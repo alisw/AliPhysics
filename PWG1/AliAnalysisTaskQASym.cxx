@@ -1139,16 +1139,17 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 
   //primary vertex: contribution from different vertexers
   const AliVVertex* vertex = event->GetPrimaryVertex();
-  if(vertex){
-    vx = vertex->GetX();
-    vy = vertex->GetY();
-    vz = vertex->GetZ();
-    if(vertex->GetNContributors()>0){
-      fVertexX[0]->Fill(vx);
-      fVertexY[0]->Fill(vy);
-      fVertexZ[0]->Fill(vz);     
-    }
+  if(!vertex) return;
+  vx = vertex->GetX();
+  vy = vertex->GetY();
+  vz = vertex->GetZ();
+  if(vertex->GetNContributors()>0){
+    fVertexX[0]->Fill(vx);
+    fVertexY[0]->Fill(vy);
+    fVertexZ[0]->Fill(vz);     
   }
+  
+
   
   const AliVVertex* vertexSPD = esd->GetPrimaryVertexSPD();
   if(vertexSPD){
