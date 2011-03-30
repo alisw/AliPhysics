@@ -37,6 +37,8 @@ using namespace std;
 Int_t PlotSpectraPbPb();
 Int_t PlotJetBFluctuations();
 Int_t PlotJetQA();
+Int_t PlotPlay();
+
 // helpers
 
 
@@ -49,6 +51,10 @@ void SetStyleH1(TH1 *h,Int_t color = 0,Int_t fillStyle = 0,Int_t markerStyle = 0
 void ScaleH2(TH2* h,char* cX = "",char* cY = "",char* cZ = "",Float_t fScale = 1,Bool_t bWidth = true);
 TH1F* GetPythia8Spectrum(const char *cHist,const char *cPythia,Float_t deta,Int_t iRebin = 1,Int_t iMask = 0);
 TF1* FitLHSgaus(TH1D *hDeltaPt, double &sigma, double &sigma_error, double &mean);
+Double_t Gamma(Double_t *x,Double_t *par);
+Double_t Gamma0(Double_t *x,Double_t *par);
+
+
 const char *cPrintMask = "110116_%s.eps";
 void set_plot_style();
 TCanvas *cTmp = 0;
@@ -107,8 +113,8 @@ TH1F* GetPythia8Spectrum(const char *cHist,const char *cPythia,Float_t deta,Int_
 
 }
 
+
 void PlotNote(){
- 
   PlotJetBFluctuations();
 }
 
@@ -1020,7 +1026,8 @@ Int_t PlotJetBFluctuations(){
   Double_t sigma = 0;
   Double_t sigma_err = 0;
   TF1* tmpGaus = 0;
-
+  TF1 *gamma0 = new TF1("gamma0",Gamma0,-40,40,4);
+  gamma0->SetParameters(1,1,1,1);
 
   for(int ic = 0;ic < nCen;ic++){
     TLegend *leg1 = new TLegend(0.2,0.65,0.3,0.93);
@@ -1036,7 +1043,7 @@ Int_t PlotJetBFluctuations(){
     leg1->AddEntry(hBiaL[ic],Form("BiA anti-k_{T}"),"P");
     */
 
-    
+    /*
     hBiaRC2[ic]->DrawCopy("psame");
     tmpGaus = FitLHSgaus(hBiaRC2[ic],sigma,sigma_err,mean);
     tmpGaus->SetRange(-40,40);
@@ -1045,8 +1052,15 @@ Int_t PlotJetBFluctuations(){
     tmpGaus->Draw("same");
     leg1->AddEntry(hBiaRC2[ic],sBiaRC2.Data(),"P");
     leg1->AddEntry(tmpGaus,Form("LHS Gaus fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
-    
+    */    
+
     hBiaRC[ic]->DrawCopy("psame");
+    hBiaRC[ic]->Fit(gamma0);
+    c1->Update();
+    if(getchar()=='q')return 1;
+    continue;
+
+
     tmpGaus = FitLHSgaus(hBiaRC[ic],sigma,sigma_err,mean);
     tmpGaus->SetRange(-40,40);
     tmpGaus->SetLineColor( hBiaRC[ic]->GetLineColor());
@@ -1279,6 +1293,40 @@ void ScaleNevent(TH1* h,TFile *fIn,Int_t iCond,Int_t iMC,Int_t iCen){
     Printf("scale factor %E",scalef);
     h->Scale(scalef);
   }
+
+}
+
+Double_t Gamma0(Double_t *x,Double_t *par){
+
+  // Fixed multiplicity M
+
+
+  Double_t p = par[0];
+  Double_t b = par[1];
+  Double_t A = par[2];
+  Double_t xval = x[0] + p/b;
+  // xval += par[3];
+  if(xval<0)return 0;
+
+  // take log to avoid zeros and NANs
+  Double_t f1 = TMath::Log(A*b);
+  Double_t f11 = ROOT::Math::lgamma(p); 
+  Double_t f2 = TMath::Log(b * xval)*(p-1);
+  Double_t f3 = -1.*b*xval;
+  Double_t f = f1-f11+f2+f3;
+  f = TMath::Exp(f);
+  return f;
+}
+
+Double_t Gamma(Double_t *x,Double_t *par){
+
+  // Fixed multiplicity M
+  Double_t M = par[0];
+  // Paramter p = <p_T>^2/sigma_p_T^2 adn b = <p_T>/sigma_p_T^2
+  Double_t b = par[1]/par[2]/par[2];
+  Double_t p = par[1] * b;
+
+  Double_t f = M * b / ROOT::Math::tgamma(M*p) * TMath::Power(M * b * x[0],M*(p-1)) * TMath::Exp(M*b*x[0]); 
 
 }
 
