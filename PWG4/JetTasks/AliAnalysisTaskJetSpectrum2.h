@@ -72,6 +72,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
     virtual void SetEventSelectionMask(UInt_t i){fEventSelectionMask = i;}
+    virtual void SetPhiWeights(TH3F *phiw){fh3PhiWeights = phiw;}
     virtual void SetNonStdFile(char* c){fNonStdFile = c;} 
 
 
@@ -108,6 +109,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Float_t GetCentrality();
     Bool_t  CalculateReactionPlaneAngle(const TList *trackList);
     Int_t   GetPhiBin(Double_t phi);
+    Double_t GetPhiWeight(Double_t phi,Double_t signedpt);
     Int_t   GetListOfJets(TList *list,TClonesArray* jarray,Int_t type);
     void    FillJetHistos(TList &jetsList,TList &particlesList,Int_t iType);
 
@@ -187,6 +189,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH2F*         fh2PtFGen;                //! found vs generated 
     TH2F*         fh2RelPtFGen;             //! relative difference between generated and found 
 
+    TH3F*         fh3PhiWeights;  // RP phi weights, need to be set externally
     TH3F*         fh3RPPhiTracks; //! RP angle
     
 
