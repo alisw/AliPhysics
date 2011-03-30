@@ -1112,8 +1112,8 @@ AliESDVertex AliVertexerTracks::TrackletVertexFinder(AliStrLine **lines, const I
 
   Double_t initPos[3]={0.,0.,0.};
 
-  Double_t (*vectP0)[3]=new Double_t [knacc][3];
-  Double_t (*vectP1)[3]=new Double_t [knacc][3];
+  Double_t (*vectP0)[3]=new Double_t [knacc][3]();
+  Double_t (*vectP1)[3]=new Double_t [knacc][3]();
   
   Double_t sum[3][3];
   Double_t dsum[3]={0,0,0};
