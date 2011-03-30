@@ -277,7 +277,7 @@ void AliMathBase::LTM(TH1F * his, TVectorD *param , Float_t fraction,  Bool_t ve
   }
 }
 
-Double_t  AliMathBase::FitGaus(TH1F* his, TVectorD *param, TMatrixD *matrix, Float_t xmin, Float_t xmax, Bool_t verbose){
+Double_t  AliMathBase::FitGaus(TH1F* his, TVectorD *param, TMatrixD */*matrix*/, Float_t xmin, Float_t xmax, Bool_t verbose){
   //
   //  Fit histogram with gaussian function
   //  
@@ -355,7 +355,7 @@ Double_t  AliMathBase::FitGaus(TH1F* his, TVectorD *param, TMatrixD *matrix, Flo
   Double_t chi2 = fitter.GetChisquare()/Float_t(npoints);
   //fitter.GetParameters();
   if (!param)  param  = new TVectorD(3);
-  if (!matrix) matrix = new TMatrixD(3,3);
+  //if (!matrix) matrix = new TMatrixD(3,3);
   (*param)[1] = par[1]/(-2.*par[2]);
   (*param)[2] = 1./TMath::Sqrt(TMath::Abs(-2.*par[2]));
   (*param)[0] = TMath::Exp(par[0]+ par[1]* (*param)[1] +  par[2]*(*param)[1]*(*param)[1]);
@@ -373,7 +373,7 @@ Double_t  AliMathBase::FitGaus(TH1F* his, TVectorD *param, TMatrixD *matrix, Flo
   return chi2;
 }
 
-Double_t  AliMathBase::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t xMax, TVectorD *param, TMatrixD *matrix, Bool_t verbose){
+Double_t  AliMathBase::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t xMax, TVectorD *param, TMatrixD */*matrix*/, Bool_t verbose){
   //
   //  Fit histogram with gaussian function
   //  
@@ -414,7 +414,7 @@ Double_t  AliMathBase::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t 
   Float_t entries = 0;
   Int_t nfilled=0;
 
-  if (!param) { cerr<<"Zero param pointer"<<endl; return 1e10; }
+  if (!param)  param  = new TVectorD(4);
 
   for (Int_t i=0; i<nBins; i++){
       entries+=arr[i];
@@ -473,9 +473,9 @@ Double_t  AliMathBase::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t 
       if (TMath::Abs(par[1])<kTol) return -4;
       if (TMath::Abs(par[2])<kTol) return -4;
 
-      if (!param)  param  = new TVectorD(4);
+      //if (!param)  param  = new TVectorD(4);
       if ( param->GetNrows()<4 ) param->ResizeTo(4);
-      if (!matrix) matrix = new TMatrixD(3,3);  // !!!!might be a memory leek. use dummy matrix pointer to call this function!
+      //if (!matrix) matrix = new TMatrixD(3,3);  // !!!!might be a memory leek. use dummy matrix pointer to call this function!
 
       (*param)[1] = par[1]/(-2.*par[2]);
       (*param)[2] = 1./TMath::Sqrt(TMath::Abs(-2.*par[2]));
