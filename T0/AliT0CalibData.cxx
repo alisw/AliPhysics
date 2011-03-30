@@ -87,7 +87,7 @@ void  AliT0CalibData::PrintLookup(Option_t*, Int_t iTRM, Int_t iTDC, Int_t iChan
 {
   // print lookup table
 
-  AliT0LookUpKey* lookkey= new AliT0LookUpKey();
+  AliT0LookUpKey* lookkey; //= new AliT0LookUpKey();
   AliT0LookUpValue*  lookvalue= new AliT0LookUpValue();
   printf("Number Of TRMs in setup %i\n",GetNumberOfTRMs());
 
