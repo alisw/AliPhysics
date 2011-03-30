@@ -24,6 +24,7 @@
 #include <float.h>
 #include <TList.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TBrowser.h>
 #include "TMath.h"
 #include "TNamed.h"
@@ -258,7 +259,59 @@ Bool_t AliFlowEventCuts::IsSelected(TObject* obj)
 Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
 {
   ///check if event passes cuts
+  Bool_t pass=kTRUE;
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(event);
+  Int_t multTPC = 0;
+  Int_t multGlobal = 0; 
+  if (fQA)
+  {
+    multTPC = fStandardTPCcuts->Count(event);
+    multGlobal = fStandardGlobalCuts->Count(event);
+    QAbefore(1)->Fill(multGlobal,multTPC);
+  }
+  if (fCutTPCmultiplicityOutliers)
+  {
+    Bool_t localpass=kTRUE;
+    //this is pretty slow as we check the event track by track twice
+    //this cut will work for 2010 PbPb data and is dependent on
+    //TPC and ITS reco efficiency (e.g. geometry, calibration etc)
+    if (!fQA)
+    {
+      multTPC = fStandardTPCcuts->Count(event);
+      multGlobal = fStandardGlobalCuts->Count(event);
+    }
+    if (multTPC > ( 23+1.216*multGlobal)) {localpass=kFALSE; pass=kFALSE;}
+    if (multTPC < (-20+1.087*multGlobal)) {localpass=kFALSE; pass=kFALSE;}
+    if (fQA&&localpass) QAafter(1)->Fill(multGlobal,multTPC);
+  }
+  const AliVVertex* pvtx=event->GetPrimaryVertex();
+  Double_t pvtxx = pvtx->GetX();
+  Double_t pvtxy = pvtx->GetY();
+  Double_t pvtxz = pvtx->GetZ();
+  Int_t ncontrib = pvtx->GetNContributors();
+  if (fCutNContributors)
+  {
+    if (ncontrib < fNContributorsMin || ncontrib >= fNContributorsMax) pass=kFALSE;
+  }
+  if (fCutPrimaryVertexX)
+  {
+    if (pvtxx < fPrimaryVertexXmin || pvtxx >= fPrimaryVertexXmax) pass=kFALSE;
+  }
+  if (fCutPrimaryVertexY)
+  {
+    if (pvtxy < fPrimaryVertexYmin || pvtxy >= fPrimaryVertexYmax) pass=kFALSE;
+  }
+  if (fQA) QAbefore(0)->Fill(pvtxz);
+  if (fCutPrimaryVertexZ)
+  {
+    Bool_t localpass=kTRUE;
+    if (pvtxz < fPrimaryVertexZmin || pvtxz >= fPrimaryVertexZmax)
+    {
+      pass=kFALSE;
+      localpass=kFALSE;
+    }
+    if (fQA&&localpass) QAafter(0)->Fill(pvtxz);
+  }
   if (fCutCentralityPercentile&&esdevent)
   {
     AliCentrality* centr = esdevent->GetCentrality();
@@ -313,43 +366,6 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
       return kFALSE;
     }
   }
-  const AliVVertex* pvtx=event->GetPrimaryVertex();
-  Double_t pvtxx = pvtx->GetX();
-  Double_t pvtxy = pvtx->GetY();
-  Double_t pvtxz = pvtx->GetZ();
-  Int_t ncontrib = pvtx->GetNContributors();
-  if (fCutNContributors)
-  {
-    if (ncontrib < fNContributorsMin || ncontrib >= fNContributorsMax)
-      return kFALSE;
-  }
-  if (fCutPrimaryVertexX)
-  {
-    if (pvtxx < fPrimaryVertexXmin || pvtxx >= fPrimaryVertexXmax)
-      return kFALSE;
-  }
-  if (fCutPrimaryVertexY)
-  {
-    if (pvtxy < fPrimaryVertexYmin || pvtxy >= fPrimaryVertexYmax)
-      return kFALSE;
-  }
-  if (fCutPrimaryVertexZ)
-  {
-    if (pvtxz < fPrimaryVertexZmin || pvtxz >= fPrimaryVertexZmax)
-    {
-      return kFALSE;
-    }
-  }
-  if (fCutTPCmultiplicityOutliers)
-  {
-    //this is pretty slow as we check the event track by track twice
-    //this cut will work for 2010 PbPb data and is dependent on
-    //TPC and ITS reco efficiency (e.g. geometry, calibration etc)
-    Int_t multTPC = fStandardTPCcuts->Count(event);
-    Int_t multGlobal = fStandardGlobalCuts->Count(event);
-    if (multTPC > ( 23+1.216*multGlobal)) return kFALSE;
-    if (multTPC < (-20+1.087*multGlobal)) return kFALSE;
-  }
   if (fCutMeanPt)
   {
     Float_t meanpt=0.0;
@@ -359,9 +375,9 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
     {
       AliVParticle* track = event->GetTrack(i);
       if (!track) continue;
-      Bool_t pass=kTRUE;
-      if (fMeanPtCuts) pass=fMeanPtCuts->IsSelected(track);
-      if (pass) 
+      Bool_t localpass=kTRUE;
+      if (fMeanPtCuts) localpass=fMeanPtCuts->IsSelected(track);
+      if (localpass) 
       {
         meanpt += track->Pt();
         nselected++;
@@ -370,7 +386,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
     meanpt=meanpt/nselected;
     if (meanpt<fMeanPtMin || meanpt >= fMeanPtMax) return kFALSE;
   }
-  return kTRUE;
+  return pass;
 }
 
 //----------------------------------------------------------------------- 
@@ -446,18 +462,23 @@ Int_t AliFlowEventCuts::RefMult(AliVEvent* event)
 //_____________________________________________________________________________
 void AliFlowEventCuts::DefineHistograms()
 {
+  //define QA histos
+  if (fQA) return;
+
   Bool_t adddirstatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-  if (!fQA) fQA = new TList();
+  fQA = new TList(); fQA->SetOwner();
   fQA->SetName(Form("%s QA",GetName()));
-  TList* before = new TList();
+  TList* before = new TList(); before->SetOwner();
   before->SetName("before");
-  TList* after = new TList();
+  TList* after = new TList(); after->SetOwner();
   after->SetName("after");
   fQA->Add(before);
   fQA->Add(after);
-  before->Add(new TH1F("zvertex",";z;event cout",500,-15.,15.));
-  after->Add(new TH1F("zvertex",";z;event cout",500,-15.,15.));
+  before->Add(new TH1F("zvertex",";z;event cout",500,-15.,15.)); //0
+  after->Add(new TH1F("zvertex",";z;event cout",500,-15.,15.)); //0
+  before->Add(new TH2F("fTPCvsGlobalMult","TPC only vs Global track multiplicity;global;TPC only",500,0,2500,500,0,3500));//1
+  after->Add(new TH2F("fTPCvsGlobalMult","TPC only vs Global track multiplicity;global;TPC only",500,0,2500,500,0,3500));//1
   TH1::AddDirectory(adddirstatus);
 }
 

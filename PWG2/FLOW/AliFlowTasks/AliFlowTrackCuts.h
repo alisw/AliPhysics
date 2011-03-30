@@ -96,7 +96,6 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetFakesAreOK( Bool_t b ) {fFakesAreOK=b;}
   void SetSPDtrackletDeltaPhiMax( Double_t m ) {fSPDtrackletDeltaPhiMax=m; fCutSPDtrackletDeltaPhi=kTRUE;}
   void SetSPDtrackletDeltaPhiMin( Double_t m ) {fSPDtrackletDeltaPhiMin=m; fCutSPDtrackletDeltaPhi=kTRUE;}
-  void SetIgnoreSignInPID( Bool_t b ) {fIgnoreSignInPID=b;}
   void SetIgnoreTPCzRange( Double_t min, Double_t max ) 
                          { fIgnoreTPCzRange=kTRUE; fIgnoreTPCzRangeMin=min; fIgnoreTPCzRangeMax=max; }
   void SetAODfilterBit( UInt_t a ) {fAODFilterBit = a; fUseAODFilterBit = kTRUE;}  						 
@@ -136,12 +135,13 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t GetBeta(const AliESDtrack* t);
   Float_t Getdedx(const AliESDtrack* t);
  
-  void SetQA() {DefineHistograms();}
+  void SetQA(Bool_t b=kTRUE) {if (b) DefineHistograms();}
   TList* GetQA() const {return fQA;}
   TH1* QAbefore(Int_t i) {return static_cast<TH1*>(static_cast<TList*>(fQA->At(0))->At(i));}
   TH1* QAafter(Int_t i) {return static_cast<TH1*>(static_cast<TList*>(fQA->At(1))->At(i));}  
 
   //MC stuff
+  void SetIgnoreSignInMCPID( Bool_t b ) {fIgnoreSignInMCPID=b;}
   void SetCutMC( Bool_t b=kTRUE );
   void SetMCprocessType( TMCProcess t ) { fMCprocessType = t; fCutMCprocessType=kTRUE; SetCutMC();}
   void SetMCisPrimary( Bool_t b ) { fMCisPrimary=b; fCutMCisPrimary=kTRUE; SetCutMC();}
@@ -149,6 +149,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   TMCProcess GetMCprocessType() const { return fMCprocessType; }
   Bool_t GetMCisPrimary() const {return fMCisPrimary;}
   Int_t GetMCPID() const {return fMCPID;}
+  void SetRequireTransportBitForPrimaries(Bool_t b) {fRequireTransportBitForPrimaries=b; SetCutMC();}
 
   void SetParamType(trackParameterType paramType) {fParamType=paramType;}
   trackParameterType GetParamType() const {return fParamType;}
@@ -231,7 +232,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   TMCProcess fMCprocessType;         //mc process type
   Bool_t fCutMCPID;                  //cut on MC pid?
   Int_t fMCPID;                      //MC PID
-  Bool_t fIgnoreSignInPID;           //when PID cut is set, pass also the antiparticle
+  Bool_t fIgnoreSignInMCPID;           //when MC PID cut is set, pass also the antiparticle
   Bool_t fCutMCisPrimary;            //do we cut on primaryness?
   Bool_t fRequireTransportBitForPrimaries; //require the transport bit to be set for primaries
   Bool_t fMCisPrimary;               //is MC primary
