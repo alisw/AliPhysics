@@ -702,10 +702,10 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
                                                           momBachAtCascadeVtx,
                                                           *aodV0);
     
-//    if (fDebug > 3) {
-//      printf("---- Cascade / AOD cascade : \n\n");
-//      aodCascade->PrintXi(fPrimaryVertex->GetX(), fPrimaryVertex->GetY(), fPrimaryVertex->GetZ());
-//    }
+    if (fDebug > 10) {
+      printf("---- Cascade / AOD cascade : \n\n");
+      aodCascade->PrintXi(fPrimaryVertex->GetX(), fPrimaryVertex->GetY(), fPrimaryVertex->GetZ());
+    }
     
   } // end of the loop on cascades
   
