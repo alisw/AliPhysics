@@ -360,7 +360,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
       hname="hptFakeTr";
       TH1F* hptFakeTr=new TH1F(hname.Data(),"Pt distribution of fake tracks;p_{t}[GeV];Entries/0.05 GeV/c",400,0.,20.);
-      hptGoodTr->SetTitleOffset(1.3,"Y");
+      hptFakeTr->SetTitleOffset(1.3,"Y");
 
       fOutputTrack->Add(hptFakeTr);
       fOutputTrack->Add(hdistrFakeTr);
@@ -844,9 +844,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	      ((TH1F*)fOutputTrack->FindObject("hptGoodTr"))->Fill(track->Pt());
 	      isGoodTrack++;
 	    }
-	  }//simple mode: no IsSelected on tracks: use "manual" cuts
-	}    
-      }
+	  }
+	}//simple mode: no IsSelected on tracks: use "manual" cuts    
+      }//fill track histos
     } //end loop on tracks
 
       //fill once per event
@@ -899,18 +899,19 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    
 	    Int_t label=0;
 	    if(fReadMC)label=track->GetLabel();
-	    if(fReadMC && label<0 && fOnOff[0]) {
-	      isFakeTrack++;
-	      ((TH1F*)fOutputTrack->FindObject("hptFakeTr"))->Fill(track->Pt());
+	    if(fOnOff[0]){
+	      if(fReadMC && label<0) {
+		isFakeTrack++;
+		((TH1F*)fOutputTrack->FindObject("hptFakeTr"))->Fill(track->Pt());
 	   
-	      ((TH1F*)fOutputTrack->FindObject("hd0f"))->Fill(d->Getd0Prong(id));
-	    } else {
-	      isGoodTrack++;
-	      ((TH1F*)fOutputTrack->FindObject("hptGoodTr"))->Fill(track->Pt());
+		((TH1F*)fOutputTrack->FindObject("hd0f"))->Fill(d->Getd0Prong(id));
+	      } else {
+		isGoodTrack++;
+		((TH1F*)fOutputTrack->FindObject("hptGoodTr"))->Fill(track->Pt());
 	    
-	      ((TH1F*)fOutputTrack->FindObject("hd0"))->Fill(d->Getd0Prong(id));
-	    }
-	  
+		((TH1F*)fOutputTrack->FindObject("hd0"))->Fill(d->Getd0Prong(id));
+	      }
+	    }	  
 	    if (fCuts->IsSelected(d,AliRDHFCuts::kAll,aod) && fOnOff[1]){
 	  
 	      AliAODPid *pid = track->GetDetPid();

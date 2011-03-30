@@ -1057,7 +1057,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   //start LS analysis
   if(fDoLS && arrayLikeSign) LSAnalysis(array3Prong,arrayLikeSign,aod,vtx1,nOS);
   
-  PostData(1,fOutput);    
+  PostData(1,fOutput); 
+  PostData(2,fListCuts);
   PostData(3,fCounter);    
   return;
 }

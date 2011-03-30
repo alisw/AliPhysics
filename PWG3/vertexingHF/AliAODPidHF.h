@@ -31,6 +31,8 @@ class AliAODPidHF : public AliAODPid{
      }
  void SetSigma(Int_t idet,Double_t sigma){fnSigma[idet]=sigma;return;}
  void SetSigmaForTPC(Double_t *sigma){for(Int_t i=0;i<3;i++) fnSigma[i]=sigma[i];return;}
+ void SetSigmaForTPCCompat(Double_t sigma){fnSigmaCompat[0]=sigma;return;}
+ void SetSigmaForTOFCompat(Double_t sigma){fnSigmaCompat[1]=sigma;return;}
  void SetSigmaForTOF(Double_t sigma){fnSigma[3]=sigma;return;}
  void SetSigmaForITS(Double_t sigma){fnSigma[4]=sigma;return;}
  void SetTofSigma(Double_t sigma){fTOFSigma=sigma;return;}
@@ -47,6 +49,7 @@ class AliAODPidHF : public AliAODPid{
  void SetMC(Bool_t mc){fMC=mc;return;}
  void SetOnePad(Bool_t onepad){fOnePad=onepad;return;}
  void SetPbPb(Bool_t pbpb){fPbPb=pbpb;return;}
+ void SetPCompatTOF(Double_t pTOF){fPCompatTOF=pTOF;return;}
  
  //Getters
  Double_t GetSigma(Int_t idet) const{return fnSigma[idet];}
@@ -65,6 +68,9 @@ class AliAODPidHF : public AliAODPid{
  Bool_t GetMC() const{return fMC;}
  Bool_t GetOnePad() const{return fOnePad;}
  Bool_t GetPbPb() const{return fPbPb;}
+ Double_t GetPCompatTOF() const{return fPCompatTOF;}
+ Double_t GetnSigmaCompatTPC() const{return fnSigmaCompat[0];}
+ Double_t GetnSigmaCompatTOF() const{return fnSigmaCompat[1];}
 
  Int_t RawSignalPID (AliAODTrack *track, TString detector) const;
  Bool_t IsKaonRaw (AliAODTrack *track, TString detector) const;
@@ -97,7 +103,7 @@ class AliAODPidHF : public AliAODPid{
 
  private:
  Int_t fnNSigma; // number of sigmas
- Double_t *fnSigma; // [fnNSigma], sigma for the raw signal PID: 0-2 for TPC, 3 for TOF, 4 for ITS 
+ Double_t *fnSigma; // [fnNSigma], sigma for the raw signal PID: 0-2 for TPC, 3 for TOF, 4 for ITS
  Double_t fTOFSigma; // TOF precision 
  Int_t fnPriors; //number of priors
  Double_t *fPriors; // [fnPriors], set of priors
@@ -110,13 +116,15 @@ class AliAODPidHF : public AliAODPid{
  Bool_t fTRD; // switch to include or exclude TRD
  Int_t fMatch; //switch to combine the info from more detectors: 1 = || , 2 = &, 3 = p region
  Bool_t fCompat; // compatibility region : useful only if fMatch=1
+ Double_t fPCompatTOF; //  compatibility p limit for TOF  
+ Double_t *fnSigmaCompat; //  0: n sigma for TPC compatibility band, 1: for TOF  
  Bool_t fMC; // MC(kTRUE) or real data (kFALSE, default option)
  Bool_t fOnePad; //  real data with one pad clusters 
  Bool_t fPbPb; //  real data PbPb 
  
 
 
- ClassDef(AliAODPidHF,7) // AliAODPid for heavy flavor PID
+ ClassDef(AliAODPidHF,8) // AliAODPid for heavy flavor PID
 
 };
 
