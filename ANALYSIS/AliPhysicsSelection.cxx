@@ -1404,29 +1404,30 @@ void AliPhysicsSelection::SaveHistograms(const char* folder)
 	  // If intensity measurements are available, they already
 	  // contain the scaling for BX ratios, so we reset the
 	  // ratioToB entries
-	  if(fBIFactorAC > 0 || fBIFactorA > 0 || fBIFactorC > 0) {
-	    if (fBIFactorAC <= 0 || fBIFactorA <= 0 || fBIFactorC <= 0) {
-	      AliError("Not all intensities set!, assuming equal intensities");
+	  if(icol == 1) {
+	    if(fBIFactorAC > 0 || fBIFactorA > 0 || fBIFactorC > 0) {
+	      if (fBIFactorAC <= 0 || fBIFactorA <= 0 || fBIFactorC <= 0) {
+		AliError("Not all intensities set!, assuming equal intensities");
+		fBIFactorA  = 1;
+		fBIFactorC  = 1;
+		fBIFactorAC = 1;
+	      } else {
+		AliInfo("Using ratio of number of bunch crossing embedded in the intensity measurements");
+		ratioToB[kClassA]  = ratioToB[kClassA]  >0 ? 1  : 0;
+		ratioToB[kClassC]  = ratioToB[kClassC]  >0 ? 1  : 0;
+		ratioToB[kClassAC] = ratioToB[kClassAC] >0 ? 1  : 0;
+		AliInfo(Form(" - BI Factor A:  %f",  fBIFactorA ));
+		AliInfo(Form(" - BI Factor C:  %f",  fBIFactorC ));
+		AliInfo(Form(" - BI Factor AC: %f",  fBIFactorAC ));
+		
+	      }
+	    } else {
+	      AliWarning("Intensities not set!, assuming equal intensities");
 	      fBIFactorA  = 1;
 	      fBIFactorC  = 1;
 	      fBIFactorAC = 1;
-	    } else {
-	      AliInfo("Using ratio of number of bunch crossing embedded in the intensity measurements");
-	      ratioToB[kClassA]  = ratioToB[kClassA]  >0 ? 1  : 0;
-	      ratioToB[kClassC]  = ratioToB[kClassC]  >0 ? 1  : 0;
-	      ratioToB[kClassAC] = ratioToB[kClassAC] >0 ? 1  : 0;
-	      AliInfo(Form(" - BI Factor A:  %f",  fBIFactorA ));
-	      AliInfo(Form(" - BI Factor C:  %f",  fBIFactorC ));
-	      AliInfo(Form(" - BI Factor AC: %f",  fBIFactorAC ));
-	      
 	    }
-	  } else {
-	    AliWarning("Intensities not set!, assuming equal intensities");
-	    fBIFactorA  = 1;
-	    fBIFactorC  = 1;
-	    fBIFactorAC = 1;
 	  }
-
 	  // Assuming that for a given class the triggers are either recorded as A+C or AC
 	  Float_t bg  = nEvents[kClassAC] > 0 ?
 	    fBIFactorAC*(ratioToB[kClassAC]*nEvents[kClassAC] - 2*acc):
