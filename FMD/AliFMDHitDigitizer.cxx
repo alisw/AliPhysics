@@ -563,7 +563,7 @@ AliFMDHitDigitizer::CheckDigit(AliFMDDigit*    digit,
 
 //____________________________________________________________________
 void
-AliFMDHitDigitizer::StoreDigits(AliLoader* loader)
+AliFMDHitDigitizer::StoreDigits(const AliLoader* loader)
 {
   /** 
    * Store the data using the loader 
