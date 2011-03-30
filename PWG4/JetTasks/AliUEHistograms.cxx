@@ -116,7 +116,8 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   
   fVertexContributors = new TH1F("fVertexContributors", ";contributors;count", 100, -0.5, 99.5);
   
-  fCentralityDistribution = new TH1F("fCentralityDistribution", ";;count", fNumberDensityPhi->GetEventHist()->GetNBins(1), fNumberDensityPhi->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray());
+  if (fNumberDensityPhi)
+    fCentralityDistribution = new TH1F("fCentralityDistribution", ";;count", fNumberDensityPhi->GetEventHist()->GetNBins(1), fNumberDensityPhi->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray());
   
   fITSClusterMap = new TH3F("fITSClusterMap", "; its cluster map; centrality; pT", 256, -0.5, 255.5, 20, 0, 100.001, 100, 0, 20);
   
