@@ -451,6 +451,11 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	Double_t zPrimVertex = aodVtx ->GetZ();
 	Double_t zMCVertex = mcHeader->GetVtxZ();
 	
+	if (TMath::Abs(zMCVertex) > fCuts->GetMaxVtxZ()){
+	  AliDebug(3,Form("z coordinate of MC vertex = %f, it was required to be within [-%f, +%f], skipping event", zMCVertex, fCuts->GetMaxVtxZ(), fCuts->GetMaxVtxZ()));
+	  return;
+	}
+
 	AliESDtrackCuts** trackCuts = new AliESDtrackCuts*[cfVtxHF->GetNProngs()];
 	if (fDecayChannel == 21){
 		// for the D*, setting the third element of the array of the track cuts to those for the soft pion
