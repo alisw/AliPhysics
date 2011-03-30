@@ -46,8 +46,6 @@ protected:
 
   AliFemtoParticleCut*         	fFemtoParticleCut;    //  select particles of type #1 
   AliFemtoParticleCut*  	fFlowParticleCut;   //  select particles of type #2 
-  AliFemtoPairCut*		fPairCut;
-  AliFemtoEventCut*		fEventCut;
 
   double fVertexZ[2];                 /* min/max z-vertex position allowed to be processed */
   unsigned int fVertexZBins;          /* number of VERTEX mixing bins in z-vertex in EventMixing Buffer */
