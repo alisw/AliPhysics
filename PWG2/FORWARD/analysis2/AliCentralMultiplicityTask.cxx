@@ -125,6 +125,7 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   // Parameters:
   //    option Not used
   //  
+  fAODCentral.Clear("");
   
   AliESDInputHandler* eventHandler = 
     dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()
@@ -145,7 +146,7 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
     AliInfo("Manager of corrections in AliCentralMultiplicityTask init");
     fFirstEventSeen = kTRUE;
   }
-  
+    
   //Selecting only events with |valid vertex| < 10 cm
   const AliESDVertex* vertex = esd->GetPrimaryVertexSPD();
   if (!vertex) return;
@@ -171,7 +172,7 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   ah->SetFillAOD(kTRUE);
   
   //Doing analysis
-  fAODCentral.Clear("");
+ 
   TH2D *aodHist = &(fAODCentral.GetHistogram());
   
   const AliMultiplicity* spdmult = esd->GetMultiplicity();
