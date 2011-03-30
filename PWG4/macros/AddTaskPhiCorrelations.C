@@ -8,33 +8,36 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0)
     return NULL;
   }  
   
-  // Check the analysis type using the event handlers connected to the analysis manager.
-  //==============================================================================
-  if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskPhiCorrelations", "This task requires an input event handler");
-    return NULL;
-  }
-  
   // Create the task and configure it.
   //===========================================================================
   AliAnalysisTaskPhiCorrelations* ana = new  AliAnalysisTaskPhiCorrelations("PhiCorrelations");
   ana->SetMode(analysisMode);// data or corrections mode
+  
+//  if (analysisMode == 0) // data
+//    ana->SelectCollisionCandidates(AliVEvent::kMB);
+
   // common config,
   ana->SetDebugLevel(0); 
   //  ana->SetFilterBit(16);  
   //ana->SetFilterBit(64+32);  
   ana->SetFilterBit(1);  
   ana->SetTrackEtaCut(0.8);
-  ana->SetPtMin(2.0);
+  ana->SetPtMin(0.15);
   //ana->SetEventSelectionBit(AliAnalysisHelperJetTasks::kIsPileUp);
   ana->SetReduceMemoryFootprint(kTRUE);
+  //ana->SetSelectCharge(2);
+  
+  if (1)
+  {
+    Printf("\n\n\n+++++++++++++++ Configuring for p+p! +++++++++++++++++\n\n\n");
+    ana->SetCentralityMethod(""); // only for pp
+  }    
   
   if (0)
   {
-    file = TFile::Open("$ALICE_ROOT/PWG4/JetTasks/inputFiles/ue_trackingefficiency.root");
-    trackingEff = (TH1D*) file->Get("trackingefficiency");
-    ana->SetTrackingEfficiency(trackingEff);
-  }
+    Printf("\n\n\n++++++++++ Using SPD centrality selection ++++++++++++\n\n\n");
+    ana->SetCentralityMethod("CL1");
+  }    
   
   mgr->AddTask(ana);
   

@@ -48,6 +48,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
   fEtaMax(0),
   fPtMin(0),
   fPtMax(0),
+  fCentralityMin(0),
+  fCentralityMax(0),
   fContaminationEnhancement(0),
   fCombineMinMax(0),
   fCache(0),
@@ -193,7 +195,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   
     iTrackBin[4] = kNLeadingPhiBins;
     trackBins[4] = leadingPhiBins;
-    trackAxisTitle[4] = "#Delta#phi";
+    trackAxisTitle[4] = "#Delta#phi (rad.)";
   }
     
   for (Int_t i=0; i<initRegions; i++)
@@ -243,6 +245,8 @@ AliUEHist::AliUEHist(const AliUEHist &c) :
   fEtaMax(0),
   fPtMin(0),
   fPtMax(0),
+  fCentralityMin(0),
+  fCentralityMax(0),
   fContaminationEnhancement(0),
   fCombineMinMax(0),
   fCache(0),
@@ -329,6 +333,8 @@ void AliUEHist::Copy(TObject& c) const
   target.fEtaMax = fEtaMax;
   target.fPtMin = fPtMin;
   target.fPtMax = fPtMax;
+  target.fCentralityMin = fCentralityMin;
+  target.fCentralityMax = fCentralityMax;
   
   if (fContaminationEnhancement)
     target.fContaminationEnhancement = dynamic_cast<TH1F*> (fContaminationEnhancement->Clone());
@@ -496,6 +502,11 @@ TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Floa
   //
   // ptLeadMin, ptLeadMax: Only meaningful for vs. delta phi plot (third axis is ptLead)
   // Histogram has to be deleted by the caller of the function
+  //
+  // twoD: 0: 1D histogram as function of phi
+  //       1: 2D histogram, deltaphi, deltaeta
+  //       10: 1D histogram, within |deltaeta| < 0.8
+  //       11: 1D histogram, within 0.8 < |deltaeta| < 1.6
   
   // unzoom all axes
   ResetBinLimits(fTrackHist[region]->GetGrid(step));
@@ -534,7 +545,7 @@ TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Floa
   }
   else
   {
-    if (multBinEnd > multBinBegin)
+    if (multBinEnd >= multBinBegin)
       Printf("Using multiplicity range %d --> %d", multBinBegin, multBinEnd);
     fTrackHist[region]->GetGrid(step)->GetGrid()->GetAxis(3)->SetRange(multBinBegin, multBinEnd);
     fEventHist->GetGrid(step)->GetGrid()->GetAxis(1)->SetRange(multBinBegin, multBinEnd);
@@ -549,11 +560,38 @@ TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Floa
     if (twoD == 0)
       tracks = (TH1D*) fTrackHist[region]->GetGrid(step)->Project(4);
     else
-      tracks  = (TH1D*) fTrackHist[region]->GetGrid(step)->Project(4, 0);
+      tracks = (TH1D*) fTrackHist[region]->GetGrid(step)->Project(4, 0);
+      
     Printf("Calculated histogram --> %f tracks", tracks->Integral());
     fTrackHist[region]->GetGrid(step)->SetRangeUser(2, 0, -1);
     
+    if (twoD == 10 || twoD == 11)
+    {
+      Float_t etaLimit = 0.8;
+      if (twoD == 10)
+      {
+        tracks = (TH1D*) ((TH2*) tracks)->ProjectionX("proj", tracks->GetYaxis()->FindBin(-etaLimit + 0.01), tracks->GetYaxis()->FindBin(etaLimit - 0.01))->Clone();
+        
+        // TODO calculate acc with 2 * (deta - 0.5 * deta*deta / 1.6)
+        tracks->Scale(1. / 0.75);
+      }
+      else if (twoD == 11)
+      {
+        TH1D* tracksTmp1 = (TH1D*) ((TH2*) tracks)->ProjectionX("proj1", tracks->GetYaxis()->FindBin(-etaLimit * 2 + 0.01), tracks->GetYaxis()->FindBin(-etaLimit - 0.01))->Clone();
+        TH1D* tracksTmp2 = ((TH2*) tracks)->ProjectionX("proj2", tracks->GetYaxis()->FindBin(etaLimit + 0.01), tracks->GetYaxis()->FindBin(2 * etaLimit - 0.01));
+        
+        tracksTmp1->Add(tracksTmp2);
+        
+        delete tracks;
+        tracks = tracksTmp1;
+        delete tracksTmp2;
+        
+        tracks->Scale(1. / 0.25);
+      }
+    }
+    
     // normalize to get a density (deta dphi)
+    // TODO normalization may be off for 2d histogram
     Float_t normalization = fTrackHist[region]->GetGrid(step)->GetAxis(4)->GetBinWidth(1);
     TAxis* axis = fTrackHist[region]->GetGrid(step)->GetAxis(0);
     if (strcmp(axis->GetTitle(), "#eta") == 0)
@@ -570,12 +608,13 @@ TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Floa
     //Printf("Normalization: %f", normalization);
     tracks->Scale(1.0 / normalization);
     
+    // NOTE fEventHist contains the number of events for the underlying event analysis and the number of trigger particles for the azimuthal correlation analysis. In the latter case the naming is therefore somewhat misleading!
     TH1D* events = fEventHist->ShowProjection(0, step);
     Int_t nEvents = (Int_t) events->Integral(firstBin, lastBin);
     Printf("Calculated histogram --> %d events", nEvents);
-    //if (twoD == 1)
-      if (nEvents > 0)
-        tracks->Scale(1.0 / nEvents);
+      
+    if (nEvents > 0)
+      tracks->Scale(1.0 / nEvents);
     
     delete events;
   }
@@ -745,7 +784,7 @@ void AliUEHist::CorrectTracks(CFStep step1, CFStep step2, Int_t region, TH1* tra
 }
 
 //____________________________________________________________________
-void AliUEHist::CorrectEvents(CFStep step1, CFStep step2, TH1* eventCorrection, Int_t var)
+void AliUEHist::CorrectEvents(CFStep step1, CFStep step2, TH1* eventCorrection, Int_t var1, Int_t var2)
 {
   // corrects from step1 to step2 by multiplying the events with eventCorrection
   // eventCorrection is as function of leading pT (var == 0) or multiplicity (var == 1)
@@ -758,8 +797,11 @@ void AliUEHist::CorrectEvents(CFStep step1, CFStep step2, TH1* eventCorrection, 
   // clear target histogram
   target->GetGrid()->Reset();
   
-  if (eventCorrection != 0 && grid->GetNBins(var) != eventCorrection->GetNbinsX())
-    AliFatal(Form("Invalid binning: %d %d", grid->GetNBins(var), eventCorrection->GetNbinsX()));
+  if (eventCorrection != 0 && grid->GetNBins(var1) != eventCorrection->GetNbinsX())
+    AliFatal(Form("Invalid binning: %d %d", grid->GetNBins(var1), eventCorrection->GetNbinsX()));
+  
+  if (eventCorrection != 0 && var2 != -1 && grid->GetNBins(var2) != eventCorrection->GetNbinsY())
+    AliFatal(Form("Invalid binning: %d %d", grid->GetNBins(var2), eventCorrection->GetNbinsY()));
   
   Int_t bins[2];
   for (Int_t x = 1; x <= grid->GetNBins(0); x++)
@@ -776,8 +818,16 @@ void AliUEHist::CorrectEvents(CFStep step1, CFStep step2, TH1* eventCorrection, 
         
         if (eventCorrection != 0)
         {
-          value *= eventCorrection->GetBinContent(bins[var]);
-          error *= eventCorrection->GetBinContent(bins[var]);
+          if (var2 == -1)
+          {
+            value *= eventCorrection->GetBinContent(bins[var1]);
+            error *= eventCorrection->GetBinContent(bins[var1]);
+          }
+          else
+          {
+            value *= eventCorrection->GetBinContent(bins[var1], bins[var2]);
+            error *= eventCorrection->GetBinContent(bins[var1], bins[var2]);
+          }
         }
         
         target->SetElement(bins, value);
@@ -798,13 +848,29 @@ void AliUEHist::Correct(AliUEHist* corrections)
   
   if (fHistogramType.Length() == 0)
   {
-    Printf("W-AliUEHist::Correct: fHistogramType not defined. Setting to backwardcompatible for backward compatibilty");
-    fHistogramType = "backwardcompatible";
+    Printf("W-AliUEHist::Correct: fHistogramType not defined. Guessing histogram type...");
+    if (fTrackHist[kToward]->GetNVar() < 5)
+    {
+      if (strcmp(fTrackHist[kToward]->GetTitle(), "d^{2}N_{ch}/d#phid#eta") == 0)
+        fHistogramType = "NumberDensitypT";
+      else if (strcmp(fTrackHist[kToward]->GetTitle(), "d^{2}#Sigma p_{T}/d#phid#eta") == 0)
+        fHistogramType = "SumpT";
+    }
+    else if (fTrackHist[kToward]->GetNVar() == 5)
+    {
+      if (strcmp(fTrackHist[kToward]->GetGrid(0)->GetGrid()->GetAxis(3)->GetTitle(), "multiplicity") == 0)
+        fHistogramType = "NumberDensityPhi";
+      else if (strcmp(fTrackHist[kToward]->GetGrid(0)->GetGrid()->GetAxis(3)->GetTitle(), "centrality") == 0)
+        fHistogramType = "NumberDensityPhiCentrality";
+    }
+      
+    if (fHistogramType.Length() == 0)
+      AliFatal("Cannot figure out histogram type. Try setting it manually...");
   }
   
   Printf("AliUEHist::Correct: Correcting %s...", fHistogramType.Data());
   
-  if (strcmp(fHistogramType, "NumberDensitypT") == 0 || strcmp(fHistogramType, "NumberDensityPhi") == 0 || strcmp(fHistogramType, "SumpT") == 0 || strcmp(fHistogramType, "backwardcompatible") == 0) // the last is for backward compatibilty
+  if (strcmp(fHistogramType, "NumberDensitypT") == 0 || strcmp(fHistogramType, "NumberDensityPhi") == 0 || strcmp(fHistogramType, "SumpT") == 0) // the last is for backward compatibilty
   {
     // ---- track level
     
@@ -814,7 +880,7 @@ void AliUEHist::Correct(AliUEHist* corrections)
     const char* projAxis = "z";
     Int_t secondBin = -1;
 
-    if (fTrackHist[kToward]->GetNVar() == 5)
+    if (strcmp(fHistogramType, "NumberDensityPhi") == 0)
     {
       projAxis = "yz";
       secondBin = 4;
@@ -934,13 +1000,49 @@ void AliUEHist::Correct(AliUEHist* corrections)
     CorrectTracks(kCFStepReconstructed, kCFStepTracked, 0, -1);
     CorrectEvents(kCFStepReconstructed, kCFStepTracked, 0, -1);
     
+    // Dont use eta in the following, because it is a Delta-eta axis
+    
     // contamination correction
     // correct single-particle contamination for associated particles
-    TH2D* contamination = corrections->GetTrackingContamination();
-    CorrectTracks(kCFStepTracked, kCFStepTrackedOnlyPrim, contamination, 0, 1);
+    
+    TH1* contamination = corrections->GetTrackingContamination(1);
+    
+    if (1)
+    {
+      Printf("Applying contamination enhancement");
+      
+      for (Int_t bin = 1; bin <= contamination->GetNbinsX(); bin++)
+      {
+        printf("%f", contamination->GetBinContent(bin));
+        if (contamination->GetBinContent(bin) > 0)
+          contamination->SetBinContent(bin, 1.0 + 1.1 * (contamination->GetBinContent(bin) - 1.0));
+        printf(" --> %f\n", contamination->GetBinContent(bin));
+      }
+    }
+      
+    CorrectTracks(kCFStepTracked, kCFStepTrackedOnlyPrim, contamination, 1);
     delete contamination;    
     
-    // TODO correct for additional contamination due to trigger particle around phi ~ 0
+    // correct for additional contamination due to trigger particle around phi ~ 0
+    TH2* correlatedContamination = corrections->GetCorrelatedContamination();
+    if (1)
+    {
+      Printf("Applying contamination enhancement");
+      
+      for (Int_t bin = 1; bin <= correlatedContamination->GetNbinsX(); bin++)
+        for (Int_t bin2 = 1; bin2 <= correlatedContamination->GetNbinsY(); bin2++)
+        {
+          printf("%f", correlatedContamination->GetBinContent(bin, bin2));
+          if (correlatedContamination->GetBinContent(bin, bin2) > 0)
+            correlatedContamination->SetBinContent(bin, bin2, 1.0 + 1.1 * (correlatedContamination->GetBinContent(bin, bin2) - 1.0));
+          printf(" --> %f\n", correlatedContamination->GetBinContent(bin, bin2));
+        }
+    }
+    
+    //new TCanvas; correlatedContamination->DrawCopy("COLZ");
+    CorrectCorrelatedContamination(kCFStepTrackedOnlyPrim, 0, correlatedContamination);
+    
+    delete correlatedContamination;
     
     // TODO correct for contamination of trigger particles (for tracks AND events)
     CorrectEvents(kCFStepTracked, kCFStepTrackedOnlyPrim, 0, 0);
@@ -949,15 +1051,16 @@ void AliUEHist::Correct(AliUEHist* corrections)
     // correct single-particle efficiency for associated particles
     // in addition correct for efficiency on trigger particles (tracks AND events)
     
-    TH1* efficiencyCorrection = corrections->GetTrackingEfficiencyCorrection();
+    // in bins of pT and centrality
+    TH1* efficiencyCorrection = corrections->GetTrackingEfficiencyCorrectionCentrality();
     // use kCFStepAnaTopology as a temporary step 
-    CorrectTracks(kCFStepTrackedOnlyPrim, kCFStepAnaTopology, efficiencyCorrection, 0, 1);
+    CorrectTracks(kCFStepTrackedOnlyPrim, kCFStepAnaTopology, efficiencyCorrection, 1, 3);
     delete efficiencyCorrection;
     
-    // correct pT,T
-    efficiencyCorrection = corrections->GetTrackEfficiency(kCFStepTrackedOnlyPrim, kCFStepAnaTopology, 1, -1, 2);
-    CorrectEvents(kCFStepTrackedOnlyPrim, kCFStepVertex, efficiencyCorrection, 0);
-    CorrectTracks(kCFStepAnaTopology, kCFStepVertex, efficiencyCorrection, 2);
+    // correct pT,T in bins of pT and centrality
+    efficiencyCorrection = corrections->GetTrackEfficiency(kCFStepTrackedOnlyPrim, kCFStepAnaTopology, 1, 3, 2);
+    CorrectEvents(kCFStepTrackedOnlyPrim, kCFStepVertex, efficiencyCorrection, 0, 1);
+    CorrectTracks(kCFStepAnaTopology, kCFStepVertex, efficiencyCorrection, 2, 3);
     delete efficiencyCorrection;
     
     // no correction for vertex finding efficiency and trigger efficiency needed in PbPb
@@ -970,7 +1073,7 @@ void AliUEHist::Correct(AliUEHist* corrections)
 }
 
 //____________________________________________________________________
-TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2, Int_t source)
+TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2, Int_t source, Int_t axis3)
 {
   // creates a track-level efficiency by dividing step2 by step1
   // projected to axis1 and axis2 (optional if >= 0)
@@ -1003,24 +1106,34 @@ TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_
   else
     return 0;
         
-  // reset all limits and set the right ones except those in axis1 and axis2
+  // reset all limits and set the right ones except those in axis1, axis2 and axis3
   ResetBinLimits(sourceContainer->GetGrid(step1));
   ResetBinLimits(sourceContainer->GetGrid(step2));
-  if (fEtaMax > fEtaMin && axis1 != 0 && axis2 != 0)
+  if (fEtaMax > fEtaMin && axis1 != 0 && axis2 != 0 && axis3 != 0)
   {
     sourceContainer->GetGrid(step1)->SetRangeUser(0, fEtaMin, fEtaMax);
     sourceContainer->GetGrid(step2)->SetRangeUser(0, fEtaMin, fEtaMax);
   }
-  if (fPtMax > fPtMin && axis1 != 1 && axis2 != 1)
+  if (fPtMax > fPtMin && axis1 != 1 && axis2 != 1 && axis3 != 1)
   {
     sourceContainer->GetGrid(step1)->SetRangeUser(1, fPtMin, fPtMax);
     sourceContainer->GetGrid(step2)->SetRangeUser(1, fPtMin, fPtMax);
+  }
+  if (fCentralityMax > fCentralityMin && axis1 != 3 && axis2 != 3 && axis3 != 3)
+  {
+    sourceContainer->GetGrid(step1)->SetRangeUser(3, fCentralityMin, fCentralityMax);
+    sourceContainer->GetGrid(step2)->SetRangeUser(3, fCentralityMin, fCentralityMax);
   }
   
   TH1* measured = 0;
   TH1* generated = 0;
     
-  if (axis2 >= 0)
+  if (axis3 >= 0)
+  {
+    generated = sourceContainer->Project(step1, axis1, axis2, axis3);
+    measured = sourceContainer->Project(step2, axis1, axis2, axis3);
+  }
+  else if (axis2 >= 0)
   {
     generated = sourceContainer->Project(step1, axis1, axis2);
     measured = sourceContainer->Project(step2, axis1, axis2);
@@ -1031,15 +1144,17 @@ TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_
     measured = sourceContainer->Project(step2, axis1);
   }
   
-  // check for bins with less than 100 entries, print warning
-  Int_t binBegin[2];
-  Int_t binEnd[2];
+  // check for bins with less than 50 entries, print warning
+  Int_t binBegin[3];
+  Int_t binEnd[3];
   
   binBegin[0] = 1;
   binBegin[1] = 1;
+  binBegin[2] = 1;
   
   binEnd[0] = generated->GetNbinsX();
   binEnd[1] = generated->GetNbinsY();
+  binEnd[2] = generated->GetNbinsZ();
   
   if (fEtaMax > fEtaMin)
   {
@@ -1052,6 +1167,11 @@ TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_
     {
       binBegin[1] = generated->GetYaxis()->FindBin(fEtaMin);
       binEnd[1]   = generated->GetYaxis()->FindBin(fEtaMax);
+    }
+    if (axis3 == 0)
+    {
+      binBegin[2] = generated->GetZaxis()->FindBin(fEtaMin);
+      binEnd[2]   = generated->GetZaxis()->FindBin(fEtaMax);
     }
   }
   
@@ -1069,13 +1189,18 @@ TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_
       binBegin[1] = generated->GetYaxis()->FindBin(fPtMin);
       binEnd[1]   = generated->GetYaxis()->FindBin(ptMax);
     }
+    if (axis3 == 1)
+    {
+      binBegin[2] = generated->GetZaxis()->FindBin(fPtMin);
+      binEnd[2]   = generated->GetZaxis()->FindBin(ptMax);
+    }
   }
   
   Int_t total = 0;
   Int_t count = 0;
-  Int_t vars[2];
+  Int_t vars[3];
   
-  for (Int_t i=0; i<2; i++)
+  for (Int_t i=0; i<3; i++)
     vars[i] = binBegin[i];
     
   const Int_t limit = 50;
@@ -1094,8 +1219,23 @@ TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_
         generated->GetBinContent(vars[0], vars[1]));
       count++;
     }
+    else if (generated->GetDimension() == 3 && generated->GetBinContent(vars[0], vars[1], vars[2]) < limit)
+    {
+      Printf("Empty bin at %s=%.2f %s=%.2f %s=%.2f (%.2f entries)", 
+        generated->GetXaxis()->GetTitle(), generated->GetXaxis()->GetBinCenter(vars[0]),
+        generated->GetYaxis()->GetTitle(), generated->GetYaxis()->GetBinCenter(vars[1]),
+        generated->GetZaxis()->GetTitle(), generated->GetZaxis()->GetBinCenter(vars[2]),
+        generated->GetBinContent(vars[0], vars[1], vars[2]));
+      count++;
+    }
     
-    vars[1]++;
+    vars[2]++;
+    if (vars[2] == binEnd[2]+1)
+    {
+      vars[2] = binBegin[2];
+      vars[1]++;
+    }
+    
     if (vars[1] == binEnd[1]+1)
     {
       vars[1] = binBegin[1];
@@ -1112,23 +1252,50 @@ TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_
   // rebin if required
   if (source == 2)
   {
-    if (axis2 != -1)
-      AliFatal("Rebinning only works for 1d at present");
-  
     TAxis* axis = fEventHist->GetGrid(0)->GetGrid()->GetAxis(0);
     
     if (axis->GetNbins() < measured->GetNbinsX())
     {
-      TH1* tmp = measured;
-      measured = tmp->Rebin(axis->GetNbins(), Form("%s_rebinned", tmp->GetName()), axis->GetXbins()->GetArray());
-      delete tmp;
-      
-      tmp = generated;
-      generated = tmp->Rebin(axis->GetNbins(), Form("%s_rebinned", tmp->GetName()), axis->GetXbins()->GetArray());
-      delete tmp;
+      if (axis2 != -1)
+      {
+        // 2d rebin with variable axis does not exist in root
+        
+        TH1* tmp = measured;
+        measured = new TH2D(Form("%s_rebinned", tmp->GetName()), tmp->GetTitle(), axis->GetNbins(), axis->GetXbins()->GetArray(), tmp->GetNbinsY(), tmp->GetYaxis()->GetXbins()->GetArray());
+        for (Int_t x=1; x<=tmp->GetNbinsX(); x++)
+          for (Int_t y=1; y<=tmp->GetNbinsY(); y++)
+          {
+            ((TH2*) measured)->Fill(tmp->GetXaxis()->GetBinCenter(x), tmp->GetYaxis()->GetBinCenter(y), tmp->GetBinContent(x, y));
+            measured->SetBinError(x, y, 0); // cannot trust bin error, set to 0
+          }
+        delete tmp;
+        
+        tmp = generated;
+        generated = new TH2D(Form("%s_rebinned", tmp->GetName()), tmp->GetTitle(), axis->GetNbins(), axis->GetXbins()->GetArray(), tmp->GetNbinsY(), tmp->GetYaxis()->GetXbins()->GetArray());
+        for (Int_t x=1; x<=tmp->GetNbinsX(); x++)
+          for (Int_t y=1; y<=tmp->GetNbinsY(); y++)
+          {
+            ((TH2*) generated)->Fill(tmp->GetXaxis()->GetBinCenter(x), tmp->GetYaxis()->GetBinCenter(y), tmp->GetBinContent(x, y));
+            generated->SetBinError(x, y, 0); // cannot trust bin error, set to 0
+          }
+        delete tmp;
+      }
+      else
+      {
+        TH1* tmp = measured;
+        measured = tmp->Rebin(axis->GetNbins(), Form("%s_rebinned", tmp->GetName()), axis->GetXbins()->GetArray());
+        delete tmp;
+        
+        tmp = generated;
+        generated = tmp->Rebin(axis->GetNbins(), Form("%s_rebinned", tmp->GetName()), axis->GetXbins()->GetArray());
+        delete tmp;
+      }
     }
     else if (axis->GetNbins() > measured->GetNbinsX())
     {
+      if (axis2 != -1)
+        AliFatal("Rebinning only works for 1d at present");
+  
       // this is an unfortunate case where the number of bins has to be increased in principle
       // there is a region where the binning is finner in one histogram and a region where it is the other way round
       // this cannot be resolved in principle, but as we only calculate the ratio the bin in the second region get the same entries
@@ -1348,6 +1515,87 @@ TH1* AliUEHist::GetBias(CFStep step1, CFStep step2, Int_t region, const char* ax
 }
 
 //____________________________________________________________________
+void AliUEHist::CorrectCorrelatedContamination(CFStep step, Int_t region, TH1* trackCorrection)
+{
+  // corrects for the given factor in a small delta-eta and delta-phi window as function of pT,A and pT,T
+  
+  if (!fTrackHist[region])
+    return;
+   
+  THnSparse* grid = fTrackHist[region]->GetGrid(step)->GetGrid();
+  
+  Int_t var1 = 1;
+  Int_t var2 = 2;
+  
+  if (grid->GetAxis(var1)->GetNbins() != trackCorrection->GetNbinsX())
+    AliFatal(Form("Invalid binning (var1): %d %d", grid->GetAxis(var1)->GetNbins(), trackCorrection->GetNbinsX()));
+    
+  if (grid->GetAxis(var2)->GetNbins() != trackCorrection->GetNbinsY())
+    AliFatal(Form("Invalid binning (var2): %d %d", grid->GetAxis(var2)->GetNbins(), trackCorrection->GetNbinsY()));
+  
+  // optimized implementation
+  for (Int_t binIdx = 0; binIdx < grid->GetNbins(); binIdx++)
+  {
+    Int_t bins[5];
+    
+    Double_t value = grid->GetBinContent(binIdx, bins);
+    Double_t error = grid->GetBinError(binIdx);
+    
+    // check eta and phi axes
+    if (TMath::Abs(grid->GetAxis(0)->GetBinCenter(bins[0])) > 0.1)
+      continue;
+    if (TMath::Abs(grid->GetAxis(4)->GetBinCenter(bins[4])) > 0.1)
+      continue;
+    
+    value *= trackCorrection->GetBinContent(bins[var1], bins[var2]);
+    error *= trackCorrection->GetBinContent(bins[var1], bins[var2]);
+    
+    grid->SetBinContent(bins, value);
+    grid->SetBinError(bins, error);
+  }
+ 
+  Printf("AliUEHist::CorrectCorrelatedContamination: Corrected.");
+}
+
+//____________________________________________________________________
+TH2* AliUEHist::GetCorrelatedContamination()
+{
+  // contamination correlated with the trigger particle is evaluated between step kCFStepTracked and kCFStepTrackedOnlyPrim in the region of delta eta and delta phi < 0.1 (smallest bin!)
+  
+  Int_t step1 = kCFStepTrackedOnlyPrim;
+  Int_t step2 = kCFStepTracked;
+  
+  fTrackHist[0]->GetGrid(step1)->SetRangeUser(0, -0.01, 0.01); // delta eta
+  fTrackHist[0]->GetGrid(step1)->SetRangeUser(4, -0.01, 0.01); // delta phi
+  TH2* tracksStep1 = (TH2*) fTrackHist[0]->Project(step1, 1, 2);
+  
+  fTrackHist[0]->GetGrid(step2)->SetRangeUser(0, -0.01, 0.01); // delta eta
+  fTrackHist[0]->GetGrid(step2)->SetRangeUser(4, -0.01, 0.01); // delta phi
+  TH2* tracksStep2 = (TH2*) fTrackHist[0]->Project(step2, 1, 2);
+  
+  tracksStep1->Divide(tracksStep2);
+  
+  TH1* triggersStep1 = fEventHist->Project(step1, 0);
+  TH1* triggersStep2 = fEventHist->Project(step2, 0);
+  
+  TH1* singleParticle = GetTrackingContamination(1);
+  
+  for (Int_t x=1; x<=tracksStep1->GetNbinsX(); x++)
+    for (Int_t y=1; y<=tracksStep1->GetNbinsY(); y++)
+      if (singleParticle->GetBinContent(x) > 0)
+        tracksStep1->SetBinContent(x, y, tracksStep1->GetBinContent(x, y) / triggersStep1->GetBinContent(y) * triggersStep2->GetBinContent(y) / singleParticle->GetBinContent(x));
+      else
+        tracksStep1->SetBinContent(x, y, 0);
+        
+  delete singleParticle;
+  delete tracksStep2;
+  delete triggersStep1;
+  delete triggersStep2;
+        
+  return tracksStep1;
+}
+
+//____________________________________________________________________
 TH2D* AliUEHist::GetTrackingEfficiency()
 {
   // extracts the tracking efficiency by calculating the efficiency from step kCFStepAnaTopology to kCFStepTrackedOnlyPrim
@@ -1358,6 +1606,17 @@ TH2D* AliUEHist::GetTrackingEfficiency()
   return dynamic_cast<TH2D*> (GetTrackEfficiency(kCFStepAnaTopology, kCFStepTrackedOnlyPrim, 0, 1));
 }
   
+//____________________________________________________________________
+TH2D* AliUEHist::GetTrackingEfficiencyCentrality()
+{
+  // extracts the tracking efficiency by calculating the efficiency from step kCFStepAnaTopology to kCFStepTrackedOnlyPrim
+  // integrates over the regions and all other variables than pT, centrality to increase the statistics
+  //
+  // returned histogram has to be deleted by the user
+
+  return dynamic_cast<TH2D*> (GetTrackEfficiency(kCFStepAnaTopology, kCFStepTrackedOnlyPrim, 1, 3));
+}
+
 //____________________________________________________________________
 TH1D* AliUEHist::GetTrackingEfficiency(Int_t axis)
 {
@@ -1399,6 +1658,17 @@ TH2D* AliUEHist::GetTrackingEfficiencyCorrection()
 }
   
 //____________________________________________________________________
+TH2D* AliUEHist::GetTrackingEfficiencyCorrectionCentrality()
+{
+  // extracts the tracking correction by calculating the efficiency from step kCFStepAnaTopology to kCFStepTracked
+  // integrates over the regions and all other variables than pT and centrality to increase the statistics
+  //
+  // returned histogram has to be deleted by the user
+
+  return dynamic_cast<TH2D*> (GetTrackEfficiency(kCFStepTrackedOnlyPrim, kCFStepAnaTopology, 1, 3));
+}
+  
+//____________________________________________________________________
 TH1D* AliUEHist::GetTrackingEfficiencyCorrection(Int_t axis)
 {
   // extracts the tracking correction by calculating the efficiency from step kCFStepAnaTopology to kCFStepTracked
@@ -1416,6 +1686,17 @@ TH2D* AliUEHist::GetTrackingContamination()
   // returned histogram has to be deleted by the user
 
   return dynamic_cast<TH2D*> (GetTrackEfficiency(kCFStepTracked, kCFStepTrackedOnlyPrim, 0, 1));
+}
+  
+//____________________________________________________________________
+TH2D* AliUEHist::GetTrackingContaminationCentrality()
+{
+  // extracts the tracking contamination by secondaries by calculating the efficiency from step kCFStepTrackedOnlyPrim to kCFStepTracked
+  // integrates over the regions and all other variables than pT and centrality to increase the statistics
+  //
+  // returned histogram has to be deleted by the user
+
+  return dynamic_cast<TH2D*> (GetTrackEfficiency(kCFStepTracked, kCFStepTrackedOnlyPrim, 1, 3));
 }
   
 //____________________________________________________________________
@@ -1510,46 +1791,122 @@ void AliUEHist::ExtendTrackingEfficiency(Bool_t verbose)
   Float_t fitRangeEnd = 14.99;
   Float_t extendRangeBegin = 10.01;
 
-  TH1* obj = GetTrackingEfficiency(1);
-
-  if (verbose)
+  if (fTrackHistEfficiency->GetNVar() == 3)
   {
-    new TCanvas; 
-    obj->Draw();
-  }
+    TH1* obj = GetTrackingEfficiency(1);
   
-  obj->Fit("pol0", (verbose) ? "+" : "0+", "SAME", fitRangeBegin, fitRangeEnd);
-
-  Float_t trackingEff = obj->GetFunction("pol0")->GetParameter(0);
-
-  obj = GetTrackingContamination(1);
-
-  if (verbose)
+    if (verbose)
+    {
+      new TCanvas; 
+      obj->Draw();
+    }
+    
+    obj->Fit("pol0", (verbose) ? "+" : "0+", "SAME", fitRangeBegin, fitRangeEnd);
+  
+    Float_t trackingEff = obj->GetFunction("pol0")->GetParameter(0);
+  
+    obj = GetTrackingContamination(1);
+  
+    if (verbose)
+    {
+      new TCanvas; 
+      obj->Draw();
+    }
+    
+    obj->Fit("pol0", (verbose) ? "+" : "0+", "SAME", fitRangeBegin, fitRangeEnd);
+  
+    Float_t trackingCont = obj->GetFunction("pol0")->GetParameter(0);
+  
+    Printf("AliUEHist::ExtendTrackingEfficiency: Fitted efficiency between %f and %f and got %f tracking efficiency and %f tracking contamination correction. Extending from %f onwards (within %f < eta < %f)", fitRangeBegin, fitRangeEnd, trackingEff, trackingCont, extendRangeBegin, fEtaMin, fEtaMax);
+  
+    // extend for full pT range
+    for (Int_t x = fTrackHistEfficiency->GetAxis(0, 0)->FindBin(fEtaMin); x <= fTrackHistEfficiency->GetAxis(0, 0)->FindBin(fEtaMax); x++)
+      for (Int_t y = fTrackHistEfficiency->GetAxis(1, 0)->FindBin(extendRangeBegin); y <= fTrackHistEfficiency->GetNBins(1); y++)
+        for (Int_t z = 1; z <= fTrackHistEfficiency->GetNBins(2); z++) // particle type axis
+        {
+          
+          Int_t bins[3];
+          bins[0] = x;
+          bins[1] = y;
+          bins[2] = z;
+          
+          fTrackHistEfficiency->GetGrid(0)->SetElement(bins, 100);
+          fTrackHistEfficiency->GetGrid(1)->SetElement(bins, 100.0 * trackingEff);
+          fTrackHistEfficiency->GetGrid(2)->SetElement(bins, 100.0 * trackingEff / trackingCont);
+        }
+  }
+  else if (fTrackHistEfficiency->GetNVar() == 4)
   {
-    new TCanvas; 
-    obj->Draw();
-  }
-  
-  obj->Fit("pol0", (verbose) ? "+" : "0+", "SAME", fitRangeBegin, fitRangeEnd);
-
-  Float_t trackingCont = obj->GetFunction("pol0")->GetParameter(0);
-
-  Printf("AliUEHist::ExtendTrackingEfficiency: Fitted efficiency between %f and %f and got %f tracking efficiency and %f tracking contamination correction. Extending from %f onwards (within %f < eta < %f)", fitRangeBegin, fitRangeEnd, trackingEff, trackingCont, extendRangeBegin, fEtaMin, fEtaMax);
- 
-  // extend up to pT 100
-  for (Int_t x = fTrackHistEfficiency->GetAxis(0, 0)->FindBin(fEtaMin); x <= fTrackHistEfficiency->GetAxis(0, 0)->FindBin(fEtaMax); x++)
-    for (Int_t y = fTrackHistEfficiency->GetAxis(1, 0)->FindBin(extendRangeBegin); y <= fTrackHistEfficiency->GetNBins(1); y++)
-      for (Int_t z = 1; z <= fTrackHistEfficiency->GetNBins(2); z++) // particle type axis
+    // fit in centrality intervals of 20% for efficiency, one bin for contamination
+    Float_t* trackingEff = 0;
+    Float_t* trackingCont = 0;
+    Int_t centralityBins = 5;
+    
+    Printf("AliUEHist::ExtendTrackingEfficiency: Fitting efficiencies between %f and %f. Extending from %f onwards (within %f < eta < %f)", fitRangeBegin, fitRangeEnd, extendRangeBegin, fEtaMin, fEtaMax);
+    
+    // 0 = eff; 1 = cont
+    for (Int_t caseNo = 0; caseNo < 2; caseNo++)
+    {
+      Float_t* target = 0;
+      Int_t centralityBinsLocal = centralityBins;
+      
+      if (caseNo == 0)
       {
-        Int_t bins[3];
-        bins[0] = x;
-        bins[1] = y;
-        bins[2] = z;
-        
-        fTrackHistEfficiency->GetGrid(0)->SetElement(bins, 100);
-        fTrackHistEfficiency->GetGrid(1)->SetElement(bins, 100.0 * trackingEff);
-        fTrackHistEfficiency->GetGrid(2)->SetElement(bins, 100.0 * trackingEff / trackingCont);
+        trackingEff = new Float_t[centralityBinsLocal];
+        target = trackingEff;
       }
+      else
+      {
+        centralityBinsLocal = 1;
+        trackingCont = new Float_t[centralityBinsLocal];
+        target = trackingCont;
+      }
+    
+      for (Int_t i=0; i<centralityBinsLocal; i++)
+      {
+        SetCentralityRange(100.0/centralityBinsLocal*i + 0.1, 100.0/centralityBinsLocal*(i+1) - 0.1);
+        TH1* proj = (caseNo == 0) ? GetTrackingEfficiency(1) : GetTrackingContamination(1);
+        if (verbose)
+        {
+          new TCanvas;
+          proj->DrawCopy();
+        }
+        if ((Int_t) proj->Fit("pol0", (verbose) ? "+" : "Q0+", "SAME", fitRangeBegin, fitRangeEnd) == 0)
+          target[i] = proj->GetFunction("pol0")->GetParameter(0);
+        else
+          target[i] = 0;
+        Printf("AliUEHist::ExtendTrackingEfficiency: case %d, centrality %d, eff %f", caseNo, i, target[i]);
+      }
+    }
+  
+    // extend for full pT range
+    for (Int_t x = fTrackHistEfficiency->GetAxis(0, 0)->FindBin(fEtaMin); x <= fTrackHistEfficiency->GetAxis(0, 0)->FindBin(fEtaMax); x++)
+      for (Int_t y = fTrackHistEfficiency->GetAxis(1, 0)->FindBin(extendRangeBegin); y <= fTrackHistEfficiency->GetNBins(1); y++)
+        for (Int_t z = 1; z <= fTrackHistEfficiency->GetNBins(2); z++) // particle type axis
+        {
+          for (Int_t z2 = 1; z2 <= fTrackHistEfficiency->GetNBins(3); z2++) // centrality axis
+          {
+            
+            Int_t bins[4];
+            bins[0] = x;
+            bins[1] = y;
+            bins[2] = z;
+            bins[3] = z2;
+            
+            Int_t z2Bin = (Int_t) (fTrackHistEfficiency->GetAxis(3, 0)->GetBinCenter(z2) / (100.0 / centralityBins));
+            //Printf("%d %d", z2, z2Bin);
+            
+            fTrackHistEfficiency->GetGrid(0)->SetElement(bins, 100);
+            fTrackHistEfficiency->GetGrid(1)->SetElement(bins, 100.0 * trackingEff[z2Bin]);
+            if (trackingCont[0] > 0)
+              fTrackHistEfficiency->GetGrid(2)->SetElement(bins, 100.0 * trackingEff[z2Bin] / trackingCont[0]);
+            else  
+              fTrackHistEfficiency->GetGrid(2)->SetElement(bins, 0);
+          }
+       }
+   }
+   
+   SetCentralityRange(0, 0);
 }
 
 void AliUEHist::AdditionalDPhiCorrection(Int_t step)
