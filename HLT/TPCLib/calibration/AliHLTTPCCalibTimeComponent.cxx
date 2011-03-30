@@ -403,24 +403,26 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
       }
   } 
   
-  if(!fCalibTime){ // create the calibration object that will call the offline functions
-  
-     Int_t startTime = fESDevent->GetTimeStamp()-60*60*1;  //Start time one hour before first event, will make precise cuts later.
-     Int_t   endTime = fESDevent->GetTimeStamp()+60*60*23; //End time 23 hours after first event.
-     fCalibTime = new AliTPCcalibTime("calibTime","time dependent Vdrift calibration", startTime, endTime, 20*60);
-     fCalibTime->SetStreamLevel(20);
-     fCalibTime->SetDebugLevel(20);
-     printf("fCalibTime = %i, startTime = %i, endTime = %i \n", fCalibTime!=0, startTime, endTime);
+  Int_t startTime = fESDevent->GetTimeStamp()-60*60*1;  //Start time one hour before first event, will make precise cuts later.
+  Int_t   endTime = fESDevent->GetTimeStamp()+60*60*23; //End time 23 hours after first event.
+  // create the calibration object that will call the offline functions
+  fCalibTime = new AliTPCcalibTime("calibTime","time dependent Vdrift calibration", startTime, endTime, 20*60);
+  if(!fCalibTime){
+     printf("fCalibTime pointer is NULL\n");
+     return 0;
   }
   
+  fCalibTime->SetStreamLevel(20);
+  fCalibTime->SetDebugLevel(20);
+  printf("fCalibTime = %i, startTime = %i, endTime = %i \n", fCalibTime!=0, startTime, endTime);
   fESDfriend = new AliESDfriend();
   fESDevent->GetESDfriend(fESDfriend);
   fESDevent->SetESDfriend(fESDfriend);
   fESDevent->AddObject(fESDfriend); 
-  // create the AliESDfriend and add it to the event, now both the friend tracks and the friends are available for the offline functions to be called
+   // create the AliESDfriend and add it to the event, now both the friend tracks and the friends are available for the offline functions to be called
 
   fCalibTime->UpdateEventInfo(fESDevent); // needed for getting the run number and time stamp information correct on the offline side
-  fCalibTime->Process(fESDevent);         // first offline function called
+  fCalibTime->Process(fESDevent);	   // first offline function called
   
   // delete fESDfriend;
   
