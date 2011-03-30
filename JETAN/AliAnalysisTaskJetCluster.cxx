@@ -103,7 +103,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fTrackEtaWindow(0.9),    
   fRecEtaWindow(0.5),
   fTrackPtCut(0.),							
-  fJetOutputMinPt(1),
+  fJetOutputMinPt(0.150),
   fJetTriggerPtCut(0),
   fCentCutUp(0),
   fCentCutLo(0),
@@ -212,7 +212,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fTrackEtaWindow(0.9),    
   fRecEtaWindow(0.5),
   fTrackPtCut(0.),							
-  fJetOutputMinPt(1),
+  fJetOutputMinPt(0.150),
   fJetTriggerPtCut(0),
   fCentCutUp(0),
   fCentCutLo(0),
@@ -1324,7 +1324,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      aodH->SetFillAOD(kTRUE);
    }
  }
-
+ if (fDebug > 10)Printf("%s:%d Rec Jets %d",(char*)__FILE__,__LINE__,fTCAJetsOut->GetEntriesFast());
  if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
  PostData(1, fHistList);
 }
@@ -1348,13 +1348,24 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
       if(fUseAODTrackInput)aod = dynamic_cast<AliAODEvent*>(InputEvent());
       else aod = AODEvent();
       if(!aod){
+	if(fDebug>2)Printf("%s:%d No AOD",(char*)__FILE__,__LINE__);
 	return iCount;
       }
       for(int it = 0;it < aod->GetNumberOfTracks();++it){
 	AliAODTrack *tr = aod->GetTrack(it);
-	if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
-	if(TMath::Abs(tr->Eta())>fTrackEtaWindow)continue;
-	if(tr->Pt()<fTrackPtCut)continue;
+	if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask))){
+	  if(fDebug>10)Printf("%s:%d Not matching filter %d/%d %d/%d",(char*)__FILE__,__LINE__,it,aod->GetNumberOfTracks(),fFilterMask,tr->GetFilterMap());	
+	  continue;
+	}
+	if(TMath::Abs(tr->Eta())>fTrackEtaWindow){
+	  if(fDebug>10)Printf("%s:%d Not matching eta %d/%d",(char*)__FILE__,__LINE__,it,aod->GetNumberOfTracks());	
+	  continue;
+	}
+	if(tr->Pt()<fTrackPtCut){
+	  if(fDebug>10)Printf("%s:%d Not matching pt %d/%d",(char*)__FILE__,__LINE__,it,aod->GetNumberOfTracks());	
+	  continue;
+	}
+	if(fDebug>10)Printf("%s:%d MATCHED %d/%d",(char*)__FILE__,__LINE__,it,aod->GetNumberOfTracks());	
 	list->Add(tr);
 	iCount++;
       }
