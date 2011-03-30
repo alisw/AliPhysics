@@ -34,8 +34,6 @@ AliFemtoAnalysisAzimuthal::AliFemtoAnalysisAzimuthal(unsigned int binsVertex, do
   : 
   fFemtoParticleCut(0),
   fFlowParticleCut(0),
-  fPairCut(0),
-  fEventCut(0),
   fVertexZBins(binsVertex), 
   fOverFlowVertexZ(0), 
   fUnderFlowVertexZ(0),
@@ -64,8 +62,6 @@ AliFemtoAnalysisAzimuthal::AliFemtoAnalysisAzimuthal(const AliFemtoAnalysisAzimu
   AliFemtoSimpleAnalysis(),
   fFemtoParticleCut(0),
   fFlowParticleCut(0),
-  fPairCut(0),
-  fEventCut(0),
   fVertexZBins(a.fVertexZBins), 
   fOverFlowVertexZ(0), 
   fUnderFlowVertexZ(0),
@@ -216,9 +212,9 @@ void AliFemtoAnalysisAzimuthal::ProcessEvent(const AliFemtoEvent* hbtEvent) {
       // get right mixing buffer
   double vertexZ = hbtEvent->PrimVertPos().z();
   double mult = hbtEvent->UncorrectedNumberOfPrimaries();
-  TVector2 Q = GetQVector(fPicoEvent->SecondParticleCollection());
-  double Psi=Q.Phi()/2.;
-  if (Psi > TMath::Pi()) Psi -= TMath::Pi();
+  TVector2 tQ = GetQVector(fPicoEvent->SecondParticleCollection());
+  double tPsi=tQ.Phi()/2.;
+  if (tPsi > TMath::Pi()) tPsi -= TMath::Pi();
       
    fMixingBuffer = fPicoEventCollectionVectorHideAway->PicoEventCollection(vertexZ,mult,fPsi); 
   if (!fMixingBuffer) {
@@ -312,50 +308,50 @@ void AliFemtoAnalysisAzimuthal::MakePairs(const char* typeIn, AliFemtoParticleCo
 
 //For getting the pair angle wrt EP
   if (type == "real"){
-	TVector2 Q, QVector;
-	float Psi=0, mQx=0, mQy=0, PairAngleEP=0;
-	Q = GetQVector(partCollection1);
+	TVector2 tQ, tQVector;
+	float tPsi=0, mQx=0, mQy=0, PairAngleEP=0;
+	tQ = GetQVector(partCollection1);
 
-	mQx = Q.X() - cos(2*(tPair->Track1()->FourMomentum().Phi()))*(tPair->Track1()->Track()->Pt()) - cos(2*(tPair->Track2()->FourMomentum().Phi()))*(tPair->Track2()->Track()->Pt());
-	mQy = Q.Y() - sin(2*(tPair->Track1()->FourMomentum().Phi()))*(tPair->Track1()->Track()->Pt()) - sin(2*(tPair->Track2()->FourMomentum().Phi()))*(tPair->Track2()->Track()->Pt());
+	mQx = tQ.X() - cos(2*(tPair->Track1()->FourMomentum().Phi()))*(tPair->Track1()->Track()->Pt()) - cos(2*(tPair->Track2()->FourMomentum().Phi()))*(tPair->Track2()->Track()->Pt());
+	mQy = tQ.Y() - sin(2*(tPair->Track1()->FourMomentum().Phi()))*(tPair->Track1()->Track()->Pt()) - sin(2*(tPair->Track2()->FourMomentum().Phi()))*(tPair->Track2()->Track()->Pt());
   
-	QVector.Set(mQx,mQy);
+	tQVector.Set(mQx,mQy);
 
-	Psi=QVector.Phi()/2.;
-	if (Psi > TMath::Pi()) Psi -= TMath::Pi();
+	tPsi=tQVector.Phi()/2.;
+	if (tPsi > TMath::Pi()) tPsi -= TMath::Pi();
 
-	PairAngleEP = (tPair->EmissionAngle() - Psi);
+	PairAngleEP = (tPair->EmissionAngle() - tPsi);
 	tPair->SetPairAngleEP(PairAngleEP);
   }
 
   if (type == "mixed"){
-	float Psi1=0, Psi2=0, mQx1=0, mQx2=0,mQy1=0, mQy2=0, px1=0, px2=0, py1=0, py2=0, PairAngleEP=0;
-	TVector2 Q1, Q2, QVector1, QVector2, P;
+	float tPsi1=0, tPsi2=0, mQx1=0, mQx2=0,mQy1=0, mQy2=0, px1=0, px2=0, py1=0, py2=0, PairAngleEP=0;
+	TVector2 tQ1, tQ2, tQVector1, tQVector2, tP;
 
-	Q1 = GetQVector(partCollection1);
-	Q2 = GetQVector(partCollection2);
+	tQ1 = GetQVector(partCollection1);
+	tQ2 = GetQVector(partCollection2);
 
-	mQx1 = Q1.X() - cos(2*(tPair->Track1()->FourMomentum().Phi()))*(tPair->Track1()->Track()->Pt());
-	mQx2 = Q2.X() - cos(2*(tPair->Track2()->FourMomentum().Phi()))*(tPair->Track2()->Track()->Pt());
-	mQy1 = Q1.Y() - sin(2*(tPair->Track1()->FourMomentum().Phi()))*(tPair->Track1()->Track()->Pt());
-	mQy2 = Q2.Y() - sin(2*(tPair->Track2()->FourMomentum().Phi()))*(tPair->Track2()->Track()->Pt());
+	mQx1 = tQ1.X() - cos(2*(tPair->Track1()->FourMomentum().Phi()))*(tPair->Track1()->Track()->Pt());
+	mQx2 = tQ2.X() - cos(2*(tPair->Track2()->FourMomentum().Phi()))*(tPair->Track2()->Track()->Pt());
+	mQy1 = tQ1.Y() - sin(2*(tPair->Track1()->FourMomentum().Phi()))*(tPair->Track1()->Track()->Pt());
+	mQy2 = tQ2.Y() - sin(2*(tPair->Track2()->FourMomentum().Phi()))*(tPair->Track2()->Track()->Pt());
   
-	QVector1.Set(mQx1,mQy1);
-	QVector2.Set(mQx2,mQy2);
+	tQVector1.Set(mQx1,mQy1);
+	tQVector2.Set(mQx2,mQy2);
 
-	Psi1=QVector1.Phi()/2.;
-	if (Psi1 > TMath::Pi()) Psi1 -= TMath::Pi();
+	tPsi1=tQVector1.Phi()/2.;
+	if (tPsi1 > TMath::Pi()) tPsi1 -= TMath::Pi();
 
-	Psi2=QVector2.Phi()/2.;
-	if (Psi2 > TMath::Pi()) Psi2 -= TMath::Pi();
+	tPsi2=tQVector2.Phi()/2.;
+	if (tPsi2 > TMath::Pi()) tPsi2 -= TMath::Pi();
 
-	px1 = (tPair->Track1()->Track()->Pt())*cos(tPair->Track1()->FourMomentum().Phi() - Psi1);
-	px2 = (tPair->Track2()->Track()->Pt())*cos(tPair->Track2()->FourMomentum().Phi() - Psi2);
-	py1 = (tPair->Track1()->Track()->Pt())*sin(tPair->Track1()->FourMomentum().Phi() - Psi1);
-	py2 = (tPair->Track2()->Track()->Pt())*sin(tPair->Track2()->FourMomentum().Phi() - Psi2);
+	px1 = (tPair->Track1()->Track()->Pt())*cos(tPair->Track1()->FourMomentum().Phi() - tPsi1);
+	px2 = (tPair->Track2()->Track()->Pt())*cos(tPair->Track2()->FourMomentum().Phi() - tPsi2);
+	py1 = (tPair->Track1()->Track()->Pt())*sin(tPair->Track1()->FourMomentum().Phi() - tPsi1);
+	py2 = (tPair->Track2()->Track()->Pt())*sin(tPair->Track2()->FourMomentum().Phi() - tPsi2);
 
-	P.Set(px1+px2, py1+py2);
-	PairAngleEP = P.Phi();
+	tP.Set(px1+px2, py1+py2);
+	PairAngleEP = tP.Phi();
 
 	tPair->SetPairAngleEP(PairAngleEP);
   }
