@@ -88,6 +88,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   const Float_t *GetCuts() const {return fCutsRD;} 
   void    GetCuts(Float_t**& cutsRD) const;
   Float_t GetCutValue(Int_t iVar,Int_t iPtBin) const;
+  Double_t GetMaxVtxZ() const {return fMaxVtxZ;}  
   Float_t GetCentrality(AliAODEvent* aodEvent){return GetCentrality(aodEvent,(AliRDHFCuts::ECentrality)fUseCentrality);}
   Float_t GetCentrality(AliAODEvent* aodEvent, AliRDHFCuts::ECentrality estimator) const;
   Bool_t  *GetIsUpperCut() const {return fIsUpperCut;}
