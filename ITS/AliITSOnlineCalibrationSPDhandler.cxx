@@ -78,7 +78,7 @@ AliITSOnlineCalibrationSPDhandler::~AliITSOnlineCalibrationSPDhandler() {
   //  ClearMaps();
   for (UInt_t gloChip=0; gloChip<1200; gloChip++) {
     delete fDeadPixelMap[gloChip];
-    delete fDeadPixelMap[gloChip];
+    delete fSparseDeadPixelMap[gloChip];
     delete fNoisyPixelMap[gloChip];
   }
 }
