@@ -36,7 +36,7 @@ class AliCaloBunchInfo;
 
 class  AliCaloRawAnalyzer : public TObject
 {
-  friend class AliCaloRawAnalyzerFactory;
+  friend class AliCaloRawAnalyzerFactory; // Shutting up the rule checker
 
  public:
   AliCaloRawAnalyzer(const char *name="AliCaloRawAnalyzer", const char *nameshort="RawAna");
@@ -77,21 +77,22 @@ class  AliCaloRawAnalyzer : public TObject
   Double_t CalculateChi2(const Double_t amp, const Double_t time,
 			 const Int_t first, const Int_t last,
 			 const Double_t adcErr=1, 
-			 const Double_t tau=2.35);
+			 const Double_t tau=2.35) const;
 
   void CalculateMeanAndRMS(const Int_t first, const Int_t last,
 			   Double_t & mean, Double_t & rms);
   void SetL1Phase(const Double_t phase) {fL1Phase = phase;};
   
-protected:
-public: // PAI
-  short Max( const AliCaloBunchInfo *const bunch, int *const maxindex);
-  UShort_t Max(const UShort_t *data, const int length );
+  //protected:
+
+  //public: // PAI
+  short Max( const AliCaloBunchInfo *const bunch, int *const maxindex) const;
+  UShort_t Max(const UShort_t *data, const int length ) const;
   bool CheckBunchEdgesForMax( const AliCaloBunchInfo *const bunch) const;
-  bool IsInTimeRange( const int maxindex, const int maxtime, const int mintime );
+  bool IsInTimeRange( const int maxindex, const int maxtime, const int mintime ) const;
   Float_t  ReverseAndSubtractPed( const AliCaloBunchInfo *bunch, const UInt_t altrocfg1,  const UInt_t altrocfg2, double *outarray ) const;
   int  SelectBunch( const std::vector<AliCaloBunchInfo> &bunchvector, short *const maxampbin, short *const maxamplitude );
-  void SelectSubarray( const Double_t *date, const int length, const short maxindex, int *const  first, int *const last, const int cut);
+  void SelectSubarray( const Double_t *date, const int length, const short maxindex, int *const  first, int *const last, const int cut) const;
   Float_t EvaluatePedestal(const UShort_t * const data, const int length ) const;
   
   Float_t GetTau() const           { return fTau;};
@@ -99,6 +100,7 @@ public: // PAI
   //Bool_t GetFixTau() const { return fFixTau; }; 
   //void SetFixTau(Bool_t b) { fFixTau = b; }; 
   
+protected:
   Double_t fReversed[ALTROMAXSAMPLES]; //Reversed sequence of samples (pedestalsubtracted)
   // private:
   int fMinTimeIndex; //The timebin of the max signal value must be between fMinTimeIndex and fMaxTimeIndex
@@ -113,14 +115,14 @@ public: // PAI
   char fName[256]; // Name of the algorithm
   char fNameShort[256]; // Abbrevation for the name
   //  CaloConstants  fAlgo;
-  Algo::fitAlgorithm fAlgo;
+  Algo::fitAlgorithm fAlgo; // Which algorithm to use
   // FILE *fFp;
-  Double_t fL1Phase;
+  Double_t fL1Phase; // Phase of the ADC sampling clock relative to the LHC clock
   
   Double_t fAmp; // The amplitude in entities of ADC counts
   Double_t fTof; // The amplitude in entities of ADC counts
   
-  Float_t fTau;
+  Float_t fTau;  // Rise time of the signal (peak position = t0 +tau), by defauly it is 235 ns
   // Bool_t fFixTau; // flag if tau should be fix
   
   ClassDef(AliCaloRawAnalyzer, 2)  

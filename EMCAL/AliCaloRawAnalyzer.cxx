@@ -93,7 +93,7 @@ AliCaloRawAnalyzer::SetTimeConstraint(const int min, const int max )
 
 
 UShort_t 
-AliCaloRawAnalyzer::Max(const UShort_t *data, const int length )
+AliCaloRawAnalyzer::Max(const UShort_t *data, const int length ) const
 {
   //------------
   UShort_t tmpmax  = data[0];
@@ -110,7 +110,7 @@ AliCaloRawAnalyzer::Max(const UShort_t *data, const int length )
 
 
 void 
-AliCaloRawAnalyzer::SelectSubarray( const Double_t *data, const int length, const short maxindex, int *const first,  int *const last, const int cut)
+AliCaloRawAnalyzer::SelectSubarray( const Double_t *data, const int length, const short maxindex,int *const first,  int *const last, const int cut) const
 {
   //Selection of subset of data from one bunch that will be used for fitting or
   //Peak finding.  Go to the left and right of index of the maximum time bin
@@ -197,7 +197,7 @@ AliCaloRawAnalyzer::EvaluatePedestal(const UShort_t * const data, const int /*le
 
 
 short  
-AliCaloRawAnalyzer::Max( const AliCaloBunchInfo *const bunch , int *const maxindex )
+AliCaloRawAnalyzer::Max( const AliCaloBunchInfo *const bunch , int *const maxindex ) const
 {
   //comment
   short tmpmax = -1;
@@ -251,7 +251,7 @@ AliCaloRawAnalyzer::CheckBunchEdgesForMax( const AliCaloBunchInfo *const bunch )
 
 
 int 
-AliCaloRawAnalyzer::SelectBunch( const vector<AliCaloBunchInfo> &bunchvector,short *const maxampbin, short *const maxamplitude )
+AliCaloRawAnalyzer::SelectBunch( const vector<AliCaloBunchInfo> &bunchvector, short *const maxampbin, short *const maxamplitude )
 {
   //We select the bunch with the highest amplitude unless any time constraints is set
   short max = -1;
@@ -286,7 +286,7 @@ AliCaloRawAnalyzer::SelectBunch( const vector<AliCaloBunchInfo> &bunchvector,sho
 
 
 bool 
-AliCaloRawAnalyzer::IsInTimeRange( const int maxindex, const int maxtindx, const int mintindx )
+AliCaloRawAnalyzer::IsInTimeRange( const int maxindex, const int maxtindx, const int mintindx ) const
 {
   // Ckeck if the index of the max ADC vaue is consistent with trigger.
   if( ( mintindx  < 0 && maxtindx   < 0) ||maxtindx  < 0 )
@@ -333,7 +333,7 @@ Double_t
 AliCaloRawAnalyzer::CalculateChi2(const Double_t amp, const Double_t time,
 				  const Int_t first, const Int_t last,
 				  const Double_t adcErr, 
-				  const Double_t tau)
+				  const Double_t tau) const
 {
   //   Input:
   //   amp   - max amplitude;
