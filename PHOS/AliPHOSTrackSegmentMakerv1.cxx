@@ -578,7 +578,8 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
     if(emcExist[linkUp->GetEmc()-fEmcFirst] != -1){
 
       //array cpvExist[] should be non-zero as far as linkUp exists
-      if(cpvExist[linkUp->GetCpv()-fCpvFirst]){ //CPV still exist
+      //But Coverity requires to check it
+      if(cpvExist && cpvExist[linkUp->GetCpv()-fCpvFirst]){ //CPV still exist
          Float_t dx,dz ;
          linkUp->GetXZ(dx,dz) ;
 	 new ((* fTrackSegments)[fNTrackSegments]) 
