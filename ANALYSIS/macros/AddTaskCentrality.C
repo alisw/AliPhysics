@@ -18,6 +18,7 @@ AliCentralitySelectionTask *AddTaskCentrality()
     return NULL;
   }
   AliCentralitySelectionTask *centralityTask = new AliCentralitySelectionTask("CentralitySelection");
+  centralityTask->SetPass(2);
   centralityTask->SelectCollisionCandidates(AliVEvent::kMB);
   mgr->AddTask(centralityTask);
   

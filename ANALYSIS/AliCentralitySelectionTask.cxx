@@ -439,6 +439,8 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
 
   MyInitScaleFactor();
   if (fIsMCInput) MyInitScaleFactorMC();
+
+  if (fPass==0) AliFatal("Which pass are you analyzing? You should set it via taskCentrality->SetPass(N)");
 }
 
 //________________________________________________________________________
