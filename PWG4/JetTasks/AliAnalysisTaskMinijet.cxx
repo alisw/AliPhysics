@@ -29,8 +29,13 @@
 
 #include "AliAnalysisTaskMinijet.h"
 
-// Analysis Task for mini jet activity analysis
-// Authors: Eva Sicking
+// Analysis task for two-particle correlations using all particles over pt threshold
+// pt_trig threshold for trigger particle (event axis) and pt_assoc for possible associated particles.
+// Extract mini-jet yield and fragmentation properties via Delta-Phi histograms of these correlations
+// post processing of analysis output via macro plot3and2Gaus.C
+// Can use ESD or AOD, reconstructed and Monte Carlo data as input
+// Author: Eva Sicking
+
 
 ClassImp(AliAnalysisTaskMinijet)
 
@@ -58,9 +63,11 @@ ClassImp(AliAnalysisTaskMinijet)
       fHistPt(0),
       fHistPtMC(0),
       fNmcNch(0),
-      pNmcNch(0),
+      fPNmcNch(0),
       fChargedPi0(0)
 {
+  //Constructor
+
   for(Int_t i = 0;i< 4;i++){
     fVertexZ[i]               =  0;
  
@@ -88,10 +95,10 @@ ClassImp(AliAnalysisTaskMinijet)
     fTriggerTracklet[i]       =  0;
     
     fNch07Nch[i]              =  0;
-    pNch07Nch[i]              =  0;
+    fPNch07Nch[i]              =  0;
     fNch07Tracklet[i]         =  0;
     fNchTracklet[i]           =  0;
-    pNch07Tracklet[i]         =  0;
+    fPNch07Tracklet[i]         =  0;
     fDPhiEventAxis[i]   = 0;
     for(Int_t j=0;j<150;j++){
       fDPhiEventAxisNchBin[i][j]   = 0;
@@ -132,7 +139,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     fHistPtMC->SetMarkerStyle(kFullCircle);
 
     fNmcNch = new TH2F("fNmcNch", "fNmcNch", 100,-0.5,99.5,100,-0.5,99.5);
-    pNmcNch = new TProfile("pNmcNch", "pNmcNch", 100,-0.5,99.5);
+    fPNmcNch = new TProfile("pNmcNch", "pNmcNch", 100,-0.5,99.5);
 
   }
 
@@ -203,7 +210,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     fNch07Nch[i]                 = new TH2F(Form("fNch07Nch%s",labels[i].Data()),
 					    Form("fNch07Nch%s",labels[i].Data()) ,  
 					    250, -2.5, 247.5,250, -2.5, 247.5);
-    pNch07Nch[i]                 = new TProfile(Form("pNch07Nch%s",labels[i].Data()),
+    fPNch07Nch[i]                 = new TProfile(Form("pNch07Nch%s",labels[i].Data()),
 						Form("pNch07Nch%s",labels[i].Data()) ,  
 						250, -2.5, 247.5);
     fNch07Tracklet[i]            = new TH2F(Form("fNch07Tracklet%s",labels[i].Data()),
@@ -212,7 +219,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     fNchTracklet[i]              = new TH2F(Form("fNchTracklet%s",labels[i].Data()),
 					    Form("fNchTracklet%s",labels[i].Data()) ,  
 					    250, -2.5, 247.5,250, -2.5, 247.5);
-    pNch07Tracklet[i]            = new TProfile(Form("pNch07Tracklet%s",labels[i].Data()),
+    fPNch07Tracklet[i]            = new TProfile(Form("pNch07Tracklet%s",labels[i].Data()),
 						Form("pNch07Tracklet%s",labels[i].Data()) ,  
 						250, -2.5, 247.5);
     fDPhiEventAxis[i]          = new TH1F(Form("fDPhiEventAxis%s",
@@ -254,7 +261,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   if(fUseMC){
     fHists->Add(fHistPtMC); 
     fHists->Add(fNmcNch); 
-    fHists->Add(pNmcNch); 
+    fHists->Add(fPNmcNch); 
   }
   fHists->Add(fChargedPi0);
 
@@ -279,10 +286,10 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     fHists->Add(fTriggerNchSeeds[i]);
     fHists->Add(fTriggerTracklet[i]);
     fHists->Add(fNch07Nch[i]);
-    fHists->Add(pNch07Nch[i]);
+    fHists->Add(fPNch07Nch[i]);
     fHists->Add(fNch07Tracklet[i]);
     fHists->Add(fNchTracklet[i]);
-    fHists->Add(pNch07Tracklet[i]);
+    fHists->Add(fPNch07Tracklet[i]);
     fHists->Add(fDPhiEventAxis[i]);
     for(Int_t j=0;j<150;j++){
       fHists->Add(fDPhiEventAxisNchBin[i][j]);
@@ -557,7 +564,7 @@ Int_t AliAnalysisTaskMinijet::LoopESD(Float_t **ptArray, Float_t ** etaArray,
     //Printf("Number of MC particles from ESDMC = %d",fNMcPrimAccept);
     //Printf("Number of tracks from ESD = %d",nAcceptedTracks);
     fNmcNch->Fill(fNMcPrimAccept,nAcceptedTracks);
-    pNmcNch->Fill(fNMcPrimAccept,nAcceptedTracks);
+    fPNmcNch->Fill(fNMcPrimAccept,nAcceptedTracks);
     return fNMcPrimAccept; // also possible to use reconstructed Nch ->  return nAcceptedTracks;
   }
   else{
@@ -940,8 +947,8 @@ Int_t AliAnalysisTaskMinijet::LoopAODMC(Float_t **ptArray, Float_t ** etaArray,
 } 
 
 //________________________________________________________________________
-void AliAnalysisTaskMinijet::Analyse(Float_t *pt, Float_t *eta, Float_t *phi, 
-				     Short_t *charge,Int_t ntracksCharged, 
+void AliAnalysisTaskMinijet::Analyse(const Float_t *pt, const Float_t *eta, const Float_t *phi, 
+				     const Short_t *charge, Int_t ntracksCharged, 
 				     Int_t ntracklets, Int_t nAll, Int_t mode)
 {
 
@@ -1017,11 +1024,11 @@ void AliAnalysisTaskMinijet::Analyse(Float_t *pt, Float_t *eta, Float_t *phi,
 
   //  plot of multiplicity distributions
   fNch07Nch[mode]->Fill(ntracksCharged, highPtTracksInnerEta);     
-  pNch07Nch[mode]->Fill(ntracksCharged, highPtTracksInnerEta);     
+  fPNch07Nch[mode]->Fill(ntracksCharged, highPtTracksInnerEta);     
   if(ntracklets){
     fNch07Tracklet[mode]->Fill(ntracklets, highPtTracksInnerEta);//only counts tracks which can be used as seeds
     fNchTracklet[mode]->Fill(ntracklets, ntracksCharged);      
-    pNch07Tracklet[mode]->Fill(ntracklets, highPtTracksInnerEta);//only counts tracks which can be used as seeds
+    fPNch07Tracklet[mode]->Fill(ntracklets, highPtTracksInnerEta);//only counts tracks which can be used as seeds
   }
  
   //analysis can only be performed with event axis, defined by high pt track
@@ -1159,7 +1166,7 @@ void AliAnalysisTaskMinijet::Terminate(Option_t*)
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskMinijet::SelectParticlePlusCharged(Short_t charge, Int_t pdg, Bool_t prim)
+const Bool_t AliAnalysisTaskMinijet::SelectParticlePlusCharged(Short_t charge, Int_t pdg, Bool_t prim)
 {
   //selection of mc particle
   //fSelectParticles=0: use charged primaries and pi0 and k0
@@ -1193,7 +1200,7 @@ Bool_t AliAnalysisTaskMinijet::SelectParticlePlusCharged(Short_t charge, Int_t p
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskMinijet::SelectParticle(Short_t charge, Int_t pdg, Bool_t prim)
+const Bool_t AliAnalysisTaskMinijet::SelectParticle(Short_t charge, Int_t pdg, Bool_t prim)
 {
   //selection of mc particle
   //fSelectParticles=0: use charged primaries and pi0 and k0
@@ -1226,8 +1233,11 @@ Bool_t AliAnalysisTaskMinijet::SelectParticle(Short_t charge, Int_t pdg, Bool_t 
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskMinijet::CleanArrays(Float_t* pt, Float_t* eta, Float_t* phi, 
-					 Short_t * charge, Int_t* nTracksTracklets)
+const void AliAnalysisTaskMinijet::CleanArrays(const Float_t* pt, 
+					       const Float_t* eta, 
+					       const Float_t* phi, 
+					       const Short_t * charge, 
+					       const Int_t* nTracksTracklets)
 {
   //clean up of memory used for arrays of track properties
 
