@@ -237,8 +237,8 @@ AliCaloRawAnalyzerPeakFinder::CopyVectors( const AliCaloPeakFinderVectors *const
 	  for( int j=0; j < PF::SAMPLERANGE; j++)  
 	    {
 	      // cout << __FILE__ << ":" << __LINE__ << ": TPX !!; i= "<< i << "  j = "<< j << endl;
-	      // pfv->GetVector( i, j, fPFAmpVectors[i][j] ,  fPFTofVectors[i][j],    
-	      // 		      fPFAmpVectorsCoarse[i][j] , fPFTofVectorsCoarse[i][j]  ); 
+	      pfv->GetVector( i, j, fPFAmpVectors[i][j] ,  fPFTofVectors[i][j],    
+	       		      fPFAmpVectorsCoarse[i][j] , fPFTofVectorsCoarse[i][j]  ); 
 
 	      fPeakFinderVectors->SetVector( i, j, fPFAmpVectors[i][j], fPFTofVectors[i][j],    
 					     fPFAmpVectorsCoarse[i][j], fPFTofVectorsCoarse[i][j] );   
