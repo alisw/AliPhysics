@@ -41,24 +41,14 @@ class AliEMCALTriggerData;
 class AliEMCALRawUtils : public TObject {
  public:
   AliEMCALRawUtils(Algo::fitAlgorithm fitAlgo = Algo::kStandard);
-  AliEMCALRawUtils(AliEMCALGeometry *pGeometry, Algo::fitAlgorithm fitAlgo = Algo::kStandard);
   virtual ~AliEMCALRawUtils();
-  
-  // void FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time, Float_t & chi2, Bool_t & fitDone) const ;
-  //  void FitParabola(const TGraph *gSig, Float_t & amp) const ; 
-  
   void Digits2Raw();
   void Raw2Digits(AliRawReader *reader, TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap,
 				  TClonesArray *digitsTRG=0x0, AliEMCALTriggerData* trgData = 0x0);
-  //static Double_t RawResponseFunctionLog(Double_t *x, Double_t *par); 
   void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Float_t amp, Float_t time, Float_t chi2, Int_t ndf);
   void TrimDigits(TClonesArray *digitsArr);
   Int_t    GetNoiseThreshold()             const { return fNoiseThreshold; }
   Int_t    GetNPedSamples()                const { return fNPedSamples; }
-  
-  // Int_t    GetPedestalValue()     const {return fgPedestalValue;}
-  // Double_t GetFEENoise()          const {return fgFEENoise;}
- 
   Bool_t   GetRemoveBadChannels() const {return fRemoveBadChannels;}
   Int_t    GetFittingAlgorithm()  const {return fFittingAlgorithm; }
   Float_t  GetTimeMax()           const {return fTimeMax ;}
@@ -71,32 +61,15 @@ class AliEMCALRawUtils : public TObject {
   void SetTimeMin(Float_t t)                       {fTimeMin   = t          ;}
   void SetTimeMax(Float_t t)                       {fTimeMax   = t          ;}
   void SetFALTROUsage(Bool_t val)                  {fUseFALTRO=val; }
-  // void SetFEENoise(Double_t val)                   {fgFEENoise = val;}
-  // void SetPedestalValue(Int_t val)                 {fgPedestalValue = val;}
-  //Double_t GetRawFormatTimeTrigger()    const { return fgTimeTrigger ; }
-  // Int_t GetRawFormatThreshold()         const { return fgThreshold ; }       
   AliCaloRawAnalyzer *GetRawAnalyzer()  const { return fRawAnalyzer;}
   virtual Option_t* GetOption() const { return fOption.Data(); }
   void SetOption(const Option_t* opt) { fOption = opt; }
-
-  // static Double_t RawResponseFunction(Double_t *x, Double_t *par); 
-  // Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL, const Int_t keyErr=0) const;  
   
-
-
 private:
   AliEMCALRawUtils(const AliEMCALRawUtils& rawUtils);  //copy ctor
   AliEMCALRawUtils& operator =(const AliEMCALRawUtils& rawUtils);
   Int_t fNoiseThreshold;                // threshold to consider signal or noise
   Int_t fNPedSamples;                   // number of samples to use in pedestal calculation
-  
-  /*
-  static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
-  static Int_t fgThreshold;             // threshold
-  static Int_t fgPedestalValue;         // pedestal value for Digits2Raw
-  static Double_t fgFEENoise;           // electronics noise in ADC units
-  */ 
-
   AliEMCALGeometry* fGeom;              // geometry
   AliAltroMapping*  fMapping[4];        // only two for now
   TString fOption;                      // option passed from Reconstructor
