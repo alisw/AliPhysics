@@ -31,6 +31,7 @@ class AliVEvent;
 class AliEMCALGeometry;
 class AliEMCALPIDUtils;
 class AliESDtrack;
+class AliExternalTrackParam;
 
 class AliEMCALRecoUtils : public TNamed {
   
@@ -199,16 +200,28 @@ public:
   // Track matching
   //----------------------------------------------------
 
-  void    FindMatches(AliVEvent *event, TObjArray * clusterArr=0x0);
-  void    GetMatchedResiduals(Int_t index, Float_t &dR, Float_t &dZ);
-  Int_t   GetMatchedTrackIndex(Int_t index);
-  Bool_t  IsMatched(Int_t index);
-  UInt_t  FindMatchedPos(Int_t index) const;
+  void    FindMatches(AliVEvent *event, TObjArray * clusterArr=0x0, TString dataType="ESD");
+  Int_t    FindMatchedCluster(AliESDtrack *track, AliVEvent *event);
+  Bool_t  ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Float_t &tmpR, Float_t &tmpZ);
+  void    GetMatchedResiduals(Int_t clsIndex, Float_t &dR, Float_t &dZ);
+  void    GetMatchedClusterResiduals(Int_t trkIndex, Float_t &dR, Float_t &dZ);
+  Int_t   GetMatchedTrackIndex(Int_t clsIndex);
+  Int_t   GetMatchedClusterIndex(Int_t trkIndex);
+  Bool_t  IsClusterMatched(Int_t clsIndex);
+  Bool_t  IsTrackMatched(Int_t trkIndex);
+  UInt_t  FindMatchedPosForCluster(Int_t clsIndex) const;
+  UInt_t  FindMatchedPosForTrack(Int_t trkIndex) const;
 
-  Float_t GetCutR()       const { return fCutR ;}
-  Float_t GetCutZ()       const { return fCutZ ;}
-  void    SetCutR(Float_t cutR) { fCutR=cutR   ;}
-  void    SetCutZ(Float_t cutZ) { fCutZ=cutZ   ;}
+  Float_t  GetCutR()       const { return fCutR ;}
+  Float_t  GetCutZ()       const { return fCutZ ;}
+  void     SetCutR(Float_t cutR) { fCutR=cutR   ;}
+  void     SetCutZ(Float_t cutZ) { fCutZ=cutZ   ;}
+
+  Double_t GetMass()       const { return fMass ;}
+  Double_t GetStep()       const { return fStep ;}
+  void     SetMass(Double_t mass){ fMass=mass   ;}
+  void     SetStep(Double_t step){ fStep=step   ;}
+ 
 
   //Track Cuts 
   Bool_t  IsAccepted(AliESDtrack *track);
@@ -263,13 +276,16 @@ private:
   Int_t      fNCellsFromEMCALBorder;     // Number of cells from EMCAL border the cell with maximum amplitude has to be.
   Bool_t     fNoEMCALBorderAtEta0;       // Do fiducial cut in EMCAL region eta = 0?
   
-  //Track matching 
+  //Track matching
+  UInt_t     fAODFilterMask;             // Filter mask to select AOD tracks. Refer to $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C
   TArrayI  * fMatchedTrackIndex;         // Array that stores indexes of matched tracks      
   TArrayI  * fMatchedClusterIndex;       // Array that stores indexes of matched clusters
   TArrayF  * fResidualZ;                 // Array that stores the residual z
   TArrayF  * fResidualR;                 // Array that stores the residual r
   Float_t    fCutR;                      // dR cut on matching
   Float_t    fCutZ;                      // dZ cut on matching
+  Double_t   fMass;                      // Mass hypothesis of the track
+  Double_t   fStep;                      // Length of each step used in extrapolation in the unit of cm.
   
   Int_t      fCutMinNClusterTPC;         // Min number of tpc clusters
   Int_t      fCutMinNClusterITS;         // Min number of its clusters  
@@ -289,7 +305,7 @@ private:
   Bool_t     fUseTimeCorrectionFactors;  // Use Time Dependent Correction
   Bool_t     fTimeCorrectionFactorsSet;  // Time Correction set at leat once
   
-  ClassDef(AliEMCALRecoUtils, 7)
+  ClassDef(AliEMCALRecoUtils, 8)
   
 };
 

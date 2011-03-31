@@ -43,7 +43,12 @@
 #include "AliLog.h"
 #include "AliPID.h"
 #include "AliESDEvent.h"
+#include "AliAODEvent.h"
 #include "AliESDtrack.h"
+#include "AliAODTrack.h"
+#include "AliExternalTrackParam.h"
+#include "AliESDfriendTrack.h"
+#include "AliTrackerBase.h"
 
 // EMCAL includes
 #include "AliEMCALRecoUtils.h"
@@ -61,8 +66,9 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fRecalibration(kFALSE), fEMCALRecalibrationFactors(),
   fRemoveBadChannels(kFALSE), fRecalDistToBadChannels(kFALSE), fEMCALBadChannelMap(),
   fNCellsFromEMCALBorder(0), fNoEMCALBorderAtEta0(kTRUE),
+  fAODFilterMask(32),
   fMatchedTrackIndex(0x0), fMatchedClusterIndex(0x0), 
-  fResidualZ(0x0), fResidualR(0x0), fCutR(20), fCutZ(20),
+  fResidualZ(0x0), fResidualR(0x0), fCutR(10), fCutZ(10), fMass(0.139), fStep(1),
   fCutMinNClusterTPC(0), fCutMinNClusterITS(0), fCutMaxChi2PerClusterTPC(0), fCutMaxChi2PerClusterITS(0),
   fCutRequireTPCRefit(0), fCutRequireITSRefit(0), fCutAcceptKinkDaughters(0),
   fCutMaxDCAToVertexXY(0), fCutMaxDCAToVertexZ(0),fCutDCAToVertex2D(0),fPIDUtils(),
@@ -108,11 +114,12 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fRemoveBadChannels(reco.fRemoveBadChannels),fRecalDistToBadChannels(reco.fRecalDistToBadChannels),
   fEMCALBadChannelMap(reco.fEMCALBadChannelMap),
   fNCellsFromEMCALBorder(reco.fNCellsFromEMCALBorder),fNoEMCALBorderAtEta0(reco.fNoEMCALBorderAtEta0),
+  fAODFilterMask(reco.fAODFilterMask),
   fMatchedTrackIndex(reco.fMatchedTrackIndex?new TArrayI(*reco.fMatchedTrackIndex):0x0),
   fMatchedClusterIndex(reco.fMatchedClusterIndex?new TArrayI(*reco.fMatchedClusterIndex):0x0),
   fResidualZ(reco.fResidualZ?new TArrayF(*reco.fResidualZ):0x0),
   fResidualR(reco.fResidualR?new TArrayF(*reco.fResidualR):0x0),
-  fCutR(reco.fCutR),fCutZ(reco.fCutZ),
+  fCutR(reco.fCutR),fCutZ(reco.fCutZ),fMass(reco.fMass), fStep(reco.fStep),
   fCutMinNClusterTPC(reco.fCutMinNClusterTPC), fCutMinNClusterITS(reco.fCutMinNClusterITS), 
   fCutMaxChi2PerClusterTPC(reco.fCutMaxChi2PerClusterTPC), fCutMaxChi2PerClusterITS(reco.fCutMaxChi2PerClusterITS),
   fCutRequireTPCRefit(reco.fCutRequireTPCRefit), fCutRequireITSRefit(reco.fCutRequireITSRefit),
@@ -155,9 +162,13 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
 
   for(Int_t i = 0; i < 15 ; i++) {fMisalTransShift[i] = reco.fMisalTransShift[i]; fMisalRotShift[i] = reco.fMisalRotShift[i];}
   for(Int_t i = 0; i < 6  ; i++) fNonLinearityParams[i] = reco.fNonLinearityParams[i]; 
+
+  fAODFilterMask              = reco.fAODFilterMask;
   
   fCutR                      = reco.fCutR;
   fCutZ                      = reco.fCutZ;
+  fMass                      = reco.fMass;
+  fStep                      = reco.fStep;
 
   fCutMinNClusterTPC         = reco.fCutMinNClusterTPC;
   fCutMinNClusterITS         = reco.fCutMinNClusterITS; 
@@ -982,18 +993,17 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(AliEMCALGeometry
     cluster->SetDispersion(TMath::Sqrt(d)) ;
   else    
     cluster->SetDispersion(0) ;
-  
 }
 
 //____________________________________________________________________________
-void AliEMCALRecoUtils::FindMatches(AliVEvent *event, TObjArray * clusterArr)
+void AliEMCALRecoUtils::FindMatches(AliVEvent *event, TObjArray * clusterArr, TString dataType)
 {
+  //Use dataType to indicate the input event is AOD or ESD
   //This function should be called before the cluster loop
   //Before call this function, please recalculate the cluster positions
   //Given the input event, loop over all the tracks, select the closest cluster as matched with fCutR
   //Store matched cluster indexes and residuals
-  //It only works with ESDs, not AODs
-  
+
   fMatchedTrackIndex  ->Reset();
   fMatchedClusterIndex->Reset();
   fResidualZ          ->Reset();
@@ -1005,51 +1015,86 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event, TObjArray * clusterArr)
   fResidualR          ->Set(500);
   
   Int_t    matched=0;
-  Float_t  clsPos[3];
-  Double_t trkPos[3];
+  Double_t cv[21];
+  for (Int_t i=0; i<21;i++) cv[i]=0;
   for(Int_t itr=0; itr<event->GetNumberOfTracks(); itr++)
   {
-    AliESDtrack *track = ((AliESDEvent*)event)->GetTrack(itr);
-    if(!track || !IsAccepted(track)) continue;
+    AliExternalTrackParam *trackParam=0;
+
+    //If the input event is ESD, the starting point for extrapolation is TPCOut, if available, or TPCInner 
+    if(dataType.Contains("ESD"))
+      {
+	AliESDtrack *esdTrack = ((AliESDEvent*)event)->GetTrack(itr);
+	if(!esdTrack || !IsAccepted(esdTrack)) continue;
+	const AliESDfriendTrack*  friendTrack = esdTrack->GetFriendTrack();
+	if(friendTrack && friendTrack->GetTPCOut())
+	  {
+	    //Use TPC Out as starting point if it is available
+	    trackParam= new AliExternalTrackParam(*friendTrack->GetTPCOut());
+	  }
+	else
+	  {
+	    //Otherwise use TPC inner
+	    trackParam = new AliExternalTrackParam(*esdTrack->GetInnerParam());
+	  }
+      }
     
-    Float_t dRMax = fCutR, dZMax = fCutZ;
+    //If the input event is AOD, the starting point for extrapolation is at vertex
+    //AOD tracks are selected according to its bit.
+    else if(dataType.Contains("AOD"))
+      {
+	AliAODTrack *aodTrack = ((AliAODEvent*)event)->GetTrack(itr);
+	if(!aodTrack) continue;
+	if(!aodTrack->TestFilterMask(fAODFilterMask)) continue; //Select AOD tracks that fulfill GetStandardITSTPCTrackCuts2010()
+	Double_t pos[3],mom[3];
+	aodTrack->GetXYZ(pos);
+	aodTrack->GetPxPyPz(mom);
+	AliDebug(5,Form("aod track: i=%d | pos=(%5.4f,%5.4f,%5.4f) | mom=(%5.4f,%5.4f,%5.4f) | charge=%d\n",itr,pos[0],pos[1],pos[2],mom[0],mom[1],mom[2],aodTrack->Charge()));
+	trackParam= new AliExternalTrackParam(pos,mom,cv,aodTrack->Charge());
+      }
+    
+    //Return if the input data is not "AOD" or "ESD"
+    else
+      {
+	printf("Wrong input data type %s! Should be \"AOD\" or \"ESD\"\n",dataType.Data());
+	return;
+      }
+  
+    if(!trackParam) continue;
+
+    Float_t dRMax = fCutR, dZMax=fCutZ;
     Int_t index = -1;
-    AliEMCALTrack *emctrack = new AliEMCALTrack(*track);
     if(!clusterArr){// get clusters from event
       for(Int_t icl=0; icl<event->GetNumberOfCaloClusters(); icl++)
       {
+	AliExternalTrackParam *trkPamTmp = new AliExternalTrackParam(*trackParam);//Retrieve the starting point every time before the extrapolation
         AliVCluster *cluster = (AliVCluster*) event->GetCaloCluster(icl);
-        if(!cluster->IsEMCAL()) continue;
-        cluster->GetPosition(clsPos); //Has been recalculated
-        if(!emctrack->PropagateToGlobal(clsPos[0],clsPos[1],clsPos[2],0.,0.) )  continue;
-        emctrack->GetXYZ(trkPos);
-        Float_t tmpR = TMath::Sqrt( TMath::Power(clsPos[0]-trkPos[0],2)+TMath::Power(clsPos[1]-trkPos[1],2)+TMath::Power(clsPos[2]-trkPos[2],2) );
-        Float_t tmpZ = TMath::Abs(clsPos[2]-trkPos[2]);
-      
+        if(!cluster->IsEMCAL()) continue;				
+	Float_t tmpR=-1, tmpZ=-1;
+	if(!ExtrapolateTrackToCluster(trkPamTmp, cluster, tmpR, tmpZ)) continue;
         if(tmpR<dRMax)
         {
           dRMax=tmpR;
           dZMax=tmpZ;
           index=icl;
         }
+	delete trkPamTmp;
       }//cluster loop
     } else { // external cluster array, not from ESD event
       for(Int_t icl=0; icl<clusterArr->GetEntriesFast(); icl++)
       {
+	AliExternalTrackParam *trkPamTmp = new AliExternalTrackParam(*trackParam);//Retrieve the starting point every time before the extrapolation
         AliVCluster *cluster = (AliVCluster*) clusterArr->At(icl);
         if(!cluster->IsEMCAL()) continue;
-        cluster->GetPosition(clsPos); //Has been recalculated
-        if(!emctrack->PropagateToGlobal(clsPos[0],clsPos[1],clsPos[2],0.,0.) )  continue;
-        emctrack->GetXYZ(trkPos);
-        Float_t tmpR = TMath::Sqrt( TMath::Power(clsPos[0]-trkPos[0],2)+TMath::Power(clsPos[1]-trkPos[1],2)+TMath::Power(clsPos[2]-trkPos[2],2) );
-        Float_t tmpZ = TMath::Abs(clsPos[2]-trkPos[2]);
-        
+	Float_t tmpR=-1, tmpZ=-1;
+	if(!ExtrapolateTrackToCluster(trkPamTmp, cluster, tmpR, tmpZ)) continue;
         if(tmpR<dRMax)
         {
           dRMax=tmpR;
           dZMax=tmpZ;
           index=icl;
         }
+	delete trkPamTmp;
       }//cluster loop
     }// external list of clusters
 
@@ -1061,7 +1106,7 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event, TObjArray * clusterArr)
       fResidualR          ->AddAt(dRMax,matched);
       matched++;
     }
-    delete emctrack;
+    delete trackParam;
   }//track loop
   
   AliDebug(2,Form("Number of matched pairs = %d !\n",matched));
@@ -1070,68 +1115,183 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event, TObjArray * clusterArr)
   fMatchedClusterIndex->Set(matched);
   fResidualZ          ->Set(matched);
   fResidualR          ->Set(matched);
-  
-  //printf("Number of matched pairs: %d\n",matched);
 }
 
 //________________________________________________________________________________
-void AliEMCALRecoUtils::GetMatchedResiduals(Int_t index, Float_t &dR, Float_t &dZ)
+Int_t AliEMCALRecoUtils::FindMatchedCluster(AliESDtrack *track, AliVEvent *event)
 {
-  //Given a cluster index as in AliESDEvent::GetCaloCluster(index)
-  //Get the residuals dR and dZ for this cluster
-  //It only works with ESDs, not AODs
+  //
+  // This function returns the index of matched cluster to input track
+  // Cut on match is dR<10cm by default. Returns -1 if no match is found
 
-  if( FindMatchedPos(index) >= 999 )
+
+  Float_t dRMax = fCutR;
+  Int_t index = -1;
+
+  AliExternalTrackParam *trackParam=0;
+  const AliESDfriendTrack*  friendTrack = track->GetFriendTrack();
+  if(friendTrack && friendTrack->GetTPCOut())
+    trackParam= const_cast<AliExternalTrackParam*>(friendTrack->GetTPCOut());
+  else
+    trackParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());
+
+  if(!trackParam) return index;	  
+  for(Int_t icl=0; icl<event->GetNumberOfCaloClusters(); icl++)
+    {
+      AliExternalTrackParam *trkPamTmp = new AliExternalTrackParam(*trackParam);//Retrieve the starting point every time before the extrapolation
+      AliVCluster *cluster = (AliVCluster*) event->GetCaloCluster(icl);
+      if(!cluster->IsEMCAL()) continue;				
+      Float_t tmpR=-1, tmpZ=-1;
+      if(!ExtrapolateTrackToCluster(trkPamTmp, cluster, tmpR, tmpZ)) continue;
+      if(tmpR>-1 && tmpR<dRMax)
+        {
+          dRMax=tmpR;
+          index=icl;
+        }
+	delete trkPamTmp;
+      }//cluster loop
+  return index;
+}
+
+//________________________________________________________________________________
+Bool_t  AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Float_t &tmpR, Float_t &tmpZ)
+{
+  //
+  //Return the residual by extrapolating a track to a cluster
+  //
+  if(!trkParam || !cluster) return kFALSE;
+  Float_t clsPos[3];
+  Double_t trkPos[3];
+  cluster->GetPosition(clsPos); //Has been recalculated
+  TVector3 vec(clsPos[0],clsPos[1],clsPos[2]);
+  Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
+  vec.RotateZ(-alpha); //Rotate the cluster to the local extrapolation coordinate system
+  trkParam->Rotate(alpha); //Rotate the track to the same local extrapolation system
+  if(!AliTrackerBase::PropagateTrackToBxByBz(trkParam, vec.X(), fMass, fStep,kFALSE)) return kFALSE; 
+  trkParam->GetXYZ(trkPos); //Get the extrapolated global position
+  tmpR = TMath::Sqrt( TMath::Power(clsPos[0]-trkPos[0],2)+TMath::Power(clsPos[1]-trkPos[1],2)+TMath::Power(clsPos[2]-trkPos[2],2) );
+  tmpZ = clsPos[2]-trkPos[2];
+  return kTRUE;
+}
+
+//________________________________________________________________________________
+void AliEMCALRecoUtils::GetMatchedResiduals(Int_t clsIndex, Float_t &dR, Float_t &dZ)
+{
+  //Given a cluster index as in AliESDEvent::GetCaloCluster(clsIndex)
+  //Get the residuals dR and dZ for this cluster to the closest track
+  //Works with ESDs and AODs
+
+  if( FindMatchedPosForCluster(clsIndex) >= 999 )
   {
     AliDebug(2,"No matched tracks found!\n");
     dR=999.;
     dZ=999.;
     return;
   }
-  dR = fResidualR->At(FindMatchedPos(index));
-  dZ = fResidualZ->At(FindMatchedPos(index));
-  //printf("dR %f, dZ %f\n",dR, dZ);
+  dR = fResidualR->At(FindMatchedPosForCluster(clsIndex));
+  dZ = fResidualZ->At(FindMatchedPosForCluster(clsIndex));
+}
+//________________________________________________________________________________
+void AliEMCALRecoUtils::GetMatchedClusterResiduals(Int_t trkIndex, Float_t &dR, Float_t &dZ)
+{
+  //Given a track index as in AliESDEvent::GetTrack(trkIndex)
+  //Get the residuals dR and dZ for this track to the closest cluster
+  //Works with ESDs and AODs
+
+  if( FindMatchedPosForTrack(trkIndex) >= 999 )
+  {
+    AliDebug(2,"No matched cluster found!\n");
+    dR=999.;
+    dZ=999.;
+    return;
+  }
+  dR = fResidualR->At(FindMatchedPosForTrack(trkIndex));
+  dZ = fResidualZ->At(FindMatchedPosForTrack(trkIndex));
 }
 
 //__________________________________________________________
-Int_t AliEMCALRecoUtils::GetMatchedTrackIndex(Int_t index)
+Int_t AliEMCALRecoUtils::GetMatchedTrackIndex(Int_t clsIndex)
 {
-  //Given a cluster index as in AliESDEvent::GetCaloCluster(index)
-  //Get the index of matched track for this cluster
-  //It only works with ESDs, not AODs
+  //Given a cluster index as in AliESDEvent::GetCaloCluster(clsIndex)
+  //Get the index of matched track to this cluster
+  //Works with ESDs and AODs
   
-  if(IsMatched(index))
-    return fMatchedTrackIndex->At(FindMatchedPos(index));
+  if(IsClusterMatched(clsIndex))
+    return fMatchedTrackIndex->At(FindMatchedPosForCluster(clsIndex));
   else 
     return -1; 
 }
 
+//__________________________________________________________
+Int_t AliEMCALRecoUtils::GetMatchedClusterIndex(Int_t trkIndex)
+{
+  //Given a track index as in AliESDEvent::GetTrack(trkIndex)
+  //Get the index of matched cluster to this track
+  //Works with ESDs and AODs
+  
+  if(IsTrackMatched(trkIndex))
+    return fMatchedClusterIndex->At(FindMatchedPosForTrack(trkIndex));
+  else 
+    return -1; 
+}
 
 //__________________________________________________
-Bool_t AliEMCALRecoUtils::IsMatched(Int_t index)
+Bool_t AliEMCALRecoUtils::IsClusterMatched(Int_t clsIndex)
 {
-  //Given a cluster index as in AliESDEvent::GetCaloCluster(index)
-  //Returns if cluster has a match
-  if(FindMatchedPos(index) < 999) 
+  //Given a cluster index as in AliESDEvent::GetCaloCluster(clsIndex)
+  //Returns if the cluster has a match
+  if(FindMatchedPosForCluster(clsIndex) < 999) 
     return kTRUE;
   else
     return kFALSE;
 }
-//__________________________________________________________
-UInt_t AliEMCALRecoUtils::FindMatchedPos(Int_t index) const
+
+//__________________________________________________
+Bool_t AliEMCALRecoUtils::IsTrackMatched(Int_t trkIndex)
 {
-  //Given a cluster index as in AliESDEvent::GetCaloCluster(index)
+  //Given a track index as in AliESDEvent::GetTrack(trkIndex)
+  //Returns if the track has a match
+  if(FindMatchedPosForTrack(trkIndex) < 999) 
+    return kTRUE;
+  else
+    return kFALSE;
+}
+
+//__________________________________________________________
+UInt_t AliEMCALRecoUtils::FindMatchedPosForCluster(Int_t clsIndex) const
+{
+  //Given a cluster index as in AliESDEvent::GetCaloCluster(clsIndex)
   //Returns the position of the match in the fMatchedClusterIndex array
   Float_t tmpR = fCutR;
   UInt_t pos = 999;
   
   for(Int_t i=0; i<fMatchedClusterIndex->GetSize(); i++)
   {
-    if(fMatchedClusterIndex->At(i)==index && fResidualR->At(i)<tmpR)
+    if(fMatchedClusterIndex->At(i)==clsIndex && fResidualR->At(i)<tmpR)
     {
       pos=i;
       tmpR=fResidualR->At(i);
-      AliDebug(3,Form("Matched cluster pos: %d, index: %d, dR: %2.4f, dZ: %2.4f.\n",i,fMatchedClusterIndex->At(i),fResidualR->At(i),fResidualZ->At(i)));
+      AliDebug(3,Form("Matched cluster index: index: %d, dR: %2.4f, dZ: %2.4f.\n",fMatchedClusterIndex->At(i),fResidualR->At(i),fResidualZ->At(i)));
+    }
+  }
+  return pos;
+}
+
+//__________________________________________________________
+UInt_t AliEMCALRecoUtils::FindMatchedPosForTrack(Int_t trkIndex) const
+{
+  //Given a track index as in AliESDEvent::GetTrack(trkIndex)
+  //Returns the position of the match in the fMatchedTrackIndex array
+  Float_t tmpR = fCutR;
+  UInt_t pos = 999;
+  
+  for(Int_t i=0; i<fMatchedTrackIndex->GetSize(); i++)
+  {
+    if(fMatchedTrackIndex->At(i)==trkIndex && fResidualR->At(i)<tmpR)
+    {
+      pos=i;
+      tmpR=fResidualR->At(i);
+      AliDebug(3,Form("Matched track index: index: %d, dR: %2.4f, dZ: %2.4f.\n",fMatchedTrackIndex->At(i),fResidualR->At(i),fResidualZ->At(i)));
     }
   }
   return pos;
@@ -1260,8 +1420,10 @@ void AliEMCALRecoUtils::Print(const Option_t *) const
   printf("Position Recalculation option %d, Particle Type %d, fW0 %2.2f, Recalibrate Data %d \n",fPosAlgo,fParticleType,fW0, fRecalibration);
 
   printf("Matching criteria: dR < %2.2f[cm], dZ < %2.2f[cm]\n",fCutR,fCutZ);
+  printf("Mass hypothesis = %2.3f[GeV/c^2], extrapolation step = %2.2f[cm]\n",fMass,fStep);
 
   printf("Track cuts: \n");
+  printf("AOD track selection mask: %d\n",fAODFilterMask);
   printf("TPCRefit = %d, ITSRefit = %d\n",fCutRequireTPCRefit,fCutRequireITSRefit);
   printf("AcceptKinks = %d\n",fCutAcceptKinkDaughters);
   printf("MinNCulsterTPC = %d, MinNClusterITS = %d\n",fCutMinNClusterTPC,fCutMinNClusterITS);
