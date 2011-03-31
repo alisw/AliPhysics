@@ -318,7 +318,7 @@ void AliAnalysisTaskCaloConv::UserExec(Option_t */*option*/)
 
   fESDEvent=(AliESDEvent*)InputEvent();
   FillHistogram("hEventsTrig",0.5) ;
-  Bool_t isSelected =(esdHandler->IsEventSelected()& AliVEvent::kMB) == AliVEvent::kMB;
+  Bool_t isSelected = esdHandler && ((esdHandler->IsEventSelected()& AliVEvent::kMB) == AliVEvent::kMB);
   if(!isSelected){
     printf("Not selected !!!!! \n") ;
     PostData(1, fOutputContainer);
@@ -331,7 +331,6 @@ void AliAnalysisTaskCaloConv::UserExec(Option_t */*option*/)
 //  if(!fStack && !fESDEvent->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")){
   //for LHC10e
   if(!fStack && !fESDEvent->IsTriggerClassFired("CINT1-B-NOPF-ALLNOTRD")){
-printf("Trigger failed \n") ;
     PostData(1, fOutputContainer);
     return ;
   } 
@@ -998,10 +997,9 @@ void AliAnalysisTaskCaloConv::SelectEMCALPhotons(){
     fEMCALEvent = new TClonesArray("TLorentzVector",10) ;
   Int_t inEMCAL = 0 ; //, inEMCALRecal=0;
   TLorentzVector pi0 ;
-return ; //Untill EMCAL geometry will be fixed
 
   //vertex
-  Double_t vtx[3];
+  Double_t vtx[3]={0.,0.,0.};
   vtx[0] = fESDEvent->GetPrimaryVertex()->GetX();
   vtx[1] = fESDEvent->GetPrimaryVertex()->GetY();
   vtx[2] = fESDEvent->GetPrimaryVertex()->GetZ();
@@ -1458,10 +1456,11 @@ void AliAnalysisTaskCaloConv::SelectConvPhotons(){
       TParticle * negativeMC = fStack->Particle(TMath::Abs(neg->GetLabel()));
       TParticle * positiveMC = fStack->Particle(TMath::Abs(pos->GetLabel()));
 
-      if(negativeMC && positiveMC){
-        if(negativeMC->GetMother(0) != positiveMC->GetMother(0))
+      if(!negativeMC || !positiveMC)
           continue ;
-      }
+
+      if(negativeMC->GetMother(0) != positiveMC->GetMother(0))
+        continue ;
 
       if(TMath::Abs(negativeMC->GetPdgCode())!=11 || TMath::Abs(positiveMC->GetPdgCode())!=11){
         continue;
@@ -2662,10 +2661,8 @@ void AliAnalysisTaskCaloConv::ProcessMC(){
        TParticle * negativeMC = fStack->Particle(TMath::Abs(fESDEvent->GetTrack(v0->GetNindex())->GetLabel()));
        TParticle * positiveMC = fStack->Particle(TMath::Abs(fESDEvent->GetTrack(v0->GetPindex())->GetLabel()));
 
-       if(negativeMC && positiveMC){
-         if(negativeMC->GetMother(0) != positiveMC->GetMother(0))
-           continue ;
-       }
+       if(negativeMC->GetMother(0) != positiveMC->GetMother(0))
+         continue ;
 
        if(TMath::Abs(negativeMC->GetPdgCode())!=11 || TMath::Abs(positiveMC->GetPdgCode())!=11){
          continue;
