@@ -205,8 +205,7 @@ void AliPhiCorrelationsQATask::UserExec(Option_t*)
         continue;
     }
     
-    continue;
-    
+    /*
     // create a tpc only track
     AliESDtrack *track = AliESDtrackCuts::GetTPCOnlyTrack(esd,esdTrack->GetID());
     if (!track) 
@@ -232,6 +231,7 @@ void AliPhiCorrelationsQATask::UserExec(Option_t*)
     //Printf("%.2f %.2f %.2f %.2f", b[0], b2[0], b[1], b2[1]);
     
     delete track;
+    */
   }      
   
   //Printf("%.2f: %d %d tracks (out of %d)", v0Centrality, centralityObj->GetQuality(), count, esd->GetNumberOfTracks());
