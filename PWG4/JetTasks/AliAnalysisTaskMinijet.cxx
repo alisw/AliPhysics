@@ -949,7 +949,7 @@ Int_t AliAnalysisTaskMinijet::LoopAODMC(Float_t **ptArray, Float_t ** etaArray,
 //________________________________________________________________________
 void AliAnalysisTaskMinijet::Analyse(const Float_t *pt, const Float_t *eta, const Float_t *phi, 
 				     const Short_t *charge, Int_t ntracksCharged, 
-				     Int_t ntracklets, Int_t nAll, Int_t mode)
+				     Int_t ntracklets, const Int_t nAll, Int_t mode)
 {
 
   // analyse track properties (comming from either ESDs or AODs) in order to compute 
