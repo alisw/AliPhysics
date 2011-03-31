@@ -1904,6 +1904,9 @@ void AliUEHist::ExtendTrackingEfficiency(Bool_t verbose)
               fTrackHistEfficiency->GetGrid(2)->SetElement(bins, 0);
           }
        }
+       
+     delete[] trackingEff;
+     delete[] trackingCont;
    }
    
    SetCentralityRange(0, 0);
