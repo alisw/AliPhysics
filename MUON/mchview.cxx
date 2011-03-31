@@ -95,7 +95,7 @@ int main(int argc, char** argv)
     {
       isGeometryFixed = kTRUE;
       TString g(static_cast<TObjString*>(args.At(i+1))->String());
-      sscanf(g.Data(),"%dx%d+%d+%d",&gix,&giy,&gox,&goy);
+      sscanf(g.Data(),"%10dx%10d+%10d+%10d",&gix,&giy,&gox,&goy);
       nok += 2;
       ++i;
     }
