@@ -273,7 +273,7 @@ Bool_t AliITStrackV2::Update(const AliCluster* c, Double_t chi2, Int_t index)
 
   Int_t n=GetNumberOfClusters();
   if (!Invariant()) {
-     if (n>fgkWARN) AliWarning("Wrong invariant !");
+    if (n>fgkWARN) AliDebug(1,"Wrong invariant !");
      return kFALSE;
   }
 
@@ -320,32 +320,32 @@ Bool_t AliITStrackV2::Invariant() const {
 
   Double_t sP2=GetParameter()[2];
   if (TMath::Abs(sP2) >= kAlmost1){
-     if (n>fgkWARN) Warning("Invariant","fP2=%f\n",sP2);
+    if (n>fgkWARN) AliDebug(1,Form("fP2=%f\n",sP2));
      return kFALSE;
   }
   Double_t sC00=GetCovariance()[0];
   if (sC00<=0 || sC00>(9.+maxMisalErrY2)) {
-     if (n>fgkWARN) Warning("Invariant","fC00=%f\n",sC00); 
+    if (n>fgkWARN) AliDebug(1,Form("fC00=%f\n",sC00)); 
      return kFALSE;
   }
   Double_t sC11=GetCovariance()[2];
   if (sC11<=0 || sC11>(9.+maxMisalErrZ2)) {
-     if (n>fgkWARN) Warning("Invariant","fC11=%f\n",sC11); 
+    if (n>fgkWARN) AliDebug(1,Form("fC11=%f\n",sC11)); 
      return kFALSE;
   }
   Double_t sC22=GetCovariance()[5];
   if (sC22<=0 || sC22>1.) {
-     if (n>fgkWARN) Warning("Invariant","fC22=%f\n",sC22); 
+    if (n>fgkWARN) AliDebug(1,Form("fC22=%f\n",sC22)); 
      return kFALSE;
   }
   Double_t sC33=GetCovariance()[9];
   if (sC33<=0 || sC33>1.) {
-     if (n>fgkWARN) Warning("Invariant","fC33=%f\n",sC33); 
+    if (n>fgkWARN) AliDebug(1,Form("fC33=%f\n",sC33)); 
      return kFALSE;
   }
   Double_t sC44=GetCovariance()[14];
   if (sC44<=0 /*|| sC44>6e-5*/) {
-     if (n>fgkWARN) Warning("Invariant","fC44=%f\n",sC44);
+    if (n>fgkWARN) AliDebug(1,Form("Invariant","fC44=%f\n",sC44));
      return kFALSE;
   }
 
@@ -364,7 +364,7 @@ Bool_t AliITStrackV2::Propagate(Double_t alp,Double_t xk) {
 
   if (!Invariant()) {
     Int_t n=GetNumberOfClusters();
-    if (n>fgkWARN) AliWarning("Wrong invariant !");
+    if (n>fgkWARN) AliDebug(1,"Wrong invariant !");
     return kFALSE;
   }
 
