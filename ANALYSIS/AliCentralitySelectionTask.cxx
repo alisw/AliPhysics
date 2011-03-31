@@ -486,7 +486,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     
     if (fRunNo<=0) {
       if (SetupRun(esd)<0)
-         AliFatal("Centrality File not available for this run");
+         AliError("Centrality File not available for this run");
+         return;
     }
 
     esdCent = esd->GetCentrality();
@@ -794,7 +795,7 @@ Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* const esd)
   ReadCentralityHistos(fileName.Data());
   ReadCentralityHistos2(fileName2.Data());
   if (!fFile && !fFile2) {
-     AliFatal(Form("Run %d not known to centrality selection!", fCurrentRun));       
+     AliError(Form("Run %d not known to centrality selection!", fCurrentRun));       
      return -1;
   }   
   return 0;
