@@ -32,9 +32,8 @@ class AliCaloPeakFinderVectors;
 
 class  AliCaloRawAnalyzerPeakFinder : public AliCaloRawAnalyzer
 {
-  friend class AliCaloRawAnalyzerFactory;
+  friend class AliCaloRawAnalyzerFactory; // shutting up the rule checker
  public:
-  // AliCaloRawAnalyzerPeakFinder( );
   virtual ~AliCaloRawAnalyzerPeakFinder();
   virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
 				      const UInt_t altrocfg1,  const UInt_t altrocfg2 );
@@ -55,9 +54,6 @@ class  AliCaloRawAnalyzerPeakFinder : public AliCaloRawAnalyzer
   Double_t fPFTofVectorsCoarse[PF::MAXSTART][PF::SAMPLERANGE][100];  // Vectors for TOF extraction, first iteration
   Double_t fPFAmpVectors[PF::MAXSTART][PF::SAMPLERANGE][100];        // Vectors for Amplitude extraction, second iteration
   Double_t fPFTofVectors[PF::MAXSTART][PF::SAMPLERANGE][100];        // Vectors for TOF extraction, second iteration
-  
-  //Double_t fAmp; // The amplitude in entities of ADC counts
- 
   AliCaloPeakFinderVectors  *fPeakFinderVectors; // Collection of Peak-Fincer vectors
   bool fRunOnAlien; // Wether or not we are running on the GRID
   bool fIsInitialized;

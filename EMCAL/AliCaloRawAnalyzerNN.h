@@ -32,7 +32,7 @@ class AliCaloNeuralFit;
 
 class  AliCaloRawAnalyzerNN : public AliCaloRawAnalyzer
 {
-  friend class AliCaloRawAnalyzerFactory;
+  friend class AliCaloRawAnalyzerFactory; // self explanatory
  public:
   // AliCaloRawAnalyzerNN();
   virtual ~AliCaloRawAnalyzerNN();

@@ -35,6 +35,9 @@
 #include "TGraph.h"
 #include "TRandom.h"
 
+#include "AliEMCALRawResponse.h"
+
+
 using namespace std;
 
 ClassImp( AliCaloRawAnalyzerKStandard )
@@ -132,7 +135,10 @@ void
       gSig->SetPoint(i, timebin, GetReversed(timebin)); 
     }
       
-  TF1 * signalF = new TF1("signal", RawResponseFunction, 0, TIMEBINS , 5);
+  
+  //  TF1 * signalF = new TF1("signal", RawResponseFunction, 0, TIMEBINS , 5);
+  TF1 * signalF = new TF1("signal", AliEMCALRawResponse::RawResponseFunction, 0, TIMEBINS , 5);
+  
   signalF->SetParameters(10.,5., TAU  ,ORDER,0.); //set all defaults once, just to be safe
   signalF->SetParNames("amp","t0","tau","N","ped");
   signalF->FixParameter(2,TAU); 
@@ -228,6 +234,8 @@ AliCaloRawAnalyzerKStandard::FitParabola(const TGraph *gSig, Float_t & amp) cons
 
 
 //__________________________________________________________________
+
+/*
 Double_t 
 AliCaloRawAnalyzerKStandard::RawResponseFunction(const Double_t *x, const Double_t *par)
 {
@@ -245,4 +253,4 @@ AliCaloRawAnalyzerKStandard::RawResponseFunction(const Double_t *x, const Double
   }
   return signal ;  
 }
-
+*/

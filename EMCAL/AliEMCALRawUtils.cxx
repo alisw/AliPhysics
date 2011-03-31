@@ -54,14 +54,17 @@
 #include "AliCaloConstants.h"
 #include "AliCaloRawAnalyzer.h"
 #include "AliCaloRawAnalyzerFactory.h"
+#include "AliEMCALRawResponse.h"
 
 using namespace CALO;
 using namespace EMCAL;
 
+/*
 Double_t AliEMCALRawUtils::fgTimeTrigger  = 600E-9 ;   // the time of the trigger as approximately seen in the data
 Int_t    AliEMCALRawUtils::fgThreshold         = 1;
 Int_t    AliEMCALRawUtils::fgPedestalValue     = 0;  // pedestal value for digits2raw, default generate ZS data
 Double_t AliEMCALRawUtils::fgFEENoise          = 3.; // 3 ADC channels of noise (sampled)
+*/
 
 ClassImp(AliEMCALRawUtils)
 
@@ -189,7 +192,7 @@ void AliEMCALRawUtils::Digits2Raw()
 	}
       else
 	{
-	  if (digit->GetAmplitude() < fgThreshold) 
+	  if (digit->GetAmplitude() <  AliEMCALRawResponse::GetRawFormatThreshold() ) 
 	    {
 	      continue;
 	    }
@@ -248,11 +251,13 @@ void AliEMCALRawUtils::Digits2Raw()
           buffers[iDDL]->WriteTrailer(3, ieta, iphi, nSM);  // trailer
           // calculate the time response function
         } else {
-          Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), digit->GetAmplitude(), adcValuesHigh.GetArray(), adcValuesLow.GetArray()) ; 
-          if (lowgain) 
-            buffers[iDDL]->WriteChannel(ieta, iphi, 0, TIMEBINS, adcValuesLow.GetArray(), fgThreshold);
+          Bool_t lowgain = AliEMCALRawResponse::RawSampledResponse(digit->GetTimeR(), digit->GetAmplitude(), 
+								   adcValuesHigh.GetArray(), adcValuesLow.GetArray()) ; 
+	  
+	  if (lowgain) 
+            buffers[iDDL]->WriteChannel(ieta, iphi, 0, TIMEBINS, adcValuesLow.GetArray(),  AliEMCALRawResponse::GetRawFormatThreshold()  );
           else 
-            buffers[iDDL]->WriteChannel(ieta,iphi, 1, TIMEBINS, adcValuesHigh.GetArray(), fgThreshold);
+            buffers[iDDL]->WriteChannel(ieta,iphi, 1, TIMEBINS, adcValuesHigh.GetArray(),  AliEMCALRawResponse::GetRawFormatThreshold()  );
         }
       }// iDDL under the limits
     }//digit exists
@@ -413,6 +418,7 @@ void AliEMCALRawUtils::TrimDigits(TClonesArray *digitsArr)
 }
 
 
+/*
 Double_t 
 AliEMCALRawUtils::RawResponseFunction(Double_t *x, Double_t *par)
 {
@@ -463,9 +469,11 @@ Bool_t AliEMCALRawUtils::RawSampledResponse(const Double_t dtime, const Double_t
   }
   return lowGain ; 
 }
-
+*/
 
 //__________________________________________________________________
+
+/*
 Double_t AliEMCALRawUtils::RawResponseFunctionLog(Double_t *x, Double_t *par)
 {
   Double_t signal = 0. ;
@@ -483,7 +491,7 @@ Double_t AliEMCALRawUtils::RawResponseFunctionLog(Double_t *x, Double_t *par)
     }
   return signal ;  
 }
-
+*/
 
 
 //__________________________________________________________________

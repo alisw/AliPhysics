@@ -36,7 +36,6 @@
 #include "TFile.h"
 #include "AliCaloPeakFinderVectors.h"
 #include <iostream>
-//#include "AliEMCALRawUtils.h"
 
 using namespace std;
 
@@ -45,7 +44,6 @@ ClassImp( AliCaloRawAnalyzerPeakFinder )
 
 
 AliCaloRawAnalyzerPeakFinder::AliCaloRawAnalyzerPeakFinder() :AliCaloRawAnalyzer("Peak-Finder", "PF"),  
-//    fAmp(0),
 							      fPeakFinderVectors(0),
 							      fRunOnAlien(false),
 							      fIsInitialized(false)
@@ -63,9 +61,6 @@ void
 AliCaloRawAnalyzerPeakFinder::InitOCDB(bool alien) const
 {
   // Setting the default OCDB pathe depending on wether we work locally or on the GRID.
-  
-
-  //  if( AliCDBManager::Instance()->HasStorage("alien://$ALICE_ROOT/OCDB")  == false  &&  AliCDBManager::Instance()->HasStorage("local://$ALICE_ROOT/OCDB") == false )
   if( !AliCDBManager::Instance()->IsDefaultStorageSet ())
     {
       AliCDBManager::Instance()->SetDefaultStorage(  alien == true ? "alien://$ALICE_ROOT/OCDB" : "local://$ALICE_ROOT/OCDB" );
@@ -124,6 +119,7 @@ AliCaloRawAnalyzerPeakFinder::ScanCoarse(const Double_t *const array, const int 
 AliCaloFitResults 
 AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 )
 {
+  // Evaluation of amplitude and TOF
   if( fIsInitialized == false )
     {
       cout << __FILE__ << ":" << __LINE__ << "ERROR, peakfinder vectors not loaded" << endl;
@@ -199,13 +195,11 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 		}
 	      if( TMath::Abs(  (maxf - fAmp  )/maxf )  >   0.1 )
 		{
-		  //	  cout << __FILE__ << ":" << __LINE__ << "WARNING: amp was" << fAmp <<", but was changed to "<< maxf << endl;
 		  fAmp = maxf;
 		}
 	      
-	      //      tof = timebinOffset - 0.01*tof/fAmp; // clock ticks
 	      tof = timebinOffset - 0.01*tof/fAmp - fL1Phase/TIMEBINWITH; // clock
-
+	      
 	      // use local-array time for chi2 estimate
 	      Float_t chi2 = CalculateChi2(fAmp, tof-timebinOffset+maxrev, first, last);
 	      Int_t ndf = last - first - 1; // nsamples - 2
@@ -236,7 +230,6 @@ AliCaloRawAnalyzerPeakFinder::CopyVectors( const AliCaloPeakFinderVectors *const
 	{
 	  for( int j=0; j < PF::SAMPLERANGE; j++)  
 	    {
-	      // cout << __FILE__ << ":" << __LINE__ << ": TPX !!; i= "<< i << "  j = "<< j << endl;
 	      pfv->GetVector( i, j, fPFAmpVectors[i][j] ,  fPFTofVectors[i][j],    
 	       		      fPFAmpVectorsCoarse[i][j] , fPFTofVectorsCoarse[i][j]  ); 
 
@@ -261,31 +254,20 @@ AliCaloRawAnalyzerPeakFinder::LoadVectorsOCDB()
   
   if( entry != 0 )
   {
-    
     cout << __FILE__ << ":" << __LINE__ << ": Printing metadata !! " << endl;
     entry->PrintMetaData();
-    
-    cout << __FILE__ << ":" << __LINE__ << ": Finnsihed Printing metadata !! " << endl;
-
     AliCaloPeakFinderVectors  *pfv = (AliCaloPeakFinderVectors *)entry->GetObject(); 
-    cout << __FILE__ << ":" << __LINE__ << ": got pfv !! " << endl;
-
     if( pfv == 0 )
     {
       cout << __FILE__ << ":" << __LINE__ << "_ ERRROR " << endl;
     }
-    
-    cout << __FILE__ << ":" << __LINE__ << ": TP0 !! " << endl;
     CopyVectors( pfv );
-   
-    cout << __FILE__ << ":" << __LINE__ << ": TP1 !! " << endl;
-
+    
     if( pfv != 0 )
     {
       fIsInitialized = true;
     }
   }
-  
 }
 
 

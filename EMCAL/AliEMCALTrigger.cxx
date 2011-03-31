@@ -61,6 +61,7 @@
 #include "AliEMCALRawUtils.h"
 #include "AliLog.h"
 #include "AliCaloConstants.h"
+#include "AliEMCALRawResponse.h"
 
 using namespace CALO;
 
@@ -671,9 +672,12 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
       //  rawUtil.RawSampledResponse(maxtimeR2 * AliEMCALRawUtils::GetRawFormatTimeBin(), 
       //				 f2x2MaxAmp, fADCValuesHigh2x2, fADCValuesLow2x2) ; 
        
-      rawUtil.RawSampledResponse(maxtimeR2*TIMEBINMAX/TIMEBINS, 
-				 f2x2MaxAmp, fADCValuesHigh2x2, fADCValuesLow2x2) ; 
+      //  rawUtil.RawSampledResponse(maxtimeR2*TIMEBINMAX/TIMEBINS, 
+      //				 f2x2MaxAmp, fADCValuesHigh2x2, fADCValuesLow2x2) ; 
       
+      AliEMCALRawResponse::RawSampledResponse( maxtimeR2*TIMEBINMAX/TIMEBINS, 
+					       f2x2MaxAmp, fADCValuesHigh2x2, fADCValuesLow2x2) ; 
+
     // Set Trigger Inputs, compare ADC time bins until threshold is attained
     // Set L0
       for(Int_t i = 0 ; i < nTimeBins ; i++){
@@ -715,10 +719,13 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
       }
       //  rawUtil.RawSampledResponse(maxtimeRn * AliEMCALRawUtils::GetRawFormatTimeBin(), 
       //   fnxnMaxAmp, fADCValuesHighnxn, fADCValuesLownxn) ;
-      rawUtil.RawSampledResponse(maxtimeRn*TIMEBINMAX/TIMEBINS, 
-      fnxnMaxAmp, fADCValuesHighnxn, fADCValuesLownxn) ;
 
+      //rawUtil.RawSampledResponse(maxtimeRn*TIMEBINMAX/TIMEBINS, 
+      //				 fnxnMaxAmp, fADCValuesHighnxn, fADCValuesLownxn) ;
 
+      AliEMCALRawResponse::RawSampledResponse (maxtimeRn*TIMEBINMAX/TIMEBINS, 
+					       fnxnMaxAmp, fADCValuesHighnxn, fADCValuesLownxn) ;
+      
     //Set Trigger Inputs, compare ADC time bins until threshold is attained
     //SetL1 Low
       for(Int_t i = 0 ; i < nTimeBins ; i++){

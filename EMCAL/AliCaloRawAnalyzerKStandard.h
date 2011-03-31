@@ -33,7 +33,8 @@ class  AliCaloRawAnalyzerKStandard : public AliCaloRawAnalyzerFitter
  public:
   virtual ~AliCaloRawAnalyzerKStandard();
   virtual AliCaloFitResults  Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
-  static Double_t RawResponseFunction(const Double_t *x, const Double_t *par); 
+  //  static Double_t RawResponseFunction(const Double_t *x, const Double_t *par); 
+ 
   void FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time, 
 	      Float_t & chi2, Bool_t & fitDone) const ;
  

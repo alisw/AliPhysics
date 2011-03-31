@@ -46,12 +46,10 @@ AliCaloRawAnalyzer::AliCaloRawAnalyzer(const char *name, const char *nameshort) 
   fIsZerosupressed( false ),
   fVerbose( false ),
   fAlgo(Algo::kNONE), 
-// fFp(0), 
   fL1Phase(0),
   fAmp(0),
   fTof(0),
   fTau( EMCAL::TAU )
-//  fFixTau(true)
 {
   //Comment 
   snprintf(fName, 256,"%s", name);
@@ -63,9 +61,6 @@ AliCaloRawAnalyzer::AliCaloRawAnalyzer(const char *name, const char *nameshort) 
     {
       fReversed[i] = 0;
     }
-
-  // fFp = fopen("amp2.txt", "w");
-
 }
 
 AliCaloRawAnalyzer::~AliCaloRawAnalyzer()
@@ -413,17 +408,6 @@ AliCaloRawAnalyzer::CalculateMeanAndRMS(const Int_t first, const Int_t last,
 
   return;
 }
-
-
-
-// AliCaloFitResults
-// AliCaloRawAnalyzer::Evaluate( const vector<AliCaloBunchInfo>  &/*bunchvector*/, const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/)
-// { // method to do the selection of what should possibly be fitted
-//   // not implemented for base class
-//   cout << __FILE__ << ":" << __LINE__ << " " << endl;
-  
-//   return AliCaloFitResults( 0, 0 );
-// }
 
 
 

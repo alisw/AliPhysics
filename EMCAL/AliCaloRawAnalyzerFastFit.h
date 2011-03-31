@@ -28,7 +28,7 @@
 
 class  AliCaloRawAnalyzerFastFit : public AliCaloRawAnalyzerFitter
 {
-  friend class  AliCaloRawAnalyzerFactory;
+  friend class  AliCaloRawAnalyzerFactory; // comment
  public:
   virtual ~AliCaloRawAnalyzerFastFit();
   virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
