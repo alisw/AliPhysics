@@ -23,10 +23,10 @@ class AliHLTD0toKpi : public TObject
 public:
   AliHLTD0toKpi();
 
-  Double_t InvMass(AliExternalTrackParam* d1, AliExternalTrackParam* d2);
-  void cosThetaStar(AliExternalTrackParam* n, AliExternalTrackParam* p,Double_t &D0,Double_t &D0bar);
-  Double_t pointingAngle(AliExternalTrackParam* n, AliExternalTrackParam* p, Double_t *pv, Double_t *sv);
-  Double_t Pt(AliExternalTrackParam* d1, AliExternalTrackParam* d2);
+  Double_t InvMass(const AliExternalTrackParam* d1, const AliExternalTrackParam* d2);
+  void CosThetaStar(const AliExternalTrackParam* n, const AliExternalTrackParam* p,Double_t &D0,Double_t &D0bar);
+  Double_t PointingAngle(const AliExternalTrackParam* n, const AliExternalTrackParam* p, const Double_t *pv, const Double_t *sv);
+  Double_t Pt(const AliExternalTrackParam* d1, const AliExternalTrackParam* d2);
 
   AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray, Double_t b, const AliESDVertex *v, bool useKF);
 

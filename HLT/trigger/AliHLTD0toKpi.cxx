@@ -18,7 +18,7 @@ AliHLTD0toKpi::AliHLTD0toKpi()
 {
 }
 
-Double_t AliHLTD0toKpi::InvMass(AliExternalTrackParam* d1, AliExternalTrackParam* d2)
+Double_t AliHLTD0toKpi::InvMass(const AliExternalTrackParam* d1, const AliExternalTrackParam* d2)
 {
   Double_t mpi=TDatabasePDG::Instance()->GetParticle(211)->Mass();
   Double_t mK=TDatabasePDG::Instance()->GetParticle(321)->Mass();
@@ -38,7 +38,7 @@ Double_t AliHLTD0toKpi::InvMass(AliExternalTrackParam* d1, AliExternalTrackParam
   return TMath::Sqrt((energy[0]+energy[1])*(energy[0]+energy[1])-momTot2);
 
 }
-void AliHLTD0toKpi::cosThetaStar(AliExternalTrackParam* d1, AliExternalTrackParam* d2,Double_t &D0,Double_t &D0bar)
+void AliHLTD0toKpi::CosThetaStar(const AliExternalTrackParam* d1, const AliExternalTrackParam* d2,Double_t &D0,Double_t &D0bar)
 {
   Double_t mD0 = TDatabasePDG::Instance()->GetParticle(421)->Mass();
   Double_t mpi=TDatabasePDG::Instance()->GetParticle(211)->Mass();
@@ -69,7 +69,7 @@ void AliHLTD0toKpi::cosThetaStar(AliExternalTrackParam* d1, AliExternalTrackPara
   D0bar = (qL/gamma-beta*TMath::Sqrt(pStar*pStar+mK*mK))/pStar;
 
 }
-Double_t AliHLTD0toKpi::pointingAngle(AliExternalTrackParam* n, AliExternalTrackParam* p, Double_t *pv, Double_t *sv)
+Double_t AliHLTD0toKpi::PointingAngle(const AliExternalTrackParam* n, const AliExternalTrackParam* p, const Double_t *pv, const Double_t *sv)
 {
 
   TVector3 mom(n->Px()+p->Px(),n->Py()+p->Py(),n->Pz()+p->Pz());
@@ -133,7 +133,7 @@ AliAODVertex* AliHLTD0toKpi::ReconstructSecondaryVertex(TObjArray *trkArray, Dou
   return vertexAOD;
 
 }
-Double_t AliHLTD0toKpi::Pt(AliExternalTrackParam* d1, AliExternalTrackParam* d2)
+Double_t AliHLTD0toKpi::Pt(const AliExternalTrackParam* d1, const AliExternalTrackParam* d2)
 {
   Double_t p1[3],p2[3];
   d1->GetPxPyPz(p1);

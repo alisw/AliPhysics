@@ -443,7 +443,7 @@ void AliHLTD0Trigger::RecD0(Int_t& nD0,const AliESDVertex* pv, Double_t field){
 	continue;
       }
       
-      fd0calc->cosThetaStar(tN,tP,D0,D0bar);
+      fd0calc->CosThetaStar(tN,tP,D0,D0bar);
       if(TMath::Abs(D0) > fcosThetaStar && TMath::Abs(D0bar) > fcosThetaStar){
 	vertexp1n1->RemoveCovMatrix();
 	delete vertexp1n1;
@@ -460,7 +460,7 @@ void AliHLTD0Trigger::RecD0(Int_t& nD0,const AliESDVertex* pv, Double_t field){
 	continue;
       }
       
-      if(fd0calc->pointingAngle(tN,tP,pvpos,svpos) < fcosPoint){
+      if(fd0calc->PointingAngle(tN,tP,pvpos,svpos) < fcosPoint){
 	vertexp1n1->RemoveCovMatrix();
 	delete vertexp1n1;
 	ftwoTrackArray->Clear();	    
@@ -539,10 +539,10 @@ Int_t AliHLTD0Trigger::RecV0(const TObject* iter){
       if(tN->GetDCA(tP,field,tmp1,tmp2) > fdca){continue;}
       
       if((fd0calc->InvMass(tN,tP) - fD0PDG) > finvMass && (fd0calc->InvMass(tP,tN) - fD0PDG) > finvMass){continue;}
-      fd0calc->cosThetaStar(tN,tP,D0,D0bar);
+      fd0calc->CosThetaStar(tN,tP,D0,D0bar);
       if(D0 > fcosThetaStar && D0bar > fcosThetaStar){continue;}
       if((d0[0]*d0[1]) > fd0d0){continue;}
-      if(fd0calc->pointingAngle(tN,tP,pvpos,svpos) < fcosPoint){continue;}
+      if(fd0calc->PointingAngle(tN,tP,pvpos,svpos) < fcosPoint){continue;}
       
       nD0++;
       if((fd0calc->InvMass(tN,tP) - fD0PDG) > finvMass){
