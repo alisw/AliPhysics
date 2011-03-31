@@ -10,7 +10,7 @@
 
 ClassImp(AliOADBPWG2Spectra)
 
-const char * AliOADBPWG2Spectra::fDetectorNames[] = {"ITS", "ITSTPC", "TPC", "TOF", "TOFTPC"};
+const char * AliOADBPWG2Spectra::fDetectorNames[] = {"ITS", "ITSTPC", "TPC", "TOF", "TOFTPC", "Dummy", "Dummy"};
 const char * AliOADBPWG2Spectra::fPidTypeNames[]  = {"GaussFit", "NSigma", "Bayes", "Kinks"};
 const char * AliOADBPWG2Spectra::fChargeTags[]    = {"Pos", "Neg"};
 const char * AliOADBPWG2Spectra::fParticleNames[] = {"Pion", "Kaon", "Proton"};
@@ -59,6 +59,7 @@ const char * AliOADBPWG2Spectra::GetHistoName(EPWG2SpectraDetector det, EPWG2Spe
   // h[Name]_[Detector(s)]_[PIDType]_[Particle]_[Pos|Neg]_[MultiplicityOrCentralityIndex]
   // where "name" is the name of this container
 
+  
   static TString histoName;
   if (centrTag)
     histoName.Form("h%s_%s_%s_%s_%s_%s_%d", GetName(), fDetectorNames[det], fPidTypeNames[pidType], fParticleNames[part], fChargeTags[charge], centrTag, centrBin);
@@ -81,8 +82,20 @@ TH1D * AliOADBPWG2Spectra::GetHisto(EPWG2SpectraDetector det, EPWG2SpectraPIDTyp
 void  AliOADBPWG2Spectra::AddHisto(TH1D * h, EPWG2SpectraDetector det, EPWG2SpectraPIDType pidType, EPWG2SpectraParticle part, 
 				    EPWG2SpectraCharge charge, const char * centrTag, Int_t centrBin) {
   // Add a histogram to the list
-  // Rename it if necessary
+  // Rename and rebinn it if necessary
+  
+  if(!h) {
+    AliWarning("Empty pointer to histogram");
+    return;
+  }
+  
   const char * name = GetHistoName(det,pidType,part,charge,centrTag,centrBin);
+  static TH1D * htest = BookHisto(kDetDummy, kGaussFit,kPion, kPos);
+  if(!CompareBinning(h,htest)){
+    AliWarning("Histo have different binning! Rebinning to standard"){
+      h = GetHistoStandardBinning(h,det,pidType,part,charge,centrTag,centrBin);
+    }
+  }
   TH1D * hold = (TH1D*) fHistos->FindObject(name);
   if (hold) fHistos->Remove(hold);
   delete hold;
@@ -122,4 +135,51 @@ void AliOADBPWG2Spectra::Browse(TBrowser *b)
   }     
    else
       TObject::Browse(b);
+}
+
+TH1D * AliOADBPWG2Spectra::GetHistoStandardBinning(const TH1D* h, EPWG2SpectraDetector det, EPWG2SpectraPIDType pidType, EPWG2SpectraParticle part, 
+						   EPWG2SpectraCharge charge, const char * centrTag, Int_t centrBin) {
+  // Returns a histo with the standard binning and the same content of h
+  // if the bins of h are not a subset of the standard binning, it crashes with a fatal error
+  // under and overflows are ignored
+  
+  // 1. Create a histogram with the standard binning
+  TH1D * hStd = BookHisto(det,  pidType,  part, charge, centrTag, centrBin);
+  Int_t nBinsH1=hStd->GetNbinsX();
+  Int_t nBinsH2=h->GetNbinsX();
+  // Loop over standard bins, 
+  for(Int_t iBin=1; iBin<=nBinsH1; iBin++){
+    Float_t lowPtH1 =hStd->GetBinLowEdge(iBin);
+    Float_t binWidH1=hStd->GetBinWidth(iBin);
+    // Loop over H2 bins and find overlapping bins to H1
+    for(Int_t jBin=1; jBin<=nBinsH2; jBin++){
+      Float_t lowPtH2=h->GetBinLowEdge(jBin);
+      Float_t binWidH2=h->GetBinWidth(jBin);
+      if(TMath::Abs(lowPtH1-lowPtH2)<0.001 && TMath::Abs(binWidH2-binWidH1)<0.001){
+	hStd->SetBinContent(jBin, h->GetBinContent(iBin));
+	hStd->SetBinError  (jBin, h->GetBinError  (iBin));
+	break;
+      }
+      if(TMath::Abs(lowPtH1-lowPtH2)<0.001){
+	AliFatal(Form("Found partially overlapping bins! [(%f,%f)(%f,%f)]",lowPtH1,binWidH1,lowPtH2,binWidH2));
+      }
+    }
+  }
+  return hStd;
+}
+
+Bool_t AliOADBPWG2Spectra::CompareBinning(TH1 * h1, TH1 * h2) {
+
+  // returns true if h1 and h2 have the same binning
+  Int_t nbins1 = h1->GetNbinsX();
+  Int_t nbins2 = h2->GetNbinsX();
+  
+  if(nbins1 != nbins2) return kFALSE;
+  
+  for(Int_t ibin = 1; ibin <= nbins1; ibin++){
+    if(TMath::Abs(h1->GetBinLowEdge(ibin) - h2->GetBinLowEdge(ibin))<0.001) return kFALSE;
+    if(TMath::Abs(h1->GetBinWidth(ibin) - h2->GetBinWidth(ibin))<0.001) return kFALSE;
+  }
+  
+  return kTRUE;
 }

@@ -11,15 +11,15 @@
 
 class TList;
 class TH1D;
-
+class TH1;
 class AliOADBPWG2Spectra : public TNamed {
 
  public :
 
-  enum EPWG2SpectraDetector { kITSsa=0, kITSTPC, kTPC, kTOF, kTOFTPC, kNDetectors };
+  enum EPWG2SpectraDetector { kITSsa=0, kITSTPC, kTPC, kTOF, kTOFTPC, kNDetectors, kDetDummy };
   enum EPWG2SpectraPIDType  { kGaussFit=0, kNSigma, kBayes, kKinks, kNPIDTypes };
   enum EPWG2SpectraCharge   { kPos=0, kNeg, kNCharge };
-  enum EPWG2SpectraParticle { kPion = 0, kKaon, kProton };
+  enum EPWG2SpectraParticle { kPion = 0, kKaon, kProton, kNParticle };
   AliOADBPWG2Spectra();
   AliOADBPWG2Spectra(char* name);
   virtual ~AliOADBPWG2Spectra();
@@ -36,6 +36,10 @@ class AliOADBPWG2Spectra : public TNamed {
   TH1D * BookHisto(EPWG2SpectraDetector det, EPWG2SpectraPIDType pidType, EPWG2SpectraParticle part, 
 		   EPWG2SpectraCharge charge, const char * centrTag = 0, Int_t centrBin = -1) ;
     
+  TH1D * GetHistoStandardBinning(const TH1D* h, EPWG2SpectraDetector det, EPWG2SpectraPIDType pidType, EPWG2SpectraParticle part, 
+				 EPWG2SpectraCharge charge, const char * centrTag, Int_t centrBin) ;
+
+  Bool_t CompareBinning(TH1 * h1, TH1 * h2) ;
 
   virtual void Print (const Option_t * opt = "") const  { fHistos->Print(opt); }
 
