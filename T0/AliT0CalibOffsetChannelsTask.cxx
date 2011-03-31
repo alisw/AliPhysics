@@ -73,9 +73,10 @@ AliT0CalibOffsetChannelsTask::~AliT0CalibOffsetChannelsTask()
   delete fTzeroORC;
   delete fResolution;
   delete fTzeroORAplusORC;
-  delete [] fTimeDiff;
-  delete [] fCFD;
-
+  for (Int_t i=0; i<24; i++) {
+    delete  fTimeDiff[i];
+    delete  fCFD[i];
+  }
   delete fTzeroObject;
 }
 
