@@ -36,7 +36,7 @@ class TObjArray ;
 // --- AliRoot header files ---
 #include "AliQADataMakerRec.h"
 class AliCaloRawAnalyzer;
-class AliCaloRawAnalyzerLMS;
+class AliCaloRawAnalyzerKStandard;
 class AliEMCALGeoParams;
 
 class AliEMCALQADataMakerRec: public AliQADataMakerRec {
@@ -78,7 +78,7 @@ public:
   Int_t GetFittingAlgorithm() const {return fFittingAlgorithm; }
   void SetFittingAlgorithm(Int_t val);
   AliCaloRawAnalyzer *GetRawAnalyzer() const { return fRawAnalyzer;}
-  AliCaloRawAnalyzerLMS *GetRawAnalyzerTRU() const { return fRawAnalyzerTRU;}
+  AliCaloRawAnalyzerKStandard *GetRawAnalyzerTRU() const { return fRawAnalyzerTRU;}
 
   void SetSuperModules(int i) {fSuperModules = i;}; //The number of SuperModules
   int GetSuperModules() const {return fSuperModules;}; //The number of SuperModules
@@ -138,7 +138,7 @@ private:
  Int_t fFittingAlgorithm;             // select the fitting algorithm
 
  AliCaloRawAnalyzer *fRawAnalyzer;    // for signal fitting
- AliCaloRawAnalyzerLMS *fRawAnalyzerTRU;    // for signal fitting, for TRU
+ AliCaloRawAnalyzerKStandard *fRawAnalyzerTRU;    // for signal fitting, for TRU
 
   int fSuperModules; //The number of SuperModules activated
   int fFirstPedestalSample; // first sample for pedestal calculation, in bunch

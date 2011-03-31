@@ -4,8 +4,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 #pragma link C++ class AliCaloRawAnalyzerPeakFinder+;
-#pragma link C++ class AliCaloRawAnalyzerLMS+;
-#pragma link C++ class AliCaloRawAnalyzerLMSOffline+;
 #pragma link C++ class AliCaloRawAnalyzerNN+;
 #pragma link C++ class AliCaloRawAnalyzerFastFit+;
 #pragma link C++ class AliCaloRawAnalyzerPeakFinder+;

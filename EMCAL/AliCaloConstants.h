@@ -99,12 +99,19 @@ namespace CaloConstants
   }
 
 
+  //namespace FitAlgorithm
+  // {
+  //  enum fitAlgorithm { kStandard = 0, kCrude = 1, kPeakFinder = 2, kNeuralNet = 3, kFastFit= 4,
+  //			kLogFit = 5, kLMS = 6,  kLMSOffline = 7, kFakeAltro = 9, kNONE = 8}; // possible return values
+  // }
+  
   namespace FitAlgorithm
   {
-    enum fitAlgorithm { kStandard = 0, kCrude = 1, kPeakFinder = 2, kNeuralNet = 3, kFastFit= 4,
-			kLogFit = 5, kLMS = 6,  kLMSOffline = 7, kFakeAltro = 9, kNONE = 8}; // possible return values
+    enum fitAlgorithm { kStandard = 0, kCrude = 1, kPeakFinder = 2, kNeuralNet = 3, kFastFit= 4, kFakeAltro = 9, kNONE = 8}; // possible return values
   }
 
+  
+  
   namespace ReturnCodes
   {
     enum kReturnCode {kFitPar=1, kDummy=-1, kCrude=-9, kNoFit=-99, kInvalid=-9999};  // possible return values

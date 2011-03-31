@@ -236,6 +236,7 @@ AliCaloRawAnalyzerPeakFinder::CopyVectors( const AliCaloPeakFinderVectors *const
 	{
 	  for( int j=0; j < PF::SAMPLERANGE; j++)  
 	    {
+	      cout << __FILE__ << ":" << __LINE__ << ": TPX !!; i= "<< i << "  j = "<< j << endl;
 	      pfv->GetVector( i, j, fPFAmpVectors[i][j] ,  fPFTofVectors[i][j],    
 			      fPFAmpVectorsCoarse[i][j] , fPFTofVectorsCoarse[i][j]  ); 
 
@@ -263,15 +264,22 @@ AliCaloRawAnalyzerPeakFinder::LoadVectorsOCDB()
     
     cout << __FILE__ << ":" << __LINE__ << ": Printing metadata !! " << endl;
     entry->PrintMetaData();
+    
+    cout << __FILE__ << ":" << __LINE__ << ": Finnsihed Printing metadata !! " << endl;
 
     AliCaloPeakFinderVectors  *pfv = (AliCaloPeakFinderVectors *)entry->GetObject(); 
+    cout << __FILE__ << ":" << __LINE__ << ": got pfv !! " << endl;
+
     if( pfv == 0 )
     {
       cout << __FILE__ << ":" << __LINE__ << "_ ERRROR " << endl;
     }
     
+    cout << __FILE__ << ":" << __LINE__ << ": TP0 !! " << endl;
     CopyVectors( pfv );
-    
+   
+    cout << __FILE__ << ":" << __LINE__ << ": TP1 !! " << endl;
+
     if( pfv != 0 )
     {
       fIsInitialized = true;

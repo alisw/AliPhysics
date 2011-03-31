@@ -21,10 +21,10 @@
 #include "AliCaloRawAnalyzerFactory.h"
 #include "AliCaloRawAnalyzerFastFit.h"
 #include "AliCaloRawAnalyzerNN.h"
-#include "AliCaloRawAnalyzerLMS.h"
+/// #include "AliCaloRawAnalyzerLMS.h"
 #include "AliCaloRawAnalyzerPeakFinder.h"
 #include "AliCaloRawAnalyzerCrude.h"
-#include "AliCaloRawAnalyzerLMSOffline.h"
+//#include "AliCaloRawAnalyzerLMSOffline.h"
 #include "AliCaloRawAnalyzerKStandard.h"
 #include "AliCaloRawAnalyzerFakeALTRO.h"
 
@@ -51,19 +51,19 @@ AliCaloRawAnalyzerFactory::CreateAnalyzer( const int algo )
     case kNeuralNet:
       return new AliCaloRawAnalyzerNN();
       break;
-    case kLMS:
-      //return new AliCaloRawAnalyzerLMS();
-      return new AliCaloRawAnalyzerLMSOffline();
-      break;
+      //    case kLMS:
+      //     return new AliCaloRawAnalyzerLMS();
+      //    return new AliCaloRawAnalyzerLMSOffline();
+      //      break;
     case kPeakFinder:
       return new AliCaloRawAnalyzerPeakFinder();
       break;
     case kCrude:
       return  new AliCaloRawAnalyzerCrude();
       break;
-    case kLMSOffline:
-      return new AliCaloRawAnalyzerLMSOffline();
-      break;
+      //    case kLMSOffline:
+      //     return new AliCaloRawAnalyzerLMSOffline();
+      //     break;
     case kStandard:
       return new AliCaloRawAnalyzerKStandard();
       break;

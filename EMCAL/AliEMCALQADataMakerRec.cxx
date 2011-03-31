@@ -65,7 +65,8 @@ Also calculate the ratio of amplitude from LED Monitor system (current/Reference
 #include "AliCaloFitResults.h"
 #include "AliCaloRawAnalyzerFastFit.h"
 #include "AliCaloRawAnalyzerNN.h"
-#include "AliCaloRawAnalyzerLMS.h"
+//#include "AliCaloRawAnalyzerLMS.h"
+#include "AliCaloRawAnalyzerKStandard.h"
 #include "AliCaloRawAnalyzerPeakFinder.h"
 #include "AliCaloRawAnalyzerCrude.h"
 
@@ -110,7 +111,7 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(fitAlgorithm fitAlgo) :
   
   //fRawAnalyzerTRU = new AliCaloRawAnalyzerLMS();
   
-  fRawAnalyzerTRU =  ( AliCaloRawAnalyzerLMS*)AliCaloRawAnalyzerFactory::CreateAnalyzer(kLMS);
+  fRawAnalyzerTRU =  ( AliCaloRawAnalyzerKStandard*)AliCaloRawAnalyzerFactory::CreateAnalyzer(kLMS);
   
   fRawAnalyzerTRU->SetFixTau(kTRUE); 
   fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
@@ -154,7 +155,7 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qad
   SetFittingAlgorithm(qadm.GetFittingAlgorithm());
   
   //fRawAnalyzerTRU = new AliCaloRawAnalyzerLMS();
-  fRawAnalyzerTRU = (AliCaloRawAnalyzerLMS*)AliCaloRawAnalyzerFactory::CreateAnalyzer(kLMS);
+  fRawAnalyzerTRU = (AliCaloRawAnalyzerKStandard*)AliCaloRawAnalyzerFactory::CreateAnalyzer(kLMS);
   fRawAnalyzerTRU->SetFixTau(kTRUE); 
   fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
 //  for (Int_t sm = 0 ; sm < fSuperModules ; sm++){
