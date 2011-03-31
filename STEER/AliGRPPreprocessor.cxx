@@ -2334,9 +2334,9 @@ Float_t AliGRPPreprocessor::ProcessUInt(const TObjArray* array)
 			arrayWeights[i-ientrySOR] = (Double_t)(timestamp2 - (Int_t)v->GetTimeStamp());
 			arrayValues[i-ientrySOR] = (Float_t)v->GetUInt();
 		}
+		aDCSArrayMean = TMath::Mean(iCountsRun,arrayValues,arrayWeights);
 		delete [] arrayValues;
 		delete [] arrayWeights;
-		aDCSArrayMean = TMath::Mean(iCountsRun,arrayValues,arrayWeights);
 	}
 	else if (iCountsRun == 1){
 		AliDCSValue* v = (AliDCSValue *)array->At(ientrySOR);
