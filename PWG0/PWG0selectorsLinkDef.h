@@ -8,7 +8,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliHighMultiplicitySelector+;
 #pragma link C++ class AliMultiplicityTask+;
 #pragma link C++ class AliCutTask+;
 #pragma link C++ class AliTriggerTask+;

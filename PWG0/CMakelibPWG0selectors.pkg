@@ -25,7 +25,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  dNdEta/AlidNdEtaTask.cxx dNdEta/AlidNdEtaCorrectionTask.cxx highMultiplicity/AliHighMultiplicitySelector.cxx multiplicity/AliMultiplicityTask.cxx esdTrackCuts/AliCutTask.cxx trigger/AliTriggerTask.cxx eventStats/AliEventStatsTask.cxx)
+set ( SRCS  dNdEta/AlidNdEtaTask.cxx dNdEta/AlidNdEtaCorrectionTask.cxx multiplicity/AliMultiplicityTask.cxx esdTrackCuts/AliCutTask.cxx trigger/AliTriggerTask.cxx eventStats/AliEventStatsTask.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
