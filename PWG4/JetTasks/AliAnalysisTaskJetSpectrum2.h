@@ -73,6 +73,14 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
     virtual void SetEventSelectionMask(UInt_t i){fEventSelectionMask = i;}
     virtual void SetPhiWeights(TH3F *phiw){fh3PhiWeights = phiw;}
+    virtual void SetFlatteningCoeff(Float_t *fA,Float_t *fB){
+      fFlatA[0] = fA[0];fFlatA[1] = fA[1];
+      fFlatA[0] = fB[0];fFlatB[1] = fB[1];
+    }
+    virtual void SetDeltaQxy(Float_t *fD){
+      fDeltaQxy[0] = fD[0];
+      fDeltaQxy[1] = fD[1];
+    }
     virtual void SetNonStdFile(char* c){fNonStdFile = c;} 
 
 
@@ -128,7 +136,6 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
     THnSparseF   *fhnJetContainer[kMaxStep*2];   //! like particle container in corrfw with different steps need AliCFContainer with Scale(), and clone() to do the same
     THnSparseF   *fhnCorrelation;           //! response matrix for unfolding 
-    THnSparseF   *fhnCorrelationPhiZRec;       //! response matrix for unfolding in max Z rec bins
 
     TF1          *f1PtScale;                //! correction function to correct to the average true jet energy depending on p_T,rec
 
@@ -165,6 +172,9 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Float_t       fDeltaPhiWindow;        // minium angle between dijets
     Float_t       fCentrality;            // ! centrality
     Float_t       fRPAngle;               // ! RP angle of the reaction plane
+    Float_t       fFlatA[2];              // flattening for RP
+    Float_t       fFlatB[2];              // flattening for RP
+    Float_t       fDeltaQxy[2];           // centering of QX QY
     Int_t         fMultRec;               // ! reconstructed track multiplicity
     Int_t         fMultGen;               // ! generated track multiplicity
     
