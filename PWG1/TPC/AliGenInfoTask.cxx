@@ -327,6 +327,7 @@ void AliGenInfoTask::ProcessESDInfo(){
   //
   //
   //
+  if (!fESD) return;
   static AliTPCParamSR param;
   fESDfriend=static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
   if (!fESDfriend) {
@@ -336,7 +337,6 @@ void AliGenInfoTask::ProcessESDInfo(){
   fESD->SetESDfriend(fESDfriend);
   //
   //
-  if (!fESD) return;
   Int_t ntracks = fESD->GetNumberOfTracks();
   for (Int_t itrack=0; itrack<ntracks; itrack++){
     AliESDtrack *track = fESD->GetTrack(itrack);
