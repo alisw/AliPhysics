@@ -629,7 +629,7 @@ void AliMUONTrackerQADataMakerRec::FillReadoutStatus(AliMUONLogger& log, AliMUON
     {
       Int_t dsp(-1),iddl(-1),ecode(-1);
       
-      sscanf(msg.Data(),"Lost token error detected with address 0x%X of DDL %d and code %d.",
+      sscanf(msg.Data(),"Lost token error detected with address 0x%10X of DDL %10d and code %10d.",
              &dsp,&iddl,&ecode);
       Int_t localBP = ((dsp >> 16)- 4)*5 + 1;
       Int_t buspatch = localBP + iddl*100;
