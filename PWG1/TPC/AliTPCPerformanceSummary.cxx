@@ -214,6 +214,8 @@ Int_t AliTPCPerformanceSummary::ProduceTrends(const Char_t* infilelist, const Ch
     if (!outfile) return -1;
      
     TChain* chain = new TChain("tpcQA");
+    if(!chain) return -1;
+
     ifstream in;
     in.open(infilelist);
 
@@ -227,11 +229,14 @@ Int_t AliTPCPerformanceSummary::ProduceTrends(const Char_t* infilelist, const Ch
     in.close();
     //TTree *tree = chain;
     TTree *tree = chain->CopyTree("1");
+    if(!tree) return -1;
     if (chain) { delete chain; chain=0; }
     //TGraph* graph = dynamic_cast<TGraph*>(tree->DrawClone("run:run"));
     //TGraph *graph = (TGraph*)gPad->GetPrimitive("Graph");
     
     TFile* out = new TFile(outfile,"RECREATE");
+    if(!out) return -1;
+
     out->cd();
     const Char_t* condition = "meanTPCncl>0";
     SaveGraph(tree,"meanTPCnclF","run",condition);
@@ -433,6 +438,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TT
     
     if (pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_3_5_7")) {    
         his3D = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_3_5_7"));
+        if(!his3D) return 8;
         his3D->GetYaxis()->SetRangeUser(-1,1);
         his3D->GetZaxis()->SetRangeUser(0.25,10);
     }
@@ -444,7 +450,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TT
     } else {    
         his2D = pTPC->GetTPCTrackHisto()->Projection(3,5);
     }            
-  
+    if(!his2D) return 8;
 
     
     his2D->FitSlicesY(0,0,-1,10,"QNR",&arrayFit);
@@ -522,6 +528,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiPos(const AliPerformanceTPC* pTPC,
     
     if (pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_7")) {    
         his3D = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_7"));
+        if(!his3D) return 16;
         his3D->GetYaxis()->SetRangeUser(-1,1);
         his3D->GetZaxis()->SetRangeUser(0.25,10);
     }
@@ -535,6 +542,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiPos(const AliPerformanceTPC* pTPC,
         his2D = pTPC->GetTPCTrackHisto()->Projection(3,5);
         pTPC->GetTPCTrackHisto()->GetAxis(8)->SetRangeUser(-1.5,1.5);
     }            
+    if(!his2D) return 16;
     
     his2D->FitSlicesY(0,0,-1,10,"QNR",&arrayFit);
     delete his2D;    
@@ -610,6 +618,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiNeg(const AliPerformanceTPC* pTPC,
     
     if (pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_3_5_7")) {    
         his3D = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_3_5_7"));
+	if(!his3D) return 32;
         his3D->GetYaxis()->SetRangeUser(-1,1);
         his3D->GetZaxis()->SetRangeUser(0.25,10);
     }
@@ -623,6 +632,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiNeg(const AliPerformanceTPC* pTPC,
         his2D = pTPC->GetTPCTrackHisto()->Projection(3,5);
         pTPC->GetTPCTrackHisto()->GetAxis(8)->SetRangeUser(-1.5,1.5);
     }            
+    if(!his2D) return 32;
+
     his2D->FitSlicesY(0,0,-1,10,"QNR",&arrayFit);
     delete his2D;    
     his1D = (TH1*) arrayFit.At(1);
@@ -709,16 +720,19 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     
     if (pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_0_5_7")) {    
         his3D0 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_0_5_7"));
+        if(!his3D0) return 1;
         his3D0->GetYaxis()->SetRangeUser(-1,1);
         his3D0->GetZaxis()->SetRangeUser(0.25,10);
     }
     if (pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_1_5_7")) {    
         his3D1 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_1_5_7"));
+        if(!his3D1) return 1;
         his3D1->GetYaxis()->SetRangeUser(-1,1);
         his3D1->GetZaxis()->SetRangeUser(0.25,10);
     }
     if (pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_2_5_7")) {    
         his3D2 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_2_5_7"));
+        if(!his3D2) return 1;
         his3D2->GetYaxis()->SetRangeUser(-1,1);
         his3D2->GetZaxis()->SetRangeUser(0.25,10);
         his3D2->GetXaxis()->SetRangeUser(0.4,1.1);        
@@ -750,6 +764,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     } else {
         hprof = pTPC->GetTPCTrackHisto()->Projection(0,5)->ProfileX();
     }
+    if(!hprof) return 1;
     
     hprof->Fit(fpol1,"QNR","QNR",0.1,0.8);
     slopeATPCncl= fpol1->GetParameter(1);
@@ -780,6 +795,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
         pTPC->GetTPCTrackHisto()->GetAxis(2)->SetRangeUser(0.4,1.1);
         his1D = pTPC->GetTPCTrackHisto()->Projection(2,5)->ProfileX();
     }      
+    if(!his1D) return 1;
     
     his1D->Fit(fpol1,"QNR","QNR",0.1,0.8);
     slopeATPCnclF= fpol1->GetParameter(1);
@@ -853,14 +869,17 @@ Int_t AliTPCPerformanceSummary::AnalyzeDrift(const AliPerformanceTPC* pTPC, TTre
     
    if (pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_4_5_7")) {    
         his3D = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_4_5_7"));
+        if(!his3D) return 2;
         his3D->GetYaxis()->SetRangeUser(-1,1);
         his3D->GetZaxis()->SetRangeUser(0.25,10);
-    }
+   }
+
    if (his3D && !fgForceTHnSparse) { 
         his2D = dynamic_cast<TH2*>(his3D->Project3D("xy")); 
     } else {    
         his2D = pTPC->GetTPCTrackHisto()->Projection(4,5);
     }        
+    if(!his2D) return 2;
     
     static TF1 *fpol1 = new TF1("fpol1","pol1");
     TObjArray arrayFit;
@@ -939,14 +958,17 @@ Int_t AliTPCPerformanceSummary::AnalyzeDriftPos(const AliPerformanceTPC* pTPC, T
     
    if (pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_4_5_7")) {    
         his3D = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_4_5_7"));
+        if(!his3D) return 64;
         his3D->GetYaxis()->SetRangeUser(-1,1);
         his3D->GetZaxis()->SetRangeUser(0.25,10);
-    }
+    } 
+
     if (his3D && !fgForceTHnSparse) { 
         his2D = dynamic_cast<TH2*>(his3D->Project3D("xy")); 
     } else {    
         his2D = pTPC->GetTPCTrackHisto()->Projection(4,5);
     }            
+    if(!his2D) return 64;
     
     static TF1 *fpol1 = new TF1("fpol1","pol1");
     TObjArray arrayFit;
@@ -1027,6 +1049,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDriftNeg(const AliPerformanceTPC* pTPC, T
     
    if (pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_4_5_7")) {    
         his3D = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_4_5_7"));
+        if(!his3D) return 128;
         his3D->GetYaxis()->SetRangeUser(-1,1);
         his3D->GetZaxis()->SetRangeUser(0.25,10);
     }
@@ -1035,6 +1058,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDriftNeg(const AliPerformanceTPC* pTPC, T
     } else {    
         his2D = pTPC->GetTPCTrackHisto()->Projection(4,5);
     }                
+    if(!his2D) return 128;
     
     static TF1 *fpol1 = new TF1("fpol1","pol1");
     TObjArray arrayFit;
@@ -1125,6 +1149,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     } else {
        his1D =  pTPCgain->GetDeDxHisto()->Projection(0);
     }
+    if(!his1D) return 4;
     his1D->Fit(&gausFit,"QN","QN");
 
     meanMIP = gausFit.GetParameter(1);
@@ -1140,6 +1165,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     } else {
         his2D =  pTPCgain->GetDeDxHisto()->Projection(0,5);
     }        
+    if(!his2D) return 4;
+
     TF1 * fpol = new TF1("fpol","pol1");
     TObjArray arrayFit;
     his2D->FitSlicesY(0,0,-1,10,"QN",&arrayFit);    
@@ -1155,6 +1182,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     } else {
         his2D =  pTPCgain->GetDeDxHisto()->Projection(0,5);
     }         
+    if(!his2D) return 4;
+
     TF1 * fpolA = new TF1("fpolA","pol1");
     TObjArray arrayFitA;
     his2D->FitSlicesY(0,0,-1,10,"QN",&arrayFit);    
@@ -1172,6 +1201,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     } else {
         his2D =  pTPCgain->GetDeDxHisto()->Projection(0,1);
     }
+    if(!his2D) return 4;
+
     for(Int_t i = 0; i < 18; i++) { // loop over sectors; correct mapping to be checked!
         //TH1* his1D=0;
         Float_t phiLow = -TMath::Pi() + i*(20./360.)*(2*TMath::Pi());
@@ -1194,6 +1225,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     } else {
         his2D =  pTPCgain->GetDeDxHisto()->Projection(0,1);
     }    
+    if(!his2D) return 4; 
+
     for(Int_t i = 0; i < 18; i++) { // loop over sectors; correct mapping to be checked!
         //TH1* his1D=0;
         Float_t phiLow = -TMath::Pi() + i*(20./360.)*(2*TMath::Pi());
@@ -1261,6 +1294,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     } else {
        his1D = pTPC->GetTPCEventHisto()->Projection(6);
     }
+    if(!his1D) return 1;
+
     vertAll = his1D->GetEntries();
     vertOK  = his1D->GetBinContent(2);
     if (vertAll>=1) {
@@ -1276,6 +1311,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     } else {
        his1D = pTPC->GetTPCEventHisto()->Projection(0);
     }
+    if(!his1D) return 1;
+
     meanVertX = his1D->GetMean();    
     rmsVertX    = his1D->GetRMS();
     delete his1D;
@@ -1288,6 +1325,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     } else {
        his1D = pTPC->GetTPCEventHisto()->Projection(1);
     }
+    if(!his1D) return 1;
+
     meanVertY = his1D->GetMean();
     rmsVertY    = his1D->GetRMS();
     delete his1D;
@@ -1298,6 +1337,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     } else {
        his1D = pTPC->GetTPCEventHisto()->Projection(2);
     }    meanVertZ = his1D->GetMean();
+    if(!his1D) return 1;
+
     rmsVertZ    = his1D->GetRMS();
     delete his1D;
     
@@ -1307,6 +1348,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     } else {
        his1D = pTPC->GetTPCEventHisto()->Projection(3);
     }
+    if(!his1D) return 1;
+
     meanMult    = his1D->GetMean();
     rmsMult     = his1D->GetRMS();
     delete his1D;
@@ -1317,6 +1360,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     } else {
        his1D = pTPC->GetTPCEventHisto()->Projection(4);
     }
+    if(!his1D) return 1;
+
     meanMultPos    = his1D->GetMean();
     rmsMultPos     = his1D->GetRMS();
     delete his1D;
@@ -1326,6 +1371,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     } else {
        his1D = pTPC->GetTPCEventHisto()->Projection(5);
     }
+    if(!his1D) return 1;
+
     meanMultNeg    = his1D->GetMean();
     rmsMultNeg     = his1D->GetRMS();
     delete his1D;
@@ -1383,6 +1430,7 @@ Int_t AliTPCPerformanceSummary::AnalyzePt(const AliPerformanceTPC* pTPC, TTreeSR
     if (pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_7")) {    
 
       his3D1 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_7"));
+      if(!his3D1) return 256;
 	
       his3D1->GetYaxis()->SetRangeUser(0.1,0.8);
       
@@ -1410,6 +1458,7 @@ Int_t AliTPCPerformanceSummary::AnalyzePt(const AliPerformanceTPC* pTPC, TTreeSR
     if (pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_3_5_7")) {    
 
       his3D2 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_3_5_7"));
+      if(!his3D2) return 256;
 	
       his3D2->GetYaxis()->SetRangeUser(0.1,0.8);
 
@@ -1484,6 +1533,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeChargeOverPt(const AliPerformanceTPC* pTP
     if (pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_5_8")) {
 
       his2D = dynamic_cast<TH2*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_5_8"));
+      if(!his2D) return 512;
 
       his1D1 = his2D->ProjectionX();
       his1D1->Fit(fp1,"R");
