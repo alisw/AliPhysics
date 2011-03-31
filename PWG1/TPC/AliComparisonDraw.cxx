@@ -490,7 +490,7 @@ TGraph2D * AliComparisonDraw::MakeStat2D(TH3 * his, Int_t delta0, Int_t delta1, 
     for (Int_t iy=0; iy<nbiny;iy++){
       Float_t xcenter = xaxis->GetBinCenter(ix); 
       Float_t ycenter = yaxis->GetBinCenter(iy); 
-      sprintf(name,"%s_%d_%d",his->GetName(), ix,iy);
+      snprintf(name,1000,"%s_%d_%d",his->GetName(), ix,iy);
       TH1 *projection = his->ProjectionZ(name,ix-delta0,ix+delta0,iy-delta1,iy+delta1);
       Float_t stat= 0;
       if (type==0) stat = projection->GetMean();
@@ -532,7 +532,7 @@ TGraph * AliComparisonDraw::MakeStat1D(TH3 * his, Int_t delta1, Int_t type){
   for (Int_t ix=0; ix<nbinx;ix++){
     Float_t xcenter = xaxis->GetBinCenter(ix); 
     //    Float_t ycenter = yaxis->GetBinCenter(iy); 
-    sprintf(name,"%s_%d",his->GetName(), ix);
+    snprintf(name,1000,"%s_%d",his->GetName(), ix);
     TH1 *projection = his->ProjectionZ(name,ix-delta1,ix+delta1,0,nbiny);
     Float_t stat= 0;
     if (type==0) stat = projection->GetMean();

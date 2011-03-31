@@ -101,7 +101,8 @@ AliGenInfoMaker::AliGenInfoMaker():
   fTRDPtCut(0.1),              //  TRD pt cut
   fTOFPtCut(0.1)               //  TOF pt cut
 {    
-  sprintf(fFnRes,"%s","genTracks.root");
+  snprintf(fFnRes,1000,"%s","genTracks.root");
+  for(Int_t i=0; i<3; i++) { fVPrim[i] = 0; };  
 }
 
 
@@ -138,10 +139,11 @@ AliGenInfoMaker::AliGenInfoMaker(const char * fnGalice, const char* fnRes,
   //
   // 
   //
+  for(Int_t i=0; i<3; i++) { fVPrim[i] = 0; };  
   fFirstEventNr = firstEvent;
   fEventNr = firstEvent;
   fNEvents = nEvents;
-  sprintf(fFnRes,"%s",fnRes);
+  snprintf(fFnRes,1000,"%s",fnRes);
   //
   //
   //
@@ -431,7 +433,7 @@ Int_t AliGenInfoMaker::TreeKLoop()
 	<<fEventNr<<endl;
   }  
   Int_t  ipdg = 0;
-  TParticlePDG *ppdg = 0;
+  //TParticlePDG *ppdg = 0;
   // not all generators give primary vertex position. Take the vertex
   // of the particle 0 as primary vertex.
   TDatabasePDG  pdg; //get pdg table  
@@ -458,7 +460,7 @@ Int_t AliGenInfoMaker::TreeKLoop()
     //
     ipdg = info->fParticle.GetPdgCode();
     info->fPdg = ipdg;
-    ppdg = pdg.GetParticle(ipdg);   	   
+    //ppdg = pdg.GetParticle(ipdg);   	   
     info->fEventNr = fEventNr;
     info->Update();
     if (fGenTracksArray){
