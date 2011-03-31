@@ -7,75 +7,75 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-// Define the range for eta subevents (for SP method)
-Double_t minA = -0.9;
-Double_t maxA = -0.5;
-Double_t minB = 0.5;
-Double_t maxB = 0.9;
-
-// AFTERBURNER
-Bool_t useAfterBurner=kFALSE;
-Double_t v1=0.0;
-Double_t v2=0.0;
-Double_t v3=0.0;
-Double_t v4=0.0;
-Int_t numberOfTrackClones=0; //non-flow
-
-// Define a range of the detector to exclude
-Bool_t ExcludeRegion = kFALSE;
-Double_t excludeEtaMin = -0.;
-Double_t excludeEtaMax = 0.;
-Double_t excludePhiMin = 0.;
-Double_t excludePhiMax = 0.;
-
-// use physics selection class
-Bool_t  UsePhysicsSelection = kTRUE;
-
-// separate QA task
-Bool_t runQAtask=kFALSE;
-Bool_t FillQAntuple=kFALSE;
-Bool_t DoQAcorrelations=kFALSE;
-
-// RUN SETTINGS
-// Flow analysis method can be:(set to kTRUE or kFALSE)
-Bool_t MCEP     = kTRUE;  // correlation with Monte Carlo reaction plane
-Bool_t SP       = kTRUE;  // scalar product method (similar to eventplane method)
-Bool_t GFC      = kTRUE;  // cumulants based on generating function
-Bool_t QC       = kTRUE;  // cumulants using Q vectors
-Bool_t FQD      = kTRUE;  // fit of the distribution of the Q vector (only integrated v)
-Bool_t LYZ1SUM  = kTRUE;  // Lee Yang Zeroes using sum generating function (integrated v)
-Bool_t LYZ1PROD = kFALSE;  // Lee Yang Zeroes using product generating function (integrated v)
-Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (second pass differential v)
-Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
-Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
-Bool_t MH       = kFALSE;  // azimuthal correlators in mixed harmonics  
-Bool_t NL       = kFALSE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
-
-Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
-
-// Boolean to use/not use weights for the Q vector
-Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
-
-// SETTING THE CUTS
-
-//---------Data selection----------
-//kMC, kGlobal, kTPCstandalone, kSPDtracklet, kPMD
-AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kGlobal;
-AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kGlobal;
-
-//---------Parameter mixing--------
-//kPure - no mixing, kTrackWithMCkine, kTrackWithMCPID, kTrackWithMCpt
-AliFlowTrackCuts::trackParameterMix rpmix = AliFlowTrackCuts::kPure;
-AliFlowTrackCuts::trackParameterMix poimix = AliFlowTrackCuts::kPure;
-
-
-const char* rptypestr = AliFlowTrackCuts::GetParamTypeName(rptype);
-const char* poitypestr = AliFlowTrackCuts::GetParamTypeName(poitype);
-
 void AddTaskFlowCentrality( Float_t centrMin=0.,
                             Float_t centrMax=100.,
                             TString fileNameBase="AnalysisResults" )
 {
+  // Define the range for eta subevents (for SP method)
+  Double_t minA = -0.9;
+  Double_t maxA = -0.5;
+  Double_t minB = 0.5;
+  Double_t maxB = 0.9;
+
+  // AFTERBURNER
+  Bool_t useAfterBurner=kFALSE;
+  Double_t v1=0.0;
+  Double_t v2=0.0;
+  Double_t v3=0.0;
+  Double_t v4=0.0;
+  Int_t numberOfTrackClones=0; //non-flow
+
+  // Define a range of the detector to exclude
+  Bool_t ExcludeRegion = kFALSE;
+  Double_t excludeEtaMin = -0.;
+  Double_t excludeEtaMax = 0.;
+  Double_t excludePhiMin = 0.;
+  Double_t excludePhiMax = 0.;
+
+  // use physics selection class
+  Bool_t  UsePhysicsSelection = kTRUE;
+
+  // separate QA task
+  Bool_t runQAtask=kFALSE;
+  Bool_t FillQAntuple=kFALSE;
+  Bool_t DoQAcorrelations=kFALSE;
+
+  // RUN SETTINGS
+  // Flow analysis method can be:(set to kTRUE or kFALSE)
+  Bool_t MCEP     = kTRUE;  // correlation with Monte Carlo reaction plane
+  Bool_t SP       = kTRUE;  // scalar product method (similar to eventplane method)
+  Bool_t GFC      = kTRUE;  // cumulants based on generating function
+  Bool_t QC       = kTRUE;  // cumulants using Q vectors
+  Bool_t FQD      = kTRUE;  // fit of the distribution of the Q vector (only integrated v)
+  Bool_t LYZ1SUM  = kTRUE;  // Lee Yang Zeroes using sum generating function (integrated v)
+  Bool_t LYZ1PROD = kFALSE;  // Lee Yang Zeroes using product generating function (integrated v)
+  Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (second pass differential v)
+  Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
+  Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
+  Bool_t MH       = kFALSE;  // azimuthal correlators in mixed harmonics  
+  Bool_t NL       = kFALSE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
+
+  Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
+
+  // Boolean to use/not use weights for the Q vector
+  Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
+
+  // SETTING THE CUTS
+
+  //---------Data selection----------
+  //kMC, kGlobal, kTPCstandalone, kSPDtracklet, kPMD
+  AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kGlobal;
+  AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kGlobal;
+
+  //---------Parameter mixing--------
+  //kPure - no mixing, kTrackWithMCkine, kTrackWithMCPID, kTrackWithMCpt
+  AliFlowTrackCuts::trackParameterMix rpmix = AliFlowTrackCuts::kPure;
+  AliFlowTrackCuts::trackParameterMix poimix = AliFlowTrackCuts::kPure;
+
+
+  const char* rptypestr = AliFlowTrackCuts::GetParamTypeName(rptype);
+  const char* poitypestr = AliFlowTrackCuts::GetParamTypeName(poitype);
+
   TString fileName(fileNameBase);
   fileName.Append(".root");
   //===========================================================================
