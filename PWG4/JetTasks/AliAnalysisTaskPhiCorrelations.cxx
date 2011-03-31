@@ -215,6 +215,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
     zvtxbin[iz] = zMin + iz*zVtxBinWidth;
   
   fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
+  
+  delete[] zvtxbin;
 }
 
 //____________________________________________________________________
