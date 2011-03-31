@@ -134,9 +134,7 @@ void
       Int_t timebin = firstTimeBin + i;    
       gSig->SetPoint(i, timebin, GetReversed(timebin)); 
     }
-      
   
-  //  TF1 * signalF = new TF1("signal", RawResponseFunction, 0, TIMEBINS , 5);
   TF1 * signalF = new TF1("signal", AliEMCALRawResponse::RawResponseFunction, 0, TIMEBINS , 5);
   
   signalF->SetParameters(10.,5., TAU  ,ORDER,0.); //set all defaults once, just to be safe
@@ -168,89 +166,3 @@ void
 }
 
 
-//__________________________________________________________________
-void 
-AliCaloRawAnalyzerKStandard::FitParabola(const TGraph *gSig, Float_t & amp) const 
-{
-  //BEG YS alternative methods to calculate the amplitude
-  Double_t * ymx = gSig->GetX() ; 
-  Double_t * ymy = gSig->GetY() ; 
-  const Int_t kN = 3 ; 
-  Double_t ymMaxX[kN] = {0., 0., 0.} ; 
-  Double_t ymMaxY[kN] = {0., 0., 0.} ; 
-  Double_t ymax = 0. ; 
-  // find the maximum amplitude
-  Int_t ymiMax = 0 ;  
-  for (Int_t ymi = 0; ymi < gSig->GetN(); ymi++) {
-    if (ymy[ymi] > ymMaxY[0] ) {
-      ymMaxY[0] = ymy[ymi] ; //<========== This is the maximum amplitude
-      ymMaxX[0] = ymx[ymi] ;
-      ymiMax = ymi ; 
-    }
-  }
-  // find the maximum by fitting a parabola through the max and the two adjacent samples
-  if ( ymiMax < gSig->GetN()-1 && ymiMax > 0) {
-    ymMaxY[1] = ymy[ymiMax+1] ;
-    ymMaxY[2] = ymy[ymiMax-1] ; 
-    ymMaxX[1] = ymx[ymiMax+1] ;
-    ymMaxX[2] = ymx[ymiMax-1] ; 
-    if (ymMaxY[0]*ymMaxY[1]*ymMaxY[2] > 0) {
-      //fit a parabola through the 3 points y= a+bx+x*x*x
-      Double_t sy = 0 ; 
-      Double_t sx = 0 ; 
-      Double_t sx2 = 0 ; 
-      Double_t sx3 = 0 ; 
-      Double_t sx4 = 0 ; 
-      Double_t sxy = 0 ; 
-      Double_t sx2y = 0 ; 
-      for (Int_t i = 0; i < kN ; i++) {
-        sy += ymMaxY[i] ; 
-        sx += ymMaxX[i] ; 		
-        sx2 += ymMaxX[i]*ymMaxX[i] ; 
-        sx3 += ymMaxX[i]*ymMaxX[i]*ymMaxX[i] ; 
-        sx4 += ymMaxX[i]*ymMaxX[i]*ymMaxX[i]*ymMaxX[i] ; 
-        sxy += ymMaxX[i]*ymMaxY[i] ; 
-        sx2y += ymMaxX[i]*ymMaxX[i]*ymMaxY[i] ; 
-      }
-      Double_t cN = (sx2y*kN-sy*sx2)*(sx3*sx-sx2*sx2)-(sx2y*sx-sxy*sx2)*(sx3*kN-sx*sx2); 
-      Double_t cD = (sx4*kN-sx2*sx2)*(sx3*sx-sx2*sx2)-(sx4*sx-sx3*sx2)*(sx3*kN-sx*sx2) ;
-      Double_t c  = cN / cD ; 
-      Double_t b  = ((sx2y*kN-sy*sx2)-c*(sx4*kN-sx2*sx2))/(sx3*kN-sx*sx2) ;
-      Double_t a  = (sy-b*sx-c*sx2)/kN  ;
-      Double_t xmax = -b/(2*c) ; 
-      ymax = a + b*xmax + c*xmax*xmax ;//<========== This is the maximum amplitude
-      amp = ymax;
-    }
-  }
-  
-  Double_t diff = TMath::Abs(1-ymMaxY[0]/amp) ; 
-  if (diff > 0.1) 
-    {
-      amp = ymMaxY[0] ; 
-    }
-
-  return;
-}
-
-
-//__________________________________________________________________
-
-/*
-Double_t 
-AliCaloRawAnalyzerKStandard::RawResponseFunction(const Double_t *x, const Double_t *par)
-{
-  // Comment
-  Double_t signal = 0.;
-  Double_t tau    = par[2];
-  Double_t n      = par[3];
-  Double_t ped    = par[4];
-  Double_t xx     = ( x[0] - par[1] + tau ) / tau ;
-
-  if (xx <= 0) 
-    signal = ped ;  
-  else {  
-    signal = ped + par[0] * TMath::Power(xx , n) * TMath::Exp(n * (1 - xx )) ; 
-  }
-  return signal ;  
-}
-*/
