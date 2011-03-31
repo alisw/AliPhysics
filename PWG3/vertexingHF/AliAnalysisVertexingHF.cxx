@@ -446,7 +446,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   // LOOP ON  POSITIVE  TRACKS
   for(iTrkP1=0; iTrkP1<nSeleTrks; iTrkP1++) {
 
-    if(iTrkP1%1==0) AliDebug(1,Form("  1st loop on pos: track number %d of %d",iTrkP1,nSeleTrks));  
+    //if(iTrkP1%1==0) AliDebug(1,Form("  1st loop on pos: track number %d of %d",iTrkP1,nSeleTrks));  
     //if(iTrkP1%1==0) printf("  1st loop on pos: track number %d of %d\n",iTrkP1,nSeleTrks);  
 
     // get track from tracks array
@@ -460,7 +460,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
       // loop on V0's
       for(iv0=0; iv0<nv0; iv0++){
 
-	AliDebug(1,Form("   loop on v0s for track number %d and v0 number %d",iTrkP1,iv0));	
+	//AliDebug(1,Form("   loop on v0s for track number %d and v0 number %d",iTrkP1,iv0));	
 
 	// Get the V0 
 	if(fInputAOD) {
@@ -581,7 +581,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	// Create and store the Cascade if passed the cuts
 	ioCascade = MakeCascade(twoTrackArrayCasc,event,vertexCasc,v0,dcaCasc,okCascades);
 	if(okCascades && ioCascade) {
-	  AliDebug(1,Form("Storing a cascade object... "));
+	  //AliDebug(1,Form("Storing a cascade object... "));
 	  // add the vertex and the cascade to the AOD
 	  AliAODVertex *vCasc = new(verticesHFRef[iVerticesHF++])AliAODVertex(*vertexCasc);
 	  rc = new(aodCascadesRef[iCascades++])AliAODRecoCascadeHF(*ioCascade);
@@ -617,7 +617,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
     // LOOP ON  NEGATIVE  TRACKS
     for(iTrkN1=0; iTrkN1<nSeleTrks; iTrkN1++) {
 
-      if(iTrkN1%1==0) AliDebug(1,Form("    1st loop on neg: track number %d of %d",iTrkN1,nSeleTrks));  
+      //if(iTrkN1%1==0) AliDebug(1,Form("    1st loop on neg: track number %d of %d",iTrkN1,nSeleTrks));  
       //if(iTrkN1%1==0) printf("    1st loop on neg: track number %d of %d\n",iTrkN1,nSeleTrks);  
 
       if(iTrkN1==iTrkP1) continue;
@@ -721,7 +721,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 		 evtNumber[iTrkP1]==evtNumber[iTrkN1]) continue;
 	    }
 
-	    if(iTrkSoftPi%1==0) AliDebug(1,Form("    1st loop on pi_s: track number %d of %d",iTrkSoftPi,nSeleTrks));  
+	    //if(iTrkSoftPi%1==0) AliDebug(1,Form("    1st loop on pi_s: track number %d of %d",iTrkSoftPi,nSeleTrks));  
 
 	    trackD0->PropagateToDCA(fV1,fBzkG,kVeryBig);
 	    if(trackD0->GetSigmaY2()<0. || trackD0->GetSigmaZ2()<0.) continue; // this is insipired by the AliITStrackV2::Invariant() checks
@@ -803,7 +803,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
 	if(iTrkP2==iTrkP1 || iTrkP2==iTrkN1) continue;
 
-	if(iTrkP2%1==0) AliDebug(1,Form("    2nd loop on pos: track number %d of %d",iTrkP2,nSeleTrks));  
+	//if(iTrkP2%1==0) AliDebug(1,Form("    2nd loop on pos: track number %d of %d",iTrkP2,nSeleTrks));  
 
 	// get track from tracks array
 	postrack2 = (AliESDtrack*)seleTrksArray.UncheckedAt(iTrkP2);
@@ -928,7 +928,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
 	    if(iTrkN2==iTrkP1 || iTrkN2==iTrkP2 || iTrkN2==iTrkN1) continue;
 
-	    if(iTrkN2%1==0) AliDebug(1,Form("    3rd loop on neg: track number %d of %d",iTrkN2,nSeleTrks));  
+	    //if(iTrkN2%1==0) AliDebug(1,Form("    3rd loop on neg: track number %d of %d",iTrkN2,nSeleTrks));  
 
 	    // get track from tracks array
 	    negtrack2 = (AliESDtrack*)seleTrksArray.UncheckedAt(iTrkN2);
@@ -1007,7 +1007,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
 	if(iTrkN2==iTrkP1 || iTrkN2==iTrkP2 || iTrkN2==iTrkN1) continue;
 
-	if(iTrkN2%1==0) AliDebug(1,Form("    2nd loop on neg: track number %d of %d",iTrkN2,nSeleTrks));  
+	//if(iTrkN2%1==0) AliDebug(1,Form("    2nd loop on neg: track number %d of %d",iTrkN2,nSeleTrks));  
 
 	// get track from tracks array
 	negtrack2 = (AliESDtrack*)seleTrksArray.UncheckedAt(iTrkN2);
@@ -1389,7 +1389,10 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   if(fCascades && fInputAOD){
     okCascades = (Bool_t)fCutsLctoV0->IsSelected(tmpCascade,AliRDHFCuts::kCandidate);
   }
-  else { AliDebug(2,Form("The cascade is contructed from ESDs, no cuts are applied")); okCascades=kTRUE; }// no cuts implemented from ESDs
+  else { 
+    //AliDebug(2,Form("The cascade is contructed from ESDs, no cuts are applied")); 
+    okCascades=kTRUE; 
+  }// no cuts implemented from ESDs
   tmpCascade->GetSecondaryVtx()->RemoveDaughters();
   tmpCascade->UnsetOwnPrimaryVtx(); 
   delete tmpCascade; tmpCascade=NULL;
@@ -1433,7 +1436,7 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   if(!okMassCut && fJPSItoEle) if(SelectInvMassAndPt(1,2,px,py,pz)) okMassCut=kTRUE;
   if(!okMassCut && fDstar)     if(SelectInvMassAndPt(3,2,px,py,pz)) okMassCut=kTRUE;
   if(!okMassCut) {
-    AliDebug(2," candidate didn't pass mass cut");
+    //AliDebug(2," candidate didn't pass mass cut");
     return 0x0;    
   }
   // primary vertex to be used by this candidate
@@ -1536,7 +1539,7 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   if(fMassCutBeforeVertexing) okMassCut=kTRUE; // mass cut already done and passed 
   if(!okMassCut && f3Prong) if(SelectInvMassAndPt(2,3,px,py,pz)) okMassCut=kTRUE;
   if(!okMassCut) {
-    AliDebug(2," candidate didn't pass mass cut");
+    //AliDebug(2," candidate didn't pass mass cut");
     return 0x0;    
   }
 
@@ -1810,7 +1813,7 @@ AliAODVertex* AliAnalysisVertexingHF::PrimaryVertex(const TObjArray *trkArray,
 
     if(!vertexESD) return vertexAOD;
     if(vertexESD->GetNContributors()<=0) { 
-      AliDebug(2,"vertexing failed"); 
+      //AliDebug(2,"vertexing failed"); 
       delete vertexESD; vertexESD=NULL;
       return vertexAOD;
     }
@@ -1901,7 +1904,7 @@ AliAODVertex* AliAnalysisVertexingHF::ReconstructSecondaryVertex(TObjArray *trkA
     if(!vertexESD) return vertexAOD;
 
     if(vertexESD->GetNContributors()!=trkArray->GetEntriesFast()) { 
-      AliDebug(2,"vertexing failed"); 
+      //AliDebug(2,"vertexing failed"); 
       delete vertexESD; vertexESD=NULL;
       return vertexAOD;
     }
