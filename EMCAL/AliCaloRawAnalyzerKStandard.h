@@ -23,7 +23,6 @@
 // Chi square fit
 
 #include "AliCaloRawAnalyzerFitter.h"
-//#include "AliCaloConstants.h"
 class  TGraph;
 
 class  AliCaloRawAnalyzerKStandard : public AliCaloRawAnalyzerFitter

@@ -118,7 +118,6 @@ AliCaloRawAnalyzerKStandard::Evaluate( const vector<AliCaloBunchInfo>  &bunchlis
 }
 
 	
-//____________________________________________________________________________ 
 void
  AliCaloRawAnalyzerKStandard::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time, Float_t & chi2, Bool_t & fitDone) const 
 { 
@@ -154,10 +153,11 @@ void
     chi2 = signalF->GetChisquare();
     fitDone = kTRUE;
   }
-  catch (const std::exception & e) {
-    AliError( Form("TGraph Fit exception %s", e.what()) ); 
-    // stay with default amp and time in case of exception, i.e. no special action required
-    fitDone = kFALSE;
+  catch (const std::exception & e) 
+    {
+      AliError( Form("TGraph Fit exception %s", e.what()) ); 
+      // stay with default amp and time in case of exception, i.e. no special action required
+      fitDone = kFALSE;
   }
 
   delete signalF;
