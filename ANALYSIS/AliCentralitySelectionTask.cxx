@@ -779,19 +779,20 @@ Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* const esd)
   AliInfo(Form("Setup Centrality Selection for run %d\n",fCurrentRun));
 
   // CHANGE HERE FOR RUN RANGES
-  if ( fCurrentRun <= 137165 ) fRunNo = 137161;
-  else fRunNo = 137366;
-  // CHANGE HERE FOR RUN RANGES
-
-  TString fileName;
-  TString fileName2;
-  if (fPass==1) {  
-  fileName=(Form("%s/COMMON/CENTRALITY/data/AliCentralityBy1D_%d.root", AliAnalysisManager::GetOADBPath(), fRunNo));
-  fileName2=(Form("%s/COMMON/CENTRALITY/data/AliCentralityByFunction_%d.root", AliAnalysisManager::GetOADBPath(), fRunNo));
-  } else if (fPass==2) {  
-  fileName=(Form("%s/COMMON/CENTRALITY/data/AliCentralityBy1D_%d.root", AliAnalysisManager::GetOADBPath(), fRunNo));
-  fileName2=(Form("%s/COMMON/CENTRALITY/data/AliCentralityByFunction_%d.root", AliAnalysisManager::GetOADBPath(), fRunNo));
-  }
+  switch (fPass) {
+    case 1:
+      if ( fCurrentRun <= 137165 ) fRunNo = 137161;
+      else fRunNo = 137366;
+      break;
+    case 2:
+      fRunNo = 139172;
+      break;       
+    default:
+      AliError(Form("Run %d not known to centrality selection!", fCurrentRun));
+      return -1;
+  }    
+  TString fileName =(Form("%s/COMMON/CENTRALITY/data/pass%d/AliCentralityBy1D_%d.root", AliAnalysisManager::GetOADBPath(), fPass, fRunNo));
+  TString fileName2=(Form("%s/COMMON/CENTRALITY/data/pass%d/AliCentralityByFunction_%d.root", AliAnalysisManager::GetOADBPath(), fPass, fRunNo));
   
   AliInfo(Form("Centrality Selection for run %d and pass %d is initialized with %s", fCurrentRun, fPass, fileName.Data()));
   ReadCentralityHistos(fileName.Data());
