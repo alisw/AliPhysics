@@ -263,7 +263,10 @@ Int_t AliOADBContainer::InitFromFile(char* fname, char* key)
 	AliError("Object not found in file \n");	
 	return 1;
     }
-    
+
+    SetName(cont->GetName());
+    SetTitle(cont->GetTitle());
+
     fEntries = cont->GetNumberOfEntries();
     fLowerLimits.Set(fEntries);
     fUpperLimits.Set(fEntries);
@@ -272,7 +275,7 @@ Int_t AliOADBContainer::InitFromFile(char* fname, char* key)
 	fUpperLimits[i] = cont->UpperLimit(i);
 	fArray->AddAt(cont->GetObjectByIndex(i), i);
     }
-
+    if (!fDefaultList) fDefaultList = new TList(); 
     TIter next(cont->GetDefaultList());
     TObject* obj;
     while((obj = next())) fDefaultList->Add(obj);
