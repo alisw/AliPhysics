@@ -40,7 +40,6 @@
 
 //
 #include "AliMCInfo.h"
-#include "AliComparisonObject.h"
 #include "AliESDRecInfo.h"
 #include "AliTPCParamSR.h"
 #include "AliTracker.h"

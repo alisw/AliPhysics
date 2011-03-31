@@ -57,7 +57,6 @@
 #include "AliESDRecInfo.h"
 #include "AliMCInfoCuts.h"
 #include "AliRecInfoCuts.h"
-#include "AliComparisonObject.h"
 #include "AliPerformanceObject.h"
 #include "AliTPCPerformanceSummary.h"
 #include "AliPerformanceTPC.h"
