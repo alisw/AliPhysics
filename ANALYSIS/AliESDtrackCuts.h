@@ -63,6 +63,7 @@ public:
   static AliESDtrackCuts* GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries=kTRUE, Int_t clusterCut=0);
   static AliESDtrackCuts* GetStandardITSSATrackCuts2009(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
   static AliESDtrackCuts* GetStandardITSSATrackCuts2010(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
+  static AliESDtrackCuts* GetStandardITSSATrackCutsPbPb2010(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
   static AliESDtrackCuts* GetStandardITSPureSATrackCuts2009(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
   static AliESDtrackCuts* GetStandardITSPureSATrackCuts2010(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
 
@@ -80,6 +81,7 @@ public:
   void SetClusterRequirementITS(Detector det, ITSClusterRequirement req = kOff) { fCutClusterRequirementITS[det] = req; }
   void SetMaxChi2PerClusterTPC(Float_t max=1e10) {fCutMaxChi2PerClusterTPC=max;}
   void SetMaxChi2PerClusterITS(Float_t max=1e10) {fCutMaxChi2PerClusterITS=max;}
+  void SetMaxNOfMissingITSPoints(Int_t max=6)    {fCutMaxMissingITSPoints=max;}
   void SetRequireTPCRefit(Bool_t b=kFALSE)       {fCutRequireTPCRefit=b;}
   void SetRequireTPCStandAlone(Bool_t b=kFALSE)  {fCutRequireTPCStandAlone=b;}
   void SetRequireITSRefit(Bool_t b=kFALSE)       {fCutRequireITSRefit=b;}
@@ -117,6 +119,7 @@ public:
   ITSClusterRequirement GetClusterRequirementITS(Detector det) const { return fCutClusterRequirementITS[det]; }
   Float_t GetMaxChi2PerClusterTPC()  const   { return fCutMaxChi2PerClusterTPC;}
   Float_t GetMaxChi2PerClusterITS()  const   { return fCutMaxChi2PerClusterITS;}
+  Int_t   GetMaxNOfMissingITSPoints() const   { return  fCutMaxMissingITSPoints;}
   Bool_t  GetRequireTPCRefit()       const   { return fCutRequireTPCRefit;}
   Bool_t  GetRequireTPCStandAlone()  const   { return fCutRequireTPCStandAlone;}
   Bool_t  GetRequireITSRefit()       const   { return fCutRequireITSRefit;}
@@ -170,7 +173,9 @@ public:
   // void SaveQualityCuts(Char_t* file)
   // void LoadQualityCuts(Char_t* file)
 
-	TH1F* GetDZNormalized(Int_t i) const { return fhDZNormalized[i]; }
+  TH1F* GetDZNormalized(Int_t i) const { return fhDZNormalized[i]; }
+  TH1F* GetNClustersTPC(Int_t i) const { return fhNClustersTPC[i]; }
+  TH1F* GetPtHist(Int_t i) const { return fhPt[i]; }
 
 protected:
   void Init(); // sets everything to 0
@@ -178,7 +183,7 @@ protected:
   Bool_t CheckPtDepDCA(TString dist,Bool_t print=kFALSE) const;
   void SetPtDepDCACuts(Double_t pt);
 
-  enum { kNCuts = 38 }; 
+  enum { kNCuts = 39 }; 
 
   //######################################################
   // esd track quality cuts
@@ -193,6 +198,7 @@ protected:
 
   Float_t fCutMaxChi2PerClusterTPC;   // max tpc fit chi2 per tpc cluster
   Float_t fCutMaxChi2PerClusterITS;   // max its fit chi2 per its cluster
+  Int_t   fCutMaxMissingITSPoints;    // max n. of missing ITS points
 
   Float_t fCutMaxC11;                 // max cov. matrix diag. elements (res. y^2)
   Float_t fCutMaxC22;                 // max cov. matrix diag. elements (res. z^2)
@@ -249,6 +255,7 @@ protected:
 
   TH1F* fhNClustersITS[2];            //->
   TH1F* fhNClustersTPC[2];            //->
+  TH1F* fhNSharedClustersTPC[2];      //->
   TH1F* fhNCrossedRowsTPC[2];         //->
   TH1F* fhRatioCrossedRowsOverFindableClustersTPC[2]; // ->
 
@@ -281,7 +288,7 @@ protected:
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
-  ClassDef(AliESDtrackCuts, 13)
+  ClassDef(AliESDtrackCuts, 14)
 };
 
 
