@@ -59,6 +59,7 @@ AliCaloRawAnalyzerFitter::~AliCaloRawAnalyzerFitter()
 void 
 AliCaloRawAnalyzerFitter::PrintFitResult(const TF1 *f) const
 {
+  //shutting up the rule checker
   cout << endl;
   cout << __FILE__ << __LINE__ << "Using this samplerange we get" << endl;
   cout << __FILE__ << __LINE__ << "AMPLITUDE = " << f->GetParameter(0)/fkEulerSquared << ",.. !!!!" << endl;
@@ -67,3 +68,9 @@ AliCaloRawAnalyzerFitter::PrintFitResult(const TF1 *f) const
   cout << endl << endl;
 }
 
+
+// Bool_t 
+// AliCaloRawAnalyzerFitter::GetFixTau() const 
+// { 
+//   return fFixTau; 
+// }; 

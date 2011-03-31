@@ -56,6 +56,7 @@ AliCaloRawAnalyzerKStandard::~AliCaloRawAnalyzerKStandard()
 AliCaloFitResults
 AliCaloRawAnalyzerKStandard::Evaluate( const vector<AliCaloBunchInfo>  &bunchlist, const UInt_t altrocfg1,  const UInt_t altrocfg2 )
 {
+  //Evaluation Amplitude and TOF
   Float_t pedEstimate  = 0;
   short maxADC = 0;
   Int_t first = 0;
@@ -228,8 +229,9 @@ AliCaloRawAnalyzerKStandard::FitParabola(const TGraph *gSig, Float_t & amp) cons
 
 //__________________________________________________________________
 Double_t 
-AliCaloRawAnalyzerKStandard::RawResponseFunction(Double_t *x, Double_t *par)
+AliCaloRawAnalyzerKStandard::RawResponseFunction(const Double_t *x, const Double_t *par)
 {
+  // Comment
   Double_t signal = 0.;
   Double_t tau    = par[2];
   Double_t n      = par[3];

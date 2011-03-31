@@ -28,20 +28,19 @@
 #include "TMath.h"
 using namespace std;
 
-//#include "AliCaloConstants.h"
-
 ClassImp(AliCaloRawAnalyzerCrude)  
 
 
 AliCaloRawAnalyzerCrude::AliCaloRawAnalyzerCrude() : AliCaloRawAnalyzer("Crude", "Crude")
 {
+  //Comment
   fAlgo=Algo::kCrude;
 }
 
 
 AliCaloRawAnalyzerCrude::~AliCaloRawAnalyzerCrude()
 {
-
+  //Comment
 }
 
 

@@ -21,21 +21,26 @@
 #include "AliCaloRawAnalyzerFactory.h"
 #include "AliCaloRawAnalyzerFastFit.h"
 #include "AliCaloRawAnalyzerNN.h"
-/// #include "AliCaloRawAnalyzerLMS.h"
 #include "AliCaloRawAnalyzerPeakFinder.h"
 #include "AliCaloRawAnalyzerCrude.h"
-//#include "AliCaloRawAnalyzerLMSOffline.h"
 #include "AliCaloRawAnalyzerKStandard.h"
 #include "AliCaloRawAnalyzerFakeALTRO.h"
 
+#include "stdlib.h"
+
+#include <iostream>
+
+using std::cout;
+using std::endl;
+
 AliCaloRawAnalyzerFactory::AliCaloRawAnalyzerFactory()
 {
-
+  // Shutting up the rule checker
 }
 
 AliCaloRawAnalyzerFactory::~AliCaloRawAnalyzerFactory()
 {
-
+  // Shutting up the rule checker
 }
 
 
@@ -51,19 +56,12 @@ AliCaloRawAnalyzerFactory::CreateAnalyzer( const int algo )
     case kNeuralNet:
       return new AliCaloRawAnalyzerNN();
       break;
-      //    case kLMS:
-      //     return new AliCaloRawAnalyzerLMS();
-      //    return new AliCaloRawAnalyzerLMSOffline();
-      //      break;
     case kPeakFinder:
       return new AliCaloRawAnalyzerPeakFinder();
       break;
     case kCrude:
       return  new AliCaloRawAnalyzerCrude();
       break;
-      //    case kLMSOffline:
-      //     return new AliCaloRawAnalyzerLMSOffline();
-      //     break;
     case kStandard:
       return new AliCaloRawAnalyzerKStandard();
       break;
@@ -72,6 +70,8 @@ AliCaloRawAnalyzerFactory::CreateAnalyzer( const int algo )
       break;
     default:
       return  new AliCaloRawAnalyzerCrude();
+      //  cout << __FILE__ << __LINE__ << " ERROR, invalid analyzer" << endl;
+      //exit(-99);
       break;
    }
 }

@@ -1,5 +1,5 @@
-#ifndef ALICALORAWANALYZERSTANDARD_H
-#define ALICALORAWANALYZERSTANDARD_H
+#ifndef ALICALORAWANALYZERKSTANDARD_H
+#define ALICALORAWANALYZERKSTANDARD_H
 /**************************************************************************
  * This file is property of and copyright by                              *
  * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
@@ -23,20 +23,17 @@
 // Chi square fit
 
 #include "AliCaloRawAnalyzerFitter.h"
-#include "AliCaloConstants.h"
+//#include "AliCaloConstants.h"
 class  TGraph;
 
 class  AliCaloRawAnalyzerKStandard : public AliCaloRawAnalyzerFitter
 {
-  friend class AliCaloRawAnalyzerFactory;
-
+  friend class AliCaloRawAnalyzerFactory; // Factory for creation of raw analyzer (= shutting up the rule checker )
   
-  
-
  public:
   virtual ~AliCaloRawAnalyzerKStandard();
   virtual AliCaloFitResults  Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
-  static Double_t RawResponseFunction(Double_t *x, Double_t *par); 
+  static Double_t RawResponseFunction(const Double_t *x, const Double_t *par); 
   void FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time, 
 	      Float_t & chi2, Bool_t & fitDone) const ;
  

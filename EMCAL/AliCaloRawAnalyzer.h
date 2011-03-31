@@ -22,28 +22,29 @@
 //Base class for extraction 
 //of signal amplitude and peak position
 //From CALO Calorimeter RAW data
+
 #include "Rtypes.h"
 #include "TObject.h"
-///#define MAXSAMPLES 1008 //CRAP PTH
 #include <vector>
+#include "TObjArray.h"
+#include "AliCaloFitResults.h"
 #include "AliCaloConstants.h"
 using namespace ALTRO;
 using namespace CALO;
 
 
 class AliCaloBunchInfo;
-#include "AliCaloFitResults.h"
+
 
 class  AliCaloRawAnalyzer : public TObject
 {
-  friend class AliCaloRawAnalyzerFactory; // Shutting up the rule checker
-
- public:
+public:
   AliCaloRawAnalyzer(const char *name="AliCaloRawAnalyzer", const char *nameshort="RawAna");
   virtual ~AliCaloRawAnalyzer();
+
   virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &/*bunchvector*/, 
-				      const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/ ) {return AliCaloFitResults( Ret::kInvalid , Ret::kInvalid);}
-  //enum fitAlgorithm {kCrude, kPeakFinder, kLMS, kFastFit, kNeuralNet, kNONE};
+  				      const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/ )  = 0;
+
   void PrintBunches( const std::vector<AliCaloBunchInfo> &bunchvector ) const;
   void PrintBunch( const AliCaloBunchInfo &bunch ) const ;
   
@@ -78,14 +79,9 @@ class  AliCaloRawAnalyzer : public TObject
 			 const Int_t first, const Int_t last,
 			 const Double_t adcErr=1, 
 			 const Double_t tau=2.35) const;
-
   void CalculateMeanAndRMS(const Int_t first, const Int_t last,
 			   Double_t & mean, Double_t & rms);
   void SetL1Phase(const Double_t phase) {fL1Phase = phase;};
-  
-  //protected:
-
-  //public: // PAI
   short Max( const AliCaloBunchInfo *const bunch, int *const maxindex) const;
   UShort_t Max(const UShort_t *data, const int length ) const;
   bool CheckBunchEdgesForMax( const AliCaloBunchInfo *const bunch) const;
@@ -94,15 +90,11 @@ class  AliCaloRawAnalyzer : public TObject
   int  SelectBunch( const std::vector<AliCaloBunchInfo> &bunchvector, short *const maxampbin, short *const maxamplitude );
   void SelectSubarray( const Double_t *date, const int length, const short maxindex, int *const  first, int *const last, const int cut) const;
   Float_t EvaluatePedestal(const UShort_t * const data, const int length ) const;
-  
   Float_t GetTau() const           { return fTau;};
   void SetTau( const Float_t tau ) { fTau =tau ;}; 
-  //Bool_t GetFixTau() const { return fFixTau; }; 
-  //void SetFixTau(Bool_t b) { fFixTau = b; }; 
   
 protected:
   Double_t fReversed[ALTROMAXSAMPLES]; //Reversed sequence of samples (pedestalsubtracted)
-  // private:
   int fMinTimeIndex; //The timebin of the max signal value must be between fMinTimeIndex and fMaxTimeIndex
   int fMaxTimeIndex; //The timebin of the max signal value must be between fMinTimeIndex and fMaxTimeIndex
   int fFitArrayCut;  //Cut on ADC value (after ped. subtraction) for signals used for fit
@@ -114,17 +106,11 @@ protected:
   bool fVerbose;     //Print debug information to std out if set to true
   char fName[256]; // Name of the algorithm
   char fNameShort[256]; // Abbrevation for the name
-  //  CaloConstants  fAlgo;
   Algo::fitAlgorithm fAlgo; // Which algorithm to use
-  // FILE *fFp;
   Double_t fL1Phase; // Phase of the ADC sampling clock relative to the LHC clock
-  
   Double_t fAmp; // The amplitude in entities of ADC counts
   Double_t fTof; // The amplitude in entities of ADC counts
-  
   Float_t fTau;  // Rise time of the signal (peak position = t0 +tau), by defauly it is 235 ns
-  // Bool_t fFixTau; // flag if tau should be fix
-  
   ClassDef(AliCaloRawAnalyzer, 2)  
 
 };

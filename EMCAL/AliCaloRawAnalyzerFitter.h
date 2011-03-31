@@ -34,9 +34,12 @@ class  AliCaloRawAnalyzerFitter : public AliCaloRawAnalyzer
 public:
   AliCaloRawAnalyzerFitter( const char *name, const char *nameshort );
   virtual ~AliCaloRawAnalyzerFitter();
-  Bool_t GetFixTau() const { return fFixTau; }; 
+  
+  //Bool_t GetFixTau() const { return fFixTau; }; 
+  Bool_t GetFixTau() const; 
   void SetFixTau(Bool_t b) { fFixTau = b; };
   TF1 * GetFit() const { return fTf1; };
+  
   void PrintFitResult(const TF1 *f) const;
 
 protected: 
