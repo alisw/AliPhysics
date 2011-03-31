@@ -1,7 +1,9 @@
 #ifndef ALIANALYSISTASKMINIJET_H
 #define ALIANALYSISTASKMINIJET_H
 
-// analysis task performing mini jet analysis (use ESD or AOD as input)
+// Two-particle correlations using all particles over pt threshold
+// Extract mini-jet yield and fragmentation properties via Delta-Phi histograms
+// Can use ESD or AOD, reconstructed and Monte Carlo data as input
 // Author: eva.sicking@cern.ch
 
 class TList;
@@ -27,10 +29,10 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   Int_t LoopESDMC(Float_t **pt, Float_t **eta, Float_t **phi, Short_t **charge,  Int_t **nTracksTracklets);
   Int_t LoopAOD  (Float_t **pt, Float_t **eta, Float_t **phi, Short_t **charge,  Int_t **nTracksTracklets);
   Int_t LoopAODMC(Float_t **pt, Float_t **eta, Float_t **phi, Short_t **charge,  Int_t **nTracksTracklets);
-  void  Analyse  (Float_t* pt, Float_t* eta, Float_t* phi,  Short_t *charge, Int_t ntacks, Int_t ntacklets=0,Int_t nAll=0, Int_t mode=0);
-  void  CleanArrays(Float_t* pt, Float_t* eta, Float_t* phi,  Short_t *charge, Int_t* nTracksTracklets=0);
-  Bool_t SelectParticlePlusCharged(Short_t charge, Int_t pdg, Bool_t prim);
-  Bool_t SelectParticle(Short_t charge, Int_t pdg, Bool_t prim);
+  void  Analyse  (const Float_t* pt, const Float_t* eta, const Float_t* phi,  const Short_t *charge, Int_t ntacks, Int_t ntacklets=0,Int_t nAll=0, Int_t mode=0);
+  const void  CleanArrays(const Float_t *pt, const Float_t *eta, const Float_t *phi, const Short_t *charge, const Int_t *nTracksTracklets=0);
+  const Bool_t SelectParticlePlusCharged(Short_t charge, Int_t pdg, Bool_t prim);
+  const Bool_t SelectParticle(Short_t charge, Int_t pdg, Bool_t prim);
 
 
   void UseMC(Bool_t useMC=kTRUE, Bool_t mcOnly=kFALSE)    {fUseMC = useMC; fMcOnly=mcOnly;}
@@ -52,8 +54,8 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
 
  private:
 
-  Bool_t       fUseMC;
-  Bool_t       fMcOnly;
+  Bool_t       fUseMC;                      // flag for Monte Carlo usages
+  Bool_t       fMcOnly;                     // flag defines, if only MC data is used in analysis or also reconstructed data
   AliESDtrackCuts* fCuts;                   // List of cuts for ESDs
   Float_t      fRadiusCut;                  // radius cut 
   Float_t      fTriggerPtCut;               // cut on particle pt used as event axis
@@ -75,7 +77,7 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   TH1F       *fHistPt;                     // Pt spectrum ESD
   TH1F       *fHistPtMC;                   // Pt spectrum MC
   TH2F       *fNmcNch;                     // N mc - N ch rec
-  TProfile   *pNmcNch;                     // N mc - N ch rec
+  TProfile   *fPNmcNch;                     // N mc - N ch rec
   TH2F       *fChargedPi0;                 // charged versus charged+Pi0
   TH1F       * fVertexZ[4];                 // z of vertex
 
@@ -102,10 +104,10 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   TH2F       * fTriggerNchSeeds[4];         // number of triggers with accepted-track number
   TH1F       * fTriggerTracklet[4];         // number of triggers with accepted-tracklet number
   TH2F       * fNch07Nch[4];                // nCharged with pT>fTriggerPtCut vs nCharged
-  TProfile   * pNch07Nch[4];                // nCharged with pT>fTriggerPtCut vs nCharged
+  TProfile   * fPNch07Nch[4];                // nCharged with pT>fTriggerPtCut vs nCharged
   TH2F       * fNch07Tracklet[4];           // nCharged with pT>fTriggerPtCut vs nTracklet
   TH2F       * fNchTracklet[4];             // nCharged vs nTracklet
-  TProfile   * pNch07Tracklet[4];           // nCharged with pT>fTriggerPtCut vs nTracklet
+  TProfile   * fPNch07Tracklet[4];           // nCharged with pT>fTriggerPtCut vs nTracklet
 
   TH1F       * fDPhiEventAxis[4];           // delta phi of associate tracks to event axis
   TH1F       * fDPhiEventAxisNchBin[4][150];// delta phi of associate tracks to event axis per Nch bin
