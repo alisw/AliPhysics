@@ -301,11 +301,11 @@ Int_t AliGenReaderEMD::NextEvent()
 	}
 	fNcurrent++;
 	printf("\t #### Putting %d particles in the stack\n", nTracks);
-	if(fPcToTrack==kAll || fPcToTrack==kOnlyNucleons) printf("\t\t  %d+%d neutrons, %d+%d protons\n", 
+	/*if(fPcToTrack==kAll || fPcToTrack==kOnlyNucleons) printf("\t\t  %d+%d neutrons, %d+%d protons\n", 
 		fNnAside,fNnCside, fNpAside,fNpCside);
 	if(fPcToTrack==kAll || fPcToTrack==kNotNucleons) printf("\t %d+%d pi+, %d+%d pi-, %d+%d pi0, %d+%d eta, %d+%d omega\n",
 	        fNppAside,fNppCside,fNpmAside,fNpmCside, 
-		fNp0Aside,fNp0Cside,fNetaAside,fNetaCside, fNomegaAside,fNomegaCside);
+		fNp0Aside,fNp0Cside,fNetaAside,fNetaCside, fNomegaAside,fNomegaCside);*/
 	return nTracks;
     }
 
@@ -434,12 +434,16 @@ TParticle* AliGenReaderEMD::NextParticle()
     Double_t amass = TDatabasePDG::Instance()->GetParticle(pdgCode)->Mass();
     p[3] = TMath::Sqrt(ptot*ptot+amass*amass);
     
-    if(p[3]<=amass) 
-      Warning("Generate","Particle %d  E = %f GeV mass = %f GeV/c^2",pdgCode,p[3],amass);
+    if(p[3]<=amass){ 
+       Warning("Generate","Particle %d  E = %f GeV mass = %f GeV ",pdgCode,p[3],amass);
+    }
+    
+    //printf("  Pc %d:  PDGcode %d  p(%1.2f, %1.2f, %1.2f, %1.3f)\n",
+    //	fNparticle,pdgCode,p[0], p[1], p[2], p[3]);
     
     TParticle* particle = new TParticle(pdgCode, 0, -1, -1, -1, -1, 
     	p[0], p[1], p[2], p[3], 0., 0., 0., 0.);
-    particle->SetBit(kTransportBit);
+    if((p[0]*p[0]+p[1]*p[1]+p[2]*p[2])>1e-5) particle->SetBit(kTransportBit);
     fNparticle++;
     return particle;
 }
