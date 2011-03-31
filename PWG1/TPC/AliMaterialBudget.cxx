@@ -531,7 +531,7 @@ void AliMaterialBudget::ProcessRefTracker(AliTrackReference* refIn,  AliTrackRef
     AliTPCseed seed;
     seed.Set(param->GetX(),param->GetAlpha(),param->GetParameter(),param->GetCovariance());
     Float_t alpha= TMath::ATan2(refIn->Y(),refIn->X());
-    seed.Rotate(alpha-seed.GetAlpha());
+    if(seed.Rotate(alpha-seed.GetAlpha()) == kFALSE) return;
     seed.SetMass(mass);
     for (Float_t xlayer= seed.GetX(); xlayer>refIn->R(); xlayer-=step){
       seed.PropagateTo(xlayer);
