@@ -29,7 +29,7 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   Int_t LoopESDMC(Float_t **pt, Float_t **eta, Float_t **phi, Short_t **charge,  Int_t **nTracksTracklets);
   Int_t LoopAOD  (Float_t **pt, Float_t **eta, Float_t **phi, Short_t **charge,  Int_t **nTracksTracklets);
   Int_t LoopAODMC(Float_t **pt, Float_t **eta, Float_t **phi, Short_t **charge,  Int_t **nTracksTracklets);
-  void  Analyse  (const Float_t* pt, const Float_t* eta, const Float_t* phi,  const Short_t *charge, Int_t ntacks, Int_t ntacklets=0,Int_t nAll=0, Int_t mode=0);
+  void  Analyse  (const Float_t* pt, const Float_t* eta, const Float_t* phi,  const Short_t *charge, Int_t ntacks, Int_t ntacklets=0, const Int_t nAll=0, Int_t mode=0);
   const void  CleanArrays(const Float_t *pt, const Float_t *eta, const Float_t *phi, const Short_t *charge, const Int_t *nTracksTracklets=0);
   const Bool_t SelectParticlePlusCharged(Short_t charge, Int_t pdg, Bool_t prim);
   const Bool_t SelectParticle(Short_t charge, Int_t pdg, Bool_t prim);
