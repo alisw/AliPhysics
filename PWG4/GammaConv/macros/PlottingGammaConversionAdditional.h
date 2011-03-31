@@ -46,10 +46,10 @@ void DrawAliceLogoPi0Performance(Float_t start_text_x, Float_t start_text_y, Flo
 						   Float_t text_size, 
 						   Bool_t LowEnergy, Bool_t MCfile , Bool_t RawData){
 
-		string alice_text = "ALICE Performance";
-		if(RawData) alice_text = "RAW DATA";
+		string alicetext = "ALICE Performance";
+		if(RawData) alicetext = "RAW DATA";
 		
-		TLatex *alice = new TLatex(start_text_x,(start_text_y+(2*difference_text)),Form("%s",alice_text.c_str())); // Bo: this was modified
+		TLatex *alice = new TLatex(start_text_x,(start_text_y+(2*difference_text)),Form("%s",alicetext.c_str())); // Bo: this was modified
 		TLatex *energy = new TLatex(start_text_x,(start_text_y+difference_text),"pp @ 7TeV"); // Bo: this was modified
 		TLatex *process = new TLatex(start_pi0_text_x, (start_text_y + (4* difference_text)), "#pi^{0} #rightarrow #gamma #gamma #rightarrow e^{+}e^{-}  e^{+}e^{-}");
 		TLatex *events = new TLatex(start_text_x,start_text_y,"1.233 x 10^{8} MinBias events"); // Bo: this was modified
@@ -57,14 +57,14 @@ void DrawAliceLogoPi0Performance(Float_t start_text_x, Float_t start_text_y, Flo
 		
 		
 		if(LowEnergy){
-			TLatex *alice = new TLatex(start_text_x,0.8,Form("%s",alice_text.c_str())); // Bo: this was modified
+			TLatex *alice = new TLatex(start_text_x,0.8,Form("%s",alicetext.c_str())); // Bo: this was modified
 			TLatex *energy = new TLatex(start_text_x,0.75,"pp @ 7TeV"); // Bo: this was modified
 			TLatex *process = new TLatex(0.35, 0.9, "#pi^{0} #rightarrow #gamma #gamma #rightarrow e^{+}e^{-}  e^{+}e^{-}");
 			TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo",start_logo_x,start_logo_y,(start_logo_x + width_logo),(start_logo_y + (width_logo*0.975)));
 		}
 		
 		if(MCfile != "") {
-			TLatex *alice = new TLatex(start_text_x,0.8,Form("%s",alice_text.c_str())); // Bo: this was modified
+			TLatex *alice = new TLatex(start_text_x,0.8,Form("%s",alicetext.c_str())); // Bo: this was modified
 			TLatex *energy = new TLatex(start_text_x,0.75,"pp @ 7TeV"); // Bo: this was modified
 			TLatex *process = new TLatex(0.35, 0.9, "#pi^{0} #rightarrow #gamma #gamma #rightarrow e^{+}e^{-}  e^{+}e^{-}");
 			TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo",start_logo_x,start_logo_y,(start_logo_x + width_logo),(start_logo_y + (width_logo*0.975)));
@@ -116,8 +116,8 @@ void DrawAliceLogoPi0Performance(Float_t start_text_x, Float_t start_text_y, Flo
 
 void DrawAliceLogo(Float_t start_x, Float_t start_y, Float_t width_logo, Float_t text_height){
 		
-		Float_t alice_start_y = start_y - text_height * 1.1;  
-		TLatex *alice = new TLatex(start_x-0.0225,alice_start_y,"ALICE Performance"); // Bo: this was modified
+		Float_t aliceStartY = start_y - text_height * 1.1;  
+		TLatex *alice = new TLatex(start_x-0.0225,aliceStartY,"ALICE Performance"); // Bo: this was modified
 	            alice->SetNDC();
 	            alice->SetTextColor(2);
 	            alice->SetTextFont(42);
@@ -125,18 +125,18 @@ void DrawAliceLogo(Float_t start_x, Float_t start_y, Float_t width_logo, Float_t
 	            alice->SetLineWidth(2);
  		  alice->Draw("same");
 	         
-		Float_t wip_start_y = start_y - text_height *(1 + 1.1);           
-	            TLatex *wip = new TLatex((start_x-0.011),wip_start_y,"work in progress"); // Bo: this was modified
+		Float_t wipStartY = start_y - text_height *(1 + 1.1);           
+	            TLatex *wip = new TLatex((start_x-0.011),wipStartY,"work in progress"); // Bo: this was modified
 	            wip->SetNDC();
 	            wip->SetTextColor(2);
 	            wip->SetTextFont(51);
 	            wip->SetTextSize(text_height);
 	            wip->SetLineWidth(2);
 		  wip->Draw("same");
-		Float_t end_x = start_x + width_logo;
-		Float_t end_y = start_y + width_logo;
+		Float_t endX = start_x + width_logo;
+		Float_t endY = start_y + width_logo;
 
-	            TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo",start_x,start_y,end_x,end_y);
+	            TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo",start_x,start_y,endX,endY);
 	            //  myPadLogo->SetFillColor(2); // color to first figure out where is the pad then comment !
 	            myPadLogo->SetBorderMode(0);
 	            myPadLogo->SetBorderSize(2);
@@ -163,8 +163,8 @@ void DrawAliceLogo(Float_t start_x, Float_t start_y, Float_t width_logo, Float_t
 
 void DrawAliceLogo1D(Float_t start_x, Float_t start_y, Float_t width_logo, Float_t text_height){
 		
-		Float_t alice_start_y = start_y - text_height * 1.1;  
-		TLatex *alice = new TLatex(start_x+0.008,alice_start_y,"ALICE Performance"); // Bo: this was modified
+		Float_t aliceStartY = start_y - text_height * 1.1;  
+		TLatex *alice = new TLatex(start_x+0.008,aliceStartY,"ALICE Performance"); // Bo: this was modified
 	            alice->SetNDC();
 	            alice->SetTextColor(2);
 	            alice->SetTextFont(42);
@@ -172,18 +172,18 @@ void DrawAliceLogo1D(Float_t start_x, Float_t start_y, Float_t width_logo, Float
 	            alice->SetLineWidth(2);
  		  alice->Draw("same");
 	         
-		Float_t wip_start_y = start_y - text_height *(1 + 1.1);           
-	            TLatex *wip = new TLatex((start_x+0.022),wip_start_y,"work in progress"); // Bo: this was modified
+		Float_t wipStartY = start_y - text_height *(1 + 1.1);           
+	            TLatex *wip = new TLatex((start_x+0.022),wipStartY,"work in progress"); // Bo: this was modified
 	            wip->SetNDC();
 	            wip->SetTextColor(2);
 	            wip->SetTextFont(51);
 	            wip->SetTextSize(text_height);
 	            wip->SetLineWidth(2);
 		  wip->Draw("same");
-		Float_t end_x = start_x + width_logo;
-		Float_t end_y = start_y + width_logo;
+		Float_t endX = start_x + width_logo;
+		Float_t endY = start_y + width_logo;
 
-	            TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo",start_x,start_y,end_x,end_y);
+	            TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo",start_x,start_y,endX,endY);
 	            //  myPadLogo->SetFillColor(2); // color to first figure out where is the pad then comment !
 	            myPadLogo->SetBorderMode(0);
 	            myPadLogo->SetBorderSize(2);
@@ -212,22 +212,22 @@ void DrawAliceLogo1D(Float_t start_x, Float_t start_y, Float_t width_logo, Float
 
 void DrawAliceLogoPerformance(Float_t start_x, Float_t start_y, Float_t width_logo, Float_t text_height, Float_t decrease, char *date){
 		
-		Float_t alice_start_y = start_y - text_height * 1.1;  
-		TLatex *alice = new TLatex((start_x-decrease),alice_start_y,"ALICE Performance"); // Bo: this was modified
+		Float_t aliceStartY = start_y - text_height * 1.1;  
+		TLatex *alice = new TLatex((start_x-decrease),aliceStartY,"ALICE Performance"); // Bo: this was modified
 	            alice->SetNDC();
 	            alice->SetTextColor(2);
 	            alice->SetTextFont(62);
 	            alice->SetTextSize(text_height);
 	            alice->SetLineWidth(2);
  		  alice->Draw("same");
-		TLatex *pp7 = new TLatex((start_x+decrease*0.3),(alice_start_y-text_height*1.1),"pp @ 7 TeV"); // Bo: this was modified
+		TLatex *pp7 = new TLatex((start_x+decrease*0.3),(aliceStartY-text_height*1.1),"pp @ 7 TeV"); // Bo: this was modified
 	            pp7->SetNDC();
 	            pp7->SetTextColor(2);
 	            pp7->SetTextFont(62);	
 	            pp7->SetTextSize(text_height);
 	            pp7->SetLineWidth(2);
  		  pp7->Draw("same");
-		TLatex *today = new TLatex((start_x-decrease*0),(alice_start_y-2*text_height*1.1),date); // Bo: this was modified
+		TLatex *today = new TLatex((start_x-decrease*0),(aliceStartY-2*text_height*1.1),date); // Bo: this was modified
 	            today->SetNDC();
 	            today->SetTextColor(2);
 	            today->SetTextFont(62);
@@ -236,10 +236,10 @@ void DrawAliceLogoPerformance(Float_t start_x, Float_t start_y, Float_t width_lo
  		  today->Draw("same");
 		
 	         
-		Float_t end_x = start_x + width_logo;
-		Float_t end_y = start_y + width_logo;
+		Float_t endX = start_x + width_logo;
+		Float_t endY = start_y + width_logo;
 
-	            TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo",start_x,start_y,end_x,end_y);
+	            TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo",start_x,start_y,endX,endY);
 	            //  myPadLogo->SetFillColor(2); // color to first figure out where is the pad then comment !
 	            myPadLogo->SetBorderMode(0);
 	            myPadLogo->SetBorderSize(2);
@@ -269,22 +269,22 @@ void DrawAliceLogoPerformance(Float_t start_x, Float_t start_y, Float_t width_lo
 
 void DrawAliceLogoPerformance2D(Float_t start_x, Float_t start_y, Float_t width_logo, Float_t text_height, Float_t decrease, char *date){
 		
-		Float_t alice_start_y = start_y + 3* text_height * 1.1;  
-		TLatex *alice = new TLatex((start_x-decrease),alice_start_y,"ALICE Performance"); // Bo: this was modified
+		Float_t aliceStartY = start_y + 3* text_height * 1.1;  
+		TLatex *alice = new TLatex((start_x-decrease),aliceStartY,"ALICE Performance"); // Bo: this was modified
 	            alice->SetNDC();
 	            alice->SetTextColor(2);
 	            alice->SetTextFont(62);
 	            alice->SetTextSize(text_height);
 	            alice->SetLineWidth(2);
  		  alice->Draw("same");
-		TLatex *pp7 = new TLatex((start_x+decrease*0.3),(alice_start_y-text_height*1.1),"pp @ 7 TeV"); // Bo: this was modified
+		TLatex *pp7 = new TLatex((start_x+decrease*0.3),(aliceStartY-text_height*1.1),"pp @ 7 TeV"); // Bo: this was modified
 	            pp7->SetNDC();
 	            pp7->SetTextColor(2);
 	            pp7->SetTextFont(62);	
 	            pp7->SetTextSize(text_height);
 	            pp7->SetLineWidth(2);
  		  pp7->Draw("same");
-		TLatex *today = new TLatex((start_x-decrease*0),(alice_start_y-2*text_height*1.1),date); // Bo: this was modified
+		TLatex *today = new TLatex((start_x-decrease*0),(aliceStartY-2*text_height*1.1),date); // Bo: this was modified
 	            today->SetNDC();
 	            today->SetTextColor(2);
 	            today->SetTextFont(62);
@@ -293,10 +293,10 @@ void DrawAliceLogoPerformance2D(Float_t start_x, Float_t start_y, Float_t width_
  		  today->Draw("same");
 		
 	         
-		Float_t end_x = start_x + width_logo;
-		Float_t end_y = start_y + width_logo;
+		Float_t endX = start_x + width_logo;
+		Float_t endY = start_y + width_logo;
 
-	            TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo",start_x , (start_y - width_logo), end_x,start_y);
+	            TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo",start_x , (start_y - width_logo), endX,start_y);
 	            //  myPadLogo->SetFillColor(2); // color to first figure out where is the pad then comment !
 	            myPadLogo->SetBorderMode(0);
 	            myPadLogo->SetBorderSize(2);
@@ -321,8 +321,8 @@ void DrawAliceLogoPerformance2D(Float_t start_x, Float_t start_y, Float_t width_
 //***********************************************************************************************************/
 
 void DrawAliceText(Float_t start_x, Float_t start_y, Float_t text_height){
-		Float_t alice_start_y = start_y - text_height * 1.1;  
-		TLatex *alice = new TLatex(start_x,alice_start_y,"ALICE Performance"); // Bo: this was modified
+		Float_t aliceStartY = start_y - text_height * 1.1;  
+		TLatex *alice = new TLatex(start_x,aliceStartY,"ALICE Performance"); // Bo: this was modified
 	            alice->SetNDC();
 	            alice->SetTextColor(2);
 	            alice->SetTextFont(42);
@@ -330,8 +330,8 @@ void DrawAliceText(Float_t start_x, Float_t start_y, Float_t text_height){
 	            alice->SetLineWidth(2);
  		  alice->Draw();
 	         
-		Float_t wip_start_y = start_y - text_height *(1 + 1.1);           
-	            TLatex *wip = new TLatex(start_x,wip_start_y,"work in progress"); // Bo: this was modified
+		Float_t wipStartY = start_y - text_height *(1 + 1.1);           
+	            TLatex *wip = new TLatex(start_x,wipStartY,"work in progress"); // Bo: this was modified
 	            wip->SetNDC();
 	            wip->SetTextColor(2);
 	            wip->SetTextFont(51);
@@ -483,12 +483,12 @@ void DrawStructure(){
 **************************************************************************************************************/
 
 void DrawArmenteros(){
-  TLatex *K0s = new TLatex(0.45,0.87,"K^{0}_{s}");
-  K0s->SetNDC();
-  K0s->SetTextFont(62);
-  K0s->SetTextSize(0.05);
-  K0s->SetLineWidth(4);
-  K0s->Draw();
+  TLatex *k0s = new TLatex(0.45,0.87,"K^{0}_{s}");
+  k0s->SetNDC();
+  k0s->SetTextFont(62);
+  k0s->SetTextSize(0.05);
+  k0s->SetLineWidth(4);
+  k0s->Draw();
 
   TLatex *lambda = new TLatex(0.71,0.47,"#Lambda");
   lambda->SetNDC();
@@ -557,15 +557,15 @@ void DrawdEdxLabel(){
 
 /* // DrawGammaLines will draw the lines in the histogram for you
 		* start_x - starting point of drawing in x
-		* end_x - end point of drawing in x
+		* endX - end point of drawing in x
 		* start_y -starting point of drawing in y
-		* end_y - end point of drawing in y
+		* endY - end point of drawing in y
 		* linew - line width
 */
-void DrawGammaLines(Float_t start_x, Float_t end_x,
-				 Float_t start_y, Float_t end_y,
+void DrawGammaLines(Float_t start_x, Float_t endX,
+				 Float_t start_y, Float_t endY,
 				Float_t linew){
-			TLine * l1 = new TLine (start_x,start_y,end_x,end_y);
+			TLine * l1 = new TLine (start_x,start_y,endX,endY);
 			l1->SetLineColor(4);
 			l1->SetLineWidth(linew);
 			l1->Draw("same");
