@@ -31,11 +31,6 @@
 
 #pragma link C++ class AliRecInfoCuts+;
 #pragma link C++ class AliMCInfoCuts+;
-#pragma link C++ class AliComparisonTask+;
-#pragma link C++ class AliComparisonRes+;
-#pragma link C++ class AliComparisonEff+;
-#pragma link C++ class AliComparisonDEdx+;
-#pragma link C++ class AliComparisonDCA+;
 #pragma link C++ class AliComparisonObject+;
 
 #pragma link C++ class AliGenInfoTask+;
