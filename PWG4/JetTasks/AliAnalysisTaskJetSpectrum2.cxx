@@ -73,7 +73,6 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fAODOut(0x0),
   fAODExtension(0x0),
   fhnCorrelation(0x0),
-  fhnCorrelationPhiZRec(0x0),
   f1PtScale(0x0),
   fBranchRec("jets"),
   fBranchGen(""),
@@ -129,6 +128,11 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fh3RPPhiTracks(0x0),
   fHistList(0x0)  
 {
+
+  fFlatA[0] =   fFlatA[1] = 0;
+  fFlatB[0] =   fFlatB[1] = 0;
+  fDeltaQxy[0] =   fDeltaQxy[1] = 0; 
+
   for(int i = 0;i < kMaxStep*2;++i){
     fhnJetContainer[i] = 0;
   }
@@ -175,7 +179,6 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fAODOut(0x0),
   fAODExtension(0x0),
   fhnCorrelation(0x0),
-  fhnCorrelationPhiZRec(0x0),
   f1PtScale(0x0),
   fBranchRec("jets"),
   fBranchGen(""),
@@ -231,6 +234,10 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh3RPPhiTracks(0x0),
   fHistList(0x0)
 {
+
+  fFlatA[0] =   fFlatA[1] = 0;
+  fFlatB[0] =   fFlatB[1] = 0;
+  fDeltaQxy[0] =   fDeltaQxy[1] = 0; 
 
   for(int i = 0;i < kMaxStep*2;++i){
     fhnJetContainer[i] = 0;
@@ -347,7 +354,6 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 
   MakeJetContainer();
   fHistList->Add(fhnCorrelation);
-  if(fhnCorrelationPhiZRec)fHistList->Add(fhnCorrelationPhiZRec);
   for(int i = 0;i<kMaxStep*2;++i)fHistList->Add(fhnJetContainer[i]);
 
   //
@@ -1074,7 +1080,6 @@ void AliAnalysisTaskJetSpectrum2::FillMatchHistos(TList &recJetsList,TList &genJ
   }
 
   Double_t container[6];
-  Double_t containerPhiZ[6];
 
   // loop over generated jets
   // consider the 
@@ -1114,8 +1119,6 @@ void AliAnalysisTaskJetSpectrum2::FillMatchHistos(TList &recJetsList,TList &genJ
     container[0] = ptRec;
     container[1] = etaRec;
     container[2] = phiRec;
-    containerPhiZ[0] = ptRec;
-    containerPhiZ[1] = phiRec;
 
     fhnJetContainer[kStep0+kMaxStep]->Fill(container);
     if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
@@ -1136,7 +1139,6 @@ void AliAnalysisTaskJetSpectrum2::FillMatchHistos(TList &recJetsList,TList &genJ
 	container[3] = ptGen;
 	container[4] = etaGen;
 	container[5] = phiGen;
-	containerPhiZ[3] = ptGen;
 	// 
 	// we accept only jets which are detected within a smaller window, to avoid ambigious pair association at the edges of the acceptance
 	// 
@@ -1148,12 +1150,7 @@ void AliAnalysisTaskJetSpectrum2::FillMatchHistos(TList &recJetsList,TList &genJ
 	  fh2RelPtFGen->Fill(ptGen,delta);
 	  fh2PtFGen->Fill(ptGen,ptRec);
 	}
-	if(fhnCorrelationPhiZRec)fhnCorrelationPhiZRec->Fill(containerPhiZ);
       } 
-      else{
-	containerPhiZ[3] = 0;
-	if(fhnCorrelationPhiZRec)fhnCorrelationPhiZRec->Fill(containerPhiZ);
-      }
     }// loop over reconstructed jets
   }
   if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
@@ -1169,7 +1166,6 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
   const Double_t kPtmin = 0.0, kPtmax = 320.; // we do not want to have empty bins at the beginning...
   const Double_t kEtamin = -3.0, kEtamax = 3.0;
   const Double_t kPhimin = 0., kPhimax = 2. * TMath::Pi();
-  const Double_t kZmin = 0., kZmax = 1;
 
   // can we neglect migration in eta and phi?
   // phi should be no problem since we cover full phi and are phi symmetric
@@ -1220,39 +1216,6 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
   for(Int_t ivar = 0; ivar < kNvar; ivar++)
     delete [] binEdges[ivar];
 
-
-
-  // for second correlation histogram
-
-
-  const Int_t kNvarPhiZ   = 4; 
-  //arrays for the number of bins in each dimension
-  Int_t iBinPhiZ[kNvarPhiZ];
-  iBinPhiZ[0] = 80; //bins in pt
-  iBinPhiZ[1] = 72; //bins in phi 
-  iBinPhiZ[2] = 20; // bins in Z
-  iBinPhiZ[3] = 80; //bins in ptgen
-
-
-  return;
-  //arrays for lower bounds :
-  Double_t* binEdgesPhiZ[kNvarPhiZ];
-  for(Int_t ivar = 0; ivar < kNvarPhiZ; ivar++)
-    binEdgesPhiZ[ivar] = new Double_t[iBinPhiZ[ivar] + 1];
-
-  for(Int_t i=0; i<=iBinPhiZ[0]; i++) binEdgesPhiZ[0][i]=(Double_t)kPtmin  + (kPtmax-kPtmin)/(Double_t)iBinPhiZ[0]*(Double_t)i;
-  for(Int_t i=0; i<=iBinPhiZ[1]; i++) binEdgesPhiZ[1][i]=(Double_t)kPhimin  + (kPhimax-kPhimin)/iBinPhiZ[1]*(Double_t)i;
-  for(Int_t i=0; i<=iBinPhiZ[2]; i++) binEdgesPhiZ[2][i]=(Double_t)kZmin  + (kZmax-kZmin)/iBinPhiZ[2]*(Double_t)i;
-  for(Int_t i=0; i<=iBinPhiZ[3]; i++) binEdgesPhiZ[3][i]=(Double_t)kPtmin  + (kPtmax-kPtmin)/(Double_t)iBinPhiZ[3]*(Double_t)i;
-
-  fhnCorrelationPhiZRec = new THnSparseF("fhnCorrelationPhiZRec","THnSparse with correlations",kNvarPhiZ,iBinPhiZ);
-  for (int k=0; k<kNvarPhiZ; k++) {
-    fhnCorrelationPhiZRec->SetBinEdges(k,binEdgesPhiZ[k]);
-  }
-  fhnCorrelationPhiZRec->Sumw2();
-
-  for(Int_t ivar = 0; ivar < kNvarPhiZ; ivar++)
-    delete [] binEdgesPhiZ[ivar];
 
 }
 
@@ -1469,19 +1432,16 @@ Bool_t AliAnalysisTaskJetSpectrum2::CalculateReactionPlaneAngle(const TList *tra
   fRPAngle=0;
 
   // need to get this info from elsewhere??
-  Double_t fFlatA[2] = {1,1};
-  Double_t fFlatB[2] = {1,1}; 
-
 
   Double_t fPsiRP =0,fDeltaPsiRP = 0;
    
    
     
   TVector2 mQ,mQ1,mQ2;
-  Float_t mQx=0, mQy=0;
+  Float_t mQx= fDeltaQxy[0], mQy=fDeltaQxy[1];
   
-  Float_t mQx1=0, mQy1=0;
-  Float_t mQx2=0, mQy2=0;
+  Float_t mQx1=fDeltaQxy[0], mQy1=fDeltaQxy[1];
+  Float_t mQx2=fDeltaQxy[0], mQy2=fDeltaQxy[1];
   
   AliVParticle *track=0x0;
   Int_t count[3]={0,0,0};
