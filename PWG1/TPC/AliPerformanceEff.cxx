@@ -336,13 +336,10 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
   // 
   // MC histograms for efficiency studies
   //
-  if(!mcEvent) return;
+  if(mcEvent)  { 
  
   AliStack *stack = mcEvent->Stack();
-  if (!stack) {
-    AliDebug(AliLog::kError, "Stack not available");
-    return;
-  }
+  if (stack) {
 
   Int_t nPart  = stack->GetNtrack();
   //Int_t nPart  = stack->GetNprimary();
@@ -416,6 +413,8 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
     // Fill histograms
     Double_t vEffSecHisto[10] = { mceta, mcphi, mcpt, pid, recStatus, findable, mcR, mother_phi, mother_eta, charge }; 
     fEffSecHisto->Fill(vEffSecHisto);
+  }
+  }
   }
 
   if(labelsRec) delete [] labelsRec; labelsRec = 0;
