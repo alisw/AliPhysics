@@ -81,6 +81,31 @@ AliESDRecInfo::AliESDRecInfo():
   //
   //  default constructor
   //
+  for(Int_t i=0; i<10; i++) { fTPCPoints[i] = 0;}
+  for(Int_t i=0; i<5; i++) {
+    fTPCinR0[i] = 0 ;
+    fTPCinR1[i] = 0 ;
+    fTPCinP0[i] = 0 ;
+    fTPCinP1[i] = 0 ;
+    fTPCDelta[i] = 0 ;
+    fTPCPools[i] = 0 ;
+    fITSinR0[i] = 0 ;
+    fITSinR1[i] = 0 ;
+    fITSinP0[i] = 0 ;
+    fITSinP1[i] = 0 ;
+    fITSDelta[i] = 0 ;
+    fITSPools[i] = 0 ;
+  }
+  for(Int_t i=0; i<2; i++) {
+    fTPCAngle0[i] =  0 ;
+    fTPCAngle1[i] =  0 ;
+    fITSAngle0[i] =  0 ;
+    fITSAngle1[i] =  0 ;
+    fLabels[i] =  0 ;
+  }
+  for(Int_t i=0; i<3; i++) { fTRLocalCoord[i] =  0 ; }
+  for(Int_t i=0; i<4; i++) { fStatus[i] =  0 ; }
+
 }
 
 
@@ -105,10 +130,36 @@ AliESDRecInfo::AliESDRecInfo(const AliESDRecInfo& recinfo):
   //
   //
   //
+  for(Int_t i=0; i<10; i++) { fTPCPoints[i] = 0;}
+  for(Int_t i=0; i<5; i++) {
+    fTPCinR0[i] = 0 ;
+    fTPCinR1[i] = 0 ;
+    fTPCinP0[i] = 0 ;
+    fTPCinP1[i] = 0 ;
+    fTPCDelta[i] = 0 ;
+    fTPCPools[i] = 0 ;
+    fITSinR0[i] = 0 ;
+    fITSinR1[i] = 0 ;
+    fITSinP0[i] = 0 ;
+    fITSinP1[i] = 0 ;
+    fITSDelta[i] = 0 ;
+    fITSPools[i] = 0 ;
+  }
+  for(Int_t i=0; i<2; i++) {
+    fTPCAngle0[i] =  0 ;
+    fTPCAngle1[i] =  0 ;
+    fITSAngle0[i] =  0 ;
+    fITSAngle1[i] =  0 ;
+    fLabels[i] =  0 ;
+  }
+  for(Int_t i=0; i<3; i++) { fTRLocalCoord[i] =  0 ; }
+  for(Int_t i=0; i<4; i++) { fStatus[i] =  0 ; }
+
   memcpy(this,&recinfo, sizeof(recinfo));
   fESDtrack=0; fTrackF=0; fTPCtrack=0;fITStrack=0;fTRDtrack=0;
   fTracks=0;
   SetESDtrack(recinfo.GetESDtrack());
+
 }
 
 
@@ -172,14 +223,16 @@ void AliESDRecInfo::SetESDtrack(const AliESDtrack *track){
     Int_t icalib=0;
     TObject *cobject=0;
     //
+    AliTPCseed *tpcSeed = NULL;
+    AliTRDtrackV1 *trdTrack = NULL;
     while (fTrackF->GetCalibObject(icalib)){
       cobject=fTrackF->GetCalibObject(icalib);
-      if (dynamic_cast<AliTPCseed*>(cobject)){
+      if ((tpcSeed = dynamic_cast<AliTPCseed*>(cobject))){
 	if (fTPCtrack) delete fTPCtrack;
-	fTPCtrack = (AliTPCseed*)(dynamic_cast<AliTPCseed*>(cobject))->Clone();
-      } else if (dynamic_cast<AliTRDtrackV1*>(cobject)){
+	fTPCtrack = (AliTPCseed*)tpcSeed->Clone();
+      } else if ((trdTrack = dynamic_cast<AliTRDtrackV1*>(cobject))){
 	if (fTRDtrack) delete fTRDtrack;
-	fTRDtrack = (AliTRDtrackV1*)(dynamic_cast<AliTRDtrackV1*>(cobject))->Clone();
+	fTRDtrack = (AliTRDtrackV1*)trdTrack->Clone();
       }
       icalib++;
     }

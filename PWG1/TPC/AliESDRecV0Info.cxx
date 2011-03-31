@@ -104,6 +104,17 @@ AliESDRecV0Info:: AliESDRecV0Info():
   //
   // default constructor
   //
+  for (Int_t i=0; i<3; i++) {
+    fPdr[i] = 0;
+    fXr[i] = 0;
+    fPm[i] = 0;
+    fAngle[i] = 0;
+  }
+  for (Int_t i=0; i<2; i++) {
+    fRs[i] = 0;
+    fLab[i] = 0;
+  }
+
   fV0tpc    = new AliV0();
   fV0its    = new AliV0();
   fV0rec    = new AliV0();
@@ -154,7 +165,8 @@ void  AliESDRecV0Info::Update(Float_t vertex[3])
     //
     //find intersection linear
     //
-    Double_t phase[2][2],radius[2];
+    Double_t phase[2][2] = { {0,0},{0,0} }; 
+    Double_t radius[2] = {0};
     Int_t  points = dhelix1.GetRPHIintersections(mhelix, phase, radius,200);
     Double_t delta1=10000,delta2=10000;  
 
@@ -212,7 +224,8 @@ void  AliESDRecV0Info::Update(Float_t vertex[3])
     
     distance2 = TMath::Min(delta1,delta2);
     if (distance2>100) fDist2 =100;
-    return;
+    Bool_t checkAll = 0; // to be checked
+    if(checkAll) { 
     if (delta1<delta2){
       //get V0 info
       dhelix1.Evaluate(phase[0][0],fXr);
@@ -259,7 +272,9 @@ void  AliESDRecV0Info::Update(Float_t vertex[3])
     fPointAngleTh = (v[2]*p[2]+vnorm2*pnorm2)/(vnorm3*pnorm3);  
     fPointAngle   = (v[0]*p[0]+v[1]*p[1]+v[2]*p[2])/(vnorm3*pnorm3);
   }
+  }
 }
+
 
 void  AliESDRecV0Info::Reset(){
   //

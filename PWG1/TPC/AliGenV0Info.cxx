@@ -156,7 +156,8 @@ void AliGenV0Info::Update(Float_t vertex[3])
   //find intersection linear
   //
   Double_t distance1, distance2;
-  Double_t phase[2][2],radius[2];
+  Double_t phase[2][2] = {{0,0},{0,0}};
+  Double_t radius[2] = {0};
   Int_t  points = dhelix1.GetRPHIintersections(mhelix, phase, radius);
   Double_t delta1=10000,delta2=10000;    
   if (points>0){
