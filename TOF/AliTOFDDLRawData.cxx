@@ -854,14 +854,14 @@ void AliTOFDDLRawData::MakeTRMtrailer(UInt_t *buf)
   UInt_t trmCRC=0x0;
   for (Int_t ii=fIndex-(fWordsPerTRM-1); ii<fIndex; ii++)
     trmCRC ^= buf[ii];
-  printf(" A trmCRC=%d\n",trmCRC);
+  //PH  printf(" A trmCRC=%d\n",trmCRC);
 
   word = 0x0;
   word ^= ( (trmCRC & 0x00000fff) >>  0);
   word ^= ( (trmCRC & 0x00fff000) >> 12);
   word ^= ( (trmCRC & 0xff000000) >> 24);
 
-  printf(" B trmCRC=%d\n",word);
+  //PH  printf(" B trmCRC=%d\n",word);
 
   AliBitPacking::PackWord(word,baseWord, 4,15); // event CRC --> CHANGED
 
