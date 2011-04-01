@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kFALSE,Bool_t cutOnDistr=kFALSE,Int_t flagD0D0bar=0,TString finname="D0toKpiCuts.root")
+AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kFALSE,Bool_t filldistr=kFALSE,Bool_t cutOnDistr=kFALSE,Int_t system=0/*0=pp,1=PbPb*/,Int_t flagD0D0bar=0,TString finname="D0toKpiCuts.root")
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -109,7 +109,10 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   }
 
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
-  if(stdcuts) RDHFD0toKpi->SetStandardCutsPP2010();
+  if(stdcuts) {
+    if(system==0) RDHFD0toKpi->SetStandardCutsPP2010();
+    else RDHFD0toKpi->SetStandardCutsPbPb2010();
+  }
   else   RDHFD0toKpi = (AliRDHFCutsD0toKpi*)filecuts->Get("D0toKpiCuts");
   RDHFD0toKpi->SetName(Form("D0toKpiCuts%d",flag));
 
@@ -137,8 +140,8 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   massD0Task->SetCutOnDistr(cutOnDistr);
   massD0Task->SetUsePid4Distr(kFALSE);
   massD0Task->SetFillOnlyD0D0bar(flagD0D0bar);
-  massD0Task->SetSystem(1); //0=pp, 1=PbPb
-  //massD0Task->SetFillVarHists(kTRUE); // default is FALSE if System=PbPb
+  massD0Task->SetSystem(system); //0=pp, 1=PbPb
+  massD0Task->SetFillVarHists(filldistr); // default is FALSE if System=PbPb
  
   mgr->AddTask(massD0Task);
   
