@@ -449,9 +449,9 @@ void AliPerformanceDEdx::Analyse()
     h2D->FitSlicesY(f1[i],0,-1,10,"QNR",arr[i]); // gaus fit of pion peak
 
     h1D = (TH1F*)arr[i]->At(1);
-    sprintf(name,"mean_dedx_mips_vs_%d",i);
+    snprintf(name,256,"mean_dedx_mips_vs_%d",i);
     h1D->SetName(name);
-    sprintf(title,"%s vs %s","mean_dedx_mips (a.u.)",fDeDxHisto->GetAxis(i)->GetTitle());
+    snprintf(title,256,"%s vs %s","mean_dedx_mips (a.u.)",fDeDxHisto->GetAxis(i)->GetTitle());
     h1D->SetTitle(title);
     h1D->GetXaxis()->SetTitle(fDeDxHisto->GetAxis(i)->GetTitle());
     h1D->GetYaxis()->SetTitle("mean_dedx_mips (a.u.)");
@@ -461,9 +461,9 @@ void AliPerformanceDEdx::Analyse()
     aFolderObj->Add(h1D);
 
     h1D = (TH1F*)arr[i]->At(2);
-    sprintf(name,"res_dedx_mips_vs_%d",i);
+    snprintf(name,256,"res_dedx_mips_vs_%d",i);
     h1D->SetName(name);
-    sprintf(title,"%s vs %s","res_dedx_mips (a.u)",fDeDxHisto->GetAxis(i)->GetTitle());
+    snprintf(title,256,"%s vs %s","res_dedx_mips (a.u)",fDeDxHisto->GetAxis(i)->GetTitle());
     h1D->SetTitle(title);
     h1D->GetXaxis()->SetTitle(fDeDxHisto->GetAxis(i)->GetTitle());
     h1D->GetYaxis()->SetTitle("res_dedx_mips (a.u.)");

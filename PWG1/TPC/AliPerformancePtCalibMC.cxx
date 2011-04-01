@@ -169,6 +169,11 @@ ClassImp(AliPerformancePtCalibMC)
    fDoRebin = kFALSE;
    fRebin = 0;
    
+   for (Int_t i=0; i<100; i++){ 
+     fThetaBins[i] =  0;
+     fPhiBins[i] =  0;
+   }
+
    Init();
 } 
 
@@ -263,6 +268,11 @@ AliPerformancePtCalibMC::AliPerformancePtCalibMC(const char *name= "AliPerforman
    fDoRebin = kFALSE;// flag for rebin
    fRebin = 0;// bins for rebin
    
+   for (Int_t i=0; i<100; i++){ 
+     fThetaBins[i] =  0;
+     fPhiBins[i] =  0;
+   }
+
    Init();
 }
 
@@ -647,6 +657,7 @@ void AliPerformancePtCalibMC::Analyse()
    TH2F *histInvPtPhi   = (TH2F*)copyTHnSparsePhi->Projection(3,0);
    
    AliPerfAnalyzeInvPt *ana = new  AliPerfAnalyzeInvPt("AliPerfAnalyzeInvPt","AliPerfAnalyzeInvPt");
+   if(!ana) return;
   
    TH1::AddDirectory(kFALSE);
  
@@ -655,6 +666,7 @@ void AliPerformancePtCalibMC::Analyse()
    ana->SetMakeFitOption(fFitGaus,fExclRange,fRange);
    if(fDoRebin) ana->SetDoRebin(fRebin);
    TObjArray *aFolderObj = new TObjArray;
+   if(!aFolderObj) return;
 
    ana->StartAnalysis(histInvPtTheta,histInvPtPhi, aFolderObj);
 

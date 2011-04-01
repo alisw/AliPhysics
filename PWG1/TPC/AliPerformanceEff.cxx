@@ -188,13 +188,25 @@ void AliPerformanceEff::Init()
 void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent)
 {
   // Fill TPC only efficiency comparison information 
-  Int_t *labelsRec =  new Int_t[esdEvent->GetNumberOfTracks()];
-  if(!labelsRec) 
-     AliDebug(AliLog::kError, "Cannot create labelsRec");
+  if(!mcEvent) return;
+  if(!esdEvent) return;
 
-  Int_t *labelsAllRec =  new Int_t[esdEvent->GetNumberOfTracks()];
-  if(!labelsAllRec) 
-     AliDebug(AliLog::kError, "Cannot create labelsAllRec");
+  Int_t *labelsRec =  NULL;
+  labelsRec =  new Int_t[esdEvent->GetNumberOfTracks()];
+  if(!labelsRec) 
+  {
+     Printf("Cannot create labelsRec");
+     return;
+  }
+  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsRec[i] = 0; }
+
+  Int_t *labelsAllRec =  NULL;
+  labelsAllRec =  new Int_t[esdEvent->GetNumberOfTracks()];
+  if(!labelsAllRec) { 
+     Printf("Cannot create labelsAllRec");
+     return;
+  }
+  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsAllRec[i] = 0; }
 
   // loop over rec. tracks
   AliESDtrack *track=0;
@@ -302,13 +314,26 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
 void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent)
 {
   // Fill TPC only efficiency comparison information for secondaries
-  Int_t *labelsRec =  new Int_t[esdEvent->GetNumberOfTracks()];
-  if(!labelsRec) 
-     AliDebug(AliLog::kError, "Cannot create labelsRec");
 
-  Int_t *labelsAllRec =  new Int_t[esdEvent->GetNumberOfTracks()];
-  if(!labelsAllRec) 
-     AliDebug(AliLog::kError, "Cannot create labelsAllRec");
+  if(!mcEvent) return;
+  if(!esdEvent) return;
+
+  Int_t *labelsRec =  NULL;
+  labelsRec =  new Int_t[esdEvent->GetNumberOfTracks()];
+  if(!labelsRec) 
+  {
+     Printf("Cannot create labelsRec");
+     return;
+  }
+  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsRec[i] = 0; }
+
+  Int_t *labelsAllRec =  NULL;
+  labelsAllRec =  new Int_t[esdEvent->GetNumberOfTracks()];
+  if(!labelsAllRec) { 
+     Printf("Cannot create labelsAllRec");
+     return;
+  }
+  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsAllRec[i] = 0; }
 
   // loop over rec. tracks
   AliESDtrack *track=0;
@@ -428,13 +453,25 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
 void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent)
 {
   // Fill efficiency comparison information
-  Int_t *labelsRec =  new Int_t[esdEvent->GetNumberOfTracks()];
-  if(!labelsRec) 
-     AliDebug(AliLog::kError, "Cannot create labelsRec");
+  if(!mcEvent) return;
+  if(!esdEvent) return;
 
-  Int_t *labelsAllRec =  new Int_t[esdEvent->GetNumberOfTracks()];
-  if(!labelsAllRec) 
-     AliDebug(AliLog::kError, "Cannot create labelsAllRec");
+  Int_t *labelsRec =  NULL;
+  labelsRec =  new Int_t[esdEvent->GetNumberOfTracks()];
+  if(!labelsRec) 
+  {
+     Printf("Cannot create labelsRec");
+     return;
+  }
+  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsRec[i] = 0; }
+
+  Int_t *labelsAllRec =  NULL;
+  labelsAllRec =  new Int_t[esdEvent->GetNumberOfTracks()];
+  if(!labelsAllRec) { 
+     Printf("Cannot create labelsAllRec");
+     return;
+  }
+  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsAllRec[i] = 0; }
 
   // loop over rec. tracks
   AliESDtrack *track=0;
@@ -529,13 +566,25 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *co
 void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent)
 {
   // Process comparison information 
-  Int_t *labelsRec =  new Int_t[esdEvent->GetNumberOfTracks()];
-  if(!labelsRec) 
-     AliDebug(AliLog::kError, "Cannot create labelsRec");
+  if(!mcEvent) return;
+  if(!esdEvent) return;
 
-  Int_t *labelsAllRec =  new Int_t[esdEvent->GetNumberOfTracks()];
-  if(!labelsAllRec) 
-     AliDebug(AliLog::kError, "Cannot create labelsAllRec");
+  Int_t *labelsRec =  NULL;
+  labelsRec =  new Int_t[esdEvent->GetNumberOfTracks()];
+  if(!labelsRec) 
+  {
+     Printf("Cannot create labelsRec");
+     return;
+  }
+  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsRec[i] = 0; }
+
+  Int_t *labelsAllRec =  NULL;
+  labelsAllRec =  new Int_t[esdEvent->GetNumberOfTracks()];
+  if(!labelsAllRec) { 
+     Printf("Cannot create labelsAllRec");
+     return;
+  }
+  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsAllRec[i] = 0; }
 
   // loop over rec. tracks
   AliESDtrack *track=0;
@@ -862,6 +911,7 @@ void AliPerformanceEff::Analyse()
   //
   TH1::AddDirectory(kFALSE);
   TObjArray *aFolderObj = new TObjArray;
+  if(!aFolderObj) return;
   char title[256];
 
   //
@@ -1099,7 +1149,7 @@ void AliPerformanceEff::Analyse()
 
   ptRecc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
   ptRecc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency",fEffSecHisto->GetAxis(2)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency",fEffSecHisto->GetAxis(2)->GetTitle());
   ptRecc->SetTitle(title);
 
   ptRecc->SetBit(TH1::kLogX);
@@ -1120,7 +1170,7 @@ void AliPerformanceEff::Analyse()
 
   ptRecElec->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
   ptRecElec->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (electrons)",fEffSecHisto->GetAxis(2)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency (electrons)",fEffSecHisto->GetAxis(2)->GetTitle());
   ptRecElec->SetTitle(title);
 
   ptRecElec->SetBit(TH1::kLogX);
@@ -1141,7 +1191,7 @@ void AliPerformanceEff::Analyse()
 
   ptRecPic->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
   ptRecPic->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (pions)",fEffSecHisto->GetAxis(2)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency (pions)",fEffSecHisto->GetAxis(2)->GetTitle());
   ptRecPic->SetTitle(title);
 
   ptRecPic->SetBit(TH1::kLogX);
@@ -1160,7 +1210,7 @@ void AliPerformanceEff::Analyse()
 
   ptRecKc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
   ptRecKc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (kaons)",fEffSecHisto->GetAxis(2)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency (kaons)",fEffSecHisto->GetAxis(2)->GetTitle());
   ptRecKc->SetTitle(title);
 
 
@@ -1179,7 +1229,7 @@ void AliPerformanceEff::Analyse()
 
   ptRecPc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
   ptRecPc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (protons)",fEffSecHisto->GetAxis(2)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency (protons)",fEffSecHisto->GetAxis(2)->GetTitle());
   ptRecPc->SetTitle(title);
 
   ptRecPc->SetBit(TH1::kLogX);
@@ -1202,7 +1252,7 @@ void AliPerformanceEff::Analyse()
 
   ptRecFc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(2)->GetTitle());
   ptRecFc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (findable)",fEffSecHisto->GetAxis(2)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency (findable)",fEffSecHisto->GetAxis(2)->GetTitle());
   ptRecFc->SetTitle(title);
 
   ptRecFc->SetBit(TH1::kLogX);
@@ -1225,7 +1275,7 @@ void AliPerformanceEff::Analyse()
 
   etaRecc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
   etaRecc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency",fEffSecHisto->GetAxis(0)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency",fEffSecHisto->GetAxis(0)->GetTitle());
   etaRecc->SetTitle(title);
 
   aFolderObj->Add(etaRecc);
@@ -1244,7 +1294,7 @@ void AliPerformanceEff::Analyse()
 
   etaRecElec->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
   etaRecElec->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (electrons)",fEffSecHisto->GetAxis(0)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency (electrons)",fEffSecHisto->GetAxis(0)->GetTitle());
   etaRecElec->SetTitle(title);
 
   aFolderObj->Add(etaRecElec);
@@ -1263,7 +1313,7 @@ void AliPerformanceEff::Analyse()
 
   etaRecPic->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
   etaRecPic->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (pions)",fEffSecHisto->GetAxis(0)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency (pions)",fEffSecHisto->GetAxis(0)->GetTitle());
   etaRecPic->SetTitle(title);
 
   aFolderObj->Add(etaRecPic);
@@ -1281,7 +1331,7 @@ void AliPerformanceEff::Analyse()
 
   etaRecKc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
   etaRecKc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (kaons)",fEffSecHisto->GetAxis(0)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency (kaons)",fEffSecHisto->GetAxis(0)->GetTitle());
   etaRecKc->SetTitle(title);
 
 
@@ -1299,7 +1349,7 @@ void AliPerformanceEff::Analyse()
 
   etaRecPc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
   etaRecPc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (protons)",fEffSecHisto->GetAxis(0)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency (protons)",fEffSecHisto->GetAxis(0)->GetTitle());
   etaRecPc->SetTitle(title);
 
   aFolderObj->Add(etaRecPc);
@@ -1321,7 +1371,7 @@ void AliPerformanceEff::Analyse()
 
   etaRecFc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(0)->GetTitle());
   etaRecFc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (findable)",fEffSecHisto->GetAxis(0)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency (findable)",fEffSecHisto->GetAxis(0)->GetTitle());
   etaRecFc->SetTitle(title);
 
   aFolderObj->Add(etaRecFc);
@@ -1346,7 +1396,7 @@ void AliPerformanceEff::Analyse()
 
   phiRecc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
   phiRecc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency",fEffSecHisto->GetAxis(1)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency",fEffSecHisto->GetAxis(1)->GetTitle());
   phiRecc->SetTitle(title);
 
   aFolderObj->Add(phiRecc);
@@ -1365,7 +1415,7 @@ void AliPerformanceEff::Analyse()
 
   phiRecElec->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
   phiRecElec->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (electrons)",fEffSecHisto->GetAxis(1)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency (electrons)",fEffSecHisto->GetAxis(1)->GetTitle());
   phiRecElec->SetTitle(title);
 
   aFolderObj->Add(phiRecElec);
@@ -1384,7 +1434,7 @@ void AliPerformanceEff::Analyse()
 
   phiRecPic->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
   phiRecPic->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (pions)",fEffSecHisto->GetAxis(1)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency (pions)",fEffSecHisto->GetAxis(1)->GetTitle());
   phiRecPic->SetTitle(title);
 
   aFolderObj->Add(phiRecPic);
@@ -1402,7 +1452,7 @@ void AliPerformanceEff::Analyse()
 
   phiRecKc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
   phiRecKc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (kaons)",fEffSecHisto->GetAxis(1)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency (kaons)",fEffSecHisto->GetAxis(1)->GetTitle());
   phiRecKc->SetTitle(title);
 
 
@@ -1420,7 +1470,7 @@ void AliPerformanceEff::Analyse()
 
   phiRecPc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
   phiRecPc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (protons)",fEffSecHisto->GetAxis(1)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency (protons)",fEffSecHisto->GetAxis(1)->GetTitle());
   phiRecPc->SetTitle(title);
 
   aFolderObj->Add(phiRecPc);
@@ -1442,7 +1492,7 @@ void AliPerformanceEff::Analyse()
 
   phiRecFc->GetXaxis()->SetTitle(fEffSecHisto->GetAxis(1)->GetTitle());
   phiRecFc->GetYaxis()->SetTitle("efficiency");
-  sprintf(title,"%s vs %s","rec. efficiency (findable)",fEffSecHisto->GetAxis(1)->GetTitle());
+  snprintf(title,256,"%s vs %s","rec. efficiency (findable)",fEffSecHisto->GetAxis(1)->GetTitle());
   phiRecFc->SetTitle(title);
 
   aFolderObj->Add(phiRecFc);
@@ -1521,7 +1571,7 @@ TH1D* AliPerformanceEff::AddHistoEff(Int_t axis, const Char_t *name, const Char_
   recc->GetXaxis()->SetTitle(fEffHisto->GetAxis(axis)->GetTitle());
   recc->GetYaxis()->SetTitle("efficiency");
 
-  sprintf(title,"%s vs %s",vsTitle, fEffHisto->GetAxis(axis)->GetTitle());  
+  snprintf(title,256,"%s vs %s",vsTitle, fEffHisto->GetAxis(axis)->GetTitle());  
   recc->SetTitle(title);
 
   if (axis == 2 ) recc->SetBit(TH1::kLogX);

@@ -287,8 +287,12 @@ AliRecInfoMaker::AliRecInfoMaker(const char* fnGenTracks,
   Reset();
   //  fFnGenTracks = fnGenTracks;
   //  fFnCmp = fnCmp;
-  sprintf(fFnGenTracks,"%s",fnGenTracks);
-  sprintf(fFnCmp,"%s",fnCmp);
+
+  memset(fFnGenTracks,0,sizeof(fFnGenTracks));
+  memset(fFnCmp,0,sizeof(fFnCmp));
+
+  snprintf(fFnGenTracks,1000,"%s",fnGenTracks);
+  snprintf(fFnCmp,1000,"%s",fnCmp);
 
   fFirstEventNr = firstEvent;
   fEventNr = firstEvent;
@@ -375,6 +379,8 @@ AliRecInfoMaker::AliRecInfoMaker(const AliRecInfoMaker& /*info*/):
   //
   // Dummy copu constructor
   //
+  memset(fFnGenTracks,0,sizeof(fFnGenTracks));
+  memset(fFnCmp,0,sizeof(fFnCmp));
 }
 
 
@@ -826,6 +832,7 @@ Int_t AliRecInfoMaker::TreeGenLoop(Int_t eventNr)
     //
     if (fIndexRecTracks[fMCInfo->fLabel*20] >= 0) {
       track= (AliESDtrack*)fEvent->GetTrack(fIndexRecTracks[fMCInfo->fLabel*20]);
+      if(!track) continue;
       //
       //
       // find nearest track if multifound
@@ -934,7 +941,9 @@ Int_t AliRecInfoMaker::BuildKinkInfo0(Int_t eventNr)
     //
     //
     AliESDRecInfo*  fRecInfo1 = (AliESDRecInfo*)fRecArray->At(fGenKinkInfo->GetMinus().fLabel);
+    if(!fRecInfo1) continue;
     AliESDRecInfo*  fRecInfo2 = (AliESDRecInfo*)fRecArray->At(fGenKinkInfo->GetPlus().fLabel);
+    if(!fRecInfo2) continue;
     fRecKinkInfo->fT1 = (*fRecInfo1);
     fRecKinkInfo->fT2 = (*fRecInfo2);
     fRecKinkInfo->fStatus =0;
