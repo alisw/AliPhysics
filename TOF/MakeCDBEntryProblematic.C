@@ -1,4 +1,4 @@
-MakeCDBEntryProblematic(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infinity(), const Char_t *filename = NULL)
+MakeCDBEntryProblematic(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infinity(), const Char_t *filename = NULL, const Char_t *dbString = "local://$ALICE_ROOT/OCDB")
 {
 
   /* create object */
@@ -24,7 +24,7 @@ MakeCDBEntryProblematic(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infin
 
   /* put object in cdb */
   AliCDBManager *cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  cdb->SetDefaultStorage(dbString);
   cdb->GetDefaultStorage()->Put(obj, id, md);
 
 }
