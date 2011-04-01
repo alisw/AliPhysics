@@ -105,22 +105,6 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTAnalysisEnvironment* pEnv)
   AddStandardComponents();
 }
 
-/*
-2010-09-06 TODO: This is a workaround for unresolved library dependencies
-with the aliroot build system. Some of the component libraries might need
-libraries not linked to the aliroot executable. I also tried to link component
-libraries to their dependencies in aliroot, but there is some awkward dependency
-and even a flaw in the build system leaving the library not built if the
-dependency was not found.
-Ideally we decouple library and component handler. The library handler needs to
-manage all dependencies, the unload-problem, etc.
-This issue is releated to https://savannah.cern.ch/task/?16325
-*/
-const std::pair<const char*, const char*> AliHLTComponentHandler::fgkLibDep[] = {
-  make_pair("libAliHLTUtil.so", "libANALYSIS.so"),
-  make_pair("libAliHLTUtil.so", "libANALYSISalice.so")
-};
-
 AliHLTComponentHandler::~AliHLTComponentHandler()
 {
   // see header file for class documentation
@@ -409,9 +393,7 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
 	hLib.fHandle=pRootHandle;
     }
     
-    if (hLib.fHandle==NULL &&
-	LoadDependencies(libraryPath) >=0 &&
-	gSystem->Load(libraryPath)>=0) {
+    if (hLib.fHandle==NULL && gSystem->Load(libraryPath)>=0) {
       int* pRootHandle=new int;
       if (pRootHandle) *pRootHandle=1;
       hLib.fHandle=pRootHandle;
@@ -472,33 +454,6 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
     iResult=-EINVAL;
   }
   return iResult;
-}
-
-int AliHLTComponentHandler::LoadDependencies( const char* libraryPath)
-{
-  // Load external library dependencies defined in a static array
-  if (!libraryPath) return -EINVAL;
-
-#ifndef HAVE_DLFCN_H
-  for (unsigned i=0; i<sizeof(fgkLibDep)/sizeof(fgkLibDep[0]); i++) {
-    if (strcmp(libraryPath, (fgkLibDep[i]).first)==0) {
-      HLTInfo("loading library dependency for %s: %s", libraryPath, (fgkLibDep[i]).second);
-      int result=gSystem->Load((fgkLibDep[i]).second);
-      if (result<0) {
-	HLTError("failed to load library dependency for %s: %s", libraryPath, (fgkLibDep[i]).second);
-	return result;
-      }
-    }
-  }
-#else
-  static bool bWarning=true;
-  if (bWarning) {
-    bWarning=false;
-    HLTWarning("function not supposed to be used with dlopen, all library dependencies need to be compiled in");
-  }
-#endif // !HAVE_DLFCN_H
-
-  return 0;
 }
 
 int AliHLTComponentHandler::UnloadLibrary( const char* libraryPath )

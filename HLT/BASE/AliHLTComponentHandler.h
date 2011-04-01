@@ -21,7 +21,6 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
 #include <vector>
-#include <utility>
 //#include "TObject.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTLogging.h"
@@ -102,11 +101,6 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * @return 0 if succeeded, neg. error code if failed
    */
   int LoadLibrary( const char* libraryPath, int bActivateAgents=1);
-
-  /**
-   * Load external library dependencies defined in a static array.
-   */
-  int LoadDependencies( const char* libraryPath);
 
   /**
    * Find a symbol in a dynamically loaded library.
@@ -361,9 +355,7 @@ class AliHLTComponentHandler : public AliHLTLogging {
   /** the global singleton */
   static AliHLTComponentHandler* fgpInstance;                      //!transient
   /** number of used instances of the global singleton */
-  static int fgNofInstances;                                       //!transient
-  /// library dependencies
-  static const std::pair<const char*, const char*> fgkLibDep[];    //!transient
+  static int fgNofInstances;                                       //!transient 
 
   ClassDef(AliHLTComponentHandler, 2);
 
