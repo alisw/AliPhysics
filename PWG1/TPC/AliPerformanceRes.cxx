@@ -972,6 +972,7 @@ void AliPerformanceRes::Analyse() {
   TH1F *h=0;
   TH2F *h2D=0;
   TObjArray *aFolderObj = new TObjArray;
+  if(!aFolderObj) return;
 
   // write results in the folder 
   TCanvas * c = new TCanvas("Phi resol Tan","Phi resol Tan");
@@ -993,13 +994,13 @@ void AliPerformanceRes::Analyse() {
       h2D = (TH2F*)fResolHisto->Projection(i,j);
 
       h = AliPerformanceRes::MakeResol(h2D,1,0,100);
-      sprintf(name,"h_res_%d_vs_%d",i,j);
+      snprintf(name,256,"h_res_%d_vs_%d",i,j);
       h->SetName(name);
 
       h->GetXaxis()->SetTitle(fResolHisto->GetAxis(j)->GetTitle());
-      sprintf(title,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(resolution)");
+      snprintf(title,256,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(resolution)");
       h->GetYaxis()->SetTitle(title);
-      sprintf(title,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
+      snprintf(title,256,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
       h->SetTitle(title);
 
       if(j==9) h->SetBit(TH1::kLogX);    
@@ -1007,14 +1008,14 @@ void AliPerformanceRes::Analyse() {
 
       h = AliPerformanceRes::MakeResol(h2D,1,1,100);
       //h = (TH1F*)arr->At(1);
-      sprintf(name,"h_mean_res_%d_vs_%d",i,j);
+      snprintf(name,256,"h_mean_res_%d_vs_%d",i,j);
       h->SetName(name);
 
       h->GetXaxis()->SetTitle(fResolHisto->GetAxis(j)->GetTitle());
-      sprintf(title,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(mean)");
+      snprintf(title,256,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(mean)");
       h->GetYaxis()->SetTitle(title);
 
-      sprintf(title,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
+      snprintf(title,256,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
       h->SetTitle(title);
 
       if(j==9) h->SetBit(TH1::kLogX);    
@@ -1033,26 +1034,26 @@ void AliPerformanceRes::Analyse() {
       h2D = (TH2F*)fPullHisto->Projection(i,j);
 
       h = AliPerformanceRes::MakeResol(h2D,1,0,100);
-      sprintf(name,"h_pull_%d_vs_%d",i,j);
+      snprintf(name,256,"h_pull_%d_vs_%d",i,j);
       h->SetName(name);
 
       h->GetXaxis()->SetTitle(fPullHisto->GetAxis(j)->GetTitle());
-      sprintf(title,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(resolution)");
+      snprintf(title,256,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(resolution)");
       h->GetYaxis()->SetTitle(title);
-      sprintf(title,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
+      snprintf(title,256,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
       h->SetTitle(title);
 
       //if(j==9) h->SetBit(TH1::kLogX);    
       aFolderObj->Add(h);
 
       h = AliPerformanceRes::MakeResol(h2D,1,1,100);
-      sprintf(name,"h_mean_pull_%d_vs_%d",i,j);
+      snprintf(name,256,"h_mean_pull_%d_vs_%d",i,j);
       h->SetName(name);
 
       h->GetXaxis()->SetTitle(fPullHisto->GetAxis(j)->GetTitle());
-      sprintf(title,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(mean)");
+      snprintf(title,256,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(mean)");
       h->GetYaxis()->SetTitle(title);
-      sprintf(title,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
+      snprintf(title,256,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
       h->SetTitle(title);
 
       //if(j==9) h->SetBit(TH1::kLogX);    

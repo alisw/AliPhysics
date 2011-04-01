@@ -299,8 +299,7 @@ void  AliMaterialBudget::ProcessMCInfo(){
   //
   //
   //
-  TParticle * particle= new TParticle;
-  TClonesArray * trefs = new TClonesArray("AliTrackReference");
+
   const Double_t kPcut=0.05;
   const Double_t kMinDrITS = 2.;   // minimal distance between references
   const Double_t kMinDrTRD = 8.;   // minimal distance between references
@@ -312,7 +311,15 @@ void  AliMaterialBudget::ProcessMCInfo(){
   Int_t npart = fMCinfo->GetNumberOfTracks();
   if (npart==0) return;
   Double_t vertex[4]={0,0,0,0};
-  fMCinfo->GetParticleAndTR(0, particle, trefs);
+
+  TClonesArray * trefs = new TClonesArray("AliTrackReference");
+  TParticle * particle= new TParticle;
+
+  if(particle && trefs) {
+    fMCinfo->GetParticleAndTR(0, particle, trefs);
+  }
+
+
   if (particle){
     vertex[0]=particle->Vx();
     vertex[1]=particle->Vy();
@@ -334,6 +341,7 @@ void  AliMaterialBudget::ProcessMCInfo(){
   AliTrackReference * refTOF0, *refTOF1;
   AliTrackReference *refMinR;
   //
+  if(!particle) return;
   for (Int_t ipart=0;ipart<npart;ipart++){
     //Int_t status = fMCinfo->GetParticleAndTR(ipart, particle, trefs);
     AliMCParticle * pp = (AliMCParticle*) fMCinfo->GetTrack(ipart);
@@ -457,8 +465,8 @@ void  AliMaterialBudget::ProcessMCInfo(){
 	
 	//	if (id==0) sprintf(name,"mcAll"); // all tracks: inconvenient to cut if on is only interest in tracks which reach the TPC
 	if (id==0) continue; // require TPC
-	if (id==1) sprintf(name,"mcITS");
-	if (id==2) sprintf(name,"mcTPC");
+	if (id==1) snprintf(name,100,"mcITS");
+	if (id==2) snprintf(name,100,"mcTPC");
 	if (id==1&& nRefITS==0) continue;
 	if (id==2&& nRefTPC==0) continue;
 

@@ -285,6 +285,7 @@ void AliPerformanceTask::Terminate(Option_t *)
     TString tmpFile = gSystem->TempDirectory() + TString("/TPCQASummary.") + uuid.AsString() + TString(".root");
     AliTPCPerformanceSummary::WriteToFile(pTPC, pDEdx, pMatch, tmpFile.Data());
     TChain* chain = new TChain("tpcQA");
+    if(!chain) return;
     chain->Add(tmpFile.Data());
     TTree *tree = chain->CopyTree("1");
     if (chain) { delete chain; chain=0; }

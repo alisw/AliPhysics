@@ -94,9 +94,9 @@ TH1F * AliTreeDraw::DrawXY(const char * chx, const char *chy, const char* select
   Double_t* bins = CreateLogBins(nbins, minx, maxx);
   TH2F* hRes2 = new TH2F("hRes2", "residuals", nbins, minx, maxx, nBinsRes, miny, maxy);
   char cut[1000];
-  sprintf(cut,"%s&&%s",selection,quality);
+  snprintf(cut,1000,"%s&&%s",selection,quality);
   char expression[1000];
-  sprintf(expression,"%s:%s>>hRes2",chy,chx);
+  snprintf(expression,1000,"%s:%s>>hRes2",chy,chx);
   fTree->Draw(expression, cut, "groff");
   TH1F* hMean=0;
   TH1F* hRes = CreateResHisto(hRes2, &hMean);
@@ -121,9 +121,9 @@ TH1F * AliTreeDraw::DrawLogXY(const char * chx, const char *chy, const char* sel
   Double_t* bins = CreateLogBins(nbins, minx, maxx);
   TH2F* hRes2 = new TH2F("hRes2", "residuals", nbins, bins, nBinsRes, miny, maxy);
   char cut[1000];
-  sprintf(cut,"%s&&%s",selection,quality);
+  snprintf(cut,1000,"%s&&%s",selection,quality);
   char expression[1000];
-  sprintf(expression,"%s:%s>>hRes2",chy,chx);
+  snprintf(expression,1000,"%s:%s>>hRes2",chy,chx);
   fTree->Draw(expression, cut, "groff");
   TH1F* hMean=0;  
   TH1F* hRes = CreateResHisto(hRes2, &hMean);
@@ -147,12 +147,12 @@ TH1F * AliTreeDraw::Eff(const char *variable, const char* selection, const char 
   TH1F* hGen = new TH1F("hGen", "gen. tracks", nbins, min, max);
   TH1F* hRec = new TH1F("hRec", "rec. tracks", nbins, min, max);
   char inputGen[1000];  
-  sprintf(inputGen,"%s>>hGen", variable);
+  snprintf(inputGen,1000,"%s>>hGen", variable);
   fTree->Draw(inputGen, selection, "groff");
   char selectionRec[256];
-  sprintf(selectionRec, "%s && %s", selection, quality);
+  snprintf(selectionRec,1000, "%s && %s", selection, quality);
   char inputRec[1000];  
-  sprintf(inputRec,"%s>>hRec", variable);
+  snprintf(inputRec,1000,"%s>>hRec", variable);
   fTree->Draw(inputRec, selectionRec, "groff");
   //
   TH1F* hEff = CreateEffHisto(hGen, hRec);
@@ -176,12 +176,12 @@ TH1F * AliTreeDraw::EffLog(const char *variable, const char* selection, const ch
   TH1F* hGen = new TH1F("hGen", "gen. tracks", nbins, bins);
   TH1F* hRec = new TH1F("hRec", "rec. tracks", nbins, bins);
   char inputGen[1000];  
-  sprintf(inputGen,"%s>>hGen", variable);
+  snprintf(inputGen,1000,"%s>>hGen", variable);
   fTree->Draw(inputGen, selection, "groff");
   char selectionRec[256];
-  sprintf(selectionRec, "%s && %s", selection, quality);
+  snprintf(selectionRec,1000, "%s && %s", selection, quality);
   char inputRec[1000];  
-  sprintf(inputRec,"%s>>hRec", variable);
+  snprintf(inputRec,1000,"%s>>hRec", variable);
   fTree->Draw(inputRec, selectionRec, "groff");
   //
   TH1F* hEff = CreateEffHisto(hGen, hRec);
@@ -325,11 +325,11 @@ TH1F* AliTreeDraw::CreateResHisto(TH2F* hRes2, TH1F **phMean,  Bool_t drawBinFit
     if (drawBinFits) {
       char name[256];
       if (bin == 0) {
-	sprintf(name, "%s < %.4g", axis->GetTitle(), axis->GetBinUpEdge(bin));
+	snprintf(name,256, "%s < %.4g", axis->GetTitle(), axis->GetBinUpEdge(bin));
       } else if (bin == nBins+1) {
-	sprintf(name, "%.4g < %s", axis->GetBinLowEdge(bin), axis->GetTitle());
+	snprintf(name,256, "%.4g < %s", axis->GetBinLowEdge(bin), axis->GetTitle());
       } else {
-	sprintf(name, "%.4g < %s < %.4g", axis->GetBinLowEdge(bin),
+	snprintf(name,256, "%.4g < %s < %.4g", axis->GetBinLowEdge(bin),
 		axis->GetTitle(), axis->GetBinUpEdge(bin));
       }
       canBinFits->cd(bin + dBin);
@@ -355,7 +355,8 @@ TH1F* AliTreeDraw::CreateResHistoI(TH2F* hRes2, TH1F **phMean, Int_t integ,  Boo
   TVirtualPad* currentPad = gPad;
   TAxis* axis = hRes2->GetXaxis();
   Int_t nBins = axis->GetNbins();
-  Bool_t overflowBinFits = kFALSE;
+  //Bool_t overflowBinFits = kFALSE;
+  
   TH1F* hRes, *hMean;
   if (axis->GetXbins()->GetSize()){
     hRes = new TH1F("hRes", "", nBins, axis->GetXbins()->GetArray());
@@ -380,7 +381,8 @@ TH1F* AliTreeDraw::CreateResHistoI(TH2F* hRes2, TH1F **phMean, Int_t integ,  Boo
   fitFunc->SetFillStyle(0);
   // create canvas for fits
   TCanvas* canBinFits = NULL;
-  Int_t nPads = (overflowBinFits) ? nBins+2 : nBins;
+  //Int_t nPads = (overflowBinFits) ? nBins+2 : nBins;
+  Int_t nPads = nBins;
   Int_t nx = Int_t(sqrt(nPads-1.));// + 1;
   Int_t ny = (nPads-1) / nx + 1;
   if (drawBinFits) {
@@ -391,7 +393,8 @@ TH1F* AliTreeDraw::CreateResHistoI(TH2F* hRes2, TH1F **phMean, Int_t integ,  Boo
   }
 
   // loop over x bins and fit projection
-  Int_t dBin = ((overflowBinFits) ? 1 : 0);
+  //Int_t dBin = ((overflowBinFits) ? 1 : 0);
+  Int_t dBin =  0;
   for (Int_t bin = 1-dBin; bin <= nBins+dBin; bin++) {
     if (drawBinFits) canBinFits->cd(bin + dBin);
     Int_t bin0=TMath::Max(bin-integ,0);
@@ -428,11 +431,11 @@ TH1F* AliTreeDraw::CreateResHistoI(TH2F* hRes2, TH1F **phMean, Int_t integ,  Boo
     if (drawBinFits) {
       char name[256];
       if (bin == 0) {
-	sprintf(name, "%s < %.4g", axis->GetTitle(), axis->GetBinUpEdge(bin));
+	snprintf(name,256, "%s < %.4g", axis->GetTitle(), axis->GetBinUpEdge(bin));
       } else if (bin == nBins+1) {
-	sprintf(name, "%.4g < %s", axis->GetBinLowEdge(bin), axis->GetTitle());
+	snprintf(name,256, "%.4g < %s", axis->GetBinLowEdge(bin), axis->GetTitle());
       } else {
-	sprintf(name, "%.4g < %s < %.4g", axis->GetBinLowEdge(bin),
+	snprintf(name,256, "%.4g < %s < %.4g", axis->GetBinLowEdge(bin),
 		axis->GetTitle(), axis->GetBinUpEdge(bin));
       }
       canBinFits->cd(bin + dBin);
@@ -458,7 +461,7 @@ TH1F* AliTreeDraw::CreateResHistoII(TH2F* hRes2, TH1F **phMean, Int_t integ,  Bo
   TVirtualPad* currentPad = gPad;
   TAxis* axis = hRes2->GetXaxis();
   Int_t nBins = axis->GetNbins();
-  Bool_t overflowBinFits = kFALSE;
+  //Bool_t overflowBinFits = kFALSE;
   TH1F* hRes, *hMean;
   if (axis->GetXbins()->GetSize()){
     hRes = new TH1F("hRes", "", nBins, axis->GetXbins()->GetArray());
@@ -483,7 +486,8 @@ TH1F* AliTreeDraw::CreateResHistoII(TH2F* hRes2, TH1F **phMean, Int_t integ,  Bo
   fitFunc->SetFillStyle(0);
   // create canvas for fits
   TCanvas* canBinFits = NULL;
-  Int_t nPads = (overflowBinFits) ? nBins+2 : nBins;
+  //Int_t nPads = (overflowBinFits) ? nBins+2 : nBins;
+  Int_t nPads = nBins;
   Int_t nx = Int_t(sqrt(nPads-1.));// + 1;
   Int_t ny = (nPads-1) / nx + 1;
   if (drawBinFits) {
@@ -494,7 +498,8 @@ TH1F* AliTreeDraw::CreateResHistoII(TH2F* hRes2, TH1F **phMean, Int_t integ,  Bo
   }
 
   // loop over x bins and fit projection
-  Int_t dBin = ((overflowBinFits) ? 1 : 0);
+  //Int_t dBin = ((overflowBinFits) ? 1 : 0);
+  Int_t dBin = 0;
   for (Int_t bin = 1-dBin; bin <= nBins+dBin; bin++) {
     if (drawBinFits) canBinFits->cd(bin + dBin);
     Int_t bin0=TMath::Max(bin-integ,0);
@@ -531,11 +536,11 @@ TH1F* AliTreeDraw::CreateResHistoII(TH2F* hRes2, TH1F **phMean, Int_t integ,  Bo
     if (drawBinFits) {
       char name[256];
       if (bin == 0) {
-	sprintf(name, "%s < %.4g", axis->GetTitle(), axis->GetBinUpEdge(bin));
+	snprintf(name,256, "%s < %.4g", axis->GetTitle(), axis->GetBinUpEdge(bin));
       } else if (bin == nBins+1) {
-	sprintf(name, "%.4g < %s", axis->GetBinLowEdge(bin), axis->GetTitle());
+	snprintf(name,256, "%.4g < %s", axis->GetBinLowEdge(bin), axis->GetTitle());
       } else {
-	sprintf(name, "%.4g < %s < %.4g", axis->GetBinLowEdge(bin),
+	snprintf(name,256, "%.4g < %s < %.4g", axis->GetBinLowEdge(bin),
 		axis->GetTitle(), axis->GetBinUpEdge(bin));
       }
       canBinFits->cd(bin + dBin);
@@ -626,7 +631,9 @@ TString* AliTreeDraw::FitPlane(const char* drawCommand, const char* formula, con
       if (i < dim) centries = fTree->Draw(((TObjString*)formulaTokens->At(i))->GetName(), cutStr.Data(), "goff", stop-start,start);
       else  centries = fTree->Draw(drawStr.Data(), cutStr.Data(), "goff", stop-start,start);
       
-      if (entries != centries) return new TString("An ERROR has occured during fitting!");
+      if (entries != centries) { 
+        return new TString("An ERROR has occured during fitting!");
+      }
       values[i] = new Double_t[entries];
       memcpy(values[i],  fTree->GetV1(), entries*sizeof(Double_t)); 
    }
@@ -642,7 +649,6 @@ TString* AliTreeDraw::FitPlane(const char* drawCommand, const char* formula, con
    fitter->GetParameters(fitParam);
    fitter->GetCovarianceMatrix(covMatrix);
    chi2 = fitter->GetChisquare();
-   chi2 = chi2;
    
    TString *preturnFormula = new TString(Form("( %f+",fitParam[0])), &returnFormula = *preturnFormula; 
    
@@ -653,6 +659,7 @@ TString* AliTreeDraw::FitPlane(const char* drawCommand, const char* formula, con
    returnFormula.Append(" )");
    delete formulaTokens;
    delete fitter;
+   delete[] *values;
    delete[] values;
    return preturnFormula;
 }

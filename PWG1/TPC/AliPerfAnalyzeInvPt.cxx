@@ -274,9 +274,11 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
    
    if(!histThetaInvPt) {
       Printf("warning: no 1/pt histogram to analyse in theta bins!");
+      return;
    }
    if(!histPhiInvPt) {
       Printf("warning: no 1/pt histogram to analyse in phit bins!");
+      return;
    }
 
    Double_t thetaBins[9] = {0.77,0.97,1.17,1.37,1.57,1.77,1.97,2.17,2.37};                 // default theta bins
@@ -370,8 +372,8 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
       fHistFitTheta[i] =  (TH1D*)fHistH2InvPtTheta->ProjectionX("_px",firstBin,lastBin,"e");
       
       Char_t titleTheta[50];
-      if(TMath::Abs(i-(fNThetaBins-1))<0.5) sprintf(titleTheta,"charge/pt (GeV/c) integrated over #theta");
-      else  sprintf(titleTheta,"charge/pt (GeV/c) for #theta range: %1.3f - %1.3f",fThetaBins[i],fThetaBins[i+1]);
+      if(TMath::Abs(i-(fNThetaBins-1))<0.5) snprintf(titleTheta,50,"charge/pt (GeV/c) integrated over #theta");
+      else  snprintf(titleTheta,50,"charge/pt (GeV/c) for #theta range: %1.3f - %1.3f",fThetaBins[i],fThetaBins[i+1]);
       
       fHistFitTheta[i]->SetTitle(titleTheta);
    
@@ -443,8 +445,8 @@ void AliPerfAnalyzeInvPt::StartAnalysis(const TH2F *histThetaInvPt, const TH2F *
       fHistFitPhi[i] =  (TH1D*) fHistH2InvPtPhi->ProjectionX("_px",firstBin,lastBin,"e");
       
       Char_t titlePhi[50];
-      if(TMath::Abs(i-(fNPhiBins-1))<0.5) sprintf(titlePhi,"charge/pt (GeV/c) integrated over #phi");
-      else  sprintf(titlePhi,"charge/pt (GeV/c) for #phi range: %1.3f - %1.3f",fPhiBins[i],fPhiBins[i+1]);
+      if(TMath::Abs(i-(fNPhiBins-1))<0.5) snprintf(titlePhi,50,"charge/pt (GeV/c) integrated over #phi");
+      else  snprintf(titlePhi,50,"charge/pt (GeV/c) for #phi range: %1.3f - %1.3f",fPhiBins[i],fPhiBins[i+1]);
      
       fHistFitPhi[i]->SetTitle(titlePhi);
   

@@ -155,6 +155,11 @@ ClassImp(AliPerformancePtCalib)
    fExclRange =0; //range of rejection of points around 0
    fDoRebin = kFALSE;
    fRebin = 0;
+ 
+   for(Int_t i=0; i<100; i++) {
+     fThetaBins[i] = 0.0;
+     fPhiBins[i] = 0.0;
+   }
 
    Init();
 }
@@ -236,6 +241,12 @@ AliPerformancePtCalib::AliPerformancePtCalib(Char_t * name="AliPerformancePtCali
    fDoRebin = kFALSE;
    fRebin = 0;
   
+   for(Int_t i=0; i<100; i++) {
+     fThetaBins[i] = 0.0;
+     fPhiBins[i] = 0.0;
+   }
+
+
    Init();
 }
 //________________________________________________________________________
@@ -346,7 +357,10 @@ void AliPerformancePtCalib::Exec(AliMCEvent* const /*mcEvent*/, AliESDEvent *con
 {
    //exec: read esd or tpc
 
-   if(!fESDTrackCuts) Printf("no esd track cut");
+   if(!fESDTrackCuts)  {
+     Printf("no esd track cut");
+     return;
+   }
    
    if (!esdEvent) {
       Printf("ERROR: Event not available");
@@ -477,14 +491,17 @@ void AliPerformancePtCalib::Analyse()
    // analyse charge/pt spectra in bins of theta and phi. Bins can be set by user
    
    THnSparseF *copyTHnSparseTheta = (THnSparseF*)fHistInvPtPtThetaPhi->Clone("copyTHnSparseTheta");
+   if(!copyTHnSparseTheta) return;
    copyTHnSparseTheta->GetAxis(3)->SetRangeUser(fMinPhi,fMaxPhi);
    TH2F *histInvPtTheta = (TH2F*)copyTHnSparseTheta->Projection(2,0);
       
    THnSparseF *copyTHnSparsePhi = (THnSparseF*)fHistInvPtPtThetaPhi->Clone("copyTHnSparsePhi");
+   if(!copyTHnSparsePhi) return;
    copyTHnSparsePhi->GetAxis(2)->SetRangeUser(fMinTheta,fMaxTheta);
    TH2F *histInvPtPhi   = (TH2F*)copyTHnSparsePhi->Projection(3,0);
    
    AliPerfAnalyzeInvPt *ana = new  AliPerfAnalyzeInvPt("AliPerfAnalyzeInvPt","AliPerfAnalyzeInvPt");
+   if(!ana) return;
   
      
    TH1::AddDirectory(kFALSE);
@@ -494,6 +511,7 @@ void AliPerformancePtCalib::Analyse()
    ana->SetMakeFitOption(fFitGaus,fExclRange,fRange);
    if(fDoRebin) ana->SetDoRebin(fRebin);		   
    TObjArray *aFolderObj = new TObjArray;
+   if(!aFolderObj) return;
    
    ana->StartAnalysis(histInvPtTheta,histInvPtPhi,aFolderObj);
   
