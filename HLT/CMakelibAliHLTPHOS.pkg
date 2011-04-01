@@ -54,7 +54,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/CALO HLT/PHOS  STEER RAW PHOS EMCAL)
 
-set ( ELIBS  "HLTbase AliHLTCalo PHOSbase PHOSUtils PHOSshuttle ESD STEER RAWDatarec EMCALbase EMCALUtils EMCALrec")
+set ( ELIBS  "HLTbase AliHLTCalo PHOSbase PHOSUtils PHOSshuttle ESD AOD STEER RAWDatarec EMCALbase EMCALraw EMCALUtils EMCALrec")
 
 include ("CMakehlt.conf")
 
