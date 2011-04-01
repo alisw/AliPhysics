@@ -142,7 +142,7 @@ void AliRDHFCutsDstoKKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
   Int_t iter=-1;
   if(fVarsForOpt[0]){
     iter++;
-    if(TMath::Abs(pdgdaughters[0]==321)){
+    if(TMath::Abs(pdgdaughters[0])==321){
       vars[iter]=dd->InvMassDsKKpi();
     }else{
       vars[iter]=dd->InvMassDspiKK();
@@ -222,7 +222,7 @@ void AliRDHFCutsDstoKKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
   if(fVarsForOpt[12]){
     iter++;
     Double_t mPDGPhi = TDatabasePDG::Instance()->GetParticle(333)->Mass();
-    if(TMath::Abs(pdgdaughters[0]==321)){
+    if(TMath::Abs(pdgdaughters[0])==321){
       
       Double_t phimass01=d->InvMass2Prongs(0,1,321,321);
        vars[iter]=TMath::Abs(phimass01-mPDGPhi);
@@ -236,7 +236,7 @@ void AliRDHFCutsDstoKKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
   if(fVarsForOpt[13]){
     iter++;
     Double_t mPDGK0star = TDatabasePDG::Instance()->GetParticle(313)->Mass();
-    if(TMath::Abs(pdgdaughters[0]==321)){
+    if(TMath::Abs(pdgdaughters[0])==321){
       
       Double_t mass12kpi=d->InvMass2Prongs(1,2,321,211);
       vars[iter]=TMath::Abs(mass12kpi-mPDGK0star);
@@ -366,8 +366,14 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
 
     Int_t okDsKKpi=1;
     Int_t okDspiKK=1;
-    Int_t okMassPhi=0;
-    Int_t okMassK0star=0;
+    Int_t okMassPhiKKpi=0;
+    Int_t okMassPhipiKK=0;
+    Int_t okMassK0starKKpi=0;
+    Int_t okMassK0starpiKK=0;
+    Int_t okDsPhiKKpi=0;
+    Int_t okDsPhipiKK=0;
+    Int_t okDsK0starKKpi=0;
+    Int_t okDsK0starpiKK=0;
 
     Double_t pt=d->Pt();
     Int_t ptbin=PtBin(pt);
@@ -394,16 +400,20 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
     if(okDsKKpi){
       Double_t mass01phi=d->InvMass2Prongs(0,1,321,321);
       Double_t mass12K0s=d->InvMass2Prongs(1,2,321,211);
-      if(TMath::Abs(mass01phi-mPhiPDG)<fCutsRD[GetGlobalIndex(12,ptbin)]) okMassPhi=1;
-      if(TMath::Abs(mass12K0s-mK0starPDG)<fCutsRD[GetGlobalIndex(13,ptbin)]) okMassK0star = 1;
-      if(!okMassPhi && !okMassK0star) okDsKKpi=0;
+      if(TMath::Abs(mass01phi-mPhiPDG)<fCutsRD[GetGlobalIndex(12,ptbin)]) okMassPhiKKpi=1;
+      if(TMath::Abs(mass12K0s-mK0starPDG)<fCutsRD[GetGlobalIndex(13,ptbin)]) okMassK0starKKpi = 1;
+      if(!okMassPhiKKpi && !okMassK0starKKpi) okDsKKpi=0;
+      if(okMassPhiKKpi) okDsPhiKKpi=1;
+      if(okMassK0starKKpi) okDsK0starKKpi=1;
     }
     if(okDspiKK){
       Double_t mass01K0s=d->InvMass2Prongs(0,1,211,321);
       Double_t mass12phi=d->InvMass2Prongs(1,2,321,321);
-      if(TMath::Abs(mass01K0s-mK0starPDG)<fCutsRD[GetGlobalIndex(13,ptbin)]) okMassK0star = 1;
-      if(TMath::Abs(mass12phi-mPhiPDG)<fCutsRD[GetGlobalIndex(12,ptbin)]) okMassPhi=1;
-      if(!okMassPhi && !okMassK0star) okDspiKK=0;
+      if(TMath::Abs(mass01K0s-mK0starPDG)<fCutsRD[GetGlobalIndex(13,ptbin)]) okMassK0starpiKK = 1;
+      if(TMath::Abs(mass12phi-mPhiPDG)<fCutsRD[GetGlobalIndex(12,ptbin)]) okMassPhipiKK=1;
+      if(!okMassPhipiKK && !okMassK0starpiKK) okDspiKK=0;
+      if(okMassPhipiKK) okDsPhipiKK=1;
+      if(okMassK0starpiKK) okDsK0starpiKK=1;
     }
     if(!okDsKKpi && !okDspiKK){
       CleanOwnPrimaryVtx(d,aod,origownvtx);
@@ -448,7 +458,7 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
-       
+
     // Cuts on candidate triplet
 
     if(d->GetSigmaVert()>fCutsRD[GetGlobalIndex(6,ptbin)]){
@@ -484,6 +494,15 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
     CleanOwnPrimaryVtx(d,aod,origownvtx);
    
 
+    if(!okDsKKpi){
+      okDsPhiKKpi=0;
+      okDsK0starKKpi=0;
+    }
+    if(!okDspiKK){
+      okDsPhipiKK=0;
+      okDsK0starpiKK=0;
+    }
+
     // PID selection
     Int_t returnvaluePID=3;  
     if(selectionLevel==AliRDHFCuts::kAll || 
@@ -496,12 +515,23 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
 
     Bool_t okPidDsKKpi=returnvaluePID&1;
     Bool_t okPidDspiKK=returnvaluePID&2;
+    if(!okPidDsKKpi){
+      okDsPhiKKpi=0;
+      okDsK0starKKpi=0;
+    }
+    if(!okPidDspiKK){
+      okDsPhipiKK=0;
+      okDsK0starpiKK=0;
+    }
+
     if((okPidDsKKpi && okDsKKpi)||(okPidDspiKK && okDspiKK)){
       Int_t returnvalue=0;
       if(okDsKKpi) returnvalue+=1;
       if(okDspiKK) returnvalue+=2;
-      if(okMassPhi) returnvalue+=4;
-      if(okMassK0star) returnvalue+=8;
+      if(okDsPhiKKpi) returnvalue+=4;
+      if(okDsPhipiKK) returnvalue+=8;
+      if(okDsK0starKKpi) returnvalue+=16;
+      if(okDsK0starpiKK) returnvalue+=32;
       return returnvalue;
     }else{
       return 0;
