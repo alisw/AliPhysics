@@ -247,7 +247,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   }
 
   if (!fGeom) { // set misalignment matrices (stored in first event)
-    fGeom = new AliEMCALGeoUtils("EMCAL_FIRSTYEARV1","EMCAL");
+    fGeom = new AliEMCALGeoUtils("EMCAL_FIRSTYEARV1","EMCAL"); //todo need to set name
     if (fEsdEv) {
       for (Int_t i=0; i<4; ++i)
         fGeom->SetMisalMatrix(fEsdEv->GetESDRun()->GetEMCALMatrix(i),i);
@@ -382,6 +382,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   FillCellHists();
   FillClusHists();
   FillPionHists();
+  FillOtherHists();
 
   PostData(1, fOutput);
 }      
@@ -401,6 +402,97 @@ void AliAnalysisTaskEMCALPi0PbPb::Terminate(Option_t *)
 }
 
 //________________________________________________________________________
+void  AliAnalysisTaskEMCALPi0PbPb::ClusterAfterburner()
+{
+  // 
+
+  AliVCaloCells *cells = fEsdCells;
+  if (!cells)
+    cells = fAodCells;
+
+  if (!cells)
+    return;
+
+  Int_t ncells = cells->GetNumberOfCells();
+  if (ncells<=0)
+    return;
+
+  Double_t cellMeanE = 0, cellSigE = 0;
+  for (Int_t i = 0; i<ncells; ++i) {
+    Double_t cellE = cells->GetAmplitude(i);
+    cellMeanE += cellE;
+    cellSigE += cellE*cellE;
+  }    
+  cellMeanE /= ncells;
+  cellSigE /= ncells;
+  cellSigE -= cellMeanE*cellMeanE;
+  if (cellSigE<0)
+    cellSigE = 0;
+  cellSigE = TMath::Sqrt(cellSigE / ncells);
+
+  Double_t subE = cellMeanE - 7*cellSigE;
+  if (subE<0)
+    return;
+
+  for (Int_t i = 0; i<ncells; ++i) {
+    Short_t id=-1;
+    Double_t amp=0,time=0;
+    if (!cells->GetCell(i, id, amp, time))
+      continue;
+    amp -= cellMeanE;
+    if (amp<0.001)
+      amp = 0;
+    cells->SetCell(i, id, amp, time);
+  }    
+
+  TObjArray *clusters = fEsdClusters;
+  if (!clusters)
+    clusters = fAodClusters;
+
+  if (!clusters)
+    return;
+
+  Int_t nclus = clusters->GetEntries();
+  for (Int_t i = 0; i<nclus; ++i) {
+    AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
+    if (!clus->IsEMCAL())
+      continue;
+    Int_t nc = clus->GetNCells();
+    Double_t clusE = 0;
+    UShort_t ids[100] = {0};
+    Double_t fra[100] = {0};
+    for (Int_t j = 0; j<nc; ++j) {
+      Short_t id = TMath::Abs(clus->GetCellAbsId(j));
+      Double_t cen = cells->GetCellAmplitude(id);
+      clusE += cen;
+      if (cen>0) {
+        ids[nc] = id;
+        ++nc;
+      }
+    }
+    if (clusE<=0) {
+      clusters->RemoveAt(i);
+      continue;
+    }
+
+    for (Int_t j = 0; j<nc; ++j) {
+      Short_t id = ids[j];
+      Double_t cen = cells->GetCellAmplitude(id);
+      fra[j] = cen/clusE;
+    }
+    clus->SetE(clusE);
+    AliAODCaloCluster *aodclus = dynamic_cast<AliAODCaloCluster*>(clus);
+    if (aodclus) {
+      aodclus->Clear("");
+      aodclus->SetNCells(nc);
+      aodclus->SetCellsAmplitudeFraction(fra);
+      aodclus->SetCellsAbsId(ids);
+    }
+  }
+  clusters->Compress();
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskEMCALPi0PbPb::FillCellHists()
 {
   // Fill histograms related to cell properties.
@@ -417,7 +509,7 @@ void AliAnalysisTaskEMCALPi0PbPb::FillCellHists()
     if (ncells==0)
       return;
 
-    for (Int_t i = 0; i<ncells; ++i ) {
+    for (Int_t i = 0; i<ncells; ++i) {
       Int_t absID    = TMath::Abs(cells->GetCellNumber(i));
       Double_t cellE = cells->GetAmplitude(i);
       fHCellE->Fill(cellE);
@@ -440,7 +532,9 @@ void AliAnalysisTaskEMCALPi0PbPb::FillCellHists()
     fHCellH->Fill(cellMaxE);
     cellMeanE /= ncells;
     fHCellM->Fill(cellMeanE);
-    fHCellM2->Fill(cellMeanE*ncells/24/48/4); //hard-coded but there is a way to figure out from geometry
+    fHCellM2->Fill(cellMeanE*ncells/24/48/4); //hard-coded but there is a way to figure out from geometry     
+    //Double_t avgE = totE / AliEMCALGeometry::GetInstance(fGeomName)->GetNumberOfSuperModules()/48/24;
+
     for (Int_t i=0; i<4; ++i) 
       fHCellMult[i]->Fill(cellModCount[i]);
   }
@@ -572,92 +666,9 @@ void AliAnalysisTaskEMCALPi0PbPb::FillPionHists()
 }
 
 //________________________________________________________________________
-void  AliAnalysisTaskEMCALPi0PbPb::ClusterAfterburner()
+void AliAnalysisTaskEMCALPi0PbPb::FillOtherHists()
 {
-  // 
-
-  AliVCaloCells *cells = fEsdCells;
-  if (!cells)
-    cells = fAodCells;
-
-  if (!cells)
-    return;
-
-  Int_t ncells = cells->GetNumberOfCells();
-  if (ncells<=0)
-    return;
-
-  Double_t cellMeanE = 0, cellSigE = 0;
-  for (Int_t i = 0; i<ncells; ++i ) {
-    Double_t cellE = cells->GetAmplitude(i);
-    cellMeanE += cellE;
-    cellSigE += cellE*cellE;
-  }    
-  cellMeanE /= ncells;
-  cellSigE /= ncells;
-  cellSigE -= cellMeanE*cellMeanE;
-  if (cellSigE<0)
-    cellSigE = 0;
-  cellSigE = TMath::Sqrt(cellSigE / ncells);
-
-  Double_t subE = cellMeanE - 7*cellSigE;
-  if (subE<0)
-    return;
-
-  for (Int_t i = 0; i<ncells; ++i) {
-    Short_t id=-1;
-    Double_t amp=0,time=0;
-    if (!cells->GetCell(i, id, amp, time))
-      continue;
-    amp -= cellMeanE;
-    if (amp<0.001)
-      amp = 0;
-    cells->SetCell(i, id, amp, time);
-  }    
-
-  TObjArray *clusters = fEsdClusters;
-  if (!clusters)
-    clusters = fAodClusters;
-
-  if (!clusters)
-    return;
-
-  Int_t nclus = clusters->GetEntries();
-  for (Int_t i = 0; i<nclus; ++i) {
-    AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
-    Int_t nc = clus->GetNCells();
-    Double_t clusE = 0;
-    UShort_t ids[100] = {0};
-    Double_t fra[100] = {0};
-    for (Int_t j = 0; j<nc; ++j) {
-      Short_t id = TMath::Abs(clus->GetCellAbsId(j));
-      Double_t cen = cells->GetCellAmplitude(id);
-      clusE += cen;
-      if (cen>0) {
-        ids[nc] = id;
-        ++nc;
-      }
-    }
-    if (clusE<=0) {
-      clusters->RemoveAt(i);
-      continue;
-    }
-
-    for (Int_t j = 0; j<nc; ++j) {
-      Short_t id = ids[j];
-      Double_t cen = cells->GetCellAmplitude(id);
-      fra[j] = cen/clusE;
-    }
-    clus->SetE(clusE);
-    AliAODCaloCluster *aodclus = dynamic_cast<AliAODCaloCluster*>(clus);
-    if (aodclus) {
-      aodclus->Clear("");
-      aodclus->SetNCells(nc);
-      aodclus->SetCellsAmplitudeFraction(fra);
-      aodclus->SetCellsAbsId(ids);
-    }
-  }
-  clusters->Compress();
+  // Fill histograms related to cell properties.
 }
 
 //________________________________________________________________________
