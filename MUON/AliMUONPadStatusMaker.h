@@ -111,6 +111,10 @@ public:
   
   static Float_t SwitchValue(const TObjArray& dcsArray);
   
+  Int_t HVStatus(Int_t detElemId, Int_t manuId) const;
+  
+  Int_t OccupancyStatus(Int_t detElemId, Int_t manuId) const;
+  
 private:
   /// Not implemented
   AliMUONPadStatusMaker(const AliMUONPadStatusMaker&);
@@ -136,10 +140,6 @@ private:
                        Bool_t& hvChannelON,
                        Bool_t& hvSwitchON) const;
 
-  Int_t HVStatus(Int_t detElemId, Int_t manuId) const;
-
-  Int_t OccupancyStatus(Int_t detElemId, Int_t manuId) const;
-  
   void SetHVStatus(Int_t detElemId, Int_t index, Int_t status) const;
 
 private:

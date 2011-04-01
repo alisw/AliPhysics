@@ -25,12 +25,15 @@ class AliMUONRegionalTriggerConfig;
 class AliMUONGlobalCrateConfig;
 class AliMUONRejectList;
 class AliMUONRecoParam;
+class TH1;
 
 namespace AliMUONCDB
 {
   Bool_t CheckOCDB(Bool_t pathOnly = kFALSE);
   Bool_t CheckMapping(Bool_t segmentationOnly = kFALSE);
   
+  void CheckHV(Int_t runNumber, Int_t verbose=0);
+
   Bool_t LoadField();
   Bool_t LoadMapping(Bool_t segmentationOnly = kFALSE);
   AliMUONRecoParam* LoadRecoParam();
@@ -56,7 +59,7 @@ namespace AliMUONCDB
 
   AliMUONVStore* Diff(AliMUONVStore& store1, AliMUONVStore& store2, const char* opt="abs");
   
-  void Plot(const AliMUONVStore& store, const char* name, Int_t nbins=512);
+  TH1** Plot(const AliMUONVStore& store, const char* name, Int_t nbins=512);
 
   void ReadIntegers(const char* filename, std::vector<int>& integers);
 

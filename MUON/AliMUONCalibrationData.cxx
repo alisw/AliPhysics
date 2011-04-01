@@ -23,6 +23,7 @@
 #include "AliDCSValue.h"
 #include "AliLog.h"
 #include "AliMpDCSNamer.h"
+#include "AliMpIntPair.h"
 #include "AliMUONConstants.h"
 #include "AliMUONGlobalCrateConfig.h"
 #include "AliMUONRegionalTriggerConfig.h"
@@ -36,6 +37,7 @@
 #include <Riostream.h>
 #include <TClass.h>
 #include <TMap.h>
+#include <TMath.h>
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONCalibrationData
@@ -59,6 +61,17 @@ ClassImp(AliMUONCalibrationData)
 
 AliMUONVStore* AliMUONCalibrationData::fgBypassPedestals(0x0);
 AliMUONVStore* AliMUONCalibrationData::fgBypassGains(0x0);
+
+namespace  
+{
+  void MarkForDeletion(Int_t* indices, Int_t first, Int_t last)
+  {
+    for ( Int_t i = first; i <= last; ++i ) 
+    {
+      indices[i] = 1;
+    }
+  }
+}
 
 //_____________________________________________________________________________
 AliMUONCalibrationData::AliMUONCalibrationData(Int_t runNumber, 
@@ -157,128 +170,405 @@ AliMUONCalibrationData::CreateGlobalTriggerCrateConfig(Int_t runNumber, Int_t* s
 
 
 //______________________________________________________________________________
-void AliMUONCalibrationData::PatchHVValues(TObjArray& values,
-                                           Int_t& nbelowready,
-                                           Int_t& noff,
-                                           Int_t& ntrips,
-                                           Int_t& neor,
-                                           TString* msg)
+Bool_t AliMUONCalibrationData::CheckHVGroup(TObjArray& values, Int_t first, Int_t last, Double_t& value, Int_t& slope, TString* msg)
+{
+  // Get the HV of the values between first and last indices
+  // return the HV slope  (in Volt per second) and a message
+  // Return kFALSE if we must discard the group
+  //
+  
+  if (msg) *msg="";
+  
+  if ( last < first ) return kFALSE;
+  if ( last - first < 2 ) return kFALSE;
+  
+  Double_t a(0.0);
+  Double_t b(0.0);
+
+  Float_t HVSAME(1); // 1 volts
+
+  AliDCSValue* vfirst = static_cast<AliDCSValue*>(values.UncheckedAt(first));
+  AliDCSValue* vlast = static_cast<AliDCSValue*>(values.UncheckedAt(last));
+
+  Int_t deltaHV = TMath::Nint(TMath::Abs(vfirst->GetFloat()-vlast->GetFloat()));
+  
+  if ( deltaHV < HVSAME ) return kFALSE;
+
+  for ( Int_t i = first; i <= last; ++i )
+  {
+    AliDCSValue* v = static_cast<AliDCSValue*>(values.UncheckedAt(i));
+
+    Double_t y = v->GetFloat() - vfirst->GetFloat();
+    Double_t x = v->GetTimeStamp() - vfirst->GetTimeStamp();
+  
+    a += x*y;
+    b += x*x;
+  }
+  
+  value = a/b;
+  slope = value > 0 ? 1 : -1;
+  value = TMath::Abs(value);
+  
+  UInt_t deltaTime = vlast->GetTimeStamp() - vfirst->GetTimeStamp();
+  
+  if (msg)
+  {
+    if (slope>0) (*msg) = Form("RU%d[%d:%d](%d)",TMath::Nint(value),first,last,deltaTime);
+    if (slope<0) (*msg) = Form("RD%d[%d:%d](%d)",TMath::Nint(value),first,last,deltaTime);
+    
+    if ( TMath::Nint(value) == 0 )
+    {
+      // this is to protect for the few cases 
+      // (see e.g. MchHvLvLeft/Chamber00Left/Quad2Sect0.actual.vMon in run 134497)
+      // where we can have *lots* of values (2483 in this example) but that
+      // are more or less constant...
+      //
+      // or simply to remove small ramps
+      //
+      slope = 0;
+      value = (vfirst->GetFloat()+vlast->GetFloat())/2.0;
+      *msg = Form("FLUCT%d[%d:%d]",TMath::Nint(value),first,last);
+    }
+  }
+  
+  return kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
+                                             TString* msg)
 {
   /// We do here a little bit of massaging of the HV values, if needed.
   ///
-  /// The main point is to "gather" the values near the end of the run (the last XX seconds)
-  /// to avoid the ramp-down before end-of-run syndrom...
+  /// The main point is to "gather" values that are within a given small amount
+  /// of time (typically 60 seconds) and infer a slope from those values
+  /// slope > 0 means it is a ramp-up, slope < 0 that's a ramp-down
   ///
-  /// The rest is more of a debug/expert tool to have closer look at trends
+  /// This is to avoid both the "ramp-down-before-end-of-run" and the
+  /// "ramp-up-after-start-of-run" syndroms...
+  ///
+  /// Return kFALSE is the kind of HV (trouble) case we have here
+  /// has not been identified...
   ///
   
-  Double_t HVBEAMTUNING(1300); 
+  UInt_t DELTATIME(60); // in seconds
+  Int_t IENDRU(60); // in seconds
   
-  Bool_t eorProblem(kFALSE);
+  // Start by finding groups of values which are not separated (each) by more than
+  // deltaTime
   
-  UInt_t mergeDelay(300); // in seconds
+  Bool_t gather(kFALSE);
+  Int_t ifirst(0);
+  Int_t ilast(0);
+  TObjArray groups;
+  groups.SetOwner(kTRUE);
   
-  // First start by removing values within the last mergeDelay seconds, keeping only
-  // the last one
-  
-  AliDCSValue* last = static_cast<AliDCSValue*>(values.At(values.GetLast()));
-  
-  Int_t* toberemoved = new Int_t[values.GetLast()+1];
-  
-  memset(toberemoved,0,(values.GetLast()+1)*sizeof(Int_t));
-  
-  Int_t ntoberemoved(0);
-  
-  for ( Int_t i = values.GetLast()-1; i > 0; --i ) 
+  for ( Int_t i = values.GetLast(); i > 0; --i ) 
   {
-    AliDCSValue* val = static_cast<AliDCSValue*>(values.At(i));
-    
-    if ( last->GetTimeStamp() - val->GetTimeStamp() < mergeDelay )
+    AliDCSValue* vi = static_cast<AliDCSValue*>(values.UncheckedAt(i));
+    AliDCSValue* vj = static_cast<AliDCSValue*>(values.UncheckedAt(i-1));
+
+    if ( vi->GetTimeStamp() - vj->GetTimeStamp() < DELTATIME )
     {
-      toberemoved[i]=1;
-      ++ntoberemoved;
-    }
-  }
-  
-  if (ntoberemoved)
-  {
-    // ok, we have some values within the same mergeDelay seconds
-    // we'll "merge" them by taking the last one, except if
-    // the last one is below HVBEAMTUNING, in which case we
-    // remove that one too (meaning the ramp-down was requesting
-    // before the end-of-run)
-    
-    if ( last->GetFloat() < HVBEAMTUNING ) 
-    {
-      eorProblem=kTRUE;
-      if (msg) *msg = "ERROR RAMP-DOWN BEFORE EOR";
-      toberemoved[values.GetLast()]=1;
-    }
-    
-    for ( Int_t i = 0; i <= values.GetLast(); ++i ) 
-    {
-      if ( toberemoved[i] ) values.RemoveAt(i);
-    }
-    
-    values.Compress();
-    
-  }
-  
-  delete[] toberemoved;
-  
-  if (eorProblem)
-  {
-    ++neor;
-    return;
-  }
-  
-  // now for the rest of the diagnosis
-  
-  Int_t ntmpoff(0);
-  Int_t ntmpready(0);
-  
-  for ( Int_t i = 0; i <= values.GetLast(); ++i ) 
-  {
-    AliDCSValue* val = static_cast<AliDCSValue*>(values.At(i));
-    
-    if ( val->GetFloat() < AliMpDCSNamer::TrackerHVOFF() ) 
-    {
-      ++ntmpoff;
-    }
-    else if ( val->GetFloat() < HVBEAMTUNING )
-    {
-      ++ntmpready;
-    }
-  }
-  
-  if ( ntmpoff )
-  {
-    if ( ntmpoff == values.GetLast()+1 ) 
-    {
-      if (msg) *msg = "ERROR HV OFF";
-      ++noff;
+      if ( !gather ) 
+      {
+        gather = kTRUE;
+        ifirst = i;    
+      }
+      ilast=i;
     }
     else
     {
-      if (msg) *msg = "ERROR TRIP";
-      ++ntrips;    
+      if ( gather ) 
+      {
+        ilast=i;
+        
+        groups.Add(new AliMpIntPair(ilast,ifirst));
+      }
+      gather = kFALSE;
     }
   }
   
-  if ( ntmpready == values.GetLast()+1 ) 
+  if (gather)
   {
-    if (msg) *msg = "ERROR BELOW READY";    
-  }      
+    groups.Add(new AliMpIntPair(0,ifirst));
+  }
+                 
+  TIter nextGroup(&groups,kIterBackward);
+  AliMpIntPair* p;
+  TString internalMsg;
+  Int_t ngroups(0);
+
+  Int_t nRU(0);
+  Int_t nRD(0);
+  Int_t nStartRU(0);
+  Int_t nEndAndShortRU(0);
+  Int_t nEndRD(0);
+  Int_t nTripRD(0);
+  Int_t nFluct(0);
   
-  if (ntmpready) ++nbelowready;
+  while ( ( p = static_cast<AliMpIntPair*>(nextGroup()) ) )
+  {
+    Double_t value;
+    Int_t slope;
+    
+    TString groupMsg;
+    
+    AliDebugClass(1,Form("group %d:%d",p->GetFirst(),p->GetSecond()));
+    
+    Bool_t ok = CheckHVGroup(values,p->GetFirst(),p->GetSecond(),value,slope,&groupMsg);
+    
+    if (!ok) continue;
+    
+    ++ngroups;
+    
+    if ( slope > 0 )
+    {
+      if ( p->GetFirst() == 0 ) 
+      {
+        // start with a ramp-up
+        ++nStartRU;
+      }
+      else if ( p->GetSecond() == values.GetLast() && TMath::Nint(value) < IENDRU )
+      {
+        ++nEndAndShortRU;
+      }
+      else
+      {
+        // ramp-up in the middle of nowhere...
+        ++nRU;
+      }
+    }
+    else if ( slope < 0 )
+    {
+      if ( p->GetSecond() == values.GetLast() ) 
+      {
+        // end with a ramp-down
+        ++nEndRD;
+      }
+      else
+      {
+        // ramp-down in the middle of nowhere
+        ++nRD;
+      }
+
+      AliDCSValue* d = static_cast<AliDCSValue*>(values.At(p->GetSecond()));
+      
+      if ( d->GetFloat() < AliMpDCSNamer::TrackerHVOFF() )
+      {
+        ++nTripRD;
+      }
+    }
+    else
+    {
+      ++nFluct;
+    }
+    
+    internalMsg += groupMsg;
+    internalMsg += " ";    
+  }
+  
+  /*
+   
+   Once we have "decoded" the groups we try to find out which of 
+   the following cases we're facing :
+  
+   case A = -------- = OK(1)
+  
+   case B = ----
+                \
+                \   = OK, once we have removed the ramp-down (2)
+  
+   case C =    ----- 
+              /
+             /       = OK, once we have removed the ramp-up (3)
+  
+   case D =    ----- 
+              /     \
+             /       \ = OK, once we have removed the ramp-down (2) and the ramp-up (3)
+  
+   case E = ----
+                \
+                 \____ = TRIP = BAD (here the ramp-down slope should be bigger than in case C)
+  
+   case F = ----         
+                \      ----- = BAD (trip + ramp-up at end of run)
+                 \____/   
+  
+   case G = fluctuations (within a range defined in CheckHVGroup...)
+   
+   case H =            
+                   /
+                  /   = ramp-up right at the end-of-run = OK (4)
+            ------
+   
+   (1) OK means the group is identified correctly, still the value can be below ready...
+   (2) ramp-down values will be removed if the ramp is indeed the last values in the serie
+       i.e. it's really an end-of-run problem (otherwise it's not case B)
+   (3) ramp-up values will be removed if the ramp is indeed the first values in the serie
+       i.e. it's really a start-of-run problem (otherwise it's not case C)
+   (4) OK if short enough...
+   
+   Any other case is unknown and we'll :
+   a) return kFALSE
+   b) assume the channel is OFF.
+  
+  
+  */
+  
+  AliDebugClass(1,Form("msg=%s ngroupds=%d",internalMsg.Data(),ngroups));
+  AliDebugClass(1,Form("nRU %d nRD %d nStartRU %d nEndRD %d nTripRD %d nFluct %d",
+                       nRU,nRD,nStartRU,nEndRD,nTripRD,nFluct));
+  
+  TString hvCase("OTHER");
+  int dummy(0),a(-1),b(-1);
+  char r[80];
+  Int_t nvalues = values.GetSize();  
+  Int_t* indices = new Int_t[nvalues];
+  memset(indices,0,nvalues*sizeof(Int_t));
+         
+  AliDCSValue* vfirst = static_cast<AliDCSValue*>(values.UncheckedAt(0));
+  AliDCSValue* vlast = static_cast<AliDCSValue*>(values.UncheckedAt(values.GetLast()));
+
+  UInt_t meanTimeStamp = ( vfirst->GetTimeStamp() + vlast->GetTimeStamp() ) / 2;
+  
+  if ( ngroups == 0 ) 
+  {
+    hvCase = "A"; 
+  }
+  else if ( nTripRD > 0 )
+  {
+    if ( nRU > 0 && nRD > 0 )
+    {
+      hvCase = "F";
+    }
+    else
+    {
+      hvCase = "E";
+    }
+    internalMsg += "TRIP ";
+    MarkForDeletion(indices,0,values.GetLast());
+    values.Add(new AliDCSValue(static_cast<Float_t>(0),meanTimeStamp));
+  }
+  else if ( nStartRU > 0 && nRU == 0 && nRD == 0 && nEndRD == 0 )
+  {
+    hvCase = "C";
+    sscanf(internalMsg.Data(),"RU%10d[%10d:%10d]%80s",&dummy,&a,&b,r);
+    MarkForDeletion(indices,a,b);
+  }
+  else if ( nStartRU > 0 && nEndRD > 0 && nRD == 0 && nRU == 0 )
+  {
+    hvCase = "D";
+    sscanf(internalMsg.Data(),"RU%10d[%10d:%10d]%80s",&dummy,&a,&b,r);    
+    MarkForDeletion(indices,a,b-1);
+    Int_t i = internalMsg.Index("RD",strlen("RD"),0,TString::kExact);
+    sscanf(internalMsg(i,internalMsg.Length()-i).Data(),
+           "RD%10d[%10d:%10d]%80s",&dummy,&a,&b,r);    
+    MarkForDeletion(indices,a+1,b);
+  }
+  else if ( nEndRD > 0 && nStartRU == 0 && nRU == 0 && nRD == 0 )
+  {
+    hvCase = "B";
+    Int_t i = internalMsg.Index("RD",strlen("RD"),0,TString::kExact);
+    sscanf(internalMsg(i,internalMsg.Length()-i).Data(),
+           "RD%10d[%10d:%10d]%80s",&dummy,&a,&b,r);    
+    MarkForDeletion(indices,a,b);
+  }
+  else if ( nFluct > 0 )
+  {
+    hvCase = "G";
+    TObjArray* af = internalMsg.Tokenize(" ");
+    TIter next(af);
+    TObjString* str;
+    while ( ( str = static_cast<TObjString*>(next()) ) )
+    {
+      TString s(str->String());
+      if ( s.BeginsWith("FLUCT") )
+      {
+        sscanf(s.Data(),"FLUCT%d[%d:%d]",&dummy,&a,&b);
+        MarkForDeletion(indices,a,b);
+      }
+    }
+    delete af;
+  }
+  else if ( nEndAndShortRU > 0 && nStartRU == 0 && nRU == 0 && nRD == 0 && nEndRD == 0 )
+  {
+    hvCase = "H";
+    sscanf(internalMsg.Data(),"RU%10d[%10d:%10d]%80s",&dummy,&a,&b,r);
+    MarkForDeletion(indices,a,b);
+  }
+  else
+  {
+    // last chance... 
+    // here we know it's not a trip, so let's assume everything is OK
+    // if first and last value are in the same ballpark
+
+    const Double_t HVFLUCT(20); // volts
+    
+    if ( TMath::Abs(vfirst->GetFloat() - vlast->GetFloat()) < HVFLUCT )
+    {
+      hvCase = "Z";
+    }
+    MarkForDeletion(indices,1,nvalues-1);
+  }
+  
+  for ( Int_t i = 0; i < nvalues; ++i ) 
+  {
+    if ( indices[i] )
+    {
+      values.RemoveAt(i);
+    }
+  }
+  
+  values.Compress();
+
+  delete[] indices;
+  
+  if ( !values.GetEntries() )
+  {
+    AliErrorClass(Form("No value left after patch... Check that !!! initial # of values=%d msg=%s",
+                       nvalues,internalMsg.Data()));
+    hvCase = "OTHER";
+  }
+
+  // take the max of the remaining values
+  TIter nextA(&values);
+  AliDCSValue* val;
+  Float_t maxval(-9999);
+  
+  while ( ( val = static_cast<AliDCSValue*>(nextA()) ) )
+  {
+    if ( val->GetFloat() > maxval )
+    {
+      maxval = val->GetFloat();
+    }
+  }
+  
+  values.Clear();
+  
+  values.Add(new AliDCSValue(maxval,meanTimeStamp));
+  
+  // once the case is inferred, add a "CASE:%10d",hvCase.Data()
+  // to the msg
+  // so we can them sum up for all channels and get a summary per run...
+  
+  internalMsg += Form("CASE:%s",hvCase.Data());
+ 
+  if (msg) *msg = internalMsg.Data();
+  
+  return hvCase=="OTHER" ? kFALSE : kTRUE;
 }
 
 //_____________________________________________________________________________
 TMap*
-AliMUONCalibrationData::CreateHV(Int_t runNumber, Int_t* startOfValidity, Bool_t patched)
+AliMUONCalibrationData::CreateHV(Int_t runNumber, 
+                                 Int_t* startOfValidity, 
+                                 Bool_t patched,
+                                 TList* messages)
 {
   /// Create a new HV map from the OCDB for a given run
   TMap* hvMap = dynamic_cast<TMap*>(CreateObject(runNumber,"MUON/Calib/HV",startOfValidity));
+
   if (patched)
   {
     TIter next(hvMap);
@@ -298,25 +588,62 @@ AliMUONCalibrationData::CreateHV(Int_t runNumber, Int_t* startOfValidity, Bool_t
       }
       else
       {
-        int nbelowready(0);
-        int noff(0);
-        int ntrips(0);
-        int neor(0);
+        TString msg;
         
-        PatchHVValues(*values,nbelowready,noff,ntrips,neor,0x0);
-        if (neor)
+        AliDebugClass(1,Form("channel %s",name.Data()));
+        Bool_t ok = PatchHVValues(*values,&msg);
+        
+        if ( messages ) 
         {
-          nbelowready=noff=ntrips=neor=0;
-          PatchHVValues(*values,nbelowready,noff,ntrips,neor,0x0);
-          if (neor)
-          {
-            AliErrorClass("neor is not null after PatchHVValue ! This is serious !");
-          }
+          messages->Add(new TObjString(Form("%s:%s",hvChannelName->String().Data(),msg.Data())));
+        }
+        
+        if (!ok)
+        {
+          AliErrorClass(Form("PatchHVValue was not successfull ! This is serious ! "
+                             "You'll have to check the logic for channel %s in run %09d",
+                             name.Data(),runNumber));
         }
       }
     }
     
   }
+  
+  if ( messages ) 
+  {
+    Int_t a(0),b(0),c(0),d(0),e(0),f(0),g(0),h(0),u(0),z(0);
+    TIter next(messages);
+    TObjString* msg;
+    char hvCase;
+    
+    while ( ( msg = static_cast<TObjString*>(next()) ) )
+    {
+      Int_t i = msg->String().Index("CASE",strlen("CASE"),0,TString::kExact);
+      
+      if ( i >= 0 )
+      {
+        sscanf(msg->String()(i,msg->String().Length()-i).Data(),"CASE:%c",&hvCase);
+      }
+
+      switch (hvCase)
+      {
+        case 'A': ++a; break;
+        case 'B': ++b; break;
+        case 'C': ++c; break;
+        case 'D': ++d; break;
+        case 'E': ++e; break;
+        case 'F': ++f; break;
+        case 'G': ++g; break;
+        case 'H': ++h; break;
+        case 'Z': ++z; break;
+        default: ++u; break;
+      }
+    }
+    
+    messages->Add(new TObjString(Form("SUMMARY : # of cases A(%3d) B(%3d) C(%3d) D(%3d) E(%3d) F(%3d) G(%3d) H(%3d) Z(%3d) OTHER(%3d)",
+                                      a,b,c,d,e,f,g,h,z,u)));
+  }
+  
   return hvMap;
 }
 
@@ -352,7 +679,7 @@ AliMUONCalibrationData::CreateObject(Int_t runNumber, const char* path, Int_t* s
   /// Access the CDB for a given path (e.g. MUON/Calib/Pedestals),
   /// and return the corresponding TObject.
   
-  AliCodeTimerAutoClass(Form("%d : %s",runNumber,path),0);
+  AliCodeTimerAutoClass(Form("%09d : %s",runNumber,path),0);
   
   AliCDBManager* man = AliCDBManager::Instance();
   
@@ -377,7 +704,7 @@ AliMUONCalibrationData::CreateObject(Int_t runNumber, const char* path, Int_t* s
 	
   {
     
-    AliCodeTimerAutoClass(Form("Failed to get %s for run %d",path,runNumber),1);
+    AliCodeTimerAutoClass(Form("Failed to get %s for run %09d",path,runNumber),1);
 
   }
   
@@ -457,7 +784,7 @@ AliMUONCalibrationData::Gains() const
   }
   return fGains;
 }
-
+ 
 //_____________________________________________________________________________
 AliMUONVCalibParam*
 AliMUONCalibrationData::Gains(Int_t detElemId, Int_t manuId) const
@@ -841,5 +1168,3 @@ AliMUONCalibrationData::Check(Int_t runNumber)
     AliInfoClass("TriggerEfficiency read OK");
   }
 }
-
-

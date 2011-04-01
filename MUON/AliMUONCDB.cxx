@@ -43,6 +43,7 @@
 #include "AliMUONCalibrationData.h"
 #include "AliMUONConstants.h"
 #include "AliMUONGlobalCrateConfig.h"
+#include "AliMUONLogger.h"
 #include "AliMUONPadStatusMaker.h"
 #include "AliMUONPadStatusMapMaker.h"
 #include "AliMUONRecoParam.h"
@@ -129,6 +130,8 @@ void getBoundaries(const AliMUONVStore& store, Int_t dim,
     const AliMpVSegmentation* seg = 
       AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
         
+    if (!seg) continue;
+    
     for ( Int_t manuChannel = 0; manuChannel < value->Size(); ++manuChannel )
     {
       AliMpPad pad = seg->PadByLocation(manuId,manuChannel,kFALSE);
@@ -407,14 +410,14 @@ AliMUONCDB::Diff(AliMUONVStore& store1, AliMUONVStore& store2,
 }
 
 //_____________________________________________________________________________
-void 
+TH1** 
 AliMUONCDB::Plot(const AliMUONVStore& store, const char* name, Int_t nbins)
 {
   /// Make histograms of each dimension of the AliMUONVCalibParam
   /// contained inside store.
   /// It produces histograms named name_0, name_1, etc...
   
-  if (!AliMUONCDB::CheckMapping(kTRUE)) return;
+  if (!AliMUONCDB::CheckMapping(kTRUE)) return 0x0;
   
   TIter next(store.CreateIterator());
   AliMUONVCalibParam* param;
@@ -452,6 +455,8 @@ AliMUONCDB::Plot(const AliMUONVStore& store, const char* name, Int_t nbins)
     const AliMpVSegmentation* seg = 
       AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(detElemId,manuId);
     
+    if (!seg) continue;
+    
     for ( Int_t manuChannel = 0; manuChannel < param->Size(); ++manuChannel )
     {
       AliMpPad pad = seg->PadByLocation(manuId,manuChannel,kFALSE);
@@ -475,6 +480,8 @@ AliMUONCDB::Plot(const AliMUONVStore& store, const char* name, Int_t nbins)
   AliInfoGeneral("AliMUONCDB", Form("Number of channels = %d",n));
   
   delete[] nPerStation;
+  
+  return h;
 }
 
 //_____________________________________________________________________________
@@ -1735,6 +1742,13 @@ void AliMUONCDB::ShowFaultyBusPatches(const char* runlist, double occLimit,
     
     AliCDBEntry* e = man->Get("MUON/Calib/OccupancyMap",runNumber);
     
+    if (!e)
+    {
+      AliErrorGeneral("AliMUONCDB::ShowFaultyBusPatches",
+                      Form("Could not get OccupancyMap for run %09d",runNumber));
+      continue;
+    }
+    
     AliMUONVStore* occmap = static_cast<AliMUONVStore*>(e->GetObject());
     
     AliMUONTrackerData td("occ","occ",*occmap);
@@ -1809,4 +1823,127 @@ void AliMUONCDB::ShowFaultyBusPatches(const char* runlist, double occLimit,
   gSystem->Exec(Form("cat %s.txt",outputBaseName));
   
 }
+
+//______________________________________________________________________________
+void AliMUONCDB::CheckHV(Int_t runNumber, Int_t verbose)
+{
+  /// Check the HV values in OCDB for a given run
+  
+  TList messages;
+  messages.SetOwner(kTRUE);
+  
+  Bool_t patched(kTRUE);
+  
+  if (!AliCDBManager::Instance()->IsDefaultStorageSet())
+  {
+    AliCDBManager::Instance()->SetDefaultStorage("raw://");
+  }
+
+  AliCDBManager::Instance()->SetRun(runNumber);
+
+  LoadMapping();
+  
+  AliMUONCalibrationData::CreateHV(runNumber,0,patched,&messages);
+  
+  AliMUONCalibrationData cd(runNumber,true);
+  
+  AliMUONPadStatusMaker statusMaker(cd);
+  
+  AliMUONRecoParam* rp = AliMUONCDB::LoadRecoParam();
+  
+  if (!rp)
+  {
+    AliErrorGeneral("AliMUONCDB::CheckHV","Could not get RecoParam !!!");
+    return;
+  }
+  
+  statusMaker.SetLimits(*rp);
+  
+  TIter next(&messages);
+  TObjString* s;
+  AliMpDCSNamer hvNamer("TRACKER");
+  AliMUONLogger log;
+  
+  while ( ( s = static_cast<TObjString*>(next()) ) )
+  {
+    TObjArray* a = s->String().Tokenize(":");
+    
+    TString name(static_cast<TObjString*>(a->At(0))->String());
+    
+    if ( name.Contains("sw") || name.Contains("SUMMARY") ) continue;
+    
+    Int_t index = hvNamer.DCSIndexFromDCSAlias(name.Data());
+    
+    Int_t detElemId = hvNamer.DetElemIdFromDCSAlias(name.Data());
+    
+    AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+    
+    if (!de)
+    {
+      AliErrorGeneral("AliMUONCDB::CheckHV",Form("Could not get detElemId from dcsAlias %s",name.Data()));
+      continue;
+    }
+    
+    Int_t manuId;
+    
+    if ( index >= 0 )
+    {
+      const AliMpArrayI* array = de->ManusForHV(index);
+      manuId = array->GetValue(0);
+    }
+    else
+      
+    {
+      AliMpBusPatch* bp = AliMpDDLStore::Instance()->GetBusPatch(de->GetBusPatchId(0));
+      
+      manuId = bp->GetManuId(0);
+    }
+    
+    Int_t status = statusMaker.HVStatus(detElemId,manuId);
+    
+    log.Log(AliMUONPadStatusMaker::AsString(status).Data());
+    
+    s->String() += Form(" (DE %4d) ",detElemId);
+    s->String() += AliMUONPadStatusMaker::AsString(status).Data();
+    
+    delete a;
+  }    
+  
+  TIter nextMessage(&messages);
+  TObjString* msg;
+  
+  while ( ( msg = static_cast<TObjString*>(nextMessage()) ) )
+  {
+    if ( verbose > 0 || msg->String().Contains("SUMMARY") )
+    {
+      AliInfoGeneral("AliMUONCDB::CheckHV",Form("RUN %09d HVchannel %s",runNumber,msg->String().Data()));
+    }
+  }
+  
+  TString lmsg;
+  Int_t occurance;
+  TString totalLog;
+  
+  while (log.Next(lmsg,occurance))
+  {
+    totalLog += Form("%s(%d)",lmsg.Data(),occurance);
+    totalLog += " | ";
+  }
+
+  AliInfoGeneral("AliMUONCDB::CheckHV",Form("RUN %09d %s",runNumber,totalLog.Data()));
+
+  // one last loop to get the list of problematic HV channels
+  nextMessage.Reset();
+  
+  while ( ( msg = static_cast<TObjString*>(nextMessage()) ) )
+  {
+    if ( msg->String().Contains("HV ") )
+    {
+      AliInfoGeneral("AliMUONCDB::CheckHV",Form("     Problem at %s",msg->String().Data()));      
+    }
+  }
+   
+  AliCDBManager::Instance()->ClearCache();
+}
+
 

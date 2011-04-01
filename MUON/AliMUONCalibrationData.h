@@ -50,7 +50,7 @@ public:
   static AliMUONGlobalCrateConfig* CreateGlobalTriggerCrateConfig(Int_t runNumber, Int_t* startOfValidity=0);
   
   /// Create a hv map (which must be deleted) from OCDB for the given run
-  static TMap* CreateHV(Int_t runNumber, Int_t* startOfValidity=0, Bool_t patched=kTRUE);
+  static TMap* CreateHV(Int_t runNumber, Int_t* startOfValidity=0, Bool_t patched=kTRUE, TList* messages=0x0);
 
   /// Create a Trigger HV and current  map (which must be deleted) from OCDB for the given run
   static TMap* CreateTriggerDCS(Int_t runNumber, Int_t* startOfValidity=0);
@@ -141,21 +141,19 @@ public:
   static TObject* CreateObject(Int_t runNumber, const char* path, Int_t* startOfValidity=0x0);
   
   static void Check(Int_t runNumber);
-  
+
   static void BypassStores(AliMUONVStore* ped, AliMUONVStore* gain);
-  
-  static void PatchHVValues(TObjArray& values,
-                            Int_t& nbelowready,
-                            Int_t& noff,
-                            Int_t& ntrips,
-                            Int_t& neor,
-                            TString* msg);
   
 protected:
   /// Not implemented
   AliMUONCalibrationData(const AliMUONCalibrationData& other);
   /// Not implemented
   AliMUONCalibrationData& operator=(const AliMUONCalibrationData& other);
+
+  static Bool_t PatchHVValues(TObjArray& values, TString* msg=0x0);
+  
+  static Bool_t CheckHVGroup(TObjArray& values, Int_t first, Int_t last, Double_t& value,
+                             Int_t& slope, TString* msg);
   
 private:
   mutable Bool_t fIsValid; ///<  Whether we were able to correctly initialize
