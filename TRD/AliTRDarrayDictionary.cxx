@@ -43,7 +43,7 @@ AliTRDarrayDictionary::AliTRDarrayDictionary()
                       ,fNtime(0)
                       ,fNDdim(0)
                       ,fDictionary(0)
-                      ,fFlag(kTRUE)
+                      ,fFlag(kFALSE)
 {
   //
   // AliTRDarrayDictionary default contructor
@@ -63,7 +63,7 @@ AliTRDarrayDictionary::AliTRDarrayDictionary(Int_t nrow, Int_t ncol, Int_t ntime
                       ,fNtime(0)
 		      ,fNDdim(0)
 		      ,fDictionary(0)
-                      ,fFlag(kTRUE)
+                      ,fFlag(kFALSE)
 
 {
   //
@@ -228,10 +228,6 @@ void AliTRDarrayDictionary::Compress()
         }
       newDim=fNDdim-counter;   //Size of the compressed array
 
-      //Set the flag if the array has no data
-      if(newDim==1)
-	fFlag=kFALSE;
-
       //Fill the buffer of the compressed array
       Int_t* buffer = new Int_t[newDim];
       Int_t counterTwo=0;
@@ -268,8 +264,8 @@ void AliTRDarrayDictionary::Compress()
     
       delete [] longArr;
       longArr=0;
-
     }
+  fFlag=kTRUE; // flag to signal compression
 
 }
 
@@ -281,29 +277,28 @@ void AliTRDarrayDictionary::Expand()
   //  
 
   Int_t dimexp=0;
+  if(!IsCompressed())
+    return;
 
-  if(!HasData()) //if the array has no data (only -1's)
-    {
-      if(fDictionary&&fNDdim==1)
-	{ 
-	  dimexp = -fDictionary[0];	
-	  delete [] fDictionary;
-	  fDictionary=0;
-	  fDictionary = new Int_t[dimexp];
-	  fNDdim = dimexp;
-	  // Re-initialize the array
-	  memset(fDictionary,-1,sizeof(Int_t)*dimexp);
-	}
+  if(fDictionary&&fNDdim==1)
+    { 
+      dimexp = -fDictionary[0];	
+      delete [] fDictionary;
+      fDictionary=0;
+      fDictionary = new Int_t[dimexp];
+      fNDdim = dimexp;
+      // Re-initialize the array
+      memset(fDictionary,-1,sizeof(Int_t)*dimexp);
       return;
     }
 
-  UShort_t *longArr = new UShort_t[fNDdim];
+  Int_t *longArr = new Int_t[fNDdim];
   if(longArr && fDictionary)
     {
       //Initialize the array
-      memset(longArr,0,sizeof(UShort_t)*fNDdim);
+      memset(longArr,0,sizeof(Int_t)*fNDdim);
 
-      UShort_t r2=0;
+      Int_t r2=0;
       for(Int_t i=0; i<fNDdim;i++)
         {
           if((fDictionary[i]<0)&&(fDictionary[i]!=-1))  
@@ -356,6 +351,8 @@ void AliTRDarrayDictionary::Expand()
     {
       delete [] longArr; 
     }
+
+  fFlag=kFALSE; // flag to signal that is not compressed anymore
 
 }
 //________________________________________________________________________________

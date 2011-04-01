@@ -38,7 +38,7 @@ class AliTRDarrayDictionary: public TObject
   Int_t GetData(Int_t nrow, Int_t ncol, Int_t ntime) const;
   void  SetData(Int_t nrow, Int_t ncol, Int_t ntime, Int_t value);
   static  void    CreateLut();
-  Bool_t HasData() const {return fFlag;}; 
+  Bool_t IsCompressed() const {return fFlag;}; 
 
  protected:
 
@@ -49,10 +49,10 @@ class AliTRDarrayDictionary: public TObject
   Int_t   fNtime;       //Number of time bins
   Int_t   fNDdim;       //Dimension of the Dictionary array
   Int_t*  fDictionary;  //[fNDdim]  //Pointer to integers array
-  Bool_t  fFlag;        //Flag for data contents in the array
+  Bool_t  fFlag;        //Flag in case of compressed array
   static Short_t *fgLutPadNumbering;   //  [fNcol] Look Up Table
 
-  ClassDef(AliTRDarrayDictionary,4) //Dictionary container class
+  ClassDef(AliTRDarrayDictionary,5) //Dictionary container class
     
 };
 #endif
