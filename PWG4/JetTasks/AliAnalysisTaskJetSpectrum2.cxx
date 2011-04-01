@@ -1,5 +1,5 @@
 // **************************************
-//  used for the correction of determiantion of reconstructed jet spectra
+// used for the correction of determiantion of reconstructed jet spectra
 // Compares input (gen) and output (rec) jets   
 // *******************************************
 
@@ -147,6 +147,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
     fh1PtTracksLeadingIn[ij] = 0;
     fh2NJetsPt[ij]  = 0;
     fh2NTracksPt[ij]  = 0;
+    fh2TrackEtaPt[ij] = 0;
     fh3MultTrackPtRP[ij] = 0;
     fh2LeadingTrackPtTrackPhi[ij] = 0;
     for(int i = 0;i <= kMaxJets;++i){
@@ -253,6 +254,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
     fh1PtTracksLeadingIn[ij] = 0;
     fh2NJetsPt[ij]  = 0;
     fh2NTracksPt[ij]  = 0;
+    fh2TrackEtaPt[ij] = 0;
     fh3MultTrackPtRP[ij] = 0;
     fh2LeadingTrackPtTrackPhi[ij] = 0;
     for(int i = 0;i <= kMaxJets;++i){
@@ -414,9 +416,9 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh1Centrality = new TH1F("fh1Centrality","cent;cent (%)",101,-0.5,100.5);
   fHistList->Add(fh1Centrality);
 
-  fh2MultRec = new TH2F("fh2MultRec","multiplicity rec;# tracks;# jetrefs",400,-0.5,4000,400,0.,4000);
+  fh2MultRec = new TH2F("fh2MultRec","multiplicity rec;# tracks;# jetrefs",500,0,5000,500,0.,5000);
   fHistList->Add(fh2MultRec);
-  fh2MultGen = new TH2F("fh2MultGen","multiplicity gen;# tracks;# jetrefs",400,-0.5,4000,400,0.,4000);
+  fh2MultGen = new TH2F("fh2MultGen","multiplicity gen;# tracks;# jetrefs",400,0,5000,500,0.,5000);
   fHistList->Add(fh2MultGen);
 
   fh2RPSubevents = new TH2F("fh2RPSubevents" ,"Reaction Plane Angle" , 180, 0, TMath::Pi(), 180, 0, TMath::Pi());
@@ -482,17 +484,21 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fh1PtTracksLeadingIn[ij] = new TH1F(Form("fh1PtTracksLeading%sIn",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
     fHistList->Add(fh1PtTracksLeadingIn[ij]);
     
-    fh1SumPtTrack[ij] = new TH1F(Form("fh1SumPtTrack%s",cAdd.Data()),Form("Sum %s track p_T;p_{T} (GeV/c)",cAdd.Data()),900,0.,900.);
+    fh1SumPtTrack[ij] = new TH1F(Form("fh1SumPtTrack%s",cAdd.Data()),Form("Sum %s track p_T;p_{T} (GeV/c)",cAdd.Data()),1000,0.,3000.);
     fHistList->Add(fh1SumPtTrack[ij]);
     
     fh2NJetsPt[ij]  = new TH2F(Form("fh2N%sJetsPt",cAdd.Data()),Form("Number of %s jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",cAdd.Data()),nBinPt,binLimitsPt,50,-0.5,49.5);
     fHistList->Add(fh2NJetsPt[ij]);
     
-    fh2NTracksPt[ij]  = new TH2F(Form("fh2N%sTracksPt",cAdd.Data()),Form("Number of %s tracks above threshhold;p_{T,cut} (GeV/c);N_{tracks}",cAdd.Data()),nBinPt,binLimitsPt,1000,0.,4000);
+    fh2NTracksPt[ij]  = new TH2F(Form("fh2N%sTracksPt",cAdd.Data()),Form("Number of %s tracks above threshhold;p_{T,cut} (GeV/c);N_{tracks}",cAdd.Data()),nBinPt,binLimitsPt,1000,0.,5000);
     fHistList->Add(fh2NTracksPt[ij]);
     
+
+    fh2TrackEtaPt[ij] = new TH2F(Form("fh2TrackEtaPt%s",cAdd.Data()),";#eta;p_{T,track}",nBinPt,binLimitsPt,50,-1.,1.);
+    fHistList->Add(fh2TrackEtaPt[ij]);
+
     fh3MultTrackPtRP[ij]  = new TH3F(Form("fh3MultTrackPtRP%s",
-					  cAdd.Data()),Form("%s track p_T;# tracks;;p_{T} (GeV/c)",cAdd.Data()),400,0,4000,nBinPt,0,300,(Int_t)fNRPBins,-0.5,fNRPBins-0.5);
+					  cAdd.Data()),Form(";# tracks;%s track p_T;RP Bin",cAdd.Data()),250,0,5000,100.,0.,50.,(Int_t)fNRPBins,-0.5,fNRPBins-0.5);
     fHistList->Add(fh3MultTrackPtRP[ij]);
     
     fh2LeadingTrackPtTrackPhi[ij] = new TH2F(Form("fh2Leading%sTrackPtTrackPhi",cAdd.Data()),Form("phi of leading %s track;p_{T};#phi;",cAdd.Data()),
@@ -513,7 +519,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 	fh2PhiPt[ij][i] = new TH2F(Form("fh2PhiPt%s_j%d",cAdd.Data(),i),Form("pt vs phi %s;#phi;p_{T};",cAdd.Data()),
 				   nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
 
-	fh3MultPtRP[ij][i]  = new TH3F(Form("fh3MultPtRP%s_j%d",cAdd.Data(),i),Form("%s jets p_T;# tracks;;p_{T} (GeV/c)",cAdd.Data()),400,0,4000,nBinPt,0,300,(Int_t)fNRPBins,-0.5,fNRPBins-0.5);
+	fh3MultPtRP[ij][i]  = new TH3F(Form("fh3MultPtRP%s_j%d",cAdd.Data(),i),Form("%s jets p_T;# tracks;;p_{T} (GeV/c)",cAdd.Data()),250,0,5000,nBinPt,0,300,(Int_t)fNRPBins,-0.5,fNRPBins-0.5);
       fHistList->Add(fh3MultPtRP[ij][i]);
 
 
@@ -1034,7 +1040,7 @@ void AliAnalysisTaskJetSpectrum2::FillTrackHistos(TList &particlesList,int iType
       if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;    
       Int_t phiBin = GetPhiBin(tmpPhi-fRPAngle);
       fh3MultTrackPtRP[iType]->Fill(refMult,tmpPt,phiBin); 
-
+      fh2TrackEtaPt[iType]->Fill(tmpTrack->Eta(),tmpPt);
       if(tmpTrack==leading){
 	fh1PtTracksLeadingIn[iType]->Fill(tmpPt);
 	fh2LeadingTrackPtTrackPhi[iType]->Fill(tmpPt,tmpPhi);
@@ -1321,7 +1327,7 @@ Float_t AliAnalysisTaskJetSpectrum2::GetCentrality(){
     if(fUseAODTrackInput)aod = dynamic_cast<AliAODEvent*>(InputEvent());
     else aod = AODEvent();
     if(!aod){
-      return 100;
+      return 101;
     }
     return aod->GetHeader()->GetCentrality();
 }

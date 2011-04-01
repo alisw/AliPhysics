@@ -93,7 +93,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     // this has to match with our selection of input events
     enum {kTrackUndef = 0, kTrackAOD, kTrackKineAll,kTrackKineCharged, kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance};
     enum {kAnaMC =  0x1, kAnaMCESD = 0x2};
-    enum {kMaxJets = 3};
+    enum {kMaxJets = 2};
     enum {kJetRec = 0, kJetGen, kJetRecFull, kJetGenFull, kJetTypes}; //
     enum {kMaxCorrelation =  3};
     
@@ -209,13 +209,15 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1SumPtTrack[kJetTypes]; //! sum over all track pT    
 
     TH1F*         fh1PtIn[kJetTypes][kMaxJets+1];  //! Jet pt  
-    TH1F*         fh1PtJetsIn[kJetTypes];  //! Jet pt for all jets
-    TH1F*         fh1PtTracksIn[kJetTypes];  //! track pt for all tracks
+    TH1F*         fh1PtJetsIn[kJetTypes];       //! Jet pt for all jets
+    TH1F*         fh1PtTracksIn[kJetTypes];     //! track pt for all tracks
     TH1F*         fh1PtTracksInLow[kJetTypes];  //! track pt for all tracks
     TH1F*         fh1PtTracksLeadingIn[kJetTypes];  //! track pt for all tracks
     
     TH2F*         fh2NJetsPt[kJetTypes];    //! Number of found jets above threshold
     TH2F*         fh2NTracksPt[kJetTypes];  //! Number of tracks above threshold
+    TH2F*         fh2TrackEtaPt[kJetTypes];       //! eta of tracks    
+
     TH2F*         fh2LeadingTrackPtTrackPhi[kJetTypes]; //! phi distribution of accepted leading tracks
     TH2F*         fh2RhoPt[kJetTypes][kMaxJets+1];     //! jet shape variable rho
     TH2F*         fh2PsiPt[kJetTypes][kMaxJets+1];     //! jet shape variable psi

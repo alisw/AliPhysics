@@ -816,7 +816,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	   taskjetSpectrum->SetBranchBkgGen(bkgClusters.Data());
 	   taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetRecFull,0);
 	   taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetGenFull,0);
-	   taskjetSpectrum->SetDebugLevel(3);
+	   taskjetSpectrum->SetTrackEtaWindow(fTrackEtaWindow);
+	   taskjetSpectrum->SetJetEtaWindow(fJetEtaWindow);
 
 	   taskjetSpectrum = AddTaskJetSpectrum2("clustersAOD_KT04_B0_Filter00256_Cut01000_Skip00RandomConeSkip00",
 						 "clustersAOD_KT04_B0_Filter00256_Cut01000_Skip00RandomCone_random",
@@ -825,7 +826,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	   taskjetSpectrum->SetBranchBkgGen(bkgClusters.Data());
 	   taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetRecFull,0);
 	   taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetGenFull,0);
-
+	   taskjetSpectrum->SetTrackEtaWindow(fTrackEtaWindow);
+	   taskjetSpectrum->SetJetEtaWindow(fJetEtaWindow);
 
 
 	   // check the old subtracted vs. the new subtracted
@@ -856,9 +858,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	   if(iAODanalysis)SetAODInput(taskjetSpectrum);
 	   */
 
-	   taskjetSpectrum = AddTaskJetSpectrum2(Form("jetsAOD_UA104_B2_Filter%05d_Cut01000",kHighPtFilterMask),kDefaultJetBranch.Data(),kDeltaAODJetName.Data(),kHighPtFilterMask,AliVEvent::kMB,0,i);
-	   //	   taskjetSpectrum->SetDebugLevel(3);
-	   //	   taskjetSpectrum->SetMinJetPt(10);
+	   taskjetSpectrum = AddTaskJetSpectrum2(Form("jetsAOD_UA104_B2_Filter%05d_Cut01000",kHighPtFilterMask),kDefaultJetBranch.Data(),kDeltaAODJetName.Data(),kHighPtFilterMask,AliVEvent::kMB,0,i);	   
 	   taskjetSpectrum->SetTrackEtaWindow(fTrackEtaWindow);
 	   taskjetSpectrum->SetJetEtaWindow(fJetEtaWindow);
 	   taskjetSpectrum->SetBranchBkgRec(bkgClusters.Data());
@@ -927,7 +927,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        if (!taskjetSpectrum) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetSpectrum2 cannot run for this train conditions - EXCLUDED");
      }
    }
-
+   AliAnalysisManager::SetCommonFileName("PWG4_Fragmentation.root");
    if(iPWG4Fragmentation){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskFragmentationFunction.C");
        AliAnalysisTaskFragmentationFunction *taskFrag = 0;
@@ -943,15 +943,22 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      
          // UA1
          taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask, 1); 
+	 taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask, 2); 
+	 taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask, 3); 
+	 taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask, 4); 
 
          // SISCONE 
+	 /*
          taskFrag = AddTaskFragmentationFunction(1<<28,kHighPtFilterMask, 1);
          taskFrag = AddTaskFragmentationFunction(1<<29,kHighPtFilterMask, 1);
          taskFrag = AddTaskFragmentationFunction(1<<30,kHighPtFilterMask, 1);
+	 */
 
          // Anti-kT B2 - B3
          taskFrag = AddTaskFragmentationFunction(1<<26,kHighPtFilterMask, 1);
          taskFrag = AddTaskFragmentationFunction(1<<27,kHighPtFilterMask, 1);
+
+	 
 
        }
        if (!taskFrag) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskFragmentationFunction cannot run for this train conditions - EXCLUDED");
@@ -1044,7 +1051,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if(!taskMini)::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskMinjet cannot run for this train conditions - EXCLUDED");
    }
 
-
+   AliAnalysisManager::SetCommonFileName("PWG4_HighPtQA.root");
    if(iPWG4PtQAMC){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtQAMC.C");
      AliPWG4HighPtQAMC *taskQAMC = 0;

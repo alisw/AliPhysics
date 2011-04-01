@@ -94,6 +94,12 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    pwg4spec->SetMinJetPt(5.);
    pwg4spec->SetJetEtaWindow(0.4);
 
+   Float_t fDQxy[2] = {-0.398,-0.379};
+   pwg4spec->SetDeltaQxy(fDQxy);
+
+   
+
+
    if(type == "AOD"){
      // Assume all jet are produced already
      pwg4spec->SetAODJetInput(kTRUE);

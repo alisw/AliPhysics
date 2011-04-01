@@ -360,8 +360,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   SetFFRadius(Float_t r = 0.4) { fFFRadius = r; }
   virtual void   SetFFBckgRadius(Float_t r = 0.7) { fFFBckgRadius = r; }
   virtual void   SetBckgMode(Bool_t bg = 1) { fBckgMode = bg; }
-  virtual void   SetBckgType(Int_t bg0 = 0, Int_t bg1 = 1,Int_t bg2 = 2, Int_t bg3 = 3) 
-  { fBckgType[0] = bg0; fBckgType[1] = bg1; fBckgType[2] = bg2; fBckgType[3] = bg3; }
+  virtual void   SetBckgType(Int_t bg0 = 0, Int_t bg1 = 1,Int_t bg2 = 2, Int_t bg3 = 3, Int_t bg4 = 4) 
+  { fBckgType[0] = bg0; fBckgType[1] = bg1; fBckgType[2] = bg2; fBckgType[3] = bg3; fBckgType[4] = bg4; }
   virtual void   SetIJMode(Int_t ij = 1)      {fIJMode = ij;}
   virtual void   SetQAMode(Int_t qa = 3)      {fQAMode = qa;}
   virtual void   SetFFMode(Int_t ff = 1)      {fFFMode = ff;}
@@ -409,7 +409,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     fPhiCorrNBinsEta = nEta; fPhiCorrEtaMin = etaMin; fPhiCorrEtaMax = etaMax;
     fPhiCorrNBinsPhi = nPhi; fPhiCorrPhiMin = phiMin; fPhiCorrPhiMax = phiMax; }
 
-  void   SetIJHistoBins(Int_t nJetPt = 245, Float_t jetPtMin = 5, Float_t jetPtMax = 250, Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 200., 
+  void   SetIJHistoBins(Int_t nJetPt = 23, Float_t jetPtMin = 5, Float_t jetPtMax = 120, Int_t nPt = 120, Float_t ptMin = 0., Float_t ptMax = 120., 
 			Int_t nZ = 22,  Float_t zMin = 0.,  Float_t zMax = 1.1,	Int_t nCosTheta = 100,  Float_t costhetaMin = 0.,  Float_t costhetaMax = 1.,
 			Int_t nTheta = 200,  Float_t thetaMin = -0.5,  Float_t thetaMax = 1.5, Int_t nJt = 25,  Float_t jtMin = 0.,  Float_t jtMax = 5.)
   { fIJNBinsJetPt = nJetPt; fIJJetPtMin = jetPtMin; fIJJetPtMax = jetPtMax; fIJNBinsPt = nPt; fIJPtMin = ptMin; fIJPtMax = ptMax;
@@ -476,8 +476,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   enum {kTrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts, kTrackKineAll, kTrackKineCharged, kTrackKineChargedAcceptance, 
 	kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance};
   enum {kJetsUndef=0, kJetsRec, kJetsRecAcceptance, kJetsGen, kJetsGenAcceptance, kJetsKine, kJetsKineAcceptance};
-  enum {kBckgPerp=0, kBckgOutLJ, kBckgOut2J, kBckgOut3J, kBckgOutAJ, kBckgOutLJStat, kBckgOut2JStat, kBckgOut3JStat, kBckgOutAJStat, kBckgClusters, 
-	kBckgClustersOutLeading, kBckgASide, kBckgASideWindow, kBckgPerpWindow};
+  enum {kBckgPerp=0, kBckgOutLJ, kBckgOut2J, kBckgClusters, kBckgClustersOutLeading, kBckgOut3J, kBckgOutAJ, kBckgOutLJStat, 
+	kBckgOut2JStat, kBckgOut3JStat, kBckgOutAJStat,  kBckgASide, kBckgASideWindow, kBckgPerpWindow};
 
  
  private:
@@ -530,7 +530,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Float_t fFFRadius;        // if radius > 0 construct FF from tracks within cone around jet axis, otherwise use trackRefs  
   Float_t fFFBckgRadius;    // compute background outside cone of this radius around jet axes
   Bool_t  fBckgMode;        // Set background subtraction mode
-  Int_t   fBckgType[4];        // Set background subtraction mode
+  Int_t   fBckgType[5];     // Set background subtraction mode
   Int_t   fIJMode;          // Set intrajet mode
   Int_t   fQAMode;          // QA mode: 0x00=0 none, 0x01=1 track qa, 0x10=2 track qa, 0x11=3 both
   Int_t   fFFMode;          // fragmentation function mode
@@ -731,6 +731,10 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   TH1F	*fh1EvtMult;              //! number of reconstructed tracks after cuts 
   TH1F	*fh1EvtCent;              //! centrality percentile 
 
+  TH2F  *fh2TrackPtVsDCAXY;       //! track pt vs DCA 
+  TH2F  *fh2TrackPtVsDCAZ;        //! track pt vs DCA
+
+
   TProfile* fh1Xsec;              //! pythia cross section and trials
   TH1F*     fh1Trials;            //! sum of trials
   TH1F*     fh1PtHard;            //! pt hard of the event
@@ -744,7 +748,6 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   TH2F  *fh2PtRecVsGenPrim;       //! association rec/gen MC: rec vs gen pt 
 
   // tracking efficiency 
-
   
   AliFragFuncQATrackHistos* fQATrackHistosRecEffGen;      //! tracking efficiency: generated primaries 
   AliFragFuncQATrackHistos* fQATrackHistosRecEffRec;      //! tracking efficiency: reconstructed primaries
@@ -779,6 +782,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncQATrackHistos* fQABckgHisto2Gen;      //! track QA: generated tracks
   AliFragFuncQATrackHistos* fQABckgHisto3RecCuts;  //! track QA: reconstructed tracks after cuts
   AliFragFuncQATrackHistos* fQABckgHisto3Gen;      //! track QA: generated tracks
+  AliFragFuncQATrackHistos* fQABckgHisto4RecCuts;  //! track QA: reconstructed tracks after cuts
+  AliFragFuncQATrackHistos* fQABckgHisto4Gen;      //! track QA: generated tracks
   
   AliFragFuncHistos*  fFFBckgHisto0RecCuts;       //! Bckg (outside leading jet or 2 jets or more) FF reconstructed tracks after cuts 
   AliFragFuncHistos*  fFFBckgHisto0RecLeading;    //! Bckg (outside leading jet or 2 jets or more) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
@@ -796,6 +801,10 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncHistos*  fFFBckgHisto3RecLeading;    //! Bckg (outside leading jet or 3 jets or more) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
   AliFragFuncHistos*  fFFBckgHisto3Gen;           //! Bckg (outside leading jet or 3 jets or more) FF generated tracks after cuts 
   AliFragFuncHistos*  fFFBckgHisto3GenLeading;    //! Bckg (outside leading jet or 3 jets or more) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt
+  AliFragFuncHistos*  fFFBckgHisto4RecCuts;       //! Bckg (outside leading jet or 4 jets or more) FF reconstructed tracks after cuts 
+  AliFragFuncHistos*  fFFBckgHisto4RecLeading;    //! Bckg (outside leading jet or 4 jets or more) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckgHisto4Gen;           //! Bckg (outside leading jet or 4 jets or more) FF generated tracks after cuts 
+  AliFragFuncHistos*  fFFBckgHisto4GenLeading;    //! Bckg (outside leading jet or 4 jets or more) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt
 
 
   AliFragFuncIntraJetHistos*  fIJBckgHisto0RecCuts;    //!
@@ -814,7 +823,10 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncIntraJetHistos*  fIJBckgHisto3RecLeading; //!
   AliFragFuncIntraJetHistos*  fIJBckgHisto3Gen;        //!
   AliFragFuncIntraJetHistos*  fIJBckgHisto3GenLeading; //!
-
+  AliFragFuncIntraJetHistos*  fIJBckgHisto4RecCuts;    //!
+  AliFragFuncIntraJetHistos*  fIJBckgHisto4RecLeading; //!
+  AliFragFuncIntraJetHistos*  fIJBckgHisto4Gen;        //!
+  AliFragFuncIntraJetHistos*  fIJBckgHisto4GenLeading; //!
 
   TRandom3*                   fRandom;          // TRandom3 for background estimation 
   Int_t                       fBckgSubMethod;   // Bckg method: 1 = leading jet excluded, 2 = 2 most energetic jets excluded        
