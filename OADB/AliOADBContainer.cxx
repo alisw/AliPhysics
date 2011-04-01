@@ -165,6 +165,9 @@ void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t 
       return;
     }
   //
+  // Remove the old object
+  RemoveObject(idx);
+
   // Check that there is no overlap with existing run ranges  
   Int_t index = HasOverlap(lower, upper);
   if (index != -1) {
