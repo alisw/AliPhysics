@@ -247,8 +247,8 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
     fHistList->Add(fh2CentvsRho);
     fHistList->Add(fh2CentvsSigma);
 
-    fh2MultvsRho = new TH2F("fh2MultvsRho","mult vs background density",4000,0.,4000.,2000,0.,200.);
-    fh2MultvsSigma = new TH2F("fh2MultvsSigma","mult vs backgroun sigma",4000,0.,4000.,1000,0.,50.);
+    fh2MultvsRho = new TH2F("fh2MultvsRho","mult vs background density",1000,0.,5000.,300,0.,300.);
+    fh2MultvsSigma = new TH2F("fh2MultvsSigma","mult vs backgroun sigma",1000,0.,5000.,500,0.,50.);
     fHistList->Add(fh2MultvsRho);
     fHistList->Add(fh2MultvsSigma);
 

@@ -1059,7 +1059,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	   Double_t phiC = rC->Phi();
 	   // massless jet, unit vector
 	   pTC = rC->ChargedBgEnergy();
-	   if(pTC<=0)pTC = 0.1; // for almost empty events
+	   if(pTC<=0)pTC = 0.001; // for almost empty events
 	   Double_t thetaC = 2.*TMath::ATan(TMath::Exp(-etaC));  
 	   Double_t pZC = pTC/TMath::Tan(thetaC);
 	   Double_t pXC = pTC * TMath::Cos(phiC);
@@ -1080,7 +1080,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	   Double_t phiC = rC->Phi();
 	   // massless jet, unit vector
 	   pTC = rC->ChargedBgEnergy();
-	   if(pTC<=0)pTC = 0.1;// for almost empty events
+	   if(pTC<=0)pTC = 0.001;// for almost empty events
 	   Double_t thetaC = 2.*TMath::ATan(TMath::Exp(-etaC));  
 	   Double_t pZC = pTC/TMath::Tan(thetaC);
 	   Double_t pXC = pTC * TMath::Cos(phiC);
