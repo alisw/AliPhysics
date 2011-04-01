@@ -122,7 +122,7 @@ if (MODULE_DHDR)
 ALICE_Format (DHDR "BASE/" "" "${MODULE_DHDR}")
 endif(MODULE_DHDR)
 
-set ( ELIBS  "-lGeom -lMinuit -lEG -lVMC -lTreePlayer -lRIO -lXMLIO -lThread -lProof -lProofPlayer -lXMLParser -lGui")
+set ( ELIBS  "${ROOTLIBS} -lGeom -lMinuit -lEG -lVMC -lTreePlayer -lRIO -lXMLIO -lThread -lProof -lProofPlayer -lXMLParser -lGui")
 set ( ELIBSDIR  "${ROOTLIBDIR}")
 
 if(NOT DHDR)
