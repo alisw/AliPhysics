@@ -30,8 +30,6 @@ class AliITSUpgradeReconstructor: public AliReconstructor
   virtual ~AliITSUpgradeReconstructor();                    //dtor  
   virtual void Init();
 
-  virtual void SetTreeAddressD(TTree* const treeD); 
-		
   virtual void ResetDigits(); 
   virtual void ResetDigits(Int_t branch);
   virtual AliTracker*  CreateTracker() const;

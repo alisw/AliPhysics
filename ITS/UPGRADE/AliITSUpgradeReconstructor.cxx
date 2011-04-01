@@ -83,31 +83,6 @@ void AliITSUpgradeReconstructor::Init() {
   //   none.
   return;
 }
-
-//___________________________________________________________________________
-void AliITSUpgradeReconstructor::SetTreeAddressD(TTree* const treeD){
-
-  // Set branch address for the tree of digits.
-
-  TBranch *branch;
-  Int_t i;
-  char branchname[30];
-  if(!treeD) return;
-  if (fDigits == 0x0) fDigits = new TObjArray(fNlayers);
-  for (i=0; i<fNlayers; i++) {
-    if(!(fDigits->At(i))) {
-      fDigits->AddAt(new TClonesArray("AliITSDigitUpgrade",1000),i);
-    }
-    else{
-      ResetDigits(i);
-    }
-    sprintf(branchname,"ITSDigits%d",i+1); 
-    if (fDigits) {
-      branch = treeD->GetBranch(branchname);
-      if (branch) branch->SetAddress(&((*fDigits)[i]));
-    }
-  }
-}
 //_____________________________________________________________________
 void AliITSUpgradeReconstructor::ResetDigits(){
   // Reset number of digits and the digits array for the ITS detector.
