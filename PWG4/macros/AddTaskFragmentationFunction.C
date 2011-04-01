@@ -244,10 +244,7 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    task->UseRecEffRecJetPtBins(); // efficiency in bins of rec/gen jet pt - default: kTRUE  
 
    task->SetBckgMode(1);        // default: bgMode = 1 
-   task->SetBckgType(AliAnalysisTaskFragmentationFunction::kBckgPerp,
-		     AliAnalysisTaskFragmentationFunction::kBckgOutLJStat,
-		     AliAnalysisTaskFragmentationFunction::kBckgClustersOutLeading,
-		     AliAnalysisTaskFragmentationFunction::kBckgClusters);  
+   task->SetBckgType();
    task->SetBranchRecBackClusters("clustersAOD_KT04_B0_Filter00256_Cut00150_Skip00");
 
 
