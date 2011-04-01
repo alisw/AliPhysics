@@ -93,8 +93,8 @@ void AliPerformanceObject::PrintHisto(Bool_t logz, Char_t * outFileName) {
   char fname[256];
   const char* suffix=".ps"; 
 
-  if(outFileName) sprintf(fname,"%s",outFileName);
-  else sprintf(fname,"%s%s",folder->GetName(),suffix);
+  if(outFileName) snprintf(fname,256,"%s",outFileName);
+  else snprintf(fname,256,"%s%s",folder->GetName(),suffix);
   
   TPostScript *ps = new TPostScript(fname,112);
   Printf("Histograms are stored in %s", fname); 

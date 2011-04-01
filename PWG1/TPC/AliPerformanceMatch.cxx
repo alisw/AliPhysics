@@ -633,13 +633,13 @@ void AliPerformanceMatch::Analyse() {
       /*
       h2D = (TH2F*)fResolHisto->Projection(i,j);
       h = AliPerformanceMatch::MakeResol(h2D,1,0,100);
-      sprintf(name,"h_res_%d_vs_%d",i,j);
+      snprintf(name,256,"h_res_%d_vs_%d",i,j);
       h->SetName(name);
 
       h->GetXaxis()->SetTitle(fResolHisto->GetAxis(j)->GetTitle());
-      sprintf(title,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(resolution)");
+      snprintf(title,256,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(resolution)");
       h->GetYaxis()->SetTitle(title);
-      sprintf(title,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
+      snprintf(title,256,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
       h->SetTitle(title);
 
       //if(j==9) h->SetBit(TH1::kLogX);    
@@ -648,14 +648,14 @@ void AliPerformanceMatch::Analyse() {
       /*
       h = AliPerformanceMatch::MakeResol(h2D,1,1,100);
       //h = (TH1F*)arr->At(1);
-      sprintf(name,"h_mean_res_%d_vs_%d",i,j);
+      snprintf(name,256,"h_mean_res_%d_vs_%d",i,j);
       h->SetName(name);
 
       h->GetXaxis()->SetTitle(fResolHisto->GetAxis(j)->GetTitle());
-      sprintf(title,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(mean)");
+      snprintf(title,256,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(mean)");
       h->GetYaxis()->SetTitle(title);
 
-      sprintf(title,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
+      snprintf(title,256,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
       h->SetTitle(title);
 
       if(j==9) h->SetBit(TH1::kLogX);    
@@ -672,26 +672,26 @@ void AliPerformanceMatch::Analyse() {
       h2D = (TH2F*)fPullHisto->Projection(i,j);
       
       h = AliPerformanceMatch::MakeResol(h2D,1,0,100);
-      sprintf(name,"h_pull_%d_vs_%d",i,j);
+      snprintf(name,256,"h_pull_%d_vs_%d",i,j);
       h->SetName(name);
 
       h->GetXaxis()->SetTitle(fPullHisto->GetAxis(j)->GetTitle());
-      sprintf(title,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(resolution)");
+      snprintf(title,256,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(resolution)");
       h->GetYaxis()->SetTitle(title);
-      sprintf(title,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
+      snprintf(title,256,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
       h->SetTitle(title);
 
       if(j==9) h->SetBit(TH1::kLogX);    
       aFolderObj->Add(h);
 
       h = AliPerformanceMatch::MakeResol(h2D,1,1,100);
-      sprintf(name,"h_mean_pull_%d_vs_%d",i,j);
+      snprintf(name,256,"h_mean_pull_%d_vs_%d",i,j);
       h->SetName(name);
 
       h->GetXaxis()->SetTitle(fPullHisto->GetAxis(j)->GetTitle());
-      sprintf(title,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(mean)");
+      snprintf(title,256,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(mean)");
       h->GetYaxis()->SetTitle(title);
-      sprintf(title,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
+      snprintf(title,256,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
       h->SetTitle(title);
 
       //if(j==9) h->SetBit(TH1::kLogX);    
@@ -723,7 +723,7 @@ void AliPerformanceMatch::Analyse() {
     TH1F* h2c = (TH1F*)h2->Clone();
     h2c->Divide(h2,h,1,1,"B");
  
-    sprintf(name,"h_eff_%d",i);
+    snprintf(name,256,"h_eff_%d",i);
     h2c->SetName(name);
 
     h2c->GetXaxis()->SetTitle(h2c->GetXaxis()->GetTitle());
@@ -769,7 +769,7 @@ void AliPerformanceMatch::Analyse() {
       TH1F* h2c = (TH1F*)h2->Clone();
       h2c->Divide(h2,h,1,1,"B");
  
-      sprintf(name,"h_TPC_eff_%d",i);
+      snprintf(name,256,"h_TPC_eff_%d",i);
       h2c->SetName(name);
 
       h2c->GetXaxis()->SetTitle(h2c->GetXaxis()->GetTitle());
@@ -817,16 +817,16 @@ void AliPerformanceMatch::AnalyseFinal() {
   {
     for(Int_t j=5; j<10; j++) 
     {
-      sprintf(name,"h_tpc_match_resol_%d_%d",i,j);
+      snprintf(name,256,"h_tpc_match_resol_%d_%d",i,j);
       h2D = dynamic_cast<TH2F*>(aFolderObj->FindObject(name));
       if (h2D) {
           h = AliPerformanceMatch::MakeResol(h2D,1,0,100);
-          sprintf(name,"h_res_%d_vs_%d",i,j);
+          snprintf(name,256,"h_res_%d_vs_%d",i,j);
           h->SetName(name);          
           h->GetXaxis()->SetTitle(fResolHisto->GetAxis(j)->GetTitle());
-          sprintf(title,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(resolution)");
+          snprintf(title,256,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(resolution)");
           h->GetYaxis()->SetTitle(title);
-          sprintf(title,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
+          snprintf(title,256,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
           h->SetTitle(title);
 
           //if(j==9) h->SetBit(TH1::kLogX);    
@@ -834,14 +834,14 @@ void AliPerformanceMatch::AnalyseFinal() {
 
           h = AliPerformanceMatch::MakeResol(h2D,1,1,100);
           //h = (TH1F*)arr->At(1);
-          sprintf(name,"h_mean_res_%d_vs_%d",i,j);
+          snprintf(name,256,"h_mean_res_%d_vs_%d",i,j);
           h->SetName(name);
 
           h->GetXaxis()->SetTitle(fResolHisto->GetAxis(j)->GetTitle());
-          sprintf(title,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(mean)");
+          snprintf(title,256,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(mean)");
           h->GetYaxis()->SetTitle(title);
 
-          sprintf(title,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
+          snprintf(title,256,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
           h->SetTitle(title);
 
           if(j==9) h->SetBit(TH1::kLogX);    
@@ -849,30 +849,30 @@ void AliPerformanceMatch::AnalyseFinal() {
           h=0;
       } 
       //
-      sprintf(name,"h_tpc_match_pull_%d_%d",i,j);
+      snprintf(name,256,"h_tpc_match_pull_%d_%d",i,j);
       h2D = dynamic_cast<TH2F*>(aFolderObj->FindObject(name));      
       if (h2D) {
           h = AliPerformanceMatch::MakeResol(h2D,1,0,100);
-          sprintf(name,"h_pull_%d_vs_%d",i,j);
+          snprintf(name,256,"h_pull_%d_vs_%d",i,j);
           h->SetName(name);
 
           h->GetXaxis()->SetTitle(fPullHisto->GetAxis(j)->GetTitle());
-          sprintf(title,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(resolution)");
+          snprintf(title,256,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(resolution)");
           h->GetYaxis()->SetTitle(title);
-          sprintf(title,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
+          snprintf(title,256,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
           h->SetTitle(title);
 
           if(j==9) h->SetBit(TH1::kLogX);    
           aFolderObj->Add(h);
 
           h = AliPerformanceMatch::MakeResol(h2D,1,1,100);
-          sprintf(name,"h_mean_pull_%d_vs_%d",i,j);
+          snprintf(name,256,"h_mean_pull_%d_vs_%d",i,j);
           h->SetName(name);
 
           h->GetXaxis()->SetTitle(fPullHisto->GetAxis(j)->GetTitle());
-          sprintf(title,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(mean)");
+          snprintf(title,256,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(mean)");
           h->GetYaxis()->SetTitle(title);
-          sprintf(title,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
+          snprintf(title,256,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
           h->SetTitle(title);
 
            //if(j==9) h->SetBit(TH1::kLogX);    
@@ -887,18 +887,18 @@ void AliPerformanceMatch::AnalyseFinal() {
   //
   for(Int_t i=5; i<10; i++) 
   {
-    sprintf(name,"h_tpc_match_eff_all_%d",i);
+    snprintf(name,256,"h_tpc_match_eff_all_%d",i);
     h = dynamic_cast<TH1F*>(aFolderObj->FindObject(name));    
 
     
-    sprintf(name,"h_tpc_match_eff_rec_%d",i);
+    snprintf(name,256,"h_tpc_match_eff_rec_%d",i);
     h2 = dynamic_cast<TH1F*>(aFolderObj->FindObject(name));    
 
     if (h && h2) {
         TH1F* h2c = (TH1F*)h2->Clone();
         h2c->Divide(h2,h,1,1,"B");
  
-        sprintf(name,"h_eff_%d",i);
+        snprintf(name,256,"h_eff_%d",i);
         h2c->SetName(name);
 
         h2c->GetXaxis()->SetTitle(h2c->GetXaxis()->GetTitle());
@@ -926,19 +926,19 @@ void AliPerformanceMatch::AnalyseFinal() {
       //
 
       // all ITS standalone tracks                  
-      sprintf(name,"h_tpc_match_trackingeff_all_%d",i);
+      snprintf(name,256,"h_tpc_match_trackingeff_all_%d",i);
       h = dynamic_cast<TH1F*>(aFolderObj->FindObject(name));
   
 
       // TPC tracks which has matching with TPC
-      sprintf(name,"h_tpc_match_trackingeff_tpc_%d",i);
+      snprintf(name,256,"h_tpc_match_trackingeff_tpc_%d",i);
       h2 = dynamic_cast<TH1F*>(aFolderObj->FindObject(name));
 
       if (h && h2) {
           TH1F* h2c = (TH1F*)h2->Clone();
           h2c->Divide(h2,h,1,1,"B");
  
-          sprintf(name,"h_TPC_eff_%d",i);
+          snprintf(name,256,"h_TPC_eff_%d",i);
           h2c->SetName(name);
 
           h2c->GetXaxis()->SetTitle(h2c->GetXaxis()->GetTitle());
