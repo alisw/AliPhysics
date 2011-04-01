@@ -38,10 +38,11 @@
     \ifx|#1|\else\right|_{#1}\fi%
 }}
 \newcommand{\MC}{\AlwaysText{MC}}
-\newcommand{\Ntrgvtx}[1][]{{\ensuremath N_{#1\text{trg,vtx}}}}
-\newcommand{\Ntrg}{{\ensuremath N_{\text{trg}}}}
-\newcommand{\Nvtx}[1][]{{\ensuremath N_{#1\text{vtx}}}}
-\newcommand{\Nsel}{{\ensuremath N_{\text{selected}}}}
+\newcommand{\N}[2]{{\ensuremath N_{#1#2}}}
+\newcommand{\NV}[1][]{\N{\text{V}}{#1}}
+\newcommand{\NnotV}{\N{\not{\text{V}}}}
+\newcommand{\NT}{\N{\text{T}}{}}
+\newcommand{\NA}{\N{\text{A}}{}}
 \newcommand{\Ngood}{{\ensuremath N_{\text{good}}}}
 \newcommand{\GeV}[1]{\unit[#1]{\AlwaysText{GeV}}}
 \newcommand{\cm}[1]{\unit[#1]{\AlwaysText{cm}}}
@@ -485,10 +486,10 @@ within an $\etaphi$ bin for a given vertex bin
 \begin{align}
   \label{eq:secondary}
   \SecMap{} &=
-  \frac{\sum_i^{\Ntrgvtx[v,]}\mult[,\text{primary},i]\etaphi}{
-    \sum_i^{\Ntrgvtx[v,]}\mult[,\text{\FMD{}},i]\etaphi}\quad,
+  \frac{\sum_i^{\NV[,v]}\mult[,\text{primary},i]\etaphi}{
+    \sum_i^{\NV[,v]}\mult[,\text{\FMD{}},i]\etaphi}\quad,
 \end{align}
-where $\Ntrgvtx$ is the number of events with a valid trigger and a
+where $\NV[,v]$ is the number of events with a valid trigger and a
 vertex in bin $v$, and $\mult[,\FMD{},i]$ is the total number of
 charged particles that hit the \FMD{} in event $i$ in the specified
 $\etaphi$ bin and $\mult[,\text{primary},i]$ is number of
@@ -602,32 +603,83 @@ depends on the current vertex bin of event $i$.
 
 To build the final $\dndeta$ distribution it is enough to sum
 \eqref{eq:superhist} and \eqref{eq:overflow} over all interesting
-events and then normalise the selected trigger type.
+events and correct for the acceptance $I(\eta)$ 
 \begin{align}
-  \dndetadphi[\etaphi] &= \sum_i^{\Nsel}\dndetadphi[i,v\etaphi]\\ 
-  I(\eta) &= \sum_i^{\Nsel}I_{i,v}(\eta)\quad.
+  \dndetadphi[\etaphi] &= \sum_i^{\NA}\dndetadphi[i,v\etaphi]\\ 
+  I(\eta) &= \sum_i^{\NA}I_{i,v}(\eta)\quad.
 \end{align}
-Note, that $I(\eta)\le\Nsel$.  
+Note, that $I(\eta)\le\NA$.  
 
-With $N_x$ equal to the number of events with trigger $x$ (\INEL,
-\INELONE, \NSD, or a particular centrality), we get
+We then need to normalise to the total number of events $N_X$, given
+by 
 \begin{align}
-  \label{eq:dndeta:x}
-  \dndeta[(\eta),x] &=
-  \frac{N_{\INEL}}{\Ngood}\frac{\Nsel}{N_x}\frac{1}{\Delta\eta}
-  \frac{1}{I(\eta)}\sum_{\varphi}\dndetadphi[\etaphi]\quad,
+  \N{X}{} &= \frac{1}{\epsilon_X}\left[\NA + \alpha(\NnotV -
+    \beta)\right]  \label{eq:fulleventnorm}\\
+  & = \frac{1}{\epsilon_X}\left[\NA + \frac{\NA}{\NV}(\NT-\NV{} -
+    \beta)\right]\nonumber \\
+  & =\frac{1}{\epsilon_X}\NA\left[1+\frac{1}{\epsilon_V}-1-
+    \frac{\beta}{\NV}\right]\nonumber\\ 
+  & = \frac{1}{\epsilon_X}\frac{1}{\epsilon_V}\NA
+  \left(1-\frac{\beta}{\NT{}}\right)\nonumber
 \end{align}
-where $\Nsel$ is the number of events with trigger $x$ and a vertex
-within the define cuts, $\Ngood=N_B-N_A-N_C+2N_E$, $N_{\INEL}$ is the
-number of inelastic triggers, and $\Delta\eta$ is the $\eta$ bin
-width.  Note, that if $x=\INEL$ then the expression
-\eqref{eq:dndeta:x} reduces to 
-\begin{align*}
-  \dndeta[(\eta),\INEL] =
-  \frac{\Nsel}{\Ngood}\frac{1}{\Delta\eta}
-  \frac{1}{I(\eta)}\sum_{\varphi}\dndetadphi[\etaphi]\quad.  
-\end{align*}
-Example code is shown in Appendix~\ref{app:exa_pass2}.
+where
+\begin{description}
+\item[$\epsilon_X$]  is the trigger efficiency for type
+  $X\in[\text{\INEL},\text{\INELONE},\text{\NSD},...]$
+\item[$\epsilon_V=\frac{\NV{}}{\NT{}}$] is the vertex efficiency
+  evaluated over the data.
+\item[$\NA$] is the number of events with a trigger \emph{and} a valid
+  vertex in the selected range
+\item[$\NV{}$] is the number of events with a trigger \emph{and} a valid
+  vertex. 
+\item[$\NT$] is the number of events with a trigger.
+\item[$\NnotV{}=\NT-\NV{}$] is the number of events with a trigger
+  \emph{but no} valid vertex
+\item[$\alpha=\frac{\NA}{\NV}$] is the fraction of accepted events of
+  the total number of events with a trigger and valid vertex.  
+\item[$\beta=\N{a}{}+\N{b}{}-\N{e}{}$] is the number of background
+  events \emph{with} a valid off-line trigger.
+\end{description}
+The two terms under the parenthesis in \eqref{eq:fulleventnorm} refers
+to the observed number of event $\NA$, and the events missed because
+of no vertex reconstruction.  Note, for $\beta\ll\NT{}$
+\eqref{eq:fulleventnorm} reduces to the simpler expression
+$$
+\N{X}{} = \frac1{\epsilon_X}\frac1{\epsilon_V}\NA{}
+$$
+The trigger efficiency $\epsilon_X$ for a given trigger type $X$ is
+evaluated from simulations as
+\begin{align}
+  \epsilon_X = \frac{\N{X\wedge \text{T}}{}}{\N{X}{}}\quad,
+\end{align}
+that is, the ratio of number of events of type $X$ with a
+corresponding trigger to the number of events of type $X$. 
+
+The final event--normalised charged particle density then becomes 
+\begin{align}
+  \frac{1}{N}\frac{dN_{\text{ch}}}{d\eta} &= 
+  \frac{1}{\N{X}{}} \int_0^{2\pi} d\varphi
+  \frac{\dndetadphi[\etaphi]}{I(\eta)}
+  \label{eq:eventnormdndeta}
+\end{align}
+
+If the trigger $X$ introduces a bias on the measured number of events,
+then \eqref{eq:eventnormdndeta} need to be modified to 
+\begin{align}
+  \frac{1}{N}\frac{dN_{\text{ch}}}{d\eta} &= 
+  \frac{1}{\N{X}{}} \int_0^{2\pi} d\varphi
+  \frac{\frac{1}{B\etaphi}\dndetadphi[\etaphi]}{I(\eta)}
+  \label{eq:eventnormdndeta2}\quad,
+\end{align}
+where $B\etaphi$ is the bias correction.  This is typically
+calculated from simulations using the expression 
+\begin{align}
+  B\etaphi = \frac{\frac{1}{\N{X\wedge
+        \text{T}}{}}\sum_i^{\N{X\wedge \text{T}}{}}
+    \mult[,\text{primary}]\etaphi}{\frac{1}{\N{X}{}}\sum_i^{\N{X}{}}
+    \mult[,\text{primary}]\etaphi}
+\end{align}
+
 
 \section{Using the per--event $\dndetadphi[i,v]$ histogram for other
   analysis} 
@@ -729,15 +781,16 @@ plots.
     (proton or nucleus) is excited and radiates particles, but there
     is no other processes taking place\\ 
     \hline
-    $\Ntrg{}$ & Number of events with a valid trigger\\
-    $\Ntrgvtx{}$ & Number of events with a valid trigger
-    \emph{and} a valid vertex within the selected vertex range.\\ 
-    $\Nsel{}$ & Number of events selected for analysis in the second
-    pass\\ 
-    $\Ngood$ & The number of expected minimum bias events, given by the
-    formula $N_B-N_A-N_C+2N_E$, where each of $N_x$ is count the
-    number of interaction triggers with requirements of beam from both
-    sides, on the A side, on the C side, or no beam, respectively.\\
+    $\NT{}$ & Number of events with a valid trigger\\
+    $\NV{}$ & Number of events with a valid trigger \emph{and} a valid
+    vertex.\\  
+    $\NA{}$ & Number of events with a valid trigger
+    \emph{and} a valid vertex \emph{within} the selected vertex range.\\ 
+    $\N{a,c,ac,e}{}$ & Number of events with background triggers $A$,
+    $B$, $AC$, or $E$, \emph{and} a valid off-line trigger of the
+    considered type.   Background triggers are typically flagged with
+    the trigger words \texttt{CINT1-A},  \texttt{CINT1-C},
+    \texttt{CINT1-AC}, \texttt{CINT1-E}, or similar.\\
     \hline
     $\mult{}$ & Charged particle multiplicity\\ 
     $\mult[,\text{primary}]$ & Primary charged particle multiplicity
@@ -767,8 +820,8 @@ plots.
     $\dndetadphi[v,i]$ & Primary charged particle density in event $i$
     with vertex $v$\\  
     $I_{v,i}(\eta)$ & $\eta$ acceptance of event $i$ with vertex $v$\\ 
-    $I(\eta)$ & Integrated $\eta$ acceptance over $\Nsel$ events.
-    Note, that this has a value of $\Nsel$ for $(\eta)$ bins where we
+    $I(\eta)$ & Integrated $\eta$ acceptance over $\NA$ events.
+    Note, that this has a value of $\NA$ for $(\eta)$ bins where we
     have full coverage\\ 
     \hline 
     $X_t$ & Value $X$ for strip number $t$ (0-511 for inner rings,
@@ -794,30 +847,29 @@ plots.
   identifierstyle=\color[rgb]{0.133,0.545,0.133}\itshape,%
   commentstyle=\color[rgb]{0.698,0.133,0.133},%
   stringstyle=\color[rgb]{0.737,0.561,0.561},
-  emph={TH2D,TFile,TTree,AliAODForwardMult},emphstyle=\color{blue},%
+  emph={TH2D,TH1D,TFile,TTree,AliAODForwardMult},emphstyle=\color{blue},%
   emph={[2]dndeta,sum,norm},emphstyle={[2]\bfseries\underbar},%
+  emph={[3]file,tree,mult,nV,nBg,nA,nT,i,gSystem},emphstyle={[3]},%
   language=c++,%
 }
 \begin{lstlisting}[caption={Example 2\textsuperscript{nd} pass code to
     do $\dndeta$},label={lst:example},frame=single,captionpos=b]
-void Analyse()
+void Analyse(int mask=AliAODForwardMult::kInel,
+             float vzLow=-10, float vzHigh=10, float trigEff=1)
 { 
   gSystem->Load("libANALYSIS.so");      // Load analysis libraries
   gSystem->Load("libANALYSISalice.so"); // General ALICE stuff
   gSystem->Load("libPWG2forward2.so");  // Forward analysis code
 
-  TH2D*              sum        = 0;                  // Summed hist
-  TFile*             file       = TFile::Open("AliAODs.root","READ");
-  TTree*             tree       = static_cast<TTree*>(file->Get("aodTree"));
-  AliAODForwardMult* mult       = 0;                  // AOD object
-  int                nInel      = 0;                  // # of INEL ev.
-  int                nGood      = 0;                  // # of total INEL
-  int                nSelected  = 0;                  // # of triggered ev.
-  int                nTriggered = 0;                  // # of ev. w/vertex
-  float              vzLow      = -10;                // Lower ip cut
-  float              vzHigh     = +10;                // Upper ip cut
-  int                mask       = AliAODForwardMult::kInel;// Trigger mask
-  tree->SetBranchAddress("Forward", &forward);        // Set the address
+  int                nT      = 0;              // # of ev. w/trigger
+  int                nV      = 0;              // # of ev. w/trigger&vertex
+  int                nA      = 0;              // # of accepted ev.
+  int                nBg     = 0;              // # of background ev
+  TH2D*              sum     = 0;              // Summed hist
+  AliAODForwardMult* mult    = 0;              // AOD object
+  TFile*             file    = TFile::Open("AliAODs.root","READ");
+  TTree*             tree    = static_cast<TTree*>(file->Get("aodTree"));
+  tree->SetBranchAddress("Forward", &forward); // Set the address
 
   for (int i = 0; i < tree->GetEntries(); i++) { 
     // Read the i'th event 
@@ -827,32 +879,33 @@ void Analyse()
     if (!sum) 
       sum = static_cast<TH2D*>(mult->GetHistogram()->Clone("d2ndetadphi"));
     
-    // Count triggers 
-    if (mult->IsTriggerBits(AliForwardMult::kB))    nGood++;
-    if (mult->IsTriggerBits(AliForwardMult::kA))    nGood--;
-    if (mult->IsTriggerBits(AliForwardMult::kC))    nGood--;
-    if (mult->IsTriggerBits(AliForwardMult::kE))    nGood += 2;
-    if (mult->IsTriggerBits(AliForwardMult::kInel)) nInel++;
+    // Calculate beta=A+C-E
+    if (mult->IsTriggerBits(mask|AliAODForwardMult::kA))    nBg++;
+    if (mult->IsTriggerBits(mask|AliAODForwardMult::kC))    nBg++;
+    if (mult->IsTriggerBits(mask|AliAODForwardMult::kE))    nBg--;
 
     // Other trigger/event requirements could be defined 
     if (!mult->IsTriggerBits(mask)) continue; 
-    nTriggered++;
+    nT++;
 
     // Check if we have vertex and select vertex range (in centimeters) 
-    if (!mult->HasIpZ() || !mult->InRange(vzLow, vzHigh) continue; 
-    nSelected++;
+    if (!mult->HasIpZ()) continue;
+    nV++;
+    
+    if (!mult->InRange(vzLow, vzHigh) continue; 
+    nA++;
 
     // Add contribution from this event
     sum->Add(&(mult->GetHistogram()));
   }
 
   // Get acceptance normalisation from underflow bins 
-  TH1D* norm   = sum->Projection("norm", 0, 1, "");
+  TH1D* norm   = sum->ProjectionX("norm", 0, 0, "");
   // Project onto eta axis - _ignoring_underflow_bins_!
-  TH1D* dndeta = sum->Projection("dndeta", 1, -1, "e");
+  TH1D* dndeta = sum->ProjectionX("dndeta", 1, -1, "e");
   // Normalize to the acceptance, and scale by the vertex efficiency 
   dndeta->Divide(norm);
-  dndeta->Scale(double(nInel * nSelected) / (nTriggered * nGood), "width");
+  dndeta->Scale(trigEff * nT/nV / (1 - nBg/nT), "width");
   // And draw the result
   dndeta->Draw();
 }
@@ -912,4 +965,4 @@ void Analyse()
 %   ispell-local-dictionary: "british"
 % End:
 %
-% LocalWords:  tracklet diffractive
+% LocalWords:  tracklet diffractive IsTriggerBits AliAODForwardMult ProjectionX
