@@ -18,6 +18,7 @@
 
 #include "AliMUONManuPainter.h"
 
+#include "AliMpDCSNamer.h"
 #include "AliLog.h"
 #include "AliMUONContour.h"
 #include "AliMUONManuContourMaker.h"
@@ -165,7 +166,27 @@ AliMUONManuPainter::Describe(const AliMUONVTrackerData& data, Int_t dataIndex,
   
   Double_t value = data.Manu(fDetElemId,fManuId,dataIndex);
   
-  return AliMUONPainterHelper::Instance()->FormatValue(data.DimensionName(dataIndex).Data(),value);
+  TString rv = AliMUONPainterHelper::Instance()->FormatValue(data.DimensionName(dataIndex).Data(),value);
+  
+  if ( TString(data.GetName()).Contains("HV") )
+  {
+    rv += "\n";
+    
+    AliMpDCSNamer hvNamer("TRACKER");
+    
+    if ( AliMpDEManager::GetStationType(fDetElemId) == AliMp::kStation12 )
+    {
+      Int_t sector = hvNamer.ManuId2Sector(fDetElemId,fManuId);
+
+      rv += hvNamer.DCSChannelName(fDetElemId,sector);
+    }
+    else
+    {
+      rv += hvNamer.DCSChannelName(fDetElemId);
+    }
+  }
+  
+  return rv;
 }
 
 //_____________________________________________________________________________
