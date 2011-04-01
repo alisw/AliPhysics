@@ -25,7 +25,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS 	 muondep/AliAnalysisTaskMuonTrackingEff.cxx muondep/AliCheckMuonDetEltResponse.cxx muondep/AliAnalysisTaskRecoCheck.cxx muondep/AliAnalysisTaskESDMCLabelAddition.cxx muondep/AliAnalysisTaskMuonResolution.cxx muondep/AliAnalysisTaskPileup.cxx muondep/AliAnalysisTaskMuonFakes.cxx muondep/AliAnalysisTaskMuonRefit.cxx)
+set ( SRCS 	 muondep/AliAnalysisTaskMuonTrackingEff.cxx muondep/AliAnalysisTaskRecoCheck.cxx muondep/AliAnalysisTaskESDMCLabelAddition.cxx muondep/AliAnalysisTaskMuonResolution.cxx muondep/AliAnalysisTaskPileup.cxx muondep/AliAnalysisTaskMuonFakes.cxx muondep/AliAnalysisTaskMuonRefit.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 

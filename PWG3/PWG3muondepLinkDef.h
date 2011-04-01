@@ -5,7 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskMuonTrackingEff+;
-#pragma link C++ class AliCheckMuonDetEltResponse+;
 #pragma link C++ class AliAnalysisTaskRecoCheck+;
 #pragma link C++ class AliAnalysisTaskESDMCLabelAddition+;
 #pragma link C++ class AliAnalysisTaskMuonResolution+;
