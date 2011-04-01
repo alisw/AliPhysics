@@ -42,7 +42,7 @@ AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const char* name) :
 AliRDHFCuts(name),
 fUseSpecialCuts(kFALSE),
 fLowPt(kTRUE),
-fDefaultPID(kTRUE),
+fDefaultPID(kFALSE),
 fUseKF(kFALSE)
 {
   //
@@ -667,26 +667,27 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
      }
 
 
-   if(combinedPID[daught][0]<=-1&&combinedPID[daught][1]<=-1){ // if not a K- and not a pi- both D0 and D0bar excluded
-    isD0D0barPID[0]=0;
-    isD0D0barPID[1]=0;
-   }
-   else if(combinedPID[daught][0]==2&&combinedPID[daught][1]>=1){
-    if(aodtrack->Charge()==-1)isD0D0barPID[1]=0;//if K- D0bar excluded
-    else isD0D0barPID[0]=0;// if K+ D0 excluded
-   }
-   else if(combinedPID[daught][0]==1&&combinedPID[daught][1]>=1){
-    isD0D0barPID[0]=0;
-    isD0D0barPID[1]=0;
-   }
-   else if(combinedPID[daught][0]>=1||combinedPID[daught][1]<=-1){ 
-   if(aodtrack->Charge()==-1)isD0D0barPID[1]=0;// not a D0bar if K- or if pi- excluded
-   else isD0D0barPID[0]=0;//  not a D0 if K+ or if pi+ excluded
-        }
-   else if(combinedPID[daught][0]<=-1||combinedPID[daught][1]>=1){
-    if(aodtrack->Charge()==-1)isD0D0barPID[0]=0;// not a D0 if pi- or if K- excluded
-    else isD0D0barPID[1]=0;// not a D0bar if pi+ or if K+ excluded
-   }
+    if(combinedPID[daught][0]<=-1&&combinedPID[daught][1]<=-1){ // if not a K- and not a pi- both D0 and D0bar excluded
+      isD0D0barPID[0]=0;
+      isD0D0barPID[1]=0;
+    }
+    else if(combinedPID[daught][0]==2&&combinedPID[daught][1]>=1){
+      if(aodtrack->Charge()==-1)isD0D0barPID[1]=0;//if K- D0bar excluded
+      else isD0D0barPID[0]=0;// if K+ D0 excluded
+    }
+    /*    else if(combinedPID[daught][0]==1&&combinedPID[daught][1]>=1){
+	  isD0D0barPID[0]=0;
+	  isD0D0barPID[1]=0;
+	  }
+    */
+    else if(combinedPID[daught][0]>=1||combinedPID[daught][1]<=-1){ 
+      if(aodtrack->Charge()==-1)isD0D0barPID[1]=0;// not a D0bar if K- or if pi- excluded
+      else isD0D0barPID[0]=0;//  not a D0 if K+ or if pi+ excluded
+    }
+    else if(combinedPID[daught][0]<=-1||combinedPID[daught][1]>=1){
+      if(aodtrack->Charge()==-1)isD0D0barPID[0]=0;// not a D0 if pi- or if K- excluded
+      else isD0D0barPID[1]=0;// not a D0bar if pi+ or if K+ excluded
+    }
 
     if(fLowPt && d->Pt()<2.){
      Double_t sigmaTPC[3]={3.,2.,0.};
@@ -1218,10 +1219,16 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   
   // PILE UP REJECTION
   //SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
+  // CENTRALITY SELECTION
+  SetMinCentrality(0.);
+  SetMaxCentrality(20.);
+  SetUseCentrality(AliRDHFCuts::kCentV0M);
+
 
   // EVENT CUTS
   SetMinVtxContr(1);
-
+  // MAX Z-VERTEX CUT
+  SetMaxVtxZ(10.);
   
   // TRACKS ON SINGLE TRACKS
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
@@ -1232,10 +1239,16 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   esdTrackCuts->SetMinDCAToVertexXY(0.);
   esdTrackCuts->SetEtaRange(-0.8,0.8);
-  esdTrackCuts->SetPtRange(0.3,1.e10);
-  
+  esdTrackCuts->SetPtRange(0.8,1.e10);
+
+  esdTrackCuts->SetMaxDCAToVertexXY(1.);  
+  esdTrackCuts->SetMaxDCAToVertexZ(1.);
+  esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0100*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");  
+
+
   AddTrackCuts(esdTrackCuts);
-  
+
+  // CANDIDATE CUTS  
   const Int_t nptbins =13;
   const Double_t ptmax = 9999.;
   const Int_t nvars=9;
@@ -1257,20 +1270,21 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
 
   SetGlobalIndex(nvars,nptbins);
   SetPtBins(nptbins+1,ptbins);
-  
-  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-40000.*1E-8,0.8},/* pt<0.5*/
-						  {0.400,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-40000.*1E-8,0.8},/* 0.5<pt<1*/
-						  {0.400,250.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-32000.*1E-8,0.8},/* 1<pt<2 */
-						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-26000.*1E-8,0.94},/* 2<pt<3 */
-						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-1500.*1E-8,0.88},/* 3<pt<4 */
-						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-1500.*1E-8,0.88},/* 4<pt<5 */
-						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.90},/* 5<pt<6 */
-						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.90},/* 6<pt<8 */
-						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.90},/* 8<pt<12 */
-						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.90},/* 12<pt<16 */
-						  {0.400,350.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.85},/* 16<pt<20 */
-						  {0.400,350.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.*1E-8,0.85},/* 20<pt<24 */
-						  {0.400,350.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.*1E-8,0.82}};/* pt>24 */
+  SetMinPtCandidate(2.);
+
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,400.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-50000.*1E-8,0.85},/* pt<0.5*/
+						  {0.400,400.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-50000.*1E-8,0.85},/* 0.5<pt<1*/
+						  {0.400,400.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-43000.*1E-8,0.85},/* 1<pt<2 */
+						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-40000.*1E-8,0.95},/* 2<pt<3 */
+						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-36000.*1E-8,0.95},/* 3<pt<4 */
+						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-27000.*1E-8,0.95},/* 4<pt<5 */
+						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-21000.*1E-8,0.92},/* 5<pt<6 */
+						  {0.400,270.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-14000.*1E-8,0.88},/* 6<pt<8 */
+						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.85},/* 8<pt<12 */
+						  {0.400,350.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-1000.*1E-8,0.83},/* 12<pt<16 */
+						  {0.400,400.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-1000.*1E-8,0.82},/* 16<pt<20 */
+						  {0.400,400.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-1000.*1E-8,0.81},/* 20<pt<24 */
+						  {0.400,400.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-1000.*1E-8,0.8}};/* pt>24 */
   
   
   //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
@@ -1309,7 +1323,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   
   SetPidHF(pidObj);
   SetUsePID(kTRUE);
-  SetUseDefaultPID(kTRUE);// TEMPORARY: PROTON EXCLUSION SET ONLY IN DEFAULT PID
+  SetUseDefaultPID(kFALSE);
 
 
   PrintAll();
