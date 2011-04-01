@@ -280,13 +280,11 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  Float_t phi  = fmd.Phi(d,r,s,t) / 180 * TMath::Pi();
 	  Float_t eta  = fmd.Eta(d,r,s,t);
 	  rh->fTotalStrips->Fill(eta, phi);
-	  if (mult < GetMultCut() || mult > 20) rh->fEmptyStrips->Fill(eta,phi);
-	  if (mult == AliESDFMD::kInvalidMult || mult > 20) continue;
 	  
-	  //if (mult == 0) { 
-	  //  rh->fEmptyStrips->Fill(eta,phi);
-	  //  continue;
-	  // }
+	  if (mult == AliESDFMD::kInvalidMult || mult > 20) { 
+	    rh->fEmptyStrips->Fill(eta,phi);
+	    continue;
+	  }
 	  
 	  Float_t n   = NParticles(mult,d,r,s,t,vtxbin,eta,lowFlux);
 	  
@@ -323,11 +321,11 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  // Mean in region of interest 
 	  Double_t poissonM = (total <= 0 || empty <= 0 ? 0 : 
 			       -TMath::Log(empty / total));
-	  Double_t poissonV = 0;
+	  Double_t poissonV = hits;
 	  if(poissonM > 0)
 	    // Correct for counting statistics and weight by counts 
 	    poissonV = (hits * poissonM) / (1 - TMath::Exp(-1*poissonM));
-	  Double_t poissonE = 0 ;
+	  Double_t poissonE = TMath::Sqrt(hits);
 	  if(poissonV > 0) poissonE = TMath::Sqrt(poissonV);
 	  
 	  rh->fELossVsPoisson->Fill(eLossV, poissonV);
