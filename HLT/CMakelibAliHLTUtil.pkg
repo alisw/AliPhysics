@@ -64,7 +64,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/BASE HLT/BASE/util STEER RAW ANALYSIS)
 
-set ( ELIBS  "HLTbase STEER STEERBase RAWDatabase ANALYSIS ANALYSISalice")
+set ( ELIBS  "HLTbase STEER STEERBase RAWDatabase AOD ANALYSIS ANALYSISalice")
 
 include ("CMakehlt.conf")
 
