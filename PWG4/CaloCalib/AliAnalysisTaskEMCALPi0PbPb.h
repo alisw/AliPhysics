@@ -42,11 +42,11 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetVertexRange(Double_t z1, Double_t z2)       { fVtxZMin=z1; fVtxZMax=z2;   }
 
  protected:
+  virtual void ClusterAfterburner();
   virtual void FillCellHists();
   virtual void FillClusHists();
   virtual void FillPionHists();
-  virtual void ClusterAfterburner();
-
+  virtual void FillOtherHists();
   Double_t     GetMaxCellEnergy(AliVCluster *c);
   void         GetSigma(AliVCluster *c, Double_t &sigmaMax, Double_t &sigmaMin);
 
