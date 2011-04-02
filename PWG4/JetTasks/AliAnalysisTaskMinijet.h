@@ -30,9 +30,9 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   Int_t LoopAOD  (Float_t **pt, Float_t **eta, Float_t **phi, Short_t **charge,  Int_t **nTracksTracklets);
   Int_t LoopAODMC(Float_t **pt, Float_t **eta, Float_t **phi, Short_t **charge,  Int_t **nTracksTracklets);
   void  Analyse  (const Float_t* pt, const Float_t* eta, const Float_t* phi,  const Short_t *charge, Int_t ntacks, Int_t ntacklets=0, const Int_t nAll=0, Int_t mode=0);
-  const void  CleanArrays(const Float_t *pt, const Float_t *eta, const Float_t *phi, const Short_t *charge, const Int_t *nTracksTracklets=0);
-  const Bool_t SelectParticlePlusCharged(Short_t charge, Int_t pdg, Bool_t prim);
-  const Bool_t SelectParticle(Short_t charge, Int_t pdg, Bool_t prim);
+  void  CleanArrays(const Float_t *pt, const Float_t *eta, const Float_t *phi, const Short_t *charge, const Int_t *nTracksTracklets=0);
+  Bool_t SelectParticlePlusCharged(const Short_t charge, const Int_t pdg, const Bool_t prim);
+  Bool_t SelectParticle(const Short_t charge, const Int_t pdg, const Bool_t prim);
 
 
   void UseMC(Bool_t useMC=kTRUE, Bool_t mcOnly=kFALSE)    {fUseMC = useMC; fMcOnly=mcOnly;}
