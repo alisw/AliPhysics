@@ -470,13 +470,14 @@ Bool_t AliTPCcalibCalib::RejectCluster(AliTPCclusterMI* cl, AliExternalTrackPara
   // check the acceptance of cluster
   // Cut on edge effects
   //
+  if (!param) return kTRUE;
   Float_t kEdgeCut=2.5;
   Float_t kSigmaCut=6;
 
   Bool_t isReject = kFALSE;
   Float_t edgeY = cl->GetX()*TMath::Tan(TMath::Pi()/18);
   Float_t dist  = edgeY - TMath::Abs(cl->GetY());
-  if (param)  dist  = TMath::Abs(edgeY - TMath::Abs(param->GetY()));
+  dist  = TMath::Abs(edgeY - TMath::Abs(param->GetY()));
   if (dist<kEdgeCut) isReject=kTRUE;
 
   Double_t cov[3]={0.01,0.,0.01}; //TODO: correct error parametrisation    

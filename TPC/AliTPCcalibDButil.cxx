@@ -1408,7 +1408,7 @@ AliTPCCalPad *AliTPCcalibDButil::CreateCEOutlyerMap( Int_t & noutliersCE, AliTPC
     AliTPCCalROC *rocCETrms    = fCETrms->GetCalROC(iroc);
     Double_t trocMedian        = rocData->GetMedian();
     //
-    if (!rocData || !rocCEQ || !rocCETrms) {
+    if (!rocData || !rocCEQ || !rocCETrms || !rocData) {
       noutliersCE+=AliTPCROC::Instance()->GetNChannels(iroc);
       rocOut->Add(1.);
       continue;
@@ -1776,7 +1776,10 @@ Double_t  AliTPCcalibDButil::GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Dou
     tdelta[nused]=ccosmic-claser;
     nused++;
   }
-  if (nused<kMinPoints &&deltaT<kMaxPeriod) return  AliTPCcalibDButil::GetTriggerOffsetTPC(run, timeStamp, deltaT*2,deltaTLaser);
+  if (nused<kMinPoints &&deltaT<kMaxPeriod) {
+    delete [] tdelta;
+    return  AliTPCcalibDButil::GetTriggerOffsetTPC(run, timeStamp, deltaT*2,deltaTLaser);
+  }
   if (nused<kMinPoints) {
     delete [] tdelta;
     printf("AliFatal: No time offset calibration available\n");

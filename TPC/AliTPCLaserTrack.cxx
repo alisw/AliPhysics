@@ -184,6 +184,7 @@ void AliTPCLaserTrack::LoadTracks()
   if (man->GetDefaultStorage()){
     if (man->GetRun()<0) man->SetRun(0);
     AliCDBEntry *entry=man->Get(AliCDBPath("TPC/Calib/LaserTracks"));
+    if (!entry) return;
     arrLaserTracks = (TObjArray*)entry->GetObject();
     entry->SetOwner(kTRUE);
   } else {
@@ -311,7 +312,6 @@ Int_t AliTPCLaserTrack::IdentifyTrack(AliExternalTrackParam *track, Int_t side)
   //
   Float_t mindist=10; // maxima minimal distance
   Int_t id = -1;
-  AliExternalTrackParam*  ltr0= (AliExternalTrackParam*)arrTracks->UncheckedAt(0);
   for (Int_t itrack=0; itrack<fgkNLaserTracks; itrack++){    
     AliTPCLaserTrack *ltr = (AliTPCLaserTrack*)arrTracks->UncheckedAt(itrack);
     if (side>=0) if (ltr->GetSide()!=side) continue;
@@ -340,13 +340,11 @@ Int_t AliTPCLaserTrack::IdentifyTrack(AliExternalTrackParam *track, Int_t side)
     if (id<0)  {
       id =itrack; 
       mindist=dist; 
-      ltr0=ltr;
       continue;
     }
     if (dist>mindist) continue;
     id = itrack;
     mindist=dist;
-    ltr0=ltr;
   }
   return id;
 }

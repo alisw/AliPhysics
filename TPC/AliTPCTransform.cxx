@@ -140,7 +140,9 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   //                TOF of particle calculated assuming the speed-of-light and 
   //                line approximation  
   //
-  
+  if (!fCurrentRecoParam) {
+    return;
+  }
   Int_t row=TMath::Nint(x[0]);
   Int_t pad=TMath::Nint(x[1]);
   Int_t sector=i[0];
@@ -155,11 +157,13 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   if (!correction) correction = calib->GetTPCComposedCorrection(AliTracker::GetBz());
   if (!time0TPC){
     AliFatal("Time unisochronity missing");
+    return ; // make coverity happy
   }
   AliTPCCorrection * correctionDelta = calib->GetTPCComposedCorrectionDelta(); 
 
   if (!param){
     AliFatal("Parameters missing");
+    return; // make coverity happy
   }
 
   Double_t xx[3];
@@ -180,7 +184,7 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   //
   // old ExB correction 
   //
-  if(fCurrentRecoParam&&fCurrentRecoParam->GetUseExBCorrection()) {
+  if(fCurrentRecoParam->GetUseExBCorrection()) {
 
     calib->GetExB()->Correct(x,xx);
 
@@ -194,7 +198,7 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   //
   // new composed  correction  - will replace soon ExB correction
   //
-  if(fCurrentRecoParam&&fCurrentRecoParam->GetUseComposedCorrection()&&correction) {
+  if(fCurrentRecoParam->GetUseComposedCorrection()&&correction) {
     Float_t distPoint[3]={xx[0],xx[1],xx[2]};
     correction->CorrectPoint(distPoint, sector);
     xx[0]=distPoint[0];
@@ -213,7 +217,7 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   //
   // Time of flight correction
   // 
-  if (fCurrentRecoParam&&fCurrentRecoParam->GetUseTOFCorrection()){
+  if (fCurrentRecoParam->GetUseTOFCorrection()){
     const Int_t kNIS=param->GetNInnerSector(), kNOS=param->GetNOuterSector(); 
     Float_t sign=1;
     if (sector < kNIS) {
@@ -288,6 +292,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   //
   //  
   //
+  if (!fCurrentRecoParam) return;
   const  Int_t kMax =60;  // cache for 60 seconds
   static Int_t lastStamp=-1;  //cached values
   static Double_t lastCorr = 1;
@@ -318,7 +323,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   //
   if (lastStampT!=(Int_t)fCurrentTimeStamp){
     lastStampT=fCurrentTimeStamp;
-    if(fCurrentRecoParam&&fCurrentRecoParam->GetUseDriftCorrectionTime()>0) {
+    if(fCurrentRecoParam->GetUseDriftCorrectionTime()>0) {
       vdcorrectionTime = (1+AliTPCcalibDB::Instance()->
 			  GetVDriftCorrectionTime(fCurrentTimeStamp, 
 						  fCurrentRun,
@@ -331,7 +336,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
 			       fCurrentRecoParam->GetUseDriftCorrectionTime());	
     }
     //
-    if(fCurrentRecoParam&&fCurrentRecoParam->GetUseDriftCorrectionGY()>0) {
+    if(fCurrentRecoParam->GetUseDriftCorrectionGY()>0) {
       
       Double_t corrGy= AliTPCcalibDB::Instance()->
 			GetVDriftCorrectionGy(fCurrentTimeStamp, 
@@ -345,6 +350,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
 
   if (!param){
     AliFatal("Parameters missing");
+    return; // make coverity happy
   }
   Int_t row=TMath::Nint(x[0]);
   //  Int_t pad=TMath::Nint(x[1]);
