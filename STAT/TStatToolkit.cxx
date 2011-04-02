@@ -1191,16 +1191,19 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   Double_t *tempArray = new Double_t[entries];
 
   Double_t count = 0.5;
-  vector<Int_t> vrun;
+  Double_t  *vrun = new Double_t[entries];
+  Int_t icount=0;
+  //
   tempArray[index[0]] = count;
-  vrun.push_back(graph->GetX()[index[0]]);
+  vrun[0] = graph->GetX()[index[0]];
   for(Int_t i=1;i<entries;i++){
     if(graph->GetX()[index[i]]==graph->GetX()[index[i-1]])
       tempArray[index[i]] = count; 
     else if(graph->GetX()[index[i]]!=graph->GetX()[index[i-1]]){
       count++;
+      icount++;
       tempArray[index[i]] = count;
-      vrun.push_back(graph->GetX()[index[i]]);
+      vrun[icount]=graph->GetX()[index[i]];
     }
   }
   
@@ -1215,7 +1218,7 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   
   Char_t xName[50];
   for(Int_t i=0;i<count;i++){
-    snprintf(xName,50,"%d",vrun.at(i));
+    snprintf(xName,50,"%d",Int_t(vrun[i]));
     graphNew->GetXaxis()->SetBinLabel(i+1,xName);
   }
   graphNew->GetHistogram()->SetTitle("");
@@ -1223,6 +1226,7 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   delete [] tempArray;
   delete [] index;
   delete [] newBins;
+  delete [] vrun;
   return graphNew;
 }
 
