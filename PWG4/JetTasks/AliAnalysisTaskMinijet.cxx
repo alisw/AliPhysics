@@ -1166,7 +1166,7 @@ void AliAnalysisTaskMinijet::Terminate(Option_t*)
 }
 
 //________________________________________________________________________
-const Bool_t AliAnalysisTaskMinijet::SelectParticlePlusCharged(Short_t charge, Int_t pdg, Bool_t prim)
+Bool_t AliAnalysisTaskMinijet::SelectParticlePlusCharged(const Short_t charge, const Int_t pdg, const Bool_t prim)
 {
   //selection of mc particle
   //fSelectParticles=0: use charged primaries and pi0 and k0
@@ -1200,7 +1200,7 @@ const Bool_t AliAnalysisTaskMinijet::SelectParticlePlusCharged(Short_t charge, I
 }
 
 //________________________________________________________________________
-const Bool_t AliAnalysisTaskMinijet::SelectParticle(Short_t charge, Int_t pdg, Bool_t prim)
+Bool_t AliAnalysisTaskMinijet::SelectParticle(const Short_t charge, const Int_t pdg, const Bool_t prim)
 {
   //selection of mc particle
   //fSelectParticles=0: use charged primaries and pi0 and k0
@@ -1233,11 +1233,11 @@ const Bool_t AliAnalysisTaskMinijet::SelectParticle(Short_t charge, Int_t pdg, B
 }
 
 //________________________________________________________________________
-const void AliAnalysisTaskMinijet::CleanArrays(const Float_t* pt, 
-					       const Float_t* eta, 
-					       const Float_t* phi, 
-					       const Short_t * charge, 
-					       const Int_t* nTracksTracklets)
+void AliAnalysisTaskMinijet::CleanArrays(const Float_t* pt, 
+					 const Float_t* eta, 
+					 const Float_t* phi, 
+					 const Short_t * charge, 
+					 const Int_t* nTracksTracklets)
 {
   //clean up of memory used for arrays of track properties
 
