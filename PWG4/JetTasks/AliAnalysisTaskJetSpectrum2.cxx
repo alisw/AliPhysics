@@ -498,11 +498,11 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fHistList->Add(fh2TrackEtaPt[ij]);
 
     fh3MultTrackPtRP[ij]  = new TH3F(Form("fh3MultTrackPtRP%s",
-					  cAdd.Data()),Form(";# tracks;%s track p_T;RP Bin",cAdd.Data()),250,0,5000,100.,0.,50.,(Int_t)fNRPBins,-0.5,fNRPBins-0.5);
+					  cAdd.Data()),Form(";# tracks;%s track p_T;RP Bin",cAdd.Data()),250,0,5000,100,0.,50.,(Int_t)fNRPBins,-0.5,fNRPBins-0.5);
     fHistList->Add(fh3MultTrackPtRP[ij]);
     
     fh2LeadingTrackPtTrackPhi[ij] = new TH2F(Form("fh2Leading%sTrackPtTrackPhi",cAdd.Data()),Form("phi of leading %s track;p_{T};#phi;",cAdd.Data()),
-					       nBinPt,binLimitsPt,nBinPhi,binLimitsPhi);
+					     nBinPt,binLimitsPt,nBinPhi,binLimitsPhi);
       fHistList->Add(fh2LeadingTrackPtTrackPhi[ij]);
 
       for(int i = 0;i <= kMaxJets;++i){
