@@ -1466,6 +1466,12 @@ void AliFlowAnalysisWithCumulants::CalculateIntegratedFlow(TString rpPoi)
    {
     yieldPt = (TH1F*)(fCommonHists->GetHistPtRP())->Clone();
    } 
+    
+ if(!yieldPt)
+ {
+  printf("\n WARNING (GFC): yieldPt is NULL in AFAWC::CIF() !!!!\n");
+  return;
+ } 
   
  TH1D *flow2ndPt = (TH1D*)fDiffFlow[rp][0][0]->Clone();
  TH1D *flow4thPt = (TH1D*)fDiffFlow[rp][0][1]->Clone();
