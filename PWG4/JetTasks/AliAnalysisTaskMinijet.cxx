@@ -971,8 +971,8 @@ void AliAnalysisTaskMinijet::Analyse(const Float_t *pt, const Float_t *eta, cons
   Float_t etaOthers = 0; // eta others
   Float_t phiOthers = 0; // phi others
 
-  Int_t *pindexInnerEta  = new Int_t[nAll];
-  Float_t *ptInnerEta = new Float_t[nAll];
+  Int_t *pindexInnerEta  = new Int_t[nAll+1]; // Fix for coverity defect complaining in TMath:Sort in line 1022
+  Float_t *ptInnerEta = new Float_t[nAll+1];  // ToDo: Proper fix needs to be investigated
   
   for (Int_t i = 0; i < nAll; i++) {
     //filling of simple check plots
