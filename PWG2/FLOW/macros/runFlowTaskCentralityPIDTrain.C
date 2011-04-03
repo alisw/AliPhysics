@@ -22,7 +22,7 @@ void runFlowTaskCentralityPIDTrain( Int_t mode = mGrid,
                                     Bool_t useFlowParFiles = kTRUE,
                                     Bool_t DATA = kTRUE,
                                     //const Char_t* dataDir="/data/alice2/ab/grid/21-16/TEST/data/",
-                                    const Char_t* dataDir="/data/alice2/mikolaj/flowPaper/data/137161/",
+                                    const Char_t* dataDir="fileList",
                                     Int_t nEvents = 1e4,
                                     Int_t offset=0 )
 {
@@ -70,7 +70,9 @@ void runFlowTaskCentralityPIDTrain( Int_t mode = mGrid,
 
   //Add the centrality determination task
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
-  AddTaskCentrality();
+  AliCentralitySelectionTask* centSelTask = AddTaskCentrality();
+  if (!DATA) centSelTask->SetMCInput();
+
 
   //Add the TOF tender
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/macros/AddTaskTenderTOF.C");
