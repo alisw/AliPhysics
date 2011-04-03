@@ -345,7 +345,7 @@ Bool_t AliITStrackV2::Invariant() const {
   }
   Double_t sC44=GetCovariance()[14];
   if (sC44<=0 /*|| sC44>6e-5*/) {
-    if (n>fgkWARN) AliDebug(1,Form("Invariant","fC44=%f\n",sC44));
+    if (n>fgkWARN) AliDebug(1,Form("fC44=%f\n",sC44));
      return kFALSE;
   }
 
