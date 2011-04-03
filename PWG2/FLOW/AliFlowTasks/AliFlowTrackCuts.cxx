@@ -63,6 +63,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fAliESDtrackCuts(NULL),
   fQA(NULL),
   fCutMC(kFALSE),
+  fCutMChasTrackReferences(kFALSE),
   fCutMCprocessType(kFALSE),
   fMCprocessType(kPNoProcess),
   fCutMCPID(kFALSE),
@@ -130,6 +131,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fAliESDtrackCuts(NULL),
   fQA(NULL),
   fCutMC(kFALSE),
+  fCutMChasTrackReferences(kFALSE),
   fCutMCprocessType(kFALSE),
   fMCprocessType(kPNoProcess),
   fCutMCPID(kFALSE),
@@ -205,6 +207,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fAliESDtrackCuts(NULL),
   fQA(NULL),
   fCutMC(that.fCutMC),
+  fCutMChasTrackReferences(that.fCutMChasTrackReferences),
   fCutMCprocessType(that.fCutMCprocessType),
   fMCprocessType(that.fMCprocessType),
   fCutMCPID(that.fCutMCPID),
@@ -285,6 +288,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   //these guys we don't need to copy, just reinit
   if (that.fQA) {fQA->Delete(); delete fQA; fQA=NULL; DefineHistograms();} 
   fCutMC=that.fCutMC;
+  fCutMChasTrackReferences=that.fCutMChasTrackReferences;
   fCutMCprocessType=that.fCutMCprocessType;
   fMCprocessType=that.fMCprocessType;
   fCutMCPID=that.fCutMCPID;
@@ -508,6 +512,10 @@ Bool_t AliFlowTrackCuts::PassesMCcuts(AliMCEvent* mcEvent, Int_t label)
     Int_t processID = particle->GetUniqueID();
     if (processID != fMCprocessType ) return kFALSE;
   }
+  if (fCutMChasTrackReferences)
+  {
+    if (mcparticle->GetNumberOfTrackReferences()<1) return kFALSE;
+  }
   return kTRUE;
 }
 
@@ -563,6 +571,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   Bool_t pass=kTRUE;
   //check the common cuts for the current particle fTrack (MC,AOD,ESD)
   Double_t pt = fTrack->Pt();
+  Double_t p = fTrack->P();
   if (!fFakesAreOK) {if (fTrackLabel<0) pass=kFALSE;}
   if (fCutPt) {if (pt < fPtMin || pt >= fPtMax ) pass=kFALSE;}
   if (fCutEta) {if (fTrack->Eta() < fEtaMin || fTrack->Eta() >= fEtaMax ) pass=kFALSE;}
@@ -583,6 +592,32 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   //the case of ESD or AOD
   if (esdTrack) { if (!PassesESDcuts(esdTrack)) { pass=kFALSE; } }
   if (aodTrack) { if (!PassesAODcuts(aodTrack)) { pass=kFALSE; } }
+
+  if (fQA)
+  {
+    Float_t pdg = 0;
+    Int_t pdgcode = fMCparticle->PdgCode();
+    switch (TMath::Abs(pdgcode))
+    {
+      case 11:
+        pdg = AliPID::kElectron + 0.5; break;
+      case 13:
+        pdg = AliPID::kMuon + 0.5; break;
+      case 211:
+        pdg = AliPID::kPion + 0.5; break;
+      case 321:
+        pdg = AliPID::kKaon + 0.5; break;
+      case 2212:
+        pdg = AliPID::kProton + 0.5; break;
+      default:
+        pdg = AliPID::kUnknown + 0.5; break;
+    }
+    pdg = TMath::Sign(pdg,static_cast<Float_t>(pdgcode));
+    if (fMCparticle) QAbefore(2)->Fill(p,pdg);
+    if (fMCparticle) QAbefore(3)->Fill(p,IsPhysicalPrimary()?0.5:-0.5);
+    if (fMCparticle && pass) QAafter(2)->Fill(p,pdg);
+    if (fMCparticle && pass) QAafter(3)->Fill(p,IsPhysicalPrimary()?0.5:-0.5);
+  }
 
   //true by default, if we didn't set any cuts
   return pass;
@@ -1289,10 +1324,14 @@ void AliFlowTrackCuts::DefineHistograms()
   after->SetName("after");
   fQA->Add(before);
   fQA->Add(after);
-  before->Add(new TH2F("TOFbeta",";p [GeV/c];#beta",kNbinsP,binsP,1000,0.4,1.1));
-  after->Add(new TH2F("TOFbeta",";p [GeV/c];#beta",kNbinsP,binsP,1000,0.4,1.1));
-  before->Add(new TH2F("TPCdedx",";p [GeV/c];dEdx",kNbinsP,binsP,500,0,500));
-  after->Add(new TH2F("TPCdedx",";p [GeV/c];dEdx",kNbinsP,binsP,500,0,500));
+  before->Add(new TH2F("TOFbeta",";p [GeV/c];#beta",kNbinsP,binsP,1000,0.4,1.1)); //0
+  after->Add(new TH2F("TOFbeta",";p [GeV/c];#beta",kNbinsP,binsP,1000,0.4,1.1)); //0
+  before->Add(new TH2F("TPCdedx",";p [GeV/c];dEdx",kNbinsP,binsP,500,0,500)); //1
+  after->Add(new TH2F("TPCdedx",";p [GeV/c];dEdx",kNbinsP,binsP,500,0,500)); //1
+  before->Add(new TH2F("MC pid",";p[GeV/c];species",kNbinsP,binsP,10,-5, 5)); //2
+  after->Add(new TH2F("MC pid",";p[GeV/c];species",kNbinsP,binsP,10,-5, 5)); //2
+  before->Add(new TH2F("MC primary",";p[GeV/c];primary",kNbinsP,binsP,2,-1,1)); //3
+  after->Add(new TH2F("MC primary",";p[GeV/c];primary",kNbinsP,binsP,2,-1,1)); //3
   TH1::AddDirectory(adddirstatus);
 }
 
@@ -2325,3 +2364,4 @@ Long64_t AliFlowTrackCuts::Merge(TCollection* list)
   }
   return number;
 }
+

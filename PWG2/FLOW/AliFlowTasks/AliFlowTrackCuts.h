@@ -143,6 +143,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   //MC stuff
   void SetIgnoreSignInMCPID( Bool_t b ) {fIgnoreSignInMCPID=b;}
   void SetCutMC( Bool_t b=kTRUE );
+  void SetCutMChasTrackReferences(Bool_t b=kTRUE) {fCutMChasTrackReferences=b;}
   void SetMCprocessType( TMCProcess t ) { fMCprocessType = t; fCutMCprocessType=kTRUE; SetCutMC();}
   void SetMCisPrimary( Bool_t b ) { fMCisPrimary=b; fCutMCisPrimary=kTRUE; SetCutMC();}
   void SetMCPID( Int_t pid ) { fMCPID=pid; fCutMCPID=kTRUE; SetCutMC(); }
@@ -228,6 +229,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliESDtrackCuts* fAliESDtrackCuts; //alianalysis cuts
   TList* fQA;                        //qa histograms go here
   Bool_t fCutMC;                     //do we cut on MC?
+  Bool_t fCutMChasTrackReferences;   //did we leave a trace in the detector?
   Bool_t fCutMCprocessType;          //do we cut on mc process type?
   TMCProcess fMCprocessType;         //mc process type
   Bool_t fCutMCPID;                  //cut on MC pid?
@@ -296,7 +298,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   static const Int_t fgkNumberOfV0tracks=64; //number of V0 channels
 
-  ClassDef(AliFlowTrackCuts,7)
+  ClassDef(AliFlowTrackCuts,8)
 };
 
 #endif
