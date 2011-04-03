@@ -17,6 +17,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
  public: 
   AliTPCRecoParam();
   virtual ~AliTPCRecoParam();
+  virtual void Print(const Option_t* option="") const;
   static   Bool_t  GetUseTimeCalibration();
   static   void    SetUseTimeCalibration(Bool_t useTimeCalibration);
   void     SetClusterSharing(Bool_t sharing){fBClusterSharing=sharing;}

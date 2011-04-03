@@ -131,7 +131,17 @@ AliTPCRecoParam::~AliTPCRecoParam()
   //  
 }
 
-
+void AliTPCRecoParam::Print(const Option_t* /*option*/) const{
+  //
+  //
+  //
+  AliTPCRecoParam::Dump();
+  printf("Systematic errors:\n");
+  const char * cherrs[5]={"sy=","sz=","ssnp=","stheta=","s1pt="};
+  for (Int_t i=0; i<5; i++){
+    printf("%s%f\n",cherrs[i],fSystematicErrors[i]);
+  }
+}
 
 
 AliTPCRecoParam *AliTPCRecoParam::GetLowFluxParam(){
