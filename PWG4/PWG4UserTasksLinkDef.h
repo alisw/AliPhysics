@@ -7,4 +7,7 @@
 #pragma link C++ class AliCaloPhoton+;
 #pragma link C++ class AliAnalysisTaskPi0+;
 
+#pragma link C++ class AliCaloCellsQA+;
+#pragma link C++ class AliAnalysisTaskCaloCellsQA+;
+
 #endif
