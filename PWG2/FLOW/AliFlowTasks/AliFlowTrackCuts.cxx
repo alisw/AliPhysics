@@ -595,28 +595,31 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
 
   if (fQA)
   {
-    Float_t pdg = 0;
-    Int_t pdgcode = fMCparticle->PdgCode();
-    switch (TMath::Abs(pdgcode))
+    if (fMCparticle)
     {
-      case 11:
-        pdg = AliPID::kElectron + 0.5; break;
-      case 13:
-        pdg = AliPID::kMuon + 0.5; break;
-      case 211:
-        pdg = AliPID::kPion + 0.5; break;
-      case 321:
-        pdg = AliPID::kKaon + 0.5; break;
-      case 2212:
-        pdg = AliPID::kProton + 0.5; break;
-      default:
-        pdg = AliPID::kUnknown + 0.5; break;
+      Float_t pdg = 0;
+      Int_t pdgcode = fMCparticle->PdgCode();
+      switch (TMath::Abs(pdgcode))
+      {
+        case 11:
+          pdg = AliPID::kElectron + 0.5; break;
+        case 13:
+          pdg = AliPID::kMuon + 0.5; break;
+        case 211:
+          pdg = AliPID::kPion + 0.5; break;
+        case 321:
+          pdg = AliPID::kKaon + 0.5; break;
+        case 2212:
+          pdg = AliPID::kProton + 0.5; break;
+        default:
+          pdg = AliPID::kUnknown + 0.5; break;
+      }
+      pdg = TMath::Sign(pdg,static_cast<Float_t>(pdgcode));
+      QAbefore(2)->Fill(p,pdg);
+      QAbefore(3)->Fill(p,IsPhysicalPrimary()?0.5:-0.5);
+      if (pass) QAafter(2)->Fill(p,pdg);
+      if (pass) QAafter(3)->Fill(p,IsPhysicalPrimary()?0.5:-0.5);
     }
-    pdg = TMath::Sign(pdg,static_cast<Float_t>(pdgcode));
-    if (fMCparticle) QAbefore(2)->Fill(p,pdg);
-    if (fMCparticle) QAbefore(3)->Fill(p,IsPhysicalPrimary()?0.5:-0.5);
-    if (fMCparticle && pass) QAafter(2)->Fill(p,pdg);
-    if (fMCparticle && pass) QAafter(3)->Fill(p,IsPhysicalPrimary()?0.5:-0.5);
   }
 
   //true by default, if we didn't set any cuts
