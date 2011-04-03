@@ -28,6 +28,8 @@
 set ( SRCS 
  UserTasks/PHOS_pp_pi0/AliCaloPhoton.cxx
  UserTasks/PHOS_pp_pi0/AliAnalysisTaskPi0.cxx
+ UserTasks/CaloCellQA/AliCaloCellsQA.cxx
+ UserTasks/CaloCellQA/AliAnalysisTaskCaloCellsQA.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -36,8 +38,8 @@ set ( DHDR  PWG4UserTasksLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  PWG4UserTasks/PHOS_pp_pi0/ PHOS)
+set ( EINCLUDE  PWG4/UserTasks/PHOS_pp_pi0 PWG4/UserTasks/CaloCellQA EMCAL PHOS)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
-set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -lPHOSbase -L${ROOTLIBDIR} -lEG)
+set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -lPHOSbase -lEMCALbase -L${ROOTLIBDIR} -lEG)
 endif( ALICE_TARGET STREQUAL "win32gcc")
