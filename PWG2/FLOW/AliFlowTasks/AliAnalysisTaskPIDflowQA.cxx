@@ -376,12 +376,14 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
     fOutputList->Add(fTPCsignalPmc);
   }
 
-  fTOFtime=new TH2F("fTOFtime",";p[GeV/c];#time",kPBins,binsPDummy,1000, 0.4, 1.1);//
+  fTOFtime=new TH2F("fTOFtime",";p[GeV/c];#time",kPBins,binsPDummy,1000, 12000, 80000);//
   fOutputList->Add(fTOFtime);
-  fTOFtimeE=new TH2F("fTOFtimeE",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,500, -0.25, 0.25);//
-  fTOFtimePi=new TH2F("fTOFtimePi",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,500, -0.25, 0.25);//
-  fTOFtimeK=new TH2F("fTOFtimeK",";p [GeV/c];#time-#time_{K}",kPBins,binsPDummy,500, -0.25, 0.25);//
-  fTOFtimeP=new TH2F("fTOFtimeP",";p [GeV/c];#time-#time_{p}",kPBins,binsPDummy,500, -0.25, 0.25);//
+  fTOFtime=new TH2F("fTOFtime",";p[GeV/c];#time",kPBins,binsPDummy,1000, 12000, 80000);//
+  fOutputList->Add(fTOFtime);
+  fTOFtimeE=new TH2F("fTOFtimeE",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,500, -8000, 8000);//
+  fTOFtimePi=new TH2F("fTOFtimePi",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,500, -8000, 8000);//
+  fTOFtimeK=new TH2F("fTOFtimeK",";p [GeV/c];#time-#time_{K}",kPBins,binsPDummy,500, -8000, 8000);//
+  fTOFtimeP=new TH2F("fTOFtimeP",";p [GeV/c];#time-#time_{p}",kPBins,binsPDummy,500, -8000, 8000);//
   //fOutputList->Add(fTOFtimeE);
   //fOutputList->Add(fTOFtimePi);
   //fOutputList->Add(fTOFtimeK);
@@ -544,28 +546,28 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fCutsTOFProtons->SetPID(AliPID::kProton, AliFlowTrackCuts::kTOFbeta);
   fCutsTOFProtons->SetQA();
   fCutsTPCElectrons = new AliFlowTrackCuts("tpc electron cuts");
-  fCutsTPCElectrons->SetPID(AliPID::kElectron, AliFlowTrackCuts::kTPCdedx);
+  fCutsTPCElectrons->SetPID(AliPID::kElectron, AliFlowTrackCuts::kTPCpid);
   fCutsTPCElectrons->SetQA();
   fCutsTPCPions = new AliFlowTrackCuts("tpc pion cuts");
-  fCutsTPCPions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCdedx);
+  fCutsTPCPions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCpid);
   fCutsTPCPions->SetQA();
   fCutsTPCKaons = new AliFlowTrackCuts("tpc kaon cuts");
-  fCutsTPCKaons->SetPID(AliPID::kKaon, AliFlowTrackCuts::kTPCdedx);
+  fCutsTPCKaons->SetPID(AliPID::kKaon, AliFlowTrackCuts::kTPCpid);
   fCutsTPCKaons->SetQA();
   fCutsTPCProtons = new AliFlowTrackCuts("tpc proton cuts");
-  fCutsTPCProtons->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCdedx);
+  fCutsTPCProtons->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCpid);
   fCutsTPCProtons->SetQA();
 
   //fOutputList->Add(fESDpid);
 
-  fOutputList->Add(fCutsTPCElectrons);
-  fOutputList->Add(fCutsTPCPions);
-  fOutputList->Add(fCutsTPCKaons);
-  fOutputList->Add(fCutsTPCProtons);
-  fOutputList->Add(fCutsTOFElectrons);
-  fOutputList->Add(fCutsTOFPions);
-  fOutputList->Add(fCutsTOFKaons);
-  fOutputList->Add(fCutsTOFProtons);
+  fOutputList->Add(fCutsTPCElectrons->GetQA());
+  fOutputList->Add(fCutsTPCPions->GetQA());
+  fOutputList->Add(fCutsTPCKaons->GetQA());
+  fOutputList->Add(fCutsTPCProtons->GetQA());
+  fOutputList->Add(fCutsTOFElectrons->GetQA());
+  fOutputList->Add(fCutsTOFPions->GetQA());
+  fOutputList->Add(fCutsTOFKaons->GetQA());
+  fOutputList->Add(fCutsTOFProtons->GetQA());
 
   if (fUseDebugFile) fFile = fopen("debug.txt","w");
 
@@ -810,9 +812,8 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
                      (track->GetStatus() & AliESDtrack::kTOFpid) &&
                      (track->GetTOFsignal() > 12000) &&
                      (track->GetTOFsignal() < 100000) &&
-                     (track->GetIntegratedLength() > 365) &&
-                     !(track->GetStatus() & AliESDtrack::kTOFmismatch);
-
+                     (track->GetIntegratedLength() > 365);
+  
   if (!goodtrack) return;
 
   const AliExternalTrackParam* innerParam = track->GetInnerParam();
@@ -827,6 +828,12 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
   Float_t timeTOF = track->GetTOFsignal()- trackT0; 
   Double_t integratedTimes[5] = {-1.0,-1.0,-1.0,-1.0,-1.0};
   track->GetIntegratedTimes(integratedTimes);
+
+  Double_t tpcpid[AliPID::kSPECIES];
+  track->GetTPCpid(tpcpid);
+
+  if (track->GetStatus() & AliESDtrack::kTOFmismatch) return;
+
 
   //beta
   Float_t beta = l/timeTOF/c;
@@ -849,6 +856,8 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
   }
 
   //responses
+  fTOFtime->Fill(p,timeTOF);
+
   fTOFbeta->Fill(p,beta);
   fTOFbetaE->Fill(p,betadiff[0]);
   fTOFbetaPi->Fill(p,betadiff[2]);
@@ -888,6 +897,7 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
         fTOFyieldSelEmcP->Fill(pt);
       }
     }
+    printf("electron: pt: %.1f | %.1f, %.1f, %.1f, %.1f, %.1f\n",pt,tpcpid[0],tpcpid[1],tpcpid[2],tpcpid[3],tpcpid[4]);
   }
   if (fCutsTOFPions->IsSelected(track)) 
   {
@@ -917,6 +927,7 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
         fTOFyieldSelPimcP->Fill(pt);
       }
     }
+    printf("pion    : pt: %.1f | %.1f, %.1f, %.1f, %.1f, %.1f\n",pt,tpcpid[0],tpcpid[1],tpcpid[2],tpcpid[3],tpcpid[4]);
   }
   if (fCutsTOFKaons->IsSelected(track)) 
   {
@@ -946,6 +957,7 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
         fTOFyieldSelKmcP->Fill(pt);
       }
     }
+    printf("kaon    : pt: %.1f | %.1f, %.1f, %.1f, %.1f, %.1f\n",pt,tpcpid[0],tpcpid[1],tpcpid[2],tpcpid[3],tpcpid[4]);
   }
   if (fCutsTOFProtons->IsSelected(track)) 
   {
@@ -975,6 +987,7 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
         fTOFyieldSelPmcP->Fill(pt);
       }
     }
+    printf("proton  : pt: %.1f | %.1f, %.1f, %.1f, %.1f, %.1f\n",pt,tpcpid[0],tpcpid[1],tpcpid[2],tpcpid[3],tpcpid[4]);
   }
 
 }

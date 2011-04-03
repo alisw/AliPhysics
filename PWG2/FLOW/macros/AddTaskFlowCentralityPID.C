@@ -14,7 +14,8 @@ void AddTaskFlowCentralityPID( Float_t centrMin=0.,
                                AliFlowTrackCuts::PIDsource sourcePID = AliFlowTrackCuts::kTOFpid,
                                Int_t charge=0,
                                Int_t harmonic=2,
-                               Bool_t doQA=kFALSE )
+                               Bool_t doQA=kFALSE,
+                               TString uniqueStr="" )
 {
   // Define the range for eta subevents (for SP method)
   Double_t minA = -0.9;
@@ -141,6 +142,7 @@ void AddTaskFlowCentralityPID( Float_t centrMin=0.,
   cutsPOI->SetQA(doQA);
 
   TString outputSlotName("");
+  outputSlotName+=uniqueStr;
   outputSlotName+=Form("V%i ",harmonic);
   outputSlotName+=cutsRP->GetName();
   outputSlotName+=" ";
@@ -433,8 +435,10 @@ void AddTaskFlowCentralityPID( Float_t centrMin=0.,
  
   if (taskFE->GetQAOn())
   {
+    TString outputQA = fileName;
+    outputQA += ":QA";
     AliAnalysisDataContainer* coutputFEQA = 
-    mgr->CreateContainer(Form("QA %s",outputSlotName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:QA",fileName));
+    mgr->CreateContainer(Form("QA %s",outputSlotName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputQA);
     mgr->ConnectOutput(taskFE,2,coutputFEQA);
   }
 
