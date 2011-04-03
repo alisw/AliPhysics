@@ -13,6 +13,7 @@ class AliESDtrackCuts;
 class AliPHOSGeometry;
 class AliTriggerAnalysis;
 
+#include "TH2I.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskPi0 : public AliAnalysisTaskSE {
