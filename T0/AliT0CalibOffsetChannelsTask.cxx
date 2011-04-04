@@ -73,10 +73,9 @@ AliT0CalibOffsetChannelsTask::~AliT0CalibOffsetChannelsTask()
   delete fTzeroORC;
   delete fResolution;
   delete fTzeroORAplusORC;
-  for (Int_t i=0; i<24; i++) {
-    delete  fTimeDiff[i];
-    delete  fCFD[i];
-  }
+  delete [] fTimeDiff;
+  delete [] fCFD;
+
   delete fTzeroObject;
 }
 
@@ -107,7 +106,8 @@ void AliT0CalibOffsetChannelsTask::UserCreateOutputObjects()
   // Create histograms
   for (Int_t i=0; i<24; i++) {
     fTimeDiff[i]   = new TH1F (Form("CFD1minCFD%d",i+1),"fTimeDiff",300, -300, 300);
-    fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",500, 2000, 3000);//6000, 7000);
+    //   fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",500, 2000, 3000);//6000, 7000);
+    fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",500, -1000, 1000);//6000, 7000);
   }
 
   fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",400,-2000,2000);   //or A plus or C 
@@ -151,23 +151,24 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
 
   const Double32_t* time = fESD->GetT0time();
   for (Int_t i=0; i<12; i++) {
-    if( time[i]>1 ){
-      fCFD[i]->Fill( time[i]);
-      if(  time[0]>1 ) 
+     if( time[i] != 0 ){
+     printf(" %i time %f \n", i, time[i] );
+    fCFD[i]->Fill( time[i]);
+      if(  time[0] != 0 ) 
 	fTimeDiff[i]->Fill( time[i]-time[0]);
     }
   }
   for (Int_t i=12; i<24; i++) {
-    if( time[i]>1) {
+    if( time[i] != 0) {
       fCFD[i]->Fill( time[i]);
-      if( time[12]>1 ) 
+      if( time[12] != 0 ) 
 	fTimeDiff[i]->Fill( time[i]-time[12]);
     }
   }
   const Double32_t* mean = fESD->GetT0TOF();
-  Double32_t meanTOF = mean[0] + 100000. ;
-  Double32_t orA = mean[1] + 100000.;
-  Double32_t orC = mean[2] + 100000.;
+  Double32_t meanTOF = mean[0] ;
+  Double32_t orA = mean[1] ;
+  Double32_t orC = mean[2];
  
   if(orA<9999) fTzeroORA->Fill(orA);
   if(orC<9999) fTzeroORC->Fill(orC);

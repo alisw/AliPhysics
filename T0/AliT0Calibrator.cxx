@@ -106,15 +106,17 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t refAmp,  Int_t ipmt, Int_t qt, Int_
   Int_t timeEq=0, timeWalk=0;  
   TGraph *fu1=(TGraph*) fWalk.At(ipmt);
   if(fu1 && fu1->GetN()>0) {
-    grY = fu1->GetY();
-    fMaxValue[ipmt]=grY[refAmp-1];
+     grY = fu1->GetY();
+     //   fMaxValue[ipmt]=grY[refAmp-1];
     // TGraph* fu  = param ->GetAmpLEDRec(i);
     // walk = Int_t (fMaxValue[ipmt]) + Int_t(fu1->Eval(Double_t(qt)));
     walk = Int_t(fu1->Eval(Double_t(qt)));
   }
   
   timeWalk = time - walk   ;
-  timeEq= timeWalk - fTimeDelayCFD[ipmt];
+  timeEq =timeWalk - refAmp ; //- fTimeDelayCFD[ipmt]; //in refAmp - mean CFD position
+ 
+ //  timeEq= timeWalk - fTimeDelayCFD[ipmt];
   //   printf(" ipmt %i time before %i timeWalk %i , walk %i  qt %i fTimeDelayCFD[ipmt] %i timeEq %i \n ",
   //	 ipmt, time,timeWalk, walk, qt,fTimeDelayCFD[ipmt], timeEq );
      AliDebug(10,Form(" ipmt %i time before %i timeWalk %i , walk %i  qt %i timeEq %i \n ",

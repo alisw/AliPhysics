@@ -207,13 +207,13 @@ int main(int argc, char **argv) {
 	 { 
 	   if(ik<12 && allData[ik+1][0]>0 && allData[knpmtC][0]>0 ){
 	     hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[knpmtC][0]);
-	     if(allData[ik+1][0]>0 ) hCFD[ik]->Fill(allData[ik+1][0]);
+	     hCFD[ik]->Fill(allData[ik+1][0]);
 	   }
 	   
 	   if(ik>11 && allData[ik+45][0]>0 && allData[56+knpmtA][0]>0 )
 	     {
 	     hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[56+knpmtA][0]);
-	     if(allData[ik+1][0]>0 ) hCFD[ik]->Fill(allData[ik+45][0]);
+	     hCFD[ik]->Fill(allData[ik+45][0]);
 	     }
 	   if(iev == 10000) {	
 	     meanShift[ik] =  hCFD1minCFD[ik]->GetMean(); 

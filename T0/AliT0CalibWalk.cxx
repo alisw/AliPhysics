@@ -128,15 +128,15 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
       Float_t x2[50], xx2[50],y2[50];
       Float_t xx1[50],yy1[50], xx[50];
       
-      Float_t cfd0[24];
-      Int_t startim = 0;
+      Float_t cfd0 = 0;
       
       for (Int_t ii=0; ii<nmips; ii++)
 	x1[ii] = y1[ii] = x2[ii] = y2[ii] = 0; 
       
       for (Int_t i=0; i<24; i++)
 	{
-	  for (Int_t im=startim; im<nmips; im++)
+	  cfd0 = 0;
+	  for (Int_t im=0; im<nmips; im++)
 	    {	      
 	      TString cfd = Form("hCFD%i_%i",i+1,im+1);
 	      TString qtc = Form("hQTC%i_%i",i+1,im+1);
@@ -166,8 +166,9 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 		else
 		  cfdmean = hCFD->GetMean();
 		
-		if (im == 0) cfd0[i] = cfdmean;
-		y1[im] =  cfdmean - cfd0[i];
+	      if(TMath::Abs(hCFD->GetMean() - cfdmean) >10 ) cfdmean = hCFD->GetMean(); 
+		if (im == 0) cfd0 = cfdmean;
+		y1[im] =  cfdmean - cfd0;
 	      }	
 	      if(hQTC && hQTC->GetEntries()>500) {
 		GetMeanAndSigma(hQTC, qtmean, sigma);
