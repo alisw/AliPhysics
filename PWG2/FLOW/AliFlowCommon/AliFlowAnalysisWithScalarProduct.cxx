@@ -48,6 +48,7 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
    fDebug(kFALSE),
    fApplyCorrectionForNUA(kFALSE),
    fHarmonic(2),
+   fTotalQvector(NULL),
    fRelDiffMsub(1.),
    fWeightsList(NULL),
    fUsePhiWeights(kFALSE),
@@ -91,6 +92,9 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
   fWeightsList = new TList();
   fHistList = new TList();
   fHistList->SetOwner(kTRUE);
+  
+  // Total Q-vector is: "QaQb" (means Qa+Qb), "Qa"  or "Qb"
+  fTotalQvector = new TString("QaQb");
   
   // Initialize arrays:
   for(Int_t i=0;i<3;i++)
@@ -469,7 +473,17 @@ void AliFlowAnalysisWithScalarProduct::FillSP(AliFlowEventSimple* anEvent) {
 	fHistMavsMb -> Fill(dMb,dMa);
 
 	//get total Q vector = the sum of subevent a and subevent b
-	AliFlowVector vQ = vQa + vQb;
+	AliFlowVector vQ;
+	if(!strcmp(fTotalQvector->Data(),"QaQb"))
+	{
+	 vQ = vQa + vQb;
+	} else if(!strcmp(fTotalQvector->Data(),"Qa"))
+	  {
+	   vQ = vQa; 
+	  } else if(!strcmp(fTotalQvector->Data(),"Qb"))
+	    {
+	     vQ = vQb; 
+	    }
 
 	//needed to correct for non-uniform acceptance:
 	fHistProNonIsotropicTermsQ->Fill(1.,vQ.Y()/(dMa+dMb),dMa+dMb);
@@ -515,7 +529,7 @@ void AliFlowAnalysisWithScalarProduct::FillSP(AliFlowEventSimple* anEvent) {
 	    pTrack = anEvent->GetTrack(i) ; 
 	    if (pTrack){
 	      Double_t dPhi = pTrack->Phi();
-	      	    
+	      Double_t dWeightUQ = 1.; // weight for u*Q 	    
 	      //calculate vU
 	      TVector2 vU;
 	      //do not need to use weight for v as the length will be made 1
@@ -535,7 +549,13 @@ void AliFlowAnalysisWithScalarProduct::FillSP(AliFlowEventSimple* anEvent) {
 		//set default phi weight to 1
 		Double_t dW = 1.; 
 		//if phi weights are used
-		if(fUsePhiWeights && fPhiWeightsSub0 && fPhiWeightsSub1) {
+		if(fUsePhiWeights && fPhiWeightsSub0 && fPhiWeightsSub1) 
+		{
+		  if(strcmp(fTotalQvector->Data(),"QaQb"))
+		  {
+		   printf("\n WARNING (SP): If you use phi-weights total Q-vector has to be Qa+Qb in the current implementation!!!! \n");
+		   exit(0);
+		  }
 		  //value of the center of the phi bin
 		  Double_t dPhiCenter = 0.;  
 		  if (pTrack->InSubevent(0) ) {
@@ -563,10 +583,29 @@ void AliFlowAnalysisWithScalarProduct::FillSP(AliFlowEventSimple* anEvent) {
 		  //TMath::Floor rounds to the lower integer
 		}     
 		// if no phi weights are used
-		else {
+		else 
+		{
+		 if(!strcmp(fTotalQvector->Data(),"QaQb"))
+		 {
 		  dQmX = (vQ.X() - (pTrack->Weight())*dUX)/(dMq-1);
 		  dQmY = (vQ.Y() - (pTrack->Weight())*dUY)/(dMq-1);
+		  dWeightUQ = dMq-1;
 		  vQm.Set(dQmX,dQmY);
+		 } else if((!strcmp(fTotalQvector->Data(),"Qa") && pTrack->InSubevent(0)) ||
+		           (!strcmp(fTotalQvector->Data(),"Qb") && pTrack->InSubevent(1)))
+		   {
+		    dQmX = (vQ.X() - (pTrack->Weight())*dUX)/(dMq-1);
+		    dQmY = (vQ.Y() - (pTrack->Weight())*dUY)/(dMq-1);
+		    dWeightUQ = dMq-1;
+		    vQm.Set(dQmX,dQmY);
+		   } else if((!strcmp(fTotalQvector->Data(),"Qa") && pTrack->InSubevent(1)) ||
+		             (!strcmp(fTotalQvector->Data(),"Qb") && pTrack->InSubevent(0)))
+		     {
+   		      dQmX = vQ.X()/dMq;
+		      dQmY = vQ.Y()/dMq;
+		      dWeightUQ = dMq;
+		      vQm.Set(dQmX,dQmY);
+		     }
 		}
 			      
 		//dUQ = scalar product of vU and vQm
@@ -576,18 +615,18 @@ void AliFlowAnalysisWithScalarProduct::FillSP(AliFlowEventSimple* anEvent) {
 		
 		//fill the profile histograms
 		if (pTrack->InRPSelection()) {
-		  fHistProUQetaRP -> Fill(dEta,dUQ,(dMq-1)); //Fill (Qu/(Mq-1)) with weight (Mq-1) 
+		  fHistProUQetaRP -> Fill(dEta,dUQ,dWeightUQ); //Fill (Qu/(Mq-1)) with weight (Mq-1) 
 		  //needed for the error calculation:
-		  fHistProUQQaQbEtaRP -> Fill(dEta,dUQ*dQaQb,(dMq-1)*dMa*dMb); //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	    
-		  fHistProUQPtRP -> Fill(dPt,dUQ,(dMq-1));                     //Fill (Qu/(Mq-1)) with weight (Mq-1)
-		  fHistProUQQaQbPtRP -> Fill(dPt,dUQ*dQaQb,(dMq-1)*dMa*dMb);   //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	
+		  fHistProUQQaQbEtaRP -> Fill(dEta,dUQ*dQaQb,dWeightUQ*dMa*dMb); //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	    
+		  fHistProUQPtRP -> Fill(dPt,dUQ,dWeightUQ);                     //Fill (Qu/(Mq-1)) with weight (Mq-1)
+		  fHistProUQQaQbPtRP -> Fill(dPt,dUQ*dQaQb,dWeightUQ*dMa*dMb);   //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	
 		  
-		  fHistSumOfWeightsEtaRP[0]->Fill(dEta,(dMq-1));        // sum of Mq-1     
-		  fHistSumOfWeightsEtaRP[1]->Fill(dEta,pow((dMq-1),2.));// sum of (Mq-1)^2     
-		  fHistSumOfWeightsEtaRP[2]->Fill(dEta,(dMq-1)*dMa*dMb);// sum of (Mq-1)*MaMb     
-		  fHistSumOfWeightsPtRP[0]->Fill(dPt,(dMq-1));          // sum of Mq-1     
-		  fHistSumOfWeightsPtRP[1]->Fill(dPt,pow((dMq-1),2.));  // sum of (Mq-1)^2     
-		  fHistSumOfWeightsPtRP[2]->Fill(dPt,(dMq-1)*dMa*dMb);  // sum of (Mq-1)*MaMb   
+		  fHistSumOfWeightsEtaRP[0]->Fill(dEta,dWeightUQ);        // sum of Mq-1     
+		  fHistSumOfWeightsEtaRP[1]->Fill(dEta,pow(dWeightUQ,2.));// sum of (Mq-1)^2     
+		  fHistSumOfWeightsEtaRP[2]->Fill(dEta,dWeightUQ*dMa*dMb);// sum of (Mq-1)*MaMb     
+		  fHistSumOfWeightsPtRP[0]->Fill(dPt,dWeightUQ);          // sum of Mq-1     
+		  fHistSumOfWeightsPtRP[1]->Fill(dPt,pow(dWeightUQ,2.));  // sum of (Mq-1)^2     
+		  fHistSumOfWeightsPtRP[2]->Fill(dPt,dWeightUQ*dMa*dMb);  // sum of (Mq-1)*MaMb   
 		  //nonisotropic terms:
 		  fHistProNonIsotropicTermsU[0][0][0]->Fill(dPt,dUY,1.);
 		  fHistProNonIsotropicTermsU[0][0][1]->Fill(dPt,dUX,1.);
@@ -595,18 +634,18 @@ void AliFlowAnalysisWithScalarProduct::FillSP(AliFlowEventSimple* anEvent) {
 		  fHistProNonIsotropicTermsU[0][1][1]->Fill(dEta,dUX,1.);
 		}
 		if (pTrack->InPOISelection()) {
-		  fHistProUQetaPOI -> Fill(dEta,dUQ,(dMq-1));//Fill (Qu/(Mq-1)) with weight (Mq-1)
+		  fHistProUQetaPOI -> Fill(dEta,dUQ,dWeightUQ);//Fill (Qu/(Mq-1)) with weight (Mq-1)
 		  //needed for the error calculation:
-		  fHistProUQQaQbEtaPOI -> Fill(dEta,dUQ*dQaQb,(dMq-1)*dMa*dMb); //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	    
-		  fHistProUQPtPOI -> Fill(dPt,dUQ,(dMq-1));                     //Fill (Qu/(Mq-1)) with weight (Mq-1)
-		  fHistProUQQaQbPtPOI -> Fill(dPt,dUQ*dQaQb,(dMq-1)*dMa*dMb);   //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	    
+		  fHistProUQQaQbEtaPOI -> Fill(dEta,dUQ*dQaQb,dWeightUQ*dMa*dMb); //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	    
+		  fHistProUQPtPOI -> Fill(dPt,dUQ,dWeightUQ);                     //Fill (Qu/(Mq-1)) with weight (Mq-1)
+		  fHistProUQQaQbPtPOI -> Fill(dPt,dUQ*dQaQb,dWeightUQ*dMa*dMb);   //Fill [Qu/(Mq-1)]*[QaQb/MaMb] with weight (Mq-1)MaMb	    
 		  
-		  fHistSumOfWeightsEtaPOI[0]->Fill(dEta,(dMq-1));        // sum of Mq-1     
-		  fHistSumOfWeightsEtaPOI[1]->Fill(dEta,pow((dMq-1),2.));// sum of (Mq-1)^2     
-		  fHistSumOfWeightsEtaPOI[2]->Fill(dEta,(dMq-1)*dMa*dMb);// sum of (Mq-1)*MaMb     
-		  fHistSumOfWeightsPtPOI[0]->Fill(dPt,(dMq-1));          // sum of Mq-1     
-		  fHistSumOfWeightsPtPOI[1]->Fill(dPt,pow((dMq-1),2.)); // sum of (Mq-1)^2     
-		  fHistSumOfWeightsPtPOI[2]->Fill(dPt,(dMq-1)*dMa*dMb); // sum of (Mq-1)*MaMb   
+		  fHistSumOfWeightsEtaPOI[0]->Fill(dEta,dWeightUQ);        // sum of Mq-1     
+		  fHistSumOfWeightsEtaPOI[1]->Fill(dEta,pow(dWeightUQ,2.));// sum of (Mq-1)^2     
+		  fHistSumOfWeightsEtaPOI[2]->Fill(dEta,dWeightUQ*dMa*dMb);// sum of (Mq-1)*MaMb     
+		  fHistSumOfWeightsPtPOI[0]->Fill(dPt,dWeightUQ);          // sum of Mq-1     
+		  fHistSumOfWeightsPtPOI[1]->Fill(dPt,pow(dWeightUQ,2.)); // sum of (Mq-1)^2     
+		  fHistSumOfWeightsPtPOI[2]->Fill(dPt,dWeightUQ*dMa*dMb); // sum of (Mq-1)*MaMb   
 		  //nonisotropic terms:
 		  fHistProNonIsotropicTermsU[1][0][0]->Fill(dPt,dUY,1.);
 		  fHistProNonIsotropicTermsU[1][0][1]->Fill(dPt,dUX,1.);
@@ -704,14 +743,26 @@ void AliFlowAnalysisWithScalarProduct::FillmuQ(AliFlowEventSimple* anEvent) {
 
     //get total Q vector = the sum of subevent a and subevent b
     AliFlowVector vQ;
-    if (vQa.GetMult() > 0 && vQb.GetMult() > 0) {
+    if(!strcmp(fTotalQvector->Data(),"QaQb"))
+    {
+     if(vQa.GetMult() > 0 || vQb.GetMult() > 0) 
+     {
       vQ = vQa + vQb;
-    } else if ( vQa.GetMult() > 0 && !(vQb.GetMult() > 0) ){
-      vQ = vQa; 
-    } else if ( !(vQa.GetMult() > 0) && vQb.GetMult() > 0 ){
-      vQ = vQb;
-    }
-
+     } else {return;}         
+    } else if(!strcmp(fTotalQvector->Data(),"Qa"))
+      {
+       if(vQa.GetMult() > 0)
+       {
+        vQ = vQa;
+       } else {return;}
+      } else if(!strcmp(fTotalQvector->Data(),"Qb"))
+        {
+         if(vQb.GetMult() > 0)
+         {
+          vQ = vQb;
+         } else {return;}
+        }
+      
     //For calculating uQ for comparison all events should be taken also if one of the subevents is empty
     //check if the total Q vector is not empty
     Double_t dMq =  vQ.GetMult();
@@ -756,7 +807,14 @@ void AliFlowAnalysisWithScalarProduct::FillmuQ(AliFlowEventSimple* anEvent) {
 		//set default phi weight to 1
 		Double_t dW = 1.; 
 		//if phi weights are used
-		if(fUsePhiWeights && fPhiWeightsSub0 && fPhiWeightsSub1) {
+		if(fUsePhiWeights && fPhiWeightsSub0 && fPhiWeightsSub1) 
+		{
+		 if(strcmp(fTotalQvector->Data(),"QaQb"))
+		 {
+	              printf("\n WARNING (SP): If you use phi-weights total Q-vector has to be Qa+Qb in the current implementation!!!! \n");
+	              exit(0);
+	             }
+
 		  //value of the center of the phi bin
 		  Double_t dPhiCenter = 0.;  
 		  if (pTrack->InSubevent(0) ) {
@@ -784,10 +842,28 @@ void AliFlowAnalysisWithScalarProduct::FillmuQ(AliFlowEventSimple* anEvent) {
 		  //TMath::Floor rounds to the lower integer
 		}     
 		// if no phi weights are used
-		else {
+		else 
+		{
+		 if(!strcmp(fTotalQvector->Data(),"QaQb"))
+		 {
 		  dQmX = (vQ.X() - (pTrack->Weight())*dUX);
 		  dQmY = (vQ.Y() - (pTrack->Weight())*dUY);
 		  vQm.Set(dQmX,dQmY);
+		 } else if((!strcmp(fTotalQvector->Data(),"Qa") && pTrack->InSubevent(0)) ||
+		           (!strcmp(fTotalQvector->Data(),"Qb") && pTrack->InSubevent(1)))
+		   {
+		    //printf("\n A \n");exit(0);
+		    dQmX = (vQ.X() - (pTrack->Weight())*dUX);
+		    dQmY = (vQ.Y() - (pTrack->Weight())*dUY);
+		    vQm.Set(dQmX,dQmY);
+		   } else if((!strcmp(fTotalQvector->Data(),"Qa") && pTrack->InSubevent(1)) ||
+		             (!strcmp(fTotalQvector->Data(),"Qb") && pTrack->InSubevent(0)))
+		     {
+   		      //printf("\n B \n");exit(0);
+		      dQmX = vQ.X();
+		      dQmY = vQ.Y();
+		      vQm.Set(dQmX,dQmY);
+		     }
 		}
 
 		//dUQ = scalar product of vU and vQm
