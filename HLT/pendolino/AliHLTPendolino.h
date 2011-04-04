@@ -405,7 +405,11 @@ class AliHLTPendolino : public AliShuttleInterface {
    * needs to be implemented to create pendolino instances
    */
   virtual void SendMLFromDet(const char* /*value*/) {}
-		
+  /**
+   * method introduced as pure virtual in r45587
+   * needs to be implemented to create pendolino instances
+   */
+  virtual TString* GetLTUConfig(const char* /*det*/) {return NULL;}	
 	protected:
 
 		

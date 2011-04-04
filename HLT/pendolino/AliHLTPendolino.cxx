@@ -46,6 +46,11 @@
 
 using namespace std;
 
+// this global object is not for use, it just makes sure that
+// AliHLTPendolino can be instantiated. In case of missing virtual
+// functions a compilation error will indicate potential problems in
+// the pendolino macros
+AliHLTPendolino gAliHLTPendolino(0,"");
 
 ClassImp(AliHLTPendolino)
 
