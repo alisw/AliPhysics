@@ -30,7 +30,7 @@ class AliAnalysisCentralitySelector : public AliAnalysisCuts
 {
 public:
 
-  AliAnalysisCentralitySelector() : fIsMC (0), fCentrEstimator(""), fCentrBin(-1), fMultMin(0), fMultMax(1000000), fUseMultRange(kFALSE), fUseV0CutRange(kFALSE), fUseSPDOuterRange(kFALSE) {;}
+  AliAnalysisCentralitySelector() : AliAnalysisCuts("CentralityCuts", "Centrality Cuts"), fIsMC (0), fCentrEstimator(""), fCentrBin(-1), fMultMin(0), fMultMax(1000000), fUseMultRange(kFALSE), fUseV0CutRange(kFALSE), fUseSPDOuterRange(kFALSE), fUsePercentile(kFALSE) {;}
   virtual ~AliAnalysisCentralitySelector(){}
     
   // AliAnalysisCuts interface
@@ -46,7 +46,8 @@ public:
   void SetUseV0Range(Bool_t flag = kTRUE) {fUseV0CutRange = flag;}
   void SetUseSPDOuterRange(Bool_t flag = kTRUE) {fUseSPDOuterRange = flag;}
   void SetCentralityEstimator(const char * estimator) { fCentrEstimator = estimator; }
-  void SetCentralityBin(Int_t bin) { fCentrBin = bin; }
+  void SetCentralityBin(Int_t bin) { fCentrBin = bin; } // uses 10% percentiles
+  void SetCentralityBin(Float_t min, Float_t max) { fMultMin = min; fMultMax = max; fUsePercentile=kTRUE;}
   virtual void Print(Option_t* option = "") const ;
   virtual Long64_t Merge(TCollection* list){list->GetEntries();return 0;}
   
@@ -59,6 +60,7 @@ protected:
   Bool_t fUseMultRange; // if true, use track bins rather than multiplicity estimator
   Bool_t fUseV0CutRange; // if true, use v0 range rather than multiplicity estimator
   Bool_t fUseSPDOuterRange; // if true, use SPD outer cluster range rather than multiplicity estimator
+  Bool_t fUsePercentile; // if true, use the specified centrality percentile
 
   ClassDef(AliAnalysisCentralitySelector, 2)
     

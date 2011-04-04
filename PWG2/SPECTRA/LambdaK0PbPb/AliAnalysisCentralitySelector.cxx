@@ -55,7 +55,7 @@ Bool_t AliAnalysisCentralitySelector::IsCentralityBinSelected(AliESDEvent* aEsd,
     //    cout << "ok" << endl;
 
   }
- else if(fUseMultRange) {
+  else if(fUseMultRange) {
     if(!trackCuts){
       AliFatal("Track cuts object is invalid");
     }
@@ -65,9 +65,16 @@ Bool_t AliAnalysisCentralitySelector::IsCentralityBinSelected(AliESDEvent* aEsd,
     if (fCentrBin == -1 && !fUseMultRange) return kTRUE;
     if (ntracks < fMultMin) return kFALSE;
     if (ntracks > fMultMax) return kFALSE;						       
-  } else {
+  } 
+  else if(fUsePercentile) {
+    AliCentrality *centrality = (AliCentrality*) aEsd->GetCentrality(); 
+    return centrality->IsEventInCentralityClass(fMultMin, fMultMax, fCentrEstimator.Data()) ;
 
-   AliCentrality *centrality = (AliCentrality*) aEsd->GetCentrality(); // FIXME: change to alicentrality?
+  }
+  
+  else {
+
+   AliCentrality *centrality = (AliCentrality*) aEsd->GetCentrality();
     if(!centrality && !fUseMultRange) {
       AliFatal("Centrality object not available"); 
     }
