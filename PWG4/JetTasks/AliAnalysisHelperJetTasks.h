@@ -83,6 +83,8 @@ class AliAnalysisHelperJetTasks : public TObject {
   static Int_t GetLastProcessType() { return fgLastProcessType; }
 
   static Bool_t Selected(Bool_t bSet = kFALSE,Bool_t bNew = kTRUE); // static function to store the state of selection from service task
+  static Double_t ReactionPlane(Bool_t bSet = kTRUE,Double_t fNew = 0); 
+  static Int_t GetPhiBin(Double_t phi,Int_t fNRPbins);
 
   static Bool_t IsPileUp(); // Wrapper for SelectInfo with PileUp
   static Bool_t IsCosmic(); // Wrapper for SelectInfo with cosmic

@@ -74,6 +74,25 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Int_t GetEventClass(AliESDEvent *esd);
     Int_t GetEventClass(AliAODEvent *aod);
 
+
+    virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
+    virtual void SetMinTrackPt(Float_t f){fMinTrackPt = f;}
+    virtual void SetTrackEtaWindow(Float_t f){fTrackRecEtaWindow = f;}
+
+    virtual void SetPhiWeights(TH3F *phiw){fh3PhiWeights = phiw;}
+    virtual void SetFlatteningCoeff(Float_t *fA,Float_t *fB){
+      fFlatA[0] = fA[0];fFlatA[1] = fA[1];
+      fFlatA[0] = fB[0];fFlatB[1] = fB[1];
+    }
+    virtual void SetDeltaQxy(Float_t *fD){
+      fDeltaQxy[0] = fD[0];
+      fDeltaQxy[1] = fD[1];
+    }
+
+    Bool_t   CalculateReactionPlaneAngle(const TList *trackList);
+    Double_t GetPhiWeight(Double_t phi,Double_t signedpt);
+    Int_t   GetListOfTracks(TList *list);
+
     enum { kAllTriggered = 0,kTriggeredVertex,kTriggeredVertexIn,kSelectedALICE,kSelectedALICEVertexValid,kSelectedALICEVertexIn,kSelected,kConstraints};
 
     enum { kNoEventCut=1<<0,
@@ -101,6 +120,8 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     UInt_t        fPhysicsSelectionFlag; // defines the glag for acceptance of events from physics selection
     UInt_t        fSelectionInfoESD;   // slection info bit mask
     UInt_t        fEventCutInfoESD;   // event selection info of what is cutted after physics selection
+    UInt_t        fFilterMask;         // filter bit for slecected tracks
+    Int_t         fRPSubeventMethod;   // method for subevent calculation
     Float_t       fAvgTrials;          // Average number of trials
     Float_t       fVtxXMean;           // mean x for cuts
     Float_t       fVtxYMean;           // mean y for cuts
@@ -111,6 +132,16 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     Float_t       fRIsolMinCosmic;     // Minimum R = sqrt{deltaPhi^2 + deltaEta^2} to be considered as cosmic candidate
     Float_t       fMaxCosmicAngle;     // Max deviation from pi (angle between two tracks) in case of cosmic candidate
     Float_t       fRunRange[2];        // only important for real data for 
+    Float_t       fCentrality;         // ! centrality
+    Float_t       fTrackRecEtaWindow;     // eta window for rec tracks
+    Float_t       fMinTrackPt;            // limits the track p_T 
+    Float_t       fRPAngle;               // ! RP angle of the reaction plane
+    Float_t       fFlatA[2];              // flattening for RP
+    Float_t       fFlatB[2];              // flattening for RP
+    Float_t       fDeltaQxy[2];           // centering of QX QY
+
+    TRandom3      *fRandomizer;        // ! randomizer
+
     TString       fNonStdFile;         // outputName for replication
     TProfile*     fh1Xsec;             //! pythia cross section and trials
     TH1F*         fh1Trials;           //! trials are added
@@ -120,6 +151,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     TH1F*         fh1EventCutInfoESD;  //! Masks that satisfy fSelectionInfo
     TH1F*         fh1CentralityESD;    //! centrality 
     TH1F*         fh1Centrality;       //! centrality 
+    TH1F*         fh1RP;               //! RP distribution
     TH2F*         fh2TriggerCount;     //! number of fire triggers in each case
     TH2F*         fh2ESDTriggerCount;  //! number of fire triggers in each case
     TH2F*         fh2TriggerVtx;       //! vtx. position vs. trigger decision
@@ -127,6 +159,15 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     TH2F*         fh2ESDTriggerRun;    //! fired triggers vs. run number
     TH2F*         fh2VtxXY;            //! XY position of VTX were available
     TH1F*         fh1NCosmicsPerEvent;  //! Number of coscmic candidates found in event
+    TH2F*         fh2RPSubevents;   //! subevent RP 
+    TH2F*         fh2RPCentrality;   //! RP vs centrality
+    TH2F*         fh2RPDeltaRP;     //! centrality vs. RP dela  
+    TH2F*         fh2RPQxQy;        //! QX QY moments
+    TH2F*         fh2RPCosDeltaRP;  //! RP resolution
+
+    TH3F*         fh3PhiWeights;  // RP phi weights, need to be set externally
+    TH3F*         fh3RPPhiTracks; //! RP angle
+
     AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis to get the background rates etc.
     TList *fHistList; //! Output list
 
