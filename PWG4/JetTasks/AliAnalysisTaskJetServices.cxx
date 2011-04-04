@@ -34,6 +34,7 @@
 #include <TProfile.h>
 #include <TList.h>
 #include <TLorentzVector.h>
+#include <TRandom3.h>
 #include <TClonesArray.h>
 #include "TDatabasePDG.h"
 
@@ -70,7 +71,8 @@ ClassImp(AliAnalysisTaskJetServices)
 AliAODHeader*  AliAnalysisTaskJetServices::fgAODHeader = NULL;
 TClonesArray*   AliAnalysisTaskJetServices::fgAODVertices = NULL;
 
-AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
+AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): 
+  AliAnalysisTaskSE(),
   fUseAODInput(kFALSE),
   fUsePhysicsSelection(kFALSE),
   fMC(kFALSE),
@@ -78,6 +80,8 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fPhysicsSelectionFlag(AliVEvent::kMB),
   fSelectionInfoESD(0),
   fEventCutInfoESD(0),
+  fFilterMask(0),
+  fRPSubeventMethod(0),
   fAvgTrials(1),
   fVtxXMean(0),
   fVtxYMean(0),
@@ -87,6 +91,11 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fPtMinCosmic(5.),
   fRIsolMinCosmic(3.),
   fMaxCosmicAngle(0.01),
+  fCentrality(101),
+  fTrackRecEtaWindow(0.9),
+  fMinTrackPt(0.15),
+  fRPAngle(0),
+  fRandomizer(0),
   fNonStdFile(""),
   fh1Xsec(0x0),
   fh1Trials(0x0),
@@ -96,6 +105,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fh1EventCutInfoESD(0),
   fh1CentralityESD(0),
   fh1Centrality(0),
+  fh1RP(0),
   fh2TriggerCount(0x0),
   fh2ESDTriggerCount(0x0),
   fh2TriggerVtx(0x0),
@@ -103,10 +113,21 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fh2ESDTriggerRun(0x0),
   fh2VtxXY(0x0),
   fh1NCosmicsPerEvent(0x0),
+  fh2RPSubevents(0x0),
+  fh2RPCentrality(0x0),
+  fh2RPDeltaRP(0x0),
+  fh2RPQxQy(0x0),
+  fh2RPCosDeltaRP(0x0),
+  fh3PhiWeights(0x0),
+  fh3RPPhiTracks(0x0),
   fTriggerAnalysis(0x0),
   fHistList(0x0)  
 {
   fRunRange[0] = fRunRange[1] = 0; 
+  fFlatA[0] =   fFlatA[1] = 0;
+  fFlatB[0] =   fFlatB[1] = 0;
+  fDeltaQxy[0] =   fDeltaQxy[1] = 0; 
+
 }
 
 AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
@@ -118,6 +139,8 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fPhysicsSelectionFlag(AliVEvent::kMB),
   fSelectionInfoESD(0),
   fEventCutInfoESD(0),
+  fFilterMask(0),
+  fRPSubeventMethod(0),
   fAvgTrials(1),
   fVtxXMean(0),
   fVtxYMean(0),
@@ -127,6 +150,11 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fPtMinCosmic(5.),
   fRIsolMinCosmic(3.),
   fMaxCosmicAngle(0.01),
+  fCentrality(101),
+  fTrackRecEtaWindow(0.9),
+  fMinTrackPt(0.15),
+  fRPAngle(0),
+  fRandomizer(0),
   fNonStdFile(""),
   fh1Xsec(0x0),
   fh1Trials(0x0),
@@ -136,6 +164,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fh1EventCutInfoESD(0),
   fh1CentralityESD(0),
   fh1Centrality(0),
+  fh1RP(0),
   fh2TriggerCount(0x0),
   fh2ESDTriggerCount(0x0),
   fh2TriggerVtx(0x0),
@@ -143,10 +172,21 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fh2ESDTriggerRun(0x0),
   fh2VtxXY(0x0),
   fh1NCosmicsPerEvent(0x0),
+  fh2RPSubevents(0x0),
+  fh2RPCentrality(0x0),
+  fh2RPDeltaRP(0x0),
+  fh2RPQxQy(0x0),
+  fh2RPCosDeltaRP(0x0),
+  fh3PhiWeights(0x0),
+  fh3RPPhiTracks(0x0),
+
   fTriggerAnalysis(0x0),
   fHistList(0x0)  
 {
   fRunRange[0] = fRunRange[1] = 0; 
+  fFlatA[0] =   fFlatA[1] = 0;
+  fFlatB[0] =   fFlatB[1] = 0;
+  fDeltaQxy[0] =   fDeltaQxy[1] = 0; 
   DefineOutput(1,TList::Class());
 }
 
@@ -190,7 +230,7 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
   // Create the output container
   //
 
-
+  fRandomizer = new TRandom3(0);
   if (fDebug > 1) printf("AnalysisTaskJetServices::UserCreateOutputObjects() \n");
 
   OpenFile(1);
@@ -225,6 +265,9 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
   
   fh1Centrality = new TH1F("fh1Centrality","cent",102,-0.5,101.5);
   fHistList->Add(fh1Centrality);
+
+  fh1RP = new TH1F("fh1RP","RP;#Psi",440, -1.*TMath::Pi(), 2.*TMath::Pi());
+  fHistList->Add(fh1RP);
 
   fh2TriggerCount = new TH2F("fh2TriggerCount",";Trigger No.;constrained;Count",AliAnalysisHelperJetTasks::kTrigger,-0.5,AliAnalysisHelperJetTasks::kTrigger-0.5,kConstraints,-0.5,kConstraints-0.5); 
   fHistList->Add(fh2TriggerCount);
@@ -271,6 +314,27 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
   }
 
   fh1NCosmicsPerEvent = new TH1F("fh1NCosmicsPerEvent","Number of cosmic candidates per event",10,0.,10.);
+
+  
+  fh2RPSubevents = new TH2F("fh2RPSubevents" ,"Reaction Plane Angle" , 180, 0, TMath::Pi(), 180, 0, TMath::Pi());
+  fHistList->Add( fh2RPSubevents);
+
+  fh2RPCentrality = new TH2F("fh2RPCentrality" ,"Reaction Plane Angle" , 20, 0.,100., 180, 0, TMath::Pi());
+  fHistList->Add(fh2RPCentrality);
+
+  fh2RPDeltaRP   = new TH2F("fh2DeltaRP" ,"Delta Reaction Plane Angle" , 100, -TMath::Pi()/2, TMath::Pi()/2,20,0.,100.0);
+  fHistList->Add(fh2RPDeltaRP);
+
+  fh2RPQxQy      = new TH2F("fh2RPQxQy" ,"" , 100, -100,100,100,-100,100);
+  fHistList->Add(fh2RPQxQy);
+
+  fh2RPCosDeltaRP = new TH2F("fh2RPCosDeltaRP" ,"" , 20, 0.001,100.001,100,-1,1);
+  fHistList->Add(fh2RPCosDeltaRP);
+
+  fh3RPPhiTracks = new TH3F("fh3RPPhiTracks","Phi Tracks Pt Centrality", 10, 0.,100.,20,-5,5,180, 0, 2*TMath::Pi());
+  fHistList->Add(fh3RPPhiTracks);
+  
+
   fHistList->Add(fh1NCosmicsPerEvent),
 
 
@@ -311,6 +375,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   
   AliAnalysisHelperJetTasks::Selected(kTRUE,kFALSE); // set slection to false
   AliAnalysisHelperJetTasks::EventClass(kTRUE,0);
+  AliAnalysisHelperJetTasks::ReactionPlane(kTRUE,0); // set slection to false
   fSelectionInfoESD = 0; // reset
   fEventCutInfoESD = 0; // reset
   AliAnalysisHelperJetTasks::SelectInfo(kTRUE,fSelectionInfoESD); // set slection to false
@@ -412,6 +477,9 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   Float_t cent = 100;
   if(aod)cent = aod->GetHeader()->GetCentrality();
   if(cent<0)cent = 101;
+  fCentrality = cent;
+  fRPAngle = 0;
+
   if(esd){
     const AliESDVertex *vtxESD = esd->GetPrimaryVertex();
     esdVtxValid = IsVertexValid(vtxESD);
@@ -514,6 +582,10 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       fh2TriggerCount->Fill(0.,kSelected);
       fh1Centrality->Fill(cent);
       AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
+      TList recTracks;
+      GetListOfTracks(&recTracks);
+      CalculateReactionPlaneAngle(&recTracks);
+      AliAnalysisHelperJetTasks::ReactionPlane(kTRUE,fRPAngle); // set slection to false
       if(fUseAODInput&&cent<=80){
 	if(fFilterAODCollisions&&aod){
 	  aodH->SetFillAOD(kTRUE);
@@ -557,6 +629,8 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   if(fNonStdFile.Length()&&aod){
     if (fgAODHeader){
       *fgAODHeader =  *(dynamic_cast<AliAODHeader*>(aod->GetHeader()));
+      Double_t q[2] = {fRPAngle,fRPAngle};
+      fgAODHeader->SetQTheta(q,2);
     }
     if(fgAODVertices){
       fgAODVertices->Delete();
@@ -616,6 +690,7 @@ AliAnalysisTaskJetServices::~AliAnalysisTaskJetServices(){
     fgAODVertices->Delete();
     delete fgAODVertices;
   }
+  delete fRandomizer;
   if(fgAODHeader)delete fgAODHeader;
 }
 
@@ -834,5 +909,154 @@ void AliAnalysisTaskJetServices::Terminate(Option_t */*option*/)
 {
   // Terminate analysis
   //
+}
+
+Bool_t AliAnalysisTaskJetServices::CalculateReactionPlaneAngle(const TList *trackList)
+{
+
+  if(!trackList)return kFALSE;
+  fRPAngle=0;
+
+  // need to get this info from elsewhere??
+
+  Double_t fPsiRP =0,fDeltaPsiRP = 0;
+   
+   
+    
+  TVector2 mQ,mQ1,mQ2;
+  Float_t mQx= fDeltaQxy[0], mQy=fDeltaQxy[1];
+  
+  Float_t mQx1=fDeltaQxy[0], mQy1=fDeltaQxy[1];
+  Float_t mQx2=fDeltaQxy[0], mQy2=fDeltaQxy[1];
+  
+  AliVParticle *track=0x0;
+  Int_t count[3]={0,0,0};
+  
+
+  for (Int_t iter=0;iter<trackList->GetEntries();iter++){
+
+    track=(AliVParticle*)trackList->At(iter);
+    
+    //cuts already applied before
+    // Comment DCA not correctly implemented yet for AOD tracks
+    
+    Double_t momentum;
+    if(track->Charge()>0){momentum=track->Pt();}
+    else{momentum=-track->Pt();}
+
+       
+
+    // For Weighting
+    fh3RPPhiTracks->Fill(fCentrality,momentum,track->Phi());
+    count[0]++;
+
+    Double_t phiweight=GetPhiWeight(track->Phi(),momentum);
+    //    Double_t phiweight=1; 
+    Double_t weight=2;
+    if(track->Pt()<2){weight=track->Pt();}
+    
+
+    mQx += (cos(2*track->Phi()))*weight*phiweight;
+    mQy += (sin(2*track->Phi()))*weight*phiweight;
+
+    // Make random Subevents
+
+    if(fRPSubeventMethod==0){
+      if(fRandomizer->Binomial(1,0.5)){
+	mQx1 += (cos(2*track->Phi()))*weight*phiweight;
+	mQy1 += (sin(2*track->Phi()))*weight*phiweight;
+	count[1]++;}
+      else{
+	mQx2 += (cos(2*track->Phi()))*weight*phiweight;
+	mQy2 += (sin(2*track->Phi()))*weight*phiweight;
+	count[2]++;}
+    }
+    else if(fRPSubeventMethod==1){
+      // Make eta dependent subevents
+      if(track->Eta()>0){
+	mQx1 += (cos(2*track->Phi()))*weight*phiweight;
+	mQy1 += (sin(2*track->Phi()))*weight*phiweight;
+	count[1]++;}
+      else{
+	mQx2 += (cos(2*track->Phi()))*weight*phiweight;
+	mQy2 += (sin(2*track->Phi()))*weight*phiweight;
+	count[2]++;}
+    }
+
+  }
+
+
+
+  //If no track passes the cuts, the ,Q.Phi() will return Pi and a peak at Pi/2 in the RP Angular Distribution will appear
+  if(count[0]==0||count[1]==0||count[2]==0){
+    return kFALSE;
+  }
+
+  mQ.Set(mQx,mQy);
+  mQ1.Set(mQx1,mQy1);
+  mQ2.Set(mQx2,mQy2);
+
+  // cout<<"MQ"<<mQx<<" " <<mQy<<" psi"<<endl;
+
+  fPsiRP=mQ.Phi()/2;
+    
+  //Correction
+  fPsiRP+=fFlatA[0]*TMath::Cos(2*fPsiRP)+fFlatB[0]*TMath::Sin(2*fPsiRP)+fFlatA[1]*TMath::Cos(4*fPsiRP)+fFlatB[1]*TMath::Sin(4*fPsiRP);
+
+  Double_t fPsiRP1=mQ1.Phi()/2;
+  fPsiRP1+=fFlatA[0]*TMath::Cos(2*fPsiRP1)+fFlatB[0]*TMath::Sin(2*fPsiRP1)+fFlatA[1]*TMath::Cos(4*fPsiRP1)+fFlatB[1]*TMath::Sin(4*fPsiRP1);
+  Double_t fPsiRP2=mQ2.Phi()/2;
+  fPsiRP2+=fFlatA[0]*TMath::Cos(2*fPsiRP2)+fFlatB[0]*TMath::Sin(2*fPsiRP2)+fFlatA[1]*TMath::Cos(4*fPsiRP2)+fFlatB[1]*TMath::Sin(4*fPsiRP2);
+  fDeltaPsiRP=fPsiRP1-fPsiRP2;
+  
+  if(fPsiRP>TMath::Pi()){fPsiRP-=TMath::Pi();}
+  if(fPsiRP<0){fPsiRP+=TMath::Pi();}
+  
+  // reactionplaneangle + Pi() is the same angle
+  if(TMath::Abs(fDeltaPsiRP)>TMath::Pi()/2){
+    if(fDeltaPsiRP>0)fDeltaPsiRP-=TMath::Pi();
+    else fDeltaPsiRP+=TMath::Pi();
+  }
+  
+  Double_t cos2deltaRP=TMath::Cos(2*fDeltaPsiRP);
+  
+  // FillHistograms
+  fh2RPSubevents->Fill(fPsiRP1,fPsiRP2);
+  fh1RP->Fill(fPsiRP);
+  fh2RPCentrality->Fill(fCentrality,fPsiRP);
+  fh2RPDeltaRP->Fill(fDeltaPsiRP,fCentrality);
+  fh2RPQxQy->Fill(mQx,mQy);
+  fh2RPCosDeltaRP->Fill(fCentrality,cos2deltaRP);
+  
+  fRPAngle=fPsiRP;  
+  return kTRUE;
+}
+
+Double_t AliAnalysisTaskJetServices::GetPhiWeight(Double_t phi,Double_t signedpt){
+  if(!fh3PhiWeights)return 1;
+  else return fh3PhiWeights->GetBinContent(fh3PhiWeights->GetXaxis()->FindBin(fCentrality),fh3PhiWeights->GetYaxis()->FindBin(signedpt),fh3PhiWeights->GetZaxis()->FindBin(phi));
+}
+
+ //________________________________________________________________________
+
+Int_t  AliAnalysisTaskJetServices::GetListOfTracks(TList *list){
+  Int_t iCount = 0;
+  AliAODEvent *aod = 0;
+  if(fUseAODInput)aod = dynamic_cast<AliAODEvent*>(InputEvent());
+  else aod = AODEvent();
+  if(!aod){
+    return iCount;
+  }
+  for(int it = 0;it < aod->GetNumberOfTracks();++it){
+    AliAODTrack *tr = aod->GetTrack(it);
+    if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
+    if(TMath::Abs(tr->Eta())>fTrackRecEtaWindow)continue;
+    if(tr->Pt()<fMinTrackPt)continue;
+    list->Add(tr);
+    iCount++;
+  }
+  list->Sort();
+  return iCount;
+
 }
 

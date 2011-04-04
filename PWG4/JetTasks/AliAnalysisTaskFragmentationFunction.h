@@ -12,6 +12,7 @@
 
 class AliESDEvent;
 class AliAODEvent;
+class AliAODExtension;
 class TList;
 class TH1F;
 class TH2F;
@@ -329,7 +330,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t* );
   virtual Bool_t Notify();
-  
+  virtual void   SetNonStdFile(char* c){fNonStdFile = c;} 
+
   virtual void   SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
   virtual void   SetJetTypeGen(Int_t i){fJetTypeGen = i;}
   virtual void   SetJetTypeRecEff(Int_t i){fJetTypeRecEff = i;}
@@ -488,8 +490,11 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 
   AliESDEvent* fESD;      // ESD event
   AliAODEvent* fAOD;      // AOD event
+  AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
   //AliMCEvent*  fMCEvent;  // MC event
-  
+  TString       fNonStdFile; // name of delta aod file to catch the extension
+ 
+ 
   TString fBranchRecJets;         // branch name for reconstructed jets
   TString fBranchRecBackJets;     // branch name for reconstructed background jets
   TString fBranchRecBckgClusters; // branch name for reconstructed background clusters 

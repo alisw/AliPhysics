@@ -58,6 +58,8 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
    : AliAnalysisTaskSE()
    ,fESD(0)
    ,fAOD(0)
+   ,fAODExtension(0)
+   ,fNonStdFile("")
    ,fBranchRecJets("jets")
    ,fBranchRecBackJets("")
    ,fBranchRecBckgClusters("")
@@ -334,6 +336,8 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   : AliAnalysisTaskSE(name)
   ,fESD(0)
   ,fAOD(0)
+  ,fAODExtension(0)
+  ,fNonStdFile("")
   ,fBranchRecJets("jets")
   ,fBranchRecBackJets("")
   ,fBranchRecBckgClusters("")
@@ -614,6 +618,8 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   : AliAnalysisTaskSE()
   ,fESD(copy.fESD)
   ,fAOD(copy.fAOD)
+  ,fAODExtension(copy.fAODExtension)
+  ,fNonStdFile(copy.fNonStdFile)
   ,fBranchRecJets(copy.fBranchRecJets)
   ,fBranchRecBackJets(copy.fBranchRecBackJets)
   ,fBranchRecBckgClusters(copy.fBranchRecBckgClusters)
@@ -895,6 +901,8 @@ AliAnalysisTaskFragmentationFunction& AliAnalysisTaskFragmentationFunction::oper
     AliAnalysisTaskSE::operator=(o);
     fESD                          = o.fESD;
     fAOD                          = o.fAOD;
+    fAODExtension                 = o.fAODExtension;
+    fNonStdFile                   = o.fNonStdFile;
     fBranchRecJets                = o.fBranchRecJets;
     fBranchRecBackJets            = o.fBranchRecBackJets;
     fBranchRecBckgClusters        = o.fBranchRecBckgClusters;
@@ -3290,6 +3298,16 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     }
   }
   
+  if(fNonStdFile.Length()!=0){
+    // case we have an AOD extension - fetch the jets from the extended output
+    
+    AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+    fAODExtension = (aodH?aodH->GetExtension(fNonStdFile.Data()):0);    
+    if(!fAODExtension){
+      if(fDebug>1)Printf("AODExtension not found for %s",fNonStdFile.Data());
+    }
+  }
+  
   if(!fAOD){
     Printf("%s:%d AODEvent not found", (char*)__FILE__,__LINE__);
     return;
@@ -4267,8 +4285,9 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfJets(TList *list, Int_t typ
     }
 
     TClonesArray *aodRecJets = 0; 
-    if(fBranchRecJets.Length()) aodRecJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fBranchRecJets.Data()));
-    if(!aodRecJets)             aodRecJets = dynamic_cast<TClonesArray*>(fAOD->GetList()->FindObject(fBranchRecJets.Data()));
+    if(fBranchRecJets.Length())      aodRecJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fBranchRecJets.Data()));
+    if(fAODExtension&&!aodRecJets)   aodRecJets = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fBranchRecJets.Data()));
+    if(!aodRecJets)                  aodRecJets = dynamic_cast<TClonesArray*>(fAOD->GetList()->FindObject(fBranchRecJets.Data()));
 
     if(!aodRecJets){
       if(fBranchRecJets.Length()) Printf("%s:%d no reconstructed jet array with name %s in AOD", (char*)__FILE__,__LINE__,fBranchRecJets.Data());
@@ -4386,6 +4405,7 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfJets(TList *list, Int_t typ
     TClonesArray *aodGenJets = 0;
     if(fBranchGenJets.Length()) aodGenJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fBranchGenJets.Data()));
     if(!aodGenJets)             aodGenJets = dynamic_cast<TClonesArray*>(fAOD->GetList()->FindObject(fBranchGenJets.Data()));
+    if(fAODExtension&&!aodGenJets)   aodGenJets = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fBranchGenJets.Data()));
 
     if(!aodGenJets){
       if(fDebug>0){
@@ -4437,7 +4457,8 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfBckgJets(TList *list, Int_t
     TClonesArray *aodRecJets = 0; 
     if(fBranchRecBckgClusters.Length()) aodRecJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fBranchRecBckgClusters.Data()));
     if(!aodRecJets)                     aodRecJets = dynamic_cast<TClonesArray*>(fAOD->GetList()->FindObject(fBranchRecBckgClusters.Data()));
-    
+    if(fAODExtension&&!aodRecJets)   aodRecJets = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fBranchRecBckgClusters.Data()));    
+
     if(!aodRecJets){
       if(fBranchRecBckgClusters.Length()) Printf("%s:%d no reconstructed jet array with name %s in AOD", (char*)__FILE__,__LINE__,fBranchRecBckgClusters.Data());
       if(fDebug>1)fAOD->Print();
