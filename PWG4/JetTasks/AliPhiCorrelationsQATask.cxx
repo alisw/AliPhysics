@@ -135,24 +135,24 @@ void AliPhiCorrelationsQATask::UserExec(Option_t*)
     return;
 
   AliCentrality *centralityObj = esd->GetCentrality();
-  if (!centralityObj)
-    AliFatal("Centrality object is 0");
-    
-  Float_t v0Centrality = -1;
-  Float_t spdCentrality = -1; 
-    
-  if (fUseUncheckedCentrality)
+  if (centralityObj)
   {
-    v0Centrality = centralityObj->GetCentralityPercentileUnchecked("V0M");
-    spdCentrality = centralityObj->GetCentralityPercentileUnchecked("CL1");
+    Float_t v0Centrality = -1;
+    Float_t spdCentrality = -1; 
+      
+    if (fUseUncheckedCentrality)
+    {
+      v0Centrality = centralityObj->GetCentralityPercentileUnchecked("V0M");
+      spdCentrality = centralityObj->GetCentralityPercentileUnchecked("CL1");
+    }
+    else
+    {
+      v0Centrality = centralityObj->GetCentralityPercentile("V0M");
+      spdCentrality = centralityObj->GetCentralityPercentile("CL1");
+    }
+    
+    fCentralityCorrelation->Fill(v0Centrality, spdCentrality);
   }
-  else
-  {
-    v0Centrality = centralityObj->GetCentralityPercentile("V0M");
-    spdCentrality = centralityObj->GetCentralityPercentile("CL1");
-  }
-  
-  fCentralityCorrelation->Fill(v0Centrality, spdCentrality);
       
   AliStack* stack = 0;
   if (fMCEvent)
