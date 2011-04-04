@@ -608,8 +608,8 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     TH1F* hpospair=new TH1F(namedistr.Data(),"Number of positive pairs",fCuts->GetNPtBins(),-0.5,fCuts->GetNPtBins()-0.5);
     namedistr="hnegpair";
     TH1F* hnegpair=new TH1F(namedistr.Data(),"Number of negative pairs",fCuts->GetNPtBins(),-0.5,fCuts->GetNPtBins()-0.5);
-    fDistr->Add(hpospair);
-    fDistr->Add(hnegpair);
+    fOutputMass->Add(hpospair);
+    fOutputMass->Add(hnegpair);
   }
 
   const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
@@ -618,7 +618,8 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nCandSel(Cuts)");
-  fNentries->GetXaxis()->SetBinLabel(3,"nD0Selected");
+  if(fReadMC) fNentries->GetXaxis()->SetBinLabel(3,"nD0Selected");
+  else fNentries->GetXaxis()->SetBinLabel(3,"Dstar<-D0");
   fNentries->GetXaxis()->SetBinLabel(4,"nEventsGoodVtxS");
   fNentries->GetXaxis()->SetBinLabel(5,"ptbin = -1");
   fNentries->GetXaxis()->SetBinLabel(6,"no daughter");
@@ -769,8 +770,11 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   Int_t nSelectedloose=0,nSelectedtight=0;  
   for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
-
-    if(d->GetSelectionMap()) if(!d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) continue; //skip the D0 from Dstar
+ 
+    if(d->GetSelectionMap()) if(!d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)){
+	fNentries->Fill(2);	
+	continue; //skip the D0 from Dstar
+      }
 
     Bool_t unsetvtx=kFALSE;
     if(!d->GetOwnPrimaryVtx()) {
@@ -977,9 +981,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
       normalizedDecayLengthxy=decayLengthxy/part->DecayLengthXYError();
 
       ptProng[0]=prong0->Pt(); ptProng[1]=prong1->Pt();
-      // ptProng[0]=part->PtProng(0); ptProng[1]=part->PtProng(1);
       d0Prong[0]=part->Getd0Prong(0); d0Prong[1]=part->Getd0Prong(1);
- 
 
       if(fArray==1) cout<<"LS signal: ERROR"<<endl;
       for (Int_t iprong=0; iprong<2; iprong++){
@@ -1129,13 +1131,12 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
       fillthis="hptB2prongsnoMcut_";
       fillthis+=ptbin;
       ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt());
-    ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt());
+      ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt());
     }
     //apply cut on invariant mass on the pair
     if(TMath::Abs(minvD0-mPDG)<invmasscut || TMath::Abs(minvD0bar-mPDG)<invmasscut){
       if(fSys==0){
-	//ptProng[0]=part->PtProng(0); ptProng[1]=part->PtProng(1);
-	ptProng[0]=((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt(); ptProng[1]=((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt(); 
+	ptProng[0]=((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt(); ptProng[1]=((AliAODTrack*)fDaughterTracks.UncheckedAt(0))->Pt();
 	cosThetaStarD0 = part->CosThetaStarD0();
 	cosThetaStarD0bar = part->CosThetaStarD0bar();
       }
@@ -1371,12 +1372,12 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   //printf("SELECTED\n");
   Int_t ptbin=cuts->PtBin(part->Pt());
 
-  AliAODTrack *prong=(AliAODTrack*)fDaughterTracks.UncheckedAt(0);
-  if(!prong) {
-    AliDebug(2,"No daughter found");
-    return;
-  }
-  else{
+  // AliAODTrack *prong=(AliAODTrack*)fDaughterTracks.UncheckedAt(0);
+  // if(!prong) {
+  //   AliDebug(2,"No daughter found");
+  //   return;
+  // }
+  // else{
     // if(prong->Charge()==1) {
     //   ((TH1F*)fDistr->FindObject("hpospair"))->Fill(fCuts->GetNPtBins()+ptbin);
     //   //fTotPosPairs[ptbin]++;
@@ -1384,7 +1385,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
     //   ((TH1F*)fDistr->FindObject("hnegpair"))->Fill(fCuts->GetNPtBins()+ptbin);
     //   //fTotNegPairs[ptbin]++;
     // }
-  }
+  //  }
  
   // for(Int_t it=0;it<2;it++){
  
