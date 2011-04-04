@@ -41,6 +41,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //--- set cuts for candidates selection
   AliRDHFCutsD0toKpi *cutsD0toKpi = new AliRDHFCutsD0toKpi("CutsD0toKpi");
   cutsD0toKpi->SetMaxVtxZ(1.e6);
+  cutsD0toKpi->SetTriggerClass("");
   Float_t cutsArrayD0toKpi[9]={0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.};
   cutsD0toKpi->SetCuts(9,cutsArrayD0toKpi);
   cutsD0toKpi->AddTrackCuts(esdTrackCuts);
