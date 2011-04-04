@@ -81,10 +81,12 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance():
   fSelectionlevel(0),
   fNVars(0),
   fNBins(100),
-  fPartOrAndAntiPart(0)
+  fPartOrAndAntiPart(0),
+  fDsChannel(0)
 {
   // Default constructor
   SetPDGCodes();
+  SetDsChannel(kPhi);
 }
 
 //________________________________________________________________________
@@ -106,10 +108,12 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance(const char *name, T
   fSelectionlevel(selectionlevel),
   fNVars(0),
   fNBins(100),
-  fPartOrAndAntiPart(0)
+  fPartOrAndAntiPart(0),
+  fDsChannel(0)
 {
 
   SetPDGCodes();
+  SetDsChannel(kPhi);
   SetMassLimits(0.15,fPDGmother); //check range
   fNPtBins=fRDCuts->GetNPtBins();
 
@@ -533,11 +537,13 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
       if(fDebug>1) printf("+++++++Is Selected\n");
     
       Int_t nVals=0;
+      if(fDecChannel==3) SetPDGdaughterDstoKKpi();
       fRDCuts->GetCutVarsForOpt(d,fVars,fNVars,fPDGdaughters);
       Int_t ptbin=fRDCuts->PtBin(d->Pt());
       if(ptbin==-1) continue;
       TString mdvname=Form("multiDimVectorPtBin%d",ptbin);
       AliMultiDimVector* muvec=(AliMultiDimVector*)fCutList->FindObject(mdvname.Data());
+
       ULong64_t *addresses = muvec->GetGlobalAddressesAboveCuts(fVars,(Float_t)d->Pt(),nVals);
       if(fDebug>1)printf("nvals = %d\n",nVals);
       for(Int_t ivals=0;ivals<nVals;ivals++){
@@ -546,9 +552,9 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	  delete [] addresses;
 	  return;
 	}
-
+	
 	fHistNEvents->Fill(3);
-
+	
 	//fill the histograms with the appropriate method
 	switch (fDecChannel){
 	case 0:
@@ -561,7 +567,9 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	  FillDstar(d,arrayMC,(Int_t)(ptbin*nHistpermv+addresses[ivals]),isSelected);
 	  break;
 	case 3:
-	  FillDs(d,arrayMC,(Int_t)(ptbin*nHistpermv+addresses[ivals]),isSelected);
+	  if(isSelected&1){
+	    FillDs(d,arrayMC,(Int_t)(ptbin*nHistpermv+addresses[ivals]),isSelected,1);
+	  }
 	  break;
 	case 4:
 	  FillD04p(d,arrayMC,(Int_t)(ptbin*nHistpermv+addresses[ivals]),isSelected);
@@ -574,6 +582,25 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	}
 	
       }
+      
+      if (fDecChannel==3 && isSelected&2){
+	SetPDGdaughterDstopiKK();
+	nVals=0;
+	fRDCuts->GetCutVarsForOpt(d,fVars,fNVars,fPDGdaughters);
+	addresses = muvec->GetGlobalAddressesAboveCuts(fVars,(Float_t)d->Pt(),nVals);
+	if(fDebug>1)printf("nvals = %d\n",nVals);
+	for(Int_t ivals=0;ivals<nVals;ivals++){
+	  if(addresses[ivals]>=muvec->GetNTotCells()){
+	    if (fDebug>1) printf("Overflow!!\n");
+	    delete [] addresses;	    
+	    return;
+	  }
+	  FillDs(d,arrayMC,(Int_t)(ptbin*nHistpermv+addresses[ivals]),isSelected,0);	  
+	  
+	}
+
+      }
+      
       delete [] addresses;
     }// end if selected
     
@@ -680,9 +707,9 @@ void AliAnalysisTaskSESignificance::FillDstar(AliAODRecoDecayHF* /*d*/,TClonesAr
 }
 
 
-void AliAnalysisTaskSESignificance::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel){
+void AliAnalysisTaskSESignificance::FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel,Int_t optDecay){
 
-  //AliInfo("Ds channel not implemented\n");
+  // Fill Ds histos
 
 
   Int_t pdgDsKKpi[3]={321,321,211};//K,K,pi 
@@ -695,53 +722,65 @@ void AliAnalysisTaskSESignificance::FillDs(AliAODRecoDecayHF* d,TClonesArray *ar
   if(fReadMC){
     labDs = d->MatchToMC(431,arrayMC,3,pdgDsKKpi);
   }
-  
-  
-  if(isSel&1  && fPartOrAndAntiPart*d->GetCharge()>=0) {
-    
-    fMassHist[index]->Fill(masses[0]); 
-        
-    if(fReadMC){
 
-      if(labDs>=0){
-	Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
-	AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(labDau0);
-	Int_t pdgCode0=TMath::Abs(p->GetPdgCode());
-	
-	if(pdgCode0==321) {	  
-	  
-	  fSigHist[index]->Fill(masses[0]); //signal
+  Int_t isKKpi=isSel&1;
+  Int_t ispiKK=isSel&2;
+  Int_t isPhiKKpi=isSel&4;
+  Int_t isPhipiKK=isSel&8;
+  Int_t isK0starKKpi=isSel&16;
+  Int_t isK0starpiKK=isSel&32;
+
+
+  if(fDsChannel==kPhi && (isPhiKKpi==0 && isPhipiKK==0)) return;
+  if(fDsChannel==kK0star && (isK0starKKpi==0 && isK0starpiKK==0)) return;
+   
+  if (optDecay==1){ 
+    if(isKKpi  && fPartOrAndAntiPart*d->GetCharge()>=0) {
+      if(fDsChannel==kPhi && isPhiKKpi==0) return;
+      if(fDsChannel==kK0star && isK0starKKpi==0) return;
+      
+      fMassHist[index]->Fill(masses[0]); 
+      
+      if(fReadMC){
+	if(labDs>=0){
+	  Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
+	  AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(labDau0);
+	  Int_t pdgCode0=TMath::Abs(p->GetPdgCode());
+	  if(pdgCode0==321) {
+	    fSigHist[index]->Fill(masses[0]); //signal
+	  }else{
+	    fRflHist[index]->Fill(masses[0]); //Reflected signal
+	  }
 	}else{
-	  fRflHist[index]->Fill(masses[0]); //Reflected signal
+	  fBkgHist[index]->Fill(masses[0]); // Background
 	}
-      }else{
-	fBkgHist[index]->Fill(masses[0]); // Background
       }
     }
   }
   
-  if(isSel&2 && fPartOrAndAntiPart*d->GetCharge()>=0){
-    fMassHist[index]->Fill(masses[1]);
-    if(fReadMC){
-      if(labDs>=0){
-	Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
-	AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(labDau0);
-	Int_t pdgCode0=TMath::Abs(p->GetPdgCode());
-	
-	if(pdgCode0==211) {	  
-	  
-	  fSigHist[index]->Fill(masses[1]);
+  if (optDecay==0){ 
+    if(ispiKK && fPartOrAndAntiPart*d->GetCharge()>=0){
+      if(fDsChannel==kPhi && isPhipiKK==0) return;
+      if(fDsChannel==kK0star && isK0starpiKK==0) return;
+      
+      fMassHist[index]->Fill(masses[1]);
+      
+      if(fReadMC){
+	if(labDs>=0){
+	  Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
+	  AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(labDau0);
+	  Int_t pdgCode0=TMath::Abs(p->GetPdgCode());	
+	  if(pdgCode0==211) {	  	  
+	    fSigHist[index]->Fill(masses[1]);
+	  }else{
+	    fRflHist[index]->Fill(masses[1]);
+	  }
 	}else{
-	  fRflHist[index]->Fill(masses[1]);
+	  fBkgHist[index]->Fill(masses[1]);
 	}
-      }else{
-	fBkgHist[index]->Fill(masses[1]);
       }
     }
   }
-  
-     
-
 }
 
 void AliAnalysisTaskSESignificance::FillD04p(AliAODRecoDecayHF* /*d*/,TClonesArray */*arrayMC*/,Int_t /*index*/,Int_t /*matchtoMC*/){

@@ -197,6 +197,9 @@ void AliAnalysisTaskSEDs::Init()
   if(fDebug > 1) printf("AnalysisTaskSEDs::Init() \n");
 
   fListCuts=new TList();
+  fListCuts->SetOwner();
+  fListCuts->SetName("CutObjects");
+
   AliRDHFCutsDstoKKpi *production = new AliRDHFCutsDstoKKpi(*fProdCuts);
   production->SetName("ProductionCuts");
   AliRDHFCutsDstoKKpi *analysis = new AliRDHFCutsDstoKKpi(*fAnalysisCuts);
@@ -250,10 +253,10 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
       fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
       fMassHist[index]->Sumw2();
       hisname.Form("hMass%sPt%dphi",htype.Data(),i);
-      fMassHistPhi[index]=new TH1F(hisname.Data(),hisname.Data(),100,minMass,maxMass);
+      fMassHistPhi[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
       fMassHistPhi[index]->Sumw2();
       hisname.Form("hMass%sPt%dk0st",htype.Data(),i);
-      fMassHistK0st[index]=new TH1F(hisname.Data(),hisname.Data(),100,minMass,maxMass);
+      fMassHistK0st[index]=new TH1F(hisname.Data(),hisname.Data(),nInvMassBins,minMass,maxMass);
       fMassHistK0st[index]->Sumw2();
       hisname.Form("hCosP%sPt%d",htype.Data(),i);
       fCosPHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,1.);
@@ -316,10 +319,10 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     fOutput->Add(fDalitzK0st[i]);
   }
 
-  fChanHist[0] = new TH1F("hChanAll", "KKpi and piKK candidates",16,-0.5,15.5);
-  fChanHist[1] = new TH1F("hChanSig", "KKpi and piKK candidates",16,-0.5,15.5);
-  fChanHist[2] = new TH1F("hChanBkg", "KKpi and piKK candidates",16,-0.5,15.5);
-  fChanHist[3] = new TH1F("hChanReflSig", "KKpi and piKK candidates",16,-0.5,15.5);
+  fChanHist[0] = new TH1F("hChanAll", "KKpi and piKK candidates",64,-0.5,63.5);
+  fChanHist[1] = new TH1F("hChanSig", "KKpi and piKK candidates",64,-0.5,63.5);
+  fChanHist[2] = new TH1F("hChanBkg", "KKpi and piKK candidates",64,-0.5,63.5);
+  fChanHist[3] = new TH1F("hChanReflSig", "KKpi and piKK candidates",64,-0.5,63.5);
   for(Int_t i=0;i<4;i++){
     fChanHist[i]->Sumw2();
     fChanHist[i]->SetMinimum(0);
@@ -454,8 +457,10 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 
     Int_t isKKpi=retCodeAnalysisCuts&1;
     Int_t ispiKK=retCodeAnalysisCuts&2;
-    Int_t isPhi=retCodeAnalysisCuts&4;
-    Int_t isK0star=retCodeAnalysisCuts&8;
+    Int_t isPhiKKpi=retCodeAnalysisCuts&4;
+    Int_t isPhipiKK=retCodeAnalysisCuts&8;
+    Int_t isK0starKKpi=retCodeAnalysisCuts&16;    
+    Int_t isK0starpiKK=retCodeAnalysisCuts&32;
 
     fChanHist[0]->Fill(retCodeAnalysisCuts);
  
@@ -500,24 +505,24 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
       Double_t invMass=d->InvMassDsKKpi();
       fMassHist[index]->Fill(invMass);
       fPtVsMass->Fill(invMass,ptCand);
-      if(isPhi) fMassHistPhi[index]->Fill(invMass);
-      if(isK0star) fMassHistK0st[index]->Fill(invMass);
+      if(isPhiKKpi) fMassHistPhi[index]->Fill(invMass);
+      if(isK0starKKpi) fMassHistK0st[index]->Fill(invMass);
       if(fReadMC  && indexMCKKpi!=-1){
 	fMassHist[indexMCKKpi]->Fill(invMass);
-	if(isPhi) fMassHistPhi[indexMCKKpi]->Fill(invMass);
-	if(isK0star) fMassHistK0st[indexMCKKpi]->Fill(invMass);	  
+	if(isPhiKKpi) fMassHistPhi[indexMCKKpi]->Fill(invMass);
+	if(isK0starKKpi) fMassHistK0st[indexMCKKpi]->Fill(invMass);	  
       }
     }
     if(ispiKK){
       Double_t invMass=d->InvMassDspiKK();
       fMassHist[index]->Fill(invMass);
       fPtVsMass->Fill(invMass,ptCand);
-      if(isPhi) fMassHistPhi[index]->Fill(invMass);
-      if(isK0star) fMassHistK0st[index]->Fill(invMass);
+      if(isPhipiKK) fMassHistPhi[index]->Fill(invMass);
+      if(isK0starpiKK) fMassHistK0st[index]->Fill(invMass);
       if(fReadMC  && indexMCpiKK!=-1){
 	fMassHist[indexMCpiKK]->Fill(invMass);
-	if(isPhi) fMassHistPhi[indexMCpiKK]->Fill(invMass);
-	if(isK0star) fMassHistK0st[indexMCpiKK]->Fill(invMass);      
+	if(isPhipiKK) fMassHistPhi[indexMCpiKK]->Fill(invMass);
+	if(isK0starpiKK) fMassHistK0st[indexMCpiKK]->Fill(invMass);      
       }
     }
 
@@ -547,12 +552,12 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	Double_t massKK=d->InvMass2Prongs(0,1,321,321);
 	Double_t massKp=d->InvMass2Prongs(1,2,321,211);
 	fDalitz[index]->Fill(massKK,massKp);
-	if(isPhi) fDalitzPhi[index]->Fill(massKK,massKp);
-	if(isK0star) fDalitzK0st[index]->Fill(massKK,massKp);
+	if(isPhiKKpi) fDalitzPhi[index]->Fill(massKK,massKp);
+	if(isK0starKKpi) fDalitzK0st[index]->Fill(massKK,massKp);
 	if(fReadMC && indexMCKKpi!=-1){
 	  fDalitz[indexMCKKpi]->Fill(massKK,massKp);
-	  if(isPhi) fDalitzPhi[indexMCKKpi]->Fill(massKK,massKp);
-	  if(isK0star) fDalitzK0st[indexMCKKpi]->Fill(massKK,massKp);
+	  if(isPhiKKpi) fDalitzPhi[indexMCKKpi]->Fill(massKK,massKp);
+	  if(isK0starKKpi) fDalitzK0st[indexMCKKpi]->Fill(massKK,massKp);
 	  fCosPHist[indexMCKKpi]->Fill(cosp);
 	  fDLenHist[indexMCKKpi]->Fill(dlen);
 	  fSigVertHist[indexMCKKpi]->Fill(sigvert);
@@ -569,12 +574,12 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	Double_t massKK=d->InvMass2Prongs(1,2,321,321);
 	Double_t massKp=d->InvMass2Prongs(0,1,211,321);
 	fDalitz[index]->Fill(massKK,massKp);
-	if(isPhi) fDalitzPhi[index]->Fill(massKK,massKp);
-	if(isK0star) fDalitzK0st[index]->Fill(massKK,massKp);
+	if(isPhipiKK) fDalitzPhi[index]->Fill(massKK,massKp);
+	if(isK0starpiKK) fDalitzK0st[index]->Fill(massKK,massKp);
 	if(fReadMC && indexMCpiKK!=-1){
 	  fDalitz[indexMCpiKK]->Fill(massKK,massKp);
-	  if(isPhi) fDalitzPhi[indexMCpiKK]->Fill(massKK,massKp);
-	  if(isK0star) fDalitzK0st[indexMCpiKK]->Fill(massKK,massKp);
+	  if(isPhipiKK) fDalitzPhi[indexMCpiKK]->Fill(massKK,massKp);
+	  if(isK0starpiKK) fDalitzK0st[indexMCpiKK]->Fill(massKK,massKp);
 	  fCosPHist[indexMCpiKK]->Fill(cosp);
 	  fDLenHist[indexMCpiKK]->Fill(dlen);
 	  fSigVertHist[indexMCpiKK]->Fill(sigvert);
