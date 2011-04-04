@@ -71,7 +71,9 @@ class AliFlowAnalysisWithScalarProduct {
    Bool_t GetApplyCorrectionForNUA() const              {return this->fApplyCorrectionForNUA;}   
    // harmonic:     
    void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
-   Int_t GetHarmonic() const {return this->fHarmonic;};  
+   Int_t GetHarmonic() const {return this->fHarmonic;};
+   // Total Q-vector is: "QaQb" (means Qa+Qb), "Qa"  or "Qb":  
+   void SetTotalQvector(const char *tqv) {*this->fTotalQvector = tqv;};     
    
    // Output 
    TList*    GetHistList() const    { return this->fHistList ; } // Gets output histogram list
@@ -204,6 +206,7 @@ class AliFlowAnalysisWithScalarProduct {
    Bool_t     fDebug ;                // flag for analysis: more print statements
    Bool_t     fApplyCorrectionForNUA; // apply correction for non-uniform acceptance
    Int_t      fHarmonic;              // harmonic 
+   TString   *fTotalQvector;          // total Q-vector is: "QaQb" (means Qa+Qb), "Qa"  or "Qb"
 
    Double_t   fRelDiffMsub;      // the relative difference the two subevent multiplicities can have
 
