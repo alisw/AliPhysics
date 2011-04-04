@@ -573,17 +573,58 @@ TList* AliCDBGrid::GetEntries(const AliCDBId& queryId) {
 		TString filter;
 		MakeQueryFilter(queryId.GetFirstRun(), queryId.GetLastRun(), 0, filter);
 
-		TString pattern = Form("%s/Run*.root", queryId.GetPath().Data());
-		AliDebug(2,Form("pattern: %s", pattern.Data()));
+		TString path = queryId.GetPath();
 
-		TString optionQuery("-y");
-		if(queryId.GetVersion() >= 0) optionQuery = "";
+		TString pattern = "Run*.root";
+		TString optionQuery = "-y";
 
-		if (optionQuery == "-y"){
-			AliInfo("Only latest version will be returned");
+		TString addFolder = "";
+		if (!path.Contains("*")){
+		    if (!path.BeginsWith("/")) addFolder += "/";
+		    addFolder += path;
+		}
+		else{
+		    if (path.BeginsWith("/")) path.Remove(0,1);
+		    if (path.EndsWith("/")) path.Remove(path.Length()-1,1);	
+		    TObjArray* tokenArr = path.Tokenize("/");
+		    if (tokenArr->GetEntries() != 3) {
+			AliError("Not a 3 level path! Keeping old query...");
+			pattern.Prepend(path+"/");
+		    }
+		    else{
+			TString str0 = ((TObjString*)tokenArr->At(0))->String();
+			TString str1 = ((TObjString*)tokenArr->At(1))->String();
+			TString str2 = ((TObjString*)tokenArr->At(2))->String();
+			if (str0 != "*" && str1 != "*" && str2 == "*"){
+			    // e.g. "ITS/Calib/*"
+			    addFolder = "/"+str0+"/"+str1;
+			}
+			else if (str0 != "*" && str1 == "*" && str2 == "*"){	
+			    // e.g. "ITS/*/*"
+			    addFolder = "/"+str0;
+			}
+			else if (str0 == "*" && str1 == "*" && str2 == "*"){	
+			    // e.g. "*/*/*"
+			    // do nothing: addFolder is already an empty string;
+			}
+			else{
+			    // e.g. "ITS/*/RecoParam"
+			    pattern.Prepend(path+"/");
+			}
+		    }
+		    delete tokenArr; tokenArr=0;
 		}
 
-		TGridResult *res = gGrid->Query(fDBFolder, pattern, filter, optionQuery.Data());
+		TString folderCopy(Form("%s%s",fDBFolder.Data(),addFolder.Data()));
+
+		AliDebug(2,Form("fDBFolder = %s, pattern = %s, filter = %s",folderCopy.Data(), pattern.Data(), filter.Data()));
+
+		TGridResult *res = gGrid->Query(folderCopy, pattern, filter, optionQuery.Data());  
+
+		if (!res) {
+		    AliError("Grid query failed");
+		    return 0;
+		}
 
 		AliCDBId validFileId;
 		for(int i=0; i<res->GetEntries(); i++){
@@ -896,7 +937,6 @@ void AliCDBGrid::QueryValidFiles()
 	pattern += ".root";
 	AliDebug(2,Form("pattern: %s", pattern.Data()));
 
-	TString tempPattern = pattern;
 	TString addFolder = "";
 	if (!path.Contains("*")){
 		if (!path.BeginsWith("/")) addFolder += "/";
@@ -908,7 +948,7 @@ void AliCDBGrid::QueryValidFiles()
 		TObjArray* tokenArr = path.Tokenize("/");
 		if (tokenArr->GetEntries() != 3) {
 			AliError("Not a 3 level path! Keeping old query...");
-			tempPattern = pattern.Prepend(path+"/");
+			pattern.Prepend(path+"/");
 		}
 		else{
 			TString str0 = ((TObjString*)tokenArr->At(0))->String();
@@ -928,7 +968,7 @@ void AliCDBGrid::QueryValidFiles()
 			}
 			else{
 				// e.g. "ITS/*/RecoParam"
-				tempPattern = pattern.Prepend(path+"/");
+				pattern.Prepend(path+"/");
 			}
 		}
 		delete tokenArr; tokenArr=0;
@@ -936,13 +976,13 @@ void AliCDBGrid::QueryValidFiles()
 
 	TString folderCopy(Form("%s%s",fDBFolder.Data(),addFolder.Data()));
 
-	AliDebug(2,Form("fDBFolder = %s, pattern = %s, filter = %s",folderCopy.Data(), tempPattern.Data(), filter.Data()));
+	AliDebug(2,Form("fDBFolder = %s, pattern = %s, filter = %s",folderCopy.Data(), pattern.Data(), filter.Data()));
 
 	if (optionQuery == "-y"){
 		AliInfo("Only latest version will be returned");
 	} 
 
-	TGridResult *res = gGrid->Query(folderCopy, tempPattern, filter, optionQuery.Data());  
+	TGridResult *res = gGrid->Query(folderCopy, pattern, filter, optionQuery.Data());  
 
 	if (!res) {
 		AliError("Grid query failed");
@@ -1047,10 +1087,13 @@ Int_t AliCDBGrid::GetLatestVersion(const char* path, Int_t run){
 	TString filter;
 	MakeQueryFilter(run, run, 0, filter);
 
-	TString pattern = Form("%s/Run*.root", path);
-	AliDebug(2,Form("pattern: %s", pattern.Data()));
+	TString pattern = ".root";
 
-	TGridResult *res = gGrid->Query(fDBFolder, pattern, filter, "-y");
+	TString folderCopy(Form("%s%s/Run",fDBFolder.Data(),path));
+
+	AliDebug(2,Form("** fDBFolder = %s, pattern = %s, filter = %s",folderCopy.Data(), pattern.Data(), filter.Data()));
+	TGridResult *res = gGrid->Query(folderCopy, pattern, filter, "-y -m");
+
 	AliCDBId validFileId;
 	if (res->GetEntries()>1){
 		AliWarning("Number of found entries >1, even if option -y was used");
