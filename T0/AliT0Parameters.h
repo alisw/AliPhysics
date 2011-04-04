@@ -77,7 +77,7 @@ public:
    
   Float_t GetTimeDelayCFD(Int_t ipmt);
 //  Float_t GetTimeV0(Int_t ipmt = 512) {return  fTimeV0;}
-
+  Float_t GetCFD (Int_t ipmt);
   void SetMeanT0(Float_t mean=512) { fMeanT0 = mean; };
   Float_t GetMeanT0 () {return fMeanT0;};
   void SetMeanVertex(Float_t mean=0) { fMeanVertex = mean; };

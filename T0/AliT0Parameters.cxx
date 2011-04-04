@@ -228,6 +228,14 @@ AliT0Parameters::GetTimeDelayCFD(Int_t ipmt)
    
   return fgCalibData->GetTimeEq(ipmt);
 }
+//__________________________________________________________________
+Float_t
+AliT0Parameters::GetCFD(Int_t ipmt) 
+  {
+  // return  CFD channel
+   
+    return fgCalibData->GetCFDvalue(ipmt,0);
+}
 
 //__________________________________________________________________
 Float_t
