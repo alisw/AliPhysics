@@ -22,10 +22,20 @@ class TH2F;
 class AliITSCorrMapSDD : public TNamed {
 
  public:
+  // maps produced from residuals stores Xtrue-Xmeasured in drift lenght.
+  // Since the map computes xtrue-xmeas in drift coordinate
+  // and the difference is added to measured local coordinate, we have
+  // Left:  Xmeas_loc_corr = Xmeas_loc + (Xtrue-Xmeas)_loc = Xmeas_loc - (Xtrue-Xmeas)_drift
+  // Right: Xmeas_loc_corr = Xmeas_loc + (Xtrue-Xmeas)_loc = Xmeas_loc + (Xtrue-Xmeas)_drift
+  // hence, for the left side the sign of the correction need to inverted
+  enum {kLeftInvBit = BIT(14)};   
   AliITSCorrMapSDD();
   AliITSCorrMapSDD(Char_t *mapname);
   virtual ~AliITSCorrMapSDD(){};
-
+  //
+  void   SetInversionBit(Bool_t v=kTRUE)           {SetBit(kLeftInvBit,v);}
+  Bool_t GetInversionBit()               const     {return TestBit(kLeftInvBit);}
+  //
   Int_t GetNBinsAnode() const {return fNAnodePts;}
   Int_t GetNBinsDrift() const {return fNDriftPts;}
   void SetNBinsAnode(Int_t nbins) {
@@ -91,3 +101,4 @@ class AliITSCorrMapSDD : public TNamed {
   ClassDef(AliITSCorrMapSDD,2);
 };
 #endif
+

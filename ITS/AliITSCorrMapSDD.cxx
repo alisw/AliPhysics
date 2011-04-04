@@ -119,7 +119,7 @@ Float_t AliITSCorrMapSDD::GetCorrection(Float_t z, Float_t x, AliITSsegmentation
   Float_t q=fXt1-m*fXm1;
   Float_t xcorr=m*fDrLen+q;
   // fDrLen is the measured drift distance, xcorr is the corresponding true
-  return (xcorr-fDrLen); 
+  return GetInversionBit() ? fDrLen-xcorr : xcorr-fDrLen; 
 }
 //______________________________________________________________________
 Float_t AliITSCorrMapSDD::GetShiftForSimulation(Float_t z, Float_t x, AliITSsegmentationSDD *seg){
@@ -129,7 +129,7 @@ Float_t AliITSCorrMapSDD::GetShiftForSimulation(Float_t z, Float_t x, AliITSsegm
   Float_t q=fXm1-m*fXt1;
   Float_t xshifted=m*fDrLen+q;
   // fDrLen is the true drift distance, xshifted is the one with map shift
-  return (fDrLen-xshifted);
+  return GetInversionBit() ? xshifted-fDrLen : fDrLen-xshifted;
 }
 //______________________________________________________________________
 TH2F* AliITSCorrMapSDD::GetMapHisto() const{
@@ -173,3 +173,4 @@ TH1F* AliITSCorrMapSDD::GetResidualDistr(Float_t dmin, Float_t dmax) const{
   }
   return hd;
 }
+
