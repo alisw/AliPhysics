@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskEMCALPi0PbPb_cxx
-#define AliAnalysisTaskEMCALPi0PbPb_cxx
+#ifndef AliAnalysisTaskEMCALPi0PbPb_h
+#define AliAnalysisTaskEMCALPi0PbPb_h
 
 // $Id$
 
@@ -31,10 +31,11 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetAsymMax(Double_t asymMax)                   { fAsymMax = asymMax;         }
   void         SetCentrality(const char *name)                { fCentVar = name;            }
   void         SetCentralityRange(Double_t from, Double_t to) { fCentFrom=from; fCentTo=to; }
-  void         SetMinClusEnergy(Double_t e)                   { fMinE = e;                  }
   void         SetClusName(const char *name)                  { fClusName = name;           }
   void         SetDoAfterburner(Bool_t b)                     { fDoAfterburner = b;         }
   void         SetFillNtuple(Bool_t b)                        { fDoNtuple = b;              }
+  void         SetGeoName(const char *n)                      { fGeoName = n;               }
+  void         SetMinClusEnergy(Double_t e)                   { fMinE = e;                  }
   void         SetMinEcc(Double_t ecc)                        { fMinEcc = ecc;              }
   void         SetMinErat(Double_t erat)                      { fMinErat = erat;            }
   void         SetNminCells(Int_t n)                          { fNminCells = n;             }
@@ -48,6 +49,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   virtual void FillPionHists();
   virtual void FillOtherHists();
   Double_t     GetMaxCellEnergy(AliVCluster *c);
+  Int_t        GetNCells(AliVCluster *c, Double_t emin=0.);
   void         GetSigma(AliVCluster *c, Double_t &sigmaMax, Double_t &sigmaMin);
 
     // input members
@@ -65,6 +67,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Double_t               fMinE;                   // minimum cluster energy (def=0.1)
   Double_t               fMinErat;                // minimum emax/ec ratio (def=0)
   Double_t               fMinEcc;                 // minimum eccentricity (def=0)
+  TString                fGeoName;                // geometry name (def = EMCAL_FIRSTYEARV1)
     // derived members (ie with ! after //)
   ULong64_t              fNEvs;                   //!accepted events 
   AliEMCALGeoUtils      *fGeom;                   //!geometry utils
@@ -110,6 +113,6 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskEMCALPi0PbPb(const AliAnalysisTaskEMCALPi0PbPb&);            // not implemented
   AliAnalysisTaskEMCALPi0PbPb &operator=(const AliAnalysisTaskEMCALPi0PbPb&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 1); // Analysis task for neutral pions in Pb+Pb
+  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 2); // Analysis task for neutral pions in Pb+Pb
 };
 #endif
