@@ -16,11 +16,11 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     stdcuts=kTRUE;
   }
 
-  Bool_t onoff[3]={kTRUE,kTRUE,kTRUE};
+  Bool_t onoff[4]={kTRUE,kTRUE,kFALSE,kTRUE};
 
   AliRDHFCuts *analysiscuts=0x0;
 
-  TString filename="",out1name="nEntriesQA",out2name="outputPid",out3name="outputTrack",out4name="cuts",out5name="countersCentrality",out6name="outputCentrCheck",inname="input",suffix="",cutsobjname="",centr="";
+  TString filename="",out1name="nEntriesQA",out2name="outputPid",out3name="outputTrack",out4name="cuts",out5name="countersCentrality",out6name="outputCentrCheck",out7name="outputEvSel",inname="input",suffix="",cutsobjname="",centr="";
   filename = AliAnalysisManager::GetCommonFileName();
   filename += ":PWG3_D2H_QA";
 
@@ -88,6 +88,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   out4name=cutsobjname;
   out5name+=suffix;
   out6name+=suffix;
+  out7name+=suffix;
 
   if(!analysiscuts && filecutsname!="none"){
     cout<<"Specific AliRDHFCuts not found"<<endl;
@@ -102,6 +103,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   out4name+=centr;
   out5name+=centr;
   out6name+=centr;
+  out7name+=centr;
 
  
   AliAnalysisTaskSEHFQA* taskQA=new AliAnalysisTaskSEHFQA(Form("QA%s",suffix.Data()),ch,analysiscuts);
@@ -111,6 +113,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   taskQA->SetTrackOn(onoff[0]);
   taskQA->SetPIDOn(onoff[1]);
   taskQA->SetCentralityOn(onoff[2]);
+  taskQA->SetEvSelectionOn(onoff[3]);
   mgr->AddTask(taskQA);
 
   //
@@ -135,6 +138,9 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
 
   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(out6name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //quality of centrality
   if(onoff[2]) mgr->ConnectOutput(taskQA,6,coutput6);
+
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(out7name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //event selection
+  if(onoff[3]) mgr->ConnectOutput(taskQA,7,coutput7);
 
  return taskQA;
 }
