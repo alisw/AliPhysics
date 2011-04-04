@@ -68,6 +68,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE(),
   fOutputTrack(0x0),
   fOutputCounters(0x0),
   fOutputCheckCentrality(0x0),
+  fOutputEvSelection(0x0),
   fDecayChannel(AliAnalysisTaskSEHFQA::kD0toKpi),
   fCuts(0x0),
   fEstimator(AliRDHFCuts::kCentTRK),
@@ -79,6 +80,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE(),
   fOnOff[0]=kTRUE;
   fOnOff[1]=kTRUE;
   fOnOff[2]=kTRUE;
+  fOnOff[3]=kTRUE;
 }
 
 //____________________________________________________________________________
@@ -89,6 +91,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   fOutputTrack(0x0),
   fOutputCounters(0x0),
   fOutputCheckCentrality(0x0),
+  fOutputEvSelection(0x0),
   fDecayChannel(ch),
   fCuts(0x0),
   fEstimator(AliRDHFCuts::kCentTRK),
@@ -104,6 +107,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   fOnOff[0]=kTRUE;
   fOnOff[1]=kTRUE;
   fOnOff[2]=kTRUE;
+  fOnOff[3]=kTRUE;
 
   // Output slot #1 writes into a TH1F container (number of events)
   DefineOutput(1,TH1F::Class());  //My private output
@@ -138,6 +142,9 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
     // Output slot #6 writes into a TList container (TH1F)
     DefineOutput(6,TList::Class());  //My private output
   }
+
+  if(fOnOff[3]) DefineOutput(7,TList::Class());  //My private output
+
 }
 
 //___________________________________________________________________________
@@ -153,6 +160,8 @@ AliAnalysisTaskSEHFQA::~AliAnalysisTaskSEHFQA()
   delete fOutputCounters;
 
   delete fOutputCheckCentrality;
+
+  delete fOutputEvSelection;
 
 }
 
@@ -429,13 +438,30 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     }
   }
 
+  //event selection (z vertex for the moment)
+  if(fOnOff[3]){
+    fOutputEvSelection=new TList();
+    fOutputEvSelection->SetOwner();
+    fOutputEvSelection->SetName(GetOutputSlot(7)->GetContainer()->GetName());
+    AliCounterCollection *evselection=new AliCounterCollection("evselection");
+    evselection->AddRubric("run",500000);
+    evselection->AddRubric("evnonsel","zvtx");
+    evselection->Init();
+
+    TH1F* hzvtx=new TH1F("hzvtx", "Distribution of z_{VTX};z_{VTX} [cm];Entries",100,-20,20);
+
+    fOutputEvSelection->Add(evselection);
+    fOutputEvSelection->Add(hzvtx);
+  }
+
   // Post the data
   PostData(1,fNEntries);
   if(fOnOff[1]) PostData(2,fOutputPID);
   if(fOnOff[0]) PostData(3,fOutputTrack);
   PostData(4,fCuts);
   if(fOnOff[2]) PostData(5,fOutputCounters);
-  
+  if(fOnOff[3]) PostData(7,fOutputEvSelection);
+
   if(!fOnOff[0] && !fOnOff[1] && !fOnOff[2]) AliError("Nothing will be filled!");
 }
 
@@ -602,10 +628,6 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       break; 
     }
   }
-
-
-  if(!aod) {delete [] pdgdaughters;return;}
-
   Bool_t isSimpleMode=fSimpleMode;
   if(!arrayProng) {
     AliInfo("Branch not found! The output will contain only trak related histograms\n");
@@ -634,12 +656,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       return;
     }
   }
+  if(!aod) {delete [] pdgdaughters;return;}
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) {
-    delete [] pdgdaughters;
-    return;
-  }
+  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
 
   // count event
   fNEntries->Fill(0); 
@@ -654,6 +674,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   //TString trigclass=aod->GetFiredTriggerClasses();
   //if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fNEntries->Fill(5); //tmp
 
+  Int_t runNumber = aod->GetRunNumber();
+
   Bool_t evSelbyCentrality=kTRUE,evSelected=kTRUE,evSelByVertex=kTRUE,evselByPileup=kFALSE;
   //select event
   if(!fCuts->IsEventSelected(aod)) {
@@ -662,10 +684,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     if(fCuts->GetWhyRejection()==2 || fCuts->GetWhyRejection()==3) evSelbyCentrality=kFALSE; //rejected by centrality
     if(fCuts->GetWhyRejection()==4) evSelByVertex=kFALSE; //rejected by vertex
     if(fCuts->GetWhyRejection()==5) fNEntries->Fill(5);//tmp
+    if(fCuts->GetWhyRejection()==6 && fOnOff[3]) ((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count("evnonsel:zvtx/Run:%d",runNumber);
   }
+
   if(evSelected || (!evSelected && !evSelbyCentrality && evSelByVertex && !evselByPileup)){ //events selected or not selected because of vtx or pileup
     if(fOnOff[2] && fCuts->GetUseCentrality()){
-      Int_t runNumber = aod->GetRunNumber();
+
       Float_t stdCentf=fCuts->GetCentrality(aod);
       Int_t stdCent = (Int_t)(stdCentf+0.5);
       Float_t secondCentf =fCuts->GetCentrality(aod,fEstimator);
@@ -703,10 +727,18 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     }
   }
 
+  if(fOnOff[3]){
+    const AliVVertex *vertex = aod->GetPrimaryVertex();
+    Double_t zvtx=vertex->GetZ();
+    if(evSelected || (!evSelected && zvtx > 10.))
+    ((TH1F*)fOutputEvSelection->FindObject("hzvtx"))->Fill(zvtx);
+  }
+
   if(!evSelected) {
     delete [] pdgdaughters;
     return; //discard all events not selected (vtx and/or centrality)
   }
+
 
   Int_t ntracks=0;
   Int_t isGoodTrack=0, isFakeTrack=0;
@@ -845,8 +877,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	      isGoodTrack++;
 	    }
 	  }
-	}//simple mode: no IsSelected on tracks: use "manual" cuts    
-      }//fill track histos
+	} //simple mode: no IsSelected on tracks: use "manual" cuts   
+      } //fill track histos
     } //end loop on tracks
 
       //fill once per event
@@ -900,6 +932,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    Int_t label=0;
 	    if(fReadMC)label=track->GetLabel();
 	    if(fOnOff[0]){
+	      
 	      if(fReadMC && label<0) {
 		isFakeTrack++;
 		((TH1F*)fOutputTrack->FindObject("hptFakeTr"))->Fill(track->Pt());
@@ -911,7 +944,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    
 		((TH1F*)fOutputTrack->FindObject("hd0"))->Fill(d->Getd0Prong(id));
 	      }
-	    }	  
+	    }
 	    if (fCuts->IsSelected(d,AliRDHFCuts::kAll,aod) && fOnOff[1]){
 	  
 	      AliAODPid *pid = track->GetDetPid();
