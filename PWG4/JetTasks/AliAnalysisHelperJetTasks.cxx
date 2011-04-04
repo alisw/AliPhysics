@@ -1318,3 +1318,25 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerFired(const AliVEvent* aEv, Trigger t
   return globalType;
 }
 
+
+Int_t AliAnalysisHelperJetTasks::GetPhiBin(Double_t phi,Int_t fNRPBins)
+{
+    Int_t phibin=-1;
+    if(!(TMath::Abs(phi)<=2*TMath::Pi()))return -1;
+    Double_t phiwrtrp=TMath::ACos(TMath::Abs(TMath::Cos(phi)));
+    phibin=Int_t(fNRPBins*phiwrtrp/(0.5*TMath::Pi()));
+    return phibin;
+}
+
+Double_t  AliAnalysisHelperJetTasks::ReactionPlane(Bool_t bSet,Double_t fNew){
+  // 
+  // Static helper task, (re)set event by event
+  //
+
+
+  static Double_t fRP = 0; // if service task is not run we acccpet all
+  if(bSet){
+    fRP = fNew;
+  }
+  return fRP;
+}
