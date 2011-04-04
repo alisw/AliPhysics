@@ -103,6 +103,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetPmdDetPlane(Int_t pmdDet){fCutPmdDet=kTRUE; fPmdDet = pmdDet; }
   void SetPmdAdc(Float_t pmdAdc){fCutPmdAdc=kTRUE; fPmdAdc = pmdAdc; }
   void SetPmdNcell(Float_t pmdNcell) {fCutPmdNcell=kTRUE; fPmdNcell = pmdNcell; }						 
+  void SetPriors(Float_t centr = 0); // set my favourite priors for Bayesian PID
 
   Int_t GetMinNClustersTPC() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClusterTPC();}
   Int_t GetMinNClustersITS() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClustersITS();}
@@ -185,8 +186,10 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetTOFpidCuts(TMatrixF* mat) {fTOFpidCuts=new TMatrixF(*mat);}
   static const char* PIDsourceName(PIDsource s);
   AliESDpid& GetESDpid() {return fESDpid;}
-  void SetAllowTOFmismatch(Bool_t b=kTRUE) {fAllowTOFmismatch=b;}
-  Bool_t GetAllowTOFmismatch() const {return fAllowTOFmismatch;}
+  void SetAllowTOFmismatchFlag(Bool_t b=kTRUE) {fAllowTOFmismatchFlag=b;}
+  Bool_t GetAllowTOFmismatchFlag() const {return fAllowTOFmismatchFlag;}
+  void SetRequireStrictTOFTPCagreement(Bool_t b=kTRUE) {fRequireStrictTOFTPCagreement=b;}
+  Bool_t GetRequireStrictTOFTPCagreement() const {return fRequireStrictTOFTPCagreement;}
 
   //these should maybe be protected
   Bool_t PassesCuts(AliVParticle* track);
@@ -221,8 +224,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void InitESDcuts() {if (!fAliESDtrackCuts) {fAliESDtrackCuts=new AliESDtrackCuts();}}
   // part added by F. Noferini
   Bool_t PassesTOFbayesianCut(AliESDtrack* track); 
-  void SetPriors(); // set my favourite priors
   Int_t GetESDPdg(AliESDtrack *track,Option_t *option="bayesianTOF",Int_t ipart=2,Float_t cPi=-1.0,Float_t cKa=0.0,Float_t cPr=0.0); // 3sigma cut ipart=0(el),1(mu),2(pi),3(K),4(p)
+  Bool_t TPCTOFagree(const AliESDtrack *track);
   // end part added by F. Noferini
 
   //the cuts
@@ -288,7 +291,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   TMatrixF* fTOFpidCuts; //tof pid cuts
   AliPID::EParticleType fParticleID; //alipid
   Double_t fParticleProbability; //desired prob for a particle type
-  Bool_t fAllowTOFmismatch; //allow TPC mismatch
+  Bool_t fAllowTOFmismatchFlag; //allow TOFmismatch flag=1 in ESD
+  Bool_t fRequireStrictTOFTPCagreement; //require stricter than TOFmismatch flag TOF-TPC agreement
 
   // part added by F. Noferini
   static const Int_t fgkPIDptBin = 20; // pT bins for priors

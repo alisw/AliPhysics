@@ -37,6 +37,7 @@
 #include <limits.h>
 #include <float.h>
 #include <TMatrix.h>
+#include "TMCProcess.h"
 #include "TParticle.h"
 #include "TH2F.h"
 #include "AliStack.h"
@@ -118,7 +119,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fTOFpidCuts(NULL),
   fParticleID(AliPID::kUnknown),
   fParticleProbability(.9),
-  fAllowTOFmismatch(kFALSE)
+  fAllowTOFmismatchFlag(kFALSE),
+  fRequireStrictTOFTPCagreement(kFALSE)
 {
   //io constructor 
   for ( Int_t i=0; i<5; i++ ) { fProbBayes[i]=0.0; }
@@ -186,7 +188,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fTOFpidCuts(NULL),
   fParticleID(AliPID::kUnknown),
   fParticleProbability(.9),
-  fAllowTOFmismatch(kFALSE)
+  fAllowTOFmismatchFlag(kFALSE),
+  fRequireStrictTOFTPCagreement(kFALSE)
 {
   //constructor 
   SetName(name);
@@ -262,7 +265,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fTOFpidCuts(NULL),
   fParticleID(that.fParticleID),
   fParticleProbability(that.fParticleProbability),
-  fAllowTOFmismatch(that.fAllowTOFmismatch)
+  fAllowTOFmismatchFlag(that.fAllowTOFmismatchFlag),
+  fRequireStrictTOFTPCagreement(that.fRequireStrictTOFTPCagreement)
 {
   //copy constructor
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
@@ -349,7 +353,8 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
 
   fParticleID=that.fParticleID;
   fParticleProbability=that.fParticleProbability;
-  fAllowTOFmismatch=that.fAllowTOFmismatch;
+  fAllowTOFmismatchFlag=that.fAllowTOFmismatchFlag;
+  fRequireStrictTOFTPCagreement=that.fRequireStrictTOFTPCagreement;
   memcpy(fProbBayes,that.fProbBayes,sizeof(fProbBayes));
 
   return *this;
@@ -597,6 +602,13 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   {
     if (fMCparticle)
     {
+      TParticle* tparticle=fMCparticle->Particle();
+      Int_t processID = tparticle->GetUniqueID();
+      //TLorentzVector v;
+      //mcparticle->Particle()->ProductionVertex(v);
+      //Double_t prodvtxX = v.X();
+      //Double_t prodvtxY = v.Y();
+
       Float_t pdg = 0;
       Int_t pdgcode = fMCparticle->PdgCode();
       switch (TMath::Abs(pdgcode))
@@ -617,8 +629,10 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
       pdg = TMath::Sign(pdg,static_cast<Float_t>(pdgcode));
       QAbefore(2)->Fill(p,pdg);
       QAbefore(3)->Fill(p,IsPhysicalPrimary()?0.5:-0.5);
+      QAbefore(4)->Fill(p,static_cast<Float_t>(processID));
       if (pass) QAafter(2)->Fill(p,pdg);
       if (pass) QAafter(3)->Fill(p,IsPhysicalPrimary()?0.5:-0.5);
+      if (pass) QAafter(4)->Fill(p,static_cast<Float_t>(processID));
     }
   }
 
@@ -1335,6 +1349,25 @@ void AliFlowTrackCuts::DefineHistograms()
   after->Add(new TH2F("MC pid",";p[GeV/c];species",kNbinsP,binsP,10,-5, 5)); //2
   before->Add(new TH2F("MC primary",";p[GeV/c];primary",kNbinsP,binsP,2,-1,1)); //3
   after->Add(new TH2F("MC primary",";p[GeV/c];primary",kNbinsP,binsP,2,-1,1)); //3
+  
+  //production process
+  TH2F* hb = new TH2F("MC production process",";p[GeV/c];",kNbinsP,binsP,kMaxMCProcess,
+                      -0.5, kMaxMCProcess-0.5);
+  TH2F* ha = new TH2F("MC production process",";p[GeV/c];",kNbinsP,binsP,kMaxMCProcess,
+                      -0.5, kMaxMCProcess-0.5);
+  TAxis* axis = hb->GetYaxis();
+  for (Int_t i=0; i<kMaxMCProcess; i++)
+  {
+    axis->SetBinLabel(i+1,TMCProcessName[i]);
+  }
+  axis = hb->GetYaxis();
+  for (Int_t i=0; i<kMaxMCProcess; i++)
+  {
+    axis->SetBinLabel(i+1,TMCProcessName[i]);
+  }
+  before->Add(hb); //4
+  after->Add(ha); //4
+
   TH1::AddDirectory(adddirstatus);
 }
 
@@ -1417,7 +1450,11 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaSimpleCut(const AliESDtrack* track )
                      (track->GetTOFsignal() < 100000) && 
                      (track->GetIntegratedLength() > 365);
                     
-  if (!fAllowTOFmismatch) {if ((track->GetStatus() & AliESDtrack::kTOFmismatch)) return kFALSE;}
+  if (!fAllowTOFmismatchFlag) {if ((track->GetStatus() & AliESDtrack::kTOFmismatch)) return kFALSE;}
+
+  Bool_t statusMatchingHard = TPCTOFagree(track);
+  if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))
+       return kFALSE;
 
   if (!goodtrack) return kFALSE;
   
@@ -1478,7 +1515,11 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaCut(const AliESDtrack* track )
                      (track->GetTOFsignal() < 100000) && 
                      (track->GetIntegratedLength() > 365);
 
-  if (!fAllowTOFmismatch) {if ((track->GetStatus() & AliESDtrack::kTOFmismatch)) return kFALSE;}
+  if (!fAllowTOFmismatchFlag) {if ((track->GetStatus() & AliESDtrack::kTOFmismatch)) return kFALSE;}
+
+  Bool_t statusMatchingHard = TPCTOFagree(track);
+  if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))
+       return kFALSE;
 
   if (!goodtrack) return kFALSE;
   
@@ -1856,11 +1897,22 @@ void AliFlowTrackCuts::InitPIDcuts()
 
 //-----------------------------------------------------------------------
 // part added by F. Noferini (some methods)
-Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(AliESDtrack* track){
+Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(AliESDtrack* track)
+{
 
-  Bool_t goodtrack = track && (track->GetStatus() & AliESDtrack::kTOFpid) && (track->GetTOFsignal() > 12000) && (track->GetTOFsignal() < 100000) && (track->GetIntegratedLength() > 365) && !(track->GetStatus() & AliESDtrack::kTOFmismatch);
+  Bool_t goodtrack = track &&
+                     (track->GetStatus() & AliESDtrack::kTOFpid) && 
+                     (track->GetTOFsignal() > 12000) && 
+                     (track->GetTOFsignal() < 100000) && 
+                     (track->GetIntegratedLength() > 365);
+
+  if (! fAllowTOFmismatchFlag) {if (track->GetStatus() & AliESDtrack::kTOFmismatch) return kFALSE;}
 
   if (! goodtrack)
+       return kFALSE;
+
+  Bool_t statusMatchingHard = TPCTOFagree(track);
+  if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))
        return kFALSE;
 
   Int_t pdg = GetESDPdg(track,"bayesianALL");
@@ -1891,7 +1943,7 @@ Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(AliESDtrack* track){
   }
 
   //  printf("pt = %f -- all prob = [%4.2f,%4.2f,%4.2f,%4.2f,%4.2f] -- prob = %f\n",track->Pt(),fProbBayes[0],fProbBayes[1],fProbBayes[2],fProbBayes[3],fProbBayes[4],prob);
-  if(TMath::Abs(pdg) == TMath::Abs(pid) && prob > 0.8){
+  if(TMath::Abs(pdg) == TMath::Abs(pid) && prob > fParticleProbability){
     if(!fCutCharge)
       return kTRUE;
     else if (fCutCharge && fCharge * track->GetSign() > 0)
@@ -1899,6 +1951,7 @@ Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(AliESDtrack* track){
   }
   return kFALSE;
 }
+
 //-----------------------------------------------------------------------
 Int_t AliFlowTrackCuts::GetESDPdg(AliESDtrack *track,Option_t *option,Int_t ipart,Float_t cPi,Float_t cKa,Float_t cPr)
 {
@@ -2036,6 +2089,9 @@ Int_t AliFlowTrackCuts::GetESDPdg(AliESDtrack *track,Option_t *option,Int_t ipar
     Double_t r1[10]; track->GetTOFpid(r1);
     Double_t r2[10]; track->GetTPCpid(r2);
 
+    r1[0] = TMath::Min(r1[2],r1[0]);
+    r1[1] = TMath::Min(r1[2],r1[1]);
+
     Int_t i;
     for (i=0; i<5; i++) rcc+=(c[i]*r1[i]*r2[i]);
     
@@ -2086,124 +2142,1116 @@ Int_t AliFlowTrackCuts::GetESDPdg(AliESDtrack *track,Option_t *option,Int_t ipar
 
   return pdg;
 }
+
 //-----------------------------------------------------------------------
-void AliFlowTrackCuts::SetPriors(){
-  // set abbundancies
-    fBinLimitPID[0] = 0.30;
-    fC[0][0] = 0.015;
-    fC[0][1] = 0.015;
-    fC[0][2] = 1;
-    fC[0][3] = 0.0025;
-    fC[0][4] = 0.000015;
-    fBinLimitPID[1] = 0.35;
-    fC[1][0] = 0.015;
-    fC[1][1] = 0.015;
-    fC[1][2] = 1;
-    fC[1][3] = 0.01;
-    fC[1][4] = 0.001;
-    fBinLimitPID[2] = 0.40;
-    fC[2][0] = 0.015;
-    fC[2][1] = 0.015;
-    fC[2][2] = 1;
-    fC[2][3] = 0.026;
-    fC[2][4] = 0.004;
-    fBinLimitPID[3] = 0.45;
-    fC[3][0] = 0.015;
-    fC[3][1] = 0.015;
-    fC[3][2] = 1;
-    fC[3][3] = 0.026;
-    fC[3][4] = 0.004;
-    fBinLimitPID[4] = 0.50;
-    fC[4][0] = 0.015;
-    fC[4][1] = 0.015;
-    fC[4][2] = 1.000000;
-    fC[4][3] = 0.05;
-    fC[4][4] = 0.01;
-    fBinLimitPID[5] = 0.60;
-    fC[5][0] = 0.012;
-    fC[5][1] = 0.012;
-    fC[5][2] = 1;
-    fC[5][3] = 0.085;
-    fC[5][4] = 0.022;
-    fBinLimitPID[6] = 0.70;
-    fC[6][0] = 0.01;
-    fC[6][1] = 0.01;
-    fC[6][2] = 1;
-    fC[6][3] = 0.12;
-    fC[6][4] = 0.036;
-    fBinLimitPID[7] = 0.80;
-    fC[7][0] = 0.0095;
-    fC[7][1] = 0.0095;
-    fC[7][2] = 1;
-    fC[7][3] = 0.15;
-    fC[7][4] = 0.05;
-    fBinLimitPID[8] = 0.90;
-    fC[8][0] = 0.0085;
-    fC[8][1] = 0.0085;
-    fC[8][2] = 1;
-    fC[8][3] = 0.18;
-    fC[8][4] = 0.074;
-    fBinLimitPID[9] = 1;
-    fC[9][0] = 0.008;
-    fC[9][1] = 0.008;
-    fC[9][2] = 1;
-    fC[9][3] = 0.22;
-    fC[9][4] = 0.1;
-    fBinLimitPID[10] = 1.20;
-    fC[10][0] = 0.007;
-    fC[10][1] = 0.007;
-    fC[10][2] = 1;
-    fC[10][3] = 0.28;
-    fC[10][4] = 0.16;
-    fBinLimitPID[11] = 1.40;
-    fC[11][0] = 0.0066;
-    fC[11][1] = 0.0066;
-    fC[11][2] = 1;
-    fC[11][3] = 0.35;
-    fC[11][4] = 0.23;
-    fBinLimitPID[12] = 1.60;
-    fC[12][0] = 0.0075;
-    fC[12][1] = 0.0075;
-    fC[12][2] = 1;
-    fC[12][3] = 0.40;
-    fC[12][4] = 0.31;
-    fBinLimitPID[13] = 1.80;
-    fC[13][0] = 0.0062;
-    fC[13][1] = 0.0062;
-    fC[13][2] = 1;
-    fC[13][3] = 0.45;
-    fC[13][4] = 0.39;
-    fBinLimitPID[14] = 2.00;
-    fC[14][0] = 0.005;
-    fC[14][1] = 0.005;
-    fC[14][2] = 1;
-    fC[14][3] = 0.46;
-    fC[14][4] = 0.47;
-    fBinLimitPID[15] = 2.20;
-    fC[15][0] = 0.0042;
-    fC[15][1] = 0.0042;
-    fC[15][2] = 1;
-    fC[15][3] = 0.5;
-    fC[15][4] = 0.55;
-    fBinLimitPID[16] = 2.40;
-    fC[16][0] = 0.007;
-    fC[16][1] = 0.007;
-    fC[16][2] = 1;
-    fC[16][3] = 0.5;
-    fC[16][4] = 0.6;
-    
-    for(Int_t i=17;i<fgkPIDptBin;i++){
-	fBinLimitPID[i] = 2.0 + 0.2 * (i-14);
-	fC[i][0] = fC[13][0];
-	fC[i][1] = fC[13][1];
-	fC[i][2] = fC[13][2];
-	fC[i][3] = fC[13][3];
-	fC[i][4] = fC[13][4];
-    }  
+void AliFlowTrackCuts::SetPriors(Float_t centrCur){
+  fBinLimitPID[0] = 0.300000;
+  fBinLimitPID[1] = 0.400000;
+  fBinLimitPID[2] = 0.500000;
+  fBinLimitPID[3] = 0.600000;
+  fBinLimitPID[4] = 0.700000;
+  fBinLimitPID[5] = 0.800000;
+  fBinLimitPID[6] = 0.900000;
+  fBinLimitPID[7] = 1.000000;
+  fBinLimitPID[8] = 1.200000;
+  fBinLimitPID[9] = 1.400000;
+  fBinLimitPID[10] = 1.600000;
+  fBinLimitPID[11] = 1.800000;
+  fBinLimitPID[12] = 2.000000;
+  fBinLimitPID[13] = 2.200000;
+  fBinLimitPID[14] = 2.400000;
+  fBinLimitPID[15] = 2.600000;
+  fBinLimitPID[16] = 2.800000;
+  fBinLimitPID[17] = 3.000000;
+ 
+  // 0-10%
+  if(centrCur < 10){
+      fC[0][0] = 0.005;
+      fC[0][1] = 0.005;
+      fC[0][2] = 1.0000;
+      fC[0][3] = 0.0010;
+      fC[0][4] = 0.0010;
+
+      fC[1][0] = 0.005;
+      fC[1][1] = 0.005;
+      fC[1][2] = 1.0000;
+      fC[1][3] = 0.0168;
+      fC[1][4] = 0.0122;
+
+      fC[2][0] = 0.005;
+      fC[2][1] = 0.005;
+      fC[2][2] = 1.0000;
+      fC[2][3] = 0.0272;
+      fC[2][4] = 0.0070;
+
+      fC[3][0] = 0.005;
+      fC[3][1] = 0.005;
+      fC[3][2] = 1.0000;
+      fC[3][3] = 0.0562;
+      fC[3][4] = 0.0258;
+
+      fC[4][0] = 0.005;
+      fC[4][1] = 0.005;
+      fC[4][2] = 1.0000;
+      fC[4][3] = 0.0861;
+      fC[4][4] = 0.0496;
+
+      fC[5][0] = 0.005;
+      fC[5][1] = 0.005;
+      fC[5][2] = 1.0000;
+      fC[5][3] = 0.1168;
+      fC[5][4] = 0.0740;
+
+      fC[6][0] = 0.005;
+      fC[6][1] = 0.005;
+      fC[6][2] = 1.0000;
+      fC[6][3] = 0.1476;
+      fC[6][4] = 0.0998;
+
+      fC[7][0] = 0.005;
+      fC[7][1] = 0.005;
+      fC[7][2] = 1.0000;
+      fC[7][3] = 0.1810;
+      fC[7][4] = 0.1296;
+
+      fC[8][0] = 0.005;
+      fC[8][1] = 0.005;
+      fC[8][2] = 1.0000;
+      fC[8][3] = 0.2240;
+      fC[8][4] = 0.1827;
+
+      fC[9][0] = 0.005;
+      fC[9][1] = 0.005;
+      fC[9][2] = 1.0000;
+      fC[9][3] = 0.2812;
+      fC[9][4] = 0.2699;
+
+      fC[10][0] = 0.005;
+      fC[10][1] = 0.005;
+      fC[10][2] = 1.0000;
+      fC[10][3] = 0.3328;
+      fC[10][4] = 0.3714;
+
+      fC[11][0] = 0.005;
+      fC[11][1] = 0.005;
+      fC[11][2] = 1.0000;
+      fC[11][3] = 0.3780;
+      fC[11][4] = 0.4810;
+
+      fC[12][0] = 0.005;
+      fC[12][1] = 0.005;
+      fC[12][2] = 1.0000;
+      fC[12][3] = 0.4125;
+      fC[12][4] = 0.5771;
+
+      fC[13][0] = 0.005;
+      fC[13][1] = 0.005;
+      fC[13][2] = 1.0000;
+      fC[13][3] = 0.4486;
+      fC[13][4] = 0.6799;
+
+      fC[14][0] = 0.005;
+      fC[14][1] = 0.005;
+      fC[14][2] = 1.0000;
+      fC[14][3] = 0.4840;
+      fC[14][4] = 0.7668;
+
+      fC[15][0] = 0.005;
+      fC[15][1] = 0.005;
+      fC[15][2] = 1.0000;
+      fC[15][3] = 0.4971;
+      fC[15][4] = 0.8288;
+
+      fC[16][0] = 0.005;
+      fC[16][1] = 0.005;
+      fC[16][2] = 1.0000;
+      fC[16][3] = 0.4956;
+      fC[16][4] = 0.8653;
+
+      fC[17][0] = 0.005;
+      fC[17][1] = 0.005;
+      fC[17][2] = 1.0000;
+      fC[17][3] = 0.5173;
+      fC[17][4] = 0.9059;   
+  }
+  // 10-20%
+  else if(centrCur < 20){
+     fC[0][0] = 0.005;
+      fC[0][1] = 0.005;
+      fC[0][2] = 1.0000;
+      fC[0][3] = 0.0010;
+      fC[0][4] = 0.0010;
+
+      fC[1][0] = 0.005;
+      fC[1][1] = 0.005;
+      fC[1][2] = 1.0000;
+      fC[1][3] = 0.0132;
+      fC[1][4] = 0.0088;
+
+      fC[2][0] = 0.005;
+      fC[2][1] = 0.005;
+      fC[2][2] = 1.0000;
+      fC[2][3] = 0.0283;
+      fC[2][4] = 0.0068;
+
+      fC[3][0] = 0.005;
+      fC[3][1] = 0.005;
+      fC[3][2] = 1.0000;
+      fC[3][3] = 0.0577;
+      fC[3][4] = 0.0279;
+
+      fC[4][0] = 0.005;
+      fC[4][1] = 0.005;
+      fC[4][2] = 1.0000;
+      fC[4][3] = 0.0884;
+      fC[4][4] = 0.0534;
+
+      fC[5][0] = 0.005;
+      fC[5][1] = 0.005;
+      fC[5][2] = 1.0000;
+      fC[5][3] = 0.1179;
+      fC[5][4] = 0.0794;
+
+      fC[6][0] = 0.005;
+      fC[6][1] = 0.005;
+      fC[6][2] = 1.0000;
+      fC[6][3] = 0.1480;
+      fC[6][4] = 0.1058;
+
+      fC[7][0] = 0.005;
+      fC[7][1] = 0.005;
+      fC[7][2] = 1.0000;
+      fC[7][3] = 0.1807;
+      fC[7][4] = 0.1366;
+
+      fC[8][0] = 0.005;
+      fC[8][1] = 0.005;
+      fC[8][2] = 1.0000;
+      fC[8][3] = 0.2219;
+      fC[8][4] = 0.1891;
+
+      fC[9][0] = 0.005;
+      fC[9][1] = 0.005;
+      fC[9][2] = 1.0000;
+      fC[9][3] = 0.2804;
+      fC[9][4] = 0.2730;
+
+      fC[10][0] = 0.005;
+      fC[10][1] = 0.005;
+      fC[10][2] = 1.0000;
+      fC[10][3] = 0.3283;
+      fC[10][4] = 0.3660;
+
+      fC[11][0] = 0.005;
+      fC[11][1] = 0.005;
+      fC[11][2] = 1.0000;
+      fC[11][3] = 0.3710;
+      fC[11][4] = 0.4647;
+
+      fC[12][0] = 0.005;
+      fC[12][1] = 0.005;
+      fC[12][2] = 1.0000;
+      fC[12][3] = 0.4093;
+      fC[12][4] = 0.5566;
+
+      fC[13][0] = 0.005;
+      fC[13][1] = 0.005;
+      fC[13][2] = 1.0000;
+      fC[13][3] = 0.4302;
+      fC[13][4] = 0.6410;
+
+      fC[14][0] = 0.005;
+      fC[14][1] = 0.005;
+      fC[14][2] = 1.0000;
+      fC[14][3] = 0.4649;
+      fC[14][4] = 0.7055;
+
+      fC[15][0] = 0.005;
+      fC[15][1] = 0.005;
+      fC[15][2] = 1.0000;
+      fC[15][3] = 0.4523;
+      fC[15][4] = 0.7440;
+
+      fC[16][0] = 0.005;
+      fC[16][1] = 0.005;
+      fC[16][2] = 1.0000;
+      fC[16][3] = 0.4591;
+      fC[16][4] = 0.7799;
+
+      fC[17][0] = 0.005;
+      fC[17][1] = 0.005;
+      fC[17][2] = 1.0000;
+      fC[17][3] = 0.4804;
+      fC[17][4] = 0.8218;
+  }
+  // 20-30%
+  else if(centrCur < 30){
+     fC[0][0] = 0.005;
+      fC[0][1] = 0.005;
+      fC[0][2] = 1.0000;
+      fC[0][3] = 0.0010;
+      fC[0][4] = 0.0010;
+
+      fC[1][0] = 0.005;
+      fC[1][1] = 0.005;
+      fC[1][2] = 1.0000;
+      fC[1][3] = 0.0102;
+      fC[1][4] = 0.0064;
+
+      fC[2][0] = 0.005;
+      fC[2][1] = 0.005;
+      fC[2][2] = 1.0000;
+      fC[2][3] = 0.0292;
+      fC[2][4] = 0.0066;
+
+      fC[3][0] = 0.005;
+      fC[3][1] = 0.005;
+      fC[3][2] = 1.0000;
+      fC[3][3] = 0.0597;
+      fC[3][4] = 0.0296;
+
+      fC[4][0] = 0.005;
+      fC[4][1] = 0.005;
+      fC[4][2] = 1.0000;
+      fC[4][3] = 0.0900;
+      fC[4][4] = 0.0589;
+
+      fC[5][0] = 0.005;
+      fC[5][1] = 0.005;
+      fC[5][2] = 1.0000;
+      fC[5][3] = 0.1199;
+      fC[5][4] = 0.0859;
+
+      fC[6][0] = 0.005;
+      fC[6][1] = 0.005;
+      fC[6][2] = 1.0000;
+      fC[6][3] = 0.1505;
+      fC[6][4] = 0.1141;
+
+      fC[7][0] = 0.005;
+      fC[7][1] = 0.005;
+      fC[7][2] = 1.0000;
+      fC[7][3] = 0.1805;
+      fC[7][4] = 0.1454;
+
+      fC[8][0] = 0.005;
+      fC[8][1] = 0.005;
+      fC[8][2] = 1.0000;
+      fC[8][3] = 0.2221;
+      fC[8][4] = 0.2004;
+
+      fC[9][0] = 0.005;
+      fC[9][1] = 0.005;
+      fC[9][2] = 1.0000;
+      fC[9][3] = 0.2796;
+      fC[9][4] = 0.2838;
+
+      fC[10][0] = 0.005;
+      fC[10][1] = 0.005;
+      fC[10][2] = 1.0000;
+      fC[10][3] = 0.3271;
+      fC[10][4] = 0.3682;
+
+      fC[11][0] = 0.005;
+      fC[11][1] = 0.005;
+      fC[11][2] = 1.0000;
+      fC[11][3] = 0.3648;
+      fC[11][4] = 0.4509;
+
+      fC[12][0] = 0.005;
+      fC[12][1] = 0.005;
+      fC[12][2] = 1.0000;
+      fC[12][3] = 0.3988;
+      fC[12][4] = 0.5339;
+
+      fC[13][0] = 0.005;
+      fC[13][1] = 0.005;
+      fC[13][2] = 1.0000;
+      fC[13][3] = 0.4315;
+      fC[13][4] = 0.5995;
+
+      fC[14][0] = 0.005;
+      fC[14][1] = 0.005;
+      fC[14][2] = 1.0000;
+      fC[14][3] = 0.4548;
+      fC[14][4] = 0.6612;
+
+      fC[15][0] = 0.005;
+      fC[15][1] = 0.005;
+      fC[15][2] = 1.0000;
+      fC[15][3] = 0.4744;
+      fC[15][4] = 0.7060;
+
+      fC[16][0] = 0.005;
+      fC[16][1] = 0.005;
+      fC[16][2] = 1.0000;
+      fC[16][3] = 0.4899;
+      fC[16][4] = 0.7388;
+
+      fC[17][0] = 0.005;
+      fC[17][1] = 0.005;
+      fC[17][2] = 1.0000;
+      fC[17][3] = 0.4411;
+      fC[17][4] = 0.7293;
+  }
+  // 30-40%
+  else if(centrCur < 40){
+      fC[0][0] = 0.005;
+      fC[0][1] = 0.005;
+      fC[0][2] = 1.0000;
+      fC[0][3] = 0.0010;
+      fC[0][4] = 0.0010;
+
+      fC[1][0] = 0.005;
+      fC[1][1] = 0.005;
+      fC[1][2] = 1.0000;
+      fC[1][3] = 0.0102;
+      fC[1][4] = 0.0048;
+
+      fC[2][0] = 0.005;
+      fC[2][1] = 0.005;
+      fC[2][2] = 1.0000;
+      fC[2][3] = 0.0306;
+      fC[2][4] = 0.0079;
+
+      fC[3][0] = 0.005;
+      fC[3][1] = 0.005;
+      fC[3][2] = 1.0000;
+      fC[3][3] = 0.0617;
+      fC[3][4] = 0.0338;
+
+      fC[4][0] = 0.005;
+      fC[4][1] = 0.005;
+      fC[4][2] = 1.0000;
+      fC[4][3] = 0.0920;
+      fC[4][4] = 0.0652;
+
+      fC[5][0] = 0.005;
+      fC[5][1] = 0.005;
+      fC[5][2] = 1.0000;
+      fC[5][3] = 0.1211;
+      fC[5][4] = 0.0955;
+
+      fC[6][0] = 0.005;
+      fC[6][1] = 0.005;
+      fC[6][2] = 1.0000;
+      fC[6][3] = 0.1496;
+      fC[6][4] = 0.1242;
+
+      fC[7][0] = 0.005;
+      fC[7][1] = 0.005;
+      fC[7][2] = 1.0000;
+      fC[7][3] = 0.1807;
+      fC[7][4] = 0.1576;
+
+      fC[8][0] = 0.005;
+      fC[8][1] = 0.005;
+      fC[8][2] = 1.0000;
+      fC[8][3] = 0.2195;
+      fC[8][4] = 0.2097;
+
+      fC[9][0] = 0.005;
+      fC[9][1] = 0.005;
+      fC[9][2] = 1.0000;
+      fC[9][3] = 0.2732;
+      fC[9][4] = 0.2884;
+
+      fC[10][0] = 0.005;
+      fC[10][1] = 0.005;
+      fC[10][2] = 1.0000;
+      fC[10][3] = 0.3204;
+      fC[10][4] = 0.3679;
+
+      fC[11][0] = 0.005;
+      fC[11][1] = 0.005;
+      fC[11][2] = 1.0000;
+      fC[11][3] = 0.3564;
+      fC[11][4] = 0.4449;
+
+      fC[12][0] = 0.005;
+      fC[12][1] = 0.005;
+      fC[12][2] = 1.0000;
+      fC[12][3] = 0.3791;
+      fC[12][4] = 0.5052;
+
+      fC[13][0] = 0.005;
+      fC[13][1] = 0.005;
+      fC[13][2] = 1.0000;
+      fC[13][3] = 0.4062;
+      fC[13][4] = 0.5647;
+
+      fC[14][0] = 0.005;
+      fC[14][1] = 0.005;
+      fC[14][2] = 1.0000;
+      fC[14][3] = 0.4234;
+      fC[14][4] = 0.6203;
+
+      fC[15][0] = 0.005;
+      fC[15][1] = 0.005;
+      fC[15][2] = 1.0000;
+      fC[15][3] = 0.4441;
+      fC[15][4] = 0.6381;
+
+      fC[16][0] = 0.005;
+      fC[16][1] = 0.005;
+      fC[16][2] = 1.0000;
+      fC[16][3] = 0.4629;
+      fC[16][4] = 0.6496;
+
+      fC[17][0] = 0.005;
+      fC[17][1] = 0.005;
+      fC[17][2] = 1.0000;
+      fC[17][3] = 0.4293;
+      fC[17][4] = 0.6491;
+  }
+  // 40-50%
+  else if(centrCur < 50){
+      fC[0][0] = 0.005;
+      fC[0][1] = 0.005;
+      fC[0][2] = 1.0000;
+      fC[0][3] = 0.0010;
+      fC[0][4] = 0.0010;
+
+      fC[1][0] = 0.005;
+      fC[1][1] = 0.005;
+      fC[1][2] = 1.0000;
+      fC[1][3] = 0.0093;
+      fC[1][4] = 0.0057;
+
+      fC[2][0] = 0.005;
+      fC[2][1] = 0.005;
+      fC[2][2] = 1.0000;
+      fC[2][3] = 0.0319;
+      fC[2][4] = 0.0075;
+
+      fC[3][0] = 0.005;
+      fC[3][1] = 0.005;
+      fC[3][2] = 1.0000;
+      fC[3][3] = 0.0639;
+      fC[3][4] = 0.0371;
+
+      fC[4][0] = 0.005;
+      fC[4][1] = 0.005;
+      fC[4][2] = 1.0000;
+      fC[4][3] = 0.0939;
+      fC[4][4] = 0.0725;
+
+      fC[5][0] = 0.005;
+      fC[5][1] = 0.005;
+      fC[5][2] = 1.0000;
+      fC[5][3] = 0.1224;
+      fC[5][4] = 0.1045;
+
+      fC[6][0] = 0.005;
+      fC[6][1] = 0.005;
+      fC[6][2] = 1.0000;
+      fC[6][3] = 0.1520;
+      fC[6][4] = 0.1387;
+
+      fC[7][0] = 0.005;
+      fC[7][1] = 0.005;
+      fC[7][2] = 1.0000;
+      fC[7][3] = 0.1783;
+      fC[7][4] = 0.1711;
+
+      fC[8][0] = 0.005;
+      fC[8][1] = 0.005;
+      fC[8][2] = 1.0000;
+      fC[8][3] = 0.2202;
+      fC[8][4] = 0.2269;
+
+      fC[9][0] = 0.005;
+      fC[9][1] = 0.005;
+      fC[9][2] = 1.0000;
+      fC[9][3] = 0.2672;
+      fC[9][4] = 0.2955;
+
+      fC[10][0] = 0.005;
+      fC[10][1] = 0.005;
+      fC[10][2] = 1.0000;
+      fC[10][3] = 0.3191;
+      fC[10][4] = 0.3676;
+
+      fC[11][0] = 0.005;
+      fC[11][1] = 0.005;
+      fC[11][2] = 1.0000;
+      fC[11][3] = 0.3434;
+      fC[11][4] = 0.4321;
+
+      fC[12][0] = 0.005;
+      fC[12][1] = 0.005;
+      fC[12][2] = 1.0000;
+      fC[12][3] = 0.3692;
+      fC[12][4] = 0.4879;
+
+      fC[13][0] = 0.005;
+      fC[13][1] = 0.005;
+      fC[13][2] = 1.0000;
+      fC[13][3] = 0.3993;
+      fC[13][4] = 0.5377;
+
+      fC[14][0] = 0.005;
+      fC[14][1] = 0.005;
+      fC[14][2] = 1.0000;
+      fC[14][3] = 0.3818;
+      fC[14][4] = 0.5547;
+
+      fC[15][0] = 0.005;
+      fC[15][1] = 0.005;
+      fC[15][2] = 1.0000;
+      fC[15][3] = 0.4003;
+      fC[15][4] = 0.5484;
+
+      fC[16][0] = 0.005;
+      fC[16][1] = 0.005;
+      fC[16][2] = 1.0000;
+      fC[16][3] = 0.4281;
+      fC[16][4] = 0.5383;
+
+      fC[17][0] = 0.005;
+      fC[17][1] = 0.005;
+      fC[17][2] = 1.0000;
+      fC[17][3] = 0.3960;
+      fC[17][4] = 0.5374;
+  }
+  // 50-60%
+  else if(centrCur < 60){
+      fC[0][0] = 0.005;
+      fC[0][1] = 0.005;
+      fC[0][2] = 1.0000;
+      fC[0][3] = 0.0010;
+      fC[0][4] = 0.0010;
+
+      fC[1][0] = 0.005;
+      fC[1][1] = 0.005;
+      fC[1][2] = 1.0000;
+      fC[1][3] = 0.0076;
+      fC[1][4] = 0.0032;
+
+      fC[2][0] = 0.005;
+      fC[2][1] = 0.005;
+      fC[2][2] = 1.0000;
+      fC[2][3] = 0.0329;
+      fC[2][4] = 0.0085;
+
+      fC[3][0] = 0.005;
+      fC[3][1] = 0.005;
+      fC[3][2] = 1.0000;
+      fC[3][3] = 0.0653;
+      fC[3][4] = 0.0423;
+
+      fC[4][0] = 0.005;
+      fC[4][1] = 0.005;
+      fC[4][2] = 1.0000;
+      fC[4][3] = 0.0923;
+      fC[4][4] = 0.0813;
+
+      fC[5][0] = 0.005;
+      fC[5][1] = 0.005;
+      fC[5][2] = 1.0000;
+      fC[5][3] = 0.1219;
+      fC[5][4] = 0.1161;
+
+      fC[6][0] = 0.005;
+      fC[6][1] = 0.005;
+      fC[6][2] = 1.0000;
+      fC[6][3] = 0.1519;
+      fC[6][4] = 0.1520;
+
+      fC[7][0] = 0.005;
+      fC[7][1] = 0.005;
+      fC[7][2] = 1.0000;
+      fC[7][3] = 0.1763;
+      fC[7][4] = 0.1858;
+
+      fC[8][0] = 0.005;
+      fC[8][1] = 0.005;
+      fC[8][2] = 1.0000;
+      fC[8][3] = 0.2178;
+      fC[8][4] = 0.2385;
+
+      fC[9][0] = 0.005;
+      fC[9][1] = 0.005;
+      fC[9][2] = 1.0000;
+      fC[9][3] = 0.2618;
+      fC[9][4] = 0.3070;
+
+      fC[10][0] = 0.005;
+      fC[10][1] = 0.005;
+      fC[10][2] = 1.0000;
+      fC[10][3] = 0.3067;
+      fC[10][4] = 0.3625;
+
+      fC[11][0] = 0.005;
+      fC[11][1] = 0.005;
+      fC[11][2] = 1.0000;
+      fC[11][3] = 0.3336;
+      fC[11][4] = 0.4188;
+
+      fC[12][0] = 0.005;
+      fC[12][1] = 0.005;
+      fC[12][2] = 1.0000;
+      fC[12][3] = 0.3706;
+      fC[12][4] = 0.4511;
+
+      fC[13][0] = 0.005;
+      fC[13][1] = 0.005;
+      fC[13][2] = 1.0000;
+      fC[13][3] = 0.3765;
+      fC[13][4] = 0.4729;
+
+      fC[14][0] = 0.005;
+      fC[14][1] = 0.005;
+      fC[14][2] = 1.0000;
+      fC[14][3] = 0.3942;
+      fC[14][4] = 0.4855;
+
+      fC[15][0] = 0.005;
+      fC[15][1] = 0.005;
+      fC[15][2] = 1.0000;
+      fC[15][3] = 0.4051;
+      fC[15][4] = 0.4762;
+
+      fC[16][0] = 0.005;
+      fC[16][1] = 0.005;
+      fC[16][2] = 1.0000;
+      fC[16][3] = 0.3843;
+      fC[16][4] = 0.4763;
+
+      fC[17][0] = 0.005;
+      fC[17][1] = 0.005;
+      fC[17][2] = 1.0000;
+      fC[17][3] = 0.4237;
+      fC[17][4] = 0.4773;
+  }
+  // 60-70%
+  else if(centrCur < 70){
+         fC[0][0] = 0.005;
+      fC[0][1] = 0.005;
+      fC[0][2] = 1.0000;
+      fC[0][3] = 0.0010;
+      fC[0][4] = 0.0010;
+
+      fC[1][0] = 0.005;
+      fC[1][1] = 0.005;
+      fC[1][2] = 1.0000;
+      fC[1][3] = 0.0071;
+      fC[1][4] = 0.0012;
+
+      fC[2][0] = 0.005;
+      fC[2][1] = 0.005;
+      fC[2][2] = 1.0000;
+      fC[2][3] = 0.0336;
+      fC[2][4] = 0.0097;
+
+      fC[3][0] = 0.005;
+      fC[3][1] = 0.005;
+      fC[3][2] = 1.0000;
+      fC[3][3] = 0.0662;
+      fC[3][4] = 0.0460;
+
+      fC[4][0] = 0.005;
+      fC[4][1] = 0.005;
+      fC[4][2] = 1.0000;
+      fC[4][3] = 0.0954;
+      fC[4][4] = 0.0902;
+
+      fC[5][0] = 0.005;
+      fC[5][1] = 0.005;
+      fC[5][2] = 1.0000;
+      fC[5][3] = 0.1181;
+      fC[5][4] = 0.1306;
+
+      fC[6][0] = 0.005;
+      fC[6][1] = 0.005;
+      fC[6][2] = 1.0000;
+      fC[6][3] = 0.1481;
+      fC[6][4] = 0.1662;
+
+      fC[7][0] = 0.005;
+      fC[7][1] = 0.005;
+      fC[7][2] = 1.0000;
+      fC[7][3] = 0.1765;
+      fC[7][4] = 0.1963;
+
+      fC[8][0] = 0.005;
+      fC[8][1] = 0.005;
+      fC[8][2] = 1.0000;
+      fC[8][3] = 0.2155;
+      fC[8][4] = 0.2433;
+
+      fC[9][0] = 0.005;
+      fC[9][1] = 0.005;
+      fC[9][2] = 1.0000;
+      fC[9][3] = 0.2580;
+      fC[9][4] = 0.3022;
+
+      fC[10][0] = 0.005;
+      fC[10][1] = 0.005;
+      fC[10][2] = 1.0000;
+      fC[10][3] = 0.2872;
+      fC[10][4] = 0.3481;
+
+      fC[11][0] = 0.005;
+      fC[11][1] = 0.005;
+      fC[11][2] = 1.0000;
+      fC[11][3] = 0.3170;
+      fC[11][4] = 0.3847;
+
+      fC[12][0] = 0.005;
+      fC[12][1] = 0.005;
+      fC[12][2] = 1.0000;
+      fC[12][3] = 0.3454;
+      fC[12][4] = 0.4258;
+
+      fC[13][0] = 0.005;
+      fC[13][1] = 0.005;
+      fC[13][2] = 1.0000;
+      fC[13][3] = 0.3580;
+      fC[13][4] = 0.4299;
+
+      fC[14][0] = 0.005;
+      fC[14][1] = 0.005;
+      fC[14][2] = 1.0000;
+      fC[14][3] = 0.3903;
+      fC[14][4] = 0.4326;
+
+      fC[15][0] = 0.005;
+      fC[15][1] = 0.005;
+      fC[15][2] = 1.0000;
+      fC[15][3] = 0.3690;
+      fC[15][4] = 0.4491;
+
+      fC[16][0] = 0.005;
+      fC[16][1] = 0.005;
+      fC[16][2] = 1.0000;
+      fC[16][3] = 0.4716;
+      fC[16][4] = 0.4298;
+
+      fC[17][0] = 0.005;
+      fC[17][1] = 0.005;
+      fC[17][2] = 1.0000;
+      fC[17][3] = 0.3875;
+      fC[17][4] = 0.4083;
+  }
+  // 70-80%
+  else if(centrCur < 80){
+      fC[0][0] = 0.005;
+      fC[0][1] = 0.005;
+      fC[0][2] = 1.0000;
+      fC[0][3] = 0.0010;
+      fC[0][4] = 0.0010;
+
+      fC[1][0] = 0.005;
+      fC[1][1] = 0.005;
+      fC[1][2] = 1.0000;
+      fC[1][3] = 0.0075;
+      fC[1][4] = 0.0007;
+
+      fC[2][0] = 0.005;
+      fC[2][1] = 0.005;
+      fC[2][2] = 1.0000;
+      fC[2][3] = 0.0313;
+      fC[2][4] = 0.0124;
+
+      fC[3][0] = 0.005;
+      fC[3][1] = 0.005;
+      fC[3][2] = 1.0000;
+      fC[3][3] = 0.0640;
+      fC[3][4] = 0.0539;
+
+      fC[4][0] = 0.005;
+      fC[4][1] = 0.005;
+      fC[4][2] = 1.0000;
+      fC[4][3] = 0.0923;
+      fC[4][4] = 0.0992;
+
+      fC[5][0] = 0.005;
+      fC[5][1] = 0.005;
+      fC[5][2] = 1.0000;
+      fC[5][3] = 0.1202;
+      fC[5][4] = 0.1417;
+
+      fC[6][0] = 0.005;
+      fC[6][1] = 0.005;
+      fC[6][2] = 1.0000;
+      fC[6][3] = 0.1413;
+      fC[6][4] = 0.1729;
+
+      fC[7][0] = 0.005;
+      fC[7][1] = 0.005;
+      fC[7][2] = 1.0000;
+      fC[7][3] = 0.1705;
+      fC[7][4] = 0.1999;
+
+      fC[8][0] = 0.005;
+      fC[8][1] = 0.005;
+      fC[8][2] = 1.0000;
+      fC[8][3] = 0.2103;
+      fC[8][4] = 0.2472;
+
+      fC[9][0] = 0.005;
+      fC[9][1] = 0.005;
+      fC[9][2] = 1.0000;
+      fC[9][3] = 0.2373;
+      fC[9][4] = 0.2916;
+
+      fC[10][0] = 0.005;
+      fC[10][1] = 0.005;
+      fC[10][2] = 1.0000;
+      fC[10][3] = 0.2824;
+      fC[10][4] = 0.3323;
+
+      fC[11][0] = 0.005;
+      fC[11][1] = 0.005;
+      fC[11][2] = 1.0000;
+      fC[11][3] = 0.3046;
+      fC[11][4] = 0.3576;
+
+      fC[12][0] = 0.005;
+      fC[12][1] = 0.005;
+      fC[12][2] = 1.0000;
+      fC[12][3] = 0.3585;
+      fC[12][4] = 0.4003;
+
+      fC[13][0] = 0.005;
+      fC[13][1] = 0.005;
+      fC[13][2] = 1.0000;
+      fC[13][3] = 0.3461;
+      fC[13][4] = 0.3982;
+
+      fC[14][0] = 0.005;
+      fC[14][1] = 0.005;
+      fC[14][2] = 1.0000;
+      fC[14][3] = 0.3362;
+      fC[14][4] = 0.3776;
+
+      fC[15][0] = 0.005;
+      fC[15][1] = 0.005;
+      fC[15][2] = 1.0000;
+      fC[15][3] = 0.3071;
+      fC[15][4] = 0.3500;
+
+      fC[16][0] = 0.005;
+      fC[16][1] = 0.005;
+      fC[16][2] = 1.0000;
+      fC[16][3] = 0.2914;
+      fC[16][4] = 0.3937;
+
+      fC[17][0] = 0.005;
+      fC[17][1] = 0.005;
+      fC[17][2] = 1.0000;
+      fC[17][3] = 0.3727;
+      fC[17][4] = 0.3877;
+  }
+  // 80-100%
+  else{
+      fC[0][0] = 0.005;
+      fC[0][1] = 0.005;
+      fC[0][2] = 1.0000;
+      fC[0][3] = 0.0010;
+      fC[0][4] = 0.0010;
+
+      fC[1][0] = 0.005;
+      fC[1][1] = 0.005;
+      fC[1][2] = 1.0000;
+      fC[1][3] = 0.0060;
+      fC[1][4] = 0.0035;
+
+      fC[2][0] = 0.005;
+      fC[2][1] = 0.005;
+      fC[2][2] = 1.0000;
+      fC[2][3] = 0.0323;
+      fC[2][4] = 0.0113;
+
+      fC[3][0] = 0.005;
+      fC[3][1] = 0.005;
+      fC[3][2] = 1.0000;
+      fC[3][3] = 0.0609;
+      fC[3][4] = 0.0653;
+
+      fC[4][0] = 0.005;
+      fC[4][1] = 0.005;
+      fC[4][2] = 1.0000;
+      fC[4][3] = 0.0922;
+      fC[4][4] = 0.1076;
+
+      fC[5][0] = 0.005;
+      fC[5][1] = 0.005;
+      fC[5][2] = 1.0000;
+      fC[5][3] = 0.1096;
+      fC[5][4] = 0.1328;
+
+      fC[6][0] = 0.005;
+      fC[6][1] = 0.005;
+      fC[6][2] = 1.0000;
+      fC[6][3] = 0.1495;
+      fC[6][4] = 0.1779;
+
+      fC[7][0] = 0.005;
+      fC[7][1] = 0.005;
+      fC[7][2] = 1.0000;
+      fC[7][3] = 0.1519;
+      fC[7][4] = 0.1989;
+
+      fC[8][0] = 0.005;
+      fC[8][1] = 0.005;
+      fC[8][2] = 1.0000;
+      fC[8][3] = 0.1817;
+      fC[8][4] = 0.2472;
+
+      fC[9][0] = 0.005;
+      fC[9][1] = 0.005;
+      fC[9][2] = 1.0000;
+      fC[9][3] = 0.2429;
+      fC[9][4] = 0.2684;
+
+      fC[10][0] = 0.005;
+      fC[10][1] = 0.005;
+      fC[10][2] = 1.0000;
+      fC[10][3] = 0.2760;
+      fC[10][4] = 0.3098;
+
+      fC[11][0] = 0.005;
+      fC[11][1] = 0.005;
+      fC[11][2] = 1.0000;
+      fC[11][3] = 0.2673;
+      fC[11][4] = 0.3198;
+
+      fC[12][0] = 0.005;
+      fC[12][1] = 0.005;
+      fC[12][2] = 1.0000;
+      fC[12][3] = 0.3165;
+      fC[12][4] = 0.3564;
+
+      fC[13][0] = 0.005;
+      fC[13][1] = 0.005;
+      fC[13][2] = 1.0000;
+      fC[13][3] = 0.3526;
+      fC[13][4] = 0.3011;
+
+      fC[14][0] = 0.005;
+      fC[14][1] = 0.005;
+      fC[14][2] = 1.0000;
+      fC[14][3] = 0.3788;
+      fC[14][4] = 0.3011;
+
+      fC[15][0] = 0.005;
+      fC[15][1] = 0.005;
+      fC[15][2] = 1.0000;
+      fC[15][3] = 0.3788;
+      fC[15][4] = 0.3011;
+
+      fC[16][0] = 0.005;
+      fC[16][1] = 0.005;
+      fC[16][2] = 1.0000;
+      fC[16][3] = 0.3788;
+      fC[16][4] = 0.3011;
+
+      fC[17][0] = 0.005;
+      fC[17][1] = 0.005;
+      fC[17][2] = 1.0000;
+      fC[17][3] = 0.3788;
+      fC[17][4] = 0.3011;
+  }
+  
+  for(Int_t i=18;i<fgkPIDptBin;i++){
+    fBinLimitPID[i] = 3.0 + 0.2 * (i-18);
+    fC[i][0] = fC[17][0];
+    fC[i][1] = fC[17][1];
+    fC[i][2] = fC[17][2];
+    fC[i][3] = fC[17][3];
+    fC[i][4] = fC[17][4];
+  }  
+}
+
+//---------------------------------------------------------------//
+Bool_t AliFlowTrackCuts::TPCTOFagree(const AliESDtrack *track)
+{
+  Bool_t status = kFALSE;
+  
+  Float_t mass[5] = {5.10998909999999971e-04,1.05658000000000002e-01,1.39570000000000000e-01,4.93676999999999977e-01,9.38271999999999995e-01};
+  
+
+  Double_t exptimes[5];
+  track->GetIntegratedTimes(exptimes);
+  
+  Float_t dedx = track->GetTPCsignal();
+
+  Float_t p = track->P();
+  Float_t time = track->GetTOFsignal()- fESDpid.GetTOFResponse().GetStartTime(p);
+  Float_t tl = track->GetIntegratedLength();
+
+  Float_t betagammares =  fESDpid.GetTOFResponse().GetExpectedSigma(p, exptimes[4], mass[4]);
+
+  Float_t betagamma1 = tl/(time-5 *betagammares) * 33.3564095198152043;
+
+//  printf("betagamma1 = %f\n",betagamma1);
+
+  if(betagamma1 < 0.1) betagamma1 = 0.1;
+
+  if(betagamma1 < 0.99999) betagamma1 /= TMath::Sqrt(1-betagamma1*betagamma1);
+  else betagamma1 = 100;
+
+  Float_t betagamma2 = tl/(time+5 *betagammares) * 33.3564095198152043;
+//  printf("betagamma2 = %f\n",betagamma2);
+
+  if(betagamma2 < 0.1) betagamma2 = 0.1;
+
+  if(betagamma2 < 0.99999) betagamma2 /= TMath::Sqrt(1-betagamma2*betagamma2);
+  else betagamma2 = 100;
+
+
+  Double_t ptpc[3];
+  track->GetInnerPxPyPz(ptpc);
+  Float_t momtpc=TMath::Sqrt(ptpc[0]*ptpc[0] + ptpc[1]*ptpc[1] + ptpc[2]*ptpc[2]);
+ 
+  for(Int_t i=0;i < 5;i++){
+    Float_t resolutionTOF =  fESDpid.GetTOFResponse().GetExpectedSigma(p, exptimes[i], mass[i]);
+    if(TMath::Abs(exptimes[i] - time) < 5 * resolutionTOF){
+      Float_t dedxExp = 0;
+      if(i==0) dedxExp =  fESDpid.GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kElectron);
+      else if(i==1) dedxExp =  fESDpid.GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kMuon);
+      else if(i==2) dedxExp =  fESDpid.GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kPion);
+      else if(i==3) dedxExp =  fESDpid.GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kKaon);
+      else if(i==4) dedxExp =  fESDpid.GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kProton);
+
+      Float_t resolutionTPC = 2;
+      if(i==0) resolutionTPC =   fESDpid.GetTPCResponse().GetExpectedSigma(momtpc,track->GetTPCsignalN(),AliPID::kElectron); 
+      else if(i==1) resolutionTPC =   fESDpid.GetTPCResponse().GetExpectedSigma(momtpc,track->GetTPCsignalN(),AliPID::kMuon);
+      else if(i==2) resolutionTPC =   fESDpid.GetTPCResponse().GetExpectedSigma(momtpc,track->GetTPCsignalN(),AliPID::kPion);
+      else if(i==3) resolutionTPC =   fESDpid.GetTPCResponse().GetExpectedSigma(momtpc,track->GetTPCsignalN(),AliPID::kKaon);
+      else if(i==4) resolutionTPC =   fESDpid.GetTPCResponse().GetExpectedSigma(momtpc,track->GetTPCsignalN(),AliPID::kProton);
+
+      if(TMath::Abs(dedx - dedxExp) < 3 * resolutionTPC){
+	status = kTRUE;
+      }
+    }
+  }
+
+  Float_t bb1 =  fESDpid.GetTPCResponse().Bethe(betagamma1);
+  Float_t bb2 =  fESDpid.GetTPCResponse().Bethe(betagamma2);
+  Float_t bbM =  fESDpid.GetTPCResponse().Bethe((betagamma1+betagamma2)*0.5);
+
+
+  //  status = kFALSE;
+  // for nuclei
+  Float_t resolutionTOFpr =   fESDpid.GetTOFResponse().GetExpectedSigma(p, exptimes[4], mass[4]);
+  Float_t resolutionTPCpr =   fESDpid.GetTPCResponse().GetExpectedSigma(momtpc,track->GetTPCsignalN(),AliPID::kProton);
+  if(TMath::Abs(dedx-bb1) < resolutionTPCpr*3 && exptimes[4] < time-7*resolutionTOFpr){
+     status = kTRUE;
+  }
+  else if(TMath::Abs(dedx-bb2) < resolutionTPCpr*3 && exptimes[4] < time-7*resolutionTOFpr){
+     status = kTRUE;
+  }
+  else if(TMath::Abs(dedx-bbM) < resolutionTPCpr*3 && exptimes[4] < time-7*resolutionTOFpr){
+     status = kTRUE;
+  }
+  
+  return status;
 }
 // end part added by F. Noferini
 //-----------------------------------------------------------------------
-
 
 //-----------------------------------------------------------------------
 const char* AliFlowTrackCuts::PIDsourceName(PIDsource s)
