@@ -165,20 +165,36 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
   // azimuthal angle of the centre of the TPC sector in which the point
   // xyz lies
   //
+  const double kSafe = 1e-5;
   Double_t radPos2 = xyz[0]*xyz[0]+xyz[1]*xyz[1];  
   Double_t radMax  = 45.; // approximately ITS outer radius
-  if (radPos2 < radMax*radMax) { // inside the ITS
-     
+  if (radPos2 < radMax*radMax) { // inside the ITS     
      fAlpha = TMath::ATan2(pxpypz[1],pxpypz[0]);
   } else { // outside the ITS
      Float_t phiPos = TMath::Pi()+TMath::ATan2(-xyz[1], -xyz[0]);
      fAlpha = 
      TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
   }
-
+  //
+  Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
+  // protection:  avoid alpha being too close to 0 or +-pi/2
+  if (TMath::Abs(sn)<kSafe) {
+    fAlpha = kSafe;
+    cs=TMath::Cos(fAlpha);
+    sn=TMath::Sin(fAlpha);
+  }
+  else if (cs<kSafe) {
+    fAlpha -= TMath::Sign(kSafe, fAlpha);
+    cs=TMath::Cos(fAlpha);
+    sn=TMath::Sin(fAlpha);    
+  }
   // Get the vertex of origin and the momentum
   TVector3 ver(xyz[0],xyz[1],xyz[2]);
   TVector3 mom(pxpypz[0],pxpypz[1],pxpypz[2]);
+  //
+  // avoid momenta along axis
+  if (TMath::Abs(mom[0])<kSafe) mom[0] = TMath::Sign(kSafe*TMath::Abs(mom[1]), mom[0]);
+  if (TMath::Abs(mom[1])<kSafe) mom[1] = TMath::Sign(kSafe*TMath::Abs(mom[0]), mom[1]);
 
   // Rotate to the local coordinate system
   ver.RotateZ(-fAlpha);
@@ -198,7 +214,6 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
   // Covariance matrix (formulas to be simplified)
 
   Double_t pt=1./TMath::Abs(fP[4]);
-  Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
   Double_t r=TMath::Sqrt((1.-fP[2])*(1.+fP[2]));
 
   Double_t m00=-sn;// m10=cs;
@@ -676,6 +691,7 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
   Double_t f1=fP[2], f2=f1 + x2r;
   if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
+  if (TMath::Abs(fP[4])< kAlmost0) return kFALSE;
 
   Double_t &fP0=fP[0], &fP1=fP[1], &fP2=fP[2], &fP3=fP[3], &fP4=fP[4];
   Double_t 
@@ -686,6 +702,8 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
   &fC40=fC[10],  &fC41=fC[11],  &fC42=fC[12],  &fC43=fC[13], &fC44=fC[14];
 
   Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
+  if (TMath::Abs(r1)<kAlmost0)  return kFALSE;
+  if (TMath::Abs(r2)<kAlmost0)  return kFALSE;
 
   fX=xk;
   double dy2dx = (f1+f2)/(r1+r2);
