@@ -22,22 +22,57 @@
 #include "AliCaloPhoton.h"
 ClassImp(AliCaloPhoton) 
 //===============================================
-AliCaloPhoton::AliCaloPhoton():TLorentzVector(),fMomV2(),fDisp(0),
-			 fTof(0),fCpv(0),fPCA(0),fTrig(0),
-			 fIsTagged(0),fIsIsolated(0),
-			 fX(0.),fY(0.),fZ(0.),
-			 fModule(0),fBadDist(0),fNCells(0)
+AliCaloPhoton::AliCaloPhoton() :
+  TLorentzVector(),
+  fMomV2(),
+  fDisp(0),
+  fTof(0),
+  fCpv(0),
+  fPCA(0),
+  fTrig(0),
+  fIsTagged(0),
+  fIsIsolated(0),
+  fIsPhoton(0),
+  fX(0.),
+  fY(0.),
+  fZ(0.),
+  fModule(0),
+  fBadDist(0),
+  fNCells(0),
+  fPi0Decayflag(0),
+  fPi0Id(0),
+  fConverted(0),
+  fConvertedPartner(0),
+  fPartnerPt(0),
+  fPrimary(0)
 {
 
 
 } 
 //===============================================
 AliCaloPhoton::AliCaloPhoton(Double_t px,Double_t py,Double_t pz,Double_t energy):
-  TLorentzVector(px,py,pz,energy),fMomV2(),fDisp(0),
-			 fTof(0),fCpv(0),fPCA(0),fTrig(0),
-			 fIsTagged(0),fIsIsolated(0),
-			 fX(0.),fY(0.),fZ(0.),
-			 fModule(0),fBadDist(0),fNCells(0)
+  TLorentzVector(px,py,pz,energy),
+  fMomV2(),
+  fDisp(0),
+  fTof(0),
+  fCpv(0),
+  fPCA(0),
+  fTrig(0),
+  fIsTagged(0),
+  fIsIsolated(0),
+  fIsPhoton(0),
+  fX(0.),
+  fY(0.),
+  fZ(0.),
+  fModule(0),
+  fBadDist(0),
+  fNCells(0),
+  fPi0Decayflag(0),
+  fPi0Id(0),
+  fConverted(0),
+  fConvertedPartner(0),
+  fPartnerPt(0),
+  fPrimary(0)
 {
   
 }
