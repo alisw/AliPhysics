@@ -639,7 +639,10 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2010() {
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny); 
   // default is kBoth, otherwise kAny
-  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  
+  esdTrackCuts->SetMaxDCAToVertexXY(1.);
+  esdTrackCuts->SetMaxDCAToVertexZ(1.);
+  esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0100*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
   esdTrackCuts->SetPtRange(0.8,1.e10);
     
   AddTrackCuts(esdTrackCuts);
@@ -707,67 +710,79 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2010() {
   }
   
     
-  anacutsval[6][0]=0.022100;
-  anacutsval[6][1]=0.022100;
-  anacutsval[6][2]=0.034;
-  anacutsval[6][3]=0.020667;
-  anacutsval[6][4]=0.020667;
-  anacutsval[6][5]=0.023333;
-  anacutsval[6][6]=0.023333;
-  anacutsval[6][7]=0.023333;
-  anacutsval[6][8]=0.023333;
-  anacutsval[6][9]=0.023333;
-  
-  anacutsval[7][0]=0.08;
-  anacutsval[7][1]=0.08;
-  anacutsval[7][2]=0.09;  
-  anacutsval[7][3]=0.095;
-  anacutsval[7][4]=0.095;
-  anacutsval[7][5]=0.115;
-  anacutsval[7][6]=0.115;
-  anacutsval[7][7]=0.115;
-  anacutsval[7][8]=0.115;
-  anacutsval[7][9]=0.115;
-  
-  anacutsval[8][0]=0.5;
-  anacutsval[8][1]=0.5;
-  anacutsval[8][2]=1.0;
-  anacutsval[8][3]=0.5;
-  anacutsval[8][4]=0.5;
-  anacutsval[8][5]=0.5;
-  anacutsval[8][6]=0.5;
-  anacutsval[8][7]=0.5;
-  anacutsval[8][8]=0.5;
-  anacutsval[8][9]=0.5;
-  
-  anacutsval[9][0]=0.995;
-  anacutsval[9][1]=0.995;
-  anacutsval[9][2]=0.997; 
-  anacutsval[9][3]=0.989; 
-  anacutsval[9][4]= 0.989;
-  anacutsval[9][5]=0.997;
-  anacutsval[9][6]=0.997;
-  anacutsval[9][7]=0.997;
-  anacutsval[9][8]=0.997;
-  anacutsval[9][9]=0.997;
  
-  anacutsval[10][0]=0.0055;
-  anacutsval[10][1]=0.0055;
-  anacutsval[10][2]= 0.0028;
-  anacutsval[10][3]=0.000883;
-  anacutsval[10][4]=0.000883;
-  anacutsval[10][5]=0.000883;
-  anacutsval[10][6]=0.000883;
-  anacutsval[10][7]=0.000883;
-  anacutsval[10][8]=0.000883;
-  anacutsval[10][9]=0.000883;
+   
+    anacutsval[6][0]=0.022100;
+    anacutsval[6][1]=0.022100;
+    anacutsval[6][2]=0.034;
+    anacutsval[6][3]=0.020667;
+    anacutsval[6][4]=0.020667;
+    anacutsval[6][5]=0.023333;
+    anacutsval[6][6]=0.023333;
+    anacutsval[6][7]=0.023333;
+    anacutsval[6][8]=0.023333;
+    anacutsval[6][9]=0.023333;
+     
+    anacutsval[7][0]=0.08;
+    anacutsval[7][1]=0.08;
+    anacutsval[7][2]=0.17;  
+    anacutsval[7][3]=0.14;
+    anacutsval[7][4]=0.14;
+    anacutsval[7][5]=0.14;
+    anacutsval[7][6]=0.19;
+    anacutsval[7][7]=0.19;
+    anacutsval[7][8]=0.19;
+    anacutsval[7][9]=0.19;
+     
+    anacutsval[8][0]=0.8;
+    anacutsval[8][1]=0.8;
+    anacutsval[8][2]=1.1;
+    anacutsval[8][3]=0.5;
+    anacutsval[8][4]=0.5;
+    anacutsval[8][5]=2.0;
+    anacutsval[8][6]=2.0;
+    anacutsval[8][7]=2.0;
+    anacutsval[8][8]=2.0;
+    anacutsval[8][9]=2.0;
+     
+     anacutsval[9][0]=0.995;
+    anacutsval[9][1]=0.995;
+    anacutsval[9][2]=0.997; 
+    anacutsval[9][3]=0.998; 
+    anacutsval[9][4]= 0.998;
+    anacutsval[9][5]=0.997;
+    anacutsval[9][6]=0.997;
+    anacutsval[9][7]=0.997;
+    anacutsval[9][8]=0.997;
+    anacutsval[9][9]=0.997;
+
+
+
+ 
+ 
+    anacutsval[10][0]=0.0055;
+    anacutsval[10][1]=0.0055;
+    anacutsval[10][2]= 0.0028;
+    anacutsval[10][3]=0.000883;
+    anacutsval[10][4]=0.000883;
+    anacutsval[10][5]=0.000883;
+    anacutsval[10][6]=0.000883;
+    anacutsval[10][7]=0.000883;
+    anacutsval[10][8]=0.000883;
+    anacutsval[10][9]=0.000883;
     
-    
+
+
+
+
   SetPtBins(nptbins+1,ptbins);
   SetCuts(nvars,nptbins,anacutsval);
   SetUsePID(kTRUE);
   SetRemoveDaughtersFromPrim(kFALSE);
-    
+  SetOptPileup(kFALSE);
+  SetMinPtCandidate(4.);
+  SetMaxPtCandidate(10000.);
+  
   PrintAll();
 
   for(Int_t iic=0;iic<nvars;iic++){delete [] anacutsval[iic];}
