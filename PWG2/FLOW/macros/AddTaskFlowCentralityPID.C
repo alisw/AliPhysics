@@ -134,7 +134,8 @@ void AddTaskFlowCentralityPID( Float_t centrMin=0.,
   cutsPOI->SetAcceptKinkDaughters(kFALSE);
   cutsPOI->SetPID(particleType, sourcePID);
   if (charge!=0) cutsPOI->SetCharge(charge);
-  cutsPOI->SetAllowTOFmismatch(kFALSE);
+  //cutsPOI->SetAllowTOFmismatch(kFALSE);
+  cutsPOI->SetRequireStrictTOFTPCagreement(kTRUE);
   //iexample: francesco's tunig TPC Bethe Bloch for data:
   //cutsPOI->GetESDpid().GetTPCResponse().SetBetheBlochParameters(4.36414e-02,1.75977e+01,1.14385e-08,2.27907e+00,3.36699e+00);
   //cutsPOI->GetESDpid().GetTPCResponse().SetMip(49);
