@@ -98,12 +98,6 @@ AliAODRecoDecayHF3Prong &AliAODRecoDecayHF3Prong::operator=(const AliAODRecoDeca
 
   return *this;
 }
-//-------------Temporary fix: overload AliAODRecoDecay::Charge()-----------
-Short_t AliAODRecoDecayHF3Prong::Charge() const {
-  Short_t charge=0;
-  for(Int_t daught=0;daught<=2;daught++)charge=charge+((AliAODTrack*)GetDaughter(daught))->Charge();
-  return charge;
-}
 //--------------------------------------------------------------------------
 Bool_t AliAODRecoDecayHF3Prong::SelectDplus(const Double_t *cuts)
   const {
