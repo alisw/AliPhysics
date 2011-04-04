@@ -51,6 +51,18 @@ ifneq ($(EMCALUtils_INCLUDE),)
   CXXFLAGS+=-D__EMCALUTIL__
 endif
 
+ifneq ($(EMCALbase_INCLUDE),)
+  ALICEINC += -I../$(EMCALbase_INCLUDE)
+endif
+
+ifneq ($(EMCALsim_INCLUDE),)
+  ALICEINC += -I../$(EMCALsim_INCLUDE)
+endif
+
+ifneq ($(EMCALrec_INCLUDE),)
+  ALICEINC += -I../$(EMCALrec_INCLUDE)
+endif
+
 ifneq ($(PWG4PartCorrBase_INCLUDE),)
   ALICEINC += -I../$(PWG4PartCorrBase_INCLUDE)
 endif
