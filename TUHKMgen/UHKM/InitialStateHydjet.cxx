@@ -469,12 +469,11 @@ Bool_t InitialStateHydjet::MultIni() {
     particleDensityPiTh = gcPiTh.ParticleNumberDensity(fDatabase->GetPDGParticle(211));
   }
 
-  for(Int_t particleIndex = 0; particleIndex < fDatabase->GetNParticles(); particleIndex++) {
-    if(particleIndex>=kNPartTypes) {
-      cout << "InitialStateHydjet::MultIni(): ERROR Particle definitions in the PDG database exceeds the hardcoded limit of " << kNPartTypes << endl;
-      cout << "      There is either an error with reading the particles file or you might need to increase the maximum allowed definitions" << endl;
-      break;
-    }
+  if(fDatabase->GetNParticles()>=kNPartTypes) {
+    cout << "InitialStateHydjet::MultIni(): ERROR Particle definitions in the PDG database exceeds the hardcoded limit of " << kNPartTypes << endl;
+    cout << "      There is either an error with reading the particles file or you might need to increase the maximum allowed definitions" << endl;
+  }
+  for(Int_t particleIndex = 0; particleIndex<fDatabase->GetNParticles() && particleIndex<kNPartTypes; particleIndex++) {
     ParticlePDG *currParticle = fDatabase->GetPDGParticleByIndex(particleIndex);
     Int_t encoding = currParticle->GetPDG();
     //strangeness supression
