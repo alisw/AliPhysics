@@ -27,6 +27,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
  public:
 
   enum FeedDownEnum {kBoth,kCharmOnly,kBeautyOnly};
+  enum ChanDs {kAllReson,kPhi,kK0star};
 
   AliAnalysisTaskSESignificance();
   AliAnalysisTaskSESignificance(const char *name, TList *listMDV,AliRDHFCuts *RDCuts, Int_t decaychannel,Int_t selectionlevel=AliRDHFCuts::kAll);
@@ -42,12 +43,15 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
   void SetNBins(Int_t nbins){fNBins=nbins;}
   void SetFillWithPartAntiPartBoth(Int_t value){fPartOrAndAntiPart=value;}
+  void SetDsChannel(Int_t chan){fDsChannel=chan;}
+
   //void SetMultiVector(const AliMultiDimVector *MultiDimVec){fMultiDimVec->CopyStructure(MultiDimVec);}
   Float_t GetUpperMassLimit()const {return fUpmasslimit;}
   Float_t GetLowerMassLimit()const {return fLowmasslimit;}
   Int_t GetNBins()const {return fNBins;}
   Int_t GetFillWithPartAntiPartBoth()const {return fPartOrAndAntiPart;}
   Int_t GetBFeedDown()const {return fBFeedDown;}
+  Int_t GetDsChannel()const {return fDsChannel;}
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -56,6 +60,19 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
     
  private:
+
+  void SetPDGdaughterDstoKKpi(){
+    fPDGdaughters[0]=321;//K
+    fPDGdaughters[1]=321;//K
+    fPDGdaughters[2]=211;//pi
+    fPDGdaughters[3]=0; //empty
+  }
+  void SetPDGdaughterDstopiKK(){
+    fPDGdaughters[0]=211;//pi
+    fPDGdaughters[1]=321;//K
+    fPDGdaughters[2]=321;//K
+    fPDGdaughters[3]=0; //empty
+  }
 
   AliAnalysisTaskSESignificance(const AliAnalysisTaskSESignificance &source);
   AliAnalysisTaskSESignificance& operator=(const AliAnalysisTaskSESignificance& source);
@@ -68,7 +85,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
 
   void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel);
   void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index, Int_t isSel);
-  void FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel);
+  void FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel,Int_t optDecay);
   void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel);
   void FillD04p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel);
   void FillLambdac(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index, Int_t isSel);
@@ -103,10 +120,10 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   Float_t fVars[kMaxCutVar];       // array with values of cut variables
   Int_t fNBins;  //number of bins in the mass histograms
   Int_t fPartOrAndAntiPart;  //fill histograms with particle only (+1), antiparticle only (-1), both (0)
+  Int_t fDsChannel;          // Ds resonant channel selected
 
-  ClassDef(AliAnalysisTaskSESignificance,3); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSESignificance,4); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
-
 
