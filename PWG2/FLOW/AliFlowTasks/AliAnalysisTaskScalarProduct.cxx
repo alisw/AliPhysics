@@ -49,7 +49,8 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name, Boo
   fListWeights(NULL),
   fRelDiffMsub(1.0),
   fApplyCorrectionForNUA(kFALSE),
-  fHarmonic(2) 
+  fHarmonic(2),
+  fTotalQvector(NULL) 
 {
   // Constructor
   cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name)"<<endl;
@@ -62,6 +63,9 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name, Boo
     DefineInput(1, TList::Class()); }
   // Output slot #0 writes into a TList container
   DefineOutput(1, TList::Class());
+
+  // Total Q-vector is: "QaQb" (means Qa+Qb), "Qa"  or "Qb"
+  fTotalQvector = new TString("QaQb");
 }
 
 //________________________________________________________________________
@@ -74,7 +78,8 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct() :
   fListWeights(NULL),
   fRelDiffMsub(1.0),
   fApplyCorrectionForNUA(kFALSE),
-  fHarmonic(0)
+  fHarmonic(0),
+  fTotalQvector(NULL) 
   {
   // Constructor
   cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct()"<<endl;
@@ -115,7 +120,12 @@ void AliAnalysisTaskScalarProduct::UserCreateOutputObjects()
   fSP->SetApplyCorrectionForNUA(fApplyCorrectionForNUA);
   // harmonic: 
   fSP->SetHarmonic(fHarmonic);
-    
+  // total Q-vector:
+  if(!(strcmp(fTotalQvector->Data(),"QaQb")==0)) // default is "QaQb" (means Qa+Qb)
+  {
+   fSP->SetTotalQvector(fTotalQvector->Data());
+  }  
+  
   //for using phi weights:
   if(fUsePhiWeights) {
     //pass the flag to the analysis class:
