@@ -39,6 +39,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fMinE(0.100),
     fMinErat(0),
     fMinEcc(0),
+    fGeoName("EMCAL_FIRSTYEARV1"),
     fNEvs(0),
     fGeom(0),
     fOutput(0),
@@ -108,9 +109,14 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
 
   if (fDoNtuple) {
     TFile *f = OpenFile(1);
-    if (f)
+    if (f) {
+      f->SetCompressionLevel(2);
       fNtuple = new TNtuple(Form("nt%.0fto%.0f",fCentFrom,fCentTo),"nt",
-                            "run:evt:cent:pt:e:emax:n:db:disp:mn:ms:chi:cpv:ecc:sig:eta:phi");
+                            "run:evt:l0:cent:pt:eta:phi:e:emax:n:n1:db:disp:mn:ms:ecc:sig");
+      fNtuple->SetDirectory(f);
+      fNtuple->SetAutoFlush(-1024*1024*1024);
+      fNtuple->SetAutoSave(-1024*1024*1024);
+    }  
   }
 
   // histograms
@@ -247,15 +253,14 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   }
 
   if (!fGeom) { // set misalignment matrices (stored in first event)
-    fGeom = new AliEMCALGeoUtils("EMCAL_FIRSTYEARV1","EMCAL"); //todo need to set name
+    fGeom = new AliEMCALGeoUtils(fGeoName,"EMCAL");
     if (fEsdEv) {
-      for (Int_t i=0; i<4; ++i)
+      for (Int_t i=0; i<fGeom->GetEMCGeometry()->GetNumberOfSuperModules(); ++i)
         fGeom->SetMisalMatrix(fEsdEv->GetESDRun()->GetEMCALMatrix(i),i);
     } else {
-      for (Int_t i=0; i<4; ++i)
+      for (Int_t i=0; i<fGeom->GetEMCGeometry()->GetNumberOfSuperModules(); ++i)
         fGeom->SetMisalMatrix(fAodEv->GetHeader()->GetEMCALMatrix(i),i);
     }
-    fGeom->GetEMCGeometry();
   }
 
   Int_t cut = 1;
@@ -532,9 +537,7 @@ void AliAnalysisTaskEMCALPi0PbPb::FillCellHists()
     fHCellH->Fill(cellMaxE);
     cellMeanE /= ncells;
     fHCellM->Fill(cellMeanE);
-    fHCellM2->Fill(cellMeanE*ncells/24/48/4); //hard-coded but there is a way to figure out from geometry     
-    //Double_t avgE = totE / AliEMCALGeometry::GetInstance(fGeomName)->GetNumberOfSuperModules()/48/24;
-
+    fHCellM2->Fill(cellMeanE*ncells/24/48/fGeom->GetEMCGeometry()->GetNumberOfSuperModules());
     for (Int_t i=0; i<4; ++i) 
       fHCellMult[i]->Fill(cellModCount[i]);
   }
@@ -575,26 +578,37 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
       fHClustSigmaSigma->Fill(max(clus->GetM02(),clus->GetM20()),clus->E()*maxAxis);
       fHClustNCellEnergyRatio->Fill(clus->GetNCells(),GetMaxCellEnergy(clus)/clus->E());
       if (fNtuple) {
+        if (clus->E()<fMinE)
+          continue;
         Float_t vals[17];
         vals[0]  = InputEvent()->GetRunNumber();
         vals[1]  = (((UInt_t)InputEvent()->GetOrbitNumber()  << 12) | (UInt_t)InputEvent()->GetBunchCrossNumber()); 
         if (vals[1]<1) 
           vals[1] = fNEvs;
-        vals[2]  = InputEvent()->GetCentrality()->GetCentralityPercentileUnchecked(fCentVar);
-        vals[3]  = clusterVec.Pt();
-        vals[4]  = clusterVec.E();
-        vals[5]  = GetMaxCellEnergy(clus);
-        vals[6]  = clus->GetNCells();
-        vals[7]  = clus->GetDistanceToBadChannel();
-        vals[8]  = clus->GetDispersion();
-        vals[9]  = clus->GetM20();
-        vals[10] = clus->GetM02();
-        vals[11] = clus->Chi2();
-        vals[12] = clus->GetEmcCpvDistance();
-        vals[13] = clusterEcc;
-        vals[14] = maxAxis;
-        vals[15] = clusterVec.Eta();
-        vals[16] = clusterVec.Phi();
+        AliESDHeader *h = dynamic_cast<AliESDHeader*>(InputEvent()->GetHeader());
+        if (h)
+          vals[2]  = h->GetL0TriggerInputs();
+        else {
+          AliAODHeader *h2 = dynamic_cast<AliAODHeader*>(InputEvent()->GetHeader());
+          if (h2)
+            vals[2]  = h2->GetL0TriggerInputs();
+          else 
+            vals[2] = 0;
+        }
+        vals[3]  = InputEvent()->GetCentrality()->GetCentralityPercentileUnchecked(fCentVar);
+        vals[4]  = clusterVec.Pt();
+        vals[5]  = clusterVec.Eta();
+        vals[6]  = clusterVec.Phi();
+        vals[7]  = clusterVec.E();
+        vals[8]  = GetMaxCellEnergy(clus);
+        vals[9]  = clus->GetNCells();
+        vals[10] = GetNCells(clus,0.100);
+        vals[11] = clus->GetDistanceToBadChannel();
+        vals[12] = clus->GetDispersion();
+        vals[13] = clus->GetM20();
+        vals[14] = clus->GetM02();
+        vals[15] = clusterEcc;
+        vals[16] = maxAxis;
         fNtuple->Fill(vals);
       }
     }
@@ -695,18 +709,18 @@ Double_t  AliAnalysisTaskEMCALPi0PbPb::GetMaxCellEnergy(AliVCluster *cluster)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEMCALPi0PbPb::GetSigma(AliVCluster *cluster, Double_t& sigmaMax, Double_t &sigmaMin)
+void AliAnalysisTaskEMCALPi0PbPb::GetSigma(AliVCluster *c, Double_t& sigmaMax, Double_t &sigmaMin)
 {
   // Calculate the (E) weighted variance along the longer (eigen) axis.
 
-  sigmaMax = 0;               // cluster variance along its longer axis
-  sigmaMin = 0;               // cluster variance along its shorter axis
-  Double_t Ec = cluster->E(); // cluster energy
-  Double_t Xc = 0 ;           // cluster first moment along X
-  Double_t Yc = 0 ;           // cluster first moment along Y
-  Double_t Sxx = 0 ;          // cluster second central moment along X (variance_X^2)
-  Double_t Sxy = 0 ;          // cluster second central moment along Y (variance_Y^2)
-  Double_t Syy = 0 ;          // cluster covariance^2
+  sigmaMax = 0;          // cluster variance along its longer axis
+  sigmaMin = 0;          // cluster variance along its shorter axis
+  Double_t Ec  = c->E(); // cluster energy
+  Double_t Xc  = 0 ;     // cluster first moment along X
+  Double_t Yc  = 0 ;     // cluster first moment along Y
+  Double_t Sxx = 0 ;     // cluster second central moment along X (variance_X^2)
+  Double_t Sxy = 0 ;     // cluster second central moment along Y (variance_Y^2)
+  Double_t Syy = 0 ;     // cluster covariance^2
 
   AliVCaloCells *cells = fEsdCells;
   if (!cells)
@@ -715,13 +729,13 @@ void AliAnalysisTaskEMCALPi0PbPb::GetSigma(AliVCluster *cluster, Double_t& sigma
   if (!cells)
     return;
 
-  Int_t ncells = cluster->GetNCells();
+  Int_t ncells = c->GetNCells();
   if (ncells==1)
     return;
 
   TVector3 pos;
   for(Int_t j=0; j<ncells; ++j) {
-    Int_t id = TMath::Abs(cluster->GetCellAbsId(j));
+    Int_t id = TMath::Abs(c->GetCellAbsId(j));
     fGeom->GetGlobal(id,pos);
     Double_t cellen = cells->GetCellAmplitude(id);
     Xc  += cellen*pos.X();
@@ -742,5 +756,29 @@ void AliAnalysisTaskEMCALPi0PbPb::GetSigma(AliVCluster *cluster, Double_t& sigma
   sigmaMax = TMath::Sqrt(sigmaMax); 
   sigmaMin = TMath::Abs(Sxx + Syy - TMath::Sqrt((Sxx-Syy)*(Sxx-Syy)+4.0*Sxy*Sxy))/2.0;
   sigmaMin = TMath::Sqrt(sigmaMin); 
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskEMCALPi0PbPb::GetNCells(AliVCluster *c, Double_t emin)
+{
+  // Calculate number of attached cells above emin.
+
+  Int_t n = 0;
+
+  AliVCaloCells *cells = fEsdCells;
+  if (!cells)
+    cells = fAodCells;
+
+  if (!cells)
+    return n;
+
+  Int_t ncells = c->GetNCells();
+  for(Int_t j=0; j<ncells; ++j) {
+    Int_t id = TMath::Abs(c->GetCellAbsId(j));
+    Double_t cellen = cells->GetCellAmplitude(id);
+    if (cellen>=emin)
+      ++n;
+  }
+  return n;
 }
 
