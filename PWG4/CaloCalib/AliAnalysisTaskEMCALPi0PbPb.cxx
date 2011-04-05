@@ -137,7 +137,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
     if (f) {
       f->SetCompressionLevel(2);
       fNtuple = new TNtuple(Form("nt%.0fto%.0f",fCentFrom,fCentTo),"nt",
-          "run:evt:l0:cent:pt:eta:phi:e:emax:n:n1:db:disp:mn:ms:ecc:sig:tkd:tke:tki:tkc:tkl");
+                            "run:evt:l0:cent:pt:eta:phi:e:emax:n:n1:db:disp:mn:ms:ecc:sig:tkdz:tkdr:tkiso:ceiso");
       fNtuple->SetDirectory(f);
       fNtuple->SetAutoFlush(-1024*1024*1024);
       fNtuple->SetAutoSave(-1024*1024*1024);
