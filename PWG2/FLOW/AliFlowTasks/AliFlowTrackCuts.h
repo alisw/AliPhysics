@@ -190,6 +190,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t GetAllowTOFmismatchFlag() const {return fAllowTOFmismatchFlag;}
   void SetRequireStrictTOFTPCagreement(Bool_t b=kTRUE) {fRequireStrictTOFTPCagreement=b;}
   Bool_t GetRequireStrictTOFTPCagreement() const {return fRequireStrictTOFTPCagreement;}
+  void SetRejectElectronsWithTPCpid(Bool_t b=kTRUE) {fCutRejectElectronsWithTPCpid=b;}
 
   //these should maybe be protected
   Bool_t PassesCuts(AliVParticle* track);
@@ -293,6 +294,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Double_t fParticleProbability; //desired prob for a particle type
   Bool_t fAllowTOFmismatchFlag; //allow TOFmismatch flag=1 in ESD
   Bool_t fRequireStrictTOFTPCagreement; //require stricter than TOFmismatch flag TOF-TPC agreement
+  Bool_t fCutRejectElectronsWithTPCpid; //reject electrons with TPC pid
 
   // part added by F. Noferini
   static const Int_t fgkPIDptBin = 20; // pT bins for priors
