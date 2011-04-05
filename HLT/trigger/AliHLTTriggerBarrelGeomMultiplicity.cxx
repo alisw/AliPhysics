@@ -219,6 +219,10 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoInit(int argc, const char** argv)
   // first configure the default
   int iResult=0;
 
+  // Matthias 05.04.2011 code audit
+  // looks like somebody has to commission this component
+  HLTWarning("this component is not tested and needs most likely a major revision!");
+
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
 
@@ -234,6 +238,8 @@ int AliHLTTriggerBarrelGeomMultiplicity::DoInit(int argc, const char** argv)
 int AliHLTTriggerBarrelGeomMultiplicity::DoDeinit()
  {
   // see header file for class documentation
+   if (fTriggerName) delete fTriggerName;
+   fTriggerName=NULL;
   return 0;
 }
 
@@ -393,10 +399,12 @@ int AliHLTTriggerBarrelGeomMultiplicity::ScanConfigurationArgument(int argc, con
 
   if (argument.CompareTo("-triggername")==0) 
     {
-      if (++i>=argc) return -EPROTO;
-      
-      fTriggerName = new char[128];
-      sprintf(fTriggerName, "%s", argv[i]);
+      if (++i>=argc || argv[i]==NULL) return -EPROTO;
+
+      int namelen=strlen(argv[i])+1;
+      fTriggerName = new char[namelen];
+      if (!fTriggerName) return -ENOMEM;
+      snprintf(fTriggerName, namelen, "%s", argv[i]);
       
       fOCDBEntry = fTriggerName;
 
