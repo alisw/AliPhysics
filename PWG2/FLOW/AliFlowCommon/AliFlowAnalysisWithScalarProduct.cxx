@@ -563,8 +563,8 @@ void AliFlowAnalysisWithScalarProduct::FillSP(AliFlowEventSimple* anEvent) {
 		    Int_t phiBin = 1+(Int_t)(TMath::Floor(dPhi*iNBinsPhiSub0/TMath::TwoPi()));
 		    dW = fPhiWeightsSub0->GetBinContent(phiBin); 
 		    dPhiCenter = fPhiWeightsSub0->GetBinCenter(phiBin);
-		    dQmX = (vQ.X() - dW*(pTrack->Weight())* TMath::Cos(fHarmonic*dPhiCenter) )/(dMq-1);
-		    dQmY = (vQ.Y() - dW*(pTrack->Weight())* TMath::Sin(fHarmonic*dPhiCenter) )/(dMq-1);
+		    dQmX = (vQ.X() - dW*(pTrack->Weight())* TMath::Cos(fHarmonic*dPhiCenter) )/(dMq-dW*pTrack->Weight());
+		    dQmY = (vQ.Y() - dW*(pTrack->Weight())* TMath::Sin(fHarmonic*dPhiCenter) )/(dMq-dW*pTrack->Weight());
 		    
 		    vQm.Set(dQmX,dQmY);
 		  }
@@ -574,8 +574,8 @@ void AliFlowAnalysisWithScalarProduct::FillSP(AliFlowEventSimple* anEvent) {
 		    Int_t phiBin = 1+(Int_t)(TMath::Floor(dPhi*iNBinsPhiSub1/TMath::TwoPi()));
 		    dW = fPhiWeightsSub1->GetBinContent(phiBin);
 		    dPhiCenter = fPhiWeightsSub1->GetBinCenter(phiBin);
-		    dQmX = (vQ.X() - dW*(pTrack->Weight())* TMath::Cos(fHarmonic*dPhiCenter) )/(dMq-1);
-		    dQmY = (vQ.Y() - dW*(pTrack->Weight())* TMath::Sin(fHarmonic*dPhiCenter) )/(dMq-1);
+		    dQmX = (vQ.X() - dW*(pTrack->Weight())* TMath::Cos(fHarmonic*dPhiCenter) )/(dMq-dW*pTrack->Weight());
+		    dQmY = (vQ.Y() - dW*(pTrack->Weight())* TMath::Sin(fHarmonic*dPhiCenter) )/(dMq-dW*pTrack->Weight());
 		    
 		    vQm.Set(dQmX,dQmY);
 		  }
@@ -587,16 +587,16 @@ void AliFlowAnalysisWithScalarProduct::FillSP(AliFlowEventSimple* anEvent) {
 		{
 		 if(!strcmp(fTotalQvector->Data(),"QaQb"))
 		 {
-		  dQmX = (vQ.X() - (pTrack->Weight())*dUX)/(dMq-1);
-		  dQmY = (vQ.Y() - (pTrack->Weight())*dUY)/(dMq-1);
-		  dWeightUQ = dMq-1;
+		  dQmX = (vQ.X() - (pTrack->Weight())*dUX)/(dMq-pTrack->Weight());
+		  dQmY = (vQ.Y() - (pTrack->Weight())*dUY)/(dMq-pTrack->Weight());
+		  dWeightUQ = dMq-pTrack->Weight();
 		  vQm.Set(dQmX,dQmY);
 		 } else if((!strcmp(fTotalQvector->Data(),"Qa") && pTrack->InSubevent(0)) ||
 		           (!strcmp(fTotalQvector->Data(),"Qb") && pTrack->InSubevent(1)))
 		   {
-		    dQmX = (vQ.X() - (pTrack->Weight())*dUX)/(dMq-1);
-		    dQmY = (vQ.Y() - (pTrack->Weight())*dUY)/(dMq-1);
-		    dWeightUQ = dMq-1;
+		    dQmX = (vQ.X() - (pTrack->Weight())*dUX)/(dMq-pTrack->Weight());
+		    dQmY = (vQ.Y() - (pTrack->Weight())*dUY)/(dMq-pTrack->Weight());
+		    dWeightUQ = dMq-pTrack->Weight();
 		    vQm.Set(dQmX,dQmY);
 		   } else if((!strcmp(fTotalQvector->Data(),"Qa") && pTrack->InSubevent(1)) ||
 		             (!strcmp(fTotalQvector->Data(),"Qb") && pTrack->InSubevent(0)))
