@@ -5,6 +5,7 @@
 // Abstract class for dNdPt analysis. All dNdPt components should derive from it.   
 // 
 // Author: J.Otwinowski 03/11/2008 
+// last change: 2011-04-04 by M.Knichel
 //------------------------------------------------------------------------------
 
 class AliESDEvent; 
@@ -46,6 +47,7 @@ public:
   //
   void SetEventCuts(AlidNdPtEventCuts* const cuts)              { fdNdPtEventCuts = cuts; }
   void SetAcceptanceCuts(AlidNdPtAcceptanceCuts* const cuts)    { fdNdPtAcceptanceCuts = cuts; }
+  void SetRecAcceptanceCuts(AlidNdPtAcceptanceCuts* const cuts) { fdNdPtRecAcceptanceCuts = cuts; }
   void SetTrackCuts(AliESDtrackCuts* const cuts)                { fEsdTrackCuts = cuts; }
   void SetUseMCInfo(const Bool_t info)                          { fUseMCInfo = info; }
   void SetAnalysisMode(const AlidNdPtHelper::AnalysisMode mode) { fAnalysisMode = mode; }
@@ -57,6 +59,7 @@ public:
 
   AlidNdPtEventCuts* GetEventCuts() const                       { return fdNdPtEventCuts; }
   AlidNdPtAcceptanceCuts* GetAcceptanceCuts() const             { return fdNdPtAcceptanceCuts; }
+  AlidNdPtAcceptanceCuts* GetRecAcceptanceCuts() const          { return fdNdPtRecAcceptanceCuts; }  
   AliESDtrackCuts* GetTrackCuts() const                         { return fEsdTrackCuts; }
   Bool_t IsUseMCInfo() const                                    { return fUseMCInfo; }
   AlidNdPtHelper::AnalysisMode GetAnalysisMode() const          { return fAnalysisMode; }
@@ -72,7 +75,8 @@ private:
   AlidNdPt& operator=(const AlidNdPt&); // not implemented
 
   AlidNdPtEventCuts      *fdNdPtEventCuts;      // event cuts
-  AlidNdPtAcceptanceCuts *fdNdPtAcceptanceCuts; // acceptance cuts
+  AlidNdPtAcceptanceCuts *fdNdPtAcceptanceCuts; // acceptance cuts  
+  AlidNdPtAcceptanceCuts *fdNdPtRecAcceptanceCuts; // additional recontruction acceptance cuts (not used for MC truth)
   AliESDtrackCuts *fEsdTrackCuts;               // esd track cuts
 
   Bool_t fUseMCInfo;                            // use MC information
@@ -84,7 +88,7 @@ private:
   AliPhysicsSelection* fPhysicsSelection; // physics trigger selection class
   AlidNdPtBackgroundCuts *fdNdPtBackgroundCuts; // background cuts (cosmics and splitted tracks)
 
-  ClassDef(AlidNdPt,1);
+  ClassDef(AlidNdPt,2);
 };
 
 #endif

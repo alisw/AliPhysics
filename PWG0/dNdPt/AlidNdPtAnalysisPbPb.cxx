@@ -25,7 +25,7 @@
 // - control histograms
 //
 // Author: J.Otwinowski 04/11/2008 
-// changed by M.L.Knichel 2011-03-08
+// last change: 2011-04-04 by M.Knichel
 //------------------------------------------------------------------------------
 
 #include "TH1.h"
@@ -111,7 +111,22 @@ ClassImp(AlidNdPtAnalysisPbPb)
   
   fTriggerAnalysis(0),
   
-  fCentralityEstimator(0)
+  fCentralityEstimator(0),
+  
+  fMultNbins(0),
+  fPtNbins(0),
+  fPtCorrNbins(0),
+  fEtaNbins(0),
+  fZvNbins(0),
+  fCentralityNbins(0),
+  fBinsMult(0),
+  fBinsPt(0),
+  fBinsPtCorr(0),
+  fBinsEta(0),
+  fBinsZv(0),
+  fBinsCentrality(0),
+  
+  fIsInit(kFALSE)
 {
   // default constructor
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
@@ -123,7 +138,8 @@ ClassImp(AlidNdPtAnalysisPbPb)
     fRecTrackHist2[i]=0;     
     fRecTrackMultHist1[i]=0;     
   }
-  Init();
+  //Init();
+  SetCentralityEstimator();
 }
 
 //_____________________________________________________________________________
@@ -181,7 +197,23 @@ AlidNdPtAnalysisPbPb::AlidNdPtAnalysisPbPb(Char_t* name, Char_t* title): AlidNdP
   
   fTriggerAnalysis(0),
   
-  fCentralityEstimator(0)
+  fCentralityEstimator(0),
+  
+  fMultNbins(0),
+  fPtNbins(0),
+  fPtCorrNbins(0),
+  fEtaNbins(0),
+  fZvNbins(0),
+  fCentralityNbins(0),
+  fBinsMult(0),
+  fBinsPt(0),
+  fBinsPtCorr(0),
+  fBinsEta(0),
+  fBinsZv(0),
+  fBinsCentrality(0),
+  
+  fIsInit(kFALSE)  
+  
 {
   //
   // constructor
@@ -196,7 +228,8 @@ AlidNdPtAnalysisPbPb::AlidNdPtAnalysisPbPb(Char_t* name, Char_t* title): AlidNdP
     fRecTrackMultHist1[i]=0; 
   }
 
-  Init();
+ // Init();
+ SetCentralityEstimator();
 }
 
 //_____________________________________________________________________________
@@ -253,38 +286,23 @@ AlidNdPtAnalysisPbPb::~AlidNdPtAnalysisPbPb() {
 }
 
 //_____________________________________________________________________________
-void AlidNdPtAnalysisPbPb::Init(){
-  
-  // init centraliy (default: VZERO mult)
-  fCentralityEstimator = "V0M";
+void AlidNdPtAnalysisPbPb::Init() {
+ 
+  Int_t multNbins = 47;  
+  Int_t ptNbinsTrackEventCorr = 37;  
+  Int_t ptNbins = 68;
+  Int_t etaNbins = 30;
+  Int_t zvNbins = 12;
+  Int_t centralityBins = 11;
 
-  //
-  // Init histograms
-  //
-
-  //const Int_t multNbins = 47;
-  const Int_t multNbins = 1;
-  //const Int_t ptNbinsTrackEventCorr = 37;
-  const Int_t ptNbinsTrackEventCorr = 68;
-  const Int_t ptNbins = 68;
-  const Int_t etaNbins = 30;
-  const Int_t zvNbins = 12;
-  const Int_t centralityBins = 3;
-/*
-  Double_t binsMult[multNbins+1] = {
+  Double_t binsMultDefault[48] = {
                    -0.5, 0.5 , 1.5 , 2.5 , 3.5 , 4.5 , 5.5 , 6.5 , 7.5 , 8.5,
                     9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5,
                     19.5, 20.5, 30.5, 40.5 , 50.5 , 60.5 , 70.5 , 80.5 , 90.5 , 100.5, 
 		    200.5, 300.5, 400.5, 500.5, 600.5, 700.5, 800.5, 900.5, 1000.5, 2000.5, 
 		    3000.5, 4000.5, 5000.5, 6000.5, 7000.5, 8000.5, 9000.5, 10000.5 }; // forPbPb
-*/
-  Double_t binsMult[multNbins+1] = {-0.5,  10000.5 }; // forPbPb
-
-
-
-  // Double_t binsPtTrackEventCorr[ptNbinsTrackEventCorr+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,3.0,4.0,20.0,50.0};
-
-  Double_t binsPtTrackEventCorr[ptNbinsTrackEventCorr+1] = {
+  Double_t binsPtTrackEventCorrDefault[38] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,3.0,4.0,20.0,50.0};
+  Double_t binsPtDefault[69] = {
         0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,
 	0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
 	1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
@@ -293,25 +311,29 @@ void AlidNdPtAnalysisPbPb::Init(){
 	11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0,
 	26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0 };
 
-  Double_t binsPt[ptNbins+1] = {
-        0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,
-	0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
-	1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
-	2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8,
-	4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0,
-	11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0,
-	26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0 };
-
-  Double_t binsEta[etaNbins+1] = {
+  Double_t binsEtaDefault[31] = {
         -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6,
 	-0.5, -0.4, -0.3, -0.2, -0.1,  0.0,  0.1,  0.2,  0.3,  0.4, 
 	 0.5,  0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4, 
 	 1.5};
 
-  Double_t binsZv[zvNbins+1] = {-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.};
+  Double_t binsZvDefault[13] = {-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.};
   
-  //Double_t binsCentrality[centralityBins+1] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.};
-  Double_t binsCentrality[centralityBins+1] = {0., 5., 70., 80.};
+  Double_t binsCentralityDefault[12] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.};  
+  
+  Double_t* binsMult = binsMultDefault;
+  Double_t* binsPtTrackEventCorr = binsPtTrackEventCorrDefault;
+  Double_t* binsPt = binsPtDefault;
+  Double_t* binsEta = binsEtaDefault;
+  Double_t* binsZv = binsZvDefault;
+  Double_t* binsCentrality = binsCentralityDefault;  
+
+  if (fMultNbins > 0) { multNbins = fMultNbins; binsMult = fBinsMult; }
+  if (fPtNbins > 0) { ptNbins  = fPtNbins; binsPt = fBinsPt; }
+  if (fPtCorrNbins > 0) { ptNbinsTrackEventCorr  = fPtCorrNbins; binsPtTrackEventCorr = fBinsPtCorr;  }
+  if (fEtaNbins > 0) { etaNbins  = fEtaNbins; binsEta = fBinsEta; }
+  if (fZvNbins > 0) { zvNbins  = fZvNbins; binsZv = fBinsZv; }
+  if (fCentralityNbins > 0) { centralityBins  = fCentralityNbins; binsCentrality = fBinsCentrality; }
 
   Int_t binsTrackEventCorrMatrix[4]={zvNbins,ptNbinsTrackEventCorr,etaNbins,centralityBins};
   Int_t binsTrackEvent[4]={zvNbins,ptNbins,etaNbins,centralityBins};
@@ -712,11 +734,16 @@ void AlidNdPtAnalysisPbPb::Init(){
   
   // init trigger analysis (for zdc cut)
   fTriggerAnalysis = new AliTriggerAnalysis;
+  
+  // set init flag
+  fIsInit = kTRUE;
 }
 
 //_____________________________________________________________________________
 void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *const mcEvent)
 {
+  //  init if not done already
+  if (!fIsInit) { Init(); }
   //
   // Process real and/or simulated events
   //
@@ -747,12 +774,14 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
   // get selection cuts
   AlidNdPtEventCuts *evtCuts = GetEventCuts(); 
   AlidNdPtAcceptanceCuts *accCuts = GetAcceptanceCuts(); 
+  AlidNdPtAcceptanceCuts *recCuts = GetRecAcceptanceCuts();   
   AliESDtrackCuts *esdTrackCuts = GetTrackCuts(); 
 
   if(!evtCuts || !accCuts  || !esdTrackCuts) {
     AliDebug(AliLog::kError, "cuts not available");
     return;
   }
+  if (0 == recCuts) { recCuts = accCuts;}
 
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
@@ -919,9 +948,8 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
       FillHistograms(track,stack,AlidNdPtHelper::kAllTracks,centralityF); 
       labelsAll[multAll] = TMath::Abs(track->GetLabel());
 
-      multAll++;
-
-      if(esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track)) {
+      multAll++;      
+      if(esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track) && recCuts->AcceptTrack(track)) {
 
          fRecTrackHist2[AlidNdPtHelper::kRecTracks]->Fill(values);
          FillHistograms(track,stack,AlidNdPtHelper::kRecTracks,centralityF); 
@@ -1281,6 +1309,9 @@ Long64_t AlidNdPtAnalysisPbPb::Merge(TCollection* const list)
 {
   // Merge list of objects (needed by PROOF)
 
+  //  init if not done already
+  if (!fIsInit) { Init(); }
+
   if (!list)
   return 0;
 
@@ -1371,6 +1402,10 @@ return count;
 //_____________________________________________________________________________
 void AlidNdPtAnalysisPbPb::Analyse() 
 {
+
+  //  init if not done already
+  if (!fIsInit) { Init(); }
+
   // Analyse histograms
   //
   TH1::AddDirectory(kFALSE);

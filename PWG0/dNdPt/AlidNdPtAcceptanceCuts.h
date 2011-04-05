@@ -5,6 +5,7 @@
 // Class to keep selection cuts for MC tracks. 
 // 
 // Author: J.Otwinowski 03/11/2008 
+// last change: 2011-04-04 by M.Knichel
 //------------------------------------------------------------------------------
 
 class TParticle;
@@ -20,9 +21,11 @@ public:
   virtual ~AlidNdPtAcceptanceCuts(); 
  
   // setters 
-  void SetEtaRange(const Float_t min=0., const Float_t max=1e99)  { fMinEta=min; fMaxEta=max; }
-  void SetPhiRange(const Float_t min=0., const Float_t max=1e99)  { fMinPhi=min; fMaxPhi=max;}
-  void SetPtRange(const Float_t min=0., const Float_t max=1e99)   { fMinPt=min;  fMaxPt=max;}
+  void SetEtaRange(const Float_t min=-1e99, const Float_t max=1e99)  { fMinEta=min; fMaxEta=max; }
+  void SetPhiRange(const Float_t min=-1e99, const Float_t max=1e99)  { fMinPhi=min; fMaxPhi=max;}
+  void SetPtRange(const Float_t min=-1e99, const Float_t max=1e99)   { fMinPt=min;  fMaxPt=max;}
+  void SetExcludeEtaPhiRange(const Float_t etaMin, const Float_t etaMax, const Float_t phiMin, const Float_t phiMax)
+  	{ fExcludeMinEta = etaMin; fExcludeMaxEta = etaMax; fExcludeMinPhi = phiMin; fExcludeMaxPhi = phiMax; fCheckRange=kTRUE; }
 
   void SetMaxDCAr(const Float_t max=1e99) { fMaxDCAr=max;}
   void SetMaxDCAz(const Float_t max=1e99) { fMaxDCAz=max;}
@@ -34,6 +37,12 @@ public:
   Float_t GetMaxPhi() const {return fMaxPhi;}
   Float_t GetMinPt() const {return fMinPt;}
   Float_t GetMaxPt() const {return fMaxPt;}
+  
+  Bool_t  GetCheckRange() const { return fCheckRange; }
+  Float_t GetExcludeMinEta() const { return fExcludeMinEta; }
+  Float_t GetExcludeMaxEta() const { return fExcludeMaxEta; }
+  Float_t GetExcludeMinPhi() const { return fExcludeMinPhi; }
+  Float_t GetExcludeMaxPhi() const { return fExcludeMaxPhi; }  
 
   Float_t GetMaxDCAr() const {return fMaxDCAr;}
   Float_t GetMaxDCAz() const {return fMaxDCAz;}
@@ -60,6 +69,12 @@ private:
   Float_t fMaxPhi; // max azimuthal angle (rad)
   Float_t fMinPt;  // min pt
   Float_t fMaxPt;  // max pt
+  
+  Float_t fExcludeMinEta;
+  Float_t fExcludeMaxEta;
+  Float_t fExcludeMinPhi;
+  Float_t fExcludeMaxPhi;
+  Bool_t  fCheckRange;
 
   // max DCAr and DCAz with respect
   // to nominal vertex position
@@ -69,7 +84,7 @@ private:
   AlidNdPtAcceptanceCuts(const AlidNdPtAcceptanceCuts&); // not implemented
   AlidNdPtAcceptanceCuts& operator=(const AlidNdPtAcceptanceCuts&); // not implemented
 
-  ClassDef(AlidNdPtAcceptanceCuts, 1)
+  ClassDef(AlidNdPtAcceptanceCuts, 2)
 };
 
 #endif // 
