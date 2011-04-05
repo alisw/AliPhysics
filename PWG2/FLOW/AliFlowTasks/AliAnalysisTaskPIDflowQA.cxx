@@ -51,7 +51,6 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA():
   fCuts(NULL),
   fEventCuts(NULL),
   fESDpid(NULL),
-  fMC(kFALSE),
   fUseDebugFile(kFALSE),
   fFile(NULL),
   fTPCsignal(NULL),
@@ -76,83 +75,42 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA():
   fTOFinvbetaPi(NULL),
   fTOFinvbetaK(NULL),
   fTOFinvbetaP(NULL),
-  fTOFbetaAfterElectronsCuts(NULL),
-  fTOFbetaAfterPionCuts(NULL),
-  fTOFbetaAfterKaonCuts(NULL),
-  fTOFbetaAfterProtonCuts(NULL),
-  fTPCsignalAfterPionCuts(NULL),
-  fTPCsignalAfterKaonCuts(NULL),
-  fTPCsignalAfterProtonCuts(NULL),
-  fTOFbetaAfterElectronsCuts1(NULL),
-  fTOFbetaAfterPionCuts1(NULL),
-  fTOFbetaAfterKaonCuts1(NULL),
-  fTOFbetaAfterProtonCuts1(NULL),
-  fTPCsignalAfterPionCuts1(NULL),
-  fTPCsignalAfterKaonCuts1(NULL),
-  fTPCsignalAfterProtonCuts1(NULL),
-  fTOFbetaEafter(NULL),
-  fTOFbetaPiafter(NULL),
-  fTOFbetaKafter(NULL),
-  fTOFbetaPafter(NULL),
-  fTPCsignalPiafter(NULL),
-  fTPCsignalKafter(NULL),
-  fTPCsignalPafter(NULL),
-  fTOFyieldSelEmcE(NULL),
-  fTOFyieldSelPimcE(NULL),
-  fTOFyieldSelKmcE(NULL),
-  fTOFyieldSelPmcE(NULL),
-  fTOFyieldSelEmcM(NULL),
-  fTOFyieldSelPimcM(NULL),
-  fTOFyieldSelKmcM(NULL),
-  fTOFyieldSelPmcM(NULL),
-  fTOFyieldSelEmcPi(NULL),
-  fTOFyieldSelPimcPi(NULL),
-  fTOFyieldSelKmcPi(NULL),
-  fTOFyieldSelPmcPi(NULL),
-  fTOFyieldSelEmcK(NULL),
-  fTOFyieldSelPimcK(NULL),
-  fTOFyieldSelKmcK(NULL),
-  fTOFyieldSelPmcK(NULL),
-  fTOFyieldSelEmcP(NULL),
-  fTOFyieldSelPimcP(NULL),
-  fTOFyieldSelKmcP(NULL),
-  fTOFyieldSelPmcP(NULL),
-  fTPCyieldSelEmcE(NULL),
-  fTPCyieldSelPimcE(NULL),
-  fTPCyieldSelKmcE(NULL),
-  fTPCyieldSelPmcE(NULL),
-  fTPCyieldSelEmcM(NULL),
-  fTPCyieldSelPimcM(NULL),
-  fTPCyieldSelKmcM(NULL),
-  fTPCyieldSelPmcM(NULL),
-  fTPCyieldSelEmcPi(NULL),
-  fTPCyieldSelPimcPi(NULL),
-  fTPCyieldSelKmcPi(NULL),
-  fTPCyieldSelPmcPi(NULL),
-  fTPCyieldSelEmcK(NULL),
-  fTPCyieldSelPimcK(NULL),
-  fTPCyieldSelKmcK(NULL),
-  fTPCyieldSelPmcK(NULL),
-  fTPCyieldSelEmcP(NULL),
-  fTPCyieldSelPimcP(NULL),
-  fTPCyieldSelKmcP(NULL),
-  fTPCyieldSelPmcP(NULL),
-  fTPCdedxAfterTOFpidPions(NULL),
-  fTPCdedxAfterTOFpidKaons(NULL),
-  fTPCdedxAfterTOFpidProtons(NULL),
+  fTOFrawtime(NULL),
+  fTOFrawtimeE(NULL),
+  fTOFrawtimePi(NULL),
+  fTOFrawtimeK(NULL),
+  fTOFrawtimeP(NULL),
+  fTOFrawbeta(NULL),
+  fTOFrawbetaE(NULL),
+  fTOFrawbetaPi(NULL),
+  fTOFrawbetaK(NULL),
+  fTOFrawbetaP(NULL),
+  fTOFrawinvbeta(NULL),
+  fTOFrawinvbetaE(NULL),
+  fTOFrawinvbetaPi(NULL),
+  fTOFrawinvbetaK(NULL),
+  fTOFrawinvbetaP(NULL),
   fPvsPt(NULL),
   fMeanPvsP(NULL),
   fTPCvsGlobalMult(NULL),
   fStandardGlobalCuts(NULL),
   fStandardTPCCuts(NULL),
-  fCutsTOFElectrons(NULL),
-  fCutsTOFPions(NULL),
-  fCutsTOFKaons(NULL),
-  fCutsTOFProtons(NULL),
-  fCutsTPCElectrons(NULL),
-  fCutsTPCPions(NULL),
-  fCutsTPCKaons(NULL),
-  fCutsTPCProtons(NULL),
+  fCutsTOFbetaElectrons(NULL),
+  fCutsTOFbetaPions(NULL),
+  fCutsTOFbetaKaons(NULL),
+  fCutsTOFbetaProtons(NULL),
+  fCutsTOFbetaSimpleElectrons(NULL),
+  fCutsTOFbetaSimplePions(NULL),
+  fCutsTOFbetaSimpleKaons(NULL),
+  fCutsTOFbetaSimpleProtons(NULL),
+  fCutsTPCdedxElectrons(NULL),
+  fCutsTPCdedxPions(NULL),
+  fCutsTPCdedxKaons(NULL),
+  fCutsTPCdedxProtons(NULL),
+  fCutsTPCpidElectrons(NULL),
+  fCutsTPCpidPions(NULL),
+  fCutsTPCpidKaons(NULL),
+  fCutsTPCpidProtons(NULL),
   fOutputList(NULL)
 {
   //def ctor
@@ -165,7 +123,6 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA(const char *name):
   fCuts(NULL),
   fEventCuts(NULL),
   fESDpid(NULL),
-  fMC(kFALSE),
   fUseDebugFile(kFALSE),
   fFile(NULL),
   fTPCsignal(NULL),
@@ -190,83 +147,42 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA(const char *name):
   fTOFinvbetaPi(NULL),
   fTOFinvbetaK(NULL),
   fTOFinvbetaP(NULL),
-  fTOFbetaAfterElectronsCuts(NULL),
-  fTOFbetaAfterPionCuts(NULL),
-  fTOFbetaAfterKaonCuts(NULL),
-  fTOFbetaAfterProtonCuts(NULL),
-  fTPCsignalAfterPionCuts(NULL),
-  fTPCsignalAfterKaonCuts(NULL),
-  fTPCsignalAfterProtonCuts(NULL),
-  fTOFbetaAfterElectronsCuts1(NULL),
-  fTOFbetaAfterPionCuts1(NULL),
-  fTOFbetaAfterKaonCuts1(NULL),
-  fTOFbetaAfterProtonCuts1(NULL),
-  fTPCsignalAfterPionCuts1(NULL),
-  fTPCsignalAfterKaonCuts1(NULL),
-  fTPCsignalAfterProtonCuts1(NULL),
-  fTOFbetaEafter(NULL),
-  fTOFbetaPiafter(NULL),
-  fTOFbetaKafter(NULL),
-  fTOFbetaPafter(NULL),
-  fTPCsignalPiafter(NULL),
-  fTPCsignalKafter(NULL),
-  fTPCsignalPafter(NULL),
-  fTOFyieldSelEmcE(NULL),
-  fTOFyieldSelPimcE(NULL),
-  fTOFyieldSelKmcE(NULL),
-  fTOFyieldSelPmcE(NULL),
-  fTOFyieldSelEmcM(NULL),
-  fTOFyieldSelPimcM(NULL),
-  fTOFyieldSelKmcM(NULL),
-  fTOFyieldSelPmcM(NULL),
-  fTOFyieldSelEmcPi(NULL),
-  fTOFyieldSelPimcPi(NULL),
-  fTOFyieldSelKmcPi(NULL),
-  fTOFyieldSelPmcPi(NULL),
-  fTOFyieldSelEmcK(NULL),
-  fTOFyieldSelPimcK(NULL),
-  fTOFyieldSelKmcK(NULL),
-  fTOFyieldSelPmcK(NULL),
-  fTOFyieldSelEmcP(NULL),
-  fTOFyieldSelPimcP(NULL),
-  fTOFyieldSelKmcP(NULL),
-  fTOFyieldSelPmcP(NULL),
-  fTPCyieldSelEmcE(NULL),
-  fTPCyieldSelPimcE(NULL),
-  fTPCyieldSelKmcE(NULL),
-  fTPCyieldSelPmcE(NULL),
-  fTPCyieldSelEmcM(NULL),
-  fTPCyieldSelPimcM(NULL),
-  fTPCyieldSelKmcM(NULL),
-  fTPCyieldSelPmcM(NULL),
-  fTPCyieldSelEmcPi(NULL),
-  fTPCyieldSelPimcPi(NULL),
-  fTPCyieldSelKmcPi(NULL),
-  fTPCyieldSelPmcPi(NULL),
-  fTPCyieldSelEmcK(NULL),
-  fTPCyieldSelPimcK(NULL),
-  fTPCyieldSelKmcK(NULL),
-  fTPCyieldSelPmcK(NULL),
-  fTPCyieldSelEmcP(NULL),
-  fTPCyieldSelPimcP(NULL),
-  fTPCyieldSelKmcP(NULL),
-  fTPCyieldSelPmcP(NULL),
-  fTPCdedxAfterTOFpidPions(NULL),
-  fTPCdedxAfterTOFpidKaons(NULL),
-  fTPCdedxAfterTOFpidProtons(NULL),
+  fTOFrawtime(NULL),
+  fTOFrawtimeE(NULL),
+  fTOFrawtimePi(NULL),
+  fTOFrawtimeK(NULL),
+  fTOFrawtimeP(NULL),
+  fTOFrawbeta(NULL),
+  fTOFrawbetaE(NULL),
+  fTOFrawbetaPi(NULL),
+  fTOFrawbetaK(NULL),
+  fTOFrawbetaP(NULL),
+  fTOFrawinvbeta(NULL),
+  fTOFrawinvbetaE(NULL),
+  fTOFrawinvbetaPi(NULL),
+  fTOFrawinvbetaK(NULL),
+  fTOFrawinvbetaP(NULL),
   fPvsPt(NULL),
   fMeanPvsP(NULL),
   fTPCvsGlobalMult(NULL),
   fStandardGlobalCuts(NULL),
   fStandardTPCCuts(NULL),
-  fCutsTOFElectrons(NULL),
-  fCutsTOFPions(NULL),
-  fCutsTOFKaons(NULL),
-  fCutsTOFProtons(NULL),
-  fCutsTPCElectrons(NULL),
-  fCutsTPCPions(NULL),
-  fCutsTPCKaons(NULL),
-  fCutsTPCProtons(NULL),
+  fCutsTOFbetaElectrons(NULL),
+  fCutsTOFbetaPions(NULL),
+  fCutsTOFbetaKaons(NULL),
+  fCutsTOFbetaProtons(NULL),
+  fCutsTOFbetaSimpleElectrons(NULL),
+  fCutsTOFbetaSimplePions(NULL),
+  fCutsTOFbetaSimpleKaons(NULL),
+  fCutsTOFbetaSimpleProtons(NULL),
+  fCutsTPCdedxElectrons(NULL),
+  fCutsTPCdedxPions(NULL),
+  fCutsTPCdedxKaons(NULL),
+  fCutsTPCdedxProtons(NULL),
+  fCutsTPCpidElectrons(NULL),
+  fCutsTPCpidPions(NULL),
+  fCutsTPCpidKaons(NULL),
+  fCutsTPCpidProtons(NULL),
   fOutputList(NULL)
 {
   //Constructor
@@ -334,60 +250,23 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
 
   fTPCsignal=new TH2F("fTPCsignal",";p [GeV/c];dEdx",kPBins,binsPDummy,500,0,500);
   fOutputList->Add(fTPCsignal);
-  fTPCdedxAfterTOFpidPions=new TH2F("fTPCsignalAfterTOFpions",";p [GeV/c];dEdx",kPBins,binsPDummy,500,0,500);
-  fOutputList->Add(fTPCdedxAfterTOFpidPions);
-  fTPCdedxAfterTOFpidKaons=new TH2F("fTPCsignalAfterTOFkaons",";p [GeV/c];dEdx",kPBins,binsPDummy,500,0,500);
-  fOutputList->Add(fTPCdedxAfterTOFpidKaons);
-  fTPCdedxAfterTOFpidProtons=new TH2F("fTPCsignalAfterTOFprotons",";p [GeV/c];dEdx",kPBins,binsPDummy,500,0,500);
-  fOutputList->Add(fTPCdedxAfterTOFpidProtons);
-  fTPCsignalAfterPionCuts=new TH2F("fTPCsignalAfterPionCuts",";p [GeV/c];dE/dx",kPBins,binsPDummy,500, 0., 500.);//
-  fTPCsignalAfterKaonCuts=new TH2F("fTPCsignalAfterKaonCuts",";p [GeV/c];dE/dx",kPBins,binsPDummy,500, 0., 500.);//
-  fTPCsignalAfterProtonCuts=new TH2F("fTPCsignalAfterProtonCuts",";p [GeV/c];dE/dx",kPBins,binsPDummy,500, 0., 500.);//
-  fOutputList->Add(fTPCsignalAfterPionCuts);
-  fOutputList->Add(fTPCsignalAfterKaonCuts);
-  fOutputList->Add(fTPCsignalAfterProtonCuts);
-  fTPCsignalAfterPionCuts1=new TH2F("fTPCsignalAfterPionCuts1",";p [GeV/c];dE/dx",kPBins,binsPDummy,500, 0., 500.);//
-  fTPCsignalAfterKaonCuts1=new TH2F("fTPCsignalAfterKaonCuts1",";p [GeV/c];dE/dx",kPBins,binsPDummy,500, 0., 500.);//
-  fTPCsignalAfterProtonCuts1=new TH2F("fTPCsignalAfterProtonCuts1",";p [GeV/c];dE/dx",kPBins,binsPDummy,500, 0., 500.);//
-  fOutputList->Add(fTPCsignalAfterPionCuts1);
-  fOutputList->Add(fTPCsignalAfterKaonCuts1);
-  fOutputList->Add(fTPCsignalAfterProtonCuts1);
-
   fTPCsignalPi=new TH2F("fTPCsignalPi",";p [GeV/c];signal",kPBins,binsPDummy,300,-2,2);//TPC PID signal as function of p for pi+
   fTPCsignalK=new TH2F("fTPCsignalK",";p [GeV/c];signal",kPBins,binsPDummy,300,-2,2);//TPC PID signal as function of p for K+
   fTPCsignalP=new TH2F("fTPCsignalP",";p [GeV/c];signal",kPBins,binsPDummy,300,-2,2);//TPC PID signal as function of p for p
   fOutputList->Add(fTPCsignalPi);
   fOutputList->Add(fTPCsignalK);
   fOutputList->Add(fTPCsignalP);
-  fTPCsignalPiafter=new TH2F("fTPCsignalPiafter",";p [GeV/c];(dE/dx-dE/dx_{#pi})/dE/dx_{#pi}",kPBins,binsPDummy,300, -2., 2.);//
-  fTPCsignalKafter=new TH2F("fTPCsignalKafter",";p [GeV/c];(dE/dx-dE/dx_{K})/dE/dx_{K}",kPBins,binsPDummy,300, -2., 2.);//
-  fTPCsignalPafter=new TH2F("fTPCsignalPafter",";p [GeV/c];(dE/dx-dE/dx_{p})/dE/dx_{p}",kPBins,binsPDummy,300, -2., 2.);//
-  fOutputList->Add(fTPCsignalPiafter);
-  fOutputList->Add(fTPCsignalKafter);
-  fOutputList->Add(fTPCsignalPafter);
 
-  if(fMC)
-  {
-    fTPCsignalPimc=new TH2F("fTPCsignalPionsMC",";p [GeV/c];signal",kPBins,binsPDummy,600,-2,2);//TPC PID signal as function of pt for pi+
-    fTPCsignalKmc=new TH2F("fTPCsignalKaonsMC",";p [GeV/c];signal",kPBins,binsPDummy,600,-2,2);//TPC PID signal as function of pt for K+
-    fTPCsignalPmc=new TH2F("fTPCsignalProtonsMC",";p [GeV/c];signal",kPBins,binsPDummy,600,-2,2);//TPC PID signal as function of pt for p
-    fOutputList->Add(fTPCsignalPimc);
-    fOutputList->Add(fTPCsignalKmc);
-    fOutputList->Add(fTPCsignalPmc);
-  }
-
-  fTOFtime=new TH2F("fTOFtime",";p[GeV/c];#time",kPBins,binsPDummy,1000, 12000, 80000);//
-  fOutputList->Add(fTOFtime);
   fTOFtime=new TH2F("fTOFtime",";p[GeV/c];#time",kPBins,binsPDummy,1000, 12000, 80000);//
   fOutputList->Add(fTOFtime);
   fTOFtimeE=new TH2F("fTOFtimeE",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,500, -8000, 8000);//
   fTOFtimePi=new TH2F("fTOFtimePi",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,500, -8000, 8000);//
   fTOFtimeK=new TH2F("fTOFtimeK",";p [GeV/c];#time-#time_{K}",kPBins,binsPDummy,500, -8000, 8000);//
   fTOFtimeP=new TH2F("fTOFtimeP",";p [GeV/c];#time-#time_{p}",kPBins,binsPDummy,500, -8000, 8000);//
-  //fOutputList->Add(fTOFtimeE);
-  //fOutputList->Add(fTOFtimePi);
-  //fOutputList->Add(fTOFtimeK);
-  //fOutputList->Add(fTOFtimeP);
+  fOutputList->Add(fTOFtimeE);
+  fOutputList->Add(fTOFtimePi);
+  fOutputList->Add(fTOFtimeK);
+  fOutputList->Add(fTOFtimeP);
 
   fTOFbeta=new TH2F("fTOFbeta",";p[GeV/c];#beta",kPBins,binsPDummy,1000, 0.4, 1.1);//
   fOutputList->Add(fTOFbeta);
@@ -411,115 +290,38 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fOutputList->Add(fTOFinvbetaK);
   fOutputList->Add(fTOFinvbetaP);
 
-  fTOFbetaAfterElectronsCuts=new TH2F("fTOFbetaAfterElectronsCuts",";p [GeV/c];#beta",kPBins,binsPDummy,1000, 0.4, 1.1);//
-  fTOFbetaAfterPionCuts=new TH2F("fTOFbetaAfterPionCuts",";p [GeV/c];#beta",kPBins,binsPDummy,1000, 0.4, 1.1);//
-  fTOFbetaAfterKaonCuts=new TH2F("fTOFbetaAfterKaonCuts",";p [GeV/c];#beta",kPBins,binsPDummy,1000, 0.4, 1.1);//
-  fTOFbetaAfterProtonCuts=new TH2F("fTOFbetaAfterProtonCuts",";p [GeV/c];#beta",kPBins,binsPDummy,1000, 0.4, 1.1);//
-  fOutputList->Add(fTOFbetaAfterElectronsCuts);
-  fOutputList->Add(fTOFbetaAfterPionCuts);
-  fOutputList->Add(fTOFbetaAfterKaonCuts);
-  fOutputList->Add(fTOFbetaAfterProtonCuts);
-  fTOFbetaAfterElectronsCuts1=new TH2F("fTOFbetaAfterElectronsCuts1",";p [GeV/c];#beta",kPBins,binsPDummy,1000, 0.4, 1.1);//
-  fTOFbetaAfterPionCuts1=new TH2F("fTOFbetaAfterPionCuts1",";p [GeV/c];#beta",kPBins,binsPDummy,1000, 0.4, 1.1);//
-  fTOFbetaAfterKaonCuts1=new TH2F("fTOFbetaAfterKaonCuts1",";p [GeV/c];#beta",kPBins,binsPDummy,1000, 0.4, 1.1);//
-  fTOFbetaAfterProtonCuts1=new TH2F("fTOFbetaAfterProtonCuts1",";p [GeV/c];#beta",kPBins,binsPDummy,1000, 0.4, 1.1);//
-  fOutputList->Add(fTOFbetaAfterElectronsCuts1);
-  fOutputList->Add(fTOFbetaAfterPionCuts1);
-  fOutputList->Add(fTOFbetaAfterKaonCuts1);
-  fOutputList->Add(fTOFbetaAfterProtonCuts1);
+  fTOFrawtime=new TH2F("fTOFrawtime",";p[GeV/c];#time",kPBins,binsPDummy,1000, 12000, 80000);//
+  fOutputList->Add(fTOFrawtime);
+  fTOFrawtimeE=new TH2F("fTOFrawtimeE",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,500, -8000, 8000);//
+  fTOFrawtimePi=new TH2F("fTOFrawtimePi",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,500, -8000, 8000);//
+  fTOFrawtimeK=new TH2F("fTOFrawtimeK",";p [GeV/c];#time-#time_{K}",kPBins,binsPDummy,500, -8000, 8000);//
+  fTOFrawtimeP=new TH2F("fTOFrawtimeP",";p [GeV/c];#time-#time_{p}",kPBins,binsPDummy,500, -8000, 8000);//
+  fOutputList->Add(fTOFrawtimeE);
+  fOutputList->Add(fTOFrawtimePi);
+  fOutputList->Add(fTOFrawtimeK);
+  fOutputList->Add(fTOFrawtimeP);
 
-  fTOFbetaEafter=new TH2F("fTOFbetaEafter",";p [GeV/c];#beta-#beta_{#pi}",kPBins,binsPDummy,500, -0.25, 0.25 );//
-  fTOFbetaPiafter=new TH2F("fTOFbetaPiafter",";p [GeV/c];#beta-#beta_{#pi}",kPBins,binsPDummy,500, -0.25, 0.25 );//
-  fTOFbetaKafter=new TH2F("fTOFbetaKafter",";p [GeV/c];#beta-#beta_{K}",kPBins,binsPDummy,500, -0.25, 0.25 );//
-  fTOFbetaPafter=new TH2F("fTOFbetaPafter",";p [GeV/c];#beta-#beta_{p}",kPBins,binsPDummy,500, -0.25, 0.25 );//
-  fOutputList->Add(fTOFbetaEafter);
-  fOutputList->Add(fTOFbetaPiafter);
-  fOutputList->Add(fTOFbetaKafter);
-  fOutputList->Add(fTOFbetaPafter);
+  fTOFrawbeta=new TH2F("fTOFrawbeta",";p[GeV/c];#beta",kPBins,binsPDummy,1000, 0.4, 1.1);//
+  fOutputList->Add(fTOFrawbeta);
+  fTOFrawbetaE=new TH2F("fTOFrawbetaE",";p [GeV/c];#beta-#beta_{#pi}",kPBins,binsPDummy,500, -0.25, 0.25);//
+  fTOFrawbetaPi=new TH2F("fTOFrawbetaPi",";p [GeV/c];#beta-#beta_{#pi}",kPBins,binsPDummy,500, -0.25, 0.25);//
+  fTOFrawbetaK=new TH2F("fTOFrawbetaK",";p [GeV/c];#beta-#beta_{K}",kPBins,binsPDummy,500, -0.25, 0.25);//
+  fTOFrawbetaP=new TH2F("fTOFrawbetaP",";p [GeV/c];#beta-#beta_{p}",kPBins,binsPDummy,500, -0.25, 0.25);//
+  fOutputList->Add(fTOFrawbetaE);
+  fOutputList->Add(fTOFrawbetaPi);
+  fOutputList->Add(fTOFrawbetaK);
+  fOutputList->Add(fTOFrawbetaP);
 
-  if (fMC)
-  {
-    fTOFyieldSelEmcE = new TH1F("fTOFyieldSelEmcE",";p [Gev/c];",kPBins,binsPDummy);
-    fTOFyieldSelPimcE = new TH1F("fTOFyieldSelPimcE",";p [Gev/c];",kPBins,binsPDummy);
-    fTOFyieldSelKmcE = new TH1F("fTOFyieldSelKmcE",";p [Gev/c];",kPBins,binsPDummy);
-    fTOFyieldSelPmcE = new TH1F("fTOFyieldSelPmcE",";p [Gev/c];",kPBins,binsPDummy);
-    fOutputList->Add(fTOFyieldSelEmcE);
-    fOutputList->Add(fTOFyieldSelPimcE);
-    fOutputList->Add(fTOFyieldSelKmcE);
-    fOutputList->Add(fTOFyieldSelPmcE);
-    fTOFyieldSelEmcM = new TH1F("fTOFyieldSelEmcM",";p [Gev/c];",kPBins,binsPDummy);
-    fTOFyieldSelPimcM = new TH1F("fTOFyieldSelPimcM",";p [Gev/c];",kPBins,binsPDummy);
-    fTOFyieldSelKmcM = new TH1F("fTOFyieldSelKmcM",";p [Gev/c];",kPBins,binsPDummy);
-    fTOFyieldSelPmcM = new TH1F("fTOFyieldSelPmcM",";p [Gev/c];",kPBins,binsPDummy);
-    fOutputList->Add(fTOFyieldSelEmcM);
-    fOutputList->Add(fTOFyieldSelPimcM);
-    fOutputList->Add(fTOFyieldSelKmcM);
-    fOutputList->Add(fTOFyieldSelPmcM);
-    fTOFyieldSelEmcPi = new TH1F("fTOFyieldSelEmcPi",";p [Gev/c];",kPBins,binsPDummy);
-    fTOFyieldSelPimcPi = new TH1F("fTOFyieldSelPimcPi",";p [Gev/c];",kPBins,binsPDummy);
-    fTOFyieldSelKmcPi = new TH1F("fTOFyieldSelKmcPi",";p [Gev/c];",kPBins,binsPDummy);
-    fTOFyieldSelPmcPi = new TH1F("fTOFyieldSelPmcPi",";p [Gev/c];",kPBins,binsPDummy);
-    fOutputList->Add(fTOFyieldSelEmcPi);
-    fOutputList->Add(fTOFyieldSelPimcPi);
-    fOutputList->Add(fTOFyieldSelKmcPi);
-    fOutputList->Add(fTOFyieldSelPmcPi);
-    fTOFyieldSelEmcK = new TH1F("fTOFyieldSelEmcK",";p [Gev/c];",kPBins,binsPDummy);
-    fTOFyieldSelPimcK = new TH1F("fTOFyieldSelPimcK",";p [Gev/c];",kPBins,binsPDummy);
-    fTOFyieldSelKmcK = new TH1F("fTOFyieldSelKmcK",";p [Gev/c];",kPBins,binsPDummy);
-    fTOFyieldSelPmcK = new TH1F("fTOFyieldSelPmcK",";p [Gev/c];",kPBins,binsPDummy);
-    fOutputList->Add(fTOFyieldSelEmcK);
-    fOutputList->Add(fTOFyieldSelPimcK);
-    fOutputList->Add(fTOFyieldSelKmcK);
-    fOutputList->Add(fTOFyieldSelPmcK);
-    fTOFyieldSelEmcP = new TH1F("fTOFyieldSelEmcP",";p [Gev/c];",kPBins,binsPDummy);
-    fTOFyieldSelPimcP = new TH1F("fTOFyieldSelPimcP",";p [Gev/c];",kPBins,binsPDummy);
-    fTOFyieldSelKmcP = new TH1F("fTOFyieldSelKmcP",";p [Gev/c];",kPBins,binsPDummy);
-    fTOFyieldSelPmcP = new TH1F("fTOFyieldSelPmcP",";p [Gev/c];",kPBins,binsPDummy);
-    fOutputList->Add(fTOFyieldSelEmcP);
-    fOutputList->Add(fTOFyieldSelPimcP);
-    fOutputList->Add(fTOFyieldSelKmcP);
-    fOutputList->Add(fTOFyieldSelPmcP);
-    fTPCyieldSelEmcE = new TH1F("fTPCyieldSelEmcE",";p [Gev/c];",kPBins,binsPDummy);
-    fTPCyieldSelPimcE = new TH1F("fTPCyieldSelPimcE",";p [Gev/c];",kPBins,binsPDummy);
-    fTPCyieldSelKmcE = new TH1F("fTPCyieldSelKmcE",";p [Gev/c];",kPBins,binsPDummy);
-    fTPCyieldSelPmcE = new TH1F("fTPCyieldSelPmcE",";p [Gev/c];",kPBins,binsPDummy);
-    fOutputList->Add(fTPCyieldSelEmcE);
-    fOutputList->Add(fTPCyieldSelPimcE);
-    fOutputList->Add(fTPCyieldSelKmcE);
-    fOutputList->Add(fTPCyieldSelPmcE);
-    fTPCyieldSelEmcM = new TH1F("fTPCyieldSelEmcM",";p [Gev/c];",kPBins,binsPDummy);
-    fTPCyieldSelPimcM = new TH1F("fTPCyieldSelPimcM",";p [Gev/c];",kPBins,binsPDummy);
-    fTPCyieldSelKmcM = new TH1F("fTPCyieldSelKmcM",";p [Gev/c];",kPBins,binsPDummy);
-    fTPCyieldSelPmcM = new TH1F("fTPCyieldSelPmcM",";p [Gev/c];",kPBins,binsPDummy);
-    fOutputList->Add(fTPCyieldSelEmcM);
-    fOutputList->Add(fTPCyieldSelPimcM);
-    fOutputList->Add(fTPCyieldSelKmcM);
-    fOutputList->Add(fTPCyieldSelPmcM);
-    fTPCyieldSelEmcPi = new TH1F("fTPCyieldSelEmcPi",";p [Gev/c];",kPBins,binsPDummy);
-    fTPCyieldSelPimcPi = new TH1F("fTPCyieldSelPimcPi",";p [Gev/c];",kPBins,binsPDummy);
-    fTPCyieldSelKmcPi = new TH1F("fTPCyieldSelKmcPi",";p [Gev/c];",kPBins,binsPDummy);
-    fTPCyieldSelPmcPi = new TH1F("fTPCyieldSelPmcPi",";p [Gev/c];",kPBins,binsPDummy);
-    fOutputList->Add(fTPCyieldSelEmcPi);
-    fOutputList->Add(fTPCyieldSelPimcPi);
-    fOutputList->Add(fTPCyieldSelKmcPi);
-    fOutputList->Add(fTPCyieldSelPmcPi);
-    fTPCyieldSelEmcK = new TH1F("fTPCyieldSelEmcK",";p [Gev/c];",kPBins,binsPDummy);
-    fTPCyieldSelPimcK = new TH1F("fTPCyieldSelPimcK",";p [Gev/c];",kPBins,binsPDummy);
-    fTPCyieldSelKmcK = new TH1F("fTPCyieldSelKmcK",";p [Gev/c];",kPBins,binsPDummy);
-    fTPCyieldSelPmcK = new TH1F("fTPCyieldSelPmcK",";p [Gev/c];",kPBins,binsPDummy);
-    fOutputList->Add(fTPCyieldSelEmcK);
-    fOutputList->Add(fTPCyieldSelPimcK);
-    fOutputList->Add(fTPCyieldSelKmcK);
-    fOutputList->Add(fTPCyieldSelPmcK);
-    fTPCyieldSelEmcP = new TH1F("fTPCyieldSelEmcP",";p [Gev/c];",kPBins,binsPDummy);
-    fTPCyieldSelPimcP = new TH1F("fTPCyieldSelPimcP",";p [Gev/c];",kPBins,binsPDummy);
-    fTPCyieldSelKmcP = new TH1F("fTPCyieldSelKmcP",";p [Gev/c];",kPBins,binsPDummy);
-    fTPCyieldSelPmcP = new TH1F("fTPCyieldSelPmcP",";p [Gev/c];",kPBins,binsPDummy);
-    fOutputList->Add(fTPCyieldSelEmcP);
-    fOutputList->Add(fTPCyieldSelPimcP);
-    fOutputList->Add(fTPCyieldSelKmcP);
-    fOutputList->Add(fTPCyieldSelPmcP);
-  }
+  fTOFrawinvbeta=new TH2F("fTOFrawinvbeta",";p[GeV/c];1/#beta",kPBins,binsPDummy,1000, 0.90, 2.5);//
+  fOutputList->Add(fTOFrawinvbeta);
+  fTOFrawinvbetaE=new TH2F("fTOFrawinvbetaE",";p [GeV/c];1/#beta-1/#beta_{#pi}",kPBins,binsPDummy,600, -0.3, 0.3);//
+  fTOFrawinvbetaPi=new TH2F("fTOFrawinvbetaPi",";p [GeV/c];1/#beta-1/#beta_{#pi}",kPBins,binsPDummy,600, -0.3, 0.3);//
+  fTOFrawinvbetaK=new TH2F("fTOFrawinvbetaK",";p [GeV/c];1/#beta-1/#beta_{K}",kPBins,binsPDummy,600, -0.3, 0.3);//
+  fTOFrawinvbetaP=new TH2F("fTOFrawinvbetaP",";p [GeV/c];1/#beta-1/#beta_{p}",kPBins,binsPDummy,600, -0.3, 0.3);//
+  fOutputList->Add(fTOFrawinvbetaE);
+  fOutputList->Add(fTOFrawinvbetaPi);
+  fOutputList->Add(fTOFrawinvbetaK);
+  fOutputList->Add(fTOFrawinvbetaP);
 
   fPvsPt=new TH2F("fPvsPt","p vs p_{t};p [GeV/c];p_{t} [GeV/c]",kPBins,binsPDummy,kPtBins,binsPtDummy);
   fOutputList->Add(fPvsPt);
@@ -533,41 +335,84 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fStandardGlobalCuts = AliFlowTrackCuts::GetStandardGlobalTrackCuts2010();
   fStandardTPCCuts = AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts2010();
 
-  fCutsTOFElectrons = new AliFlowTrackCuts("tof electron cuts");
-  fCutsTOFElectrons->SetPID(AliPID::kElectron, AliFlowTrackCuts::kTOFbeta);
-  fCutsTOFElectrons->SetQA();
-  fCutsTOFPions = new AliFlowTrackCuts("tof pion cuts");
-  fCutsTOFPions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTOFbeta);
-  fCutsTOFPions->SetQA();
-  fCutsTOFKaons = new AliFlowTrackCuts("tof kaon cuts");
-  fCutsTOFKaons->SetPID(AliPID::kKaon, AliFlowTrackCuts::kTOFbeta);
-  fCutsTOFKaons->SetQA();
-  fCutsTOFProtons = new AliFlowTrackCuts("tof proton cuts");
-  fCutsTOFProtons->SetPID(AliPID::kProton, AliFlowTrackCuts::kTOFbeta);
-  fCutsTOFProtons->SetQA();
-  fCutsTPCElectrons = new AliFlowTrackCuts("tpc electron cuts");
-  fCutsTPCElectrons->SetPID(AliPID::kElectron, AliFlowTrackCuts::kTPCpid);
-  fCutsTPCElectrons->SetQA();
-  fCutsTPCPions = new AliFlowTrackCuts("tpc pion cuts");
-  fCutsTPCPions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCpid);
-  fCutsTPCPions->SetQA();
-  fCutsTPCKaons = new AliFlowTrackCuts("tpc kaon cuts");
-  fCutsTPCKaons->SetPID(AliPID::kKaon, AliFlowTrackCuts::kTPCpid);
-  fCutsTPCKaons->SetQA();
-  fCutsTPCProtons = new AliFlowTrackCuts("tpc proton cuts");
-  fCutsTPCProtons->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCpid);
-  fCutsTPCProtons->SetQA();
+  fCutsTOFbetaElectrons = new AliFlowTrackCuts("TOFbeta e");
+  fCutsTOFbetaElectrons->SetPID(AliPID::kElectron, AliFlowTrackCuts::kTOFbeta);
+  fCutsTOFbetaElectrons->SetRequireStrictTOFTPCagreement();
+  fCutsTOFbetaElectrons->SetQA();
+  fCutsTOFbetaPions = new AliFlowTrackCuts("TOFbeta pi");
+  fCutsTOFbetaPions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTOFbeta);
+  fCutsTOFbetaPions->SetRequireStrictTOFTPCagreement();
+  fCutsTOFbetaPions->SetQA();
+  fCutsTOFbetaKaons = new AliFlowTrackCuts("TOFbeta K");
+  fCutsTOFbetaKaons->SetPID(AliPID::kKaon, AliFlowTrackCuts::kTOFbeta);
+  fCutsTOFbetaKaons->SetRequireStrictTOFTPCagreement();
+  fCutsTOFbetaKaons->SetQA();
+  fCutsTOFbetaProtons = new AliFlowTrackCuts("TOFbeta p");
+  fCutsTOFbetaProtons->SetPID(AliPID::kProton, AliFlowTrackCuts::kTOFbeta);
+  fCutsTOFbetaProtons->SetRequireStrictTOFTPCagreement();
+  fCutsTOFbetaProtons->SetQA();
+
+  fCutsTOFbetaSimpleElectrons = new AliFlowTrackCuts("TOFbetaSimple e");
+  fCutsTOFbetaSimpleElectrons->SetPID(AliPID::kElectron, AliFlowTrackCuts::kTOFbetaSimple);
+  fCutsTOFbetaSimpleElectrons->SetRequireStrictTOFTPCagreement();
+  fCutsTOFbetaSimpleElectrons->SetQA();
+  fCutsTOFbetaSimplePions = new AliFlowTrackCuts("TOFbetaSimple pi");
+  fCutsTOFbetaSimplePions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTOFbetaSimple);
+  fCutsTOFbetaSimplePions->SetRequireStrictTOFTPCagreement();
+  fCutsTOFbetaSimplePions->SetQA();
+  fCutsTOFbetaSimpleKaons = new AliFlowTrackCuts("TOFbetaSimple K");
+  fCutsTOFbetaSimpleKaons->SetPID(AliPID::kKaon, AliFlowTrackCuts::kTOFbetaSimple);
+  fCutsTOFbetaSimpleKaons->SetRequireStrictTOFTPCagreement();
+  fCutsTOFbetaSimpleKaons->SetQA();
+  fCutsTOFbetaSimpleProtons = new AliFlowTrackCuts("TOFbetaSimple p");
+  fCutsTOFbetaSimpleProtons->SetPID(AliPID::kProton, AliFlowTrackCuts::kTOFbetaSimple);
+  fCutsTOFbetaSimpleProtons->SetRequireStrictTOFTPCagreement();
+  fCutsTOFbetaSimpleProtons->SetQA();
+
+  fCutsTPCdedxElectrons = new AliFlowTrackCuts("TPCdedx e");
+  fCutsTPCdedxElectrons->SetPID(AliPID::kElectron, AliFlowTrackCuts::kTPCdedx);
+  fCutsTPCdedxElectrons->SetQA();
+  fCutsTPCdedxPions = new AliFlowTrackCuts("TPCdedx Pi");
+  fCutsTPCdedxPions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCdedx);
+  fCutsTPCdedxPions->SetQA();
+  fCutsTPCdedxKaons = new AliFlowTrackCuts("TPCdedx K");
+  fCutsTPCdedxKaons->SetPID(AliPID::kKaon, AliFlowTrackCuts::kTPCdedx);
+  fCutsTPCdedxKaons->SetQA();
+  fCutsTPCdedxProtons = new AliFlowTrackCuts("TPCdedx p");
+  fCutsTPCdedxProtons->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCdedx);
+  fCutsTPCdedxProtons->SetQA();
+
+  fCutsTPCpidElectrons = new AliFlowTrackCuts("TPCpid e");
+  fCutsTPCpidElectrons->SetPID(AliPID::kElectron, AliFlowTrackCuts::kTPCpid);
+  fCutsTPCpidElectrons->SetQA();
+  fCutsTPCpidPions = new AliFlowTrackCuts("TPCpid Pi");
+  fCutsTPCpidPions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCpid);
+  fCutsTPCpidPions->SetQA();
+  fCutsTPCpidKaons = new AliFlowTrackCuts("TPCpid K");
+  fCutsTPCpidKaons->SetPID(AliPID::kKaon, AliFlowTrackCuts::kTPCpid);
+  fCutsTPCpidKaons->SetQA();
+  fCutsTPCpidProtons = new AliFlowTrackCuts("TPCpid p");
+  fCutsTPCpidProtons->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCpid);
+  fCutsTPCpidProtons->SetQA();
 
   //fOutputList->Add(fESDpid);
 
-  fOutputList->Add(fCutsTPCElectrons->GetQA());
-  fOutputList->Add(fCutsTPCPions->GetQA());
-  fOutputList->Add(fCutsTPCKaons->GetQA());
-  fOutputList->Add(fCutsTPCProtons->GetQA());
-  fOutputList->Add(fCutsTOFElectrons->GetQA());
-  fOutputList->Add(fCutsTOFPions->GetQA());
-  fOutputList->Add(fCutsTOFKaons->GetQA());
-  fOutputList->Add(fCutsTOFProtons->GetQA());
+  fOutputList->Add(fCutsTPCdedxElectrons->GetQA());
+  fOutputList->Add(fCutsTPCdedxPions->GetQA());
+  fOutputList->Add(fCutsTPCdedxKaons->GetQA());
+  fOutputList->Add(fCutsTPCdedxProtons->GetQA());
+  fOutputList->Add(fCutsTPCpidElectrons->GetQA());
+  fOutputList->Add(fCutsTPCpidPions->GetQA());
+  fOutputList->Add(fCutsTPCpidKaons->GetQA());
+  fOutputList->Add(fCutsTPCpidProtons->GetQA());
+  fOutputList->Add(fCutsTOFbetaElectrons->GetQA());
+  fOutputList->Add(fCutsTOFbetaPions->GetQA());
+  fOutputList->Add(fCutsTOFbetaKaons->GetQA());
+  fOutputList->Add(fCutsTOFbetaProtons->GetQA());
+  fOutputList->Add(fCutsTOFbetaSimpleElectrons->GetQA());
+  fOutputList->Add(fCutsTOFbetaSimplePions->GetQA());
+  fOutputList->Add(fCutsTOFbetaSimpleKaons->GetQA());
+  fOutputList->Add(fCutsTOFbetaSimpleProtons->GetQA());
 
   if (fUseDebugFile) fFile = fopen("debug.txt","w");
 
@@ -596,29 +441,33 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
     return;
   }
 
-  AliStack* stack=0x0;
-  AliMCEvent* mcEvent=NULL;
-  if(fMC)
-  {
-    mcEvent = (AliMCEvent*) MCEvent();
-    Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
-    stack = mcEvent->Stack();
-  }
+  AliStack* stack=NULL;
+  AliMCEvent* mcEvent = MCEvent();
+  if (mcEvent) stack = mcEvent->Stack();
+  if (mcEvent) Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
 
   Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
   Int_t nTracks=fESD->GetNumberOfTracks();
 
   AliESDtrack *trackESD=0;
 
-  fCuts->SetEvent(fESD);
-  fCutsTPCElectrons->SetEvent(fESD);
-  fCutsTPCPions->SetEvent(fESD);
-  fCutsTPCKaons->SetEvent(fESD);
-  fCutsTPCProtons->SetEvent(fESD);
-  fCutsTOFElectrons->SetEvent(fESD);
-  fCutsTOFPions->SetEvent(fESD);
-  fCutsTOFKaons->SetEvent(fESD);
-  fCutsTOFProtons->SetEvent(fESD);
+  fCuts->SetEvent(fESD,mcEvent);
+  fCutsTPCdedxElectrons->SetEvent(fESD,mcEvent);
+  fCutsTPCdedxPions->SetEvent(fESD,mcEvent);
+  fCutsTPCdedxKaons->SetEvent(fESD,mcEvent);
+  fCutsTPCdedxProtons->SetEvent(fESD,mcEvent);
+  fCutsTPCpidElectrons->SetEvent(fESD,mcEvent);
+  fCutsTPCpidPions->SetEvent(fESD,mcEvent);
+  fCutsTPCpidKaons->SetEvent(fESD,mcEvent);
+  fCutsTPCpidProtons->SetEvent(fESD,mcEvent);
+  fCutsTOFbetaElectrons->SetEvent(fESD,mcEvent);
+  fCutsTOFbetaPions->SetEvent(fESD,mcEvent);
+  fCutsTOFbetaKaons->SetEvent(fESD,mcEvent);
+  fCutsTOFbetaProtons->SetEvent(fESD,mcEvent);
+  fCutsTOFbetaSimpleElectrons->SetEvent(fESD,mcEvent);
+  fCutsTOFbetaSimplePions->SetEvent(fESD,mcEvent);
+  fCutsTOFbetaSimpleKaons->SetEvent(fESD,mcEvent);
+  fCutsTOFbetaSimpleProtons->SetEvent(fESD,mcEvent);
 
   for(int tr1=0; tr1<nTracks; tr1++)
   {
@@ -631,10 +480,10 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
     if(!(fCuts->IsSelected(trackESD))) continue;
 
     Int_t label=-1;
-    if(fMC) label=trackESD->GetLabel();
+    if(mcEvent) label=trackESD->GetLabel();
 
     Int_t pdgcode=0;
-    if(stack&&fMC)
+    if(stack)
     {
       TParticle* particle2 = stack->Particle(TMath::Abs(label));
       pdgcode=particle2->GetPdgCode();
@@ -679,15 +528,13 @@ void  AliAnalysisTaskPIDflowQA::Terminate(Option_t *)
   //Terminate
   if(fCuts)
     fCuts->Dump();
-  if(fMC)
-    Printf("MC On\n");
 
   Printf("AliAnalysisTaskPIDflowQA: end of Terminate");
 }
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPIDflowQA::pidTPC(AliESDtrack* t, Int_t pdgcode)
+void AliAnalysisTaskPIDflowQA::pidTPC(AliESDtrack* t, Int_t)
 {
   //do TPC pid
   const AliExternalTrackParam* innerParam = t->GetInnerParam();
@@ -695,7 +542,6 @@ void AliAnalysisTaskPIDflowQA::pidTPC(AliESDtrack* t, Int_t pdgcode)
   Double_t pinTPCglobal=innerParam->GetP();
   Double_t tpcSignal =t->GetTPCsignal();
   Float_t p=innerParam->P();
-  Float_t pt=innerParam->Pt();
   Float_t sigPion     = fESDpid->GetTPCResponse().GetExpectedSignal(pinTPCglobal, AliPID::kPion);
   Float_t sigKaon     = fESDpid->GetTPCResponse().GetExpectedSignal(pinTPCglobal, AliPID::kKaon);
   Float_t sigProton   = fESDpid->GetTPCResponse().GetExpectedSignal(pinTPCglobal, AliPID::kProton);
@@ -708,104 +554,18 @@ void AliAnalysisTaskPIDflowQA::pidTPC(AliESDtrack* t, Int_t pdgcode)
   fTPCsignalK->Fill(p,(tpcSignal-sigKaon)/sigKaon);
   fTPCsignalP->Fill(p,(tpcSignal-sigProton)/sigProton);
 
-  if (fCutsTPCPions->IsSelected(t)) 
-  {
-    fTPCsignalAfterPionCuts->Fill(p,tpcSignal);
-    fTPCsignalPiafter->Fill(p,(tpcSignal-sigPion)/sigPion);
-    if(fMC)
-    {
-      if (TMath::Abs(pdgcode)==11)
-      {
-        fTPCyieldSelPimcE->Fill(pt);
-      }
-      if (TMath::Abs(pdgcode)==13)
-      {
-        fTPCyieldSelPimcM->Fill(pt);
-      }
-      if (TMath::Abs(pdgcode)==211)
-      {
-        fTPCyieldSelPimcPi->Fill(pt);
-      }
-      else if(TMath::Abs(pdgcode)==321)
-      {
-        fTPCyieldSelPimcK->Fill(pt);
-      }
-      else if (TMath::Abs(pdgcode)==2212)
-      {
-        fTPCyieldSelPimcP->Fill(pt);
-      }
-    }
-  }
-  if (fCutsTPCKaons->IsSelected(t)) 
-  {
-    fTPCsignalAfterKaonCuts->Fill(p,tpcSignal);
-    fTPCsignalKafter->Fill(p,(tpcSignal-sigKaon)/sigKaon);
-    if(fMC)
-    {
-      if (TMath::Abs(pdgcode)==11)
-      {
-        fTPCyieldSelKmcE->Fill(pt);
-      }
-      if (TMath::Abs(pdgcode)==13)
-      {
-        fTPCyieldSelKmcM->Fill(pt);
-      }
-      if (TMath::Abs(pdgcode)==211)
-      {
-        fTPCyieldSelKmcPi->Fill(pt);
-      }
-      else if(TMath::Abs(pdgcode)==321)
-      {
-        fTPCyieldSelKmcK->Fill(pt);
-      }
-      else if (TMath::Abs(pdgcode)==2212)
-      {
-        fTPCyieldSelKmcP->Fill(pt);
-      }
-    }
-  }
-  if (fCutsTPCProtons->IsSelected(t)) 
-  {
-    fTPCsignalAfterProtonCuts->Fill(p,tpcSignal);
-    fTPCsignalPafter->Fill(p,(tpcSignal-sigProton)/sigProton);
-    if(fMC)
-    {
-      if (TMath::Abs(pdgcode)==11)
-      {
-        fTPCyieldSelPmcE->Fill(pt);
-      }
-      if (TMath::Abs(pdgcode)==13)
-      {
-        fTPCyieldSelPmcM->Fill(pt);
-      }
-      if (TMath::Abs(pdgcode)==211)
-      {
-        fTPCyieldSelPmcPi->Fill(pt);
-      }
-      else if(TMath::Abs(pdgcode)==321)
-      {
-        fTPCyieldSelPmcK->Fill(pt);
-      }
-      else if (TMath::Abs(pdgcode)==2212)
-      {
-        fTPCyieldSelPmcP->Fill(pt);
-      }
-    }
-  }
-
-  if(fMC)
-  {
-    if(TMath::Abs(pdgcode)==211)
-      fTPCsignalPimc->Fill(p,(tpcSignal-sigPion)/sigPion);
-    else if(TMath::Abs(pdgcode)==321)
-      fTPCsignalKmc->Fill(p,(tpcSignal-sigKaon)/sigKaon);
-    else if (TMath::Abs(pdgcode)==2212)
-      fTPCsignalPmc->Fill(p,(tpcSignal-sigProton)/sigProton);
-  }
+  fCutsTPCdedxElectrons->IsSelected(t);
+  fCutsTPCdedxPions->IsSelected(t);
+  fCutsTPCdedxKaons->IsSelected(t);
+  fCutsTPCdedxProtons->IsSelected(t);
+  fCutsTPCpidElectrons->IsSelected(t);
+  fCutsTPCpidPions->IsSelected(t);
+  fCutsTPCpidKaons->IsSelected(t);
+  fCutsTPCpidProtons->IsSelected(t);
 }
 
 //______________________________________________________________________________
-void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
+void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t)
 {
   //do TOF pid
   Bool_t goodtrack = (track) &&
@@ -816,25 +576,14 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
   
   if (!goodtrack) return;
 
-  const AliExternalTrackParam* innerParam = track->GetInnerParam();
-  if (!innerParam) return;
-  Double_t pinTPCglobal=innerParam->GetP();
-  Double_t tpcSignal =track->GetTPCsignal();
   const Float_t c = 2.99792457999999984e-02;  
   Float_t p = track->GetP();
-  Float_t pt = track->Pt();
   Float_t l = track->GetIntegratedLength();  
   Float_t trackT0 = fESDpid->GetTOFResponse().GetStartTime(p);
+  //time
   Float_t timeTOF = track->GetTOFsignal()- trackT0; 
   Double_t integratedTimes[5] = {-1.0,-1.0,-1.0,-1.0,-1.0};
   track->GetIntegratedTimes(integratedTimes);
-
-  Double_t tpcpid[AliPID::kSPECIES];
-  track->GetTPCpid(tpcpid);
-
-  if (track->GetStatus() & AliESDtrack::kTOFmismatch) return;
-
-
   //beta
   Float_t beta = l/timeTOF/c;
   Float_t betaHypothesis[5] = {0.0,0.0,0.0,0.0,0.0};
@@ -844,7 +593,6 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
     betaHypothesis[i] = l/integratedTimes[i]/c;
     betadiff[i] = beta-betaHypothesis[i];
   }
-
   //inverse beta
   Float_t invbeta = 1/beta;
   Float_t invbetaHypothesis[5] = {0.0,0.0,0.0,0.0,0.0};
@@ -855,8 +603,38 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
     invbetadiff[i] = invbeta-invbetaHypothesis[i];
   }
 
+  Double_t tpcpid[AliPID::kSPECIES];
+  track->GetTPCpid(tpcpid);
+
+  //base hists
+  fTOFrawtime->Fill(p,timeTOF);
+  fTOFrawtimeE->Fill(p,timeTOF-integratedTimes[0]);
+  fTOFrawtimePi->Fill(p,timeTOF-integratedTimes[1]);
+  fTOFrawtimeK->Fill(p,timeTOF-integratedTimes[2]);
+  fTOFrawtimeP->Fill(p,timeTOF-integratedTimes[3]);
+
+  fTOFrawbeta->Fill(p,beta);
+  fTOFrawbetaE->Fill(p,betadiff[0]);
+  fTOFrawbetaPi->Fill(p,betadiff[2]);
+  fTOFrawbetaK->Fill(p,betadiff[3]);
+  fTOFrawbetaP->Fill(p,betadiff[4]);
+
+  fTOFrawinvbeta->Fill(p,invbeta);
+  fTOFrawinvbetaE->Fill(p,invbetadiff[0]);
+  fTOFrawinvbetaPi->Fill(p,invbetadiff[2]);
+  fTOFrawinvbetaK->Fill(p,invbetadiff[3]);
+  fTOFrawinvbetaP->Fill(p,invbetadiff[4]);
+
+  //cleanup with TPC
+  if (track->GetStatus() & AliESDtrack::kTOFmismatch) return;
+  if (!TPCTOFagree(track)) return;
+
   //responses
   fTOFtime->Fill(p,timeTOF);
+  fTOFtimeE->Fill(p,timeTOF-integratedTimes[0]);
+  fTOFtimePi->Fill(p,timeTOF-integratedTimes[1]);
+  fTOFtimeK->Fill(p,timeTOF-integratedTimes[2]);
+  fTOFtimeP->Fill(p,timeTOF-integratedTimes[3]);
 
   fTOFbeta->Fill(p,beta);
   fTOFbetaE->Fill(p,betadiff[0]);
@@ -870,126 +648,14 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
   fTOFinvbetaK->Fill(p,invbetadiff[3]);
   fTOFinvbetaP->Fill(p,invbetadiff[4]);
 
-  if (fCutsTOFElectrons->IsSelected(track)) 
-  {
-    fTOFbetaAfterElectronsCuts->Fill(p,beta);
-    fTOFbetaEafter->Fill(p,beta-betaHypothesis[0]);
-    if(fMC)
-    {
-      if (TMath::Abs(pdgcode)==11)
-      {
-        fTOFyieldSelEmcE->Fill(pt);
-      }
-      if (TMath::Abs(pdgcode)==13)
-      {
-        fTOFyieldSelEmcM->Fill(pt);
-      }
-      if (TMath::Abs(pdgcode)==211)
-      {
-        fTOFyieldSelEmcPi->Fill(pt);
-      }
-      else if(TMath::Abs(pdgcode)==321)
-      {
-        fTOFyieldSelEmcK->Fill(pt);
-      }
-      else if (TMath::Abs(pdgcode)==2212)
-      {
-        fTOFyieldSelEmcP->Fill(pt);
-      }
-    }
-    printf("electron: pt: %.1f | %.1f, %.1f, %.1f, %.1f, %.1f\n",pt,tpcpid[0],tpcpid[1],tpcpid[2],tpcpid[3],tpcpid[4]);
-  }
-  if (fCutsTOFPions->IsSelected(track)) 
-  {
-    fTPCdedxAfterTOFpidPions->Fill(pinTPCglobal,tpcSignal);
-    fTOFbetaAfterPionCuts->Fill(p,beta);
-    fTOFbetaPiafter->Fill(p,beta-betaHypothesis[2]);
-    if(fMC)
-    {
-      if (TMath::Abs(pdgcode)==11)
-      {
-        fTOFyieldSelPimcE->Fill(pt);
-      }
-      if (TMath::Abs(pdgcode)==13)
-      {
-        fTOFyieldSelPimcM->Fill(pt);
-      }
-      if (TMath::Abs(pdgcode)==211)
-      {
-        fTOFyieldSelPimcPi->Fill(pt);
-      }
-      else if(TMath::Abs(pdgcode)==321)
-      {
-        fTOFyieldSelPimcK->Fill(pt);
-      }
-      else if (TMath::Abs(pdgcode)==2212)
-      {
-        fTOFyieldSelPimcP->Fill(pt);
-      }
-    }
-    printf("pion    : pt: %.1f | %.1f, %.1f, %.1f, %.1f, %.1f\n",pt,tpcpid[0],tpcpid[1],tpcpid[2],tpcpid[3],tpcpid[4]);
-  }
-  if (fCutsTOFKaons->IsSelected(track)) 
-  {
-    fTPCdedxAfterTOFpidKaons->Fill(pinTPCglobal,tpcSignal);
-    fTOFbetaAfterKaonCuts->Fill(p,beta);
-    fTOFbetaKafter->Fill(p,beta-betaHypothesis[3]);
-    if(fMC)
-    {
-      if (TMath::Abs(pdgcode)==11)
-      {
-        fTOFyieldSelKmcE->Fill(pt);
-      }
-      if (TMath::Abs(pdgcode)==13)
-      {
-        fTOFyieldSelKmcM->Fill(pt);
-      }
-      if (TMath::Abs(pdgcode)==211)
-      {
-        fTOFyieldSelKmcPi->Fill(pt);
-      }
-      else if(TMath::Abs(pdgcode)==321)
-      {
-        fTOFyieldSelKmcK->Fill(pt);
-      }
-      else if (TMath::Abs(pdgcode)==2212)
-      {
-        fTOFyieldSelKmcP->Fill(pt);
-      }
-    }
-    printf("kaon    : pt: %.1f | %.1f, %.1f, %.1f, %.1f, %.1f\n",pt,tpcpid[0],tpcpid[1],tpcpid[2],tpcpid[3],tpcpid[4]);
-  }
-  if (fCutsTOFProtons->IsSelected(track)) 
-  {
-    fTPCdedxAfterTOFpidProtons->Fill(pinTPCglobal,tpcSignal);
-    fTOFbetaAfterProtonCuts->Fill(p,beta);
-    fTOFbetaPafter->Fill(p,beta-betaHypothesis[4]);
-    if(fMC)
-    {
-      if (TMath::Abs(pdgcode)==11)
-      {
-        fTOFyieldSelPmcE->Fill(pt);
-      }
-      if (TMath::Abs(pdgcode)==13)
-      {
-        fTOFyieldSelPmcM->Fill(pt);
-      }
-      if (TMath::Abs(pdgcode)==211)
-      {
-        fTOFyieldSelPmcPi->Fill(pt);
-      }
-      else if(TMath::Abs(pdgcode)==321)
-      {
-        fTOFyieldSelPmcK->Fill(pt);
-      }
-      else if (TMath::Abs(pdgcode)==2212)
-      {
-        fTOFyieldSelPmcP->Fill(pt);
-      }
-    }
-    printf("proton  : pt: %.1f | %.1f, %.1f, %.1f, %.1f, %.1f\n",pt,tpcpid[0],tpcpid[1],tpcpid[2],tpcpid[3],tpcpid[4]);
-  }
-
+  fCutsTOFbetaElectrons->IsSelected(track);
+  fCutsTOFbetaPions->IsSelected(track);
+  fCutsTOFbetaKaons->IsSelected(track);
+  fCutsTOFbetaProtons->IsSelected(track);
+  fCutsTOFbetaSimpleElectrons->IsSelected(track);
+  fCutsTOFbetaSimplePions->IsSelected(track);
+  fCutsTOFbetaSimpleKaons->IsSelected(track);
+  fCutsTOFbetaSimpleProtons->IsSelected(track);
 }
 
 //______________________________________________________________________________
@@ -997,5 +663,91 @@ Float_t AliAnalysisTaskPIDflowQA::Beta(Float_t m, Float_t p)
 {
   //get theoretical beta
   return TMath::Sqrt(1. / (1. + m * m / (p * p)));
+}
+
+//---------------------------------------------------------------//
+Bool_t AliAnalysisTaskPIDflowQA::TPCTOFagree(const AliESDtrack *track)
+{
+  Bool_t status = kFALSE;
+  
+  Float_t mass[5] = {5.10998909999999971e-04,1.05658000000000002e-01,1.39570000000000000e-01,4.93676999999999977e-01,9.38271999999999995e-01};
+  
+
+  Double_t exptimes[5];
+  track->GetIntegratedTimes(exptimes);
+  
+  Float_t dedx = track->GetTPCsignal();
+
+  Float_t p = track->P();
+  Float_t time = track->GetTOFsignal()- fESDpid->GetTOFResponse().GetStartTime(p);
+  Float_t tl = track->GetIntegratedLength();
+
+  Float_t betagammares =  fESDpid->GetTOFResponse().GetExpectedSigma(p, exptimes[4], mass[4]);
+
+  Float_t betagamma1 = tl/(time-5 *betagammares) * 33.3564095198152043;
+
+//  printf("betagamma1 = %f\n",betagamma1);
+
+  if(betagamma1 < 0.1) betagamma1 = 0.1;
+
+  if(betagamma1 < 0.99999) betagamma1 /= TMath::Sqrt(1-betagamma1*betagamma1);
+  else betagamma1 = 100;
+
+  Float_t betagamma2 = tl/(time+5 *betagammares) * 33.3564095198152043;
+//  printf("betagamma2 = %f\n",betagamma2);
+
+  if(betagamma2 < 0.1) betagamma2 = 0.1;
+
+  if(betagamma2 < 0.99999) betagamma2 /= TMath::Sqrt(1-betagamma2*betagamma2);
+  else betagamma2 = 100;
+
+
+  Double_t ptpc[3];
+  track->GetInnerPxPyPz(ptpc);
+  Float_t momtpc=TMath::Sqrt(ptpc[0]*ptpc[0] + ptpc[1]*ptpc[1] + ptpc[2]*ptpc[2]);
+ 
+  for(Int_t i=0;i < 5;i++){
+    Float_t resolutionTOF =  fESDpid->GetTOFResponse().GetExpectedSigma(p, exptimes[i], mass[i]);
+    if(TMath::Abs(exptimes[i] - time) < 5 * resolutionTOF){
+      Float_t dedxExp = 0;
+      if(i==0) dedxExp =  fESDpid->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kElectron);
+      else if(i==1) dedxExp =  fESDpid->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kMuon);
+      else if(i==2) dedxExp =  fESDpid->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kPion);
+      else if(i==3) dedxExp =  fESDpid->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kKaon);
+      else if(i==4) dedxExp =  fESDpid->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kProton);
+
+      Float_t resolutionTPC = 2;
+      if(i==0) resolutionTPC =   fESDpid->GetTPCResponse().GetExpectedSigma(momtpc,track->GetTPCsignalN(),AliPID::kElectron); 
+      else if(i==1) resolutionTPC =   fESDpid->GetTPCResponse().GetExpectedSigma(momtpc,track->GetTPCsignalN(),AliPID::kMuon);
+      else if(i==2) resolutionTPC =   fESDpid->GetTPCResponse().GetExpectedSigma(momtpc,track->GetTPCsignalN(),AliPID::kPion);
+      else if(i==3) resolutionTPC =   fESDpid->GetTPCResponse().GetExpectedSigma(momtpc,track->GetTPCsignalN(),AliPID::kKaon);
+      else if(i==4) resolutionTPC =   fESDpid->GetTPCResponse().GetExpectedSigma(momtpc,track->GetTPCsignalN(),AliPID::kProton);
+
+      if(TMath::Abs(dedx - dedxExp) < 3 * resolutionTPC){
+	status = kTRUE;
+      }
+    }
+  }
+
+  Float_t bb1 =  fESDpid->GetTPCResponse().Bethe(betagamma1);
+  Float_t bb2 =  fESDpid->GetTPCResponse().Bethe(betagamma2);
+  Float_t bbM =  fESDpid->GetTPCResponse().Bethe((betagamma1+betagamma2)*0.5);
+
+
+  //  status = kFALSE;
+  // for nuclei
+  Float_t resolutionTOFpr =   fESDpid->GetTOFResponse().GetExpectedSigma(p, exptimes[4], mass[4]);
+  Float_t resolutionTPCpr =   fESDpid->GetTPCResponse().GetExpectedSigma(momtpc,track->GetTPCsignalN(),AliPID::kProton);
+  if(TMath::Abs(dedx-bb1) < resolutionTPCpr*3 && exptimes[4] < time-7*resolutionTOFpr){
+     status = kTRUE;
+  }
+  else if(TMath::Abs(dedx-bb2) < resolutionTPCpr*3 && exptimes[4] < time-7*resolutionTOFpr){
+     status = kTRUE;
+  }
+  else if(TMath::Abs(dedx-bbM) < resolutionTPCpr*3 && exptimes[4] < time-7*resolutionTOFpr){
+     status = kTRUE;
+  }
+  
+  return status;
 }
  

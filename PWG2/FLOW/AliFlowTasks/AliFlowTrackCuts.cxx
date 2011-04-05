@@ -1509,6 +1509,12 @@ Float_t AliFlowTrackCuts::GetBeta(const AliESDtrack* track)
 //-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::PassesTOFbetaCut(const AliESDtrack* track )
 {
+  if (!fTOFpidCuts)
+  {
+    //printf("no TOFpidCuts\n");
+    return kFALSE;
+  }
+
   //check if passes PID cut using timing in TOF
   Bool_t goodtrack = (track->GetStatus() & AliESDtrack::kTOFpid) && 
                      (track->GetTOFsignal() > 12000) && 
@@ -1605,7 +1611,7 @@ Bool_t AliFlowTrackCuts::PassesTPCdedxCut(const AliESDtrack* track)
   //check if passes PID cut using dedx signal in the TPC
   if (!fTPCpidCuts)
   {
-    printf("no TPCpidCuts\n");
+    //printf("no TPCpidCuts\n");
     return kFALSE;
   }
 
