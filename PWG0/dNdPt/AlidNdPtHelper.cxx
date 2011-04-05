@@ -543,7 +543,7 @@ TObjArray* AlidNdPtHelper::GetAllChargedTracks(AliESDEvent *esdEvent, AnalysisMo
     {
       track = AlidNdPtHelper::GetTrackSPDvtx(esdEvent,iTrack,kFALSE);
     }
-    else if(analysisMode == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || analysisMode == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt ||           kITSStandAloneTrackSPDvtx || kITSStandAloneTPCTrackSPDvtx)
+    else if(analysisMode == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || analysisMode == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt || analysisMode == AlidNdPtHelper::kITSStandAloneTrackSPDvtx || analysisMode ==AlidNdPtHelper::kITSStandAloneTPCTrackSPDvtx)
     {
       track = AlidNdPtHelper::GetTrackTrackSPDvtx(esdEvent,iTrack,kFALSE);
     }

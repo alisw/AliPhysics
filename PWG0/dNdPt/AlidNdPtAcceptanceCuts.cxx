@@ -12,6 +12,7 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+// last change: 2011-04-04 by M.Knichel
 
 #include <iostream>
 #include <TList.h>
@@ -36,6 +37,11 @@ AliAnalysisCuts(name, title)
 , fMaxPhi(0)
 , fMinPt(0)
 , fMaxPt(0)
+, fExcludeMinEta(0)
+, fExcludeMaxEta(0)
+, fExcludeMinPhi(0)
+, fExcludeMaxPhi(0)
+, fCheckRange(kFALSE)
 , fMaxDCAr(0)
 , fMaxDCAz(0)
 {
@@ -78,6 +84,10 @@ Bool_t AlidNdPtAcceptanceCuts::AcceptTrack(AliESDtrack *track)
   if(phi > fMaxPhi) return kFALSE;
   if(pt < fMinPt) return kFALSE;
   if(pt > fMaxPt) return kFALSE;
+  
+  if (fCheckRange) {
+      if ((eta > fExcludeMinEta) && (eta < fExcludeMaxEta) && (phi > fExcludeMinPhi) && (phi < fExcludeMaxPhi)) { return kFALSE; }
+  }
 
 return kTRUE;
 }

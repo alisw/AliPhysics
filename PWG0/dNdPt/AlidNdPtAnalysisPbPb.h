@@ -7,7 +7,7 @@
 // AlidNdPtAnalysisPbPb class used for dNdPt analysis.in PbPb collision 
 // 
 // Author: J.Otwinowski 04/11/2008 
-// changed by M.L.Knichel 2011-03-08
+// last change: 2011-04-04 by M.Knichel
 //------------------------------------------------------------------------------
 
 class iostream;
@@ -60,6 +60,14 @@ public :
     
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
+  
+  // Set binning for Histograms (if not set default binning is used)
+  void SetBinsMult(Int_t nbins, Double_t* edges) { fMultNbins = nbins; fBinsMult = edges; }
+  void SetBinsPt(Int_t nbins, Double_t* edges) { fPtNbins = nbins; fBinsPt = edges; }
+  void SetBinsPtCorr(Int_t nbins, Double_t* edges) { fPtCorrNbins = nbins; fBinsPtCorr = edges; }
+  void SetBinsEta(Int_t nbins, Double_t* edges) { fEtaNbins = nbins; fBinsEta = edges; }
+  void SetBinsZv(Int_t nbins, Double_t* edges) { fZvNbins = nbins; fBinsZv = edges; }
+  void SetBinsCentrality(Int_t nbins, Double_t* edges) { fCentralityNbins = nbins; fBinsCentrality = edges; }
 
   // Fill histograms
   void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, AlidNdPtHelper::TrackObject trackObj, Float_t centralityF);
@@ -188,13 +196,29 @@ private:
   THnSparseF *fRecTrackHist3;  //-> nclust:chi2:Pt:Eta:Phi:centrality
 
   AliTriggerAnalysis *fTriggerAnalysis; //! trigger analysis object;
+  TString fCentralityEstimator;     // use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"
+  
+  //binning for THNsparse
+  Int_t	fMultNbins;
+  Int_t fPtNbins;
+  Int_t fPtCorrNbins;
+  Int_t fEtaNbins;
+  Int_t fZvNbins;
+  Int_t fCentralityNbins;
+  Double_t* fBinsMult;
+  Double_t* fBinsPt;
+  Double_t* fBinsPtCorr;
+  Double_t* fBinsEta;
+  Double_t* fBinsZv;
+  Double_t* fBinsCentrality;
+  
+  Bool_t fIsInit;
+  
 
   AlidNdPtAnalysisPbPb(const AlidNdPtAnalysisPbPb&); // not implemented
-  AlidNdPtAnalysisPbPb& operator=(const AlidNdPtAnalysisPbPb&); // not implemented
-  
-  TString fCentralityEstimator;     // use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"
+  AlidNdPtAnalysisPbPb& operator=(const AlidNdPtAnalysisPbPb&); // not implemented  
 
-  ClassDef(AlidNdPtAnalysisPbPb,5);
+  ClassDef(AlidNdPtAnalysisPbPb,6);
 };
 
 #endif

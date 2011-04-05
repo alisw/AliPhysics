@@ -25,6 +25,7 @@
 // - control histograms
 //
 // Author: J.Otwinowski 04/11/2008 
+// last change: 2011-04-04 by M.Knichel
 //------------------------------------------------------------------------------
 
 #include "TH1.h"
@@ -140,7 +141,21 @@ ClassImp(AlidNdPtAnalysis)
   fRecTrackHist(0),
 
   // Candle event histogram
-  fRecCandleEventMatrix(0)
+  fRecCandleEventMatrix(0),
+  
+  fMultNbins(0),
+  fPtNbins(0),
+  fPtCorrNbins(0),
+  fEtaNbins(0),
+  fZvNbins(0),
+  fBinsMult(0),
+  fBinsPt(0),
+  fBinsPtCorr(0),
+  fBinsEta(0),
+  fBinsZv(0),
+
+  fIsInit(kFALSE)  
+  
 {
   // default constructor
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
@@ -151,7 +166,7 @@ ClassImp(AlidNdPtAnalysis)
     fRecTrackHist1[i]=0;     
     fRecTrackMultHist1[i]=0;     
   }
-  Init();
+  //Init();
 }
 
 //_____________________________________________________________________________
@@ -239,7 +254,21 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
   fRecTrackHist(0),
 
   // Candle event histogram
-  fRecCandleEventMatrix(0)
+  fRecCandleEventMatrix(0),
+  
+  fMultNbins(0),
+  fPtNbins(0),
+  fPtCorrNbins(0),
+  fEtaNbins(0),
+  fZvNbins(0),
+  fBinsMult(0),
+  fBinsPt(0),
+  fBinsPtCorr(0),
+  fBinsEta(0),
+  fBinsZv(0),
+
+  fIsInit(kFALSE)  
+  
 {
   //
   // constructor
@@ -253,7 +282,7 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
     fRecTrackMultHist1[i]=0; 
   }
 
-  Init();
+  //Init();
 }
 
 //_____________________________________________________________________________
@@ -344,28 +373,36 @@ AlidNdPtAnalysis::~AlidNdPtAnalysis() {
 
 //_____________________________________________________________________________
 void AlidNdPtAnalysis::Init(){
-  //
-  // Init histograms
-  //
+  
+  Int_t multNbins = 27;
+  Int_t ptNbinsTrackEventCorr = 36;
+  Int_t ptNbins = 68;
+  Int_t etaNbins = 30;
+  Int_t zvNbins = 12;
 
-  const Int_t multNbins = 27;
-  const Int_t ptNbinsTrackEventCorr = 36;
-  const Int_t ptNbins = 68;
-  const Int_t etaNbins = 30;
-  const Int_t zvNbins = 12;
-
-  Double_t binsMult[multNbins+1] = {-0.5, 0.5 , 1.5 , 2.5 , 3.5 , 4.5 , 5.5 , 6.5 , 7.5 , 8.5,
+  Double_t binsMultDefault[28] = {-0.5, 0.5 , 1.5 , 2.5 , 3.5 , 4.5 , 5.5 , 6.5 , 7.5 , 8.5,
                                      9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5,
 				     19.5,20.5, 21.5, 22.5, 23.5, 24.5, 29.5, 149.5};
 
-  Double_t binsPtTrackEventCorr[ptNbinsTrackEventCorr+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,3.0,4.0,50.0};
+  Double_t binsPtTrackEventCorrDefault[37] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,3.0,4.0,50.0};
 
-  Double_t binsPt[ptNbins+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,18.0,20.0,22.0,24.0,26.0,28.0,30.0,32.0,34.0,36.0,40.0,45.0,50.0};
+  Double_t binsPtDefault[69] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,18.0,20.0,22.0,24.0,26.0,28.0,30.0,32.0,34.0,36.0,40.0,45.0,50.0};
 
-  Double_t binsEta[etaNbins+1] = {-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5};
+  Double_t binsEtaDefault[31] = {-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5};
 
-  Double_t binsZv[zvNbins+1] = {-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.};
-  //Double_t binsMult[multNbins+1] = {0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,12.,14.,16.,18.,20.,30.,40.,50.,70.,90.,110.,150.};
+  Double_t binsZvDefault[13] = {-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.};
+  
+  Double_t* binsMult = binsMultDefault;
+  Double_t* binsPtTrackEventCorr = binsPtTrackEventCorrDefault;
+  Double_t* binsPt = binsPtDefault;
+  Double_t* binsEta = binsEtaDefault;
+  Double_t* binsZv = binsZvDefault;  
+
+  if (fMultNbins > 0) { multNbins = fMultNbins; binsMult = fBinsMult; }
+  if (fPtNbins > 0) { ptNbins  = fPtNbins; binsPt = fBinsPt; }
+  if (fPtCorrNbins > 0) { ptNbinsTrackEventCorr  = fPtCorrNbins; binsPtTrackEventCorr = fBinsPtCorr;  }
+  if (fEtaNbins > 0) { etaNbins  = fEtaNbins; binsEta = fBinsEta; }
+  if (fZvNbins > 0) { zvNbins  = fZvNbins; binsZv = fBinsZv; }  
 
   //Int_t binsTrackMatrix[3]={zvNbins,ptNbins,etaNbins};
   Int_t binsTrackEventCorrMatrix[3]={zvNbins,ptNbinsTrackEventCorr,etaNbins};
@@ -955,11 +992,17 @@ void AlidNdPtAnalysis::Init(){
 
   // init folder
   fAnalysisFolder = CreateFolder("folderdNdPt","Analysis dNdPt Folder");
+  
+  // set init flag
+  fIsInit = kTRUE;
 }
 
 //_____________________________________________________________________________
 void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mcEvent)
 {
+  //  init if not done already
+  if (!fIsInit) { Init(); }
+  
   //
   // Process real and/or simulated events
   //
@@ -1876,6 +1919,9 @@ void AlidNdPtAnalysis::FillHistograms(AliStack *const stack, Int_t label, AlidNd
 //_____________________________________________________________________________
 Long64_t AlidNdPtAnalysis::Merge(TCollection* const list) 
 {
+  //  init if not done already
+  if (!fIsInit) { Init(); }
+  
   // Merge list of objects (needed by PROOF)
 
   if (!list)
@@ -2040,6 +2086,9 @@ return kFALSE;
 //_____________________________________________________________________________
 void AlidNdPtAnalysis::Analyse() 
 {
+  //  init if not done already
+  if (!fIsInit) { Init(); }
+  
   // Analyse histograms
   //
   TH1::AddDirectory(kFALSE);

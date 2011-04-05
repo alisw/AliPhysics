@@ -2,6 +2,11 @@
 
 // this macro creates the track and event cuts used in this analysis
 
+// last modified: 2011-03-28 
+// m.l.knichel@gsi.de
+// added cut modes 200,201: replacing TPCNcluster cut
+
+
 AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
 {
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
@@ -537,6 +542,8 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
 
     TString tag = "TPC-only tracking";
   }
+  
+  
 
   // TPC-only (no pt cut, no eta cut)
   if (cutMode == 24) 
@@ -561,6 +568,39 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
 
     TString tag = "TPC-only tracking";
   }
+  
+  // TPC-only (no pt cut, no eta cut) updated 2011
+  if (cutMode == 201) 
+  {
+    // beta cuts (still under investigation)
+    //minNClustersTPC = 50;
+    Float_t minNCrossedRowsTPC = 120; 
+    Float_t minRatioCrossedRowsOverFindableClustersTPC = 0.8; 
+    Float_t maxFractionSharedTPCCluster = 0.4;    
+    maxChi2PerClusterTPC = 4.0;
+    maxDCAtoVertexXY = 2.4; // cm
+    maxDCAtoVertexZ  = 3.2; // cm
+    minPt=0.0;
+    maxPt=1.e10;
+
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetRequireTPCRefit(kFALSE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    //esdTrackCuts->SetMinNClustersTPC(minNClustersTPC);
+    
+    esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
+    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(minRatioCrossedRowsOverFindableClustersTPC);
+    esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
+    esdTrackCuts->SetMaxFractionSharedTPCClusters(maxFractionSharedTPCCluster);
+    
+    esdTrackCuts->SetMaxDCAToVertexXY(maxDCAtoVertexXY);
+    esdTrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertexZ);
+    esdTrackCuts->SetDCAToVertex2D(kTRUE);
+    esdTrackCuts->SetPtRange(minPt,maxPt);
+
+    TString tag = "TPC-only tracking (2011)";
+  }  
+  
 
   //
   // systematic errors DCA cut studies
@@ -1149,6 +1189,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
   {
     Int_t    minclsTPC=70;
     Double_t maxchi2perTPCcl=4.;
+    Double_t maxdcazITSTPC=1.e9;
 
     //
     // TPC
@@ -1167,6 +1208,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     //
     esdTrackCuts->SetDCAToVertex2D(kFALSE);
     esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetMaxDCAToVertexZ(maxdcazITSTPC);
 
     // DCArphi parametrization (LHC10c pass2)
     // 7*(0.0026+0.0050/pt^1.01)
@@ -1210,6 +1252,46 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
 
     TString tag = "TPC+ITS combine tracking + DCAr(pt) (2010)";
+  }
+
+  // TPC+ITS combine tracking + DCAr(pt) (2011)
+  if (cutMode == 200) 
+  {
+    //Int_t    minclsTPC=70;
+    Float_t minNCrossedRowsTPC = 120; 
+    Float_t minRatioCrossedRowsOverFindableClustersTPC = 0.8; 
+    Float_t maxFractionSharedTPCCluster = 0.4;
+    Double_t maxchi2perTPCcl=4.;
+    Double_t maxdcazITSTPC=2.0;
+
+    //
+    // TPC
+    //
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    
+    //esdTrackCuts->SetMinNClustersTPC(minclsTPC);
+    esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
+    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(minRatioCrossedRowsOverFindableClustersTPC);
+    esdTrackCuts->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
+    esdTrackCuts->SetMaxFractionSharedTPCClusters(maxFractionSharedTPCCluster);
+    //
+    // ITS
+    //
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    //
+    // primary selection
+    //
+    esdTrackCuts->SetDCAToVertex2D(kFALSE);
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetMaxDCAToVertexZ(maxdcazITSTPC);
+
+    // DCArphi parametrization (LHC10c pass2)
+    // 7*(0.0026+0.0050/pt^1.01)
+    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+
+    TString tag = "TPC+ITS combine tracking + DCAr(pt) (2011)";
   }
 
   // TPC-tracks + SPD point + ITS refit + DCAr(pt) 4-sigma

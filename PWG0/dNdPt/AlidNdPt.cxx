@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+ // last change: 2011-04-04 by M.Knichel
 
 #include "AliESDtrackCuts.h"  
 #include "AlidNdPtEventCuts.h"
@@ -28,6 +29,7 @@ ClassImp(AlidNdPt)
 AlidNdPt::AlidNdPt(): TNamed()
 , fdNdPtEventCuts(0)
 , fdNdPtAcceptanceCuts(0)
+, fdNdPtRecAcceptanceCuts(0)
 , fEsdTrackCuts(0)
 , fUseMCInfo(kFALSE)
 , fAnalysisMode(AlidNdPtHelper::kTPC) 
@@ -44,6 +46,7 @@ AlidNdPt::AlidNdPt(): TNamed()
 AlidNdPt::AlidNdPt(Char_t* name, Char_t* title): TNamed(name,title)
 , fdNdPtEventCuts(0)
 , fdNdPtAcceptanceCuts(0)
+, fdNdPtRecAcceptanceCuts(0)
 , fEsdTrackCuts(0)
 , fUseMCInfo(kFALSE)
 , fAnalysisMode(AlidNdPtHelper::kTPC) 
@@ -59,6 +62,7 @@ AlidNdPt::AlidNdPt(Char_t* name, Char_t* title): TNamed(name,title)
 AlidNdPt::AlidNdPt(const AlidNdPt&): TNamed()
 , fdNdPtEventCuts(0)
 , fdNdPtAcceptanceCuts(0)
+, fdNdPtRecAcceptanceCuts(0)
 , fEsdTrackCuts(0)
 , fUseMCInfo(kFALSE)
 , fAnalysisMode(AlidNdPtHelper::kTPC) 
@@ -82,6 +86,7 @@ AlidNdPt::~AlidNdPt() {
   // destructor
   if(fdNdPtEventCuts) delete fdNdPtEventCuts; fdNdPtEventCuts=NULL; 
   if(fdNdPtAcceptanceCuts) delete fdNdPtAcceptanceCuts; fdNdPtAcceptanceCuts=NULL;
+  if(fdNdPtRecAcceptanceCuts) delete fdNdPtRecAcceptanceCuts; fdNdPtRecAcceptanceCuts=NULL;  
   if(fEsdTrackCuts) delete fEsdTrackCuts; fEsdTrackCuts=NULL;
   if(fPhysicsSelection) delete fPhysicsSelection; fPhysicsSelection=NULL;
   if(fdNdPtBackgroundCuts) delete fdNdPtBackgroundCuts; fdNdPtBackgroundCuts=NULL;
