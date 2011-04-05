@@ -29,7 +29,6 @@ using namespace std;
 
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 #include "AliITSgeomTGeo.h"
 #include "AliITSRecPoint.h"
 #include "AliHLTITSSpacePointData.h"
@@ -183,78 +182,6 @@ Int_t AliHLTITSClusterFinderComponent::DoInit( int argc, const char** argv ) {
   fBenchmark.Reset();
   fBenchmark.SetTimer(0,"total");
   fBenchmark.SetTimer(1,"reco");
-
-  /*
-  fStatTime = 0;
-  fStatTimeAll = 0;
-  fStatTimeC = 0;
-  fStatTimeAllC = 0;
-  fStatNEv = 0;
-  */
-  
-  Int_t runNo = GetRunNo();
-  AliCDBStorage* store = AliCDBManager::Instance()->GetDefaultStorage();
-  if (!store) {
-    return -ENOENT;
-  }
-
-  bool cdbOK = true;
-  //OCDB for SPD
-  if(store->GetLatestVersion("ITS/Calib/SPDNoisy", runNo)<0){
-    HLTError("SPDNoisy is not found in SPD/Calib");
-    cdbOK = false;
-  }
-  if(store->GetLatestVersion("ITS/Calib/SPDDead", runNo)<0){
-    HLTError("SPDDead is not found in SPD/Calib");
-    cdbOK = false;
-  }
-  if(store->GetLatestVersion("TRIGGER/SPD/PITConditions", runNo)<0){
-    HLTError("PITConditions is not found in TRIGGER/SPD");
-    cdbOK = false;
-  }
-  
-  //OCDB for SDD
-  if(store->GetLatestVersion("ITS/Calib/CalibSDD", runNo)<0){
-    HLTError("CalibSDD is not found in ITS/Calib");
-    cdbOK = false;
-  }
-  if(store->GetLatestVersion("ITS/Calib/RespSDD", runNo)<0){
-    HLTError("RespSDD is not found in ITS/Calib");
-    cdbOK = false;
-  }
-  if(store->GetLatestVersion("ITS/Calib/DriftSpeedSDD", runNo)<0){
-    HLTError("DriftSpeedSDD is not found in ITS/Calib");
-    cdbOK = false;
-  }
-  if(store->GetLatestVersion("ITS/Calib/DDLMapSDD", runNo)<0){
-    HLTError("DDLMapSDD is not found in ITS/Calib");
-    cdbOK = false;
-  }
-  if(store->GetLatestVersion("ITS/Calib/MapsTimeSDD", runNo)<0){
-    HLTError("MapsTimeSDD is not found in ITS/Calib");
-    cdbOK = false;
-  }
-
-  //OCDB for SSD
-  if(store->GetLatestVersion("ITS/Calib/NoiseSSD", runNo)<0){
-    HLTError("NoiseSSD is not found in ITS/Calib");
-    cdbOK = false;
-  }
-  if(store->GetLatestVersion("ITS/Calib/GainSSD", runNo)<0){
-    HLTError("GainSSD is not found in ITS/Calib");
-    cdbOK = false;
-  }
-  if(store->GetLatestVersion("ITS/Calib/BadChannelsSSD", runNo)<0){
-    HLTError("BadChannelsSSD is not found in ITS/Calib");
-    cdbOK = false;
-  }
-  
-  //General reconstruction
-  if(store->GetLatestVersion("GRP/CTP/Scalers", runNo)<0){
-    HLTError("Scalers is not found in GRP/CTP/");
-    cdbOK = false;
-  }
-  if(!cdbOK){return -EIO;}
 
   if(fModeSwitch==kClusterFinderSPD) {
     HLTDebug("using ClusterFinder for SPD");
