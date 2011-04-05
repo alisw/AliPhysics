@@ -424,7 +424,7 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
 
   if (!fGeomMatrixSet) {
     if (fLoadGeomMatrices) {
-      for(Int_t mod=0; mod < (geometry->GetEMCGeometry())->GetNumberOfSuperModules(); ++mod) {
+      for(Int_t mod=0; mod < geometry->GetNumberOfSuperModules(); ++mod) {
         if(fGeomMatrix[mod]){
           if(DebugLevel() > 2) 
             fGeomMatrix[mod]->Print();
