@@ -281,6 +281,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
  Double_t wPhi = 1.; // phi weight
  Double_t wPt  = 1.; // pt weight
  Double_t wEta = 1.; // eta weight
+ Double_t wTrack = 1.; // track weight
  Int_t nRP = anEvent->GetEventNSelTracksRP(); // number of RPs (i.e. number of reference particles)
  fReferenceMultiplicityEBE = anEvent->GetReferenceMultiplicity(); // reference multiplicity for current event
  Double_t ptEta[2] = {0.,0.}; // 0 = dPt, 1 = dEta
@@ -317,14 +318,16 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
     if(fUseEtaWeights && fEtaWeights && fEtaBinWidth) // determine eta weight for this particle: 
     {
      wEta = fEtaWeights->GetBinContent(1+(Int_t)(TMath::Floor((dEta-fEtaMin)/fEtaBinWidth))); 
-    }       
+    }      
+    // Access track weight:
+    wTrack = aftsTrack->Weight(); 
     // Calculate Re[Q_{m*n,k}] and Im[Q_{m*n,k}] for this event (m = 1,2,...,6, k = 0,1,...,8):
     for(Int_t m=0;m<6;m++) // to be improved - hardwired 6 
     {
      for(Int_t k=0;k<9;k++) // to be improved - hardwired 9
      {
-      (*fReQ)(m,k)+=pow(wPhi*wPt*wEta,k)*TMath::Cos((m+1)*n*dPhi); 
-      (*fImQ)(m,k)+=pow(wPhi*wPt*wEta,k)*TMath::Sin((m+1)*n*dPhi); 
+      (*fReQ)(m,k)+=pow(wPhi*wPt*wEta*wTrack,k)*TMath::Cos((m+1)*n*dPhi); 
+      (*fImQ)(m,k)+=pow(wPhi*wPt*wEta*wTrack,k)*TMath::Sin((m+1)*n*dPhi); 
      } 
     }
     // Calculate S_{p,k} for this event (Remark: final calculation of S_{p,k} follows after the loop over data bellow):
@@ -332,7 +335,7 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
     {
      for(Int_t k=0;k<9;k++)
      {     
-      (*fSpk)(p,k)+=pow(wPhi*wPt*wEta,k);
+      (*fSpk)(p,k)+=pow(wPhi*wPt*wEta*wTrack,k);
      }
     } 
     // Differential flow:
@@ -349,21 +352,21 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
        {
         for(Int_t pe=0;pe<2;pe++) // pt or eta
         {
-         fReRPQ1dEBE[0][pe][m][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta,k)*TMath::Cos((m+1.)*n*dPhi),1.);
-         fImRPQ1dEBE[0][pe][m][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta,k)*TMath::Sin((m+1.)*n*dPhi),1.);          
+         fReRPQ1dEBE[0][pe][m][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta*wTrack,k)*TMath::Cos((m+1.)*n*dPhi),1.);
+         fImRPQ1dEBE[0][pe][m][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta*wTrack,k)*TMath::Sin((m+1.)*n*dPhi),1.);          
          if(m==0) // s_{p,k} does not depend on index m
          {
-          fs1dEBE[0][pe][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta,k),1.);
+          fs1dEBE[0][pe][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta*wTrack,k),1.);
          } // end of if(m==0) // s_{p,k} does not depend on index m
         } // end of for(Int_t pe=0;pe<2;pe++) // pt or eta
        } // end of if(fCalculateDiffFlow) 
        if(fCalculate2DDiffFlow)
        {
-        fReRPQ2dEBE[0][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k)*TMath::Cos((m+1.)*n*dPhi),1.);
-        fImRPQ2dEBE[0][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k)*TMath::Sin((m+1.)*n*dPhi),1.);      
+        fReRPQ2dEBE[0][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta*wTrack,k)*TMath::Cos((m+1.)*n*dPhi),1.);
+        fImRPQ2dEBE[0][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta*wTrack,k)*TMath::Sin((m+1.)*n*dPhi),1.);      
         if(m==0) // s_{p,k} does not depend on index m
         {
-         fs2dEBE[0][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k),1.);
+         fs2dEBE[0][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta*wTrack,k),1.);
         } // end of if(m==0) // s_{p,k} does not depend on index m
        } // end of if(fCalculate2DDiffFlow)
       } // end of for(Int_t m=0;m<4;m++) // to be improved - hardwired 4
@@ -380,21 +383,21 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
         {
          for(Int_t pe=0;pe<2;pe++) // pt or eta
          {
-          fReRPQ1dEBE[2][pe][m][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta,k)*TMath::Cos((m+1.)*n*dPhi),1.);
-          fImRPQ1dEBE[2][pe][m][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta,k)*TMath::Sin((m+1.)*n*dPhi),1.);          
+          fReRPQ1dEBE[2][pe][m][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta*wTrack,k)*TMath::Cos((m+1.)*n*dPhi),1.);
+          fImRPQ1dEBE[2][pe][m][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta*wTrack,k)*TMath::Sin((m+1.)*n*dPhi),1.);          
           if(m==0) // s_{p,k} does not depend on index m
           {
-           fs1dEBE[2][pe][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta,k),1.);
+           fs1dEBE[2][pe][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta*wTrack,k),1.);
           } // end of if(m==0) // s_{p,k} does not depend on index m
          } // end of for(Int_t pe=0;pe<2;pe++) // pt or eta
         } // end of if(fCalculateDiffFlow) 
         if(fCalculate2DDiffFlow)
         {
-         fReRPQ2dEBE[2][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k)*TMath::Cos((m+1.)*n*dPhi),1.);
-         fImRPQ2dEBE[2][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k)*TMath::Sin((m+1.)*n*dPhi),1.);      
+         fReRPQ2dEBE[2][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta*wTrack,k)*TMath::Cos((m+1.)*n*dPhi),1.);
+         fImRPQ2dEBE[2][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta*wTrack,k)*TMath::Sin((m+1.)*n*dPhi),1.);      
          if(m==0) // s_{p,k} does not depend on index m
          {
-          fs2dEBE[2][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k),1.);
+          fs2dEBE[2][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta*wTrack,k),1.);
          } // end of if(m==0) // s_{p,k} does not depend on index m
         } // end of if(fCalculate2DDiffFlow)
        } // end of for(Int_t m=0;m<4;m++) // to be improved - hardwired 4
@@ -407,6 +410,27 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
     dPhi = aftsTrack->Phi();
     dPt  = aftsTrack->Pt();
     dEta = aftsTrack->Eta();
+    wPhi = 1.;
+    wPt  = 1.;
+    wEta = 1.;
+    wTrack = 1.;
+    if(fUsePhiWeights && fPhiWeights && fnBinsPhi && aftsTrack->InRPSelection()) // determine phi weight for POI && RP particle:
+    {
+     wPhi = fPhiWeights->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*fnBinsPhi/TMath::TwoPi())));
+    }
+    if(fUsePtWeights && fPtWeights && fnBinsPt && aftsTrack->InRPSelection()) // determine pt weight for POI && RP particle:
+    {
+     wPt = fPtWeights->GetBinContent(1+(Int_t)(TMath::Floor((dPt-fPtMin)/fPtBinWidth))); 
+    }              
+    if(fUseEtaWeights && fEtaWeights && fEtaBinWidth && aftsTrack->InRPSelection()) // determine eta weight for POI && RP particle: 
+    {
+     wEta = fEtaWeights->GetBinContent(1+(Int_t)(TMath::Floor((dEta-fEtaMin)/fEtaBinWidth))); 
+    }      
+    // Access track weight for POI && RP particle:
+    if(aftsTrack->InRPSelection())
+    {
+     wTrack = aftsTrack->Weight(); 
+    }
     ptEta[0] = dPt;
     ptEta[1] = dEta;
     // Calculate p_{m*n,k} ('p-vector' for POIs): 
@@ -418,21 +442,21 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
       {
        for(Int_t pe=0;pe<2;pe++) // pt or eta
        {
-        fReRPQ1dEBE[1][pe][m][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta,k)*TMath::Cos((m+1.)*n*dPhi),1.);
-        fImRPQ1dEBE[1][pe][m][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta,k)*TMath::Sin((m+1.)*n*dPhi),1.);          
+        fReRPQ1dEBE[1][pe][m][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta*wTrack,k)*TMath::Cos((m+1.)*n*dPhi),1.);
+        fImRPQ1dEBE[1][pe][m][k]->Fill(ptEta[pe],pow(wPhi*wPt*wEta*wTrack,k)*TMath::Sin((m+1.)*n*dPhi),1.);          
        } // end of for(Int_t pe=0;pe<2;pe++) // pt or eta
       } // end of if(fCalculateDiffFlow) 
       if(fCalculate2DDiffFlow)
       {
-       fReRPQ2dEBE[1][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k)*TMath::Cos((m+1.)*n*dPhi),1.);
-       fImRPQ2dEBE[1][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta,k)*TMath::Sin((m+1.)*n*dPhi),1.);      
+       fReRPQ2dEBE[1][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta*wTrack,k)*TMath::Cos((m+1.)*n*dPhi),1.);
+       fImRPQ2dEBE[1][m][k]->Fill(dPt,dEta,pow(wPhi*wPt*wEta*wTrack,k)*TMath::Sin((m+1.)*n*dPhi),1.);      
       } // end of if(fCalculate2DDiffFlow)
      } // end of for(Int_t m=0;m<4;m++) // to be improved - hardwired 4
     } // end of for(Int_t k=0;k<9;k++) // to be improved - hardwired 9    
    } // end of if(pTrack->InPOISelection())    
   } else // to if(aftsTrack)
     {
-     printf(" WARNING (QC): No particle (i.e. aftsTrack is a NULL pointer in AFAWQC::Make())!!!!\n\n");
+     printf("\n WARNING (QC): No particle (i.e. aftsTrack is a NULL pointer in AFAWQC::Make())!!!!\n\n");
     }
  } // end of for(Int_t i=0;i<nPrim;i++) 
 
