@@ -121,7 +121,8 @@ AliHLTEMCALMapper::InitDDLSpecificationMapping()
 const char* 
 AliHLTEMCALMapper::DDL2RcuMapFileName(const int ddlIndex) const //0=4608, 1=4607 etc...
 {
-  static char rname[256];
+  const int rnamelen=256;
+  static char rname[rnamelen];
   char tmpSide;
   
   if ( ddlIndex%NRCUSPERSECTOR <2)
@@ -133,7 +134,7 @@ AliHLTEMCALMapper::DDL2RcuMapFileName(const int ddlIndex) const //0=4608, 1=4607
       tmpSide  = 'C';
     }
   int tmprcuindex = ddlIndex%2;
-  snprintf(rname, FILEPATHMAXLENGTH, "RCU%d%c.data",  tmprcuindex,  tmpSide );
+  snprintf(rname, rnamelen, "RCU%d%c.data",  tmprcuindex,  tmpSide );
   //sprintf(rname,"RCU%d%c.data", ddlIndex/NRCUSPERSECTOR, tmpSide );
   return rname;
 }
