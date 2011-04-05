@@ -869,17 +869,18 @@ void AliRDHFCuts::CleanOwnPrimaryVtx(AliAODRecoDecayHF *d,
   // Clean-up own primary vertex if needed
   //
 
-  if(fRemoveDaughtersFromPrimary) {
+  if(fRemoveDaughtersFromPrimary || fUseMCVertex) {
     d->UnsetOwnPrimaryVtx();
     if(origownvtx) {
       d->SetOwnPrimaryVtx(origownvtx);
-      delete origownvtx;
+      delete origownvtx; origownvtx=NULL;
     }
     d->RecalculateImpPars(d->GetPrimaryVtx(),aod);
+  } else {
+    if(origownvtx) {
+      delete origownvtx; origownvtx=NULL;
+    }
   }
-
-  delete origownvtx;
-
   return;
 }
 
