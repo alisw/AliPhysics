@@ -5,6 +5,7 @@
 // AlidNdPtAnalysis class used for dNdPt analysis. 
 // 
 // Author: J.Otwinowski 04/11/2008 
+// last change: 2011-04-04 by M.Knichel
 //------------------------------------------------------------------------------
 
 class iostream;
@@ -61,6 +62,14 @@ public :
     
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
+
+  // Set binning for Histograms (if not set default binning is used)
+  void SetBinsMult(Int_t nbins, Double_t* edges) { fMultNbins = nbins; fBinsMult = edges; }
+  void SetBinsPt(Int_t nbins, Double_t* edges) { fPtNbins = nbins; fBinsPt = edges; }
+  void SetBinsPtCorr(Int_t nbins, Double_t* edges) { fPtCorrNbins = nbins; fBinsPtCorr = edges; }
+  void SetBinsEta(Int_t nbins, Double_t* edges) { fEtaNbins = nbins; fBinsEta = edges; }
+  void SetBinsZv(Int_t nbins, Double_t* edges) { fZvNbins = nbins; fBinsZv = edges; }  
+
 
   // Fill histograms
   void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Double_t zv, AlidNdPtHelper::TrackObject trackObj);
@@ -275,10 +284,24 @@ private:
   //
   THnSparseF *fRecCandleEventMatrix; //-> Zv:multMB
 
+  //binning for THNsparse
+  Int_t	fMultNbins;
+  Int_t fPtNbins;
+  Int_t fPtCorrNbins;
+  Int_t fEtaNbins;
+  Int_t fZvNbins;
+  Double_t* fBinsMult;
+  Double_t* fBinsPt;
+  Double_t* fBinsPtCorr;
+  Double_t* fBinsEta;
+  Double_t* fBinsZv;
+  
+  Bool_t fIsInit;
+
   AlidNdPtAnalysis(const AlidNdPtAnalysis&); // not implemented
   AlidNdPtAnalysis& operator=(const AlidNdPtAnalysis&); // not implemented
 
-  ClassDef(AlidNdPtAnalysis,4);
+  ClassDef(AlidNdPtAnalysis,5);
 };
 
 #endif
