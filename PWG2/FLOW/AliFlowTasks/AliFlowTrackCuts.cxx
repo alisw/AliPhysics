@@ -120,7 +120,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fParticleID(AliPID::kUnknown),
   fParticleProbability(.9),
   fAllowTOFmismatchFlag(kFALSE),
-  fRequireStrictTOFTPCagreement(kFALSE)
+  fRequireStrictTOFTPCagreement(kFALSE),
+  fCutRejectElectronsWithTPCpid(kFALSE)
 {
   //io constructor 
   for ( Int_t i=0; i<5; i++ ) { fProbBayes[i]=0.0; }
@@ -189,7 +190,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fParticleID(AliPID::kUnknown),
   fParticleProbability(.9),
   fAllowTOFmismatchFlag(kFALSE),
-  fRequireStrictTOFTPCagreement(kFALSE)
+  fRequireStrictTOFTPCagreement(kFALSE),
+  fCutRejectElectronsWithTPCpid(kFALSE)
 {
   //constructor 
   SetName(name);
@@ -266,7 +268,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fParticleID(that.fParticleID),
   fParticleProbability(that.fParticleProbability),
   fAllowTOFmismatchFlag(that.fAllowTOFmismatchFlag),
-  fRequireStrictTOFTPCagreement(that.fRequireStrictTOFTPCagreement)
+  fRequireStrictTOFTPCagreement(that.fRequireStrictTOFTPCagreement),
+  fCutRejectElectronsWithTPCpid(that.fCutRejectElectronsWithTPCpid)
 {
   //copy constructor
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
@@ -355,6 +358,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fParticleProbability=that.fParticleProbability;
   fAllowTOFmismatchFlag=that.fAllowTOFmismatchFlag;
   fRequireStrictTOFTPCagreement=that.fRequireStrictTOFTPCagreement;
+  fCutRejectElectronsWithTPCpid=that.fCutRejectElectronsWithTPCpid;
   memcpy(fProbBayes,that.fProbBayes,sizeof(fProbBayes));
 
   return *this;
@@ -764,6 +768,13 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
         break;
     }
   }    
+  if (fCutRejectElectronsWithTPCpid)
+  {
+    //reject electrons using standard TPC pid
+    Double_t pidTPC[AliPID::kSPECIES];
+    track->GetTPCpid(pidTPC);
+    if (pidTPC[AliPID::kElectron]<fParticleProbability) pass=kFALSE;
+  }
   if (fQA)
   {
     if (pass) QAafter(0)->Fill(track->GetP(),beta);
