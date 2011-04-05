@@ -1,6 +1,3 @@
-
-/* $Id$ */
-
 #include "TChain.h"
 #include "TTree.h"
 
@@ -80,14 +77,18 @@ void AliAnalysisTaskCreateMixedDimuons::ConnectInputData(Option_t *) {
 
     fInputHandler = (AliMultiEventInputHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
     fPoolMuon     = (AliEventPoolMuon*)          AliAnalysisManager::GetAnalysisManager()->GetEventPool();
-    fBufferSize = fInputHandler->GetBufferSize();
-    if (fBufferSize>100) {
-      printf("\n*** WARNING AliAnalysisTaskCreateMixedDimuons::ConnectInputData -> Trying to set fBufferSize>100, forcing fBufferSize=100 ***\n\n");
-      fBufferSize = 100;
-    }
 
-    if (!fInputHandler) Printf("ERROR: Could not get AliMultiAODInputHandler");
-    else for (Int_t i=0; i<fBufferSize; i++) fInputAOD[i] = (AliAODEvent*) fInputHandler->GetEvent(i);
+    if (!fInputHandler) {
+      Printf("ERROR: Could not get AliMultiAODInputHandler");
+    }
+    else {  
+      fBufferSize = fInputHandler->GetBufferSize();
+      if (fBufferSize>100) {
+        printf("\n*** WARNING AliAnalysisTaskCreateMixedDimuons::ConnectInputData -> Trying to set fBufferSize>100, forcing fBufferSize=100 ***\n\n");
+        fBufferSize = 100;
+      }
+      for (Int_t i=0; i<fBufferSize; i++) fInputAOD[i] = (AliAODEvent*) fInputHandler->GetEvent(i);
+    }
   }
 
   printf("<- AliAnalysisTaskCreateMixedDimuons::ConnectInputData\n");
@@ -115,6 +116,11 @@ void AliAnalysisTaskCreateMixedDimuons::UserCreateOutputObjects() {
 
 void AliAnalysisTaskCreateMixedDimuons::UserExec(Option_t *) {
 
+  if (!fInputAOD) {
+    Printf("ERROR: fInputAOD not available\n");
+    return;
+  }
+
   if (!fOutputUserAOD) {
     Printf("ERROR: fOutputUserAOD not available\n");
     return;
@@ -123,17 +129,7 @@ void AliAnalysisTaskCreateMixedDimuons::UserExec(Option_t *) {
   printf("Calling USER EXEC\n\n");
 
   for (Int_t iEv=0; iEv<fBufferSize; iEv++) {
-    if (!fInputAOD[iEv]) {
-      Printf("ERROR: fInputAOD[%d] not available\n",iEv);
-      continue;
-    }
-
     for (Int_t jEv=0; jEv<iEv; jEv++) {
-
-      if (!fInputAOD) {
-    Printf("ERROR: fInputAOD not available\n");
-    return;
-  }
 
       Int_t nTracksEv[2]  = {0};
       Int_t nFWMuonsEv[2] = {0};
