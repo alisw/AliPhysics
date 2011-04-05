@@ -26,11 +26,11 @@ public:
   virtual void Terminate(Option_t *); 
 
   AliFlowTrackCuts* GetAliESDtrackCuts() const {return fCuts;}
-  void SetAliESDtrackCuts(AliFlowTrackCuts* const cuts ){fCuts=cuts;}
+  void SetTrackCuts(AliFlowTrackCuts* cuts ){fCuts=cuts;}
   void SetEventCuts(AliFlowEventCuts* c) {fEventCuts=c;}
-  void SetMCOn(){fMC=kTRUE;}
   AliESDpid* GetESDpid() const {return fESDpid;}
   void SetUseDebugFile(Bool_t b=kTRUE) {fUseDebugFile=b;}
+  Bool_t TPCTOFagree(const AliESDtrack *track);  
 
   Float_t Beta(Float_t m, Float_t p);
 
@@ -39,7 +39,6 @@ private:
   AliFlowTrackCuts *fCuts;       //cuts 
   AliFlowEventCuts *fEventCuts; //event cuts
   AliESDpid *fESDpid;           //pid object
-  Bool_t fMC;                   //if TRUE use MC 
   Bool_t fUseDebugFile; //write debug file
   FILE* fFile; //debug output file
 
@@ -70,90 +69,50 @@ private:
   TH2F* fTOFinvbetaK;//!vs beta
   TH2F* fTOFinvbetaP;//!vs beta
 
-  TH2F* fTOFbetaAfterElectronsCuts; //!
-  TH2F* fTOFbetaAfterPionCuts; //!
-  TH2F* fTOFbetaAfterKaonCuts; //!
-  TH2F* fTOFbetaAfterProtonCuts; //!
-  TH2F* fTPCsignalAfterPionCuts; //!
-  TH2F* fTPCsignalAfterKaonCuts; //!
-  TH2F* fTPCsignalAfterProtonCuts; //!
+  TH2F* fTOFrawtime;//!vs time
+  TH2F* fTOFrawtimeE;//!vs time
+  TH2F* fTOFrawtimePi;//!vs time
+  TH2F* fTOFrawtimeK;//!vs time
+  TH2F* fTOFrawtimeP;//!vs time
 
-  TH2F* fTOFbetaAfterElectronsCuts1; //!
-  TH2F* fTOFbetaAfterPionCuts1; //!
-  TH2F* fTOFbetaAfterKaonCuts1; //!
-  TH2F* fTOFbetaAfterProtonCuts1; //!
-  TH2F* fTPCsignalAfterPionCuts1; //!
-  TH2F* fTPCsignalAfterKaonCuts1; //!
-  TH2F* fTPCsignalAfterProtonCuts1; //!
+  TH2F* fTOFrawbeta;//!vs beta
+  TH2F* fTOFrawbetaE;//!vs beta
+  TH2F* fTOFrawbetaPi;//!vs beta
+  TH2F* fTOFrawbetaK;//!vs beta
+  TH2F* fTOFrawbetaP;//!vs beta
 
-  TH2F* fTOFbetaEafter; //!
-  TH2F* fTOFbetaPiafter; //!
-  TH2F* fTOFbetaKafter; //!
-  TH2F* fTOFbetaPafter; //!
-
-  TH2F* fTPCsignalPiafter; //!
-  TH2F* fTPCsignalKafter; //!
-  TH2F* fTPCsignalPafter; //!
-
-  //MC
-  TH1F* fTOFyieldSelEmcE;//!
-  TH1F* fTOFyieldSelPimcE;//!
-  TH1F* fTOFyieldSelKmcE;//!
-  TH1F* fTOFyieldSelPmcE;//!
-  TH1F* fTOFyieldSelEmcM;//!
-  TH1F* fTOFyieldSelPimcM;//!
-  TH1F* fTOFyieldSelKmcM;//!
-  TH1F* fTOFyieldSelPmcM;//!
-  TH1F* fTOFyieldSelEmcPi;//!
-  TH1F* fTOFyieldSelPimcPi;//!
-  TH1F* fTOFyieldSelKmcPi;//!
-  TH1F* fTOFyieldSelPmcPi;//!
-  TH1F* fTOFyieldSelEmcK;//!
-  TH1F* fTOFyieldSelPimcK;//!
-  TH1F* fTOFyieldSelKmcK;//!
-  TH1F* fTOFyieldSelPmcK;//!
-  TH1F* fTOFyieldSelEmcP;//!
-  TH1F* fTOFyieldSelPimcP;//!
-  TH1F* fTOFyieldSelKmcP;//!
-  TH1F* fTOFyieldSelPmcP;//!
-  TH1F* fTPCyieldSelEmcE;//!
-  TH1F* fTPCyieldSelPimcE;//!
-  TH1F* fTPCyieldSelKmcE;//!
-  TH1F* fTPCyieldSelPmcE;//!
-  TH1F* fTPCyieldSelEmcM;//!
-  TH1F* fTPCyieldSelPimcM;//!
-  TH1F* fTPCyieldSelKmcM;//!
-  TH1F* fTPCyieldSelPmcM;//!
-  TH1F* fTPCyieldSelEmcPi;//!
-  TH1F* fTPCyieldSelPimcPi;//!
-  TH1F* fTPCyieldSelKmcPi;//!
-  TH1F* fTPCyieldSelPmcPi;//!
-  TH1F* fTPCyieldSelEmcK;//!
-  TH1F* fTPCyieldSelPimcK;//!
-  TH1F* fTPCyieldSelKmcK;//!
-  TH1F* fTPCyieldSelPmcK;//!
-  TH1F* fTPCyieldSelEmcP;//!
-  TH1F* fTPCyieldSelPimcP;//!
-  TH1F* fTPCyieldSelKmcP;//!
-  TH1F* fTPCyieldSelPmcP;//!
-  
-  TH2F* fTPCdedxAfterTOFpidPions;
-  TH2F* fTPCdedxAfterTOFpidKaons;
-  TH2F* fTPCdedxAfterTOFpidProtons;
+  TH2F* fTOFrawinvbeta;//!vs beta
+  TH2F* fTOFrawinvbetaE;//!vs beta
+  TH2F* fTOFrawinvbetaPi;//!vs beta
+  TH2F* fTOFrawinvbetaK;//!vs beta
+  TH2F* fTOFrawinvbetaP;//!vs beta
 
   TH2F* fPvsPt; //!P vs Pt yield
   TProfile* fMeanPvsP; //!mean p per bin
   TH2F* fTPCvsGlobalMult; //! correlation tpc only tracks vs global tracks
   AliFlowTrackCuts* fStandardGlobalCuts; //! cuts
   AliFlowTrackCuts* fStandardTPCCuts; //! cuts
-  AliFlowTrackCuts* fCutsTOFElectrons; //!
-  AliFlowTrackCuts* fCutsTOFPions; //!
-  AliFlowTrackCuts* fCutsTOFKaons; //!
-  AliFlowTrackCuts* fCutsTOFProtons; //!
-  AliFlowTrackCuts* fCutsTPCElectrons; //!
-  AliFlowTrackCuts* fCutsTPCPions; //!
-  AliFlowTrackCuts* fCutsTPCKaons; //!
-  AliFlowTrackCuts* fCutsTPCProtons; //!
+
+  AliFlowTrackCuts* fCutsTOFbetaElectrons; //!
+  AliFlowTrackCuts* fCutsTOFbetaPions; //!
+  AliFlowTrackCuts* fCutsTOFbetaKaons; //!
+  AliFlowTrackCuts* fCutsTOFbetaProtons; //!
+
+  AliFlowTrackCuts* fCutsTOFbetaSimpleElectrons; //!
+  AliFlowTrackCuts* fCutsTOFbetaSimplePions; //!
+  AliFlowTrackCuts* fCutsTOFbetaSimpleKaons; //!
+  AliFlowTrackCuts* fCutsTOFbetaSimpleProtons; //!
+
+  AliFlowTrackCuts* fCutsTPCdedxElectrons; //!
+  AliFlowTrackCuts* fCutsTPCdedxPions; //!
+  AliFlowTrackCuts* fCutsTPCdedxKaons; //!
+  AliFlowTrackCuts* fCutsTPCdedxProtons; //!
+
+  AliFlowTrackCuts* fCutsTPCpidElectrons; //!
+  AliFlowTrackCuts* fCutsTPCpidPions; //!
+  AliFlowTrackCuts* fCutsTPCpidKaons; //!
+  AliFlowTrackCuts* fCutsTPCpidProtons; //!
+
   TList* fOutputList;//!output list
 	
   AliAnalysisTaskPIDflowQA(const  AliAnalysisTaskPIDflowQA&); // not implemented
@@ -163,7 +122,7 @@ private:
   void pidTPC(AliESDtrack* t, Int_t pdgcode);
   void pidTOF(AliESDtrack* t, Int_t pdgcode);
     
-  ClassDef( AliAnalysisTaskPIDflowQA, 3); // example of analysis
+  ClassDef( AliAnalysisTaskPIDflowQA, 4); // example of analysis
 };
 
 #endif
