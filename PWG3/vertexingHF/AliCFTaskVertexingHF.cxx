@@ -483,15 +483,16 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	fCuts->SetTriggerClass("");
 
 
-	if (fCentralitySelection){ // consider only events in the class requested
+	if (fCentralitySelection){ // keep only the requested centrality
 	  if(fCuts->IsEventSelectedInCentrality(aodEvent)!=0) {
   	    delete[] containerInput;
 	    delete[] containerInputMC;
             delete [] trackCuts;
             return;
           }    
-	} else { // disable the centrality sel in IsEventSelected
-	  fCuts->SetUseCentrality(0);
+	}  else { // keep all centralities
+ 	  fCuts->SetMinCentrality(0.);
+	  fCuts->SetMaxCentrality(100.);
 	}
 	
 	
