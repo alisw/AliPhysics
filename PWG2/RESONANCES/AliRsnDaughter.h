@@ -81,9 +81,9 @@ public:
    Int_t   GetPDG(Bool_t abs = kTRUE);
    Int_t   GetID();
    Bool_t  IsKinkDaughter();
-   Bool_t  IsPos()             const {return (fRef->Charge() > 0);}
-   Bool_t  IsNeg()             const {return (fRef->Charge() < 0);}
-   Bool_t  IsNeutral()         const {return (!IsPos() && !IsNeg());}
+   Bool_t  IsPos()             const {if (fRef) return (fRef->Charge() > 0); return kFALSE;}
+   Bool_t  IsNeg()             const {if (fRef) return (fRef->Charge() < 0); return kFALSE;}
+   Bool_t  IsNeutral()         const {if (fRef) return (!IsPos() && !IsNeg()); return kFALSE;}
    Bool_t  IsSign(Char_t sign) const {if (sign == '+') return IsPos(); else if (sign == '-') return IsNeg(); else return IsNeutral();}
    Short_t ChargeS()           const {if (IsPos()) return  1 ; else if (IsNeg()) return -1 ; else return  0 ;}
    Char_t  ChargeC()           const {if (IsPos()) return '+'; else if (IsNeg()) return '-'; else return '0';}

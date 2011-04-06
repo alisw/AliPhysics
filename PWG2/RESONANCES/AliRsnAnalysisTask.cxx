@@ -1,190 +1,236 @@
-//
-// Class AliRsnAnalysisTask
-//
-// Virtual Class derivated from AliRsnVAnalysisTask which will be base class
-// for all RSN SE tasks
-//
-// authors: Martin Vala (martin.vala@cern.ch)
-//          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
-//
+#include <TEntryList.h>
 
-#include <Riostream.h>
-#include <TList.h>
-#include <TH1.h>
+#include "AliLog.h"
+#include "AliAnalysisManager.h"
+#include "AliMultiInputEventHandler.h"
+#include "AliMixInputEventHandler.h"
+#include "AliMCEventHandler.h"
 
-#include "AliESDEvent.h"
-#include "AliMCEvent.h"
-#include "AliAODEvent.h"
+#include "AliRsnEvent.h"
+#include "AliRsnLoop.h"
+#include "AliRsnInputHandler.h"
 
-#include "AliRsnCutSet.h"
-#include "AliRsnVATProcessInfo.h"
 #include "AliRsnAnalysisTask.h"
 
 ClassImp(AliRsnAnalysisTask)
 
-//_____________________________________________________________________________
-AliRsnAnalysisTask::AliRsnAnalysisTask(const char *name, Bool_t useKine) :
-   AliRsnVAnalysisTask(name, useKine),
-   fRsnAnalysisManager(),
-   fEventCuts("eventCuts", AliRsnCut::kEvent),
-   fOutList(0x0),
-   fZeroEventPercentWarning(100),
-   fUseZeroEventWarning(kTRUE)
+//__________________________________________________________________________________________________
+AliRsnAnalysisTask::AliRsnAnalysisTask() :
+   AliAnalysisTaskSE(),
+   fOutput(0),
+   fRsnObjects(0),
+   fInputEHMain(0),
+   fInputEHMix(0)
+{
+//
+// Dummy constructor ALWAYS needed for I/O.
+//
+}
+
+//__________________________________________________________________________________________________
+AliRsnAnalysisTask::AliRsnAnalysisTask(const char *name) :
+   AliAnalysisTaskSE(name),
+   fOutput(0),
+   fRsnObjects(0),
+   fInputEHMain(0),
+   fInputEHMix(0)
 {
 //
 // Default constructor.
-// Defines another output slot for histograms/ntuples
+// Define input and output slots here (never in the dummy constructor)
+// Input slot #0 works with a TChain - it is connected to the default input container
+// Output slot #1 writes into a TH1 container
 //
 
-   DefineOutput(2, TList::Class());
+   DefineOutput(1, TList::Class());
 }
 
-//_____________________________________________________________________________
+//__________________________________________________________________________________________________
 AliRsnAnalysisTask::AliRsnAnalysisTask(const AliRsnAnalysisTask& copy) :
-   AliRsnVAnalysisTask(copy),
-   fRsnAnalysisManager(copy.fRsnAnalysisManager),
-   fEventCuts(copy.fEventCuts),
-   fOutList(0x0),
-   fZeroEventPercentWarning(copy.fZeroEventPercentWarning),
-   fUseZeroEventWarning(copy.fUseZeroEventWarning)
+   AliAnalysisTaskSE(copy),
+   fOutput(0),
+   fRsnObjects(copy.fRsnObjects),
+   fInputEHMain(copy.fInputEHMain),
+   fInputEHMix(copy.fInputEHMix)
 {
 //
 // Copy constructor.
+// Implemented as requested by C++ standards.
+// Can be used in PROOF and by plugins.
 //
 }
 
-//_____________________________________________________________________________
+//__________________________________________________________________________________________________
 AliRsnAnalysisTask& AliRsnAnalysisTask::operator=(const AliRsnAnalysisTask& copy)
 {
 //
-// Assigment operator.
+// Assignment operator.
+// Implemented as requested by C++ standards.
+// Can be used in PROOF and by plugins.
 //
-
-   AliRsnVAnalysisTask::operator=(copy);
-
-   fRsnAnalysisManager = copy.fRsnAnalysisManager;
-   fEventCuts = copy.fEventCuts;
-   if (fOutList) fOutList->Clear();
-   fZeroEventPercentWarning = copy.fZeroEventPercentWarning;
-   fUseZeroEventWarning = copy.fUseZeroEventWarning;
-
+   AliAnalysisTaskSE::operator=(copy);
+   fRsnObjects = copy.fRsnObjects;
+   fInputEHMain = copy.fInputEHMain;
+   fInputEHMix = copy.fInputEHMix;
+   
    return (*this);
 }
 
-//_____________________________________________________________________________
-void AliRsnAnalysisTask::RsnUserCreateOutputObjects()
+//__________________________________________________________________________________________________
+AliRsnAnalysisTask::~AliRsnAnalysisTask()
 {
 //
-// Creation of output objects.
-// These are created through the utility methods in the analysis manager,
-// which asks all the AliRsnPair objects to initialize their output which
-// is then linked to the TList data member of this, which will contain all the output.
+// Destructor. 
+// Clean-up the output list, but not the histograms that are put inside
+// (the list is owner and will clean-up these histograms). Protect in PROOF case.
 //
 
-   // initialize the list
-   if (!fOutList) fOutList = new TList;
-   fOutList->Clear();
-   fOutList->SetOwner(kTRUE);
-
-   // initialize all pairs
-   fRsnAnalysisManager.InitAllPairs(fOutList);   
-
-   PostData(2, fOutList);
+   if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+      delete fOutput;
+   }
 }
 
-//_____________________________________________________________________________
-void AliRsnAnalysisTask::RsnUserExec(Option_t*)
+//__________________________________________________________________________________________________
+void AliRsnAnalysisTask::Add(AliRsnLoop *obj)
 {
 //
-// Execution of the analysis task.
-// Recovers the input event and processes it with all included pair objects,
-// using 'reconstructed' or 'MonteCarlo' functions depending on MC-only flag.
+// Add new computation object
 //
 
-   if (IsMixing()) return;
-
-   fRsnAnalysisManager.ProcessAll(&fRsnEvent[0], 0x0, fMCOnly);
-
-   PostData(2, fOutList);
+   fRsnObjects.Add(obj);
 }
 
-//_____________________________________________________________________________
-void AliRsnAnalysisTask::RsnUserExecMix(Option_t* /*opt*/)
+//__________________________________________________________________________________________________
+void AliRsnAnalysisTask::UserCreateOutputObjects()
 {
 //
-// Execution of the analysis task with event mixing.
-// Recovers the input event and processes it with all included pair objects,
-// using 'reconstructed' or 'MonteCarlo' functions depending on MC-only flag.
+// Initialization of outputs.
+// This is called once per worker node.
 //
 
-   if (!IsMixing()) return;
-   AliDebug(AliLog::kDebug, Form("RSN Mixing %lld %d [%lld,%lld] %d", fMixedEH->CurrentEntry(), fMixedEH->NumberMixed(), fMixedEH->CurrentEntryMain(), fMixedEH->CurrentEntryMix(), fMixedEH->CurrentBinIndex()));
+   // sets all Inuput Handler pointers
+   InitInputHandlers();
 
-   // the virtual class has already sorted tracks in the PID index
-   // so we need here just to call the execution of analysis
-   fRsnAnalysisManager.ProcessAll(&fRsnEvent[0], &fRsnEvent[1], fMCOnly);
+   // create list and set it as owner of its content (MANDATORY)
+   fOutput = new TList();
+   fOutput->SetOwner();
+   
+   // loop on computators and initialize all their outputs
+   TObjArrayIter next(&fRsnObjects);
+   AliRsnLoop *obj = 0x0;
+   while ( (obj = (AliRsnLoop*)next()) ) {
+      obj->Init(GetName(), fOutput);
+   }
+
+   // post data for ALL output slots >0 here, to get at least an empty histogram
+   PostData(1, fOutput);
 }
 
-//_____________________________________________________________________________
-void AliRsnAnalysisTask::RsnTerminate(Option_t*)
+//__________________________________________________________________________________________________
+void AliRsnAnalysisTask::UserExec(Option_t *)
 {
 //
-// Termination.
-// Could be added some monitor histograms here.
-//
-}
-
-//______________________________________________________________________________
-Bool_t AliRsnAnalysisTask::RsnEventProcess()
-{
-//
-// Customized event pre-processing.
-// First checks if the current event passes all cuts,
-// and if it does, updates the informations and then
-// call the operations which are already defined in the
-// omonyme function in mother class
+// Main loop for single-event computations.
+// It is called for each event and executes the 'DoLoop'
+// function of all AliRsnLoop instances stored here.
 //
 
-   // initially, an event is expected to be bad
-   fTaskInfo.SetEventUsed(kFALSE);
+   AliRsnEvent *evMain = 0x0;
+   AliRsnInputHandler *rsnIH = 0x0;
 
-   if (!AliRsnVAnalysisTask::RsnEventProcess()) return kFALSE;
-
-   // check #1: number of tracks in event (reject empty events)
-   Int_t    ntracks = fRsnEvent[0].GetMultiplicityFromTracks();
-   Double_t zeroEventPercent = 0.0;
-   if (ntracks < 1) {
-      // if using the checker for amount of empty events, update it
-      if (fUseZeroEventWarning) {
-         TH1I *hist = (TH1I*)fInfoList->FindObject(fTaskInfo.GetEventHistogramName());
-         if (hist) {
-            if (hist->Integral() > 1) zeroEventPercent = (Double_t)hist->GetBinContent(1) / hist->Integral() * 100;
-            if ((zeroEventPercent > fZeroEventPercentWarning) && (fEntry > 100))
-               AliWarning(Form("%3.2f%% Events are with zero tracks (CurrentEvent=%d)!!!", zeroEventPercent, fEntry));
+   if (fInputEHMain) {
+      TObjArrayIter next(fInputEHMain->InputEventHandlers());
+      TObject *obj = 0x0;
+      while ( (obj = next()) ) {
+         if (obj->IsA() == AliRsnInputHandler::Class()) {
+            rsnIH = (AliRsnInputHandler*)obj;
+            //AliInfo(Form("Found object '%s' which is RSN input handler", obj->GetName()));
+            evMain = rsnIH->GetRsnEvent();
+            break;
          }
       }
+   }
+   
+   if (!evMain) return;
 
-      // empty events are rejected by default
-      fTaskInfo.SetEventUsed(kFALSE);
-      AliDebug(AliLog::kDebug, "Empty event. Skipping...");
-      return kFALSE;
+   TObjArrayIter next(&fRsnObjects);
+   AliRsnLoop *obj = 0x0;
+   while ( (obj = (AliRsnLoop*)next()) ) {
+      if (obj->IsMixed()) continue;
+      obj->DoLoop(evMain, rsnIH->GetSelector());
+   }
+   
+   PostData(1, fOutput);
+}
+
+//__________________________________________________________________________________________________
+void AliRsnAnalysisTask::UserExecMix(Option_t*)
+{
+//
+// Main loop for event-mixing computations
+// It is called for each pair of matched events
+// and executes the 'DoLoop' function of all AliRsnLoop instances stored here.
+//
+
+   AliRsnEvent *evMain = 0x0;
+   AliRsnEvent *evMix  = 0x0;
+   Int_t        id     = -1;
+   AliRsnInputHandler *rsnIH = 0x0, *rsnMixIH = 0x0;
+
+   if (fInputEHMain) {
+      TObjArrayIter next(fInputEHMain->InputEventHandlers());
+      TObject *obj = 0x0;
+      while ( (obj = next()) ) {
+         if (obj->IsA() == AliRsnInputHandler::Class()) {
+            rsnIH = (AliRsnInputHandler*)obj;
+            //AliInfo(Form("Found object '%s' which is RSN input handler", obj->GetName()));
+            evMain = rsnIH->GetRsnEvent();
+            id = fInputEHMain->InputEventHandlers()->IndexOf(obj);
+            break;
+         }
+      }
+   }
+   
+   if (!evMain) return;
+
+   // gets first input handler form mixing buffer
+   AliMultiInputEventHandler *ihMultiMix = dynamic_cast<AliMultiInputEventHandler*>(fInputEHMix->InputEventHandler(0));
+   rsnMixIH = dynamic_cast<AliRsnInputHandler*>(ihMultiMix->InputEventHandler(id));
+   evMix = rsnMixIH->GetRsnEvent();
+   
+   if (!evMix) return;
+
+   TObjArrayIter next(&fRsnObjects);
+   AliRsnLoop *obj = 0x0;
+   while ( (obj = (AliRsnLoop*)next()) ) {
+      if (!obj->IsMixed()) continue;
+      obj->DoLoop(evMain, rsnIH->GetSelector(), evMix, rsnMixIH->GetSelector());
    }
 
-   // check the event cuts and update the info data accordingly
-   // events not passing the cuts must be rejected
-   if (!fEventCuts.IsSelected(&fRsnEvent[0])) {
-      fTaskInfo.SetEventUsed(kFALSE);
-      return kFALSE;
+   PostData(1, fOutput);
+}
+
+//________________________________________________________________________
+void AliRsnAnalysisTask::Terminate(Option_t *)
+{
+//
+// Draw result to screen, or perform fitting, normalizations
+// Called once at the end of the query
+//
+
+   fOutput = dynamic_cast<TList*>(GetOutputData(1));
+   if (!fOutput) { AliError("Could not retrieve TList fOutput"); return; }
+}
+
+//_____________________________________________________________________________
+void AliRsnAnalysisTask::InitInputHandlers()
+{
+//
+// Sets needed input handlers
+//
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   fInputEHMain = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
+   if (fInputEHMain) {
+      fInputEHMix = dynamic_cast<AliMixInputEventHandler *>(fInputEHMain->GetFirstMultiInputHandler());
    }
-
-   // if we reach this point, cuts were passed;
-   // then additional operations can be done
-
-   // find leading particle (without any PID/momentum restriction)
-   fRsnEvent[0].SelectLeadingParticle(0);
-
-   // final return value is positive
-   // but call the mother class method which updates info object
-   fTaskInfo.SetEventUsed(kTRUE);
-   return kTRUE;
 }

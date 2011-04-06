@@ -18,6 +18,9 @@
 
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h"
+#include "AliESDpid.h"
+#include "AliAODpidUtil.h"
+
 #include "AliRsnCutPIDTPC.h"
 
 ClassImp(AliRsnCutPIDTPC)
@@ -26,13 +29,12 @@ ClassImp(AliRsnCutPIDTPC)
 AliRsnCutPIDTPC::AliRsnCutPIDTPC
 (const char *name, AliPID::EParticleType type, Double_t min, Double_t max, Bool_t rejectOutside) :
    AliRsnCut(name, AliRsnCut::kDaughter, min, max),
-   fInitialized(kFALSE),
    fRejectOutside(rejectOutside),
    fMomMin(0.0),
    fMomMax(1E+20),
    fRefType(type),
-   fESDpid(),
-   fAODpid()
+   fESDpid(0x0),
+   fAODpid(0x0)
 {
 //
 // Main constructor.
@@ -43,7 +45,6 @@ AliRsnCutPIDTPC::AliRsnCutPIDTPC
 AliRsnCutPIDTPC::AliRsnCutPIDTPC
 (const AliRsnCutPIDTPC& copy) :
    AliRsnCut(copy),
-   fInitialized(kFALSE),
    fRejectOutside(copy.fRejectOutside),
    fMomMin(copy.fMomMin),
    fMomMax(copy.fMomMax),
@@ -65,7 +66,6 @@ AliRsnCutPIDTPC& AliRsnCutPIDTPC::operator=(const AliRsnCutPIDTPC& copy)
 
    AliRsnCut::operator=(copy);
 
-   fInitialized   = kFALSE;
    fRejectOutside = copy.fRejectOutside;
    fMomMin        = copy.fMomMin;
    fMomMax        = copy.fMomMax;
@@ -83,8 +83,11 @@ void AliRsnCutPIDTPC::SetBBParam(Double_t p0, Double_t p1, Double_t p2, Double_t
 // Properly set the Bethe-Bloch parameters in all places where it is needed.
 //
 
-   fESDpid.GetTPCResponse().SetBetheBlochParameters(p0, p1, p2, p3, p4);
-   fAODpid.GetTPCResponse().SetBetheBlochParameters(p0, p1, p2, p3, p4);
+   fBB[0] = p0;
+   fBB[1] = p1;
+   fBB[2] = p2;
+   fBB[3] = p3;
+   fBB[4] = p4;
 }
 
 //_________________________________________________________________________________________________
@@ -94,19 +97,8 @@ Bool_t AliRsnCutPIDTPC::IsSelected(TObject *object)
 // Cut checker.
 //
 
-   // initialize if needed
-   if (!fInitialized) Initialize();
-
    // coherence check
    if (!TargetOK(object)) return kFALSE;
-
-   // reject not TPC tracks
-   AliVTrack *vtrack = fDaughter->GetRefVtrack();
-   if (!vtrack) return kFALSE;
-   if (!IsTPC(vtrack)) {
-      AliDebug(AliLog::kDebug + 2, "Track is not found in TPC");
-      return kFALSE;
-   }
 
    // common evaluation variables
    Double_t     mom;
@@ -114,21 +106,40 @@ Bool_t AliRsnCutPIDTPC::IsSelected(TObject *object)
    AliAODTrack *aodTrack = fDaughter->GetRefAODtrack();
 
    // get inner momentum, needed for BB computation
-   if (esdTrack)
+   if (esdTrack) {
+      if (!esdTrack->GetInnerParam()) {
+         AliDebug(AliLog::kDebug + 2, "No inner param");
+         return kFALSE;
+      }
       mom = esdTrack->GetInnerParam()->P();
-   else if (aodTrack)
+   } else if (aodTrack) {
+      if (!aodTrack->GetDetPid()) {
+         AliDebug(AliLog::kDebug + 2, "No def-pid object");
+         return kFALSE;
+      }
       mom = aodTrack->GetDetPid()->GetTPCmomentum();
-   else {
+      if (mom < 1E-6) return kFALSE;
+   } else {
       AliDebug(AliLog::kDebug + 2, Form("Impossible to process an object of type '%s'. Cut applicable only to ESD/AOD tracks", fDaughter->GetRef()->ClassName()));
       return kFALSE;
    }
 
    // assign PID nsigmas to default cut check value
    // since bad object types are rejected before, here we have an ESD track or AOD track
-   if (esdTrack)
-      fCutValueD = fESDpid.GetTPCResponse().GetNumberOfSigmas(mom, esdTrack->GetTPCsignal(), esdTrack->GetTPCsignalN(), fRefType);
-   else
-      fCutValueD = fAODpid.NumberOfSigmasTPC(aodTrack, fRefType);
+   if (esdTrack) {
+      if (!fESDpid) {
+         fESDpid = new AliESDpid;
+         fESDpid->GetTPCResponse().SetBetheBlochParameters(fBB[0], fBB[1], fBB[2], fBB[3], fBB[4]);
+      }
+      fCutValueD = fESDpid->GetTPCResponse().GetNumberOfSigmas(mom, esdTrack->GetTPCsignal(), esdTrack->GetTPCsignalN(), fRefType);
+   } else {
+      if (!fAODpid) {
+         fAODpid = new AliAODpidUtil;
+         fAODpid->GetTPCResponse().SetBetheBlochParameters(fBB[0], fBB[1], fBB[2], fBB[3], fBB[4]);
+      }
+      if (aodTrack->GetTPCsignalN() == 0) aodTrack->GetDetPid()->SetTPCsignalN(aodTrack->GetTPCNcls());
+      fCutValueD = fAODpid->NumberOfSigmasTPC(aodTrack, fRefType);
+   }
 
    // use AliRsnCut default method to check cut
    Bool_t cutCheck = OkRangeD();
@@ -158,21 +169,4 @@ void AliRsnCutPIDTPC::Print(const Option_t *) const
    AliInfo(Form("--> cut range (nsigma)      : %.3f %.3f", fMinD, fMaxD));
    AliInfo(Form("--> momentum range          : %.3f %.3f", fMomMin, fMomMax));
    AliInfo(Form("--> tracks outside range are: %s", (fRejectOutside ? "rejected" : "accepted")));
-}
-
-//_________________________________________________________________________________________________
-void AliRsnCutPIDTPC::Initialize()
-{
-//
-// Initialize ESD pid object from global one
-//
-
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   AliESDInputHandler *handler = dynamic_cast<AliESDInputHandler*>(mgr->GetInputEventHandler());
-   if (handler) {
-      AliESDpid *pid = handler->GetESDpid();
-      if (pid) fESDpid = (*pid);
-   }
-
-   fInitialized = kTRUE;
 }

@@ -37,10 +37,10 @@ public:
    AliRsnCutPIDITS& operator=(const AliRsnCutPIDITS& copy);
    virtual ~AliRsnCutPIDITS() { }
 
-   AliESDpid*       ESDpid()  {return &fESDpid;}
-   AliAODpidUtil*   AODpid()  {return &fAODpid;}
+   AliESDpid*       ESDpid()  {return fESDpid;}
+   AliAODpidUtil*   AODpid()  {return fAODpid;}
 
-   void             SetMC(Bool_t mc = kTRUE);
+   void             SetMC(Bool_t mc = kTRUE)                      {fIsMC = mc;}
    void             SetRejectOutside(Bool_t yn = kTRUE)           {fRejectOutside = yn;}
    void             SetMomentumRange(Double_t min, Double_t max)  {fMomMin = min; fMomMax = max;}
    void             SetNSigmaRange(Double_t min, Double_t max)    {fMinD = min; fMaxD = max;}
@@ -53,15 +53,13 @@ public:
 
 private:
 
-   void Initialize();
-
-   Bool_t          fInitialized;    // a mono-usage flag which initializes the ESD pid object
-   Bool_t          fRejectOutside;  // choose if tracks outside momentum range are rejected or not
-   Double_t        fMomMin;         // min p in range where this cut is checked
-   Double_t        fMomMax;         // max p in range where this cut is checked
-   EPARTYPE        fRefType;        // particle type for which PID is checked
-   AliESDpid       fESDpid;         // ESD PID object
-   AliAODpidUtil   fAODpid;         // AOD PID object
+   Bool_t          fIsMC;           //  needed to initialize the pid object
+   Bool_t          fRejectOutside;  //  choose if tracks outside momentum range are rejected or not
+   Double_t        fMomMin;         //  min p in range where this cut is checked
+   Double_t        fMomMax;         //  max p in range where this cut is checked
+   EPARTYPE        fRefType;        //  particle type for which PID is checked
+   AliESDpid      *fESDpid;         //! ESD PID object
+   AliAODpidUtil  *fAODpid;         //! AOD PID object
 
    ClassDef(AliRsnCutPIDITS, 1)
 };
@@ -77,13 +75,9 @@ inline Bool_t AliRsnCutPIDITS::IsTPC(AliVTrack *vtrack)
       return kFALSE;
    }
 
-   Bool_t isTPCin     = ((vtrack->GetStatus() & AliESDtrack::kTPCin) != 0);
-   Bool_t isITSrefit  = ((vtrack->GetStatus() & AliESDtrack::kITSrefit) != 0);
-   Bool_t isITSpid    = ((vtrack->GetStatus() & AliESDtrack::kITSpid) != 0);
+   Bool_t isTPCin = ((vtrack->GetStatus() & AliESDtrack::kTPCin) != 0);
 
-   return (isTPCin && isITSrefit && isITSpid);
-
-   return kTRUE;
+   return (isTPCin);
 }
 
 inline Bool_t AliRsnCutPIDITS::IsSA(AliVTrack *vtrack)

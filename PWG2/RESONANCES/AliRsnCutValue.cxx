@@ -27,7 +27,8 @@ ClassImp(AliRsnCutValue)
 //_________________________________________________________________________________________________
 AliRsnCutValue::AliRsnCutValue() :
    AliRsnCut(),
-   fValue()
+   fUseMC(kFALSE),
+   fValue(0x0)
 {
 //
 // Default constructor.
@@ -36,9 +37,10 @@ AliRsnCutValue::AliRsnCutValue() :
 
 //_________________________________________________________________________________________________
 AliRsnCutValue::AliRsnCutValue
-(const char *name, AliRsnValue::EValueType type, Double_t min, Double_t max) :
-   AliRsnCut(name, AliRsnValue::TargetType(type), min, max),
-   fValue(Form("val_%s", name), type)
+(const char *name, Double_t min, Double_t max, Bool_t useMC) :
+   AliRsnCut(name, AliRsnTarget::kTargetTypes, min, max),
+   fUseMC(useMC),
+   fValue(0x0)
 {
 //
 // Main constructor.
@@ -51,6 +53,7 @@ AliRsnCutValue::AliRsnCutValue
 //_________________________________________________________________________________________________
 AliRsnCutValue::AliRsnCutValue(const AliRsnCutValue& copy) :
    AliRsnCut(copy),
+   fUseMC(copy.fUseMC),
    fValue(copy.fValue)
 {
 //
@@ -68,6 +71,7 @@ AliRsnCutValue& AliRsnCutValue::operator=(const AliRsnCutValue& copy)
 //
 
    AliRsnCut::operator=(copy);
+   fUseMC = copy.fUseMC;
    fValue = copy.fValue;
 
    return (*this);
@@ -81,8 +85,14 @@ Bool_t AliRsnCutValue::IsSelected(TObject *object)
 // Calls the AliRsnValue::Eval() method and then checks its output.
 //
 
+   // skip cut if value is not initialized
+   if (!fValue) return kTRUE;
+   
+   // match target types
+   SetTargetType(fValue->GetTargetType());
+
    // try to compute values
-   Bool_t success = fValue.Eval(object);
+   Bool_t success = fValue->Eval(object, fUseMC);
 
    // check success
    if (!success) {
@@ -91,7 +101,7 @@ Bool_t AliRsnCutValue::IsSelected(TObject *object)
    }
 
    // check in range
-   fCutValueD = fValue.GetComputedValue();
+   fCutValueD = fValue->GetComputedValue();
    return OkRangeD();
 }
 
@@ -103,6 +113,6 @@ void AliRsnCutValue::Print(const Option_t *) const
 //
 
    AliInfo(Form("Cut name   : %s", GetName()));
-   AliInfo(Form("Cut value  : %s", fValue.GetValueTypeName()));
+   AliInfo(Form("Cut value  : %s", fValue->GetName()));
    AliInfo(Form("Cut range  : %f - %f", fMinD, fMaxD));
 }

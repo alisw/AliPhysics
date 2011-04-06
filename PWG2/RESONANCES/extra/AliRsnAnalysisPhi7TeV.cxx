@@ -37,7 +37,6 @@
 #include "AliRsnEvent.h"
 #include "AliRsnTarget.h"
 #include "AliRsnDaughter.h"
-#include "AliRsnCutESD2010.h"
 
 #include "AliRsnAnalysisPhi7TeV.h"
 

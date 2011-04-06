@@ -287,10 +287,15 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
    }
 
    // step #4: DCA cut (transverse)
+   // --> reject all tracks not ITS refitted
    Double_t b[2], cov[3];
    vertex = aodEvent->GetPrimaryVertex();
    if (!vertex) {
       AliDebug(AliLog::kDebug + 2, "NULL vertex");
+      return kFALSE;
+   }
+   if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) {
+      AliDebug(AliLog::kDebug + 2, "Not ITS refitted");
       return kFALSE;
    }
    if (!track->PropagateToDCA(vertex, aodEvent->GetMagneticField(), kVeryBig, b, cov)) {
@@ -336,6 +341,7 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
    }
 
    // if we are here, all cuts were passed and no exit point was got
+   AliDebug(AliLog::kDebug + 2, "============================= ACCEPTED TRACK =====================================================");
    return kTRUE;
 }
 

@@ -17,53 +17,27 @@ class AliRsnPairDef : public TObject {
 public:
 
    AliRsnPairDef();
-   AliRsnPairDef(EPARTYPE type1, Char_t sign1, EPARTYPE type2, Char_t sign2, Int_t motherPDG = 0, Double_t motherMass = 0.0);
-   AliRsnPairDef(AliRsnDaughter::ESpecies type1, Char_t sign1, AliRsnDaughter::ESpecies type2, Char_t sign2, Int_t motherPDG = 0, Double_t motherMass = 0.0);
+   AliRsnPairDef(EPARTYPE type1, Char_t ch1, EPARTYPE type2, Char_t ch2, Int_t motherPDG = 0, Double_t motherMass = 0.0);
+   AliRsnPairDef(AliRsnDaughter::ESpecies type1, Char_t ch1, AliRsnDaughter::ESpecies type2, Char_t ch2, Int_t motherPDG = 0, Double_t motherMass = 0.0);
    AliRsnPairDef(const AliRsnPairDef &copy);
    const AliRsnPairDef& operator= (const AliRsnPairDef &copy);
    virtual ~AliRsnPairDef() { }
 
-   // getters
+   virtual const char*	    GetName()       const {return Form("%s_%s", fDef1.GetName(), fDef2.GetName());}
    Int_t                    GetMotherPDG()  const {return fMotherPDG;}
    Double_t                 GetMotherMass() const {return fMotherMass;}
-   const char*              GetPairName()   const;
-   virtual const char*	    GetName()       const {return GetPairName();}
-   
-   AliRsnDaughterDef*       GetDef1()           {return &fDef1;}
-   Double_t                 GetMass1()    const {return fDef1.GetMass();}
-   Char_t                   GetChargeC1() const {return fDef1.GetChargeC();}
-   Short_t                  GetChargeS1() const {return fDef1.GetChargeS();}
-   AliRsnDaughter::ESpecies GetPID1()     const {return fDef1.GetPID();}
-   AliRsnDaughter::ERefType GetRefType1() const {return fDef1.GetRefType();}
-   
-   AliRsnDaughterDef*       GetDef2()           {return &fDef2;}
-   Double_t                 GetMass2()    const {return fDef2.GetMass();}
-   Char_t                   GetChargeC2() const {return fDef2.GetChargeC();}
-   Short_t                  GetChargeS2() const {return fDef2.GetChargeS();}
-   AliRsnDaughter::ESpecies GetPID2()     const {return fDef2.GetPID();}
-   AliRsnDaughter::ERefType GetRefType2() const {return fDef2.GetRefType();}
-   
-   AliRsnDaughterDef*       GetDef(Int_t i)           {if (i<1) return GetDef1(); else return GetDef2();}
-   Double_t                 GetMass(Int_t i)    const {if (i<1) return GetMass1(); else return GetMass2();}
-   Char_t                   GetChargeC(Int_t i) const {if (i<1) return GetChargeC1(); else return GetChargeS2();}
-   Short_t                  GetChargeS(Int_t i) const {if (i<1) return GetChargeS1(); else return GetChargeS2();}
-   AliRsnDaughter::ESpecies GetPID(Int_t i)     const {if (i<1) return GetPID1(); else return GetPID2();}
-   AliRsnDaughter::ERefType GetRefType(Int_t i) const {if (i<1) return GetRefType1(); else return GetRefType2();}
+   AliRsnDaughterDef&       GetDef1()             {return fDef1;}
+   AliRsnDaughterDef&       GetDef2()             {return fDef2;}
+   AliRsnDaughterDef&       GetDef(Int_t i)       {if (i<1) return GetDef1(); else return GetDef2();}
 
-   // setters
-   void SetMotherPDG(Int_t pdg)                              {fMotherPDG = pdg;}
-   void SetMotherMass(Double_t mass)                         {fMotherMass = mass;}
-   void SetDef1(EPARTYPE pid, Char_t charge)                 {fDef1.SetCharge(charge); fDef1.SetPID(AliRsnDaughter::FromAliPID(pid));}
-   void SetDef2(EPARTYPE pid, Char_t charge)                 {fDef2.SetCharge(charge); fDef2.SetPID(AliRsnDaughter::FromAliPID(pid));}
-   void SetDef1(AliRsnDaughter::ESpecies pid, Char_t charge) {fDef1.SetCharge(charge); fDef1.SetPID(pid);}
-   void SetDef2(AliRsnDaughter::ESpecies pid, Char_t charge) {fDef2.SetCharge(charge); fDef2.SetPID(pid);}
-   
-   void SetDefs(EPARTYPE pid1, Char_t ch1, AliPID::EParticleType pid2, Char_t ch2)                 {SetDef1(pid1, ch1); SetDef2(pid2, ch2);}
-   void SetDefs(AliRsnDaughter::ESpecies pid1, Char_t ch1, AliPID::EParticleType pid2, Char_t ch2) {SetDef1(pid1, ch1); SetDef2(pid2, ch2);}
+   void SetMotherPDG(Int_t pdg)                 {fMotherPDG = pdg;}
+   void SetMotherMass(Double_t mass)            {fMotherMass = mass;}
+   void SetDef1(AliRsnDaughterDef *def)         {if (def) fDef1 = (*def);}
+   void SetDef2(AliRsnDaughterDef *def)         {if (def) fDef2 = (*def);}
+   void SetDef(Int_t i, AliRsnDaughterDef *def) {if (!def) return; if (i<1) fDef1 = (*def); else fDef2 = (*def);}
 
-   // checkers
-   Bool_t IsLikeSign()  const {return (GetChargeC1() == GetChargeC2());}
-   Bool_t HasEqualPID() const {return (GetPID1() == GetPID2());}
+   Bool_t IsLikeSign()  const {return (fDef1.GetChargeC() == fDef2.GetChargeC());}
+   Bool_t HasEqualPID() const {return (fDef1.GetPID() == fDef2.GetPID());}
 
 private:
 

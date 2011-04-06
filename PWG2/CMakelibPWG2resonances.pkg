@@ -26,45 +26,38 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS RESONANCES/AliRsnDaughter.cxx
-           RESONANCES/AliRsnMother.cxx 
+           RESONANCES/AliRsnMother.cxx
+           RESONANCES/AliRsnEvent.cxx
            RESONANCES/AliRsnDaughterDef.cxx
-           RESONANCES/AliRsnPairDef.cxx 
-           RESONANCES/AliRsnEvent.cxx 
-           RESONANCES/AliRsnTarget.cxx 
-           RESONANCES/AliRsnValue.cxx 
-           RESONANCES/AliRsnCut.cxx 
-           RESONANCES/AliRsnCutValue.cxx 
-           RESONANCES/AliRsnCutPrimaryVertex.cxx 
-           RESONANCES/AliRsnCutESD2010.cxx 
-           RESONANCES/AliRsnCutTrackQuality.cxx 
-           RESONANCES/AliRsnCutPID.cxx 
-           RESONANCES/AliRsnCutPIDITS.cxx 
-           RESONANCES/AliRsnCutPIDTPC.cxx 
-           RESONANCES/AliRsnCutPIDTOF.cxx 
-           RESONANCES/AliRsnCutMomentumComparison.cxx 
-           RESONANCES/AliRsnCutSet.cxx 
-           RESONANCES/AliRsnExpression.cxx 
-           RESONANCES/AliRsnVariableExpression.cxx 
-           RESONANCES/AliRsnCutManager.cxx 
-           RESONANCES/AliRsnFunction.cxx 
-           RESONANCES/AliRsnMonitor.cxx
-           RESONANCES/AliRsnMonitorFunctions.cxx
-           RESONANCES/AliRsnMonitorNtuple.cxx
-           RESONANCES/AliRsnPair.cxx 
-           RESONANCES/AliRsnPairFunctions.cxx 
-           RESONANCES/AliRsnPairNtuple.cxx 
-           RESONANCES/AliRsnAnalysisManager.cxx 
-           RESONANCES/AliRsnVATProcessInfo.cxx 
-           RESONANCES/AliRsnVAnalysisTaskSE.cxx 
-           RESONANCES/AliRsnAnalysisSE.cxx 
-           RESONANCES/AliRsnAnalysisEffSE.cxx 
-           RESONANCES/AliRsnVAnalysisTask.cxx 
-           RESONANCES/AliRsnAnalysisTask.cxx 
-           RESONANCES/AliRsnAnalysisTaskEff.cxx 
-           RESONANCES/AliRsnAnalysisTaskEffMonitor.cxx 
-           RESONANCES/AliRsnAnalysisTaskEffPair.cxx 
-           RESONANCES/AliRsnMonitorTrack.cxx 
-           RESONANCES/AliRsnAnalysisMonitorTask.cxx )
+           RESONANCES/AliRsnPairDef.cxx
+           RESONANCES/AliRsnTarget.cxx
+           RESONANCES/AliRsnValue.cxx
+           RESONANCES/AliRsnCut.cxx
+           RESONANCES/AliRsnValueStd.cxx
+           RESONANCES/AliRsnValuePID.cxx
+           RESONANCES/AliRsnCutPrimaryVertex.cxx
+           RESONANCES/AliRsnCutTrackQuality.cxx
+           RESONANCES/AliRsnCutValue.cxx
+           RESONANCES/AliRsnCutPID.cxx
+           RESONANCES/AliRsnCutPIDITS.cxx
+           RESONANCES/AliRsnCutPIDTPC.cxx
+           RESONANCES/AliRsnCutPIDTOF.cxx
+           RESONANCES/AliRsnCutPIDNSigma.cxx
+           RESONANCES/AliRsnCutMomentumComparison.cxx
+           RESONANCES/AliRsnCutSet.cxx
+           RESONANCES/AliRsnExpression.cxx
+           RESONANCES/AliRsnVariableExpression.cxx
+           RESONANCES/AliRsnCutManager.cxx
+           RESONANCES/AliRsnListOutput.cxx
+           RESONANCES/AliRsnLoop.cxx
+           RESONANCES/AliRsnLoopDaughter.cxx
+           RESONANCES/AliRsnLoopPair.cxx
+           RESONANCES/AliRsnLoopEvent.cxx
+           RESONANCES/AliRsnLoopEff.cxx
+           RESONANCES/AliRsnLoopEffPair.cxx
+           RESONANCES/AliRsnDaughterSelector.cxx
+           RESONANCES/AliRsnInputHandler.cxx
+           RESONANCES/AliRsnAnalysisTask.cxx )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 

@@ -27,7 +27,7 @@ ClassImp(AliRsnCutPIDITS)
 AliRsnCutPIDITS::AliRsnCutPIDITS
 (const char *name, AliPID::EParticleType ref, Double_t min, Double_t max, Bool_t rejectOutside) :
    AliRsnCut(name, AliRsnCut::kDaughter, min, max),
-   fInitialized(kFALSE),
+   fIsMC(kFALSE),
    fRejectOutside(rejectOutside),
    fMomMin(0.0),
    fMomMax(1E+20),
@@ -44,7 +44,7 @@ AliRsnCutPIDITS::AliRsnCutPIDITS
 AliRsnCutPIDITS::AliRsnCutPIDITS
 (const AliRsnCutPIDITS& copy) :
    AliRsnCut(copy),
-   fInitialized(kFALSE),
+   fIsMC(copy.fIsMC),
    fRejectOutside(copy.fRejectOutside),
    fMomMin(copy.fMomMin),
    fMomMax(copy.fMomMax),
@@ -66,7 +66,7 @@ AliRsnCutPIDITS& AliRsnCutPIDITS::operator=(const AliRsnCutPIDITS& copy)
 
    AliRsnCut::operator=(copy);
 
-   fInitialized   = kFALSE;
+   fIsMC          = copy.fIsMC;
    fRejectOutside = copy.fRejectOutside;
    fMomMin        = copy.fMomMin;
    fMomMax        = copy.fMomMax;
@@ -78,27 +78,11 @@ AliRsnCutPIDITS& AliRsnCutPIDITS::operator=(const AliRsnCutPIDITS& copy)
 }
 
 //_________________________________________________________________________________________________
-void AliRsnCutPIDITS::SetMC(Bool_t yn)
-{
-//
-// Properly set the PID response
-//
-
-   AliITSPIDResponse itsresponse(yn);
-
-   fESDpid.GetITSResponse() = itsresponse;
-   fAODpid.GetITSResponse() = itsresponse;
-}
-
-//_________________________________________________________________________________________________
 Bool_t AliRsnCutPIDITS::IsSelected(TObject *object)
 {
 //
 // Cut checker.
 //
-
-   // initialize if needed
-   if (!fInitialized) Initialize();
 
    // coherence check
    if (!TargetOK(object)) return kFALSE;
@@ -145,10 +129,13 @@ Bool_t AliRsnCutPIDITS::IsSelected(TObject *object)
 
    // assign PID nsigmas to default cut check value
    // since bad object types are rejected before, here we have an ESD track or AOD track
-   if (esdTrack)
-      fCutValueD = fESDpid.GetITSResponse().GetNumberOfSigmas(mom, esdTrack->GetITSsignal(), fRefType, nITSpidLayers, isSA);
-   else
-      fCutValueD = fAODpid.NumberOfSigmasITS(aodTrack, fRefType);
+   if (esdTrack) {
+      if (!fESDpid) fESDpid = new AliESDpid(fIsMC);
+      fCutValueD = fESDpid->GetITSResponse().GetNumberOfSigmas(mom, esdTrack->GetITSsignal(), fRefType, nITSpidLayers, isSA);
+   } else {
+      if (!fAODpid) fAODpid = new AliAODpidUtil(fIsMC);
+      fCutValueD = fAODpid->NumberOfSigmasITS(aodTrack, fRefType);
+   }
 
    // use AliRsnCut default method to check cut
    Bool_t cutCheck = OkRangeD();
@@ -178,21 +165,4 @@ void AliRsnCutPIDITS::Print(const Option_t *) const
    AliInfo(Form("--> cut range (nsigma)      : %.3f %.3f", fMinD, fMaxD));
    AliInfo(Form("--> momentum range          : %.3f %.3f", fMomMin, fMomMax));
    AliInfo(Form("--> tracks outside range are: %s", (fRejectOutside ? "rejected" : "accepted")));
-}
-
-//_________________________________________________________________________________________________
-void AliRsnCutPIDITS::Initialize()
-{
-//
-// Initialize ESD pid object from global one
-//
-
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   AliESDInputHandler *handler = dynamic_cast<AliESDInputHandler*>(mgr->GetInputEventHandler());
-   if (handler) {
-      AliESDpid *pid = handler->GetESDpid();
-      if (pid) fESDpid = (*pid);
-   }
-
-   fInitialized = kTRUE;
 }

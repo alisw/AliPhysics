@@ -10,6 +10,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "AliStack.h"
 #include "AliVEvent.h"
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"
@@ -19,6 +20,7 @@
 
 class AliRsnCutPID;
 class AliESDtrackCuts;
+class AliPIDResponse;
 
 class AliRsnEvent : public TObject {
 public:
@@ -29,15 +31,17 @@ public:
    virtual ~AliRsnEvent();
 
    // basic setters/getters
-   void       SetRef(AliVEvent *ref)       {fRef = ref;}
-   void       SetRefMC(AliVEvent *refmc)   {fRefMC = refmc;}
-   void       SetLeadingIndex(Int_t i)     {fLeading = i;}
-   void       SetLocalID(Int_t i)          {fLocalID = i;}
-   AliVEvent* GetRef()                     {return fRef;}
-   AliVEvent* GetRefMC()                   {return fRefMC;}
-   Int_t      GetLeadingIndex() const      {return fLeading;}
-   Int_t      GetLeadingParticleID() const {return fLeading;}
-   Int_t      GetLocalID() const           {return fLocalID;}
+   void            SetRef(AliVEvent *ref)              {fRef = ref;}
+   void            SetRefMC(AliVEvent *refmc)          {fRefMC = refmc;}
+   void            SetLeadingIndex(Int_t i)            {fLeading = i;}
+   void            SetLocalID(Int_t i)                 {fLocalID = i;}
+   void            SetPIDResponse(AliPIDResponse *pid) {fPID = pid;}
+   AliVEvent*      GetRef()                            {return fRef;}
+   AliVEvent*      GetRefMC()                          {return fRefMC;}
+   Int_t           GetLeadingIndex() const             {return fLeading;}
+   Int_t           GetLeadingParticleID() const        {return fLeading;}
+   Int_t           GetLocalID() const                  {return fLocalID;}
+   AliPIDResponse* GetPIDResponse()                    {return fPID;}
 
    // getters which convert into allowed input types
    AliESDEvent* GetRefESD()   {if (classMatchRef  (AliESDEvent::Class())) return static_cast<AliESDEvent*>(fRef)  ; return 0x0;}
@@ -61,7 +65,7 @@ public:
    AliRsnDaughter   GetDaughterAbs(Int_t absoluteIndex);
    AliRsnDaughter   GetDaughter(Int_t i, AliRsnDaughter::ERefType type = AliRsnDaughter::kTrack);
    AliRsnDaughter   GetDaughterMC(Int_t i);
-   Int_t            GetAbsoluteSum();
+   Int_t            GetAbsoluteSum() {if (fRef) return (fRef->GetNumberOfTracks() + fRef->GetNumberOfV0s() + fRef->GetNumberOfCascades()); return 0;}
    Bool_t           ConvertAbsoluteIndex(Int_t index, Int_t &realIndex, AliRsnDaughter::ERefType &type);
    Int_t            ConvertRealIndex(Int_t index, AliRsnDaughter::ERefType type);
 
@@ -89,8 +93,10 @@ private:
    AliVEvent   *fRefMC;             //  pointer to reference MC event (if any)
    Int_t        fLeading;           //  index of leading track
    Int_t        fLocalID;           //  identification number used locally
+   
+   AliPIDResponse *fPID;            //! pointer to PID response
 
-   ClassDef(AliRsnEvent, 4);
+   ClassDef(AliRsnEvent, 5);
 };
 
 #endif
