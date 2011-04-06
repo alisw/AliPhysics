@@ -85,8 +85,12 @@ AliDCSSensorArray::AliDCSSensorArray(Int_t run, const char* dbEntry) :
   //
 
   AliCDBEntry *entry = AliCDBManager::Instance()->Get(dbEntry,run);
-  TTree *tree = (TTree*) entry->GetObject();
-  fSensors = AliDCSSensor::ReadTree(tree);
+  if (entry) {
+    TTree *tree = (TTree*) entry->GetObject();
+    fSensors = AliDCSSensor::ReadTree(tree);
+  } else {
+    AliError("Unable to load configuration from CDB!");
+  }
 }
 //_____________________________________________________________________________
 AliDCSSensorArray::AliDCSSensorArray(UInt_t startTime, UInt_t endTime,
@@ -231,7 +235,7 @@ void AliDCSSensorArray::MakeSplineFit(TMap *map, Bool_t keepMap)
       fit->InitKnots(gr,fMinPoints,fIter,fMaxDelta);
       fit->SplineFit(fFitReq);
       fit->Cleanup();
-      if (fit) {
+      if (fit->GetKnots()>0) {
         entry->SetFit(fit);
       } else {
         AliWarning(Form("sensor %s: no fit performed, DCS graph kept.",stringID.Data()));
@@ -284,7 +288,7 @@ void AliDCSSensorArray::MakeSplineFitAddPoints(TMap *map)
     fit->InitKnots(gr,fMinPoints,fIter,fMaxDelta);
     fit->SplineFit(fFitReq);
     fit->Cleanup();
-    if (fit) {
+    if (fit->GetKnots()>0) {
       AliSplineFit *oldFit = entry->GetFit();
       if (oldFit) delete oldFit;
       entry->SetFit(fit);
@@ -384,7 +388,11 @@ TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet, Bool_t keepStart){
   Int_t skipped=0;
   AliDCSValue *val = (AliDCSValue *)valueSet->At(0);
   AliDCSValue::Type type = val->GetType();
-  if ( type == AliDCSValue::kInvalid || type == AliDCSValue::kBool ) return 0;
+  if ( type == AliDCSValue::kInvalid || type == AliDCSValue::kBool ) {
+     delete [] x;
+     delete [] y;
+     return 0;
+  }
   Float_t value;
   for (Int_t i=0; i<nentries; i++){
     val = (AliDCSValue *)valueSet->At(i);
