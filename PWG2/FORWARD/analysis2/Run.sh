@@ -7,7 +7,6 @@ rebin=1
 vzmin=-10
 vzmax=10
 batch=0
-gdb=0
 proof=0
 mc=0
 type=INEL
@@ -36,6 +35,8 @@ max_rotate=10
 name=`date +analysis%Y%m%d_%H%M`
 pass2dir=./
 
+#_____________________________________________________________________
+# Print usage
 usage()
 {
 cat<<EOF
@@ -87,6 +88,7 @@ If NWORKERS is 0, then the analysis will be run in local mode.
 EOF
 }
 
+#_____________________________________________________________________
 test_ralien()
 {
     aliroot -l -b <<EOF > /dev/null 2>&1
@@ -97,33 +99,121 @@ EOF
     return $ret
 }
 
+#_____________________________________________________________________
+# Toggle a value 
 toggle()
 {
     echo $((($1+1)%2))
 }
 
+#_____________________________________________________________________
+# Rotate files 
 rotate() 
 {
     fname=$1 
     if test -f ${fname}.${max_rotate} ; then 
-	echo "Maximum number of rotations - $max_rotate - for $fname found" \
-	    > /dev/stderr 
-	exit 1
+	# echo "Removing ${fname}.${max_rotate}"
+	rm -f ${fname}.${max_rotate}
+	# echo "Maximum number of rotations - $max_rotate - for $fname found" \
+	#     > /dev/stderr 
+	# exit 1
     fi
     let max=$max_rotate-1
     for i in `seq $max -1 1` ; do 
 	if test ! -f ${fname}.${i} ; then continue ; fi 
 	let newn=$i+1
-	echo "Moving ${fname}.$i to ${fname}.$newn"
+	# echo "Moving ${fname}.$i to ${fname}.$newn"
 	mv ${fname}.$i ${fname}.$newn
     done
     if test -f $fname ; then 
-	echo "Moving ${fname} to ${fname}.1"
+	# echo "Moving ${fname} to ${fname}.1"
 	mv $fname ${fname}.1 
     fi
 }
 
+#_____________________________________________________________________
+#
+# Function to run pass 
+#
+# Arguments (in order)
+#    isBatch:     Should we do batch processing 
+#    output:      Main output file 
+#    outputs:     All outputs 
+#    outdir:      Where the output will be put 
+#    notlast:     Not last pass 
+#    script:      Script name 
+#    args:        Arguments for script 
+#
+run_pass()
+{
+    isbatch=$1    ; shift 
+    output=$1     ; shift
+    outputs=$1    ; shift 
+    outdir=$1     ; shift 
+    notLast=$1    ; shift 
+    script=$1     ; shift 
+    args=$1       
 
+    # --- Log file name ----------------------------------------------
+    if test "x$output" = "x" ; then 
+	log=analysis.log
+    else
+	log=`dirname $output`/`basename $output .root`.log
+    fi
+
+    # --- Make options for AliROOT -----------------------------------
+    opts=
+    if test $isbatch -gt 0 || test $notLast -gt 0 ; then 
+	opts="-q"
+    fi
+    if test $isbatch -gt 0 ; then 
+	opts="-b $opts"
+    fi 
+
+    # --- Rotate output file -----------------------------------------
+    for i in ${outputs} ${log} ; do 
+	rotate ${outdir}${i}
+    done
+
+    # --- Some print out ---------------------------------------------
+    cat <<-EOF
+	Pass parameters: 
+	 Batch mode:          	$isBatch 
+	 Main output:	     	$output
+	 All outputs:		$outputs
+	 Output directory:	$outdir
+	 More to do:		$notLast
+	 Script to run:		$script 
+	 Script arguments:	$args
+	 Log file:              $log
+	 AliROOT options:	$opts
+	EOF
+
+    # --- Run AliROOT ------------------------------------------------
+    echo "Running aliroot $opts ${script}${args}"
+    if test $isbatch -gt 0 || test $notLast -gt 0 ; then 
+	aliroot ${opts} ${script}"${args}" 2>&1 | tee ${log}
+    else 
+	aliroot ${opts} ${script}"${args}"
+    fi
+    fail=$?
+
+    # --- Check exit conditions --------------------------------------
+    if  test $fail -gt 0  ; then 
+        echo "Returned $fail" 
+	exit $fail 
+    fi
+    for i in ${outputs} ; do 
+	if test ! -f ${outdir}${i} ; then 
+	    echo "File ${i} not generated in ${outdir}"
+	    exit 1
+	fi
+    done
+    echo "Success (log in $log)"
+}
+
+#_____________________________________________________________________
+# Loop over arguments 
 while test $# -gt 0 ; do
     case $1 in 
 	-h|--help)            usage            ; exit 0;; 
@@ -164,82 +254,38 @@ while test $# -gt 0 ; do
     shift
 done 
 
+#_____________________________________________________________________
+# Check for RAlien if needed
 if test "x$name" != "x" && test_ralien ; then 
     echo "AliEn plug-in available - output will be in $name"
     pass2dir=${name}/
 fi
 
-if test $nev -lt 0 ; then 
-    base=dndeta_xxxxxxx
-else 
-    base=`printf dndeta_%07d $nev`
-fi
-opts="-l -x"
-opts1=""
-redir=
-
-if test $dopass2 -gt 0 ; then 
-    opts1="-q" 
-fi
-if test $batch -gt 0 ; then 
-    opts="-b -q $opts"
-    redir="2>&1 | tee ${base}.log"
-    echo "redir=$redir"
-fi 
+#_____________________________________________________________________
+# Pass 1 
 if test $dopass1 -gt 0 ; then 
-    for i in ${outputs1} ; do 
-	rotate ${pass2dir}${i}
-    done
-
-    if test $gdb -gt 0 ; then 
-	export PROOF_WRAPPERCMD="gdb -batch -x ${gdb_script} --args"
-    fi
-    echo "Running aliroot $opts $opts1 ${ana}/${pass1}\(\"${esddir}\",$nev,$proof,$mc,$cent,\"${name}\"\)"
-    if test $batch -gt 0 ; then 
-	aliroot $opts $opts1 ${ana}/${pass1}\(\"${esddir}\",$nev,$proof,$mc,$cent,\"${name}\"\) 2>&1 | tee ${base}.log
-    else 
-	aliroot $opts $opts1 ${ana}/${pass1}\(\"${esddir}\",$nev,$proof,$mc,$cent,\"${name}\"\)
-    fi
-    fail=$?
-    if  test $fail -gt 0  ; then 
-        echo "Return value $fail not 0" ; exit $fail 
-    fi
-    for i in ${outputs1} ; do 
-	if test ! -f ${pass2dir}${i} ; then 
-	    echo "File ${i} in ${pass2dir} not generated"
-	    exit 1
-	fi
-	ls -l ${pass2dir}/${i}
-    done
+    args="(\"${esddir}\",$nev,$proof,$mc,$cent,\"${name}\")"
+    echo "Args=$args"
+    run_pass ${batch} ${output1} "${outputs1}" "${pass2dir}" ${dopass2} \
+	${ana}/${pass1} ${args}
     echo "Pass 1 done"
 fi
 
+#_____________________________________________________________________
+# Pass 2 
 if test $dopass2 -gt 0 ; then
-    for i in ${outputs2} ; do 
-	rotate ${pass2dir}${i} 
-    done 
-
-    args=(\(\"${pass2dir}\",$nev,\"$type\",$cent,\"$scheme\",$vzmin,$vzmax,$proof,\"$name\"\))
+    args="(\"${pass2dir}\",$nev,\"$type\",$cent,\"$scheme\",$vzmin,$vzmax,$proof,\"$name\")"
     if test "x$pass1" = "xMakeELossFits.C" ; then 
 	args=(\(\"${pass2dir}${output1}\"\))
     fi
-    echo We are Running aliroot ${opts} ${opts1} ${ana}/${pass2}${args}
-    aliroot ${opts} ${opts1} ${ana}/${pass2}${args}
 
-    fail=$? 
-    if test $fail -gt 0 ; then 
-	echo "Return value $fail not 0" ; exit $fail 
-    fi
-    for i in ${outputs2} ; do 
-	if test ! -f ${pass2dir}${i} ; then 
-	    echo "File ${i} in ${pass2dir} not generated"
-	    exit 1
-	fi
-	ls -l ${pass2dir}/${i}
-    done
+    run_pass ${batch} ${output2} "${outputs2}" "${pass2dir}" ${dopass3} \
+	${ana}/${pass2} ${args}
     echo "Pass 2 done"
 fi
 
+#_____________________________________________________________________
+# Pass 3 
 if test $dopass3 -gt 0 ; then
     tit=`echo $tit | tr ' ' '@'` 
     flags=0
@@ -248,13 +294,12 @@ if test $dopass3 -gt 0 ; then
     if test $ratios    -gt 0 ; then let flags=$(($flags|0x4)); fi
     if test $asymm     -gt 0 ; then let flags=$(($flags|0x8)); fi
 
-    args=(\(\"${pass2dir}${output2}\"\,${flags},\"$tit\",$rebin \))
+    args="(\"${pass2dir}${output2}\",${flags},\"$tit\",$rebin)"
     if test "x$pass1" = "xMakeELossFits.C" ; then 
-	args=(\(\"${pass2dir}${output1}\"\))
+	args="(\"${pass2dir}${output1}\")"
     fi
-    
-    echo "Running aliroot ${opts} ${opts1} ${ana}/${pass3}${args}"
-    aliroot ${opts} ${ana}/${pass3}${args}
+
+    run_pass ${batch} "" "" "" 0 ${ana}/${pass3} ${args}
 fi				 
 
 
