@@ -453,6 +453,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	
 	if (TMath::Abs(zMCVertex) > fCuts->GetMaxVtxZ()){
 	  AliDebug(3,Form("z coordinate of MC vertex = %f, it was required to be within [-%f, +%f], skipping event", zMCVertex, fCuts->GetMaxVtxZ(), fCuts->GetMaxVtxZ()));
+	  delete[] containerInput;
+	  delete[] containerInputMC;
 	  return;
 	}
 
@@ -481,15 +483,14 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	fCuts->SetTriggerClass("");
 
 
-	if (fCentralitySelection){
+	if (fCentralitySelection){ // consider only events in the class requested
 	  if(fCuts->IsEventSelectedInCentrality(aodEvent)!=0) {
   	    delete[] containerInput;
 	    delete[] containerInputMC;
             delete [] trackCuts;
             return;
           }    
-	}
-	else{
+	} else { // disable the centrality sel in IsEventSelected
 	  fCuts->SetUseCentrality(0);
 	}
 	
