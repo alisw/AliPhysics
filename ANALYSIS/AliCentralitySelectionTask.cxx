@@ -594,6 +594,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   // ***** Scaling for MC
   if (fIsMCInput) {
     fUseScaling=kFALSE;
+    fUseCleaning=kFALSE;
     Float_t tempScalefactorV0M = MyGetScaleFactorMC(fCurrentRun);
     v0Corr  = Short_t((multV0A+multV0C)  * tempScalefactorV0M);
   }
