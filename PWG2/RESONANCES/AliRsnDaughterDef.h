@@ -23,35 +23,35 @@ public:
    const AliRsnDaughterDef& operator= (const AliRsnDaughterDef &copy);
    virtual ~AliRsnDaughterDef() { }
 
-   // getters
-   Double_t                 GetMass()    const {return fMass;}
-   Char_t                   GetChargeC() const {return fCharge;}
-   Short_t                  GetChargeS() const {if (fCharge == '+') return 1; else if (fCharge == '-') return -1; else return 0;}
-   AliRsnDaughter::ESpecies GetPID()     const {return fPID;}
-   AliRsnDaughter::ERefType GetRefType() const {return fRefType;}
-   virtual const char*      GetName()    const {return Form("%s%c", AliRsnDaughter::SpeciesName(fPID), fCharge);}
-
-   // setters
-   void SetPID(AliRsnDaughter::ESpecies pid = AliRsnDaughter::kUnknown)     {fPID = pid; fRefType = AliRsnDaughter::RefType(pid); fMass = AliRsnDaughter::SpeciesMass(pid);}
-   void SetCharge(Char_t charge = 0)                                        {fCharge = charge;}
-   void SetRefType(AliRsnDaughter::ERefType type = AliRsnDaughter::kNoType) {fRefType = type;}
+   Bool_t                   IsOnlyTrue()      const {return fOnlyTrue;}
+   AliRsnDaughter::ESpecies GetPID()          const {return fPID;}
+   Double_t                 GetMass()         const {return fMass;}
+   Char_t                   GetChargeC()      const {return fCharge;}
+   Short_t                  GetChargeS()      const {if (fCharge == '+') return 1; else if (fCharge == '-') return -1; else return 0;}
+   AliRsnDaughter::ERefType GetRefType()      const {return fRefType;}
+   virtual const char*      GetName()         const {return Form("%s%c", AliRsnDaughter::SpeciesName(fPID), fCharge);}
+   Bool_t                   IsChargeDefined() const {return (fCharge == '+' || fCharge == '-' || fCharge == '0');}
    
-   // checker
+   void SetOnlyTrue(Bool_t yn = kTRUE)            {fOnlyTrue = yn;}
+   void SetPID(AliRsnDaughter::ESpecies pid)      {fPID = pid; fRefType = AliRsnDaughter::RefType(pid); fMass = AliRsnDaughter::SpeciesMass(pid);}
+   void SetCharge(Char_t charge)                  {fCharge = charge;}
+   void SetRefType(AliRsnDaughter::ERefType type) {fRefType = type;}
+   
    Bool_t MatchesPID(AliRsnDaughter *daughter);
    Bool_t MatchesCharge(AliRsnDaughter *daughter);
    Bool_t MatchesRefType(AliRsnDaughter *daughter);
-   Bool_t MatchesDaughter(AliRsnDaughter *daughter, Bool_t truePID = kFALSE);
-   
-   // external checker
-   Bool_t MatchesPDG(Int_t pdgCode)      {return (AliRsnDaughter::SpeciesPDG(fPID) == pdgCode);}
-   Bool_t MatchesCharge(Short_t charge)  {return (GetChargeS() == charge);}
+   Bool_t MatchesDaughter(AliRsnDaughter *daughter);
+   Bool_t MatchesPDG(Int_t pdgCode)       {return (AliRsnDaughter::SpeciesPDG(fPID) == pdgCode);}
+   Bool_t MatchesChargeS(Short_t charge)  {return (GetChargeS() == charge);}
+   Bool_t MatchesChargeC(Char_t charge)   {return (GetChargeC() == charge);}
 
 private:
 
-   AliRsnDaughter::ESpecies  fPID;     // PID of particles
-   Double_t                  fMass;    // mass of particles (subordinate to fPID)
-   Char_t                    fCharge;  // charge of particles
-   AliRsnDaughter::ERefType  fRefType; // object reference type (track/V0/cascade)
+   Bool_t                    fOnlyTrue; // fag to activate comparison of PID species
+   AliRsnDaughter::ESpecies  fPID;      // PID of particles
+   Double_t                  fMass;     // mass of particles (subordinate to fPID)
+   Char_t                    fCharge;   // charge of particles
+   AliRsnDaughter::ERefType  fRefType;  // object reference type (track/V0/cascade)
 
    // ROOT dictionary
    ClassDef(AliRsnDaughterDef, 1)
