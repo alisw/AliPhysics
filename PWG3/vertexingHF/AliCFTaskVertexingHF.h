@@ -102,6 +102,12 @@ public:
 
 	void SetFakeSelection(Int_t fakeSel = 0) {fFakeSelection=fakeSel;}
 	Int_t GetFakeSelection(){return fFakeSelection;}
+
+	void SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
+	Bool_t GetRejectCandidateIfNotFromQuark(){return fRejectIfNoQuark;}
+
+	void SetUseMCVertex(Bool_t opt){fUseMCVertex=opt;}
+	Bool_t GetUseMCVertex(){return fUseMCVertex;}
 	
 protected:
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
@@ -130,9 +136,10 @@ protected:
 	Char_t fSign;                 // flag to decide wheter to keep D0 only (0), D0bar only (1), or both D0 and D0bar (2)
         Bool_t fCentralitySelection;  //flag to switch off the centrality selection
 	Int_t  fFakeSelection;  //selection flag for fakes tracks 
+	Bool_t fRejectIfNoQuark;  // flag to remove events not geenrated with PYTHIA
+	Bool_t fUseMCVertex;  // flag to use MC vertex (useful when runnign in pp)
 
-
-	ClassDef(AliCFTaskVertexingHF,6); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,7); // class for HF corrections as a function of many variables
 };
 
 #endif

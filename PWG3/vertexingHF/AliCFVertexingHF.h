@@ -109,6 +109,8 @@ class AliCFVertexingHF : public TObject {
 	void SetFakeSelection(Int_t fakeSel){fFakeSelection = fakeSel;}
 	Int_t GetFakeSelection(){return fFakeSelection;}
 
+	void SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
+
 	protected:
 	
 	TClonesArray      *fmcArray;               //mcArray candidate
@@ -133,8 +135,9 @@ class AliCFVertexingHF : public TObject {
 	Float_t* fEtaAccCut;          //[fProngs] array of eta (absolute value) cut values for the Acceptance (MC+Rec) steps 
 	Int_t fFakeSelection; // fakes selection: 0 --> all, 1 --> non-fake, 2 --> fake
 	Float_t fFake;              // variable to indicate whether the D0 was a fake or not: 0 --> fake, 1 --> MC, 2 --> non-fake
+	Bool_t fRejectIfNoQuark;  // flag to remove events not geenrated with PYTHIA
 
-	ClassDef(AliCFVertexingHF, 5);
+	ClassDef(AliCFVertexingHF, 6);
 	
 };
 
