@@ -463,7 +463,6 @@ protected:
      * @param symmetrice Whether to make symmetric extensions 
      * @param rebin      Whether to rebin
      * @param cutEdges   Whether to cut edges when rebinning 
-     * @param color      Color of markers 
      * @param marker     Marker style 
      */
     virtual void MakeResult(const TH2D* sum,  
@@ -475,7 +474,6 @@ protected:
 			    bool        symmetrice, 
 			    Int_t       rebin, 
 			    bool        cutEdges, 
-			    Int_t       color, 
 			    Int_t       marker);
     /** 
      * End of processing 
@@ -491,7 +489,6 @@ protected:
      * @param corrEmpty   Whether to correct for empty bins
      * @param cutEdges    Whether to cut edges when rebinning
      * @param triggerMask Trigger mask 
-     * @param color       Base colour for markers 
      * @param marker      Marker style 
      */
     virtual void End(TList*      sums, 
@@ -505,7 +502,6 @@ protected:
 		     Bool_t      corrEmpty, 
 		     Bool_t      cutEdges, 
 		     Int_t       triggerMask,
-		     Int_t       color,
 		     Int_t       marker);
     /**
      * @{
@@ -540,6 +536,14 @@ protected:
      */
     TH1I* GetTrigggers() { return fTriggers; }
     /** @} */
+
+    Int_t GetColor() const;
+    TList* GetResults() const { return fOutput; }
+    const char* GetResultName(Int_t rebin, Bool_t sym, 
+			      const char* postfix="") const;
+    TH1* GetResult(Int_t rebin, Bool_t sym, 
+		   const char* postfix="") const;
+
   protected:
     /** 
      * Create sum histogram 

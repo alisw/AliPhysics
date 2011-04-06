@@ -23,7 +23,8 @@
 #include "AliInputEventHandler.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
-//#include "AliFMDStripIndex.h"
+#include "AliAODForwardMult.h"
+#include "AliFMDStripIndex.h"
 #include <TH1.h>
 #include <TH3D.h>
 #include <TH2D.h>
@@ -56,10 +57,11 @@ namespace {
 //====================================================================
 AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask()
   : AliAnalysisTaskSE(),
+    fInspector(),
+    fFirstEvent(true),
     fHEvents(0), 
     fHEventsTr(0), 
     fHEventsTrVtx(0),
-    fHEventsVtx(0), 
     fHTriggers(0),
     fPrimaryInnerAll(0),   
     fPrimaryOuterAll(0),   
@@ -89,11 +91,12 @@ AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask()
 
 //____________________________________________________________________
 AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask(const char* name)
-  : AliAnalysisTaskSE(name), 
+  : AliAnalysisTaskSE(name),
+    fInspector("eventInspector"), 
+    fFirstEvent(true),
     fHEvents(0), 
     fHEventsTr(0), 
     fHEventsTrVtx(0),
-    fHEventsVtx(0), 
     fHTriggers(0),
     fPrimaryInnerAll(0),   
     fPrimaryOuterAll(0),   
@@ -120,15 +123,17 @@ AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask(const char* name)
   //    name Name of task 
   //
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //____________________________________________________________________
 AliForwardMCCorrectionsTask::AliForwardMCCorrectionsTask(const AliForwardMCCorrectionsTask& o)
   : AliAnalysisTaskSE(o),
+    fInspector(o.fInspector),
+    fFirstEvent(o.fFirstEvent),
     fHEvents(o.fHEvents), 
     fHEventsTr(o.fHEventsTr), 
     fHEventsTrVtx(o.fHEventsTrVtx),
-    fHEventsVtx(o.fHEventsVtx), 
     fHTriggers(o.fHTriggers),
     fPrimaryInnerAll(o.fPrimaryInnerAll),   
     fPrimaryOuterAll(o.fPrimaryOuterAll),   
@@ -169,6 +174,8 @@ AliForwardMCCorrectionsTask::operator=(const AliForwardMCCorrectionsTask& o)
   // Return:
   //    Reference to this object 
   //
+  fInspector         = o.fInspector;
+  fFirstEvent        = o.fFirstEvent;
   fHEventsTr         = o.fHEventsTr;
   fHEventsTrVtx      = o.fHEventsTrVtx;
   fHTriggers         = o.fHTriggers;
@@ -333,7 +340,8 @@ AliForwardMCCorrectionsTask::UserCreateOutputObjects()
   // 
   //
   fList = new TList;
-  fList->SetName(GetName());
+  fList->SetOwner();
+  fList->SetName(Form("%sSums", GetName()));
 
   fHEvents = new TH1I(GetEventName(false,false),
 		      "Number of all events", 
@@ -371,19 +379,6 @@ AliForwardMCCorrectionsTask::UserCreateOutputObjects()
   fHEventsTrVtx->SetDirectory(0);
   fList->Add(fHEventsTrVtx);
   
-  fHEventsVtx = new TH1I(GetEventName(false,true),
-			 "Number of events w/vertex", 
-			 fVtxAxis.GetNbins(), 
-			 fVtxAxis.GetXmin(), 
-			 fVtxAxis.GetXmax());
-  fHEventsVtx->SetXTitle("v_{z} [cm]");
-  fHEventsVtx->SetYTitle("# of events");
-  fHEventsVtx->SetFillColor(kBlue+1);
-  fHEventsVtx->SetFillStyle(3001);
-  fHEventsVtx->SetDirectory(0);
-  fList->Add(fHEventsVtx);
-
-      
   fHTriggers = new TH1I("triggers", "Triggers", 10, 0, 10);
   fHTriggers->SetFillColor(kRed+1);
   fHTriggers->SetFillStyle(3001);
@@ -444,6 +439,9 @@ AliForwardMCCorrectionsTask::UserCreateOutputObjects()
   strips->Add(fStripsFMD3o);
   fList->Add(strips);
 
+  fInspector.Init(fVtxAxis);
+  fInspector.DefineOutput(fList);
+
   PostData(1, fList);
 }
 //____________________________________________________________________
@@ -470,52 +468,57 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
     AliWarning("No ESD event found for input event");
     return;
   }
-  
+
+  //--- Read run information -----------------------------------------
+  if (fFirstEvent && esd->GetESDRun()) {
+    fInspector.ReadRunDetails(esd);
+    
+    AliInfo(Form("Initializing with parameters from the ESD:\n"
+		 "         AliESDEvent::GetBeamEnergy()   ->%f\n"
+		 "         AliESDEvent::GetBeamType()     ->%s\n"
+		 "         AliESDEvent::GetCurrentL3()    ->%f\n"
+		 "         AliESDEvent::GetMagneticField()->%f\n"
+		 "         AliESDEvent::GetRunNumber()    ->%d\n",
+		 esd->GetBeamEnergy(),
+		 esd->GetBeamType(),
+		 esd->GetCurrentL3(),
+		 esd->GetMagneticField(),
+		 esd->GetRunNumber()));
+    
+    fFirstEvent = false;
+  }
+
   // Get the particle stack 
   AliStack* stack = mcEvent->Stack();
 
-  // Get the event generate header 
-  AliHeader*          mcHeader  = mcEvent->Header();
-  AliGenEventHeader*  genHeader = mcHeader->GenEventHeader();
-  
-  // Get the generator vertex 
-  TArrayF mcVertex;
-  genHeader->PrimaryVertex(mcVertex);
-  Double_t mcVtxZ = mcVertex.At(2);
+  // Some variables 
+  UInt_t   triggers; // Trigger bits
+  Bool_t   lowFlux;  // Low flux flag
+  UShort_t iVz;      // Vertex bin from ESD
+  Double_t vZ;       // Z coordinate from ESD
+  Double_t cent;     // Centrality 
+  UShort_t iVzMc;    // Vertex bin from MC
+  Double_t vZMc;     // Z coordinate of IP vertex from MC
+  Double_t b;        // Impact parameter
+  Int_t    nPart;    // Number of participants 
+  Int_t    nBin;     // Number of binary collisions 
+  Double_t phiR;     // Reaction plane from MC
+  UShort_t nClusters;// Number of SPD clusters 
+  // Process the data 
+  UInt_t retESD = fInspector.Process(esd, triggers, lowFlux, iVz, vZ, 
+				     cent, nClusters);
+  /*UInt_t retMC  =*/ fInspector.ProcessMC(mcEvent, triggers, iVzMc, vZMc, 
+					   b, nPart, nBin, phiR);
 
-  // Check the MC vertex is in range 
-  Int_t mcVtxBin = fVtxAxis.FindBin(mcVtxZ);
-  if (mcVtxBin < 1 || mcVtxBin > fVtxAxis.GetNbins()) {
-#ifdef VERBOSE 
-    AliWarning(Form("MC v_z=%f is out of rante [%,%f]", 
-		    mcVtxBin, fVtxAxis.GetXmin(), fVtxAxis.GetXmax()));
-#endif
-    return;
-  }
-
-  // UInt_t   triggers;
-  // Bool_t   gotTrigggers = false;
-  Bool_t   gotInel = false;
-  // Double_t vZ;
-  Bool_t   gotVertex = false;
-#if 0
-  // Use event inspector instead 
-  // Get the triggers 
-  UInt_t triggers = 0;
-  Bool_t gotTriggers = AliForwardUtil::ReadTriggers(esd,triggers,fHTriggers);
-  Bool_t gotInel     = triggers & AliAODForwardMult::kInel;
-  
-  // Get the ESD vertex 
-  Double_t vZ = -1000000;
-  Bool_t gotVertex = AliForwardUtil::ReadVertex(esd,vZ);
-#endif
-
-
+  // Bool_t isInelMC = true; // (triggers & AliAODForwardMult::kB);
+  // Bool_t isNSDMC  = (triggers & AliAODForwardMult::kMCNSD);
+  Bool_t isInel   = triggers & AliAODForwardMult::kInel;
+  // Bool_t isNSD    = triggers & AliAODForwardMult::kNSD;
+  Bool_t hasVtx   = retESD == AliFMDMCEventInspector::kOk;
   // Fill the event count histograms 
-  if (gotInel)              fHEventsTr->Fill(mcVtxZ);
-  if (gotInel && gotVertex) fHEventsTrVtx->Fill(mcVtxZ);
-  if (gotVertex)            fHEventsVtx->Fill(mcVtxZ);
-  fHEvents->Fill(mcVtxZ);
+  if (isInel)           fHEventsTr->Fill(vZMc);
+  if (isInel && hasVtx) fHEventsTrVtx->Fill(vZMc);
+  fHEvents->Fill(vZMc);
 
   // Cache of the hits 
   AliFMDFloatMap hitsByStrip;
@@ -539,10 +542,10 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
     Double_t phi = particle->Phi();
     
     if (isCharged && isPrimary) 
-      FillPrimary(gotInel, gotVertex, mcVtxZ, eta, phi);
+      FillPrimary(isInel, hasVtx, vZMc, eta, phi);
     
     // For the rest, ignore non-collisions, and events out of vtx range 
-    if (!gotInel || gotVertex) continue;
+    if (!isInel || !hasVtx) continue;
     
     Int_t nTrRef = particle->GetNumberOfTrackReferences();
     for (Int_t iTrRef = 0; iTrRef < nTrRef; iTrRef++) { 
@@ -558,7 +561,7 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
       // Get the detector coordinates 
       UShort_t d = 0, s = 0, t = 0;
       Char_t r = '\0';
-      // AliFMDStripIndex::Unpack(trackRef->UserId(), d, r, s, t);
+      AliFMDStripIndex::Unpack(trackRef->UserId(), d, r, s, t);
       
       // Check if mother (?) is charged and that we haven't dealt with it 
       // already
@@ -572,7 +575,7 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
       // Double_t trRefPhi = esd->GetFMDData()->Phi(d,r,s,t);
 
       // Fill strip information into histograms 
-      FillStrip(d, r, mcVtxZ, eta, phi, hitsByStrip(d,r,s,t) == 1);
+      FillStrip(d, r, vZMc, eta, phi, hitsByStrip(d,r,s,t) == 1);
 
       // Set the last processed track number - marking it as done for
       // this strip
@@ -588,20 +591,21 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
 
 //____________________________________________________________________
 void
-AliForwardMCCorrectionsTask::FillPrimary(Bool_t gotInel, Bool_t gotVtx, 
-				    Double_t vz, Double_t eta, Double_t phi) 
+AliForwardMCCorrectionsTask::FillPrimary(Bool_t isInel, Bool_t hasVtx, 
+					 Double_t vz, 
+					 Double_t eta, Double_t phi) 
 {
   // 
   // Fill in primary information
   // 
   // Parameters:
-  //    gotInel   Got INEL trigger from ESD
+  //    isInel   Got INEL trigger from ESD
   //    gotVtx    Got vertex Z from ESD 
   //    vz        @f$z@f$ coordinate of interation point
   //    eta       Pseudo rapidity 
   //    phi       Azimuthal angle
   //
-  if (gotInel && gotVtx) {
+  if (isInel && hasVtx) {
     // This takes the place of hPrimary_FMD_<r>_vtx<v> and 
     // Analysed_FMD<r>_vtx<v>
     fPrimaryInnerTrVtx->Fill(vz,eta,phi);
@@ -698,32 +702,32 @@ AliForwardMCCorrectionsTask::Terminate(Option_t*)
   //    option Not used 
   //
 
-  TList* list = dynamic_cast<TList*>(GetOutputData(1));
-  if (!list) {
+  fList = dynamic_cast<TList*>(GetOutputData(1));
+  if (!fList) {
     AliError("No output list defined");
     return;
   }
 
-  TList* primaries = static_cast<TList*>(list->FindObject("primaries"));
-  TList* hits      = static_cast<TList*>(list->FindObject("hits"));
-  TList* strips    = static_cast<TList*>(list->FindObject("strips"));
+  TList* primaries = static_cast<TList*>(fList->FindObject("primaries"));
+  TList* hits      = static_cast<TList*>(fList->FindObject("hits"));
+  TList* strips    = static_cast<TList*>(fList->FindObject("strips"));
   if (!primaries || !hits || !strips) { 
     AliError(Form("Could not find all sub-lists in %s (p=%p,h=%p,s=%p)",
-		  list->GetName(), primaries, hits, strips));
+		  fList->GetName(), primaries, hits, strips));
     return;
   }
 
   TH1I* eventsAll = 
-    static_cast<TH1I*>(list->FindObject(GetEventName(false,false)));
+    static_cast<TH1I*>(fList->FindObject(GetEventName(false,false)));
   TH1I* eventsTr = 
-    static_cast<TH1I*>(list->FindObject(GetEventName(true,false)));
+    static_cast<TH1I*>(fList->FindObject(GetEventName(true,false)));
   TH1I* eventsVtx = 
-    static_cast<TH1I*>(list->FindObject(GetEventName(false,true)));
+    static_cast<TH1I*>(fList->FindObject(GetEventName(false,true)));
   TH1I* eventsTrVtx = 
-    static_cast<TH1I*>(list->FindObject(GetEventName(true,true)));
+    static_cast<TH1I*>(fList->FindObject(GetEventName(true,true)));
   if (!eventsAll || !eventsTr || !eventsVtx || !eventsTrVtx) {
     AliError(Form("Could not find all event histograms in %s "
-		  "(a=%p,t=%p,v=%p,tv=%p)", list->GetName(), 
+		  "(a=%p,t=%p,v=%p,tv=%p)", fList->GetName(), 
 		  eventsAll, eventsTr, eventsVtx, eventsTrVtx));
     return;
   }
@@ -738,7 +742,7 @@ AliForwardMCCorrectionsTask::Terminate(Option_t*)
     static_cast<TH3D*>(primaries->FindObject(GetPrimaryName('O',true)));
   if (!primIAll || !primOAll || !primITrVtx || !primOTrVtx) {
     AliError(Form("Could not find all primary particle histograms in %s "
-		  "(ai=%p,ao=%p,tvi=%p,tvo=%p)", list->GetName(), 
+		  "(ai=%p,ao=%p,tvi=%p,tvo=%p)", fList->GetName(), 
 		  primIAll, primOAll, primITrVtx, primOTrVtx));
     return;
   }
@@ -767,6 +771,11 @@ AliForwardMCCorrectionsTask::Terminate(Option_t*)
     return;
   }
 
+  // Output list 
+  TList* output = new TList;
+  output->SetOwner();
+  output->SetName(Form("%sResults", GetName()));
+
   // Calculate the over-all event selection efficiency 
   TH1D* selEff = new TH1D("selEff", "Event selection efficiency", 
 			  fVtxAxis.GetNbins(), 
@@ -778,14 +787,15 @@ AliForwardMCCorrectionsTask::Terminate(Option_t*)
   selEff->SetFillStyle(3001);
   selEff->Add(eventsAll);
   selEff->Divide(eventsTrVtx);
-  list->Add(selEff);
+  output->Add(selEff);
 
   // Loop over vertex bins and do vertex dependendt stuff 
   for (Int_t v = 1; v <= fVtxAxis.GetNbins(); v++) {
-    // Make a sub-list in the output 
+    // Make a sub-fList in the output 
     TList* vl = new TList;
+    vl->SetOwner();
     vl->SetName(Form("vtx%02d", v));
-    list->Add(vl);
+    output->Add(vl);
 
     // Get event counts 
     Int_t nEventsAll   = Int_t(eventsAll->GetBinContent(v));
@@ -858,10 +868,11 @@ AliForwardMCCorrectionsTask::Terminate(Option_t*)
 	doubleHit->SetFillStyle(3001);
 	doubleHit->Sumw2();
 	doubleHit->Divide(hStrips);
-	list->Add(doubleHit);
-      }
-    }
-  }
+	output->Add(doubleHit);
+      } // for q 
+    } // for d 
+  } // for v 
+  PostData(2, output);
 }
 
 //____________________________________________________________________

@@ -24,6 +24,7 @@ class AliESDFMD;
 class TAxis;
 class TList;
 class TH2;
+class AliFMDFloatMap;
 
 /**
  * Class to do the sharing correction.  That is, a filter that merges 
@@ -53,6 +54,12 @@ class TH2;
 class AliFMDSharingFilter : public TNamed
 {
 public: 
+  enum Status { 
+    kNone             = 1, 
+    kCandidate        = 2, 
+    kMergedWithOther  = 3, 
+    kMergedInto       = 4
+  };
   /** 
    * Destructor
    */
@@ -83,6 +90,11 @@ public:
   AliFMDSharingFilter& operator=(const AliFMDSharingFilter& o);
 
   /** 
+   * Initialize 
+   * 
+   */
+  void Init();
+  /** 
    * Set the low cut used for sharing 
    * 
    * @param lowCut Low cut
@@ -107,14 +119,21 @@ public:
    * otherwise use de-corrected signals.  In the final output, the 
    * signals are always angle corrected. 
    */
-  void UseAngleCorrectedSignals(Bool_t use) { fCorrectAngles = use; }
+  void SetUseAngleCorrectedSignals(Bool_t use) { fCorrectAngles = use; }
   /** 
    * Set the number of landau width to subtract from the most probably
    * value to get the high cut for the merging algorithm.
    * 
    * @param n Number of @f$ \xi@f$ 
    */
-  void SetNXi(Short_t n) { fNXi = n; }
+  void SetNXi(Double_t n) { fNXi = n; }
+  /** 
+   * Whether to include sigma in the number subtracted from the MPV to
+   * get the high cut
+   * 
+   * @param u If true, then high cut is @f$ \Delta_{mp} - n(\xi+\sigma)@f$ 
+   */
+  void SetIncludeSigma(Bool_t u) { fIncludeSigma = u; }
   /** 
    * Filter the input AliESDFMD object
    * 
@@ -213,6 +232,10 @@ protected:
     void ScaleHistograms(const TList* dir, Int_t nEvents);
     TH1D*     fBefore;       // Distribution of signals before filter
     TH1D*     fAfter;        // Distribution of signals after filter
+    TH2D*     fBeforeAfter;  // Correlation of before and after 
+    TH2D*     fNeighborsBefore; // Correlation of neighbors 
+    TH2D*     fNeighborsAfter; // Correlation of neighbors 
+    TH2D*     fSum;          // Summed signal 
     TH1D*     fHits;         // Distribution of hit strips. 
     Int_t     fNHits;        // Number of hit strips per event
     ClassDef(RingHistos,1);
@@ -270,6 +293,18 @@ protected:
 			       UShort_t t,
 			       Bool_t&  usedPrev, 
 			       Bool_t&  usedThis) const;
+  Double_t MultiplicityOfStrip(Double_t thisE,
+			       Double_t prevE,
+			       Double_t nextE,
+			       Double_t eta,
+			       Bool_t   lowFlux,
+			       UShort_t d,
+			       Char_t   r,
+			       UShort_t s,
+			       UShort_t t,
+			       Status&  prevStatus, 
+			       Status&  thisStatus, 
+			       Status&  nextStatus) const;
   /** 
    * Angle correct the signal 
    * 
@@ -288,27 +323,45 @@ protected:
    * @return Angle un-corrected signal 
    */
   Double_t DeAngleCorrect(Double_t mult, Double_t eta) const;
-  /**
+  /** 
    * Get the high cut.  The high cut is defined as the 
    * most-probably-value peak found from the energy distributions, minus 
    * 2 times the width of the corresponding Landau.
+   * 
+   * @param d      Detector 
+   * @param r      Ring 
+   * @param eta    Eta value 
+   * @param errors If false, do not show errors 
+   * 
+   * @return 0 or less on failure, otherwise @f$\Delta_{mp}-n\xi@f$ 
    */
-  virtual Double_t GetHighCut(UShort_t d, Char_t r, Double_t eta) const;
+  virtual Double_t GetHighCut(UShort_t d, Char_t r, Double_t eta,
+			      Bool_t errors=true) const;
   /**
    * Get the low cut.  Normally, the low cut is taken to be the lower
    * value of the fit range used when generating the energy loss fits.
    * However, if fLowCut is set (using SetLowCit) to a value greater
    * than 0, then that value is used.
+   *
+   * @param d    Detector
+   * @param r    Ring 
+   * @param eta  Eta value 
+   * 
+   * @return 
    */
-  virtual Double_t GetLowCut() const;
+  virtual Double_t GetLowCut(UShort_t d, Char_t r, Double_t eta) const;
 
   TList    fRingHistos;    // List of histogram containers
   Double_t fLowCut;        // Low cut on sharing
   Bool_t   fCorrectAngles; // Whether to work on angle corrected signals
-  Short_t  fNXi;           // Number of xi's from Delta to stop merging
+  Double_t fNXi;           // Number of xi's from Delta to stop merging
+  Bool_t   fIncludeSigma;  // Whether to include sigma in cut 
+  TH2*     fSummed;        // Operations histogram 
+  TH2*     fHighCuts;      // High cuts used
+  AliFMDFloatMap* fOper;   // Operation done per strip 
   Int_t    fDebug;         // Debug level 
 
-  ClassDef(AliFMDSharingFilter,1); //
+  ClassDef(AliFMDSharingFilter,2); //
 };
 
 #endif

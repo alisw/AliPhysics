@@ -3,11 +3,13 @@
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
  * @date   Wed Mar 23 14:07:10 2011
  * 
- * @brief  Script to visualise the dN/deta 
+ * @brief  Script to visualise the dN/deta for pp and PbPb
  *
  * This script is independent of any AliROOT code - and should stay
  * that way.
  * 
+ * The script is <emph>very</emph> long - sigh - the joy of drawing
+ * things nicely in ROOT
  * 
  * @ingroup pwg2_forward_dndeta
  */
@@ -377,10 +379,12 @@ struct dNdetaDrawer
 					     sys,snn,trg,
 					     centLow,centHigh,onlya));
     if (!ret) { 
+#if 0
       Warning("FetchResults", "No other data found for sys=%d, sNN=%d, "
 	      "trigger=%d %d%%-%d%% central %s", 
 	      sys, snn, trg, centLow, centHigh, 
 	      onlya ? " (ALICE results)" : "all");
+#endif
       return 0;
     }
     thisOther = reinterpret_cast<TMultiGraph*>(ret);
@@ -410,22 +414,16 @@ struct dNdetaDrawer
 	Error("FetchResults", "Couldn't find list 'all' in %s", 
 	      list->GetName());
       else 
-	FetchResults(all, name, FetchOthers(0,0), -1, 0, max, rmax, amax);
+	FetchResults(all, name, FetchOthers(0,0), -1000, 0, max, rmax, amax);
       return;
     }
     
-    Int_t   nCol = gStyle->GetNumberOfColors();
     for (UShort_t i = 0; i < n; i++) { 
-      UShort_t centLow  = fCentAxis->GetXbins()->At(i);
-      UShort_t centHigh = fCentAxis->GetXbins()->At(i+1);
+      UShort_t centLow  = fCentAxis->GetBinLowEdge(i+1);
+      UShort_t centHigh = fCentAxis->GetBinUpEdge(i+1);
       TString  lname    = Form("cent%03d_%03d", centLow, centHigh);
       TList*   thisCent = static_cast<TList*>(list->FindObject(lname));
-
-      Float_t fc   = (centLow+double(centHigh-centLow)/2) / 100;
-      Int_t   icol = TMath::Min(nCol-1,int(fc * nCol + .5));
-      Int_t   col  = gStyle->GetColorPalette(icol);
-      Info("FetchResults","Centrality %d-%d color index %d (=%d*%f) -> %d", 
-	   centLow, centHigh, icol, nCol, fc, col);
+      Int_t    col      = GetCentralityColor(i+1);
 
       TString centTxt = Form("%3d%%-%3d%% central", centLow, centHigh);
       if (!thisCent)
@@ -436,6 +434,18 @@ struct dNdetaDrawer
 		     col, centTxt.Data(), max, rmax, amax);
     }
   } 
+  //__________________________________________________________________
+  Int_t GetCentralityColor(Int_t bin) const
+  {
+    UShort_t centLow  = fCentAxis->GetBinLowEdge(bin);
+    UShort_t centHigh = fCentAxis->GetBinUpEdge(bin);
+    Float_t  fc       = (centLow+double(centHigh-centLow)/2) / 100;
+    Int_t    nCol     = gStyle->GetNumberOfColors();
+    Int_t    icol     = TMath::Min(nCol-1,int(fc * nCol + .5));
+    Int_t    col      = gStyle->GetColorPalette(icol);
+    //Info("GetCentralityColor","%3d: %3d-%3d -> %3d",bin,centLow,centHigh,col);
+    return col;
+  }
   //__________________________________________________________________
   void SetAttributes(TH1* h, Int_t color)
   {
@@ -457,8 +467,9 @@ struct dNdetaDrawer
   //__________________________________________________________________
   void ModifyTitle(TNamed* h, const char* centTxt)
   {
-    if (!centTxt || !h) return;
-    h->SetTitle(Form("%s, %s", h->GetTitle(), centTxt));
+    return;
+    // if (!centTxt || !h) return;
+    // h->SetTitle(Form("%s, %s", h->GetTitle(), centTxt));
   }
 
   //__________________________________________________________________
@@ -491,11 +502,17 @@ struct dNdetaDrawer
     TH1* tracks      = FetchResult(list, "tracks");
     if (tracks) tracks->SetTitle("ALICE Tracks");
     SetAttributes(dndeta,     color);
-    SetAttributes(dndetaMC,   color+2);
+    SetAttributes(dndetaMC,   fCentAxis ? color : color+2);
     SetAttributes(dndetaTruth,color);
     SetAttributes(dndetaSym,  color);
-    SetAttributes(dndetaMCSym,color+2);
-    SetAttributes(tracks,     color+3);
+    SetAttributes(dndetaMCSym,fCentAxis ? color : color+2);
+    SetAttributes(tracks,     fCentAxis ? color : color+3);
+    if (dndetaMC && fCentAxis) 
+      dndetaMC->SetMarkerStyle(dndetaMC->GetMarkerStyle()+2);
+    if (dndetaMCSym && fCentAxis) 
+      dndetaMCSym->SetMarkerStyle(dndetaMCSym->GetMarkerStyle()+2);
+    if (dndetaTruth && fCentAxis) 
+      dndetaTruth->SetMarkerStyle(34);
     ModifyTitle(dndeta,     centTxt);
     ModifyTitle(dndetaMC,   centTxt);
     ModifyTitle(dndetaTruth,centTxt);
@@ -508,7 +525,14 @@ struct dNdetaDrawer
     max = TMath::Max(max, AddHistogram(fResults, dndetaMC,    dndetaMCSym));
     max = TMath::Max(max, AddHistogram(fResults, dndeta,      dndetaSym));
     max = TMath::Max(max, AddHistogram(fResults, tracks));
-    
+
+    THStack* rings = static_cast<THStack*>(list->FindObject("dndetaRings"));
+    if (rings) { 
+      TIter next(rings->GetHists());
+      TH1*  hist = 0;
+      while ((hist = static_cast<TH1*>(next()))) 
+	max = TMath::Max(max, AddHistogram(fResults, hist));
+    }
     // Info("FetchResults", "Got %p, %p, %p from %s with name %s, max=%f", 
     //      dndeta, dndetaMC, dndetaTruth, list->GetName(), name, max);
 
@@ -540,11 +564,13 @@ struct dNdetaDrawer
 	fRatios->Add(Ratio(dndeta, tracks, rmax));
     }
 
+    if (dndetaMC) { 
+      fRatios->Add(Ratio(dndeta,    dndetaMC,    rmax));
+      fRatios->Add(Ratio(dndetaSym, dndetaMCSym, rmax));
+    }
     if (dndetaTruth) { 
       fRatios->Add(Ratio(dndeta,      dndetaTruth, rmax));
       fRatios->Add(Ratio(dndetaSym,   dndetaTruth, rmax));
-      fRatios->Add(Ratio(dndetaMC,    dndetaTruth, rmax));
-      fRatios->Add(Ratio(dndetaMCSym, dndetaTruth, rmax));
     }
   }
   //__________________________________________________________________
@@ -580,12 +606,6 @@ struct dNdetaDrawer
     c->SetBorderSize(0);
     c->SetBorderMode(0);
 
-#if 1
-    Info("Plot", "y1=%f, y2=%f, y3=%f extra: %s %s", 
-	 y1, y2, y2, (fShowRatios ? "ratios" : ""), 
-	 (fShowLeftRight ? "right/left" : ""));
-    Info("Plot", "Maximum is %f", max);
-#endif
     PlotResults(max, y1);
     c->cd();
 
@@ -628,26 +648,53 @@ struct dNdetaDrawer
 		   Double_t x1, Double_t y1, Double_t x2, Double_t y2)
   {
     TLegend* l = new TLegend(x1,y1,x2,y2);
-    l->SetNColumns(2);
+    l->SetNColumns(fCentAxis ? 1 : 2);
     l->SetFillColor(0);
     l->SetFillStyle(0);
     l->SetBorderSize(0);
     l->SetTextFont(132);
 
     TIter    next(stack->GetHists());
-    TObject* hist = 0;
-    while ((hist = next())) { 
+    TH1*     hist = 0;
+    TObjArray unique;
+    unique.SetOwner();
+    while ((hist = static_cast<TH1*>(next()))) { 
       TString n(hist->GetTitle());
       if (n.Contains("mirrored")) continue;
-      l->AddEntry(hist, hist->GetTitle(), "pl");
+      if (unique.FindObject(n.Data())) continue;
+      TObjString* s = new TObjString(n);
+      s->SetUniqueID(((hist->GetMarkerStyle() & 0xFFFF) << 16) |
+		     ((hist->GetMarkerColor() & 0xFFFF) <<  0));
+      unique.Add(s);
+      // l->AddEntry(hist, hist->GetTitle(), "pl");
     }
     if (mg) {
       TIter nexto(mg->GetListOfGraphs());
-      while ((hist = nexto())) { 
-	TString n(hist->GetTitle());
+      TGraph* g = 0;
+      while ((g = static_cast<TGraph*>(nexto()))) { 
+	TString n(g->GetTitle());
 	if (n.Contains("mirrored")) continue;
-	l->AddEntry(hist, hist->GetTitle(), "pl");
+	if (unique.FindObject(n.Data())) continue;
+	TObjString* s = new TObjString(n);
+	s->SetUniqueID(((g->GetMarkerStyle() & 0xFFFF) << 16) |
+		       ((g->GetMarkerColor() & 0xFFFF) <<  0));
+	unique.Add(s);
+	// l->AddEntry(hist, hist->GetTitle(), "pl");
       }
+    }
+    unique.ls();
+    TIter nextu(&unique);
+    TObject* s = 0;
+    Int_t i = 0;
+    while ((s = nextu())) { 
+      TLegendEntry* dd = l->AddEntry(Form("data%2d", i++), 
+				     s->GetName(), "lp");
+      Int_t style = (s->GetUniqueID() >> 16) & 0xFFFF;
+      Int_t color = (s->GetUniqueID() >>  0) & 0xFFFF;
+      dd->SetLineColor(kBlack);
+      if (fCentAxis) dd->SetMarkerColor(kBlack);
+      else           dd->SetMarkerColor(color);
+      dd->SetMarkerStyle(style);
     }
     TLegendEntry* d1 = l->AddEntry("d1", "Data", "lp");
     d1->SetLineColor(kBlack);
@@ -658,6 +705,38 @@ struct dNdetaDrawer
     d2->SetMarkerColor(kBlack);
     d2->SetMarkerStyle(24);
     
+    l->Draw();
+  }
+  //__________________________________________________________________
+  /** 
+   * Build centrality legend 
+   * 
+   * @param axis    Stack to include 
+   * @param x1      Lower X coordinate in the range [0,1]
+   * @param y1      Lower Y coordinate in the range [0,1]
+   * @param x2      Upper X coordinate in the range [0,1]
+   * @param y2 	    Upper Y coordinate in the range [0,1]
+   */
+  void BuildCentLegend(Double_t x1, Double_t y1, Double_t x2, Double_t y2)
+  {
+    if (!fCentAxis) return;
+
+    TLegend* l = new TLegend(x1,y1,x2,y2);
+    l->SetNColumns(1);
+    l->SetFillColor(0);
+    l->SetFillStyle(0);
+    l->SetBorderSize(0);
+    l->SetTextFont(132);
+
+    Int_t n = fCentAxis->GetNbins();
+    for (Int_t i = 1; i <= n; i++) { 
+      Double_t low = fCentAxis->GetBinLowEdge(i);
+      Double_t upp = fCentAxis->GetBinUpEdge(i);
+      TLegendEntry* e = l->AddEntry(Form("dummy%02d", i),
+				    Form("%3d%% - %3d%%", 
+					 int(low), int(upp)), "pl");
+      e->SetMarkerColor(GetCentralityColor(i));
+    }
     l->Draw();
   }
   //__________________________________________________________________
@@ -703,15 +782,14 @@ struct dNdetaDrawer
     }
 
     // Make a legend in the main result pad
-    BuildLegend(fResults, fOthers, .15,p1->GetBottomMargin()+.01,.90,.35);
-#if 0
-    TLegend* l = p1->BuildLegend(.15,p1->GetBottomMargin()+.01,.90,.35);
-    l->SetNColumns(2);
-    l->SetFillColor(0);
-    l->SetFillStyle(0);
-    l->SetBorderSize(0);
-    l->SetTextFont(132);
-#endif
+    BuildCentLegend(.12, 1-p1->GetTopMargin()-.01-.5,  
+		    .35, 1-p1->GetTopMargin()-.01-.1);
+    Double_t x1 = (fCentAxis ? .7 : .15); 
+    Double_t x2 = (fCentAxis ? 1-p1->GetRightMargin()-.01: .90);
+    Double_t y1 = (fCentAxis ? .5: p1->GetBottomMargin()+.01); 
+    Double_t y2 = (fCentAxis ? 1-p1->GetTopMargin()-.01-.15 : .35);
+		   
+    BuildLegend(fResults, fOthers, x1, y1, x2, y2);
 
     // Put a title on top
     fTitle.ReplaceAll("@", " ");
@@ -725,11 +803,14 @@ struct dNdetaDrawer
     TString     eS;
     UShort_t    snn = fSNNString->GetUniqueID();
     const char* sys = fSysString->GetTitle();
+    if (snn == 2750) snn = 2760;
     if (snn > 1000) eS = Form("%4.2fTeV", float(snn)/1000);
     else            eS = Form("%3dGeV", snn);
-    TLatex* tt = new TLatex(.93, .93, Form("%s #sqrt{s}=%s, %s", 
+    TLatex* tt = new TLatex(.93, .93, Form("%s #sqrt{s%s}=%s, %s", 
 					   sys, 
+					   (fCentAxis ? "_{NN}" : ""),
 					   eS.Data(), 
+					   fCentAxis ? "by centrality" : 
 					   fTrigString->GetTitle()));
     tt->SetNDC();
     tt->SetTextFont(132);
@@ -886,12 +967,17 @@ struct dNdetaDrawer
 
     
     // Make a legend
-    TLegend* l2 = p3->BuildLegend(.15,p3->GetBottomMargin()+.01,.9,.5);
-    l2->SetNColumns(2);
-    l2->SetFillColor(0);
-    l2->SetFillStyle(0);
-    l2->SetBorderSize(0);
-    l2->SetTextFont(132);
+    Double_t xx1 = (fCentAxis ? .7                           : .15); 
+    Double_t xx2 = (fCentAxis ? 1-p3->GetRightMargin()-.01   : .90);
+    Double_t yy1 = p3->GetBottomMargin()+.01;
+    Double_t yy2 = (fCentAxis ? 1-p3->GetTopMargin()-.01-.15 : .5);
+    BuildLegend(fLeftRight, 0, xx1, yy1, xx2, yy2);
+    // TLegend* l2 = p3->BuildLegend(.15,p3->GetBottomMargin()+.01,.9,.5);
+    // l2->SetNColumns(2);
+    // l2->SetFillColor(0);
+    // l2->SetFillStyle(0);
+    // l2->SetBorderSize(0);
+    // l2->SetTextFont(132);
 
     // Make a nice band from 0.9 to 1.1
     TGraphErrors* band = new TGraphErrors(2);
@@ -936,10 +1022,12 @@ struct dNdetaDrawer
     if (!list) return 0;
     
     TH1* ret = static_cast<TH1*>(list->FindObject(name));
+#if 0
     if (!ret) {
       // all->ls();
       Warning("GetResult", "Histogram %s not found", name);
     }
+#endif
 
     return ret;
   }
@@ -961,10 +1049,7 @@ struct dNdetaDrawer
     // Rebin if needed 
     Rebin(hist);
 
-    // Info("AddHistogram", "Adding %s to %s", 
-    //      hist->GetName(), stack->GetName());
     stack->Add(hist, option);
-    // stack->ls();
     return hist->GetMaximum();
   }
   //__________________________________________________________________
@@ -992,8 +1077,6 @@ struct dNdetaDrawer
     sym = Symmetrice(hist);
     stack->Add(sym, option);
 
-    // Info("AddHistogram", "Adding %s and %s to %s", 
-    //      hist->GetName(), sym->GetName(), stack->GetName());
     return hist->GetMaximum();
   }
 
@@ -1239,32 +1322,34 @@ struct dNdetaDrawer
   {
     if (!o1 || !o2) return 0;
 
-    TH1* r = 0;
+    TH1*        r  = 0;
+    const TAttMarker* m1 = 0;
+    const TAttMarker* m2 = 0;
     const TH1* h1 = dynamic_cast<const TH1*>(o1); 
     if (h1) { 
-      // Info("Ratio", "First is a TH1");
+      m1 = h1;
       const TH1* h2 = dynamic_cast<const TH1*>(o2); 
       if (h2) { 
-	// Info("Ratio", "Second is a TH1");
-	r = RatioHH(h1,h2,max);
+	m2 = h2;
+	r = RatioHH(h1,h2);
       }
       else {
 	const TGraph* g2 = dynamic_cast<const TGraph*>(o2);
 	if (g2) { 
-	  // Info("Ratio", "Second os a TGraph");
-	  r = RatioHG(h1,g2,max);      
+	  m2 = g2;
+	  r = RatioHG(h1,g2);      
 	}
       }
     }
     else {
       const TGraphAsymmErrors* g1 = dynamic_cast<const TGraphAsymmErrors*>(o1);
       if (g1) { 
-	// Info("Ratio", "First is a TGraphAsymmErrors");
+	m1 = g1;
 	const TGraphAsymmErrors* g2 = 
 	  dynamic_cast<const TGraphAsymmErrors*>(o2);
 	if (g2) {
-	  // Info("Ratio", "Second is a TGraphAsymmErrors");
-	  r = RatioGG(g1, g2, max);
+	  m2 = g2;
+	  r = RatioGG(g1, g2);
 	}
       }
     }
@@ -1278,9 +1363,16 @@ struct dNdetaDrawer
       delete r; 
       r = 0; 
     }
-    // for (Int_t bin = 1; bin <= r->GetNbinsX(); bin++) 
-    //   if (r->GetBinContent(bin) != 0) return r;
-      
+    if (r) {
+      r->SetMarkerStyle(m1->GetMarkerStyle());
+      r->SetMarkerColor(m2->GetMarkerColor());
+      r->SetMarkerSize(0.9*m1->GetMarkerSize());
+      r->SetName(Form("%s_over_%s", o1->GetName(), o2->GetName()));
+      r->SetTitle(Form("%s / %s", o1->GetTitle(), o2->GetTitle()));
+      r->SetDirectory(0);
+      max = TMath::Max(RatioMax(r), max);
+    }
+
     return r;
   }
   //__________________________________________________________________
@@ -1290,25 +1382,15 @@ struct dNdetaDrawer
    * 
    * @param h  Numerator 
    * @param g  Divisor 
-   * @param max Maximum diviation from 1 
    * 
    * @return h/g 
    */
-  TH1* RatioHG(const TH1* h, const TGraph* g, Double_t& max) const 
+  TH1* RatioHG(const TH1* h, const TGraph* g) const 
   {
     if (!h || !g) return 0;
 
     TH1* ret = static_cast<TH1*>(h->Clone("tmp"));
-    ret->SetName(Form("%s_over_%s", h->GetName(), g->GetName()));
-    ret->SetTitle(Form("%s / %s", h->GetTitle(), g->GetTitle()));
     ret->Reset();
-    ret->SetMarkerStyle(h->GetMarkerStyle());
-    ret->SetMarkerColor(g->GetMarkerColor());
-    ret->SetMarkerSize(0.9*h->GetMarkerSize());
-    // ret->SetMarkerStyle(g->GetMarkerStyle());
-    // ret->SetMarkerColor(h->GetMarkerColor());
-    // ret->SetMarkerSize(0.9*g->GetMarkerSize());
-    ret->SetDirectory(0);
     Double_t xlow  = g->GetX()[0];
     Double_t xhigh = g->GetX()[g->GetN()-1];
     if (xlow > xhigh) { Double_t t = xhigh; xhigh = xlow; xlow = t; }
@@ -1326,8 +1408,6 @@ struct dNdetaDrawer
       ret->SetBinContent(i, c / f);
       ret->SetBinError(i, h->GetBinError(i) / f);
     }
-    if (ret->GetEntries() > 0) 
-      max = TMath::Max(RatioMax(ret), max);
     return ret;
   }
   //__________________________________________________________________
@@ -1336,25 +1416,14 @@ struct dNdetaDrawer
    * 
    * @param h1 First histogram (numerator) 
    * @param h2 Second histogram (denominator)
-   * @param max Maximum diviation from 1 
    * 
    * @return h1 / h2
    */
-  TH1* RatioHH(const TH1* h1, const TH1* h2, Double_t& max) const
+  TH1* RatioHH(const TH1* h1, const TH1* h2) const
   {
     if (!h1 || !h2) return 0;
-    TH1* t1 = static_cast<TH1*>(h1->Clone(Form("%s_%s", 
-					       h1->GetName(), 
-					       h2->GetName())));
-    t1->SetTitle(Form("%s / %s", h1->GetTitle(), h2->GetTitle()));
+    TH1* t1 = static_cast<TH1*>(h1->Clone("tmp"));
     t1->Divide(h2);
-    // t1->SetMarkerColor(h1->GetMarkerColor());
-    // t1->SetMarkerStyle(h2->GetMarkerStyle());
-    t1->SetMarkerColor(h2->GetMarkerColor());
-    t1->SetMarkerStyle(h1->GetMarkerStyle());
-    t1->SetMarkerSize(0.9*h1->GetMarkerSize());
-    t1->SetDirectory(0);
-    max = TMath::Max(RatioMax(t1), max);
     return t1;
   }
   //__________________________________________________________________
@@ -1363,12 +1432,11 @@ struct dNdetaDrawer
    * 
    * @param g1 Numerator 
    * @param g2 Denominator
-   * @param max Maximum diviation from 1 
    * 
    * @return g1 / g2 in a histogram 
    */
   TH1* RatioGG(const TGraphAsymmErrors* g1, 
-	       const TGraphAsymmErrors* g2, Double_t& max) const
+	       const TGraphAsymmErrors* g2) const
   {
     Int_t    nBins = g1->GetN();
     TArrayF  bins(nBins+1);
@@ -1383,22 +1451,13 @@ struct dNdetaDrawer
       if (i == 0) dx  = dxi;
       else if (dxi != dx) dx = 0;
     }
-    TString name(Form("%s_%s", g1->GetName(), g2->GetName()));
-    TString title(Form("%s / %s", g1->GetTitle(), g2->GetTitle()));
     TH1* h = 0;
     if (dx != 0) {
-      h = new TH1F(name.Data(), title.Data(), nBins, bins[0], bins[nBins]);
+      h = new TH1F("tmp", "tmp", nBins, bins[0], bins[nBins]);
     }
     else {
-      h = new TH1F(name.Data(), title.Data(), nBins, bins.fArray);
+      h = new TH1F("tmp", "tmp", nBins, bins.fArray);
     }
-    h->SetMarkerStyle(g1->GetMarkerStyle());
-    h->SetMarkerColor(g2->GetMarkerColor());
-    h->SetMarkerSize(0.9*g1->GetMarkerSize());
-    // h->SetMarkerStyle(g2->GetMarkerStyle());
-    // h->SetMarkerColor(g1->GetMarkerColor());
-    // h->SetMarkerSize(0.9*g2->GetMarkerSize());
-    h->SetDirectory(0);
 
     Double_t low  = g2->GetX()[0];
     Double_t high = g2->GetX()[g2->GetN()-1];
@@ -1413,7 +1472,6 @@ struct dNdetaDrawer
       h->SetBinContent(i+1, c1 / c2);
       h->SetBinError(i+1, e1 / c2);
     }
-    max = TMath::Max(RatioMax(h), max);
     return h;
   }  
   /* @} */
@@ -1543,7 +1601,6 @@ void UpdateRange(dNdetaDrawer::RangeParam* p)
   Int_t    last  = p->fMasterAxis->GetLast();
   Double_t x1    = p->fMasterAxis->GetBinCenter(first);
   Double_t x2    = p->fMasterAxis->GetBinCenter(last);
-  //Info("UpdateRange", "Range set to [%3d,%3d]->[%f,%f]", first, last, x1,x2);
 
   if (p->fSlave1Axis) { 
     Int_t i1 = p->fSlave1Axis->FindBin(x1);

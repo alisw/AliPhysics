@@ -10,7 +10,7 @@
 //    - AliESDFMD object  - copy of input, but with signals merged 
 //
 // Corrections used: 
-//    - None
+//    - ELoss fits
 //
 // Histograms: 
 //    - For each ring (FMD1i, FMD2i, FMD2o, FMD3i, FMD3o) the distribution of 
@@ -28,6 +28,7 @@
 #include <TH1.h>
 #include <TMath.h>
 #include "AliFMDStripIndex.h"
+#include "AliFMDFloatMap.h"
 #include <AliLog.h>
 #include <TROOT.h>
 #include <iostream>
@@ -47,7 +48,10 @@ AliFMDMCSharingFilter::AliFMDMCSharingFilter(const char* title)
     fFMD2o(0),
     fFMD3i(0),
     fFMD3o(0),
-    fSumEta(0)
+    fSumEta(0),
+    fOperComp(0),
+    fThetaVsNr(0), 
+    fOnlyPrimary(false)
 {
   // 
   // Constructor 
@@ -84,7 +88,25 @@ AliFMDMCSharingFilter::AliFMDMCSharingFilter(const char* title)
   fSumEta->SetMarkerStyle(22);
   fSumEta->SetFillColor(0);
   fSumEta->SetFillStyle(0);
+
+  fOper     = new AliFMDFloatMap(0,0,0,0);
+  fOperComp = new TH2I("operComp", "Operation vs # track refs", 
+		       kMergedInto, kNone-.5, kMergedInto+.5, 
+		       20, -.5, 19.5);
+  fOperComp->SetXTitle("Operation");
+  fOperComp->SetYTitle("# of track refs in sector");
+  fOperComp->SetZTitle("Observations");
+  fOperComp->GetXaxis()->SetBinLabel(kNone,            "None");
+  fOperComp->GetXaxis()->SetBinLabel(kCandidate,       "Candidate");
+  fOperComp->GetXaxis()->SetBinLabel(kMergedWithOther, "Merged w/other");
+  fOperComp->GetXaxis()->SetBinLabel(kMergedInto,      "Merged into");
+  fOperComp->SetDirectory(0);
   
+  fThetaVsNr = new TH2D("thetaVsNr", "#theta of track vs # track references",
+			360, 0, 360, 20, -.5, 19.5);
+  fThetaVsNr->SetXTitle("#theta [degrees]");
+  fThetaVsNr->SetYTitle("# of track references");
+  fThetaVsNr->SetDirectory(0);
 }
 
 //____________________________________________________________________
@@ -95,7 +117,10 @@ AliFMDMCSharingFilter::AliFMDMCSharingFilter(const AliFMDMCSharingFilter& o)
     fFMD2o(o.fFMD2o),
     fFMD3i(o.fFMD3i),
     fFMD3o(o.fFMD3o),
-    fSumEta(o.fSumEta)
+    fSumEta(o.fSumEta),
+    fOperComp(o.fOperComp),
+    fThetaVsNr(o.fThetaVsNr),
+    fOnlyPrimary(o.fOnlyPrimary)
 {
   // 
   // Copy constructor 
@@ -133,6 +158,7 @@ AliFMDMCSharingFilter::operator=(const AliFMDMCSharingFilter& o)
   //    Reference to this 
   //
   AliFMDSharingFilter::operator=(o);
+  fOnlyPrimary = o.fOnlyPrimary;
   return *this;
 }
 
@@ -142,6 +168,8 @@ AliFMDMCSharingFilter::StoreParticle(UShort_t   d,
 				     Char_t     r,
 				     UShort_t   s, 
 				     UShort_t   t, 
+				     UShort_t   nR,
+				     Double_t   theta,
 				     AliESDFMD& output) const
 {
   // 
@@ -152,10 +180,15 @@ AliFMDMCSharingFilter::StoreParticle(UShort_t   d,
   //    r       Ring
   //    s       Sector
   //    t       Strip
+  //    nR      Number of references to this particle in this sector
   //    output  Output ESD object
   //
   Double_t old = output.Multiplicity(d,r,s,t);
   if (old == AliESDFMD::kInvalidMult) old = 0;
+  if (fOper) fOperComp->Fill(fOper->operator()(d,r,s,t), nR);
+  if (theta < 0) theta += 2*TMath::Pi();
+  theta *= 180. / TMath::Pi();
+  fThetaVsNr->Fill(theta, nR);
   output.SetMultiplicity(d,r,s,t,old+1);
 }
 
@@ -182,6 +215,10 @@ AliFMDMCSharingFilter::FilterMC(const AliESDFMD&  input,
   //    True on succes, false otherwise 
   //
   output.Clear();
+
+  // Increase event count - stored in 
+  // underflow bin 
+  fSumEta->AddBinContent(0); 
 
   // Copy eta values to output 
   for (UShort_t ed = 1; ed <= 3; ed++) { 
@@ -210,17 +247,28 @@ AliFMDMCSharingFilter::FilterMC(const AliESDFMD&  input,
     if (!isCharged) continue;
     Bool_t isPrimary = stack->IsPhysicalPrimary(iTr);
 
+    // Pseudo rapidity and azimuthal angle 
+    Double_t eta = particle->Eta();
+    Double_t phi = particle->Phi();
+    
     // Fill 'dn/deta' histogram 
     if (isPrimary && iTr < nPrim) { 
-      fSumEta->Fill(particle->Eta());
-      primary->Fill(particle->Eta(), particle->Phi());
+      // Avoid under count - used to store event count
+      if (eta >= fSumEta->GetXaxis()->GetXmin()) fSumEta->Fill(eta);
+      primary->Fill(eta, phi);
     }
+
+    // Bail out if we're only processing primaries - perhaps we should
+    // track back to the original primary?
+    if (fOnlyPrimary && !isPrimary) continue;
 
     Int_t    nTrRef  = particle->GetNumberOfTrackReferences();
     Int_t    longest = -1;
     Double_t angle   = 0;
     UShort_t oD = 0, oS = 1024, oT = 1024;
     Char_t   oR = '\0';
+    UShort_t nC = 0;
+    Double_t oTheta = 0;
     for (Int_t iTrRef = 0; iTrRef < nTrRef; iTrRef++) { 
       AliTrackReference* ref = particle->GetTrackReference(iTrRef);
       
@@ -231,13 +279,24 @@ AliFMDMCSharingFilter::FilterMC(const AliESDFMD&  input,
       if (ref->DetectorId() != AliTrackReference::kFMD) 
 	continue;
 
+      // Count number of track refs in this sector 
+      nC++;
+
       // Get the detector coordinates 
       UShort_t d, s, t;
       Char_t r;
       AliFMDStripIndex::Unpack(ref->UserId(), d, r, s, t);
-      if (oD > 0 && oR != '\0' && (d != oD || r != oR)) {
+      // If this is a new detector/ring, then reset the other one 
+      if (oD > 0 && oR != '\0' && oS != 1024 && 
+	  (d != oD || r != oR || s != oS)) {
 	longest = -1;
-	StoreParticle(oD, oR, oS, oT, output);
+	angle   = 0;
+	StoreParticle(oD, oR, oS, oT, nC, oTheta, output);
+	nC = 0;
+	oD = 0;
+	oR = '\0';
+	oS = 1024;
+	oT = 1024;
       }
 
       oD = d;
@@ -256,6 +315,7 @@ AliFMDMCSharingFilter::FilterMC(const AliESDFMD&  input,
 	longest = iTrRef;
 	angle   = ang;
       }
+      oTheta = theta;
     } // Loop over track references
     if (longest < 0) continue;
 
@@ -267,7 +327,7 @@ AliFMDMCSharingFilter::FilterMC(const AliESDFMD&  input,
     Char_t r;
     AliFMDStripIndex::Unpack(ref->UserId(), d, r, s, t);
     
-    StoreParticle(d,r,s,t,output);
+    StoreParticle(d,r,s,t,nC,particle->Theta(),output);
   } // Loop over tracks
   return kTRUE;
 }
@@ -335,6 +395,8 @@ AliFMDMCSharingFilter::DefineOutput(TList* dir)
   cd->Add(fFMD3i);
   cd->Add(fFMD3o);
   dir->Add(fSumEta);
+  cd->Add(fOperComp);
+  cd->Add(fThetaVsNr);
 }
 
 //____________________________________________________________________
@@ -354,7 +416,8 @@ AliFMDMCSharingFilter::ScaleHistograms(const TList* dir, Int_t nEvents)
     AliWarning(Form("No mcSumEta histogram found in output list"));
     return;
   }
-  sumEta->Scale(1. / nEvents, "width");
+  Double_t n = nEvents; // sumEta->GetBinContent(0);
+  sumEta->Scale(1. / n, "width");
 }
 
 //____________________________________________________________________
@@ -371,6 +434,9 @@ AliFMDMCSharingFilter::Print(Option_t* option) const
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
   AliFMDSharingFilter::Print(option);
+  std::cout << std::boolalpha 
+	    << ind << " Only primary tracks:    " << fOnlyPrimary 
+	    << std::noboolalpha << std::endl;
 }
 
 //____________________________________________________________________

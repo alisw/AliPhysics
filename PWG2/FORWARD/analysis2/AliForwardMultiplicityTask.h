@@ -179,6 +179,7 @@ protected:
   AliESDFMD              fESDFMD;       // Sharing corrected ESD object
   AliForwardUtil::Histos fHistos;       // Cache histograms 
   AliAODForwardMult      fAODFMD;       // Output object
+  AliForwardUtil::Histos fRingSums;     // Cache histograms 
 
   AliFMDEventInspector    fEventInspector;    // Algorithm
   AliFMDSharingFilter     fSharingFilter;     // Algorithm

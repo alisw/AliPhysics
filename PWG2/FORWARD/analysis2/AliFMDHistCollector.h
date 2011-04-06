@@ -97,54 +97,19 @@ public:
   /** 
    * Constructor 
    */
-  AliFMDHistCollector() 
-    : fNCutBins(0), 
-      fCorrectionCut(0), 
-      fFirstBins(), 
-      fLastBins(), 
-      fDebug(0),
-      fList(0),
-      fSumRings(0),
-      fCoverage(0),
-      fMergeMethod(kStraightMean),
-      fFiducialMethod(kByCut)
-  {}
+  AliFMDHistCollector();
   /** 
    * Constructor 
    * 
    * @param title Name of object
    */
-  AliFMDHistCollector(const char* title)
-    : TNamed("fmdHistCollector", title), 
-      fNCutBins(2), 
-      fCorrectionCut(0.5), 
-      fFirstBins(1), 
-      fLastBins(1), 
-      fDebug(0),
-      fList(0),
-      fSumRings(0),
-      fCoverage(0),
-      fMergeMethod(kStraightMean),
-      fFiducialMethod(kByCut)
-  {}
+  AliFMDHistCollector(const char* title);
   /** 
    * Copy constructor 
    * 
    * @param o Object to copy from 
    */
-  AliFMDHistCollector(const AliFMDHistCollector& o)
-    : TNamed(o), 
-      fNCutBins(o.fNCutBins), 
-      fCorrectionCut(o.fCorrectionCut),
-      fFirstBins(o.fFirstBins), 
-      fLastBins(o.fLastBins), 
-      fDebug(o.fDebug),
-      fList(o.fList),
-      fSumRings(o.fSumRings),
-      fCoverage(o.fCoverage),
-      fMergeMethod(o.fMergeMethod),
-      fFiducialMethod(o.fFiducialMethod)
-  {}
+  AliFMDHistCollector(const AliFMDHistCollector& o);
 
   /** 
    * Destructor 
@@ -170,13 +135,16 @@ public:
    * Do the calculations 
    * 
    * @param hists    Cache of histograms 
+   * @param sums     Cache to sum ring histograms in 
    * @param vtxBin   Vertex bin (1 based)
    * @param out      Output histogram
    * 
    * @return true on successs 
    */
-  virtual Bool_t Collect(AliForwardUtil::Histos& hists, UShort_t vtxBin, 
-			 TH2D& out);
+  virtual Bool_t Collect(const AliForwardUtil::Histos& hists, 
+			 AliForwardUtil::Histos&       sums, 
+			 UShort_t                      vtxBin, 
+			 TH2D&                         out);
   /** 
    * Output diagnostic histograms to directory 
    * 
@@ -368,6 +336,7 @@ protected:
   void MergeBins(Double_t c,   Double_t e, 
 		 Double_t oc,  Double_t oe,
 		 Double_t& rc, Double_t& re) const;
+  
 
   Int_t       fNCutBins;        // Number of additional bins to cut away
   Float_t     fCorrectionCut;   // Cut-off on secondary corrections 
@@ -379,6 +348,7 @@ protected:
   TH2D*       fCoverage;        // Sum per ring (on y-axis)
   MergeMethod fMergeMethod;     // Merge methiod for overlapping bins 
   FiducialMethod fFiducialMethod; // Fidicual method
+
   ClassDef(AliFMDHistCollector,1); // Calculate Nch density 
 };
 

@@ -332,6 +332,15 @@ public:
      */
     const Char_t* GetName() const;
     /** 
+     * Calculate the lower bound 
+     * 
+     * @param f             Width factor
+     * @param includeSigma  Whether to include sigma
+     * 
+     * @return @f$ \Delta - f (\xi + \sigma)@f$
+     */
+    Double_t GetLowerBound(Double_t f, Bool_t includeSigma) const;
+    /** 
      * Calculate the quality 
      */
     void CalculateQuality(Double_t maxChi2nu=fgMaxChi2nu, 
@@ -526,6 +535,42 @@ public:
   ELossFit* GetFit(UShort_t d, Char_t r, Int_t etabin) const;
   /* @} */
 
+  /** 
+   * @{ 
+   * @name Lower bounds on fits 
+   */
+  /** 
+   * Get the lower validity bound of the fit
+   * 
+   * @param d            Detector
+   * @param r            Ring
+   * @param etaBin       Eta bin (1-based)
+   * @param f            Factor on xi (and sigma)
+   * @param showErrors   Show errors
+   * @param includeSigma Whether to include sigma 
+   * 
+   * @return @f$ \Delta_{mp} - f(\xi+\sigma)@f$ 
+   */
+  Double_t GetLowerBound(UShort_t d, Char_t r, Int_t etaBin, 
+			 Double_t f, Bool_t showErrors=true,
+			 Bool_t includeSigma=true) const;
+  /** 
+   * Get the lower validity bound of the fit
+   * 
+   * @param d            Detector
+   * @param r            Ring
+   * @param eta          Eta value
+   * @param f            Factor on xi (and sigma)
+   * @param showErrors   Show errors
+   * @param includeSigma Whether to include sigma 
+   * 
+   * @return @f$ \Delta_{mp} - f(\xi+\sigma)@f$ 
+   */
+  Double_t GetLowerBound(UShort_t d, Char_t r, Double_t eta, 
+			 Double_t f, Bool_t showErrors=true,
+			 Bool_t includeSigma=true) const;
+
+  
   /**						
    * @{ 
    * @name Miscellaneous

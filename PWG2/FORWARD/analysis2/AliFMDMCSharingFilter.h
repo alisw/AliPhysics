@@ -58,7 +58,10 @@ public:
     fFMD2o(0),
     fFMD3i(0),
     fFMD3o(0), 
-    fSumEta(0)
+    fSumEta(0), 
+    fOperComp(0), 
+    fThetaVsNr(0), 
+    fOnlyPrimary(false)
   {}
   /** 
    * Constructor 
@@ -80,6 +83,13 @@ public:
    * @return Reference to this 
    */
   AliFMDMCSharingFilter& operator=(const AliFMDMCSharingFilter& o);
+  
+  /** 
+   * If set, then only process primary tracks 
+   * 
+   * @param use 
+   */
+  void SetOnlyPrimary(Bool_t use) { fOnlyPrimary = use; }
   /** 
    * Filter the input kinematics and track references, using 
    * some of the ESD information
@@ -138,14 +148,16 @@ protected:
    * @param output  Output ESD object
    */
   void StoreParticle(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
-		     AliESDFMD& output) const;
+		     UShort_t nr, Double_t theta, AliESDFMD& output) const;
   TH2D* fFMD1i;  // ESD-MC correlation 
   TH2D* fFMD2i;  // ESD-MC correlation 
   TH2D* fFMD2o;  // ESD-MC correlation 
   TH2D* fFMD3i;  // ESD-MC correlation 
   TH2D* fFMD3o;  // ESD-MC correlation 
   TH1D* fSumEta; // MC dN/deta 
-
+  TH2I* fOperComp; // Operation vs # trackrefs
+  TH2D* fThetaVsNr; // Theta vs # trackrefs
+  Bool_t fOnlyPrimary; // Only process primary tracks 
   ClassDef(AliFMDMCSharingFilter,1); //
 };
 

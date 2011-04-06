@@ -13,6 +13,7 @@
 #include "AliForwardUtil.h"
 #include "AliAODForwardMult.h"
 #include <TFile.h>
+#include <TStyle.h>
 
 //____________________________________________________________________
 AliBasedNdetaTask::AliBasedNdetaTask()
@@ -153,7 +154,6 @@ AliBasedNdetaTask::AddCentralityBin(UShort_t at, Short_t low, Short_t high)
   //    high High cut
   //
   CentralityBin* bin = MakeCentralityBin(GetName(), low, high);
-  AliInfo(Form("Adding centrality bin %p [%3d,%3d] @ %d", bin, low, high, at));
   fListOfCentralities->AddAtAndExpand(bin, at);
 }
 
@@ -548,10 +548,67 @@ AliBasedNdetaTask::Terminate(Option_t *)
   // Loop over centrality bins 
   TIter next(fListOfCentralities);
   CentralityBin* bin = 0;
-  while ((bin = static_cast<CentralityBin*>(next()))) 
+  gStyle->SetPalette(1);
+  THStack* dndetaStack        = new THStack("dndeta", "dN/d#eta");
+  THStack* dndetaStackRebin   = new THStack(Form("dndeta_rebin%02d", fRebin), 
+					    "dN_{ch}/d#eta");
+  THStack* dndetaMCStack      = new THStack("dndetaMC", "dN_{ch}/d#eta");
+  THStack* dndetaMCStackRebin = new THStack(Form("dndetaMC_rebin%02d", fRebin), 
+					    "dN_{ch}/d#eta");
+  
+  while ((bin = static_cast<CentralityBin*>(next()))) {
     bin->End(fSums, fOutput, fNormalizationScheme, fShapeCorr, fTriggerEff,
 	     fSymmetrice, fRebin, fUseROOTProj, fCorrEmpty, fCutEdges, 
-	     fTriggerMask, GetColor(), GetMarker());
+	     fTriggerMask, GetMarker());
+    if (fCentAxis && bin->IsAllBin()) continue;
+    TH1* dndeta      = bin->GetResult(0, false, "");
+    TH1* dndetaSym   = bin->GetResult(0, true,  "");
+    TH1* dndetaMC    = bin->GetResult(0, false, "MC");
+    TH1* dndetaMCSym = bin->GetResult(0, true,  "MC");
+    if (dndeta)      dndetaStack->Add(dndeta);
+    if (dndetaSym)   dndetaStack->Add(dndetaSym);
+    if (dndetaMC)    dndetaMCStack->Add(dndetaMC);
+    if (dndetaMCSym) dndetaMCStack->Add(dndetaMCSym);
+    if (fRebin > 1) { 
+      dndeta      = bin->GetResult(fRebin, false, "");
+      dndetaSym   = bin->GetResult(fRebin, true,  "");
+      dndetaMC    = bin->GetResult(fRebin, false, "MC");
+      dndetaMCSym = bin->GetResult(fRebin, true,  "MC");
+      if (dndeta)      dndetaStackRebin->Add(dndeta);
+      if (dndetaSym)   dndetaStackRebin->Add(dndetaSym);
+      if (dndetaMC)    dndetaMCStackRebin->Add(dndetaMC);
+      if (dndetaMCSym) dndetaMCStackRebin->Add(dndetaMCSym);
+    }
+  }
+  // Output the stack
+  fOutput->Add(dndetaStack);
+
+  // If available output rebinned stack 
+  if (!dndetaStackRebin->GetHists() || 
+      dndetaStackRebin->GetHists()->GetEntries() <= 0) {
+    AliWarning("No rebinned histograms found");
+    delete dndetaStackRebin;
+    dndetaStackRebin = 0;
+  }
+  if (dndetaStackRebin) fOutput->Add(dndetaStackRebin);
+
+  // If available, output track-ref stack
+  if (!dndetaMCStack->GetHists() || 
+      dndetaMCStack->GetHists()->GetEntries() <= 0) {
+    AliWarning("No MC histograms found");
+    delete dndetaMCStack;
+    dndetaMCStack = 0;
+  }
+  if (dndetaMCStack) fOutput->Add(dndetaMCStack);
+
+  // If available, output rebinned track-ref stack
+  if (!dndetaMCStackRebin->GetHists() || 
+      dndetaMCStackRebin->GetHists()->GetEntries() <= 0) {
+    AliWarning("No rebinned MC histograms found");
+    delete dndetaMCStackRebin;
+    dndetaMCStackRebin = 0;
+  }
+  if (dndetaMCStackRebin) fOutput->Add(dndetaMCStackRebin);
 
   // Output collision energy string 
   if (fSNNString) fOutput->Add(fSNNString->Clone());
@@ -901,6 +958,17 @@ AliBasedNdetaTask::CentralityBin::operator=(const CentralityBin& o)
   return *this;
 }
 //____________________________________________________________________
+Int_t
+AliBasedNdetaTask::CentralityBin::GetColor() const 
+{
+  if (IsAllBin()) return kRed+2;
+  Float_t  fc       = (fLow+double(fHigh-fLow)/2) / 100;
+  Int_t    nCol     = gStyle->GetNumberOfColors();
+  Int_t    icol     = TMath::Min(nCol-1,int(fc * nCol + .5));
+  Int_t    col      = gStyle->GetColorPalette(icol);
+  return col;
+}
+//____________________________________________________________________
 const char* 
 AliBasedNdetaTask::CentralityBin::GetListName() const
 {
@@ -1110,6 +1178,38 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
 }
 
 //________________________________________________________________________
+const char* 
+AliBasedNdetaTask::CentralityBin::GetResultName(Int_t rebin,
+						Bool_t sym, 
+						const char* postfix) const
+{
+  static TString n;
+  n = Form("dndeta%s%s",GetName(), postfix);
+  if (rebin > 1) n.Append(Form("_rebin%02d", rebin));
+  if (sym)       n.Append("_mirror");
+  return n.Data();
+}
+//________________________________________________________________________
+TH1* 
+AliBasedNdetaTask::CentralityBin::GetResult(Int_t rebin,
+					    Bool_t sym, 
+					    const char* postfix) const
+{
+  if (!fOutput) { 
+    AliWarning(Form("No output list defined in %s [%3d,%3d]", GetName(), 
+		    fLow, fHigh));
+    return 0;
+  }
+  TString  n = GetResultName(rebin, sym, postfix);
+  TObject* o = fOutput->FindObject(n.Data());
+  if (!o) { 
+    // AliWarning(Form("Object %s not found in output list", n.Data()));
+    return 0;
+  }
+  return static_cast<TH1*>(o);
+}
+
+//________________________________________________________________________
 void 
 AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,  
 					     const char* postfix, 
@@ -1120,7 +1220,6 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
 					     bool        symmetrice, 
 					     Int_t       rebin, 
 					     bool        cutEdges, 
-					     Int_t       color, 
 					     Int_t       marker)
 {
   // 
@@ -1170,9 +1269,13 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
   copy->Scale(1., "width");
 
   // --- Set some histogram attributes -------------------------------
-  SetHistogramAttributes(dndeta,  color, marker, Form("ALICE %s", GetName()));
-  SetHistogramAttributes(accNorm, color, marker, Form("ALICE %s normalisation", 
-						      GetName())); 
+  TString post;
+  if (postfix && postfix[0] != '\0') post = Form(" (%s)", postfix);
+  SetHistogramAttributes(dndeta,  GetColor(), marker, 
+			 Form("ALICE %s%s", GetName(), post.Data()));
+  SetHistogramAttributes(accNorm, GetColor(), marker, 
+			 Form("ALICE %s normalisation%s", 
+			      GetName(), post.Data())); 
 
   // --- Make symmetric extensions and rebinnings --------------------
   if (symmetrice)   fOutput->Add(Symmetrice(dndeta));
@@ -1196,7 +1299,6 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 				      Bool_t      corrEmpty, 
 				      Bool_t      cutEdges, 
 				      Int_t       triggerMask,
-				      Int_t       color, 
 				      Int_t       marker) 
 {
   // 
@@ -1256,85 +1358,17 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 
   // --- Make result and store ---------------------------------------
   MakeResult(fSum, "", rootProj, corrEmpty, (scheme & kShape) ? shapeCorr : 0,
-	     scaler, symmetrice, rebin, cutEdges, color, marker);
+	     scaler, symmetrice, rebin, cutEdges, marker);
 
   // --- Process result from TrackRefs -------------------------------
-  if (fSumMC) { 
+  if (fSumMC) 
     MakeResult(fSumMC, "MC", rootProj, corrEmpty, 
 	       (scheme & kShape) ? shapeCorr : 0,
-	       scaler, symmetrice, rebin, cutEdges, color+2, marker);
-  }
+	       scaler, symmetrice, rebin, cutEdges, marker+2);
 
   // Temporary stuff 
-  if (!IsAllBin()) return;
+  // if (!IsAllBin()) return;
 
-  TFile* forward = TFile::Open("forward.root", "READ");
-  if (!forward)  { 
-    AliWarning(Form("No forward.root file found"));
-    return;
-  }
-
-  TH1D* shapeCorrProj = 0;
-  if (shapeCorr) {
-    shapeCorrProj = static_cast<const TH2D*>(shapeCorr)->ProjectionX();
-    shapeCorrProj->Scale(1. / shapeCorr->GetNbinsY());
-    shapeCorrProj->SetDirectory(0);
-    fOutput->Add(shapeCorrProj);
-  }
-
-  TList* official = static_cast<TList*>(forward->Get("official"));
-  if (official) { 
-    TH1F*  histEta  = static_cast<TH1F*>(official->FindObject("fHistEta"));
-    if (histEta)  {
-      TH1D* oEta = new TH1D("tracks", "", histEta->GetNbinsX(), 
-			    histEta->GetXaxis()->GetXmin(), 
-			    histEta->GetXaxis()->GetXmax());
-      for (Int_t i = 1; i < histEta->GetNbinsX(); i++) {
-	oEta->SetBinContent(i, histEta->GetBinContent(i));
-	oEta->SetBinError(i, histEta->GetBinError(i));
-      }
-      if (shapeCorrProj) oEta->Divide(shapeCorrProj);
-      oEta->Scale(1./ntotal, "width");
-      oEta->SetDirectory(0);
-      oEta->SetMarkerStyle(marker+4);
-      oEta->SetMarkerColor(color+5);
-      fOutput->Add(oEta);
-      fOutput->Add(Rebin(oEta, rebin, false));
-    }
-    else 
-      AliWarning(Form("Couldn't find histogram fHistEta in list %s", 
-		      official->GetName()));
-  }
-  else 
-    AliWarning(Form("Couldn't find list 'official' in %s",forward->GetName()));
-
-  TList* tracks = static_cast<TList*>(forward->Get("tracks"));
-  if (tracks) { 
-    TH1F*  histEta  = static_cast<TH1F*>(tracks->FindObject("fHistEta"));
-    if (histEta)  {
-      TH1D* oEta = new TH1D("tracks", "", histEta->GetNbinsX(), 
-			    histEta->GetXaxis()->GetXmin(), 
-			    histEta->GetXaxis()->GetXmax());
-      for (Int_t i = 1; i < histEta->GetNbinsX(); i++) {
-	oEta->SetBinContent(i, histEta->GetBinContent(i));
-	oEta->SetBinError(i, histEta->GetBinError(i));
-      }
-      if (shapeCorrProj) oEta->Divide(shapeCorrProj);
-      oEta->Scale(1./ntotal, "width");
-      oEta->SetDirectory(0);
-      oEta->SetMarkerStyle(marker);
-      oEta->SetMarkerColor(color+5);
-      fOutput->Add(oEta);
-      fOutput->Add(Rebin(oEta, rebin, false));
-    }
-    else 
-      AliWarning(Form("Couldn't find histogram fHistEta in list %s", 
-		      tracks->GetName()));
-  }
-  else 
-    AliWarning(Form("Couldn't find list 'tracks' in %s",forward->GetName()));
-
-  forward->Close();
 }
 
 //

@@ -43,7 +43,7 @@ public:
   static Color_t RingColor(UShort_t d, Char_t r)
   { 
     return ((d == 1 ? kRed : (d == 2 ? kGreen : kBlue))
-	    + ((r == 'I' || r == 'i') ? 2 : -2));
+	    + ((r == 'I' || r == 'i') ? 2 : -3));
   }
   //==================================================================
   /** 
@@ -606,6 +606,7 @@ public:
     { 
       return AliForwardUtil::RingColor(fDet, fRing);
     }
+    const char* GetName() const { return fName.Data(); } 
     UShort_t fDet;   // Detector
     Char_t   fRing;  // Ring
     TString  fName;  // Name

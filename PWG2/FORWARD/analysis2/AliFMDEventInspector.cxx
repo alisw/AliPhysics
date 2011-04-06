@@ -37,6 +37,7 @@ AliFMDEventInspector::AliFMDEventInspector()
   : TNamed(),
     fHEventsTr(0), 
     fHEventsTrVtx(0),
+    fHEventsAccepted(0),
     fHTriggers(0),
     fHType(0),
     fHWords(0),
@@ -49,7 +50,8 @@ AliFMDEventInspector::AliFMDEventInspector()
     fField(999), 
     fCollisionSystem(kUnknown),
     fDebug(0),
-    fCentAxis(0)
+    fCentAxis(0),
+    fVtxAxis(10,-10,10)
 {
   // 
   // Constructor 
@@ -61,6 +63,7 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
   : TNamed("fmdEventInspector", name),
     fHEventsTr(0), 
     fHEventsTrVtx(0), 
+    fHEventsAccepted(0),
     fHTriggers(0),
     fHType(0),
     fHWords(0),
@@ -73,7 +76,8 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fField(999), 
     fCollisionSystem(kUnknown),
     fDebug(0),
-    fCentAxis(0)
+    fCentAxis(0),
+    fVtxAxis(10,-10,10)
 {
   // 
   // Constructor 
@@ -88,6 +92,7 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
   : TNamed(o), 
     fHEventsTr(o.fHEventsTr), 
     fHEventsTrVtx(o.fHEventsTrVtx), 
+    fHEventsAccepted(o.fHEventsAccepted),
     fHTriggers(o.fHTriggers),
     fHType(o.fHType),
     fHWords(o.fHWords),
@@ -100,7 +105,8 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fField(o.fField), 
     fCollisionSystem(o.fCollisionSystem),
     fDebug(0),
-    fCentAxis(0)
+    fCentAxis(0),
+    fVtxAxis(o.fVtxAxis)
 {
   // 
   // Copy constructor 
@@ -134,6 +140,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   TNamed::operator=(o);
   fHEventsTr         = o.fHEventsTr;
   fHEventsTrVtx      = o.fHEventsTrVtx;
+  fHEventsAccepted   = o.fHEventsAccepted;
   fHTriggers         = o.fHTriggers;
   fHType             = o.fHType;
   fHWords            = o.fHWords;
@@ -146,6 +153,8 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fEnergy            = o.fEnergy;
   fField             = o.fField;
   fCollisionSystem   = o.fCollisionSystem;
+  fVtxAxis.Set(o.fVtxAxis.GetNbins(), o.fVtxAxis.GetXmin(), 
+	       o.fVtxAxis.GetXmax());
   if (fList) { 
     fList->SetName(GetName());
     if (fHEventsTr)    fList->Add(fHEventsTr);
@@ -206,12 +215,14 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   // ----- 92 number --------- ---- 1 ---
   TArrayD limits(93);
   for (Int_t i = 0; i < 92; i++) limits[i] = -1.5 + i;
+
+  fVtxAxis.Set(vtxAxis.GetNbins(), vtxAxis.GetXmin(), vtxAxis.GetXmax());
   
   fCentAxis  = new TAxis(limits.GetSize()-1, limits.GetArray());
   fHEventsTr = new TH1I("nEventsTr", "Number of events w/trigger", 
-			vtxAxis.GetNbins(), 
-			vtxAxis.GetXmin(), 
-			vtxAxis.GetXmax());
+			4*vtxAxis.GetNbins(), 
+			2*vtxAxis.GetXmin(), 
+			2*vtxAxis.GetXmax());
   fHEventsTr->SetXTitle("v_{z} [cm]");
   fHEventsTr->SetYTitle("# of events");
   fHEventsTr->SetFillColor(kRed+1);
@@ -220,19 +231,26 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   // fHEventsTr->Sumw2();
   fList->Add(fHEventsTr);
 
-  fHEventsTrVtx = new TH1I("nEventsTrVtx", 
-			   "Number of events w/trigger and vertex", 
-			   vtxAxis.GetNbins(), 
-			   vtxAxis.GetXmin(), 
-			   vtxAxis.GetXmax());
-  fHEventsTrVtx->SetXTitle("v_{z} [cm]");
-  fHEventsTrVtx->SetYTitle("# of events");
+  fHEventsTrVtx = static_cast<TH1I*>(fHEventsTr->Clone("nEventsTrVtx"));
+  fHEventsTrVtx->SetTitle("Number of events w/trigger and vertex"); 
   fHEventsTrVtx->SetFillColor(kBlue+1);
-  fHEventsTrVtx->SetFillStyle(3001);
   fHEventsTrVtx->SetDirectory(0);
   // fHEventsTrVtx->Sumw2();
   fList->Add(fHEventsTrVtx);
 
+  fHEventsAccepted = new TH1I("nEventsAccepted", 
+			      "Number of events  w/trigger and vertex in range",
+			      2*vtxAxis.GetNbins(), 
+			      2*vtxAxis.GetXmin(), 
+			      2*vtxAxis.GetXmax());
+  fHEventsAccepted->SetXTitle("v_{z} [cm]");
+  fHEventsAccepted->SetYTitle("# of events");
+  fHEventsAccepted->SetFillColor(kGreen+1);
+  fHEventsAccepted->SetFillStyle(3001);
+  fHEventsAccepted->SetDirectory(0);
+  // fHEventsAccepted->Sumw2();
+  fList->Add(fHEventsAccepted);
+			      
       
   fHTriggers = new TH1I("triggers", "Triggers", kOffline+1, 0, kOffline+1);
   fHTriggers->SetFillColor(kRed+1);
@@ -316,7 +334,8 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
 			      Bool_t&            lowFlux,
 			      UShort_t&          ivz, 
 			      Double_t&          vz,
-			      Double_t&          cent)
+			      Double_t&          cent,
+			      UShort_t&          nClusters)
 {
   // 
   // Process the event 
@@ -342,7 +361,7 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   }
 
   // --- Read trigger information from the ESD and store in AOD object
-  if (!ReadTriggers(event, triggers)) { 
+  if (!ReadTriggers(event, triggers, nClusters)) { 
     if (fDebug > 2) {
       AliWarning("Failed to read triggers from ESD"); }
     return kNoTriggers;
@@ -386,15 +405,16 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   fHEventsTrVtx->Fill(vz);
 
   // --- Get the vertex bin ------------------------------------------
-  ivz = fHEventsTr->GetXaxis()->FindBin(vz);
-  if (ivz <= 0 || ivz > fHEventsTr->GetXaxis()->GetNbins()) { 
+  ivz = fVtxAxis.FindBin(vz);
+  if (ivz <= 0 || ivz > fVtxAxis.GetNbins()) { 
     if (fDebug > 3) {
       AliWarning(Form("Vertex @ %f outside of range [%f,%f]", 
-		      vz, fHEventsTr->GetXaxis()->GetXmin(), 
-		      fHEventsTr->GetXaxis()->GetXmax())); }
+		      vz, fVtxAxis.GetXmin(), fVtxAxis.GetXmax())); 
+    }
     ivz = 0;
     return kBadVertex;
   }
+  fHEventsAccepted->Fill(vz);
   
   // --- Check the FMD ESD data --------------------------------------
   if (!event->GetFMDData()) { 
@@ -439,7 +459,8 @@ AliFMDEventInspector::ReadCentrality(const AliESDEvent* esd,
 
 //____________________________________________________________________
 Bool_t
-AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
+AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
+				   UShort_t& nClusters)
 {
   // 
   // Read the trigger information from the ESD event 
@@ -475,6 +496,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
   // then the AliPhysicsSelection object would overcount by a 
   // factor of 2! :-(
   Bool_t offline = ih->IsEventSelected();
+  nClusters = 0;
   if (offline) {
     triggers |= AliAODForwardMult::kOffline;
     triggers |= AliAODForwardMult::kInel;
@@ -489,14 +511,22 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
       // Check if we have one or more tracklets 
       // in the range -1 < eta < 1 to set the INEL>0 
       // trigger flag. 
+      // 
+      // Also count tracklets as a single cluster 
       Int_t n = spdmult->GetNumberOfTracklets();
       for (Int_t j = 0; j < n; j++) { 
 	if(TMath::Abs(spdmult->GetEta(j)) < 1) { 
 	  triggers |= AliAODForwardMult::kInelGt0;
-	  break;
+	  nClusters++;
 	}
       }
+      n = spdmult->GetNumberOfSingleClusters();
+      for (Int_t j = 0; j < n; j++) { 
+	Double_t eta = -TMath::Log(TMath::Tan(spdmult->GetThetaSingle(j)/2.));
+	if (TMath::Abs(eta) < 1) nClusters++;
+      }
     }
+    if (nClusters > 0) triggers |= AliAODForwardMult::kNClusterGt0;
   }
 
   // Analyse some trigger stuff 
@@ -505,7 +535,8 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
     triggers |= AliAODForwardMult::kNSD;
  
     
-  //Check pileup
+  // Check for multiple vertices (pile-up) with at least 3
+  // contributors and at least 0.8cm from the primary vertex
   Bool_t pileup =  esd->IsPileupFromSPD(3,0.8);
   if (pileup) {
     triggers |= AliAODForwardMult::kPileUp;
@@ -628,6 +659,40 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, Double_t& vz)
   //    @c true on success, @c false otherwise 
   //
   vz = 0;
+#if 1
+  // This is the code used by the 1st physics people 
+  const AliESDVertex* vertex    = esd->GetPrimaryVertex();
+  if (!vertex  || !vertex->GetStatus()) {
+    if (fDebug > 2) {
+      AliWarning(Form("No primary vertex (%p) or bad status %d", 
+		      vertex, (vertex ? vertex->GetStatus() : -1)));
+    }
+    return false;
+  }
+  const AliESDVertex* vertexSPD = esd->GetPrimaryVertexSPD();
+  if (!vertexSPD || !vertexSPD->GetStatus()) {
+    if (fDebug > 2) {
+      AliWarning(Form("No primary SPD vertex (%p) or bad status %d", 
+		      vertexSPD, (vertexSPD ? vertexSPD->GetStatus() : -1)));
+    }
+    return false;
+  }
+
+  // if vertex is from SPD vertexZ, require more stringent cuts 
+  if (vertex->IsFromVertexerZ()) { 
+    if (vertex->GetDispersion() > fMaxVzErr || 
+	vertex->GetZRes() > 1.25 * fMaxVzErr) {
+      if (fDebug > 2) {
+	AliWarning(Form("Dispersion %f > %f or resolution %f > %f",
+			vertex->GetDispersion(), fMaxVzErr,
+			vertex->GetZRes(), 1.25 * fMaxVzErr)); 
+      }
+      return false;
+    }
+  }
+  vz = vertex->GetZ();
+  return true;
+#else 
   // Get the vertex 
   const AliESDVertex* vertex = esd->GetPrimaryVertexSPD();
   if (!vertex) { 
@@ -655,6 +720,7 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, Double_t& vz)
   // Get the z coordiante 
   vz = vertex->GetZ();
   return kTRUE;
+#endif 
 }
   
 //____________________________________________________________________
