@@ -56,7 +56,7 @@ AliAnalysisTaskPi0::AliAnalysisTaskPi0(const char *name)
   // Set bad channel map
   char key[55] ;
   for(Int_t i=0; i<6; i++){
-    sprintf(key,"PHOS_BadMap_mod%d",i) ;
+    snprintf(key,55,"PHOS_BadMap_mod%d",i) ;
     fPHOSBadMap[i]=new TH2I(key,"Bad Modules map",64,0.,64.,56,0.,56.) ;
   }
   // Initialize the PHOS geometry
@@ -257,12 +257,12 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
   Bool_t eventV0AND       = kFALSE;
 
   AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
-  Int_t eventNumberInFile = event->GetEventNumberInFile();
   if (!event) {
      Printf("ERROR: Could not retrieve event");
      return;
   }
 
+  Int_t eventNumberInFile = event->GetEventNumberInFile();
   if(fPHOSEvent)
     fPHOSEvent->Clear() ;
   else
