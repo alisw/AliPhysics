@@ -225,7 +225,10 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
    } else if (fAnalysisType == "AOD") {
       lAODevent = dynamic_cast<AliAODEvent*>(InputEvent());
       if (lAODevent) ncascades = lAODevent->GetNumberOfCascades();
-   } else {
+   } 
+   
+   // skip when both sources are unavailable
+   if (!lESDevent && !lAODevent) {
       Printf("ERROR: neither lESDevent nor lAODevent are available \n");
       return;
    }
@@ -639,7 +642,7 @@ void AliAnalysisTaskSigma1385::IsSelected(AliESDtrack *track)
    status  = (ULong_t)track->GetStatus();
    mom     = track->P();
    isTPC   = ((status & AliESDtrack::kTPCin)  != 0);
-   isITSSA = (!isTPC && (status & AliESDtrack::kITSrefit) != 0 && (status & AliESDtrack::kITSpureSA) == 0 && (status & AliESDtrack::kITSpid) != 0);
+   isITSSA = !isTPC && track->IsOn(AliESDtrack::kITSrefit) && !track->IsOn(AliESDtrack::kITSpureSA); //(!isTPC && (status & AliESDtrack::kITSrefit) != 0 && (status & AliESDtrack::kITSpureSA) == 0 && (status & AliESDtrack::kITSpid) != 0);
    isTOF   = (((status & AliESDtrack::kTOFout) != 0) && ((status & AliESDtrack::kTIME) != 0) /* && mom > TMath::Max(b1, b2)*/);
 
 
