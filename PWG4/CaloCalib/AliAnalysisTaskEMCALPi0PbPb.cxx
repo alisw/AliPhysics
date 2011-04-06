@@ -23,6 +23,7 @@
 #include "AliEMCALRecoUtils.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
+#include "AliTrackerBase.h"
 #include "AliESDtrack.h"
 #include "AliGeomManager.h"
 #include "AliLog.h"
@@ -137,7 +138,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
     if (f) {
       f->SetCompressionLevel(2);
       fNtuple = new TNtuple(Form("nt%.0fto%.0f",fCentFrom,fCentTo),"nt",
-                            "run:evt:l0:cent:pt:eta:phi:e:emax:n:n1:db:disp:mn:ms:ecc:sig:tkdz:tkdr:tkiso:ceiso");
+                            "run:evt:l0:cent:pt:eta:phi:e:emax:n:n1:db:disp:mn:ms:ecc:sig:tkdz:tkdr:tkep:tkiso:ceiso");
       fNtuple->SetDirectory(f);
       fNtuple->SetAutoFlush(-1024*1024*1024);
       fNtuple->SetAutoSave(-1024*1024*1024);
@@ -557,6 +558,15 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcTracks()
         continue;
       if(track->GetTPCNcls()<fMinNClustPerTrack)
         continue;
+
+      if (0 && (pt>=0.6) && (track->PxAtDCA()==-999)) { // compute position on EMCAL 
+        AliExternalTrackParam tParam(track);
+        if (AliTrackerBase::PropagateTrackToBxByBz(&tParam, 438, 0.139, 1, kTRUE)) {
+          Double_t trkPos[3];
+          tParam.GetXYZ(trkPos);
+          track->SetPxPyPzAtDCA(trkPos[0],trkPos[1],trkPos[2]);
+        }
+      }
       fSelTracks->Add(track);
     }
   }
@@ -574,6 +584,8 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     return;
 
   Int_t nclus = clusters->GetEntries();
+  Int_t ntrks = fSelTracks->GetEntries();
+
   for(Int_t i = 0; i<nclus; ++i) {
     fClusProps[i].Reset();
 
@@ -587,8 +599,12 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
 
     Float_t  clsPos[3] = {0};
     clus->GetPosition(clsPos);
+    Double_t vertex[3] = {0};
+    InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+    TLorentzVector clusterVec;
+    clus->GetMomentum(clusterVec,vertex);
+    Double_t clsEta = clusterVec.Eta();
 
-    Int_t ntrks = fSelTracks->GetEntries();
     Double_t mind2 = 1e10;
     for(Int_t j = 0; j<ntrks; ++j) {
       AliVTrack *track = static_cast<AliVTrack*>(fSelTracks->At(j));
@@ -596,26 +612,28 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
         continue;
       if (track->Pt()<0.6)
         continue;
+      if (TMath::Abs(clsEta-track->Eta())>fIsoDist)
+        continue;
+
       AliExternalTrackParam tParam(track);
       Float_t tmpR=-1, tmpZ=-1;
       if (!fReco->ExtrapolateTrackToCluster(&tParam, clus, tmpR, tmpZ))
         continue;
-      Double_t d2 = TMath::Sqrt(tmpR*tmpR + tmpZ*tmpZ);
+      Double_t d2 = tmpR;
       if (mind2>d2) {
         mind2=d2;
         fClusProps[i].fTrIndex = j;
         fClusProps[i].fTrDz    = tmpZ;
-        fClusProps[i].fTrDr    = tmpR;
+        fClusProps[i].fTrDr    = TMath::Sqrt(tmpR*tmpR-tmpZ*tmpZ);
         fClusProps[i].fTrDist  = d2;
         fClusProps[i].fTrEp    = clus->E()/track->P();
       }
     }
 
+    if (0 && (fClusProps[i].fTrIndex>=0)) {
+      cout << i << " " << fClusProps[i].fTrIndex << ": Dr " << fClusProps[i].fTrDr << " " << " Dz " << fClusProps[i].fTrDz << endl;
+    }
     if (1) {
-      Double_t vertex[3] = {0};
-      InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
-      TLorentzVector clusterVec;
-      clus->GetMomentum(clusterVec,vertex);
       fClusProps[i].fTrIso      = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist);
       fClusProps[i].fTrLowPtIso = 0;
     }
@@ -808,7 +826,7 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
     if (fNtuple) {
       if (clus->E()<fMinE)
         continue;
-      Float_t vals[21];
+      Float_t vals[22];
       vals[0]  = InputEvent()->GetRunNumber();
       vals[1]  = (((UInt_t)InputEvent()->GetOrbitNumber()  << 12) | (UInt_t)InputEvent()->GetBunchCrossNumber()); 
       if (vals[1]<=0) 
@@ -839,8 +857,9 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
       vals[16] = maxAxis;
       vals[17] = fClusProps[i].fTrDz; 
       vals[18] = fClusProps[i].fTrDr;
-      vals[19] = fClusProps[i].fTrIso;
-      vals[20] = fClusProps[i].fCellIso;
+      vals[19] = fClusProps[i].fTrEp;
+      vals[20] = fClusProps[i].fTrIso;
+      vals[21] = fClusProps[i].fCellIso;
       fNtuple->Fill(vals);
     }
   }
