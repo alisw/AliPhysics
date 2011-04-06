@@ -114,7 +114,7 @@ ClassImp(AliT0Reconstructor)
   AliDebug(2,Form(" LatencyL1 %f latencyL1A %f latencyL1C %f latencyHPTDC %f \n",fLatencyL1, fLatencyL1A, fLatencyL1C, fLatencyHPTDC));
  
   for (Int_t i=0; i<24; i++) {
-    if( fTime0vertex[i] < 500 ) fTime0vertex[i] =( 1000.*fLatencyHPTDC - 1000.*fLatencyL1 + 1000.*fGRPdelays)/24.4;
+    if( fTime0vertex[i] < 500 || fTime0vertex[i] > 50000) fTime0vertex[i] =( 1000.*fLatencyHPTDC - 1000.*fLatencyL1 + 1000.*fGRPdelays)/24.4;
  
   }
   
