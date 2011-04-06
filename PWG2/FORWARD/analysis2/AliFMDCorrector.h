@@ -167,7 +167,7 @@ public:
    * 
    * @param option Not used 
    */
-  void Print(Option_t* option="") const;
+  virtual void Print(Option_t* option="") const;
 protected:
   /** 
    * Internal data structure to keep track of the histograms

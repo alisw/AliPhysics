@@ -456,7 +456,7 @@ AliFMDMCEventInspector::IsSingleDiffractive(AliStack* stack,
   else 
     return false;
   
-  // Invariant masses 
+  // Rapidity shift
   Double_t m02s = 1 - 2 * p1->Energy() / fEnergy; 
   Double_t m12s = 1 - 2 * p2->Energy() / fEnergy;
   

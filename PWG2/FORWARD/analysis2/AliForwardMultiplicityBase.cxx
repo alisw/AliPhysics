@@ -27,6 +27,7 @@
 #include "AliESDEvent.h"
 #include <TROOT.h>
 #include <TAxis.h>
+#include <THStack.h>
 #include <iostream>
 #include <iomanip>
 
@@ -205,6 +206,85 @@ AliForwardMultiplicityBase::MarkEventForStore() const
     AliFatal("No AOD output handler set in analysis manager");
 
   ah->SetFillAOD(kTRUE);
+}
+
+//____________________________________________________________________
+void
+AliForwardMultiplicityBase::MakeRingdNdeta(const TList* input, 
+					   const char*  inName,
+					   TList*       output,
+					   const char*  outName,
+					   Int_t        style) const
+{
+  // Make dN/deta for each ring found in the input list.  
+  // 
+  // A stack of all the dN/deta is also made for easy drawing. 
+  // 
+  // Note, that the distributions are normalised to the number of
+  // observed events only - they should be corrected for 
+  if (!input) return;
+  TList* list = static_cast<TList*>(input->FindObject(inName));
+  if (!list) { 
+    AliWarning(Form("No list %s found in %s", inName, input->GetName()));
+    return;
+  }
+  
+  TList* out = new TList;
+  out->SetName(outName);
+  out->SetOwner();
+  output->Add(out);
+
+  THStack*     dndetaRings = new THStack("all", "dN/d#eta per ring");
+  const char*  names[]     = { "FMD1I", "FMD2I", "FMD2O", "FMD3I", "FMD3O", 0 };
+  const char** ptr         = names;
+  
+  while (*ptr) { 
+    TList* thisList = new TList;
+    thisList->SetOwner();
+    thisList->SetName(*ptr);
+    out->Add(thisList);
+
+    TH2D* h = static_cast<TH2D*>(list->FindObject(Form("%s_cache", *ptr)));
+    if (!h) { 
+      AliWarning(Form("Didn't find %s_cache in %s", *ptr, list->GetName()));
+      ptr++;
+      continue;
+    }
+    TH2D* copy = static_cast<TH2D*>(h->Clone("sum"));
+    copy->SetDirectory(0);
+    thisList->Add(copy);
+    
+    TH1D* norm =static_cast<TH1D*>(h->ProjectionX("norm", 0, 0, ""));
+    for (Int_t i = 1; i <= copy->GetNbinsX(); i++) { 
+      for (Int_t j = 1; j <= copy->GetNbinsY(); j++) { 
+	Double_t c = copy->GetBinContent(i, j);
+	Double_t e = copy->GetBinError(i, j);
+	Double_t a = norm->GetBinContent(i);
+	copy->SetBinContent(i, j, a <= 0 ? 0 : c / a);
+	copy->SetBinError(i, j, a <= 0 ? 0 : e / a);
+      }
+    }
+
+    TH1D* res  =static_cast<TH1D*>(copy->ProjectionX("dndeta",1,
+						     h->GetNbinsY(),"e"));
+    TH1D* proj =static_cast<TH1D*>(h->ProjectionX("proj",1,h->GetNbinsY(),"e"));
+    res->SetTitle(*ptr);
+    res->Scale(1., "width");
+    copy->Scale(1., "width");
+    proj->Scale(1. / norm->GetMaximum(), "width");
+    norm->Scale(1. / norm->GetMaximum());
+
+    res->SetMarkerStyle(style);
+    norm->SetDirectory(0);
+    res->SetDirectory(0);
+    proj->SetDirectory(0);
+    thisList->Add(norm);
+    thisList->Add(res);
+    thisList->Add(proj);
+    dndetaRings->Add(res);
+    ptr++;
+  }
+  out->Add(dndetaRings);
 }
 
 //____________________________________________________________________

@@ -15,6 +15,7 @@
 #include "AliLog.h"
 #include <TH2D.h>
 #include <TROOT.h>
+#include <THStack.h>
 #include <iostream>
 #include <iomanip>
 
@@ -178,8 +179,8 @@ AliFMDCorrector::Correct(AliForwardUtil::Histos& hists,
       if (fUseSecondaryMap) {
         TH2D*  bg = fcm.GetSecondaryMap()->GetCorrection(d, r, uvb);
         if (!bg) {
-          AliWarning(Form("No secondary correction for FMDM%d%c in vertex bin %d",
-                          d, r, uvb));
+          AliWarning(Form("No secondary correction for FMDM%d%c "
+			  "in vertex bin %d", d, r, uvb));
           continue;
         }
         // Divide by primary/total ratio
@@ -198,17 +199,13 @@ AliFMDCorrector::Correct(AliForwardUtil::Histos& hists,
       if (fUseAcceptance) {
         TH2D*  ac = fcm.GetAcceptance()->GetCorrection(d, r, uvb);
         if (!ac) {
-          AliWarning(Form("No acceptance correction for FMD%d%c in vertex bin %d",
-			d, r, uvb));
+          AliWarning(Form("No acceptance correction for FMD%d%c in "
+			  "vertex bin %d", d, r, uvb));
           continue;
         }
         // Divide by the acceptance correction
         h->Divide(ac);
       }
-
-
-
-      
 
       if (fUseMergingEfficiency) {
 	if (!fcm.GetMergingEfficiency()) { 
@@ -307,8 +304,19 @@ AliFMDCorrector::ScaleHistograms(const TList* dir, Int_t nEvents)
 
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
-  while ((o = static_cast<RingHistos*>(next())))
+  THStack* sums = new THStack("sums", "Sums of ring results");
+  while ((o = static_cast<RingHistos*>(next()))) {
     o->ScaleHistograms(d, nEvents);
+    TH1D* sum = o->fDensity->ProjectionX(o->GetName(), 1, 
+					 o->fDensity->GetNbinsY(),"e");
+    sum->Scale(1., "width");
+    sum->SetTitle(o->GetName());
+    sum->SetDirectory(0);
+    sum->SetYTitle("#sum N_{ch,primary}");
+    sums->Add(sum);
+  }
+  d->Add(sums);
+
 }
 //____________________________________________________________________
 void
@@ -372,11 +380,13 @@ AliFMDCorrector::RingHistos::RingHistos(UShort_t d, Char_t r)
   //    d detector
   //    r ring 
   //
-  fDensity = new TH2D(Form("FMD%d%c_Primary_Density", d, r), 
-		      Form("in FMD%d%c", d, r), 
+  fDensity = new TH2D("primaryDensity", 
+		      "#sum N_{ch,primary}/(#Delta#eta#Delta#phi)", 
 		      200, -4, 6, (r == 'I' || r == 'i' ? 20 : 40), 
 		      0, 2*TMath::Pi());
   fDensity->SetDirectory(0);
+  fDensity->SetMarkerColor(Color());
+  fDensity->Sumw2();
   fDensity->SetXTitle("#eta");
   fDensity->SetYTitle("#phi [radians]");
   fDensity->SetZTitle("Primary N_{ch} density");
@@ -437,7 +447,7 @@ AliFMDCorrector::RingHistos::Output(TList* dir)
 
 //____________________________________________________________________
 void
-AliFMDCorrector::RingHistos::ScaleHistograms(TList* dir, Int_t /*nEvents*/)
+AliFMDCorrector::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
 { 
   // 
   // Scale the histograms to the total number of events 
@@ -448,8 +458,8 @@ AliFMDCorrector::RingHistos::ScaleHistograms(TList* dir, Int_t /*nEvents*/)
   TList* l = GetOutputList(dir);
   if (!l) return; 
 
-  //TH1* density = GetOutputHist(l,Form("%s_Primary_Density", fName.Data()));
-  //if (density) density->Scale(1./nEvents);
+  TH1* density = GetOutputHist(l,"primaryDensity");
+  if (density) density->Scale(1./nEvents);
 }
 
 //____________________________________________________________________

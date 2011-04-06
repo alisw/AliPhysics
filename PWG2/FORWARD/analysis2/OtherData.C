@@ -1150,9 +1150,11 @@ GetData(UShort_t sys,
 	mp->Add(AliceCentralInelGt7000());
       }
     }
+#if 0
     else 
       Warning("GetData", "No other results for sys=%d, energy=%d",
 	      sys, energy);
+#endif
   }
   else if (sys == 2) { 
     // Nothing for PbPb so far 
@@ -1162,7 +1164,7 @@ GetData(UShort_t sys,
       en = Form(", #sqrt{s_{NN}}=%dGeV", energy);
     else 
       en = Form(", #sqrt{s_{NN}}=%f4.2TeV", float(energy)/1000);
-    Warning("GetData", "No other data for PbP b yet");
+    // Warning("GetData", "No other data for PbPb yet");
   }
   else 
     Warning("GetData", "Unknown system %d", sys);

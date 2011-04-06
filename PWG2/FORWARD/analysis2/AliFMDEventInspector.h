@@ -14,6 +14,7 @@
  * @ingroup pwg2_forward_aod
  */
 #include <TNamed.h>
+#include <TAxis.h>
 class AliESDEvent;
 class TH2D;
 class TH1D;
@@ -135,6 +136,7 @@ public:
    * @param vz        On return, the z position of the interaction
    * @param cent      On return, the centrality (in percent) or < 0 
    *                  if not found
+   * @param nClusters On return, number of SPD clusters in @f$ |\eta|<1@f$ 
    * 
    * @return 0 (or kOk) on success, otherwise a bit mask of error codes 
    */
@@ -143,7 +145,8 @@ public:
 		 Bool_t&            lowFlux,
 		 UShort_t&          ivz, 
 		 Double_t&          vz,
-		 Double_t&          cent);
+		 Double_t&          cent,
+		 UShort_t&          nClusters);
   /** 
    * Define the output histograms.  These are put in a sub list of the
    * passed list.   The histograms are merged before the parent task calls 
@@ -224,10 +227,12 @@ protected:
    * 
    * @param esd        ESD event 
    * @param triggers   On return, contains the trigger bits 
+   * @param nClusters  On return, number of SPD clusters in @f$ |\eta|<1@f$ 
    * 
    * @return @c true on success, @c false otherwise 
    */
-  Bool_t ReadTriggers(const AliESDEvent* esd, UInt_t& triggers);
+  Bool_t ReadTriggers(const AliESDEvent* esd, UInt_t& triggers, 
+		      UShort_t& nClusters);
   /** 
    * Read the vertex information from the ESD event 
    * 
@@ -251,6 +256,7 @@ protected:
 
   TH1I*    fHEventsTr;    //! Histogram of events w/trigger
   TH1I*    fHEventsTrVtx; //! Events w/trigger and vertex 
+  TH1I*    fHEventsAccepted; //! Events w/trigger and vertex in range 
   TH1I*    fHTriggers;    //! Triggers
   TH1I*    fHType;        //! Type (low/high flux) of event
   TH1I*    fHWords;       //! Trigger words 
@@ -264,6 +270,7 @@ protected:
   UShort_t fCollisionSystem; //  Collision system
   Int_t    fDebug;        //  Debug level 
   TAxis*   fCentAxis;     // Centrality axis used in histograms
+  TAxis    fVtxAxis;
   ClassDef(AliFMDEventInspector,3); // Inspect the event 
 };
 

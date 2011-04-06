@@ -303,7 +303,18 @@ protected:
    * 
    */
   virtual void MarkEventForStore() const;
-
+  /** 
+   * Make Ring @f$ dN/d\eta @f$ histogram and a stack 
+   * 
+   * @param input      List with summed signals 
+   * @param output     Output list 
+   * @param stackName  Stack name 
+   */
+  virtual void MakeRingdNdeta(const TList* input, 
+			      const char*  inName,
+			      TList*       output,
+			      const char*  outName,
+			      Int_t        style=20) const;
   Bool_t                 fEnableLowFlux;// Whether to use low-flux specific code
   Bool_t                 fFirstEvent;   // Whether the event is the first seen 
 private:

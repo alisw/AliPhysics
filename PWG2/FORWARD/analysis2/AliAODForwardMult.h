@@ -127,7 +127,9 @@ public:
     /** true NSD from MC */
     kMCNSD    = 0x400,    
     /** Offline MB triggered */
-    kOffline  = 0x800
+    kOffline  = 0x800,
+    /** At least one SPD cluster */ 
+    kNClusterGt0 = 0x1000
   };
   /** 
    * Bin numbers in trigger histograms 
@@ -144,6 +146,7 @@ public:
     kBinPileUp, 
     kBinMCNSD,
     kBinOffline,
+    kBinNClusterGt0,
     kWithTrigger, 
     kWithVertex, 
     kAccepted
@@ -201,13 +204,27 @@ public:
    */
   void SetTriggerBits(UInt_t bits) { fTriggers |= bits; } // Set trigger bits
   /** 
-   * Check if bit(s) are set in the trigger mask 
+   * Check if all bit(s) are set in the trigger mask.  Note, this is
+   * an @e and between the bits.  If you need an @e or you should use
+   * the member function IsTriggerOrBits
    * 
    * @param bits Bits to test for 
    * 
-   * @return 
+   * @return true if all enabled bits in the argument is also set in
+   * the trigger word
    */
   Bool_t IsTriggerBits(UInt_t bits) const;
+  /** 
+   * Check if any of bit(s) are enabled in the trigger word.  This is
+   * an @e or between the selected bits.  If you need and @a and you
+   * should use the member function IsTriggerBits;
+   * 
+   * @param bits Bits to check for 
+   * 
+   * @return true if any of the enabled bits in the arguments are also
+   * enabled in the trigger mask
+   */
+  Bool_t IsTriggerOrBits(UInt_t bits) const;
   /** 
    * Whether we have any trigger bits 
    */
@@ -316,7 +333,18 @@ public:
    * @return 
    */
   Bool_t  HasCentrality() const { return !(fCentrality  < 0); }
-  
+  /** 
+   * Get the number of SPD clusters seen in @f$ |\eta|<1@f$ 
+   * 
+   * @return Number of SPD clusters seen
+   */
+  UShort_t GetNClusters() const { return fNClusters; }
+  /** 
+   * Set the number of SPD clusters seen in @f$ |\eta|<1@f$ 
+   * 
+   * @param n Number of SPD clusters 
+   */
+  void SetNClusters(UShort_t n) { fNClusters = n; }
   /** 
    * Get the name of the object 
    * 
@@ -385,14 +413,15 @@ public:
    */
   static UInt_t MakeTriggerMask(const char* what);
 protected: 
-  Bool_t  fIsMC;     // Whether this is from MC 
-  TH2D    fHist;     // Histogram of d^2N_{ch}/(deta dphi) for this event
-  UInt_t  fTriggers; // Trigger bit mask 
-  Float_t fIpZ;      // Z coordinate of the interaction point
-  Float_t fCentrality; // Event centrality 
+  Bool_t   fIsMC;       // Whether this is from MC 
+  TH2D     fHist;       // Histogram of d^2N_{ch}/(deta dphi) for this event
+  UInt_t   fTriggers;   // Trigger bit mask 
+  Float_t  fIpZ;        // Z coordinate of the interaction point
+  Float_t  fCentrality; // Event centrality 
+  UShort_t fNClusters;  // Number of SPD clusters in |eta|<1
 
   static const Float_t fgkInvalidIpZ; // Invalid IpZ value 
-  ClassDef(AliAODForwardMult,2); // AOD forward multiplicity 
+  ClassDef(AliAODForwardMult,3); // AOD forward multiplicity 
 };
 
 //____________________________________________________________________
@@ -407,6 +436,12 @@ inline Bool_t
 AliAODForwardMult::IsTriggerBits(UInt_t bits) const 
 { 
   return HasTrigger() && ((fTriggers & bits) == bits); 
+}
+//____________________________________________________________________
+inline Bool_t 
+AliAODForwardMult::IsTriggerOrBits(UInt_t bits) const 
+{ 
+  return HasTrigger() && ((fTriggers & bits) != 0);
 }
 
 #endif

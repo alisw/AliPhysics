@@ -51,6 +51,14 @@ public:
    * @param option Not used 
    */
   virtual void UserExec(Option_t* option);
+  /** 
+   * Called at end of event processing.
+   *
+   * This is called once in the master 
+   * 
+   * @param option Not used 
+   */
+  virtual void Terminate(Option_t* option);
 protected:
   /** 
    * Copy constructor 
@@ -162,7 +170,6 @@ protected:
 		     Bool_t      corrEmpty, 
 		     Bool_t      cutEdges, 
 		     Int_t       triggerMask,
-		     Int_t       color, 
 		     Int_t       marker);
   protected: 
     TH2D*           fSumPrimary;    //  Sum of primary histograms

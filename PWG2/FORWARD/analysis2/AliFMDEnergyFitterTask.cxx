@@ -187,7 +187,8 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
   AliMCEvent* mcevent = MCEvent();
   if(mcevent) {
     AliHeader* header            = mcevent->Header();
-    AliGenHijingEventHeader* hijingHeader = dynamic_cast<AliGenHijingEventHeader*>(header->GenEventHeader());
+    AliGenHijingEventHeader* hijingHeader = 
+      dynamic_cast<AliGenHijingEventHeader*>(header->GenEventHeader());
     if(hijingHeader) {
       Float_t b = hijingHeader->ImpactParameter();
       if(b<fbLow || b>fbHigh) return;
@@ -229,13 +230,14 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
 
     InitializeSubs();
   }
-  Bool_t   lowFlux  = kFALSE;
-  UInt_t   triggers = 0;
-  UShort_t ivz      = 0;
-  Double_t vz       = 0;
-  Double_t cent     = 0;
-  UInt_t   found    = fEventInspector.Process(esd, triggers, lowFlux, 
-					      ivz, vz, cent);
+  Bool_t   lowFlux   = kFALSE;
+  UInt_t   triggers  = 0;
+  UShort_t ivz       = 0;
+  Double_t vz        = 0;
+  Double_t cent      = 0;
+  UShort_t nClusters = 0;
+  UInt_t   found     = fEventInspector.Process(esd, triggers, lowFlux, 
+					       ivz, vz, cent, nClusters);
   if (found & AliFMDEventInspector::kNoEvent)    return;
   if (found & AliFMDEventInspector::kNoTriggers) return;
   if (found & AliFMDEventInspector::kNoSPD)     return;
@@ -277,20 +279,6 @@ AliFMDEnergyFitterTask::Terminate(Option_t*)
     return;
   }
   
-#if 0
-  // Get our histograms from the container 
-  TH1I* hEventsTr    = 0;//static_cast<TH1I*>(list->FindObject("nEventsTr"));
-  TH1I* hEventsTrVtx = 0;//static_cast<TH1I*>(list->FindObject("nEventsTrVtx"));
-  TH1I* hTriggers    = 0;
-  if (!fEventInspector.FetchHistograms(list, hEventsTr, 
-				       hEventsTrVtx, hTriggers)) { 
-    AliError(Form("Didn't get histograms from event selector "
-		  "(hEventsTr=%p,hEventsTrVtx=%p)", 
-		  hEventsTr, hEventsTrVtx));
-    list->ls();
-    return;
-  }
-#endif
   AliInfo("Fitting energy loss spectra");
   fEnergyFitter.Fit(list);
 
@@ -298,17 +286,6 @@ AliFMDEnergyFitterTask::Terminate(Option_t*)
   TList* list2 = static_cast<TList*>(list->Clone(Form("%sResults", 
 						      list->GetName())));
   PostData(2, list2);
-#if 0
-  // Temporary code to save output to a file - should be disabled once 
-  // the plugin stuff works 
-  list->ls();
-  TDirectory* savdir = gDirectory;
-  TFile* tmp = TFile::Open("elossfits.root", "RECREATE");
-  list->Write(list->GetName(), TObject::kSingleKey);
-  tmp->Write();
-  tmp->Close();
-  savdir->cd();
-#endif 
 }
 
 //____________________________________________________________________

@@ -35,7 +35,8 @@ AliAODForwardMult::AliAODForwardMult()
     fHist(),
     fTriggers(0),
     fIpZ(fgkInvalidIpZ), 
-    fCentrality(-1)
+    fCentrality(-1),				
+    fNClusters(0)
 {
   // 
   // Constructor 
@@ -49,7 +50,8 @@ AliAODForwardMult::AliAODForwardMult(Bool_t isMC)
 	  200, -4, 6, 20, 0, 2*TMath::Pi()),
     fTriggers(0),
     fIpZ(fgkInvalidIpZ), 
-    fCentrality(-1)
+    fCentrality(-1),				
+    fNClusters(0)
 {
   // 
   // Constructor 
@@ -87,8 +89,9 @@ AliAODForwardMult::Clear(Option_t* option)
   //  option   Passed to TH1::Reset 
   // 
   fHist.Reset(option);
-  fTriggers = 0;
-  fIpZ      = fgkInvalidIpZ;
+  fTriggers  = 0;
+  fIpZ       = fgkInvalidIpZ;
+  fNClusters = 0;
 }
 //____________________________________________________________________
 void
@@ -160,13 +163,16 @@ AliAODForwardMult::Browse(TBrowser* b)
   static TObjString ipz;
   static TObjString trg;
   static TObjString cnt;
+  static TObjString ncl;
   ipz = Form("ip_z=%fcm", fIpZ);
   trg = GetTriggerString(fTriggers);
   cnt = Form("%+6.1f%%", fCentrality);
+  ncl = Form("%d clusters", fNClusters);
   b->Add(&fHist);
   b->Add(&ipz);
   b->Add(&trg);
   b->Add(&cnt);
+  b->Add(&ncl);
 }
 
 //____________________________________________________________________
@@ -189,6 +195,7 @@ AliAODForwardMult::GetTriggerString(UInt_t mask)
   if ((mask & kC)           != 0x0) trg.Append("C ");
   if ((mask & kE)           != 0x0) trg.Append("E ");
   if ((mask & kMCNSD)       != 0x0) trg.Append("MCNSD ");
+  if ((mask & kNClusterGt0) != 0x0) trg.Append("NCluster>0 ");
   return trg.Data();
 }
   
@@ -224,6 +231,7 @@ AliAODForwardMult::MakeTriggerHistogram(const char* name)
   ret->GetXaxis()->SetBinLabel(kBinMCNSD,       "NSD (MC truth)");
   ret->GetXaxis()->SetBinLabel(kBinPileUp,      "w/Pileup");
   ret->GetXaxis()->SetBinLabel(kBinOffline,     "w/Offline");
+  ret->GetXaxis()->SetBinLabel(kBinNClusterGt0, "w/N_{cluster}>1");
   ret->GetXaxis()->SetBinLabel(kWithVertex,     "w/Vertex");
   ret->GetXaxis()->SetBinLabel(kWithTrigger,    "w/Selected trigger");
   ret->GetXaxis()->SetBinLabel(kAccepted,       "Accepted by cut");
@@ -251,6 +259,8 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
     else if (s.CompareTo("A")     == 0) trgMask |= AliAODForwardMult::kA;
     else if (s.CompareTo("C")     == 0) trgMask |= AliAODForwardMult::kC;
     else if (s.CompareTo("E")     == 0) trgMask |= AliAODForwardMult::kE;
+    else if (s.CompareTo("NCluster>0") == 0) 
+      trgMask |= AliAODForwardMult::kNClusterGt0;
     else 
       AliWarningGeneral("MakeTriggerMask", 
 			Form("Unknown trigger %s", s.Data()));
@@ -303,6 +313,7 @@ AliAODForwardMult::CheckEvent(Int_t    triggerMask,
     if (IsTriggerBits(kPileUp))         hist->AddBinContent(kBinPileUp);
     if (IsTriggerBits(kMCNSD))          hist->AddBinContent(kBinMCNSD);
     if (IsTriggerBits(kOffline))        hist->AddBinContent(kBinOffline);
+    if (IsTriggerBits(kNClusterGt0))    hist->AddBinContent(kBinNClusterGt0);
   }
   // Check if we have an event of interest. 
   if (!IsTriggerBits(triggerMask|kB)) return false;
