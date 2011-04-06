@@ -58,7 +58,8 @@ AliCFVertexingHF::AliCFVertexingHF() :
 	fPtAccCut(0x0),
 	fEtaAccCut(0x0),
 	fFakeSelection(0),
-	fFake(1.) // setting to MC value
+	fFake(1.), // setting to MC value
+	fRejectIfNoQuark(kFALSE)
 {
 	//
 	// constructor
@@ -90,7 +91,8 @@ AliCFVertexingHF::AliCFVertexingHF(TClonesArray *mcArray, UShort_t originDselect
 	fPtAccCut(0x0),
 	fEtaAccCut(0x0),
 	fFakeSelection(0),
-	fFake(1.) // setting to MC value
+	fFake(1.), // setting to MC value
+	fRejectIfNoQuark(kFALSE)
 {
 	//
 	// constructor with mcArray
@@ -149,6 +151,7 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 		fCentValue=c.fCentValue;
 		fFakeSelection=c.fFakeSelection;
 		fFake=c.fFake;
+		fRejectIfNoQuark=c.fRejectIfNoQuark;
 		if (fProngs > 0){
 			fLabelArray = new Int_t[fProngs];
                         fPtAccCut = new Float_t[fProngs];
@@ -185,7 +188,8 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	fPtAccCut(0x0),
 	fEtaAccCut(0x0),
 	fFakeSelection(c.fFakeSelection),
-	fFake(c.fFake) 
+	fFake(c.fFake),
+	fRejectIfNoQuark(c.fRejectIfNoQuark)
 {  
 	//
 	//copy constructor
@@ -273,6 +277,11 @@ Bool_t AliCFVertexingHF::CheckMCPartFamily(AliAODMCParticle */*mcPart*/, TClones
 	//
 
 	Int_t pdgGranma = CheckOrigin();
+
+	if (pdgGranma == -99999){
+		AliDebug(2,"This particle does not have a quark in his genealogy\n");
+		return kFALSE;
+	}
 	if (pdgGranma == -9999){
 		AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");	
 		return kFALSE;
@@ -306,6 +315,8 @@ Int_t AliCFVertexingHF::CheckOrigin() const
 	mother = fmcPartCandidate->GetMother();
 	Int_t istep = 0;
 	Int_t abspdgGranma =0;
+	Bool_t isFromB=kFALSE;
+	Bool_t isQuarkFound=kFALSE;
 	while (mother >0 ){
 		istep++;
 		AliDebug(2,Form("mother at step %d = %d", istep, mother));
@@ -314,22 +325,23 @@ Int_t AliCFVertexingHF::CheckOrigin() const
 			pdgGranma = mcGranma->GetPdgCode();
 			AliDebug(2,Form("Pdg mother at step %d = %d", istep, pdgGranma));
 			abspdgGranma = TMath::Abs(pdgGranma);
-			if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
-				if (!fKeepDfromB) return -9999; //skip particle if come from a B meson.
-				
-				else{
-					break;
-				}
+			if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
+			  isFromB=kTRUE;
 			}
+			if(abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
 			mother = mcGranma->GetMother();
-		}
-		else {
+		}else{
 			AliError("Failed casting the mother particle!");
 			break;
 		}
 	}
-	if (!((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000))){
-		if (fKeepDfromBOnly) return -999;
+
+	if(fRejectIfNoQuark && !isQuarkFound) return -99999;
+	if(isFromB){
+	  if (!fKeepDfromB) return -9999; //skip particle if come from a B meson.
+	}
+	else{
+	  if (fKeepDfromBOnly) return -999;
 	}
 	return pdgGranma;
 }
@@ -583,6 +595,10 @@ Bool_t AliCFVertexingHF::RecoStep()
 	
 	Int_t pdgGranma = CheckOrigin();
 	
+	if (pdgGranma == -99999){
+		AliDebug(2,"This particle does not have a quark in his genealogy\n");
+		return bRecoStep;
+	}
 	if (pdgGranma == -9999){
 		AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only prompt charm particles\n");
 		return bRecoStep;

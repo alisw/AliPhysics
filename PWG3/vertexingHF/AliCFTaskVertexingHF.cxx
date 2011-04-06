@@ -100,7 +100,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
 	fDauNames(""),
 	fSign(2),
 	fCentralitySelection(kTRUE),
-	fFakeSelection(0)
+	fFakeSelection(0),
+	fRejectIfNoQuark(kTRUE),	
+	fUseMCVertex(kFALSE)
 {
 	//
 	//Default ctor
@@ -134,7 +136,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
 	fDauNames(""),
 	fSign(2), 
 	fCentralitySelection(kTRUE),
-	fFakeSelection(0)
+	fFakeSelection(0),
+	fRejectIfNoQuark(kTRUE),
+	fUseMCVertex(kFALSE)
 {
 	//
 	// Constructor. Initialization of Inputs and Outputs
@@ -194,7 +198,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
 	fDauNames(c.fDauNames),
 	fSign(c.fSign),
 	fCentralitySelection(c.fCentralitySelection),
-	fFakeSelection(c.fFakeSelection)
+	fFakeSelection(c.fFakeSelection),
+	fRejectIfNoQuark(c.fRejectIfNoQuark),
+	fUseMCVertex(c.fUseMCVertex)
 {
 	//
 	// Copy Constructor
@@ -450,7 +456,6 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	
 	Double_t zPrimVertex = aodVtx ->GetZ();
 	Double_t zMCVertex = mcHeader->GetVtxZ();
-	
 	if (TMath::Abs(zMCVertex) > fCuts->GetMaxVtxZ()){
 	  AliDebug(3,Form("z coordinate of MC vertex = %f, it was required to be within [-%f, +%f], skipping event", zMCVertex, fCuts->GetMaxVtxZ(), fCuts->GetMaxVtxZ()));
 	  delete[] containerInput;
@@ -478,10 +483,13 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	cfVtxHF->SetFillFromGenerated(fFillFromGenerated);
 	cfVtxHF->SetNVar(fNvar);
 	cfVtxHF->SetFakeSelection(fFakeSelection);
+	cfVtxHF->SetRejectCandidateIfNotFromQuark(fRejectIfNoQuark);
 
 	// switch-off the trigger class selection (doesn't work for MC)
 	fCuts->SetTriggerClass("");
 
+	// MC vertex, to be used, in case, for pp
+	if (fUseMCVertex) fCuts->SetUseMCVertex(); 
 
 	if (fCentralitySelection){ // keep only the requested centrality
 	  if(fCuts->IsEventSelectedInCentrality(aodEvent)!=0) {
