@@ -432,6 +432,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	task->SetSign(isSign);
 	task->SetCentralitySelection(kFALSE);
 	task->SetFakeSelection(0);
+	task->SetRejectCandidateIfNotFromQuark(kTRUE); // put to false if you want to keep HIJING D0!!
+	task->SetUseMCVertex(kFALSE); // put to true if you want to do studies on pp
 
 	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
 	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);		
@@ -444,6 +446,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	Printf("Sign = %d",(Int_t)task->GetSign());
 	Printf("Centrality selection = %d",(Int_t)task->GetCentralitySelection());
 	Printf("Fake selection = %d",(Int_t)task->GetFakeSelection());
+	Printf("RejectCandidateIfNotFromQuark selection = %d",(Int_t)task->GetRejectCandidateIfNotFromQuark());
+	Printf("UseMCVertex selection = %d",(Int_t)task->GetUseMCVertex());
 	Printf("***************END CONTAINER SETTINGS *****************\n");
 
         //-----------------------------------------------------------//
