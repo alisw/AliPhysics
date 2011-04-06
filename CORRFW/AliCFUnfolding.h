@@ -38,6 +38,7 @@ class AliCFUnfolding : public TNamed {
     fRandomSeed          = randomSeed        ;
     SetMaxConvergencePerDOF(maxConvergence)  ;
   }
+  void UnsetCorrelatedErrors() {fUseCorrelatedErrors=kFALSE;}
 
 
   void UseSmoothing(TF1* fcn=0x0, Option_t* opt="iremn") { // if fcn=0x0 then smooth using neighbouring bins 
