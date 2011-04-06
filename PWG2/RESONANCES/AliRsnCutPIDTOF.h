@@ -13,14 +13,8 @@
 #define ALIRSNCUTPIDTOF_H
 
 #include "AliPID.h"
-
 #include "AliVTrack.h"
-#include "AliESDtrack.h"
-#include "AliESDpid.h"
-#include "AliAODTrack.h"
-#include "AliAODpidUtil.h"
 
-#include "AliRsnDaughter.h"
 #include "AliRsnCut.h"
 
 class AliRsnCutPIDTOF : public AliRsnCut {
@@ -36,8 +30,8 @@ public:
    AliRsnCutPIDTOF& operator=(const AliRsnCutPIDTOF& copy);
    virtual ~AliRsnCutPIDTOF() { }
 
-   AliESDpid*      ESDpid()  {return &fESDpid;}
-   AliAODpidUtil*  AODpid()  {return &fAODpid;}
+   AliESDpid*      ESDpid()  {return fESDpid;}
+   AliAODpidUtil*  AODpid()  {return fAODpid;}
 
    void            SetRejectUnmatched(Bool_t yn = kTRUE)      {fRejectUnmatched = yn;}
    void            SetNSigmaRange(Double_t min, Double_t max) {fMinD = min; fMaxD = max;}
@@ -51,12 +45,11 @@ private:
 
    void Initialize();
 
-   Bool_t            fInitialized;      // a mono-usage flag which initializes the ESD pid object
    Bool_t            fRejectUnmatched;  //  decide if non TOF matched tracks pass the cut or not
    EPARTYPE          fRefType;          //  particle type for which PID is checked
    Double_t          fRefMass;          //  reference mass used for computations
-   AliESDpid         fESDpid;           //  PID utility for ESD
-   AliAODpidUtil     fAODpid;           //  PID utility for AOD
+   AliESDpid        *fESDpid;           //! PID utility for ESD
+   AliAODpidUtil    *fAODpid;           //! PID utility for AOD
 
    ClassDef(AliRsnCutPIDTOF, 1)
 };

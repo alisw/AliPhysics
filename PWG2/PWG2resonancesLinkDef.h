@@ -2,22 +2,26 @@
 
 #pragma link C++ class AliRsnDaughter+;
 #pragma link C++ class AliRsnMother+;
+#pragma link C++ class AliRsnEvent+;
+
 #pragma link C++ class AliRsnDaughterDef+;
 #pragma link C++ class AliRsnPairDef+;
-#pragma link C++ class AliRsnEvent+;
 
 #pragma link C++ class AliRsnTarget+;
 #pragma link C++ class AliRsnValue+;
 #pragma link C++ class AliRsnCut+;
 
-#pragma link C++ class AliRsnCutValue+;
+#pragma link C++ class AliRsnValueStd+;
+#pragma link C++ class AliRsnValuePID+;
+
 #pragma link C++ class AliRsnCutPrimaryVertex+;
-#pragma link C++ class AliRsnCutESD2010+;
 #pragma link C++ class AliRsnCutTrackQuality+;
+#pragma link C++ class AliRsnCutValue+;
 #pragma link C++ class AliRsnCutPID+;
 #pragma link C++ class AliRsnCutPIDITS+;
 #pragma link C++ class AliRsnCutPIDTPC+;
 #pragma link C++ class AliRsnCutPIDTOF+;
+#pragma link C++ class AliRsnCutPIDNSigma+;
 #pragma link C++ class AliRsnCutMomentumComparison+;
 
 #pragma link C++ class AliRsnCutSet+;
@@ -25,29 +29,16 @@
 #pragma link C++ class AliRsnVariableExpression+;
 #pragma link C++ class AliRsnCutManager+;
 
-#pragma link C++ class AliRsnFunction+;
-#pragma link C++ class AliRsnMonitor+;
-#pragma link C++ class AliRsnMonitorFunctions+;
-#pragma link C++ class AliRsnMonitorNtuple+;
-#pragma link C++ class AliRsnPair+;
-#pragma link C++ class AliRsnPairFunctions+;
-#pragma link C++ class AliRsnPairNtuple+;
+#pragma link C++ class AliRsnListOutput+;
+#pragma link C++ class AliRsnLoop+;
+#pragma link C++ class AliRsnLoopDaughter+;
+#pragma link C++ class AliRsnLoopPair+;
+#pragma link C++ class AliRsnLoopEvent+;
+#pragma link C++ class AliRsnLoopEff+;
+#pragma link C++ class AliRsnLoopEffPair+;
 
-#pragma link C++ class AliRsnAnalysisManager+;
-
-#pragma link C++ class AliRsnVATProcessInfo+;
-#pragma link C++ class AliRsnVAnalysisTaskSE+;
-
-#pragma link C++ class AliRsnAnalysisSE+;
-#pragma link C++ class AliRsnAnalysisEffSE+;
-
-#pragma link C++ class AliRsnVAnalysisTask+;
+#pragma link C++ class AliRsnDaughterSelector+;
+#pragma link C++ class AliRsnInputHandler+;
 #pragma link C++ class AliRsnAnalysisTask+;
-#pragma link C++ class AliRsnAnalysisTaskEff+;
-#pragma link C++ class AliRsnAnalysisTaskEffMonitor+;
-#pragma link C++ class AliRsnAnalysisTaskEffPair+;
-
-#pragma link C++ class AliRsnMonitorTrack+;
-#pragma link C++ class AliRsnAnalysisMonitorTask+;
 
 #endif

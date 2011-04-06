@@ -40,6 +40,7 @@ ClassImp(AliRsnDaughterDef)
 
 //_____________________________________________________________________________
 AliRsnDaughterDef::AliRsnDaughterDef() :
+   fOnlyTrue(kFALSE),
    fPID(AliRsnDaughter::kUnknown),
    fMass(0.0),
    fCharge(0),
@@ -53,6 +54,7 @@ AliRsnDaughterDef::AliRsnDaughterDef() :
 
 //_____________________________________________________________________________
 AliRsnDaughterDef::AliRsnDaughterDef(AliRsnDaughter::ESpecies type, Char_t sign) :
+   fOnlyTrue(kFALSE),
    fPID(type),
    fMass(AliRsnDaughter::SpeciesMass(type)),
    fCharge(sign),
@@ -67,6 +69,7 @@ AliRsnDaughterDef::AliRsnDaughterDef(AliRsnDaughter::ESpecies type, Char_t sign)
 
 //_____________________________________________________________________________
 AliRsnDaughterDef::AliRsnDaughterDef(EPARTYPE type, Char_t sign) :
+   fOnlyTrue(kFALSE),
    fPID(AliRsnDaughter::FromAliPID(type)),
    fMass(AliRsnDaughter::SpeciesMass(AliRsnDaughter::FromAliPID(type))),
    fCharge(sign),
@@ -81,6 +84,7 @@ AliRsnDaughterDef::AliRsnDaughterDef(EPARTYPE type, Char_t sign) :
 
 //_____________________________________________________________________________
 AliRsnDaughterDef::AliRsnDaughterDef(AliRsnDaughter::ERefType refType, Char_t sign) :
+   fOnlyTrue(kFALSE),
    fPID(AliRsnDaughter::kUnknown),
    fMass(0.0),
    fCharge(sign),
@@ -100,6 +104,7 @@ AliRsnDaughterDef::AliRsnDaughterDef(AliRsnDaughter::ERefType refType, Char_t si
 //_____________________________________________________________________________
 AliRsnDaughterDef::AliRsnDaughterDef(const AliRsnDaughterDef &copy) :
    TObject(copy),
+   fOnlyTrue(copy.fOnlyTrue),
    fPID(copy.fPID),
    fMass(copy.fMass),
    fCharge(copy.fCharge),
@@ -117,6 +122,7 @@ const AliRsnDaughterDef& AliRsnDaughterDef::operator=(const AliRsnDaughterDef &c
 // Assignment operator has standard behavior.
 //
 
+   fOnlyTrue = copy.fOnlyTrue;
    fMass = copy.fMass;
    fCharge = copy.fCharge;
    fPID = copy.fPID;
@@ -126,7 +132,7 @@ const AliRsnDaughterDef& AliRsnDaughterDef::operator=(const AliRsnDaughterDef &c
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnDaughterDef::MatchesDaughter(AliRsnDaughter *checked, Bool_t truePID)
+Bool_t AliRsnDaughterDef::MatchesDaughter(AliRsnDaughter *checked)
 {
 //
 // Checks if the argument matches the definitions, by combining the other
@@ -138,7 +144,7 @@ Bool_t AliRsnDaughterDef::MatchesDaughter(AliRsnDaughter *checked, Bool_t truePI
 
    Bool_t chargeMatch = MatchesCharge(checked);
    Bool_t objMatch    = MatchesRefType(checked);
-   Bool_t pidMatch    = (truePID ? MatchesPID(checked) : kTRUE);
+   Bool_t pidMatch    = (fOnlyTrue ? MatchesPID(checked) : kTRUE);
       
    // return the AND of all
    return (chargeMatch && objMatch && pidMatch);

@@ -42,6 +42,7 @@ public:
    AliRsnCutSet*  GetDaughter2Cuts()      {return &fDaughterCuts2;}
    AliRsnCutSet*  GetMotherCuts()         {return &fMotherCuts;}
 
+   Bool_t         IsSelected(TObject *object);
    Bool_t         PassCommonDaughterCuts(AliRsnDaughter *daughter) {return fDaughterCutsCommon.IsSelected(daughter);}
    Bool_t         PassDaughter1Cuts(AliRsnDaughter *daughter)      {return fDaughterCuts1.IsSelected(daughter);}
    Bool_t         PassDaughter2Cuts(AliRsnDaughter *daughter)      {return fDaughterCuts2.IsSelected(daughter);}
@@ -58,5 +59,27 @@ private:
 
    ClassDef(AliRsnCutManager, 2)      // dictionary
 };
+
+inline Bool_t AliRsnCutManager::IsSelected(TObject *object)
+{
+//
+// Check all selection cuts
+//
+
+   if (object->InheritsFrom(AliRsnDaughter::Class())) {
+      return PassCommonDaughterCuts((AliRsnDaughter*)object);
+   } else if (object->InheritsFrom(AliRsnMother::Class())) {
+      AliRsnMother *mother = (AliRsnMother*)object;
+      if (!PassCommonDaughterCuts(mother->GetDaughter(0))) return kFALSE;
+      if (!PassCommonDaughterCuts(mother->GetDaughter(1))) return kFALSE;
+      if (!PassDaughter1Cuts(mother->GetDaughter(0))) return kFALSE;
+      if (!PassDaughter2Cuts(mother->GetDaughter(1))) return kFALSE;
+      if (!PassMotherCuts(mother)) return kFALSE;
+      return kTRUE;
+   } else {
+      AliError("AliRsnCutManager can check only daughters and mothers");
+      return kFALSE;
+   }
+}
 
 #endif

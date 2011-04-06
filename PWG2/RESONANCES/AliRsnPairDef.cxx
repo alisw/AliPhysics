@@ -40,46 +40,46 @@
 ClassImp(AliRsnPairDef)
 
 //_____________________________________________________________________________
-AliRsnPairDef::AliRsnPairDef() : fMotherMass(0.0), fMotherPDG(0), fDef1(), fDef2()
+AliRsnPairDef::AliRsnPairDef() :
+   fMotherMass(0.0), 
+   fMotherPDG(0), 
+   fDef1(), 
+   fDef2()
 {
 //
-// Empty constructor.
-// Initializes the data members to default values:
-//  - no definition of particles in the pair;
-//  - histogram binning undefined.
-// When using this constructor, all analysis elements (particles, histogram)
-// must be defined before starting event processing.
+// Constructor.
+// If the two pointers are well initialized, they are used to init the members.
 //
 }
 
 //_____________________________________________________________________________
 AliRsnPairDef::AliRsnPairDef
-(EPARTYPE type1, Char_t sign1, EPARTYPE type2, Char_t sign2, Int_t motherPDG, Double_t motherMass) :
-   fMotherMass(motherMass),
-   fMotherPDG(motherPDG),
-   fDef1(AliRsnDaughter::FromAliPID(type1), sign1),
-   fDef2(AliRsnDaughter::FromAliPID(type2), sign2)
+(EPARTYPE type1, Char_t ch1, EPARTYPE type2, Char_t ch2, Int_t pdg, Double_t mass) :
+   fMotherMass(mass), 
+   fMotherPDG(pdg), 
+   fDef1(type1, ch1), 
+   fDef2(type2, ch2)
 {
 //
-// Constructor with arguments.
-// This constructor allows to define all the working parameters.
+// Constructor.
+// If the two pointers are well initialized, they are used to init the members.
 //
 }
 
 //_____________________________________________________________________________
 AliRsnPairDef::AliRsnPairDef
-(AliRsnDaughter::ESpecies type1, Char_t sign1, AliRsnDaughter::ESpecies type2, Char_t sign2, Int_t motherPDG, Double_t motherMass) :
-   fMotherMass(motherMass),
-   fMotherPDG(motherPDG),
-   fDef1(type1, sign1),
-   fDef2(type2, sign2)
+(AliRsnDaughter::ESpecies type1, Char_t ch1, AliRsnDaughter::ESpecies type2, Char_t ch2, Int_t pdg, Double_t mass) :
+   fMotherMass(mass), 
+   fMotherPDG(pdg), 
+   fDef1(type1, ch1), 
+   fDef2(type2, ch2)
 {
 //
-// Constructor with arguments.
-// This constructor allows to define all the working parameters.
+// Constructor.
+// If the two pointers are well initialized, they are used to init the members.
 //
 }
-
+   
 //_____________________________________________________________________________
 AliRsnPairDef::AliRsnPairDef(const AliRsnPairDef &copy) :
    TObject(copy),
@@ -106,15 +106,4 @@ const AliRsnPairDef& AliRsnPairDef::operator=(const AliRsnPairDef &copy)
    fDef2 = copy.fDef2;
 
    return (*this);
-}
-
-//_____________________________________________________________________________
-const char* AliRsnPairDef::GetPairName() const
-{
-//
-// Returns a compact string with the name of the pair,
-// to be used for naming objects related to it.
-//
-
-   return Form("%s%s", fDef1.GetName(), fDef2.GetName());
 }
