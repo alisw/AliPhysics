@@ -657,6 +657,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
 
     Float_t  clsPos[3] = {0};
     clus->GetPosition(clsPos);
+    TVector3 clsVec(clsPos);
     Double_t vertex[3] = {0};
     InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
     TLorentzVector clusterVec;
@@ -675,8 +676,23 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
 
       AliExternalTrackParam tParam(track);
       Float_t tmpR=-1, tmpZ=-1;
+#if 1
+      if (1) {
+        TVector3 vec(clsPos);
+        Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
+        vec.RotateZ(-alpha);  //Rotate the cluster to the local extrapolation coordinate system
+        tParam.Rotate(alpha); //Rotate the track to the same local extrapolation system
+        if (!AliTrackerBase::PropagateTrackToBxByBz(&tParam, vec.X(), 0.139, 1, kFALSE)) 
+          continue;
+        Double_t trkPos[3];
+        tParam.GetXYZ(trkPos); //Get the extrapolated global position
+        tmpR = TMath::Sqrt( TMath::Power(clsPos[0]-trkPos[0],2)+TMath::Power(clsPos[1]-trkPos[1],2)+TMath::Power(clsPos[2]-trkPos[2],2) );
+        tmpZ = clsPos[2]-trkPos[2];
+      }
+#else
       if (!fReco->ExtrapolateTrackToCluster(&tParam, clus, tmpR, tmpZ))
         continue;
+#endif
       Double_t d2 = tmpR;
       if (mind2>d2) {
         mind2=d2;
@@ -691,14 +707,9 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     if (0 && (fClusProps[i].fTrIndex>=0)) {
       cout << i << " " << fClusProps[i].fTrIndex << ": Dr " << fClusProps[i].fTrDr << " " << " Dz " << fClusProps[i].fTrDz << endl;
     }
-    if (1) {
-      fClusProps[i].fTrIso      = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist);
-      fClusProps[i].fTrLowPtIso = 0;
-    }
-    if (1) {
-      TVector3 pVec(clsPos);
-      fClusProps[i].fCellIso = GetCellIsolation(pVec.Eta(),pVec.Phi(),fIsoDist);
-    }
+    fClusProps[i].fTrIso      = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist);
+    fClusProps[i].fTrLowPtIso = 0;
+    fClusProps[i].fCellIso    = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),fIsoDist);
   }
 }
 
