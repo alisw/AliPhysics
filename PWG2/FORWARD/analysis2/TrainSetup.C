@@ -521,6 +521,10 @@ protected:
       fNReplica(o.fNReplica),
       fESDPass(o.fESDPass)
   {
+    if (isdigit(fName[0])) { 
+      Warning("TrainSetup", "Name starts with a digit, prepending 'a' to name");
+      fName = Form("a%s", fName.Data());
+    }
     TObject* obj = 0;
     TIter nextPar(&o.fListOfPARs);
     while ((obj = nextPar())) fListOfPARs.Add(obj->Clone());
@@ -801,12 +805,17 @@ protected:
     plugin->SetGridDataDir(fDataDir);
 
     // Data search patterns 
-    if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())
+    TString pat;
+    if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()) {
+      pat = "*/";
       plugin->SetRunPrefix("");
-    else
+    }
+    else {
+      pat = Form("*ESDs/pass%d/*/", fESDPass);
       plugin->SetRunPrefix("000");
-    plugin->SetDataPattern(Form("*ESDs/pass%d/*/*%s.root", 
-				fESDPass, type == kESD ? "ESDs" : "AOD"));
+    }
+    pat.Append(Form("*%s.root", type == kESD ? "ESDs" : "AOD"));
+    plugin->SetDataPattern(pat);
 
     // Add the run numbers 
     for (Int_t i = 0; i < fRunNumbers.fN; i++) {
@@ -1694,7 +1703,7 @@ protected:
     LoadLibrary("PWG2forward2", mode, par, true);
     
     // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form(".:%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
     // --- Check if this is MC ---------------------------------------
