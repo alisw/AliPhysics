@@ -481,13 +481,18 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	fCuts->SetTriggerClass("");
 
 
-	if (fCentralitySelection)
+	if (fCentralitySelection){
 	  if(fCuts->IsEventSelectedInCentrality(aodEvent)!=0) {
   	    delete[] containerInput;
 	    delete[] containerInputMC;
             delete [] trackCuts;
             return;
           }    
+	}
+	else{
+	  fCuts->SetUseCentrality(0);
+	}
+	
 	
 	Float_t centValue = fCuts->GetCentrality(aodEvent);
 	cfVtxHF->SetCentralityValue(centValue);  
