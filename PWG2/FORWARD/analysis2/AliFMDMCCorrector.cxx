@@ -61,7 +61,7 @@ AliFMDMCCorrector::operator=(const AliFMDMCCorrector& o)
   //    Reference to this object
   //
   AliFMDCorrector::operator=(o);
-
+  fSecondaryForMC = o.fSecondaryForMC;
   return *this;
 }
 
@@ -80,6 +80,9 @@ AliFMDMCCorrector::CorrectMC(AliForwardUtil::Histos& hists,
   // Return:
   //    true on successs 
   //
+  if ((!fUseSecondaryMap || !fSecondaryForMC) && fUseVertexBias) 
+    return kTRUE;
+
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
 
   UShort_t uvb = vtxbin;
@@ -90,7 +93,7 @@ AliFMDMCCorrector::CorrectMC(AliForwardUtil::Histos& hists,
       TH2D*       h  = hists.Get(d,r);
 
 
-      if (fUseSecondaryMap) {
+      if (fUseSecondaryMap && fSecondaryForMC) {
         TH2D*       bg = fcm.GetSecondaryMap()->GetCorrection(d,r,uvb);
         if (!bg) {
           AliWarning(Form("No secondary correction for FMDM%d%c in vertex bin %d",
@@ -246,6 +249,23 @@ AliFMDMCCorrector::DefineOutput(TList* dir)
   fComps = new TList;
   fComps->SetName("esd_mc_comparison");
   d->Add(fComps);
+}
+//____________________________________________________________________
+void
+AliFMDMCCorrector::Print(Option_t* option) const
+{
+  // 
+  // Print information
+  // Parameters:
+  //    option Not used 
+  //
+  char ind[gROOT->GetDirLevel()+1];
+  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
+  ind[gROOT->GetDirLevel()] = '\0';
+  AliFMDCorrector::Print(option);
+  std::cout << std::boolalpha
+            << ind << " Use sec. map on MC:     " << fSecondaryForMC 
+            << std::noboolalpha << std::endl;
 }
 
 //____________________________________________________________________

@@ -100,6 +100,12 @@ public:
    * @} 
    */
   /** 
+   * Process only primary MC tracks 
+   * 
+   * @param use 
+   */
+  void SetOnlyPrimary(Bool_t use);
+  /** 
    * @{ 
    * @name Access to sub-algorithms 
    */
@@ -186,6 +192,8 @@ protected:
   AliESDFMD              fMCESDFMD;     // MC 'Sharing corrected' ESD object
   AliForwardUtil::Histos fMCHistos;     // MC Cache histograms 
   AliAODForwardMult      fMCAODFMD;     // MC Output object
+  AliForwardUtil::Histos fRingSums;     // Cache histograms 
+  AliForwardUtil::Histos fMCRingSums;   // Cache histograms 
   TH2D*                  fPrimary;      // Per event primary particles 
 
   AliFMDMCEventInspector    fEventInspector;    // Algorithm

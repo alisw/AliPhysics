@@ -842,6 +842,7 @@ AliForwardUtil::RingHistos::DefineOutputList(TList* d) const
   //
   if (!d) return 0;
   TList* list = new TList;
+  list->SetOwner();
   list->SetName(fName.Data());
   d->Add(list);
   return list;

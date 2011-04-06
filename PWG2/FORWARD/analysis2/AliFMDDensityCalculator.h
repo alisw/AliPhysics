@@ -133,12 +133,32 @@ public:
    */
   void SetUsePoisson(Bool_t u) { fUsePoisson = u; }
   /** 
+   * Set whether to use the phi acceptance correction. 
+   * 
+   * @param u If true, use the phi acceptance (default is false)
+   */
+  void SetUsePhiAcceptance(Bool_t u) { fUsePhiAcceptance = u; }
+  /** 
    * Set the lower multiplicity cut.  This overrides the setting in
    * the energy loss fits.
    * 
    * @param cut Cut to use 
    */
-  void SetMultCut(Double_t cut) { fMultCut = cut; }
+  void SetMultCut(Double_t cut) { SetMultCuts(cut,cut,cut,cut,cut); }
+  /** 
+   * Set the lower multiplicity cuts 
+   * 
+   * @param fmd1i Lower mulitplicyt cut for FMD1i
+   * @param fmd2i Lower mulitplicyt cut for FMD2i 
+   * @param fmd2o Lower mulitplicyt cut for FMD2o 
+   * @param fmd3i Lower mulitplicyt cut for FMD3i 
+   * @param fmd3o Lower mulitplicyt cut for FMD3o 
+   */
+  void SetMultCuts(Double_t fmd1i, 
+		   Double_t fmd2i, 
+		   Double_t fmd2o, 
+		   Double_t fmd3i, 
+		   Double_t fmd3o); 
   /** 
    * Set the luming factors used in the Poisson method
    * 
@@ -150,13 +170,37 @@ public:
     fPhiLumping = (phi < 1 ? 1 : phi); 
   }
   /** 
+   * Set the number of landau width to subtract from the most probably
+   * value to get the low cut.
+   * 
+   * @param n Number of @f$ \xi@f$ 
+   */
+  void SetNXi(Double_t nXi) { fNXi = nXi; } 
+  /** 
+   * Whether to include sigma in the number subtracted from the MPV to
+   * get the low cut
+   * 
+   * @param u If true, then low cut is @f$ \Delta_{mp} - n(\xi+\sigma)@f$ 
+   */
+  void SetIncludeSigma(Bool_t u) { fIncludeSigma = u; }
+  /** 
    * Get the multiplicity cut.  If the user has set fMultCut (via
    * SetMultCut) then that value is used.  If not, then the lower
    * value of the fit range for the enery loss fits is returned.
    * 
    * @return Lower cut on multiplicity
    */
-  Double_t GetMultCut() const;
+  Double_t GetMultCut(UShort_t d, Char_t r, Double_t eta, 
+		      Bool_t errors=true) const;
+  /** 
+   * Get the multiplicity cut.  If the user has set fMultCut (via
+   * SetMultCut) then that value is used.  If not, then the lower
+   * value of the fit range for the enery loss fits is returned.
+   * 
+   * @return Lower cut on multiplicity
+   */
+  Double_t GetMultCut(UShort_t d, Char_t r, Int_t ieta, 
+		      Bool_t errors=true) const;
   /** 
    * Print information 
    * 
@@ -341,11 +385,14 @@ protected:
 
   TList    fRingHistos;    //  List of histogram containers
   Double_t fMultCut;       //  Low cut on scaled energy loss
+  Double_t fNXi;           //  Delta-n(xi+sigma) factor 
+  Bool_t   fIncludeSigma;  //  Whether or not to include sigma in cut
   TH1D*    fSumOfWeights;  //  Histogram
   TH1D*    fWeightedSum;   //  Histogram
   TH1D*    fCorrections;   //  Histogram
   UShort_t fMaxParticles;  //  Maximum particle weight to use 
   Bool_t   fUsePoisson;    //  If true, then use poisson statistics 
+  Bool_t   fUsePhiAcceptance; // Whether to correct for corners 
   TH1D*    fAccI;          //  Acceptance correction for inner rings
   TH1D*    fAccO;          //  Acceptance correction for outer rings
   TArrayI  fFMD1iMax;      //  Array of max weights 
@@ -353,12 +400,14 @@ protected:
   TArrayI  fFMD2oMax;      //  Array of max weights 
   TArrayI  fFMD3iMax;      //  Array of max weights 
   TArrayI  fFMD3oMax;      //  Array of max weights 
+  TH2D*    fMaxWeights;    //  Histogram of max weights
+  TH2D*    fLowCuts;       //  Histogram of low cuts
   Int_t    fEtaLumping;    //  How to lump eta bins for Poisson 
   Int_t    fPhiLumping;    //  How to lump phi bins for Poisson 
   Int_t    fDebug;         //  Debug level 
+  Double_t fMultCuts[5];   //  Per-ring multiplicity cuts
 
-
-  ClassDef(AliFMDDensityCalculator,2); // Calculate Nch density 
+  ClassDef(AliFMDDensityCalculator,3); // Calculate Nch density 
 };
 
 #endif

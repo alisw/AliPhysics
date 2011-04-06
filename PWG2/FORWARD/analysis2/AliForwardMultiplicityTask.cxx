@@ -34,6 +34,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask()
     fESDFMD(),
     fHistos(),
     fAODFMD(),
+    fRingSums(),
     fEventInspector(),
     fSharingFilter(),
     fDensityCalculator(),
@@ -53,6 +54,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
     fESDFMD(),
     fHistos(),
     fAODFMD(false),
+    fRingSums(),
     fEventInspector("event"),
     fSharingFilter("sharing"), 
     fDensityCalculator("density"),
@@ -76,6 +78,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const AliForwardMultiplic
     fESDFMD(o.fESDFMD),
     fHistos(o.fHistos),
     fAODFMD(o.fAODFMD),
+    fRingSums(o.fRingSums),
     fEventInspector(o.fEventInspector),
     fSharingFilter(o.fSharingFilter),
     fDensityCalculator(o.fDensityCalculator),
@@ -115,6 +118,7 @@ AliForwardMultiplicityTask::operator=(const AliForwardMultiplicityTask& o)
   fHistCollector     = o.fHistCollector;
   fHistos            = o.fHistos;
   fAODFMD            = o.fAODFMD;
+  fRingSums          = o.fRingSums;
   fList              = o.fList;
 
   return *this;
@@ -152,13 +156,31 @@ AliForwardMultiplicityTask::InitializeSubs()
 
   fHistos.Init(*pe);
   fAODFMD.Init(*pe);
+  fRingSums.Init(*pe);
 
   fHData = static_cast<TH2D*>(fAODFMD.GetHistogram().Clone("d2Ndetadphi"));
   fHData->SetStats(0);
   fHData->SetDirectory(0);
   fList->Add(fHData);
 
+  TList* rings = new TList;
+  rings->SetName("ringSums");
+  rings->SetOwner();
+  fList->Add(rings);
+
+  rings->Add(fRingSums.Get(1, 'I'));
+  rings->Add(fRingSums.Get(2, 'I'));
+  rings->Add(fRingSums.Get(2, 'O'));
+  rings->Add(fRingSums.Get(3, 'I'));
+  rings->Add(fRingSums.Get(3, 'O'));
+  fRingSums.Get(1, 'I')->SetMarkerColor(AliForwardUtil::RingColor(1, 'I'));
+  fRingSums.Get(2, 'I')->SetMarkerColor(AliForwardUtil::RingColor(2, 'I'));
+  fRingSums.Get(2, 'O')->SetMarkerColor(AliForwardUtil::RingColor(2, 'O'));
+  fRingSums.Get(3, 'I')->SetMarkerColor(AliForwardUtil::RingColor(3, 'I'));
+  fRingSums.Get(3, 'O')->SetMarkerColor(AliForwardUtil::RingColor(3, 'O'));
+
   fEventInspector.Init(*pv);
+  fSharingFilter.Init();
   fDensityCalculator.Init(*pe);
   fCorrections.Init(*pe);
   fHistCollector.Init(*pv,*pe);
@@ -215,13 +237,14 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   fESDFMD.Clear();
   fAODFMD.Clear();
   
-  Bool_t   lowFlux  = kFALSE;
-  UInt_t   triggers = 0;
-  UShort_t ivz      = 0;
-  Double_t vz       = 0;
-  Double_t cent     = -1;
-  UInt_t   found    = fEventInspector.Process(esd, triggers, lowFlux, 
-					      ivz, vz, cent);
+  Bool_t   lowFlux   = kFALSE;
+  UInt_t   triggers  = 0;
+  UShort_t ivz       = 0;
+  Double_t vz        = 0;
+  Double_t cent      = -1;
+  UShort_t nClusters = 0;
+  UInt_t   found     = fEventInspector.Process(esd, triggers, lowFlux, 
+					       ivz, vz, cent, nClusters);
   
   if (found & AliFMDEventInspector::kNoEvent)    return;
   if (found & AliFMDEventInspector::kNoTriggers) return;
@@ -231,6 +254,7 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   fAODFMD.SetSNN(fEventInspector.GetEnergy());
   fAODFMD.SetSystem(fEventInspector.GetCollisionSystem());
   fAODFMD.SetCentrality(cent);
+  fAODFMD.SetNClusters(nClusters);
   MarkEventForStore();
   
   if (found & AliFMDEventInspector::kNoSPD)      return;
@@ -267,7 +291,8 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
     return;
   }
 
-  if (!fHistCollector.Collect(fHistos, ivz, fAODFMD.GetHistogram())) {
+  if (!fHistCollector.Collect(fHistos, fRingSums, 
+			      ivz, fAODFMD.GetHistogram())) {
     AliWarning("Histogram collector failed");
     return;
   }
@@ -328,6 +353,8 @@ AliForwardMultiplicityTask::Terminate(Option_t*)
 		"width");
   list->Add(dNdeta);
   list->Add(norm);
+
+  MakeRingdNdeta(list, "ringSums", list, "ringResults");
 
   fSharingFilter.ScaleHistograms(list,Int_t(hEventsTr->Integral()));
   fDensityCalculator.ScaleHistograms(list,Int_t(hEventsTrVtx->Integral()));

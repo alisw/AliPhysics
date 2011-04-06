@@ -58,7 +58,8 @@ public:
       fFMD2o(0),
       fFMD3i(0),
       fFMD3o(0),
-      fComps(0)
+      fComps(0),
+      fSecondaryForMC(true)
   {}
   /** 
    * Constructor 
@@ -72,7 +73,8 @@ public:
       fFMD2o(0),
       fFMD3i(0),
       fFMD3o(0),
-      fComps(0)
+      fComps(0),
+      fSecondaryForMC(true)
   {}
   /** 
    * Copy constructor 
@@ -86,7 +88,8 @@ public:
       fFMD2o(o.fFMD2o),
       fFMD3i(o.fFMD3i),
       fFMD3o(o.fFMD3o),
-      fComps(0)
+      fComps(0),
+      fSecondaryForMC(o.fSecondaryForMC)
   {}
   /** 
    * Destructor 
@@ -100,6 +103,12 @@ public:
    * @return Reference to this object
    */
   AliFMDMCCorrector& operator=(const AliFMDMCCorrector&);
+  /** 
+   * If set, then do not do the secondary correction for MC data
+   * 
+   * @param use 
+   */
+  void SetSecondaryForMC(Bool_t use) { fSecondaryForMC = use; }
   /** 
    * Initialize this object 
    * 
@@ -133,6 +142,13 @@ public:
    * @param dir List to write in
    */  
   void DefineOutput(TList* dir);
+
+  /**
+   * Print information
+   * 
+   * @param option Not used 
+   */
+  void Print(Option_t* option="") const;
 protected:
   /** 
    * MAke comparison profiles
@@ -160,7 +176,8 @@ protected:
   TProfile2D* fFMD3i; // Comparison
   TProfile2D* fFMD3o; // Comparison
   TList*      fComps; // List of comparisons 
-  
+  Bool_t      fSecondaryForMC;  // Whether to correct MC data 
+
   ClassDef(AliFMDMCCorrector,1); // Calculate Nch density 
 };
 

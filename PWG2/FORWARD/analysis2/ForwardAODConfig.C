@@ -28,6 +28,22 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Whether to enable low flux specific code 
   task->SetEnableLowFlux(kFALSE);
 
+  // Would like to use dynamic cast but CINT interprets that as a 
+  // static cast - sigh!
+  Bool_t mc = false;
+  if (task->IsA() == AliForwardMCMultiplicityTask::Class()) 
+    mc = true;
+
+#if 0 
+  if (mc) {
+    AliForwardMCMultiplicityTask* mcTask = 
+      static_cast<AliForwardMCMultiplicityTask*>(task);
+    mcTask->SetOnlyPrimary(true);
+  }
+#endif
+  Double_t nXi = mc ? 1 : .5;
+  Bool_t   includeSigma = true;
+
   // --- Event inspector ---------------------------------------------
   // Set the number of SPD tracklets for which we consider the event a
   // low flux event
@@ -37,17 +53,29 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
 
   // --- Sharing filter ----------------------------------------------
   // Set the low cut used for sharing - overrides settings in eloss fits
-  task->GetSharingFilter().SetLowCut(0.3);
+  task->GetSharingFilter().SetLowCut(0.15);
   // Set the number of xi's (width of landau peak) to stop at 
-  task->GetSharingFilter().SetNXi(1);
+  task->GetSharingFilter().SetNXi(nXi);
+  // Set whether or not to include sigma in cut
+  task->GetSharingFilter().SetIncludeSigma(includeSigma);
+  // Enable use of angle corrected signals in the algorithm 
+  task->GetSharingFilter().SetUseAngleCorrectedSignals(true);
 
   // --- Density calculator 
   // Set the maximum number of particle to try to reconstruct 
-  task->GetDensityCalculator().SetMaxParticles(3);
+  task->GetDensityCalculator().SetMaxParticles(10);
   // Wet whether to use poisson statistics to estimate N_ch
   task->GetDensityCalculator().SetUsePoisson(false);
   // Set the lower multiplicity cut.  Overrides setting in energy loss fits.
-  task->GetDensityCalculator().SetMultCut(0.3); //was 0.3
+  task->GetDensityCalculator().SetMultCut(-1); //was 0.3
+  // Set the lower per-ring multiplicity cuts 
+  task->GetDensityCalculator().SetMultCuts(-1,-1,-1,-1,-1);
+  // USe this many times xi+sigma below MPV 
+  task->GetDensityCalculator().SetNXi(nXi);
+  // Set whether or not to include sigma in cut
+  task->GetDensityCalculator().SetIncludeSigma(includeSigma);
+  // Set whether or not to use the phi acceptance 
+  task->GetDensityCalculator().SetUsePhiAcceptance(true);
 
   // --- Corrector ---------------------------------------------------
   // Whether to use the secondary map correction
@@ -82,7 +110,7 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Set the overall debug level (1: some output, 3: a lot of output)
   task->SetDebug(0);
   // Set the debug level of a single algorithm 
-  // task->GetEventInspector().SetDebug(4);
+  task->GetSharingFilter().SetDebug(0);
 
   // --- Set limits on fits the energy -------------------------------
   // Maximum relative error on parameters 

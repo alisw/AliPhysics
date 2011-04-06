@@ -15,8 +15,8 @@
  */
 #include <AliAnalysisTaskSE.h>
 #include <AliESDFMD.h>
+#include "AliFMDMCEventInspector.h"
 #include <TH1I.h>
-class AliFMDAnaParameters;
 class AliESDEvent;
 class TH2D;
 class TH3D;
@@ -186,10 +186,11 @@ protected:
   void FillStrip(UShort_t d, Char_t r, 
 		 Double_t vz, Double_t eta, Double_t phi,
 		 Bool_t first);
+  AliFMDMCEventInspector fInspector; // Event inspector 
+  Bool_t fFirstEvent;        // First event flag 
   TH1I*  fHEvents;           // All Events
   TH1I*  fHEventsTr;         // Histogram of events w/trigger
   TH1I*  fHEventsTrVtx;      // Events w/trigger and vertex 
-  TH1I*  fHEventsVtx;        // Events w/vertex 
   TH1I*  fHTriggers;         // Triggers
   TH3D*  fPrimaryInnerAll;   // Distribution of primaries - all events
   TH3D*  fPrimaryOuterAll;   // Distribution of primaries - all events

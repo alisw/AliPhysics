@@ -34,6 +34,50 @@ ClassImp(AliFMDHistCollector)
 #endif 
 
 //____________________________________________________________________
+AliFMDHistCollector::AliFMDHistCollector()
+  : fNCutBins(0), 
+    fCorrectionCut(0), 
+    fFirstBins(), 
+    fLastBins(), 
+    fDebug(0),
+    fList(0),
+    fSumRings(0),
+    fCoverage(0),
+    fMergeMethod(kStraightMean),
+    fFiducialMethod(kByCut)
+{}
+
+//____________________________________________________________________
+AliFMDHistCollector::AliFMDHistCollector(const char* title)
+  : TNamed("fmdHistCollector", title), 
+    fNCutBins(2), 
+    fCorrectionCut(0.5), 
+    fFirstBins(1), 
+    fLastBins(1), 
+    fDebug(0),
+    fList(0),
+    fSumRings(0),
+    fCoverage(0),
+    fMergeMethod(kStraightMean),
+    fFiducialMethod(kByCut)
+{
+}
+//____________________________________________________________________
+AliFMDHistCollector::AliFMDHistCollector(const AliFMDHistCollector& o)
+  : TNamed(o), 
+    fNCutBins(o.fNCutBins), 
+    fCorrectionCut(o.fCorrectionCut),
+    fFirstBins(o.fFirstBins), 
+    fLastBins(o.fLastBins), 
+    fDebug(o.fDebug),
+    fList(o.fList),
+    fSumRings(o.fSumRings),
+    fCoverage(o.fCoverage),
+    fMergeMethod(o.fMergeMethod),
+    fFiducialMethod(o.fFiducialMethod)
+{}
+
+//____________________________________________________________________
 AliFMDHistCollector::~AliFMDHistCollector()
 { 
   if (fList) delete fList;
@@ -63,6 +107,7 @@ AliFMDHistCollector::operator=(const AliFMDHistCollector& o)
   fCoverage       = o.fCoverage;
   fMergeMethod    = o.fMergeMethod;
   fFiducialMethod = o.fFiducialMethod;
+
   return *this;
 }
 
@@ -151,7 +196,7 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis,
       // Store the result for later use 
       fFirstBins[(iVz-1)*5+iIdx] = first;
       fLastBins[(iVz-1)*5+iIdx]  = last;
-      TH2D* obg = static_cast<TH2D*>(bg->Clone());
+      TH2D* obg = static_cast<TH2D*>(bg->Clone(Form("secMapFMD%d%c", d, r)));
       obg->SetDirectory(0);
       obg->Reset();
       vtxList->Add(obg);
@@ -212,7 +257,9 @@ AliFMDHistCollector::DefineOutput(TList* dir)
   fList->SetOwner();
   fList->SetName(GetName());
   dir->Add(fList);
+
 }
+
 
 //____________________________________________________________________
 Int_t
@@ -477,7 +524,8 @@ AliFMDHistCollector::MergeBins(Double_t c,   Double_t e,
 
 //____________________________________________________________________
 Bool_t
-AliFMDHistCollector::Collect(AliForwardUtil::Histos& hists,
+AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
+			     AliForwardUtil::Histos& sums,
 			     UShort_t                vtxbin, 
 			     TH2D&                   out)
 {
@@ -499,13 +547,32 @@ AliFMDHistCollector::Collect(AliForwardUtil::Histos& hists,
       TH2D*       h = hists.Get(d,r);
       TH2D*       t = static_cast<TH2D*>(h->Clone(Form("FMD%d%c_tmp",d,r)));
       Int_t       i = (d == 1 ? 1 : 2*d + (q == 0 ? -2 : -1));
+      TH2D*       o = sums.Get(d, r);
 
-      // Outer rings have better phi segmentation - rebin to same as inner. 
-      if (q == 1) t->RebinY(2);
-
+      // Get valid range 
       Int_t first = 0;
       Int_t last  = 0;
       GetFirstAndLast(d, r, vtxbin, first, last);
+      
+      // Zero outside valid range 
+      for (Int_t iPhi = 0; iPhi <= t->GetNbinsY()+1; iPhi++) { 
+	// Lower range 
+	for (Int_t iEta = 1; iEta < first; iEta++) { 
+	  t->SetBinContent(iEta,iPhi,0);
+	  t->SetBinError(iEta,iPhi,0);
+	}
+	for (Int_t iEta = last+1; iEta <= t->GetNbinsX(); iEta++) {
+	  t->SetBinContent(iEta,iPhi,0);
+	  t->SetBinError(iEta,iPhi,0);
+	}
+      }
+      for (Int_t iEta = first; iEta <= last; iEta++)
+	t->SetBinContent(iEta,0,1);
+      // Add to our per-ring sum 
+      o->Add(t);
+      
+      // Outer rings have better phi segmentation - rebin to same as inner. 
+      if (q == 1) t->RebinY(2);
 
       // Now update profile output 
       for (Int_t iEta = first; iEta <= last; iEta++) { 
@@ -518,7 +585,8 @@ AliFMDHistCollector::Collect(AliForwardUtil::Histos& hists,
 	Float_t noc      = overlap >= 0? 0.5 : 1;
 	out.SetBinContent(iEta, 0, ooc + noc);
 
-	for (Int_t iPhi = 1; iPhi <= h->GetNbinsY(); iPhi++) { 
+	// Should we loop over h or t Y bins - I think it's t
+	for (Int_t iPhi = 1; iPhi <= t->GetNbinsY(); iPhi++) { 
 	  Double_t c  = t->GetBinContent(iEta,iPhi);
 	  Double_t e  = t->GetBinError(iEta,iPhi);
 	  Double_t ee = t->GetXaxis()->GetBinCenter(iEta);
@@ -577,22 +645,26 @@ AliFMDHistCollector::Print(Option_t* /* option */) const
   case kLeastError:         std::cout << "least error\n"; break;
   }
     
-  std::cout << ind << " Bin ranges:\n" << ind << "  v_z bin";
+  std::cout << ind << " Bin ranges:\n" << ind << "  rings  ";
   Int_t nVz = fFirstBins.fN / 5;
-  for (UShort_t iVz = 1; iVz <= nVz; iVz++) 
-    std::cout << " | " << std::setw(7) << iVz;
-  std::cout << '\n' << ind << "  / ring ";
-  for (UShort_t iVz = 1; iVz <= nVz; iVz++) 
-    std::cout << "-+--------";
-  std::cout << std::endl;
-    
   for (Int_t iIdx = 0; iIdx < 5; iIdx++) {
     UShort_t d = 0;
     Char_t   r = 0;
     GetDetRing(iIdx, d, r);
+    std::cout << ind << " | FMD" << d << r << " ";
+  }
+  std::cout << '\n' << ind << "  /vz_bin ";
+  for (Int_t iIdx = 0; iIdx < 5; iIdx++) 
+    std::cout << "-+--------";
+  std::cout << std::endl;
+
+  for (UShort_t iVz = 1; iVz <= nVz; iVz++) {
+    std::cout << " " << std::setw(7) << iVz << "   ";
+    for (Int_t iIdx = 0; iIdx < 5; iIdx++) {
+      UShort_t d = 0;
+      Char_t   r = 0;
+      GetDetRing(iIdx, d, r);
     
-    std::cout << ind << "  FMD" << d << r << "  ";
-    for (UShort_t iVz = 1; iVz <= nVz; iVz++) {
       Int_t first, last;
       GetFirstAndLast(iIdx, iVz, first, last);
       std::cout << " | " << std::setw(3) << first << "-" 

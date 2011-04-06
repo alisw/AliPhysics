@@ -513,6 +513,17 @@ AliFMDCorrELossFit::ELossFit::Draw(Option_t* option)
 #define CHECKPAR(V,E,T) ((V > 0) && (E / V < T))
 
 //____________________________________________________________________
+Double_t
+AliFMDCorrELossFit::ELossFit::GetLowerBound(Double_t f, 
+					    Bool_t includeSigma) const
+{
+  // 
+  // Return 
+  //    Delta - f * (xi + sigma)
+  return fDelta - f * (fXi + (includeSigma ? fSigma : 0));
+}
+
+//____________________________________________________________________
 void 
 AliFMDCorrELossFit::ELossFit::CalculateQuality(Double_t maxChi2nu, 
 					       Double_t maxRelError, 
@@ -804,24 +815,24 @@ AliFMDCorrELossFit::FindFit(UShort_t  d, Char_t r, Int_t etabin) const
     return 0;
   }
   if (etabin <= 0 || etabin >= fEtaAxis.GetNbins()) { 
-    AliError(Form("Eta bin=%3d out of bounds [%d,%d] for FMD%d%c", 
-		  etabin, 1, fEtaAxis.GetNbins(), d, r));
+    // AliError(Form("Eta bin=%3d out of bounds [%d,%d] for FMD%d%c", 
+    //  	     etabin, 1, fEtaAxis.GetNbins(), d, r));
     return 0;
   }
   if (etabin > ringArray->GetEntriesFast()) { 
-    AliError(Form("Eta bin=%3d out of bounds [%d,%d] for FMD%d%c", 
-		  etabin, 1, ringArray->GetEntriesFast(), d, r));
+    // AliError(Form("Eta bin=%3d out of bounds [%d,%d] for FMD%d%c", 
+    // 		     etabin, 1, ringArray->GetEntriesFast(), d, r));
     return 0;
   }
   else if (etabin >= ringArray->GetEntriesFast()) { 
-    AliWarning(Form("Eta bin=%3d out of bounds by +1 [%d,%d] for FMD%d%c, " 
-		    "trying %3d", etabin, 1, ringArray->GetEntriesFast(), d, r,
-		    etabin-1));
+    // AliWarning(Form("Eta bin=%3d out of bounds by +1 [%d,%d] for FMD%d%c, " 
+    //		    "trying %3d", etabin, 1, ringArray->GetEntriesFast(), d, r,
+    //		    etabin-1));
     etabin--;
   }
   else if (!ringArray->At(etabin)) { 
-    AliWarning(Form("Eta bin=%d has no fit for FMD%d%c, trying %03d", 
-		    etabin, d, r, etabin+1));
+    // AliWarning(Form("Eta bin=%d has no fit for FMD%d%c, trying %03d", 
+    // 		    etabin, d, r, etabin+1));
     etabin++;
   }
   return static_cast<ELossFit*>(ringArray->At(etabin));
@@ -898,6 +909,38 @@ AliFMDCorrELossFit::GetOrMakeRingArray(UShort_t d, Char_t r)
   return static_cast<TObjArray*>(fRings.At(idx));
 }
 
+//____________________________________________________________________
+Double_t
+AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Int_t etabin,
+				  Double_t f, Bool_t showErrors, 
+				  Bool_t includeSigma) const
+{
+  ELossFit* fit = GetFit(d, r, etabin);
+  if (!fit) { 
+    if (showErrors) {
+      AliWarning(Form("No fit for FMD%d%c @ etabin=%d", d, r, etabin));
+    }
+    return -1024;
+  }
+  return fit->GetLowerBound(f, includeSigma);
+}
+
+//____________________________________________________________________
+Double_t
+AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Double_t eta,
+				  Double_t f, Bool_t showErrors, 
+				  Bool_t includeSigma) const
+{
+  Int_t bin = FindEtaBin(eta);
+  if (bin <= 0) { 
+    if (showErrors)
+      AliError(Form("eta=%f out of bounds for FMD%d%c", eta, d, r));
+    return -1024;
+  }
+  return GetLowerBound(d, r, bin, f, showErrors, includeSigma);
+}
+
+//____________________________________________________________________
 namespace { 
   TH1D* MakeHist(const TAxis& axis, const char* name, const char* title, 
 		 Int_t color)
@@ -915,6 +958,8 @@ namespace {
     return h;
   }
 }
+
+  
 
 #define IDX2RING(I) (i == 0 || i == 1 || i == 3 ? 'I' : 'O')
 #define IDX2DET(I)  (i == 0 ? 1 : (i == 1 || i == 2 ? 2 : 3))
