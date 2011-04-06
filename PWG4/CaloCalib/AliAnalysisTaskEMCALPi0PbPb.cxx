@@ -141,7 +141,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
     if (f) {
       f->SetCompressionLevel(2);
       fNtuple = new TNtuple(Form("nt%.0fto%.0f",fCentFrom,fCentTo),"nt",
-                            "run:evt:l0:cent:pt:eta:phi:e:emax:n:n1:db:disp:mn:ms:ecc:sig:tkdz:tkdr:tkep:tkiso:ceiso");
+                            "run:evt:l0:cent:pt:eta:phi:e:emax:n:n1:nsm:db:disp:mn:ms:ecc:sig:tkdz:tkdr:tkep:tkiso:ceiso");
       fNtuple->SetDirectory(f);
       fNtuple->SetAutoFlush(-1024*1024*1024);
       fNtuple->SetAutoSave(-1024*1024*1024);
@@ -884,7 +884,7 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
     if (fNtuple) {
       if (clus->E()<fMinE)
         continue;
-      Float_t vals[22];
+      Float_t vals[23];
       vals[0]  = InputEvent()->GetRunNumber();
       vals[1]  = (((UInt_t)InputEvent()->GetOrbitNumber()  << 12) | (UInt_t)InputEvent()->GetBunchCrossNumber()); 
       if (vals[1]<=0) 
@@ -907,17 +907,18 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
       vals[8]  = GetMaxCellEnergy(clus);
       vals[9]  = clus->GetNCells();
       vals[10] = GetNCells(clus,0.100);
-      vals[11] = clus->GetDistanceToBadChannel();
-      vals[12] = clus->GetDispersion();
-      vals[13] = clus->GetM20();
-      vals[14] = clus->GetM02();
-      vals[15] = clusterEcc;
-      vals[16] = maxAxis;
-      vals[17] = fClusProps[i].fTrDz; 
-      vals[18] = fClusProps[i].fTrDr;
-      vals[19] = fClusProps[i].fTrEp;
-      vals[20] = fClusProps[i].fTrIso;
-      vals[21] = fClusProps[i].fCellIso;
+      vals[11] = fGeom->GetSuperModuleNumber(clus->GetCellAbsId(0));
+      vals[12] = clus->GetDistanceToBadChannel();
+      vals[13] = clus->GetDispersion();
+      vals[14] = clus->GetM20();
+      vals[15] = clus->GetM02();
+      vals[16] = clusterEcc;
+      vals[17] = maxAxis;
+      vals[18] = fClusProps[i].fTrDz; 
+      vals[19] = fClusProps[i].fTrDr;
+      vals[20] = fClusProps[i].fTrEp;
+      vals[21] = fClusProps[i].fTrIso;
+      vals[22] = fClusProps[i].fCellIso;
       fNtuple->Fill(vals);
     }
   }
@@ -1031,8 +1032,9 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetMaxCellEnergy(AliVCluster *cluster) con
   if (fEsdCells) {
     for (Int_t i=0; i<ncells; i++) {
       Double_t e = fEsdCells->GetCellAmplitude(TMath::Abs(cluster->GetCellAbsId(i)));
-      if (e>maxe)
+      if (e>maxe) {
         maxe = e;
+      }
     }
   } else {
     for (Int_t i=0; i<ncells; i++) {
@@ -1090,6 +1092,8 @@ void AliAnalysisTaskEMCALPi0PbPb::GetSigma(AliVCluster *c, Double_t& sigmaMax, D
   Sxx -= Xc*Xc;
   Syy -= Yc*Yc;
   Sxy -= Xc*Yc;
+  Sxx = TMath::Abs(Sxx);
+  Syy = TMath::Abs(Syy);
   sigmaMax = (Sxx + Syy + TMath::Sqrt(TMath::Abs((Sxx-Syy)*(Sxx-Syy)+4.0*Sxy*Sxy)))/2.0;
   sigmaMax = TMath::Sqrt(TMath::Abs(sigmaMax)); 
   sigmaMin = TMath::Abs(Sxx + Syy - TMath::Sqrt(TMath::Abs((Sxx-Syy)*(Sxx-Syy)+4.0*Sxy*Sxy)))/2.0;
