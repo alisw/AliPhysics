@@ -207,8 +207,8 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   // Create histograms
 
   OpenFile(1);
-
   fOutputList = new TList();
+  fOutputList->SetOwner();
   fOutputList->SetName(GetName());
 
   /*
@@ -370,6 +370,8 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fOutputList->Add(fEventSpecieHLT);
 
   SetupESDtrackCuts();
+  
+  PostData(1, fOutputList);
 }
 
 void AliAnalysisTaskHLT::NotifyRun(){
