@@ -338,8 +338,9 @@ TH1F *AliCentralityGlauberFit::GlauberHisto(Double_t mu, Double_t k, Double_t al
     for (Int_t np=1; np<=fhAncestor->GetNbinsX(); ++np) {  
       Double_t nanc = fhAncestor->GetBinCenter(np);
       Double_t weights = fhAncestor->GetBinContent(np);
+
       if (weights <= 0) continue;
-      Int_t trials = 20 * nanc * (int) mu;
+      Int_t trials = (Int_t) (20 * nanc * (int) mu);
       if (trials <=0) continue;
       for (Int_t j=0; j<trials; j++) {
        	double nbdvalue = NBD(j, mu * nanc, k * nanc);
@@ -370,8 +371,7 @@ TH1F *AliCentralityGlauberFit::GlauberHisto(Double_t mu, Double_t k, Double_t al
       fNpart = 2;
       fNcoll = 1;
     }
-
-    Int_t n=0.;
+    Int_t n=0;
     //if (fAncestor == 1)      n = (Int_t)(TMath::Power(fNpart,alpha));
     if (fAncestor == 1)      n = (Int_t)(TMath::Power(fNcoll,alpha));
     else if (fAncestor == 2) n = (Int_t)(alpha * fNpart + (1-alpha) * fNcoll);
@@ -585,11 +585,11 @@ TH1F *AliCentralityGlauberFit::MakeAncestor(Double_t alpha)
   Int_t nents = fGlauntuple->GetEntries(); 
   for (Int_t i=0;i<nents;++i) {
     fGlauntuple->GetEntry(i % nents);
-    Int_t n=0.0;
-    //if (fAncestor == 1)      n = TMath::Power(fNpart,alpha);
-    if (fAncestor == 1)      n = TMath::Power(fNcoll,alpha);
-    else if (fAncestor == 2) n = alpha * fNpart + (1-alpha) * fNcoll;
-    else if (fAncestor == 3) n = (1-alpha) * fNpart/2 + alpha * fNcoll;
+    Int_t n=0;
+    //if (fAncestor == 1)    n = (Int_t) (TMath::Power(fNpart,alpha));
+    if (fAncestor == 1)      n = (Int_t) (TMath::Power(fNcoll,alpha));
+    else if (fAncestor == 2) n = (Int_t) (alpha * fNpart + (1-alpha) * fNcoll);
+    else if (fAncestor == 3) n = (Int_t) ((1-alpha) * fNpart/2 + alpha * fNcoll);
     fhAncestor->Fill(n);
   }
 
