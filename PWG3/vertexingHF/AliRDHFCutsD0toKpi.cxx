@@ -1221,7 +1221,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   //SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
   // CENTRALITY SELECTION
   SetMinCentrality(0.);
-  SetMaxCentrality(20.);
+  SetMaxCentrality(80.);
   SetUseCentrality(AliRDHFCuts::kCentV0M);
 
 
