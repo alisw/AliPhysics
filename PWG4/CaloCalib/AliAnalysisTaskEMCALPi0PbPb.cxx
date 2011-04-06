@@ -555,9 +555,6 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcTracks()
         continue;
       if (track->Phi()<phimin||track->Phi()>phimax)
         continue;
-      Double_t pt  = track->Pt();
-      if (pt<fMinPtPerTrack) 
-        continue;
       if(track->GetTPCNcls()<fMinNClustPerTrack)
         continue;
       AliESDtrack copyt(*track);
@@ -611,13 +608,10 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcTracks()
         continue;
       if (track->Phi()<phimin||track->Phi()>phimax)
         continue;
-      Double_t pt  = track->Pt();
-      if (pt<fMinPtPerTrack) 
-        continue;
       if(track->GetTPCNcls()<fMinNClustPerTrack)
         continue;
 
-      if (0 && (pt>=0.6) && (track->PxAtDCA()==-999)) { // compute position on EMCAL 
+      if (0 && (track->Pt()>=0.6) && (track->PxAtDCA()==-999)) { // compute position on EMCAL 
         AliExternalTrackParam tParam(track);
         if (AliTrackerBase::PropagateTrackToBxByBz(&tParam, 438, 0.139, 1, kTRUE)) {
           Double_t trkPos[3];
@@ -669,7 +663,8 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
       AliVTrack *track = static_cast<AliVTrack*>(fSelTracks->At(j));
       if (!track)
         continue;
-      if (track->Pt()<0.6)
+      Double_t pt  = track->Pt();
+      if (pt<fMinPtPerTrack) 
         continue;
       if (TMath::Abs(clsEta-track->Eta())>fIsoDist)
         continue;
