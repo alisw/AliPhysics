@@ -20,14 +20,16 @@
 #include "AliCDBManager.h"
 #include "AliCentrality.h"
 #include "AliEMCALGeoUtils.h"
+#include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
-#include "AliTrackerBase.h"
 #include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
 #include "AliGeomManager.h"
 #include "AliLog.h"
 #include "AliMagF.h"
+#include "AliTrackerBase.h"
 
 ClassImp(AliAnalysisTaskEMCALPi0PbPb)
 
@@ -50,8 +52,9 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fMinEcc(0),
     fGeoName("EMCAL_FIRSTYEARV1"),
     fMinNClustPerTrack(50),
-    fMinPtPerTrack(0.25), 
+    fMinPtPerTrack(1.0), 
     fIsoDist(0.2),
+    fTrCuts(0),
     fNEvs(0),
     fGeom(0),
     fReco(0),
@@ -527,22 +530,75 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcTracks()
   if (!tracks)
     return;
 
+  AliEMCALEMCGeometry *emc = fGeom->GetEMCGeometry();
+  Double_t phimin = emc->GetArm1PhiMin()*TMath::DegToRad()-0.25;
+  Double_t phimax = emc->GetArm1PhiMax()*TMath::DegToRad()+0.25;
+
   if (fEsdEv) {
-    //todo implement esd track filtering
-    Int_t ntracks = tracks->GetEntries();
-    for (Int_t i=0; i<ntracks; ++i) {
-      AliESDtrack *track = static_cast<AliESDtrack*>(tracks->At(i));
-      if (!track)
+    fSelTracks->SetOwner(kTRUE);
+    am->LoadBranch("PrimaryVertex.");
+    const AliESDVertex *vtx = fEsdEv->GetPrimaryVertexSPD();
+    am->LoadBranch("SPDVertex.");
+    const AliESDVertex *vtxSPD = fEsdEv->GetPrimaryVertexSPD();
+    am->LoadBranch("Tracks");
+    const Int_t Ntracks = tracks->GetEntries();
+    for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
+      AliESDtrack *track = static_cast<AliESDtrack*>(tracks->At(iTracks));
+      if (!track) {
+        AliWarning(Form("Could not receive track %d\n", iTracks));
+        continue;
+      }
+      if (fTrCuts && !fTrCuts->IsSelected(track))
         continue;
       Double_t eta = track->Eta();
       if (eta<-1||eta>1)
+        continue;
+      if (track->Phi()<phimin||track->Phi()>phimax)
         continue;
       Double_t pt  = track->Pt();
       if (pt<fMinPtPerTrack) 
         continue;
       if(track->GetTPCNcls()<fMinNClustPerTrack)
         continue;
-      fSelTracks->Add(track);
+      AliESDtrack copyt(*track);
+      Double_t bfield[3];
+      copyt.GetBxByBz(bfield);
+      AliExternalTrackParam tParam;
+      Bool_t relate = copyt.RelateToVertexBxByBz(vtxSPD,bfield,kVeryBig,&tParam);
+      if (!relate)
+        continue;
+      copyt.Set(tParam.GetX(),tParam.GetAlpha(),tParam.GetParameter(),tParam.GetCovariance());
+      Double_t p[3]      = { 0. };
+      copyt.GetPxPyPz(p);
+      Double_t pos[3]    = { 0. };      
+      copyt.GetXYZ(pos);
+      Double_t covTr[21] = { 0. };
+      copyt.GetCovarianceXYZPxPyPz(covTr);
+      Double_t pid[10]   = { 0. };  
+      copyt.GetESDpid(pid);
+      AliAODTrack *aTrack = new AliAODTrack(copyt.GetID(),
+                                            copyt.GetLabel(),
+                                            p,
+                                            kTRUE,
+                                            pos,
+                                            kFALSE,
+                                            covTr, 
+                                            (Short_t)copyt.GetSign(),
+                                            copyt.GetITSClusterMap(), 
+                                            pid,
+                                            0,/*fPrimaryVertex,*/
+                                            kTRUE, // check if this is right
+                                            vtx->UsesTrack(copyt.GetID()));
+      aTrack->SetTPCClusterMap(copyt.GetTPCClusterMap());
+      aTrack->SetTPCSharedMap (copyt.GetTPCSharedMap());
+      Float_t ndf = copyt.GetTPCNcls() + 1 - 5 ;
+      if(ndf>0)
+        aTrack->SetChi2perNDF(copyt.GetTPCchi2()/ndf);
+      else
+        aTrack->SetChi2perNDF(-1);
+      aTrack->SetFlags(copyt.GetStatus());
+      aTrack->SetTPCPointsF(copyt.GetTPCNclsF());
+      fSelTracks->Add(aTrack);
     }
   } else {
     Int_t ntracks = tracks->GetEntries();
@@ -552,6 +608,8 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcTracks()
         continue;
       Double_t eta = track->Eta();
       if (eta<-1||eta>1)
+        continue;
+      if (track->Phi()<phimin||track->Phi()>phimax)
         continue;
       Double_t pt  = track->Pt();
       if (pt<fMinPtPerTrack) 

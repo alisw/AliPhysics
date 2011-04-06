@@ -12,13 +12,14 @@ class TObjArray;
 class AliAODCaloCells;
 class AliAODCaloCluster;
 class AliAODEvent;
-class AliESDTrack;
 class AliAODTrack;
 class AliEMCALGeoUtils;
 class AliEMCALRecoUtils;
 class AliESDCaloCells;
 class AliESDCaloCluster;
 class AliESDEvent;
+class AliESDTrack;
+class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -45,6 +46,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetMinNClustersPerTrack(Double_t mct)          { fMinNClustPerTrack = mct;   }
   void         SetMinPtPerMatchedTrack(Double_t mpt)          { fMinPtPerTrack = mpt;       }
   void         SetNminCells(Int_t n)                          { fNminCells = n;             }
+  void         SetTrackCuts(AliESDtrackCuts *c)               { fTrCuts = c;                }
   void         SetUseQualFlag(Bool_t b)                       { fUseQualFlag = b;           }
   void         SetVertexRange(Double_t z1, Double_t z2)       { fVtxZMin=z1; fVtxZMax=z2;   }
 
@@ -95,6 +97,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Double_t               fMinNClustPerTrack;      // minimum number of cluster per track (def=50)
   Double_t               fMinPtPerTrack;          // minimum pT per track (def=0.25 GeV/c)
   Double_t               fIsoDist;                // isolation distance (def=0.2)
+  AliESDtrackCuts       *fTrCuts;                 //track cuts
 
     // derived members (ie with ! after //)
   ULong64_t              fNEvs;                   //!accepted events 
@@ -148,6 +151,6 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskEMCALPi0PbPb(const AliAnalysisTaskEMCALPi0PbPb&);            // not implemented
   AliAnalysisTaskEMCALPi0PbPb &operator=(const AliAnalysisTaskEMCALPi0PbPb&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 3); // Analysis task for neutral pions in Pb+Pb
+  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 4); // Analysis task for neutral pions in Pb+Pb
 };
 #endif
