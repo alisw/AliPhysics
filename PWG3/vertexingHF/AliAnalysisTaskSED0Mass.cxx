@@ -776,11 +776,11 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 	continue; //skip the D0 from Dstar
       }
 
-    Bool_t unsetvtx=kFALSE;
-    if(!d->GetOwnPrimaryVtx()) {
-      d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
-      unsetvtx=kTRUE;
-    }
+    // Bool_t unsetvtx=kFALSE;
+    // if(!d->GetOwnPrimaryVtx()) {
+    //   d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
+    //   unsetvtx=kTRUE;
+    // }
   
     
     if ( fCuts->IsInFiducialAcceptance(d->Pt(),d->Y(421)) ) {
@@ -811,7 +811,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     }
   
     fDaughterTracks.Clear();
-    if(unsetvtx) d->UnsetOwnPrimaryVtx();
+    //if(unsetvtx) d->UnsetOwnPrimaryVtx();
   } //end for prongs
   fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);  
   fCounter->StoreCandidates(aod,nSelectedtight,kFALSE);  
@@ -1158,10 +1158,10 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	if(fArray==1){
 	  if(prongg->Charge()==1) {
 	    //fTotPosPairs[ptbin]++;
-	    ((TH1F*)fDistr->FindObject("hpospair"))->Fill(ptbin);
+	    ((TH1F*)fOutputMass->FindObject("hpospair"))->Fill(ptbin);
 	  } else {
 	    //fTotNegPairs[ptbin]++;
-	    ((TH1F*)fDistr->FindObject("hnegpair"))->Fill(ptbin);
+	    ((TH1F*)fOutputMass->FindObject("hnegpair"))->Fill(ptbin);
 	  }
 	}
       }
