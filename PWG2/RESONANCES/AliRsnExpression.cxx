@@ -101,6 +101,11 @@ Bool_t AliRsnExpression::Value(TObjArray &vars)
       AliError("Expression undefined.");
       return kFALSE;
    }
+   if (!fArg2) {
+      AliError("Argument 2 is required.");
+      return kFALSE;
+   }
+
 
 //   AliDebug(AliLog::kDebug,Form("fOperator %d",fOperator));
 
