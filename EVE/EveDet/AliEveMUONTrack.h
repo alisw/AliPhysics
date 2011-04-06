@@ -20,7 +20,6 @@ class AliTrackReference;
 class TParticle;
 
 class TEveTrackPropagator;
-class TEveRecTrack;
 
 
 class AliEveMUONTrack: public TEveTrack
