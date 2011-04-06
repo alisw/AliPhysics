@@ -638,6 +638,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   TClonesArray *mcArray = 0;
   AliAODMCHeader *mcHeader = 0;
 
+  if(!aod) {
+    delete [] pdgdaughters;
+    return;
+  }
+
   //check if MC
   if(fReadMC) {
     // load MC particles
@@ -656,10 +661,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       return;
     }
   }
-  if(!aod) {delete [] pdgdaughters;return;}
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
+  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) {
+    delete [] pdgdaughters;
+    return;
+  }
 
   // count event
   fNEntries->Fill(0); 

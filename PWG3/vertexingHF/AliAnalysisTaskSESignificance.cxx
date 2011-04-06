@@ -587,6 +587,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	SetPDGdaughterDstopiKK();
 	nVals=0;
 	fRDCuts->GetCutVarsForOpt(d,fVars,fNVars,fPDGdaughters);
+	delete [] addresses;
 	addresses = muvec->GetGlobalAddressesAboveCuts(fVars,(Float_t)d->Pt(),nVals);
 	if(fDebug>1)printf("nvals = %d\n",nVals);
 	for(Int_t ivals=0;ivals<nVals;ivals++){
