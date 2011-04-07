@@ -141,12 +141,16 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
     if (f) {
       f->SetCompressionLevel(2);
       fNtuple = new TNtuple(Form("nt%.0fto%.0f",fCentFrom,fCentTo),"nt",
-                            "run:evt:l0:cent:pt:eta:phi:e:emax:n:n1:nsm:db:disp:mn:ms:ecc:sig:tkdz:tkdr:tkep:tkiso:ceiso");
+                            "run:evt:l0:tcls:cent:pt:eta:phi:e:emax:n:n1:nsm:db:disp:mn:ms:ecc:sig:tkdz:tkdr:tkep:tkiso:ceiso");
       fNtuple->SetDirectory(f);
       fNtuple->SetAutoFlush(-1024*1024*1024);
       fNtuple->SetAutoSave(-1024*1024*1024);
     }  
   }
+
+  AliEMCALEMCGeometry *emc = fGeom->GetEMCGeometry();
+  Double_t phimin = emc->GetArm1PhiMin()*TMath::DegToRad()-0.25;
+  Double_t phimax = emc->GetArm1PhiMax()*TMath::DegToRad()+0.25;
 
   // histograms
   TH1::SetDefaultSumw2(kTRUE);
@@ -237,7 +241,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fHClustEccentricity = new TH1F("hClustEccentricity","",100,-0.1,1.1);
   fHClustEccentricity->SetXTitle("#epsilon_{C}");
   fOutput->Add(fHClustEccentricity);
-  fHClustEtaPhi = new TH2F("hClustEtaPhi","",500,-0.8,0.8,500,1.2,2.2);
+  fHClustEtaPhi = new TH2F("hClustEtaPhi","",500,-0.8,0.8,100*nsm,phimin,phimax);
   fHClustEtaPhi->SetXTitle("#eta");
   fHClustEtaPhi->SetYTitle("#varphi");
   fOutput->Add(fHClustEtaPhi);
@@ -259,7 +263,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fOutput->Add(fHClustNCellEnergyRatio);
 
   // histograms for pion candidates
-  fHPionEtaPhi = new TH2F("hPionEtaPhi","",100,-0.8,0.8,100,1.2,2.2);
+  fHPionEtaPhi = new TH2F("hPionEtaPhi","",100,-0.8,0.8,100*nsm,phimin,phimax);
   fHPionEtaPhi->SetXTitle("#eta_{#gamma#gamma}");
   fHPionEtaPhi->SetYTitle("#varphi_{#gamma#gamma}");
   fOutput->Add(fHPionEtaPhi);
@@ -323,12 +327,14 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
       AliGeomManager::LoadGeometry();
     }
 
-    if (fEsdEv) {  // set misalignment matrices (stored in first event)
-      for (Int_t i=0; i<fGeom->GetEMCGeometry()->GetNumberOfSuperModules(); ++i)
-        fGeom->SetMisalMatrix(fEsdEv->GetESDRun()->GetEMCALMatrix(i),i);
-    } else {
-      for (Int_t i=0; i<fGeom->GetEMCGeometry()->GetNumberOfSuperModules(); ++i)
-        fGeom->SetMisalMatrix(fAodEv->GetHeader()->GetEMCALMatrix(i),i);
+    if (!fGeom->GetMatrixForSuperModule(0)) { // set misalignment matrices (stored in first event)
+      if (fEsdEv) {  
+        for (Int_t i=0; i<fGeom->GetEMCGeometry()->GetNumberOfSuperModules(); ++i)
+          fGeom->SetMisalMatrix(fEsdEv->GetESDRun()->GetEMCALMatrix(i),i);
+      } else {
+        for (Int_t i=0; i<fGeom->GetEMCGeometry()->GetNumberOfSuperModules(); ++i)
+          fGeom->SetMisalMatrix(fAodEv->GetHeader()->GetEMCALMatrix(i),i);
+      }
     }
 
     if (!TGeoGlobalMagField::Instance()->GetField()) { // construct field map
@@ -890,41 +896,54 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
     if (fNtuple) {
       if (clus->E()<fMinE)
         continue;
-      Float_t vals[23];
+      Float_t vals[24];
+      TString trgclasses;
       vals[0]  = InputEvent()->GetRunNumber();
       vals[1]  = (((UInt_t)InputEvent()->GetOrbitNumber()  << 12) | (UInt_t)InputEvent()->GetBunchCrossNumber()); 
       if (vals[1]<=0) 
         vals[1] = fNEvs;
       AliESDHeader *h = dynamic_cast<AliESDHeader*>(InputEvent()->GetHeader());
-      if (h)
+      if (h) {
         vals[2]  = h->GetL0TriggerInputs();
+        trgclasses = fEsdEv->GetFiredTriggerClasses();
+      }
       else {
         AliAODHeader *h2 = dynamic_cast<AliAODHeader*>(InputEvent()->GetHeader());
-        if (h2)
+        if (h2) {
           vals[2]  = h2->GetL0TriggerInputs();
-        else 
+          trgclasses = h2->GetFiredTriggerClasses();
+        } else 
           vals[2] = 0;
       }
-      vals[3]  = InputEvent()->GetCentrality()->GetCentralityPercentileUnchecked(fCentVar);
-      vals[4]  = clusterVec.Pt();
-      vals[5]  = clusterVec.Eta();
-      vals[6]  = clusterVec.Phi();
-      vals[7]  = clusterVec.E();
-      vals[8]  = GetMaxCellEnergy(clus);
-      vals[9]  = clus->GetNCells();
-      vals[10] = GetNCells(clus,0.100);
-      vals[11] = fGeom->GetSuperModuleNumber(clus->GetCellAbsId(0));
-      vals[12] = clus->GetDistanceToBadChannel();
-      vals[13] = clus->GetDispersion();
-      vals[14] = clus->GetM20();
-      vals[15] = clus->GetM02();
-      vals[16] = clusterEcc;
-      vals[17] = maxAxis;
-      vals[18] = fClusProps[i].fTrDz; 
-      vals[19] = fClusProps[i].fTrDr;
-      vals[20] = fClusProps[i].fTrEp;
-      vals[21] = fClusProps[i].fTrIso;
-      vals[22] = fClusProps[i].fCellIso;
+      vals[3]  = 0;
+      if (trgclasses.Contains("CINT1-B"))
+        vals[3] += 1;
+      if (trgclasses.Contains("CINT1B"))
+        vals[3] += 2;
+      if (trgclasses.Contains("CSH1-B"))
+        vals[3] += 4;
+      if (trgclasses.Contains("CEMC1-B"))
+        vals[3] += 8;
+      vals[4]  = InputEvent()->GetCentrality()->GetCentralityPercentileUnchecked(fCentVar);
+      vals[5]  = clusterVec.Pt();
+      vals[6]  = clusterVec.Eta();
+      vals[7]  = clusterVec.Phi();
+      vals[8]  = clusterVec.E();
+      vals[9]  = GetMaxCellEnergy(clus);
+      vals[10]  = clus->GetNCells();
+      vals[11] = GetNCells(clus,0.100);
+      vals[12] = fGeom->GetSuperModuleNumber(clus->GetCellAbsId(0));
+      vals[13] = clus->GetDistanceToBadChannel();
+      vals[14] = clus->GetDispersion();
+      vals[15] = clus->GetM20();
+      vals[16] = clus->GetM02();
+      vals[17] = clusterEcc;
+      vals[18] = maxAxis;
+      vals[19] = fClusProps[i].fTrDz; 
+      vals[20] = fClusProps[i].fTrDr;
+      vals[21] = fClusProps[i].fTrEp;
+      vals[22] = fClusProps[i].fTrIso;
+      vals[23] = fClusProps[i].fCellIso;
       fNtuple->Fill(vals);
     }
   }
