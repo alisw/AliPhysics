@@ -32,10 +32,10 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   static Int_t GetLayersNotToSkip(Int_t i) { return fgkLayersNotToSkip[i]; }
   static Int_t GetLastLayerToTrackTo() { return fgkLastLayerToTrackTo; }
-  static Int_t GetMaxClusterPerLayer() { return fgkMaxClusterPerLayer; }
-  static Int_t GetMaxClusterPerLayer5() { return fgkMaxClusterPerLayer5; }
-  static Int_t GetMaxClusterPerLayer10() { return fgkMaxClusterPerLayer10; }
-  static Int_t GetMaxClusterPerLayer20() { return fgkMaxClusterPerLayer20; }
+  static Int_t GetMaxClusterPerLayer() { return kMaxClusterPerLayer; }
+  static Int_t GetMaxClusterPerLayer5() { return kMaxClusterPerLayer5; }
+  static Int_t GetMaxClusterPerLayer10() { return kMaxClusterPerLayer10; }
+  static Int_t GetMaxClusterPerLayer20() { return kMaxClusterPerLayer20; }
   static Int_t GetMaxDetectorPerLayer() { return fgkMaxDetectorPerLayer; }
   static Double_t Getriw() { return fgkriw; }
   static Double_t Getdiw() { return fgkdiw; }
@@ -467,44 +467,44 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void SetTanLorentzAngleElectronsSSD(Float_t la) {fTanLorentzAngleElectronsSSD=la;}
 
   //
-  enum {fgkMaxClusterPerLayer=70000}; //7000*10;   // max clusters per layer
-  enum {fgkMaxClusterPerLayer5=28000};//7000*10*2/5;  // max clusters per layer
-  enum {fgkMaxClusterPerLayer10=14000};//7000*10*2/10; // max clusters per layer
-  enum {fgkMaxClusterPerLayer20=7000};//7000*10*2/20; // max clusters per layer
+  enum {kMaxClusterPerLayer=70000}; //7000*10;   // max clusters per layer
+  enum {kMaxClusterPerLayer5=28000};//7000*10*2/5;  // max clusters per layer
+  enum {kMaxClusterPerLayer10=14000};//7000*10*2/10; // max clusters per layer
+  enum {kMaxClusterPerLayer20=7000};//7000*10*2/20; // max clusters per layer
 
  protected:
   //
   static const Int_t fgkLayersNotToSkip[AliITSgeomTGeo::kNLayers]; // array with layers not to skip
-  static const Int_t fgkLastLayerToTrackTo;  // innermost layer
-  static const Int_t fgkMaxDetectorPerLayer; // max clusters per layer
-  static const Double_t fgkriw;              // TPC inner wall radius
-  static const Double_t fgkdiw;              // TPC inner wall x/X0
-  static const Double_t fgkX0iw;             // TPC inner wall X0 
-  static const Double_t fgkrcd;              // TPC central drum radius
-  static const Double_t fgkdcd;              // TPC central drum x/X0
-  static const Double_t fgkX0cd;             // TPC central drum X0
-  static const Double_t fgkyr;               // TPC rods y (tracking c.s.)
-  static const Double_t fgkdr;               // TPC rods x/X0
-  static const Double_t fgkzm;               // TPC membrane z
-  static const Double_t fgkdm;               // TPC membrane x/X0
-  static const Double_t fgkrs;               // ITS screen radius
-  static const Double_t fgkds;               // ITS screed x/X0
-  static const Double_t fgkrInsideITSscreen; // inside ITS screen radius
-  static const Double_t fgkrInsideSPD1;      // inside SPD1 radius
-  static const Double_t fgkrPipe;            // pipe radius
-  static const Double_t fgkrInsidePipe;      // inside pipe radius
-  static const Double_t fgkrOutsidePipe;     // outside pipe radius
-  static const Double_t fgkdPipe;            // pipe x/X0
+  static const Int_t fgkLastLayerToTrackTo=0;     // innermost layer
+  static const Int_t fgkMaxDetectorPerLayer=1000; // max clusters per layer
+  static const Double_t fgkriw=80.0;              // TPC inner wall radius
+  static const Double_t fgkdiw=0.0053;            // TPC inner wall x/X0
+  static const Double_t fgkX0iw=30.0;             // TPC inner wall X0 
+  static const Double_t fgkrcd=61.0;              // TPC central drum radius
+  static const Double_t fgkdcd=0.0053;            // TPC central drum x/X0
+  static const Double_t fgkX0cd=30.0;             // TPC central drum X0
+  static const Double_t fgkyr=12.8;               // TPC rods y (tracking c.s.)
+  static const Double_t fgkdr=0.03;               // TPC rods x/X0
+  static const Double_t fgkzm=0.2;                // TPC membrane z
+  static const Double_t fgkdm=0.40;               // TPC membrane x/X0
+  static const Double_t fgkrs=50.0;               // ITS screen radius
+  static const Double_t fgkds=0.001;              // ITS screed x/X0
+  static const Double_t fgkrInsideITSscreen=49.0; // inside ITS screen radius
+  static const Double_t fgkrInsideSPD1=3.5;       // inside SPD1 radius
+  static const Double_t fgkrPipe=3.;              // pipe radius
+  static const Double_t fgkrInsidePipe=2.7;       // inside pipe radius
+  static const Double_t fgkrOutsidePipe=3.3;      // outside pipe radius
+  static const Double_t fgkdPipe=0.0028;          // pipe x/X0
   static const Double_t fgkrInsideShield[2]; // inside SPD (0) SDD (1) shield radius
   static const Double_t fgkrOutsideShield[2]; // outside SPD (0) SDD (1) shield radius
   static const Double_t fgkdshield[2];        // SPD (0) SDD (1) shield x/X0
   static const Double_t fgkX0shield[2];       // SPD (0) SDD (1) shield X0
-  static const Double_t fgkX0Air;             // air X0
-  static const Double_t fgkX0Be;              // Berillium X0
-  static const Double_t fgkBoundaryWidth;     // to define track at detector boundary
-  static const Double_t fgkDeltaXNeighbDets;  // max difference in radius between neighbouring detectors 
-  static const Double_t fgkSPDdetzlength;     // SPD ladder length in z
-  static const Double_t fgkSPDdetxlength;     // SPD ladder length in x
+  static const Double_t fgkX0Air=21.82;       // air X0
+  static const Double_t fgkX0Be=65.19;        // Berillium X0
+  static const Double_t fgkBoundaryWidth=0.2; // to define track at detector boundary
+  static const Double_t fgkDeltaXNeighbDets=0.5; // max difference in radius between neighbouring detectors 
+  static const Double_t fgkSPDdetzlength=6.960;     // SPD ladder length in z (=7.072-2*0.056)
+  static const Double_t fgkSPDdetxlength=1.298;     // SPD ladder length in x (=1.410-2*0.056)
 
 
   Int_t  fTracker;  // ITS tracker to be used (see AliITSReconstructor)

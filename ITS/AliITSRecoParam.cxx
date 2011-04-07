@@ -31,36 +31,10 @@
 ClassImp(AliITSRecoParam)
 
 const Int_t AliITSRecoParam::fgkLayersNotToSkip[AliITSgeomTGeo::kNLayers]={0,0,0,0,0,0};
-const Int_t AliITSRecoParam::fgkLastLayerToTrackTo=0;
-const Int_t AliITSRecoParam::fgkMaxDetectorPerLayer=1000;
-const Double_t AliITSRecoParam::fgkriw=80.0;
-const Double_t AliITSRecoParam::fgkdiw=0.0053;
-const Double_t AliITSRecoParam::fgkX0iw=30.0;
-const Double_t AliITSRecoParam::fgkrcd=61.0;
-const Double_t AliITSRecoParam::fgkdcd=0.0053;
-const Double_t AliITSRecoParam::fgkX0cd=30.0;
-const Double_t AliITSRecoParam::fgkyr=12.8;
-const Double_t AliITSRecoParam::fgkdr=0.03;
-const Double_t AliITSRecoParam::fgkzm=0.2;
-const Double_t AliITSRecoParam::fgkdm=0.40;
-const Double_t AliITSRecoParam::fgkrs=50.0;
-const Double_t AliITSRecoParam::fgkds=0.001;
-const Double_t AliITSRecoParam::fgkrInsideITSscreen=49.0;
-const Double_t AliITSRecoParam::fgkrInsideSPD1=3.5;
-const Double_t AliITSRecoParam::fgkrPipe=3.;
-const Double_t AliITSRecoParam::fgkrInsidePipe=2.7;
-const Double_t AliITSRecoParam::fgkrOutsidePipe=3.3;
-const Double_t AliITSRecoParam::fgkdPipe=0.0028;
 const Double_t AliITSRecoParam::fgkrInsideShield[2]={7.5,25.0};
 const Double_t AliITSRecoParam::fgkrOutsideShield[2]={10.5,30.0};
 const Double_t AliITSRecoParam::fgkdshield[2]={0.0097,0.0034};
 const Double_t AliITSRecoParam::fgkX0shield[2]={38.6,42.0};
-const Double_t AliITSRecoParam::fgkX0Air=21.82;
-const Double_t AliITSRecoParam::fgkX0Be=65.19;
-const Double_t AliITSRecoParam::fgkBoundaryWidth=0.2;
-const Double_t AliITSRecoParam::fgkDeltaXNeighbDets=0.5;
-const Double_t AliITSRecoParam::fgkSPDdetzlength=6.960; // 7.072-2*0.056
-const Double_t AliITSRecoParam::fgkSPDdetxlength=1.298; // 1.410-2*0.056
 
 //_____________________________________________________________________________
 AliITSRecoParam::AliITSRecoParam() : AliDetectorRecoParam(),

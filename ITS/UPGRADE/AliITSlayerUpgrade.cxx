@@ -28,7 +28,7 @@ AliITSlayerUpgrade::AliITSlayerUpgrade():
 {  //--------------------------------------------------------------------
   //default AliITSlayerUpgrade constructor
   //--------------------------------------------------------------------
-  for (Int_t i=0; i<AliITSRecoParam::fgkMaxClusterPerLayer; i++) {
+  for (Int_t i=0; i<AliITSRecoParam::kMaxClusterPerLayer; i++) {
   fIndex[i] = -1;
   fClusters[i]= 0x0;
   }
@@ -44,7 +44,7 @@ AliITSlayerUpgrade::AliITSlayerUpgrade(Double_t p,Double_t z):
   //main AliITSlayerUpgrade constructor
   //--------------------------------------------------------------------
 
-  for (Int_t i=0; i<AliITSRecoParam::fgkMaxClusterPerLayer; i++) {
+  for (Int_t i=0; i<AliITSRecoParam::kMaxClusterPerLayer; i++) {
   fIndex[i] = -1;
   fClusters[i]= 0x0;
   }

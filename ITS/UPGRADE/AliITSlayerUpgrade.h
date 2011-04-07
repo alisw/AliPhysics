@@ -25,9 +25,9 @@
     Double_t fPhiOffset;        // offset of the first detector in Phi
     Double_t fZOffset;          // offset of the first detector in Z
 
-    AliITSRecPoint *fClusters[AliITSRecoParam::fgkMaxClusterPerLayer]; // pointers to clusters
+    AliITSRecPoint *fClusters[AliITSRecoParam::kMaxClusterPerLayer]; // pointers to clusters
     Int_t fNsel;         // numbers of selected clusters 
-    Int_t fIndex[AliITSRecoParam::fgkMaxClusterPerLayer]; // indexes of selected clusters
+    Int_t fIndex[AliITSRecoParam::kMaxClusterPerLayer]; // indexes of selected clusters
     Int_t fN;                       // number of clusters
 
 

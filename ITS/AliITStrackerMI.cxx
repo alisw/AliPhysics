@@ -1530,7 +1530,7 @@ fNMaxSigmaCl(3)
   fYB[0]=0;
   fYB[1]=0;
 
-  for (Int_t j=0; j<AliITSRecoParam::fgkMaxClusterPerLayer5; j++) {
+  for (Int_t j=0; j<AliITSRecoParam::kMaxClusterPerLayer5; j++) {
     for (Int_t j1=0; j1<6; j1++) {
       fClusters5[j1][j]=0;
       fClusterIndex5[j1][j]=-1;
@@ -1542,7 +1542,7 @@ fNMaxSigmaCl(3)
     }
   }
 
-  for (Int_t j=0; j<AliITSRecoParam::fgkMaxClusterPerLayer10; j++) {
+  for (Int_t j=0; j<AliITSRecoParam::kMaxClusterPerLayer10; j++) {
     for (Int_t j1=0; j1<11; j1++) {
       fClusters10[j1][j]=0;
       fClusterIndex10[j1][j]=-1;
@@ -1554,7 +1554,7 @@ fNMaxSigmaCl(3)
     }
   }
 
-  for (Int_t j=0; j<AliITSRecoParam::fgkMaxClusterPerLayer20; j++) {
+  for (Int_t j=0; j<AliITSRecoParam::kMaxClusterPerLayer20; j++) {
     for (Int_t j1=0; j1<21; j1++) {
       fClusters20[j1][j]=0;
       fClusterIndex20[j1][j]=-1;
@@ -1565,7 +1565,7 @@ fNMaxSigmaCl(3)
       fBy20[j1][1]=0;
     }
   }
-  for(Int_t i=0;i<AliITSRecoParam::fgkMaxClusterPerLayer;i++){
+  for(Int_t i=0;i<AliITSRecoParam::kMaxClusterPerLayer;i++){
     fClusters[i]=NULL;
     fClusterIndex[i]=0;
   }
@@ -1620,7 +1620,7 @@ fNMaxSigmaCl(3) {
   fYB[0]=0;
   fYB[1]=0;
 
-  for (Int_t j=0; j<AliITSRecoParam::fgkMaxClusterPerLayer5; j++) {
+ for (Int_t j=0; j<AliITSRecoParam::kMaxClusterPerLayer5; j++) {
     for (Int_t j1=0; j1<6; j1++) {
       fClusters5[j1][j]=0;
       fClusterIndex5[j1][j]=-1;
@@ -1632,7 +1632,7 @@ fNMaxSigmaCl(3) {
     }
   }
 
-  for (Int_t j=0; j<AliITSRecoParam::fgkMaxClusterPerLayer10; j++) {
+  for (Int_t j=0; j<AliITSRecoParam::kMaxClusterPerLayer10; j++) {
     for (Int_t j1=0; j1<11; j1++) {
       fClusters10[j1][j]=0;
       fClusterIndex10[j1][j]=-1;
@@ -1644,7 +1644,7 @@ fNMaxSigmaCl(3) {
     }
   }
 
-  for (Int_t j=0; j<AliITSRecoParam::fgkMaxClusterPerLayer20; j++) {
+  for (Int_t j=0; j<AliITSRecoParam::kMaxClusterPerLayer20; j++) {
     for (Int_t j1=0; j1<21; j1++) {
       fClusters20[j1][j]=0;
       fClusterIndex20[j1][j]=-1;
@@ -1655,7 +1655,7 @@ fNMaxSigmaCl(3) {
       fBy20[j1][1]=0;
     }
   }
-  for(Int_t i=0;i<AliITSRecoParam::fgkMaxClusterPerLayer;i++){
+  for(Int_t i=0;i<AliITSRecoParam::kMaxClusterPerLayer;i++){
     fClusters[i]=NULL;
     fClusterIndex[i]=0;
   }

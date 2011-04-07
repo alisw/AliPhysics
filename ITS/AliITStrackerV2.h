@@ -60,7 +60,7 @@ public:
 
   class AliITSlayer {
   public:
-    enum {kNsector=5, kMaxClusterPerSector=AliITSRecoParam::fgkMaxClusterPerLayer/kNsector};
+    enum {kNsector=5, kMaxClusterPerSector=AliITSRecoParam::kMaxClusterPerLayer/kNsector};
     AliITSlayer();
     AliITSlayer(Double_t r, Double_t p, Double_t z, Int_t nl, Int_t nd);
    ~AliITSlayer();
@@ -88,10 +88,10 @@ public:
     Int_t fNdetectors;          // detectors/ladder
     AliITSdetector *fDetectors; // array of detectors
 
-    AliITSRecPoint *fClusters[AliITSRecoParam::fgkMaxClusterPerLayer]; // pointers to clusters
+    AliITSRecPoint *fClusters[AliITSRecoParam::kMaxClusterPerLayer]; // pointers to clusters
     Int_t fN[kNsector];         // numbers of clusters sector by sector 
 
-    Int_t fIndex[AliITSRecoParam::fgkMaxClusterPerLayer]; // indexes of selected clusters 
+    Int_t fIndex[AliITSRecoParam::kMaxClusterPerLayer]; // indexes of selected clusters 
     Int_t fNsel;                       // number of selected clusters
 
     Double_t fRoad;     // road defined by the cluster density

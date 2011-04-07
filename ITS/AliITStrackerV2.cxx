@@ -648,7 +648,7 @@ AliITStrackerV2::AliITSlayer::AliITSlayer():
   //--------------------------------------------------------------------
   
   for (Int_t i=0; i<kNsector; i++) fN[i]=0;
-  for (Int_t i=0; i<AliITSRecoParam::fgkMaxClusterPerLayer; i++){
+  for (Int_t i=0; i<AliITSRecoParam::kMaxClusterPerLayer; i++){
     fClusters[i]=0;
     fIndex[i]=0;
   }
@@ -671,7 +671,7 @@ AliITSlayer(Double_t r,Double_t p,Double_t z,Int_t nl,Int_t nd):
 
   for (Int_t i=0; i<kNsector; i++) fN[i]=0;
 
-  for (Int_t i=0; i<AliITSRecoParam::fgkMaxClusterPerLayer; i++){
+  for (Int_t i=0; i<AliITSRecoParam::kMaxClusterPerLayer; i++){
     fClusters[i]=0;
     fIndex[i]=0;
   }

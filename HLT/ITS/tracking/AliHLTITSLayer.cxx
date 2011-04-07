@@ -53,7 +53,7 @@ fRoad(0)
   for (Int_t i=0;i<6;i++)  fN5[i] =0;  
   for (Int_t i=0;i<11;i++) fN10[i]=0;  
   for (Int_t i=0;i<21;i++) fN20[i]=0;
-  for (Int_t i=0;i<AliITSRecoParam::fgkMaxClusterPerLayer;i++){
+  for (Int_t i=0;i<AliITSRecoParam::kMaxClusterPerLayer;i++){
     fClusters[i] = 0;
     fClusterIndex[i] = 0;
     fZ[i]        = 0;
@@ -100,7 +100,7 @@ fRoad(0)
   for (Int_t i=0;i<6;i++)  fN5[i] =0;  
   for (Int_t i=0;i<11;i++) fN10[i]=0;  
   for (Int_t i=0;i<21;i++) fN20[i]=0;
-  for (Int_t i=0;i<AliITSRecoParam::fgkMaxClusterPerLayer;i++){
+  for (Int_t i=0;i<AliITSRecoParam::kMaxClusterPerLayer;i++){
     fClusters[i] = 0;
     fClusterIndex[i] = 0;
     fZ[i]        = 0;
@@ -141,7 +141,7 @@ fRoad(layer.fRoad)
   for (Int_t i=0;i<6;i++)  fN5[i] =0;  
   for (Int_t i=0;i<11;i++) fN10[i]=0;  
   for (Int_t i=0;i<21;i++) fN20[i]=0;
-  for (Int_t i=0;i<AliITSRecoParam::fgkMaxClusterPerLayer;i++){
+  for (Int_t i=0;i<AliITSRecoParam::kMaxClusterPerLayer;i++){
     fClusters[i] = 0;
     fClusterIndex[i] = 0;
     fZ[i]        = 0;
