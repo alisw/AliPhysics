@@ -53,6 +53,8 @@ protected:
     TString       fRecoConfigFile;        // the name of the ConfigFile
 
     TH2F *fHistEtRecvsEtMC; // Rec vs MC histo 
+    TH2F *fHistEtRecOverEtMC; // Rec over MC histo 
+    TH2F *fHistDiffEtRecEtMCOverEtMC; // Rec - MC over MC histo 
 
     AliESDtrackCuts* fEsdtrackCutsITSTPC; // track cuts ITS&TPC
     AliESDtrackCuts* fEsdtrackCutsTPC; // track cuts TPC
