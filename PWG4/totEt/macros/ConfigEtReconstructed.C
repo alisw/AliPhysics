@@ -1,6 +1,6 @@
 
-AliAnalysisEtReconstructed * ConfigEtReconstructed(){
-  Bool_t EMCAL = true;
+AliAnalysisEtReconstructed * ConfigEtReconstructed(Bool_t isEmcal = true){
+  Bool_t EMCAL = isEmcal;
   if(EMCAL){
     AliAnalysisEtReconstructedEmcal *totEtReco = new AliAnalysisEtReconstructedEmcal();
     totEtReco->SetDataSet(2010);
