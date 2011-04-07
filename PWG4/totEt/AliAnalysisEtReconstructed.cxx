@@ -46,6 +46,7 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
         ,fHistAntiProtonEnergyDeposit(0)
         ,fHistChargedKaonEnergyDeposit(0)
         ,fHistMuonEnergyDeposit(0)
+	,fHistRemovedEnergy(0)
         ,fGeomCorrection(1.0)
         ,fEMinCorrection(1.0)
 {
@@ -300,29 +301,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         fHistTMDeltaR->Fill(distance);
         fHistTMDxDz->Fill(cluster->GetTrackDx(), cluster->GetTrackDz());
 
-        Float_t clusteret = cluster->E() * TMath::Sin(cp.Theta());
-
-        if (distance > 3.0)
-        {
-            fTotNeutralEt_3cm += cluster->E() * TMath::Sin(cp.Theta());
-        }
-        if (distance > 5.0)
-        {
-            fTotNeutralEt_5cm += cluster->E() * TMath::Sin(cp.Theta());
-        }
-        if (distance > 7.0)
-        {
-            fTotNeutralEt_7cm += cluster->E() * TMath::Sin(cp.Theta());
-        }
-        if (distance > 10.0)
-        {
-            fTotNeutralEt_10cm += cluster->E() * TMath::Sin(cp.Theta());
-        }
-        if (distance > 15.0)
-        {
-            fTotNeutralEt_15cm += cluster->E() * TMath::Sin(cp.Theta());
-        }
-        fTotNeutralEt_nocut += cluster->E() * TMath::Sin(cp.Theta());
+//        Float_t clusteret = cluster->E() * TMath::Sin(cp.Theta());
 
         Bool_t matched = false;
 
