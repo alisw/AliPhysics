@@ -44,8 +44,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fFMD3oMax(0),
     fMaxWeights(0),
     fLowCuts(0),
-    fEtaLumping(1), 
-    fPhiLumping(1),    
+    fEtaLumping(5), 
+    fPhiLumping(5),    
     fDebug(0)
 {
   // 
@@ -77,7 +77,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fMaxWeights(0),
     fLowCuts(0),
     fEtaLumping(5), 
-    fPhiLumping(1),
+    fPhiLumping(5),
     fDebug(0)
 {
   // 
@@ -296,7 +296,7 @@ AliFMDDensityCalculator::GetMultCut(UShort_t d, Char_t r, Int_t ieta,
 //____________________________________________________________________
 Double_t
 AliFMDDensityCalculator::GetMultCut(UShort_t d, Char_t r, Double_t eta,
-				    Bool_t /*errors*/) const
+				    Bool_t errors) const
 {
   // 
   // Get the multiplicity cut.  If the user has set fMultCut (via
@@ -310,7 +310,7 @@ AliFMDDensityCalculator::GetMultCut(UShort_t d, Char_t r, Double_t eta,
   AliFMDCorrELossFit* fits = fcm.GetELossFit();
   Int_t iEta = fits->FindEtaBin(eta);
   
-  return GetMultCut(d, r, iEta);
+  return GetMultCut(d, r, iEta, errors);
 }
   
 //____________________________________________________________________
@@ -352,8 +352,6 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  Float_t  mult = fmd.Multiplicity(d,r,s,t);
 	  Float_t  phi  = fmd.Phi(d,r,s,t) / 180 * TMath::Pi();
 	  Float_t  eta  = fmd.Eta(d,r,s,t);
-	  Double_t cut  = 1024;
-	  if (eta != AliESDFMD::kInvalidEta) cut = GetMultCut(d, r, eta,false);
 	  rh->fTotalStrips->Fill(eta, phi);
 	  
 	  if (mult == AliESDFMD::kInvalidMult || mult > 20) {
@@ -361,6 +359,9 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	    rh->fEvsM->Fill(mult,0);
 	    continue;
 	  }
+
+	  Double_t cut  = 1024;
+	  if (eta != AliESDFMD::kInvalidEta) cut = GetMultCut(d, r, eta,false);
 
 	  Double_t n   = 0;
 	  if (cut > 0 && mult > cut) 
@@ -978,15 +979,17 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
 
   fELossVsPoisson = new TH2D("elossVsPoisson", 
 			     "N_{ch} from energy loss vs from Poission",
-			     100, 0, 20, 100, 0, 20);
+			     150, 0, 30, 150, 0, 30);
   fELossVsPoisson->SetDirectory(0);
   fELossVsPoisson->SetXTitle("N_{ch} from #DeltaE");
   fELossVsPoisson->SetYTitle("N_{ch} from Poisson");
   fELossVsPoisson->SetZTitle("Correlation");
 
+  Int_t nStrips = 100;
   fEmptyVsTotal = new TH2D("emptyVsTotal", 
 			   "# of empty strips vs. total # strips", 
-			   21, -.5, 20.5, 21, -0.5, 20.5);
+			   nStrips+1, -.5, nStrips+.5, 
+			   nStrips+1, -.5, nStrips+.5);
   fEmptyVsTotal->SetDirectory(0);
   fEmptyVsTotal->SetXTitle("Total # strips");
   fEmptyVsTotal->SetYTitle("Empty # strips");

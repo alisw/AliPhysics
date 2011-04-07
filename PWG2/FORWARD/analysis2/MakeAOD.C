@@ -137,7 +137,7 @@ void MakeAOD(const char* esddir,
 
   // Central 
   gROOT->LoadMacro("AddTaskCentralMult.C");
-  AddTaskCentralMult();
+  AddTaskCentralMult(mc);
   
   // --- Run the analysis --------------------------------------------
   TStopwatch t;

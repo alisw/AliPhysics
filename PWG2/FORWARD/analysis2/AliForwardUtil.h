@@ -614,7 +614,14 @@ public:
     ClassDef(RingHistos,1) 
   };
   /* @} */
-    
+private:
+  AliForwardUtil() {}
+  AliForwardUtil(const AliForwardUtil& o) : TObject(o) {}
+  AliForwardUtil& operator=(const AliForwardUtil&) { return *this; }
+  ~AliForwardUtil() {}
+  
+
+  ClassDef(AliForwardUtil,1) // Utilities - do not make object
 };
 
 #endif
