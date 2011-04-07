@@ -324,5 +324,6 @@ Int_t
 AliHLTCaloClusterizer::CompareDigitsByEnergy(const void *dig0, const void *dig1)
 {
     // See header file for documentation
-  return (float)((*((AliHLTCaloDigitDataStruct**)(dig1)))->fEnergy - (*((AliHLTCaloDigitDataStruct**)(dig0)))->fEnergy);
+  if ( ((*((AliHLTCaloDigitDataStruct**)(dig1)))->fEnergy - (*((AliHLTCaloDigitDataStruct**)(dig0)))->fEnergy) < 0) return -1;
+  return 1;
 }
