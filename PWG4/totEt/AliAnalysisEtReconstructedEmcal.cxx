@@ -38,7 +38,9 @@ void AliAnalysisEtReconstructedEmcal::Init()
   fSingleCellEnergyCut = fCuts->GetReconstructedEmcalSingleCellEnergyCut();
 
   fClusterType = fCuts->GetReconstructedEmcalClusterType();
-  fTrackDistanceCut = fCuts->GetReconstructedEmcalTrackDistanceCut();
+  fTrackDistanceCut = fCuts->GetEmcalTrackDistanceCut();
+  
+  fDetector = fCuts->GetDetectorEmcal();
 	 
 }
 
