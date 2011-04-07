@@ -27,7 +27,7 @@ class AliUEHist : public TObject
   AliUEHist(const char* reqHist = "");
   virtual ~AliUEHist();
   
-  const Int_t fkRegions;
+  const UInt_t fkRegions;
   enum Region { kToward = 0, kAway, kMin, kMax };
   
   static const Int_t fgkCFSteps;
@@ -126,7 +126,7 @@ protected:
   
   TString fHistogramType;             // what is stored in this histogram
   
-  ClassDef(AliUEHist, 6) // underlying event histogram container
+  ClassDef(AliUEHist, 7) // underlying event histogram container
 };
 
 #endif
