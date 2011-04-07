@@ -22,6 +22,12 @@ public:
 
     virtual void Init();
     
+    virtual Double_t GetChargedContribution(Int_t clusterMultiplicity);
+    
+    virtual Double_t GetNeutralContribution(Int_t clusterMultiplicity);
+    
+    virtual Double_t GetGammaContribution(Int_t clusterMultiplicity);
+    
    protected:
       
       virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField);
