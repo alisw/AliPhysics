@@ -11,6 +11,7 @@
 
 class AliCentrality;
 #include "AliAnalysisEtCommon.h"
+#include "THnSparse.h"
 
 class TString;
 class TTree;
@@ -20,8 +21,9 @@ class AliVEvent;
 class TList;
 class TString;
 class AliESDtrackCuts;
-class Rtypes;
 class AliAnalysisEtCuts;
+class AliESDCaloCluster;
+//class THnSparseD;
 
 class AliAnalysisEt : public AliAnalysisEtCommon
 {
@@ -33,6 +35,7 @@ public:
 public:
   
     /** Analyse the event! */
+
     virtual Int_t AnalyseEvent(AliVEvent *event);
 
     /** Fill the objects you want to output, classes which add new histograms should overload this. */
@@ -47,15 +50,13 @@ public:
     */
     virtual void CreateHistograms();
     virtual void CreateTrees();
-	TH2F* CreateEtaEHisto2D(TString name, TString title, TString ztitle);
+    TH2F* CreateEtaEHisto2D(TString name, TString title, TString ztitle);
     
     /** Fills the histograms, must be overloaded if you want to add your own */
     virtual void FillHistograms();
 
     /** Reset event specific values (Et etc.) */
     virtual void ResetEventValues();
-
-    
 
     /** Total Et in the event (without acceptance cuts) */
     Double_t GetTotEt() const { return fTotEt; }
@@ -79,11 +80,20 @@ public:
     
     /** Set the centrality object */
     void SetCentralityObject(AliCentrality *cent) { fCentrality = cent; }
+    
+    /** Get contribution from non-removed charged particles */
+    virtual Double_t GetChargedContribution(Int_t /*clusterMultiplicity*/) {return 0;}
+
+    /** Get contribution from non-removed neutral particles */
+    virtual Double_t GetNeutralContribution(Int_t /*clusterMultiplicity*/) {return 0;}
+    
+    /** Get contribution from removed gammas */
+    virtual Double_t GetGammaContribution(Int_t /*clusterMultiplicity*/) {return 0;}
 
 protected:
 
     //AliAnalysisEtCuts *fCuts; // keeper of basic cuts
-
+    Double_t CalculateTransverseEnergy(AliESDCaloCluster *cluster);
 
     Double_t fTotEt;/** Total Et in the event (without acceptance cuts) */    
     Double_t fTotEtAcc;/** Total Et in the event within the acceptance cuts */
@@ -122,7 +132,8 @@ protected:
     Short_t fParticlePid; /** Particle PID */
     Float_t fPidProb; /** Probability of PID */
     Bool_t fTrackPassedCut; /** The track is accepted by ESDTrackCuts */
-   
+
+    Int_t fCentClass; 
         
     Double_t fEtaCut;/** Cut in eta (standard |eta| < 0.5 )*/
 
@@ -143,6 +154,13 @@ protected:
     
     /** Minimum energy to cut on single cell cluster */
     Double_t fSingleCellEnergyCut;  // Minimum energy to cut on single cell cluster
+    
+    Double_t fTrackDistanceCut; // cut on track distance    
+    
+    Double_t fTrackDxCut; // cut on track distance in x
+    
+    Double_t fTrackDzCut; // cut on track distance in z
+    
 
     // Declare the histograms
 
@@ -199,9 +217,10 @@ protected:
     
     /* Correction plots */
     TH1F *fHistTMDeltaR; /* Track matching plots; Rec only for now */
-
-	/* Auxiliary Histogram variables */
-	static Float_t fgEtaAxis[17];//bins for eta axis of histograms
+    TH2F *fHistTMDxDz; /* Track matching plots; Rec only for now */
+  
+    /* Auxiliary Histogram variables */
+    static Float_t fgEtaAxis[17];//bins for eta axis of histograms
     static Int_t fgnumOfEtaBins;//number of eta bins
     static Float_t fgEAxis[79];//bins for pt axis of histograms
     static Int_t fgNumOfEBins;//number of pt bins
@@ -212,6 +231,30 @@ protected:
 
    /** Centrality object */
     AliCentrality *fCentrality; //Centrality object
+    
+    /** Which detector? (-1 -> PHOS, 1 -> EMCAL)*/
+    Short_t fDetector;
+    
+    /** THnSparse histograms */
+    THnSparseD *fSparseHistTracks; 
+    
+    /** THnSparse histograms */
+    THnSparseD *fSparseHistClusters;
+    
+    /** ET sparse valuses */
+    THnSparseD *fSparseHistEt; //!
+       
+    /** Values for sparse hists */
+    Double_t *fSparseTracks; //!
+    
+    /** Values for sparse hists */
+    Double_t *fSparseClusters; //!
+    
+    /** ET sparse valuses */
+    Double_t *fSparseEt; //!
+    
+    
+    
 
 private:
     //Declare private to avoid compilation warning
