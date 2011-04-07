@@ -1982,13 +1982,12 @@ void AliMultiplicityCorrection::ApplyGaussianMethod(Int_t inputRange, Bool_t ful
     proj->Fit("gaus", "0Q");
     correction->SetBinContent(i, proj->GetFunction("gaus")->GetParameter(1));
     correctionWidth->SetBinContent(i, proj->GetFunction("gaus")->GetParameter(2));
-
-    continue;
-
+    /*
     // draw for debugging
     new TCanvas;
     proj->DrawCopy();
     proj->GetFunction("gaus")->DrawCopy("SAME");
+    */
   }
 
   TH1* target = fMultiplicityESDCorrected[correlationID];
