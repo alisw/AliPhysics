@@ -226,7 +226,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   }
   if (1) {
     fHCellCheckE = new TH1*[24*48*nsm];
-    memset(fHCellCheckE,0,sizeof(fHCellCheckE));
+    memset(fHCellCheckE,0,24*48*nsm*sizeof(TH1*));
     Int_t tcs[1] = {4102};
     for (UInt_t i = 0; i<sizeof(tcs)/sizeof(Int_t); ++i){
       Int_t c=tcs[i];
@@ -312,6 +312,10 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     am->LoadBranch("AliESDHeader.");
   } else {
     fAodEv = dynamic_cast<AliAODEvent*>(InputEvent());
+    if (!fAodEv) {
+      AliFatal("Neither ESD nor AOD event found");
+      return;
+    }
     am->LoadBranch("header");
   }
 
