@@ -35,5 +35,11 @@ void AliAnalysisEtMonteCarloPhos::Init()
   fPhiCutAccMin = fCuts->GetGeometryPhosPhiAccMinCut() * TMath::Pi()/180.;
   fClusterEnergyCut = fCuts->GetReconstructedPhosClusterEnergyCut();
   fSingleCellEnergyCut = fCuts->GetReconstructedPhosSingleCellEnergyCut();
+  
+  fTrackDistanceCut = fCuts->GetPhosTrackDistanceCut();
+  fTrackDxCut = fCuts->GetPhosTrackDxCut();
+  fTrackDzCut = fCuts->GetPhosTrackDzCut();
+    
+  fDetector = fCuts->GetDetectorPhos();
     
 }
