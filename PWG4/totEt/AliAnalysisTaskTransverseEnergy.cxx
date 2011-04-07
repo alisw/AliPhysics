@@ -26,6 +26,7 @@ AliAnalysisTaskTransverseEnergy::AliAnalysisTaskTransverseEnergy(const char* nam
         ,fMCConfigFile("ConfigEtMonteCarlo.C")
         ,fRecoConfigFile("ConfigEtReconstructed.C")
         ,fHistEtRecvsEtMC(0)
+	,fHistEtRecOverEtMC(0)
         ,fEsdtrackCutsITSTPC(0)
         ,fEsdtrackCutsTPC(0)
         ,fEsdtrackCutsITS(0)
@@ -44,6 +45,7 @@ AliAnalysisTaskTransverseEnergy::AliAnalysisTaskTransverseEnergy(const char* nam
 AliAnalysisTaskTransverseEnergy::~AliAnalysisTaskTransverseEnergy()
 {    // destructor
   delete fHistEtRecvsEtMC;
+  delete fHistEtRecOverEtMC;
   delete fEsdtrackCutsITSTPC;
   delete fEsdtrackCutsTPC;
   delete fEsdtrackCutsITS;
@@ -54,6 +56,7 @@ AliAnalysisTaskTransverseEnergy::~AliAnalysisTaskTransverseEnergy()
 Int_t AliAnalysisTaskTransverseEnergy::CheckPhysicsSelection(Int_t runNumber)
 {
   // Check if the physics selection is valid, if not load a new one
+  
     if (runNumber == fCurrentRunNum || fIsMc)
     {
         return 0;
