@@ -27,6 +27,7 @@ AliAnalysisTaskTransverseEnergy::AliAnalysisTaskTransverseEnergy(const char* nam
         ,fRecoConfigFile("ConfigEtReconstructed.C")
         ,fHistEtRecvsEtMC(0)
 	,fHistEtRecOverEtMC(0)
+	,fHistDiffEtRecEtMCOverEtMC(0)
         ,fEsdtrackCutsITSTPC(0)
         ,fEsdtrackCutsTPC(0)
         ,fEsdtrackCutsITS(0)
