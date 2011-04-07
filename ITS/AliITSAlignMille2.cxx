@@ -4731,7 +4731,7 @@ void AliITSAlignMille2::ProcessSDDPointInfo(const AliTrackPoint* pnt,Int_t sID, 
     else                             vdrift += corr*1e-4;
     //
     // if IniRespSDD was used, it should be subtracted back, since it is accounted in the PreResp
-    if (fIniVDriftSDD&&fIniRespSDD) {
+    if (fIniVDriftSDD&&fIniRespSDD && (fPreVDriftSDD==0)) {
       double corr1 = fIniRespSDD->GetDeltaVDrift(sID, sddSide);
       if (fIniRespSDD->IsVDCorrMult()) vdrift *= (1-corr1);
       else vdrift -= corr1*1e-4;
@@ -4964,4 +4964,3 @@ AliAlignObjParams* AliITSAlignMille2::ConvFindDelta(const TClonesArray* arrDelta
   }
   return delta;
 }
-
