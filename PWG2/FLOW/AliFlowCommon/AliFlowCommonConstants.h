@@ -38,6 +38,8 @@ class AliFlowCommonConstants: public TNamed {
   Double_t GetEtaMax()  const { return fEtaMax; }
   Double_t GetQMin()    const { return fQMin; }
   Double_t GetQMax()    const { return fQMax; }
+  Double_t GetHistWeightvsPhiMax() const {return fHistWeightvsPhiMax;}
+  Double_t GetHistWeightvsPhiMin() const {return fHistWeightvsPhiMin;}
   
   void SetNbinsMult( Int_t i ) { fNbinsMult = i; }
   void SetNbinsPt( Int_t i )   { fNbinsPt = i; }
@@ -55,6 +57,8 @@ class AliFlowCommonConstants: public TNamed {
   void SetEtaMax( Double_t i )  { fEtaMax = i; }
   void SetQMin( Double_t i )    { fQMin = i; }
   void SetQMax( Double_t i )    { fQMax = i; }
+  void SetHistWeightvsPhiMax( Double_t d ) {fHistWeightvsPhiMax=d;}
+  void SetHistWeightvsPhiMin( Double_t d ) {fHistWeightvsPhiMin=d;}
   
  private:
   AliFlowCommonConstants& operator= (const AliFlowCommonConstants& c);
@@ -78,6 +82,8 @@ class AliFlowCommonConstants: public TNamed {
   Double_t  fEtaMax;	 // histogram limit
   Double_t  fQMin;	   // histogram limit
   Double_t  fQMax;     // histogram limit
+  Double_t  fHistWeightvsPhiMin; // histogram limit
+  Double_t  fHistWeightvsPhiMax; // histogram limit
  
   static AliFlowCommonConstants* fgPMasterConfig; //master object
   

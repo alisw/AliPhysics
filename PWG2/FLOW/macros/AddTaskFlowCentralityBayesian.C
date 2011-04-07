@@ -425,6 +425,13 @@ AliAnalysisTaskFlowEvent *AddTaskFlowCentralityBayesian(Float_t centrMin=0.,
   // Pass cuts for RPs and POIs to the task:
   taskFE->SetCutsRP(cutsRP);
   taskFE->SetCutsPOI(cutsPOI);
+  if (cutsRP->GetParamType()==AliFlowTrackCuts::kV0)
+  { 
+    //TODO: since this is set in a static object all analyses in an analysis train
+    //will be affected.
+    taskFE->SetHistWeightvsPhiMin(0.);
+    taskFE->SetHistWeightvsPhiMax(200.);
+  }
 
   // Create the analysis tasks, add them to the manager.
   //===========================================================================

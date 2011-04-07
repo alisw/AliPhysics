@@ -342,6 +342,7 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fCutsTOFbetaPions = new AliFlowTrackCuts("TOFbeta pi");
   fCutsTOFbetaPions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTOFbeta);
   fCutsTOFbetaPions->SetRequireStrictTOFTPCagreement();
+  fCutsTOFbetaPions->SetRejectElectronsWithTPCpid();
   fCutsTOFbetaPions->SetQA();
   fCutsTOFbetaKaons = new AliFlowTrackCuts("TOFbeta K");
   fCutsTOFbetaKaons->SetPID(AliPID::kKaon, AliFlowTrackCuts::kTOFbeta);
@@ -358,6 +359,7 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fCutsTOFbetaSimpleElectrons->SetQA();
   fCutsTOFbetaSimplePions = new AliFlowTrackCuts("TOFbetaSimple pi");
   fCutsTOFbetaSimplePions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTOFbetaSimple);
+  fCutsTOFbetaSimplePions->SetRejectElectronsWithTPCpid();
   fCutsTOFbetaSimplePions->SetRequireStrictTOFTPCagreement();
   fCutsTOFbetaSimplePions->SetQA();
   fCutsTOFbetaSimpleKaons = new AliFlowTrackCuts("TOFbetaSimple K");
@@ -609,9 +611,9 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t)
   //base hists
   fTOFrawtime->Fill(p,timeTOF);
   fTOFrawtimeE->Fill(p,timeTOF-integratedTimes[0]);
-  fTOFrawtimePi->Fill(p,timeTOF-integratedTimes[1]);
-  fTOFrawtimeK->Fill(p,timeTOF-integratedTimes[2]);
-  fTOFrawtimeP->Fill(p,timeTOF-integratedTimes[3]);
+  fTOFrawtimePi->Fill(p,timeTOF-integratedTimes[2]);
+  fTOFrawtimeK->Fill(p,timeTOF-integratedTimes[3]);
+  fTOFrawtimeP->Fill(p,timeTOF-integratedTimes[4]);
 
   fTOFrawbeta->Fill(p,beta);
   fTOFrawbetaE->Fill(p,betadiff[0]);
@@ -632,9 +634,9 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t)
   //responses
   fTOFtime->Fill(p,timeTOF);
   fTOFtimeE->Fill(p,timeTOF-integratedTimes[0]);
-  fTOFtimePi->Fill(p,timeTOF-integratedTimes[1]);
-  fTOFtimeK->Fill(p,timeTOF-integratedTimes[2]);
-  fTOFtimeP->Fill(p,timeTOF-integratedTimes[3]);
+  fTOFtimePi->Fill(p,timeTOF-integratedTimes[2]);
+  fTOFtimeK->Fill(p,timeTOF-integratedTimes[3]);
+  fTOFtimeP->Fill(p,timeTOF-integratedTimes[4]);
 
   fTOFbeta->Fill(p,beta);
   fTOFbetaE->Fill(p,betadiff[0]);
