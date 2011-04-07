@@ -191,6 +191,8 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   Double_t  dEtaMax = AliFlowCommonConstants::GetMaster()->GetEtaMax();	     
   Double_t  dQMin = AliFlowCommonConstants::GetMaster()->GetQMin();	     
   Double_t  dQMax = AliFlowCommonConstants::GetMaster()->GetQMax();	
+  Double_t  dHistWeightvsPhiMin = AliFlowCommonConstants::GetMaster()->GetHistWeightvsPhiMin();
+  Double_t  dHistWeightvsPhiMax = AliFlowCommonConstants::GetMaster()->GetHistWeightvsPhiMax();
   
   cout<<"The settings for the common histograms are as follows:"<<endl;
   cout<<"Multiplicity: "<<iNbinsMult<<" bins between "<<dMultMin<<" and "<<dMultMax<<endl;
@@ -317,7 +319,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   //Particle weight
   sName = "Control_Flow_WeightvsPhi_";
   sName +=anInput;
-  fHistWeightvsPhi = new TH2F(sName.Data(), sName.Data(), iNbinsPhi, dPhiMin, dPhiMax, 300, 0., 3.); 
+  fHistWeightvsPhi = new TH2F(sName.Data(), sName.Data(), iNbinsPhi, dPhiMin, dPhiMax, 300, dHistWeightvsPhiMin, dHistWeightvsPhiMax); 
   fHistWeightvsPhi ->SetXTitle("#phi");
   fHistWeightvsPhi ->SetYTitle("weight");
 
