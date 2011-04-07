@@ -40,7 +40,6 @@ protected:
 
     AliAnalysisHadEtCorrections *fCorrections;//corrections needed for hadronic et
 
-    Double_t fTrackDistanceCut; // cut on track distance    
     Double_t fPidCut; // cut on the pid probability
     
     Char_t fClusterType; // selection on cluster type
@@ -50,6 +49,11 @@ protected:
     TH2F *fHistAntiProtonEnergyDeposit; /** Energy deposited in calorimeter by anti-protons */    
     TH2F *fHistChargedKaonEnergyDeposit; /** Energy deposited in calorimeter by charged kaons */    
     TH2F *fHistMuonEnergyDeposit; /** Energy deposited in calorimeter by muons */
+
+    TH1F *fHistRemovedEnergy;
+
+    Double_t fGeomCorrection;
+    Double_t fEMinCorrection;
     
   private:
     
