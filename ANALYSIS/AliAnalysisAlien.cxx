@@ -411,8 +411,17 @@ void AliAnalysisAlien::AddRunList(const char* runList)
 void AliAnalysisAlien::AddRunNumber(const char* run)
 {
 // Add a run number to the list of runs to be processed.
-   if (fRunNumbers.Length()) fRunNumbers += " ";
-   fRunNumbers += run;
+   TString runs = run;
+   TObjString *os;
+   TObjArray *arr = runs.Tokenize(" ");
+   TIter next(arr);
+   TString prefix; 
+   prefix.Append(fRunPrefix, fRunPrefix.Index("%d"));
+   while ((os=(TObjString*)next())){
+       if (fRunNumbers.Length()) fRunNumbers += " ";
+       fRunNumbers += Form("%s%s", prefix.Data(), os->GetString().Data());
+   }
+   delete arr;
 }   
 
 //______________________________________________________________________________
