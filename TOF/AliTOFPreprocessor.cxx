@@ -931,6 +931,11 @@ AliTOFPreprocessor::ProcessT0Fill()
     sigma = 200.;
   }
 
+  /* scratch values from the fit and use max bin center as t0-fill */
+  mean = maxBinCenter;
+  sigma = -1.;
+  Log(Form("do not care about fitted value, just use max bin as t0-fill: %f ps", mean));
+
   /* create RunParams object */
   UInt_t timestamp[1] = {0};
   Float_t t0[1] = {mean};
