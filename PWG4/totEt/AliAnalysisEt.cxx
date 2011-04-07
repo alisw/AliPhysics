@@ -77,6 +77,8 @@ AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
 			       ,fClusterEnergyCut(0) 
 			       ,fSingleCellEnergyCut(0)
 			       ,fTrackDistanceCut(0)
+			       ,fTrackDxCut(0)
+			       ,fTrackDzCut(0)
 			       ,fHistEt(0)
 			       ,fHistChargedEt(0)
 			       ,fHistNeutralEt(0)
@@ -450,12 +452,6 @@ void AliAnalysisEt::CreateTrees()
     fTree->Branch("fTotEt",&fTotEt,"fTotEt/D");
     fTree->Branch("fTotEtAcc",&fTotEtAcc,"fTotEtAcc/D");
     fTree->Branch("fTotNeutralEt",&fTotNeutralEt,"fTotNeutralEt/D");
-    fTree->Branch("fTotNeutralEt_3cm",&fTotNeutralEt_3cm,"fTotNeutralEt_3cm/D");
-    fTree->Branch("fTotNeutralEt_5cm",&fTotNeutralEt_5cm,"fTotNeutralEt_5cm/D");
-    fTree->Branch("fTotNeutralEt_7cm",&fTotNeutralEt_7cm,"fTotNeutralEt_7cm/D");
-    fTree->Branch("fTotNeutralEt_10cm",&fTotNeutralEt_10cm,"fTotNeutralEt_10cm/D");
-    fTree->Branch("fTotNeutralEt_15cm",&fTotNeutralEt_15cm,"fTotNeutralEt_15cm/D");
-    fTree->Branch("fTotNeutralEt_nocut",&fTotNeutralEt_nocut,"fTotNeutralEt_nocut/D");
     fTree->Branch("fTotNeutralEtAcc",&fTotNeutralEtAcc,"fTotNeutralEtAcc/D");
     fTree->Branch("fTotChargedEt",&fTotChargedEt,"fTotChargedEt/D");
     fTree->Branch("fTotChargedEtAcc",&fTotChargedEtAcc,"fTotChargedEtAcc/D");
@@ -548,12 +544,6 @@ void AliAnalysisEt::ResetEventValues()
   fTotEt = 0;
   fTotEtAcc = 0;
   fTotNeutralEt = 0;
-  fTotNeutralEt_3cm = 0;
-  fTotNeutralEt_5cm = 0;
-  fTotNeutralEt_7cm = 0;
-  fTotNeutralEt_10cm = 0;
-  fTotNeutralEt_15cm = 0;
-  fTotNeutralEt_nocut = 0;
   fTotNeutralEtAcc = 0;
   fTotChargedEt  = 0;
   fTotChargedEtAcc = 0;
