@@ -91,7 +91,7 @@ AliRsnAnalysisTask::~AliRsnAnalysisTask()
 }
 
 //__________________________________________________________________________________________________
-void AliRsnAnalysisTask::Add(AliRsnLoop *obj)
+void AliRsnAnalysisTask::AddLoop(AliRsnLoop *obj)
 {
 //
 // Add new computation object
@@ -195,18 +195,21 @@ void AliRsnAnalysisTask::UserExecMix(Option_t*)
 
    // gets first input handler form mixing buffer
    AliMultiInputEventHandler *ihMultiMix = dynamic_cast<AliMultiInputEventHandler*>(fInputEHMix->InputEventHandler(0));
-   rsnMixIH = dynamic_cast<AliRsnInputHandler*>(ihMultiMix->InputEventHandler(id));
-   evMix = rsnMixIH->GetRsnEvent();
-   
-   if (!evMix) return;
+   if (ihMultiMix) {
+      rsnMixIH = dynamic_cast<AliRsnInputHandler*>(ihMultiMix->InputEventHandler(id));
+      if (rsnMixIH) {
+         evMix = rsnMixIH->GetRsnEvent();
+         if (!evMix) return;
 
-   TObjArrayIter next(&fRsnObjects);
-   AliRsnLoop *obj = 0x0;
-   while ( (obj = (AliRsnLoop*)next()) ) {
-      if (!obj->IsMixed()) continue;
-      obj->DoLoop(evMain, rsnIH->GetSelector(), evMix, rsnMixIH->GetSelector());
+         TObjArrayIter next(&fRsnObjects);
+         AliRsnLoop *obj = 0x0;
+         while ( (obj = (AliRsnLoop*)next()) ) {
+            if (!obj->IsMixed()) continue;
+            obj->DoLoop(evMain, rsnIH->GetSelector(), evMix, rsnMixIH->GetSelector());
+         }
+      }
    }
-
+   
    PostData(1, fOutput);
 }
 

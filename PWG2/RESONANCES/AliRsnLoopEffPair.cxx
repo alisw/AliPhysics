@@ -9,6 +9,7 @@
 
 #include "AliStack.h"
 
+#include "AliRsnEvent.h"
 #include "AliRsnCutManager.h"
 #include "AliRsnDaughterDef.h"
 #include "AliRsnPairDef.h"
@@ -75,14 +76,13 @@ Int_t AliRsnLoopEffPair::DoLoop(AliRsnEvent *rsn, AliRsnDaughterSelector*, AliRs
       AliError("Need to process ESD or AOD input");
       return 0;
    }
-   Bool_t isESD = rsn->IsESD();
    
    // additional coherence checks
    AliVEvent    *mcEvent = 0x0;
    AliStack     *listESD = 0x0;
    TClonesArray *listAOD = 0x0;
    Int_t         npart   = 0;
-   if (isESD) {
+   if (rsn->IsESD()) {
       mcEvent = rsn->GetRefMCESD();
       listESD = ((AliMCEvent*)mcEvent)->Stack();
       if (!listESD) {
@@ -126,7 +126,7 @@ Int_t AliRsnLoopEffPair::DoLoop(AliRsnEvent *rsn, AliRsnDaughterSelector*, AliRs
       
       // get next particle and take some quantities
       // in different way from ESD and AOD MC
-      if (isESD) {
+      if (rsn->IsESD()) {
          mother = mcEvent->GetTrack(ipart);
          motherESD = static_cast<AliMCParticle*>(mother);
          pdg = TMath::Abs(motherESD->Particle()->GetPdgCode());
@@ -155,7 +155,7 @@ Int_t AliRsnLoopEffPair::DoLoop(AliRsnEvent *rsn, AliRsnDaughterSelector*, AliRs
       // then, if both daughters are not 'good', skip the pair
       fDaughter[0].Reset();
       fDaughter[1].Reset();
-      if (isESD) {
+      if (rsn->IsESD()) {
          dindex[0] = motherESD->Particle()->GetFirstDaughter();
          dindex[1] = motherESD->Particle()->GetLastDaughter();
       } else {
@@ -173,8 +173,7 @@ Int_t AliRsnLoopEffPair::DoLoop(AliRsnEvent *rsn, AliRsnDaughterSelector*, AliRs
             break;
          }
          // retrieve daughter and copy some info
-         label = TMath::Abs(daughter->GetLabel());
-         if (isESD) {
+         if (rsn->IsESD()) {
             daughter = mcEvent->GetTrack(dindex[id]);
             daughterESD = static_cast<AliMCParticle*>(daughter);
             pdg = TMath::Abs(daughterESD->Particle()->GetPdgCode());
@@ -185,6 +184,7 @@ Int_t AliRsnLoopEffPair::DoLoop(AliRsnEvent *rsn, AliRsnDaughterSelector*, AliRs
             pdg = TMath::Abs(daughterAOD->GetPdgCode());
             charge = (Short_t)daughterAOD->Charge();
          }
+         label = TMath::Abs(daughter->GetLabel());
          // check if can be assigned
          imatch = -1;
          if ( fDef->GetDef1().MatchesPDG(pdg) && fDef->GetDef1().MatchesChargeS(charge) )
