@@ -39,6 +39,8 @@ AliRsnCutPIDTPC::AliRsnCutPIDTPC
 //
 // Main constructor.
 //
+
+   fBB[0] = fBB[1] = fBB[2] = fBB[3] = fBB[4] = 0.0;
 }
 
 //_________________________________________________________________________________________________
@@ -55,6 +57,9 @@ AliRsnCutPIDTPC::AliRsnCutPIDTPC
 //
 // Copy constructor.
 //
+
+   Int_t i;
+   for (i = 0; i < 5; i++) fBB[i] = copy.fBB[i];
 }
 
 //_________________________________________________________________________________________________
@@ -72,6 +77,9 @@ AliRsnCutPIDTPC& AliRsnCutPIDTPC::operator=(const AliRsnCutPIDTPC& copy)
    fRefType       = copy.fRefType;
    fESDpid        = copy.fESDpid;
    fAODpid        = copy.fAODpid;
+   
+   Int_t i;
+   for (i = 0; i < 5; i++) fBB[i] = copy.fBB[i];
 
    return (*this);
 }
