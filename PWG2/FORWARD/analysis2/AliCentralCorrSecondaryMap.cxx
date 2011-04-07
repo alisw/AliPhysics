@@ -223,8 +223,10 @@ AliCentralCorrSecondaryMap::Print(Option_t* option) const
   // Parameters:
   //    option 
   //  
-  std::cout << "SecondaryMap correction" << std::endl;
+  std::cout << "  SecondaryMap correction" << std::endl;
+  std::cout << "   " << std::flush;  
   fArray.Print(option);
+  std::cout << "   " << std::flush;
   fVertexAxis.Print(option);
 }
     

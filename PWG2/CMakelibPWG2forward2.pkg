@@ -53,6 +53,7 @@ set ( SRCS
   FORWARD/analysis2/AliForwarddNdetaTask.cxx
   FORWARD/analysis2/AliForwardUtil.cxx
   FORWARD/analysis2/AliCentralMultiplicityTask.cxx
+  FORWARD/analysis2/AliCentralMCMultiplicityTask.cxx
   FORWARD/analysis2/AliAODCentralMult.cxx
   FORWARD/analysis2/AliCentralCorrSecondaryMap.cxx
   FORWARD/analysis2/AliCentralCorrAcceptance.cxx 
@@ -69,7 +70,9 @@ set ( EINCLUDE  ANALYSIS PWG2/FORWARD/analysis2 STEER)
 
 set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h 
              FORWARD/analysis2/AliAODCentralMult.h 
-             FORWARD/analysis2/AliForwardUtil.h  )
+             FORWARD/analysis2/AliForwardUtil.h  
+	     FORWARD/analysis2/AliFMDEventInspector.h
+	     FORWARD/analysis2/AliFMDMCEventInspector.h)
 
 set ( DHDR  PWG2forward2LinkDef.h)
 
@@ -116,6 +119,7 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
                 FORWARD/analysis2/MakeAOD.C
 		FORWARD/analysis2/MakedNdeta.C
                 FORWARD/analysis2/MakeELossFits.C
+		FORWARD/analysis2/MakeEvaluateTriggers.C
                 FORWARD/analysis2/OtherData.C
 		FORWARD/analysis2/TrainSetup.C
            DESTINATION PWG2/FORWARD/analysis2 )

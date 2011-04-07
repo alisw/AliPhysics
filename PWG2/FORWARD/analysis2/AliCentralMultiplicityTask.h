@@ -15,12 +15,13 @@
  * 
  */
 #include <AliAnalysisTaskSE.h>
-#include "AliForwardUtil.h"
+#include "AliFMDEventInspector.h"
 #include "AliAODCentralMult.h"
 #include "AliCentralCorrAcceptance.h"
 #include "AliCentralCorrSecondaryMap.h"
 //class AliForwardCorrectionManager;
 class AliESDEvent;
+class AliMultiplicity;
 class TH2D;
 class TList;
 class TTree;
@@ -111,6 +112,9 @@ public:
    * @param use Whether to use acceptance corrections 
    */
   virtual void SetUseAcceptance(Bool_t use) { fUseAcceptance = use; }
+
+  AliFMDEventInspector& GetInspector() { return fInspector; }
+  const AliFMDEventInspector& GetInspector() const { return fInspector; }
 
   //__________________________________________________________________
   /**
@@ -228,6 +232,12 @@ public:
      * @return 
      */
     TH1D* GetAcceptanceCorrection(UShort_t vtxbin) const;
+    /** 
+     * Get the secondary correction map object 
+     */
+    AliCentralCorrSecondaryMap* GetSecMap() const { return fSecmap; }
+
+    void Print(Option_t* option="") const;
   private:
     /** 
      * Get the full path name 
@@ -241,7 +251,7 @@ public:
      */
     const char* GetFileName(UShort_t what, UShort_t sys, UShort_t sNN,
 			    Short_t field) const;
-    
+
     
     TString                     fAcceptancePath; // Path to acceptance 
     TString                     fSecMapPath;     // Path to secondary map
@@ -253,7 +263,32 @@ public:
 
     ClassDef(Manager,1); // Manager of data 
   };
-
+  /** 
+   * Get the ESD event and initialise manager on first event if not
+   * done already
+   * 
+   * @return Pointer to valid ESD event object 
+   */
+  virtual AliESDEvent* GetESDEvent();
+  /** 
+   * Mark this event for storage in AOD output
+   * 
+   */
+  virtual void MarkEventForStore() const;
+  /** 
+   * Process the ESD SPD information 
+   * 
+   * @param hist    Histogram to fill
+   * @param spdmult SPD multiplicity object
+   */
+  virtual void ProcessESD(TH2D& hist, const AliMultiplicity* spdmult) const;
+  /** 
+   * Corret the data 
+   * 
+   * @param hist    Histogram to correct
+   * @param vtxbin  Vertex bin 
+   */
+  virtual void CorrectData(TH2D& hist, UShort_t vtxbin) const;
   /** 
    * Get a reference to the manager 
    * 
@@ -269,15 +304,16 @@ public:
 
 
 protected: 
-  
-  TH2D*                  fData;           //sum histogram if needed
-  TList*                 fList;           //Output List for diagnostics
+  AliFMDEventInspector   fInspector;      // Inspect events 
+  TH2D*                  fData;           // sum histogram if needed
+  TList*                 fList;           // Output List for diagnostics
   AliAODCentralMult      fAODCentral;     // Output object
-  Manager                fManager;        //Manager object for corrections
+  Manager                fManager;        // Manager object for corrections
   Bool_t                 fUseSecondary;   // Whether to secondary map
   Bool_t                 fUseAcceptance;  // Whether to use acceptance corr.
   Bool_t                 fFirstEventSeen; // Have we seen first event     
-  ClassDef(AliCentralMultiplicityTask,1)  // Forward multiplicity class
+  Int_t                  fIvz;            // Event's vertex bin 
+  ClassDef(AliCentralMultiplicityTask,2)  // Forward multiplicity class
 };
 
 #endif
