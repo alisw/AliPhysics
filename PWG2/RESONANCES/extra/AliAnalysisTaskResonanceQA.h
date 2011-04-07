@@ -42,6 +42,7 @@ public:
    
    void           SetT0(AliESDpid::EStartTimeType_t ftype) {fT0 = ftype;}
    void           SetPrimaryThr(Double_t d) {fPrimaryThr = d;}
+   void           SetVz(Double_t vz)        {fVz = vz;}
    
    const char*    RsnName  (Int_t type) {return RsnName  ((ERsn)type);}
    const char*    RsnSymbol(Int_t type) {return RsnSymbol((ERsn)type);}
@@ -54,6 +55,7 @@ private:
 
    AliESDpid::EStartTimeType_t fT0;
    Double_t fPrimaryThr;
+   Double_t fVz;
    
    TList *fOutputList;
    

@@ -37,6 +37,7 @@ AliAnalysisTaskResonanceQA::AliAnalysisTaskResonanceQA(const char *name) :
    AliAnalysisTaskSE(name), 
    fT0(AliESDpid::kTOF_T0),
    fPrimaryThr(1E-6),
+   fVz(10.0),
    fOutputList(0),
    fSelectedEvts(0),
    fdEdxTPC(0),
@@ -283,7 +284,7 @@ void AliAnalysisTaskResonanceQA::UserExec(Option_t *)
          if (v0->GetNContributors() < 1) return;
       }
       if (!v0) return;
-      if (TMath::Abs(v0->GetZv()) > 10) return;
+      if (TMath::Abs(v0->GetZv()) > fVz) return;
    
       // settings for TOF time zero
       if (fESD->GetTOFHeader()) 

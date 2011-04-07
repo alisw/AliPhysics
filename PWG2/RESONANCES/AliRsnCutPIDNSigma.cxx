@@ -167,17 +167,17 @@ void AliRsnCutPIDNSigma::Print(const Option_t *) const
 // Print information on this cut
 //
 
-   Char_t mom[100], det[10], match[100];
+   Char_t mom[200], det[10], match[200];
    
    if (fRejectOutside)
-      sprintf(mom, "Tracks are accepted only in the momentum range %.2f --> %.2f", fMomMin, fMomMax);
+      snprintf(mom, 200, "Tracks are accepted only in the momentum range %.2f --> %.2f", fMomMin, fMomMax);
    else
-      sprintf(mom, "No check in momentum range");
+      snprintf(mom, 200, "No check in momentum range");
       
    if (fRejectUnmatched)
-      sprintf(match, "Unmatched tracks are rejected");
+      snprintf(match, 200, "Unmatched tracks are rejected");
    else
-      sprintf(match, "No check on track matching");
+      snprintf(match, 200, "No check on track matching");
       
    switch (fDetector) {
       case kITS: sprintf(det, "ITS"); break;
