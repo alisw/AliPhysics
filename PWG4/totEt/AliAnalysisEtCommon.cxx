@@ -110,7 +110,7 @@ AliAnalysisEtCommon::~AliAnalysisEtCommon()
 
 Int_t AliAnalysisEtCommon::AnalyseEvent(AliVEvent *event)
 { //this line is basically here to eliminate a compiler warning that event is not used.  Making it a virtual function did not work with the plugin.
-  cout << "This event has " << event->GetNumberOfTracks() << " tracks" << endl;
+//  cout << "This event has " << event->GetNumberOfTracks() << " tracks" << endl;
   ResetEventValues();
   return 0;
 }
