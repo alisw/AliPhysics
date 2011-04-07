@@ -1718,8 +1718,8 @@ protected:
     AddExtraFile(gSystem->Which(gROOT->GetMacroPath(), "ForwardAODConfig.C"));
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskCentralMult.C(%d,%d,%d)", 
-		      fSys, fSNN, fField));
+    gROOT->Macro(Form("AddTaskCentralMult.C(%d,%d,%d,%d)", 
+		      mc, fSys, fSNN, fField));
   }
   //__________________________________________________________________
   /** 

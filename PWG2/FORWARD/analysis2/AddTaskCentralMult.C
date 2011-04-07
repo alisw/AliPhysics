@@ -15,7 +15,8 @@
  * @ingroup pwg2_forward_aod
  */
 AliAnalysisTask* 
-AddTaskCentralMult(UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
+AddTaskCentralMult(Bool_t mc=false, 
+		   UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
 {
   gSystem->Load("libPWG2forward2");
 
@@ -26,16 +27,20 @@ AddTaskCentralMult(UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
   }   
 
   // --- Make the task and add it to the manager ---------------------
-  AliCentralMultiplicityTask* task = new AliCentralMultiplicityTask("Central");
+  AliCentralMultiplicityTask* task = 0;
+  if (!mc) task = new AliCentralMultiplicityTask("Central");
+  else     task = new AliCentralMCMultiplicityTask("Central");
   if(sys>0 && sNN > 0)
     task->GetManager().Init(sys, sNN, field);
   mgr->AddTask(task);
+
   // --- Set options on task -----------------------------------------
   // Whether to do correction for secondaries
   task->SetUseSecondary(true);
   // Whether to do correction for acceptance
   task->SetUseAcceptance(true);
-  
+  // task->GetInspector().SetDebug(4);
+
   // --- Make the output container and connect it --------------------
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   
