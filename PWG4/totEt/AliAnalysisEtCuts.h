@@ -49,12 +49,17 @@ class AliAnalysisEtCuts : public TNamed
   Char_t GetReconstructedPhosClusterType() const { return fReconstructedPhosClusterType; }
   Double_t GetReconstructedPhosClusterEnergyCut() const { return fReconstructedPhosClusterEnergyCut; }
   Double_t GetReconstructedPhosSingleCellEnergyCut() const { return fReconstructedPhosSingleCellEnergyCut; }
-  Double_t GetReconstructedPhosTrackDistanceCut() const { return fReconstructedPhosTrackDistanceCut; }
+  Double_t GetPhosTrackDistanceCut() const { return fPhosTrackDistanceCut; }
+  Double_t GetPhosTrackDxCut() const { return fPhosTrackDxCut; }
+  Double_t GetPhosTrackDzCut() const { return fPhosTrackDzCut; }
   // ReconstructedEmcal
   Char_t GetReconstructedEmcalClusterType() const { return fReconstructedEmcalClusterType; }
   Double_t GetReconstructedEmcalClusterEnergyCut() const { return fReconstructedEmcalClusterEnergyCut; }
   Double_t GetReconstructedEmcalSingleCellEnergyCut() const { return fReconstructedEmcalSingleCellEnergyCut; }
-  Double_t GetReconstructedEmcalTrackDistanceCut() const { return fReconstructedEmcalTrackDistanceCut; }
+  Double_t GetEmcalTrackDistanceCut() const { return fEmcalTrackDistanceCut; }
+  Double_t GetEmcalTrackDxCut() const { return fEmcalTrackDxCut; }
+  Double_t GetEmcalTrackDzCut() const { return fEmcalTrackDzCut; }
+  
   // MonteCarlo
   Double_t GetMonteCarloSingleChargedParticle() const { return fMonteCarloSingleChargedParticle; }
   Double_t GetMonteCarloNeutralParticle() const { return fMonteCarloNeutralParticle; }
@@ -77,6 +82,9 @@ class AliAnalysisEtCuts : public TNamed
   Int_t GetHistNbinsParticlePt() const { return fHistNbinsParticlePt; }
   Double_t GetHistMinParticlePt() const { return fHistMinParticlePt; }
   Double_t GetHistMaxParticlePt() const { return fHistMaxParticlePt; }
+  
+  Short_t GetDetectorPhos() const { return fDetectorPhos; }
+  Short_t GetDetectorEmcal() const { return fDetectorEmcal; }
 
   // Setters
   // Common
@@ -107,12 +115,15 @@ class AliAnalysisEtCuts : public TNamed
   void SetReconstructedPhosClusterType(const Char_t val) { fReconstructedPhosClusterType = val; }
   void SetReconstructedPhosClusterEnergyCut(const Double_t val) { fReconstructedPhosClusterEnergyCut = val; }
   void SetReconstructedPhosSingleCellEnergyCut(const Double_t val) { fReconstructedPhosSingleCellEnergyCut = val; }
-  void SetReconstructedPhosTrackDistanceCut(const Double_t val) { fReconstructedPhosTrackDistanceCut = val; }
+  void SetPhosTrackDistanceCut(const Double_t val) { fPhosTrackDistanceCut = val; }
+  void SetPhosTrackDxCut(const Double_t val) { fPhosTrackDxCut = val; }
+  void SetPhosTrackDzCut(const Double_t val) { fPhosTrackDzCut = val; }
+  
   // ReconstructedEmcal
   void SetReconstructedEmcalClusterType(const Char_t val) { fReconstructedEmcalClusterType = val; }
   void SetReconstructedEmcalClusterEnergyCut(const Double_t val) { fReconstructedEmcalClusterEnergyCut = val; }
   void SetReconstructedEmcalSingleCellEnergyCut(const Double_t val) { fReconstructedEmcalSingleCellEnergyCut = val; }
-  void SetReconstructedEmcalTrackDistanceCut(const Double_t val) { fReconstructedEmcalTrackDistanceCut = val; }
+  void SetEmcalTrackDistanceCut(const Double_t val) { fEmcalTrackDistanceCut = val; }
   // MonteCarlo
   void SetMonteCarloSingleChargedParticle(const Double_t val) { fMonteCarloSingleChargedParticle = val; }
   void SetMonteCarloNeutralParticle(const Double_t val) { fMonteCarloNeutralParticle = val; }
@@ -144,6 +155,13 @@ class AliAnalysisEtCuts : public TNamed
   Double_t fCommonClusterEnergyCut; // Cluster Energy cut
   Double_t fCommonTrackPtCut; // Track Pt
   Int_t fCommonSingleCell; // Single Cell (1)
+  Double_t fEmcalTrackDistanceCut; // EMCal track distance
+  Double_t fEmcalTrackDxCut; // EMCal track distance in x 
+  Double_t fEmcalTrackDzCut; // EMCal track distance in z
+  
+  Double_t fPhosTrackDistanceCut; // PHOS track distance  
+  Double_t fPhosTrackDxCut; // PHOS track distance in x
+  Double_t fPhosTrackDzCut; // PHOS track distance  in z
   
   // GeometryPhos
   Double_t fGeometryPhosEtaAccCut; // PHOS Eta Acc cut
@@ -171,13 +189,17 @@ class AliAnalysisEtCuts : public TNamed
   Char_t fReconstructedPhosClusterType; // PHOS cluster type
   Double_t fReconstructedPhosClusterEnergyCut; // PHOS cluster energy
   Double_t fReconstructedPhosSingleCellEnergyCut; // PHOS single cell energy
-  Double_t fReconstructedPhosTrackDistanceCut; // PHOS track distance
+  Double_t fReconstructedPhosTrackDistanceTightCut; // PHOS track distance
+  Double_t fReconstructedPhosTrackDistanceMediumCut; // PHOS track distance
+  Double_t fReconstructedPhosTrackDistanceLooseCut; // PHOS track distance
 
   // ReconstructedEmcal
   Char_t fReconstructedEmcalClusterType; // EMCal cluster type
   Double_t fReconstructedEmcalClusterEnergyCut; // EMCal cluster energy
   Double_t fReconstructedEmcalSingleCellEnergyCut; // EMCal single cell energy
-  Double_t fReconstructedEmcalTrackDistanceCut; // EMCal track distance
+  Double_t fReconstructedEmcalTrackDistanceTightCut; // EMCAL track distance
+  Double_t fReconstructedEmcalTrackDistanceMediumCut; // EMCAL track distance
+  Double_t fReconstructedEmcalTrackDistanceLooseCut; // EMCAL track distance
 
   // MonteCarlo
   Double_t fMonteCarloSingleChargedParticle; // MC charged
@@ -202,6 +224,10 @@ class AliAnalysisEtCuts : public TNamed
   Int_t fHistNbinsParticlePt; // number of bins in particle Pt histograms
   Double_t fHistMinParticlePt; // minimum value in particle Pt histograms
   Double_t fHistMaxParticlePt; // maximum value in particle Pt histograms
+
+// Detector definition
+  const Short_t fDetectorPhos; // PHOS 
+  const Short_t fDetectorEmcal; // PHOS 
 
 private:
   //Declare private to avoid compilation warning
