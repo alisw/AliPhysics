@@ -804,14 +804,10 @@ Bool_t AliRDHFCuts::RecalcOwnPrimaryVtx(AliAODRecoDecayHF *d,
     AliError("Can not remove daughters from vertex without AOD event");
     return 0;
   }   
+
   AliAODVertex *recvtx=d->RemoveDaughtersFromPrimaryVtx(aod);
   if(!recvtx){
     AliDebug(2,"Removal of daughter tracks failed");
-    return kFALSE;
-  }
-  if(recvtx->GetNContributors()<1) {
-    AliDebug(2,"Removal of daughter tracks failed");
-    delete recvtx;
     return kFALSE;
   }
 
