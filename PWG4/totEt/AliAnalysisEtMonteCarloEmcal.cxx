@@ -35,5 +35,7 @@ void AliAnalysisEtMonteCarloEmcal::Init()
   fPhiCutAccMin = fCuts->GetGeometryEmcalPhiAccMinCut() * TMath::Pi()/180.;
   fClusterEnergyCut = fCuts->GetReconstructedEmcalClusterEnergyCut();
   fSingleCellEnergyCut = fCuts->GetReconstructedEmcalSingleCellEnergyCut();
+  
+  fDetector = fCuts->GetDetectorEmcal();
 
 }
