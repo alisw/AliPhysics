@@ -57,7 +57,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
 {
   // Constructor
     
-  for (Int_t i=0; i<fkRegions; i++)
+  for (UInt_t i=0; i<fkRegions; i++)
     fTrackHist[i] = 0;
     
   if (strlen(reqHist) == 0)
@@ -154,7 +154,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   else
     AliFatal(Form("Invalid histogram requested: %s", reqHist));
   
-  Int_t initRegions = fkRegions;
+  UInt_t initRegions = fkRegions;
   
   if (axis == 0)
   {
@@ -198,7 +198,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
     trackAxisTitle[4] = "#Delta#phi (rad.)";
   }
     
-  for (Int_t i=0; i<initRegions; i++)
+  for (UInt_t i=0; i<initRegions; i++)
   {
     fTrackHist[i] = new AliCFContainer(Form("fTrackHist_%d", i), title, fgkCFSteps, nTrackVars, iTrackBin);
     
@@ -273,7 +273,7 @@ AliUEHist::~AliUEHist()
 {
   // Destructor
   
-  for (Int_t i=0; i<fkRegions; i++)
+  for (UInt_t i=0; i<fkRegions; i++)
   {
     if (fTrackHist[i])
     {
@@ -319,7 +319,7 @@ void AliUEHist::Copy(TObject& c) const
 
   AliUEHist& target = (AliUEHist &) c;
 
-  for (Int_t i=0; i<fkRegions; i++)
+  for (UInt_t i=0; i<fkRegions; i++)
     if (fTrackHist[i])
       target.fTrackHist[i] = dynamic_cast<AliCFContainer*> (fTrackHist[i]->Clone());
 
@@ -360,10 +360,10 @@ Long64_t AliUEHist::Merge(TCollection* list)
   TObject* obj;
 
   // collections of objects
-  const Int_t kMaxLists = fkRegions+2;
+  const UInt_t kMaxLists = fkRegions+2;
   TList** lists = new TList*[kMaxLists];
   
-  for (Int_t i=0; i<kMaxLists; i++)
+  for (UInt_t i=0; i<kMaxLists; i++)
     lists[i] = new TList;
   
   Int_t count = 0;
@@ -373,7 +373,7 @@ Long64_t AliUEHist::Merge(TCollection* list)
     if (entry == 0) 
       continue;
 
-    for (Int_t i=0; i<fkRegions; i++)
+    for (UInt_t i=0; i<fkRegions; i++)
       if (entry->fTrackHist[i])
         lists[i]->Add(entry->fTrackHist[i]);
     
@@ -382,14 +382,14 @@ Long64_t AliUEHist::Merge(TCollection* list)
 
     count++;
   }
-  for (Int_t i=0; i<fkRegions; i++)
+  for (UInt_t i=0; i<fkRegions; i++)
     if (fTrackHist[i])
       fTrackHist[i]->Merge(lists[i]);
   
   fEventHist->Merge(lists[fkRegions]);
   fTrackHistEfficiency->Merge(lists[fkRegions+1]);
 
-  for (Int_t i=0; i<kMaxLists; i++)
+  for (UInt_t i=0; i<kMaxLists; i++)
     delete lists[i];
     
   delete[] lists;
@@ -453,7 +453,7 @@ void AliUEHist::CountEmptyBins(AliUEHist::CFStep step, Float_t ptLeadMin, Float_
   // start from multiplicity 1
   binBegin[3] = fTrackHist[0]->GetGrid(step)->GetGrid()->GetAxis(3)->FindBin(1);
   
-  for (Int_t region=0; region<fkRegions; region++)
+  for (UInt_t region=0; region<fkRegions; region++)
   {
     Int_t total = 0;
     Int_t count = 0;
@@ -546,9 +546,11 @@ TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Floa
   else
   {
     if (multBinEnd >= multBinBegin)
+    {
       Printf("Using multiplicity range %d --> %d", multBinBegin, multBinEnd);
-    fTrackHist[region]->GetGrid(step)->GetGrid()->GetAxis(3)->SetRange(multBinBegin, multBinEnd);
-    fEventHist->GetGrid(step)->GetGrid()->GetAxis(1)->SetRange(multBinBegin, multBinEnd);
+      fTrackHist[region]->GetGrid(step)->GetGrid()->GetAxis(3)->SetRange(multBinBegin, multBinEnd);
+      fEventHist->GetGrid(step)->GetGrid()->GetAxis(1)->SetRange(multBinBegin, multBinEnd);
+    }
     
     Int_t firstBin = fTrackHist[region]->GetAxis(2, step)->FindBin(ptLeadMin);
     Int_t lastBin = fTrackHist[region]->GetAxis(2, step)->FindBin(ptLeadMax);
@@ -726,7 +728,7 @@ void AliUEHist::CorrectTracks(CFStep step1, CFStep step2, TH1* trackCorrection, 
   //
   // if trackCorrection is 0, just copies content from step1 to step2
   
-  for (Int_t region=0; region<fkRegions; region++)
+  for (UInt_t region=0; region<fkRegions; region++)
     CorrectTracks(step1, step2, region, trackCorrection, var1, var2);
 }
 
@@ -886,7 +888,7 @@ void AliUEHist::Correct(AliUEHist* corrections)
       secondBin = 4;
     }
     
-    for (Int_t region = 0; region < fkRegions; region++)
+    for (UInt_t region = 0; region < fkRegions; region++)
     {
       if (!fTrackHist[region])
         continue;
@@ -1090,7 +1092,7 @@ TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_
     if (!fCache)
     {
       fCache = (AliCFContainer*) fTrackHist[0]->Clone();
-      for (Int_t i = 1; i < fkRegions; i++)
+      for (UInt_t i = 1; i < fkRegions; i++)
         if (fTrackHist[i])
           fCache->Add(fTrackHist[i]);
     }
@@ -1434,7 +1436,7 @@ TH1* AliUEHist::GetBias(CFStep step1, CFStep step2, Int_t region, const char* ax
   if (region == -1)
   {
     tmp = (AliCFContainer*) fTrackHist[0]->Clone();
-    for (Int_t i = 1; i < fkRegions; i++)
+    for (UInt_t i = 1; i < fkRegions; i++)
       if (fTrackHist[i])
 	tmp->Add(fTrackHist[i]);
   }
