@@ -168,7 +168,7 @@ Float_t AliEMCALClusterizer::Calibrate(const Float_t amp, const Float_t time, co
   // or from digitizer parameters for simulated data.
 
   //Return energy with default parameters if calibration is not available
-  if (!fCalibData) {
+  if (!fCalibData&&!fCaloPed) {
     if (fIsInputCalibrated == kTRUE)
     {
       AliDebug(10, Form("Input already calibrated!"));
