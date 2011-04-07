@@ -264,7 +264,11 @@ AliESDtrackCuts::~AliESDtrackCuts()
     if (fhChi2PerClusterITS[i])
       delete fhChi2PerClusterITS[i];       
     if (fhChi2PerClusterTPC[i])
-      delete fhChi2PerClusterTPC[i];       
+      delete fhChi2PerClusterTPC[i];    
+    if(fhNClustersForITSPID[i])
+      delete fhNClustersForITSPID[i];
+    if(fhNMissingITSPoints[i])
+      delete fhNMissingITSPoints[i];
     if (fhC11[i])
       delete fhC11[i];                     
     if (fhC22[i])
@@ -406,6 +410,8 @@ void AliESDtrackCuts::Init()
 
     fhChi2PerClusterITS[i] = 0;
     fhChi2PerClusterTPC[i] = 0;
+    fhNClustersForITSPID[i] = 0;
+    fhNMissingITSPoints[i] = 0;
 
     fhC11[i] = 0;
     fhC22[i] = 0;
@@ -534,6 +540,8 @@ void AliESDtrackCuts::Copy(TObject &c) const
 
     if (fhChi2PerClusterITS[i]) target.fhChi2PerClusterITS[i] = (TH1F*) fhChi2PerClusterITS[i]->Clone();
     if (fhChi2PerClusterTPC[i]) target.fhChi2PerClusterTPC[i] = (TH1F*) fhChi2PerClusterTPC[i]->Clone();
+    if (fhNClustersForITSPID[i]) target.fhNClustersForITSPID[i] = (TH1F*) fhNClustersForITSPID[i]->Clone();
+    if (fhNMissingITSPoints[i]) target.fhNMissingITSPoints[i] = (TH1F*) fhNMissingITSPoints[i]->Clone();
 
     if (fhC11[i]) target.fhC11[i] = (TH1F*) fhC11[i]->Clone();
     if (fhC22[i]) target.fhC22[i] = (TH1F*) fhC22[i]->Clone();
@@ -601,7 +609,9 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
       					  			    
       fhChi2PerClusterITS[i] ->Add(entry->fhChi2PerClusterITS[i]); 
       fhChi2PerClusterTPC[i] ->Add(entry->fhChi2PerClusterTPC[i]); 
-      					  			    
+      fhNClustersForITSPID[i]->Add(entry->fhNClustersForITSPID[i]);
+      fhNMissingITSPoints[i] ->Add(entry->fhNMissingITSPoints[i]);
+
       fhC11[i]               ->Add(entry->fhC11[i]              ); 
       fhC22[i]               ->Add(entry->fhC22[i]              ); 
       fhC33[i]               ->Add(entry->fhC33[i]              ); 
@@ -1128,14 +1138,13 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
   if (fracClustersTPCShared > fCutMaxFractionSharedTPCClusters)
     cuts[34] = kTRUE;  
 
-  if(fCutRequireITSPid){
-    UChar_t clumap=esdTrack->GetITSClusterMap();
-    Int_t nPointsForPid=0;
-    for(Int_t i=2; i<6; i++){
-      if(clumap&(1<<i)) ++nPointsForPid;
-    }
-    if(nPointsForPid<3) cuts[35] = kTRUE;
+  Int_t nITSPointsForPid=0;
+  UChar_t clumap=esdTrack->GetITSClusterMap();
+  for(Int_t i=2; i<6; i++){
+    if(clumap&(1<<i)) ++nITSPointsForPid;
   }
+  if(fCutRequireITSPid && nITSPointsForPid<3) cuts[35] = kTRUE;
+  
 
   if (nCrossedRowsTPC<fCutMinNCrossedRowsTPC)
     cuts[36]=kTRUE;
@@ -1197,6 +1206,8 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
       fhRatioCrossedRowsOverFindableClustersTPC[id]->Fill(ratioCrossedRowsOverFindableClustersTPC);
       fhChi2PerClusterITS[id]->Fill(chi2PerClusterITS);
       fhChi2PerClusterTPC[id]->Fill(chi2PerClusterTPC);
+      fhNClustersForITSPID[id]->Fill(nITSPointsForPid);
+      fhNMissingITSPoints[id]->Fill(nMissITSpts);
 
       fhC11[id]->Fill(extCov[0]);
       fhC22[id]->Fill(extCov[2]);
@@ -1394,6 +1405,8 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* const esd)
     fhRatioCrossedRowsOverFindableClustersTPC[i]     = new TH1F("ratioCrossedRowsOverFindableClustersTPC"  ,"",60,0,1.5);
     fhChi2PerClusterITS[i]   = new TH1F("chi2PerClusterITS","",500,0,10);
     fhChi2PerClusterTPC[i]   = new TH1F("chi2PerClusterTPC","",500,0,10);
+    fhNClustersForITSPID[i]  = new TH1F("nPointsForITSpid","",5,-0.5,4.5);
+    fhNMissingITSPoints[i]   = new TH1F("nMissingITSClusters","",7,-0.5,6.5);
 
     fhC11[i]                 = new TH1F("covMatrixDiagonal11","",2000,0,20);
     fhC22[i]                 = new TH1F("covMatrixDiagonal22","",2000,0,20);
@@ -1422,6 +1435,8 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* const esd)
     fhNSharedClustersTPC[i]->SetTitle("n TPC shared clusters");
     fhChi2PerClusterITS[i]->SetTitle("#Chi^{2} per ITS cluster");
     fhChi2PerClusterTPC[i]->SetTitle("#Chi^{2} per TPC cluster");
+    fhNClustersForITSPID[i]->SetTitle("n ITS points for PID");
+    fhNMissingITSPoints[i]->SetTitle("n ITS layers with missing cluster");
 
     fhC11[i]->SetTitle("cov 11 : #sigma_{y}^{2} [cm^{2}]");
     fhC22[i]->SetTitle("cov 22 : #sigma_{z}^{2} [cm^{2}]");
@@ -1448,6 +1463,8 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* const esd)
     fhNSharedClustersTPC[i]->SetLineColor(color);  fhNSharedClustersTPC[i]->SetLineWidth(2);
     fhChi2PerClusterITS[i]->SetLineColor(color);   fhChi2PerClusterITS[i]->SetLineWidth(2);
     fhChi2PerClusterTPC[i]->SetLineColor(color);   fhChi2PerClusterTPC[i]->SetLineWidth(2);
+    fhNClustersForITSPID[i]->SetLineColor(color);  fhNClustersForITSPID[i]->SetLineWidth(2);
+    fhNMissingITSPoints[i]->SetLineColor(color);   fhNMissingITSPoints[i]->SetLineWidth(2);
 
     fhC11[i]->SetLineColor(color);   fhC11[i]->SetLineWidth(2);
     fhC22[i]->SetLineColor(color);   fhC22[i]->SetLineWidth(2);
@@ -1507,6 +1524,8 @@ Bool_t AliESDtrackCuts::LoadHistograms(const Char_t* dir)
     fhRatioCrossedRowsOverFindableClustersTPC[i]   = dynamic_cast<TH1F*> (gDirectory->Get("ratioCrossedRowsOverFindableClustersTPC"  ));
     fhChi2PerClusterITS[i] = dynamic_cast<TH1F*> (gDirectory->Get("chi2PerClusterITS"));
     fhChi2PerClusterTPC[i] = dynamic_cast<TH1F*> (gDirectory->Get("chi2PerClusterTPC"));
+    fhNClustersForITSPID[i] = dynamic_cast<TH1F*> (gDirectory->Get("nPointsForITSpid"));
+    fhNMissingITSPoints[i] = dynamic_cast<TH1F*> (gDirectory->Get("nMissingITSClusters"));
 
     fhC11[i] = dynamic_cast<TH1F*> (gDirectory->Get("covMatrixDiagonal11"));
     fhC22[i] = dynamic_cast<TH1F*> (gDirectory->Get("covMatrixDiagonal22"));
@@ -1577,6 +1596,8 @@ void AliESDtrackCuts::SaveHistograms(const Char_t* dir) {
     fhRatioCrossedRowsOverFindableClustersTPC[i]     ->Write();
     fhChi2PerClusterITS[i]   ->Write();
     fhChi2PerClusterTPC[i]   ->Write();
+    fhNClustersForITSPID[i]  ->Write();
+    fhNMissingITSPoints[i]   ->Write();
 
     fhC11[i]                 ->Write();
     fhC22[i]                 ->Write();

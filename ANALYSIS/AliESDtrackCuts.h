@@ -261,6 +261,8 @@ protected:
 
   TH1F* fhChi2PerClusterITS[2];       //->
   TH1F* fhChi2PerClusterTPC[2];       //->
+  TH1F* fhNClustersForITSPID[2];      //-> number of points in SDD+SSD (ITS PID selection)
+  TH1F* fhNMissingITSPoints[2];       //-> number of missing ITS points
 
   TH1F* fhC11[2];                     //->
   TH1F* fhC22[2];                     //->
@@ -288,7 +290,7 @@ protected:
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
-  ClassDef(AliESDtrackCuts, 14)
+  ClassDef(AliESDtrackCuts, 15)
 };
 
 
