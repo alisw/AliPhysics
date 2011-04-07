@@ -434,7 +434,7 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
     } else { // get matrix from file (work around bug in aliroot)
       for(Int_t mod=0; mod < geometry->GetEMCGeometry()->GetNumberOfSuperModules(); ++mod) {
         const TGeoHMatrix *gm = 0;
-        AliESDEvent *esdevent = dynamic_cast<AliESDEvent*>(event->GetHeader());
+        AliESDEvent *esdevent = dynamic_cast<AliESDEvent*>(event);
         if (esdevent) {
           gm = esdevent->GetEMCALMatrix(mod);
         } else {
@@ -482,7 +482,6 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
     if (fRun!=cdb->GetRun())
       cdb->SetRun(fRun);
   }
-
   if (!fCalibData&&fLoadCalib) {
     AliCDBEntry *entry = static_cast<AliCDBEntry*>(AliCDBManager::Instance()->Get("EMCAL/Calib/Data"));
     if (entry) 
@@ -498,10 +497,10 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
   if (fCalibData) {
     fClusterizer->SetInputCalibrated(kFALSE);   
     fClusterizer->SetCalibrationParameters(fCalibData);
-    fClusterizer->SetCaloCalibPedestal(fPedestalData);
   } else {
     fClusterizer->SetInputCalibrated(kTRUE);   
   }
+  fClusterizer->SetCaloCalibPedestal(fPedestalData);
   fClusterizer->SetJustClusters(kTRUE);
   fClusterizer->SetDigitsArr(fDigitsArr);
   fClusterizer->SetOutput(0);
