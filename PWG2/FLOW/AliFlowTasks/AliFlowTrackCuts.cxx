@@ -1371,7 +1371,7 @@ void AliFlowTrackCuts::DefineHistograms()
   {
     axis->SetBinLabel(i+1,TMCProcessName[i]);
   }
-  axis = hb->GetYaxis();
+  axis = ha->GetYaxis();
   for (Int_t i=0; i<kMaxMCProcess; i++)
   {
     axis->SetBinLabel(i+1,TMCProcessName[i]);

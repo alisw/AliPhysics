@@ -87,6 +87,8 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   void SetEtaMax( Double_t i )  { fEtaMax = i; }
   void SetQMin( Double_t i )    { fQMin = i; }
   void SetQMax( Double_t i )    { fQMax = i; }
+  void SetHistWeightvsPhiMin( Double_t i ) {fHistWeightvsPhiMin=i;}
+  void SetHistWeightvsPhiMax( Double_t i ) {fHistWeightvsPhiMax=i;}
   // end setters common constants
 
   // setters for adding by hand flow values (afterburner)
@@ -141,6 +143,8 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   Double_t  fEtaMax;   // histogram limit
   Double_t  fQMin;     // histogram limit
   Double_t  fQMax;     // histogram limit
+  Double_t fHistWeightvsPhiMin; //histogram limit
+  Double_t fHistWeightvsPhiMax; //histogram limit
   // end common constants
 
   // Excluding a range

@@ -50,7 +50,9 @@ AliFlowCommonConstants::AliFlowCommonConstants():
   fEtaMin(-5.),	     
   fEtaMax(5.),	     
   fQMin(0.),	     
-  fQMax(3.)
+  fQMax(3.),
+  fHistWeightvsPhiMin(0.),
+  fHistWeightvsPhiMax(3.)
 {
   //def ctor
 }

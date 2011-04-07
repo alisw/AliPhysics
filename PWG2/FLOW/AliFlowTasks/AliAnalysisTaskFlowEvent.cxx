@@ -110,6 +110,8 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fEtaMax(5.),	     
   fQMin(0.),	     
   fQMax(3.),
+  fHistWeightvsPhiMin(0.),
+  fHistWeightvsPhiMax(3.),
   fExcludedEtaMin(0.), 
   fExcludedEtaMax(0.), 
   fExcludedPhiMin(0.),
@@ -163,6 +165,8 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fEtaMax(5.),	     
   fQMin(0.),	     
   fQMax(3.),
+  fHistWeightvsPhiMin(0.),
+  fHistWeightvsPhiMax(3.),
   fExcludedEtaMin(0.), 
   fExcludedEtaMax(0.), 
   fExcludedPhiMin(0.),
@@ -258,6 +262,8 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
   cc->SetEtaMax(fEtaMax);
   cc->SetQMin(fQMin);
   cc->SetQMax(fQMax);
+  cc->SetHistWeightvsPhiMax(fHistWeightvsPhiMax);
+  cc->SetHistWeightvsPhiMin(fHistWeightvsPhiMin);
 
   fFlowEvent = new AliFlowEvent(3000);
 
