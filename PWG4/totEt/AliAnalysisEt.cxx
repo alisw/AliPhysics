@@ -16,9 +16,11 @@
 #include <iostream>
 #include "AliAnalysisEtCuts.h"
 #include "AliESDtrackCuts.h"
+#include "AliESDCaloCluster.h"
 #include "AliVEvent.h"
 #include "Rtypes.h"
 #include "TString.h"
+//#include "THnSparse.h"
 
 using namespace std;
 ClassImp(AliAnalysisEt);
@@ -66,6 +68,7 @@ AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
 			       ,fParticlePid(0)
 			       ,fPidProb(0)
 			       ,fTrackPassedCut(kFALSE)
+			       ,fCentClass(0)
 			       ,fEtaCut(0)
 			       ,fEtaCutAcc(0)
 			       ,fPhiCutAccMin(0)
@@ -73,6 +76,7 @@ AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
 			       ,fDetectorRadius(0)
 			       ,fClusterEnergyCut(0) 
 			       ,fSingleCellEnergyCut(0)
+			       ,fTrackDistanceCut(0)
 			       ,fHistEt(0)
 			       ,fHistChargedEt(0)
 			       ,fHistNeutralEt(0)
@@ -101,9 +105,18 @@ AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
 			       ,fHistMuonEtAcc(0)
 			       ,fHistElectronEtAcc(0)
 			       ,fHistTMDeltaR(0)
+			       ,fHistTMDxDz(0)
 			       ,fTree(0)
 			       ,fTreeDeposit(0)
 			       ,fCentrality(0)
+			       ,fDetector(0)
+			       ,fSparseHistTracks(0)
+			       ,fSparseHistClusters(0)
+			       ,fSparseHistEt(0)
+			       ,fSparseTracks(0)
+			       ,fSparseClusters(0)
+			       ,fSparseEt(0)
+			       
 {}
 
 AliAnalysisEt::~AliAnalysisEt()
@@ -144,6 +157,7 @@ AliAnalysisEt::~AliAnalysisEt()
   delete fHistMuonEtAcc; /** Et of identified muons in calorimeter acceptance */
   delete fHistElectronEtAcc; /** Et of identified electrons in calorimeter acceptance */
   delete fHistTMDeltaR; /* Track matching plots; Rec only for now */
+  delete fHistTMDxDz; /* Track matching plots; Rec only for now */
 }
 
 void AliAnalysisEt::FillOutputList(TList *list)
@@ -184,13 +198,21 @@ void AliAnalysisEt::FillOutputList(TList *list)
     list->Add(fHistElectronEtAcc);
 
     list->Add(fHistTMDeltaR);
+    list->Add(fHistTMDxDz);
 	
     if (fCuts) {
       if (fCuts->GetHistMakeTree()) {
 	list->Add(fTree);
       }
+      if (fCuts->GetHistMakeTreeDeposit()) {
+	list->Add(fTreeDeposit);
+      }
     }
-    list->Add(fTreeDeposit);
+    
+   list->Add(fSparseHistTracks);
+   list->Add(fSparseHistClusters);
+   list->Add(fSparseHistEt);
+    
 
 }
 
@@ -203,9 +225,9 @@ void AliAnalysisEt::Init()
 void AliAnalysisEt::CreateHistograms()
 { // create histograms..
   // histogram binning for E_T, p_T and Multiplicity: defaults for p+p
-  Int_t nbinsEt = 1000;
-  Double_t minEt = 0.0001;
-  Double_t maxEt = 100;
+  Int_t nbinsEt = 10000;
+  Double_t minEt = 0.0;
+  Double_t maxEt = 1000;
   Int_t nbinsPt = 200;
   Double_t minPt = 0;
   Double_t maxPt = 20;
@@ -335,7 +357,63 @@ void AliAnalysisEt::CreateHistograms()
     //
     histname = "fHistTMDeltaR" + fHistogramNameSuffix;
     fHistTMDeltaR = new TH1F(histname.Data(), "#Delta R for calorimeter clusters", 200, 0, 50);
-	
+    
+    histname = "fHistTMDxDz" + fHistogramNameSuffix;
+    fHistTMDxDz = new TH2F(histname.Data(), "#Delta x vs #Delta z for calorimeter clusters", 800, -200, 200, 800, -200, 200);
+    
+    histname = "fSparseHistTracks" + fHistogramNameSuffix;
+    const Int_t stsize = 7;
+    Int_t binsHist[stsize]   = {  1001,    7, 200000, 10000, 10000, 100,   11};
+    Double_t minHist[stsize] = {-500.5, -3.5,    0.0,   0.0,   0.0, -1.5, -0.5};
+    Double_t maxHist[stsize] = { 499.5,  3.5,  200.0, 100.0, 100.0,  1.5, 10.5};
+    fSparseTracks = new Double_t[stsize];
+    fSparseHistTracks = new THnSparseD(histname.Data(), "pid:charge:mass:et:pt:rap:cent", stsize, binsHist, minHist, maxHist);
+    
+    fSparseHistTracks->GetAxis(0)->SetTitle("pid");
+    fSparseHistTracks->GetAxis(1)->SetTitle("charge");
+    fSparseHistTracks->GetAxis(2)->SetTitle("mass");
+    fSparseHistTracks->GetAxis(3)->SetTitle("et");
+    fSparseHistTracks->GetAxis(4)->SetTitle("pt");
+    fSparseHistTracks->GetAxis(5)->SetTitle("rap");
+    fSparseHistTracks->GetAxis(6)->SetTitle("cent");
+
+    histname = "fSparseHistClusters" + fHistogramNameSuffix;
+    const Int_t scsize = 11;
+    //                            pid     ch    mass     et     pt   eta   et_t   pt_t  eta_t  cent   dist
+    Int_t scbinsHist[scsize]   = {  1001,    7, 200000, 10000, 10000,  100, 10000, 10000,  100,   11,   4000};
+    Double_t scminHist[scsize] = {-500.5, -3.5,    0.0,   0.0,   0.0, -1.5,   0.0,   0.0, -1.5, -0.5, -200.0};
+    Double_t scmaxHist[scsize] = { 499.5,  3.5,  200.0, 100.0, 100.0,  1.5, 100.0, 100.0,  1.5, 10.5,  200.0};
+    fSparseClusters = new Double_t[scsize];
+    fSparseHistClusters = new THnSparseD(histname.Data(), "pid:charge:mass:et:pt:rap:et_track:pt_track:eta_track:cent:dist_matched", scsize, scbinsHist, scminHist, scmaxHist);
+    
+    fSparseHistClusters->GetAxis(0)->SetTitle("pid");
+    fSparseHistClusters->GetAxis(1)->SetTitle("charge");
+    fSparseHistClusters->GetAxis(2)->SetTitle("mass");
+    fSparseHistClusters->GetAxis(3)->SetTitle("et");
+    fSparseHistClusters->GetAxis(4)->SetTitle("pt");
+    fSparseHistClusters->GetAxis(5)->SetTitle("rap");
+    fSparseHistClusters->GetAxis(6)->SetTitle("et_track");
+    fSparseHistClusters->GetAxis(7)->SetTitle("pt_track");
+    fSparseHistClusters->GetAxis(8)->SetTitle("rap_track");
+    fSparseHistClusters->GetAxis(9)->SetTitle("cent");
+    fSparseHistClusters->GetAxis(10)->SetTitle("dist_matched");
+
+    histname = "fSparseHistEt" + fHistogramNameSuffix;
+    const Int_t etsize = 7;
+    Int_t etbinsHist[etsize]   = { 10000, 10000,  10000,   3000,   500,   30000,   11};
+    Double_t etminHist[etsize] = {   0.0,   0.0,    0.0,   -0.5,  -0.5,    -0.5, -0.5};
+    Double_t etmaxHist[etsize] = { 200.0, 200.0,  200.0, 2999.5, 499.5,  2999.5, 10.5};
+    fSparseEt = new Double_t[etsize];
+    fSparseHistEt = new THnSparseD(histname.Data(), "tot_et:neutral_et:charged_et:tot_mult:neutral_mult:charged_mult:cent", etsize, etbinsHist, etminHist, etmaxHist);
+    
+    fSparseHistEt->GetAxis(0)->SetTitle("tot_et");
+    fSparseHistEt->GetAxis(1)->SetTitle("neutral_et");
+    fSparseHistEt->GetAxis(2)->SetTitle("charged_et");
+    fSparseHistEt->GetAxis(3)->SetTitle("tot_mult");
+    fSparseHistEt->GetAxis(4)->SetTitle("netral_mult");
+    fSparseHistEt->GetAxis(5)->SetTitle("charged_mult");
+    fSparseHistEt->GetAxis(6)->SetTitle("cent");
+  
 }
 
 TH2F* AliAnalysisEt::CreateEtaEHisto2D(TString name, TString title, TString ztitle)
@@ -372,12 +450,20 @@ void AliAnalysisEt::CreateTrees()
     fTree->Branch("fTotEt",&fTotEt,"fTotEt/D");
     fTree->Branch("fTotEtAcc",&fTotEtAcc,"fTotEtAcc/D");
     fTree->Branch("fTotNeutralEt",&fTotNeutralEt,"fTotNeutralEt/D");
+    fTree->Branch("fTotNeutralEt_3cm",&fTotNeutralEt_3cm,"fTotNeutralEt_3cm/D");
+    fTree->Branch("fTotNeutralEt_5cm",&fTotNeutralEt_5cm,"fTotNeutralEt_5cm/D");
+    fTree->Branch("fTotNeutralEt_7cm",&fTotNeutralEt_7cm,"fTotNeutralEt_7cm/D");
+    fTree->Branch("fTotNeutralEt_10cm",&fTotNeutralEt_10cm,"fTotNeutralEt_10cm/D");
+    fTree->Branch("fTotNeutralEt_15cm",&fTotNeutralEt_15cm,"fTotNeutralEt_15cm/D");
+    fTree->Branch("fTotNeutralEt_nocut",&fTotNeutralEt_nocut,"fTotNeutralEt_nocut/D");
     fTree->Branch("fTotNeutralEtAcc",&fTotNeutralEtAcc,"fTotNeutralEtAcc/D");
     fTree->Branch("fTotChargedEt",&fTotChargedEt,"fTotChargedEt/D");
     fTree->Branch("fTotChargedEtAcc",&fTotChargedEtAcc,"fTotChargedEtAcc/D");
     fTree->Branch("fMultiplicity",&fMultiplicity,"fMultiplicity/I");
     fTree->Branch("fChargedMultiplicity",&fChargedMultiplicity,"fChargedMultiplicity/I");
     fTree->Branch("fNeutralMultiplicity",&fNeutralMultiplicity,"fNeutralMultiplicity/I");
+    fTree->Branch("fCentClass",&fCentClass,"fCentClass/I");
+    
     fTree->Branch("fBaryonEt",&fBaryonEt,"fBaryonEt/D");
     fTree->Branch("fAntiBaryonEt",&fAntiBaryonEt,"fAntiBaryonEt/D");
     fTree->Branch("fMesonEt",&fMesonEt,"fMesonEt/D");
@@ -445,7 +531,8 @@ void AliAnalysisEt::FillHistograms()
 	fTree->Fill();
       }
     }
-
+    
+    fSparseHistEt->Fill(fSparseEt);
 }
 
 Int_t AliAnalysisEt::AnalyseEvent(AliVEvent *event)
@@ -461,6 +548,12 @@ void AliAnalysisEt::ResetEventValues()
   fTotEt = 0;
   fTotEtAcc = 0;
   fTotNeutralEt = 0;
+  fTotNeutralEt_3cm = 0;
+  fTotNeutralEt_5cm = 0;
+  fTotNeutralEt_7cm = 0;
+  fTotNeutralEt_10cm = 0;
+  fTotNeutralEt_15cm = 0;
+  fTotNeutralEt_nocut = 0;
   fTotNeutralEtAcc = 0;
   fTotChargedEt  = 0;
   fTotChargedEtAcc = 0;
@@ -486,3 +579,13 @@ void AliAnalysisEt::ResetEventValues()
   return;
 }
 
+Double_t AliAnalysisEt::CalculateTransverseEnergy(AliESDCaloCluster* cluster)
+{
+  
+  Float_t pos[3];
+  cluster->GetPosition(pos);
+  TVector3 cp(pos);
+  
+  return cluster->E() * TMath::Sin(cp.Theta());
+
+}
