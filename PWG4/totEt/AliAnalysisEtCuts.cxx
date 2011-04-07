@@ -20,11 +20,17 @@ ClassImp(AliAnalysisEtCuts);
 AliAnalysisEtCuts::AliAnalysisEtCuts() : 
   TNamed()
 				    //
-  ,fCommonEtaCut(0.8)
-  ,fCommonClusterEnergyCut(0.0)
+  ,fCommonEtaCut(0.5)
+  ,fCommonClusterEnergyCut(0.1)
   ,fCommonTrackPtCut(0.0)
   ,fCommonSingleCell(1)
-				    //
+  ,fEmcalTrackDistanceCut(15.0)
+  ,fEmcalTrackDxCut(5.0)
+  ,fEmcalTrackDzCut(5.0)
+  ,fPhosTrackDistanceCut(10.0)  
+  ,fPhosTrackDxCut(8.0)
+  ,fPhosTrackDzCut(3.0)
+  
   ,fGeometryPhosEtaAccCut(0.12)
   ,fGeometryPhosPhiAccMinCut(260.0)
   ,fGeometryPhosPhiAccMaxCut(320.0)
@@ -45,32 +51,39 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fReconstructedPidCut(0.0)
 				    //
   ,fReconstructedPhosClusterType(-1)
-  ,fReconstructedPhosClusterEnergyCut(0.0)
+  ,fReconstructedPhosClusterEnergyCut(0.1)
   ,fReconstructedPhosSingleCellEnergyCut(0.5)
-  ,fReconstructedPhosTrackDistanceCut(15.0)
+  ,fReconstructedPhosTrackDistanceTightCut(3.0)
+  ,fReconstructedPhosTrackDistanceMediumCut(5.0)
+  ,fReconstructedPhosTrackDistanceLooseCut(15.0)
 				    //
   ,fReconstructedEmcalClusterType(1)
   ,fReconstructedEmcalClusterEnergyCut(0.1) // GeV
   ,fReconstructedEmcalSingleCellEnergyCut(0.5)
-  ,fReconstructedEmcalTrackDistanceCut(15.0)
+  ,fReconstructedEmcalTrackDistanceTightCut(5.0)
+  ,fReconstructedEmcalTrackDistanceMediumCut(10.0)
+  ,fReconstructedEmcalTrackDistanceLooseCut(15.0)
   
   ,fMonteCarloSingleChargedParticle(3)
   ,fMonteCarloNeutralParticle(0)
 
-  ,fHistMakeTree(kFALSE)
-  ,fHistMakeTreeDeposit(kTRUE)
-  ,fHistNbinsMult(200)
+  ,fHistMakeTree(kTRUE)
+  ,fHistMakeTreeDeposit(kFALSE)
+  ,fHistNbinsMult(2000)
   ,fHistMinMult(-0.5)
-  ,fHistMaxMult(199.5)
-  ,fHistNbinsTotEt(1000)
-  ,fHistMinTotEt(0.0001)
-  ,fHistMaxTotEt(100)
-  ,fHistNbinsParticleEt(1000)
+  ,fHistMaxMult(1999.5)
+  ,fHistNbinsTotEt(10000)
+  ,fHistMinTotEt(0.000)
+  ,fHistMaxTotEt(1000)
+  ,fHistNbinsParticleEt(5000)
   ,fHistMinParticleEt(0)
-  ,fHistMaxParticleEt(10)
+  ,fHistMaxParticleEt(500)
   ,fHistNbinsParticlePt(200) 
   ,fHistMinParticlePt(0)
   ,fHistMaxParticlePt(20)
+  
+  ,fDetectorPhos(-1)
+  ,fDetectorEmcal(1)
 { // ctor
 }
 
