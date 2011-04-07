@@ -229,8 +229,10 @@ AliCentralCorrAcceptance::Print(Option_t* option) const
   // Parameters:
   //    option 
   //  
-  std::cout << "Acceptance correction due to dead channels" << std::endl;
+  std::cout << "  Acceptance correction due to dead channels" << std::endl;
+  std::cout << "   " << std::flush;  
   fArray.Print(option);
+  std::cout << "   " << std::flush;  
   fVertexAxis.Print(option);
 }
     

@@ -214,7 +214,7 @@ AliForwarddNdetaTask::CentralityBin::ProcessPrimary(const AliAODForwardMult*
   if (!forward->CheckEvent(mask, vzMin, vzMax, 0, 0, 0)) return;
 
   fSumPrimary->Add(primary);
-  Int_t n = fSumPrimary->GetBinContent(0,0);
+  Int_t n = Int_t(fSumPrimary->GetBinContent(0,0));
   fSumPrimary->SetBinContent(0,0, ++n);
 }
 
