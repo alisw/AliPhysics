@@ -14,6 +14,9 @@
  **************************************************************************/
 // Container class for bad channels & bad runs identification
 //
+// By default, pileup events are not processed, use SetAvoidPileup()
+// to change this.
+//
 // See AddTaskCaloCellsQA.C for usage example.
 //
 //----
@@ -21,6 +24,7 @@
 
 // --- ROOT system ---
 #include <TFile.h>
+#include <TObjArray.h>
 
 // --- AliRoot header files ---
 #include <AliAnalysisTaskCaloCellsQA.h>
@@ -33,21 +37,17 @@ ClassImp(AliAnalysisTaskCaloCellsQA)
 
 //________________________________________________________________
 AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA(const char *name) : AliAnalysisTaskSE(name),
-  fClusArray(0),
+  fkAvoidPileup(kTRUE),
   fCellsQA(0),
-  fOutfile(0)
+  fOutfile(new TString)
 {
-  fClusArray = new TObjArray;
-  fCellsQA = NULL;
-  fOutfile = NULL;
 }
 
 //________________________________________________________________
 AliAnalysisTaskCaloCellsQA::~AliAnalysisTaskCaloCellsQA()
 {
-  delete fClusArray;
   if (fCellsQA) delete fCellsQA;
-  if (fOutfile) delete fOutfile;
+  delete fOutfile;
 }
 
 //________________________________________________________________
@@ -58,7 +58,6 @@ void AliAnalysisTaskCaloCellsQA::InitCaloCellsQA(char* fname, Int_t nmods, Int_t
   // fname -- output file name;
   // nmods -- number of supermodules + 1;
   // det -- detector;
-  // initGeom -- if true, initialize geometry for you.
 
   if (det == kEMCAL)
     fCellsQA = new AliCaloCellsQA(nmods, AliCaloCellsQA::kEMCAL);
@@ -67,7 +66,7 @@ void AliAnalysisTaskCaloCellsQA::InitCaloCellsQA(char* fname, Int_t nmods, Int_t
   else
     Fatal("AliAnalysisTaskCaloCellsQA::InitCellsQA", "Wrong detector provided");
 
-  fOutfile = new TString(fname);
+  *fOutfile = fname;
 }
 
 //________________________________________________________________
@@ -90,6 +89,10 @@ void AliAnalysisTaskCaloCellsQA::UserExec(Option_t *)
     return;
   }
 
+  // pileup;  FIXME: why AliVEvent does not allow a version without arguments?
+  if (fkAvoidPileup && event->IsPileupFromSPD(3,0.8,3.,2.,5.))
+    return;
+
   // cells
   AliVCaloCells *cells;
   if (fCellsQA->GetDetector() == AliCaloCellsQA::kEMCAL)
@@ -110,7 +113,7 @@ void AliAnalysisTaskCaloCellsQA::UserExec(Option_t *)
   }
 
   // collect clusters
-  fClusArray->Clear();
+  TObjArray clusArray;
   for (Int_t i = 0; i < event->GetNumberOfCaloClusters(); i++) {
     AliVCluster *clus = event->GetCaloCluster(i);
     if (!clus) {
@@ -118,12 +121,12 @@ void AliAnalysisTaskCaloCellsQA::UserExec(Option_t *)
       return;
     }
 
-    fClusArray->Add(clus);
+    clusArray.Add(clus);
   }
 
   Double_t vertexXYZ[3];
   vertex->GetXYZ(vertexXYZ);
-  fCellsQA->Fill(event->GetRunNumber(), fClusArray, cells, vertexXYZ);
+  fCellsQA->Fill(event->GetRunNumber(), &clusArray, cells, vertexXYZ);
 }
 
 //________________________________________________________________

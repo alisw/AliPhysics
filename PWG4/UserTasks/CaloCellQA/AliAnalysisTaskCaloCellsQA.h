@@ -10,7 +10,6 @@
 
 // --- ROOT system ---
 #include <TString.h>
-#include <TObjArray.h>
 
 // --- AliRoot header files ---
 #include <AliAnalysisTaskSE.h>
@@ -37,17 +36,19 @@ public:
 
   // getters and setters
   AliCaloCellsQA*  GetCaloCellsQA()    { return fCellsQA; }
+  Bool_t           GetAvoidPileup()    { return fkAvoidPileup; }
   const char*      GetOutputFileName() { return fOutfile->Data(); }
+  void             SetAvoidPileup(Bool_t flag) { fkAvoidPileup = flag; }
   void             SetOutputFileName(char* fname) { *fOutfile = fname; }
 
 private:
   AliAnalysisTaskCaloCellsQA(const AliAnalysisTaskCaloCellsQA &);
-  AliAnalysisTaskCaloCellsQA & operator = (const AliAnalysisTaskCaloCellsQA &); 
+  AliAnalysisTaskCaloCellsQA & operator = (const AliAnalysisTaskCaloCellsQA &);
 
 private:
-  TObjArray*          fClusArray;     // array of clusters, input for fCellsQA
-  AliCaloCellsQA*     fCellsQA;       // analysis instance
-  TString*            fOutfile;       // output file name
+  Bool_t              fkAvoidPileup;   // flag not to process pileup events
+  AliCaloCellsQA*     fCellsQA;        // analysis instance
+  TString*            fOutfile;        // output file name
 
   ClassDef(AliAnalysisTaskCaloCellsQA, 1);
 };
