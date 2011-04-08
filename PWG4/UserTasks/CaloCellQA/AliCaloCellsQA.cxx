@@ -22,6 +22,7 @@
 //
 // See also AliAnalysisTaskCellsQA.
 // Works for EMCAL and PHOS. Requires initialized geometry.
+// Class parameters are optimized for EMCAL.
 //
 // Usage example for EMCAL:
 //
@@ -56,19 +57,19 @@
 //      AliVCluster *clus = event->GetCaloCluster(i);
 //
 //      // filter clusters here, if necessary
-//      // if (...) continue;
+//      // if (clus->E() < 0.3) continue;
 //
 //      clusArray->Add(clus);
 //    }
 //
-//    // apply unfolding afterburner, etc.
+//    // apply afterburners, etc.
 //    // ...
 //
 //    cellsQA->Fill(event->GetRunNumber(), clusArray, cells, vertexXYZ);
 //
 // d) Do not forget to post data, where necessary:
 //    PostData(1,cellsQA->GetListOfHistos());
-//
+//    See also comments in AliAnalysisTaskCellsQA::Terminate().
 //
 // TODO: add DCAL (up to 6 supermodules?)
 //
@@ -93,13 +94,13 @@ AliCaloCellsQA::AliCaloCellsQA() :
   fClusEhighMin(0),
   fPi0EClusMin(0),
   fkFullAnalysis(0),
-  fNBins_hECells(0),
-  fNBins_hPi0Mass(0),
-  fNBinsX_hNCellsInCluster(0),
-  fNBinsY_hNCellsInCluster(0),
-  fXMax_hECells(0),
-  fXMax_hPi0Mass(0),
-  fXMax_hNCellsInCluster(0),
+  fNBinsECells(0),
+  fNBinsPi0Mass(0),
+  fNBinsXNCellsInCluster(0),
+  fNBinsYNCellsInCluster(0),
+  fXMaxECells(0),
+  fXMaxPi0Mass(0),
+  fXMaxNCellsInCluster(0),
   fAbsIdMin(0),
   fAbsIdMax(0),
   fListOfHistos(0),
@@ -136,13 +137,13 @@ AliCaloCellsQA::AliCaloCellsQA(Int_t nmods, Int_t det, Int_t startRunNumber, Int
   fClusEhighMin(0),
   fPi0EClusMin(0),
   fkFullAnalysis(0),
-  fNBins_hECells(0),
-  fNBins_hPi0Mass(0),
-  fNBinsX_hNCellsInCluster(0),
-  fNBinsY_hNCellsInCluster(0),
-  fXMax_hECells(0),
-  fXMax_hPi0Mass(0),
-  fXMax_hNCellsInCluster(0),
+  fNBinsECells(0),
+  fNBinsPi0Mass(0),
+  fNBinsXNCellsInCluster(0),
+  fNBinsYNCellsInCluster(0),
+  fXMaxECells(0),
+  fXMaxPi0Mass(0),
+  fXMaxNCellsInCluster(0),
   fAbsIdMin(0),
   fAbsIdMax(0),
   fListOfHistos(0),
@@ -201,7 +202,7 @@ void AliCaloCellsQA::InitSummaryHistograms(Int_t nbins, Double_t emax,
                                            Int_t nbinst, Double_t tmin, Double_t tmax)
 {
   // Initialize summary (not per run) histograms.
-  // Must be called before calling Fill() method, if necessary.
+  // Must be called after ActivateFullAnalysis(), before calling Fill() method, if necessary.
   //
   // nbins, emax -- number of bins and maximum amplitude for fhCellAmplitude and fhCellAmplitudeNonLocMax;
   // nbinsh, emaxh -- number of bins and maximum amplitude for fhCellAmplitudeEhigh and fhCellAmplitudeEhighNonLocMax;
@@ -223,8 +224,15 @@ void AliCaloCellsQA::InitSummaryHistograms(Int_t nbins, Double_t emax,
   fhCellAmplitudeEhigh->SetYTitle("Amplitude, GeV");
   fhCellAmplitudeEhigh->SetZTitle("Counts");
 
+  fhCellTime = new TH2F("hCellTime", "Time distribution per cell",
+                        fAbsIdMax-fAbsIdMin,fAbsIdMin,fAbsIdMax, nbinst,tmin,tmax);
+  fhCellTime->SetXTitle("AbsId");
+  fhCellTime->SetYTitle("Time, microseconds");
+  fhCellTime->SetZTitle("Counts");
+
   fListOfHistos->Add(fhCellAmplitude);
   fListOfHistos->Add(fhCellAmplitudeEhigh);
+  fListOfHistos->Add(fhCellTime);
 
   if (fkFullAnalysis) {
     fhCellAmplitudeNonLocMax = new TH2F("hCellAmplitudeNonLocMax",
@@ -241,15 +249,8 @@ void AliCaloCellsQA::InitSummaryHistograms(Int_t nbins, Double_t emax,
     fhCellAmplitudeEhighNonLocMax->SetYTitle("Amplitude, GeV");
     fhCellAmplitudeEhighNonLocMax->SetZTitle("Counts");
 
-    fhCellTime = new TH2F("hCellTime", "Time distribution per cell",
-                          fAbsIdMax-fAbsIdMin,fAbsIdMin,fAbsIdMax, nbinst,tmin,tmax);
-    fhCellTime->SetXTitle("AbsId");
-    fhCellTime->SetYTitle("Time, microseconds");
-    fhCellTime->SetZTitle("Counts");
-
     fListOfHistos->Add(fhCellAmplitudeNonLocMax);
     fListOfHistos->Add(fhCellAmplitudeEhighNonLocMax);
-    fListOfHistos->Add(fhCellTime);
   }
 
   // return to the previous add directory status
@@ -296,13 +297,13 @@ void AliCaloCellsQA::SetBinningParameters(Int_t nbins1, Int_t nbins2, Int_t nbin
   // nbins2, xmax2 -- number of bins and maximum X axis value for hPi0Mass;
   // nbins3x, nbins3y, xmax3 -- number of bins in X and Y axes and maximum X axis value for hNCellsInCluster.
 
-  fNBins_hECells = nbins1;
-  fNBins_hPi0Mass = nbins2;
-  fNBinsX_hNCellsInCluster = nbins3x;
-  fNBinsY_hNCellsInCluster = nbins3y;
-  fXMax_hECells = xmax1;
-  fXMax_hPi0Mass = xmax2;
-  fXMax_hNCellsInCluster = xmax3;
+  fNBinsECells = nbins1;
+  fNBinsPi0Mass = nbins2;
+  fNBinsXNCellsInCluster = nbins3x;
+  fNBinsYNCellsInCluster = nbins3y;
+  fXMaxECells = xmax1;
+  fXMaxPi0Mass = xmax2;
+  fXMaxNCellsInCluster = xmax3;
 }
 
 //_________________________________________________________________________
@@ -459,13 +460,13 @@ void AliCaloCellsQA::InitHistosForRun(Int_t run, Int_t ri)
   // per supermodule histograms
   for (Int_t sm = minsm; sm < fNMods; sm++) {
     fhECells[ri][sm] = new TH1F(Form("run%i_hECellsSM%i",run,sm),
-      "Cell amplitude distribution", fNBins_hECells,0,fXMax_hECells);
+      "Cell amplitude distribution", fNBinsECells,0,fXMaxECells);
     fhECells[ri][sm]->SetXTitle("Amplitude, GeV");
     fhECells[ri][sm]->SetYTitle("Number of cells");
 
     fhNCellsInCluster[ri][sm] = new TH2F(Form("run%i_hNCellsInClusterSM%i",run,sm),
       "Distrubution of number of cells in cluster vs cluster energy",
-        fNBinsX_hNCellsInCluster,0,fXMax_hNCellsInCluster, fNBinsY_hNCellsInCluster,0,fNBinsY_hNCellsInCluster);
+        fNBinsXNCellsInCluster,0,fXMaxNCellsInCluster, fNBinsYNCellsInCluster,0,fNBinsYNCellsInCluster);
     fhNCellsInCluster[ri][sm]->SetXTitle("Energy, GeV");
     fhNCellsInCluster[ri][sm]->SetYTitle("Number of cells");
     fhNCellsInCluster[ri][sm]->SetZTitle("Counts");
@@ -478,7 +479,7 @@ void AliCaloCellsQA::InitHistosForRun(Int_t run, Int_t ri)
   for (Int_t sm = minsm; sm < fNMods; sm++)
     for (Int_t sm2 = sm; sm2 < fNMods; sm2++) {
       fhPi0Mass[ri][sm][sm2] = new TH1F(Form("run%i_hPi0MassSM%iSM%i",run,sm,sm2),
-                                        "#pi^{0} mass spectrum", fNBins_hPi0Mass,0,fXMax_hPi0Mass);
+                                        "#pi^{0} mass spectrum", fNBinsPi0Mass,0,fXMaxPi0Mass);
       fhPi0Mass[ri][sm][sm2]->SetXTitle("M_{#gamma#gamma}, GeV");
       fhPi0Mass[ri][sm][sm2]->SetYTitle("Counts");
 
@@ -549,10 +550,10 @@ void AliCaloCellsQA::FillJustCells(Int_t ri, AliVCaloCells *cells)
 
     if (fhECells[ri][sm]) fhECells[ri][sm]->Fill(amp);
 
-    if (fhCellAmplitude) {// in case InitSummaryHistograms() was not called
+    if (fhCellAmplitude) { // in case InitSummaryHistograms() was not called
       fhCellAmplitude->Fill(absId, amp);
       fhCellAmplitudeEhigh->Fill(absId, amp);
-      if (fkFullAnalysis) fhCellTime->Fill(absId, time);
+      fhCellTime->Fill(absId, time);
 
       // fill not a local maximum distributions
       if (fkFullAnalysis && !IsCellLocalMaximum(absId, cells)) {

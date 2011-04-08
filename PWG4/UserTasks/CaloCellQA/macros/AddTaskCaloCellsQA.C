@@ -1,15 +1,22 @@
-AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(char* fname = "CellsQA.root",
-                                               Int_t nmods = 10, Int_t det = 0,
-                                               Bool_t initGeom, Bool_t kFullAnalysis = kFALSE)
+AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0, char* fname = "CellsQA.root",
+                                               Bool_t initGeom = kFALSE, Bool_t kFullAnalysis = kFALSE)
 {
-  // Task to add EMCAL/PHOS cellsQA to your analysis.
+  // Task to add EMCAL/PHOS cellsQA/runsQA to your analysis.
+  // Do not forget to initialize geometry!
   //
-  // Usage example:
+  // Usage example for EMCAL:
   //
-  //   gROOT->LoadMacro("AddTaskCaloCellsQA.C");  // FIXME: correct path
-  //   AliAnalysisTaskCaloCellsQA *taskQA = AddTaskCaloCellsQA();
+  //   gROOT->LoadMacro("$ALICE_ROOT/PWG4/UserTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C");
+  //   AliAnalysisTaskCaloCellsQA *taskQA = AddTaskCaloCellsQA(10); // 10 supermodules
   //   taskQA->SelectCollisionCandidates(AliVEvent::kMB); // if necessary
+  //   // taskQA->SetAvoidPileup(kFALSE); // some customization
   //
+  // Usage example for PHOS:
+  //
+  //   gROOT->LoadMacro("$ALICE_ROOT/PWG4/UserTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C");
+  //   AliAnalysisTaskCaloCellsQA *taskQA = AddTaskCaloCellsQA(4, 1);
+  //   taskQA->SelectCollisionCandidates(AliVEvent::kMB); // if necessary
+  //   taskQA->GetCaloCellsQA()->SetClusterEnergyCuts(0.3,0.1); // increase statistics
   //
   // fname -- output file name;
   // nmods -- maximum supermodule number + 1:
@@ -43,7 +50,7 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(char* fname = "CellsQA.root",
   // initialize geometry
   if (initGeom) {
     if      (det == 0) AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
-    else if (det == 1) AliPHOSGeometry::GetInstance("IHEP","");
+    else if (det == 1) AliPHOSGeometry::GetInstance("IHEP");
   }
 
   // initialize analysis instance
