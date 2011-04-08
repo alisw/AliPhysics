@@ -29,23 +29,24 @@ void extract_ESD(const char* input, const char *cdbURI, int nofEvents=-1){
   // Set the CDB storage location
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage(cdbURI);
-  man->SetRun(0);
-  if (struri.BeginsWith("local://")) man->SetSpecificStorage("HLT/Calib/StreamerInfo", "local://$ALICE_ROOT/OCDB");
- 
+  //man->SetRun(146018);
+
   AliRawReader* pRawReader=AliRawReader::Create(input);
   if (!pRawReader){
     cout << "cannot open RawReader for file " << input << endl;
     return;
   }
-
+  
   if (!pRawReader->NextEvent()){
     cerr << "no events available" << endl;
     return;
   }
+  
+  if(struri.Contains("local") || strfile.Contains("alien")) man->SetRun(pRawReader->GetRunNumber());
 
   // setup of the HLT system
   AliHLTSystem *pHLT = AliHLTPluginBase::GetInstance();
-  if(!pHLT) cerr << "fatal error: can not get HLT instance" << endl;
+  if(!pHLT) cerr << "fatal error: cannot get HLT instance" << endl;
 
   TString arg;
   arg.Form("-typeid ALIESDV0");
