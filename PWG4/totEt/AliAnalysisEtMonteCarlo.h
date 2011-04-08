@@ -72,7 +72,7 @@ protected:
 	
 	TH2F *fHistAllERecEMC;	// compare energy directly from MC and the recosntructed one 
 	TH2F *fHistGammaERecEMC;//gammas 	
-	TH2F *fHistElectronERecEMC;	//gammas
+	TH2F *fHistElectronERecEMC;	//electrons
 	
 	TH1F *fHistElectronFirstMother; // distribution of PDG code of electron's (physical primary) first mothers 
 	TH1F *fHistElectronLastMother; // distribution of PDG code of electron's (physical primary) last (or second) mothers 
@@ -93,124 +93,124 @@ protected:
 	
 	TH2F *fHistRemovedOrNot; // If charged/neutral particles were removed or not
 	
-	TH2F *fHistEtNonRemovedProtons; 
-	TH2F *fHistEtNonRemovedAntiProtons; 
-	TH2F *fHistEtNonRemovedPiPlus; 
-	TH2F *fHistEtNonRemovedPiMinus; 
-	TH2F *fHistEtNonRemovedKaonPlus; 
-	TH2F *fHistEtNonRemovedKaonMinus; 
-	TH2F *fHistEtNonRemovedK0s; 
-	TH2F *fHistEtNonRemovedLambdas; 
-	TH2F *fHistEtNonRemovedElectrons; 
-	TH2F *fHistEtNonRemovedPositrons; 
-	TH2F *fHistEtNonRemovedMuPlus;
-	TH2F *fHistEtNonRemovedMuMinus;
-	TH2F *fHistEtNonRemovedNeutrons;
-	TH2F *fHistEtNonRemovedAntiNeutrons;
-	TH2F *fHistEtNonRemovedGammas;
-	TH2F *fHistEtNonRemovedGammasFromPi0;
+	TH2F *fHistEtNonRemovedProtons; // enter comment here
+	TH2F *fHistEtNonRemovedAntiProtons; // enter comment here
+	TH2F *fHistEtNonRemovedPiPlus; // enter comment here
+	TH2F *fHistEtNonRemovedPiMinus; // enter comment here
+	TH2F *fHistEtNonRemovedKaonPlus; // enter comment here
+	TH2F *fHistEtNonRemovedKaonMinus; // enter comment here
+	TH2F *fHistEtNonRemovedK0s; // enter comment here
+	TH2F *fHistEtNonRemovedLambdas; // enter comment here
+	TH2F *fHistEtNonRemovedElectrons; // enter comment here
+	TH2F *fHistEtNonRemovedPositrons; // enter comment here
+	TH2F *fHistEtNonRemovedMuPlus; // enter comment here
+	TH2F *fHistEtNonRemovedMuMinus; // enter comment here
+	TH2F *fHistEtNonRemovedNeutrons; // enter comment here
+	TH2F *fHistEtNonRemovedAntiNeutrons; // enter comment here
+	TH2F *fHistEtNonRemovedGammas; // enter comment here
+	TH2F *fHistEtNonRemovedGammasFromPi0; // enter comment here
 	
-	TH2F *fHistEtRemovedGammas;
-	TH2F *fHistEtRemovedNeutrons;
-	TH2F *fHistEtRemovedAntiNeutrons;
+	TH2F *fHistEtRemovedGammas; // enter comment here
+	TH2F *fHistEtRemovedNeutrons; // enter comment here
+	TH2F *fHistEtRemovedAntiNeutrons; // enter comment here
 	
 	
-	TH2F *fHistMultNonRemovedProtons; 
-	TH2F *fHistMultNonRemovedAntiProtons; 
-	TH2F *fHistMultNonRemovedPiPlus; 
-	TH2F *fHistMultNonRemovedPiMinus; 
-	TH2F *fHistMultNonRemovedKaonPlus; 
-	TH2F *fHistMultNonRemovedKaonMinus; 
-	TH2F *fHistMultNonRemovedK0s; 
-	TH2F *fHistMultNonRemovedLambdas; 
-	TH2F *fHistMultNonRemovedElectrons; 
-	TH2F *fHistMultNonRemovedPositrons; 
-	TH2F *fHistMultNonRemovedMuPlus;
-	TH2F *fHistMultNonRemovedMuMinus;
-	TH2F *fHistMultNonRemovedNeutrons;
-	TH2F *fHistMultNonRemovedAntiNeutrons;
-	TH2F *fHistMultNonRemovedGammas;
+	TH2F *fHistMultNonRemovedProtons; // enter comment here 
+	TH2F *fHistMultNonRemovedAntiProtons; // enter comment here 
+	TH2F *fHistMultNonRemovedPiPlus; // enter comment here 
+	TH2F *fHistMultNonRemovedPiMinus; // enter comment here 
+	TH2F *fHistMultNonRemovedKaonPlus; // enter comment here 
+	TH2F *fHistMultNonRemovedKaonMinus; // enter comment here 
+	TH2F *fHistMultNonRemovedK0s; // enter comment here 
+	TH2F *fHistMultNonRemovedLambdas; // enter comment here 
+	TH2F *fHistMultNonRemovedElectrons; // enter comment here 
+	TH2F *fHistMultNonRemovedPositrons; // enter comment here 
+	TH2F *fHistMultNonRemovedMuPlus; // enter comment here
+	TH2F *fHistMultNonRemovedMuMinus; // enter comment here
+	TH2F *fHistMultNonRemovedNeutrons; // enter comment here
+	TH2F *fHistMultNonRemovedAntiNeutrons; // enter comment here
+	TH2F *fHistMultNonRemovedGammas; // enter comment here
 	
-	TH2F *fHistMultRemovedGammas;
-	TH2F *fHistMultRemovedNeutrons;
-	TH2F *fHistMultRemovedAntiNeutrons;
+	TH2F *fHistMultRemovedGammas; // enter comment here
+	TH2F *fHistMultRemovedNeutrons; // enter comment here
+	TH2F *fHistMultRemovedAntiNeutrons; // enter comment here
 	
-	TH2F *fHistTrackMultvsNonRemovedCharged;
-	TH2F *fHistTrackMultvsNonRemovedNeutral;
-	TH2F *fHistTrackMultvsRemovedGamma;
+	TH2F *fHistTrackMultvsNonRemovedCharged; // enter comment here
+	TH2F *fHistTrackMultvsNonRemovedNeutral; // enter comment here
+	TH2F *fHistTrackMultvsRemovedGamma; // enter comment here
 	
-	TH2F *fHistClusterMultvsNonRemovedCharged;
-	TH2F *fHistClusterMultvsNonRemovedNeutral;
-	TH2F *fHistClusterMultvsRemovedGamma;
+	TH2F *fHistClusterMultvsNonRemovedCharged; // enter comment here
+	TH2F *fHistClusterMultvsNonRemovedNeutral; // enter comment here
+	TH2F *fHistClusterMultvsRemovedGamma; // enter comment here
 	
-	TH2F *fHistMultvsNonRemovedChargedE;
-	TH2F *fHistMultvsNonRemovedNeutralE;
-	TH2F *fHistMultvsRemovedGammaE;
+	TH2F *fHistMultvsNonRemovedChargedE; // enter comment here
+	TH2F *fHistMultvsNonRemovedNeutralE; // enter comment here
+	TH2F *fHistMultvsRemovedGammaE; // enter comment here
 	
-	Float_t fEtNonRemovedProtons; 
-	Float_t fEtNonRemovedAntiProtons; 
-	Float_t fEtNonRemovedPiPlus; 
-	Float_t fEtNonRemovedPiMinus; 
-	Float_t fEtNonRemovedKaonPlus; 
-	Float_t fEtNonRemovedKaonMinus; 
-	Float_t fEtNonRemovedK0s; 
-	Float_t fEtNonRemovedLambdas; 
-	Float_t fEtNonRemovedElectrons; 
-	Float_t fEtNonRemovedPositrons; 
-	Float_t fEtNonRemovedMuMinus;
-	Float_t fEtNonRemovedMuPlus;
-	Float_t fEtNonRemovedGammas;
-	Float_t fEtNonRemovedGammasFromPi0;
-	Float_t fEtNonRemovedNeutrons;
-	Float_t fEtNonRemovedAntiNeutrons;
+	Float_t fEtNonRemovedProtons; // enter comment here 
+	Float_t fEtNonRemovedAntiProtons; // enter comment here 
+	Float_t fEtNonRemovedPiPlus; // enter comment here 
+	Float_t fEtNonRemovedPiMinus; // enter comment here 
+	Float_t fEtNonRemovedKaonPlus; // enter comment here 
+	Float_t fEtNonRemovedKaonMinus; // enter comment here 
+	Float_t fEtNonRemovedK0s; // enter comment here 
+	Float_t fEtNonRemovedLambdas; // enter comment here 
+	Float_t fEtNonRemovedElectrons; // enter comment here 
+	Float_t fEtNonRemovedPositrons; // enter comment here 
+	Float_t fEtNonRemovedMuMinus; // enter comment here
+	Float_t fEtNonRemovedMuPlus; // enter comment here
+	Float_t fEtNonRemovedGammas; // enter comment here
+	Float_t fEtNonRemovedGammasFromPi0; // enter comment here
+	Float_t fEtNonRemovedNeutrons; // enter comment here
+	Float_t fEtNonRemovedAntiNeutrons; // enter comment here
 	
-	Float_t fEtRemovedGammas;
-	Float_t fEtRemovedNeutrons;
-	Float_t fEtRemovedAntiNeutrons;
+	Float_t fEtRemovedGammas; // enter comment here
+	Float_t fEtRemovedNeutrons; // enter comment here
+	Float_t fEtRemovedAntiNeutrons; // enter comment here
 		
-	Int_t fMultNonRemovedProtons; 
-	Int_t fMultNonRemovedAntiProtons; 
-	Int_t fMultNonRemovedPiPlus; 
-	Int_t fMultNonRemovedPiMinus; 
-	Int_t fMultNonRemovedKaonPlus; 
-	Int_t fMultNonRemovedKaonMinus; 
-	Int_t fMultNonRemovedK0s; 
-	Int_t fMultNonRemovedLambdas; 
-	Int_t fMultNonRemovedElectrons; 
-	Int_t fMultNonRemovedPositrons; 
-	Int_t fMultNonRemovedMuMinus;
-	Int_t fMultNonRemovedMuPlus;
-	Int_t fMultNonRemovedGammas;
-	Int_t fMultNonRemovedNeutrons;
-	Int_t fMultNonRemovedAntiNeutrons;
+	Int_t fMultNonRemovedProtons; // enter comment here 
+	Int_t fMultNonRemovedAntiProtons; // enter comment here 
+	Int_t fMultNonRemovedPiPlus; // enter comment here 
+	Int_t fMultNonRemovedPiMinus; // enter comment here 
+	Int_t fMultNonRemovedKaonPlus; // enter comment here 
+	Int_t fMultNonRemovedKaonMinus; // enter comment here 
+	Int_t fMultNonRemovedK0s; // enter comment here 
+	Int_t fMultNonRemovedLambdas; // enter comment here 
+	Int_t fMultNonRemovedElectrons; // enter comment here 
+	Int_t fMultNonRemovedPositrons; // enter comment here 
+	Int_t fMultNonRemovedMuMinus; // enter comment here
+	Int_t fMultNonRemovedMuPlus; // enter comment here
+	Int_t fMultNonRemovedGammas; // enter comment here
+	Int_t fMultNonRemovedNeutrons; // enter comment here
+	Int_t fMultNonRemovedAntiNeutrons; // enter comment here
 	
-	Int_t fMultRemovedGammas;
-	Int_t fMultRemovedNeutrons;
-	Int_t fMultRemovedAntiNeutrons;
+	Int_t fMultRemovedGammas; // enter comment here
+	Int_t fMultRemovedNeutrons; // enter comment here
+	Int_t fMultRemovedAntiNeutrons; // enter comment here
 	
-	Int_t fTrackMultInAcc;
+	Int_t fTrackMultInAcc; // enter comment here
 	
 	
-	TH2F *fHistDxDzNonRemovedCharged;
-	TH2F *fHistDxDzRemovedCharged;
-	TH2F *fHistDxDzNonRemovedNeutral;
-	TH2F *fHistDxDzRemovedNeutral;
+	TH2F *fHistDxDzNonRemovedCharged; // enter comment here
+	TH2F *fHistDxDzRemovedCharged; // enter comment here
+	TH2F *fHistDxDzNonRemovedNeutral; // enter comment here
+	TH2F *fHistDxDzRemovedNeutral; // enter comment here
 	
-	TH1F *fHistPiPlusMult;
-	TH1F *fHistPiMinusMult;
-	TH1F *fHistPiZeroMult;
+	TH1F *fHistPiPlusMult; // enter comment here
+	TH1F *fHistPiMinusMult; // enter comment here
+	TH1F *fHistPiZeroMult; // enter comment here
 
-	TH1F *fHistPiPlusMultAcc;
-	TH1F *fHistPiMinusMultAcc;
-	TH1F *fHistPiZeroMultAcc;
+	TH1F *fHistPiPlusMultAcc; // enter comment here
+	TH1F *fHistPiMinusMultAcc; // enter comment here
+	TH1F *fHistPiZeroMultAcc; // enter comment here
 	
-	Int_t fPiPlusMult;
-	Int_t fPiMinusMult;
-	Int_t fPiZeroMult;
+	Int_t fPiPlusMult; // enter comment here
+	Int_t fPiMinusMult; // enter comment here
+	Int_t fPiZeroMult; // enter comment here
 
-	Int_t fPiPlusMultAcc;
-	Int_t fPiMinusMultAcc;
-	Int_t fPiZeroMultAcc;
+	Int_t fPiPlusMultAcc; // enter comment here
+	Int_t fPiMinusMultAcc; // enter comment here
+	Int_t fPiZeroMultAcc; // enter comment here
 	
 	
 	Int_t fNeutralRemoved; // number of neutral particles that where removed by track matching
