@@ -46,6 +46,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetMinNClustersPerTrack(Double_t mct)          { fMinNClustPerTrack = mct;   }
   void         SetMinPtPerMatchedTrack(Double_t mpt)          { fMinPtPerTrack = mpt;       }
   void         SetNminCells(Int_t n)                          { fNminCells = n;             }
+  void         SetTrClassNames(const char *n)                 { fTrClassNames = n;          }
   void         SetTrackCuts(AliESDtrackCuts *c)               { fTrCuts = c;                }
   void         SetUseQualFlag(Bool_t b)                       { fUseQualFlag = b;           }
   void         SetVertexRange(Double_t z1, Double_t z2)       { fVtxZMin=z1; fVtxZMax=z2;   }
@@ -97,13 +98,15 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Double_t               fMinNClustPerTrack;      // minimum number of cluster per track (def=50)
   Double_t               fMinPtPerTrack;          // minimum pT per track (def=0.25 GeV/c)
   Double_t               fIsoDist;                // isolation distance (def=0.2)
-  AliESDtrackCuts       *fTrCuts;                 //track cuts
+  TString                fTrClassNames;           // trigger class names
+  AliESDtrackCuts       *fTrCuts;                 // track cuts
 
     // derived members (ie with ! after //)
   ULong64_t              fNEvs;                   //!accepted events 
   AliEMCALGeoUtils      *fGeom;                   //!geometry utils
   AliEMCALRecoUtils     *fReco;                   //!geometry utils
   TList                 *fOutput;                 //!container of output histograms
+  TObjArray             *fTrClassNamesArr;        //!array of trig class names  
   AliESDEvent           *fEsdEv;                  //!pointer to input esd event
   AliAODEvent           *fAodEv;                  //!pointer to input aod event
   TObjArray             *fRecPoints;              //!pointer to rec points (AliAnalysisTaskEMCALClusterizeFast)
@@ -121,6 +124,9 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   TH1                   *fHVertexZ2;              //!histo for vtxz after vtx cuts
   TH1                   *fHCent;                  //!histo for cent
   TH1                   *fHCentQual;              //!histo for cent after quality flag cut
+  TH1                   *fHTclsBeforeCuts;        //!histo for trigger classes before cuts
+  TH1                   *fHTclsAfterCuts;         //!histo for trigger classes after cuts
+
     // histograms for cells
   TH2                  **fHColuRow;               //!histo for cell column and row
   TH2                  **fHColuRowE;              //!histo for cell column and row weight energy
