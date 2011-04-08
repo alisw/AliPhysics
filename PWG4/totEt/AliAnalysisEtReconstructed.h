@@ -50,10 +50,10 @@ protected:
     TH2F *fHistChargedKaonEnergyDeposit; /** Energy deposited in calorimeter by charged kaons */    
     TH2F *fHistMuonEnergyDeposit; /** Energy deposited in calorimeter by muons */
 
-    TH1F *fHistRemovedEnergy;
+    TH1F *fHistRemovedEnergy; // removed energy
 
-    Double_t fGeomCorrection;
-    Double_t fEMinCorrection;
+    Double_t fGeomCorrection; // geometry correction
+    Double_t fEMinCorrection; // Emin correction
     
   private:
     

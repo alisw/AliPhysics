@@ -133,7 +133,7 @@ protected:
     Float_t fPidProb; /** Probability of PID */
     Bool_t fTrackPassedCut; /** The track is accepted by ESDTrackCuts */
 
-    Int_t fCentClass; 
+    Int_t fCentClass; // centrality class
         
     Double_t fEtaCut;/** Cut in eta (standard |eta| < 0.5 )*/
 
@@ -232,14 +232,11 @@ protected:
    /** Centrality object */
     AliCentrality *fCentrality; //Centrality object
     
-    /** Which detector? (-1 -> PHOS, 1 -> EMCAL)*/
-    Short_t fDetector;
+    Short_t fDetector;     /** Which detector? (-1 -> PHOS, 1 -> EMCAL)*/
     
-    /** THnSparse histograms */
-    THnSparseD *fSparseHistTracks; 
+    THnSparseD *fSparseHistTracks;     /** THnSparse histograms */
     
-    /** THnSparse histograms */
-    THnSparseD *fSparseHistClusters;
+    THnSparseD *fSparseHistClusters;     /** THnSparse histograms */
     
     /** ET sparse valuses */
     THnSparseD *fSparseHistEt; //!
