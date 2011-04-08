@@ -59,20 +59,7 @@ void rec_hlt_globalhisto(const char *filename,
   // setup the HLT system
   AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();
 
-  AliHLTConfiguration globalhisto("globalhisto", "GlobalHisto", "GLOBAL-esd-converter",
-				  "-histogram TrackPt    -size 1000 -expression Track_pt   "
-				//"-histogram TrackPt    -size 1000 -expression Track_pt  -cut Track_pt<0.8&&Track_pt>0.6  "
-				  "-histogram TrackPhi   -size 1000 -expression Track_phi   "
-				  "-histogram TrackEta   -size 1000 -expression Track_eta   "
-				  "-histogram TrackCount -size 1000 -expression trackcount  "
-				  "-histogram TrackTheta -size 1000 -expression Track_theta "
-				  "-histogram VertexX    -size 1000 -expression vertexX     "
-				  "-histogram VertexY    -size 1000 -expression vertexY     "
-				  "-histogram VertexZ    -size 1000 -expression vertexZ     "
-				  "-histogram DCAr       -size 1000 -expression Track_DCAr  "
-				  "-histogram DCAz       -size 1000 -expression Track_DCAz  "
-				  "-histogram dEdx_vs_p  -size 1000 -expression Track_dEdx:Track_p  "
-				  );
+  AliHLTConfiguration globalhisto("globalhisto", "GlobalHisto", "GLOBAL-esd-converter","");
   AliHLTConfiguration writer("writer", "ROOTFileWriter", "globalhisto", "-datafile histo.root -overwrite -concatenate-events");
 
   TString hltOptions="loglevel=0x7c ignore-hltout chains=writer";
@@ -195,31 +182,8 @@ void rec_hlt_globalhisto(const char *esdfilename,
   arguments+=" -entrytype "; arguments+=strtree;
   histoinput="ESD-publisher";
 
-  AliHLTConfiguration esdpublisher(histoinput.Data(), "ESDMCEventPublisher", "", arguments.Data());
-
-  //AliHLTConfiguration v0histo("v0","V0Histo",histoinput.Data(),"");
-  
-  AliHLTConfiguration globalhisto("globalhisto", "GlobalHisto", histoinput.Data(),
-        			"-histogram TrackPt    -size 1000 -expression Track_pt "
-        		        //"-histogram TrackPt    -size 1000 -expression Track_pt  -cut Track_pt<0.8&&Track_pt>0.6  "
-         			"-histogram TrackPhi   -size 1000 -expression Track_phi "
-         			"-histogram TrackEta   -size 1000 -expression Track_eta "
-         			"-histogram TrackCount -size 1000 -expression trackcount "
-				"-histogram Track_Nclusters -size 1000 -expression Track_Nclusters -cut Track_Nclusters>0 "
-         			"-histogram TrackTheta -size 1000 -expression Track_theta "
-         			"-histogram VertexX    -size 1000 -expression vertexX -cut nContributors>3 "
-         			"-histogram VertexY    -size 1000 -expression vertexY -cut nContributors>3 "
-         			"-histogram VertexZ    -size 1000 -expression vertexZ -cut nContributors>3 "
-         			"-histogram DCAr       -size 1000 -expression Track_DCAr "
-         			"-histogram DCAz       -size 1000 -expression Track_DCAz "
-         			"-histogram dEdx_vs_p  -size 1000 -expression Track_dEdx:Track_p "
-				"-histogram trendVertexX -size 1000 -expression vertexX:event -cut nContributors>3 "
-				"-histogram trendVertexY -size 1000 -expression vertexY:event -cut nContributors>3 "
-				"-histogram trendVertexZ -size 1000 -expression vertexZ:event -cut nContributors>3 "
-				"-histogram XY -size 1000 -expression vertexX:vertexY -cut nContributors>3 "
-				"-histogram DCA -size 1000 -expression TMath::Sqrt(Track_DCAr*Track_DCAr+Track_DCAz*Track_DCAz) "
-				"-histogram V0_AP  -size 1000 -expression V0_pt:V0_AP -cut clust1>=60&&clust2>=60&&dev1>=2.5&&dev2>=2.5&&devPrim<=3.5&&length>=3.0*sigmaLength&&length>=0&&r<=50"				
-				);
+  AliHLTConfiguration esdpublisher(histoinput.Data(), "ESDMCEventPublisher", "", arguments.Data());  
+  AliHLTConfiguration globalhisto("globalhisto", "GlobalHisto", histoinput.Data(),"");
   
   AliHLTConfiguration writer("writer1", "ROOTFileWriter", "globalhisto", "-datafile   histo.root -overwrite -concatenate-events");
   //AliHLTConfiguration writer("writer2", "ROOTFileWriter", "v0",          "-datafile v0histo.root -overwrite -concatenate-events");
@@ -231,7 +195,6 @@ void rec_hlt_globalhisto(const char *esdfilename,
   pHLT->ScanOptions("libAliHLTUtil.so libAliHLTGlobal.so loglevel=0x79");
 
   pHLT->BuildTaskList("writer1");
-  //pHLT->BuildTaskList("writer2");
   pHLT->Run(nofEvents);
 }
 	
