@@ -14,19 +14,19 @@ using namespace std;
 ClassImp(AliAnalysisEtReconstructedPhos);
 
 /*// Worst case (protons and neutrons):
-const Double_t MEANCHARGED = 0.335;
-const Double_t MEANNEUTRAL = 0.434;
-const Double_t MEANGAMMA = 0.374;
+const Double_t kMEANCHARGED = 0.335;
+const Double_t kMEANNEUTRAL = 0.434;
+const Double_t kMEANGAMMA = 0.374;
 
 // Best case (pions and K0s): 
-const Double_t MEANCHARGED = 0.304;
-const Double_t MEANNEUTRAL = 0.3356;
-const Double_t MEANGAMMA = 0.374;
+const Double_t kMEANCHARGED = 0.304;
+const Double_t kMEANNEUTRAL = 0.3356;
+const Double_t kMEANGAMMA = 0.374;
 */
 // Simulated case:
-const Double_t MEANCHARGED = 0.307;
-const Double_t MEANNEUTRAL = 0.407;
-const Double_t MEANGAMMA = 0.374;
+const Double_t kMEANCHARGED = 0.307;
+const Double_t kMEANNEUTRAL = 0.407;
+const Double_t kMEANGAMMA = 0.374;
 
 
 AliAnalysisEtReconstructedPhos::AliAnalysisEtReconstructedPhos() :
@@ -69,12 +69,12 @@ bool AliAnalysisEtReconstructedPhos::TrackHitsCalorimeter(AliVParticle* track, D
 }
 
 Double_t AliAnalysisEtReconstructedPhos::GetChargedContribution(Int_t clusterMult)
-{
+{ // Charged contrib
   if(clusterMult > 0)
   {
     Double_t nPart = 0.067 + 0.137*clusterMult;
   
-    Double_t contr = nPart*MEANCHARGED;
+    Double_t contr = nPart*kMEANCHARGED;
   
     return contr;
   }
@@ -83,12 +83,12 @@ Double_t AliAnalysisEtReconstructedPhos::GetChargedContribution(Int_t clusterMul
 }
 
 Double_t AliAnalysisEtReconstructedPhos::GetNeutralContribution(Int_t clusterMult)
-{
+{ // Neutral contrib
   if(clusterMult > 0)
   {
     Double_t nPart = 0.012 + 0.024*clusterMult - 0.00006*clusterMult*clusterMult;
   
-    Double_t contr = nPart*MEANNEUTRAL;
+    Double_t contr = nPart*kMEANNEUTRAL;
   
     return contr;
   }
@@ -96,12 +96,12 @@ Double_t AliAnalysisEtReconstructedPhos::GetNeutralContribution(Int_t clusterMul
 }
 
 Double_t AliAnalysisEtReconstructedPhos::GetGammaContribution(Int_t clusterMult)
-{
+{ // Gamma contrib
   if(clusterMult > 0)
   {
     Double_t nPart = -0.008 + 0.0057*clusterMult + 0.0002*clusterMult*clusterMult;
   
-    Double_t contr = nPart*MEANGAMMA;
+    Double_t contr = nPart*kMEANGAMMA;
   
     return contr;
   }
