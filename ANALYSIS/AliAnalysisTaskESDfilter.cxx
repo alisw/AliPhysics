@@ -38,6 +38,7 @@
 #include "AliESDMuonTrack.h"
 #include "AliESDVertex.h"
 #include "AliCentrality.h"
+#include "AliEventplane.h"
 #include "AliESDv0.h"
 #include "AliESDkink.h"
 #include "AliESDcascade.h"
@@ -254,6 +255,7 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
     header->SetEventType(0);
     header->SetMuonMagFieldScale(-999.);
     header->SetCentrality(0);       
+    header->SetEventplane(0);
   } else {
     header->SetBunchCrossNumber(esd.GetBunchCrossNumber());
     header->SetOrbitNumber(esd.GetOrbitNumber());
@@ -266,6 +268,12 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
     }
     else{
       header->SetCentrality(0);
+    }
+    if(const_cast<AliESDEvent&>(esd).GetEventplane()){
+      header->SetEventplane(const_cast<AliESDEvent&>(esd).GetEventplane());
+    }
+    else{
+      header->SetEventplane(0);
     }
   }
   

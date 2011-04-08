@@ -14,6 +14,7 @@
 #include "AliAODVertex.h"
 #include <TString.h>
 #include "AliCentrality.h"
+#include "AliEventplane.h"
 
 class TGeoHMatrix;
 class TString;
@@ -35,6 +36,7 @@ class AliAODHeader : public AliVHeader {
 	       Double_t magField,
 	       Double_t muonMagFieldScale,
 	       Double_t cent,
+	       Double_t eventplane,
 	       Double_t n1Energy,
 	       Double_t p1Energy,
 	       Double_t n2Energy,
@@ -64,6 +66,7 @@ class AliAODHeader : public AliVHeader {
   Double_t  GetMuonMagFieldScale()  const { return fMuonMagFieldScale; }
   
   Double_t  GetCentrality()         const { return fCentrality; }
+  Double_t  GetEventplane()         const { return fEventplane; }
   Double_t  GetZDCN1Energy()        const { return fZDCN1Energy; }
   Double_t  GetZDCP1Energy()        const { return fZDCP1Energy; }
   Double_t  GetZDCN2Energy()        const { return fZDCN2Energy; }
@@ -91,6 +94,7 @@ class AliAODHeader : public AliVHeader {
   UInt_t   GetL1TriggerInputs() const {return fL1TriggerInputs;} 
   UShort_t GetL2TriggerInputs() const {return fL2TriggerInputs;} 
   AliCentrality* GetCentralityP()  const { return fCentralityP; }
+  AliEventplane* GetEventplaneP()  const { return fEventplaneP; }
 
   
   void SetRunNumber(Int_t nRun)                { fRunNumber = nRun; }
@@ -105,6 +109,7 @@ class AliAODHeader : public AliVHeader {
   void SetMagneticField(Double_t magFld)       { fMagneticField = magFld; }
   void SetMuonMagFieldScale(Double_t magFldScl){ fMuonMagFieldScale = magFldScl; }
   void SetCentrality(AliCentrality* cent);
+  void SetEventplane(AliEventplane* eventplane);
   void SetZDCN1Energy(Double_t n1Energy)       { fZDCN1Energy = n1Energy; }
   void SetZDCP1Energy(Double_t p1Energy)       { fZDCP1Energy = p1Energy; }
   void SetZDCN2Energy(Double_t n2Energy)       { fZDCN2Energy = n2Energy; }
@@ -159,6 +164,7 @@ class AliAODHeader : public AliVHeader {
   Double32_t  fMagneticField;       // Solenoid Magnetic Field in kG
   Double32_t  fMuonMagFieldScale;   // magnetic field scale of muon arm magnet
   Double32_t  fCentrality;          // Centrality
+  Double32_t  fEventplane;          // Event plane angle
   Double32_t  fZDCN1Energy;         // reconstructed energy in the neutron1 ZDC
   Double32_t  fZDCP1Energy;         // reconstructed energy in the proton1 ZDC
   Double32_t  fZDCN2Energy;         // reconstructed energy in the neutron2 ZDC
@@ -192,7 +198,8 @@ class AliAODHeader : public AliVHeader {
   UInt_t      fL1TriggerInputs;     // L1 Trigger Inputs (mask)
   UShort_t    fL2TriggerInputs;     // L2 Trigger Inputs (mask)
   AliCentrality* fCentralityP;      // Pointer to full centrality information
-  ClassDef(AliAODHeader, 14);
+  AliEventplane* fEventplaneP;	    // Pointer to full event plane information
+  ClassDef(AliAODHeader, 15);
 };
 inline
 void AliAODHeader::SetCentrality(AliCentrality* cent)      { 
@@ -203,6 +210,17 @@ void AliAODHeader::SetCentrality(AliCentrality* cent)      {
     }
     else{
 	fCentrality = -999;
+    }
+}
+inline
+void AliAODHeader::SetEventplane(AliEventplane* eventplane)      { 
+    if(eventplane){
+	if(fEventplaneP)*fEventplaneP = *eventplane;
+	else fEventplaneP = new AliEventplane(*eventplane);
+	fEventplane = eventplane->GetEventplane("Q");
+    }
+    else{
+	fEventplane = -999;
     }
 }
 #endif

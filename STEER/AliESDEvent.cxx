@@ -67,6 +67,7 @@
 #include "AliESDACORDE.h"
 #include "AliESDHLTDecision.h"
 #include "AliCentrality.h"
+#include "AliEventplane.h"
 
 ClassImp(AliESDEvent)
 
@@ -136,7 +137,8 @@ AliESDEvent::AliESDEvent():
   fConnected(kFALSE),
   fUseOwnList(kFALSE),
   fTOFHeader(0),
-  fCentrality(0)
+  fCentrality(0),
+  fEventplane(0)
 {
 }
 //______________________________________________________________________________
@@ -174,7 +176,8 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fConnected(esd.fConnected),
   fUseOwnList(esd.fUseOwnList),
   fTOFHeader(new AliTOFHeader(*esd.fTOFHeader)),
-  fCentrality(new AliCentrality(*esd.fCentrality))
+  fCentrality(new AliCentrality(*esd.fCentrality)),
+  fEventplane(new AliEventplane(*esd.fEventplane))
 {
   // CKB init in the constructor list and only add here ...
   AddObject(fESDRun);
@@ -297,6 +300,7 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   }
 
   fCentrality = source.fCentrality;
+  fEventplane = source.fEventplane;
 
   fConnected  = source.fConnected;
   fUseOwnList = source.fUseOwnList;
@@ -321,6 +325,7 @@ AliESDEvent::~AliESDEvent()
       fESDObjects = 0;
     }
   if (fCentrality) delete fCentrality;
+  if (fEventplane) delete fEventplane;
   
 }
 
@@ -1749,4 +1754,10 @@ AliCentrality* AliESDEvent::GetCentrality()
 {
     if (!fCentrality) fCentrality = new AliCentrality();
     return  fCentrality;
+}
+
+AliEventplane* AliESDEvent::GetEventplane()
+{
+    if (!fEventplane) fEventplane = new AliEventplane();
+    return  fEventplane;
 }

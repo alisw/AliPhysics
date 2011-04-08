@@ -25,6 +25,7 @@
 #include "AliMCParticle.h"
 
 class AliCentrality;
+class AliEventplane;
 class AliStack;
 class AliHeader;
 class AliGenEventHeader;
@@ -134,6 +135,7 @@ public:
   virtual Int_t        EventIndexForPHOSCell(Int_t)    const {return 0;}
   virtual Int_t        EventIndexForEMCALCell(Int_t)   const {return 0;} 
   AliCentrality*       GetCentrality()  {return 0;} 
+  AliEventplane*       GetEventplane()  {return 0;} 
 
   virtual AliVVZERO *GetVZEROData() const {return 0;}
 private:

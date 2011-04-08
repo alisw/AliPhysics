@@ -25,7 +25,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  	AliAnalysisTaskSE.cxx AliAnalysisTaskME.cxx AliAnalysisTaskESDfilter.cxx AliAnalysisTaskMCParticleFilter.cxx AliKineTrackCuts.cxx AliESDtrackCuts.cxx  AliESDpidCuts.cxx AliESDv0Cuts.cxx AliEventPoolOTF.cxx AliEventPoolLoop.cxx AliEventPoolSparse.cxx AliAnalysisTaskTagCreator.cxx AliMultiEventInputHandler.cxx AliTriggerAnalysis.cxx AliPhysicsSelection.cxx AliBackgroundSelection.cxx AliPhysicsSelectionTask.cxx AliAnalysisFilter.cxx AliAnalysisCuts.cxx AliCollisionNormalization.cxx AliCollisionNormalizationTask.cxx AliCentralitySelectionTask.cxx AliAnalysisTaskAODCentralityMaker.cxx AliAnalysisTaskStat.cxx AliMultiInputEventHandler.cxx AliESDv0KineCuts.cxx AliAnalysisTaskPIDResponse.cxx)
+set ( SRCS  	AliAnalysisTaskSE.cxx AliAnalysisTaskME.cxx AliAnalysisTaskESDfilter.cxx AliAnalysisTaskMCParticleFilter.cxx AliKineTrackCuts.cxx AliESDtrackCuts.cxx  AliESDpidCuts.cxx AliESDv0Cuts.cxx AliEventPoolOTF.cxx AliEventPoolLoop.cxx AliEventPoolSparse.cxx AliAnalysisTaskTagCreator.cxx AliMultiEventInputHandler.cxx AliTriggerAnalysis.cxx AliPhysicsSelection.cxx AliBackgroundSelection.cxx AliPhysicsSelectionTask.cxx AliAnalysisFilter.cxx AliAnalysisCuts.cxx AliCollisionNormalization.cxx AliCollisionNormalizationTask.cxx AliCentralitySelectionTask.cxx AliAnalysisTaskAODCentralityMaker.cxx AliEPSelectionTask.cxx AliAnalysisTaskStat.cxx AliMultiInputEventHandler.cxx AliESDv0KineCuts.cxx AliAnalysisTaskPIDResponse.cxx)
 
 if( ROOTHASALIEN STREQUAL "yes")
 	

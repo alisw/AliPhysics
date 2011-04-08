@@ -18,6 +18,7 @@
 #include <TList.h>
 #include <TObjArray.h>
 class AliCentrality;
+class AliEventplane;
 class AliVVertex;
 
 class AliMixedEvent : public AliVEvent {
@@ -110,6 +111,7 @@ public:
   virtual Int_t        EventIndexForEMCALCell(Int_t icell) const;
 
   virtual AliCentrality* GetCentrality() {return 0;}
+  virtual AliEventplane* GetEventplane() {return 0;}
   // Primary vertex
     virtual const AliVVertex   *GetPrimaryVertex() const {return fMeanVertex;}
     virtual Bool_t ComputeVtx(const TObjArray *vertices, Double_t *pos,Double_t *sig,Int_t *nContributors);

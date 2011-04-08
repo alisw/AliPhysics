@@ -22,7 +22,7 @@
 #pragma link C++ class AliVCuts+;
 #pragma link C++ class AliVVZERO+;
 #pragma link C++ class AliCentrality+;
-
+#pragma link C++ class AliEventplane+;
 
 #pragma link C++ class AliMixedEvent+;
 

@@ -23,6 +23,7 @@
 #include "AliVCaloCells.h"
 #include "TRefArray.h"
 class AliCentrality;
+class AliEventplane;
 class AliVVZERO;
 
 class AliVEvent : public TObject {
@@ -129,6 +130,7 @@ public:
     return kFALSE;    
   }
   virtual AliCentrality* GetCentrality()                          = 0;
+  virtual AliEventplane* GetEventplane()                          = 0;
   virtual Int_t        EventIndex(Int_t itrack)             const = 0;
   virtual Int_t        EventIndexForCaloCluster(Int_t iclu) const = 0;
   virtual Int_t        EventIndexForPHOSCell(Int_t icell)   const = 0;

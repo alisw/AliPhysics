@@ -22,6 +22,7 @@
 
 #include "AliAODHeader.h"
 #include "AliCentrality.h"
+#include "AliEventplane.h"
 #include <TGeoMatrix.h>
 #include <TObjString.h>
 
@@ -33,6 +34,7 @@ AliAODHeader::AliAODHeader() :
   fMagneticField(-999.),
   fMuonMagFieldScale(-999.),
   fCentrality(-999.),
+  fEventplane(-999.),
   fZDCN1Energy(-999.),
   fZDCP1Energy(-999.),
   fZDCN2Energy(-999.),
@@ -60,7 +62,8 @@ AliAODHeader::AliAODHeader() :
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
-  fCentralityP(0)
+  fCentralityP(0),
+  fEventplaneP(0)
 {
   // default constructor
 
@@ -83,6 +86,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fMagneticField(-999.),
   fMuonMagFieldScale(-999.),
   fCentrality(-999.),
+  fEventplane(-999.),
   fZDCN1Energy(-999.),
   fZDCP1Energy(-999.),
   fZDCN2Energy(-999.),
@@ -110,7 +114,8 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
-  fCentralityP(0)
+  fCentralityP(0),
+  fEventplaneP(0)
 {
   // constructor
 
@@ -135,6 +140,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
 			   Double_t magField,
 			   Double_t muonMagFieldScale,
 			   Double_t cent,
+			   Double_t eventplane,
 			   Double_t n1Energy,
 			   Double_t p1Energy,
 			   Double_t n2Energy,
@@ -150,6 +156,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fMagneticField(magField),
   fMuonMagFieldScale(muonMagFieldScale),
   fCentrality(cent),
+  fEventplane(eventplane),
   fZDCN1Energy(n1Energy),
   fZDCP1Energy(p1Energy),
   fZDCN2Energy(n2Energy),
@@ -177,7 +184,8 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
-  fCentralityP(0)
+  fCentralityP(0),
+  fEventplaneP(0)
 {
   // constructor
 
@@ -196,6 +204,7 @@ AliAODHeader::~AliAODHeader()
 {
   // destructor
   delete fCentralityP;
+  delete fEventplaneP;
   RemoveQTheta();
 }
 
@@ -205,6 +214,7 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fMagneticField(hdr.fMagneticField),
   fMuonMagFieldScale(hdr.fMuonMagFieldScale),
   fCentrality(hdr.fCentrality),
+  fEventplane(hdr.fEventplane),
   fZDCN1Energy(hdr.fZDCN1Energy),
   fZDCP1Energy(hdr.fZDCP1Energy),
   fZDCN2Energy(hdr.fZDCN2Energy),
@@ -232,7 +242,8 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fL0TriggerInputs(hdr.fL0TriggerInputs),
   fL1TriggerInputs(hdr.fL1TriggerInputs),
   fL2TriggerInputs(hdr.fL2TriggerInputs),
-  fCentralityP(new AliCentrality(*hdr.fCentralityP))
+  fCentralityP(new AliCentrality(*hdr.fCentralityP)),
+  fEventplaneP(new AliEventplane(*hdr.fEventplaneP))
 {
   // Copy constructor.
   
@@ -271,6 +282,7 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fMagneticField    = hdr.fMagneticField;
     fMuonMagFieldScale= hdr.fMuonMagFieldScale;
     fCentrality       = hdr.fCentrality;
+    fEventplane       = hdr.fEventplane;
     fZDCN1Energy      = hdr.fZDCN1Energy;
     fZDCP1Energy      = hdr.fZDCP1Energy;
     fZDCN2Energy      = hdr.fZDCN2Energy;
@@ -297,6 +309,7 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fL1TriggerInputs    = hdr.fL1TriggerInputs;
     fL2TriggerInputs    = hdr.fL2TriggerInputs;
     fCentralityP        = new AliCentrality(*hdr.fCentralityP);
+    fEventplaneP        = new AliEventplane(*hdr.fEventplaneP);
 
     SetName(hdr.fName);
     SetTitle(hdr.fTitle);
@@ -374,6 +387,11 @@ void AliAODHeader::Clear(Option_t* /*opt*/)
     fCentralityP = 0;
     fCentrality = -999;
   }
+  if (fEventplaneP){
+    delete fEventplaneP;
+    fEventplaneP = 0;
+    fEventplane = -999;
+  }
   return;
 }
 
@@ -393,6 +411,7 @@ void AliAODHeader::Print(Option_t* /*option*/) const
   printf("Muon mag. field scale   : %f\n", fMuonMagFieldScale);
   
   printf("Centrality              : %f\n", fCentrality);
+  printf("Event plane             : %f\n", fEventplane);
   printf("ZDC N1 Energy           : %f\n", fZDCN1Energy);
   printf("ZDC P1 Energy           : %f\n", fZDCP1Energy);
   printf("ZDC N2 Energy           : %f\n", fZDCN2Energy);

@@ -35,6 +35,7 @@
 class TTree;
 class TFolder;
 class AliCentrality;
+class AliEventplane;
 
 class AliAODEvent : public AliVEvent {
 
@@ -236,6 +237,7 @@ class AliAODEvent : public AliVEvent {
   virtual Int_t        EventIndexForPHOSCell(Int_t)    const {return 0;}
   virtual Int_t        EventIndexForEMCALCell(Int_t)   const {return 0;} 
   AliCentrality*       GetCentrality() {return fHeader->GetCentralityP();} 
+  AliEventplane*       GetEventplane() {return fHeader->GetEventplaneP();}
 
   // VZERO 
   AliAODVZERO *GetVZEROData() const { return fAODVZERO; }

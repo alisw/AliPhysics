@@ -58,6 +58,7 @@ class AliESDMuonTrack;
 class AliESD;
 class AliESDcascade;
 class AliCentrality;
+class AliEventplane;
 class TRefArray;
 class AliESDACORDE;
 class AliESDHLTDecision;
@@ -189,6 +190,7 @@ public:
   Double_t GetZDCEMEnergy(Int_t i=0) const {return fESDZDC?fESDZDC->GetZDCEMEnergy(i):0;}
   Int_t    GetZDCParticipants() const {return fESDZDC?fESDZDC->GetZDCParticipants():0;}
   AliCentrality* GetCentrality();
+  AliEventplane* GetEventplane();
     
 
   void     SetZDC(Float_t n1Energy, Float_t p1Energy, Float_t em1Energy, Float_t em2Energy,
@@ -472,7 +474,8 @@ protected:
                              //  It contains also TOF time resolution
                              //  and T0spread as written in OCDB
   AliCentrality *fCentrality; //! Centrality for AA collision
-  ClassDef(AliESDEvent,13)  //ESDEvent class 
+  AliEventplane *fEventplane; //! Event plane for AA collision
+  ClassDef(AliESDEvent,14)  //ESDEvent class 
 };
 #endif 
 
