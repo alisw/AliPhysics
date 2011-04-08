@@ -211,6 +211,8 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     else {
       time[ipmt] = 0;
       adc[ipmt] = 0;
+      adcmip[ipmt] = 0;
+
     }
   }
   
@@ -440,6 +442,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	 else {
 	   time[ipmt] = 0;
 	   adc[ipmt] = 0;
+	   adcmip[ipmt] = 0;
 	   noncalibtime[ipmt] = 0;
 	 }
        }
@@ -524,6 +527,10 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   ****************************************************/
   
   AliDebug(1,Form("Start FillESD T0"));
+  if(!pESD) {
+    AliError("No ESD Event");
+    return;
+  }
   pESD ->SetT0spread(fTimeSigmaShift);
  
 

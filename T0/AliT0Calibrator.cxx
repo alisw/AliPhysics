@@ -98,18 +98,11 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t refAmp,  Int_t ipmt, Int_t qt, Int_
 {
   //
   // referemce amplitude for walk correction now read from RecoParam
-
-  Double_t *grY ; 
-
   Int_t walk=0;
 
   Int_t timeEq=0, timeWalk=0;  
   TGraph *fu1=(TGraph*) fWalk.At(ipmt);
   if(fu1 && fu1->GetN()>0) {
-     grY = fu1->GetY();
-     //   fMaxValue[ipmt]=grY[refAmp-1];
-    // TGraph* fu  = param ->GetAmpLEDRec(i);
-    // walk = Int_t (fMaxValue[ipmt]) + Int_t(fu1->Eval(Double_t(qt)));
     walk = Int_t(fu1->Eval(Double_t(qt)));
   }
   

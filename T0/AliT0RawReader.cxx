@@ -202,9 +202,9 @@ Bool_t  AliT0RawReader::Next()
 		}
 		if(correct){
 		  hit=koefhits[koef];
-		  if(hit>5) {  
+		  if(hit>4) {  
 		    AliDebug(10,Form("Too many hits for %i channel - %i ! ",koef,koefhits[koef] )); 
-		    hit=5;
+		    hit=4;
 		  }
 		  fAllData[koef][hit]=time; 
 		  koefhits[koef]++;

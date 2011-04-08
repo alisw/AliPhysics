@@ -104,7 +104,7 @@ Bool_t  AliT0CalibSeasonTimeShift::SetT0Par(Float_t par[4],Float_t spar[4])
 }
 
 //________________________________________________________________
-Bool_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys)
+Bool_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime)
 {
   // compute online equalized time
   Float_t mean, sigma;
@@ -116,9 +116,9 @@ Bool_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys)
   }
   else
     {
-      gFile->ls();
+      //    gFile->ls();
     TDirectory *dr = (TDirectory*) gFile->Get("T0Calib");
-      if (!dr) {
+    if (!dr) {
       AliWarning(Form("no Tzero Directory in file collected "));
       return ok;
     }
@@ -129,7 +129,7 @@ Bool_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys)
     }
     TString histname[4]={"fTzeroORAplusORC", "fTzeroORA", "fTzeroORC",  "fResolution"};
     for (Int_t i=0; i<4; i++)
-	{
+      {
 	  TH1F *cfd = (TH1F*)TzeroObj->FindObject( histname[i].Data());
 	  gFile->Get(histname[i].Data());
 	  if(!cfd) AliWarning(Form("no histograms collected for %s", histname[i].Data()));
@@ -139,13 +139,13 @@ Bool_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys)
 	    if (sigma == 0 || sigma > 500) ok = false;
 	    else
 	      { 
-		fMeanPar[i] =  mean;
+		fMeanPar[i] = cdbtime[i] +  mean;
 		fSigmaPar[i] = sigma;
-		printf(" T0s: %i %s %f %f  \n", i, histname[i].Data(), fMeanPar[i],fSigmaPar[i] ); 
+		//		printf(" T0s: %i %s %f %f  \n", i, histname[i].Data(), fMeanPar[i],fSigmaPar[i] ); 
 		ok=true;
 	      }
 	  }
-	} 
+      } 
     
     gFile->Close();
     delete gFile;

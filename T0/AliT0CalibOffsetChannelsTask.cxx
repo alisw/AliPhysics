@@ -73,9 +73,11 @@ AliT0CalibOffsetChannelsTask::~AliT0CalibOffsetChannelsTask()
   delete fTzeroORC;
   delete fResolution;
   delete fTzeroORAplusORC;
-  delete [] fTimeDiff;
-  delete [] fCFD;
-
+  for( Int_t  ip=0; ip < 24; ip++){
+    delete fTimeDiff[ip];
+    delete fCFD[ip];
+  }
+  
   delete fTzeroObject;
 }
 
@@ -106,8 +108,8 @@ void AliT0CalibOffsetChannelsTask::UserCreateOutputObjects()
   // Create histograms
   for (Int_t i=0; i<24; i++) {
     fTimeDiff[i]   = new TH1F (Form("CFD1minCFD%d",i+1),"fTimeDiff",300, -300, 300);
-    //   fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",500, 2000, 3000);//6000, 7000);
-    fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",500, -1000, 1000);//6000, 7000);
+    fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",500, 2000, 3000);//6000, 7000);
+    // fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",500, -1000, 1000);//6000, 7000);
   }
 
   fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",400,-2000,2000);   //or A plus or C 
