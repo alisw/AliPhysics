@@ -12,6 +12,7 @@
 #include <TLorentzVector.h>
 #include <TNtuple.h>
 #include <TProfile.h>
+#include <TString.h>
 #include <TVector2.h>
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
@@ -27,6 +28,7 @@
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliGeomManager.h"
+#include "AliInputEventHandler.h"
 #include "AliLog.h"
 #include "AliMagF.h"
 #include "AliTrackerBase.h"
@@ -54,11 +56,13 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fMinNClustPerTrack(50),
     fMinPtPerTrack(1.0), 
     fIsoDist(0.2),
+    fTrClassNames(""),
     fTrCuts(0),
     fNEvs(0),
     fGeom(0),
     fReco(0),
     fOutput(0),
+    fTrClassNamesArr(0),
     fEsdEv(0),
     fAodEv(0),
     fRecPoints(0),
@@ -74,6 +78,8 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fHVertexZ2(0x0),
     fHCent(0x0),
     fHCentQual(0x0),
+    fHTclsBeforeCuts(0x0),
+    fHTclsAfterCuts(0x0),
     fHColuRow(0x0),
     fHColuRowE(0x0),
     fHCellMult(0x0),
@@ -112,10 +118,13 @@ AliAnalysisTaskEMCALPi0PbPb::~AliAnalysisTaskEMCALPi0PbPb()
 {
   // Destructor.
 
-  delete fOutput; fOutput = 0;
+  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+    delete fOutput; fOutput = 0;
+  }
   delete fPtRanges; fPtRanges = 0;
   delete fGeom; fGeom = 0;
   delete fReco; fReco = 0;
+  delete fTrClassNamesArr;
   delete fSelTracks;
   delete [] fHColuRow;
   delete [] fHColuRowE;
@@ -132,6 +141,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
 
   fGeom = new AliEMCALGeoUtils(fGeoName,"EMCAL");
   fReco = new AliEMCALRecoUtils();
+  fTrClassNamesArr = fTrClassNames.Tokenize(" ");
   fOutput = new TList();
   fOutput->SetOwner();
   fSelTracks = new TObjArray;
@@ -141,7 +151,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
     if (f) {
       f->SetCompressionLevel(2);
       fNtuple = new TNtuple(Form("nt%.0fto%.0f",fCentFrom,fCentTo),"nt",
-                            "run:evt:l0:tcls:cent:pt:eta:phi:e:emax:n:n1:nsm:db:disp:mn:ms:ecc:sig:tkdz:tkdr:tkep:tkiso:ceiso");
+                            "run:evt:l0:tcls:cent:pt:eta:phi:e:emax:n:n1:idmax:nsm:db:disp:mn:ms:ecc:sig:tkdz:tkdr:tkep:tkiso:ceiso");
       fNtuple->SetDirectory(f);
       fNtuple->SetAutoFlush(-1024*1024*1024);
       fNtuple->SetAutoSave(-1024*1024*1024);
@@ -155,11 +165,12 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   // histograms
   TH1::SetDefaultSumw2(kTRUE);
   TH2::SetDefaultSumw2(kTRUE);
-  fHCuts = new TH1F("hEventCuts","",4,0.5,4.5);
-  fHCuts->GetXaxis()->SetBinLabel(1,"All (PS)");
-  fHCuts->GetXaxis()->SetBinLabel(2,Form("%s: %.0f-%.0f",fCentVar.Data(),fCentFrom,fCentTo));
-  fHCuts->GetXaxis()->SetBinLabel(3,"QFlag");
-  fHCuts->GetXaxis()->SetBinLabel(4,Form("zvtx: %.0f-%.0f",fVtxZMin,fVtxZMax));
+  fHCuts = new TH1F("hEventCuts","",5,0.5,5.5);
+  fHCuts->GetXaxis()->SetBinLabel(1,"All");
+  fHCuts->GetXaxis()->SetBinLabel(2,"PS");
+  fHCuts->GetXaxis()->SetBinLabel(3,Form("%s: %.0f-%.0f",fCentVar.Data(),fCentFrom,fCentTo));
+  fHCuts->GetXaxis()->SetBinLabel(4,"QFlag");
+  fHCuts->GetXaxis()->SetBinLabel(5,Form("zvtx: %.0f-%.0f",fVtxZMin,fVtxZMax));
   fOutput->Add(fHCuts);
   fHVertexZ = new TH1F("hVertexZBeforeCut","",100,-25,25);
   fHVertexZ->SetXTitle("z [cm]");
@@ -173,6 +184,15 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fHCentQual = new TH1F("hCentAfterCut","",101,-1,100);
   fHCentQual->SetXTitle(fCentVar.Data());
   fOutput->Add(fHCentQual);
+  fHTclsBeforeCuts = new TH1F("fHTclsBeforeCuts","",fTrClassNamesArr->GetEntries(),0.5,0.5+fTrClassNamesArr->GetEntries());
+  fHTclsAfterCuts = new TH1F("fHTclsAfterCuts","",fTrClassNamesArr->GetEntries(),0.5,0.5+fTrClassNamesArr->GetEntries());
+  for (Int_t i = 0; i<fTrClassNamesArr->GetEntries(); ++i) {
+    const char *name = fTrClassNamesArr->At(i)->GetName();
+    fHTclsBeforeCuts->GetXaxis()->SetBinLabel(1+i,name);
+    fHTclsAfterCuts->GetXaxis()->SetBinLabel(1+i,name);
+  }
+  fOutput->Add(fHTclsBeforeCuts);
+  fOutput->Add(fHTclsAfterCuts);
 
   // histograms for cells
   Int_t nsm = fGeom->GetEMCGeometry()->GetNumberOfSuperModules();
@@ -319,7 +339,29 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     am->LoadBranch("header");
   }
 
-  if (fHCuts->GetEntries()==0) {
+  Int_t cut = 1;
+  fHCuts->Fill(cut++);
+
+  TString trgclasses;
+  AliESDHeader *h = dynamic_cast<AliESDHeader*>(InputEvent()->GetHeader());
+  if (h) {
+    trgclasses = fEsdEv->GetFiredTriggerClasses();
+  } else {
+    AliAODHeader *h2 = dynamic_cast<AliAODHeader*>(InputEvent()->GetHeader());
+    if (h2) 
+      trgclasses = h2->GetFiredTriggerClasses();
+  }
+  for (Int_t i = 0; i<fTrClassNamesArr->GetEntries(); ++i) {
+    const char *name = fTrClassNamesArr->At(i)->GetName();
+    if (trgclasses.Contains(name))
+      fHTclsBeforeCuts->Fill(1+i);
+  }
+
+  UInt_t res = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  if (res==0)
+    return;
+
+  if (fHCuts->GetBinContent(2)==0) {
     if (!AliGeomManager::GetGeometry()) { // get geometry 
       AliWarning("Accessing geometry from OCDB, this is not very efficient!");
       AliCDBManager *cdb = AliCDBManager::Instance();
@@ -372,7 +414,6 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     }
   }
 
-  Int_t cut = 1;
   fHCuts->Fill(cut++);
 
   const AliCentrality *centP = InputEvent()->GetCentrality();
@@ -390,9 +431,6 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
 
   fHCentQual->Fill(cent);
   fHCuts->Fill(cut++);
-
-  // count number of accepted events
-  ++fNEvs;
 
   if (fEsdEv) {
     am->LoadBranch("PrimaryVertex.");
@@ -415,6 +453,15 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
 
   fHCuts->Fill(cut++);
   fHVertexZ2->Fill(vertex->GetZ());
+
+  // count number of accepted events
+  ++fNEvs;
+
+  for (Int_t i = 0; i<fTrClassNamesArr->GetEntries(); ++i) {
+    const char *name = fTrClassNamesArr->At(i)->GetName();
+    if (trgclasses.Contains(name))
+      fHTclsAfterCuts->Fill(1+i);
+  }
 
   fRecPoints   = 0; // will be set if fClusName is given and AliAnalysisTaskEMCALClusterizeFast is used
   fEsdClusters = 0; // will be set if ESD input used and if fRecPoints are not set of if clusters are attached
@@ -515,7 +562,7 @@ void AliAnalysisTaskEMCALPi0PbPb::Terminate(Option_t *)
       fNtuple->Write();
   }
 
-  AliInfo(Form("\n%s: Accepted %lld events", GetName(), fNEvs));
+  AliInfo(Form("%s: Accepted %lld events", GetName(), fNEvs));
 }
 
 //________________________________________________________________________
@@ -900,7 +947,7 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
     if (fNtuple) {
       if (clus->E()<fMinE)
         continue;
-      Float_t vals[24];
+      Float_t vals[25];
       TString trgclasses;
       vals[0]  = InputEvent()->GetRunNumber();
       vals[1]  = (((UInt_t)InputEvent()->GetOrbitNumber()  << 12) | (UInt_t)InputEvent()->GetBunchCrossNumber()); 
@@ -920,34 +967,33 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
           vals[2] = 0;
       }
       vals[3]  = 0;
-      if (trgclasses.Contains("CINT1-B"))
-        vals[3] += 1;
-      if (trgclasses.Contains("CINT1B"))
-        vals[3] += 2;
-      if (trgclasses.Contains("CSH1-B"))
-        vals[3] += 4;
-      if (trgclasses.Contains("CEMC1-B"))
-        vals[3] += 8;
+
+      for (Int_t j = 0; j<fTrClassNamesArr->GetEntries(); ++j) {
+        const char *name = fTrClassNamesArr->At(j)->GetName();
+        if (trgclasses.Contains(name))
+          vals[3] += TMath::Power(2,j);
+      }
       vals[4]  = InputEvent()->GetCentrality()->GetCentralityPercentileUnchecked(fCentVar);
       vals[5]  = clusterVec.Pt();
       vals[6]  = clusterVec.Eta();
       vals[7]  = clusterVec.Phi();
       vals[8]  = clusterVec.E();
       vals[9]  = GetMaxCellEnergy(clus);
-      vals[10]  = clus->GetNCells();
+      vals[10] = clus->GetNCells();
       vals[11] = GetNCells(clus,0.100);
-      vals[12] = fGeom->GetSuperModuleNumber(clus->GetCellAbsId(0));
-      vals[13] = clus->GetDistanceToBadChannel();
-      vals[14] = clus->GetDispersion();
-      vals[15] = clus->GetM20();
-      vals[16] = clus->GetM02();
-      vals[17] = clusterEcc;
-      vals[18] = maxAxis;
-      vals[19] = fClusProps[i].fTrDz; 
-      vals[20] = fClusProps[i].fTrDr;
-      vals[21] = fClusProps[i].fTrEp;
-      vals[22] = fClusProps[i].fTrIso;
-      vals[23] = fClusProps[i].fCellIso;
+      vals[12] = clus->GetCellAbsId(0);
+      vals[13] = fGeom->GetSuperModuleNumber(clus->GetCellAbsId(0));
+      vals[14] = clus->GetDistanceToBadChannel();
+      vals[15] = clus->GetDispersion();
+      vals[16] = clus->GetM20();
+      vals[17] = clus->GetM02();
+      vals[18] = clusterEcc;
+      vals[19] = maxAxis;
+      vals[20] = fClusProps[i].fTrDz; 
+      vals[21] = fClusProps[i].fTrDr;
+      vals[22] = fClusProps[i].fTrEp;
+      vals[23] = fClusProps[i].fTrIso;
+      vals[24] = fClusProps[i].fCellIso;
       fNtuple->Fill(vals);
     }
   }
