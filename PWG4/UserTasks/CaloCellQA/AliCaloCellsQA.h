@@ -74,7 +74,7 @@ protected:
 private:
 
   AliCaloCellsQA(const AliCaloCellsQA &);
-  AliCaloCellsQA & operator = (const AliCaloCellsQA &); 
+  AliCaloCellsQA & operator = (const AliCaloCellsQA &);
 
 private:
 
@@ -87,13 +87,13 @@ private:
   Bool_t    fkFullAnalysis;             // flag to activate all available histograms
 
   // changeable binning parameters
-  Int_t     fNBins_hECells;             // number of bins in hECells
-  Int_t     fNBins_hPi0Mass;            // number of bins in hPi0Mass
-  Int_t     fNBinsX_hNCellsInCluster;   // number of bins in hNCellsInCluster, X axis
-  Int_t     fNBinsY_hNCellsInCluster;   // number of bins in hNCellsInCluster, Y axis
-  Double_t  fXMax_hECells;              // X axis maximum in hECells
-  Double_t  fXMax_hPi0Mass;             // X axis maximum in hPi0Mass
-  Double_t  fXMax_hNCellsInCluster;     // X axis maximum in hNCellsInCluster
+  Int_t     fNBinsECells;               // number of bins in hECells
+  Int_t     fNBinsPi0Mass;              // number of bins in hPi0Mass
+  Int_t     fNBinsXNCellsInCluster;     // number of bins in hNCellsInCluster, X axis
+  Int_t     fNBinsYNCellsInCluster;     // number of bins in hNCellsInCluster, Y axis
+  Double_t  fXMaxECells;                // X axis maximum in hECells
+  Double_t  fXMaxPi0Mass;               // X axis maximum in hPi0Mass
+  Double_t  fXMaxNCellsInCluster;       // X axis maximum in hNCellsInCluster
 
   // internal parameters, used for coding convenience
   Int_t fAbsIdMin;                      // minimum absId number (0/EMCAL, 1/PHOS)
