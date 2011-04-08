@@ -33,8 +33,8 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 
 namespace
 {
-	const Int_t kPayLoadSize            =  944;
-	const Int_t kPayLoadSizeWithRawData = 1772;
+	const Int_t kPayLoadSizeOld     = 236;
+	const Int_t kPayLoadSizeNew     = 245;
 }
 
 ClassImp(AliEMCALTriggerSTURawStream)
@@ -50,7 +50,18 @@ fL1JetPatchIndex(),
 fNL0GammaPatch(0),
 fNL1JetPatch(0),
 fNL1GammaPatch(0),
-fGetRawData(0)
+fGetRawData(0),
+fV0A(0),
+fV0C(0),
+fGA(0),
+fGB(0),
+fGC(0),
+fJA(0),
+fJB(0),
+fJC(0),
+fRegionEnable(0),
+fFrameReceived(0),
+fFwVersion(0)
 {
 	//
 }
@@ -66,7 +77,18 @@ fL1JetPatchIndex(),
 fNL0GammaPatch(0),
 fNL1JetPatch(0),
 fNL1GammaPatch(0),
-fGetRawData(0)
+fGetRawData(0),
+fV0A(0),
+fV0C(0),
+fGA(0),
+fGB(0),
+fGC(0),
+fJA(0),
+fJB(0),
+fJC(0),
+fRegionEnable(0),
+fFrameReceived(0),
+fFwVersion(0)
 {
 	//
 	fRawReader->Reset();
@@ -97,8 +119,8 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 	// STU data decoder from Olivier Bourrion LPSC CNRS-IN2P3
 	// bourrion_at_lpsc_dot_in2p3_dot_fr
 	
-	UInt_t word32[1772]; // 32b words
-	for (Int_t i=0;i<1772;i++) word32[i] = 0;
+	UInt_t word32[kPayLoadSizeNew + 1536]; // 32b words
+	for (Int_t i = 0;i < kPayLoadSizeNew + 1536; i++) word32[i] = 0;
 	
 	Int_t iword = 0;
 	
@@ -109,6 +131,7 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 	Int_t eqId = -1, eqSize = 0;
 	
 	UInt_t w32;
+	
 	while (fRawReader->ReadNextInt(w32)) 
 	{
 		if (!iword)
@@ -120,26 +143,70 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 		word32[iword++] = w32;
 	}
 	
-	if (iword != kPayLoadSize && iword != kPayLoadSizeWithRawData)
+	if (iword != kPayLoadSizeOld && iword != kPayLoadSizeNew && iword != (kPayLoadSizeOld + 1536) && iword != (kPayLoadSizeNew + 1536))
 	{
-		AliError(Form("ERROR: STU payload (eqId: %d, eqSize: %d) doesn't match expected size! %d word32",
+		AliError(Form("STU payload (eqId: %d, eqSize: %d) doesn't match expected size! %d word32",
 					  eqId, eqSize, iword));
 		return kFALSE;
 	}
-	else if (AliDebugLevel())
+	
+	if (AliDebugLevel())
 	{
 		AliInfo(Form("STU (eqId: %d, eqSize: %d) payload size: %d word32",
 					 eqId, eqSize, iword));
 	}
 	
-	  fL1JetThreshold = ((word32[0]>>16) & 0xFFF);
-	fL1GammaThreshold =  (word32[0]      & 0xFFF);
+	int offset = 0;
 	
-	for (Int_t jet_row=0; jet_row<11; jet_row++)
+	switch (iword) 
 	{
-		UInt_t currentrow = word32[1+jet_row];
+		case kPayLoadSizeOld:
+		case kPayLoadSizeOld + 1536:
+		{
+			fL1JetThreshold   = ((word32[0]>>16) & 0xFFF);
+			fL1GammaThreshold =  (word32[0]      & 0xFFF);
+			
+			break;
+		}
+		case kPayLoadSizeNew:
+		case kPayLoadSizeNew + 1536:
+		{
+			fV0A = ((word32[0]>>16) & 0xFFF);
+			fV0C =  (word32[0]      & 0xFFF);
+			
+			UInt_t sV0 = fV0A + fV0C;
+			
+			fGA            = word32[1];
+			fGB            = word32[2];
+			fGC            = word32[3];
+			fJA            = word32[4];
+			fJB            = word32[5];
+			fJC            = word32[6];		
+			fRegionEnable  = word32[7];
+			fFrameReceived = word32[8];
+			fFwVersion     = word32[9];
+			
+			fL1JetThreshold   = fJA * sV0 * sV0 + fJB * sV0 + fJC;
+			fL1GammaThreshold = fGA * sV0 * sV0 + fGB * sV0 + fGC;		
+			
+			offset = 9;
+			
+			break;
+		}
+		default:
+			AliError(Form("ERROR: STU payload size does not match any of the expected sizes! %d word32",iword));
+			break;
+	}
+	
+	///////////
+	// START DECODING
+	//////////
+	
+	for (Int_t jet_row = 0; jet_row < 11; jet_row++)
+	{
+		UInt_t currentrow = word32[offset + 1 + jet_row];
 		
-		for (Int_t jet_col=0; jet_col<15; jet_col++)
+		for (Int_t jet_col = 0; jet_col < 15; jet_col++)
 		{
 			if (currentrow & (1 << jet_col))
 			{
@@ -149,11 +216,12 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 			}
 		}
 	}
+		
 	
 	//////////////////////////////////////////////////////////
 	// index des L0                                         //
 	//////////////////////////////////////////////////////////
-	// FIXME: still not interpreted to be done with Jiri
+	// FIXME: sounds like not valid data
 	
 	unsigned short truL0indexes[32][6];
 	
@@ -162,8 +230,8 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 	{
 		for (Int_t tru_num=0;tru_num<16;tru_num++)
 		{
-			truL0indexes[2*tru_num  ][index] = ( word32[12+index*16+tru_num]      & 0xFFFF);
-			truL0indexes[2*tru_num+1][index] = ((word32[12+index*16+tru_num]>>16) & 0xFFFF);
+			truL0indexes[2*tru_num  ][index] = ( word32[offset + 12 + index * 16 + tru_num]        & 0xFFFF);
+			truL0indexes[2*tru_num+1][index] = ((word32[offset + 12 + index * 16 + tru_num] >> 16) & 0xFFFF);
 		}
 	}
 
@@ -196,8 +264,8 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 	{
 		for (Int_t tru_num=0;tru_num<16;tru_num++)
 		{
-			truL1indexes[2*tru_num  ][index] = ( word32[108+index*16+tru_num]      & 0xFFFF);
-			truL1indexes[2*tru_num+1][index] = ((word32[108+index*16+tru_num]>>16) & 0xFFFF);
+			truL1indexes[2*tru_num  ][index] = ( word32[offset + 108 + index * 16 + tru_num]        & 0xFFFF);
+			truL1indexes[2*tru_num+1][index] = ((word32[offset + 108 + index * 16 + tru_num] >> 16) & 0xFFFF);
 		}
 	}	
 
@@ -236,7 +304,7 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 	// raw output                                           //
 	//////////////////////////////////////////////////////////
 	
-	if ( iword <= kPayLoadSize ) 
+	if (iword == kPayLoadSizeOld || iword == kPayLoadSizeNew) 
 	{
 		fGetRawData = 0;
 		return kTRUE;
@@ -249,8 +317,8 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 	{
 		for (Int_t tru_num=0;tru_num<16;tru_num++)
 		{
-			fADC[2*tru_num  ][index] = ( word32[236+index*16+tru_num]      & 0xFFFF);
-			fADC[2*tru_num+1][index] = ((word32[236+index*16+tru_num]>>16) & 0xFFFF);
+			fADC[2*tru_num  ][index] = ( word32[offset + 236 + index * 16 + tru_num]        & 0xFFFF);
+			fADC[2*tru_num+1][index] = ((word32[offset + 236 + index * 16 + tru_num] >> 16) & 0xFFFF);
 		}
 	}	
 
@@ -320,10 +388,23 @@ void AliEMCALTriggerSTURawStream::DumpPayLoad(const Option_t *option) const
 	
 	TString op = option;
 	
-	cout << "Jet Threshold: " << fL1JetThreshold << " Gamma threshold: " << fL1GammaThreshold << endl;
-	cout << "Number of L0:   " << fNL0GammaPatch << endl;
-	cout << "Number of L1-g: " << fNL1GammaPatch << endl;
-	cout << "Number of L1-j: " << fNL1JetPatch << endl;
+	printf("V0A:             %d\n", fV0A);
+	printf("V0C:             %d\n", fV0C);
+	printf("G_A:             %d\n", fGA);
+	printf("G_B:             %d\n", fGB);
+	printf("G_C:             %d\n", fGC);
+	printf("Gamma threshold: %d\n", fL1GammaThreshold);
+	printf("J_A:             %d\n", fJA);
+	printf("J_B:             %d\n", fJB);
+	printf("J_C:             %d\n", fJC);
+	printf("Jet Threshold:   %d\n", fL1JetThreshold);
+	printf("RawData:         %d\n", fGetRawData);
+	printf("RegionEnable:    %8x\n", fRegionEnable); 
+	printf("FrameReceived:   %8x\n", fFrameReceived);
+	printf("FwVersion:       %x\n", fFwVersion);
+	printf("Number of L0:    %d\n", fNL0GammaPatch);
+	printf("Number of L1-g:  %d\n", fNL1GammaPatch);
+	printf("Number of L1-j:  %d\n", fNL1JetPatch);
 	
 	Int_t itru, col, row;
 	
@@ -351,7 +432,7 @@ void AliEMCALTriggerSTURawStream::DumpPayLoad(const Option_t *option) const
 		}
 	}
 	
-	cout << "> RawData: " << fGetRawData << endl;
+	
 	
 	if ( (op.Contains("ADC") || op.Contains("ALL")) && fGetRawData )
 	{
