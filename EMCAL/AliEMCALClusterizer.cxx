@@ -214,7 +214,7 @@ Float_t AliEMCALClusterizer::Calibrate(const Float_t amp, const Float_t time, co
   //Check if time is too large or too small, indication of a noisy channel, remove in this case
   if(time > fTimeMax || time < fTimeMin) return 0;
     
-  if (fIsInputCalibrated)
+  if (fIsInputCalibrated||!fCalibData)
   {
     AliDebug(10, Form("Input already calibrated!"));
     return amp;
