@@ -151,13 +151,12 @@ void AliTOFTenderSupply::Init()
       fT0IntercalibrationShift = 0.;
       AliWarning("TOF tender not supported for LHC10G period!! Settings are just a guess!!");
     }
-    else if (run>=136851&&run<=139517) { //period="LHC10H";
+    else if (run>=136851&&run<=139517) { //period="LHC10H" - pass2;
       fCorrectExpTimes=kFALSE;
-      fLHC10dPatch=kTRUE;                // this will be removed when we will have pass2
+      fLHC10dPatch=kFALSE;                
       fTOFres=90.;
       fTimeZeroType=AliESDpid::kTOF_T0;
       fT0IntercalibrationShift = 0.;
-      AliWarning("TOF tender not supported for LHC10H period!! Settings are just a guess!!");
     }
     else if (run>=139699) {              //period="LHC11A";
       fCorrectExpTimes=kFALSE;
