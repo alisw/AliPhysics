@@ -119,6 +119,7 @@ AliAnalysisTaskSE(),
   fHOutCentV0MvsCentCL1(0),
   fHOutCentV0MvsCentTRK(0),
   fHOutCentTRKvsCentCL1(0),
+  fHOutCentV0MvsCentZDC(0),
   fHOutMultV0M(0),
   fHOutMultV0R(0),
   fHOutMultFMD(0),
@@ -208,6 +209,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHOutCentV0MvsCentCL1(0),
   fHOutCentV0MvsCentTRK(0),
   fHOutCentTRKvsCentCL1(0),
+  fHOutCentV0MvsCentZDC(0),
   fHOutMultV0M(0),
   fHOutMultV0R(0),
   fHOutMultFMD(0),
@@ -308,6 +310,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHOutCentV0MvsCentCL1(ana.fHOutCentV0MvsCentCL1),
   fHOutCentV0MvsCentTRK(ana.fHOutCentV0MvsCentTRK),
   fHOutCentTRKvsCentCL1(ana.fHOutCentTRKvsCentCL1),
+  fHOutCentV0MvsCentZDC(ana.fHOutCentV0MvsCentZDC),
   fHOutMultV0M(ana.fHOutMultV0M),
   fHOutMultV0R(ana.fHOutMultV0R),
   fHOutMultFMD(ana.fHOutMultFMD),
@@ -367,9 +370,10 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fHOutCentV0MvsFMD= new TH1F("fHOutCentV0MvsFMD","fHOutCentV0MvsFMD; Centrality V0 vs FMD",505,0,101);
   fHOutCentTKLvsV0M= new TH1F("fHOutCentTKLvsV0M","fHOutCentTKLvsV0M; Centrality tracklets vs V0",505,0,101);
   fHOutCentZEMvsZDC= new TH1F("fHOutCentZEMvsZDC","fHOutCentZEMvsZDC; Centrality ZEM vs ZDC",505,0,101);
-  fHOutCentV0MvsCentCL1= new TH2F("fHOutCentV0MvsCentCL1","fHOutCentV0MvsCentCL1; Cent V0 vs Cent SPD",505,0,101,505,0,101);
-  fHOutCentV0MvsCentTRK= new TH2F("fHOutCentV0MvsCentTRK","fHOutCentV0MvsCentTRK; Cent V0 vs Cent TPC",505,0,101,505,0,101);
-  fHOutCentTRKvsCentCL1= new TH2F("fHOutCentTRKvsCentCL1","fHOutCentTRKvsCentCL1; Cent TPC vs Cent SPD",505,0,101,505,0,101);
+  fHOutCentV0MvsCentCL1= new TH2F("fHOutCentV0MvsCentCL1","fHOutCentV0MvsCentCL1; Cent V0; Cent SPD",505,0,101,505,0,101);
+  fHOutCentV0MvsCentTRK= new TH2F("fHOutCentV0MvsCentTRK","fHOutCentV0MvsCentTRK; Cent V0; Cent TPC",505,0,101,505,0,101);
+  fHOutCentTRKvsCentCL1= new TH2F("fHOutCentTRKvsCentCL1","fHOutCentTRKvsCentCL1; Cent TPC; Cent SPD",505,0,101,505,0,101);
+  fHOutCentV0MvsCentZDC= new TH2F("fHOutCentV0MvsCentZDC","fHOutCentV0MvsCentZDC; Cent V0; Cent ZDC",505,0,101,505,0,101);
 
   fHOutMultV0M = new TH1F("fHOutMultV0M","fHOutMultV0M; Multiplicity V0",25000,0,25000);
   fHOutMultV0R = new TH1F("fHOutMultV0R","fHOutMultV0R; Multiplicity V0",30000,0,30000);
@@ -409,6 +413,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fOutputList->Add(  fHOutCentV0MvsCentCL1);
   fOutputList->Add(  fHOutCentV0MvsCentTRK);
   fOutputList->Add(  fHOutCentTRKvsCentCL1);
+  fOutputList->Add(  fHOutCentV0MvsCentZDC);
   fOutputList->Add(  fHOutMultV0M); 
   fOutputList->Add(  fHOutMultV0R); 
   fOutputList->Add(  fHOutMultFMD); 
@@ -680,6 +685,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     fHOutCentV0MvsCentCL1->Fill(fCentV0M,fCentCL1);
     fHOutCentV0MvsCentTRK->Fill(fCentV0M,fCentTRK);
     fHOutCentTRKvsCentCL1->Fill(fCentTRK,fCentCL1);
+    fHOutCentV0MvsCentCL1->Fill(fCentV0M,fCentZEMvsZDC);
     fHOutMultV0M->Fill(v0Corr);
     fHOutMultV0R->Fill(multV0A+multV0C);
     fHOutMultFMD->Fill((multFMDA+multFMDC));
@@ -786,7 +792,11 @@ Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* const esd)
       else fRunNo = 137366;
       break;
     case 2:
-      fRunNo = 139172;
+      if ( fCurrentRun >= 136851  && fCurrentRun <= 137165 ) fRunNo = 137161;
+      else if ( ( fCurrentRun >= 137230  && fCurrentRun <= 137848 ) || 
+		( fCurrentRun >= 138190  && fCurrentRun <= 138275 )) fRunNo = 137722;
+      else if ( fCurrentRun >= 138125  && fCurrentRun <= 138154 ) fRunNo = 138150;
+      else fRunNo = 139172;
       break;       
     default:
       AliError(Form("Run %d not known to centrality selection!", fCurrentRun));

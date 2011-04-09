@@ -110,6 +110,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH2F *fHOutCentV0MvsCentCL1;    //control histogram for centrality
   TH2F *fHOutCentV0MvsCentTRK;    //control histogram for centrality
   TH2F *fHOutCentTRKvsCentCL1;    //control histogram for centrality
+  TH2F *fHOutCentV0MvsCentZDC;    //control histogram for centrality
 
   TH1F *fHOutMultV0M ;        //control histogram for multiplicity
   TH1F *fHOutMultV0R ;        //control histogram for multiplicity
@@ -138,7 +139,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutQuality ;        //control histogram for quality
   TH1F *fHOutVertex ;        //control histogram for vertex
 
-  ClassDef(AliCentralitySelectionTask, 7); 
+  ClassDef(AliCentralitySelectionTask, 8); 
 };
 
 #endif
