@@ -28,7 +28,7 @@ public:
   AliAODpidUtil(Bool_t isMC = kFALSE): AliPIDResponse(isMC), fRange(5.) {;}
   virtual ~AliAODpidUtil() {;}
 
-  Int_t MakePID(AliAODTrack *track,Double_t *p) const;
+  Int_t MakePID(const AliAODTrack *track,Double_t *p) const;
   void MakeTPCPID(const AliAODTrack *track,Double_t *p) const;
   void MakeITSPID(const AliAODTrack *track,Double_t *p) const;
   void MakeTOFPID(const AliAODTrack *track,Double_t *p) const;

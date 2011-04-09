@@ -33,7 +33,7 @@
 
 ClassImp(AliAODpidUtil)
 
-  Int_t AliAODpidUtil::MakePID(AliAODTrack *track,Double_t *p) const {
+  Int_t AliAODpidUtil::MakePID(const AliAODTrack *track,Double_t *p) const {
   //
   //  Calculate probabilities for all detectors, except if TPConly==kTRUE
   //  and combine PID
