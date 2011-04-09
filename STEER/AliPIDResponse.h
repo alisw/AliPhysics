@@ -22,11 +22,12 @@
 #include "TNamed.h"
 
 class AliVEvent;
+class TF1;
 
 class AliPIDResponse : public TNamed {
 public:
-  AliPIDResponse(Bool_t isMC=kFALSE) : fITSResponse(isMC), fTPCResponse(), fTRDResponse(), fTOFResponse() {;}
-  virtual ~AliPIDResponse() {;}
+  AliPIDResponse(Bool_t isMC=kFALSE);
+  virtual ~AliPIDResponse();
 
   enum EStartTimeType_t {kFILL_T0,kTOF_T0, kT0_T0, kBest_T0};
   
@@ -39,15 +40,58 @@ public:
   virtual Float_t NumberOfSigmasTPC(const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type) const = 0;
 
-  void SetTOFResponse(AliVEvent */*event*/,EStartTimeType_t /*option*/) {;}
+  virtual void SetTOFResponse(AliVEvent */*event*/,EStartTimeType_t /*option*/) {;}
+
+  void SetOADBPath(const char* path) {fOADBPath=path;}
+  void InitialiseEvent(AliVEvent *event, Int_t pass);
+
+  AliPIDResponse(const AliPIDResponse &other);
+  AliPIDResponse& operator=(const AliPIDResponse &other);
   
 protected:
   AliITSPIDResponse fITSResponse;    //PID response function of the ITS
   AliTPCPIDResponse fTPCResponse;    //PID response function of the TPC
   AliTRDPIDResponse fTRDResponse;    //PID response function of the TRD
   AliTOFPIDResponse fTOFResponse;    //PID response function of the TOF
+
+private:
+  Bool_t fIsMC;                        //  If we run on MC data
+
+  TString fOADBPath;                   // OADB path to use
   
-  ClassDef(AliPIDResponse,1);  //PID response handling
+  TString fBeamType;                   //! beam type (PP) or (PBPB)
+  TString fLHCperiod;                  //! LHC period
+  TString fMCperiodTPC;                //! corresponding MC period to use for the TPC splines
+  Int_t   fRecoPass;                   //! reconstruction pass
+  Int_t   fRun;                        //! current run number
+  Int_t   fOldRun;                     //! current run number
+
+  TObjArray *fArrPidResponseMaster;    //!  TPC pid splines
+  TF1       *fResolutionCorrection;    //! TPC resolution correction
+
+  Int_t   fTOFTimeZeroType;            //! default start time type for tof (ESD)
+  Float_t fTOFres;                     //! TOF resolution
+  
+  void ExecNewRun();
+  
+  //
+  //setup parametrisations
+  //
+
+  //ITS
+  void SetITSParametrisation();
+  
+  //TPC
+  void SetTPCPidResponseMaster();
+  void SetTPCParametrisation();
+  Double_t GetTPCMultiplicityBin(const AliVEvent * const event);
+
+  //TOF
+  
+  //
+  void SetRecoInfo();
+  
+  ClassDef(AliPIDResponse,2);  //PID response handling
 };
 
 inline Float_t AliPIDResponse::NumberOfSigmasTPC(const AliVParticle *vtrack, AliPID::EParticleType type) const {
