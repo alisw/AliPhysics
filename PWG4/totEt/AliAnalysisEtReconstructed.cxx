@@ -62,7 +62,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 {
     // analyse ESD event
     ResetEventValues();
-    fCentClass = fCentrality->GetCentralityClass10("V0M");
+
     if (!ev) {
         AliFatal("ERROR: Event does not exist");
         return 0;
@@ -74,6 +74,13 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         return 0;
     }
 
+    Int_t cent = -1;
+    if (fCentrality)
+    {
+        cent = fCentrality->GetCentralityClass10("V0M");
+	fCentClass = fCentrality->GetCentralityClass10("V0M");
+    }
+
     Double_t protonMass = fgProtonMass;
 
     //for PID
@@ -83,13 +90,6 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
     Int_t nGoodTracks = list->GetEntries();
     // printf("nGoodTracks %d nCaloClusters %d\n", nGoodTracks, event->GetNumberOfCaloClusters());
-
-    Int_t cent = -1;
-
-    if (fCentrality)
-    {
-        cent = fCentrality->GetCentralityClass10("V0M");
-    }
 
     for (Int_t iTrack = 0; iTrack < nGoodTracks; iTrack++)
     {
