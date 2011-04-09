@@ -41,6 +41,7 @@ class AliAnalysisChargedHadronSpectraITSTruncatedMeanTask : public AliAnalysisTa
   void SetAliESDtrackCuts(AliESDtrackCuts* const cuts ){fCuts=cuts;/*flist->Add(fCuts);*/}
   void SetFunctionParam(Double_t* const par);
    void SetMultiplicityCut(Int_t low, Int_t up);
+ void SetSPDMethodCut(){fSPD=kTRUE;}
   void SetCorrectSDD(){fCorrectSDD=kTRUE;}
    void SetCorrectSSD(){fCorrectSSD=kTRUE;}
   void SetYcut(Float_t value){fYCut=TMath::Abs(value);}
@@ -67,7 +68,7 @@ class AliAnalysisChargedHadronSpectraITSTruncatedMeanTask : public AliAnalysisTa
   Int_t fUpMultiplicity;//up Multiplicity cut
   Float_t fLowCentrality;//low Centrality cut
   Float_t fUpCentrality;//up  Centrality cut
-  
+  Bool_t fSPD;//use spd2 as mulestimator 
   
   Float_t fYCut;//cut in y
   Float_t fsigmacut;//cut in sigma in n-sigma method
@@ -183,7 +184,7 @@ TH2F* fHistSignalinTPCAntiProtonforITSPIDcuts; //TPC signal for AntiProtons tpc+
 //Multiplicity histos
 TH1F* fHistStandartMul;//number from AliESDtrackCuts::GetReferenceMultiplicity
 TH1F* fHistMytrackMul;//number of my tracks
-
+TH2F* fHistStandartMulvSPD2;//number from AliESDtrackCuts::GetReferenceMultiplicity v SPD2
 
 //log dE-logdEfit as function of  global p at p.v. for primary tracks 
 TH2F* fHistminsignalifPionPPrimary; //pions

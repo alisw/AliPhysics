@@ -31,6 +31,8 @@
 //#include "AliESDpidCuts.h"
 //#include "AliESDpid.h"
 #include "AliCentrality.h"
+#include "AliESDUtils.h"
+#include "AliMultiplicity.h"
 
    class     AliMCEventHandler;
      class   Riostream;
@@ -41,7 +43,7 @@ ClassImp(AliAnalysisChargedHadronSpectraITSTruncatedMeanTask)
 //________________________________________________________________________
 AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::AliAnalysisChargedHadronSpectraITSTruncatedMeanTask(const char *name) 
 :AliAnalysisTaskSE(name),fESD(0),fCuts(0),fCutsMul(0),fMC(0),
-fLowMultiplicity(-1),fUpMultiplicity(-1),fLowCentrality(-10.0),fUpCentrality(-10.0),
+fLowMultiplicity(-1),fUpMultiplicity(-1),fLowCentrality(-10.0),fUpCentrality(-10.0),fSPD(0),
 fYCut(100.0),fsigmacut(3.0),fnsigmaxy(7.0),fnsigmaz(5.0),fchargeCut(0.0),
 fCorrectSDD(0),fCorrectSSD(0),fHIsettings(0),fdovertexrescuts(0),
  fK0weight(0),flambdaweight(0),fAntilambdaweight(0),
@@ -58,7 +60,7 @@ fDCAXYZOpenforcleanPions(0),fDCAXYZOpenforcleanAntiPions(0),fDCAXYZOpenforcleanP
 fHistNtrackwithstandardcuts(0),fHistNtrackwithITSPIDcuts(0),
 fHistSignalinTPCKaonforstandardcuts(0),fHistSignalinTPCKaonforITSPIDcuts(0),fHistSignalinTPCAntiKaonforstandardcuts(0),fHistSignalinTPCAntiKaonforITSPIDcuts(0),
 fHistSignalinTPCProtonforstandardcuts(0),fHistSignalinTPCProtonforITSPIDcuts(0),fHistSignalinTPCAntiProtonforstandardcuts(0),fHistSignalinTPCAntiProtonforITSPIDcuts(0),
-fHistStandartMul(0),fHistMytrackMul(0),
+fHistStandartMul(0),fHistMytrackMul(0),fHistStandartMulvSPD2(0),
 fHistminsignalifPionPPrimary(0),fHistminsignalifKaonPPrimary(0),fHistminsignalifProtonPPrimary(0),fHistminsignalifProtonPPrimaryfake(0),
 fHistminsignalifAntiPionPPrimary(0),fHistminsignalifAntiKaonPPrimary(0),fHistminsignalifAntiProtonPPrimary(0),fHistminsignalifAntiProtonPPrimaryfake(0),
 fHistminsignalifPionPSecondary(0),fHistminsignalifKaonPSecondary(0),
@@ -380,6 +382,8 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserCreateOutputObject
 		flist->Add(fHistStandartMul);
 		fHistMytrackMul=new TH1F("fHistMytrackMul",";Ntracks;counts",300,0,3000);
 		flist->Add(fHistMytrackMul);
+		fHistStandartMulvSPD2=new TH2F("fHistStandartMulvSPD2",";Ntracks;nSPD2;counts",300,0,3000,300,0,3000);
+		flist->Add(fHistStandartMulvSPD2);
 	}
 	else
 	{
@@ -387,6 +391,8 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserCreateOutputObject
 		flist->Add(fHistStandartMul);
 		fHistMytrackMul=new TH1F("fHistMytrackMul",";Ntracks;counts",300,0,300);
 		flist->Add(fHistMytrackMul);
+		fHistStandartMulvSPD2=new TH2F("fHistStandartMulvSPD2",";Ntracks;nSPD2;counts",300,0,300,300,0,300);
+		flist->Add(fHistStandartMulvSPD2);
 	}
 	fTracksCutmonitoring=new TH2F("fTracksCutmonitoring",";cut;pt[GeV/c];N_{entries}",4,0.5,4.5,kPtBins,binsPtDummy);	
 	fTracksCutmonitoring->GetXaxis()->SetBinLabel(1,"TPCin");
@@ -394,6 +400,9 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserCreateOutputObject
 	fTracksCutmonitoring->GetXaxis()->SetBinLabel(3,"ITSpid");
 	fTracksCutmonitoring->GetXaxis()->SetBinLabel(4,"DCA");
 	flist->Add(fTracksCutmonitoring);
+	
+	
+	
 	
 	if(!fMC)
 	{
@@ -745,7 +754,6 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 	Bool_t isphysevent=0;
 	Bool_t isgoodvertex=0;
 	Bool_t isvxerteinZ=0;
-		
 	 fESD = dynamic_cast<AliESDEvent*> (InputEvent());
 	if (!fESD) 
 	{
@@ -754,16 +762,19 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 	}
 	
 	Float_t refmultiplicity=fCutsMul->CountAcceptedTracks(fESD);
-	if(fLowMultiplicity>-1)
+	if(!fSPD)
 	{
-		if(refmultiplicity<fLowMultiplicity)
-			return;
-	}
-	if(fUpMultiplicity>-1)
-	{
-		if(refmultiplicity>fUpMultiplicity)
-			return;
-	}
+		if(fLowMultiplicity>-1)
+		{
+			if(refmultiplicity<fLowMultiplicity)
+				return;
+		}
+		if(fUpMultiplicity>-1)
+		{
+			if(refmultiplicity>fUpMultiplicity)
+				return;
+		}
+	}	
 	AliStack* stack=0x0;
 	Double_t mcXvertex=0.0;
 	Double_t mcYvertex=0.0;
@@ -811,10 +822,10 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 	}
 	
 	//Good vertex	
-	const AliESDVertex *vertex = fESD->GetPrimaryVertexTracks();
+	const AliESDVertex *vertex = 0x0;
 	if(isphysevent)
 	{
-	  //vertex = fESD->GetPrimaryVertexTracks();
+		vertex = fESD->GetPrimaryVertexTracks();
 		if(vertex->GetNContributors()<1) 
 		{
 			// SPD vertex
@@ -827,7 +838,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			else
 			{
 				isgoodvertex=1;
-				fHistStats->Fill(2);	
+				//fHistStats->Fill(2);	
 				fHistZVertexBeforeCut->Fill(vertex ->GetZ());
 				fHistXYVertexBeforeCut->Fill(vertex ->GetX(),vertex ->GetY());
 			}	
@@ -835,7 +846,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		else
 		{
 			isgoodvertex=1;	
-			fHistStats->Fill(2);	
+			//fHistStats->Fill(2);	
 			fHistZVertexBeforeCut->Fill(vertex ->GetZ());
 			fHistXYVertexBeforeCut->Fill(vertex ->GetX(),vertex ->GetY()); 
 		}
@@ -856,6 +867,39 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		if(TMath::Abs(vertex->GetX()-mcXvertex)>0.015||TMath::Abs(vertex->GetY()-mcYvertex)>0.015||TMath::Abs(vertex->GetZ()-mcZvertex)>0.15)
 			isvxerteinZ=0;	
 	}  
+	Float_t spdCorr=-1.0;
+	if(isgoodvertex)
+	{
+		const AliMultiplicity *mult = fESD->GetMultiplicity();
+		Float_t nClusters[6]={0.0,0.0,0.0,0.0,0.0,0.0};
+		for(Int_t ilay=0; ilay<6; ilay++)
+		{
+			nClusters[ilay] = (Float_t)mult->GetNumberOfITSClusters(ilay);
+		} 
+		spdCorr = AliESDUtils::GetCorrSPD2(nClusters[1],vertex->GetZ());
+		if(fSPD)
+		{
+			if(fLowMultiplicity>-1)
+			{
+				if(((Int_t)spdCorr)<fLowMultiplicity)
+				{
+					PostData(1,  flist);				
+					return;
+				}	
+			}
+			if(fUpMultiplicity>-1)
+			{
+				if(((Int_t)spdCorr)>fUpMultiplicity)
+				{
+					PostData(1,  flist);
+					return;
+				}	
+			}		
+		}
+		fHistStats->Fill(2);
+	}
+	
+	
 	Int_t fMCmult=0;
 	if(stack)//Looping over MC information of all events
 	{
@@ -959,8 +1003,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			}		
 							
 		}
-	}
-	else return;
+	}		 
 	
 	if(!(isphysevent&&isgoodvertex&&isvxerteinZ))
 	{
@@ -970,6 +1013,9 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		return;
 	}
 	
+	
+
+	fHistStandartMulvSPD2->Fill(refmultiplicity,spdCorr);
 	fHistStats->Fill(3);
 		
 	fHistZVertexAfterCut->Fill(vertex ->GetZ());
@@ -1040,23 +1086,21 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		Int_t   uniqueID=-1;
 		Int_t pdgcodefake=0;
 		Int_t primaryfake=0;
-		//TParticle *particle2=0x0;
-		TParticle *particle2 = stack->Particle(TMath::Abs(label));
-
+		TParticle *particle2=0x0;
 		if(label>=0&&stack&&fMC)
 		{
 			primary=stack->IsPhysicalPrimary(TMath::Abs(label));
-			//particle2 = stack->Particle(TMath::Abs(label));
+			particle2 = stack->Particle(TMath::Abs(label));
 			pdgcode=particle2->GetPdgCode();
 			chargeMC=particle2->GetPDG(0)->Charge()/3.0;
 			etaMC=particle2->Eta();
 			ptMC=particle2->Pt();
 			uniqueID=particle2->GetUniqueID();
 		}
-		else if(label<0&&stack&&fMC)
+		if(label<0&&stack&&fMC)
 		{
 			primaryfake=stack->IsPhysicalPrimary(TMath::Abs(label));
-			//particle2 = stack->Particle(TMath::Abs(label));
+			particle2 = stack->Particle(TMath::Abs(label));
 			pdgcodefake=particle2->GetPdgCode();
 			uniqueID=particle2->GetUniqueID();
 			
@@ -1261,7 +1305,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		Int_t nosignaL=-1;
 		if(nSSDSDD==3)
 		{
-			Double_t tmp2QESD[3];
+			Double_t tmp2QESD[3]={-1.0,-1.0,-1.0};
 			Int_t iLnotZero=0;
 			for (int iL=0;iL<4;iL++)
 			{
