@@ -570,7 +570,7 @@ void AliAnalysisEt::ResetEventValues()
 }
 
 Double_t AliAnalysisEt::CalculateTransverseEnergy(AliESDCaloCluster* cluster)
-{
+{ // based on cluster energy and cluster pos
   
   Float_t pos[3];
   cluster->GetPosition(pos);

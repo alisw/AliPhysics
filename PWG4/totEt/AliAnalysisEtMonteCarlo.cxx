@@ -1370,7 +1370,7 @@ bool AliAnalysisEtMonteCarlo::TrackHitsCalorimeter(TParticle* part, Double_t mag
 }
 
 void AliAnalysisEtMonteCarlo::FillHistograms()
-{
+{ // let base class fill its histograms, and us fill the local ones
     AliAnalysisEt::FillHistograms();
     //std::cout << fEtNonRemovedPiPlus << " " << fCentClass << std::endl;
 

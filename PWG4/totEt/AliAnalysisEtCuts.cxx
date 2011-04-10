@@ -81,9 +81,6 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fHistNbinsParticlePt(200) 
   ,fHistMinParticlePt(0)
   ,fHistMaxParticlePt(20)
-  
-  ,fDetectorPhos(-1)
-  ,fDetectorEmcal(1)
 { // ctor
 }
 
