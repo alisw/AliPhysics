@@ -83,8 +83,8 @@ class AliAnalysisEtCuts : public TNamed
   Double_t GetHistMinParticlePt() const { return fHistMinParticlePt; }
   Double_t GetHistMaxParticlePt() const { return fHistMaxParticlePt; }
   
-  Short_t GetDetectorPhos() const { return fDetectorPhos; }
-  Short_t GetDetectorEmcal() const { return fDetectorEmcal; }
+  Short_t GetDetectorPhos() const { return fgkDetectorPhos; }
+  Short_t GetDetectorEmcal() const { return fgkDetectorEmcal; }
 
   // Setters
   // Common
@@ -226,8 +226,8 @@ class AliAnalysisEtCuts : public TNamed
   Double_t fHistMaxParticlePt; // maximum value in particle Pt histograms
 
 // Detector definition
-  const Short_t fDetectorPhos; // PHOS 
-  const Short_t fDetectorEmcal; // PHOS 
+  static const Short_t fgkDetectorPhos = -1; // PHOS 
+  static const Short_t fgkDetectorEmcal = 1; // EMCAL 
 
 private:
   //Declare private to avoid compilation warning
