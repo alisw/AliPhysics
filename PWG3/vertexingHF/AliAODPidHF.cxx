@@ -555,9 +555,9 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track,Int_t mode,Int_t specie,Bool_t
  if(tTPCinfo+tTOFinfo==0 && fITS){
   if(!CheckStatus(track,"ITS")) return tTPCinfo+tTOFinfo;
   Int_t tITSinfo = -1;
-  if(specie==2 && IsPionRaw(track,"TOF")) tITSinfo=1;
-  if(specie==3 && IsKaonRaw(track,"TOF")) tITSinfo=1;
-  if(specie==4 && IsProtonRaw(track,"TOF")) tITSinfo=1;
+  if(specie==2 && IsPionRaw(track,"ITS")) tITSinfo=1;
+  if(specie==3 && IsKaonRaw(track,"ITS")) tITSinfo=1;
+  if(specie==4 && IsProtonRaw(track,"ITS")) tITSinfo=1;
   return tITSinfo;
  }
 
@@ -593,9 +593,9 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track,Int_t mode,Int_t specie,Bool_t
  if(tTPCinfo+tTOFinfo==0 && fITS){
   if(!CheckStatus(track,"ITS")) return tTPCinfo+tTOFinfo;
   Int_t tITSinfo = -1;
-  if(specie==2 && IsPionRaw(track,"TOF")) tITSinfo=1;
-  if(specie==3 && IsKaonRaw(track,"TOF")) tITSinfo=1;
-  if(specie==4 && IsProtonRaw(track,"TOF")) tITSinfo=1;
+  if(specie==2 && IsPionRaw(track,"ITS")) tITSinfo=1;
+  if(specie==3 && IsKaonRaw(track,"ITS")) tITSinfo=1;
+  if(specie==4 && IsProtonRaw(track,"ITS")) tITSinfo=1;
   return tITSinfo;
  }
 
