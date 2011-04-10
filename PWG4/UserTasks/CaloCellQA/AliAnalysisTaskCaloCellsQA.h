@@ -34,12 +34,17 @@ public:
   void   UserExec(Option_t *);
   void   Terminate(Option_t *);
 
+  void   SetBadCells(Int_t badcells[], Int_t nbad);
+
   // getters and setters
   AliCaloCellsQA*  GetCaloCellsQA()    { return fCellsQA; }
   Bool_t           GetAvoidPileup()    { return fkAvoidPileup; }
   const char*      GetOutputFileName() { return fOutfile->Data(); }
   void             SetAvoidPileup(Bool_t flag) { fkAvoidPileup = flag; }
   void             SetOutputFileName(char* fname) { *fOutfile = fname; }
+
+protected:
+  Bool_t IsClusterBad(AliVCluster *clus);
 
 private:
   AliAnalysisTaskCaloCellsQA(const AliAnalysisTaskCaloCellsQA &);
@@ -49,6 +54,8 @@ private:
   Bool_t              fkAvoidPileup;   // flag not to process pileup events
   AliCaloCellsQA*     fCellsQA;        // analysis instance
   TString*            fOutfile;        // output file name
+  Int_t*              fBadCells;       // bad cells array
+  Int_t               fNBad;           // number of entries in fBadCells
 
   ClassDef(AliAnalysisTaskCaloCellsQA, 1);
 };

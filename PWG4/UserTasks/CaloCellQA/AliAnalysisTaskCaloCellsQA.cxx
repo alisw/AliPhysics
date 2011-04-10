@@ -17,6 +17,8 @@
 // By default, pileup events are not processed, use SetAvoidPileup()
 // to change this.
 //
+// Clusters containing a bad cell can be rejected, use SetBadCells().
+//
 // See AddTaskCaloCellsQA.C for usage example.
 //
 //----
@@ -39,7 +41,9 @@ ClassImp(AliAnalysisTaskCaloCellsQA)
 AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA(const char *name) : AliAnalysisTaskSE(name),
   fkAvoidPileup(kTRUE),
   fCellsQA(0),
-  fOutfile(new TString)
+  fOutfile(new TString),
+  fBadCells(0),
+  fNBad(0)
 {
 }
 
@@ -48,6 +52,7 @@ AliAnalysisTaskCaloCellsQA::~AliAnalysisTaskCaloCellsQA()
 {
   if (fCellsQA) delete fCellsQA;
   delete fOutfile;
+  if (fBadCells) delete [] fBadCells;
 }
 
 //________________________________________________________________
@@ -121,6 +126,11 @@ void AliAnalysisTaskCaloCellsQA::UserExec(Option_t *)
       return;
     }
 
+    // basic filtering
+    if (fCellsQA->GetDetector() == AliCaloCellsQA::kEMCAL && !clus->IsEMCAL()) continue;
+    if (fCellsQA->GetDetector() == AliCaloCellsQA::kPHOS && !clus->IsPHOS()) continue;
+    if (IsClusterBad(clus)) continue;
+
     clusArray.Add(clus);
   }
 
@@ -140,4 +150,37 @@ void AliAnalysisTaskCaloCellsQA::Terminate(Option_t*)
 
   TFile f(fOutfile->Data(), "RECREATE");
   fCellsQA->GetListOfHistos()->Write();
+}
+
+//____________________________________________________________
+void AliAnalysisTaskCaloCellsQA::SetBadCells(Int_t badcells[], Int_t nbad)
+{
+  // Set absId numbers for bad cells;
+  // clusters which contain a bad cell will be rejected.
+
+  // switch off bad cells, if asked
+  if (nbad <= 0) {
+    if (fBadCells) delete [] fBadCells;
+    fNBad = 0;
+    return;
+  }
+
+  fNBad = nbad;
+  fBadCells = new Int_t[nbad];
+
+  for (Int_t i = 0; i < nbad; i++)
+    fBadCells[i] = badcells[i];
+}
+
+//________________________________________________________________
+Bool_t AliAnalysisTaskCaloCellsQA::IsClusterBad(AliVCluster *clus)
+{
+  // Returns true if cluster contains a bad cell
+
+  for (Int_t b = 0; b < fNBad; b++)
+    for (Int_t c = 0; c < clus->GetNCells(); c++)
+      if (clus->GetCellAbsId(c) == fBadCells[b])
+        return kTRUE;
+
+  return kFALSE;
 }
