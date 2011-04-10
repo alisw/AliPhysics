@@ -308,8 +308,12 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fL0TriggerInputs    = hdr.fL0TriggerInputs;
     fL1TriggerInputs    = hdr.fL1TriggerInputs;
     fL2TriggerInputs    = hdr.fL2TriggerInputs;
-    fCentralityP        = new AliCentrality(*hdr.fCentralityP);
     fEventplaneP        = new AliEventplane(*hdr.fEventplaneP);
+
+    if(hdr.fCentralityP){
+      if(fCentralityP)*fCentralityP = *hdr.fCentralityP;
+      else fCentralityP = new AliCentrality(*hdr.fCentralityP);
+    }
 
     SetName(hdr.fName);
     SetTitle(hdr.fTitle);
@@ -319,19 +323,23 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     for(Int_t i=0; i<3; i++) fDiamondCovXY[i]=hdr.fDiamondCovXY[i];
 
     for(Int_t m=0; m<kNPHOSMatrix; m++){
-	if(hdr.fPHOSMatrix[m])
-	    fPHOSMatrix[m]=new TGeoHMatrix(*(hdr.fPHOSMatrix[m])) ;
-	else
-	    fPHOSMatrix[m]=0;
+      if(hdr.fPHOSMatrix[m]){
+	if(fPHOSMatrix[m])delete fPHOSMatrix[m];
+	fPHOSMatrix[m]=new TGeoHMatrix(*(hdr.fPHOSMatrix[m])) ;
+      }
+      else
+	fPHOSMatrix[m]=0;
     }
     
     for(Int_t sm=0; sm<kNEMCALMatrix; sm++){
-	if(hdr.fEMCALMatrix[sm])
-	    fEMCALMatrix[sm]=new TGeoHMatrix(*(hdr.fEMCALMatrix[sm])) ;
-	else
-	    fEMCALMatrix[sm]=0;
-  }
-
+      if(hdr.fEMCALMatrix[sm]){
+	if(fEMCALMatrix[sm])delete fEMCALMatrix[sm];
+	fEMCALMatrix[sm]=new TGeoHMatrix(*(hdr.fEMCALMatrix[sm])) ;
+      }
+      else
+	fEMCALMatrix[sm]=0;
+    }
+    
   }
 
 
