@@ -51,21 +51,21 @@
 //    vertex->GetXYZ(vertexXYZ);
 //
 //    // clusters
-//    static TObjArray *clusArray = new TObjArray;
-//    clusArray->Clear();
+//    TObjArray clusArray;
 //    for (Int_t i = 0; i < event->GetNumberOfCaloClusters(); i++) {
 //      AliVCluster *clus = event->GetCaloCluster(i);
 //
 //      // filter clusters here, if necessary
 //      // if (clus->E() < 0.3) continue;
+//      // if (clus->GetNCells() < 2) continue;
 //
-//      clusArray->Add(clus);
+//      clusArray.Add(clus);
 //    }
 //
 //    // apply afterburners, etc.
 //    // ...
 //
-//    cellsQA->Fill(event->GetRunNumber(), clusArray, cells, vertexXYZ);
+//    cellsQA->Fill(event->GetRunNumber(), &clusArray, cells, vertexXYZ);
 //
 // d) Do not forget to post data, where necessary:
 //    PostData(1,cellsQA->GetListOfHistos());
@@ -101,6 +101,9 @@ AliCaloCellsQA::AliCaloCellsQA() :
   fXMaxECells(0),
   fXMaxPi0Mass(0),
   fXMaxNCellsInCluster(0),
+  fRunNumbers(),
+  fNRuns(0),
+  fRI(-1),
   fAbsIdMin(0),
   fAbsIdMax(0),
   fListOfHistos(0),
@@ -144,6 +147,9 @@ AliCaloCellsQA::AliCaloCellsQA(Int_t nmods, Int_t det, Int_t startRunNumber, Int
   fXMaxECells(0),
   fXMaxPi0Mass(0),
   fXMaxNCellsInCluster(0),
+  fRunNumbers(),
+  fNRuns(0),
+  fRI(-1),
   fAbsIdMin(0),
   fAbsIdMax(0),
   fListOfHistos(0),
@@ -367,27 +373,23 @@ Int_t AliCaloCellsQA::FindCurrentRunIndex(Int_t runNumber)
 {
   // Return current run index; add a new run if necessary.
 
-  static Int_t ri = -1;           // run index
-  static Int_t runNumbers[1000];  // already encountered runs ...
-  static Int_t nruns = 0;         // ... and their number
-
   // try previous value ...
-  if (ri >= 0 && runNumbers[ri] == runNumber) return ri;
+  if (fRI >= 0 && fRunNumbers[fRI] == runNumber) return fRI;
 
   // ... or find current run index ...
-  for (ri = 0; ri < nruns; ri++)
-    if (runNumbers[ri] == runNumber) return ri;
+  for (fRI = 0; fRI < fNRuns; fRI++)
+    if (fRunNumbers[fRI] == runNumber) return fRI;
 
   // ... or add a new run
-  if (nruns >= 1000)
+  if (fNRuns >= 1000)
     Fatal("AliCaloCellsQA::FindCurrentRunIndex", "Too many runs, how is this possible?");
 
-  // ri = nruns
-  runNumbers[ri] = runNumber;
-  InitHistosForRun(runNumber, ri);
-  nruns++;
+  // fRI = fNRuns
+  fRunNumbers[fRI] = runNumber;
+  InitHistosForRun(runNumber, fRI);
+  fNRuns++;
 
-  return ri;
+  return fRI;
 }
 
 //_________________________________________________________________________
@@ -715,7 +717,7 @@ void AliCaloCellsQA::AbsIdToSMEtaPhi(Int_t absId, Int_t &sm, Int_t &eta, Int_t &
 
   // EMCAL
   if (fDetector == kEMCAL) {
-    static AliEMCALGeometry *geomEMCAL = AliEMCALGeometry::GetInstance();
+    AliEMCALGeometry *geomEMCAL = AliEMCALGeometry::GetInstance();
     if (!geomEMCAL)
       Fatal("AliCaloCellsQA::AbsIdToSMEtaPhi", "EMCAL geometry is not initialized");
 
@@ -727,7 +729,7 @@ void AliCaloCellsQA::AbsIdToSMEtaPhi(Int_t absId, Int_t &sm, Int_t &eta, Int_t &
 
   // PHOS
   if (fDetector == kPHOS) {
-    static AliPHOSGeometry *geomPHOS = AliPHOSGeometry::GetInstance();
+    AliPHOSGeometry *geomPHOS = AliPHOSGeometry::GetInstance();
     if (!geomPHOS)
       Fatal("AliCaloCellsQA::AbsIdToSMEtaPhi", "PHOS geometry is not initialized");
 
