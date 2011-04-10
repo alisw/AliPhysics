@@ -778,6 +778,9 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2010() {
   SetPtBins(nptbins+1,ptbins);
   SetCuts(nvars,nptbins,anacutsval);
   SetUsePID(kTRUE);
+  SetMinCentrality(0.);
+  SetMaxCentrality(20.);
+  SetUseCentrality(AliRDHFCuts::kCentV0M);
   SetRemoveDaughtersFromPrim(kFALSE);
   SetOptPileup(kFALSE);
   SetMinPtCandidate(4.);
