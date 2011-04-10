@@ -13,6 +13,7 @@
 
 #include <TNamed.h>
 #include <TH1F.h>
+#include "AliLog.h"
 #include "TGraphAsymmErrors.h"
 
 
@@ -21,7 +22,6 @@ class AliHFSystErr : public TNamed
  public:
 
   AliHFSystErr(const Char_t* name="HFSystErr", const Char_t* title="");
-  AliHFSystErr(Int_t decay,const Char_t* name="HFSystErr", const Char_t* title="");
   
   virtual ~AliHFSystErr();
   
@@ -38,16 +38,46 @@ class AliHFSystErr : public TNamed
   Double_t GetTrackingEffErr(Double_t pt) const;
   Double_t GetTotalSystErr(Double_t pt,Double_t feeddownErr=0) const;
 
+  // Setting  the run number
+  //  set the two last numbers of the year (is 10 for 2010)
+  void SetRunNumber(Int_t number) { 
+    fRunNumber = number; 
+    AliInfo(Form(" Settings for run year 20%2d",fRunNumber));
+  }
+  // Setting the collision type
+  //  0 is pp, 1 is PbPb
+  void SetCollisionType(Int_t type) { 
+    fCollisionType = type; 
+    if (fCollisionType==0) { AliInfo(" Settings for p-p collisions"); }
+    else if(fCollisionType==1) { AliInfo(" Settings for Pb-Pb collisions"); }
+  }
+  // Setting for the centrality class
+  //  0100 for MB, 020 (4080) for 0-20 (40-80) CC and so on
+  void SetCentrality(Int_t centrality) { 
+    fCentralityClass = centrality; 
+    AliInfo(Form(" Settings for centrality class %d",fCentralityClass));
+  }
+
+  // Function to initialize the variables/histograms
+  void Init(Int_t decay);
 
  private:
 
   AliHFSystErr(const AliHFSystErr& source);
   AliHFSystErr& operator=(const AliHFSystErr& source); 
  
+  void InitD0toKpi2010pp();
+  void InitDplustoKpipi2010pp();
+  void InitDstartoD0pi2010pp();
 
-  void InitD0toKpi();
-  void InitDplustoKpipi();
-  void InitDstartoD0pi();
+  void InitD0toKpi2010PbPb020();
+  void InitDplustoKpipi2010PbPb020();
+  void InitDstartoD0pi2010PbPb020();
+
+  void InitD0toKpi2010PbPb4080();
+  void InitDplustoKpipi2010PbPb4080();
+  void InitDstartoD0pi2010PbPb4080();
+
 
   TH1F* ReflectHisto(TH1F *hin) const;
 
@@ -59,6 +89,11 @@ class AliHFSystErr : public TNamed
   TH1F *fPIDEff;          // PID efficiency
   TH1F *fMCPtShape;       // MC dNdpt
   TH1F *fPartAntipart;    // particle=antiparticle
+
+  Int_t fRunNumber;        // Run Number (year)
+  Int_t fCollisionType;    // Collision type: pp=0, PbPb=1
+  Int_t fCentralityClass;  // Centrality class
+                           // MB:0100, 0-10:010, 0-20:020 ...40-80:4080...
 
   ClassDef(AliHFSystErr,1);  // class for systematic errors of charm hadrons
 };

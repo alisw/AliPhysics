@@ -1300,15 +1300,13 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
 
 
 //_________________________________________________________________________________________________________
-void AliHFPtSpectrum::ComputeSystUncertainties(Int_t decay, Bool_t combineFeedDown) {
+void AliHFPtSpectrum::ComputeSystUncertainties(AliHFSystErr *systematics, Bool_t combineFeedDown) {
   //
   // Function that re-calculates the global systematic uncertainties
   //   by calling the class AliHFSystErr and combining those
   //   (in quadrature) with the feed-down subtraction uncertainties
   //
 
-  // Call the systematics uncertainty class for a given decay
-  AliHFSystErr systematics(decay);
 
   // Estimate the feed-down uncertainty in percentage
   Int_t nentries = fgSigmaCorrConservative->GetN();
@@ -1324,7 +1322,7 @@ void AliHFPtSpectrum::ComputeSystUncertainties(Int_t decay, Bool_t combineFeedDo
   }
 
   // Draw all the systematics independently
-  systematics.DrawErrors(grErrFeeddown);
+  systematics->DrawErrors(grErrFeeddown);
 
   // Set the sigma systematic uncertainties
   // possibly combine with the feed-down uncertainties 
@@ -1335,11 +1333,11 @@ void AliHFPtSpectrum::ComputeSystUncertainties(Int_t decay, Bool_t combineFeedDo
     erryl = grErrFeeddown->GetErrorYlow(i);
     erryh = grErrFeeddown->GetErrorYhigh(i);
     if (combineFeedDown) {
-      errylcomb = systematics.GetTotalSystErr(x,erryl) * y ;
-      erryhcomb = systematics.GetTotalSystErr(x,erryh) * y ;
+      errylcomb = systematics->GetTotalSystErr(x,erryl) * y ;
+      erryhcomb = systematics->GetTotalSystErr(x,erryh) * y ;
     } else {
-      errylcomb = systematics.GetTotalSystErr(x) * y ;
-      erryhcomb = systematics.GetTotalSystErr(x) * y ;
+      errylcomb = systematics->GetTotalSystErr(x) * y ;
+      erryhcomb = systematics->GetTotalSystErr(x) * y ;
     }
     fgSigmaCorr->SetPointError(i,errx,errx,errylcomb,erryhcomb);
   }
