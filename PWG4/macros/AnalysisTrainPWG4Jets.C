@@ -161,7 +161,7 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-27-06b";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginRootVersion       = "v5-28-00a";  // *CHANGE ME IF MORE RECENT IN GRID*
 TString     kPluginAliRootVersion    = "v4-19-15-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption   = kFALSE;  // use xrootd tweaks
@@ -406,6 +406,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
    */
 
+
    if(iPhysicsSelection && !iAODanalysis){
      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
      Int_t iTriggerHIC = 0;
@@ -415,9 +416,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        rejectBkg = false; // for the moment...
      }
      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kIsMC,rejectBkg);  
-     iPhysicsSelectionFlag = AliVEvent::kMB;
+
      mgr->RegisterExtraFile("EventStat_temp.root");
      mgr->AddStatisticsTask();
+   }
+   else{
+     iPhysicsSelectionFlag = AliVEvent::kMB;
    }
 
    if(iCentralitySelection){
@@ -560,6 +564,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 taskCl->SetBackgroundCalc(kTRUE);
 	 taskCl->SetCentralityCut(fCenLo,fCenUp);
 	 taskCl->SetGhostEtamax(fTrackEtaWindow);
+	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
 	 kDefaultJetBackgroundBranchCut1 = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch());
 
          if (iPWG4FastEmbedding) {
@@ -568,52 +573,62 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
            taskClEmb->SetBackgroundCalc(kTRUE);
            taskClEmb->SetCentralityCut(fCenLo,fCenUp);
            taskClEmb->SetGhostEtamax(fTrackEtaWindow);
+	   if(iAODanalysis==2)taskClEmb->SetAODTrackInput(kTRUE);
 	   kDefaultJetBackgroundBranch_extra = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskClEmb->GetJetOutputBranch());
 
            taskClEmb = AddTaskJetCluster("AODextraonly","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),0.15,fTrackEtaWindow); // this one is for the background and random jets
            taskClEmb->SetBackgroundCalc(kFALSE);
            taskClEmb->SetCentralityCut(fCenLo,fCenUp);
            taskClEmb->SetGhostEtamax(fTrackEtaWindow);
-
+	   if(iAODanalysis==2)taskClEmb->SetAODTrackInput(kTRUE);
+	   
            taskClEmb = AddTaskJetCluster("AODextra","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data(),0.15,fTrackEtaWindow);
            taskClEmb->SetCentralityCut(fCenLo,fCenUp);
            taskClEmb->SetBackgroundBranch(kDefaultJetBackgroundBranch_extra.Data());
            kJetSubtractBranches_extra += Form("%s ",taskClEmb->GetJetOutputBranch());
+	   if(iAODanalysis==2)taskClEmb->SetAODTrackInput(kTRUE);
 
            taskClEmb = AddTaskJetCluster("AODextraonly","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data(),0.15,fTrackEtaWindow);
            taskClEmb->SetCentralityCut(fCenLo,fCenUp);
+	   if(iAODanalysis==2)taskClEmb->SetAODTrackInput(kTRUE);
          }
 
 	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.2,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
 	 taskCl->SetBackgroundCalc(kTRUE);
 	 taskCl->SetCentralityCut(fCenLo,fCenUp);
 	 taskCl->SetGhostEtamax(fTrackEtaWindow);
+	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
        }
        else{
 	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.6,0,1,kDeltaAODJetName.Data(),0.15); // this one is for the background jets
 	 taskCl->SetBackgroundCalc(kTRUE);
 	 kDefaultJetBackgroundBranch = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch());
 	 taskCl->SetGhostEtamax(fTrackEtaWindow);
+	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
 
 	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1,kDeltaAODJetName.Data(),0.15); 
 	 taskCl->SetBackgroundCalc(kTRUE);
 	 taskCl->SetGhostEtamax(fTrackEtaWindow);
+	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
        } 
 
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),0.15);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
        taskCl->SetNRandomCones(1);
+       if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
        kDefaultJetBranch = taskCl->GetJetOutputBranch();
        kJetSubtractBranches += Form("%s ",taskCl->GetJetOutputBranch());
 
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),2.0);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
+	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
        if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranchCut1.Data());
        kJetSubtractBranchesCut1 += Form("%s ",taskCl->GetJetOutputBranch());
 
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data(),0.15);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
+       if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
        if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
        kJetSubtractBranches += Form("%s ",taskCl->GetJetOutputBranch());
 
@@ -630,11 +645,13 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	   taskCl->SetBackgroundCalc(kTRUE);
 	   taskCl->SetGhostEtamax(0.9);
 	   kDefaultJetBackgroundBranchMC = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch());
-	   
+	   if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);	   
+
 	   taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
 	   taskCl->SetBackgroundCalc(kTRUE);
 	   taskCl->SetGhostEtamax(fTrackEtaWindow);
 	   kDefaultJetBackgroundBranchMC2 = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch(),fTrackEtaWindow); 
+	   if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
 	 }
 	 else{
 	   taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.6,0,1, kDeltaAODJetName.Data(),0.15,fTrackEtaWindow); // this one is for the background and random jets
@@ -646,6 +663,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	   taskCl->SetBackgroundCalc(kTRUE);
 	   taskCl->SetGhostEtamax(fTrackEtaWindow);
 	   kDefaultJetBackgroundBranchMC2 = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch()); 
+	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
 	   // pp background calcs...
 	 }
 	 
@@ -653,11 +671,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 taskCl->SetGhostEtamax(fTrackEtaWindow);
 	 if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranchMC.Data());	 
 	 kDefaultJetBranchMC = taskCl->GetJetOutputBranch();
+	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
 
 	 taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1, kDeltaAODJetName.Data(),0.15,fTrackEtaWindow);
 	 if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranchMC2.Data());	 
 	 kDefaultJetBranchMC2 = taskCl->GetJetOutputBranch();
-
+	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
        }
        
        
@@ -814,8 +833,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	   // 
 
 	   // the random jets...
-	   taskjetSpectrum = AddTaskJetSpectrum2("clustersAOD_KT04_B0_Filter00256_Cut00150_Skip00RandomConeSkip00",
-						 "clustersAOD_KT04_B0_Filter00256_Cut00150_Skip00RandomCone_random",
+	   taskjetSpectrum = AddTaskJetSpectrum2(
+						 Form("clustersAOD_KT04_B0_Filter%05d_Cut00150_Skip00RandomConeSkip00",kHighPtFilterMask),
+						 Form("clustersAOD_KT04_B0_Filter%05d_Cut00150_Skip00RandomCone_random",kHighPtFilterMask),
 						 kDeltaAODJetName.Data(),kHighPtFilterMask,AliVEvent::kMB,0,i);
 
 	   taskjetSpectrum->SetBranchBkgRec(bkgClusters.Data());
@@ -825,8 +845,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	   taskjetSpectrum->SetTrackEtaWindow(fTrackEtaWindow);
 	   taskjetSpectrum->SetJetEtaWindow(fJetEtaWindow);
 
-	   taskjetSpectrum = AddTaskJetSpectrum2("clustersAOD_KT04_B0_Filter00256_Cut02000_Skip00RandomConeSkip00",
-						 "clustersAOD_KT04_B0_Filter00256_Cut02000_Skip00RandomCone_random",
+	   taskjetSpectrum = AddTaskJetSpectrum2(
+						 Form("clustersAOD_KT04_B0_Filter%05d_Cut02000_Skip00RandomConeSkip00",kHighPtFilterMask),
+						 Form("clustersAOD_KT04_B0_Filter%05d_Cut02000_Skip00RandomCone_random",kHighPtFilterMask),
 						 kDeltaAODJetName.Data(),kHighPtFilterMask,AliVEvent::kMB,0,i);
 	   taskjetSpectrum->SetBranchBkgRec(bkgClustersCut1.Data());
 	   taskjetSpectrum->SetBranchBkgGen(bkgClustersCut1.Data());
@@ -944,21 +965,36 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
          // Anti-kT
          taskFrag = AddTaskFragmentationFunction(1<<23,kHighPtFilterMask, 1);
 	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
+	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
+
          taskFrag = AddTaskFragmentationFunction(1<<23,kHighPtFilterMask, 2);
 	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
+	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
+
          taskFrag = AddTaskFragmentationFunction(1<<23,kHighPtFilterMask, 3);
 	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
+	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
+
          taskFrag = AddTaskFragmentationFunction(1<<23,kHighPtFilterMask, 4);
      	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
+	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
+
          // UA1
          taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask, 1); 
 	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
+	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
+
 	 taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask, 2); 
 	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
+	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
+
 	 taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask, 3); 
 	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
+	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
+
 	 taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask, 4); 
 	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
+	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
 
          // SISCONE 
 	 /*
@@ -970,9 +1006,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
          // Anti-kT B2 - B3
          taskFrag = AddTaskFragmentationFunction(1<<26,kHighPtFilterMask, 1);
 	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
+	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
+
+
          taskFrag = AddTaskFragmentationFunction(1<<27,kHighPtFilterMask, 1);
 	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
-	 
+	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
 
        }
        if (!taskFrag) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskFragmentationFunction cannot run for this train conditions - EXCLUDED");
@@ -1316,7 +1355,7 @@ void StartAnalysis(const char *mode, TChain *chain) {
                ::Error("AnalysisTrainPWG4Jets.C::StartAnalysis", "Cannot create the chain");
                return;
             }   
-            mgr->StartAnalysis(mode, chain);
+	    //            mgr->StartAnalysis(mode, chain);
             mgr->StartAnalysis(mode, chain,kNumberOfEvents);
          }   
          return;
@@ -1975,7 +2014,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Define production directory LFN
    plugin->SetGridDataDir(kGridDatadir.Data());
 // Set data search pattern
-   if (iAODanalysis) plugin->SetDataPattern(" *AliAOD.Jets.root");
+   if (iAODanalysis) plugin->SetDataPattern(" *AliAOD.root");
    //   else              plugin->SetDataPattern(Form(" %s/*/*ESD.tag.root",kGridPassPattern.Data()));
    else              plugin->SetDataPattern(Form(" %s/*/*AliESDs.root",kGridPassPattern.Data()));
 // ...then add run numbers to be considered
