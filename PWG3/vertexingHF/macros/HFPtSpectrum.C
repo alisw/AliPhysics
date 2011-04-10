@@ -14,6 +14,7 @@
 #include "TCanvas.h"
 #include "TROOT.h"
 
+#include "AliHFSystErr.h"
 #include "AliHFPtSpectrum.h"
 
 //
@@ -238,8 +239,11 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   cout << "   ended the calculation, getting the histograms back " << endl;
 
   // Set the systematics externally
+  AliHFSystErr *systematics = new AliHFSystErr();
+  systematics->Init(decay);
   bool combineFeedDown = true;
-  spectra->ComputeSystUncertainties(decay,combineFeedDown);
+  spectra->ComputeSystUncertainties(systematics,combineFeedDown);
+
 
   //
   // Get the output histograms

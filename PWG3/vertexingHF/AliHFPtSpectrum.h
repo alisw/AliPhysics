@@ -26,6 +26,7 @@
 
 class TH1;
 class TGraphAsymmErrors;
+class AliHFSystErr;
 
 
 class AliHFPtSpectrum: public TNamed
@@ -143,7 +144,7 @@ class AliHFPtSpectrum: public TNamed
 
   // Compute the systematic uncertainties
   //   taking as input the AliHFSystErr uncertainties
-  void ComputeSystUncertainties(Int_t decay, Bool_t combineFeedDown);
+  void ComputeSystUncertainties(AliHFSystErr *systematics, Bool_t combineFeedDown);
   //
   // Drawing the corrected spectrum comparing to theoretical prediction
   void DrawSpectrum(TGraphAsymmErrors *gPrediction);
