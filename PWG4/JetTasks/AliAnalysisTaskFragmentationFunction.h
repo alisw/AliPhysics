@@ -345,6 +345,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 			      Float_t trackPhiMin = 0., Float_t trackPhiMax = 2*TMath::Pi())
   {fTrackPtCut = trackPt; fTrackEtaMin = trackEtaMin; fTrackEtaMax = trackEtaMax; 
     fTrackPhiMin = trackPhiMin; fTrackPhiMax = trackPhiMax;}
+
+  virtual void   UseAODInputJets(Bool_t b) {fUseAODInputJets = b;}  
   virtual void   SetFilterMask(UInt_t i) {fFilterMask = i;}
   virtual void   UsePhysicsSelection(Bool_t b) {fUsePhysicsSelection = b;}
   virtual void   SetEventClass(Int_t i){fEventClass = i;}
@@ -449,18 +451,18 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 
   Double_t GetDiJetBin(Double_t invMass, Double_t leadingJetPt, Double_t eMean, Int_t kindSlices); // function to find which bin fill
   Double_t InvMass(const AliAODJet* jet1, const AliAODJet* jet2);
-  void     AssociateGenRec(TList* tracksAODMCCharged,TList* tracksRec, TArrayI& indexAODTr,TArrayI& indexMCTr,TArrayS& isGenPrim);
-  void     FillSingleTrackRecEffHisto(AliFragFuncQATrackHistos* trackQAGen, AliFragFuncQATrackHistos* trackQARec, TList* tracksGen, const TArrayI& indexAODTr, const TArrayS& isGenPrim);
-  void     FillJetTrackRecEffHisto(TObject* histGen,TObject* histRec,Double_t jetPtGen,Double_t jetPtRec, TList* jetTrackList, const TList* tracksGen,
-				   const TArrayI& indexAODTr,const TArrayS& isGenPrim, const Bool_t useRecJetPt);
+
+  void     AssociateGenRec(TList* tracksAODMCCharged,TList* tracksRec, TArrayI& indexAODTr,TArrayI& indexMCTr,TArrayS& isRefGen,TH2F* fh2PtRecVsGen);
+
+  void     FillSingleTrackHistosRecGen(AliFragFuncQATrackHistos* trackQAGen, AliFragFuncQATrackHistos* trackQARec, TList* tracksGen, 
+				       const TArrayI& indexAODTr, const TArrayS& isRefGen);
+  void     FillJetTrackHistosRecGen(TObject* histGen,TObject* histRec,Double_t jetPtGen,Double_t jetPtRec, TList* jetTrackList, const TList* tracksGen,
+				    const TArrayI& indexAODTr,const TArrayS& isRefGen, const Bool_t useRecJetPt);
 
   void     FillSingleTrackResponse(THnSparse* hnResponse, TList* tracksGen, TList* tracksRec, const TArrayI& indexAODTr, const TArrayS& isGenPrim);
-
   void     FillJetTrackResponse(THnSparse* hnResponsePt, THnSparse* hnResponseZ, THnSparse* hnResponseXi, 
 				Double_t jetPtGen, Double_t jetPtRec, TList* jetTrackList,
 				const TList* tracksGen, TList* tracksRec, const TArrayI& indexAODTr, const TArrayS& isGenPrim,const Bool_t useRecJetPt);
-  
-  // 
 
 
   Float_t  CalcJetArea(const Float_t etaJet, const Float_t rc) const;
@@ -476,7 +478,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   // Consts
   
   enum {kTrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts, kTrackKineAll, kTrackKineCharged, kTrackKineChargedAcceptance, 
-	kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance};
+	kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance, kTrackAODMCChargedSec};
   enum {kJetsUndef=0, kJetsRec, kJetsRecAcceptance, kJetsGen, kJetsGenAcceptance, kJetsKine, kJetsKineAcceptance};
   enum {kBckgPerp=0, kBckgOutLJ, kBckgOut2J, kBckgClusters, kBckgClustersOutLeading, kBckgOut3J, kBckgOutAJ, kBckgOutLJStat, 
 	kBckgOut2JStat, kBckgOut3JStat, kBckgOutAJStat,  kBckgASide, kBckgASideWindow, kBckgPerpWindow};
@@ -490,6 +492,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 
   AliESDEvent* fESD;      // ESD event
   AliAODEvent* fAOD;      // AOD event
+  AliAODEvent* fAODJets;  // AOD event with jet branch (case we have AOD both in input and output)
   AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
   //AliMCEvent*  fMCEvent;  // MC event
   TString       fNonStdFile; // name of delta aod file to catch the extension
@@ -505,6 +508,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 
   Int_t   fJetTypeRecEff;       // type of jets used for filling reconstruction efficiency histos
 
+  Bool_t  fUseAODInputJets;     // take jets from in/output - only relevant if AOD event both in input AND output and we want to use output
   UInt_t  fFilterMask;	        // filter bit for selected tracks
   Bool_t  fUsePhysicsSelection; // switch for event selection
   Int_t   fEventClass;          // event class to be looked at for this instace of the task
@@ -548,11 +552,12 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 
   Float_t fAvgTrials;       // average number of trials per event
   
-  TList* fTracksRec;            //! reconstructed tracks
-  TList* fTracksRecCuts;        //! reconstructed tracks after cuts
-  TList* fTracksGen;            //! generated tracks 
-  TList* fTracksAODMCCharged;   //! AOD MC tracks 
-  TList* fTracksRecQualityCuts; //! reconstructed tracks after quality cuts, no acceptance/pt cut
+  TList* fTracksRec;             //! reconstructed tracks
+  TList* fTracksRecCuts;         //! reconstructed tracks after cuts
+  TList* fTracksGen;             //! generated tracks 
+  TList* fTracksAODMCCharged;    //! AOD MC tracks 
+  TList* fTracksAODMCChargedSec; //! AOD MC tracks - secondaries 
+  TList* fTracksRecQualityCuts;  //! reconstructed tracks after quality cuts, no acceptance/pt cut
 
   
   TList* fJetsRec;        //! jets from reconstructed tracks
@@ -750,15 +755,18 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   TH1F  *fh1nRecEffJets;          //! number of jets for reconstruction eff per event
   TH1F  *fh1nRecBckgJetsCuts;     //! number of jets from reconstructed tracks per event
   TH1F  *fh1nGenBckgJets;         //! number of jets from generated tracks per event
-  TH2F  *fh2PtRecVsGenPrim;       //! association rec/gen MC: rec vs gen pt 
+  TH2F  *fh2PtRecVsGenPrim;       //! association rec/gen MC: rec vs gen pt, primaries 
+  TH2F  *fh2PtRecVsGenSec;        //! association rec/gen MC: rec vs gen pt, secondaries 
 
-  // tracking efficiency 
+  // tracking efficiency / secondaries
   
   AliFragFuncQATrackHistos* fQATrackHistosRecEffGen;      //! tracking efficiency: generated primaries 
   AliFragFuncQATrackHistos* fQATrackHistosRecEffRec;      //! tracking efficiency: reconstructed primaries
+  AliFragFuncQATrackHistos* fQATrackHistosSecRec;         //! reconstructed secondaries
 
   AliFragFuncHistos*  fFFHistosRecEffGen;                 //! tracking efficiency: FF generated primaries  
   AliFragFuncHistos*  fFFHistosRecEffRec;                 //! tracking efficiency: FF reconstructed primaries
+  AliFragFuncHistos*  fFFHistosSecRec;                    //! secondary contamination: FF reconstructed secondaries
 
   // momentum resolution 
   THnSparse* fhnResponseSinglePt;    //! single track response pt
