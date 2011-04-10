@@ -784,7 +784,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
       TObjString *os;
       TIter next(arr);
       while ((os=(TObjString*)next())) {
-         path = Form("%s/%s ", fGridDataDir.Data(), os->GetString().Data());
+         path = Form("%s/%s/ ", fGridDataDir.Data(), os->GetString().Data());
          if (!DirectoryExists(path)) continue;
 //         CdWork();
          if (TestBit(AliAnalysisGrid::kTest)) file = "wn.xml";
@@ -2226,7 +2226,7 @@ Bool_t AliAnalysisAlien::MergeOutputs()
       return kFALSE;
    }   
    // Get the output path
-   if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("/%s/%s/%s", gGrid->GetHomeDirectory(), fGridWorkingDir.Data(), fGridOutputDir.Data());
+   if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("%s/%s/%s", gGrid->GetHomeDirectory(), fGridWorkingDir.Data(), fGridOutputDir.Data());
    if (!DirectoryExists(fGridOutputDir)) {
       Error("MergeOutputs", "Grid output directory %s not found. Terminate() will NOT be executed", fGridOutputDir.Data());
       return kFALSE;
@@ -2474,15 +2474,18 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
             }
             if (list) delete list;            
          }
-         if (!extraLibs.IsNull()) optionsList.Add(new TNamed("ALIROOT_EXTRA_LIBS",extraLibs.Data()));
+        if (!extraLibs.IsNull()) {
+          Info("StartAnalysis", "Adding extra libs: %s",extraLibs.Data());
+          optionsList.Add(new TNamed("ALIROOT_EXTRA_LIBS",extraLibs.Data()));
+        }
          // Check extra includes
          if (!fIncludePath.IsNull()) {
             TString includePath = fIncludePath;
             includePath.ReplaceAll(" ",":");
-            includePath.ReplaceAll("$ALICE_ROOT","");
-            includePath.ReplaceAll("${ALICE_ROOT}","");
+            includePath.ReplaceAll("$ALICE_ROOT/","");
+            includePath.ReplaceAll("${ALICE_ROOT}/","");
             includePath.ReplaceAll("-I","");
-            includePath.Strip(TString::kTrailing, ':');
+            includePath.Remove(TString::kTrailing, ':');
             Info("StartAnalysis", "Adding extra includes: %s",includePath.Data()); 
             optionsList.Add(new TNamed("ALIROOT_EXTRA_INCLUDES",includePath.Data()));
          }
@@ -2505,11 +2508,13 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
                return kFALSE;
             }   
          } else {
-            if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"VO_ALICE@AliRoot::%s\", (TList*)%p, kTRUE);", 
-                                   fAliROOTVersion.Data(), &optionsList))) {
-               Error("StartAnalysis", "There was an error trying to enable package VO_ALICE@AliRoot::%s", fAliROOTVersion.Data());
-               return kFALSE;
-            }         
+           if ( ! fAliROOTVersion.IsNull() ) {
+             if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"VO_ALICE@AliRoot::%s\", (TList*)%p, kTRUE);", 
+                                         fAliROOTVersion.Data(), &optionsList))) {
+                Error("StartAnalysis", "There was an error trying to enable package VO_ALICE@AliRoot::%s", fAliROOTVersion.Data());
+                return kFALSE;
+             }
+           }
          }
          // Enable first par files from fAdditionalLibs
          if (!parLibs.IsNull()) {
@@ -2550,7 +2555,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
             TString spkg = package->GetName();
             spkg.ReplaceAll(".par", "");
             gSystem->Exec(TString::Format("rm -rf %s", spkg.Data()));
-            if (gROOT->ProcessLine(Form("gProof->UploadPackage(\"%s\");", package->GetName()))) {
+            if (!gROOT->ProcessLine(Form("gProof->UploadPackage(\"%s\");", package->GetName()))) {
                if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"%s\",kTRUE);", package->GetName()))) {
                   Error("StartAnalysis", "There was an error trying to enable package %s", package->GetName());
                   return kFALSE;
@@ -2569,7 +2574,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          TObjString *str;
          while((str=(TObjString*)next())) {
             gROOT->ProcessLine(Form("gProof->Load(\"%s+g\", kTRUE);", str->GetName()));
-         }   
+         }
          if (list) delete list;
       }
       if (testMode) {
@@ -2841,7 +2846,7 @@ Bool_t AliAnalysisAlien::Submit()
 Bool_t AliAnalysisAlien::SubmitMerging()
 {
 // Submit all merging jobs.
-   if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("/%s/%s/%s", gGrid->GetHomeDirectory(), fGridWorkingDir.Data(), fGridOutputDir.Data());
+   if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("%s/%s/%s", gGrid->GetHomeDirectory(), fGridWorkingDir.Data(), fGridOutputDir.Data());
    gGrid->Cd(fGridOutputDir);
    TString mergeJDLName = fExecutable;
    mergeJDLName.ReplaceAll(".sh", "_merge.jdl");
@@ -3419,7 +3424,7 @@ void AliAnalysisAlien::WriteMergingMacro()
    }   
    TString mergingMacro = fExecutable;
    mergingMacro.ReplaceAll(".sh","_merge.C");
-   if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("/%s/%s/%s", gGrid->GetHomeDirectory(), fGridWorkingDir.Data(), fGridOutputDir.Data());
+   if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("%s/%s/%s", gGrid->GetHomeDirectory(), fGridWorkingDir.Data(), fGridOutputDir.Data());
    if (!TestBit(AliAnalysisGrid::kSubmit)) {  
       ofstream out;
       out.open(mergingMacro.Data(), ios::out);
