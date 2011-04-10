@@ -403,6 +403,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * /*cur
   Int_t eventType = 0;
   if(fInputEvent->GetHeader())
 	  eventType = ((AliVHeader*)fInputEvent->GetHeader())->GetEventType();
+
   if( fFiredTriggerClassName  !="" && !fAnaLED){
     if(eventType!=7)
       return kFALSE; //Only physics event, do not use for simulated events!!!
@@ -410,6 +411,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * /*cur
       printf("AliCaloTrackReader::FillInputEvent() - FiredTriggerClass <%s>, selected class <%s>, compare name %d\n",
 	     GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data(), GetFiredTriggerClasses().Contains(fFiredTriggerClassName));
     if( !GetFiredTriggerClasses().Contains(fFiredTriggerClassName) ) return kFALSE;
+    else if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent() - Accepted triggered event\n");
   }
   else if(fAnaLED){
 //	  kStartOfRun =       1,    // START_OF_RUN
