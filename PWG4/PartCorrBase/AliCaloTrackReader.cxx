@@ -479,9 +479,11 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * /*cur
           bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0AND);
         //else bV0AND = //FIXME FOR AODs
         if(!bV0AND) return kFALSE;
+        
       }
       
       if(!CheckForPrimaryVertex()) return kFALSE;
+      
     }//CaloFilter patch
     else{ 
       if(fInputEvent->GetNumberOfCaloClusters() > 0) {
@@ -809,7 +811,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
   
   clus->GetMomentum(momentum, fVertex[vindex]);      
   
-  if(fEMCALPtMin < momentum.Pt()){
+  if(fEMCALPtMin < momentum.E()){
     
     if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) 
       return;
@@ -963,7 +965,7 @@ void AliCaloTrackReader::FillInputPHOS() {
         
         clus->GetMomentum(momentum, fVertex[vindex]);      
         
-        if(fPHOSPtMin < momentum.Pt()){
+        if(fPHOSPtMin < momentum.E()){
           
           if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"PHOS")) 
             continue;

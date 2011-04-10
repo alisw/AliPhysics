@@ -65,7 +65,6 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TString GetCalorimeter()                  const {return fCalorimeter ; }
   void    SetCalorimeter(TString  & det)          {fCalorimeter = det  ; }
   
-  
   // ** Cluster selection methods **
   
   void    SetMinDistanceToBadChannel(Float_t m1, Float_t m2, Float_t m3) {
