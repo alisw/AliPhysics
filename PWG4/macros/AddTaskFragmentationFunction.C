@@ -245,9 +245,7 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
 
    task->SetBckgMode(1);        // default: bgMode = 1 
    task->SetBckgType();
-   task->SetBranchRecBackClusters("clustersAOD_KT04_B0_Filter00256_Cut00150_Skip00");
-
-
+   task->SetBranchRecBackClusters(Form("clustersAOD_KT04_B0_Filter%05d_Cut00150_Skip00",filterMask));
 
    // Define histo bins
    task->SetFFHistoBins();

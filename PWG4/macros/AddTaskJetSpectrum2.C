@@ -101,8 +101,8 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
 
 
    if(type == "AOD"){
-     // Assume all jet are produced already
-     pwg4spec->SetAODJetInput(kTRUE);
+     // Assume all jets are not yet produced 
+     //     pwg4spec->SetAODJetInput(kTRUE);
      pwg4spec->SetAODTrackInput(kTRUE);
      pwg4spec->SetAODMCInput(kTRUE);
    }
