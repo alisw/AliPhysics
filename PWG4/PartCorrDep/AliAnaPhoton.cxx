@@ -158,8 +158,8 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhNtraNclu->SetYTitle("# of clusters");
   outputContainer->Add(fhNtraNclu);
   
-  fhNCellsPt  = new TH2F ("hNCellsPt","# of tracks vs # of clusters", nptbins,ptmin, ptmax, 10,0,10); 
-  fhNCellsPt->SetXTitle("p_{T}");
+  fhNCellsPt  = new TH2F ("hNCellsPt","# of cells in cluster vs E of clusters", nptbins,ptmin, ptmax, 10,0,10); 
+  fhNCellsPt->SetXTitle("p_{T} (GeV/c)");
   fhNCellsPt->SetYTitle("# of cells in cluster");
   outputContainer->Add(fhNCellsPt);  
   
@@ -767,8 +767,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
  
     //.......................................
     //If too small or big pt, skip it
-    if(mom.Pt() < GetMinPt() || mom.Pt() > GetMaxPt() ) continue ; 
-    if(GetDebug() > 2) printf("\t Cluster %d Pass Pt Cut \n",icalo);
+    if(mom.E() < GetMinPt() || mom.E() > GetMaxPt() ) continue ; 
+    if(GetDebug() > 2) printf("\t Cluster %d Pass E Cut \n",icalo);
     
     //.......................................
     // TOF cut, BE CAREFUL WITH THIS CUT
