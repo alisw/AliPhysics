@@ -10,6 +10,8 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0, 
   //   AliAnalysisTaskCaloCellsQA *taskQA = AddTaskCaloCellsQA(10); // 10 supermodules
   //   taskQA->SelectCollisionCandidates(AliVEvent::kMB); // if necessary
   //   // taskQA->SetAvoidPileup(kFALSE); // some customization
+  //   // Int_t badcells[] = {74,103,917};
+  //   // taskQA->SetBadCells(badcells, 3); // reject clusters containing any of these cells
   //
   // Usage example for PHOS:
   //

@@ -95,12 +95,17 @@ private:
   Double_t  fXMaxPi0Mass;               // X axis maximum in hPi0Mass
   Double_t  fXMaxNCellsInCluster;       // X axis maximum in hNCellsInCluster
 
-  // internal parameters, used for coding convenience
-  Int_t fAbsIdMin;                      // minimum absId number (0/EMCAL, 1/PHOS)
-  Int_t fAbsIdMax;                      // maximum absId number + 1
+  // internal parameters
+  Int_t  fRunNumbers[1000];             // already encountered runs
+  Int_t  fNRuns;                        // number of encountered runs
+  Int_t  fRI;                           // current (cached) run index
 
-  TObjArray *fListOfHistos;             //! array with all the histograms
-  TH1D *fhNEventsProcessedPerRun;       //! number of processed events per run
+  // internal parameters, used for coding convenience
+  Int_t  fAbsIdMin;                     // minimum absId number (0/EMCAL, 1/PHOS)
+  Int_t  fAbsIdMax;                     // maximum absId number + 1
+
+  TObjArray  *fListOfHistos;            //! array with all the histograms
+  TH1D  *fhNEventsProcessedPerRun;      //! number of processed events per run
 
   // per run histograms, X axis -- cell absId number;
   // NOTE: the maximum number of runs to handle per analysis instance is set to 1000;
