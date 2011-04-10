@@ -9,6 +9,10 @@
  *   aliroot -b -q 'extract-ESD.C("alien:///alice/data/2010/.../.root", "raw://", nOfEvents)' | tee extract-ESD.log
  * </pre>
  *
+ * This macro only needs the HLT/Calib/StreamerInfo object to extract the HLT ESD from raw data.
+ * However, it is extremely slow, it even gets slower during running. It should be used as an
+ * emergency solution. HLT/exa/recraw-local.C is the proper and fast way to extract HLT data. 
+ *
  * @author Kalliopi.Kanaki@ift.uib.no
  * @ingroup alihlt_tutorial
  */
@@ -29,12 +33,11 @@ void extract_ESD(const char* input, const char *cdbURI, int nofEvents=-1){
   // Set the CDB storage location
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage(cdbURI);
-  //man->SetRun(146018);
-
-  AliRawReader* pRawReader=AliRawReader::Create(input);
-  if (!pRawReader){
-    cout << "cannot open RawReader for file " << input << endl;
-    return;
+ 
+  AliRawReader *pRawReader = AliRawReader::Create(input);
+  if(!pRawReader){
+     cout << "cannot open RawReader for file " << input << endl;
+     return;
   }
   
   if (!pRawReader->NextEvent()){
@@ -42,7 +45,7 @@ void extract_ESD(const char* input, const char *cdbURI, int nofEvents=-1){
     return;
   }
   
-  if(struri.Contains("local") || strfile.Contains("alien")) man->SetRun(pRawReader->GetRunNumber());
+  if(!struri.BeginsWith("raw://")) man->SetRun(pRawReader->GetRunNumber());
 
   // setup of the HLT system
   AliHLTSystem *pHLT = AliHLTPluginBase::GetInstance();
