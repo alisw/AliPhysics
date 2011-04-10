@@ -1928,7 +1928,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             for(Int_t icell=0; icell<fNCellNCuts; icell++){
               for(Int_t iasym=0; iasym<fNAsymCuts; iasym++){
                 Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
-                if(p1->Pt() >   fPtCuts[ipt]      && p2->Pt() > fPtCuts[ipt]        && 
+                if(p1->E() >   fPtCuts[ipt]      && p2->E() > fPtCuts[ipt]        && 
                    a        <   fAsymCuts[iasym]                                    && 
                    ncell1   >=  fCellNCuts[icell] && ncell2   >= fCellNCuts[icell]){
                     fhRePtNCellAsymCuts[index]->Fill(pt,m) ;
