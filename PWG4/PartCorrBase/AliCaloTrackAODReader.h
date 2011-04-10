@@ -36,6 +36,8 @@ public:
   
   AliVEvent* GetOriginalInputEvent() const { return fOrgInputEvent; }
   
+  TString GetFiredTriggerClasses() {return ((AliAODEvent*)GetInputEvent())->GetFiredTriggerClasses();}
+  
 private:
   
   AliVEvent *fOrgInputEvent; //! Original input event, not from filtering
