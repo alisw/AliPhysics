@@ -377,6 +377,8 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
    Float_t cent=0.;
    
    if(fAODOut)cent = fAODOut->GetHeader()->GetCentrality();
+   if(fAODIn) cent = fAODIn->GetHeader()->GetCentrality();
+
    if(evBkg)sigma=evBkg->GetSigma(1); 
 
    if(fSubtraction==kArea) rho = evBkg->GetBackground(1);
