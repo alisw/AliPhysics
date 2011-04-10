@@ -29,10 +29,10 @@ public:
   virtual ~AliAnalysisEtSelectionContainer();
   
   /** Return the physics selection for the current run */
-  AliPhysicsSelection* GetPhysicsSelection(Int_t runNumber){ return fPhysicsSelectionMap[runNumber]; }
+  AliPhysicsSelection* GetPhysicsSelection(Int_t runNumber) { return fPhysicsSelectionMap[runNumber]; }
   
   /** Return the physics selection for the current run */
-  AliPhysicsSelection* GetDefaultPhysicsSelection(){ return fPhysicsSelectionMap[0]; }
+  AliPhysicsSelection* GetDefaultPhysicsSelection() { return fPhysicsSelectionMap[0]; }
   
   /** Get the map */
   std::map<int, AliPhysicsSelection*> GetPhysicsSelectionMap() const { return fPhysicsSelectionMap; }
