@@ -158,9 +158,10 @@ void AliAnalysisTaskCaloCellsQA::SetBadCells(Int_t badcells[], Int_t nbad)
   // Set absId numbers for bad cells;
   // clusters which contain a bad cell will be rejected.
 
+  if (fBadCells) delete [] fBadCells;
+
   // switch off bad cells, if asked
   if (nbad <= 0) {
-    if (fBadCells) delete [] fBadCells;
     fNBad = 0;
     return;
   }
