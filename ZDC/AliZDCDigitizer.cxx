@@ -163,9 +163,19 @@ Bool_t AliZDCDigitizer::Init()
       }
       fPMGain[2][1] = 0.869654*(1.32312-0.000101515*fBeamEnergy)*10000000;
       fPMGain[2][2] = 1.030883*(1.32312-0.000101515*fBeamEnergy)*10000000;
-      AliInfo(Form("    PMT gains for p-p @ %1.0f+%1.0f GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
-      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]));
     }
+    else{
+       Float_t scalGainFactor = fBeamEnergy/2760.;
+       for(Int_t j = 0; j < 5; j++){
+         fPMGain[0][j] = 50000./(4*scalGainFactor);   // ZNC	         
+         fPMGain[1][j] = 100000./(10*scalGainFactor); // ZPC       
+         fPMGain[2][j] = 100000./scalGainFactor;      // ZEM
+         fPMGain[3][j] = 50000./(4*scalGainFactor);   // ZNA	         
+         fPMGain[4][j] = 100000./(10*scalGainFactor); // ZPA    
+       }
+    }
+    AliInfo(Form("    PMT gains for p-p @ %1.0f+%1.0f GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]));
   }
   else if((beamType.CompareTo("A-A")) == 0){
     // PTM gains for Pb-Pb @ 2.7+2.7 A TeV ***************
