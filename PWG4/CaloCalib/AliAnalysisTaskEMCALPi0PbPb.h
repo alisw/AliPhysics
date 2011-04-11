@@ -37,6 +37,8 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetCentralityRange(Double_t from, Double_t to) { fCentFrom=from; fCentTo=to; }
   void         SetClusName(const char *name)                  { fClusName = name;           }
   void         SetDoAfterburner(Bool_t b)                     { fDoAfterburner = b;         }
+  void         SetDoTrackMatWithGeom(Bool_t b)                { fDoTrackMatWithGeom = b;    }
+  void         SetDoTrackVtxConstrain(Bool_t b)               { fDoConstrain = b;           }
   void         SetFillNtuple(Bool_t b)                        { fDoNtuple = b;              }
   void         SetGeoName(const char *n)                      { fGeoName = n;               }
   void         SetIsoDist(Double_t d)                         { fIsoDist = d;               }
@@ -100,6 +102,8 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Double_t               fIsoDist;                // isolation distance (def=0.2)
   TString                fTrClassNames;           // trigger class names
   AliESDtrackCuts       *fTrCuts;                 // track cuts
+  Bool_t                 fDoTrackMatWithGeom;     // track matching including geometry
+  Bool_t                 fDoConstrain;            // if true constrain tracks to vertex 
 
     // derived members (ie with ! after //)
   ULong64_t              fNEvs;                   //!accepted events 
@@ -136,8 +140,9 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   TH1                   *fHCellM;                 //!histo for mean cell energy (normalized to hit cells)
   TH1                   *fHCellM2;                //!histo for mean cell energy (normalized to all cells)
   TH1                  **fHCellFreqNoCut;         //!histo for cell frequency without cut
-  TH1                  **fHCellFrequCut100M;      //!histo for cell frequency with cut  100MeV
-  TH1                  **fHCellFrequCut300M;      //!histo for cell frequency with cut  300MeV
+  TH1                  **fHCellFreqCut100M;       //!histo for cell frequency with cut 100MeV
+  TH1                  **fHCellFreqCut300M;       //!histo for cell frequency with cut 300MeV
+  TH1                  **fHCellFreqE;             //!histo for cell frequency weighted with energy
   TH1                  **fHCellCheckE;            //!histo for cell E distribution for given channels
     // histograms for clusters
   TH1                   *fHClustEccentricity;     //!histo for cluster eccentricity
@@ -157,6 +162,6 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskEMCALPi0PbPb(const AliAnalysisTaskEMCALPi0PbPb&);            // not implemented
   AliAnalysisTaskEMCALPi0PbPb &operator=(const AliAnalysisTaskEMCALPi0PbPb&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 4); // Analysis task for neutral pions in Pb+Pb
+  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 5); // Analysis task for neutral pions in Pb+Pb
 };
 #endif
