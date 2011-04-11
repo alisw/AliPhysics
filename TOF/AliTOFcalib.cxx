@@ -2282,6 +2282,9 @@ AliTOFcalib::GetTimeCorrection(Int_t index, Double_t tot, Int_t deltaBC, Int_t l
     return 0.;
   }
 
+  /* deal with L0-L1 orbit crossing (negative values) */
+  if (l0l1 < 0) l0l1 += 3564;
+
   /* get calibration params */
   AliTOFChannelOffline *parOffline = (AliTOFChannelOffline *)fTOFCalOffline->At(index);
   Int_t deltaBCOffset = fDeltaBCOffset->GetDeltaBCOffset();
