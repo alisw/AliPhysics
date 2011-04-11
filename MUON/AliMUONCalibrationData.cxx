@@ -422,7 +422,7 @@ Bool_t AliMUONCalibrationData::PatchHVValues(TObjArray& values,
   
   TString hvCase("OTHER");
   int dummy(0),a(-1),b(-1);
-  char r[80];
+  char r[81];
   Int_t nvalues = values.GetSize();  
   Int_t* indices = new Int_t[nvalues];
   memset(indices,0,nvalues*sizeof(Int_t));
@@ -569,6 +569,8 @@ AliMUONCalibrationData::CreateHV(Int_t runNumber,
   /// Create a new HV map from the OCDB for a given run
   TMap* hvMap = dynamic_cast<TMap*>(CreateObject(runNumber,"MUON/Calib/HV",startOfValidity));
 
+  if (!hvMap) return 0x0;
+  
   if (patched)
   {
     TIter next(hvMap);
@@ -622,7 +624,7 @@ AliMUONCalibrationData::CreateHV(Int_t runNumber,
       
       if ( i >= 0 )
       {
-        sscanf(msg->String()(i,msg->String().Length()-i).Data(),"CASE:%c",&hvCase);
+        sscanf(msg->String()(i,msg->String().Length()-i).Data(),"CASE:%10c",&hvCase);
       }
 
       switch (hvCase)
