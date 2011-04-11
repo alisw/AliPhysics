@@ -96,10 +96,13 @@ void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t u
   if (!entry4) AliFatal("LHC clock-phase shift is not found in OCDB !");
   AliLHCClockPhase *phase = (AliLHCClockPhase*)entry4->GetObject();
   Float_t fGRPdelays = l1Delay - phase->GetMeanPhase();
+
   AliCDBEntry *entryL = AliCDBManager::Instance()->Get("T0/Calib/Latency");
+  if (!entryL) AliFatal(" T0 Latency is not found in OCDB !");
   AliT0CalibLatency *lat = (AliT0CalibLatency*)entryL->GetObject();
   Float_t fLatencyHPTDC = lat->GetLatencyHPTDC();
   Float_t fLatencyL1 = lat->GetLatencyL1();
+
   AliCDBEntry *entryCalib = AliCDBManager::Instance()->Get("T0/Calib/TimeDelay");
   if(!entryCalib) {
     AliWarning(Form("Cannot find any AliCDBEntry for [Calib, TimeDelay]!"));

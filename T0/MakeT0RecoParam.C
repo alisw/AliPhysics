@@ -1,38 +1,81 @@
 void MakeT0RecoParam(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infinity(), AliRecoParam::EventSpecie_t defaultParam = AliRecoParam::kHighMult)
+//void MakeT0RecoParam(Int_t startRun = 122000, Int_t endRun = 126437, AliRecoParam::EventSpecie_t defaultParam = AliRecoParam::kHighMult)
 {
   // Create T0 Calibration Object for Ideal calibration and
   // write it on CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  //  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+   man->SetDefaultStorage("local:///home/alla/alice/Feb11/TestCDB");
   man->SetRun(startRun);
-
+  
   TObjArray *recoParamArray = new TObjArray();
   AliT0RecoParam* t0RecoParam;
 
   t0RecoParam = AliT0RecoParam::GetHighFluxParam();
   t0RecoParam->SetEventSpecie(AliRecoParam::kHighMult);
-  // t0RecoParam->Dump();
-  cout<<" t0RecoParam->GetEventSpecie "<< t0RecoParam->GetEventSpecie()<<endl;
-  //  t0RecoParam->Dump();
+   Float_t low[500] , high[500] ;
+   Float_t pos[24] = {2472, 2492, 2501, 2540, 2526, 2525, 2501, 2461, 2556, 2544, 2533, 2487, 
+		      2485, 2502, 2453, 2470, 2520, 2486, 2512, 2523, 2505, 2562, 2533, 2481}; 
+    for (Int_t i=0; i<107; i++)
+      {
+	low[i] = 500;
+	high[i]=50000;
+ 	if(i>0  && i<13) { low[i] = pos[i-1] - 200; high[i] = pos[i-1] + 200;}
+	if(i>56 && i<69) { low[i] = pos[i-57] - 200.; high[i]=pos[i-57] + 200;}
+	//	if(i<13) { low[i]=pos[i]-500.;high[i]=pos[i]+500.;}
+	//	if(i>56 && i<69) { low[i]=pos[i+13-57]-500.;high[i]=pos[i-57+13]+500.;}
+  }
+
+  // bad PMT
+  t0RecoParam->SetRefPoint(-1);
+  // amplitude range for recontruction
+  low[200]=0.5;
+  high[200]=80;
+  for (Int_t i=0; i<24; i++) t0RecoParam-> SetBadChannels(i,0);
+  
+  for (Int_t i=0; i<500; i++) {
+    t0RecoParam->SetLow(i,low[i]);
+    t0RecoParam->SetHigh(i,high[i]);
+  }
   t0RecoParam->PrintParameters();
   recoParamArray->AddLast(t0RecoParam);
-
-
+  
+  //-----------------------------------------
 
   t0RecoParam = AliT0RecoParam::GetLowFluxParam();
   t0RecoParam->SetEventSpecie(AliRecoParam::kLowMult);
-  cout<<" t0RecoParam->GetEventSpecie "<< t0RecoParam->GetEventSpecie()<<endl;
-  t0RecoParam->SetLow(10,-1000);
+    Float_t low[500], high[500] ;
+    for (Int_t i=0; i<500; i++)
+      {
+	low[i] = 500;
+	high[i]=50000;
+  	if(i>0  && i<13) { low[i] = pos[i-1] - 200; high[i] = pos[i-1] + 200;}
+	if(i>56 && i<69) { low[i] = pos[i-57] - 200.; high[i]=pos[i-57] + 200;}
+	//	if(i<13) { low[i]=pos[i]-500.;high[i]=pos[i]+500.;}
+	//	if(i>56 && i<69) { low[i]=pos[i+13-57]-500.;high[i]=pos[i-57+13]+500.;}
+    }
+
+  // bad PMT
+    //  t0RecoParam->SetRefPoint(-1);
+    for (Int_t i=0; i<24; i++) t0RecoParam->SetBadChannels(i,0);
+  t0RecoParam->SetRefPoint(-1);
+  // amplitude range for recontruction
+  low[200]=0.8;
+  high[200]=80;
+  for (Int_t i=0; i<500; i++) {
+    t0RecoParam->SetLow(i,low[i]);
+    t0RecoParam->SetHigh(i,high[i]);
+  }
   t0RecoParam->PrintParameters();
   recoParamArray->AddLast(t0RecoParam);
-
+  //--------------------------------------
   t0RecoParam = AliT0RecoParam::GetLaserTestParam();
   t0RecoParam->SetEventSpecie(AliRecoParam::kCalib);
   // t0RecoParam->Dump();
   cout<<" t0RecoParam->GetEventSpecie "<< t0RecoParam->GetEventSpecie()<<endl;
-  for (Int_t i=98; i<149; i++) {
-    t0RecoParam->SetLow(i,-1000);
-    t0RecoParam->SetHigh(i,1000);
+  for (Int_t i=0; i<107; i++) {
+    t0RecoParam->SetLow(i, 0);
+    t0RecoParam->SetHigh(i, 50000);
   }
   //  t0RecoParam->Dump();
   t0RecoParam->SetRefPoint(1);

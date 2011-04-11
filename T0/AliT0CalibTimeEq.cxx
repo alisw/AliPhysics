@@ -262,8 +262,7 @@ Bool_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *tim
 	  }
 	  SetTimeEq(i,timecdb[i] + meandiff);
 	  SetTimeEqRms(i,sigmadiff);
-	  SetCFDvalue(i,0,cfdvalue[i] + meancfdtime );
-	  //SetCFDvalue(i,0,cfdvalue[i] );
+	  SetCFDvalue(i,0,cfdvalue[i] );
 	  if (cfddiff) delete cfddiff;
 	  if (cfdtime) delete cfdtime;
 	  } //bad pmt
