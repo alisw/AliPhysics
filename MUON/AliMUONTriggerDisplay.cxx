@@ -310,6 +310,10 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TObject* inputObject, TH2
 	AliMpPad pad = seg[cath]->PadByLocation(iBoard,ibitxy+offset,kFALSE);
 
 	if (!pad.IsValid()) continue;
+        
+  // For non-bending plane fill only the first board covered by the strip
+  // i.e. avoide filling many times the same information
+  if ( cath == 1 && pad.GetLocalBoardId(0) != iBoard ) continue;
 
 	xWidth = pad.GetDimensionX();
 	yWidth = pad.GetDimensionY();

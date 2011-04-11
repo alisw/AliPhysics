@@ -139,6 +139,32 @@ Float_t AliMUONTriggerChamberEfficiency::GetCellEfficiency(Int_t detElemId, Int_
 
 
 //__________________________________________________________________________
+Float_t AliMUONTriggerChamberEfficiency::GetCellEfficiencyError(Int_t detElemId, Int_t localBoard, Int_t hType, Int_t errType) const
+{
+  /// Get the efficiencie errors of the 2 cathodes at a given local board
+  /// errype 0 -> low error
+  /// errype 1 -> high error
+  
+  Int_t chamber = FindChamberIndex(detElemId);
+  Int_t index = GetIndex(kHboardEff, hType, chamber);
+  TGraphAsymmErrors* effGraph = ((TGraphAsymmErrors*)fEfficiencyObjects->At(index));
+  
+  // Some graphs are not available in the old implementation
+  if ( ! effGraph ) return -1.;
+
+  Float_t err = -1.;
+  if ( errType == 0 ) { // low error
+    err = effGraph->GetErrorYlow(localBoard-1);
+  }
+  else if ( errType == 1 ) { // up error
+    err = effGraph->GetErrorYhigh(localBoard-1);
+  }
+  
+  return err;
+}
+
+
+//__________________________________________________________________________
 void 
 AliMUONTriggerChamberEfficiency::IsTriggered(Int_t detElemId, Int_t localBoard, Bool_t &trigBend, Bool_t &trigNonBend) const
 {
@@ -239,8 +265,6 @@ AliMUONTriggerChamberEfficiency::FillFromList(Bool_t useMeanValues)
 
 	index = GetIndex(deTypeEff[ide], hType, ich);
 	TGraphAsymmErrors* effGraph = GetEfficiencyGraph(histoNum,histoDen);
-	histoName.ReplaceAll("Count","Eff");
-	effGraph->SetName(histoName.Data());
 	fEfficiencyObjects->AddAt(effGraph, index);
 
 	TString debugString = Form("Adding object %s",effGraph->GetName());
@@ -262,8 +286,6 @@ AliMUONTriggerChamberEfficiency::FillFromList(Bool_t useMeanValues)
 	  }
 	  index = GetIndex(kHboardEff, hType, ich);
 	  effGraph = GetEfficiencyGraph(auxHistoNum,auxHistoDen);
-	  histoName.ReplaceAll("Count","Eff");
-	  effGraph->SetName(histoName.Data());
 	  fEfficiencyObjects->AddAt(effGraph, index);
 	  AliDebug(5,Form("Adding object %s (%s/%s) at index %i",effGraph->GetName(),histoNum->GetName(),histoDen->GetName(),index));
 	  delete auxHistoNum;
@@ -407,6 +429,19 @@ AliMUONTriggerChamberEfficiency::GetIndex(Int_t histoType, Int_t countType,
   //chamber;
 }
 
+
+//_____________________________________________________________________________
+TObject* AliMUONTriggerChamberEfficiency::GetEffObject(Int_t histoType, Int_t countType, 
+                                                                 Int_t chamber)
+{
+  //
+  /// Get efficiency object
+  //
+  Int_t index = GetIndex(histoType, countType, chamber);
+  return fEfficiencyObjects->At(index);
+}
+
+
 //_____________________________________________________________________________
 TGraphAsymmErrors* AliMUONTriggerChamberEfficiency::GetEfficiencyGraph(TH1* histoNum, TH1* histoDen)
 {
@@ -422,6 +457,10 @@ TGraphAsymmErrors* AliMUONTriggerChamberEfficiency::GetEfficiencyGraph(TH1* hist
 
   Int_t npoints = histoNum->GetNbinsX();
   TGraphAsymmErrors* effGraph = new TGraphAsymmErrors(npoints);
+  TString histoName = histoNum->GetName();
+  histoName.ReplaceAll("Count","Eff");
+  effGraph->SetName(histoName.Data());
+  effGraph->SetTitle(histoName.Data());
   Double_t oldX, oldY;
   for ( Int_t ibin=0; ibin<npoints; ibin++ ) {
     Int_t foundPoint = -1;

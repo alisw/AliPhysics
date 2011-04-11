@@ -32,6 +32,8 @@ public:
   virtual ~AliMUONTriggerChamberEfficiency();
 
   Float_t GetCellEfficiency(Int_t detElemId, Int_t localBoard, Int_t hType) const;
+  Float_t GetCellEfficiencyError(Int_t detElemId, Int_t localBoard, Int_t hType, Int_t errType) const;
+  TObject* GetEffObject(Int_t histoType, Int_t countType, Int_t chamber);
     
   void IsTriggered(Int_t detElemId, Int_t localBoard, Bool_t &trigBend, Bool_t &trigNonBend) const;
 

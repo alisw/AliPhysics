@@ -161,7 +161,7 @@ AliMUONTriggerEfficiencyCells::ResetHistos(Bool_t deleteObjects)
 void AliMUONTriggerEfficiencyCells::ReadFile(const Char_t* filename, const Char_t* listname)
 {
 ///  Structure of file (.root) containing local board efficency
-    TFile *file = new TFile(filename, "read");
+    TFile *file = TFile::Open(filename);
     if(!file || !file->IsOpen()) {
       AliError(Form("Can't read file %s",filename));
       return;
