@@ -43,7 +43,7 @@ ClassImp(AliAnalysisChargedHadronSpectraITSTruncatedMeanTask)
 //________________________________________________________________________
 AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::AliAnalysisChargedHadronSpectraITSTruncatedMeanTask(const char *name) 
 :AliAnalysisTaskSE(name),fESD(0),fCuts(0),fCutsMul(0),fMC(0),
-fLowMultiplicity(-1),fUpMultiplicity(-1),fLowCentrality(-10.0),fUpCentrality(-10.0),fSPD(0),
+fLowMultiplicity(-1),fUpMultiplicity(-1),fLowCentrality(-10.0),fUpCentrality(-10.0),fSPD(0),fUsePilerejection(0),
 fYCut(100.0),fsigmacut(3.0),fnsigmaxy(7.0),fnsigmaz(5.0),fchargeCut(0.0),
 fCorrectSDD(0),fCorrectSSD(0),fHIsettings(0),fdovertexrescuts(0),
  fK0weight(0),flambdaweight(0),fAntilambdaweight(0),
@@ -820,7 +820,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 				fHistStats->Fill(1);
 		}	
 	}
-	
+	//Printf("MC 1");
 	//Good vertex	
 	const AliESDVertex *vertex = 0x0;
 	if(isphysevent)
@@ -850,6 +850,11 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			fHistZVertexBeforeCut->Fill(vertex ->GetZ());
 			fHistXYVertexBeforeCut->Fill(vertex ->GetX(),vertex ->GetY()); 
 		}
+		if(isgoodvertex&&fUsePilerejection)
+		{
+			if(fESD->IsPileupFromSPDInMultBins())
+				isgoodvertex=0;
+		}
 		if(isgoodvertex)
 		{	
 			if(TMath::Abs(vertex ->GetZ())>10.0)
@@ -861,6 +866,8 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 				isvxerteinZ=1;
 		}	
 	}
+	
+	
 	if(fdovertexrescuts&&fMC)
 	{
 		cout<<TMath::Abs(vertex->GetX()-mcXvertex)<<" "<<TMath::Abs(vertex->GetY()-mcYvertex)<<" "<<TMath::Abs(vertex->GetZ()-mcZvertex)<<endl;
@@ -899,15 +906,15 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		fHistStats->Fill(2);
 	}
 	
-	
+	//Printf("MC 2");
 	Int_t fMCmult=0;
-	if(stack)//Looping over MC information of all events
+	if(stack&&fMC)//Looping over MC information of all events
 	{
 		Float_t minpt=0.0;
 		Float_t maxpt=0.0;
 		Float_t mineta=0.0;
 		Float_t maxeta=0.0;
-		
+		//Printf("MC 12");
 		fCutsMul->GetPtRange(minpt,maxpt);
 		fCutsMul->GetEtaRange(mineta,maxeta);
 		fHistStats->Fill(8);
@@ -930,7 +937,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			if (particleMC->Pt()>2.0)
 				continue;
 			//Printf("%d aa",imc);			
-			
+		//	Printf("MC 22");
 			if(pdgcodeMC==211)	
 				fHistminsignalifPionPMCPrimaryBeforeEventCuts->Fill(particleMC->Pt());
 			if(pdgcodeMC==-211)	
@@ -1003,8 +1010,12 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			}		
 							
 		}
-	}		 
-	
+	}
+	else if(fMC)
+	    return;
+	else 
+		Printf("Data mode \n"); 
+	     		 
 	if(!(isphysevent&&isgoodvertex&&isvxerteinZ))
 	{
 		//Printf("No Good event.........\n");
@@ -1077,7 +1088,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		if(fMC)
 			label=trackESD->GetLabel();
 		//if(label<0)	
-		//	Printf("label %d %f %f %f %f %d %f %f\n",label,p,pt,eta,chi2,nTPCclusters,dcaxy,dcaz);	
+	//	Printf("label %d %f %f %f %f %d %f %f\n",label,p,pt,eta,chi2,nTPCclusters,dcaxy,dcaz);	
 		Int_t pdgcode=0;
 		Int_t primary=0;
 		Double_t chargeMC=1.0;
@@ -1362,6 +1373,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			if(nSSDSDD==4)
 				fHistMysignalminusESD->Fill((signaltouse-trackESD->GetITSsignal())/signaltouse);	
 		}
+		//Printf("Select on clean \n");	
 		if(TMath::Abs(yforpion)<=fYCut)
 		{
 			Float_t weight=1.0;
@@ -1424,7 +1436,11 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 						}
 						else if(primary&&pdgcode==-11)
 						{
-							fPrimaryElectronsMother->Fill(stack->Particle(particle2->GetFirstMother())->GetPdgCode());
+							Printf("%d Mom",particle2->GetFirstMother());
+							if(particle2->GetFirstMother()>-1)
+								fPrimaryElectronsMother->Fill(TMath::Abs(stack->Particle(particle2->GetFirstMother())->GetPdgCode()));
+							else
+								fPrimaryElectronsMother->Fill(-1);
 							fAntiElectronsource->Fill(pt,0);
 						}			
 						else if(primary&&pdgcode==-13)
@@ -1514,7 +1530,11 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 						}
 						else if(primary&&pdgcode==11)
 						{
-							fPrimaryElectronsMother->Fill(stack->Particle(particle2->GetFirstMother())->GetPdgCode());
+							Printf("%d Mom",particle2->GetFirstMother());
+							if(particle2->GetFirstMother()>-1)
+								fPrimaryElectronsMother->Fill(TMath::Abs(stack->Particle(particle2->GetFirstMother())->GetPdgCode()));
+							else
+								fPrimaryElectronsMother->Fill(-1);
 							fElectronsource->Fill(TMath::Abs(pt),0);
 						}	
 						else if(primary&&pdgcode==13)
