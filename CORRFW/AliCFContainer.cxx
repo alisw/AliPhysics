@@ -199,6 +199,7 @@ AliCFContainer* AliCFContainer::MakeSlice(Int_t nSteps, const Int_t* steps,
 
   delete [] bins;
   delete [] axis ;
+  delete [] grids;
   return out;
 }
 
