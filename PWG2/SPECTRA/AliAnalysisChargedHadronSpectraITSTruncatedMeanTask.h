@@ -54,6 +54,7 @@ class AliAnalysisChargedHadronSpectraITSTruncatedMeanTask : public AliAnalysisTa
      void SetHImode(){fHIsettings=kTRUE;}
      void SetCentralityCut(Float_t low, Float_t up); 
      void SetDoVertexrescuts(){fdovertexrescuts=kTRUE;}
+     void SetRejectPileUp(){fUsePilerejection=kTRUE;}	
  private:
  
  
@@ -69,6 +70,7 @@ class AliAnalysisChargedHadronSpectraITSTruncatedMeanTask : public AliAnalysisTa
   Float_t fLowCentrality;//low Centrality cut
   Float_t fUpCentrality;//up  Centrality cut
   Bool_t fSPD;//use spd2 as mulestimator 
+  Bool_t fUsePilerejection;// flag to use 
   
   Float_t fYCut;//cut in y
   Float_t fsigmacut;//cut in sigma in n-sigma method
@@ -416,6 +418,7 @@ void CorrectSSD(Double_t *tmpQESD) const;
     
     
     
+
  ClassDef(AliAnalysisChargedHadronSpectraITSTruncatedMeanTask, 2); // example of analysis
 };
 
