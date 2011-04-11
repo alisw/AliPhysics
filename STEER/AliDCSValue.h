@@ -44,6 +44,12 @@ public:
   UInt_t GetUInt() const { return fUInt; }
   Float_t GetFloat() const { return fFloat; }
 
+  operator Bool_t() const { return GetBool(); }
+  operator Char_t() const { return GetChar(); }
+  operator Int_t() const { return GetInt(); }
+  operator UInt_t() const { return GetUInt(); }
+  operator Float_t() const { return GetFloat(); }
+
   Type GetType() const { return fType; }
 
   UInt_t GetTimeStamp() const { return fTimeStamp; }
