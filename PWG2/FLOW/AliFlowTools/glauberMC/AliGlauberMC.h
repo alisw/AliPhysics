@@ -29,7 +29,7 @@ public:
                       kGBW,
                       kNone };
 
-   AliGlauberMC(Option_t* NA = "Pb", Option_t* NB = "Pb", Double_t xsect = 64);
+   AliGlauberMC(Option_t* NA = "Pb", Option_t* NB = "Pb", Double_t xsect = 60);
    virtual     ~AliGlauberMC();
    AliGlauberMC(const AliGlauberMC& in);
    AliGlauberMC& operator=(const AliGlauberMC& in);
@@ -48,6 +48,7 @@ public:
    Double_t	GetdNdEtaTwoNBD( const Double_t* param ) const;
 
    Double_t     GetEccentricity()    const;
+   Double_t     GetStoa()    const;
    Double_t     GetEccentricityColl()      const;
    Double_t     GetEccentricityPart()      const;
    Double_t     GetEpsilon2Part()      const;
@@ -91,7 +92,7 @@ public:
    static void       RunAndSaveNtuple( Int_t n,
                                        const Option_t *sysA="Pb",
                                        const Option_t *sysB="Pb",
-                                       Double_t signn=64,
+                                       Double_t signn=60,
                                        Double_t mind=0.4,
 				       Double_t r=6.62,
 				       Double_t a=0.546,
@@ -116,10 +117,17 @@ private:
    Double_t     fMeanX2;         //<x^2> of wounded nucleons
    Double_t     fMeanY2;         //<y^2> of wounded nucleons
    Double_t     fMeanXY;         //<xy> of wounded nucleons
-   Double_t     fMeanXParts;     //<x> of wounded nucleons
+   Double_t     fMeanX2Parts;         //<x^2> of wounded nucleons
+   Double_t     fMeanY2Parts;         //<y^2> of wounded nucleons
+   Double_t     fMeanXYParts;         //<xy> of wounded nucleons
+   Double_t     fMeanXParts;     //<x> of wounded nucleons 
    Double_t     fMeanYParts;     //<y> of wounded nucleons
+   Double_t     fMeanOXParts;     //<x> of wounded nucleons
+   Double_t     fMeanOYParts;     //<y> of wounded nucleons
    Double_t     fMeanXColl;      //<x> of binary collisions
    Double_t     fMeanYColl;      //<y> of binary collisions
+   Double_t     fMeanOXColl;      //<x> of binary collisions
+   Double_t     fMeanOYColl;      //<y> of binary collisions
    Double_t     fMeanX2Coll;     //<x^2> of binary collisions
    Double_t     fMeanY2Coll;     //<y^2> of binary collisions
    Double_t     fMeanXYColl;     //<xy> of binary collisions
@@ -129,15 +137,21 @@ private:
    Double_t     fMeanYA;        //<x> of nucleons in nucleus A
    Double_t     fMeanXB;        //<x> of nucleons in nucleus B
    Double_t     fMeanYB;        //<x> of nucleons in nucleus B 
+   Double_t     fMeanOXA;        //<x> of nucleons in nucleus A
+   Double_t     fMeanOYA;        //<x> of nucleons in nucleus A
+   Double_t     fMeanOXB;        //<x> of nucleons in nucleus B
+   Double_t     fMeanOYB;        //<x> of nucleons in nucleus B 
    Double_t     fBMC;           //Impact parameter (b)
    Int_t        fEvents;         //Number of events with at least one collision
    Int_t        fTotalEvents;    //All events within selected impact parameter range
    Double_t     fBMin;           //Minimum impact parameter to be generated
    Double_t     fBMax;           //Maximum impact parameter to be generated
-   Double_t	    fdNdEtaParam[10];//Parameters for multiplicity calculation: meaning depends on method selection
+   Double_t	    fdNdEtaParam[10];//Parameters for multiplicity calculation: meaning depends on method selection 
    EdNdEtaType fMultType;//mutliplicity method selection  
    Int_t        fMaxNpartFound;  //Largest value of Npart obtained
-   Int_t        fNpart;          //Number of wounded (participating) nucleons in current event
+   Int_t        fONpart; 
+   Int_t        fONcoll; 
+   Int_t        fNpart;          //Number of wounded (participating) nucleons in current event   
    Int_t        fNcoll;          //Number of binary collisions in current event
    Double_t     fMeanr2;         //----------<r^2> of wounded nucleons
    Double_t     fMeanr3;         //----------<r^3> of wounded nucleons
@@ -157,6 +171,7 @@ private:
    Double_t     fMeanr4Sin4Phi;   //------<r^4*sin4phi> of wounded nucleons
    Double_t     fMeanr5Cos5Phi;   //------<r^5*cos5phi> of wounded nucleons
    Double_t     fMeanr5Sin5Phi;   //------<r^5*sin5phi> of wounded nucleons
+  
    Double_t     fMeanr2Coll;         //----------<r^2> of wounded nucleons
    Double_t     fMeanr3Coll;         //----------<r^3> of wounded nucleons
    Double_t     fMeanr4Coll;         //----------<r^4> of wounded nucleons
@@ -176,9 +191,9 @@ private:
    Double_t     fMeanr5Cos5PhiColl;   //------<r^5*cos5phi> 
    Double_t     fMeanr5Sin5PhiColl;   //------<r^5*sin5phi> 
    //Double_t     fPsi2;
-   Double_t     fSx2;            //Variance of x of wounded nucleons
-   Double_t     fSy2;            //Variance of y of wounded nucleons
-   Double_t     fSxy;            //Covariance of x and y of wounded nucleons
+   Double_t     fSx2Parts;            //Variance of x of wounded nucleons
+   Double_t     fSy2Parts;            //Variance of y of wounded nucleons
+   Double_t     fSxyParts;            //Covariance of x and y of wounded nucleons
    Double_t     fSx2Coll;            //Variance of x of binaruy collisions
    Double_t     fSy2Coll;            //Variance of y of binaruy collisions
    Double_t     fSxyColl;            //Covariance of x and y of binaruy collisions
