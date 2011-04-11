@@ -10,5 +10,8 @@
 #pragma link C++ class AliAnalysisTaskEMCALClusterize+;
 #pragma link C++ class AliAnalysisTaskEMCALClusterizeFast+;
 #pragma link C++ class AliAnalysisTaskEMCALPi0PbPb+;
+#pragma link C++ class AliStaHeader+;
+#pragma link C++ class AliStaCluster+;
+#pragma link C++ class AliStaVertex+;
 
 #endif
