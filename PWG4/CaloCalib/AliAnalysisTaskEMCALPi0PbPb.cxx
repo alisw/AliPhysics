@@ -73,8 +73,13 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fAodClusters(0),
     fAodCells(0),
     fPtRanges(0),
-    fNtuple(0),
     fSelTracks(0),
+    fNtuple(0),
+    fHeader(0),
+    fPrimVert(0),
+    fSpdVert(0),
+    fTpcVert(0),
+    fClusters(0),
     fHCuts(0x0),
     fHVertexZ(0x0),
     fHVertexZ2(0x0),
@@ -153,11 +158,22 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
     TFile *f = OpenFile(1);
     if (f) {
       f->SetCompressionLevel(2);
-      fNtuple = new TNtuple(Form("nt%.0fto%.0f",fCentFrom,fCentTo),"nt",
-                            "run:evt:l0:tcls:cent:pt:eta:phi:e:emax:n:n1:idmax:nsm:db:disp:mn:ms:ecc:sig:tkdz:tkdr:tkep:tkiso:ceiso");
+      fNtuple = new TTree(Form("tree%.0fto%.0f",fCentFrom,fCentTo), "StandaloneTree");
       fNtuple->SetDirectory(f);
       fNtuple->SetAutoFlush(-1024*1024*1024);
       fNtuple->SetAutoSave(-1024*1024*1024);
+      fHeader = new AliStaHeader;
+      fNtuple->Branch("header", &fHeader, 16*1024, 99);
+      fPrimVert = new AliStaVertex;
+      fNtuple->Branch("primv", &fPrimVert, 16*1024, 99);
+      fSpdVert = new AliStaVertex;
+      fNtuple->Branch("spdv", &fSpdVert, 16*1024, 99);
+      fTpcVert = new AliStaVertex;
+      fNtuple->Branch("tpcv", &fTpcVert, 16*1024, 99);
+      if (TClass::GetClass("AliStaCluster"))
+        TClass::GetClass("AliStaCluster")->IgnoreTObjectStreamer();
+      fClusters = new TClonesArray("AliStaCluster",1000);
+      fNtuple->Branch("clusters", &fClusters, 8*16*1024, 99);
     }  
   }
 
@@ -554,6 +570,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   FillClusHists();
   FillPionHists();
   FillOtherHists();
+  FillNtuple();
 
   PostData(1, fOutput);
 }      
@@ -966,6 +983,7 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
     clus->GetMomentum(clusterVec,vertex);
     Double_t maxAxis = 0, minAxis = 0;
     GetSigma(clus,maxAxis,minAxis);
+    clus->SetTOF(maxAxis);     // store sigma in TOF
     Double_t clusterEcc = 0;
     if (maxAxis > 0)
       clusterEcc = TMath::Sqrt(1.0 - minAxis*minAxis/(maxAxis*maxAxis));
@@ -976,59 +994,121 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
     fHClustEnergySigma->Fill(clus->E()*maxAxis,clus->E());
     fHClustSigmaSigma->Fill(max(clus->GetM02(),clus->GetM20()),clus->E()*maxAxis);
     fHClustNCellEnergyRatio->Fill(clus->GetNCells(),GetMaxCellEnergy(clus)/clus->E());
-    if (fNtuple) {
-      if (clus->E()<fMinE)
-        continue;
-      Float_t vals[25];
-      TString trgclasses;
-      vals[0]  = InputEvent()->GetRunNumber();
-      vals[1]  = (((UInt_t)InputEvent()->GetOrbitNumber()  << 12) | (UInt_t)InputEvent()->GetBunchCrossNumber()); 
-      if (vals[1]<=0) 
-        vals[1] = fNEvs;
-      AliESDHeader *h = dynamic_cast<AliESDHeader*>(InputEvent()->GetHeader());
-      if (h) {
-        vals[2]  = h->GetL0TriggerInputs();
-        trgclasses = fEsdEv->GetFiredTriggerClasses();
-      }
-      else {
-        AliAODHeader *h2 = dynamic_cast<AliAODHeader*>(InputEvent()->GetHeader());
-        if (h2) {
-          vals[2]  = h2->GetL0TriggerInputs();
-          trgclasses = h2->GetFiredTriggerClasses();
-        } else 
-          vals[2] = 0;
-      }
-      vals[3]  = 0;
-
-      for (Int_t j = 0; j<fTrClassNamesArr->GetEntries(); ++j) {
-        const char *name = fTrClassNamesArr->At(j)->GetName();
-        if (trgclasses.Contains(name))
-          vals[3] += TMath::Power(2,j);
-      }
-      vals[4]  = InputEvent()->GetCentrality()->GetCentralityPercentileUnchecked(fCentVar);
-      vals[5]  = clusterVec.Pt();
-      vals[6]  = clusterVec.Eta();
-      vals[7]  = clusterVec.Phi();
-      vals[8]  = clusterVec.E();
-      vals[9]  = GetMaxCellEnergy(clus);
-      vals[10] = clus->GetNCells();
-      vals[11] = GetNCells(clus,0.100);
-      vals[12] = clus->GetCellAbsId(0);
-      vals[13] = fGeom->GetSuperModuleNumber(clus->GetCellAbsId(0));
-      vals[14] = clus->GetDistanceToBadChannel();
-      vals[15] = clus->GetDispersion();
-      vals[16] = clus->GetM20();
-      vals[17] = clus->GetM02();
-      vals[18] = clusterEcc;
-      vals[19] = maxAxis;
-      vals[20] = fClusProps[i].fTrDz; 
-      vals[21] = fClusProps[i].fTrDr;
-      vals[22] = fClusProps[i].fTrEp;
-      vals[23] = fClusProps[i].fTrIso;
-      vals[24] = fClusProps[i].fCellIso;
-      fNtuple->Fill(vals);
-    }
   }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
+{
+  // Fill ntuple.
+
+  if (!fNtuple)
+    return;
+
+  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+  if (fAodEv) {
+    fHeader->fRun            = fAodEv->GetRunNumber();
+    fHeader->fOrbit          = fAodEv->GetHeader()->GetOrbitNumber(); 
+    fHeader->fPeriod         = fAodEv->GetHeader()->GetPeriodNumber();
+    fHeader->fBx             = fAodEv->GetHeader()->GetBunchCrossNumber();
+    fHeader->fL0             = fAodEv->GetHeader()->GetL0TriggerInputs();
+    fHeader->fL1             = fAodEv->GetHeader()->GetL1TriggerInputs();
+    fHeader->fL2             = fAodEv->GetHeader()->GetL2TriggerInputs();
+    fHeader->fTrClassMask    = fAodEv->GetHeader()->GetTriggerMask();
+    fHeader->fTrCluster      = fAodEv->GetHeader()->GetTriggerCluster();
+    fHeader->fOffTriggers    = fAodEv->GetHeader()->GetOfflineTrigger();
+    fHeader->fFiredTriggers  = fAodEv->GetHeader()->GetFiredTriggerClasses();
+  } else {
+    fHeader->fRun            = fEsdEv->GetRunNumber();
+    fHeader->fOrbit          = fEsdEv->GetHeader()->GetOrbitNumber(); 
+    fHeader->fPeriod         = fEsdEv->GetESDRun()->GetPeriodNumber();
+    fHeader->fBx             = fEsdEv->GetHeader()->GetBunchCrossNumber();
+    fHeader->fL0             = fEsdEv->GetHeader()->GetL0TriggerInputs();
+    fHeader->fL1             = fEsdEv->GetHeader()->GetL1TriggerInputs();
+    fHeader->fL2             = fEsdEv->GetHeader()->GetL2TriggerInputs();
+    fHeader->fTrClassMask    = fEsdEv->GetHeader()->GetTriggerMask();
+    fHeader->fTrCluster      = fEsdEv->GetHeader()->GetTriggerCluster();
+    fHeader->fOffTriggers    = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected();
+    fHeader->fFiredTriggers  = fEsdEv->GetFiredTriggerClasses();
+  }
+  AliCentrality *cent = InputEvent()->GetCentrality();
+  fHeader->fV0Cent    = cent->GetCentralityPercentileUnchecked("V0M");
+  fHeader->fCl1Cent   = cent->GetCentralityPercentileUnchecked("CL1");
+  fHeader->fTrCent    = cent->GetCentralityPercentileUnchecked("TRK");
+  fHeader->fCqual     = cent->GetQuality();
+ 
+  Double_t val = 0;
+  TString trgclasses(fHeader->fFiredTriggers);
+  for (Int_t j = 0; j<fTrClassNamesArr->GetEntries(); ++j) {
+    const char *name = fTrClassNamesArr->At(j)->GetName();
+    if (trgclasses.Contains(name))
+      val += TMath::Power(2,j);
+  }
+  fHeader->fTcls = (UInt_t)val;
+
+  if (fAodEv) { 
+    am->LoadBranch("vertices");
+    AliAODVertex *pv = fAodEv->GetPrimaryVertex();
+    FillVertex(fPrimVert, pv);
+    AliAODVertex *sv = fAodEv->GetPrimaryVertexSPD();
+    FillVertex(fSpdVert, sv);
+  } else {
+    am->LoadBranch("PrimaryVertex.");
+    const AliESDVertex *pv = fEsdEv->GetPrimaryVertexTracks();
+    FillVertex(fPrimVert, pv);
+    am->LoadBranch("SPDVertex.");
+    const AliESDVertex *sv = fEsdEv->GetPrimaryVertexSPD();
+    FillVertex(fSpdVert, sv);
+    am->LoadBranch("TPCVertex.");
+    const AliESDVertex *tv = fEsdEv->GetPrimaryVertexTPC();
+    FillVertex(fTpcVert, tv);
+  }
+
+  TObjArray *clusters = fEsdClusters;
+  if (!clusters)
+    clusters = fAodClusters;
+  if (!clusters)
+    return;
+
+  fClusters->Clear();
+  Int_t nclus = clusters->GetEntries();
+  for(Int_t i=0,ncl=0; i<nclus; ++i) {
+    AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
+    if (!clus)
+      continue;
+    if (!clus->IsEMCAL()) 
+      continue;
+    if (clus->E()<fMinE)
+      continue;
+
+    AliStaCluster *cl = static_cast<AliStaCluster*>(fClusters->New(ncl++));
+    cl->fE        = clus->E();
+    Float_t pos[3];
+    clus->GetPosition(pos);
+    TVector3 vpos(pos);
+    cl->fR        = vpos.Perp();
+    cl->fEta      = vpos.Eta();
+    cl->fPhi      = vpos.Phi();
+    cl->fN        =  clus->GetNCells();
+    cl->fN1       = GetNCells(clus,0.100);
+    cl->fN3       = GetNCells(clus,0.300);
+    Short_t id    = -1;
+    Double_t emax = GetMaxCellEnergy(clus, id);
+    cl->fIdMax    = id;
+    cl->fEmax     = emax;
+    cl->fDbc      = clus->GetDistanceToBadChannel();;
+    cl->fDisp     = clus->GetDispersion();
+    cl->fM20      = clus->GetM20();
+    cl->fM02      = clus->GetM02();
+    cl->fEcc      = clus->Chi2();   //eccentricity
+    cl->fSig      = clus->GetTOF(); //sigma
+    cl->fTrDz     = fClusProps[i].fTrDz;
+    cl->fTrDr     = fClusProps[i].fTrDr;;
+    cl->fTrEp     = fClusProps[i].fTrEp;;
+    cl->fTrIso    = fClusProps[i].fTrIso;
+    cl->fCeIso    = fClusProps[i].fCellIso;
+  }
+  fNtuple->Fill();
 }
 
 //________________________________________________________________________
@@ -1098,7 +1178,36 @@ void AliAnalysisTaskEMCALPi0PbPb::FillPionHists()
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPi0PbPb::FillOtherHists()
 {
-  // Fill histograms related to cell properties.
+  // Fill other histograms.
+}
+
+//__________________________________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::FillVertex(AliStaVertex *v, const AliESDVertex *esdv)
+{
+  // Fill vertex from ESD vertex info.
+
+  v->fVx   = esdv->GetX();
+  v->fVy   = esdv->GetY();
+  v->fVz   = esdv->GetZ();
+  v->fVc   = esdv->GetNContributors();
+  v->fDisp = esdv->GetDispersion();
+  v->fZres = esdv->GetZRes();
+  v->fChi2 = esdv->GetChi2();
+  v->fSt   = esdv->GetStatus();
+  v->fIs3D = esdv->IsFromVertexer3D();
+  v->fIsZ  = esdv->IsFromVertexerZ();
+}
+
+//__________________________________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::FillVertex(AliStaVertex *v, const AliAODVertex *aodv)
+{
+  // Fill vertex from AOD vertex info.
+
+  v->fVx   = aodv->GetX();
+  v->fVy   = aodv->GetY();
+  v->fVz   = aodv->GetZ();
+  v->fVc   = aodv->GetNContributors();
+  v->fChi2 = aodv->GetChi2();
 }
 
 //________________________________________________________________________
@@ -1130,10 +1239,11 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetCellIsolation(Double_t cEta, Double_t c
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskEMCALPi0PbPb::GetMaxCellEnergy(AliVCluster *cluster) const
+Double_t AliAnalysisTaskEMCALPi0PbPb::GetMaxCellEnergy(AliVCluster *cluster, Short_t &id) const
 {
   // Get maximum energy of attached cell.
 
+  id = -1;
   Double_t maxe = 0;
   Int_t ncells = cluster->GetNCells();
   if (fEsdCells) {
@@ -1141,6 +1251,7 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetMaxCellEnergy(AliVCluster *cluster) con
       Double_t e = fEsdCells->GetCellAmplitude(TMath::Abs(cluster->GetCellAbsId(i)));
       if (e>maxe) {
         maxe = e;
+        id   = cluster->GetCellAbsId(i);
       }
     }
   } else {
@@ -1148,6 +1259,7 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetMaxCellEnergy(AliVCluster *cluster) con
       Double_t e = fAodCells->GetCellAmplitude(TMath::Abs(cluster->GetCellAbsId(i)));
       if (e>maxe)
         maxe = e;
+        id   = cluster->GetCellAbsId(i);
     }
   }
   return maxe;
