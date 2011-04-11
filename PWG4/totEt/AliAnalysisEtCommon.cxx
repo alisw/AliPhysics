@@ -118,9 +118,7 @@ Int_t AliAnalysisEtCommon::AnalyseEvent(AliVEvent */*event*/)
 
 void AliAnalysisEtCommon::Init()
 {// clear variables, set up cuts and PDG info
-  //MyFunction * fptr = new MyFunction(....);  // create the user function class
-  //TF1 * f = new TF1("f",fptr,&MyFunction::Evaluate,0,1,npar,"MyFunction","Evaluate");   // create TF1 class.
-  AliAnalysisLevyPt *function = new AliAnalysisLevyPt();
+  // LevyPt function described in LevyFitEvaluate below
   //parameter 0 = dNdy
   //parameter 1 = temp
   //parameter 2 = power
@@ -130,12 +128,14 @@ void AliAnalysisEtCommon::Init()
   if(fK0Data) delete fK0Data;
   if(fLambdaData) delete fLambdaData;
   if(fAntiLambdaData) delete fAntiLambdaData;
-  fK0PythiaD6T = new TF1("K0PythiaD6T",function, &AliAnalysisLevyPt::Evaluate,0,50,4,"AliAnalysisLevyPt","Evaluate");
-  fLambdaPythiaD6T = new TF1("LambdaPythiaD6T",function, &AliAnalysisLevyPt::Evaluate,0,50,4,"AliAnalysisLevyPt","Evaluate");
-  fAntiLambdaPythiaD6T = new TF1("LambdaPythiaD6T",function, &AliAnalysisLevyPt::Evaluate,0,50,4,"AliAnalysisLevyPt","Evaluate");
-  fK0Data = new TF1("K0Data",function, &AliAnalysisLevyPt::Evaluate,0,50,4,"AliAnalysisLevyPt","Evaluate");
-  fLambdaData = new TF1("LambdaData",function, &AliAnalysisLevyPt::Evaluate,0,50,4,"AliAnalysisLevyPt","Evaluate");
-  fAntiLambdaData = new TF1("LambdaData",function, &AliAnalysisLevyPt::Evaluate,0,50,4,"AliAnalysisLevyPt","Evaluate");
+
+  fK0PythiaD6T = new TF1("K0PythiaD6T", LevyPtEvaluate, 0,50,4);
+  fLambdaPythiaD6T = new TF1("LambdaPythiaD6T", LevyPtEvaluate,0,50,4);
+  fAntiLambdaPythiaD6T = new TF1("AntiLambdaPythiaD6T", LevyPtEvaluate,0,50,4);
+  fK0Data = new TF1("K0Data", LevyPtEvaluate,0,50,4);
+  fLambdaData = new TF1("LambdaData", LevyPtEvaluate,0,50,4);
+  fAntiLambdaData = new TF1("AntiLambdaData", LevyPtEvaluate,0,50,4);
+
   fK0PythiaD6T->FixParameter(3,0.493677);
   fK0Data->FixParameter(3,0.493677);
   fLambdaPythiaD6T->FixParameter(3,1.115683);
@@ -217,6 +217,22 @@ void AliAnalysisEtCommon::ResetEventValues()
       fCuts = new AliAnalysisEtCuts();
     }
   }
+}
+
+Double_t AliAnalysisEtCommon::LevyPtEvaluate(const Double_t *pt, 
+					     const Double_t *par) 
+{//LevyPt function for TF1's
+  
+  Double_t lMass  = par[3];
+  Double_t ldNdy  = par[0];
+  Double_t l2pi   = 2*TMath::Pi();
+  Double_t lTemp = par[1];
+  Double_t lPower = par[2];
+  
+  Double_t lBigCoef = ((lPower-1)*(lPower-2)) / (l2pi*lPower*lTemp*(lPower*lTemp+lMass*(lPower-2)));
+  Double_t lInPower = 1 + (TMath::Sqrt(pt[0]*pt[0]+lMass*lMass)-lMass) / (lPower*lTemp);
+  
+  return ldNdy * pt[0] * lBigCoef * TMath::Power(lInPower,(-1)*lPower);
 }
 
 

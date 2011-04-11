@@ -21,6 +21,7 @@ class AliAnalysisHadEtCorrections : public TNamed
 public:
    
   AliAnalysisHadEtCorrections();
+  virtual void Init();
     virtual ~AliAnalysisHadEtCorrections();
 
     Float_t GetEtaCut() const {return fEtaCut;}

@@ -25,7 +25,4 @@
 #pragma link C++ class AliAnalysisTaskHadEt+;
 #pragma link C++ class AliAnalysisHadEtCorrections+;
 
-#pragma link C++ class AliAnalysisLevyPt+;
-
-      
 #endif
