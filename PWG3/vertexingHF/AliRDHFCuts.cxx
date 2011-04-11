@@ -37,6 +37,7 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliAODMCHeader.h"
+#include "AliAODMCParticle.h"
 #include "AliRDHFCuts.h"
 
 ClassImp(AliRDHFCuts)
@@ -229,10 +230,15 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
 
   fWhyRejection=0;
 
+  // check if it's MC
+  Bool_t isMC=kFALSE;
+  TClonesArray *mcArray = (TClonesArray*)((AliAODEvent*)event)->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+  if(mcArray) isMC=kTRUE;
+
   // trigger class
   TString firedTriggerClasses=((AliAODEvent*)event)->GetFiredTriggerClasses();
-  // don't do for PbPb 2010 data
-  if(event->GetRunNumber()<136851 || event->GetRunNumber()>139517) {
+  // don't do for MC and for PbPb 2010 data
+  if(!isMC && (event->GetRunNumber()<136851 || event->GetRunNumber()>139517)) {
     if(!firedTriggerClasses.Contains(fTriggerClass.Data())) {
       fWhyRejection=5;
       return kFALSE;
@@ -267,14 +273,20 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     return kFALSE;
   } 
 
-  // switch to settings for 1-pad cls in TPC
+  // settings for the TPC dE/dx BB parameterization
   if(fPidHF) {
+    // pp, from LHC10d onwards
     if((event->GetRunNumber()>121693 && event->GetRunNumber()<136851) ||
        event->GetRunNumber()>139517)
       fPidHF->SetOnePad(kTRUE);
+    // PbPb LHC10h
     if(event->GetRunNumber()>=136851 && event->GetRunNumber()<=139517) 
       fPidHF->SetPbPb(kTRUE);
+    // MC
+    if(isMC) fPidHF->SetMC(kTRUE);
   }
+
+
 
   if(fOptPileup==kRejectPileupEvent){
     Int_t cutc=(Int_t)fMinContrPileup;
