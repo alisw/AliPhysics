@@ -74,7 +74,7 @@ void SimEsd(AliLoader *pHL,AliESDEvent *pEsd,Bool_t htaCheck)
       if(!pStack->IsPhysicalPrimary(i)) continue;
       TParticle *pTrack=pStack->Particle(i); 
       if(pTrack->GetPDG()->Charge()==0) continue;
-      Printf("track n. %i",i);
+//      Printf("track n. %i",i);
       AliESDtrack trk(pTrack); 
       Float_t xPc,yPc,xRa,yRa,thRa,phRa;
       Int_t iCh=pTracker.IntTrkCha(&trk,xPc,yPc,xRa,yRa,thRa,phRa);         //get chamber intersected by this track 
@@ -90,6 +90,7 @@ void SimEsd(AliLoader *pHL,AliESDEvent *pEsd,Bool_t htaCheck)
       if(phRa<0) phRa += TMath::TwoPi(); // to be verified
       
       trk.SetHMPIDtrk(xPc,yPc,thRa,phRa);                                                        //store initial infos
+      trk.SetLabel(i);
       pEsd->AddTrack(&trk);
     
       Int_t status;
