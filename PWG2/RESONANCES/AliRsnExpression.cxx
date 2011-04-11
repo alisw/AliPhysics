@@ -101,6 +101,10 @@ Bool_t AliRsnExpression::Value(TObjArray &vars)
       AliError("Expression undefined.");
       return kFALSE;
    }
+   if (fArg2 == 0) {
+      AliError("Needed second parameter");
+      return kFALSE;
+   }
 
 //   AliDebug(AliLog::kDebug,Form("fOperator %d",fOperator));
 
