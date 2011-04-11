@@ -58,6 +58,8 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fIsoDist(0.2),
     fTrClassNames(""),
     fTrCuts(0),
+    fDoTrackMatWithGeom(0),
+    fDoConstrain(0),
     fNEvs(0),
     fGeom(0),
     fReco(0),
@@ -88,8 +90,9 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fHCellM(0x0),
     fHCellM2(0x0),
     fHCellFreqNoCut(0x0),
-    fHCellFrequCut100M(0x0),
-    fHCellFrequCut300M(0x0),
+    fHCellFreqCut100M(0x0),
+    fHCellFreqCut300M(0x0),
+    fHCellFreqE(0x0),
     fHCellCheckE(0x0),
     fHClustEccentricity(0),
     fHClustEtaPhi(0x0),
@@ -130,8 +133,8 @@ AliAnalysisTaskEMCALPi0PbPb::~AliAnalysisTaskEMCALPi0PbPb()
   delete [] fHColuRowE;
   delete [] fHCellMult;
   delete [] fHCellFreqNoCut;
-  delete [] fHCellFrequCut100M;
-  delete [] fHCellFrequCut300M;
+  delete [] fHCellFreqCut100M;
+  delete [] fHCellFreqCut300M;
 }
 
 //________________________________________________________________________
@@ -184,8 +187,8 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fHCentQual = new TH1F("hCentAfterCut","",101,-1,100);
   fHCentQual->SetXTitle(fCentVar.Data());
   fOutput->Add(fHCentQual);
-  fHTclsBeforeCuts = new TH1F("fHTclsBeforeCuts","",fTrClassNamesArr->GetEntries(),0.5,0.5+fTrClassNamesArr->GetEntries());
-  fHTclsAfterCuts = new TH1F("fHTclsAfterCuts","",fTrClassNamesArr->GetEntries(),0.5,0.5+fTrClassNamesArr->GetEntries());
+  fHTclsBeforeCuts = new TH1F("hTclsBeforeCuts","",fTrClassNamesArr->GetEntries(),0.5,0.5+fTrClassNamesArr->GetEntries());
+  fHTclsAfterCuts = new TH1F("hTclsAfterCuts","",fTrClassNamesArr->GetEntries(),0.5,0.5+fTrClassNamesArr->GetEntries());
   for (Int_t i = 0; i<fTrClassNamesArr->GetEntries(); ++i) {
     const char *name = fTrClassNamesArr->At(i)->GetName();
     fHTclsBeforeCuts->GetXaxis()->SetBinLabel(1+i,name);
@@ -200,11 +203,11 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fHColuRowE  = new TH2*[nsm];
   fHCellMult  = new TH1*[nsm];
   for (Int_t i = 0; i<nsm; ++i) {
-    fHColuRow[i] = new TH2F(Form("hColRow_Mod%d",i),"",49,0,49,25,0,25);
+    fHColuRow[i] = new TH2F(Form("hColRow_Mod%d",i),"",48,0,48,24,0.,24);
     fHColuRow[i]->SetTitle(Form("Module %d: Occupancy", i));
     fHColuRow[i]->SetXTitle("col (i#eta)");
     fHColuRow[i]->SetYTitle("row (i#phi)");
-    fHColuRowE[i] = new TH2F(Form("hColRowE_Mod%d", i),"",49,0,49,25,0,25);
+    fHColuRowE[i] = new TH2F(Form("hColRowE_Mod%d", i),"",48,0,48,24,0,24);
     fHColuRowE[i]->SetTitle(Form("Module %d: Cell energy",i));
     fHColuRowE[i]->SetXTitle("col (i#eta)");
     fHColuRowE[i]->SetYTitle("row (i#phi)");
@@ -215,10 +218,10 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
     fOutput->Add(fHColuRowE[i]);
     fOutput->Add(fHCellMult[i]);
   }  
-  fHCellE = new TH1F("hCellE","",150,0.,15.);
+  fHCellE = new TH1F("hCellE","",250,0.,25.);
   fHCellE->SetXTitle("E_{cell} [GeV]");
   fOutput->Add(fHCellE);
-  fHCellH = new TH1F ("fHCellHighestE","",150,0.,15.);
+  fHCellH = new TH1F ("fHCellHighestE","",250,0.,25.);
   fHCellH->SetXTitle("E^{max}_{cell} [GeV]");
   fOutput->Add(fHCellH);
   fHCellM = new TH1F ("fHCellMeanEperHitCell","",250,0.,2.5);
@@ -228,21 +231,25 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fHCellM2->SetXTitle("1/N_{cells} #Sigma E_{cell} [GeV]");
   fOutput->Add(fHCellM2);
 
-  fHCellFreqNoCut    = new TH1*[nsm];
-  fHCellFrequCut100M = new TH1*[nsm];
-  fHCellFrequCut300M = new TH1*[nsm];
+  fHCellFreqNoCut   = new TH1*[nsm];
+  fHCellFreqCut100M = new TH1*[nsm];
+  fHCellFreqCut300M = new TH1*[nsm];
+  fHCellFreqE       = new TH1*[nsm];
   for (Int_t i = 0; i<nsm; ++i){
     Double_t lbin = i*24*48-0.5;
     Double_t hbin = lbin+24*48;
-    fHCellFreqNoCut[i]    = new TH1F(Form("fHCellFreqNoCut_SM%d",i),    
-                                     Form("Frequency SM%d (no cut);id;#",i),  1152, lbin, hbin);
-    fHCellFrequCut100M[i] = new TH1F(Form("fHCellFreqCut100M_SM%d",i), 
-                                     Form("Frequency SM%d (>0.1GeV);id;#",i), 1152, lbin, hbin);
-    fHCellFrequCut300M[i] = new TH1F(Form("fHCellFreqCut300M_SM%d",i), 
-                                     Form("Frequency SM%d (>0.3GeV);id;#",i), 1152, lbin, hbin);
+    fHCellFreqNoCut[i]   = new TH1F(Form("hCellFreqNoCut_SM%d",i),    
+                                    Form("Frequency SM%d (no cut);id;#",i),  1152, lbin, hbin);
+    fHCellFreqCut100M[i] = new TH1F(Form("hCellFreqCut100M_SM%d",i), 
+                                    Form("Frequency SM%d (>0.1GeV);id;#",i), 1152, lbin, hbin);
+    fHCellFreqCut300M[i] = new TH1F(Form("hCellFreqCut300M_SM%d",i), 
+                                    Form("Frequency SM%d (>0.3GeV);id;#",i), 1152, lbin, hbin);
+    fHCellFreqE[i]       = new TH1F(Form("hCellFreqE_SM%d",i), 
+                                    Form("Frequency SM%d (E weighted);id;#",i), 1152, lbin, hbin);
     fOutput->Add(fHCellFreqNoCut[i]);
-    fOutput->Add(fHCellFrequCut100M[i]);
-    fOutput->Add(fHCellFrequCut300M[i]);
+    fOutput->Add(fHCellFreqCut100M[i]);
+    fOutput->Add(fHCellFreqCut300M[i]);
+    fOutput->Add(fHCellFreqE[i]);
   }
   if (1) {
     fHCellCheckE = new TH1*[24*48*nsm];
@@ -362,7 +369,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     return;
 
   if (fHCuts->GetBinContent(2)==0) {
-    if (!AliGeomManager::GetGeometry()) { // get geometry 
+    if (fDoTrackMatWithGeom && !AliGeomManager::GetGeometry()) { // get geometry 
       AliWarning("Accessing geometry from OCDB, this is not very efficient!");
       AliCDBManager *cdb = AliCDBManager::Instance();
       if (!cdb->IsDefaultStorageSet())
@@ -592,7 +599,8 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcTracks()
   Double_t phimax = emc->GetArm1PhiMax()*TMath::DegToRad()+0.25;
 
   if (fEsdEv) {
-    fSelTracks->SetOwner(kTRUE);
+    if (fDoConstrain)
+      fSelTracks->SetOwner(kTRUE);
     am->LoadBranch("PrimaryVertex.");
     const AliESDVertex *vtx = fEsdEv->GetPrimaryVertexSPD();
     am->LoadBranch("SPDVertex.");
@@ -614,6 +622,12 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcTracks()
         continue;
       if(track->GetTPCNcls()<fMinNClustPerTrack)
         continue;
+
+      if (!fDoConstrain) {
+        fSelTracks->Add(track);
+        continue;
+      }
+
       AliESDtrack copyt(*track);
       Double_t bfield[3];
       copyt.GetBxByBz(bfield);
@@ -622,6 +636,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcTracks()
       if (!relate)
         continue;
       copyt.Set(tParam.GetX(),tParam.GetAlpha(),tParam.GetParameter(),tParam.GetCovariance());
+
       Double_t p[3]      = { 0. };
       copyt.GetPxPyPz(p);
       Double_t pos[3]    = { 0. };      
@@ -723,28 +738,43 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
       Double_t pt  = track->Pt();
       if (pt<fMinPtPerTrack) 
         continue;
-      if (TMath::Abs(clsEta-track->Eta())>fIsoDist)
+      if (TMath::Abs(clsEta-track->Eta())>0.5)
         continue;
 
-      AliExternalTrackParam tParam(track);
       Float_t tmpR=-1, tmpZ=-1;
-#if 1
-      if (1) {
+      if (!fDoTrackMatWithGeom) {
+        
+        AliExternalTrackParam *tParam = 0;
+        if (fEsdEv) {
+          AliESDtrack *esdTrack = static_cast<AliESDtrack*>(track);
+          tParam = new AliExternalTrackParam(*esdTrack->GetTPCInnerParam());
+        } else 
+          tParam = new AliExternalTrackParam(track);
+
+        Double_t bfield[3];
+        track->GetBxByBz(bfield);
         TVector3 vec(clsPos);
         Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
         vec.RotateZ(-alpha);  //Rotate the cluster to the local extrapolation coordinate system
-        tParam.Rotate(alpha); //Rotate the track to the same local extrapolation system
-        if (!AliTrackerBase::PropagateTrackToBxByBz(&tParam, vec.X(), 0.139, 1, kFALSE)) 
+        tParam->Rotate(alpha); //Rotate the track to the same local extrapolation system
+        Bool_t ret = tParam->PropagateToBxByBz(vec.X(), bfield);
+        if (!ret) {
+          delete tParam;
           continue;
+        }
         Double_t trkPos[3];
-        tParam.GetXYZ(trkPos); //Get the extrapolated global position
+        tParam->GetXYZ(trkPos); //Get the extrapolated global position
         tmpR = TMath::Sqrt( TMath::Power(clsPos[0]-trkPos[0],2)+TMath::Power(clsPos[1]-trkPos[1],2)+TMath::Power(clsPos[2]-trkPos[2],2) );
         tmpZ = clsPos[2]-trkPos[2];
+        delete tParam;
+      } else {
+        if (TMath::Abs(clsEta-track->Eta())>fIsoDist)
+          continue;
+        AliExternalTrackParam tParam(track);
+        if (!fReco->ExtrapolateTrackToCluster(&tParam, clus, tmpR, tmpZ))
+          continue;
       }
-#else
-      if (!fReco->ExtrapolateTrackToCluster(&tParam, clus, tmpR, tmpZ))
-        continue;
-#endif
+
       Double_t d2 = tmpR;
       if (mind2>d2) {
         mind2=d2;
@@ -759,6 +789,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     if (0 && (fClusProps[i].fTrIndex>=0)) {
       cout << i << " " << fClusProps[i].fTrIndex << ": Dr " << fClusProps[i].fTrDr << " " << " Dz " << fClusProps[i].fTrDz << endl;
     }
+
     fClusProps[i].fTrIso      = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist);
     fClusProps[i].fTrLowPtIso = 0;
     fClusProps[i].fCellIso    = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),fIsoDist);
@@ -896,10 +927,11 @@ void AliAnalysisTaskEMCALPi0PbPb::FillCellHists()
     fHColuRow[iSM]->Fill(iEta,iPhi,1);
     fHColuRowE[iSM]->Fill(iEta,iPhi,cellE);
     fHCellFreqNoCut[iSM]->Fill(absID);
-    if (cellE > 0.1) fHCellFrequCut100M[iSM]->Fill(absID);
-    if (cellE > 0.3) fHCellFrequCut300M[iSM]->Fill(absID);
+    if (cellE > 0.1) fHCellFreqCut100M[iSM]->Fill(absID);
+    if (cellE > 0.3) fHCellFreqCut300M[iSM]->Fill(absID);
     if (fHCellCheckE && fHCellCheckE[absID])
       fHCellCheckE[absID]->Fill(cellE);
+    fHCellFreqE[iSM]->Fill(absID, cellE);
   }    
   fHCellH->Fill(cellMaxE);
   cellMeanE /= ncells;
