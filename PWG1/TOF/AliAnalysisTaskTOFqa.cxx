@@ -1,5 +1,5 @@
 /*  created by fbellini@cern.ch on 14/09/2010 */
-/*  last modified by fbellini   on 08/03/2010 */
+/*  last modified by fbellini   on 31/03/2010 */
 
 
 #ifndef ALIANALYSISTASKTOFQA_CXX
@@ -30,7 +30,6 @@ AliAnalysisTaskTOFqa::AliAnalysisTaskTOFqa() :
   fESD(0x0), 
   fTrackFilter(0x0), 
   fVertex(0x0),
-  fESDpid(0x0),
   fNTOFtracks(0), 
 //  fNPrimaryTracks(0), 
   fHlist(0x0),
@@ -53,7 +52,6 @@ AliAnalysisTaskTOFqa::AliAnalysisTaskTOFqa(const char *name) :
   fESD(0x0), 
   fTrackFilter(0x0),
   fVertex(0x0),
-  fESDpid(0x0),
   fNTOFtracks(0), 
   // fNPrimaryTracks(0),  
   fHlist(0x0),
@@ -88,7 +86,6 @@ AliAnalysisTaskTOFqa::AliAnalysisTaskTOFqa(const AliAnalysisTaskTOFqa& copy)
   fESD(copy.fESD), 
   fTrackFilter(copy.fTrackFilter), 
   fVertex(copy.fVertex),
-  fESDpid(0x0),
   fNTOFtracks(copy.fNTOFtracks), 
   //fNPrimaryTracks(copy.fNPrimaryTracks), 
   fHlist(copy.fHlist),
@@ -634,11 +631,23 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
       ((TH2F*)fHlist->At(15))->Fill((Int_t)GetStripIndex(volId),track->GetTOFsignalDz());
 
       //basic PID performance check
+      if (tof<=0) {
+	printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
+	continue;
+      }
+      if (mom2==0) {
+	printf("WARNING: track with negative square momentum found! Skipping this track for PID checks\n");
+	continue;
+      }
+      if (lenght<=0){
+	printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+	continue;
+      }
       Double_t c=TMath::C()*1.E-9;// m/ns
       Double_t mass=0.; //GeV
       length =length*0.01; // in meters
       tof=tof*c;
-      Double_t beta= length/tof;
+      Double_t beta=length/tof;
       Double_t fact= (tof/length)*(tof/length) -1.;
       if(fact<=0) {
 	mass = -mom*TMath::Sqrt(-fact);
@@ -649,31 +658,42 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
       ((TH1F*) fHlistPID->At(1))->Fill(mass);
       
       //PID sigmas
+      Bool_t isValidBeta[AliPID::kSPECIES]={0,0,0,0,0};
       for (Int_t specie = 0; specie < AliPID::kSPECIES; specie++){
 	fSigmaSpecie[specie] = fESDpid->GetTOFResponse().GetExpectedSigma(mom, fTrkExpTimes[specie], AliPID::ParticleMass(specie));
 	beta=1/TMath::Sqrt(1+AliPID::ParticleMass(specie)*AliPID::ParticleMass(specie)/(mom2));
-	fThExpTimes[specie]=length*1.E3/(beta*c);//ps
+	if (beta>0) {
+	  fThExpTimes[specie]=length*1.E3/(beta*c);//ps
+	  isValidBeta=kTRUE;
+	} else {
+	  fThExpTimes[specie]=1E-10;
+	  isValidBeta[specie]=kFALSE;
+	}
       }
-      ((TH2F*)fHlistPID->At(2))->Fill((Int_t)GetStripIndex(volId),tofTime-fTrkExpTimes[AliPID::kPion]);//ps
-
-      ((TH1F*)fHlistPID->At(3))->Fill(tofTime-fTrkExpTimes[AliPID::kPion]);//ps
-      ((TH2F*)fHlistPID->At(4))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kPion]));
-      ((TH1F*)fHlistPID->At(5))->Fill(tofTime-fThExpTimes[AliPID::kPion]);//ps
-      ((TH2F*)fHlistPID->At(6))->Fill(mom,(tofTime-fThExpTimes[AliPID::kPion]));	
-      ((TH2F*)fHlistPID->At(7))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kPion])/fSigmaSpecie[AliPID::kPion]);
-
-      ((TH1F*)fHlistPID->At(8))->Fill(tofTime-fTrkExpTimes[AliPID::kKaon]);//ps
-      ((TH2F*)fHlistPID->At(9))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kKaon]));
-      ((TH1F*)fHlistPID->At(10))->Fill(tofTime-fThExpTimes[AliPID::kKaon]);//ps
-      ((TH2F*)fHlistPID->At(11))->Fill(mom,(tofTime-fThExpTimes[AliPID::kKaon]));
-      ((TH2F*)fHlistPID->At(12))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kKaon])/fSigmaSpecie[AliPID::kKaon]);
       
-      ((TH1F*)fHlistPID->At(13))->Fill(tofTime-fTrkExpTimes[AliPID::kProton]);//ps
-      ((TH2F*)fHlistPID->At(14))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kProton]));
-      ((TH1F*)fHlistPID->At(15))->Fill(tofTime-fThExpTimes[AliPID::kProton]);//ps
-      ((TH2F*)fHlistPID->At(16))->Fill(mom,(tofTime-fThExpTimes[AliPID::kProton]));
-      ((TH2F*)fHlistPID->At(17))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kProton])/fSigmaSpecie[AliPID::kProton]);
+      if (isValidBeta[AliPID::kPion]){
+	((TH2F*)fHlistPID->At(2))->Fill((Int_t)GetStripIndex(volId),tofTime-fTrkExpTimes[AliPID::kPion]);//ps
+	((TH1F*)fHlistPID->At(3))->Fill(tofTime-fTrkExpTimes[AliPID::kPion]);//ps
+	((TH2F*)fHlistPID->At(4))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kPion]));
+	((TH1F*)fHlistPID->At(5))->Fill(tofTime-fThExpTimes[AliPID::kPion]);//ps
+	((TH2F*)fHlistPID->At(6))->Fill(mom,(tofTime-fThExpTimes[AliPID::kPion]));	
+	((TH2F*)fHlistPID->At(7))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kPion])/fSigmaSpecie[AliPID::kPion]);
+      }
       
+      if (isValidBeta[AliPID::kKaon]){
+	((TH1F*)fHlistPID->At(8))->Fill(tofTime-fTrkExpTimes[AliPID::kKaon]);//ps
+	((TH2F*)fHlistPID->At(9))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kKaon]));
+	((TH1F*)fHlistPID->At(10))->Fill(tofTime-fThExpTimes[AliPID::kKaon]);//ps
+	((TH2F*)fHlistPID->At(11))->Fill(mom,(tofTime-fThExpTimes[AliPID::kKaon]));
+	((TH2F*)fHlistPID->At(12))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kKaon])/fSigmaSpecie[AliPID::kKaon]);
+      }
+      if (isValidBeta[AliPID::kProton]){
+	((TH1F*)fHlistPID->At(13))->Fill(tofTime-fTrkExpTimes[AliPID::kProton]);//ps
+	((TH2F*)fHlistPID->At(14))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kProton]));
+	((TH1F*)fHlistPID->At(15))->Fill(tofTime-fThExpTimes[AliPID::kProton]);//ps
+	((TH2F*)fHlistPID->At(16))->Fill(mom,(tofTime-fThExpTimes[AliPID::kProton]));
+	((TH2F*)fHlistPID->At(17))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kProton])/fSigmaSpecie[AliPID::kProton]);
+      }
     }//matched
   }//end loop on tracks
   
