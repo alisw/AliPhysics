@@ -843,6 +843,8 @@ Short_t AliCFUnfolding::SmoothUsingFunction() {
     fUnfolded->SetBinError  (bin,fUnfolded->GetBinError(bin)*functionValue/fUnfolded->GetBinContent(bin));
     fUnfolded->SetBinContent(bin,functionValue);
   }
+  delete [] bins;
+  delete [] bin ;
   return 0;
 }
 
