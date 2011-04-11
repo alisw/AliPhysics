@@ -74,12 +74,16 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections() : TNamed(),
 							   ,fProduction("ProductionName")
 							   ,fProductionDescription("Long production description")
 {//default constructor
-  //This seems to solve a compiler error
+  Init();
+}
+
+void AliAnalysisHadEtCorrections::Init() 
+{  //This seems to solve a compiler error
   cout<<"Creating new AliAnalysisHadEtCorrections"<<endl;
   fEfficiencyTPC = new TObjArray();
   fEfficiencyITS = new TObjArray();
-
 }
+
 AliAnalysisHadEtCorrections::~AliAnalysisHadEtCorrections()
 {//destructor
   //Clear();
