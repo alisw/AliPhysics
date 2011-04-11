@@ -63,11 +63,17 @@ class AliHMPIDTaskQA : public AliAnalysisTaskSE {
   TH2F          *fHmpPesdPhmp;          // HMP momentum vs ESD momentum
   TH2F          *fHmpCkovPesd;          // Ckov angle vs ESD momentum
   TH2F          *fHmpCkovPhmp;          // Ckov angle vs HMP momenutm
-  TH1F          *fHmpMipTrkDistX;       // Xtrk - Xmip
+  TH1F          *fHmpMipCharge3cm;      // Mip charge with 3 cm distance cut
+  TH1F          *fHmpMipTrkDist;        // Mip-track distance over-all
+  TH1F          *fHmpTrkFlags;          // track flags
+  TH1F          *fHmpPhotons[7];        // Photons per ring
+  TH2F          *fHmpPhotP[7];          // Photons per ring vs momentum
+  TH2F          *fHmpPhotSin2th[7];     // Photons per ring vs sin(th)^2
+  TH1F          *fHmpMipTrkDistPosX[7]; // Xtrk - Xmip of positive tracks
+  TH1F          *fHmpMipTrkDistNegX[7]; // Xtrk - Xmip of negative tracks
   TH1F          *fHmpMipTrkDistPosY[7]; // Ytrk - Ymip of positive tracks
   TH1F          *fHmpMipTrkDistNegY[7]; // Ytrk - Ymip of negative tracks
-  TH1F          *fHmpMipCharge3cm;      // Mip charge with 3 cm distance cut
-  TH1F          *fHmpTrkFlags;          // track flags
+  TH1F          *fHmpMipCharge[7];      // Mip charge distribution
 
   Int_t          fN1;                   // number of points for pi and K
   Int_t          fN2;                   // number of point for p
@@ -84,7 +90,7 @@ class AliHMPIDTaskQA : public AliAnalysisTaskSE {
   TH1I          *fKaonCon;              // tracks identified as kaons
   TH1I          *fProtCon;              // tracks identified as protons
 
-  ClassDef(AliHMPIDTaskQA,1);
+  ClassDef(AliHMPIDTaskQA,2);
 };
 
 #endif
