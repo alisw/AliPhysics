@@ -9,7 +9,6 @@
 #define ALIANALYSISETCOMMON_H
 
 #include "TString.h"
-#include "TMath.h"
 #include "TObject.h"
 
 class TH2F;
@@ -22,29 +21,6 @@ class Rtypes;
 class TParticle;
 class TDatabasePDG;
 class AliAnalysisEtCuts;
-
-#ifndef ALIANALYSISLEVYPT_H
-#define ALIANALYSISLEVYPT_H
-class AliAnalysisLevyPt{
- public:
-  virtual ~AliAnalysisLevyPt(){;};
-  Double_t Evaluate(const Double_t *pt, const Double_t *par) const
-  {
-    Double_t lMass  = par[3];
-    Double_t ldNdy  = par[0];
-    Double_t l2pi   = 2*TMath::Pi();
-    Double_t lTemp = par[1];
-    Double_t lPower = par[2];
-
-    Double_t lBigCoef = ((lPower-1)*(lPower-2)) / (l2pi*lPower*lTemp*(lPower*lTemp+lMass*(lPower-2)));
-    Double_t lInPower = 1 + (TMath::Sqrt(pt[0]*pt[0]+lMass*lMass)-lMass) / (lPower*lTemp);
-
-    return ldNdy * pt[0] * lBigCoef * TMath::Power(lInPower,(-1)*lPower);
-  };
-  ClassDef(AliAnalysisLevyPt, 1);
-};
-
-#endif // ALIANALYSISLEVYPT_H
 
 class AliAnalysisEtCommon  : public TObject
 {
@@ -63,6 +39,9 @@ public:
 
     /** Reset event specific values (Et etc.) */
     virtual void ResetEventValues();
+
+    /** LevyPtEvaluate function */
+    static Double_t LevyPtEvaluate(const Double_t *pt, const Double_t *par);
 
     /** Cuts info */
     AliAnalysisEtCuts * GetCuts() const { return fCuts; } 
