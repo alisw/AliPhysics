@@ -167,7 +167,7 @@ void AliRsnCutPIDNSigma::Print(const Option_t *) const
 // Print information on this cut
 //
 
-   Char_t mom[200], det[10], match[200];
+   Char_t mom[200], det[100], match[200];
    
    if (fRejectOutside)
       snprintf(mom, 200, "Tracks are accepted only in the momentum range %.2f --> %.2f", fMomMin, fMomMax);
@@ -180,10 +180,10 @@ void AliRsnCutPIDNSigma::Print(const Option_t *) const
       snprintf(match, 200, "No check on track matching");
       
    switch (fDetector) {
-      case kITS: sprintf(det, "ITS"); break;
-      case kTPC: sprintf(det, "TPC"); break;
-      case kTOF: sprintf(det, "TOF"); break;
-      default  : sprintf(det, "undefined");
+      case kITS: snprintf(det, 3, "ITS"); break;
+      case kTPC: snprintf(det, 3, "TPC"); break;
+      case kTOF: snprintf(det, 3, "TOF"); break;
+      default  : snprintf(det, 3, "undefined");
    }
 
    AliInfo(Form("Cut name          : %s", GetName()));

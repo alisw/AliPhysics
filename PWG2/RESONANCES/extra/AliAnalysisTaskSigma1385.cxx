@@ -278,6 +278,10 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
    }
 
    // initialize DB to current run
+   if (!lESDevent) {
+      Printf("ERROR: lESDevent not available \n");
+      return;
+   }
    Int_t run = lESDevent->GetRunNumber();
    if (run != fLastRun) {
       //cout << "Run = " << run << " -- LAST = " << fLastRun << endl;
