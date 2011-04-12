@@ -116,9 +116,9 @@ public:
   Bool_t  RelPosCellInSModule(Int_t absId, TVector3 &vloc) const;
 
   // Local Coordinates of SM
-  TArrayD  GetCentersOfCellsEtaDir() const {return fCentersOfCellsEtaDir;}        // size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
-  TArrayD  GetCentersOfCellsXDir()   const {return fCentersOfCellsXDir;}          // size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm)
-  TArrayD  GetCentersOfCellsPhiDir() const {return fCentersOfCellsPhiDir;}        // size fNPhi*fNPHIdiv (for TRD1 only) (phi or y in SM, in cm)
+  TArrayD  GetCentersOfCellsEtaDir() const {return fCentersOfCellsEtaDir;}     // size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
+  TArrayD  GetCentersOfCellsXDir()   const {return fCentersOfCellsXDir;}       // size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm)
+  TArrayD  GetCentersOfCellsPhiDir() const {return fCentersOfCellsPhiDir;}     // size fNPhi*fNPHIdiv (for TRD1 only) (phi or y in SM, in cm)
   //
   TArrayD  GetEtaCentersOfCells() const {return fEtaCentersOfCells;}           // [fNEta*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position; 
   TArrayD  GetPhiCentersOfCells() const {return fPhiCentersOfCells;}           // [fNPhi*fNPHIdiv] from center of SM (-10. < phi < +10.)
@@ -158,9 +158,10 @@ public:
 
   //Method to set shift-rotational matrixes from ESDHeader
   void SetMisalMatrix(const TGeoHMatrix * m, Int_t smod) {
+    fUseExternalMatrices = kTRUE;
 	  if (smod >= 0 && smod < fEMCGeometry->GetNumberOfSuperModules()){
             if(!fkSModuleMatrix[smod]) fkSModuleMatrix[smod] = new TGeoHMatrix(*m) ; //Set only if not set yet
-          }
+    }
 	  else AliFatal(Form("Wrong supermodule index -> %d",smod));
   }
 	
@@ -176,10 +177,10 @@ protected:
   // ctor only for internal usage (singleton)
   //  AliEMCALGeoUtils(const Text_t* name, const Text_t* title);
   AliEMCALEMCGeometry     *fEMCGeometry;   // Geometry object for Electromagnetic calorimeter
+  
+  void Init(void);     		           // initializes the parameters of EMCAL
 
-  void Init(void);     		     // initializes the parameters of EMCAL
-
-  TString  fGeoName;                     //geometry name
+  TString  fGeoName;                 // geometry name
 
   Int_t    fKey110DEG;               // for calculation abs cell id; 19-oct-05 
   Int_t    fNCellsInSupMod;          // number cell in super module
@@ -194,7 +195,7 @@ protected:
   TArrayD  fCentersOfCellsPhiDir;    // size fNPhi*fNPHIdiv (for TRD1 only) (phi or y in SM, in cm)
   TArrayD  fEtaCentersOfCells;       // [fNEta*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position; 
   Int_t    fNCells;                  // number of cells in calo
-  Int_t    fNPhi;		             // Number of Towers in the PHI direction
+  Int_t    fNPhi;		                 // Number of Towers in the PHI direction
   TArrayD  fCentersOfCellsXDir;      // size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm)
   Float_t  fEnvelop[3];              // the GEANT TUB for the detector 
   Float_t  fArm1EtaMin;              // Minimum pseudorapidity position of EMCAL in Eta
@@ -202,26 +203,26 @@ protected:
   Float_t  fArm1PhiMin;              // Minimum angular position of EMCAL in Phi (degrees)
   Float_t  fArm1PhiMax;              // Maximum angular position of EMCAL in Phi (degrees)
   Float_t  fEtaMaxOfTRD1;            // Max eta in case of TRD1 geometry (see AliEMCALShishKebabTrd1Module)
-  TList    *fShishKebabTrd1Modules;  //! list of modules
-  Float_t  fParSM[3];                  // SM sizes as in GEANT (TRD1)
+  TList   *fShishKebabTrd1Modules;   //! list of modules
+  Float_t  fParSM[3];                // SM sizes as in GEANT (TRD1)
   Float_t  fPhiModuleSize;           // Phi -> X 
   Float_t  fEtaModuleSize;           // Eta -> Y 
   Float_t  fPhiTileSize;             // Size of phi tile
   Float_t  fEtaTileSize;             // Size of eta tile
   Int_t    fNZ;                      // Number of Towers in the Z direction
-  Float_t  fIPDistance;		         // Radial Distance of the inner surface of the EMCAL
+  Float_t  fIPDistance;		           // Radial Distance of the inner surface of the EMCAL
   Float_t  fLongModuleSize;          // Size of long module
   // Geometry Parameters
-  Float_t  fShellThickness;	     // Total thickness in (x,y) direction
-  Float_t  fZLength;		     // Total length in z direction
-  Float_t  fSampling;		     // Sampling factor
+  Float_t  fShellThickness;	         // Total thickness in (x,y) direction
+  Float_t  fZLength;		             // Total length in z direction
+  Float_t  fSampling;		             // Sampling factor
 
-  Int_t    fFastOR2DMap[48][64];	 // FastOR 2D Map over full EMCal
+  Int_t    fFastOR2DMap[48][64];	   // FastOR 2D Map over full EMCal
 	
   TGeoHMatrix* fkSModuleMatrix[AliEMCALGeoParams::fgkEMCALModules] ; //Orientations of EMCAL super modules
-
+  Bool_t   fUseExternalMatrices;     // Use the matrices set in fkSModuleMatrix and not those in the geoManager
 	
-  ClassDef(AliEMCALGeoUtils,1)       // EMCAL geometry class 
+  ClassDef(AliEMCALGeoUtils,2)       // EMCAL geometry class 
 
 } ;
 

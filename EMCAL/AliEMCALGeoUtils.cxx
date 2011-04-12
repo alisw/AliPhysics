@@ -67,7 +67,7 @@ AliEMCALGeoUtils::AliEMCALGeoUtils():
   fShishKebabTrd1Modules(0),fPhiModuleSize(0.),
   fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fNZ(0),
   fIPDistance(0.),fLongModuleSize(0.),fShellThickness(0.),
-  fZLength(0.),fSampling(0.)
+  fZLength(0.),fSampling(0.),fUseExternalMatrices(kFALSE)
 {
   // default ctor 
   // must be kept public for root persistency purposes, but should never be called by the outside world
@@ -96,7 +96,7 @@ AliEMCALGeoUtils::AliEMCALGeoUtils(const AliEMCALGeoUtils & geo)
     fShishKebabTrd1Modules(geo.fShishKebabTrd1Modules),fPhiModuleSize(geo.fPhiModuleSize),
     fEtaModuleSize(geo.fEtaModuleSize),fPhiTileSize(geo.fPhiTileSize),fEtaTileSize(geo.fEtaTileSize),fNZ(geo.fNZ),
     fIPDistance(geo.fIPDistance),fLongModuleSize(geo.fLongModuleSize),fShellThickness(geo.fShellThickness),
-    fZLength(geo.fZLength),fSampling(geo.fSampling)
+    fZLength(geo.fZLength),fSampling(geo.fSampling),fUseExternalMatrices(geo.fUseExternalMatrices)
 {
   fEnvelop[0] = geo.fEnvelop[0];
   fEnvelop[1] = geo.fEnvelop[1];
@@ -123,7 +123,7 @@ AliEMCALGeoUtils::AliEMCALGeoUtils(const Text_t* name, const Text_t* title)
     fShishKebabTrd1Modules(0),fPhiModuleSize(0.),
     fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fNZ(0),
     fIPDistance(0.),fLongModuleSize(0.),fShellThickness(0.),
-    fZLength(0.),fSampling(0.)
+    fZLength(0.),fSampling(0.), fUseExternalMatrices(kFALSE)
 { 
 
   // ctor only for normal usage 
@@ -1301,7 +1301,22 @@ const TGeoHMatrix * AliEMCALGeoUtils::GetMatrixForSuperModule(Int_t smod) const 
 	//      AliFatal(Form("AliEMCALGeometry::GeoManager cannot find path %s!",volpath.Data()));
 	//
 	//    TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
-	
+  
+  //Use matrices set externally
+	if(!gGeoManager || (gGeoManager && fUseExternalMatrices)){
+    if(fkSModuleMatrix[smod]){
+      return fkSModuleMatrix[smod] ;
+    }
+    else{
+      AliInfo("Stop:");
+      printf("\t Can not find EMCAL misalignment matrixes\n") ;
+      printf("\t Either import TGeoManager from geometry.root or \n");
+      printf("\t read stored matrixes from AliESD Header:  \n") ;   
+      printf("\t AliEMCALGeoUtils::SetMisalMatrixes(header->GetEMCALMisalMatrix()) \n") ;
+      abort() ;
+    }  
+  }//external matrices
+  
 	if(gGeoManager){
     const Int_t buffersize = 255;
 		char path[buffersize] ;
@@ -1320,17 +1335,6 @@ const TGeoHMatrix * AliEMCALGeoUtils::GetMatrixForSuperModule(Int_t smod) const 
 		return gGeoManager->GetCurrentMatrix();
 	}
 
-	if(fkSModuleMatrix[smod]){
-		return fkSModuleMatrix[smod] ;
-	}
-	else{
-		AliInfo("Stop:");
-		printf("\t Can not find EMCAL misalignment matrixes\n") ;
-		printf("\t Either import TGeoManager from geometry.root or \n");
-		printf("\t read stored matrixes from AliESD Header:  \n") ;   
-		printf("\t AliEMCALGeoUtils::SetMisalMatrixes(header->GetEMCALMisalMatrix()) \n") ;
-		abort() ;
-	}
 	return 0 ;
 }
 
