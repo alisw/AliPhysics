@@ -347,39 +347,53 @@ AliTOFAnalysisTaskCalibPass0::ProcessOutput(const Char_t *filename, const Char_t
     AliError(Form("cannot open output file %s", filename));
     return kFALSE;
   }
-  /* get histo list */
+  /* get histograms */
   TList *list = (TList *)file->Get("Histos");
-  if (!list) {
-    AliError(Form("cannot get \"Histos\" list from file %s", filename));
-    return kFALSE;
+  TH2F *histoVertexTimestamp = NULL;
+  TH2F *histoDeltatTimestamp = NULL;
+  TH2F *histoDeltazEta = NULL;
+  TH2F *histoDeltazCosTheta = NULL;
+  TH2F *histoAcceptedTracksEtaPt = NULL;
+  TH2F *histoMatchedTracksEtaPt = NULL;
+  if (list) {
+    AliInfo(Form("getting histograms from \"Histos\" list from file %s", filename));
+    histoVertexTimestamp = (TH2F *)list->FindObject("hHistoVertexTimestamp");
+    histoDeltatTimestamp = (TH2F *)list->FindObject("hHistoDeltatTimestamp");
+    histoDeltazEta = (TH2F *)list->FindObject("hHistoDeltazEta");
+    histoDeltazCosTheta = (TH2F *)list->FindObject("hHistoDeltazCosTheta");
+    histoAcceptedTracksEtaPt = (TH2F *)list->FindObject("hHistoAcceptedTracksEtaPt");
+    histoMatchedTracksEtaPt = (TH2F *)list->FindObject("hHistoMatchedTracksEtaPt");
   }
-  /* get histos */
-  TH2F *histoVertexTimestamp = (TH2F *)list->FindObject("hHistoVertexTimestamp");
+  else {
+    AliInfo(Form("getting histograms directly from file %s", filename));
+    histoVertexTimestamp = (TH2F *)file->Get("hHistoVertexTimestamp");
+    histoDeltatTimestamp = (TH2F *)file->Get("hHistoDeltatTimestamp");
+    histoDeltazEta = (TH2F *)file->Get("hHistoDeltazEta");
+    histoDeltazCosTheta = (TH2F *)file->Get("hHistoDeltazCosTheta");
+    histoAcceptedTracksEtaPt = (TH2F *)file->Get("hHistoAcceptedTracksEtaPt");
+    histoMatchedTracksEtaPt = (TH2F *)file->Get("hHistoMatchedTracksEtaPt");
+  }
+  /* check histos */ 
   if (!histoVertexTimestamp) {
     AliError(Form("cannot get \"hHistoVertexTimestamp\" object from file %s", filename));
     return kFALSE;
   }
-  TH2F *histoDeltatTimestamp = (TH2F *)list->FindObject("hHistoDeltatTimestamp");
   if (!histoDeltatTimestamp) {
     AliError(Form("cannot get \"hHistoDeltatTimestamp\" object from file %s", filename));
     return kFALSE;
   }
-  TH2F *histoDeltazEta = (TH2F *)list->FindObject("hHistoDeltazEta");
   if (!histoDeltazEta) {
     AliError(Form("cannot get \"hHistoDeltazEta\" object from file %s", filename));
     return kFALSE;
   }
-  TH2F *histoDeltazCosTheta = (TH2F *)list->FindObject("hHistoDeltazCosTheta");
   if (!histoDeltazCosTheta) {
     AliError(Form("cannot get \"hHistoDeltazCosTheta\" object from file %s", filename));
     return kFALSE;
   }
-  TH2F *histoAcceptedTracksEtaPt = (TH2F *)list->FindObject("hHistoAcceptedTracksEtaPt");
   if (!histoAcceptedTracksEtaPt) {
     AliError(Form("cannot get \"hHistoAccptedTracksEtaPt\" object from file %s", filename));
     return kFALSE;
   }
-  TH2F *histoMatchedTracksEtaPt = (TH2F *)list->FindObject("hHistoMatchedTracksEtaPt");
   if (!histoMatchedTracksEtaPt) {
     AliError(Form("cannot get \"hHistoMatchedTracksEtaPt\" object from file %s", filename));
     return kFALSE;
