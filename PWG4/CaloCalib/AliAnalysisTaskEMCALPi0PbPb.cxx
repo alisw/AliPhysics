@@ -237,13 +237,13 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fHCellE = new TH1F("hCellE","",250,0.,25.);
   fHCellE->SetXTitle("E_{cell} [GeV]");
   fOutput->Add(fHCellE);
-  fHCellH = new TH1F ("fHCellHighestE","",250,0.,25.);
+  fHCellH = new TH1F ("hCellHighestE","",250,0.,25.);
   fHCellH->SetXTitle("E^{max}_{cell} [GeV]");
   fOutput->Add(fHCellH);
-  fHCellM = new TH1F ("fHCellMeanEperHitCell","",250,0.,2.5);
+  fHCellM = new TH1F ("hCellMeanEperHitCell","",250,0.,2.5);
   fHCellM->SetXTitle("#LT E_{cell}#GT [GeV]");
   fOutput->Add(fHCellM);
-  fHCellM2 = new TH1F ("fHCellMeanEperAllCells","",250,0.,1);
+  fHCellM2 = new TH1F ("hCellMeanEperAllCells","",250,0.,1);
   fHCellM2->SetXTitle("1/N_{cells} #Sigma E_{cell} [GeV]");
   fOutput->Add(fHCellM2);
 
@@ -274,7 +274,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
     for (UInt_t i = 0; i<sizeof(tcs)/sizeof(Int_t); ++i){
       Int_t c=tcs[i];
       if (c<24*48*nsm) {
-        fHCellCheckE[i] = new TH1F(Form("fHCellE_id%d",c), Form("Cell %d;E [GeV/c];#",c), 500, 0, 8);
+        fHCellCheckE[i] = new TH1F(Form("hCellE_id%d",c), Form("Cell %d;E [GeV/c];#",c), 500, 0, 8);
         fOutput->Add(fHCellCheckE[i]);
       }
     }
