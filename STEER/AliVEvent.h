@@ -34,6 +34,7 @@ public:
                               // empty slot
       kMUON         = BIT(2), // Muon trigger, offline SPD or V0 selection
       kHighMult     = BIT(3), // High-multiplicity trigger (threshold defined online), offline SPD or V0 selection
+      kEMC1         = BIT(4), // EMCAL trigger
       kUserDefined  = BIT(31), // Set when custom trigger classes are set in AliPhysicsSelection, offline SPD or V0 selection
       kAny          = 0xffffffff // to accept any trigger
   };
