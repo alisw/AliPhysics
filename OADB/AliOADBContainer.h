@@ -40,9 +40,9 @@ class AliOADBContainer : public TNamed {
   Int_t GetNumberOfEntries()    const {return fEntries;}
   Int_t LowerLimit(Int_t idx)   const {return fLowerLimits[idx];}
   Int_t UpperLimit(Int_t idx)   const {return fUpperLimits[idx];}
-  TObject* GetObject(Int_t run, char* def = "") const;
+  TObject* GetObject(Int_t run, const char* def = "") const;
   TObject* GetObjectByIndex(Int_t run) const;
-  TObject* GetDefaultObject(char* key) 
+  TObject* GetDefaultObject(const char* key) 
   {return(fDefaultList->FindObject(key));}
 // Debugging  
   void List();

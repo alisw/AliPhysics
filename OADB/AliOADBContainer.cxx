@@ -171,7 +171,7 @@ void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t 
   // Check that there is no overlap with existing run ranges  
   Int_t index = HasOverlap(lower, upper);
   if (index != -1) {
-    AliFatal(Form("Ambiguos validity range (%5d) !\n", index));
+    AliFatal(Form("Ambiguos validity range (%5d, %5.5d-%5.5d) !\n", index,lower,upper));
     return;
   }
   //
@@ -218,7 +218,7 @@ Int_t AliOADBContainer::GetIndexForRun(Int_t run) const
   return index;
 }
 
-TObject* AliOADBContainer::GetObject(Int_t run, char* def) const
+TObject* AliOADBContainer::GetObject(Int_t run, const char* def) const
 {
   // Return object for given run or default if not found
   TObject* obj = 0;

@@ -1,5 +1,5 @@
 #-*- Mode: CMake -*-
-set ( SRCS  AliOADBContainer.cxx AliOADBCentrality.cxx AliOADBPWG2Spectra.cxx)
+set ( SRCS  AliOADBContainer.cxx AliOADBCentrality.cxx  AliOADBPWG2Spectra.cxx AliOADBPhysicsSelection.cxx AliOADBFillingScheme.cxx)
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")
 
