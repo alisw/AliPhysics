@@ -70,12 +70,16 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   , fDigitsArr(0),       fClusterArr(0),       fCaloClusterArr(0)
   , fRecParam(0),        fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE) 
   , fOutputAODBranch(0), fOutputAODBranchName("newEMCALClusters"),     fFillAODFile(kTRUE)
-  , fRun(-1),            fRecoUtils(0),        fConfigName(""), fCellLabels()
+  , fRun(-1),            fRecoUtils(0),        fConfigName("")
+  , fCellLabels(),       fCellSecondLabels()
   
   {
   //ctor
   for(Int_t i = 0; i < 10;    i++)  fGeomMatrix[i] =  0;
-  for(Int_t j = 0; j < 12672; j++)  fCellLabels[j] = -1;
+    for(Int_t j = 0; j < 24*48*11; j++)  {
+      fCellLabels[j]       = -1;
+      fCellSecondLabels[j] = -1;
+    }  
   fDigitsArr       = new TClonesArray("AliEMCALDigit",200);
   fClusterArr      = new TObjArray(100);
   fCaloClusterArr  = new TObjArray(100);
@@ -92,11 +96,15 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   , fDigitsArr(0),       fClusterArr(0),       fCaloClusterArr(0)
   , fRecParam(0),        fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE)
   , fOutputAODBranch(0), fOutputAODBranchName("newEMCALClusters"),     fFillAODFile(kFALSE)
-  , fRun(-1),            fRecoUtils(0),        fConfigName(""), fCellLabels()
+  , fRun(-1),            fRecoUtils(0),        fConfigName("") 
+  , fCellLabels(),       fCellSecondLabels()
 {
   // Constructor
   for(Int_t i = 0; i < 10;    i++)  fGeomMatrix[i] =  0;
-  for(Int_t j = 0; j < 24*48*11; j++)  fCellLabels[j] = -1;
+  for(Int_t j = 0; j < 24*48*11; j++)  {
+    fCellLabels[j]       = -1;
+    fCellSecondLabels[j] = -1;
+  }
   fDigitsArr       = new TClonesArray("AliEMCALDigit",200);
   fClusterArr      = new TObjArray(100);
   fCaloClusterArr  = new TObjArray(100);
@@ -318,15 +326,19 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
 //      if(fCellLabels[j]!=-1) printf("Not well initialized cell %d, label %d\n",j,fCellLabels[j]) ;
 //    }
     
+    
     for (Int_t i = 0; i < event->GetNumberOfCaloClusters(); i++)
     {
       AliVCluster *clus = event->GetCaloCluster(i);
       if(clus->IsEMCAL()){   
         
         Int_t label = clus->GetLabel();
+	Int_t label2 = -1 ;
+	if (clus->GetNLabels()>=2) label2 = clus->GetLabelAt(1) ;
         UShort_t * index    = clus->GetCellsAbsId() ;
         for(Int_t icell=0; icell < clus->GetNCells(); icell++ ){
           fCellLabels[index[icell]]=label;
+	  fCellSecondLabels[index[icell]]=label2;
           //printf("1) absID %d, label %d\n",index[icell], fCellLabels[index[icell]]);
         }
         nClustersOrg++;
@@ -663,6 +675,29 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     Int_t  parentMult  = 0;
     Int_t *parentList = recPoint->GetParents(parentMult);
     clus->SetLabel(parentList, parentMult); 
+    
+    //Write the second major contributor to each MC cluster.
+    Int_t iNewLabel ;
+    for ( Int_t iLoopCell = 0 ; iLoopCell < clus->GetNCells() ; iLoopCell++ ){
+      
+      Int_t idCell = clus->GetCellAbsId(iLoopCell) ;
+      iNewLabel = 1 ; //iNewLabel makes sure we  don't write twice the same label.
+      for ( UInt_t iLoopLabels = 0 ; iLoopLabels < clus->GetNLabels() ; iLoopLabels++ )
+      {
+	if ( fCellSecondLabels[idCell] == -1 )  iNewLabel = 0;  // -1 is never a good second label.
+	if ( fCellSecondLabels[idCell] == clus->GetLabelAt(iLoopLabels) )  iNewLabel = 0;
+      }
+      if (iNewLabel == 1) 
+      {
+	Int_t * newLabelArray = (Int_t*)malloc((clus->GetNLabels()+1)*sizeof(Int_t)) ;
+	for ( UInt_t iLoopNewLabels = 0 ; iLoopNewLabels < clus->GetNLabels() ; iLoopNewLabels++ ){
+	  newLabelArray[iLoopNewLabels] = clus->GetLabelAt(iLoopNewLabels) ;
+	}
+	newLabelArray[clus->GetNLabels()] = fCellSecondLabels[idCell] ;
+	clus->SetLabel(newLabelArray,clus->GetNLabels()+1) ;
+      }
+      
+    }
     
     clusArray->Add(clus);
   } // recPoints loop
