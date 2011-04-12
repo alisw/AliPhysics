@@ -98,9 +98,10 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   AliEMCALRecoUtils*     fRecoUtils;        // Access to factorized reconstruction algorithms
   TString                fConfigName;       // Name of analysis configuration file
   
-  Int_t                  fCellLabels[12672];// Array with MC label to be passed to digit. 
+  Int_t                  fCellLabels[12672];       // Array with MC label to be passed to digit. 
+  Int_t                  fCellSecondLabels[12672]; // Array with Second MC label to be passed to digit. 
   
-  ClassDef(AliAnalysisTaskEMCALClusterize, 4);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 5);
 };
 
 #endif //ALIANALYSISTASKEMCALCLUSTERIZE_H
