@@ -26,7 +26,6 @@
 #include <TFile.h>
 #include <TParticle.h>
 #include <TClonesArray.h>
-//#include <TRefArray.h>
 #include <TList.h>
 #include <TArrayF.h>
 
@@ -37,6 +36,8 @@
 #include "AliTrackReference.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
 
 
 Int_t AliMCEvent::fgkBgLabelOffset(10000000);
@@ -59,7 +60,8 @@ AliMCEvent::AliMCEvent():
     fPrimaryOffset(0),
     fSecondaryOffset(0),
     fExternal(0),
-    fVertex(0)
+    fVertex(0),
+    fNBG(-1)
 {
     // Default constructor
 }
@@ -81,7 +83,8 @@ AliMCEvent::AliMCEvent(const AliMCEvent& mcEvnt) :
     fPrimaryOffset(0),
     fSecondaryOffset(0),
     fExternal(0),
-    fVertex(mcEvnt.fVertex)
+    fVertex(mcEvnt.fVertex),
+    fNBG(mcEvnt.fNBG)
 { 
 // Copy constructor
 }
@@ -204,6 +207,7 @@ void AliMCEvent::FinishEvent()
     fStack      =  0;
 //    fSubsidiaryEvents->Clear();
     fSubsidiaryEvents = 0;
+    fNBG = -1;
 }
 
 
@@ -702,6 +706,23 @@ const AliVVertex * AliMCEvent::GetPrimaryVertex() const
 	((AliMCVertex*) fVertex)->SetPosition(v[0], v[1], v[2]);
     }
     return fVertex;
+}
+
+Bool_t AliMCEvent::IsFromBGEvent(Int_t index)
+{
+    // Checks if a particle is from the background events
+    // Works for HIJING inside Cocktail
+    if (fNBG == -1) {
+	AliGenCocktailEventHeader* coHeader = 
+	    dynamic_cast<AliGenCocktailEventHeader*> (GenEventHeader());
+	if (!coHeader) return (0);
+	TList* list = coHeader->GetHeaders();
+	AliGenHijingEventHeader* hijingH = dynamic_cast<AliGenHijingEventHeader*>(list->FindObject("Hijing"));
+	if (!hijingH) return (0);
+	fNBG = hijingH->NProduced();
+    }
+    
+    return (index < fNBG);
 }
 
 

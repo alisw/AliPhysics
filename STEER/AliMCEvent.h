@@ -125,6 +125,8 @@ public:
     virtual Bool_t    IsPhysicalPrimary(Int_t i);
     virtual Int_t     BgLabelToIndex(Int_t label);
     static  Int_t     BgLabelOffset() {return fgkBgLabelOffset;}
+    virtual Bool_t    IsFromBGEvent(Int_t index);
+    
     // External particle array
     virtual void      SetParticleArray(TClonesArray* mcParticles) 
 	{fMCParticles = mcParticles; fNparticles = fMCParticles->GetEntries(); fExternal = kTRUE;}
@@ -137,7 +139,8 @@ public:
   AliCentrality*       GetCentrality()  {return 0;} 
   AliEventplane*       GetEventplane()  {return 0;} 
 
-  virtual AliVVZERO *GetVZEROData() const {return 0;}
+  virtual AliVVZERO    *GetVZEROData() const {return 0;}
+    
 private:
     virtual void      ReorderAndExpandTreeTR();
     virtual Int_t     FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const;
@@ -161,6 +164,8 @@ private:
     Bool_t            fExternal;         // True if external particle array
     static   Int_t        fgkBgLabelOffset;  // Standard branch name    
     mutable  AliVVertex*  fVertex;           // MC Vertex
+    Int_t             fNBG;              // Background particles in current event
+    
     ClassDef(AliMCEvent, 1)  // AliVEvent realisation for MC data
 };
 
