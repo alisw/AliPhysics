@@ -859,7 +859,9 @@ void AliSplineFit::MakeKnots0(TGraph * graph, Double_t maxdelta, Int_t minpoints
   //
 
   Int_t npoints  = graph->GetN();
-  Double_t *xknots = new Double_t[npoints];
+  Double_t *xknots = new Double_t[npoints]; 
+  for (Int_t ip=0;ip<npoints;ip++) xknots[ip]=0;
+  //
   Int_t nknots =0;
   Int_t ipoints =0;
   //
@@ -971,9 +973,9 @@ void AliSplineFit::Test(Int_t npoints, Int_t ntracks, Float_t snoise){
     Double_t sigmaS = hS->GetRMS();
     char fname[100];
     if (fit.fN<20){
-      sprintf(fname,"pol%d",fit.fN);
+      snprintf(fname,100,"pol%d",fit.fN);
     }else{
-      sprintf(fname,"pol%d",19);
+      snprintf(fname,100,"pol%d",19);
     }
     TF1 fpol("fpol",fname);
     graph1->Fit(&fpol);

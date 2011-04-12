@@ -90,6 +90,7 @@
 
 #include "TTimeStamp.h"
 #include "AliSysInfo.h"
+#include "TBufferFile.h"
 
 //#include "TMemStatManager.h"  //USE IFDEF
 
@@ -335,4 +336,20 @@ TTree*  AliSysInfo::Test(){
       }
   TTree * tree = AliSysInfo::MakeTree("syswatch.log");
   return tree;  
+}
+
+Double_t AliSysInfo::EstimateObjectSize(TObject* object){
+  //
+  // Estimate size of object as represented in the memory size in bytes
+  // Warnings:
+  //  1. Only data memebrs which are persistent are counted
+  //  2. Local copy of the object is temporary created in memory
+  //  3. Do not use it in standard programs, time and memory consument procedure
+  //
+  if (!object) return 0;
+  TBufferFile * file = new TBufferFile(TBuffer::kWrite);
+  file->WriteObject(object);
+  Double_t size=file->Length();
+  delete file;
+  return size;
 }

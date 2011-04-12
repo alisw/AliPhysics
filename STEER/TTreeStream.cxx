@@ -192,7 +192,7 @@ TTreeStream  & TTreeSRedirector::operator<<(Int_t id)
     TDirectory * backup = gDirectory;
     fFile->cd();
     char chname[100];
-    sprintf(chname,"Tree%d",id);
+    snprintf(chname,100,"Tree%d",id);
     clayout = new TTreeStream(chname);
     clayout->fId=id;
     fDataLayouts->AddAt(clayout,entries);
@@ -334,14 +334,14 @@ Int_t TTreeStream::CheckIn(Char_t type, void *pointer)
     char name[1000];
     if (fNextName.Length()>0){
       if (fNextNameCounter==0){
-	sprintf(name,"%s",(const char*)fNextName);
+	snprintf(name,1000,"%s",(const char*)fNextName);
       }
       if (fNextNameCounter>0){
-	sprintf(name,"%s%d",(const char*)fNextName,fNextNameCounter);
+	snprintf(name,1000,"%s%d",(const char*)fNextName,fNextNameCounter);
       }      
     }
     else{
-      sprintf(name,"B%d.",fCurrentIndex);
+      snprintf(name,1000,"B%d.",fCurrentIndex);
     }
     element->SetName(name);
     //
@@ -372,14 +372,14 @@ Int_t TTreeStream::CheckIn(TObject *o){
     char name[1000];
     if (fNextName.Length()>0){
       if (fNextNameCounter==0){
-	sprintf(name,"%s",(const char*)fNextName);
+	snprintf(name,1000,"%s",(const char*)fNextName);
       }
       if (fNextNameCounter>0){
-	sprintf(name,"%s%d",(const char*)fNextName,fNextNameCounter);
+	snprintf(name,1000,"%s%d",(const char*)fNextName,fNextNameCounter);
       }      
     }
     else{
-      sprintf(name,"B%d",fCurrentIndex);
+      snprintf(name,1000,"B%d",fCurrentIndex);
     }
     element->SetName(name);
 
@@ -411,10 +411,10 @@ void TTreeStream::BuildTree(){
     TTreeDataElement* element = (TTreeDataElement*)fElements->At(i);
     char bname1[1000];
     if (element->GetName()[0]==0){
-      sprintf(bname1,"B%d",i);
+      snprintf(bname1,1000,"B%d",i);
     }
     else{
-      sprintf(bname1,element->GetName());
+      snprintf(bname1,1000,element->GetName());
     }
     if (element->fClass){
       if (element->fClass->GetBaseClass("TClonesArray")){
@@ -428,7 +428,7 @@ void TTreeStream::BuildTree(){
     }
     if (element->GetType()>0){
       char bname2[1000];
-      sprintf(bname2,"B%d/%c",i,element->GetType());
+      snprintf(bname2,1000,"B%d/%c",i,element->GetType());
       TBranch * br = fTree->Branch(bname1,element->fPointer,bname2);
       fBranches->AddAt(br,i);
     }

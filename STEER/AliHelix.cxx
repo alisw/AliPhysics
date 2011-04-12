@@ -532,12 +532,12 @@ Int_t  AliHelix::ParabolicDCA(AliHelix&h,  //helixes
       dd=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
       if (dd<dm) break;
       dt1*=0.5; dt2*=0.5;
-      if (div==0){
-	div =1;
-      }
-      if (div>512) {	  
-	break;
-      }   
+  //     if (div==0){
+// 	div =1;
+//       }
+//       if (div>512) {	  
+// 	break;
+//       }   
     }
     dm=dd;
     t1+=dt1;
