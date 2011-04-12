@@ -531,7 +531,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
   Float_t pdgmass[4]={0.13957,0.493677,0.938272,1.8756}; //mass for pi, K, P (Gev/c^2)
   Int_t listcode[3]={211,321,2212};//code for pi, K, P (Gev/c^2)
   Double_t s[4];
-  Float_t ptMC=-999,yMC=-999;
+  Float_t ptMC=-999;
   Int_t code=-999, signMC=-999,isph=-999,mfl=-999;
   Float_t impactXY=-999, impactZ=-999;
   Int_t evSel=1;
@@ -674,6 +674,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     pdgPart = part->GetPDG();
     if(!pdgPart)continue;
     if(pdgPart->Charge()==0) continue; //no neutral particles
+    Float_t yMC=-999.;
     if(part->Energy() != TMath::Abs(part->Pz())) yMC = 0.5*TMath::Log((part->Energy()+part->Pz())/(part->Energy()-part->Pz()));
     if(TMath::Abs(yMC) > fMaxY) continue; //rapidity cut
     if(pdgPart->Charge()>0) signMC=1;
