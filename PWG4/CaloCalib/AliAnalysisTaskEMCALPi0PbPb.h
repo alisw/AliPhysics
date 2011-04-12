@@ -115,6 +115,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Bool_t                 fDoConstrain;            // if true constrain tracks to vertex 
 
     // derived members (ie with ! after //)
+  Bool_t                 fIsGeoMatsSet;           //!indicate that geo matrices are set 
   ULong64_t              fNEvs;                   //!accepted events 
   AliEMCALGeoUtils      *fGeom;                   //!geometry utils
   AliEMCALRecoUtils     *fReco;                   //!geometry utils
