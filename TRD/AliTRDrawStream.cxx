@@ -292,9 +292,9 @@ Bool_t AliTRDrawStream::ReadEvent(TTree *trackletTree)
 	// check for link monitor error flag
 	if (fCurrLinkMonitorFlags[fCurrSlot*fgkNlinks + fCurrLink] != 0)
 	  LinkError(kLinkMonitor);
-
-	// read the data from one HC
-	ReadLinkData();
+	else
+	  // read the data from one HC
+	  ReadLinkData();
 
 	// read all data endmarkers
 	SeekNextLink();
@@ -409,9 +409,9 @@ Int_t AliTRDrawStream::NextChamber(AliTRDdigitsManager *digMgr, UInt_t ** /* tra
 
   if (fCurrLinkMonitorFlags[fCurrSlot*fgkNlinks + fCurrLink] != 0)
     LinkError(kLinkMonitor);
-
-  // read the data from one HC
-  ReadLinkData();
+  else
+    // read the data from one HC
+    ReadLinkData();
   
   // read all data endmarkers
   SeekNextLink();
@@ -567,7 +567,7 @@ Int_t AliTRDrawStream::ReadLinkData()
 
   if (fMarkers)
     new ((*fMarkers)[fMarkers->GetEntriesFast()])
-      AliTRDrawStreamError(-kHCactive, fCurrSm, fCurrStack, fCurrLink);
+      AliTRDrawStreamError(-kHCactive, fCurrEquipmentId-1024, fCurrStack, fCurrLink);
 
   if (fErrorFlags & kDiscardHC)
     return count;
