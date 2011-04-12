@@ -90,6 +90,8 @@ class AliAODPWG4Particle : public AliVParticle {
   virtual void SetLabel(Int_t l)         { fLabel = l ; }
   virtual void SetCaloLabel (Int_t a, Int_t b) { fCaloLabel [0] = a; fCaloLabel [1] = b  ; }
   virtual void SetTrackLabel(Int_t a, Int_t b) { fTrackLabel[0] = a; fTrackLabel[1] = b  ; }
+  virtual void SetTrackLabel(Int_t a, Int_t b, Int_t c, Int_t d) 
+  { fTrackLabel[0] = a; fTrackLabel[1] = b  ; fTrackLabel[2] = c; fTrackLabel[3] = d; }
   
   virtual void SetPdg(Int_t pdg)         { fPdg = pdg ; }
   virtual void SetTag(Int_t tag)         { fTag = tag ; }
@@ -118,7 +120,7 @@ class AliAODPWG4Particle : public AliVParticle {
   Int_t      fBtag;          // tag particle from B.
   Int_t      fLabel ;        // MC label
   Int_t      fCaloLabel[2];  // CaloCluster index, 1 for photons, 2 for pi0.
-  Int_t      fTrackLabel[2]; // Track lable, 1 for pions, 2 for conversion photons 
+  Int_t      fTrackLabel[4]; // Track lable, 1 for pions, 2 for conversion photons 
   TString    fDetector ;     // Detector where particle was measured.
   Bool_t     fDisp ;         // Dispersion bit
   Bool_t     fTof ;          // TOF bit
@@ -129,7 +131,7 @@ class AliAODPWG4Particle : public AliVParticle {
   Int_t      fInputFileIndex;// 0, standard input, 1 first input added. 
 	                         // Only possible one for now, more in future?
 	
-  ClassDef(AliAODPWG4Particle,3);
+  ClassDef(AliAODPWG4Particle, 4);
 };
 
 inline Double_t AliAODPWG4Particle::Phi() const

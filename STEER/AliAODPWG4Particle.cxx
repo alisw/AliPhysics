@@ -40,6 +40,8 @@ fDetector(""), fDisp(0), fTof(0), fCharged(0), fTagged(0), fBadDist(0), fFidArea
   fCaloLabel [1] = -1;
   fTrackLabel[0] = -1;
   fTrackLabel[1] = -1;
+  fTrackLabel[2] = -1;
+  fTrackLabel[3] = -1;
 }
 
 //______________________________________________________________________________
@@ -55,6 +57,8 @@ AliAODPWG4Particle::AliAODPWG4Particle(Double_t px, Double_t py, Double_t pz, Do
   fCaloLabel [1] = -1;
   fTrackLabel[0] = -1;
   fTrackLabel[1] = -1;	
+  fTrackLabel[2] = -1;
+  fTrackLabel[3] = -1;	
 }
 
 //______________________________________________________________________________
@@ -70,6 +74,8 @@ AliAODPWG4Particle::AliAODPWG4Particle(TLorentzVector & p):
   fCaloLabel [1] = -1;
   fTrackLabel[0] = -1;
   fTrackLabel[1] = -1;
+  fTrackLabel[2] = -1;
+  fTrackLabel[3] = -1;
 }
 
 
@@ -102,6 +108,8 @@ AliAODPWG4Particle::AliAODPWG4Particle(const AliAODPWG4Particle& part) :
   fCaloLabel [1] = part.fCaloLabel[1];
   fTrackLabel[0] = part.fTrackLabel[0];
   fTrackLabel[1] = part.fTrackLabel[1];
+  fTrackLabel[2] = part.fTrackLabel[2];
+  fTrackLabel[3] = part.fTrackLabel[3];
 }
 
 //______________________________________________________________________________
