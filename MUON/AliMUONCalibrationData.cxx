@@ -24,7 +24,6 @@
 #include "AliLog.h"
 #include "AliMpDCSNamer.h"
 #include "AliMpIntPair.h"
-#include "AliMUONConstants.h"
 #include "AliMUONGlobalCrateConfig.h"
 #include "AliMUONRegionalTriggerConfig.h"
 #include "AliMUONRejectList.h"

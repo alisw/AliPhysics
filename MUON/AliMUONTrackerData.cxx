@@ -24,7 +24,6 @@
 #include "AliMUON1DMap.h"
 #include "AliMUON2DMap.h"
 #include "AliMUONCalibParamND.h"
-#include "AliMUONConstants.h"
 #include "AliMUONRejectList.h"
 #include "AliMUONSparseHisto.h"
 #include "AliMUONVStore.h"
@@ -547,7 +546,7 @@ fNofEventsPerDDL(0x0)
   AssertStores();
   
   
-  for ( Int_t chamberId = 0; chamberId < AliMUONConstants::NCh(); ++chamberId ) 
+  for ( Int_t chamberId = 0; chamberId < AliMpConstants::NofChambers(); ++chamberId ) 
   {
 //    AliMUONVCalibParam* chamber = ChamberParam(chamberId,kTRUE);
 

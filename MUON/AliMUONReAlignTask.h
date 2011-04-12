@@ -19,7 +19,7 @@ class AliMUONClusterInfo;
 class AliMUONESDInterface;
 class AliMUONRefitter;
 class AliMUONRecoParam;
-class AliMUONGeoemetryTransformer;
+class AliMUONGeometryTransformer;
 class AliMUONVStore;
 class AliMUONTrack;
 

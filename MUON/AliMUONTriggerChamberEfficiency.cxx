@@ -17,7 +17,6 @@
 
 #include "AliMUONTriggerEfficiencyCells.h"
 #include "AliMpConstants.h"
-#include "AliMUONConstants.h"
 
 // Classes for display
 #include "AliMUONTriggerDisplay.h"
@@ -216,7 +215,7 @@ AliMUONTriggerChamberEfficiency::FillFromList(Bool_t useMeanValues)
     delete fEfficiencyObjects;
 
   const Int_t kNeffHistos = 
-    2 * ( AliMUONTriggerEfficiencyCells::kNcounts - 1 ) * AliMUONConstants::NTriggerCh();
+    2 * ( AliMUONTriggerEfficiencyCells::kNcounts - 1 ) * AliMpConstants::NofTriggerChambers();
 
   fEfficiencyObjects = new TObjArray(kNeffHistos);
   fEfficiencyObjects->SetOwner();
@@ -236,7 +235,7 @@ AliMUONTriggerChamberEfficiency::FillFromList(Bool_t useMeanValues)
     if ( useMeanValues && currDe == AliMUONTriggerEfficiencyCells::kHboardCount ) 
       continue;
 
-    for(Int_t ich=0; ich<AliMUONConstants::NTriggerCh(); ich++){
+    for(Int_t ich=0; ich<AliMpConstants::NofTriggerChambers(); ich++){
       histoName = fEfficiencyMap->GetHistoName(currDe, AliMUONTriggerEfficiencyCells::kAllTracks, ich);
       if ( fEfficiencyMap->GetHistoList() ) {
 	histoDen = (TH1F*)fEfficiencyMap->GetHistoList()->FindObject(histoName.Data());
@@ -341,7 +340,7 @@ void AliMUONTriggerChamberEfficiency::DisplayEfficiency(Bool_t perSlat, Bool_t s
   TGraph* graph = 0x0;
 
   // Book histos
-  for(Int_t ich=0; ich<AliMUONConstants::NTriggerCh(); ich++){
+  for(Int_t ich=0; ich<AliMpConstants::NofTriggerChambers(); ich++){
     Int_t currCh = 11 + ich;
     for(Int_t hType=0; hType<AliMUONTriggerEfficiencyCells::kNcounts - 1; hType++){
       index = GetIndex(deType, hType, ich);
@@ -350,7 +349,7 @@ void AliMUONTriggerChamberEfficiency::DisplayEfficiency(Bool_t perSlat, Bool_t s
       histoName = graph->GetName();
       histoName += baseCanName;
       Int_t shift = 10*(index%((AliMUONTriggerEfficiencyCells::kNcounts - 1)*
-			       AliMUONConstants::NTriggerCh()));
+			       AliMpConstants::NofTriggerChambers()));
       can = new TCanvas(histoName.Data(), histoName.Data(), 100+shift, shift, 700, 700);
       can->SetRightMargin(0.14);
       can->SetLeftMargin(0.12);
@@ -420,7 +419,7 @@ AliMUONTriggerChamberEfficiency::GetIndex(Int_t histoType, Int_t countType,
   //
 
   const Int_t kNtypes = AliMUONTriggerEfficiencyCells::kNcounts - 1;
-  const Int_t kNchambers = AliMUONConstants::NTriggerCh();
+  const Int_t kNchambers = AliMpConstants::NofTriggerChambers();
   return 
     histoType * kNtypes * kNchambers + 
     chamber * kNtypes +
