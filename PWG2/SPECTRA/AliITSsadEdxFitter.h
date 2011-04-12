@@ -13,27 +13,43 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
+#include "AliITSPIDResponse.h"
+
 class TGraph;
 
 class AliITSsadEdxFitter  : public TObject {
 
  public:
-  AliITSsadEdxFitter();  
-  virtual ~AliITSsadEdxFitter(){};
+  AliITSsadEdxFitter();
+  AliITSsadEdxFitter(Bool_t isMC);
+  virtual ~AliITSsadEdxFitter(){
+    delete fITSpid;
+  };
 
-  static Double_t CalcSigma(Int_t code,Float_t x, Bool_t mc);
-  static Int_t CalcMean(Int_t code,Float_t x, Float_t mean0, Float_t &mean1, Float_t &mean2);
+  Double_t CalcSigma(Int_t code,Float_t x) const;
+  Int_t CalcMean(Int_t code,Float_t x, Float_t mean0, Float_t &mean1, Float_t &mean2) const;
 
   void GetFitPar(Double_t *fitpar, Double_t *fitparerr) const;
   void DoFitTail(TH1F *h, Int_t bin, Int_t code);
-  void DoFit(TH1F *h, Int_t bin, Int_t code, Bool_t mc, TGraph *gres);
-  void DoFitProton(TH1F *h, Int_t bin, Int_t code, Bool_t mc, TGraph *gres);
-	void DoFitOnePeak(TH1F *h, Int_t bin, Int_t signedcode, Bool_t mc);
-	void DoFitProtonFirst(TH1F *h, Int_t bin, Int_t signedcode, Bool_t mc, TGraph *gres);
-	void GetInitialParam(TH1F* h,Bool_t mc,Int_t code,Int_t bin, Float_t &pt, Float_t &ampl, Float_t &mean1, Float_t &mean2, Float_t &mean3, Float_t &sigma1, Float_t &sigma2, Float_t &sigma3);
+  void DoFit(TH1F *h, Int_t bin, Int_t code, TGraph *gres);
+  void DoFitProton(TH1F *h, Int_t bin, Int_t code, TGraph *gres);
+  void DoFitOnePeak(TH1F *h, Int_t bin, Int_t signedcode);
+  void DoFitProtonFirst(TH1F *h, Int_t bin, Int_t signedcode, TGraph *gres);
+  void GetInitialParam(TH1F* h,Int_t code,Int_t bin, Float_t &pt, Float_t &ampl); 
   void FillHisto(TH1F *hsps, Int_t bin, Float_t binsize, Int_t code);
   void FillHistoMC(TH1F *hsps, Int_t bin, Int_t code, TH1F *h);
   Bool_t IsGoodBin(Int_t bin,Int_t code);
+
+  void SetMCConfig(){
+    fIsMC=kTRUE;
+    if(fITSpid) delete fITSpid;
+    fITSpid=new AliITSPIDResponse(kTRUE);	  
+  }
+  void SetDataConfig(){
+    fIsMC=kFALSE;
+    if(fITSpid) delete fITSpid;
+    fITSpid=new AliITSPIDResponse(kFALSE);	  
+  }
 
   void SetRangeStep1(Double_t dxlow=-0.2, Double_t dxup=0.3){
     fRangeStep1[0]=dxlow;
@@ -63,18 +79,18 @@ class AliITSsadEdxFitter  : public TObject {
     fLimitsOnSigmaProton[0]=smin;
     fLimitsOnSigmaProton[1]=smax;
   }
-	void SetBinsUsedPion(Int_t bmin=2, Int_t bmax=14){
-		fBinsUsedPion[0]=bmin;
-		fBinsUsedPion[1]=bmax;
-	}
-	void SetBinsUsedKaon(Int_t bmin=7, Int_t bmax=12){
-		fBinsUsedKaon[0]=bmin;
-		fBinsUsedKaon[1]=bmax;
-	}
-	void SetBinsUsedProton(Int_t bmin=8, Int_t bmax=17){
-		fBinsUsedProton[0]=bmin;
-		fBinsUsedProton[1]=bmax;
-	}
+  void SetBinsUsedPion(Int_t bmin=2, Int_t bmax=14){
+    fBinsUsedPion[0]=bmin;
+    fBinsUsedPion[1]=bmax;
+  }
+  void SetBinsUsedKaon(Int_t bmin=7, Int_t bmax=12){
+    fBinsUsedKaon[0]=bmin;
+    fBinsUsedKaon[1]=bmax;
+  }
+  void SetBinsUsedProton(Int_t bmin=8, Int_t bmax=17){
+    fBinsUsedProton[0]=bmin;
+    fBinsUsedProton[1]=bmax;
+  }
 
   void PrintAll() const;
   void CalcResidual(TH1F *h,TF1 *fun,TGraph *gres) const;
@@ -83,6 +99,9 @@ class AliITSsadEdxFitter  : public TObject {
   void DrawFitFunction(TF1 *fun) const;
 
  private:
+  AliITSsadEdxFitter(const AliITSsadEdxFitter& s);
+  AliITSsadEdxFitter& operator=(const AliITSsadEdxFitter& s);
+
   Double_t fFitpar[3];     // array with fit parameters
   Double_t fFitparErr[3];  // array with fit parameter errors 
   Double_t fRangeStep1[2]; // Range for Step1 (w.r.t pion peak)
@@ -92,11 +111,22 @@ class AliITSsadEdxFitter  : public TObject {
   Double_t fLimitsOnSigmaPion[2]; // limits on sigma pions
   Double_t fLimitsOnSigmaKaon[2]; // limits on sigma kaons
   Double_t fLimitsOnSigmaProton[2]; // limits on sigma protons
+  
+  Double_t fExpPionMean;    // expected mean for pion peak
+  Double_t fExpKaonMean;    // expected mean for kaon peak
+  Double_t fExpProtonMean;  // expected mean for proton peak
+  Double_t fExpPionSigma;   // expected sigma for pion peak
+  Double_t fExpKaonSigma;   // expected sigma for kaon peak
+  Double_t fExpProtonSigma; // expected sigma for proton peak
+
   Int_t fBinsUsedPion[2];   // limits on bins used pions
   Int_t fBinsUsedKaon[2];   // limits on bins used kaons
   Int_t fBinsUsedProton[2]; // limits on bins used protons
 
-  ClassDef(AliITSsadEdxFitter,2);
+  Bool_t fIsMC;                 // flag MC/data
+  AliITSPIDResponse* fITSpid;   // ITS pid object
+
+  ClassDef(AliITSsadEdxFitter,3);
 };
 
 #endif
