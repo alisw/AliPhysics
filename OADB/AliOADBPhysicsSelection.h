@@ -67,9 +67,10 @@ class AliOADBPhysicsSelection : public TNamed {
   void Browse(TBrowser *b);
   virtual void	Print(Option_t* option = "") const;
 
+  static const UInt_t GetActiveBit(UInt_t mask) ;
+
 protected:
   void CleanKey(TString & str) ;
-  static const UInt_t GetActiveBit(UInt_t mask) ;
  private :
   
   UInt_t fNtriggerBits; // Size of the arrays below. Initialized using NTRIGGERBITS
