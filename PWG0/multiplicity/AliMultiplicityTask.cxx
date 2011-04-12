@@ -383,7 +383,7 @@ void AliMultiplicityTask::Exec(Option_t*)
       }
   
       Bool_t foundInEta10 = kFALSE;
-      if (!(fAnalysisMode & AliPWG0Helper::kTPCSPD)) {
+      if ((fAnalysisMode & AliPWG0Helper::kSPD)) {
 	// if we are counting both tracks and tracklets, these arrays were already initialized above 
 	AliDebug(AliLog::kInfo, "Booking arrays");
 	labelArr = new Int_t[mult->GetNumberOfTracklets()];
