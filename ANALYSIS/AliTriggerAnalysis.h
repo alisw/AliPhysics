@@ -25,7 +25,10 @@ class TMap;
 class AliTriggerAnalysis : public TObject
 {
   public:
-    enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0OR, kV0AND, kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kNSD1, kMB1Prime, kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x16000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
+    enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0OR, kV0AND, 
+      kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kNSD1, kMB1Prime, 
+      kSPDGFOL0, kSPDGFOL1, kZDCTDCA, kZDCTDCC, kZDCTime, kCTPV0A, kCTPV0C, kTPCLaserWarmUp, 
+      kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x10000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
     enum AliceSide { kASide = 1, kCSide, kCentralBarrel };
     enum V0Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG, kV0Fake };
     
@@ -36,6 +39,7 @@ class AliTriggerAnalysis : public TObject
     void SetAnalyzeMC(Bool_t flag = kTRUE) { fMC = flag; }
     
     Bool_t IsTriggerFired(const AliESDEvent* aEsd, Trigger trigger);
+    Int_t EvaluateTrigger(const AliESDEvent* aEsd, Trigger trigger);
     
     // using trigger bits in ESD
     Bool_t IsTriggerBitFired(const AliESDEvent* aEsd, Trigger trigger) const;
@@ -53,11 +57,13 @@ class AliTriggerAnalysis : public TObject
     Bool_t SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin);
     V0Decision V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists = kFALSE);
     Bool_t ZDCTrigger   (const AliESDEvent* aEsd, AliceSide side) const;
-  Bool_t ZDCTDCTrigger(const AliESDEvent* aEsd, AliceSide side, Bool_t useZN=kTRUE, Bool_t useZP=kFALSE, Bool_t fillHists=kFALSE) const;
-  Bool_t ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHists=kFALSE) const;
+    Bool_t ZDCTDCTrigger(const AliESDEvent* aEsd, AliceSide side, Bool_t useZN=kTRUE, Bool_t useZP=kFALSE, Bool_t fillHists=kFALSE) const;
+    Bool_t ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHists=kFALSE) const;
     Bool_t FMDTrigger(const AliESDEvent* aEsd, AliceSide side);
     Int_t SSDClusters(const AliESDEvent* aEsd);
     static const char* GetTriggerName(Trigger trigger);
+    
+    Bool_t IsLaserWarmUpTPCEvent(const AliESDEvent* esd);
     
     void FillHistograms(const AliESDEvent* aEsd);
     void FillTriggerClasses(const AliESDEvent* aEsd);
@@ -69,6 +75,7 @@ class AliTriggerAnalysis : public TObject
     void SetV0HwPars(Float_t thr, Float_t winLow, Float_t winHigh) { fV0HwAdcThr = thr; fV0HwWinLow = winLow; fV0HwWinHigh = winHigh; }
     void SetFMDThreshold(Float_t low, Float_t hit) { fFMDLowCut = low; fFMDHitCut = hit; }
     void SetDoFMD(Bool_t flag = kTRUE) {fDoFMD = flag;}
+    void SetZDCCutParams(Float_t refSum, Float_t refDelta, Float_t sigmaSum, Float_t sigmaDelta) { fZDCCutRefSum = refSum; fZDCCutRefDelta = refDelta; fZDCCutSigmaSum = sigmaSum; fZDCCutSigmaDelta = sigmaDelta; }
 
     Int_t GetSPDGFOThreshhold() const { return fSPDGFOThreshold; }
     Float_t GetV0TimeOffset() const { return fV0TimeOffset; }
@@ -84,6 +91,8 @@ class AliTriggerAnalysis : public TObject
     void PrintTriggerClasses() const;
     void SetESDTrackCuts(AliESDtrackCuts* cuts) { fEsdTrackCuts = cuts;}
     AliESDtrackCuts* GetESDTrackCuts() const  {return fEsdTrackCuts;}
+
+    static const UInt_t GetActiveBit(UInt_t mask) ;
 
   protected:
     Bool_t IsL0InputFired(const AliESDEvent* aEsd, UInt_t input) const;
@@ -104,6 +113,11 @@ class AliTriggerAnalysis : public TObject
     Float_t fV0HwAdcThr;            // online V0 trigger - thresholds applied on ADC data 
     Float_t fV0HwWinLow;            // online V0 trigger - lower edge of time window
     Float_t fV0HwWinHigh;           // online V0 trigger - upper edge of time window
+    
+    Float_t fZDCCutRefSum;          // ZDC time cut configuration
+    Float_t fZDCCutRefDelta;        // ZDC time cut configuration
+    Float_t fZDCCutSigmaSum;        // ZDC time cut configuration
+    Float_t fZDCCutSigmaDelta;      // ZDC time cut configuration
 
     Bool_t  fDoFMD;                 // If false, skips the FMD (physics selection runs much faster)
     Float_t fFMDLowCut;		    // 

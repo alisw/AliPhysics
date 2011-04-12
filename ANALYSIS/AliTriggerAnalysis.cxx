@@ -54,6 +54,10 @@ AliTriggerAnalysis::AliTriggerAnalysis() :
   fV0HwAdcThr(2.5),
   fV0HwWinLow(61.5),
   fV0HwWinHigh(86.5),
+  fZDCCutRefSum(-568.5),
+  fZDCCutRefDelta(-2.1),
+  fZDCCutSigmaSum(3.25),
+  fZDCCutSigmaDelta(2.25),
   fDoFMD(kTRUE),
   fFMDLowCut(0.2),
   fFMDHitCut(0.5),
@@ -209,6 +213,8 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger)
     case kMB3 : str = "MB3"; break;
     case kSPDGFO : str = "SPD GFO"; break;
     case kSPDGFOBits : str = "SPD GFO Bits"; break;
+    case kSPDGFOL0 : str = "SPD GFO L0 (first layer)"; break;
+    case kSPDGFOL1 : str = "SPD GFO L1 (second layer)"; break;
     case kV0A : str = "V0 A BB"; break;
     case kV0C : str = "V0 C BB"; break;
     case kV0OR : str = "V0 OR BB"; break;
@@ -223,6 +229,9 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger)
     case kFPANY : str = "SPD GFO | V0 | ZDC | FMD"; break;
     case kNSD1 : str = "NSD1"; break;
     case kMB1Prime: str = "MB1prime"; break;
+    case kZDCTDCA : str = "ZDC TDC A"; break;
+    case kZDCTDCC : str = "ZDC TDC C"; break;
+    case kZDCTime : str = "ZDC Time Cut"; break;
     default: str = ""; break;
   }
    
@@ -311,6 +320,179 @@ Bool_t AliTriggerAnalysis::IsTriggerBitFired(const AliESDEvent* aEsd, ULong64_t 
   
   ULong64_t trigmask = aEsd->GetTriggerMask();
   return (trigmask & (1ull << (tclass-1)));
+}
+  
+Int_t AliTriggerAnalysis::EvaluateTrigger(const AliESDEvent* aEsd, Trigger trigger)
+{
+  // evaluates a given trigger "offline"
+  // trigger combinations are not supported, for that see IsOfflineTriggerFired
+  
+  UInt_t triggerNoFlags = (UInt_t) trigger % (UInt_t) kStartOfFlags;
+  Bool_t offline = kFALSE;
+  if (trigger & kOfflineFlag)
+    offline = kTRUE;
+  
+  Int_t decision = 0;
+  switch (triggerNoFlags)
+  {
+    case kSPDGFO:
+    {
+      decision = SPDFiredChips(aEsd, (offline) ? 0 : 1);
+      break;
+    }
+    case kSPDGFOL0:
+    {
+      decision = SPDFiredChips(aEsd, (offline) ? 0 : 1, kFALSE, 1);
+      break;
+    }
+    case kSPDGFOL1:
+    {
+      decision = SPDFiredChips(aEsd, (offline) ? 0 : 1, kFALSE, 2);
+      break;
+    }
+    case kV0A:
+    {
+      if (V0Trigger(aEsd, kASide, !offline) == kV0BB)
+        decision = 1;
+      break;
+    }
+    case kV0C:
+    {
+      if (V0Trigger(aEsd, kCSide, !offline) == kV0BB)
+        decision = 1;
+      break;
+    }
+    case kV0ABG:
+    {
+      if (V0Trigger(aEsd, kASide, !offline) == kV0BG)
+        decision = 1;
+      break;
+    }
+    case kV0CBG:
+    {
+      if (V0Trigger(aEsd, kCSide, !offline) == kV0BG)
+        decision = 1;
+      break;
+    }
+    case kZDCA:
+    {
+      if (!offline)
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      if (ZDCTrigger(aEsd, kASide))
+        decision = 1;
+      break;
+    }
+    case kZDCC:
+    {
+      if (!offline)
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      if (ZDCTrigger(aEsd, kCSide))
+        decision = 1;
+      break;
+    }
+    case kZDCTDCA:
+    {
+      if (!offline)
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      if (ZDCTDCTrigger(aEsd, kASide))
+        decision = 1;
+      break;
+    }
+    case kZDCTDCC:
+    {
+      if (!offline)
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      if (ZDCTDCTrigger(aEsd, kCSide))
+        decision = 1;
+      break;
+    }
+    case kZDCTime:
+    {
+      if (!offline)
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      if (ZDCTimeTrigger(aEsd))
+        decision = 1;
+      break;
+    }
+    case kFMDA:
+    {
+      if (!offline)
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      if (FMDTrigger(aEsd, kASide))
+        decision = 1;
+      break;
+    }
+    case kFMDC:
+    {
+      if (!offline)
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      if (FMDTrigger(aEsd, kCSide))
+        decision = 1;
+      break;
+    }
+    case kCTPV0A:
+    {
+      if (offline)
+        AliFatal(Form("Offline trigger not available for trigger %d", triggerNoFlags));
+      if (IsL0InputFired(aEsd, 2))
+        decision = 1;
+      break;
+    }
+    case kCTPV0C:
+    {
+      if (offline)
+        AliFatal(Form("Offline trigger not available for trigger %d", triggerNoFlags));
+      if (IsL0InputFired(aEsd, 3))
+        decision = 1;
+      break;
+    }
+    case kTPCLaserWarmUp:
+    {
+      if (!offline)
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      return IsLaserWarmUpTPCEvent(aEsd);
+    }
+    default:
+    {
+      AliFatal(Form("Trigger type %d not implemented", triggerNoFlags));
+    }
+  }  
+  
+  return decision;
+}
+
+Bool_t AliTriggerAnalysis::IsLaserWarmUpTPCEvent(const AliESDEvent* esd)
+{
+  //
+  // This function flags noisy TPC events which can happen during laser warm-up.
+  //
+  
+  Int_t trackCounter = 0;
+  for (Int_t i=0; i<esd->GetNumberOfTracks(); ++i) 
+  {
+    AliESDtrack *track = esd->GetTrack(i);
+    if (!track) 
+      continue;
+      
+    if (track->GetTPCNcls() < 30) continue;
+    if (track->GetTPCchi2()/track->GetTPCNcls() > 0.3) continue;
+    if (TMath::Abs(track->Eta()) > 0.005) continue;
+    if (track->Pt() < 4) continue;
+    if (track->GetKinkIndex(0) > 0) continue;
+    
+    UInt_t status = track->GetStatus();
+    if ((status&AliESDtrack::kITSrefit)==1) continue; // explicitly ask for tracks without ITS refit
+    if ((status&AliESDtrack::kTPCrefit)==0) continue;
+    
+    if (track->GetTPCsignal() > 10) continue;          // explicitly ask for tracks without dE/dx
+    
+    if (TMath::Abs(track->GetZ()) < 50) continue;
+    
+    trackCounter++;
+  }
+  if (trackCounter > 15) 
+    return kTRUE;
+  return kFALSE;
 }
 
 Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigger trigger)
@@ -1009,10 +1191,6 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHi
      zdcAccept = (znaFired | zncFired);
   }
   else {
-    const Float_t refSum = -568.5;
-    const Float_t refDelta = -2.1;
-    const Float_t sigmaSum = 3.25;
-    const Float_t sigmaDelta = 2.25;
 
     // Cuts for the new corrected TDC values
     const Float_t refSumCorr = -65.5;
@@ -1026,19 +1204,20 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHi
 	for(Int_t j = 0; j < 4; ++j) {
 	  if (esdZDC->GetZDCTDCData(12,j) != 0) {
 	    Float_t tdcA = 0.025*(esdZDC->GetZDCTDCData(12,j)-esdZDC->GetZDCTDCData(14,j));
+
 	    Float_t tdcAcorr = esdZDC->GetZDCTDCCorrected(12,j);
 	    if(fillHists) {
 	      fHistTimeZDC->Fill(tdcC-tdcA,tdcC+tdcA);
 	      fHistTimeCorrZDC->Fill(tdcCcorr-tdcAcorr,tdcCcorr+tdcAcorr);
 	    }
 	    if (esdZDC->TestBit(AliESDZDC::kCorrectedTDCFilled)) {
-	      if (((tdcCcorr-tdcAcorr-refDelta)*(tdcCcorr-tdcAcorr-refDelta)/(sigmaDeltaCorr*sigmaDeltaCorr) +
+	      if (((tdcCcorr-tdcAcorr-fZDCCutRefDelta)*(tdcCcorr-tdcAcorr-fZDCCutRefDelta)/(sigmaDeltaCorr*sigmaDeltaCorr) +
 		   (tdcCcorr+tdcAcorr-refSumCorr)*(tdcCcorr+tdcAcorr-refSumCorr)/(sigmaSumCorr*sigmaSumCorr))< 1.0)
 		zdcAccept = kTRUE;
 	    }
 	    else {
-	      if (((tdcC-tdcA-refDelta)*(tdcC-tdcA-refDelta)/(sigmaDelta*sigmaDelta) +
-		   (tdcC+tdcA-refSum)*(tdcC+tdcA-refSum)/(sigmaSum*sigmaSum))< 1.0)
+	      if (((tdcC-tdcA-fZDCCutRefDelta)*(tdcC-tdcA-fZDCCutRefDelta)/(fZDCCutSigmaDelta*fZDCCutSigmaDelta) +
+		   (tdcC+tdcA-fZDCCutRefSum)*(tdcC+tdcA-fZDCCutRefSum)/(fZDCCutSigmaSum*fZDCCutSigmaSum))< 1.0)
 		zdcAccept = kTRUE;
 	    }
 	  }
@@ -1327,4 +1506,28 @@ void AliTriggerAnalysis::PrintTriggerClasses() const
   delete iter;
   
   singleTrigger.DeleteAll();
+}
+
+
+const UInt_t AliTriggerAnalysis::GetActiveBit(UInt_t mask) {
+  // Returns the active bit index in the mask
+  // Assumes only one bit is on.
+  // If more than one bit is lit, prints an error and returns the first.
+  // If no bit is on, prints an error and returns 0
+
+  Int_t nbit = sizeof(mask)*8;
+  Int_t activeBit = -1;
+  for(Int_t ibit = 0; ibit < nbit; ibit++){
+    if ( mask & (0x1 << ibit) ) {
+      if (activeBit == -1) activeBit = ibit;
+      else Printf("ERROR (AliTriggerAnalysis::GetActiveBit): More than one bit is on in this mask 0x%x", mask);
+    }
+  }
+  if (activeBit == -1) {
+    Printf("ERROR (AliTriggerAnalysis::GetActiveBit): No bit is on");
+    activeBit=0;
+  }
+
+  return activeBit;
+
 }

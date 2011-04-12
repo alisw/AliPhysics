@@ -20,6 +20,7 @@
 #include <TList.h>
 #include "TObjString.h"
 #include "AliVEvent.h"
+#include "AliAnalysisManager.h"
 
 //#define VERBOSE_STAT
 
@@ -29,7 +30,9 @@ class TH1F;
 class TCollection;
 class AliTriggerAnalysis;
 class AliAnalysisTaskSE;
-
+class AliOADBPhysicsSelection ;
+class AliOADBFillingScheme    ;
+class TPRegexp;
 
 class AliPhysicsSelection : public AliAnalysisCuts
 {
@@ -60,7 +63,7 @@ public:
   Int_t  GetCurrentRun() const {return fCurrentRun;}
   UInt_t IsCollisionCandidate(const AliESDEvent* aEsd);
   Bool_t Initialize(const AliESDEvent* aEsd);
-  Bool_t Initialize(Int_t runNumber, Bool_t pp);
+  Bool_t Initialize(Int_t runNumber);
     
   void SetAnalyzeMC(Bool_t flag = kTRUE) { fMC = flag; }
   void SetSkipTriggerClassSelection(Bool_t flag = kTRUE) { fSkipTriggerClassSelection = flag; }
@@ -69,20 +72,26 @@ public:
    
   void AddBackgroundIdentification(AliAnalysisCuts* background) { fBackgroundIdentification = background; }
     
-  virtual void Print(Option_t* option = "") const;
+  virtual void Print(const Option_t* option = "") const;
   virtual Long64_t Merge(TCollection* list);
   void SaveHistograms(const char* folder = 0);
     
   const TList* GetCollisionTriggerClasses() const { return &fCollTrigClasses; }
   const TList* GetBGTriggerClasses()        const { return &fBGTrigClasses; }
-  void AddCollisionTriggerClass(const char* className){ fCollTrigClasses.Add(new TObjString(className)); fUsingCustomClasses = kTRUE; }
-  void AddBGTriggerClass(const char* className)       { fBGTrigClasses.Add(new TObjString(className));  fUsingCustomClasses = kTRUE; }
-  
+  void AddCollisionTriggerClass(const char* className);
+  void AddBGTriggerClass(const char* className)       ;
+  void SetCustomOADBObjects(AliOADBPhysicsSelection * oadbPS, AliOADBFillingScheme * oadbFS) { fPSOADB = oadbPS; fFillOADB = oadbFS; fUsingCustomClasses = kTRUE;}
+  const AliOADBPhysicsSelection * GetOADBPhysicsSelection() const {return fPSOADB;  }
+  const AliOADBFillingScheme    * GetOADBFillingScheme()    const {return fFillOADB;}
+
+  const Int_t GetBGStatOffset() const { return fBGStatOffset; }
+
+
   AliTriggerAnalysis* GetTriggerAnalysis(Int_t i = 0) { return (fTriggerAnalysis.GetEntries() > 0) ? (AliTriggerAnalysis*) fTriggerAnalysis.At(i) : 0; }    
     
   const TH2F* GetStatisticsHistogram(Int_t idx=kStatIdxAll) const { return fHistStatistics[idx]; }
   const TH2F* GetBunchCrossingHistogram() const { return fHistBunchCrossing; }
-  virtual TObject *GetStatistics(Option_t *option) const;
+  virtual TObject *GetStatistics(const Option_t *option) const;
     
   void SetBIFactors(const AliESDEvent * aESD);
   
@@ -92,13 +101,15 @@ public:
   void SetBin0Callback( const char * cb) {fBin0CallBack = cb;} 
   void SetBin0CallbackViaPointer( Bin0Callback_t cb) {fBin0CallBackPointer = cb;}// WARNING: THIS SHOULD NOT BE USED, WILL BE REMOVED SOON
   
+  static const char * GetOADBFileName() {   static TString filename; filename.Form("%s/COMMON/PHYSICSSELECTION/data/physicsSelection.root", AliAnalysisManager::GetOADBPath()); return filename.Data();};
+
 protected:
   UInt_t CheckTriggerClass(const AliESDEvent* aEsd, const char* trigger, Int_t& triggerLogic) const;
-  Int_t GetTriggerScheme(UInt_t runNumber) const;
-  const char * GetBXIDs(UInt_t runNumber, const char * trigger ) ;
-  const char * GetFillingScheme(UInt_t runNumber) ;
+  Bool_t EvaluateTriggerLogic(const AliESDEvent* aEsd, AliTriggerAnalysis* triggerAnalysis, const char* triggerLogic, Bool_t offline);
   TH2F * BookHistStatistics(const char * tag) ;
   Int_t GetStatRow(const char * triggerBXClass, UInt_t offlineTriggerType, UInt_t ** rowIDs) const;
+  const char * GetTriggerString(TObjString * obj);
+
 
   Int_t fCurrentRun;      // run number for which the object is initialized
   Bool_t fMC;             // flag if MC is analyzed
@@ -110,6 +121,7 @@ protected:
   AliAnalysisCuts* fBackgroundIdentification; // class that performs additional background identification
     
   TH2F* fHistStatistics[2];      // how many events are cut away why {all,bin 0}
+  //  TH2F* fHistStatisticsTokens;   // how many events are cut away why (new version, bins for all tokens. Only used tokens are filled)
   TH2F* fHistBunchCrossing;   // histograms of accepted bunch crossing numbers
   TH1F* fHistTriggerPattern;  // Pattern of the individual detectors in the MB1 trigger. Can reveal inconsistencies/inefficiencies in the trigger 
     
@@ -135,7 +147,13 @@ protected:
 
   Bool_t fIsPP; // True if processing pp run, false if heavy ion
 
-  ClassDef(AliPhysicsSelection, 12)
+  AliOADBPhysicsSelection * fPSOADB; // Physics selection OADB object
+  AliOADBFillingScheme    * fFillOADB; // Filling scheme OADB object
+
+  TPRegexp* fRegexp; //! regular expression for trigger tokens
+  TList* fCashedTokens; //! trigger token lookup list
+
+  ClassDef(AliPhysicsSelection, 13)
     
     private:
   AliPhysicsSelection(const AliPhysicsSelection&);
