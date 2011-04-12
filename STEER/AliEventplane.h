@@ -12,7 +12,7 @@
 #include "TNamed.h"
 
 class TVector2;
-class AliESDtrack;
+class AliVTrack;
 class TObjArray;
 class TArrayF;
 
@@ -34,8 +34,8 @@ class AliEventplane : public TNamed
 
   /// get event plane result
   TVector2* GetQVector(); 
-  Double_t GetQContributionX(AliESDtrack* track);
-  Double_t GetQContributionY(AliESDtrack* track);
+  Double_t GetQContributionX(AliVTrack* track);
+  Double_t GetQContributionY(AliVTrack* track);
   TArrayF* GetQContributionXArray() { return fQContributionX; }
   TArrayF* GetQContributionYArray() { return fQContributionY; }
   Double_t GetEventplane(const char *method);

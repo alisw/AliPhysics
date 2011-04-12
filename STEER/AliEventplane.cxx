@@ -21,7 +21,7 @@
  
 #include "AliEventplane.h"
 #include "TVector2.h"
-#include "AliESDtrack.h"
+#include "AliVTrack.h"
 #include "TObjArray.h"
 #include "TArrayF.h"
 
@@ -143,12 +143,12 @@ Bool_t AliEventplane::IsEventInEventplaneClass(Double_t a, Double_t b, const cha
   else return kFALSE;
 }
 
-Double_t AliEventplane::GetQContributionX(AliESDtrack* track)
+Double_t AliEventplane::GetQContributionX(AliVTrack* track)
 { 
   return fQContributionX->GetAt(track->GetID());
 }
 
-Double_t AliEventplane::GetQContributionY(AliESDtrack* track)
+Double_t AliEventplane::GetQContributionY(AliVTrack* track)
 { 
   return fQContributionY->GetAt(track->GetID());
 }
