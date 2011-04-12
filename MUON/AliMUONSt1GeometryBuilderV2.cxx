@@ -65,6 +65,55 @@
 ClassImp(AliMUONSt1GeometryBuilderV2)
 /// \endcond
 
+// Thickness Constants
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzPadPlane=0.0148/2.;     //Pad plane
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzFoam = 2.503/2.;        //Foam of mechanicalplane
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzFR4 = 0.062/2.;         //FR4 of mechanical plane
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzSnPb = 0.0091/2.;       //Pad/Kapton connection (66 pt)
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzKapton = 0.0122/2.;     //Kapton
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzBergPlastic = 0.3062/2.;//Berg connector
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzBergCopper = 0.1882/2.; //Berg connector
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzDaughter = 0.0156/2.;   //Daughter board
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzGas = 0.42/2.;          //Gas thickness
+
+// Quadrant Mother volume - TUBS1 - Middle layer of model
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherIR1 = 18.3;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherOR1 = 105.673;   
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherThick1 = 6.5/2;  
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherPhiL1 = 0.; 
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherPhiU1 = 90.;
+
+// Quadrant Mother volume - TUBS2 - near and far layers of model
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherIR2 = 20.7;   
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherOR2 = 100.073;   
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherThick2 = 3.0/2; 
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherPhiL2 = 0.; 
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkMotherPhiU2 = 90.;
+
+// Sensitive copper pads, foam layer, PCB and electronics model parameters
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHxHole=1.5/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHyHole=6./2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHxBergPlastic=0.74/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHyBergPlastic=5.09/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHxBergCopper=0.25/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHyBergCopper=3.6/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHxKapton=0.8/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHyKapton=5.7/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHxDaughter=2.3/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkHyDaughter=6.3/2.;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkOffsetX=1.46;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkOffsetY=0.71;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkDeltaFilleEtamX=1.00;
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkDeltaFilleEtamY=0.051;
+
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkDeltaQuadLHC=2.6;  // LHC Origin wrt Quadrant Origin
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkFrameOffset=5.2;
+              // Fix (1) of overlap SQN* layers with SQM* ones (was 5.0)
+	      
+// Pad planes offsets
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkPadXOffsetBP =  0.50 - 0.63/2; // = 0.185
+const GReal_t AliMUONSt1GeometryBuilderV2::fgkPadYOffsetBP = -0.31 - 0.42/2; // =-0.52
+
 const char* AliMUONSt1GeometryBuilderV2::fgkHoleName="SCHL";      
 const char* AliMUONSt1GeometryBuilderV2::fgkDaughterName="SCDB";  
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantEnvelopeName="SE";
@@ -72,6 +121,9 @@ const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantMLayerName="SQM";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantNLayerName="SQN";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantFLayerName="SQF";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantMFLayerName="SQMF";
+const Int_t AliMUONSt1GeometryBuilderV2::fgkFoamBoxNameOffset=200; 
+const Int_t AliMUONSt1GeometryBuilderV2::fgkFR4BoxNameOffset=400; 
+const Int_t AliMUONSt1GeometryBuilderV2::fgkDaughterCopyNoOffset=1000;
 
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2(AliMUON* muon)
