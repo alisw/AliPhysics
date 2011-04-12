@@ -60,6 +60,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fTrCuts(0),
     fDoTrackMatWithGeom(0),
     fDoConstrain(0),
+    fIsGeoMatsSet(0),
     fNEvs(0),
     fGeom(0),
     fReco(0),
@@ -362,6 +363,59 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     am->LoadBranch("header");
   }
 
+  if (fDoTrackMatWithGeom && !AliGeomManager::GetGeometry()) { // get geometry 
+    AliWarning("Accessing geometry from OCDB, this is not very efficient!");
+    AliCDBManager *cdb = AliCDBManager::Instance();
+    if (!cdb->IsDefaultStorageSet())
+      cdb->SetDefaultStorage("raw://");
+    Int_t runno = InputEvent()->GetRunNumber();
+    if (runno != cdb->GetRun())
+      cdb->SetRun(runno);
+    AliGeomManager::LoadGeometry();
+  }
+
+  if (!AliGeomManager::GetGeometry()&&!fIsGeoMatsSet) { // set misalignment matrices (stored in first event)
+    Int_t nsm = fGeom->GetEMCGeometry()->GetNumberOfSuperModules();
+    if (fEsdEv) {  
+      for (Int_t i=0; i<nsm; ++i)
+        fGeom->SetMisalMatrix(fEsdEv->GetESDRun()->GetEMCALMatrix(i),i);
+    } else {
+      for (Int_t i=0; i<nsm; ++i)
+        fGeom->SetMisalMatrix(fAodEv->GetHeader()->GetEMCALMatrix(i),i);
+    }
+    fIsGeoMatsSet = kTRUE;
+  }
+
+  if (!TGeoGlobalMagField::Instance()->GetField()) { // construct field map
+    if (fEsdEv) {
+      const AliESDRun *erun = fEsdEv->GetESDRun();
+      AliMagF *field = AliMagF::CreateFieldMap(erun->GetCurrentL3(),
+                                               erun->GetCurrentDip(),
+                                               AliMagF::kConvLHC,
+                                               kFALSE,
+                                               erun->GetBeamEnergy(),
+                                               erun->GetBeamType());
+      TGeoGlobalMagField::Instance()->SetField(field);
+    } else {
+      Double_t pol = -1; //polarity  
+      Double_t be = -1;  //beam energy
+      AliMagF::BeamType_t btype = AliMagF::kBeamTypepp;
+      Int_t runno = fAodEv->GetRunNumber();
+      if (runno>=136851 && runno<138275) {
+        pol = -1;
+        be = 2760;
+        btype = AliMagF::kBeamTypeAA;
+      } else if (runno>=138275 && runno<=139517) {
+        pol = +1;
+        be = 2760;
+        btype = AliMagF::kBeamTypeAA;
+      } else {
+        AliError(Form("Do not know the bfield parameters for run %d! Using defaults!!!", runno));
+      }
+      TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", pol, pol, AliMagF::k5kG, btype, be));
+    }
+  }
+
   Int_t cut = 1;
   fHCuts->Fill(cut++);
 
@@ -383,59 +437,6 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   UInt_t res = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   if (res==0)
     return;
-
-  if (fHCuts->GetBinContent(2)==0) {
-    if (fDoTrackMatWithGeom && !AliGeomManager::GetGeometry()) { // get geometry 
-      AliWarning("Accessing geometry from OCDB, this is not very efficient!");
-      AliCDBManager *cdb = AliCDBManager::Instance();
-      if (!cdb->IsDefaultStorageSet())
-        cdb->SetDefaultStorage("raw://");
-      Int_t runno = InputEvent()->GetRunNumber();
-      if (runno != cdb->GetRun())
-        cdb->SetRun(runno);
-      AliGeomManager::LoadGeometry();
-    }
-
-    if (!fGeom->GetMatrixForSuperModule(0)) { // set misalignment matrices (stored in first event)
-      if (fEsdEv) {  
-        for (Int_t i=0; i<fGeom->GetEMCGeometry()->GetNumberOfSuperModules(); ++i)
-          fGeom->SetMisalMatrix(fEsdEv->GetESDRun()->GetEMCALMatrix(i),i);
-      } else {
-        for (Int_t i=0; i<fGeom->GetEMCGeometry()->GetNumberOfSuperModules(); ++i)
-          fGeom->SetMisalMatrix(fAodEv->GetHeader()->GetEMCALMatrix(i),i);
-      }
-    }
-
-    if (!TGeoGlobalMagField::Instance()->GetField()) { // construct field map
-      if (fEsdEv) {
-        const AliESDRun *erun = fEsdEv->GetESDRun();
-        AliMagF *field = AliMagF::CreateFieldMap(erun->GetCurrentL3(),
-                                                 erun->GetCurrentDip(),
-                                                 AliMagF::kConvLHC,
-                                                 kFALSE,
-                                                 erun->GetBeamEnergy(),
-                                                 erun->GetBeamType());
-        TGeoGlobalMagField::Instance()->SetField(field);
-      } else {
-        Double_t pol = -1; //polarity  
-        Double_t be = -1;  //beam energy
-        AliMagF::BeamType_t btype = AliMagF::kBeamTypepp;
-        Int_t runno = fAodEv->GetRunNumber();
-        if (runno>=136851 && runno<138275) {
-          pol = -1;
-          be = 2760;
-          btype = AliMagF::kBeamTypeAA;
-        } else if (runno>=138275 && runno<=139517) {
-          pol = +1;
-          be = 2760;
-          btype = AliMagF::kBeamTypeAA;
-        } else {
-          AliError(Form("Do not know the bfield parameters for run %d! Using defaults!!!", runno));
-        }
-        TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", pol, pol, AliMagF::k5kG, btype, be));
-      }
-    }
-  }
 
   fHCuts->Fill(cut++);
 
