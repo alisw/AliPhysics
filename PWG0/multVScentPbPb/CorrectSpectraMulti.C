@@ -47,46 +47,49 @@ enum { kSclWghMean,         // normalize bg tails to data using weighted mean of
 const char* figDir = "figMult";
 TString  useBgType    = "Inj";
 Int_t    useShapeType = kNormShapeDist;    // which distribution to use for bg normalization
-Bool_t   useMCLB      = kFALSE;             // use Comb MC Labels as a template for Bg.
+Bool_t   useMCLB      = 0;//kFALSE;             // use Comb MC Labels as a template for Bg.
 Int_t    useScaleType = kSclIntegral;//kSclWghMean;       // which type of tails normalization to use
 const double kEtaFitRange = 0.5;
 
 enum {kBitNormPerEvent=BIT(14)};
   // bins for saved parameters in the hStat histo
-enum {kDummyBin,
-      kEvTot,       // events read
-      kOneUnit,     // just 1 to track primate merges
-      kNWorkers,    // n workers
-      //
-      kDPhi,        // dphi window
-      kDTht,        // dtheta window
-      kNStd,        // N.standard deviations to keep
-      kPhiShift,    // bending shift
-      kThtS2,       // is dtheta scaled by 1/sin^2
-      kThtCW,       // on top of w.dist cut cut also on 1 sigma dThetaX
-      kPhiOvl,      // overlap params
-      kZEtaOvl,     // overlap params
-      kNoOvl,       // flag that overlap are suppressed
-      //
-      kPhiRot,      // rotation phi
-      kInjScl,      // injection scaling
-      kEtaCut,      // eta cut
-      kZVMin,       // min ZVertex to process
-      kZVMax,       // max ZVertex to process
-      //
-      kDPiSCut,     // cut on dphi used to extract signal (when WDist is used in analysis, put it equal to kDPhi
-      kNStdCut,     // cut on weighted distance (~1) used to extract signal 
-      //
-      kMCV0Scale,   // scaling value for V0 in MC
-      //
-      // here we put entries for each mult.bin
-      kBinEntries = 50,
-      kEvProcData,  // events with data mult.object (ESD or reco)
-      kEvProcInj,   // events Injected, total
-      kEvProcRot,   // events Rotated
-      kEvProcMix,   // events Mixed
-      kEntriesPerBin
-};
+  enum {kDummyBin,
+	kEvTot0,      // events read
+	kEvTot,       // events read after vertex quality selection
+	kOneUnit,     // just 1 to track primate merges
+	kNWorkers,    // n workers
+	//
+	kCentVar,     // cetrality var. used
+	kDPhi,        // dphi window
+	kDTht,        // dtheta window
+	kNStd,        // N.standard deviations to keep
+	kPhiShift,    // bending shift
+	kThtS2,       // is dtheta scaled by 1/sin^2
+	kThtCW,       // on top of w.dist cut cut also on 1 sigma dThetaX
+	kPhiOvl,      // overlap params
+	kZEtaOvl,     // overlap params
+	kNoOvl,       // flag that overlap are suppressed
+	//
+	kPhiRot,      // rotation phi
+	kInjScl,      // injection scaling
+	kEtaMin,      // eta cut
+	kEtaMax,      // eta cut
+	kZVMin,       // min ZVertex to process
+	kZVMax,       // max ZVertex to process
+	//
+	kDPiSCut,     // cut on dphi used to extract signal (when WDist is used in analysis, put it equal to kDPhi
+	kNStdCut,     // cut on weighted distance (~1) used to extract signal 
+	//
+	kMCV0Scale,   // scaling value for V0 in MC
+	//
+	// here we put entries for each mult.bin
+	kBinEntries = 50,
+	kEvProcData,  // events with data mult.object (ESD or reco)
+	kEvProcInj,   // events Injected, total
+	kEvProcRot,   // events Rotated
+	kEvProcMix,   // events Mixed
+	kEntriesPerBin
+  };
 
 
 enum {kSigCorr,kMCPrim,kRawDtCut,kSignalEst,kSignalEstMC,kBgEst,k1MBeta,k1MBetaMC,kAlpha,kAlphaMC,kBgMC,kBgRescFc,kDataDist,kBgDist,kBgMCDist, kMCShift=20, kNHistos=kMCShift+kMCShift};
@@ -157,8 +160,9 @@ void CorrectSpectraMulti(const char* flNameData, const char* flNameMC, const cha
     //
   }
   //
-  sprintf(outStr,"CutEta%.1f_Zv%.1f_%.1f_bg%s_Shape_%s_mcLB%d_cutSig%.1f_cutBg%.1f",
-	  hstat->GetBinContent(kEtaCut)/myMergeFactor,
+  sprintf(outStr,"CutEta%.1f_%.1f_Zv%.1f_%.1f_bg%s_Shape_%s_mcLB%d_cutSig%.1f_cutBg%.1f",
+	  hstat->GetBinContent(kEtaMin)/myMergeFactor,
+	  hstat->GetBinContent(kEtaMax)/myMergeFactor,
 	  hstat->GetBinContent(kZVMin)/myMergeFactor,
 	  hstat->GetBinContent(kZVMax)/myMergeFactor,	 
 	  useBgType.Data(),
@@ -246,8 +250,7 @@ Bool_t PrepareHistos(int bin, TList* lst, Bool_t isMC)
   res->AddAtAndExpand(hBgEst,kBgEst +shift);
   //
   // special feature: use MC Labels bg as a shape instead of generated bg
-  /*
-  if (useMCLB) {
+  if (useMCLB/* && !isMC*/) {
     TString nm  = hBgEst->GetName();   nm  += "_MCLB";
     TString tit = hBgEst->GetTitle();  tit += "_MCLB";
     TH2* hBMCLB = (TH2*) FindObject(bin,HName("Comb",zeCut),listMC);
@@ -258,7 +261,6 @@ Bool_t PrepareHistos(int bin, TList* lst, Bool_t isMC)
     hBgEst = hBMCLB;
     res->AddAtAndExpand(hBgEst,kBgEst +shift);
   }
-  */
   //
   // 1-beta for "data" = (Data_cut - Bg_cut) / Data_cut
   sprintf(buffn,"bin%d_%s_1mBeta",bin,isMC ? "mc":"dt");
@@ -314,18 +316,6 @@ Bool_t PrepareHistos(int bin, TList* lst, Bool_t isMC)
   hDstBg->SetTitle(bufft);
   hDstBg->Scale(1./nrmDst);
   //  res->AddAtAndExpand(hDstBg, kBgDist+shift);
-  //
-  if (useMCLB) { // use MC dist. shape as a template
-    TH1* mcshp = (TH1*) FindObject(bin,HName("Comb",useShapeType==kNormShapeDist ? "WDist":"DPhiS"),listMC);
-    double nrm1 = hDstBg->Integral();
-    double nrmMC = mcshp->Integral();
-    sprintf(buffn,"bin%d_%s_DistRawGenBgNormMCLB",bin,isMC ? "mc":"dt");
-    sprintf(bufft,"bin%d %s Raw Distance for Gen.Bg. Normalized to data MCLB",bin,isMC ? "mc":"dt");
-    if (hDstBg) delete hDstBg;
-    hDstBg = (TH1*) mcshp->Clone(buffn);
-    hDstBg->SetTitle(bufft);
-    hDstBg->Scale(nrm1/nrmMC);
-  }
   //
   // uncut w.distance or dphi distribution for comb. MC labels
   TH1* hDstBgMC = 0; 
@@ -488,10 +478,13 @@ void PlotResults()
   //
   for (int i=0;i<nCentBins;i++) {
     //
-    sprintf(outTitle,"%s, %d<c<%d, |#eta|<%.1f, %.1f<Z_{V}<%.1f,  Bg.:%s, UseMCLB=%d, CutVar:%s, |sig|<%.2f, %.2f<|bg.nrm|<%.2f",
+    sprintf(outTitle,"%s, %d<C_%s<%d, %.1f<#eta<%.1f, %.1f<Z_{V}<%.1f,  Bg.:%s, UseMCLB=%d, CutVar:%s, |sig|<%.2f, %.2f<|bg.nrm|<%.2f",
 	    uniqueName.Data(),
-	    (int)binArr[i],(int)binArr[i+1],
-	    hstat->GetBinContent(kEtaCut)/myMergeFactor,
+	    (int)binArr[i],
+	    hstat->GetXaxis()->GetBinLabel(kCentVar),
+	    (int)binArr[i+1],
+	    hstat->GetBinContent(kEtaMin)/myMergeFactor,
+	    hstat->GetBinContent(kEtaMax)/myMergeFactor,
 	    hstat->GetBinContent(kZVMin)/myMergeFactor,
 	    hstat->GetBinContent(kZVMax)/myMergeFactor,	  
 	    useBgType.Data(),
@@ -643,7 +636,7 @@ void PlotDNDEta(int bin)
   //
   gPad->SetGrid(1.1);
   gPad->Modified();
-  AddLabel(outTitle,0.1,0.97, kBlack,0.025);
+  AddLabel(outTitle,0.1,0.97, kBlack,0.02);
   //
   canvFin->cd();
   //
@@ -823,7 +816,7 @@ void PlotAlphaBeta(int bin)
   canvFin->cd(1);
   gPad->SetRightMargin(0.15);
   dtBet->Draw("colz");
-  AddLabel("#beta Data",0.2,0.95,kBlack,0.05);
+  AddLabel("#beta Data",0.2,0.95,kBlack,0.04);
   gPad->Modified();
   dtBet->GetYaxis()->SetTitleOffset(1.4);
   TPaletteAxis *p = (TPaletteAxis*)dtBet->FindObject("palette");
@@ -831,7 +824,7 @@ void PlotAlphaBeta(int bin)
   canvFin->cd(2);
   gPad->SetRightMargin(0.15);
   mcBet->Draw("colz");
-  AddLabel("#beta MC (bckg.estimated)",0.2,0.95,kBlack,0.05);
+  AddLabel("#beta MC (bckg.estimated)",0.2,0.95,kBlack,0.04);
   gPad->Modified();
   mcBet->GetYaxis()->SetTitleOffset(1.4);
   p = (TPaletteAxis*)mcBet->FindObject("palette");
@@ -839,7 +832,7 @@ void PlotAlphaBeta(int bin)
   canvFin->cd(3);
   gPad->SetRightMargin(0.15);
   mcBetLB->Draw("colz");
-  AddLabel("#beta MC (bckg.from MC labels)",0.2,0.95,kBlack,0.05);
+  AddLabel("#beta MC (bckg.from MC labels)",0.2,0.95,kBlack,0.04);
   gPad->Modified();
   mcBetLB->GetYaxis()->SetTitleOffset(1.4);
   p = (TPaletteAxis*)mcBetLB->FindObject("palette");
@@ -860,7 +853,7 @@ void PlotAlphaBeta(int bin)
   canvFin->cd(4);
   gPad->SetRightMargin(0.15);
   dtAlp->Draw("colz");
-  AddLabel("#alpha (bckg.estimated)",0.2,0.95,kBlack,0.05);
+  AddLabel("#alpha (bckg.estimated)",0.2,0.95,kBlack,0.04);
   gPad->Modified();
   dtAlp->GetYaxis()->SetTitleOffset(1.4);
   TPaletteAxis *pa = (TPaletteAxis*)dtBet->FindObject("palette");
@@ -868,14 +861,14 @@ void PlotAlphaBeta(int bin)
   canvFin->cd(5);
   gPad->SetRightMargin(0.15);
   mcAlp->Draw("colz");
-  AddLabel("#alpha (bckg.from MC labels)",0.2,0.95,kBlack,0.05);
+  AddLabel("#alpha (bckg.from MC labels)",0.2,0.95,kBlack,0.04);
   gPad->Modified();
   mcAlp->GetYaxis()->SetTitleOffset(1.4);
   pa = (TPaletteAxis*)mcBet->FindObject("palette");
   if (pa) pa->SetX1NDC(0.85);
   gPad->Modified();
   canvFin->cd(6);
-  AddLabel(outTitle,0.1,0.5, kBlack, 0.025);
+  AddLabel(outTitle,0.1,0.5, kBlack, 0.02);
   //
   if (creatAlphaBetaCMacro) {
     sprintf(buff,"%s/%sAlphaBeta_%s",figDir,uniqueName.Data(),outStr);
@@ -995,7 +988,7 @@ void PlotSpecies()
   gPad->Modified();
   //
   canvFin->cd(1);
-  //  AddLabel(outTitle,0.1,0.97, kBlack, 0.025);
+  //  AddLabel(outTitle,0.1,0.97, kBlack, 0.02);
   canvFin->cd();
   //
   if (creatSpeciesCMacro) {

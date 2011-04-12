@@ -10,6 +10,7 @@
 
 class TH1F; 
 class TH2F;
+class TH3F;
 class AliESDEvent;
 class TList;
 class TNtuple;
@@ -21,13 +22,12 @@ class AliESDTrackCuts;
 #include "../ITS/AliITSsegmentationSPD.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliTriggerAnalysis.h" 
+#include <TMath.h>
 
 class AliTrackletTaskMulti : public AliAnalysisTaskSE {
  public:
   enum {kData,kBgInj,kBgRot,kBgMix,kMC};
-  enum {kCentSPD2, kCentV0,  kCentV0CR, kCentTrTPC, 
-	kCent2D=9, // just a separator between 1D and 2D bins
-	kCentZDCV0};   // what is used to define centrality
+  enum {kCentV0M,kCentFMD,kCentTRK,kCentTKL,kCentCL0,kCentCL1,kCentV0MvsFMD,kCentTKLvsV0,kCentZEMvsZDC,kNCentTypes}; // what is used to define centrality
   //
   enum {  // define here id's of the standard histos in corresponding TObjArray* fHistosTr...
     kHEtaZvCut,       // histo zv vs eta for tracklets passing final selection (dist<1 or |dPhi|<narrowWindow ...)
@@ -53,23 +53,16 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
     kHNBCollMeanMC,
     //
     kHZVtxNoSel,       // Z vertex distribution before event selection
-    kHNTrackletsNoSel, // N tracklets before event selection
-    kHNClSPD1NoSel,    // N clusters on SPD1 before event selection
-    kHNClSPD2NoSel,    // N clusters on SPD2 before event selection
-    kHV0NoSel,         // V0 mult before selection
-    kHV0CCNoSel,       // V0 corr (Cvetan) mult before selection
-    kHV0NClSPD2NoSel,  // V0 - nspd2 correlation
-    kHV0CCNClSPD2NoSel,// V0 corr - nspd2 correlation
-    kHMultTPCNoSel,    // TPC ref.mult
+    kHV0NoSel,         // V0 before selection
+    kHNClSPD2NoSel,    // NSPD2 before selection
+    kHZDCZEMNoSel,     // ZDC ZEM before selection
     //
     kHZVtx,            // Z vertex distribution
-    kHNTracklets,      // N tracklets
-    kHNClSPD1,         // N clusters on SPD1
-    kHNClSPD2,         // N clusters on SPD2
-    kHV0,              // V0 mult after selection
-    kHV0CC,            // V0 corr mult after selection
-    kHMultTPC,         // TPC ref.mult
-    //
+    kHV0,              // V0 before selection
+    kHNClSPD2,         // NSPD2 before selection
+    kHZDCZEM,          // ZDC ZEM before selection
+    
+
     kHZVtxMixDiff,     // difference in Z vtx of mixed events
     kHNTrMixDiff,      // difference in N tracklets of mixed events
     //
@@ -89,10 +82,12 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
 
   // bins for saved parameters
   enum {kDummyBin,
-	kEvTot,       // events read
+	kEvTot0,      // events read
+	kEvTot,       // events read after vertex quality selection
 	kOneUnit,     // just 1 to track primate merges
 	kNWorkers,    // n workers
 	//
+	kCentVar,     // cetrality var. used
 	kDPhi,        // dphi window
 	kDTht,        // dtheta window
 	kNStd,        // N.standard deviations to keep
@@ -105,7 +100,8 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
 	//
 	kPhiRot,      // rotation phi
 	kInjScl,      // injection scaling
-	kEtaCut,      // eta cut
+	kEtaMin,      // eta cut
+	kEtaMax,      // eta cut
 	kZVMin,       // min ZVertex to process
 	kZVMax,       // max ZVertex to process
 	//
@@ -131,7 +127,7 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   virtual void  UserExec(Option_t *option);
   virtual void  Terminate(Option_t *);
 
-  void       SetUseCentralityVar(Int_t v=kCentV0)      {fUseCentralityVar = v;}
+  void       SetUseCentralityVar(Int_t v=kCentV0M)     {fUseCentralityVar = v;}
   void       SetUseMC(Bool_t mc = kFALSE)              {fUseMC = mc;}
   void       SetCheckReconstructables(Bool_t c=kFALSE) {fCheckReconstructables = c;}
   TObjArray* BookHistosSet(const char* pref, UInt_t selHistos=0xffffffff);
@@ -155,7 +151,9 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   void       SetNStdCut(Float_t c=1.0)          {fNStdCut = c;}
   void       SetScaleMCV0(Float_t s=1.0)        {fMCV0Scale = s;}  
   //
-  void       SetEtaCut(Float_t eta)             {fEtaCut = eta;}
+  void       SetEtaCut(Float_t etaCut)          {fEtaMax = TMath::Abs(etaCut); fEtaMin= -fEtaMax;}
+  void       SetEtaMin(Float_t etaMin)          {fEtaMin = etaMin;}
+  void       SetEtaMax(Float_t etaMax)          {fEtaMax = etaMax;}
   void       SetZVertexMin(Float_t z)           {fZVertexMin = z;}
   void       SetZVertexMax(Float_t z)           {fZVertexMax = z;}
   //
@@ -169,13 +167,6 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   void       SetDoRotation(Bool_t v=kTRUE)      {fDoRotation = v;}
   void       SetDoMixing(Bool_t v=kTRUE)        {fDoMixing = v;}
   //
-  /*
-  void       SetTrigger(AliTriggerAnalysis::Trigger trigger)  { fTrigger = trigger; }
-  void       SetMCCentralityBin(MCCentralityBin mccentrbin)   { fMCCentralityBin = mccentrbin;}
-  void       SetCentralityLowLim(Float_t centrlowlim)         { fCentrLowLim = centrlowlim;}
-  void       SetCentralityUpLim(Float_t centruplim)           { fCentrUpLim = centruplim;}
-  void       SetCentralityEst(TString centrest)               { fCentrEst = centrest;}
-  */
   //
  protected:
   void       InitMultReco();
@@ -186,10 +177,7 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   void       FillClusterInfo();
   Int_t      GetPdgBin(Int_t pdgCode);
   void       CheckReconstructables();
-  Int_t      GetCentralityBin(Float_t multX, Float_t multY=-1);
-  Float_t    GetCorrSPD2(Float_t spd2raw,Float_t zv) const;
-  Float_t    GetCorrV0(const AliESDEvent* esd, float &v0CorrResc) const;
-  Bool_t     ZDCTimeTrigger(const AliESDEvent *aEsd) const;
+  Int_t      GetCentralityBin(Float_t percentile) const;
   //
  protected:
   TList*       fOutput;                   // output list send on output slot 1 
@@ -218,7 +206,8 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   //
   // Settings for the reconstruction
   // tracklet reco settings
-  Float_t      fEtaCut;                    // histos filled only for this eta range
+  Float_t      fEtaMin;                    // histos filled only for this eta range
+  Float_t      fEtaMax;                    // histos filled only for this eta range
   Float_t      fZVertexMin;                // min Z vtx to process
   Float_t      fZVertexMax;                // max Z vtx to process
   //
@@ -244,33 +233,16 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   AliStack*    fStack;                     //! MC stack
   AliMCEvent*  fMCEvent;                   //! MC Event
   Float_t      fESDVtx[3];                 //  ESD vertex
-  AliESDtrackCuts* fTrackCuts;             //! optional track cuts
   //
-  //
-  /*
-  AliTriggerAnalysis::Trigger fTrigger;    // requested trigger
-  MCCentralityBin fMCCentralityBin;        // to select MC centrality bin in which corrections are calculated
-  Float_t      fCentrLowLim;               // to select centrality bin on data
-  Float_t      fCentrUpLim;                // to select centrality bin on data
-  TString      fCentrEst;                  // to select centrality estimator
-  */
   Float_t fNPart;                          // number of participant pairs from MC
   Float_t fNBColl;                         // number of bin. collision from MC
   Int_t  fCurrCentBin;                     // current centrality bin
   Int_t  fNCentBins;                       // N of mult bins
   Int_t  fUseCentralityVar;                // what is used to determine the centrality
-  const  Float_t* fkCentBinDef;                     //! selected binning in centrality
-  const  Float_t* fkCentBinDef2DY;                  //! Y point of 2D bin
-  const  Float_t* fkCentBinDef2DS;                  //! slope of 2D bin
-  static const Float_t fgkCentBinDefV0[];           //!definition of mult bin (with lower and upper cuts)
-  static const Float_t fgkCentBinDefV0CR[];         //!definition of mult bin (with lower and upper cuts)
-  static const Float_t fgkCentBinDefSPD2[];         //!definition of mult bin (with lower and upper cuts)
-  static const Float_t fgkCentBinDefTrTPC[];        //!definition of mult bin (with lower and upper cuts)
   //
-  static const Float_t fgkCentBinDefZDCV0X[];       //! ZDC vs V0Corr X
-  static const Float_t fgkCentBinDefZDCV0Y[];       //! ZDC vs V0Corr Y
-  static const Float_t fgkCentBinDefZDCV0S[];       //! ZDC vs V0Corr Slope
+  static const Float_t fgkCentPerc[];               //! centrality in percentiles
   //
+  static const char*  fgCentSelName[];              //!centrality types
   static const char*  fgkPDGNames[];                //!pdg names
   static const Int_t  fgkPDGCodes[];                //!pdg codes
   //

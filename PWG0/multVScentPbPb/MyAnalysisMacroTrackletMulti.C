@@ -2,7 +2,8 @@ void MyAnalysisMacroTrackletMulti
 (TString dataset="/alice/sim/LHC10f8c_130844",
  TString outFName = "trbg.root",
  Int_t   nEvents   = -1,
- Float_t etaCut     = 0.5,        // max |eta| range to fill in histos
+ Float_t etaMin     =-0.5,        // min eta range to fill in histos
+ Float_t etaMax     = 0.5,        // max eta range to fill in histos
  Float_t zMin       = -7,         // process events with Z vertex min
  Float_t zMax       =  7,         //                     max positions
  Int_t   useCentVar = 0,          // centrality variable to use: 0=V0, 1=SPD2corr
@@ -44,8 +45,8 @@ void MyAnalysisMacroTrackletMulti
   //  
   if (cutSigDPhiS<0) cutSigDPhiS = TMath::Sqrt(cutSigNStd)*dphi;
   //
-  printf("Start Analysis for %s, max %d Events skipping %d, Event Cuts: |eta|<%.1f, %.2f<Zv<%.2f\n",
-	 dataset.Data(),nEvents,nEventsSkip,etaCut,zMin,zMax);
+  printf("Start Analysis for %s, max %d Events skipping %d, Event Cuts: %.1f<eta<%.1f, %.2f<Zv<%.2f\n",
+	 dataset.Data(),nEvents,nEventsSkip,etaMin,etaMax,zMin,zMax);
   printf("Centrality variable: %d\n",useCentVar);
   printf("Tracklet cuts: dPhi:%.3f dTheta:%.3f phiShift:%.4f | Keep %.1f NstDev\n"
 	 "Scale dTheta: %s | Signal Selection: NstDev:%.1f, dPhiS: %.3f\n", 
@@ -76,6 +77,13 @@ void MyAnalysisMacroTrackletMulti
   gProof->Load("AliITSMultRecBg.cxx++");
   gProof->Load("AliTrackletTaskMulti.cxx++");
   //
+  printf("Loading Centrality task\n");
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
+  taskCentrality->SetDebugLevel(2);
+  if (useMC) taskCentrality->SetMCInput();
+  //  taskCentrality->Dump();
+  //
   // load and run AddTask macro
   gROOT->LoadMacro("AddMultTaskTrackletMulti.C");
   //
@@ -91,7 +99,8 @@ void MyAnalysisMacroTrackletMulti
   mltTask->SetUseMC(useMC);
   mltTask->SetCheckReconstructables(checkReconstructables);
   //
-  mltTask->SetEtaCut(etaCut);
+  mltTask->SetEtaMin(etaMin);
+  mltTask->SetEtaMax(etaMax);
   mltTask->SetZVertexMin(zMin);
   mltTask->SetZVertexMax(zMax);
   //
@@ -112,9 +121,10 @@ void MyAnalysisMacroTrackletMulti
   //
   printf("new Task: %p\n",mltTask);
   //
-  AddPhysicsSelection(useMC);
-  mltTask->SelectCollisionCandidates(useMC ? (AliVEvent::kMB) : (AliVEvent::kUserDefined) );
-  //mltTask->SelectCollisionCandidates();//AliVEvent::kMB);
+  printf("Requesting physics selection in %s mode\n",useMC ? "MC":"Data");
+  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  AliPhysicsSelectionTask* physicsSelectionTask = AddTaskPhysicsSelection(useMC,0);
+  mltTask->SelectCollisionCandidates();//AliVEvent::kMB);
   //
   // Run analysis
   mgr->InitAnalysis();
@@ -238,25 +248,21 @@ void MixHandlerSetup(float ntMin,float ntMax,float ntMixBinSz,
 void AddPhysicsSelection(Bool_t isMC)
 {
   // physics selection a la Michele
-  printf("Requesting physics selection in %s mode\n",isMC ? "MC":"Data");
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  //isMC is true when processing monte carlo, the second 0 disables the cluster vs tracklets
-  AliPhysicsSelectionTask* physicsSelectionTask = AddTaskPhysicsSelection(isMC,0);
   if(!isMC) {
-    AliPhysicsSelection * physSel = physicsSelectionTask->GetPhysicsSelection();
-    physSel->AddCollisionTriggerClass("+CMBAC-B-NOPF-ALL");
+    //AliPhysicsSelection * physSel = physicsSelectionTask->GetPhysicsSelection();
+    //    physSel->AddCollisionTriggerClass("+CMBAC-B-NOPF-ALL");
     /*
     physSel->AddCollisionTriggerClass("+CMBS1C-B-NOPF-ALL");
     physSel->AddCollisionTriggerClass("+CMBS1A-B-NOPF-ALL");
     */
     //
-    physSel->AddCollisionTriggerClass("+CMBS2C-B-NOPF-ALL");
-    physSel->AddCollisionTriggerClass("+CMBS2A-B-NOPF-ALL");
+    //    physSel->AddCollisionTriggerClass("+CMBS2C-B-NOPF-ALL");
+    //    physSel->AddCollisionTriggerClass("+CMBS2A-B-NOPF-ALL");
     //
     // This are needed only to fill the statistics tables
-    physSel->AddBGTriggerClass("+CMBAC-C-NOPF-ALL");
-    physSel->AddBGTriggerClass("+CMBAC-A-NOPF-ALL");
-    physSel->AddBGTriggerClass("+CMBAC-E-NOPF-ALL");
+    //    physSel->AddBGTriggerClass("+CMBAC-C-NOPF-ALL");
+    //    physSel->AddBGTriggerClass("+CMBAC-A-NOPF-ALL");
+    //    physSel->AddBGTriggerClass("+CMBAC-E-NOPF-ALL");
     //
     /*
     physSel->AddBGTriggerClass("+CMBS1C-C-NOPF-ALL");
@@ -281,6 +287,7 @@ void AddPhysicsSelection(Bool_t isMC)
   } 
   // if you use the following line, your task only gets the selected events
   //  task->SelectCollisionCandidates(AliVEvent::kUserDefined);
+  //  task->SelectCollisionCandidates();
   //
   //Alternatively, in the UserExec of your task:
   //Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kUserDefined);
