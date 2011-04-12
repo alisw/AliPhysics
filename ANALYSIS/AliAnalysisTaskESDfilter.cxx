@@ -951,6 +951,13 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
   Double_t covTr[21]={0.};
   Double_t pid[10]={0.};  
   Double_t p[3] = { 0. };
+
+  Double_t pDCA[3] = { 0. }; // momentum at DCA
+  Double_t rDCA[3] = { 0. }; // position at DCA
+  Float_t  dDCA[2] = {0.};    // DCA to the vertex d and z
+  Float_t  cDCA[3] = {0.};    // covariance of impact parameters
+
+
   AliAODTrack* aodTrack(0x0);
   
   for (Int_t nTrack = 0; nTrack < esd.GetNumberOfTracks(); ++nTrack) 
@@ -981,6 +988,14 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
         delete track;
         continue;
       }
+      // fetch the track parameters at the DCA (unconstraint)
+      if(track->GetTPCInnerParam()){
+	track->GetTPCInnerParam()->GetPxPyPz(pDCA);
+	track->GetTPCInnerParam()->GetXYZ(rDCA);
+      }
+      // get the DCA to the vertex:
+      track->GetImpactParametersTPC(dDCA,cDCA);
+      // set the constraint parameters to the track
       track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
     }
     
@@ -1013,6 +1028,12 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
     else{
       aodTrack->SetChi2perNDF(-1);
     }
+
+    // set the DCA values to the AOD track
+    aodTrack->SetPxPyPzAtDCA(pDCA[0],pDCA[1],pDCA[2]);
+    aodTrack->SetXYAtDCA(rDCA[0],rDCA[1]);
+    aodTrack->SetDCA(dDCA[0],dDCA[1]);
+
     aodTrack->SetFlags(track->GetStatus());
     aodTrack->SetTPCPointsF(track->GetTPCNclsF());
 
