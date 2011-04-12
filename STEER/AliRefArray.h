@@ -106,7 +106,7 @@ inline void AliRefArray::AddReference(UInt_t from, UInt_t to)
 inline void AliRefArray::Compactify()
 {
   // prepare for storing with minimal space usage
-  if (fRefInd && fRefSize>(fRefInd[0]+1)) fRefSize = fRefInd[0]+1;
+  if (fRefInd && fRefSize>fRefInd[0]) fRefSize = fRefInd[0];
 }
   
 #endif

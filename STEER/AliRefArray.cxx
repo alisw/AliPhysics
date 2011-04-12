@@ -63,7 +63,7 @@ AliRefArray& AliRefArray::operator=(const AliRefArray& src)
     fRefInd = 0;
     fRefBuff = 0;
     if (src.fRefInd) {
-      fRefSize = src.fRefInd[0]+1;
+      fRefSize = src.fRefInd[0];
       fRefInd  = new UInt_t[fRefSize];
       fRefBuff = new UInt_t[fRefSize];
       memcpy(fRefInd, src.fRefInd, fRefSize*sizeof(UInt_t));
@@ -127,8 +127,8 @@ void AliRefArray::ExpandReferences(Int_t addSize)
   UInt_t*   ind  = new UInt_t[fRefSize];
   if (fRefBuff) memcpy(buff, fRefBuff, oldSize*sizeof(UInt_t)); // copy current content
   if (fRefInd)  memcpy(ind,  fRefInd,  oldSize*sizeof(UInt_t));
-  memset(buff+oldSize,0,(fRefSize-oldSize)*sizeof(UInt_t));
-  memset(ind +oldSize,0,(fRefSize-oldSize)*sizeof(UInt_t));
+  memset(buff+oldSize,0,addSize*sizeof(UInt_t));
+  memset(ind +oldSize,0,addSize*sizeof(UInt_t));
   delete[] fRefBuff; fRefBuff = buff;
   delete[] fRefInd;  fRefInd  = ind;
   if (!oldSize) fRefInd[0] = 1;
