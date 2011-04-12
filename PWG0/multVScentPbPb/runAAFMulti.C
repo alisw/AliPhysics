@@ -1,8 +1,9 @@
 //
-void runAAFMulti(TString dataset="/alice/sim/LHC10h6_000137161",
+void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/LHC10h6_000137161",
 		 TString outFName = "trbg.root",
 		 Int_t   nEvents    = -1,//3000,
-		 Float_t etaCut     = 0.5,        // max |eta| range to fill in histos
+		 Float_t etaMin     =-0.5,        // min eta range to fill in histos
+		 Float_t etaMax     = 0.5,        // max eta range to fill in histos
 		 Float_t zMin       = -7,         // process events with Z vertex min
 		 Float_t zMax       =  7,         //                     max positions
 		 Int_t   useCentVar = 0,          // centrality variable to use: enum {kCentSPD2, kCentV0,  kCentV0CR, kCentTrTPC}
@@ -40,17 +41,18 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h6_000137161",
 		 //
 		 Bool_t checkReconstructables = kFALSE,//kTRUE, // fill histos for reconstructable (needs useMC and doRec) 
 		 //
-		 TString alirootVer = "VO_ALICE@AliRoot::v4-21-05-AN",
-		 TString rootVer    = "VO_ALICE@ROOT::v5-27-06b",
+		 //TString alirootVer = "VO_ALICE@AliRoot::v4-21-17-AN",
+		 TString alirootVer = "VO_ALICE@AliRoot::v4-21-17b-AN",
+		 TString rootVer    = "VO_ALICE@ROOT::v5-28-00a",
 		 //
 		 //TString proofCluster="shahoian@skaf.saske.sk"
 		 TString proofCluster="shahoian@alice-caf.cern.ch"
 		 ) 
 { 
   //  
-  Bool_t runLocal = kFALSE; // true only for local test mode
+  Bool_t runLocal = kFALSE;//kTRUE; // true only for local test mode
   if (runLocal) {
-    dataset = "/default/shahoian/test_pp";
+    dataset = "/default/shahoian/test";//"/default/shahoian/test";
     //dataset = "/default/shahoian/test";
     proofCluster = "";
     alirootVer = "AliRootProofLite";
@@ -75,6 +77,7 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h6_000137161",
   // sets $ALIROOT_MODE on each worker to let proof to know to run in special mode
   list->Add(new TNamed("ALIROOT_MODE"      , alirootMode.Data()));
   list->Add(new TNamed("ALIROOT_EXTRA_LIBS", extraLibs.Data()));
+  list->Add(new TNamed("ALIROOT_EXTRA_INCLUDES", "ITS:include"));
   list->Add(new TNamed("ALIROOT_ENABLE_ALIEN","1"));
   //
   //REM: same version of AliRoot on client!!!!! Otherwise error!! 
@@ -87,7 +90,7 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h6_000137161",
   }
   gProof->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\");"
 	       "gEnv->GetTable()->Remove(o);", kTRUE);
-  //  gProof->SetParameter("PROOF_UseMergers", 0);
+  gProof->SetParameter("PROOF_UseMergers", -1);
   // Lets enable aliroot + extra libs on proof cluster
   if (runLocal) gProof->UploadPackage(alirootVer.Data());
   gProof->EnablePackage(alirootVer.Data(), list);
@@ -104,7 +107,7 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h6_000137161",
   gROOT->LoadMacro("MyAnalysisMacroTrackletMulti.C");
   TStopwatch sw;
   sw.Start();
-  MyAnalysisMacroTrackletMulti(dataset,outFName,nEvents,etaCut,zMin,zMax,useCentVar,
+  MyAnalysisMacroTrackletMulti(dataset,outFName,nEvents,etaMin,etaMax,zMin,zMax,useCentVar,
 			       cutSigNStd,cutSigDPhiS,useMC,scaleMCV0,
 			       doRec,doInj,doRot,doMix,
 			       phiRot,injScale,scaleDTheta,nStdDev,dphi,dtht,
