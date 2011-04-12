@@ -164,9 +164,9 @@ private:
     Bool_t            fExternal;         // True if external particle array
     static   Int_t        fgkBgLabelOffset;  // Standard branch name    
     mutable  AliVVertex*  fVertex;           // MC Vertex
-    Int_t             fNBG;              // Background particles in current event
+    Int_t             fNBG;              //! Background particles in current event
     
-    ClassDef(AliMCEvent, 1)  // AliVEvent realisation for MC data
+    ClassDef(AliMCEvent, 2)              // AliVEvent realisation for MC data
 };
 
 
