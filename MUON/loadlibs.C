@@ -31,6 +31,7 @@ void loadlibs ()
   gSystem->Load("libTree");
   gSystem->Load("libProofPlayer");
   gSystem->Load("libXMLParser");
+  gSystem->Load("libPhysics");
 
   gSystem->Load("libSTEERBase"); 
   gSystem->Load("libESD");
@@ -43,7 +44,6 @@ void loadlibs ()
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   
-  gSystem->Load("libPhysics");
   gSystem->Load("libMUONcore");
   gSystem->Load("libMUONmapping");
   gSystem->Load("libMUONcalib");
