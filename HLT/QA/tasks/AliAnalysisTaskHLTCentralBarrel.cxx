@@ -56,6 +56,7 @@ AliAnalysisTaskHLTCentralBarrel::AliAnalysisTaskHLTCentralBarrel()
   ,fTrackHLT(0)
   ,fOptions()
   ,fTextBox(0)
+  ,fSwitch(kTRUE)
 {
   // Constructor
   // Define input and output slots here
@@ -78,6 +79,7 @@ AliAnalysisTaskHLTCentralBarrel::AliAnalysisTaskHLTCentralBarrel(const char *nam
   ,fTrackHLT(0) 
   ,fOptions()
   ,fTextBox(0)
+  ,fSwitch(kTRUE)
 {
   // Constructor
   // Define input and output slots here
@@ -152,16 +154,6 @@ void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
   PostData(1, fOutputList);
 }
 
-void AliAnalysisTaskHLTCentralBarrel::NotifyRun(){
- 
-  AliESDEvent *esdOFF = dynamic_cast<AliESDEvent*>(InputEvent());
-  TTimeStamp* timestamp = new TTimeStamp(esdOFF->GetTimeStamp());
-  fTextBox->SetName("text");
-  
-  TString s = Form("Run %d, Date %d", esdOFF->GetRunNumber(), timestamp->GetDate());
-  fTextBox->SetTitle(s);
-}
-
 void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
 // see header for documentation
     
@@ -179,7 +171,16 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
      printf("ERROR: HLT ESD is not available.\n");
      return;
   }
-      
+  
+  if(fSwitch==kTRUE){  
+     TTimeStamp *timestamp = new TTimeStamp(esdHLT->GetTimeStamp());
+     fTextBox->SetName("text");
+     TString s = Form("Run %d, Date %d", esdHLT->GetRunNumber(), timestamp->GetDate());
+     printf("You are analyzing run %d from date %d\n", esdHLT->GetRunNumber(), timestamp->GetDate());
+     fTextBox->SetTitle(s);
+     fSwitch=kFALSE;
+  }
+    
   // if(fUseHLTTrigger && !((AliHLTGlobalTriggerDecision*)esdHLT->GetHLTTriggerDecision())->Result()) return;  
   
   //============================ OFFLINE =============================//
@@ -284,7 +285,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
 
   Int_t nr_tracksHLT = 0;  
   if(esdHLT->GetEventSpecie()==16) return; // skip calibration events
-  
+
   const AliESDVertex *vertHLT = esdHLT->GetPrimaryVertexTracks();
     
   for(Int_t i=0; i<esdHLT->GetNumberOfTracks(); i++){

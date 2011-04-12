@@ -34,7 +34,6 @@ class AliAnalysisTaskHLTCentralBarrel : public AliAnalysisTaskSE {
     virtual void  UserCreateOutputObjects();
     virtual void  UserExec(Option_t *option);
     virtual void  Terminate(Option_t *);
-    virtual void  NotifyRun();
 
     // function to select only HLT triggered events
     //void SetUseHLTTriggerDecision(Bool_t useHLT = kFALSE) { fUseHLTTrigger = useHLT;        }
@@ -69,7 +68,9 @@ class AliAnalysisTaskHLTCentralBarrel : public AliAnalysisTaskSE {
     THnSparse *fTrackHLT; //! HLT track properties
     
     TString fOptions; //! options for filling event and/or track properties for hlt and/or offline
-    TText *fTextBox; //! TText box containing run number info and date
+    TText *fTextBox;  //! TText box containing run number info and date
+    Bool_t fSwitch;   //! boolean used to execute parts of the code in the UserExec only once, although
+                      // the function is called once per event
     
     ClassDef(AliAnalysisTaskHLTCentralBarrel, 0);
 };
