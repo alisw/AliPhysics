@@ -1509,25 +1509,3 @@ void AliTriggerAnalysis::PrintTriggerClasses() const
 }
 
 
-const UInt_t AliTriggerAnalysis::GetActiveBit(UInt_t mask) {
-  // Returns the active bit index in the mask
-  // Assumes only one bit is on.
-  // If more than one bit is lit, prints an error and returns the first.
-  // If no bit is on, prints an error and returns 0
-
-  Int_t nbit = sizeof(mask)*8;
-  Int_t activeBit = -1;
-  for(Int_t ibit = 0; ibit < nbit; ibit++){
-    if ( mask & (0x1 << ibit) ) {
-      if (activeBit == -1) activeBit = ibit;
-      else Printf("ERROR (AliTriggerAnalysis::GetActiveBit): More than one bit is on in this mask 0x%x", mask);
-    }
-  }
-  if (activeBit == -1) {
-    Printf("ERROR (AliTriggerAnalysis::GetActiveBit): No bit is on");
-    activeBit=0;
-  }
-
-  return activeBit;
-
-}

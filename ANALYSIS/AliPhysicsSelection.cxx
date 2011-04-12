@@ -534,7 +534,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       TString triggerLogicOnline  = fPSOADB->GetHardwareTrigger(triggerLogic);
       TString triggerLogicOffline = fPSOADB->GetOfflineTrigger(triggerLogic);
 
-      AliDebug(AliLog::kDebug, Form("Triggers from OADB [0x%x][%d][%s][%s]",singleTriggerResult,AliTriggerAnalysis::GetActiveBit(singleTriggerResult),triggerLogicOffline.Data(),triggerLogicOnline.Data()));
+      AliDebug(AliLog::kDebug, Form("Triggers from OADB [0x%x][%d][%s][%s]",singleTriggerResult,AliOADBPhysicsSelection::GetActiveBit(singleTriggerResult),triggerLogicOffline.Data(),triggerLogicOnline.Data()));
 
       // replay hardware trigger (should only remove events for MC)
       Bool_t onlineTrigger  = EvaluateTriggerLogic(aEsd, triggerAnalysis, triggerLogicOnline, kFALSE);

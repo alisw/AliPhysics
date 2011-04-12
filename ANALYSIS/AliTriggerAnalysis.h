@@ -92,7 +92,6 @@ class AliTriggerAnalysis : public TObject
     void SetESDTrackCuts(AliESDtrackCuts* cuts) { fEsdTrackCuts = cuts;}
     AliESDtrackCuts* GetESDTrackCuts() const  {return fEsdTrackCuts;}
 
-    static const UInt_t GetActiveBit(UInt_t mask) ;
 
   protected:
     Bool_t IsL0InputFired(const AliESDEvent* aEsd, UInt_t input) const;
@@ -141,7 +140,7 @@ class AliTriggerAnalysis : public TObject
     Bool_t fMC;              // flag if MC is analyzed
     AliESDtrackCuts* fEsdTrackCuts;  //Track Cuts to select ESD tracks
 
-    ClassDef(AliTriggerAnalysis, 13)
+    ClassDef(AliTriggerAnalysis, 14)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);
