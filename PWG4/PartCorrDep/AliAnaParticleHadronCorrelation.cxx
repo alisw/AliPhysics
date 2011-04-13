@@ -778,7 +778,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
   Double_t pyTrig  = aodParticle->Py();
   
   Double_t phiTrig = aodParticle->Phi();
-  Double_t etaTrig = aodParticle->Eta();
+  //Double_t etaTrig = aodParticle->Eta();
   
   Double_t pt   = -100.;
   Double_t px   = -100.;
@@ -872,8 +872,10 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     //Select only hadrons in pt range
     if(pt < GetMinPt() || pt > GetMaxPt()) continue ;
     //remove trigger itself for correlation when use charged triggers    
-    if(track->GetID()==aodParticle->GetTrackLabel(0) && pt==ptTrig && phi==phiTrig && eta==etaTrig) 
-      continue ;    
+    if( track->GetID() == aodParticle->GetTrackLabel(0) || track->GetID() == aodParticle->GetTrackLabel(1) ||
+        track->GetID() == aodParticle->GetTrackLabel(2) || track->GetID() == aodParticle->GetTrackLabel(3)   ) continue ;
+       //&&pt==ptTrig && phi==phiTrig && eta==etaTrig) continue ;
+
     if(IsFiducialCutOn()){
       Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
       if(! in ) continue ;
