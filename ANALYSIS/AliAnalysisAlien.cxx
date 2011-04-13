@@ -3112,6 +3112,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             out << "   gSystem->Load(\"libESD\");" << endl;
             out << "   gSystem->Load(\"libAOD\");" << endl;
          }   
+         out << "   gSystem->Load(\"libOADB\");" << endl;
          out << "   gSystem->Load(\"libANALYSIS\");" << endl;
          out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
          out << "   gSystem->Load(\"libCORRFW\");" << endl << endl;
@@ -3141,6 +3142,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          else out << "   if (!" << setupPar << "(\"ESD\")) return;" << endl;
          if (!hasAOD)       out << "   gSystem->Load(\"libAOD\");" << endl;
          else out << "   if (!" << setupPar << "(\"AOD\")) return;" << endl;
+         out << "   gSystem->Load(\"libOADB\");" << endl;
          if (!hasANALYSIS)  out << "   gSystem->Load(\"libANALYSIS\");" << endl;
          else out << "   if (!" << setupPar << "(\"ANALYSIS\")) return;" << endl;
          if (!hasANALYSISalice)   out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
@@ -3476,6 +3478,7 @@ void AliAnalysisAlien::WriteMergingMacro()
             out << "   gSystem->Load(\"libESD\");" << endl;
             out << "   gSystem->Load(\"libAOD\");" << endl;
          }
+         out << "   gSystem->Load(\"libOADB\");" << endl;
          out << "   gSystem->Load(\"libANALYSIS\");" << endl;
          out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
          out << "   gSystem->Load(\"libCORRFW\");" << endl << endl;
@@ -3506,6 +3509,7 @@ void AliAnalysisAlien::WriteMergingMacro()
          else out << "   if (!" << setupPar << "(\"ESD\")) return;" << endl;
          if (!hasAOD)       out << "   gSystem->Load(\"libAOD\");" << endl;
          else out << "   if (!" << setupPar << "(\"AOD\")) return;" << endl;
+         out << "   gSystem->Load(\"libOADB\");" << endl;
          if (!hasANALYSIS)  out << "   gSystem->Load(\"libANALYSIS\");" << endl;
          else out << "   if (!" << setupPar << "(\"ANALYSIS\")) return;" << endl;
          if (!hasANALYSISalice)   out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
