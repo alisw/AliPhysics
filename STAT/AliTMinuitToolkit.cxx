@@ -248,7 +248,7 @@ void AliTMinuitToolkit::SetWeightFunction(const Char_t *name, Float_t param1, Fl
 }
 
 
-void AliTMinuitToolkit::FitterFCN(int &npar, double *dummy, double &fchisq, double *gin, int iflag){
+void AliTMinuitToolkit::FitterFCN(int &/*npar*/, double *dummy, double &fchisq, double *gin, int iflag){
   //
   // internal function which gives the specified function to the TMinuit function
   //  
@@ -256,7 +256,7 @@ void AliTMinuitToolkit::FitterFCN(int &npar, double *dummy, double &fchisq, doub
   // suppress warnings for unused variables:
   dummy = dummy;
   iflag = iflag;
-  npar = npar;
+  //npar = npar;
   //
   AliTMinuitToolkit * fitter = (AliTMinuitToolkit*)TVirtualFitter::GetFitter()->GetObjectFit();
   fchisq = 0;
