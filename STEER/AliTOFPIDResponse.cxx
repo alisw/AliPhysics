@@ -33,6 +33,11 @@ AliTOFPIDResponse::AliTOFPIDResponse():
   fPmax(0),         // zero at 0.5 GeV/c for pp
   fTime0(0)
 {
+  fPar[0] = 0.;
+  fPar[1] = 0.;
+  fPar[2] = 0.018;
+  fPar[3] = 50.0;
+
   // Reset T0 info
   ResetT0info();
   SetMomBoundary();
@@ -49,6 +54,11 @@ AliTOFPIDResponse::AliTOFPIDResponse(Double_t *param):
   //
 
   //fPmax=TMath::Exp(-0.5*3*3)/fSigma; // ~3 sigma at 0.5 GeV/c for PbPb 
+
+  fPar[0] = 0.;
+  fPar[1] = 0.;
+  fPar[2] = 0.018;
+  fPar[3] = 50.0;
 
   // Reset T0 info
   ResetT0info();
@@ -76,7 +86,7 @@ Double_t AliTOFPIDResponse::GetExpectedSigma(Float_t mom, Float_t time, Float_t 
   // If the operation is not possible, return a negative value.
   //
 
-  Double_t dpp=0.018*mass/mom;      //mean relative pt resolution;
+  Double_t dpp=fPar[0] + fPar[1]*mom + fPar[2]*mass/mom;      //mean relative pt resolution;
 
  
   Double_t sigma = dpp*time/(1.+ mom*mom/(mass*mass));
@@ -85,7 +95,7 @@ Double_t AliTOFPIDResponse::GetExpectedSigma(Float_t mom, Float_t time, Float_t 
 
   Double_t t0res = fT0resolution[index];
 
-  return TMath::Sqrt(sigma*sigma + 50.0*50.0/mom/mom + fSigma*fSigma + t0res*t0res);
+  return TMath::Sqrt(sigma*sigma + fPar[3]*fPar[3]/mom/mom + fSigma*fSigma + t0res*t0res);
 
 }
 //_________________________________________________________________________

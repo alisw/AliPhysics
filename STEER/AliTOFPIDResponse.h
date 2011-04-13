@@ -51,6 +51,10 @@ public:
   Float_t  GetStartTimeRes(Float_t mom) const;
   Int_t    GetStartTimeMask(Float_t mom) const;
 
+  // Tracking resolution for expected times
+  void SetTrackParameter(Int_t ip,Float_t value){if(ip>=0 && ip < 4) fPar[ip] = value;};
+  Float_t GetTrackParameter(Int_t ip){if(ip>=0 && ip < 4) return fPar[ip]; else return -1.0;};
+
  private:
   Double_t fSigma;        // intrinsic TOF resolution
 
@@ -65,8 +69,9 @@ public:
   Float_t fT0resolution[fNmomBins]; // t0 (best, T0, T0-TOF, ...) resolution as a function of p 
   Float_t fPCutMin[fNmomBins+1]; // min values for p bins
   Int_t fMaskT0[fNmomBins]; // mask withthe T0 used (0x1=T0-TOF,0x2=T0A,0x3=TOC) for p bins
+  Float_t fPar[4]; // parameter for expected times resolution
 
-  ClassDef(AliTOFPIDResponse,3)   // TOF PID class
+  ClassDef(AliTOFPIDResponse,4)   // TOF PID class
 };
 
 #endif
