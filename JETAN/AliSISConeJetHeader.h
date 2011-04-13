@@ -30,11 +30,13 @@ class AliSISConeJetHeader : public AliJetHeader
   Int_t                        GetAreaTypeNumber()             const {return fAreaTypeNumber;}
   Int_t                        GetBGAlgorithm()                const {return fBGAlgo;}        
   Int_t                        GetNPassMax()                   const {return fNPassMax;}
+  Int_t                        GetNumberOfJetsToErase()        const {return fNHardJets;}
   Int_t                        GetSplitMergeScale()            const {return fSplitMergeScaleNumber;}
 
   Double_t                     GetGhostEtaMax()                const {return fGhostEtaMax;}
   Double_t                     GetGhostArea()                  const {return fGhostArea;}
   Double_t                     GetEffectiveRFact()             const {return fEffectiveRFact;}
+
   Double_t                     GetRapMax()                     const {return fRapMax;}
   Double_t                     GetRapMin()                     const {return fRapMin;}
   Double_t                     GetPhiMax()                     const {return fPhiMax;}
@@ -64,6 +66,7 @@ class AliSISConeJetHeader : public AliJetHeader
   void SetConeRadius(Double_t value)                   {fConeRadius = value;}
   void SetMinJetPt(Double_t value)                     {fMinJetPt = value;}
   void SetNPassMax(Int_t value)                        {fNPassMax = value;}
+  void SetNumberOfJetsToErase(Int_t value)             {fNHardJets = value;}
   void SetOverlapThreshold(Double_t value)             {fOverlapThreshold = value;}
   void SetPhiRange(Double_t fmin, Double_t fmax)       {fPhiMin = fmin; fPhiMax = fmax;}
   void SetPtProtojetMin(Double_t value)                {fPtProtoJetMin = value;}
@@ -84,6 +87,8 @@ class AliSISConeJetHeader : public AliJetHeader
   Int_t    fActiveAreaRepeats;        // How many times do you want to caculate active areas?
   Int_t    fAreaTypeNumber;           // Kind of area
   Int_t    fBGAlgo;                   // Algorithm for rho calculus
+  Int_t    fNHardJets;                // Number of hard jets not to take into account for rho estimation
+
   Bool_t   fBGMode;                   // Do we subtract BG or not?
   Bool_t   fCaching;                  // Do we record found cones for this set of data?
   Double_t fConeRadius;               // Cone radius
