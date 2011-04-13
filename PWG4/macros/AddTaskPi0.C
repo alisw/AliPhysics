@@ -1,4 +1,4 @@
-AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE, Bool_t outputAOD=kFALSE, Bool_t oldAOD=kFALSE)
+AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE, Bool_t outputAOD=kFALSE, TString outputfile = "", Int_t year = 2010,TString col = "pp",Bool_t oldAOD=kFALSE)
 {
   // Creates a PartCorr task, configures it and adds it to the analysis manager.
   
@@ -52,7 +52,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
     reader->SwitchOnPHOS();
   }
 
-   reader->SwitchOnSuspiciousClustersRemoval();  //EMCAL
+   reader->SwitchOffSuspiciousClustersRemoval();  //EMCAL
   
   // for case data="deltaAOD", no need to fill the EMCAL/PHOS cluster lists
   if(data.Contains("delta")){
@@ -80,7 +80,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   reader->SetZvertexCut(10.);
   
   //Min particle pT
-  reader->SetEMCALPtMin(0.1); 
+  reader->SetEMCALPtMin(0.5); 
   reader->SetPHOSPtMin(0.);
   reader->SetCTSPtMin(0.);
   if(outputAOD)  reader->SwitchOnWriteDeltaAOD()  ;
@@ -89,6 +89,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   
   // *** Calorimeters Utils	***
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
+  if(year==2010) cu->SetEMCALGeometryName("EMCAL_FIRSTYEARV1");
+  else           cu->SetEMCALGeometryName("EMCAL_COMPLETEV1");
   // Remove clusters close to borders, at least max energy cell is 1 cell away 
   cu->SetNumberOfCellsFromEMCALBorder(1);
   cu->SetNumberOfCellsFromPHOSBorder(2);
@@ -136,7 +138,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   }
   else {//EMCAL
     anaphoton->SetNCellCut(1);// At least 2 cells
-    anaphoton->SetMinPt(0.3); // no effect minium EMCAL cut.
+    anaphoton->SetMinPt(0.5); // no effect minium EMCAL cut.
     //if(!kUseKinematics) anaphoton->SetTimeCut(400,900);// Time window of [400-900] ns
     //anaphoton->SetMinDistanceToBadChannel(6, 12, 18);//For officially produced ESDs/AODs
     anaphoton->SetMinDistanceToBadChannel(1, 2, 3);//For filtered AODs, new releases.
@@ -163,9 +165,10 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   else anaphoton->SetInputAODName(Form("Photons%s",calorimeter.Data()));
   anaphoton->AddToHistogramsName("AnaPhotonCorr_");
   //Set Histograms bins and ranges
-  anaphoton->SetHistoPtRangeAndNBins(0, 100, 200) ;
-  //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-  //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  anaphoton->SetHistoPtRangeAndNBins(0, 30, 150) ;
+  if(year==2010)anaphoton->SetHistoPhiRangeAndNBins(78, 122*TMath::DegToRad(), 44*TMath::DegToRad()) ;
+  else          anaphoton->SetHistoPhiRangeAndNBins(78, 182*TMath::DegToRad(), 104*TMath::DegToRad()) ;
+  anaphoton->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
   if(kPrintSettings) anaphoton->Print("");
   
   // -----------------------------------
@@ -177,17 +180,17 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   anapi0->SetInputAODName(Form("Photons%s",calorimeter.Data()));
   anapi0->SetCalorimeter(calorimeter);
   
-  anapi0->SwitchOnMultipleCutAnalysis(); 
+  anapi0->SwitchOffMultipleCutAnalysis(); 
   //anapi0->SetNPtCuts(2);
-  //anapi0->SetNAsymCuts(2);
+  anapi0->SetNAsymCuts(3);
   //anapi0->SetNNCellCuts(2);
-  anapi0->SetNPIDBits(2);
+  anapi0->SetNPIDBits(1);
   
   //anapi0->SetPtCutsAt(0,0.3); anapi0->SetPtCutsAt(1,0.5);
   //anapi0->SetAsymCutsAt(0,0.1);anapi0->SetAsymCutsAt(1,0.5);
   //anapi0->SetNCellCutsAt(0,1); anapi0->SetNCellCutsAt(1,2);
   anapi0->SetPIDBitsAt(0,0); //No Cut
-  anapi0->SetPIDBitsAt(1,2); //Dispersion Cut
+  //anapi0->SetPIDBitsAt(1,2); //Dispersion Cut
 
   
   if(kSimulation){
@@ -202,25 +205,31 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
 	
   //settings for pp collision mixing
   anapi0->SwitchOnOwnMix(); //Off when mixing done with general mixing frame
-  anapi0->SetNCentrBin(1);
+  if     (col=="pp"  ) anapi0->SetNCentrBin(1);
+  else if(col=="PbPb") anapi0->SetNCentrBin(10);
+
   anapi0->SetNZvertBin(1);
   anapi0->SetNRPBin(1);
-  anapi0->SetNMaxEvMix(10);
+  anapi0->SetNMaxEvMix(50);
   
   if(kUseKinematics)anapi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
   else              anapi0->SwitchOffDataMC() ;
   if(calorimeter=="PHOS") anapi0->SetNumberOfModules(3); //PHOS first year
-  else  anapi0->SetNumberOfModules(4); //EMCAL first year
-  anapi0->SetHistoPtRangeAndNBins(0, 20, 200) ;
-  //anapi0->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-  //anapi0->SetHistoEtaRangeAndNBins(-0.8, 0.8, 200) ;
-  anapi0->SetHistoMassRangeAndNBins(0., 0.9, 300) ;
+  else {                   
+     if(year==2010) anapi0->SetNumberOfModules(4); //EMCAL first year
+    else            anapi0->SetNumberOfModules(10);
+  }
+  anapi0->SetHistoPtRangeAndNBins(0, 30, 150) ;    
+  anapi0->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
+  if(year==2010)anapi0->SetHistoPhiRangeAndNBins(78, 122*TMath::DegToRad(), 44*TMath::DegToRad()) ;
+  else          anapi0->SetHistoPhiRangeAndNBins(78, 182*TMath::DegToRad(), 104*TMath::DegToRad()) ;
+
+  anapi0->SetHistoMassRangeAndNBins(0., 1., 200) ;
   anapi0->SetHistoAsymmetryRangeAndNBins(0., 1. , 100) ;
   anapi0->SetHistoTrackMultiplicityRangeAndNBins(0, 200, 20); 
 
   if(kPrintSettings) anapi0->Print("");
 
-  
   
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
@@ -255,19 +264,16 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   char name[128];
   sprintf(name,"PartCorr_%s",calorimeter.Data());
   cout<<"Name of task "<<name<<endl;
-  //AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(Form(name),TList::Class(),
-  //					   AliAnalysisManager::kOutputContainer, Form("PartCorr_%s.root",calorimeter.Data()));
   
-  TString outputfile = AliAnalysisManager::GetCommonFileName(); 
-  //  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(Form("PartCorr_%s",calorimeter.Data()),  TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PartCorr_%s",outputfile.Data(),calorimeter.Data()));
+  if(outputfile.Length()==0)outputfile = AliAnalysisManager::GetCommonFileName(); 
+
   AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(calorimeter.Data(), TList::Class(), 
-                                                             AliAnalysisManager::kOutputContainer, 
-                                                             Form("%s:PartCorr",outputfile.Data()));
+                                                              AliAnalysisManager::kOutputContainer, 
+                                                              Form("%s:Pi0",outputfile.Data()));
 	
   AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("%sCuts",calorimeter.Data()), TList::Class(), 
-                                                             AliAnalysisManager::kParamContainer, 
-                                                             Form("%s:PartCorrCuts",outputfile.Data()));
-	
+                                                              AliAnalysisManager::kParamContainer, 
+                                                              Form("%s:Pi0Cuts",outputfile.Data()));
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
