@@ -41,9 +41,14 @@ fTime(0x0),
 fNL0Times(0x0),
 fL0Times(new TArrayI()),
 fL1TimeSum(0x0),
-fTriggerBits(0x0)
+fTriggerBits(0x0),
+fL1Threshold(),
+fL1V0(),
+fL1FrameMask(0)
 {
 	//
+	fL1Threshold[0] = fL1Threshold[1] = 0;
+	fL1V0[0] = fL1V0[1] = 0;	
 }
 
 //_______________
@@ -57,7 +62,10 @@ fTime(0x0),
 fNL0Times(0x0),
 fL0Times(new TArrayI()),
 fL1TimeSum(0x0),
-fTriggerBits(0x0)
+fTriggerBits(0x0),
+fL1Threshold(),
+fL1V0(),
+fL1FrameMask(0)
 {
 	//
 	src.Copy(*this);
@@ -118,6 +126,11 @@ void AliESDCaloTrigger::Copy(TObject &obj) const
 	  
 		dest.Add(fColumn[i], fRow[i], fAmplitude[i], fTime[i], times, fNL0Times[i], fL1TimeSum[i], fTriggerBits[i]);
 	}	
+
+	dest.SetL1Threshold(0, fL1Threshold[0]);
+	dest.SetL1Threshold(1, fL1Threshold[1]);
+	dest.SetL1V0(fL1V0);
+	dest.SetL1FrameMask(fL1FrameMask);
 }
 
 //_______________
@@ -174,21 +187,6 @@ Bool_t AliESDCaloTrigger::Add(Int_t col, Int_t row, Float_t amp, Float_t time, I
 
 	return kTRUE;
 }
-
-//_______________
-/*
-void AliESDCaloTrigger::SetTriggerBits(Int_t col, Int_t row, Int_t i, Int_t j)
-{
-	//
-	if (col < 0 || col > 47 || row < 0 || row > 63) 
-	{
-		AliError("Bad position!");
-		return;
-	}
-
-	fTriggerBits[col][row] = (fTriggerBits[col][row] | (1 << (i + 3 * j))); // L0 L1g L1j
-}
-*/
 
 //_______________
 Bool_t AliESDCaloTrigger::Next()

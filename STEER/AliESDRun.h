@@ -100,6 +100,9 @@ public:
     return ((i >= 0)  && (i<kT0spreadSize)) ? fT0spread[i] : 0;}
   void       SetT0spread(Int_t i, Float_t t);
   void       SetT0spread(Float_t *t);
+	
+  void       SetCaloTriggerType(const Int_t* in) {for (int i = 0; i < 8; i++) fCaloTriggerType[i] = in[i];}
+  Int_t*     GetCaloTriggerType() {return fCaloTriggerType;}
 
 private:
   Float_t         fCurrentL3;       // signed current in the L3     (LHC convention: +current -> +Bz)
@@ -121,8 +124,9 @@ private:
   TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix]; //PHOS module position and orientation matrices
   TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; //EMCAL supermodule position and orientation matrices
   Float_t         fT0spread[kT0spreadSize];     // spread of time distributions on T0A, T0C, (T0A+T0C)/2, (T0A-T0C)/2
-
-  ClassDef(AliESDRun,10)
+  Int_t           fCaloTriggerType[8]; // Calorimeter trigger type
+	
+  ClassDef(AliESDRun,11)
 };
 
 #endif 

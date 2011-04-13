@@ -38,7 +38,10 @@ fL1GammaPatches(),
 fL1JetPatches(),
 fL1Region(),
 fL1GammaThreshold(0),
-fL1JetThreshold(0)
+fL1JetThreshold(0),
+fL1V0(),
+fL1FrameMask(0),
+fL1TriggerType()
 {  
 	//
 	for (Int_t i = 0; i < 2; i++)
@@ -50,6 +53,9 @@ fL1JetThreshold(0)
 	
 	for (Int_t i = 0; i < 32; i++) for (Int_t j = 0; j < 24; j++) for (Int_t k = 0; k <  4; k++) fL0Region[i][j][k] = 0;
 	for (Int_t i = 0; i <  2; i++) for (Int_t j = 0; j < 48; j++) for (Int_t k = 0; k < 64; k++) fL1Region[i][j][k] = 0;
+	
+	fL1V0[0] = fL1V0[1] = 0;
+	for (Int_t i = 0; i < 8; i++) fL1TriggerType[i] = 0;	
 }
 
 //_____________

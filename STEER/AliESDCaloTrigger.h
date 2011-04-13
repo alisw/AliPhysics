@@ -34,8 +34,9 @@ public:
 	Bool_t  Add(Int_t col, Int_t row, Float_t amp, Float_t time, Int_t trgtimes[], Int_t ntrgtimes, Int_t trgts, Int_t trgbits);
 	
 	void    SetL1Threshold(Int_t i, Int_t thr) {fL1Threshold[i] = thr;}
-//	void    SetTriggerBits(Int_t col, Int_t row, Int_t i, Int_t j);
-
+	void    SetL1V0(const Int_t* v) {for (int i = 0; i < 2; i++) fL1V0[i] = v[i];}
+	void    SetL1FrameMask(Int_t m) {fL1FrameMask = m;}
+	
 	void    GetPosition(     Int_t& col, Int_t& row           ) const;
 	
 	void    GetAmplitude(  Float_t& amp                       ) const;
@@ -47,9 +48,10 @@ public:
 	Int_t   GetEntries(                                       ) const {return fNEntries;}
 
 	void    GetL1TimeSum(    Int_t& timesum                   ) const;
-
 	Int_t   GetL1Threshold(  Int_t  i                         ) const {return fL1Threshold[i];}
-
+	Int_t   GetL1V0(         Int_t  i                         ) const {return fL1V0[i];}
+	Int_t   GetL1FrameMask(                                   ) const {return fL1FrameMask;}
+	
 	virtual Bool_t Next();
 
 	virtual void Copy(TObject& obj) const;
@@ -71,8 +73,11 @@ private:
 	Int_t*   fTriggerBits;    // [fNEntries]
 	
 	Int_t    fL1Threshold[2]; // L1 thresholds from raw data
+	Int_t    fL1V0[2];        // L1 threshold components
+	Int_t    fL1FrameMask;    // Validation flag for L1 data
 	
-	ClassDef(AliESDCaloTrigger, 3)
+	
+	ClassDef(AliESDCaloTrigger, 4)
 };
 #endif
 

@@ -314,6 +314,24 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 		fTriggerData->SetL1GammaThreshold(fSTURawStream->GetL1GammaThreshold());
 		fTriggerData->SetL1JetThreshold(  fSTURawStream->GetL1JetThreshold()  );
 		
+		Int_t v0[2] = {fSTURawStream->GetV0A(), fSTURawStream->GetV0C()};
+		
+		Int_t type[8] = 
+		{
+			fSTURawStream->GetGA(),
+			fSTURawStream->GetGB(),
+			fSTURawStream->GetGC(),
+			fSTURawStream->GetJA(),
+			fSTURawStream->GetJB(),
+			fSTURawStream->GetJC(),
+			fSTURawStream->GetRegionEnable(), 
+			fSTURawStream->GetFwVersion()
+		};
+		
+		fTriggerData->SetL1FrameMask(fSTURawStream->GetFrameReceived());
+		fTriggerData->SetL1V0(v0);
+		fTriggerData->SetL1TriggerType(type);
+		
 		Int_t iTRU, x, y;
 
 		if (fSTURawStream->GetRawData())

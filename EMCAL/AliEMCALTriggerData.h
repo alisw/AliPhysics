@@ -5,7 +5,7 @@
 
 /*
 EMCal trigger data container: can be used independently of the data stream (simulation or raw data)
-for persistency of produced data presently stored in TTreeD
+for transient storage of trigger data
 Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 */
 
@@ -30,9 +30,13 @@ public:
 	
 	virtual void SetPatches(TriggerType_t type, Int_t i, const TClonesArray& patches);
 	
-	virtual void SetL1GammaThreshold(Int_t v) {fL1GammaThreshold = v;}
-	virtual void SetL1JetThreshold(  Int_t v) {  fL1JetThreshold = v;}
+	virtual void SetL1GammaThreshold(Int_t  v) {fL1GammaThreshold = v;}
+	virtual void SetL1JetThreshold(  Int_t  v) {  fL1JetThreshold = v;}
+	virtual void SetL1V0(            Int_t* v) {for (int i = 0; i < 2; i++) fL1V0[i] = v[i];}
+	virtual void SetL1FrameMask(     Int_t  v) {     fL1FrameMask = v;}            
+	virtual void SetL1TriggerType(   Int_t* v) {for (int i = 0; i < 8; i++) fL1TriggerType[i] = v[i];}
 
+	
 	virtual void          GetL0Trigger(  Int_t i, Int_t j, Int_t& k  ) const {   k = fL0Trigger[i][j];}
 	virtual Int_t         GetL0Trigger(  Int_t i, Int_t j            ) const {return fL0Trigger[i][j];}
 	
@@ -41,9 +45,12 @@ public:
 
 	virtual void          GetL1Region( Int_t i, Int_t arr[][64]             ) const;
 	
-	virtual Int_t         GetL1GammaThreshold() const {return fL1GammaThreshold;}
-	virtual Int_t         GetL1JetThreshold()   const {return   fL1JetThreshold;}
-
+	virtual Int_t         GetL1GammaThreshold()           const {return fL1GammaThreshold;}
+	virtual Int_t         GetL1JetThreshold()             const {return   fL1JetThreshold;}
+	virtual void          GetL1V0(            Int_t  v[]) const {for (int i = 0; i < 2; i++) v[i] = fL1V0[i];}
+	virtual Int_t         GetL1FrameMask(               ) const {return fL1FrameMask;}            
+	virtual void          GetL1TriggerType(   Int_t  v[]) const {for (int i = 0; i < 8; i++) v[i] = fL1TriggerType[i];}
+	
 	virtual Int_t         GetMode() const {return fMode;}
 	
 	virtual void          Scan() const;
@@ -70,7 +77,11 @@ private:
 	Int_t        fL1GammaThreshold;             //
 	Int_t          fL1JetThreshold;             //	
 	
-	ClassDef(AliEMCALTriggerData,1)
+	Int_t                    fL1V0[2];          //
+	Int_t             fL1FrameMask;             //
+	Int_t           fL1TriggerType[8];          //
+	
+	ClassDef(AliEMCALTriggerData,2)
 };
 
 #endif

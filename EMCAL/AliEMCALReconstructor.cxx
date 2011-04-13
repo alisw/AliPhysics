@@ -322,6 +322,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   // Trigger
   //########################################
   
+  static int saveOnce = 0;
+	
   Int_t v0M[2] = {0, 0};
   
   AliESDVZERO* esdV0 = esd->GetVZEROData();
@@ -381,6 +383,22 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       trgESD->SetL1Threshold(0, fTriggerData->GetL1GammaThreshold());
       
       trgESD->SetL1Threshold(1, fTriggerData->GetL1JetThreshold()  );
+
+	  Int_t v0[2];
+	  fTriggerData->GetL1V0(v0);
+		
+	  trgESD->SetL1V0(v0);	
+	  trgESD->SetL1FrameMask(fTriggerData->GetL1FrameMask());            
+
+	  if (!saveOnce) 
+	  {
+		  int type[8] = {0};
+		  fTriggerData->GetL1TriggerType(type);
+
+		  esd->SetCaloTriggerType(type);
+		  
+		  saveOnce = 1;
+	  }
     }
   
   // Resetting
