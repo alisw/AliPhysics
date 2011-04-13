@@ -253,6 +253,8 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
   UInt_t returnCode = AliVEvent::kUserDefined;
   triggerLogic = kCINT1;
   
+  AliDebug(AliLog::kDebug+1, Form("Processing event with triggers %s", aEsd->GetFiredTriggerClasses().Data()));
+  
   TString str(trigger);
   TObjArray* tokens = str.Tokenize(" ");
   
@@ -286,7 +288,7 @@ UInt_t AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const cha
       
       delete tokens2;
       
-      if (!foundTriggerClass)
+      if (flag && !foundTriggerClass)
       {
         AliDebug(AliLog::kDebug+1, Form("Rejecting event because (none of the) trigger class(es) %s is present", str2.Data()));
         delete tokens;
@@ -870,15 +872,15 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
   if(!fPSOADB || !fUsingCustomClasses) { // if it's already set and custom class is required, we use the one provided by the user
     AliInfo("Using Standard OADB");
     AliOADBContainer * psContainer = (AliOADBContainer*) foadb->Get("physSel");
-    if (!psContainer) AliFatal("Cannot fetche OADB container for Physics selection");
-    fPSOADB = (AliOADBPhysicsSelection*) psContainer->GetObject(runNumber, fIsPP ? "DefaultPP" : "DefaultPbPb");
+    if (!psContainer) AliFatal("Cannot fetch OADB container for Physics selection");
+    fPSOADB = (AliOADBPhysicsSelection*) psContainer->GetObject(runNumber, fIsPP ? "oadbDefaultPP" : "oadbDefaultPbPb");
     if (!fPSOADB) AliFatal(Form("Cannot find physics selection object for run %d", runNumber));
   } else {
     AliInfo("Using Custom OADB");
   }
   if(!fFillOADB || !fUsingCustomClasses) { // if it's already set and custom class is required, we use the one provided by the user
     AliOADBContainer * fillContainer = (AliOADBContainer*) foadb->Get("fillScheme");
-    if (!fillContainer) AliFatal("Cannot fetche OADB container for filling scheme");
+    if (!fillContainer) AliFatal("Cannot fetch OADB container for filling scheme");
     fFillOADB = (AliOADBFillingScheme*) fillContainer->GetObject(runNumber, "Default");
     if (!fFillOADB) AliFatal(Form("Cannot find  filling scheme object for run %d", runNumber));
   }
