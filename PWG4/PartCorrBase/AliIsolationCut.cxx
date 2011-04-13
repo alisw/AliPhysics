@@ -128,7 +128,9 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
     for(Int_t ipr = 0;ipr < plCTS->GetEntries() ; ipr ++ ){
       AliAODTrack* track = (AliAODTrack *)(plCTS->At(ipr)) ; 
       //Do not count the candidate (pion, conversion photon) or the daughters of the candidate
-      if(track->GetID() == pCandidate->GetTrackLabel(0) || track->GetID() == pCandidate->GetTrackLabel(1)) continue ;
+      if(track->GetID() == pCandidate->GetTrackLabel(0) || track->GetID() == pCandidate->GetTrackLabel(1) 
+	 || track->GetID() == pCandidate->GetTrackLabel(2) || track->GetID() == pCandidate->GetTrackLabel(3) 
+	 ) continue ;
       p3.SetXYZ(track->Px(),track->Py(),track->Pz());
       pt   = p3.Pt();
       eta  = p3.Eta();
