@@ -27,7 +27,6 @@ void MakeFlow(TString data      = "",
 	      Int_t   nevents   = 0, 
 	      TString type      = "", 
 	      Int_t   etabins   = 40,
-	      Int_t   zVertex   = 2,
 	      TString addFlow   = "",
               Int_t   addFType  = 0,
               Int_t   addFOrder = 0,
@@ -62,7 +61,7 @@ void MakeFlow(TString data      = "",
   if (data.Contains(".txt")) MakeChain(data, chain);
 
   if (data.Contains(".root")) {
-    TFile* test = TFile::Open(data.Data())
+    TFile* test = TFile::Open(data.Data());
     if (!test) {
       AliError(Form("AOD file %s not found", data.Data()));
       return;
@@ -79,14 +78,9 @@ void MakeFlow(TString data      = "",
   AliAODInputHandler *aodInputHandler = new AliAODInputHandler();
   mgr->SetInputEventHandler(aodInputHandler);      
 
-  // --- Create output handler ---------------------------------------
-  AliAODHandler* aodOut = new AliAODHandler();
-  mgr->SetOutputEventHandler(aodOut);
-  aodOut->SetOutputFileName("AliAODs.Flow.root");
-
   // --- Add the tasks ---------------------------------------------
   gROOT->LoadMacro("AddTaskForwardFlow.C");
-  AddTaskForwardFlow(type, etabins, zVertex, addFlow, addFType, addFOrder);
+  AddTaskForwardFlow(type, etabins, addFlow, addFType, addFOrder);
 
   // --- Run the analysis --------------------------------------------
   TStopwatch t;
@@ -98,7 +92,7 @@ void MakeFlow(TString data      = "",
   // 
   if (proof) mgr->SetDebugLevel(3);
   if (mgr->GetDebugLevel() < 1 && !proof) 
-    mgr->SetUseProgressBar(kTRUE,nEvents < 10000 ? 10 : 100);
+    mgr->SetUseProgressBar(kTRUE,chain->GetEntries() < 10000 ? 10 : 100);
 
   t.Start();
   if (nevents == 0) mgr->StartAnalysis("local", chain);
