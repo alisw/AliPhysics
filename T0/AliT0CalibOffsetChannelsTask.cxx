@@ -172,10 +172,10 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
   Double32_t orA = mean[1] ;
   Double32_t orC = mean[2];
  
-  if(orA<9999) fTzeroORA->Fill(orA);
-  if(orC<9999) fTzeroORC->Fill(orC);
-  if(orA<9999 && orC<9999) fResolution->Fill((orA-orC)/2.);
-  if(orA<9999 && orC<9999) fTzeroORAplusORC->Fill(meanTOF); 
+  if(orA<99999) fTzeroORA->Fill(orA);
+  if(orC<99999) fTzeroORC->Fill(orC);
+  if(orA<99999 && orC<99999) fResolution->Fill((orA-orC)/2.);
+  if(orA<99999 && orC<99999) fTzeroORAplusORC->Fill(meanTOF); 
 
   //  printf("%f   %f  %f\n",orA,orC,meanTOF);
   PostData(1, fTzeroObject);
