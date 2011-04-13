@@ -49,6 +49,7 @@ AliSISConeJetHeader::AliSISConeJetHeader():
     fMeanGhostKt(1e-100),
     fMinJetPt(2),
     fNPassMax(0),
+    fNHardJets(2),
     fOverlapThreshold(0.75),
     fPhiMax(TMath::TwoPi()),
     fPhiMin(0),
