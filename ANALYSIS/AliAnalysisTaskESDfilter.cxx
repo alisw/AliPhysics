@@ -1023,7 +1023,7 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
     aodTrack->SetTPCSharedMap (track->GetTPCSharedMap());
     Float_t ndf = track->GetTPCNcls()+1 - 5 ;
     if(ndf>0){
-      aodTrack->SetChi2perNDF(track->GetTPCchi2()/ndf);
+      aodTrack->SetChi2perNDF(track->GetConstrainedChi2TPC()/ndf);
     }
     else{
       aodTrack->SetChi2perNDF(-1);
