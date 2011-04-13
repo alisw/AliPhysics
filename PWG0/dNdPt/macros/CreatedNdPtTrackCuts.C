@@ -543,6 +543,30 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     TString tag = "TPC-only tracking";
   }
   
+  // TPC-only tight cuts
+  if (cutMode == 230) 
+  {
+    // beta cuts (still under investigation)
+    minNClustersTPC = 70;
+    maxChi2PerClusterTPC = 4.0;
+    maxDCAtoVertexXY = 0.3; // cm
+    maxDCAtoVertexZ  = 0.3; // cm
+
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetRequireTPCRefit(kFALSE);
+    esdTrackCuts->SetRequireTPCStandAlone(kTRUE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    esdTrackCuts->SetMinNClustersTPC(minNClustersTPC);
+    esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
+    esdTrackCuts->SetRequireITSRefit(kFALSE);
+    esdTrackCuts->SetMaxDCAToVertexXY(maxDCAtoVertexXY);
+    esdTrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertexZ);
+    esdTrackCuts->SetDCAToVertex2D(kTRUE);
+    //esdTrackCuts->SetPtRange(minPt,maxPt);
+    //esdTrackCuts->SetEtaRange(minEta,maxEta);
+
+    TString tag = "TPC-only tracking";
+  }
   
 
   // TPC-only (no pt cut, no eta cut)
