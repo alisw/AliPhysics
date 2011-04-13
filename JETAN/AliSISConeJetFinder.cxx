@@ -84,19 +84,21 @@ void AliSISConeJetFinder::FindJets()
 {
 
   // Pick up siscone header
-  AliSISConeJetHeader *header = (AliSISConeJetHeader*)fHeader;
-  Int_t debug  = header->GetDebug();     // debug option
-  Int_t fOpt    = fReader->GetReaderHeader()->GetDetector();
+  AliSISConeJetHeader *header      = (AliSISConeJetHeader*)fHeader;
+  AliJetReaderHeader *readerheader = (AliJetReaderHeader*)fReader->GetReaderHeader();
+
+  Int_t debug = header->GetDebug();                        // debug option
+  Int_t fOpt  = fReader->GetReaderHeader()->GetDetector();
 
 
 //******************************** SISCONE PLUGIN CONFIGURATION
 // Here we look for SISCone parameters in the header and we define our plugin.  
 
-  Double_t coneRadius                = header->GetConeRadius();                 // cone radius
-  Double_t overlapThreshold          = header->GetOverlapThreshold();           // overlap parameter
-  Int_t    nPassMax                  = header->GetNPassMax();                   // maximum number of passes
-  Double_t ptProtoJetMin             = header->GetPtProtojetMin();              // pT min of protojets
-  Double_t caching                   = header->GetCaching();                    // do we record found cones for this set of data?
+  Double_t coneRadius                = header->GetConeRadius();       // cone radius
+  Double_t overlapThreshold          = header->GetOverlapThreshold(); // overlap parameter
+  Int_t    nPassMax                  = header->GetNPassMax();         // maximum number of passes
+  Double_t ptProtoJetMin             = header->GetPtProtojetMin();    // pT min of protojets
+  Double_t caching                   = header->GetCaching();          // do we record found cones for this set of data?
 
 //  if (header->GetSplitMergeScale() == 0) fastjet::SISConePlugin::SplitMergeScale splitMergeScale = fastjet::SISConePlugin::SM_pttilde; // There's only one split merge scale
 //  Double_t splitMergeStoppingScale = header->GetSplitMergeStoppingScale(); // Additional cut on pt_tilde of protojets
@@ -105,81 +107,89 @@ void AliSISConeJetFinder::FindJets()
   plugin = new fastjet::SISConePlugin(coneRadius, overlapThreshold, nPassMax, ptProtoJetMin, caching);
 
   vector<fastjet::PseudoJet> inputParticles; 
+
 //********************************  READING OF INPUT PARTICLES
 // Here we look for px, py pz and energy of each particle that we gather in a PseudoJet object, and we put all these PseudoJet in a vector of PseudoJets : input_particles. 
 
-    if(fOpt==0) 
-      {
-	TClonesArray *lvArray = fReader->GetMomentumArray();
+  Double_t pttrackcut = readerheader->GetPtCut(); 
+  if (debug)cout<<"pT track cut for SISCone jet finder = "<<pttrackcut<<" GeV"<<endl;
 
-	
-	// We check if lvArray is ok
-	if(lvArray == 0)
-	  {
-	    cout << "Could not get the momentum array" << endl;
-	    delete plugin;
-	    return;
-	  }
-	
-	Int_t nIn = lvArray->GetEntries();
-	
-	if(nIn == 0)// nIn = Number of particles in the event
-	  {
-	    if (debug) cout << "entries = 0 ; Event empty !!!" << endl ;
-	    delete plugin;
-	    return;
-	  }
-	
-	Float_t px,py,pz,en;
-	
-	// Load input vectors
-	for(Int_t i = 0; i < nIn; i++)
-	  { 
-	    TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
-	    px = lv->Px();
-	    py = lv->Py();
-	    pz = lv->Pz();
-	    en = lv->Energy();
-	    
-	    fastjet::PseudoJet inputPart(px,py,pz,en); 
-	    inputPart.set_user_index(i);
-	    inputParticles.push_back(inputPart); 
-	    
-	  }
-      }
-    else {
-      TClonesArray* fUnit = fReader->GetUnitArray();
-      if(fUnit == 0) { cout << "Could not get the momentum array" << endl; 	    delete plugin; return; }
-      Int_t         nIn = fUnit->GetEntries();
-      if(nIn == 0) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ;  	    delete plugin; return; }
-        // Information extracted from fUnitArray
-      // load input vectors and calculate total energy in array
-      Float_t pt,eta,phi,theta,px,py,pz,en;
-      Int_t ipart = 0;
-      for(Int_t i=0; i<nIn; i++) 
-	{
-	  AliJetUnitArray *uArray = (AliJetUnitArray*)fUnit->At(i);
-	  
-	  if(uArray->GetUnitEnergy()>0.){
-	    
-	    // It is not necessary anymore to cut on particle pt
-	    pt    = uArray->GetUnitEnergy();
-	    eta   = uArray->GetUnitEta();
-	    phi   = uArray->GetUnitPhi();
-	    theta = EtaToTheta(eta);
-	    en    = (TMath::Abs(TMath::Sin(theta)) == 0) ? pt : pt/TMath::Abs(TMath::Sin(theta));
-	    px    = TMath::Cos(phi)*pt;
-	    py    = TMath::Sin(phi)*pt;
-	    pz    = en*TMath::TanH(eta);
-	    if(debug) cout << "pt: " << pt << ", eta: " << eta << ", phi: " << phi << ", en: " << en << ", px: " << px << ", py: " << py << ", pz: " << pz << endl;
-	    
-	    fastjet::PseudoJet inputPart(px,py,pz,en); // create PseudoJet object
-	    inputPart.set_user_index(ipart); //label the particle into Fastjet algortihm
-	    inputParticles.push_back(inputPart);  // back of the input_particles vector 
-	    ipart++;
-	  }
-	} // End loop on UnitArray 
+  if(fOpt==0) 
+  {
+    TClonesArray *lvArray    = fReader->GetMomentumArray();
+
+    // We check if lvArray is ok
+    if(lvArray == 0)
+    {
+      cout << "Could not get the momentum array" << endl;
+      delete plugin;
+      return;
     }
+	
+    Int_t nIn = lvArray->GetEntries();
+	
+    if(nIn == 0)// nIn = Number of particles in the event
+    {
+      if (debug) cout << "entries = 0 ; Event empty !!!" << endl ;
+      delete plugin;
+      return;
+    }
+	
+    Float_t px,py,pz,en;
+	
+    // Load input vectors
+    for(Int_t i = 0; i < nIn; i++)
+    { 
+      TLorentzVector *lv = (TLorentzVector*) lvArray->At(i);
+      px = lv->Px();
+      py = lv->Py();
+      pz = lv->Pz();
+      en = lv->Energy();
+
+      if (pttrackcut > TMath::Sqrt(px*px+py*py)) continue; //added by syssy
+	    
+      fastjet::PseudoJet inputPart(px,py,pz,en); 
+      inputPart.set_user_index(i);
+      inputParticles.push_back(inputPart); 
+    }
+  }
+  else 
+  {
+    TClonesArray* fUnit = fReader->GetUnitArray();
+    if(fUnit == 0) { cout << "Could not get the momentum array" << endl; 	    delete plugin; return; }
+    Int_t         nIn = fUnit->GetEntries();
+    if(nIn == 0) { if (debug) cout << "entries = 0 ; Event empty !!!" << endl ;  	    delete plugin; return; }
+    // Information extracted from fUnitArray
+    // load input vectors and calculate total energy in array
+    Float_t pt,eta,phi,theta,px,py,pz,en;
+    Int_t ipart = 0;
+    for(Int_t i=0; i<nIn; i++) 
+    {
+      AliJetUnitArray *uArray = (AliJetUnitArray*)fUnit->At(i);
+	  
+      if(uArray->GetUnitEnergy()>0.)
+      {
+        // It is not necessary anymore to cut on particle pt
+	pt    = uArray->GetUnitEnergy();
+	eta   = uArray->GetUnitEta();
+	phi   = uArray->GetUnitPhi();
+	theta = EtaToTheta(eta);
+	en    = (TMath::Abs(TMath::Sin(theta)) == 0) ? pt : pt/TMath::Abs(TMath::Sin(theta));
+	px    = TMath::Cos(phi)*pt;
+	py    = TMath::Sin(phi)*pt;
+	pz    = en*TMath::TanH(eta);
+
+        if (pttrackcut > TMath::Sqrt(px*px+py*py)) continue; 
+
+	if(debug) cout << "pt: " << pt << ", eta: " << eta << ", phi: " << phi << ", en: " << en << ", px: " << px << ", py: " << py << ", pz: " << pz << endl;
+	    
+	fastjet::PseudoJet inputPart(px,py,pz,en); // create PseudoJet object
+	inputPart.set_user_index(ipart); //label the particle into Fastjet algortihm
+	inputParticles.push_back(inputPart);  // back of the input_particles vector 
+	ipart++;
+      }
+    } // End loop on UnitArray 
+  }
   
 //******************************** CHOICE OF JET AREA  
 // Here we determine jets area for subtracting background later
@@ -226,9 +236,10 @@ void AliSISConeJetFinder::FindJets()
 //********************************
 //******************************** BG SUBTRACTION
   if (bgMode == 1)// BG subtraction
-  {
+    {
     //******************************** JETS FINDING AND EXTRACTION
     fastjet::ClusterSequenceArea clustSeq(inputParticles, plugin, areaDef);
+
     // Here we extract inclusive jets with pt > ptmin, sorted by pt 
     Double_t ptMin = header->GetMinJetPt(); 
     vector<fastjet::PseudoJet> inclusiveJets = clustSeq.inclusive_jets(ptMin);
@@ -243,32 +254,65 @@ void AliSISConeJetFinder::FindJets()
     Double_t phiMax = header->GetPhiMax();
     fastjet::RangeDefinition range(rapMin, rapMax, phiMin, phiMax);
 
-    // rho calculus from Cambridge/Aachen clustering (not from SISCONE as it gives too small areas)
-    Int_t algo = header->GetBGAlgorithm();
+    // As SISCone gives too small areas to estimate background,
+    // we have to choose between kT and Cambridge/Aachen algorithms
+    // to estimate mean background rho
     fastjet::JetAlgorithm algorithm = fastjet::kt_algorithm;
+    Int_t algo = header->GetBGAlgorithm();
     if (algo == 0) algorithm = fastjet::kt_algorithm;
     if (algo == 1) algorithm = fastjet::cambridge_algorithm;
-    Double_t RRho = header->GetRForRho();
-    fastjet::JetDefinition jetDefForRho(algorithm, RRho);
-    fastjet::ClusterSequenceArea csForRho(inputParticles, jetDefForRho, areaDef);
-    Double_t rho = csForRho.median_pt_per_unit_area_4vector(range);
-    cout<<"rho = "<<rho<<endl;
+
+    // Rho estimation :
+    // Radius used to calculate rho, can be different from the one used to reconstruct jets
+    Double_t RRho = header->GetRForRho(); 
+    fastjet::JetDefinition jetDefinitionForRhoEstimation(algorithm, RRho);
+    fastjet::ClusterSequenceArea csForRho(inputParticles, jetDefinitionForRhoEstimation, areaDef);
+    vector<fastjet::PseudoJet> inclusiveJetsForRhoEstimation = sorted_by_pt(csForRho.inclusive_jets());
+
+    // Number of hard jets not to be used to estimate rho
+    Int_t NHardJets = header->GetNumberOfJetsToErase();
+    if (debug) cout<<"Number of jets before subtraction : "<<inclusiveJetsForRhoEstimation.size()<<endl;
+    if (debug) cout<<"Number of jets not to count into rho estimation : "<<NHardJets<<endl;
+    Bool_t rhoOnJet = 0;
+    if (inclusiveJetsForRhoEstimation.size() == 1 && inclusiveJetsForRhoEstimation[0].perp() > 5) rhoOnJet = 1;//if there's only one jet (not bg kind), rho = 0
+    if (inclusiveJetsForRhoEstimation.size() <= NHardJets && inclusiveJetsForRhoEstimation.size() != 1  && inclusiveJetsForRhoEstimation.size() != 0)
+    {
+      //      inclusiveJetsForRhoEstimation.erase(inclusiveJetsForRhoEstimation.begin(),inclusiveJetsForRhoEstimation.begin()+1);
+      inclusiveJetsForRhoEstimation.erase(inclusiveJetsForRhoEstimation.begin());
+      cout<<"Only the 1st (hardest) jet of the event hasn't been taken into account for rho estimation"<<endl;
+    }
+    if (inclusiveJetsForRhoEstimation.size() > NHardJets) inclusiveJetsForRhoEstimation.erase(inclusiveJetsForRhoEstimation.begin(), inclusiveJetsForRhoEstimation.begin()+NHardJets);
+    
+    // Estimation of rho and fluctuations sigma
+
+    //1st method
+    Double_t rho      = 0;
+    Double_t sigma    = 0;
+    Double_t meanarea = 0;
+    // 3rd argument   : 1 = use area 4 vector rather than simple area
+    // last argument  : 0 = in case of explicit ghosts use
+    if (inclusiveJetsForRhoEstimation.size() != 0) csForRho.get_median_rho_and_sigma(inclusiveJetsForRhoEstimation, range, 1, rho, sigma, meanarea, 1); // this gives the fluctuations also
+
+    if (rhoOnJet) rho = 0;
+
+    if(debug) cout<<"rho = "<<rho<<endl;
 
     // Vector of corrected jets
-    vector<fastjet::PseudoJet> corrJets = clustSeq.subtracted_jets(rho, ptMin);
+    vector<fastjet::PseudoJet> corrJets = sorted_by_pt(clustSeq.subtracted_jets(rho, ptMin));
   
     //***************************** JETS DISPLAY
 
     for (size_t j = 0; j < jets.size(); j++)
     {
-      // If the jet is only made of ghosts, continue.
-      if (clustSeq.is_pure_ghost(jets[j]) == 1) continue;
+//       // If the jet is only made of ghosts, continue.
+//       if (clustSeq.is_pure_ghost(corrJets[j]) == 1) continue;
 
       // If the correction is > jet energy px = py = pz = e = 0
       if (corrJets[j].px() == 0 && corrJets[j].py() == 0 && corrJets[j].pz() == 0 && corrJets[j].E() == 0) continue;
 
-      if(debug){
-	cout<<"********************************** Reconstructed jet(s) (non corrected)"<<endl;
+      if(debug)
+      {
+	cout<<"********************************** Reconstructed jet(s) (not corrected)"<<endl;
 	cout<<"Jet number "<<j+1<<" : "<<"Rapidity : "<<jets[j].rap()<<" Phi : "<<jets[j].phi()<<" pT : "<<jets[j].perp()<<" area : "<<clustSeq.area(jets[j])<<endl;
 	cout<<"e = "<<jets[j].E()<<endl;
 	
@@ -301,7 +345,7 @@ void AliSISConeJetFinder::FindJets()
     {
       if(debug)
       {
-	cout<<"********************************** Reconstructed jet(s) (non corrected)"<<endl;
+	cout<<"********************************** Reconstructed jet(s) (not corrected)"<<endl;
 	cout<<"Jet number "<<k+1<<" : "<<"Rapidity : "<<jets[k].rap()<<" Phi : "<<jets[k].phi()<<" pT : "<<jets[k].perp()<<endl;
 	cout<<"e = "<<jets[k].E()<<endl;
       }
