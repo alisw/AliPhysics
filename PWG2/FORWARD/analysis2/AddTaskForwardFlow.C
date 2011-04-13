@@ -26,7 +26,6 @@
  */
 void AddTaskForwardFlow(TString type = "", 
                         Int_t etabins = 40,
-                        Int_t zVertex = 2,
                         TString addFlow = "",
                         Int_t addFType = 0,
                         Int_t addFOrder = 0)
@@ -76,10 +75,8 @@ void AddTaskForwardFlow(TString type = "",
   qc->AddFlow(addFlow);
   qc->AddFlowType(addFType);
   qc->AddFlowOrder(addFOrder);
-  qc->SetVertexRange(zVertex);
   
   mgr->ConnectInput(qc, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(qc, 0, mgr->GetCommonOutputContainer());
   mgr->ConnectOutput(qc, 1, qcout);
 
   return;

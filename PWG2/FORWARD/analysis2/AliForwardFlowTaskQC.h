@@ -5,8 +5,8 @@
 #define ALIFORWARDFLOWTASKQC_H
 /**
  * @file   AliForwardFlowTaskQC.h
- * @author Alexander Hansen
- * @date   Wed Mar 23 14:05:06 2011
+ * @author Alexander Hansen alexander.hansen@cern.ch
+ * @date   Fri Mar 25 13:53:00 2011
  * 
  * @brief  
  * 
@@ -17,8 +17,8 @@
 #include "AliForwardFlowUtil.h"
 class AliAODEvent;
 
-/**
- * @defgroup pwg2_forward_traks_flow Flow tasks 
+ /**
+ * @defgroup pwg2_forward_tasks_flow Flow tasks 
  * @ingroup pwg2_forward_tasks
  */
 /**
@@ -60,7 +60,6 @@ public:
   /** 
    * Create output objects 
    * 
-   * @todo Check if this shouldn't be UserCreateOutputObjects!
    */
   virtual void UserCreateOutputObjects();
   /**
@@ -84,16 +83,14 @@ public:
   /*
    * Returns the outputlist
    *
-   * @return output list
    */
   TList* GetOutputList() { return fOutputList; }
   /* 
    * Set Number of @f$ \eta@f$ bins to be used in flow analysis
    *
-   * @param nbins Number of @f$ \eta@f$ bins  
    */
   void SetUseNEtaBins(Int_t nbins) { fEtaBins = nbins; }
-  /* 
+  /*
    * Set which harmonics to calculate. @f$ v_{1}@f$ to @f$ v_{4}@f$ is
    * available and calculated as default
    *
@@ -107,14 +104,14 @@ public:
     fv[1] = v1; fv[2] = v2; fv[3] = v3; fv[4] = v4; }
   /*
    * Set string to add flow to MC truth particles
-   * 
-   * @param type String 
+   *
+   * @param type String
    */
   void AddFlow(TString type = "") { fAddFlow = type; }
   /*
    * Set which function fAddFlow should use
-   * 
-   * @param number Type of AddFlow 
+   *
+   * @param type of AddFlow 
    */
   void AddFlowType(Int_t number = 0) { fAddType = number; }
   /*
@@ -123,12 +120,6 @@ public:
    * @param order Flow order 
    */
   void AddFlowOrder(Int_t order = 2) { fAddOrder = order; }
- /**
-   * Set Z vertex range - Used by flow task
-   * 
-   * @param vertex Vertex range
-   */
-  void SetVertexRange(Int_t vertex = 2) { fZvertex = vertex; }
 protected:
   /** 
    * Copy constructor 
@@ -152,7 +143,8 @@ protected:
    * Calculate Q cumulant
    * 
    * @param type     Determines which histograms should be used
-   *                 - "" = data histograms
+   *                 - "FMD" = FMD data histograms
+   *                 - "SPD" = SPD data histograms
    *                 - "TrRef" = track reference histograms
    *                 - "MC" = MC truth histograms
    * @param harmonic Which harmonic to calculate
@@ -172,10 +164,10 @@ protected:
    */
   Double_t VarSQ(Double_t wxx2, Double_t x, Double_t wx, 
 		 Double_t wxx, Double_t sqrtwx2) const ;
-  /** 
+  /**
    * Caclulate the covariance between x and y - used to finalize
    * calculations in Terminate()
-   * 
+   *
    * @param wxwyxy @f$ w_x w_y x y@f$
    * @param wxwy   @f$ w_x w_y@f$
    * @param XY     @f$ xy@f$ 
@@ -196,11 +188,11 @@ protected:
   TString        fAddFlow;	//  Add flow string
   Int_t          fAddType;	//  Add flow type #
   Int_t          fAddOrder;	//  Add flow order
-  Int_t	         fZvertex;	//  Z vertex range
+  Float_t  	 fZvertex;	//  Z vertex bin
   Double_t       fCent;         //  Centrality
   
 
-  ClassDef(AliForwardFlowTaskQC, 1); // Analysis task for FMD analysis
+  ClassDef(AliForwardFlowTaskQC, 2); // Analysis task for FMD analysis
 };
  
 #endif

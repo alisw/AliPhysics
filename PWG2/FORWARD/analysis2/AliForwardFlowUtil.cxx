@@ -11,22 +11,23 @@
 #include "AliLog.h"
 #include "AliAODForwardMult.h"
 #include "AliAODEvent.h"
+#include "TProfile2D.h"
 
 ClassImp(AliForwardFlowUtil)
 
 //_____________________________________________________________________
 AliForwardFlowUtil::AliForwardFlowUtil() : 
   fList(0),
-  fZvertex(0) 
-{ 
+  fCent(0),
+  fVertex(0) {} 
   //
   // Default Constructor
   //
-}
 //_____________________________________________________________________
 AliForwardFlowUtil::AliForwardFlowUtil(TList* outputList) :
   fList(0),
-  fZvertex(0)
+  fCent(0),
+  fVertex(0)
 { 
   // 
   // Constructor
@@ -45,11 +46,11 @@ Bool_t AliForwardFlowUtil::AODCheck(const AliAODForwardMult* aodfm) const
   // Parameters: 
   //  AliAODForwardMult: forward mult object with trigger and vertex info
   //
-  return aodfm->CheckEvent(AliAODForwardMult::kInel, -fZvertex, fZvertex, 
-			   0, 0);
+  return aodfm->CheckEvent(AliAODForwardMult::kInel, -5, 5, 0, 100);
+//  return aodfm->CheckEvent(AliAODForwardMult::kInel, -5, 5, 0, 0);
 }
 //_____________________________________________________________________
-Bool_t AliForwardFlowUtil::LoopAODFMD(const AliAODEvent* aodevent) const
+Bool_t AliForwardFlowUtil::LoopAODFMD(const AliAODEvent* aodevent)
 {
   //
   // Loop over AliAODFowardMult object and fill histograms provided
@@ -60,8 +61,9 @@ Bool_t AliForwardFlowUtil::LoopAODFMD(const AliAODEvent* aodevent) const
   if (!AODCheck(aodfmult)) return kFALSE;
 
   TH2D hdNdetadphi = aodfmult->GetHistogram();
-  TH1D* dNdphi = (TH1D*)fList->FindObject("hdNdphiSE");
-  TH2D* dNdetadphi = (TH2D*)fList->FindObject("hdNdetadphiSE");
+  TH2D* vertex = (TH2D*)fList->FindObject("CoverageVsVertex");
+  TH1D* dNdphi = (TH1D*)fList->FindObject("hdNdphiSEFMD");
+  TH2D* dNdetadphi = (TH2D*)fList->FindObject("hdNdetadphiSEFMD");
   dNdphi->Reset();
   dNdetadphi->Reset();
 
@@ -69,21 +71,26 @@ Bool_t AliForwardFlowUtil::LoopAODFMD(const AliAODEvent* aodevent) const
   Double_t eta = 0;
   Double_t phi = 0;
   Double_t weight = 0;
+  fVertex = aodfmult->GetIpZ();
   for (Int_t etaBin = 1; etaBin<=hdNdetadphi.GetNbinsX(); etaBin++) {
     eta = hdNdetadphi.GetXaxis()->GetBinCenter(etaBin);
-    for (Int_t phiBin = 1; phiBin<=hdNdetadphi.GetNbinsY(); phiBin++) {
+    for (Int_t phiBin = 0; phiBin<=hdNdetadphi.GetNbinsY(); phiBin++) {
       phi = hdNdetadphi.GetYaxis()->GetBinCenter(phiBin);
       weight = hdNdetadphi.GetBinContent(etaBin, phiBin);
+      if (phiBin == 0) {
+        vertex->Fill(eta, fVertex, weight);
+        continue;
+      }
       dNdetadphi->Fill(eta, phi, weight);
       if (eta < 4.) dNdphi->Fill(phi, weight);
       mult += weight;
     }
   }
   dNdphi->SetBinContent(0, mult);
-//  if (aodfmult->HasCentrality()) dNdphi->SetBinContent(dNdphi->GetNbinsX()+1, aodfmult->GetCentrality());
-//  else dNdphi->SetBinContent(dNdphi->GetNbinsX()+1, -1);
+  fCent = -1;
+  if (aodfmult->HasCentrality()) fCent = (Double_t)aodfmult->GetCentrality();
 
-  dNdphi->SetBinContent(dNdphi->GetNbinsX()+1, GetCentFromMC(aodevent));
+//  fCent = GetCentFromMC(aodevent);
   return kTRUE;
 }
 //_____________________________________________________________________
@@ -97,6 +104,7 @@ Bool_t AliForwardFlowUtil::LoopAODSPD(const AliAODEvent* aodevent) const
   if (!aodcmult) return kFALSE;
 
   TH2D hdNdetadphi = aodcmult->GetHistogram();
+  TH2D* vertex = (TH2D*)fList->FindObject("CoverageVsVertex");
   TH2D* dNdetadphi = (TH2D*)fList->FindObject("hdNdetadphiSESPD");
   dNdetadphi->Reset();
 
@@ -105,16 +113,20 @@ Bool_t AliForwardFlowUtil::LoopAODSPD(const AliAODEvent* aodevent) const
   Double_t weight = 0;
   for (Int_t etaBin = 1; etaBin<=hdNdetadphi.GetNbinsX(); etaBin++) {
     eta = hdNdetadphi.GetXaxis()->GetBinCenter(etaBin);
-    for (Int_t phiBin = 1; phiBin<=hdNdetadphi.GetNbinsY(); phiBin++) {
+    for (Int_t phiBin = 0; phiBin<=hdNdetadphi.GetNbinsY(); phiBin++) {
       phi = hdNdetadphi.GetYaxis()->GetBinCenter(phiBin);
       weight = hdNdetadphi.GetBinContent(etaBin, phiBin);
+      if (phiBin == 0) {
+        vertex->Fill(eta, fVertex, weight);
+        continue;
+      }
       dNdetadphi->Fill(eta, phi, weight);
     }
   }
   return kTRUE;
 }
 //_____________________________________________________________________
-Bool_t AliForwardFlowUtil::LoopAODtrrefHits(const AliAODEvent* aodevent) const 
+Bool_t AliForwardFlowUtil::LoopAODFMDtrrefHits(const AliAODEvent* aodevent) const 
 {
   //
   // Loop over AliAODForwardMult object, get MC track ref information
@@ -126,8 +138,8 @@ Bool_t AliForwardFlowUtil::LoopAODtrrefHits(const AliAODEvent* aodevent) const
  // if (!AODCheck(aodfmult)) return kFALSE;
 
   TH2D hdNdetadphi = aodfmult->GetHistogram();
-  TH1D* dNdphi = (TH1D*)fList->FindObject("hdNdphiSETrRef");
-  TH2D* dNdetadphi = (TH2D*)fList->FindObject("hdNdetadphiSETrRef");
+  TH1D* dNdphi = (TH1D*)fList->FindObject("hdNdphiSEFMDTR");
+  TH2D* dNdetadphi = (TH2D*)fList->FindObject("hdNdetadphiSEFMDTR");
   dNdphi->Reset();
   dNdetadphi->Reset();
 
@@ -141,12 +153,39 @@ Bool_t AliForwardFlowUtil::LoopAODtrrefHits(const AliAODEvent* aodevent) const
       phi = hdNdetadphi.GetYaxis()->GetBinCenter(phiBin);
       weight = hdNdetadphi.GetBinContent(etaBin, phiBin);
       dNdetadphi->Fill(eta, phi, weight);
-      dNdphi->Fill(phi, weight);
+      if (eta < 4.) dNdphi->Fill(phi, weight);
       mult += weight;
     }
   }
   dNdphi->SetBinContent(0, mult);
 
+  return kTRUE;
+}
+//_____________________________________________________________________
+Bool_t AliForwardFlowUtil::LoopAODSPDtrrefHits(const AliAODEvent* aodevent) const
+{
+  // 
+  // Loop over AliAODCentralMult object and fill histograms
+  // provided by flow task
+  //
+  AliAODCentralMult* aodcmult = static_cast<AliAODCentralMult*>(aodevent->FindListObject("CentralClustersMC"));
+  if (!aodcmult) return kFALSE;
+
+  TH2D hdNdetadphi = aodcmult->GetHistogram();
+  TH2D* dNdetadphi = (TH2D*)fList->FindObject("hdNdetadphiSESPDTR");
+  dNdetadphi->Reset();
+
+  Double_t eta = 0;
+  Double_t phi = 0;
+  Double_t weight = 0;
+  for (Int_t etaBin = 1; etaBin<=hdNdetadphi.GetNbinsX(); etaBin++) {
+    eta = hdNdetadphi.GetXaxis()->GetBinCenter(etaBin);
+    for (Int_t phiBin = 1; phiBin<=hdNdetadphi.GetNbinsY(); phiBin++) {
+      phi = hdNdetadphi.GetYaxis()->GetBinCenter(phiBin);
+      weight = hdNdetadphi.GetBinContent(etaBin, phiBin);
+      dNdetadphi->Fill(eta, phi, weight);
+    }
+  }
   return kTRUE;
 }
 //_____________________________________________________________________
@@ -167,13 +206,17 @@ Bool_t AliForwardFlowUtil::LoopAODmc(const AliAODEvent* aodevent,
   }
 
   Double_t rp = 0;
-  if (addFlow.Length() > 1) {
-    AliAODMCHeader* header = (AliAODMCHeader*)aodevent->FindListObject(AliAODMCHeader::StdBranchName());
+  AliAODMCHeader* header = dynamic_cast<AliAODMCHeader*>(aodevent->FindListObject(AliAODMCHeader::StdBranchName()));
+  if (!header) {
+    AliWarning("No header file found.");
+  }
+  else {
     rp = header->GetReactionPlaneAngle();
   }
 
   TH2D* dNdetadphi = (TH2D*)fList->FindObject("hdNdetadphiSEMC");
   TH1D* dNdphi = (TH1D*)fList->FindObject("hdNdphiSEMC");
+  TProfile2D* mcTruth = (TProfile2D*)fList->FindObject("pMCTruth");
   dNdphi->Reset();
   dNdetadphi->Reset();
   
@@ -191,7 +234,9 @@ Bool_t AliForwardFlowUtil::LoopAODmc(const AliAODEvent* aodevent,
     }
     if (!particle->IsPhysicalPrimary()) continue;
     if (particle->Charge() == 0) continue;
-    if (particle->Eta() > -3.4 && particle->Eta() < 5) {
+    Double_t eta = particle->Eta();
+    Double_t phi = particle->Phi();
+    if (eta > -6 && eta < 6) {
       // Add flow if it is in the argument
       if (addFlow.Length() > 1) {
         if (addFlow.Contains("pt"))
@@ -199,15 +244,16 @@ Bool_t AliForwardFlowUtil::LoopAODmc(const AliAODEvent* aodevent,
         if (addFlow.Contains("pid"))
           weight += AddpidFlow(particle->PdgCode(), type);
         if (addFlow.Contains("eta"))
-          weight += AddetaFlow(particle->Eta(), type);
+          weight += AddetaFlow(eta, type);
         if (addFlow.Contains("flat"))
           weight = 0.1*type;
-        weight *= 2.*TMath::Cos((Double_t)order*(particle->Phi()-rp)); 
+        weight *= 2.*TMath::Cos((Double_t)order*(phi-rp)); 
       }
       weight += 1;
       
-      dNdphi->Fill(particle->Phi(), weight);
-      dNdetadphi->Fill(particle->Eta(), particle->Phi(), weight);
+      dNdphi->Fill(phi, weight);
+      dNdetadphi->Fill(eta, phi, weight);
+      mcTruth->Fill(eta, fCent, TMath::Cos(2.*(phi-rp)));
       mult += weight;
     }
   }
