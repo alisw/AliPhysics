@@ -18,11 +18,32 @@ void PlotSDDRawData(Char_t datafil[100], Int_t nDDL, Int_t firstEv=18, Int_t las
   const Int_t nHybrids=24;
   Bool_t writtenoutput=kFALSE;
   TH2F** histo = new TH2F*[nHybrids];
-  Char_t nome[20];
   for(Int_t i=0;i<nHybrids;i++){
-    sprintf(nome,"histo%d",i);
-    histo[i]=new TH2F(nome,"",256,-0.5,255.5,256,-0.5,255.5);
+    histo[i]=new TH2F(Form("histo%d",i),"",256,-0.5,255.5,256,-0.5,255.5);
     histo[i]->SetStats(0);
+  }
+
+  Bool_t isSingleMod=kFALSE;
+  Int_t npx=4;
+  Int_t npy=6;
+  Int_t xsiz=900;
+  Int_t ysiz=900;
+  Int_t nHybrToPlot=24;
+  Int_t iMod=-1;
+  if(nDDL>=240 && nDDL<500){
+    iMod=nDDL;
+    AliITSDDLModuleMapSDD* dmap=new AliITSDDLModuleMapSDD();
+    dmap->SetJun09Map();
+    Int_t nCarlos;
+    dmap->FindInDDLMap(iMod,nDDL,nCarlos);
+    histo[nCarlos*2]->SetTitle(Form("Module %d Side 0",iMod));
+    histo[nCarlos*2+1]->SetTitle(Form("Module %d Side 0",iMod));
+    isSingleMod=kTRUE;
+    npx=2;
+    npy=1;
+    xsiz=900;
+    ysiz=450;
+    nHybrToPlot=2;
   }
 
   Int_t iev=firstEv;
@@ -33,12 +54,12 @@ void PlotSDDRawData(Char_t datafil[100], Int_t nDDL, Int_t firstEv=18, Int_t las
     rd=new AliRawReaderDate(datafil,iev);
   }
   TStopwatch *evtime=new TStopwatch();
-  TCanvas* c0 = new TCanvas("cd0","c0",900,900);
+  TCanvas* c0 = new TCanvas("cd0","c0",xsiz,ysiz);
   gStyle->SetPalette(1);
 
   do{
     c0->Clear();				
-    c0->Divide(4,6,0.001,0.001);
+    c0->Divide(npx,npy,0.001,0.001);
 
     evtime->Start();
     printf("Event # %d\n",iev);
@@ -66,11 +87,16 @@ void PlotSDDRawData(Char_t datafil[100], Int_t nDDL, Int_t firstEv=18, Int_t las
     evtime->Reset();
     iev++;
     
-    for(Int_t i=0;i<nHybrids;i++){
+    for(Int_t i=0;i<nHybrToPlot;i++){
       c0->cd(i+1);
-      histo[i]->DrawCopy("colz");
+      if(isSingleMod){
+	histo[nCarlos*2+i]->DrawCopy("colz");
+      }else{
+	histo[i]->DrawCopy("colz");
+      }
     }
     c0->Update();
+    if(histo[nCarlos*2]->GetMaximum()>1) getchar();
   }while(rd->NextEvent()&&iev<=lastEv);
 
 }
