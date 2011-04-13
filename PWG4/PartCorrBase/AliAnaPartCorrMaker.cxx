@@ -284,7 +284,7 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
   }
 	
   if(fAnaDebug >= 0 ){ 
-		printf("***  Event %d   ***  \n",iEntry);
+		printf("***  AliAnaPartCorrMaker::ProcessEvent() Event %d   ***  \n",iEntry);
 	  if(fAnaDebug > 1 ) {
 		  printf("AliAnaPartCorrMaker::ProcessEvent() - Current File Name : %s\n", currentFileName);
 		  //printf("fAODBranchList %p, entries %d\n",fAODBranchList,fAODBranchList->GetEntries());
