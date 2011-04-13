@@ -6,8 +6,8 @@
 #define ALIFORWARDFLOWUTIL_H
 /**
  * @file   AliForwardFlowUtil.h
- * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
- * @date   Wed Mar 23 14:05:40 2011
+ * @author Alexander Hansen alexander.hansen@cern.ch
+ * @date   Fri Mar 25 13:15:40 2011
  * 
  * @brief  
  * 
@@ -45,7 +45,7 @@ public:
    * 
    * @param aodfm Forward multplicity AOD event structure 
    * 
-   * @return true on success
+   * @return true on success 
    */
   Bool_t AODCheck(const AliAODForwardMult* aodfm) const;
   /**
@@ -55,9 +55,9 @@ public:
    * 
    * @return true on success
    */
-  Bool_t LoopAODFMD(const AliAODEvent* AODevent) const;
+  Bool_t LoopAODFMD(const AliAODEvent* AODevent);
   /*
-   * Loop over AliAODForwardCentral object and fill flow histograms
+   * Loop over AliAODCentralMult object and fill flow histograms
    * 
    * @param AODevent AOD event structure 
    * 
@@ -72,7 +72,16 @@ public:
    * 
    * @return true on success
    */
-  Bool_t LoopAODtrrefHits(const AliAODEvent* AODevent) const;
+  Bool_t LoopAODFMDtrrefHits(const AliAODEvent* AODevent) const;
+  /**
+   * Loop over AliAODCentralMult object and fill flow histograms from
+   * track refs
+   * 
+   * @param AODevent AOD event structure 
+   * 
+   * @return true on success
+   */
+  Bool_t LoopAODSPDtrrefHits(const AliAODEvent* AODevent) const;
   /**
    * Loop over AliAODMCParticle branch object and fill flow histograms
    * add flow if arguments are set
@@ -85,13 +94,15 @@ public:
    * @return true on success
    */
   Bool_t LoopAODmc(const AliAODEvent* AODevent, TString addFlow, 
-		   Int_t type, Int_t order) const;
+                  Int_t type, Int_t order) const;
  /**
-   * Set Z vertex range - Used by flow task
-   *
-   * @param vertex Vertex range 
+   * Get centrality from newest processed event
    */
-  void SetVertexRange(Int_t vertex = 2) { fZvertex = vertex; }
+  Double_t GetCentrality() const { return fCent; }
+ /**
+   * Get z vertex coordinate from newest processed event
+   */
+  Float_t GetVertex() const { return fVertex; }
    
 protected:
   /*
@@ -101,7 +112,8 @@ protected:
    */
   AliForwardFlowUtil(const AliForwardFlowUtil& o) : TNamed(),
 						    fList(o.fList),
-						    fZvertex(o.fZvertex) {}
+						    fCent(o.fCent),
+						    fVertex(o.fVertex) {}
   /** 
    * Assignment operator 
    * 
@@ -117,7 +129,7 @@ protected:
   Double_t AddptFlow(Double_t Pt, Int_t type) const;
   /**
    * Add pid dependent flow factor
-   * 
+   *
    * @param ID   Particle ID 
    * @param type Type of flow
    */
@@ -136,8 +148,9 @@ protected:
    */
   Double_t GetCentFromMC(const AliAODEvent* AODevent) const;
 
-  TList* 	fList;  // List of flow histograms
-  Int_t		fZvertex; // Z vertex range
+  TList* 	fList;   // List of flow histograms
+  Double_t	fCent;   // centrality
+  Float_t         fVertex; // z vertex coordinate
 
   ClassDef(AliForwardFlowUtil, 1); 
 };
