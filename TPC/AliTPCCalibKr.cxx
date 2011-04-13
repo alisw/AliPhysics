@@ -64,7 +64,9 @@
 
 // 1. Analyse output histograms:
 TFile f("outHistFile.root");
-AliTPCCalibKr *obj = (AliTPCCalibKr*) cOutput.FindObject("AliTPCCalibKr")
+AliTPCCalibKr *obj = (AliTPCCalibKr*) cOutput.FindObject("AliTPCCalibKr");
+obj->SetRadius(0,0);
+obj->SetStep(1,1);
 obj->Analyse();
 
 // 2. See calibration parameters e.g.:
@@ -113,7 +115,18 @@ AliTPCCalibKr::AliTPCCalibKr() :
   fPadRmsOrocMin(0.0),
   fRowRmsOrocMin(0.0),
   fClusterPadSize1DOrocMax(200),
-  fCurveCoefficientOroc(1.0e9)
+  fCurveCoefficientOroc(1.0e9),
+  fIrocHistogramMin(100.),
+  fIrocHistogramMax(6000.),
+  fIrocHistogramNbins(200),
+  fOrocHistogramMin(100.),
+  fOrocHistogramMax(5500.),
+  fOrocHistogramNbins(200),
+  fRowRadius(0),
+  fPadRadius(0),
+  fRowStep(1),
+  fPadStep(1)
+
 {
   //
   // default constructor
@@ -136,8 +149,12 @@ AliTPCCalibKr::AliTPCCalibKr() :
   SetClusterPadSize1DMax(15,11);
   SetCurveCoefficient(1.,2.);
  
+  //set histograms settings
+  SetIrocHistogram(200,100,6000);
+  SetOrocHistogram(200,100,5500);
+
   // init histograms
-  Init();
+  //Init();
 }
 
 //_____________________________________________________________________
@@ -164,7 +181,18 @@ AliTPCCalibKr::AliTPCCalibKr(const AliTPCCalibKr& pad) :
   fPadRmsOrocMin(pad.fPadRmsOrocMin),
   fRowRmsOrocMin(pad.fRowRmsOrocMin),
   fClusterPadSize1DOrocMax(pad.fClusterPadSize1DOrocMax),
-  fCurveCoefficientOroc(pad.fCurveCoefficientOroc)
+  fCurveCoefficientOroc(pad.fCurveCoefficientOroc),
+  fIrocHistogramMin(pad.fIrocHistogramMin),
+  fIrocHistogramMax(pad.fIrocHistogramMax),
+  fIrocHistogramNbins(pad.fIrocHistogramNbins),
+  fOrocHistogramMin(pad.fOrocHistogramMin),
+  fOrocHistogramMax(pad.fOrocHistogramMax),
+  fOrocHistogramNbins(pad.fOrocHistogramNbins),
+  fRowRadius(pad.fRowRadius),
+  fPadRadius(pad.fPadRadius),
+  fRowStep(pad.fRowStep),
+  fPadStep(pad.fPadStep)
+
 {
   // copy constructor
  
@@ -216,17 +244,17 @@ void AliTPCCalibKr::Init()
   // add histograms to the TObjArray
   for(Int_t i=0; i<72; ++i) {
     
-	// C - side
-	if(IsCSide(i) == kTRUE && fCSide == kTRUE) {
+    // C - side
+    if(IsCSide(i) == kTRUE && fCSide == kTRUE) {
       TH3F *hist = CreateHisto(i);
       if(hist) fHistoKrArray.AddAt(hist,i);
-	}
+    }
     
-	// A - side
-	if(IsCSide(i) == kFALSE && fASide == kTRUE) {
+    // A - side
+    if(IsCSide(i) == kFALSE && fASide == kTRUE) {
       TH3F *hist = CreateHisto(i);
       if(hist) fHistoKrArray.AddAt(hist,i);
-	}
+    }
   }
 }
  
@@ -257,9 +285,9 @@ TH3F* AliTPCCalibKr::CreateHisto(Int_t chamber)
 
     if( IsIROC(chamber) == kTRUE ) 
 	{
-	   h = new TH3F(name,name,63,0,63,108,0,108,200,100,2500);
+	  h = new TH3F(name,name,63,0,63,108,0,108,fIrocHistogramNbins,fIrocHistogramMin,fIrocHistogramMax);
 	} else {
-	   h = new TH3F(name,name,96,0,96,140,0,140,200,100,1700);
+	  h = new TH3F(name,name,96,0,96,140,0,140,fOrocHistogramNbins,fOrocHistogramMin,fOrocHistogramMax);
 	}
     h->SetXTitle("padrow");
     h->SetYTitle("pad");
@@ -441,13 +469,13 @@ void AliTPCCalibKr::Analyse()
   Double_t windowFrac = 0.12;
   // the 3d histogram will be projected on the pads given by the following window size
   // set the numbers to 0 if you want to do a pad-by-pad calibration
-  UInt_t rowRadius = 2;
-  UInt_t padRadius = 4;
+  UInt_t rowRadius = fRowRadius;//4;
+  UInt_t padRadius = fPadRadius;//4;
   
   // the step size by which pad and row are incremented is given by the following numbers
   // set them to 1 if you want the finest granularity
-  UInt_t rowStep = 1;    // formerly: 2*rowRadius
-  UInt_t padStep = 1;    // formerly: 2*padRadius
+  UInt_t rowStep = fRowStep;//1;//2    // formerly: 2*rowRadius
+  UInt_t padStep = fPadStep;//1;//4    // formerly: 2*padRadius
 
   for (Int_t chamber = 0; chamber < 72; chamber++) {
     //if (chamber != 71) continue;
@@ -468,9 +496,9 @@ void AliTPCCalibKr::Analyse()
         // the 3d histogram will be projected on the pads given by the following bounds
         // for rows and pads
         Int_t rowLow = iRow - rowRadius;
-        UInt_t rowUp = iRow + rowRadius;
+        UInt_t rowUp = iRow + rowRadius + rowStep-1;
         Int_t padLow = iPad - padRadius;
-        UInt_t padUp = iPad + padRadius;
+        UInt_t padUp = iPad + padRadius + padStep-1;
         // if window goes out of chamber
         if (rowLow < 0) rowLow = 0;
         if (rowUp >= nRows) rowUp = nRows - 1;
@@ -478,8 +506,8 @@ void AliTPCCalibKr::Analyse()
         if (padUp >= nPads) padUp = nPads - 1;
 
         // project the histogram
-        //TH1D* projH = h->ProjectionZ("projH", rowLow, rowUp, padLow, padUp); // SLOW
-        TH1D* projH = ProjectHisto(h, "projH", rowLow, rowUp, padLow, padUp);
+        //TH1D* projH = h->ProjectionZ("projH", rowLow+1, rowUp+1, padLow+1, padUp+1); // SLOW
+        TH1D* projH = ProjectHisto(h, "projH", rowLow+1, rowUp+1, padLow+1, padUp+1);
     
         // get the number of entries in the spectrum
         Double_t entries = projH->GetEntries();

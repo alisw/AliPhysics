@@ -57,6 +57,12 @@ public:
   void SetClusterPadSize1DMax(Short_t iroc=200,Short_t oroc=200) {fClusterPadSize1DIrocMax = iroc ; fClusterPadSize1DOrocMax = oroc; }
   void SetCurveCoefficient(Float_t iroc=1.0e9,Float_t oroc=1.0e9)    {fCurveCoefficientIroc = iroc ; fCurveCoefficientOroc = oroc; }
 
+  void SetIrocHistogram(Int_t nbins=200,Float_t min=100,Float_t max=6000) {fIrocHistogramNbins = nbins ; fIrocHistogramMin = min ; fIrocHistogramMax = max; }
+  void SetOrocHistogram(Int_t nbins=200,Float_t min=100,Float_t max=5500) {fOrocHistogramNbins = nbins ; fOrocHistogramMin = min ; fOrocHistogramMax = max; }
+
+  void SetRadius(UInt_t row=0, UInt_t pad=0) {fRowRadius = row ; fPadRadius = pad; }
+  void SetStep(UInt_t row=1, UInt_t pad=1) {fRowStep = (row>=1?row:1) ; fPadStep = (pad>=1?pad:1) ; }
+
 private:
 
   Bool_t fASide;              //! Only A side
@@ -84,9 +90,22 @@ private:
   Short_t fClusterPadSize1DOrocMax; // max size of cluster in pad dir. for OROCs 
   Float_t fCurveCoefficientOroc; // A coefficient in curve function for OROCs
 
+  Float_t fIrocHistogramMin; // minimal range of histogram for IROCs
+  Float_t fIrocHistogramMax; // maximal range of histogram for IROCs
+  Int_t   fIrocHistogramNbins; // number of bins in IROC histogram
+  Float_t fOrocHistogramMin; // minimal range of histogram for OROCs
+  Float_t fOrocHistogramMax; // maximal range of histogram for OROCs
+  Int_t   fOrocHistogramNbins; // number of bins in OROC histogram
+
+  UInt_t fRowRadius; // window size around pad +/-; set to 0 for pad-by-pad calib
+  UInt_t fPadRadius; // window size around pad +/-; set to 0 for pad-by-pad calib
+  UInt_t fRowStep; // step size; set to 1 for finest granularity
+  UInt_t fPadStep; // step size; set to 1 for finest granularity
+
+
 
 public:
-  ClassDef(AliTPCCalibKr, 2)  // Implementation of the TPC krypton calibration
+  ClassDef(AliTPCCalibKr, 4)  // Implementation of the TPC krypton calibration
 };
 
 #endif

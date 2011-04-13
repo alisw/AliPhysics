@@ -42,6 +42,9 @@ AliAnalysisManager *mgr = new AliAnalysisManager("testAnalysis");
 
 // -- Calibration component 
 AliTPCCalibKr *calibObj = new AliTPCCalibKr;
+calibObj->SetIrocHistogram(200,100,6000);
+calibObj->SetOrocHistogram(200,100,5500);
+calibObj->Init();
 
 // -- Add task
 AliTPCCalibKrTask *task = new AliTPCCalibKrTask;
