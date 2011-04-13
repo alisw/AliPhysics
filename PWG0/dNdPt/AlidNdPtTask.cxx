@@ -143,6 +143,8 @@ void AlidNdPtTask::UserCreateOutputObjects()
   if(fUseCentrality) {
     Printf("Use Centrality - Bin %d", fUseCentralityBin);
   }
+
+  PostData(1, fOutput);
 }
 
 //_____________________________________________________________________________

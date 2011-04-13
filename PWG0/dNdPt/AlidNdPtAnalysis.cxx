@@ -34,6 +34,8 @@
 #include "THnSparse.h"
 
 #include "AliHeader.h"  
+#include "AliInputEventHandler.h"  
+#include "AliAnalysisManager.h"  
 #include "AliGenEventHeader.h"  
 #include "AliStack.h"  
 #include "AliESDEvent.h"  
@@ -1023,9 +1025,54 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
-  AliPhysicsSelection *trigSel = NULL;
-  AliTriggerAnalysis *trigAna = NULL;
+  AliPhysicsSelection *physicsSelection = NULL;
+  AliTriggerAnalysis* triggerAnalysis = NULL;
 
+  // 
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if (!inputHandler)
+  {
+    Printf("ERROR: Could not receive input handler");
+    return;
+  }
+
+  if(evtCuts->IsTriggerRequired())  
+  {
+    // always MB
+    isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
+
+    physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
+    if(!physicsSelection) return;
+    //SetPhysicsTriggerSelection(physicsSelection);
+
+    if (isEventTriggered) {
+      // set trigger (V0AND)
+      triggerAnalysis = physicsSelection->GetTriggerAnalysis();
+      if(!triggerAnalysis) return;
+      isEventTriggered = triggerAnalysis->IsOfflineTriggerFired(esdEvent, GetTrigger());
+    }
+
+    // calculate LHC background
+    if(!IsUseMCInfo()) 
+    { 
+      //
+      // 0-multiplicity bin for LHC background correction
+      //
+      if( GetAnalysisMode() == AlidNdPtHelper::kTPCITS || 
+          GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtx || 
+	  GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtxUpdate || 
+          GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || 
+	  GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt ) 
+      {
+        physicsSelection->SetBin0CallbackViaPointer(&AlidNdPtAnalysis::IsBinZeroTrackSPDvtx);
+      } else {
+        physicsSelection->SetBin0CallbackViaPointer(&AlidNdPtAnalysis::IsBinZeroSPDvtx);
+      }
+    }
+  }
+
+
+  /*
   if(evtCuts->IsTriggerRequired())  
   {
     //
@@ -1147,6 +1194,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
       }
     }
   }
+  */
 
 
   // use MC information
@@ -1934,7 +1982,7 @@ Long64_t AlidNdPtAnalysis::Merge(TCollection* const list)
   TObject* obj = 0;
 
   //
-  TList *collPhysSelection = new TList;
+  //TList *collPhysSelection = new TList;
 
   // collection of generated histograms
 
@@ -1945,7 +1993,7 @@ Long64_t AlidNdPtAnalysis::Merge(TCollection* const list)
 
     // physics selection
     //printf("entry->GetPhysicsTriggerSelection() %p \n", entry->GetPhysicsTriggerSelection());
-    collPhysSelection->Add(entry->GetPhysicsTriggerSelection());
+    //collPhysSelection->Add(entry->GetPhysicsTriggerSelection());
     
     //
     fRecEventHist->Add(entry->fRecEventHist);
@@ -2031,9 +2079,9 @@ Long64_t AlidNdPtAnalysis::Merge(TCollection* const list)
   count++;
   }
 
-  AliPhysicsSelection *trigSelection = GetPhysicsTriggerSelection();
-  trigSelection->Merge(collPhysSelection);
-  if(collPhysSelection) delete collPhysSelection;
+  //AliPhysicsSelection *trigSelection = GetPhysicsTriggerSelection();
+  //trigSelection->Merge(collPhysSelection);
+  //if(collPhysSelection) delete collPhysSelection;
 
 return count;
 }
@@ -2102,8 +2150,8 @@ void AlidNdPtAnalysis::Analyse()
   //
   // LHC backgraund in all and 0-bins
   //
-  AliPhysicsSelection *trigSel = GetPhysicsTriggerSelection();
-  trigSel->SaveHistograms("physics_selection");
+  //AliPhysicsSelection *trigSel = GetPhysicsTriggerSelection();
+  //trigSel->SaveHistograms("physics_selection");
 
   //
   // Reconstructed event vertex

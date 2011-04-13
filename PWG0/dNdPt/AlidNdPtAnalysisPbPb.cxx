@@ -35,6 +35,8 @@
 
 #include "AliHeader.h"  
 #include "AliGenEventHeader.h"  
+#include "AliInputEventHandler.h"  
+#include "AliAnalysisManager.h"  
 #include "AliStack.h"  
 #include "AliESDEvent.h"  
 #include "AliMCEvent.h"  
@@ -752,25 +754,6 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
     return;
   }
   
-   // zdc cut not for MC
-   if(!IsUseMCInfo()) {
-     if (!fTriggerAnalysis->ZDCTimeTrigger(esdEvent)) {
-       return; 
-     }
-   }
-
-  // track cuts from Jochen
-  const AliESDVertex* vtxESDTPC = esdEvent->GetPrimaryVertexTPC();
-  if( vtxESDTPC->GetNContributors() < 1 ) {
-    return;
-  }
-
-   // francesco prino cut
-  const AliMultiplicity* multESD = esdEvent->GetMultiplicity();
-  if( vtxESDTPC->GetNContributors() < (-10.+0.25*multESD->GetNumberOfITSClusters(0)) ) {
-    return;
-  } 
-
   // get selection cuts
   AlidNdPtEventCuts *evtCuts = GetEventCuts(); 
   AlidNdPtAcceptanceCuts *accCuts = GetAcceptanceCuts(); 
@@ -783,6 +766,37 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
   }
   if (0 == recCuts) { recCuts = accCuts;}
 
+  // trigger selection
+  Bool_t isEventTriggered = kTRUE;
+  AliPhysicsSelection *physicsSelection = NULL;
+  AliTriggerAnalysis* triggerAnalysis = NULL;
+
+  // 
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if (!inputHandler)
+  {
+    Printf("ERROR: Could not receive input handler");
+    return;
+  }
+
+  if(evtCuts->IsTriggerRequired())  
+  {
+    // always MB
+    isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
+
+    physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
+    if(!physicsSelection) return;
+    //SetPhysicsTriggerSelection(physicsSelection);
+
+    if (isEventTriggered) {
+      // set trigger (V0AND)
+      triggerAnalysis = physicsSelection->GetTriggerAnalysis();
+      if(!triggerAnalysis) return;
+      isEventTriggered = triggerAnalysis->IsOfflineTriggerFired(esdEvent, GetTrigger());
+    }
+  }
+
+  /*
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
   AliPhysicsSelection *trigSel = NULL;
@@ -815,7 +829,7 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
         }//if(GetTrigger() == AliTriggerAnalysis::kV0AND)
      }//if(IsUseMCInfo())
   }//if(evtCuts->IsTriggerRequired())
-
+  */
 
   // centrality determination
   Float_t centralityF = 0;
@@ -1322,7 +1336,7 @@ Long64_t AlidNdPtAnalysisPbPb::Merge(TCollection* const list)
   TObject* obj = 0;
 
   //
-  TList *collPhysSelection = new TList;
+  //TList *collPhysSelection = new TList;
 
   // collection of generated histograms
 
@@ -1333,8 +1347,8 @@ Long64_t AlidNdPtAnalysisPbPb::Merge(TCollection* const list)
 
     // physics selection
     //printf("entry->GetPhysicsTriggerSelection() %p \n", entry->GetPhysicsTriggerSelection());
-    AliPhysicsSelection *physSel = entry->GetPhysicsTriggerSelection();
-    if( physSel ) collPhysSelection->Add(physSel); 
+    //AliPhysicsSelection *physSel = entry->GetPhysicsTriggerSelection();
+    //if( physSel ) collPhysSelection->Add(physSel); 
     
     //
     fTrackPtCorrelationMatrix->Add(entry->fTrackPtCorrelationMatrix);
@@ -1390,9 +1404,9 @@ Long64_t AlidNdPtAnalysisPbPb::Merge(TCollection* const list)
   count++;
   }
 
-  AliPhysicsSelection *trigSelection = GetPhysicsTriggerSelection();
-  if( trigSelection ) trigSelection->Merge(collPhysSelection);
-  if(collPhysSelection) delete collPhysSelection;
+  //AliPhysicsSelection *trigSelection = GetPhysicsTriggerSelection();
+  //if( trigSelection ) trigSelection->Merge(collPhysSelection);
+  //if(collPhysSelection) delete collPhysSelection;
 
 return count;
 }
@@ -1419,8 +1433,8 @@ void AlidNdPtAnalysisPbPb::Analyse()
   //
   // LHC backgraund in all and 0-bins
   //
-  AliPhysicsSelection *trigSel = GetPhysicsTriggerSelection();
-  trigSel->SaveHistograms("physics_selection");
+  //AliPhysicsSelection *trigSel = GetPhysicsTriggerSelection();
+  //trigSel->SaveHistograms("physics_selection");
 
   //
   // Reconstructed event vertex
