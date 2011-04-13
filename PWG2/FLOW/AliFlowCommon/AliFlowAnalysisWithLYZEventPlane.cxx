@@ -377,8 +377,12 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
   Int_t iNbinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
   //set the event number
   if (fCommonHists) {
-  SetEventNumber((int)fCommonHists->GetHistQ()->GetEntries());
-  //cout<<"number of events processed is "<<fEventNumber<<endl;
+    SetEventNumber((int)fCommonHists->GetHistQ()->GetEntries());
+    //cout<<"number of events processed is "<<fEventNumber<<endl;
+  } else {
+    cout<<"Commonhist pointer is NULL."<<endl;
+    cout<<"Leaving LYZ Event plane analysis!"<<endl;
+    return;
   }
 
   //set the sum of Q vectors

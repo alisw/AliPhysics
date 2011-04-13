@@ -765,7 +765,6 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
     if (fDebug) cout<<"****histograms filled****"<<endl;  
     
     return kTRUE;
-    fEventNumber =0; //set to zero for second round over events
   }  //firstrun
    
  
@@ -813,8 +812,10 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
 	if (!TMath::AreEqualAbs(dR0, 0., 1e-100)) dVtheta = dJ01/dR0;
 	dV += dVtheta; 
 	// BP Eq. 9  -> Vn^theta = j01/r0^theta
-	if (!fHistProReDenom && !fHistProImDenom) {
+	if (!fHistProReDenom || !fHistProImDenom) {
 	  cout << "Hist pointer fDenom in file does not exist" <<endl;
+	  cout<< "Leaving LYZ second pass analysis!" <<endl;
+	  return kFALSE;
 	} else {
 	  dReDenom = fHistProReDenom->GetBinContent(theta+1);
 	  dImDenom = fHistProImDenom->GetBinContent(theta+1);
