@@ -160,7 +160,7 @@ void AliTPCv1::CreateGeometry()
   dvol->DefineSection(4,253.6,74.5,264.4);
   dvol->DefineSection(5,260.,74.5,264.4);
   //
-  TGeoMedium *m5 = gGeoManager->GetMedium("TPC_Ne-CO2-N-1");
+  TGeoMedium *m5 = gGeoManager->GetMedium("TPC_Ne-CO2-1");
   TGeoVolume *v9 = new TGeoVolume("TPC_Drift",dvol,m5);
   //
   //
@@ -801,7 +801,7 @@ void AliTPCv1::CreateGeometry()
    v1->AddNode(swheel,2,new TGeoTranslation(0.,0.,284.6));
 
    // sensitive strips 
-   TGeoMedium *m8 = gGeoManager->GetMedium("TPC_Ne-CO2-N-2");
+   TGeoMedium *m8 = gGeoManager->GetMedium("TPC_Ne-CO2-2");
    Int_t totrows;
    totrows = fTPCParam->GetNRowLow() + fTPCParam->GetNRowUp();
    Double_t *upar;

@@ -153,7 +153,7 @@ void AliTPCv4::CreateGeometry()
   dvol->DefineSection(4,253.6,74.5,264.4);
   dvol->DefineSection(5,260.,74.5,264.4);
   //
-  TGeoMedium *m5 = gGeoManager->GetMedium("TPC_Ne-CO2-N-3");
+  TGeoMedium *m5 = gGeoManager->GetMedium("TPC_Ne-CO2-3");
   TGeoVolume *v9 = new TGeoVolume("TPC_Drift",dvol,m5);
   //
   v1->AddNode(v9,1);
