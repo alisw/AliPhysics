@@ -21,7 +21,10 @@ class AliACORDERawReader : public TTask {
 //AliACORDERawReader(AliRawReader *rawReader,Bool_t isOnline = kTRUE) ;
 
   virtual  ~AliACORDERawReader();
-  AliACORDERawReader(const AliACORDERawReader& o): TTask(o),fRawReader(0),fData(NULL),fPosition(0),fIsOnline(kFALSE),fDataSize(0) {}
+  AliACORDERawReader(const AliACORDERawReader& o): TTask(o),fRawReader(0),fData(NULL),fPosition(0),fIsOnline(kFALSE),fDataSize(0)
+{
+	fWord[0] = fWord[1] = fWord[2] = fWord[3] = 0;
+}
   
   AliACORDERawReader& operator=(const AliACORDERawReader&) { return *this; }
 

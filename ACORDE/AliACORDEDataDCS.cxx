@@ -40,7 +40,11 @@ AliACORDEDataDCS::AliACORDEDataDCS():
         fFunc(0),
 	fIsProcessed(kFALSE)
 {
-	for(int i=0;i<kNHistos;i++) fHv[i]=0x0;
+	for(int i=0;i<kNHistos;i++) 
+	{
+		fHv[i]=0x0;
+		fMean[i] = fWidth[i] = 0.0;
+	}
         
 }
 
@@ -143,7 +147,7 @@ void AliACORDEDataDCS::ProcessData(TMap& aliasMap)
 
 		if(aliasArr->GetEntries()<2)
                 {
-			AliError(Form("Alias %s has just %d entries!",
+		AliError(Form("Alias %s has just %d entries!",
 					fAliasNames[j].Data(),aliasArr->GetEntries()));
 			continue;
 		}
