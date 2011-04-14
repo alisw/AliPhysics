@@ -49,6 +49,8 @@ string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 set ( EINCLUDE ANALYSIS/Aliengui)
 
+set ( ELIBS "OADB" )
+
 if( ALICE_TARGET STREQUAL "win32gcc")
 	
 			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lANALYSIS -lSTEERBase -lAOD -lESD -L${ROOTLIBDIR} -lTreePlayer -lXMLIO -lOADB)
