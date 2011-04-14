@@ -587,6 +587,9 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   FillOtherHists();
   FillNtuple();
 
+  fSelTracks->Clear();
+  fSelPrimTracks->Clear();
+
   PostData(1, fOutput);
 }      
 
