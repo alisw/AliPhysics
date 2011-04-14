@@ -67,6 +67,7 @@ void AliITSCorrMapSDD::ComputeGridPoints(Float_t z, Float_t x, AliITSsegmentatio
   if(bina>=nAnodesHybrid) bina-=nAnodesHybrid;
   Float_t stept = seg->Dx()*kMicronTocm/(Float_t)fNDriftPts;
   fDrLen= seg->Dx()*kMicronTocm-TMath::Abs(x);
+  if(fDrLen<0) fDrLen=0;
   Int_t bint = TMath::Abs((Int_t)(fDrLen/stept));
   if(bint==fNDriftPts) bint-=1;
   if(bint>=fNDriftPts){
