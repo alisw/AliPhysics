@@ -587,6 +587,9 @@ int AliHLTFileWriter::WriteBlock(int blockno, const AliHLTEventID_t& eventID,
 	fPublisherConfEvent=GetEventCount();
 	conf << "-datatype ";
 	conf << DataType2Text(pDesc->fDataType, 3);
+	conf << " -dataspec ";
+	TString specstr; specstr.Form("0x%08x", pDesc->fSpecification);
+	conf << specstr;
 	conf << " -datafile ";
 	conf << filename;
 	conf << endl;
