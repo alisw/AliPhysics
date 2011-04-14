@@ -308,7 +308,11 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fL0TriggerInputs    = hdr.fL0TriggerInputs;
     fL1TriggerInputs    = hdr.fL1TriggerInputs;
     fL2TriggerInputs    = hdr.fL2TriggerInputs;
-    fEventplaneP        = new AliEventplane(*hdr.fEventplaneP);
+
+    if(hdr.fEventplaneP){
+      if(fEventplaneP)*fEventplaneP = *hdr.fEventplaneP;
+      else fEventplaneP = new AliEventplane(*hdr.fEventplaneP);
+    }
 
     if(hdr.fCentralityP){
       if(fCentralityP)*fCentralityP = *hdr.fCentralityP;
