@@ -774,6 +774,7 @@ Int_t AliFlowEventSimple::CleanUpDeadTracks()
   for (Int_t i=0; i<fNumberOfTracks; i++)
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    if (!track) continue;
     if (track->IsDead()) {delete track;track=NULL;ncleaned++;}
   }
   fTrackCollection->Compress(); //clean up empty slots

@@ -173,10 +173,8 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
     fRefMultCuts = new AliFlowTrackCuts(*(that.fRefMultCuts));
   if (that.fMeanPtCuts)
     fMeanPtCuts = new AliFlowTrackCuts(*(that.fMeanPtCuts));
-  if (that.fStandardTPCcuts && fStandardTPCcuts)
-    *fStandardTPCcuts = *(that.fStandardTPCcuts);
-  if (that.fStandardGlobalCuts && fStandardGlobalCuts)
-    *fStandardGlobalCuts = *(that.fStandardGlobalCuts);
+  fStandardTPCcuts = AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts2010();
+  fStandardGlobalCuts = AliFlowTrackCuts::GetStandardGlobalTrackCuts2010();
 }
 
 ////-----------------------------------------------------------------------
@@ -185,6 +183,8 @@ AliFlowEventCuts::~AliFlowEventCuts()
   //dtor
   delete fMeanPtCuts;
   delete fRefMultCuts;
+  delete fStandardGlobalCuts;
+  delete fStandardTPCcuts;
   if (fQA) { fQA->SetOwner(); fQA->Delete(); delete fQA; }
 }
 
@@ -219,8 +219,8 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   fRefMultMin=that.fRefMultMin;
   if (that.fRefMultCuts) *fRefMultCuts=*(that.fRefMultCuts);
   if (that.fMeanPtCuts) *fMeanPtCuts=*(that.fMeanPtCuts);
-  if (that.fStandardTPCcuts && fStandardTPCcuts) *fStandardTPCcuts = *(that.fStandardTPCcuts);
-  if (that.fStandardGlobalCuts && fStandardGlobalCuts) *fStandardGlobalCuts = *(that.fStandardGlobalCuts);
+  fStandardTPCcuts = AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts2010();
+  fStandardGlobalCuts = AliFlowTrackCuts::GetStandardGlobalTrackCuts2010();
   fCutPrimaryVertexX=that.fCutPrimaryVertexX;
   fPrimaryVertexXmax=that.fPrimaryVertexXmax;
   fPrimaryVertexXmin=that.fPrimaryVertexXmin;
@@ -259,6 +259,11 @@ Bool_t AliFlowEventCuts::IsSelected(TObject* obj)
 Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
 {
   ///check if event passes cuts
+  const AliVVertex* pvtx=event->GetPrimaryVertex();
+  Double_t pvtxx = pvtx->GetX();
+  Double_t pvtxy = pvtx->GetY();
+  Double_t pvtxz = pvtx->GetZ();
+  Int_t ncontrib = pvtx->GetNContributors();
   Bool_t pass=kTRUE;
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(event);
   Int_t multTPC = 0;
@@ -267,11 +272,11 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
   {
     multTPC = fStandardTPCcuts->Count(event);
     multGlobal = fStandardGlobalCuts->Count(event);
+    QAbefore(0)->Fill(pvtxz);
     QAbefore(1)->Fill(multGlobal,multTPC);
   }
   if (fCutTPCmultiplicityOutliers)
   {
-    Bool_t localpass=kTRUE;
     //this is pretty slow as we check the event track by track twice
     //this cut will work for 2010 PbPb data and is dependent on
     //TPC and ITS reco efficiency (e.g. geometry, calibration etc)
@@ -280,15 +285,9 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
       multTPC = fStandardTPCcuts->Count(event);
       multGlobal = fStandardGlobalCuts->Count(event);
     }
-    if (multTPC > ( 23+1.216*multGlobal)) {localpass=kFALSE; pass=kFALSE;}
-    if (multTPC < (-20+1.087*multGlobal)) {localpass=kFALSE; pass=kFALSE;}
-    if (fQA&&localpass) QAafter(1)->Fill(multGlobal,multTPC);
+    if (multTPC > ( 23+1.216*multGlobal)) {pass=kFALSE;}
+    if (multTPC < (-20+1.087*multGlobal)) {pass=kFALSE;}
   }
-  const AliVVertex* pvtx=event->GetPrimaryVertex();
-  Double_t pvtxx = pvtx->GetX();
-  Double_t pvtxy = pvtx->GetY();
-  Double_t pvtxz = pvtx->GetZ();
-  Int_t ncontrib = pvtx->GetNContributors();
   if (fCutNContributors)
   {
     if (ncontrib < fNContributorsMin || ncontrib >= fNContributorsMax) pass=kFALSE;
@@ -301,16 +300,10 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
   {
     if (pvtxy < fPrimaryVertexYmin || pvtxy >= fPrimaryVertexYmax) pass=kFALSE;
   }
-  if (fQA) QAbefore(0)->Fill(pvtxz);
   if (fCutPrimaryVertexZ)
   {
-    Bool_t localpass=kTRUE;
     if (pvtxz < fPrimaryVertexZmin || pvtxz >= fPrimaryVertexZmax)
-    {
       pass=kFALSE;
-      localpass=kFALSE;
-    }
-    if (fQA&&localpass) QAafter(0)->Fill(pvtxz);
   }
   if (fCutCentralityPercentile&&esdevent)
   {
@@ -321,7 +314,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
                                                      fCentralityPercentileMax,
                                                      CentrMethName(fCentralityPercentileMethod) ))
       {
-        return kFALSE;
+        pass=kFALSE;
       }
     }
     else
@@ -330,40 +323,40 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
                                             fCentralityPercentileMax,
                                             CentrMethName(fCentralityPercentileMethod) ))
       {
-        return kFALSE;
+        pass=kFALSE;
       }
     }
   }
   if (fCutSPDvertexerAnomaly&&esdevent)
   {
     const AliESDVertex* sdpvertex = esdevent->GetPrimaryVertexSPD();
-    if (sdpvertex->GetNContributors()<1) return kFALSE;
-    if (sdpvertex->GetDispersion()>0.04) return kFALSE;
-    if (sdpvertex->GetZRes()>0.25) return kFALSE;
+    if (sdpvertex->GetNContributors()<1) pass=kFALSE;
+    if (sdpvertex->GetDispersion()>0.04) pass=kFALSE;
+    if (sdpvertex->GetZRes()>0.25) pass=kFALSE;
     const AliESDVertex* tpcvertex = esdevent->GetPrimaryVertexTPC();
-    if (tpcvertex->GetNContributors()<1) return kFALSE;
+    if (tpcvertex->GetNContributors()<1) pass=kFALSE;
     const AliMultiplicity* tracklets = esdevent->GetMultiplicity();
     if (tpcvertex->GetNContributors()<(-10.0+0.25*tracklets->GetNumberOfITSClusters(0)))
     {
-      return kFALSE;
+      pass=kFALSE;
     }
   }
   if (fCutZDCtiming&&esdevent)
   {
     if (!fTrigAna.ZDCTimeTrigger(esdevent))
     {
-      return kFALSE;
+      pass=kFALSE;
     }
   }
   if(fCutNumberOfTracks) {if ( event->GetNumberOfTracks() < fNumberOfTracksMin ||
-                               event->GetNumberOfTracks() >= fNumberOfTracksMax ) return kFALSE;}
+                               event->GetNumberOfTracks() >= fNumberOfTracksMax ) pass=kFALSE;}
   if(fCutRefMult&&esdevent)
   {
     //reference multiplicity still to be defined
     Double_t refMult = RefMult(event);
     if (refMult < fRefMultMin || refMult >= fRefMultMax )
     {
-      return kFALSE;
+      pass=kFALSE;
     }
   }
   if (fCutMeanPt)
@@ -384,7 +377,12 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
       }
     }
     meanpt=meanpt/nselected;
-    if (meanpt<fMeanPtMin || meanpt >= fMeanPtMax) return kFALSE;
+    if (meanpt<fMeanPtMin || meanpt >= fMeanPtMax) pass=kFALSE;
+  }
+  if (fQA&&pass) 
+  {
+    QAafter(1)->Fill(multGlobal,multTPC);
+    QAafter(0)->Fill(pvtxz);
   }
   return pass;
 }
