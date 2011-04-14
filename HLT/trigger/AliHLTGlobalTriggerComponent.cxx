@@ -762,31 +762,7 @@ int AliHLTGlobalTriggerComponent::LoadTriggerMenu(const char* cdbPath, const Ali
   // Loads the trigger menu object from the CDB path.
   
   HLTDebug("Trying to load trigger menu from '%s'.", cdbPath);
-  if (AliCDBManager::Instance() == NULL)
-  {
-    HLTError("CDB manager object not found.");
-    return -EIO;
-  }
-  AliCDBStorage* store = AliCDBManager::Instance()->GetDefaultStorage();
-  if (store == NULL)
-  {
-    HLTError("Could not get the the default storage for the CDB.");
-    return -EIO;
-  }
-  Int_t version = store->GetLatestVersion(cdbPath, GetRunNo());
-  if (version < 0)
-  {
-    HLTError("Could not find an entry in the CDB for \"%s\".", cdbPath);
-    return -EIO;
-  }
-  Int_t subVersion = store->GetLatestSubVersion(cdbPath, GetRunNo(), version);
-  AliCDBEntry* entry = AliCDBManager::Instance()->Get(cdbPath, GetRunNo(), version, subVersion);
-  if (entry == NULL)
-  {
-    HLTError("Could not get the CDB entry for \"%s\".", cdbPath);
-    return -EIO;
-  }
-  TObject* obj = entry->GetObject();
+  TObject* obj = LoadAndExtractOCDBObject(cdbPath);
   if (obj == NULL)
   {
     HLTError("Configuration object for \"%s\" is missing.", cdbPath);
