@@ -25,7 +25,7 @@ public:
 
   Int_t GetNumberOfTracks() const {return fTracks.GetEntriesFast();}
   AliESDfriendTrack *GetTrack(Int_t i) const {
-     return (AliESDfriendTrack *)fTracks.UncheckedAt(i);
+     return (AliESDfriendTrack *)fTracks.At(i);
   }
   Int_t GetEntriesInTracks() const {return fTracks.GetEntries();}
   void AddTrack(const AliESDfriendTrack *t) {
