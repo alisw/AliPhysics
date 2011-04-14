@@ -90,8 +90,8 @@ class AliHLTTPCTrackArray {
    * The array is grown if necessary.
    */
   AliHLTTPCTrack *NextTrack();
-  AliHLTTPCTrack *GetCheckedTrack(Int_t t){if(fIsPresent[t]) return fTrack[t]; return 0;}
-  AliHLTTPCTrack *GetTrack(Int_t t){return fTrack[t];}
+  AliHLTTPCTrack *GetCheckedTrack(Int_t t) const {if(fIsPresent[t]) return fTrack[t]; return 0;}
+  AliHLTTPCTrack *GetTrack(Int_t t) const {return fTrack[t];}
 
   void Remove(Int_t track); 
   void RemoveLast() {fNTracks--;}
