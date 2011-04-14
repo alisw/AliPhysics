@@ -107,8 +107,8 @@ void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
      // 			      0    1     2    3     4     5      6       7       8               9
      // 			      x    y     z   spdx spdy  spdz  #contr   mult  vertexStatus  V0centrality
      int    binsEvent[sizeEvent] = { 100, 100,  60, 100,  100,   60,    200,	200,	2,	      100 }; // binning
-     double minEvent [sizeEvent] = {  -1,  -1, -20,  -1,   -1,  -20,      0,	  3,	0,		0 }; // min x
-     double maxEvent [sizeEvent] = {   1,   1,  20,   1,    1,   20,   2000,    2000,	2,	      100 }; // max x	 
+     double minEvent [sizeEvent] = {  -1,  -1, -20,  -1,   -1,  -20,      0,	  0,	0,		0 }; // min x
+     double maxEvent [sizeEvent] = {   1,   1,  20,   1,    1,   20,   2000,   2000,	2,	      100 }; // max x	 
      fEventHLT = CreateEventTHnSparse("fEventHLT",sizeEvent,binsEvent,minEvent,maxEvent);
      fEventOFF = CreateEventTHnSparse("fEventOFF",sizeEvent,binsEvent,minEvent,maxEvent);
   }
@@ -117,8 +117,8 @@ void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
      // 			      0    1     2    3     4     5      6       7       8       
      // 			      x    y     z   spdx spdy  spdz  #contr   mult  vertexStatus
      int    binsEvent[sizeEvent] = { 100, 100,  60, 100,  100,   60,    200,	200,	2 }; // binning
-     double minEvent [sizeEvent] = {  -1,  -1, -20,  -1,   -1,  -20,      0,	  3,	0 }; // min x
-     double maxEvent [sizeEvent] = {   1,   1,  20,   1,    1,   20,   2000,    2000,	2 }; // max x	
+     double minEvent [sizeEvent] = {  -1,  -1, -20,  -1,   -1,  -20,      0,	  0,	0 }; // min x
+     double maxEvent [sizeEvent] = {   1,   1,  20,   1,    1,   20,   2000,   2000,	2 }; // max x	
      fEventHLT = CreateEventTHnSparse("fEventHLT",sizeEvent,binsEvent,minEvent,maxEvent);
      fEventOFF = CreateEventTHnSparse("fEventOFF",sizeEvent,binsEvent,minEvent,maxEvent);  
   }
@@ -128,7 +128,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
      //                                 0    1     2    3   4      5    6     7       8      9    10              11          12            
      // 			       pt  TPCcl theta eta phi   DCAr  DCAz charge  ITScl mult vertex status  vertexZ	V0centrality
      Int_t    binsTrack[sizeTrack] = { 400, 200, 200, 200, 200,  100,  100,    3,   10,  1000,     2,		 60,	 100 }; // binning
-     Double_t minTrack [sizeTrack] = {   0,   0,  -1,  -2,  -1,  -10,  -10, -1.5,    0,     3,     0,		-20,	   0 }; // min x
+     Double_t minTrack [sizeTrack] = {   0,   0,  -1,  -2,  -1,  -10,  -10, -1.5,    0,     0,     0,		-20,	   0 }; // min x
      Double_t maxTrack [sizeTrack] = {  10, 200,   4,	2,   7,   10,  -10,  1.5,   10, 10000,     2,		 20,	 100 }; // max x       
      fTrackHLT = CreateTrackTHnSparse("fTrackHLT",sizeTrack,binsTrack,minTrack,maxTrack);
      fTrackOFF = CreateTrackTHnSparse("fTrackOFF",sizeTrack,binsTrack,minTrack,maxTrack);
@@ -138,8 +138,8 @@ void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
      //                                 0    1     2    3   4       5     6      7       8     9        10             11       
      // 			       pt  TPCcl theta eta  phi   DCAr  DCAz  charge   ITScl  mult  vertex status   vertexZ  
      Int_t    binsTrack[sizeTrack] = {400, 200, 200,  200,  200,  100,  100,      3,    10,  1000,     2,  	    60 }; // binning
-     Double_t minTrack [sizeTrack] = {  0,   0,  -1,   -2,   -1,  -10,  -10,   -1.5,     0,     3,     0,  	   -20 }; // min x
-     Double_t maxTrack [sizeTrack] = { 10 , 200,   4,    2,    7,   10,   10,    1.5,    10, 10000,     2,  	    20 }; // max x  	  
+     Double_t minTrack [sizeTrack] = {  0,   0,  -1,   -2,   -1,  -10,  -10,   -1.5,     0,     0,     0,  	   -20 }; // min x
+     Double_t maxTrack [sizeTrack] = { 10 , 200,   4,   2,    7,   10,   10,    1.5,    10, 10000,     2,  	    20 }; // max x  	  
      fTrackHLT = CreateTrackTHnSparse("fTrackHLT",sizeTrack,binsTrack,minTrack,maxTrack);
      fTrackOFF = CreateTrackTHnSparse("fTrackOFF",sizeTrack,binsTrack,minTrack,maxTrack);     
   }
