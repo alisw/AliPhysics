@@ -5,6 +5,7 @@
 #include "AliITSLoader.h"
 #include "AliITSMultReconstructor.h"
 #include "AliITSRecPointContainer.h"
+#include "AliRunLoader.h"
 
 const Float_t AliITSVertexer::fgkPipeRadius = 3.0;
 
@@ -21,7 +22,7 @@ ClassImp(AliITSVertexer)
 
 //______________________________________________________________________
 AliITSVertexer::AliITSVertexer():AliVertexer(),
-fLadders(), 
+fLadders(NULL), 
 fLadOnLay2(0),
 fComputeMultiplicity(kFALSE),
 fDetTypeRec(NULL),
@@ -167,6 +168,7 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
 void AliITSVertexer::SetLaddersOnLayer2(Int_t ladwid){
   // Calculates the array of ladders on layer 2 to be used with a 
   // given ladder on layer 1
+  if(ladwid == fLadOnLay2 && fLadders)return;
   fLadOnLay2=ladwid;
   Int_t ladtot1=AliITSgeomTGeo::GetNLadders(1);
   if(fLadders) delete [] fLadders;
@@ -202,7 +204,6 @@ void AliITSVertexer::SetLaddersOnLayer2(Int_t ladwid){
   }
 }
 
-#include "AliRunLoader.h"
 
 //______________________________________________________________________
 void AliITSVertexer::Init(TString filename){
