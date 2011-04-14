@@ -54,11 +54,20 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bUseParFiles=kFALSE) {
   //plugin->SetAdditionalLibs("libCORRFW.so libTOFbase.so libTOFrec.so");
   if(!bUseParFiles)
   {
-    plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libXMLParser.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEERBase.so libSTEER.so libTPCbase.so libTOFbase.so libTOFrec.so libTRDbase.so libVZERObase.so libVZEROrec.so libT0base.so libT0rec.so libTENDER.so libTENDERSupplies.so libPWG2flowCommon.so libPWG2flowTasks.so");
+    plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libXMLParser.so "
+                              "libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEERBase.so "
+                              "libSTEER.so libTPCbase.so libTOFbase.so libTOFrec.so "
+                              "libTRDbase.so libVZERObase.so libVZEROrec.so libT0base.so "
+                              "libT0rec.so libTENDER.so libTENDERSupplies.so "
+                              "libPWG2flowCommon.so libPWG2flowTasks.so");
   } 
   else // load libs via par files
   { 
-    plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libXMLParser.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEERBase.so libSTEER.so libTPCbase.so libTOFbase.so libTOFrec.so libTRDbase.so libVZERObase.so libVZEROrec.so libT0base.so libT0rec.so libTENDER.so libTENDERSupplies.so");
+    plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libXMLParser.so "
+                              "libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEERBase.so "
+                              "libSTEER.so libTPCbase.so libTOFbase.so libTOFrec.so "
+                              "libTRDbase.so libVZERObase.so libVZEROrec.so libT0base.so "
+                              "libT0rec.so libTENDER.so libTENDERSupplies.so");
     plugin->EnablePackage("PWG2flowCommon.par");
     plugin->EnablePackage("PWG2flowTasks.par");
   }

@@ -68,6 +68,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                    kTOFbeta,     // asymmetric cuts of TOF beta signal
                    kTPCdedx,      // asymmetric cuts of TPC dedx signal
                    kTOFbetaSimple, //simple TOF only cut
+                   kTPCbayesian //bayesian cutTPC
                  };
 
   //setters (interface to AliESDtrackCuts)
@@ -203,6 +204,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesMCcuts();
   Bool_t PassesMCcuts(AliMCEvent* mcevent, Int_t label);
   Bool_t PassesTPCdedxCut(const AliESDtrack* track);
+  Bool_t PassesTPCbayesianCut(const AliESDtrack* track);
   Bool_t PassesTPCpidCut(const AliESDtrack* track) const;
   Bool_t PassesTOFbetaCut(const AliESDtrack* track);  
   Bool_t PassesTOFbetaSimpleCut(const AliESDtrack* track);  
@@ -224,8 +226,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void InitPIDcuts();
   void InitESDcuts() {if (!fAliESDtrackCuts) {fAliESDtrackCuts=new AliESDtrackCuts();}}
   // part added by F. Noferini
-  Bool_t PassesTOFbayesianCut(AliESDtrack* track); 
-  Int_t GetESDPdg(AliESDtrack *track,Option_t *option="bayesianTOF",Int_t ipart=2,Float_t cPi=-1.0,Float_t cKa=0.0,Float_t cPr=0.0); // 3sigma cut ipart=0(el),1(mu),2(pi),3(K),4(p)
+  Bool_t PassesTOFbayesianCut(const AliESDtrack* track); 
+  Int_t GetESDPdg(const AliESDtrack *track,Option_t *option="bayesianTOF",Int_t ipart=2,Float_t cPi=-1.0,Float_t cKa=0.0,Float_t cPr=0.0); // 3sigma cut ipart=0(el),1(mu),2(pi),3(K),4(p)
   Bool_t TPCTOFagree(const AliESDtrack *track);
   // end part added by F. Noferini
 

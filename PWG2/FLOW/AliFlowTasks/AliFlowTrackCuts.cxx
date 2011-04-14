@@ -674,7 +674,6 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track)
   if (fUseAODFilterBit && !track->TestFilterBit(fAODFilterBit)) pass=kFALSE;
   
   if (fCutDCAToVertexXY && track->DCA()>GetMaxDCAToVertexXY()) pass=kFALSE;
-    
 
   return pass;
 }
@@ -684,6 +683,9 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
 {
   //check cuts on ESD tracks
   Bool_t pass=kTRUE;
+  Float_t dcaxy=0.0;
+  Float_t dcaz=0.0;
+  track->GetImpactParameters(dcaxy,dcaz);
   const AliExternalTrackParam* pout = track->GetOuterParam();
   const AliExternalTrackParam* pin = track->GetInnerParam();
   if (fIgnoreTPCzRange)
@@ -731,6 +733,7 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
     if (!fAliESDtrackCuts->IsSelected(track)) pass=kFALSE;
   }
  
+  //PID part with pid QA
   Double_t beta = GetBeta(track);
   Double_t dedx = Getdedx(track);
   if (fQA)
@@ -757,6 +760,9 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
       case kTOFbetaSimple:
         if (!PassesTOFbetaSimpleCut(track)) pass=kFALSE;
         break;
+      case kTPCbayesian:
+        if (!PassesTPCbayesianCut(track)) pass=kFALSE;
+        break;
 	    // part added by F. Noferini
       case kTOFbayesian:
 	      if (!PassesTOFbayesianCut(track)) pass=kFALSE;
@@ -779,6 +785,15 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
   {
     if (pass) QAafter(0)->Fill(track->GetP(),beta);
     if (pass) QAafter(1)->Fill(pin->GetP(),dedx);
+  }
+  //end pid part with qa
+  if (fQA)
+  {
+    Double_t pt = track->Pt();
+    QAbefore(5)->Fill(pt,dcaxy);
+    QAbefore(6)->Fill(pt,dcaz);
+    if (pass) QAafter(5)->Fill(pt,dcaxy);
+    if (pass) QAafter(6)->Fill(pt,dcaz);
   }
 
   return pass;
@@ -1331,7 +1346,7 @@ void AliFlowTrackCuts::DefineHistograms()
   //define qa histograms
   if (fQA) return;
   
-  Int_t kNbinsP=60;
+  const Int_t kNbinsP=60;
   Double_t binsP[kNbinsP+1];
   binsP[0]=0.0;
   for(int i=1; i<=kNbinsP+1; i++)
@@ -1341,6 +1356,11 @@ void AliFlowTrackCuts::DefineHistograms()
     else
       binsP[i]=binsP[i-1]+0.1;
   }
+
+  const Int_t nBinsDCA=1000;
+  Double_t binsDCA[nBinsDCA+1];
+  for(int i=0; i<=nBinsDCA; i++) {binsDCA[i]=0.05*i;}
+  //for(int i=1; i<41; i++) {binsDCA[i+100]=0.1*i+1.0;}
 
   Bool_t adddirstatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
@@ -1360,7 +1380,6 @@ void AliFlowTrackCuts::DefineHistograms()
   after->Add(new TH2F("MC pid",";p[GeV/c];species",kNbinsP,binsP,10,-5, 5)); //2
   before->Add(new TH2F("MC primary",";p[GeV/c];primary",kNbinsP,binsP,2,-1,1)); //3
   after->Add(new TH2F("MC primary",";p[GeV/c];primary",kNbinsP,binsP,2,-1,1)); //3
-  
   //production process
   TH2F* hb = new TH2F("MC production process",";p[GeV/c];",kNbinsP,binsP,kMaxMCProcess,
                       -0.5, kMaxMCProcess-0.5);
@@ -1378,7 +1397,12 @@ void AliFlowTrackCuts::DefineHistograms()
   }
   before->Add(hb); //4
   after->Add(ha); //4
-
+  //DCA
+  before->Add(new TH2F("DCAxy",";p_{t}[GeV/c];DCAxy[cm]", 100, 0., 10., nBinsDCA, binsDCA));//5
+  after->Add(new TH2F("DCAxy",";p_{t}[GeV/c];DCAxy[cm]", 100, 0., 10., nBinsDCA, binsDCA));//5
+  before->Add(new TH2F("DCAz",";p_{t}[GeV/c];DCAz[cm]", 100, 0., 10., nBinsDCA, binsDCA));//6
+  after->Add(new TH2F("DCAz",";p_{t}[GeV/c];DCAz[cm]", 100, 0., 10., nBinsDCA, binsDCA));//6
+  
   TH1::AddDirectory(adddirstatus);
 }
 
@@ -1913,8 +1937,56 @@ void AliFlowTrackCuts::InitPIDcuts()
 }
 
 //-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesTPCbayesianCut(const AliESDtrack* track)
+{
+  //cut on TPC bayesian pid
+  //TODO: maybe join all bayesian methods, make GetESDPdg aware of pid mode selected
+  //if (! fAllowTOFmismatchFlag) {if (track->GetStatus() & AliESDtrack::kTOFmismatch) return kFALSE;}
+
+  //Bool_t statusMatchingHard = TPCTOFagree(track);
+  //if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))
+  //     return kFALSE;
+
+  Int_t pdg = GetESDPdg(track,"bayesianTPC");
+  //  printf("pdg set to %i\n",pdg);
+
+  Int_t pid = 0;
+  Float_t prob = 0;
+  switch (fParticleID)
+  {
+    case AliPID::kPion:
+      pid=211;
+      prob = fProbBayes[2];
+      break;
+    case AliPID::kKaon:
+      pid=321;
+      prob = fProbBayes[3];
+     break;
+    case AliPID::kProton:
+      pid=2212;
+      prob = fProbBayes[4];
+      break;
+    case AliPID::kElectron:
+      pid=-11;
+       prob = fProbBayes[0];
+     break;
+    default:
+      return kFALSE;
+  }
+
+  if(TMath::Abs(pdg) == TMath::Abs(pid) && prob > fParticleProbability)
+  {
+    if(!fCutCharge)
+      return kTRUE;
+    else if (fCutCharge && fCharge * track->GetSign() > 0)
+      return kTRUE;
+  }
+  return kFALSE;
+}
+
+//-----------------------------------------------------------------------
 // part added by F. Noferini (some methods)
-Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(AliESDtrack* track)
+Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(const AliESDtrack* track)
 {
 
   Bool_t goodtrack = track &&
@@ -1970,7 +2042,7 @@ Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(AliESDtrack* track)
 }
 
 //-----------------------------------------------------------------------
-Int_t AliFlowTrackCuts::GetESDPdg(AliESDtrack *track,Option_t *option,Int_t ipart,Float_t cPi,Float_t cKa,Float_t cPr)
+Int_t AliFlowTrackCuts::GetESDPdg(const AliESDtrack *track,Option_t *option,Int_t ipart,Float_t cPi,Float_t cKa,Float_t cPr)
 {
   //Get ESD Pdg
   Int_t pdg = 0;

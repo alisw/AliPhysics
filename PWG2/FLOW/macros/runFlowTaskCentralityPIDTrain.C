@@ -222,6 +222,7 @@ void LoadLibraries(const anaModes mode, Bool_t useFlowParFiles )
     gSystem->Load("libSTEER");
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
+    gSystem->Load("libTPCbase");
     gSystem->Load("libTOFbase");
     gSystem->Load("libTOFrec");
     gSystem->Load("libTRDbase");

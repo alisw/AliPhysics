@@ -272,9 +272,10 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
     fQAList=new TList();
     fQAList->SetOwner();
     fQAList->SetName(Form("%s QA",GetName()));
-    if (fCutsEvent->GetQA()) fQAList->Add(fCutsEvent->GetQA());
-    if (fCutsRP->GetQA()) fQAList->Add(fCutsRP->GetQA());
-    if (fCutsPOI->GetQA())fQAList->Add(fCutsPOI->GetQA());
+    if (fCutsEvent->GetQA()) fQAList->Add(fCutsEvent->GetQA()); //0
+    if (fCutsRP->GetQA()) fQAList->Add(fCutsRP->GetQA());  //1
+    if (fCutsPOI->GetQA())fQAList->Add(fCutsPOI->GetQA()); //2
+    fQAList->Add(new TH1F("event plane angle","event plane angle;angle [rad];",100,0.,TMath::TwoPi())); //3
     PostData(2,fQAList);
   }
 }
@@ -528,6 +529,13 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
 
   //tag subEvents
   fFlowEvent->TagSubeventsInEta(fMinA,fMaxA,fMinB,fMaxB);
+
+  //QA
+  if (fQAon)
+  {
+    TH1* h1 = static_cast<TH1*>(fQAList->At(3));
+    h1->Fill(fFlowEvent->GetMCReactionPlaneAngle());
+  }
 
   //fListHistos->Print();
   //fOutputFile->WriteObject(fFlowEvent,"myFlowEventSimple");
