@@ -22,7 +22,8 @@
 // Origin: F. Prino (prino@to.infn.it)
 
 void PlotCalibSDDVsTime(Int_t year=2011, Int_t firstRun=142600, 
-			Int_t lastRun=999999999){
+			Int_t lastRun=999999999,
+			Int_t selectedMod=-1){
 
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
@@ -94,6 +95,7 @@ void PlotCalibSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
 
     AliITSCalibrationSDD *cal;
     for(Int_t iMod=0; iMod<260;iMod++){
+      if(selectedMod>=240 && (iMod+240)!=selectedMod) continue;
       cal=(AliITSCalibrationSDD*)calSDD->At(iMod);
       if(cal==0) continue;
       for(Int_t iAn=0; iAn<512; iAn++){
@@ -117,7 +119,7 @@ void PlotCalibSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
       } 
     }
     printf("Run %d <Base> = %f <Noise> =%f Entries = %d\n",nrun,hbase->GetMean(),hnoise->GetMean(),(Int_t)hbase->GetEntries());
-    if((Int_t)hbase->GetEntries()==0) continue;
+    if(selectedMod==-1 && (Int_t)hbase->GetEntries()==0) continue;
     gbasevstim->SetPoint(iPoint,(Double_t)nrun,hbase->GetMean());
     gbasevstim->SetPointError(iPoint,0.,hbase->GetRMS());
     gnoisevstim->SetPoint(iPoint,(Double_t)nrun,hnoise->GetMean());
@@ -125,7 +127,9 @@ void PlotCalibSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
     ggainvstim->SetPoint(iPoint,(Double_t)nrun,hgain->GetMean());
     ggainvstim->SetPointError(iPoint,0.,hgain->GetRMS());
     gstatvstim->SetPoint(iPoint,(Double_t)nrun,hchstatus->GetBinContent(2));
-    gfracvstim->SetPoint(iPoint,(Double_t)nrun,hchstatus->GetBinContent(2)/260./512.);
+    Float_t normMod=260.;
+    if(selectedMod!=-1) normMod=1.;
+    gfracvstim->SetPoint(iPoint,(Double_t)nrun,hchstatus->GetBinContent(2)/normMod/512.);
     gfrac3vstim->SetPoint(iPoint,(Double_t)nrun,hchstatus3->GetBinContent(2)/84./512.);
     gfrac4vstim->SetPoint(iPoint,(Double_t)nrun,hchstatus4->GetBinContent(2)/176./512.);
     iPoint++;
@@ -177,10 +181,19 @@ void PlotCalibSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
   gstatvstim->SetMarkerStyle(20);
   gstatvstim->Draw("AP3");
   gstatvstim->Draw("PLXSAME");
-  gstatvstim->SetMinimum(100000.);
-  gstatvstim->SetMaximum(133000.);
+  if(selectedMod==-1){
+    gstatvstim->SetMinimum(100000.);
+    gstatvstim->SetMaximum(133000.);
+  }else{
+    gstatvstim->SetMinimum(0.);
+    gstatvstim->SetMaximum(512.);
+  }
   gstatvstim->GetXaxis()->SetTitle("Run number");
-  gstatvstim->GetYaxis()->SetTitle("Number of good anodes in acquisition");
+  if(selectedMod==-1){
+    gstatvstim->GetYaxis()->SetTitle("Number of good anodes in acquisition");
+  }else{
+    gstatvstim->GetYaxis()->SetTitle(Form("Number of good anodes in od %d",selectedMod));
+  }
   cstatus->SaveAs(Form("GoodAnodesRun%d.gif",year));
 
   TCanvas* cfrac=new TCanvas("cfrac","Fraction of Good");
@@ -192,21 +205,26 @@ void PlotCalibSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
   gfrac4vstim->SetMarkerColor(4);
   gfrac4vstim->SetLineColor(4);
   gfracvstim->Draw("APL");
-  gfrac3vstim->Draw("PLSAME");
-  gfrac4vstim->Draw("PLSAME");
   gfracvstim->SetMinimum(0.7);
   gfracvstim->SetMaximum(1.05);
   gfracvstim->GetXaxis()->SetTitle("Run number");
-  gfracvstim->GetYaxis()->SetTitle("Fraction of good anodes in acquisition");
-  TLegend* leg=new TLegend(0.2,0.15,0.45,0.35);
-  leg->SetFillColor(0);
-  TLegendEntry* entr=leg->AddEntry(gfrac3vstim,"Layer 3","P");
-  entr->SetTextColor(2);
-  entr=leg->AddEntry(gfrac4vstim,"Layer 4","P");
-  entr->SetTextColor(4);
-  entr=leg->AddEntry(gfracvstim,"All","P");
-  entr->SetTextColor(1);
-  leg->Draw();
+  if(selectedMod==-1){
+    gfracvstim->GetYaxis()->SetTitle("Fraction of good anodes in acquisition");
+    gfrac3vstim->Draw("PLSAME");
+    gfrac4vstim->Draw("PLSAME");
+  
+    TLegend* leg=new TLegend(0.2,0.15,0.45,0.35);
+    leg->SetFillColor(0);
+    TLegendEntry* entr=leg->AddEntry(gfrac3vstim,"Layer 3","P");
+    entr->SetTextColor(2);
+    entr=leg->AddEntry(gfrac4vstim,"Layer 4","P");
+    entr->SetTextColor(4);
+    entr=leg->AddEntry(gfracvstim,"All","P");
+    entr->SetTextColor(1);
+    leg->Draw();
+  }else{
+    gfracvstim->GetYaxis()->SetTitle(Form("Fraction of good anodes in mod %d",selectedMod));
+  }
   cfrac->SaveAs(Form("FractionGoodRun%d.gif",year));
 
 }
