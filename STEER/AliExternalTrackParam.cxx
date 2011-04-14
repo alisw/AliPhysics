@@ -40,7 +40,7 @@
 ClassImp(AliExternalTrackParam)
 
 Double32_t AliExternalTrackParam::fgMostProbablePt=kMostProbablePt;
- 
+Bool_t AliExternalTrackParam::fgUseLogTermMS = kFALSE;; 
 //_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam() :
   AliVTrack(),
@@ -407,13 +407,17 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
   Double_t cC43 = 0.;
   Double_t cC44 = 0.;
   if (xOverX0 != 0) {
-     Double_t theta2=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(xOverX0);
-     //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
-     if(theta2>TMath::Pi()*TMath::Pi()) return kFALSE;
-     cC22 = theta2*((1.-fP2)*(1.+fP2))*(1. + fP3*fP3);
-     cC33 = theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
-     cC43 = theta2*fP3*fP4*(1. + fP3*fP3);
-     cC44 = theta2*fP3*fP4*fP3*fP4;
+    //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
+    Double_t theta2=0.0136*0.0136/(beta2*p2)*TMath::Abs(xOverX0);
+    if (GetUseLogTermMS()) {
+      double lt = 1+0.038*TMath::Log(TMath::Abs(xOverX0));
+      if (lt>0) theta2 *= lt*lt;
+    }
+    if(theta2>TMath::Pi()*TMath::Pi()) return kFALSE;
+    cC22 = theta2*((1.-fP2)*(1.+fP2))*(1. + fP3*fP3);
+    cC33 = theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
+    cC43 = theta2*fP3*fP4*(1. + fP3*fP3);
+    cC44 = theta2*fP3*fP4*fP3*fP4;
   }
 
   //Calculating the energy loss corrections************************

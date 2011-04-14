@@ -231,11 +231,13 @@ class AliExternalTrackParam: public AliVTrack {
 
   void CheckCovariance();
 
+  static Bool_t  GetUseLogTermMS()                {return fgUseLogTermMS;} 
+  static void    SetUseLogTermMS(Bool_t v=kTRUE)  {fgUseLogTermMS = v;} 
+
 /*  protected: */
  private:
   Double_t &Par(Int_t i) {return fP[i];}
   Double_t &Cov(Int_t i) {return fC[i];}
-  
  private:
   Double32_t           fX;     // X coordinate for the point of parametrisation
   Double32_t           fAlpha; // Local <-->global coor.system rotation angle
@@ -244,6 +246,7 @@ class AliExternalTrackParam: public AliVTrack {
 
   static Double32_t    fgMostProbablePt; // "Most probable" pt
                                          // (to be used if Bz=0)
+  static Bool_t        fgUseLogTermMS;   // use log term in Mult.Stattering evaluation
   ClassDef(AliExternalTrackParam, 8)
 };
 
