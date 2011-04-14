@@ -185,8 +185,8 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
 	//
 	// Loop over generators and generate events
 	Int_t igen   = 0;
-	Int_t ntimes = 1;
 	while((entry = (AliGenCocktailEntry*)next())) {
+          Int_t ntimes = 1;
 	  if (fUsePerEventRate && (gRandom->Rndm() > entry->Rate())) continue;
 	  
 	  igen++;
@@ -227,6 +227,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
 	    }
 	  
 	  entry->Generator()->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
+	  
 	  for (Int_t i = 0; i < ntimes; i++) entry->Generator()->Generate();
 	  entry->SetLast(partArray->GetEntriesFast());
 	  preventry = entry;
