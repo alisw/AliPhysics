@@ -127,9 +127,9 @@ void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
      static const int sizeTrack = 13;
      //                                 0    1     2    3   4      5    6     7       8      9    10              11          12            
      // 			       pt  TPCcl theta eta phi   DCAr  DCAz charge  ITScl mult vertex status  vertexZ	V0centrality
-     Int_t    binsTrack[sizeTrack] = { 200, 200, 200, 200, 200,  100,  100,    3,   10,  1000,     2,		 60,	 100 }; // binning
+     Int_t    binsTrack[sizeTrack] = { 400, 200, 200, 200, 200,  100,  100,    3,   10,  1000,     2,		 60,	 100 }; // binning
      Double_t minTrack [sizeTrack] = {   0,   0,  -1,  -2,  -1,  -10,  -10, -1.5,    0,     3,     0,		-20,	   0 }; // min x
-     Double_t maxTrack [sizeTrack] = {   5, 200,   4,	2,   7,   10,  -10,  1.5,   10, 10000,     2,		 20,	 100 }; // max x       
+     Double_t maxTrack [sizeTrack] = {  10, 200,   4,	2,   7,   10,  -10,  1.5,   10, 10000,     2,		 20,	 100 }; // max x       
      fTrackHLT = CreateTrackTHnSparse("fTrackHLT",sizeTrack,binsTrack,minTrack,maxTrack);
      fTrackOFF = CreateTrackTHnSparse("fTrackOFF",sizeTrack,binsTrack,minTrack,maxTrack);
   }
@@ -137,9 +137,9 @@ void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
      static const int sizeTrack = 12;
      //                                 0    1     2    3   4       5     6      7       8     9        10             11       
      // 			       pt  TPCcl theta eta  phi   DCAr  DCAz  charge   ITScl  mult  vertex status   vertexZ  
-     Int_t    binsTrack[sizeTrack] = {200, 200, 200,  200,  200,  100,  100,      3,    10,  1000,     2,  	    60 }; // binning
+     Int_t    binsTrack[sizeTrack] = {400, 200, 200,  200,  200,  100,  100,      3,    10,  1000,     2,  	    60 }; // binning
      Double_t minTrack [sizeTrack] = {  0,   0,  -1,   -2,   -1,  -10,  -10,   -1.5,     0,     3,     0,  	   -20 }; // min x
-     Double_t maxTrack [sizeTrack] = {  5, 200,   4,    2,    7,   10,   10,    1.5,    10, 10000,     2,  	    20 }; // max x  	  
+     Double_t maxTrack [sizeTrack] = { 10 , 200,   4,    2,    7,   10,   10,    1.5,    10, 10000,     2,  	    20 }; // max x  	  
      fTrackHLT = CreateTrackTHnSparse("fTrackHLT",sizeTrack,binsTrack,minTrack,maxTrack);
      fTrackOFF = CreateTrackTHnSparse("fTrackOFF",sizeTrack,binsTrack,minTrack,maxTrack);     
   }
@@ -162,7 +162,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
      printf("ERROR: offline ESD is not available.\n");
      return;
   }
-  
+   
   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>(fInputHandler);
   AliESDEvent *esdHLT = NULL;   
 
@@ -200,8 +200,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
      }
   }
                
-  for(Int_t i=0; i<esdOFF->GetNumberOfTracks(); i++){
-      
+  for(Int_t i=0; i<esdOFF->GetNumberOfTracks(); i++){     
       AliESDtrack *esdTrackOFF = esdOFF->GetTrack(i);
       if (!esdTrackOFF) continue;
       if(!(esdTrackOFF->GetStatus()&AliESDtrack::kTPCin)) continue;
@@ -271,7 +270,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
   else {
      Double_t eventOFF[] = { vertOFF->GetX(), vertOFF->GetY(), vertOFF->GetZ(), 
                              esdOFF->GetPrimaryVertexSPD()->GetX(), esdOFF->GetPrimaryVertexSPD()->GetY(), esdOFF->GetPrimaryVertexSPD()->GetZ(),      
-                             vertOFF->GetNContributors(), nr_tracksOFF, vertOFF->GetStatus()};
+                             vertOFF->GetNContributors(), nr_tracksOFF, vertOFF->GetStatus()};			    
      if(fOptions.Contains("event-off")) fEventOFF->Fill(eventOFF);
   }
   // Inspite of the different options to fill event or track properties, all the loops over tracks are being executed. 
@@ -282,7 +281,9 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
   
   //======================================== HLT ==========================================//
 
-  Int_t nr_tracksHLT = 0;  
+  Int_t nr_tracksHLT = 0; 
+  // the following line does not have an effect yet, since HLT does not fill the relevant information (14.04.11, Kelly)
+  // It does not harm to keep it in, in case this changes in the future 
   if(esdHLT->GetEventSpecie()==16) return; // skip calibration events
 
   const AliESDVertex *vertHLT = esdHLT->GetPrimaryVertexTracks();
