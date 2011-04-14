@@ -60,7 +60,7 @@ TString cutStudies( TString folder,  THnSparse* htrackHLT, THnSparse* htrackOFF,
 		    float minCent,   float maxCent
                   );
 void printStats(TH1D *hlt, TH1D *off);
-void defineYaxisMax(TH1D *hlt, TH1D *off);
+void defineYaxisMax(TH1D *h1, TH1D *h2);
 void printLegend(TH1D *hlt, TH1D *off);
 void plot2D( THnSparse* h,     TText *hText,   TString folder,
              double minEta,    double maxEta,
@@ -152,18 +152,18 @@ void drawTHnSparse(TString inputFile="HLT-OFFLINE-CentralBarrel-comparison.root"
   
   if(heventHLT->GetEntries()>0 || heventOFF->GetEntries()>0) plotEventQuantities(heventHLT,heventOFF,hText,folder);
 
-  int counter=0; 
+  int counter = 0; 
   // counts how many times the function cutStudies() is called
   // if more than once, then it creates and fills the canvas with the overlapping hlt distributions for the various sets of cuts
   
   TString s = "";				      // eta   mult	 pt	 DCAr	  DCAz   TPCclus  ITSclus  vertexStatus  |vertexZ|    
-  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 2000, 0,    5, -10, 10, -10, 10,  0, 200,  0, 6,      2,	 10, 0, 100); outputNames.push_back(s); counter++;     
+  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 2000, 0,    10, -10, 10, -10, 10,  0, 200,  0, 6,      2, 	10, 0, 100); outputNames.push_back(s); counter++;     
   /*
-  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1, 0, 2000, 0,    5, -10, 10, -10, 10,  0, 200,  0, 6,      2,	 10, 0, 100); outputNames.push_back(s); counter++;
-  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1, 0, 2000, 0,    5,  -7,  7, -10, 10,  0, 200,  0, 6,      2,	 10, 0, 100); outputNames.push_back(s); counter++;
-  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1, 0, 2000, 0,    5,  -7,  7,  -7,  7,  0, 200,  0, 6,      2,	 10, 0, 100); outputNames.push_back(s); counter++;
-  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1, 0, 2000, 0.25, 5,  -7,  7,  -7,  7,  0, 200,  0, 6,      2,	 10, 0, 100); outputNames.push_back(s); counter++;
-  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1, 0, 2000, 0.25, 5,  -3,  3,  -3,  3,  0, 200,  0, 6,      2,	 10, 0, 100); outputNames.push_back(s); counter++;
+  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1, 0, 2000, 0,    10, -10, 10, -10, 10,  0, 200,  0, 6,      2, 	10, 0, 100); outputNames.push_back(s); counter++;
+  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1, 0, 2000, 0,    10,  -7,  7, -10, 10,  0, 200,  0, 6,      2, 	10, 0, 100); outputNames.push_back(s); counter++;
+  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1, 0, 2000, 0,    10,  -7,  7,  -7,  7,  0, 200,  0, 6,      2, 	10, 0, 100); outputNames.push_back(s); counter++;
+  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1, 0, 2000, 0.25, 10,  -7,  7,  -7,  7,  0, 200,  0, 6,      2, 	10, 0, 100); outputNames.push_back(s); counter++;
+  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1, 0, 2000, 0.25, 10,  -3,  3,  -3,  3,  0, 200,  0, 6,      2, 	10, 0, 100); outputNames.push_back(s); counter++;
   */
   
   if(counter>=2){          
@@ -627,20 +627,36 @@ void printStats(TH1D *hlt, TH1D *off){
   st2->SetTextSize(7);
   st2->SetTextFont(8);
   st2->Draw();
+  return;
 }
 
-void defineYaxisMax(TH1D *hlt, TH1D *off){ 
-  if(hlt->GetMaximum() > off->GetMaximum()) off->SetMaximum(1.1*hlt->GetMaximum());
-  else hlt->SetMaximum(1.1*off->GetMaximum());
+void defineYaxisMax(TH1D *h1, TH1D *h2){ 
+  //Y axis
+  if(h1->GetMaximum() > h2->GetMaximum()) h2->SetMaximum(1.1*h1->GetMaximum());
+  else h1->SetMaximum(1.1*h2->GetMaximum());
+  
+  h1->SetMinimum(0);
+  h2->SetMinimum(0);
+ 
+  // X axis  
+  double xmin, xmax;  
+  if(h1->GetBinLowEdge(1) > h2->GetBinLowEdge(1)) xmin = h1->GetBinLowEdge(1);
+  else xmin = h2->GetBinLowEdge(1);
+  if(h1->GetBinLowEdge(h1->GetNbinsX()+1) > h2->GetBinLowEdge(h1->GetNbinsX()+1)) xmax = h1->GetBinLowEdge(h1->GetNbinsX()+1);
+  else xmax = h2->GetBinLowEdge(h2->GetNbinsX()+1);
+  
+  h2->SetAxisRange(xmin, xmax, "X");  
+  return;
 }
 
 void printLegend(TH1D *hlt, TH1D *off){  
-  TLegend *l = new TLegend(0.6,0.6,0.8,0.8);
+  TLegend *l = new TLegend(0.5,0.5,0.7,0.7);
   l->SetFillColor(10); 
   l->SetLineColor(10);
   l->AddEntry(hlt, "HLT", "l");
   l->AddEntry(off, "OFF", "l");
   l->Draw("same");
+  return;
 }
 
 TString fix1DTitle(const char* c){

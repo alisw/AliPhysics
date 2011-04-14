@@ -15,11 +15,12 @@
  * @ingroup alihlt_qa
  * @author Kalliopi.Kanaki@ift.uib.no 
  */
-void overlayPlots(string fi="files.txt", const char* option="HLT"/* or "OFF" */){
+void overlayPlots(const char* option="HLT"/* or "OFF" */, string fi="files.txt"){
   
   gROOT->SetStyle("Plain");
   gStyle->SetPalette(1);
-  
+  gStyle->SetTitleX(gStyle->GetPadLeftMargin());
+ 
   char filenames[100];
   sprintf(filenames,"%s",fi.c_str());
   ifstream in(filenames);
@@ -33,7 +34,7 @@ void overlayPlots(string fi="files.txt", const char* option="HLT"/* or "OFF" */)
 
   in>>nr_textfile;
   if(!in.good()) break;
-  printf("Number of files: %d", nr_textfile);
+  printf("Number of files: %d\n", nr_textfile);
 
   const int nr_files = nr_textfile;
   TString file[nr_files];
@@ -51,14 +52,14 @@ void overlayPlots(string fi="files.txt", const char* option="HLT"/* or "OFF" */)
   }
   in.close();
   
-  TCanvas *ca[nr_files]; 
-  TFile   *ff[nr_files]; 
-  TPad    *pad[12]; 
-  TH1D    *h[12][nr_files];
+  TCanvas *ca;
+  TFile   *ff; 
+  TPad    *pad; 
   TH1D    *g[nr_files];
   
   TCanvas *d = new TCanvas("d",Form("%s cut studies",option),1100,900);
   d->Divide(3,3);
+  //d->Divide(3,2);
   
   TLegend *l = new TLegend(0.6,0.6,0.8,0.8);
   l->SetFillColor(10);
@@ -66,26 +67,29 @@ void overlayPlots(string fi="files.txt", const char* option="HLT"/* or "OFF" */)
   
   char cut[100];  
    
-  for(int j=1; j<10; j++){ // not 13, last pad is empty (TODO)     
+  //for(int j=1; j<7; j++){ 
+  for(int j=1; j<10; j++){ 
      for(int i=0; i<nr_files; i++){ 
             
-        ff[i] = TFile::Open(file[i].Data());   
-        if(!ff[i] || ff[i]->IsZombie()){
+        ff = TFile::Open(file[i].Data());   
+        if(!ff || ff->IsZombie()){
            printf("Non-existent, corrupted or zombie file %s\n", file[i].Data());
            return;
         } 
-        ca[i]  = (TCanvas*)ff[i]->GetObjectUnchecked("can1");		    
-	if(!ca[i]){
+        //ca  = (TCanvas*)ff->GetObjectUnchecked("can0");		    
+        ca  = (TCanvas*)ff->GetObjectUnchecked("can3");		    
+	if(!ca){
 	   printf("Empty canvas in file %s.\n", file[i].Data());
 	   continue;
-	}
-	
-        pad[j] = (TPad*)ca[i]->GetListOfPrimitives()->FindObject(Form("can1_%d",j));         	
-        if(!pad[j]){
-           printf("Empty pad in canvas %s.\n", ca[i]->GetName());
+	}	
+        //pad = (TPad*)ca->GetListOfPrimitives()->FindObject(Form("can0_%d",j));         	
+        pad = (TPad*)ca->GetListOfPrimitives()->FindObject(Form("can3_%d",j));         	
+        if(!pad){
+           printf("Empty pad in canvas %s.\n", ca->GetName());
            continue;	     
         }
-        g[i] =(TH1D*)pad[j]->FindObject(Form("fTrack%s_proj_%d",option,j-1));
+        //g[i] =(TH1D*)pad->FindObject(Form("fEvent%s_proj_%d",option,j-1));
+        g[i] =(TH1D*)pad->FindObject(Form("fTrack%s_proj_%d",option,j-1));
 	if(!g[i]){
 	   printf("Empty histogram for i=%d, file %s.\n", i, file[i].Data());
 	   continue;
@@ -105,13 +109,14 @@ void overlayPlots(string fi="files.txt", const char* option="HLT"/* or "OFF" */)
 	}					 
         if(i>0) printStats(g[i-1], g[i]);
         
-        ff[i]->Close();
+        ff->Close();
         sprintf( cut,"%s",cutnames[i].c_str() );
 	if(j==1) l->AddEntry(g[i],cut,"l");	    	
 	else continue;
     }
     if(j==1) l->Draw("same");
   }
+  return;
 }
 
 void printStats(TH1D *h1, TH1D *h2){  
@@ -127,6 +132,7 @@ void printStats(TH1D *h1, TH1D *h2){
   st2->SetTextColor(h2->GetLineColor());
   st2->SetFillStyle(0);
   st2->Draw();
+  return;
 }
 
 void defineYaxisMax(TH1D *h1, TH1D *h2){   
@@ -145,4 +151,5 @@ void defineYaxisMax(TH1D *h1, TH1D *h2){
   else xmax = h2->GetBinLowEdge(h2->GetNbinsX()+1);
   
   h2->SetAxisRange(xmin, xmax, "X");
+  return;
 }
