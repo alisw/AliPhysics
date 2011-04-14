@@ -1,3 +1,4 @@
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
@@ -54,7 +55,8 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det, 
 												     fSanityInspectorPtr(0),
 												     fRawReaderMemoryPtr(0),
 												     fAltroRawStreamPtr(0),
-												     fAlgorithm(0),  
+												     fDetector(det),
+												     fAlgorithm(algo),  
 												     fOffset(0),
 												     fBunchSizeCut(0),
 												     fMinPeakPosition(0),
@@ -66,26 +68,12 @@ AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det, 
 {
   //Constructor
   
-  fAnalyzerPtr = AliCaloRawAnalyzerFactory::CreateAnalyzer(algo);
-  fAnalyzerPtr->SetIsZeroSuppressed(true);
-  fSanityInspectorPtr = new AliHLTCaloSanityInspector();
-  
-  if( fDoPushRawData == true  )
-    {
-      fRawDataWriter  = new RawDataWriter(fCaloConstants); 
-    }
-  fRawReaderMemoryPtr = new AliRawReaderMemory();
-  fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, det);  
 }
 
 
 AliHLTCaloRawAnalyzerComponentv3::~AliHLTCaloRawAnalyzerComponentv3()
 {
   //destructor
-  delete fRawReaderMemoryPtr;
-  delete fAltroRawStreamPtr;
-  delete fRawDataWriter;
-  delete fSanityInspectorPtr;
 }
 
 
@@ -131,6 +119,17 @@ AliHLTCaloRawAnalyzerComponentv3::DoInit( int argc, const char** argv )
 	    AliLog::SetGlobalLogLevel(AliLog::kError);  //PHOS sometimes produces bad data -> Fill up the HLT logs...
 	}
     }
+
+  fAnalyzerPtr = AliCaloRawAnalyzerFactory::CreateAnalyzer(fAlgorithm);
+  fAnalyzerPtr->SetIsZeroSuppressed(true);
+  fSanityInspectorPtr = new AliHLTCaloSanityInspector();
+  
+  if( fDoPushRawData == true  )
+    {
+      fRawDataWriter  = new RawDataWriter(fCaloConstants); 
+    }
+  fRawReaderMemoryPtr = new AliRawReaderMemory();
+  fAltroRawStreamPtr = new AliCaloRawStreamV3(fRawReaderMemoryPtr, fDetector);  
  
   return iResult;
 }
@@ -146,6 +145,12 @@ AliHLTCaloRawAnalyzerComponentv3::DoDeinit()
       fAltroRawStreamPtr = 0;
     }
   return 0;
+
+  delete fRawReaderMemoryPtr;
+  delete fAltroRawStreamPtr;
+  delete fRawDataWriter;
+  delete fSanityInspectorPtr;
+
 }
 
 

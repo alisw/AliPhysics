@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
@@ -162,6 +164,9 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
   /** Pointer to the raw stream */
   AliAltroRawStreamV3* fAltroRawStreamPtr;              //!transient
 
+  /** detector */
+  TString fDetector;                                  // detector string id
+
   /** Describing which algorithm we are using */
   Short_t fAlgorithm;                                 //COMMENT
 
@@ -211,7 +216,7 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
   };
 
   RawDataWriter *fRawDataWriter; 
-  ClassDef(AliHLTCaloRawAnalyzerComponentv3, 1)
+  ClassDef(AliHLTCaloRawAnalyzerComponentv3, 0)
 
 };
 
