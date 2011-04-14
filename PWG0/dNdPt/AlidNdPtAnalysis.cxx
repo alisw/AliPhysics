@@ -423,27 +423,29 @@ void AlidNdPtAnalysis::Init(){
   fRecEventHist->Sumw2();
 
   //
-  Int_t binsTrackHist[3]={100,ptNbins,etaNbins};
-  Double_t minTrackHist[3]={-25.,0.,-1.5}; 
-  Double_t maxTrackHist[3]={25.,50.,1.5}; 
+  Int_t binsTrackHist[4]={100,ptNbins,etaNbins,150};
+  Double_t minTrackHist[4]={-25.,0.,-1.5,-0.5}; 
+  Double_t maxTrackHist[4]={25.,50.,1.5,149.5}; 
 
-  fRecTrackHist = new THnSparseF("fRecTrackHist","Zv:pT:eta",3,binsTrackHist,minTrackHist,maxTrackHist);
+  fRecTrackHist = new THnSparseF("fRecTrackHist","Zv:pT:eta:multRec",4,binsTrackHist,minTrackHist,maxTrackHist);
   fRecTrackHist->SetBinEdges(1,binsPt);
   fRecTrackHist->SetBinEdges(2,binsEta);
   fRecTrackHist->GetAxis(0)->SetTitle("Zv (cm)");
   fRecTrackHist->GetAxis(1)->SetTitle("p_{T} (GeV/c)");
   fRecTrackHist->GetAxis(2)->SetTitle("#eta");
+  fRecTrackHist->GetAxis(3)->SetTitle("multiplicity MB");
   fRecTrackHist->Sumw2();
 
   //
   // rec. vs MC correlation matrices
   //
-  Int_t binsMultTrueEventMatrix[2]={150,150};
-  Double_t minMultTrueEventMatrix[2]={-0.5,-0.5}; 
-  Double_t maxMultTrueEventMatrix[2]={149.5,149.5}; 
-  fEventMultCorrelationMatrix = new THnSparseF("fEventMultCorrelationMatrix","mult:true_mult",2,binsMultTrueEventMatrix,minMultTrueEventMatrix,maxMultTrueEventMatrix);
+  Int_t binsMultTrueEventMatrix[3]={150,150,150};
+  Double_t minMultTrueEventMatrix[3]={-0.5,-0.5,-0.5}; 
+  Double_t maxMultTrueEventMatrix[3]={149.5,149.5,149.5}; 
+  fEventMultCorrelationMatrix = new THnSparseF("fEventMultCorrelationMatrix","mult:true_mult:multMB",3,binsMultTrueEventMatrix,minMultTrueEventMatrix,maxMultTrueEventMatrix);
   fEventMultCorrelationMatrix->GetAxis(0)->SetTitle("track multiplicity");
   fEventMultCorrelationMatrix->GetAxis(1)->SetTitle("true multiplicity");
+  fEventMultCorrelationMatrix->GetAxis(2)->SetTitle("MB multiplicity");
   fEventMultCorrelationMatrix->Sumw2();
   
   Int_t binsTrackPtCorrelationMatrix[3]={ptNbins,ptNbins,etaNbins};
@@ -1327,6 +1329,32 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 
     Int_t entries = allChargedTracks->GetEntries();
     //printf("entries %d \n",entries);
+    
+
+    // calculate mult of reconstructed tracks
+    Int_t multRecTemp=0;
+    for(Int_t i=0; i<entries;++i) 
+    {
+      AliESDtrack *track = (AliESDtrack*)allChargedTracks->At(i);
+      if(!track) continue;
+      if(track->Charge()==0) continue;
+
+
+      // only postive charged 
+      if(GetParticleMode() == AlidNdPtHelper::kPlus && track->Charge() < 0) 
+        continue;
+      
+      // only negative charged 
+      if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0) 
+        continue;
+
+      if(esdTrackCuts->AcceptTrack(track)) 
+      {
+          if(accCuts->AcceptTrack(track)) multRecTemp++;
+      }  
+    }
+
+    
 
     labelsAll = new Int_t[entries];
     labelsAcc = new Int_t[entries];
@@ -1428,7 +1456,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
         if(tpcTrack) delete tpcTrack; 
       } 
 
-      FillHistograms(track,stack,vtxESD->GetZv(),AlidNdPtHelper::kAllTracks); 
+      FillHistograms(track,stack,vtxESD->GetZv(),AlidNdPtHelper::kAllTracks, multRecTemp); 
       labelsAll[multAll] = TMath::Abs(track->GetLabel());
       multAll++;
 
@@ -1477,7 +1505,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 	     track->Set(cParam.GetX(),cParam.GetAlpha(),cParam.GetParameter(),cParam.GetCovariance());
 
              if(accCuts->AcceptTrack(track)) {
-               FillHistograms(track,stack,vtxESD->GetZv(),AlidNdPtHelper::kRecTracks); 
+               FillHistograms(track,stack,vtxESD->GetZv(),AlidNdPtHelper::kRecTracks,multRecTemp); 
 	       labelsRec[multRec] = TMath::Abs(track->GetLabel());
 	       multRec++;
 	     }  
@@ -1485,19 +1513,19 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
           else {
              if(accCuts->AcceptTrack(track)) 
 	     {
-               FillHistograms(track,stack,vtxESD->GetZv(),AlidNdPtHelper::kRecTracks); 
+               FillHistograms(track,stack,vtxESD->GetZv(),AlidNdPtHelper::kRecTracks,multRecTemp); 
 	       labelsRec[multRec] = TMath::Abs(track->GetLabel());
 	       multRec++;
 	     }
           }
      }
-     if(cosmicCount) 
+    // if(cosmicCount) 
        //printf("COSMIC EVENT: number %d , mult %d \n", esdEvent->GetEventNumberInFile(), multRec);
 
-     if(highPtCount) 
+    // if(highPtCount) 
        //printf("HIGH PT EVENT: number %d , mult %d \n", esdEvent->GetEventNumberInFile(), multRec);
 
-     if(multRec > 30) 
+    // if(multRec > 30) 
        //printf("HIGH MULT EVENT: number %d , mult %d \n", esdEvent->GetEventNumberInFile(), multRec);
 
      // fill track multiplicity histograms
@@ -1529,7 +1557,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
        if(!isMCEventSelected) return;  
      }
 
-     Double_t vMultTrueEventMatrix[2] = { multRec, multMCTrueTracks };
+     Double_t vMultTrueEventMatrix[3] = { multRec, multMCTrueTracks, multMBTracks};
      if(isEventOK && isEventTriggered) {   
        if(TMath::Abs(vtxMC[2]) < 10.0) // both Rec. and corresponding MC events must be accepted
          fEventMultCorrelationMatrix->Fill(vMultTrueEventMatrix);
@@ -1821,7 +1849,7 @@ void AlidNdPtAnalysis::FillHistograms(TObjArray *const allChargedTracks,Int_t *c
 }
 
 //_____________________________________________________________________________
-void AlidNdPtAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Double_t zv, AlidNdPtHelper::TrackObject trackObj)
+void AlidNdPtAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Double_t zv, AlidNdPtHelper::TrackObject trackObj, Int_t multMB)
 {
   //
   // Fill ESD track and MC histograms 
@@ -1848,7 +1876,7 @@ void AlidNdPtAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *con
   Double_t values1[3] = {pt,eta,phi};	  
   fRecTrackHist1[trackObj]->Fill(values1);
 
-  Double_t values[3] = {zv, pt,eta};	  
+  Double_t values[4] = {zv, pt,eta, multMB};	  
   if(trackObj == AlidNdPtHelper::kRecTracks) {
     fRecTrackHist->Fill(values);
   }

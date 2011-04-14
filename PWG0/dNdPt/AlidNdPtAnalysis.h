@@ -72,7 +72,7 @@ public :
 
 
   // Fill histograms
-  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Double_t zv, AlidNdPtHelper::TrackObject trackObj);
+  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Double_t zv, AlidNdPtHelper::TrackObject trackObj, Int_t multMB);
   void FillHistograms(AliStack *const stack, Int_t label, AlidNdPtHelper::TrackObject trackObj);
   void FillHistograms(TObjArray *const allChargedTracks,Int_t *const labelsAll,Int_t multAll,Int_t *const labelsAcc,Int_t multAcc,Int_t *const labelsRec,Int_t multRec);
 
@@ -171,7 +171,7 @@ private:
   //
 
   // event rec. track vs true track multiplicity correlation matrix 
-  THnSparseF *fEventMultCorrelationMatrix; //-> mult:mult_true_tracks
+  THnSparseF *fEventMultCorrelationMatrix; //-> mult:mult_true_tracks:multMB
 
   // rec. track pt vs true track pt correlation matrix for given eta
   THnSparseF *fTrackPtCorrelationMatrix; //-> Pt:mcPt:mcEta
@@ -277,7 +277,7 @@ private:
   // Generic histograms to be corrected
   //
   THnSparseF *fRecEventHist; //-> Zv:multMB
-  THnSparseF *fRecTrackHist; //-> Zv:pT:eta
+  THnSparseF *fRecTrackHist; //-> Zv:pT:eta:multRec
 
   //
   // candle events track corrections
