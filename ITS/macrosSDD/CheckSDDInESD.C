@@ -105,7 +105,7 @@ void CheckSDDInESD(TString filename="AliESDs.root", Int_t optTracks=kAll){
 	if(clumap&(1<<i)) ++nPointsForPid;
       }
       //      track->PropagateTo(4.,5.);
-      htpccl->Fill(track->GetNcls(1)<70);
+      htpccl->Fill(track->GetNcls(1));
       Int_t status=track->GetStatus();
       Bool_t tpcin=0;
       hStatus->Fill(-1.);

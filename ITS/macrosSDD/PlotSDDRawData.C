@@ -30,11 +30,11 @@ void PlotSDDRawData(Char_t datafil[100], Int_t nDDL, Int_t firstEv=18, Int_t las
   Int_t ysiz=900;
   Int_t nHybrToPlot=24;
   Int_t iMod=-1;
+  Int_t nCarlos;
   if(nDDL>=240 && nDDL<500){
     iMod=nDDL;
     AliITSDDLModuleMapSDD* dmap=new AliITSDDLModuleMapSDD();
     dmap->SetJun09Map();
-    Int_t nCarlos;
     dmap->FindInDDLMap(iMod,nDDL,nCarlos);
     histo[nCarlos*2]->SetTitle(Form("Module %d Side 0",iMod));
     histo[nCarlos*2+1]->SetTitle(Form("Module %d Side 0",iMod));
