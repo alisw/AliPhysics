@@ -80,8 +80,8 @@ TString cutsToString( double minEta,	double maxEta,
 	   	      double minDCAz,	double maxDCAz,
 	   	      int minTPCclus,	int maxTPCclus,
 	   	      int minITSclus,	int maxITSclus, 
-	              int vs,           float vz
-		      //float minCent,    float maxCent
+	              int vs,           float vz,
+		      float minCent,    float maxCent
 	            );
 void plotTrackQuantities( THnSparse* htrackHLT, THnSparse* htrackOFF, 
                           TText* hText,         TString folder,
@@ -156,32 +156,33 @@ void drawTHnSparse(TString inputFile="HLT-OFFLINE-CentralBarrel-comparison.root"
   // counts how many times the function cutStudies() is called
   // if more than once, then it creates and fills the canvas with the overlapping hlt distributions for the various sets of cuts
   
-  TString s = "";				      // eta 	 pt	 DCAr	  DCAz   TPCclus  ITSclus  vertexStatus  |vertexZ|    
-  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -2, 2,  0,    10, -10, 10, -10, 10,  0, 200,  0, 10,      2,       10, 0, 100); outputNames.push_back(s); counter++;     
+  TString s = "";				      // eta 	 pt        DCAr    DCAz    TPCclus  ITSclus  vtxStatus  |vtxZ|  V0cent  
+  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1,  0,    10, -10, 10, -10, 10,  0, 200,   0, 10,      2,       10,   0, 100); outputNames.push_back(s); counter++;     
+  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1,  0,    10,  -7,  7, -10, 10,  0, 200,   0, 10,      2,       10,   0, 100); outputNames.push_back(s); counter++;     
   /*
-  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1,  0,    10, -10, 10, -10, 10,  0, 200,  0, 10,      2,       10, 0, 100); outputNames.push_back(s); counter++;
-  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1,  0,    10,  -7,  7, -10, 10,  0, 200,  0, 10,      2,       10, 0, 100); outputNames.push_back(s); counter++;
-  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1,  0,    10,  -7,  7,  -7,  7,  0, 200,  0, 10,      2,       10, 0, 100); outputNames.push_back(s); counter++;
-  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1,  0.25, 10,  -7,  7,  -7,  7,  0, 200,  0, 10,      2,       10, 0, 100); outputNames.push_back(s); counter++;
-  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1,  0.25, 10,  -3,  3,  -3,  3,  0, 200,  0, 10,      2,       10, 0, 100); outputNames.push_back(s); counter++;
+  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1,  0,    10, -10, 10, -10, 10,  0, 200,   0, 10,      2,       10,   0,  30); outputNames.push_back(s); counter++;
+  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1,  0,    10,  -7,  7, -10, 10,  0, 200,   0, 10,      2,       10, 0, 100); outputNames.push_back(s); counter++;
+  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1,  0,    10,  -7,  7,  -7,  7,  0, 200,   0, 10,      2,       10, 0, 100); outputNames.push_back(s); counter++;
+  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1,  0.25, 10,  -7,  7,  -7,  7,  0, 200,   0, 10,      2,       10, 0, 100); outputNames.push_back(s); counter++;
+  s = cutStudies(folder, htrackHLT, htrackOFF, hText, -1, 1,  0.25, 10,  -3,  3,  -3,  3,  0, 200,   0, 10,      2,       10, 0, 100); outputNames.push_back(s); counter++;
   */
   
   if(counter>=2){          
      TString tmp = "overlaid HLT track distributions for ";
      tmp += hText->GetTitle();
-     TCanvas *ovHLT = new TCanvas("ovHLT",tmp,1100,900);
-     ovHLT->Divide(3,3);
+     TCanvas *ovHLT = new TCanvas("ovHLT",tmp,1200,800);
+     ovHLT->Divide(4,2);
      
      tmp = "overlaid OFF track distributions for ";
      tmp += hText->GetTitle();
-     TCanvas *ovOFF = new TCanvas("ovOFF",tmp,1100,900);
-     ovOFF->Divide(3,3);
+     TCanvas *ovOFF = new TCanvas("ovOFF",tmp,1200,800);
+     ovOFF->Divide(4,2);
 
      TCanvas *ca; TFile *ff; TPad *pad; 
      TH1D *hlt[outputNames.size()];
      TH1D *off[outputNames.size()];
  
-     for(int j=1; j<10; j++){ // loop over the pads of the canvas "ov" with dimension 3x3     
+     for(int j=1; j<9; j++){ // loop over the pads of the canvas "ov" with dimension 3x3     
        for(UInt_t i=0; i<outputNames.size(); i++){ // loop over the files with different sets of cuts
      	      
      	   ff = TFile::Open(outputNames[i].Data());   
@@ -240,8 +241,8 @@ void drawTHnSparse(TString inputFile="HLT-OFFLINE-CentralBarrel-comparison.root"
      ovHLT->SaveAs(folder+"/overlaid_HLT_track_cuts.png");  
      ovOFF->SaveAs(folder+"/overlaid_OFF_track_cuts.root");
      ovOFF->SaveAs(folder+"/overlaid_OFF_track_cuts.png");  
-     delete ovHLT;
-     delete ovOFF;
+     //delete ovHLT;
+     //delete ovOFF;
   } // end if for counter>=2
   return;
 }
@@ -271,7 +272,7 @@ TString cutStudies( TString folder,
                                        vs, vz, minCent, maxCent);
 
   TString cuts = cutsToString(minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, 
-                              minITSclus, maxITSclus, vs, vz);
+                              minITSclus, maxITSclus, vs, vz, minCent, maxCent);
   
   return folder+"/track_properties_"+cuts+".root"; // same name as the one produced by plotTrackQuantities internally
 }
@@ -462,13 +463,13 @@ void plotTrackQuantities( THnSparse* htrackHLT, THnSparse* htrackOFF,
         s=""; s+=minITSclus; s+="<ITS cls/tr<"; s+=maxITSclus; pave->AddText(s);
         s=""; s+="|vertexZ| (cm)<"; s+=TMath::Abs(vz); pave->AddText(s);
         if(vs!=2) { s=""; s+="vertex status "; s+=vs; pave->AddText(s); }
-        //if() { s=""; s+=minCent; s+=" < V0 mult < "; s+=maxCent; pave->AddText(s);}
+        if(htrackHLT->GetNdimensions()==11) { s=""; s+=minCent; s+=" < V0 centr < "; s+=maxCent; pave->AddText(s);}
   	pave->Draw();
   	can3->Update();
      }      
   } 
   TString cuts = cutsToString(minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, 
-                              minITSclus, maxITSclus, vs, vz);
+                              minITSclus, maxITSclus, vs, vz, minCent, maxCent);
   
   can3->SaveAs(folder+"/track_properties_"+cuts+".root");
   can3->SaveAs(folder+"/track_properties_"+cuts+".png");
@@ -567,7 +568,7 @@ void plot2D( THnSparse* h,     TText *hText, TString folder,
   ht->SetXTitle(s);
   ht->Draw("colz");
  
-  TString cuts = cutsToString(minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, minITSclus, maxITSclus, vs, vz);
+  TString cuts = cutsToString(minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, minITSclus, maxITSclus, vs, vz, minCent, maxCent);
   if(name.Contains("HLT")){
      can4->SaveAs(folder+"/HLT_2D_track_correlations_"+cuts+".root"); 
      can4->SaveAs(folder+"/HLT_2D_track_correlations_"+cuts+".png"); 
@@ -585,14 +586,13 @@ TString cutsToString( double minEta,	double maxEta,
 	   	      double minDCAz,	double maxDCAz,
 	   	      int minTPCclus,	int maxTPCclus,
 	   	      int minITSclus,	int maxITSclus, 
-	              //int minTrackMult, int maxTrackMult,
-		      int vs,           float vz
-		      //float minCent,    float maxCent
+		      int vs,           float vz,
+		      float minCent,    float maxCent
 	            )
 {
   TString cuts = "";
-  char s[300]; sprintf(s, "eta%2g_%2g_Pt%2g_%2g_DCAr%2g_%2g_DCAz%2g_%2g_TPCclus%d_%d_ITSclus%d_%d_Zvertex%2g", 
-                           minEta,maxEta,minPt,maxPt,minDCAr,maxDCAr,minDCAz,maxDCAz,minTPCclus,maxTPCclus,minITSclus,maxITSclus,vz);
+  char s[300]; sprintf(s, "eta%2g_%2g_Pt%2g_%2g_DCAr%2g_%2g_DCAz%2g_%2g_TPCclus%d_%d_ITSclus%d_%d_Zvertex%2g_cent%2g_%2g", 
+                           minEta,maxEta,minPt,maxPt,minDCAr,maxDCAr,minDCAz,maxDCAz,minTPCclus,maxTPCclus,minITSclus,maxITSclus,vz,minCent,maxCent);
   cuts = s; cuts.ReplaceAll(" ","");
  
   if(vs!=2){
