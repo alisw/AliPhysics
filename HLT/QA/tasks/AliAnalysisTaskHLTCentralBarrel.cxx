@@ -124,22 +124,22 @@ void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
   }
   
   if(fBeamType.Contains("Pb")){ // in case of a Pb+Pb run the V0 centrality is added to the THnSparse
-     static const int sizeTrack = 13;
-     //                                 0    1     2    3   4      5    6     7       8      9    10              11          12            
-     // 			       pt  TPCcl theta eta phi   DCAr  DCAz charge  ITScl mult vertex status  vertexZ	V0centrality
-     Int_t    binsTrack[sizeTrack] = { 400, 200, 200, 200, 200,  100,  100,    3,   10,  1000,     2,		 60,	 100 }; // binning
-     Double_t minTrack [sizeTrack] = {   0,   0,  -1,  -2,  -1,  -10,  -10, -1.5,    0,     0,     0,		-20,	   0 }; // min x
-     Double_t maxTrack [sizeTrack] = {  10, 200,   4,	2,   7,   10,  -10,  1.5,   10, 10000,     2,		 20,	 100 }; // max x       
+     static const int sizeTrack = 11;
+     //                                 0    1     2   3      4    5	 6	 7     8	     9	       10	   
+     // 			       pt  TPCcl  eta phi   DCAr  DCAz charge  ITScl vertex status  vertexZ  V0centrality
+     Int_t    binsTrack[sizeTrack] = { 400, 200, 200, 200,  100,  100,    3,   10,    2,	    60,      100 }; // binning
+     Double_t minTrack [sizeTrack] = {   0,   0,  -2,  -1,  -10,  -10, -1.5,	0,    0,	   -20,        0 }; // min x
+     Double_t maxTrack [sizeTrack] = {  10, 200,   2,	7,   10,  -10,  1.5,   10,    2,	    20,      100 }; // max x	  
      fTrackHLT = CreateTrackTHnSparse("fTrackHLT",sizeTrack,binsTrack,minTrack,maxTrack);
      fTrackOFF = CreateTrackTHnSparse("fTrackOFF",sizeTrack,binsTrack,minTrack,maxTrack);
   }
   else {    
-     static const int sizeTrack = 12;
-     //                                 0    1     2    3   4       5     6      7       8     9        10             11       
-     // 			       pt  TPCcl theta eta  phi   DCAr  DCAz  charge   ITScl  mult  vertex status   vertexZ  
-     Int_t    binsTrack[sizeTrack] = {400, 200, 200,  200,  200,  100,  100,      3,    10,  1000,     2,  	    60 }; // binning
-     Double_t minTrack [sizeTrack] = {  0,   0,  -1,   -2,   -1,  -10,  -10,   -1.5,     0,     0,     0,  	   -20 }; // min x
-     Double_t maxTrack [sizeTrack] = { 10 , 200,   4,   2,    7,   10,   10,    1.5,    10, 10000,     2,  	    20 }; // max x  	  
+     static const int sizeTrack = 10;
+     //                                 0    1     2    3      4    5	  6	    7           8	     9	   
+     // 			       pt  TPCcl  eta  phi   DCAr  DCAz  charge   ITScl   vertex status   vertexZ  
+     Int_t    binsTrack[sizeTrack] = {400, 200,  200,  200,  100,  100,      3,    10,       2, 	  60 }; // binning
+     Double_t minTrack [sizeTrack] = {  0,   0,   -2,	-1,  -10,  -10,   -1.5,     0,       0, 	 -20 }; // min x
+     Double_t maxTrack [sizeTrack] = { 10 ,200,    2,	 7,   10,   10,    1.5,    10,       2, 	  20 }; // max x	
      fTrackHLT = CreateTrackTHnSparse("fTrackHLT",sizeTrack,binsTrack,minTrack,maxTrack);
      fTrackOFF = CreateTrackTHnSparse("fTrackOFF",sizeTrack,binsTrack,minTrack,maxTrack);     
   }
@@ -229,8 +229,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
          Double_t trackOFF[] = {
         			   TMath::Abs(esdTrackOFF->Pt()) 
         			  ,esdTrackOFF->GetTPCNcls()	  
-        			  ,esdTrackOFF->Theta() 	  
-        			  ,esdTrackOFF->Eta()		  
+         			  ,esdTrackOFF->Eta()		  
         			  ,esdTrackOFF->Phi()		  
         			  ,dca[0]			  
         			  ,dca[1]			  
@@ -246,7 +245,6 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
         Double_t trackOFF[] = {
         			   TMath::Abs(esdTrackOFF->Pt()) 
         			  ,esdTrackOFF->GetTPCNcls()	  
-        			  ,esdTrackOFF->Theta() 	  
         			  ,esdTrackOFF->Eta()		  
         			  ,esdTrackOFF->Phi()		  
         			  ,dca[0]			  
@@ -310,14 +308,12 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
          Double_t trackHLT[] = {
         		         TMath::Abs(esdTrackHLT->Pt())
         		        ,esdTrackHLT->GetTPCNcls()    
-        		        ,esdTrackHLT->Theta()
         		        ,esdTrackHLT->Eta()	      
         		        ,esdTrackHLT->Phi()
         		        ,dca[0] 		      
         		        ,dca[1] 		      
         		        ,esdTrackHLT->Charge()        
         		        ,esdTrackHLT->GetNcls(0)
-        		        ,nr_tracksHLT
         		        ,vertHLT->GetStatus()
         		        ,vertHLT->GetZ()
         		        ,fCentrality->GetCentralityPercentile("V0M")
@@ -327,14 +323,12 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
          Double_t trackHLT[] = {
              		   	 TMath::Abs(esdTrackHLT->Pt())
              		   	,esdTrackHLT->GetTPCNcls()    
-             		   	,esdTrackHLT->Theta()
              		   	,esdTrackHLT->Eta()	      
              		   	,esdTrackHLT->Phi()
              		   	,dca[0] 		      
              		   	,dca[1] 		      
              		   	,esdTrackHLT->Charge()  
 	     		   	,esdTrackHLT->GetNcls(0)
-	     		   	,nr_tracksHLT
 	     		   	,vertHLT->GetStatus()
 	     		   	,vertHLT->GetZ()		       
              		       };
@@ -386,13 +380,12 @@ THnSparseF* AliAnalysisTaskHLTCentralBarrel::CreateTrackTHnSparse(const char* na
   THnSparseF *thn = new THnSparseF(name,"",size,bins,min,max);
   thn->GetAxis(0)->SetTitle("p_{T}");
   thn->GetAxis(1)->SetTitle("TPC clusters/track");
-  thn->GetAxis(2)->SetTitle("#theta");
-  thn->GetAxis(3)->SetTitle("#eta");
-  thn->GetAxis(4)->SetTitle("#phi");
-  thn->GetAxis(5)->SetTitle("DCAr");
-  thn->GetAxis(6)->SetTitle("DCAz");
-  thn->GetAxis(7)->SetTitle("polarity");
-  thn->GetAxis(8)->SetTitle("ITS clusters/track");  
+  thn->GetAxis(2)->SetTitle("#eta");
+  thn->GetAxis(3)->SetTitle("#phi");
+  thn->GetAxis(4)->SetTitle("DCAr");
+  thn->GetAxis(5)->SetTitle("DCAz");
+  thn->GetAxis(6)->SetTitle("polarity");
+  thn->GetAxis(7)->SetTitle("ITS clusters/track"); 
   return thn;
 }
 
@@ -425,7 +418,6 @@ THnSparseF* AliAnalysisTaskHLTCentralBarrel::CreateTrackTHnSparse(const char* na
 //       Double_t trackHLT[] = {
 //         		        TMath::Abs(esdTrackHLT->Pt())
 //         		       ,esdTrackHLT->GetTPCNcls()    
-//         		       ,esdTrackHLT->Theta()	     
 //         		       ,esdTrackHLT->Eta()	     
 //         		       ,esdTrackHLT->Phi()	     
 //         		       ,DCAr			     
