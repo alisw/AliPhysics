@@ -202,7 +202,8 @@ void compare_HLT_offline_grid( TString runNumber
      taskCB->SetBeamType(beamType);
      if(beamType.Contains("Pb-Pb")){
         gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
-        AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(); 
+        AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
+	taskCentrality->SetPass(1); 
      }  
      taskCB->SetOptions(options); 
      AliAnalysisDataContainer *coutputCB =  mgr->CreateContainer("esd_thnsparse",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-CentralBarrel-comparison.root");       
