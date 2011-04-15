@@ -1,0 +1,36 @@
+Executable="/alice/cern.ch/user/z/zampolli/bin/mergeMakeOCDB.sh";
+
+Packages={"VO_ALICE@AliRoot::v4-19-04-AN","VO_ALICE@ROOT::v5-26-00b-2","VO_ALICE@APISCONFIG::V1.1x"};
+Jobtag =
+           {
+              "Merging Calibration Objects from calib train"
+           };
+
+GUIDFILE="guid.txt";
+TTL = "28000";
+Price = 1;
+
+Validationcommand ="/alice/cern.ch/user/z/zampolli/bin/CalibPass0/validationMerging.sh";
+
+JDLVariables={"Packages", "OutputDir"};
+GUIDFILE="guid.txt";
+
+Arguments = "$1 $2 $3";
+
+Workdirectorysize={"6000MB"}; 
+
+InputFile={"LF:/alice/cern.ch/user/m/miranov/CalibPass0/CalibTimeGain.C",
+"LF:/alice/cern.ch/user/m/miranov/CalibPass0/CalibTimeVdrift.C",
+"LF:/alice/cern.ch/user/m/miranov/CalibPass0/ConfigCalibTrain.C",
+"LF:/alice/cern.ch/user/m/miranov/CalibPass0/LoadLibraries.C",
+"LF:/alice/cern.ch/user/m/miranov/CalibPass0/makeOCDB.C",
+"LF:/alice/cern.ch/user/m/miranov/CalibPass0/makeOCDBTPC.C",
+"LF:/alice/cern.ch/user/m/miranov/CalibPass0/merge.C",
+"LF:/alice/cern.ch/user/m/miranov/CalibPass0/mergeCalibObjects.C"
+};
+
+OutputDir="/alice/cern.ch/user/z/zampolli/CalibPass0/output/";
+
+OutputArchive={"log_archive:*.log@disk=1",
+              "root_archive.zip:CalibObjects.root@disk=1"};
+
