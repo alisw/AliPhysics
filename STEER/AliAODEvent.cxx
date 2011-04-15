@@ -216,14 +216,8 @@ AliAODEvent & AliAODEvent::operator=(const AliAODEvent& aod) {
 AliAODEvent::~AliAODEvent() 
 {
 // destructor
-    if(fAODObjects&&!fConnected)
-    {
-	delete fAODObjects;
-	fAODObjects = 0;
-    }
-
+    if(!fConnected) delete fAODObjects;
     delete fAODFolder;
-    fAODFolder = 0;
 }
 
 //______________________________________________________________________________
@@ -559,7 +553,7 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
     TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("AODObjectsConnectedToTree"));
     if (connectedList && (strcmp(opt, "reconnect"))) {
         // If connected use the connected list of objects
-	fAODObjects->Delete();
+        delete fAODObjects;
 	fAODObjects = connectedList;
 	GetStdContent(); 
 	fConnected = kTRUE;
@@ -571,7 +565,8 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
     
       // create a new TList from the UserInfo TList... 
       // copy constructor does not work...
-    fAODObjects = (TList*)(aodEvent->GetList()->Clone());
+    //    fAODObjects = (TList*)(aodEvent->GetList()->Clone());
+    fAODObjects = (TList*)aodEvent->GetList();
     fAODObjects->SetOwner(kTRUE);
     if(fAODObjects->GetEntries()<kAODListN)
     {
@@ -591,7 +586,8 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
           printf("No UserInfo on tree \n");
         } else {
           
-          TList* objL = (TList*)(aodEvent->GetList()->Clone());
+	  //          TList* objL = (TList*)(aodEvent->GetList()->Clone());
+          TList* objL = (TList*)aodEvent->GetList();
           printf("Get list of object from tree %d !!\n", objL->GetEntries());
           TIter nextobject(objL);
           TObject* obj =  0;
