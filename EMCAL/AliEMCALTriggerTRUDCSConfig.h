@@ -9,6 +9,7 @@
  
  
  Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
+ Author: Jiri Kral, JYU
 */
 
 #include "TObject.h"
@@ -20,17 +21,17 @@ public:
 	AliEMCALTriggerTRUDCSConfig();
 	virtual ~AliEMCALTriggerTRUDCSConfig() {}
 
-	void    SetSELPF( Int_t pf)              { fSELPF  = pf; }  
-	void    SetL0SEL( Int_t la)              { fL0SEL  = la; }  
-	void    SetL0COSM(Int_t lc)              { fL0COSM = lc; }
-	void    SetGTHRL0(Int_t lg)              { fGTHRL0 = lg; }
-	void    SetMaskReg(Int_t arr[], Int_t n) { for (Int_t i=0;i<n;i++) fMaskReg[i] = arr[i]; }
+	void    SetSELPF( UInt_t pf)              { fSELPF  = pf; }  
+	void    SetL0SEL( UInt_t la)              { fL0SEL  = la; }  
+	void    SetL0COSM(UInt_t lc)              { fL0COSM = lc; }
+	void    SetGTHRL0(UInt_t lg)              { fGTHRL0 = lg; }
+	void    SetMaskReg(UInt_t msk, Int_t pos) { fMaskReg[pos] = msk; }
 
-	Int_t   GetSELPF()                       const { return fSELPF;  }
-	Int_t   GetL0SEL()                       const { return fL0SEL;  }
-	Int_t   GetL0COSM()                      const { return fL0COSM; }
-	Int_t   GetGTHRL0()                      const { return fGTHRL0; }
-	void    GetMaskReg(Int_t arr[], Int_t n) const { for (Int_t i=0;i<n;i++) arr[i] = fMaskReg[i]; }
+	UInt_t   GetSELPF()                       const { return fSELPF;  }
+	UInt_t   GetL0SEL()                       const { return fL0SEL;  }
+	UInt_t   GetL0COSM()                      const { return fL0COSM; }
+	UInt_t   GetGTHRL0()                      const { return fGTHRL0; }
+	UInt_t   GetMaskReg(Int_t pos) const { return fMaskReg[pos]; }
 	
 protected:
 
@@ -39,12 +40,12 @@ protected:
 
 private:
 	
-	Int_t   fSELPF;                          // 
-	Int_t   fL0SEL;                          // 
-	Int_t   fL0COSM;                         // 
-	Int_t   fGTHRL0;                         // 
-	Int_t   fMaskReg[5];                     //
+	UInt_t   fSELPF;                         // PeakFinder setup
+	UInt_t   fL0SEL;                         // L0 Algo selection
+	UInt_t   fL0COSM;                        // 2x2
+	UInt_t   fGTHRL0;                        // 4x4
+	UInt_t   fMaskReg[6];                    // 6*16 = 96 mask bits per TRU
 	
-	ClassDef(AliEMCALTriggerTRUDCSConfig,1)  //
+	ClassDef(AliEMCALTriggerTRUDCSConfig,2)  //
 };
 #endif

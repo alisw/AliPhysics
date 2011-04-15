@@ -19,6 +19,7 @@
  
  
  Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
+ Author: Jiri Kral, JYU
 */
 
 #include "AliEMCALTriggerTRUDCSConfig.h"
@@ -35,7 +36,7 @@ AliEMCALTriggerTRUDCSConfig::AliEMCALTriggerTRUDCSConfig() : TObject()
 	//
 	// AliEMCALTriggerTRUDCSConfig default constructor
 	//
-	for (Int_t i=0;i<5;i++) fMaskReg[i] = 0;
+	for (Int_t i=0;i<6;i++) fMaskReg[i] = 0;
 }
 
 

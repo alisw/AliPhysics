@@ -29,7 +29,8 @@ class AliEMCALPreprocessor : public AliPreprocessor {
   virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);//!
   virtual UInt_t Process(TMap* dcsAliasMap);//!
   UInt_t  MapTemperature(TMap* dcsAliasMap);//!
-  UInt_t  ExtractPedestals(Int_t sourceFXS);
+  UInt_t  MapTriggerConfig(TMap* dcsAliasMap);//!
+  UInt_t  ExtractPedestals(Int_t sourceFXS);//!
   UInt_t  ExtractSignal(Int_t sourceFXS);//!
 
  private:
