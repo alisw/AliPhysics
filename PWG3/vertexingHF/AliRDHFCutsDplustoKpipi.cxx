@@ -485,45 +485,45 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
     anacutsval[ic][ipt]=0.2;
   }
   
-  ic=3;
-  for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.;
-  }
-  ic=4;
-  for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.;
-  }
-  ic=5;
-  for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.01;
-  }
-  //ic=6;
-  //for(Int_t ipt=0;ipt<nptbins;ipt++){
-  // anacutsval[ic][ipt]=0.06;
   
-  ic=11;
-  for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=10000000000.;
-  }
-  
+  ic=1;
   
   anacutsval[1][0]=0.3;
   anacutsval[1][1]=0.3;
   anacutsval[1][2]=0.4;
+    
+  
+  for(Int_t ipt=3;ipt<nptbins;ipt++){
+    anacutsval[ic][ipt]=0.4;
+  }
+  
+  ic=2;
   
   anacutsval[2][0]=0.3;
   anacutsval[2][1]=0.3;
   anacutsval[2][2]=0.4;
   
+  for(Int_t ipt=3;ipt<nptbins;ipt++){
+    anacutsval[ic][ipt]=0.4;
+  }
   
-  ic=1;
-  for(Int_t ipt=3;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.4;
+  ic=3;
+  for(Int_t ipt=0;ipt<nptbins;ipt++){
+    anacutsval[ic][ipt]=0.;
   }
-  ic=2;
-  for(Int_t ipt=3;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.4;
+  
+  ic=4;
+  for(Int_t ipt=0;ipt<nptbins;ipt++){
+    anacutsval[ic][ipt]=0.;
   }
+  
+  ic=5;
+  for(Int_t ipt=0;ipt<nptbins;ipt++){
+    anacutsval[ic][ipt]=0.01;
+  }
+  
+  
+  ic=6;  
   
   anacutsval[6][0]=0.022100;
   anacutsval[6][1]=0.022100;
@@ -531,14 +531,14 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   anacutsval[6][3]=0.020667;
   anacutsval[6][4]=0.020667;
   anacutsval[6][5]=0.023333;
-  anacutsval[6][6]=0.023333;
-  anacutsval[6][7]=0.023333;
-  anacutsval[6][8]=0.023333;
-  anacutsval[6][9]=0.023333;
-  anacutsval[6][10]=0.06;
-  anacutsval[6][11]=0.06;
-  anacutsval[6][12]=0.06;
   
+  
+  for(Int_t ipt=6;ipt<nptbins;ipt++){
+    anacutsval[ic][ipt]=0.023333;
+  }
+  
+  
+  ic=7;
   
   anacutsval[7][0]=0.08;
   anacutsval[7][1]=0.08;
@@ -546,32 +546,29 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   anacutsval[7][3]=0.095;
   anacutsval[7][4]=0.095;
   anacutsval[7][5]=0.115;
-  anacutsval[7][6]=0.115;
-  anacutsval[7][7]=0.115;
-  anacutsval[7][8]=0.115;
-  anacutsval[7][9]=0.115;
-  anacutsval[7][10]=0.02;
-  anacutsval[7][11]=0.02;
-  anacutsval[7][12]=0.02;
+  
+  for(Int_t ipt=6;ipt<nptbins;ipt++){
+    anacutsval[ic][ipt]=0.115;
+  }
   
   
+  
+  ic=8;
   anacutsval[8][0]=0.5;
   anacutsval[8][1]=0.5;
   anacutsval[8][2]=1.0;
   anacutsval[8][3]=0.5;
-  anacutsval[8][4]=0.5;
-  anacutsval[8][5]=0.5;
-  anacutsval[8][6]=0.5;
-  anacutsval[8][7]=0.5;
-  anacutsval[8][8]=0.5;
-  anacutsval[8][9]=0.5;
-  anacutsval[8][10]=0.2;
-  anacutsval[8][11]=0.2;
-  anacutsval[8][12]=0.2;
-    
-    
-  anacutsval[9][0]=0.95;
-  anacutsval[9][1]=0.95;
+  
+  for(Int_t ipt=4;ipt<nptbins;ipt++){
+    anacutsval[ic][ipt]=0.5;
+  }
+  
+  
+  ic=9;
+  
+  
+  anacutsval[9][0]=0.979;
+  anacutsval[9][1]=0.979;
   anacutsval[9][2]=0.95; 
   anacutsval[9][3]=0.95; 
   anacutsval[9][4]= 0.95;
@@ -580,30 +577,40 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   anacutsval[9][7]=0.92;
   anacutsval[9][8]=0.92;
   anacutsval[9][9]=0.90;
-  anacutsval[9][10]=0.90;
-  anacutsval[9][11]=0.90;
-  anacutsval[9][12]=0.90;
+  
+  for(Int_t ipt=10;ipt<nptbins;ipt++){
+    anacutsval[ic][ipt]=0.90;
+  }
+  
+  
+  
+  ic=10;
   
   anacutsval[10][0]=0.0055;
   anacutsval[10][1]=0.0055;
   anacutsval[10][2]= 0.0028;
   anacutsval[10][3]=0.000883;
-  anacutsval[10][4]=0.000883;
-  anacutsval[10][5]=0.000883;
-  anacutsval[10][6]=0.000883;
-  anacutsval[10][7]=0.000883;
-  anacutsval[10][8]=0.000883;
-  anacutsval[10][9]=0.000883;
-  anacutsval[10][10]=0.0;
-  anacutsval[10][11]=0.0;
-  anacutsval[10][12]=0.0;
+  
+  
+  for(Int_t ipt=4;ipt<nptbins;ipt++){
+    anacutsval[ic][ipt]=0.000883;
+  }
+  
+  ic=11;
+  
+  for(Int_t ipt=0;ipt<nptbins;ipt++){
+    anacutsval[ic][ipt]=10000000000.;
+  }    
+  
+  
+  
   
   SetGlobalIndex(nvars,nptbins);
   SetPtBins(nptbins+1,ptbins);
   SetCuts(nvars,nptbins,anacutsval);
   SetUsePID(kTRUE);
   SetRemoveDaughtersFromPrim(kTRUE);
-  
+  SetOptPileup(kTRUE);
   PrintAll();
 
   for(Int_t iic=0;iic<nvars;iic++){delete [] anacutsval[iic];}
