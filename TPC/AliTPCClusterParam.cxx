@@ -1598,20 +1598,26 @@ Double_t  AliTPCClusterParam::GaussConvolution(Double_t x0, Double_t x1, Double_
   //TF1 f1("f1","AliTPCClusterParam::GaussConvolution(x,0,1,0,0.1,0.1)",-2,2)
   //TF2 f2("f2","AliTPCClusterParam::GaussConvolution(x,y,1,1,0.1,0.1)",-2,2,-2,2)
   //
-  const Float_t kEpsilon = 0.0001;
+  const Double_t kEpsilon = 0.0001;
+  const Double_t twoPi = TMath::TwoPi();
+  const Double_t hnorm = 0.5/TMath::Sqrt(twoPi);
+  const Double_t sqtwo = TMath::Sqrt(2.);
+
   if ((TMath::Abs(k0)+TMath::Abs(k1))<kEpsilon*(s0+s1)){
     // small angular effect
-    Double_t val = (TMath::Gaus(x0,0,s0)*TMath::Gaus(x1,0,s1))/(s0*s1*2.*TMath::Pi());
+    Double_t val = TMath::Gaus(x0,0,s0)*TMath::Gaus(x1,0,s1)/(s0*s1*twoPi);
     return val;
   }
   Double_t sigma2 = k1*k1*s0*s0+k0*k0*s1*s1;
-  Double_t exp0 = TMath::Exp(-(k1*x0-k0*x1)*(k1*x0-k0*x1)/(2*sigma2));
+  Double_t sigma = TMath::Sqrt(sigma2);
+  Double_t exp0 = TMath::Exp(-(k1*x0-k0*x1)*(k1*x0-k0*x1)/(2.*sigma2));
   //
-  Double_t sigmaErf =  2*s0*s1*TMath::Sqrt(2*sigma2);			     
-  Double_t erf0 = AliMathBase::ErfFast( (k0*s1*s1*(k0-2*x0)+k1*s0*s0*(k1-2*x1))/sigmaErf);
-  Double_t erf1 = AliMathBase::ErfFast( (k0*s1*s1*(k0+2*x0)+k1*s0*s0*(k1+2*x1))/sigmaErf);
-  Double_t norm = 1./TMath::Sqrt(sigma2);
-  norm/=2.*TMath::Sqrt(2.*TMath::Pi());
+  Double_t sigmaErf =  1./(2.*s0*s1*sqtwo*sigma);
+  Double_t k0s1s1 = 2.*k0*s1*s1;
+  Double_t k1s0s0 = 2.*k1*s0*s0;
+  Double_t erf0 = AliMathBase::ErfFast((sigma2-k0s1s1*x0-k1s0s0*x1)*sigmaErf);
+  Double_t erf1 = AliMathBase::ErfFast((sigma2+k0s1s1*x0+k1s0s0*x1)*sigmaErf);
+  Double_t norm = hnorm/sigma;
   Double_t val  = norm*exp0*(erf0+erf1);
   return val;
 }
