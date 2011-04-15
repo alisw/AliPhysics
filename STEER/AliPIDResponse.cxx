@@ -230,7 +230,10 @@ void AliPIDResponse::SetTPCPidResponseMaster()
   //
   // Load the TPC pid response functions from the OADB
   //
-  
+  //don't load twice for the moment
+   if (fArrPidResponseMaster) return;
+ 
+
   //reset the PID response functions
   delete fArrPidResponseMaster;
   fArrPidResponseMaster=0x0;
