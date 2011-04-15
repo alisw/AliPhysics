@@ -413,7 +413,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  }
 	Double32_t time[24], adc[24], adcmip[24], noncalibtime[24];
 	for (Int_t ipmt=0; ipmt<24; ipmt++) {
-	  if(timeCFD[ipmt] >  0  && badpmt[ipmt]==0 ){
+	  if(timeCFD[ipmt] >  0 /* && badpmt[ipmt]==0*/ ){
 	   //for simulated data
 	     //for physics  data
 	   if(( chargeQT0[ipmt] - chargeQT1[ipmt])>0)  {
@@ -448,7 +448,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        }
        fESDTZEROfriend->SetT0timeCorr(noncalibtime) ;     
        for (Int_t ipmt=0; ipmt<12; ipmt++){
-	 if(time[ipmt] !=0 && badpmt[ipmt]==0 &&  adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold )
+	 if(time[ipmt] !=0 /*&& badpmt[ipmt]==0 */&&  adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold )
 	   {
 	       //	       if(TMath::Abs(time[ipmt])<TMath::Abs(besttimeC)) {
 	     if(time[ipmt]<besttimeC){
@@ -459,7 +459,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        }
        for ( Int_t ipmt=12; ipmt<24; ipmt++)
 	 {
-	   if(time[ipmt] != 0  && badpmt[ipmt]==0 && adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold)
+	   if(time[ipmt] != 0 /* && badpmt[ipmt]==0*/ && adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold)
 	     {
 	       if(time[ipmt]<besttimeA) {
 		 //	       if(TMath::Abs(time[ipmt])<TMath::Abs(besttimeA)) {
