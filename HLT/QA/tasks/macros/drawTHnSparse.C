@@ -151,6 +151,10 @@ void drawTHnSparse(TString inputFile="HLT-OFFLINE-CentralBarrel-comparison.root"
   gSystem->Exec("mkdir "+folder); // create a folder whose name contains run number and date of run
   
   if(heventHLT->GetEntries()>0 || heventOFF->GetEntries()>0) plotEventQuantities(heventHLT,heventOFF,hText,folder);
+  else {
+    if(heventHLT->GetEntries()==0) printf("\nThe HLT event THnSparse contains 0 entries\n");
+    if(heventOFF->GetEntries()==0) printf("\nThe OFF event THnSparse contains 0 entries\n");
+  }
 
   int counter = 0; 
   // counts how many times the function cutStudies() is called
