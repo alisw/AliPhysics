@@ -4,6 +4,7 @@
 #include <TH2F.h>
 #include <TH1F.h>
 #include <TF1.h>
+#include <TGraph.h>
 #include <TDirectoryFile.h>
 #include <TList.h>
 #include <TCanvas.h>
@@ -11,15 +12,21 @@
 #include <TPaveText.h>
 #include <TStyle.h>
 #include <TClass.h>
+#include <TDatabasePDG.h>
+#include <TParameter.h>
 #include <AliCounterCollection.h>
+#include <AliRDHFCuts.h>
 
 //read the file and take list and stat
 
-Bool_t ReadFile(TList* &list,TH1F* &hstat,TString listname,TString partname,TString path="./",TString filename="AnalysisResults.root");
+Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TString path="./",TString filename="AnalysisResults.root"/*"PWG3histograms.root"*/);
+Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString listname,TString partname,TString path="./",TString filename="AnalysisResults.root"/*"PWG3histograms.root"*/);
+void SuperimposeBBToTPCSignal(Int_t period /*0=LHC10bc, 1=LHC10d, 2=LHC10h*/,TCanvas* cpid, Int_t set);
+void TPCBetheBloch(Int_t set);
 
-Bool_t ReadFile(TList* &list,TH1F* &hstat,TString listname,TString partname,TString path,TString filename){
+Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TString path,TString filename){
 
-  TString hstatname="nEntriesQA",dirname="PWG3_D2H_QA";
+  TString hstatname="nEntriesQA",dirname="PWG3_D2H_QA", cutobjname="";
   filename.Prepend(path);
   listname+=partname;
   hstatname+=partname;
@@ -47,72 +54,247 @@ Bool_t ReadFile(TList* &list,TH1F* &hstat,TString listname,TString partname,TStr
     cout<<hstatname.Data()<<" not found"<<endl;
     return kFALSE;
   }
+
+  return kTRUE;
+}
+
+Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString listname,TString partname,TString path,TString filename){
+
+  TString hstatname="nEntriesQA",dirname="PWG3_D2H_QA", cutobjname="";
+  filename.Prepend(path);
+  listname+=partname;
+  hstatname+=partname;
+
+  if(partname.Contains("Dplus")) cutobjname="DplustoKpipiCutsStandard";//"AnalysisCuts";
+  else{
+    if(partname.Contains("D0")) cutobjname="D0toKpiCutsStandard";//"D0toKpiCuts";
+    else{
+      if(partname.Contains("Dstar")) cutobjname="DStartoKpipiCuts";
+      else{
+	if(partname.Contains("Ds")) cutobjname="DstoKKpiCuts";
+	else{
+	  if(partname.Contains("D04")) cutobjname="D0toKpipipiCuts";
+	  else{
+	    if(partname.Contains("Lc")) cutobjname="LctopKpiAnalysisCuts";
+	  }
+	}
+      }
+    }
+  }
+
+  TFile* f=new TFile(filename.Data());
+  if(!f){
+    cout<<filename.Data()<<" not found"<<endl;
+    return kFALSE;
+  }
+  TDirectoryFile* dir=(TDirectoryFile*)f->Get(dirname);
+  if(!f){
+    cout<<dirname.Data()<<" not found  in "<<filename.Data()<<endl;
+    return kFALSE;
+  }
+
+  list=(TList*)dir->Get(listname);
+  if(!list){
+    cout<<"List "<<listname.Data()<<" not found"<<endl;
+    dir->ls();
+    return kFALSE;
+  }
+
+  hstat=(TH1F*)dir->Get(hstatname);
+  if(!hstat){
+    cout<<hstatname.Data()<<" not found"<<endl;
+    return kFALSE;
+  }
+
+  cutobj=(AliRDHFCuts*)dir->Get(cutobjname);
+  if(!cutobj){
+    cout<<cutobjname.Data()<<" not found"<<endl;
+    return kFALSE;
+  }
+
   return kTRUE;
 }
 
 //draw "track related" histograms (list "outputTrack")
-void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./"){
+void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./", Bool_t superimpose=kFALSE){
   gStyle->SetCanvasColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetStatColor(0);
   gStyle->SetPalette(1);
 
-  TString listname="outputTrack";
+  TString listname="outputTrack",name1="",name2="",path2="",filename="AnalysisResults.root",filename2="PWG3histograms.root";
+  TString tmp="y";
+
+  if(superimpose){
+    cout<<"Enter the names:\n>";
+    cin>>name1;
+    cout<<">";
+    cin>>name2;
+    cout<<"Are they in the same output file? (y/n)"<<endl;
+    cin>>tmp;
+    if(tmp=="n"){
+      cout<<"Path: \t";
+      cin>>path2;
+      cout<<"Filename; "<<endl;
+      cin>>filename2;
+    }
+    
+  }
 
   TList* list;
   TH1F * hstat;
 
-  Bool_t isRead=ReadFile(list,hstat,listname,partname,path);
+  Bool_t isRead=ReadFile(list,hstat,listname,Form("%s%s",partname.Data(),name1.Data()),path,filename);
   if(!isRead) return;
   if(!list || !hstat){
     cout<<":-( null pointers..."<<endl;
     return;
   }
+  TPaveText *pvtxt=new TPaveText(0.6,0.6,0.9,0.9,"NDC");
+  pvtxt->SetBorderSize(0);
+  pvtxt->SetFillStyle(0);
+  pvtxt->AddText(name1);
+
+  TList* llist;
+  TH1F* hhstat;
+  if(superimpose){
+    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path2,filename2);
+    if(!isRead) return;
+    if(!llist || !hhstat){
+      cout<<":-( null pointers..."<<endl;
+      return;
+    }
+    TText *redtext=pvtxt->AddText(name2);
+    redtext->SetTextColor(kRed);
+
+  }
 
   for(Int_t i=0;i<list->GetEntries();i++){
     TH1F* h=(TH1F*)list->At(i);
-    if(!h){
+    TH1F* hh=0x0;
+    if(superimpose){
+      hh=(TH1F*)llist->At(i);
+    }
+    if(!h || (superimpose && !hh)){
       cout<<"Histogram "<<i<<" not found"<<endl;
       continue;
     }
+    if(superimpose){
+      hhstat->SetLineColor(kRed);
+      hh->SetLineColor(kRed);
+    }
+
     TCanvas* c=new TCanvas(Form("c%s",h->GetName()),h->GetName());
     c->cd();
     c->SetGrid();
     TString hname=h->GetName();
     if(!hname.Contains("nCls")){
       c->SetLogy();
+      //h->SetMinimum(1);
       h->Draw();
-    } else h->Draw("htext0");
-    c->SaveAs(Form("%s%s.png",c->GetName(),textleg.Data()));
+      if(superimpose) hh->Draw("sames");
+    } else {
+      h->Draw("htext0");
+      if(superimpose)hh->Draw("htext0sames");
+    }
+    pvtxt->Draw();
+    c->SaveAs(Form("%s%s%s%s.png",c->GetName(),name1.Data(),name2.Data(),textleg.Data()));
   }
   
   TCanvas* cst=new TCanvas("cst","Stat");
   cst->SetGridy();
   cst->cd();
   hstat->Draw("htext0");
+  if(superimpose) {
+    hhstat->Draw("htext0sames");
+    pvtxt->Draw();
+  }
   cst->SaveAs(Form("%s%s.png",hstat->GetName(),textleg.Data()));
 
 
 }
 
 //draw "pid related" histograms (list "outputPID")
-void DrawOutputPID(TString partname="D0",TString textleg="",TString path="./"){
+//period=-999 to draw the pull instead of the cut
+void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsigma*/,TString textleg="",TString path="./"){
   gStyle->SetCanvasColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetStatColor(0);
   gStyle->SetPalette(1);
 
+  Int_t period=2 ,set=0;
+  if(mode==1){
+    cout<<"Choose period: \n-LHC10h -> 2;\n-LHC10d -> 1;\n-LHC10bc -> 0"<<endl;
+    cin>>period;
+    if(period>0){
+      cout<<"Choose set: "<<endl;
+      if(period==2) cout<<"-pass1 -> 0;\n-pass2 -> 1"<<endl;
+      cin>>set;
+    }
+  }
+
   TString listname="outputPid";
 
   TList* list;
   TH1F * hstat;
+  //needed only for mode 1
+  AliRDHFCuts* cutobj;
+  AliAODPidHF* aodpid;
+  Double_t nsigmaTOF=0;
+  Double_t nsigmaTPC[3]={},plimTPC[2]={};
 
-  Bool_t isRead=ReadFile(list,hstat,listname,partname,path);
-  if(!isRead) return;
-  if(!list || !hstat){
-    cout<<":-( null pointers..."<<endl;
-    return;
+  if(mode==1){
+    Bool_t isRead=ReadFileMore(list,hstat,cutobj,listname,partname,path);
+    if(!isRead) return;
+    if(!list || !hstat){
+      cout<<":-( null pointers..."<<endl;
+      return;
+    }
+    aodpid=(AliAODPidHF*)cutobj->GetPidHF();
+    nsigmaTOF=aodpid->GetSigma(3);
+  
+    nsigmaTPC[0]=aodpid->GetSigma(0);
+    nsigmaTPC[1]=aodpid->GetSigma(1);
+    nsigmaTPC[2]=aodpid->GetSigma(2);
+    aodpid->GetPLimit(plimTPC);
+
+  }else{
+
+    Bool_t isRead=ReadFile(list,hstat,listname,partname,path);
+    if(!isRead) return;
+    if(!list || !hstat){
+      cout<<":-( null pointers..."<<endl;
+      return;
+    }
   }
+
+
+  TPaveText *txtsigmaTOF=new TPaveText(0.1,0.65,0.5,0.9,"NDC");
+  txtsigmaTOF->SetBorderSize(0);
+  txtsigmaTOF->SetFillStyle(0);
+  txtsigmaTOF->AddText(Form("nsigmacut from cutobj = %.1f",nsigmaTOF));
+  TLine lTOF;
+  lTOF.SetLineColor(kMagenta+1);
+  lTOF.SetLineStyle(2);
+  lTOF.SetLineWidth(3);
+
+  TPaveText *txtsigmaTPC=new TPaveText(0.3,0.6,0.6,0.9,"NDC");
+  txtsigmaTPC->SetBorderSize(0);
+  txtsigmaTPC->SetFillStyle(0);
+  txtsigmaTPC->AddText("nsigmacut from cutobj \n");
+  txtsigmaTPC->AddText(Form("p < %.1f : %.1f \n",plimTPC[0],nsigmaTPC[0]));
+  txtsigmaTPC->AddText(Form("%.1f < p < %.1f : %.1f \n",plimTPC[0],plimTPC[1],nsigmaTPC[1]));
+  txtsigmaTPC->AddText(Form("p > %.1f : %.1f \n",plimTPC[1],nsigmaTPC[2]));
+  TLine lTPC;
+  lTPC.SetLineColor(kMagenta+1);
+  lTPC.SetLineStyle(2);
+  lTPC.SetLineWidth(3);
+
+  // TCanvas *ctest=new TCanvas("text","Test text");
+  // ctest->cd();
+  // txtsigmaTPC->Draw();
+  // txtsigmaTOF->Draw();
+
 
   for(Int_t i=0;i<list->GetEntries();i++){
     TClass* objtype=list->At(i)->IsA();
@@ -147,66 +329,269 @@ void DrawOutputPID(TString partname="D0",TString textleg="",TString path="./"){
       }
       h->Sumw2();
       h->Scale(1./h->Integral("width"));
-      TCanvas* c=new TCanvas(Form("c%s",h->GetName()),h->GetName());
+      TString hname=h->GetName();
+
+      if(hname.Contains("hTOFtimeKaonHyptime")){
+	TCanvas* cz=new TCanvas(Form("c%szoom",hname.Data()),Form("%szoom",hname.Data()));
+	cz->SetLogz();
+	TH2F* hz=(TH2F*)h->Clone(Form("%sz",hname.Data()));
+	hz->Draw("colz");
+	hz->SetAxisRange(-1500,1500,"Y");
+	//write
+	cz->SaveAs(Form("%szoom.png",h->GetName()));
+      }
+
+      TCanvas* c=new TCanvas(Form("c%s",hname.Data()),hname.Data());
       c->SetLogz();
       //c->SetLogx();
       c->cd();
       
       h->Draw("colz");
+     
+      //TCanvas *test=new TCanvas("test","test");
+      if(mode==0){
+	//mean and pull, code from Jens Wiechula
+	TF1 fg("fg","gaus",-2.,2.); // fit range +- 2 sigma
+	TLine l;
+	TObjArray arr;
 
-      //mean and pull, code from Jens Wiechula
-      TF1 fg("fg","gaus",-2.,2.); // fit range +- 2 sigma
-      TLine l;
-      TObjArray arr;
+	//h->Draw("colz");
+	fg.SetParameters(1,0,1);
+	h->FitSlicesY(&fg,0,-1,0,"NQR",&arr);
 
-      h->Draw("colz");
-      fg.SetParameters(1,0,1);
-      h->FitSlicesY(&fg,0,-1,0,"NQR",&arr);
+	TH1 *hM=(TH1*)arr.At(1);
+	hM->SetMarkerStyle(20);
+	hM->SetMarkerSize(.5);
+	hM->DrawClone("sames");
 
-      TH1 *hM=(TH1*)arr.At(1);
-      hM->SetMarkerStyle(20);
-      hM->SetMarkerSize(.5);
-      hM->Draw("same");
+	TH1 *hS=(TH1*)arr.At(2);
+	hS->SetMarkerStyle(20);
+	hS->SetMarkerSize(.5);
+	hS->SetMarkerColor(kRed);
+	hS->SetLineColor(kRed);
+	hS->DrawClone("same");
 
-      TH1 *hS=(TH1*)arr.At(2);
-      hS->SetMarkerStyle(20);
-      hS->SetMarkerSize(.5);
-      hS->SetMarkerColor(kRed);
-      hS->SetLineColor(kRed);
-      hS->Draw("same");
+	l.SetLineColor(kBlack);
+	l.DrawLine(.2,0,20,0);
+	l.SetLineColor(kRed);
+	l.DrawLine(.2,1,20,1);
+	
+      }else{ //mode 1
 
-      l.SetLineColor(kBlack);
-      l.DrawLine(.2,0,20,0);
-      l.SetLineColor(kRed);
-      l.DrawLine(.2,1,20,1);
+	if(hname.Contains("TOFsigma")) {
 
+	  c->cd();
+	  txtsigmaTOF->Draw();
+	  lTOF.DrawLine(.2,nsigmaTOF,20,nsigmaTOF);
+	  lTOF.DrawLine(.2,-1*nsigmaTOF,4.,-1*nsigmaTOF);
+
+	}
+      
+
+	if(hname.Contains("TPCsigma")){
+
+	  c->cd();
+	  txtsigmaTPC->Draw();
+	  lTPC.DrawLine(0.,nsigmaTPC[0],plimTPC[0],nsigmaTPC[0]);
+	  lTPC.DrawLine(plimTPC[0],nsigmaTPC[1],plimTPC[1],nsigmaTPC[1]);
+	  lTPC.DrawLine(plimTPC[1],nsigmaTPC[2],4,nsigmaTPC[2]);
+	  lTPC.DrawLine(0.,-1*nsigmaTPC[0],plimTPC[0],-1*nsigmaTPC[0]);
+	  lTPC.DrawLine(plimTPC[0],-1*nsigmaTPC[1],plimTPC[1],-1*nsigmaTPC[1]);
+	  lTPC.DrawLine(plimTPC[1],-1*nsigmaTPC[2],4,-1*nsigmaTPC[2]);
+	}
+
+	if(hname.Contains("TPCsigvsp")){
+	  SuperimposeBBToTPCSignal(period,c,set);
+	}
+      }
+	
       //write
       c->SaveAs(Form("%s.png",h->GetName()));
       TFile* fout=new TFile(Form("%s.root",h->GetName()),"recreate");
       fout->cd();
       c->Write();
-
     }
   }
 }
 
-void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path="./"){
+void SuperimposeBBToTPCSignal(Int_t period /*0=LHC10bc, 1=LHC10d, 2=LHC10h*/,TCanvas* cpid,Int_t set /*see below*/){
+
+  TFile* fBethe=new TFile("BetheBlochTPC.root");
+  if(!fBethe->IsOpen()){
+    TPCBetheBloch(set);
+    fBethe=new TFile("BetheBlochTPC.root");
+  }
+  const Int_t npart=4;
+  TString partnames[npart]={"Kaon","Pion","Electron","Proton"};
+  for(Int_t ipart=0;ipart<npart;ipart++){
+    TString grname=Form("%sP%d",partnames[ipart].Data(),period);
+    TGraph* gr=(TGraph*)fBethe->Get(grname);
+    cpid->cd();
+    gr->SetLineColor(1);
+    gr->SetLineWidth(2);
+    gr->Draw("L");
+  }
+
+  //cpid->SaveAs(Form("%sBB.png",hname.Data()));
+}
+
+//draw and save Bethe Bloch from TPC in different periods
+void TPCBetheBloch(Int_t set){
+  gStyle->SetOptTitle(0);
+  gStyle->SetCanvasColor(0);
+
+  AliTPCPIDResponse *tpcResp=new AliTPCPIDResponse();
+
+  const Int_t npart=4;
+  Double_t masses[npart]={TDatabasePDG::Instance()->GetParticle(321)->Mass()/*Kaon*/,TDatabasePDG::Instance()->GetParticle(211)->Mass()/*Pion*/,TDatabasePDG::Instance()->GetParticle(11)->Mass()/*Electron*/,TDatabasePDG::Instance()->GetParticle(2212)->Mass()/*Proton*/};
+  TString partnames[npart]={"Kaon","Pion","Electron","Proton"};
+  //printf("%s = %.4f,%s = %.4f,%s = %.4f\n",partnames[0].Data(),masses[0],partnames[1].Data(),masses[1],partnames[2].Data(),masses[2]);
+  TCanvas *cBethe=new TCanvas("cBethe","Bethe Bloch K pi e p");
+  Int_t nperiods=3; //LHC10b+c, LHC10d, LHC10h
+  Double_t alephParameters[5]={};
+
+  TFile* fout=new TFile("BetheBlochTPC.root","recreate");
+
+  for(Int_t iperiod=0;iperiod<nperiods;iperiod++){
+    if(iperiod==2){//LHC10h
+      if(set==0){//pass1 
+	alephParameters[0]=1.25202/50.;
+	alephParameters[1]=2.74992e+01;
+	alephParameters[2]=TMath::Exp(-3.31517e+01);
+	alephParameters[3]=2.46246;
+	alephParameters[4]=6.78938;
+      }
+      if (set==1){//pass2 (AOD044)
+	alephParameters[0]=1.25202/50.;
+	alephParameters[1]=2.74992e+01;
+	alephParameters[2]=TMath::Exp(-3.31517e+01);
+	alephParameters[3]=2.46246;
+	alephParameters[4]=6.78938;
+
+      }
+    }
+    if(iperiod==1){ //LHC10d
+      if(set==0){   
+	alephParameters[0] = 1.63246/50.;
+	alephParameters[1] = 2.20028e+01;
+	alephParameters[2] = TMath::Exp(-2.48879e+01);
+	alephParameters[3] = 2.39804e+00;
+	alephParameters[4] = 5.12090e+00;
+      }
+      if(set==1){
+	alephParameters[0] = 1.34490e+00/50.;
+	alephParameters[1] =  2.69455e+01;
+	alephParameters[2] =  TMath::Exp(-2.97552e+01);
+	alephParameters[3] = 2.35339e+00;
+	alephParameters[4] = 5.98079e+00;
+      }
+    }
+    if(iperiod==0){ //LHC10bc
+      
+      alephParameters[0] = 0.0283086/0.97;
+      alephParameters[1] = 2.63394e+01;
+      alephParameters[2] = 5.04114e-11;
+      alephParameters[3] = 2.12543e+00;
+      alephParameters[4] = 4.88663e+00;
+      
+    }
+
+    tpcResp->SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2],alephParameters[3],alephParameters[4]);
+
+    for(Int_t ipart=0;ipart<npart;ipart++){
+
+      const Int_t n=1000;
+      Double_t p[n],bethe[n];
+
+      for(Int_t k=0;k<n;k++){ //loop on the momentum steps
+	p[k]=0.0001+k*4./n; //limits 0.-4. GeV/c
+	//cout<<p[k]<<"\t";
+	//bethe[k]=-tpcResp->Bethe(p[k]/masses[ipart]);
+	AliPID::EParticleType ptype=AliPID::kKaon;
+	if(ipart==1) ptype=AliPID::kPion;
+	if(ipart==2) ptype=AliPID::kElectron;
+	if(ipart==3) ptype=AliPID::kProton;
+	bethe[k]=tpcResp->GetExpectedSignal(p[k],ptype);
+      }
+      //cout<<endl;
+      TGraph *gr=new TGraph(n,p,bethe);
+      gr->SetName(Form("%sP%d",partnames[ipart].Data(),iperiod));
+      gr->SetTitle(Form("%sP%d;p (GeV/c);",partnames[ipart].Data(),iperiod));
+      gr->SetLineColor(ipart+1);
+      gr->SetMarkerColor(ipart+1);
+      gr->GetYaxis()->SetRangeUser(35,100);
+      cBethe->cd();
+      if(iperiod==0 && ipart==0)gr->DrawClone("AL");
+      else gr->DrawClone("L");
+
+      fout->cd();
+      gr->Write();
+    }
+
+  }
+  TParameter<int> sett;
+  sett.SetVal(set);
+  fout->cd();
+  sett.Write();
+
+  fout->Close();
+}
+
+void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path="./", Bool_t superimpose=kFALSE){
   gStyle->SetCanvasColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetStatColor(0);
   gStyle->SetPalette(1);
 
-  TString listname="outputCentrCheck";
+  TString listname="outputCentrCheck",name1="",name2="";
+
+  if(superimpose){
+    cout<<"Enter the names:\n>";
+    cin>>name1;
+    cout<<">";
+    cin>>name2;
+  }
+  // Int_t nhist=1;
+  // TString *name=0x0;
+  // if(superimpose){
+  //   cout<<"Number of histogram to superimpose: ";
+  //   cin>>nhist;
+  //   name=new TString[nhist];
+  //   for (Int_t j=0;j<nhist;j++){
+  //     cout<<">";
+  //     cin>>name[j];
+  //   }
+  // }
 
   TList* list;
   TH1F * hstat;
 
-  Bool_t isRead=ReadFile(list,hstat,listname,partname,path);
+  Bool_t isRead=ReadFile(list,hstat,listname,Form("%s%s",partname.Data(),name1.Data()),path);
   if(!isRead) return;
   if(!list || !hstat){
     cout<<":-( null pointers..."<<endl;
     return;
   }
+
+  TPaveText *pvtxt=new TPaveText(0.6,0.6,0.9,0.9,"NDC");
+  pvtxt->SetBorderSize(0);
+  pvtxt->SetFillStyle(0);
+  pvtxt->AddText(name1);
+
+  TList* llist;
+  TH1F* hhstat;
+  if(superimpose){
+    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path);
+    if(!isRead) return;
+    if(!llist || !hhstat){
+      cout<<":-( null pointers..."<<endl;
+      return;
+    }
+    TText *redtext=pvtxt->AddText(name2);
+    redtext->SetTextColor(kRed);
+
+  }
+
 
   TCanvas* cst=new TCanvas("cst","Stat");
   cst->SetGridy();
@@ -226,21 +611,35 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
     if(tpname=="TH1F"){
 
       TH1F* h=(TH1F*)list->At(i);
-      if(!h){
+      TH1F* hh=0x0;
+      if(superimpose){
+	hh=(TH1F*)llist->At(i);
+      }
+      if(!h || (superimpose && !hh)){
 	cout<<"Histogram "<<i<<" not found"<<endl;
 	continue;
       }
+      if(superimpose){
+	hhstat->SetLineColor(kRed);
+	hh->SetLineColor(kRed);
+      }
+
       TCanvas* c=new TCanvas(Form("c%s",h->GetName()),h->GetName());
-      TPaveText *pvtxt=new TPaveText(0.6,0.6,0.9,0.9,"NDC");
-      pvtxt->SetBorderSize(0);
-      pvtxt->SetFillStyle(0);
+      TPaveText *pvtxt2=new TPaveText(0.6,0.6,0.9,0.9,"NDC");
+      pvtxt2->SetBorderSize(0);
+      pvtxt2->SetFillStyle(0);
 
       c->cd();
       c->SetGrid();
+      c->SetLogy();
       Int_t entries=h->Integral();
-      pvtxt->AddText(Form("%.1f per cent of the events",(Double_t)entries/(Double_t)nevents));
+      pvtxt2->AddText(Form("%.1f per cent of the events",(Double_t)entries/(Double_t)nevents));
       h->Draw();
-      pvtxt->Draw();
+      if(superimpose) {
+	hh->Draw("sames");
+	pvtxt->Draw();
+      }
+      pvtxt2->Draw();
       c->SaveAs(Form("%s%s.png",c->GetName(),textleg.Data()));
     }
     if(tpname=="TH2F"){
@@ -305,8 +704,8 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
       if(!hallcntr) {
 	hallcntr=(TH1F*)h->Clone("hallcntr");
 	hallcntr->Sumw2();
-      }
-      else hallcntr->Add(h);
+      } else hallcntr->Add(h);
+
       nevents080+=h->Integral();
     }
 
@@ -351,7 +750,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
     ccent->cd(ncentr+1);
     h020->Divide(hallcntr);
     h020->DrawClone();
-    TCanvas* cv020=new TCanvas(Form("cv020-%d",i),"0-20% vs run number");
+    TCanvas* cv020=new TCanvas(Form("cv020-%d",i),"0-20% vs run number",1400,600);
     cv020->cd();
     h020->GetYaxis()->SetRangeUser(0.,1.);
     h020->DrawClone();
@@ -361,7 +760,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
     h2080->Divide(hallcntr);
     h2080->DrawClone();
 
-    TCanvas* cv2080=new TCanvas(Form("cv2080-%d",i),"20-80% vs run number");
+    TCanvas* cv2080=new TCanvas(Form("cv2080-%d",i),"20-80% vs run number",1400,600);
     cv2080->cd();
     h2080->GetYaxis()->SetRangeUser(0.,1.);
     h2080->DrawClone();
@@ -389,6 +788,7 @@ void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",I
     cout<<":-( null pointers..."<<endl;
     return;
   }
+  Double_t nevents=hstat->Integral(5,6); //ev good vertex
 
   TH2F* h2=(TH2F*)list->FindObject(h2dname);
   if(!h2){
@@ -398,8 +798,13 @@ void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",I
   TCanvas* cv2d=new TCanvas("cv2d",h2->GetName());
   cv2d->cd();
   cv2d->SetLogz();
+  cv2d->SetGrid();
   h2->Draw("colz");
-  cv2d->SaveAs(Form("%s.png",h2->GetName()));
+  TPaveText *pvst=new TPaveText(0.6,0.2,0.9,0.7,"NDC");
+  pvst->SetBorderSize(0);
+  pvst->SetFillStyle(0);
+  pvst->AddText("Bin -> Cont/nEvVtx");
+
 
   Int_t kbins=1;
   if(nsteps==0){
@@ -414,22 +819,32 @@ void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",I
   TCanvas *cvpj=new TCanvas(Form("cvpj%s%s",direction.Data(),h2dname.Data()),Form("cvpj%s",direction.Data()),1000,800);
   cvpj->Divide((Int_t)(nsteps/3)+1,3);
   TFile* fout=new TFile(Form("proj%s%s.root",direction.Data(),h2dname.Data()), "recreate");
+  //Float_t maxx[nsteps];
+  Float_t maxx[12]={9000,9000,6000,4000,2000,1400,800,500,200,100,40,25};
+  Double_t integralpernev[nsteps];
+
   for(Int_t i=0;i<nsteps;i++){
     TH1F* h=0x0;
     if(direction=="X")h=(TH1F*)h2->ProjectionX(Form("px%d",i),i+kbins,i+2*kbins);
     if(direction=="Y")h=(TH1F*)h2->ProjectionY(Form("py%d",i),i+kbins,i+2*kbins);
+    integralpernev[i]=h->Integral()/nevents;
 
     TPaveText *pvtxt=new TPaveText(0.6,0.6,0.9,0.9,"NDC");
     pvtxt->SetBorderSize(0);
     pvtxt->SetFillStyle(0);
-    pvtxt->AddText(Form("%d - %d",((i+kbins-1)*10),(i+2*kbins-1)*10));
-
+    pvtxt->AddText(Form("%.0f - %.0f",h2->GetYaxis()->GetBinLowEdge((i+kbins)),h2->GetYaxis()->GetBinLowEdge((i+2*kbins))));
+    pvst->AddText(Form("%.0f - %.0f -> %.2f",h2->GetYaxis()->GetBinLowEdge((i+kbins)),h2->GetYaxis()->GetBinLowEdge((i+2*kbins)),integralpernev[i]));
     cvpj->cd(i+1);
+    h->GetXaxis()->SetRangeUser(0,maxx[i]);
     h->Draw();
     pvtxt->Draw();
     fout->cd();
     h->Write();
   }
   cvpj->SaveAs(Form("cvpj%s%s.png",direction.Data(),h2dname.Data()));
+
+  cv2d->cd();
+  pvst->Draw();
+  cv2d->SaveAs(Form("%s.png",h2->GetName()));
 
 }
