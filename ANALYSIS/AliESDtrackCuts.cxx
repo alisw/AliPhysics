@@ -843,7 +843,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCutsPbPb2010(Bool_t selPr
 }
 
 //____________________________________________________________________
-Int_t AliESDtrackCuts::GetReferenceMultiplicity(AliESDEvent* esd, Bool_t tpcOnly)
+Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, Bool_t tpcOnly)
 {
   // Gets reference multiplicity following the standard cuts and a defined fiducial volume
   // tpcOnly = kTRUE -> consider TPC-only tracks
@@ -1347,7 +1347,7 @@ TObjArray* AliESDtrackCuts::GetAcceptedTracks(AliESDEvent* esd,Bool_t bTPC)
 }
 
 //____________________________________________________________________
-Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* const esd)
+Int_t AliESDtrackCuts::CountAcceptedTracks(const AliESDEvent* const esd)
 {
   //
   // returns an the number of tracks that pass the cuts

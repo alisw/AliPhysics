@@ -293,7 +293,16 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
   header->SetZDCP2Energy(esd.GetZDCP2Energy());
   header->SetZDCEMEnergy(esd.GetZDCEMEnergy(0),esd.GetZDCEMEnergy(1));
   
+  // ITS Cluster Multiplicty
+  const AliMultiplicity *mult = esd.GetMultiplicity();
+  for (Int_t ilay = 0; ilay < 6; ilay++) header->SetITSClusters(ilay, mult->GetNumberOfITSClusters(ilay));
   
+  // TPC only Reference Multiplicty
+  AliESDtrackCuts* cuts  = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  Int_t refMult  = cuts ? (Short_t)cuts->GetReferenceMultiplicity(&esd, kTRUE) : -1;
+  header->SetTPConlyRefMultiplicity(refMult);
+  
+  //
   Float_t diamxy[2]={esd.GetDiamondX(),esd.GetDiamondY()};
   Float_t diamcov[3]; 
   esd.GetDiamondCovXY(diamcov);

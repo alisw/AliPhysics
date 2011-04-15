@@ -62,6 +62,7 @@ AliAODHeader::AliAODHeader() :
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
+  fTPConlyRefMult(-1), 
   fCentralityP(0),
   fEventplaneP(0)
 {
@@ -74,6 +75,7 @@ AliAODHeader::AliAODHeader() :
   fDiamondCovXY[1]=0.;
   for (Int_t m=0; m<kNPHOSMatrix; m++) fPHOSMatrix[m]=NULL;
   for (Int_t sm=0; sm<kNEMCALMatrix; sm++) fEMCALMatrix[sm]=NULL;
+  for (Int_t i = 0; i < 6; i++)  fITSClusters[i] = 0;
 }
 
 //______________________________________________________________________________
@@ -114,6 +116,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
+  fTPConlyRefMult(-1), 
   fCentralityP(0),
   fEventplaneP(0)
 {
@@ -184,6 +187,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
+  fTPConlyRefMult(-1), 
   fCentralityP(0),
   fEventplaneP(0)
 {
@@ -197,6 +201,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fDiamondCovXY[1]=0.;
   for (Int_t m=0; m<kNPHOSMatrix; m++) fPHOSMatrix[m]=NULL;
   for (Int_t sm=0; sm<kNEMCALMatrix; sm++) fEMCALMatrix[sm]=NULL;
+  for (Int_t i = 0; i < 6; i++)  fITSClusters[i] = 0;
 }
 
 //______________________________________________________________________________
@@ -242,6 +247,7 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fL0TriggerInputs(hdr.fL0TriggerInputs),
   fL1TriggerInputs(hdr.fL1TriggerInputs),
   fL2TriggerInputs(hdr.fL2TriggerInputs),
+  fTPConlyRefMult(hdr.fTPConlyRefMult), 
   fCentralityP(new AliCentrality(*hdr.fCentralityP)),
   fEventplaneP(new AliEventplane(*hdr.fEventplaneP))
 {
@@ -268,7 +274,7 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
       else
 	  fEMCALMatrix[sm]=0;
   }
-
+  for (Int_t i = 0; i < 6; i++)  fITSClusters[i] = hdr.fITSClusters[i];
 }
 
 //______________________________________________________________________________
@@ -308,6 +314,7 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fL0TriggerInputs    = hdr.fL0TriggerInputs;
     fL1TriggerInputs    = hdr.fL1TriggerInputs;
     fL2TriggerInputs    = hdr.fL2TriggerInputs;
+    fTPConlyRefMult     = hdr.fTPConlyRefMult;
 
     if(hdr.fEventplaneP){
       if(fEventplaneP)*fEventplaneP = *hdr.fEventplaneP;
@@ -346,7 +353,7 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     
   }
 
-
+  for (Int_t i = 0; i < 6; i++)  fITSClusters[i] = hdr.fITSClusters[i];
   return *this;
 }
 

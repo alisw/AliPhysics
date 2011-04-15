@@ -51,9 +51,9 @@ public:
 
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
   TObjArray* GetAcceptedTracks(AliESDEvent* esd, Bool_t bTPC = kFALSE);
-  Int_t CountAcceptedTracks(AliESDEvent* const esd);
+  Int_t CountAcceptedTracks(const AliESDEvent* const esd);
   
-  static Int_t GetReferenceMultiplicity(AliESDEvent* esd, Bool_t tpcOnly);
+  static Int_t GetReferenceMultiplicity(const AliESDEvent* esd, Bool_t tpcOnly);
 
   static AliESDtrack* GetTPCOnlyTrack(AliESDEvent* esd, Int_t iTrack);
   

@@ -153,7 +153,12 @@ class AliAODHeader : public AliVHeader {
   }
   
   UInt_t GetOfflineTrigger() { return fOfflineTrigger; }
-  void SetOfflineTrigger(UInt_t trigger) { fOfflineTrigger = trigger; }
+  void   SetOfflineTrigger(UInt_t trigger) { fOfflineTrigger = trigger; }
+  UInt_t GetNumberOfITSClusters(Int_t ilay) const {return fITSClusters[ilay];}
+  void   SetITSClusters(Int_t ilay, UInt_t nclus);
+  Int_t  GetTPConlyRefMultiplicity() const {return fTPConlyRefMult;}
+  void   SetTPConlyRefMultiplicity(Int_t mult) {fTPConlyRefMult = mult;} 
+  
   TString GetESDFileName() const  {return fESDFileName;}
   void Clear(Option_t* = "");
   enum {kNPHOSMatrix = 5};
@@ -197,9 +202,11 @@ class AliAODHeader : public AliVHeader {
   UInt_t      fL0TriggerInputs;     // L0 Trigger Inputs (mask)
   UInt_t      fL1TriggerInputs;     // L1 Trigger Inputs (mask)
   UShort_t    fL2TriggerInputs;     // L2 Trigger Inputs (mask)
+  UInt_t      fITSClusters[6];      // Number of ITS cluster per layer
+  Int_t       fTPConlyRefMult;      // Reference multiplicty for standard TPC only tracks
   AliCentrality* fCentralityP;      // Pointer to full centrality information
   AliEventplane* fEventplaneP;	    // Pointer to full event plane information
-  ClassDef(AliAODHeader, 15);
+  ClassDef(AliAODHeader, 16);
 };
 inline
 void AliAODHeader::SetCentrality(AliCentrality* cent)      { 
@@ -223,4 +230,12 @@ void AliAODHeader::SetEventplane(AliEventplane* eventplane)      {
 	fEventplane = -999;
     }
 }
+
+inline
+void AliAODHeader::SetITSClusters(Int_t ilay, UInt_t nclus)
+{
+    if (ilay >= 0 && ilay < 6) fITSClusters[ilay] = nclus;
+}
+
+
 #endif
