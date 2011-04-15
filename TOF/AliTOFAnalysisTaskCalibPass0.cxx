@@ -348,7 +348,7 @@ AliTOFAnalysisTaskCalibPass0::ProcessOutput(const Char_t *filename, const Char_t
     return kFALSE;
   }
   /* get histograms */
-  TList *list = (TList *)file->Get("Histos");
+  TList *list = (TList *)file->Get("TOFHistos");
   TH2F *histoVertexTimestamp = NULL;
   TH2F *histoDeltatTimestamp = NULL;
   TH2F *histoDeltazEta = NULL;
