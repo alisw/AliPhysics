@@ -3943,6 +3943,10 @@ Bool_t AliReconstruction::IsHighPt() const {
   ULong_t mask = 0;
   mask |= (AliESDtrack::kITSrefit);
   mask |= (AliESDtrack::kTPCrefit);
+  const Double_t pTminCosmic = 5.;
+  const Double_t pTmaxCosmic = 100;
+  ULong_t maskCosmic = 0;
+  maskCosmic |= (AliESDtrack::kTPCrefit);
 
   Bool_t isOK = kFALSE;
 
@@ -3956,6 +3960,15 @@ Bool_t AliReconstruction::IsHighPt() const {
 	  && trk->Pt() > pTmin 
 	  && trk->Pt() < pTmax
 	  && (trk->GetStatus() & mask) == mask ) {
+	
+	isOK = kTRUE;
+	break;
+      }
+      if (trk 
+	  && trk->GetInnerParam()
+	  && trk->GetInnerParam()->Pt() > pTminCosmic 
+	  && trk->GetInnerParam()->Pt() < pTmaxCosmic
+	  && (trk->GetStatus() & maskCosmic) == maskCosmic ) {
 	
 	isOK = kTRUE;
 	break;
