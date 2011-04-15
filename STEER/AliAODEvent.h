@@ -67,6 +67,8 @@ class AliAODEvent : public AliVEvent {
   void          RemoveObject(TObject *obj);
   TObject      *FindListObject(const char *objName) const;
   TList        *GetList()                const { return fAODObjects; }
+  void          SetConnected(Bool_t conn=kTRUE) {fConnected=conn;}
+  Bool_t        GetConnected() const {return fConnected;}
 
   // -- Header
   AliAODHeader *GetHeader()              const { return fHeader; }

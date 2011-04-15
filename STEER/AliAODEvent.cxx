@@ -534,12 +534,13 @@ Int_t AliAODEvent::GetNumberOfMuonTracks() const
   return nMuonTracks;
 }
 
+//______________________________________________________________________________
 void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
 {
     // Connects aod event to tree
   
   if(!tree){
-    Printf("%s %d AliAODEvent::ReadFromTree() Zero Pointer to Tree \n",(char*)__FILE__,__LINE__);
+    AliWarning("Zero Pointer to Tree \n");
     return;
   }
     // load the TTree
@@ -549,6 +550,8 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
   AliAODEvent *aodEvent = 0;
   aodEvent = (AliAODEvent*)tree->GetTree()->GetUserInfo()->FindObject("AliAODEvent");
   if(aodEvent){
+    // This event is connected to the tree by definition, just say so
+    aodEvent->SetConnected();
       // Check if already connected to tree
     TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("AODObjectsConnectedToTree"));
     if (connectedList && (strcmp(opt, "reconnect"))) {
