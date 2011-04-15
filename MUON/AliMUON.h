@@ -126,7 +126,10 @@ class AliMUON : public  AliDetector
   /// Parametrised tail effect in resolution histogram
   virtual void SetTailEffect(Bool_t isTailEffect) { fIsTailEffect=isTailEffect; }
     
-    // Getters
+	/// Enable trigger raw2sdigits conversion 
+	virtual void SetConvertTrigger(Bool_t convertTrigger = true) { fConvertTrigger = convertTrigger;}
+
+	// Getters
                   /// Return reference to Chamber \a id
     virtual AliMUONChamber& Chamber(Int_t id)
       {return *((AliMUONChamber *) (*fChambers)[id]);}
@@ -177,6 +180,7 @@ class AliMUON : public  AliDetector
     Int_t  fDigitizerWithNoise; ///< Flag to switch on/off generation of noisy digits
     Double_t fDigitizerNSigmas; ///< nsigma cut for noise generation
     Bool_t fIsTailEffect;       ///< Switch to turn on/off the tail effect
+	Bool_t fConvertTrigger;     ///< Switch to enable trigger raw2sdigit conversion 
 
     AliMUONRawWriter* fRawWriter; //!< Raw data writer
     
@@ -190,7 +194,7 @@ class AliMUON : public  AliDetector
 
   AliMUONDigitCalibrator* fDigitCalibrator; ///< digit calibrator (for raw2sdigits)
   
-    ClassDef(AliMUON,23)  // MUON Detector base class
+    ClassDef(AliMUON,24)  // MUON Detector base class
 };
 #endif
 

@@ -31,7 +31,7 @@
 #include "AliMUONCalibrationData.h"
 
 #include "AliMUONDigitStoreV1.h"
-#include "AliMUONVTriggerStore.h"
+#include "AliMUONTriggerStoreV1.h"
 #include "AliMUONHitStoreV1.h"
 
 #include "AliMUONChamberTrigger.h"
@@ -105,6 +105,7 @@ AliMUON::AliMUON()
     fDigitizerWithNoise(1),
     fDigitizerNSigmas(4.0),
     fIsTailEffect(kTRUE),
+    fConvertTrigger(kFALSE),
     fRawWriter(0x0),
     fDigitMaker(0x0),
     fHitStore(0x0),
@@ -143,6 +144,7 @@ AliMUON::AliMUON(const char *name, const char* title)
     fDigitizerWithNoise(1),
     fDigitizerNSigmas(4.0),
     fIsTailEffect(kTRUE),
+    fConvertTrigger(kFALSE),
     fRawWriter(0x0),
     fDigitMaker(new AliMUONDigitMaker),
     fHitStore(0x0),
@@ -523,11 +525,18 @@ Bool_t AliMUON::Raw2SDigits(AliRawReader* rawReader)
   TTree* treeS = fLoader->TreeS();
   
   AliMUONVDigitStore* sDigitStore = AliMUONVDigitStore::Create(DigitStoreClassName());
-  
+	AliMUONVTriggerStore* triggerStore = 0x0;
+	
   sDigitStore->Connect(*treeS);
-  
+  	
   if (!fDigitMaker) fDigitMaker = new AliMUONDigitMaker;
-  
+	
+	if (fConvertTrigger) {
+		triggerStore = new AliMUONTriggerStoreV1;
+		triggerStore->Connect(*treeS,true);
+		fDigitMaker->SetMakeTriggerDigits(true);
+	}
+	
   if (!fDigitCalibrator)
   {
     AliMUONRecoParam* recoParam = 0x0;
@@ -560,7 +569,7 @@ Bool_t AliMUON::Raw2SDigits(AliRawReader* rawReader)
     fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,recoParam,calibMode.Data());
   }
   
-  fDigitMaker->Raw2Digits(rawReader,sDigitStore,0x0);
+	fDigitMaker->Raw2Digits(rawReader,sDigitStore,triggerStore);
   
   fDigitCalibrator->Calibrate(*sDigitStore);
 
@@ -582,6 +591,8 @@ Bool_t AliMUON::Raw2SDigits(AliRawReader* rawReader)
   fLoader->UnloadSDigits();
   
   delete sDigitStore;
+	
+	delete triggerStore;
   
   return kTRUE;
 }

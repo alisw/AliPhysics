@@ -273,6 +273,7 @@ void Config(const char* directory="",
     // Noise-only digits in tracker/trigger (0=no noise, 1=default (noise in tracker), 2=noise in tracker and trigger):
     cout << "****** DISABLING NOISE GENERATION AS WE DO EMBEDDING ******" << endl;
     MUON->SetDigitizerWithNoise(0);
+		MUON->SetConvertTrigger(true);
     
     new AliITSv11Hybrid("ITS","ITS v11Hybrid");
     
