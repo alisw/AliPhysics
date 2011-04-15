@@ -304,8 +304,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	
 	PostData(1,fHistEventsProcessed) ;
 	PostData(2,fCFManager->GetParticleContainer()) ;
-	PostData(3,fCorrelation) ;
-	
+	PostData(3,fCorrelation) ;	
 
 	if (fFillFromGenerated){
 		AliWarning("Flag to fill container with generated value ON ---> dca, d0pi, d0K, d0xd0, cosPointingAngle will be set as dummy!");
@@ -958,6 +957,11 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
 	//slot #1
 	OpenFile(1);
 	fHistEventsProcessed = new TH1I("CFHFchist0","",1,0,1) ;
+
+	PostData(1,fHistEventsProcessed) ;
+	PostData(2,fCFManager->GetParticleContainer()) ;
+	PostData(3,fCorrelation) ;
+
 }
 
 
