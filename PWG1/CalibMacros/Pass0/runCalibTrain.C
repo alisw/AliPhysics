@@ -22,7 +22,10 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   // detector tasks
   gROOT->LoadMacro("AddTaskTPCCalib.C");
   gROOT->LoadMacro("AddTaskTRDCalib.C");
-  
+  gROOT->LoadMacro("AddTOFAnalysisTaskCalibPass0.C");
+  gROOT->LoadMacro("AddTaskT0Calib.C");
+
+
   // switch off debug 
   AliLog::SetClassDebugLevel("AliESDEvent",0);
   
@@ -56,7 +59,9 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   // Detector Tasks
   AliAnalysisTask* tTPC = AddTaskTPCCalib(runNumber);
   AliAnalysisTask* tTRD = AddTaskTRDCalib(runNumber);
-  
+  AliTOFAnalysisTaskCalibPass0 *thisTask = AddTOFAnalysisTaskCalibPass0();
+  AliAnalysisTask* tT0 = AddTaskT0Calib(runNumber);
+
   // Run the analysis
   if (!mgr->InitAnalysis()) {
     printf("Analysis cannot be started, returning\n");
