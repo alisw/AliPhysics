@@ -62,6 +62,8 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
 
   virtual Int_t GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)  ;
 
+  void CountAndGetAverages(Int_t &nClus,Int_t &nCell, Float_t &eClusTot,Float_t &eCellTot, Float_t &eDenClus,Float_t &eDenCell) ;
+  
   //Setters for parameters of event buffers
   void SetNCentrBin(Int_t n=5)    {fNCentrBin=n ;} //number of bins in centrality 
 //void SetNZvertBin(Int_t n=5)    {fNZvertBin=n ;} //number of bins for vertex position
@@ -81,8 +83,8 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   void SwitchOnCellEBins()        {fUseAverCellEBins = kTRUE  ; }
   void SwitchOffCellEBins()       {fUseAverCellEBins = kFALSE ; }
 
-  void SwitchOnClusterEDenBins()     {fUseAverClusterEDenBins = kTRUE  ; }
-  void SwitchOffClusterEDenBins()    {fUseAverClusterEDenBins = kFALSE ; }
+  void SwitchOnClusterEDenBins()  {fUseAverClusterEDenBins = kTRUE  ; }
+  void SwitchOffClusterEDenBins() {fUseAverClusterEDenBins = kFALSE ; }
   
 //  void SwitchOnClusterPairRBins()     {fUseAverClusterPairRBins = kTRUE  ; }
 //  void SwitchOffClusterPairRBins()    {fUseAverClusterPairRBins = kFALSE ; }
@@ -110,10 +112,13 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   void SwitchOffOwnMix()             {fDoOwnMix = kFALSE ; }
 
   //------------------------------------------
-  //Do analysis only with clusters in same SM
+  //Do analysis only with clusters in same SM or different combinations of SM
   //------------------------------------------
   void SwitchOnSameSM()              {fSameSM = kTRUE    ; }
   void SwitchOffSameSM()             {fSameSM = kFALSE   ; }
+  
+  void SwitchOnSMCombinations()   {fFillSMCombinations = kTRUE  ; }
+  void SwitchOffSMCombinations()  {fFillSMCombinations = kFALSE ; }
   
   //-------------------------------
   //Histogram filling options off by default
@@ -151,6 +156,9 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   void SwitchOnMultipleCutAnalysisInSimulation()   {fMultiCutAnaSim = kTRUE;}
   void SwitchOffMultipleCutAnalysisInSimulation()  {fMultiCutAnaSim = kFALSE;}
 
+  void     SwitchOnConversionChecker()             { fCheckConversion = kTRUE  ; }
+  void     SwitchOffConversionChecker()            { fCheckConversion = kFALSE ; }  
+  
   
   private:
   Bool_t   fDoOwnMix;            // Do combinatorial background not the one provided by the frame
@@ -181,6 +189,8 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   //Switchs of different analysis options
   Bool_t   fMakeInvPtPlots;      // D plots with inverse pt weight
   Bool_t   fSameSM;              // Select only pairs in same SM;
+  Bool_t   fFillSMCombinations;  // Fill histograms with different cluster pairs in SM combinations
+  Bool_t   fCheckConversion;     // Fill histograms with tagged photons as conversion
   Bool_t   fUseTrackMultBins;    // Use track multiplicity and not centrality bins
   Bool_t   fUsePhotonMultBins;   // Use photon multiplicity and not centrality bins
   Bool_t   fUseAverCellEBins;    // Use cell average energy and not centrality bins
@@ -258,8 +268,9 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2D *  fhRePtAsymEta ;           //! REAL two-photon pt vs asymmetry, close to eta mass
 
   TH3D * fhEvents;                  //! Number of events per centrality, RP, zbin
-  TH1D * fhCentrality;              //! Simple TH1D histogram with finer binning to check centrality
-  
+  TH1D * fhCentrality;              //! Histogram with centrality bins with at least one pare
+  TH1D * fhCentralityNoPair;        //! Histogram with centrality bins with no pair
+
   // Pair opening angle
   TH2D * fhRealOpeningAngle ;       //! Opening angle of pair versus pair energy
   TH2D * fhRealCosOpeningAngle ;    //! Cosinus of opening angle of pair version pair energy
@@ -307,7 +318,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2D *  fhMCPi0PtOrigin ;         //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
   TH2D *  fhMCEtaPtOrigin ;         //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
 
-  ClassDef(AliAnaPi0,17)
+  ClassDef(AliAnaPi0,18)
 } ;
 
 

@@ -76,6 +76,17 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   //In case of AODs created only for calorimeters, and track information filtered
   //CTS is off when calling this method
   //reader->SwitchOnCaloFilterPatch();
+  //Event selection
+  if     (col=="pp"  ) {
+    reader->SwitchOnEventSelection(); //remove pileup by default
+    reader->SwitchOffV0ANDSelection() ; // and besides v0 AND
+    reader->SwitchOffPrimaryVertexSelection(); // and besides primary vertex
+  }
+  else if(col=="PbPb") {
+    reader->SwitchOffEventSelection(); //remove pileup by default
+    reader->SwitchOffV0ANDSelection() ; // and besides v0 AND
+    reader->SwitchOffPrimaryVertexSelection(); // and besides primary vertex
+  }
   
   reader->SetZvertexCut(10.);
   
@@ -166,8 +177,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   anaphoton->AddToHistogramsName("AnaPhotonCorr_");
   //Set Histograms bins and ranges
   anaphoton->SetHistoPtRangeAndNBins(0, 30, 150) ;
-  if(year==2010)anaphoton->SetHistoPhiRangeAndNBins(78, 122*TMath::DegToRad(), 44*TMath::DegToRad()) ;
-  else          anaphoton->SetHistoPhiRangeAndNBins(78, 182*TMath::DegToRad(), 104*TMath::DegToRad()) ;
+  if(year==2010)anaphoton->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 122*TMath::DegToRad(), 78) ;
+  else          anaphoton->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
   anaphoton->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
   if(kPrintSettings) anaphoton->Print("");
   
@@ -179,17 +190,16 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   anapi0->SetDebug(-1);//10 for lots of messages
   anapi0->SetInputAODName(Form("Photons%s",calorimeter.Data()));
   anapi0->SetCalorimeter(calorimeter);
-  
   anapi0->SwitchOffMultipleCutAnalysis(); 
   //anapi0->SetNPtCuts(2);
-  anapi0->SetNAsymCuts(3);
+  //anapi0->SetNAsymCuts(2);
   //anapi0->SetNNCellCuts(2);
-  anapi0->SetNPIDBits(1);
+  //anapi0->SetNPIDBits(1);
   
   //anapi0->SetPtCutsAt(0,0.3); anapi0->SetPtCutsAt(1,0.5);
   //anapi0->SetAsymCutsAt(0,0.1);anapi0->SetAsymCutsAt(1,0.5);
   //anapi0->SetNCellCutsAt(0,1); anapi0->SetNCellCutsAt(1,2);
-  anapi0->SetPIDBitsAt(0,0); //No Cut
+  //anapi0->SetPIDBitsAt(0,0); //No Cut
   //anapi0->SetPIDBitsAt(1,2); //Dispersion Cut
 
   
@@ -205,9 +215,15 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
 	
   //settings for pp collision mixing
   anapi0->SwitchOnOwnMix(); //Off when mixing done with general mixing frame
-  if     (col=="pp"  ) anapi0->SetNCentrBin(1);
-  else if(col=="PbPb") anapi0->SetNCentrBin(10);
-  anapi0->SetNZvertBin(1);
+  if     (col=="pp"  ) {
+    anapi0->SetNCentrBin(1);
+    anapi0->SwitchOnSMCombinations();
+  }
+  else if(col=="PbPb") {
+    anapi0->SetNCentrBin(10);
+    anapi0->SwitchOffSMCombinations();
+  }
+  anapi0->SetNZvertBin(10);
   anapi0->SetNRPBin(1);
   anapi0->SetNMaxEvMix(50);
   
@@ -220,8 +236,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   }
   anapi0->SetHistoPtRangeAndNBins(0, 30, 150) ;    
   anapi0->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
-  if(year==2010)anapi0->SetHistoPhiRangeAndNBins(78, 122*TMath::DegToRad(), 44*TMath::DegToRad()) ;
-  else          anapi0->SetHistoPhiRangeAndNBins(78, 182*TMath::DegToRad(), 104*TMath::DegToRad()) ;
+  if(year==2010)anaphoton->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 122*TMath::DegToRad(), 78) ;
+  else          anaphoton->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
 
   anapi0->SetHistoMassRangeAndNBins(0., 1., 200) ;
   anapi0->SetHistoAsymmetryRangeAndNBins(0., 1. , 100) ;

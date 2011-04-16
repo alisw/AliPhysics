@@ -86,17 +86,21 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
 
   // ** Conversion pair analysis **
   
-  Float_t  GetMassCut()                     const { return fMassCut ; }
-  void     SetMassCut(Float_t m)                  { fMassCut    = m ; }
+  Float_t  GetMassCut()                     const { return fMassCut           ; }
+  void     SetMassCut(Float_t m)                  { fMassCut    = m           ; }
   
   Bool_t   IsCheckConversionOn()            const { return fCheckConversion   ; }
   void     SwitchOnConversionChecker()            { fCheckConversion = kTRUE  ; }
   void     SwitchOffConversionChecker()           { fCheckConversion = kFALSE ; }  
 	
   Bool_t   AreConvertedPairsInAOD()         const { return fAddConvertedPairsToAOD   ; }
-  void     SwitchOnAdditionConvertedPairsToAOD()  { fAddConvertedPairsToAOD = kTRUE  ; }
+  void     SwitchOnAdditionConvertedPairsToAOD()  { fAddConvertedPairsToAOD = kTRUE  ; fCheckConversion = kTRUE ; }
   void     SwitchOffAdditionConvertedPairsToAOD() { fAddConvertedPairsToAOD = kFALSE ; }  
 	
+  Bool_t   AreConvertedPairsRemoved()       const { return fRemoveConvertedPair      ; }
+  void     SwitchOnConvertedPairsRemoval()        { fRemoveConvertedPair  = kTRUE    ; fCheckConversion = kTRUE ; }
+  void     SwitchOffConvertedPairsRemoval()       { fRemoveConvertedPair  = kFALSE   ; }    
+  
   void     SetConvAsymCut(Float_t c)              { fConvAsymCut = c    ; }
   Float_t  GetConvAsymCut()                 const { return fConvAsymCut ; }
   
@@ -121,6 +125,7 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   
   //Conversion pairs selection cuts
   Bool_t   fCheckConversion;             // Combine pairs of clusters with mass close to 0
+  Bool_t   fRemoveConvertedPair;         // Combine pairs of clusters with mass close to 0
   Bool_t   fAddConvertedPairsToAOD;      // Put Converted pairs in AOD
   Float_t  fMassCut;                     // Mass cut for the conversion pairs selection  
   Float_t  fConvAsymCut;                 // Select conversion pairs when asymmetry is smaller than cut
@@ -131,6 +136,7 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   //Histograms 
   TH2F * fhNtraNclu;                     //! track multiplicity distribution vs cluster multiplicity
   TH2F * fhNCellsPt;                     //! number of cells in cluster vs pt 
+  TH1F * fhEPhoton    ;                  //! Number of identified photon vs energy
   TH1F * fhPtPhoton   ;                  //! Number of identified photon vs transerse momentum 
   TH2F * fhPhiPhoton  ;                  //! Azimuthal angle of identified  photon vs transerse momentum 
   TH2F * fhEtaPhoton  ;                  //! Pseudorapidity of identified  photon vs transerse momentum 
@@ -237,7 +243,7 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TH2F * fhConvDispersionMCString;       //! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is string
   TH2F * fhConvM02MCString;              //! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is string
 
-   ClassDef(AliAnaPhoton,10)
+   ClassDef(AliAnaPhoton,11)
 
 } ;
  

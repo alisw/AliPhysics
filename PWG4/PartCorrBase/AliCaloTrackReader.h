@@ -201,6 +201,12 @@ public:
   void    SwitchOnV0ANDSelection()                { fDoV0ANDEventSelection = kTRUE  ; }
   void    SwitchOffV0ANDSelection()               { fDoV0ANDEventSelection = kFALSE ; }
   Bool_t  IsV0ANDEventSelectionDone()       const { return fDoV0ANDEventSelection   ; } 
+
+  void    SwitchOnPrimaryVertexSelection()        { fUseEventsWithPrimaryVertex = kTRUE  ; }
+  void    SwitchOffPrimaryVertexSelection()       { fUseEventsWithPrimaryVertex = kFALSE ; }
+  Bool_t  IsPrimaryVertexSelectionDone()    const { return fUseEventsWithPrimaryVertex   ; } 
+  
+  
   
   // Track selection
   ULong_t GetTrackStatus()                  const {return fTrackStatus      ; }
@@ -391,19 +397,20 @@ public:
   Int_t            fV0ADC[2]    ;        // Integrated V0 signal
   Int_t            fV0Mul[2]    ;        // Integrated V0 Multiplicity
 
-  Bool_t           fCaloFilterPatch;     // CaloFilter patch
-  TString          fEMCALClustersListName; //Alternative list of clusters produced elsewhere and not from InputEvent
-  Float_t          fZvtxCut ;	           // Cut on vertex position  
-  Bool_t           fDoEventSelection;    // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
-  Bool_t           fDoV0ANDEventSelection; // Select events depending on V0, fDoEventSelection should be on
-  AliTriggerAnalysis* fTriggerAnalysis;  // Access to trigger selection algorithm for V0AND calculation
+  Bool_t           fCaloFilterPatch;             // CaloFilter patch
+  TString          fEMCALClustersListName;       // Alternative list of clusters produced elsewhere and not from InputEvent
+  Float_t          fZvtxCut ;	                   // Cut on vertex position  
+  Bool_t           fDoEventSelection;            // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
+  Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
+  Bool_t           fUseEventsWithPrimaryVertex ; // Select events with primary vertex
+  AliTriggerAnalysis* fTriggerAnalysis;          // Access to trigger selection algorithm for V0AND calculation
   
   //Centrality
   TString          fCentralityClass;     // Name of selected centrality class     
   Int_t            fCentralityOpt;       // Option for the returned value of the centrality, possible options 5, 10, 100
   Int_t            fCentralityBin[2];    // Minimum and maximum value of the centrality for the analysis
   
-  ClassDef(AliCaloTrackReader,28)
+  ClassDef(AliCaloTrackReader,29)
 } ;
 
 
