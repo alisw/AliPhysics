@@ -140,8 +140,9 @@ void drawTHnSparse(TString inputFile="HLT-OFFLINE-CentralBarrel-comparison.root"
       
   TText *hText = (TText*)list->FindObject("text");
   if(!hText) printf("No hText\n");
-   
-  TString folder = hText->GetTitle();
+
+  TString folder = "CentralBarrelTask_";
+  folder += hText->GetTitle();
   folder.ReplaceAll(" ",""); 
   folder.ReplaceAll(",","_");    
   gSystem->Exec("mkdir "+folder); // create a folder whose name contains run number and date of run
