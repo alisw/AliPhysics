@@ -99,10 +99,17 @@ public:
   virtual Float_t  GetEMCALPtMin()        const { return fEMCALPtMin ; }
   virtual Float_t  GetPHOSPtMin()         const { return fPHOSPtMin  ; }
   virtual Float_t  GetCTSPtMin()          const { return fCTSPtMin   ; }
+  virtual Float_t  GetEMCALPtMax()        const { return fEMCALPtMax ; }
+  virtual Float_t  GetPHOSPtMax()         const { return fPHOSPtMax  ; }
+  virtual Float_t  GetCTSPtMax()          const { return fCTSPtMax   ; }
   
   virtual void     SetEMCALPtMin(Float_t  pt)   { fEMCALPtMin = pt   ; }
   virtual void     SetPHOSPtMin(Float_t  pt)    { fPHOSPtMin  = pt   ; }
   virtual void     SetCTSPtMin(Float_t  pt)     { fCTSPtMin   = pt   ; }  
+  
+  virtual void     SetEMCALPtMax(Float_t  pt)   { fEMCALPtMax = pt   ; }
+  virtual void     SetPHOSPtMax(Float_t  pt)    { fPHOSPtMax  = pt   ; }
+  virtual void     SetCTSPtMax(Float_t  pt)     { fCTSPtMax   = pt   ; }  
   
   // Fidutial cuts  
   virtual AliFiducialCut * GetFiducialCut()     { if(!fFiducialCut) fFiducialCut = new AliFiducialCut(); 
@@ -339,7 +346,10 @@ public:
   Float_t          fCTSPtMin;       // pT Threshold on charged particles 
   Float_t          fEMCALPtMin;     // pT Threshold on emcal clusters
   Float_t          fPHOSPtMin;      // pT Threshold on phos clusters
-
+  Float_t          fCTSPtMax;       // pT Threshold on charged particles 
+  Float_t          fEMCALPtMax;     // pT Threshold on emcal clusters
+  Float_t          fPHOSPtMax;      // pT Threshold on phos clusters
+  
   TList          * fAODBranchList ; //-> List with AOD branches created and needed in analysis  
   TObjArray      * fCTSTracks ;     //-> temporal array with tracks
   TObjArray      * fEMCALClusters ; //-> temporal array with EMCAL CaloClusters

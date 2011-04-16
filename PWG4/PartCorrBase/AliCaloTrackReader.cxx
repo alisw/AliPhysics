@@ -59,7 +59,7 @@ ClassImp(AliCaloTrackReader)
     TObject(), fEventNumber(-1), //fCurrentFileName(""),
     fDataType(0), fDebug(0), 
     fFiducialCut(0x0), fCheckFidCut(kFALSE), fComparePtHardAndJetPt(kFALSE), fPtHardAndJetPtFactor(7),
-    fCTSPtMin(0), fEMCALPtMin(0),fPHOSPtMin(0), fAODBranchList(new TList ),
+    fCTSPtMin(0), fEMCALPtMin(0),fPHOSPtMin(0), fCTSPtMax(1000), fEMCALPtMax(1000),fPHOSPtMax(1000), fAODBranchList(new TList ),
     fCTSTracks(new TObjArray()), fEMCALClusters(new TObjArray()), fPHOSClusters(new TObjArray()),
     fEMCALCells(0x0), fPHOSCells(0x0),
     fInputEvent(0x0), fOutputEvent(0x0),fMC(0x0),
@@ -308,10 +308,13 @@ void AliCaloTrackReader::InitParameters()
 {
   //Initialize the parameters of the analysis.
   fDataType   = kESD ;
-  fCTSPtMin   = 0.2 ;
-  fEMCALPtMin = 0.2 ;
-  fPHOSPtMin  = 0.2 ;
-
+  fCTSPtMin   = 0.1 ;
+  fEMCALPtMin = 0.1 ;
+  fPHOSPtMin  = 0.1 ;
+  fCTSPtMax   = 1000. ;
+  fEMCALPtMax = 1000. ;
+  fPHOSPtMax  = 1000. ;
+  
   //Do not filter the detectors input by default.
   fFillEMCAL      = kFALSE;
   fFillPHOS       = kFALSE;
@@ -364,6 +367,9 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("CTS Min pT     : %2.1f GeV/c\n", fCTSPtMin) ;
   printf("EMCAL Min pT   : %2.1f GeV/c\n", fEMCALPtMin) ;
   printf("PHOS Min pT    : %2.1f GeV/c\n", fPHOSPtMin) ;
+  printf("CTS Max pT     : %2.1f GeV/c\n", fCTSPtMax) ;
+  printf("EMCAL Max pT   : %2.1f GeV/c\n", fEMCALPtMax) ;
+  printf("PHOS Max pT    : %2.1f GeV/c\n", fPHOSPtMax) ;
   printf("Use CTS         =     %d\n", fFillCTS) ;
   printf("Use EMCAL       =     %d\n", fFillEMCAL) ;
   printf("Use PHOS        =     %d\n", fFillPHOS) ;
@@ -721,7 +727,7 @@ void AliCaloTrackReader::FillInputCTS() {
     track->GetPxPyPz(p) ;
     TLorentzVector momentum(p[0],p[1],p[2],0);
     
-    if(fCTSPtMin < momentum.Pt()){
+    if(fCTSPtMin < momentum.Pt() && fCTSPtMax > momentum.Pt()){
       
       if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"CTS")) 
         continue;
@@ -810,7 +816,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
   
   clus->GetMomentum(momentum, fVertex[vindex]);      
   
-  if(fEMCALPtMin < momentum.E()){
+  if(fEMCALPtMin < momentum.E() && fEMCALPtMax > momentum.E()){
     
     if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) 
       return;
@@ -964,7 +970,7 @@ void AliCaloTrackReader::FillInputPHOS() {
         
         clus->GetMomentum(momentum, fVertex[vindex]);      
         
-        if(fPHOSPtMin < momentum.E()){
+        if(fPHOSPtMin < momentum.E() && fPHOSPtMax > momentum.E()){
           
           if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"PHOS")) 
             continue;
