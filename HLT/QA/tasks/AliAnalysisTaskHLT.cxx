@@ -16,7 +16,6 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-
 /** @file  AliAnalysisTaskHLT.cxx  
     @author Kalliopi Kanaki, Hege Erdal
     @date 
@@ -30,21 +29,18 @@
 class AliAnalysisTask;
 class AliAnalysisManager;
 
-
+#include "AliAnalysisTaskHLT.h"
 #include "AliHLTGlobalTriggerDecision.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TF1.h"
-#include "TCanvas.h"
-#include "TLegend.h"
-#include "TStyle.h"
 #include "TString.h"
 #include "AliESDEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDInputHandler.h"
 #include "AliTracker.h" 
 
-#include "AliAnalysisTaskHLT.h"
+#include "TText.h"
+#include "TTimeStamp.h"
 
 ClassImp(AliAnalysisTaskHLT)
 
@@ -54,23 +50,17 @@ AliAnalysisTaskHLT::AliAnalysisTaskHLT()
 :
 AliAnalysisTaskSE()
   ,fUseHLTTrigger(kFALSE)
-  ,fESDOfftrackCuts(0)
-  ,fESDHLTtrackCuts(0)
+  //,fESDOfftrackCuts(0)
+  //,fESDHLTtrackCuts(0)
   ,fOutputList(0)
   ,fHistTrigger(0)
-  ,fHistHLTTrigger(0)  
   ,fChargeOff(0)  
   ,fMomentumOff(0)
-  ,fMomentumOffTpc(0)
-  ,fMomentumOffTpcIts(0)	
   ,fDCArOff(0)  	
   ,fDCAzOff(0)  	
   ,fNclusterOff(0)
   ,fNclusterOffwCut(0)		
-  ,fdEdxOff(0) 	
-  ,fdEdxVSPOff(0)	
   ,fPhiOff(0)  	
-  ,fThetaOff(0)	
   ,fMultOff(0) 	
   ,fXYvertexOff(0)	
   ,fXvertexOff(0)	    
@@ -80,23 +70,15 @@ AliAnalysisTaskSE()
   ,fEtaMomentumcutOff(0)
   ,fNclusVSphiOff(0)
   ,fNclusVSthetaOff(0)
-  ,fStatusOff(0)
   ,fEventSpecieOff(0)
   
   ,fChargeHLT(0)
   ,fMomentumHLT(0)
-  ,fMomentumHLTTpc(0)
-  ,fMomentumHLTTpcIts(0)
   ,fDCArHLT(0)  
   ,fDCAzHLT(0)  
-  ,fDCArHLTSG(0)  
-  ,fDCAzHLTSG(0)  
   ,fNclusterHLT(0)
   ,fNclusterHLTwCut(0)
-  ,fdEdxHLT(0)    
-  ,fdEdxVSPHLT(0)
   ,fPhiHLT(0)     
-  ,fThetaHLT(0)  
   ,fMultHLT(0)  
   ,fXYvertexHLT(0)
   ,fXvertexHLT(0)
@@ -106,48 +88,33 @@ AliAnalysisTaskSE()
   ,fEtaMomentumcutHLT(0)
   ,fNclusVSphiHLT(0)	    
   ,fNclusVSthetaHLT(0)
-  ,fStatusHLT(0)
   ,fEventSpecieHLT(0)
-  ,fTrgClsArray(0)
-  
-  //     ,fDCArOff_trig(0)
-  //     ,fNclusterOff_trig(0)
-  //     
-  //     ,fDCAHLT_trig(0)
-  //     ,fNclusterHLT_trig(0)
-
+  ,fBeamType()
+  ,fTextBox(0)
+  ,fSwitch(kTRUE)
 {
-
   // Constructor
   // Define input and output slots here
   // Input slot #0 works with a TChain
   // DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
-
-  // DefineOutput(1, TList::Class());
 }
  
 AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
   :
   AliAnalysisTaskSE(name) 
   ,fUseHLTTrigger(kFALSE)   
-  ,fESDOfftrackCuts(0)
-  ,fESDHLTtrackCuts(0)
+  //,fESDOfftrackCuts(0)
+  //,fESDHLTtrackCuts(0)
   ,fOutputList(0)
   ,fHistTrigger(0)
-  ,fHistHLTTrigger(0)  
   ,fChargeOff(0)  
   ,fMomentumOff(0)
-  ,fMomentumOffTpc(0)
-  ,fMomentumOffTpcIts(0)	
   ,fDCArOff(0) 
   ,fDCAzOff(0) 
   ,fNclusterOff(0)
   ,fNclusterOffwCut(0)	
-  ,fdEdxOff(0) 	
-  ,fdEdxVSPOff(0)	
   ,fPhiOff(0)  	
-  ,fThetaOff(0)	
   ,fMultOff(0) 	
   ,fXYvertexOff(0)	
   ,fXvertexOff(0)	    
@@ -157,21 +124,13 @@ AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
   ,fEtaMomentumcutOff(0)
   ,fNclusVSphiOff(0)
   ,fNclusVSthetaOff(0)
-  ,fStatusOff(0)
   ,fEventSpecieOff(0)
 
   ,fChargeHLT(0)      
   ,fMomentumHLT(0)
-  ,fMomentumHLTTpc(0)
-  ,fMomentumHLTTpcIts(0)
-  ,fDCArHLTSG(0)  
-  ,fDCAzHLTSG(0)  
   ,fNclusterHLT(0)
   ,fNclusterHLTwCut(0)
-  ,fdEdxHLT(0)    
-  ,fdEdxVSPHLT(0)
   ,fPhiHLT(0)     
-  ,fThetaHLT(0)  
   ,fMultHLT(0)  
   ,fXYvertexHLT(0)
   ,fXvertexHLT(0)
@@ -181,17 +140,11 @@ AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
   ,fEtaMomentumcutHLT(0)
   ,fNclusVSphiHLT(0)	    
   ,fNclusVSthetaHLT(0)
-  ,fStatusHLT(0)
   ,fEventSpecieHLT(0)
-  ,fTrgClsArray(0)
-  //     ,fDCArOff_trig(0)
-  //     ,fNclusterOff_trig(0)
-  //     
-  //     ,fDCAHLT_trig(0)
-  //     ,fNclusterHLT_trig(0)
-
-{
- 
+  ,fBeamType()
+  ,fTextBox(0)
+  ,fSwitch(kTRUE)
+{ 
   // Constructor
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -234,263 +187,169 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   (fHistTrigger->GetXaxis())->SetBinLabel(8,"onlTrkThruCE"); 
   */
 
-  fHistTrigger = new TH1F("fHistTrigger", "CTP trigger counter",24 , 0, 24);
+  fHistTrigger = new TH1F("fHistTrigger", "CTP trigger counter", 24, 0, 24);
   fHistTrigger->GetXaxis()->SetTitle("");  
   fHistTrigger->GetYaxis()->SetTitle("#Events"); 
 
-  fHistHLTTrigger = new TH1F("fHistHLTTrigger", "HLT CTP trigger counter", 24, 0, 24); 
-  fHistHLTTrigger->GetXaxis()->SetTitle("");
-  fHistHLTTrigger->GetYaxis()->SetTitle("#Events");
+  //=========== event properties =================//
 
-  fChargeOff = new TH1F("fCharge_off", "Charge distribution (Offline)", 12, -3, 3);  
-  fChargeHLT = new TH1F("fCharge_hlt", "Charge distribution (HLT)", 12, -3, 3);  
+  if(fBeamType.Contains("Pb")){
+     fMultOff = new TH1F("fMult_off","TPC track multiplicity (OFF)",200,0,2000);
+     fMultHLT = new TH1F("fMult_hlt","TPC track multiplicity (HLT)",200,0,2000);
+  } 
+  else {
+     fMultOff = new TH1F("fMult_off","TPC track multiplicity (OFF)",200,0,200);
+     fMultHLT = new TH1F("fMult_hlt","TPC track multiplicity (HLT)",200,0,200);
+  }
+ 
+  fXYvertexOff = new TH2F("fXYvertex_off","XY primary vertex (OFF)",100,-1,1,100,-1,1);
+  fXYvertexHLT = new TH2F("fXYvertex_hlt","XY primary vertex (HLT)",100,-1,1,100,-1,1);
   
-  fMomentumOff = new TH1F("fMomentum_off", "momentum (offline)",1000, 0., 100);
-  fMomentumHLT = new TH1F("fMomentum_hlt", "momentum (HLT)",    1000, 0., 100);
-
-  fMomentumOffTpc = new TH1F("fMomentumTpc_off","Momentum for kTPCin (offline)",100,-3,3);
-  fMomentumHLTTpc = new TH1F("fMomentumTpc_hlt","Momentum for kTPCin (HLT)",    100,-3,3);
-
-  fMomentumOffTpcIts = new TH1F("fMomentumTpcIts_off","Momentum for kTPCin && kITSin (offline)",100,-3,3);
-  fMomentumHLTTpcIts = new TH1F("fMomentumTpcIts_hlt","Momentum for kTPCin && kITSin (HLT)",    100,-3,3);
+  fXvertexOff = new TH1F("fXvertex_off","X primary vertex (OFF)",200,-0.5,0.5);
+  fXvertexHLT = new TH1F("fXvertex_hlt","X primary vertex (HLT)",200,-0.5,0.5);
  
-  fDCArOff   = new TH1F("fDCA_off",  "DCAr to beam line (offline)",200, -100, 100);
-  fDCArHLT   = new TH1F("fDCA_hlt",  "DCAr to beam line (HLT)",    200, -100, 100);
-  fDCArHLTSG = new TH1F("fDCA_hltSG","DCAr to beam line (HLT)",    200, -100, 100);
-
-  fDCAzOff   = new TH1F("fDCAz_off",  "DCAz to beam line (offline)",200, -20, 20);
-  fDCAzHLT   = new TH1F("fDCAz_hlt",  "DCAz to beam line (HLT)",    200, -20, 20);
-  fDCAzHLTSG = new TH1F("fDCAz_hltSG","DCAz to beam line (HLT)",    200, -20, 20);
+  fYvertexOff = new TH1F("fYvertex_off","Y primary vertex (OFF)",200,-0.5,0.5);
+  fYvertexHLT = new TH1F("fYvertex_hlt","Y primary vertex (HLT)",200,-0.5,0.5);
  
-  fNclusterOff = new TH1F("fNcluster_off","clusters per track (offline)", 200, 0, 200);
-  fNclusterHLT = new TH1F("fNcluster_hlt","clusters per track (HLT)",     200, 0, 200);
- 
-  fNclusterOffwCut = new TH1F("fNcluster_wcut_off","clusters per track with cuts (offline)", 200, 0, 200);
-  fNclusterHLTwCut = new TH1F("fNcluster_wcut_hlt","clusters per track with cuts (HLT)",     200, 0, 200);
- 
-  fdEdxOff = new TH1F("fdEdx_off","energy loss (offline)",             500, 0, 500);
-  fdEdxHLT = new TH1F("fdEdx_hlt","energy loss (HLT) - not filled yet",500, 0, 500);
- 
-  fdEdxVSPOff = new TH2F("fdEdx_vs_P_off","dE/dx vs. momentum (offline)",             300, 0., 3., 500, 0., 500.);
-  fdEdxVSPHLT = new TH2F("fdEdx_vs_P_hlt","dE/dx vs. momentum (HLT) - not filled yet",300, 0., 3., 500, 0., 500.);
-
-  fPhiOff = new TH1F("fPhi_off","azimuthal angle distribution (offline)",90,0,360);
-  fPhiHLT = new TH1F("fPhi_hlt","azimuthal angle distribution (HLT)",    90,0,360);
-  
-  fThetaOff = new TH1F("fTheta_off","polar angle distribution (offline)",180,0,180);
-  fThetaHLT = new TH1F("fTheta_hlt","polar angle distribution (HLT)",    180,0,180);
-  
-  fMultOff = new TH1F("fMult_off","track multiplicity (offline)",150,0,15000);
-  fMultHLT = new TH1F("fMult_hlt","track multiplicity (HLT)",    150,0,15000);
- 
-  fXYvertexOff = new TH2F("fXYvertex_off","XY primary vertex (offline)",100,-5,5,100,-5,5);
-  fXYvertexHLT = new TH2F("fXYvertex_hlt","XY primary vertex (HLT)",    100,-5,5,100,-5,5);
-  
-  fXvertexOff = new TH1F("fXvertex_off","X primary vertex (offline)",500,-5,5);
-  fXvertexHLT = new TH1F("fXvertex_hlt","X primary vertex (HLT)",    500,-5,5);
- 
-  fYvertexOff = new TH1F("fYvertex_off","Y primary vertex (offline)",500,-5,5);
-  fYvertexHLT = new TH1F("fYvertex_hlt","Y primary vertex (HLT)",    500,-5,5);
- 
-  fZvertexOff = new TH1F("fZvertex_off","Z primary vertex (offline)",250,-30,30);
-  fZvertexHLT = new TH1F("fZvertex_hlt","Z primary vertex (HLT)",    250,-30,30);
-  
-  fEtaOff = new TH1F("fEta_off","pseudorapidity (offline)",100,-2,2);
-  fEtaHLT = new TH1F("fEta_hlt","pseudorapidity (HLT)",    100,-2,2);
- 
-  fEtaMomentumcutOff = new TH1F("fEtaMomentumcut_off","pseudorapidity DCAcut (offline)",100,-2,2);
-  fEtaMomentumcutHLT = new TH1F("fEtaMomentumcut_hlt","pseudorapidity DCAcut (HLT)",    100,-2,2);
-
-  fNclusVSphiOff = new TH2F("fNclus_vs_phi_off","clusters per track vs. #phi (offline)",360,0,360,160,0,160);
-  fNclusVSphiHLT = new TH2F("fNclus_vs_phi_hlt","clusters per track vs. #phi (HLT)",    360,0,360,160,0,160);
-  
-  fNclusVSthetaOff = new TH2F("fNclus_vs_theta_off","clusters per track vs. #theta (offline)",180,0,180,160,0,160);
-  fNclusVSthetaHLT = new TH2F("fNclus_vs_theta_hlt","clusters per track vs. #theta (HLT)",    180,0,180,160,0,160);
-
-  fStatusOff = new TH1F("fStatus_off", "Status for different detectors (offline)",12, 0, 12);
-  fStatusHLT = new TH1F("fStatus_hlt", "Status for different detectors (HLT)",    12, 0, 12);
-  
-  fEventSpecieOff = new TH1F("fEventSpecie_off","Eventspecie for Offline",18, 0, 18);
+  fZvertexOff = new TH1F("fZvertex_off","Z primary vertex (OFF)",100,-20,20);
+  fZvertexHLT = new TH1F("fZvertex_hlt","Z primary vertex (HLT)",100,-20,20);
+    
+  fEventSpecieOff = new TH1F("fEventSpecie_off","Eventspecie for OFF",18, 0, 18);
   fEventSpecieHLT = new TH1F("fEventSpecie_hlt","Eventspecie for HLT",18, 0, 18);
 
+  //=========== track properties =================//
 
-  //---------------------- add histograms to the output TList ------------------//
+  fChargeOff = new TH1F("fCharge_off", "Charge distribution (OFF)", 3, -1.5, 1.5);  
+  fChargeHLT = new TH1F("fCharge_hlt", "Charge distribution (HLT)", 3, -1.5, 1.5);  
+  
+  fMomentumOff = new TH1F("fMomentum_off", "p_{T} (OFF)", 100, 0, 10);
+  fMomentumHLT = new TH1F("fMomentum_hlt", "p_{T} (HLT)", 100, 0, 10);
+ 
+  fDCArOff = new TH1F("fDCA_off", "DCAr to beam line (OFF)", 200, -15, 15);
+  fDCArHLT = new TH1F("fDCA_hlt", "DCAr to beam line (HLT)", 200, -15, 15);
+
+  fDCAzOff = new TH1F("fDCAz_off", "DCAz to beam line (OFF)", 200, -15, 15);
+  fDCAzHLT = new TH1F("fDCAz_hlt", "DCAz to beam line (HLT)", 200, -15, 15);
+ 
+  fNclusterOff = new TH1F("fNcluster_off","TPC clusters/track (OFF)", 200, 0, 200);
+  fNclusterHLT = new TH1F("fNcluster_hlt","TPC clusters/track (HLT)", 200, 0, 200);
+ 
+  fPhiOff = new TH1F("fPhi_off","azimuthal angle distribution (OFF)",90,0,360);
+  fPhiHLT = new TH1F("fPhi_hlt","azimuthal angle distribution (HLT)",    90,0,360);
+
+  fEtaOff = new TH1F("fEta_off","pseudorapidity (OFF)",100,-2,2);
+  fEtaHLT = new TH1F("fEta_hlt","pseudorapidity (HLT)",100,-2,2);
+
+
+
+ 
+  fNclusterOffwCut = new TH1F("fNcluster_wcut_off","TPC clusters per track with cuts (OFF)", 200, 0, 200);
+  fNclusterHLTwCut = new TH1F("fNcluster_wcut_hlt","TPC clusters per track with cuts (HLT)", 200, 0, 200);
+
+  fEtaMomentumcutOff = new TH1F("fEtaMomentumcut_off","pseudorapidity DCAcut (OFF)",100,-2,2);
+  fEtaMomentumcutHLT = new TH1F("fEtaMomentumcut_hlt","pseudorapidity DCAcut (HLT)",    100,-2,2);
+
+  fNclusVSphiOff = new TH2F("fNclus_vs_phi_off","clusters per track vs. #phi (OFF)",360,0,360,160,0,160);
+  fNclusVSphiHLT = new TH2F("fNclus_vs_phi_hlt","clusters per track vs. #phi (HLT)",    360,0,360,160,0,160);
+  
+  fNclusVSthetaOff = new TH2F("fNclus_vs_theta_off","clusters per track vs. #theta (OFF)",180,0,180,160,0,160);
+  fNclusVSthetaHLT = new TH2F("fNclus_vs_theta_hlt","clusters per track vs. #theta (HLT)",    180,0,180,160,0,160);
+ 
+  //--------------------------------------------------//
+  
+  fTextBox = new TText(); 
 
   fOutputList->Add(fHistTrigger);
-  fOutputList->Add(fHistHLTTrigger);
 
-  fOutputList->Add(fChargeOff);
-  fOutputList->Add(fMomentumOff);
-  fOutputList->Add(fMomentumOffTpc);
-  fOutputList->Add(fMomentumOffTpcIts);
-  fOutputList->Add(fDCArOff);	  
-  fOutputList->Add(fDCAzOff);	  
-  fOutputList->Add(fNclusterOff);
-  fOutputList->Add(fNclusterOffwCut);
-  fOutputList->Add(fdEdxOff);	  
-  fOutputList->Add(fdEdxVSPOff);
-  fOutputList->Add(fPhiOff);	  
-  fOutputList->Add(fThetaOff);    
-  fOutputList->Add(fMultOff);
-  fOutputList->Add(fXYvertexOff); 
-  fOutputList->Add(fXvertexOff);  
-  fOutputList->Add(fYvertexOff);  
-  fOutputList->Add(fZvertexOff);  
-  fOutputList->Add(fEtaOff);  
-  fOutputList->Add(fEtaMomentumcutOff);
-  fOutputList->Add(fNclusVSphiOff);  
-  fOutputList->Add(fNclusVSthetaOff);
-  fOutputList->Add(fStatusOff);
-  fOutputList->Add(fEventSpecieOff);
-
-  fOutputList->Add(fChargeHLT);  
-  fOutputList->Add(fMomentumHLT); 
-  fOutputList->Add(fMomentumHLTTpc);  
-  fOutputList->Add(fMomentumHLTTpcIts);
-  fOutputList->Add(fDCArHLT);	  
-  fOutputList->Add(fDCAzHLT);	  
-  fOutputList->Add(fDCArHLTSG);	  
-  fOutputList->Add(fDCAzHLTSG);	  
-  fOutputList->Add(fNclusterHLT); 
-  fOutputList->Add(fNclusterHLTwCut); 
-  fOutputList->Add(fdEdxHLT);	  
-  fOutputList->Add(fdEdxVSPHLT);
-  fOutputList->Add(fPhiHLT);	  
-  fOutputList->Add(fThetaHLT);    
-  fOutputList->Add(fMultHLT);	 
-  fOutputList->Add(fXYvertexHLT); 
-  fOutputList->Add(fXvertexHLT);  
-  fOutputList->Add(fYvertexHLT);  
-  fOutputList->Add(fZvertexHLT);    
-  fOutputList->Add(fEtaHLT);  
-  fOutputList->Add(fEtaMomentumcutHLT);    
-  fOutputList->Add(fNclusVSphiHLT);  
-  fOutputList->Add(fNclusVSthetaHLT);
-  fOutputList->Add(fStatusHLT);
-  fOutputList->Add(fEventSpecieHLT);
-
-  SetupESDtrackCuts();
+  fOutputList->Add(fChargeOff); 	  fOutputList->Add(fChargeHLT);  
+  fOutputList->Add(fMomentumOff);	  fOutputList->Add(fMomentumHLT); 
+  fOutputList->Add(fDCArOff);	  	  fOutputList->Add(fDCArHLT);	  
+  fOutputList->Add(fDCAzOff);	  	  fOutputList->Add(fDCAzHLT);	  
+  fOutputList->Add(fNclusterOff);	  fOutputList->Add(fNclusterHLT); 
+  fOutputList->Add(fNclusterOffwCut);	  fOutputList->Add(fNclusterHLTwCut); 
+  fOutputList->Add(fPhiOff);	  	  fOutputList->Add(fPhiHLT);	  
+  fOutputList->Add(fMultOff);		  fOutputList->Add(fMultHLT);	 
+  fOutputList->Add(fXYvertexOff); 	  fOutputList->Add(fXYvertexHLT); 
+  fOutputList->Add(fXvertexOff);  	  fOutputList->Add(fXvertexHLT);  
+  fOutputList->Add(fYvertexOff);  	  fOutputList->Add(fYvertexHLT);  
+  fOutputList->Add(fZvertexOff);  	  fOutputList->Add(fZvertexHLT);    
+  fOutputList->Add(fEtaOff);  		  fOutputList->Add(fEtaHLT);  
+  fOutputList->Add(fEtaMomentumcutOff);   fOutputList->Add(fEtaMomentumcutHLT);   
+  fOutputList->Add(fNclusVSphiOff);  	  fOutputList->Add(fNclusVSphiHLT);  
+  fOutputList->Add(fNclusVSthetaOff);	  fOutputList->Add(fNclusVSthetaHLT);
+  fOutputList->Add(fEventSpecieOff);	  fOutputList->Add(fEventSpecieHLT);  
   
+  fOutputList->Add(fTextBox);  
+  //SetupESDtrackCuts();
   PostData(1, fOutputList);
-}
-
-void AliAnalysisTaskHLT::NotifyRun(){
-  // This will not work if the active trigger classes change from run to run.
-  // Then one has to know all trigger classes before processing the data.
-
-  AliESDEvent *esdOFF = dynamic_cast<AliESDEvent*>(InputEvent());
-  TString trgClasses = esdOFF->GetESDRun()->GetActiveTriggerClasses(); 
- 
-  fTrgClsArray = trgClasses.Tokenize(" ");
-     
-  for(Int_t i=0; i<fTrgClsArray->GetEntries(); i++){ 
-    TString str = ((TObjString *)fTrgClsArray->At(i))->GetString(); 
-    (fHistTrigger->GetXaxis())->SetBinLabel(i+1, str.Data()); 
-    (fHistHLTTrigger->GetXaxis())->SetBinLabel(i+1, str.Data()); 
-  }   
-  esdOFF = NULL;
-
-  TString Statusnames[12]={"kTPCin",
-			   "kITSin",
-			   "kTPCout",
-			   "kITSout",
-			   "kITSrefit",
-			   "kTPCrefit",
-			   "kTRDin",
-			   "kTRDout",
-			   "kTRDrefit",
-			   "kTOFin",
-			   "kTOFout",
-			   "kTOFrefit"};
-
-  for(int iii=0;iii<12;iii++){
-    (fStatusHLT->GetXaxis())->SetBinLabel(iii+1,Statusnames[iii]);
-    (fStatusOff->GetXaxis())->SetBinLabel(iii+1,Statusnames[iii]);
-  }
 }
 
 void AliAnalysisTaskHLT::UserExec(Option_t *){
   // see header file of AliAnalysisTask for documentation
 
-  AliESDEvent *esdOFF = dynamic_cast<AliESDEvent*>(InputEvent());
-  
+  AliESDEvent *esdOFF = dynamic_cast<AliESDEvent*>(InputEvent());  
   if(!esdOFF){
-        Printf("ERROR: fESD not available");
-    return;
+     printf("Error:UserExec OFF esd not available\n");
+     return;
   }
-  
-  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>(fInputHandler);
-  AliESDEvent *esdHLT = NULL;   
-  if(esdH) esdHLT = esdH->GetHLTEvent();
-    
-  if(!esdHLT){
-    Printf("ERROR: HLTesd not available");
-    return;
-  }
-
-  //Fill CTP Trigger stuff
-  //fHistTrigger->Fill(esdOFF->GetTriggerMask());
  
-  for(Int_t i=0; i<fTrgClsArray->GetEntries(); i++){
-    if((esdOFF->GetFiredTriggerClasses()).Contains(((TObjString *)fTrgClsArray->At(i))->GetString()))// && esdOFF->GetEventSpecie()==16)  
-      fHistTrigger->Fill(i);
-    if((esdHLT->GetFiredTriggerClasses()).Contains(((TObjString *)fTrgClsArray->At(i))->GetString()))// && esdOFF->GetEventSpecie()==16)  
-      fHistHLTTrigger->Fill(i);
-  }  
+  if(esdOFF->GetEventSpecie()==16) return; // skip calibration events, HLT doesn't set this flag yet
 
-  //reject laser events -> Use offline info (HLT do not set this flag)
-  if((esdOFF->GetEventSpecie()==16)) return;
-  
-  // To check if anything was triggered in HLT.
-  if(fUseHLTTrigger){  
-    if (!((AliHLTGlobalTriggerDecision*)esdHLT->GetHLTTriggerDecision())->Result()){
-      return;
-      // Process all and any events that were triggered by HLT.
-    } 
+  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>(fInputHandler);
+  if(!esdH){
+     printf("The ESD input handler is empty\n");
+     return;
   }
-
+  
+  AliESDEvent *esdHLT = NULL;   
+  if(esdH) esdHLT = esdH->GetHLTEvent();   
+  if(!esdHLT){
+     printf("Error:UserExec HLT esd not available\n");
+     return;
+  }
+ 
+  if(fSwitch==kTRUE){  
+     TTimeStamp *timestamp = new TTimeStamp(esdHLT->GetTimeStamp());
+     fTextBox->SetName("text");
+     TString s = Form("Run %d, Date %d", esdHLT->GetRunNumber(), timestamp->GetDate());
+     printf("You are analyzing run %d from date %d\n\n", esdHLT->GetRunNumber(), timestamp->GetDate());
+     fTextBox->SetTitle(s);
+     fSwitch=kFALSE;
+  }
 
   Double_t bfield = esdOFF->GetMagneticField();
  
-  UInt_t Statusnames[12]={AliESDtrack::kTPCin,
-			  AliESDtrack::kITSin,
-			  AliESDtrack::kTPCout,
-			  AliESDtrack::kITSout,
-			  AliESDtrack::kITSrefit,
-			  AliESDtrack::kTPCrefit,
-			  AliESDtrack::kTRDin,
-			  AliESDtrack::kTRDout,
-			  AliESDtrack::kTRDrefit,
-			  AliESDtrack::kTOFin,
-			  AliESDtrack::kTOFout,
-			  AliESDtrack::kTOFrefit};
+//   UInt_t Statusnames[12]={AliESDtrack::kTPCin,
+// 			  AliESDtrack::kITSin,
+// 			  AliESDtrack::kTPCout,
+// 			  AliESDtrack::kITSout,
+// 			  AliESDtrack::kITSrefit,
+// 			  AliESDtrack::kTPCrefit,
+// 			  AliESDtrack::kTRDin,
+// 			  AliESDtrack::kTRDout,
+// 			  AliESDtrack::kTRDrefit,
+// 			  AliESDtrack::kTOFin,
+// 			  AliESDtrack::kTOFout,
+// 			  AliESDtrack::kTOFrefit};
   
 
 
   //---------------- HLT ESD tree -----------------------//
 
-  Int_t nr_tracksHLT=0;	 
-  Double_t vertexHLT[3];
+  Int_t nr_tracksHLT = 0;	 
+  const AliESDVertex *vertHLT = esdHLT->GetPrimaryVertexTracks();
 
-  const AliESDVertex *vertHLT=esdHLT->GetPrimaryVertexTracks();
-
-  vertexHLT[0] = vertHLT->GetX();
-  vertexHLT[1] = vertHLT->GetY();
-  vertexHLT[2] = vertHLT->GetZ();
-  AliVertex *primVertexHLT = new AliVertex(vertexHLT, 0., 0);
-
-  Bool_t testVertexHLT=kTRUE;
-  Int_t nr_contributorsHLT= vertHLT->GetNContributors();
-
-  if(nr_contributorsHLT<1) {
-    // SPD vertex
-    vertHLT = esdHLT->GetPrimaryVertexSPD();
-    if(nr_contributorsHLT<1) {
-      // NO GOOD VERTEX, SKIP EVENT 
-      testVertexHLT=kFALSE;
-    }
-  }
-  if(testVertexHLT){
+ // Int_t nr_contributorsHLT = vertHLT->GetNContributors();
+    
+//   if(nr_contributorsHLT<1) {
+//     // SPD vertex
+//     vertHLT = esdHLT->GetPrimaryVertexSPD();
+//     if(nr_contributorsHLT<1) {
+//       // NO GOOD VERTEX, SKIP EVENT 
+//       testVertexHLT=kFALSE;
+//     }
+//   }
+  if(vertHLT->GetStatus()==kTRUE){
     fXYvertexHLT->Fill(vertHLT->GetX(), vertHLT->GetY() );
     fXvertexHLT->Fill( vertHLT->GetX() );
     fYvertexHLT->Fill( vertHLT->GetY() );
@@ -498,8 +357,6 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
   }
   //At the moment no constrains on vertex before filling histograms
   //Should be changed. 
-
-  //if( vertHLT && vertHLT->GetNContributors() >= 5 && (TMath::Abs(vertHLT->GetZ())<5.5) ){
 
   fEventSpecieHLT->Fill(esdHLT->GetEventSpecie());
 
@@ -509,103 +366,66 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
     if(!esdtrackHLT) continue;
 
     //Fill which status flags that are set for an event
-    for(int jjj=0;jjj<12;jjj++){
-      if(esdtrackHLT->GetStatus()&Statusnames[jjj]) fStatusHLT->Fill(jjj);
-    } 
+    //for(int jjj=0;jjj<12;jjj++){
+    //  if(esdtrackHLT->GetStatus()&Statusnames[jjj]) fStatusHLT->Fill(jjj);
+    //} 
 
-    //This condition is mostly affecting Offline->will cut away tracks that are counted twice 
-    //With both kITSin and kTPCin flags set.
-    if(!(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin)) continue;
-
-    //ESD-cut 
-    //At the moment not included!
-    //if(!fESDHLTtrackCuts->AcceptTrack(esdtrackHLT)) continue; 		    
+    if(!(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin)) continue; // only interested in tracks with kTPCin flag
+    if(esdtrackHLT->GetTPCNcls()<=0) continue; 
+    nr_tracksHLT++;
 
     //Calculating DCA "old" fashion
     Float_t dca[2];
     esdtrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), esdHLT->GetPrimaryVertex()->GetZv(), bfield, dca);
 
-    // plotting the DCA calculated by Sergey 
-    Float_t DCAr, DCAz = -99;
-    esdtrackHLT->GetImpactParametersTPC(DCAr, DCAz);
-    fDCArHLTSG->Fill(DCAr);
-    fDCAzHLTSG->Fill(DCAz);
-
     fDCArHLT->Fill(dca[0]);  
     fDCAzHLT->Fill(dca[1]);
     
     fChargeHLT->Fill(esdtrackHLT->Charge());
-
-    if((esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) || (esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kTPCout))
-      fNclusterHLT->Fill(esdtrackHLT->GetTPCNcls());
-
-    nr_tracksHLT++;
-    
-    if((esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) || (esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kTPCout)){
-      fNclusVSphiHLT->Fill(esdtrackHLT->Phi()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
-      fNclusVSthetaHLT->Fill(esdtrackHLT->Theta()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
-    }
-
-    if(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) fMomentumHLTTpc->Fill(esdtrackHLT->Pt());
-    if(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kITSin)   fMomentumHLTTpcIts->Fill(esdtrackHLT->Pt());   
-
+    fNclusterHLT->Fill(esdtrackHLT->GetTPCNcls());
     fEtaHLT->Fill(esdtrackHLT->Eta()); 
-    fdEdxHLT->Fill( esdtrackHLT->GetTPCsignal() );
-    fdEdxVSPHLT->Fill( TMath::Abs(esdtrackHLT->Pt()), esdtrackHLT->GetTPCsignal() );	     
-
     fPhiHLT->Fill(esdtrackHLT->Phi()*TMath::RadToDeg());
-    fThetaHLT->Fill(esdtrackHLT->Theta()*TMath::RadToDeg());
-    fMomentumHLT->Fill( TMath::Abs(esdtrackHLT->Pt()) );  
-   
-    if(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) 
-      fMomentumHLTTpc->Fill(esdtrackHLT->Pt());
-    if(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kITSin)   
-      fMomentumHLTTpcIts->Fill(esdtrackHLT->Pt());  
-
-    if(TMath::Abs(esdtrackHLT->Pt()) <0.3) continue; 
-    fEtaMomentumcutHLT->Fill(esdtrackHLT->Eta());
-    if((esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) || (esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kTPCout))
-      fNclusterHLTwCut->Fill(esdtrackHLT->GetTPCNcls());
+    fMomentumHLT->Fill(TMath::Abs(esdtrackHLT->Pt()));  
     
-    if(esdHLT->IsHLTTriggerFired()){
-        	 
-    }// end if for triggered hlt events        
+    // ???? if(TMath::Abs(esdtrackHLT->Pt()) > 0.3) fEtaMomentumcutHLT->Fill(esdtrackHLT->Eta());
+      
+//     if((esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) || (esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kTPCout)){
+//       fNclusVSphiHLT->Fill(esdtrackHLT->Phi()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
+//       fNclusVSthetaHLT->Fill(esdtrackHLT->Theta()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
+//     }
+
+   
+//     if((esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) || (esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kTPCout))
+//       fNclusterHLTwCut->Fill(esdtrackHLT->GetTPCNcls());
+    
+//     if(esdHLT->IsHLTTriggerFired()){
+//         	 
+//     }// end if for triggered hlt events        
   } // end of loop over hlt tracks
 
   if(nr_tracksHLT>0) fMultHLT->Fill(nr_tracksHLT);
 
   //----------------- OFFLINE ESD tree ----------------//
   
-  Int_t nr_tracksOff=0;
-  Double_t vertexOFF[3];
+  Int_t nr_tracksOff = 0;
+  const AliESDVertex *vertOff = esdOFF->GetPrimaryVertexTracks();
 
-  const AliESDVertex *vertOff=esdOFF->GetPrimaryVertexTracks();
-
-  vertexOFF[0] = vertOff->GetX();
-  vertexOFF[1] = vertOff->GetY();
-  vertexOFF[2] = vertOff->GetZ();
-  AliVertex *primVertexOFF = new AliVertex(vertexOFF, 0., 0);
-  Bool_t testVertex=kTRUE;
-
-
-  if(vertOff->GetNContributors()<1) {
-    // SPD vertex
-    vertOff = esdOFF->GetPrimaryVertexSPD();
-    if(vertOff->GetNContributors()<1) {
-      // NO GOOD VERTEX, SKIP EVENT 
-      testVertex=kFALSE;
-    }
-  }
+//   if(vertOff->GetNContributors()<1) {
+//     // SPD vertex
+//     vertOff = esdOFF->GetPrimaryVertexSPD();
+//     if(vertOff->GetNContributors()<1) {
+//       // NO GOOD VERTEX, SKIP EVENT 
+//       testVertex=kFALSE;
+//     }
+//   }
   
-  if(testVertex){
+  if(vertOff->GetStatus()==kTRUE){
     fXYvertexOff->Fill(vertOff->GetX(), vertOff->GetY() );
     fXvertexOff->Fill( vertOff->GetX() );
     fYvertexOff->Fill( vertOff->GetY() );
     fZvertexOff->Fill( vertOff->GetZ() );
   }
 
-  //At the moment no constrains on vertex before filling histograms
-  //Should be changed. 
   fEventSpecieOff->Fill(esdOFF->GetEventSpecie());
 
   for(Int_t i=0; i<esdOFF->GetNumberOfTracks(); i++){ 
@@ -613,18 +433,8 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
     AliESDtrack *esdtrackOFF = esdOFF->GetTrack(i); 
     if (!esdtrackOFF) continue;
 
-    //Fill histograms with which flags are set
-    for(int jjj=0;jjj<12;jjj++){
-      if(esdtrackOFF->GetStatus()&Statusnames[jjj]) fStatusOff->Fill(jjj);
-    } 
-
-    //This condition is mostly affecting Offline->will cut away tracks that are counted twice 
-    //With both kITSin and kTPCin flags set.
-    if(!(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin))continue; 
-
-    // -- ESD cuts
-    //Not included at the moment
-    //if(!fESDOfftrackCuts->AcceptTrack(esdtrackOFF) ) continue;
+    if(!(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin)) continue; 
+    if(esdtrackOFF->GetTPCNcls()<=0) continue; 
     nr_tracksOff++;
 
     //Filling of DCA for Offline
@@ -644,45 +454,24 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
 
     fDCArOff->Fill(dca[0]);
     fDCAzOff->Fill(dca[1]);
-    fChargeOff->Fill(esdtrackOFF->Charge());
-
-    if((esdtrackOFF->GetStatus()&AliESDtrack::kTPCin) || (esdtrackOFF->GetStatus()&AliESDtrack::kTPCin && esdtrackOFF->GetStatus()&AliESDtrack::kTPCout))
-      fNclusterOff->Fill(esdtrackOFF->GetTPCNcls()); 
-
-    if(esdtrackOFF->GetTPCNcls()>0) fNclusVSphiOff->Fill(esdtrackOFF->Phi()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
-    if(esdtrackOFF->GetTPCNcls()>0) fNclusVSthetaOff->Fill(esdtrackOFF->Theta()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
-
-    if(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin) fMomentumOffTpc->Fill(esdtrackOFF->Pt());
-    if(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin && esdtrackOFF->GetStatus()&AliESDtrack::kITSin)   fMomentumOffTpcIts->Fill(esdtrackOFF->Pt());   
-
-    fEtaOff->Fill(esdtrackOFF->Eta());  	
-    fdEdxOff->Fill( esdtrackOFF->GetTPCsignal() );
-    fdEdxVSPOff->Fill( TMath::Abs(esdtrackOFF->Pt()), esdtrackOFF->GetTPCsignal() );	     
     
+    fChargeOff->Fill(esdtrackOFF->Charge());
+    fNclusterOff->Fill(esdtrackOFF->GetTPCNcls()); 
+    fEtaOff->Fill(esdtrackOFF->Eta());  	
     fPhiOff->Fill(esdtrackOFF->Phi()*TMath::RadToDeg());
-    fThetaOff->Fill(esdtrackOFF->Theta()*TMath::RadToDeg());
     fMomentumOff->Fill( TMath::Abs(esdtrackOFF->Pt()) ); 
 
-    if(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin) 
-      fMomentumOffTpc->Fill(esdtrackOFF->Pt());
-    if(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin && esdtrackOFF->GetStatus()&AliESDtrack::kITSin)
-      fMomentumOffTpcIts->Fill(esdtrackOFF->Pt());  
-
-    if(TMath::Abs(esdtrackOFF->Pt()) < 0.3) continue;
-    fEtaMomentumcutOff->Fill(esdtrackOFF->Eta()); 
-    if(esdtrackOFF->GetTPCNcls()>0) fNclusterOffwCut->Fill(esdtrackOFF->GetTPCNcls()); 
+//     fNclusVSphiOff->Fill(esdtrackOFF->Phi()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
+//     fNclusVSthetaOff->Fill(esdtrackOFF->Theta()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
+// 
+//     if(TMath::Abs(esdtrackOFF->Pt()) < 0.3) continue;
+//     fEtaMomentumcutOff->Fill(esdtrackOFF->Eta()); 
+//     if(esdtrackOFF->GetTPCNcls()>0) fNclusterOffwCut->Fill(esdtrackOFF->GetTPCNcls()); 
                   
-//     if(esdHLT->IsHLTTriggerFired()){
-//           
-//     } // end if for triggered offl events
-
   } // end of loop over offline tracks
   
   if(nr_tracksOff>0) fMultOff->Fill(nr_tracksOff);
-  
-  delete primVertexOFF;
-  delete primVertexHLT;
-  
+   
   // Post output data.
   PostData(1, fOutputList);
 }
@@ -691,39 +480,39 @@ void AliAnalysisTaskHLT::Terminate(Option_t *){
   // see header file of AliAnalysisTask for documentation
 }
 
-void AliAnalysisTaskHLT::SetupESDtrackCuts() {
-  // Setup ESD cuts
-  // NB! Work in progress!
-
-  Bool_t selPrimaries = kTRUE;
-  
-  fESDOfftrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selPrimaries);
-  //To make Offline cuts = HLT cuts
-  fESDOfftrackCuts->SetRequireITSRefit(kFALSE); 
-  fESDOfftrackCuts->SetEtaRange(-0.9,+0.9);
-  
-
-  //HLT
-  //NB! Need to understand this a bit more! Which cuts should we keep?
-  fESDHLTtrackCuts = new AliESDtrackCuts;
-
-  // TPC  
-  fESDHLTtrackCuts->SetRequireTPCStandAlone(kTRUE); // to get chi2 and ncls of kTPCin
-  fESDHLTtrackCuts->SetMinNClustersTPC(70);
-  fESDHLTtrackCuts->SetMaxChi2PerClusterTPC(4);
-  fESDHLTtrackCuts->SetAcceptKinkDaughters(kFALSE);
-
-  fESDHLTtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-  				     AliESDtrackCuts::kAny);
-
-  if(selPrimaries) { // 7*(0.0050+0.0060/pt^0.9)
-    fESDHLTtrackCuts->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
-  }
-  
-  fESDHLTtrackCuts->SetMaxDCAToVertexZ(1.e6);
-  fESDHLTtrackCuts->SetDCAToVertex2D(kFALSE);
-  fESDHLTtrackCuts->SetRequireSigmaToVertex(kFALSE);
-  fESDHLTtrackCuts->SetEtaRange(-0.9,+0.9);
-
-  return;
-}
+// void AliAnalysisTaskHLT::SetupESDtrackCuts(){ // not called
+//   // Setup ESD cuts
+//   // NB! Work in progress!
+// 
+//   Bool_t selPrimaries = kTRUE;
+//   
+//   fESDOfftrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selPrimaries);
+//   //To make Offline cuts = HLT cuts
+//   fESDOfftrackCuts->SetRequireITSRefit(kFALSE); 
+//   fESDOfftrackCuts->SetEtaRange(-0.9,+0.9);
+//   
+// 
+//   //HLT
+//   //NB! Need to understand this a bit more! Which cuts should we keep?
+//   fESDHLTtrackCuts = new AliESDtrackCuts;
+// 
+//   // TPC  
+//   fESDHLTtrackCuts->SetRequireTPCStandAlone(kTRUE); // to get chi2 and ncls of kTPCin
+//   fESDHLTtrackCuts->SetMinNClustersTPC(70);
+//   fESDHLTtrackCuts->SetMaxChi2PerClusterTPC(4);
+//   fESDHLTtrackCuts->SetAcceptKinkDaughters(kFALSE);
+// 
+//   fESDHLTtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+//   				     AliESDtrackCuts::kAny);
+// 
+//   if(selPrimaries) { // 7*(0.0050+0.0060/pt^0.9)
+//     fESDHLTtrackCuts->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
+//   }
+//   
+//   fESDHLTtrackCuts->SetMaxDCAToVertexZ(1.e6);
+//   fESDHLTtrackCuts->SetDCAToVertex2D(kFALSE);
+//   fESDHLTtrackCuts->SetRequireSigmaToVertex(kFALSE);
+//   fESDHLTtrackCuts->SetEtaRange(-0.9,+0.9);
+// 
+//   return;
+// }

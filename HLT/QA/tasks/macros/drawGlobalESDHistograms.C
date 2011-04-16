@@ -21,7 +21,6 @@
 #include "TList.h"
 #include "TCanvas.h"
 #include "TText.h"
-#include "TPaveText.h"
 #include "TPaveStats.h"
 #include "TH1D.h"
 #include "TH2D.h"
@@ -47,25 +46,34 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  gStyle->SetOptStat("emr");
  gStyle->SetTitleX(gStyle->GetPadLeftMargin());
 
- TFile *f1 = TFile::Open(filename); 
- if(!f1 || f1->IsZombie()) {
+ TFile *file = TFile::Open(filename); 
+ if(!file || file->IsZombie()) {
     printf("file %s does not exist or there is an error opening it\n", filename);
     return;
  }
 
- TList *l1 = (TList*)f1->Get("global_histograms");
- if(!l1){
-    printf("No list %s contained in your input file\n", l1->GetName()); 
+ TList *list = (TList*)file->Get("global_histograms");
+ if(!list){
+    printf("No list %s contained in your input file\n", list->GetName()); 
     return; 
  }
  
+ TText *hText = (TText*)list->FindObject("text");
+ if(!hText) printf("No hText\n");
+
+ TString folder = "GlobalTask_";
+ folder += hText->GetTitle();
+ folder.ReplaceAll(" ",""); 
+ folder.ReplaceAll(",","_");
+ gSystem->Exec("mkdir "+folder); // create a folder whose name contains run number and date of run
+
  TCanvas *c1 = new TCanvas("c1","HLT vs. offline",1200,700);
  c1->Divide(3,3);
  TH1F *h1 = NULL;
  TH1F *h2 = NULL;
 
- h1 = (TH1F*)l1->FindObject("fNcluster_hlt"); if(!h1) { printf("Empty histogram fNcluster_hlt\n"); return; }
- h2 = (TH1F*)l1->FindObject("fNcluster_off"); if(!h2) { printf("Empty histogram fNcluster_off\n"); return; }
+ h1 = (TH1F*)list->FindObject("fNcluster_hlt"); if(!h1) { printf("Empty histogram fNcluster_hlt\n"); return; }
+ h2 = (TH1F*)list->FindObject("fNcluster_off"); if(!h2) { printf("Empty histogram fNcluster_off\n"); return; }
  h1->SetTitle("TPC cluster distribution");
  h1->GetXaxis()->SetTitle("TPC clusters per track");
 
@@ -81,8 +89,8 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 
 //-------------------------------------------------
 
- h1 = (TH1F*)l1->FindObject("fDCA_hlt"); if(!h1) { printf("Empty histogram fDCA_hlt\n"); return; }
- h2 = (TH1F*)l1->FindObject("fDCA_off"); if(!h2) { printf("Empty histogram fDCA_off\n"); return; }
+ h1 = (TH1F*)list->FindObject("fDCA_hlt"); if(!h1) { printf("Empty histogram fDCA_hlt\n"); return; }
+ h2 = (TH1F*)list->FindObject("fDCA_off"); if(!h2) { printf("Empty histogram fDCA_off\n"); return; }
  h1->SetTitle("DCA between track and vertex on XY plane");
  h1->SetXTitle("DCAr (cm)");
  
@@ -91,8 +99,8 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 
 //------------------------------------------------- 
 
- h1 = (TH1F*)l1->FindObject("fMult_hlt"); if(!h1) { printf("Empty histogram fMult_hlt\n"); return; }
- h2 = (TH1F*)l1->FindObject("fMult_off"); if(!h2) { printf("Empty histogram fMult_off\n"); return; }
+ h1 = (TH1F*)list->FindObject("fMult_hlt"); if(!h1) { printf("Empty histogram fMult_hlt\n"); return; }
+ h2 = (TH1F*)list->FindObject("fMult_off"); if(!h2) { printf("Empty histogram fMult_off\n"); return; }
  h1->SetTitle("track multiplicity");
 
  c1->cd(3);
@@ -100,8 +108,8 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 
 //------------------------------------------------- 
 
- h1 = (TH1F*)l1->FindObject("fCharge_hlt"); if(!h1) { printf("Empty histogram fCharge_hlt\n"); return; }
- h2 = (TH1F*)l1->FindObject("fCharge_off"); if(!h2) { printf("Empty histogram fCharge_off\n"); return; }
+ h1 = (TH1F*)list->FindObject("fCharge_hlt"); if(!h1) { printf("Empty histogram fCharge_hlt\n"); return; }
+ h2 = (TH1F*)list->FindObject("fCharge_off"); if(!h2) { printf("Empty histogram fCharge_off\n"); return; }
  h1->SetXTitle("polarity"); 
  h1->SetTitle("charge distribution");
 
@@ -110,8 +118,8 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 
 //------------------------------------------------- 
 
- h1 = (TH1F*)l1->FindObject("fMomentum_hlt"); if(!h1) { printf("Empty histogram fMomentum_hlt\n"); return; }
- h2 = (TH1F*)l1->FindObject("fMomentum_off"); if(!h2) { printf("Empty histogram fMomentum_off\n"); return; }
+ h1 = (TH1F*)list->FindObject("fMomentum_hlt"); if(!h1) { printf("Empty histogram fMomentum_hlt\n"); return; }
+ h2 = (TH1F*)list->FindObject("fMomentum_off"); if(!h2) { printf("Empty histogram fMomentum_off\n"); return; }
  h1->SetXTitle("p_{t} (GeV/c)"); 
  h1->SetTitle("transverse momentum");
 
@@ -120,8 +128,8 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 
 //------------------------------------------------- 
 
- h1 = (TH1F*)l1->FindObject("fEta_hlt"); if(!h1) { printf("Empty histogram fEta_hlt\n"); return; }
- h2 = (TH1F*)l1->FindObject("fEta_off"); if(!h2) { printf("Empty histogram fEta_off\n"); return; }
+ h1 = (TH1F*)list->FindObject("fEta_hlt"); if(!h1) { printf("Empty histogram fEta_hlt\n"); return; }
+ h2 = (TH1F*)list->FindObject("fEta_off"); if(!h2) { printf("Empty histogram fEta_off\n"); return; }
  h1->SetTitle("pseudorapidity");
  h1->SetXTitle("#eta");
 
@@ -130,8 +138,8 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 
 //------------------------------------------------- 
 
- h1 = (TH1F*)l1->FindObject("fXvertex_hlt"); if(!h1) { printf("Empty histogram fXvertex_hlt\n"); return; }
- h2 = (TH1F*)l1->FindObject("fXvertex_off"); if(!h2) { printf("Empty histogram fXvertex_off\n"); return; }
+ h1 = (TH1F*)list->FindObject("fXvertex_hlt"); if(!h1) { printf("Empty histogram fXvertex_hlt\n"); return; }
+ h2 = (TH1F*)list->FindObject("fXvertex_off"); if(!h2) { printf("Empty histogram fXvertex_off\n"); return; }
  h1->SetXTitle("x (cm)");
  h1->SetTitle("x of primary vertex");
 
@@ -140,8 +148,8 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 
 //------------------------------------------------- 
 
- h1 = (TH1F*)l1->FindObject("fYvertex_hlt"); if(!h1) { printf("Empty histogram fYvertex_hlt\n"); return; }
- h2 = (TH1F*)l1->FindObject("fYvertex_off"); if(!h2) { printf("Empty histogram fYvertex_off\n"); return; }
+ h1 = (TH1F*)list->FindObject("fYvertex_hlt"); if(!h1) { printf("Empty histogram fYvertex_hlt\n"); return; }
+ h2 = (TH1F*)list->FindObject("fYvertex_off"); if(!h2) { printf("Empty histogram fYvertex_off\n"); return; }
  h1->SetXTitle("y (cm)");
  h1->SetTitle("y of primary vertex");
  
@@ -150,8 +158,8 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 
 //------------------------------------------------- 
 
- h1 = (TH1F*)l1->FindObject("fZvertex_hlt"); if(!h1) { printf("Empty histogram fZvertex_hlt\n"); return; }
- h2 = (TH1F*)l1->FindObject("fZvertex_off"); if(!h2) { printf("Empty histogram fZvertex_off\n"); return; }
+ h1 = (TH1F*)list->FindObject("fZvertex_hlt"); if(!h1) { printf("Empty histogram fZvertex_hlt\n"); return; }
+ h2 = (TH1F*)list->FindObject("fZvertex_off"); if(!h2) { printf("Empty histogram fZvertex_off\n"); return; }
  h1->SetXTitle("z (cm)");
  h1->SetTitle("z of primary vertex");
 
@@ -160,8 +168,8 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 
 //------------------------------------------------- 
 
- c1->SaveAs("HLT-offline.png");  
- c1->SaveAs("HLT-offline.root");  
+ c1->SaveAs(folder+"/HLT-offline.png");  
+ c1->SaveAs(folder+"/HLT-offline.root");  
  return;	
 }
 
