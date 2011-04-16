@@ -77,16 +77,7 @@ set ( CXXFLAGSNO  "${CXXNOOPT} ${CXXSTF}")
 
 set ( CFLAGS  "${COPT} -Wall -W -fno-common -pipe -I${FINK_ROOT}/include")
 
-if(F77 MATCHES "g95")
-	
-	set ( FFLAGS "${FFLAGS}  -ftrace=full")
-	set ( FFLAGS "${FFLAGS} -DFORTRAN_G95")
-
-else()
-
-	set ( FFLAGS "${FFLAGS} -DFORTRAN_GFORTRAN")
-
-endif(F77 MATCHES "g95")
+set ( FFLAGS "${FFLAGS} -DFORTRAN_GFORTRAN")
 
 set ( CINTFLAGS )
 
@@ -98,27 +89,13 @@ set ( ALLIB )
 
 set ( SYSLIBS  "-L/usr/X11R6/lib -lX11")
 
-
 set ( EXEFLAGS  "-bind_at_load")
 
-if( F77 MATCHES "g95")
-	
-  execute_process(COMMAND ${CMAKE_Fortran_COMPILER} --print-search-dirs 
-                  OUTPUT_VARIABLE SYSLIBS
-                  OUTPUT_STRIP_TRAILING_WHITESPACE)
-  string(REGEX MATCH "^.*install:[^\n]*" SYSLIBS ${SYSLIBS})
-  string(REGEX REPLACE "^.*install: " "" SYSLIBS ${SYSLIBS})
-  set(SYSLIBS "-L${SHLIB} -lf95")
-  set(DYLIB ${SYSLIBS})
+execute_process(COMMAND ${CMAKE_Fortran_COMPILER} -m64 -print-file-name=libgfortran.dylib
+                OUTPUT_VARIABLE _shlib
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${CMAKE_Fortran_COMPILER} -m64 -print-file-name=libgfortranbegin.a
+                OUTPUT_VARIABLE _alib
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+set( SYSLIBS "${SYSLIBS} -ldl ${_shlib} ${_alib}")
 
-else()
-
-  execute_process(COMMAND ${CMAKE_Fortran_COMPILER} -m64 -print-file-name=libgfortran.dylib
-                  OUTPUT_VARIABLE _shlib
-                  OUTPUT_STRIP_TRAILING_WHITESPACE)
-  execute_process(COMMAND ${CMAKE_Fortran_COMPILER} -m64 -print-file-name=libgfortranbegin.a
-                  OUTPUT_VARIABLE _alib
-                  OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set( SYSLIBS "${SYSLIBS} -ldl ${_shlib} ${_alib}")
-
-endif(F77 MATCHES "g95")
