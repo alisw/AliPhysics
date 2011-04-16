@@ -106,12 +106,12 @@ public:
   Float_t CorrectClusterEnergyLinearity(AliVCluster* clu);
   
   Float_t  GetNonLinearityParam(const Int_t i) const {
-    if(i < 6 ){return fNonLinearityParams[i]; }
-    else { AliInfo(Form("Index %d larger than 6, do nothing\n",i)); return 0.;}
+    if(i < 7 ){return fNonLinearityParams[i]; }
+    else { AliInfo(Form("Index %d larger than 7, do nothing\n",i)); return 0.;}
   }
   void     SetNonLinearityParam(const Int_t i, const Float_t param) {
-    if(i < 6 ){fNonLinearityParams[i] = param; }
-    else { AliInfo(Form("Index %d larger than 6, do nothing\n",i));}
+    if(i < 7 ){fNonLinearityParams[i] = param; }
+    else { AliInfo(Form("Index %d larger than 7, do nothing\n",i));}
   }
   
   Int_t GetNonLinearityFunction() const    { return fNonLinearityFunction ;}
@@ -258,7 +258,7 @@ private:
   Float_t    fMisalTransShift[15];       // Shift parameters
   Float_t    fMisalRotShift[15];         // Shift parameters
   Int_t      fNonLinearityFunction;      // Non linearity function choice
-  Float_t    fNonLinearityParams[6];     // Parameters for the non linearity function
+  Float_t    fNonLinearityParams[7];     // Parameters for the non linearity function
   Int_t      fParticleType;              // Particle type for depth calculation
   Int_t      fPosAlgo;                   // Position recalculation algorithm
   Float_t    fW0;                        // Weight0
@@ -305,7 +305,7 @@ private:
   Bool_t     fUseTimeCorrectionFactors;  // Use Time Dependent Correction
   Bool_t     fTimeCorrectionFactorsSet;  // Time Correction set at leat once
   
-  ClassDef(AliEMCALRecoUtils, 8)
+  ClassDef(AliEMCALRecoUtils, 9)
   
 };
 

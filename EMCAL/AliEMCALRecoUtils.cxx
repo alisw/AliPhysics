@@ -87,11 +87,21 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   }
   
   //Non linearity
-  for(Int_t i = 0; i < 6  ; i++) fNonLinearityParams[i] = 0.; 
-  //For kPi0GammaGamma case, but default is no correction
-  fNonLinearityParams[0] = 0.1457/0.1349766/1.038;
-  fNonLinearityParams[1] = -0.02024/0.1349766/1.038;
-  fNonLinearityParams[2] = 1.046;
+  for(Int_t i = 0; i < 7  ; i++) fNonLinearityParams[i] = 0.; 
+
+  //For kBeamTestCorrected case, but default is no correction
+  fNonLinearityParams[0] =  0.99078;
+  fNonLinearityParams[1] =  0.161499;
+  fNonLinearityParams[2] =  0.655166; 
+  fNonLinearityParams[3] =  0.134101;
+  fNonLinearityParams[4] =  163.282;
+  fNonLinearityParams[5] =  23.6904;
+  fNonLinearityParams[6] =  0.978;
+  
+  //For kPi0GammaGamma case
+  //fNonLinearityParams[0] = 0.1457/0.1349766/1.038;
+  //fNonLinearityParams[1] = -0.02024/0.1349766/1.038;
+  //fNonLinearityParams[2] = 1.046;
 
   //Track matching
   fMatchedTrackIndex   = new TArrayI();
@@ -134,7 +144,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
       fMisalRotShift[i] = reco.fMisalRotShift[i]; 
       fMisalTransShift[i] = reco.fMisalTransShift[i]; 
   } 
-  for(Int_t i = 0; i < 6  ; i++) fNonLinearityParams[i] = reco.fNonLinearityParams[i]; 
+  for(Int_t i = 0; i < 7  ; i++) fNonLinearityParams[i] = reco.fNonLinearityParams[i]; 
 
 }
 
@@ -161,7 +171,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
 
 
   for(Int_t i = 0; i < 15 ; i++) {fMisalTransShift[i] = reco.fMisalTransShift[i]; fMisalRotShift[i] = reco.fMisalRotShift[i];}
-  for(Int_t i = 0; i < 6  ; i++) fNonLinearityParams[i] = reco.fNonLinearityParams[i]; 
+  for(Int_t i = 0; i < 7  ; i++) fNonLinearityParams[i] = reco.fNonLinearityParams[i]; 
 
   fAODFilterMask              = reco.fAODFilterMask;
   
@@ -365,17 +375,17 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster){
     case kPi0MC:
     {
       //Non-Linearity correction (from MC with function ([0]*exp(-[1]/E))+(([2]/([3]*2.*TMath::Pi())*exp(-(E-[4])^2/(2.*[3]^2)))))
-      //Double_t fNonLinearityParams[0] = 1.001;
-      //Double_t fNonLinearityParams[1] = -0.01264;
-      //Double_t fNonLinearityParams[2] = -0.03632;
-      //Double_t fNonLinearityParams[3] = 0.1798;
-      //Double_t fNonLinearityParams[4] = -0.522;
+      //Double_t fNonLinearityParams[0] = 1.014;
+      //Double_t fNonLinearityParams[1] = -0.03329;
+      //Double_t fNonLinearityParams[2] = -0.3853;
+      //Double_t fNonLinearityParams[3] = 0.5423;
+      //Double_t fNonLinearityParams[4] = -0.4335;
        energy *= (fNonLinearityParams[0]*exp(-fNonLinearityParams[1]/energy))+
                   ((fNonLinearityParams[2]/(fNonLinearityParams[3]*2.*TMath::Pi())*
                     exp(-(energy-fNonLinearityParams[4])*(energy-fNonLinearityParams[4])/(2.*fNonLinearityParams[3]*fNonLinearityParams[3]))));
       break;
     }
-      
+     
     case kPi0GammaGamma:
     {
       //Non-Linearity correction (from Olga Data with function p0+p1*exp(-p2*E))
@@ -409,18 +419,19 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster){
       
       break;
     }
+      
     case kBeamTestCorrected:
     {
       //From beam test, corrected for material between beam and EMCAL
-      //fNonLinearityParams[0] =  0.983
-      //fNonLinearityParams[1] =  9.83529e-01;
-      //fNonLinearityParams[2] = -1.84235e+02; 
-      //fNonLinearityParams[3] = -2.05019e+00;
-      //fNonLinearityParams[4] = -5.89423e+00; 
-      energy *= fNonLinearityParams[0]*( ( fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]) )  + 
-                                        ( (fNonLinearityParams[2]/(fNonLinearityParams[3]*2.*TMath::Pi())) * 
-                                            exp(-(energy-fNonLinearityParams[4])*(energy-fNonLinearityParams[4])/(2.*fNonLinearityParams[3]*fNonLinearityParams[3])) ) );
-                    
+      //fNonLinearityParams[0] =  0.99078
+      //fNonLinearityParams[1] =  0.161499;
+      //fNonLinearityParams[2] =  0.655166; 
+      //fNonLinearityParams[3] =  0.134101;
+      //fNonLinearityParams[4] =  163.282;
+      //fNonLinearityParams[5] =  23.6904;
+      //fNonLinearityParams[6] =  0.978;
+        energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+
       break;
     }
       
@@ -433,7 +444,6 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster){
   return energy;
 
 }
-
 //__________________________________________________
 Float_t  AliEMCALRecoUtils::GetDepth(const Float_t energy, const Int_t iParticle, const Int_t iSM) const 
 {
