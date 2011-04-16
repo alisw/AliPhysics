@@ -136,6 +136,7 @@ void AliAnalysisTaskHLTCalo::UserCreateOutputObjects(){
   OpenFile(1);
 
   fOutputList = new TList();
+  fOutputList->SetOwner();
   fOutputList->SetName(GetName());
 
   CreateSpecificStuff(fOutputList);
@@ -221,9 +222,7 @@ void AliAnalysisTaskHLTCalo::UserCreateOutputObjects(){
     fOutputList->AddAll(prod->GetHistograms());
   }
    
-
-  
-
+  PostData(1, fOutputList);
 }
 
 void AliAnalysisTaskHLTCalo::NotifyRun(){
