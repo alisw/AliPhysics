@@ -7,7 +7,7 @@
  *
  * or aliroot drawGlobalESDHistograms.C++ in compiled mode
  *
- * It saves the canvas with the output histograms in a png file.
+ * It saves the canvas with the output histograms in a png and a ROOT file.
  *
  * @ingroup alihlt_qa
  * @author Camilla.Stokkevag@student.uib.no, Kalliopi.Kanaki@ift.uib.no 
