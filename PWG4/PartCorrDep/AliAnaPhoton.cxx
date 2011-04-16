@@ -54,11 +54,11 @@ ClassImp(AliAnaPhoton)
     AliAnaPartCorrBaseClass(), fCalorimeter(""), 
     fMinDist(0.),fMinDist2(0.),fMinDist3(0.),fRejectTrackMatch(0),
     fTimeCutMin(-1), fTimeCutMax(9999999), fNCellsCut(0),
-    fCheckConversion(kFALSE),fAddConvertedPairsToAOD(kFALSE), fMassCut(0),
+    fCheckConversion(kFALSE), fRemoveConvertedPair(kFALSE), fAddConvertedPairsToAOD(kFALSE), fMassCut(0),
     fConvAsymCut(1.), fConvDEtaCut(2.),fConvDPhiMinCut(-1.), fConvDPhiMaxCut(7.), 
     //fhVertex(0), 
     fhNtraNclu(0), fhNCellsPt(0),
-    fhPtPhoton(0),     fhPhiPhoton(0),       fhEtaPhoton(0),       fhEtaPhiPhoton(0), fhEtaPhi05Photon(0),
+    fhEPhoton(0),      fhPtPhoton(0),  fhPhiPhoton(0),  fhEtaPhoton(0),  fhEtaPhiPhoton(0), fhEtaPhi05Photon(0),
     fhPtPhotonConv(0), fhEtaPhiPhotonConv(0),fhEtaPhi05PhotonConv(0),
     fhConvDeltaEta(0), fhConvDeltaPhi(0),    fhConvDeltaEtaPhi(0), fhConvAsym(0),     fhConvPt(0),
     //MC
@@ -163,19 +163,24 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhNCellsPt->SetYTitle("# of cells in cluster");
   outputContainer->Add(fhNCellsPt);  
   
-  fhPtPhoton  = new TH1F("hPtPhoton","Number of #gamma over calorimeter",nptbins,ptmin,ptmax); 
+  fhEPhoton  = new TH1F("hEPhoton","Number of #gamma over calorimeter vs energy",nptbins,ptmin,ptmax); 
+  fhEPhoton->SetYTitle("N");
+  fhEPhoton->SetXTitle("E_{#gamma}(GeV)");
+  outputContainer->Add(fhEPhoton) ;   
+  
+  fhPtPhoton  = new TH1F("hPtPhoton","Number of #gamma over calorimeter vs p_{T}",nptbins,ptmin,ptmax); 
   fhPtPhoton->SetYTitle("N");
   fhPtPhoton->SetXTitle("p_{T #gamma}(GeV/c)");
   outputContainer->Add(fhPtPhoton) ; 
   
   fhPhiPhoton  = new TH2F
-    ("hPhiPhoton","#phi_{#gamma}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+    ("hPhiPhoton","#phi_{#gamma} vs p_{T}",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
   fhPhiPhoton->SetYTitle("#phi (rad)");
   fhPhiPhoton->SetXTitle("p_{T #gamma} (GeV/c)");
   outputContainer->Add(fhPhiPhoton) ; 
   
   fhEtaPhoton  = new TH2F
-    ("hEtaPhoton","#eta_{#gamma}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+    ("hEtaPhoton","#eta_{#gamma} vs p_{T}",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
   fhEtaPhoton->SetYTitle("#eta");
   fhEtaPhoton->SetXTitle("p_{T #gamma} (GeV/c)");
   outputContainer->Add(fhEtaPhoton) ;
@@ -185,62 +190,64 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhEtaPhiPhoton->SetYTitle("#phi (rad)");
   fhEtaPhiPhoton->SetXTitle("#eta");
   outputContainer->Add(fhEtaPhiPhoton) ;
-  
-  fhEtaPhi05Photon  = new TH2F
-  ("hEtaPhi05Photon","#eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax); 
-  fhEtaPhi05Photon->SetYTitle("#phi (rad)");
-  fhEtaPhi05Photon->SetXTitle("#eta");
-  outputContainer->Add(fhEtaPhi05Photon) ;
-  
+  if(GetMinPt() < 0.5){
+    fhEtaPhi05Photon  = new TH2F
+    ("hEtaPhi05Photon","#eta vs #phi, E > 0.5",netabins,etamin,etamax,nphibins,phimin,phimax); 
+    fhEtaPhi05Photon->SetYTitle("#phi (rad)");
+    fhEtaPhi05Photon->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhi05Photon) ;
+  }
   
   //Conversion
-
-  fhPtPhotonConv  = new TH1F("hPtPhotonConv","Number of #gamma over calorimeter, conversion",nptbins,ptmin,ptmax); 
-  fhPtPhotonConv->SetYTitle("N");
-  fhPtPhotonConv->SetXTitle("p_{T #gamma}(GeV/c)");
-  outputContainer->Add(fhPtPhotonConv) ; 
-  
-  fhEtaPhiPhotonConv  = new TH2F
-  ("hEtaPhiPhotonConv","#eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax); 
-  fhEtaPhiPhotonConv->SetYTitle("#phi (rad)");
-  fhEtaPhiPhotonConv->SetXTitle("#eta");
-  outputContainer->Add(fhEtaPhiPhotonConv) ;
-  
-  fhEtaPhi05PhotonConv  = new TH2F
-  ("hEtaPhi05PhotonConv","#eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax); 
-  fhEtaPhi05PhotonConv->SetYTitle("#phi (rad)");
-  fhEtaPhi05PhotonConv->SetXTitle("#eta");
-  outputContainer->Add(fhEtaPhi05PhotonConv) ;
-  
-  fhConvDeltaEta  = new TH2F
-  ("hConvDeltaEta","#Delta #eta of selected conversion pairs",100,0,fMassCut,netabins*2,-0.5,0.5); 
-  fhConvDeltaEta->SetYTitle("#Delta #eta");
-  fhConvDeltaEta->SetXTitle("Pair Mass (GeV/c^2)");
-  outputContainer->Add(fhConvDeltaEta) ;
-  
-  fhConvDeltaPhi  = new TH2F
-  ("hConvDeltaPhi","#Delta #phi of selected conversion pairs",100,0,fMassCut,nphibins*2,-0.5,0.5); 
-  fhConvDeltaPhi->SetYTitle("#Delta #phi");
-  fhConvDeltaPhi->SetXTitle("Pair Mass (GeV/c^2)");
-  outputContainer->Add(fhConvDeltaPhi) ;
-  
-  fhConvDeltaEtaPhi  = new TH2F
-  ("hConvDeltaEtaPhi","#Delta #eta vs #Delta #phi of selected conversion pairs",netabins,-0.5,0.5,nphibins,-0.5,0.5); 
-  fhConvDeltaEtaPhi->SetYTitle("#Delta #phi");
-  fhConvDeltaEtaPhi->SetXTitle("#Delta #eta");
-  outputContainer->Add(fhConvDeltaEtaPhi) ;
-  
-  fhConvAsym  = new TH2F
-  ("hConvAsym","Asymmetry of selected conversion pairs",100,0,fMassCut,100,0,1); 
-  fhConvAsym->SetYTitle("Asymmetry");
-  fhConvAsym->SetXTitle("Pair Mass (GeV/c^2)");
-  outputContainer->Add(fhConvAsym) ;  
-  
-  fhConvPt  = new TH2F
-  ("hConvPt","p_{T} of selected conversion pairs",100,0,fMassCut,100,0.,10.); 
-  fhConvPt->SetYTitle("Pair p_{T} (GeV/c)");
-  fhConvPt->SetXTitle("Pair Mass (GeV/c^2)");
-  outputContainer->Add(fhConvPt) ;
+  if(fCheckConversion){
+    fhPtPhotonConv  = new TH1F("hPtPhotonConv","Number of #gamma over calorimeter, conversion",nptbins,ptmin,ptmax); 
+    fhPtPhotonConv->SetYTitle("N");
+    fhPtPhotonConv->SetXTitle("p_{T #gamma}(GeV/c)");
+    outputContainer->Add(fhPtPhotonConv) ; 
+    
+    fhEtaPhiPhotonConv  = new TH2F
+    ("hEtaPhiPhotonConv","#eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax); 
+    fhEtaPhiPhotonConv->SetYTitle("#phi (rad)");
+    fhEtaPhiPhotonConv->SetXTitle("#eta");
+    outputContainer->Add(fhEtaPhiPhotonConv) ;
+    if(GetMinPt() < 0.5){
+      fhEtaPhi05PhotonConv  = new TH2F
+      ("hEtaPhi05PhotonConv","#eta vs #phi, E > 0.5",netabins,etamin,etamax,nphibins,phimin,phimax); 
+      fhEtaPhi05PhotonConv->SetYTitle("#phi (rad)");
+      fhEtaPhi05PhotonConv->SetXTitle("#eta");
+      outputContainer->Add(fhEtaPhi05PhotonConv) ;
+    }
+    
+    fhConvDeltaEta  = new TH2F
+    ("hConvDeltaEta","#Delta #eta of selected conversion pairs",100,0,fMassCut,netabins*2,-0.5,0.5); 
+    fhConvDeltaEta->SetYTitle("#Delta #eta");
+    fhConvDeltaEta->SetXTitle("Pair Mass (GeV/c^2)");
+    outputContainer->Add(fhConvDeltaEta) ;
+    
+    fhConvDeltaPhi  = new TH2F
+    ("hConvDeltaPhi","#Delta #phi of selected conversion pairs",100,0,fMassCut,nphibins*2,-0.5,0.5); 
+    fhConvDeltaPhi->SetYTitle("#Delta #phi");
+    fhConvDeltaPhi->SetXTitle("Pair Mass (GeV/c^2)");
+    outputContainer->Add(fhConvDeltaPhi) ;
+    
+    fhConvDeltaEtaPhi  = new TH2F
+    ("hConvDeltaEtaPhi","#Delta #eta vs #Delta #phi of selected conversion pairs",netabins,-0.5,0.5,nphibins,-0.5,0.5); 
+    fhConvDeltaEtaPhi->SetYTitle("#Delta #phi");
+    fhConvDeltaEtaPhi->SetXTitle("#Delta #eta");
+    outputContainer->Add(fhConvDeltaEtaPhi) ;
+    
+    fhConvAsym  = new TH2F
+    ("hConvAsym","Asymmetry of selected conversion pairs",100,0,fMassCut,100,0,1); 
+    fhConvAsym->SetYTitle("Asymmetry");
+    fhConvAsym->SetXTitle("Pair Mass (GeV/c^2)");
+    outputContainer->Add(fhConvAsym) ;  
+    
+    fhConvPt  = new TH2F
+    ("hConvPt","p_{T} of selected conversion pairs",100,0,fMassCut,100,0.,10.); 
+    fhConvPt->SetYTitle("Pair p_{T} (GeV/c)");
+    fhConvPt->SetXTitle("Pair Mass (GeV/c^2)");
+    outputContainer->Add(fhConvPt) ;
+  }
   
   if(IsDataMC()){
     fhDeltaE  = new TH1F ("hDeltaE","MC - Reco E ", 200,-50,50); 
@@ -451,195 +458,196 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhEtaUnknown->SetXTitle("p_{T #gamma} (GeV/c)");
     outputContainer->Add(fhEtaUnknown) ;
 	
-    
-    fhPtConversionTagged  = new TH1F("hPtMCConversionTagged","Number of converted #gamma over calorimeter, tagged as converted",nptbins,ptmin,ptmax); 
-    fhPtConversionTagged->SetYTitle("N");
-    fhPtConversionTagged->SetXTitle("p_{T #gamma}(GeV/c)");
-    outputContainer->Add(fhPtConversionTagged) ; 
-    
-    fhPtAntiNeutronTagged  = new TH1F("hPtMCAntiNeutronTagged","Number of AntiNeutron id as Photon over calorimeter, tagged as converted",nptbins,ptmin,ptmax); 
-    fhPtAntiNeutronTagged->SetYTitle("N");
-    fhPtAntiNeutronTagged->SetXTitle("p_{T #gamma}(GeV/c)");
-    outputContainer->Add(fhPtAntiNeutronTagged) ; 
-    
-    fhPtAntiProtonTagged  = new TH1F("hPtMCAntiProtonTagged","Number of AntiProton id as Photon over calorimeter, tagged as converted",nptbins,ptmin,ptmax); 
-    fhPtAntiProtonTagged->SetYTitle("N");
-    fhPtAntiProtonTagged->SetXTitle("p_{T #gamma}(GeV/c)");
-    outputContainer->Add(fhPtAntiProtonTagged) ; 
-
-    fhPtUnknownTagged  = new TH1F("hPtMCUnknownTagged","Number of Unknown id as Photon over calorimeter, tagged as converted",nptbins,ptmin,ptmax); 
-    fhPtUnknownTagged->SetYTitle("N");
-    fhPtUnknownTagged->SetXTitle("p_{T #gamma}(GeV/c)");
-    outputContainer->Add(fhPtUnknownTagged) ;     
-    
-    fhConvDeltaEtaMCConversion  = new TH2F
-    ("hConvDeltaEtaMCConversion","#Delta #eta of selected conversion pairs from real conversions",100,0,fMassCut,netabins,-0.5,0.5); 
-    fhConvDeltaEtaMCConversion->SetYTitle("#Delta #eta");
-    fhConvDeltaEtaMCConversion->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvDeltaEtaMCConversion) ;
-    
-    fhConvDeltaPhiMCConversion  = new TH2F
-    ("hConvDeltaPhiMCConversion","#Delta #phi of selected conversion pairs from real conversions",100,0,fMassCut,nphibins,-0.5,0.5); 
-    fhConvDeltaPhiMCConversion->SetYTitle("#Delta #phi");
-    fhConvDeltaPhiMCConversion->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvDeltaPhiMCConversion) ;
-    
-    fhConvDeltaEtaPhiMCConversion  = new TH2F
-    ("hConvDeltaEtaPhiMCConversion","#Delta #eta vs #Delta #phi of selected conversion pairs, from real conversions",netabins,-0.5,0.5,nphibins,-0.5,0.5); 
-    fhConvDeltaEtaPhiMCConversion->SetYTitle("#Delta #phi");
-    fhConvDeltaEtaPhiMCConversion->SetXTitle("#Delta #eta");
-    outputContainer->Add(fhConvDeltaEtaPhiMCConversion) ;
-    
-    fhConvAsymMCConversion  = new TH2F
-    ("hConvAsymMCConversion","Asymmetry of selected conversion pairs from real conversions",100,0,fMassCut,100,0,1); 
-    fhConvAsymMCConversion->SetYTitle("Asymmetry");
-    fhConvAsymMCConversion->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvAsymMCConversion) ;
-    
-    fhConvPtMCConversion  = new TH2F
-    ("hConvPtMCConversion","p_{T} of selected conversion pairs from real conversions",100,0,fMassCut,100,0.,10.); 
-    fhConvPtMCConversion->SetYTitle("Pair p_{T} (GeV/c)");
-    fhConvPtMCConversion->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvPtMCConversion) ;    
-    
-    fhConvDispersionMCConversion  = new TH2F
-    ("hConvDispersionMCConversion","p_{T} of selected conversion pairs from real conversions",100,0.,1.,100,0.,1.); 
-    fhConvDispersionMCConversion->SetYTitle("Dispersion cluster 1");
-    fhConvDispersionMCConversion->SetXTitle("Dispersion cluster 2");
-    outputContainer->Add(fhConvDispersionMCConversion) ;   
-    
-    fhConvM02MCConversion  = new TH2F
-    ("hConvM02MCConversion","p_{T} of selected conversion pairs from string",100,0.,1.,100,0.,1.); 
-    fhConvM02MCConversion->SetYTitle("M02 cluster 1");
-    fhConvM02MCConversion->SetXTitle("M02 cluster 2");
-    outputContainer->Add(fhConvM02MCConversion) ;           
-    
-    fhConvDeltaEtaMCAntiNeutron  = new TH2F
-    ("hConvDeltaEtaMCAntiNeutron","#Delta #eta of selected conversion pairs from anti-neutrons",100,0,fMassCut,netabins,-0.5,0.5); 
-    fhConvDeltaEtaMCAntiNeutron->SetYTitle("#Delta #eta");
-    fhConvDeltaEtaMCAntiNeutron->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvDeltaEtaMCAntiNeutron) ;
-    
-    fhConvDeltaPhiMCAntiNeutron  = new TH2F
-    ("hConvDeltaPhiMCAntiNeutron","#Delta #phi of selected conversion pairs from anti-neutrons",100,0,fMassCut,nphibins,-0.5,0.5); 
-    fhConvDeltaPhiMCAntiNeutron->SetYTitle("#Delta #phi");
-    fhConvDeltaPhiMCAntiNeutron->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvDeltaPhiMCAntiNeutron) ;
-    
-    fhConvDeltaEtaPhiMCAntiNeutron  = new TH2F
-    ("hConvDeltaEtaPhiMCAntiNeutron","#Delta #eta vs #Delta #phi of selected conversion pairs from anti-neutrons",netabins,-0.5,0.5,nphibins,-0.5,0.5); 
-    fhConvDeltaEtaPhiMCAntiNeutron->SetYTitle("#Delta #phi");
-    fhConvDeltaEtaPhiMCAntiNeutron->SetXTitle("#Delta #eta");
-    outputContainer->Add(fhConvDeltaEtaPhiMCAntiNeutron) ;    
-    
-    fhConvAsymMCAntiNeutron  = new TH2F
-    ("hConvAsymMCAntiNeutron","Asymmetry of selected conversion pairs from anti-neutrons",100,0,fMassCut,100,0,1); 
-    fhConvAsymMCAntiNeutron->SetYTitle("Asymmetry");
-    fhConvAsymMCAntiNeutron->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvAsymMCAntiNeutron) ;
-    
-    fhConvPtMCAntiNeutron  = new TH2F
-    ("hConvPtMCAntiNeutron","p_{T} of selected conversion pairs from anti-neutrons",100,0,fMassCut,100,0.,10.); 
-    fhConvPtMCAntiNeutron->SetYTitle("Pair p_{T} (GeV/c)");
-    fhConvPtMCAntiNeutron->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvPtMCAntiNeutron) ;    
-    
-    fhConvDispersionMCAntiNeutron  = new TH2F
-    ("hConvDispersionMCAntiNeutron","p_{T} of selected conversion pairs from anti-neutrons",100,0.,1.,100,0.,1.); 
-    fhConvDispersionMCAntiNeutron->SetYTitle("Dispersion cluster 1");
-    fhConvDispersionMCAntiNeutron->SetXTitle("Dispersion cluster 2");
-    outputContainer->Add(fhConvDispersionMCAntiNeutron) ;       
-    
-    fhConvM02MCAntiNeutron  = new TH2F
-    ("hConvM02MCAntiNeutron","p_{T} of selected conversion pairs from string",100,0.,1.,100,0.,1.); 
-    fhConvM02MCAntiNeutron->SetYTitle("M02 cluster 1");
-    fhConvM02MCAntiNeutron->SetXTitle("M02 cluster 2");
-    outputContainer->Add(fhConvM02MCAntiNeutron) ;  
-    
-    fhConvDeltaEtaMCAntiProton  = new TH2F
-    ("hConvDeltaEtaMCAntiProton","#Delta #eta of selected conversion pairs from anti-protons",100,0,fMassCut,netabins,-0.5,0.5); 
-    fhConvDeltaEtaMCAntiProton->SetYTitle("#Delta #eta");
-    fhConvDeltaEtaMCAntiProton->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvDeltaEtaMCAntiProton) ;
-    
-    fhConvDeltaPhiMCAntiProton  = new TH2F
-    ("hConvDeltaPhiMCAntiProton","#Delta #phi of selected conversion pairs from anti-protons",100,0,fMassCut,nphibins,-0.5,0.5); 
-    fhConvDeltaPhiMCAntiProton->SetYTitle("#Delta #phi");
-    fhConvDeltaPhiMCAntiProton->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvDeltaPhiMCAntiProton) ;
-    
-    fhConvDeltaEtaPhiMCAntiProton  = new TH2F
-    ("hConvDeltaEtaPhiMCAntiProton","#Delta #eta vs #Delta #phi of selected conversion pairs from anti-protons",netabins,-0.5,0.5,nphibins,-0.5,0.5); 
-    fhConvDeltaEtaPhiMCAntiProton->SetYTitle("#Delta #phi");
-    fhConvDeltaEtaPhiMCAntiProton->SetXTitle("#Delta #eta");
-    outputContainer->Add(fhConvDeltaEtaPhiMCAntiProton) ;    
-    
-    fhConvAsymMCAntiProton  = new TH2F
-    ("hConvAsymMCAntiProton","Asymmetry of selected conversion pairs from anti-protons",100,0,fMassCut,100,0,1); 
-    fhConvAsymMCAntiProton->SetYTitle("Asymmetry");
-    fhConvAsymMCAntiProton->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvAsymMCAntiProton) ;
-    
-    fhConvPtMCAntiProton  = new TH2F
-    ("hConvPtMCAntiProton","p_{T} of selected conversion pairs from anti-protons",100,0,fMassCut,100,0.,10.); 
-    fhConvPtMCAntiProton->SetYTitle("Pair p_{T} (GeV/c)");
-    fhConvPtMCAntiProton->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvPtMCAntiProton) ;
-    
-    fhConvDispersionMCAntiProton  = new TH2F
-    ("hConvDispersionMCAntiProton","p_{T} of selected conversion pairs from anti-protons",100,0.,1.,100,0.,1.); 
-    fhConvDispersionMCAntiProton->SetYTitle("Dispersion cluster 1");
-    fhConvDispersionMCAntiProton->SetXTitle("Dispersion cluster 2");
-    outputContainer->Add(fhConvDispersionMCAntiProton) ;       
-    
-    fhConvM02MCAntiProton  = new TH2F
-    ("hConvM02MCAntiProton","p_{T} of selected conversion pairs from string",100,0.,1.,100,0.,1.); 
-    fhConvM02MCAntiProton->SetYTitle("M02 cluster 1");
-    fhConvM02MCAntiProton->SetXTitle("M02 cluster 2");
-    outputContainer->Add(fhConvM02MCAntiProton) ;       
-    
-    fhConvDeltaEtaMCString  = new TH2F
-    ("hConvDeltaEtaMCString","#Delta #eta of selected conversion pairs from string",100,0,fMassCut,netabins,-0.5,0.5); 
-    fhConvDeltaEtaMCString->SetYTitle("#Delta #eta");
-    fhConvDeltaEtaMCString->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvDeltaEtaMCString) ;
-    
-    fhConvDeltaPhiMCString  = new TH2F
-    ("hConvDeltaPhiMCString","#Delta #phi of selected conversion pairs from string",100,0,fMassCut,nphibins,-0.5,0.5); 
-    fhConvDeltaPhiMCString->SetYTitle("#Delta #phi");
-    fhConvDeltaPhiMCString->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvDeltaPhiMCString) ;
-    
-    fhConvDeltaEtaPhiMCString  = new TH2F
-    ("hConvDeltaEtaPhiMCString","#Delta #eta vs #Delta #phi of selected conversion pairs from string",netabins,-0.5,0.5,nphibins,-0.5,0.5); 
-    fhConvDeltaEtaPhiMCString->SetYTitle("#Delta #phi");
-    fhConvDeltaEtaPhiMCString->SetXTitle("#Delta #eta");
-    outputContainer->Add(fhConvDeltaEtaPhiMCString) ;    
-    
-    fhConvAsymMCString  = new TH2F
-    ("hConvAsymMCString","Asymmetry of selected conversion pairs from string",100,0,fMassCut,100,0,1); 
-    fhConvAsymMCString->SetYTitle("Asymmetry");
-    fhConvAsymMCString->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvAsymMCString) ;
-    
-    fhConvPtMCString  = new TH2F
-    ("hConvPtMCString","p_{T} of selected conversion pairs from string",100,0,fMassCut,100,0.,10.); 
-    fhConvPtMCString->SetYTitle("Pair p_{T} (GeV/c)");
-    fhConvPtMCString->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvPtMCString) ;
-    
-    fhConvDispersionMCString  = new TH2F
-    ("hConvDispersionMCString","p_{T} of selected conversion pairs from string",100,0.,1.,100,0.,1.); 
-    fhConvDispersionMCString->SetYTitle("Dispersion cluster 1");
-    fhConvDispersionMCString->SetXTitle("Dispersion cluster 2");
-    outputContainer->Add(fhConvDispersionMCString) ;       
-    
-    fhConvM02MCString  = new TH2F
-    ("hConvM02MCString","p_{T} of selected conversion pairs from string",100,0.,1.,100,0.,1.); 
-    fhConvM02MCString->SetYTitle("M02 cluster 1");
-    fhConvM02MCString->SetXTitle("M02 cluster 2");
-    outputContainer->Add(fhConvM02MCString) ;       
-    
+    if(fCheckConversion){  
+      fhPtConversionTagged  = new TH1F("hPtMCConversionTagged","Number of converted #gamma over calorimeter, tagged as converted",nptbins,ptmin,ptmax); 
+      fhPtConversionTagged->SetYTitle("N");
+      fhPtConversionTagged->SetXTitle("p_{T #gamma}(GeV/c)");
+      outputContainer->Add(fhPtConversionTagged) ; 
+      
+      
+      fhPtAntiNeutronTagged  = new TH1F("hPtMCAntiNeutronTagged","Number of AntiNeutron id as Photon over calorimeter, tagged as converted",nptbins,ptmin,ptmax); 
+      fhPtAntiNeutronTagged->SetYTitle("N");
+      fhPtAntiNeutronTagged->SetXTitle("p_{T #gamma}(GeV/c)");
+      outputContainer->Add(fhPtAntiNeutronTagged) ; 
+      
+      fhPtAntiProtonTagged  = new TH1F("hPtMCAntiProtonTagged","Number of AntiProton id as Photon over calorimeter, tagged as converted",nptbins,ptmin,ptmax); 
+      fhPtAntiProtonTagged->SetYTitle("N");
+      fhPtAntiProtonTagged->SetXTitle("p_{T #gamma}(GeV/c)");
+      outputContainer->Add(fhPtAntiProtonTagged) ; 
+      
+      fhPtUnknownTagged  = new TH1F("hPtMCUnknownTagged","Number of Unknown id as Photon over calorimeter, tagged as converted",nptbins,ptmin,ptmax); 
+      fhPtUnknownTagged->SetYTitle("N");
+      fhPtUnknownTagged->SetXTitle("p_{T #gamma}(GeV/c)");
+      outputContainer->Add(fhPtUnknownTagged) ;     
+      
+      fhConvDeltaEtaMCConversion  = new TH2F
+      ("hConvDeltaEtaMCConversion","#Delta #eta of selected conversion pairs from real conversions",100,0,fMassCut,netabins,-0.5,0.5); 
+      fhConvDeltaEtaMCConversion->SetYTitle("#Delta #eta");
+      fhConvDeltaEtaMCConversion->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvDeltaEtaMCConversion) ;
+      
+      fhConvDeltaPhiMCConversion  = new TH2F
+      ("hConvDeltaPhiMCConversion","#Delta #phi of selected conversion pairs from real conversions",100,0,fMassCut,nphibins,-0.5,0.5); 
+      fhConvDeltaPhiMCConversion->SetYTitle("#Delta #phi");
+      fhConvDeltaPhiMCConversion->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvDeltaPhiMCConversion) ;
+      
+      fhConvDeltaEtaPhiMCConversion  = new TH2F
+      ("hConvDeltaEtaPhiMCConversion","#Delta #eta vs #Delta #phi of selected conversion pairs, from real conversions",netabins,-0.5,0.5,nphibins,-0.5,0.5); 
+      fhConvDeltaEtaPhiMCConversion->SetYTitle("#Delta #phi");
+      fhConvDeltaEtaPhiMCConversion->SetXTitle("#Delta #eta");
+      outputContainer->Add(fhConvDeltaEtaPhiMCConversion) ;
+      
+      fhConvAsymMCConversion  = new TH2F
+      ("hConvAsymMCConversion","Asymmetry of selected conversion pairs from real conversions",100,0,fMassCut,100,0,1); 
+      fhConvAsymMCConversion->SetYTitle("Asymmetry");
+      fhConvAsymMCConversion->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvAsymMCConversion) ;
+      
+      fhConvPtMCConversion  = new TH2F
+      ("hConvPtMCConversion","p_{T} of selected conversion pairs from real conversions",100,0,fMassCut,100,0.,10.); 
+      fhConvPtMCConversion->SetYTitle("Pair p_{T} (GeV/c)");
+      fhConvPtMCConversion->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvPtMCConversion) ;    
+      
+      fhConvDispersionMCConversion  = new TH2F
+      ("hConvDispersionMCConversion","p_{T} of selected conversion pairs from real conversions",100,0.,1.,100,0.,1.); 
+      fhConvDispersionMCConversion->SetYTitle("Dispersion cluster 1");
+      fhConvDispersionMCConversion->SetXTitle("Dispersion cluster 2");
+      outputContainer->Add(fhConvDispersionMCConversion) ;   
+      
+      fhConvM02MCConversion  = new TH2F
+      ("hConvM02MCConversion","p_{T} of selected conversion pairs from string",100,0.,1.,100,0.,1.); 
+      fhConvM02MCConversion->SetYTitle("M02 cluster 1");
+      fhConvM02MCConversion->SetXTitle("M02 cluster 2");
+      outputContainer->Add(fhConvM02MCConversion) ;           
+      
+      fhConvDeltaEtaMCAntiNeutron  = new TH2F
+      ("hConvDeltaEtaMCAntiNeutron","#Delta #eta of selected conversion pairs from anti-neutrons",100,0,fMassCut,netabins,-0.5,0.5); 
+      fhConvDeltaEtaMCAntiNeutron->SetYTitle("#Delta #eta");
+      fhConvDeltaEtaMCAntiNeutron->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvDeltaEtaMCAntiNeutron) ;
+      
+      fhConvDeltaPhiMCAntiNeutron  = new TH2F
+      ("hConvDeltaPhiMCAntiNeutron","#Delta #phi of selected conversion pairs from anti-neutrons",100,0,fMassCut,nphibins,-0.5,0.5); 
+      fhConvDeltaPhiMCAntiNeutron->SetYTitle("#Delta #phi");
+      fhConvDeltaPhiMCAntiNeutron->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvDeltaPhiMCAntiNeutron) ;
+      
+      fhConvDeltaEtaPhiMCAntiNeutron  = new TH2F
+      ("hConvDeltaEtaPhiMCAntiNeutron","#Delta #eta vs #Delta #phi of selected conversion pairs from anti-neutrons",netabins,-0.5,0.5,nphibins,-0.5,0.5); 
+      fhConvDeltaEtaPhiMCAntiNeutron->SetYTitle("#Delta #phi");
+      fhConvDeltaEtaPhiMCAntiNeutron->SetXTitle("#Delta #eta");
+      outputContainer->Add(fhConvDeltaEtaPhiMCAntiNeutron) ;    
+      
+      fhConvAsymMCAntiNeutron  = new TH2F
+      ("hConvAsymMCAntiNeutron","Asymmetry of selected conversion pairs from anti-neutrons",100,0,fMassCut,100,0,1); 
+      fhConvAsymMCAntiNeutron->SetYTitle("Asymmetry");
+      fhConvAsymMCAntiNeutron->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvAsymMCAntiNeutron) ;
+      
+      fhConvPtMCAntiNeutron  = new TH2F
+      ("hConvPtMCAntiNeutron","p_{T} of selected conversion pairs from anti-neutrons",100,0,fMassCut,100,0.,10.); 
+      fhConvPtMCAntiNeutron->SetYTitle("Pair p_{T} (GeV/c)");
+      fhConvPtMCAntiNeutron->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvPtMCAntiNeutron) ;    
+      
+      fhConvDispersionMCAntiNeutron  = new TH2F
+      ("hConvDispersionMCAntiNeutron","p_{T} of selected conversion pairs from anti-neutrons",100,0.,1.,100,0.,1.); 
+      fhConvDispersionMCAntiNeutron->SetYTitle("Dispersion cluster 1");
+      fhConvDispersionMCAntiNeutron->SetXTitle("Dispersion cluster 2");
+      outputContainer->Add(fhConvDispersionMCAntiNeutron) ;       
+      
+      fhConvM02MCAntiNeutron  = new TH2F
+      ("hConvM02MCAntiNeutron","p_{T} of selected conversion pairs from string",100,0.,1.,100,0.,1.); 
+      fhConvM02MCAntiNeutron->SetYTitle("M02 cluster 1");
+      fhConvM02MCAntiNeutron->SetXTitle("M02 cluster 2");
+      outputContainer->Add(fhConvM02MCAntiNeutron) ;  
+      
+      fhConvDeltaEtaMCAntiProton  = new TH2F
+      ("hConvDeltaEtaMCAntiProton","#Delta #eta of selected conversion pairs from anti-protons",100,0,fMassCut,netabins,-0.5,0.5); 
+      fhConvDeltaEtaMCAntiProton->SetYTitle("#Delta #eta");
+      fhConvDeltaEtaMCAntiProton->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvDeltaEtaMCAntiProton) ;
+      
+      fhConvDeltaPhiMCAntiProton  = new TH2F
+      ("hConvDeltaPhiMCAntiProton","#Delta #phi of selected conversion pairs from anti-protons",100,0,fMassCut,nphibins,-0.5,0.5); 
+      fhConvDeltaPhiMCAntiProton->SetYTitle("#Delta #phi");
+      fhConvDeltaPhiMCAntiProton->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvDeltaPhiMCAntiProton) ;
+      
+      fhConvDeltaEtaPhiMCAntiProton  = new TH2F
+      ("hConvDeltaEtaPhiMCAntiProton","#Delta #eta vs #Delta #phi of selected conversion pairs from anti-protons",netabins,-0.5,0.5,nphibins,-0.5,0.5); 
+      fhConvDeltaEtaPhiMCAntiProton->SetYTitle("#Delta #phi");
+      fhConvDeltaEtaPhiMCAntiProton->SetXTitle("#Delta #eta");
+      outputContainer->Add(fhConvDeltaEtaPhiMCAntiProton) ;    
+      
+      fhConvAsymMCAntiProton  = new TH2F
+      ("hConvAsymMCAntiProton","Asymmetry of selected conversion pairs from anti-protons",100,0,fMassCut,100,0,1); 
+      fhConvAsymMCAntiProton->SetYTitle("Asymmetry");
+      fhConvAsymMCAntiProton->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvAsymMCAntiProton) ;
+      
+      fhConvPtMCAntiProton  = new TH2F
+      ("hConvPtMCAntiProton","p_{T} of selected conversion pairs from anti-protons",100,0,fMassCut,100,0.,10.); 
+      fhConvPtMCAntiProton->SetYTitle("Pair p_{T} (GeV/c)");
+      fhConvPtMCAntiProton->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvPtMCAntiProton) ;
+      
+      fhConvDispersionMCAntiProton  = new TH2F
+      ("hConvDispersionMCAntiProton","p_{T} of selected conversion pairs from anti-protons",100,0.,1.,100,0.,1.); 
+      fhConvDispersionMCAntiProton->SetYTitle("Dispersion cluster 1");
+      fhConvDispersionMCAntiProton->SetXTitle("Dispersion cluster 2");
+      outputContainer->Add(fhConvDispersionMCAntiProton) ;       
+      
+      fhConvM02MCAntiProton  = new TH2F
+      ("hConvM02MCAntiProton","p_{T} of selected conversion pairs from string",100,0.,1.,100,0.,1.); 
+      fhConvM02MCAntiProton->SetYTitle("M02 cluster 1");
+      fhConvM02MCAntiProton->SetXTitle("M02 cluster 2");
+      outputContainer->Add(fhConvM02MCAntiProton) ;       
+      
+      fhConvDeltaEtaMCString  = new TH2F
+      ("hConvDeltaEtaMCString","#Delta #eta of selected conversion pairs from string",100,0,fMassCut,netabins,-0.5,0.5); 
+      fhConvDeltaEtaMCString->SetYTitle("#Delta #eta");
+      fhConvDeltaEtaMCString->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvDeltaEtaMCString) ;
+      
+      fhConvDeltaPhiMCString  = new TH2F
+      ("hConvDeltaPhiMCString","#Delta #phi of selected conversion pairs from string",100,0,fMassCut,nphibins,-0.5,0.5); 
+      fhConvDeltaPhiMCString->SetYTitle("#Delta #phi");
+      fhConvDeltaPhiMCString->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvDeltaPhiMCString) ;
+      
+      fhConvDeltaEtaPhiMCString  = new TH2F
+      ("hConvDeltaEtaPhiMCString","#Delta #eta vs #Delta #phi of selected conversion pairs from string",netabins,-0.5,0.5,nphibins,-0.5,0.5); 
+      fhConvDeltaEtaPhiMCString->SetYTitle("#Delta #phi");
+      fhConvDeltaEtaPhiMCString->SetXTitle("#Delta #eta");
+      outputContainer->Add(fhConvDeltaEtaPhiMCString) ;    
+      
+      fhConvAsymMCString  = new TH2F
+      ("hConvAsymMCString","Asymmetry of selected conversion pairs from string",100,0,fMassCut,100,0,1); 
+      fhConvAsymMCString->SetYTitle("Asymmetry");
+      fhConvAsymMCString->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvAsymMCString) ;
+      
+      fhConvPtMCString  = new TH2F
+      ("hConvPtMCString","p_{T} of selected conversion pairs from string",100,0,fMassCut,100,0.,10.); 
+      fhConvPtMCString->SetYTitle("Pair p_{T} (GeV/c)");
+      fhConvPtMCString->SetXTitle("Pair Mass (GeV/c^2)");
+      outputContainer->Add(fhConvPtMCString) ;
+      
+      fhConvDispersionMCString  = new TH2F
+      ("hConvDispersionMCString","p_{T} of selected conversion pairs from string",100,0.,1.,100,0.,1.); 
+      fhConvDispersionMCString->SetYTitle("Dispersion cluster 1");
+      fhConvDispersionMCString->SetXTitle("Dispersion cluster 2");
+      outputContainer->Add(fhConvDispersionMCString) ;       
+      
+      fhConvM02MCString  = new TH2F
+      ("hConvM02MCString","p_{T} of selected conversion pairs from string",100,0.,1.,100,0.,1.); 
+      fhConvM02MCString->SetYTitle("M02 cluster 1");
+      fhConvM02MCString->SetXTitle("M02 cluster 2");
+      outputContainer->Add(fhConvM02MCString) ;       
+    }
     
   }//Histos with MC
     
@@ -684,6 +692,7 @@ void AliAnaPhoton::InitParameters()
 	
   fRejectTrackMatch       = kTRUE ;
   fCheckConversion        = kFALSE;
+  fRemoveConvertedPair    = kFALSE;
   fAddConvertedPairsToAOD = kFALSE;
 	
 }
@@ -713,10 +722,13 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   TLorentzVector mom, mom2 ;
   Int_t nCaloClusters = pl->GetEntriesFast();
   //List to be used in conversion analysis, to tag the cluster as candidate for conversion
-  Bool_t * indexConverted = new Bool_t[nCaloClusters];
-  for (Int_t i = 0; i < nCaloClusters; i++) 
-    indexConverted[i] = kFALSE;
-	
+  Bool_t * indexConverted = 0x0;
+  if(fCheckConversion){
+    indexConverted = new Bool_t[nCaloClusters];
+    for (Int_t i = 0; i < nCaloClusters; i++) 
+      indexConverted[i] = kFALSE;
+	}
+  
   if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillAOD() - input %s cluster entries %d\n", fCalorimeter.Data(), nCaloClusters);
 
   //----------------------------------------------------
@@ -898,12 +910,12 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //--------------------------------------------------------------------------------------
 
     // Do analysis only if there are more than one cluster
-    if( nCaloClusters > 1){
+    if( nCaloClusters > 1 && fCheckConversion){
       Bool_t bConverted = kFALSE;
       Int_t id2 = -1;
 		  
       //Check if set previously as converted couple, if so skip its use.
-      if (fCheckConversion && indexConverted[icalo]) continue;
+      if (indexConverted[icalo]) continue;
 		  
       // Second cluster loop
       for(Int_t jcalo = icalo + 1 ; jcalo < nCaloClusters ; jcalo++) {
@@ -1064,7 +1076,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         }
         
         //Do not add the current calocluster
-        if(fCheckConversion) continue;
+        if(fRemoveConvertedPair) continue;
         else {
           //printf("TAGGED\n");
           //Tag this cluster as likely conversion
@@ -1161,19 +1173,19 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 	  Float_t etacluster = ph->Eta();
 	  Float_t ecluster   = ph->E();
 	  
+    fhEPhoton   ->Fill(ecluster);
 	  fhPtPhoton  ->Fill(ptcluster);
-    if(ph->IsTagged())fhPtPhotonConv->Fill(ptcluster);
 	  fhPhiPhoton ->Fill(ptcluster,phicluster);
-	  fhEtaPhoton ->Fill(ptcluster,etacluster);
-    if(ptcluster > 0.5){
-      fhEtaPhiPhoton ->Fill(etacluster, phicluster);
-      if(ph->IsTagged())fhEtaPhiPhotonConv->Fill(etacluster, phicluster);
+	  fhEtaPhoton ->Fill(ptcluster,etacluster);    
+    if(ecluster > 0.5)         fhEtaPhiPhoton ->Fill(etacluster, phicluster);
+    else if(GetMinPt() < 0.5) fhEtaPhi05Photon->Fill(etacluster, phicluster);
+    
+    if(fCheckConversion &&ph->IsTagged()){
+      fhPtPhotonConv->Fill(ptcluster);
+      if(ecluster > 0.5)        fhEtaPhiPhotonConv  ->Fill(etacluster, phicluster);
+      else if(GetMinPt() < 0.5) fhEtaPhi05PhotonConv->Fill(etacluster, phicluster);
     }
-    else {
-      fhEtaPhi05Photon ->Fill(etacluster, phicluster);
-      if(ph->IsTagged())fhEtaPhi05PhotonConv->Fill(etacluster, phicluster);
-    }
-
+    
     //.......................................
 	  //Play with the MC data if available
 	  if(IsDataMC()){
@@ -1231,7 +1243,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         fhPtAntiNeutron  ->Fill(ptcluster);
         fhPhiAntiNeutron ->Fill(ptcluster,phicluster);
         fhEtaAntiNeutron ->Fill(ptcluster,etacluster);
-        if(ph->IsTagged()) fhPtAntiNeutronTagged ->Fill(ptcluster);
+        if(ph->IsTagged() && fCheckConversion) fhPtAntiNeutronTagged ->Fill(ptcluster);
 
       }
       else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton))
@@ -1239,14 +1251,14 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         fhPtAntiProton  ->Fill(ptcluster);
         fhPhiAntiProton ->Fill(ptcluster,phicluster);
         fhEtaAntiProton ->Fill(ptcluster,etacluster);
-        if(ph->IsTagged()) fhPtAntiProtonTagged ->Fill(ptcluster);
+        if(ph->IsTagged() && fCheckConversion) fhPtAntiProtonTagged ->Fill(ptcluster);
 
       }      
 	    else{
 	      fhPtUnknown  ->Fill(ptcluster);
 	      fhPhiUnknown ->Fill(ptcluster,phicluster);
 	      fhEtaUnknown ->Fill(ptcluster,etacluster);
-        if(ph->IsTagged()) fhPtUnknownTagged ->Fill(ptcluster);
+        if(ph->IsTagged() && fCheckConversion) fhPtUnknownTagged ->Fill(ptcluster);
 
 	      
         //		 printf(" AliAnaPhoton::MakeAnalysisFillHistograms() - Label %d, pT %2.3f Unknown, bits set: ",

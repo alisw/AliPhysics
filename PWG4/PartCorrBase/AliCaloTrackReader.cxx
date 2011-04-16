@@ -77,7 +77,7 @@ ClassImp(AliCaloTrackReader)
     fMixedEvent(NULL), fNMixedEvent(1), fVertex(NULL), 
     fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),fCaloFilterPatch(kFALSE),
     fEMCALClustersListName(""),fZvtxCut(0.), 
-    fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),
+    fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE), fUseEventsWithPrimaryVertex(kFALSE),
     fTriggerAnalysis (new AliTriggerAnalysis), fCentralityClass("V0M"),fCentralityOpt(10)
    
 {
@@ -479,10 +479,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * /*cur
           bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0AND);
         //else bV0AND = //FIXME FOR AODs
         if(!bV0AND) return kFALSE;
-        
       }
       
-      if(!CheckForPrimaryVertex()) return kFALSE;
+      if(fUseEventsWithPrimaryVertex && !CheckForPrimaryVertex()) return kFALSE;
       
     }//CaloFilter patch
     else{ 
@@ -494,7 +493,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * /*cur
           if(bPileup) return kFALSE;
           
           Bool_t bGoodV = selection[1]; 
-          if(!bGoodV) return kFALSE;
+          if(fUseEventsWithPrimaryVertex && !bGoodV) return kFALSE;
           
           if(fDoV0ANDEventSelection){
             Bool_t bV0AND = selection[2]; 
@@ -512,7 +511,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * /*cur
       else {
         //printf("AliCaloTrackReader::FillInputEvent() - No clusters in event\n");
         //Remove events with  vertex (0,0,0), bad vertex reconstruction
-        if(TMath::Abs(fVertex[0][0]) < 1.e-6 && TMath::Abs(fVertex[0][1]) < 1.e-6 && TMath::Abs(fVertex[0][2]) < 1.e-6) return kFALSE;
+        if(fUseEventsWithPrimaryVertex && TMath::Abs(fVertex[0][0]) < 1.e-6 && TMath::Abs(fVertex[0][1]) < 1.e-6 && TMath::Abs(fVertex[0][2]) < 1.e-6) return kFALSE;
         
         //First filtered AODs, track multiplicity stored there.  
         fTrackMult = (Int_t) ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
@@ -597,11 +596,11 @@ Int_t AliCaloTrackReader::GetEventCentrality() const {
   //Return current event centrality
   
   if(GetCentrality()){
-    if(fCentralityOpt==100)     return (Int_t) GetCentrality()->GetCentralityPercentile(fCentralityClass);
-    else if(fCentralityOpt==10) return GetCentrality()->GetCentralityClass10(fCentralityClass); 
-    else if(fCentralityOpt==5)  return GetCentrality()->GetCentralityClass5(fCentralityClass);
+    if(fCentralityOpt==100)     return (Int_t) GetCentrality()->GetCentralityPercentile(fCentralityClass); // 100 bins max
+    else if(fCentralityOpt==10) return GetCentrality()->GetCentralityClass10(fCentralityClass);// 10 bins max
+    else if(fCentralityOpt==20) return GetCentrality()->GetCentralityClass5(fCentralityClass); // 20 bins max
     else {
-      printf("AliAnaPartCorrBaseClass::Unknown centrality option %d, use 5, 10 or 100\n",fCentralityOpt);
+      printf("AliAnaPartCorrBaseClass::Unknown centrality option %d, use 10, 20 or 100\n",fCentralityOpt);
       return 0;
     } 
   }
@@ -1108,7 +1107,7 @@ Bool_t AliCaloTrackReader::CheckForPrimaryVertex(){
   //Only for ESDs ...
   
   AliESDEvent * event = dynamic_cast<AliESDEvent*> (fInputEvent);
-  if(!event) return kFALSE;
+  if(!event) return kTRUE;
   
   if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) {
     return kTRUE;
