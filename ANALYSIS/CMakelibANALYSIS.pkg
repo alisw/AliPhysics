@@ -31,10 +31,12 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  ANALYSISLinkDef.h)
 
+set (EXPORT ${HDRS})
+
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 if( ALICE_TARGET STREQUAL "win32gcc")
 	
-	set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase)
+set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase)
 
 endif( ALICE_TARGET STREQUAL "win32gcc")
