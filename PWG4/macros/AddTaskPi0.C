@@ -93,6 +93,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   
   //Min particle pT
   reader->SetEMCALPtMin(0.5); 
+  reader->SetEMCALPtMax(30); 
   reader->SetPHOSPtMin(0.);
   reader->SetCTSPtMin(0.);
   if(outputAOD)  reader->SwitchOnWriteDeltaAOD()  ;
@@ -106,6 +107,12 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   // Remove clusters close to borders, at least max energy cell is 1 cell away 
   cu->SetNumberOfCellsFromEMCALBorder(1);
   cu->SetNumberOfCellsFromPHOSBorder(2);
+  
+  if     (col=="pp"  ) {
+    cu->SwitchOnCorrectClusterLinearity();
+    AliEMCALRecoUtils * reco = cu->GetEMCALRecoUtils();
+    reco->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
+  }
   
   // Remove EMCAL hottest channels for first LHC10 periods 	
   //  cu->SwitchOnBadChannelsRemoval();
@@ -151,6 +158,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   else {//EMCAL
     anaphoton->SetNCellCut(1);// At least 2 cells
     anaphoton->SetMinPt(0.5); // no effect minium EMCAL cut.
+    anaphoton->SetMaxPt(30); 
     //if(!kUseKinematics) anaphoton->SetTimeCut(400,900);// Time window of [400-900] ns
     //anaphoton->SetMinDistanceToBadChannel(6, 12, 18);//For officially produced ESDs/AODs
     anaphoton->SetMinDistanceToBadChannel(1, 2, 3);//For filtered AODs, new releases.
