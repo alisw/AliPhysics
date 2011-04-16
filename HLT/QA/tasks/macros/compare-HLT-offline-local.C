@@ -219,6 +219,7 @@ void compare_HLT_offline_local( TString file
   if(bGLOBAL){
     AliAnalysisTaskHLT *taskGLOBAL = new AliAnalysisTaskHLT("offhlt_comparison_GLOBAL");
     taskGLOBAL->SetUseHLTTriggerDecision(fUseHLTTrigger);
+    taskGLOBAL->SetBeamType(beamType);
     if(fUseHLTTrigger==kTRUE) printf("\n\nOnly HLT triggered events will be used to fill the distributions for task %s.\n\n", taskGLOBAL->GetName());
     //taskGLOBAL->SelectCollisionCandidates();
     mgr->AddTask(taskGLOBAL);
