@@ -108,7 +108,7 @@ class AliSISConeJetHeader : public AliJetHeader
   Int_t    fSplitMergeScaleNumber;    // Kind of recombination in split/merge procedure, there's only one
   Double_t fSplitMergeStoppingScale;  // Stopping scale for split/merge procedure in case of area calculus
 
-  ClassDef(AliSISConeJetHeader,3)
+  ClassDef(AliSISConeJetHeader,4)
 };
  
 #endif
