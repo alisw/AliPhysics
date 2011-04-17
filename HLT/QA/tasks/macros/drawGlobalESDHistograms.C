@@ -77,7 +77,7 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  h1->SetTitle("TPC cluster distribution");
  h1->GetXaxis()->SetTitle("TPC clusters per track");
 
- TLegend *leg1 = new TLegend(0.7,0.6,0.88,0.77);
+ TLegend *leg1 = new TLegend(0.6,0.2,0.8,0.5);
  leg1->SetFillColor(10);
  leg1->SetLineColor(10);
  leg1->AddEntry(h1,"HLT", "l");
@@ -85,7 +85,6 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 
  c1->cd(1);
  plot(h1,h2);
- leg1->Draw("same");
 
 //-------------------------------------------------
 
@@ -125,6 +124,7 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 
  c1->cd(5);
  plot(h1,h2);
+ leg1->Draw("same");
 
 //------------------------------------------------- 
 
@@ -185,7 +185,6 @@ void printStats(TH1F* h1, TH1F* h2){
   st2->SetY1NDC(st2->GetY2NDC()-TMath::Abs(st1->GetY1NDC()-st1->GetY2NDC()));
   st2->SetLineColor(0);
   st2->SetTextColor(h2->GetLineColor());
-  st2->SetFillStyle(0);
   st2->Draw();  
   return;
 }
@@ -207,9 +206,9 @@ void plot(TH1F *h1, TH1F *h2){
   else xmax = h2->GetBinLowEdge(h2->GetNbinsX()+1);
   
   h2->SetAxisRange(xmin, xmax, "X");  
-  printStats(h1,h2);
   
   h1->Draw();
   h2->Draw("sames");
+  printStats(h1,h2);
   return;
 }
