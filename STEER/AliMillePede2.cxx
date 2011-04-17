@@ -251,7 +251,6 @@ Bool_t AliMillePede2::InitDataRecStorage(Bool_t read)
       if (!inpf.good()) {AliInfo(Form("Failed on input records list %s\n",fDataRecFName.Data())); return kFALSE;}
       //
       TString recfName;
-      recfName.ReadLine(inpf);
       while ( !(recfName.ReadLine(inpf)).eof() ) {
 	recfName = recfName.Strip(TString::kBoth,' ');
 	if (recfName.BeginsWith("//") || recfName.BeginsWith("#") || !recfName.EndsWith(".root")) {  // comment
