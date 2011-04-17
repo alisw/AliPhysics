@@ -18,7 +18,7 @@ class TH1F;
 class TH2F;
 class TList;
 class TText;
-
+class AliCentrality;
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
@@ -72,6 +72,7 @@ private:
     TH2F  *fNclusVSphiOff;     //! clusters per track vs. azimuthal angle 
     TH2F  *fNclusVSthetaOff;   //! clusters per track vs. polar angle 
     TH1F  *fEventSpecieOff;    //! Event Specie Offline
+    TH1F  *fV0cent;            //! V0 centrality information
     
     TH1F  *fChargeHLT;         //! Charge distribution 
     TH1F  *fMomentumHLT;       //! momentum	
@@ -95,7 +96,8 @@ private:
     TText *fTextBox;           //! TText box containing run number info and date
     Bool_t fSwitch;            //! boolean used to execute parts of the code in the UserExec only once, although
                                // the function is called once per event
-
+    AliCentrality *fCentrality;  //! Centrality holder
+   
     ClassDef(AliAnalysisTaskHLT, 0);
 };
 

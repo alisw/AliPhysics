@@ -12,8 +12,8 @@
  * - the input file or txt file containing a list of ESDs to be processed (CreateESDChain takes 20 files as a default argument)
  * - the task you want to use
  * - the path of the task location
- * - the beam type, "p-p" or "Pb-Pb", this is relevant ONLY for the central barrel task at the moment and is 
- *   used to select proper binning and axes ranges for the THnSparse objects that it fills
+ * - the beam type, "p-p" or "Pb-Pb", this is relevant for the central barrel and global tasks at the moment and is 
+ *   used to select proper binning and axes ranges for the THnSparse/TH1 objects that it fills
  * - options to make the central barrel task more flexible and lightweight; you can select if you want to 
  *   fill the THnSparse object with only event or track properties or only HLT data or only OFF
  *   possible options are: event-off event-hlt track-off track-hlt, all are turned on by default
@@ -220,9 +220,14 @@ void compare_HLT_offline_local( TString file
     AliAnalysisTaskHLT *taskGLOBAL = new AliAnalysisTaskHLT("offhlt_comparison_GLOBAL");
     taskGLOBAL->SetUseHLTTriggerDecision(fUseHLTTrigger);
     taskGLOBAL->SetBeamType(beamType);
+    mgr->AddTask(taskGLOBAL);
+    if(beamType.Contains("Pb")){
+       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+       AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(); 
+       taskCentrality->SetPass(1);
+    }	     
     if(fUseHLTTrigger==kTRUE) printf("\n\nOnly HLT triggered events will be used to fill the distributions for task %s.\n\n", taskGLOBAL->GetName());
     //taskGLOBAL->SelectCollisionCandidates();
-    mgr->AddTask(taskGLOBAL);
     if(fUseHLTTrigger==kFALSE)
       AliAnalysisDataContainer *coutputGLOBAL =  mgr->CreateContainer("global_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-GLOBAL-comparison.root");  
     else 
@@ -254,7 +259,7 @@ void compare_HLT_offline_local( TString file
      AliAnalysisTaskHLTCentralBarrel *taskCB = new AliAnalysisTaskHLTCentralBarrel("offhlt_comparison_CB"); 
      mgr->AddTask(taskCB); 
      taskCB->SetBeamType(beamType);
-     if(beamType.Contains("Pb-Pb")){
+     if(beamType.Contains("Pb")){
         gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
         AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(); 
 	taskCentrality->SetPass(1);

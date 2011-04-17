@@ -38,13 +38,14 @@ class AliAnalysisManager;
 #include "AliESDtrackCuts.h"
 #include "AliESDInputHandler.h"
 #include "AliTracker.h" 
+#include "AliCentrality.h"
 
 #include "TText.h"
 #include "TTimeStamp.h"
 
 ClassImp(AliAnalysisTaskHLT)
 
-//======================================================================================================
+//===============================================================//
 
 AliAnalysisTaskHLT::AliAnalysisTaskHLT()
 :
@@ -71,6 +72,7 @@ AliAnalysisTaskSE()
   ,fNclusVSphiOff(0)
   ,fNclusVSthetaOff(0)
   ,fEventSpecieOff(0)
+  ,fV0cent(0)  
   
   ,fChargeHLT(0)
   ,fMomentumHLT(0)
@@ -89,9 +91,11 @@ AliAnalysisTaskSE()
   ,fNclusVSphiHLT(0)	    
   ,fNclusVSthetaHLT(0)
   ,fEventSpecieHLT(0)
+  
   ,fBeamType()
   ,fTextBox(0)
   ,fSwitch(kTRUE)
+  ,fCentrality()
 {
   // Constructor
   // Define input and output slots here
@@ -125,6 +129,7 @@ AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
   ,fNclusVSphiOff(0)
   ,fNclusVSthetaOff(0)
   ,fEventSpecieOff(0)
+  ,fV0cent(0)  
 
   ,fChargeHLT(0)      
   ,fMomentumHLT(0)
@@ -141,9 +146,11 @@ AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
   ,fNclusVSphiHLT(0)	    
   ,fNclusVSthetaHLT(0)
   ,fEventSpecieHLT(0)
+  
   ,fBeamType()
   ,fTextBox(0)
   ,fSwitch(kTRUE)
+  ,fCentrality()
 { 
   // Constructor
   // Define input and output slots here
@@ -153,8 +160,7 @@ AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
   DefineOutput(1, TList::Class());
 }
 
-
-//----------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------//
 
 void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   // Create histograms
@@ -196,6 +202,7 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   if(fBeamType.Contains("Pb")){
      fMultOff = new TH1F("fMult_off","TPC track multiplicity (OFF)",200,0,2000);
      fMultHLT = new TH1F("fMult_hlt","TPC track multiplicity (HLT)",200,0,2000);
+     fV0cent  = new TH1F("fV0cent",  "V0 centrality",               100,0, 100);
   } 
   else {
      fMultOff = new TH1F("fMult_off","TPC track multiplicity (OFF)",200,0,200);
@@ -217,7 +224,7 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fEventSpecieOff = new TH1F("fEventSpecie_off","Eventspecie for OFF",18, 0, 18);
   fEventSpecieHLT = new TH1F("fEventSpecie_hlt","Eventspecie for HLT",18, 0, 18);
 
-  //=========== track properties =================//
+  //============== track properties =================//
 
   fChargeOff = new TH1F("fCharge_off", "Charge distribution (OFF)", 3, -1.5, 1.5);  
   fChargeHLT = new TH1F("fCharge_hlt", "Charge distribution (HLT)", 3, -1.5, 1.5);  
@@ -279,7 +286,9 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fOutputList->Add(fNclusVSthetaOff);	  fOutputList->Add(fNclusVSthetaHLT);
   fOutputList->Add(fEventSpecieOff);	  fOutputList->Add(fEventSpecieHLT);  
   
-  fOutputList->Add(fTextBox);  
+  fOutputList->Add(fTextBox);
+  if(fBeamType.Contains("Pb")) fOutputList->Add(fV0cent);
+ 
   //SetupESDtrackCuts();
   PostData(1, fOutputList);
 }
@@ -373,7 +382,7 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
     if(!(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin)) continue; // only interested in tracks with kTPCin flag
     if(esdtrackHLT->GetTPCNcls()<=0) continue; 
     nr_tracksHLT++;
-
+ 
     //Calculating DCA "old" fashion
     Float_t dca[2];
     esdtrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), esdHLT->GetPrimaryVertex()->GetZv(), bfield, dca);
@@ -386,21 +395,6 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
     fEtaHLT->Fill(esdtrackHLT->Eta()); 
     fPhiHLT->Fill(esdtrackHLT->Phi()*TMath::RadToDeg());
     fMomentumHLT->Fill(TMath::Abs(esdtrackHLT->Pt()));  
-    
-    // ???? if(TMath::Abs(esdtrackHLT->Pt()) > 0.3) fEtaMomentumcutHLT->Fill(esdtrackHLT->Eta());
-      
-//     if((esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) || (esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kTPCout)){
-//       fNclusVSphiHLT->Fill(esdtrackHLT->Phi()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
-//       fNclusVSthetaHLT->Fill(esdtrackHLT->Theta()*TMath::RadToDeg(), esdtrackHLT->GetTPCNcls());
-//     }
-
-   
-//     if((esdtrackHLT->GetStatus()&AliESDtrack::kTPCin) || (esdtrackHLT->GetStatus()&AliESDtrack::kTPCin && esdtrackHLT->GetStatus()&AliESDtrack::kTPCout))
-//       fNclusterHLTwCut->Fill(esdtrackHLT->GetTPCNcls());
-    
-//     if(esdHLT->IsHLTTriggerFired()){
-//         	 
-//     }// end if for triggered hlt events        
   } // end of loop over hlt tracks
 
   if(nr_tracksHLT>0) fMultHLT->Fill(nr_tracksHLT);
@@ -409,15 +403,16 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
   
   Int_t nr_tracksOff = 0;
   const AliESDVertex *vertOff = esdOFF->GetPrimaryVertexTracks();
-
-//   if(vertOff->GetNContributors()<1) {
-//     // SPD vertex
-//     vertOff = esdOFF->GetPrimaryVertexSPD();
-//     if(vertOff->GetNContributors()<1) {
-//       // NO GOOD VERTEX, SKIP EVENT 
-//       testVertex=kFALSE;
-//     }
-//   }
+   
+  if(fBeamType.Contains("Pb")){
+     fCentrality = esdOFF->GetCentrality(); 
+     // this information is only available from the offline ESD for 2010 PbPb data, the V0 info was not stored in the HLTesd (17.04.11, Kelly)
+     if(!fCentrality){
+        printf("Centrality pointer is empty\n");
+        return;
+     }
+     else fV0cent->Fill(fCentrality->GetCentralityPercentile("V0M"));
+  }
   
   if(vertOff->GetStatus()==kTRUE){
     fXYvertexOff->Fill(vertOff->GetX(), vertOff->GetY() );
@@ -436,8 +431,6 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
     if(!(esdtrackOFF->GetStatus()&AliESDtrack::kTPCin)) continue; 
     if(esdtrackOFF->GetTPCNcls()<=0) continue; 
     nr_tracksOff++;
-
-    //Filling of DCA for Offline
 
     Double_t x[3]; 
     esdtrackOFF->GetXYZ(x);
@@ -461,23 +454,15 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
     fPhiOff->Fill(esdtrackOFF->Phi()*TMath::RadToDeg());
     fMomentumOff->Fill( TMath::Abs(esdtrackOFF->Pt()) ); 
 
-//     fNclusVSphiOff->Fill(esdtrackOFF->Phi()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
-//     fNclusVSthetaOff->Fill(esdtrackOFF->Theta()*TMath::RadToDeg(), esdtrackOFF->GetTPCNcls());
-// 
-//     if(TMath::Abs(esdtrackOFF->Pt()) < 0.3) continue;
-//     fEtaMomentumcutOff->Fill(esdtrackOFF->Eta()); 
-//     if(esdtrackOFF->GetTPCNcls()>0) fNclusterOffwCut->Fill(esdtrackOFF->GetTPCNcls()); 
-                  
   } // end of loop over offline tracks
   
   if(nr_tracksOff>0) fMultOff->Fill(nr_tracksOff);
    
-  // Post output data.
   PostData(1, fOutputList);
 }
 
 void AliAnalysisTaskHLT::Terminate(Option_t *){
-  // see header file of AliAnalysisTask for documentation
+// see header file of AliAnalysisTask for documentation
 }
 
 // void AliAnalysisTaskHLT::SetupESDtrackCuts(){ // not called
