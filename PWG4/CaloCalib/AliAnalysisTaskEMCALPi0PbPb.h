@@ -240,8 +240,9 @@ class AliStaCluster : public TObject
 {
  public:
   AliStaCluster() : TObject(), fE(0), fR(0), fEta(0), fPhi(0), fN(0), fN1(0), fN3(0), fIdMax(0), fEmax(0),  
-                    fDbc(-1), fDisp(-1), fM20(0), fM02(0), fEcc(0), fSig(0), fTrackM(0), fTrDz(0), fTrDr(-1), 
-                    fTrEp(0), fTrIso(0), fTrIso1(0), fTrIso2(0), fCeIso(0), fCeCore(0), fTrigM(0), fTrigE(-1), fTrigMaskE(-1) {;}
+                    fDbc(-1), fDisp(-1), fM20(0), fM02(0), fEcc(0), fSig(0), fIsTrackM(0), fTrDz(0), fTrDr(-1), 
+                    fTrEp(0), fTrIso(0), fTrIso1(0), fTrIso2(0), fCeIso(0), fCeCore(0), fIsTrigM(0), fTrigE(-1), 
+                    fTrigMaskE(-1) {;}
 
  public:
   Double32_t    fE;                //[0,0,16] energy
@@ -259,7 +260,7 @@ class AliStaCluster : public TObject
   Double32_t    fM02;              //[0,0,16] 2-nd moment along the second eigen axis
   Double32_t    fEcc;              //[0,0,16] eccentricity
   Double32_t    fSig;              //[0,0,16] sigma
-  Bool_t        fTrackM;           //         if true then track values are set
+  Bool_t        fIsTrackM;         //         if true then track values are set
   Double32_t    fTrDz;             //[0,0,16] dZ to nearest track
   Double32_t    fTrDr;             //[0,0,16] dR to nearest track (in x,y)
   Double32_t    fTrEp;             //[0,0,16] E/P to nearest track 
@@ -268,7 +269,7 @@ class AliStaCluster : public TObject
   Double32_t    fTrIso2;           //[0,0,16] track isolation (pt>2GeV/c)
   Double32_t    fCeIso;            //[0,0,16] cell isolation
   Double32_t    fCeCore;           //[0,0,16] cell content in R=0.025
-  Bool_t        fTrigM;            //         if true then trigger values are set
+  Bool_t        fIsTrigM;          //         if true then trigger values are set
   Double32_t    fTrigE;            //[0,0,16] trigger tower energy
   Double32_t    fTrigMaskE;        //[0,0,16] masked trigger tower energy
 
