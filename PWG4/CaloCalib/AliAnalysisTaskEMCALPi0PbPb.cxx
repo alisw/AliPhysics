@@ -1228,15 +1228,6 @@ void AliAnalysisTaskEMCALPi0PbPb::FillCellHists()
     if (fHCellCheckE && fHCellCheckE[absID])
       fHCellCheckE[absID]->Fill(cellE);
     fHCellFreqE[iSM]->Fill(absID, cellE);
-    if (1) {
-      //todo
-      TVector3 pos;
-      fGeom->GetGlobal(absID,pos);
-      Int_t id2 = fGeom-> GetAbsCellIdFromCellIndexes(iSM, iPhi+1,iEta+1);
-      TVector3 pos2;
-      fGeom->GetGlobal(id2,pos2);
-      cout << "delta phi " << pos.DeltaPhi(pos2) << " " << TMath::Abs(pos2.Eta()-pos.Eta()) << endl;
-    }
   }    
   fHCellH->Fill(cellMaxE);
   cellMeanE /= ncells;
