@@ -157,8 +157,8 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 
 //============= TRACK PROPERTIES WITH CUTS ===============//
 
- TCanvas *c4 = new TCanvas("c4","HLT track properties with and w/o cuts",1200,700);
- c4->Divide(3,2);
+ TCanvas *c4 = new TCanvas("c4","HLT track properties with and w/o cuts",1250,700);
+ c4->Divide(4,2);
 
  h1 = (TH1F*)list->FindObject("fMomentum_hlt");    if(!h1) { printf("Empty histogram fMomentum_hlt\n");    return; }
  h2 = (TH1F*)list->FindObject("fMomentum_hltcut"); if(!h2) { printf("Empty histogram fMomentum_hltcut\n"); return; }
@@ -224,6 +224,24 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  h1->SetXTitle("ITS clusters per track");
 
  c4->cd(6);
+ plot(h1,h2);
+
+//------------------------------------------------- 
+ 
+ h1 = (TH1F*)list->FindObject("fDCAr_hlt");    if(!h1) { printf("Empty histogram fDCAr_hlt\n");    return; }
+ h2 = (TH1F*)list->FindObject("fDCAr_hltcut"); if(!h2) { printf("Empty histogram fDCAr_hltcut\n"); return; }
+ h1->SetXTitle("DCAr (cm)");
+
+ c4->cd(7);
+ plot(h1,h2);
+
+//------------------------------------------------- 
+ 
+ h1 = (TH1F*)list->FindObject("fDCAz_hlt");    if(!h1) { printf("Empty histogram fDCAz_hlt\n");    return; }
+ h2 = (TH1F*)list->FindObject("fDCAz_hltcut"); if(!h2) { printf("Empty histogram fDCAz_hltcut\n"); return; }
+ h1->SetXTitle("DCAr (cm)");
+
+ c4->cd(8);
  plot(h1,h2);
 
 //============= EVENT PROPERTIES ===============//
