@@ -808,7 +808,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
   }//Suspicious
   
   if(fSelectEmbeddedClusters){
-    if(clus->GetNLabels()==0) return;
+    if(clus->GetNLabels()==0 || clus->GetLabel() < 0) return;
     //else printf("Embedded cluster,  %d, n label %d label %d  \n",iclus,clus->GetNLabels(),clus->GetLabel());
   }
   
@@ -896,8 +896,13 @@ void AliCaloTrackReader::FillInputEMCAL() {
   else {
     TClonesArray * clusterList = dynamic_cast<TClonesArray*> (fOutputEvent->FindListObject(fEMCALClustersListName));
     if(!clusterList){
-      printf("AliCaloTrackReader::FillInputEMCAL() - Wrong name of list with clusters? <%s>\n",fEMCALClustersListName.Data());
-      return;
+      //printf("AliCaloTrackReader::FillInputEMCAL() - Wrong name of list with clusters? Try input event <%s>\n",fEMCALClustersListName.Data());
+      //List not in output event, try input event
+      clusterList = dynamic_cast<TClonesArray*> (fInputEvent->FindListObject(fEMCALClustersListName));
+      if(!clusterList){
+        printf("AliCaloTrackReader::FillInputEMCAL() - Wrong name of list with clusters?  <%s>\n",fEMCALClustersListName.Data());
+        return;
+      }
     }
     Int_t nclusters = clusterList->GetEntriesFast();
     for (Int_t iclus =  0; iclus <  nclusters; iclus++) {
