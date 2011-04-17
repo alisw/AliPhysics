@@ -326,6 +326,8 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  c2->SaveAs(folder+"/vertex_event_properties.root");  
  c3->SaveAs(folder+"/general_event_properties.png");  
  c3->SaveAs(folder+"/general_event_properties.root");  
+ c4->SaveAs(folder+"/HLT_track_properties_cuts.png");  
+ c4->SaveAs(folder+"/HLT_track_properties_cuts.root");  
  return;	
 }
 
