@@ -193,14 +193,18 @@ UInt_t AliEMCALPreprocessor::Process(TMap* dcsAliasMap)
     status = new TParameter<int>("tempResult",tempResult);
     resultArray->Add(status);
   }
-  // Trigger configuration processing
+  // Trigger configuration processing: only for Physics runs
   TString triggerConf = fConfEnv->GetValue("Trigger","ON");
   triggerConf.ToUpper();
-  if (triggerConf != "OFF" && dcsAliasMap ) {
-    UInt_t triggerResult = MapTriggerConfig(dcsAliasMap);
-    result=triggerResult;
-    status = new TParameter<int>("triggerResult",triggerResult);
-    resultArray->Add(status);
+  if( runType == kPhysicsRunType ) {
+    //  if (triggerConf != "OFF" && dcsAliasMap ) {
+    if ( dcsAliasMap ) {
+      UInt_t triggerResult = MapTriggerConfig(dcsAliasMap);
+      AliInfo(Form("triggerConf %s\n", triggerConf.Data()));
+      result+=triggerResult;
+      status = new TParameter<int>("triggerResult",triggerResult);
+      resultArray->Add(status);
+    }
   }
   
   // Other calibration information will be retrieved through FXS files
@@ -322,6 +326,7 @@ UInt_t AliEMCALPreprocessor::MapTemperature(TMap* dcsAliasMap)
 //______________________________________________________________________________________________
 UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
 { // extract DCS trigger info
+  AliInfo(Form("Get TRU info from DCS DPs.\n"));
   Int_t i, iTRU;
   char buf[100];
 
@@ -396,14 +401,15 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
     }
     
   } // TRUs
-  
+  AliInfo(Form("TRU info retrieved.\n"));
   // save the objects
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
   metaData.SetResponsible(kMetaResponsible);
   metaData.SetComment(kMetaComment); 
       
-  Bool_t retCode = Store("Calib", "LED", trigConfig, &metaData, 0, kFALSE);
+  Bool_t retCode = Store("Calib", "Trigger", trigConfig, &metaData, 0, kFALSE);
+  AliInfo(Form("TRU info stored.\n"));
   return retCode;
 }
 
