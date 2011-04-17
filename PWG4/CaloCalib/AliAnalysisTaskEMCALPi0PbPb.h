@@ -45,21 +45,24 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetFillNtuple(Bool_t b)                        { fDoNtuple      = b;         }
   void         SetGeoName(const char *n)                      { fGeoName       = n;         }
   void         SetIsoDist(Double_t d)                         { fIsoDist       = d;         }
- void          SetMinNClustersPerTrack(Double_t m)            { fMinNClusPerTr = m;         }
+  void         SetMarkCells(const char *n)                    { fMarkCells     = n;         }
   void         SetMinClusEnergy(Double_t e)                   { fMinE          = e;         }
   void         SetMinEcc(Double_t ecc)                        { fMinEcc        = ecc;       }
   void         SetMinErat(Double_t erat)                      { fMinErat       = erat;      }
+  void         SetMinNClustersPerTrack(Double_t m)            { fMinNClusPerTr = m;         }
   void         SetNminCells(Int_t n)                          { fNminCells     = n;         }
+  void         SetPrimTrackCuts(AliESDtrackCuts *c)           { fPrimTrCuts    = c;         }
   void         SetTrClassNames(const char *n)                 { fTrClassNames  = n;         }
   void         SetTrackCuts(AliESDtrackCuts *c)               { fTrCuts        = c;         }
-  void         SetPrimTrackCuts(AliESDtrackCuts *c)           { fPrimTrCuts    = c;         }
+  void         SetTrainMode(Bool_t b)                         { fTrainMode     = b;         }
   void         SetUseQualFlag(Bool_t b)                       { fUseQualFlag   = b;         }
   void         SetVertexRange(Double_t z1, Double_t z2)       { fVtxZMin=z1; fVtxZMax=z2;   }
 
  protected:
+  void         CalcCaloTriggers();
   virtual void CalcClusterProps();
-  virtual void CalcTracks();
   virtual void CalcPrimTracks();
+  virtual void CalcTracks();
   virtual void ClusterAfterburner();
   virtual void FillCellHists();
   virtual void FillClusHists();
@@ -68,30 +71,14 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   virtual void FillPionHists();
   void         FillVertex(AliStaVertex *v, const AliESDVertex *esdv);
   void         FillVertex(AliStaVertex *v, const AliAODVertex *aodv);
-
   Double_t     GetCellIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2)                  const;
   Double_t     GetMaxCellEnergy(AliVCluster *c) const { Short_t id=-1; return GetMaxCellEnergy(c,id); }
   Double_t     GetMaxCellEnergy(AliVCluster *c, Short_t &id)                                        const;
   Int_t        GetNCells(AliVCluster *c, Double_t emin=0.)                                          const;
   void         GetSigma(AliVCluster *c, Double_t &sigmaMax, Double_t &sigmaMin)                     const;
   Double_t     GetTrackIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2, Double_t pt=0.) const;
+  Double_t     GetTrigEnergy(AliVCluster *c)                                                        const;
 
-  class ClusProps {
-    public:
-      ClusProps() : fTrIndex(-1), fTrDz(-1), fTrDr(-1), fTrDist(-1), fTrEp(0), 
-                    fTrIso(0), fTrIso1(0), fTrIso2(0), fCellIso(0), fPhiInd(-1) {}
-      void Reset() { fTrIndex=-1; fTrDz=-1; fTrDr=-1; fTrDist=-1; fTrEp=0; fTrIso=0; fTrIso1=0; fTrIso2=0; fCellIso=0; fPhiInd=-1; }
-      Int_t    fTrIndex;
-      Double_t fTrDz;
-      Double_t fTrDr;
-      Double_t fTrDist;
-      Double_t fTrEp;
-      Double_t fTrIso;
-      Double_t fTrIso1;
-      Double_t fTrIso2;
-      Double_t fCellIso;
-      Short_t  fPhiInd;
-  };
     // input members
   TString                fCentVar;                // variable for centrality determination
   Double_t               fCentFrom;               // min centrality (def=0)
@@ -112,9 +99,12 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Double_t               fIsoDist;                // isolation distance (def=0.2)
   TString                fTrClassNames;           // trigger class names
   AliESDtrackCuts       *fTrCuts;                 // track cuts
-  AliESDtrackCuts       *fPrimTrCuts;                 // track cuts
+  AliESDtrackCuts       *fPrimTrCuts;             // track cuts
   Bool_t                 fDoTrMatGeom;            // track matching including geometry
-
+  Bool_t                 fTrainMode;              // train mode with minimal number of resources
+  TString                fMarkCells;              // list of mark cells to monitor
+  Int_t                  fMinL0Time;              // minimum accepted time for trigger
+  Int_t                  fMaxL0Time;              // maximum accepted time for trigger
     // derived members (ie with ! after //)
   Bool_t                 fIsGeoMatsSet;           //!indicate that geo matrices are set 
   ULong64_t              fNEvs;                   //!accepted events 
@@ -131,8 +121,9 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   AliAODCaloCells       *fAodCells;               //!pointer to aod cells
   TAxis                 *fPtRanges;               //!pointer to pt ranges
   TObjArray             *fSelTracks;              //!pointer to selected tracks
-  TObjArray             *fSelPrimTracks;          //!pointer to selected tracks
-  ClusProps              fClusProps[1000];        //!array of cluster properties
+  TObjArray             *fSelPrimTracks;          //!pointer to selected primary tracks
+  Int_t                  fNAmpInTrigger;          //!number of cells to keep trigger statistic
+  Float_t               *fAmpInTrigger;           //!amplitude for calo cells which are part of trigger
     // ntuple
   TTree                 *fNtuple;                 //!pointer to ntuple
   AliStaHeader          *fHeader;                 //!pointer to header
@@ -140,6 +131,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   AliStaVertex          *fSpdVert;                //!pointer to SPD vertex
   AliStaVertex          *fTpcVert;                //!pointer to TPC vertex
   TClonesArray          *fClusters;               //!pointer to clusters
+  TClonesArray          *fTriggers;               //!pointer to triggers
     // histograms
   TH1                   *fHCuts;                  //!histo for cuts
   TH1                   *fHVertexZ;               //!histo for vtxz
@@ -184,7 +176,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskEMCALPi0PbPb(const AliAnalysisTaskEMCALPi0PbPb&);            // not implemented
   AliAnalysisTaskEMCALPi0PbPb &operator=(const AliAnalysisTaskEMCALPi0PbPb&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 6) // Analysis task for neutral pions in Pb+Pb
+  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 7) // Analysis task for neutral pions in Pb+Pb
 };
 #endif
 
@@ -248,8 +240,8 @@ class AliStaCluster : public TObject
 {
  public:
   AliStaCluster() : TObject(), fE(0), fR(0), fEta(0), fPhi(0), fN(0), fN1(0), fN3(0), fIdMax(0), fEmax(0),  
-                    fDbc(0), fDisp(0), fM20(0), fM02(0), fEcc(0), fSig(0), fTrDz(0), fTrDr(-1), fTrEp(0), 
-                    fTrIso(0), fTrIso1(0), fTrIso2(0), fCeIso(0) {;}
+                    fDbc(-1), fDisp(-1), fM20(0), fM02(0), fEcc(0), fSig(0), fTrackM(0), fTrDz(0), fTrDr(-1), 
+                    fTrEp(0), fTrIso(0), fTrIso1(0), fTrIso2(0), fCeIso(0), fCeCore(0), fTrigM(0), fTrigE(-1), fTrigMaskE(-1) {;}
 
  public:
   Double32_t    fE;                //[0,0,16] energy
@@ -267,14 +259,35 @@ class AliStaCluster : public TObject
   Double32_t    fM02;              //[0,0,16] 2-nd moment along the second eigen axis
   Double32_t    fEcc;              //[0,0,16] eccentricity
   Double32_t    fSig;              //[0,0,16] sigma
+  Bool_t        fTrackM;           //         if true then track values are set
   Double32_t    fTrDz;             //[0,0,16] dZ to nearest track
-  Double32_t    fTrDr;             //[0,0,16] dR to nearest track (in x,y; if neg then no match)
+  Double32_t    fTrDr;             //[0,0,16] dR to nearest track (in x,y)
   Double32_t    fTrEp;             //[0,0,16] E/P to nearest track 
   Double32_t    fTrIso;            //[0,0,16] track isolation
   Double32_t    fTrIso1;           //[0,0,16] track isolation (pt>1GeV/c)
   Double32_t    fTrIso2;           //[0,0,16] track isolation (pt>2GeV/c)
   Double32_t    fCeIso;            //[0,0,16] cell isolation
+  Double32_t    fCeCore;           //[0,0,16] cell content in R=0.025
+  Bool_t        fTrigM;            //         if true then trigger values are set
+  Double32_t    fTrigE;            //[0,0,16] trigger tower energy
+  Double32_t    fTrigMaskE;        //[0,0,16] masked trigger tower energy
 
-  ClassDef(AliStaCluster,2) // Cluster class
+  ClassDef(AliStaCluster,3) // Cluster class
+};
+
+class AliStaTrigger : public TObject
+{
+ public:
+  AliStaTrigger() : TObject(), fE(0), fEta(0), fPhi(0), fAmp(0), fMinTime(0), fMaxTime(0) {}
+
+ public:
+  Double32_t    fE;                //[0,0,16] energy
+  Double32_t    fEta;              //[0,0,16] eta
+  Double32_t    fPhi;              //[0,0,16] phi
+  Double32_t    fAmp;              //[0,0,16] amplitude
+  Short_t       fMinTime;           //        minimum L0 "time"
+  Short_t       fMaxTime;           //        maximum L0 "time"
+
+  ClassDef(AliStaTrigger,1) // Trigger class
 };
 #endif
