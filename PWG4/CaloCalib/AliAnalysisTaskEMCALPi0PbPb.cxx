@@ -162,6 +162,33 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
 {
   // Create user objects here.
 
+  cout << "AliAnalysisTaskEMCALPi0PbPb: Input settings" << endl;
+  cout << " fCentVar:       " << fCentVar << endl;
+  cout << " fCentFrom:      " << fCentFrom << endl;
+  cout << " fCentTo:        " << fCentTo << endl;
+  cout << " fVtxZMin:       " << fVtxZMin << endl;
+  cout << " fVtxZMax:       " << fVtxZMax << endl;
+  cout << " fUseQualFlag:   " << fUseQualFlag << endl;
+  cout << " fClusName:      \"" << fClusName << "\"" << endl;
+  cout << " fDoNtuple:      " << fDoNtuple << endl;
+  cout << " fDoAfterburner: " << fDoAfterburner << endl;
+  cout << " fAsymMax:       " << fAsymMax << endl;
+  cout << " fNminCells:     " << fNminCells << endl;
+  cout << " fMinE:          " << fMinE << endl;
+  cout << " fMinErat:       " << fMinErat << endl;
+  cout << " fMinEcc:        " << fMinEcc << endl;
+  cout << " fGeoName:       \"" << fGeoName << "\"" << endl;
+  cout << " fMinNClusPerTr: " << fMinNClusPerTr << endl;
+  cout << " fTrClassNames:  \"" << fTrClassNames << "\"" << endl;
+  cout << " fDoNtuple:      " << fDoNtuple << endl;
+  cout << " fTrCuts:        " << fTrCuts << endl;
+  cout << " fPrimTrCuts:    " << fPrimTrCuts << endl;
+  cout << " fDoTrMatGeom:   " << fDoTrMatGeom << endl;
+  cout << " fTrainMode:     " << fTrainMode << endl;
+  cout << " fMarkCells:     " << fMarkCells << endl;
+  cout << " fMinL0Time:     " << fMinL0Time << endl;
+  cout << " fMaxL0Time:     " << fMaxL0Time << endl;
+
   fGeom = new AliEMCALGeoUtils(fGeoName,"EMCAL");
   fReco = new AliEMCALRecoUtils();
   fTrClassNamesArr = fTrClassNames.Tokenize(" ");
@@ -847,11 +874,11 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
         trignen += cells->GetAmplitude(pos);
     }
     if (trigpen>0) {
-      cl->fTrigM = 1;
-      cl->fTrigE = trigpen;      
+      cl->fIsTrigM = 1;
+      cl->fTrigE   = trigpen;      
     }
     if (trignen>0) {
-      cl->fTrigM     = 1;
+      cl->fIsTrigM   = 1;
       cl->fTrigMaskE = trignen;      
     }
 
@@ -910,11 +937,11 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
         cl->fTrDz   = tmpZ;
         cl->fTrDr   = TMath::Sqrt(tmpR*tmpR-tmpZ*tmpZ);
         cl->fTrEp   = clus->E()/track->P();
-        cl->fTrackM = 1;
+        cl->fIsTrackM = 1;
       }
     }
     
-    if (cl->fTrackM) {
+    if (cl->fIsTrackM) {
       fHMatchDr->Fill(cl->fTrDr);
       fHMatchDz->Fill(cl->fTrDz);
       fHMatchEp->Fill(cl->fTrEp);
