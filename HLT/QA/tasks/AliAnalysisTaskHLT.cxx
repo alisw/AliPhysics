@@ -98,8 +98,13 @@ AliAnalysisTaskSE()
   
   ,fBeamType()
   ,fTextBox(0)
+  ,fCuts(0)
   ,fSwitch(kTRUE)
   ,fCentrality()
+  ,fEta(0)
+  ,fPt(0)
+  ,fDCAr(0)
+  ,fDCAz(0)
 {
   // Constructor
   // Define input and output slots here
@@ -108,7 +113,7 @@ AliAnalysisTaskSE()
   // Output slot #0 writes into a TH1 container
 }
  
-AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
+AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name, float eta, float pt, float DCAr, float DCAz)
   :
   AliAnalysisTaskSE(name) 
   ,fUseHLTTrigger(kFALSE)   
@@ -153,8 +158,13 @@ AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
   
   ,fBeamType()
   ,fTextBox(0)
+  ,fCuts(0)
   ,fSwitch(kTRUE)
   ,fCentrality()
+  ,fEta(eta)
+  ,fPt(pt)
+  ,fDCAr(DCAr)
+  ,fDCAz(DCAz)
 { 
   // Constructor
   // Define input and output slots here
@@ -274,6 +284,11 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   //--------------------------------------------------//
   
   fTextBox = new TText(); 
+  fCuts = new TText(); 
+  fCuts->SetName("cuts");
+  TString s = Form("|#eta|<%2g, p_{T}>%2g GeV/c, |DCAr|<%2g cm, |DCAz|<%2g cm", TMath::Abs(fEta), TMath::Abs(fPt), TMath::Abs(fDCAr), TMath::Abs(fDCAz));
+  fCuts->SetTitle(s);  
+  
   //fOutputList->Add(fHistTrigger);
   fOutputList->Add(fChargeOff); 	  fOutputList->Add(fChargeHLT);       fOutputList->Add(fChargeHLTcut);  
   fOutputList->Add(fMomentumOff);	  fOutputList->Add(fMomentumHLT);     fOutputList->Add(fMomentumHLTcut); 
@@ -295,6 +310,7 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fOutputList->Add(fNcontOff);	          fOutputList->Add(fNcontHLT);  
   
   fOutputList->Add(fTextBox);
+  fOutputList->Add(fCuts);
   if(fBeamType.Contains("Pb")) fOutputList->Add(fV0cent);
  
   //SetupESDtrackCuts();
@@ -402,7 +418,7 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
     fPhiHLT->Fill(esdtrackHLT->Phi()*TMath::RadToDeg());
     fMomentumHLT->Fill(TMath::Abs(esdtrackHLT->Pt()));  
     
-    if(TMath::Abs(esdtrackHLT->Eta())<0.9 && TMath::Abs(esdtrackHLT->Pt())>0.3 && TMath::Abs(dca[0])<7 && TMath::Abs(dca[1])<7){
+    if(TMath::Abs(esdtrackHLT->Eta())<TMath::Abs(fEta) && TMath::Abs(esdtrackHLT->Pt())>TMath::Abs(fPt) && TMath::Abs(dca[0])<TMath::Abs(fDCAr) && TMath::Abs(dca[1])<TMath::Abs(fDCAz)){
        fChargeHLTcut->Fill(esdtrackHLT->Charge());
        fNclusterHLTcut->Fill(esdtrackHLT->GetTPCNcls());
        fNITSclusterHLTcut->Fill(esdtrackHLT->GetNcls(0));

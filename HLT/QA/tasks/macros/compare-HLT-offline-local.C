@@ -218,6 +218,7 @@ void compare_HLT_offline_local( TString file
   
   if(bGLOBAL){
     AliAnalysisTaskHLT *taskGLOBAL = new AliAnalysisTaskHLT("offhlt_comparison_GLOBAL");
+    //AliAnalysisTaskHLT *taskGLOBAL = new AliAnalysisTaskHLT("offhlt_comparison_GLOBAL",0.9,0.3,7,7);
     taskGLOBAL->SetUseHLTTriggerDecision(fUseHLTTrigger);
     taskGLOBAL->SetBeamType(beamType);
     mgr->AddTask(taskGLOBAL);

@@ -25,7 +25,7 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
  
   public: 
     AliAnalysisTaskHLT();
-    AliAnalysisTaskHLT(const char *name);
+    AliAnalysisTaskHLT(const char *name, float eta=2, float pt=0, float DCAr=20, float DCAz=20);
     virtual ~AliAnalysisTaskHLT() {}
 
     virtual void  UserCreateOutputObjects();
@@ -103,9 +103,14 @@ private:
         
     TString fBeamType;         //! beam type: p-p, Pb-Pb, No beam
     TText *fTextBox;           //! TText box containing run number info and date
+    TText *fCuts;              //! TText box containing the cuts
     Bool_t fSwitch;            //! boolean used to execute parts of the code in the UserExec only once, although
                                // the function is called once per event
-    AliCentrality *fCentrality;  //! Centrality holder
+    AliCentrality *fCentrality;//! Centrality holder
+    Float_t fEta;              //! cut value
+    Float_t fPt;               //! cut value
+    Float_t fDCAr;             //! cut value
+    Float_t fDCAz;             //! cut value
    
     ClassDef(AliAnalysisTaskHLT, 0);
 };

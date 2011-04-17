@@ -22,6 +22,7 @@
 #include "TCanvas.h"
 #include "TText.h"
 #include "TPaveStats.h"
+#include "TPaveText.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TLegend.h"
@@ -59,11 +60,14 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
     return; 
  }
  
- TText *hText = (TText*)list->FindObject("text");
- if(!hText) printf("No hText\n");
+ TText *runInfo = (TText*)list->FindObject("text");
+ if(!runInfo) printf("No runInfo string\n");
+
+ TText *cuts = (TText*)list->FindObject("cuts");
+ if(!cuts) printf("No cuts string\n");
 
  TString folder = "GlobalTask_";
- folder += hText->GetTitle();
+ folder += runInfo->GetTitle();
  folder.ReplaceAll(" ",""); 
  folder.ReplaceAll(",","_");
  gSystem->Exec("mkdir "+folder); // create a folder whose name contains run number and date of run
@@ -163,12 +167,19 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  c4->cd(1);
  plot(h1,h2);
 
- TLegend *leg2 = new TLegend(0.6,0.2,0.8,0.5);
- leg2->SetFillColor(10);
- leg2->SetLineColor(10);
- leg2->AddEntry(h1,"HLT", "l");
- leg2->AddEntry(h2,"HLT with cuts", "l");
- leg2->Draw("same");
+
+ TPaveText *pave = new TPaveText(2.1,24000,8.3,31600);
+ pave->SetFillColor(kWhite);
+ pave->SetLineColor(kWhite);
+ pave->SetShadowColor(kWhite);
+ TString tmp=cuts->GetTitle();
+ pave->SetTextColor(2);
+ pave->AddText(tmp);
+ pave->SetTextFont(42);
+ pave->SetTextSize(0.04);
+ pave->Draw();
+ c4->Update();
+
 
 //------------------------------------------------- 
  
