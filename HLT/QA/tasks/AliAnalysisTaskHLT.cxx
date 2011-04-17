@@ -54,7 +54,7 @@ AliAnalysisTaskSE()
   //,fESDOfftrackCuts(0)
   //,fESDHLTtrackCuts(0)
   ,fOutputList(0)
-  ,fHistTrigger(0)
+  //,fHistTrigger(0)
   ,fChargeOff(0)  
   ,fMomentumOff(0)
   ,fDCArOff(0)  	
@@ -83,8 +83,6 @@ AliAnalysisTaskSE()
   ,fEtaHLT(0)
   ,fChargeHLTcut(0)
   ,fMomentumHLTcut(0)
-  ,fDCArHLTcut(0)  
-  ,fDCAzHLTcut(0)  
   ,fNclusterHLTcut(0)
   ,fNITSclusterHLTcut(0)
   ,fPhiHLTcut(0)     
@@ -117,7 +115,7 @@ AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name)
   //,fESDOfftrackCuts(0)
   //,fESDHLTtrackCuts(0)
   ,fOutputList(0)
-  ,fHistTrigger(0)
+  //,fHistTrigger(0)
   ,fChargeOff(0)  
   ,fMomentumOff(0)
   ,fDCArOff(0) 
@@ -199,9 +197,9 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   (fHistTrigger->GetXaxis())->SetBinLabel(8,"onlTrkThruCE"); 
   */
 
-  fHistTrigger = new TH1F("fHistTrigger", "CTP trigger counter", 24, 0, 24);
-  fHistTrigger->GetXaxis()->SetTitle("");  
-  fHistTrigger->GetYaxis()->SetTitle("#Events"); 
+  //fHistTrigger = new TH1F("fHistTrigger", "CTP trigger counter", 24, 0, 24);
+  //fHistTrigger->GetXaxis()->SetTitle("");  
+  //fHistTrigger->GetYaxis()->SetTitle("#Events"); 
 
   //=========== event properties =================//
 
@@ -268,8 +266,6 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   
   fChargeHLTcut      = new TH1F("fCharge_hltcut",     "",  3, -1.5, 1.5);  
   fMomentumHLTcut    = new TH1F("fMomentum_hltcut",   "",100,    0,  10); 
-  fDCArHLTcut        = new TH1F("fDCAr_hltcut",       "",200,  -15,  15);
-  fDCAzHLTcut        = new TH1F("fDCAz_hltcut",       "",200,  -15,  15); 
   fNclusterHLTcut    = new TH1F("fNcluster_hltcut",   "",200,    0, 200);
   fNITSclusterHLTcut = new TH1F("fNITScluster_hltcut","", 10,    0,  10); 
   fPhiHLTcut         = new TH1F("fPhi_hltcut",        "", 90,    0, 360);
@@ -278,17 +274,15 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   //--------------------------------------------------//
   
   fTextBox = new TText(); 
-
-  fOutputList->Add(fHistTrigger);
-
+  //fOutputList->Add(fHistTrigger);
   fOutputList->Add(fChargeOff); 	  fOutputList->Add(fChargeHLT);       fOutputList->Add(fChargeHLTcut);  
   fOutputList->Add(fMomentumOff);	  fOutputList->Add(fMomentumHLT);     fOutputList->Add(fMomentumHLTcut); 
-  fOutputList->Add(fDCArOff);	  	  fOutputList->Add(fDCArHLT);	      fOutputList->Add(fDCArHLTcut);     
-  fOutputList->Add(fDCAzOff);	  	  fOutputList->Add(fDCAzHLT);	      fOutputList->Add(fDCAzHLTcut);     
-  fOutputList->Add(fNclusterOff);	  fOutputList->Add(fNclusterHLT);     fOutputList->Add(fNclusterHLTcut); 
-  fOutputList->Add(fNITSclusterOff);	  fOutputList->Add(fNITSclusterHLT);  fOutputList->Add(fNITSclusterHLTcut); 
-  fOutputList->Add(fPhiOff);	  	  fOutputList->Add(fPhiHLT);	      fOutputList->Add(fPhiHLTcut);      
-  fOutputList->Add(fEtaOff);  		  fOutputList->Add(fEtaHLT);  	      fOutputList->Add(fEtaHLTcut);  
+  fOutputList->Add(fDCArOff);	  	  fOutputList->Add(fDCArHLT);	      fOutputList->Add(fNclusterHLTcut);    	
+  fOutputList->Add(fDCAzOff);	  	  fOutputList->Add(fDCAzHLT);	      fOutputList->Add(fNITSclusterHLTcut); 	
+  fOutputList->Add(fNclusterOff);	  fOutputList->Add(fNclusterHLT);     fOutputList->Add(fPhiHLTcut);	 
+  fOutputList->Add(fNITSclusterOff);	  fOutputList->Add(fNITSclusterHLT);  fOutputList->Add(fEtaHLTcut);  
+  fOutputList->Add(fPhiOff);	  	  fOutputList->Add(fPhiHLT);	      
+  fOutputList->Add(fEtaOff);  		  fOutputList->Add(fEtaHLT);  	      
   
   fOutputList->Add(fMultOff);		  fOutputList->Add(fMultHLT);	 
   fOutputList->Add(fXvertexOff);  	  fOutputList->Add(fXvertexHLT);  
@@ -395,10 +389,11 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
  
     //Calculating DCA "old" fashion
     Float_t dca[2];
-    esdtrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), esdHLT->GetPrimaryVertex()->GetZv(), bfield, dca);
-
-    fDCArHLT->Fill(dca[0]);  
-    fDCAzHLT->Fill(dca[1]);
+    if(vertHLT->GetStatus()==kTRUE){
+       esdtrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), esdHLT->GetPrimaryVertex()->GetZv(), bfield, dca);
+       fDCArHLT->Fill(dca[0]);  
+       fDCAzHLT->Fill(dca[1]);
+    }
     
     fChargeHLT->Fill(esdtrackHLT->Charge());
     fNclusterHLT->Fill(esdtrackHLT->GetTPCNcls());
@@ -407,7 +402,7 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
     fPhiHLT->Fill(esdtrackHLT->Phi()*TMath::RadToDeg());
     fMomentumHLT->Fill(TMath::Abs(esdtrackHLT->Pt()));  
     
-    if(TMath::Abs(esdtrackHLT->Eta())<0.9 && TMath::Abs(esdtrackHLT->Pt())>0.3 && TMath::Abs(dca[0])<5 && TMath::Abs(dca[1])<5){
+    if(TMath::Abs(esdtrackHLT->Eta())<0.9 && TMath::Abs(esdtrackHLT->Pt())>0.3 && TMath::Abs(dca[0])<7 && TMath::Abs(dca[1])<7){
        fChargeHLTcut->Fill(esdtrackHLT->Charge());
        fNclusterHLTcut->Fill(esdtrackHLT->GetTPCNcls());
        fNITSclusterHLTcut->Fill(esdtrackHLT->GetNcls(0));

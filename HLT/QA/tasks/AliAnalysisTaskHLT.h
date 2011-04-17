@@ -52,7 +52,7 @@ private:
     //AliESDtrackCuts *fESDHLTtrackCuts;   //! ESD cuts - on HLT object 
     
     TList *fOutputList; // list of output histograms
-    TH1F *fHistTrigger; //! trigger counters 
+    //TH1F *fHistTrigger; //! trigger counters 
 
     TH1F  *fChargeOff;         //! Charge distribution      
     TH1F  *fMomentumOff;       //! momentum	
@@ -86,8 +86,6 @@ private:
     
     TH1F  *fChargeHLTcut;      //! Charge distribution with cuts for selecting primary tracks
     TH1F  *fMomentumHLTcut;    //! momentum	
-    TH1F  *fDCArHLTcut;	       //! track DCAr to beam line	 
-    TH1F  *fDCAzHLTcut;	       //! track DCAz to beam line	 
     TH1F  *fNclusterHLTcut;    //! #clusters per track
     TH1F  *fNITSclusterHLTcut; //! # ITS clusters per track
     TH1F  *fPhiHLTcut;	       //! azimuthal angle distribution
