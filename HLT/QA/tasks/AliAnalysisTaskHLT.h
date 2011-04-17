@@ -60,6 +60,7 @@ private:
     TH1F  *fDCArOff;           //! track DCAr to beam line	 
     TH1F  *fDCAzOff;           //! track DCAz to beam line	 
     TH1F  *fNclusterOff;       //! #clusters per track
+    TH1F  *fNITSclusterOff;    //! # ITS clusters per track
     TH1F  *fNclusterOffwCut;   //! #clusters per track w cuts
     TH1F  *fPhiOff;            //! azimuthal angle distribution
     TH1F  *fMultOff;           //! track multiplicity of the event
@@ -67,18 +68,23 @@ private:
     TH1F  *fXvertexOff;        //! X primary vertex distribution
     TH1F  *fYvertexOff;        //! Y primary vertex distribution
     TH1F  *fZvertexOff;        //! Z primary vertex distribution
+    TH1F  *fSPDXvertexOff;     //! SPD X primary vertex distribution
+    TH1F  *fSPDYvertexOff;     //! SPD Y primary vertex distribution
+    TH1F  *fSPDZvertexOff;     //! SPD Z primary vertex distribution
     TH1F  *fEtaOff;            //! pseudorapidity
     TH1F  *fEtaMomentumcutOff;      //! pseudorapidity with DCA cut
     TH2F  *fNclusVSphiOff;     //! clusters per track vs. azimuthal angle 
     TH2F  *fNclusVSthetaOff;   //! clusters per track vs. polar angle 
     TH1F  *fEventSpecieOff;    //! Event Specie Offline
     TH1F  *fV0cent;            //! V0 centrality information
+    TH1F  *fNcontOff;          //! # of contributors to the vertex estimate
     
     TH1F  *fChargeHLT;         //! Charge distribution 
     TH1F  *fMomentumHLT;       //! momentum	
     TH1F  *fDCArHLT;	       //! track DCAr to beam line	 
     TH1F  *fDCAzHLT;	       //! track DCAz to beam line	 
     TH1F  *fNclusterHLT;       //! #clusters per track
+    TH1F  *fNITSclusterHLT;    //! # ITS clusters per track
     TH1F  *fNclusterHLTwCut;   //! #clusters per track with cuts
     TH1F  *fPhiHLT;	       //! azimuthal angle distribution
     TH1F  *fMultHLT;	       //! track multiplicity of the event   
@@ -86,11 +92,15 @@ private:
     TH1F  *fXvertexHLT;        //! X primary vertex distribution
     TH1F  *fYvertexHLT;        //! Y primary vertex distribution
     TH1F  *fZvertexHLT;        //! Z primary vertex distribution
+    TH1F  *fSPDXvertexHLT;     //! SPD X primary vertex distribution
+    TH1F  *fSPDYvertexHLT;     //! SPD Y primary vertex distribution
+    TH1F  *fSPDZvertexHLT;     //! SPD Z primary vertex distribution
     TH1F  *fEtaHLT;	       //! pseudorapidity
     TH1F  *fEtaMomentumcutHLT;      //! pseudorapidity with DCA cut
     TH2F  *fNclusVSphiHLT;     //! clusters per track vs. azimuthal angle 
     TH2F  *fNclusVSthetaHLT;   //! clusters per track vs. polar angle 
     TH1F  *fEventSpecieHLT;    //! Event Specie HLT
+    TH1F  *fNcontHLT;          //! # of contributors to the vertex estimate
         
     TString fBeamType;         //! beam type: p-p, Pb-Pb, No beam
     TText *fTextBox;           //! TText box containing run number info and date
