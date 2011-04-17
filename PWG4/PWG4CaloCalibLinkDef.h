@@ -13,5 +13,6 @@
 #pragma link C++ class AliStaHeader+;
 #pragma link C++ class AliStaCluster+;
 #pragma link C++ class AliStaVertex+;
+#pragma link C++ class AliStaTrigger+;
 
 #endif

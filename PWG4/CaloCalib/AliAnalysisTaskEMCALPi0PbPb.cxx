@@ -23,6 +23,7 @@
 #include "AliEMCALGeoUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
+#include "AliESDCaloTrigger.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
@@ -60,6 +61,10 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fTrCuts(0),
     fPrimTrCuts(0),
     fDoTrMatGeom(0),
+    fTrainMode(0),
+    fMarkCells(),
+    fMinL0Time(-1),
+    fMaxL0Time(1024),
     fIsGeoMatsSet(0),
     fNEvs(0),
     fGeom(0),
@@ -76,12 +81,15 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fPtRanges(0),
     fSelTracks(0),
     fSelPrimTracks(0),
+    fNAmpInTrigger(0),
+    fAmpInTrigger(0),
     fNtuple(0),
     fHeader(0),
     fPrimVert(0),
     fSpdVert(0),
     fTpcVert(0),
     fClusters(0),
+    fTriggers(0),
     fHCuts(0x0),
     fHVertexZ(0x0),
     fHVertexZ2(0x0),
@@ -122,7 +130,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
   SetName(name);
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
-  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.,SPDVertex.,TPCVertex.,EMCALCells.,Tracks "
+  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.,SPDVertex.,TPCVertex.,EMCALCells.,Tracks  EMCALTrigger."
                "AOD:header,vertices,emcalCells,tracks";
 }
 
@@ -140,6 +148,7 @@ AliAnalysisTaskEMCALPi0PbPb::~AliAnalysisTaskEMCALPi0PbPb()
   delete fTrClassNamesArr;
   delete fSelTracks;
   delete fSelPrimTracks;
+  delete [] fAmpInTrigger;
   delete [] fHColuRow;
   delete [] fHColuRowE;
   delete [] fHCellMult;
@@ -167,8 +176,14 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
       f->SetCompressionLevel(2);
       fNtuple = new TTree(Form("tree%.0fto%.0f",fCentFrom,fCentTo), "StandaloneTree");
       fNtuple->SetDirectory(f);
-      fNtuple->SetAutoFlush(-1024*1024*1024);
-      fNtuple->SetAutoSave(-1024*1024*1024);
+      if (fTrainMode) {
+        fNtuple->SetAutoFlush(-2*1024*1024);
+        fNtuple->SetAutoSave(0);
+      } else {
+        fNtuple->SetAutoFlush(-32*1024*1024);
+        fNtuple->SetAutoSave(0);
+      }
+
       fHeader = new AliStaHeader;
       fNtuple->Branch("header", &fHeader, 16*1024, 99);
       fPrimVert = new AliStaVertex;
@@ -179,8 +194,12 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
       fNtuple->Branch("tpcv", &fTpcVert, 16*1024, 99);
       if (TClass::GetClass("AliStaCluster"))
         TClass::GetClass("AliStaCluster")->IgnoreTObjectStreamer();
-      fClusters = new TClonesArray("AliStaCluster",1000);
+      fClusters = new TClonesArray("AliStaCluster");
       fNtuple->Branch("clusters", &fClusters, 8*16*1024, 99);
+      if (TClass::GetClass("AliStaTrigger"))
+        TClass::GetClass("AliStaTrigger")->IgnoreTObjectStreamer();
+      fTriggers = new TClonesArray("AliStaTrigger");
+      fNtuple->Branch("l0prim", &fTriggers, 16*1024, 99);
     }  
   }
 
@@ -274,43 +293,53 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
     fOutput->Add(fHCellFreqCut300M[i]);
     fOutput->Add(fHCellFreqE[i]);
   }
-  if (1) {
+  if (!fMarkCells.IsNull()) {
     fHCellCheckE = new TH1*[24*48*nsm];
     memset(fHCellCheckE,0,24*48*nsm*sizeof(TH1*));
-    Int_t tcs[1] = {4102};
-    for (UInt_t i = 0; i<sizeof(tcs)/sizeof(Int_t); ++i){
+    TObjArray *cells = fMarkCells.Tokenize(" ");
+    Int_t n = cells->GetEntries();
+    Int_t *tcs = new Int_t[n];
+    for (Int_t i=0;i<n;++i) {
+      TString name(cells->At(i)->GetName());
+      tcs[i]=name.Atoi();
+    }
+    for (Int_t i = 0; i<n; ++i) {
       Int_t c=tcs[i];
       if (c<24*48*nsm) {
-        fHCellCheckE[i] = new TH1F(Form("hCellE_id%d",c), Form("Cell %d;E [GeV/c];#",c), 500, 0, 8);
+        fHCellCheckE[i] = new TH1F(Form("hCellE_id%d",c), Form("Cell %d;E [GeV/c];#",c), 1000, 0, 10);
         fOutput->Add(fHCellCheckE[i]);
       }
     }
+    delete cells;
+    delete [] tcs;
   }
 
   // histograms for clusters
-  fHClustEccentricity = new TH1F("hClustEccentricity","",100,-0.1,1.1);
-  fHClustEccentricity->SetXTitle("#epsilon_{C}");
-  fOutput->Add(fHClustEccentricity);
-  fHClustEtaPhi = new TH2F("hClustEtaPhi","",500,-0.8,0.8,100*nsm,phimin,phimax);
-  fHClustEtaPhi->SetXTitle("#eta");
-  fHClustEtaPhi->SetYTitle("#varphi");
-  fOutput->Add(fHClustEtaPhi);
-  fHClustEnergyPt = new TH2F("hClustEnergyPt","",250,0,50,250,0,50);
-  fHClustEnergyPt->SetXTitle("E [GeV]");
-  fHClustEnergyPt->SetYTitle("p_{T} [GeV/c]");
-  fOutput->Add(fHClustEnergyPt);
-  fHClustEnergySigma = new TH2F("hClustEnergySigma","",100,0,100,500,0,50);
-  fHClustEnergySigma->SetXTitle("E_{C} * #sigma_{max} [GeV*cm]");
-  fHClustEnergySigma->SetYTitle("E_{C} [GeV]");
-  fOutput->Add(fHClustEnergySigma);
-  fHClustSigmaSigma = new TH2F("hClustSigmaSigma","",500,0,50,500,0,50);
-  fHClustSigmaSigma->SetXTitle("#lambda_{0} [cm]");
-  fHClustSigmaSigma->SetYTitle("#sigma_{max} [cm]");
-  fOutput->Add(fHClustSigmaSigma);
-  fHClustNCellEnergyRatio = new TH2F("hClustNCellEnergyRatio","",27,-0.5,26.5,101,-0.05,1.05);
-  fHClustNCellEnergyRatio->SetXTitle("N_{cells}");
-  fHClustNCellEnergyRatio->SetYTitle("E^{max}_{cell}/E_{clus}");
-  fOutput->Add(fHClustNCellEnergyRatio);
+  if (!fTrainMode) {
+    fHClustEccentricity = new TH1F("hClustEccentricity","",100,-0.1,1.1);
+    fHClustEccentricity->SetXTitle("#epsilon_{C}");
+    fOutput->Add(fHClustEccentricity);
+    fHClustEtaPhi = new TH2F("hClustEtaPhi","",500,-0.8,0.8,100*nsm,phimin,phimax);
+    fHClustEtaPhi->SetXTitle("#eta");
+    fHClustEtaPhi->SetYTitle("#varphi");
+    fOutput->Add(fHClustEtaPhi);
+    fHClustEnergyPt = new TH2F("hClustEnergyPt","",250,0,50,250,0,50);
+    fHClustEnergyPt->SetXTitle("E [GeV]");
+    fHClustEnergyPt->SetYTitle("p_{T} [GeV/c]");
+    fOutput->Add(fHClustEnergyPt);
+    fHClustEnergySigma = new TH2F("hClustEnergySigma","",100,0,100,500,0,50);
+    fHClustEnergySigma->SetXTitle("E_{C} * #sigma_{max} [GeV*cm]");
+    fHClustEnergySigma->SetYTitle("E_{C} [GeV]");
+    fOutput->Add(fHClustEnergySigma);
+    fHClustSigmaSigma = new TH2F("hClustSigmaSigma","",500,0,50,500,0,50);
+    fHClustSigmaSigma->SetXTitle("#lambda_{0} [cm]");
+    fHClustSigmaSigma->SetYTitle("#sigma_{max} [cm]");
+    fOutput->Add(fHClustSigmaSigma);
+    fHClustNCellEnergyRatio = new TH2F("hClustNCellEnergyRatio","",27,-0.5,26.5,101,-0.05,1.05);
+    fHClustNCellEnergyRatio->SetXTitle("N_{cells}");
+    fHClustNCellEnergyRatio->SetYTitle("E^{max}_{cell}/E_{clus}");
+    fOutput->Add(fHClustNCellEnergyRatio);
+  }
 
   // histograms for track matching
   fHMatchDr = new TH1F("hMatchDrDist",";dR [cm]",500,0,200);
@@ -319,36 +348,39 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fOutput->Add(fHMatchDz);
   fHMatchEp = new TH1F("hMatchEpDist",";E/p",100,0,10);
   fOutput->Add(fHMatchEp);
+
   // histograms for pion candidates
-  fHPionEtaPhi = new TH2F("hPionEtaPhi","",100,-0.8,0.8,100*nsm,phimin,phimax);
-  fHPionEtaPhi->SetXTitle("#eta_{#gamma#gamma}");
-  fHPionEtaPhi->SetYTitle("#varphi_{#gamma#gamma}");
-  fOutput->Add(fHPionEtaPhi);
-  fHPionMggPt = new TH2F("hPionMggPt","",1000,0,2,100,0,20.0);
-  fHPionMggPt->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-  fHPionMggPt->SetYTitle("p_{T}^{#gamma#gamma} [GeV/c]");
-  fOutput->Add(fHPionMggPt);
-  fHPionMggAsym = new TH2F("hPionMggAsym","",1000,0,2,100,0,1);
-  fHPionMggAsym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-  fHPionMggAsym->SetYTitle("Z_{#gamma#gamma} [GeV]");
-  fOutput->Add(fHPionMggAsym);
-  fHPionMggDgg = new TH2F("hPionMggDgg","",1000,0,2,100,0,10);
-  fHPionMggDgg->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-  fHPionMggDgg->SetYTitle("opening angle [grad]");
-  fOutput->Add(fHPionMggDgg);
-  const Int_t nbins = 20; 
-  Double_t xbins[nbins] = {0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,8,9,10,12.5,15,20,25,50};
-  fPtRanges = new TAxis(nbins-1,xbins);
-  for (Int_t i = 0; i<=nbins; ++i) {
-    fHPionInvMasses[i] = new TH1F(Form("hPionInvMass%d",i),"",1000,0,2);
-    fHPionInvMasses[i]->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-    if (i==0)
-      fHPionInvMasses[i]->SetTitle(Form("0 < p_{T}^{#gamma#gamma} <%.1f",xbins[0]));
-    else if (i==nbins)
-      fHPionInvMasses[i]->SetTitle(Form("p_{T}^{#gamma#gamma} > 50"));
-    else 
-      fHPionInvMasses[i]->SetTitle(Form("%.1f < p_{T}^{#gamma#gamma} <%.1f",xbins[i-1],xbins[i]));
-    fOutput->Add(fHPionInvMasses[i]);
+  if (!fTrainMode) {
+    fHPionEtaPhi = new TH2F("hPionEtaPhi","",100,-0.8,0.8,100*nsm,phimin,phimax);
+    fHPionEtaPhi->SetXTitle("#eta_{#gamma#gamma}");
+    fHPionEtaPhi->SetYTitle("#varphi_{#gamma#gamma}");
+    fOutput->Add(fHPionEtaPhi);
+    fHPionMggPt = new TH2F("hPionMggPt","",1000,0,2,100,0,20.0);
+    fHPionMggPt->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+    fHPionMggPt->SetYTitle("p_{T}^{#gamma#gamma} [GeV/c]");
+    fOutput->Add(fHPionMggPt);
+    fHPionMggAsym = new TH2F("hPionMggAsym","",1000,0,2,100,0,1);
+    fHPionMggAsym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+    fHPionMggAsym->SetYTitle("Z_{#gamma#gamma} [GeV]");
+    fOutput->Add(fHPionMggAsym);
+    fHPionMggDgg = new TH2F("hPionMggDgg","",1000,0,2,100,0,10);
+    fHPionMggDgg->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+    fHPionMggDgg->SetYTitle("opening angle [grad]");
+    fOutput->Add(fHPionMggDgg);
+    const Int_t nbins = 20; 
+    Double_t xbins[nbins] = {0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,8,9,10,12.5,15,20,25,50};
+    fPtRanges = new TAxis(nbins-1,xbins);
+    for (Int_t i = 0; i<=nbins; ++i) {
+      fHPionInvMasses[i] = new TH1F(Form("hPionInvMass%d",i),"",1000,0,2);
+      fHPionInvMasses[i]->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+      if (i==0)
+        fHPionInvMasses[i]->SetTitle(Form("0 < p_{T}^{#gamma#gamma} <%.1f",xbins[0]));
+      else if (i==nbins)
+        fHPionInvMasses[i]->SetTitle(Form("p_{T}^{#gamma#gamma} > 50"));
+      else 
+        fHPionInvMasses[i]->SetTitle(Form("%.1f < p_{T}^{#gamma#gamma} <%.1f",xbins[i-1],xbins[i]));
+      fOutput->Add(fHPionInvMasses[i]);
+    }
   }
 
   PostData(1, fOutput); 
@@ -577,18 +609,24 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   if (fDoAfterburner)
     ClusterAfterburner();
 
-  CalcTracks();
+  CalcCaloTriggers();
   CalcPrimTracks();
+  CalcTracks();
   CalcClusterProps();
 
   FillCellHists();
-  FillClusHists();
-  FillPionHists();
-  FillOtherHists();
+  if (!fTrainMode) {
+    FillClusHists();
+    FillPionHists();
+    FillOtherHists();
+  }
   FillNtuple();
 
-  fSelTracks->Clear();
-  fSelPrimTracks->Clear();
+  if (fTrainMode) {
+    fSelTracks->Clear();
+    fSelPrimTracks->Clear();
+    fTriggers->Clear();
+  }
 
   PostData(1, fOutput);
 }      
@@ -608,63 +646,278 @@ void AliAnalysisTaskEMCALPi0PbPb::Terminate(Option_t *)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEMCALPi0PbPb::CalcTracks()
+void AliAnalysisTaskEMCALPi0PbPb::CalcCaloTriggers()
 {
-  // Calculate track properties (including secondaries).
+  // Calculate triggers
 
-  fSelTracks->Clear();
+  fTriggers->Clear();
 
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-  TClonesArray *tracks = 0;
-  if (fEsdEv) {
-    am->LoadBranch("Tracks");
-    TList *l = fEsdEv->GetList();
-    tracks = dynamic_cast<TClonesArray*>(l->FindObject("Tracks"));
-  } else {
-    am->LoadBranch("tracks");
-    TList *l = fAodEv->GetList();
-    tracks = dynamic_cast<TClonesArray*>(l->FindObject("tracks"));
-  }
-
-  if (!tracks)
+  AliVCaloCells *cells = fEsdCells;
+  if (!cells)
+    cells = fAodCells;
+  if (!cells)
     return;
 
-  if (fEsdEv) {
-    const Int_t Ntracks = tracks->GetEntries();
-    for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
-      AliESDtrack *track = static_cast<AliESDtrack*>(tracks->At(iTracks));
-      if (!track) {
-        AliWarning(Form("Could not receive track %d\n", iTracks));
-        continue;
-      }
-      if (fTrCuts && !fTrCuts->IsSelected(track))
-        continue;
-      Double_t eta = track->Eta();
-      if (eta<-1||eta>1)
-        continue;
-      fSelTracks->Add(track);
+  Int_t ncells = cells->GetNumberOfCells();
+  if (ncells<=0)
+    return;
+
+  if (ncells>fNAmpInTrigger) {
+    delete [] fAmpInTrigger;
+    fAmpInTrigger = new Float_t[ncells];
+    fNAmpInTrigger = ncells;
+  }
+  for (Int_t i=0;i<ncells;++i)
+    fAmpInTrigger[i] = 0;
+
+  std::map<Short_t,Short_t> map;
+  for (Short_t pos=0;pos<ncells;++pos) {
+    Short_t id = cells->GetCellNumber(pos);
+    map[id]=pos;
+  }
+
+  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+  am->LoadBranch("EMCALTrigger.");
+
+  AliESDCaloTrigger *triggers = fEsdEv->GetCaloTrigger("EMCAL");
+  if (!triggers)
+    return;
+  if (triggers->GetEntries()<=0)
+    return;
+
+  triggers->Reset();
+  Int_t ntrigs=0;
+  while (triggers->Next()) {
+    Int_t gCol=0, gRow=0, ntimes=0;
+    triggers->GetPosition(gCol,gRow);
+    triggers->GetNL0Times(ntimes);
+    if (ntimes<1)
+      continue;
+    Float_t amp=0;
+    triggers->GetAmplitude(amp);
+    Int_t find = -1;
+    fGeom->GetAbsFastORIndexFromPositionInEMCAL(gCol,gRow,find);
+    if (find<0)
+      continue;
+    Int_t cidx[4] = {-1};
+    Bool_t ret = fGeom->GetCellIndexFromFastORIndex(find, cidx);
+    if (!ret)
+      continue;
+    Int_t trgtimes[25];
+    triggers->GetL0Times(trgtimes);
+    Int_t mintime = trgtimes[0];
+    Int_t maxtime = trgtimes[0];
+    Bool_t trigInTimeWindow = 0;
+    for (Int_t i=0;i<ntimes;++i) {
+      if (trgtimes[i]<mintime)
+        mintime = trgtimes[i]; 
+      if (maxtime<trgtimes[i])
+        maxtime = trgtimes[i]; 
+      if ((fMinL0Time<trgtimes[i]) && (fMaxL0Time>trgtimes[i]))
+        trigInTimeWindow = 1;
     }
-  } else {
-    Int_t ntracks = tracks->GetEntries();
-    for (Int_t i=0; i<ntracks; ++i) {
-      AliAODTrack *track = static_cast<AliAODTrack*>(tracks->At(i));
+
+    Double_t tenergy = 0;
+    Double_t tphi=0;
+    Double_t teta=0;
+    for (Int_t i=0;i<3;++i) {
+      Short_t pos = -1;
+      std::map<Short_t,Short_t>::iterator it = map.find(cidx[i]);
+      if (it!=map.end())
+        pos = it->second;
+      if (pos<0)
+        continue;
+      if (trigInTimeWindow)
+        fAmpInTrigger[pos] = amp; // save for usage in CalcClusProperties
+      Float_t eta=-1, phi=-1;
+      fGeom->EtaPhiFromIndex(cidx[i],eta,phi);
+      Double_t en= cells->GetAmplitude(pos);
+      tenergy+=en;
+      teta+=eta*en;
+      tphi+=phi*en;
+    }
+    teta/=tenergy;
+    tphi/=tenergy;
+    AliStaTrigger *trignew = static_cast<AliStaTrigger*>(fTriggers->New(ntrigs++));
+    trignew->fE       = tenergy;
+    trignew->fEta     = teta;
+    trignew->fPhi     = tphi;
+    trignew->fAmp     = amp;
+    trignew->fMinTime = mintime;
+    trignew->fMaxTime = maxtime;
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
+{
+  // Calculate cluster properties
+
+  fClusters->Clear();
+
+  AliVCaloCells *cells = fEsdCells;
+  if (!cells)
+    cells = fAodCells;
+  if (!cells)
+    return;
+
+  TObjArray *clusters = fEsdClusters;
+  if (!clusters)
+    clusters = fAodClusters;
+  if (!clusters)
+    return;
+
+  Int_t ncells = cells->GetNumberOfCells();
+  Int_t nclus  = clusters->GetEntries();
+  Int_t ntrks  = fSelTracks->GetEntries();
+  Bool_t btracks[6][ntrks];
+  memset(btracks,0,sizeof(btracks));
+
+  std::map<Short_t,Short_t> map;
+  for (Short_t pos=0;pos<ncells;++pos) {
+    Short_t id = cells->GetCellNumber(pos);
+    map[id]=pos;
+  }
+
+  for(Int_t i=0, ncl=0; i<nclus; ++i) {
+    AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
+    if (!clus)
+      continue;
+    if (!clus->IsEMCAL())
+      continue;
+    if (clus->E()<fMinE)
+      continue;
+
+    Float_t clsPos[3] = {0};
+    clus->GetPosition(clsPos);
+    TVector3 clsVec(clsPos);
+    Double_t vertex[3] = {0};
+    InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+    TLorentzVector clusterVec;
+    clus->GetMomentum(clusterVec,vertex);
+    Double_t clsEta = clusterVec.Eta();
+
+    AliStaCluster *cl = static_cast<AliStaCluster*>(fClusters->New(ncl++));
+    cl->fE        = clus->E();
+    cl->fR        = clsVec.Perp();
+    cl->fEta      = clsVec.Eta();
+    cl->fPhi      = clsVec.Phi();
+    cl->fN        = clus->GetNCells();
+    cl->fN1       = GetNCells(clus,0.100);
+    cl->fN3       = GetNCells(clus,0.300);
+    Short_t id    = -1;
+    Double_t emax = GetMaxCellEnergy(clus, id);
+    cl->fIdMax    = id;
+    cl->fEmax     = emax;
+    if (clus->GetDistanceToBadChannel()<10000)
+      cl->fDbc    = clus->GetDistanceToBadChannel();
+    if (!TMath::IsNaN(clus->GetDispersion()))
+      cl->fDisp   = clus->GetDispersion();
+    if (!TMath::IsNaN(clus->GetM20()))
+      cl->fM20      = clus->GetM20();
+    if (!TMath::IsNaN(clus->GetM02()))
+      cl->fM02      = clus->GetM02();
+    Double_t maxAxis = 0, minAxis = 0;
+    GetSigma(clus,maxAxis,minAxis);
+    clus->SetTOF(maxAxis);     // store sigma in TOF
+    cl->fSig      = maxAxis;
+    Double_t clusterEcc = 0;
+    if (maxAxis > 0)
+      clusterEcc = TMath::Sqrt(1.0 - minAxis*minAxis/(maxAxis*maxAxis));
+    clus->SetChi2(clusterEcc); // store ecc in chi2
+    cl->fEcc      = clusterEcc;
+    cl->fTrIso    = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist);
+    cl->fTrIso1   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist, 1);
+    cl->fTrIso2   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist, 2);
+    cl->fCeCore   = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),0.05);
+    cl->fCeIso    = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),fIsoDist);
+    Double_t trigpen = 0;
+    Double_t trignen = 0;
+    for(Int_t j=0; j<cl->fN; ++j) {
+      Short_t cid = TMath::Abs(clus->GetCellAbsId(j));
+      Short_t pos = -1;
+      std::map<Short_t,Short_t>::iterator it = map.find(cid);
+      if (it!=map.end())
+        pos = it->second;
+      if (pos<0)
+        continue;
+      if (fAmpInTrigger[pos]>0)
+        trigpen += cells->GetAmplitude(pos);
+      else if (fAmpInTrigger[pos]<0)
+        trignen += cells->GetAmplitude(pos);
+    }
+    if (trigpen>0) {
+      cl->fTrigM = 1;
+      cl->fTrigE = trigpen;      
+    }
+    if (trignen>0) {
+      cl->fTrigM     = 1;
+      cl->fTrigMaskE = trignen;      
+    }
+
+    // track matching
+    Double_t mind2 = 1e10;
+    for(Int_t j = 0; j<ntrks; ++j) {
+      AliVTrack *track = static_cast<AliVTrack*>(fSelTracks->At(j));
       if (!track)
         continue;
-      Double_t eta = track->Eta();
-      if (eta<-1||eta>1)
-        continue;
-      if(track->GetTPCNcls()<fMinNClusPerTr)
+
+      if (TMath::Abs(clsEta-track->Eta())>0.5)
         continue;
 
-      if (0 && (track->Pt()>=0.6) && (track->PxAtDCA()==-999)) { // compute position on EMCAL 
-        AliExternalTrackParam tParam(track);
-        if (AliTrackerBase::PropagateTrackToBxByBz(&tParam, 438, 0.139, 1, kTRUE)) {
-          Double_t trkPos[3];
-          tParam.GetXYZ(trkPos);
-          track->SetPxPyPzAtDCA(trkPos[0],trkPos[1],trkPos[2]);
-        }
+      TVector3 vec(clsPos);
+      Int_t index =  (Int_t)(vec.Phi()*TMath::RadToDeg()/20);
+      if (btracks[index-4][j]) {
+        continue;
       }
-      fSelTracks->Add(track);
+
+      Float_t tmpR=-1, tmpZ=-1;
+      if (!fDoTrMatGeom) {
+        AliExternalTrackParam *tParam = 0;
+        if (fEsdEv) {
+          AliESDtrack *esdTrack = static_cast<AliESDtrack*>(track);
+          tParam = new AliExternalTrackParam(*esdTrack->GetTPCInnerParam());
+        } else 
+          tParam = new AliExternalTrackParam(track);
+
+        Double_t bfield[3] = {0};
+        track->GetBxByBz(bfield);
+        Double_t alpha = (index+0.5)*20*TMath::DegToRad();
+        vec.RotateZ(-alpha);   //Rotate the cluster to the local extrapolation coordinate system
+        tParam->Rotate(alpha); //Rotate the track to the same local extrapolation system
+        Bool_t ret = tParam->PropagateToBxByBz(vec.X(), bfield);
+        if (!ret) {
+          btracks[index-4][j]=1;
+          delete tParam;
+          continue;
+        }
+        Double_t trkPos[3] = {0};
+        tParam->GetXYZ(trkPos); //Get the extrapolated global position
+        tmpR = TMath::Sqrt( TMath::Power(clsPos[0]-trkPos[0],2)+TMath::Power(clsPos[1]-trkPos[1],2)+TMath::Power(clsPos[2]-trkPos[2],2) );
+        tmpZ = clsPos[2]-trkPos[2];
+        delete tParam;
+      } else {
+        if (TMath::Abs(clsEta-track->Eta())>fIsoDist)
+          continue;
+        AliExternalTrackParam tParam(track);
+        if (!fReco->ExtrapolateTrackToCluster(&tParam, clus, tmpR, tmpZ))
+          continue;
+      }
+
+      Double_t d2 = tmpR;
+      if (mind2>d2) {
+        mind2=d2;
+        cl->fTrDz   = tmpZ;
+        cl->fTrDr   = TMath::Sqrt(tmpR*tmpR-tmpZ*tmpZ);
+        cl->fTrEp   = clus->E()/track->P();
+        cl->fTrackM = 1;
+      }
+    }
+    
+    if (cl->fTrackM) {
+      fHMatchDr->Fill(cl->fTrDr);
+      fHMatchDz->Fill(cl->fTrDz);
+      fHMatchEp->Fill(cl->fTrEp);
     }
   }
 }
@@ -778,123 +1031,69 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcPrimTracks()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
+void AliAnalysisTaskEMCALPi0PbPb::CalcTracks()
 {
-  // Calculate cluster properties
+  // Calculate track properties (including secondaries).
 
-  TObjArray *clusters = fEsdClusters;
-  if (!clusters)
-    clusters = fAodClusters;
-  if (!clusters)
+  fSelTracks->Clear();
+
+  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+  TClonesArray *tracks = 0;
+  if (fEsdEv) {
+    am->LoadBranch("Tracks");
+    TList *l = fEsdEv->GetList();
+    tracks = dynamic_cast<TClonesArray*>(l->FindObject("Tracks"));
+  } else {
+    am->LoadBranch("tracks");
+    TList *l = fAodEv->GetList();
+    tracks = dynamic_cast<TClonesArray*>(l->FindObject("tracks"));
+  }
+
+  if (!tracks)
     return;
 
-  Int_t nclus = clusters->GetEntries();
-  Int_t ntrks = fSelTracks->GetEntries();
-
-  Bool_t btracks[6][ntrks];
-  memset(btracks,0,sizeof(btracks));
-
-  for(Int_t i = 0; i<nclus; ++i) {
-    fClusProps[i].Reset();
-
-    AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
-    if (!clus)
-      continue;
-    if (!clus->IsEMCAL())
-      continue;
-    if (clus->E()<fMinE)
-      continue;
-
-    Float_t clsPos[3] = {0};
-    clus->GetPosition(clsPos);
-    TVector3 clsVec(clsPos);
-    Double_t vertex[3] = {0};
-    InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
-    TLorentzVector clusterVec;
-    clus->GetMomentum(clusterVec,vertex);
-    Double_t clsEta = clusterVec.Eta();
-
-    Double_t mind2 = 1e10;
-    for(Int_t j = 0; j<ntrks; ++j) {
-      AliVTrack *track = static_cast<AliVTrack*>(fSelTracks->At(j));
+  if (fEsdEv) {
+    const Int_t Ntracks = tracks->GetEntries();
+    for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
+      AliESDtrack *track = static_cast<AliESDtrack*>(tracks->At(iTracks));
+      if (!track) {
+        AliWarning(Form("Could not receive track %d\n", iTracks));
+        continue;
+      }
+      if (fTrCuts && !fTrCuts->IsSelected(track))
+        continue;
+      Double_t eta = track->Eta();
+      if (eta<-1||eta>1)
+        continue;
+      fSelTracks->Add(track);
+    }
+  } else {
+    Int_t ntracks = tracks->GetEntries();
+    for (Int_t i=0; i<ntracks; ++i) {
+      AliAODTrack *track = static_cast<AliAODTrack*>(tracks->At(i));
       if (!track)
         continue;
-
-      if (TMath::Abs(clsEta-track->Eta())>0.5)
+      Double_t eta = track->Eta();
+      if (eta<-1||eta>1)
+        continue;
+      if(track->GetTPCNcls()<fMinNClusPerTr)
         continue;
 
-      TVector3 vec(clsPos);
-      Int_t index =  (Int_t)(vec.Phi()*TMath::RadToDeg()/20);
-      if (btracks[index-4][j]) {
-        continue;
-      }
-
-      Float_t tmpR=-1, tmpZ=-1;
-      if (!fDoTrMatGeom) {
-        AliExternalTrackParam *tParam = 0;
-        if (fEsdEv) {
-          AliESDtrack *esdTrack = static_cast<AliESDtrack*>(track);
-          tParam = new AliExternalTrackParam(*esdTrack->GetTPCInnerParam());
-        } else 
-          tParam = new AliExternalTrackParam(track);
-
-        Double_t bfield[3] = {0};
-        track->GetBxByBz(bfield);
-        Double_t alpha = (index+0.5)*20*TMath::DegToRad();
-        vec.RotateZ(-alpha);   //Rotate the cluster to the local extrapolation coordinate system
-        tParam->Rotate(alpha); //Rotate the track to the same local extrapolation system
-        Bool_t ret = tParam->PropagateToBxByBz(vec.X(), bfield);
-        if (!ret) {
-          btracks[index-4][j]=1;
-          delete tParam;
-          continue;
-        }
-        Double_t trkPos[3] = {0};
-        tParam->GetXYZ(trkPos); //Get the extrapolated global position
-        tmpR = TMath::Sqrt( TMath::Power(clsPos[0]-trkPos[0],2)+TMath::Power(clsPos[1]-trkPos[1],2)+TMath::Power(clsPos[2]-trkPos[2],2) );
-        tmpZ = clsPos[2]-trkPos[2];
-        delete tParam;
-      } else {
-        if (TMath::Abs(clsEta-track->Eta())>fIsoDist)
-          continue;
+      if (0 && (track->Pt()>=0.6) && (track->PxAtDCA()==-999)) { // compute position on EMCAL 
         AliExternalTrackParam tParam(track);
-        if (!fReco->ExtrapolateTrackToCluster(&tParam, clus, tmpR, tmpZ))
-          continue;
+        if (AliTrackerBase::PropagateTrackToBxByBz(&tParam, 438, 0.139, 1, kTRUE)) {
+          Double_t trkPos[3];
+          tParam.GetXYZ(trkPos);
+          track->SetPxPyPzAtDCA(trkPos[0],trkPos[1],trkPos[2]);
+        }
       }
-
-      Double_t d2 = tmpR;
-      if (mind2>d2) {
-        mind2=d2;
-        fClusProps[i].fTrIndex = j;
-        fClusProps[i].fTrDz    = tmpZ;
-        fClusProps[i].fTrDr    = TMath::Sqrt(tmpR*tmpR-tmpZ*tmpZ);
-        fClusProps[i].fTrDist  = d2;
-        fClusProps[i].fTrEp    = clus->E()/track->P();
-        fClusProps[i].fPhiInd  = index;
-      }
+      fSelTracks->Add(track);
     }
-    
-    if (fClusProps[i].fTrIndex>=0) {
-      Int_t tid = fClusProps[i].fTrIndex;
-      if ( (btracks[0][tid] && fClusProps[i].fPhiInd==0) ||
-           (btracks[1][tid] && fClusProps[i].fPhiInd==1) ) {
-        cout << i << " " << tid << ": Dr " << fClusProps[i].fTrDr << " " << " Dz " << fClusProps[i].fTrDz << endl;
-        cout << btracks[0][tid] << " " << btracks[1][tid] << endl;
-      }
-      fHMatchDr->Fill(fClusProps[i].fTrDr);
-      fHMatchDz->Fill(fClusProps[i].fTrDz);
-      fHMatchEp->Fill(fClusProps[i].fTrEp);
-    }
-
-    fClusProps[i].fTrIso   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist);
-    fClusProps[i].fTrIso1  = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist, 1);
-    fClusProps[i].fTrIso2  = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist, 2);
-    fClusProps[i].fCellIso = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),fIsoDist);
   }
 }
 
 //________________________________________________________________________
-void  AliAnalysisTaskEMCALPi0PbPb::ClusterAfterburner()
+void AliAnalysisTaskEMCALPi0PbPb::ClusterAfterburner()
 {
   // Run custer reconstruction afterburner.
 
@@ -1029,6 +1228,15 @@ void AliAnalysisTaskEMCALPi0PbPb::FillCellHists()
     if (fHCellCheckE && fHCellCheckE[absID])
       fHCellCheckE[absID]->Fill(cellE);
     fHCellFreqE[iSM]->Fill(absID, cellE);
+    if (1) {
+      //todo
+      TVector3 pos;
+      fGeom->GetGlobal(absID,pos);
+      Int_t id2 = fGeom-> GetAbsCellIdFromCellIndexes(iSM, iPhi+1,iEta+1);
+      TVector3 pos2;
+      fGeom->GetGlobal(id2,pos2);
+      cout << "delta phi " << pos.DeltaPhi(pos2) << " " << TMath::Abs(pos2.Eta()-pos.Eta()) << endl;
+    }
   }    
   fHCellH->Fill(cellMaxE);
   cellMeanE /= ncells;
@@ -1061,13 +1269,8 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
       continue;
     TLorentzVector clusterVec;
     clus->GetMomentum(clusterVec,vertex);
-    Double_t maxAxis = 0, minAxis = 0;
-    GetSigma(clus,maxAxis,minAxis);
-    clus->SetTOF(maxAxis);     // store sigma in TOF
-    Double_t clusterEcc = 0;
-    if (maxAxis > 0)
-      clusterEcc = TMath::Sqrt(1.0 - minAxis*minAxis/(maxAxis*maxAxis));
-    clus->SetChi2(clusterEcc); // store ecc in chi2
+    Double_t maxAxis    = clus->GetTOF(); //sigma
+    Double_t clusterEcc = clus->Chi2();   //eccentricity
     fHClustEccentricity->Fill(clusterEcc); 
     fHClustEtaPhi->Fill(clusterVec.Eta(),clusterVec.Phi());
     fHClustEnergyPt->Fill(clusterVec.E(),clusterVec.Pt());
@@ -1155,52 +1358,6 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
     FillVertex(fTpcVert, tv);
   }
 
-  TObjArray *clusters = fEsdClusters;
-  if (!clusters)
-    clusters = fAodClusters;
-  if (!clusters)
-    return;
-
-  fClusters->Clear();
-  Int_t nclus = clusters->GetEntries();
-  for(Int_t i=0,ncl=0; i<nclus; ++i) {
-    AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
-    if (!clus)
-      continue;
-    if (!clus->IsEMCAL()) 
-      continue;
-    if (clus->E()<fMinE)
-      continue;
-
-    AliStaCluster *cl = static_cast<AliStaCluster*>(fClusters->New(ncl++));
-    cl->fE        = clus->E();
-    Float_t pos[3];
-    clus->GetPosition(pos);
-    TVector3 vpos(pos);
-    cl->fR        = vpos.Perp();
-    cl->fEta      = vpos.Eta();
-    cl->fPhi      = vpos.Phi();
-    cl->fN        = clus->GetNCells();
-    cl->fN1       = GetNCells(clus,0.100);
-    cl->fN3       = GetNCells(clus,0.300);
-    Short_t id    = -1;
-    Double_t emax = GetMaxCellEnergy(clus, id);
-    cl->fIdMax    = id;
-    cl->fEmax     = emax;
-    cl->fDbc      = clus->GetDistanceToBadChannel();;
-    cl->fDisp     = clus->GetDispersion();
-    cl->fM20      = clus->GetM20();
-    cl->fM02      = clus->GetM02();
-    cl->fEcc      = clus->Chi2();   //eccentricity
-    cl->fSig      = clus->GetTOF(); //sigma
-    cl->fTrDz     = fClusProps[i].fTrDz;
-    cl->fTrDr     = fClusProps[i].fTrDr;;
-    cl->fTrEp     = fClusProps[i].fTrEp;;
-    cl->fTrIso    = fClusProps[i].fTrIso;
-    cl->fTrIso1   = fClusProps[i].fTrIso1;
-    cl->fTrIso2   = fClusProps[i].fTrIso2;
-    cl->fCeIso    = fClusProps[i].fCellIso;
-  }
   fNtuple->Fill();
 }
 
@@ -1385,11 +1542,11 @@ void AliAnalysisTaskEMCALPi0PbPb::GetSigma(AliVCluster *c, Double_t& sigmaMax, D
   if (ncells==1)
     return;
 
-  TVector3 pos;
   for(Int_t j=0; j<ncells; ++j) {
     Int_t id = TMath::Abs(c->GetCellAbsId(j));
-    fGeom->GetGlobal(id,pos);
     Double_t cellen = cells->GetCellAmplitude(id);
+    TVector3 pos;
+    fGeom->GetGlobal(id,pos);
     Xc  += cellen*pos.X();
     Yc  += cellen*pos.Y();    
     Sxx += cellen*pos.X()*pos.X(); 
@@ -1458,3 +1615,5 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetTrackIsolation(Double_t cEta, Double_t 
   } 
   return trkIsolation;
 }
+
+
