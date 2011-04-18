@@ -46,7 +46,7 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0, 
   // Configure analysis
   //===========================================================================
 
-  AliAnalysisTaskCaloCellsQA* task = new AliAnalysisTaskCaloCellsQA();
+  AliAnalysisTaskCaloCellsQA* task = new AliAnalysisTaskCaloCellsQA("AliAnalysisTaskCaloCellsQA");
   mgr->AddTask(task);
 
   // initialize geometry
