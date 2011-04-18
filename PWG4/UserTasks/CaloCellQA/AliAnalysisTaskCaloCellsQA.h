@@ -26,8 +26,9 @@ public:
 // ,kDCAL  = 2      // not implemented
   };
 
-   AliAnalysisTaskCaloCellsQA(const char *name = "AliAnalysisTaskCaloCellsQA");
-   ~AliAnalysisTaskCaloCellsQA();
+  AliAnalysisTaskCaloCellsQA(); 
+  AliAnalysisTaskCaloCellsQA(const char *name);
+  virtual ~AliAnalysisTaskCaloCellsQA();
 
   void   InitCaloCellsQA(char* fname, Int_t nmods = 10, Int_t det = kEMCAL);
   void   UserCreateOutputObjects();

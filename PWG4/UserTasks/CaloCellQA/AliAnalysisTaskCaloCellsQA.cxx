@@ -38,6 +38,16 @@
 ClassImp(AliAnalysisTaskCaloCellsQA)
 
 //________________________________________________________________
+AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA() : AliAnalysisTaskSE(),
+  fkAvoidPileup(kTRUE),
+  fCellsQA(0),
+  fOutfile(new TString),
+  fBadCells(0),
+  fNBad(0)
+{
+}
+
+//________________________________________________________________
 AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA(const char *name) : AliAnalysisTaskSE(name),
   fkAvoidPileup(kTRUE),
   fCellsQA(0),
