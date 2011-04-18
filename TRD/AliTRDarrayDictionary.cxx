@@ -265,7 +265,7 @@ void AliTRDarrayDictionary::Compress()
       delete [] longArr;
       longArr=0;
     }
-
+  fFlag=kFALSE; // This way it can be expanded afterwards
 }
 
 //________________________________________________________________________________

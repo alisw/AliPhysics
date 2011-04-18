@@ -49,10 +49,10 @@ class AliTRDarrayDictionary: public TObject
   Int_t   fNtime;       //Number of time bins
   Int_t   fNDdim;       //Dimension of the Dictionary array
   Int_t*  fDictionary;  //[fNDdim]  //Pointer to integers array
-  Bool_t  fFlag;        // Has Expand() being called before?
+  Bool_t  fFlag;        //! Has Expand() being called before?
   static Short_t *fgLutPadNumbering;   //  [fNcol] Look Up Table
 
-  ClassDef(AliTRDarrayDictionary,6) //Dictionary container class
+  ClassDef(AliTRDarrayDictionary,7) //Dictionary container class
     
 };
 #endif
