@@ -250,10 +250,10 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fHVertexZ2 = new TH1F("hVertexZAfterCut","",100,-25,25);
   fHVertexZ2->SetXTitle("z [cm]");
   fOutput->Add(fHVertexZ2);
-  fHCent = new TH1F("hCentBeforeCut","",101,-1,100);
+  fHCent = new TH1F("hCentBeforeCut","",102,-1,101);
   fHCent->SetXTitle(fCentVar.Data());
   fOutput->Add(fHCent);
-  fHCentQual = new TH1F("hCentAfterCut","",101,-1,100);
+  fHCentQual = new TH1F("hCentAfterCut","",102,-1,101);
   fHCentQual->SetXTitle(fCentVar.Data());
   fOutput->Add(fHCentQual);
   fHTclsBeforeCuts = new TH1F("hTclsBeforeCuts","",fTrClassNamesArr->GetEntries(),0.5,0.5+fTrClassNamesArr->GetEntries());
@@ -740,7 +740,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcCaloTriggers()
         mintime = trgtimes[i]; 
       if (maxtime<trgtimes[i])
         maxtime = trgtimes[i]; 
-      if ((fMinL0Time<trgtimes[i]) && (fMaxL0Time>trgtimes[i]))
+      if ((fMinL0Time<=trgtimes[i]) && (fMaxL0Time>=trgtimes[i]))
         trigInTimeWindow = 1;
     }
 
@@ -1342,7 +1342,8 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
   if (ep) {
     if (ep->GetQVector())
       fHeader->fPsi     = ep->GetQVector()->Phi()/2. ;
-    fHeader->fPsi = -1;
+    else
+      fHeader->fPsi = -1;
     if (ep->GetQsub1()&&ep->GetQsub2())
       fHeader->fPsiRes  = ep->GetQsub1()->Phi()/2.-ep->GetQsub2()->Phi()/2.;
     else 
