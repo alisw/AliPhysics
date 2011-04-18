@@ -362,7 +362,7 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
      fSwitch=kFALSE;
   }
 
-  Double_t bfield = esdOFF->GetMagneticField();
+  //Double_t bfield = esdOFF->GetMagneticField();
  
 //   UInt_t Statusnames[12]={AliESDtrack::kTPCin,
 // 			  AliESDtrack::kITSin,
@@ -411,13 +411,28 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
     if(!(esdtrackHLT->GetStatus()&AliESDtrack::kTPCin)) continue; // only interested in tracks with kTPCin flag
     if(esdtrackHLT->GetTPCNcls()<=0) continue; 
     nr_tracksHLT++;
- 
-    Float_t dca[2];
-    if(vertHLT->GetStatus()==kTRUE){
-       esdtrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), esdHLT->GetPrimaryVertex()->GetZv(), bfield, dca);
-       fDCArHLT->Fill(dca[0]);  
+   
+    Double_t x[3]; 
+    esdtrackHLT->GetXYZ(x);
+    Double_t b[3]; 
+    AliTracker::GetBxByBz(x,b);
+    Bool_t isOK = esdtrackHLT->RelateToVertexTPCBxByBz(vertHLT, b, kVeryBig);
+
+    Float_t dca[2]={0,0}; Float_t cov[3]={0,0,0}; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
+    if(isOK){
+       const AliExternalTrackParam *track = esdtrackHLT->GetTPCInnerParam();
+       if(!track) return;    
+       esdtrackHLT->GetImpactParametersTPC(dca,cov);
+       fDCArHLT->Fill(dca[0]);
        fDCAzHLT->Fill(dca[1]);
     }
+ 
+//     Float_t dca[2];
+//     if(vertHLT->GetStatus()==kTRUE){
+//        esdtrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), esdHLT->GetPrimaryVertex()->GetZv(), bfield, dca);
+//        fDCArHLT->Fill(dca[0]);  
+//        fDCAzHLT->Fill(dca[1]);
+//     }
     
     fChargeHLT->Fill(esdtrackHLT->Charge());
     fNclusterHLT->Fill(esdtrackHLT->GetTPCNcls());
@@ -478,26 +493,24 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
     if(esdtrackOFF->GetTPCNcls()<=0) continue; 
     nr_tracksOff++;
    
-//     Double_t x[3]; 
-//     esdtrackOFF->GetXYZ(x);
-//     Double_t b[3]; 
-//     AliTracker::GetBxByBz(x,b);
-//     Bool_t isOK = esdtrackOFF->RelateToVertexTPCBxByBz(vertOFF, b, kVeryBig);
-//     if(!isOK) return;
-//     
-//     const AliExternalTrackParam *track = esdtrackOFF->GetTPCInnerParam();
-//     if(!track) return;
-//     
-//     Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-//     esdtrackOFF->GetImpactParametersTPC(dca,cov);
-    
-    // calculate the offline DCAs the same way like for HLT. The above way is calculating the DCA for the TPC inner barrel surface
-    Float_t dca[2];
-    if(vertOFF->GetStatus()==kTRUE){
-       esdtrackOFF->GetDZ(esdOFF->GetPrimaryVertex()->GetXv(), esdOFF->GetPrimaryVertex()->GetYv(), esdOFF->GetPrimaryVertex()->GetZv(), bfield, dca);
+    Double_t x[3]; 
+    esdtrackOFF->GetXYZ(x);
+    Double_t b[3]; 
+    AliTracker::GetBxByBz(x,b);
+    Bool_t isOK = esdtrackOFF->RelateToVertexTPCBxByBz(vertOFF, b, kVeryBig);
+    if(isOK){
+       const AliExternalTrackParam *track = esdtrackOFF->GetTPCInnerParam();
+       if(!track) return;    
+       Float_t dca[2]={0,0}; Float_t cov[3]={0,0,0}; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
+       esdtrackOFF->GetImpactParametersTPC(dca,cov);
        fDCArOff->Fill(dca[0]);
        fDCAzOff->Fill(dca[1]);
-   }
+    }
+//     // calculate the offline DCAs the same way like for HLT. The above way is calculating the DCA for the TPC inner barrel surface (Kelly, 17.04.11)
+//     Float_t dca[2];
+//     if(vertOFF->GetStatus()==kTRUE){
+//        esdtrackOFF->GetDZ(esdOFF->GetPrimaryVertex()->GetXv(), esdOFF->GetPrimaryVertex()->GetYv(), esdOFF->GetPrimaryVertex()->GetZv(), bfield, dca);
+//    }
     
     fChargeOff->Fill(esdtrackOFF->Charge());
     fNclusterOff->Fill(esdtrackOFF->GetTPCNcls()); 
