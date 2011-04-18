@@ -28,6 +28,7 @@
 
 #include "AliTRDarrayDictionary.h"
 #include "AliTRDfeeParam.h"
+#include "AliLog.h"
 
 ClassImp(AliTRDarrayDictionary)
 
@@ -64,7 +65,6 @@ AliTRDarrayDictionary::AliTRDarrayDictionary(Int_t nrow, Int_t ncol, Int_t ntime
 		      ,fNDdim(0)
 		      ,fDictionary(0)
                       ,fFlag(kFALSE)
-
 {
   //
   // AliTRDarrayDictionary contructor
@@ -265,7 +265,6 @@ void AliTRDarrayDictionary::Compress()
       delete [] longArr;
       longArr=0;
     }
-  fFlag=kTRUE; // flag to signal compression
 
 }
 
@@ -276,8 +275,16 @@ void AliTRDarrayDictionary::Expand()
   //  Expand the array
   //  
 
+  if(fNDdim==0)
+    {
+      AliError("Called expand with dimension zero");
+      return;    
+    }
+
+
   Int_t dimexp=0;
-  if(!IsCompressed())
+  
+  if(WasExpandCalled()) 
     return;
 
   if(fDictionary&&fNDdim==1)
@@ -289,6 +296,7 @@ void AliTRDarrayDictionary::Expand()
       fNDdim = dimexp;
       // Re-initialize the array
       memset(fDictionary,-1,sizeof(Int_t)*dimexp);
+      fFlag=kTRUE; // Not expand again
       return;
     }
 
@@ -351,8 +359,7 @@ void AliTRDarrayDictionary::Expand()
     {
       delete [] longArr; 
     }
-
-  fFlag=kFALSE; // flag to signal that is not compressed anymore
+  fFlag=kTRUE; // Not expand again
 
 }
 //________________________________________________________________________________
