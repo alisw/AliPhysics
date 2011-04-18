@@ -213,6 +213,9 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
 
   // Covariance matrix (formulas to be simplified)
 
+  if      (TMath::Abs( 1-fP[2]) < kSafe) fP[2] = 1.- kSafe; //Protection
+  else if (TMath::Abs(-1-fP[2]) < kSafe) fP[2] =-1.+ kSafe; //Protection
+
   Double_t pt=1./TMath::Abs(fP[4]);
   Double_t r=TMath::Sqrt((1.-fP[2])*(1.+fP[2]));
 
