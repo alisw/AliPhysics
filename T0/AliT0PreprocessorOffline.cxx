@@ -65,7 +65,7 @@ AliT0PreprocessorOffline::~AliT0PreprocessorOffline()
 //____________________________________________________
 void AliT0PreprocessorOffline::Process(TString filePhysName, Int_t ustartRun, Int_t uendRun, TString pocdbStorage)
 {
-  //  CalibOffsetChannels(filePhysName, ustartRun, uendRun, pocdbStorage);
+  CalibOffsetChannels(filePhysName, ustartRun, uendRun, pocdbStorage);
   CalibT0sPosition(filePhysName, ustartRun, uendRun, pocdbStorage);
 }
 //____________________________________________________
