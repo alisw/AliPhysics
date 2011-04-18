@@ -50,10 +50,10 @@ public:
   void    Exec(Option_t *option);               // Supervising method
 
   Int_t    GetDigitThreshold() const { return fDigitThreshold;}
-  //Float_t GetPedestal()       const { return fPedestal; }
   Float_t  GetPinNoise()       const { return fPinNoise;}
-  //Float_t GetSlope()          const { return fSlope; }
-  Double_t GetTimeResolution() const { return fTimeResolution ; }
+  Float_t GetTimeResolution(const Float_t energy) const;
+  Double_t GetTimeResolutionPar0() const { return fTimeResolutionPar0 ; }
+  Double_t GetTimeResolutionPar1() const { return fTimeResolutionPar1 ; }
   Double_t GetTimeDelay()      const { return fTimeDelay ; }
   Float_t  GetECAchannel()     const { return fADCchannelEC ; }
   Float_t  GetECApedestal()    const { return fADCpedestalEC ; }
@@ -106,13 +106,10 @@ private:
 
   Int_t    fDigitThreshold  ;     // Threshold for storing digits in EMC, ACD units
   Int_t    fMeanPhotonElectron ;  // number of photon electrons per GeV deposited energy 
-  //Float_t fPedestal ;           // Calibration parameters //Not used, remove?
-  //Float_t fSlope ;              // read from SDigitizer   //Not used, remove?
   Float_t  fPinNoise ;            // Electronics noise in EMC
   Double_t fTimeDelay;            // Time delay to reproduce data delay
-  Double_t fTimeResolution ;      // Time resolution of FEE electronics
-  //Float_t fTimeThreshold ;        // Threshold to start timing for given crystall //Not used, remove?
-  //Float_t fTimeSignalLength ;     // Length of the timing signal //Not used, remove?
+  Double_t fTimeResolutionPar0 ;  // Time resolution of FEE electronics
+  Double_t fTimeResolutionPar1 ;  // Time resolution of FEE electronics
   Float_t fADCchannelEC ;         // width of one ADC channel in EC section (GeV)
   Float_t fADCpedestalEC ;        // pedestal for one ADC channel
   Int_t   fNADCEC ;               // number of channels in EC section ADC
@@ -123,7 +120,7 @@ private:
 	
   AliEMCALCalibData * fCalibData; //Calibration data pointer
 
-  ClassDef(AliEMCALDigitizer,9)  // description 
+  ClassDef(AliEMCALDigitizer,10)  // description 
 };
 
 

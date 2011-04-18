@@ -138,13 +138,10 @@ AliEMCALDigitizer::AliEMCALDigitizer()
     fEventNames(0x0),
     fDigitThreshold(0),
     fMeanPhotonElectron(0),
-//    fPedestal(0), //Not used, remove?
-//    fSlope(0),    //Not used, remove?
     fPinNoise(0),
     fTimeDelay(0),
-    fTimeResolution(0),
-//    fTimeThreshold(0),    //Not used, remove?
-//    fTimeSignalLength(0), //Not used, remove?
+    fTimeResolutionPar0(0),
+    fTimeResolutionPar1(0),
     fADCchannelEC(0),
     fADCpedestalEC(0),
     fNADCEC(0),
@@ -169,13 +166,10 @@ AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolder
     fEventNames(0), 
     fDigitThreshold(0),
     fMeanPhotonElectron(0),
-//    fPedestal(0),//Not used, remove?
-//    fSlope(0),   //Not used, remove?
     fPinNoise(0),
     fTimeDelay(0),
-    fTimeResolution(0),
-//    fTimeThreshold(0),    //Not used, remove?
-//    fTimeSignalLength(0), //Not used, remove?
+    fTimeResolutionPar0(0),
+    fTimeResolutionPar1(0),
     fADCchannelEC(0),
     fADCpedestalEC(0),
     fNADCEC(0),
@@ -201,13 +195,10 @@ AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d)
     fEventNames(d.fEventNames),
     fDigitThreshold(d.fDigitThreshold),
     fMeanPhotonElectron(d.fMeanPhotonElectron),
-//    fPedestal(d.fPedestal), //Not used, remove?
-//    fSlope(d.fSlope),       //Not used, remove?
     fPinNoise(d.fPinNoise),
     fTimeDelay(d.fTimeDelay),
-    fTimeResolution(d.fTimeResolution),
-//    fTimeThreshold(d.fTimeThreshold),       //Not used, remove?
-//    fTimeSignalLength(d.fTimeSignalLength), //Not used, remove?
+    fTimeResolutionPar0(d.fTimeResolutionPar0),
+    fTimeResolutionPar1(d.fTimeResolutionPar1),
     fADCchannelEC(d.fADCchannelEC),
     fADCpedestalEC(d.fADCpedestalEC),
     fNADCEC(d.fNADCEC),
@@ -230,13 +221,10 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd)
     fEventNames(0),
     fDigitThreshold(0),
     fMeanPhotonElectron(0),
-//    fPedestal(0), //Not used, remove?
-//    fSlope(0.),   //Not used, remove?
     fPinNoise(0.),
     fTimeDelay(0.),
-    fTimeResolution(0.),
-//    fTimeThreshold(0),    //Not used, remove?
-//    fTimeSignalLength(0), //Not used, remove?
+    fTimeResolutionPar0(0.),
+    fTimeResolutionPar1(0.),
     fADCchannelEC(0),
     fADCpedestalEC(0),
     fNADCEC(0),
@@ -522,6 +510,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     // until 10-02-2010 remove digits with energy smaller than fDigitThreshold 3*fPinNoise
     // now, remove digits with Digitized ADC smaller than fDigitThreshold = 3
     Float_t energy=0;
+    Float_t timeResolution = 0;
     for(i = 0 ; i < nEMC ; i++){
       digit = dynamic_cast<AliEMCALDigit*>( digits->At(i) ) ;
       if(digit){
@@ -532,8 +521,10 @@ void AliEMCALDigitizer::Digitize(Int_t event)
         //if(ampADC>2)printf("Digit energy %f, amp %d, amp cal %d, threshold %d\n",energy,digit->GetAmplitude(),ampADC,fDigitThreshold);
         if(ampADC < fDigitThreshold)
           digits->RemoveAt(i) ;
-        else 
-          digit->SetTime(gRandom->Gaus(digit->GetTime(),fTimeResolution) ) ;
+        else {
+	  timeResolution = GetTimeResolution(energy);
+          digit->SetTime(gRandom->Gaus(digit->GetTime(),timeResolution) ) ;
+	}
       }// digit exists
     } // digit loop
     
@@ -702,6 +693,19 @@ void AliEMCALDigitizer::Exec(Option_t *option)
   } 
 }
 
+//__________________________________________________________________
+Float_t AliEMCALDigitizer::GetTimeResolution(Float_t energy) const
+{  
+  // From F. Blanco
+  Float_t res = -1;
+  if (energy > 0) {
+    res = TMath::Sqrt(fTimeResolutionPar0 + 
+		      fTimeResolutionPar1/(energy*energy) );
+  }
+
+  return res;
+}
+
 //____________________________________________________________________________ 
 void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* digitsTRG)
 {
@@ -802,13 +806,13 @@ void AliEMCALDigitizer::DigitalFastOR( Double_t time, Double_t dE, Int_t timeSam
 	// id: 0..95
 	const Int_t    reso = 11;      // 11-bit resolution ADC
 	const Double_t vFSR = 1;       // Full scale input voltage range
-	const Double_t Ne   = 125;     // signal of the APD per MeV of energy deposit in a tower: 125 photo-e-/MeV @ M=30
+	const Double_t dNe   = 125;     // signal of the APD per MeV of energy deposit in a tower: 125 photo-e-/MeV @ M=30
 	const Double_t vA   = .136e-6; // CSP output range: 0.136uV/e-
 	const Double_t rise = 40e-9;   // rise time (10-90%) of the FastOR signal before shaping
 	
 	const Double_t kTimeBinWidth = 25E-9; // sampling frequency (40MHz)
 	
-	Double_t vV = 1000. * dE * Ne * vA; // GeV 2 MeV
+	Double_t vV = 1000. * dE * dNe * vA; // GeV 2 MeV
 	
 	TF1 signalF("signal", AnalogFastORFunction, 0, nSamples * kTimeBinWidth, 3);
 	signalF.SetParameter( 0,   vV ); 
@@ -908,7 +912,8 @@ void AliEMCALDigitizer::InitParameters()
   if (fPinNoise < 0.0001 ) 
     Warning("InitParameters", "No noise added\n") ; 
   fDigitThreshold     = simParam->GetDigitThreshold(); //fPinNoise * 3; // 3 * sigma
-  fTimeResolution     = simParam->GetTimeResolution(); //0.6e-9 ; // 600 pc
+  fTimeResolutionPar0 = simParam->GetTimeResolutionPar0(); 
+  fTimeResolutionPar1 = simParam->GetTimeResolutionPar1(); 
   fTimeDelay          = simParam->GetTimeDelay(); //600e-9 ; // 600 ns
 
   // These defaults are normally not used. 
@@ -918,8 +923,8 @@ void AliEMCALDigitizer::InitParameters()
 
   fNADCEC          = simParam->GetNADCEC();//(Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC - 65536
 
-  AliDebug(2,Form("Mean Photon Electron %d, Noise %f, Digit Threshold %d,Time Resolution %g,NADCEC %d",
-		fMeanPhotonElectron,fPinNoise,fDigitThreshold,fTimeResolution,fNADCEC));
+  AliDebug(2,Form("Mean Photon Electron %d, Noise %f, Digit Threshold %d,Time Resolution Par0 %g Par1 %g,NADCEC %d",
+		fMeanPhotonElectron,fPinNoise,fDigitThreshold,fTimeResolutionPar0,fTimeResolutionPar1,fNADCEC));
 
   // Not used anymore, remove?
   // fTimeSignalLength   = 1.0e-9 ;
@@ -1105,9 +1110,7 @@ void AliEMCALDigitizer::Unload()
 
 //_________________________________________________________________________________________
 void AliEMCALDigitizer::WriteDigits()
-{
-  
-  // Makes TreeD in the output file. 
+{ // Makes TreeD in the output file. 
   // Check if branch already exists: 
   //   if yes, exit without writing: ROOT TTree does not support overwriting/updating of 
   //      already existing branches. 
@@ -1150,8 +1153,7 @@ void AliEMCALDigitizer::WriteDigits()
 
 //__________________________________________________________________
 void AliEMCALDigitizer::WriteDigits(TClonesArray* digits, const char* branchName)
-{
-	//
+{ // overloaded method
 	AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
 	if(emcalLoader){
     

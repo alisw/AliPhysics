@@ -37,9 +37,8 @@ fDigitThreshold(0),
 fMeanPhotonElectron(0),
 fPinNoise(0),
 fTimeDelay(0),
-fTimeResolution(0),
-//fTimeThreshold(0),    
-//fTimeSignalLength(0),
+fTimeResolutionPar0(0),
+fTimeResolutionPar1(0),
 fNADCEC(0),//Digitizer
 fA(0.),
 fB(0.),
@@ -51,12 +50,11 @@ fECPrimThreshold(0.) //SDigitizer
 	fMeanPhotonElectron = 4400;  // electrons per GeV 
 	fPinNoise           = 0.012; // pin noise in GeV from analysis test beam data 
 	fDigitThreshold     = 3; // 3 ADC counts not anymore cut in energy: //fPinNoise * 3; // 3 * sigma
-	fTimeResolution     = 0.6e-9 ; // 600 pc
-	fTimeDelay          = 600e-9 ; // 600 nc
+	fTimeResolutionPar0 = 0.26666; // From F. Blanco: 0.51639^2
+	fTimeResolutionPar1 = 1.45861; // From F. Blanco: 1.20773^2
+	fTimeDelay          = 600e-9 ; // 600 ns
 
-	//fTimeSignalLength   = 1.0e-9 ;
 	fNADCEC             = (Int_t) TMath::Power(2,16) ; // number of channels in Tower ADC - 65536
-	//fTimeThreshold      = 0.001*10000000 ; // Means 1 MeV in terms of SDigits amplitude ??
 	
 	//SDigitizer
 	fA                  = 0;
@@ -73,9 +71,8 @@ fDigitThreshold(0),
 fMeanPhotonElectron(0),
 fPinNoise(0),
 fTimeDelay(0),
-fTimeResolution(0),
-//fTimeThreshold(0),    
-//fTimeSignalLength(0),//Digitizer
+fTimeResolutionPar0(0),
+fTimeResolutionPar1(0),
 fNADCEC(0),
 fA(0.),
 fB(0.),
@@ -120,7 +117,8 @@ void AliEMCALSimParam::Print(Option_t *) const
 	printf("=== Parameters in Digitizer === \n");
 	printf("\t Electronics noise in EMC (fPinNoise)       = %f\n", fPinNoise) ;
 	printf("\t Threshold  in EMC  (fDigitThreshold)       = %d\n", fDigitThreshold)  ;
-	printf("\t Time Resolution (fTimeResolution)          = %g\n", fTimeResolution) ;
+	printf("\t Time Resolution (fTimeResolutionPar0)          = %g\n", fTimeResolutionPar0) ;
+	printf("\t Time Resolution (fTimeResolutionPar1)          = %g\n", fTimeResolutionPar1) ;
 	printf("\t Time Delay (fTimeDelay)                    = %g\n", fTimeDelay) ;
 	printf("\t Mean Photon-Electron (fMeanPhotonElectron) = %d\n", fMeanPhotonElectron)  ;
 	printf("\t N channels in EC section ADC (fNADCEC)     = %d\n", fNADCEC) ;
