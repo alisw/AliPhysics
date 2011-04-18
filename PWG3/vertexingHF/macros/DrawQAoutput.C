@@ -462,12 +462,11 @@ void TPCBetheBloch(Int_t set){
 	alephParameters[4]=6.78938;
       }
       if (set==1){//pass2 (AOD044)
-	alephParameters[0]=1.25202/50.;
-	alephParameters[1]=2.74992e+01;
-	alephParameters[2]=TMath::Exp(-3.31517e+01);
-	alephParameters[3]=2.46246;
-	alephParameters[4]=6.78938;
-
+	alephParameters[0] = 5.10207e+00/50.; 
+	alephParameters[1] = 7.94982e+00; 
+	alephParameters[2] = TMath::Exp(-9.07942e+00); 
+	alephParameters[3] = 2.38808e+00; 
+	alephParameters[4] = 1.68165e+00;
       }
     }
     if(iperiod==1){ //LHC10d
