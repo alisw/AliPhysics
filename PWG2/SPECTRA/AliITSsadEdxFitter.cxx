@@ -45,13 +45,20 @@ AliITSsadEdxFitter::AliITSsadEdxFitter():TObject(),
   fExpPionMean(0.),
   fExpKaonMean(0.),
   fExpProtonMean(0.),
+  fExpPionMeanRange(0.),
+  fExpKaonMeanRange(0.),
+  fExpProtonMeanRange(0.),
   fExpPionSigma(0.),
   fExpKaonSigma(0.),
   fExpProtonSigma(0.),
+  fExpPionAmpl(0.),
   fIsMC(kFALSE),
+  fOptInit(0),
   fITSpid(0)
 {
   // standard constructor
+  for(Int_t i=0; i<9; i++)  fFitPars[i] = 0.;
+  for(Int_t i=0; i<9; i++)  fFitParErrors[i] = 0.;
   for(Int_t i=0; i<3; i++)  fFitpar[i] = 0.;
   for(Int_t i=0; i<3; i++)  fFitparErr[i] = 0.;
   SetRangeStep1();
@@ -71,13 +78,20 @@ AliITSsadEdxFitter::AliITSsadEdxFitter(Bool_t isMC):TObject(),
   fExpPionMean(0.),
   fExpKaonMean(0.),
   fExpProtonMean(0.),
+  fExpPionMeanRange(0.),
+  fExpKaonMeanRange(0.),
+  fExpProtonMeanRange(0.),
   fExpPionSigma(0.),
   fExpKaonSigma(0.),
   fExpProtonSigma(0.),
-  fIsMC(isMC),
+  fExpPionAmpl(0.),
+  fIsMC(isMC), 
+  fOptInit(0),
   fITSpid(0)
 {
   // standard constructor
+  for(Int_t i=0; i<9; i++)  fFitPars[i] = 0.;
+  for(Int_t i=0; i<9; i++)  fFitParErrors[i] = 0.;
   for(Int_t i=0; i<3; i++)  fFitpar[i] = 0.;
   for(Int_t i=0; i<3; i++)  fFitparErr[i] = 0.;
   SetRangeStep1();
@@ -133,38 +147,164 @@ Double_t AliITSsadEdxFitter::CalcSigma(Int_t code,Float_t x) const {
 }
 
 //_______________________________________________________
-Int_t AliITSsadEdxFitter::CalcMean(Int_t code, Float_t x, Float_t mean0, Float_t &mean1, Float_t &mean2) const{
-  // calculate the mean 12-ott-2010  
-  Double_t p1[4]={0.};
-  Double_t p2[4]={0.};
-  if(code==211){
-    p1[0] = 1.77049;
-    p1[1] = -2.65469;
-    p2[0] = 0.890856;
-    p2[1] = -0.276719;
-    mean1 = mean0 + p1[0]+ p1[1]*x + p1[2]*x*x + p1[3]*x*x*x;
-    mean2 = mean1 + p2[0]+ p2[1]*x + p2[2]*x*x + p2[3]*x*x*x;
+Int_t AliITSsadEdxFitter::InitializeMeanPosParam(Int_t code, Float_t x){
+  // Set initial values for peak positions from ad-hoc parameterizations (Melinda, 5 april 2010)
+  
+  Double_t p1[5]={0.};
+  Double_t p2[5]={0.};
+  Double_t p3[5]={0.};
+  Double_t ep1[5]={0.};
+  Double_t ep2[5]={0.};
+  Double_t ep3[5]={0.};
+  if(!fIsMC){ // data parameters
+    if(code==211){
+
+      p1[0]=-4.21001e-04; p1[1]=-3.41133e-02; p1[2]=0.; p1[3]=0.; p1[4]=0.;
+      ep1[0]= 3.62105e-06; ep1[1]= 1.52077e-04; ep1[2]= 0.; ep1[3]= 0.; ep1[4]= 0.;
+
+      p2[0] = 8.04038e+00; p2[1] = 1.51139e-01; p2[2] = 8.89984e-02; p2[3]= 0.; p2[4]= 0.;
+      ep2[0]= 6.47330e-02; ep2[1]= 3.09501e-03; ep2[2]= 6.03642e-04; ep2[3]= 0.; ep2[4]= 0.;
+
+      p3[0] = 7.41939e+00; p3[1] =-1.31031e+00; p3[2] = 9.44093e-01; p3[3]= 0.; p3[4]= 0.;
+      ep3[0]= 1.29862e-01; ep3[1]= 1.37370e-02; ep3[2]= 4.74995e-03; ep3[3]= 0.; ep3[4]= 0.;
+
+      fExpPionMean=p1[0]/(x*x)*TMath::Log(x)+p1[1];
+      fExpPionMeanRange=TMath::Sqrt(TMath::Power(1/(x*x)*TMath::Log(x),2.)*ep1[0]*ep1[0]+ep1[1]*ep1[1] );
+      fExpKaonMean=p2[0]*TMath::Landau(x,p2[1],p2[2],kFALSE);
+      fExpKaonMeanRange=TMath::Sqrt(ep2[0]*ep2[0]+(x*x)*ep2[1]*ep2[1]+(x*x*x*x)*ep2[2]*ep2[2]);
+      fExpProtonMean=-9999.;
+      fExpProtonMeanRange=0.;
+      if(x>0.2){
+	fExpProtonMean=p3[0]*TMath::Exp(-0.5*TMath::Power((x-p3[1])/p3[2],2.)) ;
+	fExpProtonMeanRange=TMath::Sqrt(ep3[0]*ep3[0]+(x*x)*ep3[1]*ep3[1]+(x*x*x*x)*ep3[2]*ep3[2]);
+      }
+
+    }else if(code==321){
+
+      p1[0] = 8.35645e-01; p1[1] = 3.61638e+00; p1[2] =-2.51068e-01; p1[3]= 0.; p1[4]= 0.;
+      ep1[0]= 6.63101e-04; ep1[1]= 2.33140e-02; ep1[2]= 1.93276e-03; ep1[3]= 0.; ep1[4]= 0.;
+
+      p2[0] = -4.75573e-02; p2[1] = -7.05764e-03; p2[2] =  7.96719e+00; p2[3]=  -7.48333e-02; p2[4]= 0.;
+      ep2[0]= 1.70759e-02; ep2[1]= 2.95064e-04; ep2[2]= 2.70493e+00; ep2[3]= 1.14466e-02; ep2[4]= 0.;
+
+      p3[0] = 4.20188e+00; p3[1] = 3.95855e-01; p3[2] = 2.01159e-01; p3[3]=  0.; p3[4]=  0.;
+      ep3[0]= 2.18608e-02; ep3[1]= 4.15293e-03; ep3[2]= 8.91846e-03; ep3[3]= 0.; ep3[4]= 0.;
+
+      fExpPionMean= p1[0]*TMath::Log(x)*TMath::Exp(-x*x*p1[1])+p1[2];
+      fExpPionMeanRange=TMath::Sqrt(ep1[0]*ep1[0]+(x*x)*ep1[1]*ep1[1]+(x*x*x*x)*ep1[2]*ep1[2]);
+      fExpKaonMean = p2[0]*TMath::Log(x)+p2[1]*TMath::Exp(-x*x*p2[2])/(x*x)+p2[3];
+      fExpKaonMeanRange=TMath::Sqrt(ep2[0]*ep2[0]+(x*x)*ep2[1]*ep2[1]+(x*x*x*x)*ep2[2]*ep2[2]);
+      fExpProtonMean = p3[0]*TMath::Landau(x, p3[1], p3[2],kFALSE);
+      fExpProtonMeanRange=TMath::Sqrt(ep3[0]*ep3[0]+(x*x)*ep3[1]*ep3[1]+(x*x*x*x)*ep3[2]*ep3[2]);
+
+    }else if(code==2212){
+
+      p1[0] =1.48277e+00; p1[1] =1.14050e+00; p1[2] =1.01751e+02; p1[3]= -2.52768e-01; p1[4]= 0.;
+      ep1[0]= 1.85491e-03; ep1[1]= 4.23200e-02; ep1[2]= 2.66855e+00; ep1[3]= 1.82240e-03; ep1[4]= 0.;
+      
+      p2[0]= 3.80541e-01 ; p2[1]=-3.79158e-02; p2[2]=-4.81653e-01; p2[3]= 0.; p2[4]= 0.;      
+      ep2[0]= 1.43643e-01; ep2[1]= 2.47156e-02; ep2[2]= 1.06836e-01; ep2[3]= 0.; ep2[4]= 0.;
+      
+      p3[0] = 1.81168e-01; p3[1] = -6.69364e-01; p3[2] =  2.10685e+01; p3[3]=   5.14868e-02; p3[4]=   0.;
+      ep3[0]= 4.61718e-02; ep3[1]= 8.21949e-02; ep3[2]= 4.46134e+00; ep3[3]= 2.69751e-02; ep3[4]= 0.;
+
+      fExpPionMean= p1[0]*TMath::Log(x)+p1[1]*TMath::Exp(-x*x*p1[2])+p1[3];
+      fExpPionMeanRange=TMath::Sqrt(ep1[0]*ep1[0]+(x*x)*ep1[1]*ep1[1]+(x*x*x*x)*ep1[2]*ep1[2]);
+      fExpKaonMean = p2[0]*TMath::Log(x)+p2[1]/(x)+p2[2];
+      fExpKaonMeanRange=TMath::Sqrt(ep2[0]*ep2[0]+(x*x)*ep2[1]*ep2[1]+(x*x*x*x)*ep2[2]*ep2[2]+(x*x*x*x*x*x)*ep2[3]*ep2[3]+(x*x*x*x*x*x*x*x)*ep2[4]*ep2[4]);
+      fExpProtonMean= p3[0]*TMath::Log(x)+p3[1]*TMath::Exp(-x*x*p3[2])+p3[3];
+      fExpProtonMeanRange=TMath::Sqrt(ep3[0]*ep3[0]+(x*x)*ep3[1]*ep3[1]+(x*x*x*x)*ep3[2]*ep3[2]+(x*x*x*x*x*x)*ep3[3]*ep3[3]+(x*x*x*x*x*x*x*x)*ep3[4]*ep3[4]);
+    }else{
+      printf("ERROR: Wrong particle code %d\n",code);
+      return -1;
+    }
+  }else{ // MC parameters
+    if(code==211){
+
+      p1[0]= -3.28744e-04; p1[1]= -1.78123e-02; p1[2]= 0.; p1[3]= 0.; p1[4]= 0.;
+      ep1[0]= 2.03102e-06; ep1[1]= 7.65859e-05; ep1[2]= 0.; ep1[3]= 0.; ep1[4]= 0.;    
+
+      p2[0] = 8.84991e+00 ; p2[1] = 1.32096e-01 ; p2[2] = 9.42394e-02 ; p2[3]=0.; p2[4]=0.;
+      ep2[0]= 4.78123e-02; ep2[1]= 1.99037e-03; ep2[2]= 2.85136e-04; ep2[3]= 0.; ep2[4]= 0.;
+
+      p3[0] =  6.25025e+00; p3[1] = -1.08315e+00; p3[2] =  8.86474e-01; p3[3]= 0.; p3[4]= 0.;
+      ep3[0]= 1.42379e+00; ep3[1]= 2.34807e-01; ep3[2]= 6.78015e-02; ep3[3]= 0.; ep3[4]= 0.;
+
+      fExpPionMean= p1[0]/(x*x)*TMath::Log(x)+p1[1];
+      fExpPionMeanRange=TMath::Sqrt(TMath::Power(1/(x*x)*TMath::Log(x),2.)*ep1[0]*ep1[0]+ep1[1]*ep1[1] );
+      fExpKaonMean = p2[0]*TMath::Landau(x,p2[1],p2[2],kFALSE);
+      fExpKaonMeanRange=TMath::Sqrt(ep2[0]*ep2[0]+(x*x)*ep2[1]*ep2[1]+(x*x*x*x)*ep2[2]*ep2[2]);
+      fExpProtonMean=-9999.;
+      fExpProtonMeanRange=0.;
+      if(x>0.2){
+	fExpProtonMean = p3[0]*TMath::Exp(-0.5*TMath::Power((x-p3[1])/p3[2],2.));
+	fExpProtonMeanRange = TMath::Sqrt(ep3[0]*ep3[0]+(x*x)*ep3[1]*ep3[1]+(x*x*x*x)*ep3[2]*ep3[2]);
+      }
+
+    }else if(code==321){
+
+      p1[0] = 9.19679e-01; p1[1] = 5.07077e-03; p1[2] = 5.48262e-05; p1[3]=  8.65674e-02; p1[4]= 0.;
+      ep1[0]= 4.03325e-04; ep1[1]= 8.85421e-06; ep1[2]= 1.77437e+00; ep1[3]= 9.00492e-03; ep1[4]= 0.;
+
+      p2[0] = -2.05127e-01; p2[1] = -2.05303e-03; p2[2] =  3.10090e-06; p2[3]=  -2.19936e-01; p2[4]= 0.;
+      ep2[0]= 3.41607e-03; ep2[1]= 1.03661e-04; ep2[2]= 9.50776e-01; ep2[3]= 3.41148e-03; ep2[4]= 0.;
+
+      p3[0] = 4.68022e+00; p3[1] = 3.02178e-01; p3[2] = 2.47185e-01; p3[3]= 0.; p3[4]= 0.;
+      ep3[0]= 1.63926e-02; ep3[1]= 6.42072e-03; ep3[2]= 7.24079e-03; ep3[3]= 0.; ep3[4]= 0.;
+
+      fExpPionMean=p1[0]*TMath::Log(x)+p1[1]*TMath::Exp(-x*x*p1[2])/(x*x)+p1[3];
+      fExpPionMeanRange=TMath::Sqrt(ep1[0]*ep1[0]+(x*x)*ep1[1]*ep1[1]+(x*x*x*x)*ep1[2]*ep1[2]);
+      fExpKaonMean=p2[0]*TMath::Log(x)+p2[1]*TMath::Exp(-x*x*p2[2])/(x*x+p2[3]);
+      fExpKaonMeanRange=TMath::Sqrt(ep2[0]*ep2[0]+(x*x)*ep2[1]*ep2[1]+(x*x*x*x)*ep2[2]*ep2[2]);
+      fExpProtonMean= p3[0]*TMath::Landau(x, p3[1], p3[2]);
+      fExpProtonMeanRange=TMath::Sqrt(ep3[0]*ep3[0]+(x*x)*ep3[1]*ep3[1]+(x*x*x*x)*ep3[2]*ep3[2]);
+
+    }else if(code==2212){
+
+      p1[0] = 1.05826e+00; p1[1]=8.59088e-01; p1[2]=9.39446e+01; p1[3]= -4.86736e-01; p1[4]=  0.;
+      ep1[0]= 1.07813e-03; ep1[1]= 1.15536e-02; ep1[2]= 9.74843e-01; ep1[3]= 1.24205e-03; ep1[4]= 0.;
+
+      p2[0]=4.91075e-01; p2[1]=6.27855e-01; p2[2] = 1.09965e+01; p2[3] =-4.24656e-01; p2[4] = 0.;
+      ep2[0]=3.00310e-02; ep2[1]= 4.42650e-02; ep2[2]= 3.40324e-01; ep2[3]= 2.46448e-02; ep2[4]= 0. ;
+
+      p3[0] = 6.75789e-01; p3[1] = 1.23129e+00; p3[2] = 3.46294e+00; p3[3]= -2.48336e-02; p3[4]= 0.;
+      ep3[0]= 2.90342e-02; ep3[1]= 4.34524e-02; ep3[2]= 7.18743e-02; ep3[3]= 1.08694e-02; ep3[4]= 0.;
+
+      fExpPionMean= p1[0]*TMath::Log(x)+p1[1]*TMath::Exp(-x*x*p1[2])+p1[3];
+      fExpPionMeanRange=TMath::Sqrt(ep1[0]*ep1[0]+(x*x)*ep1[1]*ep1[1]+(x*x*x*x)*ep1[2]*ep1[2]);
+      fExpKaonMean = p2[0]*TMath::Log(x)+p2[1]*TMath::Exp(-x*x*p2[2])+p2[3];
+      fExpKaonMeanRange=TMath::Sqrt(ep2[0]*ep2[0]+(x*x)*ep2[1]*ep2[1]+(x*x*x*x)*ep2[2]*ep2[2]+(x*x*x*x*x*x)*ep2[3]*ep2[3]+(x*x*x*x*x*x*x*x)*ep2[4]*ep2[4]);
+      fExpProtonMean=  p3[0]*TMath::Log(x)+p3[1]*TMath::Exp(-x*x*p3[2])+p3[3];
+      fExpProtonMeanRange=TMath::Sqrt(ep3[0]*ep3[0]+(x*x)*ep3[1]*ep3[1]+(x*x*x*x)*ep3[2]*ep3[2]+(x*x*x*x*x*x)*ep3[3]*ep3[3]+(x*x*x*x*x*x*x*x)*ep3[4]*ep3[4]);
+    }else{
+      printf("ERROR: Wrong particle code %d\n",code);
+      return -1;
+    }
   }
-  else if(code==321){
-    p2[0] = 1.57664;
-    p2[1] = -6.88635;
-    p2[2] = 18.702;
-    p2[3] = -16.3385;
-    mean1 = 0.;
-    mean2 = mean1 + p2[0]+ p2[1]*x + p2[2]*x*x + p2[3]*x*x*x;
-  }
-  else if(code==2212){
-    p1[0] = 4.24861; 
-    p1[1] = -19.178;
-    p1[2] = 31.5947;
-    p1[3] = -18.178;
-    mean1 = mean0 + p1[0]+ p1[1]*x + p1[2]*x*x + p1[3]*x*x*x;
-    mean2 = 0.; 
-  }
-  else return -1;
   return 0;
 }
 
+//_______________________________________________________
+Int_t AliITSsadEdxFitter::InitializeMeanPosBB(Int_t code, Float_t pt){
+  // computes peak positions from parametrized BB
+
+  Double_t massp=AliPID::ParticleMass(AliPID::kProton);
+  Double_t massk=AliPID::ParticleMass(AliPID::kKaon);
+  Double_t masspi=AliPID::ParticleMass(AliPID::kPion);
+  Bool_t isSA=kTRUE;
+  Float_t sinthmed=0.8878;
+  Float_t p=pt/sinthmed;
+  Double_t bethep=fITSpid->Bethe(p,massp,isSA);
+  Double_t bethek=fITSpid->Bethe(p,massk,isSA);
+  Double_t bethepi=fITSpid->Bethe(p,masspi,isSA);
+  Double_t betheref=bethepi;
+  if(TMath::Abs(code)==321) betheref=bethek;
+  else if(TMath::Abs(code)==2212) betheref=bethep;
+  fExpPionMean=TMath::Log(bethepi)-TMath::Log(betheref);
+  fExpKaonMean=TMath::Log(bethek)-TMath::Log(betheref);
+  fExpProtonMean=TMath::Log(bethep)-TMath::Log(betheref);
+  return 0;
+}
 //________________________________________________________
 Bool_t AliITSsadEdxFitter::IsGoodBin(Int_t bin,Int_t code){
   //method to select the bins used for the analysis only
@@ -410,10 +550,11 @@ void AliITSsadEdxFitter::DrawFitFunction(TF1 *fun) const {
 }
 
 //______________________________________________________________________
-void AliITSsadEdxFitter::GetInitialParam(TH1F* h, Int_t code,Int_t bin, Float_t &pt, Float_t &ampl){
+void AliITSsadEdxFitter::Initialize(TH1F* h, Int_t code,Int_t bin){
   //code to get the expected values to use for fitting
+
   Double_t xbins[23]={0.08,0.10,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85,0.90,0.95,1.0};
-  pt=(xbins[bin+1]+xbins[bin])/2;
+  Double_t pt=(xbins[bin+1]+xbins[bin])/2;
 
   //draw and label
   h->SetTitle(Form("p_{t}=[%1.2f,%1.2f], code=%d",xbins[bin],xbins[bin+1],code));
@@ -423,34 +564,15 @@ void AliITSsadEdxFitter::GetInitialParam(TH1F* h, Int_t code,Int_t bin, Float_t 
   h->SetFillColor(11);
 	
   //expected values
-  Double_t s2pi=TMath::Sqrt(2*TMath::Pi());
-  ampl = h->GetMaximum()/(h->GetRMS()*s2pi);
-
-  Double_t massp=AliPID::ParticleMass(AliPID::kProton);
-  Double_t massk=AliPID::ParticleMass(AliPID::kKaon);
-  Double_t masspi=AliPID::ParticleMass(AliPID::kPion);
-  Bool_t isSA=kTRUE;
-  Float_t sinthmed=0.8878;
-  Float_t p=pt/sinthmed;
-  Double_t bethep=fITSpid->Bethe(p,massp,isSA);
-  Double_t bethek=fITSpid->Bethe(p,massk,isSA);
-  Double_t bethepi=fITSpid->Bethe(p,masspi,isSA);
-  Double_t betheref=bethepi;
-  if(TMath::Abs(code)==321) betheref=bethek;
-  else if(TMath::Abs(code)==2212) betheref=bethep;
-  fExpPionMean=TMath::Log(bethepi)-TMath::Log(betheref);
-  fExpKaonMean=TMath::Log(bethek)-TMath::Log(betheref);
-  fExpProtonMean=TMath::Log(bethep)-TMath::Log(betheref);
-
-  printf("mean values        -> %f %f %f\n",fExpPionMean,fExpKaonMean,fExpProtonMean);
-  printf("integration ranges -> (%1.2f,%1.2f) (%1.2f,%1.2f) (%1.2f,%1.2f)\n",fRangeStep1[0],fRangeStep1[1],fRangeStep2[0],fRangeStep2[1],fRangeStep3[0],fRangeStep3[1]);
+  fExpPionAmpl = h->GetMaximum()/(h->GetRMS()*TMath::Sqrt(2*TMath::Pi()));
+  if(fOptInit==0) InitializeMeanPosBB(code, pt);
+  else if(fOptInit==1) InitializeMeanPosParam(code, pt);
   fExpPionSigma = CalcSigma(211,pt); //expected sigma values
   fExpKaonSigma = CalcSigma(321,pt);
   fExpProtonSigma = CalcSigma(2212,pt);
-  printf("sigma values -> %f %f %f\n",fExpPionSigma,fExpKaonSigma,fExpProtonSigma);
-  printf("sigma ranges -> (%1.2f,%1.2f) (%1.2f,%1.2f) (%1.2f,%1.2f)\n",fLimitsOnSigmaPion[0],fLimitsOnSigmaPion[1],fLimitsOnSigmaKaon[0],fLimitsOnSigmaKaon[1],fLimitsOnSigmaProton[0],fLimitsOnSigmaProton[1]);
-  return;
+
 }
+
 
 //________________________________________________________
 void AliITSsadEdxFitter::DoFit(TH1F *h, Int_t bin, Int_t signedcode, TGraph *gres){
@@ -461,17 +583,17 @@ void AliITSsadEdxFitter::DoFit(TH1F *h, Int_t bin, Int_t signedcode, TGraph *gre
 
   TF1 *fstep1, *fstep2, *fstep3, *fstepTot;
   TString modfit = "M0R+";
-  Float_t pt=0., ampl=0.;
   Int_t code=TMath::Abs(signedcode);
-  GetInitialParam(h,code,bin,pt,ampl);
+  Initialize(h,code,bin);
+  PrintInitialValues();
   if(!IsGoodBin(bin,code)) return;
 
   printf("___________________________________________________________________ First Step: pions\n");
   fstep1 = new TF1("step1",SingleGausStep,fRangeStep4[0],fRangeStep4[1],3);
-  fstep1->SetParameter(0,ampl);       //initial ampl pion
+  fstep1->SetParameter(0,fExpPionAmpl);       //initial ampl pion
   fstep1->SetParameter(1,fExpPionMean);       //initial mean pion
   fstep1->SetParameter(2,fExpPionSigma); //initial sigma pion
-  fstep1->SetParLimits(0,0.,ampl*1.2);    //limits ampl pion
+  fstep1->SetParLimits(0,0.,fExpPionAmpl*1.2);    //limits ampl pion
   fstep1->SetParLimits(1,fRangeStep4[0],fRangeStep4[1]);                                     //limits mean pion (dummy)
   fstep1->SetParLimits(2,fExpPionSigma*fLimitsOnSigmaPion[0],fExpPionSigma*fLimitsOnSigmaPion[1]); //limits sigma pion
 
@@ -542,7 +664,13 @@ void AliITSsadEdxFitter::DoFit(TH1F *h, Int_t bin, Int_t signedcode, TGraph *gre
 
   h->Fit(fstepTot,modfit.Data(),"",fRangeStep4[0],fRangeStep4[1]);//refit all
 
+  for(Int_t j=0;j<9;j++) {
+    fFitPars[j] = fstepTot->GetParameter(j);
+    fFitParErrors[j] = fstepTot->GetParError(j);
+  }
+
   //************************************* storing parameter to calculate the yields *******
+
   Int_t chpa=0;
   if(code==321) chpa=3;
   if(code==2212) chpa=6;
@@ -564,17 +692,17 @@ void AliITSsadEdxFitter::DoFitProton(TH1F *h, Int_t bin, Int_t signedcode, TGrap
   // final step: refit all using the parameters
   TF1 *fstep1, *fstep2, *fstep3, *fstepTot;
   TString modfit = "M0R+";
-  Float_t pt=0., ampl=0.;
   Int_t code=TMath::Abs(signedcode);
-  GetInitialParam(h,code,bin,pt,ampl);
+  Initialize(h,code,bin);
+  PrintInitialValues();
   if(!IsGoodBin(bin,code)) return;
 
   printf("___________________________________________________________________ First Step: pion\n");
   fstep1 = new TF1("step1",SingleGausStep,fRangeStep4[0],fRangeStep4[1],3);
-  fstep1->SetParameter(0,ampl);       //initial ampl pion
+  fstep1->SetParameter(0,fExpPionAmpl);       //initial ampl pion
   fstep1->SetParameter(1,fExpPionMean);       //initial mean pion
   fstep1->SetParameter(2,fExpPionSigma); //initial sigma pion
-  fstep1->SetParLimits(0,0,ampl*1.2);                                                          //limits ampl pion
+  fstep1->SetParLimits(0,0,fExpPionAmpl*1.2);                                                          //limits ampl pion
   fstep1->SetParLimits(1,fRangeStep4[0],fRangeStep4[1]);                                       //limits mean pion (dummy)
   fstep1->SetParLimits(2,fExpPionSigma*fLimitsOnSigmaPion[0],fExpPionSigma*fLimitsOnSigmaPion[1]);   //limits sigma pion
 
@@ -640,6 +768,10 @@ void AliITSsadEdxFitter::DoFitProton(TH1F *h, Int_t bin, Int_t signedcode, TGrap
 
   h->Fit(fstepTot,modfit,"",fRangeStep4[0],fRangeStep4[1]);//refit all
 
+  for(Int_t j=0;j<9;j++) {
+    fFitPars[j] = fstepTot->GetParameter(j);
+    fFitParErrors[j] = fstepTot->GetParError(j);
+  }
   //************************************* storing parameter to calculate the yields *******
   Int_t chpa=0;
   if(code==321) chpa=3;
@@ -662,17 +794,17 @@ void AliITSsadEdxFitter::DoFitProtonFirst(TH1F *h, Int_t bin, Int_t signedcode, 
   // final step: refit all using the parameters
   TF1 *fstep1, *fstep2, *fstep3, *fstepTot;
   TString modfit = "M0R+";
-  Float_t pt=0., ampl=0.;
   Int_t code=TMath::Abs(signedcode);
-  GetInitialParam(h,code,bin,pt,ampl);
+  Initialize(h,code,bin);
+  PrintInitialValues();
   if(!IsGoodBin(bin,code)) return;
 
   printf("___________________________________________________________________ First Step: proton\n");
   fstep1 = new TF1("step1",SingleGausStep,fRangeStep4[0],fRangeStep4[1],3);
-  fstep1->SetParameter(0,ampl/16.);       //initial ampl proton`
+  fstep1->SetParameter(0,fExpPionAmpl/16.);       //initial ampl proton`
   fstep1->SetParameter(1,fExpProtonMean);  //initial mean proton
   fstep1->SetParameter(2,fExpProtonSigma);   //initial sigma proton
-  fstep1->SetParLimits(0,0,ampl);                                                                    //limits ampl proton
+  fstep1->SetParLimits(0,0,fExpPionAmpl);                                                                    //limits ampl proton
   fstep1->SetParLimits(1,fExpPionMean,fRangeStep4[1]);                                                       //limits mean proton (dummy)
   fstep1->SetParLimits(2,fExpProtonSigma*fLimitsOnSigmaProton[0],fExpProtonSigma*fLimitsOnSigmaProton[1]); //limits sigma proton
 
@@ -684,10 +816,10 @@ void AliITSsadEdxFitter::DoFitProtonFirst(TH1F *h, Int_t bin, Int_t signedcode, 
   fstep2->FixParameter(0,fstep1->GetParameter(0)); //fixed ampl proton 
   fstep2->FixParameter(1,fstep1->GetParameter(1)); //fixed mean proton
   fstep2->FixParameter(2,fstep1->GetParameter(2)); //fixed sigma proton
-  fstep2->SetParameter(3,ampl);             //initial ampl pion
+  fstep2->SetParameter(3,fExpPionAmpl);             //initial ampl pion
   fstep2->SetParameter(4,fExpPionMean);             //initial mean pion
   fstep2->SetParameter(5,fExpPionSigma);       //initial sigma pion
-  fstep2->SetParLimits(3,0.,ampl);                                                               //limits ampl pion
+  fstep2->SetParLimits(3,0.,1.2*fExpPionAmpl);                                                               //limits ampl pion
   fstep2->SetParLimits(4,fRangeStep4[0],fstep1->GetParameter(1));                                //limits mean pion
   fstep2->SetParLimits(5,fExpPionSigma*fLimitsOnSigmaPion[0],fExpPionSigma*fLimitsOnSigmaPion[1]);     //limits sigma pion
 
@@ -741,6 +873,10 @@ void AliITSsadEdxFitter::DoFitProtonFirst(TH1F *h, Int_t bin, Int_t signedcode, 
 
   h->Fit(fstepTot,modfit,"",fRangeStep4[0],fRangeStep4[1]);//refit all
 
+  for(Int_t j=0;j<9;j++) {
+    fFitPars[j] = fstepTot->GetParameter(j);
+    fFitParErrors[j] = fstepTot->GetParError(j);
+  }
   //************************************* storing parameter to calculate the yields *******
   Int_t chpa=0;
   if(code==321) chpa=3;
@@ -761,17 +897,17 @@ void AliITSsadEdxFitter::DoFitOnePeak(TH1F *h, Int_t bin, Int_t signedcode){
   // single-gaussian fit to log(dedx)-log(dedxBB) histogram
   TF1 *fstep1;
   TString modfit = "M0R+";
-  Float_t pt=0., ampl=0.;
   Int_t code=TMath::Abs(signedcode);
-  GetInitialParam(h,code,bin,pt,ampl);
+  Initialize(h,code,bin);
+  PrintInitialValues();
   if(!IsGoodBin(bin,code)) return;
 
   printf("___________________________________________________________________ Single Step\n");
   fstep1 = new TF1("step2",SingleGausStep,fRangeStep4[0],fRangeStep4[1],3);
-  fstep1->SetParameter(0,ampl/16.);                   //initial ampl 
+  fstep1->SetParameter(0,fExpPionAmpl/16.);                   //initial ampl 
   fstep1->SetParameter(1,fExpProtonMean);              //initial mean 
   fstep1->SetParameter(2,fExpProtonSigma);               //initial sigma 
-  fstep1->SetParLimits(0,0.,ampl);                                                                   //limits ampl proton
+  fstep1->SetParLimits(0,0.,fExpPionAmpl);                                                                   //limits ampl proton
   fstep1->SetParLimits(1,fExpPionMean,fRangeStep4[1]);                                                       //limits mean proton
   //fstep1->SetParLimits(2,fExpProtonSigma*fLimitsOnSigmaProton[0],fExpProtonSigma*fLimitsOnSigmaProton[1]); //limits sigma proton
 
@@ -798,17 +934,17 @@ void AliITSsadEdxFitter::DoFitTail(TH1F *h, Int_t bin, Int_t signedcode){
 
   TF1 *fstep1, *fstep2, *fstep3, *fstepTot;
   TString modfit = "M0R+";
-  Float_t pt=0., ampl=0.;
-  GetInitialParam(h,code,bin,pt,ampl);
+  Initialize(h,code,bin);
+  PrintInitialValues();
 
   printf("\n___________________________________________________________________\n First Step: pions\n\n");
   fstep1 = new TF1("step1",SingleGausTail,-3.5,3.5,5);
-  fstep1->SetParameter(0,ampl);//initial 
+  fstep1->SetParameter(0,fExpPionAmpl);//initial 
   fstep1->SetParameter(1,fExpPionMean);
   fstep1->SetParameter(3,1.2);
   fstep1->SetParameter(4,10.);
 
-  fstep1->SetParLimits(0,0,ampl*1.2);
+  fstep1->SetParLimits(0,0,fExpPionAmpl*1.2);
   fstep1->SetParLimits(1,-3.5,3.5);
   fstep1->SetParLimits(2,0.1,0.25);
   fstep1->SetParLimits(4,5.,20.);
@@ -908,6 +1044,10 @@ void AliITSsadEdxFitter::DoFitTail(TH1F *h, Int_t bin, Int_t signedcode){
   if(bin<9) for(Int_t npar=10;npar<15;npar++) fstepTot->FixParameter(npar,-0.00000000001);
   h->Fit(fstepTot,modfit,"",-3.5,3.5); //refit all
 
+  for(Int_t j=0;j<9;j++) {
+    fFitPars[j] = fstepTot->GetParameter(j);
+    fFitParErrors[j] = fstepTot->GetParError(j);
+  }
 
   //************************************* storing parameter to calculate the yields *******
   Int_t chpa=0;
@@ -979,4 +1119,17 @@ void AliITSsadEdxFitter::PrintAll() const{
   printf(" Sigma1 = %f %f\n",fLimitsOnSigmaPion[0],fLimitsOnSigmaPion[1]);
   printf(" Sigma2 = %f %f\n",fLimitsOnSigmaKaon[0],fLimitsOnSigmaKaon[1]);
   printf(" Sigma3 = %f %f\n",fLimitsOnSigmaProton[0],fLimitsOnSigmaProton[1]);
+}
+//______________________________________________________________________
+void AliITSsadEdxFitter::PrintInitialValues() const{
+  // print initial values  
+
+  printf("mean values        -> %f %f %f\n",fExpPionMean,fExpKaonMean,fExpProtonMean);
+  printf("integration ranges -> (%1.2f,%1.2f) (%1.2f,%1.2f) (%1.2f,%1.2f)\n",
+	 fRangeStep1[0],fRangeStep1[1],fRangeStep2[0],fRangeStep2[1],fRangeStep3[0],fRangeStep3[1]);
+  printf("sigma values -> %f %f %f\n",fExpPionSigma,fExpKaonSigma,fExpProtonSigma);
+  printf("sigma ranges -> (%1.2f,%1.2f) (%1.2f,%1.2f) (%1.2f,%1.2f)\n",
+	 fLimitsOnSigmaPion[0],fLimitsOnSigmaPion[1],
+	 fLimitsOnSigmaKaon[0],fLimitsOnSigmaKaon[1],
+	 fLimitsOnSigmaProton[0],fLimitsOnSigmaProton[1]);
 }
