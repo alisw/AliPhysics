@@ -29,7 +29,7 @@ public:
                       kGBW,
                       kNone };
 
-   AliGlauberMC(Option_t* NA = "Pb", Option_t* NB = "Pb", Double_t xsect = 60);
+   AliGlauberMC(Option_t* NA = "Pb", Option_t* NB = "Pb", Double_t xsect = 64);
    virtual     ~AliGlauberMC();
    AliGlauberMC(const AliGlauberMC& in);
    AliGlauberMC& operator=(const AliGlauberMC& in);
@@ -46,10 +46,10 @@ public:
    Double_t	GetdNdEtaNBD(    const Double_t* param ) const;
    Double_t	GetdNdEtaNBDSV(  const Double_t* param ) const;
    Double_t	GetdNdEtaTwoNBD( const Double_t* param ) const;
-
    Double_t     GetEccentricity()    const;
    Double_t     GetStoa()    const;
    Double_t     GetEccentricityColl()      const;
+   Double_t     GetEccentricityCom()      const;
    Double_t     GetEccentricityPart()      const;
    Double_t     GetEpsilon2Part()      const;
    Double_t     GetEpsilon3Part()      const;
@@ -59,11 +59,20 @@ public:
    Double_t     GetEpsilon3Coll()      const;
    Double_t     GetEpsilon4Coll()      const;
    Double_t     GetEpsilon5Coll()      const;
+   Double_t     GetEpsilon2Com()      const;
+   Double_t     GetEpsilon3Com()      const;
+   Double_t     GetEpsilon4Com()      const;
+   Double_t     GetEpsilon5Com()      const;
    Double_t     GetPsi2()      const;
    Double_t     GetPsi3()      const;
    Double_t     GetPsi4()      const;
    Double_t     GetPsi5()      const;
+   //Double_t     GetE43Part()      const;
+   //Double_t     GetE43Coll()      const;
+   //Double_t     GetE43Com()      const;
+   //Double_t     GetPsi4m2()      const;
    Double_t     GetEccentricityPartColl()  const;
+   Double_t     GetEccentricityPartCom()  const;
    Double_t     GetB()               const {return fBMC;}
    Double_t     GetBMin()            const {return fBMin;}
    Double_t     GetBMax()            const {return fBMax;}
@@ -92,7 +101,7 @@ public:
    static void       RunAndSaveNtuple( Int_t n,
                                        const Option_t *sysA="Pb",
                                        const Option_t *sysB="Pb",
-                                       Double_t signn=60,
+                                       Double_t signn=64,
                                        Double_t mind=0.4,
 				       Double_t r=6.62,
 				       Double_t a=0.546,
@@ -131,6 +140,13 @@ private:
    Double_t     fMeanX2Coll;     //<x^2> of binary collisions
    Double_t     fMeanY2Coll;     //<y^2> of binary collisions
    Double_t     fMeanXYColl;     //<xy> of binary collisions
+   Double_t     fMeanXCom;      //<x> of combine
+   Double_t     fMeanYCom;      //<y> of 
+   Double_t     fMeanOXCom;      //<x> of 
+   Double_t     fMeanOYCom;      //<y> of 
+   Double_t     fMeanX2Com;     //<x^2> of 
+   Double_t     fMeanY2Com;     //<y^2> of 
+   Double_t     fMeanXYCom;     //<xy> of 
    Double_t     fMeanXSystem;    //<x> of all nucleons
    Double_t     fMeanYSystem;    //<x> of all nucleons  
    Double_t     fMeanXA;        //<x> of nucleons in nucleus A
@@ -151,8 +167,10 @@ private:
    Int_t        fMaxNpartFound;  //Largest value of Npart obtained
    Int_t        fONpart; 
    Int_t        fONcoll; 
+   Double_t     fONcom; 
    Int_t        fNpart;          //Number of wounded (participating) nucleons in current event   
    Int_t        fNcoll;          //Number of binary collisions in current event
+   Double_t     fNcom;
    Double_t     fMeanr2;         //----------<r^2> of wounded nucleons
    Double_t     fMeanr3;         //----------<r^3> of wounded nucleons
    Double_t     fMeanr4;         //----------<r^4> of wounded nucleons
@@ -171,7 +189,6 @@ private:
    Double_t     fMeanr4Sin4Phi;   //------<r^4*sin4phi> of wounded nucleons
    Double_t     fMeanr5Cos5Phi;   //------<r^5*cos5phi> of wounded nucleons
    Double_t     fMeanr5Sin5Phi;   //------<r^5*sin5phi> of wounded nucleons
-  
    Double_t     fMeanr2Coll;         //----------<r^2> of wounded nucleons
    Double_t     fMeanr3Coll;         //----------<r^3> of wounded nucleons
    Double_t     fMeanr4Coll;         //----------<r^4> of wounded nucleons
@@ -190,6 +207,24 @@ private:
    Double_t     fMeanr4Sin4PhiColl;   //------<r^4*sin4phi> 
    Double_t     fMeanr5Cos5PhiColl;   //------<r^5*cos5phi> 
    Double_t     fMeanr5Sin5PhiColl;   //------<r^5*sin5phi> 
+   Double_t     fMeanr2Com;         //----------<r^2> of wounded nucleons
+   Double_t     fMeanr3Com;         //----------<r^3> of wounded nucleons
+   Double_t     fMeanr4Com;         //----------<r^4> of wounded nucleons
+   Double_t     fMeanr5Com;         //----------<r^5> of wounded nucleons
+   Double_t     fMeanr2Cos2PhiCom;   //------<r^2*cos2phi> 
+   Double_t     fMeanr2Sin2PhiCom;   //------<r^2*sin2phi> 
+   Double_t     fMeanr2Cos3PhiCom;   //------<r^2*cos3phi> 
+   Double_t     fMeanr2Sin3PhiCom;   //------<r^2*sin3phi> 
+   Double_t     fMeanr2Cos4PhiCom;   //------<r^2*cos4phi> 
+   Double_t     fMeanr2Sin4PhiCom;   //------<r^2*sin4phi> 
+   Double_t     fMeanr2Cos5PhiCom;   //------<r^2*cos5phi> 
+   Double_t     fMeanr2Sin5PhiCom;   //------<r^2*sin5phi> 
+   Double_t     fMeanr3Cos3PhiCom;   //------<r^3*cos3phi> 
+   Double_t     fMeanr3Sin3PhiCom;   //------<r^3*sin3phi> 
+   Double_t     fMeanr4Cos4PhiCom;   //------<r^4*cos4phi> 
+   Double_t     fMeanr4Sin4PhiCom;   //------<r^4*sin4phi> 
+   Double_t     fMeanr5Cos5PhiCom;   //------<r^5*cos5phi> 
+   Double_t     fMeanr5Sin5PhiCom;   //------<r^5*sin5phi> 
    //Double_t     fPsi2;
    Double_t     fSx2Parts;            //Variance of x of wounded nucleons
    Double_t     fSy2Parts;            //Variance of y of wounded nucleons
@@ -197,6 +232,9 @@ private:
    Double_t     fSx2Coll;            //Variance of x of binaruy collisions
    Double_t     fSy2Coll;            //Variance of y of binaruy collisions
    Double_t     fSxyColl;            //Covariance of x and y of binaruy collisions
+   Double_t     fSx2Com;            //Variance of x of binaruy collisions
+   Double_t     fSy2Com;            //Variance of y of binaruy collisions
+   Double_t     fSxyCom;            //Covariance of x and y of binaruy collisions
    Double_t     fX;              //hard particle production fraction
    Double_t     fNpp;            //Multiplicity normalization
    Bool_t       fDoPartProd;     //=1 then particle production on
