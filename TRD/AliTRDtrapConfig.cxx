@@ -673,7 +673,7 @@ Bool_t AliTRDtrapConfig::SetTrapReg(TrapReg_t reg, Int_t value)
       return kTRUE;
    }
    else {
-      AliError("Register has individual values");
+      AliError(Form("Register %s has individual values", AliTRDtrapConfig::GetRegName(reg)));
    }
    return kFALSE;
 }

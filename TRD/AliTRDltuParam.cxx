@@ -36,8 +36,8 @@ AliTRDltuParam::AliTRDltuParam() :
   fOmegaTau(0.),
   fPtMin(0.1),
   fNtimebins(20 << 5),
-  fScaleQ0(1),
-  fScaleQ1(1),
+  fScaleQ0(0),
+  fScaleQ1(0),
   fPidTracklengthCorr(kFALSE),
   fTiltCorr(kFALSE)
 {

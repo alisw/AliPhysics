@@ -22,7 +22,7 @@ class AliTRDtrapConfigHandler : public TObject {
 
   void ResetMCMs();                                           // Reset all trap registers and DMEM of the MCMs
   Int_t LoadConfig();                                         // load a default configuration suitable for simulation
-  Int_t LoadConfig(TString filename, Int_t det);              // load a TRAP configuration from a file
+  Int_t LoadConfig(TString filename);                         // load a TRAP configuration from a file
 
   void ProcessLTUparam(Int_t dest, Int_t addr, UInt_t data);  // Process the LTU parameters
   void PrintGeoTest();                                        // Prints some information about the geometry. Only for debugging
@@ -31,10 +31,10 @@ class AliTRDtrapConfigHandler : public TObject {
   // Int_t poke(Int_t rob, Int_t mcm, Int_t addr, UInt_t value);   // not implemented yet
 
  private:
-  void  ConfigureDyCorr();                                    // deflection length correction due to Lorentz angle and tilted pad correction
-  void  ConfigureDRange();                                    // deflection range LUT,  range calculated according to B-field (in T) and pt_min (in GeV/c)
-  void  ConfigureNTimebins();                                 // timebins in the drift region
-  void  ConfigurePIDcorr();                                   // Calculate the mcm individual correction factors for the PID
+  void  ConfigureDyCorr(Int_t det);                             // deflection length correction due to Lorentz angle and tilted pad correction
+  void  ConfigureDRange(Int_t det);                             // deflection range LUT,  range calculated according to B-field (in T) and pt_min (in GeV/c)
+  void  ConfigureNTimebins(Int_t det);                          // timebins in the drift region
+  void  ConfigurePIDcorr(Int_t det);                            // Calculate the mcm individual correction factors for the PID
 
   Double_t Square(Double_t val) { return val*val; };          // returns the square of a given number
 
@@ -50,8 +50,6 @@ class AliTRDtrapConfigHandler : public TObject {
   static const Int_t fgkMCMperROBRow = 4;  // MCMs per ROB row
 
   AliTRDltuParam     ltuParam;             // ltuParam class for the actual calculation of the parameters
-
-  Int_t fDet;                              // detector number (0 - 539)
 
   UInt_t fRestrictiveMask;                 // mask to restrict subsequent commands to specified chambers
 

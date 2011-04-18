@@ -42,7 +42,6 @@ ClassImp(AliTRDtrapConfigHandler)
 
 AliTRDtrapConfigHandler::AliTRDtrapConfigHandler() :
      ltuParam()
-     , fDet(0)
      , fRestrictiveMask((0x3ffff << 11) | (0x1f << 6) | 0x3f)
 {
 
@@ -116,25 +115,28 @@ Int_t AliTRDtrapConfigHandler::LoadConfig()
 
   // ndrift (+ 5 binary digits)
   ltuParam.SetNtimebins(20 << 5);
-  ConfigureNTimebins();
-
   // deflection + tilt correction
   ltuParam.SetRawOmegaTau(0.16133);
-  ConfigureDyCorr();
-
   // deflection range table
   ltuParam.SetRawPtMin(0.1);
-  ConfigureDRange();
+  // magnetic field
+  ltuParam.SetRawMagField(0.0);
+  // scaling factors for q0, q1
+  ltuParam.SetRawScaleQ0(0);
+  ltuParam.SetRawScaleQ1(0);
+  // disable length correction and tilting correction
+  ltuParam.SetRawLengthCorrectionEnable(kFALSE);
+  ltuParam.SetRawTiltCorrectionEnable(kFALSE);
 
-  // hit position LUT
-  // reset values
-  const UShort_t lutPos[128] = {
-    0,  1,  1,  2,  2,  3,  3,  4,  4,  5,  5,  6,  6,  7,  7,  8,  8,  9,  9, 10, 10, 11, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15,
-    16, 16, 16, 17, 17, 18, 18, 19, 19, 19, 20, 20, 20, 21, 21, 22, 22, 22, 23, 23, 23, 24, 24, 24, 24, 25, 25, 25, 26, 26, 26, 26,
-    27, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 27, 27, 27, 27, 26,
-    26, 26, 26, 25, 25, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20, 20, 19, 18, 18, 17, 17, 16, 15, 14, 13, 12, 11, 10,  9,  8,  7,  7};
-  for (Int_t iCOG = 0; iCOG < 128; iCOG++)
-    cfg->SetTrapReg((AliTRDtrapConfig::TrapReg_t) (AliTRDtrapConfig::kTPL00 + iCOG), lutPos[iCOG]);
+  // apply ltuParams to all detectors
+  for(Int_t det=0; det<AliTRDgeometry::Ndet(); det++) {
+     ConfigureDyCorr(det);
+     ConfigureDRange(det); // deflection range
+     ConfigureNTimebins(det);  // timebins in the drift region
+     ConfigurePIDcorr(det);  // scaling parameters for the PID
+  }
+
+  // ****** hit position LUT
 
   // now calculate it from PRF
   AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
@@ -165,6 +167,7 @@ Int_t AliTRDtrapConfigHandler::LoadConfig()
       }
     }
   }
+  // ****** hit position LUT configuration end
 
   // event buffer
   cfg->SetTrapReg(AliTRDtrapConfig::kEBSF, 1);  // 0: store filtered; 1: store unfiltered
@@ -181,7 +184,8 @@ Int_t AliTRDtrapConfigHandler::LoadConfig()
   return 0;
 }
 
-Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename, Int_t det)
+
+Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename)
 {
    //
   // load a TRAP configuration from a file
@@ -191,8 +195,6 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename, Int_t det)
    // which are two tools to inspect/export configurations from wingDB
    //
 
-
-   fDet = det;
    Int_t ignoredLines=0;
    Int_t ignoredCmds=0;
    Int_t readLines=0;
@@ -213,10 +215,6 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename, Int_t det)
 
    // reset restrictive mask
    fRestrictiveMask = (0x3ffff << 11) | (0x1f << 6) | 0x3f;
-   Int_t sec   = AliTRDgeometry::GetSector(fDet);
-   Int_t stack = AliTRDgeometry::GetStack(fDet);
-   Int_t layer = AliTRDgeometry::GetLayer(fDet);
-   UInt_t rocpos = (1 << (sec+11)) | (1 << (stack+6)) | (1 << layer);
 
    while(infile.good()) {
       cmd=999;
@@ -224,22 +222,31 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename, Int_t det)
       addr=-1;
       data=-1;
       infile >> std::skipws >> cmd >> addr >> data >> extali;
-      //      std::cout << "no: " << no << ", cmd " << cmd << ", extali " << extali << ", addr " << addr << ", data " << data <<  endl;
 
       if(cmd!=999 && extali!=-1 && addr != -1 && data!= -1 && extali!=-1) {
-	if(cmd==fgkScsnCmdWrite) {
-	  if ((fRestrictiveMask & rocpos) == rocpos)
-	    cfg->AddValues(det, cmd, extali, addr, data);
-	}
-	 else if(cmd == fgkScsnCmdRestr)
-	   fRestrictiveMask = data;
-	 else if(cmd == fgkScsnLTUparam)
+
+	 if(cmd==fgkScsnCmdWrite) {
+	    for(Int_t det=0; det<AliTRDgeometry::Ndet(); det++) {
+	       UInt_t rocpos = (1 << (AliTRDgeometry::GetSector(det)+11)) | (1 << (AliTRDgeometry::GetStack(det)+6)) | (1 << AliTRDgeometry::GetLayer(det));
+	       if ((fRestrictiveMask & rocpos) == rocpos)
+		  cfg->AddValues(det, cmd, extali, addr, data);
+	    }
+	 }
+
+	 else if(cmd == fgkScsnLTUparam) {
 	    ProcessLTUparam(extali, addr, data);
+	 }
+
+	 else if(cmd == fgkScsnCmdRestr) {
+	    fRestrictiveMask = data;
+	 }
+
 	 else
 	    ignoredCmds++;
 
 	 readLines++;
       }
+
       else if(!infile.eof() && !infile.good()) {
 	 infile.clear();
 	 infile.ignore(256, '\n');
@@ -249,7 +256,7 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename, Int_t det)
       if(!infile.eof())
 	 infile.clear();
    }
-
+      
    infile.close();
 
    AliDebug(5, Form("Ignored lines: %i, ignored cmds: %i", ignoredLines, ignoredCmds));
@@ -273,10 +280,12 @@ void AliTRDtrapConfigHandler::ProcessLTUparam(Int_t dest, Int_t addr, UInt_t dat
    switch (dest) {
 
    case 0: // set the parameters in AliTRDtrapConfig
-      ConfigureDyCorr();
-      ConfigureDRange(); // deflection range
-      ConfigureNTimebins();  // timebins in the drift region
-      ConfigurePIDcorr();  // scaling parameters for the PID
+      for(Int_t det=0; det<AliTRDgeometry::Ndet(); det++) {
+	 ConfigureDyCorr(det);
+	 ConfigureDRange(det); // deflection range
+	 ConfigureNTimebins(det);  // timebins in the drift region
+	 ConfigurePIDcorr(det);  // scaling parameters for the PID
+      }
       break;
 
    case 1: // set variables
@@ -301,17 +310,17 @@ void AliTRDtrapConfigHandler::ProcessLTUparam(Int_t dest, Int_t addr, UInt_t dat
 }
 
 
-void AliTRDtrapConfigHandler::ConfigureNTimebins()
+void AliTRDtrapConfigHandler::ConfigureNTimebins(Int_t det)
 {
    //
    // Set timebins in the drift region
    //
-  AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, 127, AliTRDtrapConfig::fgkDmemAddrNdrift, ltuParam.GetNtimebins());
+  AliTRDtrapConfig::Instance()->AddValues(det, fgkScsnCmdWrite, 127, AliTRDtrapConfig::fgkDmemAddrNdrift, ltuParam.GetNtimebins());
 }
 
 
 
-void AliTRDtrapConfigHandler::ConfigureDyCorr()
+void AliTRDtrapConfigHandler::ConfigureDyCorr(Int_t det)
 {
    //
    //  Deflection length correction
@@ -319,13 +328,13 @@ void AliTRDtrapConfigHandler::ConfigureDyCorr()
    //  This correction is in units of padwidth / (256*32)
    //
 
-  Int_t nRobs = AliTRDgeometry::GetStack(fDet) == 2 ? 6 : 8;
+   Int_t nRobs = AliTRDgeometry::GetStack(det) == 2 ? 6 : 8;
 
   for (Int_t r = 0; r < nRobs; r++) {
     for (Int_t m = 0; m < 16; m++) {
       Int_t dest =  1<<10 | r<<7 | m;
-      Int_t dyCorrInt = ltuParam.GetDyCorrection(fDet, r, m);
-      AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, dest, AliTRDtrapConfig::fgkDmemAddrDeflCorr, dyCorrInt);
+      Int_t dyCorrInt = ltuParam.GetDyCorrection(det, r, m);
+      AliTRDtrapConfig::Instance()->AddValues(det, fgkScsnCmdWrite, dest, AliTRDtrapConfig::fgkDmemAddrDeflCorr, dyCorrInt);
     }
   }
 }
@@ -334,7 +343,7 @@ void AliTRDtrapConfigHandler::ConfigureDyCorr()
 
 
 
-void AliTRDtrapConfigHandler::ConfigureDRange()
+void AliTRDtrapConfigHandler::ConfigureDRange(Int_t det)
 {
    //
    // deflection range LUT
@@ -343,7 +352,7 @@ void AliTRDtrapConfigHandler::ConfigureDRange()
    // deflection (-64..63) is used
    //
 
-  Int_t nRobs = AliTRDgeometry::GetStack(fDet) == 2 ? 6 : 8;
+  Int_t nRobs = AliTRDgeometry::GetStack(det) == 2 ? 6 : 8;
 
   Int_t dyMinInt;
   Int_t dyMaxInt;
@@ -357,9 +366,9 @@ void AliTRDtrapConfigHandler::ConfigureDRange()
 	   // 	<< ", min int: " << dyMinInt << ", max int: " << dyMaxInt << endl;
 	   Int_t dest =  1<<10 | r<<7 | m;
 	   Int_t lutAddr = AliTRDtrapConfig::fgkDmemAddrDeflCutStart + 2*c;
-	   ltuParam.GetDyRange(fDet, r, m, c, dyMinInt, dyMaxInt);
-	   AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, dest, lutAddr+0, dyMinInt);
-	   AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, dest, lutAddr+1, dyMaxInt);
+	   ltuParam.GetDyRange(det, r, m, c, dyMinInt, dyMaxInt);
+	   AliTRDtrapConfig::Instance()->AddValues(det, fgkScsnCmdWrite, dest, lutAddr+0, dyMinInt);
+	   AliTRDtrapConfig::Instance()->AddValues(det, fgkScsnCmdWrite, dest, lutAddr+1, dyMaxInt);
 	 }
       }
    }
@@ -376,14 +385,14 @@ void AliTRDtrapConfigHandler::PrintGeoTest()
    for(int stack=0; stack<5; stack++) {
       for(int layer=0; layer<6; layer++) {
 
-	 fDet = sm*30+stack*6+layer;
+	 Int_t det = sm*30+stack*6+layer;
 	 for (Int_t r = 0; r < 6; r++) {
 	    for (Int_t m = 0; m < 16; m++) {
 	       for (Int_t c = 7; c < 8; c++) {
 		 cout << stack << ";" << layer << ";" << r << ";" << m
-		      << ";" << ltuParam.GetX(fDet, r, m)
-		      << ";" << ltuParam.GetLocalY(fDet, r, m, c)
-		      << ";" << ltuParam.GetLocalZ(fDet, r, m) << endl;
+		      << ";" << ltuParam.GetX(det, r, m)
+		      << ";" << ltuParam.GetLocalY(det, r, m, c)
+		      << ";" << ltuParam.GetLocalZ(det, r, m) << endl;
 	       }
 	    }
 	 }
@@ -393,7 +402,7 @@ void AliTRDtrapConfigHandler::PrintGeoTest()
 }
 
 
-void AliTRDtrapConfigHandler::ConfigurePIDcorr()
+void AliTRDtrapConfigHandler::ConfigurePIDcorr(Int_t det)
 {
    //
    // Calculate the MCM individual correction factors for the PID
@@ -406,14 +415,14 @@ void AliTRDtrapConfigHandler::ConfigurePIDcorr()
    UInt_t cor0;
    UInt_t cor1;
 
-   Int_t nRobs = AliTRDgeometry::GetStack(fDet) == 2 ? 6 : 8;
+   Int_t nRobs = AliTRDgeometry::GetStack(det) == 2 ? 6 : 8;
 
    for (Int_t r=0; r<nRobs; r++) {
       for(Int_t m=0; m<16; m++) {
 	 Int_t dest =  1<<10 | r<<7 | m;
-	 ltuParam.GetCorrectionFactors(fDet, r, m, 0, cor0, cor1);
-	 AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, dest, addrLUTcor0, cor0);
-	 AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, dest, addrLUTcor1, cor1);
+	 ltuParam.GetCorrectionFactors(det, r, m, 9, cor0, cor1);
+	 AliTRDtrapConfig::Instance()->AddValues(det, fgkScsnCmdWrite, dest, addrLUTcor0, cor0);
+	 AliTRDtrapConfig::Instance()->AddValues(det, fgkScsnCmdWrite, dest, addrLUTcor1, cor1);
     }
   }
 }
