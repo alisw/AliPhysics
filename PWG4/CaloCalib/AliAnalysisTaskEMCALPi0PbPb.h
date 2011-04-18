@@ -57,6 +57,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetTrainMode(Bool_t b)                         { fTrainMode     = b;         }
   void         SetUseQualFlag(Bool_t b)                       { fUseQualFlag   = b;         }
   void         SetVertexRange(Double_t z1, Double_t z2)       { fVtxZMin=z1; fVtxZMax=z2;   }
+  void         SetL0TimeRange(Int_t l, Int_t h)               { fMinL0Time=l; fMaxL0Time=h; }
 
  protected:
   void         CalcCaloTriggers();
