@@ -225,35 +225,35 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
 
   if(fBeamType.Contains("Pb")){
      fMultOff  = new TH1F("fMult_off", "",200,0,2000);
-     fMultHLT  = new TH1F("fMult_hlt", "TPC track multiplicity",200,0,2000);     
+     fMultHLT  = new TH1F("fMult_hlt", "TPC track multiplicity",200,0,2000); fMultHLT->SetXTitle("TPC track multiplicity");  
      fNcontOff = new TH1F("fNcont_off","",200,0,2000);
-     fNcontHLT = new TH1F("fNcont_hlt","# of contributors",200,0,2000);     
-     fV0cent   = new TH1F("fV0cent",   "V0 centrality",    100,0, 100);
+     fNcontHLT = new TH1F("fNcont_hlt","# of contributors",200,0,2000); fNcontHLT->SetXTitle("# of contributors");  
+     fV0cent   = new TH1F("fV0cent",   "V0 centrality",    100,0, 100); fV0cent->SetXTitle("V0 centrality");
   } 
   else {
      fMultOff = new TH1F("fMult_off","",200,0,200);
-     fMultHLT = new TH1F("fMult_hlt","TPC track multiplicity",200,0,200);    
+     fMultHLT = new TH1F("fMult_hlt","TPC track multiplicity",200,0,200); fMultHLT->SetXTitle("TPC track multiplicity");     
      fNcontOff = new TH1F("fNcont_off","",200,0,200);
-     fNcontHLT = new TH1F("fNcont_hlt","# of contributors",200,0,200);
+     fNcontHLT = new TH1F("fNcont_hlt","# of contributors",200,0,200); fNcontHLT->SetXTitle("# of contributors");
   }
    
   fXvertexOff = new TH1F("fXvertex_off","",200,-0.5,0.5);
-  fXvertexHLT = new TH1F("fXvertex_hlt","X primary vertex",200,-0.5,0.5);
+  fXvertexHLT = new TH1F("fXvertex_hlt","X primary vertex",200,-0.5,0.5); fXvertexHLT->SetXTitle("x (cm)");
  
   fYvertexOff = new TH1F("fYvertex_off","",200,-0.5,0.5);
-  fYvertexHLT = new TH1F("fYvertex_hlt","Y primary vertex",200,-0.5,0.5);
+  fYvertexHLT = new TH1F("fYvertex_hlt","Y primary vertex",200,-0.5,0.5); fYvertexHLT->SetXTitle("y (cm)");
  
   fZvertexOff = new TH1F("fZvertex_off","",100,-20,20);
-  fZvertexHLT = new TH1F("fZvertex_hlt","Z primary vertex",100,-20,20);
+  fZvertexHLT = new TH1F("fZvertex_hlt","Z primary vertex",100,-20,20); fZvertexHLT->SetXTitle("z (cm)");
 
   fSPDXvertexOff = new TH1F("fSPDXvertex_off","",200,-0.5,0.5);
-  fSPDXvertexHLT = new TH1F("fSPDXvertex_hlt","X SPD primary vertex",200,-0.5,0.5);
+  fSPDXvertexHLT = new TH1F("fSPDXvertex_hlt","X SPD primary vertex",200,-0.5,0.5); fSPDXvertexHLT->SetXTitle("x (cm)");
  
   fSPDYvertexOff = new TH1F("fSPDYvertex_off","",200,-0.5,0.5);
-  fSPDYvertexHLT = new TH1F("fSPDYvertex_hlt","Y SPD primary vertex",200,-0.5,0.5);
+  fSPDYvertexHLT = new TH1F("fSPDYvertex_hlt","Y SPD primary vertex",200,-0.5,0.5); fSPDYvertexHLT->SetXTitle("y (cm)");
  
   fSPDZvertexOff = new TH1F("fSPDZvertex_off","",100,-20,20);
-  fSPDZvertexHLT = new TH1F("fSPDZvertex_hlt","Z SPD primary vertex",100,-20,20);
+  fSPDZvertexHLT = new TH1F("fSPDZvertex_hlt","Z SPD primary vertex",100,-20,20); fSPDZvertexHLT->SetXTitle("z (cm)");
     
   fEventSpecieOff = new TH1F("fEventSpecie_off","",18, 0, 18);
   fEventSpecieHLT = new TH1F("fEventSpecie_hlt","event species",18, 0, 18);
@@ -261,37 +261,37 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   //============== track properties =================//
 
   fChargeOff = new TH1F("fCharge_off", "", 3, -1.5, 1.5);  
-  fChargeHLT = new TH1F("fCharge_hlt", "charge distribution", 3, -1.5, 1.5);  
+  fChargeHLT = new TH1F("fCharge_hlt", "charge distribution", 3, -1.5, 1.5); fChargeHLT->SetXTitle("polarity");
   
   fMomentumOff = new TH1F("fMomentum_off", "", 100, 0, 10);
-  fMomentumHLT = new TH1F("fMomentum_hlt", "transverse momentum", 100, 0, 10);
+  fMomentumHLT = new TH1F("fMomentum_hlt", "transverse momentum", 100, 0, 10); fMomentumHLT->SetXTitle("p_{T} (GeV/c)");
  
   fDCArOff = new TH1F("fDCAr_off", "", 200, -15, 15);
-  fDCArHLT = new TH1F("fDCAr_hlt", "DCAr", 200, -15, 15);
+  fDCArHLT = new TH1F("fDCAr_hlt", "DCAr", 200, -15, 15); fDCArHLT->SetXTitle("DCAr (cm)");
 
   fDCAzOff = new TH1F("fDCAz_off", "", 200, -15, 15);
-  fDCAzHLT = new TH1F("fDCAz_hlt", "DCAz", 200, -15, 15);
+  fDCAzHLT = new TH1F("fDCAz_hlt", "DCAz", 200, -15, 15); fDCAzHLT->SetXTitle("DCAz (cm)");
  
   fNclusterOff = new TH1F("fNcluster_off","", 200, 0, 200);
-  fNclusterHLT = new TH1F("fNcluster_hlt","TPC clusters/track", 200, 0, 200);
+  fNclusterHLT = new TH1F("fNcluster_hlt","TPC clusters/track", 200, 0, 200); fNclusterHLT->SetXTitle("TPC clusters/track");
 
   fNITSclusterOff = new TH1F("fNITScluster_off","", 10, 0, 10);
-  fNITSclusterHLT = new TH1F("fNITScluster_hlt","ITS clusters/track", 10, 0, 10);
+  fNITSclusterHLT = new TH1F("fNITScluster_hlt","ITS clusters/track", 10, 0, 10); fNITSclusterHLT->SetXTitle("ITS clusters/track");
  
   fPhiOff = new TH1F("fPhi_off","",90,0,360);
-  fPhiHLT = new TH1F("fPhi_hlt","azimuthal angle",90,0,360);
+  fPhiHLT = new TH1F("fPhi_hlt","azimuthal angle",90,0,360); fPhiHLT->SetXTitle("#phi (deg)");
 
   fEtaOff = new TH1F("fEta_off","",100,-2,2);
-  fEtaHLT = new TH1F("fEta_hlt","pseudorapidity",100,-2,2);
+  fEtaHLT = new TH1F("fEta_hlt","pseudorapidity",100,-2,2); fEtaHLT->SetXTitle("#eta");
   
-  fChargeHLTcut      = new TH1F("fCharge_hltcut",     "",  3, -1.5, 1.5);  
-  fMomentumHLTcut    = new TH1F("fMomentum_hltcut",   "",100,    0,  10); 
-  fDCArHLTcut        = new TH1F("fDCAr_hltcut",       "",200,  -15,  15);
-  fDCAzHLTcut        = new TH1F("fDCAz_hltcut",       "",200,  -15,  15);
-  fNclusterHLTcut    = new TH1F("fNcluster_hltcut",   "",200,    0, 200);
-  fNITSclusterHLTcut = new TH1F("fNITScluster_hltcut","", 10,    0,  10); 
-  fPhiHLTcut         = new TH1F("fPhi_hltcut",        "", 90,    0, 360);
-  fEtaHLTcut         = new TH1F("fEta_hltcut",        "",100,   -2,   2);
+  fChargeHLTcut      = new TH1F("fCharge_hltcut",     "",  3, -1.5, 1.5);  fChargeHLTcut->SetXTitle("polarity");   
+  fMomentumHLTcut    = new TH1F("fMomentum_hltcut",   "",100,    0,  10);  fMomentumHLTcut ->SetXTitle("p_{T} (GeV/c)");  
+  fDCArHLTcut        = new TH1F("fDCAr_hltcut",       "",200,  -15,  15);  fDCArHLTcut->SetXTitle("DCAr (cm)");       
+  fDCAzHLTcut        = new TH1F("fDCAz_hltcut",       "",200,  -15,  15);  fDCAzHLTcut->SetXTitle("DCAz (cm)");      
+  fNclusterHLTcut    = new TH1F("fNcluster_hltcut",   "",200,    0, 200);  fNclusterHLTcut->SetXTitle("TPC clusters/track");   
+  fNITSclusterHLTcut = new TH1F("fNITScluster_hltcut","", 10,    0,  10);  fNITSclusterHLTcut->SetXTitle("ITS clusters/track");
+  fPhiHLTcut         = new TH1F("fPhi_hltcut",        "", 90,    0, 360);  fPhiHLTcut->SetXTitle("#phi (deg)");    
+  fEtaHLTcut         = new TH1F("fEta_hltcut",        "",100,   -2,   2);  fEtaHLTcut->SetXTitle("#eta");	     
 
   //--------------------------------------------------//
   
