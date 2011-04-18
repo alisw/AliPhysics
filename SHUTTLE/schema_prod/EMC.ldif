@@ -21,7 +21,7 @@ multiSplit: 4000
 objectClass: dcsConfig
 dcsHost: alidcsamanda.cern.ch
 dcsAlias: PT_[00..79].Temperature
-dcsAlias: MC_TRU[00..29]_COSMTHRESH
+dcsAlias: EMC_TRU[00..29]_COSMTHRESH
 dcsAlias: EMC_TRU[00..29]_GLOBALTHRESH
 dcsAlias: EMC_TRU[00..29]_PEAKFINDER
 dcsAlias: EMC_TRU[00..29]_L0ALGSEL
