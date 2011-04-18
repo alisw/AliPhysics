@@ -23,6 +23,7 @@ class AliESDRecInfo;
 class AliESDEvent;
 class AliMCEvent;
 class AliComparisonObject;
+class AliTrackComparison;
 
 class AliMCTrackingTestTask : public AliAnalysisTask {
  public:
@@ -43,6 +44,8 @@ class AliMCTrackingTestTask : public AliAnalysisTask {
   
   void           FitTrackRefs(TParticle * part, TClonesArray * trefs);
 
+  Bool_t         IsFindable(Int_t label, Float_t minTrackLength);
+  Bool_t         AddComparisonObject(AliTrackComparison* comp);
   //
   // debug streamer part
   //
@@ -60,6 +63,9 @@ class AliMCTrackingTestTask : public AliAnalysisTask {
   AliMCTrackingTestTask& operator=(const AliMCTrackingTestTask& /*info*/) { return *this;}
   AliMCEvent  * fMCinfo;          //! MC event handler
   AliESDEvent * fESD;             //! current esd event
+  
+  Int_t         fCurrentRun;      //  current run number
+
   //
   //
   //
@@ -67,6 +73,11 @@ class AliMCTrackingTestTask : public AliAnalysisTask {
   Int_t  fStreamLevel;                  //  debug stream level 
   Int_t  fDebugLevel;                   //  debug level
   TString      fDebugOutputPath; // debug output path
+
+  TList* fOutList;
+  TIterator *fPitList;        //! iterator over the output objetcs  
+  TList *fCompList; 
+
   ClassDef(AliMCTrackingTestTask, 1); // Analysis task base class for tracks
 };
 
