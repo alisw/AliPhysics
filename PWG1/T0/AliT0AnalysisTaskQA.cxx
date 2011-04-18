@@ -73,18 +73,22 @@ void AliT0AnalysisTaskQA::UserCreateOutputObjects()
  fTimeVSAmplitude = new TH2F*[NPMT0];
 
  for (Int_t i=0; i<NPMT0; i++) {
-    fTimeVSAmplitude[i]= new TH2F (Form("fTimeVSAmplitude%d",i+1),"fTimeVsAmplitude",60, -10, 50,500,6000,7000);
+    fTimeVSAmplitude[i]= new TH2F (Form("fTimeVSAmplitude%d",i+1),"fTimeVsAmplitude",60, -10, 50,1500,1000,7000);
   }
 
   fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",100,-2000,2000);   //or A plus or C 
   fResolution      = new TH1F("fResolution","fResolution",100,-2000,2000);// or A minus or C spectrum
   fTzeroORA        = new TH1F("fTzeroORA","fTzeroORA",100,-2000,2000);// or A spectrum
   fTzeroORC        = new TH1F("fTzeroORC","fTzeroORC",100,-2000,2000);// or C spectrum
-  fCFDVSPmtId      = new TH2F("fCFDVSPmtId","fCFDVSPmtId",24,0,24,250,6000,7000);  // 
+  fCFDVSPmtId      = new TH2F("fCFDVSPmtId","fCFDVSPmtId",24,0,24,1500,1000,7000);  // 
   fSPDVertexVST0Vertex = new TH2F("fSPDVertexVST0Vertex","fSPDVertexVST0Vertex",30,-30,30,30,-30,30);
   fOrAvsNtracks    = new TH2F("fAvstracks", "Avstracks",200, 0, 1000, 500, -1000, 1000);
   fOrCvsNtracks    = new TH2F("fCvstracks", "Cvstracks",200, 0, 1000, 500, -1000, 1000);
   fT0vsNtracks     = new TH2F("fT0ACvstrackles", "T0ACvstracks",200, 0, 1000, 500, -1000, 1000); 
+   fEffAC = new TH1F("EffAC","T0Eff ", 200, 0, 1000);
+   fEffA = new TH1F("EffA","T0AEff ", 200, 0, 1000);
+   fEffC = new TH1F("EffC","T0CEff ", 200, 0, 1000);
+   ftracksEffSPD= new TH1F("ftracksEffSPD","SPDeff", 200, 0, 1000);
 
   fTzeroObject     = new TObjArray();
   fTzeroObject->SetOwner(kTRUE);
@@ -101,6 +105,10 @@ void AliT0AnalysisTaskQA::UserCreateOutputObjects()
   fTzeroObject->AddAtAndExpand(fT0vsNtracks, 30);
   fTzeroObject->AddAtAndExpand(fOrAvsNtracks,31);
   fTzeroObject->AddAtAndExpand(fOrCvsNtracks, 32);
+  fTzeroObject->AddAtAndExpand(fEffC, 33);
+  fTzeroObject->AddAtAndExpand(fEffA, 34);
+  fTzeroObject->AddAtAndExpand(fEffAC, 35);
+  fTzeroObject->AddAtAndExpand(ftracksEffSPD, 36);
 
   PostData(1, fTzeroObject);
   // Called once
@@ -139,36 +147,37 @@ void AliT0AnalysisTaskQA::UserExec(Option_t *)
   Double32_t orC = mean[2];
   Int_t ntracks = fESD->GetNumberOfTracks(); 
 
-  if(orA<9999){
+  if(orA<99999){
     fTzeroORA->Fill(orA);
     fOrAvsNtracks->Fill(ntracks, orA);
+    fEffA->Fill(ntracks);
   }
-  if(orC<9999) {
+  if(orC<99999) {
     fTzeroORC->Fill(orC);
     fOrCvsNtracks->Fill(ntracks, orC);
-  }
-  if(orA<9999 && orC<9999) {
+    fEffC->Fill(ntracks);
+   }
+  if(orA<99999 && orC<99999) {
     fResolution->Fill((orA-orC)/2.);
     fTzeroORAplusORC->Fill(mean[0]);
+    fEffAC->Fill(ntracks);
     fT0vsNtracks->Fill(ntracks, mean[0]);
   }
   
   Double32_t t0vertex = fESD->GetT0zVertex();
-  //  cout << "t0 vertex "<<t0vertex<<endl;
   Double32_t esdzvertex;
   const AliESDVertex * esdvertex = fESD->GetPrimaryVertex();
   Int_t nofcontrib=-1;
-  if(esdvertex && t0vertex<999)
+  nofcontrib=esdvertex->GetNContributors();
+  if(nofcontrib>0)    ftracksEffSPD->Fill(ntracks);
+   if(esdvertex && t0vertex<999)
     {
-      nofcontrib=esdvertex->GetNContributors();
-      if(nofcontrib>1)
+      if(nofcontrib>0)
 	{
 	  esdzvertex=esdvertex->GetZv();
-	  //	  cout << "esd vertex "<<esdzvertex<<endl;
 	  fSPDVertexVST0Vertex->Fill(t0vertex,esdzvertex);
 	}
     }
-  // printf("%f   %f  %f\n",orA,orC,time);
   PostData(1, fTzeroObject);
 }      
  //________________________________________________________________________

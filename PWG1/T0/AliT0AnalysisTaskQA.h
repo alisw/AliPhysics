@@ -39,7 +39,11 @@ class AliT0AnalysisTaskQA : public AliAnalysisTaskSE {
   TH2F        *fSPDVertexVST0Vertex; //! SPD vertex vs T0 vertex   
   TH2F        *fOrAvsNtracks; //! T0A vs Ntracks
   TH2F        *fOrCvsNtracks; //! T0C vs Ntracks
-  TH2F        *fT0vsNtracks; //! T0A vs Ntracks
+  TH2F        *fT0vsNtracks;  //! T0A vs Ntracks
+  TH1F        *fEffAC;        //T0AC eff
+  TH1F        *fEffA;         //T0A eff
+  TH1F        *fEffC;         //T0C eff
+  TH1F        *ftracksEffSPD;  // ntracks in SPD 
   
  
   AliT0AnalysisTaskQA(const AliT0AnalysisTaskQA&); // not implemented
