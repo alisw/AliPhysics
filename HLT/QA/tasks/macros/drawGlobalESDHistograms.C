@@ -7,7 +7,9 @@
  *
  * or aliroot drawGlobalESDHistograms.C++ in compiled mode
  *
- * It saves the canvas with the output histograms in a png and a ROOT file.
+ * It saves all canvases with the output histograms in a png and a ROOT file.
+ * The second argument of the macro will produce individual files for all pads,
+ * in case it is turned to kTRUE.
  *
  * @ingroup alihlt_qa
  * @author Camilla.Stokkevag@student.uib.no, Kalliopi.Kanaki@ift.uib.no 
@@ -41,7 +43,7 @@ void printStats(TH1F *h1, TH1F *h2);
 
 //==========================================================//
 
-void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison.root"){
+void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison.root", bool option=kFALSE){
  
  gROOT->SetStyle("Plain");
  gStyle->SetPalette(1);
@@ -169,8 +171,48 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  c3->SaveAs(folder+"/general_event_properties.root");  
  c4->SaveAs(folder+"/HLT_track_properties_cuts.png");  
  c4->SaveAs(folder+"/HLT_track_properties_cuts.root");  
- return;	
+ 
+ if(option==kTRUE){ 
+    TPad *pad = NULL; 
+    for(int i=1; i<=sizeTrack; i++){
+       pad = (TPad*)c1->GetListOfPrimitives()->FindObject(Form("c1_%d",i));
+       if(!pad){
+  	  printf("Empty pad %d in canvas %s.\n", i, c1->GetName());
+  	  continue;	    
+       }
+       pad->SaveAs(Form(folder+"/c1_%s_off.png",trackHLT[i-1]));
+    }
+
+    for(int i=1; i<=sizeTrack; i++){
+       pad = (TPad*)c4->GetListOfPrimitives()->FindObject(Form("c4_%d",i));
+       if(!pad){
+  	  printf("Empty pad %d in canvas %s.\n", i, c4->GetName());
+  	  continue;	    
+       }
+       pad->SaveAs(Form(folder+"/c4_%s_cuts.png",trackHLT[i-1]));
+    }
+    
+    for(int i=1; i<7; i++){
+       pad = (TPad*)c2->GetListOfPrimitives()->FindObject(Form("c2_%d",i));
+       if(!pad){
+  	  printf("Empty pad %d in canvas %s.\n", i, c2->GetName());
+  	  continue;	    
+       }
+       pad->SaveAs(Form(folder+"/c2_%s_off.png",eventHLT[i-1]));
+    }
+
+    for(int i=6; i<9; i++){
+       pad = (TPad*)c3->GetListOfPrimitives()->FindObject(Form("c3_%d",i-5));
+       if(!pad){
+  	  printf("Empty pad %d in canvas %s.\n", i-5, c3->GetName());
+  	  continue;	    
+       }
+       pad->SaveAs(Form(folder+"/c3_%s_off.png",eventHLT[i]));
+    }
  }
+ 
+ return;	
+}
 
 void printStats(TH1F* h1, TH1F* h2){    
   gPad->Update();
