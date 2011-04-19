@@ -747,6 +747,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   }
 
 
+  AliAODPidHF* pidHF=fCuts->GetPidHF();
+  AliTPCPIDResponse* tpcres=new AliTPCPIDResponse();
+  if(pidHF) pidHF->SetBetheBloch(*tpcres);
+
+
   Int_t ntracks=0;
   Int_t isGoodTrack=0, isFakeTrack=0;
 
@@ -756,7 +761,6 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     //loop on tracks in the event
     for (Int_t k=0;k<ntracks;k++){
       AliAODTrack* track=aod->GetTrack(k);
-      AliAODPidHF* pidHF=fCuts->GetPidHF();
       AliAODPid *pid = track->GetDetPid();
 
 
@@ -802,34 +806,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	}//if TOF status
 
 	if(pidHF && pidHF->CheckStatus(track,"TPC")){ 
-	  Double_t alephParameters[5];
-	  /*
-	  //this is recommended for LHC10d
-	  alephParameters[0] = 1.34490e+00/50.;
-	  alephParameters[1] =  2.69455e+01;
-	  alephParameters[2] =  TMath::Exp(-2.97552e+01);
-	  alephParameters[3] = 2.35339e+00;
-	  alephParameters[4] = 5.98079e+00;
-	  */
-      
-	  //this is recommended for PbPb (LHC10h)
-	  alephParameters[0] = 1.25202/50.; 
-	  alephParameters[1] = 2.74992e+01; 
-	  alephParameters[2] = TMath::Exp(-3.31517e+01); 
-	  alephParameters[3] = 2.46246; 
-	  alephParameters[4] = 6.78938;
-      
-	  /*
-	  //this is recommended for LHC10bc
-	  alephParameters[0] = 0.0283086/0.97;
-	  alephParameters[1] = 2.63394e+01;
-	  alephParameters[2] = 5.04114e-11;
-	  alephParameters[3] = 2.12543e+00;
-	  alephParameters[4] = 4.88663e+00;
-	  */
 
-	  AliTPCPIDResponse* tpcres=new AliTPCPIDResponse();
-	  tpcres->SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2],alephParameters[3],alephParameters[4]);
 	  Double_t TPCp=pid->GetTPCmomentum();
 	  Double_t TPCsignal=pid->GetTPCsignal();
 	  ((TH1F*)fOutputPID->FindObject("hTPCsig"))->Fill(TPCsignal);
@@ -840,7 +817,6 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  ((TH2F*)fOutputPID->FindObject("hTPCsigmaPion"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kPion));
 	  //if (pidHF->IsProtonRaw(track,"TOF"))
 	  ((TH2F*)fOutputPID->FindObject("hTPCsigmaProton"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kProton));
-	  delete tpcres;
 	}//if TPC status
       } //end PID histograms
 
@@ -955,7 +931,6 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    if (fCuts->IsSelected(d,AliRDHFCuts::kAll,aod) && fOnOff[1]){
 	  
 	      AliAODPid *pid = track->GetDetPid();
-	      AliAODPidHF* pidHF=fCuts->GetPidHF();
 	      Double_t times[5];
 	      pid->GetIntegratedTimes(times);
 	      if(pidHF && pidHF->CheckStatus(track,"TOF")) ((TH2F*)fOutputPID->FindObject("hTOFtimeKaonHyptimeAC"))->Fill(track->P(),pid->GetTOFsignal()-times[AliPID::kKaon]);
@@ -973,6 +948,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     }
   } //end if on pid or track histograms
 
+  delete tpcres;
   delete [] pdgdaughters;
   PostData(1,fNEntries);
   if(fOnOff[1]) PostData(2,fOutputPID);
