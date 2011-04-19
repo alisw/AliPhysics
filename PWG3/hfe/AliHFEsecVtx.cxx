@@ -12,9 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */
-
 //
 // Secondary vertexing construction Class
 //  Construct secondary vertex from Beauty hadron with electron and
@@ -208,7 +205,7 @@ void AliHFEsecVtx::Init()
   fFilter->MakeCutStepPrimary();
 } 
 
-void AliHFEsecVtx::Process(AliVTrack *signalTrack){ 
+Bool_t AliHFEsecVtx::Process(AliVTrack *signalTrack){ 
   //
   // Run Process
   //
@@ -219,8 +216,10 @@ void AliHFEsecVtx::Process(AliVTrack *signalTrack){
 
   if(!track){
     AliDebug(1, "no esd track pointer, return\n");
-    return;
+    return kFALSE;
   }
+
+  Bool_t bTagged = kFALSE;
 
   FillHistos(0,track); // wo any cuts
 
@@ -258,10 +257,15 @@ void AliHFEsecVtx::Process(AliVTrack *signalTrack){
   }
 
   // fill histos for raw spectra
-  if(HFEsecvtxs()->GetEntriesFast()) FillHistos(3,track); //after secvtx cut
+  if(HFEsecvtxs()->GetEntriesFast()) {
+    FillHistos(3,track); //after secvtx cut
+    bTagged = kTRUE;
+  }
     
   DeleteHFEpairs();
   DeleteHFEsecvtxs();
+
+  return bTagged;
 }
 
 //_______________________________________________________________________________________________
@@ -759,7 +763,7 @@ void AliHFEsecVtx::Fill3TrkSECVTX(AliVTrack* track, Int_t ipair, Int_t jpair)
 }
 
 //_______________________________________________________________________________________________
-void AliHFEsecVtx::Fill2TrkSECVTX(AliVTrack* track, AliHFEpairs *pair)
+void AliHFEsecVtx::Fill2TrkSECVTX(AliVTrack* track, const AliHFEpairs *pair)
 {
   //
   // fill 2 tracks' secondary vertex properties
@@ -1464,7 +1468,7 @@ Int_t AliHFEsecVtx::GetMCPDG(const AliVTrack *track)
 }
 
 //______________________________________________________________________________
-void AliHFEsecVtx::GetESDPID(AliESDtrack *track, Int_t &recpid, Double_t &recprob) 
+void AliHFEsecVtx::GetESDPID(const AliESDtrack *track, Int_t &recpid, Double_t &recprob) 
 {
   //
   // calculate likehood for esd pid
@@ -1712,7 +1716,8 @@ void AliHFEsecVtx::FillHistos(Int_t step, const AliESDtrack *track){
       //if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+2)))) return;
       (static_cast<TH1F *>(fSecVtxList->At(step+2)))->Fill(mcpart->Pt()); //beauty
     }
-    else if(esource==4) {
+    else if(esource>12 && esource<19) {
+    //else if(esource==4) {
       //if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+3)))) return;
       (static_cast<TH1F *>(fSecVtxList->At(step+3)))->Fill(mcpart->Pt()); //conversion
     }

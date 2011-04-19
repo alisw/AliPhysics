@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // The analysis task:
 // study displaced electrons from beauty and charm 
@@ -84,17 +81,6 @@ AliAnalysisTaskDisplacedElectrons::AliAnalysisTaskDisplacedElectrons():
   //
   // Dummy constructor
   //
-  DefineInput(0, TChain::Class());
-  DefineOutput(1, TList::Class());  // displacedElectron
-  DefineOutput(2, TList::Class());  // correction framework
-  DefineOutput(3, TList::Class());  // QA
-  
-  // Initialize pid
-  
-  fDeDefaultPID = new AliESDpid;
-  fDePID = new AliHFEpid("DEPID");
-  
-
 }
 
 //____________________________________________________________

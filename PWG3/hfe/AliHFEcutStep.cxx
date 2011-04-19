@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Cut step class
 // Select all tracks surviving cuts in one special cut step
@@ -120,7 +117,7 @@ void AliHFEcutStep::AddCut(AliAnalysisCuts *cut){
 }
 
 //__________________________________________________________________
-void AliHFEcutStep::SetMC(AliMCEvent *mc){
+void AliHFEcutStep::SetMC(const AliMCEvent *mc){
   //
   // Set MC information to the cuts in the cut step
   //
@@ -131,7 +128,7 @@ void AliHFEcutStep::SetMC(AliMCEvent *mc){
 }
 
 //__________________________________________________________________
-void AliHFEcutStep::SetRecEvent(AliVEvent *rec){
+void AliHFEcutStep::SetRecEvent(const AliVEvent *rec){
   //
   // Publish rec event to the cut step
   //

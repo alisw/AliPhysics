@@ -1,6 +1,3 @@
-#ifndef ALIHFEPRIVTX_H
-#define ALIHFEPRIVTX_H
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -15,14 +12,14 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // QA class of primary vertex study for Heavy Flavor electrons
 // this has functionality to reject electrons from primary vertex
 // and check primary vertex characteristics
 //
+
+#ifndef ALIHFEPRIVTX_H
+#define ALIHFEPRIVTX_H
 
 #ifndef ROOT_TObject
 //#include <TObject.h>
@@ -55,12 +52,12 @@ class AliHFEpriVtx : public TObject {
                 void CountPriVxtElecContributor(AliESDtrack *ESDelectron, Int_t sourcePart, Int_t recpid, Double_t recprob); 
                 void FillNprimVtxContributor() const;
                 void RecalcPrimvtx(Int_t nkftrk, const Int_t * const, const AliKFParticle * const); //recalculate primary vertex after removing given tracks
-                void RecalcPrimvtx(AliESDtrack * const ESDelectron); //recalculate primary vertex after removing given track
+                void RecalcPrimvtx(const AliESDtrack * const ESDelectron); //recalculate primary vertex after removing given track
                 void GetRecalcPrimvtx(Double_t privtx[3]) const {
                     privtx[0]=fPVxRe; privtx[1]=fPVyRe; privtx[2]=fPVzRe;
                 }
                 void GetNPriVxtContributor();
-                Double_t GetDistanceFromRecalVertexXY(AliESDtrack * const ESDelectron);
+                Double_t GetDistanceFromRecalVertexXY(const AliESDtrack * const ESDelectron);
 		            Int_t GetNsectrk2prim() const {return fNsectrk2prim;}; 
                 Int_t GetMCPID(AliESDtrack const *track); // return mc pid
 

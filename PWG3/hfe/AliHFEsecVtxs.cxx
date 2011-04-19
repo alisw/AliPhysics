@@ -12,9 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */
-
 //
 //  Secondary vertexing container to store secondary vertex characteristics of 
 //  2 or 3 particle sec vertex

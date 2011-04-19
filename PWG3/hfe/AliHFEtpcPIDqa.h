@@ -1,6 +1,3 @@
-#ifndef ALIHFETPCPIDQA_H
-#define ALIHFETPCPIDQA_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,14 +12,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Class AliHFEtpcPIDqa
 // Monitoring TPC PID in the HFE PID montioring framework
 // More information can be found inside the implementation file
 //
+#ifndef ALIHFETPCPIDQA_H
+#define ALIHFETPCPIDQA_H
+
 #ifndef ALIHFEDETPIDQA_H
 #include "AliHFEdetPIDqa.h"
 #endif

@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Collection class for histograms
 // Stores either histograms or vectors of histograms
@@ -133,6 +130,24 @@ Bool_t AliHFEcollection::CreateTH1F(const char* name, const char* title, Int_t n
     return CheckObject(name);
   }
 }
+
+//___________________________________________________________________
+Bool_t AliHFEcollection::CreateTH1Farray(const char* name, const char* title, Int_t nBin, const Double_t* xbins){
+
+  //
+  // Creates a TH1F histogram for the collection 2nd version 
+  //
+
+  if(!fList){
+    AliError("No TList pointer ! ");
+    return kFALSE;
+  }
+  else{
+    fList->Add(new TH1F(name, title, nBin, xbins));
+    return CheckObject(name);
+  }
+}
+
 //___________________________________________________________________
 Bool_t AliHFEcollection::CreateTH2F(const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY, Int_t logAxis){
 

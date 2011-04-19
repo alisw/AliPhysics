@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Class AliHFEpidQAmanager
 // Does steering of the PID QA. The PID QA manager is initialized according
@@ -39,6 +36,7 @@
 #include "AliHFEtpcPIDqa.h"
 #include "AliHFEtrdPIDqaV1.h"
 #include "AliHFEtofPIDqa.h"
+#include "AliHFEemcalPIDqa.h"  //s.s
 #include "AliHFEpidQAmanager.h"
 
 ClassImp(AliHFEpidQAmanager)
@@ -136,6 +134,9 @@ void AliHFEpidQAmanager::CreateDetPIDqa(AliHFEpid::EDETtype_t idet){
     case AliHFEpid::kTOFpid: 
           fDetPIDqa[idet] = new AliHFEtofPIDqa("TOFQA"); 
           break;
+    case AliHFEpid::kEMCALpid: //s.s (name) 
+          fDetPIDqa[idet] = new AliHFEemcalPIDqa("EMCALQA"); // s.s 
+          break;  //s.s
     default:
           break;
   };

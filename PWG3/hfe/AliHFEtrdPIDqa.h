@@ -1,6 +1,3 @@
-#ifndef ALIHFETRDPIDQA_H
-#define ALIHFETRDPIDQA_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,14 +12,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // QA class for TRD PID
 // Evaluate TRD PID using well identified reference tracks
 // For more information see implementation file
 //
+#ifndef ALIHFETRDPIDQA_H
+#define ALIHFETRDPIDQA_H
+
 #ifndef ROOT_TNamed
 #include <TNamed.h>
 #endif
@@ -66,8 +63,8 @@ class AliHFEtrdPIDqa : public TNamed{
     virtual void Browse(TBrowser *b);
     virtual Bool_t IsFolder() const { return kTRUE; }
 
-    void ProcessTracks(TObjArray * const  l, Int_t species);
-    void ProcessTrack(AliVTrack *track, Int_t species);
+    void ProcessTracks(const TObjArray * const  l, Int_t species);
+    void ProcessTrack(const AliVTrack *const track, Int_t species);
 
     void Init();
     void FinishAnalysis();
@@ -128,15 +125,15 @@ class AliHFEtrdPIDqa : public TNamed{
       kQuantitiesTruncMean = 6
     };
 
-    void ProcessTrackESD(AliESDtrack *track, Int_t species);
-    void ProcessTrackAOD(AliAODTrack * const track, Int_t species);
+    void ProcessTrackESD(const AliESDtrack * const track, Int_t species);
+    void ProcessTrackAOD(const AliAODTrack * const track, Int_t species);
 
-    void FillTRDLikelihoods(AliESDtrack *track, Int_t species);
-    void FillTRDQAplots(AliESDtrack *track, Int_t species);
+    void FillTRDLikelihoods(const AliESDtrack * const track, Int_t species);
+    void FillTRDQAplots(const AliESDtrack *const track, Int_t species);
 
     void AnalyseNTracklets(Int_t nTracklets);
-    Int_t GetThresholdBin(TH1 * const input, Double_t efficiency);
-    Bool_t CalculateEfficiency(TH1 * const input, Int_t threshbin, Double_t *params);
+    Int_t GetThresholdBin(const TH1 * const input, Double_t efficiency);
+    Bool_t CalculateEfficiency(const TH1 * const input, Int_t threshbin, Double_t *params);
     TF1 *MakeThresholds(TGraph *input);
 
     void CreateLikelihoodHistogram();

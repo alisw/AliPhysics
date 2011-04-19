@@ -1,6 +1,3 @@
-#ifndef ALIHFEDISPLACEDELECTRONS_H
-#define ALIHFEDISPLACEDELECTRONS_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Class for electrons from beauty study
 // Counting electrons from beauty
@@ -27,6 +21,9 @@
 //  Hongyan Yang <hongyan@physi.uni-heidelberg.de>
 //  Carlo Bombonati <Carlo.Bombonati@cern.ch>
 // 
+
+#ifndef ALIHFEDISPLACEDELECTRONS_H
+#define ALIHFEDISPLACEDELECTRONS_H
 
 #ifndef ROOT_TObject
 #include <TObject.h>
@@ -81,9 +78,9 @@ class AliHFEdisplacedElectrons : public TObject{
   void InitAnalysis();  
   void CreateOutputs(TList* const displacedList);
 
-  void FillMcOutput(AliESDEvent* fESD, AliMCEvent* fMC, AliMCParticle* mctrack);
-  void FillEsdOutput(AliESDEvent* fESDEvent, AliESDtrack *track, AliStack *stack);
-  void FillDataOutput(AliESDEvent* fESDEvent, AliESDtrack *track);
+  void FillMcOutput(const AliESDEvent * const fESD, AliMCEvent * const fMC, const AliMCParticle * const mctrack);
+  void FillEsdOutput(const AliESDEvent * const fESDEvent, AliESDtrack * const track, AliStack *stack);
+  void FillDataOutput(const AliESDEvent * const fESDEvent, AliESDtrack * const track);
 
   Int_t GetMCpid(AliStack* stack, Int_t label) const;
 

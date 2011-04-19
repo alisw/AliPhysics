@@ -37,14 +37,12 @@
 #include <AliMCEvent.h>
 #include <AliGenEventHeader.h>
 #include <AliAODMCParticle.h>
+#include <AliStack.h>
 
 #include "AliHFEmcQA.h"
 #include "AliHFEtools.h"
+#include "AliHFEcollection.h"
 
-const Int_t AliHFEmcQA::fgkGluon=21;
-const Int_t AliHFEmcQA::fgkMaxGener=10;
-const Int_t AliHFEmcQA::fgkMaxIter=100;
-const Int_t AliHFEmcQA::fgkqType = 7;    // number of species waiting for QA done
 
 ClassImp(AliHFEmcQA)
 
@@ -54,6 +52,7 @@ AliHFEmcQA::AliHFEmcQA() :
         ,fMCHeader(NULL)
         ,fMCArray(NULL)
         ,fQAhistos(NULL)
+        ,fMCQACollection(NULL)
         ,fNparents(0) 
 {
         // Default constructor
@@ -76,6 +75,7 @@ AliHFEmcQA::AliHFEmcQA(const AliHFEmcQA&p):
         ,fMCHeader(NULL)
         ,fMCArray(NULL)
         ,fQAhistos(p.fQAhistos)
+        ,fMCQACollection(p.fMCQACollection)
         ,fNparents(p.fNparents) 
 {
         // Copy constructor
@@ -161,8 +161,9 @@ void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
   kDspecies[8]="423";
 
   const Double_t kPtbound[2] = {0.1, 20.}; //bin taken for considering inclusive e analysis binning
-  Int_t iBin[1];
+  Int_t iBin[2];
   iBin[0] = 44; // bins in pt
+  iBin[1] = 23; // bins in pt
   Double_t* binEdges[1];
   binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
 
@@ -178,6 +179,32 @@ void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
      if(fQAhistos) fQAhistos->Add(fhD[iDmeson]);
      if(fQAhistos) fQAhistos->Add(fhDLogbin[iDmeson]);
   }
+
+  const Double_t kPtRange[24] = {0.,0.3,0.4,0.5,0.6,0.8,1.,1.2,1.4,1.6,1.8,2.,2.2,2.4,2.6,2.8,3.,3.5,4.,5.,6.,7.,20.,30.}; // to cope with Ana's bin
+
+  fMCQACollection = new AliHFEcollection("TaskMCQA", "MC QA histos for meason pt spectra");
+  fMCQACollection->CreateTH1Farray("pionspectra", "pion yields: MC p_{t} ", iBin[1],kPtRange);
+  fMCQACollection->CreateTH1Farray("etaspectra", "eta yields: MC p_{t} ", iBin[1],kPtRange);
+  fMCQACollection->CreateTH1Farray("omegaspectra", "omega yields: MC p_{t} ", iBin[1],kPtRange);
+  fMCQACollection->CreateTH1Farray("phispectra", "phi yields: MC p_{t} ", iBin[1],kPtRange);
+  fMCQACollection->CreateTH1Farray("etapspectra", "etap yields: MC p_{t} ", iBin[1],kPtRange);
+  fMCQACollection->CreateTH1Farray("rhospectra", "rho yields: MC p_{t} ", iBin[1],kPtRange);
+
+  fMCQACollection->CreateTH1F("pionspectraLog", "pion yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+  fMCQACollection->CreateTH1F("etaspectraLog", "eta yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+  fMCQACollection->CreateTH1F("omegaspectraLog", "omega yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+  fMCQACollection->CreateTH1F("phispectraLog", "phi yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+  fMCQACollection->CreateTH1F("etapspectraLog", "etap yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+  fMCQACollection->CreateTH1F("rhospectraLog", "rho yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+
+  fMCQACollection->CreateTH1F("piondaughters", "pion yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+  fMCQACollection->CreateTH1F("etadaughters", "eta yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+  fMCQACollection->CreateTH1F("omegadaughters", "omega yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+  fMCQACollection->CreateTH1F("phidaughters", "phi yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+  fMCQACollection->CreateTH1F("etapdaughters", "etap yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+  fMCQACollection->CreateTH1F("rhodaughters", "rho yields: MC p_{t} ", iBin[0],kPtbound[0], kPtbound[1], 1);
+
+  fQAhistos->Add(fMCQACollection->GetList());
 
 }
   
@@ -221,7 +248,13 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
   iBin[0] = 44; // bins in pt
   Double_t* binEdges[1];
   binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
-  
+
+
+  Double_t xcorrbin[201];
+  for (int icorrbin = 0; icorrbin< 201; icorrbin++){
+    xcorrbin[icorrbin]=icorrbin*0.1;
+  }
+
   TString hname; 
   if(kquark == kOthers){
     for (Int_t iqType = 0; iqType < 4; iqType++ ){
@@ -242,8 +275,9 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
      hname = hnopt+"PdgCode_"+kqTypeLabel[iqType];
      fHist[iq][iqType][icut].fPdgCode = new TH1F(hname,hname,20001,-10000.5,10000.5);
      hname = hnopt+"Pt_"+kqTypeLabel[iqType];
-     //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]);
-     fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",60,0.25,30.25); // mj to compare with FONLL
+     fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]);
+     //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",60,0.,30.); // mj to compare with FONLL
+     //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",60,0.25,30.25); // mj to compare with FONLL
      hname = hnopt+"Y_"+kqTypeLabel[iqType];
      fHist[iq][iqType][icut].fY = new TH1F(hname,hname,150,-7.5,7.5);
      hname = hnopt+"Eta_"+kqTypeLabel[iqType];
@@ -261,7 +295,17 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
   hname = hnopt+"ePtRatio_"+kqTypeLabel[kQuark];
   fHistComm[iq][icut].fePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",200,0,20,100,0,1);
   hname = hnopt+"PtCorr_"+kqTypeLabel[kQuark];
-  fHistComm[iq][icut].fPtCorr = new TH2F(hname,hname+";p_{T} (GeV/c);p_{T} (GeV/c)",200,0,20,200,0,20);
+  fHistComm[iq][icut].fPtCorr = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,xcorrbin,44,binEdges[0]);
+  //fHistComm[iq][icut].fPtCorr = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,0,20,200,0,20);
+  hname = hnopt+"PtCorrDp_"+kqTypeLabel[kQuark];
+  fHistComm[iq][icut].fPtCorrDp= new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,xcorrbin,44,binEdges[0]);
+  //fHistComm[iq][icut].fPtCorrDp= new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,0,20,200,0,20);
+  hname = hnopt+"PtCorrD0_"+kqTypeLabel[kQuark];
+  fHistComm[iq][icut].fPtCorrD0 = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,xcorrbin,44,binEdges[0]);
+  //fHistComm[iq][icut].fPtCorrD0 = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,0,20,200,0,20);
+  hname = hnopt+"PtCorrDrest_"+kqTypeLabel[kQuark];
+  fHistComm[iq][icut].fPtCorrDrest = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,xcorrbin,44,binEdges[0]);
+  //fHistComm[iq][icut].fPtCorrDrest = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,0,20,200,0,20);
   hname = hnopt+"DePtRatio_"+kqTypeLabel[kQuark];
   fHistComm[iq][icut].fDePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",100,0,20,100,0,1);
   hname = hnopt+"eDistance_"+kqTypeLabel[kQuark];
@@ -300,6 +344,122 @@ void AliHFEmcQA::Init()
 
 }
 
+void AliHFEmcQA::GetMesonKine() 
+{
+  //
+  // get meson pt spectra
+  //
+
+  AliVParticle *mctrack2 = NULL;
+  AliMCParticle *mctrack0 = NULL;
+  AliVParticle *mctrackdaugt= NULL;
+  AliMCParticle *mctrackd= NULL;
+  Int_t id1=0, id2=0;
+
+  for(Int_t imc = 0; imc <fMCEvent->GetNumberOfPrimaries(); imc++){
+     if(!(mctrack2 = fMCEvent->GetTrack(imc))) continue;
+     TParticle* mcpart0 = fMCEvent->Stack()->Particle(imc);
+     if(!mcpart0) continue;
+     mctrack0 = dynamic_cast<AliMCParticle *>(mctrack2);
+     if(abs(mctrack0->PdgCode()) == 111) // pi0 
+       {
+          if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
+            fMCQACollection->Fill("pionspectra",mctrack0->Pt());
+            fMCQACollection->Fill("pionspectraLog",mctrack0->Pt());
+          }
+          id1=mctrack0->GetFirstDaughter();
+          id2=mctrack0->GetLastDaughter();
+          if(!((id2-id1)==2)) continue;
+          for(int idx=id1; idx<=id2; idx++){
+            if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
+            mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt);
+            if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
+             fMCQACollection->Fill("piondaughters",mctrackd->Pt());
+          }
+       }
+     else if(abs(mctrack0->PdgCode()) == 221) // eta 
+       {
+          if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
+            fMCQACollection->Fill("etaspectra",mctrack0->Pt());
+            fMCQACollection->Fill("etaspectraLog",mctrack0->Pt());
+          } 
+          id1=mctrack0->GetFirstDaughter();
+          id2=mctrack0->GetLastDaughter();
+          if(!((id2-id1)==2||(id2-id1)==3)) continue;
+          for(int idx=id1; idx<=id2; idx++){
+            if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
+            mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt);
+            if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
+             fMCQACollection->Fill("etadaughters",mctrackd->Pt());
+          }
+       }
+     else if(abs(mctrack0->PdgCode()) == 223) // omega
+       {
+          if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
+            fMCQACollection->Fill("omegaspectra",mctrack0->Pt());
+            fMCQACollection->Fill("omegaspectraLog",mctrack0->Pt());
+          }
+          id1=mctrack0->GetFirstDaughter();
+          id2=mctrack0->GetLastDaughter();
+          if(!((id2-id1)==1||(id2-id1)==2)) continue;
+          for(int idx=id1; idx<=id2; idx++){
+            if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
+            mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt);
+            if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
+             fMCQACollection->Fill("omegadaughters",mctrackd->Pt());
+          }
+       }
+     else if(abs(mctrack0->PdgCode()) == 333) // phi 
+       {
+          if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
+            fMCQACollection->Fill("phispectra",mctrack0->Pt());
+            fMCQACollection->Fill("phispectraLog",mctrack0->Pt());
+          } 
+          id1=mctrack0->GetFirstDaughter();
+          id2=mctrack0->GetLastDaughter();
+          if(!((id2-id1)==1)) continue;
+          for(int idx=id1; idx<=id2; idx++){
+            if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
+            mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt);
+            if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
+             fMCQACollection->Fill("phidaughters",mctrackd->Pt());
+          }
+       }
+     else if(abs(mctrack0->PdgCode()) == 331) // eta prime
+       {
+          if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
+            fMCQACollection->Fill("etapspectra",mctrack0->Pt());
+            fMCQACollection->Fill("etapspectraLog",mctrack0->Pt());
+          }
+          id1=mctrack0->GetFirstDaughter();
+          id2=mctrack0->GetLastDaughter();
+          if(!((id2-id1)==2||(id2-id1)==3)) continue;
+          for(int idx=id1; idx<=id2; idx++){
+            if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
+            mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt);
+            if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
+             fMCQACollection->Fill("etapdaughters",mctrackd->Pt());
+          }
+       }
+     else if(abs(mctrack0->PdgCode()) == 113) // rho
+       {
+          if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {
+            fMCQACollection->Fill("rhospectra",mctrack0->Pt());
+            fMCQACollection->Fill("rhospectraLog",mctrack0->Pt());
+          }
+          id1=mctrack0->GetFirstDaughter();
+          id2=mctrack0->GetLastDaughter();
+          if(!((id2-id1)==1)) continue;
+          for(int idx=id1; idx<=id2; idx++){
+            if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
+            mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt);
+            if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
+             fMCQACollection->Fill("rhodaughters",mctrackd->Pt());
+          }
+       }
+     }
+
+}
 //__________________________________________
 void AliHFEmcQA::GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark) 
 {
@@ -737,6 +897,9 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
               // ratio between pT of electron and pT of mother B or direct D hadron 
               if(partMotherCopy->Pt()) fHistComm[iq][icut].fePtRatio->Fill(partMotherCopy->Pt(),mcpart->Pt()/partMotherCopy->Pt());
               fHistComm[iq][icut].fPtCorr->Fill(partMotherCopy->Pt(),mcpart->Pt());
+              if(TMath::Abs(partMotherCopy->GetPdgCode())==411) fHistComm[iq][icut].fPtCorrDp->Fill(partMotherCopy->Pt(),mcpart->Pt());
+              else if(TMath::Abs(partMotherCopy->GetPdgCode())==421) fHistComm[iq][icut].fPtCorrD0->Fill(partMotherCopy->Pt(),mcpart->Pt());
+              else fHistComm[iq][icut].fPtCorrDrest->Fill(partMotherCopy->Pt(),mcpart->Pt());
 
               // distance between electron production point and primary vertex
               fHistComm[iq][icut].feDistance->Fill(partMotherCopy->Pt(),decayLxy);
@@ -953,7 +1116,7 @@ void AliHFEmcQA::ReportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &mo
 }
 
 //__________________________________________
-Int_t AliHFEmcQA::GetSource(AliAODMCParticle * const mcpart)
+Int_t AliHFEmcQA::GetSource(const AliAODMCParticle * const mcpart)
 {        
   // decay particle's origin 
 
@@ -1035,7 +1198,7 @@ Int_t AliHFEmcQA::GetSource(AliAODMCParticle * const mcpart)
 }
 
 //__________________________________________
-Int_t AliHFEmcQA::GetSource(TParticle * const mcpart)
+Int_t AliHFEmcQA::GetSource(const TParticle * const mcpart)
 {
   // decay particle's origin 
 
@@ -1141,8 +1304,10 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
   }
 
   AliMCParticle *mctrack = NULL;
+  Int_t tmpMomLabel=0;
   if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(iLabel))))) return -1; 
   TParticle *partMother = mctrack->Particle();
+  TParticle *partMotherCopy = mctrack->Particle();
   Int_t maPdgcode = partMother->GetPdgCode();
 
    // if the mother is charmed hadron  
@@ -1191,9 +1356,40 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
         }
      }
    } // end of if
-   else if ( abs(maPdgcode) == 22 ) {
-     origin = kGamma;
+   else if ( abs(maPdgcode) == 22 ) { //conversion
+
+     tmpMomLabel = partMotherCopy->GetFirstMother();
+     if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tmpMomLabel))))) return -1;
+     partMother = mctrack->Particle();
+     maPdgcode = partMother->GetPdgCode();
+     if ( abs(maPdgcode) == 111 ) {
+       origin = kGammaPi0;
+       return origin;
+     } 
+     else if ( abs(maPdgcode) == 221 ) {
+       origin = kGammaEta;
+       return origin;
+     } 
+     else if ( abs(maPdgcode) == 223 ) {
+       origin = kGammaOmega;
+       return origin;
+     } 
+     else if ( abs(maPdgcode) == 333 ) {
+       origin = kGammaPhi;
+       return origin;
+     }
+     else if ( abs(maPdgcode) == 331 ) {
+       origin = kGammaEtaPrime;
+       return origin; 
+     }
+     else if ( abs(maPdgcode) == 113 ) {
+       origin = kGammaRho0;
+       return origin;
+     }
+     else origin = kElse;
+     //origin = kGamma; // finer category above
      return origin;
+
    } // end of if
    else if ( abs(maPdgcode) == 111 ) {
      origin = kPi0;
@@ -1244,6 +1440,9 @@ void AliHFEmcQA::AliHistsComm::FillList(TList *l) const {
   if(fProcessID) l->Add(fProcessID);
   if(fePtRatio) l->Add(fePtRatio);
   if(fPtCorr) l->Add(fPtCorr);
+  if(fPtCorrDp) l->Add(fPtCorrDp);
+  if(fPtCorrD0) l->Add(fPtCorrD0);
+  if(fPtCorrDrest) l->Add(fPtCorrDrest);
   if(fDePtRatio) l->Add(fDePtRatio);
   if(feDistance) l->Add(feDistance);
   if(fDeDistance) l->Add(fDeDistance);

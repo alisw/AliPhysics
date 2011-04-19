@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Class AliHFEtrdPIDqaV1
 // Monitoring TRD PID in the HFE PID montioring framework. The following
@@ -323,7 +320,7 @@ TH2 *AliHFEtrdPIDqaV1::MakeTRDlikelihoodDistribution(AliHFEdetPIDqa::EStep_t ste
     // cut on species (if available)
     histo->GetAxis(0)->SetRange(species + 2, species + 2); // undef + underflow
   }
-  histo->GetAxis(3)->SetRangeUser(step + 1, step + 1);
+  histo->GetAxis(3)->SetRange(step + 1, step + 1);
 
   TH2 *hSpec = histo->Projection(2, 1);
   // construct title and name

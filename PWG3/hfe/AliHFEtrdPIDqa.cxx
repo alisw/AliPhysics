@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // QA class for TRD PID
 // Plot Pion Efficiency at x electron efficiency
@@ -298,33 +295,32 @@ void AliHFEtrdPIDqa::CreateHistoTruncatedMean(){
 
 
 //__________________________________________________________________
-void AliHFEtrdPIDqa::ProcessTracks(TObjArray * const tracks, Int_t species){
+void AliHFEtrdPIDqa::ProcessTracks(const TObjArray * const tracks, Int_t species){
   //
   // Process Electron Tracks
   //
   if(species < -1 || species >= AliPID::kSPECIES) return;
-  TIterator *it = tracks->MakeIterator();
-  AliVTrack *track = NULL;
-  while((track = dynamic_cast<AliVTrack *>(it->Next()))){
+  TIter it(tracks);
+  const AliVTrack *track = NULL;
+  while((track = dynamic_cast<const AliVTrack *>(it()))){
     if(track) ProcessTrack(track, species);
   }
-  delete it;
 }
 
 //__________________________________________________________________
-void AliHFEtrdPIDqa::ProcessTrack(AliVTrack *track, Int_t species){
+void AliHFEtrdPIDqa::ProcessTrack(const AliVTrack * const track, Int_t species){
   //
   // Process Single Track
   //
   if(TString(track->IsA()->GetName()).CompareTo("AliESDtrack") == 0)
-    ProcessTrackESD(dynamic_cast<AliESDtrack *>(track), species);
+    ProcessTrackESD(dynamic_cast<const AliESDtrack *>(track), species);
   else if(TString(track->IsA()->GetName()).CompareTo("AliAODTrack") == 0)
-    ProcessTrackAOD(dynamic_cast<AliAODTrack *>(track), species);
+    ProcessTrackAOD(dynamic_cast<const AliAODTrack *>(track), species);
 }
 
 
 //__________________________________________________________________
-void AliHFEtrdPIDqa::ProcessTrackESD(AliESDtrack *track, Int_t species){
+void AliHFEtrdPIDqa::ProcessTrackESD(const AliESDtrack *track, Int_t species){
   //
   // Process single ESD track
   //
@@ -335,7 +331,7 @@ void AliHFEtrdPIDqa::ProcessTrackESD(AliESDtrack *track, Int_t species){
 }
 
 //__________________________________________________________________
-void AliHFEtrdPIDqa::ProcessTrackAOD(AliAODTrack * const track, Int_t /*species*/){
+void AliHFEtrdPIDqa::ProcessTrackAOD(const AliAODTrack * const track, Int_t /*species*/){
   //
   // Process single AOD track
   // AOD PID object required
@@ -347,12 +343,15 @@ void AliHFEtrdPIDqa::ProcessTrackAOD(AliAODTrack * const track, Int_t /*species*
 }
 
 //__________________________________________________________________
-void AliHFEtrdPIDqa::FillTRDLikelihoods(AliESDtrack *track, Int_t species){
+void AliHFEtrdPIDqa::FillTRDLikelihoods(const AliESDtrack * const track, Int_t species){
   //
   // Fill TRD Likelihood Histogram
   //
   Double_t trdLike[AliPID::kSPECIES];
   track->GetTRDpid(trdLike);
+  // Renormalize 
+  Double_t norm =trdLike[AliPID::kElectron]+trdLike[AliPID::kPion];
+  Double_t likeEle = norm == 0. ? 0. : trdLike[AliPID::kElectron]/norm;
   const AliExternalTrackParam *outerPars = track->GetOuterParam();
 
   Double_t quantities[kQuantitiesLike]; memset(quantities, 0, sizeof(Double_t) * kQuantitiesLike);
@@ -364,13 +363,13 @@ void AliHFEtrdPIDqa::FillTRDLikelihoods(AliESDtrack *track, Int_t species){
   quantities[kSpecies] = species;
   quantities[kP] = outerPars ? outerPars->P() : track->P();
   quantities[kNTracklets] = track->GetTRDntrackletsPID();
-  quantities[kElectronLike] = trdLike[AliPID::kElectron];
+  quantities[kElectronLike] = likeEle;
 
   fHistos->Fill("fLikeTRD", quantities);
 }
 
 //__________________________________________________________________
-void AliHFEtrdPIDqa::FillTRDQAplots(AliESDtrack *track, Int_t species){
+void AliHFEtrdPIDqa::FillTRDQAplots(const AliESDtrack * const track, Int_t species){
   //
   // Fill QA Plots containing further information
   //
@@ -676,7 +675,7 @@ void AliHFEtrdPIDqa::AnalyseNTracklets(Int_t nTracklets){
 }
 
 //__________________________________________________________________
-Int_t AliHFEtrdPIDqa::GetThresholdBin(TH1 * const input, Double_t eff){
+Int_t AliHFEtrdPIDqa::GetThresholdBin(const TH1 * const input, Double_t eff){
   //
   // Calculate the threshold bin  
   //
@@ -694,7 +693,7 @@ Int_t AliHFEtrdPIDqa::GetThresholdBin(TH1 * const input, Double_t eff){
 }
 
 //__________________________________________________________________
-Bool_t AliHFEtrdPIDqa::CalculateEfficiency(TH1 * const input, Int_t threshbin, Double_t *par){
+Bool_t AliHFEtrdPIDqa::CalculateEfficiency(const TH1 * const input, Int_t threshbin, Double_t * const par){
   // 
   // Calculate non-electron efficiency
   //
@@ -826,6 +825,13 @@ void AliHFEtrdPIDqa::ClearLists(){
 
 //__________________________________________________________________
 Double_t AliHFEtrdPIDqa::EvalPionEfficiency(Int_t ntls, Int_t eEff, Double_t p){
+  //
+  // calculate pion efficiency
+  // Arguments:
+  //   Number of tracklets
+  //   Electron Efficiency
+  //   Momentum
+  //
   TList *graphs = dynamic_cast<TList *>(fPionEfficiencies->FindObject(Form("%dTracklets", ntls)));
   if(!graphs) return -1.;
   TGraph *measurement = dynamic_cast<TGraph *>(graphs->FindObject(Form("eff%d", eEff)));
@@ -835,6 +841,13 @@ Double_t AliHFEtrdPIDqa::EvalPionEfficiency(Int_t ntls, Int_t eEff, Double_t p){
 
 //__________________________________________________________________
 Double_t AliHFEtrdPIDqa::EvalProtonEfficiency(Int_t ntls, Int_t eEff, Double_t p){
+  //
+  // calculate proton efficiency
+  // Arguments:
+  //   Number of tracklets
+  //   Electron Efficiency
+  //   Momentum
+  //
   TList *graphs = dynamic_cast<TList *>(fProtonEfficiencies->FindObject(Form("%dTracklets", ntls)));
   if(!graphs) return -1.;
   TGraph *measurement = dynamic_cast<TGraph *>(graphs->FindObject(Form("eff%d", eEff)));
@@ -844,6 +857,13 @@ Double_t AliHFEtrdPIDqa::EvalProtonEfficiency(Int_t ntls, Int_t eEff, Double_t p
 
 //__________________________________________________________________
 Double_t AliHFEtrdPIDqa::EvalThreshold(Int_t ntls, Int_t eEff, Double_t p){
+  //
+  // Get the threshold to reach a certain electron efficiency
+  // Arguments:
+  //   Number of tracklets
+  //   Electron Efficiency
+  //   Momentum
+  //
   TList *graphs = dynamic_cast<TList *>(fThresholds->FindObject(Form("%dTracklets", ntls)));
   if(!graphs) return -1.;
   TGraph *measurement = dynamic_cast<TGraph *>(graphs->FindObject(Form("eff%d", eEff)));

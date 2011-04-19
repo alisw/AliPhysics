@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // The analysis task:
 // impact parameter resolution and pull study
@@ -91,15 +88,6 @@ AliAnalysisTaskDCA::AliAnalysisTaskDCA():
   //
   // Dummy constructor
   //
-  DefineInput(0, TChain::Class());
-  DefineOutput(1, TH1I::Class());
-  DefineOutput(2, TList::Class());
-
-  //printf(" ---> Dummy constructor used!\n"); 
-  AliInfo("Dummy constructor used!");
-  fDefaultPID = new AliESDpid();
-  fHFEpid = new AliHFEpid("dummyPID");
-
 }
 
 //____________________________________________________________

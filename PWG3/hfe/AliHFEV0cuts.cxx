@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //  * 20/04/2010 *
 // Class for optimising and applying V0 cuts to obtain clean V0 samples
 // Compatible with ESDs only
@@ -139,7 +136,7 @@ void AliHFEV0cuts::Init(const char* name){
   fQA->CreateTH1Fvector1(2, "h_cut_Gamma_VtxR", "Radius of the gamma conversion vertex; r (cm); counts", 1000, 0, 100);
   fQA->CreateTH1Fvector1(2, "h_cut_Gamma_PP", "gamma psi pair angle; psi pairangle (rad); counts", 100, 0, 2);
   fQA->CreateTH1Fvector1(2, "h_cut_Gamma_Chi2", "gamma Chi2/NDF; Chi2/NDF; counts", 100, 0, 50);
-  fQA->CreateTH1Fvector1(2, "h_cut_Gamma_Sep", "gamma separation dist at TPC inned wall", 100, 0, 50);
+  fQA->CreateTH1Fvector1(2, "h_cut_Gamma_Sep", "gamma separation dist at TPC inned wall", 100, 0, 10);
   fQA->CreateTH1Fvector1(7, "h_Gamma_Mass", "Invariant mass of gammas; mass (GeV/c^{2}); counts", 100, 0, 0.2);
   
  
@@ -226,8 +223,10 @@ void AliHFEV0cuts::Init(const char* name){
   fQAmc->CreateTH2Fvector1(2, "h_cut_Gamma_DCA_S", "S - DCA between the gamma daughters; mom (GeV/c); dca (cm)", pN, pMin, pMax, 50, 0, 2, 0);
   fQAmc->CreateTH2Fvector1(2, "h_cut_Gamma_VtxR_S", "S - Radius of the gamma conversion vertex; mom (GeV/c); r (cm)", pN, pMin, pMax, 100, 0, 100, 0);
   fQAmc->CreateTH2Fvector1(2, "h_cut_Gamma_PP_S", "S - gamma psi pair angle; mom (GeV/c); psi pairangle (rad)", pN, pMin, pMax, 50, 0, 0.5, 0);
-  fQAmc->CreateTH2Fvector1(2, "h_cut_Gamma_Chi2_S", "S - gamma Chi2/NDF; mom (GeV/c); Chi2/NDF", pN, pMin, pMax, 50, 0, 100, 0);
-  fQAmc->CreateTH2Fvector1(2, "h_cut_Gamma_Sep_S", "S - gamma separation TPC-inner; mom (GeV/c); tracks separatin (cm)", pN, pMin, pMax, 100, 0, 50, 0);
+  fQAmc->CreateTH2Fvector1(2, "h_cut_Gamma_Chi2_S", "S - gamma Chi2/NDF; mom (GeV/c); Chi2/NDF", pN, pMin, pMax, 50, 0, 25, 0);
+  fQAmc->CreateTH2Fvector1(2, "h_cut_Gamma_Sep_S", "S - gamma separation TPC-inner; mom (GeV/c); tracks separatin (cm)", pN, pMin, pMax, 100, 0, 10, 0);
+  // as a function of radius, not momentum
+  fQAmc->CreateTH2Fvector1(2, "h_cut_Gamma_SepR_S", "S - gamma separation TPC-inner; radius cm; tracks separatin (cm)", 20, 0, 100, 100, 0, 20);
 
   fQAmc->CreateTH1Fvector1(9, "h_Gamma_Mass_S", "S - Invariant mass of gammas; mass (GeV/c^{2}); counts", 100, 0, 0.2);
   // gamma background
@@ -235,23 +234,24 @@ void AliHFEV0cuts::Init(const char* name){
   fQAmc->CreateTH2Fvector1(2, "h_cut_Gamma_DCA_B", "B - DCA between the gamma daughters; mom (GeV/c); dca (cm)", pN, pMin, pMax, 50, 0, 2, 0);
   fQAmc->CreateTH2Fvector1(2, "h_cut_Gamma_VtxR_B", "B - Radius of the gamma conversion vertex; mom (GeV/c); r (cm)", pN, pMin, pMax, 100, 0, 100, 0);
   fQAmc->CreateTH2Fvector1(2, "h_cut_Gamma_PP_B", "B - gamma psi pair angle; mom (GeV/c); psi pairangle (rad)", pN, pMin, pMax, 50, 0, 0.5, 0);
-  fQAmc->CreateTH2Fvector1(2, "h_cut_Gamma_Chi2_B", "B - gamma Chi2/NDF; mom (GeV/c); Chi2/NDF", pN, pMin, pMax, 50, 0, 100, 0);
+  fQAmc->CreateTH2Fvector1(2, "h_cut_Gamma_Chi2_B", "B - gamma Chi2/NDF; mom (GeV/c); Chi2/NDF", pN, pMin, pMax, 50, 0, 25, 0);
   fQAmc->CreateTH2Fvector1(2, "h_cut_Gamma_Sep_B", "B - gamma separation TPC-inner; mom (GeV/c); tracks separatin (cm)", pN, pMin, pMax, 100, 0, 50, 0);
-
+  //
+  fQAmc->CreateTH2Fvector1(2, "h_cut_Gamma_SepR_B", "S - gamma separation TPC-inner; radius cm; tracks separatin (cm)", 20, 0, 100, 100, 0, 20);
   fQAmc->CreateTH1Fvector1(9, "h_Gamma_Mass_B", "B - Invariant mass of gammas; mass (GeV/c^{2}); counts", 100, 0, 0.2);  
  
   // kaons signal
   fQAmc->CreateTH2Fvector1(2, "h_cut_K0_CosPoint_S", "S - K0 Cosine pointing angle; mom (GeV/c); cos point. angle", pN, pMin, pMax, 50, 0, 0.1, 0);
   fQAmc->CreateTH2Fvector1(2, "h_cut_K0_DCA_S", "S - DCA between the K0 daughters; mom (GeV/c); dca (cm)", pN, pMin, pMax, 50, 0, 2, 0);
   fQAmc->CreateTH2Fvector1(2, "h_cut_K0_VtxR_S", "S - Radius of the K0 decay vertex; mom (GeV/c); r (cm)", pN, pMin, pMax, 50, 0, 100, 0);
-  fQAmc->CreateTH2Fvector1(2, "h_cut_K0_Chi2_S", "S - K0 Chi2/NDF; mom (GeV/c); Chi2/NDF", pN, pMin, pMax, 50, 0, 100, 0);
+  fQAmc->CreateTH2Fvector1(2, "h_cut_K0_Chi2_S", "S - K0 Chi2/NDF; mom (GeV/c); Chi2/NDF", pN, pMin, pMax, 50, 0, 25, 0);
 
   fQAmc->CreateTH1Fvector1(5, "h_K0_Mass_S", "S - Invariant mass of K0; mass (GeV/c^{2}); counts", 125, 0.45, 0.55);
   // kaons background
   fQAmc->CreateTH2Fvector1(2, "h_cut_K0_CosPoint_B", "B - K0 Cosine pointing angle; mom (GeV/c); cos point. angle", pN, pMin, pMax, 50, 0, 0.1, 0);
   fQAmc->CreateTH2Fvector1(2, "h_cut_K0_DCA_B", "B - DCA between the K0 daughters; mom (GeV/c); dca (cm)", pN, pMin, pMax, 50, 0, 2, 0);
   fQAmc->CreateTH2Fvector1(2, "h_cut_K0_VtxR_B", "B - Radius of the K0 decay vertex; mom (GeV/c); r (cm)", pN, pMin, pMax, 50, 0, 100, 0);
-  fQAmc->CreateTH2Fvector1(2, "h_cut_K0_Chi2_B", "B - K0 Chi2/NDF; mom (GeV/c); Chi2/NDF", pN, pMin, pMax, 50, 0, 100, 0);
+  fQAmc->CreateTH2Fvector1(2, "h_cut_K0_Chi2_B", "B - K0 Chi2/NDF; mom (GeV/c); Chi2/NDF", pN, pMin, pMax, 50, 0, 50, 0);
 
   fQAmc->CreateTH1Fvector1(5, "h_K0_Mass_B", "B - Invariant mass of K0; mass (GeV/c^{2}); counts", 125, 0.45, 0.55);
 
@@ -259,7 +259,7 @@ void AliHFEV0cuts::Init(const char* name){
   fQAmc->CreateTH2Fvector1(2, "h_cut_L_CosPoint_S", "S - L Cosine pointing angle; mom (GeV/c); cos point. angle", pN, pMin, pMax, 50, 0, 0.1, 0);
   fQAmc->CreateTH2Fvector1(2, "h_cut_L_DCA_S", "S - DCA between the L daughters; mom (GeV/c); dca (cm)", pN, pMin, pMax, 50, 0, 2, 0);
   fQAmc->CreateTH2Fvector1(2, "h_cut_L_VtxR_S", "S - Radius of the L decay vertex; mom (GeV/c); r (cm)", pN, pMin, pMax, 50, 0, 100, 0);
-  fQAmc->CreateTH2Fvector1(2, "h_cut_L_Chi2_S", "S - L Chi2/NDF; mom (GeV/c); Chi2/NDF", pN, pMin, pMax, 50, 0, 100, 0);
+  fQAmc->CreateTH2Fvector1(2, "h_cut_L_Chi2_S", "S - L Chi2/NDF; mom (GeV/c); Chi2/NDF", pN, pMin, pMax, 50, 0, 50, 0);
 
   fQAmc->CreateTH1Fvector1(5, "h_L_Mass_S", "S - Invariant mass of L; mass (GeV/c^{2}); counts", 60, 1.1, 1.13);
   fQAmc->CreateTH1Fvector1(5, "h_AL_Mass_S", "S - Invariant mass of anti L; mass (GeV/c^{2}); counts", 60, 1.1, 1.13);
@@ -267,7 +267,7 @@ void AliHFEV0cuts::Init(const char* name){
   fQAmc->CreateTH2Fvector1(2, "h_cut_L_CosPoint_B", "B - L Cosine pointing angle; mom (GeV/c); cos point. angle", pN, pMin, pMax, 50, 0, 0.1, 0);
   fQAmc->CreateTH2Fvector1(2, "h_cut_L_DCA_B", "B - DCA between the L daughters; mom (GeV/c); dca (cm)", pN, pMin, pMax, 50, 0, 2, 0);
   fQAmc->CreateTH2Fvector1(2, "h_cut_L_VtxR_B", "B - Radius of the L decay vertex; mom (GeV/c); r (cm)", pN, pMin, pMax, 50, 0, 100, 0);
-  fQAmc->CreateTH2Fvector1(2, "h_cut_L_Chi2_B", "B - L Chi2/NDF; mom (GeV/c); Chi2/NDF", pN, pMin, pMax, 50, 0, 100, 0);
+  fQAmc->CreateTH2Fvector1(2, "h_cut_L_Chi2_B", "B - L Chi2/NDF; mom (GeV/c); Chi2/NDF", pN, pMin, pMax, 50, 0, 50, 0);
   fQAmc->CreateTH2Fvector1(2, "h_cut_L_rdp_v_mp_S", "S - relative L daughter mom -v- mother mom; L mom (GeV/c); relative daughter mom p2/p1", 100, 0.1, 10, 100, 0, 1);
   fQAmc->CreateTH2Fvector1(2, "h_cut_L_rdp_v_mp_B", "B - relative L daughter mom -v- mother mom; L mom (GeV/c); relative daughter mom p2/p1", 100, 0.1, 10, 100, 0, 1);
   fQAmc->CreateTH1Fvector1(5, "h_LAL_Mass_B", "B - Invariant mass of anti L; mass (GeV/c^{2}); counts", 60, 1.1, 1.13);
@@ -441,10 +441,10 @@ Bool_t AliHFEV0cuts::GammaCuts(AliESDv0 *v0){
   Float_t p[2] = {d[0]->GetP(), d[1]->GetP()};
 
   // Cut values
-  const Double_t cutChi2NDF = 10.;              // ORG [7.]  
-  const Double_t cutCosPoint[2] = {0., 0.02};  // ORG [0., 0.03]
+  const Double_t cutChi2NDF = 1.5;              // ORG [7.]  
+  const Double_t cutCosPoint[2] = {0., 0.007};  // ORG [0., 0.02]
   const Double_t cutDCA[2] = {0., 0.25};       // ORG [0., 0.25]
-  const Double_t cutProdVtxR[2] = {3., 90.};   // ORG [6., 9999]
+  const Double_t cutProdVtxR[2] = {6., 90.};   // ORG [3., 90]
   const Double_t cutPsiPair[2] = {0., 0.05};   // ORG [0. 0.05]
   // mass cut
   const Double_t cutMass = 0.05;               // ORG [0.05]
@@ -536,6 +536,7 @@ Bool_t AliHFEV0cuts::GammaCuts(AliESDv0 *v0){
 	fQAmc->Fill("h_cut_Gamma_Chi2_S", 0, iP, chi2ndf);
 	fQAmc->Fill("h_cut_Gamma_Chi2_S", 1, iP, chi2ndf);
 	fQAmc->Fill("h_cut_Gamma_Sep_S", 0, iP, sep);
+	fQAmc->Fill("h_cut_Gamma_SepR_S", 0,r2, sep);
 	fQAmc->Fill("h_Electron_P_S", 0, p[0]);
 	fQAmc->Fill("h_Electron_P_S", 0, p[1]);
       }
@@ -548,6 +549,7 @@ Bool_t AliHFEV0cuts::GammaCuts(AliESDv0 *v0){
 	fQAmc->Fill("h_cut_Gamma_Chi2_B", 0, iP, chi2ndf);
 	fQAmc->Fill("h_cut_Gamma_Chi2_B", 1, iP, chi2ndf);
 	fQAmc->Fill("h_cut_Gamma_Sep_B", 0, iP, sep);
+	fQAmc->Fill("h_cut_Gamma_SepR_B", 0,r2, sep);
 	fQAmc->Fill("h_Electron_P_B", 0, p[0]);
 	fQAmc->Fill("h_Electron_P_B", 0, p[1]);	
       }
@@ -685,11 +687,13 @@ Bool_t AliHFEV0cuts::GammaCuts(AliESDv0 *v0){
     if(iMass < cutMass){
       if(1 == fCurrentV0id){
 	fQAmc->Fill("h_cut_Gamma_Sep_S", 1, iP, sep);
+	fQAmc->Fill("h_cut_Gamma_SepR_S", 1,r2, sep);
 	fQAmc->Fill("h_Electron_P_S", 5, p[0]);
 	fQAmc->Fill("h_Electron_P_S", 5, p[1]);
       }
       else if(-2 != fCurrentV0id){
 	fQAmc->Fill("h_cut_Gamma_Sep_B", 1, iP, sep);
+	fQAmc->Fill("h_cut_Gamma_SepR_B", 1,r2, sep);
 	fQAmc->Fill("h_Electron_P_B", 5, p[0]);
 	fQAmc->Fill("h_Electron_P_B", 5, p[1]);
       }
@@ -797,7 +801,7 @@ Bool_t AliHFEV0cuts::K0Cuts(AliESDv0 *v0){
   Double_t data[4] = {0., 0., 0., 0.};
 
   // Cut values
-  const Double_t cutChi2NDF = 10.;              // ORG [7.]
+  const Double_t cutChi2NDF = 2.;              // ORG [7.]
   const Double_t cutCosPoint[2] = {0., 0.02};  // ORG [0., 0.03]
   const Double_t cutDCA[2] = {0., 0.2};        // ORG [0., 0.1]
   const Double_t cutProdVtxR[2] = {2.0, 30.};   // ORG [0., 8.1]
@@ -1096,8 +1100,8 @@ Bool_t AliHFEV0cuts::LambdaCuts(AliESDv0 *v0, Bool_t &isLambda ){
   Float_t iP = v0->P();
 
    // Cuts
-  const Double_t cutChi2NDF = 10.;              // ORG [5.]
-  const Double_t cutCosPoint[2] = {0., 0.02};  // ORG [0., 0.03]
+  const Double_t cutChi2NDF = 2.;              // ORG [5.]
+  const Double_t cutCosPoint[2] = {0., 0.01};  // ORG [0., 0.02]
   const Double_t cutDCA[2] = {0., 0.2};        // ORG [0., 0.2]
   const Double_t cutProdVtxR[2] = {2., 40.};   // ORG [0., 24.]
   const Double_t cutMass[2] = {1.11, 1.12};   // ORG [1.11, 1.12]
@@ -1452,40 +1456,12 @@ AliKFParticle *AliHFEV0cuts::CreateMotherParticle(AliVTrack* const pdaughter, Al
   // - check the number of tracks that take part in the creaton of primary vertex.
   //   important: after removeal of candidate tracks there must be at least 2 tracks left
   //   otherwise the primary vertex will be corrupted  
-  
-  // ESD Analyis
-  //const AliESDVertex *esdvertex = dynamic_cast<const AliESDVertex *>(fInputEvent->GetPrimaryVertex());
-  //if(!esdvertex) return NULL;
-  //UShort_t *contrib = esdvertex->GetIndices();
-  
-  //
-  // not using the removal of the daughter track now
-  //
-  //   Int_t nTracks = esdvertex->GetNIndices();
-  //   printf(" -D: N Vertex tracks: %i\n", nTracks);
-  //   printf(" -D: N Contributors: %i\n", fPrimaryVertex->GetNContributors()); 
-  //   Int_t nfound = 0;
-  //   for(Int_t id = 0; id < esdvertex->GetNIndices(); id++){
-  //     if(contrib[id] == pdaughter->GetID()){
-  //       if( (nTracks - nfound) <= 2 ) return NULL;
-  //       *fPrimaryVertex -= pkfdaughter;
-  //       removed[0] = kTRUE;
-  //       nfound++;
-  //     }
-  //     if(contrib[id] == ndaughter->GetID()){
-  //       if( (nTracks - nfound) <=2 ) return NULL;
-  //       *fPrimaryVertex -= nkfdaughter;
-  //       removed[1] = kTRUE;
-  //       nfound++;
-  //     }
-  //     if(nfound == 2) break;
-  //   }
-  
-  //  printf(" -D: n removed: %i\n", nfound);
+ 
   
   // Create the mother particle 
   AliKFParticle *m = new AliKFParticle(pkfdaughter, nkfdaughter);
-  // DEBUG - testing
+  // important !!!
+  m->SetField(fInputEvent->GetMagneticField());
   if(TMath::Abs(kElectron) == pspec && TMath::Abs(kElectron) == nspec) m->SetMassConstraint(0, 0.001);
   else if(TMath::Abs(kPiPlus) == pspec && TMath::Abs(kPiPlus) == nspec) m->SetMassConstraint(TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass(), 0.);
   else if(TMath::Abs(kProton) == pspec && TMath::Abs(kPiPlus) == nspec) m->SetMassConstraint(TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass(), 0.);
