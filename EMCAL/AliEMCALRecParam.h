@@ -27,7 +27,8 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   enum AliEMCALClusterizerFlag
   {
     kClusterizerv1  = 0,
-    kClusterizerNxN = 1   
+    kClusterizerNxN = 1,
+    kClusterizerv2  = 2  
   };
   
   AliEMCALRecParam() ;
