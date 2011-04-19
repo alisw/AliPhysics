@@ -198,7 +198,6 @@ void AliHFEV0pid::Process(AliVEvent * const inputEvent){
 
   //BenchmarkV0finder();
 
-
   for(Int_t iv0 = 0; iv0 < fInputEvent->GetNumberOfV0s(); iv0++){
     if(!TString(fInputEvent->IsA()->GetName()).CompareTo("AliESDEvent")){
       // case ESD
@@ -237,6 +236,7 @@ void AliHFEV0pid::Process(AliVEvent * const inputEvent){
   AliDebug(1, Form("Number of protons        : %d", fProtons->GetEntries()));
   
   delete  fPrimaryVertex;
+
 }
 
 //____________________________________________________________
@@ -282,7 +282,6 @@ Int_t AliHFEV0pid::ProcessV0(TObject *v0){
 
   // preselect the V0 candidates based on the Armenteros plot
   Int_t id = PreselectV0(esdV0, idMC);
-
   // store the resutls
   if(AliHFEV0cuts::kRecoGamma == id && IsGammaConv(v0)){
     fQA->Fill("h_nV0s", AliHFEV0cuts::kRecoGamma);
@@ -296,7 +295,9 @@ Int_t AliHFEV0pid::ProcessV0(TObject *v0){
     fQA->Fill("h_nV0s", AliHFEV0cuts::kRecoLambda);    
     return AliHFEV0cuts::kRecoLambda;
   }
-  else return AliHFEV0cuts::kUndef;
+  else return AliHFEV0cuts::kUndef; 
+
+
     
 }
 //____________________________________________________________

@@ -1,6 +1,3 @@
-#ifndef ALIHFETRACKFILTER_H
-#define ALIHFETRACKFILTER_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,14 +12,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Track filter class 
 // Apply cut steps to all tracks in one event and returns a list of
 // filtered tracks
 //
+#ifndef ALIHFETRACKFILTER_H
+#define ALIHFETRACKFILTER_H
+
 #ifndef ROOT_TNamed
 #include <TNamed.h>
 #endif
@@ -39,6 +36,7 @@ class AliMCEvent;
 
 class AliHFEtrackFilter : public TNamed{
   public:
+    AliHFEtrackFilter();
     AliHFEtrackFilter(const Char_t *name);
     AliHFEtrackFilter(const AliHFEtrackFilter &o);
     AliHFEtrackFilter &operator=(const AliHFEtrackFilter &o);
@@ -51,7 +49,7 @@ class AliHFEtrackFilter : public TNamed{
     void SetRecEvent(AliVEvent *rec);
     AliHFEcutStep *GetCutStep(Int_t istep);
     AliHFEcutStep *GetCutStep(const Char_t *name);
-    void FilterTracks(AliESDEvent *const esd);
+    void FilterTracks(const AliESDEvent *const esd);
     TObjArray *GetFilteredTracks() const { return fFilteredTracks; }
     void Flush();
 

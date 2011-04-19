@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Class AliHFEtofPIDqa
 //
@@ -148,6 +145,7 @@ void AliHFEtofPIDqa::Initialize(){
   // Make common binning
   const Int_t kPIDbins = AliPID::kSPECIES + 1;
   const Int_t kSteps = 2;
+  const Int_t kCentralityBins = 11;
   const Double_t kMinPID = -1;
   const Double_t kMinP = 0.;
   const Double_t kMaxPID = (Double_t)AliPID::kSPECIES;
@@ -157,16 +155,16 @@ void AliHFEtofPIDqa::Initialize(){
   Int_t kSigmaBins = fQAmanager->HasHighResolutionHistos() ? 1400 : 240;
 
   // 1st histogram: TOF sigmas: (species, p nsigma, step)
-  Int_t nBinsSigma[4] = {kPIDbins, kPbins, kSigmaBins, kSteps};
-  Double_t minSigma[4] = {kMinPID, kMinP, -12., 0};
-  Double_t maxSigma[4] = {kMaxPID, kMaxP, 12., 2.};
-  fHistos->CreateTHnSparse("tofnSigma", "TOF signal; species; p [GeV/c]; TOF signal [a.u.]; Selection Step", 4, nBinsSigma, minSigma, maxSigma);
+  Int_t nBinsSigma[5] = {kPIDbins, kPbins, kSigmaBins, kSteps, kCentralityBins};
+  Double_t minSigma[5] = {kMinPID, kMinP, -12., 0, 0};
+  Double_t maxSigma[5] = {kMaxPID, kMaxP, 12., 2., 11.};
+  fHistos->CreateTHnSparse("tofnSigma", "TOF signal; species; p [GeV/c]; TOF signal [a.u.]; Selection Step; Centrality", 5, nBinsSigma, minSigma, maxSigma);
 
   // 2nd histogram: TOF time - pion hypothesis (TOF Time Resolution Monitor)
   fHistos->CreateTH2F("tofTimeRes", "Difference between measured and expected time for Pions; p [GeV/c]; #Deltat [ps]", 100, 0.1, 10, 100, -200, 200); 
   
   // 3rd histogram: TPC sigmas to the electron line: (species, p nsigma, step - only filled if apriori PID information available)
-  fHistos->CreateTHnSparse("tofMonitorTPC", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step", 4, nBinsSigma, minSigma, maxSigma);
+  fHistos->CreateTHnSparse("tofMonitorTPC", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality", 5, nBinsSigma, minSigma, maxSigma);
 }
 
 //_________________________________________________________
@@ -175,6 +173,7 @@ void AliHFEtofPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   // Fill TPC histograms
   //
   AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
+  Float_t centrality = track->GetCentrality();
   Int_t species = track->GetAbInitioPID();
   if(species >= AliPID::kSPECIES) species = -1;
 
@@ -182,11 +181,12 @@ void AliHFEtofPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   AliHFEpidTOF *tofpid= dynamic_cast<AliHFEpidTOF *>(fQAmanager->GetDetectorPID(AliHFEpid::kTOFpid));
   AliHFEpidTPC *tpcpid= dynamic_cast<AliHFEpidTPC *>(fQAmanager->GetDetectorPID(AliHFEpid::kTPCpid));
   
-  Double_t contentSignal[4];
+  Double_t contentSignal[5];
   contentSignal[0] = species;
   contentSignal[1] = track->GetRecTrack()->P();
   contentSignal[2] = tofpid ? tofpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype): 0.;
   contentSignal[3] = step;
+  contentSignal[4] = centrality;
   fHistos->Fill("tofnSigma", contentSignal);
   if(tofpid){
     Double_t timeTof = tofpid->GetTOFsignal(track->GetRecTrack(), anatype);

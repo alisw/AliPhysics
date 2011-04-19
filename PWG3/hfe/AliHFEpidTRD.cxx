@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Class for TRD PID
 // Implements the abstract base class AliHFEpidbase 
@@ -44,8 +41,6 @@
 #include "AliHFEpidTRD.h"
 
 ClassImp(AliHFEpidTRD)
-
-const Double_t AliHFEpidTRD::fgkVerySmall = 1e-12;
 
 //___________________________________________________________________
 AliHFEpidTRD::AliHFEpidTRD() :
@@ -262,6 +257,19 @@ void AliHFEpidTRD::InitParameters1DLQ(){
 }
 
 //___________________________________________________________________
+void AliHFEpidTRD::RenormalizeElPi(const Double_t * const likein, Double_t * const likeout) const {
+  //
+  // Renormalize likelihoods for electrons and pions neglecting the 
+  // likelihoods for protons, kaons and muons
+  //
+  memset(likeout, 0, sizeof(Double_t) * AliPID::kSPECIES);
+  Double_t norm = likein[AliPID::kElectron] + likein[AliPID::kPion];
+  if(norm == 0.) norm = 1.;   // Safety
+  likeout[AliPID::kElectron] = likein[AliPID::kElectron] / norm;
+  likeout[AliPID::kPion] = likein[AliPID::kPion] / norm;
+}
+
+//___________________________________________________________________
 void AliHFEpidTRD::GetParameters(Double_t electronEff, Double_t *parameters) const {
   //
   // return parameter set for the given efficiency bin
@@ -283,7 +291,10 @@ Double_t AliHFEpidTRD::GetElectronLikelihood(const AliVParticle *track, AliHFEpi
     const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
     if(aodtrack)fAODpid->MakeTRDPID(const_cast<AliAODTrack *>(aodtrack), pidProbs);
   }
-  return pidProbs[AliPID::kElectron];
+  if(!IsRenormalizeElPi()) return pidProbs[AliPID::kElectron];
+  Double_t probsNew[AliPID::kSPECIES];
+  RenormalizeElPi(pidProbs, probsNew);
+  return probsNew[AliPID::kElectron];
 }
 
 //___________________________________________________________________

@@ -1,6 +1,3 @@
-#ifndef ALIHFESECVTX_H
-#define ALIHFESECVTX_H
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -15,14 +12,14 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */ 
-
 //
 //  Secondary vertexing construction Class
 //  Construct secondary vertex from Beauty hadron with electron and
 //  hadrons, then apply selection criteria
 //
+
+#ifndef ALIHFESECVTX_H
+#define ALIHFESECVTX_H
 
 #ifndef ROOT_TObject
 //#include <TObject.h>
@@ -58,7 +55,7 @@ class AliHFEsecVtx : public TObject {
 
     void CreateHistograms(TList * const qaList);
 
-    void Process(AliVTrack *track);
+    Bool_t Process(AliVTrack *track);
 
     Bool_t HasMCData() const { return TestBit(kHasMCData); };
     Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
@@ -82,7 +79,7 @@ class AliHFEsecVtx : public TObject {
     Int_t GetPairCode(const AliVTrack* const track1, const AliVTrack* const track2); // return corresponding pair code to pdg code
     Int_t GetElectronSource(Int_t mclabel); // return origin of the electron
     Int_t GetPDG(AliVTrack *track);     // return pdg 
-		void GetESDPID(AliESDtrack *track, Int_t &recpid, Double_t &recprob); //return esd pid likelihood
+    void GetESDPID(const AliESDtrack *track, Int_t &recpid, Double_t &recprob); //return esd pid likelihood
     void GetPrimaryCondition();
     void RecalcPrimvtx(Int_t nkftrk, const Int_t * const, const AliKFParticle * const); //recalculate primary vertex
 
@@ -113,7 +110,7 @@ class AliHFEsecVtx : public TObject {
 
     void Fill4TrkSECVTX(AliVTrack* track, Int_t ipair, Int_t jpair, Int_t kpair);
     void Fill3TrkSECVTX(AliVTrack* track, Int_t ipair, Int_t jpair);
-    void Fill2TrkSECVTX(AliVTrack* track, AliHFEpairs *pair);
+    void Fill2TrkSECVTX(AliVTrack* track, const AliHFEpairs *pair);
 
   private:
     enum{

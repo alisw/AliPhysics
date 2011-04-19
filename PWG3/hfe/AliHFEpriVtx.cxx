@@ -12,9 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */
-
 //
 // QA class of primary vertex study for Heavy Flavor electrons
 // this has functionality to reject electrons from primary vertex
@@ -304,7 +301,7 @@ void AliHFEpriVtx::FillNprimVtxContributor() const
 }
 
 //_______________________________________________________________________________________________
-Double_t AliHFEpriVtx::GetDistanceFromRecalVertexXY(AliESDtrack * const ESDelectron) 
+Double_t AliHFEpriVtx::GetDistanceFromRecalVertexXY(const AliESDtrack * const ESDelectron) 
 {
         //
         // return recalculated DCA after removing input track from the primary vertex
@@ -380,7 +377,7 @@ void AliHFEpriVtx::RecalcPrimvtx(Int_t nkftrk, const Int_t * const trkid, const 
 
 
 //_______________________________________________________________________________________________
-void AliHFEpriVtx::RecalcPrimvtx(AliESDtrack * const ESDelectron)
+void AliHFEpriVtx::RecalcPrimvtx(const AliESDtrack * const ESDelectron)
 {
         //
         // recalculate primary vertex after removing the input track

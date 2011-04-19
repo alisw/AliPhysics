@@ -1,6 +1,3 @@
-#ifndef ALIHFECUTS_H
-#define ALIHFECUTS_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,14 +12,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Cut container class for the ALICE HFE group
 // Serves also as interface to the correction Framework
 // Provides a set of standard cuts
 //
+#ifndef ALIHFECUTS_H
+#define ALIHFECUTS_H
+
 #ifndef ROOT_TNamed
 #include <TNamed.h>
 #endif
@@ -53,8 +50,12 @@ class AliHFEcuts : public TNamed{
       kNcutStepsDETrack = 1
     } DECutStep_t;
     typedef enum{
+      kStepHFEcutsSecvtx = 0, 
+      kNcutStepsSecvtxTrack = 1
+    } SecvtxCutStep_t;
+    typedef enum{
       kStepMCGenerated = 0,
-      kStepMCGeneratedZOutNoPileUp = 1,
+      kStepMCGeneratedZOutNoPileUpCentralityFine = 1,
       kStepMCGeneratedEventCut = 2,
       kStepMCInAcceptance = 3,
       kNcutStepsMCTrack =  4
@@ -63,9 +64,10 @@ class AliHFEcuts : public TNamed{
       kEventStepGenerated = 0,
       kEventStepRecNoCut = 1,
       kEventStepRecNoPileUp = 2,
-      kEventStepZRange = 3,
-      kEventStepReconstructed = 4,
-      kNcutStepsEvent = 5
+      kEventStepRecCentralityOk = 3,
+      kEventStepZRange = 4,
+      kEventStepReconstructed = 5,
+      kNcutStepsEvent = 6
     } EventCutStep_t;
 
     AliHFEcuts();
@@ -103,6 +105,10 @@ class AliHFEcuts : public TNamed{
       if(step >= kNcutStepsDETrack) return fgkUndefined;
       return fgkDECutName[step];
     }
+    static const Char_t *SecvtxCutName(UInt_t step){
+      if(step >= kNcutStepsSecvtxTrack) return fgkUndefined;
+      return fgkSecvtxCutName[step];
+    }
     static const Char_t *EventCutName(UInt_t step){
       if(step >= kNcutStepsEvent) return fgkUndefined;
       return fgkEventCutName[step];
@@ -126,6 +132,7 @@ class AliHFEcuts : public TNamed{
     void SetMinNTrackletsTRD(UChar_t minNtrackletsTRD) { fMinTrackletsTRD = minNtrackletsTRD; }
     void SetMaxChi2perClusterTPC(Double_t chi2) { fMaxChi2clusterTPC = chi2; };
     inline void SetMaxImpactParam(Double_t radial, Double_t z);
+    inline void SetIPcutParam(Float_t p0, Float_t p1, Float_t p2, Float_t p3, Bool_t isipsigma);
     void SetMinRatioTPCclusters(Double_t minRatioTPC) { fMinClusterRatioTPC = minRatioTPC; };
     void SetPtRange(Double_t ptmin, Double_t ptmax){fPtRange[0] = ptmin; fPtRange[1] = ptmax;};
     inline void SetProductionVertex(Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax);
@@ -135,7 +142,9 @@ class AliHFEcuts : public TNamed{
       fTPCratioDef = ratioDef;
     }
     void SetVertexRange(Double_t zrange){fVertexRangeZ = zrange;};
-    void SetTOFPIDStep(Bool_t tofPidStep) {fTOFPIDStep = tofPidStep;};    
+    void SetTOFPIDStep(Bool_t tofPidStep) {fTOFPIDStep = tofPidStep;};
+    void SetTOFMISMATCHStep(Bool_t tofMismatchStep) {fTOFMISMATCHStep = tofMismatchStep;};
+    void SetUseMixedVertex(Bool_t useMixedVertex) {fUseMixedVertex = useMixedVertex;};    
     
     inline void CreateStandardCuts();
     
@@ -177,6 +186,7 @@ class AliHFEcuts : public TNamed{
     static const Char_t* fgkMCCutName[kNcutStepsMCTrack];     // Cut step names for MC single Track cuts
     static const Char_t* fgkRecoCutName[kNcutStepsRecTrack];  // Cut step names for Rec single Track cuts
     static const Char_t* fgkDECutName[kNcutStepsDETrack];     // Cut step names for impact parameter cuts
+    static const Char_t* fgkSecvtxCutName[kNcutStepsSecvtxTrack];     // Cut step names for secondary vertexing cuts
     static const Char_t* fgkEventCutName[kNcutStepsEvent];    // Cut step names for Event cuts
     static const Char_t* fgkUndefined;                        // Name for undefined (overflow)
   
@@ -196,6 +206,10 @@ class AliHFEcuts : public TNamed{
     Double_t fSigmaToVtx;	        // Sigma To Vertex
     Double_t fVertexRangeZ;             // Vertex Range reconstructed
     Bool_t   fTOFPIDStep;               // TOF matching step efficiency
+    Bool_t   fTOFMISMATCHStep;        // TOF mismatch step
+    Bool_t   fUseMixedVertex;         // Use primary vertex from track only as before
+    Float_t  fIPCutParams[4];         // Parameters of impact parameter cut parametrization
+    Bool_t   fIsIPSigmacut;           // if abs IP cut or IP sigma cut 
 
     
     TList *fHistQA;		            //! QA Histograms
@@ -227,6 +241,16 @@ void AliHFEcuts::SetMaxImpactParam(Double_t radial, Double_t z){
   SetRequireDCAToVertex();
   fDCAtoVtx[0] = radial;
   fDCAtoVtx[1] = z;
+}
+
+//__________________________________________________________________
+void AliHFEcuts::SetIPcutParam(Float_t p0, Float_t p1, Float_t p2, Float_t p3, Bool_t isipsigma){
+  // Set parameters for impact parameter cut parametrization
+  fIPCutParams[0] = p0;
+  fIPCutParams[1] = p1;
+  fIPCutParams[2] = p2;
+  fIPCutParams[3] = p3;
+  fIsIPSigmacut = isipsigma;
 }
 
 //__________________________________________________________________

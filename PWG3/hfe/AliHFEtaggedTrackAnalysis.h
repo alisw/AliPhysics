@@ -1,6 +1,3 @@
-#ifndef ALIHFETAGGEDTRACKANALYSIS_H
-#define ALIHFETAGGEDTRACKANALYSIS_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,17 +12,17 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Class AliHFEtaggedTrackAnalysis
 // Analyses tracks with an apriori PID information (i.e. using the daugther
 // tracks from well-identified decays of neutral charged particles).
 // More information can be found inside the implementation file.
 //
-#ifndef ROOT_TObject
-#include <TObject.h>
+#ifndef ALIHFETAGGEDTRACKANALYSIS_H
+#define ALIHFETAGGEDTRACKANALYSIS_H
+
+#ifndef ROOT_TNamed
+#include <TNamed.h>
 #endif
 
 class AliHFEcollection;
@@ -35,9 +32,10 @@ class AliHFEpid;
 class AliHFEpidQAmanager;
 class AliHFEvarManager;
 
-class AliHFEtaggedTrackAnalysis : public TObject{
+class AliHFEtaggedTrackAnalysis : public TNamed{
   public:
     AliHFEtaggedTrackAnalysis();
+    AliHFEtaggedTrackAnalysis(const char *name);
     AliHFEtaggedTrackAnalysis(const AliHFEtaggedTrackAnalysis &ref);
     AliHFEtaggedTrackAnalysis &operator=(const AliHFEtaggedTrackAnalysis &ref);
     ~AliHFEtaggedTrackAnalysis();
@@ -52,9 +50,11 @@ class AliHFEtaggedTrackAnalysis : public TObject{
     AliHFEcollection * GetQAcollection() const { return fQAhistos; }
     Bool_t  GetClean() const { return fClean; }; 
     Double_t GetMagneticField() const { return fMagneticField; };
+    AliHFEvarManager *GetVarManager() const { return fVarManager; }
 
     void SetCuts(AliHFEcuts *cuts);
     void SetPID(AliHFEpid *pid);
+    void SetCentrality(Float_t centrality) { fCentralityF = centrality; };
     void SetClean(Bool_t clean) { fClean = clean; };
     void SetMagneticField(Double_t magneticField) { fMagneticField = magneticField; };
     void SetVariablesTRD(Bool_t variablesTRD) { fVariablesTRD = variablesTRD; };
@@ -71,9 +71,10 @@ class AliHFEtaggedTrackAnalysis : public TObject{
     AliHFEcuts          *fCuts;         // Single track cuts
     AliCFManager        *fCFM;          // CF Manager used for the track filtering
     AliHFEcollection    *fQAhistos;     // QA histos
+    Float_t              fCentralityF;  // Centrality
     Bool_t               fClean;        // Clean
-    Double_t            fMagneticField; // Magnetic field
-    Bool_t              fVariablesTRD;  //  Use phi angle at the first plane of the TRD 
+    Double_t             fMagneticField; // Magnetic field
+    Bool_t               fVariablesTRD;  //  Use phi angle at the first plane of the TRD 
     
   ClassDef(AliHFEtaggedTrackAnalysis, 0)
 };

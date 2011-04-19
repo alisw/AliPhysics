@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Class AliHFEtaggedTrackAnalysis
 // Analyses tracks with an apriori PID information (i.e. using the daugther
@@ -44,10 +41,9 @@
 #include "AliHFEvarManager.h"
 
 ClassImp(AliHFEtaggedTrackAnalysis)
-
 //____________________________________________________________
 AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis():
-    TObject()
+    TNamed()
   , fVarManager(NULL)
   , fContainer(NULL)
   , fPID(NULL)
@@ -55,6 +51,27 @@ AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis():
   , fCuts(NULL)
   , fCFM(NULL)
   , fQAhistos(NULL)
+  , fCentralityF(0.)
+  , fClean(kFALSE)
+  , fMagneticField(0.0)
+  , fVariablesTRD(kFALSE)
+{
+  //
+  // Dummy constructor
+  //
+}
+
+//____________________________________________________________
+AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis(const char *name):
+    TNamed(name, "")
+  , fVarManager(NULL)
+  , fContainer(NULL)
+  , fPID(NULL)
+  , fPIDqa(NULL)
+  , fCuts(NULL)
+  , fCFM(NULL)
+  , fQAhistos(NULL)
+  , fCentralityF(0.)
   , fClean(kFALSE)
   , fMagneticField(0.0)
   , fVariablesTRD(kFALSE)
@@ -63,11 +80,11 @@ AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis():
   // Default constructor
   //
   fVarManager = new AliHFEvarManager("taggedTrackVarManager");
-  fVarManager->AddVariable("pt");
-  fVarManager->AddVariable("eta");
-  fVarManager->AddVariable("phi");
-  fVarManager->AddVariable("charge");
-  fVarManager->AddVariable("species");
+  //fVarManager->AddVariable("pt");
+  //fVarManager->AddVariable("eta");
+  //fVarManager->AddVariable("phi");
+  //fVarManager->AddVariable("charge");
+  //fVarManager->AddVariable("species");
   fPIDqa = new AliHFEpidQAmanager;
   fCFM = new AliCFManager;
   SetBit(kIsOwner, kTRUE);
@@ -75,7 +92,7 @@ AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis():
 
 //____________________________________________________________
 AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis(const AliHFEtaggedTrackAnalysis &ref):
-    TObject(ref)
+    TNamed(ref)
   , fVarManager(ref.fVarManager)
   , fContainer(NULL)
   , fPID(ref.fPID)
@@ -83,6 +100,7 @@ AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis(const AliHFEtaggedTrackAnal
   , fCuts(ref.fCuts)
   , fCFM(ref.fCFM)
   , fQAhistos(ref.fQAhistos)
+  , fCentralityF(ref.fCentralityF)
   , fClean(ref.fClean)
   , fMagneticField(ref.fMagneticField)
   , fVariablesTRD(ref.fVariablesTRD)
@@ -101,6 +119,7 @@ AliHFEtaggedTrackAnalysis &AliHFEtaggedTrackAnalysis::operator=(const AliHFEtagg
   //
   // Assignment operator
   //
+  TNamed::operator=(ref);
   if(&ref != this){
     fVarManager = ref.fVarManager;
     fPID = ref.fPID;
@@ -108,6 +127,7 @@ AliHFEtaggedTrackAnalysis &AliHFEtaggedTrackAnalysis::operator=(const AliHFEtagg
     fCuts = ref.fCuts;
     fCFM = ref.fCFM;
     fQAhistos = ref.fQAhistos;
+    fCentralityF = ref.fCentralityF;
     fClean = ref.fClean;
     fMagneticField = ref.fMagneticField;
     fVariablesTRD = ref.fVariablesTRD;
@@ -175,7 +195,7 @@ void AliHFEtaggedTrackAnalysis::ProcessTrack(AliVParticle *track, Int_t abinitio
   // Filter tracks tagged by V0 PID class
   //
   //
-  fVarManager->NewTrack(track, NULL, 0., abinitioPID, kTRUE);
+  fVarManager->NewTrack(track, NULL, fCentralityF, abinitioPID, kTRUE);
 
 
 
@@ -186,8 +206,8 @@ void AliHFEtaggedTrackAnalysis::ProcessTrack(AliVParticle *track, Int_t abinitio
       
       const AliExternalTrackParam *trueparam = NULL;
       if(esdtrackc->GetOuterParam()) {
-	      trueparam = esdtrackc->GetOuterParam();
-	      fVarManager->NewTrack((AliVParticle *)trueparam, NULL, 0., abinitioPID, kTRUE);
+	trueparam = esdtrackc->GetOuterParam();
+	fVarManager->NewTrack((AliVParticle *)trueparam, NULL, fCentralityF, abinitioPID, kTRUE);
       }
       else return;
     }
@@ -251,6 +271,7 @@ void AliHFEtaggedTrackAnalysis::ProcessTrack(AliVParticle *track, Int_t abinitio
      hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
      hfetrack.SetRecTrack(track);
      hfetrack.SetAbInitioPID(abinitioPID);
+     hfetrack.SetCentrality(fCentralityF);
      fPID->SetVarManager(fVarManager);
      fPID->IsSelected(&hfetrack, fContainer, "taggedTrackContainer", fPIDqa);
    }

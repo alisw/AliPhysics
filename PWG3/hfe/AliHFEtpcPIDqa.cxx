@@ -143,15 +143,15 @@ void AliHFEtpcPIDqa::Browse(TBrowser *b){
       b->Add(fHistos, fHistos->GetName());
 
       // Make Projections of the dE/dx Spectra and add them to a new Folder
-      TString specnames[4] = {"All", "Electrons", "Pions", "Protons"};
-      Int_t specind[4] = {-1, AliPID::kElectron, AliPID::kPion, AliPID::kProton};
+      TString specnames[AliPID::kSPECIES+1] = {"All", "Electrons", "Muon", "Pions", "Kaon", "Protons"};
+      Int_t specind[AliPID::kSPECIES+1] = {-1, AliPID::kElectron, AliPID::kMuon, AliPID::kPion, AliPID::kKaon, AliPID::kProton};
       TList *listdEdx = new TList;
       listdEdx->SetOwner();
       TList *listNsigma = new TList;
       listNsigma->SetOwner();
 
       TH2 *hptr = NULL; 
-      for(Int_t ispec = 0; ispec < 4; ispec++){
+      for(Int_t ispec = 0; ispec < AliPID::kSPECIES+1; ispec++){
         for(Int_t istep = 0; istep < 2; istep++){
           hptr = MakeSpectrumdEdx(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec]);
           hptr->SetName(Form("hTPCdEdx%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));

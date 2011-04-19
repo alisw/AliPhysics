@@ -1,6 +1,3 @@
-#ifndef ALIHFEEXTRACUTS_H
-#define ALIHFEEXTRACUTS_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,14 +12,13 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Extra Cuts from the ALICE HFE Group
 // Container for cuts which are currently not implemented by
 // the Correction Framework
 //
+#ifndef ALIHFEEXTRACUTS_H
+#define ALIHFEEXTRACUTS_H
 
 // #ifndef ALICFCUTBASE_H
 #include "AliCFCutBase.h"
@@ -69,11 +65,11 @@ class AliHFEextraCuts : public AliCFCutBase{
     inline void SetMaxImpactParamR(Double_t impactParam);
     inline void SetMinImpactParamZ(Double_t impactParam);
     inline void SetMaxImpactParamZ(Double_t impactParam);
-    inline void SetMinHFEImpactParamR();
-    inline void SetMinHFEImpactParamNsigmaR();
+    inline void SetMinHFEImpactParamR(Float_t ipcutParam[4], Bool_t issigmacut);
     inline void SetMinTrackletsTRD(Int_t minTracklets);
     inline void SetMinNClustersTPC(Int_t minclusters, ETPCclusterDef_t def);
     void SetTOFPID(Bool_t tofPid) { fTOFpid = tofPid;}
+    void SetTOFMISMATCH(Bool_t tofMismatch) { fTOFmismatch = tofMismatch;}
 
     void SetCheckITSstatus(Bool_t check) { fCheck = check; };
     Bool_t GetCheckITSstatus() const { return fCheck; };
@@ -125,11 +121,13 @@ class AliHFEextraCuts : public AliCFCutBase{
     ULong64_t fCutCorrelation;		    // Cut Correlation
     ULong64_t fRequirements;		      // Cut Requirements
     Float_t fImpactParamCut[4];		    // Impact Parmameter Cut
+    Float_t fIPcutParam[4];		        // Parmameter of impact parameter cut parametrization
     UInt_t fMinNClustersTPC;          // Minimum TPC clusters cut
     Float_t fClusterRatioTPC;		      // Ratio of findable vs. found clusters in TPC
     UChar_t fMinTrackletsTRD;		      // Min. Number of Tracklets inside TRD
     UChar_t fPixelITS;                // Cut on ITS Pixels
     Bool_t  fTOFpid;                  // TOF pid
+    Bool_t  fTOFmismatch;             // TOF mismatch
     UChar_t fTPCclusterDef;           // TPC cluster definition Bitmap
     UChar_t fTPCclusterRatioDef;      // TPC cluster ratio definition Bitmap
 
@@ -178,13 +176,13 @@ void AliHFEextraCuts::SetMaxImpactParamZ(Double_t impactParam){
 }
 
 //__________________________________________________________
-void AliHFEextraCuts::SetMinHFEImpactParamR(){
-  SETBIT(fRequirements, kMinHFEImpactParamR);
-}
-
-//__________________________________________________________
-void AliHFEextraCuts::SetMinHFEImpactParamNsigmaR(){
-  SETBIT(fRequirements, kMinHFEImpactParamNsigmaR);
+void AliHFEextraCuts::SetMinHFEImpactParamR(Float_t ipcutParam[4], Bool_t isSigmacut){
+  if(isSigmacut) SETBIT(fRequirements, kMinHFEImpactParamNsigmaR);
+  else SETBIT(fRequirements, kMinHFEImpactParamR);
+  fIPcutParam[0]=ipcutParam[0];
+  fIPcutParam[1]=ipcutParam[1];
+  fIPcutParam[2]=ipcutParam[2];
+  fIPcutParam[3]=ipcutParam[3];
 }
 
 //__________________________________________________________

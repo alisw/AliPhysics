@@ -1,6 +1,3 @@
-#ifndef ALIANALYSISTASKHFEPIDQA_H
-#define ALIANALYSISTASKHFEPIDQA_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,14 +12,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Task for PID QA
 // Using AliHFEpidQA and AliHFEMCpidQA
 // More information can be found in the source file
 //
+#ifndef ALIANALYSISTASKHFEPIDQA_H
+#define ALIANALYSISTASKHFEPIDQA_H
+
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
 #endif

@@ -13,48 +13,48 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 //
-// Class AliHFEtrdPIDqaV1
-// Monitoring TRD PID in the HFE PID montioring framework. 
+// Class AliHFEemcalPIDqa
+// Monitoring EMCAL PID in the HFE PID montioring framework
 // More information can be found inside the implementation file
 //
-#ifndef ALIHFETRDPIDQAV1_H
-#define ALIHFETRDPIDQAV1_H
+#ifndef ALIHFEEMCALPIDQA_H
+#define ALIHFEEMCALPIDQA_H
 
-#ifndef ALIHFEDETPIDQAV1_H
+#ifndef ALIHFEDETPIDQA_H
 #include "AliHFEdetPIDqa.h"
 #endif
 
-class AliESDtrack;
-class AliAODTrack;
+class TH1;
+class TH2;
 class AliHFEcollection;
 class AliHFEpidObject;
-class TBrowser;
-class TCollection;
+class AliESDtrack;
+class AliAODTrack;
 
-class AliHFEtrdPIDqaV1 : public AliHFEdetPIDqa{
+class AliHFEemcalPIDqa : public AliHFEdetPIDqa{
   public:
-    AliHFEtrdPIDqaV1();
-    AliHFEtrdPIDqaV1(const Char_t *name);
-    AliHFEtrdPIDqaV1(const AliHFEtrdPIDqaV1 &c);
-    AliHFEtrdPIDqaV1 &operator=(const AliHFEtrdPIDqaV1 &o);
-    ~AliHFEtrdPIDqaV1(){}
-    virtual Long64_t Merge(TCollection *coll);
-    virtual void Browse(TBrowser *b);
-    virtual Bool_t IsFolder() const { return kTRUE; };
-
+    AliHFEemcalPIDqa();
+    AliHFEemcalPIDqa(const char*name);
+    AliHFEemcalPIDqa(const AliHFEemcalPIDqa &o);
+    AliHFEemcalPIDqa &operator=(const AliHFEemcalPIDqa &o);
+    ~AliHFEemcalPIDqa();
+    void Copy(TObject &o) const;
+    virtual Long64_t Merge(TCollection *col);
+  
     virtual void Initialize();
     virtual void ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step);
 
-    TH2 *MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
-    TH2 *MakeTRDspectrumTM(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
-    TH2 *MakeTRDlikelihoodDistribution(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
-    TH2 *MakeTRDchargeDistribution(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
+    //void HistEnergyMomMatch(double pT, double eop);
+    void HistEnergyMomMatch(const AliHFEpidObject *track, double eop);
+    TH1 *GetHistogram(const char *name); 
+    AliHFEcollection *GetHistoCollection() const { return fHistos; }
+
   protected:
-    void ProcessESDtrack(const AliESDtrack *esdtrack, AliHFEdetPIDqa::EStep_t step, Int_t species);
-    void ProcessAODtrack(const AliAODTrack *aodtrack, AliHFEdetPIDqa::EStep_t step, Int_t species);
-    AliHFEcollection *fHistos; // QA histograms
+    void ProcessESDtrack(const AliESDtrack *track, AliHFEdetPIDqa::EStep_t step, Int_t species);
+    void ProcessAODtrack(const AliAODTrack *track, AliHFEdetPIDqa::EStep_t step, Int_t species);
+  private:
+    AliHFEcollection *fHistos;        // Container for Histograms
 
-    ClassDef(AliHFEtrdPIDqaV1, 1)     // Base class for detector PID QA
+    ClassDef(AliHFEemcalPIDqa, 1);
 };
-
 #endif

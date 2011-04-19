@@ -1,6 +1,3 @@
-#ifndef ALIHFEV0PIDMC_H
-#define ALIHFEV0PIDMC_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,14 +12,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Benchmarking class for V0 finder and PID. 
 // Relies on MC information
 // For more see source file
 //
+
+#ifndef ALIHFEV0PIDMC_H
+#define ALIHFEV0PIDMC_H
 
 #ifndef ROOT_TObject
 #include <TObject.h>
@@ -46,7 +43,7 @@ class AliHFEV0pidMC : public TObject {
 
   void     SetMCEvent(AliMCEvent * const mc) { fMC = mc; };
 
-  inline TList* GetListOfQAhistograms();
+  TList* GetListOfQAhistograms();
 
  private:
   AliHFEV0pidMC(const AliHFEV0pidMC &);
@@ -61,13 +58,4 @@ class AliHFEV0pidMC : public TObject {
 
    ClassDef(AliHFEV0pidMC, 1)   // QA class for V0 PID
 };
-//____________________________________________________________
-TList *AliHFEV0pidMC::GetListOfQAhistograms(){
-  //
-  // Get QA histograms
-  //
-  if(fColl)
-    return fColl->GetList();
-  return NULL;
-}
 #endif

@@ -1,6 +1,3 @@
-#ifndef ALIHFEDCA_H
-#define ALIHFEDCA_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Class for checking impact parameter (DCA) study 
 // + study DCA in rphi (xy) and z
@@ -25,6 +19,9 @@
 // + handle both MC and data 
 // + add plugin for primary vertex 
 //
+
+#ifndef ALIHFEDCA_H
+#define ALIHFEDCA_H
 
 #ifndef ROOT_TObject
 #include <TObject.h>
@@ -90,26 +87,26 @@ class AliHFEdca : public TObject{
   void CreateHistogramsHfeDataDca(TList *hfeDataDcaList);
 
   
-  void InitAnalysis();  
-  void FillHistogramsDca(AliESDEvent *esdEvent,  AliESDtrack *track,  AliMCEvent *mcEvent);
-  void FillHistogramsVtx(AliESDEvent *esdEvent,  AliMCEvent *mcEvent);
-  void FillHistogramsPid(AliESDtrack *track, const  AliMCEvent *mcEvent);
+  void InitAnalysis()const;  
+  void FillHistogramsDca(const AliESDEvent * const esdEvent,  const AliESDtrack *const track,  AliMCEvent *const mcEvent);
+  void FillHistogramsVtx(const AliESDEvent * const esdEvent,  const AliMCEvent *const mcEvent);
+  void FillHistogramsPid(const AliESDtrack *track, const  AliMCEvent * const mcEvent);
 
-  void FillHistogramsKfDca(AliESDEvent *esdEvent,  AliESDtrack *track,  const AliMCEvent *mcEvent);
+  void FillHistogramsKfDca(const AliESDEvent * const esdEvent,  const AliESDtrack *const track,  const AliMCEvent *const mcEvent);
 
-  void FillHistogramsDataDca(AliESDEvent *esdEvent,  AliESDtrack *track, AliESDVertex *vtxESDSkip);
-  void FillHistogramsDataVtx(AliESDEvent *esdEvent);
-  void FillHistogramsDataPid(AliESDtrack *track);
+  void FillHistogramsDataDca(const AliESDEvent * const esdEvent,  const AliESDtrack * const track, const AliESDVertex * const vtxESDSkip);
+  void FillHistogramsDataVtx(const AliESDEvent * const esdEvent);
+  void FillHistogramsDataPid(const AliESDtrack * const track);
 
-  void FillHistogramsHfeDca(AliESDEvent *esdEvent,  AliESDtrack *track,  AliMCEvent *mcEvent);
-  void FillHistogramsHfeDataDca(AliESDEvent *esdEvent,AliESDtrack *track,AliESDVertex *vtxESDSkip);
+  void FillHistogramsHfeDca(const AliESDEvent *const esdEvent,  const AliESDtrack * const track,  const AliMCEvent * const mcEvent);
+  void FillHistogramsHfeDataDca(const AliESDEvent * const esdEvent, const AliESDtrack * const track, const AliESDVertex * const vtxESDSkip);
 
 
-  void ApplyExtraCuts(AliESDEvent * const esdEvent, Int_t nMinPrimVtxContributor);
+  void ApplyExtraCuts(const AliESDEvent * const esdEvent, Int_t nMinPrimVtxContributor);
 
   void PostAnalysis() const;
 
-  Int_t GetCombinedPid(AliESDtrack *track);
+  Int_t GetCombinedPid(const AliESDtrack * const track);
 
  private:   
 

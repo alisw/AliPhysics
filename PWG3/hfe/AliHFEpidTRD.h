@@ -1,6 +1,3 @@
-#ifndef ALIHFEPIDTRD_H
-#define ALIHFEPIDTRD_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,14 +12,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // TRD PID Class
 // Does PID either on a x% electron efficiency basis or on dE/dx
 // For more information please check the implementation file
 //
+#ifndef ALIHFEPIDTRD_H
+#define ALIHFEPIDTRD_H
+
  #ifndef ALIHFEPIDBASE_H
  #include "AliHFEpidBase.h"
  #endif
@@ -66,7 +63,9 @@ class AliHFEpidTRD : public AliHFEpidBase{
     Double_t GetTRDSignalV2(const AliESDtrack *track, Float_t trucation = 0.7) const;
 
     Bool_t IsCalculateTRDSignals() const { return TestBit(kTRDsignals); }
+    Bool_t IsRenormalizeElPi() const { return TestBit(kTRDrenormalize); }
     void SetPIDMethod(PIDMethodTRD_t method) { fPIDMethod = method; };
+    void SetRenormalizeElPi(Bool_t doRenorm = kTRUE) { if(doRenorm) SetBit(kTRDrenormalize, kTRUE); else SetBit(kTRDrenormalize, kFALSE);}
     void SetElectronEfficiency(Double_t electronEfficiency) { fElectronEfficiency = electronEfficiency; }
     void SetThresholdParameters(Double_t electronEff, Double_t *params);
     void SetMinP(Double_t p) { fMinP = p; }
@@ -80,7 +79,8 @@ class AliHFEpidTRD : public AliHFEpidBase{
   protected:
     enum{
       kTRDsignals = BIT(16),
-      kTRDdefaultThresholds = BIT(17)
+      kTRDdefaultThresholds = BIT(17),
+      kTRDrenormalize = BIT(18)
     };
     void Copy(TObject &ref) const;
     void InitParameters();
@@ -88,14 +88,15 @@ class AliHFEpidTRD : public AliHFEpidBase{
     void GetParameters(Double_t electronEff, Double_t *parameters) const;
     void SetUseDefaultParameters(Bool_t useDefault = kTRUE) { SetBit(kTRDdefaultThresholds, useDefault); }
     Bool_t UseDefaultParameters() const { return TestBit(kTRDdefaultThresholds); }
+    void RenormalizeElPi(const Double_t * const likein, Double_t * const likeout) const;
 
   private:
-    static const Double_t fgkVerySmall;                       // Check for 0
+    static const Double_t fgkVerySmall = 1e-12;             // Check for 0
     Double_t fMinP;                                         // Minimum momentum above which TRD PID is applied
     Double_t fElectronEfficiency;                           // Cut on electron efficiency
     PIDMethodTRD_t fPIDMethod;                              // PID Method: 2D Likelihood or Neural Network
     Double_t fThreshParams[kThreshParams];                  // Threshold parametrisation
   ClassDef(AliHFEpidTRD, 1)     // TRD electron ID class
 };
-
 #endif
+

@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Class for electrons from beauty study
 // Counting electrons from beauty
@@ -333,7 +330,7 @@ void AliHFEdisplacedElectrons::CreateOutputs(TList* const displacedList){
 
 
 //__________________________________________________________
-void AliHFEdisplacedElectrons::FillMcOutput(AliESDEvent *const fESD, AliMCEvent* const fMC, AliMCParticle* const mctrack)
+void AliHFEdisplacedElectrons::FillMcOutput(const AliESDEvent *const fESD, AliMCEvent* const fMC, const AliMCParticle* const mctrack)
 {
 
   // fill output
@@ -473,7 +470,7 @@ void AliHFEdisplacedElectrons::FillMcOutput(AliESDEvent *const fESD, AliMCEvent*
 
 
 //__________________________________________________________
-void AliHFEdisplacedElectrons::FillEsdOutput(AliESDEvent * const fESDEvent, AliESDtrack* const esdTrack, AliStack * const stack)
+void AliHFEdisplacedElectrons::FillEsdOutput(const AliESDEvent * const fESDEvent, AliESDtrack* const esdTrack, AliStack * const stack)
 {
   // after esd event selection, esd track cuts, and hfe pid 
   // this is the case for ESD tracks, with MC information
@@ -601,7 +598,7 @@ void AliHFEdisplacedElectrons::FillEsdOutput(AliESDEvent * const fESDEvent, AliE
 }
 
 //__________________________________________________________
-void AliHFEdisplacedElectrons::FillDataOutput(AliESDEvent * const fESDEvent, AliESDtrack* const esdTrack)
+void AliHFEdisplacedElectrons::FillDataOutput(const AliESDEvent * const fESDEvent, AliESDtrack* const esdTrack)
 {
   
   // this is pure data, without MC information at all

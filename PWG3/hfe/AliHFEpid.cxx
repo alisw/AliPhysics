@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // PID Steering Class 
 // Interface to the user task
@@ -42,12 +39,12 @@
 
 #include "AliHFEcontainer.h"
 #include "AliHFEpid.h"
-#include "AliHFEpidBase.h"
 #include "AliHFEpidQAmanager.h"
 #include "AliHFEpidITS.h"
 #include "AliHFEpidTPC.h"
 #include "AliHFEpidTRD.h"
 #include "AliHFEpidTOF.h"
+#include "AliHFEpidEMCAL.h"
 #include "AliHFEpidMC.h"
 #include "AliHFEvarManager.h"
 
@@ -100,6 +97,7 @@ AliHFEpid::AliHFEpid(const Char_t *name):
   fDetectorPID[kTPCpid] = new AliHFEpidTPC("TPCPID");
   fDetectorPID[kTRDpid] = new AliHFEpidTRD("TRDPID");
   fDetectorPID[kTOFpid] = new AliHFEpidTOF("TOFPID");
+  fDetectorPID[kEMCALpid] = new AliHFEpidEMCAL("EMCALPID");
 
 }
 
@@ -309,7 +307,7 @@ void AliHFEpid::ConfigureTPCrejectionSimple(){
 }
 
 //____________________________________________________________
-void AliHFEpid::ConfigureTPCrejection(const char *lowerCutParam, Double_t *params){
+void AliHFEpid::ConfigureTPCrejection(const char *lowerCutParam, Double_t * const params, Float_t upperTPCCut, Float_t TOFCut){
   //
   // Combined TPC-TOF PID
   // if no function parameterizaion is given, then the default one (exponential) is chosen
@@ -317,30 +315,47 @@ void AliHFEpid::ConfigureTPCrejection(const char *lowerCutParam, Double_t *param
   if(HasMCData()) AliInfo("Configuring TPC for MC\n");
   AliHFEpidTPC *tpcpid = dynamic_cast<AliHFEpidTPC *>(fDetectorPID[kTPCpid]);
   AliHFEpidTOF *tofpid = dynamic_cast<AliHFEpidTOF *>(fDetectorPID[kTOFpid]);
-  if(tofpid) tofpid->SetTOFnSigma(3);
+  if(tofpid) tofpid->SetTOFnSigma(TOFCut);
 
   //TF1 *upperCut = new TF1("upperCut", "[0] * TMath::Exp([1]*x)", 0, 20);
   TF1 *upperCut = new TF1("upperCut", "[0]", 0, 20); // Use constant upper cut
   TF1 *lowerCut = new TF1("lowerCut", lowerCutParam == NULL ? "[0] * TMath::Exp([1]*x) + [2]": lowerCutParam, 0, 20);
-  upperCut->SetParameter(0, 3.);
+
+  upperCut->SetParameter(0, upperTPCCut); // pp
+
+//  upperCut->SetParameter(0, 3.5); //PbPb
+//  printf("upper %f \n",upperCut->GetParameter(0));
   //upperCut->SetParameter(0, 2.7);
   //upperCut->SetParameter(1, -0.4357);
   if(params){
     for(Int_t ipar = 0; ipar < lowerCut->GetNpar(); ipar++) lowerCut->SetParameter(ipar, params[ipar]);
   } else {
     // Set default parameterization
-    if(HasMCData()) lowerCut->SetParameter(0, -2.5);
-    else lowerCut->SetParameter(0, -3.71769);
+      if(HasMCData()) lowerCut->SetParameter(0, -2.5);
+      else lowerCut->SetParameter(0, -4.03);  //pp
+//      else lowerCut->SetParameter(0, -3.83);  //PbPb
+  
+     
+    //else lowerCut->SetParameter(0, -3.71769);
     //else lowerCut->SetParameter(0, -3.7);
 
-    lowerCut->SetParameter(1, -0.40263);
+    lowerCut->SetParameter(1, -0.22); // pp
+//     lowerCut->SetParameter(1,-0.36 ); // PbPb
+    //lowerCut->SetParameter(1, -0.40263);
     //lowerCut->SetParameter(1, -0.8);
-
+    
     if(HasMCData()) lowerCut->SetParameter(2, -2.2);
-    else lowerCut->SetParameter(2, 0.267857);
+    else lowerCut->SetParameter(2, 0.92); //pp
+//     else lowerCut->SetParameter(2, 0.27); //PbPb
+   // else lowerCut->SetParameter(2, 0.92); //pp
+//     printf("lower0 %f \n",lowerCut->GetParameter(0));
+//     printf("lower1 %f \n",lowerCut->GetParameter(1));
+//     printf("lower2 %f \n",lowerCut->GetParameter(2));
+    //else lowerCut->SetParameter(2, 0.267857);
     //else lowerCut->SetParameter(2, -0.35);
   }
-  
+
+
   if(tpcpid){
     tpcpid->SetTPCnSigma(2);
     tpcpid->SetUpperSigmaCut(upperCut);
@@ -372,7 +387,7 @@ void AliHFEpid::PrintStatus() const {
   printf("===============================================\n");
   printf("PID Detectors: \n");
   Int_t npid = 0;
-  TString detectors[kNdetectorPID] = {"MC", "ESD", "ITS", "TPC", "TRD", "TOF"};
+  TString detectors[kNdetectorPID] = {"MC", "ESD", "ITS", "TPC", "TRD", "TOF", "EMCAL"};
   for(Int_t idet = 0; idet < kNdetectorPID; idet++){
     if(IsDetectorOn(idet)){
       printf("\t%s\n", detectors[idet].Data());

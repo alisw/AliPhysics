@@ -1,10 +1,6 @@
-#ifndef ALIHFECOLLECTION_H
-#define ALIHFECOLLECTION_H
-
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/* $Id$ */ 
+ * See cxx source for full Copyright notice      
+ */
 
 //                                                                      
 // Class for AliHFEcollection                                           
@@ -26,6 +22,9 @@
  * vesion: 1.0.1
  */
 
+
+#ifndef ALIHFECOLLECTION_H
+#define ALIHFECOLLECTION_H
 
 #ifndef ROOT_TNamed
 #include "TNamed.h"
@@ -53,6 +52,7 @@ class AliHFEcollection : public TNamed{
 
   // Set & Create functions
   Bool_t CreateTH1F(const char* name, const char* title, Int_t nBin, Float_t nMin, Float_t nMax, Int_t logAxis = -1);
+  Bool_t CreateTH1Farray(const char* name, const char* title, Int_t nBin, const Double_t* xbins);
 
   Bool_t CreateTH2F(const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY, Int_t logAxis = -1);
 

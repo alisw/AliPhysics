@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Signal cuts
 // Checks whether a particle (reconstructed or MC) is coming from MC Signal
@@ -153,15 +150,30 @@ Bool_t AliHFEsignalCuts::IsBeautyElectron(const TObject * const o) const {
 //____________________________________________________________
 Bool_t AliHFEsignalCuts::IsGammaElectron(const TObject * const o) const {
   //
-  // Check for MC if the electron is coming from Gamma
+  // Check for MC if the electron is coming from Gamma  
   //
   if(!dynamic_cast<const AliVParticle *>(o)) return kFALSE;
   Int_t esources = GetElecSource(dynamic_cast<const AliVParticle *>(o));
-  if(esources == AliHFEmcQA::kGamma)  // 4: conversion electrons
+  if(esources >= AliHFEmcQA::kGammaPi0 && esources <= AliHFEmcQA::kGammaRho0 )  // 4: conversion electrons
+  //if(esources == AliHFEmcQA::kGammaPi0 || esources == AliHFEmcQA::kGammaEta || esources == AliHFEmcQA::kGammaOmega || esources == AliHFEmcQA::kGammaPhi || esources == AliHFEmcQA::kGammaEtaPrime || esources == AliHFEmcQA::kGammaRho0 )  // 4: conversion electrons
     return kTRUE;
   else
     return kFALSE;
 }
+
+//____________________________________________________________
+Bool_t AliHFEsignalCuts::IsNonHFElectron(const TObject * const o) const {
+  //
+  // Check for MC if the electron is coming from NonHFE except for conversion
+  //
+  if(!dynamic_cast<const AliVParticle *>(o)) return kFALSE;
+  Int_t esources = GetElecSource(dynamic_cast<const AliVParticle *>(o));  
+  if(esources == AliHFEmcQA:: kPi0 || esources == AliHFEmcQA::kEta || esources == AliHFEmcQA::kOmega || esources == AliHFEmcQA::kPhi || esources == AliHFEmcQA::kEtaPrime || esources == AliHFEmcQA::kRho0)  // 4: conversion electrons
+    return kTRUE;
+  else
+    return kFALSE;
+}
+//____________________________________________________________
 
 /*
 //____________________________________________________________

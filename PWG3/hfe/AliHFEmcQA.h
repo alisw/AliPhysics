@@ -1,6 +1,3 @@
-#ifndef ALIHFEMCQA_H
-#define ALIHFEMCQA_H
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -15,9 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // QA class of Heavy Flavor quark and fragmeted/decayed particles
 // -Check kinematics of Heavy Quarks/hadrons, and decayed leptons
@@ -28,6 +22,9 @@
 //    Number of produced heavy quark
 //    Number of produced hadron of given pdg code
 //
+
+#ifndef ALIHFEMCQA_H
+#define ALIHFEMCQA_H
 
 #ifndef ROOT_TObject
 //#include <TObject.h>
@@ -41,6 +38,7 @@ class TString;
 class AliMCEvent;
 class AliGenEventHeader;
 class AliAODMCParticle;
+class AliHFEcollection;
 
 //________________________________________________________________
 class AliHFEmcQA: public TObject {
@@ -48,7 +46,7 @@ class AliHFEmcQA: public TObject {
   public: 
     enum heavyType {kCharm=4, kBeauty=5, kOthers=6, kElectronPDG=11};
     enum qType {kQuark, kantiQuark, kHadron, keHadron, kDeHadron, kElectron, kElectron2nd};
-    enum SourceType {kDirectCharm=1, kDirectBeauty=2, kBeautyCharm=3, kGamma=4, kPi0=5, kElse=6, kMisID=7, kEta=8, kOmega=9, kPhi=10, kEtaPrime=11, kRho0=12};
+    enum SourceType {kDirectCharm=1, kDirectBeauty=2, kBeautyCharm=3, kGamma=4, kPi0=5, kElse=6, kMisID=7, kEta=8, kOmega=9, kPhi=10, kEtaPrime=11, kRho0=12, kGammaPi0=13, kGammaEta=14, kGammaOmega=15, kGammaPhi=16, kGammaEtaPrime=17, kGammaRho0=18};
     enum ProcessType {
       kPairCreationFromq,  kPairCreationFromg,  kFlavourExitation,  kGluonSplitting, kInitialPartonShower, kLightQuarkShower
     };
@@ -72,10 +70,11 @@ class AliHFEmcQA: public TObject {
     void GetHadronKine(TParticle *part, const Int_t kquark); // get heavy hadron kinematics distribution
     void GetDecayedKine(TParticle *part, const Int_t kquark, const Int_t kdecayed, Int_t icut); // get decay electron kinematics distribution
 		void GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, Int_t kdecayed, Int_t icut); // get decay electron kinematics for AOD 
+    void GetMesonKine(); // get meson and its decay electron pt spectra
     void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
-		Int_t GetSource(TParticle * const mcpart); // return source id 
+		Int_t GetSource(const TParticle * const mcpart); // return source id 
 		Int_t GetElecSource(TParticle * const mcpart); // return electron source id 
-		Int_t GetSource(AliAODMCParticle * const mcpart); // return electron source id for AOD
+		Int_t GetSource(const AliAODMCParticle * const mcpart); // return electron source id for AOD
 
   protected:
     void IdentifyMother(Int_t motherlabel, Int_t &motherpdg, Int_t &grandmotherlabel); // 
@@ -88,10 +87,10 @@ class AliHFEmcQA: public TObject {
     AliGenEventHeader* fMCHeader; // mcheader pointer
     TClonesArray *fMCArray; // mc array pointer
 
-    static const Int_t fgkGluon; // gluon pdg code
-    static const Int_t fgkMaxGener; // ancester level wanted to be checked 
-    static const Int_t fgkMaxIter; // number of iteration to find out matching particle 
-    static const Int_t fgkqType; // number of particle type to be checked
+    static const Int_t fgkGluon=21; // gluon pdg code
+    static const Int_t fgkMaxGener=10; // ancester level wanted to be checked 
+    static const Int_t fgkMaxIter=100; // number of iteration to find out matching particle 
+    static const Int_t fgkqType=7; // number of particle type to be checked
 
     struct AliHists{
       TH1F *fPdgCode; // histogram to store particle pdg code
@@ -127,6 +126,9 @@ class AliHFEmcQA: public TObject {
       TH1F *fProcessID; // histogram to store process id 
       TH2F *fePtRatio; // fraction of electron pT from D or B hadron
       TH2F *fPtCorr; // pt correlation between e and direct D or B 
+      TH2F *fPtCorrDp; // pt correlation between e and direct D+
+      TH2F *fPtCorrD0; // pt correlation between e and direct D0
+      TH2F *fPtCorrDrest; // pt correlation between e and direct D rest
       TH2F *fDePtRatio; // fraction of D electron pT from B hadron 
       TH2F *feDistance; // distance between electron production point to mother particle 
       TH2F *fDeDistance; // distance between D electron production point to mother particle
@@ -136,6 +138,9 @@ class AliHFEmcQA: public TObject {
 			  , fProcessID()
 			  , fePtRatio()
 			  , fPtCorr()
+			  , fPtCorrDp()
+			  , fPtCorrD0()
+			  , fPtCorrDrest()
 			  , fDePtRatio()
 			  , feDistance()
 			  , fDeDistance()
@@ -147,6 +152,9 @@ class AliHFEmcQA: public TObject {
 			  , fProcessID(p.fProcessID)
 			  , fePtRatio(p.fePtRatio)
 			  , fPtCorr(p.fPtCorr)
+			  , fPtCorrDp(p.fPtCorrDp)
+			  , fPtCorrD0(p.fPtCorrD0)
+			  , fPtCorrDrest(p.fPtCorrDrest)
 			  , fDePtRatio(p.fDePtRatio)
 			  , feDistance(p.feDistance)
 			  , fDeDistance(p.fDeDistance)
@@ -167,11 +175,11 @@ class AliHFEmcQA: public TObject {
     TH1F *fhDLogbin[9]; // D meson pt w diff binning
 
     TList *fQAhistos;           // Container for QA histos
+    AliHFEcollection *fMCQACollection;      //! Tasks own QA collection
     TParticle *fHeavyQuark[50]; //! store pointer of heavy flavour quark 
     Int_t fIsHeavy[2]; // count of heavy flavour
     Int_t fNparents; // number of heavy hadrons to be considered
     Int_t fParentSelect[2][7]; // heavy hadron species
-
 
   ClassDef(AliHFEmcQA,1);
 };
