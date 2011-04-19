@@ -72,6 +72,7 @@ Int_t loadlibssim ()
   if ( gSystem->Load("libVZERObase") < 0 ) return ret; ret--;
   if ( gSystem->Load("libVZEROrec") < 0 ) return ret; ret--;
   if ( gSystem->Load("libVZEROsim") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libEMCALraw") < 0 ) return ret; ret--;
   if ( gSystem->Load("libEMCALUtils") < 0 ) return ret; ret--;
   if ( gSystem->Load("libEMCALbase") < 0 ) return ret; ret--;
   if ( gSystem->Load("libEMCALsim") < 0 ) return ret; ret--;
