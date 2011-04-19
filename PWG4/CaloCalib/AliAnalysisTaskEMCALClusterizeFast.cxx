@@ -31,6 +31,7 @@
 #include "AliEMCALCalibData.h"
 #include "AliEMCALClusterizerNxN.h"
 #include "AliEMCALClusterizerv1.h"
+#include "AliEMCALClusterizerv2.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecParam.h"
@@ -465,6 +466,8 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
     fClusterizer = new AliEMCALClusterizerv1(geometry);
   else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN) 
     fClusterizer = new AliEMCALClusterizerNxN(geometry);
+  else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2) 
+    fClusterizer = new AliEMCALClusterizerv2(geometry);
   else if(fRecParam->GetClusterizerFlag() > AliEMCALRecParam::kClusterizerNxN) {
    AliEMCALClusterizerNxN *clusterizer = new AliEMCALClusterizerNxN(geometry);
    clusterizer->SetNRowDiff(2);
