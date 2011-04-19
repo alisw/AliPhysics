@@ -3937,7 +3937,6 @@ Bool_t AliReconstruction::IsHighPt() const {
   // that was reconstructed by both ITS and TPC, the event is accepted
 
   // Track cuts
-
   const Double_t pTmin = 1.5;
   const Double_t pTmax = 100;
   ULong_t mask = 0;
@@ -3946,6 +3945,7 @@ Bool_t AliReconstruction::IsHighPt() const {
   const Double_t pTminCosmic = 5.;
   const Double_t pTmaxCosmic = 100;
   ULong_t maskCosmic = 0;
+  Int_t cosmicCount=0;
   maskCosmic |= (AliESDtrack::kTPCrefit);
 
   Bool_t isOK = kFALSE;
@@ -3970,10 +3970,11 @@ Bool_t AliReconstruction::IsHighPt() const {
 	  && trk->GetInnerParam()->Pt() < pTmaxCosmic
 	  && (trk->GetStatus() & maskCosmic) == maskCosmic ) {
 	
-	isOK = kTRUE;
+	cosmicCount++;
 	break;
       }
     }
+    if (cosmicCount>1) isOK=kTRUE;
   }
   return isOK;
 }
@@ -4005,8 +4006,10 @@ void AliReconstruction::WriteESDfriend() {
   // 3. Sample randomly events if we still have remaining slot
 
   fNall++;
-
   Bool_t isSelected = kFALSE;
+  //
+  // Store all friends for B field OFF 
+  if (TMath::Abs(AliTrackerBase::GetBz())<0.5) isSelected=kTRUE;
 
   if (IsCosmicOrCalibSpecie()) { // Selection of calib or cosmic events
     fNspecie++;
