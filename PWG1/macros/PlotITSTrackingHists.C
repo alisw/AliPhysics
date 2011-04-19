@@ -9,7 +9,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   Bool_t plotAlignmentChecks=kFALSE;
   //gStyle->SetOptStat(0);
 
-  if(fname.Contains("alien")) TGrid::Connect("alien://");
+  //if(fname.Contains("alien")) TGrid::Connect("alien://");
 
   TFile *f= TFile::Open(fname.Data());
   if(!f) return kFALSE;
@@ -82,6 +82,8 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   TH1F *fHistPhiITSMIokbadoutinz6InAcc = (TH1F*)list->FindObject("fHistPhiITSMIokbadoutinz6InAcc");
 
   TH1F *fHistPtTPCInAcc = (TH1F*)list->FindObject("fHistPtTPCInAcc");
+  TH1F *fHistPhiTPCInAcc = (TH1F*)list->FindObject("fHistPhiTPCInAcc");
+  TH1F *fHistEtaTPCInAcc = (TH1F*)list->FindObject("fHistEtaTPCInAcc");
   TH1F *fHistPtTPCInAccSfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccSfromStrange");
   TH1F *fHistPtTPCInAccPfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccPfromStrange");
   TH1F *fHistPtTPCInAccMCtwoSPD = (TH1F*)list->FindObject("fHistPtTPCInAccMCtwoSPD");
@@ -93,6 +95,20 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   TH1F *fHistPtITSMI2InAcc = (TH1F*)list->FindObject("fHistPtITSMI2InAcc");
   TH1F *fHistPtITSMISPDInAcc = (TH1F*)list->FindObject("fHistPtITSMISPDInAcc");
   TH1F *fHistPtITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistPtITSMIoneSPDInAcc");
+  TH1F *fHistPhiITSMI6InAcc = (TH1F*)list->FindObject("fHistPhiITSMI6InAcc");
+  TH1F *fHistPhiITSMI5InAcc = (TH1F*)list->FindObject("fHistPhiITSMI5InAcc");
+  TH1F *fHistPhiITSMI4InAcc = (TH1F*)list->FindObject("fHistPhiITSMI4InAcc");
+  TH1F *fHistPhiITSMI3InAcc = (TH1F*)list->FindObject("fHistPhiITSMI3InAcc");
+  TH1F *fHistPhiITSMI2InAcc = (TH1F*)list->FindObject("fHistPhiITSMI2InAcc");
+  TH1F *fHistPhiITSMISPDInAcc = (TH1F*)list->FindObject("fHistPhiITSMISPDInAcc");
+  TH1F *fHistPhiITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistPhiITSMIoneSPDInAcc");
+  TH1F *fHistEtaITSMI6InAcc = (TH1F*)list->FindObject("fHistEtaITSMI6InAcc");
+  TH1F *fHistEtaITSMI5InAcc = (TH1F*)list->FindObject("fHistEtaITSMI5InAcc");
+  TH1F *fHistEtaITSMI4InAcc = (TH1F*)list->FindObject("fHistEtaITSMI4InAcc");
+  TH1F *fHistEtaITSMI3InAcc = (TH1F*)list->FindObject("fHistEtaITSMI3InAcc");
+  TH1F *fHistEtaITSMI2InAcc = (TH1F*)list->FindObject("fHistEtaITSMI2InAcc");
+  TH1F *fHistEtaITSMISPDInAcc = (TH1F*)list->FindObject("fHistEtaITSMISPDInAcc");
+  TH1F *fHistEtaITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistEtaITSMIoneSPDInAcc");
   TH1F *fHistPtITSMI6InAccFake = (TH1F*)list->FindObject("fHistPtITSMI6InAccFake");
   TH1F *fHistPtITSMI5InAccFake = (TH1F*)list->FindObject("fHistPtITSMI5InAccFake");
   TH1F *fHistPtITSMI4InAccFake = (TH1F*)list->FindObject("fHistPtITSMI4InAccFake");
@@ -149,6 +165,20 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistPtITSMIge2InAcc->Add(fHistPtITSMI4InAcc);
   fHistPtITSMIge2InAcc->Add(fHistPtITSMI3InAcc);
   fHistPtITSMIge2InAcc->Add(fHistPtITSMI2InAcc);
+  TH1F *fHistEtaITSMIge2InAcc=0;
+  TH1F *fHistPhiITSMIge2InAcc=0;
+  if(fHistPhiITSMI6InAcc) {
+    fHistPhiITSMIge2InAcc = (TH1F*)fHistPhiITSMI6InAcc->Clone("fHistPhiITSMIge2InAcc");
+    fHistPhiITSMIge2InAcc->Add(fHistPhiITSMI5InAcc);
+    fHistPhiITSMIge2InAcc->Add(fHistPhiITSMI4InAcc);
+    fHistPhiITSMIge2InAcc->Add(fHistPhiITSMI3InAcc);
+    fHistPhiITSMIge2InAcc->Add(fHistPhiITSMI2InAcc);
+    fHistEtaITSMIge2InAcc = (TH1F*)fHistEtaITSMI6InAcc->Clone("fHistEtaITSMIge2InAcc");
+    fHistEtaITSMIge2InAcc->Add(fHistEtaITSMI5InAcc);
+    fHistEtaITSMIge2InAcc->Add(fHistEtaITSMI4InAcc);
+    fHistEtaITSMIge2InAcc->Add(fHistEtaITSMI3InAcc);
+    fHistEtaITSMIge2InAcc->Add(fHistEtaITSMI2InAcc);
+  }
   TH1F *fHistPtITSMIge2InAccFake = 0;
   if(fHistPtITSMI6InAccFake) {
     fHistPtITSMIge2InAccFake=(TH1F*)fHistPtITSMI6InAccFake->Clone("fHistPtITSMIge2InAccFake");
@@ -491,6 +521,73 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   l4->AddEntry(fHistPtITSMIokbadoutinz4InAcc,"4 layers","l");
   l4->Draw();
 
+  if(fHistPhiITSMI2InAcc) {
+  TCanvas *c5g =new TCanvas("c5g","c5g",10,10,1200,600);
+  c5g->Divide(2,1);
+  c5g_1->SetGridy();
+  c5g_2->SetGridy();
+  c5g->cd(1);
+  fHistPhiITSMIge2InAcc->SetTitle("Fraction of prolonged tracks with N ITS points");
+  fHistPhiITSMIge2InAcc->SetYTitle("ITS+TPC / TPC");
+  fHistPhiITSMIge2InAcc->Divide(fHistPhiITSMIge2InAcc,fHistPhiTPCInAcc,1,1,"B");
+  fHistPhiITSMIge2InAcc->SetMaximum(1.5);
+  fHistPhiITSMIge2InAcc->SetMinimum(0);
+  fHistPhiITSMIge2InAcc->Draw();
+  /*  fHistPhiITSMI6InAcc->Divide(fHistPhiITSMI6InAcc,fHistPhiTPCInAcc,1,1,"B");
+  fHistPhiITSMI6InAcc->SetLineColor(2);
+  fHistPhiITSMI6InAcc->Draw("same");
+  fHistPhiITSMI5InAcc->Divide(fHistPhiITSMI5InAcc,fHistPhiTPCInAcc,1,1,"B");
+  fHistPhiITSMI5InAcc->SetLineColor(3);
+  fHistPhiITSMI5InAcc->Draw("same");
+  fHistPhiITSMI4InAcc->Divide(fHistPhiITSMI4InAcc,fHistPhiTPCInAcc,1,1,"B");
+  fHistPhiITSMI4InAcc->SetLineColor(4);
+  fHistPhiITSMI4InAcc->Draw("same");
+  fHistPhiITSMI3InAcc->Divide(fHistPhiITSMI3InAcc,fHistPhiTPCInAcc,1,1,"B");
+  fHistPhiITSMI3InAcc->SetLineColor(6);
+  fHistPhiITSMI3InAcc->Draw("same");
+  fHistPhiITSMI2InAcc->Divide(fHistPhiITSMI2InAcc,fHistPhiTPCInAcc,1,1,"B");
+  fHistPhiITSMI2InAcc->SetLineColor(7);
+  fHistPhiITSMI2InAcc->Draw("same");*/
+  fHistPhiITSMISPDInAcc->Divide(fHistPhiITSMISPDInAcc,fHistPhiTPCInAcc,1,1,"B");
+  fHistPhiITSMISPDInAcc->SetLineColor(9);
+  fHistPhiITSMISPDInAcc->Draw("same");
+  fHistPhiITSMIoneSPDInAcc->Divide(fHistPhiITSMIoneSPDInAcc,fHistPhiTPCInAcc,1,1,"B");
+  fHistPhiITSMIoneSPDInAcc->SetLineColor(15);
+  fHistPhiITSMIoneSPDInAcc->Draw("same");
+  fHistPhiITSMIge2InAcc->Draw("same");
+  l3->Draw();
+  c5g->cd(2);
+  fHistEtaITSMIge2InAcc->SetTitle("Fraction of prolonged tracks with N ITS points");
+  fHistEtaITSMIge2InAcc->SetYTitle("ITS+TPC / TPC");
+  fHistEtaITSMIge2InAcc->Divide(fHistEtaITSMIge2InAcc,fHistEtaTPCInAcc,1,1,"B");
+  fHistEtaITSMIge2InAcc->SetMaximum(1.5);
+  fHistEtaITSMIge2InAcc->SetMinimum(0);
+  fHistEtaITSMIge2InAcc->Draw();
+  /*  fHistEtaITSMI6InAcc->Divide(fHistEtaITSMI6InAcc,fHistEtaTPCInAcc,1,1,"B");
+  fHistEtaITSMI6InAcc->SetLineColor(2);
+  fHistEtaITSMI6InAcc->Draw("same");
+  fHistEtaITSMI5InAcc->Divide(fHistEtaITSMI5InAcc,fHistEtaTPCInAcc,1,1,"B");
+  fHistEtaITSMI5InAcc->SetLineColor(3);
+  fHistEtaITSMI5InAcc->Draw("same");
+  fHistEtaITSMI4InAcc->Divide(fHistEtaITSMI4InAcc,fHistEtaTPCInAcc,1,1,"B");
+  fHistEtaITSMI4InAcc->SetLineColor(4);
+  fHistEtaITSMI4InAcc->Draw("same");
+  fHistEtaITSMI3InAcc->Divide(fHistEtaITSMI3InAcc,fHistEtaTPCInAcc,1,1,"B");
+  fHistEtaITSMI3InAcc->SetLineColor(6);
+  fHistEtaITSMI3InAcc->Draw("same");
+  fHistEtaITSMI2InAcc->Divide(fHistEtaITSMI2InAcc,fHistEtaTPCInAcc,1,1,"B");
+  fHistEtaITSMI2InAcc->SetLineColor(7);
+  fHistEtaITSMI2InAcc->Draw("same");*/
+  fHistEtaITSMISPDInAcc->Divide(fHistEtaITSMISPDInAcc,fHistEtaTPCInAcc,1,1,"B");
+  fHistEtaITSMISPDInAcc->SetLineColor(9);
+  fHistEtaITSMISPDInAcc->Draw("same");
+  fHistEtaITSMIoneSPDInAcc->Divide(fHistEtaITSMIoneSPDInAcc,fHistEtaTPCInAcc,1,1,"B");
+  fHistEtaITSMIoneSPDInAcc->SetLineColor(15);
+  fHistEtaITSMIoneSPDInAcc->Draw("same");
+  fHistEtaITSMIge2InAcc->Draw("same");
+  l3->Draw();
+  }
+
   if(fHistPtITSMIge2InAccFake) {
     TCanvas *c5f =new TCanvas("c5f","c5f",10,10,600,600);
     c5f->SetGridy();
@@ -748,7 +845,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
 //-----------------------------------------------------------------------------
 void PlotEffRatio() {
 
-  TFile *f= new TFile("eff_117220_117223_pass1.root");
+  TFile *f= new TFile("Runs146806/eff.root");
 
   TH1F *fHistPtITSMI6InAcc = (TH1F*)f->Get("fHistPtITSMI6InAcc");
   TH1F *fHistPtITSMI5InAcc = (TH1F*)f->Get("fHistPtITSMI5InAcc");
@@ -764,7 +861,7 @@ void PlotEffRatio() {
   TH1F *fHistNclsITSMI = (TH1F*)f->Get("fHistNclsITSMI");
 
 
-  TFile *fMC= new TFile("eff_lhc10c4.root");
+  TFile *fMC= new TFile("Runs146689_146859_sdd/eff.root");
 
   TH1F *fHistPtITSMI6InAccMC = (TH1F*)fMC->Get("fHistPtITSMI6InAcc");
   TH1F *fHistPtITSMI5InAccMC = (TH1F*)fMC->Get("fHistPtITSMI5InAcc");
@@ -2719,9 +2816,9 @@ void ReweightStrange(TH1F *hPt,TH1F* hPtPfromStrange,TH1F* hPtSfromStrange) {
   return;
 }
 //--------------------------------------------------------------------------
-void ITSTrackingTrending(Int_t firstrun,Int_t lastrun,
-			 TString pathBeforeRun="/alice/sim/LHC10d1/",
-			 TString pathAfterRun="/QA14/QAresults.root",
+void ITSTrackingTrending(Int_t firstrun=137161,Int_t lastrun=139517,
+			 TString pathBeforeRun="/alice/data/2010/LHC10h/000",
+			 TString pathAfterRun="/ESDs/pass2/QA52/QAresults.root",
 			 //TString pathBeforeRun="/alice/data/2010/LHC10b/000",
 			 //TString pathAfterRun="/ESDs/pass2/QA9/QAresults.root",
 			 TString pathAfterRun2="") 
@@ -2729,7 +2826,13 @@ void ITSTrackingTrending(Int_t firstrun,Int_t lastrun,
   //
   // Make ITS efficiency trending plots from QAresults.root files
   //
+
+  Bool_t merge=kTRUE;
+
+
   gStyle->SetOptStat(0);
+
+  TGrid::Connect("alien://");
 
   Float_t ioValues[100],ioErrors[100];
   Int_t index;
@@ -2748,53 +2851,69 @@ void ITSTrackingTrending(Int_t firstrun,Int_t lastrun,
   hEffge2Pt02->SetLineWidth(2);
   hEffge2Pt02->SetLineColor(1);
   hEffge2Pt02->SetMarkerColor(1);
+  hEffge2Pt02->SetMarkerStyle(20);
   TH1F *hEffge2Pt1 = new TH1F("hEffge2Pt1","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
   hEffge2Pt1->SetLineWidth(2);
   hEffge2Pt1->SetLineColor(1);
   hEffge2Pt1->SetMarkerColor(1);
+  hEffge2Pt1->SetMarkerStyle(20);
   TH1F *hEffge2Pt10 = new TH1F("hEffge2Pt10","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
   hEffge2Pt10->SetLineWidth(2);
   hEffge2Pt10->SetLineColor(1);
   hEffge2Pt10->SetMarkerColor(1);
+  hEffge2Pt10->SetMarkerStyle(20);
 
   TH1F *hEff6Pt02 = new TH1F("hEff6Pt02","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
   hEff6Pt02->SetLineWidth(2);
   hEff6Pt02->SetLineColor(2);
   hEff6Pt02->SetMarkerColor(2);
+  hEff6Pt02->SetMarkerStyle(20);
   TH1F *hEff6Pt1 = new TH1F("hEff6Pt1","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
   hEff6Pt1->SetLineWidth(2);
   hEff6Pt1->SetLineColor(2);
   hEff6Pt1->SetMarkerColor(2);
+  hEff6Pt1->SetMarkerStyle(20);
   TH1F *hEff6Pt10 = new TH1F("hEff6Pt10","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
   hEff6Pt10->SetLineWidth(2);
   hEff6Pt10->SetLineColor(2);
   hEff6Pt10->SetMarkerColor(2);
+  hEff6Pt10->SetMarkerStyle(20);
 
   TH1F *hEffSPDPt02 = new TH1F("hEffSPDPt02","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
   hEffSPDPt02->SetLineWidth(2);
   hEffSPDPt02->SetLineColor(9);
   hEffSPDPt02->SetMarkerColor(9);
+  hEffSPDPt02->SetMarkerStyle(20);
   TH1F *hEffSPDPt1 = new TH1F("hEffSPDPt1","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
   hEffSPDPt1->SetLineWidth(2);
   hEffSPDPt1->SetLineColor(9);
   hEffSPDPt1->SetMarkerColor(9);
+  hEffSPDPt1->SetMarkerStyle(20);
   TH1F *hEffSPDPt10 = new TH1F("hEffSPDPt10","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
   hEffSPDPt10->SetLineWidth(2);
   hEffSPDPt10->SetLineColor(9);
   hEffSPDPt10->SetMarkerColor(9);
+  hEffSPDPt10->SetMarkerStyle(20);
 
   TH1F *hEffoneSPDPt02 = new TH1F("hEffoneSPDPt02","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
   hEffoneSPDPt02->SetLineWidth(2);
   hEffoneSPDPt02->SetLineColor(15);
   hEffoneSPDPt02->SetMarkerColor(15);
+  hEffoneSPDPt02->SetMarkerStyle(20);
   TH1F *hEffoneSPDPt1 = new TH1F("hEffoneSPDPt1","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
   hEffoneSPDPt1->SetLineWidth(2);
   hEffoneSPDPt1->SetLineColor(15);
   hEffoneSPDPt1->SetMarkerColor(15);
+  hEffoneSPDPt1->SetMarkerStyle(20);
   TH1F *hEffoneSPDPt10 = new TH1F("hEffoneSPDPt10","Efficiency; run number; TPC+ITS / TPC",nruns,firstrun-0.5,lastrun+0.5);
   hEffoneSPDPt10->SetLineWidth(2);
   hEffoneSPDPt10->SetLineColor(15);
   hEffoneSPDPt10->SetMarkerColor(15);
+  hEffoneSPDPt10->SetMarkerStyle(20);
+
+
+  TFileMerger merger;
+  merger.OutputFile("QAresults_merged.root");
 
   // loop on runs
   for(Int_t irun=firstrun; irun<=lastrun; irun++) {
@@ -2813,6 +2932,8 @@ void ITSTrackingTrending(Int_t firstrun,Int_t lastrun,
       path2.Prepend("alien://");
       if(!PlotITSTrackingHists(path2.Data(),ioValues,ioErrors)) continue;
     }
+
+    merger.AddFile(path.Data());
 
     Int_t bin=hEffge2Pt1->FindBin(irun);
 
@@ -2877,6 +2998,7 @@ void ITSTrackingTrending(Int_t firstrun,Int_t lastrun,
   lSPD->AddEntry(hFracSPD1,"Frac. SPD1 ON","l");
   lSPD->AddEntry(hFracSPD2,"Frac. SPD2 ON","l");
   lSPD->Draw();
+  cSPD->Print("cSPD.root");
 
   TCanvas *cPt02 = new TCanvas("cPt02","cPt02",0,0,1000,300);
   cPt02->SetGridy();
@@ -2892,6 +3014,7 @@ void ITSTrackingTrending(Int_t firstrun,Int_t lastrun,
   lPt02->AddEntry(hEffSPDPt02,"2 SPD + any","l");
   lPt02->AddEntry(hEff6Pt02,"6 cls","l");
   lPt02->Draw();
+  cPt02->Print("cPt02.root");
 
   TCanvas *cPt1 = new TCanvas("cPt1","cPt1",0,0,1000,300);
   cPt1->SetGridy();
@@ -2902,6 +3025,7 @@ void ITSTrackingTrending(Int_t firstrun,Int_t lastrun,
   hEffSPDPt1->Draw("same");
   hEffoneSPDPt1->Draw("same");
   lPt02->Draw();
+  cPt1->Print("cPt1.root");
 
   TCanvas *cPt10 = new TCanvas("cPt10","cPt10",0,0,1000,300);
   cPt10->SetGridy();
@@ -2912,6 +3036,9 @@ void ITSTrackingTrending(Int_t firstrun,Int_t lastrun,
   hEffSPDPt10->Draw("same,p");
   hEffoneSPDPt10->Draw("same,p");
   lPt02->Draw();
+  cPt10->Print("cPt10.root");
+
+  if(merge) merger.Merge();
 
   return;
 }
@@ -2935,8 +3062,37 @@ Bool_t KeepRun(Int_t irun) {
   //
 
   // LHC10e good runs
-  Int_t nruns10e=158;
-  Int_t goodruns10e[158]={130369, 130365, 130360, 130358, 130356, 130354, 130353, 130348, 130343, 130342, 130179, 130178, 130172, 130170, 130168, 130158, 130157, 130156, 130151, 130149, 130148, 129983, 129966, 129962, 129961, 129960, 129959, 129763, 129760, 129750, 129748, 129747, 129745, 129744, 129742, 129738, 129736, 129735, 129734, 129731, 129729, 129726, 129725, 129723, 129667, 129666, 129659, 129655, 129654, 129653, 129652, 129651, 129650, 129649, 129648, 129647, 129641, 129639, 129599, 129598, 129597, 129587, 129586, 129541, 129540, 129536, 129529, 129528, 129527, 129526, 129525, 129524, 129523, 129522, 129521, 129520, 129519, 129516, 129515, 129514, 129513, 129512, 129510, 129508, 129042, 129041, 128913, 128912, 128911, 128910, 128855, 128853, 128850, 128849, 128843, 128836, 128835, 128833, 128824, 128823, 128820, 128819, 128817, 128813, 128777, 128776, 128678, 128677, 128621, 128615, 128611, 128609, 128605, 128596, 128594, 128592, 128590, 128582, 128581, 128507, 128506, 128505, 128504, 128503, 128498, 128495, 128494, 128486, 128483, 128452, 128366, 128260, 128257, 128192, 128191, 128189, 128186, 128185, 128182, 128180, 128175, 128053, 127942, 127941, 127937, 127936, 127935, 127933, 127932, 127931, 127822, 127817, 127815, 127814, 127730, 127729, 127724, 127719};
+  /*
+  Int_t nruns10e=152;
+  Int_t goodruns10e[152]={130848, 130847, 130844, 130842, 130840, 130834, 130831, 130799, 130798, 130795, 130793, 130704, 130696, 130628, 130623, 130621, 130620, 130609, 130608, 130601, 130526, 130524, 130520, 130519, 130517, 130481, 130480, 130479, 130375, 130360, 130358, 130356, 130354, 130343, 130342, 130179, 130178, 130172, 130158, 130157, 130151, 130149, 130148, 129983, 129966, 129962, 129961, 129960, 129959, 129744, 129742, 129738, 129736, 129735, 129729, 129726, 129725, 129723, 129667, 129666, 129659, 129654, 129653, 129652, 129650, 129647, 129641, 129639, 129599, 129587, 129586, 129540, 129536, 129528, 129527, 129525, 129524, 129523, 129521, 129520, 129519, 129516, 129515, 129514, 129513, 129512, 129041, 128913, 128855, 128853, 128850, 128843, 128836, 128835, 128833, 128824, 128823, 128820, 128819, 128813, 128778, 128777, 128776, 128678, 128677, 128621, 128615, 128611, 128609, 128605, 128582, 128581, 128507, 128506, 128505, 128504, 128503, 128498, 128495, 128494, 128486, 128483, 128452, 128366, 128263, 128260, 128192, 128191, 128189, 128186, 128185, 127942, 127941, 127940, 127937, 127936, 127935, 127933, 127932, 127931, 127930, 127822, 127819, 127817, 127815, 127813, 127730, 127729, 127719, 127718, 127714, 127712};
+  */
+  Int_t nruns10e=14;
+  Int_t goodruns10e[14]={127817,
+			  127930,
+			  128819,
+			  129515,
+			  129516,
+			  129521,
+			  129524,
+			  129525,
+			  129536,
+			  130151,
+			  130479,
+			  130481,
+			  130524,
+			  130621};
+
+
+  // LHC10h good runs
+  Int_t nruns10h=132;
+  Int_t goodruns10h[132]={139517, 139514, 139513, 139511, 139510, 139507, 139505, 139504, 139503, 139471, 139470, 139467, 139466, 139465, 139441, 139440, 139439, 139438, 139437, 139360, 139329, 139328, 139316, 139314, 139311, 139310, 139309, 139308, 139173, 139172, 139110, 139107, 139105, 139104, 139042, 139038, 139037, 139036, 139031, 139029, 139028, 139024, 138980, 138979, 138978, 138977, 138872, 138871, 138870, 138837, 138830, 138828, 138826, 138796, 138795, 138740, 138732, 138731, 138730, 138666, 138662, 138653, 138652, 138638, 138637, 138624, 138621, 138583, 138582, 138578, 138534, 138533, 138469, 138442, 138439, 138438, 138396, 138364, 138359, 138275, 138225, 138201, 138200, 138197, 138192, 138190, 138154, 138150, 138126, 138125, 137848, 137843, 137752, 137751, 137748, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137366, 137243, 137236, 137235, 137232, 137231, 137165, 137162, 137161};
+
+
+  // LHC11a good runs
+  Int_t nruns11a=24;
+  Int_t goodruns11a[24]={146860, 146859, 146858, 146857, 146856, 146824, 146817, 146814, 146813, 146812, 146808, 146807, 146806, 146805, 146804, 146803, 146802, 146801, 146748, 146747, 146746, 146689, 146688, 146686};
+
+
 
 
   Bool_t found=kFALSE;
@@ -2959,6 +3115,17 @@ Bool_t KeepRun(Int_t irun) {
 
   for(i=0; i<nruns10e; i++) {
     if(irun==goodruns10e[i]) {found=kTRUE; break;}
+  }  
+  if(found) return kTRUE;
+
+
+  for(i=0; i<nruns10h; i++) {
+    if(irun==goodruns10h[i]) {found=kTRUE; break;}
+  }  
+  if(found) return kTRUE;
+
+  for(i=0; i<nruns11a; i++) {
+    if(irun==goodruns11a[i]) {found=kTRUE; break;}
   }  
   if(found) return kTRUE;
 
