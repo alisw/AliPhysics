@@ -502,7 +502,8 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 		    AliAODCaloCells* copycells = aod->GetEMCALCells();
 		    fgAODEmcalCells->CreateContainer(copycells->GetNumberOfCells());
 		    nc  = copycells->GetNumberOfCells();
-		    
+		    while( nc-- ){ fgAODEmcalCells->SetCell(nc,copycells->GetCellNumber(nc),copycells->GetAmplitude(nc)); }
+
 		    AliAODCaloCells* cellsA = aodH->GetEventToMerge()->GetEMCALCells();
 		    if( cellsA ){
 			Int_t ncells  = cellsA->GetNumberOfCells();
