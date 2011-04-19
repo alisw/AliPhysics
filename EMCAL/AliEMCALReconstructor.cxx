@@ -258,7 +258,7 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   // Conversion from raw data to
   // EMCAL digits.
   // Works on a single-event basis
-  
+	
   rawReader->Reset() ; 
   
   fTriggerData->SetMode(1);	
@@ -273,7 +273,7 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   
   //Skip calibration events do the rest
   Bool_t doFit = kTRUE;
-  if ( !(GetRecParam()->FitLEDEvents()) && GetRecParam()->GetEventSpecie()==AliRecoParam::kCalib) doFit = kFALSE;
+//  if ( !(GetRecParam()->FitLEDEvents()) && GetRecParam()->GetEventSpecie()==AliRecoParam::kCalib) doFit = kFALSE;
   if (doFit){
     //must be done here because, in constructor, option is not yet known
     fgRawUtils->SetOption(GetOption());
@@ -390,7 +390,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 	  trgESD->SetL1V0(v0);	
 	  trgESD->SetL1FrameMask(fTriggerData->GetL1FrameMask());            
 
-	  if (!saveOnce) 
+	  if (!saveOnce && fTriggerData->GetL1DataDecoded()) 
 	  {
 		  int type[8] = {0};
 		  fTriggerData->GetL1TriggerType(type);

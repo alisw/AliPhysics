@@ -41,7 +41,8 @@ fL1GammaThreshold(0),
 fL1JetThreshold(0),
 fL1V0(),
 fL1FrameMask(0),
-fL1TriggerType()
+fL1TriggerType(),
+fL1DataDecoded(0)
 {  
 	//
 	for (Int_t i = 0; i < 2; i++)
@@ -260,6 +261,8 @@ void AliEMCALTriggerData::Reset()
 	}
 	 	
 	for (Int_t i = 0; i < 2; i++) for (Int_t j = 0; j < 48; j++) for (Int_t k = 0; k < 64; k++) fL1Region[i][j][k] = 0;
+	
+	fL1DataDecoded = 0;
 }
 
 

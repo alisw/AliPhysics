@@ -36,6 +36,7 @@ public:
 	virtual void SetL1FrameMask(     Int_t  v) {     fL1FrameMask = v;}            
 	virtual void SetL1TriggerType(   Int_t* v) {for (int i = 0; i < 8; i++) fL1TriggerType[i] = v[i];}
 
+	virtual void SetL1DataDecoded(   Int_t  v) {   fL1DataDecoded = v;} 
 	
 	virtual void          GetL0Trigger(  Int_t i, Int_t j, Int_t& k  ) const {   k = fL0Trigger[i][j];}
 	virtual Int_t         GetL0Trigger(  Int_t i, Int_t j            ) const {return fL0Trigger[i][j];}
@@ -51,6 +52,8 @@ public:
 	virtual Int_t         GetL1FrameMask(               ) const {return fL1FrameMask;}            
 	virtual void          GetL1TriggerType(   Int_t  v[]) const {for (int i = 0; i < 8; i++) v[i] = fL1TriggerType[i];}
 	
+	virtual Int_t         GetL1DataDecoded(             ) const {return fL1DataDecoded;}
+	
 	virtual Int_t         GetMode() const {return fMode;}
 	
 	virtual void          Scan() const;
@@ -61,9 +64,9 @@ private:
     AliEMCALTriggerData(const AliEMCALTriggerData& rhs);            // NOT implemented
 	AliEMCALTriggerData& operator=(const AliEMCALTriggerData& rhs); // NOT implemented
 	
-	Int_t                      fMode;
+	Int_t                      fMode;          //
 	
-	Int_t           fL0Trigger[2][32];
+	Int_t               fL0Trigger[2][32];      //
 	
 	TClonesArray*       fL0Patches[2];          // array of patches  
 	
@@ -80,6 +83,8 @@ private:
 	Int_t                    fL1V0[2];          //
 	Int_t             fL1FrameMask;             //
 	Int_t           fL1TriggerType[8];          //
+	
+	Int_t           fL1DataDecoded;
 	
 	ClassDef(AliEMCALTriggerData,2)
 };

@@ -193,9 +193,6 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 			
 			break;
 		}
-		default:
-			AliError(Form("ERROR: STU payload size does not match any of the expected sizes! %d word32",iword));
-			break;
 	}
 	
 	///////////
