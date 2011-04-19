@@ -93,7 +93,8 @@ fArePHOSCellsEnabled(kTRUE),
 fAreTrackletsEnabled(kTRUE),
 fESDpid(0x0),
 fIsPidOwner(kFALSE),
-fTimeZeroType(AliESDpid::kTOF_T0)
+fTimeZeroType(AliESDpid::kTOF_T0),
+fTPCaloneTrackCuts(0)
 {
   // Default constructor
 }
@@ -136,7 +137,8 @@ fArePHOSCellsEnabled(kTRUE),
 fAreTrackletsEnabled(kTRUE),
 fESDpid(0x0),
 fIsPidOwner(kFALSE),
-fTimeZeroType(AliESDpid::kTOF_T0)
+fTimeZeroType(AliESDpid::kTOF_T0),
+fTPCaloneTrackCuts(0)
 {
   // Constructor
 }
@@ -157,6 +159,7 @@ void AliAnalysisTaskESDfilter::UserCreateOutputObjects()
   {
     AliError("No OutputTree() for adding the track filter");
   }
+  fTPCaloneTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 }
 
 //______________________________________________________________________________
@@ -298,8 +301,7 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
   for (Int_t ilay = 0; ilay < 6; ilay++) header->SetITSClusters(ilay, mult->GetNumberOfITSClusters(ilay));
   
   // TPC only Reference Multiplicty
-  AliESDtrackCuts* cuts  = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-  Int_t refMult  = cuts ? (Short_t)cuts->GetReferenceMultiplicity(&esd, kTRUE) : -1;
+  Int_t refMult  = fTPCaloneTrackCuts ? (Short_t)fTPCaloneTrackCuts->GetReferenceMultiplicity(&esd, kTRUE) : -1;
   header->SetTPConlyRefMultiplicity(refMult);
   
   //

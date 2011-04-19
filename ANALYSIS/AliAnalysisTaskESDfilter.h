@@ -20,6 +20,7 @@ class AliESDtrack;
 class AliMCEventHandler;
 class TRefArray;
 class AliAODHeader;
+class AliESDtrackCuts;
 
 class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
 {
@@ -125,8 +126,9 @@ private:
   AliESDpid* fESDpid; // esd pid
   Bool_t fIsPidOwner; // whether we own fESDpid
   Int_t fTimeZeroType;  //  time zero type 
+  AliESDtrackCuts* fTPCaloneTrackCuts; // TPC stand-alone track cuts
   
-  ClassDef(AliAnalysisTaskESDfilter, 8); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskESDfilter, 9); // Analysis task for standard ESD filtering
 };
  
 #endif
