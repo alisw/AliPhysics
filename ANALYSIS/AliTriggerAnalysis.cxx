@@ -58,6 +58,10 @@ AliTriggerAnalysis::AliTriggerAnalysis() :
   fZDCCutRefDelta(-2.1),
   fZDCCutSigmaSum(3.25),
   fZDCCutSigmaDelta(2.25),
+  fZDCCutRefSumCorr(-65.5),
+  fZDCCutRefDeltaCorr(-2.1),
+  fZDCCutSigmaSumCorr(6.0),
+  fZDCCutSigmaDeltaCorr(1.2),
   fDoFMD(kTRUE),
   fFMDLowCut(0.2),
   fFMDHitCut(0.5),
@@ -1191,12 +1195,6 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHi
      zdcAccept = (znaFired | zncFired);
   }
   else {
-
-    // Cuts for the new corrected TDC values
-    const Float_t refSumCorr = -65.5;
-    const Float_t sigmaSumCorr = 6.0;
-    const Float_t sigmaDeltaCorr = 1.2;
-
     for(Int_t i = 0; i < 4; ++i) {
       if (esdZDC->GetZDCTDCData(10,i) != 0) {
 	Float_t tdcC = 0.025*(esdZDC->GetZDCTDCData(10,i)-esdZDC->GetZDCTDCData(14,i)); 
@@ -1211,8 +1209,8 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHi
 	      fHistTimeCorrZDC->Fill(tdcCcorr-tdcAcorr,tdcCcorr+tdcAcorr);
 	    }
 	    if (esdZDC->TestBit(AliESDZDC::kCorrectedTDCFilled)) {
-	      if (((tdcCcorr-tdcAcorr-fZDCCutRefDelta)*(tdcCcorr-tdcAcorr-fZDCCutRefDelta)/(sigmaDeltaCorr*sigmaDeltaCorr) +
-		   (tdcCcorr+tdcAcorr-refSumCorr)*(tdcCcorr+tdcAcorr-refSumCorr)/(sigmaSumCorr*sigmaSumCorr))< 1.0)
+	      if (((tdcCcorr-tdcAcorr-fZDCCutRefDeltaCorr)*(tdcCcorr-tdcAcorr-fZDCCutRefDeltaCorr)/(fZDCCutSigmaDeltaCorr*fZDCCutSigmaDeltaCorr) +
+		   (tdcCcorr+tdcAcorr-fZDCCutRefSumCorr)*(tdcCcorr+tdcAcorr-fZDCCutRefSumCorr)/(fZDCCutSigmaSumCorr*fZDCCutSigmaSumCorr))< 1.0)
 		zdcAccept = kTRUE;
 	    }
 	    else {

@@ -76,6 +76,7 @@ class AliTriggerAnalysis : public TObject
     void SetFMDThreshold(Float_t low, Float_t hit) { fFMDLowCut = low; fFMDHitCut = hit; }
     void SetDoFMD(Bool_t flag = kTRUE) {fDoFMD = flag;}
     void SetZDCCutParams(Float_t refSum, Float_t refDelta, Float_t sigmaSum, Float_t sigmaDelta) { fZDCCutRefSum = refSum; fZDCCutRefDelta = refDelta; fZDCCutSigmaSum = sigmaSum; fZDCCutSigmaDelta = sigmaDelta; }
+    void SetCorrZDCCutParams(Float_t refSum, Float_t refDelta, Float_t sigmaSum, Float_t sigmaDelta) { fZDCCutRefSumCorr = refSum; fZDCCutRefDeltaCorr = refDelta; fZDCCutSigmaSumCorr = sigmaSum; fZDCCutSigmaDeltaCorr = sigmaDelta; }
 
     Int_t GetSPDGFOThreshhold() const { return fSPDGFOThreshold; }
     Float_t GetV0TimeOffset() const { return fV0TimeOffset; }
@@ -118,6 +119,11 @@ class AliTriggerAnalysis : public TObject
     Float_t fZDCCutSigmaSum;        // ZDC time cut configuration
     Float_t fZDCCutSigmaDelta;      // ZDC time cut configuration
 
+    Float_t fZDCCutRefSumCorr;      // Corrected ZDC time cut configuration
+    Float_t fZDCCutRefDeltaCorr;    // Corrected ZDC time cut configuration
+    Float_t fZDCCutSigmaSumCorr;    // Corrected ZDC time cut configuration
+    Float_t fZDCCutSigmaDeltaCorr;  // Corrected ZDC time cut configuration
+
     Bool_t  fDoFMD;                 // If false, skips the FMD (physics selection runs much faster)
     Float_t fFMDLowCut;		    // 
     Float_t fFMDHitCut;		    // 
@@ -140,7 +146,7 @@ class AliTriggerAnalysis : public TObject
     Bool_t fMC;              // flag if MC is analyzed
     AliESDtrackCuts* fEsdTrackCuts;  //Track Cuts to select ESD tracks
 
-    ClassDef(AliTriggerAnalysis, 14)
+    ClassDef(AliTriggerAnalysis, 15)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);
