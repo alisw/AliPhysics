@@ -548,17 +548,18 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *
           continue;
 
         fDict[iDict] = newDict;
-        
-        if (fDict[iDict]->GetDim() == 0) {
-          AliError(Form("Dictionary %i of det. %i has dim. 0", fDetector, iDict));
-          continue;
-        }
         fDict[iDict]->Expand(); 
       }
       else {
         fDict[iDict] = newDict;
         if (fDict[iDict])
           fDict[iDict]->Expand();
+        }
+      
+      // If there is no data, set dictionary to zero to avoid crashes  
+      if (fDict[iDict]->GetDim() == 0)  {
+        AliError(Form("Dictionary %i of det. %i has dim. 0", fDetector, iDict));
+        fDict[iDict] = 0x0;
       }
     }
   }
@@ -602,17 +603,18 @@ void AliTRDmcmSim::SetDataByPad(AliTRDarrayADC* const adcArray, AliTRDdigitsMana
           continue;
 
         fDict[iDict] = newDict;
-        
-        if (fDict[iDict]->GetDim() == 0) {
-          AliError(Form("Dictionary %i of det. %i has dim. 0", fDetector, iDict));
-          continue;
-        }
         fDict[iDict]->Expand(); 
       }
       else {
         fDict[iDict] = newDict;
         if (fDict[iDict])
           fDict[iDict]->Expand();
+      }
+      
+      // If there is no data, set dictionary to zero to avoid crashes  
+      if (fDict[iDict]->GetDim() == 0)  {
+        AliError(Form("Dictionary %i of det. %i has dim. 0", fDetector, iDict));
+        fDict[iDict] = 0x0;
       }
     }
   }
@@ -1628,7 +1630,7 @@ void AliTRDmcmSim::FitTracklet()
       else
       {
         if (slope > 63 || slope < -64) { // wrapping in TRAP!
-          AliError(Form("Overflow in slope: %i, tracklet discarded!", slope));
+          AliDebug(1,Form("Overflow in slope: %i, tracklet discarded!", slope));
           fMCMT[cpu] = 0x10001000;
           continue;
         }
@@ -1701,8 +1703,8 @@ void AliTRDmcmSim::FitTracklet()
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetNHits(fit0->fNhits + fit1->fNhits);
 	((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetNHits0(nHits0);
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetNHits1(nHits1);
-        ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetQ0(q0);
-        ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetQ1(q1);
+        ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetQ0(q0 >> fgkAddDigits);
+        ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetQ1(q1 >> fgkAddDigits);
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetSlope(fitSlope);
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetOffset(fitOffset);
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetError(TMath::Sqrt(TMath::Abs(fitError)/nHits));
@@ -1878,12 +1880,12 @@ Int_t AliTRDmcmSim::GetPID(Int_t q0, Int_t q1)
 
    UInt_t nBinsQ0 = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTnbins);  // number of bins in q0 / 4 !!
    UInt_t pidTotalSize = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTLength);
-   if(nBinsQ0==0 || pidTotalSize==0)  // make sure we don't run into trouble if one of the values is not configured
-      return 0;
+   if(nBinsQ0==0 || pidTotalSize==0)  // make sure we don't run into trouble if the value for Q0 is not configured
+     return 0;                        // Q1 not configured is ok for 1D LUT
 
    ULong_t corrQ0 = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTcor0, fDetector, fRobPos, fMcmPos);
    ULong_t corrQ1 = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTcor1, fDetector, fRobPos, fMcmPos);
-   if(corrQ0==0 || corrQ1==0)  // make sure we don't run into trouble if one of the values is not configured
+   if(corrQ0==0)  // make sure we don't run into trouble if one of the values is not configured
       return 0;
 
    addrQ0 = corrQ0;
