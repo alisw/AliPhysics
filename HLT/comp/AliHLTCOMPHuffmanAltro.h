@@ -1,4 +1,4 @@
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTCOMPHUFFMANALTRO_H
 #define ALIHLTCOMPHUFFMANALTRO_H
@@ -27,6 +27,9 @@
 #include "AliHLTLogging.h"
 #include "AliHLTCOMPHuffmanData.h"
 
+class AliRawReaderMemory;
+class AliAltroRawStreamV3;
+
 /** @class   AliHLTCOMPHuffmanAltro
     @author Jenny Wagner
     @date   20-11-2007
@@ -51,45 +54,46 @@ class AliHLTCOMPHuffmanAltro : public AliHLTLogging
   virtual ~AliHLTCOMPHuffmanAltro();
 
   /** SetInputData 
-   *  @param inputdata  pointer to input data
-   *  @param datasize   size of input data
+   * Data buffer has to be valid all the time, no internal copy.
+   *  @param memory       pointer to input data
+   *  @param size         size of input data
+   *  @param equipmentId  equipment (ddl) id
    */
-  void SetInputData(void* inputdata, unsigned long datasize);
+  int AddInputData(UChar_t* memory, ULong_t size, Int_t equipmentId);
   
   /** SetOutputData
    *  @param outputdata  pointer to output data
    *  @param outputsize  size of output data
    */
-  void SetOutputData(AliHLTUInt8_t* outputdata, unsigned long outputsize);
+  int SetOutputData(AliHLTUInt8_t* outputdata, unsigned long outputsize);
 
-  /** get patch from component and set it as currently processed patch of this class  (only needed for binary output)*/
-  //void SetPatch(Int_t patch) {fPatch = patch;};
+  /**
+   * Reset and prepare for new event
+   */
+  int Reset();
 
- /** get slice from component and set it as currently processed slice of this class (only needed for binary output) */
-  // void SetSlice(Int_t slice) {fSlice = slice;};
-  
   /** GetOutputDataSize (which is unknown at first and has to be calculated
    * @return output data size
   */
   unsigned long GetOutputDataSize();
 
   /** initialise training table */
-  void InitNewTrainingTable();
+  int InitNewTrainingTable();
 
   /** write out new HuffmanData
    * @param huffmandata   pointer to Huffman data 
   */
-  void SetHuffmanData(AliHLTCOMPHuffmanData* huffmandata);
+  int SetHuffmanData(AliHLTCOMPHuffmanData* huffmandata) const;
 
   /** get training table from HuffmanData instance
    * @param huffmandata  pointer to Huffman data
   */
-  void GetTrainingTable(AliHLTCOMPHuffmanData* huffmandata);
+  int GetTrainingTable(const AliHLTCOMPHuffmanData* huffmandata);
 
   /** initialise the translation table
    * @param huffmandata  pointer to Huffman data
   */
-  void GetTranslationTable(AliHLTCOMPHuffmanData* huffmandata);
+  int GetTranslationTable(const AliHLTCOMPHuffmanData* huffmandata);
 
   /** function to compress or decompress data */
   void ProcessData();
@@ -107,6 +111,9 @@ class AliHLTCOMPHuffmanAltro : public AliHLTLogging
   /** function to read 10 bit data in and write same 10 bit data out (performance test) */
   Int_t CopyData();
 
+  /** print content */
+  virtual void Print(Option_t* option = "") const;
+
  private:
 
   /** copy constructor prohibited */
@@ -115,7 +122,8 @@ class AliHLTCOMPHuffmanAltro : public AliHLTLogging
   AliHLTCOMPHuffmanAltro& operator=(const AliHLTCOMPHuffmanAltro&);
 
   /** function to calculate the entropy of the incoming data */
-  Int_t CalcEntropy();
+  /// FIXME: the size of the array is not known, everything assumes size TIMEBINS
+  Int_t CalcEntropy(const AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* occurrencetable=NULL);
 
   /** function for merge sorting the array data 
    * @param unsortedarray   unsorted array of data from occurrence table
@@ -161,6 +169,11 @@ class AliHLTCOMPHuffmanAltro : public AliHLTLogging
    */
   Int_t TrainingData(); 
 
+  /// raw reader instance
+  AliRawReaderMemory* fpRawReader;                    //! transient
+  /// raw stream decoder
+  AliAltroRawStreamV3* fpAltroRawStream;          //! transient
+
   /** boolean to decide whether to process data (FALSE) or create a new code table (TRUE) */
   Bool_t fTrainingMode;                         // choice if new codetable is created or not
   /** boolean to decide whether to compress (TRUE) or decompress (FALSE) incoming data (automatically TRUE for code creation) */
@@ -177,6 +190,8 @@ class AliHLTCOMPHuffmanAltro : public AliHLTLogging
   UInt_t fNrcuTrailerwords;                      // number of RCU trailerwords
   /** calculated entropy of input data */
   Double_t fEntropy;                            // entropy of the file
+
+  int fVerbosity;                               //! verbosity
 
   //AliHLTUInt8_t fSlice;                         // transient variables to specify
   //AliHLTUInt8_t fPatch;                         // where output root file comes from

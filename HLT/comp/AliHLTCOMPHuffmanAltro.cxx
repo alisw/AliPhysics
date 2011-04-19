@@ -1,224 +1,243 @@
-// @(#) $Id$
+//-*- Mode: C++ -*-
+// $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * All rights reserved.                                                   *
- *                                                                        *
- * Primary Author: Jenny Wagner  (jwagner@cern.ch)                        *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+///**************************************************************************
+///* This file is property of and copyright by the ALICE HLT Project        * 
+///* All rights reserved.                                                   *
+///*                                                                        *
+///* Primary Author: Jenny Wagner  (jwagner@cern.ch)                        *
+///*                                                                        *
+///* Permission to use, copy, modify and distribute this software and its   *
+///* documentation strictly for non-commercial purposes is hereby granted   *
+///* without fee, provided that the above copyright notice appears in all   *
+///* copies and that both the copyright notice and this permission notice   *
+///* appear in the supporting documentation. The authors make no claims     *
+///* about the suitability of this software for any purpose. It is          * 
+///* provided "as is" without express or implied warranty.                  *
+///**************************************************************************
 
-/** @file   AliHLTCOMPHuffmanAltro.cxx
-    @author Jenny Wagner
-    @date   29-08-2007
-    @brief  The Huffman compressor
-*/
+/// @file   AliHLTCOMPHuffmanAltro.cxx
+/// @author Jenny Wagner
+/// @date   29-08-2007
+/// @brief  The Huffman compressor
+///
 
 #include "AliHLTCOMPHuffmanAltro.h"
+#include "AliRawReaderMemory.h"
+#include "AliAltroRawStreamV3.h"
+#include <memory>
 
 #if __GNUC__ >= 3
 using namespace std;
 #endif
 
+#include <numeric>
+using std::accumulate;
+
+namespace
+{
+  // Helper class for std::accumulate algorithm.
+  class AliHLTCOMPHuffmanOccurrenceSum {
+  public:
+    typedef int first_argument_type;
+    typedef AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct second_argument_type;
+    typedef bool result_type;
+    int operator() (int a, AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct b) {
+      return a+b.fabundance;
+    }
+  };
+} // end of namespace
+
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTCOMPHuffmanAltro)
 
-/** construction without any arguments (used for isolated tests) */
 AliHLTCOMPHuffmanAltro::AliHLTCOMPHuffmanAltro()
-  :
-  fTrainingMode(0),
-  fCompressionSwitch(0),
-  fPointer2InData(NULL),
-  fPointer2OutData(NULL),
-  fInputDataSize(0),
-  fOutputDataSize(0),
-  fNrcuTrailerwords(0),
-  fEntropy(0.0),
-  fTrainingTable(NULL),
-  fTranslationTable(NULL)
+  : AliHLTLogging()
+  , fpRawReader(NULL)
+  , fpAltroRawStream(NULL)
+  , fTrainingMode(0)
+  , fCompressionSwitch(0)
+  , fPointer2InData(NULL)
+  , fPointer2OutData(NULL)
+  , fInputDataSize(0)
+  , fOutputDataSize(0)
+  , fNrcuTrailerwords(0)
+  , fEntropy(0.0)
+  , fVerbosity(0)
+  , fTrainingTable(NULL)
+  , fTranslationTable(NULL)
 {
-  // see header file for class documentation
+  // standard constructor
 }
 
-/** construction with arguments: compressionswitch (compress/ decompress), trainingmode (create new CodeTable or not) and translationtable (read in given CodeTable) */
 AliHLTCOMPHuffmanAltro::AliHLTCOMPHuffmanAltro(Bool_t compressionswitch, Bool_t trainingmode, AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* translationtable, Int_t nrcutrailerwords)
-  :
-  fTrainingMode(0),
-  fCompressionSwitch(0),
-  fPointer2InData(NULL),
-  fPointer2OutData(NULL),
-  fInputDataSize(0),
-  fOutputDataSize(0),
-  fNrcuTrailerwords(0),
-  fEntropy(0.0),
-  fTrainingTable(NULL),
-  fTranslationTable(NULL)
+  : AliHLTLogging()
+  , fpRawReader(NULL)
+  , fpAltroRawStream(NULL)
+  , fTrainingMode(trainingmode)
+  , fCompressionSwitch(compressionswitch)
+  , fPointer2InData(NULL)
+  , fPointer2OutData(NULL)
+  , fInputDataSize(0)
+  , fOutputDataSize(0)
+  , fNrcuTrailerwords(nrcutrailerwords)
+  , fEntropy(0.0)
+  , fVerbosity(0)
+  , fTrainingTable(NULL)
+  , fTranslationTable(translationtable)
 {
-  // see header file for class documentation
-  // initialise member variables
-  fCompressionSwitch = compressionswitch;
-  fTrainingMode = trainingmode;
-  fTranslationTable = translationtable;
-  fNrcuTrailerwords = nrcutrailerwords;
-   
+  // constructor
 }
 
-/** EntropyEncoder destructor  */
 AliHLTCOMPHuffmanAltro::~AliHLTCOMPHuffmanAltro()
 {
-  /* destructor, see header file for class documentation */
+  /// destructor
+  if (fpAltroRawStream) delete fpAltroRawStream;
+  fpAltroRawStream=NULL;
+  if (fpRawReader) delete fpRawReader;
+  fpRawReader=NULL;
+
+  if (fTrainingTable) delete [] fTrainingTable;
+  fTrainingTable=NULL;
 }
 
-/** SetInputData takes input data pointer and input data size from component class */
-void AliHLTCOMPHuffmanAltro::SetInputData(void* inputdata, unsigned long datasize)
+int AliHLTCOMPHuffmanAltro::AddInputData(UChar_t* memory, ULong_t datasize, Int_t equipmentId)
 {
-  // see header file for class documentation
-  fPointer2InData = (AliHLTUInt8_t*)inputdata;
+  /// SetInputData takes input data pointer and input data size from component class
+  if (memory == NULL) {
+    return -EINVAL;
+  };
+  
+  // check datasize < header + trailer
+  if (datasize <= 32 + fNrcuTrailerwords) { // 8*32 (headerwords) = 8* 4*8 (headerbytes)
+    HLTError("Error! Size of input data less than header and trailer");
+    return -ENODATA;
+  }
+
+  // FIXME: fPointer2InData is obsolete
+  fPointer2InData = (AliHLTUInt8_t*)memory;
   fInputDataSize = datasize; // size in bytes
-  
-  // error when inputdata = NULL
-  if (inputdata == NULL)
-    {
-      HLTError("Error! Pointer to input data == NULL");
-    };
-  
-  // error when datasize < header + trailer
-  if (datasize <= 32 + fNrcuTrailerwords) // 8*32 (headerwords) = 8* 4*8 (headerbytes)
-    {
-      HLTError("Error! Size of input data less than header and trailer");
+
+  if (!fpRawReader) {
+    std::auto_ptr<AliRawReaderMemory> rawReader(new AliRawReaderMemory);
+    std::auto_ptr<AliAltroRawStreamV3> rawStream(new AliAltroRawStreamV3(rawReader.get()));
+
+    if (!rawReader.get() || !rawStream.get()) {
+      return -ENOMEM;
     }
+
+    fpRawReader=rawReader.release();
+    fpAltroRawStream=rawStream.release();
+  }
+
+  fpRawReader->AddBuffer(memory, datasize, equipmentId);
+
+  return 0;
 }
 
-
-/** SetOuptputData takes output data pointer and outputsize from component class */
-void AliHLTCOMPHuffmanAltro::SetOutputData(AliHLTUInt8_t* outputdata, unsigned long outputsize)
+int AliHLTCOMPHuffmanAltro::Reset()
 {
-  // see header file for class documentation
+  /// Reset and prepare for new event
+  if (fpRawReader) {
+    fpRawReader->ClearBuffers();
+  }
+  if (fpAltroRawStream) {
+    fpAltroRawStream->Reset();
+  }
+
+  InitNewTrainingTable();
+
+  return 0;
+}
+
+int AliHLTCOMPHuffmanAltro::SetOutputData(AliHLTUInt8_t* outputdata, unsigned long outputsize)
+{
+  /// SetOuptputData takes output data pointer and outputsize from component class
+  if (outputdata == NULL) {
+    return -EINVAL;
+  };
+
   fPointer2OutData = (AliHLTUInt64_t*) outputdata;
   fOutputDataSize = outputsize;
 
-  // error when outputdata = NULL
-  if (outputdata == NULL)
-    {
-      HLTError("Error! Pointer to output data == NULL");
-    };
-  
   // errors: compression: when outputdatasize < inputdatasize
   //         decompress.: when outputdatasize < inputMultiplier * inputdatasize
   // this should not happen with current config in component (inputMultiplier = 4.0 for decomp and 1.0 for comp)
-  if (fCompressionSwitch == kTRUE) // compression
-    {
-      if(outputsize < fInputDataSize)
-  	{
-  	  HLTError("Error! Size of output data not equal to size of input data for compression: reserved memory space might be too small");
-  	};
+  if (fCompressionSwitch) { // compression
+    if(outputsize < fInputDataSize) {
+      HLTError("Error! Size of output data not equal to size of input data for compression: reserved memory space might be too small");
+      return -ENOSPC;
     }
-  else // decompression
-    {
-      if(outputsize < (fInputDataSize << 1)) // smaller than inputdatasize * 2 not possible
-  	{
-  	  HLTError("Error! Size of output data too small for decompression");
-  	};
+  } else { // decompression
+    if(outputsize < (fInputDataSize << 1)) { // smaller than inputdatasize * 2 not possible
+      HLTError("Error! Size of output data too small for decompression");
+      return -ENOSPC;
     }
+  }
+
+  return 0;
 }
 
-/** GetOutputDataSize delivers output data size for component class to arrange blocks for output writing */
 unsigned long AliHLTCOMPHuffmanAltro::GetOutputDataSize()
 {
-  // see header file for class documentation
+  // GetOutputDataSize delivers output data size for component class to arrange blocks for output writing
   // error when fOuputDataSize = 0; (not by training as there is no output when training)
-  if((fOutputDataSize == 0) && (fTrainingMode == kFALSE))
-    {
-      HLTError("Error! Calculated output data size is zero");
-    };
+  if((fOutputDataSize == 0) && (fTrainingMode == kFALSE)) {
+    HLTError("Error! Calculated output data size is zero");
+  };
 
   return fOutputDataSize;
 }
 
-/** Initialise training table */
-void AliHLTCOMPHuffmanAltro::InitNewTrainingTable()
+int AliHLTCOMPHuffmanAltro::InitNewTrainingTable()
 {
-  // see header file for class documentation
-  // define array for training table with amplitudes and abundances
-  fTrainingTable =  new AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct[TIMEBINS];
+  // Initialise training table
+  if (!fTrainingTable) fTrainingTable =  new AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct[TIMEBINS];
+  if (!fTrainingTable) return -ENOMEM;
   
   //initialise this array:
-  for(Int_t ii = 0; ii < TIMEBINS; ii++)
-    {
-      
-      fTrainingTable[ii].famplitude = ii;   
-      
-      fTrainingTable[ii].fabundance = 0;
-      
-      fTrainingTable[ii].fcode = 2; //to assure that each leaf is assigned either 0 or 1!!!
-    }
-  
+  for(Int_t ii = 0; ii < TIMEBINS; ii++) {
+    fTrainingTable[ii].famplitude = ii;   
+    fTrainingTable[ii].fabundance = 0;
+    fTrainingTable[ii].fcode = 2; //to assure that each leaf is assigned either 0 or 1!!!
+  }
+
+  return 0;
 }
 
-/** write produced code and occurrence table to Huffman Data */
-void AliHLTCOMPHuffmanAltro::SetHuffmanData(AliHLTCOMPHuffmanData* huffmandata)
+int AliHLTCOMPHuffmanAltro::SetHuffmanData(AliHLTCOMPHuffmanData* huffmandata) const
 {
-  // see header file for class documentation
-  huffmandata->InitHuffmanData(fTrainingTable, fTranslationTable);
+  // write produced code and occurrence table to Huffman Data
+  return huffmandata->InitHuffmanData(fTrainingTable, fTranslationTable);
 }
 
-/** GetTrainingTable delivers training table for statistics */
-void AliHLTCOMPHuffmanAltro::GetTrainingTable(AliHLTCOMPHuffmanData* huffmandata)
+int AliHLTCOMPHuffmanAltro::GetTrainingTable(const AliHLTCOMPHuffmanData* huffmandata)
 {
-  // see header file for class documentation
   // take translation table from HuffmanData
-  fTrainingTable = huffmandata->GetOccurrenceTable(fTrainingTable);
-   
-  // print fTrainingTable to screen (non-zero entries only):
-  // for(Int_t jj = 0; jj < TIMEBINS; jj++)
-  //  {
-  //   if(fTrainingTable[jj].fabundance != 0)
-  //   cout << jj << "  |  " << fTrainingTable[jj].famplitude << "  |  " << fTrainingTable[jj].fabundance << endl;
-  //  }
+  huffmandata->GetOccurrenceTable(fTrainingTable);
+  if (fVerbosity>0) Print("trainingtable");
 
-  // error when no training table available
-  if (fTrainingTable == NULL)
-    {
-      HLTError("Error! Pointer to training table = NULL");
-    };
+  return 0;
 }
 
-/** initialisation of the code table for the Huffman compressor/ decompressor */
-void AliHLTCOMPHuffmanAltro::GetTranslationTable(AliHLTCOMPHuffmanData* huffmandata)
+int AliHLTCOMPHuffmanAltro::GetTranslationTable(const AliHLTCOMPHuffmanData* huffmandata)
 {
-  // see header file for class documentation
-  // initialise fTranslationTable to be read from a file:
+  // initialise fTranslationTable
+  if (fTranslationTable) delete fTranslationTable;
   fTranslationTable = new AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct[TIMEBINS];
+  if (!fTranslationTable) return -ENOMEM;
 
-  for(Int_t kk = 0; kk < TIMEBINS; kk++)
-    {
-      fTranslationTable[kk].famplitude = 0;
-      fTranslationTable[kk].fhuffmancode = 0;
-      // fTranslationTable[kk].morecode = NULL;
-      fTranslationTable[kk].fvalidcodelength = 0;
-    }
+  for(Int_t kk = 0; kk < TIMEBINS; kk++) {
+    fTranslationTable[kk].famplitude = 0;
+    fTranslationTable[kk].fhuffmancode = 0;
+    fTranslationTable[kk].fvalidcodelength = 0;
+  }
 
   // take translation table from HuffmanData
-   fTranslationTable = huffmandata->GetCodeTable(fTranslationTable);
+  huffmandata->GetCodeTable(fTranslationTable);
+  if (fVerbosity>0) Print("translationtable");
 
-  // print fTranlsationTable to screen (non-zero entries only):
-  // for(Int_t jj = 0; jj < TIMEBINS; jj++)
-  //  {
-  //   if(fTranslationTable[jj].fvalidcodelength != 0)
-  //   cout << jj << "  |  " << fTranslationTable[jj].fhuffmancode << "  |  " << fTranslationTable[jj].fvalidcodelength << endl;
-  //  }
-
-  // error when fTranslationTable = NULL
-  if (fTranslationTable == NULL)
-    {
-      HLTError("Error! Pointer to Huffman coding table = NULL");
-    }
+  return 0;
 }
 
 /** ProcessData function to process data compression or decompression */
@@ -1026,86 +1045,60 @@ Int_t AliHLTCOMPHuffmanAltro::HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffm
     return 0;
 }
 
-/** Training function to create the HuffmanCode from a binary tree */
 Int_t AliHLTCOMPHuffmanAltro::TrainingData()
 { 
-  // see header file for class documentation
+  // fill training data to create the HuffmanCode from a binary tree
+  int iResult=0;
+
   // total number of events counted
   Int_t totalnumber = 0;
 
-  // 10 BIT READ IN !!!
-  AliHLTUInt32_t* pointer2InData = (AliHLTUInt32_t*)fPointer2InData;
+  if (!fpAltroRawStream) return -ENODATA;
+  fpAltroRawStream->Reset();
  
   // initialise required variables for input reading:
   AliHLTUInt32_t data10 = 0; // temporary number to read out 10bit word with
-  UInt_t idxwd = 8;           // because of common data header words (see below)!
-  UInt_t bitpswd = 0;
 
-  // number 32-bit trailer and common data header words:
-  // Int_t fNrcuTrailerwords = 1; // determined by user input as argument
-  UInt_t headerwords = 8;
-  
-  // validation test
-  // check if the input data size is appropriate:
-  // cout << "size of input data in bytes (DEC) =  " << fInputDataSize << endl;
-  
-  // error and abort when total number of bits cannot be divided by 32:
-  // remember that fInputDataSize is given in BYTES!
-  if (((fInputDataSize << 3) & 0x1F) != 0)
-    {
-      HLTError("Error! Input data size (bytes) %i cannot be divided into 32 bit words", fInputDataSize);
+  if (!fTrainingTable && (iResult=InitNewTrainingTable())<=0)
+    return -iResult;
 
-      return 1;
-    };
-  
-  // error and abort when input data without trailer words cannot be divided into 10 bit words:
-  if ((( (fInputDataSize << 3) - (fNrcuTrailerwords << 5) - (headerwords << 5)) % 10) != 0)
-    {
- HLTError("Error! Input data (bytes) %i without trailer (bytes) %i and header words (bytes) %i cannot be divided into 10 bit words", fInputDataSize, (fNrcuTrailerwords << 2),(headerwords << 2));     
+  // read altro data
+  while (fpAltroRawStream->NextDDL()) {
+    while (fpAltroRawStream->NextChannel()) {
+      int iNofBunches=0;
+      // include payload size in training table
+      data10=fpAltroRawStream->GetChannelPayloadSize();
+      //fTrainingTable[(Int_t)(data10)].fabundance += 1;
+      if (fpAltroRawStream->NextBunch()) {
+	do {
+	  // include bunch length in training table
+	  int iBunchLen=fpAltroRawStream->GetBunchLength();
+	  data10=iBunchLen;
+	  fTrainingTable[(Int_t)(data10)].fabundance += 1;
 
-      return 1;
-    };
-  
-  // index word reads position of 32bit word in input array
-  UInt_t idx10 = 0;
-    
-  // last valid bit 
-  UInt_t endNdx = (fInputDataSize>>2)-fNrcuTrailerwords;
+	  // include start time in training table
+	  int iStartTime=fpAltroRawStream->GetStartTimeBin();
+	  data10=iStartTime;
+	  //fTrainingTable[(Int_t)(data10)].fabundance += 1;
 
-  // start reading input data (which are 10 bit words):
-  while (idxwd < endNdx)
-    {
-      // write input data in temp and cut out 10 bits with mask 0x3FF
-      data10 = (pointer2InData[idxwd] >> bitpswd ) & 0x3FFU;
-
-      // if number of bits left in read input less than ten, get remaining bits from next 32bit word
-      if(bitpswd > 21)
-	{
-	  data10 |= (pointer2InData[idxwd + 1]) << (32 - bitpswd);
-	  data10 &= 0x3FFU;
-	};
-
-      // fill abundances in training table
-      fTrainingTable[(Int_t)(data10)].fabundance += 1;
+	  const UShort_t* signals=fpAltroRawStream->GetSignals();
+	  for (int sigpos=0; sigpos<iBunchLen-2; sigpos++) {
+	    data10=signals[sigpos];
+	    // include signals in training table
+	    fTrainingTable[(Int_t)(data10)].fabundance += 1;
+	  }
+	  iNofBunches++;
+	} while (fpAltroRawStream->NextBunch());
+      }
       
       // increase total number of events
       totalnumber += 1;
-      
-      ++idx10; // go on reading 10 bit word
-
-      // bit position word reads position in 32bit word when 10 bits are read out  
-      bitpswd = (idx10 * 10) & 0x1F;
-      
-      idxwd = ((idx10 * 10)>>5)+8; 
     }
+  }
 
-  // validation test
-  // cout << "abundance table is now filled " << endl;
+  fOutputDataSize = 0;
 
-  // set fOutputDataSize to zero as no output has been created:
-    fOutputDataSize = 0;
-
-    return 0;
+  return 0;
 }
 
 /** Create Huffman code table out of abundance table filled by training data in DoEvent function of component */
@@ -1779,119 +1772,28 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
   return 0;
 }
 
-/** CalcEntropy is to calculate entropy for 10 bits amplitudes of input data (per event only!) */
-Int_t AliHLTCOMPHuffmanAltro::CalcEntropy()
+Int_t AliHLTCOMPHuffmanAltro::CalcEntropy(const AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* occurrencetable)
 {
-  // see heaeder file for class documentation
-  // create result array with TIMEBINS entries according to their abundance in the input data:
-  UInt_t* histogrammarray = new UInt_t[TIMEBINS];
-  if (!histogrammarray) return -1;
+  // calculate entropy of 10 bit values
+  if (!occurrencetable) occurrencetable=fTrainingTable;
+  if (!occurrencetable) return -ENODATA;
 
-  // initialise histrogramm:
-  for(UInt_t jj = 0; jj < TIMEBINS; jj++)
-    {
-      histogrammarray[jj] = 0;
-    }
+  int totalnumber=accumulate(occurrencetable, occurrencetable+TIMEBINS, int(0), AliHLTCOMPHuffmanOccurrenceSum());
+  if (totalnumber<1) {
+    HLTWarning("can not calculate entropy from empty table");
+    fEntropy=0.0;
+    return 0;
+  }
 
-  // total number of counted data
-  UInt_t totalnumber = 0;
-
-  fEntropy = 0.0;
-
-  // 10 BIT READ IN !!!
-  AliHLTUInt32_t* pointer2InData = (AliHLTUInt32_t*)fPointer2InData;
-  
-  // initialise required variables for input reading:
-  AliHLTUInt32_t data10 = 0; // temporary number to read out 10bit word with
-  UInt_t idxwd = 8; // because of common data header words (see below)!
-  UInt_t bitpswd = 0;
-
-  // number 32-bit trailer and common data header words:
-  // Int_t fNrcuTrailerwords = 1;   // determined by user input as argument
-  UInt_t headerwords = 8;
-  
-  // validation test
-  // check if the input data size is appropriate:
-  // cout << "size of input data in bytes (DEC) =  " << fInputDataSize << endl;
-  
-  // error and abort when total number of bits cannot be divided by 32:
-  // remember that fInputDataSize is given in BYTES!
-  if (((fInputDataSize << 3) & 0x1F) != 0)
-    {
-      HLTError("Error! Input data size (bytes) %i cannot be divided into 32 bit words", fInputDataSize);
-
-      delete [] histogrammarray;
-      return 1;
-    };
-  
-  // error and abort when input data without trailer words cannot be divided into 10 bit words:
-  if ((( (fInputDataSize << 3) - (fNrcuTrailerwords << 5) - (headerwords << 5)) % 10) != 0)
-    {
-      HLTError("Error! Input data without trailer and header words (bytes) %i cannot be divided into 10 bit words", fInputDataSize);
-
-      delete [] histogrammarray;
-      return 1;
-    };
-
-  // index to watch current bit position of 10 bits words
-  UInt_t idx10 = 0;
+  double entropy=0.0;  
+  const double l2 = log(2.0);
+  for(UInt_t jj = 0; jj < TIMEBINS; jj++) {
+    double value=occurrencetable[jj].fabundance;
+    if (value<1.0) continue;
+    entropy += (- (Double_t) value / (Double_t) totalnumber ) * log( ( (Double_t) value / (Double_t) totalnumber )) / (l2);
+  }
  
-  // last valid bit for read in
-  UInt_t endNdx = (fInputDataSize>>2)-fNrcuTrailerwords;
-
-  // start reading and encoding input data (which are 10 bit words):
-  while (idxwd < endNdx)
-    {
-      // write input data in temp and cut out 10 bits with mask 0x3FF
-      data10 = (pointer2InData[idxwd] >> bitpswd ) & 0x3FFU;
-
-      // if number of bits left in read input less than ten, get remaining bits from next 32bit word
-      if(bitpswd > 21)
-	{
-	  data10 |= (pointer2InData[idxwd + 1]) << (32 - bitpswd);
-	  data10 &= 0x3FFU;
-	};
-
-      // validation test
-      // print first 10 bits words to screen
-      // if (idx10 < 100)
-      //  {
-      //    cout << "read 10 bits word (HEX) =  " << hex <<  data10 << dec << endl;
-      //  };
-      
-      // store abundance of data10 in histogrammarray
-      histogrammarray[(UInt_t) data10] += 1;
-      
-      ++totalnumber;
-      
-      idx10 += 1; // go on reading 10 bit word
-      // bit position word reads position in 32bit word when 10 bits are read out  
-      bitpswd = (idx10 * 10) & 0x1F;
-      idxwd = ((idx10 * 10)>>5)+8;
-    }
-  
-  // validation test
-  // print abundance table to screen
-  // for (Int_t jj=0; jj < TIMEBINS; jj++)
-  //  {
-  //    cout << histogrammarray[jj] << endl;
-  //  }
-
-  // save log(2) in special variable for performance gain:
-  double l2 = log(2.0);
-
-  // calculate the entropy of the array 
-  for(UInt_t jj = 0; jj < TIMEBINS; jj++)
-    {
-      if (histogrammarray[jj] != 0)
-	{
-	  fEntropy += (- (Double_t) histogrammarray[jj] / (Double_t) totalnumber ) * log( ( (Double_t) histogrammarray[jj] / (Double_t) totalnumber )) / (l2);
-	};
-    }
- 
-  // free space 
-  delete[] histogrammarray;
-  
+  fEntropy=entropy;
   return 0;
 }
 
@@ -1976,4 +1878,36 @@ Int_t AliHLTCOMPHuffmanAltro::CopyData()
   // cout << "number of 10 bits words (DEC) =  " << bitcounter << endl;
    
   return 0;
+}
+
+void AliHLTCOMPHuffmanAltro::Print(Option_t* option) const
+{
+  // print content
+
+  if (strcmp(option, "trainingtable")==0) {
+    // print fTrainingTable to screen (non-zero entries only):
+    if (!fTrainingTable) {
+      cout << "no training table" << endl;
+      return;
+    }
+    for(Int_t jj = 0; jj < TIMEBINS; jj++) {
+      if(fTrainingTable[jj].fabundance != 0)
+	cout << jj << "  |  " << fTrainingTable[jj].famplitude << "  |  " << fTrainingTable[jj].fabundance << endl;
+    }
+    return;
+  }
+
+  if (strcmp(option, "translationtable")==0) {
+    // print fTranslationTable to screen (non-zero entries only):
+    if (!fTranslationTable) {
+      cout << "no translation table" << endl;
+      return;
+    }
+    for(Int_t jj = 0; jj < TIMEBINS; jj++) {
+      if(fTranslationTable[jj].fvalidcodelength != 0)
+	cout << jj << "  |  " << fTranslationTable[jj].fhuffmancode << "  |  " << fTranslationTable[jj].fvalidcodelength << endl;
+    }
+    return;
+  }
+
 }

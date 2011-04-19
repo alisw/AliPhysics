@@ -311,7 +311,8 @@ Int_t AliHLTCOMPHuffmanAltroCalibComponent::ProcessCalibration( const AliHLTComp
 
     //HLTDebug ( "Input Raw Data - Slice/Patch: %d/%d.", fSlice, fPatch);
 
-    fHuffmanCompressor->SetInputData(iter->fPtr, iter->fSize);
+    // FIXME: set ddl no
+    fHuffmanCompressor->AddInputData(reinterpret_cast<UChar_t*>(iter->fPtr), iter->fSize, 768);
 
     // only necessary for output in binary file
     //fHuffmanCompressor->SetSlice(fSlice);

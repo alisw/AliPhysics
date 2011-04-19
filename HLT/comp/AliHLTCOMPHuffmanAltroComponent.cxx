@@ -377,7 +377,8 @@ int AliHLTCOMPHuffmanAltroComponent::DoEvent( const AliHLTComponentEventData& ev
 
       // HLTDebug("HLT::HuffmanCompressor::DoEvent", "Event received", "Starting to process data");
 
-      fHuffmanCompressor->SetInputData(iter->fPtr, iter->fSize);
+      // FIXME: set ddl no
+      fHuffmanCompressor->AddInputData(reinterpret_cast<UChar_t*>(iter->fPtr), iter->fSize, 768);
 
       // validation test
       // HLTDebug("input data pointer (HEX) = %x ", iter->fPtr);

@@ -3,26 +3,26 @@
 #ifndef ALIHLTCOMPHUFFMANCODEDATA_H
 #define ALIHLTCOMPHUFFMANCODEDATA_H
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * All rights reserved.                                                   *
- *                                                                        *
- * Primary Author: Jenny Wagner  (jwagner@cern.ch)                        *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+///**************************************************************************
+///* This file is property of and copyright by the ALICE HLT Project        * 
+///* All rights reserved.                                                   *
+///*                                                                        *
+///* Primary Author: Jenny Wagner  (jwagner@cern.ch)                        *
+///*                                                                        *
+///* Permission to use, copy, modify and distribute this software and its   *
+///* documentation strictly for non-commercial purposes is hereby granted   *
+///* without fee, provided that the above copyright notice appears in all   *
+///* copies and that both the copyright notice and this permission notice   *
+///* appear in the supporting documentation. The authors make no claims     *
+///* about the suitability of this software for any purpose. It is          * 
+///* provided "as is" without express or implied warranty.                  *
+///**************************************************************************
 
-/** @file   AliHLTCOMPHuffmanCodeData.h
-    @author Jenny Wagner
-    @date   29-08-2007
-    @brief  Data class containing the Huffman code table of ADV-values
-*/
+/// @file   AliHLTCOMPHuffmanCodeData.h
+/// @author Jenny Wagner
+/// @date   29-08-2007
+/// @brief  Data class containing the Huffman code table of ADV-values
+///
 
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
@@ -52,10 +52,10 @@ public:
   virtual ~AliHLTCOMPHuffmanCodeData();
 
   /** convert Huffman code struct into class instance of HuffmanCodeData */
-  void SetHuffmanCodeData(AliHLTCOMPHuffmanCodeStruct const& codetableentry);
+  void SetHuffmanCodeData(const AliHLTCOMPHuffmanCodeStruct& codetableentry);
 
   /** return Huffman code struct */
-  AliHLTCOMPHuffmanCodeStruct* GetHuffmanCodeData(AliHLTCOMPHuffmanCodeStruct* codetableentry);
+  AliHLTCOMPHuffmanCodeStruct* GetHuffmanCodeData(AliHLTCOMPHuffmanCodeStruct* codetableentry) const;
 
 private:
 

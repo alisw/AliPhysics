@@ -1,24 +1,24 @@
-//-*- Mode: C++ -*-
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * All rights reserved.                                                   *
- *                                                                        *
- * Primary Author: Jenny Wagner  (jwagner@cern.ch)                        *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+// $Id$
+///**************************************************************************
+///* This file is property of and copyright by the ALICE HLT Project        * 
+///* All rights reserved.                                                   *
+///*                                                                        *
+///* Primary Author: Jenny Wagner  (jwagner@cern.ch)                        *
+///*                                                                        *
+///* Permission to use, copy, modify and distribute this software and its   *
+///* documentation strictly for non-commercial purposes is hereby granted   *
+///* without fee, provided that the above copyright notice appears in all   *
+///* copies and that both the copyright notice and this permission notice   *
+///* appear in the supporting documentation. The authors make no claims     *
+///* about the suitability of this software for any purpose. It is          * 
+///* provided "as is" without express or implied warranty.                  *
+///**************************************************************************
 
-/** @file   ALIHLTCOMPHuffmanCodeData.cxx
-    @author Jenny Wagner
-    @date   29-08-2007
-    @brief  Data class for the Huffman code table of 10-bit-ADC-values
-*/
+/// @file   ALIHLTCOMPHuffmanCodeData.cxx
+/// @author Jenny Wagner
+/// @date   29-08-2007
+/// @brief  Data class for the Huffman code table of 10-bit-ADC-values
+///
 
 #include "AliHLTCOMPHuffmanCodeData.h"
 #include "AliHLTStdIncludes.h"
@@ -50,7 +50,7 @@ AliHLTCOMPHuffmanCodeData::~AliHLTCOMPHuffmanCodeData()
   /* destructor, see header file for class documentation */
 }
 
-void AliHLTCOMPHuffmanCodeData::SetHuffmanCodeData(AliHLTCOMPHuffmanCodeStruct const& codetableentry)
+void AliHLTCOMPHuffmanCodeData::SetHuffmanCodeData(const AliHLTCOMPHuffmanCodeStruct& codetableentry)
 {
   // see header file for class documentation
   famplitude = codetableentry.famplitude;
@@ -58,7 +58,7 @@ void AliHLTCOMPHuffmanCodeData::SetHuffmanCodeData(AliHLTCOMPHuffmanCodeStruct c
   fvalidcodelength = codetableentry.fvalidcodelength;
 }
 
-AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* AliHLTCOMPHuffmanCodeData::GetHuffmanCodeData(AliHLTCOMPHuffmanCodeStruct* codetableentry)
+AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* AliHLTCOMPHuffmanCodeData::GetHuffmanCodeData(AliHLTCOMPHuffmanCodeStruct* codetableentry) const
 {
   // see header file for class documentation
   codetableentry->famplitude = famplitude;
