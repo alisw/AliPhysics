@@ -67,8 +67,8 @@
 #include "AliEMCALTriggerTypes.h"
 
 ClassImp(AliEMCALReconstructor) 
-
-const AliEMCALRecParam*     AliEMCALReconstructor::fgkRecParam        = 0;   // EMCAL rec. parameters
+  
+ const AliEMCALRecParam*     AliEMCALReconstructor::fgkRecParam        = 0;   // EMCAL rec. parameters
 AliEMCALRawUtils*           AliEMCALReconstructor::fgRawUtils         = 0;   // EMCAL raw utilities class
 AliEMCALClusterizer*        AliEMCALReconstructor::fgClusterizer      = 0;   // EMCAL clusterizer class
 TClonesArray*               AliEMCALReconstructor::fgDigitsArr        = 0;   // list of digits, to be used multiple times
@@ -80,7 +80,7 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   : fGeom(0),fCalibData(0),fPedestalData(0),fTriggerData(0x0) 
 {
   // ctor
-
+  
   fgRawUtils = new AliEMCALRawUtils;
   
   //To make sure we match with the geometry in a simulation file,
@@ -258,7 +258,7 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   // Conversion from raw data to
   // EMCAL digits.
   // Works on a single-event basis
-	
+  
   rawReader->Reset() ; 
   
   fTriggerData->SetMode(1);	
@@ -273,13 +273,13 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   
   //Skip calibration events do the rest
   Bool_t doFit = kTRUE;
-//  if ( !(GetRecParam()->FitLEDEvents()) && GetRecParam()->GetEventSpecie()==AliRecoParam::kCalib) doFit = kFALSE;
+  if ( !(GetRecParam()->FitLEDEvents()) && GetRecParam()->GetEventSpecie()==AliRecoParam::kCalib) doFit = kFALSE;
   if (doFit){
     //must be done here because, in constructor, option is not yet known
     fgRawUtils->SetOption(GetOption());
     
     //  fgRawUtils->SetRawFormatHighLowGainFactor(GetRecParam()->GetHighLowGainFactor());
-  
+    
     //   fgRawUtils->SetRawFormatOrder(GetRecParam()->GetOrderParameter());
     //    fgRawUtils->SetRawFormatTau(GetRecParam()->GetTau());
     fgRawUtils->SetNoiseThreshold(GetRecParam()->GetNoiseThreshold());
@@ -323,7 +323,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //########################################
   
   static int saveOnce = 0;
-	
+  
   Int_t v0M[2] = {0, 0};
   
   AliESDVZERO* esdV0 = esd->GetVZEROData();
@@ -383,22 +383,22 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       trgESD->SetL1Threshold(0, fTriggerData->GetL1GammaThreshold());
       
       trgESD->SetL1Threshold(1, fTriggerData->GetL1JetThreshold()  );
-
-	  Int_t v0[2];
-	  fTriggerData->GetL1V0(v0);
-		
-	  trgESD->SetL1V0(v0);	
-	  trgESD->SetL1FrameMask(fTriggerData->GetL1FrameMask());            
-
-	  if (!saveOnce && fTriggerData->GetL1DataDecoded()) 
-	  {
-		  int type[8] = {0};
-		  fTriggerData->GetL1TriggerType(type);
-
-		  esd->SetCaloTriggerType(type);
-		  
-		  saveOnce = 1;
-	  }
+      
+      Int_t v0[2];
+      fTriggerData->GetL1V0(v0);
+      
+      trgESD->SetL1V0(v0);	
+      trgESD->SetL1FrameMask(fTriggerData->GetL1FrameMask());            
+      
+      if (!saveOnce && fTriggerData->GetL1DataDecoded()) 
+	{
+	  int type[8] = {0};
+	  fTriggerData->GetL1TriggerType(type);
+	  
+	  esd->SetCaloTriggerType(type);
+	  
+	  saveOnce = 1;
+	}
     }
   
   // Resetting
@@ -423,8 +423,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     if(dig->GetAmplitude() > 0 ){
       energy = fgClusterizer->Calibrate(dig->GetAmplitude(),dig->GetTime(),dig->GetId()); //TimeR or Time?
       if(energy > 0){ //Digits tagged as bad (dead, hot, not alive) are set to 0 in calibrate, remove them	
-	emcCells.SetCell(idignew,dig->GetId(),energy, dig->GetTime());   
-	idignew++;
+        emcCells.SetCell(idignew,dig->GetId(),energy, dig->GetTime());   
+        idignew++;
       }
     }
   }
@@ -490,16 +490,16 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     Int_t newCellMult = 0;
     for (Int_t iCell=0; iCell<cellMult; iCell++) {
       if (amplFloat[iCell] > 0) {
-	absIdList[newCellMult] = (UShort_t)(digitInts[iCell]);
-	//Calculate Fraction
-	if(emcCells.GetCellAmplitude(digitInts[iCell])>0 && GetRecParam()->GetUnfold()){
-	  fracList[newCellMult] = amplFloat[iCell]/(emcCells.GetCellAmplitude(digitInts[iCell]));//get cell calibration value 
-	  
-	}
-	else{
-	  fracList[newCellMult] = 0; 
-	}
-	newCellMult++;
+        absIdList[newCellMult] = (UShort_t)(digitInts[iCell]);
+        //Calculate Fraction
+        if(emcCells.GetCellAmplitude(digitInts[iCell])>0 && GetRecParam()->GetUnfold()){
+          fracList[newCellMult] = amplFloat[iCell]/(emcCells.GetCellAmplitude(digitInts[iCell]));//get cell calibration value 
+          
+        }
+        else{
+          fracList[newCellMult] = 0; 
+        }
+        newCellMult++;
       }
     }
     
