@@ -217,7 +217,7 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 	fOutputAOD   = handler->GetAOD();
 	fTreeA = handler->GetTree();
 	if (fOutputAOD && !(handler->IsStandard())) {
-	    if ((handler->NeedsHeaderReplication()) && !(fgAODHeader)) 
+	    if ((handler->NeedsHeaderReplication() || merging) && !(fgAODHeader)) 
 		{
 		 if (fDebug > 1) AliInfo("Replicating header");
 		 fgAODHeader = new AliAODHeader;
@@ -363,12 +363,12 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 	AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
 
 	if (aod && !(handler->IsStandard()) && !(handler->AODIsReplicated())) {
-	    if ((handler->NeedsHeaderReplication()) && (fgAODHeader))
+	    if ((handler->NeedsHeaderReplication() || merging) && (fgAODHeader))
 	    {
 	      // copy the contents by assigment
 	      *fgAODHeader =  *(aod->GetHeader());
 	    }
-	    if ((handler->NeedsTracksBranchReplication() || merging) && (fgAODTracks))
+	    if ((handler->NeedsTracksBranchReplication() || (merging &&  aodH->GetMergeTracks())) && (fgAODTracks))
 	    {
 		TClonesArray* tracks = aod->GetTracks();
 		new (fgAODTracks) TClonesArray(*tracks);
@@ -392,7 +392,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 		TClonesArray* pmdClusters = aod->GetPmdClusters();
 		new (fgAODPMDClusters) TClonesArray(*pmdClusters);
 	    }
-	    if ((handler->NeedsJetsBranchReplication() || merging) && (fgAODJets))
+	    if ((handler->NeedsJetsBranchReplication() || (merging &&aodH->GetMergeTracks())) && (fgAODJets))
 	    {
 		TClonesArray* jets = aod->GetJets();
 		new (fgAODJets) TClonesArray(*jets);
@@ -402,7 +402,9 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 		TClonesArray* fmdClusters = aod->GetFmdClusters();
 		new (fgAODFMDClusters) TClonesArray(*fmdClusters);
 	    }
-	    if ((handler->NeedsCaloClustersBranchReplication() || merging) && (fgAODCaloClusters))
+	    if ((handler->NeedsCaloClustersBranchReplication() || 
+		 (merging && (aodH->GetMergeEMCALClusters() || aodH->GetMergePHOSClusters()))) 
+		&& (fgAODCaloClusters))
 	    {
 		TClonesArray* caloClusters = aod->GetCaloClusters();
 		new (fgAODCaloClusters) TClonesArray(*caloClusters);
@@ -415,7 +417,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 		  new (fgAODMCParticles) TClonesArray(*mcParticles);
 	    }
 	    
-	    if ((handler->NeedsDimuonsBranchReplication() || merging) && (fgAODDimuons))
+	    if ((handler->NeedsDimuonsBranchReplication() || (merging && aodH->GetMergeTracks())) && (fgAODDimuons))
 	    {
 	        fgAODDimuons->Clear();
 		TClonesArray& dimuons = *fgAODDimuons;
@@ -464,7 +466,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 
 		// tracks
 		TClonesArray* tracks = aodH->GetEventToMerge()->GetTracks();
-		if(tracks){
+		if(tracks && aodH->GetMergeTracks()){
 		  Int_t ntr = tracks->GetEntries();
 		  nc  = fgAODTracks->GetEntries();	
 		  for (Int_t i = 0; i < ntr; i++) {
@@ -483,75 +485,78 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 		
 		// clusters
 		TClonesArray* clusters = aodH->GetEventToMerge()->GetCaloClusters();
-		if( clusters ){
+		if( clusters  && (aodH->GetMergeEMCALClusters() || aodH->GetMergePHOSClusters())) {
 		  Int_t ncl  = clusters->GetEntries();
 		  nc         =  fgAODCaloClusters->GetEntries();
 		  for (Int_t i = 0; i < ncl; i++) {
 		    AliAODCaloCluster*    cluster = (AliAODCaloCluster*) clusters->At(i);
+		    if(cluster->IsEMCAL() && !aodH->GetMergeEMCALClusters() ) continue;
+		    if(cluster->IsPHOS()  && !aodH->GetMergePHOSClusters()  ) continue;   
 		    new((*fgAODCaloClusters)[nc++]) AliAODCaloCluster(*cluster);
 		  }
 		}
 
 		// EMCAL cells
 		//*fgAODEmcalCells =  *(aod->GetEMCALCells()); // This will be valid after 10.Mar.2011.
-		{
-		  AliAODCaloCells* copycells = aod->GetEMCALCells();
-		  fgAODEmcalCells->CreateContainer(copycells->GetNumberOfCells());
-		  nc  = copycells->GetNumberOfCells();
-		  while( nc-- ){ fgAODEmcalCells->SetCell(nc,copycells->GetCellNumber(nc),copycells->GetAmplitude(nc)); }
-		}
-		AliAODCaloCells* cellsA = aodH->GetEventToMerge()->GetEMCALCells();
-		if( cellsA ){
-		  Int_t ncells  = cellsA->GetNumberOfCells();
-		  nc = fgAODEmcalCells->GetNumberOfCells();
-		  for (Int_t i  = 0; i < ncells; i++) {
-		    Int_t cn  = cellsA->GetCellNumber(i);
-		    Int_t pos = fgAODEmcalCells->GetCellPosition(cn);
-		    if (pos >= 0) {
-		      Double_t amp = cellsA->GetAmplitude(i) + fgAODEmcalCells->GetAmplitude(pos);
-		      fgAODEmcalCells->SetCell(pos, cn, amp);
-		    } else {
-		      AliAODCaloCells* copycells = new AliAODCaloCells(*fgAODEmcalCells);
-		      fgAODEmcalCells->CreateContainer(nc+1);
-		      Int_t nn = copycells->GetNumberOfCells();
-		      while( nn-- ){ fgAODEmcalCells->SetCell(nn,copycells->GetCellNumber(nn),copycells->GetAmplitude(nn)); }
-		      fgAODEmcalCells->SetCell(nc++,cn,cellsA->GetAmplitude(i));
-		      delete copycells;
+		if(aodH->GetMergeEMCALCells()) {
+		    AliAODCaloCells* copycells = aod->GetEMCALCells();
+		    fgAODEmcalCells->CreateContainer(copycells->GetNumberOfCells());
+		    nc  = copycells->GetNumberOfCells();
+		    
+		    AliAODCaloCells* cellsA = aodH->GetEventToMerge()->GetEMCALCells();
+		    if( cellsA ){
+			Int_t ncells  = cellsA->GetNumberOfCells();
+			nc = fgAODEmcalCells->GetNumberOfCells();
+			for (Int_t i  = 0; i < ncells; i++) {
+			    Int_t cn  = cellsA->GetCellNumber(i);
+			    Int_t pos = fgAODEmcalCells->GetCellPosition(cn);
+			    if (pos >= 0) {
+				Double_t amp = cellsA->GetAmplitude(i) + fgAODEmcalCells->GetAmplitude(pos);
+				fgAODEmcalCells->SetCell(pos, cn, amp);
+			    } else {
+				AliAODCaloCells* copycells1 = new AliAODCaloCells(*fgAODEmcalCells);
+				fgAODEmcalCells->CreateContainer(nc+1);
+				Int_t nn = copycells1->GetNumberOfCells();
+				while( nn-- ){ fgAODEmcalCells->SetCell(nn,copycells1->GetCellNumber(nn),copycells1->GetAmplitude(nn)); }
+				fgAODEmcalCells->SetCell(nc++,cn,cellsA->GetAmplitude(i));
+				delete copycells1;
+			    }
+			}
+			fgAODEmcalCells->Sort();
 		    }
-		  }
-		  fgAODEmcalCells->Sort();
-		}
+		} // merge emcal cells
+		
 		
 		// PHOS cells
 		//*fgAODPhosCells =  *(aod->GetPHOSCells()); // This will be valid after 10.Mar.2011.
-		{
-		  AliAODCaloCells* copycells = aod->GetPHOSCells();
-		  fgAODPhosCells->CreateContainer(copycells->GetNumberOfCells());
-		  nc  = copycells->GetNumberOfCells();
-		  while( nc-- ){ fgAODPhosCells->SetCell(nc,copycells->GetCellNumber(nc),copycells->GetAmplitude(nc)); }
-		}
-		AliAODCaloCells* cellsP = aodH->GetEventToMerge()->GetPHOSCells();
-		if( cellsP ){
-		  Int_t ncellsP  = cellsP->GetNumberOfCells();
-		  nc = fgAODPhosCells->GetNumberOfCells();
-		  
-		  for (Int_t i  = 0; i < ncellsP; i++) {
-		    Int_t cn  = cellsP->GetCellNumber(i);
-		    Int_t pos = fgAODPhosCells->GetCellPosition(cn);
-		    if (pos >= 0) {
-		      Double_t amp = cellsP->GetAmplitude(i) + fgAODPhosCells->GetAmplitude(pos);
-		      fgAODPhosCells->SetCell(pos, cn, amp);
-		    } else {
-		      AliAODCaloCells* copycells = new AliAODCaloCells(*fgAODPhosCells);
-		      fgAODPhosCells->CreateContainer(nc+1);
-		      Int_t nn = copycells->GetNumberOfCells();
-		      while( nn-- ){ fgAODPhosCells->SetCell(nn,copycells->GetCellNumber(nn),copycells->GetAmplitude(nn)); }
-		      fgAODPhosCells->SetCell(nc++,cn,cellsP->GetAmplitude(i));
-		      delete copycells;
+		if(aodH->GetMergePHOSCells()) {
+		    AliAODCaloCells* copycells = aod->GetPHOSCells();
+		    fgAODPhosCells->CreateContainer(copycells->GetNumberOfCells());
+		    nc  = copycells->GetNumberOfCells();
+		    while( nc-- ){ fgAODPhosCells->SetCell(nc,copycells->GetCellNumber(nc),copycells->GetAmplitude(nc)); }
+		    AliAODCaloCells* cellsP = aodH->GetEventToMerge()->GetPHOSCells();
+		    if( cellsP ){
+			Int_t ncellsP  = cellsP->GetNumberOfCells();
+			nc = fgAODPhosCells->GetNumberOfCells();
+			
+			for (Int_t i  = 0; i < ncellsP; i++) {
+			    Int_t cn  = cellsP->GetCellNumber(i);
+			    Int_t pos = fgAODPhosCells->GetCellPosition(cn);
+			    if (pos >= 0) {
+				Double_t amp = cellsP->GetAmplitude(i) + fgAODPhosCells->GetAmplitude(pos);
+				fgAODPhosCells->SetCell(pos, cn, amp);
+			    } else {
+				AliAODCaloCells* copycells1 = new AliAODCaloCells(*fgAODPhosCells);
+				fgAODPhosCells->CreateContainer(nc+1);
+				Int_t nn = copycells1->GetNumberOfCells();
+				while( nn-- ){ fgAODPhosCells->SetCell(nn,copycells1->GetCellNumber(nn),copycells1->GetAmplitude(nn)); }
+				fgAODPhosCells->SetCell(nc++,cn,cellsP->GetAmplitude(i));
+				delete copycells1;
+			    }
+			}
+			fgAODPhosCells->Sort();
 		    }
-		  }
-		  fgAODPhosCells->Sort();
-		}
+		} // Merge PHOS Cells
 			
 	    } // merging
 	    
