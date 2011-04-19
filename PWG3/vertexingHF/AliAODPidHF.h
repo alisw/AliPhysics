@@ -88,7 +88,7 @@ class AliAODPidHF : public AliAODPid{
 
  Bool_t IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK);
 
-
+ void SetBetheBloch(AliTPCPIDResponse tpcResp) const;
 
  protected:
 
@@ -99,7 +99,6 @@ class AliAODPidHF : public AliAODPid{
  void BayesianProbabilityTPC(AliAODTrack *track,Double_t *prob) const;
  void BayesianProbabilityTOF(AliAODTrack *track,Double_t *prob) const;
  void BayesianProbabilityTRD(AliAODTrack *track,Double_t *prob) const;
- void SetBetheBloch(AliTPCPIDResponse tpcResp) const;
 
  private:
  Int_t fnNSigma; // number of sigmas
