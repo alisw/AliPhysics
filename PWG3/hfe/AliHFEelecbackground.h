@@ -1,6 +1,3 @@
-#ifndef ALIHFEELECBACKGROUND_H
-#define ALIHFEELECBACKGROUND_H
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -15,14 +12,14 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */ 
-
 //
 //  Secondary vertexing construction Class
 //  Construct secondary vertex from Beauty hadron with electron and
 //  hadrons, then apply selection criteria
 //
+
+#ifndef ALIHFEELECBACKGROUND_H
+#define ALIHFEELECBACKGROUND_H
 
 #ifndef ROOT_TObject
 //#include <TObject.h>
@@ -91,11 +88,11 @@ class AliHFEelecbackground : public TObject {
     TList *GetList()  const           { return fList; };
     TList *GetListPostProcess() const { return fListPostProcess; };
     
-    Bool_t SingleTrackCut(AliESDtrack* const trackPart) const;
+    Bool_t SingleTrackCut(const AliESDtrack* const trackPart) const;
     Bool_t ShareCluster(AliESDtrack * const track1,AliESDtrack * const track2); 
     Bool_t PIDTrackCut(AliESDtrack* const trackPart);
     void PairAnalysis(AliESDtrack* const track, AliESDtrack* const trackpart); 
-    void FillOutput(Double_t *results, Double_t *resultsr, Int_t sign); 
+    void FillOutput(const Double_t *results,const Double_t *resultsr, Int_t sign); 
     void PostProcess();
     void Plot() const;
     
@@ -149,8 +146,7 @@ class AliHFEelecbackground : public TObject {
     AliMCEvent*  fMCEvent;           //! MC event             
     Double_t fBz;                    // Magnetic field 
     const AliESDVertex *fkVertex;    //! Primary vertex
-    static const Double_t fgkMe;     //!  Mass of the electron
-    
+    static const Double_t fgkMe= 0.0005109989;     //!  Mass of the electron
     Double_t fPtESD;                 //! pt of tagged electron
     Int_t fIndexTrack;               //! index track
     Int_t fPdg;                      //! pdg code track 

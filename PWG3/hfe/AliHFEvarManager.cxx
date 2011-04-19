@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Class AliHFEvarManager:
 // Contains definition of the variables which are filled into the 
@@ -166,7 +163,7 @@ void AliHFEvarManager::AddVariable(TString name){
   else if(!name.CompareTo("charge"))
     fVariables->AddLast(new AliHFEvariable("charge", "charge", kCharge, 2, -1.1, 1.1));
   else if(!name.CompareTo("source"))
-    fVariables->AddLast(new AliHFEvariable("source", "source", kSource, 4, 0, 4));
+    fVariables->AddLast(new AliHFEvariable("source", "source", kSource, 5, 0, 5));
   else if(!name.CompareTo("centrality"))
     fVariables->AddLast(new AliHFEvariable("centrality", "centrality", kCentrality, 11, 0.0, 11.0));
   else if(!name.CompareTo("species"))
@@ -263,7 +260,8 @@ Double_t AliHFEvarManager::GetValue(AliVParticle *track, UInt_t code, Float_t ce
 	      if(fSignal->IsCharmElectron(track)) value = 0;
 	      else if(fSignal->IsBeautyElectron(track)) value = 1;
 	      else if(fSignal->IsGammaElectron(track)) value = 2;
-	      else value = 3;
+        else if(fSignal->IsNonHFElectron(track)) value = 3;
+	      else value = 4;
       }
       break;
     }
@@ -298,7 +296,7 @@ void AliHFEvarManager::FillContainer(AliCFContainer *cont, Int_t step, Bool_t us
 }
 
 //____________________________________________________________
-void AliHFEvarManager::FillContainer(AliHFEcontainer *cont, const Char_t *contname, UInt_t step, Bool_t useMC, Double_t externalWeight) const {
+void AliHFEvarManager::FillContainer(const AliHFEcontainer *const cont, const Char_t *contname, UInt_t step, Bool_t useMC, Double_t externalWeight) const {
 	//
 	// Fill CF container with defined content
 	//
@@ -310,7 +308,7 @@ void AliHFEvarManager::FillContainer(AliHFEcontainer *cont, const Char_t *contna
 }  
 
 //____________________________________________________________
-void AliHFEvarManager::FillContainerStepname(AliHFEcontainer *cont, const Char_t *contname, const Char_t *step, Bool_t useMC, Double_t externalWeight) const {
+void AliHFEvarManager::FillContainerStepname(const AliHFEcontainer *const cont, const Char_t *contname, const Char_t *step, Bool_t useMC, Double_t externalWeight) const {
 	//
 	// Fill CF container with defined content
 	//
@@ -328,10 +326,13 @@ void AliHFEvarManager::FillCorrelationMatrix(THnSparseF *matrix) const {
 	//
 
 	// Do reweighting if necessary
-  Double_t content[10];
-  memcpy(content, fContent, sizeof(Double_t) * 5);
-  memcpy(&content[5], fContentMC, sizeof(Double_t) * 5);
-	matrix->Fill(content, fWeightFactor);
+  Int_t nVars = fVariables->GetEntriesFast();
+  Double_t *content = new Double_t[2*nVars];
+  memcpy(&content[0], fContent, sizeof(Double_t) * nVars);
+  memcpy(&content[nVars], fContentMC, sizeof(Double_t) * nVars);
+  matrix->Fill(content, fWeightFactor);
+  if(content) delete[] content;
+
 }
 
 //_______________________________________________

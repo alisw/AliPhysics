@@ -1,6 +1,3 @@
-#ifndef ALIANALYSISTASKHFE_H
-#define ALIANALYSISTASKHFE_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,16 +12,20 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Task for Heavy Flavour Electron Analysis
 // Fills a single-inclusive electron pt-spectrum
 // For further information see implementation file
 //
+#ifndef ALIANALYSISTASKHFE_H
+#define ALIANALYSISTASKHFE_H
+
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
+#endif
+
+#ifndef ROOT_TString
+#include <TString.h>
 #endif
 
 class AliHFEcontainer;
@@ -83,6 +84,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t IsAODanalysis() const { return TestBit(kAODanalysis); };
     Bool_t IsESDanalysis() const { return !TestBit(kAODanalysis); };
     Bool_t HasMCData() const { return TestBit(kHasMCdata); }
+    Bool_t IsPbPb() const { return TestBit(kBeamType); }
     Bool_t GetPlugin(Int_t plug) const { return TESTBIT(fPlugins, plug); };
 
     // Get Components for configuration
@@ -104,15 +106,20 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SetPIDPreselect(AliHFEpid * const cuts) { fPIDpreselect = cuts; };
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
-    void SetBackGroundFactorsFunction(TF1 * const backGroundFactorsFunction) { fBackGroundFactorsFunction = backGroundFactorsFunction; };
+    void SetPbPbAnalysis(Bool_t isPbPb = kFALSE) { SetBit(kBeamType, isPbPb); };
+    void SetBackGroundFactorsFunction(TF1 * const backGroundFactorsFunction, Int_t centralitybin=0)
+    {  fBackGroundFactorArray[centralitybin]=backGroundFactorsFunction;
+       fBackGroundFactorApply=kTRUE;};
     void PrintStatus() const;
-    void ReadCentrality();
+    Bool_t ReadCentrality();
     void RejectionPileUpVertexRangeEventCut();  
+    void SelectSpecialTrigger(const Char_t *trgclust){ fHasSpecialTriggerSelection = kTRUE; fSpecialTrigger = trgclust; }
  
   private:
     enum{
       kHasMCdata = BIT(19),
-      kAODanalysis = BIT(20)
+      kAODanalysis = BIT(20),
+      kBeamType = BIT(21)
     };
 
     Bool_t FillProductionVertex(const AliVParticle * const track) const;
@@ -129,12 +136,18 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     ULong_t fQAlevel;                     // QA level
     UShort_t fPlugins;                    // Enabled Plugins
     Bool_t fFillSignalOnly;               // Fill container only with MC Signal Tracks
+    Bool_t fBackGroundFactorApply;        // Apply Background Function Subtraction
     Bool_t fRemovePileUp;                 // Remove Pile Up
     Bool_t fIdentifiedAsPileUp;           // Identified as pile-up
     Bool_t fIdentifiedAsOutInz;           // Out Of Range in z
     Bool_t fPassTheEventCut;              // Pass The Event Cut
+    Bool_t fHasSpecialTriggerSelection;   // Select special triggered events
+    TString fSpecialTrigger;              // Special trigger selection
     Float_t fCentralityF;                 // Centrality
-    TF1  *fBackGroundFactorsFunction;     // BackGround factors
+    Float_t fContributors;                // Contributors
+    Double_t fWeightBackGround;            // weight background function
+    Double_t fVz;                         // z position of the primary vertex
+    TF1  *fBackGroundFactorArray[12];     // Array of BackGround factors for each centrality bin, bin0 = min bias
     AliHFEcontainer *fContainer;          //! The HFE container
     AliHFEvarManager *fVarManager;        // The var manager as the backbone of the analysis
     AliHFEsignalCuts *fSignalCuts;        //! MC true signal (electron coming from certain source) 

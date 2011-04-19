@@ -1,6 +1,3 @@
-#ifndef ALIHFEPIDQA_H
-#define ALIHFEPIDQA_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,15 +12,15 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Class for PID QA
 // Several studies done on clean samples of electrons, pions and kaons
 // coming from V0 PID
 // More information can be found in the implementation file
 //
+#ifndef ALIHFEPIDQA_H
+#define ALIHFEPIDQA_H
+
 #ifndef ROOT_TObject
 #include <TObject.h>
 #endif

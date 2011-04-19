@@ -1,6 +1,3 @@
-#ifndef ALIHFEPID_H
-#define ALIHFEPID_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,14 +12,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Steering class for electron identification
 // Combines detector PID objects
 // For more information please check the implementation file
 //
+#ifndef ALIHFEPID_H
+#define ALIHFEPID_H
+
 #ifndef ROOT_TNamed
 #include <TNamed.h>
 #endif
@@ -36,8 +33,6 @@
 class AliAODpidUtil;
 class AliESDpid;
 class AliHFEcontainer;
-class AliHFEpidBase;
-class AliHFEpidQAmanager;
 class AliHFEvarManager;
 class AliVParticle;
 class AliMCParticle;
@@ -89,7 +84,7 @@ class AliHFEpid : public TNamed{
     //-----Configure PID detectors with predefined stettings------
     void ConfigureTPCasymmetric(Double_t pmin = 0.1, Double_t pmax = 20., Double_t sigmamin = -0.2, Double_t sigmamax = 5.);
     void ConfigureTPCrejectionSimple();
-    void ConfigureTPCrejection(const char *lowerCutParam = NULL, Double_t *params = NULL);
+    void ConfigureTPCrejection(const char *lowerCutParam = NULL, Double_t * const params = NULL, Float_t upperTPCCut=3.0, Float_t TOFCut=3.0);
     void ConfigureTPCstrategyParis();
     //------------------------------------------------------------
 

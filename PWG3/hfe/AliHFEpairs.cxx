@@ -12,9 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */
-
 //
 //  Container class to store pair characteristics
 //  for secondary vertex analysis

@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Extra cuts implemented by the ALICE Heavy Flavour Electron Group
 // Cuts stored here:
@@ -61,6 +58,7 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   fMinTrackletsTRD(0),
   fPixelITS(0),
   fTOFpid(kFALSE),
+  fTOFmismatch(kFALSE),
   fTPCclusterDef(0),
   fTPCclusterRatioDef(0),
   fCheck(kFALSE),
@@ -71,6 +69,7 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   // Default Constructor
   //
   memset(fImpactParamCut, 0, sizeof(Float_t) * 4);
+  memset(fIPcutParam, 0, sizeof(Float_t) * 4);
 }
 
 //______________________________________________________
@@ -84,6 +83,7 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   fMinTrackletsTRD(c.fMinTrackletsTRD),
   fPixelITS(c.fPixelITS),
   fTOFpid(c.fTOFpid),
+  fTOFmismatch(c.fTOFmismatch),
   fTPCclusterDef(c.fTPCclusterDef),
   fTPCclusterRatioDef(c.fTPCclusterRatioDef),
   fCheck(c.fCheck),
@@ -95,6 +95,7 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   // Performs a deep copy
   //
   memcpy(fImpactParamCut, c.fImpactParamCut, sizeof(Float_t) * 4);
+  memcpy(fIPcutParam, c.fIPcutParam, sizeof(Float_t) * 4);
   if(IsQAOn()){
     fIsQAOn = kTRUE;
     fQAlist = dynamic_cast<TList *>(c.fQAlist->Clone());
@@ -119,9 +120,11 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     fTPCclusterDef = c.fTPCclusterDef;
     fTPCclusterRatioDef = c.fTPCclusterRatioDef;
     fTOFpid = c.fTOFpid;
+    fTOFmismatch = c.fTOFmismatch;
     fCheck = c.fCheck;
     fDebugLevel = c.fDebugLevel;
     memcpy(fImpactParamCut, c.fImpactParamCut, sizeof(Float_t) * 4);
+    memcpy(fIPcutParam, c.fIPcutParam, sizeof(Float_t) * 4);
     if(IsQAOn()){
       fIsQAOn = kTRUE;
       fQAlist = dynamic_cast<TList *>(c.fQAlist->Clone());
@@ -186,6 +189,7 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   Double_t hfeimpactR, hfeimpactnsigmaR;
   Double_t hfeimpactRcut, hfeimpactnsigmaRcut;
   Bool_t tofstep = kTRUE;
+  Bool_t tofmismatchstep = kTRUE;
   GetImpactParameters(track, impactR, impactZ);
   if(TESTBIT(fRequirements, kMinHFEImpactParamR) || TESTBIT(fRequirements, kMinHFEImpactParamNsigmaR)){
     // Protection for PbPb
@@ -289,7 +293,16 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
     if(track->GetStatus() & AliESDtrack::kTOFpid) tofstep = kTRUE;
   
   }
-  if(fRequirements == survivedCut && tofstep){
+
+  if(fTOFmismatch){
+    // cut on TOF mismatch
+    tofmismatchstep = kFALSE;
+    if(!(track->GetStatus() & AliESDtrack::kTOFmismatch)) tofmismatchstep = kTRUE;
+  
+  }
+
+
+  if(fRequirements == survivedCut && tofstep && tofmismatchstep){
     //
     // Track selected
     //
@@ -640,9 +653,7 @@ void AliHFEextraCuts::GetHFEImpactParameterCuts(AliVTrack *track, Double_t &hfei
     AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
     if(!esdtrack) return;
     Double_t pt = esdtrack->Pt();	
-    //hfeimpactRcut=0.0064+0.078*exp(-0.56*pt);  // used Carlo's old parameter 
-    hfeimpactRcut=0.011+0.077*exp(-0.65*pt); // used Carlo's new parameter
-    hfeimpactnsigmaRcut=3; // 3 sigma trail cut
+    hfeimpactRcut = fIPcutParam[0]+fIPcutParam[1]*exp(fIPcutParam[2]*pt);  // abs R cut
+    hfeimpactnsigmaRcut = fIPcutParam[3];                                  // sigma cut
   }
 }
-

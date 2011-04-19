@@ -12,9 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */
-
 //
 //
 // First implementation of a class
@@ -62,7 +59,7 @@
 ClassImp(AliHFEelecbackground)
 
 Bool_t AliHFEelecbackground::fgUseMCPID = kFALSE;
-const Double_t    AliHFEelecbackground::fgkMe = 0.00051099892;
+
 
 //___________________________________________________________________________________________
 AliHFEelecbackground::AliHFEelecbackground():
@@ -1032,7 +1029,7 @@ void AliHFEelecbackground::CalculateMotherVariableR(AliESDtrack* const track, Al
   
 }
 //_________________________________________________________________________________
-void AliHFEelecbackground::FillOutput(Double_t *results, Double_t *resultsr, Int_t sign) 
+void AliHFEelecbackground::FillOutput(const Double_t *results, const Double_t *resultsr,Int_t sign) 
 {
   //
   // Fill the Data and MC THnSparseF 
@@ -1093,7 +1090,7 @@ void AliHFEelecbackground::FillOutput(Double_t *results, Double_t *resultsr, Int
  
 }    
 //_______________________________________________________________________________________________
-Bool_t AliHFEelecbackground::SingleTrackCut(AliESDtrack* const trackPart) const
+Bool_t AliHFEelecbackground::SingleTrackCut(const AliESDtrack* const trackPart) const
 {
   //
   // Return minimum quality for the partner

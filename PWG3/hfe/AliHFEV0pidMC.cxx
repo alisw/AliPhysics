@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // class to benchmark the V0 pid capabilties
 // runs over reconstructed V0 candidates and uses MC information for 
@@ -215,5 +212,14 @@ Int_t AliHFEV0pidMC::PDGtoAliPID(Int_t pdg) const {
     return -1;
   };
   return -1;
+}
+//____________________________________________________________
+TList *AliHFEV0pidMC::GetListOfQAhistograms(){
+  //
+  // Get QA histograms
+  //
+  if(fColl)
+    return fColl->GetList();
+  return NULL;
 }
 

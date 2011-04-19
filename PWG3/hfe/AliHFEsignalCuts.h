@@ -1,6 +1,3 @@
-#ifndef ALIHFESIGNALCUTS_H
-#define ALIHFESIGNALCUTS_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,14 +12,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Signal cuts
 // Checks whether a particle (reconstructed or MC) is coming from MC Signal
 // For more information see implementation file
 //
+#ifndef ALIHFESIGNALCUTS_H
+#define ALIHFESIGNALCUTS_H
+
 #ifndef ALIANALYSISCUTS_H
 #include "AliAnalysisCuts.h"
 #endif
@@ -46,6 +43,7 @@ class AliHFEsignalCuts : public AliAnalysisCuts{
     Bool_t IsCharmElectron(const TObject * const o) const;
     Bool_t IsBeautyElectron(const TObject * const o) const;
     Bool_t IsGammaElectron(const TObject * const o) const;
+    Bool_t IsNonHFElectron(const TObject * const o) const;
 
     //void SetMCEvent(AliMCEvent *mc) { fMC = mc; }
     void SetMCEvent(AliMCEvent *mc);

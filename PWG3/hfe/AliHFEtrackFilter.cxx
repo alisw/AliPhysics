@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Track filter class 
 // Apply cut steps to all tracks in one event and returns a list of
@@ -44,6 +41,26 @@
 #include "AliHFEtools.h"
 
 ClassImp(AliHFEtrackFilter)
+
+//__________________________________________________________________
+AliHFEtrackFilter::AliHFEtrackFilter() :
+  TNamed(),
+  fFilteredTracks(NULL),
+  fCutSteps(NULL),
+  fEfficiencyContainers(NULL),
+  fMC(NULL),
+  fMCsignal(NULL),
+  fPtBins(0),
+  fEtaBins(0),
+  fPhiBins(0),
+  fPtBinning(NULL),
+  fEtaBinning(NULL),
+  fPhiBinning(NULL)
+{
+  //
+  // Dummy Constructor
+  //
+}
 
 //__________________________________________________________________
 AliHFEtrackFilter::AliHFEtrackFilter(const Char_t *name) :
@@ -232,7 +249,7 @@ void AliHFEtrackFilter::InitCF(AliHFEcontainer *cont){
 }
 
 //__________________________________________________________________
-void AliHFEtrackFilter::FilterTracks(AliESDEvent * const event){
+void AliHFEtrackFilter::FilterTracks(const AliESDEvent * const event){
   //
   // Perform track filtering
   // Check each cut step one by one and select tracks which pass

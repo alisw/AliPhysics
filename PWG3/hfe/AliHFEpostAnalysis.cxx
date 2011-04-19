@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Post analysis code
 // Drawing nice pictures containing
@@ -247,7 +244,7 @@ void AliHFEpostAnalysis::DrawEfficiency(){
   effReconstructibleP->SetStats(kFALSE);
   cEff->cd(1);
   effReconstructibleP->Draw("e");
-  effCalc->CalculateEfficiency(AliHFEcuts::kStepMCGeneratedZOutNoPileUp, AliHFEcuts::kStepMCGenerated);
+  effCalc->CalculateEfficiency(AliHFEcuts::kStepMCGeneratedZOutNoPileUpCentralityFine, AliHFEcuts::kStepMCGenerated);
   TH1 *effSignal = effCalc->Project(0);
   effSignal->SetName("effSignal");
   effSignal->SetTitle("Efficiency of Signal Electrons");

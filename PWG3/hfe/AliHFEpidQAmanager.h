@@ -1,6 +1,3 @@
-#ifndef ALIHFEPIDQAMANAGER_H
-#define ALIHFEPIDQAMANAGER_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,14 +12,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Class AliHFEpidQAmanager
 // Steering PID QA
 // More information can be found inside the implementation file
 //
+#ifndef ALIHFEPIDQAMANAGER_H
+#define ALIHFEPIDQAMANAGER_H
+
 #ifndef ROOT_TObject
 #include <TObject.h>
 #endif

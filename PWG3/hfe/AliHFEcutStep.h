@@ -1,6 +1,3 @@
-#ifndef ALIHFECUTSTEP_H
-#define ALIHFECUTSTEP_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,14 +12,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Cut step class
 // Select all tracks surviving cuts in one special cut step
 // Used in AliHFEtrackFilter
 // 
+#ifndef ALIHFECUTSTEP_H
+#define ALIHFECUTSTEP_H
+
 #include <TNamed.h>
 
 class TObjArray;
@@ -42,8 +39,8 @@ class AliHFEcutStep : public TNamed{
       AliAnalysisCuts *GetCut(const Char_t *name);
       Bool_t IsSelected(TObject *o);
 
-      void SetMC(AliMCEvent *mc);
-      void SetRecEvent(AliVEvent *mc);
+      void SetMC(const AliMCEvent *mc);
+      void SetRecEvent(const AliVEvent *mc);
 
     private:
       TObjArray *fCuts; // List of cuts in one cut step

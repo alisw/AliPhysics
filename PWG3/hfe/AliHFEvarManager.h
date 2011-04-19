@@ -1,6 +1,3 @@
-#ifndef ALIHFEVARMANAGER_H
-#define ALIHFEVARMANAGER_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,15 +12,15 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Class AliHFEvarManager
 // Common place for definiton of variables to be filled into the 
 // correction framework container
 // More information can be found inside the implementation file
 //
+#ifndef ALIHFEVARMANAGER_H
+#define ALIHFEVARMANAGER_H
+
 #ifndef ROOT_TNamed
 #include <TNamed.h>
 #endif
@@ -57,6 +54,8 @@ public:
   AliHFEvarManager &operator=(const AliHFEvarManager &ref);
   void Copy(TObject &o) const;
 	~AliHFEvarManager();
+
+  TObjArray *GetVariables() const { return fVariables; }
   
   void SetOwner(Bool_t owner = kTRUE) { SetBit(kOwner, owner); }
   Bool_t IsOwner() const { return TestBit(kOwner); }
@@ -66,9 +65,9 @@ public:
   void DefineVariables(AliHFEcontainer *cont);
   void NewTrack(AliVParticle *track, AliVParticle *mcTrack = NULL, Float_t centrality = 99.0, Int_t aprioriPID = -1, Bool_t signal = kTRUE);
   Bool_t IsSignalTrack() const { return fSignalTrack; }
-  void FillContainer(AliCFContainer *cont, Int_t step, Bool_t useMC = kFALSE) const;
-  void FillContainer(AliHFEcontainer *cont, const Char_t *contname, UInt_t step, Bool_t useMC = kFALSE, Double_t externalWeight = 1.) const;
-  void FillContainerStepname(AliHFEcontainer *cont, const Char_t *contname, const Char_t *step, Bool_t useMC = kFALSE, Double_t externalWeight = 1.) const;
+  void FillContainer(AliCFContainer *const cont, Int_t step, Bool_t useMC = kFALSE) const;
+  void FillContainer(const AliHFEcontainer *const cont, const Char_t *contname, UInt_t step, Bool_t useMC = kFALSE, Double_t externalWeight = 1.) const;
+  void FillContainerStepname(const AliHFEcontainer *const cont, const Char_t *contname, const Char_t *step, Bool_t useMC = kFALSE, Double_t externalWeight = 1.) const;
   void FillCorrelationMatrix(THnSparseF *matrix) const;
   
   void SetSignalCuts(AliHFEsignalCuts *signal) { fSignal = signal; }

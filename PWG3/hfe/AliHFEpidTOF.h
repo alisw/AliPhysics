@@ -4,8 +4,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice   */   
 
-/* $Id$ */ 
-
 //
 // Class for TOF PID
 // Rejects protons and kaons at the TPC dE/dx line crossings
@@ -31,7 +29,7 @@ class AliHFEpidTOF : public AliHFEpidBase{
     virtual Bool_t    InitializePID();
     virtual Int_t     IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *piqa) const;
   
-    void SetTOFnSigma(Short_t nSigma) { fNsigmaTOF = nSigma; };
+    void SetTOFnSigma(Float_t nSigma) { fNsigmaTOF = nSigma; };
     Double_t NumberOfSigmas(const AliVParticle *track, AliPID::EParticleType species, AliHFEpidObject::AnalysisType_t anaType) const;
     Double_t GetTOFsignal(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anatype) const;
     Double_t GetTime0(AliHFEpidObject::AnalysisType_t anatype) const;
@@ -42,7 +40,7 @@ class AliHFEpidTOF : public AliHFEpidBase{
   private:
     AliPID        *fPID;           //! PID Object
 
-    Short_t    fNsigmaTOF;         // TOF sigma band
+    Float_t    fNsigmaTOF;         // TOF sigma band
 
     ClassDef(AliHFEpidTOF, 1)
 };

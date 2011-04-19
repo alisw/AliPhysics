@@ -1,6 +1,3 @@
-#ifndef ALIHFEV0INF0_H
-#define ALIHFEV0INFO_H
-
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -15,13 +12,13 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */ 
-
 //
 // Stores aditional information about the V0 candidates
 // author: M.Fasel@gsi.de
 //
+#ifndef ALIHFEV0INF0_H
+#define ALIHFEV0INFO_H
+
 #ifndef ROOT_TObject
 #include <TObject.h>
 #endif

@@ -50,8 +50,6 @@ AliHFEcontainer::AliHFEcontainer():
   //
   // Default constructor
   //
-  fContainers = new THashList();
-  fContainers->SetOwner();
 }
 
 //__________________________________________________________________
@@ -318,7 +316,7 @@ THnSparseF *AliHFEcontainer::GetCorrelationMatrix(const Char_t *name) const{
 }
 
 //__________________________________________________________________
-void AliHFEcontainer::FillCFContainer(const Char_t *name, UInt_t step, Double_t *content, Double_t weight) const {
+void AliHFEcontainer::FillCFContainer(const Char_t *name, UInt_t step, const Double_t * const content, Double_t weight) const {
   //
   // Fill container
   //
@@ -328,7 +326,7 @@ void AliHFEcontainer::FillCFContainer(const Char_t *name, UInt_t step, Double_t 
 }
 
 //__________________________________________________________________
-void AliHFEcontainer::FillCFContainerStepname(const Char_t *name, const Char_t *steptitle, Double_t *content, Double_t weight)const{
+void AliHFEcontainer::FillCFContainerStepname(const Char_t *name, const Char_t *steptitle, const Double_t * const content, Double_t weight)const{
   //
   // Fill container
   //
