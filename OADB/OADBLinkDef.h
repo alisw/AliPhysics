@@ -14,5 +14,6 @@
 #pragma link C++ class AliOADBPhysicsSelection+;
 #pragma link C++ class AliOADBFillingScheme+;
 #pragma link C++ class AliOADBPWG2Spectra+;
+#pragma link C++ class AliOADBTriggerAnalysis+;
 
 #endif
