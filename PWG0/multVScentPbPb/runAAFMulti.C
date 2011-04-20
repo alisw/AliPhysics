@@ -42,7 +42,7 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/L
 		 Bool_t checkReconstructables = kFALSE,//kTRUE, // fill histos for reconstructable (needs useMC and doRec) 
 		 //
 		 //TString alirootVer = "VO_ALICE@AliRoot::v4-21-17-AN",
-		 TString alirootVer = "VO_ALICE@AliRoot::v4-21-17b-AN",
+		 TString alirootVer = "VO_ALICE@AliRoot::v4-21-20-AN",
 		 TString rootVer    = "VO_ALICE@ROOT::v5-28-00a",
 		 //
 		 //TString proofCluster="shahoian@skaf.saske.sk"
@@ -52,8 +52,8 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/L
   //  
   Bool_t runLocal = kFALSE;//kTRUE; // true only for local test mode
   if (runLocal) {
-    dataset = "/default/shahoian/test";//"/default/shahoian/test";
-    //dataset = "/default/shahoian/test";
+    //    dataset = "/default/shahoian/test_pp";//"/default/shahoian/test";
+    dataset = "default/shahoian/test_pp130850";
     proofCluster = "";
     alirootVer = "AliRootProofLite";
     nEvents = 500;
@@ -78,7 +78,7 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/L
   list->Add(new TNamed("ALIROOT_MODE"      , alirootMode.Data()));
   list->Add(new TNamed("ALIROOT_EXTRA_LIBS", extraLibs.Data()));
   list->Add(new TNamed("ALIROOT_EXTRA_INCLUDES", "ITS:include"));
-  list->Add(new TNamed("ALIROOT_ENABLE_ALIEN","1"));
+  if (doRec || doInj || doRot || doMix) list->Add(new TNamed("ALIROOT_ENABLE_ALIEN","1"));
   //
   //REM: same version of AliRoot on client!!!!! Otherwise error!! 
   TProof::Mgr(proofCluster.Data())->SetROOTVersion(rootVer.Data());
@@ -90,7 +90,7 @@ void runAAFMulti(TString dataset="/alice/sim/LHC10h8_000137161", //"/alice/sim/L
   }
   gProof->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\");"
 	       "gEnv->GetTable()->Remove(o);", kTRUE);
-  gProof->SetParameter("PROOF_UseMergers", -1);
+  gProof->SetParameter("PROOF_UseMergers", 0);
   // Lets enable aliroot + extra libs on proof cluster
   if (runLocal) gProof->UploadPackage(alirootVer.Data());
   gProof->EnablePackage(alirootVer.Data(), list);

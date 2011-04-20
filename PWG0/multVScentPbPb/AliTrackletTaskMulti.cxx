@@ -77,7 +77,8 @@
 ClassImp(AliTrackletTaskMulti)
 
 // centrality percentile (inverted: 100% - most central)
-const Float_t  AliTrackletTaskMulti::fgkCentPerc[] = {0,10,20,30};
+const Float_t  AliTrackletTaskMulti::fgkCentPerc[] = {0,100};//{0,5,10,20,30};
+//const Float_t  AliTrackletTaskMulti::fgkCentPerc[] = {0,5,10,20,30,40};
   //{0,10,20,30,40,50,60,70,80,90,95,101};
 
 const char* AliTrackletTaskMulti::fgCentSelName[] = {"V0M","FMD","TRK","TKL","CL0","CL1","V0MvsFMD","TKLvsV0M","ZENvsZDC"};
@@ -302,35 +303,39 @@ void AliTrackletTaskMulti::UserCreateOutputObjects()
   fOutput->SetOwner(); 
   //
   //
-  AliCDBManager *man = AliCDBManager::Instance();
-  if (fUseMC) {
-    Bool_t newGeom = kTRUE;
-    man->SetDefaultStorage("alien://Folder=/alice/simulation/2008/v4-15-Release/Residual");
-    if (newGeom) {
-      // new geom
-      AliCDBEntry*  obj = man->Get("GRP/Geometry/Data",130844,8);
-      AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
-      if (!AliGeomManager::ApplyAlignObjsToGeom("ITS",130844,6,-1)) AliFatal("Failed to misalign geometry");
+  Bool_t needGeom = GetDoNormalReco() || GetDoInjection() || GetDoRotation() || GetDoMixing();
+  if (needGeom) {
+    AliCDBManager *man = AliCDBManager::Instance();
+    if (fUseMC) {
+      Bool_t newGeom = kTRUE;
+      man->SetDefaultStorage("alien://Folder=/alice/simulation/2008/v4-15-Release/Residual");
+      if (newGeom) {
+	// new geom
+	AliCDBEntry*  obj = man->Get("GRP/Geometry/Data",130844,8);
+	AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
+	if (!AliGeomManager::ApplyAlignObjsToGeom("ITS",130844,6,-1)) AliFatal("Failed to misalign geometry");
+      }
+      else {
+	// old geom
+	AliCDBEntry*  obj = man->Get("GRP/Geometry/Data",130845,7);
+	AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
+	if (!AliGeomManager::ApplyAlignObjsToGeom("ITS",130845,5,-1)) AliFatal("Failed to misalign geometry");
+      }
     }
     else {
-      // old geom
-      AliCDBEntry*  obj = man->Get("GRP/Geometry/Data",130845,7);
+      man->SetDefaultStorage("alien://Folder=/alice/data/2010/OCDB"); //man->SetRun(137366);
+      AliCDBEntry*  obj = man->Get("GRP/Geometry/Data",137366);
       AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
-      if (!AliGeomManager::ApplyAlignObjsToGeom("ITS",130845,5,-1)) AliFatal("Failed to misalign geometry");
+      if (!AliGeomManager::ApplyAlignObjsToGeom("ITS",137366,-1,-1)) AliFatal("Failed to misalign geometry");
     }
   }
-  else {
-    man->SetDefaultStorage("alien://Folder=/alice/data/2010/OCDB"); //man->SetRun(137366);
-    AliCDBEntry*  obj = man->Get("GRP/Geometry/Data",137366);
-    AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
-    if (!AliGeomManager::ApplyAlignObjsToGeom("ITS",137366,-1,-1)) AliFatal("Failed to misalign geometry");
-  }
-  //
+    //
   // Create histograms
   fNCentBins = sizeof(fgkCentPerc)/sizeof(Float_t)-1;
   //---------------------------------------------Standard histos per tracklet type--->>
   UInt_t hPattern = 0xffffffff;
   fHistosTrData                      = BookHistosSet("TrData",hPattern);
+  hPattern &= ~(BIT(kHEtaZvSPD1));  // fill single clusters for "data" only
   if (GetDoInjection()) fHistosTrInj = BookHistosSet("TrInj",hPattern);
   if (GetDoRotation())  fHistosTrRot = BookHistosSet("TrRot",hPattern);
   if (GetDoMixing())    fHistosTrMix = BookHistosSet("TrMix",hPattern);
@@ -372,11 +377,17 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
 {
   // Main loop
   //
+  Bool_t needRecPoints = GetDoNormalReco() || GetDoInjection() || GetDoRotation() || GetDoMixing();
+  //
   AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
   fRPTree = fRPTreeMix = 0;
-  AliESDInputHandlerRP *handRP = (AliESDInputHandlerRP*)anMan->GetInputEventHandler();
-  if (!handRP) { printf("No RP handler\n"); return; }
-  AliESDEvent *esd  = handRP->GetEvent();
+  AliESDInputHandler *handler = (AliESDInputHandler*)anMan->GetInputEventHandler();
+  AliESDInputHandlerRP *handRP = 0;
+  if (needRecPoints) {
+    handRP = (AliESDInputHandlerRP*)handler;
+    if (!handRP) { printf("No RP handler\n"); return; }
+  }
+  AliESDEvent *esd  = handler->GetEvent();
   if (!esd) { printf("No AliESDEvent\n"); return; }
   //
   // do we need to initialize the field?
@@ -427,12 +438,30 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
   AliESDZDC *esdZDC = esd->GetESDZDC();
   float zdcEnergy=0,zemEnergy=0;
   if (esdZDC) {
-    zdcEnergy = (esdZDC->GetZDCN1Energy() + esdZDC->GetZDCP1Energy() + esdZDC->GetZDCN2Energy()+ esdZDC->GetZDCP2Energy())/8;
+    zdcEnergy = (esdZDC->GetZDCN1Energy() + esdZDC->GetZDCP1Energy() + esdZDC->GetZDCN2Energy()+ esdZDC->GetZDCP2Energy());
     zemEnergy = (esdZDC->GetZDCEMEnergy(0)+esdZDC->GetZDCEMEnergy(1))/8.; 
   }
   ((TH2*)fHistosCustom->UncheckedAt(kHZDCZEMNoSel))->Fill(zemEnergy,zdcEnergy);
   //
   Float_t centPercentile = centrality->GetCentralityPercentileUnchecked(fgCentSelName[fUseCentralityVar]);
+
+  // temporary >>>>>>>>>>>>>>>>>>>>>>>>
+  if (fUseCentralityVar==kCentZEMvsZDC) {
+    float zdcEn = zdcEnergy;
+    float zemEn = zemEnergy;
+    Float_t slope;
+    Float_t zdcPercentile;
+    if (zemEn > 295.) {
+      slope = (zdcEn + 15000.)/(zemEn - 295.);
+      slope += 2.23660e+02;
+      zdcPercentile = (TMath::ATan(slope) - 1.56664)/8.99571e-05;
+      if (zdcPercentile<0) zdcPercentile = 0;
+    }
+    else zdcPercentile = 100;
+    centPercentile = zdcPercentile;
+  }
+  // temporary >>>>>>>>>>>>>>>>>>>>>>>>
+  
   fCurrCentBin = GetCentralityBin(centPercentile);
   //
   //  printf("CentPerc: %f : Bin %d\n",centPercentile, fCurrCentBin);
@@ -457,8 +486,10 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
     if (!fStack) { printf("Stack not available\n"); return; }
   }
   //
-  fRPTree = handRP->GetTreeR("ITS");
-  if (!fRPTree) { AliError(" Invalid ITS cluster tree !\n"); return; }
+  if (needRecPoints) {
+    fRPTree = handRP->GetTreeR("ITS");
+    if (!fRPTree) { AliError(" Invalid ITS cluster tree !\n"); return; }
+  }
   //
   // =============================================================================>>>
   // MC Generator info
@@ -501,7 +532,10 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
     FillClusterInfo();
     //
   }
-  if (!GetDoNormalReco()) FillHistos(kData,multESD); // fill data histos from ESD
+  if (!GetDoNormalReco()) {
+    FillHistos(kData,multESD); // fill data histos from ESD
+    FillClusterInfoFromMult(multESD, vtxf[2] );
+  }
   //
   // Injection: it must come right after the normal reco since needs its results
   if (GetDoInjection()) {
@@ -559,7 +593,7 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
   }
   // =============================================================================<<<
   //
-  delete fMultReco; 
+  if (fMultReco) delete fMultReco; 
   fMultReco = 0;
   //
 }      
@@ -850,13 +884,13 @@ TObjArray* AliTrackletTaskMulti::BookCustomHistos()
   //
   // -------------------------------------------------
   TH2F* hclinf=0;
-  hclinf = new TH2F("cl0InfoUsed","#phi vs Z of used clusters, Lr0",60,-15,15, 80,0,2*TMath::Pi());
+  hclinf = new TH2F("cl0InfoUsed","#phi vs Z of used clusters, Lr0",64,-16,16, 80,0,2*TMath::Pi());
   AddHisto(histos,hclinf,kHClUsedInfoL0);
-  hclinf = new TH2F("cl1InfoUsed","#phi vs Z of used clusters, Lr1",60,-15,15, 2*80,0,2*TMath::Pi());
+  hclinf = new TH2F("cl1InfoUsed","#phi vs Z of used clusters, Lr1",64,-16,16, 2*80,0,2*TMath::Pi());
   AddHisto(histos,hclinf,kHClUsedInfoL1);
-  hclinf = new TH2F("cl0InfoAll","#phi vs Z of all clusters, Lr0",60,-15,15, 80,0,2*TMath::Pi());
+  hclinf = new TH2F("cl0InfoAll","#phi vs Z of all clusters, Lr0",64,-16,16, 80,0,2*TMath::Pi());
   AddHisto(histos,hclinf,kHClAllInfoL0);
-  hclinf = new TH2F("cl1InfoAll","#phi vs Z of all clusters, Lr1",60,-15,15, 2*80,0,2*TMath::Pi());
+  hclinf = new TH2F("cl1InfoAll","#phi vs Z of all clusters, Lr1",64,-16,16, 2*80,0,2*TMath::Pi());
   AddHisto(histos,hclinf,kHClAllInfoL1);
   //
   // -------------------------------------------------
@@ -927,6 +961,15 @@ TObjArray* AliTrackletTaskMulti::BookHistosSet(const char* pref, UInt_t selHisto
 	      "[#Delta#theta%s/#sigma#theta]^{2}",fScaleDTBySin2T ? "*sin^{-2}(#theta)":"");
       h1->GetXaxis()->SetTitle(bufft);
       AddHisto(histos,h1,offs+kHWDist);
+    }
+    //
+    if (selHistos & (0x1<<kHEtaZvSPD1) ) {
+      sprintf(buffn,"b%d_%s_ZvEtaSPD1",ib,pref);
+      sprintf(bufft,"bin%d (%s) Zv vs Eta SPD1 clusters",ib,pref);
+      h2 = new TH2F(buffn,bufft,nEtaBins,fEtaMin,fEtaMax, nZVBins, fZVertexMin,fZVertexMax);
+      h2->GetXaxis()->SetTitle("#eta");
+      h2->GetYaxis()->SetTitle("Zv");
+      AddHisto(histos,h2,offs+kHEtaZvSPD1);
     }
     //
   }
@@ -1039,6 +1082,20 @@ void AliTrackletTaskMulti::FillHistos(Int_t type, const AliMultiplicity* mlt)
       if (fCheckReconstructables) CheckReconstructables();
     }
   }
+  //  
+  //-------------------------------------------------------------TMP RS - singles ------->>>
+  int offsH = fCurrCentBin*kNStandardH;
+  TH2* hSingles = (TH2*)histos->UncheckedAt(offsH+kHEtaZvSPD1);
+  if (hSingles) {
+    int nclS = mlt->GetNumberOfSingleClusters();
+    double *thtS = mlt->GetThetaSingle();
+    for (int ics=nclS;ics--;) {
+      double etaS = -TMath::Log(TMath::Tan(thtS[ics]/2));
+      if (etaS<fEtaMin || etaS>fEtaMax) continue;
+      hSingles->Fill(etaS,fESDVtx[2]);
+    }
+  }
+  //-------------------------------------------------------------TMP RS - singles -------<<<
   //
 }
 
@@ -1371,6 +1428,33 @@ void AliTrackletTaskMulti::FillClusterInfo()
       Float_t *clinf = fMultReco->GetClusterOfLayer(il,ic);
       hclA[il]->Fill( clinf[AliITSMultReconstructor::kClZ], clinf[AliITSMultReconstructor::kClPh]);
     }
+  //
+}
+
+//_________________________________________________________________________
+void AliTrackletTaskMulti::FillClusterInfoFromMult(const AliMultiplicity* mlt, double zVertex)
+{
+  // fill info on clusters taking them from Multiplicity object
+  const double kRSPD2 = 3.9;
+  TH2F *hclU = (TH2F*)fHistosCustom->UncheckedAt(kHClUsedInfoL0);
+  TH2F *hclA = (TH2F*)fHistosCustom->UncheckedAt(kHClAllInfoL0);
+  int ntr = mlt->GetNumberOfTracklets();
+  for (int itr=ntr;itr--;) {
+    Bool_t goodTracklet = kTRUE;
+    if (TMath::Abs( mlt->GetDeltaPhi(itr)-fDPhiShift)>fDPhiSCut) goodTracklet = kFALSE;
+    if (mlt->CalcDist(itr) > fNStdCut) goodTracklet = kFALSE;
+    double phi   = mlt->GetPhi(itr);
+    double z     = kRSPD2/TMath::Tan(mlt->GetTheta(itr)) + zVertex;
+    if (goodTracklet) hclU->Fill(z,phi);
+    hclA->Fill(z,phi);
+  }
+  //
+  int ncl = mlt->GetNumberOfSingleClusters();
+  for (int icl=ncl;icl--;) {
+    double phi   = mlt->GetPhiSingle(icl);
+    double z     = kRSPD2/TMath::Tan(mlt->GetThetaSingle(icl)) + zVertex;
+    hclA->Fill(z,phi);
+  }
   //
 }
 
