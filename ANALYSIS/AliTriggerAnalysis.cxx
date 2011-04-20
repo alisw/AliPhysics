@@ -479,7 +479,6 @@ Bool_t AliTriggerAnalysis::IsLaserWarmUpTPCEvent(const AliESDEvent* esd)
       continue;
       
     if (track->GetTPCNcls() < 30) continue;
-    if (track->GetTPCchi2()/track->GetTPCNcls() > 0.3) continue;
     if (TMath::Abs(track->Eta()) > 0.005) continue;
     if (track->Pt() < 4) continue;
     if (track->GetKinkIndex(0) > 0) continue;
@@ -489,8 +488,6 @@ Bool_t AliTriggerAnalysis::IsLaserWarmUpTPCEvent(const AliESDEvent* esd)
     if ((status&AliESDtrack::kTPCrefit)==0) continue;
     
     if (track->GetTPCsignal() > 10) continue;          // explicitly ask for tracks without dE/dx
-    
-    if (TMath::Abs(track->GetZ()) < 50) continue;
     
     trackCounter++;
   }
