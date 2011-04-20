@@ -269,12 +269,12 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
   fh1RP = new TH1F("fh1RP","RP;#Psi",440, -1.*TMath::Pi(), 2.*TMath::Pi());
   fHistList->Add(fh1RP);
 
-  fh2TriggerCount = new TH2F("fh2TriggerCount",";Trigger No.;constrained;Count",AliAnalysisHelperJetTasks::kTrigger,-0.5,AliAnalysisHelperJetTasks::kTrigger-0.5,kConstraints,-0.5,kConstraints-0.5); 
+  fh2TriggerCount = new TH2F("fh2TriggerCount",";Trigger No.;constrained;Count",6,-0.5,5.5,kConstraints,-0.5,kConstraints-0.5); 
   fHistList->Add(fh2TriggerCount);
 
-  fh2ESDTriggerCount = new TH2F("fh2ESDTriggerCount",";Trigger No.;constrained;Count",AliAnalysisHelperJetTasks::kTrigger,-0.5,AliAnalysisHelperJetTasks::kTrigger-0.5,kConstraints,-0.5,kConstraints-0.5); 
+  fh2ESDTriggerCount = new TH2F("fh2ESDTriggerCount",";Trigger No.;constrained;Count",6,-0.5,5.5,kConstraints,-0.5,kConstraints-0.5); 
   fHistList->Add(fh2ESDTriggerCount);
-  const Int_t nBins = AliAnalysisHelperJetTasks::kTrigger*kConstraints;
+  const Int_t nBins = 6*kConstraints;
   fh2TriggerVtx = new TH2F("fh2TriggerVtx",";Constraint No. * (trig no+1);Vtx (cm);Count",nBins,-0.5,nBins-0.5,400,-20.,20.); 
   fHistList->Add(fh2TriggerVtx);
 
