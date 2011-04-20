@@ -554,9 +554,9 @@ void AliEMCALRecoUtils::InitEMCALRecalibrationFactors(){
 	TH1::AddDirectory(kFALSE);
   
 	fEMCALRecalibrationFactors = new TObjArray(10);
-	for (int i = 0; i < 12; i++) fEMCALRecalibrationFactors->Add(new TH2F(Form("EMCALRecalFactors_SM%d",i),Form("EMCALRecalFactors_SM%d",i),  48, 0, 48, 24, 0, 24));
+	for (int i = 0; i < 10; i++) fEMCALRecalibrationFactors->Add(new TH2F(Form("EMCALRecalFactors_SM%d",i),Form("EMCALRecalFactors_SM%d",i),  48, 0, 48, 24, 0, 24));
 	//Init the histograms with 1
-	for (Int_t sm = 0; sm < 12; sm++) {
+	for (Int_t sm = 0; sm < 10; sm++) {
 		for (Int_t i = 0; i < 48; i++) {
 			for (Int_t j = 0; j < 24; j++) {
 				SetEMCALChannelRecalibrationFactor(sm,i,j,1.);
