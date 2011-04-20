@@ -25,6 +25,7 @@
 #include "AliEMCALRecoUtils.h"
 #include "AliESDCaloTrigger.h"
 #include "AliESDEvent.h"
+#include "AliESDUtils.h"
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
@@ -33,6 +34,7 @@
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 #include "AliMagF.h"
+#include "AliMultiplicity.h"
 #include "AliTrackerBase.h"
 
 ClassImp(AliAnalysisTaskEMCALPi0PbPb)
@@ -180,7 +182,6 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   cout << " fGeoName:       \"" << fGeoName << "\"" << endl;
   cout << " fMinNClusPerTr: " << fMinNClusPerTr << endl;
   cout << " fTrClassNames:  \"" << fTrClassNames << "\"" << endl;
-  cout << " fDoNtuple:      " << fDoNtuple << endl;
   cout << " fTrCuts:        " << fTrCuts << endl;
   cout << " fPrimTrCuts:    " << fPrimTrCuts << endl;
   cout << " fDoTrMatGeom:   " << fDoTrMatGeom << endl;
@@ -755,7 +756,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcCaloTriggers()
       if (pos<0)
         continue;
       if (trigInTimeWindow)
-        fAmpInTrigger[pos] = amp; // save for usage in CalcClusProperties
+        fAmpInTrigger[pos] = amp;
       Float_t eta=-1, phi=-1;
       fGeom->EtaPhiFromIndex(cidx[i],eta,phi);
       Double_t en= cells->GetAmplitude(pos);
@@ -1331,6 +1332,12 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
     fHeader->fTrCluster      = fEsdEv->GetHeader()->GetTriggerCluster();
     fHeader->fOffTriggers    = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected();
     fHeader->fFiredTriggers  = fEsdEv->GetFiredTriggerClasses();
+    Float_t v0CorrR = 0;
+    fHeader->fV0 = AliESDUtils::GetCorrV0(fEsdEv,v0CorrR);
+    const AliMultiplicity *mult = fEsdEv->GetMultiplicity();
+    if (mult) 
+      fHeader->fCl1 = mult->GetNumberOfITSClusters(1);
+    fHeader->fTr = AliESDtrackCuts::GetReferenceMultiplicity(fEsdEv,1);
   }
   AliCentrality *cent = InputEvent()->GetCentrality();
   fHeader->fV0Cent    = cent->GetCentralityPercentileUnchecked("V0M");
@@ -1358,6 +1365,63 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
       val += TMath::Power(2,j);
   }
   fHeader->fTcls = (UInt_t)val;
+
+  fHeader->fNSelTr     = fSelTracks->GetEntries();
+  fHeader->fNSelPrimTr = fSelPrimTracks->GetEntries();
+
+  fHeader->fNCells   = 0;
+  fHeader->fNCells1  = 0;
+  fHeader->fNCells2  = 0;
+  fHeader->fNCells5  = 0;
+  fHeader->fMaxCellE = 0;
+
+  AliVCaloCells *cells = fEsdCells;
+  if (!cells)
+    cells = fAodCells; 
+
+  if (cells) {
+    Int_t ncells = cells->GetNumberOfCells();
+    for(Int_t j=0; j<ncells; ++j) {
+      Double_t cellen = cells->GetAmplitude(j);
+      if (cellen>1)
+        ++fHeader->fNCells1;
+      if (cellen>2)
+        ++fHeader->fNCells2;
+      if (cellen>5)
+        ++fHeader->fNCells5;
+      if (cellen>fHeader->fMaxCellE)
+        fHeader->fMaxCellE = cellen; 
+    }
+    fHeader->fNCells = ncells;
+  }
+
+  fHeader->fNClus      = 0;
+  fHeader->fNClus1     = 0;
+  fHeader->fNClus2     = 0;
+  fHeader->fNClus5     = 0;
+  fHeader->fMaxClusE   = 0;
+
+  TObjArray *clusters = fEsdClusters;
+  if (!clusters)
+    clusters = fAodClusters;
+
+  if (clusters) {
+    Int_t nclus = clusters->GetEntries();
+    for(Int_t j=0; j<nclus; ++j) {
+      AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(j));
+      Double_t clusen = clus->E();
+      if (clusen>1)
+        ++fHeader->fNClus1;
+      if (clusen>2)
+        ++fHeader->fNClus2;
+      if (clusen>5)
+        ++fHeader->fNClus5;
+      if (clusen>fHeader->fMaxClusE)
+        fHeader->fMaxClusE = clusen; 
+    }
+    fHeader->fNClus = nclus;
+  }
+
 
   if (fAodEv) { 
     am->LoadBranch("vertices");
