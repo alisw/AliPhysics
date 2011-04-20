@@ -1,3 +1,5 @@
+Bool_t needRecPoints = kFALSE;
+
 void MyAnalysisMacroTrackletMulti
 (TString dataset="/alice/sim/LHC10f8c_130844",
  TString outFName = "trbg.root",
@@ -45,6 +47,8 @@ void MyAnalysisMacroTrackletMulti
   //  
   if (cutSigDPhiS<0) cutSigDPhiS = TMath::Sqrt(cutSigNStd)*dphi;
   //
+  needRecPoints = doRec || doInj || doRot || doMix;
+    //
   printf("Start Analysis for %s, max %d Events skipping %d, Event Cuts: %.1f<eta<%.1f, %.2f<Zv<%.2f\n",
 	 dataset.Data(),nEvents,nEventsSkip,etaMin,etaMax,zMin,zMax);
   printf("Centrality variable: %d\n",useCentVar);
@@ -80,7 +84,7 @@ void MyAnalysisMacroTrackletMulti
   printf("Loading Centrality task\n");
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-  taskCentrality->SetDebugLevel(2);
+  //  taskCentrality->SetDebugLevel(2);
   if (useMC) taskCentrality->SetMCInput();
   //  taskCentrality->Dump();
   //
@@ -186,10 +190,14 @@ Bool_t InputHandlerSetup(TString format = "esd", Bool_t useKine = kTRUE)
     if (!esdInputHandler)
     {
       Info("CustomAnalysisTaskInputSetup", "Creating esdInputHandler ...");
-      esdInputHandler = new AliESDInputHandlerRP();
+      if (needRecPoints)
+	esdInputHandler = new AliESDInputHandlerRP();
+      else 
+	esdInputHandler = new AliESDInputHandler();
+      //
       mgr->SetInputEventHandler(esdInputHandler);
     }
-
+    //
     if (useKine)
     {
       AliMCEventHandler* mcInputHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());

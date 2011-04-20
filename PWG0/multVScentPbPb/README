@@ -1,4 +1,7 @@
-dN/dEta analysis can be done in 2 ways:
+Questions to ruben.shahoyan@cern.ch
+
+------------------------------------------------------------
+PbPb dN/dEta analysis can be done in 2 ways:
 
 1) For single centrality bin:
 Using AliTrackletTaskUni.{h,cxx} steered by the
@@ -18,11 +21,19 @@ using the CorrectSpectra.C macro (the cuts/variables use... must be set
 beforehand)
 
 
-2) Mor multiple centrality bins at once:
+2) For multiple centrality bins at once:
 AliTrackletTaskMulti.{h,cxx} steered by the 
 runAAFMulti.C and MyAnalysisMacroTrackletMulti.C
 
-It produces for each centrality bin a set of histos, particularly 2D histos for
+One should set the in the AliTrackletTaskMulti the
+const Float_t  AliTrackletTaskMulti::fgkCentPerc[] ... aray with definition of selected 
+centrality bins, i.e. {0.,5.,10.,100} will creat bin0 for 0-5% centrality, bin1 for 5-10% etc.
+
+The variable on which centrality is defined is selected via runAAFMulti useCentVar parameter,
+should correspond to one of AliTrackletMultTask 
+enum {kCentV0M,kCentFMD,kCentTRK,kCentTKL,kCentCL0,kCentCL1,kCentV0MvsFMD,kCentTKLvsV0,kCentZEMvsZDC,kNCentTypes}; 
+
+The produces for each centrality bin a set of histos, particularly 2D histos for
 Zv vs eta with the signal cut on "distance" already applied (by defaults one for 
 "w.dist" another for "dphi-bend" + 1D histo of "distance" for selected Zv,eta
 range (to be used for the bg matching the tails of data"
@@ -33,6 +44,23 @@ signal cut (cutSigNStd in the runAAFMulti) and number of st.dev to keep (nStdDev
 One has to runAAFMulti.C for over the data and MC datasets and then analyse them
 using the CorrectSpectraMulti.C macro 
 
+The typical use of runAAFMulti is (used for PbPb analysis in 2010)
+root -q 'runAAFMulti.C(
+"/alice/data/LHC10h_000137366_p2",                                    // input 
+"resMultiWide_LHC10h_000137366_p2_eta_m08_p08_zv_m7_p7_zdczem.root",  // output
+-1,        // N events to process (-1 : all events)
+-0.5,0.5,  // eta selection
+-7,7,      // Zv selection
+8,         // centrality variable
+0.7520,    // rescale MC V0 to match data
+ 1.5,      // cut on weighed distance used to extract signal
+ -1,       // cut on dPhi-phiBent used to extract signal (if negative -> dphi*sqrt(cutSigNStd), recommended!)
+kTRUE,     // fill MC info (macro detects automatically that MC is analysed from ../sim/.. in the input dataset name
+kTRUE,     // redo tracklets reconstruction and use new AliMuliplicity to fill histos
+kTRUE      // generate injected bg
+... the rest is better to not touch..
+)'
+
 --------------------------------
 Both methods can use 3 types of generated bg: injection, rotation and mixing.
 Simultaneous eployment of all these methods is also possible, but may create 
@@ -40,3 +68,37 @@ a memory problem.
 
 The corresponding CorrectSpectra... macros must be tuned for the bg.type used.
 
+-----------------------------------------------------
+Update: Wed Apr 20 16:23:55 CEST 2011
+Addapted AliTrackletTaskMulti for pp data analysis w/o bg generation. In this case 
+the recpoints and the connection to OCDB (alien libs) are not needed.
+One should set the 
+const Float_t  AliTrackletTaskMulti::fgkCentPerc[] = {0,100};
+and chose a centrality variable availabe in pp, like V0.
+Note that in this mode the AliMultiplicity object from the input dataset is used.
+
+The typical call of runAAFMulti is:
+
+root -q 'runAAFMulti.C("/alice/data/LHC10e_000130844_p2","resppWide_LHC10e_130844_p2_eta_m26_p26_zv_m20_p20a.root",
+-1,
+-2.6,2.6,
+-20,20,0, 
+0.7520,
+2.,        // put it to large value to not affect the tracklet selection from existing AliMultiplicity object
+-1,
+kTRUE,
+kFALSE,   // DO NOT do new reco of tracklets
+kFALSE,   // DO NOT do bg. generation by injection
+kFALSE,   // DO NOT do bg.generation by rotation
+kFALSE,   // DO NOT do bg.generation by mixing
+3.14159e+00, // irrelevant
+1.,          // irrelevant 
+kFALSE,    // NO scaling of dtheta by sin^2(theta) (that's how pp data was reconstructed so far...)
+2,         // irrelevant
+0.08,      // dphi tolerance
+0.025      // dtheta tolerance
+)'
+
+The sample macro ppcor.C shows how to extract dNdEta from the outputs of data and MC.
+
+------------------------------------------------------------
