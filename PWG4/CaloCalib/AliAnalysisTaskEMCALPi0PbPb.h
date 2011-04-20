@@ -188,8 +188,11 @@ class AliStaHeader
  public:
   AliStaHeader() : fRun(0), fOrbit(0), fPeriod(0), fBx(0), fL0(0), fL1(0), fL2(0),
                    fTrClassMask(0), fTrCluster(0), fOffTriggers(0), fFiredTriggers(),
-                   fTcls(0), fV0Cent(0), fCl1Cent(0), fTrCent(0), fCqual(-1),
-                   fPsi(0), fPsiRes(0) {;}
+                   fTcls(0), fV0Cent(0), fV0(0), fCl1Cent(0), fCl1(0), fTrCent(0), fTr(0),
+                   fCqual(-1), fPsi(0), fPsiRes(0), fNSelTr(0), fNSelPrimTr(0), 
+                   fNCells(0), fNCells1(0), fNCells2(0), fNCells5(0), 
+                   fNClus(0), fNClus1(0), fNClus2(0), fNClus5(0), 
+                   fMaxCellE(0), fMaxClusE(0) {;}
   virtual ~AliStaHeader() {;}
 
  public:
@@ -206,13 +209,28 @@ class AliStaHeader
   TString       fFiredTriggers;  //         string with fired triggers
   UInt_t        fTcls;           //         custom trigger definition
   Double32_t    fV0Cent;         //[0,0,16] v0 cent
+  Double32_t    fV0;             //[0,0,16] v0 result used for cent 
   Double32_t    fCl1Cent;        //[0,0,16] cl1 cent
+  Double32_t    fCl1;            //[0,0,16] cl1 result used for cent 
   Double32_t    fTrCent;         //[0,0,16] tr cent
+  Double32_t    fTr;             //[0,0,16] tr result used for cent 
   Int_t         fCqual;          //         centrality quality
   Double32_t    fPsi;            //[0,0,16] event-plane angle
   Double32_t    fPsiRes;         //[0,0,16] event-plane ange resolution
+  UShort_t      fNSelTr;         //         # selected tracks         
+  UShort_t      fNSelPrimTr;     //         # selected tracks (primary)
+  UShort_t      fNCells;         //         # cells
+  UShort_t      fNCells1;        //         # cells > 1 GeV
+  UShort_t      fNCells2;        //         # cells > 2 GeV
+  UShort_t      fNCells5;        //         # cells > 5 GeV
+  UShort_t      fNClus;          //         # clus
+  UShort_t      fNClus1;         //         # clus > 1 GeV
+  UShort_t      fNClus2;         //         # clus > 2 GeV
+  UShort_t      fNClus5;         //         # clus > 5 GeV
+  Double32_t    fMaxCellE;       //[0,0,16] maximum cell energy
+  Double32_t    fMaxClusE;       //[0,0,16] maximum clus energy
 
-  ClassDef(AliStaHeader,2) // Header class
+  ClassDef(AliStaHeader,3) // Header class
 };
 
 class AliStaVertex
