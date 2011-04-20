@@ -50,16 +50,23 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   //AOD methods
   void           SetAODBranchName(TString &name)                { fOutputAODBranchName = name  ; }
   void           FillAODFile(Bool_t yesno)                      { fFillAODFile         = yesno ; }
+  void           FillAODCaloCells();
+  void           FillAODHeader();
+  void           SwitchOnFillAODHeader()                        { fFillAODHeader    = kTRUE    ; }
+  void           SwitchOffFillAODHeader()                       { fFillAODHeader    = kFALSE   ; } 
+  void           SwitchOnFillAODCaloCells()                     { fFillAODCaloCells = kTRUE    ; }
+  void           SwitchOffFillAODCaloCells()                    { fFillAODCaloCells = kFALSE   ; } 
   
   //Algorithms settings
   void           JustUnfold(Bool_t yesno)                       { fJustUnfold          = yesno ; }
   AliEMCALRecParam * GetRecParam()                       const  { return fRecParam             ; }
   void           InitClusterization();
   
-  void SetEMCALRecoUtils(AliEMCALRecoUtils * ru)                { fRecoUtils           = ru    ; }
+  void           SetEMCALRecoUtils(AliEMCALRecoUtils * ru)      { fRecoUtils           = ru    ; }
   AliEMCALRecoUtils* GetRecoUtils()                      const  { return fRecoUtils            ; }
   
   void SetConfigFileName(TString name)                          { fConfigName          = name  ; }
+  void SetMaxEvent(Int_t max)                                   { fMaxEvent            = max   ; }
   
  private:
     
@@ -93,6 +100,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   TString                fOutputAODBranchName;  // New of output AOD branch
   Bool_t                 fFillAODFile;      // Fill the output AOD file with the new clusters, 
                                             // if not they will be only available for the event they were generated
+  Bool_t                 fFillAODHeader;    // Copy header to standard branch
+  Bool_t                 fFillAODCaloCells; // Copy calocells to standard branch
+
   Int_t                  fRun;              //!run number
   
   AliEMCALRecoUtils*     fRecoUtils;        // Access to factorized reconstruction algorithms
@@ -101,7 +111,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   Int_t                  fCellLabels[12672];       // Array with MC label to be passed to digit. 
   Int_t                  fCellSecondLabels[12672]; // Array with Second MC label to be passed to digit. 
   
-  ClassDef(AliAnalysisTaskEMCALClusterize, 5);
+  Int_t                  fMaxEvent;         // Set a maximum event
+  
+  ClassDef(AliAnalysisTaskEMCALClusterize, 6);
 };
 
 #endif //ALIANALYSISTASKEMCALCLUSTERIZE_H
