@@ -123,6 +123,7 @@
 #include <AliOADBContainer.h>
 #include "AliOADBPhysicsSelection.h"
 #include "AliOADBFillingScheme.h"
+#include "AliOADBTriggerAnalysis.h"
 
 ClassImp(AliPhysicsSelection)
 
@@ -154,6 +155,7 @@ AliPhysicsSelection::AliPhysicsSelection() :
   fIsPP(kFALSE),
   fPSOADB(0),
   fFillOADB(0),
+  fTriggerOADB(0),
   fRegexp(0),
   fCashedTokens(0)
   
@@ -214,13 +216,17 @@ AliPhysicsSelection::~AliPhysicsSelection()
   if (fPSOADB)
   { 
     delete fPSOADB;
-    fPSOADB = 0;
-    
+    fPSOADB = 0;    
   }  
   if (fFillOADB)
   { 
     delete fFillOADB;
     fFillOADB = 0;
+  }  
+  if (fTriggerOADB)
+  { 
+    delete fTriggerOADB;
+    fTriggerOADB = 0;
   }  
   
   if (fRegexp)
@@ -884,6 +890,13 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
     fFillOADB = (AliOADBFillingScheme*) fillContainer->GetObject(runNumber, "Default");
     if (!fFillOADB) AliFatal(Form("Cannot find  filling scheme object for run %d", runNumber));
   }
+  if(!fTriggerOADB || !fUsingCustomClasses) { // if it's already set and custom class is required, we use the one provided by the user
+    AliOADBContainer * triggerContainer = (AliOADBContainer*) foadb->Get("trigAnalysis");
+    if (!triggerContainer) AliFatal("Cannot fetch OADB container for trigger analysis");
+    fTriggerOADB = (AliOADBTriggerAnalysis*) triggerContainer->GetObject(runNumber, "Default");
+    fTriggerOADB->Print();
+    if (!fTriggerOADB) AliFatal(Form("Cannot find  trigger analysis object for run %d", runNumber));
+  }
 
   
   if(!fBin0CallBack) 
@@ -977,6 +990,10 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
       triggerAnalysis->EnableHistograms();
       triggerAnalysis->SetSPDGFOThreshhold(1);
       triggerAnalysis->SetDoFMD(kFALSE);
+      triggerAnalysis->SetCorrZDCCutParams(fTriggerOADB->GetZDCCutRefSumCorr(),
+					   fTriggerOADB->GetZDCCutRefDeltaCorr(), 
+					   fTriggerOADB->GetZDCCutSigmaSumCorr(),
+					   fTriggerOADB->GetZDCCutSigmaDeltaCorr());
       fTriggerAnalysis.Add(triggerAnalysis);
     }
 

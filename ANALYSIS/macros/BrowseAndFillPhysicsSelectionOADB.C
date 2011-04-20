@@ -27,6 +27,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
 
   AliOADBContainer * oadbContPS = new AliOADBContainer("physSel");
   AliOADBContainer * oadbContFillingScheme = new AliOADBContainer("fillScheme");
+  AliOADBContainer * oadbContTriggerAnalysis = new AliOADBContainer("trigAnalysis");
 
   // Defaults
   AliOADBFillingScheme * fsDefault = new AliOADBFillingScheme("Default");
@@ -87,6 +88,11 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbDefaultPbPb->SetOfflineTrigger          ( 1,"(V0A && V0C && SPDGFO > 1)");
 
   oadbContPS->AddDefaultObject(oadbDefaultPbPb);
+
+  // Trigger analysis defaults
+  AliOADBTriggerAnalysis * oadbTrigAnalysis = new AliOADBTriggerAnalysis("Default");
+  oadbTrigAnalysis->SetZDCCorrParameters(-66.5, -2.1, 4*0.58, 4*0.5);
+  oadbContTriggerAnalysis->AddDefaultObject(oadbTrigAnalysis);  
 
   // ----- 2009 - 2010 -----
   // ----- proton-proton -----
@@ -533,12 +539,47 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbContPS->AppendObject(oadbLHC10h9, 139328,139517);
 
 
+  // Trigger Analysis: ZDC timing cuts
+ 
+  AliOADBTriggerAnalysis * oadbTrigAnalysisZDC1 = new AliOADBTriggerAnalysis("ZDCCut1");
+  oadbTrigAnalysisZDC1->SetZDCCorrParameters(-66.9, -2.1, 4*0.58, 4*0.5);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC1, 136851, 137848);  
+
+  AliOADBTriggerAnalysis * oadbTrigAnalysisZDC2 = new AliOADBTriggerAnalysis("ZDCCut2");
+  oadbTrigAnalysisZDC2->SetZDCCorrParameters(-66.2, -2.1, 4*0.58, 4*0.5);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC2, 138125, 138275);  
+
+  AliOADBTriggerAnalysis * oadbTrigAnalysisZDC3 = new AliOADBTriggerAnalysis("ZDCCut3");
+  oadbTrigAnalysisZDC3->SetZDCCorrParameters(-65.4, -2.1, 4*0.58, 4*0.5);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC3, 138359, 138469);  
+
+  AliOADBTriggerAnalysis * oadbTrigAnalysisZDC4 = new AliOADBTriggerAnalysis("ZDCCut4");
+  oadbTrigAnalysisZDC4->SetZDCCorrParameters(-67.7, -2.1, 4*0.58, 4*0.5);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC4, 138533, 138742);  
+
+  AliOADBTriggerAnalysis * oadbTrigAnalysisZDC5 = new AliOADBTriggerAnalysis("ZDCCut5");
+  oadbTrigAnalysisZDC5->SetZDCCorrParameters(-67.2, -2.1, 4*0.58, 4*0.5);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC5, 138795, 138872);  
+
+  AliOADBTriggerAnalysis * oadbTrigAnalysisZDC6 = new AliOADBTriggerAnalysis("ZDCCut6");
+  oadbTrigAnalysisZDC6->SetZDCCorrParameters(-65.6, -2.1, 4*0.58, 4*0.5);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisZDC6, 138924, 139517);  
+
+  oadbTrigAnalysisZDC1->Print();
+  oadbTrigAnalysisZDC2->Print();
+  oadbTrigAnalysisZDC3->Print();
+  oadbTrigAnalysisZDC4->Print();
+  oadbTrigAnalysisZDC5->Print();
+  oadbTrigAnalysisZDC6->Print();
+
+
   // ----- 2011 -----
   // ----- proton-proton -----
 
 
   oadbContPS->WriteToFile(oadbfilename.Data());
   oadbContFillingScheme->WriteToFile(oadbfilename.Data());
+  oadbContTriggerAnalysis->WriteToFile(oadbfilename.Data());
 
   TFile * fopen = new TFile (oadbfilename); 
   new TBrowser;

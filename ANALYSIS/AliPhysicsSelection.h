@@ -32,6 +32,7 @@ class AliTriggerAnalysis;
 class AliAnalysisTaskSE;
 class AliOADBPhysicsSelection ;
 class AliOADBFillingScheme    ;
+class AliOADBTriggerAnalysis;
 class TPRegexp;
 
 class AliPhysicsSelection : public AliAnalysisCuts
@@ -80,9 +81,10 @@ public:
   const TList* GetBGTriggerClasses()        const { return &fBGTrigClasses; }
   void AddCollisionTriggerClass(const char* className);
   void AddBGTriggerClass(const char* className)       ;
-  void SetCustomOADBObjects(AliOADBPhysicsSelection * oadbPS, AliOADBFillingScheme * oadbFS) { fPSOADB = oadbPS; fFillOADB = oadbFS; fUsingCustomClasses = kTRUE;}
+  void SetCustomOADBObjects(AliOADBPhysicsSelection * oadbPS, AliOADBFillingScheme * oadbFS, AliOADBTriggerAnalysis * oadbTA = 0) { fPSOADB = oadbPS; fFillOADB = oadbFS; fTriggerOADB = oadbTA; fUsingCustomClasses = kTRUE;}
   const AliOADBPhysicsSelection * GetOADBPhysicsSelection() const {return fPSOADB;  }
   const AliOADBFillingScheme    * GetOADBFillingScheme()    const {return fFillOADB;}
+  const AliOADBTriggerAnalysis  * GetOADBTriggerAnalysis()  const {return fTriggerOADB;}
 
   const Int_t GetBGStatOffset() const { return fBGStatOffset; }
 
@@ -149,11 +151,12 @@ protected:
 
   AliOADBPhysicsSelection * fPSOADB; // Physics selection OADB object
   AliOADBFillingScheme    * fFillOADB; // Filling scheme OADB object
+  AliOADBTriggerAnalysis  * fTriggerOADB; // Trigger analysis OADB object
 
   TPRegexp* fRegexp; //! regular expression for trigger tokens
   TList* fCashedTokens; //! trigger token lookup list
 
-  ClassDef(AliPhysicsSelection, 13)
+  ClassDef(AliPhysicsSelection, 14)
     
     private:
   AliPhysicsSelection(const AliPhysicsSelection&);
