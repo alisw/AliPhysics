@@ -37,7 +37,7 @@ class AliTRDgtuSim : public TObject {
   Bool_t WriteTracksToDataFile(TList *listOfTracks, Int_t event);
   Bool_t WriteTreesToFile() const;
   Bool_t WriteTracksToESD(const TList *const listOfTracks, AliESDEvent *esd);
-  Bool_t WriteTracksToLoader();
+  Bool_t WriteTracksToLoader(const TList *const listOfTracks);
 
  protected:
   AliRunLoader 	*fRunLoader;  	//!

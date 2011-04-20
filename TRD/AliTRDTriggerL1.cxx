@@ -71,7 +71,6 @@ void AliTRDTriggerL1::Trigger()
   // now running the GTU tracking;
   AliTRDgtuSim *gtusim = new AliTRDgtuSim();
   gtusim->RunGTU(trdLoader, 0x0);
-  gtusim->WriteTracksToLoader();
   
   TTree *trackTree = trdLoader->GetDataLoader("gtutracks")->Tree();
   if (!trackTree) {

@@ -123,6 +123,7 @@ Bool_t AliTRDgtuSim::RunGTUFromTrackletFile(TString filename, Int_t event, Int_t
 		AliDebug(1,Form("--- There are %i tracks. Writing ...", listOfTracks->GetEntries()));
 		WriteTracksToTree(listOfTracks);
 		fTMU->WriteTrackletsToTree(fTrackletTree);
+		WriteTracksToLoader(listOfTracks);
 		WriteTracksToDataFile(listOfTracks, iEventPrev);
 		if (listOfTracks->GetEntries() > 0) 
 		    AliDebug(2,Form("   %4.1f GeV/c", ((AliTRDtrackGTU*) listOfTracks->At(0))->GetPt() ));
@@ -159,6 +160,7 @@ Bool_t AliTRDgtuSim::RunGTUFromTrackletFile(TString filename, Int_t event, Int_t
 	fTMU->RunTMU(listOfTracks);
 	WriteTracksToTree(listOfTracks);
 	fTMU->WriteTrackletsToTree(fTrackletTree);
+	WriteTracksToLoader(listOfTracks);
 	WriteTracksToDataFile(listOfTracks, iEventPrev);
 	delete fTMU;
 	delete listOfTracks;
@@ -212,6 +214,7 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
 		fTMU->RunTMU(listOfTracks);
 		WriteTracksToTree(listOfTracks);
 		fTMU->WriteTrackletsToTree(fTrackletTree);
+		WriteTracksToLoader(listOfTracks);
 		WriteTracksToESD(listOfTracks, esd);
 		fTMU->Reset();
 		listOfTracks->Delete();
@@ -232,6 +235,7 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
 	fTMU->RunTMU(listOfTracks);
 	WriteTracksToTree(listOfTracks);
 	fTMU->WriteTrackletsToTree(fTrackletTree);
+	WriteTracksToLoader(listOfTracks);
 	WriteTracksToESD(listOfTracks, esd);
 	delete fTMU;
 	fTMU = 0x0;
@@ -313,7 +317,7 @@ Bool_t AliTRDgtuSim::LoadTracklets(AliLoader *const loader)
 
     for (Int_t iEntry = 0; iEntry < trackletTree->GetEntries(); iEntry++) {
       trackletTree->GetEntry(iEntry);
-      printf("%i tracklets in HC %i\n", ar->GetEntriesFast(), hc);
+      AliDebug(2, Form("%i tracklets in HC %i", ar->GetEntriesFast(), hc));
       for (Int_t iTracklet = 0; iTracklet < ar->GetEntriesFast(); iTracklet++) {
 	AliTRDtrackletWord *trklWord = (AliTRDtrackletWord*) (*ar)[iTracklet];
 	new((*fTrackletArray)[fTrackletArray->GetEntriesFast()]) AliTRDtrackletWord(trklWord->GetTrackletWord(), hc);
@@ -413,6 +417,8 @@ Bool_t AliTRDgtuSim::WriteTracksToESD(const TList * const listOfTracks, AliESDEv
 	TIter next(listOfTracks);
 	while (AliTRDtrackGTU *trk = (AliTRDtrackGTU*) next()) {
 	    AliESDTrdTrack *trdtrack = trk->CreateTrdTrack();
+	    if (trdtrack->GetLabel() < 0)
+	      trdtrack->SetLabel(-2);
 	    esd->AddTrdTrack(trdtrack);
 	    delete trdtrack;
 	}
@@ -420,7 +426,7 @@ Bool_t AliTRDgtuSim::WriteTracksToESD(const TList * const listOfTracks, AliESDEv
     return kTRUE;
 }
 
-Bool_t AliTRDgtuSim::WriteTracksToLoader()
+Bool_t AliTRDgtuSim::WriteTracksToLoader(const TList * const listOfTracks)
 {
   // write the GTU tracks to the dedicated loader
   // these tracks contain more information than the ones in the ESD
@@ -446,14 +452,12 @@ Bool_t AliTRDgtuSim::WriteTracksToLoader()
   }
   
   AliTRDtrackGTU *trk = 0x0;
+
   if (!trackTree->GetBranch("TRDtrackGTU"))
     trackTree->Branch("TRDtrackGTU", "AliTRDtrackGTU", &trk, 32000);
   
-  AliDebug(1,Form("Found %lld tracks", fTrackTree->GetEntries()));
-
-  for (Int_t iTrack = 0; iTrack < fTrackTree->GetEntries(); iTrack++) {
-    fTrackTree->SetBranchAddress("TRDgtuTrack", &trk);
-    fTrackTree->GetEntry(iTrack);
+  TIter next(listOfTracks);
+  while (trk = (AliTRDtrackGTU*) next()) {
     trackTree->SetBranchAddress("TRDtrackGTU", &trk);
     trackTree->Fill();
   }

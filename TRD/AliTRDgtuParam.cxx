@@ -39,6 +39,10 @@ ClassImp(AliTRDgtuParam)
 
 AliTRDgtuParam *AliTRDgtuParam::fgInstance = 0;
 
+// ----- matching windows -----
+      Int_t     AliTRDgtuParam::fgDeltaY     = 19;
+      Int_t     AliTRDgtuParam::fgDeltaAlpha = 21;
+
 // ----- Bin widths (granularity) -----
 const Float_t 	AliTRDgtuParam::fgkBinWidthY  = 160e-4;
 const Float_t 	AliTRDgtuParam::fgkBinWidthdY = 140e-4;

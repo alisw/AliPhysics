@@ -47,8 +47,8 @@ class AliTRDgtuParam : public TObject {
   Int_t GetCiAlpha(Int_t layer) const;
   Int_t GetCiYProj(Int_t layer) const;
   Int_t GetYt(Int_t stack, Int_t layer, Int_t zrow) const;
-  Int_t GetDeltaY() const { return fgkDeltaY; }
-  Int_t GetDeltaAlpha() const { return fgkDeltaAlpha; }
+  Int_t GetDeltaY() const { return fgDeltaY; }
+  Int_t GetDeltaAlpha() const { return fgDeltaAlpha; }
   Int_t GetZSubchannel(Int_t stack, Int_t layer, Int_t zchannel, Int_t zpos) const;
   Int_t GetRefLayer(Int_t refLayerIdx) const;
 //  Bool_t GetFitParams(TVectorD &rhs, Int_t k); // const
@@ -58,6 +58,9 @@ class AliTRDgtuParam : public TObject {
   Bool_t IsInZChannel(Int_t stack, Int_t layer, Int_t zchannel, Int_t zpos) const;
 
   void SetVertexSize(Float_t vertexsize) { fVertexSize = vertexsize; }
+
+  static void SetDeltaY(Int_t dy) { fgDeltaY = dy; }
+  static void SetDeltaAlpha(Int_t da) { fgDeltaAlpha = da; }
 
   // z-channel map
   Int_t GenerateZChannelMap(); // could have different modes (for beam-beam, cosmics, ...)
@@ -78,8 +81,8 @@ class AliTRDgtuParam : public TObject {
   static const Int_t fgkNZChannels = 3; // No. of z-channels
   static const Int_t fgkNLinks = 12;	// No. of links
   static const Int_t fgkFixLayer = 2;	// which layer is fixed for the generation of the z-channel map
-  static const Int_t fgkDeltaY = 19;	// accepted deviation in y_proj, default: 9
-  static const Int_t fgkDeltaAlpha = 21; // accepted deviation in alpha, default: 11
+  static       Int_t fgDeltaY;    	// accepted deviation in y_proj, default: 9
+  static       Int_t fgDeltaAlpha;      // accepted deviation in alpha, default: 11
   static const Int_t fgkNRefLayers = 3;	 // no. of reference layers
 
   static const Float_t fgkBinWidthY; // bin width for y-position
