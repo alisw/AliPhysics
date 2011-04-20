@@ -245,7 +245,7 @@ void AliAODInputHandler::ConnectFriends()
     } else {
 	// Friends have to be merged
 	TNamed* filename = (TNamed*) (fFriends->At(0));
-	fFileToMerge = new TFile(filename->GetName());
+        fFileToMerge = TFile::Open(filename->GetName());
 	if (fFileToMerge) {
 	    fFileToMerge->GetObject("aodTree", fTreeToMerge);
 	    if (!fAODEventToMerge) fAODEventToMerge = new AliAODEvent();

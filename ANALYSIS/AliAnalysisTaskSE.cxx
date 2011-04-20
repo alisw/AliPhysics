@@ -360,6 +360,25 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
     if (handler && aodH) {
 	fMCEvent = aodH->MCEvent();
 	Bool_t merging = aodH->GetMergeEvents();
+      
+  // Do not analyze merged events if last embedded file has less events than normal event, 
+  // skip analysis after last embeded event 
+  if(merging){
+    if(aodH->GetReadEntry() + aodH->GetMergeOffset() >= aodH->GetTreeToMerge()->GetEntriesFast()){
+      //printf("Skip Entry %lld, Offset %d, Tree Entries %d\n",aodH->GetReadEntry(),aodH->GetMergeOffset(), aodH->GetTreeToMerge()->GetEntries());
+          
+      // Do I need to add the lines before the return?
+      // Added protection in case the derived task is not an AOD producer.
+      AliAnalysisDataSlot *out0 = GetOutputSlot(0);
+      if (out0 && out0->IsConnected()) PostData(0, fTreeA);    
+          
+      DisconnectMultiHandler();
+          
+      return;
+    }
+    //else   printf("MERGE Entry %lld, Offset %d, Tree Entries %d\n",aodH->GetReadEntry(),aodH->GetMergeOffset(), aodH->GetTreeToMerge()->GetEntries());
+  }
+      
 	AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
 
 	if (aod && !(handler->IsStandard()) && !(handler->AODIsReplicated())) {

@@ -43,7 +43,9 @@ class AliAODInputHandler : public AliInputEventHandler {
     void                 SetMergeEvents(Bool_t flag) {fMergeEvents = flag;}
     Bool_t               GetMergeEvents() const {return fMergeEvents;}
     AliAODEvent*         GetEventToMerge() {return fAODEventToMerge;}
+    TTree*               GetTreeToMerge()  const {return fTreeToMerge;}
     void                 SetMergeOffset(Int_t ioff) {fMergeOffset = ioff;}
+    Int_t                GetMergeOffset()     const {return fMergeOffset;}
     void                 SetMergeTracks(Bool_t flag) {fMergeTracks = flag;}
     Bool_t               GetMergeTracks()      const {return fMergeTracks;}
     void                 SetMergeEMCALClusters(Bool_t flag) {fMergeEMCALClusters = flag;}
