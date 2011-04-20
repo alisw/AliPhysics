@@ -68,17 +68,11 @@ AliAnalysisTaskParticleCorrelation::AliAnalysisTaskParticleCorrelation(const cha
 AliAnalysisTaskParticleCorrelation::~AliAnalysisTaskParticleCorrelation() 
 {
   // Remove all pointers
-	
-//	printf("********** Delete Task\n");
-//  // Do not delete it here, already done somewhere else, need to understand where.
-//  if(fOutputContainer){
-//    fOutputContainer->Clear() ; 
-//    delete fOutputContainer ;
-//  }
-
-  if(fAna) delete fAna;
-
-//  printf("********** Task deleted \n");
+  if (fOutputContainer && ! AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+    fOutputContainer->Clear() ; 
+    delete fOutputContainer ;
+  }
+  if (fAna && ! AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fAna;
 }
 
 //_____________________________________________________
