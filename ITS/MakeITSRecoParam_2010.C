@@ -87,8 +87,12 @@ void MakeITSRecoParam_2010(AliRecoParam::EventSpecie_t default=AliRecoParam::kLo
     itsRecoParam->SetMinContVtxPlaneEff(3);
     // itsRecoParam->SetOptTrackletsPlaneEff(kTRUE); // activate it for MC (very important) !
     // Removal of tracklets reconstructed in the SPD overlaps 
+    // 
     itsRecoParam->SetTrackleterRemoveClustersFromOverlaps(kTRUE);
-  
+    itsRecoParam->SetTrackleterPhiWindow(0.08);
+    itsRecoParam->SetTrackleterThetaWindow(0.025);
+    itsRecoParam->SetTrackleterScaleDThetaBySin2T(kTRUE);
+    //
     // V0 finder (A. Marin)
     itsRecoParam->GetESDV0Params()->SetMaxPidProbPionForb(0.9);
 
