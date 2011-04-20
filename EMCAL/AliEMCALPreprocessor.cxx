@@ -338,6 +338,12 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
   // DS comment: for now only holds TRU info, i.e. only partially filled
   // (STU info only in raw data header; unfortunately not also picked up via DCS DPs)
   AliEMCALTriggerDCSConfig *trigConfig = new AliEMCALTriggerDCSConfig();
+  // allocate space for TRU objects
+  TClonesArray *truArr = new TClonesArray("AliEMCALTriggerTRUDCSConfig", kNTRU);
+  for( iTRU = 0; iTRU < kNTRU; iTRU++){
+    new((*truArr)[iTRU]) AliEMCALTriggerTRUDCSConfig();
+  }
+  trigConfig->SetTRUArr(truArr);
 
   // loop through all TRUs
   bool debug = true; // debug flag for AliInfo printouts for each TRU
@@ -362,6 +368,7 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
     AliEMCALTriggerTRUDCSConfig* truConfig = trigConfig->GetTRUDCSConfig(iTRU);
     if( ! truConfig ){
       AliWarning( Form("EMC DCS TRU%02d config not retrieved!\n", iTRU ));
+      continue;
     }
 
     // get last entries. fill the TRU object
