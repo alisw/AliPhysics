@@ -659,12 +659,12 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhPrimPi0Pt) ;
     outputContainer->Add(fhPrimPi0AccPt) ;
     
-    fhPrimPi0Y      = new TH2D("hPrimPi0Rapidity","Rapidity of primary pi0",nptbins,ptmin,ptmax, netabins,etamin,etamax) ;
+    fhPrimPi0Y      = new TH2D("hPrimPi0Rapidity","Rapidity of primary pi0",nptbins,ptmin,ptmax,netabins*4/(etamax-etamin),-2, 2) ;
     fhPrimPi0Y   ->SetYTitle("Rapidity");
     fhPrimPi0Y   ->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0Y) ;
     
-    fhPrimPi0AccY   = new TH2D("hPrimPi0AccRapidity","Rapidity of primary pi0",nptbins,ptmin,ptmax, netabins,etamin,etamax) ; 
+    fhPrimPi0AccY   = new TH2D("hPrimPi0AccRapidity","Rapidity of primary pi0",nptbins,ptmin,ptmax,netabins,etamin,etamax) ; 
     fhPrimPi0AccY->SetYTitle("Rapidity");
     fhPrimPi0AccY->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0AccY) ;
@@ -674,7 +674,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhPrimPi0Phi->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0Phi) ;
     
-    fhPrimPi0AccPhi = new TH2D("hPrimPi0AccPhi","Azimuthal of primary pi0 with accepted daughters",nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
+    fhPrimPi0AccPhi = new TH2D("hPrimPi0AccPhi","Azimuthal of primary pi0 with accepted daughters",nptbins,ptmin,ptmax, nphibins*TMath::TwoPi()/((phimax-phimin)*TMath::RadToDeg()),0,TMath::TwoPi()) ; 
     fhPrimPi0AccPhi->SetYTitle("#phi (deg)");
     fhPrimPi0AccPhi->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0AccPhi) ;
@@ -1044,33 +1044,33 @@ void AliAnaPi0::FillAcceptanceHistograms(){
           
           //Origin of meson
           Int_t momindex  = prim->GetFirstMother();
-          if(momindex < 0) continue;
-          TParticle* mother = stack->Particle(momindex);
-          Int_t mompdg    = TMath::Abs(mother->GetPdgCode());
-          Int_t momstatus = mother->GetStatusCode();
-          if(pdg == 111){
-            if     (momstatus  == 21)fhPrimPi0PtOrigin->Fill(pi0Pt,0.5);//parton
-            else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(pi0Pt,1.5);//quark
-            else if(mompdg     > 2100  && mompdg   < 2210) fhPrimPi0PtOrigin->Fill(pi0Pt,2.5);// resonances
-            else if(mompdg    == 221) fhPrimPi0PtOrigin->Fill(pi0Pt,8.5);//eta
-            else if(mompdg    == 331) fhPrimPi0PtOrigin->Fill(pi0Pt,9.5);//eta prime
-            else if(mompdg    == 213) fhPrimPi0PtOrigin->Fill(pi0Pt,4.5);//rho
-            else if(mompdg    == 223) fhPrimPi0PtOrigin->Fill(pi0Pt,5.5);//omega
-            else if(mompdg    >= 310   && mompdg    <= 323) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0S, k+-,k*
-            else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0L
-            else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(pi0Pt,3.5);//resonances   
-            else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5);//other?
-          }//pi0
-          else {
-            if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(pi0Pt,0.5);//parton
-            else if(mompdg    < 22  ) fhPrimEtaPtOrigin->Fill(pi0Pt,1.5);//quark
-            else if(mompdg    > 2100  && mompdg   < 2210) fhPrimEtaPtOrigin->Fill(pi0Pt,2.5);//qq resonances
-            else if(mompdg    == 331) fhPrimEtaPtOrigin->Fill(pi0Pt,5.5);//eta prime
-            else if(momstatus == 11 || momstatus  == 12 ) fhPrimEtaPtOrigin->Fill(pi0Pt,3.5);//resonances
-            else fhPrimEtaPtOrigin->Fill(pi0Pt,4.5);//stable, conversions?
-            //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );          
-          }
-          
+          if(momindex >= 0) {
+            TParticle* mother = stack->Particle(momindex);
+            Int_t mompdg    = TMath::Abs(mother->GetPdgCode());
+            Int_t momstatus = mother->GetStatusCode();
+            if(pdg == 111){
+              if     (momstatus  == 21)fhPrimPi0PtOrigin->Fill(pi0Pt,0.5);//parton
+              else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(pi0Pt,1.5);//quark
+              else if(mompdg     > 2100  && mompdg   < 2210) fhPrimPi0PtOrigin->Fill(pi0Pt,2.5);// resonances
+              else if(mompdg    == 221) fhPrimPi0PtOrigin->Fill(pi0Pt,8.5);//eta
+              else if(mompdg    == 331) fhPrimPi0PtOrigin->Fill(pi0Pt,9.5);//eta prime
+              else if(mompdg    == 213) fhPrimPi0PtOrigin->Fill(pi0Pt,4.5);//rho
+              else if(mompdg    == 223) fhPrimPi0PtOrigin->Fill(pi0Pt,5.5);//omega
+              else if(mompdg    >= 310   && mompdg    <= 323) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0S, k+-,k*
+              else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0L
+              else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(pi0Pt,3.5);//resonances   
+              else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5);//other?
+            }//pi0
+            else {
+              if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(pi0Pt,0.5);//parton
+              else if(mompdg    < 22  ) fhPrimEtaPtOrigin->Fill(pi0Pt,1.5);//quark
+              else if(mompdg    > 2100  && mompdg   < 2210) fhPrimEtaPtOrigin->Fill(pi0Pt,2.5);//qq resonances
+              else if(mompdg    == 331) fhPrimEtaPtOrigin->Fill(pi0Pt,5.5);//eta prime
+              else if(momstatus == 11 || momstatus  == 12 ) fhPrimEtaPtOrigin->Fill(pi0Pt,3.5);//resonances
+              else fhPrimEtaPtOrigin->Fill(pi0Pt,4.5);//stable, conversions?
+              //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );          
+            }
+          } // pi0 has mother
           
           //Check if both photons hit Calorimeter
           if(prim->GetNDaughters()!=2) return; //Only interested in 2 gamma decay
@@ -1086,7 +1086,6 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               TLorentzVector lv1, lv2;
               phot1->Momentum(lv1);
               phot2->Momentum(lv2);
-              
               Bool_t inacceptance = kFALSE;
               if(fCalorimeter == "PHOS"){
                 if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet()){
@@ -1149,20 +1148,21 @@ void AliAnaPi0::FillAcceptanceHistograms(){
     }//stack exists and data is MC
   }//read stack
   else if(GetReader()->ReadAODMCParticles()){
-    
     TClonesArray * mcparticles = GetReader()->GetAODMCParticles(0);
     if(mcparticles){
       Int_t nprim = mcparticles->GetEntriesFast();
+
       for(Int_t i=0; i < nprim; i++)
       {
         AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);   
-        // Only generator particles
-        if( prim->GetStatus() == 0) break;
+        
+        // Only generator particles, when they come from PYTHIA, PHOJET, HERWIG ...
+        //if( prim->GetStatus() == 0 && (GetMCAnalysisUtils()->GetMCGenerator()).Length()!=0) break;
 
         Int_t pdg = prim->GetPdgCode();
         if( pdg == 111 || pdg == 221){
           Double_t pi0Pt = prim->Pt() ;
-          //printf("pi0, pt %2.2f\n",pi0Pt);
+          //printf("pi0, pt %2.2f, eta %f, phi %f\n",pi0Pt, prim->Eta(), prim->Phi());
           if(prim->E() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception	  
           Double_t pi0Y  = 0.5*TMath::Log((prim->E()-prim->Pz())/(prim->E()+prim->Pz())) ;
           Double_t phi   = TMath::RadToDeg()*prim->Phi() ;
@@ -1183,10 +1183,10 @@ void AliAnaPi0::FillAcceptanceHistograms(){
           
           //Origin of meson
           Int_t momindex  = prim->GetMother();
-          if(momindex < 0) continue;
-          AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
-          Int_t mompdg    = TMath::Abs(mother->GetPdgCode());
-          Int_t momstatus = mother->GetStatus();
+          if(momindex >= 0) {
+            AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
+            Int_t mompdg    = TMath::Abs(mother->GetPdgCode());
+            Int_t momstatus = mother->GetStatus();
             if(pdg == 111){
               if     (momstatus  == 21) fhPrimPi0PtOrigin->Fill(pi0Pt,0.5);//parton
               else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(pi0Pt,1.5);//quark
@@ -1209,6 +1209,7 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               else fhPrimEtaPtOrigin->Fill(pi0Pt,4.5);//stable, conversions?
               //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );          
             }
+          }//pi0 has mother
           
           //Check if both photons hit Calorimeter
           if(prim->GetNDaughters()!=2) return; //Only interested in 2 gamma decay

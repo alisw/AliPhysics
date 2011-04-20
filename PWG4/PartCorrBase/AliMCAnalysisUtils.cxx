@@ -173,7 +173,7 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t in
     }// Kine stack from ESDs
   }//First labels not the same
   
-  if(counter1==99 || counter2==99) printf("AliMCAnalysisUtils::CheckCommonAncestor() - Genealogy too large c1: %d, c2= %d\n", counter1, counter2);
+  if((counter1==99 || counter2==99) && fDebug >=0) printf("AliMCAnalysisUtils::CheckCommonAncestor() - Genealogy too large c1: %d, c2= %d\n", counter1, counter2);
   //printf("CheckAncestor:\n");
   Int_t commonparents = 0;
   Int_t ancLabel = -1;

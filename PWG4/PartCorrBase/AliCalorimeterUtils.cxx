@@ -610,6 +610,9 @@ void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEven
           printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
       }//AOD as input
     }//Get matrix from data
+    else if(gGeoManager){
+      fEMCALGeoMatrixSet = kTRUE;
+    }
   }//EMCAL geo && no geoManager
 	
 	//Get the PHOS transformation geometry matrices from ESD 
@@ -642,8 +645,10 @@ void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEven
 					printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Setting of EMCAL transformation matrixes for AODs not implemented yet. \n Import geometry.root file\n");
       }//AOD as input
     }// get matrix from data
+    else if(gGeoManager){
+      fPHOSGeoMatrixSet = kTRUE;
+    }
 	}//PHOS geo	and  geoManager was not set
-  
 }
 
 //________________________________________________________________
