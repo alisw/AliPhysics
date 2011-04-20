@@ -37,6 +37,7 @@
 #include <iostream>
 
 #include "AliAnalysisManager.h"
+#include "AliHeader.h"
 #include "AliVEvent.h"
 #include "AliESD.h"
 #include "AliESDEvent.h"
@@ -45,20 +46,22 @@
 #include "AliESDZDC.h"
 #include "AliESDFMD.h"
 #include "AliESDVZERO.h"
-#include "AliCentrality.h"
 #include "AliESDtrackCuts.h"
+#include "AliESDVertex.h"
+#include "AliCentrality.h"
 #include "AliMultiplicity.h"
 #include "AliAODHandler.h"
+#include "AliAODHeader.h"
 #include "AliAODEvent.h"
-#include "AliESDVertex.h"
 #include "AliAODVertex.h"
+#include "AliAODVZERO.h"
+#include "AliAODTracklets.h"
 #include "AliAODMCHeader.h"
-#include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
 #include "AliStack.h"
-#include "AliHeader.h"
-#include "AliAODMCParticle.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
@@ -477,6 +480,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   Short_t v0CorrResc = 0;           // corrected and rescaled V0 multiplicity
 
   Float_t zvtx =0;                  // z-vertex SPD
+
  
   AliCentrality *esdCent = 0;
 
@@ -582,6 +586,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     zem2Energy = (Float_t) (esdZDC->GetZDCEMEnergy(1))/8.;
   
   }   
+
   else if(fAnalysisInput.CompareTo("AOD")==0){
     //AliAODEvent *aod =  dynamic_cast<AliAODEvent*> (InputEvent());
     // to be implemented
@@ -589,12 +594,10 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     return;
   } 
 
-
   // ***** Scaling
   // ***** Scaling for pass2 
   if (fPass==2) {
     fUseScaling=kFALSE;
-    fUseCleaning=kFALSE;
   }
   // ***** Scaling for MC
   if (fIsMCInput) {
@@ -819,21 +822,8 @@ Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* const esd)
 Bool_t AliCentralitySelectionTask::IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_t cent) const
 {
 // Clean outliers
-  Float_t val= -0.143789 + 0.288874 * v0;
-  Float_t spdSigma[101]={231.483, 189.446, 183.359, 179.923, 174.229, 170.309, 165.021, 
-			 160.84, 159.33, 154.453, 151.644, 148.337, 145.215, 142.353, 
-			 139.351, 136, 133.838, 129.885, 127.36, 125.032, 122.21, 120.3, 
-			 117.766, 114.77, 113.1, 110.268, 107.463, 105.293, 102.845, 
-			 100.835, 98.9632, 97.3287, 93.6887, 92.1066, 89.3224, 87.8382, 
-			 86.04, 83.6431, 81.9655, 80.0491, 77.8208, 76.4716, 74.2165, 
-			 72.2752, 70.4875, 68.9414, 66.8622, 65.022, 63.5134, 61.8228, 
-			 59.7166, 58.5008, 56.2789, 54.9615, 53.386, 51.2165, 49.4842, 
-			 48.259, 47.1129, 45.3115, 43.8486, 41.9207, 40.5754, 39.3872, 
-			 38.1897, 36.5401, 35.1283, 33.9702, 32.6429, 31.3612, 29.5876, 
-			 28.9319, 27.564, 26.0443, 25.2836, 23.9753, 22.8936, 21.5665, 
-			 20.7048, 19.8016, 18.7095, 18.1144, 17.2095, 16.602, 16.3233, 
-			 15.7185, 15.3006, 14.7432, 14.4174, 14.0805, 13.7638, 13.7638, 
-			 13.7638, 13.7638, 13.7638, 13.7638, 13.7638, 13.7638, 13.7638, 18.0803, 18.0803};
+  Float_t val= -0.579579 +  0.273949 * v0;
+  Float_t spdSigma[101]={216.473, 194.377, 190.432, 185.019, 179.787, 175.99, 170.695, 167.276, 162.229, 159.016, 155.592, 151.909, 148.967, 146.367, 142.752, 139.718, 136.838, 134.133, 131.374, 128.616, 126.195, 123.49, 120.76, 118.368, 115.671, 113.354, 110.986, 108.761, 105.816, 103.373, 101.525, 99.3941, 96.8891, 95.1021, 92.728, 90.6434, 88.6393, 86.4624, 84.19, 82.3937, 80.4803, 78.5633, 76.5256, 74.7059, 73.0146, 70.9321, 69.1671, 67.2923, 65.5859, 63.9027, 61.7826, 60.1855, 58.6887, 56.8523, 55.1695, 53.422, 51.9776, 50.3506, 48.5304, 47.1517, 45.4786, 43.9914, 42.4579, 41.0889, 39.6201, 38.3046, 36.8624, 35.3697, 33.9223, 32.4637, 30.859, 29.9707, 28.764, 27.5677, 26.3437, 24.8656, 23.5253, 22.9878, 21.5172, 20.4645, 19.7614, 19.0363, 18.0875, 17.3675, 16.7313, 16.4101, 15.8235, 15.4795, 14.897, 14.578, 14.3506, 14.3506, 14.3506, 14.3506, 14.3506, 14.3506, 14.3506, 14.3506, 14.3506, 22.5965, 22.5965};
 
   if ( TMath::Abs(spd-val) > fOutliersCut*spdSigma[cent] ) 
     return kTRUE;
@@ -845,21 +835,8 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_
 Bool_t AliCentralitySelectionTask::IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int_t cent) const
 {
 // Clean outliers
-  Float_t val = -0.540691 + 0.128358 * v0;
-  Float_t tpcSigma[101]={106.439, 89.2834, 86.7568, 85.3641, 83.379, 81.6093, 79.3189, 
-			 78.0616, 77.2167, 75.0021, 73.9957, 72.0926, 71.0442, 69.8395, 
-			 68.1169, 66.6676, 66.0038, 64.2284, 63.3845, 61.7439, 60.642, 
-			 59.5383, 58.3696, 57.0227, 56.0619, 54.7108, 53.8382, 52.3398, 
-			 51.5297, 49.9488, 49.1126, 48.208, 46.8566, 45.7724, 44.7829, 
-			 43.8726, 42.7499, 41.9307, 40.6874, 39.9619, 38.5534, 38.0884, 
-			 36.6141, 35.7482, 34.8804, 34.1769, 33.1278, 32.3435, 31.4783, 
-			 30.2587, 29.4741, 28.8575, 27.9298, 26.9752, 26.1675, 25.1234, 
-			 24.4702, 23.6843, 22.9764, 21.8579, 21.2924, 20.3241, 19.8296, 
-			 19.2465, 18.4474, 17.7216, 16.8956, 16.342, 15.626, 15.0329, 
-			 14.3911, 13.9301, 13.254, 12.6745, 12.2436, 11.7776, 11.1795, 
-			 10.673, 10.27, 9.95646, 9.50939, 9.26162, 8.95315, 8.73439, 
-			 8.67375, 8.43029, 8.34818, 8.33484, 8.40709, 8.3974, 8.32814, 
-			 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 12.351, 12.351};
+  Float_t val = -1.03873 +  0.125691 * v0;
+  Float_t tpcSigma[101]={105.1, 95.7594, 94.5777, 91.7369, 89.655, 87.9469, 85.2747, 83.8137, 81.5663, 79.9871, 78.3491, 76.664, 75.1352, 73.9838, 72.0122, 70.7627, 69.1832, 67.8707, 66.3974, 65.0222, 64.1065, 62.7248, 61.498, 60.11, 58.7405, 57.681, 56.2979, 55.3153, 53.983, 52.6813, 51.5321, 50.5531, 49.3309, 48.2269, 47.1665, 46.1924, 45.1143, 44.0394, 42.8571, 41.8471, 40.9594, 39.8298, 38.8128, 37.8845, 36.8788, 35.9896, 34.9477, 34.1293, 33.1267, 32.161, 31.1132, 30.3521, 29.5237, 28.5992, 27.6283, 26.8885, 26.0719, 25.1334, 24.2125, 23.5376, 22.5383, 21.8396, 21.0384, 20.2942, 19.4746, 18.5545, 18.26, 17.2997, 16.7109, 15.9324, 15.2755, 14.764, 14.2358, 13.6728, 13.2606, 12.846, 12.2636, 11.722, 11.1491, 10.5952, 10.235, 9.87852, 9.48122, 9.17571, 8.90995, 8.81675, 8.62595, 8.59371, 8.52936, 8.58058, 8.5543, 8.5543, 8.5543, 8.5543, 8.5543, 8.5543, 8.5543, 8.5543, 8.5543, 14.2584, 14.2584};
 
   if ( TMath::Abs(tracks-val) > fOutliersCut*tpcSigma[cent] ) 
     return kTRUE;
