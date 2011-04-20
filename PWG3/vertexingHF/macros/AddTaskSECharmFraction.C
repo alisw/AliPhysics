@@ -1,4 +1,4 @@
-AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t switchMC[5],Bool_t readmc=kFALSE,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c",Int_t ppPbPb=0,Int_t analysLevel=2)
+AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t switchMC[5],Bool_t readmc=kFALSE,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c",Int_t ppPbPb=0,Int_t analysLevel=3)
 {  
   //
   // Configuration macro for the task to analyze the fraction of prompt charm
@@ -29,6 +29,13 @@ AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.roo
     if(containerprefix!="c")fileout+=containerprefix;
     str="d0D0";
   }
+  else if(fileout=="standardUp"){
+    fileout=AliAnalysisManager::GetCommonFileName();
+    fileout+=":PWG3_D2H_Up_";
+    fileout+="d0D0";
+    if(containerprefix!="c")fileout+=containerprefix;
+    str="d0D0";    
+  }
   else {
     str=fileout;
     str.ReplaceAll(".root","");
@@ -45,18 +52,36 @@ AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.roo
     hfTask = new AliAnalysisTaskSECharmFraction("AliAnalysisTaskSECharmFraction",cutTight,cutLoose);
   }
   else {
-    hfTask = new AliAnalysisTaskSECharmFraction("AliAnalysisTaskSECharmFraction");
+    //hfTask = new AliAnalysisTaskSECharmFraction("AliAnalysisTaskSECharmFraction");
+    AliRDHFCutsD0toKpi *cutTight=new AliRDHFCutsD0toKpi("D0toKpiCutsStandard");
+    AliRDHFCutsD0toKpi *cutLoose=new AliRDHFCutsD0toKpi("D0toKpiCutsLoose");
+    if(ppPbPb==1){
+      cutTight->SetStandardCutsPbPb2010();
+      cutTight->SetMinCentrality(0.);
+      cutTight->SetMaxCentrality(20.);
+      cutLoose->SetStandardCutsPbPb2010();
+      cutLoose->SetMinCentrality(40.);
+      cutLoose->SetMaxCentrality(80.);
+    }
+    else {
+      cutTight->SetStandardCutsPP2010();
+      cutLoose->SetStandardCutsPP2010();
+    }
+    hfTask = new AliAnalysisTaskSECharmFraction("AliAnalysisTaskSECharmFraction",cutTight,cutLoose);  
+    cutLoose->PrintAll();
   }
   
   if(ppPbPb==1){// Switch Off recalctulation of primary vertex w/o candidate's daughters
+    // a protection that must be kept here to be sure 
+    //that this is done also if the cut objects are provided by outside 
     Printf("AddTaskSECharmFraction: Switch Off recalctulation of primary vertex w/o candidate's daughters (PbPb analysis) \n");
     AliRDHFCutsD0toKpi *cloose=hfTask->GetLooseCut();
     AliRDHFCutsD0toKpi *ctight=hfTask->GetTightCut();
     cloose->SetRemoveDaughtersFromPrim(kFALSE);
     ctight->SetRemoveDaughtersFromPrim(kFALSE);
     // Activate Default PID for proton rejection (TEMPORARY)
-    cloose->SetUseDefaultPID(kTRUE);
-    ctight->SetUseDefaultPID(kTRUE);
+    // cloose->SetUseDefaultPID(kTRUE);
+    // ctight->SetUseDefaultPID(kTRUE);
   }
 
   hfTask->SetReadMC(readmc);

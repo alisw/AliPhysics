@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 /////////////////////////////////////////////////////////////
 //
 // Class AliAnalysisTaskSECharmFraction
@@ -84,6 +82,7 @@ ClassImp(AliAnalysisTaskSECharmFraction)
       fsidebandInvMassCut(),
       fsidebandInvMassWindow(),
       fUseMC(kTRUE),
+      fCleanCandOwnVtx(kFALSE),
       fNentries(0),
       fSignalType(0),
       fSignalTypeLsCuts(0),
@@ -131,6 +130,7 @@ ClassImp(AliAnalysisTaskSECharmFraction)
       fsidebandInvMassCut(-1.),
       fsidebandInvMassWindow(-1.),
       fUseMC(kFALSE),
+      fCleanCandOwnVtx(kFALSE),
       fNentries(0),
       fSignalType(0),
       fSignalTypeLsCuts(0),
@@ -199,6 +199,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
     fsidebandInvMassCut(-1.),
     fsidebandInvMassWindow(-1.),
     fUseMC(kFALSE),
+    fCleanCandOwnVtx(kFALSE),
     fNentries(0),
     fSignalType(0),
     fSignalTypeLsCuts(0),
@@ -409,9 +410,26 @@ void AliAnalysisTaskSECharmFraction::Init()
   AliRDHFCutsD0toKpi* copyfCutsLoose=new AliRDHFCutsD0toKpi(*fCutsLoose);
   const char* nameoutputLoose=GetOutputSlot(22)->GetContainer()->GetName();
   copyfCutsLoose->SetName(nameoutputLoose);
+
   // Post the data
   PostData(21,copyfCutsTight);  
   PostData(22,copyfCutsLoose);
+  
+  
+  fCleanCandOwnVtx=kFALSE;
+  if(fCutsTight->GetIsPrimaryWithoutDaughters()^fCutsLoose->GetIsPrimaryWithoutDaughters()) {
+    printf("Two cut objects have different selection for primary vertex recalculation w/o daughters:\n Dangerous for variable drawing!! \n");   
+  }
+  else{
+    if(fCutsTight->GetIsPrimaryWithoutDaughters()){
+      fCleanCandOwnVtx=kTRUE;
+      fCutsTight->SetRemoveDaughtersFromPrim(kFALSE);
+      fCutsLoose->SetRemoveDaughtersFromPrim(kFALSE);
+    }
+  }
+   
+
+
   
   return;
 }
@@ -449,24 +467,44 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TString strnamept,strtitlept;
   Printf("INSIDE USER CREATE \n");
   
- // fNentries=new TH1F("nentriesChFr", "Look at the number of entries! = number of AODs", 2,1.,2.);
-  fNentries=new TH1F("nentriesChFr", "Analyzed sample properties", 15,-0.5,14.5);
+  // fNentries=new TH1F("nentriesChFr", "Look at the number of entries! = number of AODs", 2,1.,2.);
+  
+  fNentries=new TH1F("nentriesChFr", "Analyzed sample properties", 21,-0.5,20.5);
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
-  fNentries->GetXaxis()->SetBinLabel(2,"nCandSel(Cuts)");
-  fNentries->GetXaxis()->SetBinLabel(3,"nD0Selected");
-  fNentries->GetXaxis()->SetBinLabel(4,"nEventsGoodVtxS");
-  fNentries->GetXaxis()->SetBinLabel(5,"ptbin = -1");
-  fNentries->GetXaxis()->SetBinLabel(6,"no daughter");
-  fNentries->GetXaxis()->SetBinLabel(7,"nCandSel(Tr)");
-  fNentries->GetXaxis()->SetBinLabel(8,"PID=0");
-  fNentries->GetXaxis()->SetBinLabel(9,"PID=1");
-  fNentries->GetXaxis()->SetBinLabel(10,"PID=2");
-  fNentries->GetXaxis()->SetBinLabel(11,"PID=3");
-  fNentries->GetXaxis()->SetBinLabel(12,"K");
-  fNentries->GetXaxis()->SetBinLabel(13,"Lambda");
-  fNentries->GetXaxis()->SetBinLabel(14,"Pile-up Rej");
-  fNentries->GetXaxis()->SetBinLabel(15,"N. of 0SMH");
+
+  fNentries->GetXaxis()->SetBinLabel(2,"nEvTGHTsel");
+  fNentries->GetXaxis()->SetBinLabel(3,"nEvTGHTPile-up Rej");
+  fNentries->GetXaxis()->SetBinLabel(4,"nEvTGHTGoodVtxS");
+  fNentries->GetXaxis()->SetBinLabel(5,"nEvTGHTRejVtxZ");
+  fNentries->GetXaxis()->SetBinLabel(6,"nTracksTGHTEv");
+  fNentries->GetXaxis()->SetBinLabel(7,"nCandTGHTEv");
+  fNentries->GetXaxis()->SetBinLabel(8,"nCandSelTGHTEv");
+  fNentries->GetXaxis()->SetBinLabel(20,"nUnexpErrorTGHT");
+
+  fNentries->GetXaxis()->SetBinLabel(9,"nEvLSsel");
+  fNentries->GetXaxis()->SetBinLabel(10,"nEvLSPile-up Rej");
+  fNentries->GetXaxis()->SetBinLabel(11,"nEvLSGoodVtxS");
+  fNentries->GetXaxis()->SetBinLabel(12,"nEvLSRejVtxZ");
+  fNentries->GetXaxis()->SetBinLabel(13,"nTracksLSEv");
+  fNentries->GetXaxis()->SetBinLabel(14,"nCandLSEv");
+  fNentries->GetXaxis()->SetBinLabel(15,"nCandSelLSEv");
+  fNentries->GetXaxis()->SetBinLabel(21,"nUnexpErrorTGHT");
+
+  /*   -----------------  NOT ACTIVATED YET ------------------
+    fNentries->GetXaxis()->SetBinLabel(5,"ptbin = -1");
+    fNentries->GetXaxis()->SetBinLabel(6,"no daughter");
+    fNentries->GetXaxis()->SetBinLabel(7,"nCandSel(Tr)");
+    fNentries->GetXaxis()->SetBinLabel(8,"PID=0");
+    fNentries->GetXaxis()->SetBinLabel(9,"PID=1");
+    fNentries->GetXaxis()->SetBinLabel(10,"PID=2");
+    fNentries->GetXaxis()->SetBinLabel(11,"PID=3");
+    fNentries->GetXaxis()->SetBinLabel(12,"K");
+    fNentries->GetXaxis()->SetBinLabel(13,"Lambda");
+    fNentries->GetXaxis()->SetBinLabel(14,"Pile-up Rej");
+    fNentries->GetXaxis()->SetBinLabel(15,"N. of 0SMH");
+  */
+
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   fSignalType=new TH1F("hsignaltype", "Histo for type of MC signal", 61,-1.,60.);
@@ -736,14 +774,36 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH2F *hangletracksVSd0xd0NCsignpt;
   TH2F *hangletracksVSd0D0NCsignpt;
   TH1F *hd0xd0NCsignpt;
+  // AZIMUHAL HISTOS
+  TH1F *hPhiHistPMNCsignpt,*hPhiHistSBNCsignpt;
 
+  
   TH2F *hTOFpidNCsign=new TH2F("hTOFpidNCsign","TOF time VS momentum",10,0.,4.,50,-50000.,50000.);
   flistNoCutsSignal->Add(hTOFpidNCsign);
  
+  
+
   //##################
   for(Int_t i=0;i<fnbins;i++){
     //Printf("INSIDE HISTOS CREATION LOOP: %d \n",fnbins);
-       
+    
+    namehist="hPhiHistPMNCsign_pt";
+    namehist+=i;
+    titlehist="Azimuthal correlation No Cuts Sign PM ptbin=";
+    titlehist+=i;
+    hPhiHistPMNCsignpt=new TH1F(namehist.Data(),titlehist.Data(),100,-3.15,3.15);
+    hPhiHistPMNCsignpt->Sumw2();
+    flistNoCutsSignal->Add(hPhiHistPMNCsignpt);
+
+    namehist="hPhiHistSBNCsign_pt";
+    namehist+=i;
+    titlehist="Azimuthal correlation No Cuts Sign SB ptbin=";
+    titlehist+=i;
+    hPhiHistSBNCsignpt=new TH1F(namehist.Data(),titlehist.Data(),100,-3.15,3.15);
+    hPhiHistSBNCsignpt->Sumw2();
+    flistNoCutsSignal->Add(hPhiHistSBNCsignpt);
+    
+
     namehist="hd0zD0ptNCsign_pt";
     namehist+=i;
     titlehist="d0(z) No Cuts Signalm ptbin=";
@@ -2239,11 +2299,31 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH2F *hangletracksVSd0xd0LSCsignpt;
   TH2F *hangletracksVSd0D0LSCsignpt;
   TH1F *hd0xd0LSCsignpt;
+  TH1F *hPhiHistPMLSCsignpt,*hPhiHistSBLSCsignpt;
 
   TH2F *hTOFpidLSCsign=new TH2F("hTOFpidLSCsign","TOF time VS momentum",10,0.,4.,50,-50000.,50000.);
   flistLsCutsSignal->Add(hTOFpidLSCsign);
 
   for(Int_t i=0;i<fnbins;i++){
+ 
+    namehist="hPhiHistPMLSCsign_pt";
+    namehist+=i;
+    titlehist="Azimuthal correlation LS Cuts Sign PM ptbin=";
+    titlehist+=i;
+    hPhiHistPMLSCsignpt=new TH1F(namehist.Data(),titlehist.Data(),100,-3.15,3.15);
+    hPhiHistPMLSCsignpt->Sumw2();
+    flistLsCutsSignal->Add(hPhiHistPMLSCsignpt);
+
+    namehist="hPhiHistSBLSCsign_pt";
+    namehist+=i;
+    titlehist="Azimuthal correlation LS Cuts Sign SB ptbin=";
+    titlehist+=i;
+    hPhiHistSBLSCsignpt=new TH1F(namehist.Data(),titlehist.Data(),100,-3.15,3.15);
+    hPhiHistSBLSCsignpt->Sumw2();
+    flistLsCutsSignal->Add(hPhiHistSBLSCsignpt);
+
+  
+
     namehist="hd0zD0ptLSCsign_pt";
     namehist+=i;
     titlehist="d0(z) Loose Cuts Signm ptbin=";
@@ -3742,12 +3822,29 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH2F *hangletracksVSd0xd0TGHCsignpt;
   TH2F *hangletracksVSd0D0TGHCsignpt;
   TH1F *hd0xd0TGHCsignpt;
+  TH1F *hPhiHistPMTGHCsignpt,*hPhiHistSBTGHCsignpt;
 
   TH2F *hTOFpidTGHCsign=new TH2F("hTOFpidTGHCsign","TOF time VS momentum",10,0.,4.,50,-50000.,50000.);
   flistTghCutsSignal->Add(hTOFpidTGHCsign);
 
   for(Int_t i=0;i<fnbins;i++){
     // Printf("INSIDE FIRST LOOP FOR  TIGHT CUTS HISTO CREATION %d\n", fnbins);
+    namehist="hPhiHistPMTGHCsign_pt";
+    namehist+=i;
+    titlehist="Azimuthal correlation TGH Cuts Sign PM ptbin=";
+    titlehist+=i;
+    hPhiHistPMTGHCsignpt=new TH1F(namehist.Data(),titlehist.Data(),100,-3.15,3.15);
+    hPhiHistPMTGHCsignpt->Sumw2();
+    flistTghCutsSignal->Add(hPhiHistPMTGHCsignpt);
+
+    namehist="hPhiHistSBTGHCsign_pt";
+    namehist+=i;
+    titlehist="Azimuthal correlation TGH Cuts Sign SB ptbin=";
+    titlehist+=i;
+    hPhiHistSBTGHCsignpt=new TH1F(namehist.Data(),titlehist.Data(),100,-3.15,3.15);
+    hPhiHistSBTGHCsignpt->Sumw2();
+    flistTghCutsSignal->Add(hPhiHistSBTGHCsignpt);
+
     namehist="hd0zD0ptTGHCsign_pt";
     namehist+=i;
     titlehist="d0(z) Tight Cuts Signal ptbin=";
@@ -5221,21 +5318,30 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     isEventSelTGHT=kFALSE;
     if(fCutsTight->GetWhyRejection()==1){ 
       // rejected for pileup
-      fNentries->Fill(13);
-    
-    PostData(1,fNentries);
-    return;
+      fNentries->Fill(2);    
     }
+    if(fCutsTight->GetWhyRejection()==6){
+      // |prim Vtx Zspd| > acceptable
+      fNentries->Fill(4);      
+    }
+  }
+  else {
+    fNentries->Fill(1);    
   }
   if(!fCutsLoose->IsEventSelected(aod)){
     isEventSelLOOSE=kFALSE;
     if(fCutsLoose->GetWhyRejection()==1){
       // rejected for pileup    
-      fNentries->Fill(13);
-      PostData(1,fNentries);
-
-    return;
+      fNentries->Fill(9);
+      
     }
+    if(fCutsLoose->GetWhyRejection()==6){
+      // |prim Vtx Z| > acceptable
+      fNentries->Fill(11);      
+    }
+  }
+  else {
+    fNentries->Fill(8);    
   }
   
   if(!(isEventSelTGHT||isEventSelLOOSE)){
@@ -5244,12 +5350,19 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   }
   // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
+  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001){
+    if(isEventSelTGHT)fNentries->Fill(19);
+    if(isEventSelLOOSE)fNentries->Fill(20);
+    PostData(1,fNentries);
+    return;
+  }
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
   TString primTitle = vtx1->GetTitle();
-  if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) {   
-    fNentries->Fill(3);
+  if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) { 
+    
+    if(isEventSelTGHT)fNentries->Fill(3);
+    if(isEventSelLOOSE)fNentries->Fill(10);
   }
   else {
     PostData(1,fNentries);
@@ -5257,11 +5370,31 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     
   }
 
+  // FILL n-tracks counter
+  if(isEventSelTGHT)fNentries->Fill(5,aod->GetNumberOfTracks());
+  if(isEventSelLOOSE)fNentries->Fill(12,aod->GetNumberOfTracks());
+  
+
+  Bool_t aziListIsFilled=kFALSE;
+  Double_t azilist[30000];
+  Int_t trkIDlist[30000],nprim=0;
+  
+ 
+  for(Int_t ephi=0;ephi<30000;ephi++){
+    azilist[ephi]=-999.;
+    trkIDlist[ephi]=-999;
+  }
+  //aziListIsFilled=kFALSE;
+    
+
+
+
   
   TClonesArray *arrayMC=0x0;
   AliAODMCHeader *aodmcHeader=0x0;
   Double_t vtxTrue[3];
-
+ 
+  
   if(fReadMC){
     // load MC particles
     arrayMC = 
@@ -5289,6 +5422,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   //  Int_t nTotHF=0,nTotDstar=0,nTot3Prong=0;
   Int_t nTotD0toKpi=0;
   Int_t okd0tight,okd0bartight,okd0loose,okd0barloose,okd0tightnopid,okd0bartightnopid;
+  Bool_t defaultNC=kTRUE;
   Bool_t isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,isSideBand;
   Bool_t isinacceptance;
   Int_t signallevel=-1;
@@ -5298,44 +5432,53 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   
  
   AliAODRecoDecayHF *aodDMC=0x0;// to be used to create a fake true sec vertex
-  // make trkIDtoEntry register (temporary)
-  Int_t trkIDtoEntry[100000];
-  fptAll=0.;
-  fptAllSq=0.;
-  fptMax[0]=0.;
-  fptMax[1]=0.;
-  fptMax[2]=0.;
-  for(Int_t it=0;it<aod->GetNumberOfTracks();it++) {
-    AliAODTrack *track = aod->GetTrack(it);
-    fptAll+=track->Pt();
-    fptAllSq+=track->Pt()*track->Pt();
-    if(track->Pt()>fptMax[0]){
-      fptMax[2]=fptMax[1];
-      fptMax[1]=fptMax[0];
-      fptMax[0]=track->Pt();
-    }
-    else if(track->Pt()>fptMax[1]){
-      fptMax[2]=fptMax[1];
-      fptMax[1]=track->Pt();
-    }
-    else if(track->Pt()>fptMax[2])fptMax[2]=track->Pt();
-    if(track->GetID()<0) {
-      //printf("Track ID <0, id= %d\n",track->GetID());
-      PostData(1,fNentries);
-      return;
-    }
-    trkIDtoEntry[track->GetID()]=it;
-  }
+  // make trkIDtoEntry register (temporary)  
   
+  if(fFastAnalysis<1){
+    Int_t trkIDtoEntry[100000];
+    fptAll=0.;
+    fptAllSq=0.;
+    fptMax[0]=0.;
+    fptMax[1]=0.;
+    fptMax[2]=0.;
+    for(Int_t it=0;it<aod->GetNumberOfTracks();it++) {
+      AliAODTrack *track = aod->GetTrack(it);
+      fptAll+=track->Pt();
+      fptAllSq+=track->Pt()*track->Pt();
+      if(track->Pt()>fptMax[0]){
+	fptMax[2]=fptMax[1];
+	fptMax[1]=fptMax[0];
+	fptMax[0]=track->Pt();
+      }
+      else if(track->Pt()>fptMax[1]){
+	fptMax[2]=fptMax[1];
+	fptMax[1]=track->Pt();
+      }
+      else if(track->Pt()>fptMax[2])fptMax[2]=track->Pt();
+      if(track->GetID()<0) {
+	if(isEventSelTGHT)fNentries->Fill(19);
+	if(isEventSelLOOSE)fNentries->Fill(20);
+	//printf("Track ID <0, id= %d\n",track->GetID());
+	PostData(1,fNentries);
+	return;
+      }
+      trkIDtoEntry[track->GetID()]=it;
+    }
+  }
 
   // loop over D0->Kpi candidates
   Int_t nD0toKpi = arrayD0toKpi->GetEntriesFast();
   nTotD0toKpi += nD0toKpi;
+  // fille D0 candidate counter 
+  if(isEventSelTGHT)fNentries->Fill(6,nD0toKpi);
+  if(isEventSelLOOSE)fNentries->Fill(13,nD0toKpi);
+  
   //	cout<<"Number of D0->Kpi: "<<nD0toKpi<<endl;
   
   for (Int_t iD0toKpi = 0; iD0toKpi < nD0toKpi; iD0toKpi++) {
     if(aodDMC!=0x0)delete aodDMC;
       
+    defaultNC=kTRUE;
     isPeakD0=kFALSE;
     isPeakD0bar=kFALSE;
     isSideBandD0=kFALSE;
@@ -5353,12 +5496,24 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     
 
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->UncheckedAt(iD0toKpi);
-    Bool_t unsetvtx=kFALSE;
-    if(!d->GetOwnPrimaryVtx()) {
-      d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
-      unsetvtx=kTRUE;
-    }
+   //  Bool_t unsetvtx=kFALSE;
+//     if(!d->GetOwnPrimaryVtx()) {
+//       d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
+//       unsetvtx=kTRUE;
+//     }
+
+    //recalculate vertex w/o daughters
+    AliAODVertex *origownvtx=0x0;
+    if(fCleanCandOwnVtx){      
+      if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
+      if(!fCutsTight->RecalcOwnPrimaryVtx(d,aod))  defaultNC=kFALSE;   
       
+    }
+
+  
+    // ############ MISALIGN HERE: TEMPORARY SOLUTION ##########
+    //    d->Misalign("resC");
+
     
     //############# SIGNALLEVEL DESCRIPTION #####################
     // TO BE CONSIDERED WITH GREAT CARE, only =0 and =1 (and MC selection when possible) are reliable
@@ -5398,18 +5553,6 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     //    Double_t relangle=d->ProngsRelAngle(0,1);
     // UPV: HERE TO CHANGE WITH:
      //  isinacceptance = (TMath::Abs(d->EtaProng(0))<fAcceptanceCuts[0]&&TMath::Abs(d->EtaProng(1))<fAcceptanceCuts[0]); //eta acceptance 
-       
-    //######## INVARIANT MASS SELECTION ###############
-    CheckInvMassD0(d,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar);
-    if((isSideBandD0||isSideBandD0bar)){
-	 if(!(isPeakD0||isPeakD0bar))isSideBand=kTRUE; //(isSideBand no more used in the following, can remove it)
-	 else {// AVOID TO CONSIDER IN THE SIDEBAND  THOSE  CANDIDATES FOR WHICH 1 MASS HYPOTHESIS IS IN THE PEAK REGION
-	   isSideBand=kFALSE; 
-	   isSideBandD0=kFALSE;
-	   isSideBandD0bar=kFALSE;	   
-	 }
-    }
-
 
     // INVESTIGATE SIGNAL TYPE : ACCESS TO MC INFORMATION
     if(fReadMC){
@@ -5491,9 +5634,10 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     // Check tighter cuts w/o PID:
     // 
     //    Int_t ncont=vtx1->GetNContributors();   
-    if(vtx1->GetNContributors()<1)signallevel=51;
-    Bool_t defaultNC=SpecialSelD0(d,nVtx);
-    if(isEventSelTGHT){
+    if(fFastAnalysis<1)if(vtx1->GetNContributors()<1)signallevel=51;
+  
+    if(defaultNC&&fFastAnalysis<1&&fNtrMaxforVtx<2)defaultNC=SpecialSelD0(d,nVtx);// No More in USE!
+    if(isEventSelTGHT&&defaultNC){
       Bool_t iscutusingpid=fCutsTight->GetIsUsePID();
       fCutsTight->SetUsePID(kFALSE);
       Int_t isSelectedTightNoPid=fCutsTight->IsSelected(d,AliRDHFCuts::kAll,aod);
@@ -5520,10 +5664,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 	break;
       }
       
-      if(!defaultNC){      
-	okd0tightnopid=kFALSE;
-	okd0bartightnopid=kFALSE;
-      }
+    
       //    signallevel=fCutsTight->GetSelectionStep();
       fSignalType->Fill(signallevel);
       
@@ -5532,38 +5673,41 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
       
       // ######### SPECIAL SELECTION PID ##############
       fCutsTight->SetUsePID(iscutusingpid);
-      Int_t isSelectedPid=fCutsTight->IsSelected(d,AliRDHFCuts::kPID,aod);
-      Int_t isSelectedTight=fCutsTight->CombineSelectionLevels(3,isSelectedTightNoPid,isSelectedPid);
-      switch(isSelectedTight){
-      case 0:
-	okd0tight=kFALSE;
-	okd0bartight=kFALSE;
-	break;
-      case 1:
-	okd0tight=kTRUE;
-	okd0bartight=kFALSE;
-	break;
-      case 2:
-	okd0tight=kFALSE;
-	okd0bartight=kTRUE;
-	break;
-      case 3:
-	okd0tight=kTRUE;
-	okd0bartight=kTRUE;
-	break;
-      default:
-	okd0tight=kTRUE;
-	okd0bartight=kTRUE;
-	break;
+      if(okd0tightnopid||okd0bartightnopid){
+	Int_t isSelectedPid=fCutsTight->IsSelected(d,AliRDHFCuts::kPID,aod);
+	Int_t isSelectedTight=fCutsTight->CombineSelectionLevels(3,isSelectedTightNoPid,isSelectedPid);
+	switch(isSelectedTight){
+	case 0:
+	  okd0tight=kFALSE;
+	  okd0bartight=kFALSE;
+	  break;
+	case 1:
+	  okd0tight=kTRUE;
+	  okd0bartight=kFALSE;
+	  break;
+	case 2:
+	  okd0tight=kFALSE;
+	  okd0bartight=kTRUE;
+	  break;
+	case 3:
+	  okd0tight=kTRUE;
+	  okd0bartight=kTRUE;
+	  break;
+	default:
+	  okd0tight=kTRUE;
+	  okd0bartight=kTRUE;
+	  break;
+	}
       }
     }
     else{
       fSignalType->Fill(signallevel);
     }
+
     
-    if(((isPeakD0&&okd0tight)||(isPeakD0bar&&okd0bartight))&&isinacceptance)fSignalTypeTghCuts->Fill(signallevel);
+  
     
-    if(isEventSelLOOSE){
+    if(isEventSelLOOSE&&defaultNC){
       // CHECK LOOSER CUTS 
       //ptbin=SetStandardCuts(ptD0,flargeInvMassCut);
       
@@ -5591,26 +5735,10 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 	okd0barloose=kTRUE;
 	break;
       }
-      if(!defaultNC){
-	okd0loose=kFALSE;
-	okd0barloose=kFALSE;
-      }
+     
     }
     
   
-
-    if(((isPeakD0&&okd0loose)||(isPeakD0bar&&okd0barloose))&&isinacceptance)fSignalTypeLsCuts->Fill(signallevel);
-   
-    
-  
-    //###################    FILL HISTOS      ########################
-    //################################################################
-    //
-    //######## improvement: SPEED HERE CAN BE IMPROVED: CALCULATE ONCE AND FOR ALL 
-    //            CANDIDATE VARIABLES   
-
-
-
     //NO CUTS Case: force okD0 and okD0bar = kTRUE
     //     special cuts are applied also in the "NO Cuts" case
     //
@@ -5622,8 +5750,45 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
       okd0tightnopid=defaultNC;
       okd0bartightnopid=defaultNC;
     }        
-    // ############ MISALIGN HERE: TEMPORARY SOLUTION ##########
-    //d->Misalign("full14");
+
+    if(okd0loose||okd0barloose||okd0tight||okd0bartight||okd0tightnopid||okd0bartightnopid){
+      //######## INVARIANT MASS SELECTION ###############
+      CheckInvMassD0(d,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar);
+      if((isSideBandD0||isSideBandD0bar)){
+	if(!(isPeakD0||isPeakD0bar))isSideBand=kTRUE; //(isSideBand no more used in the following, can remove it)
+	else {// AVOID TO CONSIDER IN THE SIDEBAND  THOSE  CANDIDATES FOR WHICH 1 MASS HYPOTHESIS IS IN THE PEAK REGION
+	  isSideBand=kFALSE; 
+	  isSideBandD0=kFALSE;
+	  isSideBandD0bar=kFALSE;	   
+	}
+      }
+      if(fFastAnalysis<3){
+	if(!aziListIsFilled){
+	  FillAziList(aod,azilist,trkIDlist,nprim);
+	  aziListIsFilled=kTRUE;
+	}
+	
+	if(signallevel==1||signallevel==0){	  
+	  FillAziHistos(d,flistNoCutsSignal,ptbin,azilist,trkIDlist,nprim,okd0tightnopid,okd0bartightnopid,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar); 
+	  FillAziHistos(d,flistTghCutsSignal,ptbin,azilist,trkIDlist,nprim,okd0tight,okd0bartight,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar); 
+	  FillAziHistos(d,flistLsCutsSignal,ptbin,azilist,trkIDlist,nprim,okd0loose,okd0barloose,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar); 	  
+	}
+	
+      }
+    }
+    if(((isPeakD0&&okd0tight)||(isPeakD0bar&&okd0bartight))&&isinacceptance)fSignalTypeTghCuts->Fill(signallevel);
+    if(((isPeakD0&&okd0loose)||(isPeakD0bar&&okd0barloose))&&isinacceptance)fSignalTypeLsCuts->Fill(signallevel);
+  
+   
+    
+  
+    //###################    FILL HISTOS      ########################
+    //################################################################
+    //
+    //######## improvement: SPEED HERE CAN BE IMPROVED: CALCULATE ONCE AND FOR ALL 
+    //            CANDIDATE VARIABLES   
+
+   
     if(signallevel==1||signallevel==0)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);    // else if(fusePID&&signallevel>=30&&signallevel<40)FillHistos(d,flistNoCutsSignal,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);// OLD LINE, COULD BE REMOVED 
     else if(signallevel==2)FillHistos(d,flistNoCutsFromDstar,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==3||signallevel==4)FillHistos(d,flistNoCutsFromB,ptbin,okd0tightnopid,okd0bartightnopid,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
@@ -5633,6 +5798,8 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 
     
     //LOOSE CUTS Case
+    if(okd0loose||okd0barloose)fNentries->Fill(14);
+
     if(signallevel==1||signallevel==0)FillHistos(d,flistLsCutsSignal,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==2)FillHistos(d,flistLsCutsFromDstar,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==3||signallevel==4)FillHistos(d,flistLsCutsFromB,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
@@ -5640,14 +5807,14 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     else if(signallevel==5||signallevel==6)FillHistos(d,flistLsCutsOther,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
 
     //TIGHT CUTS Case
+    if(okd0tight||okd0bartight)fNentries->Fill(7);
+  
     if(signallevel==1||signallevel==0)FillHistos(d,flistTghCutsSignal,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==2)FillHistos(d,flistTghCutsFromDstar,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==3||signallevel==4)FillHistos(d,flistTghCutsFromB,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==-1||signallevel==7||signallevel==8||signallevel==10)FillHistos(d,flistTghCutsBack,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==5||signallevel==6)FillHistos(d,flistTghCutsOther,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
     
-    
-
 
     // ######## PRINTING INFO FOR D0-like candidate
 
@@ -5662,7 +5829,10 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
       aodDMC=0x0;
     }
     
-    if(unsetvtx) d->UnsetOwnPrimaryVtx();
+    if(fCleanCandOwnVtx)fCutsTight->CleanOwnPrimaryVtx(d,aod,origownvtx);
+    
+
+    //   if(unsetvtx) d->UnsetOwnPrimaryVtx();
     
   }
   
@@ -6517,7 +6687,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
       str.Append(namehist.Data());
       str.Append("_pt");
       str+=ptbin;
-      //((TH1F*)list->FindObject(str.Data()))->Fill(d->Eta());
+      ((TH1F*)list->FindObject(str.Data()))->Fill(d->Eta());
       
       // OTHER NEW ADDITIONAL HISTOS
       
@@ -6555,20 +6725,22 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
   }  
   
   //  ######### Invariant mass histos #################
-  str="hMass";
-  str.Append(namehist.Data());
-  ((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0);
-  ((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0bar);
-   
-      
-  if(isPeakD0||isPeakD0bar){
+  if(fFastAnalysis<1){ 
     str="hMass";
     str.Append(namehist.Data());
-    str.Append("PM");
-    if(isPeakD0&&okD0)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0);
-    if(isPeakD0bar&&okD0bar)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0bar);
+    ((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0);
+    ((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0bar);
+    
+    
+    if(isPeakD0||isPeakD0bar){
+      str="hMass";
+      str.Append(namehist.Data());
+      str.Append("PM");
+      if(isPeakD0&&okD0)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0);
+      if(isPeakD0bar&&okD0bar)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0bar);
+    }
   }
-  
+
   // The Following is a NEW HISTO  
   str="hInvMassD0";
   str.Append(namehist.Data());
@@ -6613,13 +6785,16 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
     if(isPeakD0&&okD0)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0);
     if(isPeakD0bar&&okD0bar)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0bar);
     }*/
-  if(isSideBandD0||isSideBandD0bar){
-    str="hMass";
-    str.Append(namehist.Data());
-    str.Append("SB");
-    if(okD0)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0);
-    if(okD0bar)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0bar);
+  if(fFastAnalysis<2){ 
+    if(isSideBandD0||isSideBandD0bar){
+      str="hMass";
+      str.Append(namehist.Data());
+      str.Append("SB");
+      if(okD0)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0);
+      if(okD0bar)((TH1F*)list->FindObject(str.Data()))->Fill(invMassD0bar);
+    }
   }
+  
   if(fReadMC){
     if(massmumtrue>0.){
       str="hMassTrue";
@@ -6640,7 +6815,8 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
       }
     }
   }
- // ################ D0 Impact Parameter Histos #####################
+
+  // ################ D0 Impact Parameter Histos #####################
   if(isPeakD0||isPeakD0bar){    
    
     str="hd0D0";
@@ -6819,7 +6995,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
 	nD0all++;  
 	if(mcPart->GetMother()<0)continue;
 	AliAODMCParticle* mcD0Parent = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcPart->GetMother()));
-	if(!mcD0Parent)continue;
+	if(mcD0Parent==0x0)continue;
 	Bool_t notfound=kFALSE,bMeson=kFALSE,bBaryon=kFALSE;
 	//CheckOrigin
 	while(TMath::Abs(mcD0Parent->GetPdgCode())!=4&&TMath::Abs(mcD0Parent->GetPdgCode())!=5){
@@ -6836,10 +7012,6 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
 	    break;
 	  }
 	  mcD0Parent=dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcD0Parent->GetMother()));
-	  if(!mcD0Parent){
-	    notfound=kTRUE;
-	    break;
-	  }
 	}
 	if(notfound)continue;
 	if(TMath::Abs(mcD0Parent->GetPdgCode())==4)continue;//D0 from c quarks already counted
@@ -6969,6 +7141,77 @@ AliAODVertex* AliAnalysisTaskSECharmFraction::GetPrimaryVtxSkipped(AliAODEvent *
   return vertexAOD;
   
 }
+
+
+
+ Bool_t AliAnalysisTaskSECharmFraction::FillAziList(AliAODEvent *aod,Double_t azilist[30000],Int_t trkIDlist[30000],Int_t &nprim)const{
+   Int_t ntracks=aod->GetNumberOfTracks();
+   Double_t ptmin=1.;
+   if(ntracks>30000){
+     nprim=1;
+     return kFALSE;	  
+   }
+   nprim=0;
+   for(Int_t it=0;it<ntracks;it++) {
+     AliAODTrack *track = aod->GetTrack(it);
+     
+     if(track->IsPrimaryCandidate()){
+       if(track->Pt()>ptmin){
+	 
+	 azilist[nprim]=track->Phi();
+	 trkIDlist[nprim]=track->GetID();
+	 nprim++;
+       }
+     }
+   }
+   return kTRUE;
+ }
+ 
+ 
+ void AliAnalysisTaskSECharmFraction::FillAziHistos(AliAODRecoDecayHF2Prong *d,TList *&list,Int_t ptbin,Double_t azilist[30000],Int_t trkIDlist[30000],Int_t nprim,Int_t okD0,Int_t okD0bar,Bool_t isPeakD0,Bool_t isPeakD0bar,Bool_t isSideBandD0,Bool_t isSideBandD0bar)const{
+   
+   if((!okD0)&&(!okD0bar))return;
+   if(ptbin==-1)return;
+   TString namehist=list->GetName(),str;
+   namehist.ReplaceAll("list","");
+   //   Double_t ptD=d->Pt();
+ 
+   str="hPhiHist";
+   if(isPeakD0||isPeakD0bar)str.Append("PM");
+   else if(isSideBandD0||isSideBandD0bar)str.Append("SB");
+   else return;
+   str.Append(namehist.Data());
+   str.Append("_pt");
+   str+=ptbin;
+   
+   AliAODTrack *dtr;
+   dtr=(AliAODTrack*)d->GetDaughter(0);
+   Int_t id1=dtr->GetID();
+   dtr=(AliAODTrack*)d->GetDaughter(1);
+   Int_t id2=dtr->GetID();
+   
+   Double_t phi=d->Phi();	
+   Double_t weight=1./nprim;
+   Double_t azi;
+   for(Int_t j=0;j<nprim;j++){
+     if(trkIDlist[j]!=id1&&trkIDlist[j]!=id2){
+       azi=azilist[j]-phi;
+       if(azi>TMath::Pi())azi-=2.*TMath::Pi();
+       else if(azi<-TMath::Pi())azi+=2.*TMath::Pi();
+       
+       ((TH1F*)list->FindObject(str.Data()))->Fill(azi,weight);
+     }
+   }
+   
+   
+ }
+
+
+
+
+
+
+
 
 
 void AliAnalysisTaskSECharmFraction::Terminate(const Option_t*){

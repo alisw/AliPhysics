@@ -4,8 +4,6 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
-
 //*************************************************************************
 // Class AliAnalysisTaskSECharmFraction
 // AliAnalysisTask for the extraction of the fraction of prompt charm
@@ -67,6 +65,9 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   AliAODRecoDecayHF* ConstructFakeTrueSecVtx(const AliAODMCParticle *b1,const AliAODMCParticle *b2,const AliAODMCParticle *mum,Double_t *primaryVtxTrue);
   void SetUseMC(Bool_t useMC){fUseMC=useMC;}
   Bool_t SpecialSelD0(AliAODRecoDecayHF2Prong *d,Int_t &nusedforVtx);
+  Bool_t FillAziList(AliAODEvent *aod,Double_t azilist[30000],Int_t trkIDlist[30000],Int_t &nprim)const;
+  void FillAziHistos(AliAODRecoDecayHF2Prong *d,TList *&list,Int_t ptbin,Double_t azilist[30000],Int_t trkIDlist[30000],Int_t nprim,Int_t okD0,Int_t okD0bar,Bool_t isPeakD0,Bool_t isPeakD0bar,Bool_t isSideBandD0,Bool_t isSideBandD0bar)const;
+
   AliAODVertex* GetPrimaryVtxSkipped(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *d);
  
   /* ######### THE FOLLOWING IS FOR FURTHER IMPLEMENATION ############
@@ -122,6 +123,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   Double_t fsidebandInvMassCut;             // invariant mass cut to define side band region lower limit
   Double_t fsidebandInvMassWindow;          // invariant mass cut to define side band region width
   Bool_t fUseMC;                            // flag to use or not MC info
+  Bool_t fCleanCandOwnVtx;                  // flag to switch on/off cleaning of the candidate own vtx
   TH1F *fNentries;                          //!histo for #AOD analysed, container 1
   TH1F *fSignalType;                        //!histo for the type of MC signal , container 2
   TH1F *fSignalTypeLsCuts;                 //!histo for the type of MC signal with loose cuts , container 3
@@ -156,7 +158,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   AliAnalysisTaskSECharmFraction(const AliAnalysisTaskSECharmFraction&); // not implemented
   AliAnalysisTaskSECharmFraction& operator=(const AliAnalysisTaskSECharmFraction&); // not implemented
   
-  ClassDef(AliAnalysisTaskSECharmFraction,1); // analysis task for prompt charm fraction
+  ClassDef(AliAnalysisTaskSECharmFraction,2); // analysis task for prompt charm fraction
 };
 
 #endif
