@@ -232,6 +232,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
 
     TH3F*         fh3MultPtRP[kJetTypes][kMaxJets+1];       //! RP vs. mult of jets      
     TH3F*         fh3MultTrackPtRP[kJetTypes];  //! mult vs pt      
+    TH3F*         fh3MultTrackPtLowRP[kJetTypes];  //! mult vs pt      
 
 
     TH1F*   fh1DijetMinv[kJetTypes];            //! dijet inv mass
