@@ -31,8 +31,8 @@
 #endif
 
 
-void PlotPedestalsvsTime(Int_t year=2010, Int_t firstRun=111000, 
-		   Int_t lastRun=999999999, Int_t ipedGainChain=0)
+void PlotPedestalsvsTime(Int_t year=2011, Int_t firstRun=141820, 
+		   Int_t lastRun=146900, Int_t ipedGainChain=0)
 {
 
 
@@ -107,15 +107,21 @@ void PlotPedestalsvsTime(Int_t year=2010, Int_t firstRun=111000,
  gStyle->SetTitleOffset(1.1,"Y");  
  // *************************************************************
 
- TCanvas *cHadPeds = new TCanvas("cHadPeds","Hadronic ZDC pedestals",0,0,900,700);
+ TCanvas *cHadPeds = new TCanvas("cHadPeds","Hadronic ZDC pedestals",0,0,1000,800);
  cHadPeds->Divide(5,4);
  for(int ic=0; ic<5; ic++){
    // *** ZNC pedestals
    cHadPeds->cd(ic+1);
    //
    TH1F *haxis1=0;
-   if(ipedGainChain==0) haxis1 = gPad->DrawFrame(firstRun-100, 20, lastRun+100, 90);
-   else  haxis1 = gPad->DrawFrame(firstRun-100, 200, lastRun+100, 700);
+   if(ipedGainChain==0){
+     if(ic==0) haxis1 = gPad->DrawFrame(firstRun-100, 80, lastRun+100, 100);
+     else  haxis1 = gPad->DrawFrame(firstRun-100, 50, lastRun+100, 70);
+   }
+   else{
+     if(ic==0) haxis1 = gPad->DrawFrame(firstRun-100, 500, lastRun+100, 800);
+     else  haxis1 = gPad->DrawFrame(firstRun-100, 300, lastRun+100, 600);
+   }
    haxis1->GetXaxis()->SetNoExponent();
    haxis1->SetXTitle("RUN no.");
    haxis1->SetYTitle("ZNC pedestals");
@@ -127,8 +133,8 @@ void PlotPedestalsvsTime(Int_t year=2010, Int_t firstRun=111000,
    cHadPeds->cd(ic+6);
    //
    TH1F *haxis2=0;
-   if(ipedGainChain==0) haxis2= gPad->DrawFrame(firstRun-100, 20, lastRun+100, 90);
-   else  haxis2 = gPad->DrawFrame(firstRun-100, 200, lastRun+100, 700);
+   if(ipedGainChain==0) haxis2= gPad->DrawFrame(firstRun-100, 55, lastRun+100, 85);
+   else  haxis2 = gPad->DrawFrame(firstRun-100, 400, lastRun+100, 700);
    haxis2->GetXaxis()->SetNoExponent();
    haxis2->SetXTitle("RUN no.");
    haxis2->SetYTitle("ZPC pedestals");
@@ -140,8 +146,8 @@ void PlotPedestalsvsTime(Int_t year=2010, Int_t firstRun=111000,
    cHadPeds->cd(ic+11);
    //
    TH1F *haxis3=0;
-   if(ipedGainChain==0) haxis3 = gPad->DrawFrame(firstRun-100, 20, lastRun+100, 90);
-   else  haxis3 = gPad->DrawFrame(firstRun-100, 200, lastRun+100, 700);
+   if(ipedGainChain==0) haxis3 = gPad->DrawFrame(firstRun-100, 35, lastRun+100, 85);
+   else  haxis3 = gPad->DrawFrame(firstRun-100, 300, lastRun+100, 700);
    haxis3->GetXaxis()->SetNoExponent();
    haxis3->SetXTitle("RUN no.");
    haxis3->SetYTitle("ZNA pedestals");
@@ -153,8 +159,8 @@ void PlotPedestalsvsTime(Int_t year=2010, Int_t firstRun=111000,
    cHadPeds->cd(ic+16);
    //
    TH1F *haxis4=0;
-   if(ipedGainChain==0) haxis4 = gPad->DrawFrame(firstRun-100, 20, lastRun+100, 90);
-   else  haxis4 = gPad->DrawFrame(firstRun-100, 200, lastRun+100, 700);
+   if(ipedGainChain==0) haxis4 = gPad->DrawFrame(firstRun-100, 40, lastRun+100, 80);
+   else  haxis4 = gPad->DrawFrame(firstRun-100, 300, lastRun+100, 600);
    haxis4->GetXaxis()->SetNoExponent();
    haxis4->SetXTitle("RUN no.");
    haxis4->SetYTitle("ZPA pedestals");
@@ -172,8 +178,8 @@ void PlotPedestalsvsTime(Int_t year=2010, Int_t firstRun=111000,
     cothPeds->cd(ic+1);
     //
     TH1F *haxis5=0;
-    if(ipedGainChain==0) haxis5 = gPad->DrawFrame(firstRun-100, 20, lastRun+20, 90);
-    else  haxis5 = gPad->DrawFrame(firstRun-100, 200, lastRun+100, 700);
+    if(ipedGainChain==0) haxis5 = gPad->DrawFrame(firstRun-100, 30, lastRun+20, 70);
+    else  haxis5 = gPad->DrawFrame(firstRun-100, 250, lastRun+100, 550);
     haxis5->GetXaxis()->SetNoExponent();
     haxis5->SetXTitle("RUN no.");
     haxis5->SetYTitle("ZEM pedestals");
@@ -185,8 +191,8 @@ void PlotPedestalsvsTime(Int_t year=2010, Int_t firstRun=111000,
     cothPeds->cd(ic+3);
     //
     TH1F *haxis6=0; 
-    if(ipedGainChain==0) haxis6 = gPad->DrawFrame(firstRun-100, 20, lastRun+100, 90);
-    else  haxis6 = gPad->DrawFrame(firstRun-100, 150, lastRun+100, 700);
+    if(ipedGainChain==0) haxis6 = gPad->DrawFrame(firstRun-100, 50, lastRun+100, 90);
+    else  haxis6 = gPad->DrawFrame(firstRun-100, 400, lastRun+100, 700);
     haxis6->GetXaxis()->SetNoExponent();
     haxis6->SetXTitle("RUN no.");
     haxis6->SetYTitle("PMRef. pedestals");

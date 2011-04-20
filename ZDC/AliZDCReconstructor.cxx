@@ -106,8 +106,11 @@ void AliZDCReconstructor::Init()
   }*/
     
   fBeamEnergy = GetRunInfo()->GetBeamEnergy();
-  if(fBeamEnergy<0.01) AliWarning(" Beam energy value missing -> E_beam = 0");
-
+  if(fBeamEnergy<0.01){
+     AliWarning(" Beam energy value missing -> setting it to 1380 GeV ");
+     fBeamEnergy = 1380.;
+  }
+  
   if(((beamType.CompareTo("pp"))==0) || ((beamType.CompareTo("p-p"))==0)
      ||((beamType.CompareTo("PP"))==0) || ((beamType.CompareTo("P-P"))==0)){
     fRecoMode=1;
@@ -248,56 +251,38 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
     if(det == 1){ // *** ZNC
        tZN1Corr[quad] = (Float_t) (digit.GetADCValue(0)-ped2SubHg);
        tZN1Corr[quad+5] = (Float_t) (digit.GetADCValue(1)-ped2SubLg);
-       if(tZN1Corr[quad]<0.) tZN1Corr[quad] = 0.;
-       if(tZN1Corr[quad+5]<0.) tZN1Corr[quad+5] = 0.;
     }
     else if(det == 2){ // *** ZP1
        tZP1Corr[quad] = (Float_t) (digit.GetADCValue(0)-ped2SubHg);
        tZP1Corr[quad+5] = (Float_t) (digit.GetADCValue(1)-ped2SubLg);
-       if(tZP1Corr[quad]<0.) tZP1Corr[quad] = 0.;
-       if(tZP1Corr[quad+5]<0.) tZP1Corr[quad+5] = 0.;
     }
     else if(det == 3){
        if(quad == 1){	    // *** ZEM1  
          dZEM1Corr[0] += (Float_t) (digit.GetADCValue(0)-ped2SubHg); 
          dZEM1Corr[1] += (Float_t) (digit.GetADCValue(1)-ped2SubLg); 
-         if(dZEM1Corr[0]<0.) dZEM1Corr[0] = 0.;
-         if(dZEM1Corr[1]<0.) dZEM1Corr[1] = 0.;
        }
        else if(quad == 2){  // *** ZEM2
          dZEM2Corr[0] += (Float_t) (digit.GetADCValue(0)-ped2SubHg); 
          dZEM2Corr[1] += (Float_t) (digit.GetADCValue(1)-ped2SubLg); 
-         if(dZEM2Corr[0]<0.) dZEM2Corr[0] = 0.;
-         if(dZEM2Corr[1]<0.) dZEM2Corr[1] = 0.;
        }
     }
     else if(det == 4){  // *** ZN2
        tZN2Corr[quad] = (Float_t) (digit.GetADCValue(0)-ped2SubHg);
        tZN2Corr[quad+5] = (Float_t) (digit.GetADCValue(1)-ped2SubLg);
-       if(tZN2Corr[quad]<0.) tZN2Corr[quad] = 0.;
-       if(tZN2Corr[quad+5]<0.) tZN2Corr[quad+5] = 0.;
    }
     else if(det == 5){  // *** ZP2 
        tZP2Corr[quad] = (Float_t) (digit.GetADCValue(0)-ped2SubHg);
        tZP2Corr[quad+5] = (Float_t) (digit.GetADCValue(1)-ped2SubLg);
-       if(tZP2Corr[quad]<0.) tZP2Corr[quad] = 0.;
-       if(tZP2Corr[quad+5]<0.) tZP2Corr[quad+5] = 0.;
     }
    }
    else{ // Reference PMs
      if(det == 1){
        sPMRef1[0] = (Float_t) (digit.GetADCValue(0)-ped2SubHg);
        sPMRef1[1] = (Float_t) (digit.GetADCValue(1)-ped2SubLg);
-       // Ch. debug
-       if(sPMRef1[0]<0.) sPMRef1[0] = 0.;
-       if(sPMRef2[1]<0.) sPMRef1[1] = 0.;
      }
      else if(det == 4){
        sPMRef2[0] = (Float_t) (digit.GetADCValue(0)-ped2SubHg);
        sPMRef2[1] = (Float_t) (digit.GetADCValue(1)-ped2SubLg);
-       // Ch. debug
-       if(sPMRef2[0]<0.) sPMRef2[0] = 0.;
-       if(sPMRef2[1]<0.) sPMRef2[1] = 0.;
      }
    }
 
