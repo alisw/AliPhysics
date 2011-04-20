@@ -34,6 +34,7 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
     kHDPhiDTheta,     // measured dTheta vs dPhi
     kHDPhiSDThetaX,   // dTheta (1/sin^2 scaled if needed) vs dPhi (bending subtracted)
     kHWDist,          // Weighted distance 
+    kHEtaZvSPD1,      // histo zv vs eta for SPD1 single clusters
     kNStandardH       // number of standard histos per centrality bin
   };
   enum { // define here id's of any custom histos to be added to fHistosCustom
@@ -175,6 +176,7 @@ class AliTrackletTaskMulti : public AliAnalysisTaskSE {
   void       FillMCPrimaries();
   void       FillSpecies(Int_t primsec, Int_t id);
   void       FillClusterInfo();
+  void       FillClusterInfoFromMult(const AliMultiplicity* mlt, double zVertex);
   Int_t      GetPdgBin(Int_t pdgCode);
   void       CheckReconstructables();
   Int_t      GetCentralityBin(Float_t percentile) const;

@@ -116,7 +116,7 @@ void PlotSpecies();
 Float_t myMergeFactor = -1; // if the files were manually merged, scale everything except statistics by 1/myMergeFactor
 Int_t nCentBins = -1;
 TList *listDt=0, *listMC=0;
-TObjArray resArr;
+TObjArray resArr, resDnDeta;
 char outStr[1000];
 char outTitle[1000];
 TString uniqueName="";
@@ -526,7 +526,11 @@ void PlotDNDEta(int bin)
   gPad->SetLeftMargin(0.15);
   //
   // corrected data
-  TH1* hsigCorr = ((TH2F*)res->At(shift + kSigCorr))->ProjectionX(prefN+"DataCorrSignal");
+  TString nms =  prefN;
+  nms += "DataCorrSignal";
+  nms += "_"; 
+  nms += uniqueName;
+  TH1* hsigCorr = ((TH2F*)res->At(shift + kSigCorr))->ProjectionX(nms.Data());
   SetHStyle(hsigCorr,kRed,20,1.0);
   hsigCorr->Scale(1./hsigCorr->GetBinWidth(1));
   hsigCorr->Draw();
@@ -537,6 +541,8 @@ void PlotDNDEta(int bin)
   TLatex *txfit = new TLatex(-0.2,hsigCorr->GetMinimum()*0.9, ftres);
   txfit->SetTextSize(0.04);
   txfit->Draw();
+  resDnDeta.AddAtAndExpand( hsigCorr, bin );
+  hsigCorr->SetDirectory(0);
   //
   // raw data
   TH1* hraw = ((TH2F*)res->At(shift+kRawDtCut))->ProjectionX(prefN+"DataRaw");
