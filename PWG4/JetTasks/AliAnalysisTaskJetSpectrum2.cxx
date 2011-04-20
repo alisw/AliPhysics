@@ -149,6 +149,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
     fh2NTracksPt[ij]  = 0;
     fh2TrackEtaPt[ij] = 0;
     fh3MultTrackPtRP[ij] = 0;
+    fh3MultTrackPtLowRP[ij] = 0;
     fh2LeadingTrackPtTrackPhi[ij] = 0;
     for(int i = 0;i <= kMaxJets;++i){
       fh3MultPtRP[ij][i] = 0;
@@ -256,6 +257,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
     fh2NTracksPt[ij]  = 0;
     fh2TrackEtaPt[ij] = 0;
     fh3MultTrackPtRP[ij] = 0;
+    fh3MultTrackPtLowRP[ij] = 0;
     fh2LeadingTrackPtTrackPhi[ij] = 0;
     for(int i = 0;i <= kMaxJets;++i){
       fh3MultPtRP[ij][i] = 0;
@@ -361,7 +363,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   //
   //  Histogram
     
-  const Int_t nBinPt = 160;
+  const Int_t nBinPt = 125;
   Double_t binLimitsPt[nBinPt+1];
   for(Int_t iPt = 0;iPt <= nBinPt;iPt++){
     if(iPt == 0){
@@ -443,7 +445,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh2RelPtFGen = new TH2F("fh2RelPtFGen",";p_{T,gen};p_{T,rec}-p_{T,gen}/p_{T,Gen}",nBinPt,binLimitsPt,241,-2.41,2.41);
   fHistList->Add(fh2RelPtFGen);
 
-  fh3RPPhiTracks = new TH3F("fh3RPPhiTracks","Phi Tracks Pt Centrality", 10, 0.,100.,20,-5,5,180, 0, 2*TMath::Pi());
+  fh3RPPhiTracks = new TH3F("fh3RPPhiTracks","Phi Tracks Pt Centrality", 10, 0.,100.,20,-5,5,200, 0, 2*TMath::Pi());
   fHistList->Add(fh3RPPhiTracks);
   
   for(int ij = 0;ij <kJetTypes;++ij){    
@@ -478,7 +480,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fh1PtTracksIn[ij] = new TH1F(Form("fh1PtTracks%sIn",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
     fHistList->Add(fh1PtTracksIn[ij]);
     
-    fh1PtTracksInLow[ij] = new TH1F(Form("fh1PtTracks%sInLow",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),100,0.,10.);
+    fh1PtTracksInLow[ij] = new TH1F(Form("fh1PtTracks%sInLow",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),50,0.,5.);
     fHistList->Add(fh1PtTracksInLow[ij]);
     
     fh1PtTracksLeadingIn[ij] = new TH1F(Form("fh1PtTracksLeading%sIn",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
@@ -498,8 +500,12 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     fHistList->Add(fh2TrackEtaPt[ij]);
 
     fh3MultTrackPtRP[ij]  = new TH3F(Form("fh3MultTrackPtRP%s",
-					  cAdd.Data()),Form(";# tracks;%s track p_T;RP Bin",cAdd.Data()),250,0,5000,100,0.,50.,(Int_t)fNRPBins,-0.5,fNRPBins-0.5);
+					  cAdd.Data()),Form(";# tracks;%s track p_T;RP Bin",cAdd.Data()),250,0,5000,50,0.,50.,(Int_t)fNRPBins,-0.5,fNRPBins-0.5);
     fHistList->Add(fh3MultTrackPtRP[ij]);
+
+    fh3MultTrackPtLowRP[ij]  = new TH3F(Form("fh3MultTrackPtLowRP%s",
+					  cAdd.Data()),Form(";# tracks;%s track p_T;RP Bin",cAdd.Data()),250,0,5000,50,0.,5.,(Int_t)fNRPBins,-0.5,fNRPBins-0.5);
+    fHistList->Add(fh3MultTrackPtLowRP[ij]);
     
     fh2LeadingTrackPtTrackPhi[ij] = new TH2F(Form("fh2Leading%sTrackPtTrackPhi",cAdd.Data()),Form("phi of leading %s track;p_{T};#phi;",cAdd.Data()),
 					     nBinPt,binLimitsPt,nBinPhi,binLimitsPhi);
@@ -519,7 +525,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 	fh2PhiPt[ij][i] = new TH2F(Form("fh2PhiPt%s_j%d",cAdd.Data(),i),Form("pt vs phi %s;#phi;p_{T};",cAdd.Data()),
 				   nBinPhi,binLimitsPhi,nBinPt,binLimitsPt);
 
-	fh3MultPtRP[ij][i]  = new TH3F(Form("fh3MultPtRP%s_j%d",cAdd.Data(),i),Form("%s jets p_T;# tracks;;p_{T} (GeV/c)",cAdd.Data()),250,0,5000,nBinPt,0,300,(Int_t)fNRPBins,-0.5,fNRPBins-0.5);
+	fh3MultPtRP[ij][i]  = new TH3F(Form("fh3MultPtRP%s_j%d",cAdd.Data(),i),Form("%s jets p_T;# tracks;;p_{T} (GeV/c)",cAdd.Data()),250,0,5000,nBinPt,0,binLimitsPt[nBinPt-1],(Int_t)fNRPBins,-0.5,fNRPBins-0.5);
       fHistList->Add(fh3MultPtRP[ij][i]);
 
 
@@ -647,8 +653,23 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
 
 
   if(!aodRecJets){
-    Printf("%s:%d no reconstructed Jet array with name %s in AOD",(char*)__FILE__,__LINE__,fBranchRec.Data());
-    return;
+    if(fDebug){
+
+	Printf("%s:%d no reconstructed Jet array with name %s in AOD",(char*)__FILE__,__LINE__,fBranchRec.Data());
+	if(fAODIn){
+	  Printf("Input AOD >>>>");
+	  fAODIn->Print();    
+	}
+	if(fAODExtension){
+	  Printf("AOD Extension >>>>");
+	  fAODExtension->Print();
+	}
+	if(fAODOut){
+	  Printf("Output AOD >>>>");
+	  fAODOut->Print();    
+	}
+    }
+	return;
   }
 
   TClonesArray *aodGenJets = 0;
@@ -827,10 +848,10 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   // delegate to a separated method?
 
   FillMatchHistos(recJetsList,genJetsList);
-
+  
   if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
   PostData(1, fHistList);
-}
+  }
 
 void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particlesList,Int_t iType){
 
@@ -1040,6 +1061,7 @@ void AliAnalysisTaskJetSpectrum2::FillTrackHistos(TList &particlesList,int iType
       if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;    
       Int_t phiBin = GetPhiBin(tmpPhi-fRPAngle);
       fh3MultTrackPtRP[iType]->Fill(refMult,tmpPt,phiBin); 
+      fh3MultTrackPtLowRP[iType]->Fill(refMult,tmpPt,phiBin); 
       fh2TrackEtaPt[iType]->Fill(tmpTrack->Eta(),tmpPt);
       if(tmpTrack==leading){
 	fh1PtTracksLeadingIn[iType]->Fill(tmpPt);
@@ -1169,7 +1191,7 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
   // link it
   //
   const Int_t kNvar   = 3 ; //number of variables on the grid:pt,eta, phi
-  const Double_t kPtmin = 0.0, kPtmax = 320.; // we do not want to have empty bins at the beginning...
+  const Double_t kPtmin = 0.0, kPtmax = 250.; // we do not want to have empty bins at the beginning...
   const Double_t kEtamin = -3.0, kEtamax = 3.0;
   const Double_t kPhimin = 0., kPhimax = 2. * TMath::Pi();
 
@@ -1180,7 +1202,7 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
 
   //arrays for the number of bins in each dimension
   Int_t iBin[kNvar];
-  iBin[0] = 160; //bins in pt
+  iBin[0] = 125; //bins in pt
   iBin[1] =  1; //bins in eta 
   iBin[2] = 1; // bins in phi
 
