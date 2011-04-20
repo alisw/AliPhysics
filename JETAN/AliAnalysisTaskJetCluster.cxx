@@ -393,14 +393,14 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
   //
   //  Histogram
     
-  const Int_t nBinPt = 200;
+  const Int_t nBinPt = 100;
   Double_t binLimitsPt[nBinPt+1];
   for(Int_t iPt = 0;iPt <= nBinPt;iPt++){
     if(iPt == 0){
       binLimitsPt[iPt] = 0.0;
     }
     else {// 1.0
-      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 1.0;
+      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 2.0;
     }
   }
   
@@ -428,7 +428,7 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
     }
   }
 
-  const int nChMax = 4000;
+  const int nChMax = 5000;
 
   fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
   fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
@@ -815,7 +815,6 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   fastjet::AreaType areaType =   fastjet::active_area;
   fastjet::AreaDefinition areaDef = fastjet::AreaDefinition(areaType,ghostSpec);
   fastjet::JetDefinition jetDef(fAlgorithm, fRparam, fRecombScheme, fStrategy);
-  vector <fastjet::PseudoJet> inclusiveJets, sortedJets;
   fastjet::ClusterSequenceArea clustSeq(inputParticlesRec, jetDef,areaDef);
   
   //range where to compute background
@@ -827,9 +826,9 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   fastjet::RangeDefinition range(rapMin,rapMax, phiMin, phiMax);
  
 
+  const vector <fastjet::PseudoJet> &inclusiveJets = clustSeq.inclusive_jets();
+  const vector <fastjet::PseudoJet> &sortedJets = sorted_by_pt(inclusiveJets);
 
-  inclusiveJets = clustSeq.inclusive_jets();
-  sortedJets    = sorted_by_pt(inclusiveJets);
  
   fh1NJetsRec->Fill(sortedJets.size());
 
@@ -920,7 +919,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       
       fh1PtJetsRecIn->Fill(tmpPt);
       // Fill Spectra with constituents
-      vector<fastjet::PseudoJet> constituents = clustSeq.constituents(sortedJets[j]);
+      const vector<fastjet::PseudoJet> &constituents = clustSeq.constituents(sortedJets[j]);
 
       fh1NConstRec->Fill(constituents.size());
       fh2PtNch->Fill(nCh,tmpPt);
@@ -1183,13 +1182,12 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
  }
 
  // find the random jets
- vector <fastjet::PseudoJet> inclusiveJetsRan, sortedJetsRan;
+
  fastjet::ClusterSequenceArea clustSeqRan(inputParticlesRecRan, jetDef, areaDef);
   
- inclusiveJetsRan = clustSeqRan.inclusive_jets();
- sortedJetsRan    = sorted_by_pt(inclusiveJetsRan);
-
  // fill the jet information from random track
+ const vector <fastjet::PseudoJet> &inclusiveJetsRan = clustSeqRan.inclusive_jets();
+ const vector <fastjet::PseudoJet> &sortedJetsRan    = sorted_by_pt(inclusiveJetsRan);
 
   fh1NJetsRecRan->Fill(sortedJetsRan.size());
 
@@ -1243,7 +1241,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       Float_t tmpPt = tmpRec.Pt();
       fh1PtJetsRecInRan->Fill(tmpPt);
       // Fill Spectra with constituents
-      vector<fastjet::PseudoJet> constituents = clustSeqRan.constituents(sortedJetsRan[j]);
+      const vector<fastjet::PseudoJet> &constituents = clustSeqRan.constituents(sortedJetsRan[j]);
       fh1NConstRecRan->Fill(constituents.size());
       fh2NConstPtRan->Fill(tmpPt,constituents.size());
       fh2PtNchRan->Fill(nCh,tmpPt);
