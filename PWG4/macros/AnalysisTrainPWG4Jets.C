@@ -82,6 +82,10 @@ Bool_t      kIsPbPb             = kFALSE;  // Pb+Pb
 //==============================================================================
 Int_t       iJETAN             = 1;      // Jet analysis (PWG4) // 1 write standard 2 write non-standard jets, 3 wrtie both
 Int_t       iJETSUBTRACT        = 1;      // Jet background subtration
+TList       kJetListSpectrum;             // list of jets contains TObjString of possible jet finder names
+TExMap      kJetMapSpectrum;             // Maps the jet finder pairs to be used in the spectrum task second number negative no pair other wise (j1+1) + (1000 * (j2+1)) +10000 * (j3+1)
+TExMap      kJetBackMapSpectrum;             // Maps the jet finder pairs with the background branch used, just for countint of trackrefs
+Int_t       kJetMapOffset[3] = {10000,100,1};
 TString     kDefaultJetBranch     = "";      // is currently set when filled (iJETAN or clusters) or from config macro 
 TString     kDefaultJetBackgroundBranch            = "";      // is currently set when filled (jet clsuters  
 TString     kDefaultJetBackgroundBranchCut1        = "";      // is currently set when filled (jet clsuters  
@@ -133,6 +137,7 @@ Int_t       iPWG4GammaConv     = 0;      // Gamma Conversio
 Int_t       iPWG4CaloConv     = 0;      // Gamma Conversio
 Int_t       kHighPtFilterMask  = 32;     // change depending on the used AOD Filter
 TString     kDeltaAODJetName   = "AliAOD.Jets.root";     
+TString     kDeltaAODJetNameInput   = "";     
 TString     kDeltaAODJCORRANName   = "AliAOD.JCORRAN.root";     
 TString     kDeltaAODPartCorrName   = "AliAOD.PartCorr.root";     
 TString     kFastEmbeddingAOD  = "emb/AliAOD.root";
@@ -209,6 +214,7 @@ TString anaLibsExtra = "";
 TString anaSources = "";
 // Function signatures
 class AliAnalysisAlien;
+class AliAnalysisManager;
 
 //______________________________________________________________________________
 void AnalysisTrainPWG4Jets(const char *analysis_mode="local", 
@@ -326,7 +332,10 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    // AOD input handler
       AliAODInputHandler *aodH = new AliAODInputHandler();
       mgr->SetInputEventHandler(aodH);
-      //      if (iPWG4JetTasks) aodH->AddFriend(Form("deltas/%s",kDeltaAODJetName.Data()));
+      if (kDeltaAODJetNameInput.Length()){
+	Printf("Adding Friend %s",kDeltaAODJetNameInput.Data());
+	aodH->AddFriend(kDeltaAODJetNameInput.Data());
+      }
       //      if (iPWG4PartCorr) aodH->AddFriend(Form("deltas/%s"kDeltaAODJetName.Data()));
    } else {   
    // ESD input handler
@@ -490,30 +499,55 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	
 	taskjets = AddTaskJets("AOD","UA1",0.4,kHighPtFilterMask,1.,0); // no background subtraction
 	if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
+	TString cTmp("");	
+	cTmp = taskjets->GetNonStdBranch();
+	if(cTmp.Length())kJetListSpectrum.Add(new TObjString(cTmp.Data()));
+
+	taskjets = AddTaskJets("AOD","UA1",0.4,kHighPtFilterMask,2.,0); // no background subtraction
+	if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
+	TString cTmp("");	
+	cTmp = taskjets->GetNonStdBranch();
+	if(cTmp.Length())kJetListSpectrum.Add(new TObjString(cTmp.Data()));
+
 
 	// STANDARD UA jet finders pT cut 1 GeV background mode 2 R = 0.4
 	if(kIsPbPb){
 	  taskjets = AddTaskJets("AOD","UA1",0.4,kHighPtFilterMask,1.,2); // background subtraction
 	  if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
+	  cTmp = taskjets->GetNonStdBranch();
+	  if(cTmp.Length())kJetListSpectrum.Add(new TObjString(cTmp.Data()));
+	  taskjets = AddTaskJets("AOD","UA1",0.4,kHighPtFilterMask,2.,2); // background subtraction
+	  if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
+	  cTmp = taskjets->GetNonStdBranch();
+	  if(cTmp.Length())kJetListSpectrum.Add(new TObjString(cTmp.Data()));
 	}
 
-	TString cTmp("");
+
 
 	// SICONE 
 	taskjets = AddTaskJets("AOD","SISCONE",0.4,kHighPtFilterMask,0.15,0); //no background subtraction to be done later....
 	if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
 	cTmp = taskjets->GetNonStdBranch();
 	if(cTmp.Length()>0)kJetSubtractBranches += Form("%s ",cTmp.Data());
+	if(cTmp.Length())kJetListSpectrum.Add(new TObjString(cTmp.Data()));
 
 	if(kUseAODMC){
 	  // STANDARD UA jet finders pT cut 1 GeV background mode 2 R = 0.4
 	  if(kIsPbPb){
 	    taskjets = AddTaskJets("AODMC","UA1",0.4,kHighPtFilterMask,1.,2); // background subtraction
+	    cTmp = taskjets->GetNonStdBranch();
+	    if(cTmp.Length())kJetListSpectrum.Add(new TObjString(cTmp.Data()));
 	    taskjets = AddTaskJets("AODMC2","UA1",0.4,kHighPtFilterMask,1.,2); // background subtraction
+	    cTmp = taskjets->GetNonStdBranch();
+	    if(cTmp.Length())kJetListSpectrum.Add(new TObjString(cTmp.Data()));
 	  }
 	  else{
 	    taskjets = AddTaskJets("AODMC","UA1",0.4,kHighPtFilterMask,1.,0); // no background subtraction
+	    cTmp = taskjets->GetNonStdBranch();
+	    if(cTmp.Length())kJetListSpectrum.Add(new TObjString(cTmp.Data()));
 	    taskjets = AddTaskJets("AODMC2","UA1",0.4,kHighPtFilterMask,1.,0); // no background subtraction
+	    cTmp = taskjets->GetNonStdBranch();
+	    if(cTmp.Length())kJetListSpectrum.Add(new TObjString(cTmp.Data()));
 	  }
 	}
 	if(kDeltaAODJetName.Length()>0)mgr->RegisterExtraFile(kDeltaAODJetName.Data()); 
@@ -557,7 +591,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 taskCl->SetCentralityCut(fCenLo,fCenUp);
 	 taskCl->SetGhostEtamax(fTrackEtaWindow);
 	 kDefaultJetBackgroundBranch = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch());
-
+	 kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
+	 kJetListSpectrum.Add(new TObjString(Form("%sRandomConeSkip%02d",taskCl->GetJetOutputBranch(),0)));
+	 kJetListSpectrum.Add(new TObjString(Form("%sRandomCone_random",taskCl->GetJetOutputBranch())));
 
 	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),2.0,fTrackEtaWindow,0); // this one is for the background and random jets, random cones with no skip
 	 taskCl->SetNRandomCones(1);
@@ -566,6 +602,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 taskCl->SetGhostEtamax(fTrackEtaWindow);
 	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
 	 kDefaultJetBackgroundBranchCut1 = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch());
+	 kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
+	 kJetListSpectrum.Add(new TObjString(Form("%sRandomConeSkip%02d",taskCl->GetJetOutputBranch(),0)));
+	 kJetListSpectrum.Add(new TObjString(Form("%sRandomCone_random",taskCl->GetJetOutputBranch())));
 
          if (iPWG4FastEmbedding) {
            AliAnalysisTaskJetCluster *taskClEmb = 0;
@@ -597,6 +636,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 taskCl->SetBackgroundCalc(kTRUE);
 	 taskCl->SetCentralityCut(fCenLo,fCenUp);
 	 taskCl->SetGhostEtamax(fTrackEtaWindow);
+	 kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
 	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
        }
        else{
@@ -605,11 +645,13 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 kDefaultJetBackgroundBranch = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch());
 	 taskCl->SetGhostEtamax(fTrackEtaWindow);
 	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
+	 kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
 
 	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1,kDeltaAODJetName.Data(),0.15); 
 	 taskCl->SetBackgroundCalc(kTRUE);
 	 taskCl->SetGhostEtamax(fTrackEtaWindow);
 	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
+	 kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
        } 
 
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),0.15);
@@ -619,19 +661,23 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
        kDefaultJetBranch = taskCl->GetJetOutputBranch();
        kJetSubtractBranches += Form("%s ",taskCl->GetJetOutputBranch());
+       kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
+       kJetListSpectrum.Add(new TObjString(Form("%sRandomConeSkip%02d",taskCl->GetJetOutputBranch(),2)));
+       kJetListSpectrum.Add(new TObjString(Form("%sRandomCone_random",taskCl->GetJetOutputBranch())));
 
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),2.0);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
 	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
        if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranchCut1.Data());
        kJetSubtractBranchesCut1 += Form("%s ",taskCl->GetJetOutputBranch());
+	 kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
 
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data(),0.15);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
        if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
        kJetSubtractBranches += Form("%s ",taskCl->GetJetOutputBranch());
-
+	 kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
 
 
        if(kDeltaAODJetName.Length()==0&&kFilterAOD){
@@ -646,24 +692,28 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	   taskCl->SetGhostEtamax(0.9);
 	   kDefaultJetBackgroundBranchMC = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch());
 	   if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);	   
+	 kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
 
 	   taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
 	   taskCl->SetBackgroundCalc(kTRUE);
 	   taskCl->SetGhostEtamax(fTrackEtaWindow);
 	   kDefaultJetBackgroundBranchMC2 = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch(),fTrackEtaWindow); 
 	   if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
+	   kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
 	 }
 	 else{
 	   taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.6,0,1, kDeltaAODJetName.Data(),0.15,fTrackEtaWindow); // this one is for the background and random jets
 	   taskCl->SetBackgroundCalc(kTRUE);
 	   taskCl->SetGhostEtamax(fTrackEtaWindow);
 	   kDefaultJetBackgroundBranchMC = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch());
-	   
+	 kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));	   
+
 	   taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.6,0,1, kDeltaAODJetName.Data(),0.15,fTrackEtaWindow); // this one is for the background and random jets
 	   taskCl->SetBackgroundCalc(kTRUE);
 	   taskCl->SetGhostEtamax(fTrackEtaWindow);
 	   kDefaultJetBackgroundBranchMC2 = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch()); 
-	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
+	   if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
+	   kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
 	   // pp background calcs...
 	 }
 	 
@@ -672,11 +722,13 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranchMC.Data());	 
 	 kDefaultJetBranchMC = taskCl->GetJetOutputBranch();
 	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
+	 kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
 
 	 taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1, kDeltaAODJetName.Data(),0.15,fTrackEtaWindow);
 	 if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranchMC2.Data());	 
 	 kDefaultJetBranchMC2 = taskCl->GetJetOutputBranch();
 	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
+	 kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
        }
        
        
@@ -690,32 +742,52 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliAnalysisTaskJetBackgroundSubtract *taskSubtract = 0;
      if(kJetSubtractBranches.Length()){
 
-       taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,3,kJetSubtractMask1.Data(),kJetSubtractMask2.Data());
-       taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data()); 
-       if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
 
-       taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,2,kJetSubtractMask1.Data(),kJetSubtractMask2.Data());
-       taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());	 	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
-       if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
-       
-       //	taskSubtract->SetDebugLevel(3);
-       
-       taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,1,kJetSubtractMask1.Data(),kJetSubtractMask2.Data());
-       taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());	 	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
-       if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
-       
-       if(kJetSubtractBranches.Contains(kDefaultJetBranch.Data())&&kIsPbPb){
-	 kDefaultJetBranch.ReplaceAll(taskSubtract->GetToReplace(),Form(taskSubtract->GetReplacementMask(),taskSubtract->GetSubtractionMethod()));
+
+
+       for(int iB = 0;iB<3;iB++){
+	 if(iB>2)continue;
+	 taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,iB,kJetSubtractMask1.Data(),kJetSubtractMask2.Data());
+	 taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());	 	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
+	 if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
+	 TString cTmp;       
+	 TObjArray *objArr = kJetSubtractBranches.Tokenize(" ");
+	 for(int iJB = 0;iJB<objArr->GetEntries();iJB++){
+	   TObjString *ostr = (TObjString*)objArr->At(iJB);
+	   cTmp = ostr->GetString().Data();
+	   cTmp.ReplaceAll(kJetSubtractMask1.Data(),Form(kJetSubtractMask2.Data(),iB));
+	   kJetListSpectrum.Add(new TObjString(cTmp.Data()));
+	 }
+	 
+	 //	taskSubtract->SetDebugLevel(3);
+	 if(iB==2){
+	   if(kJetSubtractBranches.Contains(kDefaultJetBranch.Data())&&kIsPbPb){
+	     kDefaultJetBranch.ReplaceAll(taskSubtract->GetToReplace(),Form(taskSubtract->GetReplacementMask(),taskSubtract->GetSubtractionMethod()));
+	   }
+	 }
+	 
        }
 
+       //
        // cut1
-       taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranchesCut1,1,kJetSubtractMask1.Data(),kJetSubtractMask2.Data(),"Cut2000");
+       Int_t iB = 2;
+       taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranchesCut1,iB,kJetSubtractMask1.Data(),kJetSubtractMask2.Data(),"Cut2000");
        taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranchCut1.Data());	 	
        taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
        if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
+
+       objArr = kJetSubtractBranchesCut1.Tokenize(" ");
+       for(int iJB = 0;iJB<objArr->GetEntries();iJB++){
+	 TObjString *ostr = (TObjString*)objArr->At(iJB);
+	 cTmp = ostr->GetString().Data();
+	 cTmp.ReplaceAll(kJetSubtractMask1.Data(),Form(kJetSubtractMask2.Data(),iB));
+	 kJetListSpectrum.Add(new TObjString(cTmp.Data()));
+       }
+
+
      }
      if(kJetSubtractBranches_extra.Length()){
-       taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches_extra,1,kJetSubtractMask1.Data(),kJetSubtractMask2.Data(),"extra");
+       taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches_extra,2,kJetSubtractMask1.Data(),kJetSubtractMask2.Data(),"extra");
        taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch_extra.Data());
        taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
        //taskSubtract->SetDebugLevel(3);
@@ -787,115 +859,93 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliAnalysisTaskJetSpectrum2 *taskjetSpectrum = 0;
      TString bkgClusters = kDefaultJetBackgroundBranch.Data(); 
      bkgClusters.ReplaceAll(Form("%s_",AliAODJetEventBackground::StdBranchName()),"");
-
+     Printf("############# Possible jet branches ###################");
+     for(int iJF = 0;iJF < kJetListSpectrum.GetSize();iJF++){
+       TObjString *objStr = (TObjString*)kJetListSpectrum.At(iJF);
+       Printf("%3d: %s",iJF+1,objStr->GetString().Data());
+     }
 
      if(iPWG4JetSpectrum&1){
        if(kIsPbPb){
-	 for(int i = 0;i<5;i++){
-	   TString tmp(kDefaultJetBranch.Data());
-	   //	   tmp.ReplaceAll(Form(kJetSubtractMask2.Data(),1),kJetSubtractMask1.Data());
-	   //	   tmp.ReplaceAll(Form(kJetSubtractMask2.Data(),1),kJetSubtractMask1.Data());
-	   tmp.ReplaceAll(Form(kJetSubtractMask2.Data(),1),Form(kJetSubtractMask1.Data(),0));
-
-	   taskjetSpectrum = AddTaskJetSpectrum2(kDefaultJetBranch.Data(),tmp.Data(),kDeltaAODJetName.Data(),kHighPtFilterMask,AliVEvent::kMB,0,i);
-	   taskjetSpectrum->SetBranchBkgRec(bkgClusters.Data());
-	   taskjetSpectrum->SetBranchBkgGen(bkgClusters.Data());
-
-	   //	   taskjetSpectrum->SetDebugLevel(3);
-	   //	   taskjetSpectrum->SetMinJetPt(10);
-	   taskjetSpectrum->SetTrackEtaWindow(fTrackEtaWindow);
-	   taskjetSpectrum->SetJetEtaWindow(fJetEtaWindow);
-	   if(i!=1){
-	     taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetRecFull,0);
-	     taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetGenFull,0);
+	 for(int iJF = 0;iJF < kJetListSpectrum.GetSize();iJF++){
+	   Long64_t value = kJetMapSpectrum(iJF+1);
+	   Printf("iJF: %d value: %d", iJF+1,(Int_t)value);
+	   if(value==0)continue;
+	   TObjString *objStr = (TObjString*)kJetListSpectrum.At(iJF);
+	   TString bName1 = objStr->GetString().Data();
+	   TString bName2[3];
+	   
+	   TObjString *objStrBkg = (TObjString*)kJetListSpectrum.At(iJF);
+	   TString bBkgName1(""); 
+	   TString bBkgName2[3];
+	   
+	   Long64_t valueBkg1 = kJetBackMapSpectrum(iJF+1);
+	   if(valueBkg1>0){
+	     TObjString *objStrBkg = (TObjString*)kJetListSpectrum.At(valueBkg1-1);
+	     bBkgName1 = objStrBkg->GetString().Data();
 	   }
-	   if(iAODanalysis)SetAODInput(taskjetSpectrum);
-
-	   TString tmpCut1(kDefaultJetBranch.Data());
-	   TString tmp2Cut1(kDefaultJetBranch.Data());
-	   tmp2Cut1.ReplaceAll(Form(kJetSubtractMask2.Data(),1),Form(kJetSubtractMask1.Data(),0));
-	   tmp2Cut1.ReplaceAll("00150","02000");
-	   tmpCut1.ReplaceAll("00150","02000");
-	   TString bkgClustersCut1 = tmpCut1.Data();
-	   bkgClustersCut1.ReplaceAll(Form("%s_",AliAODJetEventBackground::StdBranchName()),"");
-
-       
-	   taskjetSpectrum = AddTaskJetSpectrum2(tmpCut1.Data(),tmp2Cut1.Data(),kDeltaAODJetName.Data(),kHighPtFilterMask,AliVEvent::kMB,0,i);
-	   taskjetSpectrum->SetBranchBkgRec(bkgClustersCut1.Data());
-	   taskjetSpectrum->SetBranchBkgGen(bkgClustersCut1.Data());
-	   taskjetSpectrum->SetTrackEtaWindow(fTrackEtaWindow);
-	   taskjetSpectrum->SetJetEtaWindow(fJetEtaWindow);
-	   if(i!=1){
-	     taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetRecFull,0);
-	     taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetGenFull,0);
+	   
+	   if(value>0){
+	     Int_t iJF2 = -1; 
+	     for(int i = 0;i<3;i++){
+	       iJF2 = value/kJetMapOffset[i]-1;
+	       value = value%kJetMapOffset[i];
+	       Printf("%d %d", iJF2+1,(Int_t)value);
+	       if(iJF2>=0&&iJF2<kJetListSpectrum.GetSize()){
+		 TObjString *objStr2 = (TObjString*)kJetListSpectrum.At(iJF2);
+		 bName2[i] = objStr2->GetString().Data();
+		 Long64_t valueBkg2 = kJetBackMapSpectrum(iJF2+1);
+		 if(valueBkg2>0){
+		   TObjString *objStrBkg2 = (TObjString*)kJetListSpectrum.At(valueBkg2-1);
+		   bBkgName2[i] = objStrBkg2->GetString().Data();
+		 }
+	       }
+	     }
 	   }
-       
-	   // 
-
-	   // the random jets...
-	   taskjetSpectrum = AddTaskJetSpectrum2(
-						 Form("clustersAOD_KT04_B0_Filter%05d_Cut00150_Skip00RandomConeSkip00",kHighPtFilterMask),
-						 Form("clustersAOD_KT04_B0_Filter%05d_Cut00150_Skip00RandomCone_random",kHighPtFilterMask),
-						 kDeltaAODJetName.Data(),kHighPtFilterMask,AliVEvent::kMB,0,i);
-
-	   taskjetSpectrum->SetBranchBkgRec(bkgClusters.Data());
-	   taskjetSpectrum->SetBranchBkgGen(bkgClusters.Data());
-	   taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetRecFull,0);
-	   taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetGenFull,0);
-	   taskjetSpectrum->SetTrackEtaWindow(fTrackEtaWindow);
-	   taskjetSpectrum->SetJetEtaWindow(fJetEtaWindow);
-
-	   taskjetSpectrum = AddTaskJetSpectrum2(
-						 Form("clustersAOD_KT04_B0_Filter%05d_Cut02000_Skip00RandomConeSkip00",kHighPtFilterMask),
-						 Form("clustersAOD_KT04_B0_Filter%05d_Cut02000_Skip00RandomCone_random",kHighPtFilterMask),
-						 kDeltaAODJetName.Data(),kHighPtFilterMask,AliVEvent::kMB,0,i);
-	   taskjetSpectrum->SetBranchBkgRec(bkgClustersCut1.Data());
-	   taskjetSpectrum->SetBranchBkgGen(bkgClustersCut1.Data());
-	   taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetRecFull,0);
-	   taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetGenFull,0);
-	   taskjetSpectrum->SetTrackEtaWindow(fTrackEtaWindow);
-	   taskjetSpectrum->SetJetEtaWindow(fJetEtaWindow);
-
-
-	   // check the old subtracted vs. the new subtracted
-	   /*
-	   TString tmp2(kDefaultJetBranch.Data());
-	   tmp2.ReplaceAll(Form(kJetSubtractMask2.Data(),1),Form(kJetSubtractMask2.Data(),2));
-	   taskjetSpectrum = AddTaskJetSpectrum2(tmp2.Data(),kDefaultJetBranch.Data(),kDeltaAODJetName.Data(),kHighPtFilterMask,AliVEvent::kMB,0,i);
-	   taskjetSpectrum->SetBranchBkgRec(bkgClusters.Data());
-	   taskjetSpectrum->SetBranchBkgGen(bkgClusters.Data());
-	   //	   taskjetSpectrum->SetDebugLevel(3);
-	   //	   taskjetSpectrum->SetMinJetPt(10);
-	   taskjetSpectrum->SetTrackEtaWindow(fTrackEtaWindow);
-	   taskjetSpectrum->SetJetEtaWindow(fJetEtaWindow);
-	   if(iAODanalysis)SetAODInput(taskjetSpectrum);
-	   */
-	   // check the old subtracted vs. the new subtracted
-	   /*
-	   TString tmp3(kDefaultJetBranch.Data());
-	   tmp3.ReplaceAll(Form(kJetSubtractMask2.Data(),1),Form(kJetSubtractMask2.Data(),3));
-
-	   taskjetSpectrum = AddTaskJetSpectrum2(tmp3.Data(),kDefaultJetBranch.Data(),kDeltaAODJetName.Data(),kHighPtFilterMask,AliVEvent::kMB,0,i);
-	   //	   taskjetSpectrum->SetDebugLevel(3);
-	   //	   taskjetSpectrum->SetMinJetPt(10);
-	   taskjetSpectrum->SetBranchBkgRec(bkgClusters.Data());
-	   taskjetSpectrum->SetBranchBkgGen(bkgClusters.Data());
-	   taskjetSpectrum->SetTrackEtaWindow(0.8);
-	   taskjetSpectrum->SetJetEtaWindow(0.4);
-	   if(iAODanalysis)SetAODInput(taskjetSpectrum);
-	   */
-
-	   taskjetSpectrum = AddTaskJetSpectrum2(Form("jetsAOD_UA104_B2_Filter%05d_Cut01000",kHighPtFilterMask),kDefaultJetBranch.Data(),kDeltaAODJetName.Data(),kHighPtFilterMask,AliVEvent::kMB,0,i);	   
-	   taskjetSpectrum->SetTrackEtaWindow(fTrackEtaWindow);
-	   taskjetSpectrum->SetJetEtaWindow(fJetEtaWindow);
-	   taskjetSpectrum->SetBranchBkgRec(bkgClusters.Data());
-	   taskjetSpectrum->SetBranchBkgGen(bkgClusters.Data());
-	   if(i!=1){
-	     taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetRecFull,0);
-	     taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetGenFull,0);
+	   
+	   
+	   // loop over all centralities
+	   for(int ic = 0;ic<5;ic++){
+	     Bool_t bDone = kFALSE;
+	     for(int i = 0;i<3;i++){
+	       Printf("%s/%s %s/%s",bName1.Data(),bBkgName1.Data(),bName2[i].Data(),bBkgName2[i].Data());
+	       if(bName2[i].Length()){
+		 taskjetSpectrum = AddTaskJetSpectrum2(bName1.Data(),bName2[i].Data(),kDeltaAODJetName.Data(),kHighPtFilterMask,AliVEvent::kMB,0,ic);
+		 bDone = kTRUE; 
+	       }
+	       else{
+		 if(!bDone){
+		   taskjetSpectrum = AddTaskJetSpectrum2(bName1.Data(),bName2[i].Data(),kDeltaAODJetName.Data(),kHighPtFilterMask,AliVEvent::kMB,0,ic);
+		   bDone = kTRUE; 
+		 }
+		 else{
+		   continue;
+		 }
+	       }
+	       // setting all the other things...
+	       taskjetSpectrum->SetTrackEtaWindow(fTrackEtaWindow);
+	       taskjetSpectrum->SetJetEtaWindow(fJetEtaWindow);
+	       if(ic!=1){
+		 taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetRecFull,0);
+		 taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetGenFull,0);
+	       }
+	       if(bName2[i].Length()==0){
+		 taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetGenFull,0);
+		 taskjetSpectrum->SetFlagJetType(AliAnalysisTaskJetSpectrum2::kJetGen,0);
+	       }
+	       if(iAODanalysis==1){
+		 taskjetSpectrum->SetAODJetInput(kTRUE);
+		 taskjetSpectrum->SetAODTrackInput(kTRUE);
+	       }
+	       else if (iAODanalysis==2){
+		 taskjetSpectrum->SetAODTrackInput(kTRUE);
+		 taskjetSpectrum->SetAODJetInput(kFALSE);
+	       }
+	       //	       taskjetSpectrum->SetDebugLevel(11);
+	       taskjetSpectrum->SetBranchBkgRec(bBkgName1.Data());
+	       taskjetSpectrum->SetBranchBkgGen(bBkgName2[i].Data());
+	     } 
 	   }
-	   if(iAODanalysis)SetAODInput(taskjetSpectrum);
-
 	 }
        }
        else{ // ! PbPb
@@ -962,56 +1012,43 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
        }
        else{
-         // Anti-kT
-         taskFrag = AddTaskFragmentationFunction(1<<23,kHighPtFilterMask, 1);
-	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
-	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
 
-         taskFrag = AddTaskFragmentationFunction(1<<23,kHighPtFilterMask, 2);
-	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
-	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
 
-         taskFrag = AddTaskFragmentationFunction(1<<23,kHighPtFilterMask, 3);
-	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
-	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
+	 for(int ic = 1;ic < 5;ic++){
+	   // Anti-kT
+	   taskFrag = AddTaskFragmentationFunction(1<<23,kHighPtFilterMask, ic);
+	   if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
+	   if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
 
-         taskFrag = AddTaskFragmentationFunction(1<<23,kHighPtFilterMask, 4);
-     	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
-	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
-
-         // UA1
-         taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask, 1); 
-	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
-	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
-
-	 taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask, 2); 
-	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
-	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
-
-	 taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask, 3); 
-	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
-	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
-
-	 taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask, 4); 
-	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
-	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
+	   // UA1
+	   taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask, ic); 
+	   if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
+	   if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
 
          // SISCONE 
-	 /*
-         taskFrag = AddTaskFragmentationFunction(1<<28,kHighPtFilterMask, 1);
-         taskFrag = AddTaskFragmentationFunction(1<<29,kHighPtFilterMask, 1);
-         taskFrag = AddTaskFragmentationFunction(1<<30,kHighPtFilterMask, 1);
-	 */
-
-         // Anti-kT B2 - B3
-         taskFrag = AddTaskFragmentationFunction(1<<26,kHighPtFilterMask, 1);
-	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
-	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
+	   if(ic==1){
+	     /*
+	       taskFrag = AddTaskFragmentationFunction(1<<28,kHighPtFilterMask, ic);
+	       taskFrag = AddTaskFragmentationFunction(1<<29,kHighPtFilterMask, ic);
+	       taskFrag = AddTaskFragmentationFunction(1<<30,kHighPtFilterMask, ic);
+	     */
 
 
-         taskFrag = AddTaskFragmentationFunction(1<<27,kHighPtFilterMask, 1);
-	 if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
-	 if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
+
+	     // Anti-kT B2 - B3
+	     if(!iAODanalysis==1){
+	       taskFrag = AddTaskFragmentationFunction(1<<26,kHighPtFilterMask, ic);
+	       if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
+	       if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
+	       
+	       taskFrag = AddTaskFragmentationFunction(1<<27,kHighPtFilterMask, ic);
+	       if(kDeltaAODJetName.Length()>0)taskFrag->SetNonStdFile(kDeltaAODJetName.Data());
+	       if(iAODanalysis==2)taskFrag->UseAODInputJets(kFALSE);
+	     }
+	   }
+
+	 } 
+
 
        }
        if (!taskFrag) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskFragmentationFunction cannot run for this train conditions - EXCLUDED");
@@ -1269,17 +1306,6 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        }
        Printf("%s copy ...",dest.Data());
        TFile::Cp(Form("file:%s_merge.jdl",kTrainName.Data()),Form("alien://%s",dest.Data()));
-
-
-       /*
-       dest = Form("%s/rootfiles/STEER/LQ1dRef_v1.root",gGrid->GetHomeDirectory());
-       if(AliAnalysisAlien::FileExists(dest.Data())){
-	 Printf("%s exist on grid removing...",dest.Data());
-	 gGrid->Rm(dest.Data());
-       }
-       TFile::Cp(Form("file:%s/STEER/LQ1dRef_v1.root",
-		      gSystem->ExpandPathName("$ALICE_ROOT")),Form("alien://%s",dest.Data()));
-       */
      }
      AliLog::SetGlobalLogLevel(AliLog::kError);
      if((kUseSysInfo>0&&smode=="LOCAL")||!strcmp(plugin_mode, "test")){
@@ -1486,7 +1512,7 @@ void CheckModuleFlags(const char *mode) {
    iPWG4GammaConvLib = iPWG4GammaConv||iPWG4CaloConv;
 
 
-   iEMCUtilLibs = iPWG4PartCorrLibs||iPWG4JCORRAN||iPWG4GammaConvLib||iJETAN;
+   iEMCUtilLibs = iPWG4JetTasks||iPWG4PartCorrLibs||iPWG4JCORRAN||iPWG4GammaConvLib||iJETAN;
    iJETANLib = iPWG4JetTasks||iJETAN||iDIJETAN;
 
    if (iESDfilter) {iAODhandler=1;}
@@ -1600,8 +1626,8 @@ Bool_t LoadCommonLibraries(const char *mode)
             success &= LoadLibrary("ESD", mode, kTRUE);
             success &= LoadLibrary("AOD", mode, kTRUE);
             success &= LoadLibrary("ANALYSIS", mode, kTRUE);
-            success &= LoadLibrary("ANALYSISalice", mode, kTRUE);
             success &= LoadLibrary("OADB", mode, kTRUE);
+            success &= LoadLibrary("ANALYSISalice", mode, kTRUE);
             success &= LoadLibrary("ROOTFILES", mode, kTRUE);
 	    //            success &= LoadLibrary("EventMixing", mode,kTRUE);
             success &= LoadLibrary("CORRFW", mode, kTRUE);
@@ -1610,8 +1636,8 @@ Bool_t LoadCommonLibraries(const char *mode)
             success &= LoadLibrary("libESD.so", mode);
             success &= LoadLibrary("libAOD.so", mode);
             success &= LoadLibrary("libANALYSIS.so", mode);
-            success &= LoadLibrary("libANALYSISalice.so", mode);
             success &= LoadLibrary("libOADB.so", mode, kTRUE);
+            success &= LoadLibrary("libANALYSISalice.so", mode);
 	    //            success &= LoadLibrary("libEventMixing.so", mode);
             success &= LoadLibrary("libCORRFW.so", mode);
             gROOT->ProcessLine(".include $ALICE_ROOT/include");
@@ -2014,8 +2040,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Define production directory LFN
    plugin->SetGridDataDir(kGridDatadir.Data());
 // Set data search pattern
-   if (iAODanalysis) plugin->SetDataPattern(" *AliAOD.root");
-   //   else              plugin->SetDataPattern(Form(" %s/*/*ESD.tag.root",kGridPassPattern.Data()));
+   if (iAODanalysis) plugin->SetDataPattern(Form(" %s/*/*AliAOD.root",kGridPassPattern.Data()));
    else              plugin->SetDataPattern(Form(" %s/*/*AliESDs.root",kGridPassPattern.Data()));
 // ...then add run numbers to be considered
 //   plugin->SetRunRange(kGridRunRange[0], kGridRunRange[1]);
@@ -2029,29 +2054,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
      in1.open(kGridLocalRunList.Data());
      int iRun;
      int icount = 0;
-     /*
-     char c;
-     char cLine[250];
-     while(!in1.eof()){
-       c = in1.get();
-       if ( (c >= '0') && (c <= '9') )
-	 {
-	   in1.putback (c)s;
-	   in1>>iRun;
-	   Printf("AnalysisTrainPWG4Jets Adding run number from File %s", Form(kGridRunPattern.Data(),iRun));
-	   plugin->AddRunNumber(Form(kGridRunPattern.Data(),iRun));
-       }
-     else
-       {
-	 in1.putback (c);
-	 in1.getline(cLine,250);
-
-       }
-     }
-     */
-     
      Int_t nRun = 0;
-
      // just use run numbers, negatives will be excluded
      while(in1>>iRun){
        if(iRun>=0){
@@ -2070,7 +2073,6 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
        }
      }
    }
-
 // Method 2: Declare existing data files (raw collections, xml collections, root file)
 // If no path mentioned data is supposed to be in the work directory (see SetGridWorkingDir())
 // XML collections added via this method can be combined with the first method if
@@ -2090,11 +2092,9 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetGridOutputDir(kGridOutdir);
 
    // Add external packages
-   if (iJETAN||iDIJETAN) {
-      plugin->AddExternalPackage("boost::v1_43_0");
-      plugin->AddExternalPackage("cgal::v3.6");
-      plugin->AddExternalPackage("fastjet::v2.4.2");
-   }   
+   plugin->AddExternalPackage("boost::v1_43_0");
+   plugin->AddExternalPackage("cgal::v3.6");
+   plugin->AddExternalPackage("fastjet::v2.4.2");
 
 
    // set extra libs before par file compilation
