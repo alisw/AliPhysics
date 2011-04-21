@@ -32,17 +32,28 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Int_t yea
   //Reader
   //For this particular analysis few things done by the reader.
   //Nothing else needs to be set.
+  Bool_t doEmcal = 1;
+  Bool_t doPhos  = 1;
+  if (data.Contains("PHOS"))
+    doEmcal = 0;
+  else if (data.Contains("EMCAL"))
+    doPhos = 0;
+
   AliCaloTrackReader * reader = 0x0;
-  if     (data=="AOD") reader = new AliCaloTrackAODReader();
-  else if(data=="ESD") reader = new AliCaloTrackESDReader();
+  if (data.Contains("AOD")) reader = new AliCaloTrackAODReader();
+  else if(data.Contains("ESD")) reader = new AliCaloTrackESDReader();
   //reader->SetDebug(10);//10 for lots of messages
-  reader->SwitchOnEMCALCells(); 
-  reader->SwitchOnPHOSCells(); 
-  reader->SwitchOnEMCAL();
-  reader->SwitchOnPHOS();
+  if (doEmcal) {
+    reader->SwitchOnEMCALCells(); 
+    reader->SwitchOnEMCAL();
+    reader->SetEMCALPtMin(0.); 
+  }
+  if (doPhos) {
+    reader->SwitchOnPHOSCells(); 
+    reader->SwitchOnPHOS();
+    reader->SetPHOSPtMin (0.);
+  }
   reader->SwitchOnCTS();
-  reader->SetEMCALPtMin(0.); 
-  reader->SetPHOSPtMin (0.);
   reader->SetCTSPtMin  (0.);
   reader->SetZvertexCut(10.);
   
@@ -172,8 +183,10 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Int_t yea
   emcalQA->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
   emcalQA->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
   //emcalQA->GetMCAnalysisUtils()->SetDebug(10);
+  if (!doPhos)
+    emcalQA->SwitchOffCorrelation();
 	
-  if(kPrintSettings) emcalQA->Print("");	
+  if(kPrintSettings&&doEmcal) emcalQA->Print("");	
   
   AliAnaCalorimeterQA *phosQA = new AliAnaCalorimeterQA();
   //phosQA->SetDebug(2); //10 for lots of messages
@@ -207,14 +220,18 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Int_t yea
   phosQA->SetHistoV0SignalRangeAndNBins(0,5000,500);
   phosQA->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
   phosQA->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
-  
+  if (!doEmcal)
+    phosQA->SwitchOffCorrelation();
+  if(kPrintSettings&&doPhos) phosQA->Print("");	
 
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
   maker->SetReader(reader);//pointer to reader
   maker->SetCaloUtils(cu); //pointer to calorimeter utils
-  maker->AddAnalysis(emcalQA,0);
-  maker->AddAnalysis(phosQA,1);
+  if (doEmcal)
+    maker->AddAnalysis(emcalQA,0);
+  if (doPhos)
+    maker->AddAnalysis(phosQA,1+doEmcal);
   maker->SetAnaDebug(-1)  ; // 0 to at least print the event number
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOffAODsMaker()  ;
@@ -232,6 +249,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Int_t yea
   //task->SetDebugLevel(-1);
   task->SelectCollisionCandidates();
   task->SetAnalysisMaker(maker);	
+  task->SetBranches("ESD:AliESDRun.,AliESDHeader"); //just a trick to get Constantin's analysis to work
   mgr->AddTask(task);
   
   //Create containers
