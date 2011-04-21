@@ -34,11 +34,11 @@ AliRecInfoCuts::AliRecInfoCuts(const Char_t* name,const Char_t *title) : AliESDt
 , fMinNTrackletsTRD(0)
 {
   // init data members with defaults
-  Init();
+  InitME();
 }
 
 //_____________________________________________________________________________
-void AliRecInfoCuts::Init()
+void AliRecInfoCuts::InitME()
 {
   // set default values 
   SetMinTPCsignalN();
