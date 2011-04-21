@@ -22,6 +22,7 @@
 #include "AliCentrality.h"
 #include "AliEMCALGeoUtils.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALRecPoint.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliESDCaloTrigger.h"
 #include "AliESDEvent.h"
@@ -842,9 +843,9 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     if (!TMath::IsNaN(clus->GetDispersion()))
       cl->fDisp   = clus->GetDispersion();
     if (!TMath::IsNaN(clus->GetM20()))
-      cl->fM20      = clus->GetM20();
+      cl->fM20    = clus->GetM20();
     if (!TMath::IsNaN(clus->GetM02()))
-      cl->fM02      = clus->GetM02();
+      cl->fM02    = clus->GetM02();
     Double_t maxAxis = 0, minAxis = 0;
     GetSigma(clus,maxAxis,minAxis);
     clus->SetTOF(maxAxis);     // store sigma in TOF
@@ -859,6 +860,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     cl->fTrIso2   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist, 2);
     cl->fCeCore   = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),0.05);
     cl->fCeIso    = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),fIsoDist);
+
     Double_t trigpen = 0;
     Double_t trignen = 0;
     for(Int_t j=0; j<cl->fN; ++j) {
@@ -882,6 +884,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
       cl->fIsTrigM   = 1;
       cl->fTrigMaskE = trignen;      
     }
+    cl->fIsShared = IsShared(clus);
 
     // track matching
     Double_t mind2 = 1e10;
@@ -1559,20 +1562,41 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetCellIsolation(Double_t cEta, Double_t c
   Int_t ncells = cells->GetNumberOfCells();
   for (Int_t i = 0; i<ncells; ++i) {
     Int_t absID    = TMath::Abs(cells->GetCellNumber(i));
-    Double_t cellE = cells->GetAmplitude(i);
-    Float_t eta, phi;
+    Float_t eta=-1, phi=-1;
     fGeom->EtaPhiFromIndex(absID,eta,phi);
-    Double_t phidiff = TVector2::Phi_0_2pi(phi-cPhi);
+    Double_t phidiff = TVector2::Phi_mpi_pi(phi-cPhi);
     Double_t dist = (eta-cEta)*(eta-cEta)+phidiff*phidiff;
     if(dist>rad2)
       continue;
+    Double_t cellE = cells->GetAmplitude(i);
     cellIsolation += cellE;
   }
   return cellIsolation;
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskEMCALPi0PbPb::GetMaxCellEnergy(AliVCluster *cluster, Short_t &id) const
+Double_t AliAnalysisTaskEMCALPi0PbPb::GetCellEnergy(const AliVCluster *cluster) const
+{
+  // Get maximum energy of attached cell.
+
+  Double_t ret = 0;
+  Int_t ncells = cluster->GetNCells();
+  if (fEsdCells) {
+    for (Int_t i=0; i<ncells; i++) {
+      Double_t e = fEsdCells->GetCellAmplitude(TMath::Abs(cluster->GetCellAbsId(i)));
+      ret += e;
+      }
+  } else {
+    for (Int_t i=0; i<ncells; i++) {
+      Double_t e = fAodCells->GetCellAmplitude(TMath::Abs(cluster->GetCellAbsId(i)));
+      ret += e;
+    }
+  }
+  return ret;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskEMCALPi0PbPb::GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const
 {
   // Get maximum energy of attached cell.
 
@@ -1599,7 +1623,7 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetMaxCellEnergy(AliVCluster *cluster, Sho
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEMCALPi0PbPb::GetSigma(AliVCluster *c, Double_t& sigmaMax, Double_t &sigmaMin) const
+void AliAnalysisTaskEMCALPi0PbPb::GetSigma(const AliVCluster *c, Double_t& sigmaMax, Double_t &sigmaMin) const
 {
   // Calculate the (E) weighted variance along the longer (eigen) axis.
 
@@ -1653,7 +1677,7 @@ void AliAnalysisTaskEMCALPi0PbPb::GetSigma(AliVCluster *c, Double_t& sigmaMax, D
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskEMCALPi0PbPb::GetNCells(AliVCluster *c, Double_t emin) const
+Int_t AliAnalysisTaskEMCALPi0PbPb::GetNCells(const AliVCluster *c, Double_t emin) const
 {
   // Calculate number of attached cells above emin.
 
@@ -1690,7 +1714,7 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetTrackIsolation(Double_t cEta, Double_t 
       continue;
     Float_t eta = track->Eta();
     Float_t phi = track->Phi();
-    Double_t phidiff = TVector2::Phi_0_2pi(phi-cPhi);
+    Double_t phidiff = TVector2::Phi_mpi_pi(phi-cPhi);
     Double_t dist = (eta-cEta)*(eta-cEta)+phidiff*phidiff;
     if(dist>rad2)
       continue;
@@ -1699,4 +1723,29 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetTrackIsolation(Double_t cEta, Double_t 
   return trkIsolation;
 }
 
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0PbPb::IsShared(const AliVCluster *c) const
+{
+  // Returns if cluster shared across super modules.
+
+  AliVCaloCells *cells = fEsdCells;
+  if (!cells)
+    cells = fAodCells;
+  if (!cells)
+    return 0;
+
+  Int_t n = -1;
+  Int_t ncells = c->GetNCells();
+  for(Int_t j=0; j<ncells; ++j) {
+    Int_t id = TMath::Abs(c->GetCellAbsId(j));
+    Int_t got = id / (24*48);
+    if (n==-1) {
+      n = got;
+      continue;
+    }
+    if (got!=n)
+      return 1;
+  }
+  return 0;
+}
 
