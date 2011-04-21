@@ -2389,6 +2389,12 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          Info("StartAnalysis", "Stopping the analysis. Please use SetProofReset(0) to resume.");
          return kFALSE;
       }
+      // Check if there is an old active session
+      Long_t nsessions = gROOT->ProcessLine(Form("TProof::Mgr(\"%s\")->QuerySessions(\"\")->GetEntries();", fProofCluster.Data()));
+      if (nsessions) {
+         Error("StartAnalysis","You have to reset your old session first\n");
+         return kFALSE;
+      }
       // Do we need to change the ROOT version ? The success of this cannot be checked.
       if (!fRootVersionForProof.IsNull() && !testMode) {
          gROOT->ProcessLine(Form("TProof::Mgr(\"%s\")->SetROOTVersion(\"%s\");", 
@@ -2413,11 +2419,6 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       }
       if (!proof) {
          Error("StartAnalysis", "Could not connect to PROOF cluster <%s>", fProofCluster.Data());
-         return kFALSE;
-      }   
-      Long_t nsessions = gROOT->ProcessLine(Form("TProof::Mgr(\"%s\")->QuerySessions(\"\")->GetEntries();", fProofCluster.Data()));
-      if (nsessions) {
-         Error("StartAnalysis","You have to reset your old session first\n");
          return kFALSE;
       }   
       if (fNproofWorkersPerSlave*fNproofWorkers > 0)
