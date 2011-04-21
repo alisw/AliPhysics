@@ -275,13 +275,13 @@ void AliSISConeJetFinder::FindJets()
     if (debug) cout<<"Number of jets not to count into rho estimation : "<<NHardJets<<endl;
     Bool_t rhoOnJet = 0;
     if (inclusiveJetsForRhoEstimation.size() == 1 && inclusiveJetsForRhoEstimation[0].perp() > 5) rhoOnJet = 1;//if there's only one jet (not bg kind), rho = 0
-    if (inclusiveJetsForRhoEstimation.size() <= NHardJets && inclusiveJetsForRhoEstimation.size() != 1  && inclusiveJetsForRhoEstimation.size() != 0)
+    if (inclusiveJetsForRhoEstimation.size() <= (UInt_t)NHardJets && inclusiveJetsForRhoEstimation.size() != 1  && inclusiveJetsForRhoEstimation.size() != 0)
     {
       //      inclusiveJetsForRhoEstimation.erase(inclusiveJetsForRhoEstimation.begin(),inclusiveJetsForRhoEstimation.begin()+1);
       inclusiveJetsForRhoEstimation.erase(inclusiveJetsForRhoEstimation.begin());
       cout<<"Only the 1st (hardest) jet of the event hasn't been taken into account for rho estimation"<<endl;
     }
-    if (inclusiveJetsForRhoEstimation.size() > NHardJets) inclusiveJetsForRhoEstimation.erase(inclusiveJetsForRhoEstimation.begin(), inclusiveJetsForRhoEstimation.begin()+NHardJets);
+    if (inclusiveJetsForRhoEstimation.size() > (UInt_t)NHardJets) inclusiveJetsForRhoEstimation.erase(inclusiveJetsForRhoEstimation.begin(), inclusiveJetsForRhoEstimation.begin()+NHardJets);
     
     // Estimation of rho and fluctuations sigma
 
