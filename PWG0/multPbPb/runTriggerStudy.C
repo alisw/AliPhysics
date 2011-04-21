@@ -180,7 +180,12 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
   {
     cout << "Init in Local or Grid mode" << endl;
 
+    gSystem->Load("libCore");  
+    gSystem->Load("libGeom");
+    gSystem->Load("libPhysics");
     gSystem->Load("libVMC");
+    gSystem->Load("libTree");
+    gSystem->Load("libProof");
     gSystem->Load("libTree");
     gSystem->Load("libSTEERBase");
     gSystem->Load("libESD");

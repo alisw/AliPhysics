@@ -60,8 +60,12 @@ void TriggerStudyResults(const char * filename = "outTrigger/collection_136854.x
 
 LoadLibs() {
 
+  gSystem->Load("libCore.so");  
+  gSystem->Load("libGeom.so");
+  gSystem->Load("libPhysics.so");
   gSystem->Load("libVMC");
   gSystem->Load("libTree");
+  gSystem->Load("libProof");
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
   gSystem->Load("libAOD");
@@ -93,8 +97,8 @@ LoadLibs() {
   gROOT->LoadMacro(taskName    +(debug?"+g":""));   
 
   // Histo fitter
-  gROOT->LoadMacro("/Users/mfloris/Work/ALICE/ANALYSIS/HistoFitter/fcn.cxx+g");
-  gROOT->LoadMacro("/Users/mfloris/Work/ALICE/ANALYSIS/HistoFitter/AliHistoFitter.cxx+g");
+  // gROOT->LoadMacro("/Users/mfloris/Work/ALICE/ANALYSIS/HistoFitter/fcn.cxx+g");
+  // gROOT->LoadMacro("/Users/mfloris/Work/ALICE/ANALYSIS/HistoFitter/AliHistoFitter.cxx+g");
 
 
 }
