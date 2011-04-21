@@ -72,13 +72,15 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   virtual void FillPionHists();
   void         FillVertex(AliStaVertex *v, const AliESDVertex *esdv);
   void         FillVertex(AliStaVertex *v, const AliAODVertex *aodv);
-  Double_t     GetCellIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2)                  const;
-  Double_t     GetMaxCellEnergy(AliVCluster *c) const { Short_t id=-1; return GetMaxCellEnergy(c,id); }
-  Double_t     GetMaxCellEnergy(AliVCluster *c, Short_t &id)                                        const;
-  Int_t        GetNCells(AliVCluster *c, Double_t emin=0.)                                          const;
-  void         GetSigma(AliVCluster *c, Double_t &sigmaMax, Double_t &sigmaMin)                     const;
-  Double_t     GetTrackIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2, Double_t pt=0.) const;
-  Double_t     GetTrigEnergy(AliVCluster *c)                                                        const;
+  Double_t     GetCellIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2)                        const;
+  Double_t     GetCellEnergy(const AliVCluster *c)    const;
+  Double_t     GetMaxCellEnergy(const AliVCluster *c) const { Short_t id=-1; return GetMaxCellEnergy(c,id); }
+  Double_t     GetMaxCellEnergy(const AliVCluster *c, Short_t &id)                                        const;
+  Int_t        GetNCells(const AliVCluster *c, Double_t emin=0.)                                          const;
+  void         GetSigma(const AliVCluster *c, Double_t &sigmaMax, Double_t &sigmaMin)                     const;
+  Double_t     GetTrackIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2, Double_t pt=0.)       const;
+  Double_t     GetTrigEnergy(const AliVCluster *c)                                                        const;
+  Bool_t       IsShared(const AliVCluster *c)                                                             const;
 
     // input members
   TString                fCentVar;                // variable for centrality determination
@@ -261,7 +263,7 @@ class AliStaCluster : public TObject
   AliStaCluster() : TObject(), fE(0), fR(0), fEta(0), fPhi(0), fN(0), fN1(0), fN3(0), fIdMax(0), fEmax(0),  
                     fDbc(-1), fDisp(-1), fM20(0), fM02(0), fEcc(0), fSig(0), fIsTrackM(0), fTrDz(0), fTrDr(-1), 
                     fTrEp(0), fTrIso(0), fTrIso1(0), fTrIso2(0), fCeIso(0), fCeCore(0), fIsTrigM(0), fTrigE(-1), 
-                    fTrigMaskE(-1) {;}
+                    fTrigMaskE(-1), fIsShared(0) {;}
 
  public:
   Double32_t    fE;                //[0,0,16] energy
@@ -291,8 +293,9 @@ class AliStaCluster : public TObject
   Bool_t        fIsTrigM;          //         if true then trigger values are set
   Double32_t    fTrigE;            //[0,0,16] trigger tower energy
   Double32_t    fTrigMaskE;        //[0,0,16] masked trigger tower energy
+  Bool_t        fIsShared;         //         =true then extends across more than one super module
 
-  ClassDef(AliStaCluster,3) // Cluster class
+  ClassDef(AliStaCluster,4) // Cluster class
 };
 
 class AliStaTrigger : public TObject
