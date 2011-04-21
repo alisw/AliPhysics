@@ -23,8 +23,15 @@ class AliMassFitControl : public TObject {
     fMinMass=1.085; fMaxMass=1.17;
     fBinLower=0;fBinUpper=0;
   };
+  ///// the minimum value of parameter have to be zero with this constructor
   AliMassFitControl(Double_t ptLo, Double_t ptUp, Int_t polyO, Int_t RBF, Double_t m1, Double_t m2){
     fPtUpper=ptUp; fPtLower=ptLo; fPolyOrder = polyO; fRebinFactor = RBF;
+    fMinMass=m1; fMaxMass=m2; fhistMin = 0;
+    fBinLower=0;fBinUpper=0;
+  };
+  ///// the minimum value of (QA) parameter don't have to be zero. can by arbitrary value "histMin"
+  AliMassFitControl(Double_t histMin, Double_t ptLo, Double_t ptUp, Int_t polyO, Int_t RBF, Double_t m1, Double_t m2){
+    fhistMin = histMin; fPtUpper=ptUp; fPtLower=ptLo; fPolyOrder = polyO; fRebinFactor = RBF;
     fMinMass=m1; fMaxMass=m2;
     fBinLower=0;fBinUpper=0;
   };
@@ -61,11 +68,13 @@ class AliMassFitControl : public TObject {
   };
   Double_t DPt() const {return fPtUpper-fPtLower;};
   void CalcBinLimits(Int_t BinsPerGeV){
-    fBinLower = TMath::Nint(1.+fPtLower*BinsPerGeV);
-    fBinUpper = TMath::Nint(fPtUpper*BinsPerGeV);
+//    fBinLower = TMath::Nint(1.+fPtLower*BinsPerGeV); //this assumes that histogram allways start from zero. not true for QA
+    fBinLower = TMath::Nint(1.+(fPtLower-fhistMin)*BinsPerGeV); //this is valid if hist. doesn't start from zero but from number: histMin
+    fBinUpper = TMath::Nint((fPtUpper-fhistMin)*BinsPerGeV); //this is valid if hist. doesn't start from zero but from number: histMin    
   };
 
 protected:
+  Double_t fhistMin; //value of the first bin for QA parameter
   Double_t fPtUpper; // Upper pt limit
   Double_t fPtLower; // Lower pt limit. This was previously public due to use in sorting functions but it seems OK here.
   Int_t fBinUpper; // Upper bin limit

@@ -1,14 +1,15 @@
 #!/bin/bash
 
-run=000137161
-pass=pass1_5plus
+run=
+#pass=/alice/data/LHC10h_000139172_p2
+pass=
 mc=0
 mode="full"
 nev=1234566789
 workers=26
 ROPT=""
 listfile=""
-offset=0
+offset=500000
 debug=kTRUE
 option="SAVE" #FIXME:set option
 suffix=""
@@ -18,7 +19,9 @@ partID=1
 task=no
 fit=no
 usePID=kTRUE
-
+binMin=0
+binMax=6
+ihist=0
 give_help() {
 
 cat <<ENDOFGUIDE
@@ -42,6 +45,8 @@ Available options:
                                must have the same path
   -x <suffix>                  Add extra suffix to files 
   -i                           Disable PID cuts
+  -c min,max                   First and last centrality bins to process 
+                               (As defined in AddTaskLambdaK0PbPb)
  Grid only options
   -g <gridmode>                Plugin Mode [default=$mode]
   -p <recopass>                Reconstruction pass [default=$pass]       
@@ -65,8 +70,16 @@ ENDOFGUIDE
 
 }
 
-while getopts "r:hd:mg:p:n:w:t:l:f:b:x:i" opt; do
+while getopts "r:hd:mg:p:n:w:t:l:f:b:x:ic:s:" opt; do
   case $opt in
+    s)
+    ihist=$OPTARG     
+    ;;
+    c)
+      bins=$OPTARG
+      binMax=${bins#*,}
+      binMin=${bins%,*}
+      ;;
     r)
       runMode=$OPTARG
       task=yes
@@ -97,6 +110,7 @@ while getopts "r:hd:mg:p:n:w:t:l:f:b:x:i" opt; do
       workers=$OPTARG
       ;;
     m)
+    #Int_t Nev =
       mc=kTRUE
       ;;
     g) 
@@ -144,18 +158,18 @@ if [ "$task" = "yes" ]
 
     if [ "$runMode" = "2" ]
     then
-	echo root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$usePID,$option,$suffix,$workers,\"$mode\"\)
-	root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$usePID,\"$option\",\"$suffix\",$workers,\"$mode\"\)
+	echo root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$usePID,$option,$suffix,$workers,\"$mode\",$binMin,$binMax\)
+	root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$usePID,\"$option\",\"$suffix\",$workers,\"$mode\",$binMin,$binMax\)
     else
 	for run in $runlist 
 	do
-	    echo root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$usePID,$option,$suffix,$workers,\"$mode\"\)
-	    root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$usePID,\"$option\",\"$suffix\",$workers,\"$mode\"\)
+	    echo root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$usePID,$option,\"$suffix\",$workers,\"$mode\",$binMin,$binMax\)
+	    root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$usePID,\"$option\",\"$suffix\",$workers,\"$mode\",$binMin,$binMax\)
 	done
     fi
 elif [ "$fit" = "yes" ]
 then    
-    root FitSpectrum.C\(\"./output/$fitFolder/lambdak0_${fitBin}.root\",\"clambdak0Histo_${fitBin}\",\"$suffix\",$partID\)
+    root FitSpectrum.C\(\"./output/$fitFolder/lambdak0_${fitBin}.root\",\"clambdak0Histo_${fitBin}\",\"$suffix\",${ihist},$partID\)
 else
     give_help
 fi
