@@ -32,7 +32,7 @@
 #include <TBranch.h>
 #include <TTree.h>
 #include <TMath.h>
-#include <TObjArray.h>
+//#include <TObjArray.h>
 
 // --- Standard library ---
 
@@ -330,13 +330,13 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   TH2D *hphil3norm = new TH2D("SDDphizL3NORM","NORM SDD #varphiz Layer3 ",12,0.5,6.5,14,0.5,14.5);//4
   hphil3norm->GetXaxis()->SetTitle("z[Module Number L3 ]");
   hphil3norm->GetYaxis()->SetTitle("#varphi[ Ladder Number L3]");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hphil3norm,4+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, saveCorr); 
+  rv = fAliITSQADataMakerRec->Add2RawsList(hphil3norm,4+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, !saveCorr); 
   fSDDhRawsTask++;
   
   TH2D *hphil4norm = new TH2D("SDDphizL4NORM","NORM SDD #varphiz Layer4 ",16,0.5,8.5,22,0.5,22.5); //5
   hphil4norm->GetXaxis()->SetTitle("z[Module Number L4]");
   hphil4norm->GetYaxis()->SetTitle("#varphi[Ladder Number L4]");
-   rv = fAliITSQADataMakerRec->Add2RawsList(hphil4norm,5+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, saveCorr); 
+   rv = fAliITSQADataMakerRec->Add2RawsList(hphil4norm,5+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, !saveCorr); 
   fSDDhRawsTask++;
 
 	
