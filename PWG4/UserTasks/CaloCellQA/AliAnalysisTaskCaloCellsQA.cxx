@@ -19,6 +19,15 @@
 //
 // Clusters containing a bad cell can be rejected, use SetBadCells().
 //
+// The output can be directly saved into a file (see the class second
+// constructor). Saving through AliAnalysisManager is always happen with
+// TObject::kSingleKey option. In such case an output from different runs
+// cannot be merged later, because here we have histograms which are
+// run-dependent, i.e. not the same between every analysis instance.
+//
+// If you forget to initialize EMCAL/PHOS geometry, the class will do it
+// for you.
+//
 // See AddTaskCaloCellsQA.C for usage example.
 //
 //----
@@ -34,6 +43,8 @@
 #include <AliVCaloCells.h>
 #include <AliVCluster.h>
 #include <AliVVertex.h>
+#include <AliEMCALGeometry.h>
+#include <AliPHOSGeometry.h>
 
 ClassImp(AliAnalysisTaskCaloCellsQA)
 
@@ -41,36 +52,43 @@ ClassImp(AliAnalysisTaskCaloCellsQA)
 AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA() : AliAnalysisTaskSE(),
   fkAvoidPileup(kTRUE),
   fCellsQA(0),
-  fOutfile(new TString),
-  fBadCells(0),
-  fNBad(0)
+  fOutfile(0),
+  fNBad(0),
+  fBadCells(0)
 {
 }
 
 //________________________________________________________________
-AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA(const char *name) : AliAnalysisTaskSE(name),
+AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA(const char *name, char *outfile) : AliAnalysisTaskSE(name),
   fkAvoidPileup(kTRUE),
   fCellsQA(0),
-  fOutfile(new TString),
-  fBadCells(0),
-  fNBad(0)
+  fOutfile(0),
+  fNBad(0),
+  fBadCells(0)
 {
+  // outfile -- file name to write to; if NULL, write into output container;
+  //   allows to avoid limitation of AliAnalysisManager, which always
+  //   writes with TObject::kSingleKey option.
+
+  if (outfile)
+    fOutfile = new TString(outfile);
+  else
+    DefineOutput(1, TObjArray::Class());
 }
 
 //________________________________________________________________
 AliAnalysisTaskCaloCellsQA::~AliAnalysisTaskCaloCellsQA()
 {
   if (fCellsQA) delete fCellsQA;
-  delete fOutfile;
+  if (fOutfile) delete fOutfile;
   if (fBadCells) delete [] fBadCells;
 }
 
 //________________________________________________________________
-void AliAnalysisTaskCaloCellsQA::InitCaloCellsQA(char* fname, Int_t nmods, Int_t det)
+void AliAnalysisTaskCaloCellsQA::InitCaloCellsQA(Int_t nmods, Int_t det)
 {
   // Must be called at the very beginning.
   //
-  // fname -- output file name;
   // nmods -- number of supermodules + 1;
   // det -- detector;
 
@@ -80,8 +98,6 @@ void AliAnalysisTaskCaloCellsQA::InitCaloCellsQA(char* fname, Int_t nmods, Int_t
     fCellsQA = new AliCaloCellsQA(nmods, AliCaloCellsQA::kPHOS);
   else
     Fatal("AliAnalysisTaskCaloCellsQA::InitCellsQA", "Wrong detector provided");
-
-  *fOutfile = fname;
 }
 
 //________________________________________________________________
@@ -90,12 +106,28 @@ void AliAnalysisTaskCaloCellsQA::UserCreateOutputObjects()
   // Per run histograms cannot be initialized here
 
   fCellsQA->InitSummaryHistograms();
+
+  if (!fOutfile)
+    PostData(1, fCellsQA->GetListOfHistos());
 }
 
 //________________________________________________________________
 void AliAnalysisTaskCaloCellsQA::UserExec(Option_t *)
 {
   // Does the job for one event
+
+  // check geometry
+  if (fCellsQA->GetDetector() == kEMCAL) {
+    if (!AliEMCALGeometry::GetInstance()) {
+      Info("UserExec", "EMCAL geometry not initialized, initializing it for you");
+      AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+    }
+  } else {
+    if (!AliPHOSGeometry::GetInstance()) {
+      Info("UserExec", "PHOS geometry not initialized, initializing it for you");
+      AliPHOSGeometry::GetInstance("IHEP");
+    }
+  }
 
   // event
   AliVEvent *event = InputEvent();
@@ -147,19 +179,20 @@ void AliAnalysisTaskCaloCellsQA::UserExec(Option_t *)
   Double_t vertexXYZ[3];
   vertex->GetXYZ(vertexXYZ);
   fCellsQA->Fill(event->GetRunNumber(), &clusArray, cells, vertexXYZ);
+
+  if (!fOutfile)
+    PostData(1, fCellsQA->GetListOfHistos());
 }
 
 //________________________________________________________________
 void AliAnalysisTaskCaloCellsQA::Terminate(Option_t*)
 {
-  // The AliCaloCellsQA analysis output should not be saved through
-  // AliAnalysisManager, because it will write with TObject::kSingleKey
-  // option. Such an output cannot be merged later: we have histograms
-  // which are run-dependent, i.e. not the same between every analysis
-  // instance.
+  // Handle direct saving of the histograms into a file
 
-  TFile f(fOutfile->Data(), "RECREATE");
-  fCellsQA->GetListOfHistos()->Write();
+  if (fOutfile) {
+    TFile f(fOutfile->Data(), "RECREATE");
+    fCellsQA->GetListOfHistos()->Write();
+  }
 }
 
 //____________________________________________________________
