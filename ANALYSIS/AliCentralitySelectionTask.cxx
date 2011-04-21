@@ -1146,7 +1146,19 @@ void AliCentralitySelectionTask::MyInitScaleFactorMC()
 // Initialize the MC scaling factors
   for (int i=0; i<(fHighRunN-fLowRunN); i++) fV0MScaleFactorMC[i] = 0.0;
   // scale factors determined from <V0 charge> on a run-by-run basis
-  fV0MScaleFactorMC[0] = 0.75108;
+  switch (fPass) {
+  case 1:
+    fV0MScaleFactorMC[0] = 0.75108;
+    break;
+  case 2:
+    fV0MScaleFactorMC[0] = 0.8;
+    break;
+  default:
+    AliError(Form("Unknown reconstruction pass (%d)! Setting MC scale in V0 to 1", fPass));
+    fV0MScaleFactorMC[0] = 1.0;
+    break;
+  }
+
   // set all missing values to the value of the run before it ....
   for (int i=0; i<=(fHighRunN-fLowRunN); i++) {    
     if (fV0MScaleFactorMC[i] == 0.0) {     
