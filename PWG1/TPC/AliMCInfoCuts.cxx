@@ -45,7 +45,7 @@ AliAnalysisCuts(name, title)
   // default constructor 
   
   // init data members with defaults
-  Init();
+  InitME();
 }
 
 //_____________________________________________________________________________
@@ -60,7 +60,7 @@ AliMCInfoCuts::~AliMCInfoCuts()
 }
 
 //_____________________________________________________________________________
-void AliMCInfoCuts::Init()  
+void AliMCInfoCuts::InitME()  
 {
   // set default values
   SetMinRowsWithDigits();

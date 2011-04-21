@@ -45,7 +45,7 @@ public:
   Float_t GetProtBar() const   {return protbar;}
  
   // cuts init function
-  void Init();
+  void InitME();
 
   // check MC tracks
   virtual Bool_t IsSelected(TObject *) {return kTRUE;}

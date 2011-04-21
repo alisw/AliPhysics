@@ -38,7 +38,7 @@ public:
   Float_t GetTPCTRDMatchingRadius()  const {return fTPCTRDMatchingRadius;}
 
   // cuts init function
-  void Init();
+  void InitME();
 
 private:
   Int_t   fMinTPCsignalN;  // min. number of TPC hits
