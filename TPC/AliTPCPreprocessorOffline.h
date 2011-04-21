@@ -38,7 +38,8 @@ public:
   void AddLaserGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift);
   void SetDefaultGraphDrift(TGraph *graph, Int_t color, Int_t style);
   void MakeDefaultPlots(TObjArray * const arr, TObjArray *picArray);
-  Bool_t ValidateTimeDrift(Double_t maxVDriftCorr=0.03);
+  void SetMaxVDriftCorr(Double_t maxVDriftCorr=0.03) {fMaxVdriftCorr=maxVDriftCorr;};
+  Bool_t ValidateTimeDrift();
   //
   // Gain part
   //
@@ -49,7 +50,9 @@ public:
   Bool_t AnalyzeAttachment(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesFit = 2000);
   Bool_t AnalyzePadRegionGain();
   Bool_t AnalyzeGainMultiplicity();
-  Bool_t ValidateTimeGain(Double_t minGain=2.0, Double_t maxGain = 3.0);
+  void SetTimeGainRange(Double_t minGain=2.0, Double_t maxGain = 3.0) 
+       {fMinGain = minGain; fMaxGain = maxGain;};
+  Bool_t ValidateTimeGain();
   //
   // Alignment time part
   //
@@ -99,6 +102,9 @@ private:
   TChain   *fAlignTree;        //alignment tree
   //
   Bool_t fSwitchOnValidation;  // flag to switch on validation of OCDB parameters
+  Float_t fMinGain;   	       // min gain
+  Float_t fMaxGain;            // max gain
+  Float_t fMaxVdriftCorr;      // max v-drift correction
 
 private:
   AliTPCPreprocessorOffline& operator=(const AliTPCPreprocessorOffline&); // not implemented

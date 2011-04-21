@@ -108,7 +108,10 @@ AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
   fGainCosmic(0),       // calibration component for cosmic
   fGainMult(0),
   fAlignTree(0),        // alignment tree
-  fSwitchOnValidation(kFALSE) // flag to switch on validation of OCDB parameters
+  fSwitchOnValidation(kFALSE), // flag to switch on validation of OCDB parameters
+  fMinGain(2.0),
+  fMaxGain(3.0),
+  fMaxVdriftCorr(0.03)
 {
   //
   // default constructor
@@ -248,12 +251,14 @@ void AliTPCPreprocessorOffline::UpdateOCDBDrift( Int_t ustartRun, Int_t uendRun,
   gStorage->Put(fVdriftArray, (*id1), metaData);
 }
 
-Bool_t AliTPCPreprocessorOffline::ValidateTimeGain(Double_t minGain, Double_t maxGain)
+Bool_t AliTPCPreprocessorOffline::ValidateTimeGain()
 {
   //
   // Validate time gain corrections 
   //
   Printf("ValidateTimeGain..." );
+  Float_t minGain = fMinGain;
+  Float_t maxGain = fMaxGain;
 
   TGraphErrors *gr = (TGraphErrors*)fGainArray->FindObject("TGRAPHERRORS_MEAN_GAIN_BEAM_ALL");
   if(!gr) return kFALSE;
@@ -270,12 +275,14 @@ return kTRUE;
 }
 
 
-Bool_t AliTPCPreprocessorOffline::ValidateTimeDrift(Double_t maxVDriftCorr)
+Bool_t AliTPCPreprocessorOffline::ValidateTimeDrift()
 {
   //
   // Validate time drift velocity corrections 
   //
   Printf("ValidateTimeDrift..." );
+
+  Float_t maxVDriftCorr = fMaxVdriftCorr;
 
   TGraphErrors* gr = (TGraphErrors*)fVdriftArray->FindObject("ALIGN_ITSB_TPC_DRIFTVD");
   Printf("ALIGN_ITSB_TPC_DRIFTVD graph = %p",gr);
@@ -483,9 +490,9 @@ void AliTPCPreprocessorOffline::AddAlignmentGraphs(  TObjArray * vdriftArray, Al
   arrayTRD=timeDrift->GetAlignTRDTPC();
   arrayTOF=timeDrift->GetAlignTOFTPC();
 
-  if (arrayITS->GetEntries()>0) mstatITS= AliTPCcalibDButil::MakeStatRelKalman(arrayITS,0.9,50,0.025);
-  if (arrayTOF->GetEntries()>0) mstatTOF= AliTPCcalibDButil::MakeStatRelKalman(arrayTOF,0.9,1000,0.025);
-  if (arrayTRD->GetEntries()>0) mstatTRD= AliTPCcalibDButil::MakeStatRelKalman(arrayTRD,0.9,50,0.025);
+  if (arrayITS->GetEntries()>0) mstatITS= AliTPCcalibDButil::MakeStatRelKalman(arrayITS,0.9,50,fMaxVdriftCorr);
+  if (arrayTOF->GetEntries()>0) mstatTOF= AliTPCcalibDButil::MakeStatRelKalman(arrayTOF,0.9,1000,fMaxVdriftCorr);
+  if (arrayTRD->GetEntries()>0) mstatTRD= AliTPCcalibDButil::MakeStatRelKalman(arrayTRD,0.9,50,fMaxVdriftCorr);
   //
   TObjArray * arrayITSP= AliTPCcalibDButil::SmoothRelKalman(arrayITS,*mstatITS, 0, 5.);
   TObjArray * arrayITSM= AliTPCcalibDButil::SmoothRelKalman(arrayITS,*mstatITS, 1, 5.);
