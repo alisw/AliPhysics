@@ -24,7 +24,8 @@ class AliAnalysisTaskTriggerStudy : public AliAnalysisTaskSE {
   // enum for triggers to be included in the venn-like histogram
   //  enum {kVDC0MBS1,kVDC0MBS2,kVDC0VBA,kVDC0VBC,kVDC0OM2,kNVDEntries};
   //  enum {kVDC0MBS1,kVDC0MBS2,kVDC0VBA,kVDC0VBC,kNVDEntries};
-  enum {kVDV0AND,kVDV0OR,kVDNTRACKS,kNVDEntries};// Venn diagram for Federico, 7 teV
+  //  enum {kVDV0AND,kVDV0OR,kVDNTRACKS,kNVDEntries};// Venn diagram for Federico, 7 teV
+  enum {kVDV0ANDOnline,kVDV0ANDOffline,kVDPhysSel, kVDRecCandle,kNVDEntries};// Venn diagram for Federico, 7 teV
     
 public:
 

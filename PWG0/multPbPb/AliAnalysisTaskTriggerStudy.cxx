@@ -34,7 +34,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskTriggerStudy)
 
 //const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"C0SM1","C0SM2","C0VBA","C0VBC","C0OM2"};       
-const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"V0AND","V0OR","NTRACKS", "NTRACKS ESD"};//,"C0OM2"};       
+const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"V0AND online","V0AND offline","Physics Selection", "Rec Candle"};//,"C0OM2"};       
 
 AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy()
 : AliAnalysisTaskSE("TaskTriggerStudy"),
@@ -223,9 +223,10 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
 
 
   Bool_t vdArray[kNVDEntries];
-  vdArray[kVDV0AND]    = c0v0A && c0v0C;
-  vdArray[kVDV0OR]     = c0v0A || c0v0C;
-  vdArray[kVDNTRACKS]  = atLeast1Track;
+  vdArray[kVDV0ANDOnline]      = c0v0A && c0v0C;
+  vdArray[kVDV0ANDOffline]     = v0AHW && v0CHW;
+  vdArray[kVDRecCandle]        = atLeast1Track;
+  vdArray[kVDPhysSel]          = isSelected;
   //  vdArray[kVDNTRACKSESD]  = atLeast1TrackESD;
 
   FillTriggerOverlaps("All", "All Events",vdArray);
