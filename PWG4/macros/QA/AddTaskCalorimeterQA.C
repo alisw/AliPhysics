@@ -228,10 +228,11 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Int_t yea
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
   maker->SetReader(reader);//pointer to reader
   maker->SetCaloUtils(cu); //pointer to calorimeter utils
+  Int_t n=0;//analysis counter
   if (doEmcal)
-    maker->AddAnalysis(emcalQA,0);
+    maker->AddAnalysis(emcalQA,n++);
   if (doPhos)
-    maker->AddAnalysis(phosQA,1+doEmcal);
+    maker->AddAnalysis(phosQA,n);
   maker->SetAnaDebug(-1)  ; // 0 to at least print the event number
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOffAODsMaker()  ;
