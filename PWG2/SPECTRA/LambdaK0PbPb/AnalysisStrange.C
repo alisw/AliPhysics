@@ -11,6 +11,9 @@ void AnalysisStrange()
 // Set temporary merging directory to current one
    gSystem->Setenv("TMPDIR", gSystem->pwd());
 
+// Set temporary compilation directory to current one
+   gSystem->SetBuildDir(gSystem->pwd(), kTRUE);
+
 // Reset existing include path and add current directory first in the search
    gSystem->SetIncludePath("-I.");
 // load base root libraries
@@ -22,15 +25,13 @@ void AnalysisStrange()
    gSystem->Load("libMinuit");
 
 // Load analysis framework libraries
-   if (!SetupPar("STEERBase")) return;
-   if (!SetupPar("ESD")) return;
-   if (!SetupPar("AOD")) return;
-   if (!SetupPar("ANALYSIS")) return;
-   if (!SetupPar("ANALYSISalice")) return;
-   if (!SetupPar("CORRFW")) return;
+   gSystem->Load("libSTEERBase");
+   gSystem->Load("libESD");
+   gSystem->Load("libAOD");
+   gSystem->Load("libANALYSIS");
+   gSystem->Load("libANALYSISalice");
+   gSystem->Load("libCORRFW");
 
-// Compile other par packages
-   if (!SetupPar("OADB.par")) return;
 // include path
    TString intPath = gInterpreter->GetIncludePath();
    TObjArray *listpaths = intPath.Tokenize(" ");
@@ -48,6 +49,7 @@ void AnalysisStrange()
 // Add aditional AliRoot libraries
 
 // analysis source to be compiled at runtime (if any)
+   gROOT->ProcessLine(".L AliAnalysisCentralitySelector.cxx+g");
    gROOT->ProcessLine(".L AliAnalysisTaskPerformanceStrange.cxx+g");
 
 // connect to AliEn and make the chain
@@ -115,41 +117,3 @@ TChain* CreateChain(const char *xmlfile, const char *type="ESD")
    return chain;
 }
 
-//________________________________________________________________________________
-Bool_t SetupPar(const char *package) {
-// Compile the package and set it up.
-   TString pkgdir = package;
-   pkgdir.ReplaceAll(".par","");
-   gSystem->Exec(TString::Format("tar xvzf %s.par", pkgdir.Data()));
-   TString cdir = gSystem->WorkingDirectory();
-   gSystem->ChangeDirectory(pkgdir);
-   // Check for BUILD.sh and execute
-   if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
-      printf("*******************************\n");
-      printf("*** Building PAR archive    ***\n");
-      printf("*******************************\n");
-      if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
-         ::Error("SetupPar", "Cannot build par archive %s", pkgdir.Data());
-         gSystem->ChangeDirectory(cdir);
-         return kFALSE;
-      }
-   } else {
-      ::Error("SetupPar","Cannot access PROOF-INF/BUILD.sh for package %s", pkgdir.Data());
-      gSystem->ChangeDirectory(cdir);
-      return kFALSE;
-   }
-   // Check for SETUP.C and execute
-   if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
-      printf("*******************************\n");
-      printf("***    Setup PAR archive    ***\n");
-      printf("*******************************\n");
-      gROOT->Macro("PROOF-INF/SETUP.C");
-   } else {
-      ::Error("SetupPar","Cannot access PROOF-INF/SETUP.C for package %s", pkgdir.Data());
-      gSystem->ChangeDirectory(cdir);
-      return kFALSE;
-   }
-   // Restore original workdir
-   gSystem->ChangeDirectory(cdir);
-   return kTRUE;
-}

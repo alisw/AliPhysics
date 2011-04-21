@@ -5,7 +5,7 @@ AliAnalysisGrid* CreateAlienHandler(const char * runlist, TList * listCode, cons
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init then
   //   source /tmp/gclient_env_$UID in the current shell.
-  if (!AliAnalysisGrid::CreateToken()) return NULL;
+//  if (!AliAnalysisGrid::CreateToken()) return NULL;
   AliAnalysisAlien *plugin = new AliAnalysisAlien(); 
   plugin->SetOverwriteMode();
   // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
@@ -13,29 +13,33 @@ AliAnalysisGrid* CreateAlienHandler(const char * runlist, TList * listCode, cons
   // Set versions of used packages
   // FIXME: PAR FILES OPTIONAL?
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-27-06b");
-  //  plugin->SetAliROOTVersion("v4-21-09-AN");
+  plugin->SetROOTVersion("v5-28-00a");
+    plugin->SetAliROOTVersion("v4-21-20-AN");
 // PAR files: I'm using a modified ANALYSISalice package, so I need to load par files for everything
-   plugin->EnablePackage("STEERBase");
+/*   plugin->EnablePackage("STEERBase");
    plugin->EnablePackage("ESD");
    plugin->EnablePackage("AOD");
    plugin->EnablePackage("CORRFW");
    plugin->EnablePackage("ANALYSIS");
    plugin->EnablePackage("ANALYSISalice");
    plugin->EnablePackage("OADB");
-
+*/
 
   // Declare input data to be processed.
   // Method 1: Create automatically XML collections using alien 'find' command.
   // Define production directory LFN
    if(!isMC) 
-     plugin->SetGridDataDir("/alice/data/2010/LHC10h/");
+     //plugin->SetGridDataDir("/alice/data/2010/LHC10h/");
+     plugin->SetGridDataDir("/alice/sim/LHC11a10a/");
    else
-     plugin->SetGridDataDir("/alice/sim/LHC10h8/");
+     //plugin->SetGridDataDir("/alice/sim/LHC10h8/");
+     plugin->SetGridDataDir("/alice/sim/LHC11a10a/");
 
    // Set data search pattern
    if(!isMC)
-     plugin->SetDataPattern("*/pass1/*AliESDs.root");
+     //plugin->SetDataPattern("*/pass1/*AliESDs.root");
+     //plugin->SetDataPattern("*/pass2/*AliESDs.root");
+     plugin->SetDataPattern("*AliESDs.root");
    else
      plugin->SetDataPattern("AliESDs.root");
 
@@ -45,7 +49,8 @@ AliAnalysisGrid* CreateAlienHandler(const char * runlist, TList * listCode, cons
    plugin->AddRunNumber(runlist);
 
 
-   plugin->SetGridWorkingDir("LambdaK0/");
+   //plugin->SetGridWorkingDir("LambdaK0/");
+   plugin->SetGridWorkingDir("LambdaK0MC/");
    plugin->SetGridOutputDir("out");
 
    // plugin->SetDefaultOutputs(kFALSE);

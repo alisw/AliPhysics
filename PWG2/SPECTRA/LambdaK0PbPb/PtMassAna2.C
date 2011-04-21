@@ -9,7 +9,7 @@ Float_t quad(Double_t *x, Double_t *par){
   return par[0] + par[1]*x[0] + par[2]*x[0]*x[0]; //a+bx+cx**2
 }
 
-TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *ControlArray,Char_t* fulllabel){
+TH1F* PtMassAna2(TH2F *PtMass, Int_t mode,Int_t ihist, const Int_t NControl, TObjArray *ControlArray,Char_t* fulllabel){
 
   //TString *tLabel = new TString(fulllabel); //not reqd
 
@@ -123,6 +123,7 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
   c1->SetWindowSize(1024,768);
   Int_t NDraw = NControl;
   if(NDraw==16){c1->Divide(4,4);}
+  elseif(NDraw<=36 && NDraw>25){ c1->Divide(6,6);}
   elseif(NDraw<=25 && NDraw>20){ c1->Divide(5,5);}
   elseif(NDraw<=20 && NDraw>16){  c1->Divide(5,4);}
   elseif(NDraw<=15 && NDraw>12){ c1->Divide(5,3);}
@@ -132,7 +133,7 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
   elseif(NDraw<=4 && NDraw>2){c1->Divide(2,2);}
   elseif(NDraw==2){c1->Divide(2,1);}
   elseif(NDraw==1){/*do nothing*/;}
-  else{c1->Divide(6,5);}
+  else{c1->Divide(7,6);}
 
   //
   // Project out the histograms from 2D into 1D 'slices'
@@ -140,7 +141,6 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
   Char_t id[20], title[80];
   //cout << "NControl: " << NControl << endl;
   TH1D* hMassSlice[NControl];
-
   //Arrays to store various quantities which can later be histogrammed.
   //  const Int_t NBinsArrays = NBins+1-NFirst; // array of 1D projection histograms is counted from 0 but other arrays are used for histograms contents and therefore N+1 are need because element zero is left empty
   const Int_t NBinsArrays = NControl+1;
@@ -170,10 +170,17 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
 
   Int_t BinLo, BinHi; //For pt bins
   // **** Main loop over the AliMassFitControllers ****
+ 
   TIter controlIter(ControlArray);
   AliMassFitControl *controller;
   while (controller=(AliMassFitControl*)controlIter.Next()) { 
-    controller->CalcBinLimits(20); //This BinsPerGeV argument should be calculated from the data
+    if(ihist == 0)controller->CalcBinLimits(20); //This BinsPerGeV argument should be calculated from the data
+    if(ihist == 1)controller->CalcBinLimits(50); //This BinsPerGeV argument should be calculated from the data
+    if(ihist == 2)controller->CalcBinLimits(50); //This BinsPerGeV argument should be calculated from the data
+    if(ihist == 3)controller->CalcBinLimits(1); //This BinsPerGeV argument should be calculated from the data
+    if(ihist == 4)controller->CalcBinLimits(1); //This BinsPerGeV argument should be calculated from the data
+    if(ihist == 6)controller->CalcBinLimits(20000); //This BinsPerGeV argument should be calculated from the data
+    if(ihist == 5)controller->CalcBinLimits(100); //This BinsPerGeV argument should be calculated from the data
     //Had to introduce this Nint fn otherwise got inconsistencies after type implicit conversion
     //    BinLo=TMath::Nint(1.+BinPtEdges[N]*20.); //cout << "BinLo: " << BinLo << ", " << 1+BinPtEdges[N]*20. << endl;
     //    BinHi=TMath::Nint(BinPtEdges[N+1]*20.); //cout << "BinHi: " << BinHi << ", " << BinPtEdges[N+1]*20. << endl;
@@ -183,7 +190,8 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
     sprintf(id,"Mass%d",N);
     cout << "Mass histo:" << N << " Firstbin: " << BinLo << " Last bin:" << BinHi << " " << controller->PtLower() << "-" << controller->PtUpper() << " GeV" << endl; 
     //cout << "About to create mass projection " << N << endl;
-    hMassSlice[N] = PtMass->ProjectionX(id,BinLo,BinHi);
+    if(ihist == 0) hMassSlice[N] = PtMass->ProjectionX(id,BinLo,BinHi);
+    if(ihist != 0) hMassSlice[N] = PtMass->ProjectionY(id,BinLo,BinHi);
     //cout << "Mass projection " << N << " created." << endl;
    sprintf(title,"%s Mass, %.2f < p_{t} < %.2f",partName,controller->PtLower(),controller->PtUpper());
     hMassSlice[N]->SetTitle(title);
@@ -237,7 +245,7 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
     hMassSlice[N]->Fit(gausQuad,"LR");
     hMassSlice[N]->Draw("E,SAME");
     gausQuad->DrawCopy("SAME");
-
+    hMassSlice[N]->Clone("hMySlice");
     //Fit the background:
     xxlo=gausQuad->GetParameter(0)-NSigmaEx*gausQuad->GetParameter(2);
     xxhi=gausQuad->GetParameter(0)+NSigmaEx*gausQuad->GetParameter(2);
@@ -270,6 +278,20 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
     qback->SetParameter(1,quad->GetParameter(1));
     qback->SetParameter(2,quad->GetParameter(2));
     qback->DrawCopy("SAME");
+    if(N==28){
+TCanvas *myCan = new TCanvas();
+TPad *mypad = new TPad();
+myCan->cd();
+mypad->Draw();
+hMassSlice[N]->Draw();
+quad->SetRange(xmin,xxlo);
+quad->DrawCopy("SAME");
+quad->SetRange(xxhi,xmax);
+quad->DrawCopy("SAME");
+qback->DrawCopy("SAME");
+
+}
+   
 
     //Integrate the signal+background (i.e. original histo)
     sigBkgd[NArray]=hMassSlice[N]->Integral(massBinLo,massBinHi);
@@ -382,7 +404,8 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
 
   cDiag->cd(2);
   if (part=="K0"){
-    hSigmas->SetMaximum(0.012);
+    //hSigmas->SetMaximum(0.012);
+    hSigmas->SetMaximum(0.112);
   }else{
     hSigmas->SetMaximum(0.006);}
   hSigmas->SetMinimum(0.0);
@@ -404,7 +427,7 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
 
   cDiag->cd(6);
   hChi2PerDOF2->SetMinimum(0);
-  hChi2PerDOF2->SetMaximum(6);
+  hChi2PerDOF2->SetMaximum(60);
   hChi2PerDOF2->Draw();
 
   Char_t fileNameBase[80];
@@ -427,8 +450,8 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
     ey = hYields->GetBinError(j)/hYields->GetBinWidth(j);
     hYields->SetBinContent(j,y);
     hYields->SetBinError(j,ey);
-    y = hYields->GetBinContent(j)/hYields->GetBinCenter(j);
-    ey = hYields->GetBinError(j)/hYields->GetBinCenter(j);
+//    y = hYields->GetBinContent(j)/hYields->GetBinCenter(j);
+//    ey = hYields->GetBinError(j)/hYields->GetBinCenter(j);
     hYields->SetBinContent(j,y);
     hYields->SetBinError(j,ey);
   }

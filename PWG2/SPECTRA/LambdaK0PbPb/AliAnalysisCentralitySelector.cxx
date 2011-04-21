@@ -35,7 +35,7 @@ Bool_t AliAnalysisCentralitySelector::IsCentralityBinSelected(AliESDEvent* aEsd,
   if (fUseV0CutRange) {
 
     Float_t multV0=0;
-    AliESDVZERO* esdV0 = aEsd->GetVZEROData();
+        AliESDVZERO* esdV0 = aEsd->GetVZEROData();
     Float_t multV0A=esdV0->GetMTotV0A();
     Float_t multV0C=esdV0->GetMTotV0C();
     multV0 = multV0A+multV0C;
@@ -68,8 +68,7 @@ Bool_t AliAnalysisCentralitySelector::IsCentralityBinSelected(AliESDEvent* aEsd,
   } 
   else if(fUsePercentile) {
     AliCentrality *centrality = (AliCentrality*) aEsd->GetCentrality(); 
-    return centrality->IsEventInCentralityClass(fMultMin, fMultMax, fCentrEstimator.Data()) ;
-
+   return centrality->IsEventInCentralityClass(fMultMin, fMultMax, fCentrEstimator.Data()) ;
   }
   
   else {
