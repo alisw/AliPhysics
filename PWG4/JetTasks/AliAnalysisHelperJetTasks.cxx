@@ -796,11 +796,14 @@ Bool_t AliAnalysisHelperJetTasks::PythiaInfoFromFile(const char* currFile,Float_
   return kTRUE;
 }
 
-Bool_t AliAnalysisHelperJetTasks::PrintDirectorySize(const char* currFile){
+Bool_t AliAnalysisHelperJetTasks::PrintDirectorySize(const char* currFile,Int_t iDetail){
 
   //
   // Print the size on disk and in memory occuppied by a directory 
   //
+
+  TFile *fDummy = 0;
+  if(iDetail>=0)fDummy = TFile::Open("/tmp/dummy.root","RECREATE");
 
   TFile *fIn = TFile::Open(currFile);
   if(!fIn){
@@ -833,6 +836,16 @@ Bool_t AliAnalysisHelperJetTasks::PrintDirectorySize(const char* currFile){
 	diskSize +=  (Float_t)jkey->GetNbytes()/1024./1024.;
 	if(list){
 	  Printf("%03d/%03d: %60s %5.2f MB %5.2f MB",i,j,list->GetName(),(Float_t)jkey->GetObjlen()/1024./1024.,(Float_t)jkey->GetNbytes()/1024./1024.);
+	  if(iDetail==i){
+	    for(int il = 0;il<list->GetEntries();il++){
+	      TObject *ob = list->At(il);
+	      if(fDummy){
+		fDummy->cd();
+		Int_t nBytesWrite = ob->Write();
+		Printf("%03d/%03d/%03d: %60s  %5.2f kB",i,j,il,ob->GetName(),(Float_t)nBytesWrite/1024.);
+	      }
+	    }
+	  }
 	}
 	else{
 	  Printf("%03d/%03d: %60s %5.2f MB %5.2f MB",i,j,jkey->GetName(),(Float_t)jkey->GetObjlen()/1024./1024.,(Float_t)jkey->GetNbytes()/1024./1024.);
