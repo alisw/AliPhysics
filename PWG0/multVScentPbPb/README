@@ -101,4 +101,12 @@ kFALSE,    // NO scaling of dtheta by sin^2(theta) (that's how pp data was recon
 
 The sample macro ppcor.C shows how to extract dNdEta from the outputs of data and MC.
 
+----------
+Thu Apr 21 23:27:19 CEST 2011
+Put the version for pp in the AliTrackletTaskMultipp.h/cxx (rename it to AliTrackletTaskMulti.h/cxx 
+before running runAAFMulti as mentioned above.
+Added additional method 
+FillClusterAutoCorrelationFromMult(const AliMultiplicity* mlt, double zVertex)
+to fill the inter-cluster distances (all to all and used to unused) for clusters
+vs Z and Phi
 ------------------------------------------------------------
