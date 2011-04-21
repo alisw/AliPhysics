@@ -103,16 +103,19 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CalculateDiffFlowCorrectionsForNUASinTermsUsingParticleWeights(TString type, TString ptOrEta);  
     // 2e.) 2D differential flow:
     virtual void Calculate2DDiffFlowCorrelations(TString type); // type = RP or POI
-    // 2f.) Distributions of reference flow correlations:
+    // 2f.) Other differential correlators (i.e. Teaney-Yan correlator):    
+    virtual void CalculateOtherDiffCorrelators(TString type, TString ptOrEta); // type = RP or POI    
+    // 2g.) Distributions of reference flow correlations:
     virtual void StoreDistributionsOfCorrelations();
-    // 2g.) Store phi distibution for one event to vizualize flow:
+    // 2h.) Store phi distibution for one event to vizualize flow:
     virtual void StorePhiDistributionForOneEvent(AliFlowEventSimple* const anEvent);    
-    // 2h.) Cross-checking differential flow correlations with nested loops:
+    // 2i.) Cross-checking differential flow correlations with nested loops:
     virtual void EvaluateDiffFlowNestedLoops(AliFlowEventSimple* const anEvent);
     virtual void EvaluateDiffFlowCorrelationsWithNestedLoops(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta);
     virtual void EvaluateDiffFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta); 
     virtual void EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoops(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta);
     virtual void EvaluateDiffFlowCorrectionTermsForNUAWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta);
+    virtual void EvaluateOtherDiffCorrelatorsWithNestedLoops(AliFlowEventSimple* const anEvent, TString type, TString ptOrEta);
   // 3.) method Finish() and methods called within Finish():
   virtual void Finish();
     virtual void CheckPointersUsedInFinish();     
@@ -143,9 +146,12 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CrossCheckDiffFlowCorrelations(TString type, TString ptOrEta);
     virtual void PrintNumberOfParticlesInSelectedBin();     
     virtual void CrossCheckDiffFlowCorrectionTermsForNUA(TString type, TString ptOrEta); 
-    //  2D:
+    // 3c.) 2D:
     virtual void Calculate2DDiffFlowCumulants(TString type);    
     virtual void Calculate2DDiffFlow(TString type);    
+    // 3d.) Other differential correlators:
+    virtual void CrossCheckOtherDiffCorrelators(TString type, TString ptOrEta);
+    
   // 4.)  method GetOutputHistograms() and methods called within GetOutputHistograms(): 
   virtual void GetOutputHistograms(TList *outputListHistos);
     virtual void GetPointersForCommonHistograms(); 
@@ -153,6 +159,7 @@ class AliFlowAnalysisWithQCumulants{
     virtual void GetPointersForIntFlowHistograms(); 
     virtual void GetPointersForDiffFlowHistograms(); 
     virtual void GetPointersFor2DDiffFlowHistograms(); 
+    virtual void GetPointersForOtherDiffCorrelators(); 
     virtual void GetPointersForNestedLoopsHistograms(); 
     
   // 5.) other methods:   
@@ -336,6 +343,9 @@ class AliFlowAnalysisWithQCumulants{
   //   2D:
   void Set2DDiffFlowCorrelationsPro(TProfile2D* const p2ddfcp, Int_t const i, Int_t const k) {this->f2DDiffFlowCorrelationsPro[i][k] = p2ddfcp;};
   TProfile2D* Get2DDiffFlowCorrelationsPro(Int_t i, Int_t k) const {return this->f2DDiffFlowCorrelationsPro[i][k];};
+  //   Other differential correlators:
+  void SetOtherDiffCorrelators(TProfile* const odc,Int_t const i,Int_t const j,Int_t const k,Int_t const l) {this->fOtherDiffCorrelators[i][j][k][l] = odc;};
+  TProfile* GetOtherDiffCorrelators(Int_t i,Int_t j,Int_t k,Int_t l) const {return this->fOtherDiffCorrelators[i][j][k][l];};   
   // histograms:
   void SetDiffFlowCorrelationsHist(TH1D* const diffFlowCorrelationsHist, Int_t const i, Int_t const j, Int_t const k) {this->fDiffFlowCorrelationsHist[i][j][k] = diffFlowCorrelationsHist;};
   TH1D* GetDiffFlowCorrelationsHist(Int_t i, Int_t j, Int_t k) const {return this->fDiffFlowCorrelationsHist[i][j][k];};
@@ -400,8 +410,10 @@ class AliFlowAnalysisWithQCumulants{
   void SetDiffFlowDirectCorrelations(TProfile* const diffFlowDirectCorrelations,Int_t const i,Int_t const j,Int_t const k){this->fDiffFlowDirectCorrelations[i][j][k]=diffFlowDirectCorrelations;};
   TProfile* GetDiffFlowDirectCorrelations(Int_t i, Int_t j, Int_t k) const {return this->fDiffFlowDirectCorrelations[i][j][k];};
   void SetDiffFlowDirectCorrectionTermsForNUA(TProfile* const dfdctfn, Int_t const i, Int_t const j, Int_t const k, Int_t const l) {this->fDiffFlowDirectCorrectionTermsForNUA[i][j][k][l] = dfdctfn;};
-  TProfile* GetDiffFlowDirectCorrectionTermsForNUA(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowDirectCorrectionTermsForNUA[i][j][k][l];};  
-        
+  TProfile* GetDiffFlowDirectCorrectionTermsForNUA(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fDiffFlowDirectCorrectionTermsForNUA[i][j][k][l];};          
+  void SetOtherDirectDiffCorrelators(TProfile* const oddc, Int_t const i, Int_t const j, Int_t const k, Int_t const l) {this->fOtherDirectDiffCorrelators[i][j][k][l] = oddc;};
+  TProfile* GetOtherDirectDiffCorrelators(Int_t i, Int_t j, Int_t k, Int_t l) const {return this->fOtherDirectDiffCorrelators[i][j][k][l];};  
+
  private:
   
   AliFlowAnalysisWithQCumulants(const AliFlowAnalysisWithQCumulants& afawQc);
@@ -565,6 +577,9 @@ class AliFlowAnalysisWithQCumulants{
   TProfile *fDiffFlowCorrectionTermsForNUAPro[2][2][2][10]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
   //   2D:                                                            
   TProfile2D *f2DDiffFlowCorrelationsPro[2][4]; // [0=RP,1=POI][correlation index]
+  //   Other differential correlators:
+  TList *fOtherDiffCorrelatorsList; // list to hold profiles with other differential correlators
+  TProfile *fOtherDiffCorrelators[2][2][2][1]; // // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correlator index] 
   //  4e.) histograms holding final results:
   //   1D:
   TH1D *fDiffFlowCorrelationsHist[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][correlation index]
@@ -607,6 +622,8 @@ class AliFlowAnalysisWithQCumulants{
   TH1D *fNoOfParticlesInBin; // bin: 1 = # of RPs in pt bin, 2 = # of RPs in eta bin, 3 = # of POIs in pt bin, 4 = # of POIs in eta bin 
   TProfile *fDiffFlowDirectCorrelations[2][2][4]; // [0=RP,1=POI][0=pt,1=eta][correlation index]
   TProfile *fDiffFlowDirectCorrectionTermsForNUA[2][2][2][10]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correction term index]
+  // other differential correlators: 
+  TProfile *fOtherDirectDiffCorrelators[2][2][2][1]; // [0=RP,1=POI][0=pt,1=eta][0=sin terms,1=cos terms][correlator index]
                   
   ClassDef(AliFlowAnalysisWithQCumulants, 0);
 };
