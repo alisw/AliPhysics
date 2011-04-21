@@ -2415,6 +2415,11 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          Error("StartAnalysis", "Could not connect to PROOF cluster <%s>", fProofCluster.Data());
          return kFALSE;
       }   
+      Long_t nsessions = gROOT->ProcessLine(Form("TProof::Mgr(\"%s\")->QuerySessions(\"\")->GetEntries();", fProofCluster.Data()));
+      if (nsessions) {
+         Error("StartAnalysis","You have to reset your old session first\n");
+         return kFALSE;
+      }   
       if (fNproofWorkersPerSlave*fNproofWorkers > 0)
          gROOT->ProcessLine(Form("gProof->SetParallel(%d);", fNproofWorkers));
       // Is dataset existing ?
@@ -3047,6 +3052,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       Bool_t hasESD = kFALSE;
       Bool_t hasAOD = kFALSE;
       Bool_t hasANALYSIS = kFALSE;
+      Bool_t hasOADB = kFALSE;
       Bool_t hasANALYSISalice = kFALSE;
       Bool_t hasCORRFW = kFALSE;
       TString func = fAnalysisMacro;
@@ -3112,8 +3118,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             out << "   gSystem->Load(\"libESD\");" << endl;
             out << "   gSystem->Load(\"libAOD\");" << endl;
          }   
-         out << "   gSystem->Load(\"libOADB\");" << endl;
          out << "   gSystem->Load(\"libANALYSIS\");" << endl;
+         out << "   gSystem->Load(\"libOADB\");" << endl;
          out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
          out << "   gSystem->Load(\"libCORRFW\");" << endl << endl;
       } else {
@@ -3130,6 +3136,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
                 pkgname == "AOD.par")       hasAOD = kTRUE;
             if (pkgname == "ANALYSIS" ||
                 pkgname == "ANALYSIS.par")  hasANALYSIS = kTRUE;
+            if (pkgname == "OADB" ||
+                pkgname == "OADB.par")      hasOADB = kTRUE;
             if (pkgname == "ANALYSISalice" ||
                 pkgname == "ANALYSISalice.par") hasANALYSISalice = kTRUE;
             if (pkgname == "CORRFW" ||
@@ -3142,9 +3150,10 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          else out << "   if (!" << setupPar << "(\"ESD\")) return;" << endl;
          if (!hasAOD)       out << "   gSystem->Load(\"libAOD\");" << endl;
          else out << "   if (!" << setupPar << "(\"AOD\")) return;" << endl;
-         out << "   gSystem->Load(\"libOADB\");" << endl;
          if (!hasANALYSIS)  out << "   gSystem->Load(\"libANALYSIS\");" << endl;
          else out << "   if (!" << setupPar << "(\"ANALYSIS\")) return;" << endl;
+         if (!hasOADB)  out << "   gSystem->Load(\"libOADB\");" << endl;
+         else out << "   if (!" << setupPar << "(\"OADB\")) return;" << endl;
          if (!hasANALYSISalice)   out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
          else out << "   if (!" << setupPar << "(\"ANALYSISalice\")) return;" << endl;
          if (!hasCORRFW)    out << "   gSystem->Load(\"libCORRFW\");" << endl << endl;
@@ -3161,6 +3170,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
                 pkgname == "AOD.par" ||
                 pkgname == "ANALYSIS" ||
                 pkgname == "ANALYSIS.par" ||
+                pkgname == "OADB" ||
+                pkgname == "OADB.par" ||
                 pkgname == "ANALYSISalice" ||
                 pkgname == "ANALYSISalice.par" ||
                 pkgname == "CORRFW" ||
@@ -3438,6 +3449,7 @@ void AliAnalysisAlien::WriteMergingMacro()
       Bool_t hasESD = kFALSE;
       Bool_t hasAOD = kFALSE;
       Bool_t hasANALYSIS = kFALSE;
+      Bool_t hasOADB = kFALSE;
       Bool_t hasANALYSISalice = kFALSE;
       Bool_t hasCORRFW = kFALSE;
       TString func = mergingMacro;
@@ -3478,8 +3490,8 @@ void AliAnalysisAlien::WriteMergingMacro()
             out << "   gSystem->Load(\"libESD\");" << endl;
             out << "   gSystem->Load(\"libAOD\");" << endl;
          }
-         out << "   gSystem->Load(\"libOADB\");" << endl;
          out << "   gSystem->Load(\"libANALYSIS\");" << endl;
+         out << "   gSystem->Load(\"libOADB\");" << endl;
          out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
          out << "   gSystem->Load(\"libCORRFW\");" << endl << endl;
       } else {
@@ -3497,6 +3509,8 @@ void AliAnalysisAlien::WriteMergingMacro()
                 pkgname == "AOD.par")       hasAOD = kTRUE;
             if (pkgname == "ANALYSIS" ||
                 pkgname == "ANALYSIS.par")  hasANALYSIS = kTRUE;
+            if (pkgname == "OADB" ||
+                pkgname == "OADB.par")      hasOADB = kTRUE;
             if (pkgname == "ANALYSISalice" ||
                 pkgname == "ANALYSISalice.par") hasANALYSISalice = kTRUE;
             if (pkgname == "CORRFW" ||
@@ -3512,6 +3526,8 @@ void AliAnalysisAlien::WriteMergingMacro()
          out << "   gSystem->Load(\"libOADB\");" << endl;
          if (!hasANALYSIS)  out << "   gSystem->Load(\"libANALYSIS\");" << endl;
          else out << "   if (!" << setupPar << "(\"ANALYSIS\")) return;" << endl;
+         if (!hasOADB)  out << "   gSystem->Load(\"libOADB\");" << endl;
+         else out << "   if (!" << setupPar << "(\"OADB\")) return;" << endl;
          if (!hasANALYSISalice)   out << "   gSystem->Load(\"libANALYSISalice\");" << endl;
          else out << "   if (!" << setupPar << "(\"ANALYSISalice\")) return;" << endl;
          if (!hasCORRFW)    out << "   gSystem->Load(\"libCORRFW\");" << endl << endl;
@@ -3528,6 +3544,8 @@ void AliAnalysisAlien::WriteMergingMacro()
                 pkgname == "AOD.par" ||
                 pkgname == "ANALYSIS" ||
                 pkgname == "ANALYSIS.par" ||
+                pkgname == "OADB" ||
+                pkgname == "OADB.par" ||
                 pkgname == "ANALYSISalice" ||
                 pkgname == "ANALYSISalice.par" ||
                 pkgname == "CORRFW" ||
