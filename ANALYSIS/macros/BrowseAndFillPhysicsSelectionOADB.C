@@ -115,7 +115,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbContPS->AppendObject(oadbLHC09d10e, 104065,118555);
   oadbContPS->AppendObject(oadbLHC09d10e->Clone(), 118562,127711);
 
-  // LHC09c, fill 1069 (problems with the V0 online trigger in ESD)
+  // LHC10c, fill 1069 (problems with the V0 online trigger in ESD)
   AliOADBPhysicsSelection * oadbLHC10cV0Bug = new AliOADBPhysicsSelection("oadbLHC10cV0Bug");
   oadbLHC10cV0Bug->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CINT1B-ABCE-NOPF-ALL","B",0);
   oadbLHC10cV0Bug->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1A-ABCE-NOPF-ALL","A",0);
@@ -128,7 +128,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbLHC10cV0Bug->AddBGTriggerClass          ( AliVEvent::kMUON,"+CMUS1A-ABCE-NOPF-MUON","A",1);
   oadbLHC10cV0Bug->AddBGTriggerClass          ( AliVEvent::kMUON,"+CMUS1C-ABCE-NOPF-MUON","C",1);
   oadbLHC10cV0Bug->AddBGTriggerClass          ( AliVEvent::kMUON,"+CMUS1-E-NOPF-MUON","E",1);
-  oadbLHC10cV0Bug->SetHardwareTrigger         ( 1,"SPDGFO >= 1 || V0A || V0C");                                         
+  oadbLHC10cV0Bug->SetHardwareTrigger         ( 1,"SPDGFO >= 1 || CTPV0A || CTPV0C");                                         
   oadbLHC10cV0Bug->SetOfflineTrigger          ( 1,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
 
   oadbContPS->AppendObject(oadbLHC10cV0Bug, 118556,118561);
@@ -173,28 +173,107 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbLHC10e2->SetOfflineTrigger          ( 1,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
     
   oadbContPS->AppendObject(oadbLHC10e2, 127719,127730);
+
+  // LHC10e3
+  AliOADBPhysicsSelection * oadbLHC10e3 = new AliOADBPhysicsSelection("oadbLHC10e3");
+  oadbLHC10e3->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CINT1-B-NOPF-ALLNOTRD","B",0);
+  oadbLHC10e3->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-AC-NOPF-ALLNOTRD","AC",0);
+  oadbLHC10e3->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-E-NOPF-ALLNOTRD","E",0);  
+  oadbLHC10e3->SetHardwareTrigger         ( 0,"SPDGFO >= 1 || V0A || V0C");
+  oadbLHC10e3->SetOfflineTrigger          ( 0,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
   
-  // LHC10e3 +LHC10f +LHC10g
-  AliOADBPhysicsSelection * oadbLHC10e3_10f_10g = new AliOADBPhysicsSelection("oadbLHC10e3_10f_10g");
-  oadbLHC10e3_10f_10g->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CINT1-B-NOPF-ALLNOTRD","B",0);
-  oadbLHC10e3_10f_10g->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-AC-NOPF-ALLNOTRD","AC",0);
-  oadbLHC10e3_10f_10g->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-E-NOPF-ALLNOTRD","E",0);  
-  oadbLHC10e3_10f_10g->SetHardwareTrigger         ( 0,"SPDGFO >= 1 || V0A || V0C");
-  oadbLHC10e3_10f_10g->SetOfflineTrigger          ( 0,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
+  oadbLHC10e3->AddCollisionTriggerClass   ( AliVEvent::kMUON,"+CMUS1-B-NOPF-ALLNOTRD","B",1);
+  oadbLHC10e3->AddBGTriggerClass          ( AliVEvent::kMUON,"+CMUS1-AC-NOPF-ALLNOTRD","AC",1);
+  oadbLHC10e3->AddBGTriggerClass          ( AliVEvent::kMUON,"+CMUS1-E-NOPF-ALLNOTRD","E",1);
+  oadbLHC10e3->SetHardwareTrigger         ( 1,"SPDGFO >= 1 || V0A || V0C");                                         
+  oadbLHC10e3->SetOfflineTrigger          ( 1,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
+    
+  oadbLHC10e3->AddCollisionTriggerClass   ( AliVEvent::kHighMult,"+CSH1-B-NOPF-ALLNOTRD","B",2);
+  oadbLHC10e3->AddBGTriggerClass          ( AliVEvent::kHighMult,"+CSH1-AC-NOPF-ALLNOTRD","AC",2);
+  oadbLHC10e3->AddBGTriggerClass          ( AliVEvent::kHighMult,"+CSH1-E-NOPF-ALLNOTRD","E",2);
+  oadbLHC10e3->SetHardwareTrigger         ( 2,"SPDGFO >= 1 || V0A || V0C");                                         
+  oadbLHC10e3->SetOfflineTrigger          ( 2,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
+    
+  oadbContPS->AppendObject(oadbLHC10e3, 127813,130850);
+
+
+  // LHC10f1
+  AliOADBPhysicsSelection * oadbLHC10f1 = new AliOADBPhysicsSelection("oadbLHC10f1");
+  oadbLHC10f1->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CINT1-B-NOPF-ALLNOTRD","B",0);
+  oadbLHC10f1->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-AC-NOPF-ALLNOTRD","AC",0);
+  oadbLHC10f1->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-E-NOPF-ALLNOTRD","E",0);  
+  oadbLHC10f1->SetHardwareTrigger         ( 0,"SPDGFO >= 1 || V0A || V0C");
+  oadbLHC10f1->SetOfflineTrigger          ( 0,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
   
-  oadbLHC10e3_10f_10g->AddCollisionTriggerClass   ( AliVEvent::kMUON,"+CMUS1-B-NOPF-ALLNOTRD","B",1);
-  oadbLHC10e3_10f_10g->AddBGTriggerClass          ( AliVEvent::kMUON,"+CMUS1-AC-NOPF-ALLNOTRD","AC",1);
-  oadbLHC10e3_10f_10g->AddBGTriggerClass          ( AliVEvent::kMUON,"+CMUS1-E-NOPF-ALLNOTRD","E",1);
-  oadbLHC10e3_10f_10g->SetHardwareTrigger         ( 1,"SPDGFO >= 1 || V0A || V0C");                                         
-  oadbLHC10e3_10f_10g->SetOfflineTrigger          ( 1,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
+  oadbLHC10f1->AddCollisionTriggerClass   ( AliVEvent::kMUON,"+CMUS1-B-NOPF-ALLNOTRD","B",1);
+  oadbLHC10f1->AddBGTriggerClass          ( AliVEvent::kMUON,"+CMUS1-AC-NOPF-ALLNOTRD","AC",1);
+  oadbLHC10f1->AddBGTriggerClass          ( AliVEvent::kMUON,"+CMUS1-E-NOPF-ALLNOTRD","E",1);
+  oadbLHC10f1->SetHardwareTrigger         ( 1,"SPDGFO >= 1 || V0A || V0C");                                         
+  oadbLHC10f1->SetOfflineTrigger          ( 1,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
     
-  oadbLHC10e3_10f_10g->AddCollisionTriggerClass   ( AliVEvent::kHighMult,"+CSH1-B-NOPF-ALLNOTRD","B",2);
-  oadbLHC10e3_10f_10g->AddBGTriggerClass          ( AliVEvent::kHighMult,"+CSH1-AC-NOPF-ALLNOTRD","AC",2);
-  oadbLHC10e3_10f_10g->AddBGTriggerClass          ( AliVEvent::kHighMult,"+CSH1-E-NOPF-ALLNOTRD","E",2);
-  oadbLHC10e3_10f_10g->SetHardwareTrigger         ( 2,"SPDGFO >= 1 || V0A || V0C");                      
-  oadbLHC10e3_10f_10g->SetOfflineTrigger          ( 2,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
+  oadbLHC10f1->AddCollisionTriggerClass   ( AliVEvent::kHighMult,"+CSH1-B-NOPF-ALLNOTRD","B",2);
+  oadbLHC10f1->AddBGTriggerClass          ( AliVEvent::kHighMult,"+CSH1-AC-NOPF-ALLNOTRD","AC",2);
+  oadbLHC10f1->AddBGTriggerClass          ( AliVEvent::kHighMult,"+CSH1-E-NOPF-ALLNOTRD","E",2);
+  oadbLHC10f1->SetHardwareTrigger         ( 2,"SPDGFO >= 1 || V0A || V0C");                                         
+  oadbLHC10f1->SetOfflineTrigger          ( 2,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
     
-  oadbContPS->AppendObject(oadbLHC10e3_10f_10g, 127813,136376);
+  oadbContPS->AppendObject(oadbLHC10f1, 133004,134690);
+
+  // LHC10f2
+  AliOADBPhysicsSelection * oadbLHC10f2 = new AliOADBPhysicsSelection("oadbLHC10f2");
+  oadbLHC10f2->AddCollisionTriggerClass   ( AliVEvent::kCINT5,"+CINT5-B-NOPF-ALLNOTRD","B",0);
+  oadbLHC10f2->AddBGTriggerClass          ( AliVEvent::kCINT5,"+CINT5-AC-NOPF-ALLNOTRD","AC",0);
+  oadbLHC10f2->AddBGTriggerClass          ( AliVEvent::kCINT5,"+CINT5-E-NOPF-ALLNOTRD","E",0);  
+  oadbLHC10f2->SetHardwareTrigger         ( 0,"V0A || V0C");
+  oadbLHC10f2->SetOfflineTrigger          ( 0,"(V0A || V0C) && !V0ABG && !V0CBG");
+  
+  oadbLHC10f2->AddCollisionTriggerClass   ( AliVEvent::kCMUS5,"+CMUS5-B-NOPF-ALLNOTRD","B",1);
+  oadbLHC10f2->AddBGTriggerClass          ( AliVEvent::kCMUS5,"+CMUS5-AC-NOPF-ALLNOTRD","AC",1);
+  oadbLHC10f2->AddBGTriggerClass          ( AliVEvent::kCMUS5,"+CMUS5-E-NOPF-ALLNOTRD","E",1);
+  oadbLHC10f2->SetHardwareTrigger         ( 1,"V0A || V0C");                                         
+  oadbLHC10f2->SetOfflineTrigger          ( 1,"(V0A || V0C) && !V0ABG && !V0CBG");
+    
+  oadbContPS->AppendObject(oadbLHC10f2, 134776,134931);
+
+  // LHC10f3
+  AliOADBPhysicsSelection * oadbLHC10f3 = new AliOADBPhysicsSelection("oadbLHC10f3");
+  oadbLHC10f3->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CINT1-B-NOPF-ALLNOTRD","B",0);
+  oadbLHC10f3->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-AC-NOPF-ALLNOTRD","AC",0);
+  oadbLHC10f3->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-E-NOPF-ALLNOTRD","E",0);  
+  oadbLHC10f3->SetHardwareTrigger         ( 0,"SPDGFO >= 1 || V0A || V0C");
+  oadbLHC10f3->SetOfflineTrigger          ( 0,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
+  
+  oadbLHC10f3->AddCollisionTriggerClass   ( AliVEvent::kMUON,"+CMUS1-B-NOPF-ALLNOTRD","B",1);
+  oadbLHC10f3->AddBGTriggerClass          ( AliVEvent::kMUON,"+CMUS1-AC-NOPF-ALLNOTRD","AC",1);
+  oadbLHC10f3->AddBGTriggerClass          ( AliVEvent::kMUON,"+CMUS1-E-NOPF-ALLNOTRD","E",1);
+  oadbLHC10f3->SetHardwareTrigger         ( 1,"SPDGFO >= 1 || V0A || V0C");                                         
+  oadbLHC10f3->SetOfflineTrigger          ( 1,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
+    
+  oadbLHC10f3->AddCollisionTriggerClass   ( AliVEvent::kHighMult,"+CSH1-B-NOPF-ALLNOTRD","B",2);
+  oadbLHC10f3->AddBGTriggerClass          ( AliVEvent::kHighMult,"+CSH1-AC-NOPF-ALLNOTRD","AC",2);
+  oadbLHC10f3->AddBGTriggerClass          ( AliVEvent::kHighMult,"+CSH1-E-NOPF-ALLNOTRD","E",2);
+  oadbLHC10f3->SetHardwareTrigger         ( 1,"SPDGFO >= 1 || V0A || V0C");                                         
+  oadbLHC10f3->SetOfflineTrigger          ( 1,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
+    
+  oadbContPS->AppendObject(oadbLHC10f3, 135029,135029);
+
+
+  // LHC10g
+  AliOADBPhysicsSelection * oadbLHC10g = new AliOADBPhysicsSelection("oadbLHC10g");
+  oadbLHC10g->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CINT1-B-NOPF-ALLNOTRD","B",0);
+  oadbLHC10g->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-AC-NOPF-ALLNOTRD","AC",0);
+  oadbLHC10g->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-E-NOPF-ALLNOTRD","E",0);  
+  oadbLHC10g->SetHardwareTrigger         ( 0,"SPDGFO >= 1 || V0A || V0C");
+  oadbLHC10g->SetOfflineTrigger          ( 0,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
+  
+  oadbLHC10g->AddCollisionTriggerClass   ( AliVEvent::kMUON,"+CMUS1-B-NOPF-ALLNOTRD","B",1);
+  oadbLHC10g->AddBGTriggerClass          ( AliVEvent::kMUON,"+CMUS1-AC-NOPF-ALLNOTRD","AC",1);
+  oadbLHC10g->AddBGTriggerClass          ( AliVEvent::kMUON,"+CMUS1-E-NOPF-ALLNOTRD","E",1);
+  oadbLHC10g->SetHardwareTrigger         ( 1,"SPDGFO >= 1 || V0A || V0C");                                         
+  oadbLHC10g->SetOfflineTrigger          ( 1,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG");
+    
+  oadbContPS->AppendObject(oadbLHC10g, 135654,136377);
+
 
   // filling schemes
 
