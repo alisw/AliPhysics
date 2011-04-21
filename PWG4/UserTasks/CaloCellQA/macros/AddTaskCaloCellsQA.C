@@ -1,8 +1,7 @@
 AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0, char* fname = "CellsQA.root",
-                                               Bool_t initGeom = kFALSE, Bool_t kFullAnalysis = kFALSE)
+                                               Bool_t kFullAnalysis = kFALSE, char* contname = NULL)
 {
   // Task to add EMCAL/PHOS cellsQA/runsQA to your analysis.
-  // Do not forget to initialize geometry!
   //
   // Usage example for EMCAL:
   //
@@ -26,9 +25,14 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0, 
   //   use 4 for PHOS (PHOS numbers start from 1, not from zero);
   //   use 10 for EMCAL >= 2011;
   // det -- detector, 0/EMCAL, 1/PHOS;
-  // initGeom -- if true, initialize geometry for you;
   // kFullAnalysis -- if true, initialize the analysis to fill more histograms
-  //                  (necessary for the completeness in searching of problematic cells).
+  //                  (necessary for the completeness in searching of problematic cells);
+  // contname -- TObjArray container name in the output file;
+  //   DO NOT USE THIS OPTION UNLESS YOU KNOW WHAT YOU ARE DOING;
+  //   if not NULL, the output will be written into the output container and cannot be later
+  //   merged for different run numbers;
+  //   name must be unique, if you are going to call AddTaskCaloCellsQA() several times
+  //   (AliAnalysisManager limitation).
 
   // get manager instance
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -46,20 +50,17 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0, 
   // Configure analysis
   //===========================================================================
 
-  AliAnalysisTaskCaloCellsQA* task = new AliAnalysisTaskCaloCellsQA("AliAnalysisTaskCaloCellsQA");
-  mgr->AddTask(task);
+  AliAnalysisTaskCaloCellsQA* task;
 
-  // initialize geometry
-  if (initGeom) {
-    if      (det == 0) AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
-    else if (det == 1) AliPHOSGeometry::GetInstance("IHEP");
-  }
+  if (!contname) task = new AliAnalysisTaskCaloCellsQA("AliAnalysisTaskCaloCellsQA", fname);
+  else           task = new AliAnalysisTaskCaloCellsQA("AliAnalysisTaskCaloCellsQA");
+  mgr->AddTask(task);
 
   // initialize analysis instance
   if (det == 0)// EMCAL
-    task->InitCaloCellsQA(fname, nmods, AliAnalysisTaskCaloCellsQA::kEMCAL);
+    task->InitCaloCellsQA(nmods, AliAnalysisTaskCaloCellsQA::kEMCAL);
   else if (det == 1)// PHOS
-    task->InitCaloCellsQA(fname, nmods, AliAnalysisTaskCaloCellsQA::kPHOS);
+    task->InitCaloCellsQA(nmods, AliAnalysisTaskCaloCellsQA::kPHOS);
   else
     ::Fatal("AddTaskCaloCellsQA", "Wrong detector provided");
 
@@ -68,6 +69,10 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0, 
     task->GetCaloCellsQA()->ActivateFullAnalysis();
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+
+  if (contname)
+    mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname,
+                       TObjArray::Class(), AliAnalysisManager::kOutputContainer, fname));
 
   return task;
 }

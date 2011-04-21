@@ -27,10 +27,10 @@ public:
   };
 
   AliAnalysisTaskCaloCellsQA(); 
-  AliAnalysisTaskCaloCellsQA(const char *name);
+  AliAnalysisTaskCaloCellsQA(const char *name, char *outfile = NULL);                                                
   virtual ~AliAnalysisTaskCaloCellsQA();
 
-  void   InitCaloCellsQA(char* fname, Int_t nmods = 10, Int_t det = kEMCAL);
+  void   InitCaloCellsQA(Int_t nmods = 10, Int_t det = kEMCAL);                                                      
   void   UserCreateOutputObjects();
   void   UserExec(Option_t *);
   void   Terminate(Option_t *);
@@ -55,8 +55,8 @@ private:
   Bool_t              fkAvoidPileup;   // flag not to process pileup events
   AliCaloCellsQA*     fCellsQA;        // analysis instance
   TString*            fOutfile;        // output file name
-  Int_t*              fBadCells;       // bad cells array
   Int_t               fNBad;           // number of entries in fBadCells
+  Int_t*              fBadCells;       //[fNBad] bad cells array                                                     
 
   ClassDef(AliAnalysisTaskCaloCellsQA, 1);
 };
