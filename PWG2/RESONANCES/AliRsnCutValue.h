@@ -25,7 +25,7 @@ class AliRsnCutValue : public AliRsnCut {
 public:
 
    AliRsnCutValue();
-   AliRsnCutValue(const char *name, Double_t min, Double_t max, Bool_t isMC);
+   AliRsnCutValue(const char *name, Double_t min, Double_t max);
    AliRsnCutValue(const AliRsnCutValue& copy);
    AliRsnCutValue& operator=(const AliRsnCutValue& copy);
    virtual ~AliRsnCutValue() { }
@@ -33,15 +33,12 @@ public:
    Double_t       GetComputedValue()              {if (fValue) return fValue->GetComputedValue(); return -1E20;}
    AliRsnValue*   GetValueObj()                   {return fValue;}
    void           SetValueObj(AliRsnValue *value) {fValue = value; SetTargetType(value->GetTargetType());}
-   Bool_t         IsUsingMC()                     {return fUseMC;}
-   void           UseMC(Bool_t yn = kTRUE)        {fUseMC = yn;}
 
    virtual Bool_t IsSelected(TObject *object);
    virtual void   Print(const Option_t *option = "") const;
 
 protected:
 
-   Bool_t       fUseMC;
    AliRsnValue *fValue;
 
    ClassDef(AliRsnCutValue, 1)

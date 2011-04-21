@@ -1,3 +1,4 @@
+#include <Riostream.h>
 #include "AliLog.h"
 
 #include "AliRsnEvent.h"
@@ -97,8 +98,9 @@ Bool_t AliRsnInputHandler::BeginEvent(Long64_t entry)
                AliMCEventHandler *mcH =  multiIH->GetFirstMCEventHandler();
                if (mcH) fRsnEvent->SetRefMC(mcH->MCEvent());
             } else if (fRsnEvent->GetRefAOD()) {
-               // TODO AOD MC
-//                fRsnEvent->SetRefMC(mcH->MCEvent());
+               AliAODEvent *aod = fRsnEvent->GetRefAOD();
+               TClonesArray *listAOD = (TClonesArray*)(aod->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+               if (listAOD) fRsnEvent->SetRefMC(fRsnEvent->GetRefAOD());
             }
             if (fParentHandler->ParentHandler()) tmp = "MIX";
             // applying pid cuts

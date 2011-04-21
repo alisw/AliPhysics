@@ -1,18 +1,3 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
 //
 //  This class works as generic interface to each candidate resonance daughter.
 //  Its main purpose is to provide a unique reference which includes all the
@@ -33,30 +18,10 @@
 
 #include <TParticle.h>
 #include <TDatabasePDG.h>
-#include "AliAODVertex.h"
 
 #include "AliRsnDaughter.h"
 
 ClassImp(AliRsnDaughter)
-
-//_____________________________________________________________________________
-AliRsnDaughter::AliRsnDaughter() :
-   fOK(kFALSE),
-   fLabel(-1),
-   fMotherPDG(0),
-   fRsnID(-1),
-   fPrec(0.0, 0.0, 0.0, 0.0),
-   fPsim(0.0, 0.0, 0.0, 0.0),
-   fRef(0x0),
-   fRefMC(0x0),
-   fOwnerEvent(0x0)
-{
-//
-// Default constructor.
-// Initializes all data members to the same values
-// Which will be given by Reset() method.
-//
-}
 
 //_____________________________________________________________________________
 AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) :
@@ -91,51 +56,13 @@ AliRsnDaughter& AliRsnDaughter::operator=(const AliRsnDaughter &copy)
    fLabel      = copy.fLabel;
    fMotherPDG  = copy.fMotherPDG;
    fRsnID      = copy.fRsnID;
-   fPrec       = copy.fPrec;
    fPsim       = copy.fPsim;
+   fPrec       = copy.fPrec;
    fRef        = copy.fRef;
    fRefMC      = copy.fRefMC;
    fOwnerEvent = copy.fOwnerEvent;
 
    return (*this);
-}
-
-//_____________________________________________________________________________
-void AliRsnDaughter::SetRef(AliVParticle *p)
-{
-//
-// Set the pointer to reference reconstructed VParticle
-// and copies its momentum in the 4-vector.
-// Mass is set to 0 (must be assigned by SetMass()).
-//
-
-   fPrec.SetXYZT(0.0, 0.0, 0.0, 0.0);
-   fRef = p;
-   
-   if (fRef) {
-      fPrec.SetX(fRef->Px());
-      fPrec.SetY(fRef->Py());
-      fPrec.SetZ(fRef->Pz());
-   }
-}
-
-//_____________________________________________________________________________
-void AliRsnDaughter::SetRefMC(AliVParticle *p)
-{
-//
-// Set the pointer to reference MonteCarlo VParticle
-// and copies its momentum in the 4-vector.
-// Mass is set to 0 (must be assigned by SetMass()).
-//
-
-   fPsim.SetXYZT(0.0, 0.0, 0.0, 0.0);
-   fRefMC = p;
-   
-   if (fRefMC) {
-      fPsim.SetX(fRefMC->Px());
-      fPsim.SetY(fRefMC->Py());
-      fPsim.SetZ(fRefMC->Pz());
-   }
 }
 
 //_____________________________________________________________________________
@@ -151,33 +78,30 @@ void AliRsnDaughter::Reset()
    fLabel     = -1;
    fMotherPDG =  0;
    fRsnID     = -1;
+   
+   fPsim.SetXYZT(0.0, 0.0, 0.0, 0.0);
+   fPrec.SetXYZT(0.0, 0.0, 0.0, 0.0);
 
-   SetRef(NULL);
-   SetRefMC(NULL);
+   fRef = fRefMC = 0x0;
+   fOwnerEvent = 0x0;
 }
 
 //_____________________________________________________________________________
-Int_t AliRsnDaughter::GetPDG(Bool_t abs)
+Int_t AliRsnDaughter::GetPDG()
 {
 //
 // Return the PDG code of the particle from MC ref (if any).
 // If argument is kTRUE, returns its absolute value.
 //
 
-   Int_t pdg = 0;
-   if (!fRefMC) return pdg;
-
-   // ESD
-   AliMCParticle *esd = GetRefMCESD();
-   if (esd) pdg = esd->Particle()->GetPdgCode();
-
-   // AOD
-   AliAODMCParticle *aod = GetRefMCAOD();
-   if (aod) pdg = aod->GetPdgCode();
-
-   // abs value if required
-   if (abs) pdg = TMath::Abs(pdg);
-   return pdg;
+   if (Match(fRefMC, AliMCParticle::Class()))
+      return ((AliMCParticle*)fRefMC)->Particle()->GetPdgCode();
+   else if (Match(fRefMC, AliAODMCParticle::Class()))
+      return ((AliAODMCParticle*)fRefMC)->GetPdgCode();
+   else {
+      AliWarning("Cannot retrieve PDG");
+      return 0;
+   }
 }
 
 //_____________________________________________________________________________
@@ -190,11 +114,11 @@ Int_t AliRsnDaughter::GetID()
 //
 
    // ESD tracks
-   AliESDtrack *esd = GetRefESDtrack();
+   AliESDtrack *esd = Ref2ESDtrack();
    if (esd) return esd->GetID();
 
    // AOD tracks
-   AliAODTrack *aod = GetRefAODtrack();
+   AliAODTrack *aod = Ref2AODtrack();
    if (aod) return aod->GetID();
 
    // whatever else
@@ -202,72 +126,38 @@ Int_t AliRsnDaughter::GetID()
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnDaughter::IsKinkDaughter()
+Int_t AliRsnDaughter::GetMother()
 {
 //
-// Checks if this track is a kink daughter.
-// this information is important for some cuts, in some cases
-// and it is retrieved differently from ESDs and AODs, so
-// this is done here in order to have a unique outcome.
+// Return index of the first mother of the MC reference, if any.
+// Otherwise, returns -1 (the same as for primary tracks)
 //
 
-   AliESDtrack *etrack = GetRefESDtrack();
-   AliAODTrack *atrack = GetRefAODtrack();
+   if (!fRefMC) return -1;
 
-   if (etrack) {
-      return (etrack->GetKinkIndex(0) > 0);
-   } else if (atrack) {
-      AliAODVertex *vertex = atrack->GetProdVertex();
-      if (vertex) if (vertex->GetType() == AliAODVertex::kKink) return kTRUE;
+   if (fRefMC->InheritsFrom(AliMCParticle::Class())) {
+      AliMCParticle *mc = (AliMCParticle*)fRefMC;
+      return mc->Particle()->GetFirstMother();
+   } else if (fRefMC->InheritsFrom(AliAODMCParticle::Class())) {
+      AliAODMCParticle *mc = (AliAODMCParticle*)fRefMC;
+      return mc->GetMother();
    }
-
-   return kFALSE;
+   else
+      return -1;
 }
+   
+   
 
 //______________________________________________________________________________
-AliRsnDaughter::ERefType AliRsnDaughter::RefType(ESpecies species)
-{
-//
-// Returns the expected object type for a candidate daughter
-// of the given species.
-//
-
-   switch (species) {
-      case kElectron:
-      case kMuon:
-      case kPion:
-      case kKaon:
-      case kProton:
-         return kTrack;
-      case kKaon0:
-      case kLambda:
-         return kV0;
-      case kXi:
-      case kOmega:
-         return kCascade;
-      default:
-         return kNoType;
-   }
-}
-
-//______________________________________________________________________________
-void AliRsnDaughter::Print(Option_t *) const
+void AliRsnDaughter::Print(Option_t *opt) const
 {
 //
 // Override of TObject::Print()
 //
 
    AliInfo("=== DAUGHTER INFO ======================================================================");
-   //if (fRef) {
-   //   AliInfo(Form(" Ref  : %x (%15s) with px,py,pz = %6.2f %6.2f %6.2f", (UInt_t)fRef  , fRef  ->ClassName(), fPrec.X(), fPrec.Y(), fPrec.Z()));
-   //} else {
-   //   AliInfo(" Ref  : NULL");
-   //}
-   //if (fRefMC) {
-   //   AliInfo(Form(" RefMC: %x (%15s) with px,py,pz = %6.2f %6.2f %6.2f", (UInt_t)fRefMC, fRefMC->ClassName(), fPsim.X(), fPsim.Y(), fPsim.Z()));
-   //} else {
-   //   AliInfo(" RefMC: NULL");
-   //}
+   AliInfo(Form(" (sim) px,py,pz = %6.2f %6.2f %6.2f", fPsim.X(), fPsim.Y(), fPsim.Z()));
+   AliInfo(Form(" (rec) px,py,pz = %6.2f %6.2f %6.2f", fPrec.X(), fPrec.Y(), fPrec.Z()));
    AliInfo(Form(" OK, RsnID, Label, MotherPDG = %s, %5d, %5d, %4d", (fOK ? "true " : "false"), fRsnID, fLabel, fMotherPDG));
    AliInfo("========================================================================================");
 }

@@ -38,12 +38,12 @@
 
 ClassImp(AliRsnMother)
 
-//_____________________________________________________________________________
+//__________________________________________________________________________________________________
 AliRsnMother::AliRsnMother(const AliRsnMother &obj) :
    TObject(obj),
    fRefEvent(obj.fRefEvent),
    fSum(obj.fSum),
-   fSumMC(obj.fSumMC)
+   fRef(obj.fRef)
 {
 //
 // Copy constructor.
@@ -54,7 +54,7 @@ AliRsnMother::AliRsnMother(const AliRsnMother &obj) :
    for (i = 0; i < 2; i++) fDaughter[i] = obj.fDaughter[i];
 }
 
-//_____________________________________________________________________________
+//__________________________________________________________________________________________________
 AliRsnMother& AliRsnMother::operator=(const AliRsnMother &obj)
 {
 //
@@ -62,19 +62,16 @@ AliRsnMother& AliRsnMother::operator=(const AliRsnMother &obj)
 // Does not duplicate pointers.
 //
 
-   Int_t i;
-
    fSum = obj.fSum;
-   fSumMC = obj.fSumMC;
-
-   for (i = 0; i < 2; i++) fDaughter[i] = obj.fDaughter[i];
-   
+   fRef = obj.fRef;
    fRefEvent = obj.fRefEvent;
-
+   fDaughter[0] = obj.fDaughter[0];
+   fDaughter[1] = obj.fDaughter[1];
+   
    return (*this);
 }
 
-//_____________________________________________________________________________
+//__________________________________________________________________________________________________
 AliRsnMother::~AliRsnMother()
 {
 //
@@ -83,8 +80,22 @@ AliRsnMother::~AliRsnMother()
 //
 }
 
-//_____________________________________________________________________________
-Int_t AliRsnMother::CommonMother(Int_t &m0, Int_t &m1) const
+//_______________________________________________________________________________________________________________________
+void AliRsnMother::Reset()
+{
+//
+// Resets the mother, zeroing all data members.
+//
+
+   Int_t i;
+   for (i = 0; i < 2; i++) fDaughter[i] = 0x0;
+   fRefEvent = 0x0;
+   fSum.SetXYZM(0.0, 0.0, 0.0, 0.0);
+   fRef.SetXYZM(0.0, 0.0, 0.0, 0.0);
+}
+
+//__________________________________________________________________________________________________
+Int_t AliRsnMother::CommonMother() const
 {
 //
 // If MC info is available, checks if the two tracks in the pair have the same mother.
@@ -95,81 +106,21 @@ Int_t AliRsnMother::CommonMother(Int_t &m0, Int_t &m1) const
 // to check if they are really coming from a resonance (indexes >= 0) or not.
 //
 
-   // if MC info is not available, the check can't be done
-   if (!fDaughter[0]->GetRefMC() || !fDaughter[1]->GetRefMC()) {
-      AliDebug(AliLog::kDebug, "MC Info absent --> cannot check common mother");
-      return 0;
-   }
-
-   // check that labels are the same
-   m0 = -1;
-   m1 = -2;
-   if (fDaughter[0]->IsESD() && fDaughter[1]->IsESD()) {
-      if (fDaughter[0]->GetRefMCESD() && fDaughter[1]->GetRefMCESD()) {
-         m0 = fDaughter[0]->GetRefMCESD()->Particle()->GetFirstMother();
-         m1 = fDaughter[1]->GetRefMCESD()->Particle()->GetFirstMother();
-      }
-   }
-   if (fDaughter[0]->IsAOD() && fDaughter[1]->IsAOD()) {
-      if (fDaughter[0]->GetRefMCAOD() && fDaughter[1]->GetRefMCAOD()) {
-         m0 = fDaughter[0]->GetRefMCAOD()->GetMother();
-         m1 = fDaughter[1]->GetRefMCAOD()->GetMother();
-      }
-   }
+   Int_t m1  = fDaughter[0]->GetMother();
+   Int_t m2  = fDaughter[1]->GetMother();
+   Int_t out = 0;
    
-   // decide the answer depending on the two mother labels
-   if (m0 != m1) 
-      return 0;
-   else
-      return TMath::Abs(fDaughter[0]->GetMotherPDG());
-}
-
-//_____________________________________________________________________________
-void AliRsnMother::ComputeSum(Double_t mass0, Double_t mass1)
-{
-//
-// Sets the masses for the 4-momenta of the daughters and then
-// sums them, taking into account that the space part is set to
-// each of them when the reference object is set (see AliRsnDaughter::SetRef)
-//
-
-   fDaughter[0]->SetMass(mass0);
-   fDaughter[1]->SetMass(mass1);
-
-   fSum   = fDaughter[0]->Prec() + fDaughter[1]->Prec();
-   fSumMC = fDaughter[0]->Psim() + fDaughter[1]->Psim();
-}
-
-//_____________________________________________________________________________
-void AliRsnMother::ResetPair()
-{
-//
-// Resets the mother, zeroing all data members.
-//
-
-   Int_t i;
-   for (i = 0; i < 2; i++) fDaughter[i] = 0x0;
-   fRefEvent = 0x0;
-
-   fSum  .SetXYZM(0.0, 0.0, 0.0, 0.0);
-   fSumMC.SetXYZM(0.0, 0.0, 0.0, 0.0);
-}
-
-//_____________________________________________________________________________
-Double_t AliRsnMother::AngleTo(AliRsnDaughter *track, Bool_t mc)
-{
-//
-// Compute the angle betwee this and the passed object
-// if second argument is kTRUE, use MC values.
-//
-
-   TLorentzVector &me = (mc ? fSumMC : fSum);
-   TLorentzVector &he = track->P(mc);
+   // a true mother makes sense only if both mothers
+   // are not-negative and equal
+   if (m1 >= 0 && m2 >= 0 && m1 == m2) {
+      out = TMath::Abs(fDaughter[0]->GetMotherPDG());
+      AliDebugClass(1, Form("Mothers are: %d %d --> EQUAL (PDG = %d)", m1, m2, out));
+   } 
    
-   return me.Angle(he.Vect());
+   return out;
 }
 
-//_____________________________________________________________________________
+//__________________________________________________________________________________________________
 Double_t AliRsnMother::AngleToLeading(Bool_t &success)
 {
 //
@@ -187,14 +138,14 @@ Double_t AliRsnMother::AngleToLeading(Bool_t &success)
    
    Int_t id1 = fDaughter[0]->GetID();
    Int_t id2 = fDaughter[1]->GetID();
-   Int_t idL = fRefEvent->GetLeadingParticleID();
+   Int_t idL = fRefEvent->GetLeadingIndex();
    
    if (id1 == idL || id2 == idL) {
       success = kFALSE;
       return -99.0;
    }
    
-   AliRsnDaughter leading = fRefEvent->GetDaughter(idL);
+   AliRsnDaughter leading = fRefEvent->GetDaughter(idL, kFALSE);
    AliVParticle  *ref     = leading.GetRef();
    Double_t       angle   = ref->Phi() - fSum.Phi();
    
@@ -206,7 +157,28 @@ Double_t AliRsnMother::AngleToLeading(Bool_t &success)
    return angle;
 }
 
-//_____________________________________________________________________________
+//__________________________________________________________________________________________________
+void AliRsnMother::ComputeSum(Double_t mass0, Double_t mass1, Double_t motherMass)
+{
+//
+// Sets the masses for the 4-momenta of the daughters and then
+// sums them, taking into account that the space part is set to
+// each of them when the reference object is set (see AliRsnDaughter::SetRef)
+//
+
+   fDaughter[0]->FillP(mass0);
+   fDaughter[1]->FillP(mass1);
+
+   // sum
+   fSum   = fDaughter[0]->Prec() + fDaughter[1]->Prec();
+   fSumMC = fDaughter[0]->Psim() + fDaughter[1]->Psim();
+   
+   // reference
+   fRef.SetXYZM(fSum.X(), fSum.Y(), fSum.Z(), motherMass);
+   fRefMC.SetXYZM(fSumMC.X(), fSumMC.Y(), fSumMC.Z(), motherMass);
+}
+
+//__________________________________________________________________________________________________
 Double_t AliRsnMother::CosThetaStar(Bool_t first, Bool_t useMC)
 {
 //
@@ -217,9 +189,9 @@ Double_t AliRsnMother::CosThetaStar(Bool_t first, Bool_t useMC)
 // [Contribution from Z. Feckova]
 //
 
-   TLorentzVector mother    = (useMC ? fSumMC : fSum);
-   TLorentzVector daughter0 = (first ? fDaughter[0]->P(useMC) : fDaughter[1]->P(useMC));
-   TLorentzVector daughter1 = (first ? fDaughter[1]->P(useMC) : fDaughter[0]->P(useMC));
+   TLorentzVector &mother    = Sum(useMC);
+   TLorentzVector &daughter0 = (first ? fDaughter[0]->P(useMC) : fDaughter[1]->P(useMC));
+   TLorentzVector &daughter1 = (first ? fDaughter[1]->P(useMC) : fDaughter[0]->P(useMC));
    TVector3 momentumM(mother.Vect());
    TVector3 normal(mother.Y() / momentumM.Mag(), -mother.X() / momentumM.Mag(), 0.0);
 
@@ -248,7 +220,7 @@ Double_t AliRsnMother::CosThetaStar(Bool_t first, Bool_t useMC)
    return cosThetaStar;
 }
 
-//_____________________________________________________________________________
+//__________________________________________________________________________________________________
 void AliRsnMother::PrintInfo(const Option_t * /*option*/) const
 {
 //
@@ -264,7 +236,7 @@ void AliRsnMother::PrintInfo(const Option_t * /*option*/) const
    AliInfo("========= END PAIR INFO ===========");
 }
 
-//_____________________________________________________________________________
+//__________________________________________________________________________________________________
 Bool_t AliRsnMother::CheckPair(Bool_t checkMC) const
 {
 //

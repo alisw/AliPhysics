@@ -12,20 +12,9 @@
 #define ALIRSNCUTPRIMARYVERTEX_H
 
 #include "AliRsnCut.h"
-#include "AliPID.h"
 
-#include "Riostream.h"
-#include "TMath.h"
+class AliVVertex;
 
-#include "AliLog.h"
-#include "AliESDEvent.h"
-#include "AliESDVertex.h"
-
-#include "AliRsnEvent.h"
-
-class AliRsnEvent;
-class AliRsnDaughter;
-class AliRsnPairParticle;
 class AliRsnCutPrimaryVertex : public AliRsnCut {
 public:
 
@@ -38,10 +27,27 @@ public:
 
 protected:
 
+   Bool_t CheckVertex(AliVVertex *vert);
+
    Bool_t fAcceptTPC;   // if kTRUE, the TPC primary vertexes are accepted
    Bool_t fCheckPileUp; // check and reject pileupped events (pp)
 
    ClassDef(AliRsnCutPrimaryVertex, 1)
 };
+
+//__________________________________________________________________________________________________
+inline Bool_t AliRsnCutPrimaryVertex::CheckVertex(AliVVertex *vertex)
+{
+//
+// Checks if a candidate primary vertex is good,
+// which is true if it is not null and has at
+// least one contributor
+//
+
+   if (!vertex) return kFALSE; 
+   if (vertex->GetNContributors() < 1) return kFALSE;
+   
+   return kTRUE;
+}
 
 #endif
