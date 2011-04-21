@@ -33,8 +33,9 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnTarget.cxx
            RESONANCES/AliRsnValue.cxx
            RESONANCES/AliRsnCut.cxx
-           RESONANCES/AliRsnValueStd.cxx
-           RESONANCES/AliRsnValuePID.cxx
+           RESONANCES/AliRsnValueDaughter.cxx
+           RESONANCES/AliRsnValuePair.cxx
+           RESONANCES/AliRsnValueEvent.cxx
            RESONANCES/AliRsnCutPrimaryVertex.cxx
            RESONANCES/AliRsnCutTrackQuality.cxx
            RESONANCES/AliRsnCutValue.cxx
@@ -44,6 +45,7 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnCutPIDTOF.cxx
            RESONANCES/AliRsnCutPIDNSigma.cxx
            RESONANCES/AliRsnCutMomentumComparison.cxx
+           RESONANCES/AliRsnCutKaonForPhi2010.cxx
            RESONANCES/AliRsnCutSet.cxx
            RESONANCES/AliRsnExpression.cxx
            RESONANCES/AliRsnVariableExpression.cxx

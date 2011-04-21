@@ -32,7 +32,7 @@ public:
    void           SetListID(Int_t i, Int_t val)        {if (i==0||i==1) fListID[i] = val;}
 
    // methods
-   Bool_t         MotherOK();
+   Bool_t         IsTrueMother();
    virtual void   Print(Option_t *opt = "") const;
    virtual Bool_t Init(const char *prefix, TList *list);
    virtual Int_t  DoLoop(AliRsnEvent *main, AliRsnDaughterSelector *smain, AliRsnEvent *mix = 0, AliRsnDaughterSelector *smix = 0);

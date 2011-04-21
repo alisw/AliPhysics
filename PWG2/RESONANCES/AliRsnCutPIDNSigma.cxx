@@ -32,8 +32,7 @@ AliRsnCutPIDNSigma::AliRsnCutPIDNSigma
    fSpecies(species),
    fDetector(det),
    fMomMin(0.0),
-   fMomMax(0.0),
-   fRejectOutside(kFALSE),
+   fMomMax(1E20),
    fRejectUnmatched(kFALSE)
 {
 //
@@ -49,7 +48,6 @@ AliRsnCutPIDNSigma::AliRsnCutPIDNSigma
    fDetector(copy.fDetector),
    fMomMin(copy.fMomMin),
    fMomMax(copy.fMomMax),
-   fRejectOutside(copy.fRejectOutside),
    fRejectUnmatched(copy.fRejectUnmatched)
 {
 //
@@ -70,7 +68,6 @@ AliRsnCutPIDNSigma& AliRsnCutPIDNSigma::operator=(const AliRsnCutPIDNSigma& copy
    fDetector = copy.fDetector;
    fMomMin = copy.fMomMin;
    fMomMax = copy.fMomMax;
-   fRejectOutside = copy.fRejectOutside;
    fRejectUnmatched = copy.fRejectUnmatched;
 
    return (*this);
@@ -95,40 +92,38 @@ Bool_t AliRsnCutPIDNSigma::IsSelected(TObject *object)
 
    // get reference momentum, for range cut
    Double_t momentum = -1.0;
-   if (!fDaughter->GetRefVtrack()) {
+   if (!fDaughter->Ref2Vtrack()) {
       AliDebugClass(2, "Referenced daughter is not a track");
       return kFALSE;
    }
    if (fDetector == kTPC)
-      momentum = fDaughter->GetRefVtrack()->GetTPCmomentum();
+      momentum = fDaughter->Ref2Vtrack()->GetTPCmomentum();
    else
       momentum = fDaughter->GetRef()->P();
       
    // check momentum range, if required
-   if (fRejectOutside) {
-      if (momentum < fMomMin || momentum > fMomMax) {
-         AliDebugClass(2, Form("Track momentum = %.5f, outside allowed range [%.2f - %.2f]", momentum, fMomMin, fMomMax));
-         return kFALSE;
-      }
+   if (momentum < fMomMin || momentum > fMomMax) {
+      AliDebugClass(2, Form("Track momentum = %.5f, outside allowed range [%.2f - %.2f]", momentum, fMomMin, fMomMax));
+      return kFALSE;
    }
    
    // matching check, if required
    if (fRejectUnmatched) {
       switch (fDetector) {
          case kITS:
-            if (!IsITS()) {
+            if (!IsITS(fDaughter->Ref2Vtrack())) {
                AliDebug(3, "Rejecting track not matched in ITS");
                return kFALSE;
             }
             break;
          case kTPC:
-            if (!IsTPC()) {
+            if (!IsTPC(fDaughter->Ref2Vtrack())) {
                AliDebug(3, "Rejecting track not matched in TPC");
                return kFALSE;
             }
             break;
          case kTOF:
-            if (!IsTOF()) {
+            if (!IsTOF(fDaughter->Ref2Vtrack())) {
                AliDebug(3, "Rejecting track not matched in TOF");
                return kFALSE;
             }
@@ -153,7 +148,6 @@ Bool_t AliRsnCutPIDNSigma::IsSelected(TObject *object)
          fCutValueD = pid->NumberOfSigmasTOF(fDaughter->GetRef(), fSpecies);
          break;
       default:
-         fCutValueD = 1E20;
          return kFALSE;
    }
    
@@ -168,11 +162,6 @@ void AliRsnCutPIDNSigma::Print(const Option_t *) const
 //
 
    Char_t mom[200], det[100], match[200];
-   
-   if (fRejectOutside)
-      snprintf(mom, 200, "Tracks are accepted only in the momentum range %.2f --> %.2f", fMomMin, fMomMax);
-   else
-      snprintf(mom, 200, "No check in momentum range");
       
    if (fRejectUnmatched)
       snprintf(match, 200, "Unmatched tracks are rejected");

@@ -27,7 +27,6 @@ ClassImp(AliRsnCutValue)
 //_________________________________________________________________________________________________
 AliRsnCutValue::AliRsnCutValue() :
    AliRsnCut(),
-   fUseMC(kFALSE),
    fValue(0x0)
 {
 //
@@ -37,9 +36,8 @@ AliRsnCutValue::AliRsnCutValue() :
 
 //_________________________________________________________________________________________________
 AliRsnCutValue::AliRsnCutValue
-(const char *name, Double_t min, Double_t max, Bool_t useMC) :
+(const char *name, Double_t min, Double_t max) :
    AliRsnCut(name, AliRsnTarget::kTargetTypes, min, max),
-   fUseMC(useMC),
    fValue(0x0)
 {
 //
@@ -53,7 +51,6 @@ AliRsnCutValue::AliRsnCutValue
 //_________________________________________________________________________________________________
 AliRsnCutValue::AliRsnCutValue(const AliRsnCutValue& copy) :
    AliRsnCut(copy),
-   fUseMC(copy.fUseMC),
    fValue(copy.fValue)
 {
 //
@@ -71,7 +68,6 @@ AliRsnCutValue& AliRsnCutValue::operator=(const AliRsnCutValue& copy)
 //
 
    AliRsnCut::operator=(copy);
-   fUseMC = copy.fUseMC;
    fValue = copy.fValue;
 
    return (*this);
@@ -92,7 +88,7 @@ Bool_t AliRsnCutValue::IsSelected(TObject *object)
    SetTargetType(fValue->GetTargetType());
 
    // try to compute values
-   Bool_t success = fValue->Eval(object, fUseMC);
+   Bool_t success = fValue->Eval(object);
 
    // check success
    if (!success) {

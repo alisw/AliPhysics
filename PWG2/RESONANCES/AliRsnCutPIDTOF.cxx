@@ -88,7 +88,7 @@ Bool_t AliRsnCutPIDTOF::IsSelected(TObject *object)
    if (!TargetOK(object)) return kFALSE;
 
    // reject always non-track objects
-   AliVTrack *vtrack = fDaughter->GetRefVtrack();
+   AliVTrack *vtrack = fDaughter->Ref2Vtrack();
    if (!vtrack) {
       AliDebug(AliLog::kDebug + 2, Form("Impossible to process an object of type '%s'. Cut applicable only to ESD/AOD tracks", fDaughter->GetRef()->ClassName()));
       return kFALSE;
@@ -108,8 +108,8 @@ Bool_t AliRsnCutPIDTOF::IsSelected(TObject *object)
    // prepare some useful variables
    Double_t     tof, sigma, times[5];
    Double_t    &ref = times[(Int_t)fRefType];
-   AliESDtrack *esdTrack = fDaughter->GetRefESDtrack();
-   AliAODTrack *aodTrack = fDaughter->GetRefAODtrack();
+   AliESDtrack *esdTrack = fDaughter->Ref2ESDtrack();
+   AliAODTrack *aodTrack = fDaughter->Ref2AODtrack();
 
    // cut check depends on the object type
    if (esdTrack) {

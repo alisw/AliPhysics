@@ -7,7 +7,11 @@
 // author: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
+#include <Riostream.h>
+
 #include "AliStack.h"
+#include "AliGenEventHeader.h"
+#include "AliAODMCHeader.h"
 
 #include "AliRsnEvent.h"
 #include "AliRsnCutManager.h"
@@ -19,7 +23,7 @@ ClassImp(AliRsnLoopEffPair)
 
 //_____________________________________________________________________________
 AliRsnLoopEffPair::AliRsnLoopEffPair(const char *name, AliRsnPairDef *def) :
-   AliRsnLoopEff(name, 2),
+   AliRsnLoopEff(name, 1),
    fDef(def),
    fMother()
 {
@@ -54,6 +58,166 @@ AliRsnLoopEffPair& AliRsnLoopEffPair::operator=(const AliRsnLoopEffPair& copy)
    return (*this);
 }
 
+//__________________________________________________________________________________________________
+Bool_t AliRsnLoopEffPair::AssignMotherAndDaughters(AliRsnEvent *rsnEvent, Int_t ipart)
+{
+//
+// Calls the appropriate assignment method
+//
+
+   // setup pointers
+   fMother.SetDaughter(0, &fDaughter[0]);
+   fMother.SetDaughter(1, &fDaughter[1]);
+   fMother.SetRefEvent(rsnEvent);
+   fDaughter[0].SetOwnerEvent(rsnEvent);
+   fDaughter[1].SetOwnerEvent(rsnEvent);
+
+   if (rsnEvent->IsESD())
+      return AssignMotherAndDaughtersESD(rsnEvent, ipart);
+   else if (rsnEvent->IsAOD())
+      return AssignMotherAndDaughtersAOD(rsnEvent, ipart);
+   else {
+      AliError("Unrecognized input event");
+      return kFALSE;
+   }
+}
+
+//__________________________________________________________________________________________________
+Bool_t AliRsnLoopEffPair::AssignMotherAndDaughtersESD(AliRsnEvent *rsnEvent, Int_t ipart)
+{
+//
+// Gets a particle in the MC event and try to assign it to the mother.
+// If it has two daughters, retrieve them and assign also them.
+// NOTE: assignment is done only for MC, since reconstructed match is assigned in the same way
+//       for ESD and AOD, if available
+// ---
+// Implementation for ESD inputs
+//
+
+   AliMCEvent    *mc      = rsnEvent->GetRefMCESD();
+   AliStack      *stack   = mc->Stack();
+   AliMCParticle *mother  = (AliMCParticle*)mc->GetTrack(ipart);
+   TParticle     *motherP = mother->Particle();
+   Int_t          ntracks = stack->GetNtrack();
+   
+   // check PDG code and exit if it is wrong
+   if (TMath::Abs(motherP->GetPdgCode()) != fDef->GetMotherPDG()) return kFALSE;
+   
+   // check number of daughters and exit if it is not 2
+   if (motherP->GetNDaughters() < 2) return kFALSE;
+   
+   // check distance from primary vertex
+   TLorentzVector vprod;
+   motherP->ProductionVertex(vprod);
+   if (!CheckDistanceFromPV(vprod.X(), vprod.Y(), vprod.Z())) {
+      AliDebugClass(1, "Distant production vertex");
+      return kFALSE;
+   }
+   
+   // get the daughters and check their PDG code and charge:
+   // if they match one of the pair daughter definitions, 
+   // assign them as MC reference of the 'fDaughter' objects
+   fDaughter[0].Reset();
+   fDaughter[1].Reset();
+   Int_t index[2] = {motherP->GetFirstDaughter(), motherP->GetLastDaughter()};
+   Int_t i, pdg;
+   Short_t charge;
+   AliMCParticle *daughter = 0x0;
+   for (i = 0; i < 2; i++) {
+      // check index for stack
+      if (index[i] < 0 || index[i] > ntracks) {
+         AliError(Form("Index %d overflow: value = %d, max = %d", i, index[i], ntracks));
+         return kFALSE;
+      }
+      // get daughter and its PDG and charge
+      daughter = (AliMCParticle*)mc->GetTrack(index[i]);
+      pdg      = TMath::Abs(daughter->Particle()->GetPdgCode());
+      charge   = (Short_t)(daughter->Particle()->GetPDG()->Charge() / 3);
+      // check if it matches one definition
+      if (fDef->GetDef1().MatchesPDG(pdg) && fDef->GetDef1().MatchesChargeS(charge)) {
+         fDaughter[0].SetGood();
+         fDaughter[0].SetRefMC(daughter);
+         fDaughter[0].SetLabel(index[i]);
+      } else if (fDef->GetDef2().MatchesPDG(pdg) && fDef->GetDef2().MatchesChargeS(charge)) {
+         fDaughter[1].SetGood();
+         fDaughter[1].SetRefMC(daughter);
+         fDaughter[1].SetLabel(index[i]);
+      }
+   }
+   
+   // return success if both daughters were assigned
+   if (fDaughter[0].IsOK() && fDaughter[1].IsOK()) {
+      return kTRUE;
+   } else {
+      fDaughter[0].Reset();
+      fDaughter[1].Reset();
+      return kFALSE;
+   }
+}
+
+//__________________________________________________________________________________________________
+Bool_t AliRsnLoopEffPair::AssignMotherAndDaughtersAOD(AliRsnEvent *rsnEvent, Int_t ipart)
+{
+   AliAODEvent      *aod     = rsnEvent->GetRefAOD();
+   TClonesArray     *listAOD = (TClonesArray*)(aod->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+   AliAODMCParticle *mother  = (AliAODMCParticle*)listAOD->At(ipart);
+   Int_t             ntracks = listAOD->GetEntries();
+   
+   // check PDG code and exit if it is wrong
+   if (TMath::Abs(mother->GetPdgCode()) != fDef->GetMotherPDG()) return kFALSE;
+   
+   // check number of daughters and exit if it is not 2
+   if (mother->GetNDaughters() < 2) return kFALSE;
+   
+   // check distance from primary vertex
+   Double_t vprod[3] = {(Double_t)mother->Xv(), (Double_t)mother->Yv(), (Double_t)mother->Zv()};
+   Double_t dv = DistanceFromPV(vprod[0], vprod[1], vprod[2]);
+   if (dv > fMaxDistPV) {
+      AliDebugClass(1, "Distant production vertex");
+      return kFALSE;
+   }
+   
+   // get the daughters and check their PDG code and charge:
+   // if they match one of the pair daughter definitions, 
+   // assign them as MC reference of the 'fDaughter' objects
+   fDaughter[0].Reset();
+   fDaughter[1].Reset();
+   Int_t index[2] = {(Int_t)mother->GetDaughter(0), (Int_t)mother->GetDaughter(1)};
+   Int_t i, pdg;
+   Short_t charge;
+   AliAODMCParticle *daughter = 0x0;
+   for (i = 0; i < 2; i++) {
+      // check index for stack
+      if (index[i] < 0 || index[i] > ntracks) {
+         AliError(Form("Index %d overflow: value = %d, max = %d", i, index[i], ntracks));
+         return kFALSE;
+      }
+      // get daughter and its PDG and charge
+      daughter = (AliAODMCParticle*)listAOD->At(index[i]);
+      pdg      = TMath::Abs(daughter->GetPdgCode());
+      charge   = (Short_t)(daughter->Charge() / 3);
+      // check if it matches one definition
+      if (fDef->GetDef1().MatchesPDG(pdg) && fDef->GetDef1().MatchesChargeS(charge)) {
+         fDaughter[0].SetGood();
+         fDaughter[0].SetRefMC(daughter);
+         fDaughter[0].SetLabel(index[i]);
+      } else if (fDef->GetDef2().MatchesPDG(pdg) && fDef->GetDef2().MatchesChargeS(charge)) {
+         fDaughter[1].SetGood();
+         fDaughter[1].SetRefMC(daughter);
+         fDaughter[1].SetLabel(index[i]);
+      }
+   }
+   
+   // return success if both daughters were assigned
+   if (fDaughter[0].IsOK() && fDaughter[1].IsOK()) {
+      return kTRUE;
+   } else {
+      fDaughter[0].Reset();
+      fDaughter[1].Reset();
+      return kFALSE;
+   }
+}
+
 //_____________________________________________________________________________
 Int_t AliRsnLoopEffPair::DoLoop(AliRsnEvent *rsn, AliRsnDaughterSelector*, AliRsnEvent*, AliRsnDaughterSelector*)
 {
@@ -64,9 +228,18 @@ Int_t AliRsnLoopEffPair::DoLoop(AliRsnEvent *rsn, AliRsnDaughterSelector*, AliRs
    // check event cuts
    if (!OkEvent(rsn)) return 0;
    
+   // retrieve output
+   fOutput = (AliRsnListOutput*)fOutputs[0];
+   
    // check presence of MC reference
    if (!rsn->GetRefMC()) {
       AliError("Need a MC to compute efficiency");
+      return 0;
+   }
+   
+   // check presence of event
+   if (!rsn->GetRef()) {
+      AliError("Need an event to compute efficiency");
       return 0;
    }
    
@@ -77,27 +250,22 @@ Int_t AliRsnLoopEffPair::DoLoop(AliRsnEvent *rsn, AliRsnDaughterSelector*, AliRs
       return 0;
    }
    
-   // additional coherence checks
-   AliVEvent    *mcEvent = 0x0;
-   AliStack     *listESD = 0x0;
-   TClonesArray *listAOD = 0x0;
-   Int_t         npart   = 0;
+   // retrieve the MC primary vertex position
+   // and do some additional coherence checks
+   Int_t i, npart = 0;
    if (rsn->IsESD()) {
-      mcEvent = rsn->GetRefMCESD();
-      listESD = ((AliMCEvent*)mcEvent)->Stack();
-      if (!listESD) {
-         AliError("Stack is not present");
-         return 0;
-      }
-      npart = listESD->GetNprimary();
+      TArrayF mcVertex(3);
+      AliGenEventHeader *genEH = rsn->GetRefMCESD()->GenEventHeader();
+      genEH->PrimaryVertex(mcVertex);
+      for (i = 0; i < 3; i++) fVertex[i] = (Double_t)mcVertex[i];
+      npart = rsn->GetRefMCESD()->GetNumberOfTracks();
    } else {
-      mcEvent = rsn->GetRefMCAOD();
-      listAOD = (TClonesArray*)((AliAODEvent*)mcEvent)->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-      if (!listAOD) {
-         AliError("Stack is not present");
-         return 0;
-      }
-      npart = listAOD->GetEntries();
+      for (i = 0; i < 3; i++) fVertex[i] = 0.0;
+      AliAODEvent *aod = rsn->GetRefMCAOD();
+      TClonesArray *listAOD = (TClonesArray*)(aod->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+      if (listAOD) npart = listAOD->GetEntries();
+      AliAODMCHeader *mcH = static_cast<AliAODMCHeader*>(aod->FindListObject(AliAODMCHeader::StdBranchName()));
+      if (mcH) mcH->GetVertex(fVertex);
    }
    
    // check number of particles
@@ -105,111 +273,47 @@ Int_t AliRsnLoopEffPair::DoLoop(AliRsnEvent *rsn, AliRsnDaughterSelector*, AliRs
       AliInfo("Empty event");
       return 0;
    }
-
-   // by default, assign daughters to mother
-   // in the correct order (ref. pairDef)
-   fMother.SetDaughter(0, &fDaughter[0]);
-   fMother.SetDaughter(1, &fDaughter[1]);
-   fMother.SetRefEvent(rsn);
-   fDaughter[0].SetOwnerEvent(rsn);
-   fDaughter[1].SetOwnerEvent(rsn);
    
    // utility variables
-   Bool_t            stop;
-   Int_t             ipart, pdg, ndaughters, dindex[2], id, label, charge, imatch, index, istep, count = 0, nsteps = NStepsArray();
-   AliVParticle     *mother = 0x0, *daughter = 0x0;
-   AliMCParticle    *motherESD = 0x0, *daughterESD = 0x0;
-   AliAODMCParticle *motherAOD = 0x0, *daughterAOD = 0x0;
+   Int_t ipart, istep, count = 0, nsteps = fSteps.GetEntries();
+   Int_t ntracks = rsn->GetAbsoluteSum();
+   AliRsnDaughter check;
    
    // loop over particles
    for (ipart = 0; ipart < npart; ipart++) {
-      
-      // get next particle and take some quantities
-      // in different way from ESD and AOD MC
-      if (rsn->IsESD()) {
-         mother = mcEvent->GetTrack(ipart);
-         motherESD = static_cast<AliMCParticle*>(mother);
-         pdg = TMath::Abs(motherESD->Particle()->GetPdgCode());
-         ndaughters = motherESD->Particle()->GetNDaughters();
-      } else {
-         mother = (AliVParticle*)listAOD->At(ipart);
-         motherAOD = static_cast<AliAODMCParticle*>(mother);
-         pdg = TMath::Abs(motherAOD->GetPdgCode());
-         ndaughters = motherAOD->GetNDaughters();
-      }
-      
-      // skip particles with wrong PDG code,
-      if (pdg != fDef->GetMotherPDG()) continue;
-      
-      // fill first step
-      fMother.SumMC().SetXYZM(mother->Px(), mother->Py(), mother->Pz(), fDef->GetMotherMass());
-      GetOutput()->Fill(&fMother, 0);
+      // check i-th particle
+      if (!AssignMotherAndDaughters(rsn, ipart)) continue;
+      // if assignment was successful, for first step, use MC info
+      fDaughter[0].SetRef(fDaughter[0].GetRefMC());
+      fDaughter[1].SetRef(fDaughter[1].GetRefMC());
+      fMother.SetRefEvent(rsn);
+      fMother.ComputeSum(fDef->GetDef1().GetMass(), fDef->GetDef2().GetMass(), fDef->GetMotherMass());
+      fOutput->Fill(&fMother, 0);
       count++;
-      
-      // reject particles with more/less than 2 daughters
-      if (ndaughters != 2) continue;
-      
-      // retrieve daughters
-      // if one of them matches the definition for daughte #1 or #2 in pairDef,
-      // assign it to the corresponding AliRsnDaughter member, and set it to 'good'
-      // then, if both daughters are not 'good', skip the pair
-      fDaughter[0].Reset();
-      fDaughter[1].Reset();
-      if (rsn->IsESD()) {
-         dindex[0] = motherESD->Particle()->GetFirstDaughter();
-         dindex[1] = motherESD->Particle()->GetLastDaughter();
-      } else {
-         dindex[0] = motherAOD->GetDaughter(0);
-         dindex[1] = motherAOD->GetDaughter(1);
-      }
-      
-      // try to assign a daughter to each fDaughter[] data member
-      stop = kFALSE;
-      for (id = 0; id < 2; id++) {
-         // avoid overflows
-         if (dindex[id] < 0 || dindex[id] > npart) {
-            AliWarning(Form("Found a stack overflow in dindex[%d]: value = %d, max = %d", id, dindex[id], npart));
-            stop = kTRUE;
-            break;
-         }
-         // retrieve daughter and copy some info
-         if (rsn->IsESD()) {
-            daughter = mcEvent->GetTrack(dindex[id]);
-            daughterESD = static_cast<AliMCParticle*>(daughter);
-            pdg = TMath::Abs(daughterESD->Particle()->GetPdgCode());
-            charge = (Short_t)(daughterESD->Particle()->GetPDG()->Charge() / 3);
-         } else {
-            daughter = (AliAODMCParticle*)listAOD->At(dindex[id]);
-            daughterAOD = static_cast<AliAODMCParticle*>(daughter);
-            pdg = TMath::Abs(daughterAOD->GetPdgCode());
-            charge = (Short_t)daughterAOD->Charge();
-         }
-         label = TMath::Abs(daughter->GetLabel());
-         // check if can be assigned
-         imatch = -1;
-         if ( fDef->GetDef1().MatchesPDG(pdg) && fDef->GetDef1().MatchesChargeS(charge) )
-            imatch = 0;
-         else if ( fDef->GetDef2().MatchesPDG(pdg) && fDef->GetDef2().MatchesChargeS(charge) )
-            imatch = 1;
-         if (imatch < 0 || imatch > 1) continue;
-         // assign
-         label = daughter->GetLabel();
-         fDaughter[imatch].SetRefMC(daughter);
-         fDaughter[imatch].SetGood();
-         index = FindTrack(label, mcEvent);
-         if (index > 0) {
-            fDaughter[imatch].SetRef(rsn->GetRef()->GetTrack(index));
-         }
-      }
-      
-      // if both daughters were assigned, this means that the decay is correct
-      // and then we fill second step
-      if (fDaughter[0].IsOK() && fDaughter[1].IsOK()) {
-         GetOutput()->Fill(&fMother, 1);
-         for (istep = 0; istep < nsteps; istep++) {
-            AliRsnCutManager *cuts = (AliRsnCutManager*)fSteps[istep];
-            if (!cuts->IsSelected(&fMother)) break;
-            GetOutput()->Fill(&fMother, 2 + istep);
+      // for each further step, try to find two tracks which pass the related cuts
+      for (istep = 0; istep < nsteps; istep++) {
+         AliRsnCutManager *cuts = (AliRsnCutManager*)fSteps[istep];
+         fDaughter[0].SetBad();
+         fDaughter[1].SetBad();
+         for (i = 0; i < ntracks; i++) {
+            rsn->SetDaughter(check, i);
+            if (!cuts->PassCommonDaughterCuts(&check)) continue;
+            if (TMath::Abs(check.GetLabel()) == fDaughter[0].GetLabel()) {
+               if (!cuts->PassDaughter1Cuts(&check)) continue;
+               fDaughter[0].SetRef(check.GetRef());
+               fDaughter[0].SetGood();
+            } else if (TMath::Abs(check.GetLabel()) == fDaughter[1].GetLabel()) {
+               if (!cuts->PassDaughter2Cuts(&check)) continue;
+               fDaughter[1].SetRef(check.GetRef());
+               fDaughter[1].SetGood();
+            }
+            if (fDaughter[0].IsOK() && fDaughter[1].IsOK()) {
+               fMother.ComputeSum(fDef->GetDef1().GetMass(), fDef->GetDef2().GetMass(), fDef->GetMotherMass());
+               if (cuts->PassMotherCuts(&fMother)) {
+                  fOutput->Fill(&fMother, 1 + istep);
+                  break;
+               }
+            }
          }
       }
    }

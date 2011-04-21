@@ -114,8 +114,8 @@ Bool_t AliRsnCutPID::ComputeWeights(AliRsnDaughter *daughter)
    Bool_t useDefault = fUseDefault;
    Bool_t perfectPID = fPerfect;
    if (perfectPID && !daughter->GetRefMC()) return kFALSE;
-   if (!daughter->GetRefESDtrack()) useDefault = kTRUE;
-   if (!daughter->GetRefESDtrack() && !daughter->GetRefAODtrack()) return kFALSE;
+   if (!daughter->Ref2ESDtrack()) useDefault = kTRUE;
+   if (!daughter->Ref2ESDtrack() && !daughter->Ref2AODtrack()) return kFALSE;
 
    // if perfect PID ise required,
    // compare the PDG code of the type stored in 'fMinI' of the cut
@@ -129,18 +129,18 @@ Bool_t AliRsnCutPID::ComputeWeights(AliRsnDaughter *daughter)
    // if default weights are (or need to be) used,
    // they are taken directly and function exits
    if (useDefault) {
-      if (daughter->GetRefESDtrack())
-         daughter->GetRefESDtrack()->GetESDpid(fWeight);
+      if (daughter->Ref2ESDtrack())
+         daughter->Ref2ESDtrack()->GetESDpid(fWeight);
       else {
          for (i = 0; i < AliPID::kSPECIES; i++)
-            fWeight[i] = daughter->GetRefAODtrack()->PID()[i];
+            fWeight[i] = daughter->Ref2AODtrack()->PID()[i];
       }
       return kTRUE;
    }
 
    // if we arrive here, this means that we have an ESD track
    // and we want to customize the PID
-   AliESDtrack *track = daughter->GetRefESDtrack();
+   AliESDtrack *track = daughter->Ref2ESDtrack();
    Double_t     w[kDetectors][AliPID::kSPECIES];
    track->GetITSpid(w[kITS]);
    track->GetTPCpid(w[kTPC]);

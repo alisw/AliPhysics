@@ -20,6 +20,7 @@ ClassImp(AliRsnLoopDaughter)
 //_____________________________________________________________________________
 AliRsnLoopDaughter::AliRsnLoopDaughter(const char *name, Int_t listID, AliRsnDaughterDef *def) :
    AliRsnLoop(name),
+   fOnlyTrue(kFALSE),
    fListID(listID),
    fDef(def),
    fDaughter()
@@ -32,6 +33,7 @@ AliRsnLoopDaughter::AliRsnLoopDaughter(const char *name, Int_t listID, AliRsnDau
 //_____________________________________________________________________________
 AliRsnLoopDaughter::AliRsnLoopDaughter(const AliRsnLoopDaughter& copy) :
    AliRsnLoop(copy),
+   fOnlyTrue(copy.fOnlyTrue),
    fListID(copy.fListID),
    fDef(copy.fDef),
    fDaughter(copy.fDaughter)
@@ -49,6 +51,7 @@ AliRsnLoopDaughter& AliRsnLoopDaughter::operator=(const AliRsnLoopDaughter& copy
 //
 
    AliRsnLoop::operator=(copy);
+   fOnlyTrue = copy.fOnlyTrue;
    fListID = copy.fListID;
    fDaughter = copy.fDaughter;
    fDef = copy.fDef;
@@ -123,9 +126,11 @@ Int_t AliRsnLoopDaughter::DoLoop
          continue;
       }
       for (i = 0; i < list[il]->GetN(); i++) {
-         evMain->SetDaughterAbs(fDaughter, (Int_t)list[il]->GetEntry(i));
+         evMain->SetDaughter(fDaughter, (Int_t)list[il]->GetEntry(i));
          // check matching
-         if (!fDef->MatchesDaughter(&fDaughter)) continue;
+         if (fOnlyTrue && !fDef->MatchesPID(&fDaughter)) continue;
+         if (!fDef->MatchesCharge(&fDaughter)) continue;
+         if (!fDef->MatchesRefType(&fDaughter)) continue;
          // fill outputs
          nadd++;
          next.Reset();

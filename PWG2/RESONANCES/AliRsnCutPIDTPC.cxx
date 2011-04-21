@@ -110,8 +110,8 @@ Bool_t AliRsnCutPIDTPC::IsSelected(TObject *object)
 
    // common evaluation variables
    Double_t     mom;
-   AliESDtrack *esdTrack = fDaughter->GetRefESDtrack();
-   AliAODTrack *aodTrack = fDaughter->GetRefAODtrack();
+   AliESDtrack *esdTrack = fDaughter->Ref2ESDtrack();
+   AliAODTrack *aodTrack = fDaughter->Ref2AODtrack();
 
    // get inner momentum, needed for BB computation
    if (esdTrack) {
