@@ -436,7 +436,7 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 //      vCascade->Print();
 //    }
     
-    if(esd.GetTOFHeader() && fIsPidOwner) fESDpid->SetTOFResponse(const_cast<AliESDEvent*>(&esd), AliESDpid::kBest_T0); //in case of AOD production strating form LHC10e without Tender. 
+    if(esd.GetTOFHeader() && fIsPidOwner) fESDpid->SetTOFResponse(const_cast<AliESDEvent*>(&esd), (AliESDpid::EStartTimeType_t)fTimeZeroType); //in case of AOD production strating form LHC10e without Tender. 
 
 
     // 3 - Add the bachelor track from the cascade
