@@ -53,77 +53,22 @@
 ClassImp(AliRsnValue)
 
 //_____________________________________________________________________________
-AliRsnValue::AliRsnValue() :
-   AliRsnTarget(),
-   fComputedValue(0),
-   fBinArray(0)
-{
-//
-// Default constructor without arguments.
-// Initialize data members to meaningless values.
-// This method is provided for ROOT streaming,
-// but should never be used directly by a user.
-//
-}
-
-//_____________________________________________________________________________
-AliRsnValue::AliRsnValue
-(const char *name, Int_t nbins, Double_t min, Double_t max) :
-   AliRsnTarget(name),
+AliRsnValue::AliRsnValue(const char *name, AliRsnTarget::ETargetType type) :
+   AliRsnTarget(name, type),
+   fUseMCInfo(kFALSE),
    fComputedValue(0.0),
    fBinArray(0)
 {
 //
-// Main constructor (version 1).
-// This constructor defines in meaningful way all data members,
-// and defined a fixed binnings, subdividing the specified interval
-// into that many bins as specified in the integer argument.
-// ---
-// This method is also the entry point for all instances
-// of this class which don't need to do binning (e.g.: TNtuple inputs),
-// since arguments 3 to 5 have default values which don't create any
-// binning array, in order not to allocate memory when this is useless.
+// Constructor.
+// Initializes the binning to an empty array.
 //
-
-   SetBins(nbins, min, max);
-}
-
-//_____________________________________________________________________________
-AliRsnValue::AliRsnValue
-(const char *name, Double_t min, Double_t max, Double_t step) :
-   AliRsnTarget(name),
-   fComputedValue(0.0),
-   fBinArray(0)
-{
-//
-// Main constructor (version 2).
-// This constructor defines in meaningful way all data members
-// and creates enough equal bins of the specified size to cover
-// the required interval.
-//
-
-   SetBins(min, max, step);
-}
-
-//_____________________________________________________________________________
-AliRsnValue::AliRsnValue
-(const char *name, Int_t nbins, Double_t *array) :
-   AliRsnTarget(name),
-   fComputedValue(0.0),
-   fBinArray(0)
-{
-//
-// Main constructor (version 3).
-// This constructor defines in meaningful way all data members
-// and creates a set of variable bins delimited by the passed array.
-//
-
-   SetBins(nbins, array);
 }
 
 //_____________________________________________________________________________
 AliRsnValue::AliRsnValue(const AliRsnValue& copy) :
    AliRsnTarget(copy),
+   fUseMCInfo(copy.fUseMCInfo),
    fComputedValue(copy.fComputedValue),
    fBinArray(copy.fBinArray)
 {
@@ -143,6 +88,7 @@ AliRsnValue& AliRsnValue::operator=(const AliRsnValue& copy)
 
    AliRsnTarget::operator=(copy);
 
+   fUseMCInfo = copy.fUseMCInfo;
    fComputedValue = copy.fComputedValue;
    fBinArray = copy.fBinArray;
 
@@ -207,7 +153,7 @@ void AliRsnValue::SetBins(Int_t nbins, Double_t *array)
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnValue::Eval(TObject *, Bool_t)
+Bool_t AliRsnValue::Eval(TObject *)
 {
 //
 // Evaluation of the required value.
@@ -225,7 +171,8 @@ Bool_t AliRsnValue::Eval(TObject *, Bool_t)
 void AliRsnValue::Print(Option_t *option) const
 {
 //
-// Print informations about this object
+// Print informations about this object.
+// If one specifies option "BINS" all bin limits are also printed.
 //
 
    AliInfo("=== VALUE INFO =================================================");

@@ -89,7 +89,7 @@ Bool_t AliRsnCutPIDITS::IsSelected(TObject *object)
 
    // reject not ITS tracks
    // status is checked in the same way for all tracks
-   AliVTrack *vtrack = fDaughter->GetRefVtrack();
+   AliVTrack *vtrack = fDaughter->Ref2Vtrack();
    if (!vtrack) {
       AliDebug(AliLog::kDebug + 2, Form("Impossible to process an object of type '%s'. Cut applicable only to ESD/AOD tracks", fDaughter->GetRef()->ClassName()));
       return kFALSE;
@@ -108,8 +108,8 @@ Bool_t AliRsnCutPIDITS::IsSelected(TObject *object)
    // common evaluation variables
    Int_t        k, nITSpidLayers = 0;
    Double_t     mom      = vtrack->P();
-   AliESDtrack *esdTrack = fDaughter->GetRefESDtrack();
-   AliAODTrack *aodTrack = fDaughter->GetRefAODtrack();
+   AliESDtrack *esdTrack = fDaughter->Ref2ESDtrack();
+   AliAODTrack *aodTrack = fDaughter->Ref2AODtrack();
 
    // count number of PID layers...
    if (esdTrack) {

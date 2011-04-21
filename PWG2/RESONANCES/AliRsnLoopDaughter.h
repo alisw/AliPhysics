@@ -22,6 +22,7 @@ public:
    AliRsnDaughterDef* GetDef()                       {return  fDef;}
    AliRsnDaughter*    GetDaughter()                  {return &fDaughter;}
                                                      
+   void               SetOnlyTrue(Bool_t yn = kTRUE) {fOnlyTrue = yn;}
    void               SetListID(Int_t i)             {fListID = i;}
    void               SetDef(AliRsnDaughterDef *def) {fDef = def;}
    
@@ -31,6 +32,7 @@ public:
 
 protected:
 
+   Bool_t             fOnlyTrue;   //  for selecting only true particles
    Int_t              fListID;     //  index of entry list to use
    AliRsnDaughterDef *fDef;        //  definition for selection
    AliRsnDaughter     fDaughter;   //! daughter temporary member

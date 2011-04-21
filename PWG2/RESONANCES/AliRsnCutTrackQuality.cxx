@@ -31,7 +31,7 @@ ClassImp(AliRsnCutTrackQuality)
 
 //_________________________________________________________________________________________________
 AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
-   AliRsnCut(name, AliRsnCut::kDaughter, 0.0, 0.0),
+   AliRsnCut(name, AliRsnTarget::kDaughter, 0.0, 0.0),
    fFlagsOn(0x0),
    fFlagsOff(0x0),
    fRejectKinkDaughters(kTRUE),
@@ -45,7 +45,8 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
    fITSminNClusters(0),
    fITSmaxChi2(1E20),
    fTPCminNClusters(0),
-   fTPCmaxChi2(1E20)
+   fTPCmaxChi2(1E20),
+   fAODTestFilterBit(-1)
 {
 //
 // Default constructor.
@@ -72,7 +73,8 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const AliRsnCutTrackQuality &copy) 
    fITSminNClusters(copy.fITSminNClusters),
    fITSmaxChi2(copy.fITSmaxChi2),
    fTPCminNClusters(copy.fTPCminNClusters),
-   fTPCmaxChi2(copy.fTPCmaxChi2)
+   fTPCmaxChi2(copy.fTPCmaxChi2),
+   fAODTestFilterBit(copy.fAODTestFilterBit)
 {
 //
 // Copy constructor.
@@ -106,6 +108,7 @@ AliRsnCutTrackQuality& AliRsnCutTrackQuality::operator=(const AliRsnCutTrackQual
    fITSmaxChi2 = copy.fITSmaxChi2;
    fTPCminNClusters = copy.fTPCminNClusters;
    fTPCmaxChi2 = copy.fTPCmaxChi2;
+   fAODTestFilterBit = copy.fAODTestFilterBit;
 
    SetPtRange(copy.fPt[0], copy.fPt[1]);
    SetEtaRange(copy.fEta[0], copy.fEta[1]);
@@ -134,6 +137,7 @@ void AliRsnCutTrackQuality::DisableAll()
    fITSmaxChi2 = 1E20;
    fTPCminNClusters = 0;
    fTPCmaxChi2 = 1E20;
+   fAODTestFilterBit = -1;
 
    SetPtRange(0.0, 1E20);
    SetEtaRange(-1E20, 1E20);
@@ -155,26 +159,31 @@ Bool_t AliRsnCutTrackQuality::IsSelected(TObject *object)
    // as a convention, if a the collection of 'on' flags is '0x0', it
    // is assumed that no flags are required, and this check is skipped;
    // for the collection of 'off' flags this is not needed
-   AliVTrack *vtrack = fDaughter->GetRefVtrack();
+   AliVTrack *vtrack = fDaughter->Ref2Vtrack();
    if (!vtrack) {
-      AliDebug(AliLog::kDebug + 2, Form("This object is not either an ESD nor AOD track, it is an %s", fDaughter->GetRef()->ClassName()));
+      AliDebug(AliLog::kDebug + 2, "This object is not either an ESD nor AOD track");
       return kFALSE;
    }
    ULong_t status   = (ULong_t)vtrack->GetStatus();
    ULong_t checkOn  = status & fFlagsOn;
    ULong_t checkOff = status & fFlagsOff;
    if (fFlagsOn != 0x0 && checkOn != fFlagsOn) {
-      AliDebug(AliLog::kDebug + 2, Form("Not all required flags are present: required %lx, track has %lx", fFlagsOn, status));
+      AliDebug(AliLog::kDebug + 2, Form("Failed flag check: required  %s", Binary(fFlagsOn)));
+      AliDebug(AliLog::kDebug + 2, Form("                   track has %s", Binary(status  )));
       return kFALSE;
    }
    if (checkOff != 0) {
-      AliDebug(AliLog::kDebug + 2, Form("Some forbidden flags are present: required %lx, track has %lx", fFlagsOff, status));
+      AliDebug(AliLog::kDebug + 2, Form("Failed flag check: forbidden %s", Binary(fFlagsOff)));
+      AliDebug(AliLog::kDebug + 2, Form("                   track has %s", Binary(status  )));
       return kFALSE;
    }
+   AliDebug(AliLog::kDebug + 3, Form("Flag check OK: required  %s", Binary(fFlagsOn)));
+   AliDebug(AliLog::kDebug + 3, Form("               forbidden %s", Binary(fFlagsOff)));
+   AliDebug(AliLog::kDebug + 3, Form("               track has %s", Binary(status  )));
 
    // retrieve real object type
-   AliESDtrack *esdTrack = fDaughter->GetRefESDtrack();
-   AliAODTrack *aodTrack = fDaughter->GetRefAODtrack();
+   AliESDtrack *esdTrack = fDaughter->Ref2ESDtrack();
+   AliAODTrack *aodTrack = fDaughter->Ref2AODtrack();
    if (esdTrack) {
       AliDebug(AliLog::kDebug + 2, "Checking an ESD track");
       return CheckESD(esdTrack);
@@ -239,6 +248,19 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
 // This is done doing directly all checks, since there is not
 // an equivalend checker for AOD tracks
 //
+
+   // if a test bit is used, check it and skip the following
+   if (fAODTestFilterBit >= 0) {
+      UInt_t bit = (UInt_t)fAODTestFilterBit;
+      AliDebugClass(2, Form("Required a test filter bit for AOD check: %u (result: %s)", bit, (track->TestFilterBit(bit) ? "accept" : "reject")));
+      if (!track->TestFilterBit(bit)) 
+         return kFALSE;
+      else {
+         if (track->Pt() < fPt[0] || track->Pt() > fPt[1]) return kFALSE;
+         if (track->Eta() < fEta[0] || track->Eta() > fEta[1]) return kFALSE;
+         return kTRUE;
+      }
+   }
 
    // try to retrieve the reference AOD event
    AliAODEvent *aodEvent = 0x0;

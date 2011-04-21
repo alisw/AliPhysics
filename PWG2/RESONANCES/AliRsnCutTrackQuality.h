@@ -48,14 +48,17 @@ public:
    void      SetTPCmaxChi2(Double_t value)             {fTPCmaxChi2 = value;}
 
    void      SetRejectKinkDaughters(Bool_t yn = kTRUE) {fRejectKinkDaughters = yn;}
+   
+   void      SetAODTestFilterBit(Int_t value)          {fAODTestFilterBit = value;}
 
    virtual Bool_t IsSelected(TObject *obj);
    virtual void   Print(const Option_t *option = "") const;
 
 protected:
 
-   Bool_t     CheckESD(AliESDtrack *track);
-   Bool_t     CheckAOD(AliAODTrack *track);
+   Bool_t      CheckESD(AliESDtrack *track);
+   Bool_t      CheckAOD(AliAODTrack *track);
+   const char* Binary(UInt_t number);
 
    ULong_t    fFlagsOn;                // status flags which must be ON (used AliESDtrack ones, connected with '|')
    ULong_t    fFlagsOff;               // status flags which must be OFF (used AliESDtrack ones, connected with '|')
@@ -77,8 +80,26 @@ protected:
 
    Int_t      fTPCminNClusters;        // minimum number of required clusters in TPC
    Double_t   fTPCmaxChi2;             // maximum chi2 / number of clusters in TPC
+   Int_t      fAODTestFilterBit;       // test filter bit for AOD tracks
 
    ClassDef(AliRsnCutTrackQuality, 1)
 };
+
+//__________________________________________________________________________________________________
+inline const char * AliRsnCutTrackQuality::Binary(UInt_t number)
+{
+//
+// Convert an integer in binary
+//
+
+    static char b[15];
+    b[0] = '\0';
+
+    UInt_t z;
+    for (z = 512; z > 0; z >>= 1)
+        strcat(b, ((number & z) == z) ? "1" : "0");
+
+    return b;
+}
 
 #endif

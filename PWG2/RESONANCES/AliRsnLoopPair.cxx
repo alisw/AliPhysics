@@ -12,6 +12,7 @@
 //          M. Vala (email: martin.vala@cern.ch)
 //
 
+#include <Riostream.h>
 #include <TList.h>
 #include <TEntryList.h>
 
@@ -165,31 +166,31 @@ Int_t AliRsnLoopPair::DoLoop
    AliRsnListOutput *out = 0x0;
    
    for (i0 = 0; i0 < list0->GetN(); i0++) {
-      evMain->SetDaughterAbs(fDaughter[0], (Int_t)list0->GetEntry(i0));
+      evMain->SetDaughter(fDaughter[0], (Int_t)list0->GetEntry(i0));
+      fDaughter[0].FillP(fPairDef->GetDef1().GetMass());
       start = 0;
-      if (!fDaughter[0].GetRef()) {
-         AliDebugClass(3, Form("[%s]: daughte #1 has NULL ref", GetName()));
-         continue;
-      }
-      if (!fDaughter[0].IsOK()) {
-         AliDebugClass(3, Form("[%s]: daughte #1 is BAD", GetName()));
-         continue;
-      }
       if (!fIsMixed && list0 == list1) start = i0 + 1;
       for (i1 = start; i1 < list1->GetN(); i1++) {
-         evMix->SetDaughterAbs(fDaughter[1], (Int_t)list1->GetEntry(i1));
-         if (!fDaughter[1].GetRef()) {
-            AliDebugClass(3, Form("[%s]: daughte #2 has NULL ref", GetName()));
-            continue;
-         }
-         if (!fDaughter[1].IsOK()) {
-            AliDebugClass(3, Form("[%s]: daughte #2 is BAD", GetName()));
-            continue;
+         AliDebugClass(4, Form("Checking entries pair: %d (%d) with %d (%d)", (Int_t)i0, (Int_t)list0->GetEntry(i0), (Int_t)i1, (Int_t)list1->GetEntry(i1)));
+         evMix->SetDaughter(fDaughter[1], (Int_t)list1->GetEntry(i1));
+         fDaughter[1].FillP(fPairDef->GetDef2().GetMass());
+         fMother.Sum(0) = fDaughter[0].Prec() + fDaughter[1].Prec();
+         fMother.Sum(1) = fDaughter[0].Psim() + fDaughter[1].Psim();
+         fMother.Ref(0).SetXYZM(fMother.Sum(0).X(), fMother.Sum(0).Y(), fMother.Sum(0).Z(), fPairDef->GetMotherMass());
+         fMother.Ref(1).SetXYZM(fMother.Sum(1).X(), fMother.Sum(1).Y(), fMother.Sum(1).Z(), fPairDef->GetMotherMass());
+         // check cuts
+         if (fPairCuts) {
+            if (!fPairCuts->IsSelected(&fMother)) {
+               AliDebugClass(2, Form("[%s]: candidate mother didn't pass the cuts", GetName()));
+               continue;
+            }
          }
          // check mother
-         if (!MotherOK()) {
-            AliDebugClass(2, Form("[%s]: candidate mother didn't pass the cuts", GetName()));
-            continue;
+         if (fOnlyTrue) {
+            if (!IsTrueMother()) {
+               AliDebugClass(2, Form("[%s]: candidate mother is not true", GetName()));
+               continue;
+            }
          }
          // fill outputs
          next.Reset();
@@ -199,55 +200,34 @@ Int_t AliRsnLoopPair::DoLoop
          }
       }
    }
-   
+
    return npairs;
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnLoopPair::MotherOK()
+Bool_t AliRsnLoopPair::IsTrueMother()
 {
 //
-// Checks that first argument matches definitions for first daughter
-// and the same for second argument, where the order is defined by
-// the AliRsnPairDef data member.
-// If the matching is successful, the AliRsnMother data member is 
-// initialized using the mass hypotheses defined here and the momenta
-// in the passed daughters.
-// The third argument is necessary to choose which one of the possible two
-// events owning the two daughter will be used as reference.
+// Checks to see if the mother comes from a true resonance.
+// It is triggered by the 'SetOnlyTrue()' function
 //
+      
+   // check #1:
+   // daughters have same mother with the right PDG code
+   Int_t commonPDG = fMother.CommonMother();
+   if (commonPDG != fPairDef->GetMotherPDG()) return kFALSE;
+   AliDebugClass(4, "Found a true mother");
    
-   // check matching and exit if one of them fails
-   // if true pair is required, this is taken into account:
-   // if both true pairs and correct decay tree is required,
-   // then we must be sure that also the true PID of daughters matches,
-   // instead if correct decay tree is not required this additional check is not done
-   fPairDef->GetDef1().SetOnlyTrue(fOnlyTrue && fCheckDecay);
-   fPairDef->GetDef2().SetOnlyTrue(fOnlyTrue && fCheckDecay);
-   if (!fPairDef->GetDef1().MatchesDaughter(&fDaughter[0])) return kFALSE;
-   if (!fPairDef->GetDef2().MatchesDaughter(&fDaughter[1])) return kFALSE;
-   
-   // if matching is successful
-   // compute 4-momenta of daughters and mother
-   fMother.ComputeSum(fPairDef->GetDef1().GetMass(), fPairDef->GetDef2().GetMass());
-   
-   // if required a true pair, check this here and eventually return a fail message
-   // this is done using the method AliRsnMother::CommonMother with 2 arguments
-   // passed by reference, where the real GEANT label of the particle is stored
-   // and one can check if these tracks are both really secondaries (ID >= 0)
-   if (fOnlyTrue) {
-      Int_t m0, m1, common;
-      common = fMother.CommonMother(m0, m1);
-      if (m0 < 0 || m1 < 0) return kFALSE;
-      if (common != fPairDef->GetMotherPDG()) return kFALSE;
+   // check #2:
+   // checks if daughter have the right particle type
+   // (activated by fCheckDecay)
+   if (fCheckDecay) {
+      AliRsnDaughterDef &def1 = fPairDef->GetDef1();
+      AliRsnDaughterDef &def2 = fPairDef->GetDef2();
+      if (!def1.MatchesPID(&fDaughter[0])) return kFALSE;
+      if (!def2.MatchesPID(&fDaughter[1])) return kFALSE;
    }
+   AliDebugClass(4, "Decay products match");
    
-   // point to first event as reference
-   // and checks the pair cuts,
-   // (done first because it is more likely 
-   // that it is not passed and execution is faster)
-   if (fPairCuts)
-      return fPairCuts->IsSelected(&fMother);
-   else
-      return kTRUE;
+   return kTRUE;
 }

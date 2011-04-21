@@ -9,6 +9,7 @@
 
 #include "AliRsnCut.h"
 
+class AliVTrack;
 class AliPIDResponse;
 
 class AliRsnCutPIDNSigma : public AliRsnCut {
@@ -26,15 +27,14 @@ public:
    AliRsnCutPIDNSigma& operator=(const AliRsnCutPIDNSigma& copy);
    virtual ~AliRsnCutPIDNSigma() { }
 
-   void             SetRejectOutside(Bool_t yn = kTRUE)           {fRejectOutside = yn;}
    void             SetRejectUnmatched(Bool_t yn = kTRUE)         {fRejectUnmatched = yn;}
    void             SetMomentumRange(Double_t min, Double_t max)  {fMomMin = min; fMomMax = max;}
    void             SetNSigmaRange(Double_t min, Double_t max)    {AliRsnCut::SetRangeD(min, max);}
    void             SetSpecies(AliPID::EParticleType type)        {fSpecies = type;}
    
-   Bool_t           IsITS();
-   Bool_t           IsTPC();
-   Bool_t           IsTOF();
+   Bool_t           IsITS(AliVTrack *vtrack);
+   Bool_t           IsTPC(AliVTrack *vtrack);
+   Bool_t           IsTOF(AliVTrack *vtrack);
    
    virtual Bool_t   IsSelected(TObject *object);
    virtual void     Print(const Option_t *option = "") const;
@@ -45,64 +45,44 @@ private:
    EDetector               fDetector;        //  detector used for PID
    Double_t                fMomMin;          //  momentum range (for ITS and TOF it is vertex momentum, for TPC it is inner wall)
    Double_t                fMomMax;          //  momentum range (for ITS and TOF it is vertex momentum, for TPC it is inner wall)
-   Bool_t                  fRejectOutside;   //  tracks outside momentum range do pass the cut?
    Bool_t                  fRejectUnmatched; //  tracks not matched to this detector do pass the cut?
 
    ClassDef(AliRsnCutPIDNSigma, 1)
 };
 
-inline Bool_t AliRsnCutPIDNSigma::IsITS()
+inline Bool_t AliRsnCutPIDNSigma::IsITS(AliVTrack *vtrack)
 {
 //
 // Checks if the track has the status flags required for an ITS standalone track
 //
 
-   AliVTrack *vtrack = fDaughter->GetRefVtrack();
-   
-   if (!vtrack) {
-      AliWarning("NULL argument: impossible to check status");
-      return kFALSE;
-   }
+   if ((vtrack->GetStatus() & AliESDtrack::kITSin)  == 0) return kFALSE;
+   if ((vtrack->GetStatus() & AliESDtrack::kITSpid) == 0) return kFALSE;
 
-   Bool_t isITSin  = ((vtrack->GetStatus() & AliESDtrack::kTPCin) != 0);
-   Bool_t isITSpid = ((vtrack->GetStatus() & AliESDtrack::kITSpid) != 0);
-
-   return (isITSin && isITSpid);
+   return kTRUE;
 }
 
-inline Bool_t AliRsnCutPIDNSigma::IsTPC()
+inline Bool_t AliRsnCutPIDNSigma::IsTPC(AliVTrack *vtrack)
 {
 //
 // Checks if the track has the status flags required for a TPC track
 //
 
-   AliVTrack *vtrack = fDaughter->GetRefVtrack();
-
-   if (!vtrack) {
-      AliWarning("NULL argument: impossible to check status");
-      return kFALSE;
-   }
-
-   return ((vtrack->GetStatus() & AliESDtrack::kTPCin) != 0);
+   if ((vtrack->GetStatus() & AliESDtrack::kTPCin) == 0) return kFALSE;
+   
+   return kTRUE;
 }
 
-inline Bool_t AliRsnCutPIDNSigma::IsTOF()
+inline Bool_t AliRsnCutPIDNSigma::IsTOF(AliVTrack *vtrack)
 {
 //
 // Checks if the track has the status flags required for an ITS standalone track
 //
 
-   AliVTrack *vtrack = fDaughter->GetRefVtrack();
+   if ((vtrack->GetStatus() & AliESDtrack::kTOFout) == 0) return kFALSE;
+   if ((vtrack->GetStatus() & AliESDtrack::kTIME)   == 0) return kFALSE;
 
-   if (!vtrack) {
-      AliWarning("NULL argument: impossible to check status");
-      return kFALSE;
-   }
-
-   Bool_t isTOFout = ((vtrack->GetStatus() & AliESDtrack::kTOFout) != 0);
-   Bool_t isTIME   = ((vtrack->GetStatus() & AliESDtrack::kTIME) != 0);
-
-   return (isTOFout && isTIME);
+   return kTRUE;
 }
 
 #endif

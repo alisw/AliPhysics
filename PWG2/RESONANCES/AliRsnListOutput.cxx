@@ -33,6 +33,7 @@ ClassImp(AliRsnListOutput)
 //________________________________________________________________________________________
 AliRsnListOutput::AliRsnListOutput(const char *name, AliRsnListOutput::EOut type) :
    TNamed(name, ""),
+   fSkipFailed(kTRUE),
    fType(type),
    fSteps(0),
    fValues(0),
@@ -51,6 +52,7 @@ AliRsnListOutput::AliRsnListOutput(const char *name, AliRsnListOutput::EOut type
 //________________________________________________________________________________________
 AliRsnListOutput::AliRsnListOutput(const AliRsnListOutput &copy) :
    TNamed(copy),
+   fSkipFailed(copy.fSkipFailed),
    fType(copy.fType),
    fSteps(copy.fSteps),
    fValues(copy.fValues),
@@ -78,6 +80,7 @@ const AliRsnListOutput& AliRsnListOutput::operator=(const AliRsnListOutput& copy
 
    TNamed::operator=(copy);
 
+   fSkipFailed = copy.fSkipFailed;
    fType = copy.fType;
    fSteps = copy.fSteps;
    fValues = copy.fValues;
@@ -334,7 +337,7 @@ Bool_t AliRsnListOutput::Fill(TObject *target, Int_t step)
       globalOK = globalOK && val->Eval(target);
       fArray[i] = (Double_t)val->GetComputedValue();
    }
-   if (!globalOK) return kFALSE;
+   if (!globalOK && fSkipFailed) return kFALSE;
    
    // retrieve object
    if (!fList || fIndex < 0) {

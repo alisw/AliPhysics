@@ -254,31 +254,35 @@ void AliRsnDaughterSelector::ScanEvent(AliRsnEvent* ev)
    TClonesArray *cutsArray = 0x0, *entryArray = 0x0;
    
    for (id = 0; id < nTot; id++) {
-      ev->SetDaughterAbs(check, id);
-      if (!check.IsOK()) continue;
+      ev->SetDaughter(check, id);
+      // some checks
+      if (!check.GetRef()) {
+         AliDebugClass(1, Form("[%s]: daughter has NULL ref", GetName()));
+         continue;
+      }
+      if (!check.IsOK()) {
+         AliDebugClass(1, Form("[%s]: daughter is BAD", GetName()));
+         continue;
+      }
       // set pointers according to charge
-      switch (check.ChargeS()) {
-         case 1:
-            cutsArray = &fCutSetsC;
-            entryArray = &fEntryListsP;
-            break;
-         case -1:
-            cutsArray = &fCutSetsC;
-            entryArray = &fEntryListsM;
-            break;
-         default:
-            cutsArray = &fCutSetsN;
-            entryArray = &fEntryListsN;
-            break;
+      if (check.ChargeS() > 0) {
+         cutsArray = &fCutSetsC;
+         entryArray = &fEntryListsP;
+      } else if (check.ChargeS() < 0) {
+         cutsArray = &fCutSetsC;
+         entryArray = &fEntryListsM;
+      } else {
+         cutsArray = &fCutSetsN;
+         entryArray = &fEntryListsN;
       }
       // check with all cuts in that charge
-      nSel = cutsArray->GetEntriesFast();
+      nSel = cutsArray->GetEntries();
       for (is = 0; is < nSel; is++) {
          AliRsnCutSet *cuts = (AliRsnCutSet*)cutsArray->At(is);
          if (cuts->IsSelected(&check)) {
             TEntryList *el = (TEntryList*)entryArray->At(is);
             el->Enter(id);
-         } 
+         }
       }
    }
    

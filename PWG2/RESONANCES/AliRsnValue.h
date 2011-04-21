@@ -17,31 +17,30 @@
 class AliRsnValue : public AliRsnTarget {
 public:
 
-   AliRsnValue();
-   AliRsnValue(const char *name, Int_t nbins = 0, Double_t min = 0.0, Double_t max = 0.0);
-   AliRsnValue(const char *name, Double_t min, Double_t max, Double_t step);
-   AliRsnValue(const char *name, Int_t nbins, Double_t *array);
+   AliRsnValue(const char *name = "", AliRsnTarget::ETargetType type = AliRsnTarget::kTargetTypes);
    AliRsnValue(const AliRsnValue& copy);
    AliRsnValue& operator=(const AliRsnValue& copy);
    virtual ~AliRsnValue() { }
 
-   TArrayD         GetArray() const         {return fBinArray;}
+   TArrayD&        GetArray()               {return fBinArray;}
    const Double_t* GetArrayValues() const   {return fBinArray.GetArray();}
    Double_t        GetComputedValue() const {return fComputedValue;}
 
+   void            SetUseMCInfo(Bool_t yn = kTRUE) {fUseMCInfo = yn;}
    void            SetBins(Int_t n, Double_t min, Double_t max);
    void            SetBins(Int_t n, Double_t *array);
    void            SetBins(Double_t min, Double_t max, Double_t step);
 
-   virtual Bool_t  Eval(TObject *object, Bool_t useMC = kFALSE);
+   virtual Bool_t  Eval(TObject *object);
    virtual void    Print(Option_t *option = "") const;
 
 protected:
 
+   Bool_t   fUseMCInfo;      // flag to choose MC info when choice is possible
    Double_t fComputedValue;  // computed value
    TArrayD  fBinArray;       // array of bins (when used for a histogram axis)
 
-   ClassDef(AliRsnValue, 3)      // AliRsnValue base class
+   ClassDef(AliRsnValue, 3)  // AliRsnValue base class
 };
 
 #endif

@@ -15,7 +15,7 @@ ClassImp(AliRsnCutPrimaryVertex)
 //_________________________________________________________________________________________________
 AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex
 (const char *name, Double_t maxVz, Int_t nContributors, Bool_t acceptTPC) :
-   AliRsnCut(name, AliRsnCut::kEvent, 0, nContributors - 1, 0.0, maxVz),
+   AliRsnCut(name, AliRsnCut::kEvent, 0, nContributors - 1, -maxVz, maxVz + 1E-6),
    fAcceptTPC(acceptTPC),
    fCheckPileUp(kFALSE)
 {
@@ -33,9 +33,6 @@ AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex
 // Since the range check uses the '>=' and '<=', the high edge
 // must be decreased by 1 to get the right behaviour, since this is integer.
 //
-
-   fMinD = 0.0;
-   fMaxD = maxVz + 1E-6;
 }
 
 //_________________________________________________________________________________________________
@@ -50,8 +47,8 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
    if (!TargetOK(object)) return kFALSE;
 
    // retrieve ESD event
-   AliESDEvent *esd = fEvent->GetRefESD();
-   AliAODEvent *aod = fEvent->GetRefAOD();
+   AliESDEvent *esd = dynamic_cast<AliESDEvent*>(fEvent->GetRef());
+   AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fEvent->GetRef());
 
    if (esd) {
       // pile-up check
@@ -92,19 +89,33 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
       } else
          return kFALSE;
    } else if (aod) {
-      // pile-up check is not yet available for AODs
-
-      // lines suggested by Andrea to reject TPC-only events
-      if (!fAcceptTPC) {
-         if (!aod->GetPrimaryVertexSPD()) return kFALSE;
-         else if (aod->GetPrimaryVertexSPD()->GetNContributors() < 1) return kFALSE;
+      // in this case, as suggested by Andrea Dainese,
+      // we first check if the SPD primary vertex is there
+      // if it is not, then the only available is the TPC
+      // stand-alone primary vertex, which is rejected
+      AliAODVertex *aodv = aod->GetPrimaryVertexSPD();
+      if (!aodv) {
+         AliDebugClass(1, "Not found SPD vertex --> TPC only available, skipped");
+         return kFALSE;
       }
-
-      AliAODVertex *prim = (AliAODVertex*)aod->GetPrimaryVertex();
-      if (!prim) return kFALSE;
-
-      fCutValueI = prim->GetNContributors();
-      fCutValueD = prim->GetZ();
+      // now check primary vertex
+      aodv = (AliAODVertex*)aod->GetPrimaryVertex();
+      if (CheckVertex(aodv)) {
+         AliDebugClass(1, "Vertex TRK is OK");
+         fCutValueD = aodv->GetZ();
+         fCutValueI = aodv->GetNContributors();
+      }
+      else {
+         aodv = aod->GetPrimaryVertexSPD();
+         if (CheckVertex(aodv)) {
+            AliDebugClass(1, "Vertex TRK is BAD, but vertex SPD is OK");
+            fCutValueD = aodv->GetZ();
+            fCutValueI = aodv->GetNContributors();
+         } else {
+            AliDebugClass(1, "Vertex TRK is BAD, and vertex SPD is BAD");
+            return kFALSE;
+         }
+      }
    } else
       return kFALSE;
 
