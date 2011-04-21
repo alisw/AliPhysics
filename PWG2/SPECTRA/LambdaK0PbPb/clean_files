@@ -1,0 +1,1 @@
+rm -rf *.so *.d *.xml *.root  std* log* *.jdl 

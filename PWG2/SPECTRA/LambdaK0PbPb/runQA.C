@@ -27,7 +27,7 @@ TList * listToLoad = new TList(); // Additional classes to be loaded, see InitAn
 TChain * GetAnalysisChain(const char * incollection);
 void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug=0) ;
 
-void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 1, Bool_t usePID = kTRUE, const char* option = "",TString customSuffix = "", Int_t workers = -1, const char * gridMode="full", Int_t binMin=0, Int_t binMax = 6)
+void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, Bool_t usePID = kTRUE, const char* option = "",TString customSuffix = "", Int_t workers = -1, const char * gridMode="full", Int_t binMin=0, Int_t binMax = 6)
 {
   // runMode:
   //
@@ -76,7 +76,7 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
   // Centrality
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-  //taskCentrality->SetPass(2);
+  taskCentrality->SetPass(2);
   if(isMC) taskCentrality->SetMCInput();
 
   AliAnalysisCentralitySelector * centrSelector = new AliAnalysisCentralitySelector();
@@ -105,7 +105,7 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
   
   gROOT->ProcessLine(".L AddTaskLambdaK0PbPb.C");
   Int_t nbin = 0; // will contain the number of centrality bins
-  AliAnalysisTaskPerformanceStrange ** task = AddTaskLambdaK0PbPb("lambdak0.root", centrSelector, nbin, binMin, binMax,isMC); // FIXME also pass cuts, centrality bin type selection(5,10% percentiles, ranges...)
+  AliAnalysisTaskPerformanceStrange ** task = AddTaskLambdaK0PbPb("lambdak0.root", centrSelector, nbin, binMin, binMax); // FIXME also pass cuts, centrality bin type selection(5,10% percentiles, ranges...)
   // configure task
   //  else if (iAODanalysis) task->SetAnalysisType("AOD");
   // FIXME: add options to macro
@@ -158,7 +158,7 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
 
 void MoveOutput(const char * data, const char * suffix = ""){
 
-  TString path("output10bins/");
+  TString path("output/");
   path = path + TString(data).Tokenize("/")->Last()->GetName() + suffix;
   
   TString fileName = "lambdak0.root";
@@ -223,10 +223,9 @@ void InitAndLoadLibs(Int_t runMode, Int_t workers,Bool_t debug) {
       Char_t* alienuser = gSystem->Getenv("alien_API_USER");
       TProof * p = TProof::Open(alienuser!=0 ? Form("%s@alice-caf.cern.ch",alienuser) : "alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
       //TProof * p = TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
-      //p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE); // avoid submerging
+      p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE); // avoid submerging
       //gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-18-AN");
-      //gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-20-AN");
-      gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-21-AN");
+      gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-20-AN");
 
 
       // Enable the needed package

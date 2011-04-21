@@ -37,8 +37,8 @@ public:
   virtual UInt_t GetSelectionMask(const TObject* obj) { return (UInt_t) IsCentralityBinSelected((AliESDEvent*) obj, NULL); }
   virtual Bool_t IsSelected(TList*) { AliFatal("Not implemented"); return kFALSE; }
   virtual Bool_t IsSelected(TObject* obj)  {return (UInt_t) IsCentralityBinSelected ( (AliESDEvent*) obj, NULL);}
-    
-  Bool_t IsCentralityBinSelected(AliESDEvent* aEsd, AliESDtrackCuts * trackCuts);
+      
+   Bool_t IsCentralityBinSelected(AliESDEvent* aEsd, AliESDtrackCuts * trackCuts);
     
   void SetIsMC(Bool_t flag = kTRUE, Int_t multMin = 0, Int_t multMax=10000) { fIsMC = flag; fMultMin = multMin; fMultMax = multMax; }
   void SetMultRange(Int_t multMin = 0, Int_t multMax=10000) { fMultMin = multMin; fMultMax = multMax; }
@@ -47,7 +47,8 @@ public:
   void SetUseSPDOuterRange(Bool_t flag = kTRUE) {fUseSPDOuterRange = flag;}
   void SetCentralityEstimator(const char * estimator) { fCentrEstimator = estimator; }
   void SetCentralityBin(Int_t bin) { fCentrBin = bin; } // uses 10% percentiles
-  void SetCentralityBin(Float_t min, Float_t max) { fMultMin = min; fMultMax = max; fUsePercentile=kTRUE;}
+  void SetCentralityBin(Float_t min, Float_t max) { fMultMin = min; fMultMax = max; fUsePercentile=kTRUE;}//  maybe don't need this
+//  void SetPercentile(Bool_t flag = kTRUE){fUsePercentile = flag;}
   virtual void Print(Option_t* option = "") const ;
   virtual Long64_t Merge(TCollection* list){list->GetEntries();return 0;}
   
