@@ -153,9 +153,8 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
 
   const Double32_t* time = fESD->GetT0time();
   for (Int_t i=0; i<12; i++) {
-     if( time[i] != 0 ){
-     printf(" %i time %f \n", i, time[i] );
-    fCFD[i]->Fill( time[i]);
+    if( time[i] != 0 ){
+      fCFD[i]->Fill( time[i]);
       if(  time[0] != 0 ) 
 	fTimeDiff[i]->Fill( time[i]-time[0]);
     }
