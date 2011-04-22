@@ -328,7 +328,8 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
 { // extract DCS trigger info
   AliInfo(Form("Get TRU info from DCS DPs.\n"));
   Int_t i, iTRU;
-  char buf[100];
+  const Int_t bufsize = 1000;
+  char buf[bufsize];
 
   AliDCSValue *dcsVal;
   TObjArray *arrL0ALGSEL, *arrPEAKFINDER, *arrGLOBALTHRESH, *arrCOSMTHRESH;
@@ -350,13 +351,13 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
   for( iTRU = 0; iTRU < kNTRU; iTRU++){
     if (debug) AliInfo( Form("iTRU %d \n", iTRU) );
     // get the shuttled values
-    sprintf( buf, "EMC_TRU%02d_L0ALGSEL", iTRU );
+    snprintf( buf, bufsize, "EMC_TRU%02d_L0ALGSEL", iTRU );
     arrL0ALGSEL = (TObjArray*) dcsAliasMap->GetValue( buf );
-    sprintf( buf, "EMC_TRU%02d_PEAKFINDER", iTRU );
+    snprintf( buf, bufsize, "EMC_TRU%02d_PEAKFINDER", iTRU );
     arrPEAKFINDER = (TObjArray*) dcsAliasMap->GetValue( buf );
-    sprintf( buf, "EMC_TRU%02d_GLOBALTHRESH", iTRU );
+    snprintf( buf, bufsize, "EMC_TRU%02d_GLOBALTHRESH", iTRU );
     arrGLOBALTHRESH = (TObjArray*) dcsAliasMap->GetValue( buf );
-    sprintf( buf, "EMC_TRU%02d_COSMTHRESH", iTRU );
+    snprintf( buf, bufsize, "EMC_TRU%02d_COSMTHRESH", iTRU );
     arrCOSMTHRESH = (TObjArray*) dcsAliasMap->GetValue( buf );
     
     for( i = 0; i < 6; i++ ){

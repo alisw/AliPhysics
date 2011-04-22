@@ -112,7 +112,7 @@ void AliEMCALClusterizerv2::MakeClusters()
 
   // set up TObjArray with pointers to digits to work on 
   TObjArray digitsC;
-  Double_t e = 0.0, ehs = 0.0;
+  Double_t ehs = 0.0;
   AliEMCALDigit *digit = 0;
   TIter nextdigit(fDigitsArr);
   while ( (digit = static_cast<AliEMCALDigit*>(nextdigit())) ) {

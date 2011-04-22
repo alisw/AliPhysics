@@ -12,7 +12,6 @@
 #pragma link C++ class AliEMCALTracker+;
 #pragma link C++ class AliEMCALPID+;
 #pragma link C++ class AliEMCALQADataMakerRec+;
-#pragma link C++ class AliEMCALAodCluster+;
 #pragma link C++ class AliEMCALAfterBurnerUF+;
 
 
