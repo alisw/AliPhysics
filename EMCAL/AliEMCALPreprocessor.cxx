@@ -196,7 +196,7 @@ UInt_t AliEMCALPreprocessor::Process(TMap* dcsAliasMap)
   // Trigger configuration processing: only for Physics runs
   TString triggerConf = fConfEnv->GetValue("Trigger","ON");
   triggerConf.ToUpper();
-  if( runType == kPhysicsRunType ) {
+  if( runType == kPhysicsRunType || runType == kPedestalRunType ) {
     //  if (triggerConf != "OFF" && dcsAliasMap ) {
     if ( dcsAliasMap ) {
       UInt_t triggerResult = MapTriggerConfig(dcsAliasMap);
@@ -361,7 +361,7 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
     arrCOSMTHRESH = (TObjArray*) dcsAliasMap->GetValue( buf );
     
     for( i = 0; i < 6; i++ ){
-      sprintf( buf, "EMC_TRU%02d_MASK%d", iTRU, i );
+      snprintf( buf, bufsize, "EMC_TRU%02d_MASK%d", iTRU, i );
       arrMASK[i] = (TObjArray*) dcsAliasMap->GetValue( buf );
     }
     
