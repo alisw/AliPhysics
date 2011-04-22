@@ -496,9 +496,10 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     LoadBranches();
     
     if (fRunNo<=0) {
-      if (SetupRun(esd)<0)
-         AliError("Centrality File not available for this run");
-         return;
+	if (SetupRun(esd)<0) {
+	    AliError("Centrality File not available for this run");
+	    return;
+	}
     }
 
     esdCent = esd->GetCentrality();
