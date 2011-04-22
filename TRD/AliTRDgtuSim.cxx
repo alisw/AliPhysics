@@ -457,7 +457,7 @@ Bool_t AliTRDgtuSim::WriteTracksToLoader(const TList * const listOfTracks)
     trackTree->Branch("TRDtrackGTU", "AliTRDtrackGTU", &trk, 32000);
   
   TIter next(listOfTracks);
-  while (trk = (AliTRDtrackGTU*) next()) {
+  while ((trk = (AliTRDtrackGTU*) next())) {
     trackTree->SetBranchAddress("TRDtrackGTU", &trk);
     trackTree->Fill();
   }
