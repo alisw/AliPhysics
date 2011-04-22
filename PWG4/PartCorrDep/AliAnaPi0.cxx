@@ -652,7 +652,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   //Histograms filled only if MC data is requested 	
   if(IsDataMC()){
     //Pi0
-    fhPrimPi0Pt     = new TH1D("hPrimPi0Pt","Primary pi0 pt",nptbins,ptmin,ptmax) ;
+    fhPrimPi0Pt     = new TH1D("hPrimPi0Pt","Primary pi0 pt, Y<1",nptbins,ptmin,ptmax) ;
     fhPrimPi0AccPt  = new TH1D("hPrimPi0AccPt","Primary pi0 pt with both photons in acceptance",nptbins,ptmin,ptmax) ;
     fhPrimPi0Pt   ->SetXTitle("p_{T} (GeV/c)");
     fhPrimPi0AccPt->SetXTitle("p_{T} (GeV/c)");
@@ -670,13 +670,14 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhPrimPi0AccY->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0AccY) ;
     
-    fhPrimPi0Phi    = new TH2D("hPrimPi0Phi","Azimuthal of primary pi0",nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
+    Int_t nphibinsopen = TMath::Nint(nphibins*TMath::TwoPi()/(phimax-phimin));
+    fhPrimPi0Phi    = new TH2D("hPrimPi0Phi","Azimuthal of primary pi0, Y<1",nptbins,ptmin,ptmax,nphibinsopen,0,360) ; 
     fhPrimPi0Phi->SetYTitle("#phi (deg)");
     fhPrimPi0Phi->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0Phi) ;
     
-    Int_t nphibinsopen = TMath::Nint(nphibins*TMath::TwoPi()/((phimax-phimin)*TMath::RadToDeg()));
-    fhPrimPi0AccPhi = new TH2D("hPrimPi0AccPhi","Azimuthal of primary pi0 with accepted daughters",nptbins,ptmin,ptmax,nphibinsopen,0,TMath::TwoPi()) ; 
+    fhPrimPi0AccPhi = new TH2D("hPrimPi0AccPhi","Azimuthal of primary pi0 with accepted daughters",nptbins,ptmin,ptmax,
+                                                                nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
     fhPrimPi0AccPhi->SetYTitle("#phi (deg)");
     fhPrimPi0AccPhi->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0AccPhi) ;
@@ -1020,28 +1021,30 @@ void AliAnaPi0::FillAcceptanceHistograms(){
   if(GetReader()->ReadStack()){	
     AliStack * stack = GetMCStack();
     if(stack){
-      for(Int_t i=0 ; i<stack->GetNprimary(); i++){
+      for(Int_t i=0 ; i<stack->GetNtrack(); i++){
         TParticle * prim = stack->Particle(i) ;
         Int_t pdg = prim->GetPdgCode();
+        //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
+          //                             prim->GetName(), prim->GetPdgCode());
+
         if( pdg == 111 || pdg == 221){
           Double_t pi0Pt = prim->Pt() ;
-          //printf("pi0, pt %2.2f\n",pi0Pt);
           if(prim->Energy() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception	  
           Double_t pi0Y  = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
           Double_t phi   = TMath::RadToDeg()*prim->Phi() ;
           if(pdg == 111){
             if(TMath::Abs(pi0Y) < 1.0){
-              fhPrimPi0Pt->Fill(pi0Pt) ;
+              fhPrimPi0Pt ->Fill(pi0Pt) ;
+              fhPrimPi0Phi->Fill(pi0Pt, phi) ;
             }
             fhPrimPi0Y  ->Fill(pi0Pt, pi0Y) ;
-            fhPrimPi0Phi->Fill(pi0Pt, phi) ;
           }
           else if(pdg == 221){
             if(TMath::Abs(pi0Y) < 1.0){
-              fhPrimEtaPt->Fill(pi0Pt) ;
+              fhPrimEtaPt ->Fill(pi0Pt) ;
+              fhPrimEtaPhi->Fill(pi0Pt, phi) ;
             }
             fhPrimEtaY  ->Fill(pi0Pt, pi0Y) ;
-            fhPrimEtaPhi->Fill(pi0Pt, phi) ;
           }
           
           //Origin of meson
@@ -1075,7 +1078,7 @@ void AliAnaPi0::FillAcceptanceHistograms(){
           } // pi0 has mother
           
           //Check if both photons hit Calorimeter
-          if(prim->GetNDaughters()!=2) return; //Only interested in 2 gamma decay
+          if(prim->GetNDaughters()!=2) continue; //Only interested in 2 gamma decay
           Int_t iphot1=prim->GetFirstDaughter() ;
           Int_t iphot2=prim->GetLastDaughter() ;
           if(iphot1>-1 && iphot1<stack->GetNtrack() && iphot2>-1 && iphot2<stack->GetNtrack()){
@@ -1131,7 +1134,7 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               if(inacceptance){
                 if(pdg==111){
                   fhPrimPi0AccPt ->Fill(pi0Pt) ;
-                  fhPrimPi0AccPhi->Fill(pi0Pt, phi) ;
+                  fhPrimPi0AccPhi->Fill(pi0Pt, phi*TMath::RadToDeg()) ;
                   fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
                   Double_t angle  = lv1.Angle(lv2.Vect());
                   fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle);
@@ -1165,22 +1168,23 @@ void AliAnaPi0::FillAcceptanceHistograms(){
         if( pdg == 111 || pdg == 221){
           Double_t pi0Pt = prim->Pt() ;
           //printf("pi0, pt %2.2f, eta %f, phi %f\n",pi0Pt, prim->Eta(), prim->Phi());
-          if(prim->E() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception	  
+          if(prim->E() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception
+          
           Double_t pi0Y  = 0.5*TMath::Log((prim->E()-prim->Pz())/(prim->E()+prim->Pz())) ;
           Double_t phi   = TMath::RadToDeg()*prim->Phi() ;
           if(pdg == 111){
-            if(TMath::Abs(pi0Y) < 0.5){
-              fhPrimPi0Pt->Fill(pi0Pt) ;
+            if(TMath::Abs(pi0Y) < 1){
+              fhPrimPi0Pt->Fill(pi0Pt) ;            
+              fhPrimPi0Phi->Fill(pi0Pt, phi) ;
             }
             fhPrimPi0Y  ->Fill(pi0Pt, pi0Y) ;
-            fhPrimPi0Phi->Fill(pi0Pt, phi) ;
           }
           else if(pdg == 221){
-            if(TMath::Abs(pi0Y) < 0.5){
-              fhPrimEtaPt->Fill(pi0Pt) ;
+            if(TMath::Abs(pi0Y) < 1){
+              fhPrimEtaPt->Fill(pi0Pt) ;            
+              fhPrimEtaPhi->Fill(pi0Pt, phi) ;
             }
             fhPrimEtaY  ->Fill(pi0Pt, pi0Y) ;
-            fhPrimEtaPhi->Fill(pi0Pt, phi) ;
           }
           
           //Origin of meson
@@ -1214,7 +1218,7 @@ void AliAnaPi0::FillAcceptanceHistograms(){
           }//pi0 has mother
           
           //Check if both photons hit Calorimeter
-          if(prim->GetNDaughters()!=2) return; //Only interested in 2 gamma decay
+          if(prim->GetNDaughters()!=2) continue; //Only interested in 2 gamma decay
           Int_t iphot1=prim->GetDaughter(0) ;
           Int_t iphot2=prim->GetDaughter(1) ;
           if(iphot1>-1 && iphot1<nprim && iphot2>-1 && iphot2<nprim){
