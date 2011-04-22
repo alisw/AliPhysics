@@ -63,6 +63,7 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
    fHistProUQPtAllEventsPOI(NULL),
    fHistProQNorm(NULL),
    fHistProQaQb(NULL),
+   fHistProQaQbVsM(NULL),
    fHistProQaQbNorm(NULL),
    fHistProQaQbReImNorm(NULL),
    fHistProNonIsotropicTermsQ(NULL),
@@ -220,6 +221,12 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   fHistProQaQb = new TProfile("FlowPro_QaQb_SP","FlowPro_QaQb_SP", 1, 0.5, 1.5,"s");
   fHistProQaQb->SetYTitle("<QaQb>");
   fHistList->Add(fHistProQaQb); 
+
+  fHistProQaQbVsM = new TProfile("FlowPro_QaQbVsM_SP","FlowPro_QaQbVsM_SP",1000,0.,10000.); // to be improved (hardwired numbers)
+  fHistProQaQbVsM->SetYTitle("#LTQ_{a}Q_{b}^{*}#GT");
+  fHistProQaQbVsM->SetXTitle("M");
+  fHistProQaQbVsM->Sumw2();
+  fHistList->Add(fHistProQaQbVsM); 
 
   fHistProQaQbNorm = new TProfile("FlowPro_QaQbNorm_SP","FlowPro_QaQbNorm_SP", 1, 0.5, 1.5,"s");
   fHistProQaQbNorm->SetYTitle("<QaQb/MaMb>");
@@ -467,6 +474,7 @@ void AliFlowAnalysisWithScalarProduct::FillSP(AliFlowEventSimple* anEvent) {
 
 	//fill some SP control histograms
 	fHistProQaQb -> Fill(1.,vQa*vQb,1.); //Fill with weight 1 -> Weight with MaMb????
+	fHistProQaQbVsM->Fill(anEvent->GetNumberOfRPs()+0.5,(vQa*vQb)/(dMa*dMb),dMa*dMb);  
 	fHistQaQbCos ->Fill(TMath::ACos((vQa/vQa.Mod())*(vQb/vQb.Mod())));  //Acos(Qa*Qb) = angle
 	fHistResolution -> Fill(TMath::Cos( vQa.Phi()- vQb.Phi() ));  //vQa.Phi() returns 2*phi
 	fHistQaQb -> Fill(vQa*vQb);
