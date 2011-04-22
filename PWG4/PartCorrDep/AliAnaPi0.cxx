@@ -659,7 +659,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhPrimPi0Pt) ;
     outputContainer->Add(fhPrimPi0AccPt) ;
     
-    fhPrimPi0Y      = new TH2D("hPrimPi0Rapidity","Rapidity of primary pi0",nptbins,ptmin,ptmax,netabins*4/(etamax-etamin),-2, 2) ;
+    Int_t netabinsopen =  (Int_t) netabins*4/(etamax-etamin);
+    fhPrimPi0Y      = new TH2D("hPrimPi0Rapidity","Rapidity of primary pi0",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimPi0Y   ->SetYTitle("Rapidity");
     fhPrimPi0Y   ->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0Y) ;
@@ -674,7 +675,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhPrimPi0Phi->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0Phi) ;
     
-    fhPrimPi0AccPhi = new TH2D("hPrimPi0AccPhi","Azimuthal of primary pi0 with accepted daughters",nptbins,ptmin,ptmax, nphibins*TMath::TwoPi()/((phimax-phimin)*TMath::RadToDeg()),0,TMath::TwoPi()) ; 
+    Int_t nphibinsopen = (Int_t) nphibins*TMath::TwoPi()/((phimax-phimin)*TMath::RadToDeg());
+    fhPrimPi0AccPhi = new TH2D("hPrimPi0AccPhi","Azimuthal of primary pi0 with accepted daughters",nptbins,ptmin,ptmax,nphibinsopen,0,TMath::TwoPi()) ; 
     fhPrimPi0AccPhi->SetYTitle("#phi (deg)");
     fhPrimPi0AccPhi->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0AccPhi) ;
