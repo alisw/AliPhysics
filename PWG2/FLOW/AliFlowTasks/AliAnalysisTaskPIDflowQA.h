@@ -103,6 +103,11 @@ private:
   AliFlowTrackCuts* fCutsTOFbetaSimpleKaons; //!
   AliFlowTrackCuts* fCutsTOFbetaSimpleProtons; //!
 
+  AliFlowTrackCuts* fCutsTOFbayesianElectrons; //!
+  AliFlowTrackCuts* fCutsTOFbayesianPions; //!
+  AliFlowTrackCuts* fCutsTOFbayesianKaons; //!
+  AliFlowTrackCuts* fCutsTOFbayesianProtons; //!
+
   AliFlowTrackCuts* fCutsTPCdedxElectrons; //!
   AliFlowTrackCuts* fCutsTPCdedxPions; //!
   AliFlowTrackCuts* fCutsTPCdedxKaons; //!
@@ -112,6 +117,20 @@ private:
   AliFlowTrackCuts* fCutsTPCpidPions; //!
   AliFlowTrackCuts* fCutsTPCpidKaons; //!
   AliFlowTrackCuts* fCutsTPCpidProtons; //!
+
+  AliFlowTrackCuts* fCutsTPCbayesianElectrons; //!
+  AliFlowTrackCuts* fCutsTPCbayesianPions; //!
+  AliFlowTrackCuts* fCutsTPCbayesianKaons; //!
+  AliFlowTrackCuts* fCutsTPCbayesianProtons; //!
+
+  AliFlowTrackCuts* fCutsMCelectrons;
+  AliFlowTrackCuts* fCutsMCpions;
+  AliFlowTrackCuts* fCutsMCkaons;
+  AliFlowTrackCuts* fCutsMCprotons;
+  AliFlowTrackCuts* fCutsMCprimaryelectrons;
+  AliFlowTrackCuts* fCutsMCprimarypions;
+  AliFlowTrackCuts* fCutsMCprimarykaons;
+  AliFlowTrackCuts* fCutsMCprimaryprotons;
 
   TList* fOutputList;//!output list
 	

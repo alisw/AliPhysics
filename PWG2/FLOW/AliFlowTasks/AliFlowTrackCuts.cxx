@@ -1359,7 +1359,7 @@ void AliFlowTrackCuts::DefineHistograms()
 
   const Int_t nBinsDCA=1000;
   Double_t binsDCA[nBinsDCA+1];
-  for(int i=0; i<=nBinsDCA; i++) {binsDCA[i]=0.05*i;}
+  for(int i=0; i<nBinsDCA+1; i++) {binsDCA[i]=0.01*i-5.;}
   //for(int i=1; i<41; i++) {binsDCA[i+100]=0.1*i+1.0;}
 
   Bool_t adddirstatus = TH1::AddDirectoryStatus();
@@ -3350,6 +3350,8 @@ const char* AliFlowTrackCuts::PIDsourceName(PIDsource s)
   {
     case kTPCdedx:
       return "TPCdedx";
+    case kTPCbayesian:
+      return "TPCbayesian";
     case kTOFbeta:
       return "TOFbeta";
     case kTPCpid:
