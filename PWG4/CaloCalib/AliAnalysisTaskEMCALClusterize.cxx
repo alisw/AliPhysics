@@ -73,7 +73,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   , fOutputAODBranch(0), fOutputAODBranchName("newEMCALClusters")
   , fFillAODFile(kTRUE), fFillAODHeader(0),    fFillAODCaloCells(0)
   , fRun(-1),            fRecoUtils(0),        fConfigName("")
-  , fCellLabels(),       fCellSecondLabels(),  fMaxEvent(1e9)
+  , fCellLabels(),       fCellSecondLabels(),  fMaxEvent(1000000000)
   
   {
   //ctor
@@ -100,7 +100,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   , fOutputAODBranch(0),  fOutputAODBranchName("newEMCALClusters")
   , fFillAODFile(kFALSE), fFillAODHeader(0),    fFillAODCaloCells(0)
   , fRun(-1),             fRecoUtils(0),        fConfigName("") 
-  , fCellLabels(),        fCellSecondLabels(),  fMaxEvent(1e9)
+  , fCellLabels(),        fCellSecondLabels(),  fMaxEvent(1000000000)
 {
   // Constructor
   for(Int_t i = 0; i < 10;    i++)  fGeomMatrix[i] =  0;
