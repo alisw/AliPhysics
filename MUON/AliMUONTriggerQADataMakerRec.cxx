@@ -76,8 +76,8 @@ namespace
 AliMUONTriggerQADataMakerRec::AliMUONTriggerQADataMakerRec(AliQADataMakerRec* master) : 
 AliMUONVQADataMakerRec(master),
 fDigitMaker(new AliMUONDigitMaker(kFALSE)),
-fCalibrationData(new AliMUONCalibrationData(AliCDBManager::Instance()->GetRun())),
-fTriggerProcessor(new AliMUONTriggerElectronics(fCalibrationData)),
+fCalibrationData(0x0),
+fTriggerProcessor(0x0),
 fDigitStore(0x0)
 {
     /// ctor
@@ -167,6 +167,16 @@ void AliMUONTriggerQADataMakerRec::EndOfDetectorCycleRaws(Int_t /*specie*/, TObj
     ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434AllEvents))->SetMaximum(1.1);
     ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerRatio4434SinceLastUpdate))->SetMaximum(1.1);
   }
+  
+  if ( GetRawsData(AliMUONQAIndices::kTriggerGlobalScalersNorm) ) {
+    TH1* inputHisto = GetRawsData(AliMUONQAIndices::kTriggerGlobalScalers);
+    TH1* scaledHisto = GetRawsData(AliMUONQAIndices::kTriggerGlobalScalersNorm);
+    scaledHisto->Reset();
+    scaledHisto->Add(inputHisto);
+    Float_t scaleValue = ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerScalersTime))->GetBinContent(1);
+    if ( scaleValue > 0. ) scaledHisto->Scale(1./scaleValue);
+  }
+  
 }
 
 //____________________________________________________________________________ 
@@ -432,6 +442,22 @@ void AliMUONTriggerQADataMakerRec::InitRaws()
   
   Add2RawsList(new TH1F("hTriggerIsThere","trigger is there",1,0,1),AliMUONQAIndices::kTriggerIsThere,kTRUE,kFALSE,kFALSE);
 
+  if ( GetRecoParam()->GetEventSpecie() == AliRecoParam::kCalib ) {
+    TH1F* histoGlobalScalers = new TH1F("hTriggerGlobalScalers","Trigger global scalers", 6, -0.5, 6.-0.5);
+    histoGlobalScalers->GetYaxis()->SetTitle("L0 counts");
+    histoGlobalScalers->GetXaxis()->SetTitle("Global output");
+    for (int ibin=0;ibin<6;ibin++){
+      histoGlobalScalers->GetXaxis()->SetBinLabel(ibin+1,globalXaxisName[ibin]);
+    }        
+    // Copy of previous histo for scaling purposes
+    TH1F* histoGlobalScalersNorm = (TH1F*)histoGlobalScalers->Clone("hTriggerGlobalScalersRate");
+    histoGlobalScalersNorm->SetTitle("Trigger global L0 scalers rate");
+    histoGlobalScalersNorm->SetOption("etext0");
+    histoGlobalScalersNorm->GetYaxis()->SetTitle("L0 scalers rate (Hz)");
+    // Adding both histos after cloning to avoid problems with the expert bit
+    Add2RawsList(histoGlobalScalers,     AliMUONQAIndices::kTriggerGlobalScalers,     expert, !image, !saveCorr);
+    Add2RawsList(histoGlobalScalersNorm, AliMUONQAIndices::kTriggerGlobalScalersNorm, expert, !image, !saveCorr);
+  }
 }
 
 //__________________________________________________________________
@@ -546,36 +572,41 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       darcHeader = rawStreamTrig.GetHeaders();
 
       if (darcHeader->GetGlobalFlag()){
-	if ( fillScalerHistos ) {
-	  UInt_t nOfClocks = darcHeader->GetGlobalClock();
-	  Double_t nOfSeconds = ((Double_t) nOfClocks) / 40e6; // 1 clock each 25 ns
-	  ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerScalersTime))->Fill(1., nOfSeconds);
-	}
+        if ( fillScalerHistos ) {
+          UInt_t nOfClocks = darcHeader->GetGlobalClock();
+          Double_t nOfSeconds = ((Double_t) nOfClocks) / 40e6; // 1 clock each 25 ns
+          ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerScalersTime))->Fill(1., nOfSeconds);
+          const UInt_t* globScaler = darcHeader->GetGlobalScaler();
+          Int_t bitCorr[6] = {2,0,3,1,4,5};
+          for (Int_t bit=0; bit<6; bit++){
+            ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerGlobalScalers))->Fill(bitCorr[bit],(double)(*(globScaler+bit)));
+          }
+        }
 
-	//Get Global datas
-	inputGlobalTrigger.SetFromGlobalResponse(darcHeader->GetGlobalOutput());
-	Bool_t resp[6] = {inputGlobalTrigger.PairUnlikeHpt(), inputGlobalTrigger.PairUnlikeLpt(),
-			  inputGlobalTrigger.PairLikeHpt(), inputGlobalTrigger.PairLikeLpt(),
-			  inputGlobalTrigger.SingleHpt(), inputGlobalTrigger.SingleLpt()}; 
-	for (Int_t bit=0; bit<6; bit++){
-	  if ( ! resp[bit] ){
-	    if ( fillScalerHistos )
-	      nDeadGlobal++;
-	  }
-	  else
-	    ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerGlobalOutput))->Fill(bit);
-	}
+        //Get Global datas
+        inputGlobalTrigger.SetFromGlobalResponse(darcHeader->GetGlobalOutput());
+        Int_t resp[6] = {inputGlobalTrigger.PairUnlikeHpt(), inputGlobalTrigger.PairUnlikeLpt(),
+          inputGlobalTrigger.PairLikeHpt(), inputGlobalTrigger.PairLikeLpt(),
+          inputGlobalTrigger.SingleHpt(), inputGlobalTrigger.SingleLpt()}; 
+        for (Int_t bit=0; bit<6; bit++){
+          if ( resp[bit] == 0 ){
+            if ( fillScalerHistos )
+              nDeadGlobal++;
+          }
+          else
+            ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerGlobalOutput))->Fill(bit, resp[bit]);
+        } // loop on bits
 
-	//for (Int_t Bit=0; Bit<32; Bit++){
-	//fTriggerInputGlobalDataLPt[Bit/4][Bit%4]=((darcHeader->GetGlobalInput(0)>>Bit)&1);
-	//fTriggerInputGlobalDataLPt[Bit/4+8][Bit%4]=((darcHeader->GetGlobalInput(1)>>Bit)&1);
-	//fTriggerInputGlobalDataHPt[Bit/4][Bit%4]=((darcHeader->GetGlobalInput(2)>>Bit)&1);
-	//fTriggerInputGlobalDataHPt[Bit/4+8][Bit%4]=((darcHeader->GetGlobalInput(3)>>Bit)&1);
-	//}
+        //for (Int_t Bit=0; Bit<32; Bit++){
+        //fTriggerInputGlobalDataLPt[Bit/4][Bit%4]=((darcHeader->GetGlobalInput(0)>>Bit)&1);
+        //fTriggerInputGlobalDataLPt[Bit/4+8][Bit%4]=((darcHeader->GetGlobalInput(1)>>Bit)&1);
+        //fTriggerInputGlobalDataHPt[Bit/4][Bit%4]=((darcHeader->GetGlobalInput(2)>>Bit)&1);
+        //fTriggerInputGlobalDataHPt[Bit/4+8][Bit%4]=((darcHeader->GetGlobalInput(3)>>Bit)&1);
+        //}
 
-	for (Int_t i=0; i<4; i++){
-	  globalInput[i]=darcHeader->GetGlobalInput(i);
-	}
+        for (Int_t i=0; i<4; i++){
+          globalInput[i]=darcHeader->GetGlobalInput(i);
+        }
       }
 
       Int_t nReg = rawStreamTrig.GetRegionalHeaderCount();
@@ -733,7 +764,7 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       }
     }
 
-  fTriggerProcessor->Digits2Trigger(digitStore,recoTriggerStore);
+  TriggerElectronics()->Digits2Trigger(digitStore,recoTriggerStore);
 
   AliMUONGlobalTrigger* recoGlobalTriggerFromLocal;
   recoGlobalTriggerFromLocal = recoTriggerStore.Global();
@@ -1187,7 +1218,7 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutLocal(const AliMUONVTrigger
     // Fill ratio 44/34 histos (if not scaler event)
     if ( GetRecoParam()->GetEventSpecie() != AliRecoParam::kCalib ) {
       Bool_t is34 = ( recoLocalTrigger->GetLoDecision() != 0 );
-      Bool_t is44 = fTriggerProcessor->ModifiedLocalResponse(loCircuit, respBendPlane, respNonBendPlane, kTRUE);
+      Bool_t is44 = TriggerElectronics()->ModifiedLocalResponse(loCircuit, respBendPlane, respNonBendPlane, kTRUE);
       if ( is34 ) ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerNumberOf34Dec))->Fill(loCircuit);
       if ( is44 ) ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerNumberOf44Dec))->Fill(loCircuit);
 
@@ -1291,7 +1322,7 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutGlobal(AliMUONGlobalTrigger
 {
   //
   /// Match data and reconstructed Global Trigger decision for a reconstruction from Global inputs.
-  /// histo='G': fill FromGlobalInput histo='F': fill from Local input;
+  /// histo='G': fill FromGlobalInput histo='L': fill from Local input;
   //
 
   if ( recoGlobalTrigger.GetGlobalResponse() == inputGlobalTrigger.GetGlobalResponse() )
@@ -1307,18 +1338,18 @@ void AliMUONTriggerQADataMakerRec::RawTriggerMatchOutGlobal(AliMUONGlobalTrigger
 	  histoToFill=AliMUONQAIndices::kTriggerErrorOutGlobalFromInLocal;
 	  binToFill=AliMUONQAIndices::kAlgoGlobalFromLocal;
       }else{
-	  AliWarning(Form("Global histos not filled, 3rd argument must be 'G' or 'F'"));
+	  AliWarning(Form("Global histos not filled, 3rd argument must be 'G' or 'L'"));
 	  return;
       } 
   }
 
   ((TH1F*)GetRawsData(AliMUONQAIndices::kTriggerErrorSummary))->Fill(binToFill);
 
-  Bool_t inputResp[6] = {inputGlobalTrigger.PairUnlikeHpt(), inputGlobalTrigger.PairUnlikeLpt(),
+  Int_t inputResp[6] = {inputGlobalTrigger.PairUnlikeHpt(), inputGlobalTrigger.PairUnlikeLpt(),
 			 inputGlobalTrigger.PairLikeHpt(), inputGlobalTrigger.PairLikeLpt(),
 			 inputGlobalTrigger.SingleHpt(), inputGlobalTrigger.SingleLpt()};
 
-  Bool_t recoResp[6] = {recoGlobalTrigger.PairUnlikeHpt(), recoGlobalTrigger.PairUnlikeLpt(),
+  Int_t recoResp[6] = {recoGlobalTrigger.PairUnlikeHpt(), recoGlobalTrigger.PairUnlikeLpt(),
 			recoGlobalTrigger.PairLikeHpt(), recoGlobalTrigger.PairLikeLpt(),
 			recoGlobalTrigger.SingleHpt(), recoGlobalTrigger.SingleLpt()};
 
@@ -1413,3 +1444,15 @@ void AliMUONTriggerQADataMakerRec::FillRatio4434Histos(Int_t evtInterval)
 
 }
 
+
+//____________________________________________________________________________ 
+AliMUONTriggerElectronics* AliMUONTriggerQADataMakerRec::TriggerElectronics()
+{
+  /// Return trigger electronics
+  /// (create it if necessary)
+  if ( ! fTriggerProcessor ) { 
+    if ( ! fCalibrationData ) fCalibrationData = new AliMUONCalibrationData(AliCDBManager::Instance()->GetRun());
+    fTriggerProcessor = new AliMUONTriggerElectronics(fCalibrationData);
+  }
+  return fTriggerProcessor;
+}

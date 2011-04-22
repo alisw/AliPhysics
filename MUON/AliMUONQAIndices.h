@@ -18,7 +18,7 @@ namespace AliMUONQAIndices
   /// Histogram indices common to raw and digits and/or recpoints.
   ///
   /// WARNING ! Those ones should not be reused anywhere else below.
-  /// Numbers from 1 to 50 are thus reserved for ECommon enum !
+  /// Numbers from 1 to 49 are thus reserved for ECommon enum !
   ///
   enum ECommon {
     kTrackerBusPatchOccupancy         =  1, ///< Bus patch occupancies
@@ -80,7 +80,9 @@ namespace AliMUONQAIndices
     kTriggerRatio4434AllEvents       = 110,  ///< Ratio 44/34 since the beginning of the run vs Event Number
     kTriggerRatio4434SinceLastUpdate = 111,  ///< Ratio 44/34 for the last kUpdateRatio4434 events vs Event Number
     kTriggerNumberOf34Dec            = 112,  ///< Number of Decision in coincidence 3/4 vs Local Board
-    kTriggerNumberOf44Dec            = 113   ///< Number of Decision in coincidence 4/4 vs Local Board
+    kTriggerNumberOf44Dec            = 113,  ///< Number of Decision in coincidence 4/4 vs Local Board
+    kTriggerGlobalScalers            = 114,  ///< Number of L0 counts
+    kTriggerGlobalScalersNorm        = 115   ///< L0 scaler rates
     
   };
   
