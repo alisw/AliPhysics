@@ -74,7 +74,6 @@ void loadlibs ()
   gSystem->Load("libTHijing");
   gSystem->Load("libpythia6");
   gSystem->Load("libEGPythia6");
-  gSystem->Load("libPythia6");
   gSystem->Load("libAliPythia6");
   
 }
