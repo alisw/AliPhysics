@@ -65,7 +65,9 @@ void AliAnalysisTaskLRC::UserCreateOutputObjects()
     
    for(Int_t i=0; i < lLrcNum; i++)
   {
-  fOutList->Add((dynamic_cast<AliLRCProcess*> (fLRCproc.At(i)))->CreateOutput());
+    AliLRCProcess *p = (dynamic_cast<AliLRCProcess*> (fLRCproc.At(i)));
+    if(p) fOutList->Add(p->CreateOutput());
+    else continue;
   }
   
   
@@ -144,7 +146,9 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)
   
    for(Int_t i=0; i < lLrcNum; i++)
   {
-  (dynamic_cast<AliLRCProcess*> (fLRCproc.At(i)))->FinishEvent();
+    AliLRCProcess *p = (dynamic_cast<AliLRCProcess*> (fLRCproc.At(i)));
+    if(p) p->FinishEvent();
+    else continue;
   }
 
   
