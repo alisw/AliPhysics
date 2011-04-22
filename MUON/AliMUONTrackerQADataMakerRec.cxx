@@ -579,12 +579,7 @@ void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleRaws(Int_t specie, TObjArra
     ProjectTrackerData(TrackerDataMaker(specie)->Data(),
                        *hbp,*hnevents,*hddl,*hddlevents);
     
-    if ( fLogger->NumberOfEntries() > 0 )
-    {
-      // readout errors      
-      FillReadoutStatus(*fLogger,TrackerDataMaker(specie)->Data());      
-      fLogger->Clear();
-    }
+    FillReadoutStatus(*fLogger,TrackerDataMaker(specie)->Data());      
   }    
 }
 
@@ -1339,7 +1334,7 @@ void AliMUONTrackerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       TH1* hrostatus = GetRawsData(AliMUONQAIndices::kTrackerReadoutStatus);
 
       if (hrostatus) hrostatus->Fill(1.0*AliMUONQAIndices::kTrackerRawNofEmptyEvents);
-    }
+    }    
   }
 }
 
@@ -1606,6 +1601,8 @@ AliMUONTrackerQADataMakerRec::ResetDetectorRaws(TObjArray* list)
       }
     }
   }
+  
+  fLogger->Clear();
 }
 
 //____________________________________________________________________________ 

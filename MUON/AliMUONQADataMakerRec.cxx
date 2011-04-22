@@ -28,6 +28,7 @@
 ///
 /// \author C. Finck, D. Stocco, L. Aphecetche, A. Blanc
 
+#include "AliDAQ.h"
 #include "AliMUONTrackerQADataMakerRec.h"
 #include "AliMUONTriggerQADataMakerRec.h"
 #include "AliQAChecker.h"
@@ -179,20 +180,32 @@ void AliMUONQADataMakerRec::InitESDs()
 void AliMUONQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
   /// make QA for rawdata
-
-  // Check id histograms already created for this Event Specie
-
+  /// Note that we do not call the sub-datamaker MakeRaws method
+  /// for events where the MCH or MTR is not part of the readout...
+  
+  if ( !rawReader || !rawReader->GetDetectorPattern() ) return;
+  
+  UInt_t clmask = rawReader->GetDetectorPattern()[0];
+    
   if ( fTracker && rawReader->GetType() == AliRawEventHeaderBase::kPhysicsEvent ) 
   {
-    rawReader->Reset();
-    fTracker->MakeRaws(rawReader);
+    UInt_t mchMask = AliDAQ::DetectorPattern(" MUONTRK ");
+    if ( clmask & mchMask ) 
+    {
+      rawReader->Reset();
+      fTracker->MakeRaws(rawReader);
+    }
   }
   
   if ( fTrigger && (rawReader->GetType() == AliRawEventHeaderBase::kPhysicsEvent ||
                     rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent ) )
   {
-    rawReader->Reset();    
-    fTrigger->MakeRaws(rawReader);
+    UInt_t mtrMask = AliDAQ::DetectorPattern(" MUONTRG ");
+    if ( clmask & mtrMask )
+    {
+      rawReader->Reset();    
+      fTrigger->MakeRaws(rawReader);
+    }
   }
 }
 
