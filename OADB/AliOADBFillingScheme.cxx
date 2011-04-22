@@ -107,6 +107,6 @@ void AliOADBFillingScheme::Browse(TBrowser *b)
 void AliOADBFillingScheme::Print(Option_t* option) const {
   // Print Class contents
   // Option is passed to TMap::Print
-  cout << "Filling scheme Name " <<  fFSName.Data() << endl;
+  cout << "Filling scheme Name " <<  fFSName.Data() << option << endl;
   fBXIds->Print(option);
 }

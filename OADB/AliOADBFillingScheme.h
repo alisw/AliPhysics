@@ -21,8 +21,6 @@ class AliOADBFillingScheme : public TNamed {
   AliOADBFillingScheme();
   AliOADBFillingScheme(char* name);
   virtual ~AliOADBFillingScheme();
-  AliOADBFillingScheme(const AliOADBFillingScheme& cont); 
-  AliOADBFillingScheme& operator=(const AliOADBFillingScheme& cont);
   void Init();
   
   // Getters
@@ -38,6 +36,9 @@ class AliOADBFillingScheme : public TNamed {
   virtual void	Print(Option_t* option = "") const;
 
  private :
+
+  AliOADBFillingScheme(const AliOADBFillingScheme& cont);            // to be implemented
+  AliOADBFillingScheme& operator=(const AliOADBFillingScheme& cont); // to be implemented
   
   TString fFSName               ; // Name of the filling scheme 
   TMap * fBXIds              ; // Map from the beam side bunch crossing number. Beam side is "B", "A", "C", "E".
