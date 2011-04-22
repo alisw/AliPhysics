@@ -1134,7 +1134,7 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               if(inacceptance){
                 if(pdg==111){
                   fhPrimPi0AccPt ->Fill(pi0Pt) ;
-                  fhPrimPi0AccPhi->Fill(pi0Pt, phi*TMath::RadToDeg()) ;
+                  fhPrimPi0AccPhi->Fill(pi0Pt, phi ) ;
                   fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
                   Double_t angle  = lv1.Angle(lv2.Vect());
                   fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle);
