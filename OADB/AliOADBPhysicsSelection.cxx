@@ -188,13 +188,20 @@ void AliOADBPhysicsSelection::Browse(TBrowser *b)
    // Browse this object.
    // If b=0, there is no Browse call TObject::Browse(0) instead.
    //         This means TObject::Inspect() will be invoked indirectly
-
-  TFolder  ** bitFolders = new TFolder*[fNtriggerBits];
+  static TFolder  ** bitFolders = 0;
+  if(!bitFolders) {
+    bitFolders = new TFolder*[fNtriggerBits];
+    for(UInt_t ibit = 0; ibit < fNtriggerBits; ibit++){
+      bitFolders[ibit] = 0;
+    }
+    
+  }
 
   if (b) {
     for(UInt_t ibit = 0; ibit < fNtriggerBits; ibit++){
-      //      if(bitFolders[ibit]) delete bitFolders[ibit];
+      if(bitFolders[ibit]) delete bitFolders[ibit];
       bitFolders[ibit] = new TFolder (Form("Bit %2.2d", ibit), "Trigger bit folder");
+      bitFolders[ibit]->SetOwner(); // Delete also the TObjString when deleting the folder
       for(UInt_t ilogic = 0; ilogic < fNtriggerLogics; ilogic++){
 	if(GetHardwareTrigger(ilogic) != "" || 	GetOfflineTrigger(ilogic) != "")  {
 	  bitFolders[ibit]->Add(new TObjString(Form("Hardware Trig    [*%d][%s]",ilogic,GetHardwareTrigger(ilogic).Data())));
@@ -209,6 +216,7 @@ void AliOADBPhysicsSelection::Browse(TBrowser *b)
 	bitFolders[ibit]->Add(new TObjString(Form("Collision Class  [%s] [%s]", coll->String().Data(), 
 						  GetBeamSide(coll->String().Data()).Data())));
       }
+      delete itColl;
 
       TIterator *itBG = fBGTrigClasses[ibit]->MakeIterator();
       TObjString * bg = 0;
@@ -216,7 +224,7 @@ void AliOADBPhysicsSelection::Browse(TBrowser *b)
 	bitFolders[ibit]->Add(new TObjString(Form("Background Class [%s] [%s]", bg->String().Data(), 
 						  GetBeamSide(bg->String().Data()).Data())));
       }
-
+      delete itBG;
 
       b->Add(bitFolders[ibit]);
 
