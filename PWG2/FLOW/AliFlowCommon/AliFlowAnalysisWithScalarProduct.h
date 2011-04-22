@@ -87,6 +87,7 @@ class AliFlowAnalysisWithScalarProduct {
    TProfile* GetHistProUQPtAllEventsPOI() const  {return this->fHistProUQPtAllEventsPOI;}
    TProfile* GetHistProQNorm() const    {return this->fHistProQNorm;}
    TProfile* GetHistProQaQb() const     {return this->fHistProQaQb;}
+   TProfile* GetHistProQaQbVsM() const  {return this->fHistProQaQbVsM;}
    TProfile* GetHistProQaQbNorm() const {return this->fHistProQaQbNorm;}
    TProfile* GetHistProQaQbReImNorm() const {return this->fHistProQaQbReImNorm;} 
    TProfile* GetHistProNonIsotropicTermsQ() const {return this->fHistProNonIsotropicTermsQ;} 
@@ -138,6 +139,8 @@ class AliFlowAnalysisWithScalarProduct {
      {this->fHistProQNorm = aHistProQNorm;}
    void SetHistProQaQb(TProfile* const aHistProQaQb)       
      {this->fHistProQaQb = aHistProQaQb;}
+   void SetHistProQaQbVsM(TProfile* const aHistProQaQbVsM)       
+     {this->fHistProQaQbVsM = aHistProQaQbVsM;}
    void SetHistProQaQbNorm(TProfile* const aHistProQaQbNorm)         
      {this->fHistProQaQbNorm = aHistProQaQbNorm;}     
    void SetHistProQaQbReImNorm(TProfile* const aHistProQaQbReImNorm)         
@@ -223,7 +226,8 @@ class AliFlowAnalysisWithScalarProduct {
    TProfile*  fHistProUQPtPOI;      // uQ(pt) for POI (for events where both subevents are filled)
    TProfile*  fHistProUQPtAllEventsPOI;  // uQ(pt) for POI (for events where 1 subevent may be empty)
    TProfile*  fHistProQNorm;        // average of (Qa+Qb).Mod()
-   TProfile*  fHistProQaQb;         // average of QaQb 
+   TProfile*  fHistProQaQb;         // average of QaQb
+   TProfile*  fHistProQaQbVsM;      // average of QaQb versus multiplicity    
    TProfile*  fHistProQaQbNorm;     // average of QaQb/MaMb
    TProfile*  fHistProQaQbReImNorm; // average of Im[Qa/Ma], Re[Qa/Ma], Im[Qb/Mb], Re[Qb/Mb] 
    TProfile*  fHistProNonIsotropicTermsQ;          // 1st bin: sin, 2nd bin: cos 
@@ -255,7 +259,7 @@ class AliFlowAnalysisWithScalarProduct {
    TH1D*      fHistQbNorm;       // distribution of Qb/Mb
    TH2D*      fHistQbNormvsMb;   // distribution of Qb/Mb vs Mb
    TH2D*      fHistMavsMb;       // Ma vs Mb
-      
+
    TList*     fHistList;         // list to hold all output histograms  
 
    ClassDef(AliFlowAnalysisWithScalarProduct,0)  // macro for rootcint
