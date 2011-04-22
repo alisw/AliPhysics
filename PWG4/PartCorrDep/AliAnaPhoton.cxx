@@ -158,7 +158,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   fhNtraNclu->SetYTitle("# of clusters");
   outputContainer->Add(fhNtraNclu);
   
-  fhNCellsPt  = new TH2F ("hNCellsPt","# of cells in cluster vs E of clusters", nptbins,ptmin, ptmax, 10,0,10); 
+  fhNCellsPt  = new TH2F ("hNCellsPt","# of cells in cluster vs E of clusters", nptbins,ptmin, ptmax, 100,0,100); 
   fhNCellsPt->SetXTitle("p_{T} (GeV/c)");
   fhNCellsPt->SetYTitle("# of cells in cluster");
   outputContainer->Add(fhNCellsPt);  
@@ -900,7 +900,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //Check origin of the candidates
     if(IsDataMC()){
       aodph.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), aodph.GetInputFileIndex()));
-      if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodph.GetTag());
+      if(GetDebug() > 0)
+        printf("AliAnaPhoton::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodph.GetTag());
     }//Work with stack also   
     
     //--------------------------------------------------------------------------------------
@@ -1191,7 +1192,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 	  if(IsDataMC()){
 	    
 	    Int_t tag =ph->GetTag();
-	    
+
 	    if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
       {
         fhPtMCPhoton  ->Fill(ptcluster);
