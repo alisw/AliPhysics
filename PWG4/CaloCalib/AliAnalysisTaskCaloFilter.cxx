@@ -220,7 +220,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       if (file) header->SetESDFileName(file->GetName());
     }
   }
-  else  header->SetESDFileName(aodevent->GetHeader()->GetESDFileName());
+  else if (aodevent) header->SetESDFileName(aodevent->GetHeader()->GetESDFileName());
   
   header->SetBunchCrossNumber(event->GetBunchCrossNumber());
   header->SetOrbitNumber(event->GetOrbitNumber());
@@ -237,8 +237,8 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   
   //Trigger  
   header->SetOfflineTrigger(fInputHandler->IsEventSelected()); // propagate the decision of the physics selection
-  if (esdevent) header->SetFiredTriggerClasses(esdevent->GetFiredTriggerClasses());
-  else          header->SetFiredTriggerClasses(aodevent->GetFiredTriggerClasses());
+  if      (esdevent) header->SetFiredTriggerClasses(esdevent->GetFiredTriggerClasses());
+  else if (aodevent) header->SetFiredTriggerClasses(aodevent->GetFiredTriggerClasses());
   header->SetTriggerMask(event->GetTriggerMask()); 
   header->SetTriggerCluster(event->GetTriggerCluster());
   if(esdevent){
@@ -246,7 +246,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
     header->SetL1TriggerInputs(esdevent->GetHeader()->GetL1TriggerInputs());    
     header->SetL2TriggerInputs(esdevent->GetHeader()->GetL2TriggerInputs());    
   }
-  else {
+  else if (aodevent){
     header->SetL0TriggerInputs(aodevent->GetHeader()->GetL0TriggerInputs());    
     header->SetL1TriggerInputs(aodevent->GetHeader()->GetL1TriggerInputs());    
     header->SetL2TriggerInputs(aodevent->GetHeader()->GetL2TriggerInputs());    
@@ -265,8 +265,8 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   Float_t diamcov[3];
   event->GetDiamondCovXY(diamcov);
   header->SetDiamond(diamxy,diamcov);
-  if(esdevent) header->SetDiamondZ(esdevent->GetDiamondZ(),esdevent->GetSigma2DiamondZ());
-  else         header->SetDiamondZ(aodevent->GetDiamondZ(),aodevent->GetSigma2DiamondZ());
+  if      (esdevent) header->SetDiamondZ(esdevent->GetDiamondZ(),esdevent->GetSigma2DiamondZ());
+  else if (aodevent) header->SetDiamondZ(aodevent->GetDiamondZ(),aodevent->GetSigma2DiamondZ());
   
   //
   //
