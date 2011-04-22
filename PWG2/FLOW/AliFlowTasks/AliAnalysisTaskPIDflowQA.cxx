@@ -103,6 +103,10 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA():
   fCutsTOFbetaSimplePions(NULL),
   fCutsTOFbetaSimpleKaons(NULL),
   fCutsTOFbetaSimpleProtons(NULL),
+  fCutsTOFbayesianElectrons(NULL),
+  fCutsTOFbayesianPions(NULL),
+  fCutsTOFbayesianKaons(NULL),
+  fCutsTOFbayesianProtons(NULL),
   fCutsTPCdedxElectrons(NULL),
   fCutsTPCdedxPions(NULL),
   fCutsTPCdedxKaons(NULL),
@@ -111,6 +115,18 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA():
   fCutsTPCpidPions(NULL),
   fCutsTPCpidKaons(NULL),
   fCutsTPCpidProtons(NULL),
+  fCutsTPCbayesianElectrons(NULL),
+  fCutsTPCbayesianPions(NULL),
+  fCutsTPCbayesianKaons(NULL),
+  fCutsTPCbayesianProtons(NULL),
+  fCutsMCelectrons(NULL),
+  fCutsMCpions(NULL),
+  fCutsMCkaons(NULL),
+  fCutsMCprotons(NULL),
+  fCutsMCprimaryelectrons(NULL),
+  fCutsMCprimarypions(NULL),
+  fCutsMCprimarykaons(NULL),
+  fCutsMCprimaryprotons(NULL),
   fOutputList(NULL)
 {
   //def ctor
@@ -175,6 +191,10 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA(const char *name):
   fCutsTOFbetaSimplePions(NULL),
   fCutsTOFbetaSimpleKaons(NULL),
   fCutsTOFbetaSimpleProtons(NULL),
+  fCutsTOFbayesianElectrons(NULL),
+  fCutsTOFbayesianPions(NULL),
+  fCutsTOFbayesianKaons(NULL),
+  fCutsTOFbayesianProtons(NULL),
   fCutsTPCdedxElectrons(NULL),
   fCutsTPCdedxPions(NULL),
   fCutsTPCdedxKaons(NULL),
@@ -183,6 +203,18 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA(const char *name):
   fCutsTPCpidPions(NULL),
   fCutsTPCpidKaons(NULL),
   fCutsTPCpidProtons(NULL),
+  fCutsTPCbayesianElectrons(NULL),
+  fCutsTPCbayesianPions(NULL),
+  fCutsTPCbayesianKaons(NULL),
+  fCutsTPCbayesianProtons(NULL),
+  fCutsMCelectrons(NULL),
+  fCutsMCpions(NULL),
+  fCutsMCkaons(NULL),
+  fCutsMCprotons(NULL),
+  fCutsMCprimaryelectrons(NULL),
+  fCutsMCprimarypions(NULL),
+  fCutsMCprimarykaons(NULL),
+  fCutsMCprimaryprotons(NULL),
   fOutputList(NULL)
 {
   //Constructor
@@ -342,7 +374,6 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fCutsTOFbetaPions = new AliFlowTrackCuts("TOFbeta pi");
   fCutsTOFbetaPions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTOFbeta);
   fCutsTOFbetaPions->SetRequireStrictTOFTPCagreement();
-  fCutsTOFbetaPions->SetRejectElectronsWithTPCpid();
   fCutsTOFbetaPions->SetQA();
   fCutsTOFbetaKaons = new AliFlowTrackCuts("TOFbeta K");
   fCutsTOFbetaKaons->SetPID(AliPID::kKaon, AliFlowTrackCuts::kTOFbeta);
@@ -359,7 +390,6 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fCutsTOFbetaSimpleElectrons->SetQA();
   fCutsTOFbetaSimplePions = new AliFlowTrackCuts("TOFbetaSimple pi");
   fCutsTOFbetaSimplePions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTOFbetaSimple);
-  fCutsTOFbetaSimplePions->SetRejectElectronsWithTPCpid();
   fCutsTOFbetaSimplePions->SetRequireStrictTOFTPCagreement();
   fCutsTOFbetaSimplePions->SetQA();
   fCutsTOFbetaSimpleKaons = new AliFlowTrackCuts("TOFbetaSimple K");
@@ -371,10 +401,27 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fCutsTOFbetaSimpleProtons->SetRequireStrictTOFTPCagreement();
   fCutsTOFbetaSimpleProtons->SetQA();
 
+  fCutsTOFbayesianElectrons = new AliFlowTrackCuts("TOFbayesian e");
+  fCutsTOFbayesianElectrons->SetPID(AliPID::kElectron, AliFlowTrackCuts::kTOFbayesian);
+  fCutsTOFbayesianElectrons->SetRequireStrictTOFTPCagreement();
+  fCutsTOFbayesianElectrons->SetQA();
+  fCutsTOFbayesianPions = new AliFlowTrackCuts("TOFbayesian pi");
+  fCutsTOFbayesianPions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTOFbayesian);
+  fCutsTOFbayesianPions->SetRequireStrictTOFTPCagreement();
+  fCutsTOFbayesianPions->SetQA();
+  fCutsTOFbayesianKaons = new AliFlowTrackCuts("TOFbayesian K");
+  fCutsTOFbayesianKaons->SetPID(AliPID::kKaon, AliFlowTrackCuts::kTOFbayesian);
+  fCutsTOFbayesianKaons->SetRequireStrictTOFTPCagreement();
+  fCutsTOFbayesianKaons->SetQA();
+  fCutsTOFbayesianProtons = new AliFlowTrackCuts("TOFbayesian p");
+  fCutsTOFbayesianProtons->SetPID(AliPID::kProton, AliFlowTrackCuts::kTOFbayesian);
+  fCutsTOFbayesianProtons->SetRequireStrictTOFTPCagreement();
+  fCutsTOFbayesianProtons->SetQA();
+
   fCutsTPCdedxElectrons = new AliFlowTrackCuts("TPCdedx e");
   fCutsTPCdedxElectrons->SetPID(AliPID::kElectron, AliFlowTrackCuts::kTPCdedx);
   fCutsTPCdedxElectrons->SetQA();
-  fCutsTPCdedxPions = new AliFlowTrackCuts("TPCdedx Pi");
+  fCutsTPCdedxPions = new AliFlowTrackCuts("TPCdedx pi");
   fCutsTPCdedxPions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCdedx);
   fCutsTPCdedxPions->SetQA();
   fCutsTPCdedxKaons = new AliFlowTrackCuts("TPCdedx K");
@@ -387,7 +434,7 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fCutsTPCpidElectrons = new AliFlowTrackCuts("TPCpid e");
   fCutsTPCpidElectrons->SetPID(AliPID::kElectron, AliFlowTrackCuts::kTPCpid);
   fCutsTPCpidElectrons->SetQA();
-  fCutsTPCpidPions = new AliFlowTrackCuts("TPCpid Pi");
+  fCutsTPCpidPions = new AliFlowTrackCuts("TPCpid pi");
   fCutsTPCpidPions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCpid);
   fCutsTPCpidPions->SetQA();
   fCutsTPCpidKaons = new AliFlowTrackCuts("TPCpid K");
@@ -396,6 +443,57 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fCutsTPCpidProtons = new AliFlowTrackCuts("TPCpid p");
   fCutsTPCpidProtons->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCpid);
   fCutsTPCpidProtons->SetQA();
+
+  fCutsTPCbayesianElectrons = new AliFlowTrackCuts("TPCbayesian e");
+  fCutsTPCbayesianElectrons->SetPID(AliPID::kElectron, AliFlowTrackCuts::kTPCbayesian);
+  fCutsTPCbayesianElectrons->SetQA();
+  fCutsTPCbayesianPions = new AliFlowTrackCuts("TPCbayesian pi");
+  fCutsTPCbayesianPions->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCbayesian);
+  fCutsTPCbayesianPions->SetQA();
+  fCutsTPCbayesianKaons = new AliFlowTrackCuts("TPCbayesian K");
+  fCutsTPCbayesianKaons->SetPID(AliPID::kKaon, AliFlowTrackCuts::kTPCbayesian);
+  fCutsTPCbayesianKaons->SetQA();
+  fCutsTPCbayesianProtons = new AliFlowTrackCuts("TPCbayesian p");
+  fCutsTPCbayesianProtons->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCbayesian);
+  fCutsTPCbayesianProtons->SetQA();
+
+  fCutsMCelectrons=new AliFlowTrackCuts("MC e");
+  fCutsMCelectrons->SetMCPID(11);
+  fCutsMCelectrons->SetIgnoreSignInMCPID();
+  fCutsMCelectrons->SetQA();
+  fCutsMCpions=new AliFlowTrackCuts("MC pi");
+  fCutsMCpions->SetMCPID(211);
+  fCutsMCpions->SetIgnoreSignInMCPID();
+  fCutsMCpions->SetQA();
+  fCutsMCkaons=new AliFlowTrackCuts("MC K");
+  fCutsMCpions->SetMCPID(321);
+  fCutsMCpions->SetIgnoreSignInMCPID();
+  fCutsMCpions->SetQA();
+  fCutsMCprotons=new AliFlowTrackCuts("MC p");
+  fCutsMCpions->SetMCPID(2212);
+  fCutsMCpions->SetIgnoreSignInMCPID();
+  fCutsMCpions->SetQA();
+
+  fCutsMCprimaryelectrons=new AliFlowTrackCuts("MCprimary e");
+  fCutsMCprimaryelectrons->SetMCPID(11);
+  fCutsMCprimaryelectrons->SetIgnoreSignInMCPID();
+  fCutsMCprimaryelectrons->SetMCisPrimary();
+  fCutsMCprimaryelectrons->SetQA();
+  fCutsMCprimarypions=new AliFlowTrackCuts("MCprimary pi");
+  fCutsMCprimarypions->SetMCPID(211);
+  fCutsMCprimarypions->SetIgnoreSignInMCPID();
+  fCutsMCprimarypions->SetMCisPrimary();
+  fCutsMCprimarypions->SetQA();
+  fCutsMCprimarykaons=new AliFlowTrackCuts("MCprimary K");
+  fCutsMCprimarypions->SetMCPID(321);
+  fCutsMCprimarypions->SetIgnoreSignInMCPID();
+  fCutsMCprimarypions->SetMCisPrimary();
+  fCutsMCprimarypions->SetQA();
+  fCutsMCprimaryprotons=new AliFlowTrackCuts("MCprimary p");
+  fCutsMCprimarypions->SetMCPID(2212);
+  fCutsMCprimarypions->SetIgnoreSignInMCPID();
+  fCutsMCprimarypions->SetMCisPrimary();
+  fCutsMCprimarypions->SetQA();
 
   //fOutputList->Add(fESDpid);
 
@@ -407,6 +505,10 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fOutputList->Add(fCutsTPCpidPions->GetQA());
   fOutputList->Add(fCutsTPCpidKaons->GetQA());
   fOutputList->Add(fCutsTPCpidProtons->GetQA());
+  fOutputList->Add(fCutsTPCbayesianElectrons->GetQA());
+  fOutputList->Add(fCutsTPCbayesianPions->GetQA());
+  fOutputList->Add(fCutsTPCbayesianKaons->GetQA());
+  fOutputList->Add(fCutsTPCbayesianProtons->GetQA());
   fOutputList->Add(fCutsTOFbetaElectrons->GetQA());
   fOutputList->Add(fCutsTOFbetaPions->GetQA());
   fOutputList->Add(fCutsTOFbetaKaons->GetQA());
@@ -415,6 +517,18 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fOutputList->Add(fCutsTOFbetaSimplePions->GetQA());
   fOutputList->Add(fCutsTOFbetaSimpleKaons->GetQA());
   fOutputList->Add(fCutsTOFbetaSimpleProtons->GetQA());
+  fOutputList->Add(fCutsTOFbayesianElectrons->GetQA());
+  fOutputList->Add(fCutsTOFbayesianPions->GetQA());
+  fOutputList->Add(fCutsTOFbayesianKaons->GetQA());
+  fOutputList->Add(fCutsTOFbayesianProtons->GetQA());
+  fOutputList->Add(fCutsMCelectrons->GetQA());
+  fOutputList->Add(fCutsMCpions->GetQA());
+  fOutputList->Add(fCutsMCkaons->GetQA());
+  fOutputList->Add(fCutsMCprotons->GetQA());
+  fOutputList->Add(fCutsMCprimaryelectrons->GetQA());
+  fOutputList->Add(fCutsMCprimarypions->GetQA());
+  fOutputList->Add(fCutsMCprimarykaons->GetQA());
+  fOutputList->Add(fCutsMCprimaryprotons->GetQA());
 
   if (fUseDebugFile) fFile = fopen("debug.txt","w");
 
@@ -462,6 +576,10 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
   fCutsTPCpidPions->SetEvent(fESD,mcEvent);
   fCutsTPCpidKaons->SetEvent(fESD,mcEvent);
   fCutsTPCpidProtons->SetEvent(fESD,mcEvent);
+  fCutsTPCbayesianElectrons->SetEvent(fESD,mcEvent);
+  fCutsTPCbayesianPions->SetEvent(fESD,mcEvent);
+  fCutsTPCbayesianKaons->SetEvent(fESD,mcEvent);
+  fCutsTPCbayesianProtons->SetEvent(fESD,mcEvent);
   fCutsTOFbetaElectrons->SetEvent(fESD,mcEvent);
   fCutsTOFbetaPions->SetEvent(fESD,mcEvent);
   fCutsTOFbetaKaons->SetEvent(fESD,mcEvent);
@@ -470,6 +588,18 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
   fCutsTOFbetaSimplePions->SetEvent(fESD,mcEvent);
   fCutsTOFbetaSimpleKaons->SetEvent(fESD,mcEvent);
   fCutsTOFbetaSimpleProtons->SetEvent(fESD,mcEvent);
+  fCutsTOFbayesianElectrons->SetEvent(fESD,mcEvent);
+  fCutsTOFbayesianPions->SetEvent(fESD,mcEvent);
+  fCutsTOFbayesianKaons->SetEvent(fESD,mcEvent);
+  fCutsTOFbayesianProtons->SetEvent(fESD,mcEvent);
+  fCutsMCelectrons->SetEvent(fESD,mcEvent);
+  fCutsMCpions->SetEvent(fESD,mcEvent);
+  fCutsMCkaons->SetEvent(fESD,mcEvent);
+  fCutsMCprotons->SetEvent(fESD,mcEvent);
+  fCutsMCprimaryelectrons->SetEvent(fESD,mcEvent);
+  fCutsMCprimarypions->SetEvent(fESD,mcEvent);
+  fCutsMCprimarykaons->SetEvent(fESD,mcEvent);
+  fCutsMCprimaryprotons->SetEvent(fESD,mcEvent);
 
   for(int tr1=0; tr1<nTracks; tr1++)
   {
@@ -496,6 +626,18 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
 
     pidTPC(trackESD,pdgcode);
     pidTOF(trackESD,pdgcode);
+  }
+
+  for (Int_t imc=0; imc<(mcEvent!=NULL)?mcEvent->GetNumberOfTracks():0;imc++)
+  {
+    fCutsMCelectrons->IsSelected(mcEvent->GetTrack(imc));
+    fCutsMCpions->IsSelected(mcEvent->GetTrack(imc));
+    fCutsMCkaons->IsSelected(mcEvent->GetTrack(imc));
+    fCutsMCprotons->IsSelected(mcEvent->GetTrack(imc));
+    fCutsMCprimaryelectrons->IsSelected(mcEvent->GetTrack(imc));
+    fCutsMCprimarypions->IsSelected(mcEvent->GetTrack(imc));
+    fCutsMCprimarykaons->IsSelected(mcEvent->GetTrack(imc));
+    fCutsMCprimaryprotons->IsSelected(mcEvent->GetTrack(imc));
   }
 
   //check the correlation between the global and TPConly number of tracks
@@ -564,6 +706,10 @@ void AliAnalysisTaskPIDflowQA::pidTPC(AliESDtrack* t, Int_t)
   fCutsTPCpidPions->IsSelected(t);
   fCutsTPCpidKaons->IsSelected(t);
   fCutsTPCpidProtons->IsSelected(t);
+  fCutsTPCbayesianElectrons->IsSelected(t);
+  fCutsTPCbayesianPions->IsSelected(t);
+  fCutsTPCbayesianKaons->IsSelected(t);
+  fCutsTPCbayesianProtons->IsSelected(t);
 }
 
 //______________________________________________________________________________
@@ -658,6 +804,10 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t)
   fCutsTOFbetaSimplePions->IsSelected(track);
   fCutsTOFbetaSimpleKaons->IsSelected(track);
   fCutsTOFbetaSimpleProtons->IsSelected(track);
+  fCutsTOFbayesianElectrons->IsSelected(track);
+  fCutsTOFbayesianPions->IsSelected(track);
+  fCutsTOFbayesianKaons->IsSelected(track);
+  fCutsTOFbayesianProtons->IsSelected(track);
 }
 
 //______________________________________________________________________________

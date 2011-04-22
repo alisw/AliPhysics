@@ -71,6 +71,7 @@ void runFlowTaskCentralityTrain( Int_t mode = mPROOF,
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask* centSelTask = AddTaskCentrality();
   if (!DATA) centSelTask->SetMCInput();
+  if (DATA) centSelTask->SetPass(1);
 
 
   if (useTender)
