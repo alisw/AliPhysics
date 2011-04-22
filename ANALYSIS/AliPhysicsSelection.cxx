@@ -506,9 +506,9 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       Bool_t v0BG = v0ABG || v0CBG;
 
       // fmd
-      Bool_t fmdA = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDA));
-      Bool_t fmdC = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDC));
-      Bool_t fmd  = fmdA || fmdC;
+      // Bool_t fmdA = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDA));
+      // Bool_t fmdC = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDC));
+      // Bool_t fmd  = fmdA || fmdC;
     
       // SSD
       //Int_t ssdClusters = triggerAnalysis->SSDClusters(aEsd);
@@ -519,6 +519,8 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       Bool_t zdcA    = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCA));
       Bool_t zdcC    = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTDCC));
       Bool_t zdcTime = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kZDCTime));
+
+      Bool_t laserCut = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kTPCLaserWarmUp));
 
       // Some "macros"
       Bool_t mb1 = (fastOROffline > 0 || v0A || v0C) && (!v0BG);
@@ -591,8 +593,8 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 	if (mb1prime)
 	  fHistStatistics[iHistStat]->Fill(kStatMB1Prime, i);
 
-	if (fmd)
-	  fHistStatistics[iHistStat]->Fill(kStatFMD, i);
+	if (laserCut)
+	  fHistStatistics[iHistStat]->Fill(kStatLaserCut, i);
 
 	//if(ntrig >= 2 && !v0BG) 
 	//  fHistStatistics[iHistStat]->Fill(kStatAny2Hits, i);
@@ -1100,7 +1102,7 @@ TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
   h->GetXaxis()->SetBinLabel(kStatFO2L1,         "FO (L1) >= 2");
   h->GetXaxis()->SetBinLabel(kStatV0A,	         "V0A");
   h->GetXaxis()->SetBinLabel(kStatV0C,	         "V0C");
-  h->GetXaxis()->SetBinLabel(kStatFMD,	         "FMD");
+  h->GetXaxis()->SetBinLabel(kStatLaserCut,      "TPC Laser Wup Cut");
   h->GetXaxis()->SetBinLabel(kStatV0ABG,	 "V0A BG");
   h->GetXaxis()->SetBinLabel(kStatV0CBG,	 "V0C BG");
   h->GetXaxis()->SetBinLabel(kStatZDCA,          "ZDCA");
