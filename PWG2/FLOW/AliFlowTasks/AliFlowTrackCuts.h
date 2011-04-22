@@ -143,11 +143,11 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   TH1* QAafter(Int_t i) {return static_cast<TH1*>(static_cast<TList*>(fQA->At(1))->At(i));}  
 
   //MC stuff
-  void SetIgnoreSignInMCPID( Bool_t b ) {fIgnoreSignInMCPID=b;}
+  void SetIgnoreSignInMCPID( Bool_t b=kTRUE ) {fIgnoreSignInMCPID=b;}
   void SetCutMC( Bool_t b=kTRUE );
   void SetCutMChasTrackReferences(Bool_t b=kTRUE) {fCutMChasTrackReferences=b;}
   void SetMCprocessType( TMCProcess t ) { fMCprocessType = t; fCutMCprocessType=kTRUE; SetCutMC();}
-  void SetMCisPrimary( Bool_t b ) { fMCisPrimary=b; fCutMCisPrimary=kTRUE; SetCutMC();}
+  void SetMCisPrimary( Bool_t b=kTRUE ) { fMCisPrimary=b; fCutMCisPrimary=kTRUE; SetCutMC();}
   void SetMCPID( Int_t pid ) { fMCPID=pid; fCutMCPID=kTRUE; SetCutMC(); }
   TMCProcess GetMCprocessType() const { return fMCprocessType; }
   Bool_t GetMCisPrimary() const {return fMCisPrimary;}
