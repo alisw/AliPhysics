@@ -39,15 +39,15 @@ AliOADBFillingScheme::~AliOADBFillingScheme(){
 
 }
 
-AliOADBFillingScheme::AliOADBFillingScheme(const AliOADBFillingScheme& cont) {
-  // Copy ctor
-  AliError("To be implemented");
-}
+// AliOADBFillingScheme::AliOADBFillingScheme(const AliOADBFillingScheme& cont) {
+//   // Copy ctor
+//   AliError("To be implemented");
+// }
 
-AliOADBFillingScheme& AliOADBFillingScheme::operator=(const AliOADBFillingScheme& cont) {
-  //Assignment operator
-  AliError("To be implemented");
-}
+// AliOADBFillingScheme& AliOADBFillingScheme::operator=(const AliOADBFillingScheme& cont) {
+//   //Assignment operator
+//   AliError("To be implemented");
+// }
   
 // Getters
 

@@ -234,7 +234,7 @@ void AliOADBPhysicsSelection::Browse(TBrowser *b)
       TObject::Browse(b);
 }
 
-const UInt_t AliOADBPhysicsSelection::GetActiveBit(UInt_t mask) {
+UInt_t AliOADBPhysicsSelection::GetActiveBit(UInt_t mask) {
   // Returns the active bit index in the mask
   // Assumes only one bit is on.
   // If more than one bit is lit, prints an error and returns the first.

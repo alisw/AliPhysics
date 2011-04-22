@@ -53,7 +53,7 @@ class AliOADBPhysicsSelection : public TNamed {
   // Thess take a single trigger bit, as the HW/offline conditions are mapped 1 <-> 1 to a single EOfflineTriggerTypes bit
   const TString  GetHardwareTrigger(UInt_t triggerLogic) const { return triggerLogic >= NTRIGGERLOGICS ? "" : fHardwareTrigger[triggerLogic].String(); }
   const TString  GetOfflineTrigger (UInt_t triggerLogic) const { return triggerLogic >= NTRIGGERLOGICS ? "" : fOfflineTrigger [triggerLogic].String(); }
-  const UInt_t GetNTriggerBits()  const { return fNtriggerBits; }
+  UInt_t GetNTriggerBits()  const { return fNtriggerBits; }
   // Setters 
   void AddCollisionTriggerClass(AliVEvent::EOfflineTriggerTypes triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic);
   void AddBGTriggerClass       (AliVEvent::EOfflineTriggerTypes triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic);
@@ -67,7 +67,7 @@ class AliOADBPhysicsSelection : public TNamed {
   void Browse(TBrowser *b);
   virtual void	Print(Option_t* option = "") const;
 
-  static const UInt_t GetActiveBit(UInt_t mask) ;
+  static UInt_t GetActiveBit(UInt_t mask) ;
 
 protected:
   void CleanKey(TString & str) ;
