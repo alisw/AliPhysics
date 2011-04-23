@@ -535,11 +535,15 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }// pid bit loop
     
     fhRePtNCellAsymCuts    = new TH2D*[fNPtCuts*fNAsymCuts*fNCellNCuts];
-    fhRePtNCellAsymCutsSM0 = new TH2D*[fNPtCuts*fNAsymCuts*fNCellNCuts];
-    fhRePtNCellAsymCutsSM1 = new TH2D*[fNPtCuts*fNAsymCuts*fNCellNCuts];
-    fhRePtNCellAsymCutsSM2 = new TH2D*[fNPtCuts*fNAsymCuts*fNCellNCuts];
-    fhRePtNCellAsymCutsSM3 = new TH2D*[fNPtCuts*fNAsymCuts*fNCellNCuts];
     fhMiPtNCellAsymCuts    = new TH2D*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+
+    if(fFillSMCombinations){
+      fhRePtNCellAsymCutsSM0 = new TH2D*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+      fhRePtNCellAsymCutsSM1 = new TH2D*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+      fhRePtNCellAsymCutsSM2 = new TH2D*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+      fhRePtNCellAsymCutsSM3 = new TH2D*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+    }
+    
     for(Int_t ipt=0; ipt<fNPtCuts; ipt++){
       for(Int_t icell=0; icell<fNCellNCuts; icell++){
         for(Int_t iasym=0; iasym<fNAsymCuts; iasym++){
@@ -551,56 +555,59 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           fhRePtNCellAsymCuts[index]->SetXTitle("p_{T} (GeV/c)");
           fhRePtNCellAsymCuts[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
           outputContainer->Add(fhRePtNCellAsymCuts[index]) ;
-                    
-          snprintf(key,   buffersize,"hRe_pt%d_cell%d_asym%d_SM0",ipt,icell,iasym) ;
-          snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for pt >%2.2f, ncell>%d and asym >%1.2f, SM 0 ",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
-          fhRePtNCellAsymCutsSM0[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-          fhRePtNCellAsymCutsSM0[index]->SetXTitle("p_{T} (GeV/c)");
-          fhRePtNCellAsymCutsSM0[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-          outputContainer->Add(fhRePtNCellAsymCutsSM0[index]) ;
-          
-          snprintf(key,   buffersize,"hRe_pt%d_cell%d_asym%d_SM1",ipt,icell,iasym) ;
-          snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for pt >%2.2f, ncell>%d and asym >%1.2f, SM 1 ",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
-          fhRePtNCellAsymCutsSM1[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-          fhRePtNCellAsymCutsSM1[index]->SetXTitle("p_{T} (GeV/c)");
-          fhRePtNCellAsymCutsSM1[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-          outputContainer->Add(fhRePtNCellAsymCutsSM1[index]) ;
-          
-          snprintf(key,   buffersize,"hRe_pt%d_cell%d_asym%d_SM2",ipt,icell,iasym) ;
-          snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for pt >%2.2f, ncell>%d and asym >%1.2f, SM 2 ",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
-          fhRePtNCellAsymCutsSM2[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-          fhRePtNCellAsymCutsSM2[index]->SetXTitle("p_{T} (GeV/c)");
-          fhRePtNCellAsymCutsSM2[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-          outputContainer->Add(fhRePtNCellAsymCutsSM2[index]) ;
-          
-          snprintf(key,   buffersize,"hRe_pt%d_cell%d_asym%d_SM3",ipt,icell,iasym) ;
-          snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for pt >%2.2f, ncell>%d and asym >%1.2f, SM 3 ",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
-          fhRePtNCellAsymCutsSM3[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-          fhRePtNCellAsymCutsSM3[index]->SetXTitle("p_{T} (GeV/c)");
-          fhRePtNCellAsymCutsSM3[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-          outputContainer->Add(fhRePtNCellAsymCutsSM3[index]) ;
           
           snprintf(key,   buffersize,"hMi_pt%d_cell%d_asym%d",ipt,icell,iasym) ;
           snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for pt >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
           fhMiPtNCellAsymCuts[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
           fhMiPtNCellAsymCuts[index]->SetXTitle("p_{T} (GeV/c)");
           fhMiPtNCellAsymCuts[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-          outputContainer->Add(fhMiPtNCellAsymCuts[index]) ;
+          outputContainer->Add(fhMiPtNCellAsymCuts[index]) ;          
           
+          if(fFillSMCombinations){          
+            snprintf(key,   buffersize,"hRe_pt%d_cell%d_asym%d_SM0",ipt,icell,iasym) ;
+            snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for pt >%2.2f, ncell>%d and asym >%1.2f, SM 0 ",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
+            fhRePtNCellAsymCutsSM0[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+            fhRePtNCellAsymCutsSM0[index]->SetXTitle("p_{T} (GeV/c)");
+            fhRePtNCellAsymCutsSM0[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+            outputContainer->Add(fhRePtNCellAsymCutsSM0[index]) ;
+            
+            snprintf(key,   buffersize,"hRe_pt%d_cell%d_asym%d_SM1",ipt,icell,iasym) ;
+            snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for pt >%2.2f, ncell>%d and asym >%1.2f, SM 1 ",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
+            fhRePtNCellAsymCutsSM1[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+            fhRePtNCellAsymCutsSM1[index]->SetXTitle("p_{T} (GeV/c)");
+            fhRePtNCellAsymCutsSM1[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+            outputContainer->Add(fhRePtNCellAsymCutsSM1[index]) ;
+            
+            snprintf(key,   buffersize,"hRe_pt%d_cell%d_asym%d_SM2",ipt,icell,iasym) ;
+            snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for pt >%2.2f, ncell>%d and asym >%1.2f, SM 2 ",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
+            fhRePtNCellAsymCutsSM2[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+            fhRePtNCellAsymCutsSM2[index]->SetXTitle("p_{T} (GeV/c)");
+            fhRePtNCellAsymCutsSM2[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+            outputContainer->Add(fhRePtNCellAsymCutsSM2[index]) ;
+            
+            snprintf(key,   buffersize,"hRe_pt%d_cell%d_asym%d_SM3",ipt,icell,iasym) ;
+            snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for pt >%2.2f, ncell>%d and asym >%1.2f, SM 3 ",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
+            fhRePtNCellAsymCutsSM3[index] = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+            fhRePtNCellAsymCutsSM3[index]->SetXTitle("p_{T} (GeV/c)");
+            fhRePtNCellAsymCutsSM3[index]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+            outputContainer->Add(fhRePtNCellAsymCutsSM3[index]) ;
+          
+          }
         }
       }
     }
     
-    fhRePtMult = new TH3D*[fNAsymCuts] ;
-    for(Int_t iasym = 0; iasym<fNAsymCuts; iasym++){
-      fhRePtMult[iasym] = new TH3D(Form("hRePtMult_asym%d",iasym),Form("(p_{T},C,M)_{#gamma#gamma}, A<%1.2f",fAsymCuts[iasym]),
-                                   nptbins,ptmin,ptmax,ntrmbins,ntrmmin,ntrmmax,nmassbins,massmin,massmax);
-      fhRePtMult[iasym]->SetXTitle("p_{T} (GeV/c)");
-      fhRePtMult[iasym]->SetYTitle("Track multiplicity");
-      fhRePtMult[iasym]->SetZTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-      outputContainer->Add(fhRePtMult[iasym]) ;
+    if(ntrmbins!=0){
+      fhRePtMult = new TH3D*[fNAsymCuts] ;
+      for(Int_t iasym = 0; iasym<fNAsymCuts; iasym++){
+        fhRePtMult[iasym] = new TH3D(Form("hRePtMult_asym%d",iasym),Form("(p_{T},C,M)_{#gamma#gamma}, A<%1.2f",fAsymCuts[iasym]),
+                                     nptbins,ptmin,ptmax,ntrmbins,ntrmmin,ntrmmax,nmassbins,massmin,massmax);
+        fhRePtMult[iasym]->SetXTitle("p_{T} (GeV/c)");
+        fhRePtMult[iasym]->SetYTitle("Track multiplicity");
+        fhRePtMult[iasym]->SetZTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+        outputContainer->Add(fhRePtMult[iasym]) ;
+      }
     }
-    
   }// multi cuts analysis
   
   fhEvents=new TH3D("hEvents","Number of events",fNCentrBin,0.,1.*fNCentrBin,
@@ -1134,7 +1141,7 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               if(inacceptance){
                 if(pdg==111){
                   fhPrimPi0AccPt ->Fill(pi0Pt) ;
-                  fhPrimPi0AccPhi->Fill(pi0Pt, phi ) ;
+                  fhPrimPi0AccPhi->Fill(pi0Pt, phi) ;
                   fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
                   Double_t angle  = lv1.Angle(lv2.Vect());
                   fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle);
@@ -1973,7 +1980,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                    ncell1   >=  fCellNCuts[icell] && ncell2   >= fCellNCuts[icell]){
                     fhRePtNCellAsymCuts[index]->Fill(pt,m) ;
                   //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
-                  if(module1==module2){
+                  if(fFillSMCombinations && module1==module2){
                     if     (module1==0)  fhRePtNCellAsymCutsSM0[index]->Fill(pt,m) ;
                     else if(module1==1)  fhRePtNCellAsymCutsSM1[index]->Fill(pt,m) ;
                     else if(module1==2)  fhRePtNCellAsymCutsSM2[index]->Fill(pt,m) ;
@@ -1984,8 +1991,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               }// pid bit cut loop
             }// icell loop
           }// pt cut loop
-          for(Int_t iasym = 0; iasym < fNAsymCuts; iasym++){
-            if(a < fAsymCuts[iasym])fhRePtMult[iasym]->Fill(pt,GetTrackMultiplicity(),m) ;
+          if(GetHistoTrackMultiplicityBins()){
+            for(Int_t iasym = 0; iasym < fNAsymCuts; iasym++){
+              if(a < fAsymCuts[iasym])fhRePtMult[iasym]->Fill(pt,GetTrackMultiplicity(),m) ;
+            }
           }
         }// multiple cuts analysis
       }// ok if same sm
