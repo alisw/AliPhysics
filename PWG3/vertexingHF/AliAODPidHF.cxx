@@ -690,7 +690,7 @@ Int_t AliAODPidHF::MakeRawPid(AliAODTrack *track, Int_t specie){
   
 }
 //--------------------------------------------
-void AliAODPidHF::SetBetheBloch(AliTPCPIDResponse tpcResp) const{
+void AliAODPidHF::SetBetheBloch(AliTPCPIDResponse &tpcResp) const{
 
  Double_t alephParameters[5];
 
