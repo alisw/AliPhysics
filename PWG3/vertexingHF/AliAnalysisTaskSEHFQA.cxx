@@ -338,6 +338,13 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hnClsITS-SA";
     TH1F* hnClsITSSA=new TH1F(hname.Data(),"Distribution of number of ITS clusters(ITS-SA);nITScls;Entries",7,-0.5,6.5);
 
+
+    hname="hnLayerITS";
+    TH1F* hnLayerITS=new TH1F(hname.Data(),"Number of tracks with point in layer",7,-1.5,5.5);
+
+    hname="hnLayerITSsa";
+    TH1F* hnLayerITSsa=new TH1F(hname.Data(),"Number of tracks with point in layer",7,-1.5,5.5);
+    
     hname="hnClsSPD";
     TH1F* hnClsSPD=new TH1F(hname.Data(),"Distribution of number of SPD clusters;nSPDcls;Entries",3,-0.5,2.5);
 
@@ -354,6 +361,8 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
     fOutputTrack->Add(hnClsITS);
     fOutputTrack->Add(hnClsITSSA);
+    fOutputTrack->Add(hnLayerITS);
+    fOutputTrack->Add(hnLayerITSsa);
     fOutputTrack->Add(hnClsSPD);
     fOutputTrack->Add(hptGoodTr);
     fOutputTrack->Add(hdistrGoodTr);
@@ -825,8 +834,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       //check clusters of the tracks
       if(fOnOff[0]){
 
+	((TH1F*)fOutputTrack->FindObject("hnLayerITS"))->Fill(-1);
 	for(Int_t l=0;l<6;l++) {
 	  if(TESTBIT(track->GetITSClusterMap(),l)) {
+	    ((TH1F*)fOutputTrack->FindObject("hnLayerITS"))->Fill(l);
 	    nclsTot++; if(l<2) nclsSPD++;
 	  }
 	}
@@ -835,6 +846,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 	if(!(track->GetStatus()&AliESDtrack::kTPCin) && track->GetStatus()&AliESDtrack::kITSrefit && !(track->GetStatus()&AliESDtrack::kITSpureSA)){//tracks retrieved in the ITS and not reconstructed in the TPC
 	  ((TH1F*)fOutputTrack->FindObject("hnClsITS-SA"))->Fill(nclsTot);
+	  ((TH1F*)fOutputTrack->FindObject("hnLayerITS"))->Fill(-1);
+	  for(Int_t l=0;l<6;l++) {
+	    if(TESTBIT(track->GetITSClusterMap(),l)) {
+	      ((TH1F*)fOutputTrack->FindObject("hnLayerITSsa"))->Fill(l);
+	    }
+	  }
 	}
 	Int_t label=0;
 	if(fReadMC){
