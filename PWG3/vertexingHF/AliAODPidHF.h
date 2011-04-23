@@ -88,7 +88,7 @@ class AliAODPidHF : public AliAODPid{
 
  Bool_t IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK);
 
- void SetBetheBloch(AliTPCPIDResponse tpcResp) const;
+ void SetBetheBloch(AliTPCPIDResponse &tpcResp) const;
 
  protected:
 
