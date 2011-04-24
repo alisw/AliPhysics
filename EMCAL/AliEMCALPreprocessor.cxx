@@ -318,6 +318,7 @@ UInt_t AliEMCALPreprocessor::MapTemperature(TMap* dcsAliasMap)
     
     Bool_t storeOK = Store("Calib", "Temperature", fTemp, &metaData, 0, kFALSE);
     if ( !storeOK )  result=1;
+    AliInfo(Form("Temperature info stored. result %d\n", result));
   }
   
   return result;
@@ -438,9 +439,12 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
   metaData.SetResponsible(kMetaResponsible);
   metaData.SetComment(kMetaComment); 
       
-  Bool_t retCode = Store("Calib", "Trigger", trigConfig, &metaData, 0, kFALSE);
-  AliInfo(Form("TRU info stored.\n"));
-  return retCode;
+  UInt_t result=0;
+  Bool_t storeOK = Store("Calib", "Trigger", trigConfig, &metaData, 0, kFALSE);
+  if ( !storeOK )  result=1;
+  AliInfo(Form("TRU info stored. result %d\n", result));
+
+  return result;
 }
 
 //______________________________________________________________________________________________
