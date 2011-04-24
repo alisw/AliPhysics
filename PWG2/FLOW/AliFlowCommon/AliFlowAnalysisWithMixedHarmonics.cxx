@@ -96,10 +96,22 @@ fNonIsotropicTermsPro(NULL),
 f3pCorrelatorVsMPro(NULL),
 f3pPOICorrelatorVsM(NULL),
 fNonIsotropicTermsVsMPro(NULL),
-f2pCorrelatorCosPsiDiff(NULL),
-f2pCorrelatorCosPsiSum(NULL),
-f2pCorrelatorSinPsiDiff(NULL),
-f2pCorrelatorSinPsiSum(NULL),
+f2pCorrelatorCosPsiDiffPtDiff(NULL),
+f2pCorrelatorCosPsiSumPtDiff(NULL),
+f2pCorrelatorSinPsiDiffPtDiff(NULL),
+f2pCorrelatorSinPsiSumPtDiff(NULL),
+f2pCorrelatorCosPsiDiffPtSum(NULL),
+f2pCorrelatorCosPsiSumPtSum(NULL),
+f2pCorrelatorSinPsiDiffPtSum(NULL),
+f2pCorrelatorSinPsiSumPtSum(NULL),
+f2pCorrelatorCosPsiDiffEtaDiff(NULL),
+f2pCorrelatorCosPsiSumEtaDiff(NULL),
+f2pCorrelatorSinPsiDiffEtaDiff(NULL),
+f2pCorrelatorSinPsiSumEtaDiff(NULL),
+f2pCorrelatorCosPsiDiffEtaSum(NULL),
+f2pCorrelatorCosPsiSumEtaSum(NULL),
+f2pCorrelatorSinPsiDiffEtaSum(NULL),
+f2pCorrelatorSinPsiSumEtaSum(NULL),
 fResultsList(NULL),
 f3pCorrelatorHist(NULL),
 fDetectorBiasHist(NULL),
@@ -291,11 +303,31 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
        fReEtaEBE[1]->Fill(TMath::Abs(dEta1-dEta2),TMath::Cos(n*(dPsi1+dPsi2)),1.);
        fImEtaEBE[1]->Fill(TMath::Abs(dEta1-dEta2),TMath::Sin(n*(dPsi1+dPsi2)),1.);
 
-       //2particle correlator <cos(n*(psi1 - ps12))>
-       f2pCorrelatorCosPsiDiff->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1-dPsi2)));
-       f2pCorrelatorCosPsiSum->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1+dPsi2)));
-       f2pCorrelatorSinPsiDiff->Fill(TMath::Abs(dPt1-dPt2),TMath::Sin(n*(dPsi1-dPsi2)));
-       f2pCorrelatorSinPsiSum->Fill(TMath::Abs(dPt1-dPt2),TMath::Sin(n*(dPsi1+dPsi2)));
+       //=========================================================//
+       //2particle correlator <cos(n*(psi1 - ps12))> vs |Pt1-Pt2|
+       f2pCorrelatorCosPsiDiffPtDiff->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1-dPsi2)));
+       f2pCorrelatorCosPsiSumPtDiff->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1+dPsi2)));
+       f2pCorrelatorSinPsiDiffPtDiff->Fill(TMath::Abs(dPt1-dPt2),TMath::Sin(n*(dPsi1-dPsi2)));
+       f2pCorrelatorSinPsiSumPtDiff->Fill(TMath::Abs(dPt1-dPt2),TMath::Sin(n*(dPsi1+dPsi2)));
+       //_______________________________________________________//
+       //2particle correlator <cos(n*(psi1 - ps12))> vs (Pt1+Pt2)/2
+       f2pCorrelatorCosPsiDiffPtSum->Fill((dPt1+dPt2)/2.,TMath::Cos(n*(dPsi1-dPsi2)));
+       f2pCorrelatorCosPsiSumPtSum->Fill((dPt1+dPt2)/2.,TMath::Cos(n*(dPsi1+dPsi2)));
+       f2pCorrelatorSinPsiDiffPtSum->Fill((dPt1+dPt2)/2.,TMath::Sin(n*(dPsi1-dPsi2)));
+       f2pCorrelatorSinPsiSumPtSum->Fill((dPt1+dPt2)/2.,TMath::Sin(n*(dPsi1+dPsi2)));
+       //_______________________________________________________//
+       //2particle correlator <cos(n*(psi1 - ps12))> vs |eta1-eta2|
+       f2pCorrelatorCosPsiDiffEtaDiff->Fill(TMath::Abs(dEta1-dEta2),TMath::Cos(n*(dPsi1-dPsi2)));
+       f2pCorrelatorCosPsiSumEtaDiff->Fill(TMath::Abs(dEta1-dEta2),TMath::Cos(n*(dPsi1+dPsi2)));
+       f2pCorrelatorSinPsiDiffEtaDiff->Fill(TMath::Abs(dEta1-dEta2),TMath::Sin(n*(dPsi1-dPsi2)));
+       f2pCorrelatorSinPsiSumEtaDiff->Fill(TMath::Abs(dEta1-dEta2),TMath::Sin(n*(dPsi1+dPsi2)));
+       //_______________________________________________________//
+       //2particle correlator <cos(n*(psi1 - ps12))> vs (Pt1+Pt2)/2
+       f2pCorrelatorCosPsiDiffEtaSum->Fill((dEta1+dEta2)/2.,TMath::Cos(n*(dPsi1-dPsi2)));
+       f2pCorrelatorCosPsiSumEtaSum->Fill((dEta1+dEta2)/2.,TMath::Cos(n*(dPsi1+dPsi2)));
+       f2pCorrelatorSinPsiDiffEtaSum->Fill((dEta1+dEta2)/2.,TMath::Sin(n*(dPsi1-dPsi2)));
+       f2pCorrelatorSinPsiSumEtaSum->Fill((dEta1+dEta2)/2.,TMath::Sin(n*(dPsi1+dPsi2)));
+       //=========================================================//
        
        if(b1stPOIisAlsoRP)
        {
@@ -507,18 +539,61 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
   }
  }
 
- TProfile *g2pCorrelatorCosPsiDiff = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiDiff"));
- if(g2pCorrelatorCosPsiDiff)
-   this->Set2pCorrelatorCosPsiDiff(g2pCorrelatorCosPsiDiff);
- TProfile *g2pCorrelatorCosPsiSum = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiSum"));
- if(g2pCorrelatorCosPsiSum)
-   this->Set2pCorrelatorCosPsiSum(g2pCorrelatorCosPsiSum);
- TProfile *g2pCorrelatorSinPsiDiff = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorSinPsiDiff"));
- if(g2pCorrelatorSinPsiDiff)
-   this->Set2pCorrelatorSinPsiDiff(g2pCorrelatorSinPsiDiff);
- TProfile *g2pCorrelatorSinPsiSum = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorSinPsiSum"));
- if(g2pCorrelatorSinPsiSum)
-   this->Set2pCorrelatorSinPsiSum(g2pCorrelatorSinPsiSum);
+ //2p correlator vs |Pt1-Pt2|
+ TProfile *g2pCorrelatorCosPsiDiffPtDiff = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiDiffPtDiff"));
+ if(g2pCorrelatorCosPsiDiffPtDiff)
+   this->Set2pCorrelatorCosPsiDiffPtDiff(g2pCorrelatorCosPsiDiffPtDiff);
+ TProfile *g2pCorrelatorCosPsiSumPtDiff = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiSumPtDiff"));
+ if(g2pCorrelatorCosPsiSumPtDiff)
+   this->Set2pCorrelatorCosPsiSumPtDiff(g2pCorrelatorCosPsiSumPtDiff);
+ TProfile *g2pCorrelatorSinPsiDiffPtDiff = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorSinPsiDiffPtDiff"));
+ if(g2pCorrelatorSinPsiDiffPtDiff)
+   this->Set2pCorrelatorSinPsiDiffPtDiff(g2pCorrelatorSinPsiDiffPtDiff);
+ TProfile *g2pCorrelatorSinPsiSumPtDiff = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorSinPsiSumPtDiff"));
+ if(g2pCorrelatorSinPsiSumPtDiff)
+   this->Set2pCorrelatorSinPsiSumPtDiff(g2pCorrelatorSinPsiSumPtDiff);
+
+ //2p correlator vs (Pt1+Pt2)/2
+ TProfile *g2pCorrelatorCosPsiDiffPtSum = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiDiffPtSum"));
+ if(g2pCorrelatorCosPsiDiffPtSum)
+   this->Set2pCorrelatorCosPsiDiffPtSum(g2pCorrelatorCosPsiDiffPtSum);
+ TProfile *g2pCorrelatorCosPsiSumPtSum = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiSumPtSum"));
+ if(g2pCorrelatorCosPsiSumPtSum)
+   this->Set2pCorrelatorCosPsiSumPtSum(g2pCorrelatorCosPsiSumPtSum);
+ TProfile *g2pCorrelatorSinPsiDiffPtSum = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorSinPsiDiffPtSum"));
+ if(g2pCorrelatorSinPsiDiffPtSum)
+   this->Set2pCorrelatorSinPsiDiffPtSum(g2pCorrelatorSinPsiDiffPtSum);
+ TProfile *g2pCorrelatorSinPsiSumPtSum = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorSinPsiSumPtSum"));
+ if(g2pCorrelatorSinPsiSumPtSum)
+   this->Set2pCorrelatorSinPsiSumPtSum(g2pCorrelatorSinPsiSumPtSum);
+
+ //2p correlator vs |eta1-eta2|
+ TProfile *g2pCorrelatorCosPsiDiffEtaDiff = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiDiffEtaDiff"));
+ if(g2pCorrelatorCosPsiDiffEtaDiff)
+   this->Set2pCorrelatorCosPsiDiffEtaDiff(g2pCorrelatorCosPsiDiffEtaDiff);
+ TProfile *g2pCorrelatorCosPsiSumEtaDiff = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiSumEtaDiff"));
+ if(g2pCorrelatorCosPsiSumEtaDiff)
+   this->Set2pCorrelatorCosPsiSumEtaDiff(g2pCorrelatorCosPsiSumEtaDiff);
+ TProfile *g2pCorrelatorSinPsiDiffEtaDiff = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorSinPsiDiffEtaDiff"));
+ if(g2pCorrelatorSinPsiDiffEtaDiff)
+   this->Set2pCorrelatorSinPsiDiffEtaDiff(g2pCorrelatorSinPsiDiffEtaDiff);
+ TProfile *g2pCorrelatorSinPsiSumEtaDiff = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorSinPsiSumEtaDiff"));
+ if(g2pCorrelatorSinPsiSumEtaDiff)
+   this->Set2pCorrelatorSinPsiSumEtaDiff(g2pCorrelatorSinPsiSumEtaDiff);
+
+ //2p correlator vs (eta1+eta2)/2
+ TProfile *g2pCorrelatorCosPsiDiffEtaSum = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiDiffEtaSum"));
+ if(g2pCorrelatorCosPsiDiffEtaSum)
+   this->Set2pCorrelatorCosPsiDiffEtaSum(g2pCorrelatorCosPsiDiffEtaSum);
+ TProfile *g2pCorrelatorCosPsiSumEtaSum = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiSumEtaSum"));
+ if(g2pCorrelatorCosPsiSumEtaSum)
+   this->Set2pCorrelatorCosPsiSumEtaSum(g2pCorrelatorCosPsiSumEtaSum);
+ TProfile *g2pCorrelatorSinPsiDiffEtaSum = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorSinPsiDiffEtaSum"));
+ if(g2pCorrelatorSinPsiDiffEtaSum)
+   this->Set2pCorrelatorSinPsiDiffEtaSum(g2pCorrelatorSinPsiDiffEtaSum);
+ TProfile *g2pCorrelatorSinPsiSumEtaSum = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorSinPsiSumEtaSum"));
+ if(g2pCorrelatorSinPsiSumEtaSum)
+   this->Set2pCorrelatorSinPsiSumEtaSum(g2pCorrelatorSinPsiSumEtaSum);
    
  TString s5pCorrelatorProName = "f5pCorrelatorPro";
  TProfile *p5pCorrelatorPro = dynamic_cast<TProfile*>(profileList->FindObject(s5pCorrelatorProName.Data()));
@@ -1041,30 +1116,109 @@ void AliFlowAnalysisWithMixedHarmonics::BookDifferential()
   fProfileList->Add(f3pCorrelatorVsEtaSumDiffPro[sd]);
  }
 
- f2pCorrelatorCosPsiDiff = new TProfile("f2pCorrelatorCosPsiDiff","",fnBinsPt,0.,fPtMax);
- f2pCorrelatorCosPsiDiff->SetStats(kFALSE);
- f2pCorrelatorCosPsiSum = new TProfile("f2pCorrelatorCosPsiSum","",fnBinsPt,0.,fPtMax);
- f2pCorrelatorCosPsiSum->SetStats(kFALSE);
- f2pCorrelatorSinPsiDiff = new TProfile("f2pCorrelatorSinPsiDiff","",fnBinsPt,0.,fPtMax);
- f2pCorrelatorSinPsiDiff->SetStats(kFALSE);
- f2pCorrelatorSinPsiSum = new TProfile("f2pCorrelatorSinPsiSum","",fnBinsPt,0.,fPtMax);
- f2pCorrelatorSinPsiSum->SetStats(kFALSE);
+ //2p correlator vs |Pt1-Pt2|
+ f2pCorrelatorCosPsiDiffPtDiff = new TProfile("f2pCorrelatorCosPsiDiffPtDiff",";|p_{T,1}-p_{T,2}| (GeV/c);#LT #LT cos(#psi_{1} - #psi_{2}) #GT #GT",fnBinsPt,0.,fPtMax);
+ f2pCorrelatorCosPsiDiffPtDiff->SetStats(kFALSE);
+ f2pCorrelatorCosPsiSumPtDiff = new TProfile("f2pCorrelatorCosPsiSumPtDiff",";|p_{T,1}-p_{T,2}| (GeV/c);#LT #LT cos(#psi_{1} + #psi_{2}) #GT #GT",fnBinsPt,0.,fPtMax);
+ f2pCorrelatorCosPsiSumPtDiff->SetStats(kFALSE);
+ f2pCorrelatorSinPsiDiffPtDiff = new TProfile("f2pCorrelatorSinPsiDiffPtDiff",";|p_{T,1}-p_{T,2}| (GeV/c);#LT #LT sin(#psi_{1} - #psi_{2}) #GT #GT",fnBinsPt,0.,fPtMax);
+ f2pCorrelatorSinPsiDiffPtDiff->SetStats(kFALSE);
+ f2pCorrelatorSinPsiSumPtDiff = new TProfile("f2pCorrelatorSinPsiSumPtDiff",";|p_{T,1}-p_{T,2}| (GeV/c);#LT #LT sin(#psi_{1} + #psi_{2}) #GT #GT",fnBinsPt,0.,fPtMax);
+ f2pCorrelatorSinPsiSumPtDiff->SetStats(kFALSE);
  if(fHarmonic == 1) {
-   f2pCorrelatorCosPsiDiff->SetTitle(Form("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[1].Data())); 
-   f2pCorrelatorCosPsiSum->SetTitle(Form("#LT#LTcos(#psi_{1}+#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[1].Data())); 
-   f2pCorrelatorSinPsiDiff->SetTitle(Form("#LT#LTsin(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[1].Data())); 
-   f2pCorrelatorSinPsiSum->SetTitle(Form("#LT#LTsin(#psi_{1}+#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[1].Data())); 
+   f2pCorrelatorCosPsiDiffPtDiff->SetTitle(Form("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[1].Data())); 
+   f2pCorrelatorCosPsiSumPtDiff->SetTitle(Form("#LT#LTcos(#psi_{1}+#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[1].Data())); 
+   f2pCorrelatorSinPsiDiffPtDiff->SetTitle(Form("#LT#LTsin(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[1].Data())); 
+   f2pCorrelatorSinPsiSumPtDiff->SetTitle(Form("#LT#LTsin(#psi_{1}+#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[1].Data())); 
  }
  else {
-   f2pCorrelatorCosPsiDiff->SetTitle(Form("#LT#LTcos[%d(#psi_{1}-#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[1].Data()));
-   f2pCorrelatorCosPsiSum->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[1].Data()));
-   f2pCorrelatorSinPsiDiff->SetTitle(Form("#LT#LTsin[%d(#psi_{1}-#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[1].Data()));
-   f2pCorrelatorSinPsiSum->SetTitle(Form("#LT#LTsin[%d(#psi_{1}+#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[1].Data()));
+   f2pCorrelatorCosPsiDiffPtDiff->SetTitle(Form("#LT#LTcos[%d(#psi_{1}-#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag[1].Data()));
+   f2pCorrelatorCosPsiSumPtDiff->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag[1].Data()));
+   f2pCorrelatorSinPsiDiffPtDiff->SetTitle(Form("#LT#LTsin[%d(#psi_{1}-#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag[1].Data()));
+   f2pCorrelatorSinPsiSumPtDiff->SetTitle(Form("#LT#LTsin[%d(#psi_{1}+#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag[1].Data()));
  }
- fProfileList->Add(f2pCorrelatorCosPsiDiff);
- fProfileList->Add(f2pCorrelatorCosPsiSum);
- fProfileList->Add(f2pCorrelatorSinPsiDiff);
- fProfileList->Add(f2pCorrelatorSinPsiSum);
+ fProfileList->Add(f2pCorrelatorCosPsiDiffPtDiff);
+ fProfileList->Add(f2pCorrelatorCosPsiSumPtDiff);
+ fProfileList->Add(f2pCorrelatorSinPsiDiffPtDiff);
+ fProfileList->Add(f2pCorrelatorSinPsiSumPtDiff);
+
+ //2p correlator vs (Pt1+Pt2)/2
+ f2pCorrelatorCosPsiDiffPtSum = new TProfile("f2pCorrelatorCosPsiDiffPtSum",";(p_{T,1}+p_{T,2})/2 (GeV/c);#LT #LT cos(#psi_{1} - #psi_{2}) #GT #GT",fnBinsPt,0.,fPtMax);
+ f2pCorrelatorCosPsiDiffPtSum->SetStats(kFALSE);
+ f2pCorrelatorCosPsiSumPtSum = new TProfile("f2pCorrelatorCosPsiSumPtSum",";(p_{T,1}+p_{T,2})/2 (GeV/c);#LT #LT cos(#psi_{1} + #psi_{2}) #GT #GT",fnBinsPt,0.,fPtMax);
+ f2pCorrelatorCosPsiSumPtSum->SetStats(kFALSE);
+ f2pCorrelatorSinPsiDiffPtSum = new TProfile("f2pCorrelatorSinPsiDiffPtSum",";(p_{T,1}+p_{T,2})/2 (GeV/c);#LT #LT sin(#psi_{1} - #psi_{2}) #GT #GT",fnBinsPt,0.,fPtMax);
+ f2pCorrelatorSinPsiDiffPtSum->SetStats(kFALSE);
+ f2pCorrelatorSinPsiSumPtSum = new TProfile("f2pCorrelatorSinPsiSumPtSum",";(p_{T,1}+p_{T,2})/2 (GeV/c);#LT #LT sin(#psi_{1} + #psi_{2}) #GT #GT",fnBinsPt,0.,fPtMax);
+ f2pCorrelatorSinPsiSumPtSum->SetStats(kFALSE);
+ if(fHarmonic == 1) {
+   f2pCorrelatorCosPsiDiffPtSum->SetTitle(Form("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[0].Data())); 
+   f2pCorrelatorCosPsiSumPtSum->SetTitle(Form("#LT#LTcos(#psi_{1}+#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[0].Data())); 
+   f2pCorrelatorSinPsiDiffPtSum->SetTitle(Form("#LT#LTsin(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[0].Data())); 
+   f2pCorrelatorSinPsiSumPtSum->SetTitle(Form("#LT#LTsin(#psi_{1}+#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[0].Data())); 
+ }
+ else {
+   f2pCorrelatorCosPsiDiffPtSum->SetTitle(Form("#LT#LTcos[%d(#psi_{1}-#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag[0].Data()));
+   f2pCorrelatorCosPsiSumPtSum->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag[0].Data()));
+   f2pCorrelatorSinPsiDiffPtSum->SetTitle(Form("#LT#LTsin[%d(#psi_{1}-#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag[0].Data()));
+   f2pCorrelatorSinPsiSumPtSum->SetTitle(Form("#LT#LTsin[%d(#psi_{1}+#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag[0].Data()));
+ }
+ fProfileList->Add(f2pCorrelatorCosPsiDiffPtSum);
+ fProfileList->Add(f2pCorrelatorCosPsiSumPtSum);
+ fProfileList->Add(f2pCorrelatorSinPsiDiffPtSum);
+ fProfileList->Add(f2pCorrelatorSinPsiSumPtSum);
+
+ //2p correlator vs |eta1-eta2|
+ f2pCorrelatorCosPsiDiffEtaDiff = new TProfile("f2pCorrelatorCosPsiDiffEtaDiff",";|#eta_{1}-#eta_{2}|;#LT #LT cos(#psi_{1} - #psi_{2}) #GT #GT",fnBinsEta,fEtaMin,fEtaMax);
+ f2pCorrelatorCosPsiDiffEtaDiff->SetStats(kFALSE);
+ f2pCorrelatorCosPsiSumEtaDiff = new TProfile("f2pCorrelatorCosPsiSumEtaDiff",";|#eta_{1}-#eta_{2}|;#LT #LT cos(#psi_{1} + #psi_{2}) #GT #GT",fnBinsEta,fEtaMin,fEtaMax);
+ f2pCorrelatorCosPsiSumEtaDiff->SetStats(kFALSE);
+ f2pCorrelatorSinPsiDiffEtaDiff = new TProfile("f2pCorrelatorSinPsiDiffEtaDiff",";|#eta_{1}-#eta_{2}|;#LT #LT sin(#psi_{1} - #psi_{2}) #GT #GT",fnBinsEta,fEtaMin,fEtaMax);
+ f2pCorrelatorSinPsiDiffEtaDiff->SetStats(kFALSE);
+ f2pCorrelatorSinPsiSumEtaDiff = new TProfile("f2pCorrelatorSinPsiSumEtaDiff",";|#eta_{1}-#eta_{2}|;#LT #LT sin(#psi_{1} + #psi_{2}) #GT #GT",fnBinsEta,fEtaMin,fEtaMax);
+ f2pCorrelatorSinPsiSumEtaDiff->SetStats(kFALSE);
+ if(fHarmonic == 1) {
+   f2pCorrelatorCosPsiDiffEtaDiff->SetTitle(Form("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag2[1].Data())); 
+   f2pCorrelatorCosPsiSumEtaDiff->SetTitle(Form("#LT#LTcos(#psi_{1}+#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag2[1].Data())); 
+   f2pCorrelatorSinPsiDiffEtaDiff->SetTitle(Form("#LT#LTsin(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag2[1].Data())); 
+   f2pCorrelatorSinPsiSumEtaDiff->SetTitle(Form("#LT#LTsin(#psi_{1}+#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag2[1].Data())); 
+ }
+ else {
+   f2pCorrelatorCosPsiDiffEtaDiff->SetTitle(Form("#LT#LTcos[%d(#psi_{1}-#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[1].Data()));
+   f2pCorrelatorCosPsiSumEtaDiff->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[1].Data()));
+   f2pCorrelatorSinPsiDiffEtaDiff->SetTitle(Form("#LT#LTsin[%d(#psi_{1}-#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[1].Data()));
+   f2pCorrelatorSinPsiSumEtaDiff->SetTitle(Form("#LT#LTsin[%d(#psi_{1}+#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[1].Data()));
+ }
+ fProfileList->Add(f2pCorrelatorCosPsiDiffEtaDiff);
+ fProfileList->Add(f2pCorrelatorCosPsiSumEtaDiff);
+ fProfileList->Add(f2pCorrelatorSinPsiDiffEtaDiff);
+ fProfileList->Add(f2pCorrelatorSinPsiSumEtaDiff);
+
+ //2p correlator vs (eta1+eta2)/2
+ f2pCorrelatorCosPsiDiffEtaSum = new TProfile("f2pCorrelatorCosPsiDiffEtaSum",";(#eta_{1}+#eta_{,2})/2;#LT #LT cos(#psi_{1} - #psi_{2}) #GT #GT",fnBinsEta,fEtaMin,fEtaMax);
+ f2pCorrelatorCosPsiDiffEtaSum->SetStats(kFALSE);
+ f2pCorrelatorCosPsiSumEtaSum = new TProfile("f2pCorrelatorCosPsiSumEtaSum",";(#eta_{1}+#eta_{,2})/2;#LT #LT cos(#psi_{1} + #psi_{2}) #GT #GT",fnBinsEta,fEtaMin,fEtaMax);
+ f2pCorrelatorCosPsiSumEtaSum->SetStats(kFALSE);
+ f2pCorrelatorSinPsiDiffEtaSum = new TProfile("f2pCorrelatorSinPsiDiffEtaSum",";(#eta_{1}+#eta_{,2})/2;#LT #LT sin(#psi_{1} - #psi_{2}) #GT #GT",fnBinsEta,fEtaMin,fEtaMax);
+ f2pCorrelatorSinPsiDiffEtaSum->SetStats(kFALSE);
+ f2pCorrelatorSinPsiSumEtaSum = new TProfile("f2pCorrelatorSinPsiSumEtaSum",";(#eta_{1}+#eta_{,2})/2;#LT #LT sin(#psi_{1} + #psi_{2}) #GT #GT",fnBinsEta,fEtaMin,fEtaMax);
+ f2pCorrelatorSinPsiSumEtaSum->SetStats(kFALSE);
+ if(fHarmonic == 1) {
+   f2pCorrelatorCosPsiDiffEtaSum->SetTitle(Form("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag2[0].Data())); 
+   f2pCorrelatorCosPsiSumEtaSum->SetTitle(Form("#LT#LTcos(#psi_{1}+#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag2[0].Data())); 
+   f2pCorrelatorSinPsiDiffEtaSum->SetTitle(Form("#LT#LTsin(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag2[0].Data())); 
+   f2pCorrelatorSinPsiSumEtaSum->SetTitle(Form("#LT#LTsin(#psi_{1}+#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag2[0].Data())); 
+ }
+ else {
+   f2pCorrelatorCosPsiDiffEtaSum->SetTitle(Form("#LT#LTcos[%d(#psi_{1}-#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[0].Data()));
+   f2pCorrelatorCosPsiSumEtaSum->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[0].Data()));
+   f2pCorrelatorSinPsiDiffEtaSum->SetTitle(Form("#LT#LTsin[%d(#psi_{1}-#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[0].Data()));
+   f2pCorrelatorSinPsiSumEtaSum->SetTitle(Form("#LT#LTsin[%d(#psi_{1}+#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[0].Data()));
+ }
+ fProfileList->Add(f2pCorrelatorCosPsiDiffEtaSum);
+ fProfileList->Add(f2pCorrelatorCosPsiSumEtaSum);
+ fProfileList->Add(f2pCorrelatorSinPsiDiffEtaSum);
+ fProfileList->Add(f2pCorrelatorSinPsiSumEtaSum);
 
 } // end of void AliFlowAnalysisWithMixedHarmonics::BookDifferential()     
    
@@ -1315,31 +1469,110 @@ for(Int_t fs=0;fs<2;fs++)
   } // end of for(Int_t fs=0;fs<2;fs++)
  } // end of for(Int_t sd=0;sd<2;sd++)
  
- if(!f2pCorrelatorCosPsiDiff) {
+ //2p correlator vs |Pt1-Pt2|
+ if(!f2pCorrelatorCosPsiDiffPtDiff) {
   cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
-  cout<<endl;
-  exit(0);
- }
- if(!f2pCorrelatorCosPsiSum) {
-  cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorCosPsiSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiffPtDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
- if(!f2pCorrelatorSinPsiDiff) {
+ if(!f2pCorrelatorCosPsiSumPtDiff) {
   cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
-  cout<<endl;
-  exit(0);
- }
- if(!f2pCorrelatorSinPsiSum) {
-  cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorSinPsiSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiSumPtDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
-                                                                                                                                                                                                                                                                                                                                   
+ if(!f2pCorrelatorSinPsiDiffPtDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiffPtDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiSumPtDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiSumPtDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+
+ //2p correlator vs (Pt1+Pt2)/2
+ if(!f2pCorrelatorCosPsiDiffPtSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiffPtSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorCosPsiSumPtSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiSumPtSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiDiffPtSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiffPtSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiSumPtSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiSumPtSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+
+ //2p correlator vs |eta1-eta2|
+ if(!f2pCorrelatorCosPsiDiffEtaDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiffEtaDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorCosPsiSumEtaDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiSumEtaDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiDiffEtaDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiffEtaDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiSumEtaDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiSumEtaDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+
+ //2p correlator vs (eta1+eta2)/2
+ if(!f2pCorrelatorCosPsiDiffEtaSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiffEtaSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorCosPsiSumEtaSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiSumEtaSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiDiffEtaSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiffEtaSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiSumEtaSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiSumEtaSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+
 } // end of AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
 
 //================================================================================================================
@@ -1442,27 +1675,106 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
   } 
  }
 
- if(!f2pCorrelatorCosPsiDiff) {
+ //2p correlator vs |Pt1-Pt2|
+ if(!f2pCorrelatorCosPsiDiffPtDiff) {
   cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
-  cout<<endl;
-  exit(0);
- }
- if(!f2pCorrelatorCosPsiSum) {
-  cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorCosPsiSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiffPtDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
- if(!f2pCorrelatorSinPsiDiff) {
+ if(!f2pCorrelatorCosPsiSumPtDiff) {
   cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiSumPtDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }
- if(!f2pCorrelatorSinPsiSum) {
+ if(!f2pCorrelatorSinPsiDiffPtDiff) {
   cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorSinPsiSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiffPtDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiSumPtDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiSumPtDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+
+ //2p correlator vs (Pt1+Pt2)/2
+ if(!f2pCorrelatorCosPsiDiffPtSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiffPtSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorCosPsiSumPtSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiSumPtSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiDiffPtSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiffPtSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiSumPtSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiSumPtSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+
+ //2p correlator vs |eta1-eta2|
+ if(!f2pCorrelatorCosPsiDiffEtaDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiffEtaDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorCosPsiSumEtaDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiSumEtaDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiDiffEtaDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiffEtaDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiSumEtaDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiSumEtaDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+
+ //2p correlator vs (eta1+eta2)/2
+ if(!f2pCorrelatorCosPsiDiffEtaSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiffEtaSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorCosPsiSumEtaSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiSumEtaSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiDiffEtaSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiffEtaSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiSumEtaSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiSumEtaSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }

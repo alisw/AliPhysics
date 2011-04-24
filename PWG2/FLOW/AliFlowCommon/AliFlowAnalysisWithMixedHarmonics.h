@@ -154,15 +154,46 @@ class AliFlowAnalysisWithMixedHarmonics
   TProfile* Get3pPOICorrelatorVsM() const {return this->f3pPOICorrelatorVsM;};
   void SetNonIsotropicTermsVsMPro(TProfile2D* const nitVsMPro) {this->fNonIsotropicTermsVsMPro = nitVsMPro;};
   TProfile2D* GetNonIsotropicTermsVsMPro() const {return this->fNonIsotropicTermsVsMPro;};
-  void Set2pCorrelatorCosPsiDiff(TProfile* const g2pCorrelatorCosPsiDiff) {this->f2pCorrelatorCosPsiDiff = g2pCorrelatorCosPsiDiff;};
-  TProfile* Get2pCorrelatorCosPsiDiff() const {return this->f2pCorrelatorCosPsiDiff;};
-  void Set2pCorrelatorCosPsiSum(TProfile* const g2pCorrelatorCosPsiSum) {this->f2pCorrelatorCosPsiSum = g2pCorrelatorCosPsiSum;};
-  TProfile* Get2pCorrelatorCosPsiSum() const {return this->f2pCorrelatorCosPsiSum;};
-  void Set2pCorrelatorSinPsiDiff(TProfile* const g2pCorrelatorSinPsiDiff) {this->f2pCorrelatorSinPsiDiff = g2pCorrelatorSinPsiDiff;};
-  TProfile* Get2pCorrelatorSinPsiDiff() const {return this->f2pCorrelatorSinPsiDiff;};
-  void Set2pCorrelatorSinPsiSum(TProfile* const g2pCorrelatorSinPsiSum) {this->f2pCorrelatorSinPsiSum = g2pCorrelatorSinPsiSum;};
-  TProfile* Get2pCorrelatorSinPsiSum() const {return this->f2pCorrelatorSinPsiSum;};
 
+  //2p correlators - pt diff
+  void Set2pCorrelatorCosPsiDiffPtDiff(TProfile* const g2pCorrelatorCosPsiDiffPtDiff) {this->f2pCorrelatorCosPsiDiffPtDiff = g2pCorrelatorCosPsiDiffPtDiff;};
+  TProfile* Get2pCorrelatorCosPsiDiffPtDiff() const {return this->f2pCorrelatorCosPsiDiffPtDiff;};
+  void Set2pCorrelatorCosPsiSumPtDiff(TProfile* const g2pCorrelatorCosPsiSumPtDiff) {this->f2pCorrelatorCosPsiSumPtDiff = g2pCorrelatorCosPsiSumPtDiff;};
+  TProfile* Get2pCorrelatorCosPsiSumPtDiff() const {return this->f2pCorrelatorCosPsiSumPtDiff;};
+  void Set2pCorrelatorSinPsiDiffPtDiff(TProfile* const g2pCorrelatorSinPsiDiffPtDiff) {this->f2pCorrelatorSinPsiDiffPtDiff = g2pCorrelatorSinPsiDiffPtDiff;};
+  TProfile* Get2pCorrelatorSinPsiDiffPtDiff() const {return this->f2pCorrelatorSinPsiDiffPtDiff;};
+  void Set2pCorrelatorSinPsiSumPtDiff(TProfile* const g2pCorrelatorSinPsiSumPtDiff) {this->f2pCorrelatorSinPsiSumPtDiff = g2pCorrelatorSinPsiSumPtDiff;};
+  TProfile* Get2pCorrelatorSinPsiSumPtDiff() const {return this->f2pCorrelatorSinPsiSumPtDiff;};
+
+  //2p correlators - pt sum
+  void Set2pCorrelatorCosPsiDiffPtSum(TProfile* const g2pCorrelatorCosPsiDiffPtSum) {this->f2pCorrelatorCosPsiDiffPtSum = g2pCorrelatorCosPsiDiffPtSum;};
+  TProfile* Get2pCorrelatorCosPsiDiffPtSum() const {return this->f2pCorrelatorCosPsiDiffPtSum;};
+  void Set2pCorrelatorCosPsiSumPtSum(TProfile* const g2pCorrelatorCosPsiSumPtSum) {this->f2pCorrelatorCosPsiSumPtSum = g2pCorrelatorCosPsiSumPtSum;};
+  TProfile* Get2pCorrelatorCosPsiSumPtSum() const {return this->f2pCorrelatorCosPsiSumPtSum;};
+  void Set2pCorrelatorSinPsiDiffPtSum(TProfile* const g2pCorrelatorSinPsiDiffPtSum) {this->f2pCorrelatorSinPsiDiffPtSum = g2pCorrelatorSinPsiDiffPtSum;};
+  TProfile* Get2pCorrelatorSinPsiDiffPtSum() const {return this->f2pCorrelatorSinPsiDiffPtSum;};
+  void Set2pCorrelatorSinPsiSumPtSum(TProfile* const g2pCorrelatorSinPsiSumPtSum) {this->f2pCorrelatorSinPsiSumPtSum = g2pCorrelatorSinPsiSumPtSum;};
+  TProfile* Get2pCorrelatorSinPsiSumPtSum() const {return this->f2pCorrelatorSinPsiSumPtSum;};
+
+  //2p correlators - eta diff
+  void Set2pCorrelatorCosPsiDiffEtaDiff(TProfile* const g2pCorrelatorCosPsiDiffEtaDiff) {this->f2pCorrelatorCosPsiDiffEtaDiff = g2pCorrelatorCosPsiDiffEtaDiff;};
+  TProfile* Get2pCorrelatorCosPsiDiffEtaDiff() const {return this->f2pCorrelatorCosPsiDiffEtaDiff;};
+  void Set2pCorrelatorCosPsiSumEtaDiff(TProfile* const g2pCorrelatorCosPsiSumEtaDiff) {this->f2pCorrelatorCosPsiSumEtaDiff = g2pCorrelatorCosPsiSumEtaDiff;};
+  TProfile* Get2pCorrelatorCosPsiSumEtaDiff() const {return this->f2pCorrelatorCosPsiSumEtaDiff;};
+  void Set2pCorrelatorSinPsiDiffEtaDiff(TProfile* const g2pCorrelatorSinPsiDiffEtaDiff) {this->f2pCorrelatorSinPsiDiffEtaDiff = g2pCorrelatorSinPsiDiffEtaDiff;};
+  TProfile* Get2pCorrelatorSinPsiDiffEtaDiff() const {return this->f2pCorrelatorSinPsiDiffEtaDiff;};
+  void Set2pCorrelatorSinPsiSumEtaDiff(TProfile* const g2pCorrelatorSinPsiSumEtaDiff) {this->f2pCorrelatorSinPsiSumEtaDiff = g2pCorrelatorSinPsiSumEtaDiff;};
+  TProfile* Get2pCorrelatorSinPsiSumEtaDiff() const {return this->f2pCorrelatorSinPsiSumEtaDiff;};
+
+  //2p correlators - eta sum
+  void Set2pCorrelatorCosPsiDiffEtaSum(TProfile* const g2pCorrelatorCosPsiDiffEtaSum) {this->f2pCorrelatorCosPsiDiffEtaSum = g2pCorrelatorCosPsiDiffEtaSum;};
+  TProfile* Get2pCorrelatorCosPsiDiffEtaSum() const {return this->f2pCorrelatorCosPsiDiffEtaSum;};
+  void Set2pCorrelatorCosPsiSumEtaSum(TProfile* const g2pCorrelatorCosPsiSumEtaSum) {this->f2pCorrelatorCosPsiSumEtaSum = g2pCorrelatorCosPsiSumEtaSum;};
+  TProfile* Get2pCorrelatorCosPsiSumEtaSum() const {return this->f2pCorrelatorCosPsiSumEtaSum;};
+  void Set2pCorrelatorSinPsiDiffEtaSum(TProfile* const g2pCorrelatorSinPsiDiffEtaSum) {this->f2pCorrelatorSinPsiDiffEtaSum = g2pCorrelatorSinPsiDiffEtaSum;};
+  TProfile* Get2pCorrelatorSinPsiDiffEtaSum() const {return this->f2pCorrelatorSinPsiDiffEtaSum;};
+  void Set2pCorrelatorSinPsiSumEtaSum(TProfile* const g2pCorrelatorSinPsiSumEtaSum) {this->f2pCorrelatorSinPsiSumEtaSum = g2pCorrelatorSinPsiSumEtaSum;};
+  TProfile* Get2pCorrelatorSinPsiSumEtaSum() const {return this->f2pCorrelatorSinPsiSumEtaSum;};
 
   void SetResultsList(TList* const rlist) {this->fResultsList = rlist;}
   TList* GetResultsList() const {return this->fResultsList;}    
@@ -248,10 +279,30 @@ class AliFlowAnalysisWithMixedHarmonics
   TProfile2D *fNonIsotropicTermsVsMPro; // non-isotropic terms in the decomposition of <cos[n(phi1+phi2-2phi3))]> vs multiplicity
   TProfile *f3pCorrelatorVsPtSumDiffPro[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(p1+p2)/2,|p1-p2|]
   TProfile *f3pCorrelatorVsEtaSumDiffPro[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(eta1+eta2)/2,|eta1-eta2|]
-  TProfile *f2pCorrelatorCosPsiDiff; // <<cos[n(psi1-psi2)] 
-  TProfile *f2pCorrelatorCosPsiSum; // <<cos[n(psi1+psi2)] 
-  TProfile *f2pCorrelatorSinPsiDiff; // <<sin[n(psi1-psi2)] 
-  TProfile *f2pCorrelatorSinPsiSum; // <<sin[n(psi1+psi2)] 
+
+  //2p correlators vs |Pt1 - Pt2|
+  TProfile *f2pCorrelatorCosPsiDiffPtDiff; // <<cos[n(psi1-psi2)] vs pt diff 
+  TProfile *f2pCorrelatorCosPsiSumPtDiff; // <<cos[n(psi1+psi2)]  vs pt diff 
+  TProfile *f2pCorrelatorSinPsiDiffPtDiff; // <<sin[n(psi1-psi2)]  vs pt diff 
+  TProfile *f2pCorrelatorSinPsiSumPtDiff; // <<sin[n(psi1+psi2)]  vs pt diff 
+
+  //2p correlators vs (Pt1 + Pt2)/2
+  TProfile *f2pCorrelatorCosPsiDiffPtSum; // <<cos[n(psi1-psi2)] vs pt sum 
+  TProfile *f2pCorrelatorCosPsiSumPtSum; // <<cos[n(psi1+psi2)]  vs pt sum 
+  TProfile *f2pCorrelatorSinPsiDiffPtSum; // <<sin[n(psi1-psi2)]  vs pt sum 
+  TProfile *f2pCorrelatorSinPsiSumPtSum; // <<sin[n(psi1+psi2)]  vs pt sum 
+
+  //2p correlators vs |eta1 - eta2|
+  TProfile *f2pCorrelatorCosPsiDiffEtaDiff; // <<cos[n(psi1-psi2)] vs eta diff 
+  TProfile *f2pCorrelatorCosPsiSumEtaDiff; // <<cos[n(psi1+psi2)]  vs eta diff 
+  TProfile *f2pCorrelatorSinPsiDiffEtaDiff; // <<sin[n(psi1-psi2)]  vs eta diff 
+  TProfile *f2pCorrelatorSinPsiSumEtaDiff; // <<sin[n(psi1+psi2)]  vs eta diff 
+
+  //2p correlators vs (eta1 + eta2)/2
+  TProfile *f2pCorrelatorCosPsiDiffEtaSum; // <<cos[n(psi1-psi2)] vs eta sum 
+  TProfile *f2pCorrelatorCosPsiSumEtaSum; // <<cos[n(psi1+psi2)]  vs eta sum 
+  TProfile *f2pCorrelatorSinPsiDiffEtaSum; // <<sin[n(psi1-psi2)]  vs eta sum 
+  TProfile *f2pCorrelatorSinPsiSumEtaSum; // <<sin[n(psi1+psi2)]  vs eta sum 
 
   // 5.) Final results:
   TList *fResultsList; // list holding objects with final results 
