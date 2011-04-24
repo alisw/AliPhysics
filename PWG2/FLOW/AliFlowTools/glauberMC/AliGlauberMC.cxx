@@ -612,7 +612,7 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
       fMeanOYColl += oYB*oNcoll;
       fMeanOYColl += oYB*((1-0.15)+0.15*oNcoll);
       fONcoll += oNcoll;
-      fONcom += (1-0.15)+0.15*oNcoll;
+      fONcom += ((1-0.15)+0.15*oNcoll);
     }
   }
 
@@ -655,23 +655,23 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
     AliGlauberNucleon *nucleonA=(AliGlauberNucleon*)(fNucleonsA->UncheckedAt(i));
     Double_t xAA = nucleonA->GetX(); // X
     Double_t yAA = nucleonA->GetY(); // Y
-    Double_t xA = xAA - fMeanOXParts; // X'
-    Double_t yA = yAA - fMeanOYParts; // Y'
-    Double_t r2A = xA *xA+yA*yA;     // r'^2
-    Double_t rA = TMath::Sqrt(r2A);  // r'
-    Double_t r3A = r2A*rA;
-    Double_t r4A = r3A*rA;
-    Double_t r5A = r4A*rA;
-    //Double_t phiAA = TMath::ATan2(yAA,xAA);
-    Double_t phiA = TMath::ATan2(yA,xA);
-    Double_t sin2PhiA = TMath::Sin(2.*phiA);
-    Double_t cos2PhiA = TMath::Cos(2.*phiA);
-    Double_t sin3PhiA = TMath::Sin(3.*phiA);
-    Double_t cos3PhiA = TMath::Cos(3.*phiA);
-    Double_t sin4PhiA = TMath::Sin(4.*phiA);
-    Double_t cos4PhiA = TMath::Cos(4.*phiA);
-    Double_t sin5PhiA = TMath::Sin(5.*phiA);
-    Double_t cos5PhiA = TMath::Cos(5.*phiA);
+    Double_t xAPart = xAA - fMeanOXParts; // X'
+    Double_t yAPart = yAA - fMeanOYParts; // Y'
+    Double_t r2APart = xAPart *xAPart+yAPart*yAPart;     // r'^2
+    Double_t rAPart = TMath::Sqrt(r2APart);  // r'
+    Double_t r3APart = r2APart*rAPart;
+    Double_t r4APart = r3APart*rAPart;
+    Double_t r5APart = r4APart*rAPart;
+    Double_t phiAPart = TMath::ATan2(yAPart,xAPart);
+    Double_t sin2PhiAPart = TMath::Sin(2.*phiAPart);
+    Double_t cos2PhiAPart = TMath::Cos(2.*phiAPart);
+    Double_t sin3PhiAPart = TMath::Sin(3.*phiAPart);
+    Double_t cos3PhiAPart = TMath::Cos(3.*phiAPart);
+    Double_t sin4PhiAPart = TMath::Sin(4.*phiAPart);
+    Double_t cos4PhiAPart = TMath::Cos(4.*phiAPart);
+    Double_t sin5PhiAPart = TMath::Sin(5.*phiAPart);
+    Double_t cos5PhiAPart = TMath::Cos(5.*phiAPart);
+   
     fMeanXSystem  += xAA;
     fMeanYSystem  += yAA;
     fMeanXA  += xAA;
@@ -683,53 +683,89 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
     if(nucleonA->IsWounded())
      {
       fNpart++;
-      fMeanXParts  += xA;
-      fMeanYParts  += yA;
-      fMeanX2Parts += xA * xA;
-      fMeanY2Parts += yA * yA;
-      fMeanXYParts += xA * yA;
-      fMeanr2 += r2A;
-      fMeanr3 += r3A;
-      fMeanr4 += r4A;
-      fMeanr5 += r5A;
-      fMeanr2Cos2Phi += r2A*cos2PhiA;
-      fMeanr2Sin2Phi += r2A*sin2PhiA;
-      fMeanr2Cos3Phi += r2A*cos3PhiA;
-      fMeanr2Sin3Phi += r2A*sin3PhiA;
-      fMeanr2Cos4Phi += r2A*cos4PhiA;
-      fMeanr2Sin4Phi += r2A*sin4PhiA;
-      fMeanr2Cos5Phi += r2A*cos5PhiA;
-      fMeanr2Sin5Phi += r2A*sin5PhiA;
-      fMeanr3Cos3Phi += r3A*cos3PhiA;
-      fMeanr3Sin3Phi += r3A*sin3PhiA;
-      fMeanr4Cos4Phi += r4A*cos4PhiA;
-      fMeanr4Sin4Phi += r4A*sin4PhiA;
-      fMeanr5Cos5Phi += r5A*cos5PhiA;
-      fMeanr5Sin5Phi += r5A*sin5PhiA;
+      fMeanXParts  += xAPart;
+      fMeanYParts  += yAPart;
+      fMeanX2Parts += xAPart * xAPart;
+      fMeanY2Parts += yAPart * yAPart;
+      fMeanXYParts += xAPart * yAPart;
+      fMeanr2 += r2APart;
+      fMeanr3 += r3APart;
+      fMeanr4 += r4APart;
+      fMeanr5 += r5APart;
+      fMeanr2Cos2Phi += r2APart*cos2PhiAPart;
+      fMeanr2Sin2Phi += r2APart*sin2PhiAPart;
+      fMeanr2Cos3Phi += r2APart*cos3PhiAPart;
+      fMeanr2Sin3Phi += r2APart*sin3PhiAPart;
+      fMeanr2Cos4Phi += r2APart*cos4PhiAPart;
+      fMeanr2Sin4Phi += r2APart*sin4PhiAPart;
+      fMeanr2Cos5Phi += r2APart*cos5PhiAPart;
+      fMeanr2Sin5Phi += r2APart*sin5PhiAPart;
+      fMeanr3Cos3Phi += r3APart*cos3PhiAPart;
+      fMeanr3Sin3Phi += r3APart*sin3PhiAPart;
+      fMeanr4Cos4Phi += r4APart*cos4PhiAPart;
+      fMeanr4Sin4Phi += r4APart*sin4PhiAPart;
+      fMeanr5Cos5Phi += r5APart*cos5PhiAPart;
+      fMeanr5Sin5Phi += r5APart*sin5PhiAPart;
     }
   }
-
+  
   for (Int_t i = 0; i<fBN; i++)
     {
       AliGlauberNucleon *nucleonB=(AliGlauberNucleon*)(fNucleonsB->UncheckedAt(i));
       Double_t xBB = nucleonB->GetX();
       Double_t yBB = nucleonB->GetY();
-      Double_t xB = xBB - fMeanOXParts;
-      Double_t yB = yBB - fMeanOYParts;
-      Double_t r2B = xB*xB + yB*yB;
-      Double_t rB = TMath::Sqrt(r2B);
-      Double_t r3B = r2B*rB;
-      Double_t r4B = r3B*rB;
-      Double_t r5B = r4B*rB;
-      Double_t phiB = TMath::ATan2(yB,xB);
-      Double_t sin2PhiB = TMath::Sin(2*phiB);
-      Double_t cos2PhiB = TMath::Cos(2*phiB);
-      Double_t sin3PhiB = TMath::Sin(3*phiB);
-      Double_t cos3PhiB = TMath::Cos(3*phiB);
-      Double_t sin4PhiB = TMath::Sin(4*phiB);
-      Double_t cos4PhiB = TMath::Cos(4*phiB);
-      Double_t sin5PhiB = TMath::Sin(5*phiB);
-      Double_t cos5PhiB = TMath::Cos(5*phiB);
+      // for Wounded
+      Double_t xBPart = xBB - fMeanOXParts; // X'
+      Double_t yBPart = yBB - fMeanOYParts; // Y'
+      Double_t r2BPart = xBPart*xBPart+yBPart*yBPart;     // r'^2
+      Double_t rBPart = TMath::Sqrt(r2BPart);  // r'
+      Double_t r3BPart = r2BPart*rBPart;
+      Double_t r4BPart = r3BPart*rBPart;
+      Double_t r5BPart = r4BPart*rBPart;
+      Double_t phiBPart = TMath::ATan2(yBPart,xBPart);
+      Double_t sin2PhiBPart = TMath::Sin(2.*phiBPart);
+      Double_t cos2PhiBPart = TMath::Cos(2.*phiBPart);
+      Double_t sin3PhiBPart = TMath::Sin(3.*phiBPart);
+      Double_t cos3PhiBPart = TMath::Cos(3.*phiBPart);
+      Double_t sin4PhiBPart = TMath::Sin(4.*phiBPart);
+      Double_t cos4PhiBPart = TMath::Cos(4.*phiBPart);
+      Double_t sin5PhiBPart = TMath::Sin(5.*phiBPart);
+      Double_t cos5PhiBPart = TMath::Cos(5.*phiBPart);
+      // for Binary
+      Double_t xBColl = xBB - fMeanOXColl; // X'-Binary
+      Double_t yBColl = yBB - fMeanOYColl; // Y'-B
+      Double_t r2BColl = xBColl*xBColl+yBColl*yBColl;     // r'^2-B
+      Double_t rBColl = TMath::Sqrt(r2BColl);  // r'-B
+      Double_t r3BColl = r2BColl*rBColl;
+      Double_t r4BColl = r3BColl*rBColl;
+      Double_t r5BColl = r4BColl*rBColl;
+      Double_t phiBColl = TMath::ATan2(yBColl,xBColl);
+      Double_t sin2PhiBColl = TMath::Sin(2.*phiBColl);
+      Double_t cos2PhiBColl = TMath::Cos(2.*phiBColl);
+      Double_t sin3PhiBColl = TMath::Sin(3.*phiBColl);
+      Double_t cos3PhiBColl = TMath::Cos(3.*phiBColl);
+      Double_t sin4PhiBColl = TMath::Sin(4.*phiBColl);
+      Double_t cos4PhiBColl = TMath::Cos(4.*phiBColl);
+      Double_t sin5PhiBColl = TMath::Sin(5.*phiBColl);
+      Double_t cos5PhiBColl = TMath::Cos(5.*phiBColl);
+      // for combine
+      Double_t xBCom = xBB - fMeanOXCom; // X'-Combine
+      Double_t yBCom = yBB - fMeanOYCom; // Y'-C
+      Double_t r2BCom = xBCom *xBCom+yBCom*yBCom;     // r'^2-C
+      Double_t rBCom = TMath::Sqrt(r2BCom);  // r'-C
+      Double_t r3BCom = r2BCom*rBCom;
+      Double_t r4BCom = r3BCom*rBCom;
+      Double_t r5BCom = r4BCom*rBCom;
+      Double_t phiBCom = TMath::ATan2(yBCom,xBCom);
+      Double_t sin2PhiBCom = TMath::Sin(2.*phiBCom);
+      Double_t cos2PhiBCom = TMath::Cos(2.*phiBCom);
+      Double_t sin3PhiBCom = TMath::Sin(3.*phiBCom);
+      Double_t cos3PhiBCom = TMath::Cos(3.*phiBCom);
+      Double_t sin4PhiBCom = TMath::Sin(4.*phiBCom);
+      Double_t cos4PhiBCom = TMath::Cos(4.*phiBCom);
+      Double_t sin5PhiBCom = TMath::Sin(5.*phiBCom);
+      Double_t cos5PhiBCom = TMath::Cos(5.*phiBCom);   
+      
       fMeanXSystem  += xBB;
       fMeanYSystem  += yBB;
       fMeanXB  += xBB;
@@ -742,77 +778,77 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
 	{
 	  Int_t ncoll = nucleonB->GetNColl();
 	  fNpart++;
-	  fMeanXParts  += xB;
-	  fMeanXColl  += xB*ncoll;
-	  fMeanXCom  += xB*((1-0.15)+0.15*ncoll);
-	  fMeanYParts  += yB;
-	  fMeanYColl += yB*ncoll;
-	  fMeanYCom += yB*((1-0.15)+0.15*ncoll);
-	  fMeanX2Parts += xB * xB;
-	  fMeanX2Coll += xB*xB*ncoll;
-	  fMeanX2Com += xB*xB*((1-0.15)+0.15*ncoll);
-	  fMeanY2Parts += yB * yB;
-	  fMeanY2Coll += yB*yB*ncoll;
-	  fMeanY2Com += yB*yB*((1-0.15)+0.15*ncoll);
-	  fMeanXYParts += xB * yB;
-	  fMeanXYColl += xB*yB*ncoll;
-	  fMeanXYCom += xB*yB*((1-0.15)+0.15*ncoll);
+	  fMeanXParts  += xBPart;
+	  fMeanXColl  += xBColl*ncoll;
+	  fMeanXCom  += xBCom*((1-0.15)+0.15*ncoll);
+	  fMeanYParts  += yBPart;
+	  fMeanYColl += yBColl*ncoll;
+	  fMeanYCom += yBCom*((1-0.15)+0.15*ncoll);
+	  fMeanX2Parts += xBPart * xBPart;
+	  fMeanX2Coll += xBColl*xBColl*ncoll;
+	  fMeanX2Com += xBCom*xBCom*((1-0.15)+0.15*ncoll);
+	  fMeanY2Parts += yBPart * yBPart;
+	  fMeanY2Coll += yBColl*yBColl*ncoll;
+	  fMeanY2Com += yBCom*yBCom*((1-0.15)+0.15*ncoll);
+	  fMeanXYParts += xBPart * yBPart;
+	  fMeanXYColl += xBColl*yBColl*ncoll;
+	  fMeanXYCom += xBCom*yBCom*((1-0.15)+0.15*ncoll);
 	  fNcoll += ncoll;
-	  fNcom += (1-0.15)+0.15*ncoll;
-	  fMeanr2 += r2B;
-	  fMeanr3 += r3B;
-	  fMeanr4 += r4B;
-	  fMeanr5 += r5B;
-	  fMeanr2Cos2Phi += r2B*cos2PhiB;
-	  fMeanr2Sin2Phi += r2B*sin2PhiB;
-	  fMeanr2Cos3Phi += r2B*cos3PhiB;
-	  fMeanr2Sin3Phi += r2B*sin3PhiB;
-	  fMeanr2Cos4Phi += r2B*cos4PhiB;
-	  fMeanr2Sin4Phi += r2B*sin4PhiB;
-	  fMeanr2Cos5Phi += r2B*cos5PhiB;
-	  fMeanr2Sin5Phi += r2B*sin5PhiB;
-	  fMeanr3Cos3Phi += r3B*cos3PhiB;
-	  fMeanr3Sin3Phi += r3B*sin3PhiB;
-	  fMeanr4Cos4Phi += r4B*cos4PhiB;
-	  fMeanr4Sin4Phi += r4B*sin4PhiB;
-	  fMeanr5Cos5Phi += r5B*cos5PhiB;
-	  fMeanr5Sin5Phi += r5B*sin5PhiB;
-	  fMeanr2Coll += r2B*ncoll;
-	  fMeanr3Coll += r3B*ncoll;
-	  fMeanr4Coll += r4B*ncoll;
-	  fMeanr5Coll += r5B*ncoll;
-	  fMeanr2Cos2PhiColl += r2B*cos2PhiB*ncoll;
-	  fMeanr2Sin2PhiColl += r2B*sin2PhiB*ncoll;
-	  fMeanr2Cos3PhiColl += r2B*cos3PhiB*ncoll;
-	  fMeanr2Sin3PhiColl += r2B*sin3PhiB*ncoll;
-	  fMeanr2Cos4PhiColl += r2B*cos4PhiB*ncoll;
-	  fMeanr2Sin4PhiColl += r2B*sin4PhiB*ncoll;
-	  fMeanr2Cos5PhiColl += r2B*cos5PhiB*ncoll;
-	  fMeanr2Sin5PhiColl += r2B*sin5PhiB*ncoll;
-	  fMeanr3Cos3PhiColl += r3B*cos3PhiB*ncoll;
-	  fMeanr3Sin3PhiColl += r3B*sin3PhiB*ncoll;
-	  fMeanr4Cos4PhiColl += r4B*cos4PhiB*ncoll;
-	  fMeanr4Sin4PhiColl += r4B*sin4PhiB*ncoll;
-	  fMeanr5Cos5PhiColl += r5B*cos5PhiB*ncoll;
-	  fMeanr5Sin5PhiColl += r5B*sin5PhiB*ncoll;
-	  fMeanr2Com += r2B*((1-0.15)+0.15*ncoll);
-	  fMeanr3Com += r3B*((1-0.15)+0.15*ncoll);
-	  fMeanr4Com += r4B*((1-0.15)+0.15*ncoll);
-	  fMeanr5Com += r5B*((1-0.15)+0.15*ncoll);
-	  fMeanr2Cos2PhiCom += r2B*cos2PhiB*((1-0.15)+0.15*ncoll);
-	  fMeanr2Sin2PhiCom += r2B*sin2PhiB*((1-0.15)+0.15*ncoll);
-	  fMeanr2Cos3PhiCom += r2B*cos3PhiB*((1-0.15)+0.15*ncoll);
-	  fMeanr2Sin3PhiCom += r2B*sin3PhiB*((1-0.15)+0.15*ncoll);
-	  fMeanr2Cos4PhiCom += r2B*cos4PhiB*((1-0.15)+0.15*ncoll);
-	  fMeanr2Sin4PhiCom += r2B*sin4PhiB*((1-0.15)+0.15*ncoll);
-	  fMeanr2Cos5PhiCom += r2B*cos5PhiB*((1-0.15)+0.15*ncoll);
-	  fMeanr2Sin5PhiCom += r2B*sin5PhiB*((1-0.15)+0.15*ncoll);
-	  fMeanr3Cos3PhiCom += r3B*cos3PhiB*((1-0.15)+0.15*ncoll);
-	  fMeanr3Sin3PhiCom += r3B*sin3PhiB*((1-0.15)+0.15*ncoll);
-	  fMeanr4Cos4PhiCom += r4B*cos4PhiB*((1-0.15)+0.15*ncoll);
-	  fMeanr4Sin4PhiCom += r4B*sin4PhiB*((1-0.15)+0.15*ncoll);
-	  fMeanr5Cos5PhiCom += r5B*cos5PhiB*((1-0.15)+0.15*ncoll);
-	  fMeanr5Sin5PhiCom += r5B*sin5PhiB*((1-0.15)+0.15*ncoll);
+	  fNcom += ((1-0.15)+0.15*ncoll);
+	  fMeanr2 += r2BPart;
+	  fMeanr3 += r3BPart;
+	  fMeanr4 += r4BPart;
+	  fMeanr5 += r5BPart;
+	  fMeanr2Cos2Phi += r2BPart*cos2PhiBPart;
+	  fMeanr2Sin2Phi += r2BPart*sin2PhiBPart;
+	  fMeanr2Cos3Phi += r2BPart*cos3PhiBPart;
+	  fMeanr2Sin3Phi += r2BPart*sin3PhiBPart;
+	  fMeanr2Cos4Phi += r2BPart*cos4PhiBPart;
+	  fMeanr2Sin4Phi += r2BPart*sin4PhiBPart;
+	  fMeanr2Cos5Phi += r2BPart*cos5PhiBPart;
+	  fMeanr2Sin5Phi += r2BPart*sin5PhiBPart;
+	  fMeanr3Cos3Phi += r3BPart*cos3PhiBPart;
+	  fMeanr3Sin3Phi += r3BPart*sin3PhiBPart;
+	  fMeanr4Cos4Phi += r4BPart*cos4PhiBPart;
+	  fMeanr4Sin4Phi += r4BPart*sin4PhiBPart;
+	  fMeanr5Cos5Phi += r5BPart*cos5PhiBPart;
+	  fMeanr5Sin5Phi += r5BPart*sin5PhiBPart;
+	  fMeanr2Coll += r2BColl*ncoll;
+	  fMeanr3Coll += r3BColl*ncoll;
+	  fMeanr4Coll += r4BColl*ncoll;
+	  fMeanr5Coll += r5BColl*ncoll;
+	  fMeanr2Cos2PhiColl += r2BColl*cos2PhiBColl*ncoll;
+	  fMeanr2Sin2PhiColl += r2BColl*sin2PhiBColl*ncoll;
+	  fMeanr2Cos3PhiColl += r2BColl*cos3PhiBColl*ncoll;
+	  fMeanr2Sin3PhiColl += r2BColl*sin3PhiBColl*ncoll;
+	  fMeanr2Cos4PhiColl += r2BColl*cos4PhiBColl*ncoll;
+	  fMeanr2Sin4PhiColl += r2BColl*sin4PhiBColl*ncoll;
+	  fMeanr2Cos5PhiColl += r2BColl*cos5PhiBColl*ncoll;
+	  fMeanr2Sin5PhiColl += r2BColl*sin5PhiBColl*ncoll;
+	  fMeanr3Cos3PhiColl += r3BColl*cos3PhiBColl*ncoll;
+	  fMeanr3Sin3PhiColl += r3BColl*sin3PhiBColl*ncoll;
+	  fMeanr4Cos4PhiColl += r4BColl*cos4PhiBColl*ncoll;
+	  fMeanr4Sin4PhiColl += r4BColl*sin4PhiBColl*ncoll;
+	  fMeanr5Cos5PhiColl += r5BColl*cos5PhiBColl*ncoll;
+	  fMeanr5Sin5PhiColl += r5BColl*sin5PhiBColl*ncoll;
+	  fMeanr2Com += r2BCom*((1-0.15)+0.15*ncoll);
+	  fMeanr3Com += r3BCom*((1-0.15)+0.15*ncoll);
+	  fMeanr4Com += r4BCom*((1-0.15)+0.15*ncoll);
+	  fMeanr5Com += r5BCom*((1-0.15)+0.15*ncoll);
+	  fMeanr2Cos2PhiCom += r2BCom*cos2PhiBCom*((1-0.15)+0.15*ncoll);
+	  fMeanr2Sin2PhiCom += r2BCom*sin2PhiBCom*((1-0.15)+0.15*ncoll);
+	  fMeanr2Cos3PhiCom += r2BCom*cos3PhiBCom*((1-0.15)+0.15*ncoll);
+	  fMeanr2Sin3PhiCom += r2BCom*sin3PhiBCom*((1-0.15)+0.15*ncoll);
+	  fMeanr2Cos4PhiCom += r2BCom*cos4PhiBCom*((1-0.15)+0.15*ncoll);
+	  fMeanr2Sin4PhiCom += r2BCom*sin4PhiBCom*((1-0.15)+0.15*ncoll);
+	  fMeanr2Cos5PhiCom += r2BCom*cos5PhiBCom*((1-0.15)+0.15*ncoll);
+	  fMeanr2Sin5PhiCom += r2BCom*sin5PhiBCom*((1-0.15)+0.15*ncoll);
+	  fMeanr3Cos3PhiCom += r3BCom*cos3PhiBCom*((1-0.15)+0.15*ncoll);
+	  fMeanr3Sin3PhiCom += r3BCom*sin3PhiBCom*((1-0.15)+0.15*ncoll);
+	  fMeanr4Cos4PhiCom += r4BCom*cos4PhiBCom*((1-0.15)+0.15*ncoll);
+	  fMeanr4Sin4PhiCom += r4BCom*sin4PhiBCom*((1-0.15)+0.15*ncoll);
+	  fMeanr5Cos5PhiCom += r5BCom*cos5PhiBCom*((1-0.15)+0.15*ncoll);
+	  fMeanr5Sin5PhiCom += r5BCom*sin5PhiBCom*((1-0.15)+0.15*ncoll);
 	}
     }
   
@@ -1319,9 +1355,10 @@ Double_t AliGlauberMC::GetEccentricityColl() const
 //______________________________________________________________________________
 Double_t AliGlauberMC::GetEccentricityCom() const
 {
-  //get standard eccentricity of binary collisions
+  //get standard eccentricity of combined weight 
   if (fNcom<2) return 0.0;
-  return ((fSy2Com-fSx2Com)/(fSy2Com+fSx2Com));
+  //return ((fSy2Com-fSx2Com)/(fSy2Com+fSx2Com));
+  return (((fMeanY2Com-(fMeanYCom*fMeanYCom)) - (fMeanX2Com-(fMeanXCom*fMeanXCom))) / ((fMeanY2Com-(fMeanYCom*fMeanYCom)) + (fMeanX2Com-(fMeanXCom*fMeanXCom))) );
 }
 
 //______________________________________________________________________________
@@ -1523,11 +1560,7 @@ void AliGlauberMC::Run(Int_t nevents)
   if (fnt == 0)
   {
     fnt = new TNtuple(name,title,
-                      "Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:"
-                      "VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB:VarE:Stoa:VarEColl:"
-                      "VarECom:VarEPart:VarEPartColl:VarEPartCom:dNdEta1:dNdEta2:dNdEtaSum:xsect:tAA:Epsl2:"
-                      "Epsl3:Epsl4:Epsl5:E2Coll:E3Coll:E4Coll:E5Coll:E2Com:E3Com:E4Com:"
-                      "E5Com:Psi2:Psi3:Psi4:Psi5");
+                      "Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB:VarE:Stoa:VarEColl:VarECom:VarEPart:VarEPartColl:VarEPartCom:dNdEta:dNdEtaGBW:dNdEtaTwoNBD:xsect:tAA:Epsl2:Epsl3:Epsl4:Epsl5:E2Coll:E3Coll:E4Coll:E5Coll:E2Com:E3Com:E4Com:E5Com:Psi2:Psi3:Psi4:Psi5");
     fnt->SetDirectory(0);
   }
   Int_t q = 0;
