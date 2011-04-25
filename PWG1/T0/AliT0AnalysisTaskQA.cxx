@@ -29,7 +29,9 @@ AliT0AnalysisTaskQA::AliT0AnalysisTaskQA()
   : AliAnalysisTaskSE(),  fESD(0x0), fTzeroObject(0x0),
   fTzeroORA(0x0), fTzeroORC(0x0), fResolution(0x0), fTzeroORAplusORC(0x0),
     fRunNumber(0),fTimeVSAmplitude(0x0),fCFDVSPmtId(0x0),fSPDVertexVST0Vertex(0x0),
-    fOrAvsNtracks(0), fOrCvsNtracks(0), fT0vsNtracks(0) 
+  fOrAvsNtracks(0), fOrCvsNtracks(0), fT0vsNtracks(0),
+  fEffAC(0), fEffA(0), fEffC(0), ftracksEffSPD(0)
+  
 {
   // Constructor
 
@@ -47,7 +49,9 @@ AliT0AnalysisTaskQA::AliT0AnalysisTaskQA(const char *name)
   : AliAnalysisTaskSE(name),  fESD(0x0), fTzeroObject(0x0),
   fTzeroORA(0x0), fTzeroORC(0x0), fResolution(0x0), fTzeroORAplusORC(0x0),
     fRunNumber(0),fTimeVSAmplitude(0x0),fCFDVSPmtId(0x0),fSPDVertexVST0Vertex(0x0),
-    fOrAvsNtracks(0), fOrCvsNtracks(0), fT0vsNtracks(0) 
+    fOrAvsNtracks(0), fOrCvsNtracks(0), fT0vsNtracks(0),
+   fEffAC(0), fEffA(0), fEffC(0), ftracksEffSPD(0)
+
 {
   // Constructor
   // Define input and output slots here
@@ -73,7 +77,7 @@ void AliT0AnalysisTaskQA::UserCreateOutputObjects()
  fTimeVSAmplitude = new TH2F*[NPMT0];
 
  for (Int_t i=0; i<NPMT0; i++) {
-    fTimeVSAmplitude[i]= new TH2F (Form("fTimeVSAmplitude%d",i+1),"fTimeVsAmplitude",60, -10, 50,1500,1000,7000);
+    fTimeVSAmplitude[i]= new TH2F (Form("fTimeVSAmplitude%d",i+1),"fTimeVsAmplitude",500, 0, 50,1500,1000,7000);
   }
 
   fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",100,-2000,2000);   //or A plus or C 
