@@ -9,9 +9,10 @@
 #define ALIANALYSISETSELECTIONHANDLER_H
 
 #include "TObject.h"
-#include "AliAnalysisEtSelectionContainer.h"
+	       //#include "AliAnalysisEtSelectionContainer.h"
 
 class AliPhysicsSelection;
+class AliAnalysisEtSelectionContainer;
 
 class AliAnalysisEtSelectionHandler : public TObject
 {
@@ -23,9 +24,9 @@ public:
     
     virtual ~AliAnalysisEtSelectionHandler();
     
-    AliPhysicsSelection* GetPhysicsSelection(Int_t runNumber) { return fSelections->GetPhysicsSelection(runNumber); }
+    AliPhysicsSelection* GetPhysicsSelection(Int_t runNumber);// { return fSelections->GetPhysicsSelection(runNumber); }
     
-    AliPhysicsSelection* GetDefaultPhysicsSelection() { return fSelections->GetDefaultPhysicsSelection(); }
+    AliPhysicsSelection* GetDefaultPhysicsSelection();// { return fSelections->GetDefaultPhysicsSelection(); }
     
     AliAnalysisEtSelectionContainer* GetSelectionContainer() const { return fSelections; }
 
