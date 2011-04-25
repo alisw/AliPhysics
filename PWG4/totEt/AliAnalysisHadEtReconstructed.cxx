@@ -121,7 +121,6 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
     TObjArray* list = NULL;
     switch(cutset){
     case 0:
-      //cout<<"Using ITS+TPC tracks"<<endl;
       cutName = strTPCITS;
       list = fEsdtrackCutsITSTPC->GetAcceptedTracks(realEvent);
       isTPC = true;
@@ -152,6 +151,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	else{
 	  if(TMath::Abs(track->Eta())>fCorrections->GetEtaCut()) continue;
 	  Float_t nSigmaPion,nSigmaProton,nSigmaKaon,nSigmaElectron;
+	  pID->MakeTPCPID(track);
+	  pID->MakeITSPID(track);
 	  if(cutset!=1){
 	    nSigmaPion = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kPion));
 	    nSigmaProton = TMath::Abs(pID->NumberOfSigmasTPC(track,AliPID::kProton));
@@ -174,6 +175,13 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	  bool isProton = (nSigmaPion>3.0 && nSigmaProton<3.0 && nSigmaKaon>3.0 && track->Pt()<0.9);
 
 	  bool unidentified = (!isProton && !isKaon && !isElectron && !isPion);
+	  if(cutset==1){//ITS dE/dx identification requires tighter cuts on the tracks and we don't gain much from that so we won't do it
+	    unidentified = true;
+	    isPion=false;
+	    isElectron=false;
+	    isKaon=false;
+	    isProton=false;
+	  }
 	  Float_t dEdx = track->GetTPCsignal();
 	  if(cutset==1) dEdx = track->GetITSsignal();
 	  FillHisto2D(Form("dEdxDataAll%s",cutName->Data()),track->P(),dEdx,1.0);
@@ -183,10 +191,10 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
 	  Float_t corrBkgd=0.0;
 	  Float_t corrNotID=0.0;
-	  Float_t corrNoID=0.0;// = fCorrections->GetNotIDCorrectionNoPID(track->Pt());
+	  Float_t corrNoID = fCorrections->GetNotIDCorrectionNoPID(track->Pt());
 	  Float_t corrEff = 0.0;
 	  Float_t corrEffNoID = 0.0;
-	  if(cutset==0){//TPC
+	  if(cutset!=1){//TPC
 	    corrBkgd = fCorrections->GetBackgroundCorrectionTPC(track->Pt());
 	    corrEffNoID = fCorrections->GetTPCEfficiencyCorrectionHadron(track->Pt(),fCentBin);
 	    corrNotID = fCorrections->GetNotIDConstCorrectionTPC();
@@ -198,11 +206,13 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    corrNotID = fCorrections->GetNotIDConstCorrectionITS();
 	    corrNoID = fCorrections->GetNotIDConstCorrectionITSNoID();
 	  }
-	  FillHisto2D("fbkgdVsCentralityBin",fCentBin,corrBkgd,1.0);
-	  FillHisto2D("fnotIDVsCentralityBin",fCentBin,corrNotID,1.0);
-	  FillHisto2D("fpTcutVsCentralityBin",fCentBin,fCorrections->GetpTCutCorrectionTPC(),1.0);
-	  if(fCorrHadEtFullAcceptanceTPC>0.0) FillHisto2D("fneutralVsCentralityBin",fCentBin,1.0/fCorrHadEtFullAcceptanceTPC,1.0);
-	  if(fCorrections->GetNeutralCorrection()>0.0) FillHisto2D("ConstantCorrectionsVsCentralityBin",fCentBin,1.0/fCorrections->GetNeutralCorrection(),1.0);
+	  if(fDataSet==20100){
+	    FillHisto2D("fbkgdVsCentralityBin",fCentBin,corrBkgd,1.0);
+	    FillHisto2D("fnotIDVsCentralityBin",fCentBin,corrNotID,1.0);
+	    FillHisto2D("fpTcutVsCentralityBin",fCentBin,fCorrections->GetpTCutCorrectionTPC(),1.0);
+	    if(fCorrHadEtFullAcceptanceTPC>0.0) FillHisto2D("fneutralVsCentralityBin",fCentBin,1.0/fCorrHadEtFullAcceptanceTPC,1.0);
+	    if(fCorrections->GetNeutralCorrection()>0.0) FillHisto2D("ConstantCorrectionsVsCentralityBin",fCentBin,1.0/fCorrections->GetNeutralCorrection(),1.0);
+	  }
 	  Float_t et = 0.0;
 	  Float_t etNoID = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
 	  Float_t etpartialcorrected = 0.0;
@@ -215,11 +225,9 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	  if(isPion){
 	    FillHisto2D(Form("dEdxDataPion%s",cutName->Data()),track->P(),dEdx,1.0);
 	    et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
-	    if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionPion(track->Pt(),fCentBin);}
-	    //else{corrEff = fCorrections->GetITSEfficiencyCorrectionPion(track->Pt());}
+   	    if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionPion(track->Pt(),fCentBin);}
 	    etpartialcorrected = et*corrBkgd*corrEff*corrNotID;
-	    //cout<<"et partial corrected pion = "<<et<<" "<<corrBkgd<<" "<<corrEff<<" "<<corrNotID<<endl;
-	    if(corrEff>0.0)FillHisto2D("feffPionVsCentralityBin",fCentBin,1.0/corrEff,1.0);
+	    if(corrEff>0.0&&fDataSet==20100)FillHisto2D("feffPionVsCentralityBin",fCentBin,1.0/corrEff,1.0);
 	    if(track->Charge()>0.0){
 	      FillHisto2D(Form("EtDataRaw%sPiPlus",cutName->Data()),track->Pt(),track->Eta(),et);
 	      FillHisto2D(Form("EtDataCorrected%sPiPlus",cutName->Data()),track->Pt(),track->Eta(),etpartialcorrected);
@@ -233,10 +241,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    FillHisto2D(Form("dEdxDataKaon%s",cutName->Data()),track->P(),dEdx,1.0);
 	    et = Et(track->P(),track->Theta(),fgKPlusCode,track->Charge());
 	    if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionKaon(track->Pt(),fCentBin);}
-	    //else{corrEff = fCorrections->GetITSEfficiencyCorrectionKaon(track->Pt(),fCentBin);}
 	    etpartialcorrected = et*corrBkgd*corrEff*corrNotID;
-	    //cout<<"et partial corrected kaon = "<<et<<" "<<corrBkgd<<" "<<corrEff<<" "<<corrNotID<<endl;
-	    if(corrEff>0.0)FillHisto2D("feffKaonVsCentralityBin",fCentBin,1.0/corrEff,1.0);
+	    if(corrEff>0.0&&fDataSet==20100)FillHisto2D("feffKaonVsCentralityBin",fCentBin,1.0/corrEff,1.0);
 	      
 	    if(track->Charge()>0.0){
 	      FillHisto2D(Form("EtDataRaw%sKPlus",cutName->Data()),track->Pt(),track->Eta(),et);
@@ -251,10 +257,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    FillHisto2D(Form("dEdxDataProton%s",cutName->Data()),track->P(),dEdx,1.0);
 	    et = Et(track->P(),track->Theta(),fgProtonCode,track->Charge());
 	    if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionProton(track->Pt(),fCentBin);}
-	    //else{corrEff = fCorrections->GetITSEfficiencyCorrectionProton(track->Pt());}
 	    etpartialcorrected = et*corrBkgd*corrEff*corrNotID;
-	    //cout<<"et partial corrected proton = "<<et<<" "<<corrBkgd<<" "<<corrEff<<" "<<corrNotID<<endl;
-	    if(corrEff>0.0)FillHisto2D("feffProtonVsCentralityBin",fCentBin,1.0/corrEff,1.0);
+	    if(corrEff>0.0&&fDataSet==20100)FillHisto2D("feffProtonVsCentralityBin",fCentBin,1.0/corrEff,1.0);
 	      
 	    if(track->Charge()>0.0){
 	      FillHisto2D(Form("EtDataRaw%sProton",cutName->Data()),track->Pt(),track->Eta(),et);
@@ -267,21 +271,18 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	  }
 	  if(isElectron){
 	    FillHisto2D(Form("dEdxDataProton%s",cutName->Data()),track->P(),dEdx,1.0);
-	    //et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
 	  }
 	  if(unidentified){
-	    //if(!isPion) 
+	    if(isPion) cerr<<"I should not be here!!  AliAnalysisHadEtReconstructed 273"<<endl; 
 	    FillHisto2D(Form("dEdxDataUnidentified%s",cutName->Data()),track->P(),dEdx,1.0);
 	    et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
 	    Float_t etProton = Et(track->P(),track->Theta(),fgProtonCode,track->Charge());
 	    Float_t etKaon = Et(track->P(),track->Theta(),fgKPlusCode,track->Charge());
-	    //cout<<"et partial corrected unidentified = "<<et<<" "<<corrBkgd<<" "<<corrEffNoID<<" "<<corrNotID<<endl;
-	    if(corrEff>0.0)FillHisto2D("feffHadronVsCentralityBin",fCentBin,1.0/corrEff,1.0);
+	    if(corrEff>0.0&&fDataSet==20100)FillHisto2D("feffHadronVsCentralityBin",fCentBin,1.0/corrEff,1.0);
 	    etpartialcorrected = et*corrBkgd*corrEffNoID*corrNotID;
 	    etpartialcorrectedPion = et*corrBkgd*corrEffNoID;
 	    etpartialcorrectedProton = etProton*corrBkgd*corrEffNoID;
 	    etpartialcorrectedKaon = etKaon*corrBkgd*corrEffNoID;
-	    //if(!isPion) 
 	    FillHisto2D(Form("EtDataCorrected%sUnidentified",cutName->Data()),track->Pt(),track->Eta(),etpartialcorrected);
 	  }
 	  else{
@@ -352,6 +353,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
   delete strTPC;
   delete strITS;
   delete strTPCITS;
+  // cout<<"Reconstructed pi/k/p et "<<GetCorrectedPiKPEtFullAcceptanceTPC()<<endl;
   return 1;
 }
 void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Float_t corrEt, Float_t corrEtPion, Float_t corrEtProton, Float_t corrEtKaon, Float_t corrEtNoPID, Float_t pt, Bool_t IsTPC, Bool_t InPHOS, Bool_t InEMCAL) {//Adding Et to each of the variables that tracks et event by event
@@ -364,7 +366,7 @@ void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Flo
     if(InPHOS)fRawEtPHOSAcceptanceTPCNoPID += rawEtNoPID;
     if(InEMCAL)fRawEtEMCALAcceptanceTPCNoPID += rawEtNoPID;
     //adding to the corrected Et
-    fCorrectedHadEtFullAcceptanceTPC += corrEt;
+    fCorrectedHadEtFullAcceptanceTPC += corrEt;//the pi/k/p et
     fCorrectedHadEtFullAcceptanceTPCAssumingPion += corrEtPion;
     fCorrectedHadEtFullAcceptanceTPCAssumingProton += corrEtProton;
     fCorrectedHadEtFullAcceptanceTPCAssumingKaon += corrEtKaon;
