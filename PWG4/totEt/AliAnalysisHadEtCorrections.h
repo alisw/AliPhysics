@@ -11,8 +11,9 @@
 #define ALIANALYSISHADETCORRECTIONS_H
 
 #include "TString.h"
-#include "TH1D.h"
+#include "TNamed.h"
 class Rtypes;
+class TH1D;
 class TNamed;
 class TObjArray;
 
@@ -21,8 +22,9 @@ class AliAnalysisHadEtCorrections : public TNamed
 public:
    
   AliAnalysisHadEtCorrections();
-  virtual void Init();
     virtual ~AliAnalysisHadEtCorrections();
+    virtual void Init();
+
 
     Float_t GetEtaCut() const {return fEtaCut;}
     Float_t GetAcceptanceCorrectionFull() const {return fAcceptanceCorrectionFull;}
@@ -76,8 +78,8 @@ public:
     Float_t GetITSEfficiencyCorrectionProton(const float pT, const int cb = -1);
     Float_t GetITSEfficiencyCorrectionHadron(const float pT, const int cb = -1);
     //...and these guys are too
-    Float_t GetBackgroundCorrectionTPC(const float pT){return (1.0-fBackgroundTPC->GetBinContent(fBackgroundTPC->FindBin(pT)));}
-    Float_t GetBackgroundCorrectionITS(const float pT){return (1.0-fBackgroundITS->GetBinContent(fBackgroundITS->FindBin(pT)));}
+    Float_t GetBackgroundCorrectionTPC(const float pT);//{return (1.0-fBackgroundTPC->GetBinContent(fBackgroundTPC->FindBin(pT)));}
+    Float_t GetBackgroundCorrectionITS(const float pT);//{return (1.0-fBackgroundITS->GetBinContent(fBackgroundITS->FindBin(pT)));}
 
 
     void SetEtaCut(const Float_t val){fEtaCut=val;}
