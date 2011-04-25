@@ -12,6 +12,7 @@
 #include "AliAnalysisHadEt.h"
 class AliVEvent;
 class TRandom;
+class AliAnalysisHadEtReconstructed;
 
 class AliAnalysisHadEtMonteCarlo : public AliAnalysisHadEt
 {
@@ -114,6 +115,7 @@ public:
     Bool_t PiKP() const {return fInvestigatePiKP;}
     Bool_t BaryonEnhancement() const {return fBaryonEnhancement;}
     Bool_t ReconstructedPt() const {return fUseRecoPt;}
+    void SetHadEtReconstructed(AliAnalysisHadEtReconstructed *reco){fHadEtReco = reco;}
 
  protected:
 
@@ -125,6 +127,10 @@ public:
     Float_t fSimPiKPEt;//simulated Et for pi,k,p event by event
     Float_t fSimHadEt;//simulated Et event by event
     Float_t fSimTotEt;//total et event by event
+    Float_t fSimPiKPEtShouldBeReco;//simulated Et for pi,k,p event by event
+    Float_t fSimPiKPEtShouldBeRecoPi;//simulated Et for pi event by event
+    Float_t fSimPiKPEtShouldBeRecoK;//simulated Et for k event by event
+    Float_t fSimPiKPEtShouldBeRecoP;//simulated Et for p event by event
 
     Bool_t fInvestigateSmearing;//Turns on and off functions and histos for investigating momentum, efficiency, pid smearing
     Bool_t fInvestigateFull;//Turns on and off functions and histos for investigating event-by-event et for the full acceptance
@@ -141,6 +147,7 @@ public:
     static Float_t fgSmearWidths[4];//array with widths for smearing with different momentum resultions
     static Int_t fgNumSmearWidths;//number of entries in the array above
     TRandom *fPtSmearer;//a TRandom used for investigating momentum smearing
+    AliAnalysisHadEtReconstructed *fHadEtReco;//corresponding class for data reconstruction.  Used to access corrections directly used here.
 
     ClassDef(AliAnalysisHadEtMonteCarlo, 1);
 };

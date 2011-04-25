@@ -21,6 +21,7 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisHadEtReconstructed.h"
+#include "AliAnalysisHadEtCorrections.h"
 #include "AliAnalysisEtCuts.h"
 #include <iostream>
 #include "TRandom.h"
@@ -40,6 +41,10 @@ AliAnalysisHadEtMonteCarlo::AliAnalysisHadEtMonteCarlo():AliAnalysisHadEt()
 							,fSimPiKPEt(0)
 							,fSimHadEt(0)
 							,fSimTotEt(0) 
+							,fSimPiKPEtShouldBeReco(0)
+							,fSimPiKPEtShouldBeRecoPi(0)
+							,fSimPiKPEtShouldBeRecoK(0)
+							,fSimPiKPEtShouldBeRecoP(0)
 							,fInvestigateSmearing(0)
 							,fInvestigateFull(0)
 							,fInvestigateEMCal(0)
@@ -49,6 +54,7 @@ AliAnalysisHadEtMonteCarlo::AliAnalysisHadEtMonteCarlo():AliAnalysisHadEt()
 							,fBaryonEnhancement(0)
 							,fUseRecoPt(0)
 							,fPtSmearer(0)
+							,fHadEtReco(0)
 {
 }
 AliAnalysisHadEtMonteCarlo::~AliAnalysisHadEtMonteCarlo(){//destructor
@@ -93,6 +99,28 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
   //Roughly following $ALICE_ROOT/PWG0/dNdEta/AlidNdEtaCorrectionTask
 
   //=============================================TPC&&ITS=============================================
+  //for investigating momentum smearing 
+  Float_t pTtotalReco = 0.0;
+  Float_t pTtotalSim = 0.0;
+  Float_t eTtotalSimAll = 0.0;
+  Float_t eTtotalReco = 0.0;
+  Float_t eTtotalRecoEffCorr = 0.0;
+  Float_t eTtotalRecoEffBkgdCorr = 0.0;
+  Float_t eTtotalRecoBkgdCorr = 0.0;
+  Float_t eTtotalRecoUncorr = 0.0;
+  Float_t eTtotalRecoTotalUncorr = 0.0;
+  Float_t eTtotalRecoEffCorrPi = 0.0;
+  Float_t eTtotalRecoEffCorrK = 0.0;
+  Float_t eTtotalRecoEffCorrP = 0.0;
+  Float_t eTtotalRecoBkgd = 0.0;
+  Float_t eTtotalRecoPIDSmeared = 0.0;
+  Float_t eTtotalAsReconstructed = 0.0;
+  Float_t eTBkgdAsReconstructed = 0.0;
+  Float_t eTtotalAsReconstructedPi = 0.0;
+  Float_t eTtotalAsReconstructedP = 0.0;
+  Float_t eTtotalAsReconstructedK = 0.0;
+  Float_t eTtotalSim = 0.0;
+  Int_t nReco = 0;
   TString *strTPC = new TString("TPC");
   TString *strITS = new TString("ITS");
   TString *strTPCITS = new TString("TPCITS");
@@ -152,7 +180,14 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  bool isKaon = (nSigmaPion>3.0 && nSigmaProton>3.0 && nSigmaKaon<3.0 && track->Pt()<0.45);
 	  bool isProton = (nSigmaPion>3.0 && nSigmaProton<3.0 && nSigmaKaon>3.0 && track->Pt()<0.9);
 
-	  bool unidentified = (!isProton && !isKaon && !isElectron);
+	  bool unidentified = (!isProton && !isKaon && !isElectron && !isPion);
+	  if(cutset==1){//ITS dE/dx identification requires tighter cuts on the tracks and we don't gain much from that so we won't do it
+	    unidentified = true;
+	    isPion=false;
+	    isElectron=false;
+	    isKaon=false;
+	    isProton=false;
+	  }
 	  Float_t dEdx = track->GetTPCsignal();
 	  if(cutset==1) dEdx = track->GetITSsignal();
 
@@ -165,8 +200,101 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	    continue; 	 	
 	  }
 	  else{//analysis
+	    if(fInvestigateSmearing && cutset==2){
+	      //calculates what we would measure for the pi/k/p et with background
+	      eTtotalRecoTotalUncorr += Et(simPart);
+	      if(isPion){
+		eTtotalRecoEffBkgdCorr += Et(simPart) *fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionPion(track->Pt(),fCentBin) * fHadEtReco->GetCorrections()->GetBackgroundCorrectionTPC(track->Pt());
+		eTtotalRecoBkgdCorr += Et(simPart) * fHadEtReco->GetCorrections()->GetBackgroundCorrectionTPC(track->Pt());
+		eTtotalRecoTotalUncorr += Et(simPart);
+	      }
+	      if(isProton){
+		eTtotalRecoEffBkgdCorr += Et(simPart) *fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionProton(track->Pt(),fCentBin) * fHadEtReco->GetCorrections()->GetBackgroundCorrectionTPC(track->Pt());
+		eTtotalRecoBkgdCorr += Et(simPart) * fHadEtReco->GetCorrections()->GetBackgroundCorrectionTPC(track->Pt());
+	      }
+	      if(isKaon){
+		eTtotalRecoEffBkgdCorr += Et(simPart) *fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionKaon(track->Pt(),fCentBin) * fHadEtReco->GetCorrections()->GetBackgroundCorrectionTPC(track->Pt());
+		eTtotalRecoBkgdCorr += Et(simPart) * fHadEtReco->GetCorrections()->GetBackgroundCorrectionTPC(track->Pt());
+	      }
+	      if(unidentified){
+		eTtotalRecoEffBkgdCorr += Et(simPart) *fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionHadron(track->Pt(),fCentBin) * fHadEtReco->GetCorrections()->GetBackgroundCorrectionTPC(track->Pt());
+		eTtotalRecoBkgdCorr += Et(simPart) * fHadEtReco->GetCorrections()->GetBackgroundCorrectionTPC(track->Pt());
+	      }
+	      //for calculating et as it's done in the reconstructed data
+	      Float_t corrBkgd=0.0;
+	      Float_t corrNotID=0.0;
+	      Float_t corrNoID=0.0;// = fHadEtReco->GetCorrections()->GetNotIDCorrectionNoPID(track->Pt());
+	      Float_t corrEff = 0.0;
+	      Float_t corrEffNoID = 0.0;
+	      Float_t et = 0.0;
+	      if(cutset==2){//TPC
+		corrBkgd = fHadEtReco->GetCorrections()->GetBackgroundCorrectionTPC(track->Pt());
+		corrEffNoID = fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionHadron(track->Pt(),fCentBin);
+		corrNotID = fHadEtReco->GetCorrections()->GetNotIDConstCorrectionTPC();
+		corrNoID = fHadEtReco->GetCorrections()->GetNotIDConstCorrectionTPCNoID();
+	      }
+	      if(cutset==1){//ITS
+		corrBkgd = fHadEtReco->GetCorrections()->GetBackgroundCorrectionITS(track->Pt());
+		corrEffNoID = fHadEtReco->GetCorrections()->GetITSEfficiencyCorrectionHadron(track->Pt(),fCentBin);
+		corrNotID = fHadEtReco->GetCorrections()->GetNotIDConstCorrectionITS();
+		corrNoID = fHadEtReco->GetCorrections()->GetNotIDConstCorrectionITSNoID();
+	      }
+	      
+	      bool isprimary = stack->IsPhysicalPrimary(label);
+	      if (TMath::Abs(track->Eta()) < fHadEtReco->GetCorrections()->GetEtaCut()){
+		  if(isPion){
+		    et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
+		    corrEff = fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionPion(track->Pt(),fCentBin);
+		    if(isprimary){
+		      eTtotalAsReconstructed += et*corrBkgd*corrEff*corrNotID;
+		    }
+		    else{
+		      eTBkgdAsReconstructed += et*corrBkgd*corrEff*corrNotID;
+		    }
+		  }
+		  if(isKaon){
+		    et = Et(track->P(),track->Theta(),fgKPlusCode,track->Charge());
+		    corrEff = fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionKaon(track->Pt(),fCentBin);
+		    if(isprimary){
+		      eTtotalAsReconstructed += et*corrBkgd*corrEff*corrNotID;
+		    }
+		    else{
+		      eTBkgdAsReconstructed += et*corrBkgd*corrEff*corrNotID;
+		    }
+		  }
+		  if(isProton){
+		    et = Et(track->P(),track->Theta(),fgProtonCode,track->Charge());
+		    corrEff = fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionProton(track->Pt(),fCentBin);
+		    if(isprimary){
+		      eTtotalAsReconstructed += et*corrBkgd*corrEff*corrNotID;
+		    }
+		    else{
+		      eTBkgdAsReconstructed += et*corrBkgd*corrEff*corrNotID;
+		    }
+		  }
+		  if(unidentified){
+		    et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
+		    corrEff = fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionHadron(track->Pt(),fCentBin);
+		    if(isprimary){
+		      eTtotalAsReconstructed += et*corrBkgd*corrEff*corrNotID;
+		    }
+		    else{
+		      eTBkgdAsReconstructed += et*corrBkgd*corrEff*corrNotID;
+		    }
+		  }
+		  if(!isPion && !isProton && !isKaon && !unidentified){
+		      eTBkgdAsReconstructed += et*corrBkgd*corrEff*corrNotID;
+		  }
+		  Int_t pdgCode =  simPart->GetPDG(0)->PdgCode();
+		  if(pdgCode==fgPiPlusCode ||pdgCode==fgPiMinusCode){eTtotalAsReconstructedPi+=et*corrBkgd*corrEff*corrNotID;}
+		  if(pdgCode==fgKPlusCode ||pdgCode==fgKMinusCode){eTtotalAsReconstructedK+=et*corrBkgd*corrEff*corrNotID;}
+		  if(pdgCode==fgProtonCode ||pdgCode==fgAntiProtonCode){eTtotalAsReconstructedP+=et*corrBkgd*corrEff*corrNotID;}
+		}
+	    }
+
+	    if(cutset==2) eTtotalSimAll += Et(simPart);
 	    if(stack->IsPhysicalPrimary(label)){
-	      if (TMath::Abs(simPart->Eta()) < fCuts->GetCommonEtaCut()){
+	      if (TMath::Abs(simPart->Eta()) < fHadEtReco->GetCorrections()->GetEtaCut()){
 		Int_t pdgCode =  simPart->GetPDG(0)->PdgCode();
 		Int_t mypid = 0;
 		if(pdgCode==AliAnalysisHadEt::fgPiPlusCode) mypid = 1;
@@ -178,14 +306,27 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		if(pdgCode==fgKMinusCode) mypid = 3;
 		if(pdgCode==fgEMinusCode) mypid = 4;
 		bool filled = false;      
+		//for smearing investigations
+		if(fInvestigateSmearing && cutset==2){
+		  pTtotalReco += simPart->Pt();
+		  pTtotalSim += track->Pt();
+		  eTtotalReco += Et(track->P(),track->Theta(),pdgCode,track->Charge());
+		  eTtotalSim += Et(simPart);
+		  nReco++;
+		}
 		//============Charged hadrons===================================
+		float myefficiencyCorrEt = 0.0;
 		//identified...
 		if(isPion){
 		  if(pdgCode!=fgPiPlusCode && pdgCode!=fgPiMinusCode){
 		    FillHisto2D(Form("MisidentifiedPIDs%s",cutName->Data()),1,mypid,1);
-		    //if(mypid==0)cerr<<"I was misidentified! I'm not a pion! I am a "<<simPart->GetName()<<endl;
 		  }
 		  float myEt = Et(simPart);
+		  if(fInvestigateSmearing && cutset==2){
+		    eTtotalRecoPIDSmeared +=myEt;
+		    eTtotalRecoEffCorr += myEt *fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionPion(track->Pt(),fCentBin);
+		    myefficiencyCorrEt = myEt * fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionPion(track->Pt(),fCentBin) ;
+		  }
 		  if(track->Charge()>0){ FillHisto2D(Form("EtReconstructed%sIdentifiedPiPlus",cutName->Data()),track->Pt(),track->Eta(),myEt);}
 		  else{ FillHisto2D(Form("EtReconstructed%sIdentifiedPiMinus",cutName->Data()),track->Pt(),track->Eta(),myEt);}
 		  FillHisto2D(Form("dEdxPion%s",cutName->Data()),track->P(),dEdx,1.0);
@@ -195,6 +336,11 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    FillHisto2D(Form("MisidentifiedPIDs%s",cutName->Data()),2,mypid,1);
 		  }
 		  float myEt = Et(simPart);
+		  if(fInvestigateSmearing && cutset==2){
+		    eTtotalRecoPIDSmeared +=myEt;
+		    eTtotalRecoEffCorr += myEt *fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionProton(track->Pt(),fCentBin);
+		    myefficiencyCorrEt = myEt * fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionProton(track->Pt(),fCentBin);
+		  }
 		  if(track->Charge()>0){ FillHisto2D(Form("EtReconstructed%sIdentifiedProton",cutName->Data()),track->Pt(),track->Eta(),myEt);}
 		  else{ FillHisto2D(Form("EtReconstructed%sIdentifiedAntiProton",cutName->Data()),track->Pt(),track->Eta(),myEt);}
 		  if(fBaryonEnhancement){
@@ -209,6 +355,11 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    FillHisto2D(Form("MisidentifiedPIDs%s",cutName->Data()),3,mypid,1);
 		  }
 		  float myEt = Et(simPart);
+		  if(fInvestigateSmearing && cutset==2){
+		    eTtotalRecoPIDSmeared +=myEt;
+		    eTtotalRecoEffCorr += myEt *fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionKaon(track->Pt(),fCentBin);
+		    myefficiencyCorrEt = myEt * fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionKaon(track->Pt(),fCentBin);
+		  }
 		  if(track->Charge()>0){ FillHisto2D(Form("EtReconstructed%sIdentifiedKPlus",cutName->Data()),track->Pt(),track->Eta(),myEt);}
 		  else{ FillHisto2D(Form("EtReconstructed%sIdentifiedKMinus",cutName->Data()),track->Pt(),track->Eta(),myEt);}
 		  FillHisto2D(Form("dEdxKaon%s",cutName->Data()),track->P(),dEdx,1.0);
@@ -228,6 +379,11 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    float myEtP = Et(simPart,fgProtonMass);
 		    float myEtK = Et(simPart,fgKaonMass);
 		    float myEt = Et(simPart);
+		    if(fInvestigateSmearing && cutset==2){
+		      eTtotalRecoPIDSmeared +=myEtPi;
+		      eTtotalRecoEffCorr += myEt *fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionHadron(track->Pt(),fCentBin);
+		      myefficiencyCorrEt = myEt * fHadEtReco->GetCorrections()->GetTPCEfficiencyCorrectionHadron(track->Pt(),fCentBin);
+		    }
 		    FillHisto2D(Form("EtReconstructed%sUnidentifiedAssumingPion",cutName->Data()),track->Pt(),track->Eta(),myEtPi);
 		    FillHisto2D(Form("EtReconstructed%sUnidentifiedAssumingProton",cutName->Data()),track->Pt(),track->Eta(),myEtP);
 		    FillHisto2D(Form("EtReconstructed%sUnidentifiedAssumingKaon",cutName->Data()),track->Pt(),track->Eta(),myEtK);
@@ -274,6 +430,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  myEtReco = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
 		  float pT = simPart->Pt();
 		  float eta = simPart->Eta();
+		  if(fInvestigateSmearing && cutset==2){
+		    eTtotalRecoEffCorrPi+=myefficiencyCorrEt;
+		    eTtotalRecoUncorr +=myEt;
+		  }
 		  if(fUseRecoPt){//Then we switch the pT and the Et
 		    myEt = myEtReco;
 		    pT = track->Pt();
@@ -301,6 +461,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  myEtReco = Et(track->P(),track->Theta(),fgPiMinusCode,track->Charge());
 		  float pT = simPart->Pt();
 		  float eta = simPart->Eta();
+		  if(fInvestigateSmearing && cutset==2){
+		    eTtotalRecoEffCorrPi+=myefficiencyCorrEt;
+		    eTtotalRecoUncorr +=myEt;
+		  }
 		  if(fUseRecoPt){//Then we switch the pT and the Et
 		    myEt = myEtReco;
 		    pT = track->Pt();
@@ -333,6 +497,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    pT = track->Pt();
 		    eta = track->Eta();
 		  }
+		  if(fInvestigateSmearing && cutset==2){
+		    eTtotalRecoEffCorrK+=myefficiencyCorrEt;
+		    eTtotalRecoUncorr +=myEt;
+		  }
 		  FillHisto2D(Form("EtReconstructed%sKPlus",cutName->Data()),pT,eta,myEt);
 		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
 		  FillHisto2D(Form("EtNReconstructed%sKPlus",cutName->Data()),pT,eta,myEt);
@@ -361,6 +529,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    pT = track->Pt();
 		    eta = track->Eta();
 		  }
+		  if(fInvestigateSmearing && cutset==2){
+		    eTtotalRecoEffCorrK+=myefficiencyCorrEt;
+		    eTtotalRecoUncorr +=myEt;
+		  }
 		  FillHisto2D(Form("EtReconstructed%sKMinus",cutName->Data()),pT,eta,myEt);
 		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
 		  FillHisto2D(Form("EtNReconstructed%sKMinus",cutName->Data()),pT,eta,myEt);
@@ -388,6 +560,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    myEt = myEtReco;
 		    pT = track->Pt();
 		    eta = track->Eta();
+		  }
+		  if(fInvestigateSmearing && cutset==2){
+		    eTtotalRecoEffCorrP+=myefficiencyCorrEt;
+		    eTtotalRecoUncorr +=myEt;
 		  }
 		  FillHisto2D(Form("EtReconstructed%sProton",cutName->Data()),pT,eta,myEt);
 		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
@@ -424,6 +600,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    myEt = myEtReco;
 		    pT = track->Pt();
 		    eta = track->Eta();
+		  }
+		  if(fInvestigateSmearing && cutset==2){
+		    eTtotalRecoEffCorrP+=myefficiencyCorrEt;
+		    eTtotalRecoUncorr +=myEt;
 		  }
 		  FillHisto2D(Form("EtReconstructed%sAntiProton",cutName->Data()),pT,eta,myEt);
 		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
@@ -462,8 +642,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    FillHisto2D(Form("EtReconstructed%sMisidentifiedElectrons",cutName->Data()),track->Pt(),track->Eta(),myEtPi);
 		  }
 		  float myEt = Et(simPart);
-		    FillHisto2D(Form("EtReconstructed%sEMinus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		    filled = true;
+		  FillHisto2D(Form("EtReconstructed%sEMinus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
+		  filled = true;
 		}
 		if(myEtReco>0.0){FillHisto2D(Form("ETresolution%s",cutName->Data()),myEtReco,(myEtSim-myEtReco)/myEtReco,1.0);}
 		if(track->Pt()>0.0){FillHisto2D(Form("pTresolution%s",cutName->Data()),track->Pt(),(simPart->Pt() - track->Pt())/track->Pt(),1.0);}
@@ -476,53 +656,64 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		}
 
 	      }
-	      
 	    }
 	    else{//not a primary - we're after V0 daughters!
-	      if (TMath::Abs(simPart->Eta()) < fCuts->GetCommonEtaCut()){
+	      bool written = false;
+	      //now, what is the et we would measure for this?  Since this is the relevant et.
+	      float myrecoEt = 0;
+	      if(isPion || unidentified) myrecoEt = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
+	      if(isProton) myrecoEt = Et(track->P(),track->Theta(),fgProtonCode,track->Charge());
+	      if(isKaon) myrecoEt = Et(track->P(),track->Theta(),fgKPlusCode,track->Charge());
+	      if (TMath::Abs(simPart->Eta()) < fHadEtReco->GetCorrections()->GetEtaCut()){
 		TParticle *mom = stack->Particle(simPart->GetFirstMother());
 		if(mom){
 		  TParticlePDG *pc = mom->GetPDG(0);
 		  if(pc){
 		    Int_t pdgCode =  mom->GetPDG(0)->PdgCode();
 		    if(pdgCode == fgLambdaCode){
+		      written = true;
 		      float myEt = Et(simPart);
 		      float pT = simPart->Pt();
 		      float eta = simPart->Eta();
+		      eTtotalRecoBkgd+=myEt;
 		      if(fUseRecoPt){//Then we switch the pT and the Et
 			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			pT = track->Pt();
 			eta = track->Eta();
 		      }
-		      FillHisto2D(Form("EtReconstructed%sLambdaDaughters",cutName->Data()),pT,eta,myEt);
+		      FillHisto2D(Form("EtReconstructed%sLambdaDaughters",cutName->Data()),pT,eta,myrecoEt);
 		      Float_t weight = LambdaWeight(mom->Pt());
 		      if(fBaryonEnhancement){
 			float enhancement = ProtonBaryonEnhancement(track->Pt());
 			weight = weight*enhancement;
 		      }
-		      FillHisto2D(Form("EtReconstructed%sLambdaDaughtersReweighted",cutName->Data()),pT,eta,myEt*weight);
+		      FillHisto2D(Form("EtReconstructed%sLambdaDaughtersReweighted",cutName->Data()),pT,eta,myrecoEt*weight);
 		    }
 		    if(pdgCode == fgAntiLambdaCode){
+		      written = true;
 		      float myEt = Et(simPart);
 		      float pT = simPart->Pt();
 		      float eta = simPart->Eta();
+		      eTtotalRecoBkgd+=myEt;
 		      if(fUseRecoPt){//Then we switch the pT and the Et
 			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			pT = track->Pt();
 			eta = track->Eta();
 		      }
-		      FillHisto2D(Form("EtReconstructed%sAntiLambdaDaughters",cutName->Data()),pT,eta,myEt);
+		      FillHisto2D(Form("EtReconstructed%sAntiLambdaDaughters",cutName->Data()),pT,eta,myrecoEt);
 		      Float_t weight = AntiLambdaWeight(mom->Pt());
 		      if(fBaryonEnhancement){
 			float enhancement = ProtonBaryonEnhancement(track->Pt());
 			weight = weight*enhancement;
 		      }
-		      FillHisto2D(Form("EtReconstructed%sAntiLambdaDaughtersReweighted",cutName->Data()),pT,eta,myEt*weight);
+		      FillHisto2D(Form("EtReconstructed%sAntiLambdaDaughtersReweighted",cutName->Data()),pT,eta,myrecoEt*weight);
 		    }
-		    if(pdgCode == fgK0SCode){
+		    if(pdgCode == fgK0SCode || pdgCode == fgK0LCode || pdgCode == fgKPlusCode || pdgCode == fgKMinusCode){//actually get all kaon daughters
+		      written = true;
 		      float myEt = Et(simPart);
 		      float pT = simPart->Pt();
 		      float eta = simPart->Eta();
+		      eTtotalRecoBkgd+=myEt;
 		      if(fUseRecoPt){//Then we switch the pT and the Et
 			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			pT = track->Pt();
@@ -530,51 +721,59 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      }
 		      FillHisto2D(Form("EtReconstructed%sK0SDaughters",cutName->Data()),pT,eta,myEt);
 		      Float_t weight = K0Weight(mom->Pt());
-		      FillHisto2D(Form("EtReconstructed%sK0SDaughtersReweighted",cutName->Data()),pT,eta,myEt*weight);
+		      FillHisto2D(Form("EtReconstructed%sK0SDaughtersReweighted",cutName->Data()),pT,eta,myrecoEt*weight);
 		    }
 		    if(pdgCode == fgXiCode){
+		      written = true;
 		      float myEt = Et(simPart);
 		      float pT = simPart->Pt();
 		      float eta = simPart->Eta();
+		      eTtotalRecoBkgd+=myEt;
 		      if(fUseRecoPt){//Then we switch the pT and the Et
 			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			pT = track->Pt();
 			eta = track->Eta();
 		      }
-		      FillHisto2D(Form("EtReconstructed%sXiDaughters",cutName->Data()),pT,eta,myEt);
+		      FillHisto2D(Form("EtReconstructed%sXiDaughters",cutName->Data()),pT,eta,myrecoEt);
 		    }
 		    if(pdgCode == fgAntiXiCode){
+		      written = true;
 		      float myEt = Et(simPart);
 		      float pT = simPart->Pt();
 		      float eta = simPart->Eta();
+		      eTtotalRecoBkgd+=myEt;
 		      if(fUseRecoPt){//Then we switch the pT and the Et
 			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			pT = track->Pt();
 			eta = track->Eta();
 		      }
-		      FillHisto2D(Form("EtReconstructed%sAntiXiDaughters",cutName->Data()),pT,eta,myEt);
+		      FillHisto2D(Form("EtReconstructed%sAntiXiDaughters",cutName->Data()),pT,eta,myrecoEt);
 		    }
 		    if(pdgCode == fgOmegaCode){
+		      written = true;
 		      float myEt = Et(simPart);
 		      float pT = simPart->Pt();
 		      float eta = simPart->Eta();
+		      eTtotalRecoBkgd+=myEt;
 		      if(fUseRecoPt){//Then we switch the pT and the Et
 			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			pT = track->Pt();
 			eta = track->Eta();
 		      }
-		      FillHisto2D(Form("EtReconstructed%sOmegaDaughters",cutName->Data()),pT,eta,myEt);
+		      FillHisto2D(Form("EtReconstructed%sOmegaDaughters",cutName->Data()),pT,eta,myrecoEt);
 		    }
 		    if(pdgCode == fgXiCode){
+		      written = true;
 		      float myEt = Et(simPart);
 		      float pT = simPart->Pt();
 		      float eta = simPart->Eta();
+		      eTtotalRecoBkgd+=myEt;
 		      if(fUseRecoPt){//Then we switch the pT and the Et
 			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			pT = track->Pt();
 			eta = track->Eta();
 		      }
-		      FillHisto2D(Form("EtReconstructed%sAntiOmegaDaughters",cutName->Data()),pT,eta,myEt);
+		      FillHisto2D(Form("EtReconstructed%sAntiOmegaDaughters",cutName->Data()),pT,eta,myrecoEt);
 		    }
 
 		    if(mom->GetFirstMother()>0){
@@ -585,55 +784,121 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 			  Int_t pdgCodeGrandma =  grandma->GetPDG(0)->PdgCode();
 		      
 			  if(pdgCodeGrandma == fgXiCode){
+			    written = true;
 			    float myEt = Et(simPart);
 			    float pT = simPart->Pt();
 			    float eta = simPart->Eta();
+			    eTtotalRecoBkgd+=myEt;
 			    if(fUseRecoPt){//Then we switch the pT and the Et
 			      myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			      pT = track->Pt();
 			      eta = track->Eta();
 			    }
-			    FillHisto2D(Form("EtReconstructed%sXiDaughters",cutName->Data()),pT,eta,myEt);
+			    FillHisto2D(Form("EtReconstructed%sXiDaughters",cutName->Data()),pT,eta,myrecoEt);
 			  }
 			  if(pdgCodeGrandma == fgAntiXiCode){
+			    written = true;
 			    float myEt = Et(simPart);
 			    float pT = simPart->Pt();
 			    float eta = simPart->Eta();
+			    eTtotalRecoBkgd+=myEt;
 			    if(fUseRecoPt){//Then we switch the pT and the Et
 			      myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			      pT = track->Pt();
 			      eta = track->Eta();
 			    }
-			    FillHisto2D(Form("EtReconstructed%sAntiXiDaughters",cutName->Data()),pT,eta,myEt);
+			    FillHisto2D(Form("EtReconstructed%sAntiXiDaughters",cutName->Data()),pT,eta,myrecoEt);
 			  }
 			  if(pdgCodeGrandma == fgOmegaCode){
+			    written = true;
 			    float myEt = Et(simPart);
 			    float pT = simPart->Pt();
 			    float eta = simPart->Eta();
+			    eTtotalRecoBkgd+=myEt;
 			    if(fUseRecoPt){//Then we switch the pT and the Et
 			      myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			      pT = track->Pt();
 			      eta = track->Eta();
 			    }
-			    FillHisto2D(Form("EtReconstructed%sOmegaDaughters",cutName->Data()),pT,eta,myEt);
+			    FillHisto2D(Form("EtReconstructed%sOmegaDaughters",cutName->Data()),pT,eta,myrecoEt);
 			  }
 			  if(pdgCodeGrandma == fgXiCode){
+			    written = true;
 			    float myEt = Et(simPart);
 			    float pT = simPart->Pt();
 			    float eta = simPart->Eta();
+			    eTtotalRecoBkgd+=myEt;
 			    if(fUseRecoPt){//Then we switch the pT and the Et
 			      myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			      pT = track->Pt();
 			      eta = track->Eta();
 			    }
-			    FillHisto2D(Form("EtReconstructed%sAntiOmegaDaughters",cutName->Data()),pT,eta,myEt);
+			    FillHisto2D(Form("EtReconstructed%sAntiOmegaDaughters",cutName->Data()),pT,eta,myrecoEt);
 			  }
 
 			}
 		      }
 		    }
+		    if(!written){
+		      int mycode = simPart->GetPDG(0)->PdgCode();
+		      if( (pdgCode == fgGammaCode || pdgCode == fgPi0Code) && (mycode==fgEPlusCode||mycode==fgEMinusCode)){
+			written = true;
+			float myEt = Et(simPart);
+			float pT = simPart->Pt();
+			float eta = simPart->Eta();
+			eTtotalRecoBkgd+=myEt;
+			if(fUseRecoPt){//Then we switch the pT and the Et
+			  myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			  pT = track->Pt();
+			  eta = track->Eta();
+			}
+			FillHisto2D(Form("EtReconstructed%sConversionElectrons",cutName->Data()),pT,eta,myrecoEt);
+		      }
+		      if(mycode==fgMuPlusCode || mycode==fgMuMinusCode){
+			written = true;
+			float myEt = Et(simPart);
+			float pT = simPart->Pt();
+			float eta = simPart->Eta();
+			eTtotalRecoBkgd+=myEt;
+			if(fUseRecoPt){//Then we switch the pT and the Et
+			  myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			  pT = track->Pt();
+			  eta = track->Eta();
+			}
+			FillHisto2D(Form("EtReconstructed%sSecondaryMuons",cutName->Data()),pT,eta,myrecoEt);
+		      }
+		      if(mycode==fgPiPlusCode || mycode==fgPiMinusCode){
+			written = true;
+			float myEt = Et(simPart);
+			float pT = simPart->Pt();
+			float eta = simPart->Eta();
+			eTtotalRecoBkgd+=myEt;
+			if(fUseRecoPt){//Then we switch the pT and the Et
+			  myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			  pT = track->Pt();
+			  eta = track->Eta();
+			}
+			FillHisto2D(Form("EtReconstructed%sSecondaryPions",cutName->Data()),pT,eta,myrecoEt);
+		      }
+		      if(mycode==fgAntiProtonCode || mycode==fgProtonCode){
+			written = true;
+			float myEt = Et(simPart);
+			float pT = simPart->Pt();
+			float eta = simPart->Eta();
+			eTtotalRecoBkgd+=myEt;
+			if(fUseRecoPt){//Then we switch the pT and the Et
+			  myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			  pT = track->Pt();
+			  eta = track->Eta();
+			}
+			FillHisto2D(Form("EtReconstructed%sSecondaryProtons",cutName->Data()),pT,eta,myrecoEt);
+		      }
+		      //if(!written) cout<<"I was not counted in the background and I am a "<<simPart->GetName()<<" and my mother is a "<<mom->GetName()<<endl;
+		    }
 		  }
+		  else{cout<<"No particle code!! 657"<<endl;}
 		}
+		else{cout<<"No mother particle!! 658"<<endl;}
 	      }
 	    }
 	  }
@@ -642,11 +907,25 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
       }
     delete list;
   }
+  if(fInvestigateSmearing){
+    if(fSimPiKPEtShouldBeReco>0.0) FillHisto2D("SimPiKPEtMinusSimEffCorrRecoOnly",fSimPiKPEtShouldBeReco,(fSimPiKPEtShouldBeReco-eTtotalRecoEffCorr)/fSimPiKPEtShouldBeReco,1.0);
+    if(fSimPiKPEtShouldBeReco>0.0) FillHisto2D("SimPiKPEtMinusSimEffBkgdCorrRecoOnly",fSimPiKPEtShouldBeReco,(fSimPiKPEtShouldBeReco-eTtotalRecoEffBkgdCorr)/fSimPiKPEtShouldBeReco,1.0);
+    if(fSimPiKPEtShouldBeRecoPi>0.0) FillHisto2D("SimPiKPEtMinusSimEffCorrRecoPiOnly",fSimPiKPEtShouldBeRecoPi,(fSimPiKPEtShouldBeRecoPi-eTtotalRecoEffCorrPi)/fSimPiKPEtShouldBeRecoPi,1.0);
+    if(fSimPiKPEtShouldBeRecoP>0.0) FillHisto2D("SimPiKPEtMinusSimEffCorrRecoPOnly",fSimPiKPEtShouldBeRecoP,(fSimPiKPEtShouldBeRecoP-eTtotalRecoEffCorrP)/fSimPiKPEtShouldBeRecoP,1.0);
+    if(fSimPiKPEtShouldBeRecoK>0.0) FillHisto2D("SimPiKPEtMinusSimEffCorrRecoKOnly",fSimPiKPEtShouldBeRecoK,(fSimPiKPEtShouldBeRecoK-eTtotalRecoEffCorrK)/fSimPiKPEtShouldBeRecoK,1.0);
+    if(eTtotalSim>0.0) FillHisto2D("SimPiKPEtMinusSimAllCorrSmearedRecoOnly",eTtotalSim,(eTtotalSim-eTtotalSimAll+eTtotalRecoBkgd)/eTtotalSim,1.0);
+    if(eTtotalRecoTotalUncorr>0.0) FillHisto2D("SimPiKPEtMeasMinusEtRealPiKP",eTtotalRecoTotalUncorr,(eTtotalRecoTotalUncorr-eTtotalRecoUncorr)/eTtotalRecoTotalUncorr,1.0);
+    if(eTtotalSim>0.0) FillHisto2D("SimPiKPEtMinusSimAllSmearedRecoOnly",eTtotalSim,(eTtotalSim-eTtotalSimAll)/eTtotalSim,1.0);
+    if(eTtotalSim>0.0) FillHisto2D("SimPiKPEtMinusSimPIDSmearedRecoOnly",eTtotalSim,(eTtotalSim-eTtotalRecoPIDSmeared*1.01)/eTtotalSim,1.0);
+    if(eTtotalSim>0.0) FillHisto2D("SimPiKPEtMinusSimSmearedRecoOnly",eTtotalSim,(eTtotalSim-eTtotalReco)/eTtotalSim,1.0);
+    if(pTtotalSim>0.0) FillHisto2D("SimPiKPPtMinusSimSmearedRecoOnly",pTtotalSim,(pTtotalSim-pTtotalReco)/pTtotalSim,1.0);
+    if(eTtotalSim>0.0) FillHisto2D("SimPiKPEtMinusSimSmearedMultRecoOnly",nReco,(eTtotalSim-eTtotalReco)/eTtotalSim,1.0);
+    if(pTtotalSim>0.0) FillHisto2D("SimPiKPPtMinusSimSmearedMultRecoOnly",nReco,(pTtotalSim-pTtotalReco)/pTtotalSim,1.0);
+  }
   delete pID;
   delete strTPC;
   delete strITS;
   delete strTPCITS;
-  //delete AliESDpid;
   return 1;
 }
 Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
@@ -674,6 +953,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     Float_t fSimPiKPEtPtCutSmearedITS = 0;
     Float_t fSimPiKPEtPIDSmeared = 0;
     Float_t fSimPiKPEtPIDSmearedNoID = 0;
+    fSimPiKPEtShouldBeReco = 0;
+    fSimPiKPEtShouldBeRecoPi = 0;
+    fSimPiKPEtShouldBeRecoK = 0;
+    fSimPiKPEtShouldBeRecoP = 0;
     //=================Tracks which may or may not have been reconstructed=================
 
     for (Int_t iPart = 0; iPart < nPrim; iPart++)
@@ -686,13 +969,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
             Printf("ERROR: Could not get particle %d", iPart);
             continue;
 	  }
-
-        //TParticlePDG *pc = part->GetPDG(0);
-
         // Check if it is a primary particle
 	if (stack->IsPhysicalPrimary(iPart)){//primaries
 
-	  if (TMath::Abs(part->Eta()) < fCuts->GetCommonEtaCut())	    {
+	  if (TMath::Abs(part->Eta()) < fHadEtReco->GetCorrections()->GetEtaCut())	    {
 
 	    Int_t pdgCode =  part->GetPDG(0)->PdgCode();
 	    bool filled = false;
@@ -734,6 +1014,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      float myEt = Et(part);
 	      float myEtP = Et(part,fgProtonMass);
 	      float myEtK = Et(part,fgKaonMass);
+	      if(part->Pt()>0.15) fSimPiKPEtShouldBeReco += myEt;
+	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoPi += myEt;
 
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
@@ -765,6 +1047,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      float myEt = Et(part);
 	      float myEtP = Et(part,fgProtonMass);
 	      float myEtK = Et(part,fgKaonMass);
+	      if(part->Pt()>0.15) fSimPiKPEtShouldBeReco += myEt;
+	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoPi += myEt;
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedPiMinus",part->Pt(),part->Eta(),myEt);
@@ -794,6 +1078,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      float myEt = Et(part);
 	      float myEtPi = Et(part,fgPionMass);
 	      float myEtP = Et(part,fgProtonMass);
+	      if(part->Pt()>0.15) fSimPiKPEtShouldBeReco += myEt;
+	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoK += myEt;
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedKPlus",part->Pt(),part->Eta(),myEt);
@@ -822,6 +1108,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      float myEt = Et(part);
 	      float myEtPi = Et(part,fgPionMass);
 	      float myEtP = Et(part,fgProtonMass);
+	      if(part->Pt()>0.15) fSimPiKPEtShouldBeReco += myEt;
+	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoK += myEt;
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedKMinus",part->Pt(),part->Eta(),myEt);
@@ -850,6 +1138,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      float myEt = Et(part);
 	      float myEtPi = Et(part,fgPionMass);
 	      float myEtK = Et(part,fgKaonMass);
+	      if(part->Pt()>0.15) fSimPiKPEtShouldBeReco += myEt;
+	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoP += myEt;
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedProton",part->Pt(),part->Eta(),myEt);
@@ -884,6 +1174,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      float myEt = Et(part);
 	      float myEtPi = Et(part,fgPionMass);
 	      float myEtK = Et(part,fgKaonMass);
+	      if(part->Pt()>0.15) fSimPiKPEtShouldBeReco += myEt;
+	      if(part->Pt()>0.15) fSimPiKPEtShouldBeRecoP += myEt;
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedAntiProton",part->Pt(),part->Eta(),myEt);
@@ -936,7 +1228,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      float myEt = Et(part);
 	      fSimHadEt += myEt;
 	      fSimTotEt += myEt;
-	      //cout<<"I am a simulated lambda! pt "<<part->Pt()<<" eta "<<part->Eta()<<endl;
 	      FillHisto2D("EtSimulatedLambda",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedAllHadron",part->Pt(),part->Eta(),myEt);
 	      Float_t weight = LambdaWeight(part->Pt());
@@ -957,11 +1248,9 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		      myEt = Et(daughter);
 		      FillHisto2D("EtSimulatedLambdaDaughters",daughter->Pt(),daughter->Eta(),myEt);
 		      FillHisto2D("EtSimulatedLambdaDaughtersReweighted",daughter->Pt(),daughter->Eta(),myEt*weight);
-		      //cout<<"Lambda daughter is a "<<daughter->GetName()<<endl;
 		    }
 		  }
 		  else{
-		    //cout<<"Lambda daughter is a "<<daughter->GetName()<<endl;
 		  }
 		}
 	      }
@@ -991,11 +1280,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		      myEt = Et(daughter);
 		      FillHisto2D("EtSimulatedAntiLambdaDaughters",daughter->Pt(),daughter->Eta(),myEt);
 		      FillHisto2D("EtSimulatedAntiLambdaDaughtersReweighted",daughter->Pt(),daughter->Eta(),myEt*weight);
-		      //cout<<"AntiLambda daughter is a "<<daughter->GetName()<<endl;
 		    }
-		  }
-		  else{
-		    //cout<<"AntiLambda daughter is a "<<daughter->GetName()<<endl;
 		  }
 		}
 	      }
@@ -1022,11 +1307,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		      myEt = Et(daughter);
 		      FillHisto2D("EtSimulatedK0SDaughters",daughter->Pt(),daughter->Eta(),myEt);
 		      FillHisto2D("EtSimulatedK0SDaughtersReweighted",daughter->Pt(),daughter->Eta(),myEt*weight);
-		      //cout<<"K0S daughter is a "<<daughter->GetName()<<endl;
 		    }
-		  }
-		  else{
-		    //cout<<"K0S daughter is a "<<daughter->GetName()<<endl;
 		  }
 		}
 	      }
@@ -1060,11 +1341,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		    if(daughtercode==fgPiPlusCode || daughtercode==fgProtonCode || daughtercode==fgKMinusCode){
 		      myEt = Et(daughter);
 		      FillHisto2D("EtSimulatedOmegaDaughters",daughter->Pt(),daughter->Eta(),myEt);
-		    //cout<<"Omega daughter is a "<<daughter->GetName()<<endl;
 		    }
-		  }
-		  else{
-		    //cout<<"Omega daughter is a "<<daughter->GetName()<<endl;
 		  }
 		}
 	      }
@@ -1087,11 +1364,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		    if(daughtercode==fgPiMinusCode || daughtercode==fgAntiProtonCode || daughtercode==fgKPlusCode){
 		      myEt = Et(daughter);
 		      FillHisto2D("EtSimulatedAntiOmegaDaughters",daughter->Pt(),daughter->Eta(),myEt);
-		      //cout<<"AntiOmega daughter is a "<<daughter->GetName()<<endl;
 		    }
-		  }
-		  else{
-		    //cout<<"AntiOmega daughter is a "<<daughter->GetName()<<endl;
 		  }
 		}
 	      }
@@ -1124,7 +1397,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      for(Int_t idaughter = 0;idaughter<ndaughters;idaughter++){
 		Int_t daughterindex = part->GetDaughter(idaughter);
 		if(daughterindex<0 || daughterindex>1e5 || daughterindex>1e5) continue;
-		//cerr<<"Daughter index "<<daughterindex<<" npart "<<nPrim<<endl;
 		TParticle *daughter = stack->ParticleFromTreeK(daughterindex);
 		if(daughter){
 		  if(daughter->GetPDG(0)){
@@ -1133,11 +1405,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		    if(daughtercode==fgPiPlusCode || daughtercode==fgProtonCode || daughtercode==fgPiMinusCode){
 		      myEt = Et(daughter);
 		      FillHisto2D("EtSimulatedXiDaughters",daughter->Pt(),daughter->Eta(),myEt);
-		    //cout<<"Xi daughter is a "<<daughter->GetName()<<endl;
 		    }
-		  }
-		  else{
-		    //cout<<"Xi daughter is a "<<daughter->GetName()<<endl;
 		  }
 		}
 	      }
@@ -1160,11 +1428,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		    if(daughtercode==fgPiPlusCode || daughtercode==fgAntiProtonCode || daughtercode==fgPiMinusCode){
 		      myEt = Et(daughter);
 		      FillHisto2D("EtSimulatedAntiXiDaughters",daughter->Pt(),daughter->Eta(),myEt);
-		      //cout<<"AntiXi daughter is a "<<daughter->GetName()<<endl;
 		    }
-		  }
-		  else{
-		    //cout<<"AntiXi daughter is a "<<daughter->GetName()<<endl;
 		  }
 		}
 	      }
@@ -1212,7 +1476,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		momEta = mom->Eta();
 		mompT = mom->Pt();
 	      }
-	      //cout<<"I am a gamma and my mom is "<<mom->GetName()<<endl;
 	      //We want to separate the gammas by pi0, eta, omega0 but we don't want to double count energy so we get the et from the gamma daughter
 	      if(pdgCodeMom == fgEtaCode){
 		float myEt = Et(part);
@@ -1256,11 +1519,6 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      fSimTotEt += myEt;
 	      FillHisto2D("EtSimulatedOmega0",part->Pt(),part->Eta(),myEt);
 	      filled = true;
-	    }
-	    if(!filled){
-	      //if( strcmp(pc->ParticleClass(),"Baryon")==0 || strcmp(pc->ParticleClass(),"Meson")==0 ){
-	      //cout<<"Did not find a place for "<<part->GetName()<<" "<<pdgCode<<" which is a "<<pc->ParticleClass()<<endl;
-		//}
 	    }
 	  }
 	}
@@ -1549,6 +1807,10 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateEtaPtHisto2D(Form("EtReconstructed%sAntiOmegaDaughters",cutName->Data()),"Reconstructed E_{T} from #Omega^{+} Daughters");
   CreateEtaPtHisto2D(Form("EtReconstructed%sXiDaughters",cutName->Data()),"Reconstructed E_{T} from #Xi^{-} Daughters");
   CreateEtaPtHisto2D(Form("EtReconstructed%sAntiXiDaughters",cutName->Data()),"Reconstructed E_{T} from #Xi^{+} Daughters");
+  CreateEtaPtHisto2D(Form("EtReconstructed%sConversionElectrons",cutName->Data()),"Reconstructed E_{T} from conversion electrons");
+  CreateEtaPtHisto2D(Form("EtReconstructed%sSecondaryMuons",cutName->Data()),"Reconstructed E_{T} from secondary muons");//from pions
+  CreateEtaPtHisto2D(Form("EtReconstructed%sSecondaryPions",cutName->Data()),"Reconstructed E_{T} from secondary pions");//from rescattering and sigma+-
+  CreateEtaPtHisto2D(Form("EtReconstructed%sSecondaryProtons",cutName->Data()),"Reconstructed E_{T} from secondary protons");//from rescattering and sigma+-
 
     CreateIntHisto1D(Form("UnidentifiedPIDs%s",cutName->Data()),"PIDs of unidentified particles", "PID", "Number of particles",9, -4,4);
     CreateHisto2D(Form("MisidentifiedPIDs%s",cutName->Data()),"PIDs of misidentified particles", "PID real","PID identified",5, -.5,4.5,5, -.5,4.5);
@@ -1655,6 +1917,85 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   etDiff = 0.15;
 
   if(fInvestigateSmearing){
+    //======================================================================
+
+    snprintf(histoname,200,"SimPiKPEtMeasMinusEtRealPiKP");
+    snprintf(histotitle,200,"Simulated (all reconstructed - primaries)/all reconstructed for reconstructed tracks only");
+    snprintf(ytitle,50,"(primary-all)/primary");
+    snprintf(xtitle,50,"true p, K, p E_{T} for primary tracks");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff*5,etDiff*5);
+
+    snprintf(histoname,200,"SimPiKPEtMinusSimAllCorrSmearedRecoOnly");
+    snprintf(histotitle,200,"Simulated (primary-all)/primary for reconstructed tracks only");
+    snprintf(ytitle,50,"(primary-all)/primary");
+    snprintf(xtitle,50,"true p, K, p E_{T} for primary tracks");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff*5,etDiff*5);
+
+    snprintf(histoname,200,"SimPiKPEtMinusSimEffCorrRecoOnly");
+    snprintf(histotitle,200,"(sim-reco)/sim primary #pi,k,p for p_{T}>0.15");
+    snprintf(ytitle,50,"(sim-reco)/sim");
+    snprintf(xtitle,50,"true p, K, p E_{T} for primary tracks");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff*5,etDiff*5);
+
+    snprintf(histoname,200,"SimPiKPEtMinusSimEffBkgdCorrRecoOnly");
+    snprintf(histotitle,200,"(sim-reco)/sim primary #pi,k,p for p_{T}>0.15 with background subtraction");
+    snprintf(ytitle,50,"(sim-reco)/sim");
+    snprintf(xtitle,50,"true p, K, p E_{T} for primary tracks");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff*5,etDiff*5);
+
+    snprintf(histoname,200,"SimPiKPEtMinusSimEffCorrRecoPiOnly");
+    snprintf(histotitle,200,"(sim-reco)/sim primary #pi for p_{T}>0.15");
+    snprintf(ytitle,50,"(sim-reco)/sim");
+    snprintf(xtitle,50,"true #pi E_{T} for primary tracks");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt/2,nbinsEt,-etDiff*5,etDiff*5);
+
+    snprintf(histoname,200,"SimPiKPEtMinusSimEffCorrRecoKOnly");
+    snprintf(histotitle,200,"(sim-reco)/sim primary K for p_{T}>0.15");
+    snprintf(ytitle,50,"(sim-reco)/sim");
+    snprintf(xtitle,50,"true K E_{T} for primary tracks");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt/6,nbinsEt,-etDiff*5,etDiff*5);
+
+    snprintf(histoname,200,"SimPiKPEtMinusSimEffCorrRecoPOnly");
+    snprintf(histotitle,200,"(sim-reco)/sim primary p for p_{T}>0.15");
+    snprintf(ytitle,50,"(sim-reco)/sim");
+    snprintf(xtitle,50,"true p E_{T} for primary tracks");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt/6,nbinsEt,-etDiff*5,etDiff*5);
+
+    snprintf(histoname,200,"SimPiKPEtMinusSimAllSmearedRecoOnly");
+    snprintf(histotitle,200,"Simulated (primary-all)/primary for reconstructed tracks only");
+    snprintf(ytitle,50,"(primary-all)/primary");
+    snprintf(xtitle,50,"true p, K, p E_{T} for primary tracks");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff*5,0.0);
+
+    snprintf(histoname,200,"SimPiKPEtMinusSimPIDSmearedRecoOnly");
+    snprintf(histotitle,200,"Simulated (true-smeared)/true for reconstructed tracks only with PID smearing");
+    snprintf(ytitle,50,"(true-smeared)/true");
+    snprintf(xtitle,50,"true p, K, p E_{T}");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
+
+    snprintf(histoname,200,"SimPiKPEtMinusSimSmearedRecoOnly");
+    snprintf(histotitle,200,"Simulated (true-smeared)/true for reconstructed tracks only");
+    snprintf(ytitle,50,"(true-smeared)/true");
+    snprintf(xtitle,50,"true p, K, p E_{T}");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff/15,etDiff/15);
+
+    snprintf(histoname,200,"SimPiKPPtMinusSimSmearedRecoOnly");
+    snprintf(histotitle,200,"Simulated (true-smeared)/true for reconstructed tracks only");
+    snprintf(ytitle,50,"(true-smeared)/true");
+    snprintf(xtitle,50,"true p, K, p p_{T}");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff/15,etDiff/15);
+
+    snprintf(histoname,200,"SimPiKPEtMinusSimSmearedMultRecoOnly");
+    snprintf(histotitle,200,"Simulated (true-smeared)/true for reconstructed tracks only");
+    snprintf(ytitle,50,"(true-smeared)/true");
+    snprintf(xtitle,50,"number of reconstructed particles");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff/15,etDiff/15);
+
+    snprintf(histoname,200,"SimPiKPPtMinusSimSmearedMultRecoOnly");
+    snprintf(histotitle,200,"Simulated (true-smeared)/true for reconstructed tracks only");
+    snprintf(ytitle,50,"(true-smeared)/true");
+    snprintf(xtitle,50,"number of reconstructed particles");
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff/15,etDiff/15);
 
     //======================================================================
 
