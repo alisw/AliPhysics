@@ -56,6 +56,8 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t GetStoreDistributions() const {return this->fStoreDistributions;};
   void SetCalculateCumulantsVsM(Bool_t const ccvm) {this->fCalculateCumulantsVsM = ccvm;};
   Bool_t GetCalculateCumulantsVsM() const {return this->fCalculateCumulantsVsM;};
+  void SetCalculateAllCorrelationsVsM(Bool_t const cacvm) {this->fCalculateAllCorrelationsVsM = cacvm;};
+  Bool_t GetCalculateAllCorrelationsVsM() const {return this->fCalculateAllCorrelationsVsM;};     
   void SetMinimumBiasReferenceFlow(Bool_t const mmrf) {this->fMinimumBiasReferenceFlow = mmrf;};
   Bool_t GetMinimumBiasReferenceFlow() const {return this->fMinimumBiasReferenceFlow;};     
   void SetForgetAboutCovariances(Bool_t const fac) {this->fForgetAboutCovariances = fac;};
@@ -99,6 +101,7 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t fCalculate2DDiffFlow;           // calculate differential flow in (pt,eta) (Remark: this is very expensive in terms of CPU time)
   Bool_t fStoreDistributions;            // store or not distributions of correlations
   Bool_t fCalculateCumulantsVsM;         // calculate cumulants versus multiplicity  
+  Bool_t fCalculateAllCorrelationsVsM;   // calculate all correlations versus multiplicity     
   Bool_t fMinimumBiasReferenceFlow;      // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)     
   Bool_t fForgetAboutCovariances;        // when propagating error forget about the covariances  
   Bool_t fStorePhiDistributionForOneEvent; // store phi distribution for one event to illustrate flow

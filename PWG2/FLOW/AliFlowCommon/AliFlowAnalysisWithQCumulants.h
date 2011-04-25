@@ -243,6 +243,8 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t GetPropagateErrorAlsoFromNIT() const {return this->fPropagateErrorAlsoFromNIT;};  
   void SetCalculateCumulantsVsM(Bool_t const ccvm) {this->fCalculateCumulantsVsM = ccvm;};
   Bool_t GetCalculateCumulantsVsM() const {return this->fCalculateCumulantsVsM;};   
+  void SetCalculateAllCorrelationsVsM(Bool_t const cacvm) {this->fCalculateAllCorrelationsVsM = cacvm;};
+  Bool_t GetCalculateAllCorrelationsVsM() const {return this->fCalculateAllCorrelationsVsM;};   
   void SetMinimumBiasReferenceFlow(Bool_t const mmrf) {this->fMinimumBiasReferenceFlow = mmrf;};
   Bool_t GetMinimumBiasReferenceFlow() const {return this->fMinimumBiasReferenceFlow;};  
   void SetForgetAboutCovariances(Bool_t const fac) {this->fForgetAboutCovariances = fac;};
@@ -468,6 +470,7 @@ class AliFlowAnalysisWithQCumulants{
   TList *fIntFlowList; // list to hold all histograms and profiles relevant for integrated flow 
   TList *fIntFlowProfiles; // list to hold all profiles relevant for integrated flow
   TList *fIntFlowResults; // list to hold all histograms with final results relevant for integrated flow  
+  TList *fIntFlowAllCorrelationsVsM; // list to hold all profiles with correlations vs M
   //  3b.) flags:
   TProfile *fIntFlowFlags; // profile to hold all flags for integrated flow
   Bool_t fApplyCorrectionForNUA; // apply correction for non-uniform acceptance 
@@ -477,6 +480,7 @@ class AliFlowAnalysisWithQCumulants{
   Double_t fMaxMult; // maximal multiplicity for flow analysis versus multiplicity  
   Bool_t fPropagateErrorAlsoFromNIT; // propagate error by taking into account also non-isotropic terms (not sure if resulting error then is correct - to be improved)
   Bool_t fCalculateCumulantsVsM; // calculate cumulants versus multiplicity  
+  Bool_t fCalculateAllCorrelationsVsM; // calculate all correlations versus multiplicity   
   Bool_t fMinimumBiasReferenceFlow; // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)   
   Bool_t fForgetAboutCovariances; // when propagating error forget about the covariances  
   Bool_t fStorePhiDistributionForOneEvent; // store phi distribution for one event to illustrate flow
@@ -498,6 +502,7 @@ class AliFlowAnalysisWithQCumulants{
   TProfile *fIntFlowCorrelationsVsMPro[4]; // average correlations <<2>>, <<4>>, <<6>> and <<8>> versus multiplicity (error is wrong here!)
   TProfile *fIntFlowSquaredCorrelationsVsMPro[4]; // average correlations <<2>^2>, <<4>^2>, <<6>^2> and <<8>^2> versus multiplicity  
   TProfile *fIntFlowCorrelationsAllPro; // average all correlations for integrated flow (with wrong errors!)
+  TProfile *fIntFlowCorrelationsAllVsMPro[34]; // average all correlations vs M (errors via Sumw2 - to me improved)
   TProfile *fIntFlowExtraCorrelationsPro; // when particle weights are used some extra correlations appear 
   TProfile *fIntFlowProductOfCorrelationsPro; // average product of correlations <2>, <4>, <6> and <8>  
   TProfile *fIntFlowProductOfCorrelationsVsMPro[6]; // average product of correlations <2>, <4>, <6> and <8>  
