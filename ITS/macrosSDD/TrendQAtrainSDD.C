@@ -43,8 +43,8 @@ void TrendQAtrainSDD(TString period,
   TString outFilNam=Form("TrendingSDD_%s_%s_%s.root",period.Data(),recoPass.Data(),qaTrain.Data());
 
 
-  const Int_t nVariables=31;
-  TNtuple* ntsdd=new TNtuple("ntsdd","SDD trending","nrun:fracTrackWithClu1:errfracTrackWithClu1:fracTrackWithClu2:errfracTrackWithClu2:fracTrackWithClu3:errfracTrackWithClu3:fracTrackWithClu4:errfracTrackWithClu4:fracTrackWithClu5:errfracTrackWithClu5:fracTrackWithClu6:errfracTrackWithClu6:meanTrPts3:errmeanTrPts3:meanTrPts4:errmeanTrPts4:minDrTime:errminDrTime:meanDrTime:errmeanDrTime:fracExtra:errfracExtra:meandEdxTB0:errmeandEdxTB0:meandEdxTB5:errmeandEdxTB5:nMod95:nMod80:nMod60:nModEmpty");
+  const Int_t nVariables=35;
+  TNtuple* ntsdd=new TNtuple("ntsdd","SDD trending","nrun:fracTrackWithClu1:errfracTrackWithClu1:fracTrackWithClu2:errfracTrackWithClu2:fracTrackWithClu3:errfracTrackWithClu3:fracTrackWithClu4:errfracTrackWithClu4:fracTrackWithClu5:errfracTrackWithClu5:fracTrackWithClu6:errfracTrackWithClu6:meanTrPts3:errmeanTrPts3:meanTrPts4:errmeanTrPts4:minDrTime:errminDrTime:meanDrTime:errmeanDrTime:fracExtra:errfracExtra:meandEdxLay3:errmeandEdxLay3:meandEdxLay4:errmeandEdxLay4:meandEdxTB0:errmeandEdxTB0:meandEdxTB5:errmeandEdxTB5:nMod95:nMod80:nMod60:nModEmpty");
   Float_t xnt[nVariables];
 
   TBits* readRun=new TBits(999999);
@@ -245,6 +245,10 @@ void TrendQAtrainSDD(TString period,
 	  }
 	}
       }
+      TH2F* hdedxmod=(TH2F*)l->FindObject("hdEdxVsMod");
+      TH1D* hdedxLay3=hdedxmod->ProjectionY("hdedxLay3",1,84);
+      TH1D* hdedxLay4=hdedxmod->ProjectionY("hdedxLay4",85,260);
+      
       TH1F* hSigTim0=(TH1F*)l->FindObject("hSigTimeInt0");
       TH1F* hSigTim5=(TH1F*)l->FindObject("hSigTimeInt5");
 
@@ -272,6 +276,10 @@ void TrendQAtrainSDD(TString period,
       xnt[index++]=htimT->GetMeanError();
       xnt[index++]=fracExtra;
       xnt[index++]=errFracExtra;
+      xnt[index++]=hdedxLay3->GetMean();
+      xnt[index++]=hdedxLay3->GetMeanError();
+      xnt[index++]=hdedxLay4->GetMean();
+      xnt[index++]=hdedxLay4->GetMeanError();
       xnt[index++]=hSigTim0->GetMean();
       xnt[index++]=hSigTim0->GetMeanError();
       xnt[index++]=hSigTim5->GetMean();
@@ -308,6 +316,7 @@ void MakePlots(TString ntupleFileName){
   Float_t fracTrackWithClu3,fracTrackWithClu4,errfracTrackWithClu3,errfracTrackWithClu4;
   Float_t fracTrackWithClu5,fracTrackWithClu6,errfracTrackWithClu5,errfracTrackWithClu6;
   Float_t fracExtra,errfracExtra;
+  Float_t meandEdxLay3,errmeandEdxLay3,meandEdxLay4,errmeandEdxLay4;
   Float_t meandEdxTB0,errmeandEdxTB0,meandEdxTB5,errmeandEdxTB5;
   Float_t nMod95,nMod80,nMod60,nModEmpty;
   
@@ -343,6 +352,10 @@ void MakePlots(TString ntupleFileName){
   ntsdd->SetBranchAddress("errmeandEdxTB0",&errmeandEdxTB0);
   ntsdd->SetBranchAddress("meandEdxTB5",&meandEdxTB5);
   ntsdd->SetBranchAddress("errmeandEdxTB5",&errmeandEdxTB5);
+  ntsdd->SetBranchAddress("meandEdxLay3",&meandEdxLay3);
+  ntsdd->SetBranchAddress("errmeandEdxLay3",&errmeandEdxLay3);
+  ntsdd->SetBranchAddress("meandEdxLay4",&meandEdxLay4);
+  ntsdd->SetBranchAddress("errmeandEdxLay4",&errmeandEdxLay4);
 
   TH1F* histotrp3=new TH1F("histotrp3","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
   TH1F* histotrp4=new TH1F("histotrp4","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
@@ -351,6 +364,8 @@ void MakePlots(TString ntupleFileName){
   TH1F* histofracExtra=new TH1F("histofracExtra","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
   TH1F* histodEdxTB0=new TH1F("histodEdxTB0","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
   TH1F* histodEdxTB5=new TH1F("histodEdxTB5","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histodEdxLay3=new TH1F("histodEdxLay3","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histodEdxLay4=new TH1F("histodEdxLay4","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
   TH1F* histoTrackClu1=new TH1F("histoTrackClu1","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
   TH1F* histoTrackClu2=new TH1F("histoTrackClu2","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
   TH1F* histoTrackClu3=new TH1F("histoTrackClu3","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
@@ -404,6 +419,12 @@ void MakePlots(TString ntupleFileName){
     histodEdxTB5->SetBinContent(i+1,meandEdxTB5);
     histodEdxTB5->SetBinError(i+1,errmeandEdxTB5);
     histodEdxTB5->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histodEdxLay3->SetBinContent(i+1,meandEdxLay3);
+    histodEdxLay3->SetBinError(i+1,errmeandEdxLay3);
+    histodEdxLay3->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histodEdxLay4->SetBinContent(i+1,meandEdxLay4);
+    histodEdxLay4->SetBinError(i+1,errmeandEdxLay4);
+    histodEdxLay4->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
 
     histoNmodEffBelow95->SetBinContent(i+1,nMod95);
     histoNmodEffBelow95->SetBinError(i+1,0.0001);
@@ -475,6 +496,24 @@ void MakePlots(TString ntupleFileName){
   leg2->SetFillStyle(0);
   leg2->Draw();
   c4->Update();
+
+  TCanvas* c4b=new TCanvas("c4b","Charge per Layer");
+  histodEdxLay3->SetLineColor(1);
+  histodEdxLay3->SetMarkerStyle(20);
+  histodEdxLay3->Draw();
+  histodEdxLay3->SetMinimum(0.);
+  histodEdxLay4->SetLineColor(4);
+  histodEdxLay4->SetMarkerColor(4);
+  histodEdxLay4->SetMarkerStyle(23);
+  histodEdxLay4->Draw("same");
+  histodEdxLay3->GetYaxis()->SetTitle("<dE/dx> (keV/300 #mum)");
+  TLegend* leg2b=new TLegend(0.6,0.15,0.88,0.35);
+  ent=leg2b->AddEntry(histodEdxLay3,"Layer 3","PL");
+  ent=leg2b->AddEntry(histodEdxLay4,"Layer 4","PL");
+  ent->SetTextColor(histodEdxLay4->GetMarkerColor());
+  leg2b->SetFillStyle(0);
+  leg2b->Draw();
+  c4b->Update();
 
   TCanvas* c5=new TCanvas("c5","TrackWithSDD");
   histoTrackClu3->Draw();
