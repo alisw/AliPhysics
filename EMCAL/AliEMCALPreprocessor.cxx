@@ -196,11 +196,9 @@ UInt_t AliEMCALPreprocessor::Process(TMap* dcsAliasMap)
   // Trigger configuration processing: only for Physics runs
   TString triggerConf = fConfEnv->GetValue("Trigger","ON");
   triggerConf.ToUpper();
-  if( runType == kPhysicsRunType || runType == kPedestalRunType ) {
-    //  if (triggerConf != "OFF" && dcsAliasMap ) {
-    if ( dcsAliasMap ) {
+  if( runType == kPhysicsRunType ) {
+    if (triggerConf != "OFF" && dcsAliasMap ) {
       UInt_t triggerResult = MapTriggerConfig(dcsAliasMap);
-      AliInfo(Form("triggerConf %s\n", triggerConf.Data()));
       result+=triggerResult;
       status = new TParameter<int>("triggerResult",triggerResult);
       resultArray->Add(status);
@@ -348,7 +346,7 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
   trigConfig->SetTRUArr(truArr);
 
   // loop through all TRUs
-  bool debug = true; // debug flag for AliInfo printouts for each TRU
+  bool debug = false; // debug flag for AliInfo printouts for each TRU
   for( iTRU = 0; iTRU < kNTRU; iTRU++){
     if (debug) AliInfo( Form("iTRU %d \n", iTRU) );
     // get the shuttled values
