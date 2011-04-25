@@ -45,17 +45,19 @@ AliAnalysisTaskHadEt::AliAnalysisTaskHadEt(const char *name, Bool_t isMc) :
   if(fMCAnalysis) delete fMCAnalysis;
   if(fRecAnalysis) delete fRecAnalysis;
 
-  if (fMCConfigFile.Length()) {
-    cout<<"Rereading AliAnalysisHadEtMonteCarlo configuration file..."<<endl;
-    gROOT->LoadMacro(fMCConfigFile);
-    fMCAnalysis = (AliAnalysisHadEtMonteCarlo *) gInterpreter->ProcessLine("ConfigHadEtMonteCarlo()");
-  }
-
   if (fRecoConfigFile.Length()) {
     cout<<"Rereading AliAnalysisHadEtReconstructed configuration file..."<<endl;
     gROOT->LoadMacro(fRecoConfigFile);
     fRecAnalysis = (AliAnalysisHadEtReconstructed *) gInterpreter->ProcessLine("ConfigHadEtReconstructed()");
   }
+
+  if (fMCConfigFile.Length()) {
+    cout<<"Rereading AliAnalysisHadEtMonteCarlo configuration file..."<<endl;
+    gROOT->LoadMacro(fMCConfigFile);
+    fMCAnalysis = (AliAnalysisHadEtMonteCarlo *) gInterpreter->ProcessLine("ConfigHadEtMonteCarlo()");
+    fMCAnalysis->SetHadEtReconstructed(fRecAnalysis);
+  }
+
 
     // Define input and output slots here
     // Input slot #0 works with a TChain
@@ -100,8 +102,8 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
     fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
     fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
   }
-  if(fRecAnalysis->DataSet()==2010 || fRecAnalysis->DataSet()==20100){
-    cout<<"Setting track cuts for the 2010 p+p collisions at 7 GeV"<<endl;
+  if(fRecAnalysis->DataSet()==2010){
+    cout<<"Setting track cuts for the 2010 p+p collisions at 7 TeV"<<endl;
     //cout<<"Warning:  Have not set 2010 track cuts yet!!"<<endl;
     fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
     fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
@@ -109,6 +111,17 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
     fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
     //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
     fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
+    fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
+  }
+  if(fRecAnalysis->DataSet()==20100){
+    cout<<"Setting track cuts for the 2010 Pb+Pb collisions at 2.76 TeV"<<endl;
+    //cout<<"Warning:  Have not set 2010 track cuts yet!!"<<endl;
+    fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
+    fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+    fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
+    //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
+    fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSSATrackCutsPbPb2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
     fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
   }
 
@@ -145,7 +158,8 @@ AliCentrality *cent = GetCentralityObject();
 
 if(res == 0 && cent){
   
-  
+  //cout<<"New Event"<<endl;  
+
   fRecAnalysis->AnalyseEvent(fESDEvent);
 
   AliMCEvent* mcEvent = MCEvent();
@@ -192,6 +206,7 @@ if(res == 0 && cent){
       }
     }
   }
+//cout<<"End Event"<<endl<<endl;
 // Post output data.
 PostData(1, fOutputList);
 }

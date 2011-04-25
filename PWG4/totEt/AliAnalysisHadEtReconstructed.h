@@ -74,6 +74,7 @@ public:
     Float_t GetCorrectedPiKPEtFullAcceptanceTPCNoPID() const {return fCorrectedHadEtFullAcceptanceTPCNoPID;}
     Float_t GetCorrectedPiKPEtFullAcceptanceITSNoPID() const {return fCorrectedHadEtFullAcceptanceITSNoPID+fCorrectedHadEtFullAcceptanceTPCNoPID;}
     void SetCorrections(AliAnalysisHadEtCorrections *corr){fCorrections = corr;}
+    AliAnalysisHadEtCorrections *GetCorrections(){return fCorrections;}
 
     void CreateHistograms();
      virtual void Init();
