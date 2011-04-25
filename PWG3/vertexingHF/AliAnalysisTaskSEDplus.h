@@ -37,7 +37,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   virtual ~AliAnalysisTaskSEDplus();
 
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
-  void SetDoLikeSign(Bool_t dols=kTRUE){fDoLS=dols;}
+  void SetDoLikeSign(Int_t dols=0){fDoLS=dols;}
   void SetUseStrangeness(Bool_t uses=kTRUE){fUseStrangeness=uses;}
   void SetMassLimits(Float_t range);
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
@@ -73,15 +73,22 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   enum {kMaxPtBins=20};
 
   TList   *fOutput; //! list send on output slot 0
-  TH1F    *fHistNEvents; //!hist. for No. of events
+  TH1F *fHistNEvents; //!hist. for No. of events
   TH1F *fMassHist[3*kMaxPtBins]; //!hist. for inv mass (LC)
-  TH1F*   fCosPHist[3*kMaxPtBins]; //!hist. for PointingAngle (LC)
-  TH1F*   fDLenHist[3*kMaxPtBins]; //!hist. for Dec Length (LC)
-  TH1F*   fSumd02Hist[3*kMaxPtBins]; //!hist. for sum d02 (LC)
-  TH1F*   fSigVertHist[3*kMaxPtBins]; //!hist. for sigVert (LC)
-  TH1F*   fPtMaxHist[3*kMaxPtBins]; //!hist. for Pt Max (LC)
-  TH1F*   fDCAHist[3*kMaxPtBins]; //!hist. for DCA (LC)
-  TH1F *fMassHistTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
+  TH1F *fCosPHist[3*kMaxPtBins]; //!hist. for PointingAngle (LC)
+  TH1F *fDLenHist[3*kMaxPtBins]; //!hist. for Dec Length (LC)
+  TH1F *fSumd02Hist[3*kMaxPtBins]; //!hist. for sum d02 (LC)
+  TH1F *fSigVertHist[3*kMaxPtBins]; //!hist. for sigVert (LC)
+  TH1F *fPtMaxHist[3*kMaxPtBins]; //!hist. for Pt Max (LC)
+  TH1F *fPtKHist[3*kMaxPtBins]; //!hist. for PtK (LC)
+  TH1F *fPtpi1Hist[3*kMaxPtBins]; //!hist. for PtPi1 (LC)
+  TH1F *fPtpi2Hist[3*kMaxPtBins]; //!hist. for PtPi2 (LC)
+  TH1F *fDCAHist[3*kMaxPtBins]; //!hist. for DCA (LC)
+  TH1F *fDLxy[3*kMaxPtBins]; //!hist. for DLxy (LC)
+  TH1F *fDLxyTC[3*kMaxPtBins]; //!hist. for DLxy (TC)
+  TH1F *fCosxy[3*kMaxPtBins]; //!hist. for Cosxy (LC)
+  TH1F *fCosxyTC[3*kMaxPtBins]; //!hist. for Cosxy (TC)
+   TH1F *fMassHistTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
   TH1F *fMassHistTCPlus[3*kMaxPtBins]; //!hist. for D+ inv mass (TC)
   TH1F *fMassHistTCMinus[3*kMaxPtBins]; //!hist. for D- inv mass (TC)
   TH1F *fMassHistLS[5*kMaxPtBins];//!hist. for LS inv mass (LC)
@@ -113,9 +120,9 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Bool_t fReadMC;    //flag for access to MC
   Bool_t fUseStrangeness;//flag to enhance strangeness in MC to fit to data
   Bool_t fUseBit;      //flag to use bitmask
-  Bool_t fDoLS;      //flag to do LS analysis
+  Int_t fDoLS;      //flag to do LS analysis
   
-  ClassDef(AliAnalysisTaskSEDplus,11); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,12); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif

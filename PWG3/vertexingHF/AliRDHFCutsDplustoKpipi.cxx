@@ -37,14 +37,15 @@ ClassImp(AliRDHFCutsDplustoKpipi)
 //--------------------------------------------------------------------------
 AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const char* name) : 
 AliRDHFCuts(name),
-fUseStrongPid(kFALSE)
+  fUseStrongPid(kFALSE),
+  fUseImpParProdCorrCut(kFALSE)
 {
   //
   // Default Constructor
   //
-  Int_t nvars=12;
+  Int_t nvars=14;
   SetNVars(nvars);
-  TString varNames[12]={"inv. mass [GeV]",
+  TString varNames[14]={"inv. mass [GeV]",
 			"pTK [GeV/c]",
 			"pTPi [GeV/c]",
 			"d0K [cm]   lower limit!",
@@ -55,8 +56,10 @@ fUseStrongPid(kFALSE)
 			"pM=Max{pT1,pT2,pT3} (GeV/c)",
 			"cosThetaPoint",
 			"Sum d0^2 (cm^2)",
-			"dca cut (cm)"};
-  Bool_t isUpperCut[12]={kTRUE,
+			"dca cut (cm)",
+			"dec len XY (cm)",
+			"cosThetaPointXY"};
+  Bool_t isUpperCut[14]={kTRUE,
 			 kFALSE,
 			 kFALSE,
 			 kFALSE,
@@ -67,9 +70,11 @@ fUseStrongPid(kFALSE)
 			 kFALSE,
 			 kFALSE,
 			 kFALSE,
-			 kTRUE};
+			 kTRUE,
+			 kFALSE,
+			 kFALSE};
   SetVarNames(nvars,varNames,isUpperCut);
-  Bool_t forOpt[12]={kFALSE,
+  Bool_t forOpt[14]={kFALSE,
 		     kFALSE,
 		     kFALSE,
 		     kFALSE,
@@ -80,8 +85,10 @@ fUseStrongPid(kFALSE)
 		     kTRUE,
 		     kTRUE,
 		     kTRUE,
-		     kFALSE};
-  SetVarsForOpt(5,forOpt);
+		     kFALSE,
+		     kTRUE,
+		     kTRUE};
+  SetVarsForOpt(7,forOpt);
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
   if(fPidHF)delete fPidHF;
@@ -112,8 +119,8 @@ fUseStrongPid(kFALSE)
 //--------------------------------------------------------------------------
 AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const AliRDHFCutsDplustoKpipi &source) :
   AliRDHFCuts(source),
-  fUseStrongPid(source.fUseStrongPid)
-
+  fUseStrongPid(source.fUseStrongPid),
+  fUseImpParProdCorrCut(source.fUseImpParProdCorrCut)
 {
   //
   // Copy constructor
@@ -234,6 +241,14 @@ void AliRDHFCutsDplustoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *var
       }
     }
     vars[iter]=maxDCA;
+  }
+  if(fVarsForOpt[12]){
+    iter++;
+    vars[iter]=d->NormalizedDecayLengthXY();
+  }
+  if(fVarsForOpt[13]){
+    iter++;
+    vars[iter]=d->CosPointingAngleXY();
   }
   return;
 }
@@ -361,8 +376,10 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
     Double_t sum2=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
     if(sum2<fCutsRD[GetGlobalIndex(10,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
-    if(d->Getd0Prong(0)*d->Getd0Prong(1)<0. && d->Getd0Prong(2)*d->Getd0Prong(1)<0.) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
-    
+    if(fUseImpParProdCorrCut){
+      if(d->Getd0Prong(0)*d->Getd0Prong(1)<0. && d->Getd0Prong(2)*d->Getd0Prong(1)<0.) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+    }
+
     //sec vert
     if(d->GetSigmaVert()>fCutsRD[GetGlobalIndex(6,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
@@ -374,22 +391,16 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
     if(d->Pt2Prong(0) < fCutsRD[GetGlobalIndex(2,ptbin)]*fCutsRD[GetGlobalIndex(2,ptbin)] || TMath::Abs(d->Getd0Prong(0))<fCutsRD[GetGlobalIndex(4,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}//Pion1
 
     if(d->Pt2Prong(2) < fCutsRD[GetGlobalIndex(2,ptbin)]*fCutsRD[GetGlobalIndex(2,ptbin)] || TMath::Abs(d->Getd0Prong(2))<fCutsRD[GetGlobalIndex(4,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}//Pion2
-
-    
-
-
-    
     
     if(d->Pt2Prong(0)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)] && d->Pt2Prong(1)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)] && d->Pt2Prong(2)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
     if(d->DecayLength2()<fCutsRD[GetGlobalIndex(7,ptbin)]*fCutsRD[GetGlobalIndex(7,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
-
-
     if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
-    
+    if(d->NormalizedDecayLengthXY()<fCutsRD[GetGlobalIndex(12,ptbin)]){CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
+    if(d->CosPointingAngleXY()<fCutsRD[GetGlobalIndex(13,ptbin)]){CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
     // unset recalculated primary vertex when not needed any more
     CleanOwnPrimaryVtx(d,aod,origownvtx);
@@ -456,7 +467,7 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   
  
   const Int_t nptbins =13;
-  const Int_t nvars=12;
+  const Int_t nvars=14;
   Float_t ptbins[nptbins+1];
   ptbins[0]=0.;
   ptbins[1]=1;	
@@ -480,50 +491,26 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   for(Int_t ic=0;ic<nvars;ic++){anacutsval[ic]=new Float_t[nptbins];}
 
   //Double_t cutsDplus[12]={0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0.,10000000000.};
-  Int_t ic=0;
   for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.2;
+    anacutsval[0][ipt]=0.2;
+    anacutsval[3][ipt]=0.;
+    anacutsval[4][ipt]=0.;
+    anacutsval[5][ipt]=0.01;
+    anacutsval[11][ipt]=10000000000.;
+    anacutsval[12][ipt]=0.;
+    anacutsval[13][ipt]=0.;
   }
-  
-  
-  ic=1;
-  
+
   anacutsval[1][0]=0.3;
   anacutsval[1][1]=0.3;
-  anacutsval[1][2]=0.4;
-    
-  
-  for(Int_t ipt=3;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.4;
-  }
-  
-  ic=2;
-  
+  anacutsval[1][2]=0.4; 
   anacutsval[2][0]=0.3;
   anacutsval[2][1]=0.3;
-  anacutsval[2][2]=0.4;
-  
+  anacutsval[2][2]=0.4;  
   for(Int_t ipt=3;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.4;
+    anacutsval[1][ipt]=0.4;
+    anacutsval[2][ipt]=0.4;
   }
-  
-  ic=3;
-  for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.;
-  }
-  
-  ic=4;
-  for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.;
-  }
-  
-  ic=5;
-  for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.01;
-  }
-  
-  
-  ic=6;  
   
   anacutsval[6][0]=0.022100;
   anacutsval[6][1]=0.022100;
@@ -531,44 +518,23 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   anacutsval[6][3]=0.020667;
   anacutsval[6][4]=0.020667;
   anacutsval[6][5]=0.023333;
-  
-  
-  for(Int_t ipt=6;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.023333;
-  }
-  
-  
-  ic=7;
+    
   
   anacutsval[7][0]=0.08;
   anacutsval[7][1]=0.08;
   anacutsval[7][2]=0.09;  
   anacutsval[7][3]=0.095;
   anacutsval[7][4]=0.095;
-  anacutsval[7][5]=0.115;
-  
-  for(Int_t ipt=6;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.115;
-  }
-  
-  
-  
-  ic=8;
+   
   anacutsval[8][0]=0.5;
   anacutsval[8][1]=0.5;
   anacutsval[8][2]=1.0;
   anacutsval[8][3]=0.5;
-  
-  for(Int_t ipt=4;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.5;
-  }
-  
-  
-  ic=9;
-  
-  
-  anacutsval[9][0]=0.979;
-  anacutsval[9][1]=0.979;
+  anacutsval[8][4]=0.5;
+     
+    
+  anacutsval[9][0]=0.95;
+  anacutsval[9][1]=0.95;
   anacutsval[9][2]=0.95; 
   anacutsval[9][3]=0.95; 
   anacutsval[9][4]= 0.95;
@@ -577,40 +543,31 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   anacutsval[9][7]=0.92;
   anacutsval[9][8]=0.92;
   anacutsval[9][9]=0.90;
-  
-  for(Int_t ipt=10;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.90;
-  }
-  
-  
-  
-  ic=10;
+  anacutsval[9][10]=0.90;
+  anacutsval[9][11]=0.90;
+  anacutsval[9][12]=0.90;
   
   anacutsval[10][0]=0.0055;
   anacutsval[10][1]=0.0055;
   anacutsval[10][2]= 0.0028;
   anacutsval[10][3]=0.000883;
+  anacutsval[10][4]=0.000883;
+
   
-  
-  for(Int_t ipt=4;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.000883;
-  }
-  
-  ic=11;
-  
-  for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=10000000000.;
-  }    
-  
-  
-  
-  
+  for(Int_t ipt=5;ipt<nptbins;ipt++){
+    anacutsval[6][ipt]=0.02333;
+    anacutsval[7][ipt]=0.115;
+    anacutsval[8][ipt]=0.5;
+    anacutsval[10][ipt]=0.000883;
+    }   
+
+
   SetGlobalIndex(nvars,nptbins);
   SetPtBins(nptbins+1,ptbins);
   SetCuts(nvars,nptbins,anacutsval);
   SetUsePID(kTRUE);
   SetRemoveDaughtersFromPrim(kTRUE);
-  SetOptPileup(kTRUE);
+  
   PrintAll();
 
   for(Int_t iic=0;iic<nvars;iic++){delete [] anacutsval[iic];}
@@ -646,10 +603,7 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2010() {
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny); 
   // default is kBoth, otherwise kAny
-  
-  esdTrackCuts->SetMaxDCAToVertexXY(1.);
-  esdTrackCuts->SetMaxDCAToVertexZ(1.);
-  esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0100*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
   esdTrackCuts->SetPtRange(0.8,1.e10);
     
   AddTrackCuts(esdTrackCuts);
@@ -669,7 +623,7 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2010() {
   ptbins[8]=12.;
   ptbins[9]=16.;
   ptbins[10]=24.;
-  const Int_t nvars=12;
+  const Int_t nvars=14;
     
     
     
@@ -678,110 +632,67 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2010() {
   
   for(Int_t ic=0;ic<nvars;ic++){anacutsval[ic]=new Float_t[nptbins];}
   //Double_t cutsDplus[12]={0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0.,10000000000.};
-  Int_t ic=0;
+
   for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.2;
+    anacutsval[0][ipt]=0.2;
+    anacutsval[1][ipt]=0.8;
+    anacutsval[2][ipt]=0.8;
+    anacutsval[3][ipt]=0.;
+    anacutsval[4][ipt]=0.;
+    anacutsval[5][ipt]=0.01;
+    anacutsval[11][ipt]=10000000000.;
+    anacutsval[12][ipt]=0.;
+    anacutsval[13][ipt]=0.;
   }
   
-  ic=3;
-  for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.;
-  }
-  ic=4;
-  for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.;
-  }
-  ic=5;
-  for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.01;
-  }
-  //ic=6;
-  //for(Int_t ipt=0;ipt<nptbins;ipt++){
-  // anacutsval[ic][ipt]=0.06;
-  
-  ic=11;
-  for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=10000000000.;
-  }
-  
-  
-  
-  
-  ic=1;
-  for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.8;
-  }
-  ic=2;
-  for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[ic][ipt]=0.8;
-  }
-  
-    
- 
-   
     anacutsval[6][0]=0.022100;
-    anacutsval[6][1]=0.022100;
-    anacutsval[6][2]=0.034;
-    anacutsval[6][3]=0.020667;
-    anacutsval[6][4]=0.020667;
-    anacutsval[6][5]=0.023333;
-    anacutsval[6][6]=0.023333;
-    anacutsval[6][7]=0.023333;
-    anacutsval[6][8]=0.023333;
-    anacutsval[6][9]=0.023333;
-     
+     anacutsval[6][1]=0.022100;
+     anacutsval[6][2]=0.034;
+     anacutsval[6][3]=0.020667;
+     anacutsval[6][4]=0.020667;
+     anacutsval[6][5]=0.023333;
+    
     anacutsval[7][0]=0.08;
     anacutsval[7][1]=0.08;
     anacutsval[7][2]=0.17;  
     anacutsval[7][3]=0.14;
     anacutsval[7][4]=0.14;
     anacutsval[7][5]=0.14;
-    anacutsval[7][6]=0.19;
-    anacutsval[7][7]=0.19;
-    anacutsval[7][8]=0.19;
-    anacutsval[7][9]=0.19;
-     
+
+    
+
     anacutsval[8][0]=0.8;
     anacutsval[8][1]=0.8;
     anacutsval[8][2]=1.1;
     anacutsval[8][3]=0.5;
     anacutsval[8][4]=0.5;
     anacutsval[8][5]=2.0;
-    anacutsval[8][6]=2.0;
-    anacutsval[8][7]=2.0;
-    anacutsval[8][8]=2.0;
-    anacutsval[8][9]=2.0;
-     
-     anacutsval[9][0]=0.995;
+    
+   
+    anacutsval[9][0]=0.995;
     anacutsval[9][1]=0.995;
     anacutsval[9][2]=0.997; 
     anacutsval[9][3]=0.998; 
     anacutsval[9][4]= 0.998;
     anacutsval[9][5]=0.997;
-    anacutsval[9][6]=0.997;
-    anacutsval[9][7]=0.997;
-    anacutsval[9][8]=0.997;
-    anacutsval[9][9]=0.997;
 
-
-
- 
- 
     anacutsval[10][0]=0.0055;
     anacutsval[10][1]=0.0055;
     anacutsval[10][2]= 0.0028;
     anacutsval[10][3]=0.000883;
     anacutsval[10][4]=0.000883;
     anacutsval[10][5]=0.000883;
-    anacutsval[10][6]=0.000883;
-    anacutsval[10][7]=0.000883;
-    anacutsval[10][8]=0.000883;
-    anacutsval[10][9]=0.000883;
     
+    for(Int_t ipt=6;ipt<nptbins;ipt++){
+      anacutsval[6][ipt]=0.02333;
+      anacutsval[7][ipt]=0.19;
+      anacutsval[8][ipt]=2.0;
+      anacutsval[9][ipt]=0.997;
+      anacutsval[10][ipt]=0.000883;
+    }   
 
-
-
-
+   
+    
   SetPtBins(nptbins+1,ptbins);
   SetCuts(nvars,nptbins,anacutsval);
   SetUsePID(kTRUE);
@@ -789,10 +700,7 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2010() {
   SetMaxCentrality(20.);
   SetUseCentrality(AliRDHFCuts::kCentV0M);
   SetRemoveDaughtersFromPrim(kFALSE);
-  SetOptPileup(kFALSE);
-  SetMinPtCandidate(4.);
-  SetMaxPtCandidate(10000.);
-  
+    
   PrintAll();
 
   for(Int_t iic=0;iic<nvars;iic++){delete [] anacutsval[iic];}
