@@ -49,3 +49,11 @@ AliAnalysisEtSelectionHandler& AliAnalysisEtSelectionHandler::operator=(const Al
   // Assignment operator, not properly implemented
   return *this;
 }
+
+AliPhysicsSelection* AliAnalysisEtSelectionHandler::GetPhysicsSelection(Int_t runNumber) { //Returns physics selection
+  return fSelections->GetPhysicsSelection(runNumber); 
+}
+
+AliPhysicsSelection* AliAnalysisEtSelectionHandler::GetDefaultPhysicsSelection() { //returns default physics selection.
+  return fSelections->GetDefaultPhysicsSelection(); 
+}
