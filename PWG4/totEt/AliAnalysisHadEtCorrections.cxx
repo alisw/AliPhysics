@@ -11,9 +11,9 @@
 #include "TMath.h"
 #include <iostream>
 #include "Rtypes.h"
-#include "TNamed.h"
 #include "TObjArray.h"
 #include "AliLog.h"
+#include "TH1D.h"
 
 using namespace std;
 
@@ -60,8 +60,6 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections() : TNamed(),
 							   ,fEfficiencyKaonITS(0)
 							   ,fEfficiencyProtonITS(0)
 							   ,fEfficiencyHadronITS(0)
-							   ,fEfficiencyTPC(0)
-							   ,fEfficiencyITS(0)
 							   ,fEfficiencyErrorLow(0)
 							   ,fEfficiencyErrorHigh(0)
 							   ,fBackgroundErrorLow(0)
@@ -76,12 +74,11 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections() : TNamed(),
 {//default constructor
   Init();
 }
-
 void AliAnalysisHadEtCorrections::Init() 
 {  //This seems to solve a compiler error
-  cout<<"Creating new AliAnalysisHadEtCorrections"<<endl;
-  fEfficiencyTPC = new TObjArray();
-  fEfficiencyITS = new TObjArray();
+   cout<<"Creating new AliAnalysisHadEtCorrections"<<endl;
+   fEfficiencyTPC = new TObjArray();
+   fEfficiencyITS = new TObjArray();
 }
 
 AliAnalysisHadEtCorrections::~AliAnalysisHadEtCorrections()
@@ -331,13 +328,13 @@ Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionPion(const float 
   if(cb ==-1){//pp
     if(!fEfficiencyPionTPC){cerr<<"No histogram fEfficiencyPionTPC!"<<endl; return -1.0;}
     eff = fEfficiencyPionTPC->GetBinContent(fEfficiencyPionTPC->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyPionTPC%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyPionTPC%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }
@@ -346,13 +343,13 @@ Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionKaon(const float 
   if(cb ==-1){//pp
     if(!fEfficiencyKaonTPC){cerr<<"No histogram fEfficiencyKaonTPC!"<<endl; return -1.0;}
     eff = fEfficiencyKaonTPC->GetBinContent(fEfficiencyKaonTPC->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyKaonTPC%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyKaonTPC%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }
@@ -361,13 +358,13 @@ Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionProton(const floa
   if(cb ==-1){//pp
     if(!fEfficiencyProtonTPC){cerr<<"No histogram fEfficiencyProtonTPC!"<<endl; return -1.0;}
     eff = fEfficiencyProtonTPC->GetBinContent(fEfficiencyProtonTPC->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyProtonTPC%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyProtonTPC%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }
@@ -376,13 +373,13 @@ Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionHadron(const floa
   if(cb ==-1){//pp
     if(!fEfficiencyHadronTPC){cerr<<"No histogram fEfficiencyHadronTPC!"<<endl; return -1.0;}
     eff = fEfficiencyHadronTPC->GetBinContent(fEfficiencyHadronTPC->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyHadronTPC%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyHadronTPC%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }
@@ -391,13 +388,13 @@ Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionPion(const float 
   if(cb ==-1){//pp
     if(!fEfficiencyPionITS){cerr<<"No histogram fEfficiencyPionITS!"<<endl; return -1.0;}
     eff = fEfficiencyPionITS->GetBinContent(fEfficiencyPionITS->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyPionITS%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyPionITS%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }
@@ -406,13 +403,13 @@ Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionKaon(const float 
   if(cb ==-1){//pp
     if(!fEfficiencyKaonITS){cerr<<"No histogram fEfficiencyKaonITS!"<<endl; return -1.0;}
     eff = fEfficiencyKaonITS->GetBinContent(fEfficiencyKaonITS->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyKaonITS%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyKaonITS%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }
@@ -421,13 +418,13 @@ Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionProton(const floa
   if(cb ==-1){//pp
     if(!fEfficiencyProtonITS){cerr<<"No histogram fEfficiencyProtonITS!"<<endl; return -1.0;}
     eff = fEfficiencyProtonITS->GetBinContent(fEfficiencyProtonITS->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyProtonITS%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyProtonITS%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }
@@ -436,13 +433,13 @@ Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionHadron(const floa
   if(cb ==-1){//pp
     if(!fEfficiencyHadronITS){cerr<<"No histogram fEfficiencyHadronITS!"<<endl; return -1.0;}
     eff = fEfficiencyHadronITS->GetBinContent(fEfficiencyHadronITS->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo("Efficiency is zero!");  return 0.0;}
   }
   else{
     TH1D *fEfficiency = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyHadronITS%i",cb));
     if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyHadronITS%i",cb)<<endl; return -1.0;}
     eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
-    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+    if(eff<=0.0){AliInfo(Form("Pion efficiency is zero for centrality bin %i!",cb));  return 0.0;}
   }
   return 1.0/eff;
 }
@@ -574,6 +571,12 @@ Float_t AliAnalysisHadEtCorrections::GetNotIDCorrectionNoPID(const float pT){//G
   Float_t val = fnotIDNoID->GetBinContent(fnotIDNoID->FindBin(pT));
   if(val>0.0) return 1.0/(val);
   else{return 0.0;}
+}
+Float_t AliAnalysisHadEtCorrections::GetBackgroundCorrectionTPC(const float pT){//Get background correction for TPC tracks
+  return (1.0-fBackgroundTPC->GetBinContent(fBackgroundTPC->FindBin(pT)));
+}
+Float_t AliAnalysisHadEtCorrections::GetBackgroundCorrectionITS(const float pT){//Get background correction for ITS tracks
+  return (1.0-fBackgroundITS->GetBinContent(fBackgroundITS->FindBin(pT)));
 }
 void AliAnalysisHadEtCorrections::Report(){//Gives a report on the status of all corrections
   //This is primarily for cross checking that the results we get from the macro that fills this class, GetCorrections.C, are sane
