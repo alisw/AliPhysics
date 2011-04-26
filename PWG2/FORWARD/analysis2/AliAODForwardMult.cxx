@@ -259,7 +259,7 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
     else if (s.CompareTo("A")     == 0) trgMask |= AliAODForwardMult::kA;
     else if (s.CompareTo("C")     == 0) trgMask |= AliAODForwardMult::kC;
     else if (s.CompareTo("E")     == 0) trgMask |= AliAODForwardMult::kE;
-    else if (s.CompareTo("NCluster>0") == 0) 
+    else if (s.CompareTo("NCLUSTER>0") == 0) 
       trgMask |= AliAODForwardMult::kNClusterGt0;
     else 
       AliWarningGeneral("MakeTriggerMask", 
