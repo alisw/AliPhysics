@@ -116,6 +116,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //
   void     SetSystematicError(Double_t *systematic){ for (Int_t i=0; i<5;i++) fSystematicErrors[i]=systematic[i];}
   const Double_t * GetSystematicError() const { return fSystematicErrors;}
+  void    SetUseSystematicCorrelation(Bool_t useCorrelation)  {fUseSystematicCorrelation=useCorrelation;}
+  Bool_t  GetUseSystematicCorrelation() const { return fUseSystematicCorrelation;}
 
   static   AliTPCRecoParam *GetLowFluxParam();        // make reco parameters for low  flux env.
   static   AliTPCRecoParam *GetHighFluxParam();       // make reco parameters for high flux env. 
@@ -188,12 +190,13 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   //  misscalibration 
   //
   Double_t fSystematicErrors[5];  //systematic errors in the track parameters - to be added to TPC covariance matrix 
+  Bool_t fUseSystematicCorrelation;         // switch to use the correlation for the sys
 public:   
   static Bool_t fgUseTimeCalibration; // flag usage the time dependent calibration
                                       // to be switched off for pass 0 reconstruction
                                       // Use static function, other option will be to use 
                                       // additional specific storage ?
-  ClassDef(AliTPCRecoParam, 13)
+  ClassDef(AliTPCRecoParam, 14)
 };
 
 

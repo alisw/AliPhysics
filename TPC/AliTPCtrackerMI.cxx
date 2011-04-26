@@ -2810,6 +2810,7 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESDEvent *event)
     seed->UpdatePoints();
     AddCovariance(seed);
     AliESDtrack *esd=event->GetTrack(i);
+    if (!esd) continue; //never happen
     if (seed->GetNumberOfClusters()<60 && seed->GetNumberOfClusters()<(esd->GetTPCclusters(0) -5)*0.8){
       AliExternalTrackParam paramIn;
       AliExternalTrackParam paramOut;
@@ -5864,7 +5865,12 @@ Int_t AliTPCtrackerMI::Clusters2Tracks (AliESDEvent *const esd)
   //
   
   if (fSeeds) DeleteSeeds();
-  fEvent = esd;
+  fEvent = esd; 
+
+  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;  
+  transform->SetCurrentTimeStamp( esd->GetTimeStamp());
+  transform->SetCurrentRun(esd->GetRunNumber());
+
   Clusters2Tracks();
   if (!fSeeds) return 1;
   FillESD(fSeeds);
@@ -6825,9 +6831,40 @@ Bool_t AliTPCtrackerMI::IsFindable(AliTPCseed & track){
 
 void AliTPCtrackerMI::AddCovariance(AliTPCseed * seed){
   //
-  // Adding systematic error
+  // Adding systematic error estimate to the covariance matrix
   // !!!! the systematic error for element 4 is in 1/cm not in pt 
+  //
+  const Double_t *param = AliTPCReconstructor::GetRecoParam()->GetSystematicError();
+  //
+  // use only the diagonal part if not specified otherwise
+  if (!AliTPCReconstructor::GetRecoParam()->GetUseSystematicCorrelation()) return AddCovarianceAdd(seed);
+  //
+  Double_t *covarS= (Double_t*)seed->GetCovariance();
+  Double_t factor[5]={1,1,1,1,1};
+  Double_t facC =  AliTracker::GetBz()*kB2C;
+  factor[0]= TMath::Sqrt(TMath::Abs((covarS[0] + param[0]*param[0])/covarS[0]));
+  factor[1]= TMath::Sqrt(TMath::Abs((covarS[2] + param[1]*param[1])/covarS[2]));
+  factor[2]= TMath::Sqrt(TMath::Abs((covarS[5] + param[2]*param[2])/covarS[5]));
+  factor[3]= TMath::Sqrt(TMath::Abs((covarS[9] + param[3]*param[3])/covarS[9]));
+  factor[4]= TMath::Sqrt(TMath::Abs((covarS[14] + facC*facC*param[4]*param[4])/covarS[14]));
+  // 0
+  // 1    2
+  // 3    4    5
+  // 6    7    8    9 
+  // 10   11   12   13   14
+  for (Int_t i=0; i<5; i++){
+    for (Int_t j=i; j<5; j++){
+      Int_t index=seed->GetIndex(i,j);
+      covarS[index]*=factor[i]*factor[j];
+    }
+  }
+}
 
+
+void AliTPCtrackerMI::AddCovarianceAdd(AliTPCseed * seed){
+  //
+  // Adding systematic error - as additive factor without correlation
+  //
   const Double_t *param = AliTPCReconstructor::GetRecoParam()->GetSystematicError();
   Double_t *covarIn= (Double_t*)seed->GetCovariance();
   Double_t covar[15];

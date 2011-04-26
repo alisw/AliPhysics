@@ -121,6 +121,7 @@ private:
   AliTPCtrackerMI(const AliTPCtrackerMI& r);           //dummy copy constructor
   AliTPCtrackerMI &operator=(const AliTPCtrackerMI& r);//dummy assignment operator
   void AddCovariance(AliTPCseed * seed);               // add covariance
+  void AddCovarianceAdd(AliTPCseed * seed);               // add covariance
 
    inline AliTPCtrackerRow &GetRow(Int_t sec, Int_t row);
    inline Bool_t     IsActive(Int_t sec, Int_t row);
