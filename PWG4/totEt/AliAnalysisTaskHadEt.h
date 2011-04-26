@@ -20,7 +20,7 @@ class TList;
 
 class AliAnalysisTaskHadEt : public AliAnalysisTaskTransverseEnergy {
 public:
-    AliAnalysisTaskHadEt(const char *name = "AliAnalysisTaskHadEt", Bool_t isMc = false);
+  AliAnalysisTaskHadEt(const char *name = "AliAnalysisTaskHadEt", Bool_t isMc = false, TString recoConfigFile = "ConfigHadEtReconstructed.C", TString mcConfigFile = "ConfigHadEtMonteCarlo.C");
     virtual ~AliAnalysisTaskHadEt();
 
     //  virtual void   ConnectInputData(Option_t *);
