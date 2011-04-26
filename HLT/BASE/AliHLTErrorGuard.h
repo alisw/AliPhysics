@@ -32,7 +32,7 @@
  * <pre>
  * if (nastyerror) {
  *   static AliHLTErrorGuard g("classname", "functionname", "message");
- *   g.Throw(5);
+ *   (++g).Throw(5);
  * }
  * </pre>
  * Both examples will throw the error for the first 5 occurrences. The macro
