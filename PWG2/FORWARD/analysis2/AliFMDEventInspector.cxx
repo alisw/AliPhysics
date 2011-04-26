@@ -215,6 +215,7 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   // ----- 92 number --------- ---- 1 ---
   TArrayD limits(93);
   for (Int_t i = 0; i < 92; i++) limits[i] = -1.5 + i;
+  limits[92] = 100.5;
 
   fVtxAxis.Set(vtxAxis.GetNbins(), vtxAxis.GetXmin(), vtxAxis.GetXmax());
   
@@ -785,7 +786,16 @@ AliFMDEventInspector::Print(Option_t*) const
 	    << ind << " System:                 " 
 	    << AliForwardUtil::CollisionSystemString(fCollisionSystem) << '\n'
 	    << ind << " CMS energy per nucleon: " << sNN << '\n'
-	    << ind << " Field:                  " <<  field << std::endl;
+	    << ind << " Field:                  " <<  field << '\n';
+  if (!fCentAxis) { std::cout << std::flush; return; }
+  Int_t nBin = fCentAxis->GetNbins();
+  std::cout << ind << " Centrality axis:        " << nBin << " bins"
+	    << std::flush;
+  for (Int_t i = 0; i < nBin; i++) { 
+    if ((i % 10) == 0) std::cout << '\n' << ind << "  ";
+    std::cout << std::setw(5) << fCentAxis->GetBinLowEdge(i+1) << '-';
+  }
+  std::cout << std::setw(5) << fCentAxis->GetBinUpEdge(nBin) << std::endl;
 }
 
   
