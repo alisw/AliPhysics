@@ -861,22 +861,23 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     for ( Int_t iLoopCell = 0 ; iLoopCell < clus->GetNCells() ; iLoopCell++ ){
       
       Int_t idCell = clus->GetCellAbsId(iLoopCell) ;
-      iNewLabel = 1 ; //iNewLabel makes sure we  don't write twice the same label.
-      for ( UInt_t iLoopLabels = 0 ; iLoopLabels < clus->GetNLabels() ; iLoopLabels++ )
-      {
-	if ( fCellSecondLabels[idCell] == -1 )  iNewLabel = 0;  // -1 is never a good second label.
-	if ( fCellSecondLabels[idCell] == clus->GetLabelAt(iLoopLabels) )  iNewLabel = 0;
-      }
-      if (iNewLabel == 1) 
-      {
-	Int_t * newLabelArray = (Int_t*)malloc((clus->GetNLabels()+1)*sizeof(Int_t)) ;
-	for ( UInt_t iLoopNewLabels = 0 ; iLoopNewLabels < clus->GetNLabels() ; iLoopNewLabels++ ){
-	  newLabelArray[iLoopNewLabels] = clus->GetLabelAt(iLoopNewLabels) ;
-	}
-	newLabelArray[clus->GetNLabels()] = fCellSecondLabels[idCell] ;
-	clus->SetLabel(newLabelArray,clus->GetNLabels()+1) ;
-      }
-      
+      if(idCell>=0){
+        iNewLabel = 1 ; //iNewLabel makes sure we  don't write twice the same label.
+        for ( UInt_t iLoopLabels = 0 ; iLoopLabels < clus->GetNLabels() ; iLoopLabels++ )
+        {
+          if ( fCellSecondLabels[idCell] == -1 )  iNewLabel = 0;  // -1 is never a good second label.
+          if ( fCellSecondLabels[idCell] == clus->GetLabelAt(iLoopLabels) )  iNewLabel = 0;
+        }
+        if (iNewLabel == 1) 
+        {
+          Int_t * newLabelArray = (Int_t*)malloc((clus->GetNLabels()+1)*sizeof(Int_t)) ;
+          for ( UInt_t iLoopNewLabels = 0 ; iLoopNewLabels < clus->GetNLabels() ; iLoopNewLabels++ ){
+            newLabelArray[iLoopNewLabels] = clus->GetLabelAt(iLoopNewLabels) ;
+          }
+          newLabelArray[clus->GetNLabels()] = fCellSecondLabels[idCell] ;
+          clus->SetLabel(newLabelArray,clus->GetNLabels()+1) ;
+        }
+      }//positive cell number
     }
     
     clusArray->Add(clus);
