@@ -516,7 +516,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
         for(Int_t icell=0; icell < clus->GetNCells(); icell++ ){
           fCellLabels[index[icell]]=label;
           fCellSecondLabels[index[icell]]=label2;
-          //printf("1) absID %d, label %d\n",index[icell], fCellLabels[index[icell]]);
+          //printf("1) absID %d, label[0] %d label[1] %d\n",index[icell], fCellLabels[index[icell]],fCellSecondLabels[index[icell]]);
         }
         nClustersOrg++;
       }
@@ -655,7 +655,11 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
 //     }
 //    }
     
-    //printf("Cluster %d, energy %f\n",newCluster->GetID(),newCluster->E());
+//    printf("Cluster %d, energy %f\n",newCluster->GetID(),newCluster->E());
+//    printf("labels: ");
+//    for(UInt_t ilab = 0; ilab < newCluster->GetNLabels(); ilab++)
+//      printf("Label[%d]: %d ",ilab, newCluster->GetLabelAt(ilab)); 
+//     printf("\n ");
     
     newCluster->SetID(i);
     new((*fOutputAODBranch)[i])  AliAODCaloCluster(*newCluster);
@@ -874,8 +878,10 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
           for ( UInt_t iLoopNewLabels = 0 ; iLoopNewLabels < clus->GetNLabels() ; iLoopNewLabels++ ){
             newLabelArray[iLoopNewLabels] = clus->GetLabelAt(iLoopNewLabels) ;
           }
+
           newLabelArray[clus->GetNLabels()] = fCellSecondLabels[idCell] ;
           clus->SetLabel(newLabelArray,clus->GetNLabels()+1) ;
+          delete [] newLabelArray;
         }
       }//positive cell number
     }
