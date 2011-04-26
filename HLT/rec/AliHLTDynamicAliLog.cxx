@@ -117,7 +117,7 @@ extern "C" int AliDynamicMessage(AliHLTComponentLogSeverity severity,
     AliLog::Message(AliLog::kInfo, message, "HLT", originClass, originFunc, file, line);
     break;
   default:
-    break;
+    AliLog::Message(AliLog::kInfo, message, "HLT", originClass?originClass:"AliHLT", originFunc, file, line);
   }
   return 0;
 }
