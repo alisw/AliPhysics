@@ -591,6 +591,7 @@ void AliTPCcalibLaser::Process(AliESDEvent * event) {
   if (!fESDfriend) {
     return;
   }
+  if (fESDfriend->TestSkipBit()) return;
   if (fESD->GetNumberOfTracks()<kMinTracks) return; //not enough tracks
   AliDebug(4,Form("Event number in current file: %d",event->GetEventNumberInFile()));
   //
@@ -3278,9 +3279,10 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       if (!h &&hm &&hm->GetEntries()>0) {
 	h=(TH1F*)hm->Clone();
 	h->SetDirectory(0);
-	fDeltaZ.AddAt(h,id);
+	fDeltaZ.AddAt(h,id);      
       }
-      if (hm) h->Add(hm);
+      if (h && hm) h->Add(hm);
+
       // merge fP3 histograms
       hm = (TH1F*)cal->fDeltaP3.At(id);
       h  = (TH1F*)fDeltaP3.At(id);
@@ -3289,7 +3291,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
 	h->SetDirectory(0);
 	fDeltaP3.AddAt(h,id);
       }
-      if (hm) h->Add(hm);
+      if (h && hm) h->Add(hm);
       // merge fP4 histograms
       hm = (TH1F*)cal->fDeltaP4.At(id);
       h  = (TH1F*)fDeltaP4.At(id);
@@ -3298,7 +3300,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
 	h->SetDirectory(0);
 	fDeltaP4.AddAt(h,id);
       }
-      if (hm) h->Add(hm);
+      if (h&&hm) h->Add(hm);
 
       //
       // merge fDeltaPhi histograms
@@ -3309,7 +3311,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
 	h->SetDirectory(0);
 	fDeltaPhi.AddAt(h,id);
       }
-      if (hm) h->Add(hm);
+      if (h&&hm) h->Add(hm);
       // merge fDeltaPhiP histograms
       hm = (TH1F*)cal->fDeltaPhiP.At(id);
       h  = (TH1F*)fDeltaPhiP.At(id);
@@ -3318,7 +3320,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
 	h->SetDirectory(0);
 	fDeltaPhiP.AddAt(h,id);
       }
-      if (hm) h->Add(hm);
+      if (h&&hm) h->Add(hm);
       // merge fSignals histograms
       hm = (TH1F*)cal->fSignals.At(id);
       h  = (TH1F*)fSignals.At(id);
@@ -3327,7 +3329,7 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
 	h->SetDirectory(0);
 	fSignals.AddAt(h,id);
       }
-      if (hm) h->Add(hm);
+      if (h&&hm) h->Add(hm);
       //
       //
       // merge ProfileY histograms -0
@@ -3518,7 +3520,7 @@ void   AliTPCcalibLaser::MakeFitHistos(){
     //TH2F *profy2 = (TH2F*)fDeltaYres2.UncheckedAt(id);
     TH2F *profy2 = 0;
     TH2F *profz2 = (TH2F*)fDeltaZres2.UncheckedAt(id);
-    TH2F *profyabs = (TH2F*)fDeltaYresAbs.UncheckedAt(id);
+    TH2F *profyabs = 0; //(TH2F*)fDeltaYresAbs.UncheckedAt(id);
     TH2F *profzabs = (TH2F*)fDeltaYresAbs.UncheckedAt(id);
     //    TH2F *profy3 = (TH2F*)fDeltaYres3.UncheckedAt(id);
     //TH2F *profz3 = (TH2F*)fDeltaZres3.UncheckedAt(id);
@@ -3563,7 +3565,7 @@ void   AliTPCcalibLaser::MakeFitHistos(){
     TH1F * hisdz = (TH1F*)fDeltaZ.At(id);
     //TH1F * hisP3 = (TH1F*)fDeltaP3.At(id);
     TH1F * hisP3 = 0;
-    TH1F * hisP4 = (TH1F*)fDeltaP4.At(id);
+    TH1F * hisP4 = 0;
     
     TH1F * hisdphi = (TH1F*)fDeltaPhi.At(id);
     TH1F * hisdphiP = (TH1F*)fDeltaPhiP.At(id);
