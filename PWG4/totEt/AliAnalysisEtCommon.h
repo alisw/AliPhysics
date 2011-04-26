@@ -54,7 +54,8 @@ public:
     void SetITSTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsITS = (AliESDtrackCuts *) cuts;}
     void SetCentralityMethod(char *method){ fCentralityMethod = TString(method);}
     void SetNumberOfCentralityBins(Int_t bins){fNCentBins = bins;}
-    void SetDataSet(Int_t val){fDataSet = val;}
+    void SetDataSet(Int_t val){fDataSet = val;fV0ScaleDataSet=val;}//defaults to using the same data sets
+    void SetV0ScaleDataSet(Int_t val){fV0ScaleDataSet=val;}
     Int_t DataSet()const {return fDataSet;}
 
 protected:   
@@ -67,6 +68,7 @@ protected:
     //2009 = 900 GeV p+p data from 2009
     //2010 = 7 TeV p+p data from 2010
     //20100 = 2.76 TeV Pb+Pb data from 2010
+    Int_t fV0ScaleDataSet;//Integer corresponding to the data set to use for rescaling V0 spectra.  No scale available for 2.76 TeV so we will use both 900 GeV and 7 TeV
 
     /** PDG Database */
     //TDatabasePDG *fPdgDB;//data base used for looking up pdg codes

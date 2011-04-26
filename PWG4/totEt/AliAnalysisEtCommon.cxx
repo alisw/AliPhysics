@@ -74,6 +74,7 @@ AliAnalysisEtCommon::AliAnalysisEtCommon() : TObject()
 					   ,fHistogramNameSuffix("")
 					   ,fCuts(0)
 					   ,fDataSet(2010)
+					   ,fV0ScaleDataSet(2010)
 					   ,fEsdtrackCutsITSTPC(0)
 					   ,fEsdtrackCutsTPC(0)
 					   ,fEsdtrackCutsITS(0)
@@ -142,7 +143,7 @@ void AliAnalysisEtCommon::Init()
   fAntiLambdaPythiaD6T->FixParameter(3,1.115683);
   fLambdaData->FixParameter(3,1.115683);
   fAntiLambdaData->FixParameter(3,1.115683);
-  if(fDataSet==2009){
+  if(fV0ScaleDataSet==2009){
     //These data are from the ALICE 900 GeV p+p paper
     fK0PythiaD6T->SetParameter(0,0.1437);
     fK0PythiaD6T->SetParameter(1,0.1497);
@@ -163,7 +164,7 @@ void AliAnalysisEtCommon::Init()
     fAntiLambdaData->SetParameter(1,0.210);
     fAntiLambdaData->SetParameter(2,9.2);
   }
-  if(fDataSet==2010 ||fDataSet==20100 ){
+  if(fV0ScaleDataSet==2010 ||fV0ScaleDataSet==20100 ){
     //These data are from the CMS analysis note on 7 TeV spectra
     //http://cdsweb.cern.ch/record/1279344/files/QCD-10-007-pas.pdf
     //Note the CMS parameterization of the Levy function differs from the ALICE parameterization by a constant.
