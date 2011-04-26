@@ -215,7 +215,7 @@ AliCentralCorrSecondaryMap::Browse(TBrowser* b)
 }
 //____________________________________________________________________
 void
-AliCentralCorrSecondaryMap::Print(Option_t* option) const
+AliCentralCorrSecondaryMap::Print(Option_t* /* option */) const
 {
   // 
   // Print this object 
@@ -223,11 +223,16 @@ AliCentralCorrSecondaryMap::Print(Option_t* option) const
   // Parameters:
   //    option 
   //  
-  std::cout << "  SecondaryMap correction" << std::endl;
-  std::cout << "   " << std::flush;  
-  fArray.Print(option);
-  std::cout << "   " << std::flush;
-  fVertexAxis.Print(option);
+  std::cout << "  SecondaryMap correction\n" 
+	    << "   # of vertex bins: "  << fVertexAxis.GetNbins() << "\n"
+	    << "   Vertex range:     [" << fVertexAxis.GetXmin() 
+	    << "," << fVertexAxis.GetXmax() << "]\n" 
+	    << "   Histograms:\n"
+	    << "    ";
+  TIter next(&fArray);
+  TObject* o = 0;
+  while ((o = next())) std::cout << o->GetName() << " ";
+  std::cout << std::endl;
 }
     
 //____________________________________________________________________
