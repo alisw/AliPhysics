@@ -1144,9 +1144,9 @@ AliFMDDensityCalculator::RingHistos::Output(TList* dir)
   d->Add(fDensity);
   d->Add(fELossVsPoisson);
   d->Add(fEmptyVsTotal);
-  d->Add(fTotalStrips);
-  d->Add(fEmptyStrips);
-  d->Add(fBasicHits);
+  // d->Add(fTotalStrips);
+  // d->Add(fEmptyStrips);
+  // d->Add(fBasicHits);
   
   
 }
