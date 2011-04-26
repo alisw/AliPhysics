@@ -346,7 +346,7 @@ void AliPIDResponse::SetTPCParametrisation()
   if (fRun>=122195){
     fTPCResponse.SetSigma(2.30176e-02, 5.60422e+02);
   }
-  
+  if (fArrPidResponseMaster)
   fResolutionCorrection=(TF1*)fArrPidResponseMaster->FindObject(Form("TF1_%s_ALL_%s_PASS%d_%s_SIGMA",datatype.Data(),period.Data(),fRecoPass,fBeamType.Data()));
   
   if (fResolutionCorrection) AliInfo(Form("Setting multiplicity correction function: %s",fResolutionCorrection->GetName()));
