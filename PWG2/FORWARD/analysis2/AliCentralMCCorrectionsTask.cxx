@@ -67,7 +67,7 @@ AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask()
     fVtxAxis(),
     fEtaAxis(),
     fList(),
-    fNPhiBins(40)    
+    fNPhiBins(20)    
 {
   // 
   // Constructor 
@@ -90,7 +90,7 @@ AliCentralMCCorrectionsTask::AliCentralMCCorrectionsTask(const char* name)
     fVtxAxis(10,-10,10), 
     fEtaAxis(200,-4,6),
     fList(),
-    fNPhiBins(40)    
+    fNPhiBins(20)    
 {
   // 
   // Constructor 
