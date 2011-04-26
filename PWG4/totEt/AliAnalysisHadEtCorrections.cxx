@@ -60,6 +60,8 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections() : TNamed(),
 							   ,fEfficiencyKaonITS(0)
 							   ,fEfficiencyProtonITS(0)
 							   ,fEfficiencyHadronITS(0)
+							   ,fEfficiencyTPC(0)
+							   ,fEfficiencyITS(0)
 							   ,fEfficiencyErrorLow(0)
 							   ,fEfficiencyErrorHigh(0)
 							   ,fBackgroundErrorLow(0)
