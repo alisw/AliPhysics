@@ -88,6 +88,7 @@ void AliOADBTriggerAnalysis::Print(Option_t* option) const {
   cout << " - ZDCCutRefDeltaCorr   "<< fZDCCutRefDeltaCorr   << endl;
   cout << " - ZDCCutSigmaSumCorr   "<< fZDCCutSigmaSumCorr   << endl;
   cout << " - ZDCCutSigmaDeltaCorr "<< fZDCCutSigmaDeltaCorr << endl;
+  cout << option << endl;
   
 
 }
