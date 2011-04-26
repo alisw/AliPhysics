@@ -111,7 +111,8 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fAliRootMode(),
                   fMergeDirName(),
                   fInputFiles(0),
-                  fPackages(0)
+                  fPackages(0),
+                  fProofParam()
 {
 // Dummy ctor.
    SetDefaults();
@@ -181,7 +182,8 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fAliRootMode(),
                   fMergeDirName(),
                   fInputFiles(0),
-                  fPackages(0)
+                  fPackages(0),
+                  fProofParam()
 {
 // Default ctor.
    SetDefaults();
@@ -251,7 +253,8 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fAliRootMode(other.fAliRootMode),
                   fMergeDirName(other.fMergeDirName),
                   fInputFiles(0),
-                  fPackages(0)
+                  fPackages(0),
+                  fProofParam()
 {
 // Copy ctor.
    fGridJDL = (TGridJDL*)gROOT->ProcessLine("new TAlienJDL()");
@@ -282,6 +285,7 @@ AliAnalysisAlien::~AliAnalysisAlien()
    if (fMergingJDL) delete fMergingJDL;
    if (fInputFiles) delete fInputFiles;
    if (fPackages) delete fPackages;
+   fProofParam.DeleteAll();
 }   
 
 //______________________________________________________________________________
@@ -2355,6 +2359,30 @@ void AliAnalysisAlien::SetPreferedSE(const char */*se*/)
 }
 
 //______________________________________________________________________________
+void AliAnalysisAlien::SetProofParameter(const char *pname, const char *value)
+{
+// Set some PROOF special parameter.
+   TPair *pair = dynamic_cast<TPair*>(fProofParam.FindObject(pname));
+   if (pair) {
+      TObject *old = pair->Key();
+      TObject *val = pair->Value();
+      fProofParam.Remove(old);
+      delete old;
+      delete val;
+   }
+   fProofParam.Add(new TObjString(pname), new TObjString(value));
+}
+
+//______________________________________________________________________________
+const char *AliAnalysisAlien::GetProofParameter(const char *pname) const
+{
+// Returns a special PROOF parameter.
+   TPair *pair = dynamic_cast<TPair*>(fProofParam.FindObject(pname));
+   if (!pair) return 0;
+   return pair->Value()->GetName();
+}      
+
+//______________________________________________________________________________
 Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEntry*/)
 {
 // Start remote grid analysis.
@@ -2427,6 +2455,13 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       }   
       if (fNproofWorkersPerSlave*fNproofWorkers > 0)
          gROOT->ProcessLine(Form("gProof->SetParallel(%d);", fNproofWorkers));
+      // Set proof special parameters if any
+      TIter nextpp(&fProofParam);
+      TObject *proofparam;
+      while ((proofparam=nextpp())) {
+         TString svalue = GetProofParameter(proofparam->GetName());
+         gROOT->ProcessLine(Form("gProof->SetParameter(\"%s\",%s);", proofparam->GetName(), svalue.Data()));
+      }   
       // Is dataset existing ?
       if (!testMode) {
          TString dataset = fProofDataSet;

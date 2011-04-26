@@ -22,6 +22,10 @@
 #include <TMath.h>
 #endif
 
+#ifndef ROOT_TMap
+#include <TMap.h>
+#endif
+
 class TGridJDL;
 
 class AliAnalysisAlien : public AliAnalysisGrid {
@@ -122,6 +126,8 @@ public:
    virtual void        SetProofCluster(const char *cluster)              {fProofCluster = cluster;}
    virtual void        SetProofDataSet(const char *dataset)              {fProofDataSet = dataset;}
    virtual const char *GetProofDataSet() const                           {return fProofDataSet.Data();}
+   virtual void        SetProofParameter(const char *pname, const char *value);
+   const char         *GetProofParameter(const char *pname) const;
    virtual void        SetProofReset(Int_t mode)                         {fProofReset = mode;}
    virtual void        SetNproofWorkers(Int_t nworkers)                  {fNproofWorkers = nworkers;}
    virtual void        SetNproofWorkersPerSlave(Int_t nworkers)          {fNproofWorkersPerSlave = nworkers;}
@@ -207,7 +213,8 @@ private:
    TString          fMergeDirName;    // Name of the directory that should be added to the output directory
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
+   TMap             fProofParam;      // Key-value pairs for proof mode
    
-   ClassDef(AliAnalysisAlien, 17)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 18)   // Class providing some AliEn utilities
 };
 #endif
