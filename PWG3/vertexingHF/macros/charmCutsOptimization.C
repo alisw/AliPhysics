@@ -55,7 +55,7 @@ Bool_t MC(TH1F* hs,TH1F* hb, Double_t& sgn, Double_t& errsgn, Double_t& bkg, Dou
 
 //Note: writefit=kTRUE writes the root files with the fit performed but it also draw all the canvas, so if your computer is not powerfull enough I suggest to run it in batch mode (root -b)
 
-Bool_t charmCutsOptimization(Bool_t isData=kTRUE,TString part="both"/*"A" anti-particle, "P" particle*/,TString centr="no",Bool_t writefit=kFALSE,Int_t minentries=50,Double_t *rangefit=0x0, Bool_t useBinCounting=kTRUE){
+Bool_t charmCutsOptimization(Bool_t isData=kTRUE,TString part="both"/*"A" anti-particle, "P" particle*/,TString centr="no",Bool_t writefit=kFALSE,Int_t minentries=50,Double_t *rangefit=0x0, Bool_t useBinCounting=kFALSE){
   outcheck.open("output.dat",ios::out);
   outdetail.open("discarddetails.dat",ios::out);
 
@@ -513,6 +513,13 @@ Bool_t BinCounting(TH1F* h,Double_t* rangefit,Bool_t writefit, Double_t& sgn, Do
   TFitResultPtr r = h->Fit(fBkgFit,"RS+");
   Int_t ok = r;
 
+  if(ok==-1){
+    cout<<"FIT NOT OK!"<<endl;
+    cout<<"\t 0\t xxx"<<"\t failed"<<endl;
+    status=0;
+    return kFALSE;
+  } 
+
   reject = false;
   TF1 *fBkgFct = new TF1("fBkgFct",ExpoBkgWoPeak,min,max,4);
   fBkgFct->SetLineStyle(2);
@@ -520,55 +527,47 @@ Bool_t BinCounting(TH1F* h,Double_t* rangefit,Bool_t writefit, Double_t& sgn, Do
   h->GetListOfFunctions()->Add(fBkgFct);
   TH1F * hBkgFct = (TH1F*)fBkgFct->GetHistogram();
 
-  if(ok==-1){
-    cout<<"FIT NOT OK!"<<endl;
-    cout<<"\t 0\t xxx"<<"\t failed"<<endl;
-    status=0;
-    return kFALSE;
-  } 
-  else { //fit ok!
-    status = 1;    
-    Double_t binStartCount = h->FindBin(mass-nsigma*sigma);
-    Double_t binEndCount = h->FindBin(mass+nsigma*sigma);
-    Double_t counts=0., bkgcounts=0., errcounts=0., errbkgcounts=0.;
-    for (Int_t ibin = binStartCount; ibin<=binEndCount; ibin++) {
-      counts += h->GetBinContent( ibin );
-      errcounts += counts ;
-      Double_t center =  h->GetBinCenter(ibin);
-      bkgcounts += hBkgFct->GetBinContent( hBkgFct->FindBin(center) );
-      errbkgcounts += bkgcounts ;
-    }
-    bkg = bkgcounts;
-    errbkg = TMath::Sqrt( errbkgcounts );
-    sgn = counts - bkg ;
-    if(sgn<0) status = 2; // significance < 0
-    errsgn = TMath::Sqrt( counts + errbkg*errbkg );
-    sgnf = sgn / TMath::Sqrt( sgn + bkg );
-    errsgnf = TMath::Sqrt( sgnf*sgnf/(sgn+bkg)/(sgn+bkg)*(1/4.*errsgn*errsgn+errbkg*errbkg) + sgnf*sgnf/sgn/sgn*errsgn*errsgn );
-    //    cout << " Signal "<<sgn<<" +- "<<errsgn<<", bkg "<<bkg<<" +- "<<errbkg<<", significance "<<sgnf<<" +- "<<errsgnf<<endl;
-
-    if(writefit) {
-      TString filename = Form("%sMassFit.root",h->GetName());
-      TFile* outputcv = new TFile(filename.Data(),"recreate");      
-      TCanvas* c = new TCanvas();
-      c->SetName(Form("%s",h->GetName()));
-      h->Draw();
-      TPaveText *pavetext=new TPaveText(0.4,0.7,0.85,0.9,"NDC");     
-      pavetext->SetBorderSize(0);
-      pavetext->SetFillStyle(0);
-      pavetext->AddText(Form("Signal = %4.2e #pm %4.2e",sgn,errsgn));
-      pavetext->AddText(Form("Bkg = %4.2e #pm %4.2e",bkg,errbkg));
-      pavetext->AddText(Form("Signif = %3.2f #pm %3.2f",sgnf,errsgnf));
-      c->cd();
-      pavetext->DrawClone();
-      outputcv->cd();
-      c->Write();
-      outputcv->Close();
-      delete outputcv;
-      delete c;
-    }
-
+  status = 1;    
+  Double_t binStartCount = h->FindBin(mass-nsigma*sigma);
+  Double_t binEndCount = h->FindBin(mass+nsigma*sigma);
+  Double_t counts=0., bkgcounts=0., errcounts=0., errbkgcounts=0.;
+  for (Int_t ibin = binStartCount; ibin<=binEndCount; ibin++) {
+    counts += h->GetBinContent( ibin );
+    errcounts += counts ;
+    Double_t center =  h->GetBinCenter(ibin);
+    bkgcounts += hBkgFct->GetBinContent( hBkgFct->FindBin(center) );
+    errbkgcounts += bkgcounts ;
   }
+  bkg = bkgcounts;
+  errbkg = TMath::Sqrt( errbkgcounts );
+  sgn = counts - bkg ;
+  if(sgn<0) status = 2; // significance < 0
+  errsgn = TMath::Sqrt( counts + errbkg*errbkg );
+  sgnf = sgn / TMath::Sqrt( sgn + bkg );
+  errsgnf = TMath::Sqrt( sgnf*sgnf/(sgn+bkg)/(sgn+bkg)*(1/4.*errsgn*errsgn+errbkg*errbkg) + sgnf*sgnf/sgn/sgn*errsgn*errsgn );
+  //    cout << " Signal "<<sgn<<" +- "<<errsgn<<", bkg "<<bkg<<" +- "<<errbkg<<", significance "<<sgnf<<" +- "<<errsgnf<<endl;
+  
+  if(writefit) {
+    TString filename = Form("%sMassFit.root",h->GetName());
+    TFile* outputcv = new TFile(filename.Data(),"recreate");      
+    TCanvas* c = new TCanvas();
+    c->SetName(Form("%s",h->GetName()));
+    h->Draw();
+    TPaveText *pavetext=new TPaveText(0.4,0.7,0.85,0.9,"NDC");     
+    pavetext->SetBorderSize(0);
+    pavetext->SetFillStyle(0);
+    pavetext->AddText(Form("Signal = %4.2e #pm %4.2e",sgn,errsgn));
+    pavetext->AddText(Form("Bkg = %4.2e #pm %4.2e",bkg,errbkg));
+    pavetext->AddText(Form("Signif = %3.2f #pm %3.2f",sgnf,errsgnf));
+    c->cd();
+    pavetext->DrawClone();
+    outputcv->cd();
+    c->Write();
+    outputcv->Close();
+    delete outputcv;
+    delete c;
+  }
+
   
   delete fBkgFit;
   delete fBkgFct;
