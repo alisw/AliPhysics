@@ -29,9 +29,11 @@ AddTaskCentralMCCorr()
   }
 
   // --- Add our task ------------------------------------------------
-  AliCentralMCCorrectionsTask* task2 = new AliCentralMCCorrectionsTask("spd");
-  mgr->AddTask(task2);
-  task2->SetNPhiBins(40);
+  AliCentralMCCorrectionsTask* task = new AliCentralMCCorrectionsTask("spd");
+  mgr->AddTask(task);
+  // This has to match the binning used in the AliAODCentralMult
+  // class.  Currently, this is set to 20. 
+  task->SetNPhiBins(20);
   // task2->GetTrackDensity().SetDebug(false);
   
   // --- create containers for input/output --------------------------
