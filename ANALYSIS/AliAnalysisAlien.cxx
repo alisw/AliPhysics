@@ -2366,7 +2366,8 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
    }
    // Are we in PROOF mode ?
    if (mgr->IsProofMode()) {
-      Info("StartAnalysis", "##### Starting PROOF analysis on cluster <%s> via the plugin #####", fProofCluster.Data());
+      if (testMode) Info("StartAnalysis", "##### Starting PROOF analysis with Proof Lite via the plugin #####");
+      else Info("StartAnalysis", "##### Starting PROOF analysis on cluster <%s> via the plugin #####", fProofCluster.Data());
       if (fProofCluster.IsNull()) {
          Error("StartAnalysis", "You need to specify the proof cluster name via SetProofCluster");
          return kFALSE;
@@ -2389,11 +2390,14 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          Info("StartAnalysis", "Stopping the analysis. Please use SetProofReset(0) to resume.");
          return kFALSE;
       }
-      // Check if there is an old active session
-      Long_t nsessions = gROOT->ProcessLine(Form("TProof::Mgr(\"%s\")->QuerySessions(\"\")->GetEntries();", fProofCluster.Data()));
-      if (nsessions) {
-         Error("StartAnalysis","You have to reset your old session first\n");
-         return kFALSE;
+      
+      if (!testMode) {
+        // Check if there is an old active session
+        Long_t nsessions = gROOT->ProcessLine(Form("TProof::Mgr(\"%s\")->QuerySessions(\"\")->GetEntries();", fProofCluster.Data()));
+        if (nsessions) {
+          Error("StartAnalysis","You have to reset your old session first\n");
+          return kFALSE;
+        }
       }
       // Do we need to change the ROOT version ? The success of this cannot be checked.
       if (!fRootVersionForProof.IsNull() && !testMode) {
