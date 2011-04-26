@@ -1084,7 +1084,8 @@ GetData(UShort_t sys,
 	UShort_t type=0x1, 
 	UShort_t centLow=0, 
 	UShort_t centHigh=0, 
-	bool     aliceOnly=false)
+	bool     aliceOnly=false,
+	bool     nomc=false)
 {
   TMultiGraph* mp = new TMultiGraph(Form("dndeta_%dGeV_%d_%03d_%03d", 
 					 energy, type, centLow, centHigh),"");
@@ -1104,14 +1105,14 @@ GetData(UShort_t sys,
     if (TMath::Abs(energy-900) < 10) {
       if (type & 0x1) { 
 	tn.Append(" INEL");
-	if (!aliceOnly) mp->Add(Pythia900INEL());
+	if (!aliceOnly && !nomc) mp->Add(Pythia900INEL());
 	if (!aliceOnly) mp->Add(UA5Inel(false));
 	if (!aliceOnly) mp->Add(UA5Inel(true));
 	mp->Add(AliceCentralInel900());
       }      
       if (type & 0x4) { 
 	tn.Append(" NSD");
-	if (!aliceOnly) mp->Add(Pythia900NSD());
+	if (!aliceOnly && !nomc) mp->Add(Pythia900NSD());
 	if (!aliceOnly) mp->Add(UA5Nsd(false));
 	if (!aliceOnly) mp->Add(UA5Nsd(true));
 	mp->Add(AliceCentralNsd900());

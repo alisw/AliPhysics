@@ -31,8 +31,10 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Would like to use dynamic cast but CINT interprets that as a 
   // static cast - sigh!
   Bool_t mc = false;
-  if (task->IsA() == AliForwardMCMultiplicityTask::Class()) 
+  if (task->IsA() == AliForwardMCMultiplicityTask::Class()) {
+    Info("ForwardAODConfig", "Setting up assuming Monte-Carlo input");
     mc = true;
+  }
 
 #if 0 
   if (mc) {
@@ -41,7 +43,7 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
     mcTask->SetOnlyPrimary(true);
   }
 #endif
-  Double_t nXi = mc ? 1 : .5;
+  Double_t nXi = 1; // mc ? 1 : .5;
   Bool_t   includeSigma = true;
 
   // --- Event inspector ---------------------------------------------
@@ -53,7 +55,7 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
 
   // --- Sharing filter ----------------------------------------------
   // Set the low cut used for sharing - overrides settings in eloss fits
-  task->GetSharingFilter().SetLowCut(0.15);
+  task->GetSharingFilter().SetLowCut(mc ? 0.15 : 0.2);
   // Set the number of xi's (width of landau peak) to stop at 
   task->GetSharingFilter().SetNXi(nXi);
   // Set whether or not to include sigma in cut
