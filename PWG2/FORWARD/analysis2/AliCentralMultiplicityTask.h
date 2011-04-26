@@ -204,6 +204,38 @@ public:
     const char* GetFullFileName(UShort_t what, UShort_t sys, UShort_t sNN, 
 				Short_t  field) const;
     /** 
+     * Get the full path name 
+     * 
+     * @param what   What to get
+     * @param sys    Collision system
+     * @param sNN    Center of mass energy 
+     * @param field  Magnetic field 
+     * 
+     * @return 
+     */
+    const char* GetFileName(UShort_t what, UShort_t sys, UShort_t sNN,
+			    Short_t field) const;
+
+    /** 
+     * Get the obejct name 
+     * 
+     * @param what which correction
+     * 
+     * @return Name of object
+     */
+    const char* GetObjectName(UShort_t what) const { 
+      return what == 0 ? GetSecMapName() : GetAcceptanceName(); }
+    /** 
+     * Get the directory part of the full file name 
+     * 
+     * @param what What correction 
+     * 
+     * @return directory path
+     */
+    const char* GetFileDir(UShort_t what) const {
+      return what == 0 ? fSecMapPath.Data() : fAcceptancePath.Data(); }
+
+    /** 
      * Get the acceptance object name 
      * 
      * @return 
@@ -236,22 +268,23 @@ public:
      * Get the secondary correction map object 
      */
     AliCentralCorrSecondaryMap* GetSecMap() const { return fSecmap; }
+    /** 
+     * Write a correction object to (a temporary) file.  
+     *    
+     * @param what   What kind of correction
+     * @param sys    Collision system
+     * @param cms    Center of mass energy
+     * @param field  Field 
+     * @param o      Object to write
+     * @param full   If true, write to full path
+     * 
+     * @return True on success 
+     */
+    Bool_t WriteFile(UShort_t what, UShort_t sys, UShort_t cms, Short_t field, 
+		     TObject* o, Bool_t full) const;
 
     void Print(Option_t* option="") const;
   private:
-    /** 
-     * Get the full path name 
-     * 
-     * @param what   What to get
-     * @param sys    Collision system
-     * @param sNN    Center of mass energy 
-     * @param field  Magnetic field 
-     * 
-     * @return 
-     */
-    const char* GetFileName(UShort_t what, UShort_t sys, UShort_t sNN,
-			    Short_t field) const;
-
     
     TString                     fAcceptancePath; // Path to acceptance 
     TString                     fSecMapPath;     // Path to secondary map
@@ -304,16 +337,20 @@ public:
 
 
 protected: 
-  AliFMDEventInspector   fInspector;      // Inspect events 
-  TH2D*                  fData;           // sum histogram if needed
-  TList*                 fList;           // Output List for diagnostics
-  AliAODCentralMult      fAODCentral;     // Output object
-  Manager                fManager;        // Manager object for corrections
-  Bool_t                 fUseSecondary;   // Whether to secondary map
-  Bool_t                 fUseAcceptance;  // Whether to use acceptance corr.
-  Bool_t                 fFirstEventSeen; // Have we seen first event     
-  Int_t                  fIvz;            // Event's vertex bin 
-  ClassDef(AliCentralMultiplicityTask,2)  // Forward multiplicity class
+  AliFMDEventInspector   fInspector;        // Inspect events 
+  TH2D*                  fData;             // sum histogram if needed
+  TList*                 fList;             // Output List for diagnostics
+  AliAODCentralMult      fAODCentral;       // Output object
+  Manager                fManager;          // Manager object for corrections
+  Bool_t                 fUseSecondary;     // Whether to secondary map
+  Bool_t                 fUseAcceptance;    // Whether to use acceptance corr.
+  Bool_t                 fFirstEventSeen;   // Have we seen first event     
+  Int_t                  fIvz;              // Event's vertex bin 
+  TH2D*                  fNClusterTracklet; // # of clusters vs tracklets 
+  TH2D*                  fClusterPerTracklet; // Clusters per tracklet. 
+  TH1D*                  fNCluster;         //! Number of clusters 
+  TH1D*                  fNTracklet;        //! number of tracklets 
+  ClassDef(AliCentralMultiplicityTask,2)    // Forward multiplicity class
 };
 
 #endif
