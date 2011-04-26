@@ -166,8 +166,8 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-28-00a";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     kPluginAliRootVersion    = "v4-19-15-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     kPluginRootVersion       = "v5-28-00c";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginAliRootVersion    = "v4-21-01a-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption   = kFALSE;  // use xrootd tweaks
 Bool_t      kPluginOverwriteMode    = kTRUE;  // overwrite existing collections
@@ -657,6 +657,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),0.15);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
+       taskCl->SetCentralityCut(fCenLo,fCenUp);
+       //       taskCl->SetDebugLevel(3);
+ 
        taskCl->SetNRandomCones(1);
        if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
        kDefaultJetBranch = taskCl->GetJetOutputBranch();
@@ -667,17 +670,18 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),2.0);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
-	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
+       if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
        if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranchCut1.Data());
        kJetSubtractBranchesCut1 += Form("%s ",taskCl->GetJetOutputBranch());
-	 kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
+       kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
+       
 
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data(),0.15);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
        if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
        kJetSubtractBranches += Form("%s ",taskCl->GetJetOutputBranch());
-	 kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
+       kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
 
 
        if(kDeltaAODJetName.Length()==0&&kFilterAOD){
@@ -745,11 +749,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
 
 
-       for(int iB = 0;iB<3;iB++){
+       for(int iB = 1;iB<3;iB++){
 	 if(iB>2)continue;
 	 taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,iB,kJetSubtractMask1.Data(),kJetSubtractMask2.Data());
 	 taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());	 	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
 	 if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
+	 //	 taskSubtract->SetDebugLevel(10);
 	 TString cTmp;       
 	 TObjArray *objArr = kJetSubtractBranches.Tokenize(" ");
 	 for(int iJB = 0;iJB<objArr->GetEntries();iJB++){
@@ -906,6 +911,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	   
 	   // loop over all centralities
 	   for(int ic = 0;ic<5;ic++){
+	     if(ic==0)continue;
 	     Bool_t bDone = kFALSE;
 	     for(int i = 0;i<3;i++){
 	       Printf("%s/%s %s/%s",bName1.Data(),bBkgName1.Data(),bName2[i].Data(),bBkgName2[i].Data());
