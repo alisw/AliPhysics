@@ -294,6 +294,8 @@ if test $dopass3 -gt 0 ; then
     if test $ratios    -gt 0 ; then let flags=$(($flags|0x4)); fi
     if test $asymm     -gt 0 ; then let flags=$(($flags|0x8)); fi
 
+    echo "Running with Title=$tit"
+
     args="(\"${pass2dir}${output2}\",${flags},\"$tit\",$rebin)"
     if test "x$pass1" = "xMakeELossFits.C" ; then 
 	args="(\"${pass2dir}${output1}\")"
