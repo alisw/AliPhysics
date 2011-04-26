@@ -494,13 +494,15 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
 //    }
     
     Int_t nClusters = event->GetNumberOfCaloClusters();
-    if(aodIH) 
+    if(aodIH && aodIH->GetEventToMerge())  //Embedding
       nClusters = aodIH->GetEventToMerge()->GetNumberOfCaloClusters(); //Get clusters directly from embedded signal
     for (Int_t i = 0; i < nClusters; i++)
     {
       AliVCluster *clus = 0;
-      if(aodIH) clus = aodIH->GetEventToMerge()->GetCaloCluster(i); //Get clusters directly from embedded signal
-      else      clus = event->GetCaloCluster(i);
+      if(aodIH && aodIH->GetEventToMerge()) //Embedding
+        clus = aodIH->GetEventToMerge()->GetCaloCluster(i); //Get clusters directly from embedded signal
+      else      
+        clus = event->GetCaloCluster(i);
 
       if(!clus) {
         printf("AliEMCALReclusterize::UserExec() - No Clusters\n");
