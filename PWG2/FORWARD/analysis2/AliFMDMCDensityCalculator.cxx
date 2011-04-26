@@ -33,17 +33,7 @@ AliFMDMCDensityCalculator::~AliFMDMCDensityCalculator()
   // 
   // Destructor 
   //
-  if (fComps)  fComps->Clear();
-  if (fFMD1i)  delete fFMD1i;
-  if (fFMD2i)  delete fFMD2i;
-  if (fFMD2o)  delete fFMD2o;
-  if (fFMD3i)  delete fFMD3i;
-  if (fFMD3o)  delete fFMD3o;
-  if (fFMD1iC) delete fFMD1iC;
-  if (fFMD2iC) delete fFMD2iC;
-  if (fFMD2oC) delete fFMD2oC;
-  if (fFMD3iC) delete fFMD3iC;
-  if (fFMD3oC) delete fFMD3oC;
+  if (fComps)  fComps->Delete();
 }
 
 //____________________________________________________________________
@@ -85,6 +75,11 @@ AliFMDMCDensityCalculator::Init(const TAxis& eAxis)
   fFMD2oC = Make(2,'O');
   fFMD3iC = Make(3,'I');
   fFMD3oC = Make(3,'O');
+  fFMD1iD = Make(1,'I', 20);
+  fFMD2iD = Make(2,'I', 20);
+  fFMD2oD = Make(2,'O', 20);
+  fFMD3iD = Make(3,'I', 20);
+  fFMD3oD = Make(3,'O', 20);
  
   fComps->Add(fFMD1i);
   fComps->Add(fFMD2i);
@@ -96,6 +91,11 @@ AliFMDMCDensityCalculator::Init(const TAxis& eAxis)
   fComps->Add(fFMD2oC);
   fComps->Add(fFMD3iC);
   fComps->Add(fFMD3oC);
+  fComps->Add(fFMD1iD);
+  fComps->Add(fFMD2iD);
+  fComps->Add(fFMD2oD);
+  fComps->Add(fFMD3iD);
+  fComps->Add(fFMD3oD);
 }
     
 
@@ -167,8 +167,8 @@ AliFMDMCDensityCalculator::Make(UShort_t d, Char_t r,
 				   (r == 'I' || r == 'i') ? 20 : 40,
 				   0, 2*TMath::Pi());
   ret->GetXaxis()->SetTitle("#eta");
-  ret->GetYaxis()->SetTitle("#varphi [degrees]");
-  ret->GetZaxis()->SetTitle("#LT incusive density ESD/MC#GT");
+  ret->GetYaxis()->SetTitle("#varphi [radians]");
+  ret->GetZaxis()->SetTitle("#LT #deltaN_{ch,incl}=N_{ch,incl,ana}-N_{ch,incl,mc}#GT");
   ret->SetDirectory(0);
   return ret;
 }
@@ -188,10 +188,31 @@ AliFMDMCDensityCalculator::Make(UShort_t d, Char_t r) const
   //
   TH2D* ret = new TH2D(Form("FMD%d%c_corr_mc_esd", d, r),
 		       Form("ESD-MC correlation for FMD%d%c", d, r),
-		       200, 0, 20, 200, 0, 20);
+		       41, -.5, 40.5, 410, -.5, 40.5);
   ret->GetXaxis()->SetTitle("m_{incl} (MC)");
-  ret->GetYaxis()->SetTitle("#Delta/#Delta_{mp} (ESD)");
+  ret->GetYaxis()->SetTitle("m_{incl} from #Delta/#Delta_{mp} (ESD)");
   ret->GetZaxis()->SetTitle("Correlation");
+  ret->SetDirectory(0);
+  return ret;
+}
+//____________________________________________________________________
+TH1D*
+AliFMDMCDensityCalculator::Make(UShort_t d, Char_t r, Int_t max) const
+{
+  // 
+  // MAke comparison profiles
+  // 
+  // Parameters:
+  //    d     Detector 
+  //    r     Ring 
+  // 
+  // Return:
+  //    Newly allocated profile object
+  //
+  TH1D* ret = new TH1D(Form("FMD%d%c_diff_mc_esd", d, r),
+		       Form("ESD-MC difference for FMD%d%c", d, r),
+		       20*max,-max, max);
+  ret->GetXaxis()->SetTitle("MC - ESD");
   ret->SetDirectory(0);
   return ret;
 }
@@ -211,18 +232,22 @@ AliFMDMCDensityCalculator::Fill(UShort_t d, Char_t r, TH2* esd, TH2* mc)
   if (!esd || !mc) return;
   TProfile2D* p = 0;
   TH2D*       h = 0;
+  TH1D*       x = 0;
   switch (d) { 
   case 1:  
     p = fFMD1i;                                   
     h = fFMD1iC;
+    x = fFMD1iD;
     break;
   case 2:  
     p = (r == 'I' || r == 'i' ? fFMD2i  : fFMD2o); 
     h = (r == 'I' || r == 'i' ? fFMD2iC : fFMD2oC); 
+    x = (r == 'I' || r == 'i' ? fFMD2iD : fFMD2oD); 
     break;
   case 3:  
     p = (r == 'I' || r == 'i' ? fFMD3i  : fFMD3o); 
     h = (r == 'I' || r == 'i' ? fFMD3iC : fFMD3oC); 
+    x = (r == 'I' || r == 'i' ? fFMD3iD : fFMD3oD); 
     break;
   }
   if (!p) return;
@@ -234,7 +259,9 @@ AliFMDMCDensityCalculator::Fill(UShort_t d, Char_t r, TH2* esd, TH2* mc)
       Double_t mEsd = esd->GetBinContent(iEta,iPhi);
       Double_t mMc  = mc->GetBinContent(iEta,iPhi);
       
-      p->Fill(eta, phi, (mMc > 0 ? mEsd / mMc : 0));
+      if (mMc <= 0 && mEsd <= 0) continue;
+      x->Fill(mMc-mEsd);
+      p->Fill(eta, phi, mEsd - mMc);
       h->Fill(mMc,mEsd);
     }
   }
@@ -280,6 +307,7 @@ AliFMDMCDensityCalculator::DefineOutput(TList* dir)
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
 
   fComps = new TList;
+  fComps->SetOwner();
   fComps->SetName("esd_mc_comparison");
   d->Add(fComps);
 

@@ -57,6 +57,11 @@ public:
       fFMD2oC(0),
       fFMD3iC(0),
       fFMD3oC(0),
+      fFMD1iD(0), 
+      fFMD2iD(0),
+      fFMD2oD(0),
+      fFMD3iD(0),
+      fFMD3oD(0),
       fComps(0)
   {}
   /** 
@@ -76,6 +81,11 @@ public:
       fFMD2oC(0),
       fFMD3iC(0),
       fFMD3oC(0),
+      fFMD1iD(0), 
+      fFMD2iD(0),
+      fFMD2oD(0),
+      fFMD3iD(0),
+      fFMD3oD(0),
       fComps(0)
   {}
   /** 
@@ -95,6 +105,11 @@ public:
       fFMD2oC(o.fFMD2oC),
       fFMD3iC(o.fFMD3iC),
       fFMD3oC(o.fFMD3oC),
+      fFMD1iD(o.fFMD1iD), 
+      fFMD2iD(o.fFMD2iD),
+      fFMD2oD(o.fFMD2oD),
+      fFMD3iD(o.fFMD3iD),
+      fFMD3oD(o.fFMD3oD),
       fComps(0)
   {}
   /** 
@@ -165,6 +180,15 @@ protected:
    */
   TH2D* Make(UShort_t d, Char_t r) const;
   /** 
+   * MAke comparison profiles
+   * 
+   * @param d     Detector 
+   * @param r     Ring 
+   * 
+   * @return Newly allocated profile object
+   */
+  TH1D* Make(UShort_t d, Char_t r, Int_t max) const;
+  /** 
    * Fill comparison profiles
    * 
    * @param d    Detector 
@@ -184,6 +208,11 @@ protected:
   TH2D*       fFMD2oC; // Correlation in FMD2o
   TH2D*       fFMD3iC; // Correlation in FMD3i
   TH2D*       fFMD3oC; // Correlation in FMD3o
+  TH1D*       fFMD1iD; // Correlation in FMD1i
+  TH1D*       fFMD2iD; // Correlation in FMD2i
+  TH1D*       fFMD2oD; // Correlation in FMD2o
+  TH1D*       fFMD3iD; // Correlation in FMD3i
+  TH1D*       fFMD3oD; // Correlation in FMD3o
   TList*      fComps; // List of comparisons 
 
   ClassDef(AliFMDMCDensityCalculator,1); // Calculate Nch density 
