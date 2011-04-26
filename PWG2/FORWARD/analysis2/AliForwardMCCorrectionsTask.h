@@ -16,12 +16,13 @@
 #include <AliAnalysisTaskSE.h>
 #include <AliESDFMD.h>
 #include "AliFMDMCEventInspector.h"
+#include "AliFMDMCTrackDensity.h"
 #include <TH1I.h>
 class AliESDEvent;
+class AliFMDCorrSecondaryMap;
 class TH2D;
-class TH3D;
+class TH1D;
 class TList;
-class TTree;
 
 
 /** 
@@ -133,83 +134,122 @@ public:
    * @param axis Axis
    */
   void SetEtaAxis(const TAxis& axis);
+  /** 
+   * Get a reference to the track density calculator 
+   * 
+   * @return Reference to the track density calculator 
+   */
+  AliFMDMCTrackDensity& GetTrackDensity() { return fTrackDensity; }
+  /** 
+   * Get a reference to the track density calculator 
+   * 
+   * @return Reference to the track density calculator 
+   */
+  const AliFMDMCTrackDensity& GetTrackDensity() const { return fTrackDensity; }
+  /** 
+   * Get a reference to the event inspector
+   * 
+   * @return Reference to the event inspector 
+   */
+  AliFMDMCEventInspector& GetEventInspector() { return fInspector; }
+  /** 
+   * Get a reference to the event inspector
+   * 
+   * @return Reference to the event inspector 
+   */
+  const AliFMDMCEventInspector& GetEventInspector() const { return fInspector;}
 protected: 
-  /** 
-   * Get vertex project
+  /**
+   * A vertex bin 
    * 
-   * @param v   Vertex bin 
-   * @param src Source 3D histogram 
-   * 
-   * @return 2D projection of the V'th bin
    */
-  TH2D*  GetVertexProj(Int_t v, TH3D* src) const;
-  /** 
-   * Make a 3D histogram
-   * 
-   * @param name   Name 
-   * @param title  Title 
-   * @param nPhi   Number of phi bins
-   * 
-   * @return Histogram
-   */
-  TH3D* Make3D(const char* name, const char* title, Int_t nPhi) const;
-  /** 
-   * Make 1D histogram
-   * 
-   * @param name   Name 
-   * @param title  Title
-   * 
-   * @return Histogram
-   */
-  TH1D* Make1D(const char* name, const char* title) const;
-  /** 
-   * Fill in primary information
-   * 
-   * @param gotInel   Got INEL trigger from ESD
-   * @param gotVtx    Got vertex Z from ESD 
-   * @param vz        @f$z@f$ coordinate of interation point
-   * @param eta       Pseudo rapidity 
-   * @param phi       Azimuthal angle
-   */
-  void  FillPrimary(Bool_t gotInel, Bool_t gotVtx, 
-		    Double_t vz, Double_t eta, Double_t phi);
-  /** 
-   * Fill in per-strip information
-   * 
-   * @param d         Detector
-   * @param r         Ring
-   * @param vz        @f$z@f$ coordinate of interation point
-   * @param eta       Pseudo rapidity 
-   * @param phi       Azimuthal angle
-   * @param first     First fill in this event
-   */
-  void FillStrip(UShort_t d, Char_t r, 
-		 Double_t vz, Double_t eta, Double_t phi,
-		 Bool_t first);
-  AliFMDMCEventInspector fInspector; // Event inspector 
-  Bool_t fFirstEvent;        // First event flag 
-  TH1I*  fHEvents;           // All Events
-  TH1I*  fHEventsTr;         // Histogram of events w/trigger
-  TH1I*  fHEventsTrVtx;      // Events w/trigger and vertex 
-  TH1I*  fHTriggers;         // Triggers
-  TH3D*  fPrimaryInnerAll;   // Distribution of primaries - all events
-  TH3D*  fPrimaryOuterAll;   // Distribution of primaries - all events
-  TH3D*  fPrimaryInnerTrVtx; // Distribution of primaries - trg+vtx events
-  TH3D*  fPrimaryOuterTrVtx; // Distribution of primaries - trg+vtx events
-  TH3D*  fHitsFMD1i;         // Distribution of FMD1i hits 
-  TH3D*  fHitsFMD2i;         // Distribution of FMD2i hits 
-  TH3D*  fHitsFMD2o;         // Distribution of FMD2o hits 
-  TH3D*  fHitsFMD3i;         // Distribution of FMD3i hits 
-  TH3D*  fHitsFMD3o;         // Distribution of FMD3o hits 
-  TH1D*  fStripsFMD1i;       // Distribution of FMD1i # strips hit
-  TH1D*  fStripsFMD2i;       // Distribution of FMD2i # strips hit 
-  TH1D*  fStripsFMD2o;       // Distribution of FMD2o # strips hit 
-  TH1D*  fStripsFMD3i;       // Distribution of FMD3i # strips hit 
-  TH1D*  fStripsFMD3o;       // Distribution of FMD3o # strips hit 
-  TAxis  fVtxAxis;           // Vertex axis 
-  TAxis  fEtaAxis;           // Eta axis 
+  struct VtxBin : public TNamed
+  {
+    /** 
+     * Constructor 
+     */
+    VtxBin();
+    /** 
+     * Constructor
+     *  
+     * @param low       Lower @f$v_z@f$ bound
+     * @param high      Upper @f$v_z@f$ bound
+     * @param etaAxis   @f$\eta@f$ axis to use 
+     */
+    VtxBin(Double_t low, Double_t high, const TAxis& etaAxis);
+    /** 
+     * Copy constructor 
+     * 
+     * @param o Object to copy from 
+     */
+    VtxBin(const VtxBin& o);
+    /** 
+     * Assignment operator 
+     * 
+     * @param o Object to assign from 
+     * 
+     * @return Reference to this object
+     */
+    VtxBin& operator=(const VtxBin& o);
+    /** 
+     * Get bin name
+     * 
+     * @param low       Lower @f$v_z@f$ bound
+     * @param high      Upper @f$v_z@f$ bound
+     * 
+     * @return Bin name 
+     */
+    static const char* BinName(Double_t low, Double_t high);
+    /** 
+     * Declare output in passed list 
+     * 
+     * @param list List to put output in 
+     */
+    void DefineOutput(TList* list);
+    /** 
+     * Calculate the background correction
+     * 
+     * @param hits      Summed hits (track-refs)
+     * @param primary   Summed primaries 
+     * 
+     * @return Background correction
+     */
+    TH2D* MakeBg(const TH2D* hits, const TH2D* primary) const;
+    /** 
+     * End of job process 
+     * 
+     * @param o List to add output to 
+     */
+    void Finish(const TList*            i, 
+		TList*                  o,
+		UShort_t                iVz, 
+		AliFMDCorrSecondaryMap* map);
 
-  TList* fList; // Output list 
+    AliForwardUtil::Histos fHists;    // Cache of per-ring histograms
+    TH2D*                  fPrimary;  // Cache or primary 
+    TH1D*                  fCounts;   // Event count 
+
+    ClassDef(VtxBin,1); // Vertex bin 
+  };
+  /** 
+   * Define our vertex bins 
+   * 
+   * @param list List to read or add binst from/to
+   */
+  void DefineBins(TList* list);
+
+  AliFMDMCEventInspector fInspector; // Event inspector 
+  AliFMDMCTrackDensity   fTrackDensity; // Get the track density 
+
+  AliESDFMD  fESDFMD;       // Cache object
+  TObjArray* fVtxBins;      // Vertex bins 
+  Bool_t     fFirstEvent;   // First event flag 
+  TH1I*      fHEvents;      // All Events
+  TH1I*      fHEventsTr;    // Histogram of events w/trigger
+  TH1I*      fHEventsTrVtx; // Events w/trigger and vertex 
+  TAxis      fVtxAxis;      // Vertex axis 
+  TAxis      fEtaAxis;      // Eta axis 
+  TList*     fList;         // Output list 
 
   ClassDef(AliForwardMCCorrectionsTask,1) // Forward corrections class
 };
