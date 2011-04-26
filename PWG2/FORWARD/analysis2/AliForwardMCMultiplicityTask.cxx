@@ -164,7 +164,7 @@ AliForwardMCMultiplicityTask::SetDebug(Int_t dbg)
 void
 AliForwardMCMultiplicityTask::SetOnlyPrimary(Bool_t use)
 {
-  fSharingFilter.SetOnlyPrimary(use);
+  fSharingFilter.GetTrackDensity().SetUseOnlyPrimary(use);
   fCorrections.SetSecondaryForMC(!use);
 }
 
