@@ -34,12 +34,19 @@ AddTaskCentralMult(Bool_t mc=false,
     task->GetManager().Init(sys, sNN, field);
   mgr->AddTask(task);
 
-  // --- Set options on task -----------------------------------------
-  // Whether to do correction for secondaries
-  task->SetUseSecondary(true);
-  // Whether to do correction for acceptance
-  task->SetUseAcceptance(true);
-  // task->GetInspector().SetDebug(4);
+  // --- Configure the task ------------------------------------------
+  const char* config = gSystem->Which(gROOT->GetMacroPath(),
+				      "CentralAODConfig.C");
+  if (!config) 
+    Warning("AddTaskCentralMult", "CentralAODConfig.C not found in %s",
+	    gROOT->GetMacroPath());
+  else {
+    Info("AddTaskCentralMult", 
+	 "Loading configuration of '%s' from %s",
+	 task->ClassName(), config);
+    gROOT->Macro(Form("%s((AliCentralMultiplicityTask*)%p)", config, task));
+    delete config;
+  }
 
   // --- Make the output container and connect it --------------------
   TString outputfile = AliAnalysisManager::GetCommonFileName();
