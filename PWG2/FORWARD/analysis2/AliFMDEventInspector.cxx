@@ -777,6 +777,9 @@ AliFMDEventInspector::Print(Option_t*) const
   field.ReplaceAll("kG", " kG");
   
   std::cout << ind << ClassName() << ": " << GetName() << '\n'
+	    << ind << " Vertex bins:            " << fVtxAxis.GetNbins() << '\n'
+	    << ind << " Vertex range:           [" << fVtxAxis.GetXmin() 
+	    << "," << fVtxAxis.GetXmax() << "]\n"
 	    << ind << " Low flux cut:           " << fLowFluxCut << '\n'
 	    << ind << " Max(delta v_z):         " << fMaxVzErr << " cm\n"
 	    << ind << " System:                 " 
