@@ -23,6 +23,7 @@
 #include <TROOT.h>
 #include <TFile.h>
 #include <TError.h>
+#include <TSystem.h>
 #include <iostream>
 #include <iomanip>
 
@@ -37,7 +38,11 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name)
     fUseSecondary(true),
     fUseAcceptance(true),
     fFirstEventSeen(false), 
-    fIvz(0)
+    fIvz(0),
+    fNClusterTracklet(0),
+    fClusterPerTracklet(0),
+    fNCluster(0),
+    fNTracklet(0)      
 {
   // 
   // Constructor 
@@ -58,7 +63,11 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask()
     fUseSecondary(true),
     fUseAcceptance(true),
     fFirstEventSeen(false), 
-    fIvz(0)
+    fIvz(0),
+    fNClusterTracklet(0),
+    fClusterPerTracklet(0),
+    fNCluster(0),
+    fNTracklet(0)      
 {
   // 
   // Constructor 
@@ -75,7 +84,11 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplic
     fUseSecondary(o.fUseSecondary),
     fUseAcceptance(o.fUseAcceptance),
     fFirstEventSeen(o.fFirstEventSeen), 
-    fIvz(0)
+    fIvz(0),
+    fNClusterTracklet(o.fNClusterTracklet),
+    fClusterPerTracklet(o.fClusterPerTracklet),
+    fNCluster(o.fNCluster),
+    fNTracklet(o.fNTracklet)      
 {
   //
   // Copy constructor 
@@ -88,15 +101,19 @@ AliCentralMultiplicityTask::operator=(const AliCentralMultiplicityTask& o)
   // 
   // Assignment operator 
   //
-  fInspector      = o.fInspector;
-  fData           = o.fData;
-  fList           = o.fList;
-  fAODCentral     = o.fAODCentral;
-  fManager        = o.fManager;
-  fUseSecondary   = o.fUseSecondary;
-  fUseAcceptance  = o.fUseAcceptance;
-  fFirstEventSeen = o.fFirstEventSeen;
-  fIvz            = 0; 
+  fInspector         = o.fInspector;
+  fData              = o.fData;
+  fList              = o.fList;
+  fAODCentral        = o.fAODCentral;
+  fManager           = o.fManager;
+  fUseSecondary      = o.fUseSecondary;
+  fUseAcceptance     = o.fUseAcceptance;
+  fFirstEventSeen    = o.fFirstEventSeen;
+  fIvz               = 0; 
+  fNClusterTracklet  = o.fNClusterTracklet;
+  fClusterPerTracklet= o.fClusterPerTracklet;
+  fNCluster          = o.fNCluster;
+  fNTracklet         = o.fNTracklet;
   return *this;
 }
 //____________________________________________________________________
@@ -137,27 +154,60 @@ AliCentralMultiplicityTask::GetESDEvent()
     AliWarning("No ESD event found for input event");
     return 0;
   }
-
-  if (fFirstEventSeen) return esd;
-  if (GetManager().IsInit()) return esd;
   
+  // IF we've read the first event already, just return the event 
+  if (fFirstEventSeen) return esd;
+  
+  // Read the details of the rung 
   fInspector.ReadRunDetails(esd);
-  GetManager().Init(fInspector.GetCollisionSystem(),
-		    fInspector.GetEnergy(),
-		    fInspector.GetField());
+
+  // If we weren't initialised before (i.e., in the setup), do so now. 
+  if (!GetManager().IsInit()) {
+    GetManager().Init(fInspector.GetCollisionSystem(),
+		      fInspector.GetEnergy(),
+		      fInspector.GetField());
+    AliInfo("Manager of corrections in AliCentralMultiplicityTask init");
+  }
+
+  // Check for existence and get secondary map 
   AliCentralCorrSecondaryMap* secMap = GetManager().GetSecMap();
-  if (!secMap) 
-    AliFatal("No secondary map defined!");
+  if (!secMap) AliFatal("No secondary map defined!");
   const TAxis& vaxis = secMap->GetVertexAxis();
 
-  std::cout << "Vertex range is " 
-	    << vaxis.GetNbins() << "," 
-	    << vaxis.GetXmin() << "," 
-	    << vaxis.GetXmax()
-	    << std::endl;
+  fNClusterTracklet = new TH2D("nClusterVsnTracklet", 
+				"Total number of cluster vs number of tracklets",
+				100, 0, 100, 100, 0, 100);
+  fNClusterTracklet->SetDirectory(0);
+  fNClusterTracklet->SetXTitle("# of free clusters");
+  fNClusterTracklet->SetYTitle("# of tracklets");
+  fNClusterTracklet->SetStats(0);
+  fList->Add(fNClusterTracklet);
+
+  Int_t    nEta = 80;
+  Double_t lEta = 2;
+  fClusterPerTracklet = new TH2D("clusterPerTracklet", 
+				 "N_{free cluster}/N_{tracklet} vs. #eta", 
+				 nEta,-lEta,lEta, 101, -.05, 10.05);
+  fClusterPerTracklet->SetDirectory(0);
+  fClusterPerTracklet->SetXTitle("#eta");
+  fClusterPerTracklet->SetYTitle("N_{free cluster}/N_{tracklet}");
+  fClusterPerTracklet->SetStats(0);
+  fList->Add(fClusterPerTracklet);
+
+  // Cache histograms 
+  fNCluster = new TH1D("cacheCluster", "", nEta,-lEta,lEta);
+  fNCluster->SetDirectory(0);
+  fNCluster->Sumw2();
+		       
+  fNTracklet = new TH1D("cacheTracklet", "", nEta,-lEta,lEta);
+  fNTracklet->SetDirectory(0);
+  fNTracklet->Sumw2();
+
+  // Initialize the inspecto 
   fInspector.Init(vaxis);
-  AliInfo("Manager of corrections in AliCentralMultiplicityTask init");
   fFirstEventSeen = kTRUE;
+
+  // Print some information 
   Print();
 
   return esd;
@@ -227,15 +277,30 @@ void
 AliCentralMultiplicityTask::ProcessESD(TH2D& aodHist, 
 				       const AliMultiplicity* spdmult) const
 {
- 
+  fNTracklet->Reset();
+  fNCluster->Reset();
+
   //Filling clusters in layer 1 used for tracklets...
-  for(Int_t j = 0; j< spdmult->GetNumberOfTracklets();j++)
-    aodHist.Fill(spdmult->GetEta(j),spdmult->GetPhi(j));
+  for(Int_t j = 0; j< spdmult->GetNumberOfTracklets();j++) {
+    Double_t eta = spdmult->GetEta(j);
+    fNTracklet->Fill(eta);
+    aodHist.Fill(eta,spdmult->GetPhi(j));
+  }
 
   //...and then the unused ones in layer 1 
-  for(Int_t j = 0; j< spdmult->GetNumberOfSingleClusters();j++) 
-    aodHist.Fill(-TMath::Log(TMath::Tan(spdmult->GetThetaSingle(j)/2.)),
-		 spdmult->GetPhiSingle(j));
+  for(Int_t j = 0; j< spdmult->GetNumberOfSingleClusters();j++) {
+    Double_t eta = -TMath::Log(TMath::Tan(spdmult->GetThetaSingle(j)/2.));
+    fNCluster->Fill(eta);
+    aodHist.Fill(eta, spdmult->GetPhiSingle(j));
+  }
+  fNClusterTracklet->Fill(fNCluster->GetEntries(), 
+			  fNTracklet->GetEntries());
+  
+  fNCluster->Divide(fNTracklet);
+  for (Int_t j = 1; j <= fNCluster->GetNbinsX(); j++)  
+    fClusterPerTracklet->Fill(fNCluster->GetXaxis()->GetBinCenter(j), 
+			      fNCluster->GetBinContent(j));
+
 }
 
 //____________________________________________________________________
@@ -415,16 +480,15 @@ AliCentralMultiplicityTask::Manager::GetFileName(UShort_t  what ,
   // this member function
   static TString fname = "";
   
-  fname = "";
   switch(what) {
-  case 0:  fname.Append(fSecMapName.Data());     break;
-  case 1:  fname.Append(fAcceptanceName.Data()); break;
+  case 0:  fname = fSecMapName;     break;
+  case 1:  fname = fAcceptanceName; break;
   default:
     ::Error("GetFileName", 
 	    "Invalid indentifier %d for central object, must be 0 or 1!", what);
     break;
   }
-  fname.Append(Form("_%s_%04dGeV_%c%1dkG.root", 
+  fname.Append(Form("_%s_%04dGeV_%c%1dkG.root",
 		    AliForwardUtil::CollisionSystemString(sys), 
 		    sNN, (field < 0 ? 'm' : 'p'), TMath::Abs(field)));
   
@@ -509,11 +573,88 @@ AliCentralMultiplicityTask::Manager::Init(UShort_t  sys,
 	   sys == 1 ? "pp" : sys == 2 ? "PbPb" : "unknown", sNN,field);
   }  
 }
+//____________________________________________________________________
+Bool_t
+AliCentralMultiplicityTask::Manager::WriteFile(UShort_t what, 
+					       UShort_t sys, 
+					       UShort_t sNN, 
+					       Short_t  fld, 
+					       TObject* obj, 
+					       Bool_t   full) const
+{
+  // 
+  // Write correction output to (a temporary) file 
+  // 
+  // Parameters: 
+  //   What     What to write 
+  //   sys      Collision system (1: pp, 2: PbPb)
+  //   sNN      Center of mass energy per nucleon (GeV)
+  //   fld      Field (kG)
+  //   obj      Object to write 
+  //   full     if true, write to full path, otherwise locally
+  // 
+  // Return: 
+  //   true on success. 
+  TString ofName;
+  if (!full)
+    ofName = GetFileName(what, sys, sNN, fld);
+  else 
+    ofName = GetFullFileName(what, sys, sNN, fld);
+  if (ofName.IsNull()) { 
+    AliErrorGeneral("Manager",Form("Unknown object type %d", what));
+    return false;
+  }
+  TFile* output = TFile::Open(ofName, "RECREATE");
+  if (!output) { 
+    AliErrorGeneral("Manager",Form("Failed to open file %s", ofName.Data()));
+    return false;
+  }
+  
+  TString oName(GetObjectName(what));
+  Int_t ret = obj->Write(oName);
+  if (ret <= 0) { 
+    AliErrorGeneral("Manager",Form("Failed to write %p to %s/%s (%d)", 
+				   obj, ofName.Data(), oName.Data(), ret));
+    return false;
+  }
+
+  ret = output->Write();
+  if (ret < 0) { 
+    AliErrorGeneral("Manager",
+		    Form("Failed to write %s to disk (%d)", ofName.Data(),ret));
+    return false;
+  }
+  output->ls();
+  output->Close();
+  
+  TString cName(obj->IsA()->GetName());
+  AliInfoGeneral("Manager",
+		 Form("Wrote %s object %s to %s\n",
+		      cName.Data(),oName.Data(), ofName.Data()));
+  if (!full) { 
+    TString dName(GetFileDir(what));
+    AliInfoGeneral("Manager",
+		   Form("%s should be copied to %s\n"
+			"Do for example\n\t"
+			"aliroot $ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/"
+			"MoveCorrections.C\\(%d\\)\nor\n\t"
+			"cp %s %s/", 
+			ofName.Data(),dName.Data(), 
+			what, ofName.Data(), 
+			gSystem->ExpandPathName(dName.Data())));
+
+
+  }
+  return true;
+}
 
 //____________________________________________________________________
 void 
 AliCentralMultiplicityTask::Manager::Print(Option_t* option) const
 {
+  // 
+  // Print information to standard output 
+  //
   std::cout << " AliCentralMultiplicityTask::Manager\n" 
 	    << std::boolalpha 
 	    << "  Initialized:     " << fIsInit << '\n'
