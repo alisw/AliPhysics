@@ -15,6 +15,82 @@
 #include <TFile.h>
 #include <TStyle.h>
 
+namespace {
+  enum { 
+    kMarkerSolid        = 0x000, 
+    kMarkerHollow       = 0x001, 
+    kMarkerCircle       = 0x002,
+    kMarkerSquare       = 0x004, 
+    kMarkerUpTriangle   = 0x006, 
+    kMarkerDownTriangle = 0x008, 
+    kMarkerDiamond      = 0x00a,
+    kMarkerCross        = 0x00c,
+    kMarkerStar         = 0x00e
+  };
+  Int_t MarkerStyle(UInt_t bits)
+  {
+    Int_t  base   = bits & (0xFE);
+    Bool_t hollow = bits & kMarkerHollow;
+    switch (base) { 
+    case kMarkerCircle:       return (hollow ? 24 : 20);
+    case kMarkerSquare:       return (hollow ? 25 : 21);
+    case kMarkerUpTriangle:   return (hollow ? 26 : 22);
+    case kMarkerDownTriangle: return (hollow ? 32 : 23);
+    case kMarkerDiamond:      return (hollow ? 27 : 33); 
+    case kMarkerCross:        return (hollow ? 28 : 34); 
+    case kMarkerStar:         return (hollow ? 30 : 29); 
+    }
+    return 1;
+  }
+  UShort_t MarkerBits(Int_t style) 
+  { 
+    UShort_t bits = 0;
+    switch (style) { 
+    case 24: case 25: case 26: case 27: case 28: case 30: case 32: 
+      bits |= kMarkerHollow; break;
+    }
+    switch (style) { 
+    case 20: case 24: bits |= kMarkerCircle;       break;
+    case 21: case 25: bits |= kMarkerSquare;       break;
+    case 22: case 26: bits |= kMarkerUpTriangle;   break;
+    case 23: case 32: bits |= kMarkerDownTriangle; break;
+    case 27: case 33: bits |= kMarkerDiamond;      break;
+    case 28: case 34: bits |= kMarkerCross;        break;
+    case 29: case 30: bits |= kMarkerStar;         break;
+    }
+    return bits;
+  }
+  Int_t FlipHollow(Int_t style) 
+  {
+    UShort_t bits = MarkerBits(style);
+    Int_t ret = MarkerStyle(bits ^ kMarkerHollow);
+    return ret;
+  }
+#if 0
+  void TestMarkers()
+  {
+    TCanvas* c = new TCanvas("c", "C");
+
+    Int_t nMarker = 7;
+    Int_t nCols   = 3;
+
+    TLatex* l = new TLatex(.05, .9, "Marker");
+    l->SetTextSize(0.03);
+    l->Draw();
+    l->DrawLatex(0.3,  .9, "kSolid");
+    l->DrawLatex(0.55, .9, "kHollow");
+    l->DrawLatex(0.8,  .9, "Flipped");
+
+    DrawOne("kMarkerCircle",       kMarkerCircle,       .7);
+    DrawOne("kMarkerSquare",       kMarkerSquare,       .6);
+    DrawOne("kMarkerUpTriangle",   kMarkerUpTriangle,   .5);
+    DrawOne("kMarkerDownTriangle", kMarkerDownTriangle, .4);
+    DrawOne("kMarkerDiamond",      kMarkerDiamond,      .3);
+    DrawOne("kMarkerCross",        kMarkerCross,        .2);
+    DrawOne("kMarkerStar",         kMarkerStar,         .1);
+  }
+#endif
+}
 //____________________________________________________________________
 AliBasedNdetaTask::AliBasedNdetaTask()
   : AliAnalysisTaskSE(), 
@@ -202,6 +278,7 @@ AliBasedNdetaTask::SetNormalizationScheme(const char* what)
     else if (s.CompareTo("TRIGGER")   == 0) bit = kTriggerEfficiency;
     else if (s.CompareTo("FULL")      == 0) bit = kFull;
     else if (s.CompareTo("NONE")      == 0) bit = kNone;
+    else if (s.CompareTo("ZEROBIN")   == 0) bit = kZeroBin;
     else 
       Warning("SetNormalizationScheme", "Unknown option %s", s.Data());
     if (add) scheme |= bit;
@@ -220,7 +297,8 @@ AliBasedNdetaTask::SetNormalizationScheme(UShort_t scheme)
     if (scheme & kEventLevel)        tit.Append("EVENT ");
     if (scheme & kShape)             tit.Append("SHAPE ");
     if (scheme & kBackground)        tit.Append("BACKGROUND ");
-    if (scheme & kTriggerEfficiency) tit.Append("TRIGGER");
+    if (scheme & kTriggerEfficiency) tit.Append("TRIGGER ");
+    if (scheme & kZeroBin)           tit.Append("ZEROBIN ");
   }
   tit = tit.Strip(TString::kBoth);
   if (!fSchemeString) fSchemeString = new TNamed("scheme", "");
@@ -344,10 +422,15 @@ AliBasedNdetaTask::UserExec(Option_t *)
   TH2D* data   = GetHistogram(aod, false);
   TH2D* dataMC = GetHistogram(aod, true);
 
+  Bool_t isZero = ((fNormalizationScheme & kZeroBin) &&
+		   !forward->IsTriggerBits(AliAODForwardMult::kNClusterGt0));
+
+
   // Loop over centrality bins 
   CentralityBin* allBin = 
     static_cast<CentralityBin*>(fListOfCentralities->At(0));
-  allBin->ProcessEvent(forward, fTriggerMask, fVtxMin, fVtxMax, data, dataMC);
+  allBin->ProcessEvent(forward, fTriggerMask, isZero, 
+		       fVtxMin, fVtxMax, data, dataMC);
   
   // Find this centrality bin 
   if (fCentAxis && fCentAxis->GetNbins() > 0) {
@@ -356,7 +439,7 @@ AliBasedNdetaTask::UserExec(Option_t *)
     if (icent >= 1 && icent <= fCentAxis->GetNbins()) 
       thisBin = static_cast<CentralityBin*>(fListOfCentralities->At(icent));
     if (thisBin)
-      thisBin->ProcessEvent(forward, fTriggerMask, fVtxMin, fVtxMax, 
+      thisBin->ProcessEvent(forward, fTriggerMask, isZero, fVtxMin, fVtxMax, 
 			    data, dataMC);
   }
 
@@ -412,6 +495,28 @@ AliBasedNdetaTask::SetHistogramAttributes(TH1D* h, Int_t colour, Int_t marker,
   h->GetYaxis()->SetNdivisions(10);
   h->GetYaxis()->SetDecimals();
   h->SetStats(0);
+}
+
+//________________________________________________________________________
+void
+AliBasedNdetaTask::ScaleToCoverage(TH2D* copy, const TH1D* norm) 
+{
+  // Normalize to the acceptance -
+  // dndeta->Divide(accNorm);
+  for (Int_t i = 1; i <= copy->GetNbinsX(); i++) { 
+    Double_t a = norm->GetBinContent(i);
+    for (Int_t j = 1; j <= copy->GetNbinsY(); j++) { 
+      if (a <= 0) { 
+	copy->SetBinContent(i,j,0);
+	copy->SetBinError(i,j,0);
+	continue;
+      }
+      Double_t c = copy->GetBinContent(i, j);
+      Double_t e = copy->GetBinError(i, j);
+      copy->SetBinContent(i, j, c / a);
+      copy->SetBinError(i, j, e / a);
+    }
+  }
 }
 
 //________________________________________________________________________
@@ -655,7 +760,7 @@ AliBasedNdetaTask::LoadNormalizationData(UShort_t sys, UShort_t energy)
   if(energy == 7000) snn.Form("7000");
   if(energy == 2750) snn.Form("2750"); 
   
-  if(fShapeCorr && (fTriggerEff != 1)) {
+  if(fShapeCorr &&  (fTriggerEff != 1)) {
     AliInfo("Objects already set for normalization - no action taken"); 
     return; 
   }
@@ -668,14 +773,28 @@ AliBasedNdetaTask::LoadNormalizationData(UShort_t sys, UShort_t energy)
     return;
   }
 
-  // Shape correction 
-  TString shapeCorName(Form("h%sNormalization", 
-			    fTriggerMask == AliAODForwardMult::kInel ? "Inel" :
-			    fTriggerMask == AliAODForwardMult::kNSD ? "NSD" :
-			    fTriggerMask == AliAODForwardMult::kInelGt0 ?
-			    "InelGt0" : "All"));
-  TH2F* shapeCor = dynamic_cast<TH2F*>(fin->Get(shapeCorName));
-  if (shapeCor) SetShapeCorrection(shapeCor);
+  // Shape correction
+  if ((fNormalizationScheme & kShape) && !fShapeCorr) {
+    TString trigName("All");
+    if (fTriggerMask == AliAODForwardMult::kInel || 
+	fTriggerMask == AliAODForwardMult::kNClusterGt0) 
+      trigName = "Inel";
+    else if (fTriggerMask == AliAODForwardMult::kNSD)
+      trigName = "NSD";
+    else if (fTriggerMask == AliAODForwardMult::kInelGt0)
+      trigName = "InelGt0";
+    else {
+      AliWarning(Form("Normalization for trigger %s not known, using all",
+		      AliAODForwardMult::GetTriggerString(fTriggerMask)));
+    }
+      
+    TString shapeCorName(Form("h%sNormalization", trigName.Data()));
+    TH2F*   shapeCor = dynamic_cast<TH2F*>(fin->Get(shapeCorName));
+    if (shapeCor) SetShapeCorrection(shapeCor);
+    else { 
+      AliWarning(Form("No shape correction found for %s", trigName.Data()));
+    }
+  }
 
   // Trigger efficiency
   TString effName(Form("%sTriggerEff", 
@@ -683,17 +802,23 @@ AliBasedNdetaTask::LoadNormalizationData(UShort_t sys, UShort_t energy)
 		       fTriggerMask == AliAODForwardMult::kNSD ? "nsd" :
 		       fTriggerMask == AliAODForwardMult::kInelGt0 ?
 		       "inelgt0" : "all"));
-  TParameter<float>* eff = static_cast<TParameter<float>*>(fin->Get(effName));
-  if (eff) SetTriggerEff(eff->GetVal());
+  TParameter<float>* eff = 0;
+  if (fNormalizationScheme & kTriggerEfficiency) 
+    eff = static_cast<TParameter<float>*>(fin->Get(effName));
+  Double_t trigEff = eff ? eff->GetVal() : 1;
+  if (fTriggerEff != 1) SetTriggerEff(trigEff);
+  if (fTriggerEff < 0)  fTriggerEff = 1;
 
   // TEMPORARY FIX
   // Rescale the shape correction by the trigger efficiency 
-  AliWarning(Form("Rescaling shape correction by trigger efficiency: "
-		  "1/E_X=1/%f", fTriggerEff));
-  fShapeCorr->Scale(1. / fTriggerEff);
+  if (fShapeCorr) {
+    AliWarning(Form("Rescaling shape correction by trigger efficiency: "
+		    "1/E_X=1/%f", trigEff));
+    fShapeCorr->Scale(1. / trigEff);
+  }
 
   // Print - out
-  if (shapeCor && eff) AliInfo("Loaded objects for normalization.");
+  if (fShapeCorr && fTriggerEff) AliInfo("Loaded objects for normalization.");
 }
 
 
@@ -831,7 +956,7 @@ AliBasedNdetaTask::Symmetrice(const TH1* h)
   s->SetBins(nBins, -h->GetXaxis()->GetXmax(), -h->GetXaxis()->GetXmin());
   s->SetMarkerColor(h->GetMarkerColor());
   s->SetMarkerSize(h->GetMarkerSize());
-  s->SetMarkerStyle(h->GetMarkerStyle()+4);
+  s->SetMarkerStyle(FlipHollow(h->GetMarkerStyle()));
   s->SetFillColor(h->GetFillColor());
   s->SetFillStyle(h->GetFillStyle());
   s->SetDirectory(0);
@@ -856,6 +981,161 @@ AliBasedNdetaTask::Symmetrice(const TH1* h)
   s->SetBinContent(l2+1, h->GetBinContent(first));
   s->SetBinError(l2+1, h->GetBinError(first));
   return s;
+}
+
+//====================================================================
+void
+AliBasedNdetaTask::Sum::Init(TList* list, const TH2D* data, Int_t col)
+{
+  TString n(GetHistName(0));
+  TString n0(GetHistName(1));
+  const char* postfix = GetTitle();
+
+  fSum = static_cast<TH2D*>(data->Clone(n));
+  if (postfix) fSum->SetTitle(Form("%s (%s)", data->GetTitle(), postfix));
+  fSum->SetDirectory(0);
+  fSum->SetMarkerColor(col);
+  fSum->SetMarkerStyle(MarkerStyle(kMarkerCircle|kMarkerSolid));
+  fSum->Reset();
+  list->Add(fSum);
+
+  fSum0 = static_cast<TH2D*>(data->Clone(n0));
+  if (postfix) 
+    fSum0->SetTitle(Form("%s 0-bin (%s)", data->GetTitle(), postfix));
+  else   
+    fSum0->SetTitle(Form("%s 0-bin", data->GetTitle()));
+  fSum0->SetDirectory(0);
+  fSum0->SetMarkerColor(col);
+  fSum0->SetMarkerStyle(MarkerStyle(kMarkerCross|kMarkerHollow));
+  fSum0->Reset();
+  list->Add(fSum0);
+
+  fEvents = new TH1I(GetHistName(2), "Event types", 2, -.5, 1.5);
+  fEvents->SetDirectory(0);
+  fEvents->GetXaxis()->SetBinLabel(1, "Non-zero");
+  fEvents->GetXaxis()->SetBinLabel(2, "Zero");
+  list->Add(fEvents);
+}
+
+//____________________________________________________________________
+TString
+AliBasedNdetaTask::Sum::GetHistName(Int_t what) const
+{
+  TString n(GetName());
+  if      (what == 1) n.Append("0");
+  else if (what == 2) n.Append("Events");
+  const char* postfix = GetTitle();
+  if (postfix && postfix[0] != '\0')  n.Append(postfix);
+  return n;
+}
+
+//____________________________________________________________________
+void
+AliBasedNdetaTask::Sum::Add(const TH2D* data, Bool_t isZero)
+{
+
+  if (isZero) fSum0->Add(data);
+  else        fSum->Add(data);
+  fEvents->Fill(isZero ? 1 : 0);
+}
+
+//____________________________________________________________________
+TH2D*
+AliBasedNdetaTask::Sum::GetSum(const TList* input, 
+			       TList*       output, 
+			       Double_t&    ntotal,
+			       Double_t     epsilon0, 
+			       Double_t     epsilon,
+			       Int_t        marker,
+			       Bool_t       rootProj, 
+			       Bool_t       corrEmpty) const
+{
+  TH2D* sum      = static_cast<TH2D*>(input->FindObject(GetHistName(0)));
+  TH2D* sum0     = static_cast<TH2D*>(input->FindObject(GetHistName(1)));
+  TH1I* events   = static_cast<TH1I*>(input->FindObject(GetHistName(2)));
+  TH2D* ret      = static_cast<TH2D*>(fSum->Clone(fSum->GetName()));
+  ret->SetDirectory(0);
+  ret->Reset();
+  Int_t n        = Int_t(events->GetBinContent(1));
+  Int_t n0       = Int_t(events->GetBinContent(2));
+
+  // Generate merged histogram 
+  ret->Add(sum0, sum, 1. / epsilon0, 1. / epsilon);
+  ntotal = n / epsilon + n0 / epsilon0;
+
+  TList* out = new TList;
+  out->SetOwner();
+  const char* postfix = GetTitle();
+  if (!postfix) postfix = "";
+  out->SetName(Form("partial%s", postfix));
+  output->Add(out);
+
+  // Now make copies, normalize them, and store in output list 
+  TH2D* sumCopy  = static_cast<TH2D*>(sum->Clone("sum"));
+  TH2D* sum0Copy = static_cast<TH2D*>(sum0->Clone("sum0"));
+  TH2D* retCopy  = static_cast<TH2D*>(ret->Clone("sumAll"));
+  sumCopy->SetMarkerStyle(FlipHollow(marker));
+  sumCopy->SetDirectory(0);
+  sum0Copy->SetMarkerStyle(MarkerStyle(MarkerBits(marker)+4));
+  sum0Copy->SetDirectory(0);
+  retCopy->SetMarkerStyle(marker);
+  retCopy->SetDirectory(0);
+
+  TH1D* norm    = ProjectX(sum,  "norm",    0, 0, rootProj, corrEmpty, false);
+  TH1D* norm0   = ProjectX(sum0, "norm0",   0, 0, rootProj, corrEmpty, false);
+  TH1D* normAll = ProjectX(ret,  "normAll", 0, 0, rootProj, corrEmpty, false);
+  norm->SetDirectory(0);
+  norm0->SetDirectory(0);
+  normAll->SetDirectory(0);
+  
+  ScaleToCoverage(sumCopy, norm);
+  ScaleToCoverage(sum0Copy, norm0);
+  ScaleToCoverage(retCopy, normAll);
+
+  Int_t nY = sum->GetNbinsY();
+  TH1D* sumCopyPx  = ProjectX(sumCopy,  "average",    1, nY,rootProj,corrEmpty);
+  TH1D* sum0CopyPx = ProjectX(sum0Copy, "average0",   1, nY,rootProj,corrEmpty);
+  TH1D* retCopyPx  = ProjectX(retCopy,  "averageAll", 1, nY,rootProj,corrEmpty);
+  sumCopyPx->SetDirectory(0);
+  sum0CopyPx->SetDirectory(0);
+  retCopyPx->SetDirectory(0);
+
+  // Scale our 1D histograms
+  sumCopyPx->Scale(1., "width");
+  sum0CopyPx->Scale(1., "width");  
+  retCopyPx->Scale(1., "width");  
+
+  AliInfo(Form("Maximum %f,%f changed to %f", sumCopyPx->GetMaximum(), 
+	       sum0CopyPx->GetMaximum(), retCopyPx->GetMaximum()));
+
+  // Scale the normalization - they should be 1 at the maximum
+  norm->Scale(n > 0   ? 1. / n  : 1);
+  norm0->Scale(n0 > 0 ? 1. / n0 : 1);
+  normAll->Scale(ntotal > 0 ? 1. / ntotal : 1);
+
+  out->Add(sumCopy);
+  out->Add(sum0Copy);
+  out->Add(retCopy);
+  out->Add(sumCopyPx);
+  out->Add(sum0CopyPx);
+  out->Add(retCopyPx);
+  out->Add(norm);
+  out->Add(norm0);
+  out->Add(normAll);
+
+  AliInfo(Form("Returning  (1/%f * %s + 1/%f * %s), "
+	       "1/%f * %d + 1/%f * %d = %d", 
+	       epsilon0, sum0->GetName(), epsilon, sum->GetName(), 
+	       epsilon0, n0, epsilon, n, int(ntotal)));
+#if 0
+  for (Int_t i = 1; i <= ret->GetNbinsX(); i++) { 
+    Double_t nc  = sum->GetBinContent(i, 0);
+    Double_t nc0 = sum0->GetBinContent(i, 0);
+    ret->SetBinContent(i, 0, nc + nc0); // Just count events 
+  }
+#endif
+ 
+  return ret;
 }
 
 //====================================================================
@@ -1011,19 +1291,14 @@ AliBasedNdetaTask::CentralityBin::CreateSums(const TH2D* data, const TH2D* mc)
   //    data  Data histogram to clone 
   //    mc    (optional) MC histogram to clone 
   //
-  fSum = static_cast<TH2D*>(data->Clone(GetName()));
-  fSum->SetDirectory(0);
-  fSum->Reset();
-  fSums->Add(fSum);
+  fSum = new Sum(GetName(),"");
+  fSum->Init(fSums, data, GetColor());
   
   // If no MC data is given, then do not create MC sum histogram 
   if (!mc) return;
 
-  fSumMC = static_cast<TH2D*>(mc->Clone(Form("%sMC", GetName())));
-  fSumMC->SetTitle(Form("%s (MC)", fSumMC->GetTitle()));
-  fSumMC->SetDirectory(0);
-  fSumMC->Reset();
-  fSums->Add(fSumMC);
+  fSumMC = new Sum(GetName(), "MC");
+  fSumMC->Init(fSums, mc, GetColor());
 }
 
 //____________________________________________________________________
@@ -1051,7 +1326,7 @@ AliBasedNdetaTask::CentralityBin::CheckEvent(const AliAODForwardMult* forward,
 //____________________________________________________________________
 void
 AliBasedNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* forward,
-					       Int_t triggerMask,
+					       Int_t triggerMask, Bool_t isZero,
 					       Double_t vzMin, Double_t vzMax,
 					       const TH2D* data, const TH2D* mc)
 {
@@ -1069,9 +1344,9 @@ AliBasedNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* forward,
   if (!CheckEvent(forward, triggerMask, vzMin, vzMax)) return;
   if (!data) return;
   if (!fSum) CreateSums(data, mc);
-  
-  fSum->Add(data);
-  if (mc) fSumMC->Add(mc);
+
+  fSum->Add(data, isZero);
+  if (mc) fSumMC->Add(mc, isZero);
 }
 
 //________________________________________________________________________
@@ -1090,7 +1365,6 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
   //    trigEff From MC
   //    ntotal  On return, contains the number of events. 
   //
-  ntotal               = 0;
   Double_t nAll        = t.GetBinContent(AliAODForwardMult::kBinAll);
   Double_t nB          = t.GetBinContent(AliAODForwardMult::kBinB);
   Double_t nA          = t.GetBinContent(AliAODForwardMult::kBinA);
@@ -1099,7 +1373,8 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
   Double_t nOffline    = t.GetBinContent(AliAODForwardMult::kBinOffline);
   Double_t nTriggered  = t.GetBinContent(AliAODForwardMult::kWithTrigger);
   Double_t nWithVertex = t.GetBinContent(AliAODForwardMult::kWithVertex);
-  Double_t nAccepted   = t.GetBinContent(AliAODForwardMult::kAccepted);
+  Double_t nAccepted   = ntotal; // t.GetBinContent(AliAODForwardMult::kAccepted);
+  ntotal               = 0;
   
   if (nTriggered <= 0.1) { 
     AliError("Number of triggered events <= 0");
@@ -1114,7 +1389,7 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
   Double_t scaler = 1;
   Double_t beta   = nA + nC - 2*nE;
 
-  if (scheme & kEventLevel) {
+  if (scheme & kEventLevel && !(scheme & kZeroBin)) {
     ntotal = nAccepted / vtxEff;
     scaler = vtxEff;
     AliInfo(Form("Calculating event normalisation as\n"
@@ -1148,7 +1423,30 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
 		   Int_t(nWithVertex), ntotal, scaler));
     }
   }
-  if (scheme & kTriggerEfficiency) {
+  if (scheme & kZeroBin) {
+    // Calculate as 
+    // 
+    //  N = N_A + 1/E_X * N_A / N_V (N_T - N_V - beta)
+    //    = N_A (1 + 1/E_X (N_T/N_V - 1 - beta / N_V))
+    // 
+    //  s = N_A/N = 1 / (1 + 1/E_X (N_T/N_V - 1 - beta / N_V))
+    //    = N_V / (N_V + 1/E_X (N_T - N_V - beta)) 
+    // 
+    if (!(scheme & kBackground)) beta = 0;
+    ntotal = nAccepted * (1 + 1/trigEff * (nTriggered / nWithVertex - 1 
+					 - beta / nWithVertex));
+    scaler = nWithVertex / (nWithVertex + 
+			    1/trigEff * (nTriggered-nWithVertex-beta));
+    AliInfo(Form("Calculating event normalisation as\n"
+		 "  beta = N_a + N_c + 2 N_e = %d + %d - 2 * %d = %d\n"
+		 "  N = N_A (1 + 1/E_X (N_T/N_V - 1 - beta / N_V)) = "
+		 "%d (1 + 1 / %f (%d / %d - 1 - %d / %d)) = %f (%f)",
+		 Int_t(nA), Int_t(nC), Int_t(nE), Int_t(beta),
+		 Int_t(nAccepted), trigEff, Int_t(nTriggered), 
+		 Int_t(nWithVertex), Int_t(beta), Int_t(nWithVertex), 
+		 ntotal, scaler));
+  }
+  if (scheme & kTriggerEfficiency && !(scheme & kZeroBin)) {
     ntotal /= trigEff;
     scaler *= trigEff;
     AliInfo(Form("Correcting for trigger efficiency:\n"
@@ -1246,17 +1544,9 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
   if (shapeCorr) copy->Divide(shapeCorr);
   else AliInfo("No shape correction specified, or disabled");
   
-  // Normalize to the acceptance -
-  // dndeta->Divide(accNorm);
-  for (Int_t i = 1; i <= copy->GetNbinsX(); i++) { 
-    for (Int_t j = 1; j <= copy->GetNbinsY(); j++) { 
-      Double_t c = copy->GetBinContent(i, j);
-      Double_t e = copy->GetBinError(i, j);
-      Double_t a = accNorm->GetBinContent(i);
-      copy->SetBinContent(i, j, a <= 0 ? 0 : c / a);
-      copy->SetBinError(i, j, a <= 0 ? 0 : e / a);
-    }
-  }
+  // --- Normalize to the coverage -----------------------------------
+  ScaleToCoverage(copy, accNorm);
+
   // --- Event-level normalization -----------------------------------
   copy->Scale(scaler);
 
@@ -1327,8 +1617,6 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   fOutput->SetOwner();
   results->Add(fOutput);
 
-  fSum      = static_cast<TH2D*>(fSums->FindObject(GetName()));
-  fSumMC    = static_cast<TH2D*>(fSums->FindObject(Form("%sMC", GetName())));
   fTriggers = static_cast<TH1I*>(fSums->FindObject("triggers"));
 
   if (!fTriggers) { 
@@ -1341,14 +1629,46 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   }
 
   // --- Get normalization scaler ------------------------------------
-  Double_t ntotal = 0;
-  Double_t epsilonT = trigEff;
+  Double_t epsilonT  = trigEff;
+  Double_t epsilonT0 = trigEff;
   // TEMPORARY FIX
   if (triggerMask == AliAODForwardMult::kNSD) {
     // This is a local change 
-    epsilonT = 0.92; 
+    epsilonT = 0.934; 
     AliWarning(Form("Using hard-coded NSD trigger efficiency of %f",epsilonT));
   }
+  else if (triggerMask == AliAODForwardMult::kInel) {
+    // This is a local change 
+    epsilonT = 0.92; 
+    AliWarning(Form("Using hard-coded Inel trigger efficiency of %f",epsilonT));
+  }
+  if (scheme & kZeroBin) { 
+    if (triggerMask==AliAODForwardMult::kInel)
+      epsilonT0 = 0.785021; // 0.100240;
+    else if (triggerMask==AliAODForwardMult::kInelGt0)
+      epsilonT0 = 0;
+    else if (triggerMask==AliAODForwardMult::kNSD)
+      epsilonT0 = .706587;
+    epsilonT = 1;
+    AliWarning(Form("Using hard-coded NCluster>0 trigger efficiency of %f",
+		    epsilonT0));
+  }
+
+  // Get our histograms 
+  Double_t nSum   = 0;
+  TH2D*    sum    = fSum->GetSum(fSums, fOutput, nSum, epsilonT0, 1, 
+				 marker, rootProj, corrEmpty);
+  Double_t nSumMC = 0;
+  TH2D*    sumMC  = 0;
+  if (fSumMC) sumMC = fSumMC->GetSum(fSums, fOutput, nSumMC, 
+				     epsilonT0, 1, marker,
+				     rootProj, corrEmpty);
+  if (!sum) { 
+    AliError("Failed to get sum from summer - bailing out");
+    return;
+  }
+    
+  Double_t ntotal = nSum;
   Double_t scaler = Normalization(*fTriggers, scheme, epsilonT, ntotal);
   if (scaler < 0) { 
     AliError("Failed to calculate normalization - bailing out");
@@ -1357,15 +1677,16 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   fOutput->Add(fTriggers->Clone());
 
   // --- Make result and store ---------------------------------------
-  MakeResult(fSum, "", rootProj, corrEmpty, (scheme & kShape) ? shapeCorr : 0,
+  MakeResult(sum, "", rootProj, corrEmpty, (scheme & kShape) ? shapeCorr : 0,
 	     scaler, symmetrice, rebin, cutEdges, marker);
 
   // --- Process result from TrackRefs -------------------------------
-  if (fSumMC) 
-    MakeResult(fSumMC, "MC", rootProj, corrEmpty, 
+  if (sumMC) 
+    MakeResult(sumMC, "MC", rootProj, corrEmpty, 
 	       (scheme & kShape) ? shapeCorr : 0,
-	       scaler, symmetrice, rebin, cutEdges, marker+2);
-
+	       scaler, symmetrice, rebin, cutEdges, 
+	       MarkerStyle(MarkerBits(marker)+4));
+  
   // Temporary stuff 
   // if (!IsAllBin()) return;
 
