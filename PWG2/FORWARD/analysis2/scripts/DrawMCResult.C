@@ -21,8 +21,44 @@ Rebin(TH1* h, Int_t rebin)
   return h;
 }
 
+TH1*
+Ratio(const TH1* h1, const TH1* h2)
+{
+  if (!h1) return;
+  if (!h2) return;
+  
+  TH1* copy = static_cast<TH1*>(h2->Clone("tmp"));
+  copy->SetName(Form("%s_%s", h2->GetName(), h1->GetName()));
+  copy->SetTitle(Form("%s/%s", h2->GetTitle(), h1->GetTitle()));
+  copy->SetDirectory(0);
+  copy->Divide(h1);
+
+  return copy;
+}
+
+Int_t 
+Ratio(THStack* r, const THStack* h1, const THStack* h2)
+{
+  if (!h1) return 0;
+  if (!h2) return 0;
+
+  int n1 = h1->GetHists()->GetEntries();
+  int n2 = h2->GetHists()->GetEntries();
+  int nH = 0;
+  for (int i = 0; i < n1 && i < n2; i++) { 
+    TH1* hh1 = static_cast<TH1*>(h1->GetHists()->At(i));
+    TH1* hh2 = static_cast<TH1*>(h2->GetHists()->At(i));
+    TH1* h   = Ratio(hh1, hh2);
+    if (!h) continue;
+    nH++;
+    r->Add(h);
+  }
+  return nH;
+}
+
 void
-DrawMCResult(const char* filename="forward.root", Int_t rebin=1)
+DrawMCResult(const char* filename="forward.root", Int_t rebin=1,
+	     Bool_t ratios=true)
 {
   gStyle->SetPalette(1);
   gStyle->SetOptFit(0);
@@ -51,29 +87,43 @@ DrawMCResult(const char* filename="forward.root", Int_t rebin=1)
   }
 
 
+  gStyle->SetTitleBorderSize(0);
+  gStyle->SetTitleFillColor(0);
+  gStyle->SetTitleStyle(0);
+  // gStyle->SetTitleColor(kBlack);
+
 
   TCanvas* c = new TCanvas("c", "C", 900, 700);
   c->SetFillColor(0);
   c->SetBorderSize(0);
   c->SetTopMargin(0.05);
   c->SetRightMargin(0.05);
-  gStyle->SetTitleBorderSize(0);
-  gStyle->SetTitleFillColor(0);
-  gStyle->SetTitleStyle(0);
-  // gStyle->SetTitleColor(kBlack);
+
+  Double_t y1 = (ratios ? .3 : 0);
+  TPad* p1 = new TPad("p1", "p1", 0, y1, 1, 1, 0, 0, 0); 
+  p1->SetBottomMargin(ratios ? 0.01 : .10);
+  p1->SetFillColor(0);
+  p1->SetBorderSize(0);
+  p1->SetTopMargin(0.05);
+  p1->SetRightMargin(0.05);
+  p1->Draw();
+  p1->cd();
 
   THStack* all = new THStack("all", "Analysis steps");
   if (res) {
+    res->SetTitle("dN_{ch}/d#eta");
     TIter next(res->GetHists());
     TH1* h = 0;
     while ((h = static_cast<TH1*>(next()))) all->Add(Rebin(h,rebin));
   }
   if (mcRes) {
+    mcRes->SetTitle("Track-Refs");
     TIter next(mcRes->GetHists());
     TH1* h = 0;
     while ((h = static_cast<TH1*>(next()))) all->Add(Rebin(h,rebin));
   }
   if (deltas) {
+    deltas->SetTitle("#sum_{} #Delta/#Delta_{mip}");
     TIter next(deltas->GetHists());
     TH1* h = 0;
     while ((h = static_cast<TH1*>(next()))) { 
@@ -82,6 +132,7 @@ DrawMCResult(const char* filename="forward.root", Int_t rebin=1)
     }
   }
   if (nchs) {
+    nchs->SetTitle("#sum_{} N_{ch,incl}");
     TIter next(nchs->GetHists());
     TH1* h = 0;
     while ((h = static_cast<TH1*>(next()))) { 
@@ -90,6 +141,7 @@ DrawMCResult(const char* filename="forward.root", Int_t rebin=1)
     }
   }
   if (prims) {
+    prims->SetTitle("#sum_{} N_{ch,primary}");
     TIter next(prims->GetHists());
     TH1* h = 0;
     while ((h = static_cast<TH1*>(next()))) { 
@@ -108,6 +160,7 @@ DrawMCResult(const char* filename="forward.root", Int_t rebin=1)
   c->SetGridx();
 
   TLegend* l = new TLegend(.33, .2, .53, .9);
+  TLegendEntry* e = 0;
   l->SetFillColor(0);
   l->SetFillStyle(0);
   l->SetBorderSize(0);
@@ -118,46 +171,85 @@ DrawMCResult(const char* filename="forward.root", Int_t rebin=1)
     TIter next(res->GetHists());
     TH1* h = 0;
     while ((h = static_cast<TH1*>(next()))) {
-      TLegendEntry* e = l->AddEntry(Form("dummy%02d", i++),h->GetTitle(),"pl");
+      e = l->AddEntry(Form("dummy%02d", i++),h->GetTitle(),"pl");
       e->SetMarkerStyle(20);
       e->SetMarkerColor(h->GetMarkerColor());
     }
-    TLegendEntry* e1 = l->AddEntry(Form("dummy%02d", i++),
-				   "dN_{ch}/d#eta","pl");
-    e1->SetMarkerStyle(20);
-    e1->SetMarkerColor(kBlack);
+    e = l->AddEntry(Form("dummy%02d", i++),res->GetTitle(),"pl");
+    e->SetMarkerStyle(20);
+    e->SetMarkerColor(kBlack);
   }
   if (deltas) { 
-    TLegendEntry* e1 = l->AddEntry(Form("dummy%02d", i++),
-				   "#sum_{} #Delta/#Delta_{mip}","pl");
+    e = l->AddEntry(Form("dummy%02d", i++), deltas->GetTitle(),"pl");
     TH1* h = static_cast<TH1*>(deltas->GetHists()->At(0));
-    e1->SetMarkerStyle(h->GetMarkerStyle());
-    e1->SetMarkerColor(kBlack);
+    e->SetMarkerStyle(h->GetMarkerStyle());
+    e->SetMarkerColor(kBlack);
   }
   if (nchs) { 
-    TLegendEntry* e1 = l->AddEntry(Form("dummy%02d", i++),
-				   "#sum_{} N_{ch,incl}","pl");
+    e = l->AddEntry(Form("dummy%02d",i++),nchs->GetTitle(),"pl");
     TH1* h = static_cast<TH1*>(nchs->GetHists()->At(0));
-    e1->SetMarkerStyle(h->GetMarkerStyle());
-    e1->SetMarkerColor(kBlack);
+    e->SetMarkerStyle(h->GetMarkerStyle());
+    e->SetMarkerColor(kBlack);
   }
   if (prims) { 
-    TLegendEntry* e1 = l->AddEntry(Form("dummy%02d", i++),
-				   "#sum_{} N_{ch,primary}","pl");
+    e = l->AddEntry(Form("dummy%02d", i++), prims->GetTitle(),"pl");
     TH1* h = static_cast<TH1*>(prims->GetHists()->At(0));
-    e1->SetMarkerStyle(h->GetMarkerStyle());
-    e1->SetMarkerColor(kBlack);
+    e->SetMarkerStyle(h->GetMarkerStyle());
+    e->SetMarkerColor(kBlack);
   }
 
   if (mcRes) { 
-    TLegendEntry* e1 = l->AddEntry(Form("dummy%02d", i++),"Track-Refs", "pl");
+    e = l->AddEntry(Form("dummy%02d", i++), mcRes->GetTitle(), "pl");
     TH1* h = static_cast<TH1*>(mcRes->GetHists()->At(0));
-    e1->SetMarkerStyle(h->GetMarkerStyle());
-    e1->SetMarkerColor(kBlack);
+    e->SetMarkerStyle(h->GetMarkerStyle());
+    e->SetMarkerColor(kBlack);
   }
 
   if (sumEta) l->AddEntry(sumEta);
   l->Draw();
+
+
+  if (!ratios) return;
+
+  c->cd();
+  TPad* p2 = new TPad("p2", "p2", 0, 0, 1, y1, 0, 0, 0); 
+  p2->SetTopMargin(0);
+  p2->SetFillColor(0);
+  p2->SetBorderSize(0);
+  p2->SetRightMargin(0.05);
+  p2->Draw();
+  p2->cd();
+
+  THStack* rs = new THStack("ratios", "Ratios");
+  Int_t nDN = Ratio(rs, deltas, nchs);
+  Int_t nNR = Ratio(rs, nchs, res);
+  Int_t nRP = Ratio(rs, res, prims);
+  rs->Draw("nostack");
+
+  TLegend* ll = new TLegend(.38, .2, .48, .9);
+  ll->SetFillColor(0);
+  ll->SetFillStyle(0);
+  ll->SetBorderSize(0);
+  ll->SetNColumns(1);
+  ll->SetTextFont(132);
+  if (nDN) {
+    e = ll->AddEntry("d1", Form("#frac{%s}{%s}", 
+					      nchs->GetTitle(), 
+					      deltas->GetTitle()), "lp");
+    e->SetMarkerStyle(21);
+  }
+  if (nNR) {
+    e = ll->AddEntry("d2", Form("#frac{%s}{%s}", res->GetTitle(), 
+				nchs->GetTitle()), "lp");
+    e->SetMarkerStyle(20);
+  }
+  if (nRP) {
+    e = ll->AddEntry("d3", Form("#frac{%s}{%s}", prims->GetTitle(), 
+			    res->GetTitle()), "lp");
+    e->SetMarkerStyle(22);
+  }
+  ll->Draw();
+  
 
 }
 
