@@ -76,7 +76,7 @@ void AliTRDltuParam::GetDyRange(Int_t det, Int_t rob, Int_t mcm, Int_t ch,
   dyMinInt = fgDyMin;
   dyMaxInt = fgDyMax;
 
-  if (fMagField < 0.1)
+  if (TMath::Abs(fMagField) < 0.1)
     return;
 
   Float_t e = 0.30;
@@ -149,7 +149,7 @@ Float_t AliTRDltuParam::GetLocalY(Int_t det, Int_t rob, Int_t mcm, Int_t ch) con
 {
   Int_t layer = det%6;
   // calculate the pad position as in the TRAP
-  Float_t ypos = (-4 + (rob&0x1) * 4 + (mcm&0x3)) * 18 - ch - 0.5; // y position in bins of pad widths
+  Float_t ypos = (-4 + 1 + (rob&0x1) * 4 + (mcm&0x3)) * 18 - ch - 0.5; // y position in bins of pad widths
   return ypos*fgWidthPad[layer];
 }
 
