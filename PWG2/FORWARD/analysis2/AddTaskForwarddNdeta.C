@@ -40,6 +40,8 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
   task->SetVertexRange(vzMin, vzMax);
   // Set the trigger mask to use (INEL,INEL>0,NSD)
   task->SetTriggerMask(trig);
+  // Set the trigger efficiency 
+  // task->SetTriggerEff(0.997535);
   // Whether to cut edges when re-binning 
   task->SetCutEdges(cutEdges);
   // Whether to correct for empty bins when projecting 

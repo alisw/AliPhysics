@@ -14,6 +14,7 @@
  * @ingroup pwg2_forward_dndeta
  */
 #include <TH1.h>
+#include <TColor.h>
 #include <THStack.h>
 #include <TGraphErrors.h>
 #include <TGraphAsymmErrors.h>
@@ -62,6 +63,7 @@ struct dNdetaDrawer
       fShowAlice(false),        // Bool_t
       fShowRatios(false),	// Bool_t 
       fShowLeftRight(false),	// Bool_t
+      fShowRings(false),        // Bool_t 
       fRebin(5),		// UShort_t
       fCutEdges(false),		// Bool_t
       fTitle(""),		// TString
@@ -134,6 +136,7 @@ struct dNdetaDrawer
    * @param x To show or not 
    */
   void SetShowLeftRight(Bool_t x) { fShowLeftRight = x; }
+  void SetShowRings(Bool_t x) { fShowRings = x; }
   //__________________________________________________________________
   /** 
    * Set the rebinning factor 
@@ -372,12 +375,13 @@ struct dNdetaDrawer
     if (!fShowOthers && !fShowAlice) return 0;
 
     Bool_t   onlya = (fShowOthers ? false : true);
+    Bool_t   nomc  = true;
     UShort_t sys   = (fSysString  ? fSysString->GetUniqueID() : 0);
     UShort_t trg   = (fTrigString ? fTrigString->GetUniqueID() : 0);
     UShort_t snn   = (fSNNString  ? fSNNString->GetUniqueID() : 0);
-    Long_t   ret   = gROOT->ProcessLine(Form("GetData(%d,%d,%d,%d,%d,%d);",
+    Long_t   ret   = gROOT->ProcessLine(Form("GetData(%d,%d,%d,%d,%d,%d,%d);",
 					     sys,snn,trg,
-					     centLow,centHigh,onlya));
+					     centLow,centHigh,onlya,nomc));
     if (!ret) { 
 #if 0
       Warning("FetchResults", "No other data found for sys=%d, sNN=%d, "
@@ -526,12 +530,14 @@ struct dNdetaDrawer
     max = TMath::Max(max, AddHistogram(fResults, dndeta,      dndetaSym));
     max = TMath::Max(max, AddHistogram(fResults, tracks));
 
-    THStack* rings = static_cast<THStack*>(list->FindObject("dndetaRings"));
-    if (rings) { 
-      TIter next(rings->GetHists());
-      TH1*  hist = 0;
-      while ((hist = static_cast<TH1*>(next()))) 
-	max = TMath::Max(max, AddHistogram(fResults, hist));
+    if (fShowRings) {
+      THStack* rings = static_cast<THStack*>(list->FindObject("dndetaRings"));
+      if (rings) { 
+	TIter next(rings->GetHists());
+	TH1*  hist = 0;
+	while ((hist = static_cast<TH1*>(next()))) 
+	  max = TMath::Max(max, AddHistogram(fResults, hist));
+      }
     }
     // Info("FetchResults", "Got %p, %p, %p from %s with name %s, max=%f", 
     //      dndeta, dndetaMC, dndetaTruth, list->GetName(), name, max);
@@ -622,6 +628,8 @@ struct dNdetaDrawer
     Int_t   nev  = 0;
     if (fTriggers) nev = fTriggers->GetBinContent(1);
     trg          = trg.Strip(TString::kBoth);
+    trg.ReplaceAll(" ", "_");
+    trg.ReplaceAll(">", "Gt");
     TString base(Form("dndeta_%s_%s_%s_%c%02d%c%02dcm_%09dev",
 		      fSysString->GetTitle(), 
 		      fSNNString->GetTitle(), 
@@ -682,7 +690,7 @@ struct dNdetaDrawer
 	// l->AddEntry(hist, hist->GetTitle(), "pl");
       }
     }
-    unique.ls();
+    // unique.ls();
     TIter nextu(&unique);
     TObject* s = 0;
     Int_t i = 0;
@@ -765,7 +773,8 @@ struct dNdetaDrawer
     fResults->SetMaximum(1.15*max);
     fResults->SetMinimum(yd > 0.00001 ? -0.1 : 0);
 
-    FixAxis(fResults, 1/(1-yd)/1.7, "#frac{1}{N} #frac{dN_{ch}}{d#eta}");
+    Double_t s = (yd > 0.00001 ? 1/(1-yd)/1.7 : 1.2);
+    FixAxis(fResults, s, "#frac{1}{N} #frac{dN_{ch}}{d#eta}");
 
     p1->Clear();
     fResults->DrawClone("nostack e1");
@@ -799,6 +808,7 @@ struct dNdetaDrawer
     tit->SetTextSize(0.05);
     tit->Draw();
 
+    Int_t aliceBlue = TColor::GetColor(41,73,156);
     // Put a nice label in the plot
     TString     eS;
     UShort_t    snn = fSNNString->GetUniqueID();
@@ -812,6 +822,7 @@ struct dNdetaDrawer
 					   eS.Data(), 
 					   fCentAxis ? "by centrality" : 
 					   fTrigString->GetTitle()));
+    tt->SetTextColor(aliceBlue);
     tt->SetNDC();
     tt->SetTextFont(132);
     tt->SetTextAlign(33);
@@ -821,6 +832,7 @@ struct dNdetaDrawer
     Int_t nev = 0;
     if (fTriggers) nev = fTriggers->GetBinContent(1);
     TLatex* et = new TLatex(.93, .83, Form("%d events", nev));
+    et->SetTextColor(aliceBlue);
     et->SetNDC();
     et->SetTextFont(132);
     et->SetTextAlign(33);
@@ -832,6 +844,7 @@ struct dNdetaDrawer
       vt->SetNDC();
       vt->SetTextFont(132);
       vt->SetTextAlign(33);
+      vt->SetTextColor(aliceBlue);
       vt->Draw();
     }
     // results->Draw("nostack e1 same");
@@ -841,22 +854,29 @@ struct dNdetaDrawer
 
 
     // Mark the plot as preliminary
-    TLatex* pt = new TLatex(.12, .93, "Preliminary");
+    TLatex* pt = new TLatex(.12, .93, "Work in progress");
     pt->SetNDC();
     pt->SetTextFont(22);
-    pt->SetTextSize(0.07);
-    pt->SetTextColor(kRed+1);
+    // pt->SetTextSize();
+    pt->SetTextColor(TColor::GetColor(234,26,46));
     pt->SetTextAlign(13);
     pt->Draw();
 
-    if (!gSystem->AccessPathName("ALICE.png")) { 
-      TPad* logo = new TPad("logo", "logo", .12, .65, .25, .85, 0, 0, 0);
-      logo->SetFillStyle(0);
-      logo->Draw();
-      logo->cd();
+    const char*  logos[] = { "ALICE.png", "FMD.png", 0 };
+    const char** logo    = logos;
+    while (*logo) {
+      if (gSystem->AccessPathName(*logo)) {
+	logo++;
+	continue;
+      }
+      TPad* pad = new TPad("logo", "logo", .12, .65, .25, .85, 0, 0, 0);
+      pad->SetFillStyle(0);
+      pad->Draw();
+      pad->cd();
       TImage* i = TImage::Create();
-      i->ReadImage("ALICE.png");
+      i->ReadImage(*logo);
       i->Draw();
+      break;
     }
     p1->cd();
   }
@@ -1568,6 +1588,7 @@ struct dNdetaDrawer
   Bool_t       fShowAlice;    // Show ALICE published data
   Bool_t       fShowRatios;   // Show ratios 
   Bool_t       fShowLeftRight;// Show asymmetry 
+  Bool_t       fShowRings;    // Show rings too
   UShort_t     fRebin;        // Rebinning factor 
   Bool_t       fCutEdges;     // Whether to cut edges
   TString      fTitle;        // Title on plot
@@ -1679,6 +1700,7 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   d.SetShowAlice(flags & 0x2);
   d.SetShowRatios(flags & 0x4);
   d.SetShowLeftRight(flags & 0x8);
+  d.SetShowRings(flags & 0x10);
   // Do the below if your input data does not contain these settings 
   if (sNN > 0) d.SetSNN(sNN);     // Collision energy per nucleon pair (GeV)
   if (sys > 0) d.SetSys(sys);     // Collision system (1:pp, 2:PbPB)

@@ -33,6 +33,9 @@ public:
     kESD  = 0x1, 
     kMC   = 0x2
   };
+  enum { 
+    kMaxN = 9
+  };
   /** 
    * Constructor
    */
@@ -41,6 +44,7 @@ public:
       fInel(),
       fInelGt0(),
       fNSD(),
+      fNClusterGt0(),
       fInspector(), 
       fFirstEvent(true),
       fData(0), 
@@ -60,6 +64,7 @@ public:
       fInel(AliAODForwardMult::kInel),
       fInelGt0(AliAODForwardMult::kInelGt0),
       fNSD(AliAODForwardMult::kNSD),
+      fNClusterGt0(AliAODForwardMult::kNClusterGt0),
       fInspector("eventInspector"), 
       fFirstEvent(true), 
       fData(0), 
@@ -91,11 +96,10 @@ public:
   {
     fList = new TList;
     fList->SetOwner();
-    fList->SetName(GetName());
+    fList->SetName("triggerSums");
 
-    Double_t mb[] = { 0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 1000 };
-    Int_t    nM   = 10;
-    TAxis mAxis(nM, mb);
+    // Double_t mb[] = { 0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11 };
+    // Int_t    nM   = 10;
     TAxis eAxis(200, -4, 6);
     TAxis pAxis(40, 0, 2*TMath::Pi());
 
@@ -108,7 +112,7 @@ public:
     fData->SetZTitle("N_{ch}(#eta,#varphi)");
     fData->Sumw2();
     
-    fM = new TH1D("m", "Distribution of N_{ch}|_{|#eta|<1}",nM+1, -0.5, nM+.5); 
+    fM = new TH1D("m", "Distribution of N_{ch}|_{|#eta|<1}", kMaxN+1,0,kMaxN+1);
     fM->SetXTitle("N_{ch}|_{|#eta|<1}");
     fM->SetYTitle("Events");
     fM->SetFillColor(kRed+1);
@@ -116,22 +120,24 @@ public:
     fM->SetDirectory(0);
     fList->Add(fM);
 
-    for (Int_t i = 0; i <= nM; i++) { 
+    for (Int_t i = 0; i <= kMaxN; i++) { 
       TString lbl;
-      if (i == 0)       lbl = "all";
-      else if (i == nM) lbl = Form("%d+",int(mAxis.GetBinLowEdge(i)+.5));
-      else              lbl = Form("<%d",int(mAxis.GetBinUpEdge(i)+.5));
+      if (i == 0)          lbl = "all";
+      else if (i == kMaxN) lbl = Form("%d+",i-1);
+      else                 lbl = Form("<%d",i);
       fM->GetXaxis()->SetBinLabel(i+1, lbl);
     }
 
-    fTriggers = new TH1I("triggers", "Triggers", 6, -.5, 5.5);
+    fTriggers = new TH1I("triggers", "Triggers", 8, -.5, 7.5);
     fTriggers->SetDirectory(0);
     fTriggers->GetXaxis()->SetBinLabel(1, "INEL (MC)");
     fTriggers->GetXaxis()->SetBinLabel(2, "INEL (ESD)");
-    fTriggers->GetXaxis()->SetBinLabel(3, "INEL>0 (MC)");
-    fTriggers->GetXaxis()->SetBinLabel(4, "INEL>0 (ESD)");
-    fTriggers->GetXaxis()->SetBinLabel(5, "NSD (MC)");
-    fTriggers->GetXaxis()->SetBinLabel(6, "NSD (ESD)");
+    fTriggers->GetXaxis()->SetBinLabel(3, "INEL & N_{cluster}>0 (MC)");
+    fTriggers->GetXaxis()->SetBinLabel(4, "INEL & N_{cluster}>0 (ESD)");
+    fTriggers->GetXaxis()->SetBinLabel(5, "INEL>0 (MC)");
+    fTriggers->GetXaxis()->SetBinLabel(6, "INEL>0 (ESD)");
+    fTriggers->GetXaxis()->SetBinLabel(7, "NSD (MC)");
+    fTriggers->GetXaxis()->SetBinLabel(8, "NSD (ESD)");
     fTriggers->SetFillColor(kYellow+1);
     fTriggers->SetFillStyle(3001);
     fList->Add(fTriggers);
@@ -161,6 +167,7 @@ public:
     fInel.CreateObjects(fList, fM, fData);
     fInelGt0.CreateObjects(fList, fM, fData);
     fNSD.CreateObjects(fList, fM, fData);
+    fNClusterGt0.CreateObjects(fList, fM, fData);
 
 
     fInspector.DefineOutput(fList);
@@ -220,9 +227,10 @@ public:
     Int_t    nPart;    // Number of participants 
     Int_t    nBin;     // Number of binary collisions 
     Double_t phiR;     // Reaction plane from MC
-    
+    UShort_t nClusters;// Number of clisters 
     // Process the data 
-    Int_t retESD = fInspector.Process(esd, triggers, lowFlux, iVz, vZ, cent);
+    Int_t retESD = fInspector.Process(esd, triggers, lowFlux, iVz, vZ, cent,
+				      nClusters);
     Int_t retMC  = fInspector.ProcessMC(mcEvent, triggers, iVzMc, 
 					vZMc, b, nPart, nBin, phiR);
 
@@ -291,16 +299,22 @@ public:
       if (triggered) fTriggers->Fill(1);
       fInel.AddEvent(triggered, hasVertex, m, fData);
     }
-    if (isMcInelGt0) {
+    if (isMcInel) { // && nClusters > 0) {
       fTriggers->Fill(2);
-      bool triggered = (triggers & AliAODForwardMult::kInelGt0);
+      bool triggered = (triggers & AliAODForwardMult::kNClusterGt0);
       if (triggered) fTriggers->Fill(3);
+      fNClusterGt0.AddEvent(triggered, hasVertex, m, fData);
+    }
+    if (isMcInelGt0) {
+      fTriggers->Fill(4);
+      bool triggered = (triggers & AliAODForwardMult::kInelGt0);
+      if (triggered) fTriggers->Fill(5);
       fInelGt0.AddEvent(triggered, hasVertex, m, fData);
     }
     if (isMcNSD) {
-      fTriggers->Fill(4);
+      fTriggers->Fill(6);
       bool triggered = (triggers & AliAODForwardMult::kNSD);
-      if (triggered) fTriggers->Fill(5);
+      if (triggered) fTriggers->Fill(7);
       fNSD.AddEvent(triggered, hasVertex, m, fData);
     }
     PostData(1, fList);
@@ -319,7 +333,7 @@ public:
 
 
     TList* output = new TList;
-    output->SetName(GetName());
+    output->SetName("triggerResults");
     output->SetOwner();
 
     fVertexMC = static_cast<TH1D*>(fList->FindObject("vertexMC"));
@@ -328,26 +342,43 @@ public:
     if (fVertexMC) { 
       TH1D* vtxMC = static_cast<TH1D*>(fVertexMC->Clone("vertexMC"));
       vtxMC->SetDirectory(0);
-      vtxMC->Scale(1. / vtxMC->GetEntries());
+      if (vtxMC->GetEntries() > 0)
+	vtxMC->Scale(1. / vtxMC->GetEntries());
+      else 
+	vtxMC->Scale(0);
       output->Add(vtxMC);
     }
     if (fVertexESD) { 
       TH1D* vtxESD = static_cast<TH1D*>(fVertexESD->Clone("vertexESD"));
       vtxESD->SetDirectory(0);
-      vtxESD->Scale(1. / vtxESD->GetEntries());
+      if (vtxESD->GetEntries() > 0)
+	vtxESD->Scale(1. / vtxESD->GetEntries());
+      else 
+	vtxESD->Scale(0);
       output->Add(vtxESD);
     }
     if (fM) { 
       TH1D* m = static_cast<TH1D*>(fM->Clone("m"));
       m->SetDirectory(0);
       m->SetYTitle("P(N_{ch}|_{|#eta|<1} < X)");
-      m->Scale(1. / m->GetBinContent(1));
+      if (m->GetBinContent(1) > 0)
+	m->Scale(1. / m->GetBinContent(1));
+      else 
+	m->Scale(0);
       output->Add(m);
     }      
+
+    TString vtxReq;
+    if (fVertexRequirement & kMC)  vtxReq.Append("MC ");
+    if (fVertexRequirement & kESD) vtxReq.Append("ESD ");
+    output->Add(new TNamed("vtxReq", vtxReq.Data()));
+    output->Add(new TNamed("trkReq",
+			   fTrackletRequirement == kMC ? "MC" : "ESD"));
 
     fInel.Finish(fList, output);
     fInelGt0.Finish(fList, output);
     fNSD.Finish(fList, output);
+    fNClusterGt0.Finish(fList, output);
 
     PostData(2, output);
   }
@@ -371,6 +402,8 @@ protected:
       TH1I*     fCounts;
       UShort_t  fLow;
       UShort_t  fHigh;
+      Bool_t IsAll() const { return fLow > fHigh; }
+      Bool_t IsLast() const { return fHigh >= kMaxN; }
       /** 
        * Constructor 
        */
@@ -394,8 +427,19 @@ protected:
 	  fLow(low), 
 	  fHigh(high)
       {
-	if (low >= high) SetName("all");
-	else             SetName(Form("m%03d_%03d", fLow, fHigh));
+	if (IsAll()) {
+	  SetName("all");
+	  SetTitle("All");
+	}
+	else if (IsLast()) { 
+	  SetName(Form("m%03dplus", fLow));
+	  SetTitle(Form("%d #leq N_{tracklets}|_{|#eta|<1}", fLow));
+	}
+	else {
+	  SetName(Form("m%03d_%03d", fLow, fHigh));
+	  SetTitle(Form("%d #leq N_{tracklets}|_{|#eta|<1} < %d", fLow,fHigh));
+	}
+
 	TList* l = new TList;
 	l->SetOwner();
 	l->SetName(GetName());
@@ -405,7 +449,7 @@ protected:
 	fTruth->SetTitle("MC truth");
 	fTruth->SetDirectory(0);
 	fTruth->SetZTitle("#sum_i^{N_X} N_{ch}(#eta,#varphi)");
-	fTruth->Sumw2();
+	// fTruth->Sumw2();
 	fTruth->Reset();
 	l->Add(fTruth);
 
@@ -413,7 +457,7 @@ protected:
 	fTriggered->SetTitle("Triggered");
 	fTriggered->SetDirectory(0);
 	fTriggered->SetZTitle("#sum_i^{N_T} N_{ch}(#eta,#varphi)");
-	fTriggered->Sumw2();
+	// fTriggered->Sumw2();
 	fTriggered->Reset();
 	l->Add(fTriggered);
 
@@ -421,7 +465,7 @@ protected:
 	fAccepted->SetTitle("Accepted");
 	fAccepted->SetDirectory(0);
 	fAccepted->SetZTitle("#sum_i^{N_T} N_{ch}(#eta,#varphi)");
-	fAccepted->Sumw2();
+	// fAccepted->Sumw2();
 	fAccepted->Reset();
 	l->Add(fAccepted);
 	
@@ -484,13 +528,19 @@ protected:
 	if (nTriggered > 0) fTriggered->Scale(1. / nTriggered);
 	if (nAccepted > 0)  fAccepted->Scale(1. / nAccepted);
 
-	if (fLow >= fHigh) 
-	  Info("Finish", "%-6s  [all]  E_X=N_T/N_X=%9d/%-9d=%f "
+	if (IsAll()) 
+	  Info("Finish", "%-12s  [all]  E_X=N_T/N_X=%9d/%-9d=%f "
 	       "E_V=N_A/N_T=%9d/%-9d=%f", 
 	       p->GetName(), nTriggered, nTruth, eff, nAccepted, nTriggered, 
 	       (nTriggered > 0 ? double(nAccepted) / nTriggered: 0));
+	else if (IsLast()) 
+	  Info("Finish", "%-12s  [%2d+]  E_X=N_T/N_X=%9d/%-9d=%f "
+	       "E_V=N_A/N_T=%9d/%-9d=%f", 
+	       p->GetName(), fLow, nTriggered, nTruth, eff, 
+	       nAccepted, nTriggered, 
+	       (nTriggered > 0 ? double(nAccepted) / nTriggered: 0));
 	else
-	  Info("Finish", "%-6s [%2d-%2d] E_X=N_T/N_X=%9d/%-9d=%f "
+	  Info("Finish", "%-12s [%2d-%2d] E_X=N_T/N_X=%9d/%-9d=%f "
 	       "E_V=N_A/N_T=%9d/%-9d=%f", 
 	       p->GetName(), fLow, fHigh, nTriggered, nTruth, eff, 
 	       nAccepted, nTriggered, 
@@ -511,9 +561,9 @@ protected:
 	bias->SetZTitle("Trigger bias (accepted/truth)");
 	out->Add(bias);
 
+	TString title = GetTitle();
 	TH1D* truth_px = static_cast<TH1D*>(fTruth->ProjectionX("truth_eta"));
-	truth_px->SetTitle(Form("%d #leq N_{tracklets}|_{|#eta|<1} < %d", 
-			       fLow, fHigh));
+	truth_px->SetTitle(title);
 	truth_px->Scale(1. / fTruth->GetNbinsY());
 	truth_px->SetDirectory(0);
 	truth_px->SetLineColor(kRed+1);
@@ -524,8 +574,7 @@ protected:
 
 	TH1D* triggered_px = 
 	  static_cast<TH1D*>(fTriggered->ProjectionX("triggered_eta"));
-	triggered_px->SetTitle(Form("%d #leq N_{tracklets}|_{|#eta|<1} < %d", 
-			       fLow, fHigh));
+	triggered_px->SetTitle(title);
 	triggered_px->Scale(1. / fTriggered->GetNbinsY());
 	triggered_px->SetDirectory(0);
  	triggered_px->SetLineColor(kGreen+1);
@@ -536,8 +585,7 @@ protected:
 
 	TH1D* accepted_px = 
 	  static_cast<TH1D*>(fAccepted->ProjectionX("accepted_eta"));
-	accepted_px->SetTitle(Form("%d #leq N_{tracklets}|_{|#eta|<1} < %d", 
-				   fLow, fHigh));
+	accepted_px->SetTitle(title);
 	accepted_px->Scale(1. / fAccepted->GetNbinsY());
  	accepted_px->SetLineColor(kBlue+1);
 	accepted_px->SetMarkerColor(kBlue+1);
@@ -553,8 +601,7 @@ protected:
 
 #if 0
 	TH1D* bias_px = static_cast<TH1D*>(bias->ProjectionX("bias_eta"));
-	bias_px->SetTitle(Form("%d #leq N_{tracklets}|_{|#eta|<1} < %d", 
-			       fLow, fHigh));
+	bias_px->SetTitle(title);
 	bias_px->Scale(1. / bias->GetNbinsY());
 #else
 	TH1D* bias_px = static_cast<TH1D*>(accepted_px->Clone("bias_px"));
@@ -595,6 +642,9 @@ protected:
 	fM(0), 
 	fBins(0)
     {
+      TString n(GetName());
+      n = n.Strip(TString::kBoth);
+      SetName(n);
     }
     /** 
      * Create objects 
@@ -618,12 +668,13 @@ protected:
       ours->Add(fM);
       
       fBins = new TObjArray;
-      fBins->AddAt(new MBin(ours, 0, 0, dHist), 0);
-      for (Int_t i = 1; i <= fM->GetNbinsX(); i++) { 
+      fBins->AddAt(new MBin(ours, 1000, 0, dHist), 0);
+      for (Int_t i = 1; i < fM->GetNbinsX(); i++) { 
 	Double_t low  = fM->GetXaxis()->GetBinLowEdge(i);
 	Double_t high = fM->GetXaxis()->GetBinUpEdge(i);
-
-	fBins->AddAt(new MBin(ours, low, high, dHist), i);
+	Info("CreatePbjects", "Adding bin [%3d,%3d] @ %d", 
+	     int(low), int(high), i);
+	fBins->AddAt(new MBin(ours, UShort_t(low), UShort_t(high), dHist), i);
       }
     }
     /** 
@@ -635,10 +686,20 @@ protected:
      */
     MBin* FindBin(UShort_t m) 
     { 
+#if 0
+      for (Int_t i = 1; i < fBins->GetEntries(); i++) {
+	MBin* b = static_cast<MBin*>(fBins->At(i));
+	if (m >= b->fLow && m < b->fHigh) return b;
+      }
+      Warning("FindBin", "Found no bin for m=%d", m);
+      return 0;
+#else
       Int_t b = fM->GetXaxis()->FindBin(m);
       if (b <= 0) return 0;
       if (b >= fM->GetNbinsX()+1) b = fM->GetNbinsX();
-      return static_cast<MBin*>(fBins->At(b));
+      MBin* bin = static_cast<MBin*>(fBins->At(b));
+      return bin;
+#endif
     }
     /** 
      * Add event observation 
@@ -656,6 +717,7 @@ protected:
       all->AddEvent(triggered, hasVtx, data);
       
       MBin* bin = FindBin(m);
+      if (!bin) return;
       bin->AddEvent(triggered, hasVtx, data);      
     }      
     /** 
@@ -699,7 +761,7 @@ protected:
       gStyle->SetPalette(1);
       Int_t   nCol = gStyle->GetNumberOfColors();
       THStack* stack = new THStack("biases", "Trigger biases");
-      for (Int_t i = 0; i <= nBin; i++) { 
+      for (Int_t i = 0; i < nBin; i++) { 
 	MBin* bin = static_cast<MBin*>(fBins->At(i));
 	effs->SetBinContent(i+1, bin->Finish(l, ours, stack));
 	TH1* h = static_cast<TH1*>(stack->GetHists()->At(i));
@@ -724,6 +786,7 @@ protected:
   TriggerType            fInel;
   TriggerType            fInelGt0;
   TriggerType            fNSD;
+  TriggerType            fNClusterGt0;
   AliFMDMCEventInspector fInspector;
   TList*                 fList;
   Bool_t                 fFirstEvent;
@@ -741,9 +804,9 @@ protected:
 //====================================================================
 void MakeEvaluateTriggers(const char* esddir, 
 			  Int_t       nEvents    = -1, 
-			  UInt_t      vtx        = 0x1,
+			  UInt_t      vtx        = 0x2,
 			  UInt_t      trk        = 0x1,
-			  UInt_t      vz         = 10,
+			  Int_t       vz         = 10,
 			  Int_t       proof      = 0)
 {
   // --- Libraries to load -------------------------------------------
@@ -848,4 +911,149 @@ void MakeEvaluateTriggers(const char* esddir,
   t.Stop();
   t.Print();
 }
+//====================================================================
+void DrawEvaluateTriggers(const char* filename="triggers.root")
+{
+  TFile* file = TFile::Open(filename, "READ");
+  if (!file) { 
+    Error("DrawEvaluteTriggers", "Failed to open %s", filename);
+    return;
+  }
+
+  TList* list = static_cast<TList*>(file->Get("triggerResults"));
+  if (!list) { 
+    Error("DrawEvaluateTriggers", "Faield to get triggerResults from %s", 
+	  list->GetName());
+    return;
+  }
+
+  TCanvas* c = new TCanvas("c", "c", 1200, 900);
+  c->SetFillColor(0);
+  c->SetBorderSize(0);
+  c->SetBorderMode(0);
+
+  TPad* p = new TPad("top", "Top", 0, .9, 1, 1, 0, 0, 0); 
+  p->SetFillColor(0);
+  p->SetFillStyle(0);
+  p->SetBorderSize(0);
+  p->SetBorderMode(0);
+  c->cd();
+  p->Draw();
+  p->cd();
+  TObject* vtxReq = list->FindObject("vtxReq");
+  TObject* trkReq = list->FindObject("trkReq");
+  if (!vtxReq) vtxReq = new TNamed("vtxReq", "Unknown");
+  if (!trkReq) trkReq = new TNamed("trkReq", "Unknown");
+  TLatex* ltx = new TLatex(0.5, 0.5, 
+			   Form("Trigger bias and efficiency. " 
+				"Vertex requirement: %s, "
+				"Tracklet requirement %s",
+				vtxReq->GetTitle(), trkReq->GetTitle()));
+  ltx->Draw();
+  ltx->SetTextAlign(22);
+  ltx->SetTextSize(0.4);
+
+  const char*  trigs[] = { "INEL", "NCluster>0", "INEL>0", "NSD", 0 };
+  const char** trig    = trigs;
+  Int_t n = 4;
+  Int_t i = 0;
+  while (*trig) { 
+    TList* lt = static_cast<TList*>(list->FindObject(*trig));
+    if (!lt) { 
+      Warning("DrawEvaluteTriggers", "No list for '%s' in '%s'", 
+	      *trig, list->GetName());
+      // list->ls();
+      TIter next(triggerResults);
+      TObject* o ;
+      while ((o = next())) Printf("'%s'", o->GetName());
+      trig++;
+      i++;
+      continue;
+    }
+
+    Double_t y1 = 1-double(i+1)/n;
+    Double_t y2 = 1-double(i)/n;
+    Double_t x1 = double(i)/n;
+    Double_t x2 = double(i+1)/n;
+    p = new TPad(Form("p%d", 2*i), Form("%s biases", *trig), 
+		 x1, .3, x2, .9, 0, 0);
+    p->SetFillColor(0);
+    p->SetFillStyle(0);
+    p->SetBorderSize(0);
+    p->SetBorderMode(0);
+    p->SetTopMargin(0.01);
+    p->SetBottomMargin(0.05);
+    p->SetRightMargin(0.01);
+    c->cd();
+    p->Draw();
+    p->cd();
+    
+    THStack* biases = static_cast<THStack*>(lt->FindObject("biases"));
+    biases->SetTitle(*trig);
+    TLegend* l = new TLegend(.1, .15, .95, .35, 
+			     Form("1/N_{T}#sum N_{ch}}/"
+				  "1/N_{X}#sum N_{ch} - %s", *trig));
+    l->SetFillColor(0);
+    l->SetFillStyle(0);
+    l->SetBorderSize(0);
+    l->SetNColumns(2);
+    
+    gStyle->SetOptTitle(0);
+    TIter next(biases->GetHists());
+    TH1*  frame = 0;
+    TH1*  hist = 0;
+    Int_t j = 1;
+    while ((hist = static_cast<TH1*>(next()))) { 
+      if (!frame) { 
+	
+	frame = new TH2D("frame", "", 
+			 hist->GetXaxis()->GetNbins(),
+			 hist->GetXaxis()->GetXmin(),
+			 hist->GetXaxis()->GetXmax(),
+			 100, 0, 4);
+	frame->SetDirectory(0);
+	frame->SetXTitle(hist->GetXaxis()->GetTitle());
+	frame->SetYTitle(hist->GetYaxis()->GetTitle());
+	frame->SetStats(0);
+	frame->Draw();
+      }
+      // hist->Scale(j);
+      // hist->Draw("same p hist");
+      // if (j == 1) hist->SetTitle("all");
+      l->AddEntry(hist, hist->GetTitle(), "p");
+      j++;
+    }
+    // biases->SetMaximum(3.5);
+    biases->Draw("p hist nostack");
+    l->Draw();
+    
+    p = new TPad(Form("p%d", 2*i+1), Form("%s efficiencies", *trig), 
+		 x1, 0, x2, .3, 0, 0, 0);
+    p->SetFillColor(0);
+    p->SetFillStyle(0);
+    p->SetBorderSize(0);
+    p->SetBorderMode(0);
+    p->SetTopMargin(0.01);
+    p->SetRightMargin(0.01);
+    c->cd();
+    p->Draw();
+    p->cd();
+    
+    TH1* effs = static_cast<TH1*>(lt->FindObject("effs"));
+    effs->SetTitle(*trig);
+    effs->SetStats(0);
+    effs->SetMinimum(0);
+    effs->SetMaximum(1.4);
+    effs->SetMarkerSize(2.5);
+    effs->Draw("hist text");
+
+
+    i++;
+    trig++;
+  }
+  c->cd();
+
+  c->SaveAs("triggers.png");
+}
+
 #endif
