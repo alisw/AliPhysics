@@ -326,6 +326,22 @@ public:
   /* 
    * @}
    */
+  /** 
+   * Write a correction object to (a temporary) file.  
+   *    
+   * @param what   What kind of correction
+   * @param sys    Collision system
+   * @param cms    Center of mass energy
+   * @param field  Field 
+   * @param mc     Whether this is for MC only
+   * @param o      Object to write
+   * @param full   If true, write to full path
+   * 
+   * @return True on success 
+   */
+  Bool_t WriteFile(ECorrection what, 
+		   UShort_t sys, UShort_t cms, Short_t field, Bool_t mc,
+		   TObject* o, Bool_t full) const;
 private:
   /** 
    * Copy constructor 

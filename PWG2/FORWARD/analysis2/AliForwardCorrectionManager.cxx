@@ -909,6 +909,78 @@ AliForwardCorrectionManager::Browse(TBrowser* b)
   if (fAcceptance)	  b->Add(fAcceptance,        "Acceptance corr");
 }
 
+//____________________________________________________________________
+Bool_t
+AliForwardCorrectionManager::WriteFile(ECorrection what, 
+				       UShort_t    sys, 
+				       UShort_t    sNN, 
+				       Short_t     fld, 
+				       Bool_t      mc,
+				       TObject*    obj, 
+				       Bool_t      full) const
+{
+  // 
+  // Write correction output to (a temporary) file 
+  // 
+  // Parameters: 
+  //   What     What to write 
+  //   sys      Collision system (1: pp, 2: PbPb)
+  //   sNN      Center of mass energy per nucleon (GeV)
+  //   fld      Field (kG)
+  //   mc       MC-only flag 
+  //   obj      Object to write 
+  //   full     if true, write to full path, otherwise locally
+  // 
+  // Return: 
+  //   true on success. 
+  TString ofName;
+  if (!full)
+    ofName = GetFileName(what, sys, sNN, fld, mc);
+  else 
+    ofName = GetFilePath(what, sys, sNN, fld, mc);
+  if (ofName.IsNull()) { 
+    AliError(Form("Unknown object type %d", what));
+    return false;
+  }
+  TFile* output = TFile::Open(ofName, "RECREATE");
+  if (!output) { 
+    AliError(Form("Failed to open file %s", ofName.Data()));
+    return false;
+  }
+
+  TString oName(GetObjectName(what));
+  Int_t ret = obj->Write(oName);
+  if (ret <= 0) { 
+    AliError(Form("Failed to write %p to %s/%s (%d)", 
+		  obj, ofName.Data(), oName.Data(), ret));
+    return false;
+  }
+
+  ret = output->Write();
+  if (ret < 0) { 
+    AliError(Form("Failed to write %s to disk (%d)", ofName.Data(), ret));
+    return false;
+  }
+  output->ls();
+  output->Close();
+  
+  TString cName(obj->IsA()->GetName());
+  AliInfo(Form("Wrote %s object %s to %s",
+	       cName.Data(), oName.Data(), ofName.Data()));
+  if (!full) { 
+    TString dName(GetFileDir(what));
+    AliInfo(Form("%s should be copied to %s"
+		 "Do for example\n\n\t"
+		 "aliroot $ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/"
+		 "MoveCorrections.C\\(%d\\)\nor\n\t"
+		 "cp %s %s/\n", 
+		 ofName.Data(),dName.Data(),
+		 what, ofName.Data(), 
+		 gSystem->ExpandPathName(dName.Data())));
+  }
+  return true;
+}
+
 #ifndef DOXY_INPUT
 //______________________________________________________________________________
 void AliForwardCorrectionManager::Streamer(TBuffer &R__b)
