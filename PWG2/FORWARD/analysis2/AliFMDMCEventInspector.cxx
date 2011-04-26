@@ -353,12 +353,11 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   fHBvsBin->Fill(b, nbin);
 
   // Check for the vertex bin 
-  ivz = fHEventsTr->GetXaxis()->FindBin(vz);
+  ivz = fVtxAxis.FindBin(vz);
   if (ivz <= 0 || ivz > fHEventsTr->GetXaxis()->GetNbins()) { 
     if (fDebug > 3) {
       AliWarning(Form("Vertex @ %f outside of range [%f,%f]", 
-		      vz, fHEventsTr->GetXaxis()->GetXmin(), 
-		      fHEventsTr->GetXaxis()->GetXmax())); }
+		      vz, fVtxAxis.GetXmin(), fVtxAxis.GetXmax())); }
     ivz = 0;
     return kBadVertex;
   }
