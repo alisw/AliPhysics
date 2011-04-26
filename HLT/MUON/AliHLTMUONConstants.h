@@ -54,251 +54,76 @@ class AliHLTMUONConstants
 {
 public:
 
-	static const AliHLTMUONTriggerRecordStruct& NilTriggerRecordStruct()
-	{
-		return fgkNilTriggerRecordStruct;
-	}
+	// The following methods return null/nil structures that can also be used as sentinels:
+	static const AliHLTMUONTriggerRecordStruct& NilTriggerRecordStruct();
+	static const AliHLTMUONTrigRecInfoStruct& NilTrigRecInfoStruct();
+	static const AliHLTMUONRecHitStruct& NilRecHitStruct();
+	static const AliHLTMUONChannelStruct& NilChannelStruct();
+	static const AliHLTMUONClusterStruct& NilClusterStruct();
+	static const AliHLTMUONMansoTrackStruct& NilMansoTrackStruct();
+	static const AliHLTMUONMansoRoIStruct& NilMansoRoIStruct();
+	static const AliHLTMUONMansoCandidateStruct& NilMansoCandidateStruct();
+	static const AliHLTMUONTrackStruct& NilTrackStruct();
+	static const AliHLTMUONTrackDecisionStruct& NilTrackDecisionStruct();
+	static const AliHLTMUONPairDecisionStruct& NilPairDecisionStruct();
 
-	static const AliHLTMUONTrigRecInfoStruct& NilTrigRecInfoStruct()
-	{
-		return fgkNilTrigRecInfoStruct;
-	}
-
-	static const AliHLTMUONRecHitStruct& NilRecHitStruct()
-	{
-		return fgkNilRecHitStruct;
-	}
-
-	static const AliHLTMUONChannelStruct& NilChannelStruct()
-	{
-		return fgkNilChannelStruct;
-	}
-
-	static const AliHLTMUONClusterStruct& NilClusterStruct()
-	{
-		return fgkNilClusterStruct;
-	}
-
-	static const AliHLTMUONMansoTrackStruct& NilMansoTrackStruct()
-	{
-		return fgkNilMansoTrackStruct;
-	}
-
-	static const AliHLTMUONMansoRoIStruct& NilMansoRoIStruct()
-	{
-		return fgkNilMansoRoIStruct;
-	}
-
-	static const AliHLTMUONMansoCandidateStruct& NilMansoCandidateStruct()
-	{
-		return fgkNilMansoCandidateStruct;
-	}
-
-	static const AliHLTMUONTrackStruct& NilTrackStruct()
-	{
-		return fgkNilTrackStruct;
-	}
-
-	static const AliHLTMUONTrackDecisionStruct& NilTrackDecisionStruct()
-	{
-		return fgkNilTrackDecisionStruct;
-	}
-
-	static const AliHLTMUONPairDecisionStruct& NilPairDecisionStruct()
-	{
-		return fgkNilPairDecisionStruct;
-	}
-
-	// Returns the raw data type for MUON DDLs. To figure out if the DDL format
-	// will be for a tracking DDL or trigger DDL one needs to also check the
-	// sepcification word of the input data block. If one of the first 20 least
-	// significant bits are set then it is a tracker DDL otherwise if it is
-	// the 21st or 22nd bit then it is from the muon trigger.
-	static const AliHLTComponentDataType& DDLRawDataType()
-	{
-		return fgkDDLRawDataType;
-	}
-
-	static const AliHLTComponentDataType& TriggerRecordsBlockDataType()
-	{
-		return fgkTriggerRecordsBlockDataType;
-	}
-
-	static const AliHLTComponentDataType& TrigRecsDebugBlockDataType()
-	{
-		return fgkTrigRecsDebugBlockDataType;
-	}
-
-	static const AliHLTComponentDataType& RecHitsBlockDataType()
-	{
-		return fgkRecHitsBlockDataType;
-	}
-
-	static const AliHLTComponentDataType& ClusterBlockDataType()
-	{
-		return fgkClusterBlockDataType;
-	}
-
-	static const AliHLTComponentDataType& ChannelBlockDataType()
-	{
-		return fgkChannelBlockDataType;
-	}
-
-	static const AliHLTComponentDataType& MansoTracksBlockDataType()
-	{
-		return fgkMansoTracksBlockDataType;
-	}
-
-	static const AliHLTComponentDataType& MansoCandidatesBlockDataType()
-	{
-		return fgkMansoCandidatesBlockDataType;
-	}
-
-	static const AliHLTComponentDataType& TracksBlockDataType()
-	{
-		return fgkTracksBlockDataType;
-	}
-
-	static const AliHLTComponentDataType& SinglesDecisionBlockDataType()
-	{
-		return fgkSinglesDecisionBlockDataType;
-	}
-
-	static const AliHLTComponentDataType& PairsDecisionBlockDataType()
-	{
-		return fgkPairsDecisionBlockDataType;
-	}
-
-	static const AliHLTComponentDataType& RootifiedEventDataType()
-	{
-		return fgkRootifiedEventDataType;
-	}
-
-	static const AliHLTComponentDataType& ESDDataType()
-	{
-		return fgkESDDataType;
-	}
-
-	static const AliHLTComponentDataType& ClusterStoreDataType()
-	{
-		return fgkClusterStoreDataType;
-	}
-
-	static const AliHLTComponentDataType& HistogramDataType()
-	{
-		return fgkHistogramDataType;
-	}
+	// Methods returning HLT component input and output data block types:
 	
-	static const char* RecHitsSourceId()
-	{
-		return fgkRecHitsSourceId;
-	}
-	
-	static const char* TriggerRecordsSourceId()
-	{
-		return fgkTriggerRecordsSourceId;
-	}
-	
-	static const char* TracksSourceId()
-	{
-		return fgkTracksSourceId;
-	}
-	
-	static const char* DigitPublisherId()
-	{
-		return fgkDigitPublisherId;
-	}
-	
-	static const char* TriggerReconstructorId()
-	{
-		return fgkTriggerReconstructorId;
-	}
-	
-	static const char* HitReconstructorId()
-	{
-		return fgkHitReconstructorId;
-	}
-	
-	static const char* MansoTrackerFSMId()
-	{
-		return fgkMansoTrackerFSMId;
-	}
-	
-	static const char* FullTrackerId()
-	{
-		return fgkFullTrackerId;
-	}
-	
-	static const char* DecisionComponentId()
-	{
-		return fgkDecisionComponentId;
-	}
-	
-	static const char* ESDMakerId()
-	{
-		return fgkESDMakerId;
-	}
-	
-	static const char* RootifierComponentId()
-	{
-		return fgkRootifierComponentId;
-	}
-	
-	static const char* EmptyEventFilterComponentId()
-	{
-		return fgkEmptyEventFilterComponentId;
-	}
-	
-	static const char* DataCheckerComponentId()
-	{
-		return fgkDataCheckerComponentId;
-	}
-	
-	static const char* ClusterFinderId()
-	{
-		return fgkClusterFinderId;
-	}
-	
-	static const char* RawDataHistogrammerId()
-	{
-		return fgkRawDataHistogrammerId;
-	}
+	/**
+	 * Returns the raw data type for MUON DDLs. To figure out if the DDL format
+	 * will be for a tracking DDL or trigger DDL one needs to also check the
+	 * sepcification word of the input data block. If one of the first 20 least
+	 * significant bits are set then it is a tracker DDL otherwise if it is
+	 * the 21st or 22nd bit then it is from the muon trigger.
+	 */
+	static const AliHLTComponentDataType& DDLRawDataType();
 
-	static const char* ClusterHistogrammerId()
-	{
-		return fgkClusterHistogrammerId;
-	}
+	static const AliHLTComponentDataType& TriggerRecordsBlockDataType();
+	static const AliHLTComponentDataType& TrigRecsDebugBlockDataType();
+	static const AliHLTComponentDataType& RecHitsBlockDataType();
+	static const AliHLTComponentDataType& ClusterBlockDataType();
+	static const AliHLTComponentDataType& ChannelBlockDataType();
+	static const AliHLTComponentDataType& MansoTracksBlockDataType();
+	static const AliHLTComponentDataType& MansoCandidatesBlockDataType();
+	static const AliHLTComponentDataType& TracksBlockDataType();
+	static const AliHLTComponentDataType& SinglesDecisionBlockDataType();
+	static const AliHLTComponentDataType& PairsDecisionBlockDataType();
+	static const AliHLTComponentDataType& RootifiedEventDataType();
+	static const AliHLTComponentDataType& ESDDataType();
+	static const AliHLTComponentDataType& ClusterStoreDataType();
+	static const AliHLTComponentDataType& HistogramDataType();
 	
-	static const char* TriggerReconstructorCDBPath()
-	{
-		return fgkTriggerReconstructorCDBPath;
-	}
 	
-	static const char* HitReconstructorCDBPath()
-	{
-		return fgkHitReconstructorCDBPath;
-	}
+	// Methods to return component ID names:
+	static const char* RecHitsSourceId();
+	static const char* TriggerRecordsSourceId();
+	static const char* TracksSourceId();
+	static const char* DigitPublisherId();
+	static const char* TriggerReconstructorId();
+	static const char* HitReconstructorId();
+	static const char* MansoTrackerFSMId();
+	static const char* FullTrackerId();
+	static const char* DecisionComponentId();
+	static const char* ESDMakerId();
+	static const char* RootifierComponentId();
+	static const char* EmptyEventFilterComponentId();
+	static const char* DataCheckerComponentId();
+	static const char* ClusterFinderId();
+	static const char* RawDataHistogrammerId();
+	static const char* ClusterHistogrammerId();
 	
-	static const char* MansoTrackerFSMCDBPath()
-	{
-		return fgkMansoTrackerFSMCDBPath;
-	}
-	
-	static const char* DecisionComponentCDBPath()
-	{
-		return fgkDecisionComponentCDBPath;
-	}
-	
-	static const char* FieldIntegralsCDBPath()
-	{
-		return fgkFieldIntegralsCDBPath;
-	}
+	// Methods for returning the CDB path entries to configuration information:
+	static const char* TriggerReconstructorCDBPath();
+	static const char* HitReconstructorCDBPath();
+	static const char* MansoTrackerFSMCDBPath();
+	static const char* DecisionComponentCDBPath();
+	static const char* FieldIntegralsCDBPath();
 	
 	/// Returns the typical X (non-bending plane) resolution of the hit reconstruction (units = cm).
-	static double DefaultNonBendingReso() { return 0.144; }
+	static double DefaultNonBendingReso();
 	
 	/// Returns the typical Y (bending plane) resolution of the hit reconstruction (units = cm).
-	static double DefaultBendingReso() { return 0.01; }
+	static double DefaultBendingReso();
 
 private:
 
@@ -307,62 +132,6 @@ private:
 	AliHLTMUONConstants(const AliHLTMUONConstants& obj);
 	virtual ~AliHLTMUONConstants() {}
 	AliHLTMUONConstants& operator = (const AliHLTMUONConstants& obj);
-	
-	
-	// The following are null/nil structures that can also be used as sentinels:
-	static const AliHLTMUONTriggerRecordStruct fgkNilTriggerRecordStruct; // Nil trigger record.
-	static const AliHLTMUONTrigRecInfoStruct fgkNilTrigRecInfoStruct; // Nil trigger record debug information.
-	static const AliHLTMUONRecHitStruct fgkNilRecHitStruct; // Nil reconstructed hit.
-	static const AliHLTMUONChannelStruct fgkNilChannelStruct; // Nil tracking chamber channel.
-	static const AliHLTMUONClusterStruct fgkNilClusterStruct; // Nil tracking chamber cluster.
-	static const AliHLTMUONMansoTrackStruct fgkNilMansoTrackStruct; // Nil manso track.
-	static const AliHLTMUONMansoRoIStruct fgkNilMansoRoIStruct; // Nil manso region of interest.
-	static const AliHLTMUONMansoCandidateStruct fgkNilMansoCandidateStruct; // Nil manso candidate track.
-	static const AliHLTMUONTrackStruct fgkNilTrackStruct; // Nil track structure.
-	static const AliHLTMUONTrackDecisionStruct fgkNilTrackDecisionStruct; // Nil decision for single track.
-	static const AliHLTMUONPairDecisionStruct fgkNilPairDecisionStruct; // Nil decision for track pair.
-
-	// HLT component input and output data block types:
-	static const AliHLTComponentDataType fgkDDLRawDataType; // DDL packed data block type from dimuon spectrometer.
-	static const AliHLTComponentDataType fgkTriggerRecordsBlockDataType; // Trigger records block type generated by trigger DDL translation components.
-	static const AliHLTComponentDataType fgkTrigRecsDebugBlockDataType; // Debugging information block type generated by trigger DDL translation components.
-	static const AliHLTComponentDataType fgkRecHitsBlockDataType; // Reconstructed hits block type generated by hit reconstruction components.
-	static const AliHLTComponentDataType fgkClusterBlockDataType; // Debugging information block type for reconstructed hit clusters.
-	static const AliHLTComponentDataType fgkChannelBlockDataType; // Debugging information block type for channels corresponding to clusters.
-	static const AliHLTComponentDataType fgkMansoTracksBlockDataType; // Manso tracks block type generated by Manso tracker components.
-	static const AliHLTComponentDataType fgkMansoCandidatesBlockDataType; // Debugging information about a track candidate generated by the Manso algorithm.
-	static const AliHLTComponentDataType fgkTracksBlockDataType; // Full tracks block type generated by the tracker components.
-	static const AliHLTComponentDataType fgkSinglesDecisionBlockDataType; // Trigger decision block type for single track decisions.
-	static const AliHLTComponentDataType fgkPairsDecisionBlockDataType; // Trigger decision block type for pairs of particles.
-	static const AliHLTComponentDataType fgkRootifiedEventDataType; // An AliHLTMUONEvent ROOT object.
-	static const AliHLTComponentDataType fgkESDDataType; // The ESD data type with origin equal to MUON.
-	static const AliHLTComponentDataType fgkClusterStoreDataType; // Offline algorithm cluster store object.
-	static const AliHLTComponentDataType fgkHistogramDataType; // TH1/2/3 histogram type.
-	
-	// Component ID names:
-	static const char* fgkRecHitsSourceId; // Name of source component for reconstructed hits for debugging.
-	static const char* fgkTriggerRecordsSourceId; // Name of source component for trigger records for debugging.
-	static const char* fgkTracksSourceId; // Name of source component for tracks for debugging.
-	static const char* fgkDigitPublisherId; // Component name for publishing DDL streams from digits.
-	static const char* fgkTriggerReconstructorId; // Trigger record reconstructor component name.
-	static const char* fgkHitReconstructorId; // Centre of gravity cluster finder component name.
-	static const char* fgkMansoTrackerFSMId; // Manso tracker FSM implementation component name.
-	static const char* fgkFullTrackerId; // Full tracker implementation component name.
-	static const char* fgkDecisionComponentId; // dHLT decision component name.
-	static const char* fgkESDMakerId; // Name of ESD maker component which converts dHLT data to AliESDEvent classes.
-	static const char* fgkRootifierComponentId; // The name of the event filter debugging component.
-	static const char* fgkEmptyEventFilterComponentId; // The name of the event filter debugging component.
-	static const char* fgkDataCheckerComponentId; // Name of data checking component for debugging.
-	static const char* fgkClusterFinderId; // Name of cluster finder implementing offline algorithms.
-	static const char* fgkRawDataHistogrammerId; // Raw data histogrammer component name.
-	static const char* fgkClusterHistogrammerId; // Cluster data histogrammer component name.
-	
-	// CDB path entries to configuration information.
-	static const char* fgkTriggerReconstructorCDBPath; // Path to CDB entry for the trigger reconstruction component.
-	static const char* fgkHitReconstructorCDBPath; // Path to CDB entry for the hit reconstruction component.
-	static const char* fgkMansoTrackerFSMCDBPath; // Path to CDB entry for the Manso FSM tracker component.
-	static const char* fgkDecisionComponentCDBPath; // Path to CDB entry for trigger decision component.
-	static const char* fgkFieldIntegralsCDBPath; // Path to CDB entry for magnetic field integrals.
 	
 	ClassDef(AliHLTMUONConstants, 0);  // Interface class to dHLT constants.
 };
