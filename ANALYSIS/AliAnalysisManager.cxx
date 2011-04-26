@@ -1438,6 +1438,11 @@ void AliAnalysisManager::CheckBranches(Bool_t load)
 Bool_t AliAnalysisManager::CheckTasks() const
 {
 // Check consistency of tasks.
+   Int_t ntasks = fTasks->GetEntries();
+   if (!ntasks) {
+      Error("CheckTasks", "No tasks connected to the manager. This may be due to forgetting to compile the task or to load their library.");
+      return kFALSE;
+   }
    // Get the pointer to AliAnalysisTaskSE::Class()
    TClass *badptr = (TClass*)gROOT->ProcessLine("AliAnalysisTaskSE::Class()");
    // Loop all tasks to check if their corresponding library was loaded
