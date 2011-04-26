@@ -1,32 +1,26 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+///**************************************************************************
+///* This file is property of and copyright by the ALICE HLT Project        * 
+///* ALICE Experiment at CERN, All rights reserved.                         *
+///*                                                                        *
+///* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+///*                  for The ALICE HLT Project.                            *
+///*                                                                        *
+///* Permission to use, copy, modify and distribute this software and its   *
+///* documentation strictly for non-commercial purposes is hereby granted   *
+///* without fee, provided that the above copyright notice appears in all   *
+///* copies and that both the copyright notice and this permission notice   *
+///* appear in the supporting documentation. The authors make no claims     *
+///* about the suitability of this software for any purpose. It is          *
+///* provided "as is" without express or implied warranty.                  *
+///**************************************************************************
 
-//  @file   AliHLTConfiguration.cxx
-//  @author Matthias Richter
-//  @date   2007
-//  @brief  HLT configuration description for a single component.
-//  @note   The class is used in Offline (AliRoot) context
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+/// @file   AliHLTConfiguration.cxx
+/// @author Matthias Richter
+/// @date   2007
+/// @brief  HLT configuration description for a single component.
+/// @note   The class is used in Offline (AliRoot) context
 
 #if __GNUC__>= 3
 using namespace std;
@@ -82,10 +76,10 @@ AliHLTConfiguration::AliHLTConfiguration(const char* id, const char* component, 
   // see header file for function documentation
   if (bufsize) fBufferSize=ConvertSizeString(bufsize);
   if (id && component) {
-    if (fgConfigurationHandler) {
-      fgConfigurationHandler->RegisterConfiguration(this);
+    if (AliHLTConfigurationHandler::Instance()) {
+      AliHLTConfigurationHandler::Instance()->RegisterConfiguration(this);
     } else {
-      HLTWarning("no configuration handler set, skip registration");
+      AliHLTConfigurationHandler::MissedRegistration(id);
     }
   }
 }
@@ -127,11 +121,11 @@ AliHLTConfiguration& AliHLTConfiguration::operator=(const AliHLTConfiguration& s
 AliHLTConfiguration::~AliHLTConfiguration()
 {
   // see header file for function documentation
-  if (fgConfigurationHandler) {
-    if (fgConfigurationHandler->FindConfiguration(fID.Data())!=NULL) {
+  if (AliHLTConfigurationHandler::Instance()) {
+    if (AliHLTConfigurationHandler::Instance()->FindConfiguration(fID.Data())!=NULL) {
       // remove the configuration from the handler if it exists
       // but DO NOT remove the clone configuration
-      fgConfigurationHandler->RemoveConfiguration(this);
+      AliHLTConfigurationHandler::Instance()->RemoveConfiguration(this);
     }
   }
   if (fArgv != NULL) {
@@ -149,33 +143,6 @@ AliHLTConfiguration::~AliHLTConfiguration()
     fListSources.erase(element);
     element=fListSources.begin();
   }
-}
-
-/* the global configuration handler which is used to automatically register the configuration
- */
-AliHLTConfigurationHandler* AliHLTConfiguration::fgConfigurationHandler=NULL;
-
-int AliHLTConfiguration::GlobalInit(AliHLTConfigurationHandler* pHandler)
-{
-  // see header file for function documentation
-  int iResult=0;
-  if (fgConfigurationHandler!=NULL && fgConfigurationHandler!=pHandler) {
-    fgConfigurationHandler->Logging(kHLTLogWarning, "AliHLTConfiguration::GlobalInit", HLT_DEFAULT_LOG_KEYWORD, "configuration handler already initialized, overriding object %p with %p", fgConfigurationHandler, pHandler);
-  }
-  fgConfigurationHandler=pHandler;
-  return iResult;
-}
-
-int AliHLTConfiguration::GlobalDeinit(AliHLTConfigurationHandler* pHandler)
-{
-  // see header file for function documentation
-  int iResult=0;
-  if (fgConfigurationHandler!=NULL && fgConfigurationHandler!=pHandler) {
-    fgConfigurationHandler->Logging(kHLTLogWarning, "AliHLTConfiguration::GlobalDeinit", HLT_DEFAULT_LOG_KEYWORD, "handler %p is not set, skip ...", pHandler);
-    return -EBADF;
-  }
-  fgConfigurationHandler=NULL;
-  return iResult;
 }
 
 const char* AliHLTConfiguration::GetName() const 
@@ -329,7 +296,8 @@ int AliHLTConfiguration::ExtractSources()
   int iResult=0;
   fNofSources=0; // indicates that the function was called, there are either n or 0 sources
   fListSources.clear();
-  if (!fgConfigurationHandler) {
+  AliHLTConfigurationHandler* pHandler=AliHLTConfigurationHandler::Instance();
+  if (!pHandler) {
     HLTError("global configuration handler not initialized, can not resolve sources");
     return -EFAULT;
   }
@@ -339,7 +307,7 @@ int AliHLTConfiguration::ExtractSources()
       fNofSources=tgtList.size();
       vector<char*>::iterator element=tgtList.begin();
       while ((element=tgtList.begin())!=tgtList.end()) {
-	  AliHLTConfiguration* pConf=fgConfigurationHandler->FindConfiguration(*element);
+	  AliHLTConfiguration* pConf=pHandler->FindConfiguration(*element);
 	  if (pConf) {
 	    //HLTDebug("configuration %s (%p): source \"%s\" (%p) inserted", GetName(), this, pConf->GetName(), pConf);
 	    fListSources.push_back(pConf);

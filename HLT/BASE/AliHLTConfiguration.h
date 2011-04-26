@@ -90,20 +90,6 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
   virtual ~AliHLTConfiguration();
 
   /*****************************************************************************
-   * global initialization
-   */
-
-  /**
-   * Global initialization of the configuration handler.
-   */
-  static int GlobalInit(AliHLTConfigurationHandler* pHandler);
-
-  /**
-   * Global de-init and cleanup of the global configuration handler
-   */
-  static int GlobalDeinit(AliHLTConfigurationHandler* pHandler);
-
-  /*****************************************************************************
    * properties of the configuration
    */
 
@@ -279,10 +265,7 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
   /** size of the output buffer */
   int fBufferSize;                                                 // see above
 
-  /** the instance of the global configuration handler */
-  static AliHLTConfigurationHandler* fgConfigurationHandler;       //! transient
-
-  ClassDef(AliHLTConfiguration, 1);
+  ClassDef(AliHLTConfiguration, 0);
 };
 
 #endif

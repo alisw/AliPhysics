@@ -123,9 +123,7 @@ AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel, const char* name
   } else {
     HLTFatal("can not create Component Handler");
   }
-  if (fpConfigurationHandler) {
-    AliHLTConfiguration::GlobalInit(fpConfigurationHandler);
-  } else {
+  if (fpConfigurationHandler==NULL) {
     HLTFatal("can not create Configuration Handler");
   }
 }
@@ -136,7 +134,6 @@ AliHLTSystem::~AliHLTSystem()
   fgNofInstances--;
   CleanHLTOUT();
   CleanTaskList();
-  AliHLTConfiguration::GlobalDeinit(fpConfigurationHandler);
   if (fpConfigurationHandler) {
     fpConfigurationHandler->Destroy();
   }

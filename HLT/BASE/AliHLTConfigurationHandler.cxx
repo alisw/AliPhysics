@@ -37,6 +37,7 @@ using namespace std;
 #include <string>
 #include "AliHLTConfigurationHandler.h"
 #include "AliHLTConfiguration.h"
+#include "AliHLTErrorGuard.h"
 #include "TMap.h"
 #include "TObjString.h"
 
@@ -44,8 +45,9 @@ using namespace std;
 ClassImp(AliHLTConfigurationHandler)
 
 AliHLTConfigurationHandler::AliHLTConfigurationHandler()
-  :
-  fgListConfigurations()
+  : AliHLTLogging()
+  , fgListConfigurations()
+  , fFlags(0)
 {
   // see header file for class documentation
   // or
@@ -161,6 +163,26 @@ void AliHLTConfigurationHandler::PrintConfigurations()
   }
 }
 
+void AliHLTConfigurationHandler::Print(const char* option)
+{
+  // print info
+  TString argument(option);
+  if (argument.BeginsWith("treeroot=")) {
+    argument.ReplaceAll("treeroot=", "");
+    if (argument.IsNull()) {
+      cout << "invalid argument to option 'treeroot=', please specify configuration" << endl;
+      return;
+    }
+    // TODO: add functionality to print a dependency tree beginning from a root configuration
+    // add also option to limit the depth
+    cout << "need to implement option 'treeview', argument " << argument << endl;
+    return;
+  }
+
+  // default: print all
+  PrintConfigurations();
+}
+
 int AliHLTConfigurationHandler::RemoveConfiguration(const char* id)
 {
   // see header file for function documentation
@@ -212,6 +234,29 @@ AliHLTConfiguration* AliHLTConfigurationHandler::FindConfiguration(const char* i
     pConf=(AliHLTConfiguration*)fgListConfigurations.FindObject(id); 
   }
   return pConf;
+}
+
+int AliHLTConfigurationHandler::MissedRegistration(const char* name)
+{
+  /// indicate a failed attempt to register because of unavailable global instance
+
+  /// everything fine if global instance is inactive
+  if (fgpInstance) {
+    if (fgpInstance->IsActive()) {
+      static AliHLTErrorGuard g("AliHLTConfigurationHandler", "MissedRegistration",
+				"internal error, global instance available but registration of configuration failed");
+      (++g).Throw(1);
+    }
+    return 0;
+  }
+  TString message("Missing configuration handler, failed to register configuration");
+  if (name) {message+=" '"; message+=name;}
+  message+="'\n AliHLTSystem and configuration handler can be initialized by adding the line";
+  message+="\n    AliHLTSystem* pHLT=AliHLTPluginBase::GetInstance();";
+  message+="\n to the macro before the first AliHLTConfiguration definition. Suppressing further messages.\n";
+  static AliHLTErrorGuard g("AliHLTConfigurationHandler", "MissedRegistration", message.Data());
+  (++g).Throw(1);
+  return 1;
 }
 
 int AliHLTConfigurationHandler::AddSubstitution(const char* componentId, const AliHLTConfiguration& subst)
