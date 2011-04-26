@@ -243,10 +243,7 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 
   fSumPrimary     = static_cast<TH2D*>(fSums->FindObject("truth"));
 
-  if (!fSumPrimary) { 
-    AliWarning("No MC truth histogram found");
-  }
-  else {
+  if (fSumPrimary) { 
 #if 0
     Int_t n = fSumPrimary->GetBinContent(0,0);
 #else
@@ -263,9 +260,25 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 
     
     SetHistogramAttributes(dndetaTruth, GetColor(), 30, "Monte-Carlo truth");
-    
+
     fOutput->Add(dndetaTruth);
     fOutput->Add(Rebin(dndetaTruth, rebin, cutEdges));
+
+    // Get analysis result, and form ratio 
+    TH1D* dndeta = static_cast<TH1D*>(fOutput->FindObject(Form("dndeta%s",
+							       GetName())));
+    if (!dndeta) {
+      AliWarning(Form("No dndeta%s in the list %s", 
+		      GetName(), fOutput->GetName()));
+    }
+    else { 
+      TH1D* ratio = static_cast<TH1D*>(dndeta->Clone("ratio"));
+      ratio->SetDirectory(0);
+      ratio->Divide(dndetaTruth);
+
+      fOutput->Add(ratio);
+      fOutput->Add(Rebin(ratio, rebin, cutEdges));
+    }
   }
 
   if (!IsAllBin()) return;
