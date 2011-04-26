@@ -39,6 +39,7 @@ AddTaskCentraldNdeta(const char* trig     = "INEL",
   // Set the vertex range to use 
   task->SetVertexRange(vzMin, vzMax);
   // Set the trigger mask to use (INEL,INEL>0,NSD)
+  task->SetTriggerEff(0.997535);
   task->SetTriggerMask(trig);
   // Whether to cut edges when re-binning 
   task->SetCutEdges(cutEdges);
