@@ -197,14 +197,14 @@ int AliHLTMiscImplementation::CheckOCDBEntries(const TMap* const pMap) const
   AliCDBManager* man = AliCDBManager::Instance();
   if (!man) {
     ALIHLTERRORGUARD(1, "failed to access CDB manager");
-    return NULL;
+    return -ENOSYS;
   }
   const TMap* pCache=man->GetEntryCache();
 
   Int_t runNo = GetCDBRunNo();
 
   TIterator* next=pMap->MakeIterator();
-  if (!next) return -ENOENT;
+  if (!next) return -EFAULT;
 
   TObject* pEntry=NULL;
   while ((pEntry=next->Next())) {
@@ -218,13 +218,13 @@ int AliHLTMiscImplementation::CheckOCDBEntries(const TMap* const pMap) const
     const char* uri=man->GetURI(pEntry->GetName());
     if (!uri) {
       log.Logging(kHLTLogError, "AliHLTMiscImplementation::CheckOCDBEntries", "CDB handling", "can not find URI for CDB object \"%s\"", pEntry->GetName());
-      return NULL;
+      return -ENODEV;
     }
 
     AliCDBStorage* pStorage = AliCDBManager::Instance()->GetStorage(uri);
     if (!pStorage) {
       log.Logging(kHLTLogError, "AliHLTMiscImplementation::CheckOCDBEntries", "CDB handling", "can not find storage for URI \"%s\"", uri);
-      return NULL;
+      return -EBADF;
     }
 
     // GetLatestVersion is the only method to check the existence without potential AliFatal
