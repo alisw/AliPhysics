@@ -14,7 +14,7 @@
  * @ingroup pwg2_forward_aod
  */
 #include "AliFMDSharingFilter.h"
-class AliMCEvent;
+#include "AliFMDMCTrackDensity.h"
 
 /**
  * Class to do the sharing correction for MC data.
@@ -53,15 +53,13 @@ public:
    */
   AliFMDMCSharingFilter()
   : AliFMDSharingFilter(), 
+    fTrackDensity(),
     fFMD1i(0),
     fFMD2i(0),
     fFMD2o(0),
     fFMD3i(0),
     fFMD3o(0), 
-    fSumEta(0), 
-    fOperComp(0), 
-    fThetaVsNr(0), 
-    fOnlyPrimary(false)
+    fOperComp(0)
   {}
   /** 
    * Constructor 
@@ -83,13 +81,20 @@ public:
    * @return Reference to this 
    */
   AliFMDMCSharingFilter& operator=(const AliFMDMCSharingFilter& o);
-  
+
   /** 
-   * If set, then only process primary tracks 
+   * Return the track density calculator 
    * 
-   * @param use 
+   * @return Track density calculator 
    */
-  void SetOnlyPrimary(Bool_t use) { fOnlyPrimary = use; }
+  const AliFMDMCTrackDensity& GetTrackDensity() const { return fTrackDensity; }
+  /** 
+   * Return the track density calculator 
+   * 
+   * @return Track density calculator 
+   */
+  AliFMDMCTrackDensity& GetTrackDensity() { return fTrackDensity; }
+
   /** 
    * Filter the input kinematics and track references, using 
    * some of the ESD information
@@ -138,26 +143,13 @@ public:
    */
   void Print(Option_t* option="") const;
 protected:
-  /** 
-   * Store a particle hit in FMD<i>dr</i>[<i>s,t</i>] in @a output
-   * 
-   * @param d       Detector
-   * @param r       Ring
-   * @param s       Sector
-   * @param t       Strip
-   * @param output  Output ESD object
-   */
-  void StoreParticle(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
-		     UShort_t nr, Double_t theta, AliESDFMD& output) const;
-  TH2D* fFMD1i;  // ESD-MC correlation 
-  TH2D* fFMD2i;  // ESD-MC correlation 
-  TH2D* fFMD2o;  // ESD-MC correlation 
-  TH2D* fFMD3i;  // ESD-MC correlation 
-  TH2D* fFMD3o;  // ESD-MC correlation 
-  TH1D* fSumEta; // MC dN/deta 
-  TH2I* fOperComp; // Operation vs # trackrefs
-  TH2D* fThetaVsNr; // Theta vs # trackrefs
-  Bool_t fOnlyPrimary; // Only process primary tracks 
+  AliFMDMCTrackDensity fTrackDensity;
+  TH2D* fFMD1i;      // ESD-MC correlation 
+  TH2D* fFMD2i;      // ESD-MC correlation 
+  TH2D* fFMD2o;      // ESD-MC correlation 
+  TH2D* fFMD3i;      // ESD-MC correlation 
+  TH2D* fFMD3o;      // ESD-MC correlation 
+  TH2I* fOperComp;   // Operation vs # trackrefs
   ClassDef(AliFMDMCSharingFilter,1); //
 };
 
