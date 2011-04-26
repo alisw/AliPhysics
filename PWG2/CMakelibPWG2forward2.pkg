@@ -45,6 +45,7 @@ set ( SRCS
   FORWARD/analysis2/AliFMDMCCorrector.cxx
   FORWARD/analysis2/AliFMDMCDensityCalculator.cxx
   FORWARD/analysis2/AliFMDMCSharingFilter.cxx
+  FORWARD/analysis2/AliFMDMCTrackDensity.cxx
   FORWARD/analysis2/AliForwardCorrectionManager.cxx
   FORWARD/analysis2/AliForwardMultiplicityBase.cxx
   FORWARD/analysis2/AliForwardMultiplicityTask.cxx
@@ -54,6 +55,7 @@ set ( SRCS
   FORWARD/analysis2/AliForwardUtil.cxx
   FORWARD/analysis2/AliCentralMultiplicityTask.cxx
   FORWARD/analysis2/AliCentralMCMultiplicityTask.cxx
+  FORWARD/analysis2/AliCentralMCCorrectionsTask.cxx
   FORWARD/analysis2/AliAODCentralMult.cxx
   FORWARD/analysis2/AliCentralCorrSecondaryMap.cxx
   FORWARD/analysis2/AliCentralCorrAcceptance.cxx 
@@ -61,6 +63,7 @@ set ( SRCS
   FORWARD/analysis2/AliBasedNdetaTask.cxx
   FORWARD/analysis2/AliForwardFlowUtil.cxx
   FORWARD/analysis2/AliForwardFlowTaskQC.cxx
+  FORWARD/analysis2/AliSPDMCTrackDensity.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -97,6 +100,11 @@ add_custom_command( OUTPUT FORWARD/doc/html/index.html
 add_custom_target( PWG2forward-doc DEPENDS FORWARD/doc/doc.pdf )
 add_custom_target( PWG2forward-doxy DEPENDS FORWARD/doc/html/index.html )
 
+add_custom_target( install-PWG2forward2.par 
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/${PACKAGE}.par ${CMAKE_INSTALL_PREFIX}
+  COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green --bold "${PACKAGE}.par installed in ${CMAKE_INSTALL_PREFIX}"
+  DEPENDS ${CMAKE_BINARY_DIR}/${PACKAGE}.par)
+
 # --------------------------------------------------------------------
 # Extra installation targets 
 #
@@ -108,18 +116,22 @@ install ( DIRECTORY FORWARD/analysis2/scripts
 
 # Install other scripts
 install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
+  		FORWARD/analysis2/AddTaskCentralMCCorr.C
 		FORWARD/analysis2/AddTaskCentralMult.C
   		FORWARD/analysis2/AddTaskCentralTracks.C
                 FORWARD/analysis2/AddTaskCopyHeader.C
 		FORWARD/analysis2/AddTaskFMDELoss.C
+  		FORWARD/analysis2/AddTaskForwardMCCorr.C
                 FORWARD/analysis2/AddTaskForwardMult.C
 		FORWARD/analysis2/AddTaskForwarddNdeta.C
 		FORWARD/analysis2/DrawdNdeta.C
 		FORWARD/analysis2/ForwardAODConfig.C
+		FORWARD/analysis2/CentralAODConfig.C
                 FORWARD/analysis2/MakeAOD.C
 		FORWARD/analysis2/MakedNdeta.C
                 FORWARD/analysis2/MakeELossFits.C
 		FORWARD/analysis2/MakeEvaluateTriggers.C
+		FORWARD/analysis2/MakeMCCorr.C		
                 FORWARD/analysis2/OtherData.C
 		FORWARD/analysis2/TrainSetup.C
            DESTINATION PWG2/FORWARD/analysis2 )
