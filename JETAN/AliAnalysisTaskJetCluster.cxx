@@ -918,7 +918,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       if(tmpPt<0)tmpPt = 0; // avoid negative weights...
       
       fh1PtJetsRecIn->Fill(tmpPt);
-      // Fill Spectra with constituents
+      // Fill Spectra with constituentsemacs
       const vector<fastjet::PseudoJet> &constituents = clustSeq.constituents(sortedJets[j]);
 
       fh1NConstRec->Fill(constituents.size());
@@ -1314,7 +1314,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
        }
      }
    }   
-
+ 
    if(select){
      static AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
      fh1CentralitySelect->Fill(cent);
@@ -1322,8 +1322,12 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      aodH->SetFillAOD(kTRUE);
    }
  }
- if (fDebug > 10)Printf("%s:%d Rec Jets %d",(char*)__FILE__,__LINE__,fTCAJetsOut->GetEntriesFast());
- if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
+ if (fDebug > 2){
+   if(fTCAJetsOut)Printf("%s:%d Rec Jets %d",(char*)__FILE__,__LINE__,fTCAJetsOut->GetEntriesFast());
+   if(fTCAJetsOutRan)Printf("%s:%d Rec Jets Ran %d",(char*)__FILE__,__LINE__,fTCAJetsOutRan->GetEntriesFast());
+   if(fTCARandomConesOut)Printf("%s:%d RC %d",(char*)__FILE__,__LINE__,fTCARandomConesOut->GetEntriesFast());
+   if(fTCARandomConesOutRan)Printf("%s:%d RC Ran %d",(char*)__FILE__,__LINE__,fTCARandomConesOutRan->GetEntriesFast());
+ }
  PostData(1, fHistList);
 }
 

@@ -141,6 +141,11 @@ Bool_t AliAnalysisTaskJetBackgroundSubtract::Notify()
     TString newName(ostr->GetString().Data());
     newName.ReplaceAll(fReplaceString1.Data(),Form(fReplaceString2.Data(),fSubtraction));
     TClonesArray* jarrayOut = 0;      
+    if(newName.CompareTo(ostr->GetString())==0){
+      Printf("%s:%d Input and output branch would have the same name, skipping %s ",(char*)__FILE__,__LINE__,ostr->GetString().Data());
+      continue;
+    }
+
     if(!jarrayOut&&fAODOut){
       jarrayOut = (TClonesArray*)(fAODOut->FindListObject(newName.Data()));
     }
@@ -203,10 +208,16 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
       continue;
     }
 
+
     // add a new branch to the output for the background subtracted jets take the names from
     // the input jets and replace the background flag names
     TClonesArray *tca = new TClonesArray("AliAODJet", 0);
     newName.ReplaceAll(fReplaceString1.Data(),Form(fReplaceString2.Data(),fSubtraction));
+    if(newName.CompareTo(ostr->GetString())==0){
+      Printf("%s:%d Input and output branch would have the same name, skipping: %s ",(char*)__FILE__,__LINE__,ostr->GetString().Data());
+      continue;
+    }
+
     if(fDebug){
       Printf("%s:%d created branch \n %s from \n %s",(char*)__FILE__,__LINE__,newName.Data(),
 	     ostr->GetString().Data());
