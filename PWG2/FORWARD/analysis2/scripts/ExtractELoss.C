@@ -61,29 +61,8 @@ ExtractELoss(const char* fname="forward_eloss.root",
   }
 
   AliForwardCorrectionManager& mgr = AliForwardCorrectionManager::Instance();
-
-  TString ofName(mgr.GetFileName(AliForwardCorrectionManager::kELossFits,
-				 sys, sNN, field, mc));
-  TFile* output = TFile::Open(ofName.Data(), "RECREATE");
-  if (!output) { 
-    Error("ExtractELoss", "Failed to open file %s", ofName.Data());
-    return;
-  }
-
-  TString oName(mgr.GetObjectName(AliForwardCorrectionManager::kELossFits));
-  obj->Write(oName);
-
-  output->Write();
-  output->ls();
-  output->Close();
-  
-  TString dName(mgr.GetFileDir(AliForwardCorrectionManager::kELossFits));
-  Info("ExtractELoss", "Wrote %s object %s to %s",cName.Data(),oName.Data(), 
-       ofName.Data());
-  Info("ExtractELoss", "%s should be copied to %s",ofName.Data(),dName.Data());
-  Info("ExtractELoss", "Do for example\n\t"
-       "aliroot $ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/MoveCorrections.C\(0,0,0,0,1\)\n\t"
-       "cp %s %s/", ofName.Data(), gSystem->ExpandPathName(dName.Data()));
+  mgr.WriteFile(AliForwardCorrectionManager::kELossFits, 
+		sys, sNN, field, mc, obj, false);
 }
 
     

@@ -6,8 +6,15 @@
 void
 LoadLibs()
 {
+  const char* test = gSystem->GetLibraries("PWG2forward2","D",false);
+  if (test && test[0] != '\0') { 
+    // TInterpreter* inter = gROOT->GetInterpreter();
+    // inter->ClearFileBusy();
+    // inter->UnloadFile(inter->GetCurrentMacroName());
+    return;
+  }
   gSystem->Load("libVMC");
-  gSystem->Load("libTree");
+  // gSystem->Load("libTree");
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
   gSystem->Load("libANALYSIS");
