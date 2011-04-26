@@ -15,14 +15,10 @@
  * 
  */
 #include "AliCentralMultiplicityTask.h"
+#include "AliSPDMCTrackDensity.h"
 //class AliForwardCorrectionManager;
 class AliESDEvent;
 class AliMCEvent;
-class TH1D;
-class TH2D;
-class TH3D;
-class TList;
-class TTree;
 
 /** 
  * Class that calculates the multiplicity in the
@@ -74,7 +70,7 @@ public:
    * 
    * @return Reference to this object 
    */
-  AliCentralMCMultiplicityTask& operator=(const AliCentralMCMultiplicityTask& o);
+  AliCentralMCMultiplicityTask& operator=(const AliCentralMCMultiplicityTask&o);
   /** 
    * Create output objects 
    * 
@@ -100,22 +96,9 @@ public:
   virtual void Print(Option_t* option="") const;
 
 protected: 
-  /** 
-   * Process the MC event
-   * 
-   * @param hist   Histogram to fill 
-   * @param event  Event structure 
-   */
-  void ProcessMC(TH2D& hist, const AliMCEvent* event) const;
-
+  AliSPDMCTrackDensity   fTrackDensity;     // Calculate N_ch,incl
+					    // from MC
   AliAODCentralMult      fAODMCCentral;     // Output object
-  Double_t               fMinR;             // Min radius 
-  Double_t               fMaxR;             // Max radius 
-  Double_t               fMinZ;             // Min z
-  Double_t               fMaxZ;             // Max z
-  TH2D*                  fRZ;               // Location in (r,z)
-  TH3D*                  fXYZ;              // Location in (x,y,z)
-  TH1D*                  fNRefs;            // Refs per track 
   ClassDef(AliCentralMCMultiplicityTask,1)  // Forward multiplicity class
 };
 
