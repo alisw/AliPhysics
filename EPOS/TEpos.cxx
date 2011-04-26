@@ -185,9 +185,9 @@ void TEpos::GenerateInputFile() {
 	char epo[256];
 	char *epoEnv = getenv("EPO");
 	if (epoEnv) {
-		strncpy(epo, epoEnv, 256);
+		strncpy(epo, epoEnv, 255);
 	} else {
-		strncpy(epo, getenv("ALICE_ROOT"), 256);
+		strncpy(epo, getenv("ALICE_ROOT"), 255);
 	}
 	strncat(epo, "/EPOS/epos167", 256);
 
