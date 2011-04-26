@@ -33,31 +33,31 @@ ClassImp(AliAnalysisTaskHadEt)
 
 
 //________________________________________________________________________
-AliAnalysisTaskHadEt::AliAnalysisTaskHadEt(const char *name, Bool_t isMc) :
+  AliAnalysisTaskHadEt::AliAnalysisTaskHadEt(const char *name, Bool_t isMc, TString recoConfigFile, TString mcConfigFile) :
         AliAnalysisTaskTransverseEnergy(name, isMc)
 	,fRecAnalysis(0)
 	,fMCAnalysis(0)
 {
     // Constructor
-  fMCConfigFile = "ConfigHadEtMonteCarlo.C";
-  fRecoConfigFile = "ConfigHadEtReconstructed.C";
+  fMCConfigFile = mcConfigFile;
+  fRecoConfigFile = recoConfigFile;
   
+
   if(fMCAnalysis) delete fMCAnalysis;
   if(fRecAnalysis) delete fRecAnalysis;
 
   if (fRecoConfigFile.Length()) {
-    cout<<"Rereading AliAnalysisHadEtReconstructed configuration file..."<<endl;
+    cout<<"Rereading AliAnalysisHadEtReconstructed configuration file "<<fRecoConfigFile<<endl;
     gROOT->LoadMacro(fRecoConfigFile);
     fRecAnalysis = (AliAnalysisHadEtReconstructed *) gInterpreter->ProcessLine("ConfigHadEtReconstructed()");
   }
 
   if (fMCConfigFile.Length()) {
-    cout<<"Rereading AliAnalysisHadEtMonteCarlo configuration file..."<<endl;
+    cout<<"Rereading AliAnalysisHadEtMonteCarlo configuration file "<<fMCConfigFile<<endl;
     gROOT->LoadMacro(fMCConfigFile);
     fMCAnalysis = (AliAnalysisHadEtMonteCarlo *) gInterpreter->ProcessLine("ConfigHadEtMonteCarlo()");
     fMCAnalysis->SetHadEtReconstructed(fRecAnalysis);
   }
-
 
     // Define input and output slots here
     // Input slot #0 works with a TChain
@@ -76,7 +76,11 @@ AliAnalysisTaskHadEt::~AliAnalysisTaskHadEt(){//Destructor
 void AliAnalysisTaskHadEt::UserCreateOutputObjects()
 {
     // Create histograms
+
     // Called once
+
+
+
   fOutputList = new TList;
   fOutputList->SetOwner();
   fMCAnalysis->SetHistoList(fOutputList);
@@ -102,8 +106,9 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
     fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
     fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
   }
-  if(fRecAnalysis->DataSet()==2010){
-    cout<<"Setting track cuts for the 2010 p+p collisions at 7 TeV"<<endl;
+  if(fRecAnalysis->DataSet()==2010 || fRecAnalysis->DataSet()==20111){
+    if(fRecAnalysis->DataSet()==2010)cout<<"Setting track cuts for the 2010 p+p collisions at 7 TeV"<<endl;
+    else{cout<<"Setting track cuts for the 2011 p+p collisions at 2.76 TeV"<<endl;}
     //cout<<"Warning:  Have not set 2010 track cuts yet!!"<<endl;
     fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
     fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
