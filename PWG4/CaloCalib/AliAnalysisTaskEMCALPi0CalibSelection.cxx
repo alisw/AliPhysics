@@ -146,7 +146,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::LocalInit()
 	fCuts->Add(new TObjString(onePar));
 	snprintf(onePar,buffersize, "Histograms: bins %d; energy range: %2.2f < E < %2.2f GeV;",fNbins,fMinBin,fMaxBin) ;
 	fCuts->Add(new TObjString(onePar));
-	snprintf(onePar,buffersize, "Switchs: Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d, Analyze Old AODs? %d, Mass per channel same SM clusters? %d ",
+	snprintf(onePar,buffersize, "Switchs: Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d, Mass per channel same SM clusters? %d ",
             fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fSameSM) ;
 	fCuts->Add(new TObjString(onePar));
 	snprintf(onePar,buffersize, "EMCAL Geometry name: < %s >, Load Matrices? %d",fEMCALGeoName.Data(),fLoadMatrices) ;
