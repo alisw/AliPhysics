@@ -69,6 +69,10 @@ public:
      * Correct for the trigger efficiency from MC 
      */
     kTriggerEfficiency = 0x8,
+    /** 
+     * Correct using zero-bin efficiency only 
+     */
+    kZeroBin = 0x10,
     /**
      * Do the full correction
      */
@@ -263,6 +267,13 @@ public:
 			bool  corr=true,
 			bool  error=true);
   /** 
+   * Scale the copy of the 2D histogram by coverage in supplied 1D histogram
+   *  
+   * @param copy Data to scale 
+   * @param norm Coverage histogram 
+   */
+  static void ScaleToCoverage(TH2D* copy, const TH1D* norm);
+  /** 
    * Set histogram graphical options, etc. 
    * 
    * @param h       Histogram to modify
@@ -320,6 +331,43 @@ protected:
    */
   virtual CentralityBin* MakeCentralityBin(const char* name, Short_t low, 
 					   Short_t high) const;
+  
+  //==================================================================
+  struct Sum : public TNamed
+  {
+    TH2D* fSum;     // Sum of non-zero events
+    TH2D* fSum0;    // Sum of zero events 
+    TH1I* fEvents;  // Distribution of events 
+    
+    Sum() : fSum(0), fSum0(0), fEvents(0) {}
+    Sum(const char* name, const char* postfix) 
+      : TNamed(name,postfix), 
+	fSum(0), 
+	fSum0(0), 
+	fEvents(0) 
+    {}
+    Sum(const Sum& o) 
+      : TNamed(o), 
+	fSum(o.fSum), 
+	fSum0(o.fSum0), 
+	fEvents(o.fEvents) 
+    {}
+    Sum& operator=(const Sum& o) {
+      SetName(o.GetName()); fSum = o.fSum; fSum0 = o.fSum0; fEvents=o.fEvents;
+      return *this;
+    }
+    ~Sum() {}
+    void Init(TList* list, const TH2D* data, Int_t col);
+    void Add(const TH2D* data, Bool_t isZero=false);
+    TString GetHistName(Int_t what=0) const;
+    TH2D* GetSum(const TList* l, TList* o, Double_t& ntotal,
+		 Double_t zeroEff, Double_t otherEff=1, Int_t marker=20,
+		 Bool_t rootXproj=false, Bool_t corrEmpty=true) const;
+  };
+
+    
+    
+  //==================================================================
   /**
    * Calculations done per centrality 
    * 
@@ -386,6 +434,7 @@ protected:
      */
     virtual void ProcessEvent(const AliAODForwardMult* forward, 
 			      Int_t                    triggerMask,
+			      Bool_t                   isZero,
 			      Double_t                 vzMin, 
 			      Double_t                 vzMax, 
 			      const TH2D*              data, 
@@ -514,7 +563,7 @@ protected:
      * 
      * @return Sum histogram
      */
-    const TH2D* GetSum(Bool_t mc=false) const { return mc ? fSumMC : fSum; }
+    const Sum* GetSum(Bool_t mc=false) const { return mc ? fSumMC : fSum; }
     /** 
      * Get sum histogram 
      * 
@@ -522,7 +571,7 @@ protected:
      * 
      * @return Sum histogram
      */
-    TH2D* GetSum(Bool_t mc=false) { return mc ? fSumMC : fSum; }
+    Sum* GetSum(Bool_t mc=false) { return mc ? fSumMC : fSum; }
     /** 
      * Get trigger histogram
      * 
@@ -568,8 +617,8 @@ protected:
 			      Double_t vzMax);
     TList*   fSums;      // Output list 
     TList*   fOutput;    // Output list 
-    TH2D*    fSum;       // Sum histogram
-    TH2D*    fSumMC;     // MC sum histogram
+    Sum*     fSum;       // Sum histogram
+    Sum*     fSumMC;     // MC sum histogram
     TH1I*    fTriggers;  // Trigger histogram 
     UShort_t fLow;       // Lower limit (inclusive)
     UShort_t fHigh;      // Upper limit (exclusive)
