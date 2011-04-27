@@ -58,7 +58,8 @@ AliFMDSharingFilter::AliFMDSharingFilter()
     fSummed(0),
     fHighCuts(0),
     fOper(0),
-    fDebug(0)
+    fDebug(0),
+    fZeroSharedHitsBelowThreshold(0)
 {
   // 
   // Default Constructor - do not use 
@@ -76,7 +77,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
     fSummed(0),
     fHighCuts(0),
     fOper(0),
-    fDebug(0)
+    fDebug(0),
+    fZeroSharedHitsBelowThreshold(0)
 {
   // 
   // Constructor 
@@ -102,7 +104,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
     fSummed(o.fSummed),
     fHighCuts(o.fHighCuts),
     fOper(o.fOper),
-    fDebug(o.fDebug)
+    fDebug(o.fDebug),
+    fZeroSharedHitsBelowThreshold(o.fZeroSharedHitsBelowThreshold)
 {
   // 
   // Copy constructor 
@@ -139,14 +142,15 @@ AliFMDSharingFilter::operator=(const AliFMDSharingFilter& o)
   //
   TNamed::operator=(o);
 
-  fLowCut        = o.fLowCut;
-  fCorrectAngles = o.fCorrectAngles;
-  fNXi           = o.fNXi;
-  fDebug         = o.fDebug;
-  fOper          = o.fOper;
-  fSummed        = o.fSummed;
-  fHighCuts      = o.fHighCuts;
-  fIncludeSigma  = o.fIncludeSigma;
+  fLowCut                       = o.fLowCut;
+  fCorrectAngles                = o.fCorrectAngles;
+  fNXi                          = o.fNXi;
+  fDebug                        = o.fDebug;
+  fOper                         = o.fOper;
+  fSummed                       = o.fSummed;
+  fHighCuts                     = o.fHighCuts;
+  fIncludeSigma                 = o.fIncludeSigma;
+  fZeroSharedHitsBelowThreshold = o.fZeroSharedHitsBelowThreshold;
 
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
@@ -554,7 +558,9 @@ AliFMDSharingFilter::MultiplicityOfStrip(Double_t thisE,
   DBGL(3, Form(" %9f<%9f<%9f (was %9f), zeroed, candidate", 
 		   lowCut, totalE, highCut, thisE));
   thisStatus = kCandidate;
-  return 0;
+  if(fZeroSharedHitsBelowThreshold)
+    return 0;
+  else return totalE; 
 }
 	   
 //_____________________________________________________________________
