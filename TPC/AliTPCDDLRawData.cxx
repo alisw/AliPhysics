@@ -76,7 +76,7 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
   DataPad data;
 
   //AliAltroBuffer is used in write mode to generate raw data file
-  char  filename[15];
+  char  filename[100];
   Int_t ddlNumber=0;
   AliAltroBuffer *buffer=NULL;
   Int_t pSecNumber=-1;  //Previous Sector number
@@ -112,7 +112,7 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
 	ddlNumber=data.Sec*2+data.SubSec;
       else
 	ddlNumber=72+(data.Sec-36)*4+data.SubSec;
-      strcpy(filename,AliDAQ::DdlFileName("TPC",ddlNumber));
+      strncpy(filename,AliDAQ::DdlFileName("TPC",ddlNumber),100);
       Int_t patchIndex = data.SubSec;
       if(data.Sec>=36) patchIndex += 2;
       //buffer=new AliAltroBuffer(filename,mapping[patchIndex]);
