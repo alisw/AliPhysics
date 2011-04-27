@@ -63,6 +63,12 @@ void recraw_local(const char *filename,
 		  const char *modules="ALL",
 		  const char *hltOptions="loglevel=0x7c")
 {
+  if(!gSystem->AccessPathName("galice.root")){
+    cerr << "AliReconstruction on raw data requires to delete galice.root, or run at different place." << endl;
+    cerr << "!!! DO NOT DELETE the galice.root of your simulation, but create a subfolder !!!!" << endl;
+    return;
+  }
+
   // connect to the GRID if we use a file or OCDB from the GRID
   TString struri=cdbURI;
   TString strfile=filename;
