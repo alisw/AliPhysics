@@ -632,6 +632,7 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * /*matrix*/, Int
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
   if (!transform) {
     AliFatal("Tranformations not in calibDB");    
+    return;
   }
   transform->SetCurrentRecoParam((AliTPCRecoParam*)fRecoParam);
   Double_t x[3]={c.GetRow(),c.GetPad(),c.GetTimeBin()};
@@ -1190,7 +1191,7 @@ void AliTPCclustererMI::Digits2ClustersOld
     rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
 
     // select only good sector 
-    input.Next();
+    if (!input.Next()) continue;
     if(input.GetSector() != fSector) continue;
 
     AliTPCCalROC * gainROC    = gainTPC->GetCalROC(fSector);  // pad gains per given sector
@@ -1493,7 +1494,6 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
     dsignal[i] = signal[i];
   }
 
-  TGraph * graph=0;
   //
   // Big signals dumping
   //    
@@ -1505,7 +1505,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
       "Sector="<<uid[0]<<
       "Row="<<uid[1]<<
       "Pad="<<uid[2]<<
-      "Graph="<<graph<<
+      //      "Graph="<<graph<<
       "Max="<<max<<
       "MaxPos="<<maxPos<<	
       //
@@ -1517,7 +1517,6 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
       "Mean09="<<mean09<<
       "RMS09="<<rms09<<
       "\n";
-  delete graph;  
   }
 
   delete [] dsignal;

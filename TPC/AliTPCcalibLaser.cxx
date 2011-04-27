@@ -3519,7 +3519,7 @@ void   AliTPCcalibLaser::MakeFitHistos(){
     TH2F *profz = (TH2F*)fDeltaZres.UncheckedAt(id);
     //TH2F *profy2 = (TH2F*)fDeltaYres2.UncheckedAt(id);
     TH2F *profy2 = 0;
-    TH2F *profz2 = (TH2F*)fDeltaZres2.UncheckedAt(id);
+    TH2F *profz2 = 0;(TH2F*)fDeltaZres2.UncheckedAt(id);
     TH2F *profyabs = 0; //(TH2F*)fDeltaYresAbs.UncheckedAt(id);
     TH2F *profzabs = (TH2F*)fDeltaYresAbs.UncheckedAt(id);
     //    TH2F *profy3 = (TH2F*)fDeltaYres3.UncheckedAt(id);
@@ -3569,7 +3569,7 @@ void   AliTPCcalibLaser::MakeFitHistos(){
     
     TH1F * hisdphi = (TH1F*)fDeltaPhi.At(id);
     TH1F * hisdphiP = (TH1F*)fDeltaPhiP.At(id);
-    TH1F * hisSignal = (TH1F*)fSignals.At(id);
+    TH1F * hisSignal = 0; //(TH1F*)fSignals.At(id);
 
     if (!hisdz){
       hisdz = new TH1F(Form("hisdz%d",id),Form("hisdz%d",id),1000,-10,10);
