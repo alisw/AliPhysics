@@ -35,12 +35,13 @@
 //
 //_________________________________________________________________________________________
 
+enum centrality{ kpp, k010, k020, k2040, k4060, k6080, k4080, k80100 };
 
 void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HFPtSpectrum_D0Kpi_method1_221110_newnorm.root",
 						      const char *nbfilename="HFPtSpectrum_D0Kpi_method2_221110_newnorm.root",
 						      const char *outfilename="HFPtSpectrum_D0Kpi_combinedFD.root",
 						      const char *thfilename="D0DplusDstarPredictions_y05.root",
-						      Int_t decay=1)
+						      Int_t decay=1, Int_t centrality=kpp)
 {
   
   // 
@@ -106,7 +107,22 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   //
   // Call the systematics uncertainty class for a given decay
   //   will help to compute the systematical unc. (but FD) 
-  AliHFSystErr systematics(decay);
+  AliHFSystErr systematics;
+  if( centrality!=kpp)  {
+    systematics.SetCollisionType(1);
+    if ( centrality == k020 ) {
+      systematics.SetCentrality(020);
+    }
+    else if ( centrality == k4080 ) {
+      systematics.SetCentrality(4080);
+    }
+    else { 
+      cout << " Systematics not yet implemented " << endl;
+      return;
+    }
+  }
+  else { systematics.SetCollisionType(0); }
+  systematics.Init(decay);
 
   // 
   // Loop on all the bins to do the calculations
@@ -197,7 +213,7 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
 
   //
   // Plot the results
-  TH2F *histo2Draw = new TH2F("histo2Draw","histo2 (for drawing)",100,0,20.,100,1e4,1e8);
+  TH2F *histo2Draw = new TH2F("histo2Draw","histo2 (for drawing)",100,0,20.,100,1e4,1e10);
   histo2Draw->SetStats(0);
   histo2Draw->GetXaxis()->SetTitle("p_{T}  [GeV]");
   histo2Draw->GetXaxis()->SetTitleSize(0.05);
