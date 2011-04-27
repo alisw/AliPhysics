@@ -28,7 +28,7 @@
  * In Oct 2008 the component has been extended in order to select channels
  * by calculating average/sigma and applying thresholds.
  *
- * TheAliAltroDecoder is used as input decoder to read and scan the
+ * The AliAltroRawStreamV3 is used as input decoder to read and scan the
  * Altro Raw data.
  * 
  * <h2>General properties:</h2>

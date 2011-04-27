@@ -16,23 +16,19 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTAltroChannelSelectorComponent.cxx
-    @author Matthias Richter
-    @date   
-    @brief  A filter/selective readout component for Altro data.
-*/
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+/// @file   AliHLTAltroChannelSelectorComponent.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  A filter/selective readout component for Altro data.
+///
 
 #include <cassert>
+#include <memory>
 #include "AliHLTAltroChannelSelectorComponent.h"
-#include "AliAltroDecoder.h"
-#include "AliAltroData.h"
-#include "AliAltroBunch.h"
+#include "AliHLTErrorGuard.h"
+#include "AliHLTDAQ.h"
+#include "AliRawReaderMemory.h"
+#include "AliAltroRawStreamV3.h"
 #include "TMath.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -184,8 +180,9 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
   // process the DLL input
   int blockno=0;
   const AliHLTComponentBlockData* pDesc=NULL;
+  std::auto_ptr<AliRawReaderMemory> pRawReader(new AliRawReaderMemory);
+  if (pRawReader.get()) return -ENOMEM;
 
-  AliAltroDecoder* decoder=NULL;
   for (pDesc=GetFirstInputBlock(kAliHLTDataTypeDDLRaw); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
     iResult=0;
     if (pDesc->fSize<=32) {
@@ -213,25 +210,39 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
     }
     }
 
-    if (decoder) delete decoder;
-    decoder=new AliAltroDecoder;
-    if (decoder->SetMemory(reinterpret_cast<UChar_t*>(pDesc->fPtr), pDesc->fSize)<0) {
-      HLTWarning("corrupted data block: initialization of decoder failed for block: %s specification %#x size %d",
-		 DataType2Text(pDesc->fDataType).c_str(), pDesc->fSpecification, pDesc->fSize);
-      iResult=-EFAULT;
-    } else {
-      if (decoder->Decode()) {
-	HLTDebug("init decoder %p size %d", pDesc->fPtr,pDesc->fSize);
-      } else {
-	HLTWarning("corrupted data block: decoding failed for raw data block: %s specification %#x size %d",
-		   DataType2Text(pDesc->fDataType).c_str(), pDesc->fSpecification, pDesc->fSize);
-	iResult=-EFAULT;
-      }
+    static AliHLTErrorGuard required("AliHLTAltroChannelSelectorComponent", "DoEvent", "component commission required after major changes");
+    (++required).Throw(1);
+
+    pRawReader->Reset();
+    int ddlid=AliHLTDAQ::DdlIDFromHLTBlockData(pDesc->fDataType.fOrigin, pDesc->fSpecification);
+    if (ddlid<0) {
+      HLTError("unable to extract DDL Id for data block %s 0x%08x", DataType2Text(pDesc->fDataType).c_str(), pDesc->fSpecification);
+      continue;
+    }
+
+    if (!pRawReader->AddBuffer((UChar_t*)pDesc->fPtr,pDesc->fSize, ddlid)) {
+      ALIHLTERRORGUARD(1, "can not set up AltroDecoder for data block %s 0x%08x,"
+		       " skipping data block and suppressing further messages",
+		       DataType2Text(pDesc->fDataType).c_str(), pDesc->fSpecification);
+      continue;
+    }
+
+    std::auto_ptr<AliAltroRawStreamV3> altroRawStream(new AliAltroRawStreamV3(pRawReader.get()));
+
+    if (!altroRawStream.get()) {
+      iResult=-ENOMEM;
+      break;
+    }
+
+    altroRawStream->Reset();
+    if (!altroRawStream->NextDDL()) {
+      ALIHLTERRORGUARD(1, "internal error, can not read data from AliRawReaderMemory");
+      continue;
     }
 
     unsigned int rcuTrailerLength=0;
     if (iResult>=0 &&
-	((rcuTrailerLength=decoder->GetRCUTrailerSize())==0 ||
+	((rcuTrailerLength=altroRawStream->GetRCUTrailerSize())==0 ||
 	 rcuTrailerLength>pDesc->fSize-cdhSize)) {
       if (rcuTrailerLength>0) {
 	HLTWarning("corrupted data block: RCU trailer length exceeds buffer size");
@@ -258,8 +269,6 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
     AliHLTUInt32_t iOutputSize=0;
     AliHLTUInt32_t iNofAltro40=0;
     AliHLTUInt32_t iCapacity=size;
-    AliAltroData channel;
-    AliAltroBunch altrobunch;
 
     // first add the RCU trailer
     AliHLTUInt8_t* pSrc=reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr);
@@ -273,19 +282,19 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
       break;
     }
 
-    while (decoder->NextChannel(&channel) && iResult>=0) {
+    while (altroRawStream->NextChannel() && iResult>=0) {
       iTotal++;
 
-      int hwAddress=channel.GetHadd();
+      int hwAddress=altroRawStream->GetHWAddress();
       if (fSignalThreshold!=0) {
 	// treshold by adc counts
 	unsigned int sumSignals=0;
 	unsigned int maxSignal=0;
 	unsigned int nofSignals=0;
-	while(channel.NextBunch(&altrobunch)){
-	  const UInt_t *bunchData=altrobunch.GetData();
-	  unsigned int time=altrobunch.GetStartTimeBin();
-	  for(Int_t i=0;i<altrobunch.GetBunchSize();i++){
+	while(altroRawStream->NextBunch()){
+	  const UShort_t *bunchData=altroRawStream->GetSignals();
+	  unsigned int time=altroRawStream->GetStartTimeBin();
+	  for(Int_t i=0;i<altroRawStream->GetBunchLength();i++){
 	    if(bunchData[i]>0){// disregarding 0 data.
 	      if(time+i>=fStartTimeBin && time+i<=fEndTimeBin){
 		sumSignals+=bunchData[i];
@@ -304,10 +313,10 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
 	unsigned int sumSignals=0;
 	unsigned int maxSignal=0;
 	unsigned int nofSignals=0;
-	while(channel.NextBunch(&altrobunch)){
-	  const UInt_t *bunchData=altrobunch.GetData();
-	  unsigned int time=altrobunch.GetStartTimeBin();
-	  for(Int_t i=0;i<altrobunch.GetBunchSize();i++){
+	while(altroRawStream->NextBunch()){
+	  const UShort_t *bunchData=altroRawStream->GetSignals();
+	  unsigned int time=altroRawStream->GetStartTimeBin();
+	  for(Int_t i=0;i<altroRawStream->GetBunchLength();i++){
 	    if(bunchData[i]>0){// disregarding 0 data.
 	      if(time+i>=fStartTimeBin && time+i<=fEndTimeBin){
 		sumSignals+=bunchData[i]*bunchData[i];
@@ -337,19 +346,18 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
       // no of 10 bit words is without the fill words to fill complete 40 bit words
       // in addition, align to complete 40 bit words (the '+3')
       // also, the 5 bytes of the Altro trailer must be added to get the full size
-      int channelSize=((channel.GetDataSize()+3)/4)*5;
+      int channelSize=((altroRawStream->GetChannelPayloadSize()+2)/3)*4;
       if (channelSize==0) {
 	if (fTalkative) HLTWarning("skipping zero length channel (hw address %d)", hwAddress);
 	iCorrupted++;
 	continue;
       }
-      channelSize+=5;
+      channelSize+=4;
       HLTDebug("ALTRO block hwAddress 0x%08x (%d) selected (active), size %d", hwAddress, hwAddress, channelSize);
 
-      if ((iResult=decoder->CopyBackward(outputPtr, iCapacity-iOutputSize))>=0) {
+      if (false) {
 	if (channelSize == iResult) {
-	  if (channelSize%5 == 0) {
-	    iNofAltro40+=channelSize/5;
+	  if (channelSize%4 == 0) {
 	    iOutputSize+=channelSize;
 	  } else {
 	    if (fTalkative) HLTWarning("corrupted ALTRO channel: incomplete 40 bit word (channel hw address %d)", hwAddress);
@@ -400,7 +408,6 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
     }
     if (fTalkative) HLTImportant("data block %d (0x%08x): selected %d out of %d ALTRO channel(s), %d corrupted channels skipped", blockno, pDesc->fSpecification, iSelected, iTotal, iCorrupted);
   }
-  if (decoder) delete decoder;
 
   if (iResult<0) {
     outputBlocks.clear();

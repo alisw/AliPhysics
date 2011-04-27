@@ -41,8 +41,7 @@ class TRandom;
  *
  * A couple of functions provide access to the simulated data on a
  * signal by signal basis (Next()) or a bunch by bunch basis
- * (NextChannel() / NextBunch()). The scheme follows pretty much the
- * AliRawReader or AliAltroDecoder scheme respectively.
+ * (NextChannel() / NextBunch()).
  *
  * @ingroup alihlt_rcu
  */

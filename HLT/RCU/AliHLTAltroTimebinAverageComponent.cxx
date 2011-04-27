@@ -28,11 +28,12 @@
 using namespace std;
 #endif
 #include "AliHLTAltroTimebinAverageComponent.h"
-#include "AliAltroDecoder.h"
-#include "AliAltroData.h"
-#include "AliAltroBunch.h"
+#include "AliHLTErrorGuard.h"
+#include "AliAltroRawStreamV3.h"
 #include "AliHLTAltroEncoder.h"
+#include "AliRawReaderMemory.h"
 #include "AliRawDataHeader.h"
+#include <memory>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTAltroTimebinAverageComponent)
@@ -172,8 +173,8 @@ int AliHLTAltroTimebinAverageComponent::DoEvent( const AliHLTComponentEventData&
   const AliHLTComponentBlockData* iter = NULL;
   unsigned long ndx;
 
-  AliAltroDecoder* decoder=NULL;
-  AliHLTAltroEncoder* altroEncoder=NULL;
+  std::auto_ptr<AliRawReaderMemory> pRawReader(new AliRawReaderMemory);
+  if (pRawReader.get()) return -ENOMEM;
 
   for(ndx = 0; ndx < evtData.fBlockCnt; ndx++) {
     iter = blocks+ndx;
@@ -181,66 +182,59 @@ int AliHLTAltroTimebinAverageComponent::DoEvent( const AliHLTComponentEventData&
     if ( iter->fDataType != kAliHLTDataTypeDDLRaw) {
       continue;
     }
- 
-    if (decoder) delete decoder;
-    decoder=new AliAltroDecoder;
-    if (!decoder) {
+
+    static AliHLTErrorGuard required("AliHLTAltroTimebinAverageComponent", "DoEvent", "component commission required after major changes, need to extract equipment id from data specification");
+    (++required).Throw(1);
+
+    pRawReader->Reset();
+    // FIXME: set ddl no
+    if (!pRawReader->AddBuffer((UChar_t*)iter->fPtr,iter->fSize, 768)) {
+      ALIHLTERRORGUARD(1, "can not set up AltroDecoder for data block %s 0x%08x,"
+		       " skipping data block and suppressing further messages",
+		       DataType2Text(iter->fDataType).c_str(), iter->fSpecification);
+      continue;
+    }
+
+    std::auto_ptr<AliAltroRawStreamV3> altroRawStream(new AliAltroRawStreamV3(pRawReader.get()));
+    std::auto_ptr<AliHLTAltroEncoder> altroEncoder(new AliHLTAltroEncoder);
+
+    if (!altroRawStream.get() || !altroEncoder.get()) {
       iResult=-ENOMEM;
       break;
     }
 
-    if (altroEncoder) delete altroEncoder;
-
-    int localResult=0;
-    if ((localResult=decoder->SetMemory((UChar_t*)iter->fPtr,iter->fSize))<0) {
-      HLTWarning("can not set up AltroDecoder for data block %s 0x%08x: error %d, skipping data block",
-		 DataType2Text(iter->fDataType).c_str(), iter->fSpecification, localResult);
-      continue;
-    }
-      
-    if (!decoder->Decode()) {
-      HLTWarning("can not decode data block %s 0x%08x: skipping data block",
-		 DataType2Text(iter->fDataType).c_str(), iter->fSpecification);
+    altroRawStream->Reset();
+    if (!altroRawStream->NextDDL()) {
+      ALIHLTERRORGUARD(1, "internal error, can not read data from AliRawReaderMemory");
       continue;
     }
 
     UChar_t *RCUTrailer=NULL;
-    Int_t RCUTrailerSize=decoder->GetRCUTrailerSize();
-    if (RCUTrailerSize<=0 || !decoder->GetRCUTrailerData(RCUTrailer) || RCUTrailer==NULL) {
-      HLTWarning("can not find RCU trailer for data block %s 0x%08x: skipping data block",
-		 DataType2Text(iter->fDataType).c_str(), iter->fSpecification);
+    Int_t RCUTrailerSize=altroRawStream->GetRCUTrailerSize();
+    if (RCUTrailerSize<=0 || !altroRawStream->GetRCUTrailerData(RCUTrailer) || RCUTrailer==NULL) {
+      ALIHLTERRORGUARD(1, "can not find RCU trailer for data block %s 0x%08x: skipping data block",
+		       DataType2Text(iter->fDataType).c_str(), iter->fSpecification);
       continue;
     }
-      
-    AliAltroData altrochannel;
-    while (iResult>=0 && decoder->NextChannel(&altrochannel) && iResult>=0) {
-      int hwadd=altrochannel.GetHadd();
 
-      AliAltroBunch altrobunch;
-      while (iResult>=0 && altrochannel.NextBunch(&altrobunch) && iResult>=0) {
-	int bunchLength=altrobunch.GetBunchSize();
-	int bunchEndTime=altrobunch.GetEndTimeBin();
-	int time=bunchEndTime-bunchLength+1;
-	const  UInt_t* bunchData=altrobunch.GetData();
+    altroEncoder->SetBuffer(outputPtr+offset,capacity-offset);
+    AliRawDataHeader cdh;
+    altroEncoder->SetCDH((AliHLTUInt8_t*)iter->fPtr,sizeof(AliRawDataHeader));
+
+    altroEncoder->SetRCUTrailer(RCUTrailer, RCUTrailerSize);
+
+    while (iResult>=0 && altroRawStream->NextChannel()) {
+      int hwadd=altroRawStream->GetHWAddress();
+
+      while (iResult>=0 && altroRawStream->NextBunch()) {
+	int bunchLength=altroRawStream->GetBunchLength();
+	int time=altroRawStream->GetStartTimeBin();
+	const  UShort_t* bunchData=altroRawStream->GetSignals();
 	for (int bin=bunchLength && iResult>=0; bin>0; ) {
 	  bin--;
 	  if(bunchData[bin]>0){// disregarding 0 data.
 	     
 	    if(time+bin>=fStartTimeBin && time+bin<=fEndTimeBin){
-	      if (!altroEncoder) {
-		// set up the encoder
-		altroEncoder=new AliHLTAltroEncoder;
-		if (!altroEncoder) {
-		  iResult=-ENOMEM;
-		  break;
-		}
-		altroEncoder->SetBuffer(outputPtr+offset,capacity-offset);
-		AliRawDataHeader cdh;
-		altroEncoder->SetCDH((AliHLTUInt8_t*)iter->fPtr,sizeof(AliRawDataHeader));
-
-		altroEncoder->SetRCUTrailer(RCUTrailer, RCUTrailerSize);
-	      }
-		
 	      AliHLTUInt16_t signal=bunchData[bin];
 	      if (bin-1>=0) signal+=bunchData[bin-1];
 	      altroEncoder->AddSignal((time+bin)/2,signal/2);
@@ -249,12 +243,12 @@ int AliHLTAltroTimebinAverageComponent::DoEvent( const AliHLTComponentEventData&
 	  } // end if bunchData[i]>0
 	} // for loop
       } //while loop over bunches
-      if (altroEncoder) {
+      if (true/*condition deprecated but keep formatting*/) {
 	altroEncoder->SetChannel(hwadd);
       }
     } // while loop over channels
 
-    if (altroEncoder) {
+    if (true/*condition deprecated but keep formatting*/) {
      int sizeOfData=altroEncoder->SetLength();
      
      if (sizeOfData<0) {
