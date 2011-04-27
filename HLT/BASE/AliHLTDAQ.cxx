@@ -25,6 +25,7 @@
 #include "AliHLTDAQ.h"
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
+#include "AliHLTMisc.h"
 #include "TClass.h"
 #include "TSystem.h"
 
@@ -81,7 +82,8 @@ Int_t       AliHLTDAQ::NumberOfDetectors()
 
 Int_t       AliHLTDAQ::DetectorID(const char *detectorName)
 {
-  // see header file for class documentation
+  // get the detector ID from the detector name
+  // forwards to AliDAQ::DetectorName
   if (!fgpInstance) GetInstance();
   if (fgpInstance) return fgpInstance->VirtDetectorID(detectorName);
   return -1;
@@ -89,27 +91,38 @@ Int_t       AliHLTDAQ::DetectorID(const char *detectorName)
 
 const char *AliHLTDAQ::DetectorName(Int_t detectorID)
 {
-  // see header file for class documentation
+  // get the detector name from the detector ID
+  // forwards to AliDAQ::DetectorName
   if (!fgpInstance) GetInstance();
   if (fgpInstance) return fgpInstance->VirtDetectorName(detectorID);
   return NULL;
 }
 
-const char *AliHLTDAQ::DetectorName(const char dataorigin[4])
+Int_t       AliHLTDAQ::DetectorIDFromHLTOrigin(const char dataorigin[kAliHLTComponentDataTypefOriginSize])
 {
-  // see header file for class documentation
+  // get the detector id from HLT origin
   for (int i=0; fgkOriginMapping[i]!=NULL; i++) {
     if (strncmp(fgkOriginMapping[i], dataorigin, kAliHLTComponentDataTypefOriginSize)==0) {
-      return DetectorName(i);
+      return i;
     }
   }
 
-  return NULL;
+  return -1;
+}
+
+const char *AliHLTDAQ::DetectorName(const char dataorigin[kAliHLTComponentDataTypefOriginSize])
+{
+  // get the detector name from HLT origin
+  Int_t detectorID=DetectorIDFromHLTOrigin(dataorigin);
+  if (detectorID<0) return NULL;
+
+  return DetectorName(detectorID);
 }
 
 Int_t       AliHLTDAQ::DdlIDOffset(const char *detectorName)
 {
-  // see header file for class documentation
+  // get ID of the first DDL of a detector
+  // forwards to AliDAQ::DdlIDOffset
   if (!fgpInstance) GetInstance();
   if (fgpInstance) return fgpInstance->VirtDdlIDOffset(detectorName);
   return -1;
@@ -117,7 +130,8 @@ Int_t       AliHLTDAQ::DdlIDOffset(const char *detectorName)
 
 Int_t       AliHLTDAQ::DdlIDOffset(Int_t detectorID)
 {
-  // see header file for class documentation
+  // get ID of the first DDL of a detector
+  // forwards to AliDAQ::DdlIDOffset
   if (!fgpInstance) GetInstance();
   if (fgpInstance) return fgpInstance->VirtDdlIDOffset(detectorID);
   return -1;
@@ -125,7 +139,8 @@ Int_t       AliHLTDAQ::DdlIDOffset(Int_t detectorID)
 
 const char *AliHLTDAQ::DetectorNameFromDdlID(Int_t ddlID, Int_t &ddlIndex)
 {
-  // see header file for class documentation
+  // get detector name from global DDL ID and index of DDL within the detector
+  // forwards to AliDAQ::DetectorNameFromDdlID
   if (!fgpInstance) GetInstance();
   if (fgpInstance) return fgpInstance->VirtDetectorNameFromDdlID(ddlID, ddlIndex);
   return NULL;
@@ -133,7 +148,8 @@ const char *AliHLTDAQ::DetectorNameFromDdlID(Int_t ddlID, Int_t &ddlIndex)
 
 Int_t       AliHLTDAQ::DetectorIDFromDdlID(Int_t ddlID, Int_t &ddlIndex)
 {
-  // see header file for class documentation
+  // get detector ID from global DDL ID and index of DDL within the detector
+  // forwards to AliDAQ::DetectorNameFromDdlID
   if (!fgpInstance) GetInstance();
   if (fgpInstance) return fgpInstance->VirtDetectorIDFromDdlID(ddlID, ddlIndex);
   return -1;
@@ -141,7 +157,8 @@ Int_t       AliHLTDAQ::DetectorIDFromDdlID(Int_t ddlID, Int_t &ddlIndex)
 
 Int_t       AliHLTDAQ::DdlID(const char *detectorName, Int_t ddlIndex)
 {
-  // see header file for class documentation
+  // get global DDL ID from detector name and index of DDL within the detector
+  // forwards to AliDAQ::DdlID
   if (!fgpInstance) GetInstance();
   if (fgpInstance) return fgpInstance->VirtDdlID(detectorName, ddlIndex);
   return -1;
@@ -149,7 +166,8 @@ Int_t       AliHLTDAQ::DdlID(const char *detectorName, Int_t ddlIndex)
 
 Int_t       AliHLTDAQ::DdlID(Int_t detectorID, Int_t ddlIndex)
 {
-  // see header file for class documentation
+  // get global DDL ID from detector ID and index of DDL within the detector
+  // forwards to AliDAQ::DdlID
   if (!fgpInstance) GetInstance();
   if (fgpInstance) return fgpInstance->VirtDdlID(detectorID, ddlIndex);
   return -1;
@@ -251,8 +269,9 @@ string AliHLTDAQ::HLTOrigin(Int_t detectorID)
 
 string AliHLTDAQ::HLTSpecificationFromDdlID(Int_t ddlID)
 {
+  // get the HLT data specification from equipment id
   string result = "";
-  Int_t ddlIndex;
+  Int_t ddlIndex=0;
   Int_t detectorID = DetectorIDFromDdlID(ddlID, ddlIndex);
   if (detectorID < 0)
     return result;
@@ -260,11 +279,7 @@ string AliHLTDAQ::HLTSpecificationFromDdlID(Int_t ddlID)
   const int strtmplength=11;
   char strtmp[strtmplength];
   memset(strtmp, 0, strtmplength);
-  if (detectorID != TPCID) {
-    snprintf(strtmp, strtmplength, "0x%08x", 0x1 << ddlIndex);
-    result = strtmp;
-  }
-  else { // TPC
+  if (detectorID == TPCID) {
     int partition;
     int slice;
     if (ddlID < 840) {
@@ -277,36 +292,76 @@ string AliHLTDAQ::HLTSpecificationFromDdlID(Int_t ddlID)
     snprintf(strtmp, strtmplength, "0x%02x%02x%02x%02x", slice, slice, partition, partition);
     result = strtmp;
   }
+  else if (detectorID == DetectorID("TOF")) {
+    AliHLTLogging log;
+    log.Logging(kHLTLogWarning, "AliHLTDAQ::HLTSpecificationFromDdlID", "HLT Analysis", "Mapping of data specification not implemented for TOF");
+  }
+  else { // default
+    snprintf(strtmp, strtmplength, "0x%08x", 0x1 << ddlIndex);
+    result = strtmp;
+  }
   return result;
+}
+
+Int_t AliHLTDAQ::DdlIDFromHLTBlockData(const char dataorigin[kAliHLTComponentDataTypefOriginSize], UInt_t specification)
+{
+  // get the DDL ID (global equipment ID) from HLT origin and data specification
+  Int_t detectorID=DetectorIDFromHLTOrigin(dataorigin);
+  if (detectorID<0) return -1;
+  Int_t ddlID=DdlIDOffset(detectorID);
+  if (ddlID<0) return -1;
+
+  if (detectorID == DetectorID("TPC")) {
+    int minPartition= specification     &0xff;
+    int maxPartition=(specification>>8) &0xff;
+    int minSlice    =(specification>>16)&0xff;
+    int maxSlice    =(specification>>24)&0xff;
+    if (minPartition<0 || minPartition>5 ||
+	maxPartition<0 || maxPartition>5 ||
+	minSlice<0 || minSlice>35 ||
+	maxSlice<0 || maxSlice>35) {
+      AliHLTLogging log;
+      log.Logging(kHLTLogError, "AliHLTDAQ::DdlID", "HLT Analysis", "invalid data specification 0x%08x", specification);
+      return -1;
+    }
+    else if (minPartition!=maxPartition || 
+	     minSlice!=maxSlice) {
+      AliHLTLogging log;
+      log.Logging(kHLTLogError, "AliHLTDAQ::DdlID", "HLT Analysis", "ambiguous data specification 0x%08x", specification);
+      return -1;
+    }
+    if (minPartition<2) ddlID+=2*minSlice+minPartition;        // inner sector
+    else                ddlID+=4*minSlice+(minPartition-2)+72; // outer sector
+  }
+  else if (detectorID == DetectorID("TOF")) {
+    AliHLTLogging log;
+    log.Logging(kHLTLogWarning, "AliHLTDAQ::DdlID", "HLT Analysis", "Mapping of data specification not implemented for TOF");
+    return -1;
+  }
+  else { // default
+    for (int i=0; i<32; i++) {
+      if ((specification&(0x1<<i))==0) continue; // if bit not set
+      if ((specification&(0xffffffff^(0x1<<i)))!=0) { // check if other bits set
+	AliHLTLogging log;
+	log.Logging(kHLTLogError, "AliHLTDAQ::DdlID", "HLT Analysis", "ambiguous data specification 0x%08x", specification);
+	return -1;
+      }
+      ddlID+=i;
+      break;
+    }
+  }
+
+  return ddlID;
 }
 
 AliHLTDAQ* AliHLTDAQ::GetInstance()
 {
   // see header file for class documentation
-  int iLibResult=0;
   if (!fgpInstance) {
-    AliHLTLogging log;
-    TClass* pCl=NULL;
-    ROOT::NewFunc_t pNewFunc=NULL;
-    do {
-      pCl=TClass::GetClass(fgkImplName);
-    } while (!pCl && (iLibResult=gSystem->Load(fgkImplLibrary))==0);
-    if (iLibResult>=0) {
-      if (pCl && (pNewFunc=pCl->GetNew())!=NULL) {
-	void* p=(*pNewFunc)(NULL);
-	if (p) {
-	  fgpInstance=reinterpret_cast<AliHLTDAQ*>(p);
-	  if (!fgpInstance) {
-	    log.Logging(kHLTLogError, "AliHLTDAQ::Instance", "HLT Analysis", "type cast to AliHLTDAQ instance failed");
-	  }
-	} else {
-	  log.Logging(kHLTLogError, "AliHLTDAQ::Instance", "HLT Analysis", "can not create AliHLTDAQ instance from class descriptor");
-	}
-      } else {
-	log.Logging(kHLTLogError, "AliHLTDAQ::Instance", "HLT Analysis", "can not find AliHLTDAQ class descriptor");
-      }
-    } else {
-      log.Logging(kHLTLogError, "AliHLTDAQ::Instance", "HLT Analysis", "can not load libHLTrec library");
+    fgpInstance=AliHLTMisc::LoadInstance((AliHLTDAQ*)NULL, fgkImplName, fgkImplLibrary);
+    if (!fgpInstance) {
+      AliHLTLogging log;
+      log.Logging(kHLTLogError, "AliHLTDAQ::Instance", "HLT Analysis", "failed to load AliHLTDAQ implementation");
     }
   }
   return fgpInstance;

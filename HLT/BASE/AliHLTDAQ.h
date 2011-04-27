@@ -33,6 +33,8 @@ class AliHLTDAQ {
 
   static  Int_t       DetectorID(const char *detectorName);
   static  const char *DetectorName(Int_t detectorID);
+  // Note: use specific number instead of kAliHLTComponentDataTypefOriginSize to avoid including AliHLTDataTypes.h
+  static  Int_t       DetectorIDFromHLTOrigin(const char dataorigin[4]);
   static  const char *DetectorName(const char dataorigin[4]);
 
   static  Int_t       DdlIDOffset(const char *detectorName);
@@ -62,6 +64,8 @@ class AliHLTDAQ {
   static std::string HLTOrigin(Int_t detectorID);
   
   static std::string HLTSpecificationFromDdlID(Int_t ddlID);
+  // Note: use specific number instead of kAliHLTComponentDataTypefOriginSize to avoid including AliHLTDataTypes.h
+  static Int_t       DdlIDFromHLTBlockData(const char dataorigin[4], UInt_t specification);
 
   static AliHLTDAQ* GetInstance();
 
