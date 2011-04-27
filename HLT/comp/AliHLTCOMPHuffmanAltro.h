@@ -24,6 +24,7 @@
     @brief  The Huffman compressor
 */
 
+#include "TObject.h"
 #include "AliHLTLogging.h"
 #include "AliHLTCOMPHuffmanData.h"
 
@@ -35,7 +36,7 @@ class AliAltroRawStreamV3;
     @date   20-11-2007
     @brief  The Huffman Compressor with functions training (for Calibration), compress and decompress, calculate entropy  
 */
-class AliHLTCOMPHuffmanAltro : public AliHLTLogging
+class AliHLTCOMPHuffmanAltro : public TObject, public AliHLTLogging
 {
  public:
 

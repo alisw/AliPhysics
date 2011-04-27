@@ -1,25 +1,25 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * All rights reserved.                                                   *
- *                                                                        *
- * Primary Author: Jenny Wagner  (jwagner@cern.ch)                        *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* All rights reserved.                                                   *
+//*                                                                        *
+//* Primary Author: Jenny Wagner                                           *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          * 
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
-/** @file   AliHLTCOMPHuffmanAltroComponent.cxx
-    @author Jenny Wagner
-    @date   29-08-2007
-    @brief  The Huffman compressor component.
-*/
+/// @file   AliHLTCOMPHuffmanAltroComponent.cxx
+/// @author Jenny Wagner, maintained by Matthias.Richter@cern.ch
+/// @date   29-08-2007
+/// @brief  The Huffman compressor component.
+///
 
 #if __GNUC__>= 3
 using namespace std;
@@ -30,6 +30,7 @@ using namespace std;
 #include "AliHLTCOMPHuffmanData.h"
 #include "AliHLTCompDefinitions.h"
 #include "AliHLTStdIncludes.h"
+#include "AliHLTDAQ.h"
 #include "TFile.h"
 
 ClassImp(AliHLTCOMPHuffmanAltroComponent)
@@ -377,8 +378,13 @@ int AliHLTCOMPHuffmanAltroComponent::DoEvent( const AliHLTComponentEventData& ev
 
       // HLTDebug("HLT::HuffmanCompressor::DoEvent", "Event received", "Starting to process data");
 
-      // FIXME: set ddl no
-      fHuffmanCompressor->AddInputData(reinterpret_cast<UChar_t*>(iter->fPtr), iter->fSize, 768);
+      int ddlid=AliHLTDAQ::DdlIDFromHLTBlockData(iter->fDataType.fOrigin, iter->fSpecification);
+      if (ddlid<0) {
+	HLTError("unable to extract DDL Id for data block %s 0x%08x", DataType2Text(iter->fDataType).c_str(), iter->fSpecification);
+	continue;
+      }
+
+      fHuffmanCompressor->AddInputData(reinterpret_cast<UChar_t*>(iter->fPtr), iter->fSize, ddlid);
 
       // validation test
       // HLTDebug("input data pointer (HEX) = %x ", iter->fPtr);

@@ -52,7 +52,7 @@ namespace
 ClassImp(AliHLTCOMPHuffmanAltro)
 
 AliHLTCOMPHuffmanAltro::AliHLTCOMPHuffmanAltro()
-  : AliHLTLogging()
+  : TObject(), AliHLTLogging()
   , fpRawReader(NULL)
   , fpAltroRawStream(NULL)
   , fTrainingMode(0)
@@ -71,7 +71,7 @@ AliHLTCOMPHuffmanAltro::AliHLTCOMPHuffmanAltro()
 }
 
 AliHLTCOMPHuffmanAltro::AliHLTCOMPHuffmanAltro(Bool_t compressionswitch, Bool_t trainingmode, AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* translationtable, Int_t nrcutrailerwords)
-  : AliHLTLogging()
+  : TObject(), AliHLTLogging()
   , fpRawReader(NULL)
   , fpAltroRawStream(NULL)
   , fTrainingMode(trainingmode)
@@ -276,12 +276,10 @@ void AliHLTCOMPHuffmanAltro::ProcessData()
     }
 }
 
-/** GetEntropy returns entropy and prints it to screen */
 Double_t AliHLTCOMPHuffmanAltro::GetEntropy()
 {
-  // see header file for class documentation
   // Information about calculated entropy
-  HLTInfo("Calculated entropy =  %f",fEntropy);
+  if (fVerbosity>0) HLTInfo("Calculated entropy =  %f",fEntropy);
 
   return fEntropy;
 }
@@ -1153,6 +1151,7 @@ Int_t AliHLTCOMPHuffmanAltro::CreateCodeTable()
       HLTWarning("Warning! Only %i different 10 bit words out of %i are used, i.e. created Huffman Code table might not be optimal to encode other data", TIMEBINS-zeroentries, TIMEBINS);
     }
   
+  // FIXME use auto_ptr, use size of HuffmanArraySorted instead of TIMEBINS
   // initialise leaves of the tree as list (= queue) ofAliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct,
  AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct * HuffmanTreeList = new AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct[filled];
   
@@ -1910,4 +1909,8 @@ void AliHLTCOMPHuffmanAltro::Print(Option_t* option) const
     return;
   }
 
+  if (strcmp(option, "entropy")==0) {
+    cout << "Calculated entropy = " << fEntropy << endl;
+    return;
+  }
 }

@@ -7,11 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTCOMPHuffmanAltroComponent.h
-    @author Jenny Wagner
-    @date   20-11-2007
-    @brief  The Huffman compressor component.
-*/
+/// @file   AliHLTCOMPHuffmanAltroComponent.h
+/// @author Jenny Wagner, maintained by Matthias.Richter@cern.ch
+/// @date   20-11-2007
+/// @brief  The Huffman compressor component.
+///
 
 #include "AliHLTProcessor.h"
 

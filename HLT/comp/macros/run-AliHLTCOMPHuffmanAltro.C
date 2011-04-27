@@ -24,7 +24,7 @@ void run_AliHLTCOMPHuffmanAltro(const char* input, int iMinEquipmentId=768, int 
     return;
   }
   pRawReader->RewindEvents();
-  pRawReader->SelectEquipment(0, iMinEquipmentId, iMaxEquipmentId);
+  pRawReader->SelectEquipment(-1, iMinEquipmentId, iMaxEquipmentId);
 
   gSystem->Load("libAliHLTComp.so");
   AliHLTCOMPHuffmanAltro encoder(kTRUE, kTRUE, NULL, 0);
@@ -46,7 +46,7 @@ void run_AliHLTCOMPHuffmanAltro(const char* input, int iMinEquipmentId=768, int 
       cout << " DDL: " << ddlid << "  size " << size << endl;
       encoder.AddInputData((UChar_t*)buffer.GetArray(), size, ddlid);
       encoder.ProcessData();
-      //encoder.CreateCodeTable();
+      encoder.CreateCodeTable();
     }
     event++;
   }
