@@ -34,6 +34,7 @@ using namespace std;
 #include "AliHLTComponentHandler.h"
 #include "AliHLTMessage.h"
 #include "AliHLTCTPData.h"
+#include "AliHLTErrorGuard.h"
 #include "AliRawDataHeader.h"
 #include "TString.h"
 #include "TMath.h"
@@ -2004,7 +2005,8 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	HLTWarning("did not receive SOR, ignoring EOR");
       }
     }
-    if (indexComConfEvent>=0 || fEventType==gkAliEventTypeConfiguration) {
+    if (fEventType==gkAliEventTypeConfiguration) {
+      if (indexComConfEvent>=0) {
       TString cdbEntry;
       if (indexComConfEvent>=0 && fpInputBlocks[indexComConfEvent].fPtr!=NULL && fpInputBlocks[indexComConfEvent].fSize>0) {
 	cdbEntry.Append(reinterpret_cast<const char*>(fpInputBlocks[indexComConfEvent].fPtr), fpInputBlocks[indexComConfEvent].fSize);
@@ -2014,8 +2016,12 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
       if (tmpResult<0) {
 	HLTWarning("reconfiguration of component %p (%s) failed with error code %d", this, GetComponentID(), tmpResult);
       }
+      } else {
+	ALIHLTERRORGUARD(1, "incomplete Configure event, missing parameter data block");
+      }
     }
-    if (indexUpdtDCSEvent>=0 || fEventType==gkAliEventTypeReadPreprocessor) {
+    if (fEventType==gkAliEventTypeReadPreprocessor) {
+      if (indexUpdtDCSEvent>=0) {
       TString modules;
       if (fpInputBlocks[indexUpdtDCSEvent].fPtr!=NULL && fpInputBlocks[indexUpdtDCSEvent].fSize>0) {
 	modules.Append(reinterpret_cast<const char*>(fpInputBlocks[indexUpdtDCSEvent].fPtr), fpInputBlocks[indexUpdtDCSEvent].fSize);
@@ -2024,6 +2030,9 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
       int tmpResult=ReadPreprocessorValues(modules[0]==0?"ALL":modules.Data());
       if (tmpResult<0) {
 	HLTWarning("preprocessor update of component %p (%s) failed with error code %d", this, GetComponentID(), tmpResult);
+      }
+      } else {
+	ALIHLTERRORGUARD(1, "incomplete ReadPreprocessor event, missing parameter data block");
       }
     }
   } else {
