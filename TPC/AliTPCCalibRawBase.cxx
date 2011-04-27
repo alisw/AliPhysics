@@ -34,7 +34,6 @@
 #include "AliAltroMapping.h"
 #include "AliAltroRawStream.h"
 #include "AliTPCROC.h"
-#include "AliTPCRawStreamFast.h"
 #include "AliTPCRawStreamV3.h"
 #include "AliTPCRawStream.h"
 #include "AliLog.h"
@@ -123,56 +122,6 @@ AliTPCCalibRawBase::~AliTPCCalibRawBase()
     
     return *this;
   }
-//_____________________________________________________________________
-Bool_t AliTPCCalibRawBase::ProcessEventFast(AliTPCRawStreamFast * const rawStreamFast)
-{
-  //
-  // Event Processing loop - AliTPCRawStreamFast
-  //
-  ResetEvent();
-  Bool_t withInput = kFALSE;
-  while ( rawStreamFast->NextDDL() ){
-    while ( rawStreamFast->NextChannel() ){
-      Int_t isector  = rawStreamFast->GetSector();                       //  current sector
-      Int_t iRow     = rawStreamFast->GetRow();                          //  current row
-      Int_t iPad     = rawStreamFast->GetPad();                          //  current pad
-      
-      while ( rawStreamFast->NextBunch() ){
-        Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
-        Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
-        for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
-          Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
-            Update(isector,iRow,iPad,iTimeBin+1,signal);
-          withInput = kTRUE;
-        }
-      }
-    }
-  }
-  if (withInput){
-    EndEvent();
-  }
-  return withInput;
-}
-//_____________________________________________________________________
-Bool_t AliTPCCalibRawBase::ProcessEventFast(AliRawReader * const rawReader)
-{
-  //
-  //  Event processing loop - AliRawReader
-  //
-  AliRawEventHeaderBase* eventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
-  if (eventHeader){
-    fTimeStamp   = eventHeader->Get("Timestamp");
-    fRunNumber = eventHeader->Get("RunNb");
-    fEventType = eventHeader->Get("Type");
-  }
-  if (!fFirstTimeStamp) fFirstTimeStamp=fTimeStamp;
-  fLastTimeStamp=fTimeStamp;
-  
-  AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader, (AliAltroMapping**)fMapping);
-  Bool_t res=ProcessEventFast(rawStreamFast);
-  delete rawStreamFast;
-  return res;
-}
 //_____________________________________________________________________
 Bool_t AliTPCCalibRawBase::ProcessEvent(AliTPCRawStreamV3 * const rawStreamV3)
 {

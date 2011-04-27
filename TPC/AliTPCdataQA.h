@@ -16,7 +16,6 @@ class AliTPCROC;
 class AliTPCCalROC;
 class AliTPCRawStream;
 class AliTPCRawStreamV3;
-class AliTPCRawStreamFast;
 class AliRawReader;
 class AliTPCAltroMapping;
 class AliTPCCalPad;
@@ -37,8 +36,6 @@ public:
  void MakeTree(const char *fname="QApad.root") const;
 
   //
-  Bool_t ProcessEventFast(AliTPCRawStreamFast *const rawStreamFast);
-  Bool_t ProcessEventFast(AliRawReader        *const rawReader);
   Bool_t ProcessEvent(AliTPCRawStream *const rawStream);
   Bool_t ProcessEvent(AliTPCRawStreamV3 *const rawStreamV3);
   Bool_t ProcessEvent(AliRawReader    *const rawReader);

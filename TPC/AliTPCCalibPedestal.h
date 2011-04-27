@@ -18,7 +18,6 @@ class TTreeSRedirector;
 class AliTPCROC;
 class AliTPCCalROC;
 class AliTPCRawStream;
-class AliTPCRawStreamFast;
 class AliRawReader;
 class TMap;
 

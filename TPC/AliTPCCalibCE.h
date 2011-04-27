@@ -24,7 +24,6 @@ class AliTPCCalROC;
 class AliTPCParam;
 class AliRawReader;
 class AliTPCRawStream;
-class AliTPCRawStreamFast;
 class TGraph;
 class TMap;
 class TCollection;

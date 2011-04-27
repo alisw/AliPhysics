@@ -67,6 +67,10 @@ mgr->StartAnalysis("local", chain);
 
 */
 
+// system includes
+#include <cstdio>
+using namespace std;
+
 //Root includes
 #include <TH1F.h>
 #include <TH2F.h>
@@ -87,7 +91,6 @@ mgr->StartAnalysis("local", chain);
 #include "AliTPCROC.h"
 #include "AliMathBase.h"
 #include "TTreeStream.h"
-#include "AliTPCRawStreamFast.h"
 
 //date
 #include "event.h"

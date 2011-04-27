@@ -104,7 +104,6 @@
 #include "AliTPCROC.h"
 #include "AliMathBase.h"
 #include "TTreeStream.h"
-#include "AliTPCRawStreamFast.h"
 
 //date
 #include "event.h"
@@ -557,63 +556,6 @@ Bool_t AliTPCdataQA::ProcessEvent(AliRawReader *const rawReader)
     if(fEventCounter%fEventsPerBin==0) 
       UpdateEventHistograms();
   }
-  return res;
-}
-
-//_____________________________________________________________________
-Bool_t AliTPCdataQA::ProcessEventFast(AliTPCRawStreamFast *const rawStreamFast)
-{
-  //
-  // Event Processing loop - AliTPCRawStream
-  //
-  Bool_t withInput = kFALSE;
-  Int_t nSignals = 0;
-  Int_t lastSector = -1;
-
-  while ( rawStreamFast->NextDDL() ){
-    while ( rawStreamFast->NextChannel() ){
-      
-      Int_t iSector  = rawStreamFast->GetSector(); //  current sector
-      Int_t iRow     = rawStreamFast->GetRow();    //  current row
-      Int_t iPad     = rawStreamFast->GetPad();    //  current pad
-  // Call local maxima finder if the data is in a new sector
-      if(iSector != lastSector) {
-        
-        if(nSignals>0)
-          FindLocalMaxima(lastSector);
-        
-        CleanArrays();
-        lastSector = iSector;
-        nSignals = 0;
-      }
-      
-      while ( rawStreamFast->NextBunch() ){
-        Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
-        Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
-        
-        for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
-          Float_t signal = rawStreamFast->GetSignals()[iTimeBin-startTbin];
-          nSignals += Update(iSector,iRow,iPad,iTimeBin+1,signal);
-          withInput = kTRUE;
-        }
-      }
-    }
-  }
-  
-  return withInput;
-}
-//_____________________________________________________________________
-Bool_t AliTPCdataQA::ProcessEventFast(AliRawReader *const rawReader)
-{
-  //
-  //  Event processing loop - AliRawReader
-  //
-  AliTPCRawStreamFast rawStreamFast(rawReader, (AliAltroMapping**)fMapping);
-  Bool_t res=ProcessEventFast(&rawStreamFast);
-  if(res)
-    fEventCounter++; // only increment event counter if there is TPC data
-                     // otherwise Analyse (called in QA) fails
-
   return res;
 }
 

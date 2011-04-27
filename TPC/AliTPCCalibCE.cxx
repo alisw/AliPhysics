@@ -289,7 +289,6 @@ END_HTML */
 #include "AliRawReaderDate.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliTPCRawStream.h"
-#include "AliTPCRawStreamFast.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCROC.h"

@@ -15,7 +15,6 @@ class AliAltroMapping;
 class AliAltroRawStream;
 class AliRawReader;
 class AliTPCAltroMapping;
-class AliTPCRawStreamFast;
 class AliTPCRawStreamV3;
 class AliTPCRawStream;
 class AliTPCROC;
@@ -34,10 +33,6 @@ public:
 
   virtual ~AliTPCCalibRawBase();
   
-  
-  Bool_t ProcessEventFast(AliTPCRawStreamFast * const rawStreamFast);
-  Bool_t ProcessEventFast(AliRawReader        * const rawReader);
-
   //uses the new decoder which is compatible with the new altro format
   Bool_t ProcessEvent(AliTPCRawStreamV3   * const rawStreamV3);
   Bool_t ProcessEvent(AliRawReader        * const rawReader);
