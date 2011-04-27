@@ -632,7 +632,6 @@ TH1D* AliTPCCalibKr::ProjectHisto(TH3F* histo3D, const char* name, Int_t xMin, I
 Long64_t AliTPCCalibKr::Merge(TCollection* list) {
 // merge function 
 //
-cout << "Merge " << endl;
 
 if (!list)
 return 0;
