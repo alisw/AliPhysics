@@ -2017,7 +2017,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     }
     if (indexUpdtDCSEvent>=0 || fEventType==gkAliEventTypeReadPreprocessor) {
       TString modules;
-      if (indexUpdtDCSEvent>=0 && fpInputBlocks[indexUpdtDCSEvent].fPtr!=NULL && fpInputBlocks[indexUpdtDCSEvent].fSize>0) {
+      if (fpInputBlocks[indexUpdtDCSEvent].fPtr!=NULL && fpInputBlocks[indexUpdtDCSEvent].fSize>0) {
 	modules.Append(reinterpret_cast<const char*>(fpInputBlocks[indexUpdtDCSEvent].fPtr), fpInputBlocks[indexUpdtDCSEvent].fSize);
       }
       HLTDebug("received preprocessor update command: detectors %s", modules.IsNull()?"ALL":modules.Data());
