@@ -120,6 +120,13 @@ public:
    * signals are always angle corrected. 
    */
   void SetUseAngleCorrectedSignals(Bool_t use) { fCorrectAngles = use; }
+   /** 
+   * Enable zeroing of signals if below high cut
+   * 
+   * @param use zero the signals if below sharing cut
+   * 
+   */
+  void SetZeroSharedHitsBelowThreshold(Bool_t use) { fZeroSharedHitsBelowThreshold = use; }
   /** 
    * Set the number of landau width to subtract from the most probably
    * value to get the high cut for the merging algorithm.
@@ -360,7 +367,8 @@ protected:
   TH2*     fHighCuts;      // High cuts used
   AliFMDFloatMap* fOper;   // Operation done per strip 
   Int_t    fDebug;         // Debug level 
-
+  Bool_t   fZeroSharedHitsBelowThreshold; //Whether to zero shared strip below cut
+  
   ClassDef(AliFMDSharingFilter,2); //
 };
 
