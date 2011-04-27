@@ -425,9 +425,16 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
 
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
   fEsdEv = dynamic_cast<AliESDEvent*>(InputEvent());
+  UInt_t offtrigger = 0;
   if (fEsdEv) {
     am->LoadBranch("AliESDRun.");
     am->LoadBranch("AliESDHeader.");
+    UInt_t mask = fEsdEv->GetESDRun()->GetDetectorsInReco();
+    if ((mask >> 18) & 0x1 == 0) { //AliDAQ::OfflineModuleName(180=="EMCAL"
+      AliError(Form("EMCAL not reconstructed: %u (%u)", mask,  fEsdEv->GetESDRun()->GetDetectorsInDAQ()));
+      return;
+    }
+    offtrigger = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected();
   } else {
     fAodEv = dynamic_cast<AliAODEvent*>(InputEvent());
     if (!fAodEv) {
@@ -435,8 +442,12 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
       return;
     }
     am->LoadBranch("header");
+    offtrigger =  fAodEv->GetHeader()->GetOfflineTrigger();
   }
-
+  if (offtrigger & AliVEvent::kFastOnly) {
+    AliWarning(Form("EMCAL not in fast only partition"));
+    return;
+  }
   if (fDoTrMatGeom && !AliGeomManager::GetGeometry()) { // get geometry 
     AliWarning("Accessing geometry from OCDB, this is not very efficient!");
     AliCDBManager *cdb = AliCDBManager::Instance();
