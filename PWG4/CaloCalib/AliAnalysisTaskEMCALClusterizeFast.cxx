@@ -38,6 +38,7 @@
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliESDEvent.h"
+#include "AliInputEventHandler.h"
 #include "AliLog.h"
 
 #include "AliAnalysisTaskEMCALClusterizeFast.h"
@@ -146,6 +147,23 @@ void AliAnalysisTaskEMCALClusterizeFast::UserExec(Option_t *)
   }
 
   LoadBranches();
+
+  UInt_t offtrigger = 0;
+  if (esdevent) {
+    UInt_t mask = esdevent->GetESDRun()->GetDetectorsInReco();
+    if ((mask >> 18) & 0x1 == 0) { //AliDAQ::OfflineModuleName(180=="EMCAL"
+      AliError(Form("EMCAL not reconstructed: %u (%u)", mask,  esdevent->GetESDRun()->GetDetectorsInDAQ()));
+      return;
+    }
+    AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+    offtrigger = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected();
+  } else if (aodevent) {
+    offtrigger =  aodevent->GetHeader()->GetOfflineTrigger();
+  }
+  if (offtrigger & AliVEvent::kFastOnly) {
+    AliWarning(Form("EMCAL not in fast only partition"));
+    return;
+  }
   
   Init();
 
