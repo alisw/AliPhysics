@@ -10,6 +10,7 @@
 
 class AliTPCParam;
 class AliTPCclustererMI;
+class AliTPCAltroEmulator;
 
 class AliTPCReconstructor: public AliReconstructor {
 public:
@@ -34,6 +35,9 @@ public:
 
   static Int_t StreamLevel()               { return fgStreamLevel;}
   static void  SetStreamLevel(Int_t level) { fgStreamLevel = level;}
+  static void  SetAltroEmulator(AliTPCAltroEmulator *altro) { fAltroEmulator=altro;}
+  static AliTPCAltroEmulator *  GetAltroEmulator() { return fAltroEmulator;}
+
 
 private:
   AliTPCReconstructor(const AliTPCReconstructor&); //Not implemented
@@ -41,7 +45,7 @@ private:
   AliTPCParam*         GetTPCParam() const;
   static Int_t               fgStreamLevel; // flag for streaming      - for TPC reconstruction
   AliTPCclustererMI*         fClusterer;   // TPC clusterer
-
+  static AliTPCAltroEmulator * fAltroEmulator;    // ALTRO emulator
   ClassDef(AliTPCReconstructor, 0)   // class for the TPC reconstruction
 };
 
