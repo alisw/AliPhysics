@@ -9,11 +9,12 @@ void LoadLibraries(Bool_t useParFiles=kFALSE) {
   gSystem->Load("libESD.so");
   gSystem->Load("libAOD.so"); 
   gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libOADB.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libCORRFW.so");
   gSystem->Load("libPWG3base.so");
   gSystem->Load("libPWG3vertexingHF.so");
-  gSystem->Load("libPWG3muon.so");
+  //gSystem->Load("libPWG3muon.so");
  
 
   if(useParFiles) {
@@ -21,11 +22,12 @@ void LoadLibraries(Bool_t useParFiles=kFALSE) {
     setupPar("ESD");
     setupPar("AOD");
     setupPar("ANALYSIS");
+    setupPar("OADB");
     setupPar("ANALYSISalice");
     setupPar("CORRFW");  
     setupPar("PWG3base");
     setupPar("PWG3vertexingHF");
-    setupPar("PWG3muon");
+    //setupPar("PWG3muon");
   }
 
   return;

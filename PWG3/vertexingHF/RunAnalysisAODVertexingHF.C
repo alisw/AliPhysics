@@ -15,7 +15,7 @@ void RunAnalysisAODVertexingHF()
   //
 
 
-  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/PWG3 -I$ALICE_ROOT/PWG3/base -I$ALICE_ROOT/PWG3/vertexingHF -g"); 
+  gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWG3 -I$ALICE_ROOT/PWG3/base -I$ALICE_ROOT/PWG3/vertexingHF -g"); 
   //
   TString trainName = "D2H";
   TString analysisMode = "grid"; // "local", "grid", or "proof"
@@ -332,12 +332,13 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
      plugin->EnablePackage("ESD.par");
      plugin->EnablePackage("AOD.par");
      plugin->EnablePackage("ANALYSIS.par");
+     plugin->EnablePackage("OADB.par");
      plugin->EnablePackage("ANALYSISalice.par");
      plugin->EnablePackage("CORRFW.par");
      plugin->EnablePackage("PWG3base.par");
      plugin->EnablePackage("PWG3vertexingHF.par");
    }
-   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/PWG3 -I$ALICE_ROOT/PWG3/base -I$ALICE_ROOT/PWG3/vertexingHF -g");
+   plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS  -I$ALICE_ROOT/OADB -I$ALICE_ROOT/PWG3 -I$ALICE_ROOT/PWG3/base -I$ALICE_ROOT/PWG3/vertexingHF -g");
 
    plugin->SetDefaultOutputs(kTRUE);
    // merging via jdl
