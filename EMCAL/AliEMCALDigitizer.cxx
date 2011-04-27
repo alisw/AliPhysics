@@ -702,8 +702,8 @@ Float_t AliEMCALDigitizer::GetTimeResolution(Float_t energy) const
     res = TMath::Sqrt(fTimeResolutionPar0 + 
 		      fTimeResolutionPar1/(energy*energy) );
   }
-
-  return res;
+  // parametrization above is for ns. Convert to seconds:
+  return res*1e-9;
 }
 
 //____________________________________________________________________________ 
