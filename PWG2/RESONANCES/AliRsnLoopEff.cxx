@@ -38,7 +38,8 @@ AliRsnLoopEff::AliRsnLoopEff(const AliRsnLoopEff& copy) :
    AliRsnLoop(copy),
    fAddSteps(copy.fAddSteps),
    fSteps(copy.fSteps),
-   fOutput(copy.fOutput)
+   fOutput(copy.fOutput),
+   fMaxDistPV(copy.fMaxDistPV)
 {
 //
 // Copy constructor

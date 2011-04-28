@@ -46,6 +46,7 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnCutPIDNSigma.cxx
            RESONANCES/AliRsnCutMomentumComparison.cxx
            RESONANCES/AliRsnCutKaonForPhi2010.cxx
+           RESONANCES/AliRsnCutKaonForPhi2010PP.cxx
            RESONANCES/AliRsnCutSet.cxx
            RESONANCES/AliRsnExpression.cxx
            RESONANCES/AliRsnVariableExpression.cxx

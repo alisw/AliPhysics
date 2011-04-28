@@ -103,14 +103,14 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
       if (CheckVertex(aodv)) {
          AliDebugClass(1, "Vertex TRK is OK");
          fCutValueD = aodv->GetZ();
-         fCutValueI = aodv->GetNContributors();
+         fCutValueI = aodv->GetNDaughters(); //aodv->GetNContributors();
       }
       else {
          aodv = aod->GetPrimaryVertexSPD();
          if (CheckVertex(aodv)) {
             AliDebugClass(1, "Vertex TRK is BAD, but vertex SPD is OK");
             fCutValueD = aodv->GetZ();
-            fCutValueI = aodv->GetNContributors();
+            fCutValueI = aodv->GetNDaughters(); //aodv->GetNContributors();
          } else {
             AliDebugClass(1, "Vertex TRK is BAD, and vertex SPD is BAD");
             return kFALSE;
