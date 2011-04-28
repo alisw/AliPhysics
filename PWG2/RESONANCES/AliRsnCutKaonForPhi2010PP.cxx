@@ -6,13 +6,17 @@
 
 #include "AliPID.h"
 #include "AliPIDResponse.h"
-#include "AliRsnCutKaonForPhi2010.h"
+#include "AliRsnCutKaonForPhi2010PP.h"
 
-ClassImp(AliRsnCutKaonForPhi2010)
+ClassImp(AliRsnCutKaonForPhi2010PP)
 
 //__________________________________________________________________________________________________
-AliRsnCutKaonForPhi2010::AliRsnCutKaonForPhi2010(const char *name) :
-   AliRsnCut(name, AliRsnTarget::kDaughter, 0.0, 3.0),
+AliRsnCutKaonForPhi2010PP::AliRsnCutKaonForPhi2010PP(const char *name) :
+   AliRsnCut(name, AliRsnTarget::kDaughter, -3.0, 3.0),
+   fNSigmaTPCLow(5.0),
+   fNSigmaTPCHigh(3.0),
+   fLimitTPC(0.350),
+   fNSigmaTOF(3.0),
    fCutQuality(Form("%sQuality", name))
 {
 //
@@ -38,7 +42,7 @@ AliRsnCutKaonForPhi2010::AliRsnCutKaonForPhi2010(const char *name) :
 }
 
 //__________________________________________________________________________________________________
-Bool_t AliRsnCutKaonForPhi2010::IsSelected(TObject *obj)
+Bool_t AliRsnCutKaonForPhi2010PP::IsSelected(TObject *obj)
 {
 //
 // Global check
@@ -69,16 +73,12 @@ Bool_t AliRsnCutKaonForPhi2010::IsSelected(TObject *obj)
       return kFALSE;
    }
    
-   // PID ITS :
-   // depends on momentum
-   //SetRangeD(0.0, 4.0);
-   //fCutValueD = TMath::Abs(pid->NumberOfSigmasITS(track, AliPID::kKaon));
-   //if (!OkRangeD()) return kFALSE;
-   
    // PID TPC :
    // depends on momentum
-   //SetRangeD(0.0, 3.0);
-   //if (track->GetTPCmomentum() < 0.350) SetRangeD(0.0, 5.0);
+   if (track->GetTPCmomentum() < fLimitTPC) 
+      SetRangeD(0.0, fNSigmaTPCLow);
+   else
+      SetRangeD(0.0, fNSigmaTPCHigh);
    fCutValueD = TMath::Abs(pid->NumberOfSigmasTPC(track, AliPID::kKaon));
    if (!OkRangeD()) return kFALSE;
    
@@ -87,7 +87,7 @@ Bool_t AliRsnCutKaonForPhi2010::IsSelected(TObject *obj)
    if (!MatchTOF(track)) 
       return kTRUE;
    else {
-      //SetRangeD(0.0, 3.0);
+      SetRangeD(0.0, fNSigmaTOF);
       fCutValueD = TMath::Abs(pid->NumberOfSigmasTOF(track, AliPID::kKaon));
       return OkRangeD();
    }
