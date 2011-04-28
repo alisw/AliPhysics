@@ -90,7 +90,7 @@ AliAnalysisTaskSE(),
   fTrackCuts(0),
   fZVCut(10),
   fOutliersCut(5),
-  fQuality(0),
+  fQuality(999),
   fCentV0M(0),
   fCentFMD(0),
   fCentTRK(0),
@@ -180,7 +180,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fTrackCuts(0),
   fZVCut(10),
   fOutliersCut(5),
-  fQuality(0),
+  fQuality(999),
   fCentV0M(0),
   fCentFMD(0),
   fCentTRK(0),
@@ -401,7 +401,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fHOutCentTRKqual2 = new TH1F("fHOutCentTRK_qual2","fHOutCentTRK_qual2; Centrality TPC",505,0,101);
   fHOutCentCL1qual2 = new TH1F("fHOutCentCL1_qual2","fHOutCentCL1_qual2; Centrality SPD outer",505,0,101);
 
-  fHOutQuality = new TH1F("fHOutQuality", "fHOutQuality", 10,-0.5,9.5);
+  fHOutQuality = new TH1F("fHOutQuality", "fHOutQuality", 100,-0.5,99.5);
   fHOutVertex  = new TH1F("fHOutVertex", "fHOutVertex", 100,-20,20);
 
   fOutputList->Add(  fHOutCentV0M     );
@@ -480,6 +480,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   Short_t v0CorrResc = 0;           // corrected and rescaled V0 multiplicity
 
   Float_t zvtx =0;                  // z-vertex SPD
+  Int_t zvtxNcont =0;               // contributors to z-vertex SPD
 
  
   AliCentrality *esdCent = 0;
@@ -516,6 +517,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     // ***** Vertex Info
     const AliESDVertex* vtxESD = esd->GetPrimaryVertexSPD();
     zvtx        = vtxESD->GetZ(); 
+    zvtxNcont   = vtxESD->GetNContributors();
 
     // ***** CB info (tracklets, clusters, chips)
     //nTracks    = event->GetNumberOfTracks();     
@@ -636,7 +638,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
       fOutliersCut=6;
       
       // ***** vertex
-      if (TMath::Abs(zvtx)>fZVCut) fQuality += 1;   
+      if (TMath::Abs(zvtx)>fZVCut || zvtxNcont<1) fQuality += 1;   
 
       // ***** outliers
       // **** V0 vs SPD
@@ -796,9 +798,9 @@ Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* const esd)
       else fRunNo = 137366;
       break;
     case 2:
-      if ( fCurrentRun >= 136851  && fCurrentRun <= 137165 ) fRunNo = 137161;
-      else if ( ( fCurrentRun >= 137230  && fCurrentRun <= 137848 ) || 
-		( fCurrentRun >= 138190  && fCurrentRun <= 138275 )) fRunNo = 137722;
+      if      ( fCurrentRun >= 136851  && fCurrentRun <= 137165 ) fRunNo = 137161;
+      else if ( fCurrentRun >= 138190  && fCurrentRun <= 138275 ) fRunNo = 137722;
+      else if ( fCurrentRun >= 137230  && fCurrentRun <= 137848 ) fRunNo = 138200;
       else if ( fCurrentRun >= 138125  && fCurrentRun <= 138154 ) fRunNo = 138150;
       else fRunNo = 139172;
       break;       
