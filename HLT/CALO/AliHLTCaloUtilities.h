@@ -31,12 +31,13 @@ class  AliHLTCaloUtilities
  public:
   AliHLTCaloUtilities();
   virtual ~AliHLTCaloUtilities();
-  static bool CheckFile(const char *fileName, const char *opt);
-  static bool ScanSingleIntArgument(int argc, const char** argv, const char *name, int *value = 0 );
-  static bool ScanSingleFloatArgument(int argc, const char** argv, const char *name, float *value = 0 );
-  static bool ScanSingleNameArgument(int argc, const char** argv, const char *name, char *outname = 0 );
-  static bool ScanSingleArgument(int argc, const char** argv, const char *name);
+  // static bool CheckFile(const char *fileName, const char *opt);
+  // static bool ScanSingleIntArgument(int argc, const char** argv, const char *name, int *value = 0 );
+  // static bool ScanSingleFloatArgument(int argc, const char** argv, const char *name, float *value = 0 );
+  // static bool ScanSingleNameArgument(int argc, const char** argv, const char *name, char *outname = 0 );
+  // static bool ScanSingleArgument(int argc, const char** argv, const char *name);
 
+  /*
   template<typename T> 
     static void  DumpData(T *array, int N, int nPerLine)
     {
@@ -51,7 +52,9 @@ class  AliHLTCaloUtilities
 	}
       cout << endl;
     }
+  */
 
+  /*
   template<typename T> 
     static void  ResetArray(T *array, int N)
     {
@@ -60,7 +63,9 @@ class  AliHLTCaloUtilities
 	  array[i] = 0;
 	}
     }
- 
+  */
+
+  
   template<typename T> 
     static T  MaxValue(T *array, int N)
     {
@@ -76,9 +81,10 @@ class  AliHLTCaloUtilities
       return tmpMax;
     }
   
+
   
-private:
-  static int DoExistArgument(const int argc, const char** argv, const char *argument);
+  //private:
+  // static int DoExistArgument(const int argc, const char** argv, const char *argument);
 
 };
 
