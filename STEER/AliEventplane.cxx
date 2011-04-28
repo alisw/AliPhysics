@@ -31,14 +31,14 @@ AliEventplane::AliEventplane() : TNamed("Eventplane", "Eventplane"),
   fQVector(0),
   fQContributionX(0),
   fQContributionY(0),
-  fEventplaneQ(0),
+  fEventplaneQ(-1),
   fQsub1(0),
   fQsub2(0),
   fQsubRes(0)
 {
   /// constructor
-  fQContributionX = new TArrayF();
-  fQContributionY = new TArrayF();
+  fQContributionX = new TArrayF(0);
+  fQContributionY = new TArrayF(0);
 }
 
 AliEventplane::AliEventplane(const AliEventplane& ep) : 
@@ -151,4 +151,15 @@ Double_t AliEventplane::GetQContributionX(AliVTrack* track)
 Double_t AliEventplane::GetQContributionY(AliVTrack* track)
 { 
   return fQContributionY->GetAt(track->GetID());
+}
+
+void AliEventplane::Reset()
+{ 
+  delete fQVector; fQVector=0;
+  fQContributionX->Reset();
+  fQContributionY->Reset();
+  fEventplaneQ = -1;
+  delete fQsub1; fQsub1=0;
+  delete fQsub2; fQsub2=0;
+  fQsubRes = 0;
 }

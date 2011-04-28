@@ -34,15 +34,17 @@ class AliEventplane : public TNamed
 
   /// get event plane result
   TVector2* GetQVector(); 
-  Double_t GetQContributionX(AliVTrack* track);
-  Double_t GetQContributionY(AliVTrack* track);
-  TArrayF* GetQContributionXArray() { return fQContributionX; }
-  TArrayF* GetQContributionYArray() { return fQContributionY; }
-  Double_t GetEventplane(const char *method);
+  Double_t  GetQContributionX(AliVTrack* track);
+  Double_t  GetQContributionY(AliVTrack* track);
+  TArrayF*  GetQContributionXArray() { return fQContributionX; }
+  TArrayF*  GetQContributionYArray() { return fQContributionY; }
+  Double_t  GetEventplane(const char *method);
   TVector2* GetQsub1();
   TVector2* GetQsub2();
-  Double_t GetQsubRes();
-  Bool_t  IsEventInEventplaneClass(Double_t a, Double_t b, const char *method);
+  Double_t  GetQsubRes();
+  Bool_t    IsEventInEventplaneClass(Double_t a, Double_t b, const char *method);
+
+  void Reset();
 
  private:
    TVector2* fQVector;		// Q-Vector of event
