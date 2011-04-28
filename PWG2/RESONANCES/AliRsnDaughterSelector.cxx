@@ -2,7 +2,7 @@
 #include <TEntryList.h>
 
 #include "AliLog.h"
-
+#include "AliRsnMiniParticle.h"
 #include "AliRsnCutSet.h"
 #include "AliRsnDaughterDef.h"
 
@@ -286,5 +286,58 @@ void AliRsnDaughterSelector::ScanEvent(AliRsnEvent* ev)
       }
    }
    
+   //Print();
+}
+
+//__________________________________________________________________________________________________
+AliRsnMiniEvent AliRsnDaughterSelector::CreateMiniEvent(AliRsnEvent* ev)
+{
+//
+// Loop over event and fill all entry lists
+//
+
+   AliRsnMiniEvent newEv;
+   AliRsnMiniParticle newPart;
+
+   Int_t id, is;
+   Int_t nSel, nTot = ev->GetAbsoluteSum();
+   AliRsnDaughter check;
+   TClonesArray *cutsArray = 0x0, *entryArray = 0x0;
+   
+   for (id = 0; id < nTot; id++) {
+      ev->SetDaughter(check, id);
+      // some checks
+      if (!check.GetRef()) {
+         AliDebugClass(1, Form("[%s]: daughter has NULL ref", GetName()));
+         continue;
+      }
+      if (!check.IsOK()) {
+         AliDebugClass(1, Form("[%s]: daughter is BAD", GetName()));
+         continue;
+      }
+      // copy informations
+      if (check.GetRefMC()) {
+         newPart.PsimX() = check.GetRefMC()->Px();
+         newPart.PsimY() = check.GetRefMC()->Py();
+         newPart.PsimZ() = check.GetRefMC()->Pz();
+      }
+      newPart.PrecX() = check.GetRef()->Px();
+      newPart.PrecY() = check.GetRef()->Py();
+      newPart.PrecZ() = check.GetRef()->Pz();
+      newPart.Charge() = check.GetRef()->Charge();
+      newPart.Mother() = check.GetMother();
+      newPart.MotherPDG() = check.GetMotherPDG();
+      newPart.CutBits() = 0x0;
+      // check with all cuts in that charge
+      nSel = cutsArray->GetEntries();
+      for (is = 0; is < nSel; is++) {
+         AliRsnCutSet *cuts = (AliRsnCutSet*)cutsArray->At(is);
+         if (cuts->IsSelected(&check)) newPart.SetCutBit(is);
+      }
+      // add only if it satisfied a cut bit
+      if (newPart.CutBits() != 0) newEv.AddParticle(newPart);
+   }
+   
+   return newEv;
    //Print();
 }

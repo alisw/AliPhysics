@@ -18,7 +18,7 @@ class AliRsnEvent;
 class AliRsnMother : public TObject {
 public:
 
-   AliRsnMother() : fRefEvent(0), fSum(), fRef() {fDaughter[0] = fDaughter[1] = 0;}
+   AliRsnMother() : fRefEvent(0), fSum(), fSumMC(), fRef(), fRefMC() {fDaughter[0] = fDaughter[1] = 0;}
    AliRsnMother(const AliRsnMother &obj);
    AliRsnMother& operator=(const AliRsnMother &obj);
    virtual ~AliRsnMother();

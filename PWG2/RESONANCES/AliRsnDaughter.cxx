@@ -149,7 +149,7 @@ Int_t AliRsnDaughter::GetMother()
    
 
 //______________________________________________________________________________
-void AliRsnDaughter::Print(Option_t *opt) const
+void AliRsnDaughter::Print(Option_t *) const
 {
 //
 // Override of TObject::Print()

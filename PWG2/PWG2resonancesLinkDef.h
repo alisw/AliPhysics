@@ -25,7 +25,7 @@
 #pragma link C++ class AliRsnCutPIDNSigma+;
 #pragma link C++ class AliRsnCutMomentumComparison+;
 #pragma link C++ class AliRsnCutKaonForPhi2010+;
-
+#pragma link C++ class AliRsnCutKaonForPhi2010PP+;
 
 #pragma link C++ class AliRsnCutSet+;
 #pragma link C++ class AliRsnExpression+;

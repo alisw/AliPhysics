@@ -43,7 +43,9 @@ AliRsnMother::AliRsnMother(const AliRsnMother &obj) :
    TObject(obj),
    fRefEvent(obj.fRefEvent),
    fSum(obj.fSum),
-   fRef(obj.fRef)
+   fSumMC(obj.fSumMC),
+   fRef(obj.fRef),
+   fRefMC(obj.fRefMC)
 {
 //
 // Copy constructor.
@@ -64,6 +66,8 @@ AliRsnMother& AliRsnMother::operator=(const AliRsnMother &obj)
 
    fSum = obj.fSum;
    fRef = obj.fRef;
+   fSumMC = obj.fSumMC;
+   fRefMC = obj.fRefMC;
    fRefEvent = obj.fRefEvent;
    fDaughter[0] = obj.fDaughter[0];
    fDaughter[1] = obj.fDaughter[1];
