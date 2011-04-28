@@ -37,6 +37,9 @@ AliAnalysisTaskJetResponse::AliAnalysisTaskJetResponse() :
   fEvtClassMax(4),
   fCentMin(0.),
   fCentMax(100.),
+  fNInputTracksMin(0),
+  fNInputTracksMax(-1),
+  fReactionPlaneBin(-1),
   fJetEtaMin(-.5),
   fJetEtaMax(.5),
   fJetPtMin(20.),
@@ -44,27 +47,34 @@ AliAnalysisTaskJetResponse::AliAnalysisTaskJetResponse() :
   fNMatchJets(4),
   //fJetDeltaEta(.4),
   //fJetDeltaPhi(.4),
+  fEvtClassMode(0),
   fkNbranches(2),
-  fkEvtClasses(5),
+  fkEvtClasses(12),
   fOutputList(0x0),
   fHistEvtSelection(0x0),
   fHistEvtClass(0x0),
   fHistCentrality(0x0),
+  fHistNInputTracks(0x0),
+  //fHistNInputTracks2(0x0),
+  fHistCentVsTracks(0x0),
+  fHistReactionPlane(0x0),
+  fHistReactionPlaneWrtJets(0x0),
   fHistPtJet(new TH1F*[fkNbranches]),
   fHistEtaPhiJet(new TH2F*[fkNbranches]),
   fHistEtaPhiJetCut(new TH2F*[fkNbranches]),
   fHistDeltaEtaDeltaPhiJet(new TH2F*[fkEvtClasses]),
   fHistDeltaEtaDeltaPhiJetCut(new TH2F*[fkEvtClasses]),
-  fHistDeltaEtaDeltaPhiJetNOMatching(new TH2F*[fkEvtClasses]),
+  //fHistDeltaEtaDeltaPhiJetNOMatching(new TH2F*[fkEvtClasses]),
   fHistDeltaEtaEtaJet(new TH2F*[fkEvtClasses]),
   fHistDeltaPtEtaJet(new TH2F*[fkEvtClasses]),
   fHistPtFraction(new TH2F*[fkEvtClasses]),
-  fHistPtPtExtra(0x0),
   fHistPtResponse(new TH2F*[fkEvtClasses]),
   fHistPtSmearing(new TH2F*[fkEvtClasses]),
   fHistDeltaR(new TH2F*[fkEvtClasses]),
-  fHistArea(new TH2F*[fkEvtClasses]),
-  fHistDeltaArea(new TH2F*[fkEvtClasses])
+  fHistArea(new TH3F*[fkEvtClasses]),
+  //fHistJetPtArea(new TH2F*[fkEvtClasses]),
+  fHistDeltaArea(new TH2F*[fkEvtClasses]),
+  fHistJetPtDeltaArea(new TH2F*[fkEvtClasses])
 {
   // default Constructor
 
@@ -87,34 +97,42 @@ AliAnalysisTaskJetResponse::AliAnalysisTaskJetResponse(const char *name) :
   fEvtClassMax(4),
   fCentMin(0.),
   fCentMax(100.),
+  fNInputTracksMin(0),
+  fNInputTracksMax(-1),
+  fReactionPlaneBin(-1),
   fJetEtaMin(-.5),
   fJetEtaMax(.5),
   fJetPtMin(20.),
   fJetPtFractionMin(0.5),
   fNMatchJets(4),
-  //fJetDeltaEta(.4),
-  //fJetDeltaPhi(.4),
+  fEvtClassMode(0),
   fkNbranches(2),
-  fkEvtClasses(5),
+  fkEvtClasses(12),
   fOutputList(0x0),
   fHistEvtSelection(0x0),
   fHistEvtClass(0x0),
   fHistCentrality(0x0),
+  fHistNInputTracks(0x0),
+  //fHistNInputTracks2(0x0),
+  fHistCentVsTracks(0x0),
+  fHistReactionPlane(0x0),
+  fHistReactionPlaneWrtJets(0x0),
   fHistPtJet(new TH1F*[fkNbranches]),
   fHistEtaPhiJet(new TH2F*[fkNbranches]),
   fHistEtaPhiJetCut(new TH2F*[fkNbranches]),
   fHistDeltaEtaDeltaPhiJet(new TH2F*[fkEvtClasses]),
   fHistDeltaEtaDeltaPhiJetCut(new TH2F*[fkEvtClasses]),
-  fHistDeltaEtaDeltaPhiJetNOMatching(new TH2F*[fkEvtClasses]),
+  //fHistDeltaEtaDeltaPhiJetNOMatching(new TH2F*[fkEvtClasses]),
   fHistDeltaEtaEtaJet(new TH2F*[fkEvtClasses]),
   fHistDeltaPtEtaJet(new TH2F*[fkEvtClasses]),
   fHistPtFraction(new TH2F*[fkEvtClasses]),
-  fHistPtPtExtra(0x0),
   fHistPtResponse(new TH2F*[fkEvtClasses]),
   fHistPtSmearing(new TH2F*[fkEvtClasses]),
   fHistDeltaR(new TH2F*[fkEvtClasses]),
-  fHistArea(new TH2F*[fkEvtClasses]),
-  fHistDeltaArea(new TH2F*[fkEvtClasses])
+  fHistArea(new TH3F*[fkEvtClasses]),
+  //fHistJetPtArea(new TH2F*[fkEvtClasses]),
+  fHistDeltaArea(new TH2F*[fkEvtClasses]),
+  fHistJetPtDeltaArea(new TH2F*[fkEvtClasses])
 {
   // Constructor
 
@@ -161,15 +179,21 @@ void AliAnalysisTaskJetResponse::UserCreateOutputObjects()
   TH1::AddDirectory(kFALSE);
 
 
-  fHistEvtSelection = new TH1I("fHistEvtSelection", "event selection", 5, -0.5, 4.5);
+  fHistEvtSelection = new TH1I("fHistEvtSelection", "event selection", 6, -0.5, 5.5);
   fHistEvtSelection->GetXaxis()->SetBinLabel(1,"ACCEPTED");
   fHistEvtSelection->GetXaxis()->SetBinLabel(2,"events IN");
   fHistEvtSelection->GetXaxis()->SetBinLabel(3,"event selection (rejected)");
   fHistEvtSelection->GetXaxis()->SetBinLabel(4,"vertex cut (rejected)");
   fHistEvtSelection->GetXaxis()->SetBinLabel(5,"centrality (rejected)");
+  fHistEvtSelection->GetXaxis()->SetBinLabel(6,"multiplicity (rejected)");
   
-  fHistEvtClass   = new TH1I("fHistEvtClass", "event classes", fkEvtClasses, -0.5, fkEvtClasses-0.5);
+  fHistEvtClass   = new TH1I("fHistEvtClass", "event classes (centrality) ", fkEvtClasses, -0.5, fkEvtClasses-0.5);
   fHistCentrality = new TH1F("fHistCentrality", "event centrality", 100, 0., 100.);
+  fHistNInputTracks  = new TH1F("fHistNInputTracks", "nb. of input tracks", 400, 0., 4000.);
+  //fHistNInputTracks2 = new TH2F("fHistNInputTracks2", "nb. of input tracks;from B0;from Bx", 400, 0., 4000., 400, 0., 4000.);
+  fHistCentVsTracks  = new TH2F("fHistCentVsTracks", "centrality vs. nb. of input tracks;centrality;input tracks", 100, 0., 100., 400, 0., 4000.); 
+  fHistReactionPlane = new TH1F("fHistReactionPlane", "reaction plane", 30, 0., TMath::Pi());
+  fHistReactionPlaneWrtJets = new TH1F("fHistReactionPlaneWrtJets", "reaction plane wrt jets", 48, -TMath::Pi(), TMath::Pi());
 
   for (Int_t iBranch = 0; iBranch < fkNbranches; iBranch++) {
     fHistPtJet[iBranch] = new TH1F(Form("fHistPtJet%i", iBranch),
@@ -179,17 +203,13 @@ void AliAnalysisTaskJetResponse::UserCreateOutputObjects()
 
     fHistEtaPhiJet[iBranch]    = new TH2F(Form("fHistEtaPhiJet%i", iBranch),
 					                 Form("#eta - #phi of jets from branch %i (before cut);#eta;#phi", iBranch),
-					                 48, -1.2, 1.2, 100, 0., 2*TMath::Pi());
+					                 28, -0.7, 0.7, 100, 0., 2*TMath::Pi());
 	fHistEtaPhiJetCut[iBranch] = new TH2F(Form("fHistEtaPhiJetCut%i", iBranch),
 					                 Form("#eta - #phi of jets from branch %i (before cut);#eta;#phi", iBranch),
-					                 48, -1.2, 1.2, 100, 0., 2*TMath::Pi());
+					                 28, -0.7, 0.7, 100, 0., 2*TMath::Pi());
 
   }
   
-
-  fHistPtPtExtra = new TH2F("fHistPtPtExtra", "p_{T} response;p_{T} (GeV/c);p_{T} (GeV/c)",
-			    250, 0., 250., 250, 0., 250.);
-
   for (Int_t iEvtClass =0; iEvtClass < fkEvtClasses; iEvtClass++) {
     fHistDeltaEtaDeltaPhiJet[iEvtClass] = new TH2F(Form("fHistDeltaEtaDeltaPhiJet%i",iEvtClass),
 					                              "#Delta#eta - #Delta#phi of jet;#Delta#eta;#Delta#phi",
@@ -197,45 +217,50 @@ void AliAnalysisTaskJetResponse::UserCreateOutputObjects()
     fHistDeltaEtaDeltaPhiJetCut[iEvtClass] = new TH2F(Form("fHistDeltaEtaDeltaPhiJetCut%i",iEvtClass),
 					                              "#Delta#eta - #Delta#phi of jet;#Delta#eta;#Delta#phi",
 					                              101, -1.01, 1.01, 101, -1.01, 1.01);												  
-    fHistDeltaEtaDeltaPhiJetNOMatching[iEvtClass] = new TH2F("fHistDeltaEtaDeltaPhiJetNOMatching",
-					                                         "#Delta#eta - #Delta#phi of jets which do not match;#Delta#eta;#Delta#phi",
-					                                         100, -2., 2., 100, TMath::Pi(), TMath::Pi());
+    //fHistDeltaEtaDeltaPhiJetNOMatching[iEvtClass] = new TH2F("fHistDeltaEtaDeltaPhiJetNOMatching",
+	//				                                         "#Delta#eta - #Delta#phi of jets which do not match;#Delta#eta;#Delta#phi",
+	//				                                         100, -2., 2., 100, TMath::Pi(), TMath::Pi());
     fHistPtResponse[iEvtClass] = new TH2F(Form("pt_response%i",iEvtClass), Form("pt_response%i;p_{T} (GeV/c);p_{T} (GeV/c)",iEvtClass),
 					                      250, 0., 250., 250, 0., 250.);
     fHistPtSmearing[iEvtClass] = new TH2F(Form("pt_smearing%i",iEvtClass), Form("pt_smearing%i;#Deltap_{T} (GeV/c);p_{T} (GeV/c)",iEvtClass),
-					                      200, -50., 150., 250, 0., 250.);
-    fHistDeltaR[iEvtClass]     = new TH2F(Form("hist_DeltaR%i",iEvtClass), "#DeltaR of matched jets;#Deltap_{T};#DeltaR", 200, -50.,150., 60, 0.,.6);
-    fHistArea[iEvtClass]       = new TH2F(Form("hist_Area%i",iEvtClass), "jet area;#Deltap_{T};jet area", 200, -50.,150., 100, 0.,1.0);
-    fHistDeltaArea[iEvtClass]  = new TH2F(Form("hist_DeltaArea%i",iEvtClass), "#DeltaArea of matched jets;#Deltap_{T};#Deltaarea", 200, -50., 150., 60, 0., .3); 
+					                      161, -80.5, 80.5, 250, 0., 250.);
+    fHistDeltaR[iEvtClass]     = new TH2F(Form("hist_DeltaR%i",iEvtClass), "#DeltaR of matched jets;#Deltap_{T};#DeltaR", 161, -80.5,80.5, 85, 0.,3.4);
+    fHistArea[iEvtClass]       = new TH3F(Form("hist_Area%i",iEvtClass), "jet area;probe p_{T};#Deltap_{T};jet area", 250, 0., 250., 161, -80.5,80.5, 100, 0.,1.0);
+	//fHistJetPtArea[iEvtClass]       = new TH2F(Form("hist_JetPtArea%i",iEvtClass), "jet area vs. probe p_{T};jet p_{T};jet area", 250, 0.,250., 100, 0.,1.0);
+    fHistDeltaArea[iEvtClass]  = new TH2F(Form("hist_DeltaArea%i",iEvtClass), "#DeltaArea of matched jets;#Deltap_{T};#Deltaarea", 161, -80.5, 80.5, 32, -.8, .8); 
+	fHistJetPtDeltaArea[iEvtClass]  = new TH2F(Form("hist_JetPtDeltaArea%i",iEvtClass), "#DeltaArea of matched jets vs. probe jet p_{T};#Deltap_{T};#Deltaarea", 250, 0., 250., 32, -.8, .8);
 	
     fHistDeltaEtaEtaJet[iEvtClass] = new TH2F(Form("fHistDeltaEtaEtaJet%i", iEvtClass),
                                                 Form("#eta - #Delta#eta of matched jets from event class %i;#eta;#Delta#eta", iEvtClass),
-                                                60, -.6, .6, 100, -.5, .5);
+                                                28, -.7, .7, 101, -1.01, 1.01);
     fHistDeltaPtEtaJet[iEvtClass] = new TH2F(Form("fHistDeltaPtEtaJet%i", iEvtClass),
                                                 Form("#eta - #Deltap_{T} of matched jets from event class %i;#eta;#Deltap_{T}", iEvtClass),
-                                                60, -.6, .6, 200, -50., 150);
+                                                28, -.7, .7, 161, -80.5, 80.5);
     fHistPtFraction[iEvtClass] = new TH2F(Form("fHistPtFraction%i", iEvtClass),
 	                                      Form("fraction from embedded jet in reconstructed jet;fraction (event class %i);p_{T}^{emb}", iEvtClass),
-										  100, 0., 1., 250, 0., 250.);
+										  52, 0., 1.04, 250, 0., 250.);
   }
 
   
   fOutputList->Add(fHistEvtSelection);
   fOutputList->Add(fHistEvtClass);
   fOutputList->Add(fHistCentrality);
+  fOutputList->Add(fHistNInputTracks);
+  fOutputList->Add(fHistCentVsTracks);
+  fOutputList->Add(fHistReactionPlane);
+  fOutputList->Add(fHistReactionPlaneWrtJets);
+
 
   for (Int_t iBranch = 0; iBranch < fkNbranches; iBranch++) {
     fOutputList->Add(fHistPtJet[iBranch]);
     fOutputList->Add(fHistEtaPhiJet[iBranch]);
 	fOutputList->Add(fHistEtaPhiJetCut[iBranch]);
   }
-  
-  fOutputList->Add(fHistPtPtExtra);
-  
+    
   for (Int_t iEvtClass =0; iEvtClass < fkEvtClasses; iEvtClass++) {
     fOutputList->Add(fHistDeltaEtaDeltaPhiJet[iEvtClass]);
     fOutputList->Add(fHistDeltaEtaDeltaPhiJetCut[iEvtClass]);
-    fOutputList->Add(fHistDeltaEtaDeltaPhiJetNOMatching[iEvtClass]);
+    //fOutputList->Add(fHistDeltaEtaDeltaPhiJetNOMatching[iEvtClass]);
 	fOutputList->Add(fHistDeltaEtaEtaJet[iEvtClass]);
     fOutputList->Add(fHistDeltaPtEtaJet[iEvtClass]);
 	fOutputList->Add(fHistPtFraction[iEvtClass]);
@@ -244,7 +269,9 @@ void AliAnalysisTaskJetResponse::UserCreateOutputObjects()
     fOutputList->Add(fHistPtSmearing[iEvtClass]);
     fOutputList->Add(fHistDeltaR[iEvtClass]);
     fOutputList->Add(fHistArea[iEvtClass]);
+	//fOutputList->Add(fHistJetPtArea[iEvtClass]);
     fOutputList->Add(fHistDeltaArea[iEvtClass]);
+	fOutputList->Add(fHistJetPtDeltaArea[iEvtClass]);
   }
 
   // =========== Switch on Sumw2 for all histos ===========
@@ -263,7 +290,6 @@ void AliAnalysisTaskJetResponse::UserCreateOutputObjects()
 void AliAnalysisTaskJetResponse::UserExec(Option_t *)
 {
   // load events, apply event cuts, then compare leading jets
-
   if(!strlen(fJetBranchName[0].Data()) || !strlen(fJetBranchName[1].Data())){
       AliError("Jet branch name not set.");
       return;
@@ -316,7 +342,7 @@ void AliAnalysisTaskJetResponse::UserExec(Option_t *)
 
   // centrality selection
   AliCentrality *cent = fESD->GetCentrality();
-  Float_t centValue = cent->GetCentralityPercentile("TRK");
+  Float_t centValue = cent->GetCentralityPercentile("V0M");
   if(fDebug) printf("centrality: %f\n", centValue);
   if (centValue < fCentMin || centValue > fCentMax){
     fHistEvtSelection->Fill(4);
@@ -324,11 +350,55 @@ void AliAnalysisTaskJetResponse::UserExec(Option_t *)
     return;
   }
 
+
+  // multiplicity due to input tracks
+  Int_t nInputTracks = 0;
+  
+  TString jbname(fJetBranchName[1]);
+  for(Int_t i=1; i<=3; ++i){
+    if(jbname.Contains(Form("B%d",i))) jbname.ReplaceAll(Form("B%d",i),"B0");
+  }
+  // use only HI event
+  if(jbname.Contains("AODextraonly")) jbname.ReplaceAll("AODextraonly","AOD");
+  if(jbname.Contains("AODextra")) jbname.ReplaceAll("AODextra","AOD");
+  
+  if(fDebug) Printf("Multiplicity from jet branch %s", jbname.Data());
+  TClonesArray *tmpAODjets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(jbname.Data()));
+    
+  for (Int_t iJet=0; iJet<tmpAODjets->GetEntriesFast(); iJet++){
+      AliAODJet *jet = dynamic_cast<AliAODJet*>((*tmpAODjets)[iJet]);
+	  if(!jet) continue;
+	  TRefArray *trackList = jet->GetRefTracks();
+	  Int_t nTracks = trackList->GetEntriesFast();
+	  nInputTracks += nTracks;
+	  if(fDebug) Printf("#jet%d: %d tracks", iJet, nTracks);
+  }
+  if(fDebug) Printf("---> input tracks: %d", nInputTracks);
+
+  if (nInputTracks < fNInputTracksMin || (fNInputTracksMax > -1 && nInputTracks > fNInputTracksMax)){
+       fHistEvtSelection->Fill(5);
+       PostData(1, fOutputList);
+       return;
+  }
+  
+  if(fEvtClassMode==1){ //multiplicity
+     fHistEvtClass->SetTitle("event classes (multiplicity)");
+     eventClass = fkEvtClasses-1 - (Int_t)(nInputTracks/250.);
+     if(eventClass<0) eventClass = 0;
+  }
+ 
+ 
+  
   fHistEvtSelection->Fill(0); // accepted events
   fHistEvtClass->Fill(eventClass);
   fHistCentrality->Fill(centValue);
+  fHistNInputTracks->Fill(nInputTracks);
+  fHistCentVsTracks->Fill(centValue,nInputTracks);
+  Double_t rp = AliAnalysisHelperJetTasks::ReactionPlane(kFALSE);
   // -- end event selection --
 
+  
+  
   // fetch jets
   TClonesArray *aodJets[2];
   aodJets[0] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[0].Data())); // in general: embedded jet
@@ -344,7 +414,7 @@ void AliAnalysisTaskJetResponse::UserExec(Option_t *)
     }
     fListJets[iJetType]->Sort();
   }
-  
+    
   // jet matching 
   static TArrayI aMatchIndex(fListJets[0]->GetEntries());
   static TArrayF aPtFraction(fListJets[0]->GetEntries());
@@ -381,6 +451,17 @@ void AliAnalysisTaskJetResponse::UserExec(Option_t *)
 		jetPt[i]   = jet[i]->Pt();
 		jetArea[i] = jet[i]->EffectiveAreaCharged();
 	 }
+         
+         // reaction plane;
+         if(fReactionPlaneBin>=0){
+            Int_t rpBin = AliAnalysisHelperJetTasks::GetPhiBin(TVector2::Phi_mpi_pi(rp-jetPhi[1]), 3);
+            if(rpBin!=fReactionPlaneBin) continue;
+         }
+         fHistReactionPlane->Fill(rp);
+         fHistReactionPlaneWrtJets->Fill(TVector2::Phi_mpi_pi(rp-jetPhi[1]));
+         
+
+
 	 if(eventClass > -1 && eventClass < fkEvtClasses){
         fHistPtFraction[eventClass] -> Fill(fraction, jetPt[0]);
 	 }
@@ -426,8 +507,6 @@ void AliAnalysisTaskJetResponse::UserExec(Option_t *)
              fHistEtaPhiJetCut[i] -> Fill(jetEta[i], jetPhi[i]);
 	 }
 	 
-	 fHistPtPtExtra->Fill(jetPt[0], jetPt[1]);
-	 
 	 if(eventClass > -1 && eventClass < fkEvtClasses){
 		 fHistDeltaEtaDeltaPhiJetCut[eventClass] -> Fill(deltaEta, deltaPhi);
 		 
@@ -438,8 +517,10 @@ void AliAnalysisTaskJetResponse::UserExec(Option_t *)
                  fHistDeltaEtaEtaJet[eventClass]         -> Fill(jetEta[0], deltaEta);
 		 
 		 fHistDeltaR[eventClass]                 -> Fill(deltaPt, deltaR);
-		 fHistArea[eventClass]                   -> Fill(deltaPt, jetArea[1]);
+		 fHistArea[eventClass]                   -> Fill(jetPt[0], deltaPt, jetArea[1]);
+		 		 //fHistJetPtArea[eventClass]                   -> Fill(jetPt[0], jetArea[1]);
                  fHistDeltaArea[eventClass]              -> Fill(deltaPt, deltaArea);
+				 fHistJetPtDeltaArea[eventClass]              -> Fill(jetPt[0], deltaArea);
 		 
 	 }
   }
