@@ -167,7 +167,7 @@ void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t 
   //
   // Remove the old object and reset the range
   TObject* obj2 = fArray->RemoveAt(idx);
-  // don't delete it: if you are updating it may be the same pointer...
+  // don't delete it: if you are updating it may be pointing to the same location of obj...
   //  delete obj2;
   fLowerLimits[idx] = -1;
   fUpperLimits[idx] = -1;
@@ -179,7 +179,7 @@ void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t 
   }
   //
   // Add object at the same position
-  printf("idx %d obj %llx\n", idx, obj);
+  //printf("idx %d obj %llx\n", idx, obj);
   fLowerLimits[idx] = lower;
   fUpperLimits[idx] = upper;
   fArray->AddAt(obj, idx);
