@@ -22,8 +22,8 @@
 #include <cmath>
 #include "AliHLTCaloUtilities.h" 
 
-using std::cout;
-using std::endl;
+//using std::cout;
+//using std::endl;
 
 ClassImp(AliHLTPHOSRawAnalyzerPeakFinder) 
 
@@ -70,11 +70,10 @@ AliHLTPHOSRawAnalyzerPeakFinder::SetTVector(Double_t *tVec, Int_t size)
 }
 
 
-//___________________________________________________________________
 void
 AliHLTPHOSRawAnalyzerPeakFinder::SetAVector(Double_t *aVec, Int_t size)
 {
-    
+  //comment
   fAVectorSize = size;
 
   if(fAVectorPtr != 0)
@@ -90,12 +89,10 @@ AliHLTPHOSRawAnalyzerPeakFinder::SetAVector(Double_t *aVec, Int_t size)
     }
 }
 
-
-
-//___________________________________________________________________
 void 
 AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(Int_t /*start*/, Int_t length)
 {
+  //comment
   fDTof = 0;
   fDAmpl = 0;
   Int_t tmpLength;
@@ -117,19 +114,16 @@ AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(Int_t /*start*/, Int_t length)
       
       for(int i=0; i < tmpLength; i++)
 	{  
-	  //fDAmpl += fAVectorPtr[i]*fIntDataPtr[i]; removed 18 april 2008    
 	  fDAmpl += fAVectorPtr[i]*fDoubleDataPtr[i];   
 	}
 
       for(int i=0; i < tmpLength; i++)
 	{   
-	  //  fDTof += fTVectorPtr[i]*fIntDataPtr[i];  removed 18 april 2008   
 	  fDTof += fTVectorPtr[i]*fDoubleDataPtr[i]; 
 	}
       
       if(fDAmpl > 900)
 	{
-	  //	  Double_t tmpMax = MaxValue(const_cast<unsigned int*>(fIntDataPtr), tmpLength);  removed 18 april 2008   
 	  double tmpMax = AliHLTCaloUtilities::MaxValue(fDoubleDataPtr, tmpLength); 
 
 	  if(tmpMax == 1023)
@@ -137,9 +131,7 @@ AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(Int_t /*start*/, Int_t length)
 	      fDAmpl = tmpMax;
 	    }
 	}
-
       fDTof = fDTof/fDAmpl;
-
     }
 } //end Evaluate
 
