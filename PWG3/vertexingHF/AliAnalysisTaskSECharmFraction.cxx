@@ -50,6 +50,7 @@
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
+#include "AliNormalizationCounter.h"
 
 class TCanvas;
 class TTree;
@@ -87,6 +88,7 @@ ClassImp(AliAnalysisTaskSECharmFraction)
       fSignalType(0),
       fSignalTypeLsCuts(0),
       fSignalTypeTghCuts(0),
+      fCounter(0),
       flistMCproperties(0),
       flistNoCutsSignal(0),
       flistNoCutsBack(0),
@@ -135,6 +137,7 @@ ClassImp(AliAnalysisTaskSECharmFraction)
       fSignalType(0),
       fSignalTypeLsCuts(0),
       fSignalTypeTghCuts(0),
+      fCounter(0),
       flistMCproperties(0),
       flistNoCutsSignal(0),
       flistNoCutsBack(0),
@@ -166,13 +169,15 @@ ClassImp(AliAnalysisTaskSECharmFraction)
   DefineOutput(2, TH1F::Class());
   DefineOutput(3, TH1F::Class());
   DefineOutput(4, TH1F::Class());
-  for(Int_t j=5;j<21;j++){
+  DefineOutput(5, AliNormalizationCounter::Class());
+
+  for(Int_t j=6;j<22;j++){
     DefineOutput(j, TList::Class());
   }
 
   // Output slot for the Cut Objects 
-  DefineOutput(21,AliRDHFCutsD0toKpi::Class());  //My private output
   DefineOutput(22,AliRDHFCutsD0toKpi::Class());  //My private output
+  DefineOutput(23,AliRDHFCutsD0toKpi::Class());  //My private output
 
 }
 
@@ -204,6 +209,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
     fSignalType(0),
     fSignalTypeLsCuts(0),
     fSignalTypeTghCuts(0),
+    fCounter(0),
     flistMCproperties(0),
     flistNoCutsSignal(0),
     flistNoCutsBack(0),
@@ -252,13 +258,15 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
   DefineOutput(2, TH1F::Class());
   DefineOutput(3, TH1F::Class());
   DefineOutput(4, TH1F::Class());
-  for(Int_t j=5;j<21;j++){
+  DefineOutput(5, AliNormalizationCounter::Class());
+
+  for(Int_t j=6;j<22;j++){
 
     DefineOutput(j, TList::Class());
   }
  // Output slot for the Cut Objects 
-  DefineOutput(21,AliRDHFCutsD0toKpi::Class());  //My private output
   DefineOutput(22,AliRDHFCutsD0toKpi::Class());  //My private output
+  DefineOutput(23,AliRDHFCutsD0toKpi::Class());  //My private output
  
 }
 
@@ -298,11 +306,18 @@ AliAnalysisTaskSECharmFraction::~AliAnalysisTaskSECharmFraction()
     delete fSignalTypeTghCuts;
     fSignalTypeTghCuts = 0;
   } 
+  
+  if (fCounter) {
+    delete fCounter;
+    fCounter = 0;
+  } 
+  
   if(flistMCproperties){
     flistMCproperties->Delete();
     delete flistMCproperties;
     flistMCproperties=0;
- }
+  }
+  
   if(flistNoCutsSignal){
     flistNoCutsSignal->Delete();
     delete flistNoCutsSignal;
@@ -412,8 +427,8 @@ void AliAnalysisTaskSECharmFraction::Init()
   copyfCutsLoose->SetName(nameoutputLoose);
 
   // Post the data
-  PostData(21,copyfCutsTight);  
-  PostData(22,copyfCutsLoose);
+  PostData(22,copyfCutsTight);  
+  PostData(23,copyfCutsLoose);
   
   
   fCleanCandOwnVtx=kFALSE;
@@ -511,6 +526,10 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   fSignalTypeLsCuts=new TH1F("hsignaltypeLsCuts", "Histo for type of MC signal with loose cuts", 61,-1.,60.);
   fSignalTypeTghCuts=new TH1F("hsignaltypeTghCuts", "Histo for type of MC signal with tight cuts", 61,-1.,60.);
 
+
+  fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
+  
+  
   //##########  DEFINE THE TLISTS ##################
   flistMCproperties=new TList();
   flistMCproperties->SetOwner();
@@ -5308,11 +5327,14 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 
   //histogram filled with 1 for every AOD
   fNentries->Fill(0);
+  fCounter->StoreEvent(aod,fReadMC); 
   
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL
   //  TString trigclass=aod->GetFiredTriggerClasses();
   // if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fNentries->Fill(14);
-  
+ 
+  Int_t nSelectedloose=0, nSelectedtight=0; 
+
   Bool_t isEventSelTGHT=kTRUE,isEventSelLOOSE=kTRUE;
   if(!fCutsTight->IsEventSelected(aod)){
     isEventSelTGHT=kFALSE;
@@ -5568,6 +5590,9 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
       isinacceptance=kFALSE;
       signallevel=22; 
     }
+    else{
+      nSelectedloose++;
+    }
    
     //###################################################################################
     //
@@ -5807,8 +5832,11 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     else if(signallevel==5||signallevel==6)FillHistos(d,flistLsCutsOther,ptbin,okd0loose,okd0barloose,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
 
     //TIGHT CUTS Case
-    if(okd0tight||okd0bartight)fNentries->Fill(7);
-  
+    if(okd0tight||okd0bartight){
+      fNentries->Fill(7);
+      nSelectedtight++; 
+    }
+    
     if(signallevel==1||signallevel==0)FillHistos(d,flistTghCutsSignal,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==2)FillHistos(d,flistTghCutsFromDstar,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
     else if(signallevel==3||signallevel==4)FillHistos(d,flistTghCutsFromB,ptbin,okd0tight,okd0bartight,invMassD0,invMassD0bar,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar,massmumtrue,aodDMC,vtxTrue);
@@ -5835,6 +5863,11 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
     //   if(unsetvtx) d->UnsetOwnPrimaryVtx();
     
   }
+
+
+  fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);  
+  fCounter->StoreCandidates(aod,nSelectedtight,kFALSE); 
+  
   
   // ####################### POST OUTPUT TLIST DATA #########################
   // ####### histo for #AOD entries already posted
@@ -5842,22 +5875,23 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   PostData(2,fSignalType);
   PostData(3,fSignalTypeLsCuts);
   PostData(4,fSignalTypeTghCuts);
-  PostData(5,flistMCproperties);
-  PostData(6,flistNoCutsSignal);
-  PostData(7,flistNoCutsBack);
-  PostData(8,flistNoCutsFromB);
-  PostData(9,flistNoCutsFromDstar);
-  PostData(10,flistNoCutsOther);
-  PostData(11,flistLsCutsSignal);
-  PostData(12,flistLsCutsBack);
-  PostData(13,flistLsCutsFromB);
-  PostData(14,flistLsCutsFromDstar);
-  PostData(15,flistLsCutsOther);
-  PostData(16,flistTghCutsSignal);
-  PostData(17,flistTghCutsBack);
-  PostData(18,flistTghCutsFromB);
-  PostData(19,flistTghCutsFromDstar);
-  PostData(20,flistTghCutsOther);
+  PostData(5,fCounter);
+  PostData(6,flistMCproperties);
+  PostData(7,flistNoCutsSignal);
+  PostData(8,flistNoCutsBack);
+  PostData(9,flistNoCutsFromB);
+  PostData(10,flistNoCutsFromDstar);
+  PostData(11,flistNoCutsOther);
+  PostData(12,flistLsCutsSignal);
+  PostData(13,flistLsCutsBack);
+  PostData(14,flistLsCutsFromB);
+  PostData(15,flistLsCutsFromDstar);
+  PostData(16,flistLsCutsOther);
+  PostData(17,flistTghCutsSignal);
+  PostData(18,flistTghCutsBack);
+  PostData(19,flistTghCutsFromB);
+  PostData(20,flistTghCutsFromDstar);
+  PostData(21,flistTghCutsOther);
 
   return;
 }
