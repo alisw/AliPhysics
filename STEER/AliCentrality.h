@@ -45,6 +45,7 @@ class AliCentrality : public TNamed
   Bool_t  IsEventInCentralityClassUnchecked(Float_t a, Float_t b, const char *method) const;
 
   Int_t GetQuality() const;
+  void  Reset();
 
  private:
   Int_t   fQuality; // Quality of centrality determination

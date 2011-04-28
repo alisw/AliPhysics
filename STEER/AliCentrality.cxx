@@ -24,7 +24,7 @@
 ClassImp(AliCentrality)
 
 AliCentrality::AliCentrality() : TNamed("Centrality", "Centrality"),
-  fQuality(0),
+  fQuality(999),
   fCentralityV0M(0),
   fCentralityFMD(0),
   fCentralityTRK(0),
@@ -229,4 +229,18 @@ Bool_t AliCentrality::IsEventInCentralityClassUnchecked(Float_t a, Float_t b, co
   else return kFALSE;
 } 
 
+void AliCentrality::Reset()
+{
+// Reset.
 
+  fQuality            =  999;
+  fCentralityV0M      =  0;
+  fCentralityFMD      =  0;
+  fCentralityTRK      =  0;
+  fCentralityTKL      =  0;
+  fCentralityCL0      =  0;
+  fCentralityCL1      =  0;
+  fCentralityV0MvsFMD =  0;
+  fCentralityTKLvsV0M =  0;
+  fCentralityZEMvsZDC =  0;
+}

@@ -406,6 +406,8 @@ void AliESDEvent::ResetStdContent()
   // Reset the standard contents
   if(fESDRun) fESDRun->Reset();
   if(fHeader) fHeader->Reset();
+  if(fCentrality) fCentrality->Reset();
+  if(fEventplane) fEventplane->Reset();
   if(fESDZDC) fESDZDC->Reset();
   if(fESDFMD) {
     fESDFMD->Clear();
