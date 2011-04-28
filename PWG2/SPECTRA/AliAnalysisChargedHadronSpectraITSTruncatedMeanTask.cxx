@@ -870,9 +870,12 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 	
 	if(fdovertexrescuts&&fMC)
 	{
-		cout<<TMath::Abs(vertex->GetX()-mcXvertex)<<" "<<TMath::Abs(vertex->GetY()-mcYvertex)<<" "<<TMath::Abs(vertex->GetZ()-mcZvertex)<<endl;
-		if(TMath::Abs(vertex->GetX()-mcXvertex)>0.015||TMath::Abs(vertex->GetY()-mcYvertex)>0.015||TMath::Abs(vertex->GetZ()-mcZvertex)>0.15)
-			isvxerteinZ=0;	
+		if(vertex)
+		{
+			cout<<TMath::Abs(vertex->GetX()-mcXvertex)<<" "<<TMath::Abs(vertex->GetY()-mcYvertex)<<" "<<TMath::Abs(vertex->GetZ()-mcZvertex)<<endl;
+			if(TMath::Abs(vertex->GetX()-mcXvertex)>0.015||TMath::Abs(vertex->GetY()-mcYvertex)>0.015||TMath::Abs(vertex->GetZ()-mcZvertex)>0.15)
+				isvxerteinZ=0;
+		}		
 	}  
 	Float_t spdCorr=-1.0;
 	if(isgoodvertex)
