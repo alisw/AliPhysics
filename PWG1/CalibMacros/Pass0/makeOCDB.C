@@ -66,6 +66,11 @@ ocdbStorage+="?se=ALICE::CERN::SE";
   procestrd.CalibVdriftT0("CalibObjects.root",runNumber,runNumber,ocdbStorage);
   procestrd.CalibGain("CalibObjects.root",runNumber,runNumber,ocdbStorage);
   
+  // TOF part
+  AliTOFAnalysisTaskCalibPass0 calibTask;
+  Printf("Calibrating TOF");
+  calibTask.ProcessOutput("CalibObjects.root", ocdbStorage);
+
   return;
 }
 
