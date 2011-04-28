@@ -65,6 +65,16 @@ class AliITSsadEdxFitter  : public TObject {
     fOptInit=opt;
   }
 
+  void SetUseLoglikelihoodFit(){
+    fFitOption="LL0R+";
+  }
+  void SetUseChisquareFit(){
+    fFitOption="0R+";
+  }
+  void SetUseMinuitImproveFit(){
+    fFitOption="M0R+";
+  }
+
   void SetRangeStep1(Double_t dxlow=-0.2, Double_t dxup=0.3){
     fRangeStep1[0]=dxlow;
     fRangeStep1[1]=dxup;
@@ -146,6 +156,7 @@ class AliITSsadEdxFitter  : public TObject {
 
   Bool_t fIsMC;                 // flag MC/data
   Char_t fOptInit;              // option for initialization
+  TString fFitOption;           // option for fitting
   AliITSPIDResponse* fITSpid;   // ITS pid object
 
 
