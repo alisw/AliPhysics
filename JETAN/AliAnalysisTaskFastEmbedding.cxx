@@ -262,11 +262,37 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
     // create output objects
     if(fDebug > 1) Printf("AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()");
 
+	OpenFile(1);
+    if(!fHistList) fHistList = new TList();
+    fHistList->SetOwner(kTRUE);
+	
+
+    // set seed
+    rndm = new TRandom3();
+    Int_t id = GetJobID();
+    if(id>-1) rndm->SetSeed(id);
+    else      rndm->SetSeed();   // a TTUID is generated and used for seed
+    AliInfo(Form("TRandom3 seed: %d", rndm->GetSeed()));
+
+    // embed mode with AOD
+    Int_t rc = -1;
+    if(fEmbedMode==kAODFull || fEmbedMode==kAODJetTracks || fEmbedMode==kAODJet4Mom){
+
+       // open input AOD
+       rc = OpenAODfile();
+       if(rc<0){
+           PostData(1, fHistList);
+    	   return;
+	   }
+    } //end: embed mode with AOD
+
+
     // connect output aod
     // create a new branch for extra tracks
     fAODout = AODEvent();
     if(!fAODout){
         AliError("Output AOD not found.");
+		PostData(1, fHistList);
         return;
     }
     if(!fAODout->FindListObject(fTrackBranch.Data()) && strlen(fTrackBranch.Data())){
@@ -285,13 +311,7 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
 
 
 
-
     //qa histograms
-
-    OpenFile(1);
-    if(!fHistList) fHistList = new TList();
-    fHistList->SetOwner(kTRUE);
-
     Bool_t oldStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE);
 
@@ -342,26 +362,9 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
     TH1::AddDirectory(oldStatus);
 
 
-    // set seed
-    rndm = new TRandom3();
-    Int_t id = GetJobID();
-    if(id>-1) rndm->SetSeed(id);
-    else      rndm->SetSeed();   // a TTUID is generated and used for seed
-    AliInfo(Form("TRandom3 seed: %d", rndm->GetSeed()));
-
-    // embed mode with AOD
-    if(fEmbedMode==kAODFull || fEmbedMode==kAODJetTracks || fEmbedMode==kAODJet4Mom){
-
-       // open input AOD
-       Int_t rc = OpenAODfile();
-       if(rc<0) return;
-       fh1AODfile->Fill(rc);
-
-    } //end: embed mode with AOD
-
-   
+    fh1AODfile->Fill(rc);
     
-   PostData(1, fHistList);
+    PostData(1, fHistList);
 }
 
 
@@ -480,6 +483,11 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
        TClonesArray *mcpartOUT = 0x0;
        if(mcpartIN){
 	   mcpartOUT = (TClonesArray*)(fAODout->FindListObject(fMCparticlesBranch.Data()));
+       if(!mcpartOUT){
+         AliError("Extra MC particles branch not found in output.");
+         PostData(1, fHistList);
+         return;
+       }
 	   mcpartOUT->Delete();
        } else {
 	   AliInfo("No extra MC particles found.");
