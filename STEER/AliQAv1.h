@@ -1,5 +1,5 @@
-#ifndef ALIQAv1_H
-#define ALIQAv1_H
+#ifndef ALIQAV1_H
+#define ALIQAV1_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -48,12 +48,12 @@ public:
   Bool_t                 CheckFatal() const ;
   static void            Close() ; 
   static const char *    GetAliTaskName(ALITASK_t tsk) ;
-  static  TH1 *          GetData(TObjArray** list, Int_t index, AliRecoParam::EventSpecie_t) ; 
+  static  TH1 *          GetData(TObjArray** list, Int_t index, AliRecoParam::EventSpecie_t eventSpecie) ; 
   Bool_t *               GetEventSpecies() { return fEventSpecies ; }
   static const TString   GetExpert() { return fgkExpert ; }
   static       UInt_t    GetExpertBit() { return fgkExpertBit ; }
   static       UInt_t    GetImageBit()  { return fgkImageBit ; }
-  static const char *    GetImageFileName() { return fImageFileName.Data() ; }
+  static const char *    GetImageFileName() { return fgkImageFileName.Data() ; }
   static const char *    GetImageFileFormat() { return fImageFileFormat.Data() ; }
   static const TString   GetLabLocalFile() { return fgkLabLocalFile ; } 
   static const TString   GetLabLocalOCDB() { return fgkLabLocalOCDB ; } 
@@ -65,7 +65,7 @@ public:
   ULong_t *              GetQA() { return fQA ; }
   static       UInt_t    GetQABit() { return fgkQABit ; }
   static TFile *         GetQADataFile(const char * name, Int_t run) ; 
-  static TFile *	       GetQADataFile(const char * fileName) ;
+  static TFile *	     GetQADataFile(const char * fileName) ;
   static const char *    GetQADataFileName(const char * name, Int_t run) 
   {return Form("%s.%s.%d.root", name, fgQADataFileName.Data(), run)  ; }
   static const char *    GetQADataFileName() { return fgQADataFileName.Data() ; }
@@ -92,7 +92,7 @@ public:
   Bool_t                 IsSet(DETECTORINDEX_t det, ALITASK_t tsk, Int_t es, QABIT_t bit) const ;
   Bool_t                 IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es) const ;
   Bool_t                 IsSetAny(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es) const ;
-  void                   Merge(TCollection * list) ; 
+  void                   Merge(const TCollection * list) ; 
   static MODE_t          Mode(TASKINDEX_t task) ;
   void                   Set(QABIT_t bit, AliRecoParam::EventSpecie_t es) ;
   void                   Set(QABIT_t bit, Int_t es) ;
@@ -166,7 +166,7 @@ private:
   static       TString   fgRefDataDirName         ; //! name of Reference directory name in OCDB for data  	
   static const TString   fgkQARefOCDBDefault      ; //! default storage for QA in OCDB 
   Bool_t *               fEventSpecies            ; //[fNEventSpecies] list of event species encountered in a run
-  static const TString   fImageFileName           ; //! name of the file that contains all the QA images
+  static const TString   fgkImageFileName           ; //! name of the file that contains all the QA images
   static const TString   fImageFileFormat         ; //! format of the file that contains all the QA images
   static const UShort_t  fgkMaxQAObjects          ;//! maximum number of QA objects allowed dor each task (Raws, digits,....) 
 

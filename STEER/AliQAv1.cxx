@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -76,7 +75,7 @@ const UInt_t   AliQAv1::fgkExpertBit           = BIT(19);
 const UInt_t   AliQAv1::fgkQABit               = BIT(20) ; 
 const UInt_t   AliQAv1::fgkImageBit            = BIT(21) ; 
 const Int_t    AliQAv1::fgkQADebugLevel        = 99 ; 
-const TString  AliQAv1::fImageFileName         = "QAImage" ; 
+const TString  AliQAv1::fgkImageFileName       = "QAImage" ; 
 const TString  AliQAv1::fImageFileFormat       = "ps" ; 
 const UShort_t AliQAv1::fgkMaxQAObjects        = 10000 ; 
 
@@ -672,7 +671,6 @@ AliQAv1 * AliQAv1::Instance(const ALITASK_t tsk)
 AliQAv1 *  AliQAv1::Instance(const TASKINDEX_t tsk) 
 {
 	// get an instance of the singleton.
-	
 	ALITASK_t index = kNULLTASK ; 
 
 	if ( tsk == kRAWS )
@@ -688,7 +686,7 @@ AliQAv1 *  AliQAv1::Instance(const TASKINDEX_t tsk)
 }
 
 //_______________________________________________________________
-void AliQAv1::Merge(TCollection * list) {
+void AliQAv1::Merge(const TCollection * list) {
 	// Merge the QA resuls in the list into this single AliQAv1 object
 	
 	for (Int_t det = 0 ; det < kNDET ; det++) {
