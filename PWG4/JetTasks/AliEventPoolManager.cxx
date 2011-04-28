@@ -104,10 +104,12 @@ Int_t AliEventPool::UpdatePool(TObjArray *trk)
   nTrkC = NTracksInPool();
 
   if (fNTimes==1) {
-    cout << "\nPool " << MultBinIndex() << ", " << ZvtxBinIndex() 
-	 << " ready at event "<< iEvent;
-    PrintInfo();
-    cout << endl;
+    if (AliEventPool::fDebug) {
+      cout << "\nPool " << MultBinIndex() << ", " << ZvtxBinIndex() 
+           << " ready at event "<< iEvent;
+      PrintInfo();
+      cout << endl;
+    }
     fNTimes++; // See this message exactly once/pool
   }
 
