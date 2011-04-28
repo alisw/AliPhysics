@@ -1,14 +1,14 @@
-AliAnalysisTaskJetResponse* AddTaskJetResponse(Char_t* type = "clusters", Char_t* jf = "FASTKT", Float_t radius = 0.4, UInt_t filterMask = 256 , Float_t ptTrackMin = 0.15, Int_t iBack = 1, Int_t eventClassMin = 1, Int_t eventClassMax = 4, Int_t reactionPlaneBin = -1){
+AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(Char_t* type = "clusters", Char_t* jf = "FASTKT", Float_t radius = 0.4, UInt_t filterMask = 256 , Float_t ptTrackMin = 0.15, Int_t iBack = 1, Int_t eventClassMin = 1, Int_t eventClassMax = 4, Int_t reactionPlaneBin = -1){
 
   Printf("adding task jet response\n");
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if(!mgr){
-	::Error("AddTaskJetResponse", "No analysis manager to connect to.");
+	::Error("AddTaskJetResponseV2", "No analysis manager to connect to.");
 	return NULL;
     }
     if(!mgr->GetInputEventHandler()){
-        ::Error("AddTaskJetResponse", "This task requires an input event handler.");
+        ::Error("AddTaskJetResponseV2", "This task requires an input event handler.");
 	return NULL;
     }
 
@@ -28,7 +28,7 @@ AliAnalysisTaskJetResponse* AddTaskJetResponse(Char_t* type = "clusters", Char_t
     suffix2 += Form("_Cut%05d", (int)((1000.*ptTrackMin)));
     if(type=="clusters") suffix2 += Form("_Skip00");
 
-    AliAnalysisTaskJetResponse *task = new AliAnalysisTaskJetResponse(Form("JetResponse%s", suffix2.Data()));
+    AliAnalysisTaskJetResponseV2 *task = new AliAnalysisTaskJetResponseV2(Form("JetResponseV2%s", suffix2.Data()));
 
     TString branch1 = Form("%sAODextraonly%s",type, suffix.Data());
     Printf("Branch1: %s",branch1.Data());
@@ -53,7 +53,6 @@ AliAnalysisTaskJetResponse* AddTaskJetResponse(Char_t* type = "clusters", Char_t
     //task->SetJetEtaMax(.4);  // LHC10h pass1
 
     //task->SetNMatchJets(1); // leading jets only
-    task->SetEventClassMode(1); //0: centrality (default), 1: multiplicity 
 
 
     mgr->AddTask(task);
@@ -63,13 +62,13 @@ AliAnalysisTaskJetResponse* AddTaskJetResponse(Char_t* type = "clusters", Char_t
         suffix2 += Form("_rp%d", reactionPlaneBin);
     }
 
-    AliAnalysisDataContainer *coutputJetResponse = mgr->CreateContainer(
-         Form("jetresponse_%s%s", type,suffix2.Data()), TList::Class(), AliAnalysisManager::kOutputContainer,
-         Form("%s:PWG4_JetResponse_%s%s", AliAnalysisManager::GetCommonFileName(), type, suffix2.Data()));
+    AliAnalysisDataContainer *coutputJetResponseV2 = mgr->CreateContainer(
+         Form("jetresponseV2_%s%s", type,suffix2.Data()), TList::Class(), AliAnalysisManager::kOutputContainer,
+         Form("%s:PWG4_JetResponseV2_%s%s", AliAnalysisManager::GetCommonFileName(), type, suffix2.Data()));
 
     mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());
-    mgr->ConnectOutput(task, 1, coutputJetResponse);
+    mgr->ConnectOutput(task, 1, coutputJetResponseV2);
 
     return task;
 }

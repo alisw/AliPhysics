@@ -37,6 +37,7 @@
 #pragma link C++ class AliAnalysisTaskJetsTM+;
 #pragma link C++ class AliAnalysisTaskQGSep+;
 #pragma link C++ class AliAnalysisTaskJetResponse+;
+#pragma link C++ class AliAnalysisTaskJetResponseV2;
 #pragma link C++ class AliAnalysisTaskPhiCorrelations+;
 #pragma link C++ class AliEventPool+;
 #pragma link C++ class AliEventPoolManager+;
