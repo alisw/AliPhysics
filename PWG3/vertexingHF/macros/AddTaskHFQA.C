@@ -49,7 +49,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
       analysiscuts = new AliRDHFCutsDStartoKpipi();
       analysiscuts->SetStandardCutsPP2010();
     }
-    else analysiscuts = (AliRDHFCutsDstartoKpipi*)filecuts->Get(cutsobjname);
+    else analysiscuts = (AliRDHFCutsDStartoKpipi*)filecuts->Get(cutsobjname);
     suffix="Dstar";
     break;
   case 3:
