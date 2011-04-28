@@ -254,8 +254,8 @@ AliCaloRawAnalyzerPeakFinder::LoadVectorsOCDB()
   
   if( entry != 0 )
   {
-    cout << __FILE__ << ":" << __LINE__ << ": Printing metadata !! " << endl;
-    entry->PrintMetaData();
+    //cout << __FILE__ << ":" << __LINE__ << ": Printing metadata !! " << endl;
+    //entry->PrintMetaData();
     AliCaloPeakFinderVectors  *pfv = (AliCaloPeakFinderVectors *)entry->GetObject(); 
     if( pfv == 0 )
     {
