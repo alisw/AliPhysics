@@ -22,6 +22,8 @@ class AliAODRecoDecayHF;
 class AliAODMCParticle;
 class AliAnalysisVertexingHF;
 class AliRDHFCutsD0toKpi;
+class AliNormalizationCounter;
+
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
@@ -128,6 +130,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   TH1F *fSignalType;                        //!histo for the type of MC signal , container 2
   TH1F *fSignalTypeLsCuts;                 //!histo for the type of MC signal with loose cuts , container 3
   TH1F *fSignalTypeTghCuts;                //!histo for the type of MC signal with tight cuts, container 4
+  AliNormalizationCounter *fCounter;        //!counter for the normalization 
   TList *flistMCproperties;               //!TLists for MC properties of D0 w.r.t. B mesons and c quarks cntainer 5
   TList *flistNoCutsSignal;               //!TList for signal (D prompt) with nocuts, container 6
   TList *flistNoCutsBack;               //!TList for background with nocuts, container 7
@@ -158,7 +161,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   AliAnalysisTaskSECharmFraction(const AliAnalysisTaskSECharmFraction&); // not implemented
   AliAnalysisTaskSECharmFraction& operator=(const AliAnalysisTaskSECharmFraction&); // not implemented
   
-  ClassDef(AliAnalysisTaskSECharmFraction,2); // analysis task for prompt charm fraction
+  ClassDef(AliAnalysisTaskSECharmFraction,3); // analysis task for prompt charm fraction
 };
 
 #endif
