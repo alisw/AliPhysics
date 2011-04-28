@@ -45,7 +45,7 @@ AliOADBContainer::AliOADBContainer() :
   // Default constructor
 }
 
-AliOADBContainer::AliOADBContainer(char* name) : 
+AliOADBContainer::AliOADBContainer(const char* name) : 
   TNamed(name, "OADBContainer"),
   fArray(new TObjArray(100)),
   fDefaultList(new TList()),
@@ -156,8 +156,8 @@ void AliOADBContainer::RemoveObject(Int_t idx)
 void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t upper)
 {
   //
-  // Append a new object to the list 
-  
+  // Update an existing object, at a given position 
+
   // Check that index is inside range
   if (idx < 0 || idx >= fEntries) 
     {
@@ -165,9 +165,12 @@ void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t 
       return;
     }
   //
-  // Remove the old object
-  RemoveObject(idx);
-
+  // Remove the old object and reset the range
+  TObject* obj2 = fArray->RemoveAt(idx);
+  // don't delete it: if you are updating it may be the same pointer...
+  //  delete obj2;
+  fLowerLimits[idx] = -1;
+  fUpperLimits[idx] = -1;
   // Check that there is no overlap with existing run ranges  
   Int_t index = HasOverlap(lower, upper);
   if (index != -1) {
@@ -175,10 +178,12 @@ void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t 
     return;
   }
   //
-  // Add object
+  // Add object at the same position
+  printf("idx %d obj %llx\n", idx, obj);
   fLowerLimits[idx] = lower;
   fUpperLimits[idx] = upper;
   fArray->AddAt(obj, idx);
+
 }
     
  
@@ -198,6 +203,7 @@ Int_t AliOADBContainer::GetIndexForRun(Int_t run) const
 {
   //
   // Find the index for a given run 
+  
   Int_t found = 0;
   Int_t index = -1;
   for (Int_t i = 0; i < fEntries; i++) 
@@ -243,7 +249,7 @@ TObject* AliOADBContainer::GetObjectByIndex(Int_t run) const
   return (fArray->At(run));
 }
 
-void AliOADBContainer::WriteToFile(char* fname) const
+void AliOADBContainer::WriteToFile(const char* fname) const
 {
   //
   // Write object to file
@@ -253,7 +259,7 @@ void AliOADBContainer::WriteToFile(char* fname) const
   f->Close();
 }
 
-Int_t AliOADBContainer::InitFromFile(char* fname, char* key)
+Int_t AliOADBContainer::InitFromFile(const char* fname, const char* key)
 {
     // 
     // Initialize object from file
@@ -292,6 +298,8 @@ void AliOADBContainer::List()
 {
   //
   // List Objects
+  printf("Entries %d\n", fEntries);
+  
   for (Int_t i = 0; i < fEntries; i++) {
     printf("Lower %5d Upper %5d \n", fLowerLimits[i], fUpperLimits[i]);
     (fArray->At(i))->Dump();

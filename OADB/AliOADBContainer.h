@@ -22,7 +22,7 @@ class AliOADBContainer : public TNamed {
 
  public :
   AliOADBContainer();
-  AliOADBContainer(char* name);
+  AliOADBContainer(const char* name);
   virtual ~AliOADBContainer();
   AliOADBContainer(const AliOADBContainer& cont); 
   AliOADBContainer& operator=(const AliOADBContainer& cont);
@@ -34,8 +34,8 @@ class AliOADBContainer : public TNamed {
   void   CleanDefaultList();
   TList* GetDefaultList() const {return fDefaultList;}
 // I/O  
-  void  WriteToFile(char* fname)  const;
-  Int_t InitFromFile(char* fname, char* key);
+  void  WriteToFile(const char* fname)  const;
+  Int_t InitFromFile(const char* fname, const char* key);
 // Getters
   Int_t GetNumberOfEntries()    const {return fEntries;}
   Int_t LowerLimit(Int_t idx)   const {return fLowerLimits[idx];}
