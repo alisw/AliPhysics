@@ -18,11 +18,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-
-
 #include "AliHLTPHOSRawAnalyzerPeakFinder.h"
-//#include <iostream>
 #include <cmath>
 #include "AliHLTCaloUtilities.h" 
 
@@ -30,7 +26,6 @@ using std::cout;
 using std::endl;
 
 ClassImp(AliHLTPHOSRawAnalyzerPeakFinder) 
-
 
 
 /**
@@ -44,10 +39,8 @@ AliHLTPHOSRawAnalyzerPeakFinder::AliHLTPHOSRawAnalyzerPeakFinder():AliHLTPHOSRaw
 								   fAVectorPtr(0), 
 								   fTVectorSize(0), 
 								   fAVectorSize(0)
-//  fUtilitiesPtr(0)
 {
-  //  fUtilitiesPtr = new  AliHLTPHOSUtilities(); 
-  //  cout <<"PeakFinder:You cannot invoke the Fitter without arguments"<<endl;;
+
 }
 
 
@@ -56,7 +49,6 @@ AliHLTPHOSRawAnalyzerPeakFinder::~AliHLTPHOSRawAnalyzerPeakFinder()
 {
 
 } //end AliHLTPHOSRawAnalyzerPeakFinder
-
 
 
 void 
@@ -138,7 +130,7 @@ AliHLTPHOSRawAnalyzerPeakFinder::Evaluate(Int_t /*start*/, Int_t length)
       if(fDAmpl > 900)
 	{
 	  //	  Double_t tmpMax = MaxValue(const_cast<unsigned int*>(fIntDataPtr), tmpLength);  removed 18 april 2008   
-	  double tmpMax = fUtilitiesPtr->MaxValue(fDoubleDataPtr, tmpLength); 
+	  double tmpMax = AliHLTCaloUtilities::MaxValue(fDoubleDataPtr, tmpLength); 
 
 	  if(tmpMax == 1023)
 	    {

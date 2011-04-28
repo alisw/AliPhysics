@@ -17,12 +17,6 @@ class AliHLTPHOSRawAnalyzerPeakFinder : public AliHLTPHOSRawAnalyzer
 
 
 /**
-* Extraction of timing and energy using the Peakfinde Algorithm.
-* The. The parameters "start" and "length" defines a sub array  of the data array
-* that will be used for the the fit. If start+length must not exeed the total length
-* of the Data array. "start" must be chosen as close as possible to t0.
-* The baseline must also be subtracted.
-* The length of "tVector" and "aVector" mus be equal to length.
 * "index + length" must not exeed the length of the data array set in the constructor.
 * @param tVectPtr the peakfinder vector for timing
 * @param size size in number of values of the time vector
@@ -30,15 +24,7 @@ class AliHLTPHOSRawAnalyzerPeakFinder : public AliHLTPHOSRawAnalyzer
   virtual void SetTVector(Double_t *tVectPtr =0, Int_t size = 0);
 
 
-
 /**
-* Extraction of timing and energy using the Peakfinde Algorithm.
-* The. The parameters "start" and "length" defines a sub array  of the data array
-* that will be used for the the fit. If start+length must not exeed the total length
-* of the Data array. "start" must be chosen as close as possible to t0.
-* The baseline must also be subtracted.
-* The length of "tVector" and "aVector" mus be equal to length.
-* "index + length" must not exeed the length of the data array set in the constructor.
 * @param aVectPtr the peakfinder vector for timing
 * @param size size in number of values of the time vector
 */
@@ -67,9 +53,6 @@ class AliHLTPHOSRawAnalyzerPeakFinder : public AliHLTPHOSRawAnalyzer
  Int_t       fTVectorSize;
  Int_t       fAVectorSize;
  
- // AliHLTPHOSUtilities *fUtilitiesPtr;
-
-
   ClassDef(AliHLTPHOSRawAnalyzerPeakFinder, 2) 
   
     };
