@@ -21,6 +21,7 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(){
     //SetToyTrackRanges(
     Double_t minPt = 20.;   Double_t maxPt = 200.;
     Double_t minEta = -0.5; Double_t maxEta = 0.5;
+    //Double_t minEta = -0.4; Double_t maxEta = 0.4;  // for LHC10h pass1
     Double_t minPhi = 0.;   Double_t maxPhi = 2*TMath::Pi();
     //fToyDistributionTrackPt: 0 = uniform distribution
     //                         else = exponential / power law (not implemented yet)
@@ -35,7 +36,8 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(){
 
     // ## set jet pT range for event selection ##
     // SetEvtSelJetPtRange(Float_t minPt, Float_t maxPt)
-    task->SetEvtSelJetPtRange(20.,-1.);
+    task->SetEvtSelJetPtRange(40.,-1.);
+    //task->SetEvtSelJetEtaRange(-0.4, 0.4); // smaller eta window for LHC10h pass1
 
     mgr->AddTask(task);
 

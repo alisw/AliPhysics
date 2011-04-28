@@ -1,26 +1,28 @@
-#ifndef ALIANALYSISTASKJETRESPONSE_H
-#define ALIANALYSISTASKJETRESPONSE_H
+#ifndef ALIANALYSISTASKJETRESPONSEV2_H
+#define ALIANALYSISTASKJETRESPONSEV2_H
 
 class TH1F;
 class TH2F;
 class TH3F;
+class THnSparse;
 class AliESDEvent;
 class AliAODEvent;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliVEvent.h"
 
-class AliAnalysisTaskJetResponse : public AliAnalysisTaskSE {
+class AliAnalysisTaskJetResponseV2 : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskJetResponse();
-  AliAnalysisTaskJetResponse(const char *name);
-  virtual ~AliAnalysisTaskJetResponse();
+  AliAnalysisTaskJetResponseV2();
+  AliAnalysisTaskJetResponseV2(const char *name);
+  virtual ~AliAnalysisTaskJetResponseV2();
 
   virtual void     LocalInit() {Init();}
   virtual void     Init();
   virtual void     UserCreateOutputObjects();
   virtual void     UserExec(Option_t *option);
   virtual void     Terminate(const Option_t*);
+  virtual Int_t    GetNInputTracks();
 
   virtual AliVEvent::EOfflineTriggerTypes GetOfflineTrgMask() const { return fOfflineTrgMask; }
   virtual void     GetBranchNames(TString &branch1, TString &branch2) const { branch1 = fJetBranchName[0]; branch2 = fJetBranchName[1]; }
@@ -39,7 +41,6 @@ class AliAnalysisTaskJetResponse : public AliAnalysisTaskSE {
   virtual Float_t  GetJetPtMin() const { return fJetPtMin; }
   virtual Float_t  GetJetPtFractionMin() const { return fJetPtFractionMin; }
   virtual Int_t    GetNMatchJets() const { return fNMatchJets; }
-  virtual Int_t    GetEventClassMode() const { return fEvtClassMode; }
 
   virtual void     SetBranchNames(const TString &branch1, const TString &branch2);
   virtual void     SetOfflineTrgMask(AliVEvent::EOfflineTriggerTypes mask) { fOfflineTrgMask = mask; }
@@ -58,7 +59,6 @@ class AliAnalysisTaskJetResponse : public AliAnalysisTaskSE {
   virtual void     SetJetPtMin(Float_t pt) { fJetPtMin = pt; }
   virtual void     SetJetPtFractionMin(Float_t pt) { fJetPtFractionMin = pt; }
   virtual void     SetNMatchJets(Int_t n) { fNMatchJets = n; }
-  virtual void     SetEventClassMode(Int_t mode) { fEvtClassMode = mode; }
 
  private:
   // ESD/AOD events
@@ -86,41 +86,26 @@ class AliAnalysisTaskJetResponse : public AliAnalysisTaskSE {
   Float_t fJetPtMin;      // minimum jet pT
   Float_t fJetPtFractionMin; // minimum fraction for positiv match of jets
   Int_t   fNMatchJets;       // maximal nb. of jets taken for matching
+  Double_t fMatchMaxDist;     // maximal distance of matching jets
   
-  Int_t fEvtClassMode; // event class mode; 0: centrality (default), 1: multiplicity
 
   // output objects
   const Int_t fkNbranches;                   //! number of branches to be read
   const Int_t fkEvtClasses;                  //! number of event classes
   TList *fOutputList;                        //! output data container
   TH1I  *fHistEvtSelection;                  //! event selection statistic
-  TH1I  *fHistEvtClass;                      //! event classes (from helper task)
-  TH1F  *fHistCentrality;                    //! centrality of the event  
-  TH1F  *fHistNInputTracks;                  //! nb. of input tracks in the event
-  TH2F  *fHistCentVsTracks;                  //! centrality vs. nb. of input tracks of the event
-  TH1F  *fHistReactionPlane;                 //! reaction plane of the event
-  TH1F  *fHistReactionPlaneWrtJets;                 //! reaction plane of the event wrt the jet
-  TH1F **fHistPtJet;                         //! pt distribution of jets
-  TH2F **fHistEtaPhiJet;                     //! eta-phi distribution of jets (before acceptance cuts)
-  TH2F **fHistEtaPhiJetCut;                  //! eta-phi distribution of jets in eta acceptace per event class
-  TH2F **fHistDeltaEtaDeltaPhiJet;           //! delta eta vs. delta phi of matched jets (before acceptance cuts)
-  TH2F **fHistDeltaEtaDeltaPhiJetCut;        //! delta eta vs. delta phi of matched jets
-  //TH2F **fHistDeltaEtaDeltaPhiJetNOMatching; //! delta eta vs. delta phi of jets which do not match
-  TH2F **fHistDeltaEtaEtaJet;                //! delta eta vs. eta of matched jets per event class
-  TH2F **fHistDeltaPtEtaJet;                 //! delta eta vs. eta of matched jets per event class
-  TH2F **fHistPtFraction;                    //! fraction from embedded jet in reconstructed jet per event class
-  TH2F **fHistPtResponse;                    //! jet pt response per event class
-  TH2F **fHistPtSmearing;                    //! emb-jet pt vs (emb+UE - emb) pt
-  TH2F **fHistDeltaR;                        //! shift dR of jets vs (emb+UE - emb) pt
-  TH3F **fHistArea;                          //! area of jets vs (emb+UE - emb) pt
-  //TH2F **fHistJetPtArea;                          //! area of jets vs (emb+UE - emb) pt
-  TH2F **fHistDeltaArea;                     //! delta area of jets vs (emb+UE - emb) pt
-  TH2F **fHistJetPtDeltaArea;                     //! delta area of jets vs emb pt
+  THnSparse *fhnEvent;                       //! variables per event
+  THnSparse *fhnJetsRp;                      //! variables per jet
+  THnSparse *fhnJetsDeltaPt;                 //! variables per jet
+  THnSparse *fhnJetsEta;                     //! variables per jet
+  THnSparse *fhnJetsArea;                    //! variables per jet
+  THnSparse *fhnJetsBeforeCut1;               //! variables per jet before acceptance cut
+  THnSparse *fhnJetsBeforeCut2;               //! variables per jet before acceptance cut
+  
+  AliAnalysisTaskJetResponseV2(const AliAnalysisTaskJetResponseV2&); // not implemented
+  AliAnalysisTaskJetResponseV2& operator=(const AliAnalysisTaskJetResponseV2&); // not implemented
 
-  AliAnalysisTaskJetResponse(const AliAnalysisTaskJetResponse&); // not implemented
-  AliAnalysisTaskJetResponse& operator=(const AliAnalysisTaskJetResponse&); // not implemented
-
-  ClassDef(AliAnalysisTaskJetResponse, 3);
+  ClassDef(AliAnalysisTaskJetResponseV2, 1);
 };
 
 #endif
