@@ -7,15 +7,8 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliHLTProcessor.h"
-//#include "AliHLTCaloBase.h"
-// #include "AliHLTCaloDefinitions.h"
-#include "AliHLTDataTypes.h"
 
-// #include "AliHLTCaloConstant.h"
 
-// using namespace CaloHLTConst;
-
-//class AliHLTCaloProcessor:public AliHLTProcessor, public AliHLTCaloBase
 class AliHLTCaloProcessor:public AliHLTProcessor
 {
 
@@ -23,37 +16,17 @@ class AliHLTCaloProcessor:public AliHLTProcessor
   AliHLTCaloProcessor();
   virtual ~AliHLTCaloProcessor();
   virtual int DoInit(int argc, const char** argv) = 0;
-  //  virtual int DoDeinit() = 0;
   virtual const char* GetComponentID() = 0;
   virtual void GetInputDataTypes( std::vector <AliHLTComponentDataType>& list) =0;
   virtual AliHLTComponentDataType GetOutputDataType() =0;
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier) =0;
   virtual AliHLTComponent* Spawn() = 0; 
-
-
   char lineNumber[256];
   const char *IntToChar(int number);
-  /*
-   *Check file and write messages to AliLog system
-   */
-  bool CheckFileLog(const char *origin, const char *filename, const char *opt);
-  void DoneWritingLog(const char *origin, const char *filename);
-
-  using  AliHLTProcessor::DoEvent;
 
  protected:
-  void ScanRunNumberFromFile();
-  virtual int ScanArgumentsModule(int argc, const char** argv);
   int fCaloEventCount;                  /**<Global event counter for this component*/
-  AliHLTUInt8_t  fModuleID;             /**<ID of the module this component read data from (0-4)*/
-
-  Bool_t fPrintInfoModule;                    /**<wether or not to print debugg info to std out*/
-  int fPrintInfoFrequncyModule;               /**<Defines the update frequency for information printet to std out*/
-
   static const AliHLTComponentDataType fgkInputDataTypes[]; /**<List of  datatypes that can be given to this component*/
-  int fRunNumber;
-  char fFilepath[1024];
-  char fMessage[1024];
 
  private:
   AliHLTCaloProcessor(const AliHLTCaloProcessor & );
