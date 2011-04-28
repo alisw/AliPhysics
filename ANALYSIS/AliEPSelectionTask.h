@@ -64,28 +64,28 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
   Bool_t   fUsePtWeight;		// use of pT weights
   Bool_t   fSaveTrackContribution;	// storage of contribution of each track to Q-Vector
   
-  AliESDtrackCuts* fESDtrackCuts;
+  AliESDtrackCuts* fESDtrackCuts;       //! track cuts
   
-  TObjArray* ftracklist;		// list of accepted tracks for Q-Vector
+  TObjArray* ftracklist;		//! list of accepted tracks for Q-Vector
   TH1F*	 fPhiDist;			// Phi distribution used to calculate phi weights
 
-  TVector2* fQVector;			// Q-Vector of the event  
-  Double_t* fQContributionX;		// array of the tracks' contributions to X component of Q-Vector - index = track ID
-  Double_t* fQContributionY;		// array of the tracks' contributions to Y component of Q-Vector - index = track ID
-  Double_t  fEventplaneQ; 		// Event plane angle from Q-Vector
-  TVector2* fQsub1;			// Q-Vector of sub-event 1
-  TVector2* fQsub2;			// Q-Vector of sub-event 2
-  Double_t  fQsubRes;			// Difference of EP angles of subevents
+  TVector2* fQVector;			//! Q-Vector of the event  
+  Double_t* fQContributionX;		//! array of the tracks' contributions to X component of Q-Vector - index = track ID
+  Double_t* fQContributionY;		//! array of the tracks' contributions to Y component of Q-Vector - index = track ID
+  Double_t  fEventplaneQ; 		//! Event plane angle from Q-Vector
+  TVector2* fQsub1;			//! Q-Vector of sub-event 1
+  TVector2* fQsub2;			//! Q-Vector of sub-event 2
+  Double_t  fQsubRes;			//! Difference of EP angles of subevents
   
   TList* fOutputList;  
-  TH1F*  fHOutEventplaneQ;    		// control histogram: Event Plane angle
-  TH1F*  fHOutPhi;			// control histogram: original phi distribution
-  TH1F*	 fHOutPhiCorr;			// control histogram: corrected phi distribution
-  TH2F*  fHOutsub1sub2;			// control histogram: correlation of EP from subevents
-  TH2F*  fHOutNTEPRes;			// control histogram: Difference of EP angles of subevents vs Nch
-  TH2F*  fHOutPTPsi;			// control histogram: Difference of EP angle and emission angle of track vs track pT
-  TH2F*	 fHOutDiff;			// control histogram: Difference of MC RP and EP - only filled if fUseMCRP is true!
-  TH2F*  fHOutleadPTPsi;		// control histogram: emission angle of leading pT track vs EP angle
+  TH1F*  fHOutEventplaneQ;    		//! control histogram: Event Plane angle
+  TH1F*  fHOutPhi;			//! control histogram: original phi distribution
+  TH1F*	 fHOutPhiCorr;			//! control histogram: corrected phi distribution
+  TH2F*  fHOutsub1sub2;			//! control histogram: correlation of EP from subevents
+  TH2F*  fHOutNTEPRes;			//! control histogram: Difference of EP angles of subevents vs Nch
+  TH2F*  fHOutPTPsi;			//! control histogram: Difference of EP angle and emission angle of track vs track pT
+  TH2F*	 fHOutDiff;			//! control histogram: Difference of MC RP and EP - only filled if fUseMCRP is true!
+  TH2F*  fHOutleadPTPsi;		//! control histogram: emission angle of leading pT track vs EP angle
 
   ClassDef(AliEPSelectionTask,2); 
 };

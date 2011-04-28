@@ -226,7 +226,6 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	fQsub1 = new TVector2(QQ1);
 	fQsub2 = new TVector2(QQ2);
 	fQsubRes = (fQsub1->Phi()/2 - fQsub2->Phi()/2);
-  
 	esdEP->SetQVector(fQVector);
 	esdEP->SetEventplaneQ(fEventplaneQ);
 	esdEP->SetQsub(fQsub1,fQsub2);
@@ -363,7 +362,8 @@ void AliEPSelectionTask::SetESDtrackCuts(TString status){
 }
 
 //__________________________________________________________________________
-void AliEPSelectionTask::SetPhiDistribution(char* infilename, char* listname){
+void AliEPSelectionTask::SetPhiDistribution(char* infilename, char* listname)
+{
   TFile f(infilename);
   TObject* list = f.Get(listname);
   fPhiDist = (TH1F*)list->FindObject("fHOutPhi");
@@ -420,7 +420,7 @@ Double_t AliEPSelectionTask::GetPhiWeight(AliESDtrack* track)
     while (Phi<0) Phi += TMath::TwoPi();
     while (Phi>TMath::TwoPi()) Phi -= TMath::TwoPi();
       
-    Double_t PhiDistValue = fPhiDist->GetBinContent(1+TMath::Floor((track->Phi())*nPhibins/TMath::TwoPi()));
+    Double_t PhiDistValue = fPhiDist->GetBinContent(1+TMath::FloorNint((track->Phi())*nPhibins/TMath::TwoPi()));
     
     if (PhiDistValue > 0) phiweight = nParticles/nPhibins/PhiDistValue;
   }
