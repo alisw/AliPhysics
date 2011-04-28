@@ -152,17 +152,27 @@ AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.roo
 							   fileout.Data());
   
   mgr->ConnectOutput(hfTask,4,coutputSignalType_TghCuts);
- //Now Container for MC TList
+
+
+  containername="outputNormalizationCounter";
+  containername.Prepend(containerprefix.Data());
+  containername.Append(str.Data());
+  AliAnalysisDataContainer *coutputNormCounter = mgr ->CreateContainer(containername.Data(), AliNormalizationCounter::Class(), 
+								       AliAnalysisManager::kOutputContainer, 
+								       fileout.Data());
+  mgr->ConnectOutput(hfTask, 5, coutputNormCounter);
+  
+  //Now Container for MC TList
   containername="listMCproperties";
   containername.Prepend(containerprefix.Data());
   containername.Append(str.Data());
   AliAnalysisDataContainer *clistMCprop = mgr->CreateContainer(containername.Data(),TList::Class(),
 							       AliAnalysisManager::kOutputContainer, 
 							       fileout.Data());
-  mgr->ConnectOutput(hfTask,5,clistMCprop);
+  mgr->ConnectOutput(hfTask,6,clistMCprop);
   
   // Now container for TLists 
-  last=6;
+  last=7;
   //##########  NO CUTS TLISTS CONTAINER ##############à
   containername="listNCsign";
   containername.Prepend(containerprefix.Data());
