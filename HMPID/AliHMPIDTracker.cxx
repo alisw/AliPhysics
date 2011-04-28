@@ -16,7 +16,8 @@
 #include <AliAlignObj.h>         //GetTrackPoint()
 #include <AliCDBManager.h>       //PropageteBack()
 #include <AliCDBEntry.h>         //PropageteBack()
-//.
+#include "TTreeStream.h"         // debug streamer
+//
 // HMPID base class fo tracking
 //.
 //.
@@ -25,14 +26,27 @@ ClassImp(AliHMPIDTracker)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDTracker::AliHMPIDTracker():
   AliTracker(),
-  fClu(new TObjArray(AliHMPIDParam::kMaxCh+1))  
+  fClu(new TObjArray(AliHMPIDParam::kMaxCh+1)),
+  fDebugStreamer(0)
 {
 // ctor. Create TObjArray of TClonesArray of AliHMPIDCluster  
 // 
 //  
   fClu->SetOwner(kTRUE);
   for(int i=AliHMPIDParam::kMinCh;i<=AliHMPIDParam::kMaxCh;i++) fClu->AddAt(new TClonesArray("AliHMPIDCluster"),i);
+  fDebugStreamer = new TTreeSRedirector("HMPIDdebug.root");
+
 }//ctor
+
+
+AliHMPIDTracker::~AliHMPIDTracker(){
+  //
+  // destructor
+  // 
+  delete fClu;
+  if (fDebugStreamer) delete fDebugStreamer;
+}
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
 Bool_t AliHMPIDTracker::GetTrackPoint(Int_t idx, AliTrackPoint& point) const
 {
@@ -118,7 +132,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 // Static method to reconstruct Theta Ckov for all valid tracks of a given event.
 // Arguments: pEsd- pointer ESD; pClu- pointer to clusters for all chambers; pNmean - pointer to all function Nmean=f(time)
 //   Returns: error code, 0 if no errors   
-  
+  const Double_t kMaxSnp=0.9;  //maximal snp for prolongation
   AliHMPIDRecon recon;                                                                           //instance of reconstruction class, nothing important in ctor
   AliHMPIDParam *pParam = AliHMPIDParam::Instance();                                             //Instance of AliHMPIDParam
   Float_t xPc,yPc,xRa,yRa,theta,phi;
@@ -157,8 +171,12 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     if(!pTrk->IsOn(AliESDtrack::kTPCout)) continue;
  
     if(pTrk->IsOn(AliESDtrack::kTPCrefit)) continue;
- 
+    AliESDfriendTrack *ftrack= (AliESDfriendTrack *)pTrk->GetFriendTrack();
+    if (!ftrack) continue; 
+    if (!ftrack->GetTPCOut()) continue;
     AliHMPIDtrack *hmpTrk = new AliHMPIDtrack(*pTrk);                                             //create a hmpid track to be used for propagation and matching 
+    hmpTrk->Set(ftrack->GetTPCOut()->GetX(), ftrack->GetTPCOut()->GetAlpha(),ftrack->GetTPCOut()->GetParameter(), ftrack->GetTPCOut()->GetCovariance());
+    //
     bz=AliTracker::GetBz();  
 //initial flags for HMPID ESD infos    
     pTrk->SetHMPIDtrk(0,0,0,0);                                                                //no intersection found
@@ -213,17 +231,65 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       pTrk->SetHMPIDsignal(pParam->kMipQdcCut);
       delete hmpTrk;hmpTrk=0x0; continue;                                                                     
     }
-
-    Double_t radius = (pParam->Lors2Mars(ipCh,pParam->SizeAllX()/2,pParam->SizeAllY()/2)).Mag(); 
-    
-    if(!AliTracker::PropagateTrackToBxByBz(hmpTrk,radius,pTrk->GetMass(),1,kFALSE)) {delete hmpTrk;hmpTrk=0x0;continue;}
-              
-    if(!hmpTrk->PropagateTo(bestHmpCluster)) {delete hmpTrk;hmpTrk=0x0;continue;}
+    //    Double_t radius = (pParam->Lors2Mars(ipCh,pParam->SizeAllX()/2,pParam->SizeAllY()/2)).Mag(); 
+    //
+    TVector3 vG = pParam->Lors2Mars(ipCh,bestHmpCluster->X(),bestHmpCluster->Y());    
+    Double_t gx = vG[0];
+    Double_t gy = vG[1];
+    Double_t gz = vG[2];
+    Double_t alpha=TMath::ATan2(gy,gx);
+    Double_t radiusH=TMath::Sqrt(gy*gy+gx*gx);
+    //
+    //
+    if (!(hmpTrk->Rotate(alpha,kTRUE))) continue;
+    if(!AliTrackerBase::PropagateTrackToBxByBz(hmpTrk,radiusH,pTrk->GetMass(),1,kFALSE,kMaxSnp,-1)) {delete hmpTrk;hmpTrk=0x0;continue;}    
+    //
+    // Dump debug info if specified
+    // 
+    //    if (AliHMPIDReconstructor::StreamLevel()>0){
+    if (1) {//use the AliHMPIDreconstructor switch to activate it	
+      AliExternalTrackParam * trackTPC=new AliExternalTrackParam(*(ftrack->GetTPCOut()));
+      AliExternalTrackParam * trackCurrent=new AliExternalTrackParam(*pTrk);      
+      trackTPC->Rotate(alpha);
+      trackCurrent->Rotate(alpha);      
+      Bool_t statusTPC= AliTracker::PropagateTrackToBxByBz(trackTPC,radiusH,pTrk->GetMass(),1,kFALSE,kMaxSnp,-1);      
+      Bool_t statusCurrent=AliTracker::PropagateTrackToBxByBz(trackCurrent,radiusH,pTrk->GetMass(),1,kFALSE,kMaxSnp,-1);    
+      Double_t tanAlpha=TMath::ATan(TMath::ASin(trackTPC->GetSnp()));
+      Double_t deltaC= trackTPC->GetC(AliTrackerBase::GetBz())-ftrack->GetTPCOut()->GetC(AliTrackerBase::GetBz());    
+      //
+      (*fDebugStreamer)<<"track"<<
+	"rH="<<radiusH<<                  // radius of cluster
+	"tanAlpha="<<tanAlpha<<           // tan of the local inlination angle
+	"dC="<<deltaC<<                   // delta of the curvature
+	"trackTPC.="<<trackTPC<<          // TPc outer param extrapolated to the HMPID
+	"trackCurrent.="<<trackCurrent<<  // current track extrapolated to the HMPID
+	"sTPC="<<statusTPC<<              // status for the current TPC  track
+	"sCurrent="<<statusCurrent<<      // status for the current global track
+	"cl.="<<bestHmpCluster<<          // HMPID cluster
+	//
+	"t.="<<pTrk<<                     // curent esd track
+	"ft.="<<ftrack<<                  // friend track
+	"hmpTrk.="<<hmpTrk<<              // hmpid tracks as used in the following code
+	"gx="<<gx<<                       // global cluster position X
+	"gy="<<gy<<                       // Y
+	"gz="<<gz<<                       // Z
+	"\n";
+    } 
+                
+    //if(!hmpTrk->PropagateTo(bestHmpCluster)) {delete hmpTrk;hmpTrk=0x0;continue;}
 
     Int_t cluSiz = bestHmpCluster->Size();
     pTrk->SetHMPIDmip(bestHmpCluster->X(),bestHmpCluster->Y(),(Int_t)bestHmpCluster->Q(),0);  //store mip info in any case 
     pTrk->SetHMPIDcluIdx(ipCh,index+1000*cluSiz);                                             //set chamber, index of cluster + cluster size
-
+    
+    Double_t HmpXYZ[3];    hmpTrk->GetXYZ(HmpXYZ);
+    Double_t HmpPxPyPz[3]; hmpTrk->GetPxPyPz(HmpPxPyPz);
+         
+    pParam->Mars2Lors(ipCh,HmpXYZ,xPc,yPc); pParam->Mars2Lors(ipCh,HmpPxPyPz,theta,phi);        
+    
+    pTrk->SetHMPIDtrk(xPc,yPc,theta,phi);
+    
+    
     if(AliHMPIDReconstructor::GetRecoParam())                                                 //retrieve distance cut
     {
       if(AliHMPIDReconstructor::GetRecoParam()->IsFixedDistCut()==kTRUE)                      //distance cut is fixed number

@@ -14,12 +14,13 @@ class AliESDEvent;      //Recon()
 class AliESDtrack;      //IntTrkCha()
 class AliHMPIDtrack;
 class AliHMPIDRecoParamV1;
+class TTreeSRedirector;
 
 class AliHMPIDTracker : public AliTracker
 {
 public:
            AliHMPIDTracker();
-  virtual ~AliHMPIDTracker()                                            {delete fClu;}
+  virtual ~AliHMPIDTracker();//                                            {delete fClu;}
 //framework part  
          AliCluster *GetCluster     (Int_t                      )const  {return 0;} //pure virtual from AliTracker 
          Bool_t      GetTrackPoint  (Int_t idx,AliTrackPoint &pt)const;             //             from AliTracker  
@@ -39,6 +40,8 @@ public:
   
 protected:
  TObjArray            *fClu;                     //! each chamber holds it's one list of clusters 
+  TTreeSRedirector *fDebugStreamer;     //!debug streamer
+
 //
 private:
   AliHMPIDTracker(const AliHMPIDTracker& r);              //dummy copy constructor
