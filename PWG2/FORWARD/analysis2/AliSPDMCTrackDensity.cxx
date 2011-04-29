@@ -17,8 +17,8 @@ AliSPDMCTrackDensity::AliSPDMCTrackDensity()
     fUseOnlyPrimary(false), 
     fMinR(3.5), 
     fMaxR(4.5),
-    fMinZ(-14.1), 
-    fMaxZ(+14.1),
+    fMinZ(-15), // -14.1), 
+    fMaxZ(+15), // +14.1),
     fRZ(0), 
     fXYZ(0),
     fNRefs(0),
@@ -82,7 +82,7 @@ void
 AliSPDMCTrackDensity::DefineOutput(TList* l)
 {
   fRZ = new TH2D("rz", "(r,z) of used track references", 
-		 50, 0, 5, 30, -15, 15);
+		 30, -15, 15, 50, 0, 5);
   fRZ->SetXTitle("z [cm]");
   fRZ->SetYTitle("r [cm]");
   fRZ->SetDirectory(0);

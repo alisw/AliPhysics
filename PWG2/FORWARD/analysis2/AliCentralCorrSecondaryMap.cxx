@@ -163,13 +163,16 @@ AliCentralCorrSecondaryMap::SetCorrection(UShort_t b, TH2D*  h)
     return false;
   }
   h->SetName(Form("SPD_vtxbin%03d", b));
-  h->SetTitle(Form("SecondaryMap correction for SPD "
-		   "in vertex bin %d [%+8.4f,%+8.4f]", 
-		   b, fVertexAxis.GetBinLowEdge(b), 
+  h->SetTitle(Form("Secondary correction %+5.1f<v_{z}<%+5.1f]", 
+		   fVertexAxis.GetBinLowEdge(b), 
 		   fVertexAxis.GetBinUpEdge(b)));
   h->SetXTitle("#eta");
-  h->SetYTitle("dN_{ch}/d#eta / sum_i N_{ch,i}");
+  h->SetYTitle("#varphi [radians]");
+  h->SetZTitle("dN_{ch}/d#eta / #sum_{i} N_{ch,i}");
   h->SetFillStyle(3001);
+  h->SetFillColor(kRed+1);
+  h->SetMarkerStyle(20);
+  h->SetMarkerColor(kRed+1);
   h->SetDirectory(0);
   h->SetStats(0);
   fArray.AddAtAndExpand(h, b-1);

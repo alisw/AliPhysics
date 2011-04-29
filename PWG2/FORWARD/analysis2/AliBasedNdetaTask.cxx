@@ -15,82 +15,6 @@
 #include <TFile.h>
 #include <TStyle.h>
 
-namespace {
-  enum { 
-    kMarkerSolid        = 0x000, 
-    kMarkerHollow       = 0x001, 
-    kMarkerCircle       = 0x002,
-    kMarkerSquare       = 0x004, 
-    kMarkerUpTriangle   = 0x006, 
-    kMarkerDownTriangle = 0x008, 
-    kMarkerDiamond      = 0x00a,
-    kMarkerCross        = 0x00c,
-    kMarkerStar         = 0x00e
-  };
-  Int_t MarkerStyle(UInt_t bits)
-  {
-    Int_t  base   = bits & (0xFE);
-    Bool_t hollow = bits & kMarkerHollow;
-    switch (base) { 
-    case kMarkerCircle:       return (hollow ? 24 : 20);
-    case kMarkerSquare:       return (hollow ? 25 : 21);
-    case kMarkerUpTriangle:   return (hollow ? 26 : 22);
-    case kMarkerDownTriangle: return (hollow ? 32 : 23);
-    case kMarkerDiamond:      return (hollow ? 27 : 33); 
-    case kMarkerCross:        return (hollow ? 28 : 34); 
-    case kMarkerStar:         return (hollow ? 30 : 29); 
-    }
-    return 1;
-  }
-  UShort_t MarkerBits(Int_t style) 
-  { 
-    UShort_t bits = 0;
-    switch (style) { 
-    case 24: case 25: case 26: case 27: case 28: case 30: case 32: 
-      bits |= kMarkerHollow; break;
-    }
-    switch (style) { 
-    case 20: case 24: bits |= kMarkerCircle;       break;
-    case 21: case 25: bits |= kMarkerSquare;       break;
-    case 22: case 26: bits |= kMarkerUpTriangle;   break;
-    case 23: case 32: bits |= kMarkerDownTriangle; break;
-    case 27: case 33: bits |= kMarkerDiamond;      break;
-    case 28: case 34: bits |= kMarkerCross;        break;
-    case 29: case 30: bits |= kMarkerStar;         break;
-    }
-    return bits;
-  }
-  Int_t FlipHollow(Int_t style) 
-  {
-    UShort_t bits = MarkerBits(style);
-    Int_t ret = MarkerStyle(bits ^ kMarkerHollow);
-    return ret;
-  }
-#if 0
-  void TestMarkers()
-  {
-    TCanvas* c = new TCanvas("c", "C");
-
-    Int_t nMarker = 7;
-    Int_t nCols   = 3;
-
-    TLatex* l = new TLatex(.05, .9, "Marker");
-    l->SetTextSize(0.03);
-    l->Draw();
-    l->DrawLatex(0.3,  .9, "kSolid");
-    l->DrawLatex(0.55, .9, "kHollow");
-    l->DrawLatex(0.8,  .9, "Flipped");
-
-    DrawOne("kMarkerCircle",       kMarkerCircle,       .7);
-    DrawOne("kMarkerSquare",       kMarkerSquare,       .6);
-    DrawOne("kMarkerUpTriangle",   kMarkerUpTriangle,   .5);
-    DrawOne("kMarkerDownTriangle", kMarkerDownTriangle, .4);
-    DrawOne("kMarkerDiamond",      kMarkerDiamond,      .3);
-    DrawOne("kMarkerCross",        kMarkerCross,        .2);
-    DrawOne("kMarkerStar",         kMarkerStar,         .1);
-  }
-#endif
-}
 //____________________________________________________________________
 AliBasedNdetaTask::AliBasedNdetaTask()
   : AliAnalysisTaskSE(), 
@@ -366,7 +290,7 @@ AliBasedNdetaTask::UserCreateOutputObjects()
     for (Int_t i = 0; i < nbin; i++) 
       AddCentralityBin(i+1,  Short_t((*bins)[i]), Short_t((*bins)[i+1]));
   }
-  fSums->Add(fCentAxis);
+  if (fCentAxis) fSums->Add(fCentAxis);
 
 
   // Centrality histogram 
@@ -484,7 +408,7 @@ AliBasedNdetaTask::SetHistogramAttributes(TH1D* h, Int_t colour, Int_t marker,
   h->SetTitle(title);
   h->SetMarkerColor(colour);
   h->SetMarkerStyle(marker);
-  h->SetMarkerSize(1);
+  h->SetMarkerSize(marker == 29 || marker == 30 ? 1.2 : 1);
   h->SetFillStyle(0);
   h->SetYTitle(ytitle);
   h->GetXaxis()->SetTitleFont(132);
@@ -661,10 +585,14 @@ AliBasedNdetaTask::Terminate(Option_t *)
   THStack* dndetaMCStackRebin = new THStack(Form("dndetaMC_rebin%02d", fRebin), 
 					    "dN_{ch}/d#eta");
   
+  Int_t style = GetMarker();
+  Int_t color = GetColor();
+
+  AliInfo(Form("Marker style=%d, color=%d", style, color));
   while ((bin = static_cast<CentralityBin*>(next()))) {
     bin->End(fSums, fOutput, fNormalizationScheme, fShapeCorr, fTriggerEff,
 	     fSymmetrice, fRebin, fUseROOTProj, fCorrEmpty, fCutEdges, 
-	     fTriggerMask, GetMarker());
+	     fTriggerMask, style, color);
     if (fCentAxis && bin->IsAllBin()) continue;
     TH1* dndeta      = bin->GetResult(0, false, "");
     TH1* dndetaSym   = bin->GetResult(0, true,  "");
@@ -956,7 +884,7 @@ AliBasedNdetaTask::Symmetrice(const TH1* h)
   s->SetBins(nBins, -h->GetXaxis()->GetXmax(), -h->GetXaxis()->GetXmin());
   s->SetMarkerColor(h->GetMarkerColor());
   s->SetMarkerSize(h->GetMarkerSize());
-  s->SetMarkerStyle(FlipHollow(h->GetMarkerStyle()));
+  s->SetMarkerStyle(FlipHollowStyle(h->GetMarkerStyle()));
   s->SetFillColor(h->GetFillColor());
   s->SetFillStyle(h->GetFillStyle());
   s->SetDirectory(0);
@@ -983,6 +911,52 @@ AliBasedNdetaTask::Symmetrice(const TH1* h)
   return s;
 }
 
+//__________________________________________________________________
+Int_t
+AliBasedNdetaTask::GetMarkerStyle(UShort_t bits)
+{
+  Int_t  base   = bits & (0xFE);
+  Bool_t hollow = bits & kHollow;
+  switch (base) { 
+  case kCircle:       return (hollow ? 24 : 20);
+  case kSquare:       return (hollow ? 25 : 21);
+  case kUpTriangle:   return (hollow ? 26 : 22);
+  case kDownTriangle: return (hollow ? 32 : 23);
+  case kDiamond:      return (hollow ? 27 : 33); 
+  case kCross:        return (hollow ? 28 : 34); 
+  case kStar:         return (hollow ? 30 : 29); 
+  }
+  return 1;
+}
+//__________________________________________________________________
+UShort_t
+AliBasedNdetaTask::GetMarkerBits(Int_t style) 
+{ 
+  UShort_t bits = 0;
+  switch (style) { 
+  case 24: case 25: case 26: case 27: case 28: case 30: case 32: 
+    bits |= kHollow; break;
+  }
+  switch (style) { 
+  case 20: case 24: bits |= kCircle;       break;
+  case 21: case 25: bits |= kSquare;       break;
+  case 22: case 26: bits |= kUpTriangle;   break;
+  case 23: case 32: bits |= kDownTriangle; break;
+  case 27: case 33: bits |= kDiamond;      break;
+  case 28: case 34: bits |= kCross;        break;
+  case 29: case 30: bits |= kStar;         break;
+  }
+  return bits;
+}
+//__________________________________________________________________
+Int_t
+AliBasedNdetaTask::FlipHollowStyle(Int_t style) 
+{
+  UShort_t bits = GetMarkerBits(style);
+  Int_t    ret  = GetMarkerStyle(bits ^ kHollow);
+  return ret;
+}
+
 //====================================================================
 void
 AliBasedNdetaTask::Sum::Init(TList* list, const TH2D* data, Int_t col)
@@ -995,7 +969,7 @@ AliBasedNdetaTask::Sum::Init(TList* list, const TH2D* data, Int_t col)
   if (postfix) fSum->SetTitle(Form("%s (%s)", data->GetTitle(), postfix));
   fSum->SetDirectory(0);
   fSum->SetMarkerColor(col);
-  fSum->SetMarkerStyle(MarkerStyle(kMarkerCircle|kMarkerSolid));
+  fSum->SetMarkerStyle(GetMarkerStyle(kCircle|kSolid));
   fSum->Reset();
   list->Add(fSum);
 
@@ -1006,7 +980,7 @@ AliBasedNdetaTask::Sum::Init(TList* list, const TH2D* data, Int_t col)
     fSum0->SetTitle(Form("%s 0-bin", data->GetTitle()));
   fSum0->SetDirectory(0);
   fSum0->SetMarkerColor(col);
-  fSum0->SetMarkerStyle(MarkerStyle(kMarkerCross|kMarkerHollow));
+  fSum0->SetMarkerStyle(GetMarkerStyle(kCross|kHollow));
   fSum0->Reset();
   list->Add(fSum0);
 
@@ -1053,14 +1027,25 @@ AliBasedNdetaTask::Sum::GetSum(const TList* input,
   TH2D* sum      = static_cast<TH2D*>(input->FindObject(GetHistName(0)));
   TH2D* sum0     = static_cast<TH2D*>(input->FindObject(GetHistName(1)));
   TH1I* events   = static_cast<TH1I*>(input->FindObject(GetHistName(2)));
-  TH2D* ret      = static_cast<TH2D*>(fSum->Clone(fSum->GetName()));
+  if (!sum || !sum0 || !events) {
+    AliWarning(Form("Failed to find one or more histograms: "
+		    "%s (%p) %s (%p) %s (%p)", 
+		    GetHistName(0).Data(), sum, 
+		    GetHistName(1).Data(), sum0,
+		    GetHistName(2).Data(), events));
+    return 0;
+  }
+
+  TH2D* ret      = static_cast<TH2D*>(sum->Clone(sum->GetName()));
   ret->SetDirectory(0);
   ret->Reset();
   Int_t n        = Int_t(events->GetBinContent(1));
   Int_t n0       = Int_t(events->GetBinContent(2));
 
+  AliInfo(Form("Adding histograms %s and %s with weights %f and %f resp.",
+	       sum0->GetName(), sum->GetName(), 1./epsilon, 1./epsilon0));
   // Generate merged histogram 
-  ret->Add(sum0, sum, 1. / epsilon0, 1. / epsilon);
+  ret->Add(sum0, sum, 1. / epsilon0, 1. / epsilon); 
   ntotal = n / epsilon + n0 / epsilon0;
 
   TList* out = new TList;
@@ -1074,9 +1059,9 @@ AliBasedNdetaTask::Sum::GetSum(const TList* input,
   TH2D* sumCopy  = static_cast<TH2D*>(sum->Clone("sum"));
   TH2D* sum0Copy = static_cast<TH2D*>(sum0->Clone("sum0"));
   TH2D* retCopy  = static_cast<TH2D*>(ret->Clone("sumAll"));
-  sumCopy->SetMarkerStyle(FlipHollow(marker));
+  sumCopy->SetMarkerStyle(FlipHollowStyle(marker));
   sumCopy->SetDirectory(0);
-  sum0Copy->SetMarkerStyle(MarkerStyle(MarkerBits(marker)+4));
+  sum0Copy->SetMarkerStyle(GetMarkerStyle(GetMarkerBits(marker)+4));
   sum0Copy->SetDirectory(0);
   retCopy->SetMarkerStyle(marker);
   retCopy->SetDirectory(0);
@@ -1239,9 +1224,9 @@ AliBasedNdetaTask::CentralityBin::operator=(const CentralityBin& o)
 }
 //____________________________________________________________________
 Int_t
-AliBasedNdetaTask::CentralityBin::GetColor() const 
+AliBasedNdetaTask::CentralityBin::GetColor(Int_t fallback) const 
 {
-  if (IsAllBin()) return kRed+2;
+  if (IsAllBin()) return fallback;
   Float_t  fc       = (fLow+double(fHigh-fLow)/2) / 100;
   Int_t    nCol     = gStyle->GetNumberOfColors();
   Int_t    icol     = TMath::Min(nCol-1,int(fc * nCol + .5));
@@ -1291,9 +1276,11 @@ AliBasedNdetaTask::CentralityBin::CreateSums(const TH2D* data, const TH2D* mc)
   //    data  Data histogram to clone 
   //    mc    (optional) MC histogram to clone 
   //
-  fSum = new Sum(GetName(),"");
-  fSum->Init(fSums, data, GetColor());
-  
+  if (data) {
+    fSum = new Sum(GetName(),"");
+    fSum->Init(fSums, data, GetColor());
+  }
+
   // If no MC data is given, then do not create MC sum histogram 
   if (!mc) return;
 
@@ -1518,7 +1505,8 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
 					     bool        symmetrice, 
 					     Int_t       rebin, 
 					     bool        cutEdges, 
-					     Int_t       marker)
+					     Int_t       marker,
+					     Int_t       color)
 {
   // 
   // Generate the dN/deta result from input 
@@ -1560,10 +1548,11 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
 
   // --- Set some histogram attributes -------------------------------
   TString post;
+  Int_t rColor = GetColor(color);
   if (postfix && postfix[0] != '\0') post = Form(" (%s)", postfix);
-  SetHistogramAttributes(dndeta,  GetColor(), marker, 
+  SetHistogramAttributes(dndeta,  rColor, marker, 
 			 Form("ALICE %s%s", GetName(), post.Data()));
-  SetHistogramAttributes(accNorm, GetColor(), marker, 
+  SetHistogramAttributes(accNorm, rColor, marker, 
 			 Form("ALICE %s normalisation%s", 
 			      GetName(), post.Data())); 
 
@@ -1589,7 +1578,8 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 				      Bool_t      corrEmpty, 
 				      Bool_t      cutEdges, 
 				      Int_t       triggerMask,
-				      Int_t       marker) 
+				      Int_t       marker,
+				      Int_t       color) 
 {
   // 
   // End of processing 
@@ -1617,6 +1607,11 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   fOutput->SetOwner();
   results->Add(fOutput);
 
+  if (!fSum) { 
+    AliInfo("This task did not produce any output");
+    return;
+  }
+
   fTriggers = static_cast<TH1I*>(fSums->FindObject("triggers"));
 
   if (!fTriggers) { 
@@ -1624,7 +1619,7 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
     return;
   }
   if (!fSum) { 
-    AliError(Form("Couldn't find histogram '%s' in list", GetName()));
+    AliError(Form("No sum object for %s", GetName()));
     return;
   }
 
@@ -1678,14 +1673,14 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 
   // --- Make result and store ---------------------------------------
   MakeResult(sum, "", rootProj, corrEmpty, (scheme & kShape) ? shapeCorr : 0,
-	     scaler, symmetrice, rebin, cutEdges, marker);
+	     scaler, symmetrice, rebin, cutEdges, marker, color);
 
   // --- Process result from TrackRefs -------------------------------
   if (sumMC) 
     MakeResult(sumMC, "MC", rootProj, corrEmpty, 
 	       (scheme & kShape) ? shapeCorr : 0,
 	       scaler, symmetrice, rebin, cutEdges, 
-	       MarkerStyle(MarkerBits(marker)+4));
+	       GetMarkerStyle(GetMarkerBits(marker)+4), color);
   
   // Temporary stuff 
   // if (!IsAllBin()) return;
