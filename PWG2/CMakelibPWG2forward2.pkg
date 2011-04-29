@@ -61,6 +61,7 @@ set ( SRCS
   FORWARD/analysis2/AliCentralCorrAcceptance.cxx 
   FORWARD/analysis2/AliCentraldNdetaTask.cxx
   FORWARD/analysis2/AliBasedNdetaTask.cxx
+  FORWARD/analysis2/AliMCTruthdNdetaTask.cxx
   FORWARD/analysis2/AliForwardFlowUtil.cxx
   FORWARD/analysis2/AliForwardFlowTaskQC.cxx
   FORWARD/analysis2/AliSPDMCTrackDensity.cxx
@@ -124,6 +125,7 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
   		FORWARD/analysis2/AddTaskForwardMCCorr.C
                 FORWARD/analysis2/AddTaskForwardMult.C
 		FORWARD/analysis2/AddTaskForwarddNdeta.C
+		FORWARD/analysis2/AddTaskMCTruthdNdeta.C
 		FORWARD/analysis2/DrawdNdeta.C
 		FORWARD/analysis2/ForwardAODConfig.C
 		FORWARD/analysis2/CentralAODConfig.C

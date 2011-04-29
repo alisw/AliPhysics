@@ -69,6 +69,8 @@
 #pragma link C++ class AliForwarddNdetaTask::CentralityBin+;
 #pragma link C++ class AliBasedNdetaTask+;
 #pragma link C++ class AliBasedNdetaTask::CentralityBin+;
+#pragma link C++ class AliMCTruthdNdetaTask+;
+#pragma link C++ class AliMCTruthdNdetaTask::CentralityBin+;
 
 #pragma link C++ class AliCentralMultiplicityTask+;
 #pragma link C++ class AliCentralMultiplicityTask::Manager+;
