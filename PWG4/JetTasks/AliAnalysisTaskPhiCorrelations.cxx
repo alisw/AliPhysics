@@ -216,12 +216,17 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
   Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
   
-  Int_t nZvtxBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(2);
-  Double_t* zvtxbin = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(2, 0)->GetXbins()->GetArray();
+  Int_t nZvtxBins  = 7;
+  Double_t vertexBins[] = { -7, -5, -3, -1, 1, 3, 5, 7 };
+  Double_t* zvtxbin = vertexBins;
+  
+  if (fHistos->GetUEHist(2)->GetEventHist()->GetNVar() > 2)
+  {
+    nZvtxBins = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(2);
+    zvtxbin = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(2, 0)->GetXbins()->GetArray();
+  }
 
   fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
-  
-  delete[] zvtxbin;
 }
 
 //____________________________________________________________________
