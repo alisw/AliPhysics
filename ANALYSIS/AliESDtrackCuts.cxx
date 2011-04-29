@@ -609,8 +609,10 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
       					  			    
       fhChi2PerClusterITS[i] ->Add(entry->fhChi2PerClusterITS[i]); 
       fhChi2PerClusterTPC[i] ->Add(entry->fhChi2PerClusterTPC[i]); 
-      fhNClustersForITSPID[i]->Add(entry->fhNClustersForITSPID[i]);
-      fhNMissingITSPoints[i] ->Add(entry->fhNMissingITSPoints[i]);
+      if (fhNClustersForITSPID[i])
+	fhNClustersForITSPID[i]->Add(entry->fhNClustersForITSPID[i]);
+      if (fhNMissingITSPoints[i])
+	fhNMissingITSPoints[i] ->Add(entry->fhNMissingITSPoints[i]);
 
       fhC11[i]               ->Add(entry->fhC11[i]              ); 
       fhC22[i]               ->Add(entry->fhC22[i]              ); 
@@ -972,7 +974,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
   Float_t nCrossedRowsTPC = esdTrack->GetTPCClusterInfo(2,1); 
   Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
   if (esdTrack->GetTPCNclsF()>0) {
-    ratioCrossedRowsOverFindableClustersTPC = esdTrack->GetTPCClusterInfo(2,1)/esdTrack->GetTPCNclsF();
+    ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC / esdTrack->GetTPCNclsF();
   }
   
   Int_t nClustersTPCShared = esdTrack->GetTPCnclsS();
