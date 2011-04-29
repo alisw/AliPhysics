@@ -673,6 +673,9 @@ protected:
     // --- Physics selction - only for ESD ---------------------------
     if (type == kESD) CreatePhysicsSelection(mc, mgr);
     
+    // --- Create centrality task ------------------------------------
+    CreateCentralitySelection(mc, mgr);
+
     // --- Create tasks ----------------------------------------------
     CreateTasks(mode, usePar, mgr);
 
@@ -1002,6 +1005,19 @@ protected:
   {
     gROOT->Macro(Form("AddTaskPhysicsSelection.C(%d)", mc));
     mgr->RegisterExtraFile("event_stat.root");
+  }
+  //__________________________________________________________________
+  /** 
+   * Create physics selection , and add to manager
+   * 
+   * @param mc Whether this is for MC 
+   * @param mgr Manager
+   */
+  virtual void CreateCentralitySelection(Bool_t mc, AliAnalysisManager* /*mgr*/)
+  {
+    gROOT->LoadMacro("AddTaskCentrality.C");
+    AliCentralitySelectionTask* ctask = AddTaskCentrality();
+    if (mc) ctask->SetMCInput();
   }
   //__________________________________________________________________
   /** 
@@ -1709,9 +1725,6 @@ protected:
     // --- Check if this is MC ---------------------------------------
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
     
-    // --- Centrality ------------------------------------------------
-    if (fUseCent) gROOT->Macro("AddTaskCentrality.C");
-    
     // --- Add the task ----------------------------------------------
     gROOT->Macro(Form("AddTaskForwardMult.C(%d,%d,%d,%d)", 
 		      mc, fSys, fSNN, fField));
@@ -1720,6 +1733,7 @@ protected:
     // --- Add the task ----------------------------------------------
     gROOT->Macro(Form("AddTaskCentralMult.C(%d,%d,%d,%d)", 
 		      mc, fSys, fSNN, fField));
+    AddExtraFile(gSystem->Which(gROOT->GetMacroPath(), "CentralAODConfig.C"));
   }
   //__________________________________________________________________
   /** 
@@ -1748,6 +1762,18 @@ protected:
     // --- Ignore trigger class when selecting events.  This means ---
     // --- that we get offline+(A,C,E) events too --------------------
     ps->SetSkipTriggerClassSelection(true);
+  }
+  //__________________________________________________________________
+  /** 
+   * Create the centrality selection only if requested
+   * 
+   * @param mc  Monte-Carlo truth flag 
+   * @param mgr Manager
+   */
+  void CreateCentralitySelection(Bool_t mc, AliAnalysisManager* mgr)
+  {
+    if (!fUseCent) return;
+    TrainSetup::CreateCentralitySelection(mc, mgr);
   }
   UShort_t fSys;
   UShort_t fSNN;
@@ -1888,7 +1914,14 @@ protected:
 
     gROOT->Macro(Form("AddTaskCentraldNdeta.C(\"%s\",%f,%f,%d,\"%s\")",
 		      fTrig.Data(), fVzMin, fVzMax, fUseCent, fScheme.Data()));
+
+    gROOT->Macro(Form("AddTaskMCTruthdNdeta.C(\"%s\",%f,%f,%d,\"%s\")",
+		      fTrig.Data(), fVzMin, fVzMax, fUseCent, fScheme.Data()));
   }
+  /** 
+   * Do not the centrality selection
+   */
+  void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
   /** 
    * Crete output handler - we don't want one here. 
    * 
@@ -1940,6 +1973,7 @@ public:
   MakeMCCorrTrain(const  char* name, 
 		  Double_t    vzMin=-10, 
 		  Double_t    vzMax=10, 
+		  Bool_t      dateTime = false,
 		  UShort_t     year     = 0, 
 		  UShort_t     month    = 0, 
 		  UShort_t     day      = 0, 
@@ -2038,6 +2072,10 @@ protected:
     // --- that we get offline+(A,C,E) events too --------------------
     // ps->SetSkipTriggerClassSelection(true);
   }
+  /** 
+   * Do not the centrality selection
+   */
+  void CreateCentralitySelection(Bool_t, AliAnalysisManager*) {}
   Double_t fVzMin;     // Least v_z
   Double_t fVzMax;     // Largest v_z
 };

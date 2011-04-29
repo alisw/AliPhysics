@@ -334,7 +334,7 @@ public:
    * @return Reference to corrections manager 
    */
   const Manager& GetManager() const { return fManager; }
-
+  void FindEtaLimits();
 
 protected: 
   AliFMDEventInspector   fInspector;        // Inspect events 
@@ -350,6 +350,8 @@ protected:
   TH2D*                  fClusterPerTracklet; // Clusters per tracklet. 
   TH1D*                  fNCluster;         //! Number of clusters 
   TH1D*                  fNTracklet;        //! number of tracklets 
+  TArrayI                fEtaMin;           // Least eta bin to use
+  TArrayI                fEtaMax;           // Largest eta bin to use
   ClassDef(AliCentralMultiplicityTask,2)    // Forward multiplicity class
 };
 

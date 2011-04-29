@@ -61,96 +61,6 @@ AliForwarddNdetaTask::MakeCentralityBin(const char* name, Short_t l, Short_t h)
   return new AliForwarddNdetaTask::CentralityBin(name, l, h);
 }
 
-//____________________________________________________________________
-void
-AliForwarddNdetaTask::UserExec(Option_t* option)
-{
-  // 
-  // Called at each event 
-  //
-  // This is called once in the master 
-  // 
-  // Parameters:
-  //    option Not used 
-  //
-  AliBasedNdetaTask::UserExec(option);
-  
-  AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
-  if (!aod) {
-    AliError("Cannot get the AOD event");
-    return;
-  } 
-
-  TObject* obj = aod->FindListObject("Forward");
-  if (!obj) { 
-    AliWarning("No forward object found");
-    return;
-  }
-  AliAODForwardMult* forward = static_cast<AliAODForwardMult*>(obj);
- 
-  TObject* oPrimary   = aod->FindListObject("primary");
-  if (!oPrimary) return;
-  
-  TH2D* primary   = static_cast<TH2D*>(oPrimary);
-
-  // Loop over centrality bins 
-  TIter next(fListOfCentralities);
-  CentralityBin* bin = 0;
-  while ((bin = static_cast<CentralityBin*>(next()))) 
-    bin->ProcessPrimary(forward, fTriggerMask, fVtxMin, fVtxMax, primary);
-}  
-  
-//________________________________________________________________________
-void 
-AliForwarddNdetaTask::Terminate(Option_t *option) 
-{
-  // 
-  // Called at end of event processing.. 
-  //
-  // This is called once in the master 
-  // 
-  // Parameters:
-  //    option Not used 
-  AliBasedNdetaTask::Terminate(option);
-
-  THStack* truth      = new THStack("dndetaTruth",      "dN/d#eta MC Truth");
-  THStack* truthRebin = new THStack(Form("dndetaTruth_rebin%02d", fRebin), 
-				    "dN/d#eta MC Truth");
-
-  TIter next(fListOfCentralities);
-  CentralityBin* bin = 0;
-  while ((bin = static_cast<CentralityBin*>(next()))) {
-    if (fCentAxis && bin->IsAllBin()) continue;
-
-    TList* results = bin->GetResults();
-    if (!results) continue; 
-
-    TH1* dndeta      = static_cast<TH1*>(results->FindObject("dndetaTruth"));
-    TH1* dndetaRebin = 
-      static_cast<TH1*>(results->FindObject(Form("dndetaTruth_rebin%02d",
-						fRebin)));
-    if (dndeta)      truth->Add(dndeta);
-    if (dndetaRebin) truthRebin->Add(dndetaRebin);
-  }
-  // If available output rebinned stack 
-  if (!truth->GetHists() || 
-      truth->GetHists()->GetEntries() <= 0) {
-    AliWarning("No MC truth histograms found");
-    delete truth;
-    truth = 0;
-  }
-  if (truth) fOutput->Add(truth);
-
-  // If available output rebinned stack 
-  if (!truthRebin->GetHists() || 
-      truthRebin->GetHists()->GetEntries() <= 0) {
-    AliWarning("No rebinned MC truth histograms found");
-    delete truthRebin;
-    truthRebin = 0;
-  }
-  if (truthRebin) fOutput->Add(truthRebin);
-  
-}
 
 //____________________________________________________________________
 TH2D*
@@ -181,45 +91,6 @@ AliForwarddNdetaTask::GetHistogram(const AliAODEvent* aod, Bool_t mc)
 
 //========================================================================
 void
-AliForwarddNdetaTask::CentralityBin::ProcessPrimary(const AliAODForwardMult* 
-						    forward, 
-						    Int_t triggerMask,
-						    Double_t vzMin, 
-						    Double_t vzMax, 
-						    const TH2D* primary)
-{ 
-  // Check the centrality class unless this is the 'all' bin 
-  if (!IsAllBin()) { 
-    Double_t centrality = forward->GetCentrality();
-    if (centrality < fLow || centrality >= fHigh) return;
-  }
-
-  // Create sum histogram 
-  if (!fSumPrimary) { 
-    fSumPrimary = static_cast<TH2D*>(primary->Clone("truth"));
-    fSumPrimary->SetDirectory(0);
-    fSumPrimary->Reset();
-    fSums->Add(fSumPrimary);
-  }
-  
-  // translate real trigger mask to MC trigger mask
-  Int_t mask = AliAODForwardMult::kB;
-  if (triggerMask == AliAODForwardMult::kNSD) {
-    mask ^= AliAODForwardMult::kNSD;
-    mask =  AliAODForwardMult::kMCNSD;
-  }
-
-  // Now use our normal check, but with the new mask, except 
-  vzMin = vzMax = -10000; // ignore vertex 
-  if (!forward->CheckEvent(mask, vzMin, vzMax, 0, 0, 0)) return;
-
-  fSumPrimary->Add(primary);
-  Int_t n = Int_t(fSumPrimary->GetBinContent(0,0));
-  fSumPrimary->SetBinContent(0,0, ++n);
-}
-
-//________________________________________________________________________
-void
 AliForwarddNdetaTask::CentralityBin::End(TList*      sums, 
 					 TList*      results,
 					 UShort_t    scheme,
@@ -231,7 +102,8 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 					 Bool_t      corrEmpty, 
 					 Bool_t      cutEdges,
 					 Int_t       triggerMask,
-					 Int_t       marker)
+					 Int_t       marker,
+					 Int_t       color)
 {
   AliInfo(Form("In End of %s with corrEmpty=%d, cutEdges=%d, rootProj=%d", 
 	       GetName(), corrEmpty, cutEdges, rootProj));
@@ -239,47 +111,7 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 					shapeCorr, trigEff, 
 					symmetrice, rebin, 
 					rootProj, corrEmpty, cutEdges,
-					triggerMask, marker);
-
-  fSumPrimary     = static_cast<TH2D*>(fSums->FindObject("truth"));
-
-  if (fSumPrimary) { 
-#if 0
-    Int_t n = fSumPrimary->GetBinContent(0,0);
-#else
-    Int_t n = (triggerMask == AliAODForwardMult::kNSD ? 
-	       Int_t(fTriggers->GetBinContent(AliAODForwardMult::kBinMCNSD)) : 
-	       Int_t(fTriggers->GetBinContent(AliAODForwardMult::kBinAll)));
-#endif
-    AliInfo(Form("Normalising MC truth to %d", n));
-    
-    TH1D* dndetaTruth = fSumPrimary->ProjectionX("dndetaTruth",1,
-					       fSumPrimary->GetNbinsY(),"e");
-    dndetaTruth->SetDirectory(0);
-    dndetaTruth->Scale(1./n, "width");
-
-    
-    SetHistogramAttributes(dndetaTruth, GetColor(), 30, "Monte-Carlo truth");
-
-    fOutput->Add(dndetaTruth);
-    fOutput->Add(Rebin(dndetaTruth, rebin, cutEdges));
-
-    // Get analysis result, and form ratio 
-    TH1D* dndeta = static_cast<TH1D*>(fOutput->FindObject(Form("dndeta%s",
-							       GetName())));
-    if (!dndeta) {
-      AliWarning(Form("No dndeta%s in the list %s", 
-		      GetName(), fOutput->GetName()));
-    }
-    else { 
-      TH1D* ratio = static_cast<TH1D*>(dndeta->Clone("ratio"));
-      ratio->SetDirectory(0);
-      ratio->Divide(dndetaTruth);
-
-      fOutput->Add(ratio);
-      fOutput->Add(Rebin(ratio, rebin, cutEdges));
-    }
-  }
+					triggerMask, marker, color);
 
   if (!IsAllBin()) return;
   TFile* file = TFile::Open("forward.root", "READ");

@@ -93,6 +93,9 @@ void MakedNdeta(const char* aoddir   = ".",
   // Central
   gROOT->LoadMacro("AddTaskCentraldNdeta.C");
   AddTaskCentraldNdeta(trig, vzMin, vzMax, useCent, scheme);
+  // MC
+  gROOT->LoadMacro("AddTaskMCTruthdNdeta.C");
+  AddTaskMCTruthdNdeta(trig, vzMin, vzMax, useCent, scheme);
 
   
   // --- Run the analysis --------------------------------------------

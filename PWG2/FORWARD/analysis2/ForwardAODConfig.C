@@ -32,7 +32,7 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // static cast - sigh!
   Bool_t mc = false;
   if (task->IsA() == AliForwardMCMultiplicityTask::Class()) {
-    Info("ForwardAODConfig", "Setting up assuming Monte-Carlo input");
+    Info("ForwardAODConfig", "Assuming Monte-Carlo input");
     mc = true;
   }
 
@@ -69,7 +69,7 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Wet whether to use poisson statistics to estimate N_ch
   task->GetDensityCalculator().SetUsePoisson(false);
   // Set the lower multiplicity cut.  Overrides setting in energy loss fits.
-  task->GetDensityCalculator().SetMultCut(-1); //was 0.3
+  task->GetDensityCalculator().SetMultCut(.3); //was 0.3
   // Set the lower per-ring multiplicity cuts 
   task->GetDensityCalculator().SetMultCuts(-1,-1,-1,-1,-1);
   // USe this many times xi+sigma below MPV 
