@@ -1580,7 +1580,7 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
   for(Int_t ipt=0;ipt<nptbins;ipt++){ 
 
     if(fArray==1 && fFillVarHists){ 
-      fLsNormalization = 2.*TMath::Sqrt(((TH1F*)fDistr->FindObject("hpospair"))->Integral(nptbins+ipt+1,nptbins+ipt+2)*((TH1F*)fDistr->FindObject("hnegpair"))->Integral(nptbins+ipt+1,nptbins+ipt+2)); //after cuts
+      fLsNormalization = 2.*TMath::Sqrt(((TH1F*)fOutputMass->FindObject("hpospair"))->Integral(nptbins+ipt+1,nptbins+ipt+2)*((TH1F*)fOutputMass->FindObject("hnegpair"))->Integral(nptbins+ipt+1,nptbins+ipt+2)); //after cuts
 
 
       if(fLsNormalization>1e-6) {
@@ -1592,7 +1592,7 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
       }
     
 
-      fLsNormalization = 2.*TMath::Sqrt(((TH1F*)fDistr->FindObject("hpospair"))->Integral(ipt+1,ipt+2)*((TH1F*)fDistr->FindObject("hnegpair"))->Integral(ipt+1,ipt+2)); 
+      fLsNormalization = 2.*TMath::Sqrt(((TH1F*)fOutputMass->FindObject("hpospair"))->Integral(ipt+1,ipt+2)*((TH1F*)fOutputMass->FindObject("hnegpair"))->Integral(ipt+1,ipt+2)); 
       //fLsNormalization = 2.*TMath::Sqrt(fTotPosPairs[4]*fTotNegPairs[4]);
 
       if(fLsNormalization>1e-6) {
