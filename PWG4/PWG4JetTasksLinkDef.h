@@ -42,5 +42,6 @@
 #pragma link C++ class AliEventPool+;
 #pragma link C++ class AliEventPoolManager+;
 #pragma link C++ class AliPhiCorrelationsQATask+;
+#pragma link C++ class AliTHn+;
 
 #endif
