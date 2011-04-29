@@ -56,9 +56,9 @@ AliHLTMUONClusterHistoComponent::~AliHLTMUONClusterHistoComponent()
 {
   // see header file for class documentation
   
- if (fChargePerClusterBending)	 	delete fChargePerClusterBending;
- if (fChargePerClusterNonBending)	delete fChargePerClusterNonBending;
- if (fNumberOfClusters) 	 	delete fNumberOfClusters;
+ if (fChargePerClusterBending != NULL)		delete fChargePerClusterBending;
+ if (fChargePerClusterNonBending != NULL)	delete fChargePerClusterNonBending;
+ if (fNumberOfClusters != NULL) 	 	delete fNumberOfClusters;
 }
 
 // Public functions to implement AliHLTComponent's interface.
@@ -154,9 +154,21 @@ int AliHLTMUONClusterHistoComponent::DoInit( int argc, const char** argv )
 int AliHLTMUONClusterHistoComponent::DoDeinit()
 {
   // see header file for class documentation
-  if(fChargePerClusterBending!=NULL) delete fChargePerClusterBending;
-  if(fChargePerClusterNonBending!=NULL) delete fChargePerClusterNonBending;
-  if(fNumberOfClusters!=NULL) delete fNumberOfClusters;
+  if (fChargePerClusterBending != NULL)
+  {
+    delete fChargePerClusterBending;
+    fChargePerClusterBending = NULL;
+  }
+  if (fChargePerClusterNonBending != NULL)
+  {
+    delete fChargePerClusterNonBending;
+    fChargePerClusterNonBending = NULL;
+  }
+  if (fNumberOfClusters != NULL)
+  {
+    delete fNumberOfClusters;
+    fNumberOfClusters = NULL;
+  }
   return 0;
 }
 
