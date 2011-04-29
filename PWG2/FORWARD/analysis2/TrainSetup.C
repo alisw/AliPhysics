@@ -38,6 +38,7 @@
 #include <AliMCEventHandler.h>
 #include <AliVEventHandler.h>
 #include <AliPhysicsSelection.h>
+#include <AliCentralitySelectionTask.h>
 #else
 class TArrayI;
 class TChain;
@@ -227,7 +228,7 @@ struct TrainSetup
    * 
    * @return Enumaration value 
    */
-  static EType ParseType(const char* type, Bool_t& mc)
+  static EType ParseType(const char* type, Bool_t& /*mc*/)
   {
     // mc = false;
     TString sType(type);
@@ -1013,10 +1014,13 @@ protected:
    * @param mc Whether this is for MC 
    * @param mgr Manager
    */
-  virtual void CreateCentralitySelection(Bool_t mc, AliAnalysisManager* /*mgr*/)
+  virtual void CreateCentralitySelection(Bool_t mc, AliAnalysisManager* mgr)
   {
-    gROOT->LoadMacro("AddTaskCentrality.C");
-    AliCentralitySelectionTask* ctask = AddTaskCentrality();
+    gROOT->Macro("AddTaskCentrality.C");
+    AliCentralitySelectionTask* ctask = 
+      dynamic_cast<AliCentralitySelectionTask*>(mgr->GetTask("CentralitySelection"));
+    if (!ctask) return;
+    // ctask->SetPass(fESDPass);
     if (mc) ctask->SetMCInput();
   }
   //__________________________________________________________________
@@ -1971,9 +1975,7 @@ public:
    * @param min      Minutes  - if not specified, current minutes
    */
   MakeMCCorrTrain(const  char* name, 
-		  Double_t    vzMin=-10, 
-		  Double_t    vzMax=10, 
-		  Bool_t      dateTime = false,
+		  Bool_t       dateTime = false,
 		  UShort_t     year     = 0, 
 		  UShort_t     month    = 0, 
 		  UShort_t     day      = 0, 
@@ -1992,8 +1994,7 @@ public:
    * @param usePar   If true, use PARs 
    */
   void Run(const char* mode, const char* oper, 
-	   Int_t nEvents=-1, Bool_t mc=false,
-	   Bool_t usePar=false)
+	   Int_t nEvents=-1, Bool_t usePar=false)
   {
     Info("Run", "Running in mode=%s, oper=%s, events=%d, Par=%d", 
 	 mode, oper, nEvents, usePar);
@@ -2079,6 +2080,34 @@ protected:
   Double_t fVzMin;     // Least v_z
   Double_t fVzMax;     // Largest v_z
 };
+
+void
+BuildTrainSetup()
+{
+  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+			   "$ALICE_ROOT/ANALYSIS/macros",
+			   gROOT->GetMacroPath()));
+  gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
+  gSystem->Load("libRAliEn");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  TString path = gSystem->Which(gROOT->GetMacroPath(), "TrainSetup.C");
+  Info("BuildTrainSetup", "Path=%s", path.Data());
+  TString tmp("TrainSetup");
+  FILE* fp = gSystem->TempFileName(tmp, ".");
+  fclose(fp);
+  gSystem->Unlink(tmp);
+  tmp.Append(".C");
+  Info("BuildTrainSetup", "Copy %s -> %s", path.Data(), tmp.Data());
+  gSystem->CopyFile(path, tmp);
+  gROOT->LoadMacro(Form("%s+g", tmp.Data()));
+  gSystem->Unlink(tmp);
+  tmp.ReplaceAll(".C", "_C.so");
+  gSystem->Unlink(tmp);
+  tmp.ReplaceAll("_C.so", "_C.d");
+  gSystem->Unlink(tmp);
+}
+
   
 //____________________________________________________________________
 //
