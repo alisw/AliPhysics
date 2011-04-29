@@ -203,6 +203,7 @@ void AliAnalysisTaskSPDdNdEta::UserCreateOutputObjects()
     else man->SetDefaultStorage("alien://Folder=/alice/data/2010/OCDB");
     man->SetRun(137161); 
     AliCDBEntry* obj = man->Get(AliCDBPath("GRP", "Geometry", "Data"));
+    if(!obj) AliFatal("Unable to load geometry from CDB!");
     AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
     AliGeomManager::GetNalignable("ITS");
     AliGeomManager::ApplyAlignObjsFromCDB("ITS");
