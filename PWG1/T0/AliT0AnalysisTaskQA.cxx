@@ -172,16 +172,18 @@ void AliT0AnalysisTaskQA::UserExec(Option_t *)
   Double32_t esdzvertex;
   const AliESDVertex * esdvertex = fESD->GetPrimaryVertex();
   Int_t nofcontrib=-1;
-  nofcontrib=esdvertex->GetNContributors();
-  if(nofcontrib>0)    ftracksEffSPD->Fill(ntracks);
-   if(esdvertex && t0vertex<999)
-    {
-      if(nofcontrib>0)
-	{
-	  esdzvertex=esdvertex->GetZv();
-	  fSPDVertexVST0Vertex->Fill(t0vertex,esdzvertex);
-	}
-    }
+  if(esdvertex) {
+    nofcontrib=esdvertex->GetNContributors();
+    if(nofcontrib>0)    ftracksEffSPD->Fill(ntracks);
+    if(esdvertex && t0vertex<999)
+      {
+	if(nofcontrib>0)
+	  {
+	    esdzvertex=esdvertex->GetZv();
+	    fSPDVertexVST0Vertex->Fill(t0vertex,esdzvertex);
+	  }
+      }
+  }
   PostData(1, fTzeroObject);
 }      
  //________________________________________________________________________
