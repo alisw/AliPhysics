@@ -210,7 +210,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
 
   // event mixing
   //  Int_t trackDepth = 100; // Require e.g. 20 5-track events, or 2 50-track events
-  Int_t trackDepth = 5000; // Require e.g. 20 5-track events, or 2 50-track events
+  Int_t trackDepth = 5000; 
   Int_t poolsize   = 100;  // Maximum number of events
   
   Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
@@ -296,7 +296,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     if (centralityObj)
     {
       centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
-      Printf("Centrality is %f", centrality);  
+      AliInfo(Form("Centrality is %f", centrality));
     }
     else
     {
@@ -469,7 +469,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       //centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
     else
       centrality = -1;
-    Printf("Centrality is %f", centrality);  
+    AliInfo(Form("Centrality is %f", centrality));
   }
   
   // Support for ESD and AOD based analysis
