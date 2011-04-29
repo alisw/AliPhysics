@@ -1713,35 +1713,39 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
   else {
     TList *list = dynamic_cast<TList *>(file->Get("outputList"));
     Int_t iRap = 0, iPt = 1;
-
-    //Calculation of efficiency/correction: Protons
-    AliCFContainer *gProtonContainer = dynamic_cast<AliCFContainer *>(list->At(0));
-    AliCFContainer *gAntiProtonContainer = dynamic_cast<AliCFContainer *>(list->At(1));
-
-    if (gProtonContainer && gAntiProtonContainer){
-      AliCFEffGrid *effProtonsStep0Step2 = new AliCFEffGrid("eff20",
-							    "effProtonsStep0Step2",
-							    *gProtonContainer);
-      effProtonsStep0Step2->CalculateEfficiency(2,0); 
-      fHistEfficiencyYPtProtons = (TH2D*)effProtonsStep0Step2->Project(iRap,iPt);
-      fHistEfficiencyYPtProtons->Sumw2();
-
+    if (list){
       //Calculation of efficiency/correction: Protons
-      AliCFEffGrid *effAntiProtonsStep0Step2 = new AliCFEffGrid("eff20",
-								"effAntiProtonsStep0Step2",
-								*gAntiProtonContainer);
-      effAntiProtonsStep0Step2->CalculateEfficiency(2,0); 
-      fHistEfficiencyYPtAntiProtons = (TH2D*)effAntiProtonsStep0Step2->Project(iRap,iPt);
-      fHistEfficiencyYPtAntiProtons->Sumw2();
+      AliCFContainer *gProtonContainer = dynamic_cast<AliCFContainer *>(list->At(0));
+      AliCFContainer *gAntiProtonContainer = dynamic_cast<AliCFContainer *>(list->At(1));
 
-      Correct();
+      if (gProtonContainer && gAntiProtonContainer){
+	AliCFEffGrid *effProtonsStep0Step2 = new AliCFEffGrid("eff20",
+							      "effProtonsStep0Step2",
+							      *gProtonContainer);
+	effProtonsStep0Step2->CalculateEfficiency(2,0);
+	fHistEfficiencyYPtProtons = (TH2D*)effProtonsStep0Step2->Project(iRap,iPt);
+	fHistEfficiencyYPtProtons->Sumw2();
+
+	//Calculation of efficiency/correction: Protons
+	AliCFEffGrid *effAntiProtonsStep0Step2 = new AliCFEffGrid("eff20",
+								  "effAntiProtonsStep0Step2",
+								  *gAntiProtonContainer);
+	effAntiProtonsStep0Step2->CalculateEfficiency(2,0);
+	fHistEfficiencyYPtAntiProtons = (TH2D*)effAntiProtonsStep0Step2->Project(iRap,iPt);
+	fHistEfficiencyYPtAntiProtons->Sumw2();
+	
+	Correct();
+      }
+      else {
+	cout<<"Could not retreive the proton and anti-proton correction containers"<<endl;
+	status = kFALSE;
+      }
     }
     else {
-      cout<<"Could not retreive the proton and anti-proton correction containers"<<endl;
+      cout<<"Could not retreive the output list from the CORRW file"<<endl;
       status = kFALSE;
     }
   }
-
   return status;
 }
 
