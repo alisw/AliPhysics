@@ -235,6 +235,18 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   TClonesArray *mcArray = (TClonesArray*)((AliAODEvent*)event)->GetList()->FindObject(AliAODMCParticle::StdBranchName());
   if(mcArray) isMC=kTRUE;
 
+  // settings for the TPC dE/dx BB parameterization
+  if(fPidHF) {
+    // pp, from LHC10d onwards
+    if((event->GetRunNumber()>121693 && event->GetRunNumber()<136851) ||
+       event->GetRunNumber()>139517) fPidHF->SetOnePad(kTRUE);
+    // PbPb LHC10h
+    if(event->GetRunNumber()>=136851 && event->GetRunNumber()<=139517) fPidHF->SetPbPb(kTRUE);
+    // MC
+    if(isMC) fPidHF->SetMC(kTRUE);
+  }
+
+
   // trigger class
   TString firedTriggerClasses=((AliAODEvent*)event)->GetFiredTriggerClasses();
   // don't do for MC and for PbPb 2010 data
@@ -256,7 +268,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
 
 
 
-  // multiplicity cuts no implemented yet
+  // vertex requirements
    
   const AliVVertex *vertex = event->GetPrimaryVertex();
 
@@ -273,21 +285,8 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     return kFALSE;
   } 
 
-  // settings for the TPC dE/dx BB parameterization
-  if(fPidHF) {
-    // pp, from LHC10d onwards
-    if((event->GetRunNumber()>121693 && event->GetRunNumber()<136851) ||
-       event->GetRunNumber()>139517)
-      fPidHF->SetOnePad(kTRUE);
-    // PbPb LHC10h
-    if(event->GetRunNumber()>=136851 && event->GetRunNumber()<=139517) 
-      fPidHF->SetPbPb(kTRUE);
-    // MC
-    if(isMC) fPidHF->SetMC(kTRUE);
-  }
 
-
-
+  // pile-up rejection
   if(fOptPileup==kRejectPileupEvent){
     Int_t cutc=(Int_t)fMinContrPileup;
     Double_t cutz=(Double_t)fMinDzPileup;
@@ -297,7 +296,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     }
   }
 
-  //centrality selection
+  // centrality selection
   if (fUseCentrality!=kCentOff) {  
     Int_t rejection=IsEventSelectedInCentrality(event);    
     if(rejection>1){      
