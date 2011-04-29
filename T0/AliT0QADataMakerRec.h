@@ -57,9 +57,10 @@ private:
   Float_t fTrEffCal[6];
   Float_t fTrEffPhys[6];
   TH1F*  fhTimeDiff[24];
+  Int_t fMeans[24];
+ 
 
-
-  ClassDef(AliT0QADataMakerRec,5)  // description 
+  ClassDef(AliT0QADataMakerRec,6)  // description 
 
 };
 

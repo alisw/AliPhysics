@@ -68,11 +68,11 @@ AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kT0),
       feffPhysC[i]=0;
       feffPhysA[i]=0;
       feffqtcPhys[i]=0;
-
+      fMeans[i]=0;
    }
 
   // for(Int_t ic=0; ic<24; ic++) 
-  // fhTimeDiff[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),"CFD-CFD",100,-250,250);
+  // fMeans[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),"CFD-CFD",100,-250,250);
 }
 
 
@@ -99,9 +99,6 @@ AliT0QADataMakerRec& AliT0QADataMakerRec::operator = (const AliT0QADataMakerRec&
 AliT0QADataMakerRec::~AliT0QADataMakerRec()
 {
   //destructor
-  //  for(Int_t ic=0; ic<24; ic++) {
-  ////    if (fhTimeDiff[ic]) delete fhTimeDiff[ic];
-  //  }
 }
 //____________________________________________________________________________
 void AliT0QADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
@@ -419,13 +416,17 @@ void AliT0QADataMakerRec::InitRaws()
    TH1F* fhOrCminOrATvdcOffcal= new TH1F("fhOrCminOrATvdcOffcal","T0_OR C - T0_OR ATVDC off laser",10000,-5000,5000);
    Add2RawsList( fhOrCminOrATvdcOffcal,218+250, expert, !image, !saveCorr);
    
-   TH2F* fhBeam = new TH2F("fhBeam", " Mean vs Vertex ", 120, -30, 30, 120, -30, 30);
+   //satellite  & beam background
+  TH2F* fhBeam = new TH2F("fhBeam", " Mean vs Vertex ", 120, -30, 30, 120, -30, 30);
    Add2RawsList( fhBeam,220, !expert, image, !saveCorr);
-   TH2F* fhBeamTVDCon = new TH2F("fhBeamTVDCon", " Mean vs Vertex TVDC on ", 120, -30, 30, 120, -30, 30);
+   TH2F* fhBeamTVDCon = new TH2F("fhBeamTVDCon", " Mean vs Vertex TVDC on ",50, -5, 5, 50, -5, 5) ;
    Add2RawsList( fhBeamTVDCon,221, expert, image, !saveCorr);
    TH2F* fhBeamTVDCoff = new TH2F("fhBeamTVDCoff", " Mean vs Vertex TVDC off", 120, -30, 30, 120, -30, 30);
    Add2RawsList( fhBeamTVDCoff,222, expert, image, !saveCorr);
-   
+   TH1F* fhMean = new TH1F("fhMean", " (T0A+T0C)/2 ", 200, -2000, 2000);
+   Add2RawsList( fhMean,223, !expert, image, !saveCorr);
+
+   //triggers
    const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
    for (Int_t itr=0; itr<6; itr++) {
      GetRawsData(169)->Fill(triggers[itr], fNumTriggersCal[itr]);
@@ -673,34 +674,49 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
       GetRawsData(216)->Fill(nhitsOrC);
 
       //draw satellite
-      Int_t besttimeA=9999999;
-      Int_t besttimeC=9999999;
-      if(type == 7){	
-	if( fnEventPhys > 2000) {
-	  for (Int_t ipmt=0; ipmt<12; ipmt++){
-	    if(allData[ipmt+1][0] > 1 ) {
-	      //	      time[ipmt] = allData[ipmt+1][0] - Int_t(GetRawsData(1)->GetMean());
-	      time[ipmt] = allData[ipmt+1][0] - 2500;
-	      if(time[ipmt]<besttimeC)
-		besttimeC=time[ipmt]; //timeC
+       if(type == 7){	
+	  if(fnEventPhys == 1000) {
+	    for (Int_t ik=0; ik<24; ik++)
+	      {
+		GetRawsData(ik+1)->GetXaxis()->SetRangeUser(2000, 3000);
+		int  maxBin  =  GetRawsData(ik+1) ->GetMaximumBin(); 
+		double   meanEstimate  =  GetRawsData(ik+1)->GetBinCenter( maxBin);
+		TF1* fit= new TF1("fit","gaus", meanEstimate - 40, meanEstimate + 40);
+		fit->SetParameters (GetRawsData(ik+1)->GetBinContent(maxBin), meanEstimate, 80);
+		GetRawsData(ik+1) -> Fit("fit","RQ","Q",  meanEstimate-40,  meanEstimate+40);
+		fMeans[ik]= (Int_t) fit->GetParameter(1);
+		GetRawsData(ik+1)->GetXaxis()->SetRangeUser(0, 30000);
+
+	      }
+	  }
+
+	  if( fnEventPhys > 1000) {
+	    Int_t besttimeA=9999999;
+	    Int_t besttimeC=9999999;
+	    for (Int_t ipmt=0; ipmt<12; ipmt++){
+		if(allData[ipmt+1][0] > 1 ) {
+		  //	      time[ipmt] = allData[ipmt+1][0] - Int_t(GetRawsData(1)->GetMean());
+		  time[ipmt] = allData[ipmt+1][0] - fMeans[ipmt];
+		  if(TMath::Abs(time[ipmt]) < TMath::Abs(besttimeC))
+		    besttimeC=time[ipmt]; //timeC
+		}
 	    }
-	  }
-	  for ( Int_t ipmt=12; ipmt<24; ipmt++){
-	    if(allData[ipmt+45][0] > 0) {
-	      time[ipmt] = allData[ipmt+45][0] - 2500;
-	      if(time[ipmt]<besttimeA) 
-		besttimeA=time[ipmt]; //timeA
+	    for ( Int_t ipmt=12; ipmt<24; ipmt++){
+	      if(allData[ipmt+45][0] > 0) {
+		time[ipmt] = allData[ipmt+45][0] - fMeans[ipmt] ;
+		if(TMath::Abs(time[ipmt]) < TMath::Abs(besttimeA) );
+		  besttimeA=time[ipmt]; //timeA
+	      }
 	    }
-	  }
-	  
-	  if(besttimeA<99999 &&besttimeC< 99999) {
-	    Float_t t0 =  24.4 * (Float_t( besttimeA+besttimeC)/2. );
-	    Float_t ver = 24.4 * Float_t( besttimeA-besttimeC)/2.;
-	    GetRawsData(220)->Fill(0.001*ver, 0.001*(t0));
-	    if(allData[50][0] > 0)  GetRawsData(221)->Fill(0.001*ver, 0.001*(t0));
-	    if(allData[50][0] <= 0) GetRawsData(222)->Fill(0.001*ver, 0.001*(t0));
-	  }
-	} //event >100
+	    if(besttimeA<99999 &&besttimeC< 99999) {
+	      Float_t t0 =  24.4 * (Float_t( besttimeA+besttimeC)/2. );
+	      Float_t ver = 24.4 * Float_t( besttimeA-besttimeC)/2.;
+	      GetRawsData(220)->Fill(0.001*ver, 0.001*(t0));
+	      if(allData[50][0] > 0)  GetRawsData(221)->Fill(0.001*ver, 0.001*(t0));
+	      if(allData[50][0] <= 0) GetRawsData(222)->Fill(0.001*ver, 0.001*(t0));
+	      GetRawsData(223) ->Fill(t0);
+	    }	  
+	  } //event >100
       } //type 7
     } //next
   
