@@ -166,7 +166,8 @@ void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t 
     }
   //
   // Remove the old object and reset the range
-  TObject* obj2 = fArray->RemoveAt(idx);
+  //  TObject* obj2 = 
+  fArray->RemoveAt(idx);
   // don't delete it: if you are updating it may be pointing to the same location of obj...
   //  delete obj2;
   fLowerLimits[idx] = -1;
