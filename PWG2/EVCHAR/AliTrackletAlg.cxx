@@ -688,6 +688,7 @@ void AliTrackletAlg::FindTracklets(const Float_t *vtx)
 
   delete[] partners;
   delete[] minDists;
+  delete[] associatedLay1;
 
   for (Int_t i=0; i<fNClustersLay1; i++)
     if (blacklist[i])
@@ -789,7 +790,8 @@ void AliTrackletAlg::LoadClusterArrays(TTree* itsClusterTree)
         if (idt==80) 
                    Printf("First Cl2 LoadClArr %f %f %f ",cluGlo[0],cluGlo[1],cluGlo[2]);*/
 	new (clArr[nclLayer++]) AliITSRecPoint(*cluster);
-	nClustersInChip[ seg.GetChipFromLocal(0,cluster->GetDetLocalZ()) ]++; 
+        if (seg.GetChipFromLocal(0,cluster->GetDetLocalZ())>=0) 
+	  nClustersInChip[ seg.GetChipFromLocal(0,cluster->GetDetLocalZ()) ]++; 
       }
       for(Int_t ifChip=5;ifChip--;) if (nClustersInChip[ifChip]) fNFiredChips[il]++;
     }
@@ -864,7 +866,8 @@ AliTrackletAlg::LoadClusterFiredChips(TTree* itsClusterTree) {
   
   AliITSsegmentationSPD seg;   
   AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
-  TClonesArray* itsClusters=rpcont->FetchClusters(0,itsClusterTree);
+  TClonesArray* itsClusters=NULL;
+  rpcont->FetchClusters(0,itsClusterTree);
   if(!rpcont->IsSPDActive()){
     AliWarning("No SPD rec points found, multiplicity not calculated");
     return;
@@ -890,7 +893,8 @@ AliTrackletAlg::LoadClusterFiredChips(TTree* itsClusterTree) {
       // find the chip for the current cluster
       Float_t locz = cluster->GetDetLocalZ();
       Int_t iChip = seg.GetChipFromLocal(0,locz);
-      nClustersInChip[iChip]++; 
+      if (iChip>=0)
+        nClustersInChip[iChip]++; 
       
     }// end of cluster loop
 
