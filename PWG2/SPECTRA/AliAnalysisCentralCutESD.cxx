@@ -179,13 +179,13 @@ Bool_t AliAnalysisCentralCutESD::IsA(AliESDtrack *track, PDG_t reqPartType){
 		printf("Unknown PID method!\n");
 		return kFALSE;
     }
+
     if(partType<0.) return kFALSE;
-    if((AliPID::ParticleCode(partType)) != reqPartType){
-		return kFALSE;
-    }
 
-	if(track->Charge() != charge) return kFALSE;
+    else if((AliPID::ParticleCode(partType)) != reqPartType) return kFALSE;
 
+    if(track->Charge() != charge) return kFALSE;
+    
     return kTRUE;
 
 }
