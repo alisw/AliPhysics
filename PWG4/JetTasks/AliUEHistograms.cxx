@@ -54,7 +54,8 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fVertexContributors(0),
   fCentralityDistribution(0),
   fITSClusterMap(0),
-  fSelectCharge(0)
+  fSelectCharge(0),
+  fRunNumber(0)
 {
   // Constructor
   //
@@ -141,7 +142,8 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fVertexContributors(0),
   fCentralityDistribution(0),
   fITSClusterMap(0),
-  fSelectCharge(0)
+  fSelectCharge(0),
+  fRunNumber(0)
 {
   //
   // AliUEHistograms copy constructor
@@ -269,7 +271,7 @@ Int_t AliUEHistograms::CountParticles(TList* list, Float_t ptMin)
 }
   
 //____________________________________________________________________
-void AliUEHistograms::Fill(Int_t eventType, AliUEHist::CFStep step, AliVParticle* leading, TList* toward, TList* away, TList* min, TList* max)
+void AliUEHistograms::Fill(Int_t eventType, Float_t zVtx, AliUEHist::CFStep step, AliVParticle* leading, TList* toward, TList* away, TList* min, TList* max)
 {
   // fills the UE event histograms
   //
@@ -290,14 +292,15 @@ void AliUEHistograms::Fill(Int_t eventType, AliUEHist::CFStep step, AliVParticle
     multiplicity += CountParticles(min, ptMin);
     multiplicity += CountParticles(max, ptMin);
      
-    FillRegion(AliUEHist::kToward, step, leading, toward, multiplicity);
-    FillRegion(AliUEHist::kAway,   step, leading, away, multiplicity);
-    FillRegion(AliUEHist::kMin,    step, leading, min, multiplicity);
-    FillRegion(AliUEHist::kMax,    step, leading, max, multiplicity);
+    FillRegion(AliUEHist::kToward, zVtx, step, leading, toward, multiplicity);
+    FillRegion(AliUEHist::kAway,   zVtx, step, leading, away, multiplicity);
+    FillRegion(AliUEHist::kMin,    zVtx, step, leading, min, multiplicity);
+    FillRegion(AliUEHist::kMax,    zVtx, step, leading, max, multiplicity);
  
-    Double_t vars[2];
+    Double_t vars[3];
     vars[0] = leading->Pt();
     vars[1] = multiplicity;
+    vars[2] = zVtx;
     for (Int_t i=0; i<fgkUEHists; i++)
       if (GetUEHist(i))
         GetUEHist(i)->GetEventHist()->Fill(vars, step);
@@ -309,7 +312,7 @@ void AliUEHistograms::Fill(Int_t eventType, AliUEHist::CFStep step, AliVParticle
 }
   
 //____________________________________________________________________
-void AliUEHistograms::FillRegion(AliUEHist::Region region, AliUEHist::CFStep step, AliVParticle* leading, TList* list, Int_t multiplicity)
+void AliUEHistograms::FillRegion(AliUEHist::Region region, Float_t zVtx, AliUEHist::CFStep step, AliVParticle* leading, TList* list, Int_t multiplicity)
 {
   // loops over AliVParticles in list and fills the given region at the given step
   //
@@ -319,7 +322,7 @@ void AliUEHistograms::FillRegion(AliUEHist::Region region, AliUEHist::CFStep ste
   {
     AliVParticle* particle = (AliVParticle*) list->At(i);
     
-    Double_t vars[5];
+    Double_t vars[6];
     vars[0] = particle->Eta();
     vars[1] = particle->Pt();
     vars[2] = leading->Pt();
@@ -329,7 +332,8 @@ void AliUEHistograms::FillRegion(AliUEHist::Region region, AliUEHist::CFStep ste
       vars[4] -= TMath::TwoPi();
     if (vars[4] < -0.5 * TMath::Pi())
       vars[4] += TMath::TwoPi();
-
+    vars[5] = zVtx;
+    
     if (fNumberDensitypT)
       fNumberDensitypT->GetTrackHist(region)->Fill(vars, step);
       
@@ -379,7 +383,7 @@ void AliUEHistograms::Fill(AliVParticle* leadingMC, AliVParticle* leadingReco)
 }
 
 //____________________________________________________________________
-void AliUEHistograms::FillCorrelations(Double_t centrality, AliUEHist::CFStep step, TSeqCollection* particles, TSeqCollection* mixed, Float_t weight, Bool_t firstTime)
+void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TSeqCollection* particles, TSeqCollection* mixed, Float_t weight, Bool_t firstTime)
 {
   // fills the fNumberDensityPhi histogram
   //
@@ -403,8 +407,8 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, AliUEHist::CFStep st
         fCorrelationpT->Fill(centrality, triggerParticle->Pt());
         fCorrelationEta->Fill(centrality, triggerParticle->Eta());
         fCorrelationPhi->Fill(centrality, triggerParticle->Phi());
-        if (dynamic_cast<AliAODTrack*>(triggerParticle))
-          fITSClusterMap->Fill(((AliAODTrack*) triggerParticle)->GetITSClusterMap(), centrality, triggerParticle->Pt());
+/*        if (dynamic_cast<AliAODTrack*>(triggerParticle))
+          fITSClusterMap->Fill(((AliAODTrack*) triggerParticle)->GetITSClusterMap(), centrality, triggerParticle->Pt());*/
       }
         
       for (Int_t j=0; j<jMax; j++)
@@ -436,7 +440,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, AliUEHist::CFStep st
             continue;
         }
         
-        Double_t vars[5];
+        Double_t vars[6];
         vars[0] = triggerParticle->Eta() - particle->Eta();
         vars[1] = particle->Pt();
         vars[2] = triggerParticle->Pt();
@@ -446,6 +450,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, AliUEHist::CFStep st
           vars[4] -= TMath::TwoPi();
         if (vars[4] < -0.5 * TMath::Pi())
           vars[4] += TMath::TwoPi();
+	vars[5] = zVtx;
     
         // fill all in toward region and do not use the other regions
         fNumberDensityPhi->GetTrackHist(AliUEHist::kToward)->Fill(vars, step, weight);
@@ -454,9 +459,10 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, AliUEHist::CFStep st
       if (firstTime)
       {
         // once per trigger particle
-        Double_t vars[2];
+        Double_t vars[3];
         vars[0] = triggerParticle->Pt();
         vars[1] = centrality;
+	vars[2] = zVtx;
         fNumberDensityPhi->GetEventHist()->Fill(vars, step);
       }
     }
@@ -538,6 +544,16 @@ void AliUEHistograms::SetPtRange(Float_t ptMin, Float_t ptMax)
   for (Int_t i=0; i<fgkUEHists; i++)
     if (GetUEHist(i))
       GetUEHist(i)->SetPtRange(ptMin, ptMax);
+}
+
+//____________________________________________________________________
+void AliUEHistograms::SetZVtxRange(Float_t min, Float_t max)
+{
+  // sets pT min and max for all contained AliUEHist classes
+  
+  for (Int_t i=0; i<fgkUEHists; i++)
+    if (GetUEHist(i))
+      GetUEHist(i)->SetZVtxRange(min, max);
 }
 
 //____________________________________________________________________
@@ -631,6 +647,7 @@ void AliUEHistograms::Copy(TObject& c) const
     target.fITSClusterMap = dynamic_cast<TH3F*> (fITSClusterMap->Clone());
     
   target.fSelectCharge = fSelectCharge;
+  target.fRunNumber = fRunNumber;
 }
 
 //____________________________________________________________________

@@ -352,7 +352,7 @@ void  AliAnalysisTaskLeadingTrackUE::AnalyseCorrectionMode()
   // Fill UE containers (step, leading track, towards particles, away particles, transverse MIN and MAX particles)
   // (MC-true leading particle and MC-true all particles)
   // STEP 0
-  fHistosUE->Fill(fillId,AliUEHist::kCFStepAll,leadingMC,(TList*)regionSortedParticlesMC->At(0),(TList*)regionSortedParticlesMC->At(1),(TList*)regionsMinMaxMC->At(0),(TList*)regionsMinMaxMC->At(1));
+  fHistosUE->Fill(fillId,0,AliUEHist::kCFStepAll,leadingMC,(TList*)regionSortedParticlesMC->At(0),(TList*)regionSortedParticlesMC->At(1),(TList*)regionsMinMaxMC->At(0),(TList*)regionsMinMaxMC->At(1));
   
   // Trigger selection ************************************************
   if (fAnalyseUE->TriggerSelection(fInputHandler))
@@ -370,7 +370,7 @@ void  AliAnalysisTaskLeadingTrackUE::AnalyseCorrectionMode()
   	    // Fill UE containers (step, leading track, towards particles, away particles, transverse MIN and MAX particles)
     	    // (MC-true leading particle and MC-true all particles)
     	    // STEP 1
-	    fHistosUE->Fill(fillId,AliUEHist::kCFStepTriggered,leadingMC,(TList*)regionSortedParticlesMC->At(0),(TList*)regionSortedParticlesMC->At(1),(TList*)regionsMinMaxMC->At(0),(TList*)regionsMinMaxMC->At(1));
+	    fHistosUE->Fill(fillId,0,AliUEHist::kCFStepTriggered,leadingMC,(TList*)regionSortedParticlesMC->At(0),(TList*)regionSortedParticlesMC->At(1),(TList*)regionsMinMaxMC->At(0),(TList*)regionsMinMaxMC->At(1));
   
 	    // count number of MC tracks above 150 MeV/c
 	    Int_t nMCTracks = 0; 
@@ -391,7 +391,7 @@ void  AliAnalysisTaskLeadingTrackUE::AnalyseCorrectionMode()
 	      // Fill UE containers (step, leading track, towards particles, away particles, transverse MIN and MAX particles)
 	      // (MC-true leading particle and MC-true all particles)
 	      // STEP 2
-	      fHistosUE->Fill(fillId,AliUEHist::kCFStepVertex,leadingMC,(TList*)regionSortedParticlesMC->At(0),(TList*)regionSortedParticlesMC->At(1),(TList*)regionsMinMaxMC->At(0),(TList*)regionsMinMaxMC->At(1));
+	      fHistosUE->Fill(fillId,0,AliUEHist::kCFStepVertex,leadingMC,(TList*)regionSortedParticlesMC->At(0),(TList*)regionSortedParticlesMC->At(1),(TList*)regionsMinMaxMC->At(0),(TList*)regionsMinMaxMC->At(1));
     
               // fill here for tracking efficiency
               // loop over particle species
@@ -425,7 +425,7 @@ void  AliAnalysisTaskLeadingTrackUE::AnalyseCorrectionMode()
 	        // (MC-true leading particle and MC-true all particles)
 	        // STEP 3
 	        if (!fReduceMemoryFootprint)
-	          fHistosUE->Fill(fillId,AliUEHist::kCFStepAnaTopology,leadingMC,(TList*)regionSortedParticlesMC->At(0),(TList*)regionSortedParticlesMC->At(1),(TList*)regionsMinMaxMC->At(0),(TList*)regionsMinMaxMC->At(1));
+	          fHistosUE->Fill(fillId,0,AliUEHist::kCFStepAnaTopology,leadingMC,(TList*)regionSortedParticlesMC->At(0),(TList*)regionSortedParticlesMC->At(1),(TList*)regionsMinMaxMC->At(0),(TList*)regionsMinMaxMC->At(1));
       
 	        //Sort RECO particles w.r.t. MC-leading and return matched (primary) MC particle 
 	        // (you cannot sort tracks w.r.t. RECO-leading and plot it vs. MC-leading ...)
@@ -435,7 +435,7 @@ void  AliAnalysisTaskLeadingTrackUE::AnalyseCorrectionMode()
 	        // (MC leading particle and RECO-matched (quantities from MC particle)  all particles)
 	        // STEP 4
 	        //if (!fReduceMemoryFootprint)
-  	          fHistosUE->Fill(fillId,AliUEHist::kCFStepTrackedOnlyPrim,leadingMC,(TList*)regionSortedParticlesRECOLTMC->At(0),(TList*)regionSortedParticlesRECOLTMC->At(1),(TList*)regionsMinMaxRECOLTMC->At(0),(TList*)regionsMinMaxRECOLTMC->At(1));
+  	          fHistosUE->Fill(fillId,0,AliUEHist::kCFStepTrackedOnlyPrim,leadingMC,(TList*)regionSortedParticlesRECOLTMC->At(0),(TList*)regionSortedParticlesRECOLTMC->At(1),(TList*)regionsMinMaxRECOLTMC->At(0),(TList*)regionsMinMaxRECOLTMC->At(1));
 	        // comparing this step with step 3 (for all-tracks observables) you get the tracking efficiency
         
 	        //Sort RECO particles w.r.t. MC-leading and return matched (primary+secondary) MC particle 
@@ -447,7 +447,7 @@ void  AliAnalysisTaskLeadingTrackUE::AnalyseCorrectionMode()
 	        // (MC leading particle and RECO-matched (quantities from MC particle)  all particles)
 	        // STEP 5
 	        //if (!fReduceMemoryFootprint)
-                  fHistosUE->Fill(fillId,AliUEHist::kCFStepTracked,leadingMC,(TList*)regionSortedParticlesRECOLTMC2->At(0),(TList*)regionSortedParticlesRECOLTMC2->At(1),(TList*)regionsMinMaxRECOLTMC2->At(0),(TList*)regionsMinMaxRECOLTMC2->At(1));
+                  fHistosUE->Fill(fillId,0,AliUEHist::kCFStepTracked,leadingMC,(TList*)regionSortedParticlesRECOLTMC2->At(0),(TList*)regionSortedParticlesRECOLTMC2->At(1),(TList*)regionsMinMaxRECOLTMC2->At(0),(TList*)regionsMinMaxRECOLTMC2->At(1));
 	        // comparing this step with step 3 (for all-tracks observables) you get the tracking efficiency
           
 	        // SWITCH TO RECONSTRUCTED TRACKS  ************************************
@@ -458,7 +458,7 @@ void  AliAnalysisTaskLeadingTrackUE::AnalyseCorrectionMode()
 	        // Fill UE containers (step, leading track, towards particles, away particles, transverse MIN and MAX particles)
 	        // (RECO leading particle and RECO  all particles)
 	        // STEP 6
-	        fHistosUE->Fill(fillId,AliUEHist::kCFStepReconstructed,(AliVParticle*)ltRECO->At(0),(TList*)regionSortedParticlesRECO->At(0),(TList*)regionSortedParticlesRECO->At(1),(TList*)regionsMinMaxRECO->At(0),(TList*)regionsMinMaxRECO->At(1));
+	        fHistosUE->Fill(fillId,0,AliUEHist::kCFStepReconstructed,(AliVParticle*)ltRECO->At(0),(TList*)regionSortedParticlesRECO->At(0),(TList*)regionSortedParticlesRECO->At(1),(TList*)regionsMinMaxRECO->At(0),(TList*)regionsMinMaxRECO->At(1));
         
 	        // STEP 8 for reduced efficiency study
 	        FillReducedEfficiency(fillId, AliUEHist::kCFStepBiasStudy, ltRECO, kFALSE);
@@ -488,7 +488,7 @@ void  AliAnalysisTaskLeadingTrackUE::AnalyseCorrectionMode()
 	          // Fill UE containers (step, leading track, towards particles, away particles, transverse MIN and MAX particles)
 	          // (RECO-MATCHED leading particle and RECO all particles)
 	          // STEP 7
-	          fHistosUE->Fill(fillId,AliUEHist::kCFStepRealLeading,(AliVParticle*)ltRECO->At(0),(TList*)regionSortedParticlesRECO->At(0),(TList*)regionSortedParticlesRECO->At(1),(TList*)regionsMinMaxRECO->At(0),(TList*)regionsMinMaxRECO->At(1));
+	          fHistosUE->Fill(fillId,0,AliUEHist::kCFStepRealLeading,(AliVParticle*)ltRECO->At(0),(TList*)regionSortedParticlesRECO->At(0),(TList*)regionSortedParticlesRECO->At(1),(TList*)regionsMinMaxRECO->At(0),(TList*)regionsMinMaxRECO->At(1));
 	          // comparing this step with step 6 (for leading-track observables) you get the efficiency to reconstruct the leading track
           	  // comparing this step with step 6 (for all-tracks observables) you see how leading-track misidentification affects the final distributions
         	}
@@ -562,7 +562,7 @@ void  AliAnalysisTaskLeadingTrackUE::AnalyseDataMode()
   // Fill UE containers (step, leading track, towards particles, away particles, transverse MIN and MAX particles)
   // (RECO leading particle and RECO  all particles)
   // STEP 6
-  fHistosUE->Fill(eventId,AliUEHist::kCFStepReconstructed,(AliVParticle*)ltRECO->At(0),(TList*)regionSortedParticlesRECO->At(0),(TList*)regionSortedParticlesRECO->At(1),(TList*)regionsMinMaxRECO->At(0),(TList*)regionsMinMaxRECO->At(1));
+  fHistosUE->Fill(eventId,0,AliUEHist::kCFStepReconstructed,(AliVParticle*)ltRECO->At(0),(TList*)regionSortedParticlesRECO->At(0),(TList*)regionSortedParticlesRECO->At(1),(TList*)regionsMinMaxRECO->At(0),(TList*)regionsMinMaxRECO->At(1));
   
   // STEP 8 and 9 for reduced efficiency study
   FillReducedEfficiency(eventId, AliUEHist::kCFStepBiasStudy, ltRECO, kFALSE);
@@ -619,7 +619,7 @@ void AliAnalysisTaskLeadingTrackUE::FillReducedEfficiency(Int_t eventId, AliUEHi
   TObjArray *regionSortedParticlesRECOLowEff = fAnalyseUE->SortRegions(leading, particleList, 0); 
   TObjArray *regionsMinMaxRECOLowEff = fAnalyseUE->GetMinMaxRegion((TList*)regionSortedParticlesRECOLowEff->At(2), (TList*)regionSortedParticlesRECOLowEff->At(3));
     
-  fHistosUE->Fill(eventId,step,leading,(TList*)regionSortedParticlesRECOLowEff->At(0), (TList*)regionSortedParticlesRECOLowEff->At(1), (TList*)regionsMinMaxRECOLowEff->At(0), (TList*)regionsMinMaxRECOLowEff->At(1));
+  fHistosUE->Fill(eventId,0,step,leading,(TList*)regionSortedParticlesRECOLowEff->At(0), (TList*)regionSortedParticlesRECOLowEff->At(1), (TList*)regionsMinMaxRECOLowEff->At(0), (TList*)regionsMinMaxRECOLowEff->At(1));
 
   delete regionSortedParticlesRECOLowEff;
   delete regionsMinMaxRECOLowEff;

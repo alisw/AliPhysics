@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -88,7 +87,8 @@ fHistos(0x0),
 fHistosMixed(0),
 fkTrackingEfficiency(0x0),
 // handlers and events
-fAOD(0x0),           
+fAOD(0x0),
+fESD(0x0),
 fArrayMC(0x0),
 fInputHandler(0x0),
 fMcEvent(0x0),
@@ -98,7 +98,7 @@ fPoolMgr(0x0),
 fListOfHistos(0x0), 
 // event QA
 fnTracksVertex(1),  // QA tracks pointing to principal vertex (= 3 default) 
-fZVertex(10.),
+fZVertex(7.),
 fCentralityMethod("V0M"),
 // track cuts
 fTrackEtaCut(0.8),
@@ -114,7 +114,6 @@ fSelectCharge(0)
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TList container
   DefineOutput(0, TList::Class());
-
 }
 
 AliAnalysisTaskPhiCorrelations::~AliAnalysisTaskPhiCorrelations() 
@@ -140,22 +139,33 @@ void AliAnalysisTaskPhiCorrelations::ConnectInputData(Option_t* /*option*/)
   
   TObject* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   
-  if( handler && handler->InheritsFrom("AliAODInputHandler") ) { // input AOD
-  	fAOD = ((AliAODInputHandler*)handler)->GetEvent();
-	if (fDebug > 1) AliInfo(" ==== Tracks and Jets from AliAODInputHandler");
-  } else {  //output AOD
-  	handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
-  	if( handler && handler->InheritsFrom("AliAODHandler") ) {
-  		fAOD = ((AliAODHandler*)handler)->GetAOD();
-  		if (fDebug > 1) AliInfo(" ==== Tracks and Jets from AliAODHandler");
- 	} else {  // no AOD
-		AliWarning("I can't get any AOD Event Handler");
-  		}
-  	}	
+  if( handler && handler->InheritsFrom("AliAODInputHandler") ) 
+  { // input AOD
+    fAOD = ((AliAODInputHandler*)handler)->GetEvent();
+    if (fDebug > 1) AliInfo(" ==== Tracks and Jets from AliAODInputHandler");
+  } 
+  else 
+  {  //output AOD
+    handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
+    if (handler && handler->InheritsFrom("AliAODHandler") ) 
+    {
+      fAOD = ((AliAODHandler*)handler)->GetAOD();
+      if (fDebug > 1) AliInfo(" ==== Tracks and Jets from AliAODHandler");
+    } 
+    else 
+    {  // no AOD
+      AliWarning("I can't get any AOD Event Handler");
+    }
+  }
+  
+  if (handler && handler->InheritsFrom("AliESDInputHandler") ) 
+  { // input ESD
+    // pointer received per event in ::Exec
+    if (fDebug > 1) AliInfo(" ==== Tracks and Jets from AliESDInputHandler");
+  } 
   
   // Initialize common pointers
   Initialize();
-   
 }
 
 //____________________________________________________________________
@@ -169,7 +179,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fAnalyseUE = new AliAnalyseLeadingTrackUE();
   fAnalyseUE->SetParticleSelectionCriteria(fFilterBit, fUseChargeHadrons, fTrackEtaCut, fPtMin);
   fAnalyseUE->SetDebug(fDebug); 
-  fAnalyseUE->DefineESDCuts(0);
+  fAnalyseUE->DefineESDCuts(fFilterBit);
 
   // Initialize output list of containers
   if (fListOfHistos != NULL){
@@ -200,20 +210,15 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
 
   // event mixing
   //  Int_t trackDepth = 100; // Require e.g. 20 5-track events, or 2 50-track events
-  Int_t trackDepth = 1000; // Require e.g. 20 5-track events, or 2 50-track events
+  Int_t trackDepth = 5000; // Require e.g. 20 5-track events, or 2 50-track events
   Int_t poolsize   = 100;  // Maximum number of events
   
   Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
   Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
   
-  Int_t nZvtxBins  = 5;
-  Double_t zMin    = -10.0;
-  Double_t zMax    =  10.0;
-  Double_t zVtxBinWidth =  (zMax - zMin) / nZvtxBins;
-  Double_t* zvtxbin = new Double_t[nZvtxBins+1];
-  for (int iz=0; iz<nZvtxBins+1; iz++)
-    zvtxbin[iz] = zMin + iz*zVtxBinWidth;
-  
+  Int_t nZvtxBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(2);
+  Double_t* zvtxbin = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(2, 0)->GetXbins()->GetArray();
+
   fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
   
   delete[] zvtxbin;
@@ -223,11 +228,22 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
 void  AliAnalysisTaskPhiCorrelations::Exec(Option_t */*option*/)
 {
   // array of MC particles
-  if (fMcHandler){
-    fArrayMC = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (!fArrayMC)
-      AliFatal("No array of MC particles found !!!");
+  if (fMcHandler) {
+    if (fAOD)
+    {
+      fArrayMC = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (!fArrayMC)
+	AliFatal("No array of MC particles found !!!");
+    }
     fMcEvent = fMcHandler->MCEvent();
+  }
+
+  // receive ESD pointer if we are not running AOD analysis
+  if (!fAOD)
+  {
+    AliVEventHandler* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+    if (handler && handler->InheritsFrom("AliESDInputHandler"))
+      fESD = ((AliESDInputHandler*)handler)->GetEvent();
   }
 
   // Analyse the event
@@ -266,7 +282,12 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   
   if (fCentralityMethod.Length() > 0)
   {
-    AliCentrality *centralityObj = fAOD->GetHeader()->GetCentralityP();
+    AliCentrality *centralityObj = 0;
+    if (fAOD)
+      centralityObj = fAOD->GetHeader()->GetCentralityP();
+    else if (fESD)
+      centralityObj = fESD->GetCentrality();
+    
     if (centralityObj)
     {
       centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
@@ -279,19 +300,30 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
      }
   }
   
+  // Support for ESD and AOD based analysis
+  AliVEvent* inputEvent = fAOD;
+  if (!inputEvent)
+    inputEvent = fESD;
+  
+  TObject* mc = fArrayMC;
+  if (!mc)
+    mc = fMcEvent;
+  
   // count all events
   fHistos->FillEvent(centrality, -1);
   
   // Only consider MC events within the vtx-z region used also as cut on the reconstructed vertex
   if (!fAnalyseUE->VertexSelection(fMcEvent, 0, fZVertex)) 
     return;
+  
+  Float_t zVtx = fMcEvent->GetPrimaryVertex()->GetZ();
     
   // Get MC primaries
-  TObjArray* tracksMC = fAnalyseUE->GetAcceptedParticles(fArrayMC, 0, kTRUE, -1, kTRUE);
+  TObjArray* tracksMC = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kTRUE);
   
   // (MC-true all particles)
   // STEP 0
-  fHistos->FillCorrelations(centrality, AliUEHist::kCFStepAll, tracksMC);
+  fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC);
   
   // Trigger selection ************************************************
   if (fAnalyseUE->TriggerSelection(fInputHandler))
@@ -299,16 +331,16 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     fHistos->FillEvent(centrality, AliUEHist::kCFStepTriggered);
     
     // Vertex selection *************************************************
-    if (fAnalyseUE->VertexSelection(fAOD, fnTracksVertex, fZVertex))
+    if (fAnalyseUE->VertexSelection(inputEvent, fnTracksVertex, fZVertex))
     {
       // fill here for tracking efficiency
       // loop over particle species
       
       for (Int_t particleSpecies = 0; particleSpecies < 4; particleSpecies++)
       {
-        TObjArray* primMCParticles = fAnalyseUE->GetAcceptedParticles(fArrayMC, 0x0, kTRUE, particleSpecies, kTRUE);
-        TObjArray* primRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(fAOD, fArrayMC, kTRUE, particleSpecies, kTRUE);
-        TObjArray* allRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(fAOD, fArrayMC, kFALSE, particleSpecies, kTRUE);
+        TObjArray* primMCParticles = fAnalyseUE->GetAcceptedParticles(mc, 0x0, kTRUE, particleSpecies, kTRUE);
+        TObjArray* primRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, particleSpecies, kTRUE);
+        TObjArray* allRecoTracksMatched = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, particleSpecies, kTRUE);
       
         fHistos->FillTrackingEfficiency(primMCParticles, primRecoTracksMatched, allRecoTracksMatched, particleSpecies, centrality);
         
@@ -319,30 +351,31 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     
       // (MC-true all particles)
       // STEP 2
-      fHistos->FillCorrelations(centrality, AliUEHist::kCFStepVertex, tracksMC);
+      if (!fReduceMemoryFootprint)
+	fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepVertex, tracksMC);
       
       // Get MC primaries that match reconstructed track
-      TObjArray* tracksRecoMatchedPrim = fAnalyseUE->GetAcceptedParticles(fAOD, fArrayMC, kTRUE, -1, kTRUE);
+      TObjArray* tracksRecoMatchedPrim = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, -1, kTRUE);
       
       // (RECO-matched (quantities from MC particle) primary particles)
       // STEP 4
-      fHistos->FillCorrelations(centrality, AliUEHist::kCFStepTrackedOnlyPrim, tracksRecoMatchedPrim);
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepTrackedOnlyPrim, tracksRecoMatchedPrim);
       
       // Get MC primaries + secondaries that match reconstructed track
-      TObjArray* tracksRecoMatchedAll = fAnalyseUE->GetAcceptedParticles(fAOD, fArrayMC, kFALSE, -1, kTRUE);
+      TObjArray* tracksRecoMatchedAll = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, -1, kTRUE);
       
       // (RECO-matched (quantities from MC particle) all particles)
       // STEP 5
-      fHistos->FillCorrelations(centrality, AliUEHist::kCFStepTracked, tracksRecoMatchedAll);
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepTracked, tracksRecoMatchedAll);
       
       // Get RECO tracks
-      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(fAOD, 0, kTRUE, -1, kTRUE);
+      TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
       
       // (RECO all tracks)
       // STEP 6
-      fHistos->FillCorrelations(centrality, AliUEHist::kCFStepReconstructed, tracks);
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks);
       
-      if (1)
+      if (0 && !fReduceMemoryFootprint)
       {
         // make list of secondaries (matched with MC)
         TObjArray* tracksRecoMatchedSecondaries = new TObjArray;
@@ -351,10 +384,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
             tracksRecoMatchedSecondaries->Add(tracksRecoMatchedAll->At(i));
       
         // Study: Use only secondaries as trigger particles and plot the correlation vs. all particles; store in step 9
-        fHistos->FillCorrelations(centrality, AliUEHist::kCFStepBiasStudy2, tracksRecoMatchedSecondaries, tracksRecoMatchedAll);
+        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracksRecoMatchedSecondaries, tracksRecoMatchedAll);
         
         // Study: Use only primaries as trigger particles and plot the correlation vs. secondaries; store in step 8
-        fHistos->FillCorrelations(centrality, AliUEHist::kCFStepBiasStudy, tracksRecoMatchedPrim, tracksRecoMatchedSecondaries);
+        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksRecoMatchedPrim, tracksRecoMatchedSecondaries);
       
         // plot delta phi vs process id of secondaries
         // trigger particles: primaries in 4 < pT < 10
@@ -413,15 +446,19 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (!fInputHandler)
     return;
     
-  if (!(fInputHandler->IsEventSelected()&AliVEvent::kMB))
+  if (!(fInputHandler->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kUserDefined)))
     return;
 
   Double_t centrality = 0;
   
   if (fCentralityMethod.Length() > 0)
   {
-    //AliCentrality *centralityObj = esd->GetCentrality();
-    AliCentrality *centralityObj = fAOD->GetHeader()->GetCentralityP();
+    AliCentrality *centralityObj = 0;
+    if (fAOD)
+      centralityObj = fAOD->GetHeader()->GetCentralityP();
+    else if (fESD)
+      centralityObj = fESD->GetCentrality();
+    
     if (centralityObj)
       centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
       //centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
@@ -429,6 +466,13 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       centrality = -1;
     Printf("Centrality is %f", centrality);  
   }
+  
+  // Support for ESD and AOD based analysis
+  AliVEvent* inputEvent = fAOD;
+  if (!inputEvent)
+    inputEvent = fESD;
+
+  fHistos->SetRunNumber(inputEvent->GetRunNumber());
   
   // Fill the "event-counting-container", it is needed to get the number of events remaining after each event-selection cut
   fHistos->FillEvent(centrality, AliUEHist::kCFStepAll);
@@ -440,7 +484,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   fHistos->FillEvent(centrality, AliUEHist::kCFStepTriggered);
   
   // Vertex selection *************************************************
-  if(!fAnalyseUE->VertexSelection(fAOD, fnTracksVertex, fZVertex)) return;
+  if(!fAnalyseUE->VertexSelection(inputEvent, fnTracksVertex, fZVertex)) return;
   
   // Fill the "event-counting-container", it is needed to get the number of events remaining after each event-selection cut
   fHistos->FillEvent(centrality, AliUEHist::kCFStepVertex);
@@ -448,7 +492,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (centrality < 0)
     return;
 
-  TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(fAOD, 0, kTRUE, -1, kTRUE);
+  TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
   //Printf("Accepted %d tracks", tracks->GetEntries());
   
   // event mixing
@@ -469,7 +513,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   //    FillCorrelations(). Also nMix should be passed in, so a weight
   //    of 1./nMix can be applied.
 
-  AliAODVertex* vertex = fAOD->GetPrimaryVertex();
+  const AliVVertex* vertex = inputEvent->GetPrimaryVertex();
   Double_t zVtx = vertex->GetZ();
   
   AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx);
@@ -480,7 +524,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   //pool->SetDebug(1);
     
   // Fill containers at STEP 6 (reconstructed)
-  fHistos->FillCorrelations(centrality, AliUEHist::kCFStepReconstructed, tracks);
+  fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks);
   
   if (pool->IsReady()) 
   {
@@ -491,7 +535,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     // Fill mixed-event histos here  
     for (Int_t jMix=0; jMix<nMix; jMix++) {
       TObjArray* bgTracks = pool->GetEvent(jMix);
-      fHistosMixed->FillCorrelations(centrality, AliUEHist::kCFStepReconstructed, tracks, bgTracks, 1.0 / nMix, (jMix == 0));
+      fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, bgTracks, 1.0 / nMix, (jMix == 0));
     }
   }
   

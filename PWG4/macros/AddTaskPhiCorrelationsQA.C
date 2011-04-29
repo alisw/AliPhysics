@@ -12,7 +12,7 @@ AliPhiCorrelationsQATask *AddTaskPhiCorrelationsQA()
   //===========================================================================
   AliPhiCorrelationsQATask* ana = new  AliPhiCorrelationsQATask("");
   
-  ana->SelectCollisionCandidates();
+  ana->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kUserDefined);
   
   mgr->AddTask(ana);
   

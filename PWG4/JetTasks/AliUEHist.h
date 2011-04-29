@@ -46,7 +46,7 @@ class AliUEHist : public TObject
   
   void CopyReconstructedData(AliUEHist* from);
   
-  TH1* GetUEHist(CFStep step, Region region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1, Int_t multBinBegin = 0, Int_t multBinEnd = -1, Int_t twoD = 0);
+  TH1* GetUEHist(CFStep step, Region region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1, Int_t multBinBegin = 0, Int_t multBinEnd = -1, Int_t twoD = 0, Bool_t etaNorm = kTRUE);
   TH1* GetPtHist(CFStep step, Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Float_t phiMin, Float_t phiMax, Float_t etaMin, Float_t etaMax, Bool_t skipPhiNormalization = kFALSE);
   
   TH1* GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Int_t source = 1, Int_t axis3 = -1);
@@ -83,6 +83,7 @@ class AliUEHist : public TObject
   void SetEtaRange(Float_t etaMin, Float_t etaMax) { fEtaMin = etaMin; fEtaMax = etaMax; }
   void SetPtRange(Float_t ptMin, Float_t ptMax)    { fPtMin = ptMin; fPtMax = ptMax; }
   void SetCentralityRange(Float_t min, Float_t max)    { fCentralityMin = min; fCentralityMax = max; }
+  void SetZVtxRange(Float_t min, Float_t max)          { fZVtxMin = min; fZVtxMax = max; }
   
   void SetContaminationEnhancement(TH1F* hist)    { fContaminationEnhancement = hist; }
   
@@ -117,6 +118,8 @@ protected:
   Float_t fPtMax;                     // pT max for projections (for track pT, not pT,lead)
   Float_t fCentralityMin;             // centrality min for projections
   Float_t fCentralityMax;             // centrality max for projections
+  Float_t fZVtxMin;                   // z vtx min for projections
+  Float_t fZVtxMax;                   // z vtx max for projections
   
   TH1F* fContaminationEnhancement;    // histogram that contains the underestimation of secondaries in the MC as function of pT
   
@@ -126,7 +129,7 @@ protected:
   
   TString fHistogramType;             // what is stored in this histogram
   
-  ClassDef(AliUEHist, 7) // underlying event histogram container
+  ClassDef(AliUEHist, 8) // underlying event histogram container
 };
 
 #endif
