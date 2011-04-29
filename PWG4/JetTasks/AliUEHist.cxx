@@ -163,6 +163,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
   
   UInt_t initRegions = fkRegions;
   
+  Bool_t useVtxAxis = kFALSE;
+  
   if (axis == 0)
   {
     trackBins[2] = leadingpTBins;
@@ -185,7 +187,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   }
   else if (axis == 2)
   {
-    nTrackVars = 6;
+    nTrackVars = 5;
     initRegions = 1;
   
     iTrackBin[0] = kNDeltaEtaBins;
@@ -204,9 +206,13 @@ AliUEHist::AliUEHist(const char* reqHist) :
     trackBins[4] = leadingPhiBins;
     trackAxisTitle[4] = "#Delta#phi (rad.)";
 
-    iTrackBin[5] = kNVertexBins;
-    trackBins[5] = vertexBins;
-    trackAxisTitle[5] = "z-vtx (cm)";
+    if (useVtxAxis)
+    {
+      nTrackVars = 6;
+      iTrackBin[5] = kNVertexBins;
+      trackBins[5] = vertexBins;
+      trackAxisTitle[5] = "z-vtx (cm)";
+    }
   }
     
   for (UInt_t i=0; i<initRegions; i++)
@@ -234,7 +240,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   iEventBin[1] = iTrackBin[3];
   
   // plus track 5th axis (in certain cases)
-  if (axis == 2)
+  if (axis == 2 && useVtxAxis)
   {
     nEventVars = 3;
     iEventBin[2] = iTrackBin[5];
@@ -248,7 +254,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   fEventHist->SetBinLimits(1, trackBins[3]);
   fEventHist->SetVarTitle(1, trackAxisTitle[3]);
   
-  if (axis == 2)
+  if (axis == 2 && useVtxAxis)
   {
     fEventHist->SetBinLimits(2, trackBins[5]);
     fEventHist->SetVarTitle(2, trackAxisTitle[5]);
