@@ -206,39 +206,41 @@ void AliProtonSpectraCorrection::FillCorrectionMaps(AliESDEvent *esd,
 
     //Protons
     //check the MC-level cuts
-    if (mcPart && fCFManagerProtons->CheckParticleCuts(AliCFManager::kPartGenCuts,
-					     mcPart)) {
-      containerInput[0] = (Float_t)mcPart->Eta();
-      containerInput[1] = (Float_t)mcPart->Pt();
-      //fill the container for Gen-level selection
-      fCFManagerProtons->GetParticleContainer()->Fill(containerInput,
-						      kStepGenerated);
-      //check the Acceptance-level cuts
-      if (fCFManagerProtons->CheckParticleCuts(AliCFManager::kPartAccCuts,
+    if (mcPart){
+      if (fCFManagerProtons->CheckParticleCuts(AliCFManager::kPartGenCuts,
 					       mcPart)) {
-	//fill the container for Acceptance-level selection
+	containerInput[0] = (Float_t)mcPart->Eta();
+	containerInput[1] = (Float_t)mcPart->Pt();
+	//fill the container for Gen-level selection
 	fCFManagerProtons->GetParticleContainer()->Fill(containerInput,
-							kStepReconstructible);
-      }//acceptance cuts - protons
-    }//MC level cuts - protons
-
-    //Antiprotons
-    //check the MC-level cuts
-    if (fCFManagerAntiProtons->CheckParticleCuts(AliCFManager::kPartGenCuts,
+							kStepGenerated);
+	//check the Acceptance-level cuts
+	if (fCFManagerProtons->CheckParticleCuts(AliCFManager::kPartAccCuts,
 						 mcPart)) {
-      containerInput[0] = (Float_t)mcPart->Eta();
-      containerInput[1] = (Float_t)mcPart->Pt();
-      //fill the container for Gen-level selection
-      fCFManagerAntiProtons->GetParticleContainer()->Fill(containerInput,
-							  kStepGenerated);
-      //check the Acceptance-level cuts
-      if (fCFManagerAntiProtons->CheckParticleCuts(AliCFManager::kPartAccCuts,
+	  //fill the container for Acceptance-level selection
+	  fCFManagerProtons->GetParticleContainer()->Fill(containerInput,
+							  kStepReconstructible);
+	}//acceptance cuts - protons
+      }//MC level cuts - protons
+
+      //Antiprotons
+      //check the MC-level cuts
+      if (fCFManagerAntiProtons->CheckParticleCuts(AliCFManager::kPartGenCuts,
 						   mcPart)) {
-	//fill the container for Acceptance-level selection
+	containerInput[0] = (Float_t)mcPart->Eta();
+	containerInput[1] = (Float_t)mcPart->Pt();
+	//fill the container for Gen-level selection
 	fCFManagerAntiProtons->GetParticleContainer()->Fill(containerInput,
-							    kStepReconstructible);
-      }//acceptance cuts - antiprotons
-    }//MC level cuts - antiprotons
+							    kStepGenerated);
+	//check the Acceptance-level cuts
+	if (fCFManagerAntiProtons->CheckParticleCuts(AliCFManager::kPartAccCuts,
+						     mcPart)) {
+	  //fill the container for Acceptance-level selection
+	  fCFManagerAntiProtons->GetParticleContainer()->Fill(containerInput,
+							      kStepReconstructible);
+	}//acceptance cuts - antiprotons
+      }//MC level cuts - antiprotons
+    }//MC particle condition
   }//loop over MC particles
   
   
