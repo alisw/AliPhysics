@@ -5,8 +5,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr
  Bool_t kPrintSettings = kTRUE,
  Bool_t kSimulation = kFALSE, 
  Bool_t outputAOD=kFALSE, 
- Bool_t oldAOD=kFALSE,
- TString period
+TString period = ""
  ) {
 
   // Creates a PartCorr task, configures it and adds it to the analysis manager.
@@ -77,8 +76,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr
     //switch on cluster energy smearing
     reader->SwitchOnClusterEnergySmearing();
     reader->SetSmearingParameters(0,0.07);
-    reader->SetSmearingParameters(0,0.00);
-    reader->SetSmearingParameters(0,0.00);
+    reader->SetSmearingParameters(1,0.00);
+    reader->SetSmearingParameters(2,0.00);
   }
 
   
@@ -95,7 +94,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr
   reader->SetCTSPtMin(0.1);
 
   if(outputAOD)      reader->SwitchOnWriteDeltaAOD()  ;
-  if(oldAOD)         reader->SwitchOnOldAODs();
   if(kPrintSettings) reader->Print("");
   
 
@@ -118,11 +116,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr
     cu->SwitchOnCorrectClusterLinearity();
     if (!kSimulation) {
       cu->GetEMCALRecoUtils()->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
-      cu->GetEMCALRecoUtils()->SetNonLinearityParam(0,0.976       ) ;
-      cu->GetEMCALRecoUtils()->SetNonLinearityParam(1,9.83529e-01 ) ;
-      cu->GetEMCALRecoUtils()->SetNonLinearityParam(2,-1.84235e+02) ; 
-      cu->GetEMCALRecoUtils()->SetNonLinearityParam(3,-2.05019e+00) ;
-      cu->GetEMCALRecoUtils()->SetNonLinearityParam(4,-5.89423e+00) ;
     }
     else              {
       cu->GetEMCALRecoUtils()->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
@@ -149,7 +142,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr
   // Recover the file from alien  
   //   /alice/cern.ch/user/g/gconesab/BadChannelsDB
   //-----------------------------------------------------------------
-  if (calorimeter == "EMCAL") {
+  if (calorimeter == "EMCAL" && period !="") {
     cu->SwitchOnBadChannelsRemoval();
     cu->SwitchOnDistToBadChannelRecalculation();
     TFile * fbad = new TFile("BadChannels.root","read");
@@ -204,7 +197,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr
   //  Recover file from alien  
   //  /alice/cern.ch/user/g/gconesab/TimeDepCorrectionDB
   //-----------------------------------------------------------------
-  if (!kSimulation && calorimeter == "EMCAL") {
+  if (!kSimulation && calorimeter == "EMCAL" && period!="") {
     cu->GetEMCALRecoUtils()->SwitchOnTimeDepCorrection();
     char cmd[200] ;
     sprintf(cmd, ".!tar xvfz CorrectionFiles.tgz >& /dev/null") ;
@@ -224,7 +217,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr
   //     https://twiki.cern.ch/twiki/bin/view/ALICE/EMCalOffline#Summary_of_Calibration_and_Align
   //------------------------------------------------------------------------
   
-  if (calorimeter == "EMCAL") {
+  if (calorimeter == "EMCAL" && period !="") {
     cu->SwitchOnRecalibration();
     TFile* f = 0x0 ;
     if (!kSimulation) {
@@ -260,20 +253,17 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr
   
   AliAnaPhoton *anaphoton = new AliAnaPhoton();
   anaphoton->SetDebug(-1); //10 for lots of messages
-  //settings for different multiplicity analysis
-  anaphoton->SwitchOffEventSelection() ;
-  //anaphoton->SetMultiplicity(80, 120);
 
   if(calorimeter == "PHOS"){
     anaphoton->SetNCellCut(2);
-    anaphoton->SetMinPt(0.);
+    anaphoton->SetMinPt(0.3);
     anaphoton->SetMinDistanceToBadChannel(2, 4, 5);
   }
   else {//EMCAL
     anaphoton->SetNCellCut(1);
     anaphoton->SetMinPt(0.); 
-    if(!kUseKinematics) anaphoton->SetTimeCut(400,900);// Time window of [400-900] ns
-    anaphoton->SetMinDistanceToBadChannel(4, 5, 10);
+    //if(!kUseKinematics) anaphoton->SetTimeCut(400,900);// Time window of [400-900] ns
+    anaphoton->SetMinDistanceToBadChannel(1, 2, 3);
   }
   anaphoton->SetCalorimeter(calorimeter);
   if(kUseKinematics) anaphoton->SwitchOnDataMC() ;//Access MC stack and fill more histograms
@@ -680,18 +670,18 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr
   // Particle selection analysis
   maker->AddAnalysis(anaphoton,n++);
   //maker->AddAnalysis(anapi0,n++);
-  maker->AddAnalysis(anapi0ebe,n++);
+    maker->AddAnalysis(anapi0ebe,n++);
 //   maker->AddAnalysis(anaomegaToPi0Gamma,n++);  
   //if(calorimeter=="EMCAL")maker->AddAnalysis(anabtag,n++);   
   // Isolation analysis
-  maker->AddAnalysis(anaisol,n++);
-//   maker->AddAnalysis(anaisolpi0,n++);
+    maker->AddAnalysis(anaisol,n++);
+    maker->AddAnalysis(anaisolpi0,n++);
   // Correlation analysis
 //   maker->AddAnalysis(anacorrjet,n++);
-  maker->AddAnalysis(anacorrhadron,n++);
-//   maker->AddAnalysis(anacorrhadronpi0,n++);
-//   maker->AddAnalysis(anacorrisohadron,n++);
-//   maker->AddAnalysis(anacorrhadronisopi0,n);
+   maker->AddAnalysis(anacorrhadron,n++);
+   maker->AddAnalysis(anacorrhadronpi0,n++);
+   maker->AddAnalysis(anacorrisohadron,n++);
+   maker->AddAnalysis(anacorrhadronisopi0,n);
   maker->SetAnaDebug(0)  ;
   maker->SwitchOnHistogramsMaker()  ;
   if(inputDataType.Contains("delta")) maker->SwitchOffAODsMaker()  ;
