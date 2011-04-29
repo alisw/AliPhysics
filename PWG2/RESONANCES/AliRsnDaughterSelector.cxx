@@ -2,7 +2,7 @@
 #include <TEntryList.h>
 
 #include "AliLog.h"
-#include "AliRsnMiniParticle.h"
+//#include "AliRsnMiniParticle.h"
 #include "AliRsnCutSet.h"
 #include "AliRsnDaughterDef.h"
 
@@ -289,6 +289,7 @@ void AliRsnDaughterSelector::ScanEvent(AliRsnEvent* ev)
    //Print();
 }
 
+/*
 //__________________________________________________________________________________________________
 AliRsnMiniEvent AliRsnDaughterSelector::CreateMiniEvent(AliRsnEvent* ev)
 {
@@ -341,3 +342,4 @@ AliRsnMiniEvent AliRsnDaughterSelector::CreateMiniEvent(AliRsnEvent* ev)
    return newEv;
    //Print();
 }
+*/
