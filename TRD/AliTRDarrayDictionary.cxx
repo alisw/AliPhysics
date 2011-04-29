@@ -284,7 +284,10 @@ void AliTRDarrayDictionary::Expand()
 
   Int_t dimexp=0;
   
-  if(WasExpandCalled()) 
+//   if(WasExpandCalled()) 
+//     return;
+
+  if(fNDdim==fNrow*fNumberOfChannels*fNtime)
     return;
 
   if(fDictionary&&fNDdim==1)
@@ -330,11 +333,10 @@ void AliTRDarrayDictionary::Expand()
       Int_t contaexp =0;    
       Int_t h=0;
       Int_t* bufferE = new Int_t[dimexp];
-      memset(bufferE,-1,sizeof(Int_t)*dimexp);
 
       if(bufferE)
 	{
-
+	  memset(bufferE,-1,sizeof(Int_t)*dimexp);
           for(Int_t i=0; i<dimexp; i++)
             {
               if(fDictionary[contaexp]>=-1)  
