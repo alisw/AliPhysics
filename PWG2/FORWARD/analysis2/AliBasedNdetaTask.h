@@ -286,9 +286,37 @@ public:
 				     const char* title, 
 				     const char* ytitle="#frac{1}{N} #frac{dN_{ch}}{d#eta}");
   /** @} */
+
+  /**
+   * Marker styles 
+   */
+  enum { 
+    kSolid        = 0x000, 
+    kHollow       = 0x001, 
+    kCircle       = 0x002,
+    kSquare       = 0x004, 
+    kUpTriangle   = 0x006, 
+    kDownTriangle = 0x008, 
+    kDiamond      = 0x00a,
+    kCross        = 0x00c,
+    kStar         = 0x00e
+  };
+  static Int_t GetMarkerStyle(UShort_t bits);
+  static UShort_t GetMarkerBits(Int_t style);
+  static Int_t FlipHollowStyle(Int_t style);
 protected:
+  /** 
+   * Copy contructor
+   */
   AliBasedNdetaTask(const AliBasedNdetaTask&);
+  /** 
+   * Assignment operator 
+   * 
+   * 
+   * @return 
+   */
   AliBasedNdetaTask& operator=(const AliBasedNdetaTask&) { return *this; }
+  // Forward declaration 
   class CentralityBin;
 
   /** 
@@ -301,17 +329,17 @@ protected:
    */
   virtual TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc=false) = 0;
   /** 
-   * Get the colour to use for markers
+   * Get the colour to use for markers (only pp - in PbPb we use a rainbow)
    * 
    * @return Marker colour 
    */
-  virtual Int_t GetColor() const { return kRed+1; }
+  virtual Int_t GetColor() const { return kBlack; }
   /** 
    * Get the marker style 
    * 
    * @return Marker style 
    */
-  virtual Int_t GetMarker() const { return 20; }
+  virtual Int_t GetMarker() const { return GetMarkerStyle(kCircle); }
   /** 
    * Add a centrality bin 
    * 
@@ -333,39 +361,99 @@ protected:
 					   Short_t high) const;
   
   //==================================================================
+  /**
+   * Class that holds the sum of the data - possibly split into 0 or
+   * non-zero bins 
+   * 
+   */
   struct Sum : public TNamed
   {
     TH2D* fSum;     // Sum of non-zero events
     TH2D* fSum0;    // Sum of zero events 
     TH1I* fEvents;  // Distribution of events 
-    
+    /** 
+     * I/O Constructor - do not use
+     */    
     Sum() : fSum(0), fSum0(0), fEvents(0) {}
+    /** 
+     * Constructor 
+     * 
+     * @param name      Name
+     * @param postfix   Possible post-fix 
+     */
     Sum(const char* name, const char* postfix) 
       : TNamed(name,postfix), 
 	fSum(0), 
 	fSum0(0), 
 	fEvents(0) 
     {}
+    /** 
+     * Copy constructor
+     * 
+     * @param o Object to copy from 
+     */
     Sum(const Sum& o) 
       : TNamed(o), 
 	fSum(o.fSum), 
 	fSum0(o.fSum0), 
 	fEvents(o.fEvents) 
     {}
+    /** 
+     * Assignment operator 
+     * 
+     * @param o Object to assign from 
+     * 
+     * @return Reference to this object 
+     */
     Sum& operator=(const Sum& o) {
       SetName(o.GetName()); fSum = o.fSum; fSum0 = o.fSum0; fEvents=o.fEvents;
       return *this;
     }
+    /** 
+     * Destructor 
+     */
     ~Sum() {}
+    /** 
+     * Initialise this object.  
+     * 
+     * @param list  List to add histograms to
+     * @param data  Format of data to be cloned here
+     * @param col   Color 
+     */
     void Init(TList* list, const TH2D* data, Int_t col);
+    /** 
+     * Add an event 
+     * 
+     * @param data    Data to add
+     * @param isZero  If this is zero event
+     */
     void Add(const TH2D* data, Bool_t isZero=false);
+    /** 
+     * Get the histogram name 
+     * 
+     * @param what Which one 
+     * 
+     * @return Name 
+     */
     TString GetHistName(Int_t what=0) const;
+    /** 
+     * Get the sum 
+     * 
+     * @param l          List to get histograms from 
+     * @param o          Output list
+     * @param ntotal     On return, the total number of events
+     * @param zeroEff    Zero-bin efficiency
+     * @param otherEff   Non-zero-bin efficiency 
+     * @param marker     Marker to use 
+     * @param rootXproj  Whether to use TH2::ProjectionX
+     * @param corrEmpty  Correct for empty bins 
+     * 
+     * @return The total sum histogram 
+     */
     TH2D* GetSum(const TList* l, TList* o, Double_t& ntotal,
 		 Double_t zeroEff, Double_t otherEff=1, Int_t marker=20,
 		 Bool_t rootXproj=false, Bool_t corrEmpty=true) const;
   };
-
-    
     
   //==================================================================
   /**
@@ -427,6 +515,7 @@ protected:
      * 
      * @param forward     Forward data (for trigger, vertex, & centrality)
      * @param triggerMask Trigger mask 
+     * @param isZero      True if this is a zero bin event 
      * @param vzMin       Minimum IP z coordinate
      * @param vzMax       Maximum IP z coordinate
      * @param data        Data histogram 
@@ -523,7 +612,8 @@ protected:
 			    bool        symmetrice, 
 			    Int_t       rebin, 
 			    bool        cutEdges, 
-			    Int_t       marker);
+			    Int_t       marker,
+			    Int_t       color);
     /** 
      * End of processing 
      * 
@@ -551,7 +641,8 @@ protected:
 		     Bool_t      corrEmpty, 
 		     Bool_t      cutEdges, 
 		     Int_t       triggerMask,
-		     Int_t       marker);
+		     Int_t       marker,
+		     Int_t       color);
     /**
      * @{
      * @name Access histograms
@@ -586,10 +677,39 @@ protected:
     TH1I* GetTrigggers() { return fTriggers; }
     /** @} */
 
-    Int_t GetColor() const;
+    /** 
+     * Get the color of the markers
+     *
+     * @return 
+     */
+    Int_t GetColor(Int_t fallback=kRed+2) const;
+    /** 
+     * Get list of results 
+     * 
+     * 
+     * @return 
+     */
     TList* GetResults() const { return fOutput; }
+    /** 
+     * Get name of result histogram 
+     * 
+     * @param rebin 
+     * @param sym 
+     * @param postfix 
+     * 
+     * @return 
+     */
     const char* GetResultName(Int_t rebin, Bool_t sym, 
 			      const char* postfix="") const;
+    /** 
+     * Get a result 
+     * 
+     * @param rebin 
+     * @param sym 
+     * @param postfix 
+     * 
+     * @return 
+     */
     TH1* GetResult(Int_t rebin, Bool_t sym, 
 		   const char* postfix="") const;
 

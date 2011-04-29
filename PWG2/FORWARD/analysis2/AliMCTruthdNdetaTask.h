@@ -1,10 +1,10 @@
 //
 // Task to analyse the AOD for for dN/deta in the forward regions 
 //
-#ifndef ALIFORWARDDNDETATASK_H
-#define ALIFORWARDDNDETATASK_H
+#ifndef ALIMCTRUTHDNDETATASK_H
+#define ALIMCTRUTHDNDETATASK_H
 /**
- * @file   AliForwarddNdetaTask.h
+ * @file   AliMCTruthdNdetaTask.h
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
  * @date   Wed Mar 23 14:04:54 2011
  * 
@@ -24,36 +24,44 @@ class TH1D;
  * @ingroup pwg2_forward_tasks_dndeta
  * @ingroup pwg2_forward_dndeta
  */
-class AliForwarddNdetaTask : public AliBasedNdetaTask
+class AliMCTruthdNdetaTask : public AliBasedNdetaTask
 {
 public:
   /** 
    * Constructor 
    * 
    */
-  AliForwarddNdetaTask();
+  AliMCTruthdNdetaTask();
   /** 
    * Constructor
    * 
    * @param name    Name of task 
    */
-  AliForwarddNdetaTask(const char* name);
+  AliMCTruthdNdetaTask(const char* name);
   /**
    * Destructor
    * 
    */
-  virtual ~AliForwarddNdetaTask() {}
+  virtual ~AliMCTruthdNdetaTask() {}
+  /** 
+   * Called at end of event processing.
+   *
+   * This is called once in the master 
+   * 
+   * @param option Not used 
+   */
+  virtual void Terminate(Option_t* option);
 protected:
   /** 
    * Copy constructor 
    */
-  AliForwarddNdetaTask(const AliForwarddNdetaTask& o);
+  AliMCTruthdNdetaTask(const AliMCTruthdNdetaTask& o);
   /** 
    * Assigmement operator
    * 
    * @return Reference to this
    */
-  AliForwarddNdetaTask& operator=(const AliForwarddNdetaTask&) { return *this; }
+  AliMCTruthdNdetaTask& operator=(const AliMCTruthdNdetaTask&) { return *this; }
 
   /** 
    * Retrieve the histogram 
@@ -65,11 +73,17 @@ protected:
    */
   TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc);
   /** 
+   * Get the marker style 
+   * 
+   * @return Marker style 
+   */
+  virtual Int_t GetMarker() const { return GetMarkerStyle(kStar); }
+  /** 
    * Get the colour to use for markers (only pp - in PbPb we use a rainbow)
    * 
    * @return Marker colour 
    */
-  virtual Int_t GetColor() const { return kRed+2; }
+  virtual Int_t GetColor() const { return kGray+2; }
   /** 
    * Make a new centrality bin
    * 
@@ -82,12 +96,16 @@ protected:
   AliBasedNdetaTask::CentralityBin* 
   MakeCentralityBin(const char* name, Short_t l, Short_t h) const;
 
+  /**
+   * Class that holds data for a single centrality bin 
+   * 
+   */
   struct CentralityBin : public AliBasedNdetaTask::CentralityBin 
   {
     /** 
      * Constructor 
      */
-    CentralityBin() : AliBasedNdetaTask::CentralityBin() {}
+    CentralityBin() : AliBasedNdetaTask::CentralityBin(), fSumTruth(0) {}
     /** 
      * Constructor 
      * 
@@ -96,7 +114,8 @@ protected:
      * @param high Upper centrality cut in percent 
      */
     CentralityBin(const char* name, Short_t low, Short_t high)
-      : AliBasedNdetaTask::CentralityBin(name, low, high)
+      : AliBasedNdetaTask::CentralityBin(name, low, high), 
+	fSumTruth(0)
     {}
     /** 
      * Copy constructor 
@@ -104,7 +123,8 @@ protected:
      * @param other Object to copy from 
      */
     CentralityBin(const CentralityBin& other) 
-      : AliBasedNdetaTask::CentralityBin(other)
+      : AliBasedNdetaTask::CentralityBin(other), 
+	fSumTruth(other.fSumTruth) 
     {}
     /** 
      * Destructor 
@@ -117,6 +137,24 @@ protected:
      * @return 
      */
     CentralityBin& operator=(const CentralityBin&) { return *this; }
+    /** 
+     * Process an event
+     * 
+     * @param forward     Forward data (for trigger, vertex, & centrality)
+     * @param triggerMask Trigger mask 
+     * @param isZero      True if this is a zero bin event 
+     * @param vzMin       Minimum IP z coordinate
+     * @param vzMax       Maximum IP z coordinate
+     * @param data        Data histogram 
+     * @param mc          MC histogram
+     */
+    virtual void ProcessEvent(const AliAODForwardMult* forward, 
+			      Int_t                    triggerMask,
+			      Bool_t                   isZero,
+			      Double_t                 vzMin, 
+			      Double_t                 vzMax, 
+			      const TH2D*              data, 
+			      const TH2D*              mc);
     /** 
      * End of processing 
      * 
@@ -148,10 +186,11 @@ protected:
 		     Int_t       marker,
 		     Int_t       color);
   protected: 
-    ClassDef(CentralityBin,2); // A centrality bin     
+    TH2D*           fSumTruth;    //  Sum of primary histograms
+    ClassDef(CentralityBin,1); // A centrality bin     
   };
 
-  ClassDef(AliForwarddNdetaTask,2); // Determine multiplicity in forward region
+  ClassDef(AliMCTruthdNdetaTask,1); // Determine multiplicity in forward region
 };
 
 #endif

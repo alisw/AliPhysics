@@ -22,6 +22,14 @@ ClearCanvas(TCanvas* c)
   c->Clear();
 }
 
+void
+LoadLibraries()
+{
+  const char* test = gSystem->GetLibraries("PWG2forward2","D",false);
+  if (test && test[0] != '\0') return;
+  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
+}
+
 /** 
  * Draw energy loss fits to a multi-page PDF. 
  *
@@ -40,11 +48,11 @@ ClearCanvas(TCanvas* c)
  * @ingroup pwg2_forward_analysis_scripts
  */
 void
-DrawCorrCentralSecMap2(const char* fname, const char* option="colz")
+DrawCorrCentralSecMap2(const char* fname, const char* option="colz", bool tracklets=true)
 {
   //__________________________________________________________________
   // Load libraries and object 
-  gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
+  LoadLibraries();
 
   TFile* file = TFile::Open(fname, "READ");
   if (!file) { 
@@ -63,6 +71,7 @@ DrawCorrCentralSecMap2(const char* fname, const char* option="colz")
   if (!corr) { 
     Error("DrawCorrCentralSecMap", "Object '%s' not found in %s", 
 	  objName, fname);
+    file->ls();
     return;
   }
 
@@ -88,6 +97,11 @@ DrawCorrCentralSecMap2(const char* fname, const char* option="colz")
   gStyle->SetFrameBorderMode(1);
   gStyle->SetPalette(1);
 
+  TString opt(option);
+  opt.ToLower();
+  Bool_t h2d = (opt.Contains("lego") || 
+		opt.Contains("surf") || 
+		opt.Contains("col"));
   ClearCanvas(c);
   //__________________________________________________________________
   // Draw all corrections
@@ -95,37 +109,84 @@ DrawCorrCentralSecMap2(const char* fname, const char* option="colz")
   Int_t        nVtx    = vtxAxis.GetNbins();
   c->Divide((nVtx+2)/3, 3, 0, 0);
   Int_t ipad = 0;
-  for (UShort_t v=1; v <= nVtx; v++) { 
+  for (UShort_t v=1; v <= nVtx+1; v++) { 
     ipad++;
     if (ipad == 1) {
       c->cd(ipad);
       TLatex* l = new TLatex(.5, .5, 
 			     "#frac{#sum N_{ch,SPD0}}{#sum N_{ch,primary}}");
+      if (!tracklets) 
+	l->SetText(.5,.5,"#frac{dN_{ch}/d#eta}{#sum N_{ch,primary}}");
       l->SetNDC();
       l->SetTextAlign(22);
       l->SetTextSize(.1);
       l->Draw();
       ipad++;
     }
-    if (ipad == 12) ipad++;
-    
+    if (ipad == 12) {
+      if (!tracklets) 
+	continue;
+      c->cd(ipad);
+      TFile* f = TFile::Open("forward_mccorr.root", "READ");
+      if (!f) {
+	Warning("DrawCorrCentralSecMap2", "File forward_mccorr.root not found");
+	continue;
+      }
+      TList* l3 = static_cast<TList*>(f->Get("CentralSums"));
+      if (!l3) { 
+	Warning("DrawCorrCentralSecMap2", "No CentralSums list found");
+	f->Close();
+	continue;
+      }
+      TH1* xyz = static_cast<TH1*>(l3->FindObject("xyz"));
+      if (!xyz) {
+	Warning("DrawCorrCentralSecMap2", "no xyz histogram found");
+	f->Close();
+	continue;
+      }
+      xyz = static_cast<TH1*>(xyz->Clone());
+      xyz->SetDirectory(0);
+      xyz->Draw("ISO");
+      f->Close();
+      continue;
+    }
     TVirtualPad* p = c->cd(ipad);
     p->SetFillColor(kWhite);
     p->SetGridx();
     p->SetGridy();
 
     TH2*   h1 = corr->GetCorrection(v);
+    if (h2d) { 
+      p->SetRightMargin(0.13);
+      h1->SetMaximum(1.9);
+      h1->Draw(option);
+      continue;
+    }
+
     TH1D*  pr = h1->ProjectionX(Form("vtxbin%02d", v), -1, -1, "e");
+    TH1D*  nr = static_cast<TH1D*>(pr->Clone("norm"));
+    nr->SetDirectory(0);
     pr->SetDirectory(0);
     pr->SetTitle(Form("%+5.1f<v_{z}<%+5.1f", 
 		      vtxAxis.GetBinLowEdge(v),
 		      vtxAxis.GetBinUpEdge(v)));
-    pr->Scale(1. / h1->GetNbinsY());
     pr->SetMarkerColor(kRed+1);
     pr->SetFillColor(kRed+1);
     pr->SetFillStyle(3001);
     pr->SetMaximum(1.65);
     pr->GetXaxis()->SetRangeUser(-3.1,3.1);
+    
+    Int_t nX = h1->GetNbinsX();
+    Int_t nY = h1->GetNbinsY();
+    nr->Reset();
+    for (Int_t i = 1; i <= nX; i++) { 
+      Int_t nonZero = 0;
+      for (Int_t j = 1; j <= nY; j++) 
+	if (h1->GetBinContent(i,j) > 0.001) nonZero++;
+      nr->SetBinContent(i, nonZero);
+    }
+    // pr->Scale(1. / nY);
+    pr->Divide(nr);
     pr->Draw("hist"); 
     pr->Draw("same");
    

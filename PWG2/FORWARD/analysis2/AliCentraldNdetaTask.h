@@ -54,17 +54,17 @@ protected:
    */
   TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc=false);
   /** 
-   * Get the colour to use for markers
+   * Get the colour to use for markers (only pp - in PbPb we use a rainbow)
    * 
    * @return Marker colour 
    */
-  virtual Int_t GetColor() const { return kRed+1; }
+  virtual Int_t GetColor() const { return kMagenta+2; }
   /** 
    * Get the marker style 
    * 
    * @return Marker style 
    */
-  virtual Int_t GetMarker() const { return 21; }
+  virtual Int_t GetMarker() const { return GetMarkerStyle(kSquare); }
 
   ClassDef(AliCentraldNdetaTask,1); // Determine multiplicity in central area
 };

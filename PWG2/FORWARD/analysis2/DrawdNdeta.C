@@ -74,6 +74,7 @@ struct dNdetaDrawer
       fVtxAxis(0),		// TAxis*
       fCentAxis(0),             // TAxis*
       fTriggers(0),		// TH1*
+      fTruth(0),                // TH1* 
       fRangeParam(0)
 
   {
@@ -251,6 +252,10 @@ struct dNdetaDrawer
     TList* clusters = static_cast<TList*>(file->Get("CentralResults"));
     if (!clusters) Warning("Open", "Couldn't find list CentralResults");
 
+    // --- Get the central results -----------------------------------
+    TList* mcTruth = static_cast<TList*>(file->Get("MCTruthResults"));
+    if (!mcTruth) Warning("Open", "Couldn't find list MCTruthResults");
+
     // --- Make our containtes ---------------------------------------
     fResults   = new THStack("results", "Results");
     fRatios    = new THStack("ratios",  "Ratios");
@@ -258,6 +263,7 @@ struct dNdetaDrawer
     fOthers    = new TMultiGraph();
     
     // --- Loop over input data --------------------------------------
+    FetchResults(mcTruth,  "MCTruth", max, rmax, amax);
     FetchResults(forward,  "Forward", max, rmax, amax);
     FetchResults(clusters, "Central", max, rmax, amax);
 
@@ -384,7 +390,7 @@ struct dNdetaDrawer
 					     centLow,centHigh,onlya,nomc));
     if (!ret) { 
 #if 0
-      Warning("FetchResults", "No other data found for sys=%d, sNN=%d, "
+      Warning("FetchOthers", "No other data found for sys=%d, sNN=%d, "
 	      "trigger=%d %d%%-%d%% central %s", 
 	      sys, snn, trg, centLow, centHigh, 
 	      onlya ? " (ALICE results)" : "all");
@@ -469,7 +475,7 @@ struct dNdetaDrawer
     // g->SetFillColor(color);
   }
   //__________________________________________________________________
-  void ModifyTitle(TNamed* h, const char* centTxt)
+  void ModifyTitle(TNamed* /*h*/, const char* /*centTxt*/)
   {
     return;
     // if (!centTxt || !h) return;
@@ -515,8 +521,10 @@ struct dNdetaDrawer
       dndetaMC->SetMarkerStyle(dndetaMC->GetMarkerStyle()+2);
     if (dndetaMCSym && fCentAxis) 
       dndetaMCSym->SetMarkerStyle(dndetaMCSym->GetMarkerStyle()+2);
-    if (dndetaTruth && fCentAxis) 
+    if (dndetaTruth && fCentAxis) {
       dndetaTruth->SetMarkerStyle(34);
+      dndetaTruth->SetMarkerColor(kYellow-1);
+    }
     ModifyTitle(dndeta,     centTxt);
     ModifyTitle(dndetaMC,   centTxt);
     ModifyTitle(dndetaTruth,centTxt);
@@ -530,53 +538,57 @@ struct dNdetaDrawer
     max = TMath::Max(max, AddHistogram(fResults, dndeta,      dndetaSym));
     max = TMath::Max(max, AddHistogram(fResults, tracks));
 
-    if (fShowRings) {
-      THStack* rings = static_cast<THStack*>(list->FindObject("dndetaRings"));
-      if (rings) { 
-	TIter next(rings->GetHists());
-	TH1*  hist = 0;
-	while ((hist = static_cast<TH1*>(next()))) 
-	  max = TMath::Max(max, AddHistogram(fResults, hist));
-      }
+    if (dndetaTruth) {
+      fTruth = dndetaTruth;
     }
-    // Info("FetchResults", "Got %p, %p, %p from %s with name %s, max=%f", 
-    //      dndeta, dndetaMC, dndetaTruth, list->GetName(), name, max);
-
-    if (fShowLeftRight) {
-      fLeftRight->Add(Asymmetry(dndeta,    amax));
-      fLeftRight->Add(Asymmetry(dndetaMC,  amax));
-      fLeftRight->Add(Asymmetry(tracks,    amax));
-    }
-
-    if (thisOther) {
-      TIter next(thisOther->GetListOfGraphs());
-      TGraph* g = 0;
-      while ((g = static_cast<TGraph*>(next()))) {
-	fRatios->Add(Ratio(dndeta,    g, rmax));
-	fRatios->Add(Ratio(dndetaSym, g, rmax));
-	SetAttributes(g, color);
-	ModifyTitle(g, centTxt);
-	if (!fOthers->GetListOfGraphs() || 
-	    !fOthers->GetListOfGraphs()->FindObject(g->GetName())) {
-	  max = TMath::Max(max,TMath::MaxElement(g->GetN(), g->GetY()));
-	  fOthers->Add(g);
+    else {
+      if (fShowRings) {
+	THStack* rings = static_cast<THStack*>(list->FindObject("dndetaRings"));
+	if (rings) { 
+	  TIter next(rings->GetHists());
+	  TH1*  hist = 0;
+	  while ((hist = static_cast<TH1*>(next()))) 
+	    max = TMath::Max(max, AddHistogram(fResults, hist));
 	}
       }
-      // fOthers->Add(thisOther);
+      // Info("FetchResults", "Got %p, %p, %p from %s with name %s, max=%f", 
+      //      dndeta, dndetaMC, dndetaTruth, list->GetName(), name, max);
+      
+      if (fShowLeftRight) {
+	fLeftRight->Add(Asymmetry(dndeta,    amax));
+	fLeftRight->Add(Asymmetry(dndetaMC,  amax));
+	fLeftRight->Add(Asymmetry(tracks,    amax));
+      }
+      
+      if (thisOther) {
+	TIter next(thisOther->GetListOfGraphs());
+	TGraph* g = 0;
+	while ((g = static_cast<TGraph*>(next()))) {
+	  fRatios->Add(Ratio(dndeta,    g, rmax));
+	  fRatios->Add(Ratio(dndetaSym, g, rmax));
+	  SetAttributes(g, color);
+	  ModifyTitle(g, centTxt);
+	  if (!fOthers->GetListOfGraphs() || 
+	      !fOthers->GetListOfGraphs()->FindObject(g->GetName())) {
+	    max = TMath::Max(max,TMath::MaxElement(g->GetN(), g->GetY()));
+	    fOthers->Add(g);
+	  }
+	}
+	// fOthers->Add(thisOther);
+      }
+      if (tracks) { 
+	if (!fRatios->GetHists() || 
+	    !fRatios->GetHists()->FindObject(tracks->GetName()))
+	  fRatios->Add(Ratio(dndeta, tracks, rmax));
+      }
     }
-    if (tracks) { 
-      if (!fRatios->GetHists() || 
-	  !fRatios->GetHists()->FindObject(tracks->GetName()))
-	fRatios->Add(Ratio(dndeta, tracks, rmax));
-    }
-
     if (dndetaMC) { 
       fRatios->Add(Ratio(dndeta,    dndetaMC,    rmax));
       fRatios->Add(Ratio(dndetaSym, dndetaMCSym, rmax));
     }
-    if (dndetaTruth) { 
-      fRatios->Add(Ratio(dndeta,      dndetaTruth, rmax));
-      fRatios->Add(Ratio(dndetaSym,   dndetaTruth, rmax));
+    if (fTruth) {
+      fRatios->Add(Ratio(dndeta,      fTruth, rmax));
+      fRatios->Add(Ratio(dndetaSym,   fTruth, rmax));
     }
   }
   //__________________________________________________________________
@@ -1384,8 +1396,8 @@ struct dNdetaDrawer
       r = 0; 
     }
     if (r) {
-      r->SetMarkerStyle(m1->GetMarkerStyle());
-      r->SetMarkerColor(m2->GetMarkerColor());
+      r->SetMarkerStyle(m2->GetMarkerStyle());
+      r->SetMarkerColor(m1->GetMarkerColor());
       r->SetMarkerSize(0.9*m1->GetMarkerSize());
       r->SetName(Form("%s_over_%s", o1->GetName(), o2->GetName()));
       r->SetTitle(Form("%s / %s", o1->GetTitle(), o2->GetTitle()));
@@ -1603,6 +1615,7 @@ struct dNdetaDrawer
   THStack*     fLeftRight;    // Left-right asymmetry
   TMultiGraph* fOthers;       // Older data 
   TH1*         fTriggers;     // Number of triggers
+  TH1*         fTruth;        // Pointer to truth 
   RangeParam*  fRangeParam;   // Parameter object for range zoom 
   
 };

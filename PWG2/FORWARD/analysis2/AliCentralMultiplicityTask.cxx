@@ -42,7 +42,9 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name)
     fNClusterTracklet(0),
     fClusterPerTracklet(0),
     fNCluster(0),
-    fNTracklet(0)      
+    fNTracklet(0),
+    fEtaMin(0),
+    fEtaMax(0)
 {
   // 
   // Constructor 
@@ -67,7 +69,9 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask()
     fNClusterTracklet(0),
     fClusterPerTracklet(0),
     fNCluster(0),
-    fNTracklet(0)      
+    fNTracklet(0),
+    fEtaMin(0),
+    fEtaMax(0)
 {
   // 
   // Constructor 
@@ -88,7 +92,9 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplic
     fNClusterTracklet(o.fNClusterTracklet),
     fClusterPerTracklet(o.fClusterPerTracklet),
     fNCluster(o.fNCluster),
-    fNTracklet(o.fNTracklet)      
+    fNTracklet(o.fNTracklet),
+    fEtaMin(o.fEtaMin),
+    fEtaMax(o.fEtaMax)      
 {
   //
   // Copy constructor 
@@ -114,6 +120,8 @@ AliCentralMultiplicityTask::operator=(const AliCentralMultiplicityTask& o)
   fClusterPerTracklet= o.fClusterPerTracklet;
   fNCluster          = o.fNCluster;
   fNTracklet         = o.fNTracklet;
+  fEtaMin            = o.fEtaMin;
+  fEtaMax            = o.fEtaMax;
   return *this;
 }
 //____________________________________________________________________
@@ -174,9 +182,11 @@ AliCentralMultiplicityTask::GetESDEvent()
   if (!secMap) AliFatal("No secondary map defined!");
   const TAxis& vaxis = secMap->GetVertexAxis();
 
+  FindEtaLimits();
+
   fNClusterTracklet = new TH2D("nClusterVsnTracklet", 
-				"Total number of cluster vs number of tracklets",
-				100, 0, 100, 100, 0, 100);
+			       "Total number of cluster vs number of tracklets",
+			       100, 0, 100, 100, 0, 100);
   fNClusterTracklet->SetDirectory(0);
   fNClusterTracklet->SetXTitle("# of free clusters");
   fNClusterTracklet->SetYTitle("# of tracklets");
@@ -224,6 +234,62 @@ AliCentralMultiplicityTask::MarkEventForStore() const
     AliFatal("No AOD output handler set in analysis manager");
 
   ah->SetFillAOD(kTRUE);
+}
+
+//____________________________________________________________________
+void AliCentralMultiplicityTask::FindEtaLimits()
+{
+  AliCentralCorrSecondaryMap* secMap = GetManager().GetSecMap();
+  const TAxis& vaxis = secMap->GetVertexAxis();
+
+  fEtaMin.Set(vaxis.GetNbins());
+  fEtaMax.Set(vaxis.GetNbins());
+
+  TList* secs = new TList;
+  secs->SetOwner();
+  secs->SetName("secondaryMaps");
+  fList->Add(secs);
+  
+  for (Int_t v = 1; v <= vaxis.GetNbins(); v++) { 
+    TH2D* corr = secMap->GetCorrection(UShort_t(v));
+    TH1D* proj = corr->ProjectionX(Form("secCor%02d", v));
+    proj->Scale(1. / corr->GetNbinsY());
+    proj->SetTitle(Form("Projection of secondary correction "
+			"for %+5.1f<v_{z}<%+5.1f",
+			vaxis.GetBinLowEdge(v), vaxis.GetBinUpEdge(v)));
+    proj->SetYTitle("#LT 2^{nd} correction#GT");
+    proj->SetDirectory(0);
+    proj->SetMarkerStyle(20);
+    proj->SetMarkerColor(kBlue+1);
+    secs->Add(proj);
+
+    TH1D* after = static_cast<TH1D*>(proj->Clone(Form("secCorFiducial%02d",v)));
+    after->SetDirectory(0);
+    after->SetMarkerColor(kRed+1);
+    secs->Add(after);
+
+    Double_t prev = 0;
+    for (Int_t e = 1; e <= proj->GetNbinsX(); e++) { 
+      Double_t c = proj->GetBinContent(e);
+      if (c > .5 && TMath::Abs(c - prev) < .1) {
+	fEtaMin[v-1] = e;
+	break;
+      }
+      prev = c;
+      after->SetBinContent(e, 0);
+      after->SetBinError(e, 0);
+    }
+    for (Int_t e = proj->GetNbinsX(); e >= 1; e--) { 
+      Double_t c = proj->GetBinContent(e);
+      if (c > .5 && TMath::Abs(c - prev) < .1) {
+	fEtaMax[v-1] = e;
+	break;
+      }
+      prev = c;
+      after->SetBinContent(e, 0);
+      after->SetBinError(e, 0);
+    }
+  }
 }
 
 //____________________________________________________________________
@@ -319,22 +385,34 @@ AliCentralMultiplicityTask::CorrectData(TH2D& aodHist, UShort_t vtxbin) const
   for(Int_t nx = 1; nx <= aodHist.GetNbinsX(); nx++) {
     Float_t accCor = hAcceptance->GetBinContent(nx);
     Float_t accErr = hAcceptance->GetBinError(nx);
-    
+
+    Bool_t fiducial = true;
+    if (nx < fEtaMin[vtxbin-1] || nx > fEtaMax[vtxbin-1]) 
+      fiducial = false;
     Bool_t etabinSeen = kFALSE;  
     for(Int_t ny = 1; ny <= aodHist.GetNbinsY(); ny++) {
+#if 1
+      if (!fiducial) { 
+	aodHist.SetBinContent(nx, ny, 0);
+	aodHist.SetBinError(nx, ny, 0);
+	continue;
+      }
+#endif	
       // Get currrent value 
       Float_t aodValue = aodHist.GetBinContent(nx,ny);
       Float_t aodErr   = aodHist.GetBinError(nx,ny);
 
+#if 0 // This is done once in the FindEtaBins function
       // Set underflow bin
       Float_t secCor   = 0;
       if(hSecMap)       secCor     = hSecMap->GetBinContent(nx,ny);
       if (secCor > 0.5) etabinSeen = kTRUE;
+#endif
       if (aodValue < 0.000001) { 
 	aodHist.SetBinContent(nx,ny, 0); 
+	aodHist.SetBinError(nx,ny, 0); 
 	continue; 
       }
-
       if (!fUseAcceptance) continue; 
 
       // Acceptance correction 
@@ -346,10 +424,10 @@ AliCentralMultiplicityTask::CorrectData(TH2D& aodHist, UShort_t vtxbin) const
       //test
       aodHist.SetBinError(nx,ny,error);
       aodHist.SetBinError(nx,ny,aodErr);
-      
     }
     //Filling underflow bin if we eta bin is in range
-    if(etabinSeen) aodHist.SetBinContent(nx,0, 1.);
+    if (fiducial) aodHist.SetBinContent(nx,0, 1.);
+    // if (etabinSeen) aodHist.SetBinContent(nx,0, 1.);
   }  
 }
 
@@ -382,6 +460,22 @@ AliCentralMultiplicityTask::Print(Option_t* option) const
 	    << std::setw (8) << fOfflineTriggerMask 
 	    << std::dec     << std::setfill (' ') 
 	    << std::noboolalpha << std::endl;
+  AliCentralCorrSecondaryMap* secMap = GetManager().GetSecMap();
+  if (secMap) {
+    const TAxis& vaxis = secMap->GetVertexAxis();
+    std::cout << "  Eta ranges:\n"
+	    << "     Vertex        | Eta bins\n"
+	      << "   bin     range   | \n"
+	      << "   ----------------+-----------" << std::endl;
+    for (Int_t v = 1; v <= vaxis.GetNbins(); v++) { 
+      std::cout << "   " << std::setw(2) << v << "  " 
+		<< std::setw(5) << vaxis.GetBinLowEdge(v) << "-"
+		<< std::setw(5) << vaxis.GetBinUpEdge(v) << " | "
+		<< std::setw(3) << fEtaMin[v-1] << "-" 
+		<< std::setw(3) << fEtaMax[v-1] << std::endl;
+    }
+  }
+
   gROOT->IncreaseDirLevel();
   fManager.Print(option);
   fInspector.Print(option);
