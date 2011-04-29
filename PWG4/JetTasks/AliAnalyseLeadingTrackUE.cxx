@@ -104,8 +104,8 @@ Bool_t AliAnalyseLeadingTrackUE::ApplyCuts(TObject* track)
 {
   
   // select track according to set of cuts
-  if (! fEsdTrackCuts->IsSelected(track) )return kFALSE;
-  if (!fEsdTrackCutsSPD->IsSelected(track) && fEsdTrackCutsSDD->IsSelected(track)) return kFALSE;
+  if (!fEsdTrackCuts->IsSelected(track) )return kFALSE;
+  if (fEsdTrackCutsSPD && fEsdTrackCutsSDD && !fEsdTrackCutsSPD->IsSelected(track) && fEsdTrackCutsSDD->IsSelected(track)) return kFALSE;
 
   return kTRUE;
 }
@@ -114,21 +114,28 @@ Bool_t AliAnalyseLeadingTrackUE::ApplyCuts(TObject* track)
 //____________________________________________________________________
 void AliAnalyseLeadingTrackUE::DefineESDCuts(Int_t /*filterbit*/){
   
-   // Reproduces the cuts of the corresponding bit in the ESD->AOD filtering
-   // (see $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C)
+  // Reproduces the cuts of the corresponding bit in the ESD->AOD filtering
+  // (see $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C)
 
-   fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
-   fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
- 
-   // Add SPD requirement 
-   fEsdTrackCutsSPD = new AliESDtrackCuts("SPD", "Require 1 cluster in SPD");
-   fEsdTrackCutsSPD->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
- 
-   // Add SDD requirement 
-   fEsdTrackCutsSDD = new AliESDtrackCuts("SDD", "Require 1 cluster in first layer SDD");
-   fEsdTrackCutsSDD->SetClusterRequirementITS(AliESDtrackCuts::kSDD,AliESDtrackCuts::kFirst);
+  if (fFilterBit == 128)
+  {
+    fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    fEsdTrackCuts->SetMinNClustersTPC(70);
+  }
+  else
+  {
+    fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+    fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+
+    // Add SPD requirement 
+    fEsdTrackCutsSPD = new AliESDtrackCuts("SPD", "Require 1 cluster in SPD");
+    fEsdTrackCutsSPD->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+
+    // Add SDD requirement 
+    fEsdTrackCutsSDD = new AliESDtrackCuts("SDD", "Require 1 cluster in first layer SDD");
+    fEsdTrackCutsSDD->SetClusterRequirementITS(AliESDtrackCuts::kSDD,AliESDtrackCuts::kFirst);
+  }
 }
-
 
 //____________________________________________________________________
 TObjArray*  AliAnalyseLeadingTrackUE::FindLeadingObjects(TObject *obj)
@@ -171,6 +178,10 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
 
   Int_t nTracks = NParticles(obj);
   TObjArray* tracks = new TObjArray;
+  
+  // for TPC only tracks
+  if (fFilterBit == 128 && obj->InheritsFrom("AliESDEvent"))
+    tracks->SetOwner(kTRUE);
  
   // Loop over tracks or jets
   for (Int_t ipart=0; ipart<nTracks; ++ipart) {
@@ -379,8 +390,36 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	if (!( ApplyCuts(part)) )
 	 return 0; 
 	
-	// only primary candidates (does not exist for ESD tracks??????)
-	//if ( ((AliAODTrack*)part)->IsPrimaryCandidate() )return 0;
+	if (fFilterBit == 128)
+	{
+	  // create TPC only tracks constrained to the SPD vertex
+
+	  const AliESDVertex *vtxSPD = esdEvent->GetPrimaryVertexSPD();
+
+	  AliESDtrack* track = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent, ipart);
+	  if(!track) return 0;
+    
+	  // laser warm up tracks
+	  if (track->GetTPCsignal() < 10.)
+	    return 0;
+    
+	  if(track->Pt()>0.){
+	    // only constrain tracks above threshold
+	    AliExternalTrackParam exParam;
+	    // take the B-feild from the ESD, no 3D fieldMap available at this point
+	    Bool_t relate = kFALSE;
+	    relate = track->RelateToVertex(vtxSPD,esdEvent->GetMagneticField(),kVeryBig,&exParam);
+	    if(!relate)
+	    {
+//                 Printf("relating failed");
+	      delete track;
+	      return 0;
+	    }
+	    track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
+	  }
+	  
+	  part = track;
+	}
 	
 	// eventually only hadrons
 	//TO-DO
@@ -532,12 +571,9 @@ Bool_t  AliAnalyseLeadingTrackUE::TriggerSelection(const TObject* obj)
   if (!obj) // MC
     return kFALSE;
 
-  //Use AliPhysicsSelection to select good events
-  if( !obj->InheritsFrom("AliAODInputHandler") ) { // not needed for AOD input 
-	if (!(((AliInputEventHandler*)obj)->IsEventSelected()&AliVEvent::kMB))return kFALSE;
-        }                                
-
-  // TODO for AOD input trigger bit needs to be checked too (is stored in the AOD)
+  // Use AliPhysicsSelection to select good events, works for ESD and AOD
+  if (!(((AliInputEventHandler*)obj)->IsEventSelected()&(AliVEvent::kMB|AliVEvent::kUserDefined)))
+    return kFALSE;
 
   return kTRUE;
 }

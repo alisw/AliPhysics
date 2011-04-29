@@ -43,6 +43,7 @@ class AliVParticle;
 class TH1D;
 class TObjArray;
 class AliEventPoolManager;
+class AliESDEvent;
 
 class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
   {
@@ -106,6 +107,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
 
     // Handlers and events
     AliAODEvent*             fAOD;             //! AOD Event 
+    AliESDEvent*             fESD;             //! ESD Event 
     TClonesArray*            fArrayMC;         //! Array of MC particles 
     AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler 
     AliMCEvent*              fMcEvent;         //! MC event

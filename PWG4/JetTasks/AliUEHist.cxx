@@ -34,6 +34,7 @@
 #include "AliLog.h"
 #include "TCanvas.h"
 #include "TF1.h"
+#include "AliTHn.h"
 
 ClassImp(AliUEHist)
 
@@ -50,6 +51,8 @@ AliUEHist::AliUEHist(const char* reqHist) :
   fPtMax(0),
   fCentralityMin(0),
   fCentralityMax(0),
+  fZVtxMin(0),
+  fZVtxMax(0),
   fContaminationEnhancement(0),
   fCombineMinMax(0),
   fCache(0),
@@ -70,9 +73,9 @@ AliUEHist::AliUEHist(const char* reqHist) :
     
   // track level
   Int_t nTrackVars = 4; // eta vs pT vs pT,lead (vs delta phi) vs multiplicity
-  Int_t iTrackBin[5];
-  Double_t* trackBins[5];
-  const char* trackAxisTitle[5];
+  Int_t iTrackBin[6];
+  Double_t* trackBins[6];
+  const char* trackAxisTitle[6];
   
   // eta
   iTrackBin[0] = 20;
@@ -83,14 +86,14 @@ AliUEHist::AliUEHist(const char* reqHist) :
   trackAxisTitle[0] = "#eta";
   
   // delta eta
-  const Int_t kNDeltaEtaBins = 32;
+  const Int_t kNDeltaEtaBins = 40;
   Double_t deltaEtaBins[kNDeltaEtaBins+1];
   for (Int_t i=0; i<=kNDeltaEtaBins; i++)
-    deltaEtaBins[i] = -1.6 + 0.1 * i;
+    deltaEtaBins[i] = -2.0 + 0.1 * i;
   
   // pT
-  iTrackBin[1] = 39;
-  Double_t pTBins[] = {0.0, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 100.0};
+  iTrackBin[1] = 22;
+  Double_t pTBins[] = {0.15, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 12.0, 15.0, 20.0};
   trackBins[1] = pTBins;
   trackAxisTitle[1] = "p_{T} (GeV/c)";
   
@@ -101,11 +104,11 @@ AliUEHist::AliUEHist(const char* reqHist) :
     leadingpTBins[i] = 0.5 * i;
   
   // pT,lead binning 2
-  const Int_t kNLeadingpTBins2 = 14;
-  Double_t leadingpTBins2[] = { 0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 100.0 };
+  const Int_t kNLeadingpTBins2 = 9;
+  Double_t leadingpTBins2[] = { 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0 };
   
   // phi,lead; this binning starts at -pi/2 and is modulo 3
-  const Int_t kNLeadingPhiBins = 36;
+  const Int_t kNLeadingPhiBins = 72;
   Double_t leadingPhiBins[kNLeadingPhiBins+1];
   for (Int_t i=0; i<=kNLeadingPhiBins; i++)
     leadingPhiBins[i] = -TMath::Pi() / 2 + 1.0 / kNLeadingPhiBins * i * TMath::TwoPi();
@@ -117,17 +120,21 @@ AliUEHist::AliUEHist(const char* reqHist) :
     multiplicityBins[i] = -0.5 + i;
   multiplicityBins[kNMultiplicityBins] = 200;
   
+  trackBins[3] = multiplicityBins;
+  iTrackBin[3] = kNMultiplicityBins;
+  trackAxisTitle[3] = "multiplicity";
+  
   // centrality (in %)
-  const Int_t kNCentralityBins = 5 + 3 + 8;
-  Double_t centralityBins[] = { 0, 1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100.1 };
+  const Int_t kNCentralityBins = 5 + 1 + 9;
+  Double_t centralityBins[] = { 0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100.1 };
   
   // particle species
   const Int_t kNSpeciesBins = 4; // pi, K, p, rest
   Double_t speciesBins[] = { -0.5, 0.5, 1.5, 2.5, 3.5 };
   
-  trackBins[3] = multiplicityBins;
-  iTrackBin[3] = kNMultiplicityBins;
-  trackAxisTitle[3] = "multiplicity";
+  // vtx-z axis
+  const Int_t kNVertexBins = 7;
+  Double_t vertexBins[] = { -7, -5, -3, -1, 1, 3, 5, 7 };
   
   // selection depending on requested histogram
   Int_t axis = -1; // 0 = pT,lead, 1 = phi,lead
@@ -178,7 +185,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   }
   else if (axis == 2)
   {
-    nTrackVars = 5;
+    nTrackVars = 6;
     initRegions = 1;
   
     iTrackBin[0] = kNDeltaEtaBins;
@@ -196,11 +203,18 @@ AliUEHist::AliUEHist(const char* reqHist) :
     iTrackBin[4] = kNLeadingPhiBins;
     trackBins[4] = leadingPhiBins;
     trackAxisTitle[4] = "#Delta#phi (rad.)";
+
+    iTrackBin[5] = kNVertexBins;
+    trackBins[5] = vertexBins;
+    trackAxisTitle[5] = "z-vtx (cm)";
   }
     
   for (UInt_t i=0; i<initRegions; i++)
   {
-    fTrackHist[i] = new AliCFContainer(Form("fTrackHist_%d", i), title, fgkCFSteps, nTrackVars, iTrackBin);
+    if (strcmp(reqHist, "NumberDensityPhiCentrality") == 0)
+      fTrackHist[i] = new AliTHn(Form("fTrackHist_%d", i), title, fgkCFSteps, nTrackVars, iTrackBin);
+    else
+      fTrackHist[i] = new AliCFContainer(Form("fTrackHist_%d", i), title, fgkCFSteps, nTrackVars, iTrackBin);
     
     for (Int_t j=0; j<nTrackVars; j++)
     {
@@ -211,8 +225,22 @@ AliUEHist::AliUEHist(const char* reqHist) :
     SetStepNames(fTrackHist[i]);
   }
   
+  // event level
+  Int_t nEventVars = 2;
+  Int_t iEventBin[3];
+
   // track 3rd and 4th axis --> event 1st and 2nd axis
-  fEventHist = new AliCFContainer("fEventHist", title, fgkCFSteps, 2, iTrackBin+2);
+  iEventBin[0] = iTrackBin[2];
+  iEventBin[1] = iTrackBin[3];
+  
+  // plus track 5th axis (in certain cases)
+  if (axis == 2)
+  {
+    nEventVars = 3;
+    iEventBin[2] = iTrackBin[5];
+  }
+  
+  fEventHist = new AliCFContainer("fEventHist", title, fgkCFSteps, nEventVars, iEventBin);
   
   fEventHist->SetBinLimits(0, trackBins[2]);
   fEventHist->SetVarTitle(0, trackAxisTitle[2]);
@@ -220,6 +248,12 @@ AliUEHist::AliUEHist(const char* reqHist) :
   fEventHist->SetBinLimits(1, trackBins[3]);
   fEventHist->SetVarTitle(1, trackAxisTitle[3]);
   
+  if (axis == 2)
+  {
+    fEventHist->SetBinLimits(2, trackBins[5]);
+    fEventHist->SetVarTitle(2, trackAxisTitle[5]);
+  }
+
   SetStepNames(fEventHist);
   
   iTrackBin[2] = kNSpeciesBins;
@@ -247,6 +281,8 @@ AliUEHist::AliUEHist(const AliUEHist &c) :
   fPtMax(0),
   fCentralityMin(0),
   fCentralityMax(0),
+  fZVtxMin(0),
+  fZVtxMax(0),
   fContaminationEnhancement(0),
   fCombineMinMax(0),
   fCache(0),
@@ -335,6 +371,8 @@ void AliUEHist::Copy(TObject& c) const
   target.fPtMax = fPtMax;
   target.fCentralityMin = fCentralityMin;
   target.fCentralityMax = fCentralityMax;
+  target.fZVtxMin = fZVtxMin;
+  target.fZVtxMax = fZVtxMax;
   
   if (fContaminationEnhancement)
     target.fContaminationEnhancement = dynamic_cast<TH1F*> (fContaminationEnhancement->Clone());
@@ -496,7 +534,7 @@ void AliUEHist::CountEmptyBins(AliUEHist::CFStep step, Float_t ptLeadMin, Float_
 }  
 
 //____________________________________________________________________
-TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Int_t twoD)
+TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Int_t twoD, Bool_t etaNorm)
 {
   // Extracts the UE histogram at the given step and in the given region by projection and dividing tracks by events
   //
@@ -507,12 +545,22 @@ TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Floa
   //       1: 2D histogram, deltaphi, deltaeta
   //       10: 1D histogram, within |deltaeta| < 0.8
   //       11: 1D histogram, within 0.8 < |deltaeta| < 1.6
+  //
+  // etaNorm: if kTRUE (default), the distributions are divided by the area in delta eta
   
   // unzoom all axes
   ResetBinLimits(fTrackHist[region]->GetGrid(step));
   ResetBinLimits(fEventHist->GetGrid(step));
   
   SetBinLimits(fTrackHist[region]->GetGrid(step));
+  
+  // z vtx
+  if (fZVtxMax > fZVtxMin)
+  {
+    Printf("Using z-vtx range %f --> %f", fZVtxMin, fZVtxMax);
+    fTrackHist[region]->GetGrid(step)->GetGrid()->GetAxis(5)->SetRangeUser(fZVtxMin, fZVtxMax);
+    fEventHist->GetGrid(step)->GetGrid()->GetAxis(2)->SetRangeUser(fZVtxMin, fZVtxMax);
+  }
     
   TH1D* tracks = 0;
   
@@ -536,7 +584,9 @@ TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Floa
     Float_t phiRegion = TMath::TwoPi() / 3;
     if (!fCombineMinMax && region == kMin)
       phiRegion /= 2;
-    Float_t normalization = phiRegion * (axis->GetBinUpEdge(axis->GetLast()) - axis->GetBinLowEdge(axis->GetFirst()));
+    Float_t normalization = phiRegion;
+    if (etaNorm)
+      normalization *= (axis->GetBinUpEdge(axis->GetLast()) - axis->GetBinLowEdge(axis->GetFirst()));
     //Printf("Normalization: %f", normalization);
     tracks->Scale(1.0 / normalization);
     
@@ -595,16 +645,20 @@ TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Floa
     // normalize to get a density (deta dphi)
     // TODO normalization may be off for 2d histogram
     Float_t normalization = fTrackHist[region]->GetGrid(step)->GetAxis(4)->GetBinWidth(1);
-    TAxis* axis = fTrackHist[region]->GetGrid(step)->GetAxis(0);
-    if (strcmp(axis->GetTitle(), "#eta") == 0)
+    
+    if (etaNorm)
     {
-      Printf("Normalizing using eta-axis range");
-      normalization *= axis->GetBinUpEdge(axis->GetLast()) - axis->GetBinLowEdge(axis->GetFirst());
-    }
-    else
-    {
-      Printf("Normalizing assuming accepted range of |eta| < 0.8");
-      normalization *= 0.8 * 2;
+      TAxis* axis = fTrackHist[region]->GetGrid(step)->GetAxis(0);
+      if (strcmp(axis->GetTitle(), "#eta") == 0)
+      {
+	Printf("Normalizing using eta-axis range");
+	normalization *= axis->GetBinUpEdge(axis->GetLast()) - axis->GetBinLowEdge(axis->GetFirst());
+      }
+      else
+      {
+	Printf("Normalizing assuming accepted range of |eta| < 0.8");
+	normalization *= 0.8 * 2;
+      }
     }
     
     //Printf("Normalization: %f", normalization);

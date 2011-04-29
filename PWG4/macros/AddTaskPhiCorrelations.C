@@ -1,4 +1,4 @@
-AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0)
+AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, Bool_t ppRun = kFALSE)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -20,24 +20,32 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0)
   ana->SetDebugLevel(0); 
   //  ana->SetFilterBit(16);  
   //ana->SetFilterBit(64+32);  
-  ana->SetFilterBit(1);  
-  ana->SetTrackEtaCut(0.8);
+  
+//   Int_t bit = 1;
+  Int_t bit = 128;
+  ana->SetFilterBit(bit);  
+  
+  Printf("AddTaskPhiCorrelations:\n\n\n++++++++++ Using bit %d ++++++++++++\n\n\n", bit);
+  
+  ana->SetTrackEtaCut(1.0);
   ana->SetPtMin(0.15);
   //ana->SetEventSelectionBit(AliAnalysisHelperJetTasks::kIsPileUp);
   ana->SetReduceMemoryFootprint(kTRUE);
   //ana->SetSelectCharge(2);
   
-  if (1)
+  if (0)
   {
-    Printf("\n\n\n+++++++++++++++ Configuring for p+p! +++++++++++++++++\n\n\n");
+    Printf("AddTaskPhiCorrelations:\n\n\n++++++++++ Using SPD centrality selection ++++++++++++\n\n\n");
+    ana->SetCentralityMethod("CL1");
+  }    
+  
+  if (ppRun)
+  {
+    Printf("AddTaskPhiCorrelations:\n\n\n+++++++++++++++ Configuring for p+p! +++++++++++++++++\n\n\n");
     ana->SetCentralityMethod(""); // only for pp
   }    
   
-  if (0)
-  {
-    Printf("\n\n\n++++++++++ Using SPD centrality selection ++++++++++++\n\n\n");
-    ana->SetCentralityMethod("CL1");
-  }    
+//   gSystem->Sleep(3000);
   
   mgr->AddTask(ana);
   

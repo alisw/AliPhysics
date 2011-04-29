@@ -25,8 +25,8 @@ class AliUEHistograms : public TNamed
   AliUEHistograms(const char* name = "AliUEHistograms", const char* histograms = "123");
   virtual ~AliUEHistograms();
   
-  void Fill(Int_t eventType, AliUEHist::CFStep step, AliVParticle* leading, TList* toward, TList* away, TList* min, TList* max);
-  void FillCorrelations(Double_t centrality, AliUEHist::CFStep step, TSeqCollection* particles, TSeqCollection* mixed = 0, Float_t weight = 1, Bool_t firstTime = kTRUE);
+  void Fill(Int_t eventType, Float_t zVtx, AliUEHist::CFStep step, AliVParticle* leading, TList* toward, TList* away, TList* min, TList* max);
+  void FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TSeqCollection* particles, TSeqCollection* mixed = 0, Float_t weight = 1, Bool_t firstTime = kTRUE);
   void Fill(AliVParticle* leadingMC, AliVParticle* leadingReco);
   void FillEvent(Int_t eventType, Int_t step);
   void FillEvent(Double_t centrality, Int_t step);
@@ -44,6 +44,8 @@ class AliUEHistograms : public TNamed
   void SetSumpT(AliUEHist* obj) { fSumpT = obj; }
   void SetNumberDensityPhi(AliUEHist* obj) { fNumberDensityPhi = obj; }
   
+  void SetRunNumber(Long64_t runNumber) { fRunNumber = runNumber; }
+  
   TH2F* GetCorrelationpT()  { return fCorrelationpT; }
   TH2F* GetCorrelationEta() { return fCorrelationEta; }
   TH2F* GetCorrelationPhi() { return fCorrelationPhi; }
@@ -55,11 +57,13 @@ class AliUEHistograms : public TNamed
   TH3F* GetEventCountDifferential() { return fEventCountDifferential; }
   TH1F* GetVertexContributors() { return fVertexContributors; }
   TH1F* GetCentralityDistribution() { return fCentralityDistribution; }
+  Long64_t GetRunNumber() { return fRunNumber; }
   
   void Correct(AliUEHistograms* corrections);
   
   void SetEtaRange(Float_t etaMin, Float_t etaMax);
   void SetPtRange(Float_t ptMin, Float_t ptMax);
+  void SetZVtxRange(Float_t min, Float_t max);
   void SetContaminationEnhancement(TH1F* hist);
   void SetCombineMinMax(Bool_t flag);
   void SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
@@ -75,7 +79,7 @@ class AliUEHistograms : public TNamed
   void Scale(Double_t factor);
   
 protected:
-  void FillRegion(AliUEHist::Region region, AliUEHist::CFStep step, AliVParticle* leading, TList* list, Int_t multiplicity);
+  void FillRegion(AliUEHist::Region region, Float_t zVtx, AliUEHist::CFStep step, AliVParticle* leading, TList* list, Int_t multiplicity);
   Int_t CountParticles(TList* list, Float_t ptMin);
   
   static const Int_t fgkUEHists; // number of histograms
@@ -101,7 +105,9 @@ protected:
   
   Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
   
-  ClassDef(AliUEHistograms, 6)  // underlying event histogram container
+  Long64_t fRunNumber;           // run number that has been processed
+  
+  ClassDef(AliUEHistograms, 7)  // underlying event histogram container
 };
 
 #endif
