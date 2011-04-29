@@ -694,27 +694,37 @@ void AliAODPidHF::SetBetheBloch(AliTPCPIDResponse &tpcResp) const{
 
  Double_t alephParameters[5];
 
- // MC
- if(fMC){
-  alephParameters[0] = 2.15898e+00/50.;
-  alephParameters[1] = 1.75295e+01;
-  alephParameters[2] = 3.40030e-09;
-  alephParameters[3] = 1.96178e+00;
-  alephParameters[4] = 3.91720e+00;
+ if(fMC) {  // MC
 
- }else{
+   if(fPbPb) { // PbPb MC
 
-   // Read Data
+     alephParameters[0] = 1.44405e+00;
+     alephParameters[1] = 2.35409e+01;
+     alephParameters[2] = TMath::Exp(-2.90330e+01);
+     alephParameters[3] = 2.10681e+00;
+     alephParameters[4] = 4.62254e+00;
 
-  if(fOnePad) {
+   } else {  // pp MC
 
-    alephParameters[0] =1.34490e+00/50; 
+     alephParameters[0] = 2.15898e+00/50.;
+     alephParameters[1] = 1.75295e+01;
+     alephParameters[2] = 3.40030e-09;
+     alephParameters[3] = 1.96178e+00;
+     alephParameters[4] = 3.91720e+00;
+
+   }
+
+ } else { // Real Data
+
+   if(fOnePad) { // pp 1-pad (since LHC10d)
+
+    alephParameters[0] =1.34490e+00/50.; 
     alephParameters[1] = 2.69455e+01; 
     alephParameters[2] = TMath::Exp(-2.97552+01); 
     alephParameters[3] = 2.35339e+00; 
     alephParameters[4] = 5.98079e+00;
     
-  } else if(fPbPb) {
+  } else if(fPbPb) { // PbPb 
     
     // alephParameters[0] = 1.25202/50.; 
     // alephParameters[1] = 2.74992e+01; 
@@ -728,7 +738,8 @@ void AliAODPidHF::SetBetheBloch(AliTPCPIDResponse &tpcResp) const{
     alephParameters[3] = 2.38808e+00; 
     alephParameters[4] = 1.68165e+00;
     
-  } else {
+  } else {  // pp no 1-pad (LHC10bc)
+
     alephParameters[0] = 0.0283086/0.97;
     alephParameters[1] = 2.63394e+01;
     alephParameters[2] = 5.04114e-11;
