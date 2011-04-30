@@ -36,8 +36,11 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Init();
   virtual void   LocalInit()                                    { Init()                       ; }
+  
+  //OCDB
   Bool_t         AccessOCDB();
-
+  void           SwitchOnAccessOCDB()                           { fAccessOCDB = kTRUE          ; }
+  void           SwitchOffAccessOCDB()                          { fAccessOCDB = kFALSE         ; } 
   void           SetOCDBPath(const char *path)                  { fOCDBpath = path             ; }
   
   //Geometry methods
@@ -65,8 +68,8 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SetEMCALRecoUtils(AliEMCALRecoUtils * ru)      { fRecoUtils           = ru    ; }
   AliEMCALRecoUtils* GetRecoUtils()                      const  { return fRecoUtils            ; }
   
-  void SetConfigFileName(TString name)                          { fConfigName          = name  ; }
-  void SetMaxEvent(Int_t max)                                   { fMaxEvent            = max   ; }
+  void           SetConfigFileName(TString name)                { fConfigName          = name  ; }
+  void           SetMaxEvent(Int_t max)                         { fMaxEvent            = max   ; }
   
  private:
     
@@ -83,6 +86,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   AliEMCALCalibData     *fCalibData;        // EMCAL calib data
   AliCaloCalibPedestal  *fPedestalData;     // EMCAL pedestal
   TString                fOCDBpath;         // Path with OCDB location
+  Bool_t                 fAccessOCDB;       // Need to access info from OCDB (not really)   
 
   //Temporal arrays
   TClonesArray          *fDigitsArr;        //-> Digits array
@@ -113,7 +117,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   Int_t                  fMaxEvent;         // Set a maximum event
   
-  ClassDef(AliAnalysisTaskEMCALClusterize, 6);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 7);
 };
 
 #endif //ALIANALYSISTASKEMCALCLUSTERIZE_H
