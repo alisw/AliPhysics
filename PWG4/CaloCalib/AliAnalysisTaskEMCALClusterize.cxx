@@ -67,7 +67,7 @@ ClassImp(AliAnalysisTaskEMCALClusterize)
 AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name) 
   : AliAnalysisTaskSE(name)
   , fGeom(0), fGeomName("EMCAL_FIRSTYEARV1"),  fGeomMatrixSet(kFALSE), fLoadGeomMatrices(kFALSE)
-  , fCalibData(0),       fPedestalData(0),     fOCDBpath("raw://")
+  , fCalibData(0),       fPedestalData(0),     fOCDBpath("raw://"),    fAccessOCDB(kFALSE)
   , fDigitsArr(0),       fClusterArr(0),       fCaloClusterArr(0)
   , fRecParam(0),        fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE) 
   , fOutputAODBranch(0), fOutputAODBranchName("newEMCALClusters")
@@ -94,7 +94,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskEMCALClusterize")
   , fGeom(0), fGeomName("EMCAL_FIRSTYEARV1"),   fGeomMatrixSet(kFALSE), fLoadGeomMatrices(kFALSE)
-  , fCalibData(0),        fPedestalData(0),     fOCDBpath("raw://")
+  , fCalibData(0),        fPedestalData(0),     fOCDBpath("raw://"),    fAccessOCDB(kFALSE)  
   , fDigitsArr(0),        fClusterArr(0),       fCaloClusterArr(0)
   , fRecParam(0),         fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE)
   , fOutputAODBranch(0),  fOutputAODBranchName("newEMCALClusters")
@@ -347,8 +347,11 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(fFillAODFile);
   LoadBranches();
   
-  AccessOCDB();
   
+  //Init pointers, clusterizer, ocdb
+  if(fAccessOCDB) AccessOCDB();
+  InitClusterization();
+
   //Get the event
   AliVEvent   * event    = 0;
   AliESDEvent * esdevent = 0;
@@ -358,7 +361,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   //Check if input event are embedded events
   //If so, take output event
   if (aodIH && aodIH->GetMergeEvents()) {
-    //printf("AliAnalysisTaskEMCALClusterize::UserExec() - Use embedded events\øn");
+    //printf("AliAnalysisTaskEMCALClusterize::UserExec() - Use embedded events\n");
     event  = AODEvent();
     
     if(!aodIH->GetMergeEMCALCells()) 
@@ -678,34 +681,33 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
 Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
 {
   //Access to OCDB stuff
-
+  
   AliVEvent * event = InputEvent();
   if (!event)
   {
     Warning("AccessOCDB","Event not available!!!");
     return kFALSE;
   }
-
+  
   if (event->GetRunNumber()==fRun)
     return kTRUE;
   fRun = event->GetRunNumber();
-
+  
   if(DebugLevel() > 1 )
     Info("AccessODCD()"," Begin");
-
-  fGeom = AliEMCALGeometry::GetInstance(fGeomName);
   
+  //fGeom = AliEMCALGeometry::GetInstance(fGeomName);
   
   AliCDBManager *cdb = AliCDBManager::Instance();
-    
-
+  
+  
   if (fOCDBpath.Length()){
     cdb->SetDefaultStorage(fOCDBpath.Data());
     Info("AccessOCDB","Default storage %s",fOCDBpath.Data());
   }
   
   cdb->SetRun(event->GetRunNumber());
-
+  
   //
   // EMCAL from RAW OCDB
   if (fOCDBpath.Contains("alien:"))
@@ -713,7 +715,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
     cdb->SetSpecificStorage("EMCAL/Calib/Data","alien://Folder=/alice/data/2010/OCDB");
     cdb->SetSpecificStorage("EMCAL/Calib/Pedestals","alien://Folder=/alice/data/2010/OCDB");
   }
-
+  
   TString path = cdb->GetDefaultStorage()->GetBaseFolder();
   
   // init parameters:
@@ -722,27 +724,25 @@ Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
   if(!fCalibData)
   {
     AliCDBEntry *entry = (AliCDBEntry*) 
-      AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
+    AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
     
     if (entry) fCalibData =  (AliEMCALCalibData*) entry->GetObject();
   }
   
   if(!fCalibData)
     AliFatal("Calibration parameters not found in CDB!");
-    
+  
   //Get calibration parameters	
   if(!fPedestalData)
   {
     AliCDBEntry *entry = (AliCDBEntry*) 
-      AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
+    AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
     
     if (entry) fPedestalData =  (AliCaloCalibPedestal*) entry->GetObject();
   }
-    
+  
   if(!fPedestalData)
     AliFatal("Dead map not found in CDB!");
-
-  InitClusterization();
   
   return kTRUE;
 }
