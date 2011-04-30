@@ -67,6 +67,7 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   //QA list
   fList = new TList();
   fList->SetName("listQA");
+  fList->SetOwner();
 
   //Event stats.
   TString gCutName[4] = {"Total","Offline trigger",
