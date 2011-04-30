@@ -27,6 +27,8 @@ void MakePlots(TString ntupleFileName);
 void TrendQAtrainSDD(TString period,
 		     TString recoPass,
 		     TString qaTrain="QA",
+		     Bool_t useOnlyMerged=kFALSE,
+		     TString runListFile="",
 		     Int_t firstRun=0,
 		     Int_t lastRun=999999999,
 		     TString fileName="QAresults.root"){
@@ -40,7 +42,30 @@ void TrendQAtrainSDD(TString period,
   else if(period.Contains("LHC10")) year=2010;
   else if(period.Contains("LHC11")) year=2011;
 
+  Bool_t useExternalList=kFALSE;
+  Int_t runList[10000];
+  Int_t totRuns=0;
+  if(runListFile.Length()>0){
+    if(!gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",runListFile.Data()))){
+      printf("Use Run List from %s  --- runs to be analyzed:\n",runListFile.Data());
+      useExternalList=kTRUE;
+      FILE* rfil=fopen(runListFile.Data(),"r");
+      Int_t nrun;
+      while(!feof(rfil)){
+	fscanf(rfil,"%d, ",&nrun);
+	if(feof(rfil)) break;
+	runList[totRuns++]=nrun;
+      }
+      for(Int_t ir=0; ir<totRuns; ir++){
+	printf("%d\n",runList[ir]);
+      }
+    }else{
+      printf("File with run list does not exist\n");
+    }
+  }
+
   TString outFilNam=Form("TrendingSDD_%s_%s_%s.root",period.Data(),recoPass.Data(),qaTrain.Data());
+
 
 
   const Int_t nVariables=35;
@@ -49,36 +74,38 @@ void TrendQAtrainSDD(TString period,
 
   TBits* readRun=new TBits(999999);
   readRun->ResetAllBits();
-  if(!gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",outFilNam.Data()))){
-    TFile* oldfil=new TFile(outFilNam.Data());
-    TNtuple* ntmp=(TNtuple*)oldfil->Get("ntsdd");
-    Bool_t isOK=kFALSE;
-    if(ntmp){
-      if(ntmp->GetNvar()==ntsdd->GetNvar()){
-	isOK=kTRUE;
-	TObjArray* arr1=(TObjArray*)ntsdd->GetListOfBranches();
-	TObjArray* arr2=(TObjArray*)ntmp->GetListOfBranches();
-	for(Int_t iV=0; iV<ntmp->GetNvar(); iV++){
-	  TString vnam1=arr1->At(iV)->GetName();
-	  TString vnam2=arr2->At(iV)->GetName();
-	  if(vnam1!=vnam2) isOK=kFALSE;
-	  ntmp->SetBranchAddress(vnam2.Data(),&xnt[iV]);
-	}
-	if(isOK){
-	  for(Int_t nE=0; nE<ntmp->GetEntries(); nE++){
-	    ntmp->GetEvent(nE);
-	    Int_t theRun=(Int_t)(xnt[0]+0.0001);
-	    readRun->SetBitNumber(theRun);
-	    ntsdd->Fill(xnt);
+  if(!useExternalList){
+    if(!gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",outFilNam.Data()))){
+      TFile* oldfil=new TFile(outFilNam.Data());
+      TNtuple* ntmp=(TNtuple*)oldfil->Get("ntsdd");
+      Bool_t isOK=kFALSE;
+      if(ntmp){
+	if(ntmp->GetNvar()==ntsdd->GetNvar()){
+	  isOK=kTRUE;
+	  TObjArray* arr1=(TObjArray*)ntsdd->GetListOfBranches();
+	  TObjArray* arr2=(TObjArray*)ntmp->GetListOfBranches();
+	  for(Int_t iV=0; iV<ntmp->GetNvar(); iV++){
+	    TString vnam1=arr1->At(iV)->GetName();
+	    TString vnam2=arr2->At(iV)->GetName();
+	    if(vnam1!=vnam2) isOK=kFALSE;
+	    ntmp->SetBranchAddress(vnam2.Data(),&xnt[iV]);
+	  }
+	  if(isOK){
+	    for(Int_t nE=0; nE<ntmp->GetEntries(); nE++){
+	      ntmp->GetEvent(nE);
+	      Int_t theRun=(Int_t)(xnt[0]+0.0001);
+	      readRun->SetBitNumber(theRun);
+	      ntsdd->Fill(xnt);
+	    }
 	  }
 	}
       }
+      if(!isOK){
+	printf("Ntuple in local file not OK -> will be recreated\n");
+      }
+      oldfil->Close();
+      delete oldfil;
     }
-    if(!isOK){
-      printf("Ntuple in local file not OK -> will be recreated\n");
-    }
-    oldfil->Close();
-    delete oldfil;
   }
 
   if(!gGrid||!gGrid->IsConnected()) {
@@ -92,7 +119,7 @@ void TrendQAtrainSDD(TString period,
   printf("================>%d files found\n", nFiles);
   if (nFiles < 1) return;
 
-
+  Int_t nAnalyzedFiles=0;
   if (nFiles > 1){
     for (Int_t iFil = 0; iFil <nFiles ; iFil++) { 
       TString fileNameLong=Form("%s",gr->GetKey(iFil,"turl"));
@@ -103,19 +130,31 @@ void TrendQAtrainSDD(TString period,
       runNumber.Remove(9,runNumber.Sizeof());
    
       Int_t iRun=atoi(runNumber.Data());
+      if(useExternalList){
+	Bool_t keepRun=kFALSE;
+	for(Int_t ir=0; ir<totRuns; ir++){
+	  if(iRun==runList[ir]){
+	    keepRun=kTRUE;
+	    break;
+	  }
+	}
+	if(!keepRun) continue;
+      }
       if(readRun->TestBitNumber(iRun)){ 
 	printf("Run %d aleady in local ntuple -> skipping it\n",iRun);
 	continue;
       }
       if(iRun<firstRun) continue;
-      if(iRun>lastRun) continue;
+      if(iRun>lastRun) continue;    
 
-      TString isMerged=fileNameLong;
-      isMerged.Remove(isMerged.Sizeof()-16); 
-      isMerged.Remove(0,isMerged.Sizeof()-5);
-      if(!isMerged.Contains("QA")) continue;
+      if(useOnlyMerged){
+	TString isMerged=fileNameLong;
+	isMerged.Remove(isMerged.Sizeof()-16); 
+	isMerged.Remove(0,isMerged.Sizeof()-5);
+	if(!isMerged.Contains("QA")) continue;
+      }
       printf("Open File %s  Run %d\n",fileNameLong.Data(),iRun);
-
+      
 
 
       TFile* f=TFile::Open(fileNameLong.Data());  
@@ -130,6 +169,10 @@ void TrendQAtrainSDD(TString period,
 	printf("Run %d coutputRP TList MISSING -> Exit\n",iRun);
 	continue;
       }  
+
+      nAnalyzedFiles++;
+      if(!useOnlyMerged) readRun->SetBitNumber(iRun);
+
       TH1F* hcllay=(TH1F*)l->FindObject("hCluInLay");
       Float_t fracT[6]={0.,0.,0.,0.,0.,0.};
       Float_t efracT[6]={0.,0.,0.,0.,0.,0.};
@@ -291,14 +334,16 @@ void TrendQAtrainSDD(TString period,
       ntsdd->Fill(xnt);
     }
   }
+  printf("Number of analyzed files = %d\n",nAnalyzedFiles);
 
-  TFile* outfil=new TFile(outFilNam.Data(),"recreate");
-  outfil->cd();
-  ntsdd->Write();
-  outfil->Close();
-
-  MakePlots(outFilNam);
-
+  if(nAnalyzedFiles>0){
+    TFile* outfil=new TFile(outFilNam.Data(),"recreate");
+    outfil->cd();
+    ntsdd->Write();
+    outfil->Close();
+    
+    MakePlots(outFilNam);
+  }
 }
 
 void MakePlots(TString ntupleFileName){
@@ -427,16 +472,16 @@ void MakePlots(TString ntupleFileName){
     histodEdxLay4->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
 
     histoNmodEffBelow95->SetBinContent(i+1,nMod95);
-    histoNmodEffBelow95->SetBinError(i+1,0.0001);
+    histoNmodEffBelow95->SetBinError(i+1,0.0000001);
     histoNmodEffBelow95->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
     histoNmodEffBelow80->SetBinContent(i+1,nMod80);
-    histoNmodEffBelow80->SetBinError(i+1,0.0001);
+    histoNmodEffBelow80->SetBinError(i+1,0.0000001);
     histoNmodEffBelow80->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
     histoNmodEffBelow60->SetBinContent(i+1,nMod60);
-    histoNmodEffBelow60->SetBinError(i+1,0.0001);
+    histoNmodEffBelow60->SetBinError(i+1,0.0000001);
     histoNmodEffBelow60->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
     histoNmodEmpty->SetBinContent(i+1,nModEmpty);
-    histoNmodEmpty->SetBinError(i+1,0.0001);
+    histoNmodEmpty->SetBinError(i+1,0.000001);
     histoNmodEmpty->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
   }
 
@@ -563,13 +608,34 @@ void MakePlots(TString ntupleFileName){
   TCanvas* c6=new TCanvas("c6","Modules with low eff",800,1000);
   c6->Divide(1,4);
   c6->cd(1);
+  histoNmodEffBelow95->SetMinimum(histoNmodEffBelow95->GetMinimum()-2);
+  histoNmodEffBelow95->SetMaximum(histoNmodEffBelow95->GetMaximum()+2);
   histoNmodEffBelow95->Draw("E");
+  histoNmodEffBelow95->GetYaxis()->SetTitle("N. modules with eff<0.95");
+  histoNmodEffBelow95->GetYaxis()->SetTitleSize(0.075);
+  histoNmodEffBelow95->GetYaxis()->SetTitleOffset(0.5);
   c6->cd(2);
+  histoNmodEffBelow80->SetMinimum(histoNmodEffBelow80->GetMinimum()-2);
+  histoNmodEffBelow80->SetMaximum(histoNmodEffBelow80->GetMaximum()+2);
   histoNmodEffBelow80->Draw("E");
+  histoNmodEffBelow80->GetYaxis()->SetTitle("N. modules with eff<0.80");
+  histoNmodEffBelow80->GetYaxis()->SetTitleSize(0.075);
+  histoNmodEffBelow80->GetYaxis()->SetTitleOffset(0.5);
   c6->cd(3);
+  histoNmodEffBelow60->SetMinimum(histoNmodEffBelow60->GetMinimum()-2);
+  histoNmodEffBelow60->SetMaximum(histoNmodEffBelow60->GetMaximum()+2);
   histoNmodEffBelow60->Draw("E");
+  histoNmodEffBelow60->GetYaxis()->SetTitle("N. modules with eff<0.60");
+  histoNmodEffBelow60->GetYaxis()->SetTitleSize(0.075);
+  histoNmodEffBelow60->GetYaxis()->SetTitleOffset(0.5);
   c6->cd(4);
+  histoNmodEmpty->SetMinimum(histoNmodEmpty->GetMinimum()-2);
+  histoNmodEmpty->SetMaximum(histoNmodEmpty->GetMaximum()+2);
   histoNmodEmpty->Draw("E");
+  histoNmodEmpty->GetYaxis()->SetTitle("N. modules with no points");
+  histoNmodEmpty->GetYaxis()->SetTitleSize(0.075);
+  histoNmodEmpty->GetYaxis()->SetTitleOffset(0.5);
+
 
 }
 
