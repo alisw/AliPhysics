@@ -484,8 +484,6 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 { 
-  printf(" **** GRAZIE CVETAN!!!!  \n");
- 
   // Execute analysis for current event:
   if(fDebug>1) printf(" **** AliCentralitySelectionTask::UserExec() \n");
   
