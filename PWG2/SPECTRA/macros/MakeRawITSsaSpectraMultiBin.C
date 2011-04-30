@@ -30,7 +30,7 @@ void Logo();
 void MakeRawITSsaSpectraMultiBin(Bool_t optMC=kTRUE, Int_t multibin=0){
 
 
-  AliITSsadEdxFitter *ITSsa=new AliITSsadEdxFitter();
+  AliITSsadEdxFitter *ITSsa=new AliITSsadEdxFitter(optMC);
 
   TString filename, dirName, ps0, ps1, ps2;
   Char_t listname[50];
@@ -322,7 +322,7 @@ void MakeRawITSsaSpectraMultiBin(Bool_t optMC=kTRUE, Int_t multibin=0){
     gPad->SetLogy();
     fHistPosPi[i]->Write();
     gres[0][i]=new TGraph();
-    ITSsa->DoFit(fHistPosPi[i],i,211,optMC,gres[0][i]);
+    ITSsa->DoFit(fHistPosPi[i],i,211,gres[0][i]);
     ITSsa->FillHisto(hSpectraPos[0],i+1,binsize,211);
     if(optMC) ITSsa->FillHistoMC(hSpectraMCPIDPos[0],i+1,211,fHistMCPosPi[i]);
     if(ITSsa->IsGoodBin(i,211)){
@@ -338,7 +338,7 @@ void MakeRawITSsaSpectraMultiBin(Bool_t optMC=kTRUE, Int_t multibin=0){
     gPad->SetLogy();
     fHistPosK[i]->Write();
     gres[1][i]=new TGraph();
-    ITSsa->DoFit(fHistPosK[i],i,321,optMC,gres[1][i]);
+    ITSsa->DoFit(fHistPosK[i],i,321,gres[1][i]);
     ITSsa->FillHisto(hSpectraPos[1],i+1,binsize,321);
     if(optMC) ITSsa->FillHistoMC(hSpectraMCPIDPos[1],i+1,321,fHistMCPosK[i]);
     if(ITSsa->IsGoodBin(i,321)){
@@ -355,7 +355,7 @@ void MakeRawITSsaSpectraMultiBin(Bool_t optMC=kTRUE, Int_t multibin=0){
     fHistPosP[i]->Write();
     fHistPosP[i]->SetFillColor(16);
     gres[2][i]=new TGraph();
-    ITSsa->DoFitProton(fHistPosP[i],i,2212,optMC,gres[2][i]);
+    ITSsa->DoFitProton(fHistPosP[i],i,2212,gres[2][i]);
     ITSsa->FillHisto(hSpectraPos[2],i+1,binsize,2212);
     if(optMC) ITSsa->FillHistoMC(hSpectraMCPIDPos[2],i+1,2212,fHistMCPosP[i]);
     if(ITSsa->IsGoodBin(i,2212)){
@@ -373,7 +373,7 @@ void MakeRawITSsaSpectraMultiBin(Bool_t optMC=kTRUE, Int_t multibin=0){
     gPad->SetLogy();
     fHistNegPi[i]->Write();
     gres[3][i]=new TGraph();
-    ITSsa->DoFit(fHistNegPi[i],i,211,optMC,gres[3][i]);
+    ITSsa->DoFit(fHistNegPi[i],i,211,gres[3][i]);
     ITSsa->FillHisto(hSpectraNeg[0],i+1,binsize,211);
     if(optMC) ITSsa->FillHistoMC(hSpectraMCPIDNeg[0],i+1,211,fHistMCNegPi[i]);
     if(ITSsa->IsGoodBin(i,211)){
@@ -389,7 +389,7 @@ void MakeRawITSsaSpectraMultiBin(Bool_t optMC=kTRUE, Int_t multibin=0){
     gPad->SetLogy();
     fHistNegK[i]->Write();
     gres[4][i]=new TGraph();
-    ITSsa->DoFit(fHistNegK[i],i,321,optMC,gres[4][i]);
+    ITSsa->DoFit(fHistNegK[i],i,321,gres[4][i]);
     ITSsa->FillHisto(hSpectraNeg[1],i+1,binsize,321);
     if(optMC) ITSsa->FillHistoMC(hSpectraMCPIDNeg[1],i+1,321,fHistMCNegK[i]);
     if(ITSsa->IsGoodBin(i,321)){
@@ -405,7 +405,7 @@ void MakeRawITSsaSpectraMultiBin(Bool_t optMC=kTRUE, Int_t multibin=0){
     gPad->SetLogy();
     fHistNegP[i]->Write();
     gres[5][i]=new TGraph();
-    ITSsa->DoFitProton(fHistNegP[i],i,2212,optMC,gres[5][i]);
+    ITSsa->DoFitProton(fHistNegP[i],i,2212,gres[5][i]);
     ITSsa->FillHisto(hSpectraNeg[2],i+1,binsize,2212);
     if(optMC) ITSsa->FillHistoMC(hSpectraMCPIDNeg[2],i+1,2212,fHistMCNegP[i]);
     if(ITSsa->IsGoodBin(i,2212)){
