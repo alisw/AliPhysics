@@ -340,9 +340,11 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
 	AliQACheckerBase * qac = GetDetQAChecker(det) ; 
 	if (qac)
 		AliDebug(AliQAv1::GetQADebugLevel(), Form("QA checker found for %s", AliQAv1::GetDetName(det).Data())) ;
-	if (!qac)
+	if (!qac) {
 		AliError(Form("QA checker not found for %s", AliQAv1::GetDetName(det).Data())) ; 
-  
+		return kFALSE;
+	}
+
 	AliQAv1::ALITASK_t index = AliQAv1::kNULLTASK ; 
 	if ( task == AliQAv1::kRAWS ) 
 		index = AliQAv1::kRAW ; 
@@ -380,8 +382,10 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
 	AliQACheckerBase * qac = GetDetQAChecker(det) ; 
 	if (qac)
 		AliDebug(AliQAv1::GetQADebugLevel(), Form("QA checker found for %s", AliQAv1::GetDetName(det).Data())) ;
-	if (!qac)
+	if (!qac) {
 		AliError(Form("QA checker not found for %s", AliQAv1::GetDetName(det).Data())) ; 
+		return kFALSE;
+	}
   
 	AliQAv1::ALITASK_t index = AliQAv1::kNULLTASK ; 
 	if ( task == AliQAv1::kRAWS ) 
