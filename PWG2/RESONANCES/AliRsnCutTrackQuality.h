@@ -92,7 +92,7 @@ inline const char * AliRsnCutTrackQuality::Binary(UInt_t number)
 // Convert an integer in binary
 //
 
-    static char b[15];
+    static char b[50];
     b[0] = '\0';
 
     UInt_t z;
