@@ -65,7 +65,8 @@ ClassImp(AliCaloTrackReader)
     fInputEvent(0x0), fOutputEvent(0x0),fMC(0x0),
     fFillCTS(0),fFillEMCAL(0),fFillPHOS(0),
     fFillEMCALCells(0),fFillPHOSCells(0),  fSelectEmbeddedClusters(kFALSE),
-    fRemoveSuspiciousClusters(kFALSE), fSmearClusterEnergy(kFALSE), fRandom(),
+//    fRemoveSuspiciousClusters(kFALSE), 
+    fSmearClusterEnergy(kFALSE), fRandom(),
 //    fSecondInputAODTree(0x0), fSecondInputAODEvent(0x0),
 //    fSecondInputFileName(""),fSecondInputFirstEvent(0), 
 //    fCTSTracksNormalInputEntries(0), fEMCALClustersNormalInputEntries(0), 
@@ -787,25 +788,28 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
   if (fMixedEvent) 
     vindex = fMixedEvent->EventIndexForCaloCluster(iclus);
   
-  //Check if the cluster contains any bad channel and if close to calorimeter borders
-  if(GetCaloUtils()->ClusterContainsBadChannel("EMCAL",clus->GetCellsAbsId(), clus->GetNCells())) 
-    return;
-  if(!GetCaloUtils()->CheckCellFiducialRegion(clus, (AliVCaloCells*)fInputEvent->GetEMCALCells(), fInputEvent, vindex)) 
-    return;
   
-  //Remove suspicious clusters
-  if(fRemoveSuspiciousClusters){
-    Int_t ncells      = clus->GetNCells();
-    Float_t energy    = clus->E();
-    Float_t minNCells = 1+energy/3;//-x*x*0.0033
-    if(ncells < minNCells) {
-      //if(energy > 2)printf("AliCaloTrackReader::FillInputEMCALAlgorithm() - Remove cluster: e %2.2f, Ncells %d, min Ncells %2.1f\n",energy,ncells,minNCells);
-      return;
-    }
-//    else {
-//      if(energy > 2)printf("AliCaloTrackReader::FillInputEMCALAlgorithm() - Keep cluster: e %2.2f, Ncells %d, min Ncells %2.1f\n",energy,ncells,minNCells);
+  //Reject clusters with bad channels, close to borders and exotic;
+  if(!GetCaloUtils()->GetEMCALRecoUtils()->IsGoodCluster(clus,GetCaloUtils()->GetEMCALGeometry(),GetEMCALCells())) return;
+//  //Check if the cluster contains any bad channel and if close to calorimeter borders
+//  if(GetCaloUtils()->ClusterContainsBadChannel("EMCAL",clus->GetCellsAbsId(), clus->GetNCells())) 
+//    return;
+//  if(!GetCaloUtils()->CheckCellFiducialRegion(clus, (AliVCaloCells*)fInputEvent->GetEMCALCells(), fInputEvent, vindex)) 
+//    return;
+//  
+//  //Remove suspicious clusters
+//  if(fRemoveSuspiciousClusters){
+//    Int_t ncells      = clus->GetNCells();
+//    Float_t energy    = clus->E();
+//    Float_t minNCells = 1+energy/3;//-x*x*0.0033
+//    if(ncells < minNCells) {
+//      //if(energy > 2)printf("AliCaloTrackReader::FillInputEMCALAlgorithm() - Remove cluster: e %2.2f, Ncells %d, min Ncells %2.1f\n",energy,ncells,minNCells);
+//      return;
 //    }
-  }//Suspicious
+////    else {
+////      if(energy > 2)printf("AliCaloTrackReader::FillInputEMCALAlgorithm() - Keep cluster: e %2.2f, Ncells %d, min Ncells %2.1f\n",energy,ncells,minNCells);
+////    }
+//  }//Suspicious
   
   if(fSelectEmbeddedClusters){
     if(clus->GetNLabels()==0 || clus->GetLabel() < 0) return;
@@ -890,7 +894,7 @@ void AliCaloTrackReader::FillInputEMCAL() {
     }// cluster loop
     
     //Recalculate track matching
-    if(fDataType==kESD)GetCaloUtils()->RecalculateClusterTrackMatching(fInputEvent);
+    GetCaloUtils()->RecalculateClusterTrackMatching(fInputEvent);
     
   }//Get the clusters from the input event
   else {

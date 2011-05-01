@@ -483,7 +483,7 @@ void AliCalorimeterUtils::InitEMCALGeometry()
 {
 	//Initialize EMCAL geometry if it did not exist previously
 	if (!fEMCALGeo){
-		fEMCALGeo = new AliEMCALGeoUtils(fEMCALGeoName);
+		fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName);
 		if(fDebug > 0){
 			printf("AliCalorimeterUtils::InitEMCALGeometry()");
 			if (!gGeoManager) printf(" - Careful!, gGeoManager not loaded, load misalign matrices");
