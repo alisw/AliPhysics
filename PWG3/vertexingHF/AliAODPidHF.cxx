@@ -720,7 +720,7 @@ void AliAODPidHF::SetBetheBloch(AliTPCPIDResponse &tpcResp) const{
 
     alephParameters[0] =1.34490e+00/50.; 
     alephParameters[1] = 2.69455e+01; 
-    alephParameters[2] = TMath::Exp(-2.97552+01); 
+    alephParameters[2] = TMath::Exp(-2.97552e+01); 
     alephParameters[3] = 2.35339e+00; 
     alephParameters[4] = 5.98079e+00;
     
