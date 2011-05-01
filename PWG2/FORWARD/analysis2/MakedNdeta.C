@@ -40,7 +40,8 @@ void MakedNdeta(const char* aoddir   = ".",
 		Double_t    vzMin    = -10,
 		Double_t    vzMax    = +10,
 	        Int_t       proof    = 0,
-		const char* name     = 0)
+		const char* name     = 0,
+		const char* mcfile   = 0)
 {
   if ((name && name[0] != '\0') && gSystem->Load("libRAliEn") >= 0) {
     gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
@@ -89,10 +90,10 @@ void MakedNdeta(const char* aoddir   = ".",
   // --- Add tasks ---------------------------------------------------
   // Forward 
   gROOT->LoadMacro("AddTaskForwarddNdeta.C");
-  AddTaskForwarddNdeta(trig, vzMin, vzMax, useCent, scheme, true);
+  AddTaskForwarddNdeta(trig, vzMin, vzMax, useCent, scheme, true, mcfile);
   // Central
   gROOT->LoadMacro("AddTaskCentraldNdeta.C");
-  AddTaskCentraldNdeta(trig, vzMin, vzMax, useCent, scheme);
+  AddTaskCentraldNdeta(trig, vzMin, vzMax, useCent, scheme,false, mcfile);
   // MC
   gROOT->LoadMacro("AddTaskMCTruthdNdeta.C");
   AddTaskMCTruthdNdeta(trig, vzMin, vzMax, useCent, scheme);

@@ -181,6 +181,15 @@ public:
    */
   void SetNormalizationScheme(const char* what);
   /** 
+   * Filename of final MC correction
+   * 
+   * @param filename filename
+   */
+  void SetMCFinalCorrFilename(const char* filename) { 
+    fFinalMCCorrFile.Clear();
+    fFinalMCCorrFile.Append(filename); 
+  }
+  /** 
    * Load the normalization data - done automatically if not set from outside
    * 
    * @param sys system
@@ -613,7 +622,9 @@ protected:
 			    Int_t       rebin, 
 			    bool        cutEdges, 
 			    Int_t       marker,
-			    Int_t       color);
+			    Int_t       color, 
+			    TList*      mclist,
+			    TList*      truthlist);
     /** 
      * End of processing 
      * 
@@ -642,7 +653,9 @@ protected:
 		     Bool_t      cutEdges, 
 		     Int_t       triggerMask,
 		     Int_t       marker,
-		     Int_t       color);
+		     Int_t       color,
+		     TList*      mclist,
+		     TList*      truthlist);
     /**
      * @{
      * @name Access histograms
@@ -742,7 +755,8 @@ protected:
     TH1I*    fTriggers;  // Trigger histogram 
     UShort_t fLow;       // Lower limit (inclusive)
     UShort_t fHigh;      // Upper limit (exclusive)
-
+    Bool_t   fDoFinalMCCorrection; //Do final MC correction
+    
     ClassDef(CentralityBin,1); // A centrality bin 
   };
   TList*          fSums;         // Container of sums 
@@ -765,6 +779,8 @@ protected:
   UShort_t        fNormalizationScheme; // Normalization scheme
   TNamed*         fSchemeString;     
   TNamed*         fTriggerString; 
+  TString         fFinalMCCorrFile; //Filename for final MC corr
+  
   ClassDef(AliBasedNdetaTask,4); // Determine multiplicity in base area
 };
 
