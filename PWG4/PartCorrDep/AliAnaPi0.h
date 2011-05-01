@@ -159,6 +159,8 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   void     SwitchOnConversionChecker()             { fCheckConversion = kTRUE  ; }
   void     SwitchOffConversionChecker()            { fCheckConversion = kFALSE ; }  
   
+  Double_t WeightPi0(Int_t pi0Id);
+  Int_t    GetMotherPi0Index(Int_t label);
   
   private:
   Bool_t   fDoOwnMix;            // Do combinatorial background not the one provided by the frame
@@ -317,6 +319,9 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   
   TH2D *  fhMCPi0PtOrigin ;         //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
   TH2D *  fhMCEtaPtOrigin ;         //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
+
+  Int_t fFirstPi0;
+  Int_t fLastPi0;
 
   ClassDef(AliAnaPi0,18)
 } ;

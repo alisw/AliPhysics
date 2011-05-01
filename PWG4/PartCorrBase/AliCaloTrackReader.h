@@ -267,9 +267,9 @@ public:
   AliCalorimeterUtils * GetCaloUtils()            const { return fCaloUtils                       ; }
   void   SetCaloUtils(AliCalorimeterUtils * caloutils)  { fCaloUtils = caloutils                  ; }  
   
-  void   SwitchOnSuspiciousClustersRemoval()            { fRemoveSuspiciousClusters = kTRUE       ; }
-  void   SwitchOffSuspiciousClustersRemoval()           { fRemoveSuspiciousClusters = kFALSE      ; }
-  Bool_t IsSuspiciousClustersRemovalOn()          const { return fRemoveSuspiciousClusters        ; } 
+  void   SwitchOnSuspiciousClustersRemoval()            { GetCaloUtils()->GetEMCALRecoUtils()->SwitchOnRejectExoticCluster() ; }//fRemoveSuspiciousClusters = kTRUE       ; }
+  void   SwitchOffSuspiciousClustersRemoval()           { GetCaloUtils()->GetEMCALRecoUtils()->SwitchOffRejectExoticCluster(); }//fRemoveSuspiciousClusters = kFALSE      ; }
+  Bool_t IsSuspiciousClustersRemovalOn()          const { return GetCaloUtils()->GetEMCALRecoUtils()->IsRejectExoticCluster(); }//fRemoveSuspiciousClusters        ; } 
   
   //Use only for MC
   void    SwitchOnClusterEnergySmearing()               { fSmearClusterEnergy = kTRUE             ; }
@@ -367,7 +367,7 @@ public:
   Bool_t           fFillEMCALCells; // use data from EMCAL
   Bool_t           fFillPHOSCells;  // use data from PHOS
   Bool_t           fSelectEmbeddedClusters;   // Use only simulated clusters that come from embedding.
-  Bool_t           fRemoveSuspiciousClusters; // Remove high energy clusters with low number of cells
+  //Bool_t           fRemoveSuspiciousClusters; // Remove high energy clusters with low number of cells
   Bool_t           fSmearClusterEnergy;       // Smear cluster energy, to be done only for simulated data to match real data
   Float_t          fSmearClusterParam[3];     // Smearing parameters
   TRandom3         fRandom;                   // Random generator
@@ -420,7 +420,7 @@ public:
   Int_t            fCentralityOpt;       // Option for the returned value of the centrality, possible options 5, 10, 100
   Int_t            fCentralityBin[2];    // Minimum and maximum value of the centrality for the analysis
   
-  ClassDef(AliCaloTrackReader,29)
+  ClassDef(AliCaloTrackReader,30)
 } ;
 
 
