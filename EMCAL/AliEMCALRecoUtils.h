@@ -200,8 +200,8 @@ public:
   // Track matching
   //----------------------------------------------------
 
-  void    FindMatches(AliVEvent *event, TObjArray * clusterArr=0x0, TString dataType="ESD");
-  Int_t    FindMatchedCluster(AliESDtrack *track, AliVEvent *event);
+  void    FindMatches(AliVEvent *event, TObjArray * clusterArr=0x0, AliEMCALGeometry *geom=0x0);
+  Int_t   FindMatchedCluster(AliESDtrack *track, AliVEvent *event, AliEMCALGeometry *geom);
   Bool_t  ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Float_t &tmpR, Float_t &tmpZ);
   void    GetMatchedResiduals(Int_t clsIndex, Float_t &dR, Float_t &dZ);
   void    GetMatchedClusterResiduals(Int_t trkIndex, Float_t &dR, Float_t &dZ);
@@ -222,6 +222,14 @@ public:
   void     SetMass(Double_t mass){ fMass=mass   ;}
   void     SetStep(Double_t step){ fStep=step   ;}
  
+  //Cluster cut
+  Bool_t IsGoodCluster(AliVCluster *cluster, AliEMCALGeometry *geom, AliVCaloCells* cells);
+  Bool_t IsExoticCluster(AliVCluster *cluster);
+
+  void SwitchOnRejectExoticCluster()  { fRejectExoticCluster=kTRUE  ;}
+  void SwitchOffRejectExoticCluster() { fRejectExoticCluster=kFALSE ;}
+  Bool_t IsRejectExoticCluster()      { return fRejectExoticCluster ;}
+
 
   //Track Cuts 
   Bool_t  IsAccepted(AliESDtrack *track);
@@ -286,7 +294,11 @@ private:
   Float_t    fCutZ;                      // dZ cut on matching
   Double_t   fMass;                      // Mass hypothesis of the track
   Double_t   fStep;                      // Length of each step used in extrapolation in the unit of cm.
-  
+
+  // Cluster cuts
+  Bool_t     fRejectExoticCluster;      // Switch on or off exotic cluster rejection
+
+  // Track cuts  
   Int_t      fCutMinNClusterTPC;         // Min number of tpc clusters
   Int_t      fCutMinNClusterITS;         // Min number of its clusters  
   Float_t    fCutMaxChi2PerClusterTPC;   // Max tpc fit chi2 per tpc cluster
@@ -305,7 +317,7 @@ private:
   Bool_t     fUseTimeCorrectionFactors;  // Use Time Dependent Correction
   Bool_t     fTimeCorrectionFactorsSet;  // Time Correction set at leat once
   
-  ClassDef(AliEMCALRecoUtils, 9)
+  ClassDef(AliEMCALRecoUtils, 10)
   
 };
 
