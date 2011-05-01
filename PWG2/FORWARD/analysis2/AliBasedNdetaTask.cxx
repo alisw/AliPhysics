@@ -37,7 +37,8 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fCentAxis(0),
     fNormalizationScheme(kFull), 
     fSchemeString(0), 
-    fTriggerString(0)
+    fTriggerString(0),
+    fFinalMCCorrFile("")
 {
   // 
   // Constructor
@@ -66,7 +67,8 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fCentAxis(0),
     fNormalizationScheme(kFull), 
     fSchemeString(0),
-    fTriggerString(0)
+    fTriggerString(0),
+    fFinalMCCorrFile("")
 {
   // 
   // Constructor
@@ -106,7 +108,8 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
     fCentAxis(o.fCentAxis),
     fNormalizationScheme(o.fNormalizationScheme), 
     fSchemeString(o.fSchemeString), 
-    fTriggerString(o.fTriggerString)
+    fTriggerString(o.fTriggerString),
+    fFinalMCCorrFile(o.fFinalMCCorrFile)
 {}
 
 //____________________________________________________________________
@@ -560,7 +563,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
   fOutput = new TList;
   fOutput->SetName(Form("%s_result", GetName()));
   fOutput->SetOwner();
-
+  
   fSNNString     = static_cast<TNamed*>(fSums->FindObject("sNN"));
   fSysString     = static_cast<TNamed*>(fSums->FindObject("sys"));
   fCentAxis      = static_cast<TAxis*>(fSums->FindObject("centAxis"));
@@ -585,14 +588,27 @@ AliBasedNdetaTask::Terminate(Option_t *)
   THStack* dndetaMCStackRebin = new THStack(Form("dndetaMC_rebin%02d", fRebin), 
 					    "dN_{ch}/d#eta");
   
+  TList* mclist = 0;
+  TList* truthlist = 0;
+  
+  if(fFinalMCCorrFile.Contains(".root")) {
+    TFile* ftest = TFile::Open(fFinalMCCorrFile.Data());
+    if(ftest) {
+      mclist    = dynamic_cast<TList*> (ftest->Get(Form("%sResults", GetName())));
+      truthlist = dynamic_cast<TList*> (ftest->Get("MCTruthResults"));
+    }
+    else AliWarning("MC analysis file invalid - no final MC correction possible");
+    
+  }
   Int_t style = GetMarker();
   Int_t color = GetColor();
-
+  
   AliInfo(Form("Marker style=%d, color=%d", style, color));
   while ((bin = static_cast<CentralityBin*>(next()))) {
+    
     bin->End(fSums, fOutput, fNormalizationScheme, fShapeCorr, fTriggerEff,
 	     fSymmetrice, fRebin, fUseROOTProj, fCorrEmpty, fCutEdges, 
-	     fTriggerMask, style, color);
+	     fTriggerMask, style, color, mclist, truthlist);
     if (fCentAxis && bin->IsAllBin()) continue;
     TH1* dndeta      = bin->GetResult(0, false, "");
     TH1* dndetaSym   = bin->GetResult(0, true,  "");
@@ -1132,7 +1148,8 @@ AliBasedNdetaTask::CentralityBin::CentralityBin()
     fSumMC(0), 
     fTriggers(0), 
     fLow(0), 
-    fHigh(0)
+    fHigh(0),
+    fDoFinalMCCorrection(false)
 {
   // 
   // Constructor 
@@ -1148,7 +1165,8 @@ AliBasedNdetaTask::CentralityBin::CentralityBin(const char* name,
     fSumMC(0), 
     fTriggers(0),
     fLow(low), 
-    fHigh(high)
+    fHigh(high),
+    fDoFinalMCCorrection(false)
 {
   // 
   // Constructor 
@@ -1178,7 +1196,8 @@ AliBasedNdetaTask::CentralityBin::CentralityBin(const CentralityBin& o)
     fSumMC(o.fSumMC), 
     fTriggers(o.fTriggers), 
     fLow(o.fLow), 
-    fHigh(o.fHigh)
+    fHigh(o.fHigh),
+    fDoFinalMCCorrection(o.fDoFinalMCCorrection)
 {
   // 
   // Copy constructor 
@@ -1219,6 +1238,7 @@ AliBasedNdetaTask::CentralityBin::operator=(const CentralityBin& o)
   fTriggers  = o.fTriggers;
   fLow       = o.fLow;
   fHigh      = o.fHigh;
+  fDoFinalMCCorrection = o.fDoFinalMCCorrection;
 
   return *this;
 }
@@ -1506,7 +1526,9 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
 					     Int_t       rebin, 
 					     bool        cutEdges, 
 					     Int_t       marker,
-					     Int_t       color)
+					     Int_t       color,
+					     TList*      mclist, 
+					     TList*      truthlist)
 {
   // 
   // Generate the dN/deta result from input 
@@ -1545,7 +1567,33 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
   // Event-level normalization 
   dndeta->Scale(1., "width");
   copy->Scale(1., "width");
-
+  
+  TH1D* dndetaMCCorrection = 0;
+  TList* centlist          = 0;
+  TH1D* dndetaMCtruth      = 0;
+  TList* truthcentlist     = 0;
+  
+  // Possible final correction to <MC analysis> / <MC truth>
+  if(mclist) 
+    centlist = static_cast<TList*> (mclist->FindObject(GetListName()));
+  if(centlist)
+    dndetaMCCorrection =  static_cast<TH1D*> (centlist->FindObject(Form("dndeta%s%s",GetName(), postfix)));
+  if(truthlist) 
+    truthcentlist = static_cast<TList*> (truthlist->FindObject(GetListName()));
+  if(truthcentlist)
+    dndetaMCtruth =  static_cast<TH1D*> (truthcentlist->FindObject("dndetaTruth"));
+  //std::cout<<dndetaMCCorrection<<"  "<<dndetaMCtruth<<std::endl;
+  if(dndetaMCCorrection && dndetaMCtruth) {
+    AliInfo("Correcting with final MC correction");
+    dndetaMCCorrection->Divide(dndetaMCtruth);
+    dndeta->Divide(dndetaMCCorrection);
+    
+    //std::cout<<"histo "<<Form("dndeta%s%s",GetName(), postfix)<<"  "<<GetListName()<<"  "<<dndetaMCCorrection<<std::endl;
+    //std::cout<<"truth "<<GetListName()<<"  "<<dndetaMCtruth<<std::endl;
+  
+  }
+  else AliInfo("No final MC correction applied");
+  
   // --- Set some histogram attributes -------------------------------
   TString post;
   Int_t rColor = GetColor(color);
@@ -1579,7 +1627,9 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 				      Bool_t      cutEdges, 
 				      Int_t       triggerMask,
 				      Int_t       marker,
-				      Int_t       color) 
+				      Int_t       color, 
+				      TList*      mclist,
+				      TList*      truthlist) 
 {
   // 
   // End of processing 
@@ -1629,12 +1679,12 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   // TEMPORARY FIX
   if (triggerMask == AliAODForwardMult::kNSD) {
     // This is a local change 
-    epsilonT = 0.934; 
+    epsilonT = 0.96; 
     AliWarning(Form("Using hard-coded NSD trigger efficiency of %f",epsilonT));
   }
   else if (triggerMask == AliAODForwardMult::kInel) {
     // This is a local change 
-    epsilonT = 0.92; 
+    epsilonT = 0.934; 
     AliWarning(Form("Using hard-coded Inel trigger efficiency of %f",epsilonT));
   }
   if (scheme & kZeroBin) { 
@@ -1673,14 +1723,14 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 
   // --- Make result and store ---------------------------------------
   MakeResult(sum, "", rootProj, corrEmpty, (scheme & kShape) ? shapeCorr : 0,
-	     scaler, symmetrice, rebin, cutEdges, marker, color);
+	     scaler, symmetrice, rebin, cutEdges, marker, color, mclist, truthlist);
 
   // --- Process result from TrackRefs -------------------------------
   if (sumMC) 
     MakeResult(sumMC, "MC", rootProj, corrEmpty, 
 	       (scheme & kShape) ? shapeCorr : 0,
 	       scaler, symmetrice, rebin, cutEdges, 
-	       GetMarkerStyle(GetMarkerBits(marker)+4), color);
+	       GetMarkerStyle(GetMarkerBits(marker)+4), color, mclist, truthlist);
   
   // Temporary stuff 
   // if (!IsAllBin()) return;

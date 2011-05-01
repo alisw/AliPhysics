@@ -34,6 +34,7 @@ gdb_script=$ALICE_ROOT/PWG2/FORWARD/analysis2/gdb_cmds
 max_rotate=10
 name=`date +analysis%Y%m%d_%H%M`
 pass2dir=./
+mcfilename="none"
 
 #_____________________________________________________________________
 # Print usage
@@ -66,6 +67,7 @@ Options:
 	-Z,--show-asymmetry	Show asymmetry 		    ($asymm)
 	-S,--scheme SCHEME	Normalisation scheme	    ($scheme)
 	-T,--title STRING       Title on plots              ($tit)
+        -q,--mcfilename         MC dndeta filename          ($mcfilename)
 	-N,--name STRING        Name of analysis            ($name)
 	-I,--input-dir PATH     Path to input ESD data      ($esddir)
 
@@ -242,7 +244,8 @@ while test $# -gt 0 ; do
 	-R|--show-ratios)     ratios=`toggle $ratios`	;;
 	-Z|--show-asymmetry)  asymm=`toggle $asymm`	;;
 	-S|--scheme)          scheme=`echo $2 | tr ' ' ','` ; shift ;;
-	-T|--title)           tit=$2 ; shift ;; 
+	-T|--title)           tit=$2 ; shift ;;
+	-q|--mcname)          mcfilename=$2 ; shift ;;
 	-N|--name)            name=$2 ; shift ;; 
 	-I|--input-dir)       esddir=$2 ; shift ;;
 	-t|--type)           
@@ -274,11 +277,11 @@ fi
 #_____________________________________________________________________
 # Pass 2 
 if test $dopass2 -gt 0 ; then
-    args="(\"${pass2dir}\",$nev,\"$type\",$cent,\"$scheme\",$vzmin,$vzmax,$proof,\"$name\")"
+    args="(\"${pass2dir}\",$nev,\"$type\",$cent,\"$scheme\",$vzmin,$vzmax,$proof,\"$name\",\"$mcfilename\")"
     if test "x$pass1" = "xMakeELossFits.C" ; then 
 	args=(\(\"${pass2dir}${output1}\"\))
     fi
-
+    
     run_pass ${batch} ${output2} "${outputs2}" "${pass2dir}" ${dopass3} \
 	${ana}/${pass2} ${args}
     echo "Pass 2 done"

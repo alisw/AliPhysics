@@ -184,7 +184,9 @@ protected:
 		     Bool_t      cutEdges, 
 		     Int_t       triggerMask,
 		     Int_t       marker,
-		     Int_t       color);
+		     Int_t       color,
+		     TList*      mclist,
+		     TList*      truthlist);
   protected: 
     TH2D*           fSumTruth;    //  Sum of primary histograms
     ClassDef(CentralityBin,1); // A centrality bin     

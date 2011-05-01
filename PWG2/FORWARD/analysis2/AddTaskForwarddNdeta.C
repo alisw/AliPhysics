@@ -29,13 +29,17 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
 		     Double_t    vzMax    = +10, 
 		     Bool_t      useCent  = false,
 		     const char* scheme   = 0,
-		     Bool_t      cutEdges = false)
+		     Bool_t      cutEdges = false,
+		     const char* mcanalysisfilename = "none")
 {
   // --- Analysis manager --------------------------------------------
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
 
   // --- Make our object ---------------------------------------------
   AliForwarddNdetaTask* task = new AliForwarddNdetaTask("Forward");
+  //Set the filename of the corresponding MC analysis
+  task->SetMCFinalCorrFilename(mcanalysisfilename);
+  
   // Set the vertex range to use 
   task->SetVertexRange(vzMin, vzMax);
   // Set the trigger mask to use (INEL,INEL>0,NSD)

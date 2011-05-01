@@ -199,7 +199,9 @@ AliMCTruthdNdetaTask::CentralityBin::End(TList*      sums,
 					 Bool_t      cutEdges,
 					 Int_t       triggerMask,
 					 Int_t       marker,
-					 Int_t       color)
+					 Int_t       color,
+					 TList*      mclist,
+					 TList*      truthlist)
 {
 #if 0
   AliInfo(Form("At end with sums=%p, results=%p, scheme=%d, "
@@ -215,7 +217,7 @@ AliMCTruthdNdetaTask::CentralityBin::End(TList*      sums,
 					shapeCorr, trigEff, 
 					symmetrice, rebin, 
 					rootProj, corrEmpty, cutEdges,
-					triggerMask, marker, color);
+					triggerMask, marker, color, mclist, truthlist);
 
   fSumTruth     = static_cast<TH2D*>(fSums->FindObject("truth"));
   

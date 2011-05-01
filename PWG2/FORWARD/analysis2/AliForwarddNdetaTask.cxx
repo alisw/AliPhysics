@@ -103,7 +103,9 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 					 Bool_t      cutEdges,
 					 Int_t       triggerMask,
 					 Int_t       marker,
-					 Int_t       color)
+					 Int_t       color,
+					 TList*      mclist,
+					 TList*      truthlist )
 {
   AliInfo(Form("In End of %s with corrEmpty=%d, cutEdges=%d, rootProj=%d", 
 	       GetName(), corrEmpty, cutEdges, rootProj));
@@ -111,7 +113,7 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 					shapeCorr, trigEff, 
 					symmetrice, rebin, 
 					rootProj, corrEmpty, cutEdges,
-					triggerMask, marker, color);
+					triggerMask, marker, color, mclist, truthlist);
 
   if (!IsAllBin()) return;
   TFile* file = TFile::Open("forward.root", "READ");
