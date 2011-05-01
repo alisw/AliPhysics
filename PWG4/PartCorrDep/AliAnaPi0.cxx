@@ -85,7 +85,7 @@ fhPrimEtaPt(0x0), fhPrimEtaAccPt(0x0), fhPrimEtaY(0x0), fhPrimEtaAccY(0x0), fhPr
 fhPrimPi0PtOrigin(0x0),  fhPrimEtaPtOrigin(0x0), 
 fhMCOrgMass(),fhMCOrgAsym(),  fhMCOrgDeltaEta(),fhMCOrgDeltaPhi(),
 fhMCPi0MassPtRec(), fhMCPi0MassPtTrue(), fhMCPi0PtTruePtRec(), fhMCEtaMassPtRec(), fhMCEtaMassPtTrue(), fhMCEtaPtTruePtRec(),
-fhMCPi0PtOrigin(0x0),  fhMCEtaPtOrigin(0x0), fFirstPi0(0), fLastPi0(0)
+fhMCPi0PtOrigin(0x0),  fhMCEtaPtOrigin(0x0)
 {
 //Default Ctor
  InitParameters();
@@ -1028,43 +1028,6 @@ void AliAnaPi0::FillAcceptanceHistograms(){
   if(GetReader()->ReadStack()){	
     AliStack * stack = GetMCStack();
     if(stack){
-      
-      //Find last/first pi0 for weigth
-      //const Double_t rcut = 1. ; //cut for primary particles
-      
-      //Look for the bunch of pi0s with at least 2 j\psi (443) after
-      fFirstPi0=0;
-      fLastPi0=0;
-    
-      Int_t pi0inBunch=-1;
-      const Int_t minNPi0InBunch=10 ;
-      for (Int_t iTracks = 0; iTracks < stack->GetNtrack(); iTracks++) {
-        TParticle* particle = (TParticle *)stack->Particle(iTracks);
-        //Look only at primary particles
-        if(particle->R()>1 || particle->GetFirstMother()!=-1)
-          continue ;
-        if(particle->GetPdgCode()==111){
-          //primary pi0
-          if(pi0inBunch==-1){ //Start new bunch
-            pi0inBunch=iTracks ;
-          }
-        }
-        else{//bunch of pi0s ended
-          if(pi0inBunch>-1){
-            if(iTracks-pi0inBunch > minNPi0InBunch){//This was our bunch
-              fFirstPi0=pi0inBunch ;
-              fLastPi0=iTracks-1 ;
-              break ;
-            }
-            else{
-              pi0inBunch=-1;
-            }
-          }
-        }
-      }
-      
-//      printf("Set Last %d - First %d \n",fLastPi0,fFirstPi0);
-
       for(Int_t i=0 ; i<stack->GetNtrack(); i++){
         TParticle * prim = stack->Particle(i) ;
         Int_t pdg = prim->GetPdgCode();
@@ -1078,10 +1041,10 @@ void AliAnaPi0::FillAcceptanceHistograms(){
           Double_t phi   = TMath::RadToDeg()*prim->Phi() ;
           if(pdg == 111){
             if(TMath::Abs(pi0Y) < 1.0){
-              fhPrimPi0Pt ->Fill(pi0Pt,WeightPi0(i)) ;
-              fhPrimPi0Phi->Fill(pi0Pt, phi,WeightPi0(i)) ;
+              fhPrimPi0Pt ->Fill(pi0Pt) ;
+              fhPrimPi0Phi->Fill(pi0Pt, phi) ;
             }
-            fhPrimPi0Y  ->Fill(pi0Pt, pi0Y,WeightPi0(i)) ;
+            fhPrimPi0Y  ->Fill(pi0Pt, pi0Y) ;
           }
           else if(pdg == 221){
             if(TMath::Abs(pi0Y) < 1.0){
@@ -1108,7 +1071,7 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               else if(mompdg    >= 310   && mompdg    <= 323) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0S, k+-,k*
               else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0L
               else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(pi0Pt,3.5);//resonances   
-              else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5, WeightPi0(i));//other?
+              else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5);//other?
             }//pi0
             else {
               if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(pi0Pt,0.5);//parton
@@ -1177,12 +1140,12 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               
               if(inacceptance){
                 if(pdg==111){
-                  fhPrimPi0AccPt ->Fill(pi0Pt, WeightPi0(i)) ;
-                  fhPrimPi0AccPhi->Fill(pi0Pt, phi, WeightPi0(i)) ;
-                  fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y, WeightPi0(i)) ;
+                  fhPrimPi0AccPt ->Fill(pi0Pt) ;
+                  fhPrimPi0AccPhi->Fill(pi0Pt, phi) ;
+                  fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
                   Double_t angle  = lv1.Angle(lv2.Vect());
-                  fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle, WeightPi0(i));
-                  fhPrimPi0CosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle), WeightPi0(i));
+                  fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle);
+                  fhPrimPi0CosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
                 }
                 else if(pdg==221){
                   fhPrimEtaAccPt ->Fill(pi0Pt) ;
@@ -1201,44 +1164,6 @@ void AliAnaPi0::FillAcceptanceHistograms(){
     if(mcparticles){
       Int_t nprim = mcparticles->GetEntriesFast();
 
-      
-      //Find last/first pi0 for weigth
-      //const Double_t rcut = 1. ; //cut for primary particles
-      
-      //Look for the bunch of pi0s with at least 2 j\psi (443) after
-      fFirstPi0=0;
-      fLastPi0=0;
-      
-//      Int_t pi0inBunch=-1;
-//      const Int_t minNPi0InBunch=10 ;
-//      for (Int_t iTracks = 0; iTracks < nprim-4; iTracks++) {
-//        AliAODMCParticle* particle = (AliAODMCParticle *)mcparticles->At(iTracks);
-//        //Look only at primary particles
-//        if(TMath::Sqrt(particle->Yv()*particle->Yv()+particle->Xv()*particle->Xv())>1 || particle->GetMother()!=-1)
-//          continue ;
-//        if(particle->GetPdgCode()==111){
-//          //primary pi0
-//          if(pi0inBunch==-1){ //Start new bunch
-//            pi0inBunch=iTracks ;
-//          }
-//        }
-//        else{//bunch of pi0s ended
-//          if(pi0inBunch>-1){
-//            if(iTracks-pi0inBunch > minNPi0InBunch){//This was our bunch
-//              fFirstPi0=pi0inBunch ;
-//              fLastPi0=iTracks-1 ;
-//              break ;
-//            }
-//            else{
-//              pi0inBunch=-1;
-//            }
-//          }
-//        }
-//      }
-      
-//      printf("Set Last %d - First %d \n",fLastPi0,fFirstPi0);
-
-      
       for(Int_t i=0; i < nprim; i++)
       {
         AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);   
@@ -1256,10 +1181,10 @@ void AliAnaPi0::FillAcceptanceHistograms(){
           Double_t phi   = TMath::RadToDeg()*prim->Phi() ;
           if(pdg == 111){
             if(TMath::Abs(pi0Y) < 1){
-              fhPrimPi0Pt->Fill(pi0Pt, WeightPi0(i)) ;            
-              fhPrimPi0Phi->Fill(pi0Pt, phi, WeightPi0(i)) ;
+              fhPrimPi0Pt->Fill(pi0Pt) ;            
+              fhPrimPi0Phi->Fill(pi0Pt, phi) ;
             }
-            fhPrimPi0Y  ->Fill(pi0Pt, pi0Y, WeightPi0(i)) ;
+            fhPrimPi0Y  ->Fill(pi0Pt, pi0Y) ;
           }
           else if(pdg == 221){
             if(TMath::Abs(pi0Y) < 1){
@@ -1286,7 +1211,7 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               else if(mompdg    >= 310   && mompdg    <= 323) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0S, k+-,k*
               else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0L
               else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(pi0Pt,3.5);//resonances   
-              else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5, WeightPi0(i));//other?
+              else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5);//other?
             }//pi0
             else {
               if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(pi0Pt,0.5);//parton
@@ -1374,12 +1299,12 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               if(inacceptance){
                 if(pdg==111){
   //                printf("ACCEPTED pi0: pt %2.2f, phi %3.2f, eta %1.2f\n",pi0Pt,phi,pi0Y);
-                  fhPrimPi0AccPt ->Fill(pi0Pt, WeightPi0(i)) ;
-                  fhPrimPi0AccPhi->Fill(pi0Pt, phi, WeightPi0(i)) ;
-                  fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y, WeightPi0(i)) ;
+                  fhPrimPi0AccPt ->Fill(pi0Pt) ;
+                  fhPrimPi0AccPhi->Fill(pi0Pt, phi) ;
+                  fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
                   Double_t angle  = lv1.Angle(lv2.Vect());
-                  fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle, WeightPi0(i));
-                  fhPrimPi0CosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle), WeightPi0(i));
+                  fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle);
+                  fhPrimPi0CosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
                 }
                 else if(pdg==221){
                   fhPrimEtaAccPt ->Fill(pi0Pt) ;
@@ -1395,65 +1320,6 @@ void AliAnaPi0::FillAcceptanceHistograms(){
     
     
   }	// read AOD MC
-}
-
-//___________________________________________________________________________
-Double_t AliAnaPi0::WeightPi0(Int_t pi0Id){
-  
- //Weight to correct for pi0
-  
-  if(pi0Id<fFirstPi0) return 1 ;
-  if(pi0Id>fLastPi0) return 1 ;
-  //This is HardPi0 generators
-  //In total there were 5 generators
-  printf("Last %d - First %d \n",fLastPi0,fFirstPi0);
-  Int_t pi0PerGenerator = (fLastPi0-fFirstPi0+1)/5 ;
-  if(pi0PerGenerator==0) return 1.;
-  Int_t nGenerator=(pi0Id-fFirstPi0+1)/pi0PerGenerator;
-  const Double_t kp0 =1.35;
-  const Double_t kxn= 6.18;
-  
-  switch(nGenerator){
-    case 0: return 1.;  //  genPi0HagPt0->SetPtRange(0., 30.) ;
-    case 1: return TMath::Power(kp0 /(kp0 + 3.), kxn);    //genPi0HagPt1->SetPtRange(3., 30.) ;
-    case 2: return TMath::Power(kp0 /(kp0 + 6.), kxn);;    //genPi0HagPt2->SetPtRange(6., 30.) ;
-    case 3: return TMath::Power(kp0 /(kp0 + 9.), kxn);;    //genPi0HagPt3->SetPtRange(9., 30.) ;
-    case 4: return TMath::Power(kp0 /(kp0 + 12.), kxn);;    //genPi0HagPt4->SetPtRange(12., 30.) ;
-    default: printf("Unknown generator %d: pi0=%d, first Pi0=%d, last pi0=%d \n",nGenerator,pi0Id,fFirstPi0,fLastPi0) ; return 1;
-  }
-}  
-
-//___________________________________________________________________________
-Int_t AliAnaPi0::GetMotherPi0Index(Int_t label){
-  
-  //Index of mother pi0, if pi0
-  
-  
-  if(GetReader()->ReadAODMCParticles()){
-    TClonesArray * mcparticles = GetReader()->GetAODMCParticles(0);
-    
-    while(label > -1){
-      AliAODMCParticle * mom = (AliAODMCParticle *) mcparticles->At(label);
-      if(mom){
-        if(mom->GetPdgCode()==111) return label;
-        else label  = mom->GetMother() ;
-      }
-    }
-  }  //AOD  
-  else { //Kine stack from ESDs 
-    AliStack * stack = GetReader()->GetStack();
-    
-    while(label > -1){
-      TParticle * mom = stack->Particle(label);        
-      if(mom){
-        if(mom->GetPdgCode()==111) return label;
-        else label  = mom->GetFirstMother() ;
-      }
-    }
-  }//Stack
-  
-  return -1;
-  
 }
 
 //_____________________________________________________________
@@ -1493,10 +1359,10 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
         fhMCOrgDeltaPhi[1]->Fill(pt,dphi);
       }          
       else if(ancPDG==111){//Pi0
-        fhMCOrgMass[2]->Fill(pt,mass, WeightPi0(momindex));
-        fhMCOrgAsym[2]->Fill(pt,asym), WeightPi0(momindex);
-        fhMCOrgDeltaEta[2]->Fill(pt,deta, WeightPi0(momindex));
-        fhMCOrgDeltaPhi[2]->Fill(pt,dphi, WeightPi0(momindex));
+        fhMCOrgMass[2]->Fill(pt,mass);
+        fhMCOrgAsym[2]->Fill(pt,asym);
+        fhMCOrgDeltaEta[2]->Fill(pt,deta);
+        fhMCOrgDeltaPhi[2]->Fill(pt,dphi);
         if(fMultiCutAnaSim){
           for(Int_t ipt=0; ipt<fNPtCuts; ipt++){          
             for(Int_t icell=0; icell<fNCellNCuts; icell++){
@@ -1505,18 +1371,18 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
                 if(pt1    >  fPtCuts[ipt]      && pt2    >  fPtCuts[ipt]        && 
                    asym   <  fAsymCuts[iasym]                                   && 
                    ncell1 >= fCellNCuts[icell] && ncell2 >= fCellNCuts[icell]){ 
-                  fhMCPi0MassPtRec [index]->Fill(pt,mass, WeightPi0(momindex));
-                  fhMCPi0MassPtTrue[index]->Fill(ancMomentum.Pt(),mass, WeightPi0(momindex));
-                  if(mass < 0.17 && mass > 0.1) fhMCPi0PtTruePtRec[index]->Fill(ancMomentum.Pt(),pt, WeightPi0(momindex));
+                  fhMCPi0MassPtRec [index]->Fill(pt,mass);
+                  fhMCPi0MassPtTrue[index]->Fill(ancMomentum.Pt(),mass);
+                  if(mass < 0.17 && mass > 0.1) fhMCPi0PtTruePtRec[index]->Fill(ancMomentum.Pt(),pt);
                 }//pass the different cuts
               }// pid bit cut loop
             }// icell loop
           }// pt cut loop
         }//Multi cut ana sim
         else {
-          fhMCPi0MassPtTrue[0]->Fill(ancMomentum.Pt(),mass, WeightPi0(momindex));
+          fhMCPi0MassPtTrue[0]->Fill(ancMomentum.Pt(),mass);
           if(mass < 0.17 && mass > 0.1) {
-            fhMCPi0PtTruePtRec[0]->Fill(ancMomentum.Pt(),pt, WeightPi0(momindex)); 
+            fhMCPi0PtTruePtRec[0]->Fill(ancMomentum.Pt(),pt); 
    
             if(GetReader()->ReadStack()){	
               TParticle* ancestor = GetMCStack()->Particle(ancLabel);
@@ -1546,7 +1412,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
             else if(mompdg    >= 310   && mompdg    <= 323) fhMCPi0PtOrigin->Fill(pt,6.5);//k0S, k+-,k*
             else if(mompdg    == 130) fhMCPi0PtOrigin->Fill(pt,6.5);//k0L
             else if(momstatus == 11 || momstatus  == 12 ) fhMCPi0PtOrigin->Fill(pt,3.5);//resonances   
-            else                      fhMCPi0PtOrigin->Fill(pt,7.5, WeightPi0(momindex));//other?
+            else                      fhMCPi0PtOrigin->Fill(pt,7.5);//other?
             
           }//pi0 mass region
           
@@ -1936,10 +1802,6 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     //Get (Super)Module number of this cluster
     module1 = GetModuleNumber(p1);
     
-    Int_t label1 = GetMotherPi0Index(p1->GetLabel());
-    Double_t weight1 = WeightPi0(label1);
-    p1->SetFiducialArea(weight1*10000);
-    
     //---------------------------------
     //Second loop on photons/clusters
     //---------------------------------
@@ -1974,17 +1836,6 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       if(GetDebug() > 2)
         printf(" E: photon1 %f, photon2 %f; Pair: pT %f, mass %f, a %f\n", p1->E(), p2->E(), (photon1 + photon2).E(),m,a);
       
-      
-      Int_t label2 = GetMotherPi0Index(p2->GetLabel());
-      Double_t weight2 = WeightPi0(label2);
-      p2->SetFiducialArea(weight2*10000);
-      Double_t weight=1.;
-      if(label1!=label2) weight=weight1*weight2;
-      else               weight=weight1;
-       
-      if(weight!=1)
-        printf("Weight: l1 %d, w1 %f, l2 %d, w2 %f, W %f\n",label1,weight1,label2,weight2,weight);
-      
       //--------------------------------
       // Opening angle selection
       //--------------------------------
@@ -2007,7 +1858,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //-------------------------------------------------------------------------------------------------
       if(a < fAsymCuts[0] && fFillSMCombinations){
         if(module1==module2 && module1 >=0 && module1<fNModules)
-          fhReMod[module1]->Fill(pt,m,weight) ;
+          fhReMod[module1]->Fill(pt,m) ;
 
         if(fCalorimeter=="EMCAL"){
           
@@ -2015,18 +1866,18 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           Int_t j=0;
           for(Int_t i = 0; i < fNModules/2; i++){
             j=2*i;
-            if((module1==j && module2==j+1) || (module1==j+1 && module2==j)) fhReSameSectorEMCALMod[i]->Fill(pt,m,weight) ;
+            if((module1==j && module2==j+1) || (module1==j+1 && module2==j)) fhReSameSectorEMCALMod[i]->Fill(pt,m) ;
           }
           
           // Same side
           for(Int_t i = 0; i < fNModules-2; i++){
-            if((module1==i && module2==i+2) || (module1==i+2 && module2==i)) fhReSameSideEMCALMod[i]->Fill(pt,m,weight); 
+            if((module1==i && module2==i+2) || (module1==i+2 && module2==i)) fhReSameSideEMCALMod[i]->Fill(pt,m); 
           }
         }//EMCAL
         else {//PHOS
-          if((module1==0 && module2==1) || (module1==1 && module2==0)) fhReDiffPHOSMod[0]->Fill(pt,m,weight) ; 
-          if((module1==0 && module2==2) || (module1==2 && module2==0)) fhReDiffPHOSMod[1]->Fill(pt,m,weight) ; 
-          if((module1==1 && module2==2) || (module1==2 && module2==1)) fhReDiffPHOSMod[2]->Fill(pt,m,weight) ;
+          if((module1==0 && module2==1) || (module1==1 && module2==0)) fhReDiffPHOSMod[0]->Fill(pt,m) ; 
+          if((module1==0 && module2==2) || (module1==2 && module2==0)) fhReDiffPHOSMod[1]->Fill(pt,m) ; 
+          if((module1==1 && module2==2) || (module1==2 && module2==1)) fhReDiffPHOSMod[2]->Fill(pt,m) ;
         }//PHOS
       }
       
@@ -2036,8 +1887,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       if(ok){
         
         //Check if one of the clusters comes from a conversion 
-        if     (p1->IsTagged() && p2->IsTagged()) fhReConv2->Fill(pt,m,weight);
-        else if(p1->IsTagged() || p2->IsTagged()) fhReConv ->Fill(pt,m,weight);
+        if     (p1->IsTagged() && p2->IsTagged()) fhReConv2->Fill(pt,m);
+        else if(p1->IsTagged() || p2->IsTagged()) fhReConv ->Fill(pt,m);
         
         //Fill histograms for different bad channel distance, centrality, assymmetry cut and pid bit
         for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
@@ -2046,15 +1897,15 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               if(a < fAsymCuts[iasym]){
                 Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
                 //printf("index %d :(cen %d * nPID %d + ipid %d)*nasym %d + iasym %d\n",index,curCentrBin,fNPIDBits,ipid,fNAsymCuts,iasym);
-                fhRe1     [index]->Fill(pt,m,weight);
-                if(fMakeInvPtPlots)fhReInvPt1[index]->Fill(pt,m,weight/pt) ;
+                fhRe1     [index]->Fill(pt,m);
+                if(fMakeInvPtPlots)fhReInvPt1[index]->Fill(pt,m,1./pt) ;
                 if(fFillBadDistHisto){
                   if(p1->DistToBad()>0 && p2->DistToBad()>0){
-                    fhRe2     [index]->Fill(pt,m,weight) ;
-                    if(fMakeInvPtPlots)fhReInvPt2[index]->Fill(pt,m,weight/pt) ;
+                    fhRe2     [index]->Fill(pt,m) ;
+                    if(fMakeInvPtPlots)fhReInvPt2[index]->Fill(pt,m,1./pt) ;
                     if(p1->DistToBad()>1 && p2->DistToBad()>1){
-                      fhRe3     [index]->Fill(pt,m,weight) ;
-                      if(fMakeInvPtPlots)fhReInvPt3[index]->Fill(pt,m,weight/pt) ;
+                      fhRe3     [index]->Fill(pt,m) ;
+                      if(fMakeInvPtPlots)fhReInvPt3[index]->Fill(pt,m,1./pt) ;
                     }// bad 3
                   }// bad2
                 }// Fill bad dist histos
@@ -2064,13 +1915,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         }// pid bit loop
         
         //Fill histograms with opening angle
-        fhRealOpeningAngle   ->Fill(pt,angle,weight);
-        fhRealCosOpeningAngle->Fill(pt,TMath::Cos(angle),weight);
+        fhRealOpeningAngle   ->Fill(pt,angle);
+        fhRealCosOpeningAngle->Fill(pt,TMath::Cos(angle));
         
         //Fill histograms with pair assymmetry
-        fhRePtAsym->Fill(pt,a,weight);
-        if(m > 0.10 && m < 0.17) fhRePtAsymPi0->Fill(pt,a,weight);
-        if(m > 0.45 && m < 0.65) fhRePtAsymEta->Fill(pt,a,weight);
+        fhRePtAsym->Fill(pt,a);
+        if(m > 0.10 && m < 0.17) fhRePtAsymPi0->Fill(pt,a);
+        if(m > 0.45 && m < 0.65) fhRePtAsymEta->Fill(pt,a);
         
         //-------------------------------------------------------
         //Get the number of cells needed for multi cut analysis.
@@ -2114,7 +1965,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
             
             if(p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)    && 
-               p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton))   fhRePIDBits[ipid]->Fill(pt,m,weight) ;
+               p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton))   fhRePIDBits[ipid]->Fill(pt,m) ;
             
             //printf("ipt %d, ipid%d, name %s\n",ipt, ipid, fhRePtPIDCuts[ipt*fNPIDBitsBits+ipid]->GetName());
           } // pid bit cut loop
@@ -2127,19 +1978,24 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                 if(p1->E() >   fPtCuts[ipt]      && p2->E() > fPtCuts[ipt]        && 
                    a        <   fAsymCuts[iasym]                                    && 
                    ncell1   >=  fCellNCuts[icell] && ncell2   >= fCellNCuts[icell]){
-                    fhRePtNCellAsymCuts[index]->Fill(pt,m,weight) ;
+                    fhRePtNCellAsymCuts[index]->Fill(pt,m) ;
                   //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
                   if(fFillSMCombinations && module1==module2){
-                    if     (module1==0)  fhRePtNCellAsymCutsSM0[index]->Fill(pt,m,weight) ;
-                    else if(module1==1)  fhRePtNCellAsymCutsSM1[index]->Fill(pt,m,weight) ;
-                    else if(module1==2)  fhRePtNCellAsymCutsSM2[index]->Fill(pt,m,weight) ;
-                    else if(module1==3)  fhRePtNCellAsymCutsSM3[index]->Fill(pt,m,weight) ;
+                    if     (module1==0)  fhRePtNCellAsymCutsSM0[index]->Fill(pt,m) ;
+                    else if(module1==1)  fhRePtNCellAsymCutsSM1[index]->Fill(pt,m) ;
+                    else if(module1==2)  fhRePtNCellAsymCutsSM2[index]->Fill(pt,m) ;
+                    else if(module1==3)  fhRePtNCellAsymCutsSM3[index]->Fill(pt,m) ;
                     //else printf("AliAnaPi0::FillHistograms() - WRONG SM NUMBER\n");
                   }
                 }
               }// pid bit cut loop
             }// icell loop
           }// pt cut loop
+          if(GetHistoTrackMultiplicityBins()){
+            for(Int_t iasym = 0; iasym < fNAsymCuts; iasym++){
+              if(a < fAsymCuts[iasym])fhRePtMult[iasym]->Fill(pt,GetTrackMultiplicity(),m) ;
+            }
+          }
         }// multiple cuts analysis
       }// ok if same sm
     }// second same event particle
@@ -2156,7 +2012,6 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     for(Int_t ii=0; ii<nMixed; ii++){  
       TClonesArray* ev2= (TClonesArray*) (evMixList->At(ii));
       Int_t nPhot2=ev2->GetEntriesFast() ;
-
       Double_t m = -999;
       if(GetDebug() > 1) 
         printf("AliAnaPi0::MakeAnalysisFillHistograms() - Mixed event %d photon entries %d, centrality bin %d\n", ii, nPhot2, curCentrBin);
@@ -2171,15 +2026,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         //Get kinematics of cluster and (super) module of this cluster
         TLorentzVector photon1(p1->Px(),p1->Py(),p1->Pz(),p1->E());
         module1 = GetModuleNumber(p1);
-        Float_t weight1 = p1->GetFiducialArea()*10000.;
-
+        
         //---------------------------------
         //First loop on photons/clusters
         //---------------------------------        
         for(Int_t i2=0; i2<nPhot2; i2++){
           AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (ev2->At(i2)) ;
-          Float_t weight2 = p2->GetFiducialArea()*10000.;
-          Float_t weight  = weight1*weight2;
+          
           //Get kinematics of second cluster and calculate those of the pair
           TLorentzVector photon2(p2->Px(),p2->Py(),p2->Pz(),p2->E());
           m           = (photon1+photon2).M() ; 
@@ -2212,7 +2065,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           //-------------------------------------------------------------------------------------------------          
           if(a < fAsymCuts[0] && fFillSMCombinations){
             if(module1==module2 && module1 >=0 && module1<fNModules)
-              fhMiMod[module1]->Fill(pt,m,weight) ;
+              fhMiMod[module1]->Fill(pt,m) ;
 
             if(fCalorimeter=="EMCAL"){
               
@@ -2220,18 +2073,18 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               Int_t j=0;
               for(Int_t i = 0; i < fNModules/2; i++){
                 j=2*i;
-                if((module1==j && module2==j+1) || (module1==j+1 && module2==j)) fhMiSameSectorEMCALMod[i]->Fill(pt,m,weight) ;
+                if((module1==j && module2==j+1) || (module1==j+1 && module2==j)) fhMiSameSectorEMCALMod[i]->Fill(pt,m) ;
               }
               
               // Same side
               for(Int_t i = 0; i < fNModules-2; i++){
-                if((module1==i && module2==i+2) || (module1==i+2 && module2==i)) fhMiSameSideEMCALMod[i]->Fill(pt,m,weight); 
+                if((module1==i && module2==i+2) || (module1==i+2 && module2==i)) fhMiSameSideEMCALMod[i]->Fill(pt,m); 
               }
             }//EMCAL
             else {//PHOS
-              if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffPHOSMod[0]->Fill(pt,m,weight) ; 
-              if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffPHOSMod[1]->Fill(pt,m,weight) ; 
-              if((module1==1 && module2==2) || (module1==2 && module2==1)) fhMiDiffPHOSMod[2]->Fill(pt,m,weight) ;
+              if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffPHOSMod[0]->Fill(pt,m) ; 
+              if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffPHOSMod[1]->Fill(pt,m) ; 
+              if((module1==1 && module2==2) || (module1==2 && module2==1)) fhMiDiffPHOSMod[2]->Fill(pt,m) ;
             }//PHOS
             
             
@@ -2242,8 +2095,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           if(ok){
             
             //Check if one of the clusters comes from a conversion 
-            if     (p1->IsTagged() && p2->IsTagged()) fhMiConv2->Fill(pt,m,weight);
-            else if(p1->IsTagged() || p2->IsTagged()) fhMiConv ->Fill(pt,m,weight);
+            if     (p1->IsTagged() && p2->IsTagged()) fhMiConv2->Fill(pt,m);
+            else if(p1->IsTagged() || p2->IsTagged()) fhMiConv ->Fill(pt,m);
 
             //Fill histograms for different bad channel distance, centrality, assymmetry cut and pid bit
             for(Int_t ipid=0; ipid<fNPIDBits; ipid++){ 
@@ -2251,15 +2104,15 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                 for(Int_t iasym=0; iasym < fNAsymCuts; iasym++){
                   if(a < fAsymCuts[iasym]){
                     Int_t index = ((curCentrBin*fNPIDBits)+ipid)*fNAsymCuts + iasym;
-                    fhMi1     [index]->Fill(pt,m,weight) ;
-                    if(fMakeInvPtPlots)fhMiInvPt1[index]->Fill(pt,m,weight/pt) ;
+                    fhMi1     [index]->Fill(pt,m) ;
+                    if(fMakeInvPtPlots)fhMiInvPt1[index]->Fill(pt,m,1./pt) ;
                     if(fFillBadDistHisto){
                       if(p1->DistToBad()>0 && p2->DistToBad()>0){
                         fhMi2     [index]->Fill(pt,m) ;
-                        if(fMakeInvPtPlots)fhMiInvPt2[index]->Fill(pt,m,weight/pt) ;
+                        if(fMakeInvPtPlots)fhMiInvPt2[index]->Fill(pt,m,1./pt) ;
                         if(p1->DistToBad()>1 && p2->DistToBad()>1){
                           fhMi3     [index]->Fill(pt,m) ;
-                          if(fMakeInvPtPlots)fhMiInvPt3[index]->Fill(pt,m,weight/pt) ;
+                          if(fMakeInvPtPlots)fhMiInvPt3[index]->Fill(pt,m,1./pt) ;
                         }
                       }
                     }// Fill bad dist histo
@@ -2280,7 +2133,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                     if(p1->Pt() >   fPtCuts[ipt]      && p2->Pt() > fPtCuts[ipt]        && 
                        a        <   fAsymCuts[iasym]                                    && 
                        p1->GetBtag() >=  fCellNCuts[icell] && p2->GetBtag() >= fCellNCuts[icell]){
-                      fhMiPtNCellAsymCuts[index]->Fill(pt,m,weight) ;
+                      fhMiPtNCellAsymCuts[index]->Fill(pt,m) ;
                       //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
                     }
                   }// pid bit cut loop
@@ -2289,8 +2142,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             } // Multi cut ana
             
             //Fill histograms with opening angle
-            fhMixedOpeningAngle   ->Fill(pt,angle,weight);
-            fhMixedCosOpeningAngle->Fill(pt,TMath::Cos(angle),weight);          
+            fhMixedOpeningAngle   ->Fill(pt,angle);
+            fhMixedCosOpeningAngle->Fill(pt,TMath::Cos(angle));          
           }//ok
         }// second cluster loop
       }//first cluster loop
