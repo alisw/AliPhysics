@@ -3519,9 +3519,9 @@ void   AliTPCcalibLaser::MakeFitHistos(){
     TH2F *profz = (TH2F*)fDeltaZres.UncheckedAt(id);
     //TH2F *profy2 = (TH2F*)fDeltaYres2.UncheckedAt(id);
     TH2F *profy2 = 0;
-    TH2F *profz2 = 0;(TH2F*)fDeltaZres2.UncheckedAt(id);
+    TH2F *profz2 = 0;//(TH2F*)fDeltaZres2.UncheckedAt(id);
     TH2F *profyabs = 0; //(TH2F*)fDeltaYresAbs.UncheckedAt(id);
-    TH2F *profzabs = (TH2F*)fDeltaYresAbs.UncheckedAt(id);
+    TH2F *profzabs = 0; //(TH2F*)fDeltaYresAbs.UncheckedAt(id);
     //    TH2F *profy3 = (TH2F*)fDeltaYres3.UncheckedAt(id);
     //TH2F *profz3 = (TH2F*)fDeltaZres3.UncheckedAt(id);
     if (!profy){
@@ -3567,8 +3567,8 @@ void   AliTPCcalibLaser::MakeFitHistos(){
     TH1F * hisP3 = 0;
     TH1F * hisP4 = 0;
     
-    TH1F * hisdphi = (TH1F*)fDeltaPhi.At(id);
-    TH1F * hisdphiP = (TH1F*)fDeltaPhiP.At(id);
+    TH1F * hisdphi = 0;//(TH1F*)fDeltaPhi.At(id);
+    TH1F * hisdphiP = 0;//(TH1F*)fDeltaPhiP.At(id);
     TH1F * hisSignal = 0; //(TH1F*)fSignals.At(id);
 
     if (!hisdz){

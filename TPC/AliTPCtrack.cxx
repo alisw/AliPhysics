@@ -188,7 +188,7 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   if (pcstream){
     AliExternalTrackParam dummy;
     AliExternalTrackParam *ptpc=(AliExternalTrackParam *)tpc;
-    if (!ptpc) ptpc=&dummy;
+    //    if (!ptpc) ptpc=&dummy;
     AliESDtrack *esd= (AliESDtrack *)&t;
     (*pcstream)<<"trackP"<<
       "reject="<<reject<<   // flag - rejection of current esd track parameters

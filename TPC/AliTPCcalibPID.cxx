@@ -256,6 +256,7 @@ void AliTPCcalibPID::Process(AliESDEvent *event) {
    Printf("ERROR: esdFriend not available");
    return;
   }  
+  if (esdFriend->TestSkipBit()) return;
   //
   // track loop
   //
@@ -862,7 +863,7 @@ void AliTPCcalibPID::DumpTree(THnSparse * hndim, const char * outname){
   //
   Double_t position[10];
   Double_t value; 
-  Int_t *bins = new Int_t[10];
+  Int_t bins[1000];
   //
   //
   const Float_t rmsy0=0.5, rmsz0=1;

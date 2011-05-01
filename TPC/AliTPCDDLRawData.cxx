@@ -152,7 +152,7 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
 	      ddlNumber=data.Sec*2+data.SubSec;
 	    else
 	      ddlNumber=72+(data.Sec-36)*4+data.SubSec;
-	    strcpy(filename,AliDAQ::DdlFileName("TPC",ddlNumber));
+	    strncpy(filename,AliDAQ::DdlFileName("TPC",ddlNumber),100);
 	    Int_t patchIndex = data.SubSec;
 	    if(data.Sec>=36) patchIndex += 2;
 	    // buffer=new AliAltroBuffer(filename,mapping[patchIndex]);
