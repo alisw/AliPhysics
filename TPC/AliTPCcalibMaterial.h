@@ -22,9 +22,13 @@ public:
   AliTPCcalibMaterial(const Text_t *name, const Text_t *title); 
   virtual ~AliTPCcalibMaterial();
   virtual void           Process(AliESDEvent *event);
+  virtual void           ProcessPairs(AliESDEvent *event);
   virtual Long64_t       Merge(TCollection *li);
   virtual void           Analyze(){;}
  public:
+  Bool_t CheckLooper(Int_t index, AliESDEvent *event);
+  Bool_t CheckV0(Int_t index, AliESDEvent *event);
+ 
   THnSparse * MakeHisto();
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
