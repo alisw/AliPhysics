@@ -146,7 +146,9 @@ protected:
 		     Bool_t      cutEdges, 
 		     Int_t       triggerMask,
 		     Int_t       marker,
-		     Int_t       color);
+		     Int_t       color,
+		     TList*      mclist,
+		     TList*      truthlist);
   protected: 
     ClassDef(CentralityBin,2); // A centrality bin     
   };
