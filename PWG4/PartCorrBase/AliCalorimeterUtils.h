@@ -48,7 +48,7 @@ class AliCalorimeterUtils : public TObject {
   //virtual void Init();
 	
   //Calorimeters Geometry Methods
-  AliEMCALGeoUtils * GetEMCALGeometry() const { return fEMCALGeo;}
+  AliEMCALGeometry * GetEMCALGeometry() const { return fEMCALGeo;}
   TString  EMCALGeometryName()          const { return fEMCALGeoName ; }  
   void  SetEMCALGeometryName(TString name)    { fEMCALGeoName = name ; }
   void InitEMCALGeometry() ; 
@@ -177,12 +177,12 @@ class AliCalorimeterUtils : public TObject {
   void RecalculateClusterPID(AliVCluster* clu) {fEMCALRecoUtils->RecalculateClusterPID(clu);}
 
   //Track matching recalculation
-  void RecalculateClusterTrackMatching(AliVEvent * event)         {if (fRecalculateMatching) fEMCALRecoUtils->FindMatches(event);}
+  void RecalculateClusterTrackMatching(AliVEvent * event)         {if (fRecalculateMatching) fEMCALRecoUtils->FindMatches(event,0,fEMCALGeo);}
   void GetMatchedResiduals(Int_t index, Float_t &dR, Float_t &dZ) {if (fRecalculateMatching) fEMCALRecoUtils->GetMatchedResiduals(index,dR,dZ);}
   //This could be used for PHOS ...
-  void SwitchOnRecalculateClusterTrackMatching()      { fRecalculateMatching = kTRUE; } 
-  void SwitchOffRecalculateClusterTrackMatching()     { fRecalculateMatching = kFALSE; } 
-  Bool_t IsRecalculationOfClusterTrackMatchingOn()  const { return fRecalculateMatching ; }
+  void SwitchOnRecalculateClusterTrackMatching()          { fRecalculateMatching = kTRUE ; } 
+  void SwitchOffRecalculateClusterTrackMatching()         { fRecalculateMatching = kFALSE; } 
+  Bool_t IsRecalculationOfClusterTrackMatchingOn()  const { return fRecalculateMatching  ; }
   Float_t GetCutR() const { return fCutR; }
   Float_t GetCutZ() const { return fCutZ; }
   
@@ -194,7 +194,7 @@ class AliCalorimeterUtils : public TObject {
   Int_t              fDebug;                 //  Debugging level
   TString            fEMCALGeoName;          //  Name of geometry to use for EMCAL.
   TString            fPHOSGeoName;           //  Name of geometry to use for PHOS.	
-  AliEMCALGeoUtils * fEMCALGeo ;             //! EMCAL geometry pointer
+  AliEMCALGeometry * fEMCALGeo ;             //! EMCAL geometry pointer
   AliPHOSGeoUtils  * fPHOSGeo  ;             //! PHOS  geometry pointer  
   Bool_t             fEMCALGeoMatrixSet;     //  Check if the transformation matrix is set for EMCAL
   Bool_t             fPHOSGeoMatrixSet ;     //  Check if the transformation matrix is set for PHOS

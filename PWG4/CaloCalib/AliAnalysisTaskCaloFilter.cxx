@@ -394,7 +394,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       
     }
     //Recalculate track-matching
-    fEMCALRecoUtils->FindMatches(event);
+    fEMCALRecoUtils->FindMatches(event,0,fEMCALGeo);
     
   } // corrections in EMCAL
   
@@ -423,11 +423,14 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       if(DebugLevel() > 2)
         printf("Check cluster %d for bad channels and close to border\n",cluster->GetID());
       if(fEMCALRecoUtils->ClusterContainsBadChannel(fEMCALGeo,cluster->GetCellsAbsId(), cluster->GetNCells())) continue;	
+      
       //      if(!fEMCALRecoUtils->CheckCellFiducialRegion(fEMCALGeo, cluster, event->GetEMCALCells())) {
       //        printf("Finally reject\n");
       //        continue;
       //      }
-      
+
+      if(fEMCALRecoUtils->IsRejectExoticCluster() && fEMCALRecoUtils->IsExoticCluster(cluster)) continue;	
+
       fEMCALRecoUtils->GetMatchedResiduals(cluster->GetID(),dR,dZ);
       cluster->SetTrackDistance(dR,dZ);
     }
