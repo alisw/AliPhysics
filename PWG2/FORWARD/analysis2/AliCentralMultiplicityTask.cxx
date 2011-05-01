@@ -389,7 +389,7 @@ AliCentralMultiplicityTask::CorrectData(TH2D& aodHist, UShort_t vtxbin) const
     Bool_t fiducial = true;
     if (nx < fEtaMin[vtxbin-1] || nx > fEtaMax[vtxbin-1]) 
       fiducial = false;
-    Bool_t etabinSeen = kFALSE;  
+    //  Bool_t etabinSeen = kFALSE;  
     for(Int_t ny = 1; ny <= aodHist.GetNbinsY(); ny++) {
 #if 1
       if (!fiducial) { 
