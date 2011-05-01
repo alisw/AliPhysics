@@ -44,7 +44,6 @@
 #include "AliHMPIDParam.h"
 //#include <TGeoHMatrix>
 #include "AliGeomManager.h"
-#include "AliCDBManager.h"
 #include "AliGRPManager.h"
 
 ClassImp(AliTrackComparisonESD)
@@ -57,7 +56,6 @@ AliTrackComparisonESD::AliTrackComparisonESD()
    fESDfriend(0),
    fCurrentRun(-1),
    fDebugOutputPath(""),
-   fOcdbPath("local:///lustre/alice/alien/alice/data/2010/OCDB"),
    fOutput(0),
    fEMCAL(0),
    fHMPID(0),
@@ -81,7 +79,6 @@ AliTrackComparisonESD::AliTrackComparisonESD(const char *name)
    fESDfriend(0),
    fCurrentRun(-1),
    fDebugOutputPath(""),
-   fOcdbPath("local:///lustre/alice/alien/alice/data/2010/OCDB"),
    fOutput(0),
    fEMCAL(0),
    fHMPID(0),
@@ -214,38 +211,6 @@ Bool_t AliTrackComparisonESD::SetupEvent() {
   else
     fCurrentRun = fESD->GetRunNumber();
 
-  // OCDB
-  printf("setting run to %d\n",fCurrentRun);
-  AliCDBManager::Instance()->SetDefaultStorage(fOcdbPath.Data());
-  AliCDBManager::Instance()->SetRun(fCurrentRun); 
-
-  // magnetic field
-  if ( !TGeoGlobalMagField::Instance()->GetField() ) {
-    printf("Loading field map...\n");
-    AliGRPManager grpMan;
-    if( !grpMan.ReadGRPEntry() ) { 
-      printf("Cannot get GRP entry\n"); 
-      return kFALSE;
-    }
-    if( !grpMan.SetMagField() ) { 
-      printf("Problem with magnetic field setup\n"); 
-      return kFALSE;
-    }
-  }
-
-  // geometry
-  printf("Loading geometry...\n");
-  AliGeomManager::LoadGeometry();
-  if( !AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD TOF PHOS EMCAL HMPID") ) {
-    //printf("Problem with align objects\n");
-  }
-  fGeom =  AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");
-  printf("%s\n",fGeom->GetName());
-  if(!fGeom)
-    {
-      printf("EMCAL geometry not loaded!\n");
-      return kFALSE;
-    }
   return kTRUE;
 }
 
@@ -287,7 +252,7 @@ void AliTrackComparisonESD::Exec(Option_t *) {
   TRefArray *clusters = new TRefArray();
   Int_t nclusters = fESD->GetEMCALClusters(clusters);
   AliESDCaloCells *cells = fESD->GetEMCALCells();
-  RecalClusterPos(clusters,cells);
+  //  RecalClusterPos(clusters,cells);
 //   Float_t pos[3];
 //   for(Int_t icl=0; icl<nclusters; icl++)
 //     {
@@ -446,6 +411,9 @@ void AliTrackComparisonESD::ProcessHMPID(AliESDtrack *track, AliESDfriendTrack *
 
 //________________________________________________________________________
 void AliTrackComparisonESD::RecalClusterPos(TRefArray *clusters, AliESDCaloCells *cells){
+  //
+  //
+  //
   Double_t iLocal[3], iGlobal[3];
   Float_t cPos[3];
   //Float_t pos[3];
