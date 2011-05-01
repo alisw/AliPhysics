@@ -37,8 +37,6 @@ public:
   virtual void Terminate(Option_t *option);
   virtual void FinishTaskOutput();
   void         SetDebugOuputhPath(const char * name){fDebugOutputPath=name;}
-  void         SetOcdbPath(const char *path){fOcdbPath=path;}
-  TString      GetOcdbPath(){return fOcdbPath;}
 
   Bool_t SetupEvent();
   void ProcessTOF(AliESDtrack *track, AliESDfriendTrack *friendTrack, Double_t *vPos);
@@ -61,7 +59,6 @@ private:
   AliESDfriend *fESDfriend;       //! current esd friend
   Int_t fCurrentRun;              //Current run number
   TString      fDebugOutputPath;  // debug output path
-  TString      fOcdbPath;
   
   TObjArray    *fOutput;          //Output array for fEMCAL,fHMPID,fTOF
   AliTrackComparison *fEMCAL;     // EMCAL track comparison
