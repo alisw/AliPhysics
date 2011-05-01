@@ -69,6 +69,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fAODFilterMask(32),
   fMatchedTrackIndex(0x0), fMatchedClusterIndex(0x0), 
   fResidualZ(0x0), fResidualR(0x0), fCutR(10), fCutZ(10), fMass(0.139), fStep(1),
+  fRejectExoticCluster(kFALSE),
   fCutMinNClusterTPC(0), fCutMinNClusterITS(0), fCutMaxChi2PerClusterTPC(0), fCutMaxChi2PerClusterITS(0),
   fCutRequireTPCRefit(0), fCutRequireITSRefit(0), fCutAcceptKinkDaughters(0),
   fCutMaxDCAToVertexXY(0), fCutMaxDCAToVertexZ(0),fCutDCAToVertex2D(0),fPIDUtils(),
@@ -130,6 +131,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fResidualZ(reco.fResidualZ?new TArrayF(*reco.fResidualZ):0x0),
   fResidualR(reco.fResidualR?new TArrayF(*reco.fResidualR):0x0),
   fCutR(reco.fCutR),fCutZ(reco.fCutZ),fMass(reco.fMass), fStep(reco.fStep),
+  fRejectExoticCluster(reco.fRejectExoticCluster),
   fCutMinNClusterTPC(reco.fCutMinNClusterTPC), fCutMinNClusterITS(reco.fCutMinNClusterITS), 
   fCutMaxChi2PerClusterTPC(reco.fCutMaxChi2PerClusterTPC), fCutMaxChi2PerClusterITS(reco.fCutMaxChi2PerClusterITS),
   fCutRequireTPCRefit(reco.fCutRequireTPCRefit), fCutRequireITSRefit(reco.fCutRequireITSRefit),
@@ -179,6 +181,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fCutZ                      = reco.fCutZ;
   fMass                      = reco.fMass;
   fStep                      = reco.fStep;
+  fRejectExoticCluster       = reco.fRejectExoticCluster;
 
   fCutMinNClusterTPC         = reco.fCutMinNClusterTPC;
   fCutMinNClusterITS         = reco.fCutMinNClusterITS; 
@@ -363,6 +366,18 @@ Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(AliEMCALGeometry* geom, USho
 	
 	return kFALSE;
 	
+}
+
+//_________________________________________________
+Bool_t AliEMCALRecoUtils::IsExoticCluster(AliVCluster *cluster){
+  // Check if the cluster has high energy  but small number of cells
+  // The criteria comes from Gustavo's study
+  //
+
+  if(cluster->GetNCells()<(1+cluster->E()/3.))
+    return kTRUE;
+  else
+    return kFALSE;
 }
 
 //__________________________________________________
@@ -1006,9 +1021,8 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(AliEMCALGeometry
 }
 
 //____________________________________________________________________________
-void AliEMCALRecoUtils::FindMatches(AliVEvent *event, TObjArray * clusterArr, TString dataType)
+void AliEMCALRecoUtils::FindMatches(AliVEvent *event,TObjArray * clusterArr,  AliEMCALGeometry *geom)
 {
-  //Use dataType to indicate the input event is AOD or ESD
   //This function should be called before the cluster loop
   //Before call this function, please recalculate the cluster positions
   //Given the input event, loop over all the tracks, select the closest cluster as matched with fCutR
@@ -1032,9 +1046,9 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event, TObjArray * clusterArr, TS
     AliExternalTrackParam *trackParam=0;
 
     //If the input event is ESD, the starting point for extrapolation is TPCOut, if available, or TPCInner 
-    if(dataType.Contains("ESD"))
+    if(dynamic_cast<AliESDEvent*> (event))
       {
-	AliESDtrack *esdTrack = ((AliESDEvent*)event)->GetTrack(itr);
+	AliESDtrack *esdTrack = dynamic_cast<AliESDEvent*> (event)->GetTrack(itr);
 	if(!esdTrack || !IsAccepted(esdTrack)) continue;
 	const AliESDfriendTrack*  friendTrack = esdTrack->GetFriendTrack();
 	if(friendTrack && friendTrack->GetTPCOut())
@@ -1051,9 +1065,9 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event, TObjArray * clusterArr, TS
     
     //If the input event is AOD, the starting point for extrapolation is at vertex
     //AOD tracks are selected according to its bit.
-    else if(dataType.Contains("AOD"))
+    else if(dynamic_cast<AliAODEvent*> (event))
       {
-	AliAODTrack *aodTrack = ((AliAODEvent*)event)->GetTrack(itr);
+	AliAODTrack *aodTrack = dynamic_cast<AliAODEvent*> (event)->GetTrack(itr);
 	if(!aodTrack) continue;
 	if(!aodTrack->TestFilterMask(fAODFilterMask)) continue; //Select AOD tracks that fulfill GetStandardITSTPCTrackCuts2010()
 	Double_t pos[3],mom[3];
@@ -1066,7 +1080,7 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event, TObjArray * clusterArr, TS
     //Return if the input data is not "AOD" or "ESD"
     else
       {
-	printf("Wrong input data type %s! Should be \"AOD\" or \"ESD\"\n",dataType.Data());
+	printf("Wrong input data type! Should be \"AOD\" or \"ESD\"\n");
 	return;
       }
   
@@ -1079,7 +1093,8 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event, TObjArray * clusterArr, TS
       {
 	AliExternalTrackParam *trkPamTmp = new AliExternalTrackParam(*trackParam);//Retrieve the starting point every time before the extrapolation
         AliVCluster *cluster = (AliVCluster*) event->GetCaloCluster(icl);
-        if(!cluster->IsEMCAL()) continue;				
+        if(geom && !IsGoodCluster(cluster,geom,(AliVCaloCells*)event->GetEMCALCells())) continue;	
+	printf("good clusters: %d \n",icl);
 	Float_t tmpR=-1, tmpZ=-1;
 	if(!ExtrapolateTrackToCluster(trkPamTmp, cluster, tmpR, tmpZ)) continue;
         if(tmpR<dRMax)
@@ -1128,7 +1143,7 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event, TObjArray * clusterArr, TS
 }
 
 //________________________________________________________________________________
-Int_t AliEMCALRecoUtils::FindMatchedCluster(AliESDtrack *track, AliVEvent *event)
+Int_t AliEMCALRecoUtils::FindMatchedCluster(AliESDtrack *track, AliVEvent *event, AliEMCALGeometry *geom)
 {
   //
   // This function returns the index of matched cluster to input track
@@ -1150,7 +1165,7 @@ Int_t AliEMCALRecoUtils::FindMatchedCluster(AliESDtrack *track, AliVEvent *event
     {
       AliExternalTrackParam *trkPamTmp = new AliExternalTrackParam(*trackParam);//Retrieve the starting point every time before the extrapolation
       AliVCluster *cluster = (AliVCluster*) event->GetCaloCluster(icl);
-      if(!cluster->IsEMCAL()) continue;				
+      if(geom && !IsGoodCluster(cluster,geom,(AliVCaloCells*)event->GetEMCALCells())) continue;			
       Float_t tmpR=-1, tmpZ=-1;
       if(!ExtrapolateTrackToCluster(trkPamTmp, cluster, tmpR, tmpZ)) continue;
       if(tmpR>-1 && tmpR<dRMax)
@@ -1305,6 +1320,21 @@ UInt_t AliEMCALRecoUtils::FindMatchedPosForTrack(Int_t trkIndex) const
     }
   }
   return pos;
+}
+
+//__________________________________________________________
+Bool_t AliEMCALRecoUtils::IsGoodCluster(AliVCluster *cluster, AliEMCALGeometry *geom, AliVCaloCells* cells)
+{
+  // check if the cluster survives some quality cut
+  //
+  //
+  Bool_t isGood=kTRUE;
+  if(!cluster || !cluster->IsEMCAL()) isGood=kFALSE;
+  if(ClusterContainsBadChannel(geom,cluster->GetCellsAbsId(),cluster->GetNCells())) isGood=kFALSE;
+  if(!CheckCellFiducialRegion(geom,cluster,cells)) isGood=kFALSE;
+  if(fRejectExoticCluster && IsExoticCluster(cluster)) isGood=kFALSE;
+
+  return isGood;
 }
 
 //__________________________________________________________
