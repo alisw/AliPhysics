@@ -311,7 +311,7 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 		    " dca ",
 		    200,  -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
 
-  fDcaZ   = new TH1F("fDcaZ", "fDcaZ ",200,  -range*50*(1+Int_t(fTrackType/2)*9), range*50*(1+Int_t(fTrackType/2)*9));
+  fDcaZ   = new TH1F("fDcaZ", "fDcaZ ",200,  -3, 3);// limits fitting those of track cuts
 
 
   fqRec    = new TH1F("fqRec",   
