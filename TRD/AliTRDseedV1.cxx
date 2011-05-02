@@ -1234,7 +1234,7 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
   }
   AliDebug(4, Form("Sorted row candidates:\n"
       "  row[%2d] Ncl[%2d] <dz>[cm]=%+8.2f row[%2d] Ncl[%2d] <dz>[cm]=%+8.2f"
-      , idxRow[0], ncl[idxRow[0]], zresRow[0], idxRow[1], ncl[idxRow[1]], zresRow[1]));
+      , idxRow[0], ncl[idxRow[0]], zresRow[0], idxRow[1], idxRow[1]>=0?ncl[idxRow[1]]:0, zresRow[1]));
 
   // initialize debug streamer
   TTreeSRedirector *pstreamer(NULL);
@@ -1266,14 +1266,14 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
     vdx[0].Clear(); vdy[0].Clear(); vs2[0].Clear();
     vdx[1].Clear(); vdy[1].Clear(); vs2[1].Clear();
     if(recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 4){    
-      Int_t idx(idxRow[1]);
-      if(idx<0){ 
+      Int_t idx(0);
+      if(idxRow[1]<0){
         for(Int_t ir(0); ir<kNrows; ir++){ 
           if(clst[ir].GetEntries()>0) continue;
           idx = ir;
           break;
         }
-      }
+      } else idx = idxRow[1];
       (*pstreamer) << "AttachClusters5"
           << "c0.="    << &clst[idxRow[0]]
           << "c1.="    << &clst[idx]
