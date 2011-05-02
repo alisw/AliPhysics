@@ -403,7 +403,7 @@ Int_t AliITStrackerUpgrade::FindTracks(AliESDEvent* event,Bool_t useAllClusters)
 
       // loop on phi and lambda window size
       for(Int_t nloop=0;nloop<fNloop;nloop++){
-	Int_t nclTheLay=fCluLayer[theLay]->GetEntries();
+	Int_t nclTheLay=fCluLayer[theLay]->GetEntriesFast();
         while(nclTheLay--){
           ResetForFinding();
           Bool_t useRP=SetFirstPoint(theLay,nclTheLay,primaryVertex);
@@ -738,44 +738,39 @@ Int_t AliITStrackerUpgrade::SearchClusters(Int_t layer,Double_t phiwindow,Double
     fPhiEstimate=ChoosePoint(fi1,fi2,fPhic);
   }
 
- 
-  Int_t ncl = fCluLayer[layer]->GetEntries();
-  AliDebug(2,Form(" Number of clusters %i in layer %i.",ncl,layer));
+
+  Double_t phiExpect=fPhiEstimate;
+  Double_t lamExpect=fLambdac;
+
+  Int_t ncl = fCluLayer[layer]->GetEntriesFast();
   for (Int_t index=0; index<ncl; index++) {
-    AliITSRecPointU *c = (AliITSRecPointU*)fCluLayer[layer]->At(index);
-    if (!c) continue;
-    if (c->GetQ()<=0) continue;
-    if(layer>1 && c->GetQ()<=fMinQ) continue;
-    
+
     AliITSclusterTable* arr = (AliITSclusterTable*)GetClusterCoord(layer,index);
-    
-    Double_t phi;
-    Double_t xT,yT;
-    xT=arr->GetX();
-    yT=arr->GetY();
-    phi=arr->GetPhi();
-    if (TMath::Abs(phi-fPhiEstimate)>phiwindow)
-      {
-        continue;
-      }
 
     Double_t lambda = arr->GetLambda();
-    if (TMath::Abs(lambda-fLambdac)>lambdawindow) continue;
+    if (TMath::Abs(lambda-lamExpect)>lambdawindow) continue;
+
+    Double_t phi = arr->GetPhi();
+    Double_t deltaPhi = phi-phiExpect;
+    if(deltaPhi>TMath::Pi()) deltaPhi-=2*TMath::Pi();
+    else if(deltaPhi<-TMath::Pi()) deltaPhi+=2*TMath::Pi();
+    if (TMath::Abs(deltaPhi)>phiwindow) continue;
 
     if(trs->GetNumberOfClustersU()==trs->GetMaxNumberOfClusters()) return 0;
     if(trs->GetNumberOfMarked(layer)==trs->GetMaxNMarkedPerLayer()) return 0;
     Int_t orind = arr->GetOrInd();
     trs->AddClusterU(layer,orind);
     trs->AddClusterMark(layer,index);
-       
     nc++;
     fLambdac=lambda;
     fPhiEstimate=phi;
 
     fPointc[0]=arr->GetX();
     fPointc[1]=arr->GetY();
+
   }
   return nc;
+ 
 }
 
 //________________________________________________________________

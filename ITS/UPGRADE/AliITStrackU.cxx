@@ -78,7 +78,8 @@ AliITStrackU::AliITStrackU(AliESDtrack& t,Bool_t c):
   // Copy a V2 track into a U track
   // -> to be checked
   //------------------------------------------------------------------
-
+ ResetIndexU();
+ ResetMarked();
   for(Int_t nlay=0;nlay<fgMaxNLayer;nlay++){
     fDy[nlay]=0; fDz[nlay]=0; fSigmaY[nlay]=0; fSigmaZ[nlay]=0; fSigmaYZ[nlay]=0;
     fClIndex[nlay]=-1; fNy[nlay]=0; fNz[nlay]=0; fNormQ[nlay]=0; fNormChi2[nlay]=1000;  
