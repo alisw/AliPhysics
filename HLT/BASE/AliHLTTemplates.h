@@ -25,18 +25,23 @@ namespace HLT
     AliHLTUnaryPredicate(T (C::*pFct)() const, T value)
       : fpFct(pFct), fValue(value) { };
 
+    /// copy contructor
+    AliHLTUnaryPredicate(const AliHLTUnaryPredicate& p)
+      : fpFct(p.fpFct), fValue(p.fValue) { };
+    /// assignment operator
+    AliHLTUnaryPredicate& operator=(const AliHLTUnaryPredicate& p) {
+      fpFct=p.fpFct; fValue=p.fValue; return *this;
+    }
+
     /// override operator== execute member function and compare result to value
     bool operator==(const C& object) const {
+      if (!fpFct) return false;
       return (object.*fpFct)()==fValue;
     }
 
   private:
     /// standard contructor prohibited
     AliHLTUnaryPredicate();
-    /// copy contructor prohibited
-    AliHLTUnaryPredicate(const AliHLTUnaryPredicate&);
-    /// assignment operator prohibited
-    AliHLTUnaryPredicate& operator=(const AliHLTUnaryPredicate&);
 
     T (C::*fpFct)() const;   //! pointer to member function
     T  fValue;               //! value to match
