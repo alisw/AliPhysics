@@ -53,7 +53,7 @@ public :
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
 
   // Fill histograms
-  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack) const;
+  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, Float_t centralityF) const;
 
   // Getters
   THnSparseF *GetEventCount()   const {return fEventCount;}
@@ -64,6 +64,10 @@ public :
   //
   THnSparseF *GetRecMCTrackHist() const {return fRecMCTrackHist;}
   
+
+  TString GetCentralityEstimator() const {return fCentralityEstimator; }
+  void SetCentralityEstimator(TString centEst="V0M") { fCentralityEstimator = centEst; }
+
 private:
 
   // analysis folder 
@@ -81,12 +85,14 @@ private:
   //
   // THnSparse track histograms
   //
-  THnSparseF *fRecMCTrackHist; //-> nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge
+  //THnSparseF *fRecMCTrackHist; //-> nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge:centr
+  THnSparseF *fRecMCTrackHist; //-> nCrossRows:chi2PerClust:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge:centr
+  TString fCentralityEstimator;     // use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"
 
   AlidNdPtCutAnalysisPbPb(const AlidNdPtCutAnalysisPbPb&); // not implemented
   AlidNdPtCutAnalysisPbPb& operator=(const AlidNdPtCutAnalysisPbPb&); // not implemented
 
-  ClassDef(AlidNdPtCutAnalysisPbPb,1);
+  ClassDef(AlidNdPtCutAnalysisPbPb,2);
 };
 
 #endif
