@@ -262,6 +262,9 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
   if (strcmp(clus->GetClass()->GetName(),"AliESDCaloCluster")==0)
     esdobjects = 1;
 
+  AliVCaloCells *cells = InputEvent()->GetEMCALCells();
+  AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(fGeomName);
+  
   Int_t Ncls = fClusterArr->GetEntriesFast();
   for(Int_t i=0, nout=clus->GetEntries(); i < Ncls; ++i) {
     AliEMCALRecPoint *recpoint = static_cast<AliEMCALRecPoint*>(fClusterArr->At(i));
@@ -305,7 +308,14 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     recpoint->GetElipsAxis(elipAxis);
     c->SetM02(elipAxis[0]*elipAxis[0]) ;
     c->SetM20(elipAxis[1]*elipAxis[1]) ;
-    c->SetDistanceToBadChannel(recpoint->GetDistanceToBadTower()); 
+    if (fRecoUtils && fRecoUtils->IsBadChannelsRemovalSwitchedOn()) {
+      fRecoUtils->RecalculateClusterDistanceToBadChannel(geom, cells, c);
+    } else {
+      if (fPedestalData) 
+        recpoint->EvalDistanceToBadChannels(fPedestalData);
+      c->SetDistanceToBadChannel(recpoint->GetDistanceToBadTower()); 
+    }
+
     if (esdobjects) {
       AliESDCaloCluster *cesd = static_cast<AliESDCaloCluster*>(c);
       cesd->SetCellsAbsId(absIds);
