@@ -417,6 +417,10 @@ Int_t AliITStrackerUpgrade::FindTracks(AliESDEvent* event,Bool_t useAllClusters)
           nClusLay[kk] = SearchClusters(theLay,fPhiWin[nloop],fLambdaWin[nloop],
                                         &trs,primaryVertex[2],pflag);
           Int_t nextLay=theLay+seedStep;
+          if(nextLay<0){
+          AliWarning("Negative layer id. Please check!");
+          continue;
+          }
           Bool_t goon=kTRUE;
           while(goon){
 

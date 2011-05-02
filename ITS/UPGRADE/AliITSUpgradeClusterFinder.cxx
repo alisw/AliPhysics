@@ -712,27 +712,7 @@ UInt_t AliITSUpgradeClusterFinder::GetPixelCharge(UInt_t col, UInt_t row){
   //...self explaining
   //
   Int_t q=0;
-  //AliInfo(Form(" entrate charge array %i ", fChargeArray->GetEntries()));
-  for(Int_t entry =0; entry < fChargeArray->GetEntries(); entry++){
-    /*    TObjString *s = (TObjString*)fChargeArray->At(entry);
-	  TString name = s->GetString();
-	  if(!name.Contains(Form("%i %i",col,row)))
-	  continue;
-	  AliInfo(Form(" 1 entry %i ", entry));
-	  TObjArray *array = name.Tokenize(" ");
-	  array->SetOwner(kTRUE);
-	  AliInfo(Form(" 2 entry %i ", entry));
-	  TString charge = ((TObjString*)array->At(2))->String();
-    
-	  TString rowS, colS;
-	  rowS = ((TObjString*)array->At(0))->String();
-	  colS = ((TObjString*)array->At(1))->String();
-	  AliInfo(Form(" 3 prima del delete entry %i ", entry));
-	  array->Clear();
-	  delete array;
-	  AliInfo(Form(" 4 dopo il delete  entry %i ", entry));
-	  q=charge.Atoi();
-    */
+  for(Int_t entry =0; entry < fChargeArray->GetEntriesFast(); entry++){
     AliITSUPixelModule *pixMod = (AliITSUPixelModule*)fChargeArray->At(entry);
     //  pixMod->PrintInfo();
     if(col!=pixMod->GetCol())continue;
@@ -749,20 +729,7 @@ void AliITSUpgradeClusterFinder::AddLabelIndex(UInt_t col, UInt_t row){
   // Adding cluster labels
   //
 
-  for(Int_t entry =0; entry < fChargeArray->GetEntries(); entry++){
-    /*    TObjString *s = (TObjString*)fChargeArray->At(entry);
-	  TString name = s->GetString();
-	  if(!name.Contains(Form("%i %i",col,row)))
-	  continue;
-	  TObjArray *array = name.Tokenize(" ");
-	  TString index[3];
-	  Int_t label[3];
-	  for(Int_t i=0; i<3; i++){
-	  index[i]=((TObjString*)array->At(3+i))->String();
-	  label[i]=index[i].Atoi();
-
-	  }
-    */ 
+  for(Int_t entry =0; entry < fChargeArray->GetEntriesFast(); entry++){
     AliITSUPixelModule *pix= (AliITSUPixelModule*)fChargeArray->At(entry);
     if(col!=pix->GetCol())continue;
     if(row!=pix->GetRow())continue;
@@ -816,9 +783,8 @@ void AliITSUpgradeClusterFinder::MakeRecPointBranch(TTree *treeR){
 
   if(!fRecPoints)fRecPoints = new TClonesArray("AliITSRecPointU",1000);
   if (treeR) {
-    TBranch *branch = treeR->GetBranch("ITSRecPoints");
-    if (branch) return ;
-    else branch = treeR->Branch("ITSRecPoints",&fRecPoints); 
+    if (treeR->GetBranch("ITSRecPoints")) return ;
+    else treeR->Branch("ITSRecPoints",&fRecPoints); 
   }
 }
 //____________________________________________________
@@ -851,7 +817,7 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
     StartEvent(); 
     pArrDig->Sort();
     
-    for(Int_t ientr =0; ientr < pArrDig->GetEntries() ; ientr++){
+    for(Int_t ientr =0; ientr < pArrDig->GetEntriesFast() ; ientr++){
       AliITSDigitUpgrade *dig = (AliITSDigitUpgrade*)pArrDig->At(ientr);
       Int_t colz=dig->GetzPixelNumber();
       Int_t rowx=dig->GetxPixelNumber();
@@ -906,7 +872,7 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
 	recpnt.SetSigmaZ2(zsize/TMath::Sqrt(12)*zsize/TMath::Sqrt(12));
 	new(lrecp[nClusters++]) AliITSRecPointU(recpnt);
 	//Int_t idx = fRecPoints->GetEntries();
-	AliDebug(1,Form("recpoint : Nelectrons %f (entry %i)",recpnt.GetQ(),fRecPoints->GetEntries()));
+	AliDebug(1,Form("recpoint : Nelectrons %f (entry %i)",recpnt.GetQ(),fRecPoints->GetEntriesFast()));
     
       }//cluster list entries
     }//module
