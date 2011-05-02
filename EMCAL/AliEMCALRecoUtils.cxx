@@ -1094,7 +1094,6 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,TObjArray * clusterArr,  Al
 	AliExternalTrackParam *trkPamTmp = new AliExternalTrackParam(*trackParam);//Retrieve the starting point every time before the extrapolation
         AliVCluster *cluster = (AliVCluster*) event->GetCaloCluster(icl);
         if(geom && !IsGoodCluster(cluster,geom,(AliVCaloCells*)event->GetEMCALCells())) continue;	
-	printf("good clusters: %d \n",icl);
 	Float_t tmpR=-1, tmpZ=-1;
 	if(!ExtrapolateTrackToCluster(trkPamTmp, cluster, tmpR, tmpZ)) continue;
         if(tmpR<dRMax)
