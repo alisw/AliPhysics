@@ -56,6 +56,7 @@ AliESDRun::AliESDRun() :
   for (Int_t m=0; m<kNPHOSMatrix; m++) fPHOSMatrix[m]=NULL;
   for (Int_t sm=0; sm<kNEMCALMatrix; sm++) fEMCALMatrix[sm]=NULL;
   for (Int_t i=0; i<kT0spreadSize;i++) fT0spread[i]=0.;
+  for (Int_t it=0; it<8; it++) fCaloTriggerType[it]=0;
 }
 
 //______________________________________________________________________________
@@ -100,6 +101,7 @@ AliESDRun::AliESDRun(const AliESDRun &esd) :
 		fEMCALMatrix[sm]=NULL;
   }
   for (Int_t i=0; i<kT0spreadSize;i++) fT0spread[i]=esd.fT0spread[i];
+  for (Int_t it=0; it<8; it++) fCaloTriggerType[it]=esd.fCaloTriggerType[it];
 
 }
 
@@ -147,6 +149,7 @@ AliESDRun& AliESDRun::operator=(const AliESDRun &esd)
 	}
   } 
   for (Int_t i=0; i<kT0spreadSize;i++) fT0spread[i]=esd.fT0spread[i];
+  for (Int_t it=0; it<8; it++) fCaloTriggerType[it]=esd.fCaloTriggerType[it];
   return *this;
 }
 
