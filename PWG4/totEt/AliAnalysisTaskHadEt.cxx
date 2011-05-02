@@ -96,17 +96,18 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
   if(fEsdtrackCutsITSTPC) delete fEsdtrackCutsITSTPC;
   if(fEsdtrackCutsITS) delete fEsdtrackCutsITS;
   if(fEsdtrackCutsTPC) delete fEsdtrackCutsTPC;
-  if(fRecAnalysis->DataSet()==2009){
-    cout<<"Setting track cuts for the 2009 p+p collisions at 900 GeV"<<endl;
-    fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selectPrimaries);
-    fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
-    fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
-    //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
-    fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
-    fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
-  }
-  if(fRecAnalysis->DataSet()==2010 || fRecAnalysis->DataSet()==20111){
+  //We do not use these because we are using the 2010 900 GeV data
+//   if(fRecAnalysis->DataSet()==2009){
+//     cout<<"Setting track cuts for the 2009 p+p collisions at 900 GeV"<<endl;
+//     fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selectPrimaries);
+//     fEsdtrackCutsITSTPC->SetName("fEsdTrackCuts");
+//     fEsdtrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+//     fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
+//     //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
+//     fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
+//     fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
+//   }
+  if(fRecAnalysis->DataSet()==2010 || fRecAnalysis->DataSet()==20111||fRecAnalysis->DataSet()==2009){
     if(fRecAnalysis->DataSet()==2010)cout<<"Setting track cuts for the 2010 p+p collisions at 7 TeV"<<endl;
     else{cout<<"Setting track cuts for the 2011 p+p collisions at 2.76 TeV"<<endl;}
     //cout<<"Warning:  Have not set 2010 track cuts yet!!"<<endl;
@@ -127,7 +128,8 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
     fEsdtrackCutsTPC->SetName("fEsdTrackCutsTPCOnly");
     //ITS stand alone cuts - similar to 2009 cuts but with only ITS hits required
     fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSSATrackCutsPbPb2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
-    fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
+    // fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
+   fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
   }
 
   fOutputList->Add(fEsdtrackCutsITSTPC);
