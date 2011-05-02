@@ -350,7 +350,7 @@ void AliTPCcalibTrigger::MakeTree(TTreeStream &pcstream, const char *tname){
   THnSparse * his = GetHisto(tname);
   if (!his) return;
   //
-  Int_t *bins = new Int_t[100];
+  Int_t bins[1000];
   Int_t ndim = his->GetNdimensions();
   Double_t position[10];
   //

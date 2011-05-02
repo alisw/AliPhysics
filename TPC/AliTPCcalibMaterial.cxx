@@ -281,10 +281,10 @@ void  AliTPCcalibMaterial::ProcessPairs(AliESDEvent *event){
   if ( ntracks<=2 ) return;
   
   //
-  Float_t dca[2];
-  Float_t cov[3];
-  Float_t dca0[2];
-  Float_t dca1[2];
+  Float_t dca[2]={0};
+  Float_t cov[3]={0};
+  Float_t dca0[2]={0};
+  Float_t dca1[2]={0};
   //
   //1. Calculate total dEdx for primary and secondary tracks
   //   and count primaries and secondaries
@@ -581,7 +581,7 @@ Bool_t AliTPCcalibMaterial::CheckLooper(Int_t index, AliESDEvent *event){
   return kFALSE;
 }
 
-Bool_t AliTPCcalibMaterial::CheckV0(Int_t index, AliESDEvent *event){
+Bool_t AliTPCcalibMaterial::CheckV0(Int_t /*index*/, AliESDEvent */*event*/){
   //
   // check if given track is V0 candidata
   // if looper return kTRUE
