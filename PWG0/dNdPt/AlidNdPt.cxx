@@ -91,3 +91,22 @@ AlidNdPt::~AlidNdPt() {
   if(fPhysicsSelection) delete fPhysicsSelection; fPhysicsSelection=NULL;
   if(fdNdPtBackgroundCuts) delete fdNdPtBackgroundCuts; fdNdPtBackgroundCuts=NULL;
 }
+
+//_____________________________________________________________________________
+Double_t * AlidNdPt::CreateLogAxis(Int_t nbins, Double_t xmin, Double_t xmax) {
+  // retun pointer to the array with log axis
+  // it is user responsibility to delete the array
+ 
+  Double_t logxmin = TMath::Log10(xmin);
+  Double_t logxmax = TMath::Log10(xmax);
+  Double_t binwidth = (logxmax-logxmin)/nbins;
+  
+  Double_t *xbins =  new Double_t[nbins+1];
+
+  xbins[0] = xmin;
+  for (Int_t i=1;i<=nbins;i++) {
+    xbins[i] = xmin + TMath::Power(10,logxmin+i*binwidth);
+  }
+
+return xbins;
+}
