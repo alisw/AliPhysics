@@ -271,27 +271,32 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
     //Set Histrograms bins and ranges
     emcalQA->SetHistoPtRangeAndNBins(0, 50, 200) ;
     emcalQA->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
-    emcalQA->SetHistoEtaRangeAndNBins(-0.71, 0.71, 200) ;
+    emcalQA->SetHistoEtaRangeAndNBins(-0.71, 0.71, 142) ;
     
     if(year==2010){  
       emcalQA->SetNumberOfModules(4); 
-      emcalQA->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 100) ;
-      emcalQA->SetHistoXRangeAndNBins(-230,90,120);
-      emcalQA->SetHistoYRangeAndNBins(370,450,40);
+      emcalQA->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 122*TMath::DegToRad(), 78) ;
+      emcalQA->SetHistoXRangeAndNBins(-230,90,60);
+      emcalQA->SetHistoYRangeAndNBins(370,450,20);
     }
     else{            
       emcalQA->SetNumberOfModules(10); 
-      emcalQA->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 181*TMath::DegToRad(), 100) ;
-      emcalQA->SetHistoXRangeAndNBins(-600,90,200);
-      emcalQA->SetHistoYRangeAndNBins(100,450,100);
+      emcalQA->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
+      emcalQA->SetHistoXRangeAndNBins(-600,90,100);
+      emcalQA->SetHistoYRangeAndNBins(100,450,50);
     }
+    
+    emcalQA->SwitchOffFillAllPi0Histogram();
+    emcalQA->SwitchOffFillAllTrackMatchingHistogram();
+    emcalQA->SwitchOffFillAllTH3Histogram();
+    emcalQA->SwitchOffFillAllPositionHistogram2();
     
     emcalQA->SetHistoMassRangeAndNBins(0., 1, 100) ;
     emcalQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 10 );
-    emcalQA->SetHistoPOverERangeAndNBins(0,10.,100);
-    emcalQA->SetHistodEdxRangeAndNBins(0.,200.,100);
-    emcalQA->SetHistodRRangeAndNBins(0.,TMath::Pi(),150);
-    emcalQA->SetHistoTimeRangeAndNBins(300.,900,300);
+    emcalQA->SetHistoPOverERangeAndNBins(0,10.,50);
+    emcalQA->SetHistodEdxRangeAndNBins(0.,200.,50);
+    emcalQA->SetHistodRRangeAndNBins(0.,TMath::Pi(),75);
+    emcalQA->SetHistoTimeRangeAndNBins(300.,900,150);
     emcalQA->SetHistoRatioRangeAndNBins(0.,2.,100);
     emcalQA->SetHistoVertexDistRangeAndNBins(0.,100.,100);
     emcalQA->SetHistoNClusterCellRangeAndNBins(0,500,500);
