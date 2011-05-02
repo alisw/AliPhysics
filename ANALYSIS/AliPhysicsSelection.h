@@ -86,7 +86,7 @@ public:
   const AliOADBFillingScheme    * GetOADBFillingScheme()    const {return fFillOADB;}
   const AliOADBTriggerAnalysis  * GetOADBTriggerAnalysis()  const {return fTriggerOADB;}
 
-  const Int_t GetBGStatOffset() const { return fBGStatOffset; }
+  Int_t GetBGStatOffset() const { return fBGStatOffset; }
 
 
   AliTriggerAnalysis* GetTriggerAnalysis(Int_t i = 0) { return (fTriggerAnalysis.GetEntries() > 0) ? (AliTriggerAnalysis*) fTriggerAnalysis.At(i) : 0; }    
