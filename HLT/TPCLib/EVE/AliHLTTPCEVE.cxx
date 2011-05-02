@@ -25,6 +25,7 @@
 #include <cerrno>
 #include <cassert>
 #include "AliHLTTPCEVE.h"
+#include "TEveManager.h"
 #include "TEvePointSet.h"
 #include "TEveElement.h"
 #include "AliRawReader.h"
@@ -32,6 +33,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCSpacePointData.h"
+#include "AliHLTTPCSpacePointContainer.h"
 #include "TSystem.h"
 #include "TClass.h"
 #include "TString.h"
@@ -146,6 +148,55 @@ int AliHLTTPCEVE::AddClusters(TEvePointSet* clusters, const AliHLTTPCClusterData
   if (iResult<0) {
     // reset clusters
   }
+
+  return iResult;
+}
+
+int AliHLTTPCEVE::AddClusters(TEvePointSet* clusters, const AliHLTTPCSpacePointContainer* points, Float_t maxR) const
+{
+  // add clusters from a space point collection
+  int iResult=0;
+  if (!clusters || !points) return -EINVAL;
+  Float_t maxRsqr = maxR*maxR; // maxR squared for a simple geometrical cut below
+  vector<AliHLTUInt32_t> clusterIDs;
+  points->GetClusterIDs(clusterIDs);
+  for (vector<AliHLTUInt32_t>::const_iterator element=clusterIDs.begin();
+       element!=clusterIDs.end(); element++) {
+    AliHLTUInt32_t clusterID=*element;
+    UInt_t clusterSlice =AliHLTTPCSpacePointData::GetSlice(clusterID);
+    //UInt_t clusterPart  =AliHLTTPCSpacePointData::GetPatch(clusterID);
+    //UInt_t clusterNumber=AliHLTTPCSpacePointData::GetNumber(clusterID);
+    Float_t phi     = ( clusterSlice + 0.5 ) * TMath::Pi() / 9.0;
+    Float_t cos     = TMath::Cos( phi );
+    Float_t sin     = TMath::Sin( phi );
+
+    Float_t X=points->GetX(clusterID);
+    Float_t Y=points->GetY(clusterID);
+    Float_t Z=points->GetZ(clusterID);
+    if (X*X+Y*Y<=maxRsqr) {
+      clusters->SetNextPoint(cos*X - sin*Y, sin*X + cos*Y, Z);
+    }
+  }
+
+  return iResult;
+}
+
+int AliHLTTPCEVE::AddPointSet(TEveManager* pEve, const AliHLTTPCSpacePointContainer* points, Float_t maxR, const char* title) const
+{
+  // create new point set and add to eve
+  if (!pEve) return -EINVAL;
+  int iResult=0;
+  TEvePointSet* clusters=new TEvePointSet(200000);
+  clusters->SetOwnIds(kTRUE);
+  clusters->SetMarkerColor(2);
+  clusters->SetMarkerStyle(5);
+  iResult=AddClusters(clusters, points, maxR);
+  TString name=title==NULL?"HLT TPC Clusters":title;
+  clusters->SetName(name);
+  name.Form("N=%d", clusters->Size());
+  clusters->SetTitle(name);
+  pEve->AddElement(clusters,NULL);
+  pEve->Redraw3D();
 
   return iResult;
 }

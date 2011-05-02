@@ -15,11 +15,13 @@
 
 #include "AliHLTLogging.h"
 
+class TEveManager;
 class TEvePointSet;
 class TEveElement;
 class AliRawReader;
 class AliHLTOUT;
 class AliHLTTPCClusterData;
+class AliHLTTPCSpacePointContainer;
 
 /**
  * @class AliHLTTPCEVE
@@ -73,6 +75,10 @@ class AliHLTTPCEVE : public AliHLTLogging {
    * @param maxR        geometrical cut, maximum radius of clusters
    */
   int AddClusters(TEvePointSet* clusters, const AliHLTTPCClusterData* data, unsigned int sizeInByte, int slice, Float_t maxR) const;
+
+  int AddClusters(TEvePointSet* clusters, const AliHLTTPCSpacePointContainer* points, Float_t maxR=5000) const;
+
+  int AddPointSet(TEveManager* pEve, const AliHLTTPCSpacePointContainer* points, Float_t maxR=5000, const char* title=NULL) const;
 
  protected:
 
