@@ -164,7 +164,7 @@ void AliAnalysisEtCommon::Init()
     fAntiLambdaData->SetParameter(1,0.210);
     fAntiLambdaData->SetParameter(2,9.2);
   }
-  if(fV0ScaleDataSet==2010 ||fV0ScaleDataSet==20100 ){
+  if(fV0ScaleDataSet==2010 ||fV0ScaleDataSet==20100 ||fV0ScaleDataSet==20111){
     //These data are from the CMS analysis note on 7 TeV spectra
     //http://cdsweb.cern.ch/record/1279344/files/QCD-10-007-pas.pdf
     //Note the CMS parameterization of the Levy function differs from the ALICE parameterization by a constant.
