@@ -18,6 +18,8 @@
 #include <vector>
 using namespace std;
 
+class TClonesArray;
+
 /**
  * @class AliHLTGlobalBarrelTrack
  * Representation of global HLT barrel tracks.
@@ -91,6 +93,8 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
   virtual void Print(Option_t* option = "") const;
 
   Double_t GetPathLengthTo( Double_t x, Double_t b ) const;
+
+  static int ReadTracks(const char* filename, TClonesArray& tgt, AliHLTComponentDataType dt=kAliHLTVoidDataType, unsigned specification=kAliHLTVoidDataSpec);
 
  protected:
 

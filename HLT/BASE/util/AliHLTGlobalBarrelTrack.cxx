@@ -29,7 +29,11 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include <cassert>
+#include <memory>
 #include "AliHLTGlobalBarrelTrack.h"
+#include "TClonesArray.h"
+#include "TFile.h"
+#include "TArrayC.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalBarrelTrack)
@@ -193,3 +197,42 @@ void AliHLTGlobalBarrelTrack::Print(Option_t* option) const
 //   cout << "  Tgl "       << GetTgl();
 //   cout << "  Signed1Pt " << GetSigned1Pt() << endl;
 }
+
+int AliHLTGlobalBarrelTrack::ReadTracks(const char* filename, TClonesArray& tgt, AliHLTComponentDataType /*dt*/, unsigned /*specification*/)
+{
+  // open block from file and add to collection
+  if (!filename) return -EINVAL;
+  
+  TString input=filename;
+  input+="?filetype=raw";
+  std::auto_ptr<TFile> pFile(new TFile(input));
+  if (!pFile.get()) return -ENOMEM;
+  if (pFile->IsZombie()) return -ENOENT;
+
+  int iResult=0;
+  pFile->Seek(0);
+  std::auto_ptr<TArrayC> buffer(new TArrayC);
+  if (!buffer.get()) return -ENOMEM;
+
+  buffer->Set(pFile->GetSize());
+  if (pFile->ReadBuffer(buffer->GetArray(), buffer->GetSize())==0) {
+    const AliHLTTracksData* pTracks=reinterpret_cast<const AliHLTTracksData*>(buffer->GetArray());
+    vector<AliHLTGlobalBarrelTrack> tracks;
+    iResult=ConvertTrackDataArray(pTracks, buffer->GetSize(), tracks);
+    if (iResult>=0) {
+      tgt.ExpandCreate(tracks.size());
+      for (unsigned i=0; i<tracks.size(); i++) {
+	new (tgt[i]) AliHLTGlobalBarrelTrack(tracks[i]);
+      }
+      iResult=tracks.size();
+    } else {
+      //HLTError("failed to convert tracks from file %s size %d byte(s) ", filename, pFile->GetSize());
+    }
+  } else {
+    //HLTError("failed reading %d byte(s) from file %s", pFile->GetSize(), filename);
+    iResult=-ENODATA;
+  }
+
+  return iResult;
+}
+
