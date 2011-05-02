@@ -33,19 +33,8 @@ class AlidNdPtTask : public AliAnalysisTaskSE {
 
   Bool_t AddAnalysisObject(AlidNdPt *pObj);
   void SetUseMCInfo(Bool_t info)           { fUseMCInfo = info; }
-
-  // Use centrality - if yes, which one
-  void  SetUseCentrality(Int_t cent)   { fUseCentrality = cent; }
-  Int_t GetUseCentrality()             { return fUseCentrality; }
-
-  // Centrality bin to be used
-  void  SetUseCentralityBin(Int_t bin) { fUseCentralityBin = bin; }
-  Int_t GetUseCentralityBin()          { return fUseCentralityBin; }
   
  private:
-
-  // Calculate centrality
-  Int_t CalculateCentralityBin();
 
   AliESDEvent *fESD;    //! ESD event
   AliMCEvent *fMC;      //! MC event
@@ -55,13 +44,10 @@ class AlidNdPtTask : public AliAnalysisTaskSE {
 
   Bool_t fUseMCInfo;        // use MC information
 
-  Int_t fUseCentrality;     // use centrality (0=off(default),1=VZERO,2=SPD)
-  Int_t fUseCentralityBin;  // centrality bin to be used 
-
   AlidNdPtTask(const AlidNdPtTask&); // not implemented
   AlidNdPtTask& operator=(const AlidNdPtTask&); // not implemented
   
-  ClassDef(AlidNdPtTask, 2); // example of analysis
+  ClassDef(AlidNdPtTask, 3); // example of analysis
 };
 
 #endif

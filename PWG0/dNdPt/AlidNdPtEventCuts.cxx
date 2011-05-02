@@ -110,13 +110,6 @@ Bool_t AlidNdPtEventCuts::AcceptEvent(AliESDEvent *esdEvent,AliMCEvent *mcEvent,
       retValue=kFALSE;
   }
 
-  /*
-  Float_t R = TMath::Sqrt(vtx->GetXv()*vtx->GetXv()+vtx->GetYv()*vtx->GetYv());
-  if(vtx->GetNContributors() < fMinNContributors) return kFALSE; 
-  if(vtx->GetNContributors() > fMaxNContributors) return kFALSE; 
-  if(R > fMaxR) return kFALSE; 
-  */
-
   if(vtx->GetZv() < fMinZv) return kFALSE; 
   if(vtx->GetZv() > fMaxZv) return kFALSE; 
 

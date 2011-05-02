@@ -55,8 +55,6 @@ AlidNdPtTask::AlidNdPtTask(const char *name)
   , fPitList(0)
   , fCompList(0)
   , fUseMCInfo(kFALSE)
-  , fUseCentrality(0)    // default = off
-  , fUseCentralityBin(0)
 {
   // Constructor
 
@@ -140,10 +138,6 @@ void AlidNdPtTask::UserCreateOutputObjects()
   }
   Printf("UserCreateOutputObjects(): Number of output objects: %d \n", count);
 
-  if(fUseCentrality) {
-    Printf("Use Centrality - Bin %d", fUseCentralityBin);
-  }
-
   PostData(1, fOutput);
 }
 
@@ -170,23 +164,12 @@ void AlidNdPtTask::UserExec(Option_t *)
     }
   }
 
-  // Process analysis
-  Bool_t process = kTRUE;
 
-  // Check fo centrality
-  if (fUseCentrality) {
-    if ( CalculateCentralityBin() != fUseCentralityBin ) {
-      process = kFALSE;
-    }
-  }
-
-  if (process) {
     AlidNdPt *pObj = 0;
     fPitList->Reset();
     while((pObj = (AlidNdPt *)fPitList->Next()) != NULL) {
       pObj->Process(fESD,fMC);
     }
-  }
 
 
   // Post output data.
@@ -204,41 +187,4 @@ void AlidNdPtTask::Terminate(Option_t *)
     Printf("ERROR: AlidNdPtTask::Terminate(): Output data not avaiable GetOutputData(0)==0x0 ..." );
     return;
   }
-}
-
-//________________________________________________________________________
-Int_t AlidNdPtTask::CalculateCentralityBin(){
-  // Get Centrality bin
-
-  Int_t centrality = -1;
-  Float_t centralityF = -1;
-
-  if (fUseCentrality == 0)
-    return centrality;
-
-  AliCentrality *esdCentrality = fESD->GetCentrality();
-    
-  // New : 2010-11-18 JMT 
-  if ( fUseCentrality == 1 )
-    centralityF = esdCentrality->GetCentralityPercentile("V0M");
-  else if ( fUseCentrality == 2 )
-    centralityF = esdCentrality->GetCentralityPercentile("CL1");
-  else if ( fUseCentrality == 3 )
-    centralityF = esdCentrality->GetCentralityPercentile("TRK"); 
-  if (centralityF == 0.)
-    centralityF = 100.;
-
-  if      ( centralityF >=  0. && centralityF <   5.) centrality =  0;
-  else if ( centralityF >=  5. && centralityF <  10.) centrality =  5;
-  else if ( centralityF >= 10. && centralityF <  20.) centrality = 10;
-  else if ( centralityF >= 20. && centralityF <  30.) centrality = 20;
-  else if ( centralityF >= 30. && centralityF <  40.) centrality = 30;
-  else if ( centralityF >= 40. && centralityF <  50.) centrality = 40;
-  else if ( centralityF >= 50. && centralityF <  60.) centrality = 50;
-  else if ( centralityF >= 60. && centralityF <  70.) centrality = 60;
-  else if ( centralityF >= 70. && centralityF <  80.) centrality = 70;
-  else if ( centralityF >= 80. && centralityF <  90.) centrality = 80;
-  else if ( centralityF >= 90. && centralityF <=100.) centrality = 90;
-  
-  return centrality;
 }

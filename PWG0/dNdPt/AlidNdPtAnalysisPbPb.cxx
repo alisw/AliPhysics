@@ -788,7 +788,7 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
     if(!physicsSelection) return;
     //SetPhysicsTriggerSelection(physicsSelection);
 
-    if (isEventTriggered) {
+    if (isEventTriggered && (GetTrigger() == AliTriggerAnalysis::kV0AND)) {
       // set trigger (V0AND)
       triggerAnalysis = physicsSelection->GetTriggerAnalysis();
       if(!triggerAnalysis) return;
@@ -796,49 +796,11 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
     }
   }
 
-  /*
-  // trigger selection
-  Bool_t isEventTriggered = kTRUE;
-  AliPhysicsSelection *trigSel = NULL;
-  AliTriggerAnalysis *trigAna = NULL;
-
-  if(evtCuts->IsTriggerRequired())  
-  {
-    //
-    trigSel = GetPhysicsTriggerSelection();
-    if(!trigSel) {
-      printf("cannot get trigSel \n");
-      return;
-    }
-
-    //
-    if(IsUseMCInfo()) 
-    { 
-      trigSel->SetAnalyzeMC();
-
-      
-        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
-	
-        if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
-	{
-          trigAna = trigSel->GetTriggerAnalysis();
-          if(!trigAna) 
-            return;
-
-          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
-        }//if(GetTrigger() == AliTriggerAnalysis::kV0AND)
-     }//if(IsUseMCInfo())
-  }//if(evtCuts->IsTriggerRequired())
-  */
 
   // centrality determination
-  Float_t centralityF = 0;
+  Float_t centralityF = -1.;
   AliCentrality *esdCentrality = esdEvent->GetCentrality();
   centralityF = esdCentrality->GetCentralityPercentile(fCentralityEstimator.Data()); 
-  if (centralityF == 0.) {
-    centralityF = 100.;
-  }
-
 
   // use MC information
   AliHeader* header = 0;
@@ -905,17 +867,12 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
 
   // vertex contributors
   Int_t multMBTracks = 0; 
-  if(GetAnalysisMode() == AlidNdPtHelper::kTPC) 
+  if(GetAnalysisMode() == AlidNdPtHelper::kTPC || GetAnalysisMode() == AlidNdPtHelper::kTPCITS) 
   {
      if(vtxESD->GetStatus()) {
          multMBTracks = vtxESD->GetNContributors();
      }
   } 
-  else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
-     if(vtxESD->GetStatus()) {
-         multMBTracks = vtxESD->GetNContributors();
-     }
-  }
   else {
     AliDebug(AliLog::kError, Form("Found analysis type %d", GetAnalysisMode()));
     return; 
@@ -963,7 +920,7 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
       labelsAll[multAll] = TMath::Abs(track->GetLabel());
 
       multAll++;      
-      if(esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track) && recCuts->AcceptTrack(track)) {
+      if(esdTrackCuts->AcceptTrack(track) && accCuts->AcceptTrack(track) && recCuts->AcceptTrackLocalTPC(track)) {
 
          fRecTrackHist2[AlidNdPtHelper::kRecTracks]->Fill(values);
          FillHistograms(track,stack,AlidNdPtHelper::kRecTracks,centralityF); 
@@ -988,9 +945,6 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
 
    if(IsUseMCInfo())  
    {
-
-     //Double_t vMultTrueEventMatrix[2] = { multRec, multMCTrueTracks };
-
      // 
      // event level corrections (zv,N_MB)
      //
@@ -1146,8 +1100,6 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
   if(labelsAll) delete [] labelsAll; labelsAll = 0;
   if(labelsAcc) delete [] labelsAcc; labelsAcc = 0;
   if(labelsRec) delete [] labelsRec; labelsRec = 0;
-
-  if(!evtCuts->IsRecVertexRequired() && vtxESD != NULL) delete vtxESD;
 
 }
 
