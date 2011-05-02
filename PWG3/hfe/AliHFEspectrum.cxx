@@ -155,16 +155,17 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
       fNbDimensions = fNbDimensions + 1;
 	switch(nbDimensions){
 	case 1:
-	    dims[0] = 5;
-            dims[1] = 0;
-	break;
+	  dims[0] = 5;
+	  dims[1] = 0;
+	  break;
 	case 2:
-	    dims[0] = 5;
-	    for(Int_t i = 0; i < 2; i++) dims[(i+1)] = i;
-	break;
-            dims[0] = 5;
-	case 3:   for(Int_t i = 0; i < 3; i++) dims[(i+1)] = i;
-	break;
+	  dims[0] = 5;
+	  for(Int_t i = 0; i < 2; i++) dims[(i+1)] = i;
+	  break;
+	case 3:
+	  dims[0] = 5;
+	  for(Int_t i = 0; i < 3; i++) dims[(i+1)] = i;
+	  break;
 	default:
 	    AliError("Container with this number of dimensions not foreseen (yet)");
 	    return kFALSE;
@@ -238,9 +239,10 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
   THnSparseF *mccorrelation = 0x0;
   if(fInclusiveSpectrum) {
     if((fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD + 2))) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
-    if((fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD + 1))) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
-    if((fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD))) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepbeforePID");
-    if((fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD - 1))) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepbeforePID");
+    else if((fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD + 1))) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
+    else if((fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD))) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepbeforePID");
+    else if((fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD - 1))) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepbeforePID");
+    else mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
   }
   else mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID"); // we confirmed that we get same result by using it instead of correlationstepafterDE
   //else mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterDE");
@@ -445,10 +447,10 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
     ratiocorrected->SetStats(0);
     ratiocorrected->Draw();
 
-    TH1D **unfoldingspectrac = new TH1D*[fNCentralityBinAtTheEnd];
-    TGraphErrors **unfoldingspectracn = new TGraphErrors*[fNCentralityBinAtTheEnd];
-    TH1D **correctedspectrac = new TH1D*[fNCentralityBinAtTheEnd];
-    TGraphErrors **correctedspectracn = new TGraphErrors*[fNCentralityBinAtTheEnd];
+    TH1D unfoldingspectrac[fNCentralityBinAtTheEnd];
+    TGraphErrors unfoldingspectracn[fNCentralityBinAtTheEnd];
+    TH1D correctedspectrac[fNCentralityBinAtTheEnd];
+    TGraphErrors correctedspectracn[fNCentralityBinAtTheEnd];
 
     
 
@@ -529,7 +531,7 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
 	TH1D *aftersu = (TH1D *) sparsesu->Projection(1);
 	CorrectFromTheWidth(aftersu);
 	aftersu->SetName((const char*)titleenameunotnormalized);
-	unfoldingspectrac[binc] = aftersu;
+	unfoldingspectrac[binc] = *aftersu;
 	ccorrectede->cd(1);
        	TGraphErrors* aftersun = NormalizeTH1N(aftersu,nbEvents);
 	aftersun->SetTitle("");
@@ -540,12 +542,12 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
 	aftersun->SetLineColor(kBlue);
 	aftersun->Draw("AP");
 	aftersun->SetName((const char*)titleenameunormalized);
-	unfoldingspectracn[binc] = aftersun;
+	unfoldingspectracn[binc] = *aftersun;
 	ccorrectede->cd(1);
 	TH1D *aftersd = (TH1D *) sparsed->Projection(1);
 	CorrectFromTheWidth(aftersd);
 	aftersd->SetName((const char*)titleenamednotnormalized);
-	correctedspectrac[binc] = aftersd;
+	correctedspectrac[binc] = *aftersd;
 	ccorrectede->cd(1);
 	TGraphErrors* aftersdn = NormalizeTH1N(aftersd,nbEvents);
 	aftersdn->SetTitle("");
@@ -556,7 +558,7 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
 	aftersdn->SetLineColor(kBlack);
 	aftersdn->Draw("P");
 	aftersdn->SetName((const char*)titleenamednormalized);
-	correctedspectracn[binc] = aftersdn;
+	correctedspectracn[binc] = *aftersdn;
 	TLegend *legcorrectedud = new TLegend(0.4,0.6,0.89,0.89);
 	legcorrectedud->AddEntry(aftersun,"Corrected","p");
 	legcorrectedud->AddEntry(aftersdn,"Alltogether","p");
@@ -614,10 +616,10 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
       alltogetherCorrection->SetName("AlltogetherCorrectedNotNormalizedSpectrum");
       alltogetherCorrection->Write();
       for(Int_t binc = 0; binc < fNCentralityBinAtTheEnd; binc++){
-	unfoldingspectrac[binc]->Write();
-	unfoldingspectracn[binc]->Write();
-	correctedspectrac[binc]->Write();
-	correctedspectracn[binc]->Write();
+	unfoldingspectrac[binc].Write();
+	unfoldingspectracn[binc].Write();
+	correctedspectrac[binc].Write();
+	correctedspectracn[binc].Write();
       }
       out->Close(); delete out;
     }
@@ -1248,6 +1250,9 @@ AliCFDataGrid *AliHFEspectrum::CorrectParametrizedEfficiency(AliCFDataGrid* cons
 
    
   } 
+
+  delete[] coord;
+  delete[] points;
 
   AliCFDataGrid *resultt = new AliCFDataGrid("spectrumEfficiencyParametrized", "Data Grid for spectrum after Efficiency parametrized", *dataContainerbis,fStepData);
 
