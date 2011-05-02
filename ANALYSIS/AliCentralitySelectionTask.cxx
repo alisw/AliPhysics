@@ -834,7 +834,8 @@ Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* const esd)
       break;
     case 2:
       if      ( fCurrentRun >= 136851  && fCurrentRun <= 137165 ) fRunNo = 137161;
-      else if ( fCurrentRun >= 137230  && fCurrentRun <= 137848 ) fRunNo = 137722;
+      else if ( fCurrentRun >= 137230  && fCurrentRun <= 137531 ) fRunNo = 137366;
+      else if ( fCurrentRun >= 137539  && fCurrentRun <= 137848 ) fRunNo = 137722;
       else if ( fCurrentRun >= 138125  && fCurrentRun <= 138154 ) fRunNo = 138150;
       else if ( fCurrentRun >= 138190  && fCurrentRun <= 138275 ) fRunNo = 138200;
       else fRunNo = 139172;
