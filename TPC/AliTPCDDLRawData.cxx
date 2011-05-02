@@ -76,7 +76,7 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
   DataPad data;
 
   //AliAltroBuffer is used in write mode to generate raw data file
-  char  filename[100];
+  char  filename[101];
   Int_t ddlNumber=0;
   AliAltroBuffer *buffer=NULL;
   Int_t pSecNumber=-1;  //Previous Sector number

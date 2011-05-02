@@ -581,7 +581,7 @@ Bool_t AliTPCcalibMaterial::CheckLooper(Int_t index, AliESDEvent *event){
   return kFALSE;
 }
 
-Bool_t AliTPCcalibMaterial::CheckV0(Int_t /*index*/, AliESDEvent */*event*/){
+Bool_t AliTPCcalibMaterial::CheckV0(Int_t index, AliESDEvent *event){
   //
   // check if given track is V0 candidata
   // if looper return kTRUE
