@@ -772,7 +772,10 @@ Bool_t AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *vo
   Bool_t result = kFALSE;
   while (iterations > 0) {
     Int_t nArrays = LoadPoints(volids, points,pointsdim);
-    if (nArrays == 0) return kFALSE;
+    if (nArrays == 0) {
+      UnloadPoints(pointsdim, points);
+      return kFALSE;
+    }
 
     AliTrackResiduals *minimizer = CreateMinimizer();
     minimizer->SetNTracks(nArrays);
