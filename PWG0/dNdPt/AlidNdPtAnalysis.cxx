@@ -141,6 +141,7 @@ ClassImp(AlidNdPtAnalysis)
   // Generic histograms to be corrected
   fRecEventHist(0),
   fRecTrackHist(0),
+  fEventCount(0),
 
   // Candle event histogram
   fRecCandleEventMatrix(0),
@@ -254,6 +255,7 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
   // Generic histograms to be corrected
   fRecEventHist(0),
   fRecTrackHist(0),
+  fEventCount(0),
 
   // Candle event histogram
   fRecCandleEventMatrix(0),
@@ -368,6 +370,7 @@ AlidNdPtAnalysis::~AlidNdPtAnalysis() {
   //
   if(fRecEventHist) delete fRecEventHist; fRecEventHist=0; 
   if(fRecTrackHist) delete fRecTrackHist; fRecTrackHist=0; 
+  if(fEventCount) delete fEventCount; fEventCount=0;
 
   //
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
@@ -993,6 +996,15 @@ void AlidNdPtAnalysis::Init(){
   fRecTrackHist2->GetAxis(3)->SetTitle("#eta");
   fRecTrackHist2->GetAxis(4)->SetTitle("#phi (rad)");
   fRecTrackHist2->Sumw2();
+  
+  Int_t binsEventCount[3]={2,2,2};
+  Double_t minEventCount[3]={0,0,0}; 
+  Double_t maxEventCount[3]={2,2,2}; 
+  fEventCount = new THnSparseF("fEventCount","trig vs trig+vertex",3,binsEventCount,minEventCount,maxEventCount);
+  fEventCount->GetAxis(0)->SetTitle("trig");
+  fEventCount->GetAxis(1)->SetTitle("trig+vert");
+  fEventCount->GetAxis(2)->SetTitle("selected");
+  fEventCount->Sumw2();
 
   // init folder
   fAnalysisFolder = CreateFolder("folderdNdPt","Analysis dNdPt Folder");
@@ -1047,7 +1059,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
     if(!physicsSelection) return;
     //SetPhysicsTriggerSelection(physicsSelection);
 
-    if (isEventTriggered) {
+    if (isEventTriggered && (GetTrigger() == AliTriggerAnalysis::kV0AND)) {
       // set trigger (V0AND)
       triggerAnalysis = physicsSelection->GetTriggerAnalysis();
       if(!triggerAnalysis) return;
@@ -1072,131 +1084,6 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
       }
     }
   }
-
-
-  /*
-  if(evtCuts->IsTriggerRequired())  
-  {
-    //
-    trigSel = GetPhysicsTriggerSelection();
-    if(!trigSel) {
-      AliDebug(AliLog::kError, "cannot get trigSel");
-      return;
-    }
-    
-    if(IsUseMCInfo()) 
-    { 
-      trigSel->SetAnalyzeMC();
-
-      if(GetParticleMode() == AlidNdPtHelper::kVZEROCase1)
-      {
-        // check V0 systematics (case1)
-	// Initialization done in the macro
-        trigAna = trigSel->GetTriggerAnalysis();
-        if(!trigAna) 
-          return;
-
-        //trigAna->SetV0HwPars(15, 61.5, 86.5);
-        //trigAna->SetV0AdcThr(15);
-
-        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
-        //printf("MB1 & kVZEROCase1  %d \n",isEventTriggered);
-        //isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
-	
-        if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
-	{
-          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
-          //printf("V0AND %d \n",isEventTriggered);
-        }
-      }
-      else if(GetParticleMode() == AlidNdPtHelper::kVZEROCase2)
-      {
-        // check V0 systematics (case2 only in MC)
-	// Initialization done in the macro
-
-        trigAna = trigSel->GetTriggerAnalysis();
-        if(!trigAna) 
-          return;
-
-        //trigAna->SetV0HwPars(0, 0, 125);
-        //trigAna->SetV0AdcThr(0);
-
-        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
-        //isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
-	
-	if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
-	{
-          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
-          //printf("V0AND %d \n",isEventTriggered);
-        }
-      }
-      else {
-        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
-        //printf("MB1 %d \n",isEventTriggered);
-	
-        if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
-	{
-          trigAna = trigSel->GetTriggerAnalysis();
-          if(!trigAna) 
-            return;
-
-          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
-          //printf("V0AND %d \n",isEventTriggered);
-        }
-      }
-    }
-    else {
-      //
-      // 0-multiplicity bin for LHC background correction
-      //
-      if( GetAnalysisMode() == AlidNdPtHelper::kTPCITS || 
-          GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtx || 
-	  GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtxUpdate || 
-          GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || 
-	  GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt ) 
-      {
-        trigSel->SetBin0CallbackViaPointer(&AlidNdPtAnalysis::IsBinZeroTrackSPDvtx);
-      } else {
-        trigSel->SetBin0CallbackViaPointer(&AlidNdPtAnalysis::IsBinZeroSPDvtx);
-      }
-
-      if(GetParticleMode() == AlidNdPtHelper::kVZEROCase1)
-      {
-        // check V0 systematics (case1)
-	// Initialization done in the macro
-        trigAna = trigSel->GetTriggerAnalysis();
-        if(!trigAna) 
-          return;
-
-        //trigAna->SetV0HwPars(15, 61.5, 86.5);
-        //trigAna->SetV0AdcThr(15);
-
-        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
-        //isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
-	
-        if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
-	{
-          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
-          //printf("V0AND %d \n",isEventTriggered);
-        }
-      }
-      else {
-        isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
-        //printf("MB1 %d \n",isEventTriggered);
-	
-        if(GetTrigger() == AliTriggerAnalysis::kV0AND) 
-	{
-          trigAna = trigSel->GetTriggerAnalysis();
-          if(!trigAna) 
-            return;
-
-          isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
-          //printf("V0AND %d \n",isEventTriggered);
-        }
-      }
-    }
-  }
-  */
 
 
   // use MC information
@@ -1267,6 +1154,11 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD) && isRecVertex; 
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());
+  
+  Bool_t isTrigAndVertex = isEventTriggered && isEventOK;
+  
+  Double_t vEventCount[3] = { (isEventTriggered && kTRUE) , isTrigAndVertex,  isTrigAndVertex && (TMath::Abs(vtxESD->GetZv()) < 10.)};
+  fEventCount->Fill(vEventCount);  
 
   // vertex contributors
   Int_t multMBTracks = 0; 
@@ -1315,10 +1207,6 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
   Int_t multAll=0, multAcc=0, multRec=0;
   Int_t *labelsAll=0, *labelsAcc=0, *labelsRec=0;
 
-  // cosmics analysis
-  Int_t cosmicCount = 0;
-  // high-pt tracks
-  Int_t highPtCount = 0;
 
   // check event cuts
   if(isEventOK && isEventTriggered && isEventSelected)
@@ -1354,7 +1242,6 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
       }  
     }
 
-    
 
     labelsAll = new Int_t[entries];
     labelsAcc = new Int_t[entries];
@@ -1373,6 +1260,15 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
       if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0) 
         continue;
 
+      FillHistograms(track,stack,vtxESD->GetZv(),AlidNdPtHelper::kAllTracks, multRecTemp); 
+      labelsAll[multAll] = TMath::Abs(track->GetLabel());
+      multAll++;
+     
+      //if(accCuts->AcceptTrack(track)) { 
+      //FillHistograms(track,stack,AlidNdPtHelper::kAccTracks); 
+      //labelsAcc[multAcc] = TMath::Abs(track->GetLabel());
+      //multAcc++;
+      //}
 
       // esd track selection 
       // ITS stand alone
@@ -1427,6 +1323,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
       }
       else {
         // check track cuts
+    
         if(!esdTrackCuts->AcceptTrack(track)) 
 	  continue;
       }
@@ -1456,43 +1353,6 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
         if(tpcTrack) delete tpcTrack; 
       } 
 
-      FillHistograms(track,stack,vtxESD->GetZv(),AlidNdPtHelper::kAllTracks, multRecTemp); 
-      labelsAll[multAll] = TMath::Abs(track->GetLabel());
-      multAll++;
-
-         //FillHistograms(track,stack,AlidNdPtHelper::kAccTracks); 
-	 //labelsAcc[multAcc] = TMath::Abs(track->GetLabel());
-	 //multAcc++;
-      
-         // check high-pt tracks
-         if(accCuts->AcceptTrack(track) && track->Pt() > 6.)
-	 {
-	     //printf(" high pt: pt %f \n",track->Pt());
-	     highPtCount++;
-	 }
-
-         // check cosmics tracks
-         if( GetParticleMode()==AlidNdPtHelper::kCosmic )
-         {
-           if(accCuts->AcceptTrack(track)) 
-	   { 
-             for(Int_t j=0; j<entries;++j) 
-             {
-               AliESDtrack *track1 = (AliESDtrack*)allChargedTracks->At(j);
-               if(!track1) continue;
-               if(track1->Charge()==0) continue;
-
-               if( esdTrackCuts->AcceptTrack(track1) && accCuts->AcceptTrack(track1) ) 
-               { 
-		 if ( AlidNdPtHelper::IsCosmicTrack(track,track1) ) { 
-		   cosmicCount++;
-		   break;
-		 }
-	       }
-	     }
-	   }
-          // if(!isCosmic) continue;
-         }
 
          // update track parameters using vertex point 
 	 if( GetAnalysisMode() == AlidNdPtHelper::kTPCSPDvtxUpdate || 
@@ -1519,14 +1379,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 	     }
           }
      }
-    // if(cosmicCount) 
-       //printf("COSMIC EVENT: number %d , mult %d \n", esdEvent->GetEventNumberInFile(), multRec);
 
-    // if(highPtCount) 
-       //printf("HIGH PT EVENT: number %d , mult %d \n", esdEvent->GetEventNumberInFile(), multRec);
-
-    // if(multRec > 30) 
-       //printf("HIGH MULT EVENT: number %d , mult %d \n", esdEvent->GetEventNumberInFile(), multRec);
 
      // fill track multiplicity histograms
      FillHistograms(allChargedTracks,labelsAll,multAll,labelsAcc,multAcc,labelsRec,multRec);
@@ -1714,9 +1567,9 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
          Double_t vTrackMatrix[3] = {vtxMC[2],particle->Pt(),particle->Eta()}; 
 
 	 // all genertated primaries including neutral
-         if( iMc < stack->GetNprimary() ) {
-           //fGenTrackMatrix->Fill(vTrackMatrix);
-	 }
+         //if( iMc < stack->GetNprimary() ) {
+         //fGenTrackMatrix->Fill(vTrackMatrix);
+	 //}
 
          // only charged particles
          if(!particle->GetPDG()) continue;
@@ -2103,6 +1956,7 @@ Long64_t AlidNdPtAnalysis::Merge(TCollection* const list)
     fRecMCTrackHist1->Add(entry->fRecMCTrackHist1);
     fMCMultRecTrackHist1->Add(entry->fMCMultRecTrackHist1);
     fRecTrackHist2->Add(entry->fRecTrackHist2);
+    fEventCount->Add(entry->fEventCount);
 
   count++;
   }
