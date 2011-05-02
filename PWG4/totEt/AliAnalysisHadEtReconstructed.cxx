@@ -587,7 +587,7 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 
   Float_t minEt = 0.0;
   Float_t maxEt = 100.0;
-  if(fDataSet==20100) maxEt=3000.0;
+  if(fDataSet==20100) maxEt=3500.0;
   Int_t nbinsEt = 200;
   char histoname[200];
   char histotitle[200];
