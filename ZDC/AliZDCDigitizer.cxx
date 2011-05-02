@@ -170,11 +170,11 @@ Bool_t AliZDCDigitizer::Init()
     else{ // for RELDIS simulation
        Float_t scalGainFactor = 0.5;
        for(Int_t j = 0; j < 5; j++){
-    	 fPMGain[0][j] = 50000./(4*scalGainFactor);  // ZNC		 
-    	 fPMGain[1][j] = 100000./(5*scalGainFactor); // ZPC	   
+    	 fPMGain[0][j] = 50000./scalGainFactor;  // ZNC		 
+    	 fPMGain[1][j] = 100000./scalGainFactor; // ZPC	   
     	 fPMGain[2][j] = 100000./scalGainFactor;     // ZEM
-    	 fPMGain[3][j] = 50000./(4*scalGainFactor);  // ZNA		 
-    	 fPMGain[4][j] = 100000./(5*scalGainFactor); // ZPA	
+    	 fPMGain[3][j] = 50000./scalGainFactor;  // ZNA		 
+    	 fPMGain[4][j] = 100000./scalGainFactor; // ZPA	
        }
        //
        AliInfo(Form("	PMT gains for RELDIS simulation: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
