@@ -54,6 +54,7 @@ AliTPCtrackerRow::AliTPCtrackerRow():
   fN1(0),
   fClusters2(0),
   fN2(0),
+  fFastCluster(),
   fN(0),
   fClusters(),
   fIndex(),

@@ -1402,6 +1402,7 @@ AliTPCCalPad *AliTPCcalibDButil::CreateCEOutlyerMap( Int_t & noutliersCE, AliTPC
   Double_t rmsMedian         = fCETrms->GetMedian();
   for (UInt_t iroc=0;iroc<fCETmean->kNsec;++iroc){
     AliTPCCalROC *rocData=fCETmean->GetCalROC(iroc);
+    if (!rocData) continue;
     if (fALTROMasked) rocMasked= fALTROMasked->GetCalROC(iroc);
     AliTPCCalROC *rocOut       = out->GetCalROC(iroc);
     AliTPCCalROC *rocCEQ       = fCEQmean->GetCalROC(iroc);
