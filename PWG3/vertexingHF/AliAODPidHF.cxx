@@ -698,7 +698,7 @@ void AliAODPidHF::SetBetheBloch(AliTPCPIDResponse &tpcResp) const{
 
    if(fPbPb) { // PbPb MC
 
-     alephParameters[0] = 1.44405e+00;
+     alephParameters[0] = 1.44405/50.;
      alephParameters[1] = 2.35409e+01;
      alephParameters[2] = TMath::Exp(-2.90330e+01);
      alephParameters[3] = 2.10681e+00;
@@ -706,7 +706,7 @@ void AliAODPidHF::SetBetheBloch(AliTPCPIDResponse &tpcResp) const{
 
    } else {  // pp MC
 
-     alephParameters[0] = 2.15898e+00/50.;
+     alephParameters[0] = 2.15898/50.;
      alephParameters[1] = 1.75295e+01;
      alephParameters[2] = 3.40030e-09;
      alephParameters[3] = 1.96178e+00;
