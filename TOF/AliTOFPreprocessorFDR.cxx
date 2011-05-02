@@ -265,13 +265,13 @@ UInt_t AliTOFPreprocessorFDR::ProcessDCSDataPoints(TMap* aliasMap)
     
     Log("Storing DCS Data in OCDB");
     resultDCSMap = Store("Calib","DCSData",array, &metaDataDCS,0,kTRUE);
-    if (!resultDCSStore){
+    if (!resultDCSMap){
       Log("Some problems occurred while storing DCS data results in OCDB, TOF exiting from Shuttle");
       return 3;// return error Code for processed DCS data not stored 
       // in reference data
     }
     
-    if (array) delete array;
+    delete array;
     return 0;
 
   }
