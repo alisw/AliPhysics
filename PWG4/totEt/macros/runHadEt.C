@@ -4,7 +4,7 @@
 //by default this runs locally
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
-void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Bool_t test = kTRUE) {
+void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Bool_t test = kTRUE, Int_t material = 0) {
     TStopwatch timer;
     timer.Start();
     gSystem->Load("libTree.so");
@@ -70,8 +70,9 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Boo
   // Make the analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("TotEtManager");
   if(submit){
-      gROOT->LoadMacro("CreateAlienHandlerHadEt.C");
-      AliAnalysisGrid *alienHandler = CreateAlienHandlerHadEt(dataset,data,test);//integer dataset, boolean isData, bool submit-in-test-mode
+
+    gROOT->LoadMacro("CreateAlienHandlerHadEt.C");
+    AliAnalysisGrid *alienHandler = CreateAlienHandlerHadEt(dataset,data,test,material);//integer dataset, boolean isData, bool submit-in-test-mode
       if (!alienHandler) return;
       mgr->SetGridHandler(alienHandler);
   }
@@ -106,40 +107,37 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Boo
    if(dataset==20100){//PbPb 2.76 TeV
      if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a4_bis.PbPb.ForData.root","corrections.root",kTRUE);}
      else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11a4_bis.PbPb.ForSimulations.root","corrections.root",kTRUE);}
+     gSystem->CopyFile("ConfigHadEtMonteCarloPbPb.C","ConfigHadEtMonteCarlo.C",kTRUE);
+     gSystem->CopyFile("ConfigHadEtReconstructedPbPb.C","ConfigHadEtReconstructed.C",kTRUE);
+     //centTask->SetPass(1);
    }
    else{
      if(dataset==2009){//pp 900 GeV
-       cout<<"Warning! You are using 7 TeV corrections for 900 GeV data!"<<endl;}
+       gSystem->CopyFile("ConfigHadEtMonteCarlopp900GeV.C","ConfigHadEtMonteCarlo.C",kTRUE);
+       gSystem->CopyFile("ConfigHadEtReconstructedpp900GeV.C","ConfigHadEtReconstructed.C",kTRUE);
+       if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11b1a.pp.ForData.root","corrections.root",kTRUE);}
+       else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11b1a.pp.ForSimulations.root","corrections.root",kTRUE);}
+     }
      if(dataset==20111){//pp 2.76 TeV
-       cout<<"Warning! You are using 7 TeV corrections for 2.76eV data!"<<endl;}
-     if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC10d4.pp.ForData.root","corrections.root",kTRUE);}
-     else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC10d4.pp.ForSimulations.root","corrections.root",kTRUE);}
+       gSystem->CopyFile("ConfigHadEtMonteCarlopp276TeV.C","ConfigHadEtMonteCarlo.C",kTRUE);
+       gSystem->CopyFile("ConfigHadEtReconstructedpp276TeV.C","ConfigHadEtReconstructed.C",kTRUE);
+       if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC11b10a.pp.ForData.root","corrections.root",kTRUE);}
+       else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC11b10a.pp.ForSimulations.root","corrections.root",kTRUE);}
+     }
+     if(dataset==2010){//pp 7 TeV
+       gSystem->CopyFile("ConfigHadEtMonteCarlopp7TeV.C","ConfigHadEtMonteCarlo.C",kTRUE);
+       gSystem->CopyFile("ConfigHadEtReconstructedpp7TeV.C","ConfigHadEtReconstructed.C",kTRUE);
+       if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC10e20.pp.ForData.root","corrections.root",kTRUE);}
+       else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC10e20.pp.ForSimulations.root","corrections.root",kTRUE);}
+     }
    }
-   TString recoFile;
-   TString mcFile;
-   if(dataset==20100){
-     recoFile = "ConfigHadEtReconstructedPbPb.C";
-     mcFile = "ConfigHadEtMonteCarloPbPb.C";
-   }
-   if(dataset==2009){
-     recoFile = "ConfigHadEtReconstructedpp900GeV.C";
-     mcFile = "ConfigHadEtMonteCarlopp900GeV.C";
-   }
-   if(dataset==20111){
-     recoFile = "ConfigHadEtReconstructedpp276TeV.C";
-     mcFile = "ConfigHadEtMonteCarlopp276TeV.C";
-   }
-   if(dataset==2010){
-     recoFile = "ConfigHadEtReconstructedpp7TeV.C";
-     mcFile = "ConfigHadEtMonteCarlopp7TeV.C";
-   }
-   AliAnalysisTaskHadEt *task2 = new AliAnalysisTaskHadEt("TaskHadEt",!data,recoFile,mcFile);
-    if(!data) task2->SetMcData();
-    mgr->AddTask(task2);
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("out2", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");
-  mgr->ConnectInput(task2,0,cinput1);
-  mgr->ConnectOutput(task2,1,coutput2);
-  
+   AliAnalysisTaskHadEt *task2 = new AliAnalysisTaskHadEt("TaskHadEt",!data);//,recoFile,mcFile);
+   if(!data) task2->SetMcData();
+   mgr->AddTask(task2);
+   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("out2", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");
+   mgr->ConnectInput(task2,0,cinput1);
+   mgr->ConnectOutput(task2,1,coutput2);
+   
   mgr->SetDebugLevel(0);
   
   if (!mgr->InitAnalysis()) return;

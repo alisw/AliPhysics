@@ -2,7 +2,9 @@
 AliAnalysisHadEtReconstructed * ConfigHadEtReconstructed(){
   //cout<<"Hello I am configuring you"<<endl;
   AliAnalysisHadEtReconstructed *hadEtReco = new AliAnalysisHadEtReconstructed();
-  hadEtReco->SetDataSet(20100);
+  //hadEtReco->SetDataSet(2009);
+  hadEtReco->SetDataSet(2009);
+  hadEtReco->SetV0ScaleDataSet(2009);
   //Set corrections...
 
   TFile *infile = new TFile("corrections.root");
