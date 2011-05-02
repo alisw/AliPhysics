@@ -102,6 +102,7 @@
 
 #pragma link C++ class AliHLTTriggerMenuSymbol+;
 #pragma link C++ class AliHLTRunStatistics+;
+#pragma link C++ class AliHLTSpacePointContainer+;
 #pragma link C++ class AliHLTMisc+;
 #pragma link C++ class AliHLTCTPData+;
 #pragma link C++ class AliHLTScalars+;
@@ -125,6 +126,7 @@
 #pragma link C++ function AliHLTComponentDataTypeInitializer(const char*, const char*);
 #pragma link C++ function AliHLTComponentDataTypeInitializer(const AliHLTComponentDataType, const char*);
 #pragma link C++ function operator<<(ostream &, const AliHLTComponentDataType &);
+#pragma link C++ function operator<<(ostream &, const AliHLTSpacePointContainer &);
 
 #pragma link C++ global kAliHLTComponentDataTypefOriginSize;
 #pragma link C++ global kAliHLTComponentDataTypefIDsize;
