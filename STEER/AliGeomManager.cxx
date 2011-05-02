@@ -1488,7 +1488,7 @@ void AliGeomManager::CheckOverlapsOverPNs(Double_t threshold)
   // originated by the application of alignment objects.
   //
 
-  TObjArray* ovexlist = new TObjArray(64);
+  TObjArray* ovexlist = 0x0;
 
   AliInfoClass("********* Checking overlaps/extrusions over physical nodes only *********");
   TObjArray* pnList = gGeoManager->GetListOfPhysicalNodes();
