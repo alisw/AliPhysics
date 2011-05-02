@@ -1,4 +1,6 @@
-AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE, Bool_t outputAOD=kFALSE, TString outputfile = "", Int_t year = 2010,TString col = "pp",Bool_t oldAOD=kFALSE)
+AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE, 
+                                               Bool_t outputAOD=kFALSE, TString outputfile = "", Int_t year = 2010,TString col = "pp",
+                                               Bool_t withQA = kFALSE)
 {
   // Creates a PartCorr task, configures it and adds it to the analysis manager.
   
@@ -51,8 +53,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
     reader->SwitchOnPHOSCells();  
     reader->SwitchOnPHOS();
   }
-
-   reader->SwitchOffSuspiciousClustersRemoval();  //EMCAL
   
   // for case data="deltaAOD", no need to fill the EMCAL/PHOS cluster lists
   if(data.Contains("delta")){
@@ -97,7 +97,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   reader->SetPHOSPtMin(0.);
   reader->SetCTSPtMin(0.);
   if(outputAOD)  reader->SwitchOnWriteDeltaAOD()  ;
-  if(oldAOD) reader->SwitchOnOldAODs();
   if(kPrintSettings) reader->Print("");
   
   // *** Calorimeters Utils	***
@@ -112,6 +111,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
     cu->SwitchOnCorrectClusterLinearity();
     AliEMCALRecoUtils * reco = cu->GetEMCALRecoUtils();
     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
+    reco->SwitchOnRejectExoticCluster();
   }
   
   // Remove EMCAL hottest channels for first LHC10 periods 	
@@ -255,6 +255,52 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
 
   if(kPrintSettings) anapi0->Print("");
 
+  //QA
+  if (withQA) {
+    AliAnaCalorimeterQA *emcalQA = new AliAnaCalorimeterQA();
+    //emcalQA->SetDebug(10); //10 for lots of messages
+    emcalQA->SetCalorimeter("EMCAL");
+    if(kUseKinematics) emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+    else  emcalQA->SwitchOffDataMC() ;
+    emcalQA->AddToHistogramsName("QA_"); //Begining of histograms name
+    //emcalQA->SetFiducialCut(fidCut);
+    emcalQA->SwitchOffFiducialCut();
+    emcalQA->SwitchOffPlotsMaking();
+    emcalQA->SwitchOffCorrelation();
+    //  if(!kUseKinematics)emcalQA->SetTimeCut(400,850);//Open for the moment
+    //Set Histrograms bins and ranges
+    emcalQA->SetHistoPtRangeAndNBins(0, 50, 200) ;
+    emcalQA->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
+    emcalQA->SetHistoEtaRangeAndNBins(-0.71, 0.71, 200) ;
+    
+    if(year==2010){  
+      emcalQA->SetNumberOfModules(4); 
+      emcalQA->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 100) ;
+      emcalQA->SetHistoXRangeAndNBins(-230,90,120);
+      emcalQA->SetHistoYRangeAndNBins(370,450,40);
+    }
+    else{            
+      emcalQA->SetNumberOfModules(10); 
+      emcalQA->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 181*TMath::DegToRad(), 100) ;
+      emcalQA->SetHistoXRangeAndNBins(-600,90,200);
+      emcalQA->SetHistoYRangeAndNBins(100,450,100);
+    }
+    
+    emcalQA->SetHistoMassRangeAndNBins(0., 1, 100) ;
+    emcalQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 10 );
+    emcalQA->SetHistoPOverERangeAndNBins(0,10.,100);
+    emcalQA->SetHistodEdxRangeAndNBins(0.,200.,100);
+    emcalQA->SetHistodRRangeAndNBins(0.,TMath::Pi(),150);
+    emcalQA->SetHistoTimeRangeAndNBins(300.,900,300);
+    emcalQA->SetHistoRatioRangeAndNBins(0.,2.,100);
+    emcalQA->SetHistoVertexDistRangeAndNBins(0.,100.,100);
+    emcalQA->SetHistoNClusterCellRangeAndNBins(0,500,500);
+    emcalQA->SetHistoZRangeAndNBins(-400,400,100);
+    emcalQA->SetHistoRRangeAndNBins(400,450,25);
+    emcalQA->SetHistoV0SignalRangeAndNBins(0,5000,100);
+    emcalQA->SetHistoV0MultiplicityRangeAndNBins(0,5000,100);
+    emcalQA->SetHistoTrackMultiplicityRangeAndNBins(0,5000,100);
+  }//withQA
   
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
@@ -264,6 +310,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   // Particle selection analysis
   maker->AddAnalysis(anaphoton,n++);
   maker->AddAnalysis(anapi0,n++);
+  if(withQA)maker->AddAnalysis(emcalQA,n++);  
   maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
   if(data.Contains("delta")) maker->SwitchOffAODsMaker()  ;
