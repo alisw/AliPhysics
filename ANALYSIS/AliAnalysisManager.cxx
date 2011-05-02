@@ -1024,7 +1024,7 @@ void AliAnalysisManager::Terminate()
                tree->Draw("deltaVM:event",cut,"", 1234567890, 0);
                hist = (TH1*)gPad->GetListOfPrimitives()->FindObject("htemp");            
                if (hist) {
-                  hist->SetTitle(Form("%s: Exec dVM[kB]/event", task->GetName()));
+                  hist->SetTitle(Form("%s: Exec dVM[MB]/event", task->GetName()));
                   hist->GetYaxis()->SetTitle("deltaVM [MB]");
                }   
             }
@@ -1133,8 +1133,8 @@ void AliAnalysisManager::ProfileTask(const char *name, const char */*option*/) c
    tree->Draw("deltaVM:sname",cut,"", 1234567890, 0);
    hist = (TH1*)gPad->GetListOfPrimitives()->FindObject("htemp");
    if (hist) {
-      hist->SetTitle("Alocated VM[kB] for COO and Terminate");
-      hist->GetYaxis()->SetTitle("deltaVM [kB]");
+      hist->SetTitle("Alocated VM[MB] for COO and Terminate");
+      hist->GetYaxis()->SetTitle("deltaVM [MB]");
       hist->GetXaxis()->SetTitle("method");
    }   
    // CPU profile per event
@@ -1152,8 +1152,8 @@ void AliAnalysisManager::ProfileTask(const char *name, const char */*option*/) c
    tree->Draw("deltaVM:event",cut,"", 1234567890, 0);
    hist = (TH1*)gPad->GetListOfPrimitives()->FindObject("htemp");
    if (hist) {
-      hist->SetTitle("Alocated VM[kB] per event");
-      hist->GetYaxis()->SetTitle("deltaVM [kB]");
+      hist->SetTitle("Alocated VM[MB] per event");
+      hist->GetYaxis()->SetTitle("deltaVM [MB]");
    }   
    canvas->Modified();
    delete tree;
