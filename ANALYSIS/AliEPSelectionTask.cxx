@@ -367,7 +367,10 @@ void AliEPSelectionTask::SetPhiDistribution(char* infilename, char* listname)
   TFile f(infilename);
   TObject* list = f.Get(listname);
   fPhiDist = (TH1F*)list->FindObject("fHOutPhi");
-  if (!fPhiDist) cout << "Phi Distribution not found!!!" << endl;
+  if (!fPhiDist) {
+    cout << "Phi Distribution not found!!!" << endl;
+    return;
+  }
   
   Bool_t emptybins;
 
@@ -411,7 +414,7 @@ Double_t AliEPSelectionTask::GetPhiWeight(AliESDtrack* track)
 {
   Double_t phiweight=1;
   
-  if (fUsePhiWeight) {
+  if (fUsePhiWeight && fPhiDist && track) {
     Double_t nParticles = fPhiDist->Integral();
     Double_t nPhibins = fPhiDist->GetNbinsX();
   
