@@ -70,14 +70,14 @@ const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, const Ali
 
   const AliESDVertex* vertex = 0;
   AliESDVertex *initVertex = 0;
-  if (analysisMode == kSPD || analysisMode == kTPCITS || 
+  if (analysisMode == kSPD || 
       analysisMode == kTPCSPDvtx || analysisMode == kTPCSPDvtxUpdate || analysisMode == kTPCITSHybrid)
   {
     vertex = aEsd->GetPrimaryVertexSPD();
     if (debug)
       Printf("AlidNdPtHelper::GetVertex: Returning SPD vertex");
-  }
-  else if (analysisMode == kTPCTrackSPDvtx || analysisMode == kTPCTrackSPDvtxUpdate || 
+  }  
+  else if (analysisMode == kTPCITS  || analysisMode == kTPCTrackSPDvtx || analysisMode == kTPCTrackSPDvtxUpdate || 
            analysisMode == kTPCITSHybridTrackSPDvtx || analysisMode == kTPCITSHybridTrackSPDvtxDCArPt || 
 	   analysisMode == kITSStandAloneTrackSPDvtx ||  analysisMode == kITSStandAloneTPCTrackSPDvtx)
   {
@@ -211,17 +211,6 @@ Bool_t AlidNdPtHelper::TestRecVertex(const AliESDVertex* vertex, const AliESDVer
     }
   }
 
-  /*
-  // check Ncontributors
-  if (vertex->GetNContributors() <= 0) {
-    if (debug){
-      Printf("AlidNdPtHelper::GetVertex: NContributors() <= 0: %d",vertex->GetNContributors());
-      Printf("AlidNdPtHelper::GetVertex: NIndices(): %d",vertex->GetNIndices());
-      vertex->Print();
-    }
-    return kFALSE;
-  }
-  */
 
   return kTRUE;
 }

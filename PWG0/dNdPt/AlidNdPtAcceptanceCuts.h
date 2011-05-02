@@ -56,6 +56,7 @@ public:
 
   //
   Bool_t AcceptTrack(AliESDtrack *track);
+  Bool_t AcceptTrackLocalTPC(AliESDtrack *track);
   Bool_t AcceptTrack(AliExternalTrackParam *track);
   Bool_t AcceptTrack(TParticle *particle);
   

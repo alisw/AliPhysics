@@ -85,6 +85,19 @@ Bool_t AlidNdPtAcceptanceCuts::AcceptTrack(AliESDtrack *track)
   if(pt < fMinPt) return kFALSE;
   if(pt > fMaxPt) return kFALSE;
   
+return kTRUE;
+}
+
+Bool_t AlidNdPtAcceptanceCuts::AcceptTrackLocalTPC(AliESDtrack *track)
+{
+  // check acceptance cuts for AliESDtrack
+  if(!track) return kFALSE;
+  const AliExternalTrackParam *innerParam =  track->GetInnerParam();
+  if(!innerParam) return kFALSE;
+
+  Float_t eta = track->Eta();
+  Float_t phi = TMath::ATan2(innerParam->Py(),innerParam->Px());
+
   if (fCheckRange) {
       if ((eta > fExcludeMinEta) && (eta < fExcludeMaxEta) && (phi > fExcludeMinPhi) && (phi < fExcludeMaxPhi)) { return kFALSE; }
   }
