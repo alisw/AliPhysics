@@ -164,8 +164,7 @@ void AliHFEemcalPIDqa::ProcessTrack(const AliHFEpidObject *track,AliHFEdetPIDqa:
   //AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
   Float_t centrality = track->GetCentrality();
 
-  const AliVTrack *vtrack = dynamic_cast<const AliVTrack *>(track->GetRecTrack());
-  const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(vtrack);
+  const AliESDtrack *esdtrack = static_cast<const AliESDtrack *>(track->GetRecTrack());
 
   Double_t contentSignal[4];
   contentSignal[0] = track->GetRecTrack()->P();

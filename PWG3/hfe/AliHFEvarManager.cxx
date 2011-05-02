@@ -157,9 +157,9 @@ void AliHFEvarManager::AddVariable(TString name){
   if(!name.CompareTo("pt")) 
     fVariables->AddLast(new AliHFEvariable("pt", "pt", kPt, 44, 0.1, 20, kTRUE));
   else if(!name.CompareTo("eta"))
-    fVariables->AddLast(new AliHFEvariable("eta", "eta", kEta, 8, -0.8, 0.8));
+    fVariables->AddLast(new AliHFEvariable("eta", "eta", kEta, 80, -0.8, 0.8));
   else if(!name.CompareTo("phi"))
-    fVariables->AddLast(new AliHFEvariable("phi", "phi", kPhi, 18, -0, 2*TMath::Pi()));
+    fVariables->AddLast(new AliHFEvariable("phi", "phi", kPhi, 180, -0, 2*TMath::Pi()));
   else if(!name.CompareTo("charge"))
     fVariables->AddLast(new AliHFEvariable("charge", "charge", kCharge, 2, -1.1, 1.1));
   else if(!name.CompareTo("source"))
@@ -331,7 +331,7 @@ void AliHFEvarManager::FillCorrelationMatrix(THnSparseF *matrix) const {
   memcpy(&content[0], fContent, sizeof(Double_t) * nVars);
   memcpy(&content[nVars], fContentMC, sizeof(Double_t) * nVars);
   matrix->Fill(content, fWeightFactor);
-  if(content) delete[] content;
+  delete[] content;
 
 }
 
