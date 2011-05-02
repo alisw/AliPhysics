@@ -590,6 +590,8 @@ void Parser::ReadShare()
 	  tPartBuf->SetPDGCode((int) mc);
 	  tPartBuf->SetNumber(number);
 	  tNum = mDB->AddParticleType(tPartBuf);
+
+	  delete tPartBuf;
 	}
       in.close();
     }
