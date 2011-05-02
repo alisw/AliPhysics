@@ -205,7 +205,7 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
       AliMCEvent* mcEvent  = MCEvent();      
       if (mcEvent && mcEvent->GenEventHeader()) {
 	AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
-	fRP = headerH->ReactionPlaneAngle();
+	if (headerH) fRP = headerH->ReactionPlaneAngle();
       }
     }
     if (esd){
@@ -239,18 +239,20 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	
 	for (int iter = 0; iter<NT;iter++){
 	  AliESDtrack* track = dynamic_cast<AliESDtrack*> (ftracklist->At(iter));
-	  float delta = track->Phi()-fEventplaneQ;
-	  while (delta < 0) delta += TMath::Pi();
-	  while (delta > TMath::Pi()) delta -= TMath::Pi();
-	  fHOutPTPsi->Fill(track->Pt(),delta);
-	  fHOutPhi->Fill(track->Phi());
-	  fHOutPhiCorr->Fill(track->Phi(),GetPhiWeight(track));
+	  if (track) {
+	    float delta = track->Phi()-fEventplaneQ;
+	    while (delta < 0) delta += TMath::Pi();
+	    while (delta > TMath::Pi()) delta -= TMath::Pi();
+	    fHOutPTPsi->Fill(track->Pt(),delta);
+	    fHOutPhi->Fill(track->Phi());
+	    fHOutPhiCorr->Fill(track->Phi(),GetPhiWeight(track));
+	  }
 	}
 	
 	AliESDtrack* trmax = esd->GetTrack(0);
 	for (int iter = 1; iter<NT;iter++){
 	  AliESDtrack* track = dynamic_cast<AliESDtrack*> (ftracklist->At(iter));
-	  if (track->Pt() > trmax->Pt()) trmax = track;
+	  if (track && (track->Pt() > trmax->Pt())) trmax = track;
 	}
 	fHOutleadPTPsi->Fill(trmax->Phi(),fEventplaneQ);      
       }
@@ -290,13 +292,15 @@ TVector2 AliEPSelectionTask::GetQ(AliEventplane* EP, TObjArray* tracklist)
   for (int i=0; i<NT; i++){
     weight = 1;
     track = dynamic_cast<AliESDtrack*> (tracklist->At(i));
-    weight = GetWeight(track);
-    if (fSaveTrackContribution){
-      EP->GetQContributionXArray()->AddAt(weight*cos(2*track->Phi()),track->GetID());
-      EP->GetQContributionYArray()->AddAt(weight*sin(2*track->Phi()),track->GetID());
+    if (track) {
+      weight = GetWeight(track);
+      if (fSaveTrackContribution){
+	EP->GetQContributionXArray()->AddAt(weight*cos(2*track->Phi()),track->GetID());
+	EP->GetQContributionYArray()->AddAt(weight*sin(2*track->Phi()),track->GetID());
+      }
+      mQx += (weight*cos(2*track->Phi()));
+      mQy += (weight*sin(2*track->Phi()));
     }
-    mQx += (weight*cos(2*track->Phi()));
-    mQy += (weight*sin(2*track->Phi()));
   }
   mQ.Set(mQx,mQy);
   return mQ;
@@ -318,6 +322,7 @@ void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklis
   for (Int_t i = 0; i < NT; i++) {
     weight = 1;
     track = dynamic_cast<AliESDtrack*> (tracklist->At(i));
+    if (!track) continue;
     weight = GetWeight(track);
     
     // This loop splits the track set into 2 random subsets
