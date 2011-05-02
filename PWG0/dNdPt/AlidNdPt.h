@@ -68,6 +68,7 @@ public:
   AlidNdPtHelper::ParticleMode GetParticleMode() const          { return fParticleMode; }
   AliPhysicsSelection* GetPhysicsTriggerSelection() const       { return fPhysicsSelection; }
   AlidNdPtBackgroundCuts* GetBackgroundCuts() const             { return fdNdPtBackgroundCuts; }
+  Double_t* CreateLogAxis(Int_t nbins, Double_t xmin, Double_t xmax);
 
 private:
 
@@ -88,7 +89,7 @@ private:
   AliPhysicsSelection* fPhysicsSelection; // physics trigger selection class
   AlidNdPtBackgroundCuts *fdNdPtBackgroundCuts; // background cuts (cosmics and splitted tracks)
 
-  ClassDef(AlidNdPt,2);
+  ClassDef(AlidNdPt,3);
 };
 
 #endif
