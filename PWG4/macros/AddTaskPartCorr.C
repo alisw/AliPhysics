@@ -5,7 +5,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr
  Bool_t kPrintSettings = kTRUE,
  Bool_t kSimulation = kFALSE, 
  Bool_t outputAOD=kFALSE, 
-TString period = ""
+ TString period = ""
  ) {
 
   // Creates a PartCorr task, configures it and adds it to the analysis manager.
@@ -95,14 +95,6 @@ TString period = ""
 
   if(outputAOD)      reader->SwitchOnWriteDeltaAOD()  ;
   if(kPrintSettings) reader->Print("");
-  
-
-  //-----------------------------------------------------------------
-  // Bad cluster removal
-  //  -> REAL DATA ONLY
-  //-----------------------------------------------------------------
-  reader->SwitchOnSuspiciousClustersRemoval();
-
 
   // *** Calorimeters Utils	***
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
@@ -113,6 +105,7 @@ TString period = ""
   //  -> EMCAL
   //-----------------------------------------------------------------
   if (calorimeter == "EMCAL") {
+    cu->GetEMCALRecoUtils()->SwitchOnRejectExoticCluster();
     cu->SwitchOnCorrectClusterLinearity();
     if (!kSimulation) {
       cu->GetEMCALRecoUtils()->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
@@ -187,7 +180,7 @@ TString period = ""
 	matrix[j]->Print();
 	cu->SetEMCALGeometryMatrixInSM(matrix[j],j);
       }
-    cu->SwitchOnRecalculateClusterTrackMatching();
+    //cu->SwitchOnRecalculateClusterTrackMatching();
   }
   
   //-----------------------------------------------------------------
