@@ -55,12 +55,23 @@ public:
   TString GetStyleMacro() const {return fStyleMacro ;}
   void SetStyleMacro( TString macro ) {fStyleMacro = macro; }
   
- 	
   void SwitchOnFillAllPositionHistogram()   {fFillAllPosHisto = kTRUE  ;}
   void SwitchOffFillAllPositionHistogram()  {fFillAllPosHisto = kFALSE ;}
   
+  void SwitchOnFillAllPositionHistogram2()   {fFillAllPosHisto2 = kTRUE  ;}
+  void SwitchOffFillAllPositionHistogram2()  {fFillAllPosHisto2 = kFALSE ;}
+  
   void SwitchOnFillAllTH12Histogram()   {fFillAllTH12 = kTRUE  ;}
   void SwitchOffFillAllTH12Histogram()  {fFillAllTH12 = kFALSE ;}
+  
+  void SwitchOnFillAllTH3Histogram()   {fFillAllTH3 = kTRUE  ;}
+  void SwitchOffFillAllTH3Histogram()  {fFillAllTH3 = kFALSE ;}
+  
+  void SwitchOnFillAllTrackMatchingHistogram()   {fFillAllTMHisto = kTRUE  ;}
+  void SwitchOffFillAllTrackMatchingHistogram()  {fFillAllTMHisto = kFALSE ;}
+  
+  void SwitchOnFillAllPi0Histogram()   {fFillAllPi0Histo = kTRUE  ;}
+  void SwitchOffFillAllPi0Histogram()  {fFillAllPi0Histo = kFALSE ;}
   
   void SwitchOnCorrelation()  {fCorrelate = kTRUE  ;}
   void SwitchOffCorrelation() {fCorrelate = kFALSE ;}
@@ -225,7 +236,11 @@ public:
   TString  fCalorimeter ;    // Calorimeter selection
   TString  fStyleMacro  ;    // Location of macro for plots style
   Bool_t   fFillAllPosHisto; // Fill all the position related histograms 
+  Bool_t   fFillAllPosHisto2;// Fill all the position related histograms 2
   Bool_t   fFillAllTH12 ;    // Fill simple histograms which information is already in TH3 histograms
+  Bool_t   fFillAllTH3 ;     // Fill TH3 histograms
+  Bool_t   fFillAllTMHisto ; // Fill track matching histograms
+  Bool_t   fFillAllPi0Histo ;// Fill track matching histograms
   Bool_t   fCorrelate   ;    // Correlate PHOS/EMCAL cells/clusters, also with V0 and track multiplicity
   Int_t    fNModules    ;    // Number of EMCAL/PHOS modules, set as many histogras as modules 
   Int_t    fNRCU        ;    // Number of EMCAL/PHOS RCU, set as many histogras as RCU 
@@ -508,7 +523,7 @@ public:
   TH2F *fhMCChHad1pOverER02;    //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *fhMCNeutral1pOverER02;  //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-  ClassDef(AliAnaCalorimeterQA,13)
+  ClassDef(AliAnaCalorimeterQA,14)
 } ;
 
 
