@@ -72,7 +72,7 @@ void runFlowTaskCentralityPIDTrain( Int_t mode = mGrid,
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask* centSelTask = AddTaskCentrality();
   if (!DATA) centSelTask->SetMCInput();
-
+  if (DATA) centSelTask->SetPass(1);
 
   //Add the TOF tender
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/macros/AddTaskTenderTOF.C");
