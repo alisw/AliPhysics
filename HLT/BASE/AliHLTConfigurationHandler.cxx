@@ -47,6 +47,7 @@ ClassImp(AliHLTConfigurationHandler)
 AliHLTConfigurationHandler::AliHLTConfigurationHandler()
   : AliHLTLogging()
   , fgListConfigurations()
+  , fgListScheduledRegistrations()
   , fFlags(0)
 {
   // see header file for class documentation
@@ -67,6 +68,7 @@ AliHLTConfigurationHandler::~AliHLTConfigurationHandler()
     fgListConfigurations.Remove(lnk);
     delete pConf;
   }
+  fgListScheduledRegistrations.Delete();
 }
 
 AliHLTConfigurationHandler* AliHLTConfigurationHandler::fgpInstance=NULL;
@@ -103,26 +105,30 @@ int AliHLTConfigurationHandler::RegisterConfiguration(AliHLTConfiguration* pConf
   // see header file for function documentation
   int iResult=0;
   if (pConf) {
-    AliHLTConfiguration* pExisting=NULL;
-    if ((pExisting=FindConfiguration(pConf->GetName())) == NULL) {
-      AliHLTConfiguration* pClone=new AliHLTConfiguration(*pConf);
-      fgListConfigurations.Add(pClone);
-      HLTDebug("configuration \"%s\" (%p) registered from %p", pClone->GetName(), pClone, pConf);
+    AliHLTConfiguration* pClone=new AliHLTConfiguration(*pConf);
+    if (IsActive()) {      
+      AliHLTConfiguration* pExisting=NULL;
+      if ((pExisting=FindConfiguration(pConf->GetName())) == NULL) {
+        fgListConfigurations.Add(pClone);
+        HLTDebug("configuration \"%s\" (%p) registered from %p", pClone->GetName(), pClone, pConf);
 
-      // mark all configurations with unresolved dependencies for re-evaluation
-      TObjLink* lnk=fgListConfigurations.FirstLink();
-      while (lnk) {
-	AliHLTConfiguration* pSrc=(AliHLTConfiguration*)lnk->GetObject();
-	if (pSrc && pSrc!=pClone && pSrc->SourcesResolved()!=1) {
-	  pSrc->InvalidateSources();
-	}
-	lnk=lnk->Next();
+        // mark all configurations with unresolved dependencies for re-evaluation
+        TObjLink* lnk=fgListConfigurations.FirstLink();
+        while (lnk) {
+          AliHLTConfiguration* pSrc=(AliHLTConfiguration*)lnk->GetObject();
+          if (pSrc && pSrc!=pClone && pSrc->SourcesResolved()!=1) {
+            pSrc->InvalidateSources();
+          }
+          lnk=lnk->Next();
+        }
+      } else {
+        if ((*pExisting)!=(*pConf)) {
+          iResult=-EEXIST;
+          HLTWarning("configuration \"%s\" already registered with different properties", pConf->GetName());
+        }
       }
-    } else {
-      if ((*pExisting)!=(*pConf)) {
-      iResult=-EEXIST;
-      HLTWarning("configuration \"%s\" already registered with different properties", pConf->GetName());
-      }
+    } else if (IsScheduling()) {
+      fgListScheduledRegistrations.Add(pClone);
     }
   } else {
     iResult=-EINVAL;
@@ -234,6 +240,29 @@ AliHLTConfiguration* AliHLTConfigurationHandler::FindConfiguration(const char* i
     pConf=(AliHLTConfiguration*)fgListConfigurations.FindObject(id); 
   }
   return pConf;
+}
+
+int AliHLTConfigurationHandler::Deactivate(bool schedule) {
+  // see header file for function documentation
+  fFlags|=kInactive;
+  if (schedule)
+    fFlags|=kScheduling;
+  return 0;
+}
+
+int AliHLTConfigurationHandler::Activate() {
+  // see header file for function documentation
+  fFlags&=~kInactive;
+  if (IsScheduling()) {
+    fFlags&=~kScheduling;
+    TObjLink *lnk = fgListScheduledRegistrations.FirstLink();
+    while (lnk) {
+      RegisterConfiguration((AliHLTConfiguration*)lnk->GetObject());
+      lnk = lnk->Next();
+    }
+    ClearScheduledRegistrations();
+  }
+  return 0;
 }
 
 int AliHLTConfigurationHandler::MissedRegistration(const char* name)

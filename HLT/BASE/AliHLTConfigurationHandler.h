@@ -24,8 +24,8 @@ class TMap;
  * @brief Global Handling of HLT configurations.
  *
  * This class implements the global handling of @ref AliHLTConfiguration objects.
- * It is a list of all configuartion descriptor currently available in the system.
- * Each @ref AliHLTConfiguration object is registerd automatically with the
+ * It is a list of all configuration descriptors currently available in the system.
+ * Each @ref AliHLTConfiguration object is registered automatically with the
  * handler and put into the list.
  *
  * @note This class is only used for the @ref alihlt_system.
@@ -58,27 +58,36 @@ class AliHLTConfigurationHandler : public AliHLTLogging {
 
   /**
    * Get the instance of the global singleton.
-   * Does not create the global instance. Returns NULL if status of the global
-   * instance is 'inactive'.
+   * Does not create the global instance.
    */
   static AliHLTConfigurationHandler* Instance() {
-    if (!fgpInstance || !fgpInstance->IsActive()) return NULL;
+    if (!fgpInstance) return NULL;
     return fgpInstance;
   }
 
   /*****************************************************************************
-   * activation, effects the availability of the global singleton via
-   * AliHLTConfigurationHandler::Instance()
+   * activation, affects if the handler will accept new registrations
    */
 
-  /// deactivate the handler, AliHLTConfiguration objects will not register
-  int Deactivate() {fFlags|=kInactive; return 0;}
+  /**
+   * Deactivate the handler, AliHLTConfiguration objects will not register
+   * @param schedule     Store and schedule registrations pending reactivation
+   */
+  int Deactivate(bool schedule=false);
 
-  /// activate the handler, AliHLTConfiguration objects will register again
-  int Activate() {fFlags&=~kInactive; return 0;}
+  /**
+   * Activate the handler, AliHLTConfiguration objects will register again
+   */
+  int Activate();
 
   /// check if active
   bool IsActive() const {return (fFlags&kInactive)==0;}
+  
+  /// check if scheduling
+  bool IsScheduling() const {return (fFlags&kScheduling)>0;}
+  
+  /// clear scheduled registrations
+  void ClearScheduledRegistrations() {fgListScheduledRegistrations.Delete();}
 
   /// signal a missed registration
   static int MissedRegistration(const char* name=NULL);
@@ -158,11 +167,15 @@ class AliHLTConfigurationHandler : public AliHLTLogging {
 
  private:
   enum {
-    kInactive = 0x1
+    kInactive = 0x1,
+    kScheduling = 0x2
   };
 
   /** the list of registered configurations */
   TList fgListConfigurations;                                      // see above
+  
+  /** list of configurations scheduled to be registered */
+  TList fgListScheduledRegistrations;                              // see above
 
   /** status of the handler */
   unsigned fFlags;                                                 //! transient
