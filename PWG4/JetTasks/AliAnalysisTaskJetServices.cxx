@@ -573,6 +573,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 	fh2TriggerVtx->Fill(kSelectedALICEVertexValid*(iCl+1),zvtx);
       }
     }
+
     if(cand&&aodVtxIn&&iCl<5){
       fh2TriggerCount->Fill(0.,kSelectedALICEVertexIn);
       fh2TriggerCount->Fill(iCl,kSelectedALICEVertexIn);
@@ -582,6 +583,13 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       fh2TriggerCount->Fill(0.,kSelected);
       fh1Centrality->Fill(cent);
       AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
+      if(aodH&&cand&&fFilterAODCollisions&&!esd){
+	if(cent<=80&&aodVtxIn){
+	  aodH->SetFillAOD(kTRUE);
+	  aodH->SetFillExtension(kTRUE);
+	}
+      }
+
       TList recTracks;
       GetListOfTracks(&recTracks);
       CalculateReactionPlaneAngle(&recTracks);
