@@ -623,7 +623,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   }
   
   //Recalculate track-matching for the new clusters, only with ESDs
-  fRecoUtils->FindMatches(esdevent,fCaloClusterArr,fGeom);
+  fRecoUtils->FindMatches(event,fCaloClusterArr,fGeom);
 
   
   //-------------------------------------------------------------------------------------
