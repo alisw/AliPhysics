@@ -69,7 +69,7 @@ AliTRDPIDResponse::AliTRDPIDResponse(const AliTRDPIDResponse &ref):
   // For creating a deep copy call SetOwner
   //
   Int_t size  = (AliPID::kSPECIES)*(kNPBins);
-  memcpy(fMapRefHists, ref.fMapRefHists, sizeof(Double_t) * size);
+  memcpy(fMapRefHists, ref.fMapRefHists, sizeof(Int_t) * size);
 }
 
 //____________________________________________________________
@@ -91,7 +91,7 @@ AliTRDPIDResponse &AliTRDPIDResponse::operator=(const AliTRDPIDResponse &ref){
   } else if(fReferences) delete fReferences;
   fReferences = ref.fReferences;
   Int_t size  = (AliPID::kSPECIES)*(kNPBins);
-  memcpy(fMapRefHists, ref.fMapRefHists, sizeof(Double_t) * size);
+  memcpy(fMapRefHists, ref.fMapRefHists, sizeof(Int_t) * size);
   fPIDmethod = ref.fPIDmethod;
   
   return *this;
