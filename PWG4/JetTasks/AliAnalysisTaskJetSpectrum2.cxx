@@ -844,7 +844,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   fMultGen = genMult1;
   if(fMultGen<=0)fMultGen = genMult2;
 
-  Doublet_t var0[2] = {0,};
+  Double_t var0[2] = {0,};
   var0[0] = fCentrality;
   var0[1] = fMultRec;
   fhnEvent->Fill(var0);
