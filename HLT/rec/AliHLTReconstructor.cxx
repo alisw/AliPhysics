@@ -148,6 +148,10 @@ void AliHLTReconstructor::Init()
 	pSystem->SwitchAliLog(0);
       } else if (token.CompareTo("ignore-hltout")==0) {
 	fFlags|=kAliHLTReconstructorIgnoreHLTOUT;
+      } else if (token.CompareTo("run-online-config")==0) {
+        fFlags|=kAliHLTReconstructorIgnoreHLTOUT;
+	if (option.Length()>0) option+=" ";
+	option+=token;
       } else if (token.CompareTo("ignore-ctp")==0) {
 	fFlags|=kAliHLTReconstructorIgnoreCTP;
       } else if (token.Contains("esdmanager=")) {
