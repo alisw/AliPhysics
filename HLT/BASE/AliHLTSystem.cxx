@@ -1181,37 +1181,54 @@ int AliHLTSystem::ScanOptions(const char* options)
 	  }
 	} else if (token.Contains("alilog=off")) {
 	  SwitchAliLog(0);
-	} else if (token.Contains("config=")) {
-	  TString param=token.ReplaceAll("config=", "");
-	  Int_t error=0;
-	  if (token.EndsWith(".xml", TString::kIgnoreCase)) {
-	    Int_t filesize = 0;
-	    AliHLTOnlineConfiguration conf;
-	    filesize = conf.LoadConfiguration(param.Data());
-	    if (filesize <= 0) {
-	      HLTError("can not load config \'%s\'", param.Data());
-	      iResult=-EBADF;
-	    } else {
-	      error = conf.Parse();
-	      if (error==0) {
-		fChains = conf.GetDefaultChains();
-		libs = conf.GetComponentLibraries();
-		libs += " ";
-		SetStatusFlags(kConfigurationLoaded);
-	      } else {
-		HLTError("can not parse config \'%s\'", param.Data());
-		iResult=-EBADF;
+	} else if (token.Contains("config=") || token.Contains("run-online-config")) {
+	  if (!CheckStatus(kConfigurationLoaded)) {
+	    Int_t error=0;
+	    AliHLTOnlineConfiguration* pConf = NULL;
+	    if (token.Contains("run-online-config")) {
+	      AliCDBEntry* pEntry=AliHLTMisc::Instance().LoadOCDBEntry("HLT/Calib/OnlineConfig");
+	      if (pEntry) {
+		TObject* pObject=AliHLTMisc::Instance().ExtractObject(pEntry);
+		if (pObject && pObject->IsA() == AliHLTOnlineConfiguration::Class())
+		  pConf = (AliHLTOnlineConfiguration*)pObject;
 	      }
 	    }
-	  } else {
-	    gROOT->Macro(param.Data(), &error);
-	    if (error==0) {
-	      SetStatusFlags(kConfigurationLoaded);
-	    } else {
-	      HLTError("can not execute macro \'%s\'", param.Data());
-	      iResult=-EBADF;
+	    if (token.Contains("config=")) {
+	      TString param=token.ReplaceAll("config=", "");
+	      if (token.EndsWith(".xml", TString::kIgnoreCase)) {
+		Int_t filesize = 0;
+		pConf = new AliHLTOnlineConfiguration;
+		filesize = pConf->LoadConfiguration(param.Data());
+		if (filesize <= 0) {
+		  HLTError("cannot load config \'%s\'", param.Data());
+		  iResult=-EBADF;
+		}
+	      } else {
+		gROOT->Macro(param.Data(), &error);
+		if (error==0) {
+		  SetStatusFlags(kConfigurationLoaded);
+		} else {
+		  HLTError("cannot execute macro \'%s\'", param.Data());
+		  iResult=-EBADF;
+		}
+	      }
 	    }
-	  }	
+	    if (pConf) {
+		error = pConf->Parse();
+		if (error==0) {
+		  fChains = pConf->GetDefaultChains();
+		  libs = pConf->GetComponentLibraries();
+		  libs += " ";
+		  SetStatusFlags(kConfigurationLoaded);
+		} else {
+		  HLTError("cannot parse online configuration");
+		  iResult=-EBADF;
+		}
+	    }
+	    delete pConf; pConf=NULL;
+	  } else {
+	    HLTWarning("HLT options has both a config file and run-online-config set");
+	  }
 	} else if (token.Contains("chains=")) {
 	  TString param=token.ReplaceAll("chains=", "");
 	  fChains=param.ReplaceAll(",", " ");
