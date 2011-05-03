@@ -33,6 +33,7 @@
 #include <TString.h>
 #include <TObjString.h>
 
+#include "AliHLTConfigurationHandler.h"
 #include "AliHLTDAQ.h"
 #include "AliHLTOnlineConfiguration.h"
 #include "AliHLTComponentConfiguration.h"
@@ -64,6 +65,8 @@ int AliHLTOnlineConfiguration::LoadConfiguration(const char* filename)
 {
   /// load configuration from file
 
+  if (TestBit(kLoaded))
+    return -EPROTO;
   ifstream in;
   in.open(filename);
   if (!in.is_open())
@@ -104,7 +107,7 @@ int AliHLTOnlineConfiguration::Parse()
   /// parse the xml buffer
 
   int iResult = 0;
-  if (TestBit(kLoaded)) {
+  if (TestBit(kLoaded) && !TestBit(kParsed)) {
     iResult = -EINVAL;
     TDOMParser *domParser = new TDOMParser();
     domParser->SetValidate(false);
@@ -115,9 +118,17 @@ int AliHLTOnlineConfiguration::Parse()
     else {
       TXMLDocument* doc;
       if ((doc = domParser->GetXMLDocument()) && doc->GetRootNode()) {
+        AliHLTConfigurationHandler* pHandler = AliHLTConfigurationHandler::Instance();
+        pHandler->Deactivate(true);
         iResult = ParseConfiguration(doc->GetRootNode());
         if (iResult == 0)
           SetBit(kParsed);
+        else {
+          pHandler->ClearScheduledRegistrations();
+          fConfEntryList.Delete();
+          fDefaultChains.Clear();
+        }
+        pHandler->Activate();
       }
     }
     delete domParser;
@@ -135,7 +146,7 @@ int AliHLTOnlineConfiguration::ParseConfiguration(TXMLNode* node)
   int nElems = 0;
   if (node && node->GetChildren()) {
     node = node->GetChildren();
-    for (; node; node = node->GetNextNode()) {
+    for (; node && iResult == 0; node = node->GetNextNode()) {
       if (node->GetNodeType() == TXMLNode::kXMLElementNode) {
         if (strcmp(node->GetNodeName(), "Proc") == 0) {
           const char* id = 0;
@@ -152,23 +163,29 @@ int AliHLTOnlineConfiguration::ParseConfiguration(TXMLNode* node)
               }
           }
           if (id && type && node->GetChildren()) {
-            if (ParseEntry(node->GetChildren(), id, type) == 0) {
+            iResult = ParseEntry(node->GetChildren(), id, type);
+            if (iResult == 0)
               nElems++;
-            }
-          }
-          else if (!id) {
-            HLTError("Configuration component missing ID attribute");
-          }
-          else if (!type) {
-            HLTError("Configuration component missing type attribute");
           }
           else {
-            HLTError("Empty configuration component %s", id);
+            iResult = -EINVAL;
+            if (!id) {
+              HLTError("Configuration component missing ID attribute");
+            }
+            else if (!type) {
+              HLTError("Configuration component missing type attribute");
+            }
+            else {
+              HLTError("Empty configuration component %s", id);
+            }
           }
         }
       }
     }
-    if (!nElems) {
+    if (iResult != 0) {
+      HLTError("An error occurred parsing the configuration. Aborting...");
+    }
+    else if (!nElems) {
       iResult = -EINVAL;
       HLTError("Configuration did not contain any (valid) elements");
     }
@@ -261,13 +278,24 @@ int AliHLTOnlineConfiguration::ParseStandardComponent(const char* id,
     strncpy(cmdcopy, cmd, strlen(cmd));
     strtok(cmdcopy, " -"); // Skip "AliRootWrapperSubscriber"
     char* strtmp = 0;
+    bool CFTransform = false;
     while (((strtmp = strtok(0, " -")))) {
-      if (strcmp(strtmp, "componentid") == 0)
+      if (strcmp(strtmp, "componentid") == 0) {
         compid = strtok(0, " -");
+        if (strcmp(compid, "TPCHWClusterTransform") == 0)
+        // FIXME: Ugly hack to replace cluster transformers. Refactor.
+          CFTransform = true;
+      }
       else if (strcmp(strtmp, "componentargs") == 0)
         hasArgs = true;
       else if (strcmp(strtmp, "componentlibrary") == 0)
         complib = strtok(0, " -");
+    }
+    if (CFTransform) {
+      compid = "TPCClusterFinder32Bit";
+      // NOTE: Cluster transformer's arguments ignored and cluster finder
+      // component gets no arguments at all...
+      hasArgs = false;
     }
     if (hasArgs) {
       // Parse component arguments
@@ -325,8 +353,14 @@ int AliHLTOnlineConfiguration::ParseRORCPublisher(const char* id,
     const char complib[] = "libAliHLTUtil.so";
     // Parse (and validate) component command
     int ddlID;
-    int res = sscanf(cmd, "RORCPublisher -slot %*d %*d %*d %*d -rorcinterface %*d -sleep "
-      "-sleeptime %*d -maxpendingevents %*d -alicehlt -ddlid %d", &ddlID);
+    int res;
+    if (strstr(cmd, "-hwcoproc")) {
+      // HW Co-processor has complex argument rules, so skip full validation
+      res = sscanf(strstr(cmd, "-ddlid"), "-ddlid %d", &ddlID);
+    } else {
+      res = sscanf(cmd, "RORCPublisher -slot %*d %*d %*d %*d -rorcinterface %*d -sleep "
+        "-sleeptime %*d -maxpendingevents %*d -alicehlt -ddlid %d", &ddlID);
+    }
     if (res != 1) {
       iResult = -EINVAL;
       HLTError("Configuration component %s has <Cmd> element of unknown format\n"
