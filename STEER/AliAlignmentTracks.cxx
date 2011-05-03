@@ -789,7 +789,10 @@ Bool_t AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *vo
       fitter->GetTrackResiduals(pVolId,pTrack);
       minimizer->AddTrackPointArrays(pVolId,pTrack);
     }
-    if (!(result = minimizer->Minimize())) break;
+    if (!(result = minimizer->Minimize())) {
+      UnloadPoints(pointsdim, points);
+      break;
+    }
 
     // Update the alignment object(s)
     if (fDoUpdate) for (Int_t iVolId = 0; iVolId < nVolIds; iVolId++) {
