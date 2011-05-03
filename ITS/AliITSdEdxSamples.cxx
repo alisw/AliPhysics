@@ -65,7 +65,7 @@ AliITSdEdxSamples::AliITSdEdxSamples(const AliITSdEdxSamples& source) :
   fParticleSpecie(source.fParticleSpecie)
 {
   // Copy constructor
-  for(Int_t i=0; i<fNSamples; i++){
+  for(Int_t i=0; i<kMaxSamples; i++){
     fdESamples[i]=source.GetdESample(i);
     fdxSamples[i]=source.GetdxSample(i);
     fPAtSample[i]=source.GetMomentumAtSample(i);
