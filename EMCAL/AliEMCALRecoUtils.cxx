@@ -1038,6 +1038,9 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,TObjArray * clusterArr,  Al
   fResidualZ          ->Set(500);
   fResidualR          ->Set(500);
   
+  AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (event);
+  AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (event);
+
   Int_t    matched=0;
   Double_t cv[21];
   for (Int_t i=0; i<21;i++) cv[i]=0;
@@ -1046,9 +1049,9 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,TObjArray * clusterArr,  Al
     AliExternalTrackParam *trackParam=0;
 
     //If the input event is ESD, the starting point for extrapolation is TPCOut, if available, or TPCInner 
-    if(dynamic_cast<AliESDEvent*> (event))
+    if(esdevent)
       {
-	AliESDtrack *esdTrack = dynamic_cast<AliESDEvent*> (event)->GetTrack(itr);
+	AliESDtrack *esdTrack = esdevent->GetTrack(itr);
 	if(!esdTrack || !IsAccepted(esdTrack)) continue;
 	const AliESDfriendTrack*  friendTrack = esdTrack->GetFriendTrack();
 	if(friendTrack && friendTrack->GetTPCOut())
@@ -1065,9 +1068,9 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,TObjArray * clusterArr,  Al
     
     //If the input event is AOD, the starting point for extrapolation is at vertex
     //AOD tracks are selected according to its bit.
-    else if(dynamic_cast<AliAODEvent*> (event))
+    else if(aodevent)
       {
-	AliAODTrack *aodTrack = dynamic_cast<AliAODEvent*> (event)->GetTrack(itr);
+	AliAODTrack *aodTrack = aodevent->GetTrack(itr);
 	if(!aodTrack) continue;
 	if(!aodTrack->TestFilterMask(fAODFilterMask)) continue; //Select AOD tracks that fulfill GetStandardITSTPCTrackCuts2010()
 	Double_t pos[3],mom[3];
