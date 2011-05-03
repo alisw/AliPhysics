@@ -150,9 +150,14 @@ void AliAnalysisTaskEMCALClusterizeFast::UserExec(Option_t *)
 
   UInt_t offtrigger = 0;
   if (esdevent) {
-    UInt_t mask = esdevent->GetESDRun()->GetDetectorsInReco();
-    if ((mask >> 18) & 0x1 == 0) { //AliDAQ::OfflineModuleName(180=="EMCAL"
-      AliError(Form("EMCAL not reconstructed: %u (%u)", mask,  esdevent->GetESDRun()->GetDetectorsInDAQ()));
+    UInt_t mask1 = esdevent->GetESDRun()->GetDetectorsInDAQ();
+    UInt_t mask2 = esdevent->GetESDRun()->GetDetectorsInReco();
+    Bool_t desc1 = (mask1 >> 18) & 0x1;
+    Bool_t desc2 = (mask2 >> 18) & 0x1;
+    if (desc1==0 || desc2==0) { //AliDAQ::OfflineModuleName(180=="EMCAL"
+      AliError(Form("EMCAL not in DAQ/RECO: %u (%u)/%u (%u)", 
+		    mask1, esdevent->GetESDRun()->GetDetectorsInReco(),
+		    mask2, esdevent->GetESDRun()->GetDetectorsInDAQ()));
       return;
     }
     AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
