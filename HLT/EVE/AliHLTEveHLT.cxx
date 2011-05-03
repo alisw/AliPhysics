@@ -1,3 +1,4 @@
+// $Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -571,11 +572,13 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
     
     for( ; ok; dx*=.9 ){
 
+      // FIXME this loop does not make sense anymore
+      // Matthias 2010-05-02
       if( !t.TransportToX(x0+dx, bz, .999 ) ){
 	ok = 0; 
 	break;
-	if( TMath::Abs(dx)<1. ) break;      
-	continue;
+	// if( TMath::Abs(dx)<1. ) break;      
+	// continue;
       }
       break;
     }
