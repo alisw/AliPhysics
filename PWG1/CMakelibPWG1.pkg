@@ -1,3 +1,5 @@
+# -*- mode: CMake -*-
+
 #--------------------------------------------------------------------------------#
 # Package File for PWG1                                                          #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,31 +27,64 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-file (GLOB SRCS1 "*.cxx" )
-file (GLOB SRCS2 "global/*.cxx" )
-file (GLOB SRCS3 "cosmic/*.cxx" )
-file (GLOB SRCS4 "tender/*.cxx" )
-file (GLOB SRCS5 "HMPID/*.cxx" )
-file (GLOB SRCS6 "ITS/*.cxx" )
-file (GLOB SRCS7 "TRD/*.cxx" )
-file (GLOB SRCS8 "TPC/*.cxx" )
-file (GLOB SRCS9 "TOF/*.cxx" )
-file (GLOB SRCS10 "TRD/info/*.cxx" )
-file (GLOB SRCS11 "background/*.cxx" )
-file (GLOB SRCS12 "Centrality/*.cxx" )
-file (GLOB SRCS13 "ZDC/*.cxx" )
-file (GLOB SRCS14 "T0/*.cxx" )
+file ( GLOB SRCS1 "*.cxx" )
+file ( GLOB SRCS2 "global/*.cxx" )
+file ( GLOB SRCS3 "cosmic/*.cxx" )
+file ( GLOB SRCS4 "tender/*.cxx" )
+file ( GLOB SRCS5 "HMPID/*.cxx" )
+file ( GLOB SRCS6 "ITS/*.cxx" )
+file ( GLOB SRCS7 "TRD/*.cxx" )
+file ( GLOB SRCS8 "TPC/*.cxx" )
+file ( GLOB SRCS9 "TOF/*.cxx" )
+file ( GLOB SRCS10 "TRD/info/*.cxx" )
+file ( GLOB SRCS11 "background/*.cxx" )
+file ( GLOB SRCS12 "Centrality/*.cxx" )
+file ( GLOB SRCS13 "ZDC/*.cxx" )
+file ( GLOB SRCS14 "T0/*.cxx" )
 
-list(APPEND SRCS ${SRCS1} ${SRCS2} ${SRCS3} ${SRCS4} ${SRCS5} ${SRCS6} ${SRCS7} ${SRCS8} ${SRCS9} ${SRCS10} ${SRCS11} ${SRCS12} ${SRCS13} ${SRCS14})
+list ( APPEND SRCS 
+  ${SRCS1} 
+  ${SRCS2} 
+  ${SRCS3} 
+  ${SRCS4} 
+  ${SRCS5} 
+  ${SRCS6} 
+  ${SRCS7} 
+  ${SRCS8} 
+  ${SRCS9} 
+  ${SRCS10} 
+  ${SRCS11} 
+  ${SRCS12} 
+  ${SRCS13} 
+  ${SRCS14}
+  )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWG1LinkDef.h)
 
-set ( EINCLUDE  STEER TPC ITS TRD TOF TRD/Cal ANALYSIS/Tender ANALYSIS PWG1/comparison PWG1/cosmic PWG1/global PWG1/tender PWG1/ITS PWG1/TPC PWG1/TOF PWG1/TRD PWG1/TRD/info PWG1/background PWG1/Centrality HMPID PWG1/ZDC PWG1/T0 PWG4/PartCorrBase)
-
-  if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lSTEER -lTPCbase -lANALYSISalice -lANALYSIS -L${ROOTLIBDIR} -lMinuit -lEG -lGeom )
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  
+  STEER 
+  TPC 
+  ITS 
+  TRD 
+  TOF 
+  TRD/Cal 
+  ANALYSIS/Tender 
+  ANALYSIS 
+  PWG1/comparison 
+  PWG1/cosmic 
+  PWG1/global 
+  PWG1/tender 
+  PWG1/ITS 
+  PWG1/TPC 
+  PWG1/TOF 
+  PWG1/TRD 
+  PWG1/TRD/info 
+  PWG1/background 
+  PWG1/Centrality 
+  HMPID 
+  PWG1/ZDC 
+  PWG1/T0 
+  PWG4/PartCorrBase
+  )
