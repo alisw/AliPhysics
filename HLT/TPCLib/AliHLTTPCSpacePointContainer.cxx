@@ -324,7 +324,7 @@ AliHLTTPCSpacePointContainer::AliHLTTPCSpacePointProperties::AliHLTTPCSpacePoint
   // copy constructor
 }
 
-AliHLTTPCSpacePointContainer::AliHLTTPCSpacePointProperties::AliHLTTPCSpacePointProperties& AliHLTTPCSpacePointContainer::AliHLTTPCSpacePointProperties::operator=(const AliHLTTPCSpacePointProperties& src)
+AliHLTTPCSpacePointContainer::AliHLTTPCSpacePointProperties& AliHLTTPCSpacePointContainer::AliHLTTPCSpacePointProperties::operator=(const AliHLTTPCSpacePointProperties& src)
 {
   // assignment operator
   if (&src==this) return *this;
