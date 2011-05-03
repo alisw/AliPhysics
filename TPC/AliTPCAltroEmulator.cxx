@@ -1090,12 +1090,12 @@ Bool_t AliTPCAltroEmulator::WriteEvent(Int_t ievent) {
       fRawData[0]=i32*4;
       
       Int_t nwritten=fwrite(fRawData,sizeof(UInt_t),i32,file);
+      fclose(file);
+
       if (nwritten!=i32) return kFALSE;
       
       // clean up
       do {fRawData[--i32]=0;} while (i32>0);
-      
-      fclose(file);
     }
   }
   return kTRUE;

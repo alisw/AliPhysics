@@ -2054,11 +2054,6 @@ Int_t AliTPCCalibTCF::DumpTCFparamToFilePerPad(const char *nameFileTCFPerPad,con
   Int_t tpcPadNum = 557568;
   Int_t validFlag = 1; // 1 if parameters for pad exist, 0 if they are only inherited from the roc
 
-  Bool_t *entryID = new Bool_t[7200000]; // helping vector
-  for (Int_t ii = 0; ii<7200000; ii++) {
-    entryID[ii]=0;
-  }
-    
   // get file/tuple with parameters per pad
   TFile fileTCFparam(nameFileTCFPerPad);
   TNtuple *paramTuple = (TNtuple*)fileTCFparam.Get("TCFparam");
@@ -2074,6 +2069,11 @@ Int_t AliTPCCalibTCF::DumpTCFparamToFilePerPad(const char *nameFileTCFPerPad,con
     return -1;
   } else {
     printf("Got mapping object from %s\n", nameMappingFile);
+  }
+
+  Bool_t *entryID = new Bool_t[7200000]; // helping vector
+  for (Int_t ii = 0; ii<7200000; ii++) {
+    entryID[ii]=0;
   }
 
   // creating outputfile
