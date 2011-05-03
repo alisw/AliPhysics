@@ -305,8 +305,12 @@ void AliTHn::FillParent()
     THnSparse* target = GetGrid(i)->GetGrid();
     
     Int_t* binIdx = new Int_t[fNVars];
+    Int_t* nBins  = new Int_t[fNVars];
     for (Int_t j=0; j<fNVars; j++)
+    {
       binIdx[j] = 1;
+      nBins[j] = target->GetAxis(j)->GetNbins();
+    }
     
     Long64_t count = 0;
     
@@ -330,17 +334,99 @@ void AliTHn::FillParent()
       
       for (Int_t j=fNVars-1; j>0; j--)
       {
-	if (binIdx[j] > target->GetAxis(j)->GetNbins())
+	if (binIdx[j] > nBins[j])
 	{
 	  binIdx[j] = 1;
 	  binIdx[j-1]++;
 	}
       }
       
-      if (binIdx[0] > target->GetAxis(0)->GetNbins())
+      if (binIdx[0] > nBins[0])
 	break;
     }
     
     AliInfo(Form("Step %d: copied %lld entries out of %lld bins", i, count, GetGlobalBinIndex(binIdx)));
+
+    delete[] binIdx;
+    delete[] nBins;
+  }
+}
+
+void AliTHn::ReduceAxis()
+{
+  // "removes" one axis by summing over the axis and putting the entry to bin 1
+  // TODO presently only implemented for the last axis
+  
+  Int_t axis = fNVars-1;
+  
+  for (Int_t i=0; i<fNSteps; i++)
+  {
+    if (!fValues[i])
+      continue;
+      
+    Float_t* source = fValues[i]->GetArray();
+    Float_t* sourceSumw2 = 0;
+    if (fSumw2[i])
+      sourceSumw2 = fSumw2[i]->GetArray();
+    
+    THnSparse* target = GetGrid(i)->GetGrid();
+    
+    Int_t* binIdx = new Int_t[fNVars];
+    Int_t* nBins  = new Int_t[fNVars];
+    for (Int_t j=0; j<fNVars; j++)
+    {
+      binIdx[j] = 1;
+      nBins[j] = target->GetAxis(j)->GetNbins();
+    }
+    
+    Long64_t count = 0;
+
+    while (1)
+    {
+      // sum over axis <axis>
+      Float_t sumValues = 0;
+      Float_t sumSumw2 = 0;
+      for (Int_t j=1; j<=nBins[axis]; j++)
+      {
+	binIdx[axis] = j;
+	Long64_t globalBin = GetGlobalBinIndex(binIdx);
+	sumValues += source[globalBin];
+	source[globalBin] = 0;
+
+	if (sourceSumw2)
+	{
+	  sumSumw2 += sourceSumw2[globalBin];
+	  sourceSumw2[globalBin] = 0;
+	}
+      }
+      binIdx[axis] = 1;
+	
+      Long64_t globalBin = GetGlobalBinIndex(binIdx);
+      source[globalBin] = sumValues;
+      if (sourceSumw2)
+	sourceSumw2[globalBin] = sumSumw2;
+
+      count++;
+
+      // next bin
+      binIdx[fNVars-2]++;
+      
+      for (Int_t j=fNVars-2; j>0; j--)
+      {
+	if (binIdx[j] > nBins[j])
+	{
+	  binIdx[j] = 1;
+	  binIdx[j-1]++;
+	}
+      }
+      
+      if (binIdx[0] > nBins[0])
+	break;
+    }
+    
+    AliInfo(Form("Step %d: reduced %lld bins to %lld entries", i, GetGlobalBinIndex(binIdx), count));
+
+    delete[] binIdx;
+    delete[] nBins;
   }
 }

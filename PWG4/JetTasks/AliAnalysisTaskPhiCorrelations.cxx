@@ -333,7 +333,15 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   // Trigger selection ************************************************
   if (fAnalyseUE->TriggerSelection(fInputHandler))
   {  
-    fHistos->FillEvent(centrality, AliUEHist::kCFStepTriggered);
+    // (MC-true all particles)
+    // STEP 1
+    if (!fReduceMemoryFootprint)
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepTriggered, tracksMC);
+    else
+      fHistos->FillEvent(centrality, AliUEHist::kCFStepTriggered);
+      
+    if (!inputEvent)
+      AliFatal("UNEXPECTED: inputEvent is 0. Trigger selection should have failed");
     
     // Vertex selection *************************************************
     if (fAnalyseUE->VertexSelection(inputEvent, fnTracksVertex, fZVertex))
@@ -358,6 +366,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       // STEP 2
       if (!fReduceMemoryFootprint)
 	fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepVertex, tracksMC);
+      else
+	fHistos->FillEvent(centrality, AliUEHist::kCFStepVertex);
       
       // Get MC primaries that match reconstructed track
       TObjArray* tracksRecoMatchedPrim = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kTRUE, -1, kTRUE);

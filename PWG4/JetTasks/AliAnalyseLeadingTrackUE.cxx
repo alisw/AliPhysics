@@ -401,7 +401,10 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
     
 	  // laser warm up tracks
 	  if (track->GetTPCsignal() < 10.)
+	  {
+	    delete track;
 	    return 0;
+	  }
     
 	  if(track->Pt()>0.){
 	    // only constrain tracks above threshold
