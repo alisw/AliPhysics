@@ -136,7 +136,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
     THnSparseF   *fhnJetContainer[kMaxStep*2];   //! like particle container in corrfw with different steps need AliCFContainer with Scale(), and clone() to do the same
     THnSparseF   *fhnCorrelation;           //! response matrix for unfolding 
-
+    THnSparseF   *fhnEvent;                 //! event counts 
     TF1          *f1PtScale;                //! correction function to correct to the average true jet energy depending on p_T,rec
 
     TString       fBranchRec;  // AOD branch name for reconstructed
@@ -212,28 +212,16 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1PtJetsIn[kJetTypes];       //! Jet pt for all jets
     TH1F*         fh1PtTracksIn[kJetTypes];     //! track pt for all tracks
     TH1F*         fh1PtTracksInLow[kJetTypes];  //! track pt for all tracks
-    TH1F*         fh1PtTracksLeadingIn[kJetTypes];  //! track pt for all tracks
     
     TH2F*         fh2NJetsPt[kJetTypes];    //! Number of found jets above threshold
     TH2F*         fh2NTracksPt[kJetTypes];  //! Number of tracks above threshold
-    TH2F*         fh2TrackEtaPt[kJetTypes];       //! eta of tracks    
 
-    TH2F*         fh2LeadingTrackPtTrackPhi[kJetTypes]; //! phi distribution of accepted leading tracks
-    TH2F*         fh2RhoPt[kJetTypes][kMaxJets+1];     //! jet shape variable rho
-    TH2F*         fh2PsiPt[kJetTypes][kMaxJets+1];     //! jet shape variable psi
+    THnSparseF    *fhnJetPt[kJetTypes];                  //! jet pt information for analysis
+    THnSparseF    *fhnJetPtQA[kJetTypes];                //! jet pt information for QA
+    THnSparseF    *fhnTrackPt[kJetTypes];                //! track pt information for analysis
+    THnSparseF    *fhnTrackPtQA[kJetTypes];              //! track pt information for analysis
 
-    TH2F*         fh2PhiPt[kJetTypes][kMaxJets+1];       //! phi of jets      
-    TH2F*         fh2EtaPt[kJetTypes][kMaxJets+1];       //! eta of jets      
-    TH2F*         fh2AreaPt[kJetTypes][kMaxJets+1];       //! area distribution 
-    TH2F*         fh2EtaArea[kJetTypes][kMaxJets+1];       //! area vs eta distribution 
-    TH2F*         fh2PhiEta[kJetTypes][kMaxJets+1];      //! eta phi distribution of jet      
     TH2F*         fh2LTrackPtJetPt[kJetTypes][kMaxJets+1];       //! leading track within the jet vs jet pt 
-
-
-    TH3F*         fh3MultPtRP[kJetTypes][kMaxJets+1];       //! RP vs. mult of jets      
-    TH3F*         fh3MultTrackPtRP[kJetTypes];  //! mult vs pt      
-    TH3F*         fh3MultTrackPtLowRP[kJetTypes];  //! mult vs pt      
-
 
     TH1F*   fh1DijetMinv[kJetTypes];            //! dijet inv mass
     TH2F*   fh2DijetDeltaPhiPt[kJetTypes];      //! dijet delta phi vs pt
@@ -245,7 +233,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList;                  //! Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 14) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 15) // Analysis task for standard jet analysis
 };
  
 #endif
