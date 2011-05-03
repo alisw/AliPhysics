@@ -47,6 +47,7 @@
 #include "AliTriggerAnalysis.h"
 #include "AliCentrality.h"
 #include "AliMultiplicity.h"
+#include "AliAODHandler.h"
 
 class AliESDTrackCuts;
 class AliCFContainer;
@@ -417,11 +418,6 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     }
   } 
 
-  //Must set fForceAOD to true for the AOD to get filled. Should only be done when running independent chain / train. 
-  if(fKFForceAOD) {
-    if (!AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()) AliFatal("Cannot run ESD filter without an output event handler");
-    AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
-  }
 
   //  if(fV0Reader == NULL){ // coverty does not permit this test
   // Write warning here cuts and so on are default if this ever happens
@@ -786,6 +782,30 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
       ProcessGammasForOmegaMesonAnalysis();
     }
   }
+
+
+  //Must set fForceAOD to true for the AOD to get filled. (Unless called by other task)
+  if(fKFForceAOD) {
+    if (!AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()) { 
+      AliFatal("Cannot run ESD filter without an output event handler");
+   
+    } else {
+      if(fAODGamma && fAODGamma->GetEntriesFast() > 0) {
+	AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
+	AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillExtension(kTRUE);   
+      }
+    }
+  
+  }
+
+  ///Make sure delta aod is filled if standard aod is filled (for synchronization when reading aod with standard aod)
+  if(fKFCreateAOD) {
+    AliAODHandler * aodhandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+    if (aodhandler && aodhandler->GetFillAOD()) {
+      AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillExtension(kTRUE);   
+    }
+  }
+
 
   //Clear the data in the v0Reader
   fV0Reader->UpdateEventByEventData();
