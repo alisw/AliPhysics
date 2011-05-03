@@ -1328,7 +1328,7 @@ Bool_t AliEMCALRecoUtils::IsGoodCluster(AliVCluster *cluster, AliEMCALGeometry *
   //
   //
   Bool_t isGood=kTRUE;
-  if(!cluster || !cluster->IsEMCAL()) isGood=kFALSE;
+  if(!cluster || !cluster->IsEMCAL()) return kFALSE;
   if(ClusterContainsBadChannel(geom,cluster->GetCellsAbsId(),cluster->GetNCells())) isGood=kFALSE;
   if(!CheckCellFiducialRegion(geom,cluster,cells)) isGood=kFALSE;
   if(fRejectExoticCluster && IsExoticCluster(cluster)) isGood=kFALSE;
