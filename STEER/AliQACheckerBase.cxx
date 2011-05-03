@@ -289,7 +289,7 @@ void AliQACheckerBase::GetRefSubDir(const char * det, const char * task, TDirect
       AliCDBEntry * entry = manQA->Get(detOCDBDir, manQA->GetRun()) ;
       if (entry) {
         TList * listDetQAD =static_cast<TList *>(entry->GetObject()) ;
-        if ( strcmp(listDetQAD->ClassName(), "TList") != 0 ) {
+        if ( listDetQAD && strcmp(listDetQAD->ClassName(), "TList") != 0 ) {
           AliError(Form("Expected a Tlist and found a %s for detector %s", listDetQAD->ClassName(), det)) ; 
           listDetQAD = NULL ; 
           continue ; 
