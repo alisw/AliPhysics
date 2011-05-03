@@ -658,6 +658,76 @@ Bool_t AliV0Reader::NextV0(){
     }
  	
     fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_goodtracks_alfa_qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+
+
+    if(GetXYRadius()>fMaxR){ // cuts on distance from collision point
+      if(fHistograms != NULL){
+	fHistograms->FillHistogram("ESD_CutR_InvMass",GetMotherCandidateMass());
+      }
+      fCurrentV0IndexNumber++;
+      continue;
+    }	
+    if(fDoCF){
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepR);			// for CF
+    }
+    if(GetXYRadius()<fMinR){ // cuts on distance from collision point
+      if(fHistograms != NULL){
+	fHistograms->FillHistogram("ESD_CutMinR_InvMass",GetMotherCandidateMass());
+      }
+      fCurrentV0IndexNumber++;
+      continue;
+    }
+		
+
+		
+    if((TMath::Abs(fCurrentZValue)*fLineCutZRSlope)-fLineCutZValue > GetXYRadius() ){ // cuts out regions where we do not reconstruct
+      if(fHistograms != NULL){
+	fHistograms->FillHistogram("ESD_CutLine_InvMass",GetMotherCandidateMass());
+      }
+      fCurrentV0IndexNumber++;
+      continue;
+    }
+    if(fDoCF){
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepLine);			// for CF
+    }
+		
+    if(TMath::Abs(fCurrentZValue) > fMaxZ ){ // cuts out regions where we do not reconstruct
+      if(fHistograms != NULL){
+	fHistograms->FillHistogram("ESD_CutZ_InvMass",GetMotherCandidateMass());
+      }
+      fCurrentV0IndexNumber++;
+      continue;
+    }
+    if(fDoCF){
+      fCFManager->GetParticleContainer()->Fill(containerInput,kStepZ);		// for CF	
+    }
+
+    if(fUseKFParticle){
+      if(TMath::Abs(fMotherCandidateLorentzVector->Eta())> fEtaCut){
+	if(fHistograms != NULL){
+	  fHistograms->FillHistogram("ESD_CutEta_InvMass",GetMotherCandidateMass());
+	}
+	fCurrentV0IndexNumber++;
+	continue;
+      }
+
+      if(TMath::Abs(fCurrentNegativeKFParticle->GetEta())> fEtaCut){
+	if(fHistograms != NULL){
+	  fHistograms->FillHistogram("ESD_CutEta_InvMass",GetMotherCandidateMass());
+	}
+	fCurrentV0IndexNumber++;
+	continue;
+      }
+
+      if(TMath::Abs(fCurrentPositiveKFParticle->GetEta())> fEtaCut){
+	if(fHistograms != NULL){
+	  fHistograms->FillHistogram("ESD_CutEta_InvMass",GetMotherCandidateMass());
+	}
+	fCurrentV0IndexNumber++;
+	continue;
+      }
+    }
+
  
     if(fDodEdxSigmaCut == kTRUE){
       if( fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
@@ -836,14 +906,14 @@ Bool_t AliV0Reader::NextV0(){
     if( fDoTOFsigmaCut == kTRUE ){ // RRnewTOF start ///////////////////////////////////////////////////////////////////////////// 
       Bool_t PosTrackNotTOFelec = kFALSE;
       Bool_t NegTrackNotTOFelec = kFALSE;
-      Double_t t0pos = fgESDpid->GetTOFResponse().GetStartTime(fCurrentPositiveESDTrack->P());
-      Double_t t0neg = fgESDpid->GetTOFResponse().GetStartTime(fCurrentNegativeESDTrack->P());
-      Double_t fnSigmaPos = fgESDpid->NumberOfSigmasTOF(fCurrentPositiveESDTrack, AliPID::kElectron, t0pos);
-      Double_t fnSigmaNeg = fgESDpid->NumberOfSigmasTOF(fCurrentNegativeESDTrack, AliPID::kElectron, t0neg);
       if( fCurrentPositiveESDTrack->GetStatus() & AliESDtrack::kTOFpid ){
+	Double_t t0pos = fgESDpid->GetTOFResponse().GetStartTime(fCurrentPositiveESDTrack->P());
+	Double_t fnSigmaPos = fgESDpid->NumberOfSigmasTOF(fCurrentPositiveESDTrack, AliPID::kElectron, t0pos);
 	if( (fnSigmaPos>fTofPIDnSigmaAboveElectronLine) || (fnSigmaPos<fTofPIDnSigmaBelowElectronLine) ) PosTrackNotTOFelec = kTRUE;
       }
       if( fCurrentNegativeESDTrack->GetStatus() & AliESDtrack::kTOFpid ){
+	Double_t t0neg = fgESDpid->GetTOFResponse().GetStartTime(fCurrentNegativeESDTrack->P());
+	Double_t fnSigmaNeg = fgESDpid->NumberOfSigmasTOF(fCurrentNegativeESDTrack, AliPID::kElectron, t0neg);
 	if( (fnSigmaNeg>fTofPIDnSigmaAboveElectronLine) || (fnSigmaNeg<fTofPIDnSigmaBelowElectronLine) ) NegTrackNotTOFelec = kTRUE;	
       }
       if( (PosTrackNotTOFelec==kTRUE) || (NegTrackNotTOFelec==kTRUE) ){
@@ -950,47 +1020,6 @@ Bool_t AliV0Reader::NextV0(){
       fCFManager->GetParticleContainer()->Fill(containerInput,kStepTPCPID);			// for CF
     }
 		
-    if(GetXYRadius()>fMaxR){ // cuts on distance from collision point
-      if(fHistograms != NULL){
-	fHistograms->FillHistogram("ESD_CutR_InvMass",GetMotherCandidateMass());
-      }
-      fCurrentV0IndexNumber++;
-      continue;
-    }	
-    if(fDoCF){
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepR);			// for CF
-    }
-    if(GetXYRadius()<fMinR){ // cuts on distance from collision point
-      if(fHistograms != NULL){
-	fHistograms->FillHistogram("ESD_CutMinR_InvMass",GetMotherCandidateMass());
-      }
-      fCurrentV0IndexNumber++;
-      continue;
-    }
-		
-
-		
-    if((TMath::Abs(fCurrentZValue)*fLineCutZRSlope)-fLineCutZValue > GetXYRadius() ){ // cuts out regions where we do not reconstruct
-      if(fHistograms != NULL){
-	fHistograms->FillHistogram("ESD_CutLine_InvMass",GetMotherCandidateMass());
-      }
-      fCurrentV0IndexNumber++;
-      continue;
-    }
-    if(fDoCF){
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepLine);			// for CF
-    }
-		
-    if(TMath::Abs(fCurrentZValue) > fMaxZ ){ // cuts out regions where we do not reconstruct
-      if(fHistograms != NULL){
-	fHistograms->FillHistogram("ESD_CutZ_InvMass",GetMotherCandidateMass());
-      }
-      fCurrentV0IndexNumber++;
-      continue;
-    }
-    if(fDoCF){
-      fCFManager->GetParticleContainer()->Fill(containerInput,kStepZ);		// for CF	
-    }
 		
     /* Moved further up so corr framework can work
        if(UpdateV0Information() == kFALSE){
@@ -1075,29 +1104,6 @@ Bool_t AliV0Reader::NextV0(){
 	fCFManager->GetParticleContainer()->Fill(containerInput,kStepChi2);			// for CF
       }
 			
-      if(TMath::Abs(fMotherCandidateLorentzVector->Eta())> fEtaCut){
-	if(fHistograms != NULL){
-	  fHistograms->FillHistogram("ESD_CutEta_InvMass",GetMotherCandidateMass());
-	}
-	fCurrentV0IndexNumber++;
-	continue;
-      }
-
-      if(TMath::Abs(fCurrentNegativeKFParticle->GetEta())> fEtaCut){
-	if(fHistograms != NULL){
-	  fHistograms->FillHistogram("ESD_CutEta_InvMass",GetMotherCandidateMass());
-	}
-	fCurrentV0IndexNumber++;
-	continue;
-      }
-
-      if(TMath::Abs(fCurrentPositiveKFParticle->GetEta())> fEtaCut){
-	if(fHistograms != NULL){
-	  fHistograms->FillHistogram("ESD_CutEta_InvMass",GetMotherCandidateMass());
-	}
-	fCurrentV0IndexNumber++;
-	continue;
-      }
 
       if(fDoCF){
 	fCFManager->GetParticleContainer()->Fill(containerInput,kStepEta);			// for CF
