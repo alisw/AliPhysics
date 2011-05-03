@@ -542,7 +542,11 @@ void AliAnalysisTaskITSAlignQA::Terminate(Option_t */*option*/)
   }
 
   fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
-  printf("Number of analyzed events = %d\n",(Int_t)fHistNEvents->GetBinContent(2));
+  if(fHistNEvents){
+    printf("Number of analyzed events = %d\n",(Int_t)(fHistNEvents->GetBinContent(2)));
+  }else{
+    printf("Warning: pointer to fHistNEvents is NULL\n");
+  }
   return;
 }
 
@@ -558,9 +562,12 @@ void AliAnalysisTaskITSAlignQA::LoadGeometryFromOCDB(){
   man->SetDefaultStorage(fOCDBLocation.Data());
   man->SetRun(fRunNb);
   AliCDBEntry* obj = man->Get(AliCDBPath("GRP", "Geometry", "Data"));
-  AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
-  AliGeomManager::GetNalignable("ITS");
-  AliGeomManager::ApplyAlignObjsFromCDB("ITS");
+  if(obj){
+    AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
+    AliGeomManager::GetNalignable("ITS");
+    AliGeomManager::ApplyAlignObjsFromCDB("ITS");
+  }
+  else AliFatal("Geometry object not found in OCDB");
 }
 
 
