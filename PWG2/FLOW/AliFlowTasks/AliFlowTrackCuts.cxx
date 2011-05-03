@@ -1349,7 +1349,7 @@ void AliFlowTrackCuts::DefineHistograms()
   const Int_t kNbinsP=60;
   Double_t binsP[kNbinsP+1];
   binsP[0]=0.0;
-  for(int i=1; i<=kNbinsP+1; i++)
+  for(int i=1; i<kNbinsP+1; i++)
   {
     if(binsP[i-1]+0.05<1.01)
       binsP[i]=binsP[i-1]+0.05;
@@ -1989,16 +1989,15 @@ Bool_t AliFlowTrackCuts::PassesTPCbayesianCut(const AliESDtrack* track)
 Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(const AliESDtrack* track)
 {
 
-  Bool_t goodtrack = track &&
-                     (track->GetStatus() & AliESDtrack::kTOFpid) && 
+  Bool_t goodtrack = (track->GetStatus() & AliESDtrack::kTOFpid) && 
                      (track->GetTOFsignal() > 12000) && 
                      (track->GetTOFsignal() < 100000) && 
                      (track->GetIntegratedLength() > 365);
 
-  if (! fAllowTOFmismatchFlag) {if (track->GetStatus() & AliESDtrack::kTOFmismatch) return kFALSE;}
-
   if (! goodtrack)
        return kFALSE;
+
+  if (! fAllowTOFmismatchFlag) {if (track->GetStatus() & AliESDtrack::kTOFmismatch) return kFALSE;}
 
   Bool_t statusMatchingHard = TPCTOFagree(track);
   if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))

@@ -282,19 +282,19 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
 
   fTPCsignal=new TH2F("fTPCsignal",";p [GeV/c];dEdx",kPBins,binsPDummy,500,0,500);
   fOutputList->Add(fTPCsignal);
-  fTPCsignalPi=new TH2F("fTPCsignalPi",";p [GeV/c];signal",kPBins,binsPDummy,300,-2,2);//TPC PID signal as function of p for pi+
-  fTPCsignalK=new TH2F("fTPCsignalK",";p [GeV/c];signal",kPBins,binsPDummy,300,-2,2);//TPC PID signal as function of p for K+
-  fTPCsignalP=new TH2F("fTPCsignalP",";p [GeV/c];signal",kPBins,binsPDummy,300,-2,2);//TPC PID signal as function of p for p
+  fTPCsignalPi=new TH2F("fTPCsignalPi",";p [GeV/c];signal",kPBins,binsPDummy,500,-2,2);//TPC PID signal as function of p for pi+
+  fTPCsignalK=new TH2F("fTPCsignalK",";p [GeV/c];signal",kPBins,binsPDummy,500,-2,2);//TPC PID signal as function of p for K+
+  fTPCsignalP=new TH2F("fTPCsignalP",";p [GeV/c];signal",kPBins,binsPDummy,500,-2,2);//TPC PID signal as function of p for p
   fOutputList->Add(fTPCsignalPi);
   fOutputList->Add(fTPCsignalK);
   fOutputList->Add(fTPCsignalP);
 
   fTOFtime=new TH2F("fTOFtime",";p[GeV/c];#time",kPBins,binsPDummy,1000, 12000, 80000);//
   fOutputList->Add(fTOFtime);
-  fTOFtimeE=new TH2F("fTOFtimeE",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,500, -8000, 8000);//
-  fTOFtimePi=new TH2F("fTOFtimePi",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,500, -8000, 8000);//
-  fTOFtimeK=new TH2F("fTOFtimeK",";p [GeV/c];#time-#time_{K}",kPBins,binsPDummy,500, -8000, 8000);//
-  fTOFtimeP=new TH2F("fTOFtimeP",";p [GeV/c];#time-#time_{p}",kPBins,binsPDummy,500, -8000, 8000);//
+  fTOFtimeE=new TH2F("fTOFtimeE",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,1000, -8000, 8000);//
+  fTOFtimePi=new TH2F("fTOFtimePi",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,1000, -8000, 8000);//
+  fTOFtimeK=new TH2F("fTOFtimeK",";p [GeV/c];#time-#time_{K}",kPBins,binsPDummy,1000, -8000, 8000);//
+  fTOFtimeP=new TH2F("fTOFtimeP",";p [GeV/c];#time-#time_{p}",kPBins,binsPDummy,1000, -8000, 8000);//
   fOutputList->Add(fTOFtimeE);
   fOutputList->Add(fTOFtimePi);
   fOutputList->Add(fTOFtimeK);
@@ -302,10 +302,10 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
 
   fTOFbeta=new TH2F("fTOFbeta",";p[GeV/c];#beta",kPBins,binsPDummy,1000, 0.4, 1.1);//
   fOutputList->Add(fTOFbeta);
-  fTOFbetaE=new TH2F("fTOFbetaE",";p [GeV/c];#beta-#beta_{#pi}",kPBins,binsPDummy,500, -0.25, 0.25);//
-  fTOFbetaPi=new TH2F("fTOFbetaPi",";p [GeV/c];#beta-#beta_{#pi}",kPBins,binsPDummy,500, -0.25, 0.25);//
-  fTOFbetaK=new TH2F("fTOFbetaK",";p [GeV/c];#beta-#beta_{K}",kPBins,binsPDummy,500, -0.25, 0.25);//
-  fTOFbetaP=new TH2F("fTOFbetaP",";p [GeV/c];#beta-#beta_{p}",kPBins,binsPDummy,500, -0.25, 0.25);//
+  fTOFbetaE=new TH2F("fTOFbetaE",";p [GeV/c];#beta-#beta_{#pi}",kPBins,binsPDummy,1000, -0.25, 0.25);//
+  fTOFbetaPi=new TH2F("fTOFbetaPi",";p [GeV/c];#beta-#beta_{#pi}",kPBins,binsPDummy,1000, -0.25, 0.25);//
+  fTOFbetaK=new TH2F("fTOFbetaK",";p [GeV/c];#beta-#beta_{K}",kPBins,binsPDummy,1000, -0.25, 0.25);//
+  fTOFbetaP=new TH2F("fTOFbetaP",";p [GeV/c];#beta-#beta_{p}",kPBins,binsPDummy,1000, -0.25, 0.25);//
   fOutputList->Add(fTOFbetaE);
   fOutputList->Add(fTOFbetaPi);
   fOutputList->Add(fTOFbetaK);
@@ -313,10 +313,10 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
 
   fTOFinvbeta=new TH2F("fTOFinvbeta",";p[GeV/c];1/#beta",kPBins,binsPDummy,1000, 0.90, 2.5);//
   fOutputList->Add(fTOFinvbeta);
-  fTOFinvbetaE=new TH2F("fTOFinvbetaE",";p [GeV/c];1/#beta-1/#beta_{#pi}",kPBins,binsPDummy,600, -0.3, 0.3);//
-  fTOFinvbetaPi=new TH2F("fTOFinvbetaPi",";p [GeV/c];1/#beta-1/#beta_{#pi}",kPBins,binsPDummy,600, -0.3, 0.3);//
-  fTOFinvbetaK=new TH2F("fTOFinvbetaK",";p [GeV/c];1/#beta-1/#beta_{K}",kPBins,binsPDummy,600, -0.3, 0.3);//
-  fTOFinvbetaP=new TH2F("fTOFinvbetaP",";p [GeV/c];1/#beta-1/#beta_{p}",kPBins,binsPDummy,600, -0.3, 0.3);//
+  fTOFinvbetaE=new TH2F("fTOFinvbetaE",";p [GeV/c];1/#beta-1/#beta_{#pi}",kPBins,binsPDummy,1000, -0.3, 0.3);//
+  fTOFinvbetaPi=new TH2F("fTOFinvbetaPi",";p [GeV/c];1/#beta-1/#beta_{#pi}",kPBins,binsPDummy,1000, -0.3, 0.3);//
+  fTOFinvbetaK=new TH2F("fTOFinvbetaK",";p [GeV/c];1/#beta-1/#beta_{K}",kPBins,binsPDummy,1000, -0.3, 0.3);//
+  fTOFinvbetaP=new TH2F("fTOFinvbetaP",";p [GeV/c];1/#beta-1/#beta_{p}",kPBins,binsPDummy,1000, -0.3, 0.3);//
   fOutputList->Add(fTOFinvbetaE);
   fOutputList->Add(fTOFinvbetaPi);
   fOutputList->Add(fTOFinvbetaK);
@@ -324,10 +324,10 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
 
   fTOFrawtime=new TH2F("fTOFrawtime",";p[GeV/c];#time",kPBins,binsPDummy,1000, 12000, 80000);//
   fOutputList->Add(fTOFrawtime);
-  fTOFrawtimeE=new TH2F("fTOFrawtimeE",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,500, -8000, 8000);//
-  fTOFrawtimePi=new TH2F("fTOFrawtimePi",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,500, -8000, 8000);//
-  fTOFrawtimeK=new TH2F("fTOFrawtimeK",";p [GeV/c];#time-#time_{K}",kPBins,binsPDummy,500, -8000, 8000);//
-  fTOFrawtimeP=new TH2F("fTOFrawtimeP",";p [GeV/c];#time-#time_{p}",kPBins,binsPDummy,500, -8000, 8000);//
+  fTOFrawtimeE=new TH2F("fTOFrawtimeE",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,1000, -8000, 8000);//
+  fTOFrawtimePi=new TH2F("fTOFrawtimePi",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,1000, -8000, 8000);//
+  fTOFrawtimeK=new TH2F("fTOFrawtimeK",";p [GeV/c];#time-#time_{K}",kPBins,binsPDummy,1000, -8000, 8000);//
+  fTOFrawtimeP=new TH2F("fTOFrawtimeP",";p [GeV/c];#time-#time_{p}",kPBins,binsPDummy,1000, -8000, 8000);//
   fOutputList->Add(fTOFrawtimeE);
   fOutputList->Add(fTOFrawtimePi);
   fOutputList->Add(fTOFrawtimeK);
@@ -335,10 +335,10 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
 
   fTOFrawbeta=new TH2F("fTOFrawbeta",";p[GeV/c];#beta",kPBins,binsPDummy,1000, 0.4, 1.1);//
   fOutputList->Add(fTOFrawbeta);
-  fTOFrawbetaE=new TH2F("fTOFrawbetaE",";p [GeV/c];#beta-#beta_{#pi}",kPBins,binsPDummy,500, -0.25, 0.25);//
-  fTOFrawbetaPi=new TH2F("fTOFrawbetaPi",";p [GeV/c];#beta-#beta_{#pi}",kPBins,binsPDummy,500, -0.25, 0.25);//
-  fTOFrawbetaK=new TH2F("fTOFrawbetaK",";p [GeV/c];#beta-#beta_{K}",kPBins,binsPDummy,500, -0.25, 0.25);//
-  fTOFrawbetaP=new TH2F("fTOFrawbetaP",";p [GeV/c];#beta-#beta_{p}",kPBins,binsPDummy,500, -0.25, 0.25);//
+  fTOFrawbetaE=new TH2F("fTOFrawbetaE",";p [GeV/c];#beta-#beta_{#pi}",kPBins,binsPDummy,1000, -0.25, 0.25);//
+  fTOFrawbetaPi=new TH2F("fTOFrawbetaPi",";p [GeV/c];#beta-#beta_{#pi}",kPBins,binsPDummy,1000, -0.25, 0.25);//
+  fTOFrawbetaK=new TH2F("fTOFrawbetaK",";p [GeV/c];#beta-#beta_{K}",kPBins,binsPDummy,1000, -0.25, 0.25);//
+  fTOFrawbetaP=new TH2F("fTOFrawbetaP",";p [GeV/c];#beta-#beta_{p}",kPBins,binsPDummy,1000, -0.25, 0.25);//
   fOutputList->Add(fTOFrawbetaE);
   fOutputList->Add(fTOFrawbetaPi);
   fOutputList->Add(fTOFrawbetaK);
@@ -346,10 +346,10 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
 
   fTOFrawinvbeta=new TH2F("fTOFrawinvbeta",";p[GeV/c];1/#beta",kPBins,binsPDummy,1000, 0.90, 2.5);//
   fOutputList->Add(fTOFrawinvbeta);
-  fTOFrawinvbetaE=new TH2F("fTOFrawinvbetaE",";p [GeV/c];1/#beta-1/#beta_{#pi}",kPBins,binsPDummy,600, -0.3, 0.3);//
-  fTOFrawinvbetaPi=new TH2F("fTOFrawinvbetaPi",";p [GeV/c];1/#beta-1/#beta_{#pi}",kPBins,binsPDummy,600, -0.3, 0.3);//
-  fTOFrawinvbetaK=new TH2F("fTOFrawinvbetaK",";p [GeV/c];1/#beta-1/#beta_{K}",kPBins,binsPDummy,600, -0.3, 0.3);//
-  fTOFrawinvbetaP=new TH2F("fTOFrawinvbetaP",";p [GeV/c];1/#beta-1/#beta_{p}",kPBins,binsPDummy,600, -0.3, 0.3);//
+  fTOFrawinvbetaE=new TH2F("fTOFrawinvbetaE",";p [GeV/c];1/#beta-1/#beta_{#pi}",kPBins,binsPDummy,1000, -0.3, 0.3);//
+  fTOFrawinvbetaPi=new TH2F("fTOFrawinvbetaPi",";p [GeV/c];1/#beta-1/#beta_{#pi}",kPBins,binsPDummy,1000, -0.3, 0.3);//
+  fTOFrawinvbetaK=new TH2F("fTOFrawinvbetaK",";p [GeV/c];1/#beta-1/#beta_{K}",kPBins,binsPDummy,1000, -0.3, 0.3);//
+  fTOFrawinvbetaP=new TH2F("fTOFrawinvbetaP",";p [GeV/c];1/#beta-1/#beta_{p}",kPBins,binsPDummy,1000, -0.3, 0.3);//
   fOutputList->Add(fTOFrawinvbetaE);
   fOutputList->Add(fTOFrawinvbetaPi);
   fOutputList->Add(fTOFrawinvbetaK);
@@ -466,13 +466,13 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fCutsMCpions->SetIgnoreSignInMCPID();
   fCutsMCpions->SetQA();
   fCutsMCkaons=new AliFlowTrackCuts("MC K");
-  fCutsMCpions->SetMCPID(321);
-  fCutsMCpions->SetIgnoreSignInMCPID();
-  fCutsMCpions->SetQA();
+  fCutsMCkaons->SetMCPID(321);
+  fCutsMCkaons->SetIgnoreSignInMCPID();
+  fCutsMCkaons->SetQA();
   fCutsMCprotons=new AliFlowTrackCuts("MC p");
-  fCutsMCpions->SetMCPID(2212);
-  fCutsMCpions->SetIgnoreSignInMCPID();
-  fCutsMCpions->SetQA();
+  fCutsMCprotons->SetMCPID(2212);
+  fCutsMCprotons->SetIgnoreSignInMCPID();
+  fCutsMCprotons->SetQA();
 
   fCutsMCprimaryelectrons=new AliFlowTrackCuts("MCprimary e");
   fCutsMCprimaryelectrons->SetMCPID(11);
@@ -485,15 +485,15 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fCutsMCprimarypions->SetMCisPrimary();
   fCutsMCprimarypions->SetQA();
   fCutsMCprimarykaons=new AliFlowTrackCuts("MCprimary K");
-  fCutsMCprimarypions->SetMCPID(321);
-  fCutsMCprimarypions->SetIgnoreSignInMCPID();
-  fCutsMCprimarypions->SetMCisPrimary();
-  fCutsMCprimarypions->SetQA();
+  fCutsMCprimarykaons->SetMCPID(321);
+  fCutsMCprimarykaons->SetIgnoreSignInMCPID();
+  fCutsMCprimarykaons->SetMCisPrimary();
+  fCutsMCprimarykaons->SetQA();
   fCutsMCprimaryprotons=new AliFlowTrackCuts("MCprimary p");
-  fCutsMCprimarypions->SetMCPID(2212);
-  fCutsMCprimarypions->SetIgnoreSignInMCPID();
-  fCutsMCprimarypions->SetMCisPrimary();
-  fCutsMCprimarypions->SetQA();
+  fCutsMCprimaryprotons->SetMCPID(2212);
+  fCutsMCprimaryprotons->SetIgnoreSignInMCPID();
+  fCutsMCprimaryprotons->SetMCisPrimary();
+  fCutsMCprimaryprotons->SetQA();
 
   //fOutputList->Add(fESDpid);
 
@@ -628,16 +628,21 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
     pidTOF(trackESD,pdgcode);
   }
 
-  for (Int_t imc=0; imc<(mcEvent!=NULL)?mcEvent->GetNumberOfTracks():0;imc++)
+  //for (Int_t imc=0; imc<(mcEvent!=NULL)?mcEvent->GetNumberOfTracks():0;imc++)
+  if (mcEvent)
   {
-    fCutsMCelectrons->IsSelected(mcEvent->GetTrack(imc));
-    fCutsMCpions->IsSelected(mcEvent->GetTrack(imc));
-    fCutsMCkaons->IsSelected(mcEvent->GetTrack(imc));
-    fCutsMCprotons->IsSelected(mcEvent->GetTrack(imc));
-    fCutsMCprimaryelectrons->IsSelected(mcEvent->GetTrack(imc));
-    fCutsMCprimarypions->IsSelected(mcEvent->GetTrack(imc));
-    fCutsMCprimarykaons->IsSelected(mcEvent->GetTrack(imc));
-    fCutsMCprimaryprotons->IsSelected(mcEvent->GetTrack(imc));
+    for (Int_t imc=0; imc<mcEvent->GetNumberOfTracks();imc++)
+    {
+      printf("imc: %i label:%i\n",imc,mcEvent->GetTrack(imc)->GetLabel());
+      fCutsMCelectrons->IsSelected(mcEvent->GetTrack(imc));
+      fCutsMCpions->IsSelected(mcEvent->GetTrack(imc));
+      fCutsMCkaons->IsSelected(mcEvent->GetTrack(imc));
+      fCutsMCprotons->IsSelected(mcEvent->GetTrack(imc));
+      fCutsMCprimaryelectrons->IsSelected(mcEvent->GetTrack(imc));
+      fCutsMCprimarypions->IsSelected(mcEvent->GetTrack(imc));
+      fCutsMCprimarykaons->IsSelected(mcEvent->GetTrack(imc));
+      fCutsMCprimaryprotons->IsSelected(mcEvent->GetTrack(imc));
+    }
   }
 
   //check the correlation between the global and TPConly number of tracks
