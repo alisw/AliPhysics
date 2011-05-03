@@ -1,3 +1,5 @@
+# -*- mode: CMake -*-
+
 #--------------------------------------------------------------------------------#
 # Package File for EVGEN                                                         #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,18 +27,73 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliGenHIJINGpara.cxx AliGenBox.cxx AliGenFixed.cxx AliGenCocktail.cxx AliGenCocktailAfterBurner.cxx AliGenLib.cxx AliGenMUONlib.cxx AliGenHMPIDlib.cxx AliGenParam.cxx AliDimuCombinator.cxx AliGenHalo.cxx AliGenHaloProtvino.cxx AliGenExtFile.cxx AliGenScan.cxx AliGenPHOSlib.cxx AliGenDoubleScan.cxx AliGenCocktailEntry.cxx AliGenGSIlib.cxx AliGenEMlib.cxx AliGenPMDlib.cxx AliGenMC.cxx AliGenReader.cxx AliGenReaderCwn.cxx AliGenReaderTreeK.cxx AliGenReaderEcalHijing.cxx AliGenReaderEcalJets.cxx AliGenHIJINGparaBa.cxx AliGeVSimParticle.cxx AliGenGeVSim.cxx AliGenThetaSlice.cxx AliGenSTRANGElib.cxx AliGenBeamGas.cxx AliGenAfterBurnerFlow.cxx AliGenSlowNucleons.cxx AliSlowNucleonModel.cxx AliSlowNucleonModelExp.cxx AliGenMUONCocktail.cxx AliGenMUONCocktailpp.cxx AliGenEMCocktail.cxx AliGenHBTosl.cxx AliGenReaderEMD.cxx AliDecayerPolarized.cxx AliGenCorrHF.cxx AliGenCosmicsParam.cxx AliGenKrypton.cxx AliGenThermalPhotons.cxx AliGenPromptPhotons.cxx AliGenPileup.cxx AliGenFunction.cxx AliGenTHnSparse.cxx AliOmegaDalitz.cxx AliGenDeuteron.cxx AliGenReaderSL.cxx AliGenMUONLMR.cxx)
+set ( SRCS  
+  AliGenHIJINGpara.cxx 
+  AliGenBox.cxx 
+  AliGenFixed.cxx 
+  AliGenCocktail.cxx 
+  AliGenCocktailAfterBurner.cxx 
+  AliGenLib.cxx 
+  AliGenMUONlib.cxx 
+  AliGenHMPIDlib.cxx 
+  AliGenParam.cxx 
+  AliDimuCombinator.cxx 
+  AliGenHalo.cxx 
+  AliGenHaloProtvino.cxx 
+  AliGenExtFile.cxx 
+  AliGenScan.cxx 
+  AliGenPHOSlib.cxx 
+  AliGenDoubleScan.cxx 
+  AliGenCocktailEntry.cxx 
+  AliGenGSIlib.cxx 
+  AliGenEMlib.cxx 
+  AliGenPMDlib.cxx 
+  AliGenMC.cxx 
+  AliGenReader.cxx 
+  AliGenReaderCwn.cxx 
+  AliGenReaderTreeK.cxx 
+  AliGenReaderEcalHijing.cxx 
+  AliGenReaderEcalJets.cxx 
+  AliGenHIJINGparaBa.cxx 
+  AliGeVSimParticle.cxx 
+  AliGenGeVSim.cxx 
+  AliGenThetaSlice.cxx 
+  AliGenSTRANGElib.cxx 
+  AliGenBeamGas.cxx 
+  AliGenAfterBurnerFlow.cxx 
+  AliGenSlowNucleons.cxx 
+  AliSlowNucleonModel.cxx 
+  AliSlowNucleonModelExp.cxx 
+  AliGenMUONCocktail.cxx 
+  AliGenMUONCocktailpp.cxx 
+  AliGenEMCocktail.cxx 
+  AliGenHBTosl.cxx 
+  AliGenReaderEMD.cxx 
+  AliDecayerPolarized.cxx 
+  AliGenCorrHF.cxx 
+  AliGenCosmicsParam.cxx 
+  AliGenKrypton.cxx 
+  AliGenThermalPhotons.cxx 
+  AliGenPromptPhotons.cxx 
+  AliGenPileup.cxx 
+  AliGenFunction.cxx 
+  AliGenTHnSparse.cxx 
+  AliOmegaDalitz.cxx 
+  AliGenDeuteron.cxx 
+  AliGenReaderSL.cxx 
+  AliGenMUONLMR.cxx
+  )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR EVGENLinkDef.h)
 
-set ( EXPORT AliDecayer.h AliGenMC.h AliGenCocktailAfterBurner.h AliGenCocktail.h AliOmegaDalitz.h)
+set ( EXPORT 
+  AliDecayer.h 
+  AliGenMC.h 
+  AliGenCocktailAfterBurner.h 
+  AliGenCocktail.h 
+  AliOmegaDalitz.h
+  )
 
 set ( EINCLUDE FASTSIM THijing PYTHIA6 LHAPDF)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lESD -lSTEERbase -lFASTSIM -L${ROOTLIBDIR} -lVMC -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
