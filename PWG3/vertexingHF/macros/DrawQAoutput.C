@@ -21,7 +21,7 @@
 
 Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TString path="./",TString filename="AnalysisResults.root"/*"PWG3histograms.root"*/);
 Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString listname,TString partname,TString path="./",TString filename="AnalysisResults.root"/*"PWG3histograms.root"*/);
-void SuperimposeBBToTPCSignal(Int_t period /*0=LHC10bc, 1=LHC10d, 2=LHC10h*/,TCanvas* cpid, Int_t set);
+void SuperimposeBBToTPCSignal(Int_t period /*0=LHC10bc, 1=LHC10d, 2=LHC10h 3=MC*/,TCanvas* cpid, Int_t set);
 void TPCBetheBloch(Int_t set);
 
 Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TString path,TString filename){
@@ -65,7 +65,7 @@ Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString lis
   listname+=partname;
   hstatname+=partname;
 
-  if(partname.Contains("Dplus")) cutobjname="DplustoKpipiCutsStandard";//"AnalysisCuts";
+  if(partname.Contains("Dplus")) cutobjname="AnalysisCuts";//"DplustoKpipiCutsStandard";
   else{
     if(partname.Contains("D0")) cutobjname="D0toKpiCutsStandard";//"D0toKpiCuts";
     else{
@@ -122,7 +122,7 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
   gStyle->SetStatColor(0);
   gStyle->SetPalette(1);
 
-  TString listname="outputTrack",name1="",name2="",path2="",filename="AnalysisResults.root",filename2="PWG3histograms.root";
+  TString listname="outputTrack",name1="",name2="",path2="",filename="AnalysisResults.root"/*"PWG3histograms.root"*/,filename2="PWG3histograms.root";
   TString tmp="y";
 
   if(superimpose){
@@ -188,12 +188,18 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
     c->cd();
     c->SetGrid();
     TString hname=h->GetName();
-    if(!hname.Contains("nCls")){
+    if(!hname.Contains("hn")){
       c->SetLogy();
       //h->SetMinimum(1);
       h->Draw();
       if(superimpose) hh->Draw("sames");
     } else {
+      if(hname.Contains("layer")){
+	Int_t ntracks=h->GetBinContent(1);
+	h->Scale(1./ntracks);
+	h->GetYaxis()->SetTitle("Fraction of tracks with point in layer x");
+	h->GetXaxis()->SetRangeUser(0.5,6.5);
+      }
       h->Draw("htext0");
       if(superimpose)hh->Draw("htext0sames");
     }
@@ -224,7 +230,7 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
 
   Int_t period=2 ,set=0;
   if(mode==1){
-    cout<<"Choose period: \n-LHC10h -> 2;\n-LHC10d -> 1;\n-LHC10bc -> 0"<<endl;
+    cout<<"Choose period: \n-MC -> 3;\n-LHC10h -> 2;\n-LHC10de -> 1;\n-LHC10bc -> 0"<<endl;
     cin>>period;
     if(period>0){
       cout<<"Choose set: "<<endl;
@@ -406,8 +412,8 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
       }
 	
       //write
-      c->SaveAs(Form("%s.png",h->GetName()));
-      TFile* fout=new TFile(Form("%s.root",h->GetName()),"recreate");
+      c->SaveAs(Form("%s%d.png",h->GetName(),mode));
+      TFile* fout=new TFile(Form("%s%d.root",h->GetName(),mode),"recreate");
       fout->cd();
       c->Write();
     }
@@ -447,7 +453,7 @@ void TPCBetheBloch(Int_t set){
   TString partnames[npart]={"Kaon","Pion","Electron","Proton"};
   //printf("%s = %.4f,%s = %.4f,%s = %.4f\n",partnames[0].Data(),masses[0],partnames[1].Data(),masses[1],partnames[2].Data(),masses[2]);
   TCanvas *cBethe=new TCanvas("cBethe","Bethe Bloch K pi e p");
-  Int_t nperiods=3; //LHC10b+c, LHC10d, LHC10h
+  Int_t nperiods=4; //LHC10b+c, LHC10d, LHC10h
   Double_t alephParameters[5]={};
 
   TFile* fout=new TFile("BetheBlochTPC.root","recreate");
@@ -462,14 +468,15 @@ void TPCBetheBloch(Int_t set){
 	alephParameters[4]=6.78938;
       }
       if (set==1){//pass2 (AOD044)
-	alephParameters[0] = 5.10207e+00/50.; 
-	alephParameters[1] = 7.94982e+00; 
-	alephParameters[2] = TMath::Exp(-9.07942e+00); 
-	alephParameters[3] = 2.38808e+00; 
-	alephParameters[4] = 1.68165e+00;
+	alephParameters[0]=1.25202/50.;
+	alephParameters[1]=2.74992e+01;
+	alephParameters[2]=TMath::Exp(-3.31517e+01);
+	alephParameters[3]=2.46246;
+	alephParameters[4]=6.78938;
+
       }
     }
-    if(iperiod==1){ //LHC10d
+    if(iperiod==1){ //LHC10de
       if(set==0){   
 	alephParameters[0] = 1.63246/50.;
 	alephParameters[1] = 2.20028e+01;
@@ -494,7 +501,23 @@ void TPCBetheBloch(Int_t set){
       alephParameters[4] = 4.88663e+00;
       
     }
-
+   if(iperiod==3){ //MC
+      if(set==0){
+	alephParameters[0] = 2.15898e+00/50.;
+	alephParameters[1] = 1.75295e+01;
+	alephParameters[2] = 3.40030e-09;
+	alephParameters[3] = 1.96178e+00;
+	alephParameters[4] = 3.91720e+00;
+      }
+      if(set==1){ //new
+	alephParameters[0] = 1.44405/50;
+	alephParameters[1] = 2.35409e+01;
+	alephParameters[2] = TMath::Exp(-2.90330e+01);
+	alephParameters[3] = 2.10681;
+	alephParameters[4] = 4.62254;
+ 
+      }
+    }
     tpcResp->SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2],alephParameters[3],alephParameters[4]);
 
     for(Int_t ipart=0;ipart<npart;ipart++){
