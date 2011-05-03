@@ -1,11 +1,58 @@
-set ( SRCS  AliCDBEntry.cxx AliCDBId.cxx AliCDBMetaData.cxx AliCDBPath.cxx AliCDBRunRange.cxx AliCDBManager.cxx AliCDBStorage.cxx AliCDBLocal.cxx AliCDBDump.cxx AliCDBGrid.cxx AliDCSValue.cxx AliDCSSensor.cxx AliDCSSensorArray.cxx AliDCSGenDB.cxx AliSplineFit.cxx TTreeStream.cxx AliPreprocessor.cxx AliShuttleInterface.cxx AliGRPDCS.cxx AliCDBHandler.cxx AliBaseCalibViewer.cxx AliBaseCalibViewerGUI.cxx AliCalibViewerGUItime.cxx)
+# -*- mode: CMake -*-
 
-string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+set ( SRCS  
+    AliCDBEntry.cxx 
+    AliCDBId.cxx 
+    AliCDBMetaData.cxx 
+    AliCDBPath.cxx 
+    AliCDBRunRange.cxx 
+    AliCDBManager.cxx 
+    AliCDBStorage.cxx 
+    AliCDBLocal.cxx 
+    AliCDBDump.cxx 
+    AliCDBGrid.cxx 
+    AliDCSValue.cxx 
+    AliDCSSensor.cxx 
+    AliDCSSensorArray.cxx 
+    AliDCSGenDB.cxx 
+    AliSplineFit.cxx 
+    TTreeStream.cxx 
+    AliPreprocessor.cxx 
+    AliShuttleInterface.cxx 
+    AliGRPDCS.cxx 
+    AliCDBHandler.cxx 
+    AliBaseCalibViewer.cxx 
+    AliBaseCalibViewerGUI.cxx 
+    AliCalibViewerGUItime.cxx
+    )
+
+string( REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set ( DHDR  CDBLinkDef.h)
 
-set ( EXPORT  AliCDBEntry.h AliCDBId.h AliCDBMetaData.h AliCDBPath.h AliCDBRunRange.h AliCDBManager.h AliCDBStorage.h AliCDBLocal.h AliCDBDump.h AliCDBGrid.h AliDCSValue.h AliDCSSensor.h AliDCSSensorArray.h AliDCSGenDB.h AliSplineFit.h TTreeStream.h AliPreprocessor.h  AliShuttleInterface.h AliGRPDCS.h AliCDBHandler.h AliBaseCalibViewer.h AliBaseCalibViewerGUI.h AliCalibViewerGUItime.h )
+set ( EXPORT  
+    AliCDBEntry.h 
+    AliCDBId.h 
+    AliCDBMetaData.h 
+    AliCDBPath.h 
+    AliCDBRunRange.h 
+    AliCDBManager.h 
+    AliCDBStorage.h 
+    AliCDBLocal.h 
+    AliCDBDump.h 
+    AliCDBGrid.h 
+    AliDCSValue.h 
+    AliDCSSensor.h 
+    AliDCSSensorArray.h 
+    AliDCSGenDB.h 
+    AliSplineFit.h 
+    TTreeStream.h 
+    AliPreprocessor.h  
+    AliShuttleInterface.h 
+    AliGRPDCS.h 
+    AliCDBHandler.h 
+    AliBaseCalibViewer.h 
+    AliBaseCalibViewerGUI.h 
+    AliCalibViewerGUItime.h 
+    )
 
-if(ALICE_TARGET STREQUAL "win32gcc")
-  set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lMinuit )
-endif(ALICE_TARGET STREQUAL "win32gcc")

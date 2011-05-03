@@ -1,4 +1,133 @@
-set ( SRCS  AliRunLoader.cxx AliLoader.cxx AliDataLoader.cxx AliObjectLoader.cxx AliBaseLoader.cxx AliTreeLoader.cxx AliTaskLoader.cxx AliDetector.cxx AliDigit.cxx	AliHit.cxx AliRun.cxx AliGenerator.cxx AliVertexGenerator.cxx AliLego.cxx	AliModule.cxx	AliDigitNew.cxx AliGeometry.cxx	AliRecPoint.cxx AliHitMap.cxx AliLegoGenerator.cxx AliLegoGeneratorXYZ.cxx AliLegoGeneratorPhiZ.cxx AliLegoGeneratorEta.cxx AliLegoGeneratorEtaR.cxx AliRndm.cxx AliDebugVolume.cxx AliConfig.cxx AliRunDigitizer.cxx AliDigitizer.cxx AliStream.cxx AliMergeCombi.cxx AliGausCorr.cxx AliMemoryWatcher.cxx AliVertexer.cxx AliV0vertexer.cxx AliCascadeVertexer.cxx AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx AliReconstructor.cxx AliGeomManager.cxx AliAlignObj.cxx AliAlignObjParams.cxx AliAlignObjMatrix.cxx AliMisAligner.cxx AliTriggerInput.cxx AliTriggerDetector.cxx AliTriggerConfiguration.cxx AliTriggerBCMask.cxx AliTriggerInteraction.cxx AliTriggerDescriptor.cxx AliTriggerClass.cxx AliTriggerCluster.cxx AliTriggerPFProtection.cxx AliCentralTrigger.cxx AliRieman.cxx AliTrackFitter.cxx AliTrackFitterRieman.cxx AliTrackFitterKalman.cxx AliTrackFitterStraight.cxx AliTrackResiduals.cxx AliTrackResidualsChi2.cxx AliTrackResidualsFast.cxx AliTrackResidualsLinear.cxx AliAlignmentTracks.cxx AliExpression.cxx AliCTPRawStream.cxx AliMathBase.cxx AliSignalProcesor.cxx AliTracker.cxx AliCluster.cxx AliCluster3D.cxx AliTrackleter.cxx AliHelix.cxx AliV0.cxx AliKink.cxx AliSelectorRL.cxx AliSurveyObj.cxx AliSurveyPoint.cxx AliSurveyToAlignObjs.cxx AliFstream.cxx AliCTPRawData.cxx AliQADataMaker.cxx AliGlobalQADataMaker.cxx AliQADataMakerSim.cxx AliQADataMakerRec.cxx AliCorrQADataMakerRec.cxx AliQAManager.cxx AliQAChecker.cxx AliCorrQAChecker.cxx AliGlobalQAChecker.cxx AliQACheckerBase.cxx AliQAThresholds.cxx AliMillepede.cxx AliPlaneEff.cxx AliTriggerRunScalers.cxx AliGRPPreprocessor.cxx AliGRPRecoParam.cxx AliRelAlignerKalman.cxx AliESDTagCreator.cxx AliGRPObject.cxx AliQAv1.cxx AliRunInfo.cxx AliEventInfo.cxx AliRecoParam.cxx AliDetectorRecoParam.cxx AliMillePedeRecord.cxx AliMillePede2.cxx AliMatrixSq.cxx AliVectorSparse.cxx AliMatrixSparse.cxx AliSymMatrix.cxx AliSymBDMatrix.cxx AliRectMatrix.cxx AliMinResSolve.cxx AliParamSolver.cxx AliGRPManager.cxx AliDCSArray.cxx AliLHCReader.cxx AliLHCDipValT.cxx AliLHCData.cxx AliCTPTimeParams.cxx AliCTPInputTimeParams.cxx AliLHCClockPhase.cxx AliLTUConfig.cxx)
+# -*- mode: CMake -*-
+
+set ( SRCS  
+    AliRunLoader.cxx 
+    AliLoader.cxx 
+    AliDataLoader.cxx 
+    AliObjectLoader.cxx 
+    AliBaseLoader.cxx 
+    AliTreeLoader.cxx 
+    AliTaskLoader.cxx 
+    AliDetector.cxx 
+    AliDigit.cxx 
+    AliHit.cxx 
+    AliRun.cxx 
+    AliGenerator.cxx 
+    AliVertexGenerator.cxx 
+    AliLego.cxx	
+    AliModule.cxx 
+    AliDigitNew.cxx 
+    AliGeometry.cxx 
+    AliRecPoint.cxx 
+    AliHitMap.cxx 
+    AliLegoGenerator.cxx 
+    AliLegoGeneratorXYZ.cxx 
+    AliLegoGeneratorPhiZ.cxx 
+    AliLegoGeneratorEta.cxx 
+    AliLegoGeneratorEtaR.cxx 
+    AliRndm.cxx 
+    AliDebugVolume.cxx 
+    AliConfig.cxx 
+    AliRunDigitizer.cxx 
+    AliDigitizer.cxx 
+    AliStream.cxx 
+    AliMergeCombi.cxx 
+    AliGausCorr.cxx 
+    AliMemoryWatcher.cxx 
+    AliVertexer.cxx 
+    AliV0vertexer.cxx 
+    AliCascadeVertexer.cxx 
+    AliMC.cxx 
+    AliSimulation.cxx 
+    AliReconstruction.cxx 
+    AliVertexGenFile.cxx 
+    AliReconstructor.cxx 
+    AliGeomManager.cxx 
+    AliAlignObj.cxx 
+    AliAlignObjParams.cxx 
+    AliAlignObjMatrix.cxx 
+    AliMisAligner.cxx 
+    AliTriggerInput.cxx 
+    AliTriggerDetector.cxx 
+    AliTriggerConfiguration.cxx 
+    AliTriggerBCMask.cxx 
+    AliTriggerInteraction.cxx 
+    AliTriggerDescriptor.cxx 
+    AliTriggerClass.cxx 
+    AliTriggerCluster.cxx 
+    AliTriggerPFProtection.cxx 
+    AliCentralTrigger.cxx 
+    AliRieman.cxx 
+    AliTrackFitter.cxx 
+    AliTrackFitterRieman.cxx 
+    AliTrackFitterKalman.cxx 
+    AliTrackFitterStraight.cxx 
+    AliTrackResiduals.cxx 
+    AliTrackResidualsChi2.cxx 
+    AliTrackResidualsFast.cxx 
+    AliTrackResidualsLinear.cxx 
+    AliAlignmentTracks.cxx 
+    AliExpression.cxx 
+    AliCTPRawStream.cxx 
+    AliMathBase.cxx 
+    AliSignalProcesor.cxx 
+    AliTracker.cxx 
+    AliCluster.cxx 
+    AliCluster3D.cxx 
+    AliTrackleter.cxx 
+    AliHelix.cxx 
+    AliV0.cxx 
+    AliKink.cxx 
+    AliSelectorRL.cxx 
+    AliSurveyObj.cxx 
+    AliSurveyPoint.cxx 
+    AliSurveyToAlignObjs.cxx 
+    AliFstream.cxx 
+    AliCTPRawData.cxx 
+    AliQADataMaker.cxx 
+    AliGlobalQADataMaker.cxx 
+    AliQADataMakerSim.cxx 
+    AliQADataMakerRec.cxx 
+    AliCorrQADataMakerRec.cxx 
+    AliQAManager.cxx 
+    AliQAChecker.cxx 
+    AliCorrQAChecker.cxx 
+    AliGlobalQAChecker.cxx 
+    AliQACheckerBase.cxx 
+    AliQAThresholds.cxx 
+    AliMillepede.cxx 
+    AliPlaneEff.cxx 
+    AliTriggerRunScalers.cxx 
+    AliGRPPreprocessor.cxx 
+    AliGRPRecoParam.cxx 
+    AliRelAlignerKalman.cxx 
+    AliESDTagCreator.cxx 
+    AliGRPObject.cxx 
+    AliQAv1.cxx 
+    AliRunInfo.cxx 
+    AliEventInfo.cxx 
+    AliRecoParam.cxx 
+    AliDetectorRecoParam.cxx 
+    AliMillePedeRecord.cxx 
+    AliMillePede2.cxx 
+    AliMatrixSq.cxx 
+    AliVectorSparse.cxx 
+    AliMatrixSparse.cxx 
+    AliSymMatrix.cxx 
+    AliSymBDMatrix.cxx 
+    AliRectMatrix.cxx 
+    AliMinResSolve.cxx 
+    AliParamSolver.cxx 
+    AliGRPManager.cxx 
+    AliDCSArray.cxx 
+    AliLHCReader.cxx 
+    AliLHCDipValT.cxx 
+    AliLHCData.cxx 
+    AliCTPTimeParams.cxx 
+    AliCTPInputTimeParams.cxx 
+    AliLHCClockPhase.cxx 
+    AliLTUConfig.cxx
+    )
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")
 
@@ -8,6 +137,3 @@ set ( EINCLUDE  RAW HLT/sim TPC)
 
 set ( EXPORT ${HDRS} AliConst.h AliCallf77.h AliRawDataHeaderSim.h )
 
-if (ALICE_TARGET STREQUAL "win32gcc")
-  set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lCDB -lRAWDatabase -lRAWDatarec -L${ROOTLIBDIR} -lMinuit -lVMC -lEG -lGeom -lProofPlayer -lProof )
-endif (ALICE_TARGET STREQUAL "win32gcc")

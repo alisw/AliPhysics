@@ -1,13 +1,66 @@
-set ( SRCS  AliESDEvent.cxx AliESDInputHandler.cxx AliESDInputHandlerRP.cxx AliESDfriend.cxx AliESD.cxx AliESDtrack.cxx AliESDfriendTrack.cxx AliESDMuonTrack.cxx AliESDPmdTrack.cxx AliESDTrdTrack.cxx AliESDHLTtrack.cxx AliESDv0.cxx AliESDcascade.cxx AliVertex.cxx AliESDVertex.cxx AliESDpid.cxx AliESDkink.cxx AliESDCaloCluster.cxx AliESDMuonCluster.cxx AliESDMuonPad.cxx AliKFParticleBase.cxx AliKFParticle.cxx AliKFVertex.cxx AliKalmanTrack.cxx AliVertexerTracks.cxx AliStrLine.cxx AliESDV0Params.cxx AliTrackPointArray.cxx AliESDFMD.cxx AliFMDMap.cxx AliFMDFloatMap.cxx AliESDMultITS.cxx AliESDVZERO.cxx AliMultiplicity.cxx AliSelector.cxx AliESDRun.cxx AliESDHeader.cxx AliESDHLTDecision.cxx AliESDZDC.cxx AliESDTZERO.cxx AliESDTZEROfriend.cxx AliESDCaloTrigger.cxx AliRawDataErrorLog.cxx AliMeanVertex.cxx AliESDCaloCells.cxx AliESDACORDE.cxx AliTriggerIR.cxx AliESDVZEROfriend.cxx AliTriggerScalersESD.cxx AliTriggerScalersRecordESD.cxx AliESDHandler.cxx AliTrackerBase.cxx  AliTOFHeader.cxx AliESDUtils.cxx)
+# -*- mode: CMake -*-
 
-string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+set ( SRCS  
+    AliESDEvent.cxx 
+    AliESDInputHandler.cxx 
+    AliESDInputHandlerRP.cxx 
+    AliESDfriend.cxx 
+    AliESD.cxx 
+    AliESDtrack.cxx 
+    AliESDfriendTrack.cxx 
+    AliESDMuonTrack.cxx 
+    AliESDPmdTrack.cxx 
+    AliESDTrdTrack.cxx 
+    AliESDHLTtrack.cxx 
+    AliESDv0.cxx 
+    AliESDcascade.cxx 
+    AliVertex.cxx 
+    AliESDVertex.cxx 
+    AliESDpid.cxx 
+    AliESDkink.cxx 
+    AliESDCaloCluster.cxx 
+    AliESDMuonCluster.cxx 
+    AliESDMuonPad.cxx 
+    AliKFParticleBase.cxx 
+    AliKFParticle.cxx 
+    AliKFVertex.cxx 
+    AliKalmanTrack.cxx 
+    AliVertexerTracks.cxx 
+    AliStrLine.cxx 
+    AliESDV0Params.cxx 
+    AliTrackPointArray.cxx 
+    AliESDFMD.cxx 
+    AliFMDMap.cxx 
+    AliFMDFloatMap.cxx 
+    AliESDMultITS.cxx 
+    AliESDVZERO.cxx 
+    AliMultiplicity.cxx 
+    AliSelector.cxx 
+    AliESDRun.cxx 
+    AliESDHeader.cxx 
+    AliESDHLTDecision.cxx 
+    AliESDZDC.cxx 
+    AliESDTZERO.cxx 
+    AliESDTZEROfriend.cxx 
+    AliESDCaloTrigger.cxx 
+    AliRawDataErrorLog.cxx 
+    AliMeanVertex.cxx 
+    AliESDCaloCells.cxx 
+    AliESDACORDE.cxx 
+    AliTriggerIR.cxx 
+    AliESDVZEROfriend.cxx 
+    AliTriggerScalersESD.cxx 
+    AliTriggerScalersRecordESD.cxx 
+    AliESDHandler.cxx 
+    AliTrackerBase.cxx  
+    AliTOFHeader.cxx 
+    AliESDUtils.cxx
+    )
+
+string( REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set ( EINCLUDE  RAW)
 
 set ( DHDR  ESDLinkDef.h)
 
 set ( EXPORT ${HDRS})
-
-if(ALICE_TARGET STREQUAL "win32gcc")
-  set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -L${ROOTLIBDIR} -lEG )
-endif(ALICE_TARGET STREQUAL "win32gcc")
