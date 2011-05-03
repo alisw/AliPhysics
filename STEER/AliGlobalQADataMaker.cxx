@@ -355,7 +355,7 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
     }
 
     for (Int_t j=0; j<6; ++j) {
-      Int_t idet, sts;
+      Int_t idet=0, sts=0;
       Float_t xloc,zloc;
       if (!track->GetITSModuleIndexInfo(j,idet,sts,xloc,zloc)) continue;
       if (j>=2) idet+=240;
