@@ -27,6 +27,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTComponent.h"
 #include "AliHLTTemplates.h"
+#include "TMath.h"
 #include <memory>
 #include <algorithm>
 
@@ -190,6 +191,15 @@ float AliHLTTPCSpacePointContainer::GetCharge(AliHLTUInt32_t clusterID) const
   if (fClusters.find(clusterID)==fClusters.end() ||
       fClusters.find(clusterID)->second.Data()==NULL) return 0.0;
   return fClusters.find(clusterID)->second.Data()->fCharge;
+}
+
+float AliHLTTPCSpacePointContainer::GetPhi(AliHLTUInt32_t clusterID) const
+{
+  // get charge
+  if (fClusters.find(clusterID)==fClusters.end() ||
+      fClusters.find(clusterID)->second.Data()==NULL) return 0.0;
+  int slice=AliHLTTPCSpacePointData::GetSlice(fClusters.find(clusterID)->second.Data()->fID);
+  return ( slice + 0.5 ) * TMath::Pi() / 9.0;
 }
 
 void AliHLTTPCSpacePointContainer::Clear(Option_t * /*option*/)
