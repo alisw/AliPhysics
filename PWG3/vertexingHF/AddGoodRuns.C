@@ -93,8 +93,8 @@ Int_t AddGoodRuns(AliAnalysisAlien* plugin,TString lhcPeriod,TString mcprod="") 
   }
 
   if(lhcPeriod=="LHC11a") {
-    nruns=24;
-    Int_t runlist[24]={146860, 146859, 146858, 146857, 146856, 146824, 146817, 146814, 146813, 146812, 146808, 146807, 146806, 146805, 146804, 146803, 146802, 146801, 146748, 146747, 146746, 146689, 146688, 146686};  
+    nruns=14;
+    Int_t runlist[14]={146860, 146859, 146856, 146824, 146817, 146806, 146805, 146804, 146803, 146802, 146801, 146748, 146747, 146746};  
    
     for(Int_t k=0;k<nruns;k++){
       if(runlist[k]<firstrun || runlist[k]>lastrun) continue;
