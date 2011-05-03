@@ -418,6 +418,10 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     }
   } 
 
+  if(fAODGamma) fAODGamma->Delete();
+  if(fAODPi0) fAODPi0->Delete();
+  if(fAODOmega) fAODOmega->Delete();
+
 
   //  if(fV0Reader == NULL){ // coverty does not permit this test
   // Write warning here cuts and so on are default if this ever happens
@@ -456,9 +460,6 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
   fV0Reader->Initialize();
   fDoMCTruth = fV0Reader->GetDoMCTruth();
 
-  if(fAODGamma) fAODGamma->Delete();
-  if(fAODPi0) fAODPi0->Delete();
-  if(fAODOmega) fAODOmega->Delete();
 	
   if(fKFReconstructedGammasTClone == NULL){
     fKFReconstructedGammasTClone = new TClonesArray("AliKFParticle",0);
