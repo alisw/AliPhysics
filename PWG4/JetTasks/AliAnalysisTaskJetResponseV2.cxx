@@ -189,12 +189,12 @@ void AliAnalysisTaskJetResponseV2::UserCreateOutputObjects()
   fhnJetsRp = new THnSparseF("fhnJetsRp", hnTitle.Data(), dim2, nbins2, xmin2, xmax2);
   
   
-  const Int_t dim3 = 6;
-  // cent : nInpTrks : rp bins:  deltaPt : jetPt(2x) (hr delta pt)
-  Int_t    nbins3[dim3] = {  16,   400,    3,    241,  250,  250 };
-  Double_t xmin3[dim3]  = {   0.,    0., -.5, -120.5,   0.,   0. };
-  Double_t xmax3[dim3]  = {  80., 4000., 2.5,  120.5, 250., 250. };
-  hnTitle = "variables per jet;centrality;nb. of input tracks; reaction plane bin;#delta p_{T};probe p_{T};rec p_{T}";
+  const Int_t dim3 = 7;
+  // cent : nInpTrks : rp bins:  deltaPt : jetPt(2x) : deltaArea (hr delta pt)
+  Int_t    nbins3[dim3] = {  16,   400,    3,    241,  250,  250,   81 };
+  Double_t xmin3[dim3]  = {   0.,    0., -.5, -120.5,   0.,   0., -.81 };
+  Double_t xmax3[dim3]  = {  80., 4000., 2.5,  120.5, 250., 250.,  .81 };
+  hnTitle = "variables per jet;centrality;nb. of input tracks; reaction plane bin;#delta p_{T};probe p_{T};rec p_{T};#Deltaarea";
   fhnJetsDeltaPt = new THnSparseF("fhnJetsDeltaPt", hnTitle.Data(), dim3, nbins3, xmin3, xmax3);
     
   const Int_t dim4 = 10;	
@@ -463,9 +463,9 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
           };
      fhnJetsRp->Fill(jetEntriesRp);
 	 
-	 Double_t jetEntriesDeltaPt[6] = {
+	 Double_t jetEntriesDeltaPt[7] = {
            (Double_t)centValue, (Double_t)nInputTracks, (Double_t)rpBin,
-		   (Double_t)deltaPt, (Double_t)jetPt[0], (Double_t)jetPt[1]
+		   (Double_t)deltaPt, (Double_t)jetPt[0], (Double_t)jetPt[1], (Double_t)deltaArea
 		   };		 
      fhnJetsDeltaPt->Fill(jetEntriesDeltaPt);
 	 
