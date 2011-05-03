@@ -106,7 +106,9 @@ AliQAChecker::~AliQAChecker()
   AliQACheckerBase * AliQAChecker::GetDetQAChecker(Int_t det)
 {
 	// Gets the Quality Assurance checker for the detector specified by its name
-	
+
+  if (det<0 || det>=AliQAv1::kNDET) return NULL;
+
 	if (fCheckers[det]) 
     return fCheckers[det];
 
