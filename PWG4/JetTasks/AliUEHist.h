@@ -20,6 +20,7 @@ class TH2;
 class TH2D;
 class TCollection;
 class AliCFGridSparse;
+class THnSparse;
 
 class AliUEHist : public TObject
 {
@@ -107,6 +108,7 @@ class AliUEHist : public TObject
 protected:
   void SetStepNames(AliCFContainer* container);
   void WeightHistogram(TH3* hist1, TH1* hist2);
+  void MultiplyHistograms(THnSparse* grid, THnSparse* target, TH1* histogram, Int_t var1, Int_t var2);
 
   AliCFContainer* fTrackHist[4];      // container for track level distributions in four regions (toward, away, min, max) and at four analysis steps
   AliCFContainer* fEventHist;         // container for event level distribution at four analysis steps

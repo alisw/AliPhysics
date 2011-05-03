@@ -28,6 +28,7 @@ class AliTHn : public AliCFContainer
   TArrayF* GetSumw2(Int_t step)  { return fSumw2[step]; }
   
   void DeleteContainers();
+  void ReduceAxis();
   
   AliTHn(const AliTHn &c);
   AliTHn& operator=(const AliTHn& corr);
