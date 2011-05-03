@@ -41,6 +41,7 @@
 #include <AliESDtrack.h>
 #include <AliESDInputHandler.h>
 #include <AliAnalysisManager.h>
+#include <AliTRDPIDReference.h>
 #include <AliTRDPIDResponse.h>
 #include <AliTender.h>
 
@@ -57,16 +58,18 @@ AliTRDTenderSupply::AliTRDTenderSupply() :
   fChamberGainNew(NULL),
   fChamberVdriftOld(NULL),
   fChamberVdriftNew(NULL),
-  fFileNNref(""),
+  fRefFilename(""),
   fPIDmethod(kNNpid),
+  fNormalizationFactor(1.),
   fPthreshold(0.8),
   fNBadChambers(0),
-  fGainCorrection(kTRUE)
+  fGainCorrection(kTRUE),
+  fLoadReferencesFromCDB(kFALSE),
+  fHasReferences(kFALSE)
 {
   //
   // default ctor
   //
-  memset(fBadChamberID, 0, sizeof(Int_t) * kNChambers);
 }
 
 //_____________________________________________________
@@ -78,11 +81,14 @@ AliTRDTenderSupply::AliTRDTenderSupply(const char *name, const AliTender *tender
   fChamberGainNew(NULL),
   fChamberVdriftOld(NULL),
   fChamberVdriftNew(NULL),
-  fFileNNref(""),
+  fRefFilename(""),
   fPIDmethod(kNNpid),
+  fNormalizationFactor(1.),
   fPthreshold(0.8),
   fNBadChambers(0),
-  fGainCorrection(kTRUE)
+  fGainCorrection(kTRUE),
+  fLoadReferencesFromCDB(kFALSE),
+  fHasReferences(kFALSE)
 {
   //
   // named ctor
@@ -113,6 +119,10 @@ void AliTRDTenderSupply::Init()
     fESDpid=new AliESDpid;
     fTender->GetESDhandler()->SetESDpid(fESDpid);
   }
+  // Load References
+  if(!fLoadReferencesFromCDB) LoadReferences();
+  fESDpid->GetTRDResponse().SetGainNormalisationFactor(fNormalizationFactor);
+
   // Set Normalisation Factors
   if(mgr->GetMCtruthEventHandler()){
     // Assume MC
@@ -136,6 +146,7 @@ void AliTRDTenderSupply::ProcessEvent()
   if (fTender->RunChanged()){
     AliDebug(0, Form("AliTPCTenderSupply::ProcessEvent - Run Changed (%d)\n",fTender->GetRun()));
     if (fGainCorrection) SetChamberGain();
+    if(!fHasReferences) LoadReferences();
   }
 
   fESD = fTender->GetEvent();
@@ -163,16 +174,58 @@ void AliTRDTenderSupply::ProcessEvent()
 }
 
 //_____________________________________________________
+void AliTRDTenderSupply::LoadReferences(){
+  //
+  // Load Reference from the OCDB/OADB into the PID Response
+  //
+  if(fLoadReferencesFromCDB){
+    AliDebug(1, "Loading Reference Distributions from the OCDB");
+    AliCDBEntry *en = fTender->GetCDBManager()->Get("TRD/Calib/PIDLQ1D");
+    if(!en){
+      AliError("References for 1D Likelihood Method not in OCDB");
+      return;
+    }
+    en->GetId().Print();
+    TObjArray *arr = dynamic_cast<TObjArray *>(en->GetObject());
+    if(!arr) AliError("List with the references not found");
+  
+    // Get new references
+    TIter refs(arr);
+    TObject *o = NULL;
+    AliTRDPIDReference *ref = NULL;
+    while((o = refs())){
+      if(!TString(o->IsA()->GetName()).CompareTo("AliTRDPIDReference")){
+        ref = dynamic_cast<AliTRDPIDReference *>(o);
+        break;
+      }
+    }
+    if(ref){
+      fESDpid->GetTRDResponse().Load(ref);
+      fHasReferences = kTRUE;
+      AliInfo("Reference distributions loaded into the PID Response");
+    } else {
+      AliError("References not found");
+    }
+  } else {
+    // Backward compatibility mode
+    AliInfo("Loading Reference Distributions from ROOT file");
+    if(fRefFilename.Length() != 0){
+    	fESDpid->GetTRDResponse().Load(fRefFilename.Data());
+    	fHasReferences = kTRUE;
+    } else{
+    	AliError("No file defined");
+    }
+  }
+}
+
+//_____________________________________________________
 void AliTRDTenderSupply::SetChamberGain(){
   //
   // Load Chamber Gain factors into the Tender supply
   //
   
   //find previous entry from the UserInfo
-  //   TTree *tree=((TChain*)fTender->GetInputData(0))->GetTree();
-  AliAnalysisManager*mgr = AliAnalysisManager::GetAnalysisManager();
-  AliAnalysisTaskSE *task = (AliAnalysisTaskSE*)mgr->GetTasks()->First();
-  TTree *tree=((TChain*)task->GetInputData(0))->GetTree();
+  TTree *tree=((TChain*)fTender->GetInputData(0))->GetTree();
   if (!tree) {
   AliError("Tree not found in ESDhandler");
     return;

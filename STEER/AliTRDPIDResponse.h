@@ -30,6 +30,7 @@
 
 class TObjArray;
 class AliVTrack;
+class AliTRDPIDReference;
 class AliTRDPIDResponse : public TObject {
   public:
     enum ETRDPIDResponseStatus {
@@ -51,11 +52,11 @@ class AliTRDPIDResponse : public TObject {
     };
     AliTRDPIDResponse();
     AliTRDPIDResponse(const AliTRDPIDResponse &ref);
-    AliTRDPIDResponse& operator=(const AliTRDPIDResponse &);
+    AliTRDPIDResponse& operator=(const AliTRDPIDResponse &ref);
     ~AliTRDPIDResponse();
     
     ETRDPIDMethod     GetPIDmethod() const { return fPIDmethod;}
-    Bool_t    GetResponse(Int_t n, Double_t *dedx, Float_t *p, Double_t prob[AliPID::kSPECIES], Bool_t kNorm=kTRUE) const;
+    Bool_t    GetResponse(Int_t n, const Double_t * const dedx, const Float_t * const p, Double_t prob[AliPID::kSPECIES], Bool_t kNorm=kTRUE) const;
     inline ETRDNslices  GetNumberOfSlices() const;
     
     Bool_t    IsOwner() const {return TestBit(kIsOwner);}
@@ -64,18 +65,14 @@ class AliTRDPIDResponse : public TObject {
     void      SetPIDmethod(ETRDPIDMethod m) {fPIDmethod=m;}
     void      SetGainNormalisationFactor(Double_t gainFactor) { fGainNormalisationFactor = gainFactor; }
 
-    Bool_t    Load(const Char_t *filename = NULL);
-    Bool_t    Load(const TObjArray *histos);
+    Bool_t    Load(const Char_t *filename = NULL, const Char_t *refName = "RefTRDLQ1D");
+    Bool_t    Load(const AliTRDPIDReference *ref) { fkPIDReference = ref; return kTRUE; }
   
   private:
-    Bool_t    CookdEdx(Int_t nSlice, Double_t *in, Double_t *out) const;
-    Int_t     GetLowerMomentumBin(Double_t p) const;
+    Bool_t    CookdEdx(Int_t nSlice, const Double_t * const in, Double_t *out) const;
     Double_t  GetProbabilitySingleLayer(Int_t species, Double_t plocal, Double_t dEdx) const;
     
-    static const Double_t fgkPBins[kNPBins];
-    TObjArray *fReferences; // Container for reference distributions
-    Int_t     fMapRefHists[AliPID::kSPECIES][kNPBins];     
-                            // Map for the position of a given historgam in the container 
+    const AliTRDPIDReference *fkPIDReference;   // PID References
     Double_t  fGainNormalisationFactor;  // Gain normalisation factor
     ETRDPIDMethod   fPIDmethod;   // PID method selector  
   

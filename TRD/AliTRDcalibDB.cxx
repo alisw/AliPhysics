@@ -35,6 +35,7 @@
 #include "AliCDBEntry.h"
 #include "AliLog.h"
 
+#include "AliTRDPIDReference.h"
 #include "AliTRDcalibDB.h"
 
 #include "Cal/AliTRDCalROC.h"
@@ -1163,7 +1164,19 @@ AliTRDPIDResponse *AliTRDcalibDB::GetPIDResponse(AliTRDPIDResponse::ETRDPIDMetho
     fPIDResponse = new AliTRDPIDResponse;
     // Load Reference Histos from OCDB
     fPIDResponse->SetPIDmethod(method);
-    fPIDResponse->Load(dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDPIDLQ1D)));
+    const TObjArray *references = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDPIDLQ1D));
+    TIter refs(references);
+    TObject *obj = NULL;
+    AliTRDPIDReference *ref = NULL;
+    Bool_t hasReference = kFALSE;
+    while((obj = refs())){
+    	if((ref = dynamic_cast<AliTRDPIDReference *>(obj))){
+        	fPIDResponse->Load(ref);
+        	hasReference = kTRUE;
+        	break;
+    	}
+    }
+    if(!hasReference) AliError("Reference histograms not found in the OCDB");
   }
   return fPIDResponse;
 }

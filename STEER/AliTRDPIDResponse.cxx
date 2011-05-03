@@ -35,63 +35,46 @@
 
 #include "AliLog.h"
 
+#include "AliTRDPIDReference.h"
 #include "AliTRDPIDResponse.h"
 
 ClassImp(AliTRDPIDResponse)
 
-const Double_t AliTRDPIDResponse::fgkPBins[kNPBins] = {1, 2, 3, 4, 5, 6};
-
 //____________________________________________________________
 AliTRDPIDResponse::AliTRDPIDResponse():
   TObject()
-  ,fReferences(NULL)
+  ,fkPIDReference(NULL)
   ,fGainNormalisationFactor(1.)
   ,fPIDmethod(kLQ1D)
 {
   //
   // Default constructor
   //
-  for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++)
-    for(Int_t ipbin = 0; ipbin < kNPBins; ipbin++)
-      fMapRefHists[ispec][ipbin] = -1;
 }
 
 //____________________________________________________________
 AliTRDPIDResponse::AliTRDPIDResponse(const AliTRDPIDResponse &ref):
   TObject(ref)
-  ,fReferences(ref.fReferences)
+  ,fkPIDReference(ref.fkPIDReference)
   ,fGainNormalisationFactor(ref.fGainNormalisationFactor)
   ,fPIDmethod(ref.fPIDmethod)
 {
   //
   // Copy constructor
-  // Flat copy of the reference histos
-  // For creating a deep copy call SetOwner
   //
-  Int_t size  = (AliPID::kSPECIES)*(kNPBins);
-  memcpy(fMapRefHists, ref.fMapRefHists, sizeof(Int_t) * size);
 }
 
 //____________________________________________________________
 AliTRDPIDResponse &AliTRDPIDResponse::operator=(const AliTRDPIDResponse &ref){
   //
   // Assignment operator
-  // Performs a flat copy of the reference histos
   //
   if(this == &ref) return *this;
   
   // Make copy
   TObject::operator=(ref);
-  if(IsOwner()){
-    if(fReferences){
-      fReferences->Delete();
-      delete fReferences;
-    }
-    SetBit(kIsOwner, kFALSE);
-  } else if(fReferences) delete fReferences;
-  fReferences = ref.fReferences;
-  Int_t size  = (AliPID::kSPECIES)*(kNPBins);
-  memcpy(fMapRefHists, ref.fMapRefHists, sizeof(Int_t) * size);
+  fGainNormalisationFactor = ref.fGainNormalisationFactor;
+  fkPIDReference = ref.fkPIDReference;
   fPIDmethod = ref.fPIDmethod;
   
   return *this;
@@ -102,15 +85,11 @@ AliTRDPIDResponse::~AliTRDPIDResponse(){
   //
   // Destructor
   //
-  if(IsOwner()){
-    // Destroy histos
-    if(fReferences) fReferences->Delete();
-  }
-  if(fReferences) delete fReferences;
+  if(IsOwner()) delete fkPIDReference;
 }
 
 //____________________________________________________________
-Bool_t AliTRDPIDResponse::Load(const Char_t * filename){
+Bool_t AliTRDPIDResponse::Load(const Char_t * filename, const Char_t *refName){
   //
   // Load References into the toolkit
   //
@@ -126,101 +105,16 @@ Bool_t AliTRDPIDResponse::Load(const Char_t * filename){
   }
   
   gROOT->cd();
-  fReferences = new TObjArray(AliPID::kSPECIES*kNPBins);
-  fReferences->SetOwner();
-  TIter iter(in->GetListOfKeys());
-  TKey *histkey = NULL;
-  TObject *tmp = NULL;
-  Int_t arrayPos = 0, pbin = 0; 
-  AliPID::EParticleType species;
-  TString histname;
-  TH1 *hnew = NULL;
-  while((histkey = dynamic_cast<TKey *>(iter()))){
-    tmp = histkey->ReadObj();
-    histname = tmp->GetName();
-    if(histname.BeginsWith("fHQel")){ // Electron histogram
-      histname.ReplaceAll("fHQel_p","");
-      species = AliPID::kElectron;
-    } else if(histname.BeginsWith("fHQmu")){ // Muon histogram
-      histname.ReplaceAll("fHQmu_p","");
-      species = AliPID::kMuon;
-    } else if(histname.BeginsWith("fHQpi")){ // Pion histogram
-      histname.ReplaceAll("fHQpi_p","");
-      species = AliPID::kPion;
-    }else if(histname.BeginsWith("fHQka")){ // Kaon histogram
-      histname.ReplaceAll("fHQka_p","");
-      species = AliPID::kKaon;
-    }else if(histname.BeginsWith("fHQpr")){ // Proton histogram
-      histname.ReplaceAll("fHQpr_p","");
-      species = AliPID::kProton;
-    } else continue;
-    pbin = histname.Atoi() - 1;
-    AliDebug(1, Form("Species %d, Histname %s, Pbin %d, Position in container %d", species, histname.Data(), pbin, arrayPos));
-    fMapRefHists[species][pbin] = arrayPos;
-    fReferences->AddAt((hnew =new TH1F(*dynamic_cast<TH1F *>(tmp))), arrayPos);
-    hnew->SetDirectory(gROOT);
-    arrayPos++;
-  } 
-  in->Close();
+  fkPIDReference = dynamic_cast<const AliTRDPIDReference *>(in->Get(refName)->Clone());
+  in->Close(); delete in;
   owd->cd();
-  AliDebug(2, Form("Successfully loaded %d Reference Histograms", arrayPos));
   SetBit(kIsOwner, kTRUE);
-  delete in;
+  AliDebug(2, Form("Successfully loaded References for %d Momentum bins", fkPIDReference->GetNumberOfMomentumBins()));
   return kTRUE;
 }
 
 //____________________________________________________________
-Bool_t AliTRDPIDResponse::Load(const TObjArray *histos){
-  //
-  // Load Reference into the PID Response (from OCDB/OADB)
-  //
-  AliDebug(1, "Setting references (from the database)");
-  if(fReferences) fReferences->Clear();
-  else
-    fReferences = new TObjArray(AliPID::kSPECIES*kNPBins);
-  fReferences->SetOwner();
-  TIter iter(histos);
-  Int_t arrayPos = 0, pbin = 0; 
-  AliPID::EParticleType species;
-  TObject *tmp = NULL;
-  TString histname;
-  TH1 *hnew = NULL;
-  while((tmp = iter())){
-    histname = tmp->GetName();
-    if(histname.BeginsWith("fHQel")){ // Electron histogram
-      histname.ReplaceAll("fHQel_p","");
-      species = AliPID::kElectron;
-    } else if(histname.BeginsWith("fHQmu")){ // Muon histogram
-      histname.ReplaceAll("fHQmu_p","");
-      species = AliPID::kMuon;
-    } else if(histname.BeginsWith("fHQpi")){ // Pion histogram
-      histname.ReplaceAll("fHQpi_p","");
-      species = AliPID::kPion;
-    }else if(histname.BeginsWith("fHQka")){ // Kaon histogram
-      histname.ReplaceAll("fHQka_p","");
-      species = AliPID::kKaon;
-    }else if(histname.BeginsWith("fHQpr")){ // Proton histogram
-      histname.ReplaceAll("fHQpr_p","");
-      species = AliPID::kProton;
-    } else continue;
-    pbin = histname.Atoi() - 1;
-    AliDebug(1, Form("Species %d, Histname %s, Pbin %d, Position in container %d", species, histname.Data(), pbin, arrayPos));
-    fMapRefHists[species][pbin] = arrayPos;
-    fReferences->AddAt((hnew = new TH1F(*dynamic_cast<TH1F *>(tmp))), arrayPos);
-    hnew->SetDirectory(gROOT);
-    arrayPos++;
-  }
-  if(!arrayPos){
-    AliError("Failed loading References");
-    return kFALSE;
-  }
-  AliDebug(2, Form("Successfully loaded %d Reference Histograms", arrayPos));
-  SetBit(kIsOwner, kTRUE);
-  return kTRUE;
-}
-
-//____________________________________________________________
-Bool_t AliTRDPIDResponse::GetResponse(Int_t n, Double_t *dedx, Float_t *p, Double_t prob[AliPID::kSPECIES], Bool_t kNorm) const
+Bool_t AliTRDPIDResponse::GetResponse(Int_t n, const Double_t * const dedx, const Float_t * const p, Double_t prob[AliPID::kSPECIES], Bool_t kNorm) const
 {
   //
   // Calculate TRD likelihood values for the track based on dedx and 
@@ -240,21 +134,21 @@ Bool_t AliTRDPIDResponse::GetResponse(Int_t n, Double_t *dedx, Float_t *p, Doubl
   //   true if calculation success
   // 
 
-  if(!fReferences){
+  if(!fkPIDReference){
     AliWarning("Missing reference data. PID calculation not possible.");
     return kFALSE;
   }
 
   for(Int_t is(AliPID::kSPECIES); is--;) prob[is]=.2;
   Double_t prLayer[AliPID::kSPECIES];
-  Double_t DE[10], s(0.);
+  Double_t dE[10], s(0.);
   for(Int_t il(kNlayer); il--;){
     memset(prLayer, 0, AliPID::kSPECIES*sizeof(Double_t));
-    if(!CookdEdx(n, &dedx[il*n], &DE[0])) continue;
+    if(!CookdEdx(n, &dedx[il*n], &dE[0])) continue;
 
     s=0.;
     for(Int_t is(AliPID::kSPECIES); is--;){
-      if((DE[0] > 0.) && (p[il] > 0.)) prLayer[is] = GetProbabilitySingleLayer(is, p[il], DE[0]);
+      if((dE[0] > 0.) && (p[il] > 0.)) prLayer[is] = GetProbabilitySingleLayer(is, p[il], dE[0]);
       AliDebug(3, Form("Probability for Species %d in Layer %d: %f", is, il, prLayer[is]));
       s+=prLayer[is];
     }
@@ -287,58 +181,27 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
   // Interpolation between momentum bins
   //
   AliDebug(1, Form("Make Probability for Species %d with Momentum %f", species, plocal));
-  Int_t pbin = GetLowerMomentumBin(plocal);  
-  AliDebug(1, Form("Bin %d", pbin));
-  Double_t pLayer = 0.;
+  Float_t pLower, pUpper;
+  Double_t probLayer = 0.;
+  TH1 *refUpper = dynamic_cast<TH1 *>(fkPIDReference->GetUpperReference((AliPID::EParticleType)species, plocal, pUpper)),
+      *refLower = dynamic_cast<TH1 *>(fkPIDReference->GetLowerReference((AliPID::EParticleType)species, plocal, pLower));
   // Do Interpolation exept for underflow and overflow
-  if(pbin >= 0 && pbin < kNPBins-1){
-    TH1 *refHistUpper = NULL, *refHistLower = NULL;
-    if(fMapRefHists[species][pbin] >= 0)
-      refHistLower = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][pbin]));
-    if(fMapRefHists[species][pbin+1] >= 0)
-      refHistUpper = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][pbin+1]));
-    AliDebug(1, Form("Reference Histos (Upper/Lower): [%p|%p]", refHistUpper, refHistLower));
+  if(refLower && refUpper){
+    Double_t probLower = refLower->GetBinContent(refLower->GetXaxis()->FindBin(dEdx));
+    Double_t probUpper = refUpper->GetBinContent(refUpper->GetXaxis()->FindBin(dEdx));
   
-    if (refHistLower && refHistUpper ) {
-      Double_t pLower = refHistLower->GetBinContent(refHistLower->GetXaxis()->FindBin(dEdx));
-      Double_t pUpper = refHistUpper->GetBinContent(refHistUpper->GetXaxis()->FindBin(dEdx));
-  
-      pLayer = pLower + (pUpper - pLower)/(fgkPBins[pbin+1]-fgkPBins[pbin]) * (plocal - fgkPBins[pbin]); 
-    }
+    probLayer = probLower + (probUpper - probLower)/(pUpper-pLower) * (plocal - pLower);
+  } else if(refLower){
+    // underflow
+    probLayer = refLower->GetBinContent(refLower->GetXaxis()->FindBin(dEdx));
+  } else if(refUpper){
+    // overflow
+    probLayer = refUpper->GetBinContent(refUpper->GetXaxis()->FindBin(dEdx));
+  } else {
+    AliError("No references available");
   }
-  else{
-    TH1 *refHist = NULL;
-    if(pbin < 0){
-      // underflow
-      if(fMapRefHists[species][0] >= 0){
-        refHist = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][0])); 
-      }
-    } else {
-      // overflow
-      if(fMapRefHists[species][kNPBins-1] > 0)
-        refHist = dynamic_cast<TH1 *>(fReferences->UncheckedAt(fMapRefHists[species][kNPBins-1])); 
-    }
-    if (refHist)
-      pLayer = refHist->GetBinContent(refHist->GetXaxis()->FindBin(dEdx));
-  }
-  AliDebug(1, Form("Probability %f", pLayer));
-  return pLayer;
-}
-
-//____________________________________________________________
-Int_t AliTRDPIDResponse::GetLowerMomentumBin(Double_t p) const {
-  //
-  // Get the momentum bin for a given momentum value
-  //
-  Int_t bin = -1;
-  if(p > fgkPBins[kNPBins-1]) return kNPBins-1;
-  for(Int_t ibin = 0; ibin < kNPBins - 1; ibin++){
-    if(p >= fgkPBins[ibin] && p < fgkPBins[ibin+1]){
-      bin = ibin;
-      break;
-    }
-  }
-  return bin;
+  AliDebug(1, Form("Probability %f", probLayer));
+  return probLayer;
 }
 
 //____________________________________________________________
@@ -346,18 +209,18 @@ void AliTRDPIDResponse::SetOwner(){
   //
   // Make Deep Copy of the Reference Histograms
   //
-  if(!fReferences || IsOwner()) return;
-  TObjArray *ctmp = new TObjArray();
-  for(Int_t ien = 0; ien < fReferences->GetEntriesFast(); ien++)
-    ctmp->AddAt(fReferences->UncheckedAt(ien)->Clone(), ien);
-  delete fReferences;
-  fReferences = ctmp;
+  if(!fkPIDReference || IsOwner()) return;
+  const AliTRDPIDReference *tmp = fkPIDReference;
+  fkPIDReference = dynamic_cast<const AliTRDPIDReference *>(tmp->Clone());
   SetBit(kIsOwner, kTRUE);
 }
 
 //____________________________________________________________
-Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, Double_t *in, Double_t *out) const
+Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Double_t *out) const
 {
+	//
+	// Recalculate dE/dx
+	//
   switch(fPIDmethod){
   case kNN: // NN 
     break;

@@ -14,8 +14,8 @@
 
 #include <AliTenderSupply.h>
 
+class AliTRDpidRecalculator;
 class AliTRDCalDet;
-class AliESDtrack;
 class AliESDEvent;
 
 class AliTRDTenderSupply: public AliTenderSupply {
@@ -30,8 +30,10 @@ public:
   AliTRDTenderSupply(const char *name, const AliTender *tender=NULL);
   virtual ~AliTRDTenderSupply();
 
-  void SetNNref(const char* file) {fFileNNref=file;}
+  void SetLoadReferencesFromCDB() { fLoadReferencesFromCDB = kTRUE; }
+  void SetRefFile(const char* file) {fRefFilename=file;}
   void SetPIDmethod(Int_t pidMethod) { fPIDmethod = pidMethod; }
+  void SetNormalizationFactor(Double_t norm) { fNormalizationFactor = norm; }
   void SetCalibLowpThreshold(Double_t pmin) { fPthreshold = pmin; };
   
   virtual void              Init();
@@ -51,6 +53,7 @@ private:
   Bool_t GetTRDchamberID(AliESDtrack * const track, Int_t *detectors);
   void SetChamberGain();
   void ApplyGainCorrection(AliESDtrack *track);
+  void LoadReferences();
   
   AliESDEvent           *fESD;       //! the ESD Event
   AliESDpid             *fESDpid;    //! ESD PID object
@@ -60,12 +63,15 @@ private:
   AliTRDCalDet *fChamberVdriftOld;   // Old drift velocity calibration
   AliTRDCalDet *fChamberVdriftNew;   // New drift velocity calibration
 
-  TString fFileNNref;                // path and name to the NNref file
+  TString fRefFilename;                // path and name to the NNref file
   Int_t fPIDmethod;                  // PID method
+  Double_t fNormalizationFactor;     // dE/dx Normalization Factor 
   Double_t fPthreshold;              // Low Momentum threshold for calibration
   Int_t fBadChamberID[kNChambers];   // List of Bad Chambers
   UInt_t fNBadChambers;              // Number of bad chambers
   Bool_t fGainCorrection;            // Apply gain correction 
+  Bool_t fLoadReferencesFromCDB;     // Load References from CDB
+  Bool_t fHasReferences;             // has references loaded
   
   AliTRDTenderSupply(const AliTRDTenderSupply&c);
   AliTRDTenderSupply& operator= (const AliTRDTenderSupply&c);
