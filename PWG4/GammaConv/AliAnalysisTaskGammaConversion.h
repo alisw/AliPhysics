@@ -16,6 +16,7 @@
 #include "AliGammaConversionBGHandler.h"
 #include "TRandom3.h"
 #include "TF1.h"
+#include "AliMultiplicity.h"
 //#include "AliCFManager.h"  // for CF
 //#include "AliCFContainer.h"   // for CF
 
@@ -168,6 +169,9 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void SetSelectV0AND(Bool_t selectV0AND) { fSelectV0AND = selectV0AND; }
   void SetUseMultiplicity(Int_t useMultiplicity) {fUseMultiplicity=useMultiplicity;}
   void SetUseMultiplicityBin(Int_t useMultiplicityBin) {fUseMultiplicityBin=useMultiplicityBin;}
+  void SetUseHBTMultiplicity(Int_t useHBTMultiplicity) {fUseHBTMultiplicity=useHBTMultiplicity;}
+  void SetUseHBTMultiplicityBin(Int_t useHBTMultiplicityBin) {fUseHBTMultiplicityBin=useHBTMultiplicityBin;}
+
   Int_t CalculateMultiplicityBin();
   void SetUseCentrality(Int_t useCentrality) {fUseCentrality=useCentrality;}
   void SetUseCentralityBin(Int_t useCentralityBin) {fUseCentralityBin=useCentralityBin;}
@@ -314,10 +318,12 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Int_t fMultiplicity;
   Int_t fUseMultiplicity;
   Int_t fUseMultiplicityBin;
+  Int_t fUseHBTMultiplicity;
+  Int_t fUseHBTMultiplicityBin;
   Int_t fUseCentrality;
   Int_t fUseCentralityBin;
   TRandom3 fRandom;
-  ClassDef(AliAnalysisTaskGammaConversion, 18); // Analysis task for gamma conversions
+  ClassDef(AliAnalysisTaskGammaConversion, 19); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H
