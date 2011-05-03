@@ -485,7 +485,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   // First recalibrate and recalculate energy and position
   Float_t pos[]={0,0,0};
   if(fCorrectClusters){
-    for(Int_t iClu=0; iClu<kNumberOfEMCALClusters-1; iClu++) {
+    for(Int_t iClu=0; iClu<kNumberOfEMCALClusters; iClu++) {
       AliVCluster *c1 = (AliVCluster *) caloClustersArr->At(iClu);
       
       if(fRecoUtils->ClusterContainsBadChannel(fEMCALGeo, c1->GetCellsAbsId(), c1->GetNCells())) continue;	
