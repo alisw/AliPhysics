@@ -19,6 +19,7 @@
 #include "AliHLTStdIncludes.h"
 
 class TArrayC;
+class TH1;
 
 /**
  * @class AliHLTSpacePointContainer
@@ -52,6 +53,7 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
   virtual float GetZ(AliHLTUInt32_t clusterID) const = 0;
   virtual float GetZWidth(AliHLTUInt32_t clusterID) const = 0;
   virtual float GetCharge(AliHLTUInt32_t clusterID) const = 0;
+  virtual float GetPhi(AliHLTUInt32_t /*clusterID*/) const {return 0.0;}
 
   /// create a collection of clusters for a specific track
   virtual AliHLTSpacePointContainer* SelectByTrack(int trackId, bool bAlloc=false) const;
@@ -91,6 +93,18 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
   virtual void Print(Option_t *option="") const;
 
   virtual void Print(ostream& out, Option_t *option="") const;
+
+  TH1* DrawProjection(const char* plane) const {
+    vector<AliHLTUInt32_t> selection; // empty list -> no selection
+    return DrawProjection(plane, selection);
+  }
+
+  TH1* DrawProjection(const char* plane, AliHLTUInt32_t specification) const {
+    vector<AliHLTUInt32_t> selection; selection.push_back(specification);
+    return DrawProjection(plane, selection);
+  }
+
+  TH1* DrawProjection(const char* plane, const vector<AliHLTUInt32_t>& selection) const;
 
  protected:
 

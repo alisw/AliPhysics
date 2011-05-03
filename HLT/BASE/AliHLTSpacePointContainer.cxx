@@ -28,6 +28,8 @@
 #include "TString.h"
 #include "TArrayC.h"
 #include "TObjArray.h"
+#include "TH2F.h"
+#include "TMath.h"
 #include <memory>
 #include <iostream>
 
@@ -201,6 +203,90 @@ int AliHLTSpacePointContainer::SetMCID(int /*mcID*/, const AliHLTUInt32_t* /*clu
 {
   /// default implementation, nothing to do
   return -ENOSYS;
+}
+
+TH1* AliHLTSpacePointContainer::DrawProjection(const char* plane, const vector<AliHLTUInt32_t>& selection) const
+{
+  // draw the projection of space points in a specified plane
+  // "xy", "xz", "yz"
+  
+  int mode=0;
+  if (strcmp(plane, "xy")==0) mode=0;
+  else if (strcmp(plane, "xz")==0) mode=1;
+  else if (strcmp(plane, "yz")==0) mode=2;
+  else {
+    HLTError("invalid plane specification %s, allowed 'xy', 'xz', 'yz'", plane);
+    return NULL;
+  }
+  
+  float maxXAxis=100.0;
+  float maxYAxis=100.0;
+  vector<AliHLTUInt32_t> clusterIDs;
+  GetClusterIDs(clusterIDs);
+  vector<AliHLTUInt32_t>::iterator clusterID=clusterIDs.begin();
+  while (clusterID!=clusterIDs.end()) {
+    vector<AliHLTUInt32_t>::const_iterator element=selection.begin();
+    for (; element!=selection.end(); element++) {
+      if (((*element)&0xffff0000)==((*clusterID)&0xffff0000)) break;
+    }
+    if (element==selection.end() && selection.size()>0) {
+      clusterID=clusterIDs.erase(clusterID);
+      continue;
+    }
+    float XValue=0.0;
+    float YValue=0.0;
+    if (mode==0) {
+      XValue=GetX(*clusterID);
+      YValue=GetY(*clusterID);
+    } else if (mode==1) {
+      XValue=GetX(*clusterID);
+      YValue=GetZ(*clusterID);
+    } else if (mode==2) {
+      XValue=GetY(*clusterID);
+      YValue=GetZ(*clusterID);
+    }
+    if (maxXAxis<XValue) maxXAxis=XValue;
+    if (maxYAxis<YValue) maxYAxis=YValue;
+    clusterID++;
+  }
+  if (maxXAxis<maxYAxis) maxXAxis=maxYAxis;
+  else maxYAxis=maxXAxis;
+
+  TH2F* histogram=new TH2F(plane, plane, 1000, -maxXAxis, maxXAxis, 1000, -maxYAxis, maxYAxis);
+  if (!histogram) return NULL;
+    if (mode==0) {
+      histogram->GetXaxis()->SetTitle("X [cm]");
+      histogram->GetYaxis()->SetTitle("Y [cm]");
+    } else if (mode==1) {
+      histogram->GetXaxis()->SetTitle("Z [cm]");
+      histogram->GetYaxis()->SetTitle("X [cm]");
+    } else if (mode==2) {
+      histogram->GetXaxis()->SetTitle("Z [cm]");
+      histogram->GetYaxis()->SetTitle("Y [cm]");
+    }
+
+  for (clusterID=clusterIDs.begin(); clusterID!=clusterIDs.end(); clusterID++) {
+    float XValue=GetX(*clusterID);
+    float YValue=GetY(*clusterID);
+    float ZValue=GetZ(*clusterID);
+    Float_t phi     = GetPhi(*clusterID);
+    Float_t cos     = TMath::Cos( phi );
+    Float_t sin     = TMath::Sin( phi );
+    if (mode==0) {
+      histogram->SetTitle("XY projection");
+      histogram->Fill(cos*XValue - sin*YValue, sin*XValue + cos*YValue);
+    } else if (mode==1) {
+      // should be maybe 'ZX' but somehow 'XZ' is more 'lingual convenient'
+      histogram->SetTitle("XZ projection");
+      histogram->Fill(ZValue, cos*XValue - sin*YValue);
+    } else if (mode==2) {
+      // same comment
+      histogram->SetTitle("YZ projection");
+      histogram->Fill(ZValue, sin*XValue + cos*YValue);
+    }
+  }
+
+  return histogram;
 }
 
 ostream& operator<<(ostream &out, const AliHLTSpacePointContainer& c)
