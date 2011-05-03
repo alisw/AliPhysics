@@ -293,6 +293,15 @@ AliTPCROC::AliTPCROC()
     fNPads[i]     = 0;
     fRowPosIndex[i]= 0;
   }
+  
+  for (UInt_t i=0;i<100;++i){
+    fPadRowLow[i]=0.;
+    fPadRowUp[i]=0.;
+    fNPadsLow[i]=0;
+    fNPadsUp[i]=0;
+    fYInner[i]=0.;
+    fYOuter[i]=0.;
+  }
 }
 
 
@@ -370,6 +379,16 @@ AliTPCROC::AliTPCROC(const AliTPCROC &roc)
     fNPads[1][irow]       = roc.fNPads[1][irow];
     fRowPosIndex[1][irow] = roc.fRowPosIndex[1][irow];
   }
+  
+  for (UInt_t i=0;i<100;++i){
+    fPadRowLow[i]=roc.fPadRowLow[i];
+    fPadRowUp[i]=roc.fPadRowUp[i];
+    fNPadsLow[i]=roc.fNPadsLow[i];
+    fNPadsUp[i]=roc.fNPadsUp[i];
+    fYInner[i]=roc.fYInner[i];
+    fYOuter[i]=roc.fYOuter[i];
+  }
+
 }
 //____________________________________________________________________________
 AliTPCROC & AliTPCROC::operator =(const AliTPCROC & roc)
