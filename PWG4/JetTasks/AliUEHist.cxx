@@ -779,6 +779,56 @@ TH1* AliUEHist::GetPtHist(CFStep step, Region region, Float_t ptLeadMin, Float_t
   return tracks;
 }
 
+void AliUEHist::MultiplyHistograms(THnSparse* grid, THnSparse* target, TH1* histogram, Int_t var1, Int_t var2)
+{
+  // multiplies <grid> with <histogram> and put the result in <target>
+  // <grid> has usually more dimensions than histogram. The axis which are used to choose the value 
+  // from <histogram> are given in <var1> and <var2>
+  //
+  // if <histogram> is 0, just copies content from step1 to step2
+  
+  // clear target histogram
+  target->Reset();
+  
+  if (histogram != 0)
+  {
+    if (grid->GetAxis(var1)->GetNbins() != histogram->GetNbinsX())
+      AliFatal(Form("Invalid binning (var1): %d %d", grid->GetAxis(var1)->GetNbins(), histogram->GetNbinsX()));
+      
+    if (var2 >= 0 && grid->GetAxis(var2)->GetNbins() != histogram->GetNbinsY())
+      AliFatal(Form("Invalid binning (var2): %d %d", grid->GetAxis(var2)->GetNbins(), histogram->GetNbinsY()));
+  }
+
+  if (grid->GetNdimensions() > 6)
+    AliFatal("Too many dimensions in THnSparse");
+  
+  Int_t bins[6];
+  
+  // optimized implementation
+  for (Int_t binIdx = 0; binIdx < grid->GetNbins(); binIdx++)
+  {
+    Double_t value = grid->GetBinContent(binIdx, bins);
+    Double_t error = grid->GetBinError(binIdx);
+    
+    if (histogram != 0)
+    {
+      if (var2 < 0)
+      {
+        value *= histogram->GetBinContent(bins[var1]);
+        error *= histogram->GetBinContent(bins[var1]);
+      }
+      else
+      {
+        value *= histogram->GetBinContent(bins[var1], bins[var2]);
+        error *= histogram->GetBinContent(bins[var1], bins[var2]);
+      }
+    }
+    
+    target->SetBinContent(bins, value);
+    target->SetBinError(bins, error);
+  }
+}
+
 //____________________________________________________________________
 void AliUEHist::CorrectTracks(CFStep step1, CFStep step2, TH1* trackCorrection, Int_t var1, Int_t var2)
 {
@@ -805,43 +855,8 @@ void AliUEHist::CorrectTracks(CFStep step1, CFStep step2, Int_t region, TH1* tra
   THnSparse* grid = fTrackHist[region]->GetGrid(step1)->GetGrid();
   THnSparse* target = fTrackHist[region]->GetGrid(step2)->GetGrid();
   
-  // clear target histogram
-  target->Reset();
+  MultiplyHistograms(grid, target, trackCorrection, var1, var2);
   
-  if (trackCorrection != 0)
-  {
-    if (grid->GetAxis(var1)->GetNbins() != trackCorrection->GetNbinsX())
-      AliFatal(Form("Invalid binning (var1): %d %d", grid->GetAxis(var1)->GetNbins(), trackCorrection->GetNbinsX()));
-      
-    if (var2 >= 0 && grid->GetAxis(var2)->GetNbins() != trackCorrection->GetNbinsY())
-      AliFatal(Form("Invalid binning (var2): %d %d", grid->GetAxis(var2)->GetNbins(), trackCorrection->GetNbinsY()));
-  }
-  
-  // optimized implementation
-  for (Int_t binIdx = 0; binIdx < grid->GetNbins(); binIdx++)
-  {
-    Int_t bins[5];
-    Double_t value = grid->GetBinContent(binIdx, bins);
-    Double_t error = grid->GetBinError(binIdx);
-    
-    if (trackCorrection != 0)
-    {
-      if (var2 < 0)
-      {
-        value *= trackCorrection->GetBinContent(bins[var1]);
-        error *= trackCorrection->GetBinContent(bins[var1]);
-      }
-      else
-      {
-        value *= trackCorrection->GetBinContent(bins[var1], bins[var2]);
-        error *= trackCorrection->GetBinContent(bins[var1], bins[var2]);
-      }
-    }
-    
-    target->SetBinContent(bins, value);
-    target->SetBinError(bins, error);
-  }
- 
   Printf("AliUEHist::CorrectTracks: Corrected from %f to %f entries. Correction histogram: %f entries (integral: %f)", grid->GetEntries(), target->GetEntries(), (trackCorrection) ? trackCorrection->GetEntries() : -1.0, (trackCorrection) ? trackCorrection->Integral() : -1.0); 
 }
 
@@ -856,48 +871,8 @@ void AliUEHist::CorrectEvents(CFStep step1, CFStep step2, TH1* eventCorrection, 
   AliCFGridSparse* grid = fEventHist->GetGrid(step1);
   AliCFGridSparse* target = fEventHist->GetGrid(step2);
   
-  // clear target histogram
-  target->GetGrid()->Reset();
-  
-  if (eventCorrection != 0 && grid->GetNBins(var1) != eventCorrection->GetNbinsX())
-    AliFatal(Form("Invalid binning: %d %d", grid->GetNBins(var1), eventCorrection->GetNbinsX()));
-  
-  if (eventCorrection != 0 && var2 != -1 && grid->GetNBins(var2) != eventCorrection->GetNbinsY())
-    AliFatal(Form("Invalid binning: %d %d", grid->GetNBins(var2), eventCorrection->GetNbinsY()));
-  
-  Int_t bins[2];
-  for (Int_t x = 1; x <= grid->GetNBins(0); x++)
-  {
-    bins[0] = x;
-    for (Int_t y = 1; y <= grid->GetNBins(1); y++)
-    {
-      bins[1] = y;
-      
-      Double_t value = grid->GetElement(bins);
-      if (value != 0)
-      {
-        Double_t error = grid->GetElementError(bins);
-        
-        if (eventCorrection != 0)
-        {
-          if (var2 == -1)
-          {
-            value *= eventCorrection->GetBinContent(bins[var1]);
-            error *= eventCorrection->GetBinContent(bins[var1]);
-          }
-          else
-          {
-            value *= eventCorrection->GetBinContent(bins[var1], bins[var2]);
-            error *= eventCorrection->GetBinContent(bins[var1], bins[var2]);
-          }
-        }
-        
-        target->SetElement(bins, value);
-        target->SetElementError(bins, error);
-      }
-    }
-  }
-  
+  MultiplyHistograms(grid->GetGrid(), target->GetGrid(), eventCorrection, var1, var2);
+
   Printf("AliUEHist::CorrectEvents: Corrected from %f to %f entries. Correction histogram: %f entries (integral: %f)", grid->GetEntries(), target->GetEntries(), (eventCorrection) ? eventCorrection->GetEntries() : -1.0, (eventCorrection) ? eventCorrection->Integral() : -1.0); 
 }
 
@@ -1101,8 +1076,9 @@ void AliUEHist::Correct(AliUEHist* corrections)
         }
     }
     
-    //new TCanvas; correlatedContamination->DrawCopy("COLZ");
+//     new TCanvas; correlatedContamination->DrawCopy("COLZ");
     CorrectCorrelatedContamination(kCFStepTrackedOnlyPrim, 0, correlatedContamination);
+//     Printf("\n\n\nWARNING ---> SKIPPING CorrectCorrelatedContamination\n\n\n");
     
     delete correlatedContamination;
     
@@ -1598,7 +1574,7 @@ void AliUEHist::CorrectCorrelatedContamination(CFStep step, Int_t region, TH1* t
   // optimized implementation
   for (Int_t binIdx = 0; binIdx < grid->GetNbins(); binIdx++)
   {
-    Int_t bins[5];
+    Int_t bins[6];
     
     Double_t value = grid->GetBinContent(binIdx, bins);
     Double_t error = grid->GetBinError(binIdx);
@@ -1985,7 +1961,7 @@ void AliUEHist::AdditionalDPhiCorrection(Int_t step)
   // optimized implementation
   for (Int_t binIdx = 0; binIdx < grid->GetNbins(); binIdx++)
   {
-    Int_t bins[5];
+    Int_t bins[6];
     Double_t value = grid->GetBinContent(binIdx, bins);
     Double_t error = grid->GetBinError(binIdx);
     
