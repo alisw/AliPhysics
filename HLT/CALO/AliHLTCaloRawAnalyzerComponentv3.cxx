@@ -144,13 +144,17 @@ AliHLTCaloRawAnalyzerComponentv3::DoDeinit()
       delete fAltroRawStreamPtr;
       fAltroRawStreamPtr = 0;
     }
+
+  if (fRawReaderMemoryPtr) delete fRawReaderMemoryPtr;
+  fRawReaderMemoryPtr=NULL;
+  if (fAltroRawStreamPtr) delete fAltroRawStreamPtr;
+  fAltroRawStreamPtr=NULL;
+  if (fRawDataWriter) delete fRawDataWriter;
+  fRawDataWriter=NULL;
+  if (fSanityInspectorPtr) delete fSanityInspectorPtr;
+  fSanityInspectorPtr=NULL;
+
   return 0;
-
-  delete fRawReaderMemoryPtr;
-  delete fAltroRawStreamPtr;
-  delete fRawDataWriter;
-  delete fSanityInspectorPtr;
-
 }
 
 
