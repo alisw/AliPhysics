@@ -340,11 +340,13 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
 
     hname="hnLayerITS";
-    TH1F* hnLayerITS=new TH1F(hname.Data(),"Number of tracks with point in layer",7,-1.5,5.5);
+    TH1F* hnLayerITS=new TH1F(hname.Data(),"Number of tracks with point in layer;ITS layer;",7,-1.5,5.5);
+    hnLayerITS->GetXaxis()->SetBinLabel(1,"n tracks");
 
     hname="hnLayerITSsa";
-    TH1F* hnLayerITSsa=new TH1F(hname.Data(),"Number of tracks with point in layer",7,-1.5,5.5);
-    
+    TH1F* hnLayerITSsa=new TH1F(hname.Data(),"Number of tracks with point in layer;ITS layer;",7,-1.5,5.5);
+    hnLayerITSsa->GetXaxis()->SetBinLabel(1,"n tracks");
+   
     hname="hnClsSPD";
     TH1F* hnClsSPD=new TH1F(hname.Data(),"Distribution of number of SPD clusters;nSPDcls;Entries",3,-0.5,2.5);
 
