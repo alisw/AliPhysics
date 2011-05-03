@@ -429,9 +429,14 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   if (fEsdEv) {
     am->LoadBranch("AliESDRun.");
     am->LoadBranch("AliESDHeader.");
-    UInt_t mask = fEsdEv->GetESDRun()->GetDetectorsInReco();
-    if ((mask >> 18) & 0x1 == 0) { //AliDAQ::OfflineModuleName(180=="EMCAL"
-      AliError(Form("EMCAL not reconstructed: %u (%u)", mask,  fEsdEv->GetESDRun()->GetDetectorsInDAQ()));
+    UInt_t mask1 = fEsdEv->GetESDRun()->GetDetectorsInDAQ();
+    UInt_t mask2 = fEsdEv->GetESDRun()->GetDetectorsInReco();
+    Bool_t desc1 = (mask1 >> 18) & 0x1;
+    Bool_t desc2 = (mask2 >> 18) & 0x1;
+    if (desc1==0 || desc2==0) { //AliDAQ::OfflineModuleName(180=="EMCAL"
+      AliError(Form("EMCAL not in DAQ/RECO: %u (%u)/%u (%u)", 
+		    mask1, fEsdEv->GetESDRun()->GetDetectorsInReco(),
+		    mask2, fEsdEv->GetESDRun()->GetDetectorsInDAQ()));
       return;
     }
     offtrigger = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected();
@@ -461,12 +466,16 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
 
   if (!AliGeomManager::GetGeometry()&&!fIsGeoMatsSet) { // set misalignment matrices (stored in first event)
     Int_t nsm = fGeom->GetEMCGeometry()->GetNumberOfSuperModules();
-    if (fEsdEv) {  
-      for (Int_t i=0; i<nsm; ++i)
-        fGeom->SetMisalMatrix(fEsdEv->GetESDRun()->GetEMCALMatrix(i),i);
-    } else {
-      for (Int_t i=0; i<nsm; ++i)
-        fGeom->SetMisalMatrix(fAodEv->GetHeader()->GetEMCALMatrix(i),i);
+    for (Int_t i=0; i<nsm; ++i) {
+      const TGeoHMatrix *geom = 0;
+      if (fEsdEv)
+        geom = fEsdEv->GetESDRun()->GetEMCALMatrix(i);
+      else 
+        geom = fAodEv->GetHeader()->GetEMCALMatrix(i);
+      if (!geom)
+        continue;
+      geom->Print();
+      fGeom->SetMisalMatrix(geom,i);
     }
     fIsGeoMatsSet = kTRUE;
   }
