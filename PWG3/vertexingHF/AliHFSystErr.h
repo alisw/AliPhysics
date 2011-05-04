@@ -12,6 +12,7 @@
 //***********************************************************
 
 #include <TNamed.h>
+#include <TString.h>
 #include <TH1F.h>
 #include "AliLog.h"
 #include "TGraphAsymmErrors.h"
@@ -53,9 +54,9 @@ class AliHFSystErr : public TNamed
   }
   // Setting for the centrality class
   //  0100 for MB, 020 (4080) for 0-20 (40-80) CC and so on
-  void SetCentrality(Int_t centrality) { 
+  void SetCentrality(TString centrality) { 
     fCentralityClass = centrality; 
-    AliInfo(Form(" Settings for centrality class %d",fCentralityClass));
+    AliInfo(Form(" Settings for centrality class %s",fCentralityClass.Data()));
   }
 
   // Function to initialize the variables/histograms
@@ -92,10 +93,10 @@ class AliHFSystErr : public TNamed
 
   Int_t fRunNumber;        // Run Number (year)
   Int_t fCollisionType;    // Collision type: pp=0, PbPb=1
-  Int_t fCentralityClass;  // Centrality class
+  TString fCentralityClass;  // Centrality class
                            // MB:0100, 0-10:010, 0-20:020 ...40-80:4080...
 
-  ClassDef(AliHFSystErr,1);  // class for systematic errors of charm hadrons
+  ClassDef(AliHFSystErr,2);  // class for systematic errors of charm hadrons
 };
 
 #endif
