@@ -62,6 +62,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     virtual     void    SetDebugLevel( Int_t level )  { fDebug = level; }
     virtual     void    SetMode(Int_t mode)           { fMode  = mode;  }
     virtual     void    SetReduceMemoryFootprint(Bool_t flag) { fReduceMemoryFootprint = flag; }
+    virtual	void	SetEventMixing(Bool_t flag) { fFillMixed = flag; }
     
     // histogram settings
     void SetTrackingEfficiency( const TH1D* hist) { fkTrackingEfficiency = hist; }
@@ -97,6 +98,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Int_t 	        fMode;            //  fMode = 0: data-like analysis 
     				          //  fMode = 1: corrections analysis	
     Bool_t              fReduceMemoryFootprint; // reduce memory consumption by writing less debug histograms
+    Bool_t		fFillMixed;		// enable event mixing (default: ON)
     
     // Pointers to external UE classes
     AliAnalyseLeadingTrackUE*     fAnalyseUE;      //! points to class containing common analysis algorithms

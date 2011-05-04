@@ -45,8 +45,9 @@ protected:
   Int_t    fNSteps;  // number of selection steps
   TArrayF **fValues; //[fNSteps] data container
   TArrayF **fSumw2;  //[fNSteps] data container
+  TAxis** axisCache; //! cache axis pointers (about 50% of the time in Fill is spent in GetAxis otherwise)
   
-  ClassDef(AliTHn, 2) // THn like container
+  ClassDef(AliTHn, 3) // THn like container
 };
 
 #endif

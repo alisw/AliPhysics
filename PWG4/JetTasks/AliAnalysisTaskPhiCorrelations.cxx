@@ -81,6 +81,7 @@ AliAnalysisTask(name,""),
 fDebug(0),
 fMode(0),
 fReduceMemoryFootprint(kFALSE),
+fFillMixed(kTRUE),
 // pointers to UE classes
 fAnalyseUE(0x0),
 fHistos(0x0),
@@ -357,7 +358,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
         fHistos->FillTrackingEfficiency(primMCParticles, primRecoTracksMatched, allRecoTracksMatched, particleSpecies, centrality);
         
-        delete primMCParticles;
+// 	Printf("%d --> %d %d %d", particleSpecies, primMCParticles->GetEntries(), primRecoTracksMatched->GetEntries(), allRecoTracksMatched->GetEntries());
+
+	delete primMCParticles;
         delete primRecoTracksMatched;
         delete allRecoTracksMatched;
       }
@@ -510,56 +513,59 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
   //Printf("Accepted %d tracks", tracks->GetEntries());
   
-  // event mixing
-  
-  // 1. First get an event pool corresponding in mult (cent) and
-  //    zvertex to the current event. Once initialized, the pool
-  //    should contain nMix (reduced) events. This routine does not
-  //    pre-scan the chain. The first several events of every chain
-  //    will be skipped until the needed pools are filled to the
-  //    specified depth. If the pool categories are not too rare, this
-  //    should not be a problem. If they are rare, you could lose
-  //    statistics.
-
-  // 2. Collect the whole pool's content of tracks into one TObjArray
-  //    (bgTracks), which is effectively a single background super-event.
-
-  // 3. The reduced and bgTracks arrays must both be passed into
-  //    FillCorrelations(). Also nMix should be passed in, so a weight
-  //    of 1./nMix can be applied.
-
   const AliVVertex* vertex = inputEvent->GetPrimaryVertex();
   Double_t zVtx = vertex->GetZ();
   
-  AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx);
-  
-  if (!pool)
-    AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centrality, zVtx));
-  
-  //pool->SetDebug(1);
-    
   // Fill containers at STEP 6 (reconstructed)
   fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks);
   
-  if (pool->IsReady()) 
+  if (fFillMixed)
   {
+    // event mixing
     
-    Int_t nMix = pool->GetCurrentNEvents();
-    //cout << "nMix = " << nMix << endl;
-  
-    // Fill mixed-event histos here  
-    for (Int_t jMix=0; jMix<nMix; jMix++) {
-      TObjArray* bgTracks = pool->GetEvent(jMix);
-      fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, bgTracks, 1.0 / nMix, (jMix == 0));
+    // 1. First get an event pool corresponding in mult (cent) and
+    //    zvertex to the current event. Once initialized, the pool
+    //    should contain nMix (reduced) events. This routine does not
+    //    pre-scan the chain. The first several events of every chain
+    //    will be skipped until the needed pools are filled to the
+    //    specified depth. If the pool categories are not too rare, this
+    //    should not be a problem. If they are rare, you could lose
+    //    statistics.
+
+    // 2. Collect the whole pool's content of tracks into one TObjArray
+    //    (bgTracks), which is effectively a single background super-event.
+
+    // 3. The reduced and bgTracks arrays must both be passed into
+    //    FillCorrelations(). Also nMix should be passed in, so a weight
+    //    of 1./nMix can be applied.
+
+    AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx);
+    
+    if (!pool)
+      AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centrality, zVtx));
+    
+    //pool->SetDebug(1);
+      
+    if (pool->IsReady()) 
+    {
+      
+      Int_t nMix = pool->GetCurrentNEvents();
+      //cout << "nMix = " << nMix << endl;
+    
+      // Fill mixed-event histos here  
+      for (Int_t jMix=0; jMix<nMix; jMix++) {
+	TObjArray* bgTracks = pool->GetEvent(jMix);
+	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, bgTracks, 1.0 / nMix, (jMix == 0));
+      }
     }
+    
+    // clone and give ownership to event pool
+    TObjArray* tracksClone = (TObjArray*) tracks->Clone();
+    tracksClone->SetOwner(kTRUE);
+    
+    pool->UpdatePool(tracksClone);
+    //pool->PrintInfo();
   }
-  
-  // clone and give ownership to event pool
-  TObjArray* tracksClone = (TObjArray*) tracks->Clone();
-  tracksClone->SetOwner(kTRUE);
-  
-  pool->UpdatePool(tracksClone);
-  //pool->PrintInfo();
 
   delete tracks;
 }
