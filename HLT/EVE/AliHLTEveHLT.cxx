@@ -570,19 +570,15 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
     // and a "decay point", to let the event display know where the track ends
     //
     
-    for( ; ok; dx*=.9 ){
 
-      // FIXME this loop does not make sense anymore
-      // Matthias 2010-05-02
-      if( !t.TransportToX(x0+dx, bz, .999 ) ){
-	ok = 0; 
-	break;
-	// if( TMath::Abs(dx)<1. ) break;      
-	// continue;
-      }
-      break;
+    ///Removing meaningless loop, please have a look Sergey!!
+
+    // FIXME this loop does not make sense anymore
+    // Matthias 2010-05-02
+    if( !t.TransportToX(x0+dx, bz, .999 ) ){
+      ok = 0; 
     }
-
+    
     {
       if( !ok ){ 
 	AliHLTTPCCATrackConvertor::SetExtParam( t, trackParam );
