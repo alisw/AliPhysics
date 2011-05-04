@@ -30,6 +30,7 @@ class TH1F;
 class TH2F;
 class TH3F;
 class TProfile;
+class TRandom3;
 
 
 
