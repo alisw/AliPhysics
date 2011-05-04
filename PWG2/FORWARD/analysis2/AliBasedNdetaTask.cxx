@@ -591,14 +591,14 @@ AliBasedNdetaTask::Terminate(Option_t *)
   TList* mclist = 0;
   TList* truthlist = 0;
   
-  if(fFinalMCCorrFile.Contains(".root")) {
+  if (fFinalMCCorrFile.Contains(".root")) {
     TFile* ftest = TFile::Open(fFinalMCCorrFile.Data());
     if(ftest) {
-      mclist    = dynamic_cast<TList*> (ftest->Get(Form("%sResults", GetName())));
-      truthlist = dynamic_cast<TList*> (ftest->Get("MCTruthResults"));
+      mclist    = dynamic_cast<TList*>(ftest->Get(Form("%sResults",GetName())));
+      truthlist = dynamic_cast<TList*>(ftest->Get("MCTruthResults"));
     }
-    else AliWarning("MC analysis file invalid - no final MC correction possible");
-    
+    else 
+      AliWarning("MC analysis file invalid - no final MC correction possible");
   }
   Int_t style = GetMarker();
   Int_t color = GetColor();
@@ -1577,7 +1577,7 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
   if(mclist) 
     centlist = static_cast<TList*> (mclist->FindObject(GetListName()));
   if(centlist)
-    dndetaMCCorrection =  static_cast<TH1D*> (centlist->FindObject(Form("dndeta%s%s",GetName(), postfix)));
+    dndetaMCCorrection = static_cast<TH1D*>(centlist->FindObject(Form("dndeta%s%s",GetName(), postfix)));
   if(truthlist) 
     truthcentlist = static_cast<TList*> (truthlist->FindObject(GetListName()));
   if(truthcentlist)
@@ -1723,14 +1723,16 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 
   // --- Make result and store ---------------------------------------
   MakeResult(sum, "", rootProj, corrEmpty, (scheme & kShape) ? shapeCorr : 0,
-	     scaler, symmetrice, rebin, cutEdges, marker, color, mclist, truthlist);
+	     scaler, symmetrice, rebin, cutEdges, marker, color, 
+	     mclist, truthlist);
 
   // --- Process result from TrackRefs -------------------------------
   if (sumMC) 
     MakeResult(sumMC, "MC", rootProj, corrEmpty, 
 	       (scheme & kShape) ? shapeCorr : 0,
 	       scaler, symmetrice, rebin, cutEdges, 
-	       GetMarkerStyle(GetMarkerBits(marker)+4), color, mclist, truthlist);
+	       GetMarkerStyle(GetMarkerBits(marker)+4), color, 
+	       mclist, truthlist);
   
   // Temporary stuff 
   // if (!IsAllBin()) return;
