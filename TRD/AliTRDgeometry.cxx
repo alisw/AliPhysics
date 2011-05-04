@@ -2792,8 +2792,8 @@ Int_t AliTRDgeometry::GetStack(Double_t z, Int_t layer)
       (layer >= fgkNlayer)) return -1;
 	
   Int_t    istck = fgkNstack;
-  Double_t zmin;
-  Double_t zmax;
+  Double_t zmin  = 0.0;
+  Double_t zmax  = 0.0;
 
   do {
     istck--;
