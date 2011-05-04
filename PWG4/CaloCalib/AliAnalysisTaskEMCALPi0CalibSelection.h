@@ -17,7 +17,6 @@ class TH1F;
 // AliRoot includes
 #include "AliAnalysisTaskSE.h"
 class AliEMCALGeometry;
-//class AliEMCALCalibData ;
 #include "AliEMCALGeoParams.h"
 class AliEMCALRecoUtils;
 
@@ -40,6 +39,7 @@ public:
   virtual void UserExec(Option_t * opt);
   virtual void LocalInit() ;
   
+  void    SetPairDTimeCut(Float_t t)        {fDTimeCut    = t   ;}
   void    SetAsymmetryCut(Float_t asy)      {fAsyCut      = asy ;}
   void    SetClusterMinEnergy(Float_t emin) {fEmin        = emin;}
   void    SetClusterMaxEnergy(Float_t emax) {fEmax        = emax;}
@@ -85,8 +85,9 @@ private:
 
   AliEMCALGeometry * fEMCALGeo;  //! EMCAL geometry
 	
-  Float_t fEmin;           // min. cluster energy
-  Float_t fEmax;           // max. cluster energy
+  Float_t fEmin;           // min. cluster energy (GeV)
+  Float_t fEmax;           // max. cluster energy (GeV)
+  Float_t fDTimeCut;       // Maximum difference between time of cluster pairs (ns)
   Float_t fAsyCut;         // Asymmetry cut
   Int_t   fMinNCells;      // min. ncells in cluster
   Int_t   fGroupNCells;    // group n cells
@@ -145,8 +146,16 @@ private:
   
   Int_t   fNMaskCellColumns;  // Number of masked columns
   Int_t*  fMaskCellColumns;   //[fNMaskCellColumns] list of masked cell collumn
-   
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,13);
+  
+  //Time
+  TH2F*   fhClusterTime ;                  // Timing of clusters vs energy
+  TH2F*   fhClusterTimeSM[10] ;            // Timing of clusters vs energy per SM
+  TH2F*   fhClusterPairDiffTime;           // Diference in time of clusters
+  TH2F*   fhClusterPairDiffTimeSameSM[AliEMCALGeoParams::fgkEMCALModules];       // Diference in time of clusters same SM
+  TH2F*   fhClusterPairDiffTimeSameSector[AliEMCALGeoParams::fgkEMCALModules/2]; // Diference in time of clusters same sector
+  TH2F*   fhClusterPairDiffTimeSameSide[AliEMCALGeoParams::fgkEMCALModules-2];   // Diference in time of clusters same side
+
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,14);
 
 };
 
