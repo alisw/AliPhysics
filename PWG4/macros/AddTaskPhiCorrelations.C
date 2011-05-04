@@ -1,4 +1,4 @@
-AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, Bool_t ppRun = kFALSE)
+AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, Bool_t ppRun = kFALSE, const char* outputFileName = 0)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -28,6 +28,7 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   Printf("AddTaskPhiCorrelations:\n\n\n++++++++++ Using bit %d ++++++++++++\n\n\n", bit);
   
   ana->SetTrackEtaCut(1.0);
+//   ana->SetTrackEtaCut(0.8);
   ana->SetPtMin(0.15);
   //ana->SetEventSelectionBit(AliAnalysisHelperJetTasks::kIsPileUp);
   ana->SetReduceMemoryFootprint(kTRUE);
@@ -52,7 +53,10 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histosPhiCorrelations", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_PhiCorrelations", AliAnalysisManager::GetCommonFileName()));
+  if (!outputFileName)
+    outputFileName = AliAnalysisManager::GetCommonFileName();
+  
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histosPhiCorrelations", TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:PWG4_PhiCorrelations", outputFileName));
   
   mgr->ConnectInput  (ana, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (ana, 0, coutput1 );
