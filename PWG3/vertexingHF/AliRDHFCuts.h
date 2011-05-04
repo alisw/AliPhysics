@@ -60,6 +60,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void AddTrackCuts(const AliESDtrackCuts *cuts) 
           {delete fTrackCuts; fTrackCuts=new AliESDtrackCuts(*cuts); return;}
   void SetUsePID(Bool_t flag=kTRUE) {fUsePID=flag; return;}
+  void SetUseAOD049(Bool_t flag=kTRUE) {fUseAOD049=flag; return;}
   void SetUseCentrality(Int_t flag=1);    // see enum below
   void SetPidHF(AliAODPidHF* pidObj) {
     if(fPidHF) delete fPidHF;
@@ -90,7 +91,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t GetCutValue(Int_t iVar,Int_t iPtBin) const;
   Double_t GetMaxVtxZ() const {return fMaxVtxZ;}  
   Float_t GetCentrality(AliAODEvent* aodEvent){return GetCentrality(aodEvent,(AliRDHFCuts::ECentrality)fUseCentrality);}
-  Float_t GetCentrality(AliAODEvent* aodEvent, AliRDHFCuts::ECentrality estimator) const;
+  Float_t GetCentrality(AliAODEvent* aodEvent, AliRDHFCuts::ECentrality estimator);
   Bool_t  *GetIsUpperCut() const {return fIsUpperCut;}
   AliESDtrackCuts *GetTrackCuts() const {return fTrackCuts;}
   virtual AliESDtrackCuts *GetTrackCutsSoftPi() const {return 0;}
@@ -98,6 +99,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t   GetGlobalIndex(Int_t iVar,Int_t iPtBin) const;
   void    GetVarPtIndex(Int_t iGlob, Int_t& iVar, Int_t& iPtBin) const;
   Bool_t  GetIsUsePID() const {return fUsePID;}
+  Bool_t  GetUseAOD049() const {return fUseAOD049;}
   Bool_t  GetIsPrimaryWithoutDaughters() const {return fRemoveDaughtersFromPrimary;}
   Bool_t GetOptPileUp() const {return fOptPileup;}
   Int_t GetUseCentrality() const {return fUseCentrality;}
@@ -167,6 +169,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t *fCutsRD; //[fGlobalIndex] the cuts values
   Bool_t  *fIsUpperCut; //[fnVars] use > or < to select
   Bool_t fUsePID; // enable PID usage (off by default)
+  Bool_t fUseAOD049; // enable AOD049 centrality cleanup
   AliAODPidHF *fPidHF; // PID for heavy flavours manager
   Int_t fWhyRejection; // used to code the step at which candidate was rejected
   Bool_t fRemoveDaughtersFromPrimary; // flag to switch on the removal of duaghters from the primary vertex computation
@@ -187,7 +190,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t fMinPtCand; // minimum pt of the candidate
   Double_t fMaxPtCand; // minimum pt of the candidate
 
-  ClassDef(AliRDHFCuts,13);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,14);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
