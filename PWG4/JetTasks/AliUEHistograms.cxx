@@ -383,7 +383,7 @@ void AliUEHistograms::Fill(AliVParticle* leadingMC, AliVParticle* leadingReco)
 }
 
 //____________________________________________________________________
-void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TSeqCollection* particles, TSeqCollection* mixed, Float_t weight, Bool_t firstTime)
+void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed, Float_t weight, Bool_t firstTime)
 {
   // fills the fNumberDensityPhi histogram
   //
@@ -391,21 +391,31 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
   //
   // if mixed is non-0, mixed events are filled, the trigger particle is from particles, the associated from mixed
   
+  // Eta() is extremely time consuming, therefore cache it for the inner loop here:
+  TObjArray* input = (mixed) ? mixed : particles;
+  TArrayF eta(input->GetEntriesFast());
+  for (Int_t i=0; i<input->GetEntriesFast(); i++)
+    eta[i] = ((AliVParticle*) input->At(i))->Eta();
+  
   // if particles is not set, just fill event statistics
   if (particles)
   {
-    for (Int_t i=0; i<particles->GetEntries(); i++)
+    Int_t jMax = particles->GetEntriesFast();
+    if (mixed)
+      jMax = mixed->GetEntriesFast();
+    
+    for (Int_t i=0; i<particles->GetEntriesFast(); i++)
     {
       AliVParticle* triggerParticle = (AliVParticle*) particles->At(i);
-      Int_t jMax = particles->GetEntries();
-      if (mixed)
-        jMax = mixed->GetEntries();
+      
+      // some optimization
+      Float_t triggerEta = triggerParticle->Eta();
         
       if (!mixed)
       {
         // QA
         fCorrelationpT->Fill(centrality, triggerParticle->Pt());
-        fCorrelationEta->Fill(centrality, triggerParticle->Eta());
+        fCorrelationEta->Fill(centrality, triggerEta);
         fCorrelationPhi->Fill(centrality, triggerParticle->Phi());
 /*        if (dynamic_cast<AliAODTrack*>(triggerParticle))
           fITSClusterMap->Fill(((AliAODTrack*) triggerParticle)->GetITSClusterMap(), centrality, triggerParticle->Pt());*/
@@ -441,7 +451,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
         }
         
         Double_t vars[6];
-        vars[0] = triggerParticle->Eta() - particle->Eta();
+        vars[0] = triggerEta - eta[j];
         vars[1] = particle->Pt();
         vars[2] = triggerParticle->Pt();
         vars[3] = centrality;
@@ -490,7 +500,7 @@ void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim,
     else if (step == 2)
       list = recoAll;
       
-    for (Int_t i=0; i<list->GetEntries(); i++)
+    for (Int_t i=0; i<list->GetEntriesFast(); i++)
     {
       AliVParticle* particle = (AliVParticle*) list->At(i);
       Double_t vars[4];

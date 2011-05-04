@@ -180,8 +180,12 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
   TObjArray* tracks = new TObjArray;
   
   // for TPC only tracks
+  Bool_t hasOwnership = kFALSE;
   if (fFilterBit == 128 && obj->InheritsFrom("AliESDEvent"))
-    tracks->SetOwner(kTRUE);
+    hasOwnership = kTRUE;
+  
+  if (!arrayMC)
+    tracks->SetOwner(hasOwnership);
  
   // Loop over tracks or jets
   for (Int_t ipart=0; ipart<nTracks; ++ipart) {
@@ -192,10 +196,12 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
       if (TMath::Abs(part->Eta()) > fTrackEtaCut || part->Pt() < fTrackPtMin)
         continue;
     
-    if (arrayMC && arrayMC->InheritsFrom("TClonesArray") && obj->InheritsFrom("AliAODEvent")) {
-      Int_t label = ((AliAODTrack*)part)->GetLabel();
+    if (arrayMC) {
+      Int_t label = part->GetLabel();
+      if (hasOwnership)
+	delete part;
       // re-define part as the matched MC particle
-      part = (AliAODMCParticle*)ParticleWithCuts(arrayMC, TMath::Abs(label),onlyprimaries, particleSpecies);
+      part = ParticleWithCuts(arrayMC, TMath::Abs(label),onlyprimaries, particleSpecies);
       if (!part)continue;
     }
     
@@ -364,7 +370,58 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
                 if (!isHadron) return 0;				  
 		}
 	*/
-
+       if (particleSpecies != -1) {
+                // find the primary mother
+                AliMCParticle* mother = (AliMCParticle*) part;
+// 		Printf("");
+                while (!mcEvent->IsPhysicalPrimary(mother->GetLabel()))
+                {
+// 		  Printf("pdg = %d; mother = %d", mother->PdgCode(), mother->GetMother());
+                  if (mother->GetMother() < 0)
+                  {
+                    mother = 0;
+                    break;
+                  }
+                    
+                  mother = (AliMCParticle*) mcEvent->GetTrack(mother->GetMother());
+                  if (!mother)
+                    break;
+                }
+                
+                if (mother)
+                {
+                  Int_t pdgCode = mother->PdgCode();
+                  if (particleSpecies == 0 && TMath::Abs(pdgCode)!=211)
+                          return 0;
+                  if (particleSpecies == 1 && TMath::Abs(pdgCode)!=321)
+                          return 0;
+                  if (particleSpecies == 2 && TMath::Abs(pdgCode)!=2212)
+                          return 0;
+                  if (particleSpecies == 3 && (TMath::Abs(pdgCode)==211 || TMath::Abs(pdgCode)==321 || TMath::Abs(pdgCode)==2212))
+                          return 0;
+                }
+                else
+                {
+                  // if mother not found, accept particle only in case of particleSpecies == 3. To include it in all or no sample is no solution
+                  Printf("WARNING: No mother found for particle %d:", part->GetLabel());
+                  //part->Dump();
+                  //part->Print();
+  
+                  /*
+                  // this code prints the details of the mother that is missing in the AOD
+                  AliMCEventHandler* fMcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  
+                  AliMCEvent* fMcEvent = fMcHandler->MCEvent();
+                  
+                  fMcEvent->Stack()->Particle(fMcEvent->Stack()->Particle(part->GetLabel())->GetMother(0))->Print();
+                  fMcEvent->Stack()->Particle(fMcEvent->Stack()->Particle(fMcEvent->Stack()->Particle(part->GetLabel())->GetMother(0))->GetMother(0))->Print();
+                  Printf("eta = %f", fMcEvent->Stack()->Particle(fMcEvent->Stack()->Particle(fMcEvent->Stack()->Particle(part->GetLabel())->GetMother(0))->GetMother(0))->Eta());
+                  */
+                  
+                  if (particleSpecies != 3)
+                    return 0;
+                }
+        }
   }else if (obj->InheritsFrom("AliAODEvent")){ // RECO AOD TRACKS
   	AliAODEvent *aodEvent = static_cast<AliAODEvent*>(obj);
         part = aodEvent->GetTrack(ipart);
