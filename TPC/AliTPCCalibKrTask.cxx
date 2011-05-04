@@ -138,6 +138,7 @@ void AliTPCCalibKrTask::ConnectInputData(Option_t *)
 
   if(!fTree) { 
    Printf("ERROR: Could not read chain from input");
+   return;
   }
   else {
    fTree->SetBranchStatus("*",1); 

@@ -281,7 +281,7 @@ TH3F* AliTPCCalibKr::CreateHisto(Int_t chamber)
     char name[256];
 	TH3F *h;
 
-    sprintf(name,"ADCcluster_ch%d",chamber);
+	snprintf(name,256,"ADCcluster_ch%d",chamber);
 
     if( IsIROC(chamber) == kTRUE ) 
 	{
