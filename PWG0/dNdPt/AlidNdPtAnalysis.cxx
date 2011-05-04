@@ -1749,7 +1749,11 @@ void AlidNdPtAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *con
   if(!stack) return;
 
   Int_t label = TMath::Abs(esdTrack->GetLabel()); 
-  //if(label == 0) return;
+  if(label > stack->GetNtrack()) 
+  {
+    printf("esd track label: %d, stack->GetNtrack(): %d\n", label, stack->GetNtrack());
+    return;
+  }
 
   TParticle* particle = stack->Particle(label);
   if(!particle) return;
