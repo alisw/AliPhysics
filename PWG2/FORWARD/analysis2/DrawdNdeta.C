@@ -34,6 +34,8 @@
 #include <TLatex.h>
 #include <TImage.h>
 
+Double_t myFunc(Double_t* xp, Double_t* pp);
+
 /**
  * Class to draw dN/deta results 
  * 
@@ -59,7 +61,7 @@ struct dNdetaDrawer
    * 
    */
   dNdetaDrawer()
-    : fShowOthers(false),	// Bool_t 
+    : fShowOthers(0),		// Bool_t 
       fShowAlice(false),        // Bool_t
       fShowRatios(false),	// Bool_t 
       fShowLeftRight(false),	// Bool_t
@@ -75,8 +77,11 @@ struct dNdetaDrawer
       fCentAxis(0),             // TAxis*
       fTriggers(0),		// TH1*
       fTruth(0),                // TH1* 
-      fRangeParam(0)
-
+      fRangeParam(0),
+      fFwdSysErr(0.076),
+      fCenSysErr(0),
+      fRemoveOuters(false), 
+      fClusterScale("")
   {
     fRangeParam = new RangeParam;
     fRangeParam->fMasterAxis = 0;
@@ -113,7 +118,7 @@ struct dNdetaDrawer
    * 
    * @param x Whether to show or not 
    */
-  void SetShowOthers(Bool_t x)    { fShowOthers = x; }
+  void SetShowOthers(UShort_t x)    { fShowOthers = x; }
   //__________________________________________________________________
   /** 
    * Show ALICE published data 
@@ -137,6 +142,12 @@ struct dNdetaDrawer
    * @param x To show or not 
    */
   void SetShowLeftRight(Bool_t x) { fShowLeftRight = x; }
+  //__________________________________________________________________
+  /** 
+   * Whether to show rings 
+   * 
+   * @param x To show or not 
+   */
   void SetShowRings(Bool_t x) { fShowRings = x; }
   //__________________________________________________________________
   /** 
@@ -159,6 +170,20 @@ struct dNdetaDrawer
    * @param x Title
    */
   void SetTitle(TString x)        { fTitle = x; }
+  //__________________________________________________________________
+  /** 
+   * Set the systematic error in the forward region
+   * 
+   * @param e Systematic error in the forward region 
+   */
+  void SetForwardSysError(Double_t e=0) { fFwdSysErr = e; }
+  //__________________________________________________________________
+  /** 
+   * Set the systematic error in the forward region
+   * 
+   * @param e Systematic error in the forward region 
+   */
+  void SetCentralSysError(Double_t e=0) { fCenSysErr = e; }
   /* @} */
   //==================================================================  
   /** 
@@ -263,9 +288,9 @@ struct dNdetaDrawer
     fOthers    = new TMultiGraph();
     
     // --- Loop over input data --------------------------------------
-    FetchResults(mcTruth,  "MCTruth", max, rmax, amax);
-    FetchResults(forward,  "Forward", max, rmax, amax);
-    FetchResults(clusters, "Central", max, rmax, amax);
+    /*TObjArray* mcA =*/ FetchResults(mcTruth,  "MCTruth", max, rmax, amax);
+    TObjArray* fwdA = FetchResults(forward,  "Forward", max, rmax, amax);
+    TObjArray* cenA = FetchResults(clusters, "Central", max, rmax, amax);
 
     // --- Get trigger information -----------------------------------
     TList* sums = static_cast<TList*>(file->Get("ForwardSums"));
@@ -294,7 +319,7 @@ struct dNdetaDrawer
     if (!fOthers->GetListOfGraphs() || 
 	fOthers->GetListOfGraphs()->GetEntries() <= 0) { 
       Warning("Run", "No other data found - disabling that");
-      fShowOthers = false;
+      fShowOthers = 0;
     }
     if (!fRatios->GetHists() || 
 	fRatios->GetHists()->GetEntries() <= 0) { 
@@ -308,6 +333,32 @@ struct dNdetaDrawer
       // fLeftRight->ls();
       fShowLeftRight = false;
     }
+    if (fFwdSysErr > 0) { 
+      if (fCenSysErr <= 0) fCenSysErr = fFwdSysErr;
+      for (Int_t i = 0; i < fwdA->GetEntriesFast(); i++) {
+	TH1* fwd = static_cast<TH1*>(fwdA->At(i));
+	TH1* cen = static_cast<TH1*>(cenA->At(i));
+	CorrectForward(fwd);
+	CorrectCentral(cen);
+	Double_t low, high;
+	TH1* tmp = Merge(cen, fwd, low, high);
+	TF1* f   = FitMerged(tmp, low, high);
+	MakeSysError(tmp, cen, fwd, f);
+	delete f;
+	Info("", "Adding systematic error histogram %s", 
+	     tmp->GetName());
+	fResults->GetHists()->AddFirst(tmp, "e5");
+	TH1* tmp2 = Symmetrice(tmp);
+	tmp2->SetFillColor(tmp->GetFillColor());
+	tmp2->SetFillStyle(tmp->GetFillStyle());
+	tmp2->SetMarkerStyle(tmp->GetMarkerStyle());
+	tmp2->SetLineWidth(tmp->GetLineWidth());
+	fResults->GetHists()->AddFirst(tmp2, "e5");
+	fResults->Modified();
+      }
+    }
+    delete fwdA;
+    delete cenA;
     
     // --- Close the input file --------------------------------------
     file->Close();
@@ -378,27 +429,18 @@ struct dNdetaDrawer
   TMultiGraph* FetchOthers(UShort_t centLow, UShort_t centHigh)
   {
     TMultiGraph* thisOther = 0;
-    if (!fShowOthers && !fShowAlice) return 0;
+    if (fShowOthers == 0) return 0;
 
-    Bool_t   onlya = (fShowOthers ? false : true);
-    Bool_t   nomc  = true;
     UShort_t sys   = (fSysString  ? fSysString->GetUniqueID() : 0);
     UShort_t trg   = (fTrigString ? fTrigString->GetUniqueID() : 0);
     UShort_t snn   = (fSNNString  ? fSNNString->GetUniqueID() : 0);
-    Long_t   ret   = gROOT->ProcessLine(Form("GetData(%d,%d,%d,%d,%d,%d,%d);",
+    Long_t   ret   = gROOT->ProcessLine(Form("GetData(%d,%d,%d,%d,%d,%d);",
 					     sys,snn,trg,
-					     centLow,centHigh,onlya,nomc));
-    if (!ret) { 
-#if 0
-      Warning("FetchOthers", "No other data found for sys=%d, sNN=%d, "
-	      "trigger=%d %d%%-%d%% central %s", 
-	      sys, snn, trg, centLow, centHigh, 
-	      onlya ? " (ALICE results)" : "all");
-#endif
-      return 0;
-    }
-    thisOther = reinterpret_cast<TMultiGraph*>(ret);
-    
+					     centLow,centHigh,
+					     fShowOthers));
+    if (!ret) return 0;
+
+    thisOther = reinterpret_cast<TMultiGraph*>(ret);    
     return thisOther;
   }
   //__________________________________________________________________
@@ -411,23 +453,29 @@ struct dNdetaDrawer
    * @param rmax  On return, maximum of ratios
    * @param amax  On return, maximum of left-right comparisons
    */
-  void FetchResults(const TList* list, 
-		    const char*  name, 
-		    Double_t&    max,
-		    Double_t&    rmax,
-		    Double_t&    amax)
+  TObjArray* 
+  FetchResults(const TList* list, 
+	       const char*  name, 
+	       Double_t&    max,
+	       Double_t&    rmax,
+	       Double_t&    amax)
   {
-    UShort_t n = fCentAxis ? fCentAxis->GetNbins() : 0;
+    UShort_t   n = fCentAxis ? fCentAxis->GetNbins() : 0;
     if (n == 0) {
       TList* all = static_cast<TList*>(list->FindObject("all"));
-      if (!all)
+      if (!all) {
 	Error("FetchResults", "Couldn't find list 'all' in %s", 
 	      list->GetName());
-      else 
-	FetchResults(all, name, FetchOthers(0,0), -1000, 0, max, rmax, amax);
-      return;
+	return 0;
+      }
+      TObjArray* a = new TObjArray;
+      TH1*       h = FetchResults(all, name, FetchOthers(0,0), 
+				  -1000, 0, max, rmax, amax);
+      a->AddAt(h, 0);
+      return a;
     }
     
+    TObjArray* a = new TObjArray;
     for (UShort_t i = 0; i < n; i++) { 
       UShort_t centLow  = fCentAxis->GetBinLowEdge(i+1);
       UShort_t centHigh = fCentAxis->GetBinUpEdge(i+1);
@@ -436,13 +484,16 @@ struct dNdetaDrawer
       Int_t    col      = GetCentralityColor(i+1);
 
       TString centTxt = Form("%3d%%-%3d%% central", centLow, centHigh);
-      if (!thisCent)
+      if (!thisCent) {
 	Error("FetchResults", "Couldn't find list '%s' in %s", 
 	      lname.Data(), list->GetName());
-      else 
-	FetchResults(thisCent, name, FetchOthers(centLow, centHigh), 
-		     col, centTxt.Data(), max, rmax, amax);
+	continue;
+      }
+      TH1* h = FetchResults(thisCent, name, FetchOthers(centLow, centHigh), 
+			    col, centTxt.Data(), max, rmax, amax);
+      a->AddAt(h, i);
     }
+    return a;
   } 
   //__________________________________________________________________
   Int_t GetCentralityColor(Int_t bin) const
@@ -495,7 +546,7 @@ struct dNdetaDrawer
    * @param rmax       On return, ratio maximum 
    * @param amax       On return, left-right maximum 
    */
-  void FetchResults(const TList* list, 
+  TH1* FetchResults(const TList* list, 
 		    const char*  name, 
 		    TMultiGraph* thisOther,
 		    Int_t        color,
@@ -509,14 +560,11 @@ struct dNdetaDrawer
     TH1* dndetaTruth = FetchResult(list, "dndetaTruth");
     TH1* dndetaSym   = 0;
     TH1* dndetaMCSym = 0;
-    TH1* tracks      = FetchResult(list, "tracks");
-    if (tracks) tracks->SetTitle("ALICE Tracks");
     SetAttributes(dndeta,     color);
     SetAttributes(dndetaMC,   fCentAxis ? color : color+2);
     SetAttributes(dndetaTruth,color);
     SetAttributes(dndetaSym,  color);
     SetAttributes(dndetaMCSym,fCentAxis ? color : color+2);
-    SetAttributes(tracks,     fCentAxis ? color : color+3);
     if (dndetaMC && fCentAxis) 
       dndetaMC->SetMarkerStyle(dndetaMC->GetMarkerStyle()+2);
     if (dndetaMCSym && fCentAxis) 
@@ -530,13 +578,11 @@ struct dNdetaDrawer
     ModifyTitle(dndetaTruth,centTxt);
     ModifyTitle(dndetaSym,  centTxt);
     ModifyTitle(dndetaMCSym,centTxt);
-    ModifyTitle(tracks,     centTxt);
       
 
     max = TMath::Max(max, AddHistogram(fResults, dndetaTruth, "e5 p"));
     max = TMath::Max(max, AddHistogram(fResults, dndetaMC,    dndetaMCSym));
     max = TMath::Max(max, AddHistogram(fResults, dndeta,      dndetaSym));
-    max = TMath::Max(max, AddHistogram(fResults, tracks));
 
     if (dndetaTruth) {
       fTruth = dndetaTruth;
@@ -557,7 +603,6 @@ struct dNdetaDrawer
       if (fShowLeftRight) {
 	fLeftRight->Add(Asymmetry(dndeta,    amax));
 	fLeftRight->Add(Asymmetry(dndetaMC,  amax));
-	fLeftRight->Add(Asymmetry(tracks,    amax));
       }
       
       if (thisOther) {
@@ -576,11 +621,6 @@ struct dNdetaDrawer
 	}
 	// fOthers->Add(thisOther);
       }
-      if (tracks) { 
-	if (!fRatios->GetHists() || 
-	    !fRatios->GetHists()->FindObject(tracks->GetName()))
-	  fRatios->Add(Ratio(dndeta, tracks, rmax));
-      }
     }
     if (dndetaMC) { 
       fRatios->Add(Ratio(dndeta,    dndetaMC,    rmax));
@@ -590,6 +630,7 @@ struct dNdetaDrawer
       fRatios->Add(Ratio(dndeta,      fTruth, rmax));
       fRatios->Add(Ratio(dndetaSym,   fTruth, rmax));
     }
+    return dndeta;
   }
   //__________________________________________________________________
   /** 
@@ -611,9 +652,9 @@ struct dNdetaDrawer
     Double_t y1 = 0;
     Double_t y2 = 0;
     Double_t y3 = 0;
-    if (!fShowRatios)    w  *= 1.4;
+    if (!fShowRatios)    w  *= 1.3;
     else                 y1 =  0.3;
-    if (!fShowLeftRight) w  *= 1.4;
+    if (!fShowLeftRight) w  *= 1.3;
     else { 
       Double_t y11 = y1;
       y1 = (y11 > 0.0001 ? 0.4 : 0.2);
@@ -674,21 +715,28 @@ struct dNdetaDrawer
     l->SetBorderSize(0);
     l->SetTextFont(132);
 
+    // Loop over items in stack and get unique items, while ignoring
+    // mirrored data and systematic error bands 
     TIter    next(stack->GetHists());
     TH1*     hist = 0;
     TObjArray unique;
     unique.SetOwner();
+    Bool_t   sysErrSeen = false;
     while ((hist = static_cast<TH1*>(next()))) { 
-      TString n(hist->GetTitle());
-      if (n.Contains("mirrored")) continue;
-      if (unique.FindObject(n.Data())) continue;
-      TObjString* s = new TObjString(n);
+      TString t(hist->GetTitle());
+      TString n(hist->GetName());
+      n.ToLower();
+      if (t.Contains("mirrored")) continue;
+      if (n.Contains("syserror")) { sysErrSeen = true; continue; }
+      if (unique.FindObject(t.Data())) continue;
+      TObjString* s = new TObjString(hist->GetTitle());
       s->SetUniqueID(((hist->GetMarkerStyle() & 0xFFFF) << 16) |
 		     ((hist->GetMarkerColor() & 0xFFFF) <<  0));
       unique.Add(s);
       // l->AddEntry(hist, hist->GetTitle(), "pl");
     }
     if (mg) {
+      // If we have other stuff, scan for unique names 
       TIter nexto(mg->GetListOfGraphs());
       TGraph* g = 0;
       while ((g = static_cast<TGraph*>(nexto()))) { 
@@ -702,7 +750,8 @@ struct dNdetaDrawer
 	// l->AddEntry(hist, hist->GetTitle(), "pl");
       }
     }
-    // unique.ls();
+
+    // Add legend entries for unique items only
     TIter nextu(&unique);
     TObject* s = 0;
     Int_t i = 0;
@@ -716,10 +765,35 @@ struct dNdetaDrawer
       else           dd->SetMarkerColor(color);
       dd->SetMarkerStyle(style);
     }
+    if (sysErrSeen) {
+      // Add entry for systematic errors 
+      TLegendEntry* d0 = l->AddEntry("d0", Form("%4.1f%% Systematic error", 
+						100*fFwdSysErr), "f");
+      d0->SetLineColor(kGray);
+      d0->SetMarkerColor(kGray);
+      d0->SetFillColor(kGray);
+      d0->SetFillStyle(3001);
+      d0->SetMarkerStyle(0);
+      d0->SetLineWidth(0);
+      i++;
+    }
+    if (!fCentAxis && i % 2 == 1)  {
+      // To make sure the 'data' and 'mirrored' entries are on a line
+      // by themselves 
+      TLegendEntry* dd = l->AddEntry("dd", "   ", "");
+      dd->SetTextSize(0);
+      dd->SetFillStyle(0);
+      dd->SetFillColor(0);
+      dd->SetLineWidth(0);
+      dd->SetLineColor(0);
+      dd->SetMarkerSize(0);
+    }
+    // Add entry for 'data'
     TLegendEntry* d1 = l->AddEntry("d1", "Data", "lp");
     d1->SetLineColor(kBlack);
     d1->SetMarkerColor(kBlack);
     d1->SetMarkerStyle(20);
+    // Add entry for 'mirrored data'
     TLegendEntry* d2 = l->AddEntry("d2", "Mirrored data", "lp");
     d2->SetLineColor(kBlack);
     d2->SetMarkerColor(kBlack);
@@ -774,8 +848,8 @@ struct dNdetaDrawer
     p1->SetBorderSize(0);
     p1->SetBorderMode(0);
     p1->SetBottomMargin(yd > 0.001 ? 0.001 : 0.1);
-    p1->SetRightMargin(0.05);
-    p1->SetGridx();
+    p1->SetRightMargin(0.03);
+    if (fShowLeftRight || fShowRatios) p1->SetGridx();
     p1->SetTicks(1,1);
     p1->SetNumber(1);
     p1->Draw();
@@ -785,8 +859,9 @@ struct dNdetaDrawer
     fResults->SetMaximum(1.15*max);
     fResults->SetMinimum(yd > 0.00001 ? -0.1 : 0);
 
-    Double_t s = (yd > 0.00001 ? 1/(1-yd)/1.7 : 1.2);
-    FixAxis(fResults, s, "#frac{1}{N} #frac{dN_{ch}}{d#eta}");
+    FixAxis(fResults, (1-yd)*(yd > .001 ? 1 : .9 / 1.2), 
+	    "#font[12]{#frac{1}{N} "
+	    "#frac{dN_{#font[132]{ch}}}{d#font[152]{#eta}}}");
 
     p1->Clear();
     fResults->DrawClone("nostack e1");
@@ -795,7 +870,7 @@ struct dNdetaDrawer
     fRangeParam->fSlave1Pad  = p1;
 
     // Draw other data
-    if (fShowOthers || fShowAlice) {
+    if (fShowOthers != 0) {
       TGraphAsymmErrors* o      = 0;
       TIter              nextG(fOthers->GetListOfGraphs());
       while ((o = static_cast<TGraphAsymmErrors*>(nextG())))
@@ -881,7 +956,7 @@ struct dNdetaDrawer
 	logo++;
 	continue;
       }
-      TPad* pad = new TPad("logo", "logo", .12, .65, .25, .85, 0, 0, 0);
+      TPad* pad = new TPad("logo", "logo", .12, .7, .25, .9, 0, 0, 0);
       pad->SetFillStyle(0);
       pad->Draw();
       pad->cd();
@@ -902,14 +977,14 @@ struct dNdetaDrawer
    */
   void PlotRatios(Double_t max, Double_t y1, Double_t y2) 
   {
-    if (!fShowRatios) return;
+    if (fShowRatios == 0) return;
 
     bool isBottom = (y1 < 0.0001);
     Double_t yd = y2 - y1;
     // Make a sub-pad for the result itself
     TPad* p2 = new TPad("p2", "p2", 0, y1, 1.0, y2, 0, 0, 0);
     p2->SetTopMargin(0.001);
-    p2->SetRightMargin(0.05);
+    p2->SetRightMargin(0.03);
     p2->SetBottomMargin(isBottom ? 1/yd * 0.07 : 0.0001);
     p2->SetGridx();
     p2->SetTicks(1,1);
@@ -918,7 +993,7 @@ struct dNdetaDrawer
     p2->cd();
 
     // Fix up axis
-    FixAxis(fRatios, 1/yd/1.7, "Ratios", 7);
+    FixAxis(fRatios, yd, "Ratios", 7);
 
     fRatios->SetMaximum(1+TMath::Max(.22,1.05*max));
     fRatios->SetMinimum(1-TMath::Max(.32,1.05*max));
@@ -981,7 +1056,7 @@ struct dNdetaDrawer
     // Make a sub-pad for the result itself
     TPad* p3 = new TPad("p3", "p3", 0, y1, 1.0, y2, 0, 0, 0);
     p3->SetTopMargin(0.001);
-    p3->SetRightMargin(0.05);
+    p3->SetRightMargin(0.03);
     p3->SetBottomMargin(isBottom ? 1/yd * 0.07 : 0.0001);
     p3->SetGridx();
     p3->SetTicks(1,1);
@@ -990,7 +1065,7 @@ struct dNdetaDrawer
     p3->cd();
 
     // Fix up axis
-    FixAxis(fLeftRight, 1/yd/1.7, "Right/Left", 4);
+    FixAxis(fLeftRight, yd, "Right/Left", 4);
 
     fLeftRight->SetMaximum(1+TMath::Max(.12,1.05*max));
     fLeftRight->SetMinimum(1-TMath::Max(.15,1.05*max));
@@ -1550,7 +1625,7 @@ struct dNdetaDrawer
    * @param force  Whether to draw the stack first or not
    * @param ynDiv  Divisions on Y axis
    */
-  void FixAxis(THStack* stack, Double_t s, const char* ytitle,
+  void FixAxis(THStack* stack, Double_t yd, const char* ytitle,
                Int_t ynDiv=210, Bool_t force=true)
   {
     if (!stack) { 
@@ -1564,17 +1639,25 @@ struct dNdetaDrawer
       Warning("FixAxis", "Stack %s has no histogram", stack->GetName());
       return;
     }
-    
-    h->SetXTitle("#eta");
+    Double_t s = 1/yd/1.2;
+    // Info("FixAxis", "for %s, s=1/%f=%f", stack->GetName(), yd, s);
+
+    h->SetXTitle("#font[152]{#eta}");
     h->SetYTitle(ytitle);
     TAxis* xa = h->GetXaxis();
     TAxis* ya = h->GetYaxis();
+
+    // Int_t   npixels = 20
+    // Float_t dy = gPad->AbsPixeltoY(0) - gPad->AbsPixeltoY(npixels);
+    // Float_t ts = dy/(gPad->GetY2() - gPad->GetY1());
+
     if (xa) {
-      xa->SetTitle("#eta");
+      // xa->SetTitle(h->GetXTitle());
       // xa->SetTicks("+-");
       xa->SetTitleSize(s*xa->GetTitleSize());
       xa->SetLabelSize(s*xa->GetLabelSize());
       xa->SetTickLength(s*xa->GetTickLength());
+      // xa->SetTitleOffset(xa->GetTitleOffset()/s);
 
       if (stack != fResults) {
 	TAxis* rxa = fResults->GetXaxis();
@@ -1582,7 +1665,7 @@ struct dNdetaDrawer
       }
     }
     if (ya) {
-      ya->SetTitle(ytitle);
+      // ya->SetTitle(h->GetYTitle());
       ya->SetDecimals();
       // ya->SetTicks("+-");
       ya->SetNdivisions(ynDiv);
@@ -1591,12 +1674,154 @@ struct dNdetaDrawer
       ya->SetLabelSize(s*ya->GetLabelSize());
     }
   }
+  //__________________________________________________________________
+  /** 
+   * Merge two histograms into one 
+   * 
+   * @param cen    Central part
+   * @param fwd    Forward part
+   * @param xlow   On return, lower eta bound
+   * @param xhigh  On return, upper eta bound
+   * 
+   * @return Newly allocated histogram or null
+   */
+  TH1* 
+  Merge(const TH1* cen, const TH1* fwd, Double_t& xlow, Double_t& xhigh)
+  {
+    TH1* tmp = static_cast<TH1*>(fwd->Clone("tmp"));
+    TString name(fwd->GetName());
+    name.ReplaceAll("Forward", "Merged");
+    tmp->SetName(name);
+
+    // tmp->SetMarkerStyle(28);
+    // tmp->SetMarkerColor(kBlack);
+    tmp->SetDirectory(0);
+    xlow  = 100;
+    xhigh = -100;
+    for (Int_t i = 1; i <= tmp->GetNbinsX(); i++) {
+      Double_t cc = cen->GetBinContent(i);
+      Double_t cf = fwd->GetBinContent(i);
+      Double_t ec = cen->GetBinError(i);
+      Double_t ef = fwd->GetBinError(i);
+      Double_t nc = cf;
+      Double_t ne = ef;
+      if (cc < 0.001 && cf < 0.01) continue;
+      xlow  = TMath::Min(tmp->GetXaxis()->GetBinLowEdge(i),xlow);
+      xhigh = TMath::Max(tmp->GetXaxis()->GetBinUpEdge(i),xhigh);
+      if (cc > 0.001) {
+	nc = cc;
+	ne = ec;
+	if (cf > 0.001) {
+	  nc  = (cf + cc) / 2;
+	  ne  = TMath::Sqrt(ec*ec + ef*ef);
+	}
+      }
+      tmp->SetBinContent(i, nc);
+      tmp->SetBinError(i, ne);
+    }
+    return tmp;
+  }
+  //____________________________________________________________________
+  /** 
+   * Fit  @f$g(x;A_1,A_2,\sigma_1,\sigma_2)@f$ to histogram data 
+   * 
+   * @param tmp    Histogram
+   * @param xlow   Lower x bound
+   * @param xhigh  Upper x bound 
+   *
+   * @return Fitted function 
+   */
+  TF1* 
+  FitMerged(TH1* tmp, Double_t xlow, Double_t xhigh)
+  {
+    TF1* tmpf  = new TF1("tmpf", "gaus", xlow, xhigh);
+    tmp->Fit(tmpf, "NQ", "");
+    tmp->SetDirectory(0);
+
+    TF1* fit = new TF1("f", myFunc, xlow, xhigh, 4);
+    fit->SetParNames("a_{1}", "a_{2}", "#sigma_{1}", "#sigma_{2}");
+    fit->SetParameters(tmpf->GetParameter(0), 
+		       .2, 
+		       tmpf->GetParameter(2), 
+		       tmpf->GetParameter(2)/4);
+    fit->SetParLimits(3, 0, 100);
+    fit->SetParLimits(4, 0, 100);
+    tmp->Fit(fit,"0W","");
+
+    delete tmpf;
+    return fit;
+  }
+  //____________________________________________________________________
+  /** 
+   * Make band of systematic errors 
+   * 
+   * @param tmp Histogram
+   * @param fit Fit 
+   */
+  void
+  MakeSysError(TH1* tmp, TH1* cen, TH1* fwd, TF1* fit)
+  {
+    for (Int_t i = 1; i <= tmp->GetNbinsX(); i++) {
+      Double_t tc = tmp->GetBinContent(i);
+      if (tc < 0.01) continue;
+      Double_t fc = fwd->GetBinContent(i);
+      Double_t cc = cen->GetBinContent(i);
+      Double_t sysErr = fFwdSysErr;
+      if (cc > .01 && fc > 0.01) 
+	sysErr = (fFwdSysErr+fCenSysErr) / 2;
+      else if (cc > .01) 
+	sysErr = fCenSysErr;
+      Double_t x = tmp->GetXaxis()->GetBinCenter(i);
+      Double_t y = fit->Eval(x);
+      tmp->SetBinContent(i, y);
+      tmp->SetBinError(i,sysErr*y);
+    }
+    TString name(tmp->GetName());
+    name.ReplaceAll("Merged", "SysError");
+    tmp->SetName(name);
+    tmp->SetFillColor(kGray);
+    tmp->SetFillStyle(3001);
+    tmp->SetMarkerStyle(0);
+    tmp->SetLineWidth(0);
+  }
+  void CorrectForward(TH1* h) const
+  {
+    if (!fRemoveOuters) return;
+    
+    for (Int_t i = 1; i <= h->GetNbinsX(); i++) { 
+      Double_t eta = h->GetBinCenter(i);
+      if (TMath::Abs(eta) < 2.3) { 
+	h->SetBinContent(i, 0);
+	h->SetBinError(i, 0);
+      }
+    }
+  }
+  void CorrectCentral(TH1* h) const 
+  {
+    if (fClusterScale.IsNull()) return;
+    TString t(h->GetTitle());
+    Info("CorrectCentral", "Replacing Central with Tracklets in %s", t.Data());
+    t.ReplaceAll("Central", "Tracklets");
+    h->SetTitle(t);
+
+    TF1* cf = new TF1("clusterScale", fClusterScale);
+    for (Int_t i = 1; i <= h->GetNbinsX(); i++) { 
+      Double_t eta = h->GetBinCenter(i);
+      Double_t f   = cf->Eval(eta);
+      Double_t c   = h->GetBinContent(i);
+      if (f < .1) f = 1;
+      h->SetBinContent(i, c / f);
+    }
+    delete cf;
+  }
+    
+	      
   /* @} */
 
 
 
   //__________________________________________________________________
-  Bool_t       fShowOthers;   // Show other data
+  UShort_t     fShowOthers;   // Show other data
   Bool_t       fShowAlice;    // Show ALICE published data
   Bool_t       fShowRatios;   // Show ratios 
   Bool_t       fShowLeftRight;// Show asymmetry 
@@ -1617,8 +1842,35 @@ struct dNdetaDrawer
   TH1*         fTriggers;     // Number of triggers
   TH1*         fTruth;        // Pointer to truth 
   RangeParam*  fRangeParam;   // Parameter object for range zoom 
-  
+  Double_t     fFwdSysErr;    // Systematic error in forward range
+  Double_t     fCenSysErr;    // Systematic error in central range 
+  Bool_t       fRemoveOuters; // Whether to remove outers
+  TString      fClusterScale; // Scaling of clusters to tracklets
 };
+
+//____________________________________________________________________
+/** 
+ * Function to calculate 
+ * @f[
+ *  g(x;A_1,A_2,\sigma_1,\sigma_2) = 
+ *       A_1\left(\frac{1}{2\pi\sigma_1}e^{(x/\sigma_1)^2} - 
+ *           A_2\frac{1}{2\pi\sigma_2}e^{(x/\sigma_2)^2}\right)
+ * @f]
+ * 
+ * @param xp Pointer to x array
+ * @param pp Pointer to parameter array 
+ * 
+ * @return @f$g(x;A_1,A_2,\sigma_1,\sigma_2)@f$
+ */
+Double_t myFunc(Double_t* xp, Double_t* pp)
+{
+  Double_t x  = xp[0];
+  Double_t a1 = pp[0];
+  Double_t a2 = pp[1];
+  Double_t s1 = pp[2];
+  Double_t s2 = pp[3];
+  return a1*(TMath::Gaus(x, 0, s1) - a2 * TMath::Gaus(x, 0, s2));
+}
 
 //=== Stuff for auto zooming =========================================
 void UpdateRange(dNdetaDrawer::RangeParam* p)
@@ -1694,10 +1946,10 @@ void RangeExec(dNdetaDrawer::RangeParam* p)
  */
 void
 DrawdNdeta(const char* filename="forward_dndeta.root", 
-	   Int_t       flags=0xf,
 	   const char* title="",
 	   UShort_t    rebin=5, 
-	   Bool_t      cutEdges=false,
+	   UShort_t    others=0x7,
+	   UShort_t    flags=0x7,
 	   UShort_t    sNN=0, 
 	   UShort_t    sys=0,
 	   UShort_t    trg=0,
@@ -1707,13 +1959,15 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   dNdetaDrawer* pd = new dNdetaDrawer;
   dNdetaDrawer& d = *pd;
   d.SetRebin(rebin);
-  d.SetCutEdges(cutEdges);
   d.SetTitle(title);
-  d.SetShowOthers(flags & 0x1);
-  d.SetShowAlice(flags & 0x2);
-  d.SetShowRatios(flags & 0x4);
-  d.SetShowLeftRight(flags & 0x8);
-  d.SetShowRings(flags & 0x10);
+  d.SetShowOthers(others);
+  d.SetShowRatios(flags & 0x1);
+  d.SetShowLeftRight(flags & 0x2);
+  d.SetForwardSysError(flags & 0x4 ? 0.076 : 0);
+  d.SetShowRings(flags & 0x8);
+  d.SetCutEdges(flags & 0x10);
+  // d.fRemoveOuters = (flags & 0x20);
+  // d.fClusterScale = "1.06 -0.003*x +0.0119*x*x";
   // Do the below if your input data does not contain these settings 
   if (sNN > 0) d.SetSNN(sNN);     // Collision energy per nucleon pair (GeV)
   if (sys > 0) d.SetSys(sys);     // Collision system (1:pp, 2:PbPB)

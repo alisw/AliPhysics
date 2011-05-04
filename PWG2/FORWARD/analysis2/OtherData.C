@@ -713,6 +713,7 @@ TGraphAsymmErrors* AliceCentralInel900()
  */
 TGraphAsymmErrors* AliceCentralInelGt900()
 {  
+#if 0
   // INEL>0 - p7741_d4x1y1 - Eur.Phys.J.C68:345-354,2010. 
   double x[] = { -0.9, -0.7, -0.5, -0.3, -0.1, 0.1, 0.3, 0.5, 0.7, 
     0.9 };
@@ -740,10 +741,43 @@ TGraphAsymmErrors* AliceCentralInelGt900()
   }
 
   TGraphAsymmErrors* g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
+#else
+  // These are from JFGO
+  TGraphAsymmErrors *g = new TGraphAsymmErrors(15);
+  g->SetPoint(0,-1.5,4.12575);
+  g->SetPointError(0,0.1,0.1,0.0742967,0.0814571);
+  g->SetPoint(1,-1.3,3.91209);
+  g->SetPointError(1,0.1,0.1,0.0697701,0.0766199);
+  g->SetPoint(2,-1.1,3.98377);
+  g->SetPointError(2,0.1,0.1,0.0704503,0.0774795);
+  g->SetPoint(3,-0.9,4.00035);
+  g->SetPointError(3,0.1,0.1,0.0702388,0.0773433);
+  g->SetPoint(4,-0.7,3.87228);
+  g->SetPointError(4,0.1,0.1,0.067597,0.0745103);
+  g->SetPoint(5,-0.5,3.79613);
+  g->SetPointError(5,0.1,0.1,0.0659771,0.0727816);
+  g->SetPoint(6,-0.3,3.70489);
+  g->SetPointError(6,0.1,0.1,0.0642016,0.0708603);
+  g->SetPoint(7,-0.1,3.67423);
+  g->SetPointError(7,0.1,0.1,0.0635759,0.0701884);
+  g->SetPoint(8,0.1,3.72765);
+  g->SetPointError(8,0.1,0.1,0.0645004,0.071209);
+  g->SetPoint(9,0.3,3.72171);
+  g->SetPointError(9,0.1,0.1,0.064493,0.071182);
+  g->SetPoint(10,0.5,3.77428);
+  g->SetPointError(10,0.1,0.1,0.0655974,0.0723627);
+  g->SetPoint(11,0.7,3.91704);
+  g->SetPointError(11,0.1,0.1,0.0683783,0.0753716);
+  g->SetPoint(12,0.9,4.00674);
+  g->SetPointError(12,0.1,0.1,0.0703511,0.0774669);
+  g->SetPoint(13,1.1,3.97948);
+  g->SetPointError(13,0.1,0.1,0.0703744,0.077396);
+  g->SetPoint(14,1.3,3.99165);
+  g->SetPointError(14,0.1,0.1,0.0711888,0.078178);
+#endif
   SetGraphAttributes(g, INELGt0, ALICE, false, "alice_inelgt900", 
 		     "ALICE INEL>0 (publ.)");
   return g;
-
 }
 
 //____________________________________________________________________
@@ -759,6 +793,7 @@ TGraphAsymmErrors* AliceCentralInelGt900()
  */
 TGraphAsymmErrors* AliceCentralInelGt2360()
 {  
+#if 0
   // INEL>0 - p7741_d5x1y1 - Eur.Phys.J.C68:345-354,2010. 
   double x[] = { -0.9, -0.7, -0.5, -0.3, -0.1, 0.1, 0.3, 0.5, 0.7, 0.9 };
   double exm[] = { 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1 };
@@ -782,6 +817,41 @@ TGraphAsymmErrors* AliceCentralInelGt2360()
   }
 
   TGraphAsymmErrors* g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
+#else 
+  // These are from JFGO
+  TGraphAsymmErrors* g = new TGraphAsymmErrors(15);
+  g->SetPoint(0,-1.5,4.79047);
+  g->SetPointError(0,0.1,0.1,0.0844278,0.109947);
+  g->SetPoint(1,-1.3,4.91068);
+  g->SetPointError(1,0.1,0.1,0.0856751,0.112038);
+  g->SetPoint(2,-1.1,4.87386);
+  g->SetPointError(2,0.1,0.1,0.0842846,0.110628);
+  g->SetPoint(3,-0.9,4.91365);
+  g->SetPointError(3,0.1,0.1,0.084339,0.111049);
+  g->SetPoint(4,-0.7,4.7601);
+  g->SetPointError(4,0.1,0.1,0.0812087,0.107203);
+  g->SetPoint(5,-0.5,4.63355);
+  g->SetPointError(5,0.1,0.1,0.078687,0.104079);
+  g->SetPoint(6,-0.3,4.63885);
+  g->SetPointError(6,0.1,0.1,0.0785337,0.104014);
+  g->SetPoint(7,-0.1,4.55439);
+  g->SetPointError(7,0.1,0.1,0.0769842,0.10203);
+  g->SetPoint(8,0.1,4.55087);
+  g->SetPointError(8,0.1,0.1,0.0769246,0.101951);
+  g->SetPoint(9,0.3,4.64118);
+  g->SetPointError(9,0.1,0.1,0.0785732,0.104066);
+  g->SetPoint(10,0.5,4.66172);
+  g->SetPointError(10,0.1,0.1,0.0791652,0.104711);
+  g->SetPoint(11,0.7,4.81871);
+  g->SetPointError(11,0.1,0.1,0.0822086,0.108523);
+  g->SetPoint(12,0.9,4.88193);
+  g->SetPointError(12,0.1,0.1,0.0837944,0.110332);
+  g->SetPoint(13,1.1,4.89068);
+  g->SetPointError(13,0.1,0.1,0.0845754,0.111009);
+  g->SetPoint(14,1.3,5.05663);
+  g->SetPointError(14,0.1,0.1,0.0882216,0.115368);
+#endif
+
   SetGraphAttributes(g, INELGt0, ALICE, false, "alice_inelgt2360", 
 		     "ALICE INEL>0 (publ.)");
   return g;
@@ -800,6 +870,7 @@ TGraphAsymmErrors* AliceCentralInelGt2360()
  */
 TGraphAsymmErrors* AliceCentralInelGt7000()
 {  
+#if 0
   // INEL>0 - p7741_d6x1y1 - Eur.Phys.J.C68:345-354,2010. 
 // Plot: p7741_d6x1y1
   double x[] = { -0.9, -0.7, -0.5, -0.3, -0.1, 0.1, 0.3, 0.5, 0.7, 0.9 };
@@ -824,6 +895,40 @@ TGraphAsymmErrors* AliceCentralInelGt7000()
   }
 
   TGraphAsymmErrors* g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
+#else 
+  // These are from JFGO
+  TGraphAsymmErrors* g = new TGraphAsymmErrors(15);
+  g->SetPoint(0,-1.5,6.28573);
+  g->SetPointError(0,0.1,0.1,0.125928,0.215392);
+  g->SetPoint(1,-1.3,6.25573);
+  g->SetPointError(1,0.1,0.1,0.124352,0.213795);
+  g->SetPoint(2,-1.1,6.28779);
+  g->SetPointError(2,0.1,0.1,0.124143,0.214399);
+  g->SetPoint(3,-0.9,6.21881);
+  g->SetPointError(3,0.1,0.1,0.122079,0.211642);
+  g->SetPoint(4,-0.7,6.0728);
+  g->SetPointError(4,0.1,0.1,0.118661,0.206355);
+  g->SetPoint(5,-0.5,6.011);
+  g->SetPointError(5,0.1,0.1,0.117043,0.204019);
+  g->SetPoint(6,-0.3,5.84071);
+  g->SetPointError(6,0.1,0.1,0.11346,0.198086);
+  g->SetPoint(7,-0.1,5.8532);
+  g->SetPointError(7,0.1,0.1,0.113569,0.198433);
+  g->SetPoint(8,0.1,5.84811);
+  g->SetPointError(8,0.1,0.1,0.11347,0.198261);
+  g->SetPoint(9,0.3,5.91022);
+  g->SetPointError(9,0.1,0.1,0.11481,0.200444);
+  g->SetPoint(10,0.5,6.00649);
+  g->SetPointError(10,0.1,0.1,0.116955,0.203866);
+  g->SetPoint(11,0.7,6.17115);
+  g->SetPointError(11,0.1,0.1,0.120583,0.209697);
+  g->SetPoint(12,0.9,6.2645);
+  g->SetPointError(12,0.1,0.1,0.122976,0.213197);
+  g->SetPoint(13,1.1,6.36448);
+  g->SetPointError(13,0.1,0.1,0.125657,0.217014);
+  g->SetPoint(14,1.3,6.39489);
+  g->SetPointError(14,0.1,0.1,0.127118,0.218551);
+#endif
   SetGraphAttributes(g, INELGt0, ALICE, false, "alice_inelgt7000", 
 		     "ALICE INEL>0 (publ.)");
   return g;
@@ -1061,6 +1166,83 @@ TGraphAsymmErrors* CMSNsd7000()
 }
 
 //____________________________________________________________________
+TGraphAsymmErrors*
+GetSingle(UShort_t which, 
+	  UShort_t sys, 
+	  UShort_t energy, 
+	  UShort_t type=0x1, 
+	  UShort_t centLow=0, 
+	  UShort_t centHigh=0) 
+{
+  TGraphAsymmErrors* ret = 0;
+  if (sys == 1) { 
+    if (TMath::Abs(energy-900) < 10) {
+      switch (type) { 
+      case 1: // INEL 
+	switch (which) { 
+	case PYTHIA: ret = Pythia900INEL(); break;
+	case UA5:    ret = UA5Inel(false);  break;
+	case UA5+10: ret = UA5Inel(true);   break;
+	case ALICE:  ret = AliceCentralInel900(); break;
+	}      
+	break;
+      case 2: // INEL>0
+	switch (which) { 
+	case ALICE: ret = AliceCentralInelGt900(); break;
+	}
+	break;
+      case 4:  // NSD 
+	switch (which) { 
+	case PYTHIA: ret = Pythia900NSD(); break;
+	case UA5:    ret = UA5Nsd(false);  break;
+	case UA5+10: ret = UA5Nsd(true);   break;
+	case ALICE:  ret = AliceCentralNsd900(); break;
+	case CMS:    ret = CMSNsd900();          break;
+	}
+	break;
+      } // type 
+    }
+    else if (TMath::Abs(energy-2360) < 10) {
+      switch (type) { 
+      case 1: // INEL 
+	switch (which) { 
+	case ALICE: ret = AliceCentralInel2360(); break;
+	}
+	break;
+      case 2: // INEL > 0
+	switch (which) {
+	case ALICE: ret = AliceCentralInelGt2360(); break;
+	}
+	break;
+      case 4: // NSD 
+	switch (which) { 
+	case ALICE: ret = AliceCentralNsd2360(); break;
+	case CMS:   ret = CMSNsd2360(); break;
+	}
+	break;
+      }
+    }
+    else if (TMath::Abs(energy-7000) < 10) {
+      switch (type) { 
+      case 1: ret = 0;  break;
+      case 2: // INEL > 0
+	switch (which) { 
+	case ALICE: ret = AliceCentralInelGt7000(); break;
+	}
+	break;
+      case 4: // NSD 
+	switch (which) { 
+	case CMS: ret = CMSNsd7000(); break;
+	}
+	break;
+      }
+    }
+  }
+  return ret;
+}
+
+	  
+//____________________________________________________________________
 /** 
  * Get a multi graph of data for a given energy and trigger type 
  * 
@@ -1084,8 +1266,7 @@ GetData(UShort_t sys,
 	UShort_t type=0x1, 
 	UShort_t centLow=0, 
 	UShort_t centHigh=0, 
-	bool     aliceOnly=false,
-	bool     nomc=false)
+	UShort_t which=0x7)
 {
   TMultiGraph* mp = new TMultiGraph(Form("dndeta_%dGeV_%d_%03d_%03d", 
 					 energy, type, centLow, centHigh),"");
@@ -1093,89 +1274,74 @@ GetData(UShort_t sys,
   TString en;
   TString sn;
   TString cn;
-  if (sys == 1) { 
-    sn = ", pp(p#bar{p})";
-    if (energy < 1000) 
-      en = Form(", #sqrt{s}=%dGeV", energy);
+  bool    ua5    = (which & (1 << UA5));      // 0x1
+  bool    cms    = (which & (1 << CMS));      // 0x2
+  bool    alice  = (which & (1 << ALICE));    // 0x4
+  bool    pythia = (which & (1 << PYTHIA));   // 0x8
+  
+  en.Append(Form(", #sqrt{s%s}=", sys == 1 ? "" : "_{NN}"));
+  if (energy < 1000) 
+    en.Append(Form("%dGeV", energy));
+  else {
+    if (energy % 1000 == 0) 
+      en.Append(Form("%dTeV", energy/1000));
     else 
-      en = Form(", #sqrt{s}=%f4.2TeV", float(energy)/1000);
+      en.Append(Form("%4.2fTeV", float(energy)/1000));
+  }
+
+  if (sys == 1) { 
     if (!(type & 0x7)) 
       Warning("GetData", "Unknown trigger mask 0x%x", type);
 
-    if (TMath::Abs(energy-900) < 10) {
-      if (type & 0x1) { 
-	tn.Append(" INEL");
-	if (!aliceOnly && !nomc) mp->Add(Pythia900INEL());
-	if (!aliceOnly) mp->Add(UA5Inel(false));
-	if (!aliceOnly) mp->Add(UA5Inel(true));
-	mp->Add(AliceCentralInel900());
-      }      
-      if (type & 0x4) { 
-	tn.Append(" NSD");
-	if (!aliceOnly && !nomc) mp->Add(Pythia900NSD());
-	if (!aliceOnly) mp->Add(UA5Nsd(false));
-	if (!aliceOnly) mp->Add(UA5Nsd(true));
-	mp->Add(AliceCentralNsd900());
-	if (!aliceOnly) mp->Add(CMSNsd900());
-      }
-      if (type & 0x2) { 
-	tn.Append(" INEL>0");
-	mp->Add(AliceCentralInelGt900());
-      }
-    }
-    else if (TMath::Abs(energy-2360) < 10) {
-      if (type & 0x1) { 
-	tn.Append(" INEL");
-	mp->Add(AliceCentralInel2360());
-      }
-      if (type & 0x4) { 
-	tn.Append(" NSD");
-	mp->Add(AliceCentralNsd2360());
-	if (!aliceOnly) mp->Add(CMSNsd2360());
-      }
-      if (type & 0x2) { 
-	tn.Append(" INEL>0");
-	mp->Add(AliceCentralInelGt2360());
-      }
-    }
-    else if (TMath::Abs(energy-7000) < 10) {
-      if (type & 0x1) { 
-	tn.Append(" INEL");
-      }
-      if (type & 0x4) { 
-	tn.Append(" NSD");
-	if (!aliceOnly) mp->Add(CMSNsd7000());
-      }
-      if (type & 0x2) { 
-	tn.Append(" INEL>0");
-	mp->Add(AliceCentralInelGt7000());
-      }
-    }
-#if 0
-    else 
+    if (!(TMath::Abs(energy-900) < 10 || 
+	  TMath::Abs(energy-2360) < 10 || 
+	  TMath::Abs(energy-7000) < 10)) {
       Warning("GetData", "No other results for sys=%d, energy=%d",
 	      sys, energy);
-#endif
+      return 0;
+    }
+    
+    sn = "pp";
+
+    if (type & 0x1) tn.Append("INEL");
+    if (type & 0x2) { if (!tn.IsNull()) tn.Append("|"); tn.Append("INEL>0"); }
+    if (type & 0x4) { if (!tn.IsNull()) tn.Append("|"); tn.Append("NSD"); }
+
+    Bool_t seenUA5 = false;
+    for (Int_t i = 0; i < 3; i++) { 
+      UShort_t mask = (1 << i);
+      if ((type & mask) == 0) continue;
+      TGraphAsymmErrors* gUAp = (ua5   ? GetSingle(UA5,   sys,energy,mask): 0);
+      TGraphAsymmErrors* gUAn = (ua5   ? GetSingle(UA5+10,sys,energy,mask): 0);
+      TGraphAsymmErrors* gCMS = (cms   ? GetSingle(CMS,   sys,energy,mask): 0);
+      TGraphAsymmErrors* gALI = (alice ? GetSingle(ALICE, sys,energy,mask): 0);
+      TGraphAsymmErrors* gPYT = (pythia? GetSingle(PYTHIA,sys,energy,mask): 0);
+      if (gUAp) mp->Add(gUAp);
+      if (gUAn) mp->Add(gUAn);
+      if (gCMS) mp->Add(gCMS);
+      if (gALI) mp->Add(gALI);
+      if (gPYT) mp->Add(gPYT);
+      if (gUAp || gUAn) seenUA5 = true;
+    }
+    if (seenUA5) sn.Append("(p#bar{p})");
   }
   else if (sys == 2) { 
     // Nothing for PbPb so far 
     cn = Form(", %d%%-%d%% central", centLow, centHigh);
-    sn = ", PbPb";
-    if (energy < 1000) 
-      en = Form(", #sqrt{s_{NN}}=%dGeV", energy);
-    else 
-      en = Form(", #sqrt{s_{NN}}=%f4.2TeV", float(energy)/1000);
+    sn = "PbPb";
     // Warning("GetData", "No other data for PbPb yet");
   }
   else 
     Warning("GetData", "Unknown system %d", sys);
-  TString tit(Form("1/N dN_{ch}/d#eta%s%s%s%s", 
-		   sn.Data(), en.Data(), tn.Data(), cn.Data()));
-  mp->SetTitle(tit.Data());
+
   if (!mp->GetListOfGraphs() || mp->GetListOfGraphs()->GetEntries() <= 0) {
     delete mp;
     mp = 0;
+    return 0;
   }
+  TString tit(Form("%s%s, %s%s", 
+		   sn.Data(), en.Data(), tn.Data(), cn.Data()));
+  mp->SetTitle(tit.Data());
   return mp;
 }
 
@@ -1192,19 +1358,19 @@ GetData(UShort_t sys,
  *   - 0x4 NSD 
  * @param centLow   Low centrality cut (only for PbPB)
  * @param centHigh  High centrality cut (only for PbPB)
- * @param aliceOnly Only return other ALICE data
+ * @param alice Only return other ALICE data
  * 
  * @ingroup pwg2_forward_otherdata
  */
 void
 OtherData(UShort_t sys=1, 
-	      UShort_t energy=900, 
-	      UShort_t type=0x1, 
-	      UShort_t centLow=0, 
-	      UShort_t centHigh=5, 
-	      bool     aliceOnly=false)
+	  UShort_t energy=900, 
+	  UShort_t type=0x1, 
+	  UShort_t centLow=0, 
+	  UShort_t centHigh=5, 
+	  UShort_t which=0x7)
 {
-  TMultiGraph* mp = GetData(sys, energy, type, centLow, centHigh, aliceOnly);
+  TMultiGraph* mp = GetData(sys, energy, type, centLow, centHigh, which);
   if (!mp) return;
 
   gStyle->SetTitleX(0.1);
@@ -1216,28 +1382,38 @@ OtherData(UShort_t sys=1,
   gStyle->SetTitleFillColor(kBlack);
   gStyle->SetTitleFontSize(0.02);
   
-  gStyle->SetOptTitle(1);
+  gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   
   TCanvas* c = new TCanvas("c", "dN/deta", 800, 600);
   c->SetFillColor(0);
   c->SetBorderSize(0);
   c->SetBorderMode(0);
-  c->SetRightMargin(0.05);
-  c->SetTopMargin(0.05);
+  c->SetRightMargin(0.02);
+  c->SetTopMargin(0.02);
   
 
   mp->SetMinimum(0);
   mp->Draw("ap");
-  if (mp->GetXaxis())
+  if (mp->GetXaxis()) {
     mp->GetXaxis()->SetTitle("#eta");
-  if (mp->GetYaxis())
-    mp->GetYaxis()->SetTitle("#frac{1}{N} #frac{dN_{ch}}{#eta}");
-
-  TLegend* l = c->BuildLegend(0.3, 0.15, 0.7, 0.5);
+    mp->GetXaxis()->SetTitleFont(12);
+    mp->GetXaxis()->SetLabelFont(132);
+  }
+  if (mp->GetYaxis()) {
+    mp->GetYaxis()->SetTitle("#frac{1}{N} #frac{dN_{#font[132]{ch}}}{d#eta}");
+    mp->GetYaxis()->SetTitleFont(12);
+    mp->GetYaxis()->SetLabelFont(132);
+  }
+  TLegend* l = c->BuildLegend(0.3, 0.15, 0.7, 0.5, 
+			      mp->GetTitle());
   l->SetFillColor(0);
+  l->SetTextFont(132);
   l->SetBorderSize(0);
-
+  TLegendEntry* h = static_cast<TLegendEntry*>(l->GetListOfPrimitives()->At(0));
+  if (h) { 
+    h->SetTextFont(22);
+  }
   c->cd();
 }
 

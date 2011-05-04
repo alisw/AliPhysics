@@ -1,40 +1,50 @@
 #!/bin/bash 
 
-ana=$ALICE_ROOT/PWG2/FORWARD/analysis2
-esddir="."
-nev=-1
-rebin=1
-vzmin=-10
-vzmax=10
+# General options 
 batch=0
 proof=0
-mc=0
-type=INEL
-cms=900
-hhd=1
-comp=1
 cent=0
-tit=
-others=0
-published=1
-ratios=1
-asymm=1 
-scheme="full"
 dopass1=0
 dopass2=0
 dopass3=0
+max_rotate=10
+prog=aliroot
+
+# Input (data and scripts)
+ana=$ALICE_ROOT/PWG2/FORWARD/analysis2
+esddir="."
+nev=-1
+
+# Pass 1 options 
+mc=0
+scheme="full"
+
+# Pass 2 event selection
+vzmin=-10
+vzmax=10
+type=INEL
+mcfilename="none"
+
+# Pass 3 visualisation options 
+rebin=1
+tit=
+others=
+ratios=1
+asymm=1 
+rings=0
+syserr=1
+
+# Derived variables 
 pass1=MakeAOD.C
 pass2=MakedNdeta.C
-pass3=DrawdNdeta.C++g
+pass3=DrawdNdeta.C++
 output1=forward.root
 output2=forward_dndeta.root
 outputs1="${output1} AliAOD.root event_stat.root EventStat_temp.root"
 outputs2="${output2}"
 gdb_script=$ALICE_ROOT/PWG2/FORWARD/analysis2/gdb_cmds
-max_rotate=10
 name=`date +analysis%Y%m%d_%H%M`
 pass2dir=./
-mcfilename="none"
 
 #_____________________________________________________________________
 # Print usage
@@ -46,30 +56,37 @@ Usage: $0 [OPTIONS]
 Do Pass1 and Pass2 on ESD files in current directory.  
 
 Options:
+   General options:
 	-h,--help		This help                  
+	-b,--batch              Do batch processing         ($batch)
+	-P,--proof NWORKERS	Run in PROOF(Lite) mode     ($proof)
+	-1,--pass1 		Run pass 1 (AOD)            ($dopass1)
+	-2,--pass2		Run pass 2 (Hists)          ($dopass2)
+	-3,--pass3		Run pass 3 (Vizualisation)  ($dopass3)
 	-n,--events N		Number of events            ($nev)
-	-1,--pass1 		Run pass 1, only AOD        ($dopass1)
-	-2,--pass2		Run pass 2, only Hists      ($dopass2)
-	-3,--pass3		Draw results                ($dopass3)
+	-g,--gdb		Run in GDB mode    	    ($gdb)
+	-N,--name STRING        Name of analysis            ($name)
+	-E,--eloss		Run energy loss script      
+	-A,--script-dir		Script directory            ($ana)
+	-a,--program		Program to use		    ($prog)
+   Pass 1 options and event selection
+        -C,--use-centrality     Run centrality task         ($cent)
+	-M,--mc			Run over MC data            ($mc)
+	-I,--input-dir PATH     Path to input ESD data      ($esddir)
+   Pass 2 options 
 	-v,--vz-min CM          Minimum value of vz         ($vzmin)
 	-V,--vz-max CM          Maximum value of vz         ($vzmax)
 	-t,--trigger TYPE       Select trigger TYPE         ($type)
-	-b,--batch              Do batch processing         ($batch)
-	-P,--proof NWORKERS	Run in PROOF(Lite) mode     ($proof)
-	-M,--mc			Run over MC data            ($mc)
-	-g,--gdb		Run in GDB mode    	    ($gdb)
-	-E,--eloss		Run energy loss script      
+	-S,--scheme SCHEME	Normalisation scheme	    ($scheme)
+	-q,--mcfilename		Result of MC analysis	    ($mcfilename)
+   Pass 3 options 
         -r,--rebin              Rebin factor                ($rebin)
-        -C,--use-centrality     Run centrality task         ($cent)
-	-O,--show-older		Show older data	            ($others)
-	-J,--show-published	Show ALICE published data   ($published)
+	-O,--others WHICH	Show other data	            ($others)
+	-J,--show-rings		Show individual rings       ($rings)
 	-R,--show-ratios	Show ratios to other data   ($ratios)
 	-Z,--show-asymmetry	Show asymmetry 		    ($asymm)
-	-S,--scheme SCHEME	Normalisation scheme	    ($scheme)
+	-G,--show-syserror      Show systematic errors      ($syserr)
 	-T,--title STRING       Title on plots              ($tit)
-        -q,--mcfilename         MC dndeta filename          ($mcfilename)
-	-N,--name STRING        Name of analysis            ($name)
-	-I,--input-dir PATH     Path to input ESD data      ($esddir)
 
 TYPE is a comma or space separated list of 
  
@@ -85,6 +102,13 @@ SCHEME is a comma or space separated list of
   SHAPE         Shape correction 
   TRIGGER       Trigger efficiency 
   FULL          Same as EVENTLEVEL,BACKGROUND,SHAPE,TRIGGER
+
+WHICH is a comma or space separated list of 
+
+  UA5		UA5 data (900GeV, ppbar, INEL, NSD)
+  CMS           CMS data 
+  ALICE         ALICE published data
+  PYTHIA        Event generator data 
 
 If NWORKERS is 0, then the analysis will be run in local mode. 
 EOF
@@ -192,11 +216,11 @@ run_pass()
 	EOF
 
     # --- Run AliROOT ------------------------------------------------
-    echo "Running aliroot $opts ${script}${args}"
+    echo "Running ${prog} $opts ${script}${args}"
     if test $isbatch -gt 0 || test $notLast -gt 0 ; then 
-	aliroot ${opts} ${script}"${args}" 2>&1 | tee ${log}
+	${prog} ${opts} ${script}"${args}" 2>&1 | tee ${log}
     else 
-	aliroot ${opts} ${script}"${args}"
+	${prog} ${opts} ${script}"${args}"
     fi
     fail=$?
 
@@ -218,19 +242,18 @@ run_pass()
 # Loop over arguments 
 while test $# -gt 0 ; do
     case $1 in 
-	-h|--help)            usage            ; exit 0;; 
-	-n|--events)          nev=$2           ; shift ;; 
-	-3|--pass3|-D|--draw) dopass3=`toggle $dopass3`   ;; 
-	-2|--pass2|-H|--hist) dopass2=`toggle $dopass2`   ;; 
-	-1|--pass1|-A|--aod)  dopass1=`toggle $dopass1`   ;; 
+	# General options 
+	-h|--help)            usage  ; exit 0		  ;; 
 	-b|--batch)           batch=`toggle $batch`       ;; 
-	-P|--proof)           proof=$2	          ; shift ;; 
-	-C|--use-centrality)  cent=`toggle $cent` ;;
-	-M|--mc)              mc=`toggle $mc`     ;; 
-	-g|--gdb)             gdb=`toggle $gdb`   ;;
-	-r|--rebin)           rebin=$2            ; shift ;;
-	-v|--vz-min)          vzmin=$2            ; shift ;; 
-	-V|--vz-max)          vzmax=$2            ; shift ;; 
+	-P|--proof)           proof=$2	; shift 	  ;; 
+	-1|--pass1|--aod)     dopass1=`toggle $dopass1`   ;; 
+	-2|--pass2|--hist)    dopass2=`toggle $dopass2`   ;; 
+	-3|--pass3|--draw)    dopass3=`toggle $dopass3`   ;; 
+	-n|--events)          nev=$2 ; shift 		  ;;
+	-g|--gdb)             gdb=`toggle $gdb`   	  ;;
+	-N|--name)            name=$2 ; shift 		  ;; 
+	-A|--script-dir)      ana=$2; shift 		  ;;
+	-a|--program)	      prog=$2 ; shift 		  ;;
 	-E|--eloss)           pass1=MakeELossFits.C 
 	                      pass2=scripts/ExtractELoss.C
 	                      pass3=scripts/DrawAnaELoss.C 
@@ -239,19 +262,24 @@ while test $# -gt 0 ; do
 			      outputs2=""
 			      dopass2=1 
 			      ;;
-	-O|--show-older)      others=`toggle $others`	;;
-	-J|--show-published)  published=`toggle $published`	;;
-	-R|--show-ratios)     ratios=`toggle $ratios`	;;
-	-Z|--show-asymmetry)  asymm=`toggle $asymm`	;;
+	# Pass 1 options
+	-C|--use-centrality)  cent=`toggle $cent` 	;;
+	-M|--mc)              mc=`toggle $mc`     	;; 
+	-I|--input-dir)       esddir=$2 ; shift 	;;
+	# Pass 2 options 
+	-v|--vz-min)          vzmin=$2 ; shift 		;; 
+	-V|--vz-max)          vzmax=$2 ; shift 		;; 
 	-S|--scheme)          scheme=`echo $2 | tr ' ' ','` ; shift ;;
-	-T|--title)           tit=$2 ; shift ;;
+	-t|--type)            type=$2  ; shift ;;
 	-q|--mcname)          mcfilename=$2 ; shift ;;
-	-N|--name)            name=$2 ; shift ;; 
-	-I|--input-dir)       esddir=$2 ; shift ;;
-	-t|--type)           
-	    #if test "x$type" = "x" ; then type=$2 ; else type="$type|$2"; fi
-	    type=$2
-	    shift ;;
+	# PAss 3 options 
+	-r|--rebin)           rebin=$2  ; shift 	;;
+	-O|--others)          others=`echo $2 | tr ',' ' '` ; shift	;;
+	-R|--show-ratios)     ratios=`toggle $ratios`	;;
+	-J|--show-rings)      rings=`toggle $rings`	;;
+	-Z|--show-asymmetry)  asymm=`toggle $asymm`	;;
+	-G|--show-syserror)   syserr=`toggle $syserr`	;;
+	-T|--title)           tit=$2 ; shift ;;
 	*) echo "$0: Unknown option '$1'" >> /dev/stderr ; exit 1 ;;
     esac
     shift
@@ -292,14 +320,22 @@ fi
 if test $dopass3 -gt 0 ; then
     tit=`echo $tit | tr ' ' '@'` 
     flags=0
-    if test $others    -gt 0 ; then let flags=$(($flags|0x1)); fi
-    if test $published -gt 0 ; then let flags=$(($flags|0x2)); fi
-    if test $ratios    -gt 0 ; then let flags=$(($flags|0x4)); fi
-    if test $asymm     -gt 0 ; then let flags=$(($flags|0x8)); fi
+    if test $ratios    -gt 0 ; then let flags=$(($flags|0x1)); fi
+    if test $asymm     -gt 0 ; then let flags=$(($flags|0x2)); fi
+    if test $syserr    -gt 0 ; then let flags=$(($flags|0x4)); fi
+    if test $rings     -gt 0 ; then let flags=$(($flags|0x8)); fi
+    which=0
+    others=`echo $others | tr ',' ' ' | tr '[a-z]' '[A-Z]'` 
+    for i in $others ; do 
+	case $i in 
+	    UA5)	let which=$(($which|0x1)) ;; 
+	    CMS)	let which=$(($which|0x2)) ;; 
+	    ALICE)	let which=$(($which|0x4)) ;; 
+	    PYTHIA|MC)	let which=$(($which|0x8)) ;; 
+	esac
+    done 
 
-    echo "Running with Title=$tit"
-
-    args="(\"${pass2dir}${output2}\",${flags},\"$tit\",$rebin)"
+    args="(\"${pass2dir}${output2}\",\"$tit\",$rebin,${which},${flags})"
     if test "x$pass1" = "xMakeELossFits.C" ; then 
 	args="(\"${pass2dir}${output1}\")"
     fi
