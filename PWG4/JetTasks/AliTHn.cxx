@@ -42,7 +42,8 @@ AliTHn::AliTHn() :
   fNVars(0),
   fNSteps(0),
   fValues(0),
-  fSumw2(0)
+  fSumw2(0),
+  axisCache(0)
 {
   // Constructor
 }
@@ -53,7 +54,8 @@ AliTHn::AliTHn(const Char_t* name, const Char_t* title,const Int_t nSelStep, con
   fNVars(nVarIn),
   fNSteps(nSelStep),
   fValues(0),
-  fSumw2(0)
+  fSumw2(0),
+  axisCache(0)
 {
   // Constructor
 
@@ -84,7 +86,8 @@ AliTHn::AliTHn(const AliTHn &c) :
   fNVars(0),
   fNSteps(0),
   fValues(0),
-  fSumw2(0)
+  fSumw2(0),
+  axisCache(0)
 {
   //
   // AliTHn copy constructor
@@ -101,14 +104,20 @@ AliTHn::~AliTHn()
   
   if (fValues)
   {
-    delete fValues;
+    delete[] fValues;
     fValues = 0;
   }
 
   if (fSumw2)
   {
-    delete fSumw2;
+    delete[] fSumw2;
     fSumw2 = 0;
+  }
+  
+  if (axisCache)
+  {
+    delete[] axisCache;
+    axisCache = 0;
   }
 }
 
@@ -228,16 +237,24 @@ void AliTHn::Fill(const Double_t *var, Int_t istep, Double_t weight)
 {
   // fills an entry
 
+  // fill axis cache
+  if (!axisCache)
+  {
+    axisCache = new TAxis*[fNVars];
+    for (Int_t i=0; i<fNVars; i++)
+      axisCache[i] = GetAxis(i, 0);
+  }
+
   // calculate global bin index
   Long64_t bin = 0;
   for (Int_t i=0; i<fNVars; i++)
   {
-    bin *= GetAxis(i, 0)->GetNbins();
+    bin *= axisCache[i]->GetNbins();
     
-    Int_t tmpBin = GetAxis(i, 0)->FindBin(var[i]);
+    Int_t tmpBin = axisCache[i]->FindBin(var[i]);
 //     Printf("%d", tmpBin);
     // under/overflow not supported
-    if (tmpBin < 1 || tmpBin > GetAxis(i, 0)->GetNbins())
+    if (tmpBin < 1 || tmpBin > axisCache[i]->GetNbins())
       return;
     
     // bins start from 0 here

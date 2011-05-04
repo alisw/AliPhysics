@@ -15,6 +15,7 @@ class AliVParticle;
 
 class TList;
 class TSeqCollection;
+class TObjArray;
 class TH1F;
 class TH2F;
 class TH3F;
@@ -26,7 +27,7 @@ class AliUEHistograms : public TNamed
   virtual ~AliUEHistograms();
   
   void Fill(Int_t eventType, Float_t zVtx, AliUEHist::CFStep step, AliVParticle* leading, TList* toward, TList* away, TList* min, TList* max);
-  void FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TSeqCollection* particles, TSeqCollection* mixed = 0, Float_t weight = 1, Bool_t firstTime = kTRUE);
+  void FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed = 0, Float_t weight = 1, Bool_t firstTime = kTRUE);
   void Fill(AliVParticle* leadingMC, AliVParticle* leadingReco);
   void FillEvent(Int_t eventType, Int_t step);
   void FillEvent(Double_t centrality, Int_t step);
