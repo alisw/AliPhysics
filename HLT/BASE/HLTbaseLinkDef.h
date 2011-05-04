@@ -54,6 +54,7 @@
 #pragma link C++ class AliHLTEventStatistics+;
 #pragma link C++ class AliHLTBlockDataCollection+;
 #pragma link C++ class AliHLTTriggerDecision+;
+#pragma link C++ class AliHLTComponentBenchmark+;
 
 #include "RVersion.h"
 #if ROOT_VERSION_CODE < 334336 //ROOT_VERSION(5,26,0)

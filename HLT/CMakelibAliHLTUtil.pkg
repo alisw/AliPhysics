@@ -51,7 +51,6 @@ set ( CLASS_HDRS
     AliHLTAgentUtil.h
     AliHLTESDCaloClusterMaker.h
     AliHLTCaloClusterReader.h
-    AliHLTComponentBenchmark.h
     AliHLTCorruptorComponent.h
     AliHLTESDTrackCuts.h
     )
