@@ -32,6 +32,8 @@
 
 ClassImp(AliHMPIDReconstructor)
 
+Int_t AliHMPIDReconstructor::fgStreamLevel = 0;        // stream (debug) level
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fDaqSig(0),fDig(0),fClu(0)
 {
