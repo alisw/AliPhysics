@@ -266,7 +266,7 @@ void AliAnalysisTaskGammaConvDalitz::UserExec(Option_t */*option*/)
       } 
 
         
-       if (fMCEvent ) {
+	if (MCEvent() ) {
 
     // To avoid crashes due to unzip errors. Sometimes the trees are not there.
         AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
