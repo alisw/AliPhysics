@@ -59,7 +59,7 @@ ClassImp(AliTrackReference)
 }
 
 AliTrackReference::AliTrackReference(const AliTrackReference &tr) :
-  TObject(),
+  TObject(tr),
   fTrack(tr.fTrack),
   fX(tr.fX),
   fY(tr.fY),
