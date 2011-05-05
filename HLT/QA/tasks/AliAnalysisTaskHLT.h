@@ -25,7 +25,7 @@ class AliAnalysisTaskHLT : public AliAnalysisTaskSE {
  
   public: 
     AliAnalysisTaskHLT();
-    AliAnalysisTaskHLT(const char *name, float eta=2, float pt=0, float DCAr=20, float DCAz=20);
+    AliAnalysisTaskHLT(const char *name, float eta=2, float pt=0, float DCAr=20, float DCAz=20, float vertexZ=20);
     virtual ~AliAnalysisTaskHLT() {}
 
     virtual void  UserCreateOutputObjects();
@@ -113,6 +113,7 @@ private:
     Float_t fPt;               //! cut value
     Float_t fDCAr;             //! cut value
     Float_t fDCAz;             //! cut value
+    Float_t fVertexZ;          //! cut value
    
     ClassDef(AliAnalysisTaskHLT, 0);
 };

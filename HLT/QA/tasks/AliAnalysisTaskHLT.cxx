@@ -111,6 +111,7 @@ AliAnalysisTaskSE()
   ,fPt(0)
   ,fDCAr(0)
   ,fDCAz(0)
+  ,fVertexZ(0)
 {
   // Constructor
   // Define input and output slots here
@@ -119,7 +120,7 @@ AliAnalysisTaskSE()
   // Output slot #0 writes into a TH1 container
 }
  
-AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name, float eta, float pt, float DCAr, float DCAz)
+AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name, float eta, float pt, float DCAr, float DCAz, float vertexZ)
   :
   AliAnalysisTaskSE(name) 
   ,fUseHLTTrigger(kFALSE)   
@@ -175,6 +176,7 @@ AliAnalysisTaskHLT::AliAnalysisTaskHLT(const char *name, float eta, float pt, fl
   ,fPt(pt)
   ,fDCAr(DCAr)
   ,fDCAz(DCAz)
+  ,fVertexZ(vertexZ)
 { 
   // Constructor
   // Define input and output slots here
@@ -298,7 +300,7 @@ void AliAnalysisTaskHLT::UserCreateOutputObjects(){
   fTextBox = new TText(); 
   fCuts = new TText(); 
   fCuts->SetName("cuts");
-  TString s = Form("|#eta|<%2g, p_{T}>%2g, |DCAr|<%2g, |DCAz|<%2g", TMath::Abs(fEta), TMath::Abs(fPt), TMath::Abs(fDCAr), TMath::Abs(fDCAz));
+  TString s = Form("|#eta|<%2g, p_{T}>%2g, |DCAr|<%2g, |DCAz|<%2g, |vertexZ|<%2g", TMath::Abs(fEta), TMath::Abs(fPt), TMath::Abs(fDCAr), TMath::Abs(fDCAz),TMath::Abs(fVertexZ));
   fCuts->SetTitle(s);  
   
   //fOutputList->Add(fHistTrigger);
@@ -441,7 +443,12 @@ void AliAnalysisTaskHLT::UserExec(Option_t *){
     fPhiHLT->Fill(esdtrackHLT->Phi()*TMath::RadToDeg());
     fMomentumHLT->Fill(TMath::Abs(esdtrackHLT->Pt()));  
     
-    if(TMath::Abs(esdtrackHLT->Eta())<TMath::Abs(fEta) && TMath::Abs(esdtrackHLT->Pt())>TMath::Abs(fPt) && TMath::Abs(dca[0])<TMath::Abs(fDCAr) && TMath::Abs(dca[1])<TMath::Abs(fDCAz)){
+    if( TMath::Abs(esdtrackHLT->Eta())<TMath::Abs(fEta) && 
+        TMath::Abs(esdtrackHLT->Pt())>TMath::Abs(fPt) && 
+        TMath::Abs(dca[0])<TMath::Abs(fDCAr) && 
+        TMath::Abs(dca[1])<TMath::Abs(fDCAz) &&
+        TMath::Abs(vertHLT->GetZ())<TMath::Abs(fVertexZ) )
+    {       
        fChargeHLTcut->Fill(esdtrackHLT->Charge());
        fNclusterHLTcut->Fill(esdtrackHLT->GetTPCNcls());
        fDCArHLTcut->Fill(dca[0]);  
