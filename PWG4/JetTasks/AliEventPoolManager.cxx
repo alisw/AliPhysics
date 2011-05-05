@@ -108,7 +108,7 @@ Int_t AliEventPool::UpdatePool(TObjArray *trk)
 
   if (fNTimes==1) {
     fFirstFilled = kTRUE;
-    if (1||AliEventPool::fDebug) {
+    if (AliEventPool::fDebug) {
       cout << "\nPool " << MultBinIndex() << ", " << ZvtxBinIndex() 
            << " ready at event "<< iEvent;
       PrintInfo();
