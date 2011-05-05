@@ -15,6 +15,8 @@
 #include "TClonesArray.h"
 #include "TTree.h"
 
+#include "AliLog.h"
+
 class TObjArray;
 class TString;
 class TBranch;
@@ -26,18 +28,14 @@ class AliTRDarrayADC;
 class AliTRDSignalIndex;
 class AliTRDtrackletContainer;
 
-#define TRDMAXTBINS 63
-#define TRDMAXADC   21
-#define TRDMAXMCM   4 * 16
-#define MAXTRACKLETSPERHC 256
-
 class AliTRDrawStream : public TObject
 {
  public:
   AliTRDrawStream(AliRawReader *rawReader = 0x0);
   ~AliTRDrawStream();
 
-  enum { kDDLOffset = 0x400 };                                // Offset for DDL numbers
+  enum { kDDLOffset = 0x400,                                  // Offset for DDL numbers
+         kDDLMax    = 0x411 };                                // Max DDL number for TRD SM
 
   Bool_t SetReader(AliRawReader *rawReader) { fRawReader = rawReader; return kTRUE; }
   void SetDigitsManager(AliTRDdigitsManager *digMgr) { fDigitsManager = digMgr; }
@@ -55,8 +53,9 @@ class AliTRDrawStream : public TObject
   Bool_t ReadEvent(TTree *trackletTree = 0x0);
 
   Bool_t NextDDL();
-  Int_t NextChamber(AliTRDdigitsManager *digMgr, 
-		    UInt_t ** /* trackletContainer */=NULL, UShort_t ** /* errorContainer */=NULL);
+  Int_t NextChamber(AliTRDdigitsManager *digMgr); 
+  Int_t NextChamber(AliTRDdigitsManager *digMgr,
+		      UInt_t ** /* trackletContainer */, UShort_t ** /* errorContainer */) { AliError("Deprecated, use NextChamber(AliTRDdigitsManger*) instead!"); return NextChamber(digMgr); }
 
   Bool_t ConnectTracklets(TTree *trklTree);
 
@@ -102,6 +101,8 @@ class AliTRDrawStream : public TObject
 
   TTree* GetErrorTree() const { return fErrors; }
   static const char* GetErrorMessage(ErrorCode_t errCode);
+  static void SetErrorDebugLevel(ErrorCode_t error, Int_t level) { fgErrorDebugLevel[error] = level; }
+  static void SetErrorBehaviour(ErrorCode_t error, ErrorBehav_t behav) { fgErrorBehav[error] = behav; }
 
   class AliTRDrawStreamError : public TObject {
   public:
@@ -168,11 +169,22 @@ class AliTRDrawStream : public TObject
   Bool_t IsDumping() const { return (fNDumpMCMs > 0); }
   Bool_t DumpingMCM(Int_t det, Int_t rob, Int_t mcm) const;
 
-  void DumpRaw(TString title, UInt_t *start, Int_t length); 
+  TString DumpRaw(TString title, UInt_t *start, Int_t length, UInt_t endmarker = 0xffffffff); 
+  TString DumpMcmHeader(TString title, UInt_t word);
+  TString DumpAdcMask(TString title, UInt_t word);
+
+  // temporary: allow to change expected readout order
+  static void SetMCMReadoutPos(Int_t mcm, Int_t pos) { if (mcm > -1 && mcm < 16) fgMcmOrder[mcm] = pos; }
+  static void SetROBReadoutPos(Int_t robpair, Int_t pos) { if (robpair > -1 && robpair < 4) fgMcmOrder[robpair] = pos; }
 
  protected:
+  Int_t ReadGTUHeaders(UInt_t *buffer);
   Int_t ReadSmHeader();
-  Int_t ReadStackIndexHeader(Int_t stack);
+  Int_t ReadTrackingHeader(Int_t stack);
+  Int_t ReadTriggerHeaders();
+  Int_t ReadStackHeader(Int_t stack);
+  Int_t DecodeGTUtracks();
+  Int_t ReadGTUTrailer();
 
   Int_t ReadLinkData();
   Int_t ReadTracklets();
@@ -193,8 +205,8 @@ class AliTRDrawStream : public TObject
   Int_t Check(UInt_t mcmhdr) const { return 0xf & mcmhdr; }
   Int_t CouldBeMCMhdr(UInt_t mcmhdr) const { return ((0xf & mcmhdr) == 0xc); }
 
-  Int_t GetMCMReadoutPos(Int_t mcm) const { return (mcm > -1 && mcm < 16) ? fgkMcmOrder[mcm] : -1; }
-  Int_t GetROBReadoutPos(Int_t rob) const { return (rob > -1 && rob < 4) ? fgkRobOrder[rob] : -1; }
+  Int_t GetMCMReadoutPos(Int_t mcm) const { return (mcm > -1 && mcm < 16) ? fgMcmOrder[mcm] : -1; }
+  Int_t GetROBReadoutPos(Int_t rob) const { return (rob > -1 && rob < 4) ? fgRobOrder[rob] : -1; }
 
   // ADC mask decoding
   Int_t GetActiveChannels(UInt_t adcmask) const { return 0x1fffff & adcmask >> 4; }
@@ -232,11 +244,13 @@ class AliTRDrawStream : public TObject
   Int_t   fPayloadSize;                         // size of the payload (in UInt_t words)
 
   static const Int_t fgkNlinks;                 // number of links to read
+  static const Int_t fgkNsectors;               // number of sectors
   static const Int_t fgkNstacks;                // number of stacks to read
+  static const Int_t fgkNtriggers;              // number of triggers in data stream
   static const UInt_t fgkDataEndmarker;         // data endmarker 
   static const UInt_t fgkTrackletEndmarker;     // tracklet endmarker
-  static const Int_t fgkMcmOrder [];            // expected readout order of the MCMs
-  static const Int_t fgkRobOrder [];            // expected readout order of the ROBs
+  static       Int_t fgMcmOrder [];             // expected readout order of the MCMs
+  static       Int_t fgRobOrder [];             // expected readout order of the ROBs
 
   // persistent information
   Int_t  fNtimebins;                            // number of timebins
@@ -253,21 +267,37 @@ class AliTRDrawStream : public TObject
   // DDL header
   UInt_t fCurrEquipmentId;			// current Equipment ID
 
-  // SMU index header
-  UInt_t fCurrSmuIndexHeaderSize;		// current size of the SMU index header
-  UInt_t fCurrSmuIndexHeaderVersion;		// current version of the SMU index header
+  // SM header
+  UInt_t fCurrSmHeaderSize;                     // current size of the SM header
+  UInt_t fCurrSmHeaderVersion;                  // current version of the SM header
+  UInt_t fCurrTrailerReadout;			// current presence of trailer (after the payload)
+  UInt_t fCurrTrgHeaderAvail;	        	// current trigger information availability
+  UInt_t fCurrTrgHeaderReadout;                 // current readout mode for the trigger headers
+  UInt_t fCurrTrkHeaderAvail;	        	// current tracking information availability
+  UInt_t fCurrEvType;            		// current event type
+  UInt_t fCurrTriggerEnable;                    // current trigger enable
+  UInt_t fCurrTriggerFired;                     // current trigger fired
   UInt_t fCurrTrackEnable;			// current value of track enable
   UInt_t fCurrTrackletEnable; 			// current value of tracklet enable
   UInt_t fCurrStackMask;			// current mask of active stacks
 
-  // Stack index header
+  // Tracking header
+  UInt_t *fCurrTrkHeaderIndexWord;              // current tracking header index word
+  UInt_t *fCurrTrkHeaderSize;                   // current tracking header index word
+
+  // Trigger header
+  UInt_t *fCurrTrgHeaderIndexWord;              // current tracking header index word
+  UInt_t *fCurrTrgHeaderSize;                   // current tracking header index word
+
+  // Stack header
   UInt_t *fCurrStackIndexWord;			// current stack index words
   UInt_t *fCurrStackHeaderSize;			// current stack index sizes
   UInt_t *fCurrStackHeaderVersion;		// current stack header versions
   UInt_t *fCurrLinkMask;			// current link masks
   UInt_t *fCurrCleanCheckout;			// current clean checkout flags
   UInt_t *fCurrBoardId;				// current board IDs
-  UInt_t *fCurrHwRev;				// current hardware revision
+  UInt_t  fCurrHwRev;    			// current hardware revision
+  UInt_t *fCurrHwRevTMU;			// current hardware revision
   UInt_t *fCurrLinkMonitorFlags;		// current link monitor flags
   UInt_t *fCurrLinkDataTypeFlags;		// current link data flags
   UInt_t *fCurrLinkDebugFlags;			// current link debug flags

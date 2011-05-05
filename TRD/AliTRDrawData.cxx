@@ -667,7 +667,7 @@ TClonesArray *AliTRDrawData::TrackletsArray()
   // Returns the array of on-line tracklets
 
   if (!fTracklets) {
-    fTracklets = new TClonesArray("AliTRDtrackletWord", 2*MAXTRACKLETSPERHC);
+    fTracklets = new TClonesArray("AliTRDtrackletWord", 200);
   }
   return fTracklets;
 }
