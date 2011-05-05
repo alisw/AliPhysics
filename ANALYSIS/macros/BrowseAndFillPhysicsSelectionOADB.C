@@ -617,6 +617,27 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
 
   oadbContPS->AppendObject(oadbLHC10h9, 139328,139517);
 
+  // ----- 2011 -----
+  // ----- proton-proton -----
+
+  // LHC11a1
+  AliOADBPhysicsSelection * oadbLHC11a1 = new AliOADBPhysicsSelection("oadbLHC11a1");
+  oadbLHC11a1->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CINT1-B-NOPF-ALL","B",0);
+  oadbLHC11a1->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-AC-NOPF-ALL","AC",0);
+  oadbLHC11a1->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-E-NOPF-ALL","E",0);  
+  oadbLHC11a1->SetHardwareTrigger         ( 0,"SPDGFO >= 1 || V0A || V0C");					      
+  oadbLHC11a1->SetOfflineTrigger          ( 0,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG  && !TPCLaserWarmUp");
+
+  oadbLHC11a1->AddCollisionTriggerClass   ( AliVEvent::kMUON,"+CMUS1-B-NOPF-ALL","B",1);
+  oadbLHC11a1->AddBGTriggerClass          ( AliVEvent::kMUON,"+CMUS1-AC-NOPF-ALL","AC",1);
+  oadbLHC11a1->AddBGTriggerClass          ( AliVEvent::kMUON,"+CMUS1-E-NOPF-ALL","E",1);
+  oadbLHC11a1->SetHardwareTrigger         ( 1,"SPDGFO >= 1 || V0A || V0C");                                         
+  oadbLHC11a1->SetOfflineTrigger          ( 1,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG  && !TPCLaserWarmUp");
+  
+  oadbContPS->AppendObject(oadbLHC11a1, 146857,146857);
+
+
+  // ------------------------------------------------------------------------------------------------------------
 
   // Trigger Analysis: ZDC timing cuts
  
@@ -652,8 +673,6 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbTrigAnalysisZDC6->Print();
 
 
-  // ----- 2011 -----
-  // ----- proton-proton -----
 
 
   oadbContPS->WriteToFile(oadbfilename.Data());
