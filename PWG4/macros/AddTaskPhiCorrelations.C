@@ -36,6 +36,8 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   
   ana->SetEventMixing(kFALSE);
   
+//   ana->SetCompareCentralities(kTRUE);
+  
   if (0)
   {
     Printf("AddTaskPhiCorrelations:\n\n\n++++++++++ Using SPD centrality selection ++++++++++++\n\n\n");
