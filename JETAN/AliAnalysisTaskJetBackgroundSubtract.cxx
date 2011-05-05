@@ -231,6 +231,14 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
   fHistList->SetOwner();
   PostData(1, fHistList); // post data in any case once
 
+  // 
+  
+  // delta pT vs. area vs. cent vs. mult
+  const Int_t nSparseBinsDelta = 4;
+  const Int_t nBinsDelta[nSparseBinsDelta] =   {   241,  10,  10,  25}; 
+  const Double_t xminDelta[nSparseBinsDelta] = {-120.5,   0,   0,   0};
+  const Double_t xmaxDelta[nSparseBinsDelta] = { 120.5, 1.0, 100,5000};
+ 
   for(int iJB = 0;iJB<fJBArray->GetEntries();iJB++){
     TObjString *ostr = (TObjString*)fJBArray->At(iJB);
     TString oldName(ostr->GetString().Data()); 
@@ -241,8 +249,11 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
       continue;
     }
     newName.ReplaceAll(fReplaceString1.Data(),Form(fReplaceString2.Data(),fSubtraction));
+    
     TH2F *hTmp = new TH2F(Form("h2PtInPtOut_%d",iJB),Form(";%s p_{T}; %s p_{T}",oldName.Data(),newName.Data()),200,0,200.,400,-200.,200.);
     fHistList->Add(hTmp);
+    THnSparseF *hFTmp = new THnSparseF(Form("hnDPtAreaCentMult_%d",iJB),Form("%s delta;#delta p_{T};Area;cent;mult",newName.Data()),nSparseBinsDelta,nBinsDelta,xminDelta,xmaxDelta);
+    fHistList->Add(hFTmp);
   }
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -253,13 +264,13 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
   //    
 
  
-    fh2CentvsRho = new TH2F("fh2CentvsRho","centrality vs background density",100,0.,100.,2000,0.,200.);
-    fh2CentvsSigma = new TH2F("fh2CentvsSigma","centrality vs backgroun sigma",100,0.,100.,1000,0.,50.);
+    fh2CentvsRho = new TH2F("fh2CentvsRho","centrality vs background density", 100,0.,100.,600,0.,300.);
+    fh2CentvsSigma = new TH2F("fh2CentvsSigma","centrality vs backgroun sigma",100,0.,100.,500,0.,50.);
     fHistList->Add(fh2CentvsRho);
     fHistList->Add(fh2CentvsSigma);
 
-    fh2MultvsRho = new TH2F("fh2MultvsRho","mult vs background density",1000,0.,5000.,300,0.,300.);
-    fh2MultvsSigma = new TH2F("fh2MultvsSigma","mult vs backgroun sigma",1000,0.,5000.,500,0.,50.);
+    fh2MultvsRho = new TH2F("fh2MultvsRho","mult vs background density", 100,0.,5000.,600,0.,300.);
+    fh2MultvsSigma = new TH2F("fh2MultvsSigma","mult vs background sigma",100,0.,5000.,500,0.,50.);
     fHistList->Add(fh2MultvsRho);
     fHistList->Add(fh2MultvsSigma);
 
@@ -274,7 +285,6 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
      fHistList->Add(fh2ShiftPhiLeading);
    }
     
-
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fHistList->GetEntries(); ++i) {
     TH1 *h1 = dynamic_cast<TH1*>(fHistList->At(i));
@@ -431,30 +441,33 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
       continue;
     }
     TH2F* h2PtInOut = (TH2F*)fHistList->FindObject(Form("h2PtInPtOut_%d",iJB));
+    THnSparseF* hnDPtAreaCentMult = (THnSparseF*)fHistList->FindObject(Form("hnDPtAreaCentMult_%d",iJB));
     // loop over all jets
     Int_t nOut = 0;
       
+    Double_t deltaPt[4];
+    deltaPt[2] = cent;
+    deltaPt[3] = mult;
 
     for(int i = 0;i < jarray->GetEntriesFast();i++){
       AliAODJet *jet = (AliAODJet*)jarray->At(i);
       AliAODJet tmpNewJet(*jet);
       Bool_t bAdd = false;
-     
+      Float_t ptSub = 0;
+
 
       if(fSubtraction==kArea){	
 	Double_t background = rho * jet->EffectiveAreaCharged();
-	Float_t ptSub = jet->Pt() - background;	
+	ptSub = jet->Pt() - background;	
 	if(fDebug>2){
 	  Printf("%s:%d Jet %d %3.3f %3.3f",(char*)__FILE__,__LINE__,i,jet->Pt(),ptSub);
 	}
 	if(ptSub<0){
 	  // optionally rescale it and keep??
 	  bAdd = false; // RescaleJetMomentum(&tmpNewJet,0.1);
-	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),ptSub);
 	}
 	else{
 	  bAdd = RescaleJetMomentum(&tmpNewJet,ptSub);
-	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),ptSub);
 	}
 	// add background estimates to the new jet object
 	// allows to recover old p_T and rho...
@@ -462,35 +475,30 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
       }// kAREA
       else if(fSubtraction==kRhoRecalc){
  	Double_t background = rho * jet->EffectiveAreaCharged();
-	Float_t ptSub = jet->Pt() - background;	
+	ptSub = jet->Pt() - background;	
         if(fDebug>2){
 	  Printf("%s:%d Jet %d %3.3f %3.3f %3.3f %3.3f",(char*)__FILE__,__LINE__,i,jet->Pt(),ptSub,background,rho);}
 	if(ptSub<0){
 	  // optionally rescale it and keep??
 	  bAdd = false;// RescaleJetMomentum(&tmpNewJet,0.1);
-	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),ptSub);
 	}
 	else{
 	  bAdd = RescaleJetMomentum(&tmpNewJet,ptSub);
-	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),ptSub);
 	}
 	// add background estimates to the new jet object
 	// allows to recover old p_T and rho...
 	tmpNewJet.SetBgEnergy(background,0);
-
       }//kRhoRecalc
        else if(fSubtraction==kRhoRC){
 	Double_t background = rho * jet->EffectiveAreaCharged();
-	Float_t ptSub = jet->Pt() - background;	
+	ptSub = jet->Pt() - background;	
 	if(fDebug>2){	Printf("%s:%d Jet %d %3.3f %3.3f %3.3f %3.3f",(char*)__FILE__,__LINE__,i,jet->Pt(),ptSub,background,rho);}
 	if(ptSub<0){
 	  // optionally rescale it and keep??
 	  bAdd = false; // RescaleJetMomentum(&tmpNewJet,0.1);
-	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),ptSub);
 	}
 	else{
 	  bAdd = RescaleJetMomentum(&tmpNewJet,ptSub);
-	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),ptSub);
 	}
 	// add background estimates to the new jet object
 	// allows to recover old p_T and rho...
@@ -499,14 +507,11 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
        }//kRhoRC
 
        else if(fSubtraction==k4Area&&jet->VectorAreaCharged()){
-
-	 
 	 backgroundv.SetPxPyPzE(rho*(jet->VectorAreaCharged())->Px(),rho*(jet->VectorAreaCharged())->Py(),rho*(jet->VectorAreaCharged())->Pz(),rho*(jet->VectorAreaCharged())->E());
+	 ptSub = jet->Pt()-backgroundv.Pt();
 	 if((backgroundv.E()>jet->E())&&(backgroundv.Pt()>jet->Pt())){
-       
-	   // optionally rescale it and keep??
+       	   // optionally rescale it and keep??
 	   bAdd = false; // RescaleJetMomentum(&tmpNewJet,0.1);
-	   if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),jet->Pt()-backgroundv.Pt());
 	 }
 	 else{
 	   bAdd = RescaleJet4vector(&tmpNewJet,backgroundv);
@@ -526,7 +531,6 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
         AliAODJet *newJet = new ((*jarrayOut)[nOut++]) AliAODJet(tmpNewJet);
 	// what about track references, clear for now...
 	if(fSubtraction==k4Area){
-         if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),jet->Pt()-newJet->Pt());
          fh2ShiftEta->Fill(jet->Eta(),newJet->Eta());
          fh2ShiftPhi->Fill(jet->Phi(),newJet->Phi());
          if(i==0){fh2ShiftEtaLeading->Fill(jet->Eta(),newJet->Eta());
@@ -539,6 +543,12 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 	  AliVParticle *vp = dynamic_cast<AliVParticle*>(refs->At(ir));
 	  if(vp)newJet->AddTrack(vp);
 	}
+      }
+      if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),ptSub);
+      if(hnDPtAreaCentMult){
+	deltaPt[0] = ptSub;
+	deltaPt[1] = jet->EffectiveAreaCharged();
+	hnDPtAreaCentMult->Fill(deltaPt);
       }
     }
     if(jarrayOut)jarrayOut->Sort();
