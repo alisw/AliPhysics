@@ -41,10 +41,10 @@ AliAnalysisTaskJetBackgroundSubtract *AddTaskJetBackgroundSubtract(TString sJetB
 
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();	
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(
-							   Form("PWG4_JetSubtract_%s",cAdd.Data()),
+							   Form("pwgJetSubtract_%s",cAdd.Data()),
 							   TList::Class(), 
 							   AliAnalysisManager::kOutputContainer,
-							   Form("%s:pwg4JetSubtract_%s",AliAnalysisManager::GetCommonFileName(),cAdd.Data()));
+							   Form("%s:PWG4_JetSubtract_%s",AliAnalysisManager::GetCommonFileName(),cAdd.Data()));
 
   mgr->ConnectInput(task,0,cinput );
   mgr->ConnectOutput(task,1,coutput);
