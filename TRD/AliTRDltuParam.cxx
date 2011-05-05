@@ -28,7 +28,7 @@ Float_t AliTRDltuParam::fgLengthOuterPadC1[6] =
 Float_t AliTRDltuParam::fgLengthInnerPadC0 = 9.0;
 Float_t AliTRDltuParam::fgLengthOuterPadC0 = 8.0;
 Float_t AliTRDltuParam::fgScalePad = 256. * 32.;
-Float_t AliTRDltuParam::fgDriftLength = 3.e-2;
+Float_t AliTRDltuParam::fgDriftLength = 3.;
 
 AliTRDltuParam::AliTRDltuParam() :
   TObject(),
