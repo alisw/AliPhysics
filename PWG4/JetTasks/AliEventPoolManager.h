@@ -64,6 +64,8 @@ class AliEventPool : public TObject
   Bool_t      EventMatchesBin(Int_t mult,    Double_t zvtx) const;
   Bool_t      EventMatchesBin(Double_t mult, Double_t zvtx) const;
   Bool_t      IsReady()                    const { return NTracksInPool() >= fTargetTrackDepth; }
+  Bool_t      IsFirstReady()               const { return fFirstFilled;   }
+  Int_t       GetNTimes()                  const { return fNTimes;        }
   Int_t       GetCurrentNEvents()          const { return fEvents.size(); }
   Int_t       GlobalEventIndex(Int_t j)    const;
   TObject    *GetRandomTrack()             const;
