@@ -318,7 +318,7 @@ void plotEventQuantities(THnSparse* heventHLT, THnSparse* heventOFF, TText* hTex
      off = heventOFF->Projection(9); // V0 centrality, taken from the offline ESD
      off->SetTitle(fix1DTitle(heventOFF->Projection(9)->GetTitle()));
      off->SetLineColor(2);
-     //off->Draw(); // TODO
+     off->Draw();
   }  
   
   can1->SaveAs(folder+"/vertex_event_properties.root");
