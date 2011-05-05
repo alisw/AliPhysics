@@ -82,6 +82,7 @@ fDebug(0),
 fMode(0),
 fReduceMemoryFootprint(kFALSE),
 fFillMixed(kTRUE),
+fCompareCentralities(kFALSE),
 // pointers to UE classes
 fAnalyseUE(0x0),
 fHistos(0x0),
@@ -469,9 +470,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 
   Double_t centrality = 0;
   
+  AliCentrality *centralityObj = 0;
   if (fCentralityMethod.Length() > 0)
   {
-    AliCentrality *centralityObj = 0;
     if (fAOD)
       centralityObj = fAOD->GetHeader()->GetCentralityP();
     else if (fESD)
@@ -507,7 +508,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   // Fill the "event-counting-container", it is needed to get the number of events remaining after each event-selection cut
   fHistos->FillEvent(centrality, AliUEHist::kCFStepVertex);
  
-  if (centrality < 0)
+  // optimization
+  if (centrality < 0 && !fCompareCentralities)
     return;
 
   TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
@@ -516,9 +518,23 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   const AliVVertex* vertex = inputEvent->GetPrimaryVertex();
   Double_t zVtx = vertex->GetZ();
   
-  // Fill containers at STEP 6 (reconstructed)
-  fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks);
+  // fill two different centralities (syst study)
+  // the zvtx axis is used to distinguish the results of both centralities: configured centrality in zvtx = 0, SPD in zvtx = 2
+  if (fCompareCentralities)
+    zVtx = 0;
   
+  // Fill containers at STEP 6 (reconstructed)
+  if (centrality >= 0)
+    fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks);
+
+  // fill second time with SPD centrality
+  if (fCompareCentralities && centralityObj)
+  {
+    centrality = centralityObj->GetCentralityPercentile("CL1");
+    if (centrality >= 0)
+      fHistos->FillCorrelations(centrality, 2, AliUEHist::kCFStepReconstructed, tracks);
+  }
+    
   if (fFillMixed)
   {
     // event mixing
