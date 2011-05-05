@@ -81,36 +81,42 @@ Int_t AliEventPool::UpdatePool(TObjArray *trk)
   iEvent++;
 
   Int_t mult = trk->GetEntries();
-  Int_t nTrkA = NTracksInPool();
-  Int_t nTrkB = 0;
-  Int_t nTrkC = 0;
+  Int_t nTrk = NTracksInPool();
 
-  if (nTrkA < fTargetTrackDepth && ((nTrkA + mult) >= fTargetTrackDepth)) 
+  if (nTrk < fTargetTrackDepth && ((nTrk + mult) >= fTargetTrackDepth)) 
     fNTimes++;
-  
+
   // remove 0th element before appending this event
-  if (NTracksInPool() >= fTargetTrackDepth) {
+  Bool_t removeFirstEvent = 0;
+  if (nTrk>fTargetTrackDepth) {
+    Int_t nTrksFirstEvent= fNTracksInEvent.front();
+    Int_t diff = nTrk - nTrksFirstEvent + mult;
+    if (diff>fTargetTrackDepth)
+      removeFirstEvent = 1;
+  }
+  if (removeFirstEvent) {
     TObjArray *fa = fEvents.front();
     delete fa;
     fEvents.pop_front();         // remove first track array 
     fNTracksInEvent.pop_front(); // remove first int
     fEventIndex.pop_front();
-    nTrkB = NTracksInPool();
   }
 
   fNTracksInEvent.push_back(mult);
   fEvents.push_back(trk);
   fEventIndex.push_back(iEvent);
-  nTrkC = NTracksInPool();
 
   if (fNTimes==1) {
-    if (AliEventPool::fDebug) {
+    fFirstFilled = kTRUE;
+    if (1||AliEventPool::fDebug) {
       cout << "\nPool " << MultBinIndex() << ", " << ZvtxBinIndex() 
            << " ready at event "<< iEvent;
       PrintInfo();
       cout << endl;
     }
     fNTimes++; // See this message exactly once/pool
+  } else {
+    fFirstFilled = kFALSE;
   }
 
   fWasUpdated = true;
