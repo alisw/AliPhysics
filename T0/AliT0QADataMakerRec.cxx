@@ -417,13 +417,13 @@ void AliT0QADataMakerRec::InitRaws()
    Add2RawsList( fhOrCminOrATvdcOffcal,218+250, expert, !image, !saveCorr);
    
    //satellite  & beam background
-  TH2F* fhBeam = new TH2F("fhBeam", " Mean vs Vertex ", 120, -30, 30, 120, -30, 30);
+  TH2F* fhBeam = new TH2F("fhBeam", " Mean vs Vertex; (T0A-T0C)/2 [ns]; (T0A+T0C)/2 [ns] ", 120, -30, 30, 120, -30, 30);
    Add2RawsList( fhBeam,220, !expert, image, !saveCorr);
-   TH2F* fhBeamTVDCon = new TH2F("fhBeamTVDCon", " Mean vs Vertex TVDC on ",50, -5, 5, 50, -5, 5) ;
+   TH2F* fhBeamTVDCon = new TH2F("fhBeamTVDCon", " Mean vs Vertex TVDC on; (T0A-T0C)/2 [ns]; (T0A+T0C)/2 [ns]",50, -5, 5, 50, -5, 5) ;
    Add2RawsList( fhBeamTVDCon,221, expert, image, !saveCorr);
-   TH2F* fhBeamTVDCoff = new TH2F("fhBeamTVDCoff", " Mean vs Vertex TVDC off", 120, -30, 30, 120, -30, 30);
+   TH2F* fhBeamTVDCoff = new TH2F("fhBeamTVDCoff", " Mean vs Vertex TVDC off; (T0A-T0C)/2 [ns]; (T0A+T0C)/2 [ns]", 120, -30, 30, 120, -30, 30);
    Add2RawsList( fhBeamTVDCoff,222, expert, image, !saveCorr);
-   TH1F* fhMean = new TH1F("fhMean", " (T0A+T0C)/2 ", 200, -2000, 2000);
+   TH1F* fhMean = new TH1F("fhMean", " (T0A+T0C)/2; (T0A+T0C)/2 [ps] ", 200, -2000, 2000);
    Add2RawsList( fhMean,223, !expert, image, !saveCorr);
 
    //triggers
