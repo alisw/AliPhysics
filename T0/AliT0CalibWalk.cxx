@@ -159,14 +159,15 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 		printf("no peak in CFD spectrum for PMT %i amplitude %i\n",i,im);
 		return ok;
 	      }
-	      
 	      if(hCFD && hCFD->GetEntries()>500 ) {
 		if( hCFD->GetRMS() >= 1.5) 
 		  GetMeanAndSigma(hCFD, cfdmean, sigma);
 		else
 		  cfdmean = hCFD->GetMean();
 		
-	      if(TMath::Abs(hCFD->GetMean() - cfdmean) >10 ) cfdmean = hCFD->GetMean(); 
+		Int_t   maxBin = hCFD->GetMaximumBin(); 
+		Double_t  meanEstimate = hCFD->GetBinCenter( maxBin); 
+		if(TMath::Abs(meanEstimate - cfdmean) > 20 ) cfdmean = meanEstimate; 
 		if (im == 0) cfd0 = cfdmean;
 		y1[im] =  cfdmean - cfd0;
 	      }	
@@ -235,7 +236,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 void AliT0CalibWalk::GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma) 
 {
 
-  const double window = 5.;  //fit window 
+  const double window = 2.;  //fit window 
  
   double meanEstimate, sigmaEstimate; 
   int maxBin;

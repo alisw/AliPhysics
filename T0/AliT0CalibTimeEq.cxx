@@ -138,7 +138,9 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 		  meandiff = cfd->GetMean();
 		  sigmadiff=cfd->GetRMS();
 		}
-	      if(TMath::Abs(cfd->GetMean() - meandiff) >10 ) meandiff = cfd->GetMean(); 
+		Int_t   maxBin = cfd->GetMaximumBin(); 
+		Double_t  meanEstimate = cfd->GetBinCenter( maxBin); 
+		if(TMath::Abs(meanEstimate - meandiff) > 20 ) meandiff = meanEstimate; 
 	    }
 	    else 
 	      {
@@ -158,7 +160,9 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 		  meancfdtime = cfdtime->GetMean();
 		  sigmacfdtime = cfdtime->GetRMS();
 		}
-	      if(TMath::Abs(cfdtime->GetMean() - meancfdtime) >20 ) meancfdtime = cfdtime->GetMean(); 
+		Int_t   maxBin = cfdtime->GetMaximumBin(); 
+		Double_t  meanEstimate = cfdtime->GetBinCenter( maxBin); 
+		if(TMath::Abs(meanEstimate - meancfdtime) > 20 ) meancfdtime = meanEstimate; 
 	    }
 	  }
 	  else 
@@ -166,7 +170,6 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	      ok=false;
 	      AliWarning(Form(" Not  enouph data in PMT in CFD peak %i - %i ", i, nent));
 	    }
-	  printf(" %i %f %f %f %f \n",i, meandiff, sigmadiff, meancfdtime, sigmacfdtime);
 	  SetTimeEq(i,meandiff);
 	  SetTimeEqRms(i,sigmadiff);
 	  SetCFDvalue(i,0,meancfdtime);
@@ -216,7 +219,6 @@ Bool_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *tim
       TObjArray * TzeroObj = (TObjArray*) dr->Get("fTzeroObject");
       for (Int_t i=0; i<24; i++)
 	{
-	  printf("@@@ were in OCDB before %f \n", timecdb[i]);
 	  if (i != badpmt) {
 	  TH1F *cfddiff = (TH1F*)TzeroObj->At(i);
 	  TH1F *cfdtime = (TH1F*)TzeroObj->At(i+24);
@@ -233,7 +235,9 @@ Bool_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *tim
 		  meandiff = cfddiff->GetMean();
 		  sigmadiff = cfddiff->GetRMS();
 		}
-	      if(TMath::Abs(cfddiff->GetMean() - meandiff) >10 ) meandiff = cfddiff->GetMean(); 
+		Int_t   maxBin = cfddiff->GetMaximumBin(); 
+		Double_t  meanEstimate = cfddiff->GetBinCenter( maxBin); 
+		if(TMath::Abs(meanEstimate - meandiff) > 20 ) meandiff = meanEstimate; 
 	      
 	    }
 	    else 
@@ -252,7 +256,9 @@ Bool_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *tim
 		  meancfdtime = cfdtime->GetMean();
 		  sigmacfdtime=cfdtime->GetRMS();
 		}
-	      if(TMath::Abs(cfdtime->GetMean() - meancfdtime) >20 ) meancfdtime = cfdtime->GetMean(); 
+		Int_t   maxBin = cfdtime->GetMaximumBin(); 
+		Double_t  meanEstimate = cfdtime->GetBinCenter( maxBin); 
+		if(TMath::Abs(meanEstimate - meancfdtime) > 20 ) meancfdtime = meanEstimate; 
 	    }
 	    else 
 	      {
