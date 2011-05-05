@@ -194,6 +194,7 @@ struct TrainSetup
       fListOfExtras(),
       fNReplica(4),
       fESDPass(3),
+      fPassPostfix(""),
       fEscapedName(name),
       fAllowOverwrite(kFALSE)
   {
@@ -377,6 +378,12 @@ struct TrainSetup
    * @param pass Pass number 
    */
   void SetESDPass(Int_t pass) { fESDPass = pass; }
+  /** 
+   * Set the ESD pass to use 
+   * 
+   * @param pass Pass number 
+   */
+  void SetPassPostfix(const char* postfix) { fPassPostfix = postfix; }
   //__________________________________________________________________
   /** 
    * Add a source file to be copied and byte compiled on slaves 
@@ -815,7 +822,7 @@ protected:
       plugin->SetRunPrefix("");
     }
     else {
-      pat = Form("*ESDs/pass%d/*/", fESDPass);
+      pat = Form("*ESDs/pass%d%s/*/", fESDPass, fPassPostfix.Data());
       plugin->SetRunPrefix("000");
     }
     pat.Append(Form("*%s.root", type == kESD ? "ESDs" : "AOD"));
@@ -1517,6 +1524,7 @@ protected:
   TList   fListOfExtras;     // List of extra files to upload
   Int_t   fNReplica;         // Storage replication
   Int_t   fESDPass;
+  TString fPassPostfix;      // Possible pass postfix
   TString fEscapedName;
   Bool_t  fAllowOverwrite;
 };

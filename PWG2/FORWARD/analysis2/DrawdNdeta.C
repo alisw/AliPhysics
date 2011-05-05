@@ -33,6 +33,8 @@
 #include <TLegendEntry.h>
 #include <TLatex.h>
 #include <TImage.h>
+#include <TRandom.h>
+#include <fstream>
 
 Double_t myFunc(Double_t* xp, Double_t* pp);
 
@@ -61,27 +63,35 @@ struct dNdetaDrawer
    * 
    */
   dNdetaDrawer()
-    : fShowOthers(0),		// Bool_t 
-      fShowAlice(false),        // Bool_t
-      fShowRatios(false),	// Bool_t 
-      fShowLeftRight(false),	// Bool_t
-      fShowRings(false),        // Bool_t 
-      fRebin(5),		// UShort_t
-      fCutEdges(false),		// Bool_t
-      fTitle(""),		// TString
-      fTrigString(0),		// TNamed*
-      fNormString(0),           // TNamed*
-      fSNNString(0),		// TNamed*
-      fSysString(0),		// TNamed*
-      fVtxAxis(0),		// TAxis*
-      fCentAxis(0),             // TAxis*
-      fTriggers(0),		// TH1*
-      fTruth(0),                // TH1* 
-      fRangeParam(0),
-      fFwdSysErr(0.076),
-      fCenSysErr(0),
-      fRemoveOuters(false), 
-      fClusterScale("")
+    : // Options 
+    fShowRatios(false),    // Show ratios 
+    fShowLeftRight(false), // Show asymmetry 
+    fShowRings(false),     // Show rings too
+    fExport(false),        // Export data to script
+    fCutEdges(false),      // Whether to cut edges
+    fRemoveOuters(false),  // Whether to remove outers
+    fShowOthers(0),        // Show other data
+    // Settings 
+    fRebin(0),             // Rebinning factor 
+    fFwdSysErr(0.076),     // Systematic error in forward range
+    fCenSysErr(0),         // Systematic error in central range 
+    fTitle(""),            // Title on plot
+    fClusterScale(""),     // Scaling of clusters to tracklets      
+    // Read (or set) information 
+    fTrigString(0),        // Trigger string (read, or set)
+    fNormString(0),        // Normalisation string (read, or set)
+    fSNNString(0),         // Energy string (read, or set)
+    fSysString(0),         // Collision system string (read or set)
+    fVtxAxis(0),           // Vertex cuts (read or set)
+    fCentAxis(0),          // Centrality axis
+    // Resulting plots 
+    fResults(0),           // Stack of results 
+    fRatios(0),            // Stack of ratios 
+    fLeftRight(0),         // Left-right asymmetry
+    fOthers(0),            // Older data 
+    fTriggers(0),          // Number of triggers
+    fTruth(0),             // Pointer to truth 
+    fRangeParam(0)         // Parameter object for range zoom 
   {
     fRangeParam = new RangeParam;
     fRangeParam->fMasterAxis = 0;
@@ -90,6 +100,9 @@ struct dNdetaDrawer
     fRangeParam->fSlave2Axis = 0;
     fRangeParam->fSlave2Pad  = 0;
   }
+  dNdetaDrawer(const dNdetaDrawer&) {}
+  dNdetaDrawer& operator=(const dNdetaDrawer&) { return *this; }
+
   //__________________________________________________________________
   virtual ~dNdetaDrawer()
   {
@@ -121,13 +134,6 @@ struct dNdetaDrawer
   void SetShowOthers(UShort_t x)    { fShowOthers = x; }
   //__________________________________________________________________
   /** 
-   * Show ALICE published data 
-   * 
-   * @param x Wheter to show or not 
-   */
-  void SetShowAlice(Bool_t x)     { fShowAlice = x; }
-  //__________________________________________________________________
-  /** 
    * Whether to show ratios or not.  If there's nothing to compare to,
    * the ratio panel will be implicitly disabled
    * 
@@ -149,6 +155,13 @@ struct dNdetaDrawer
    * @param x To show or not 
    */
   void SetShowRings(Bool_t x) { fShowRings = x; }
+  //__________________________________________________________________
+  /** 
+   * Whether to export results to a script 
+   *
+   * @param x Wheter to export results to a script
+   */
+  void SetExport(Bool_t x)     { fExport = x; }
   //__________________________________________________________________
   /** 
    * Set the rebinning factor 
@@ -693,6 +706,8 @@ struct dNdetaDrawer
     c->SaveAs(Form("%s.png",  base.Data()));
     c->SaveAs(Form("%s.root", base.Data()));
     c->SaveAs(Form("%s.C",    base.Data()));
+    base.ReplaceAll("dndeta", "export");
+    Export(base);
   }
   //__________________________________________________________________
   /** 
@@ -854,7 +869,7 @@ struct dNdetaDrawer
     p1->SetNumber(1);
     p1->Draw();
     p1->cd();
-    
+
     // Info("PlotResults", "Plotting results with max=%f", max);
     fResults->SetMaximum(1.15*max);
     fResults->SetMinimum(yd > 0.00001 ? -0.1 : 0);
@@ -1814,38 +1829,111 @@ struct dNdetaDrawer
     }
     delete cf;
   }
-    
+  //____________________________________________________________________
+  void Export(const char* basename)
+  {
+    TString bname(basename);
+    bname.ReplaceAll(" ", "_");
+    bname.ReplaceAll("-", "_");
+    TString fname(Form("%s.C", bname.Data()));
+
+    std::ofstream out(fname.Data());
+    if (!out) { 
+      Error("Export", "Failed to open output file %s", fname.Data());
+      return;
+    }
+    out << "// Create by dNdetaDrawer\n"
+	<< "void " << bname << "(THStack* stack, TLegend* l, Int_t m)\n"
+	<< "{"
+	<< "   Int_t ma[] = { 24, 25, 26, 32,\n"
+	<< "                  20, 21, 22, 33,\n"
+	<< "                  34, 30, 29, 0, \n"
+	<< "                  23, 27 };\n"
+	<< "   Int_t mm = ((m < 20 || m > 34) ? 0 : ma[m-20]);\n\n";
+    TList* hists = fResults->GetHists();
+    TIter  next(hists);
+    TH1*   hist = 0;
+    while ((hist = static_cast<TH1*>(next()))) { 
+      TString hname = hist->GetName();
+      hname.Append(Form("_%04x", (gRandom->Integer(0xffff) & 0xffff)));
+      hist->SetName(hname);
+      hist->GetListOfFunctions()->Clear();
+      hist->SavePrimitive(out, "nodraw");
+      bool mirror = hname.Contains("mirror");
+      bool syserr = hname.Contains("SysError");
+      if (!syserr) 
+	out << "   " << hname << "->SetMarkerStyle(" 
+	    << (mirror ? "mm" : "m") << ");\n";
+      else 
+	out << "   " << hname << "->SetMarkerStyle(1);\n";
+      out << "   stack->Add(" << hname 
+	  << (syserr ? ",\"e5\"" : "") << ");\n\n";
+    }
+    UShort_t    snn = fSNNString->GetUniqueID();
+    // const char* sys = fSysString->GetTitle();
+    TString eS;
+    if      (snn == 2750)     snn = 2760;
+    if      (snn < 1000)      eS = Form("%3dGeV", snn);
+    else if (snn % 1000 == 0) eS = Form("%dTeV", snn/1000);
+    else                      eS = Form("%4.2fTeV", float(snn)/1000);
+    out << "  if (l) {\n"
+	<< "    TLegendEntry* e = l->AddEntry(\"\",\"" << eS << "\",\"pl\");\n"
+	<< "    e->SetMarkerStyle(m);\n"
+	<< "    e->SetMarkerColor(kBlack);\n"
+	<< "  }\n"
+	<< "}\n" << std::endl;
+  }
 	      
   /* @} */
 
 
 
   //__________________________________________________________________
-  UShort_t     fShowOthers;   // Show other data
-  Bool_t       fShowAlice;    // Show ALICE published data
+  /** 
+   * @{ 
+   * @name Options 
+   */
   Bool_t       fShowRatios;   // Show ratios 
   Bool_t       fShowLeftRight;// Show asymmetry 
   Bool_t       fShowRings;    // Show rings too
-  UShort_t     fRebin;        // Rebinning factor 
+  Bool_t       fExport;       // Export results to file
   Bool_t       fCutEdges;     // Whether to cut edges
+  Bool_t       fRemoveOuters; // Whether to remove outers
+  UShort_t     fShowOthers;   // Show other data
+  /* @} */
+  /** 
+   * @{ 
+   * @name Settings 
+   */
+  UShort_t     fRebin;        // Rebinning factor 
+  Double_t     fFwdSysErr;    // Systematic error in forward range
+  Double_t     fCenSysErr;    // Systematic error in central range 
   TString      fTitle;        // Title on plot
+  TString      fClusterScale; // Scaling of clusters to tracklets      
+  /* @} */
+  /** 
+   * @{ 
+   * @name Read (or set) information 
+   */
   TNamed*      fTrigString;   // Trigger string (read, or set)
   TNamed*      fNormString;   // Normalisation string (read, or set)
   TNamed*      fSNNString;    // Energy string (read, or set)
   TNamed*      fSysString;    // Collision system string (read or set)
   TAxis*       fVtxAxis;      // Vertex cuts (read or set)
   TAxis*       fCentAxis;     // Centrality axis
+  /* @} */
+  /** 
+   * @{ 
+   * @name Resulting plots 
+   */
   THStack*     fResults;      // Stack of results 
   THStack*     fRatios;       // Stack of ratios 
   THStack*     fLeftRight;    // Left-right asymmetry
   TMultiGraph* fOthers;       // Older data 
   TH1*         fTriggers;     // Number of triggers
   TH1*         fTruth;        // Pointer to truth 
+  /* @} */
   RangeParam*  fRangeParam;   // Parameter object for range zoom 
-  Double_t     fFwdSysErr;    // Systematic error in forward range
-  Double_t     fCenSysErr;    // Systematic error in central range 
-  Bool_t       fRemoveOuters; // Whether to remove outers
-  TString      fClusterScale; // Scaling of clusters to tracklets
 };
 
 //____________________________________________________________________
@@ -1927,7 +2015,34 @@ void RangeExec(dNdetaDrawer::RangeParam* p)
   UpdateRange(p);
 }
 
-//=== Steering function ==============================================  
+//=== Steering functions
+//==============================================  
+void
+Usage()
+{
+  Info("DrawdNdeta", "Usage: DrawdNdeta(FILE,TITLE,REBIN,OTHERS,FLAGS)\n\n"
+       "  const char* FILE   File name to open (\"forward_root\")\n"
+       "  const char* TITLE  Title to put on plot (\"\")\n"
+       "  UShort_t    REBIN  Rebinning factor (1)\n"
+       "  UShort_t    OTHERS Other data to draw - more below (0x7)\n"
+       "  UShort_t    FLAGS  Visualisation flags - more below (0x7)\n\n"
+       " OTHERS is a bit mask of\n\n"
+       "  0x1   Show UA5 data (INEL,NSD, ppbar, 900GeV)\n"
+       "  0x2   Show CMS data (NSD, pp)\n"
+       "  0x4   Show published ALICE data (INEL,INEL>0,NSD, pp)\n"
+       "  0x8   Show event genertor data\n\n"
+       " FLAGS is a bit mask of\n\n"
+       "  0x1   Show ratios of data to other data and possibly MC\n"
+       "  0x2   Show left-right asymmetry\n"
+       "  0x4   Show systematic error band\n"
+       "  0x8   Show individual ring results (INEL only)\n"
+       "  0x10  Cut edges when rebinning\n"
+       "  0x20  Remove FMDxO points\n"
+       "  0x40  Do not make our own canvas\n"
+       );
+}
+
+//____________________________________________________________________
 /** 
  * Draw @f$ dN/d\eta@f$ 
  * 
@@ -1956,6 +2071,13 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
 	   Float_t     vzMin=999, 
 	   Float_t     vzMax=-999)
 {
+  TString fname(filename);
+  fname.ToLower();
+  if (fname.CompareTo("help") == 0 || 
+      fname.CompareTo("--help") == 0) { 
+    Usage();
+    return;
+  }
   dNdetaDrawer* pd = new dNdetaDrawer;
   dNdetaDrawer& d = *pd;
   d.SetRebin(rebin);
@@ -1966,7 +2088,8 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   d.SetForwardSysError(flags & 0x4 ? 0.076 : 0);
   d.SetShowRings(flags & 0x8);
   d.SetCutEdges(flags & 0x10);
-  // d.fRemoveOuters = (flags & 0x20);
+  d.fRemoveOuters = (flags & 0x20);
+  d.SetExport(flags & 0x40);
   // d.fClusterScale = "1.06 -0.003*x +0.0119*x*x";
   // Do the below if your input data does not contain these settings 
   if (sNN > 0) d.SetSNN(sNN);     // Collision energy per nucleon pair (GeV)
