@@ -403,14 +403,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	    
 	  }
 	
-	for (Int_t iHit=0; iHit<5; iHit++) 
-	  {
-	      if(allData[49][iHit] > low[49] && 
-		 allData[49][iHit] < high[49]){
-		onlineMean = allData[49][iHit];
-		break;
-	      }
-	  }
+	onlineMean = allData[49][0];
+	
 	Double32_t time[24], adc[24], adcmip[24], noncalibtime[24];
 	for (Int_t ipmt=0; ipmt<24; ipmt++) {
 	  if(timeCFD[ipmt] >  0 /* && badpmt[ipmt]==0*/ ){
