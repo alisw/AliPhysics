@@ -51,9 +51,9 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
 
     
 
-    virtual void SetUseGlobalSelection(Bool_t b){fUseGlobalSelection = b;}
     virtual void SetAODTrackInput(Bool_t b){fUseAODTrackInput = b;}
     virtual void SetAODMCInput(Bool_t b){fUseAODMCInput = b;}
+    virtual void SetEventSelection(Bool_t b){fEventSelection = b;}
     virtual void SetRecEtaWindow(Float_t f){fRecEtaWindow = f;}
     virtual void SetTrackEtaWindow(Float_t f){fTrackEtaWindow = f;}
     virtual void SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
@@ -62,6 +62,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetCentralityCut(Float_t xLo,Float_t xUp){fCentCutLo = xLo; fCentCutUp = xUp;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
     virtual void SetJetTriggerPtCut(Float_t x){fJetTriggerPtCut = x;}    
+    virtual void SetVtxCuts(Float_t z,Float_t r = 1){fVtxZCut = z; fVtxR2Cut = r *r;}    
     virtual void SetBackgroundBranch(const char* c){fBackgroundBranch = c;}
     virtual const char* GetBackgroundBranch(){return fBackgroundBranch.Data();}    
     virtual void SetNSkipLeadingRan(Int_t x){fNSkipLeadingRan = x;}
@@ -118,8 +119,8 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TRefArray       *fRef;               // ! trefarray for track references within the jet
     Bool_t        fUseAODTrackInput;      // take track from input AOD not from ouptu AOD
     Bool_t        fUseAODMCInput;         // take MC from input AOD not from ouptu AOD
-    Bool_t        fUseGlobalSelection;    // Limit the eta of the generated jets
     Bool_t        fUseBackgroundCalc;     // switches on background calculations
+    Bool_t        fEventSelection;        // use the event selection of this task, otherwise analyse all
     UInt_t        fFilterMask;            // filter bit for slecected tracks
     Int_t         fTrackTypeRec;          // type of tracks used for FF 
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
@@ -128,11 +129,13 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Int_t         fNRandomCones;          // number of generated random cones
     Float_t       fAvgTrials;             // Average nimber of trials
     Float_t       fExternalWeight;        // external weight
-    Float_t       fTrackEtaWindow;          // eta window used for corraltion plots between rec and gen 
+    Float_t       fTrackEtaWindow;        // eta window used for corraltion plots between rec and gen 
     Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
     Float_t       fTrackPtCut;            // minimum track pt to be accepted
     Float_t       fJetOutputMinPt;        // minimum p_t for jets to be written out
     Float_t       fJetTriggerPtCut;       // minimum jwt pT for AOD to be written
+    Float_t       fVtxZCut;               // zvtx cut
+    Float_t       fVtxR2Cut;              // R vtx cut (squared) 
     Float_t       fCentCutUp;             // upper limit on centrality
     Float_t       fCentCutLo;             // lower limit on centrality
     // output configurartion
@@ -230,7 +233,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 16) 
+    ClassDef(AliAnalysisTaskJetCluster, 17) 
 };
  
 #endif

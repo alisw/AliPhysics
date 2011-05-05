@@ -90,8 +90,8 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fRef(new TRefArray),
   fUseAODTrackInput(kFALSE),
   fUseAODMCInput(kFALSE),
-  fUseGlobalSelection(kFALSE),
   fUseBackgroundCalc(kFALSE),
+  fEventSelection(kFALSE),							
   fFilterMask(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),  
@@ -105,6 +105,8 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fTrackPtCut(0.),							
   fJetOutputMinPt(0.150),
   fJetTriggerPtCut(0),
+  fVtxZCut(8),
+  fVtxR2Cut(1),
   fCentCutUp(0),
   fCentCutLo(0),
   fNonStdBranch(""),
@@ -199,8 +201,8 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fRef(new TRefArray),
   fUseAODTrackInput(kFALSE),
   fUseAODMCInput(kFALSE),
-  fUseGlobalSelection(kFALSE),
   fUseBackgroundCalc(kFALSE),
+  fEventSelection(kFALSE),							
   fFilterMask(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
@@ -214,6 +216,8 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fTrackPtCut(0.),							
   fJetOutputMinPt(0.150),
   fJetTriggerPtCut(0),
+  fVtxZCut(8),
+  fVtxR2Cut(1),
   fCentCutUp(0),
   fCentCutLo(0),
   fNonStdBranch(""),
@@ -636,15 +640,6 @@ void AliAnalysisTaskJetCluster::Init()
 void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 {
 
-  if(fUseGlobalSelection){
-    // no selection by the service task, we continue
-    if (fDebug > 1)Printf("Not selected %s:%d",(char*)__FILE__,__LINE__);
-    PostData(1, fHistList);
-    return;
-  }
-
-
-
   // handle and reset the output jet branch 
 
   if(fTCAJetsOut)fTCAJetsOut->Delete();
@@ -704,24 +699,28 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       fh1ZPhySel->Fill(zVtx);
     }
 
-
-    if(vtxAOD->GetNContributors()>2&&!vtxTitle.Contains("TPCVertex")){
+    if(fEventSelection){
+      if(vtxAOD->GetNContributors()>2&&!vtxTitle.Contains("TPCVertex")){
 	Float_t yvtx = vtxAOD->GetY();
 	Float_t xvtx = vtxAOD->GetX();
 	Float_t r2   = yvtx*yvtx+xvtx*xvtx;  
-	if(TMath::Abs(zVtx)<8.&&r2<1.){ // apply vertex cut later on
+	if(TMath::Abs(zVtx)<fVtxZCut&&r2<fVtxR2Cut){ // apply vertex cut later on
 	  if(physicsSelection){
 	    selectEvent = true;
 	  }
 	}
-    }
-    if(fCentCutUp>0){
-      if(cent<fCentCutLo||cent>fCentCutUp){
-	selectEvent = false;
       }
+      if(fCentCutUp>0){
+	if(cent<fCentCutLo||cent>fCentCutUp){
+	  selectEvent = false;
+	}
+      }
+    }else{
+      selectEvent = true;
     }
-
   }
+  
+
   if(!selectEvent){
     PostData(1, fHistList);
     return;
@@ -1388,6 +1387,8 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 
 	AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*> (track);
 	if(!trackAOD)continue;
+        if((fFilterMask>0)&&!(trackAOD->TestFilterBit(fFilterMask))) continue;
+        if(TMath::Abs(trackAOD->Eta())>fTrackEtaWindow) continue;
 	if(trackAOD->Pt()<fTrackPtCut) continue;
 	list->Add(trackAOD);
 	iCount++;
