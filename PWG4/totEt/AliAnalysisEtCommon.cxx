@@ -145,15 +145,31 @@ void AliAnalysisEtCommon::Init()
   fAntiLambdaData->FixParameter(3,1.115683);
   if(fV0ScaleDataSet==2009){
     //These data are from the ALICE 900 GeV p+p paper
-    fK0PythiaD6T->SetParameter(0,0.1437);
-    fK0PythiaD6T->SetParameter(1,0.1497);
-    fK0PythiaD6T->SetParameter(2,6.94);
-    fLambdaPythiaD6T->SetParameter(0,0.0213);
-    fLambdaPythiaD6T->SetParameter(1,0.1315);
-    fLambdaPythiaD6T->SetParameter(2,4.60);
-    fAntiLambdaPythiaD6T->SetParameter(0,0.0213);
-    fAntiLambdaPythiaD6T->SetParameter(1,0.1315);
-    fAntiLambdaPythiaD6T->SetParameter(2,4.60);
+    //from email from Boris 10/31/10
+//      	 		dN/dy		 	Tlevy		 	n		 	<pt>	 extra(%)	chi2/ndf
+// K0S
+// D6T-109	0.1437±0.0002	 0.1497±0.0004	 6.94±0.04	 0.5765	 14.24	 162.5/24=6.8
+// CSC-306	0.1938±0.0002	 0.1363±0.0003	 8.84±0.06	 0.4950	 16.80	 1075.1/24=44.8
+// P0-320		0.1395±0.0002	 0.1440±0.0004	 6.43±0.04	 0.5778	 14.56	 387.0/24=16.1
+// PHOJET		0.1967±0.0002	 0.1292±0.0003	 7.01±0.04	 0.5115	 16.90	 1735.4/24=72.3
+
+// Lambda
+// D6T-109	0.0213±0.0001	 0.1315±0.0011	 4.60±0.05	 0.7889	 48.25	 200.1/26=7.7
+// CSC-306	0.0279±0.0001	 0.1074±0.0007	 5.71±0.07	 0.6131	 59.25	 71.8/26=2.8
+// P0-320		0.0161±0.0001	 0.1125±0.0010	 4.53±0.05	 0.7126	 53.61	 171.1/26=6.6
+// PHOJET		0.0190±0.0001	 0.1013±0.0008	 4.70±0.05	 0.6469	 58.14	 162.2/26=6.2
+    //paper available at http://arxiv.org/pdf/1012.3257v2
+    //so that if I'm working at home and don't have library access I can read the paper...
+    //While all of these functions are labeled D6T, they are actually Perugia-0.  I did this to avoid the complication of renaming all of the variables.
+    fK0PythiaD6T->SetParameter(0,0.1395);
+    fK0PythiaD6T->SetParameter(1,0.1440);
+    fK0PythiaD6T->SetParameter(2,6.43);
+    fLambdaPythiaD6T->SetParameter(0,0.0161);
+    fLambdaPythiaD6T->SetParameter(1,0.1125);
+    fLambdaPythiaD6T->SetParameter(2,4.53);
+    fAntiLambdaPythiaD6T->SetParameter(0,0.0161);
+    fAntiLambdaPythiaD6T->SetParameter(1,0.1125);
+    fAntiLambdaPythiaD6T->SetParameter(2,4.53);
     fK0Data->SetParameter(0,0.184);
     fK0Data->SetParameter(1,0.168);
     fK0Data->SetParameter(2,6.6);
@@ -169,15 +185,25 @@ void AliAnalysisEtCommon::Init()
     //http://cdsweb.cern.ch/record/1279344/files/QCD-10-007-pas.pdf
     //Note the CMS parameterization of the Levy function differs from the ALICE parameterization by a constant.
     //CMS does not list the overall constant in their fit, the ratios of the dN/dy(y=0) is used.
-    fK0PythiaD6T->SetParameter(0,0.72);
-    fK0PythiaD6T->SetParameter(1,0.183);
-    fK0PythiaD6T->SetParameter(2,7.41);
-    fLambdaPythiaD6T->SetParameter(0,0.54);
-    fLambdaPythiaD6T->SetParameter(1,0.216);
-    fLambdaPythiaD6T->SetParameter(2,5.71);
-    fAntiLambdaPythiaD6T->SetParameter(0,0.54);
-    fAntiLambdaPythiaD6T->SetParameter(1,0.216);
-    fAntiLambdaPythiaD6T->SetParameter(2,5.71);
+    //While all of these functions are labeled D6T, they are actually Perugia-0.  I did this to avoid the complication of renaming all of the variables.
+    fK0PythiaD6T->SetParameter(0,0.72);//K0S in CMS analysis note Fig. 10 - Perugia 0 and D6T level comparable
+    fK0PythiaD6T->SetParameter(1,0.168);
+    fK0PythiaD6T->SetParameter(2,5.39);
+    fLambdaPythiaD6T->SetParameter(0,0.54/1.12);//from looking at the difference in lambdas in Perugia 0 and D6T in fig. 10
+    fLambdaPythiaD6T->SetParameter(1,0.163);
+    fLambdaPythiaD6T->SetParameter(2,4.64);
+    fAntiLambdaPythiaD6T->SetParameter(0,0.54/1.12);//
+    fAntiLambdaPythiaD6T->SetParameter(1,0.163);
+    fAntiLambdaPythiaD6T->SetParameter(2,4.64);
+//     fK0PythiaD6T->SetParameter(0,0.72);
+//     fK0PythiaD6T->SetParameter(1,0.183);
+//     fK0PythiaD6T->SetParameter(2,5.71);
+//     fLambdaPythiaD6T->SetParameter(0,0.54);
+//     fLambdaPythiaD6T->SetParameter(1,0.216);
+//     fLambdaPythiaD6T->SetParameter(2,5.11);
+//     fAntiLambdaPythiaD6T->SetParameter(0,0.54);
+//     fAntiLambdaPythiaD6T->SetParameter(1,0.216);
+//     fAntiLambdaPythiaD6T->SetParameter(2,5.11);
     fK0Data->SetParameter(0,1.0);
     fK0Data->SetParameter(1,0.215);
     fK0Data->SetParameter(2,6.79);
