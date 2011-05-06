@@ -50,6 +50,10 @@ public:
     Float_t GetNotIDConstCorrectionITSLowBound() const {return fNotIDConstITSLow;}
     Float_t GetNotIDConstCorrectionTPCNoIDLowBound() const {return fNotIDConstTPCNoIDLow;}
     Float_t GetNotIDConstCorrectionITSNoIDLowBound() const {return fNotIDConstITSNoIDLow;}
+    Float_t GetNotIDConstCorrectionTPCHighBound() const {return fNotIDConstTPCHigh;}
+    Float_t GetNotIDConstCorrectionITSHighBound() const {return fNotIDConstITSHigh;}
+    Float_t GetNotIDConstCorrectionTPCNoIDHighBound() const {return fNotIDConstTPCNoIDHigh;}
+    Float_t GetNotIDConstCorrectionITSNoIDHighBound() const {return fNotIDConstITSNoIDHigh;}
     TH1D *GetNotIDCorrectionTPC() const {return fnotIDTPC;}
     TH1D *GetNotIDCorrectionITS() const {return fnotIDITS;}
     TH1D *GetNotIDCorrectionNoPID() const {return fnotIDNoID;}
@@ -80,6 +84,10 @@ public:
     //...and these guys are too
     Float_t GetBackgroundCorrectionTPC(const float pT);//{return (1.0-fBackgroundTPC->GetBinContent(fBackgroundTPC->FindBin(pT)));}
     Float_t GetBackgroundCorrectionITS(const float pT);//{return (1.0-fBackgroundITS->GetBinContent(fBackgroundITS->FindBin(pT)));}
+    Float_t GetEfficiencyErrorLowBound(){return fEfficiencyErrorLow;}
+    Float_t GetEfficiencyErrorHighBound(){return fEfficiencyErrorHigh;}
+    Float_t GetBackgroundErrorLowBound(){return fBackgroundErrorLow;}
+    Float_t GetBackgroundErrorHighBound(){return fBackgroundErrorHigh;}
 
 
     void SetEtaCut(const Float_t val){fEtaCut=val;}
