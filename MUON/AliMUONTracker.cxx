@@ -257,7 +257,7 @@ void AliMUONTracker::FillESD(const AliMUONVTrackStore& trackStore, AliESDEvent* 
   // get ITS vertex
   Double_t vertex[3] = {0., 0., 0.};
   const AliESDVertex* esdVert = esd->GetVertex(); 
-  if (esdVert->GetNContributors()) {
+  if (esdVert->GetNContributors() > 0 || !strcmp(esdVert->GetTitle(),"vertexer: smearMC")) {
     esdVert->GetXYZ(vertex);
     AliDebug(1,Form("found vertex (%e,%e,%e)",vertex[0],vertex[1],vertex[2]));
   }
