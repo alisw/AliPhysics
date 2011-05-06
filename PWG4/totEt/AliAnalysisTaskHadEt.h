@@ -27,6 +27,7 @@ public:
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
+    void IsSim(){isSim = kTRUE;}
 
 private:
 
@@ -36,6 +37,7 @@ private:
 
     AliAnalysisHadEtReconstructed *fRecAnalysis; // Rec
     AliAnalysisHadEtMonteCarlo *fMCAnalysis; // MC
+    Bool_t isSim;//Boolean to keep track of whether or not this is running on simulations
 
     ClassDef(AliAnalysisTaskHadEt, 2); // example of analysis
 };
