@@ -29,7 +29,8 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   
   ana->SetTrackEtaCut(1.0);
 //   ana->SetTrackEtaCut(0.8);
-  ana->SetPtMin(0.15);
+//   ana->SetPtMin(0.15);
+  ana->SetPtMin(1.0);
   //ana->SetEventSelectionBit(AliAnalysisHelperJetTasks::kIsPileUp);
   ana->SetReduceMemoryFootprint(kTRUE);
   //ana->SetSelectCharge(2);
