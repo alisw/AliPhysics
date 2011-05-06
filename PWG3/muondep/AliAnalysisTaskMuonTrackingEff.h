@@ -63,6 +63,8 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTaskSE
   void FillTDHistos (Int_t chamber, Int_t detElt, Double_t posXL, Double_t posYL);
   
   void FillTTHistos (Int_t chamber, Int_t detElt, Double_t posXL, Double_t posYL);
+
+  void FillSDHistos (Int_t chamber, Int_t detElt, Double_t posXL, Double_t posYL);
   
   Int_t FromDetElt2iDet (Int_t chamber, Int_t detElt) const;
   Int_t FromDetElt2LocalId (Int_t chamber, Int_t detElt) const;
@@ -84,11 +86,14 @@ private:
 
   TList* fDetEltTDHistList;  //!< List of histograms of the tracks detected in the detection elements. 
   TList* fDetEltTTHistList;  //!< List of histograms of the tracks which have passed through the detection elements. 
+  TList* fDetEltSDHistList;  //!< List of histograms of the tracks only detected by one chamber of the station at the detection element level.
   TList* fChamberTDHistList; //!< List of histograms of the tracks detected in the chambers.
   TList* fChamberTTHistList; //!< List of histograms of the tracks which have passed through the chambers.
+  TList* fChamberSDHistList; //!< List of histograms of the tracks only detected by one chamber of the station.
+  TList* fExtraHistList;     //!< List of extra histograms.
 
   
-  ClassDef(AliAnalysisTaskMuonTrackingEff, 2)
+  ClassDef(AliAnalysisTaskMuonTrackingEff, 3)
 };
 
 #endif
