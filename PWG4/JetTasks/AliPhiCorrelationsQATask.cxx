@@ -106,6 +106,8 @@ void AliPhiCorrelationsQATask::UserCreateOutputObjects()
   
   fOutput->Add(fDCAPrimaries);
   fOutput->Add(fDCASecondaries);
+
+  PostData(1, fOutput);
 }
 
 void AliPhiCorrelationsQATask::UserExec(Option_t*)
@@ -118,9 +120,6 @@ void AliPhiCorrelationsQATask::UserExec(Option_t*)
   if (!esd)
     AliFatal("No input event");
     
-  // post the data already here
-  PostData(1, fOutput);
-
   // vertex cut
   const AliESDVertex* vtxESD = esd->GetPrimaryVertex();
   const AliESDVertex *vtxSPD = esd->GetPrimaryVertexSPD();

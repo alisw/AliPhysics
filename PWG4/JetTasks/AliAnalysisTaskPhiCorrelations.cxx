@@ -207,6 +207,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fListOfHistos->Add(new TH2F("trackletsVsV0Cent", ";L1 clusters;v0 centrality", 100, -0.5, 9999.5, 101, 0, 101));
   fListOfHistos->Add(new TH2F("processIDs", ";#Delta#phi;process id", 100, -0.5 * TMath::Pi(), 1.5 * TMath::Pi(), kPNoProcess + 1, -0.5, kPNoProcess + 0.5));
   
+  PostData(0,fListOfHistos);
+  
   // Add task configuration to output list 
   AddSettingsTree();
 
@@ -256,8 +258,6 @@ void  AliAnalysisTaskPhiCorrelations::Exec(Option_t */*option*/)
   // Analyse the event
   if (fMode) AnalyseCorrectionMode();
   else AnalyseDataMode();
-
-  PostData(0,fListOfHistos);
 }
 
 /******************** ANALYSIS METHODS *****************************/
