@@ -1,8 +1,5 @@
 #ifndef ALIANALYSISTASKDIELECTRONEFFICIENCY_H
 #define ALIANALYSISTASKDIELECTRONEFFICIENCY_H
-
-/* $Id$ */ 
-
 //#####################################################
 //#                                                   # 
 //#  Analysis Task for Event Mixing for dielectron    #

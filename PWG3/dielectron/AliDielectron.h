@@ -25,11 +25,13 @@
 #include "AliDielectronHistos.h"
 
 class AliVEvent;
+class AliMCEvent;
 class THashList;
 class AliDielectronCF;
 class AliDielectronDebugTree;
 class AliDielectronTrackRotator;
 class AliDielectronPair;
+class AliDielectronSignalMC;
 
 //________________________________________________________________
 class AliDielectron : public TNamed {
@@ -84,13 +86,16 @@ public:
   AliDielectronCF* GetCFManagerPair() const { return fCfManagerPair; }
 
   void SetPreFilterUnlikeOnly(Bool_t setValue=kTRUE){fPreFilterUnlikeOnly=setValue;};
+  void SetPreFilterAllSigns(Bool_t setValue=kTRUE){fPreFilterAllSigns=setValue;};
 
   void SetTrackRotator(AliDielectronTrackRotator * const rot) { fTrackRotator=rot; }
   AliDielectronTrackRotator* GetTrackRotator() const { return fTrackRotator; }
 
   void SetHasMC(Bool_t hasMC) { fHasMC = hasMC; }
   Bool_t GetHasMC() const     { return fHasMC;  }
-  
+
+  void AddSignalMC(AliDielectronSignalMC* signal);  
+
   void SetDebugTree(AliDielectronDebugTree * const tree) { fDebugTree=tree; }
   
   static const char* TrackClassName(Int_t i) { return (i>=0&&i<4)?fgkTrackClassNames[i]:""; }
@@ -110,6 +115,8 @@ private:
   Int_t fPdgMother;     // pdg code of mother tracks
   Int_t fPdgLeg1;       // pdg code leg1
   Int_t fPdgLeg2;       // pdg code leg2
+
+  TObjArray* fSignalsMC;      // array of AliDielectronSignalMC
 
   Bool_t fNoPairing;    // if to skip pairing, can be used for track QA only
     
@@ -131,6 +138,7 @@ private:
   AliDielectronDebugTree *fDebugTree;  // Debug tree output
 
   Bool_t fPreFilterUnlikeOnly;  //Apply PreFilter either in +- or to ++/--/+- individually
+  Bool_t fPreFilterAllSigns;  //Apply PreFilter find in  ++/--/+- and remove from all
   Bool_t fHasMC;                //If we run with MC, at the moment only needed in AOD
   
   void FillTrackArrays(AliVEvent * const ev, Int_t eventNr=0);
@@ -151,6 +159,7 @@ private:
   void ProcessMC();
   
   void  FillHistograms(const AliVEvent *ev);
+  void  FillHistogramsMC(const AliMCEvent *ev);
   void  FillHistogramsPair(AliDielectronPair *pair,Bool_t fromPreFilter=kFALSE);
   void  FillHistogramsTracks(TObjArray **tracks);
 

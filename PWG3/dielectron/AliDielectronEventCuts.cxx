@@ -29,6 +29,7 @@ Detailed description
 #include <AliESDVertex.h>
 #include <AliESDEvent.h>
 #include <AliMultiplicity.h>
+#include <AliCentrality.h>
 
 #include "AliDielectronEventCuts.h"
 
@@ -41,6 +42,8 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fRequireVtx(kFALSE),
   fMinVtxContributors(0),
   fMultITSTPC(kFALSE),
+  fCentMin(1.),
+  fCentMax(0.),
   fVtxType(kVtxTracks),
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
@@ -60,6 +63,8 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fRequireVtx(kFALSE),
   fMinVtxContributors(0),
   fMultITSTPC(kFALSE),
+  fCentMin(1.),
+  fCentMax(0.),
   fVtxType(kVtxTracks),
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
@@ -89,6 +94,13 @@ Bool_t AliDielectronEventCuts::IsSelected(TObject* event)
   AliESDEvent *ev=dynamic_cast<AliESDEvent*>(event);
   if (!ev) return kFALSE;
 
+  if (fCentMin<fCentMax){
+    AliCentrality *centrality=ev->GetCentrality();
+    Double_t centralityF=-1;
+    if (centrality) centralityF = centrality->GetCentralityPercentile("V0M");
+    if (centralityF<fCentMin || centralityF>=fCentMax) return kFALSE;
+  }
+
   fkVertex=0x0;
   switch(fVtxType){
   case kVtxTracks:
@@ -102,16 +114,25 @@ Bool_t AliDielectronEventCuts::IsSelected(TObject* event)
 
   if ((fRequireVtx||fVtxZmin<fVtxZmax||fMinVtxContributors>0)&&!fkVertex) return kFALSE;
   
+
+  if (fMinVtxContributors>0){
+    Int_t nCtrb = fkVertex->GetNContributors();
+    if (nCtrb<fMinVtxContributors){
+      if (fVtxType==kVtxTracksOrSPD){
+        fkVertex=ev->GetPrimaryVertexSPD();
+        nCtrb = fkVertex->GetNContributors();
+        if (nCtrb<fMinVtxContributors) return kFALSE;
+      } else {
+        return kFALSE;
+      }
+    }
+  }
+
   if (fVtxZmin<fVtxZmax){
     Double_t zvtx=fkVertex->GetZv();
     if (zvtx<fVtxZmin||zvtx>fVtxZmax) return kFALSE;
   }
-
-  if (fMinVtxContributors>0){
-    Int_t nCtrb = fkVertex->GetNContributors();
-    if (nCtrb<fMinVtxContributors) return kFALSE;
-  }
-
+  
   if (fRequireV0and){
     if (!fTriggerAnalysis) fTriggerAnalysis=new AliTriggerAnalysis;
     Bool_t v0AND = kFALSE;
@@ -136,6 +157,7 @@ Bool_t AliDielectronEventCuts::IsSelected(TObject* event)
     if ( vtxESDTPC && multESD && vtxESDTPC->GetNContributors() < (-10.+0.25*multESD->GetNumberOfITSClusters(0)) )
       return kFALSE;
   }
+
   
   return kTRUE;
 }

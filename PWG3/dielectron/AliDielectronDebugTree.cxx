@@ -13,8 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id$ */
-
 ///////////////////////////////////////////////////////////////////////////
 //                Dielectron DebugTree                                  //
 //                                                                       //
@@ -114,6 +112,7 @@ void AliDielectronDebugTree::Fill(AliDielectronPair *pair)
   TObjString fileName;
   Int_t eventInFile=-1;
   Int_t runNumber=-1;
+  UInt_t eventTime=0;
   
   TTree *t=man->GetTree();
   if (t) {
@@ -126,6 +125,7 @@ void AliDielectronDebugTree::Fill(AliDielectronPair *pair)
     AliESDEvent *ev=dynamic_cast<AliESDEvent*>(han->GetEvent());
     eventInFile=ev->GetEventNumberInFile();
     runNumber=ev->GetRunNumber();
+    eventTime=ev->GetTimeStamp();
   }
   
   if (!fStreamer) fStreamer=new TTreeSRedirector(fFileName.Data());
@@ -137,7 +137,8 @@ void AliDielectronDebugTree::Fill(AliDielectronPair *pair)
     << "EventInFile=" << eventInFile
     << "Run="         << runNumber
     << "Leg1_ID="     << id1
-    << "Leg2_ID="     << id2;
+    << "Leg2_ID="     << id2
+    << "EventTime="    << eventTime;
   
   //Fill MC information
   Bool_t hasMC=AliDielectronMC::Instance()->HasMC();

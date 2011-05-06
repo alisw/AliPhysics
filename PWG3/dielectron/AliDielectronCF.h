@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
-
 //#############################################################
 //#                                                           #
 //#             Class AliDielectronCF                         #
@@ -42,6 +40,7 @@ public:
   virtual ~AliDielectronCF();
 
   void SetStepForMCtruth(Bool_t steps=kTRUE)           { fStepForMCtruth=steps;           }
+  Bool_t GetStepForMCtruth() const                     { return fStepForMCtruth;          }
   void SetStepForNoCutsMCmotherPid(Bool_t steps=kTRUE) { fStepForNoCutsMCmotherPid=steps; }
   void SetStepForAfterAllCuts(Bool_t steps=kTRUE)      { fStepForAfterAllCuts=steps;      }
   void SetStepForPreFilter(Bool_t steps=kTRUE)         { fStepForPreFilter=steps;         }
@@ -51,6 +50,7 @@ public:
   void SetStepsForBackground(Bool_t steps=kTRUE)       { fStepsForBackground=steps;       }
   
   void SetPdgMother(Int_t pdg) { fPdgMother=pdg; }
+  void SetSignalsMC(TObjArray* array)    {fSignalsMC = array;}
   
   void AddStepMask(UInt_t mask)                  { fStepMasks[fNStepMasks++]=mask; }
   
@@ -64,7 +64,8 @@ public:
 //   void Fill(UInt_t mask, const TObject *particle);
   void Fill(UInt_t mask, const AliDielectronPair *particle);
   void FillMC(const TObject *particle);
-  
+  void FillMC(Int_t label1, Int_t label2, Int_t nSignal);
+
   AliCFContainer* GetContainer() const { return fCfContainer; }
   
 private:
@@ -97,6 +98,7 @@ private:
   UInt_t fNStepMasks;                    //number of configured step masks
 
   Int_t fPdgMother;                      //Pdg code of MCtruth validation
+  TObjArray* fSignalsMC;                 //! array of MC signals to be studied
   AliCFContainer* fCfContainer;          //the CF container
 
   Bool_t fHasMC;                         //if MC info is available

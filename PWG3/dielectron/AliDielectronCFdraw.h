@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
-
 //#############################################################
 //#                                                           #
 //#             Class AliDielectronCF                         #
@@ -63,6 +61,7 @@ public:
   void Draw(Int_t var0, Int_t var1, const char* opt="", const char* slices="");
   void Draw(Int_t var0, Int_t var1, Int_t var2, const char* opt="", const char* slices="");
 
+  TObjArray* CollectHistosProj(const Option_t* varnames, const char* slices);
   TObjArray* CollectHistosProj(const Int_t vars[3], const char* slices);
   TH1* Project(const Int_t vars[3], Int_t slice);
   TH1* Project(const Option_t* var, Int_t slice);

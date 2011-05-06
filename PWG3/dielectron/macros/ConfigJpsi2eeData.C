@@ -41,7 +41,8 @@ AliDielectron* ConfigJpsi2ee(Int_t cutDefinition, Bool_t isAOD=kFALSE)
   InitCFDieleData(diele, cutDefinition, isAOD);
 
   AliDielectronTrackRotator *rot=new AliDielectronTrackRotator;
-  rot->SetIterations(4);
+  rot->SetConeAnglePhi(TMath::Pi());
+  rot->SetIterations(10);
   diele->SetTrackRotator(rot);
   return diele;
 }
@@ -76,7 +77,7 @@ void SetupTrackCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
   //
   if (isAOD){
     // TPC #clusteres cut
-    pt->AddCut(AliDielectronVarManager::kNclsTPC,60.,160.);
+    pt->AddCut(AliDielectronVarManager::kNclsTPC,70.,160.);
     pt->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
     //TODO: DCA cuts to be investigated!!!
 //       pt->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
@@ -113,26 +114,28 @@ AliESDtrackCuts *SetupESDtrackCutsDieleData(Int_t cutDefinition)
   // Setup default AliESDtrackCuts
   //
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts;
-  
+
   // basic track quality cuts  (basicQ)
   esdTrackCuts->SetMaxDCAToVertexZ(3.0);
   esdTrackCuts->SetMaxDCAToVertexXY(1.0);
-  
+
   esdTrackCuts->SetEtaRange( -0.9 , 0.9 );
-  
+
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  
-  esdTrackCuts->SetMinNClustersTPC(60);
+
+  esdTrackCuts->SetPtRange(.8,1e30);
+
+  esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
 
   // default SPD any
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-  
+
   if (cutDefinition==0)
     esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-  
+
   return esdTrackCuts;
 }
 
@@ -213,21 +216,37 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD)
   
   //pair variables
   cf->AddVariable(AliDielectronVarManager::kPt,"0.0, 1.0, 2.0, 3.0, 5., 7.0, 10.0, 100.0");
-  
-  cf->AddVariable(AliDielectronVarManager::kY,"-5,-1,-0.9,-0.8,-0.5,-0.3,0.3,0.5,0.8,0.9,1.0,5");
+
+  cf->AddVariable(AliDielectronVarManager::kY,"-5,-1,-0.9,-0.8,-0.7,-0.5,-0.3,0.3,0.5,0.7,0.8,0.9,1.0,5");
   cf->AddVariable(AliDielectronVarManager::kM,125,0.,125*.04); //40Mev Steps
-  cf->AddVariable(AliDielectronVarManager::kPairType,11,0,11);
+  cf->AddVariable(AliDielectronVarManager::kPairType,"-0.5,0.5,1.5,2.5");
+  cf->AddVariable(AliDielectronVarManager::kThetaHE, "-2.0, -1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1.0, 2.0");
+  cf->AddVariable(AliDielectronVarManager::kThetaCS, "-2.0, -1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1.0, 2.0");
   //leg variables
-  cf->AddVariable(AliDielectronVarManager::kPt,"0.0, 0.8, 1.0, 1.2, 100.0",kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kNclsTPC,"0, 70, 80, 90, 100, 120, 160",kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kNFclsTPCr,"0, 90, 100, 120, 140, 150, 160",kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kNFclsTPCrFrac,"0, .5, .7, .8, .9, .95, 1",kTRUE);
-  cf->AddVariable(AliDielectronVarManager::kEta,"-5,-1,-0.9,-0.8,-0.5,0.5,0.8,0.9,1.0,5",kTRUE);
-  
+  cf->AddVariable(AliDielectronVarManager::kPt,"0.0, 0.8, 0.9, 0.95, 1.0, 1.05, 1.1, 1.2, 100.0",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kNclsTPC,"0, 70, 75, 80, 85, 90, 100, 120, 160",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kEta,"-5,-1,-0.9,-0.85,-0.8,-0.75,0.75,0.8,0.85,0.9,1.0,5",kTRUE);
+
 //   cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-2.5,-2,-1.5,-1,-0.5,4.",kTRUE);
   cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPio,"3.,3.5,4.,100",kTRUE);
   cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPro,"3.,3.5,4.,100",kTRUE);
-  
+
+  //event variables
+  cf->AddVariable(AliDielectronVarManager::kNaccTrcklts,"0.0, 9.0, 17.0, 25.0, 36.0, 55.0, 500.0");
+
+  if (!isAOD){
+    Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+    if (hasMC){
+      cf->AddVariable(AliDielectronVarManager::kPdgCode,10000,-5000.5,4999.5,kTRUE);
+      cf->AddVariable(AliDielectronVarManager::kPdgCodeMother,10000,-5000.5,4999.5,kTRUE);
+      cf->AddVariable(AliDielectronVarManager::kPdgCodeGrandMother,10000,-5000.5,4999.5,kTRUE);
+    }
+  }
+    //only in this case write MC truth info
+  if (cutDefinition==0){
+    cf->SetStepForMCtruth();
+  }
+
   diele->SetCFManagerPair(cf);
   
 }

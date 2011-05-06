@@ -413,12 +413,12 @@ f.Draw("same")
 // Default
 //
 c->SetAlias("cutE","abs(Leg1_TPC_nSigma_Electrons)<3&&abs(Leg2_TPC_nSigma_Electrons)<3");
-c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3&&abs(Leg2_TPC_nSigma_Pions)>3");
-c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3&&(Leg2_TPC_nSigma_Protons)>3");
+c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3.5&&abs(Leg2_TPC_nSigma_Pions)>3.5");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3.5&&(Leg2_TPC_nSigma_Protons)>3.5");
 c->SetAlias("pidSig","cutE&&cutPi&&cutP");
 
 c->SetAlias("LegEta","abs(Leg1_Eta)<0.9&&abs(Leg2_Eta)<0.9");
-c->SetAlias("LegNcl","Leg1_NclsTPC>90&&Leg2_NclsTPC>90");
+c->SetAlias("LegNcl","Leg1_NclsTPC>70&&Leg2_NclsTPC>70");
 c->SetAlias("LegPt","Leg1_Pt>1&&Leg2_Pt>1");
 c->SetAlias("Rap","abs(Y)<0.9");
 c->SetAlias("QA","LegNcl&&LegEta&&Rap&&LegPt");

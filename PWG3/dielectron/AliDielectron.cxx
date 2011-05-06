@@ -59,6 +59,7 @@ The names are available via the function PairClassName(Int_t i)
 #include "AliDielectronVarManager.h"
 #include "AliDielectronTrackRotator.h"
 #include "AliDielectronDebugTree.h"
+#include "AliDielectronSignalMC.h"
 
 #include "AliDielectron.h"
 
@@ -96,6 +97,7 @@ AliDielectron::AliDielectron() :
   fPdgMother(443),
   fPdgLeg1(11),
   fPdgLeg2(11),
+  fSignalsMC(0x0),
   fNoPairing(kFALSE),
   fHistos(0x0),
   fPairCandidates(new TObjArray(10)),
@@ -103,6 +105,7 @@ AliDielectron::AliDielectron() :
   fTrackRotator(0x0),
   fDebugTree(0x0),
   fPreFilterUnlikeOnly(kFALSE),
+  fPreFilterAllSigns(kFALSE),
   fHasMC(kFALSE)
 {
   //
@@ -122,6 +125,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fPdgMother(443),
   fPdgLeg1(11),
   fPdgLeg2(11),
+  fSignalsMC(0x0),
   fNoPairing(kFALSE),
   fHistos(0x0),
   fPairCandidates(new TObjArray(10)),
@@ -129,6 +133,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fTrackRotator(0x0),
   fDebugTree(0x0),
   fPreFilterUnlikeOnly(kFALSE),
+  fPreFilterAllSigns(kFALSE),
   fHasMC(kFALSE)
 {
   //
@@ -146,6 +151,7 @@ AliDielectron::~AliDielectron()
   if (fHistos) delete fHistos;
   if (fPairCandidates) delete fPairCandidates;
   if (fDebugTree) delete fDebugTree;
+  if (fSignalsMC) delete fSignalsMC;
 }
 
 //________________________________________________________________
@@ -157,7 +163,10 @@ void AliDielectron::Init()
 
   if(GetHasMC()) AliDielectronMC::Instance()->SetHasMC(GetHasMC());
   
-  if (fCfManagerPair) fCfManagerPair->InitialiseContainer(fPairFilter);
+  if (fCfManagerPair) {
+    fCfManagerPair->SetSignalsMC(fSignalsMC);
+    fCfManagerPair->InitialiseContainer(fPairFilter);
+  }
   if (fTrackRotator)  {
     fTrackRotator->SetTrackArrays(&fTracks[0],&fTracks[1]);
     fTrackRotator->SetPdgLegs(fPdgLeg1,fPdgLeg2);
@@ -208,14 +217,22 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   //fill track arrays for the first event
   if (ev1){
     FillTrackArrays(ev1);
-    if ((fPreFilterUnlikeOnly) && ( fPairPreFilter.GetCuts()->GetEntries()>0 )) PairPreFilter(0, 1, fTracks[0], fTracks[1]);
+    if (((fPreFilterAllSigns)||(fPreFilterUnlikeOnly)) && ( fPairPreFilter.GetCuts()->GetEntries()>0 )) PairPreFilter(0, 1, fTracks[0], fTracks[1]);
+    if ((fPreFilterAllSigns) && ( fPairPreFilter.GetCuts()->GetEntries()>0 )) {
+		  	PairPreFilter(0, 0, fTracks[0], fTracks[0]);
+		  	PairPreFilter(1, 1, fTracks[1], fTracks[1]);
+		}		
   }
 
 
   //fill track arrays for the second event
   if (ev2) {
     FillTrackArrays(ev2,1);
-    if ((fPreFilterUnlikeOnly) && ( fPairPreFilter.GetCuts()->GetEntries()>0 )) PairPreFilter(2, 3, fTracks[2], fTracks[3]);
+    if (((fPreFilterAllSigns)||(fPreFilterUnlikeOnly)) && ( fPairPreFilter.GetCuts()->GetEntries()>0 )) PairPreFilter(2, 3, fTracks[2], fTracks[3]);
+    if ((fPreFilterAllSigns) && ( fPairPreFilter.GetCuts()->GetEntries()>0 )) {
+		  	PairPreFilter(2, 2, fTracks[2], fTracks[2]);
+		  	PairPreFilter(3, 3, fTracks[3], fTracks[3]);
+		}		
   }
 
   if (!fNoPairing){
@@ -247,16 +264,102 @@ void AliDielectron::ProcessMC()
   // Process the MC data
   //
 
+  AliDielectronMC *dieMC=AliDielectronMC::Instance();
+
+  if (fHistos) FillHistogramsMC(dieMC->GetMCEvent());
+
+  if(!fSignalsMC) return;
   //loop over all MC data and Fill the CF container if it exist
   if (!fCfManagerPair) return;
   fCfManagerPair->SetPdgMother(fPdgMother);
-  AliDielectronMC *dieMC=AliDielectronMC::Instance();
-  for (Int_t ipart=0; ipart<dieMC->GetNMCTracks();++ipart){
-    //TODO: MC truth cut properly!!!
-    AliVParticle *mcPart=dieMC->GetMCTrackFromMCEvent(ipart);
-    if (!dieMC->IsMCMotherToEE(mcPart, fPdgMother)) continue;
-    fCfManagerPair->FillMC(mcPart);
+  if(!fCfManagerPair->GetStepForMCtruth()) return;
+
+  // signals to be studied
+  Int_t nSignals = fSignalsMC->GetEntries();
+
+  // initialize 2D arrays of labels for particles from each MC signal
+  Int_t** labels1;      // labels for particles satisfying branch 1
+  Int_t** labels2;      // labels for particles satisfying branch 2
+  Int_t** labels12;     // labels for particles satisfying both branches
+  labels1 = new Int_t*[nSignals];
+  labels2 = new Int_t*[nSignals];
+  labels12 = new Int_t*[nSignals];
+  Int_t* indexes1=new Int_t[nSignals];
+  Int_t* indexes2=new Int_t[nSignals];
+  Int_t* indexes12=new Int_t[nSignals];
+  for(Int_t isig=0;isig<nSignals;++isig) {
+    *(labels1+isig) = new Int_t[dieMC->GetNMCTracks()];
+    *(labels2+isig) = new Int_t[dieMC->GetNMCTracks()];
+    *(labels12+isig) = new Int_t[dieMC->GetNMCTracks()];
+    for(Int_t ip=0; ip<dieMC->GetNMCTracks();++ip) {
+      labels1[isig][ip] = -1;
+      labels2[isig][ip] = -1;
+      labels12[isig][ip] = -1;
+    }
+    indexes1[isig]=0;
+    indexes2[isig]=0;
+    indexes12[isig]=0;
   }
+
+  Bool_t truth1=kFALSE;
+  Bool_t truth2=kFALSE;
+  // loop over the MC tracks
+  for(Int_t ipart=0; ipart<dieMC->GetNMCTracks(); ++ipart) {
+    for(Int_t isig=0; isig<nSignals; ++isig) {       // loop over signals
+      // Proceed only if this signal is required in the pure MC step
+      // NOTE: Some signals can be satisfied by many particles and this leads to high
+      //       computation times (e.g. secondary electrons from the GEANT transport). Be aware of this!!
+      if(!((AliDielectronSignalMC*)fSignalsMC->At(isig))->GetFillPureMCStep()) continue;
+
+      truth1 = dieMC->IsMCTruth(ipart, (AliDielectronSignalMC*)fSignalsMC->At(isig), 1);
+      truth2 = dieMC->IsMCTruth(ipart, (AliDielectronSignalMC*)fSignalsMC->At(isig), 2);
+
+      // particles satisfying both branches are treated separately to avoid double counting during pairing
+      if(truth1 && truth2) {
+	labels12[isig][indexes12[isig]] = ipart;
+	++indexes12[isig];
+      }
+      else {
+	if(truth1) {
+	  labels1[isig][indexes1[isig]] = ipart;
+	  ++indexes1[isig];
+	}
+	if(truth2) {
+	  labels2[isig][indexes2[isig]] = ipart;
+	  ++indexes2[isig];
+	}
+      }
+    }
+  }  // end loop over MC particles
+
+  // Do the pairing and fill the CF container with pure MC info
+  for(Int_t isig=0; isig<nSignals; ++isig) {
+    // mix the particles which satisfy only one of the signal branches
+    for(Int_t i1=0;i1<indexes1[isig];++i1) {
+      for(Int_t i2=0;i2<indexes2[isig];++i2) {
+	fCfManagerPair->FillMC(labels1[isig][i1], labels2[isig][i2], isig);
+      }
+    }
+    // mix the particles which satisfy both branches
+    for(Int_t i1=0;i1<indexes12[isig];++i1) {
+      for(Int_t i2=0; i2<i1; ++i2) {
+	fCfManagerPair->FillMC(labels12[isig][i1], labels12[isig][i2], isig);
+      }
+    }
+  }    // end loop over signals
+
+  // release the memory
+  for(Int_t isig=0;isig<nSignals;++isig) {
+    delete [] *(labels1+isig);
+    delete [] *(labels2+isig);
+    delete [] *(labels12+isig);
+  }
+  delete [] labels1;
+  delete [] labels2;
+  delete [] labels12;
+  delete [] indexes1;
+  delete [] indexes2;
+  delete [] indexes12;
 }
 
 //________________________________________________________________
@@ -281,6 +384,23 @@ void AliDielectron::FillHistogramsTracks(TObjArray **tracks)
     }
   }
 }
+
+
+//________________________________________________________________
+void AliDielectron::FillHistogramsMC(const AliMCEvent *ev)
+{
+  //
+  // Fill Histogram information for MCEvents
+  //
+
+  Double_t values[AliDielectronVarManager::kNMaxValues];
+  // Fill event information
+  AliDielectronVarManager::Fill(ev, values);
+  if (fHistos->GetHistogramList()->FindObject("MCEvent"))
+    fHistos->FillClass("MCEvent", AliDielectronVarManager::kNMaxValues, values);
+}
+
+
 //________________________________________________________________
 void AliDielectron::FillHistograms(const AliVEvent *ev)
 {
@@ -450,6 +570,8 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
                           track2, fPdgLeg2);
       candidate.SetType(pairIndex);
       candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
+      //relate to the production vertex
+//       if (AliDielectronVarManager::GetKFVertex()) candidate.SetProductionVertex(*AliDielectronVarManager::GetKFVertex());
       
       //pair cuts
       UInt_t cutMask=fPairPreFilter.IsSelected(&candidate);
@@ -458,7 +580,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
       if (cutMask!=selectedMask) continue;
       if (fCfManagerPair) fCfManagerPair->Fill(selectedMaskPair+1 ,&candidate);
       accepted=kTRUE;
-      FillHistogramsPair(&candidate,kTRUE);
+      if (fHistos) FillHistogramsPair(&candidate,kTRUE);
       //remove the tracks from the Track arrays
       arrTracks2.AddAt(0x0,itrack2);
       //in case of like sign remove the track from both arrays!
@@ -503,7 +625,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
     }
   }
   //For unlike-sign monitor track-cuts:
-  if (arr1!=arr2) {
+  if (arr1!=arr2&&fHistos) {
     TObjArray *unlikesignArray[2] = {&arrTracks1,&arrTracks2};
     FillHistogramsTracks(unlikesignArray);
   }
@@ -520,7 +642,7 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2)
   TObjArray arrTracks2=fTracks[arr2];
 
   //process pre filter if set
-  if ((!fPreFilterUnlikeOnly) && ( fPairPreFilter.GetCuts()->GetEntries()>0 ))  PairPreFilter(arr1, arr2, arrTracks1, arrTracks2);
+  if ((!fPreFilterAllSigns) && (!fPreFilterUnlikeOnly) && ( fPairPreFilter.GetCuts()->GetEntries()>0 ))  PairPreFilter(arr1, arr2, arrTracks1, arrTracks2);
   
   Int_t pairIndex=GetPairIndex(arr1,arr2);
 
@@ -610,3 +732,15 @@ void AliDielectron::SaveDebugTree()
   if (fDebugTree) fDebugTree->DeleteStreamer();
 }
 
+
+//__________________________________________________________________
+void AliDielectron::AddSignalMC(AliDielectronSignalMC* signal) {
+  //
+  //  Add an MC signal to the signals list
+  //
+  if(!fSignalsMC) {
+    fSignalsMC = new TObjArray();
+    fSignalsMC->SetOwner();
+  }
+  fSignalsMC->Add(signal);
+}

@@ -27,6 +27,7 @@
 #include <AliKFParticle.h>
 #include <AliVParticle.h>
 
+class AliVVertex;
 class AliVTrack;
 
 //TODO
@@ -90,12 +91,17 @@ public:
   virtual const Double_t *PID() const { return 0;} //TODO: check
   // Dummy
   Int_t PdgCode() const {return 0;}
+  //
+  Double_t GetLXY(const AliVVertex * const vtx) const;
+  Double_t GetPseudoProperTime(const AliVVertex * const vtx) const;
 
 
   UChar_t GetType() const { return fType; }
   void SetType(Char_t type) { fType=type; }
 
   void SetLabel(Int_t label) {fLabel=label;}
+
+  void SetProductionVertex(const AliKFParticle &Vtx) { fPair.SetProductionVertex(Vtx); }
   
   //inter leg information
   Double_t OpeningAngle()         const { return fD1.GetAngle(fD2);                             }
