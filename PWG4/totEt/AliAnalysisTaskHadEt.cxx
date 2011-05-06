@@ -37,11 +37,11 @@ ClassImp(AliAnalysisTaskHadEt)
         AliAnalysisTaskTransverseEnergy(name, isMc)
 	,fRecAnalysis(0)
 	,fMCAnalysis(0)
+	,isSim(isMc)
 {
     // Constructor
   fMCConfigFile = mcConfigFile;
   fRecoConfigFile = recoConfigFile;
-  isSim = isMc;  
 
   if(fMCAnalysis) delete fMCAnalysis;
   if(fRecAnalysis) delete fRecAnalysis;
