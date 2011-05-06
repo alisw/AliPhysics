@@ -50,6 +50,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "NFclsTPCrobust",
   "NFclsTPCrobustFraction",
   "TPCsignalN",
+  "TPCsignalNfrac",
   "TPCchi2PerCluster",
   "TrackStatus",
     
@@ -64,7 +65,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "PdgCode",
 
   "PdgCodeMother",
-
+  "PdgCodeGrandMother",
+    
   "NumberOfDaughters",
   "HaveSameMother",
   "IsJpsiPrimary",
@@ -82,6 +84,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 
   "P_InnerParam",
   "TPC_signal",
+  "TOF_signal",
+  "TOF_beta",
+  
   "TPC_nSigma_Electrons",
   "TPC_nSigma_Pions",
   "TPC_nSigma_Muons",
@@ -111,6 +116,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "Merr",
   "DCA",
   "PairType",
+  "PseudoProperTime",
   //
   "X",
   "Y",
@@ -120,14 +126,17 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "ZRes",
   "NTrk",
   "Tracks",
+  "Nacc",
+  "kNaccTrcklts",
+  "kNch",
   "Centrality",
   "Nevents"
 };
 
-AliESDpid* AliDielectronVarManager::fgESDpid = 0x0;
-AliAODpidUtil* AliDielectronVarManager::fgAODpidUtil = 0x0;
-AliVEvent* AliDielectronVarManager::fgEvent  = 0x0;
-AliKFVertex* AliDielectronVarManager::fgKFVertex  = 0x0;
+AliPIDResponse* AliDielectronVarManager::fgPIDResponse = 0x0;
+AliVEvent*      AliDielectronVarManager::fgEvent       = 0x0;
+AliKFVertex*    AliDielectronVarManager::fgKFVertex    = 0x0;
+Double_t        AliDielectronVarManager::fgData[AliDielectronVarManager::kNMaxValues] = {};
 //________________________________________________________________
 AliDielectronVarManager::AliDielectronVarManager() :
   TNamed("AliDielectronVarManager","AliDielectronVarManager")

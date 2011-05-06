@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
-
 //#####################################################
 //#                                                   # 
 //#              Class AliDielectronMC                #
@@ -27,6 +25,7 @@ class TParticle;
 class AliMCParticle;
 class AliAODMCParticle;
 
+#include "AliDielectronSignalMC.h"
 #include "AliDielectronPair.h"
 
 class AliDielectronMC : public TObject{
@@ -64,6 +63,10 @@ public:
   Bool_t IsMotherPdg(const AliDielectronPair* pair, Int_t pdgMother);
   Bool_t IsMotherPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   Bool_t IsMCMotherToEE(const AliVParticle *particle, Int_t pdgMother);
+  Bool_t IsMCTruth(const AliDielectronPair* pair, AliDielectronSignalMC* signalMC);
+  Bool_t IsMCTruth(Int_t ipart, AliDielectronSignalMC* signalMC, Int_t branch);
+  Int_t GetMothersLabel(Int_t daughterLabel);
+  Int_t GetPdgFromLabel(Int_t label);
 
   Bool_t HaveSameMother(const AliDielectronPair *pair);
   
@@ -90,6 +93,8 @@ public:
   void GetDaughters(const TObject *mother, AliVParticle* &d1, AliVParticle* &d2);
   Int_t IsJpsiPrimary(const AliDielectronPair * pair);
   Int_t IsJpsiPrimary(const AliVParticle * pair);
+
+  AliMCEvent* GetMCEvent() { return fMCEvent; }         // return the AliMCEvent
   
 private:
   AliMCEvent    *fMCEvent;  // MC event object
@@ -111,6 +116,8 @@ private:
   Int_t GetLabelMotherWithPdgESD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   Int_t GetLabelMotherWithPdgAOD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   
+  Bool_t ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t checkBothCharges) const;
+  Bool_t CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source);
   ClassDef(AliDielectronMC, 0)
 };
 

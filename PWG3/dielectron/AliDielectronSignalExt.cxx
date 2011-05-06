@@ -13,8 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id$ */
-
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
 //                      Dielectron SignalExt                             //
@@ -198,6 +196,13 @@ void AliDielectronSignalExt::ProcessRotation(TObjArray* const arrhist)
     delete fHistDataPM;
     fHistDataPM=0x0;
     return;
+  }
+  fHistBackground->Sumw2();
+
+  // rebin the histograms
+  if (fRebin>1) {
+    fHistDataPM->Rebin(fRebin);
+    fHistBackground->Rebin(fRebin);
   }
 
   //scale histograms to match integral between fScaleMin and fScaleMax
