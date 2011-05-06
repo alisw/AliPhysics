@@ -1528,15 +1528,15 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
             fhMCOrgDeltaEta[10]->Fill(pt,deta);
             fhMCOrgDeltaPhi[10]->Fill(pt,dphi);
           }
-          else {
-            printf("AliAnaPi0::FillMCVersusRecDataHistograms() - Check ** Common ancestor label %d, pdg %d, name %s, status %d; \n",
-                   ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
-          }
+         // else {
+         //   printf("AliAnaPi0::FillMCVersusRecDataHistograms() - Check ** Common ancestor label %d, pdg %d, name %s, status %d; \n",
+         //          ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
+         // }
         }//status 21
-        else {
-          printf("AliAnaPi0::FillMCVersusRecDataHistograms() - Check *** Common ancestor label %d, pdg %d, name %s, status %d; \n",
-                 ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
-        }
+        //else {
+        //  printf("AliAnaPi0::FillMCVersusRecDataHistograms() - Check *** Common ancestor label %d, pdg %d, name %s, status %d; \n",
+        //         ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
+       // }
       }////Partons, colliding protons, strings, intermediate corrections
     }//ancLabel > -1 
     else { //ancLabel <= -1
