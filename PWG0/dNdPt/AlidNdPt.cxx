@@ -110,3 +110,12 @@ Double_t * AlidNdPt::CreateLogAxis(Int_t nbins, Double_t xmin, Double_t xmax) {
 
 return xbins;
 }
+//_____________________________________________________________________________
+
+Double_t* AlidNdPt::CloneArray(Int_t n, Double_t* source)
+{
+    if (!source || n==0) return 0;
+    Double_t* dest = new Double_t[n];
+    for (Int_t i=0; i<n ; i++) { dest[i] = source[i]; }
+    return dest;
+}

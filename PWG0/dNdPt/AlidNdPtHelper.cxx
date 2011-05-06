@@ -1480,5 +1480,70 @@ Int_t  AlidNdPtHelper::GetSPDMBPrimTrackMult(const AliESDEvent* const esdEvent, 
 
 return inputCount;
 }
+//_____________________________________________________________________________
+
+THnSparse* AlidNdPtHelper::RebinTHnSparse(const THnSparse* hist1, THnSparse* hist2, const Char_t* newname, Option_t* option)
+{
+    THnSparse* htemp = 0;
+    const THnSparse* hist = 0;
+    TString opt = option;
+    opt.ToLower();
+    Bool_t calcErrors = kFALSE;
+    Bool_t useRange = kFALSE;
+    Bool_t overwrite = kFALSE;
+    if (opt.Contains("e")) { calcErrors = kTRUE; } // calcluate correct errors (not implemented)
+    if (opt.Contains("r")) { useRange = kTRUE; }   // use the axis range given in hist1
+    if (opt.Contains("o")) { overwrite = kTRUE; }  // overwrite hist2 instead of creating a new one
+    Int_t ndim  = hist1->GetNdimensions();
+    if (ndim != hist2->GetNdimensions()) {
+        printf("AlidNdPtHelper::RebinTHnSparse: ERROR: Histograms have different dimensions \n");
+        return 0;
+    }    
+    Int_t* dims = new Int_t[ndim];
+    for (Int_t i = 0; i < ndim; i++) { dims[i] = i; }
+    if (useRange) {         
+        htemp = hist1->Projection(ndim,dims,"e");
+	hist = htemp; 
+    } else { hist = hist1; }
+    //THnSparse* hnew = hist2->Projection(ndim,dims,"o");
+    //hnew->SetName(newname);
+    THnSparse* hnew = 0;
+    if (overwrite) { 
+        hnew = hist2;
+    } else {
+        hnew = (THnSparse*) hist2->Clone(newname);
+    }
+    for (Int_t i = 0; i < ndim; i++) { hnew->GetAxis(i)->SetRange(); }
+    hnew->SetTitle(hist1->GetTitle());
+    hnew->Reset();
+    hnew->Sumw2();
+    Double_t content;
+    Double_t error;
+    Int_t* c = new Int_t[ndim];
+    Double_t* x = new Double_t[ndim];
+    Long64_t n = hist->GetNbins();
+    for (Long64_t j = 0; j < n; j++) {
+        content = hist->GetBinContent(j,c);
+        error = hist->GetBinError(j);
+        for (Int_t i = 0; i < ndim; i++) {
+            x[i] = hist->GetAxis(i)->GetBinCenter(c[i]);
+        }
+        /* function IsInRange is protected, shit!
+        if (useRange) {
+            if (! hist1->IsInRange(c)) continue;
+        }
+        */
+        if (calcErrors) {
+           // implementation to be done
+        } else {
+           hnew->Fill(x,content);
+        }
+    }
+    delete[] c; c=0;
+    delete[] x; x=0;
+    delete[] dims; dims=0;
+    if (htemp) { delete htemp; htemp = 0;}
+    return hnew;
+}
 
 

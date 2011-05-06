@@ -110,6 +110,9 @@ class AlidNdPtHelper : public TObject
     static Double_t GetStrangenessCorrFactorPbPb(const Double_t pt);    
     static Double_t GetLinearInterpolationValue(const Double_t x1, const Double_t y1, const Double_t x2, const Double_t y2, const Double_t pt);
 
+    // function to rebin THnSparse, the content of hist1 will be rebinned, hist2 serves as a protoype for the binning
+    static THnSparse* RebinTHnSparse(const THnSparse* hist1, THnSparse* hist2, const Char_t* newname = "",  Option_t* option = "");
+
     ClassDef(AlidNdPtHelper, 1);
 
   private:

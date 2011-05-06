@@ -22,5 +22,7 @@
 
 #pragma link C++ class AlidNdPtBackgroundCuts+;
 #pragma link C++ class AlidNdPtEfficiency+;
+#pragma link C++ class AliPtResolAnalysis+;
+#pragma link C++ class AliPtResolAnalysisPbPb+;
 
 #endif
