@@ -41,7 +41,7 @@ ClassImp(AliAnalysisTaskHadEt)
     // Constructor
   fMCConfigFile = mcConfigFile;
   fRecoConfigFile = recoConfigFile;
-  
+  isSim = isMc;  
 
   if(fMCAnalysis) delete fMCAnalysis;
   if(fRecAnalysis) delete fRecAnalysis;
@@ -85,8 +85,9 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
   fOutputList->SetOwner();
   fMCAnalysis->SetHistoList(fOutputList);
   fRecAnalysis->SetHistoList(fOutputList);
-  fMCAnalysis->CreateHistograms();
+  if(isSim) fMCAnalysis->CreateHistograms();
   fRecAnalysis->CreateHistograms();
+
 
   if(fRecAnalysis->DataSet() != fMCAnalysis->DataSet()){
     cout<<"Warning: Reconstruction data set and Monte Carlo data set are not the same!  Setting data set to "<<fRecAnalysis->DataSet()<<endl;
@@ -173,7 +174,7 @@ if(res == 0 && cent){
 // if (!mcEvent) {
 //   Printf("ERROR: Could not retrieve MC event");
 //  }
-  if (mcEvent && fESDEvent){
+  if (mcEvent && fESDEvent && isSim){
       ((AliAnalysisHadEtMonteCarlo*)fMCAnalysis)->AnalyseEvent((AliVEvent*)mcEvent,(AliVEvent*)fESDEvent);
       if(fMCAnalysis->Full()){
 	fMCAnalysis->FillSimTotEtMinusRecoTotEtFullAcceptanceTPC( fRecAnalysis->GetCorrectedTotEtFullAcceptanceTPC() );
