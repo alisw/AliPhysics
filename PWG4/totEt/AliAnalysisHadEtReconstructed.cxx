@@ -270,7 +270,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    }
 	  }
 	  if(isElectron){
-	    FillHisto2D(Form("dEdxDataProton%s",cutName->Data()),track->P(),dEdx,1.0);
+	    FillHisto2D(Form("dEdxDataElectron%s",cutName->Data()),track->P(),dEdx,1.0);
 	  }
 	  if(unidentified){
 	    if(isPion) cerr<<"I should not be here!!  AliAnalysisHadEtReconstructed 273"<<endl; 
@@ -587,7 +587,7 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 
   Float_t minEt = 0.0;
   Float_t maxEt = 100.0;
-  if(fDataSet==20100) maxEt=3500.0;
+  if(fDataSet==20100) maxEt=4000.0;
   Int_t nbinsEt = 200;
   char histoname[200];
   char histotitle[200];
