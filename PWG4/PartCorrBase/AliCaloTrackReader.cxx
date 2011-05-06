@@ -884,7 +884,8 @@ void AliCaloTrackReader::FillInputEMCAL() {
     
   }//Get the clusters from the input event
   else {
-    TClonesArray * clusterList = dynamic_cast<TClonesArray*> (fOutputEvent->FindListObject(fEMCALClustersListName));
+    TClonesArray * clusterList = 0x0; 
+    if(fOutputEvent) clusterList = dynamic_cast<TClonesArray*> (fOutputEvent->FindListObject(fEMCALClustersListName));
     if(!clusterList){
       //printf("AliCaloTrackReader::FillInputEMCAL() - Wrong name of list with clusters? Try input event <%s>\n",fEMCALClustersListName.Data());
       //List not in output event, try input event
