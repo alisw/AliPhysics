@@ -68,6 +68,8 @@ ClassImp(AliCFMuonResUpsilon)
 //__________________________________________________________________________
 AliCFMuonResUpsilon::AliCFMuonResUpsilon() :
 	AliAnalysisTaskSE(""),
+	fReadAODData(kFALSE),
+	fReadMCInfo(kFALSE),
   fCFManager(0x0),
 	hnevts(0x0),
 	fIsPhysSelMB(kFALSE),
@@ -89,6 +91,8 @@ AliCFMuonResUpsilon::AliCFMuonResUpsilon() :
 //___________________________________________________________________________
 AliCFMuonResUpsilon::AliCFMuonResUpsilon(const Char_t* name) :
   AliAnalysisTaskSE(name),
+	fReadAODData(kFALSE),
+	fReadMCInfo(kFALSE),
   fCFManager(0x0),
 	hnevts(0x0),
 	fIsPhysSelMB(kFALSE),
@@ -130,6 +134,7 @@ AliCFMuonResUpsilon& AliCFMuonResUpsilon::operator=(const AliCFMuonResUpsilon& c
   if (this!=&c) {
     AliAnalysisTaskSE::operator=(c);
     fReadAODData = c.fReadAODData;
+		fReadMCInfo = c.fReadMCInfo;
     fCFManager  = c.fCFManager;
     fQAHistList = c.fQAHistList;
 		hnevts = c.hnevts;
@@ -464,11 +469,11 @@ void AliCFMuonResUpsilon::UserExec(Option_t *)
 		AliAODEvent *fAOD = 0x0;
 
   	AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-		fAOD = aodH->GetEvent();
 		if( ! aodH) {
 			AliError("Cannot get input event handler");
 			return;
 		}
+		fAOD = aodH->GetEvent();
 
 		// MC part -----------------------------------------------------------------------------------
 
@@ -894,6 +899,7 @@ void AliCFMuonResUpsilon::Terminate(Option_t *)
 {
   // draw result of the Invariant mass MC and ESD
 
+/*
 		TH1D *h1 = dynamic_cast<TH1D*>(GetOutputData(1));
     AliCFContainer *cont = dynamic_cast<AliCFContainer*> (GetOutputData(2));   
 
@@ -911,6 +917,7 @@ void AliCFMuonResUpsilon::Terminate(Option_t *)
 		mmass->Draw("HIST");
 		c1->cd(4);
 		h1->Draw("HIST");
+		*/
 }
 //________________________________________________________________________
 
