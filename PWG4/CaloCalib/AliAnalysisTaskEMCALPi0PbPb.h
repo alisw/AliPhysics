@@ -22,6 +22,7 @@ class AliESDEvent;
 class AliESDTrack;
 class AliESDVertex;
 class AliESDtrackCuts;
+class AliMCParticle;
 class AliStaHeader;
 class AliStaVertex;
 
@@ -44,25 +45,29 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetDoTrackMatWithGeom(Bool_t b)                { fDoTrMatGeom   = b;         }
   void         SetFillNtuple(Bool_t b)                        { fDoNtuple      = b;         }
   void         SetGeoName(const char *n)                      { fGeoName       = n;         }
+  void         SetGeoUtils(AliEMCALGeoUtils *geo)             { fGeom          = geo;       }
   void         SetIsoDist(Double_t d)                         { fIsoDist       = d;         }
+  void         SetL0TimeRange(Int_t l, Int_t h)               { fMinL0Time=l; fMaxL0Time=h; }
   void         SetMarkCells(const char *n)                    { fMarkCells     = n;         }
+  void         SetMcMode(Bool_t b)                            { fMcMode        = b;         }
   void         SetMinClusEnergy(Double_t e)                   { fMinE          = e;         }
   void         SetMinEcc(Double_t ecc)                        { fMinEcc        = ecc;       }
   void         SetMinErat(Double_t erat)                      { fMinErat       = erat;      }
   void         SetMinNClustersPerTrack(Double_t m)            { fMinNClusPerTr = m;         }
   void         SetNminCells(Int_t n)                          { fNminCells     = n;         }
   void         SetPrimTrackCuts(AliESDtrackCuts *c)           { fPrimTrCuts    = c;         }
+  void         SetRecoUtils(AliEMCALRecoUtils *reco)          { fReco          = reco;      }
   void         SetTrClassNames(const char *n)                 { fTrClassNames  = n;         }
   void         SetTrackCuts(AliESDtrackCuts *c)               { fTrCuts        = c;         }
   void         SetTrainMode(Bool_t b)                         { fTrainMode     = b;         }
   void         SetUseQualFlag(Bool_t b)                       { fUseQualFlag   = b;         }
   void         SetVertexRange(Double_t z1, Double_t z2)       { fVtxZMin=z1; fVtxZMax=z2;   }
-  void         SetL0TimeRange(Int_t l, Int_t h)               { fMinL0Time=l; fMaxL0Time=h; }
 
  protected:
-  void         CalcCaloTriggers();
+  virtual void CalcCaloTriggers();
   virtual void CalcClusterProps();
   virtual void CalcPrimTracks();
+  virtual void CalcMcInfo();
   virtual void CalcTracks();
   virtual void ClusterAfterburner();
   virtual void FillCellHists();
@@ -70,6 +75,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   virtual void FillNtuple();
   virtual void FillOtherHists();
   virtual void FillPionHists();
+  virtual void FillMcHists();
   void         FillVertex(AliStaVertex *v, const AliESDVertex *esdv);
   void         FillVertex(AliStaVertex *v, const AliAODVertex *aodv);
   Double_t     GetCellIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2)                        const;
@@ -81,6 +87,8 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Double_t     GetTrackIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2, Double_t pt=0.)       const;
   Double_t     GetTrigEnergy(const AliVCluster *c)                                                        const;
   Bool_t       IsShared(const AliVCluster *c)                                                             const;
+  void         PrintDaughters(AliMCParticle *p)                                                           const;
+  void         PrintTrackRefs(AliMCParticle *p)                                                           const;
 
     // input members
   TString                fCentVar;                // variable for centrality determination
@@ -108,11 +116,13 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   TString                fMarkCells;              // list of mark cells to monitor
   Int_t                  fMinL0Time;              // minimum accepted time for trigger
   Int_t                  fMaxL0Time;              // maximum accepted time for trigger
+  Bool_t                 fMcMode;                 // monte carlo mode
+  AliEMCALGeoUtils      *fGeom;                   // geometry utils
+  AliEMCALRecoUtils     *fReco;                   // reco utils
+
     // derived members (ie with ! after //)
   Bool_t                 fIsGeoMatsSet;           //!indicate that geo matrices are set 
   ULong64_t              fNEvs;                   //!accepted events 
-  AliEMCALGeoUtils      *fGeom;                   //!geometry utils
-  AliEMCALRecoUtils     *fReco;                   //!geometry utils
   TList                 *fOutput;                 //!container of output histograms
   TObjArray             *fTrClassNamesArr;        //!array of trig class names  
   AliESDEvent           *fEsdEv;                  //!pointer to input esd event
@@ -174,12 +184,13 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   TH2                   *fHPionMggAsym;           //!histo for pion mass vs. asym
   TH2                   *fHPionMggDgg;            //!histo for pion mass vs. opening angle
   TH1                   *fHPionInvMasses[21];     //!histos for invariant mass plots 
+    // histograms for MC
 
  private:
   AliAnalysisTaskEMCALPi0PbPb(const AliAnalysisTaskEMCALPi0PbPb&);            // not implemented
   AliAnalysisTaskEMCALPi0PbPb &operator=(const AliAnalysisTaskEMCALPi0PbPb&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 7) // Analysis task for neutral pions in Pb+Pb
+  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 9) // Analysis task for neutral pions in Pb+Pb
 };
 #endif
 
@@ -267,7 +278,7 @@ class AliStaCluster : public TObject
 
  public:
   Double32_t    fE;                //[0,0,16] energy
-  Double32_t    fR;                //[0,0,16] radius
+  Double32_t    fR;                //[0,0,16] radius (cylinder)
   Double32_t    fEta;              //[0,0,16] eta
   Double32_t    fPhi;              //[0,0,16] phi
   UChar_t       fN;                //         number of cells
@@ -298,6 +309,21 @@ class AliStaCluster : public TObject
   ClassDef(AliStaCluster,4) // Cluster class
 };
 
+class AliStaTrackRef : public TObject
+{
+ public:
+  AliStaTrackRef() : TObject(), fR(0), fEta(0), fPhi(0), fId(-1), fMo(-1) {}
+
+ public:
+  Double32_t    fR;                //[0,0,16] r (cylinder)
+  Double32_t    fEta;              //[0,0,16] eta
+  Double32_t    fPhi;              //[0,0,16] phi
+  Short_t       fId;               //         id
+  Short_t       fMo;               //         mother index
+
+  ClassDef(AliStaTrackRef,1) // Track reference class
+};
+
 class AliStaTrigger : public TObject
 {
  public:
@@ -313,4 +339,22 @@ class AliStaTrigger : public TObject
 
   ClassDef(AliStaTrigger,1) // Trigger class
 };
+
+
+#if 0
+class AliStaPart : public TObject
+{
+ public:
+  AliStaTrigger() : TObject(), fE(0), fEta(0), fPhi(0), fAmp(0), fMinTime(0), fMaxTime(0) {}
+
+ public:
+  Double32_t    fE;                //[0,0,16] pt
+  Double32_t    fEta;              //[0,0,16] eta
+  Double32_t    fPhi;              //[0,0,16] phi
+  Int_t         fId;               //[0,0,16] id
+
+  ClassDef(AliStaTrigger,1) // Trigger class
+};
+#endif
+
 #endif
