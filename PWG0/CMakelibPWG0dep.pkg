@@ -25,7 +25,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  dNdPt/AlidNdPtHelper.cxx dNdPt/AlidNdPtAnalysis.cxx dNdPt/AlidNdPtAnalysisPbPb.cxx dNdPt/AlidNdPtCorrection.cxx dNdPt/AlidNdPtAcceptanceCuts.cxx dNdPt/AlidNdPtEventCuts.cxx dNdPt/AlidNdPt.cxx dNdPt/AlidNdPtCutAnalysis.cxx dNdPt/AlidNdPtTask.cxx dNdPt/AlidNdPtBackgroundCuts.cxx dNdPt/AlidNdPtCutAnalysisPbPb.cxx dNdPt/AlidNdPtEfficiency.cxx)
+set ( SRCS  dNdPt/AlidNdPtHelper.cxx dNdPt/AlidNdPtAnalysis.cxx dNdPt/AlidNdPtAnalysisPbPb.cxx dNdPt/AlidNdPtCorrection.cxx dNdPt/AlidNdPtAcceptanceCuts.cxx dNdPt/AlidNdPtEventCuts.cxx dNdPt/AlidNdPt.cxx dNdPt/AlidNdPtCutAnalysis.cxx dNdPt/AlidNdPtTask.cxx dNdPt/AlidNdPtBackgroundCuts.cxx dNdPt/AlidNdPtCutAnalysisPbPb.cxx dNdPt/AlidNdPtEfficiency.cxx dNdPt/AliPtResolAnalysis.cxx dNdPt/AliPtResolAnalysisPbPb.cxx ) 
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
