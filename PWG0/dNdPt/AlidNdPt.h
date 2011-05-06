@@ -70,6 +70,9 @@ public:
   AlidNdPtBackgroundCuts* GetBackgroundCuts() const             { return fdNdPtBackgroundCuts; }
   Double_t* CreateLogAxis(Int_t nbins, Double_t xmin, Double_t xmax);
 
+protected:
+   static Double_t* CloneArray(Int_t n, Double_t* source);
+
 private:
 
   AlidNdPt(const AlidNdPt&); // not implemented

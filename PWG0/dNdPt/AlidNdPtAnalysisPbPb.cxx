@@ -285,6 +285,13 @@ AlidNdPtAnalysisPbPb::~AlidNdPtAnalysisPbPb() {
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
   
   if (fTriggerAnalysis) delete fTriggerAnalysis;  fTriggerAnalysis = 0;
+  
+  if (fBinsMult) delete fBinsMult; fBinsMult=0;
+  if (fBinsPt) delete fBinsPt; fBinsPt=0;
+  if (fBinsPtCorr) delete fBinsPtCorr; fBinsPtCorr=0;
+  if (fBinsEta) delete fBinsEta; fBinsEta=0;
+  if (fBinsZv) delete fBinsZv; fBinsZv=0;
+  if (fBinsCentrality) delete fBinsCentrality; fBinsCentrality=0;  
 }
 
 //_____________________________________________________________________________

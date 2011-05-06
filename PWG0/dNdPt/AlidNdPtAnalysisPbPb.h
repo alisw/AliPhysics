@@ -62,12 +62,12 @@ public :
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
   
   // Set binning for Histograms (if not set default binning is used)
-  void SetBinsMult(Int_t nbins, Double_t* edges) { fMultNbins = nbins; fBinsMult = edges; }
-  void SetBinsPt(Int_t nbins, Double_t* edges) { fPtNbins = nbins; fBinsPt = edges; }
-  void SetBinsPtCorr(Int_t nbins, Double_t* edges) { fPtCorrNbins = nbins; fBinsPtCorr = edges; }
-  void SetBinsEta(Int_t nbins, Double_t* edges) { fEtaNbins = nbins; fBinsEta = edges; }
-  void SetBinsZv(Int_t nbins, Double_t* edges) { fZvNbins = nbins; fBinsZv = edges; }
-  void SetBinsCentrality(Int_t nbins, Double_t* edges) { fCentralityNbins = nbins; fBinsCentrality = edges; }
+  void SetBinsMult(Int_t nbins, Double_t* edges) { fMultNbins = nbins; fBinsMult = CloneArray(nbins+1,edges); }
+  void SetBinsPt(Int_t nbins, Double_t* edges) { fPtNbins = nbins; fBinsPt = CloneArray(nbins+1,edges); }
+  void SetBinsPtCorr(Int_t nbins, Double_t* edges) { fPtCorrNbins = nbins; fBinsPtCorr = CloneArray(nbins+1,edges); }
+  void SetBinsEta(Int_t nbins, Double_t* edges) { fEtaNbins = nbins; fBinsEta = CloneArray(nbins+1,edges); }
+  void SetBinsZv(Int_t nbins, Double_t* edges) { fZvNbins = nbins; fBinsZv= CloneArray(nbins+1,edges); }
+  void SetBinsCentrality(Int_t nbins, Double_t* edges) { fCentralityNbins = nbins; fBinsCentrality = CloneArray(nbins+1,edges); }
 
   // Fill histograms
   void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, AlidNdPtHelper::TrackObject trackObj, Float_t centralityF);
