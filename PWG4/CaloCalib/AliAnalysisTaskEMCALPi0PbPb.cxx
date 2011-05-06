@@ -34,8 +34,11 @@
 #include "AliGeomManager.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
+#include "AliMCEvent.h"
+#include "AliMCParticle.h"
 #include "AliMagF.h"
 #include "AliMultiplicity.h"
+#include "AliStack.h"
 #include "AliTrackerBase.h"
 
 ClassImp(AliAnalysisTaskEMCALPi0PbPb)
@@ -68,10 +71,11 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fMarkCells(),
     fMinL0Time(-1),
     fMaxL0Time(1024),
-    fIsGeoMatsSet(0),
-    fNEvs(0),
+    fMcMode(0),
     fGeom(0),
     fReco(0),
+    fIsGeoMatsSet(0),
+    fNEvs(0),
     fOutput(0),
     fTrClassNamesArr(0),
     fEsdEv(0),
@@ -182,6 +186,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   cout << " fMinEcc:        " << fMinEcc << endl;
   cout << " fGeoName:       \"" << fGeoName << "\"" << endl;
   cout << " fMinNClusPerTr: " << fMinNClusPerTr << endl;
+  cout << " fIsoDist:       " << fIsoDist << endl;
   cout << " fTrClassNames:  \"" << fTrClassNames << "\"" << endl;
   cout << " fTrCuts:        " << fTrCuts << endl;
   cout << " fPrimTrCuts:    " << fPrimTrCuts << endl;
@@ -190,9 +195,18 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   cout << " fMarkCells:     " << fMarkCells << endl;
   cout << " fMinL0Time:     " << fMinL0Time << endl;
   cout << " fMaxL0Time:     " << fMaxL0Time << endl;
+  cout << " fMcMode:        " << fMcMode << endl;
+  cout << " fGeom:          " << fGeom << endl;
+  cout << " fReco:          " << fReco << endl;
 
-  fGeom = new AliEMCALGeoUtils(fGeoName,"EMCAL");
-  fReco = new AliEMCALRecoUtils();
+  if (!fGeom)
+    fGeom = new AliEMCALGeoUtils(fGeoName,"EMCAL");
+  else {
+    if (fGeom->GetMatrixForSuperModule(0))
+      fIsGeoMatsSet = kTRUE;
+  }
+  if (!fReco)
+    fReco = new AliEMCALRecoUtils();
   fTrClassNamesArr = fTrClassNames.Tokenize(" ");
   fOutput = new TList();
   fOutput->SetOwner();
@@ -449,7 +463,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     am->LoadBranch("header");
     offtrigger =  fAodEv->GetHeader()->GetOfflineTrigger();
   }
-  if (offtrigger & AliVEvent::kFastOnly) {
+  if (!fMcMode && (offtrigger & AliVEvent::kFastOnly)) {
     AliWarning(Form("EMCAL not in fast only partition"));
     return;
   }
@@ -602,12 +616,14 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
         recalibrated = kTRUE;
     }
   }
-  if (1 && AODEvent() && !fClusName.IsNull()) {
-    TList *l = AODEvent()->GetList();
-    TClonesArray *clus = 0;
+  if (1 && !fClusName.IsNull()) {
+    TList *l = 0;
+    if (AODEvent()) 
+      l = AODEvent()->GetList();
+    else if (fAodEv)
+      l = fAodEv->GetList();
     if (l) {
-      clus = dynamic_cast<TClonesArray*>(l->FindObject(fClusName));
-      fAodClusters = clus;
+      fAodClusters = dynamic_cast<TClonesArray*>(l->FindObject(fClusName));
     }
   }
 
@@ -616,10 +632,8 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
       if (!clusattached)
         am->LoadBranch("CaloClusters");
       TList *l = fEsdEv->GetList();
-      TClonesArray *clus = 0;
       if (l) {
-        clus = dynamic_cast<TClonesArray*>(l->FindObject("CaloClusters"));
-        fEsdClusters = clus;
+        fEsdClusters = dynamic_cast<TClonesArray*>(l->FindObject("CaloClusters"));
       }
     }
     if (1) {
@@ -632,10 +646,8 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
       if (!clusattached)
         am->LoadBranch("caloClusters");
       TList *l = fAodEv->GetList();
-      TClonesArray *clus = 0;
       if (l) {
-        clus = dynamic_cast<TClonesArray*>(l->FindObject("caloClusters"));
-        fAodClusters = clus;
+        fAodClusters = dynamic_cast<TClonesArray*>(l->FindObject("caloClusters"));
       }
     }
     if (1) {
@@ -658,6 +670,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   if (fDoAfterburner)
     ClusterAfterburner();
 
+  CalcMcInfo();
   CalcCaloTriggers();
   CalcPrimTracks();
   CalcTracks();
@@ -669,6 +682,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     FillPionHists();
     FillOtherHists();
   }
+  FillMcHists();
   FillNtuple();
 
   if (fTrainMode) {
@@ -698,6 +712,9 @@ void AliAnalysisTaskEMCALPi0PbPb::Terminate(Option_t *)
 void AliAnalysisTaskEMCALPi0PbPb::CalcCaloTriggers()
 {
   // Calculate triggers
+
+  if (fAodEv)
+    return; // information not available in AOD
 
   fTriggers->Clear();
 
@@ -881,28 +898,30 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     cl->fCeCore   = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),0.05);
     cl->fCeIso    = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),fIsoDist);
 
-    Double_t trigpen = 0;
-    Double_t trignen = 0;
-    for(Int_t j=0; j<cl->fN; ++j) {
-      Short_t cid = TMath::Abs(clus->GetCellAbsId(j));
-      Short_t pos = -1;
-      std::map<Short_t,Short_t>::iterator it = map.find(cid);
-      if (it!=map.end())
-        pos = it->second;
-      if (pos<0)
-        continue;
-      if (fAmpInTrigger[pos]>0)
-        trigpen += cells->GetAmplitude(pos);
-      else if (fAmpInTrigger[pos]<0)
-        trignen += cells->GetAmplitude(pos);
-    }
-    if (trigpen>0) {
-      cl->fIsTrigM = 1;
-      cl->fTrigE   = trigpen;      
-    }
-    if (trignen>0) {
-      cl->fIsTrigM   = 1;
-      cl->fTrigMaskE = trignen;      
+    if (fAmpInTrigger) { // fill trigger info if present
+      Double_t trigpen = 0;
+      Double_t trignen = 0;
+      for(Int_t j=0; j<cl->fN; ++j) {
+        Short_t cid = TMath::Abs(clus->GetCellAbsId(j));
+        Short_t pos = -1;
+        std::map<Short_t,Short_t>::iterator it = map.find(cid);
+        if (it!=map.end())
+          pos = it->second;
+        if (pos<0)
+          continue;
+        if (fAmpInTrigger[pos]>0)
+          trigpen += cells->GetAmplitude(pos);
+        else if (fAmpInTrigger[pos]<0)
+          trignen += cells->GetAmplitude(pos);
+      }
+      if (trigpen>0) {
+        cl->fIsTrigM = 1;
+        cl->fTrigE   = trigpen;      
+      }
+      if (trignen>0) {
+        cl->fIsTrigM   = 1;
+        cl->fTrigMaskE = trignen;      
+      }
     }
     cl->fIsShared = IsShared(clus);
 
@@ -944,7 +963,9 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
         }
         Double_t trkPos[3] = {0};
         tParam->GetXYZ(trkPos); //Get the extrapolated global position
-        tmpR = TMath::Sqrt( TMath::Power(clsPos[0]-trkPos[0],2)+TMath::Power(clsPos[1]-trkPos[1],2)+TMath::Power(clsPos[2]-trkPos[2],2) );
+        tmpR = TMath::Sqrt( TMath::Power(clsPos[0]-trkPos[0],2) + 
+                            TMath::Power(clsPos[1]-trkPos[1],2) +
+                            TMath::Power(clsPos[2]-trkPos[2],2) );
         tmpZ = clsPos[2]-trkPos[2];
         delete tParam;
       } else {
@@ -1323,6 +1344,231 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::CalcMcInfo()
+{
+  // Get Mc truth particle information.
+
+  if (!fMcMode)
+    return;
+
+// todo: treat mc differently for AOD and ESD. Check with Amorsch when we get MC handler also for AOD case.
+
+  AliMCEvent *mcEvent = MCEvent();
+  if (!mcEvent)
+    return;
+
+  const AliVVertex *evtVtx = mcEvent->GetPrimaryVertex();
+  if (!evtVtx)
+    return;
+
+  mcEvent->PreReadAll();
+  AliStack *stack = mcEvent->Stack();
+
+  Int_t nTracks = mcEvent->GetNumberOfPrimaries();
+  for (Int_t iTrack = 0; iTrack<nTracks; ++iTrack) {
+    AliMCParticle *mcP = static_cast<AliMCParticle*>(mcEvent->GetTrack(iTrack));
+    if (!mcP)
+      continue;
+
+    // pion or eta meson
+    TParticle *tP = mcP->Particle();
+    if(tP->GetPdgCode() == 111) {
+    } else if(tP->GetPdgCode() == 221) {
+    } else
+      continue;
+
+    // primary particle
+    Double_t dR = TMath::Sqrt((tP->Vx()-evtVtx->GetX())*(tP->Vx()-evtVtx->GetX())+(tP->Vy()-evtVtx->GetY())*(tP->Vy()-evtVtx->GetY()));
+    if(dR > 1.0)
+      continue;
+
+    // do not account dalitz decays
+    if(tP->GetNDaughters()!=2)
+     continue; 
+
+    // kinematic cuts
+    Double_t pt = tP->Pt() ;
+    if (pt<0.5) {
+      continue;
+    }
+    Double_t rap = tP->Y();
+    if (TMath::Abs(rap)>1){
+      continue;
+    }
+
+    // get daughters
+    TParticle *tD1 = 0;
+    TClonesArray *tD1refs = 0;
+    mcEvent->GetParticleAndTR(tP->GetFirstDaughter(),tD1,tD1refs);
+
+    TParticle *tD2 = 0;
+    TClonesArray *tD2refs = 0;
+    mcEvent->GetParticleAndTR(tP->GetLastDaughter(),tD2,tD2refs);
+
+    TParticle *tD11 = 0;
+    TClonesArray *tD11refs = 0;
+    TParticle *tD12 = 0;
+    TClonesArray *tD12refs = 0;
+    Bool_t d1Dec = 0;
+    if (tD1->GetNDaughters()>2) {
+      AliWarning(Form("Decay photon has more than two daughters: %d", tD1->GetNDaughters()));
+      return;
+    }
+    if (tD1->GetNDaughters()>=1)
+      mcEvent->GetParticleAndTR(tD1->GetFirstDaughter(),tD11,tD11refs);
+    if (tD1->GetNDaughters()==2) {
+      mcEvent->GetParticleAndTR(tD1->GetLastDaughter(),tD12,tD12refs);
+      d1Dec = 1;
+    }
+
+    TParticle *tD21 = 0;
+    TClonesArray *tD21refs = 0;
+    TParticle *tD22 = 0;
+    TClonesArray *tD22refs = 0;
+    Bool_t d2Dec = 0;
+    if (tD2->GetNDaughters()>2) {
+      AliWarning(Form("Decay photon has more than two daughters: %d", tD2->GetNDaughters()));
+      return;
+    }
+    if (tD2->GetNDaughters()>=1)
+      mcEvent->GetParticleAndTR(tD2->GetFirstDaughter(),tD21,tD21refs);
+    if (tD2->GetNDaughters()==2) {
+      mcEvent->GetParticleAndTR(tD2->GetLastDaughter(),tD22,tD22refs);
+      d2Dec = 1;
+    }
+
+    Bool_t pDec = d1Dec && d2Dec;
+    if (!pDec) 
+      continue;
+
+    if (tD11) {
+      cout << " Dau 11 with " << tD11->GetNDaughters() << endl;
+      tD11->Print();
+    }
+
+    if (0) {
+      tP->Print();
+      tD1->Print();
+      tD2->Print();
+      if (tD11) {
+        cout << " Dau 11 with " << tD11->GetNDaughters() << endl;
+        tD11->Print();
+        if (tD11refs) {
+          Int_t nrefs = tD11refs->GetEntries();
+          for (Int_t j=0;j<nrefs;++j) {
+            AliTrackReference *tr = (AliTrackReference*)tD11refs->At(j);
+            tr->SetUserId(tr->DetectorId());
+            tr->Print();
+          }
+        }
+      }
+      if (tD12){
+        cout << " Dau 12 with " << tD12->GetNDaughters() << endl;
+        tD12->Print();
+        if (tD12refs) {
+          Int_t nrefs = tD12refs->GetEntries();
+          for (Int_t j=0;j<nrefs;++j) {
+            AliTrackReference *tr = (AliTrackReference*)tD12refs->At(j);
+            tr->SetUserId(tr->DetectorId());
+            tr->Print();
+          }
+        }
+      }
+      if (tD21) {
+        cout << " Dau 21 with " << tD21->GetNDaughters() << endl;
+        tD21->Print();
+        if (tD21refs) {
+          Int_t nrefs = tD21refs->GetEntries();
+          for (Int_t j=0;j<nrefs;++j) {
+            AliTrackReference *tr = (AliTrackReference*)tD21refs->At(j);
+            tr->SetUserId(tr->DetectorId());
+            tr->Print();
+          }
+        }
+      }
+      if (tD22) {
+        cout << " Dau 22 with " << tD22->GetNDaughters() << endl;
+        tD22->Print();
+        if (tD22refs) {
+          Int_t nrefs = tD22refs->GetEntries();
+          for (Int_t j=0;j<nrefs;++j) {
+            AliTrackReference *tr = (AliTrackReference*)tD22refs->At(j);
+            tr->SetUserId(tr->DetectorId());
+            tr->Print();
+          }
+        }
+      }
+    }
+#if 0
+    TParticle * gamma1 = fStack->Particle(particle->GetFirstDaughter());
+    TParticle * gamma2 = fStack->Particle(particle->GetLastDaughter());
+    //Number of pi0s decayed into acceptance
+    Bool_t inAcc1 = (TMath::Abs(gamma1->Eta())<0.9) ;
+    Bool_t inAcc2 = (TMath::Abs(gamma2->Eta())<0.9) ;
+    Int_t mod1,mod2 ;
+    Double_t x=0.,z=0. ;
+    Bool_t hitPHOS1 = fPHOSgeom->ImpactOnEmc(gamma1, mod1, z,x) ;
+    Bool_t hitPHOS2 = fPHOSgeom->ImpactOnEmc(gamma2, mod2, z,x) ;
+    Bool_t hitEMCAL1= fEMCALgeom->Impact(gamma1) ;
+    Bool_t hitEMCAL2= fEMCALgeom->Impact(gamma2) ;
+
+
+    TParticle *mcP2 = 0;
+    TClonesArray *refs = 0;
+    mcEvent->GetParticleAndTR(iTrack,mcP2,refs);
+    if (!refs) 
+      continue;
+
+    Int_t nrefs = refs->GetEntries();
+    if (nrefs == 0)
+      continue;
+
+    AliTrackReference *trEmcal = 0;
+    for (Int_t j=0;j<nrefs;++j) {
+      AliTrackReference *tr = (AliTrackReference*)refs->At(j);
+      Int_t did = tr->DetectorId();
+      if (did!=AliTrackReference::kEMCAL)
+        continue;
+      trEmcal = tr;
+      break;
+    }
+
+    if (!trEmcal)
+      continue;
+
+    Double_t distA = TMath::Sqrt((trEmcal->X()-tP->Vx())*(trEmcal->X()-tP->Vx()) +
+                                  (trEmcal->Y()-tP->Vy())*(trEmcal->Y()-tP->Vy()) +
+                                  (trEmcal->Z()-tP->Vz())*(trEmcal->Z()-tP->Vz()));
+    cout << "dist label to particle " << distA << " --------- " << endl;
+    trEmcal->Print();
+    tP->Print();
+
+    Int_t moi = tP->GetFirstMother();
+    if (moi>=0) {
+      AliMCParticle *mcMo = static_cast<AliMCParticle*>(mcEvent->GetTrack(moi));
+      TParticle *tMo = mcMo->Particle();
+      Double_t dist3d = TMath::Sqrt((tMo->Vx()-tP->Vx())*(tMo->Vx()-tP->Vx()) +
+                                    (tMo->Vy()-tP->Vy())*(tMo->Vy()-tP->Vy()) +
+                                    (tMo->Vz()-tP->Vz())*(tMo->Vz()-tP->Vz()));
+      cout << "dist 3d " << dist3d << endl;
+      tMo->Print();
+      while (1) {
+        Int_t newm = tMo->GetFirstMother();
+        if (newm>=0) {
+          AliMCParticle *newmo = static_cast<AliMCParticle*>(mcEvent->GetTrack(newm));
+          tMo = newmo->Particle();
+          tMo->Print();
+        } else {
+          break;
+        }
+      }
+      cout << " ------- " << endl;
+    }
+#endif
+  }
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
 {
   // Fill ntuple.
@@ -1529,6 +1775,17 @@ void AliAnalysisTaskEMCALPi0PbPb::FillPionHists()
       }
     }
   } 
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::FillMcHists()
+{
+  // Fill additional MC information histograms.
+
+  if (!fMcMode)
+    return;
+
+  // check if aod or esd mc mode and the fill histos
 }
 
 //________________________________________________________________________
@@ -1767,5 +2024,17 @@ Bool_t AliAnalysisTaskEMCALPi0PbPb::IsShared(const AliVCluster *c) const
       return 1;
   }
   return 0;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::PrintDaughters(AliMCParticle *p) const
+{
+  // Print daugher information. TODO
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::PrintTrackRefs(AliMCParticle *p) const
+{
+  // Print track ref array. TODO
 }
 
