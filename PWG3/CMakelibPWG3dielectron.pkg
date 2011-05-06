@@ -25,7 +25,39 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  dielectron/AliDielectron.cxx dielectron/AliDielectronPair.cxx dielectron/AliDielectronHistos.cxx dielectron/AliDielectronCF.cxx dielectron/AliDielectronCFdraw.cxx dielectron/AliDielectronMC.cxx dielectron/AliDielectronVarManager.cxx dielectron/AliAnalysisTaskDielectronSE.cxx dielectron/AliAnalysisTaskDielectronME.cxx dielectron/AliAnalysisTaskDielectronFilter.cxx dielectron/AliAnalysisTaskDielectronEfficiency.cxx dielectron/AliAnalysisTaskMultiDielectron.cxx dielectron/AliDielectronVarCuts.cxx dielectron/AliDielectronTrackCuts.cxx dielectron/AliDielectronPairLegCuts.cxx dielectron/AliDielectronSignalBase.cxx dielectron/AliDielectronSignalFunc.cxx dielectron/AliDielectronSignalExt.cxx dielectron/AliDielectronSpectrum.cxx dielectron/AliDielectronDebugTree.cxx dielectron/AliDielectronTrackRotator.cxx dielectron/AliDielectronPID.cxx dielectron/AliDielectronCutGroup.cxx dielectron/AliDielectronEventCuts.cxx dielectron/AliDielectronHelper.cxx)
+set ( SRCS  
+      dielectron/AliDielectron.cxx 
+      dielectron/AliDielectronPair.cxx 
+      dielectron/AliDielectronHistos.cxx 
+      dielectron/AliDielectronCF.cxx 
+      dielectron/AliDielectronCFdraw.cxx 
+      dielectron/AliDielectronMC.cxx 
+      dielectron/AliDielectronVarManager.cxx 
+      dielectron/AliAnalysisTaskDielectronSE.cxx 
+      dielectron/AliAnalysisTaskDielectronME.cxx 
+      dielectron/AliAnalysisTaskDielectronFilter.cxx 
+      dielectron/AliAnalysisTaskDielectronEfficiency.cxx 
+      dielectron/AliAnalysisTaskMultiDielectron.cxx 
+      dielectron/AliDielectronVarCuts.cxx 
+      dielectron/AliDielectronTrackCuts.cxx 
+      dielectron/AliDielectronPairLegCuts.cxx 
+      dielectron/AliDielectronSignalBase.cxx 
+      dielectron/AliDielectronSignalFunc.cxx 
+      dielectron/AliDielectronSignalExt.cxx 
+      dielectron/AliDielectronSpectrum.cxx 
+      dielectron/AliDielectronDebugTree.cxx 
+      dielectron/AliDielectronTrackRotator.cxx 
+      dielectron/AliDielectronPID.cxx 
+      dielectron/AliDielectronCutGroup.cxx 
+      dielectron/AliDielectronEventCuts.cxx 
+      dielectron/AliDielectronHelper.cxx
+      dielectron/AliDielectronBtoJPSItoEleCDFfitFCN.cxx
+      dielectron/AliDielectronBtoJPSItoEleCDFfitHandler.cxx
+      dielectron/AliDielectronBtoJPSItoEle.cxx
+      dielectron/AliAnalysisTaskDielectronReadAODBranch.cxx
+      dielectron/AliDielectronTRDpidCut.cxx
+      dielectron/AliDielectronSignalMC.cxx
+)
 
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
@@ -35,6 +67,6 @@ set ( EINCLUDE  PWG3/dielectron STEER CORRFW)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
 	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lSTEER -lANALYSISalice -lANALYSIS -lCORRFW)
+  set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lSTEER -lANALYSISalice -lANALYSIS -lCORRFW)
 
 endif( ALICE_TARGET STREQUAL "win32gcc")

@@ -1,0 +1,111 @@
+0	1	-0.9	0.9	0.0	10.0	 0.166296
+1	2	-0.9	0.9	0.0	10.0	 0.0981205
+2	1	-0.3	0.3	0.0	10.0	 0.250893
+3	2	-0.3	0.3	0.0	10.0	 0.14815
+4	1	0.3	0.9	0.0	10.0	 0.114476
+5	2	0.3	0.9	0.0	10.0	 0.0714274
+6	1	-0.9	-0.3	0.0	10.0	 0.132827
+7	2	-0.9	-0.3	0.0	10.0	 0.0744763
+8	1	-0.9	0.9	0.0	1.0	 0.212133
+9	2	-0.9	0.9	0.0	1.0	 0.130519
+10	1	-0.9	0.9	1.0	2.0	 0.154221
+11	2	-0.9	0.9	1.0	2.0	 0.0904563
+12	1	-0.9	0.9	2.0	3.0	 0.134749
+13	2	-0.9	0.9	2.0	3.0	 0.0809487
+14	1	-0.9	0.9	3.0	5.0	 0.162985
+15	2	-0.9	0.9	3.0	5.0	 0.0933719
+18	1	-0.9	0.9	5.0	7.0	 0.208292
+19	2	-0.9	0.9	5.0	7.0	 0.12236
+20	1	-0.9	0.9	7.0	10.0	 0.256803
+21	2	-0.9	0.9	7.0	10.0	 0.151098
+44	1	-0.9	0.9	0.0	10.0	 0.732274
+45	2	-0.9	0.9	0.0	10.0	 0.73302
+46	1	-0.3	0.3	0.0	10.0	 0.750076
+47	2	-0.3	0.3	0.0	10.0	 0.748854
+48	1	0.3	0.9	0.0	10.0	 0.720021
+49	2	0.3	0.9	0.0	10.0	 0.718408
+50	1	-0.9	-0.3	0.0	10.0	 0.709021
+51	2	-0.9	-0.3	0.0	10.0	 0.715329
+52	1	-0.9	0.9	0.0	1.0	 0.775536
+53	2	-0.9	0.9	0.0	1.0	 0.773124
+54	1	-0.9	0.9	1.0	2.0	 0.741671
+55	2	-0.9	0.9	1.0	2.0	 0.726778
+56	1	-0.9	0.9	2.0	3.0	 0.705218
+57	2	-0.9	0.9	2.0	3.0	 0.708847
+58	1	-0.9	0.9	3.0	5.0	 0.716112
+59	2	-0.9	0.9	3.0	5.0	 0.720476
+60	1	-0.9	0.9	5.0	8.0	 0.74608
+61	2	-0.9	0.9	5.0	8.0	 0.74722
+62	1	-0.9	0.9	5.0	7.0	 0.743021
+63	2	-0.9	0.9	5.0	7.0	 0.743945
+64	1	-0.9	0.9	7.0	10.0	 0.765076
+65	2	-0.9	0.9	7.0	10.0	 0.767918
+
+# Format:  efficiencyId    SPD(1-any/2-first)     yLow       yHigh      ptLow      ptHigh      efficiency
+# Efficiency descriptions (based on efficiencyId) : 
+# 0 - Eff. vs. pt, (full cuts, SPD any)/(J/#Psi in |y|<0.9 & 0<pt<10.0 GeV/c)
+# 1 - Eff. vs. pt, (full cuts, SPD first)/(J/#Psi in |y|<0.9 & 0<pt<10.0 GeV/c)
+# 2 - Eff. vs. pt, (full cuts, SPD any)/(J/#Psi in |y|<0.3 & 0<pt<10.0 GeV/c)
+# 3 - Eff. vs. pt, (full cuts, SPD first)/(J/#Psi in |y|<0.3 & 0<pt<10.0 GeV/c)
+# 4 - Eff. vs. pt, (full cuts, SPD any)/(J/#Psi in 0.3<y<0.9 & 0<pt<10.0 GeV/c)
+# 5 - Eff. vs. pt, (full cuts, SPD first)/(J/#Psi in 0.3<y<0.9 & 0<pt<10.0 GeV/c)
+# 6 - Eff. vs. pt, (full cuts, SPD any)/(J/#Psi in -0.9<y<-0.3 & 0<pt<10.0 GeV/c)
+# 7 - Eff. vs. pt, (full cuts, SPD first)/(J/#Psi in -0.9<y<-0.3 & 0<pt<10.0 GeV/c)
+# 8 - Eff. vs. pt, (full cuts, SPD any)/(J/#Psi in |y|<0.9 & 0<pt<1.0)
+# 9 - Eff. vs. pt, (full cuts, SPD first)/(J/#Psi in |y|<0.9 & 0<pt<1.0)
+# 10 - Eff. vs. pt, (full cuts, SPD any)/(J/#Psi in |y|<0.9 & 1.0<pt<2.0)
+# 11 - Eff. vs. pt, (full cuts, SPD first)/(J/#Psi in |y|<0.9 & 1.0<pt<2.0)
+# 12 - Eff. vs. pt, (full cuts, SPD any)/(J/#Psi in |y|<0.9 & 2.0<pt<3.0)
+# 13 - Eff. vs. pt, (full cuts, SPD first)/(J/#Psi in |y|<0.9 & 2.0<pt<3.0)
+# 14 - Eff. vs. pt, (full cuts, SPD any)/(J/#Psi in |y|<0.9 & 3.0<pt<5.0)
+# 15 - Eff. vs. pt, (full cuts, SPD first)/(J/#Psi in |y|<0.9 & 3.0<pt<5.0)
+# 16 - Eff. vs. pt, (full cuts, SPD any)/(J/#Psi in |y|<0.9 & 5.0<pt<8.0)
+# 17 - Eff. vs. pt, (full cuts, SPD first)/(J/#Psi in |y|<0.9 & 5.0<pt<8.0)
+# 18 - Eff. vs. pt, (full cuts, SPD any)/(J/#Psi in |y|<0.9 & 5.0<pt<7.0)
+# 19 - Eff. vs. pt, (full cuts, SPD first)/(J/#Psi in |y|<0.9 & 5.0<pt<7.0)
+# 20 - Eff. vs. pt, (full cuts, SPD any)/(J/#Psi in |y|<0.9 & 7.0<pt<10.0)
+# 21 - Eff. vs. pt, (full cuts, SPD first)/(J/#Psi in |y|<0.9 & 7.0<pt<10.0)
+# 22 - Eff. vs. pt, (full cuts, SPD any, TPC PID)/(J/#Psi in |y|<0.9 & 0<pt<10.0 GeV/c)
+# 23 - Eff. vs. pt, (full cuts, SPD first, TPC PID)/(J/#Psi in |y|<0.9 & 0<pt<10.0 GeV/c)
+# 24 - Eff. vs. pt, (full cuts, SPD any, TPC PID)/(J/#Psi in |y|<0.3 & 0<pt<10.0 GeV/c)
+# 25 - Eff. vs. pt, (full cuts, SPD first, TPC PID)/(J/#Psi in |y|<0.3 & 0<pt<10.0 GeV/c)
+# 26 - Eff. vs. pt, (full cuts, SPD any, TPC PID)/(J/#Psi in 0.3<y<0.9 & 0<pt<10.0 GeV/c)
+# 27 - Eff. vs. pt, (full cuts, SPD first, TPC PID)/(J/#Psi in 0.3<y<0.9 & 0<pt<10.0 GeV/c)
+# 28 - Eff. vs. pt, (full cuts, SPD any, TPC PID)/(J/#Psi in -0.9<y<-0.3 & 0<pt<10.0 GeV/c)
+# 29 - Eff. vs. pt, (full cuts, SPD first, TPC PID)/(J/#Psi in -0.9<y<-0.3 & 0<pt<10.0 GeV/c)
+# 30 - Eff. vs. pt, (full cuts, SPD any, TPC PID)/(J/#Psi in |y|<0.9 & 0<pt<1.0)
+# 31 - Eff. vs. pt, (full cuts, SPD first, TPC PID)/(J/#Psi in |y|<0.9 & 0<pt<1.0)
+# 32 - Eff. vs. pt, (full cuts, SPD any, TPC PID)/(J/#Psi in |y|<0.9 & 1.0<pt<2.0)
+# 33 - Eff. vs. pt, (full cuts, SPD first, TPC PID)/(J/#Psi in |y|<0.9 & 1.0<pt<2.0)
+# 34 - Eff. vs. pt, (full cuts, SPD any, TPC PID)/(J/#Psi in |y|<0.9 & 2.0<pt<3.0)
+# 35 - Eff. vs. pt, (full cuts, SPD first, TPC PID)/(J/#Psi in |y|<0.9 & 2.0<pt<3.0)
+# 36 - Eff. vs. pt, (full cuts, SPD any, TPC PID)/(J/#Psi in |y|<0.9 & 3.0<pt<5.0)
+# 37 - Eff. vs. pt, (full cuts, SPD first, TPC PID)/(J/#Psi in |y|<0.9 & 3.0<pt<5.0)
+# 38 - Eff. vs. pt, (full cuts, SPD any, TPC PID)/(J/#Psi in |y|<0.9 & 5.0<pt<8.0)
+# 39 - Eff. vs. pt, (full cuts, SPD first, TPC PID)/(J/#Psi in |y|<0.9 & 5.0<pt<8.0)
+# 40 - Eff. vs. pt, (full cuts, SPD any, TPC PID)/(J/#Psi in |y|<0.9 & 5.0<pt<7.0)
+# 41 - Eff. vs. pt, (full cuts, SPD first, TPC PID)/(J/#Psi in |y|<0.9 & 5.0<pt<7.0)
+# 42 - Eff. vs. pt, (full cuts, SPD any, TPC PID)/(J/#Psi in |y|<0.9 & 7.0<pt<10.0)
+# 43 - Eff. vs. pt, (full cuts, SPD first, TPC PID)/(J/#Psi in |y|<0.9 & 7.0<pt<10.0)
+# 44 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD any, J/#Psi in -0.9y<+0.9 & 0<pt<10.0 GeV/c
+# 45 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD first, J/#Psi in -0.9y<+0.9 & 0<pt<10.0 GeV/c
+# 46 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD any, J/#Psi in -0.3y<+0.3 & 0<pt<10.0 GeV/c
+# 47 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD first, J/#Psi in -0.3y<+0.3 & 0<pt<10.0 GeV/c
+# 48 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD any, J/#Psi in +0.3<y<+0.9 & 0<pt<10.0 GeV/c
+# 49 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD first, J/#Psi in +0.3<y<+0.9 & 0<pt<10.0 GeV/c
+# 50 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD any, J/#Psi in -0.9<y<-0.3 & 0<pt<10.0 GeV/c
+# 51 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD first, J/#Psi in -0.9<y<-0.3 & 0<pt<10.0 GeV/c
+# 52 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD any, J/#Psi in -0.9<y<+0.9 & 0<pt<1.0 GeV/c
+# 53 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD first, J/#Psi in -0.9<y<+0.9 & 0<pt<1.0 GeV/c
+# 54 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD any, J/#Psi in -0.9<y<+0.9 & 1.0<pt<2.0 GeV/c
+# 55 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD first, J/#Psi in -0.9<y<+0.9 & 1.0<pt<2.0 GeV/c
+# 56 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD any, J/#Psi in -0.9<y<+0.9 & 2.0<pt<3.0 GeV/c
+# 57 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD first, J/#Psi in -0.9<y<+0.9 & 2.0<pt<3.0 GeV/c
+# 58 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD any, J/#Psi in -0.9<y<+0.9 & 3.0<pt<5.0 GeV/c
+# 59 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD first, J/#Psi in -0.9<y<+0.9 & 3.0<pt<5.0 GeV/c
+# 60 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD any, J/#Psi in -0.9<y<+0.9 & 5.0<pt<8.0 GeV/c
+# 61 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD first, J/#Psi in -0.9<y<+0.9 & 5.0<pt<8.0 GeV/c
+# 62 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD any, J/#Psi in -0.9<y<+0.9 & 5.0<pt<7.0 GeV/c
+# 63 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD first, J/#Psi in -0.9<y<+0.9 & 5.0<pt<7.0 GeV/c
+# 64 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD any, J/#Psi in -0.9<y<+0.9 & 7.0<pt<10.0 GeV/c
+# 65 - Eff. vs. pt, (2.92<M_{inv}<3.16) / (0.0<M_{inv}<5.0), SPD first, J/#Psi in -0.9<y<+0.9 & 7.0<pt<10.0 GeV/c

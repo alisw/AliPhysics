@@ -19,6 +19,7 @@
 //
 // Authors: 
 //   Jens Wiechula <Jens.Wiechula@cern.ch> 
+//   Frederick Kramer <Frederick.Kramer@cern.ch> 
 // 
 
 
@@ -31,7 +32,15 @@
 #include <TVectorD.h>
 
 #include <AliVEvent.h>
+#include <AliVParticle.h>
 #include <AliKFParticle.h>
+#include <AliESDtrackCuts.h>
+#include <AliESDEvent.h>
+#include <AliMCEvent.h>
+#include <AliAODEvent.h>
+#include <AliAODTracklets.h>
+#include <AliMultiplicity.h>
+#include <AliStack.h>
 
 #include "AliDielectronHelper.h"
 
@@ -113,6 +122,97 @@ TVectorD* AliDielectronHelper::MakeArbitraryBinning(const char* bins)
   delete arr;
   return binLimits;
 }
+
+
+//_____________________________________________________________________________
+Int_t AliDielectronHelper::GetNch(const AliMCEvent *ev, Double_t etaRange){
+  // determination of Nch
+  if (!ev || ev->IsA()!=AliMCEvent::Class()) return -1;
+
+  AliStack *stack = ((AliMCEvent*)ev)->Stack();
+
+  if (!stack) return -1;
+
+  Int_t nParticles = stack->GetNtrack();
+  Int_t nCh = 0;
+
+  // count..
+  for (Int_t iMc = 0; iMc < nParticles; ++iMc) {
+    if (!stack->IsPhysicalPrimary(iMc)) continue;
+
+    TParticle* particle = stack->Particle(iMc);
+    if (!particle) continue;
+    if (particle->GetPDG()->Charge() == 0) continue;
+
+    Float_t eta = particle->Eta();
+    if (TMath::Abs(eta) < TMath::Abs(etaRange)) nCh++;
+  }
+
+  return nCh;
+}
+
+
+//_____________________________________________________________________________
+Int_t AliDielectronHelper::GetNaccTrcklts(const AliVEvent *ev){
+  // Compute the collision multiplicity based on AOD or ESD tracklets
+  // Code taken from: AliAnalysisTaskMuonCollisionMultiplicity::ComputeMultiplicity()
+
+  if (!ev) return -1;
+
+  Int_t nTracklets = 0;
+  Int_t nAcc = 0;
+  Double_t etaRange = 1.6;
+  
+  if (ev->IsA() == AliAODEvent::Class()) {
+    AliAODTracklets *tracklets = ((AliAODEvent*)ev)->GetTracklets();
+    nTracklets = tracklets->GetNumberOfTracklets();
+    for (Int_t nn = 0; nn < nTracklets; nn++) {
+      Double_t theta = tracklets->GetTheta(nn);
+      Double_t eta = -TMath::Log(TMath::Tan(theta/2.0));
+      if (TMath::Abs(eta) < etaRange) nAcc++;
+    }
+  } else if (ev->IsA() == AliESDEvent::Class()) {
+    nTracklets = ((AliESDEvent*)ev)->GetMultiplicity()->GetNumberOfTracklets();
+    for (Int_t nn = 0; nn < nTracklets; nn++) {
+      Double_t eta = ((AliESDEvent*)ev)->GetMultiplicity()->GetEta(nn);
+      if (TMath::Abs(eta) < etaRange) nAcc++;
+    }
+  } else return -1;
+
+  return nAcc;
+}
+
+
+//_____________________________________________________________________________
+Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
+  // put a robust Nacc definition here
+
+  return -1;
+  if (!ev || ev->IsA()!=AliESDEvent::Class()) return -1;
+  
+  // basic track cuts for the N_acc definition
+  AliESDtrackCuts esdTC;
+  esdTC.SetMaxDCAToVertexZ(3.0);
+  esdTC.SetMaxDCAToVertexXY(1.0);
+  esdTC.SetEtaRange( -0.9 , 0.9 );
+  esdTC.SetAcceptKinkDaughters(kFALSE);
+  esdTC.SetRequireITSRefit(kTRUE);
+  esdTC.SetRequireTPCRefit(kTRUE);
+  esdTC.SetMinNClustersTPC(70);
+  esdTC.SetMaxChi2PerClusterTPC(4);
+  esdTC.SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+
+  Int_t nRecoTracks = ev->GetNumberOfTracks();
+  Int_t nAcc = 0;
+
+  for (Int_t iTrack = 0; iTrack < nRecoTracks; iTrack++) {
+    AliVParticle* candidate = ev->GetTrack(iTrack);
+    if (esdTC.IsSelected(candidate)) nAcc++;
+  }
+
+  return nAcc;
+}
+
 
 //_____________________________________________________________________________
 void AliDielectronHelper::RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, const AliVEvent * const ev){

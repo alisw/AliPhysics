@@ -29,7 +29,7 @@ Float_t FitMCshape(AliDielectronSignalBase *sig);
 const char *mcLineShapeFile="$ALICE_ROOT/PWG3/dielectron/macros/mcMinv_LHC10f7a.root";
  
 //_______________________________________
-void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t save=kTRUE)
+void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t save=kTRUE, Bool_t DoPt=kTRUE )
 {
   AliDielectronCFdraw d(filenameData);
   AliDielectronCFdraw dCorr("corrCont","corrCont");
@@ -42,6 +42,7 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
   TList* listData = (TList*)f.Get("jpsi_QA");
   //THashList *a = (THashList*)listData->FindObject("basicQ+SPDfirst+pt>.6+PID");
   THashList *a = (THashList*)listData->FindObject("basicQ+SPDfirst+pt>.8+PID"); //01.02.11
+  //THashList *a = (THashList*)listData->FindObject("FullCuts+SPDany+Pi3.0+P3.0"); //Ionut
   THashList *b = (THashList*)a->FindObject("Event");    
   TH1F *hZvtx= (TH1F*) b->FindObject("VtxZ");
   hZvtx->SetDirectory(0);
@@ -99,12 +100,15 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
 
   //if (hZvtx) delete hZvtx;
 
-  Int_t stepFirst=0, stepAny=1, stepTOFmix=2; //Data
+  Int_t stepFirst=0, stepAny=1, stepAnyV0=2, stepAnyV0T=3; //Data ...from 05.02.11 on
+  //Int_t stepFirst=0, stepAny=1, stepTOFmix=2; //Data
   //Int_t stepFirst=2, stepAny=4, stepTOFmix=6; d.SetRangeUser("PairType",1,1); //MC only
+  //Int_t stepFirst=1, stepAny=3, stepAnyV0T=5; //MC truth
+  //Int_t stepFirst=2, stepAny=4, stepAnyV0T=5; //MC, all pairs ...or vice-versa
 
   gStyle->SetOptStat(0);
   //Set common Ranges
-  d.SetRangeUser("Leg1_NclsTPC",70.,170.);
+  d.SetRangeUser("Leg1_NclsTPC",70.,170.); //was 90
   d.SetRangeUser("Leg2_NclsTPC",70.,170.);
   d.SetRangeUser("Leg1_Pt",1.01,100000);
   d.SetRangeUser("Leg2_Pt",1.01,100000);
@@ -113,13 +117,10 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
 
 //   d.SetRangeUser("Leg1_TPC_nSigma_Electrons",-3,3);
 //   d.SetRangeUser("Leg2_TPC_nSigma_Electrons",-3,3);
-/*
-   d.SetRangeUser("Leg1_TPC_nSigma_Pions",3.5,20);
-   d.SetRangeUser("Leg2_TPC_nSigma_Pions",3.5,20);
-   d.SetRangeUser("Leg1_TPC_nSigma_Protons",3.5,20);
-   d.SetRangeUser("Leg2_TPC_nSigma_Protons",3.5,20);
-*/  
-  //d.SetRangeUser("M",0.5,5.);
+  d.SetRangeUser("Leg1_TPC_nSigma_Pions",3.51,20); // 2011-02-09_0027.5195 only
+  d.SetRangeUser("Leg2_TPC_nSigma_Pions",3.51,20); 
+  d.SetRangeUser("Leg1_TPC_nSigma_Protons",3.01,20); 
+  d.SetRangeUser("Leg2_TPC_nSigma_Protons",3.01,20);
   d.SetRangeUser("M",0.5,5.);
   //============================
   //SPD first
@@ -127,16 +128,16 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
   
   //--- Like sign subtraction
   AliDielectronSignalBase *sigFirst=GetSignalLS(d,stepFirst);
-  SetStyle(sigFirst,"ITS First - Like Sign subtraction");
+  SetStyle(sigFirst,"SPDfirst - Like Sign subtraction");
   DrawSpectra(sigFirst,"cFirst",hStats,fNevSel,save);
   //--- Like sign subtraction Arithmetic mean
   AliDielectronSignalBase *sigFirstArith=GetSignalLS(d,stepFirst,AliDielectronSignalBase::kLikeSignArithm);
-  SetStyle(sigFirstArith,"ITS FirstArith - Like Sign subtraction");
+  SetStyle(sigFirstArith,"SPDfirstArith - Like Sign subtraction");
   DrawSpectra(sigFirstArith,"cFirstArith",hStats,fNevSel,save);
   //--- Rotation subtraction
   AliDielectronSignalBase *sigFirstRot=GetSignalRot(d,stepFirst);
-  SetStyle(sigFirstRot,"ITS First - Track rotation subtraction");
-//   DrawSpectra(sigFirstRot,"cFirstRot",hStats,save);
+  SetStyle(sigFirstRot,"SPDfirst - Track rotation subtraction");
+  DrawSpectra(sigFirstRot,"cFirstRot",hStats,save);
   
   //============================
   //SPD any
@@ -146,25 +147,39 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
   DrawSpectra(sigAny,"cAny",hStats,fNevSel,save);
   //--- like sign with arithmetic mean
   AliDielectronSignalBase *sigAnyArith=GetSignalLS(d,stepAny,AliDielectronSignalBase::kLikeSignArithm);
-  SetStyle(sigAnyArith,"ITS Any - Like Sign subtraction (Arithm. mean)");
+  SetStyle(sigAnyArith,"SPDany - Like Sign subtraction (Arithm. mean)");
   DrawSpectra(sigAnyArith,"cAnyArith",hStats,fNevSel,save);
   
   //--- Rotation subtraction
   AliDielectronSignalBase *sigAnyRot=GetSignalRot(d,stepAny);
-  SetStyle(sigAnyRot,"ITS First - Track rotation subtraction");
-//   DrawSpectra(sigAnyRot,"cAnyRot",hStats,fNevSel,save);
-  
+  SetStyle(sigAnyRot,"SPDany - Track rotation subtraction");
+  DrawSpectra(sigAnyRot,"cAnyRot",hStats,fNevSel,save);
+
+  //AliDielectronSignalBase *sigAnyRot2=GetSignalRot(d,stepAnyV0); //diff. rot. angle
+  //SetStyle(sigAnyRot2,"ITS First - Track rotation subtraction");
+  //DrawSpectra(sigAnyRot2,"cAnyRot2",hStats,fNevSel,save);
+
+  //AliDielectronSignalBase *sigAnyRot3=GetSignalRot(d,stepAnyV0T);  //diff. rot. angle
+  //SetStyle(sigAnyRot3,"ITS First - Track rotation subtraction");
+  //DrawSpectra(sigAnyRot3,"cAnyRot3",hStats,fNevSel,save);
+
+  //--- like sign with arithmetic mean, V0 (tender) conversions excl.
+  //AliDielectronSignalBase *sigAnyV0tArith=GetSignalLS(d,stepAnyV0T,AliDielectronSignalBase::kLikeSignArithm);
+  //SetStyle(sigAnyV0tArith,"ITS Any V0 (Tender) excl. - LS-Arithm.");
+  //DrawSpectra(sigAnyV0tArith,"cAnyV0tArith",hStats,fNevSel,save);
+
   //=============================
   //TOF up to 1.2, parametrisation in TPC ele
   //
+/*
   AliDielectronSignalBase *sigTOFmix=GetSignalLS(d,stepTOFmix);
   SetStyle(sigTOFmix,"TOF + TPC - Like Sign subtraction");
-//   DrawSpectra(sigTOFmix,"cTOFTPC",hStats,fNevSel,save);
+  DrawSpectra(sigTOFmix,"cTOFTPC",hStats,fNevSel,save);
   //--- Rotation subtraction
   AliDielectronSignalBase *sigTOFmixRot=GetSignalRot(d,stepTOFmix);
   SetStyle(sigTOFmixRot,"TOF + TPC - Track rotation subtraction");
-//   DrawSpectra(sigTOFmixRot,"cTOFTPCrot",hStats,fNevSel,save);
-  
+  DrawSpectra(sigTOFmixRot,"cTOFTPCrot",hStats,fNevSel,save);
+*/  
 
  //================================
  // y bins
@@ -175,22 +190,22 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
   AliDielectronSignalBase *sigY_03=GetSignalLS(d,stepAny,AliDielectronSignalBase::kLikeSignArithm);
   DrawSpectra(sigY_03,"cAny_Y03",hStats,fNevSel,save);
 
-
-// 7% more material budget
-
-
 //  simulator.AliModule::SetDensityFactor(1.07);
 
+  if (DoPt){
 
   //===============================
   // Pt bins
   //   "0.0, 0.8, 1.4, 2.8, 5., 9.9"
   d.SetRangeUser("Y",-.899,+.899);
+  //Char_t *metPt="cAnyArith"; //method for background for Minv in pt bins
+  Char_t *metPt="cAnyRot";
+
 
   FILE *out_file;
   if (save){      
-      if ( (out_file = fopen(Form("sigPt_%s.txt","cAnyArith"), "w")) == NULL )
-      { fprintf(stderr, "Cannot open file %s\n", Form("sigPt_%s.txt","cAnyArith")); }
+      if ( (out_file = fopen(Form("sigPt_%s.txt",metPt), "w")) == NULL )
+      { fprintf(stderr, "Cannot open file %s\n", Form("sigPt_%s.txt",metPt)); }
   }  
   const Int_t NptBins=6;
   //Float_t PtC[5]={0.5,1.25,2.25,4.,7.5}; //pt bins...need clever way
@@ -212,8 +227,16 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
   //for (Int_t i=0; i<5; ++i){
   for (Int_t i=0; i<NptBins; ++i){
     d.SetRangeUser("Pt",(*vBins)[i]+.001, (*vBins)[i+1]-0.001);
-    sig_Pt[i]=GetSignalLS(d,stepAny,AliDielectronSignalBase::kLikeSignArithm);
-    DrawSpectra(sig_Pt[i],Form("cAny_Pt%d",i),hStats,fNevSel,save);
+    if ("cAnyArith" == metPt){	
+	sig_Pt[i]=GetSignalLS(d,stepAny,AliDielectronSignalBase::kLikeSignArithm);
+    } 
+    else if ("cAnyRot" == metPt){
+	sig_Pt[i]=GetSignalRot(d,stepAny); //rotation
+    }
+    else {
+	cout << " ??? No such method ??? " <<metPt <<endl;
+    }
+    DrawSpectra(sig_Pt[i],Form("%s_Pt%d",metPt,i),hStats,fNevSel,save);
   }
   
   TH1D *hSigPt=new TH1D("hSigPt","hSigPt",NptBins,vBins->GetMatrixArray());
@@ -228,14 +251,14 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
       hSigSOB->SetBinContent(i+1,sig_Pt[i]->GetSB());
       hSigSOB->SetBinError(i+1,sig_Pt[i]->GetSBError());
       if (save){ 
-	  fprintf(out_file,"%4.1f %5.2f %3d %4.1f  %3.1f %4.2f  %4.1f %4.2f \n",PtC[i],PtW[i],(int)hSigPt->GetBinContent(i+1),hSigPt->GetBinError(i+1),hSigSign->GetBinContent(i+1),hSigSign->GetBinError(i+1),hSigSOB->GetBinContent(i+1),hSigSOB->GetBinError(i+1));
+	  fprintf(out_file,"%4.1f %5.2f %5.1f  %4.1f  %3.1f %4.2f  %4.1f %4.2f \n",PtC[i],PtW[i],hSigPt->GetBinContent(i+1),hSigPt->GetBinError(i+1),hSigSign->GetBinContent(i+1),hSigSign->GetBinError(i+1),hSigSOB->GetBinContent(i+1),hSigSOB->GetBinError(i+1));
       }
   
   }
 
   if (save){      
       fclose(out_file);      
-      fprintf(stdout, " *** Signal file vs. pt: %s\n", Form("sigPt_%s.txt","cAny"));
+      fprintf(stdout, " *** Signal file vs. pt: %s\n", Form("sigPt_%s.txt",metPt));
   }
 
   const Int_t kMarkTyp=20; //marker type
@@ -293,7 +316,9 @@ void PlotDataResults(const char* filenameData, const char* filenameMC="", Bool_t
   hSigSOB->GetYaxis()->SetTitle("S/B");
   hSigSOB->Draw();  
 
-  cSigPt->SaveAs(Form("SigPt_cAny.eps"));
+  cSigPt->SaveAs(Form("SigPt_%s.eps",metPt));
+  
+  } //DoPt
 
   if (hStats) delete hStats;
 
@@ -313,11 +338,16 @@ AliDielectronSignalBase *GetSignalLS(AliDielectronCFdraw &d, Int_t step, AliDiel
   
   for (Int_t iType=0;iType<3;++iType){
     d.SetRangeUser("PairType",iType,iType);
-    arr->AddAt(d.Project("M",step),iType);
+    TH1D* hh = (TH1D*)d.Project("M",step);
+    if(TMath::Abs(hh->GetBinWidth(1)-0.02)<0.0001) {
+	//hh->Rebin(2);
+    }
+    arr->AddAt(hh,iType);
   }
   
   AliDielectronSignalExt *sig=new AliDielectronSignalExt;
   sig->SetScaleRawToBackground(3.2,4.9);
+  //sig->SetScaleRawToBackground(3.2,5.0);
   sig->SetIntegralRange(2.92,3.15);
   sig->SetMethod(type);
   sig->Process(arr);
@@ -357,7 +387,7 @@ AliDielectronSignalBase *GetSignalLSY(AliDielectronCFdraw &d, Int_t step, AliDie
 
   AliDielectronSignalExt *sig=new AliDielectronSignalExt;
   sig->SetScaleRawToBackground(3.2,4.9);
-  sig->SetIntegralRange(2.92,3.15);
+  sig->SetIntegralRange(2.93,3.15);
   sig->SetMethod(type);
   sig->Process(arr);
   
@@ -496,7 +526,7 @@ void DrawSpectra(AliDielectronSignalBase *sig, const char* cname, TH1  *hEventSt
   Double_t sigS2Ber=sig->GetSBError();
   Double_t sigSignif= sig->GetSignificance();
   Double_t sigSignifEr= sig->GetSignificanceError();
-  lat->DrawLatex(0.18, 0.92, Form("S: %3d#pm%4.1f, S/B: %3.1f#pm %4.2f, Signif.: %4.1f#pm%4.2f (%4.2f-%4.2f GeV) ",(int)sigN,sigEr,sigS2B,sigS2Ber,sigSignif,sigSignifEr,
+  lat->DrawLatex(0.18, 0.92, Form("S: %5.1f#pm%4.1f, S/B: %3.1f#pm %4.2f, Signif.: %4.1f#pm%4.2f (%4.2f-%4.2f GeV) ",sigN,sigEr,sigS2B,sigS2Ber,sigSignif,sigSignifEr,
                        hUS->GetBinLowEdge(hUS->FindBin(sig->GetIntegralMin())),
                        hUS->GetBinLowEdge(hUS->FindBin(sig->GetIntegralMax())+1)));
   
@@ -575,14 +605,12 @@ void DrawSpectra(AliDielectronSignalBase *sig, const char* cname, TH1  *hEventSt
   }  
 
   if (save){ 
-    c->SaveAs(Form("Minv_%s.eps",cname));
-    //c->SaveAs(Form("%s.png",cname));
 
     FILE *out_file;
     if ( (out_file = fopen(Form("sig_%s.txt",cname), "w")) == NULL )
     {   fprintf(stderr, "Cannot open file %s\n", Form("sig_%s.txt",cname)); }
     fprintf(stdout, "Signal file: %s\n", Form("sig_%s.txt",cname));
-    fprintf(out_file,"%3d %4.1f  %3.1f %4.2f  %4.1f %4.2f %d %6.3f\n",(int)sigN,sigEr,sigS2B,sigS2Ber,sigSignif,sigSignifEr,(Int_t)afterPhys,effInt);
+    fprintf(out_file,"%3d %4.1f  %3.1f %4.2f  %4.1f %4.2f  %d  %4.2f  %6.3f\n",(int)sigN,sigEr,sigS2B,sigS2Ber,sigSignif,sigSignifEr,(Int_t)afterPhys,sig->GetScaleFactor(),effInt);
     fclose(out_file);
 
     TFile outMinv(Form("Minv_%s.root",cname), "RECREATE");
@@ -592,7 +620,10 @@ void DrawSpectra(AliDielectronSignalBase *sig, const char* cname, TH1  *hEventSt
     if (hMmc) hMmc->Write();
     outMinv.Close();
 
-    }
+    c->SaveAs(Form("Minv_%s.eps",cname));
+    //c->SaveAs(Form("%s.png",cname));
+
+  }
   
   return;
 }
@@ -626,11 +657,12 @@ Float_t FitMCshape(AliDielectronSignalBase *sig)
   effInt/=hMmc->Integral();
   printf("MC signal fraction in range %4.2f-%4.2f GeV: %5.3f \n",hMmc->GetBinLowEdge(hMmc->FindBin(mb1)),hMmc->GetBinLowEdge(hMmc->FindBin(mb2)+1),effInt);
  
+  Float_t MminFit=1.2; //min., Minv for fit (and chi2 calc.)
   Float_t mcScale1=(hMsub->GetXaxis()->GetBinWidth(1)/hMmc->GetXaxis()->GetBinWidth(1))*
     hMsub->Integral(hMsub->FindBin(mb1),hMsub->FindBin(mb2))/
     hMmc->Integral(hMmc->FindBin(mb1),hMmc->FindBin(mb2));
   
-  printf("1st guess of MC scale factor: %6.3f\n",mcScale1);
+  printf("1st guess of MC scale factor: %6.3f ...chi2 for Minv>%4.1f\n",mcScale1,MminFit);
   
   Float_t mcScale=0.;
   Float_t chi2_min=100000.;
@@ -642,15 +674,17 @@ Float_t FitMCshape(AliDielectronSignalBase *sig)
     Float_t scale=(0.4+0.05*(Float_t)i)*mcScale1;
     ndf=0;
     for(Int_t ib=1; ib<=hMsub->GetXaxis()->GetNbins(); ib++){
-      Float_t data=(Float_t)hMsub->GetBinContent(ib);
-      Float_t err=(Float_t)hMsub->GetBinError(ib);
-      Float_t mc=scale*((Float_t)hMmc->GetBinContent(hMmc->FindBin(hMsub->GetBinCenter(ib))));
-      if (err>0) {
-        chi2 += ((data-mc)*(data-mc))/(err*err);
-        ndf++;
-      } else {
-        printf("bin %d Err: %6.3f, chi2: %6.1f\n",ib,err,chi2);
-      }
+	if (hMsub->GetBinCenter(ib) > MminFit) {
+	    Float_t data=(Float_t)hMsub->GetBinContent(ib);
+	    Float_t err=(Float_t)hMsub->GetBinError(ib);
+	    Float_t mc=scale*((Float_t)hMmc->GetBinContent(hMmc->FindBin(hMsub->GetBinCenter(ib))));
+	    if (err>0) {
+		chi2 += ((data-mc)*(data-mc))/(err*err);
+		ndf++;
+	    } else {
+		printf("bin %d Err: %6.3f, chi2: %6.1f\n",ib,err,chi2);
+	    }
+	}
     }
       //printf("%d scale factor: %6.3f, chi2: %6.1f\n",i,scale,chi2);
     if(chi2 < chi2_min){

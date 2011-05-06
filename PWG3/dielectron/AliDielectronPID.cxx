@@ -13,8 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id$ */
-
 ///////////////////////////////////////////////////////////////////////////
 //                Dielectron PID                                  //
 //                                                                       //
@@ -422,13 +420,34 @@ void AliDielectronPID::SetDefaults(Int_t def){
     lowerCut->SetParameters(-2.65,-0.6757);
     AddCut(kTPC,AliPID::kElectron,lowerCut,4.);
     AddCut(kTOF,AliPID::kElectron,-5,5,0,200,kFALSE,AliDielectronPID::kIfAvailable);
+
   } else if (def==10) {
     AddCut(kTOF,AliPID::kElectron,-5,5,0,200,kFALSE,AliDielectronPID::kIfAvailable);
     AddCut(kTPC,AliPID::kElectron,3.);
     AddCut(kTPC,AliPID::kPion,-3.,3.,0.,0.,kTRUE);
     AddCut(kTPC,AliPID::kProton,-3.,3.,0.,0.,kTRUE);
     
+  } else if (def==11) {
+    // lower cut TPC: parametrisation by HFE
+    // only use from period d on !!
+    // upper cut TPC: 3 sigma
+    // TOF ele band 3sigma 0<p<2.0GeV
+    TF1 *lowerCut=new TF1("lowerCut", "[0] * TMath::Exp([1]*x)+[2]", 0, 100);
+    lowerCut->SetParameters(-3.718,-0.4,0.27);
+    AddCut(kTPC,AliPID::kElectron,lowerCut,3.);
+    AddCut(kTOF,AliPID::kElectron,-3,3,0,2.);
+  } else if (def==12) {
+    // lower cut TPC: parametrisation by HFE
+    // only use from period d on !!
+    // upper cut TPC: 3 sigma
+    // TOF 5 sigma inclusion if TOFpid available
+    // this should reduce K,p,Pi to a large extent
+    TF1 *lowerCut=new TF1("lowerCut", "[0] * TMath::Exp([1]*x)+[2]", 0, 100);
+    lowerCut->SetParameters(-3.718,-0.4,0.27);
+    AddCut(kTPC,AliPID::kElectron,lowerCut,4.);
+    AddCut(kTOF,AliPID::kElectron,-5,5,0,200,kFALSE,AliDielectronPID::kIfAvailable);
   }
+
 }
 
 //______________________________________________

@@ -13,8 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id$ */
-
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
 //                        Basic Analysis Task                            //
@@ -115,6 +113,12 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
     fEventStat=new TH1D("hEventStat","Event statistics",nbins,0,nbins);
     fEventStat->GetXaxis()->SetBinLabel(1,"Before Phys. Sel.");
     fEventStat->GetXaxis()->SetBinLabel(2,"After Phys. Sel.");
+
+    //default names
+    fEventStat->GetXaxis()->SetBinLabel(3,"Bin3 not used");
+    fEventStat->GetXaxis()->SetBinLabel(4,"Bin4 not used");
+    fEventStat->GetXaxis()->SetBinLabel(5,"Bin5 not used");
+    
     if (fTriggerOnV0AND&&isESD) fEventStat->GetXaxis()->SetBinLabel(3,"V0and triggers");
     if (fEventFilter) fEventStat->GetXaxis()->SetBinLabel(4,"After Event Filter");
     if (fRejectPileup) fEventStat->GetXaxis()->SetBinLabel(5,"After Pileup rejection");
@@ -144,11 +148,13 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   if (fListHistos.IsEmpty()&&fListCF.IsEmpty()) return;
 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  AliESDInputHandler *esdHandler=0x0;
   Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
-  if ( (esdHandler=dynamic_cast<AliESDInputHandler*>(man->GetInputEventHandler())) && esdHandler->GetESDpid() ){
-    AliDielectronVarManager::SetESDpid(esdHandler->GetESDpid());
+  
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  
+  if ( inputHandler->GetPIDResponse() ){
+    AliDielectronVarManager::SetPIDResponse( inputHandler->GetPIDResponse() );
   } else {
     //load esd pid bethe bloch parameters depending on the existance of the MC handler
     // yes: MC parameters
@@ -177,7 +183,6 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
     }
   } 
   // Was event selected ?
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   UInt_t isSelected = AliVEvent::kAny;
   if( fSelectPhysics && inputHandler && inputHandler->GetEventSelection() ) {
     isSelected = inputHandler->IsEventSelected();

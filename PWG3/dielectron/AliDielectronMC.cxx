@@ -13,8 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id$ */
-
 //#####################################################
 //#                                                   # 
 //#              Class AliDielectronMC                #
@@ -40,6 +38,8 @@
 #include <AliLog.h>
 
 #include <TClonesArray.h>
+
+#include "AliDielectronSignalMC.h"
 #include "AliDielectronMC.h"
 
 AliDielectronMC* AliDielectronMC::fgInstance=0x0;
@@ -649,6 +649,362 @@ void AliDielectronMC::GetDaughters(const TObject *mother, AliVParticle* &d1, Ali
     d2=fMCEvent->GetTrack(lblD2);
    }
 }
+
+
+//________________________________________________________________________________
+Int_t AliDielectronMC::GetMothersLabel(Int_t daughterLabel) {
+  //
+  //  Get the label of the mother for particle with label daughterLabel
+  //
+  if(daughterLabel<0) return -1;
+  if (fAnaType==kAOD) {
+    if(!fMcArray) return -1;
+    return (static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(daughterLabel)))->GetMother();
+  } else if(fAnaType==kESD) {
+    if (!fMCEvent) return -1;
+    return (static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(daughterLabel)))->GetMother();
+  }
+  return -1;
+}
+
+
+//________________________________________________________________________________
+Int_t AliDielectronMC::GetPdgFromLabel(Int_t label) {
+  //
+  //  Get particle code using the label from stack
+  //
+  if(label<0) return 0;
+  if(fAnaType==kAOD) {
+    if(!fMcArray) return 0;
+    return (static_cast<AliAODMCParticle*>(GetMCTrackFromMCEvent(label)))->PdgCode();
+  } else if(fAnaType==kESD) {
+    if (!fMCEvent) return 0;
+    return (static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(label)))->PdgCode();
+  }
+  return 0;
+}
+
+
+//________________________________________________________________________________
+Bool_t AliDielectronMC::ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t checkBothCharges) const {
+  //
+  //  Test the PDG codes of particles with the required ones
+  //
+  Bool_t result = kTRUE;
+  Int_t absRequiredPDG = TMath::Abs(requiredPDG);
+  switch(absRequiredPDG) {
+  case 0:
+    result = kTRUE;    // PDG not required (any code will do fine)
+    break;
+  case 100:     // all light flavoured mesons
+    if(checkBothCharges)
+      result = TMath::Abs(particlePDG)>=100 && TMath::Abs(particlePDG)<=299;
+    else {
+      if(requiredPDG>0) result = particlePDG>=100 && particlePDG<=299;
+      if(requiredPDG<0) result = particlePDG>=-299 && particlePDG<=-100;
+    }
+    break;
+  case 1000:     // all light flavoured baryons
+    if(checkBothCharges)
+      result = TMath::Abs(particlePDG)>=1000 && TMath::Abs(particlePDG)<=2999;
+    else {
+      if(requiredPDG>0) result = particlePDG>=1000 && particlePDG<=2999;
+      if(requiredPDG<0) result = particlePDG>=-2999 && particlePDG<=-1000;
+    }
+    break;
+  case 200:     // all light flavoured mesons  (as for the 100 case)
+    if(checkBothCharges)
+      result = TMath::Abs(particlePDG)>=100 && TMath::Abs(particlePDG)<=299;
+    else {
+      if(requiredPDG>0)result = particlePDG>=100 && particlePDG<=299;
+      if(requiredPDG<0)result = particlePDG>=-299 && particlePDG<=-100;
+    }
+    break;
+  case 2000:     // all light flavoured baryons (as for the 1000 case)
+    if(checkBothCharges)
+      result = TMath::Abs(particlePDG)>=1000 && TMath::Abs(particlePDG)<=2999;
+    else {
+      if(requiredPDG>0) result = particlePDG>=1000 && particlePDG<=2999;
+      if(requiredPDG<0) result = particlePDG>=-2999 && particlePDG<=-1000;
+    }
+    break;
+  case 300:     // all strange mesons
+    if(checkBothCharges)
+      result = TMath::Abs(particlePDG)>=300 && TMath::Abs(particlePDG)<=399;
+    else {
+      if(requiredPDG>0) result = particlePDG>=300 && particlePDG<=399;
+      if(requiredPDG<0) result = particlePDG>=-399 && particlePDG<=-300;
+    }
+    break;
+  case 3000:     // all strange baryons
+    if(checkBothCharges)
+      result = TMath::Abs(particlePDG)>=3000 && TMath::Abs(particlePDG)<=3999;
+    else {
+      if(requiredPDG>0) result = particlePDG>=3000 && particlePDG<=3999;
+      if(requiredPDG<0) result = particlePDG>=-3999 && particlePDG<=-3000;
+    }
+    break;
+  case 400:     // all charmed mesons
+    if(checkBothCharges)
+      result = TMath::Abs(particlePDG)>=400 && TMath::Abs(particlePDG)<=499;
+    else {
+      if(requiredPDG>0) result = particlePDG>=400 && particlePDG<=499;
+      if(requiredPDG<0) result = particlePDG>=-499 && particlePDG<=-400;
+    }
+    break;
+  case 4000:     // all charmed baryons
+    if(checkBothCharges)
+      result = TMath::Abs(particlePDG)>=4000 && TMath::Abs(particlePDG)<=4999;
+    else {
+      if(requiredPDG>0) result = particlePDG>=4000 && particlePDG<=4999;
+      if(requiredPDG<0) result = particlePDG>=-4999 && particlePDG<=-4000;
+    }
+    break;
+  case 500:      // all beauty mesons
+    if(checkBothCharges)
+      result = TMath::Abs(particlePDG)>=500 && TMath::Abs(particlePDG)<=599;
+    else {
+      if(requiredPDG>0) result = particlePDG>=500 && particlePDG<=599;
+      if(requiredPDG<0) result = particlePDG>=-599 && particlePDG<=-500;
+    }
+    break;
+  case 5000:      // all beauty baryons
+    if(checkBothCharges)
+      result = TMath::Abs(particlePDG)>=5000 && TMath::Abs(particlePDG)<=5999;
+    else {
+      if(requiredPDG>0) result = particlePDG>=5000 && particlePDG<=5999;
+      if(requiredPDG<0) result = particlePDG>=-5999 && particlePDG<=-5000;
+    }
+    break;
+  default:          // all specific cases
+    if(checkBothCharges)
+      result = (absRequiredPDG==TMath::Abs(particlePDG));
+    else
+      result = (requiredPDG==particlePDG);
+  }
+
+  return result;
+}
+
+
+//________________________________________________________________________________
+Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source) {
+  //
+  //  Check the source for the particle 
+  //
+
+  switch (source) {
+    case AliDielectronSignalMC::kDontCare :
+      return kTRUE;
+    break;
+    case AliDielectronSignalMC::kPrimary :
+      if(label>=0 && label<GetNPrimary()) return kTRUE;
+      else return kFALSE;
+    break;
+    case AliDielectronSignalMC::kSecondary :
+      if(label>=GetNPrimary()) return kTRUE;
+      else return kFALSE;
+    break;
+    case AliDielectronSignalMC::kDirect :
+      if(label>=0 && GetMothersLabel(label)<0) return kTRUE;
+      else return kFALSE;
+    break;
+    case AliDielectronSignalMC::kDecayProduct :
+      if(label>=0 && GetMothersLabel(label)>=0) return kTRUE;
+      else return kFALSE;
+    break;
+    default :
+      return kFALSE;
+  }
+  return kFALSE;
+}
+
+
+//________________________________________________________________________________
+Bool_t AliDielectronMC::IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, Int_t branch) {
+  //
+  // Check if the particle corresponds to the MC truth in signalMC in the branch specified
+  //
+  
+  // NOTE:  Some particles have the sign of the label flipped. It is related to the quality of matching
+  //        between the ESD and the MC track. The negative labels indicate a poor matching quality
+  //if(label<0) return kFALSE;
+  if(label<0) label *= -1; 
+  AliVParticle* part = GetMCTrackFromMCEvent(label);
+  // check the leg
+  if(!ComparePDG(part->PdgCode(),signalMC->GetLegPDG(branch),signalMC->GetCheckBothChargesLegs(branch))) return kFALSE;
+  if(!CheckParticleSource(label, signalMC->GetLegSource(branch))) return kFALSE;
+
+  // check the mother
+  AliVParticle* mcMother=0x0;
+  Int_t mLabel = -1;
+  if(signalMC->GetMotherPDG(branch)!=0 || signalMC->GetMotherSource(branch)!=AliDielectronSignalMC::kDontCare) {
+    if(part) {
+      mLabel = GetMothersLabel(label);
+      mcMother = GetMCTrackFromMCEvent(mLabel);
+    }
+    if(!mcMother) return kFALSE;
+
+    if(!ComparePDG(mcMother->PdgCode(),signalMC->GetMotherPDG(branch),signalMC->GetCheckBothChargesMothers(branch))) return kFALSE;
+    if(!CheckParticleSource(mLabel, signalMC->GetMotherSource(branch))) return kFALSE;
+  }
+
+  // check the grandmother
+  if(signalMC->GetGrandMotherPDG(branch)!=0 || signalMC->GetGrandMotherSource(branch)!=AliDielectronSignalMC::kDontCare) {
+    AliVParticle* mcGrandMother=0x0;
+    Int_t gmLabel = -1;
+    if(mcMother) {
+      gmLabel = GetMothersLabel(mLabel);
+      mcGrandMother = static_cast<AliMCParticle*>(GetMCTrackFromMCEvent(gmLabel));
+    }
+    if(!mcGrandMother) return kFALSE;
+    
+    if(!ComparePDG(mcGrandMother->PdgCode(),signalMC->GetGrandMotherPDG(branch),signalMC->GetCheckBothChargesGrandMothers(branch))) return kFALSE;
+    if(!CheckParticleSource(gmLabel, signalMC->GetGrandMotherSource(branch))) return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+
+//________________________________________________________________________________
+Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, AliDielectronSignalMC* signalMC) {
+  //
+  // Check if the pair corresponds to the MC truth in signalMC 
+  //
+ 
+  // legs (daughters)
+  const AliVParticle * mcD1 = pair->GetFirstDaughter();
+  const AliVParticle * mcD2 = pair->GetSecondDaughter();
+  Int_t labelD1 = (mcD1 ? mcD1->GetLabel() : -1);
+  Int_t labelD2 = (mcD2 ? mcD2->GetLabel() : -1);
+  if(labelD1<0) labelD1 *= -1;
+  if(labelD2<0) labelD2 *= -1;
+  Int_t d1Pdg = 0;
+  Int_t d2Pdg = 0;
+  d1Pdg=GetPdgFromLabel(labelD1);
+  d2Pdg=GetPdgFromLabel(labelD2);
+  
+  // mothers
+  AliVParticle* mcM1=0x0;
+  AliVParticle* mcM2=0x0;
+  
+  // grand-mothers
+  AliVParticle* mcG1 = 0x0;
+  AliVParticle* mcG2 = 0x0;
+  
+  // make direct(1-1 and 2-2) and cross(1-2 and 2-1) comparisons for the whole branch
+  Bool_t directTerm = kTRUE;
+  // daughters
+  directTerm = directTerm && mcD1 && ComparePDG(d1Pdg,signalMC->GetLegPDG(1),signalMC->GetCheckBothChargesLegs(1)) 
+               && CheckParticleSource(labelD1, signalMC->GetLegSource(1));
+    
+  directTerm = directTerm && mcD2 && ComparePDG(d2Pdg,signalMC->GetLegPDG(2),signalMC->GetCheckBothChargesLegs(2))
+               && CheckParticleSource(labelD2, signalMC->GetLegSource(2));
+    
+  // mothers
+  Int_t labelM1 = -1;
+  if(signalMC->GetMotherPDG(1)!=0 || signalMC->GetMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
+    labelM1 = GetMothersLabel(labelD1);
+    if(labelD1>-1 && labelM1>-1) mcM1 = GetMCTrackFromMCEvent(labelM1);
+    directTerm = directTerm && mcM1 
+                 && ComparePDG(mcM1->PdgCode(),signalMC->GetMotherPDG(1),signalMC->GetCheckBothChargesMothers(1))
+                 && CheckParticleSource(labelM1, signalMC->GetMotherSource(1));
+  }
+  
+  Int_t labelM2 = -1;
+  if(signalMC->GetMotherPDG(2)!=0 || signalMC->GetMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
+    labelM2 = GetMothersLabel(labelD2);
+    if(labelD2>-1 && labelM2>-1) mcM2 = GetMCTrackFromMCEvent(labelM2);
+    directTerm = directTerm && mcM2 
+                 && ComparePDG(mcM2->PdgCode(),signalMC->GetMotherPDG(2),signalMC->GetCheckBothChargesMothers(2))
+                 && CheckParticleSource(labelM2, signalMC->GetMotherSource(2));
+  }
+ 
+  // grand-mothers
+  Int_t labelG1 = -1;
+  if(signalMC->GetGrandMotherPDG(1)!=0 || signalMC->GetGrandMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
+    labelG1 = GetMothersLabel(labelM1);
+    if(mcM1 && labelG1>-1) mcG1 = GetMCTrackFromMCEvent(labelG1);
+    directTerm = directTerm && mcG1 
+                 && ComparePDG(mcG1->PdgCode(),signalMC->GetGrandMotherPDG(1),signalMC->GetCheckBothChargesGrandMothers(1))
+                 && CheckParticleSource(labelG1, signalMC->GetGrandMotherSource(1));
+  }
+
+  Int_t labelG2 = -1;
+  if(signalMC->GetGrandMotherPDG(2)!=0 || signalMC->GetGrandMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
+    labelG2 = GetMothersLabel(labelM2);
+    if(mcM2 && labelG2>-1) mcG2 = GetMCTrackFromMCEvent(labelG2);
+    directTerm = directTerm && mcG2 
+                 && ComparePDG(mcG2->PdgCode(),signalMC->GetGrandMotherPDG(2),signalMC->GetCheckBothChargesGrandMothers(2))
+                 && CheckParticleSource(labelG2, signalMC->GetGrandMotherSource(2));
+  }
+
+  // Cross term
+  Bool_t crossTerm = kTRUE;
+  // daughters
+  crossTerm = crossTerm && mcD2 
+              && ComparePDG(d2Pdg,signalMC->GetLegPDG(1),signalMC->GetCheckBothChargesLegs(1))
+              && CheckParticleSource(labelD2, signalMC->GetLegSource(1));
+    
+  crossTerm = crossTerm && mcD1 
+              && ComparePDG(d1Pdg,signalMC->GetLegPDG(2),signalMC->GetCheckBothChargesLegs(2))
+              && CheckParticleSource(labelD1, signalMC->GetLegSource(2));
+  
+  // mothers  
+  if(signalMC->GetMotherPDG(1)!=0 || signalMC->GetMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
+    if(!mcM2 && labelD2>-1) {
+      labelM2 = GetMothersLabel(labelD2);
+      if(labelM2>-1) mcM2 = GetMCTrackFromMCEvent(labelM2);
+    }
+    crossTerm = crossTerm && mcM2 
+                && ComparePDG(mcM2->PdgCode(),signalMC->GetMotherPDG(1),signalMC->GetCheckBothChargesMothers(1))
+                && CheckParticleSource(labelM2, signalMC->GetMotherSource(1));
+  }
+  
+  if(signalMC->GetMotherPDG(2)!=0 || signalMC->GetMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
+    if(!mcM1 && labelD1>-1) {
+      labelM1 = GetMothersLabel(labelD1);
+      if(labelM1>-1) mcM1 = GetMCTrackFromMCEvent(labelM1);  
+    }
+    crossTerm = crossTerm && mcM1 
+                && ComparePDG(mcM1->PdgCode(),signalMC->GetMotherPDG(2),signalMC->GetCheckBothChargesMothers(2))
+                && CheckParticleSource(labelM1, signalMC->GetMotherSource(2));
+  }
+
+  // grand-mothers
+  if(signalMC->GetGrandMotherPDG(1)!=0 || signalMC->GetGrandMotherSource(1)!=AliDielectronSignalMC::kDontCare) {
+    if(!mcG2 && mcM2) {
+      labelG2 = GetMothersLabel(labelM2);
+      if(labelG2>-1) mcG2 = GetMCTrackFromMCEvent(labelG2);
+    }
+    crossTerm = crossTerm && mcG2 
+                && ComparePDG(mcG2->PdgCode(),signalMC->GetGrandMotherPDG(1),signalMC->GetCheckBothChargesGrandMothers(1))
+                && CheckParticleSource(labelG2, signalMC->GetGrandMotherSource(1));
+  }
+
+  if(signalMC->GetGrandMotherPDG(2)!=0 || signalMC->GetGrandMotherSource(2)!=AliDielectronSignalMC::kDontCare) {
+    if(!mcG1 && mcM1) {
+      labelG1 = GetMothersLabel(labelM1);
+      if(labelG2>-1) mcG1 = GetMCTrackFromMCEvent(labelG1);
+    }
+    crossTerm = crossTerm && mcG1 
+                && ComparePDG(mcG1->PdgCode(),signalMC->GetGrandMotherPDG(2),signalMC->GetCheckBothChargesGrandMothers(2))
+                && CheckParticleSource(labelG1, signalMC->GetGrandMotherSource(2));
+  }
+
+  Bool_t motherRelation = kTRUE;
+  if(signalMC->GetMothersRelation()==AliDielectronSignalMC::kSame) {
+    motherRelation = motherRelation && HaveSameMother(pair);
+  }
+  if(signalMC->GetMothersRelation()==AliDielectronSignalMC::kDifferent) {
+    motherRelation = motherRelation && !HaveSameMother(pair);
+  }
+ 
+  return ((directTerm || crossTerm) && motherRelation);
+}
+
+
 
 //____________________________________________________________
 Bool_t AliDielectronMC::HaveSameMother(const AliDielectronPair * pair)

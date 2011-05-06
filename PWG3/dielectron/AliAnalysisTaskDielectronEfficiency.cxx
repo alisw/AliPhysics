@@ -13,8 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id$ */
-
 //#####################################################
 //#                                                   #
 //#  Simple efficiency study for dielectrons          #

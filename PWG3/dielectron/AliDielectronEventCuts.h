@@ -40,6 +40,7 @@ public:
   void SetRequireV0and(UChar_t type=1)          { fRequireV0and=type;           }
   void SetMinVtxContributors(Int_t min=1)       { fMinVtxContributors=min;      }
   void SetCutOnMultipicityITSTPC(Bool_t mult=kTRUE) { fMultITSTPC=mult;         }
+  void SetCentralityRange(Double_t min, Double_t max) { fCentMin=min; fCentMax=max; }
   //
   //Analysis cuts interface
   //
@@ -54,6 +55,8 @@ private:
   Bool_t   fRequireVtx;             // require a vertex
   Int_t    fMinVtxContributors;     // min number of vertex contributors
   Bool_t   fMultITSTPC;             // if to cut on the ITS TPC multiplicity correlation (Pb-Pb)
+  Double_t fCentMin;               // minimum multiplity percentile
+  Double_t fCentMax;               // maximum multiplity percentile
   EVtxType fVtxType;                // vertex type
 
   UChar_t fRequireV0and;             // use V0and triggered events only

@@ -36,6 +36,12 @@ AliAnalysisTask *AddTaskJPSI(Bool_t hasMC_aod = kFALSE){
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,10.);
+
+  // add event filter
+  task->SetEventFilter(eventCuts);
+
+  // pileup rejection
+  task->SetRejectPileup();
   
   //----------------------
   //create data containers

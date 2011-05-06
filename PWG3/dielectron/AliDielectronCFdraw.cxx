@@ -13,8 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id$ */
-
 ///////////////////////////////////////////////////////////////////////////
 //       Dielectron Correction framework draw helper                     //
 //                                                                       //
@@ -177,12 +175,14 @@ void AliDielectronCFdraw::SetRangeUser(Int_t ivar, Double_t min, Double_t max, c
   // Set range of cut steps defined in slices
   // Steps may be separated by one the the characteres ,;:
   //
+  if (ivar==-1) return;
   TObjArray *arr=TString(slices).Tokenize(",:;");
 
   if (arr->GetEntriesFast()==0){
     // all slices in case of 0 entries
     for (Int_t istep=0; istep<fCfContainer->GetNStep(); ++istep){
       fCfContainer->GetGrid(istep)->SetRangeUser(ivar,min,max);
+      fCfContainer->GetAxis(ivar,istep)->SetBit(TAxis::kAxisRange,1);
     }
   } else {
     TIter next(arr);
@@ -190,6 +190,7 @@ void AliDielectronCFdraw::SetRangeUser(Int_t ivar, Double_t min, Double_t max, c
     while ( (ostr=static_cast<TObjString*>(next())) ) {
       Int_t istep=ostr->GetString().Atoi();
       fCfContainer->GetGrid(istep)->SetRangeUser(ivar,min,max);
+      fCfContainer->GetAxis(ivar,istep)->SetBit(TAxis::kAxisRange,1);
     }
   }
   delete arr;
@@ -202,6 +203,7 @@ void AliDielectronCFdraw::UnsetRangeUser(Int_t ivar, const char* slices)
   // Unset range of cut steps defined in slices
   // Steps may be separated by one the the characteres ,;:
   //
+  if (ivar==-1) return;
   TObjArray *arr=TString(slices).Tokenize(",:;");
   
   if (arr->GetEntriesFast()==0){
@@ -253,6 +255,41 @@ void AliDielectronCFdraw::Draw(const Option_t* varnames, const char* opt, const 
 
   Draw(ivar[0],ivar[1],ivar[2],opt,slices);
   delete arrVars;
+}
+
+//________________________________________________________________
+TObjArray* AliDielectronCFdraw::CollectHistosProj(const Option_t* varnames, const char* slices)
+{
+  //
+  // Collect histos with 'variables' of 'slices'
+  // for multidimensional histograms, variables may be separated by a ':'
+  // slice numbers may be separated by any of ,:;
+  //
+  // variables may be called by either their name or number
+  //
+  
+  TObjArray *arrVars=TString(varnames).Tokenize(":");
+  Int_t entries=arrVars->GetEntriesFast();
+  if (entries<1||entries>3){
+    AliError("Wrong number of variables, supported are 1 - 3 dimensions");
+    delete arrVars;
+    return 0x0;
+  }
+  
+  TIter next(arrVars);
+  TObjString *ostr=0x0;
+  Int_t ivar[3]={-1,-1,-1};
+  for (Int_t i=entries-1; i>=0; --i){
+    ostr=static_cast<TObjString*>(next());
+    if (ostr->GetString().IsDigit()){
+      ivar[i]=ostr->GetString().Atoi();
+    } else {
+      ivar[i]=fCfContainer->GetVar(ostr->GetName());
+    }
+  }
+  delete arrVars;
+  
+  return CollectHistosProj(ivar,slices);
 }
 
 //________________________________________________________________
