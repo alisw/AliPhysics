@@ -286,74 +286,42 @@ AlidNdPtAnalysisPbPb::~AlidNdPtAnalysisPbPb() {
   
   if (fTriggerAnalysis) delete fTriggerAnalysis;  fTriggerAnalysis = 0;
   
-  if (fBinsMult) delete fBinsMult; fBinsMult=0;
-  if (fBinsPt) delete fBinsPt; fBinsPt=0;
-  if (fBinsPtCorr) delete fBinsPtCorr; fBinsPtCorr=0;
-  if (fBinsEta) delete fBinsEta; fBinsEta=0;
-  if (fBinsZv) delete fBinsZv; fBinsZv=0;
-  if (fBinsCentrality) delete fBinsCentrality; fBinsCentrality=0;  
+  if (fBinsMult) delete[] fBinsMult; fBinsMult=0;
+  if (fBinsPt) delete[] fBinsPt; fBinsPt=0;
+  if (fBinsPtCorr) delete[] fBinsPtCorr; fBinsPtCorr=0;
+  if (fBinsEta) delete[] fBinsEta; fBinsEta=0;
+  if (fBinsZv) delete[] fBinsZv; fBinsZv=0;
+  if (fBinsCentrality) delete[] fBinsCentrality; fBinsCentrality=0;  
 }
 
 //_____________________________________________________________________________
 void AlidNdPtAnalysisPbPb::Init() {
- 
-  Int_t multNbins = 47;  
-  Int_t ptNbinsTrackEventCorr = 37;  
-  Int_t ptNbins = 68;
-  Int_t etaNbins = 30;
-  Int_t zvNbins = 12;
-  Int_t centralityBins = 11;
 
-  Double_t binsMultDefault[48] = {
-                   -0.5, 0.5 , 1.5 , 2.5 , 3.5 , 4.5 , 5.5 , 6.5 , 7.5 , 8.5,
-                    9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5,
-                    19.5, 20.5, 30.5, 40.5 , 50.5 , 60.5 , 70.5 , 80.5 , 90.5 , 100.5, 
-		    200.5, 300.5, 400.5, 500.5, 600.5, 700.5, 800.5, 900.5, 1000.5, 2000.5, 
-		    3000.5, 4000.5, 5000.5, 6000.5, 7000.5, 8000.5, 9000.5, 10000.5 }; // forPbPb
-  Double_t binsPtTrackEventCorrDefault[38] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,3.0,4.0,20.0,50.0};
-  Double_t binsPtDefault[69] = {
-        0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,
-	0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
-	1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
-	2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8,
-	4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0,
-	11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0,
-	26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0 };
+    //define default binning
+    Double_t binsMultDefault[48] = {-0.5, 0.5 , 1.5 , 2.5 , 3.5 , 4.5 , 5.5 , 6.5 , 7.5 , 8.5,9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5,19.5, 20.5, 30.5, 40.5 , 50.5 , 60.5 , 70.5 , 80.5 , 90.5 , 100.5,200.5, 300.5, 400.5, 500.5, 600.5, 700.5, 800.5, 900.5, 1000.5, 2000.5, 3000.5, 4000.5, 5000.5, 6000.5, 7000.5, 8000.5, 9000.5, 10000.5 }; 
+    Double_t binsPtDefault[69] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,18.0,20.0,22.0,24.0,26.0,28.0,30.0,32.0,34.0,36.0,40.0,45.0,50.0};
+    Double_t binsPtCorrDefault[37] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,3.0,4.0,50.0};    
+    Double_t binsEtaDefault[31] = {-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5};
+    Double_t binsZvDefault[13] = {-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.};
+    Double_t binsCentralityDefault[12] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.};  
 
-  Double_t binsEtaDefault[31] = {
-        -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6,
-	-0.5, -0.4, -0.3, -0.2, -0.1,  0.0,  0.1,  0.2,  0.3,  0.4, 
-	 0.5,  0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4, 
-	 1.5};
+   // if no binning is set, use the default
+   if (!fBinsMult)   { SetBinsMult(47,binsMultDefault); }
+   if (!fBinsPt)     { SetBinsPt(68,binsPtDefault); }
+   if (!fBinsPtCorr) { SetBinsPtCorr(36,binsPtCorrDefault); }
+   if (!fBinsEta)    { SetBinsEta(30,binsEtaDefault); }
+   if (!fBinsZv)     { SetBinsZv(12,binsZvDefault); }   
+   if (!fBinsCentrality)  { SetBinsCentrality(11,binsCentralityDefault); }   
 
-  Double_t binsZvDefault[13] = {-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.};
+  Int_t binsTrackEventCorrMatrix[4]={fZvNbins,fPtNbins,fEtaNbins,fCentralityNbins};
+  Int_t binsTrackEvent[4]={fZvNbins,fPtNbins,fEtaNbins,fCentralityNbins};
+  Int_t binsTrackPtCorrelationMatrix[4]={fPtNbins,fPtNbins,fEtaNbins,fCentralityNbins};
   
-  Double_t binsCentralityDefault[12] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.};  
-  
-  Double_t* binsMult = binsMultDefault;
-  Double_t* binsPtTrackEventCorr = binsPtTrackEventCorrDefault;
-  Double_t* binsPt = binsPtDefault;
-  Double_t* binsEta = binsEtaDefault;
-  Double_t* binsZv = binsZvDefault;
-  Double_t* binsCentrality = binsCentralityDefault;  
-
-  if (fMultNbins > 0) { multNbins = fMultNbins; binsMult = fBinsMult; }
-  if (fPtNbins > 0) { ptNbins  = fPtNbins; binsPt = fBinsPt; }
-  if (fPtCorrNbins > 0) { ptNbinsTrackEventCorr  = fPtCorrNbins; binsPtTrackEventCorr = fBinsPtCorr;  }
-  if (fEtaNbins > 0) { etaNbins  = fEtaNbins; binsEta = fBinsEta; }
-  if (fZvNbins > 0) { zvNbins  = fZvNbins; binsZv = fBinsZv; }
-  if (fCentralityNbins > 0) { centralityBins  = fCentralityNbins; binsCentrality = fBinsCentrality; }
-
-  Int_t binsTrackEventCorrMatrix[4]={zvNbins,ptNbinsTrackEventCorr,etaNbins,centralityBins};
-  Int_t binsTrackEvent[4]={zvNbins,ptNbins,etaNbins,centralityBins};
-  Int_t binsTrackPtCorrelationMatrix[4]={ptNbins,ptNbins,etaNbins,centralityBins};
-
-
   fTrackPtCorrelationMatrix = new THnSparseF("fTrackPtCorrelationMatrix","Pt:mcPt:mcEta:Centrality",4,binsTrackPtCorrelationMatrix);
-  fTrackPtCorrelationMatrix->SetBinEdges(0,binsPt);
-  fTrackPtCorrelationMatrix->SetBinEdges(1,binsPt);
-  fTrackPtCorrelationMatrix->SetBinEdges(2,binsEta);
-  fTrackPtCorrelationMatrix->SetBinEdges(3,binsCentrality);
+  fTrackPtCorrelationMatrix->SetBinEdges(0,fBinsPt);
+  fTrackPtCorrelationMatrix->SetBinEdges(1,fBinsPt);
+  fTrackPtCorrelationMatrix->SetBinEdges(2,fBinsEta);
+  fTrackPtCorrelationMatrix->SetBinEdges(3,fBinsCentrality);
   fTrackPtCorrelationMatrix->GetAxis(0)->SetTitle("Pt (GeV/c)");
   fTrackPtCorrelationMatrix->GetAxis(1)->SetTitle("mcPt (GeV/c)");
   fTrackPtCorrelationMatrix->GetAxis(2)->SetTitle("mcEta");
@@ -363,32 +331,32 @@ void AlidNdPtAnalysisPbPb::Init() {
   //
   // Efficiency and contamination correction matrices
   //
-  Int_t binsEventMatrix[3]={zvNbins,multNbins,centralityBins};
-  Double_t minEventMatrix[3]={-30.,-0.5,0.}; 
-  Double_t maxEventMatrix[3]={30.,10000.5,100.}; 
+  Int_t binsEventMatrix[3]={fZvNbins,fMultNbins,fCentralityNbins};
+//   Double_t minEventMatrix[3]={-30.,-0.5,0.}; 
+//   Double_t maxEventMatrix[3]={30.,10000.5,100.}; 
 
-  fGenEventMatrix = new THnSparseF("fGenEventMatrix","mcZv:multMB:Centrality",3,binsEventMatrix,minEventMatrix,maxEventMatrix);
-  fGenEventMatrix->SetBinEdges(0,binsZv);
-  fGenEventMatrix->SetBinEdges(1,binsMult);
-  fGenEventMatrix->SetBinEdges(2,binsCentrality);
+  fGenEventMatrix = new THnSparseF("fGenEventMatrix","mcZv:multMB:Centrality",3,binsEventMatrix); //,minEventMatrix,maxEventMatrix);
+  fGenEventMatrix->SetBinEdges(0,fBinsZv);
+  fGenEventMatrix->SetBinEdges(1,fBinsMult);
+  fGenEventMatrix->SetBinEdges(2,fBinsCentrality);
   fGenEventMatrix->GetAxis(0)->SetTitle("mcZv (cm)");
   fGenEventMatrix->GetAxis(1)->SetTitle("multiplicity MB");
   fGenEventMatrix->GetAxis(2)->SetTitle("Centrality");
   fGenEventMatrix->Sumw2();
   //
-  fTriggerEventMatrix = new THnSparseF("fTriggerEventMatrix","mcZv:multMB:Centrality",3,binsEventMatrix,minEventMatrix,maxEventMatrix);
-  fTriggerEventMatrix->SetBinEdges(0,binsZv);
-  fTriggerEventMatrix->SetBinEdges(1,binsMult);
-  fTriggerEventMatrix->SetBinEdges(2,binsCentrality);
+  fTriggerEventMatrix = new THnSparseF("fTriggerEventMatrix","mcZv:multMB:Centrality",3,binsEventMatrix); //,minEventMatrix,maxEventMatrix);
+  fTriggerEventMatrix->SetBinEdges(0,fBinsZv);
+  fTriggerEventMatrix->SetBinEdges(1,fBinsMult);
+  fTriggerEventMatrix->SetBinEdges(2,fBinsCentrality);
   fTriggerEventMatrix->GetAxis(0)->SetTitle("mcZv (cm)");
   fTriggerEventMatrix->GetAxis(1)->SetTitle("multiplicity MB");
   fTriggerEventMatrix->GetAxis(2)->SetTitle("Centrality");
   fTriggerEventMatrix->Sumw2();
   //
-  fRecEventMatrix = new THnSparseF("fRecEventMatrix","mcZv:multMB:Centrality",3,binsEventMatrix,minEventMatrix,maxEventMatrix);
-  fRecEventMatrix->SetBinEdges(0,binsZv);
-  fRecEventMatrix->SetBinEdges(1,binsMult);
-  fRecEventMatrix->SetBinEdges(2,binsCentrality);    
+  fRecEventMatrix = new THnSparseF("fRecEventMatrix","mcZv:multMB:Centrality",3,binsEventMatrix); //,minEventMatrix,maxEventMatrix);
+  fRecEventMatrix->SetBinEdges(0,fBinsZv);
+  fRecEventMatrix->SetBinEdges(1,fBinsMult);
+  fRecEventMatrix->SetBinEdges(2,fBinsCentrality);    
   fRecEventMatrix->GetAxis(0)->SetTitle("mcZv (cm)");
   fRecEventMatrix->GetAxis(1)->SetTitle("multiplicity MB");
   fRecEventMatrix->GetAxis(2)->SetTitle("Centrality");
@@ -398,10 +366,10 @@ void AlidNdPtAnalysisPbPb::Init() {
   // track to event corrections
   //
   fGenTrackEventMatrix = new THnSparseF("fGenTrackEventMatrix","mcZv:mcPt:mcEta:Centrality",4,binsTrackEventCorrMatrix);
-  fGenTrackEventMatrix->SetBinEdges(0,binsZv);
-  fGenTrackEventMatrix->SetBinEdges(1,binsPtTrackEventCorr);
-  fGenTrackEventMatrix->SetBinEdges(2,binsEta);
-  fGenTrackEventMatrix->SetBinEdges(3,binsCentrality);
+  fGenTrackEventMatrix->SetBinEdges(0,fBinsZv);
+  fGenTrackEventMatrix->SetBinEdges(1,fBinsPtCorr);
+  fGenTrackEventMatrix->SetBinEdges(2,fBinsEta);
+  fGenTrackEventMatrix->SetBinEdges(3,fBinsCentrality);
   fGenTrackEventMatrix->GetAxis(0)->SetTitle("mcZv (cm)");
   fGenTrackEventMatrix->GetAxis(1)->SetTitle("mcPt (GeV/c)");
   fGenTrackEventMatrix->GetAxis(2)->SetTitle("mcEta");
@@ -409,10 +377,10 @@ void AlidNdPtAnalysisPbPb::Init() {
   fGenTrackEventMatrix->Sumw2();
   //
   fTriggerTrackEventMatrix = new THnSparseF("fTriggerTrackEventMatrix","mcZv:mcPt:mcEta:Centrality",4,binsTrackEventCorrMatrix);
-  fTriggerTrackEventMatrix->SetBinEdges(0,binsZv);
-  fTriggerTrackEventMatrix->SetBinEdges(1,binsPtTrackEventCorr);
-  fTriggerTrackEventMatrix->SetBinEdges(2,binsEta);
-  fTriggerTrackEventMatrix->SetBinEdges(3,binsCentrality);
+  fTriggerTrackEventMatrix->SetBinEdges(0,fBinsZv);
+  fTriggerTrackEventMatrix->SetBinEdges(1,fBinsPtCorr);
+  fTriggerTrackEventMatrix->SetBinEdges(2,fBinsEta);
+  fTriggerTrackEventMatrix->SetBinEdges(3,fBinsCentrality);
   fTriggerTrackEventMatrix->GetAxis(0)->SetTitle("mcZv (cm)");
   fTriggerTrackEventMatrix->GetAxis(1)->SetTitle("mcPt (GeV/c)");
   fTriggerTrackEventMatrix->GetAxis(2)->SetTitle("mcEta");
@@ -420,10 +388,10 @@ void AlidNdPtAnalysisPbPb::Init() {
   fTriggerTrackEventMatrix->Sumw2();
   //
   fRecTrackEventMatrix = new THnSparseF("fRecTrackEventMatrix","mcZv:mcPt:mcEta:Centrality",4,binsTrackEventCorrMatrix);
-  fRecTrackEventMatrix->SetBinEdges(0,binsZv);
-  fRecTrackEventMatrix->SetBinEdges(1,binsPtTrackEventCorr);
-  fRecTrackEventMatrix->SetBinEdges(2,binsEta);
-  fRecTrackEventMatrix->SetBinEdges(3,binsCentrality);
+  fRecTrackEventMatrix->SetBinEdges(0,fBinsZv);
+  fRecTrackEventMatrix->SetBinEdges(1,fBinsPtCorr);
+  fRecTrackEventMatrix->SetBinEdges(2,fBinsEta);
+  fRecTrackEventMatrix->SetBinEdges(3,fBinsCentrality);
   fRecTrackEventMatrix->GetAxis(0)->SetTitle("mcZv (cm)");
   fRecTrackEventMatrix->GetAxis(1)->SetTitle("mcPt (GeV/c)");
   fRecTrackEventMatrix->GetAxis(2)->SetTitle("mcEta");
@@ -434,10 +402,10 @@ void AlidNdPtAnalysisPbPb::Init() {
   // tracks correction matrices
   //
   fGenTrackMatrix = new THnSparseF("fGenTrackMatrix","mcZv:mcPt:mcEta:Centrality",4,binsTrackEventCorrMatrix);
-  fGenTrackMatrix->SetBinEdges(0,binsZv);
-  fGenTrackMatrix->SetBinEdges(1,binsPtTrackEventCorr);
-  fGenTrackMatrix->SetBinEdges(2,binsEta);
-  fGenTrackMatrix->SetBinEdges(3,binsCentrality);
+  fGenTrackMatrix->SetBinEdges(0,fBinsZv);
+  fGenTrackMatrix->SetBinEdges(1,fBinsPtCorr);
+  fGenTrackMatrix->SetBinEdges(2,fBinsEta);
+  fGenTrackMatrix->SetBinEdges(3,fBinsCentrality);
   fGenTrackMatrix->GetAxis(0)->SetTitle("mcZv (cm)");
   fGenTrackMatrix->GetAxis(1)->SetTitle("mcPt (GeV/c)");
   fGenTrackMatrix->GetAxis(2)->SetTitle("mcEta");
@@ -445,10 +413,10 @@ void AlidNdPtAnalysisPbPb::Init() {
   fGenTrackMatrix->Sumw2();
 
   fGenPrimTrackMatrix = new THnSparseF("fGenPrimTrackMatrix","mcZv:mcPt:mcEta:Centrality",4,binsTrackEventCorrMatrix);
-  fGenPrimTrackMatrix->SetBinEdges(0,binsZv);
-  fGenPrimTrackMatrix->SetBinEdges(1,binsPtTrackEventCorr);
-  fGenPrimTrackMatrix->SetBinEdges(2,binsEta);
-  fGenPrimTrackMatrix->SetBinEdges(3,binsCentrality);
+  fGenPrimTrackMatrix->SetBinEdges(0,fBinsZv);
+  fGenPrimTrackMatrix->SetBinEdges(1,fBinsPtCorr);
+  fGenPrimTrackMatrix->SetBinEdges(2,fBinsEta);
+  fGenPrimTrackMatrix->SetBinEdges(3,fBinsCentrality);
   fGenPrimTrackMatrix->GetAxis(0)->SetTitle("mcZv (cm)");
   fGenPrimTrackMatrix->GetAxis(1)->SetTitle("mcPt (GeV/c)");
   fGenPrimTrackMatrix->GetAxis(2)->SetTitle("mcEta");
@@ -457,10 +425,10 @@ void AlidNdPtAnalysisPbPb::Init() {
 
 
   fRecPrimTrackMatrix = new THnSparseF("fRecPrimTrackMatrix","mcZv:mcPt:mcEta:Centrality",4,binsTrackEventCorrMatrix);
-  fRecPrimTrackMatrix->SetBinEdges(0,binsZv);
-  fRecPrimTrackMatrix->SetBinEdges(1,binsPtTrackEventCorr);
-  fRecPrimTrackMatrix->SetBinEdges(2,binsEta);
-  fRecPrimTrackMatrix->SetBinEdges(3,binsCentrality);
+  fRecPrimTrackMatrix->SetBinEdges(0,fBinsZv);
+  fRecPrimTrackMatrix->SetBinEdges(1,fBinsPtCorr);
+  fRecPrimTrackMatrix->SetBinEdges(2,fBinsEta);
+  fRecPrimTrackMatrix->SetBinEdges(3,fBinsCentrality);
   fRecPrimTrackMatrix->GetAxis(0)->SetTitle("mcZv (cm)");
   fRecPrimTrackMatrix->GetAxis(1)->SetTitle("mcPt (GeV/c)");
   fRecPrimTrackMatrix->GetAxis(2)->SetTitle("mcEta");
@@ -469,10 +437,10 @@ void AlidNdPtAnalysisPbPb::Init() {
 
   //
   fRecTrackMatrix = new THnSparseF("fRecTrackMatrix","mcZv:mcPt:mcEta:Centrality",4,binsTrackEventCorrMatrix);
-  fRecTrackMatrix->SetBinEdges(0,binsZv);
-  fRecTrackMatrix->SetBinEdges(1,binsPtTrackEventCorr);
-  fRecTrackMatrix->SetBinEdges(2,binsEta);
-  fRecTrackMatrix->SetBinEdges(3,binsCentrality);
+  fRecTrackMatrix->SetBinEdges(0,fBinsZv);
+  fRecTrackMatrix->SetBinEdges(1,fBinsPtCorr);
+  fRecTrackMatrix->SetBinEdges(2,fBinsEta);
+  fRecTrackMatrix->SetBinEdges(3,fBinsCentrality);
   fRecTrackMatrix->GetAxis(0)->SetTitle("mcZv (cm)");
   fRecTrackMatrix->GetAxis(1)->SetTitle("mcPt (GeV/c)");
   fRecTrackMatrix->GetAxis(2)->SetTitle("mcEta");
@@ -480,10 +448,10 @@ void AlidNdPtAnalysisPbPb::Init() {
   fRecTrackMatrix->Sumw2();
 
   fRecSecTrackMatrix = new THnSparseF("fRecSecTrackMatrix","mcZv:mcPt:mcEta:Centrality",4,binsTrackEventCorrMatrix);
-  fRecSecTrackMatrix->SetBinEdges(0,binsZv);
-  fRecSecTrackMatrix->SetBinEdges(1,binsPtTrackEventCorr);
-  fRecSecTrackMatrix->SetBinEdges(2,binsEta);
-  fRecSecTrackMatrix->SetBinEdges(3,binsCentrality);
+  fRecSecTrackMatrix->SetBinEdges(0,fBinsZv);
+  fRecSecTrackMatrix->SetBinEdges(1,fBinsPtCorr);
+  fRecSecTrackMatrix->SetBinEdges(2,fBinsEta);
+  fRecSecTrackMatrix->SetBinEdges(3,fBinsCentrality);
   fRecSecTrackMatrix->GetAxis(0)->SetTitle("mcZv (cm)");
   fRecSecTrackMatrix->GetAxis(1)->SetTitle("Pt (GeV/c)");
   fRecSecTrackMatrix->GetAxis(2)->SetTitle("Eta");
@@ -492,10 +460,10 @@ void AlidNdPtAnalysisPbPb::Init() {
 
   //
   fRecMultTrackMatrix = new THnSparseF("fRecMultTrackMatrix","mcZv:mcPt:mcEta:Centrality",4,binsTrackEventCorrMatrix);
-  fRecMultTrackMatrix->SetBinEdges(0,binsZv);
-  fRecMultTrackMatrix->SetBinEdges(1,binsPtTrackEventCorr);
-  fRecMultTrackMatrix->SetBinEdges(2,binsEta);
-  fRecMultTrackMatrix->SetBinEdges(3,binsCentrality);
+  fRecMultTrackMatrix->SetBinEdges(0,fBinsZv);
+  fRecMultTrackMatrix->SetBinEdges(1,fBinsPtCorr);
+  fRecMultTrackMatrix->SetBinEdges(2,fBinsEta);
+  fRecMultTrackMatrix->SetBinEdges(3,fBinsCentrality);
   fRecMultTrackMatrix->GetAxis(0)->SetTitle("mcZv (cm)");
   fRecMultTrackMatrix->GetAxis(1)->SetTitle("mcPt (GeV/c)");
   fRecMultTrackMatrix->GetAxis(2)->SetTitle("mcEta");
@@ -505,12 +473,12 @@ void AlidNdPtAnalysisPbPb::Init() {
   //
   // Control analysis histograms
   //
-  Int_t binsMCEventHist1[4]={100,100,zvNbins,centralityBins};
+  Int_t binsMCEventHist1[4]={100,100,fZvNbins,fCentralityNbins};
   Double_t minMCEventHist1[4]={-0.1,-0.1,-30.,0.}; 
   Double_t maxMCEventHist1[4]={0.1,0.1,30.,100.}; 
   fMCEventHist1 = new THnSparseF("fMCEventHist1","mcXv:mcYv:mcZv:Centrality",4,binsMCEventHist1,minMCEventHist1,maxMCEventHist1);
-  fMCEventHist1->SetBinEdges(2,binsZv);
-  fMCEventHist1->SetBinEdges(3,binsCentrality);
+  fMCEventHist1->SetBinEdges(2,fBinsZv);
+  fMCEventHist1->SetBinEdges(3,fBinsCentrality);
   fMCEventHist1->GetAxis(0)->SetTitle("mcXv (cm)");
   fMCEventHist1->GetAxis(1)->SetTitle("mcYv (cm)");
   fMCEventHist1->GetAxis(2)->SetTitle("mcZv (cm)");
@@ -518,13 +486,13 @@ void AlidNdPtAnalysisPbPb::Init() {
   fMCEventHist1->Sumw2();
 
   //
-  Int_t binsRecEventHist1[4]={100,100,zvNbins,centralityBins};
+  Int_t binsRecEventHist1[4]={100,100,fZvNbins,fCentralityNbins};
   Double_t minRecEventHist1[4]={-3.,-3.,-30.,0.}; 
   Double_t maxRecEventHist1[4]={3.,3.,30.,100.}; 
   
   fRecEventHist1 = new THnSparseF("fRecEventHist1","Xv:Yv:Zv:Centrality",4,binsRecEventHist1,minRecEventHist1,maxRecEventHist1);
-  fRecEventHist1->SetBinEdges(2,binsZv);
-  fRecEventHist1->SetBinEdges(3,binsCentrality);
+  fRecEventHist1->SetBinEdges(2,fBinsZv);
+  fRecEventHist1->SetBinEdges(3,fBinsCentrality);
   fRecEventHist1->GetAxis(0)->SetTitle("Xv (cm)");
   fRecEventHist1->GetAxis(1)->SetTitle("Yv (cm)");
   fRecEventHist1->GetAxis(2)->SetTitle("Zv (cm)");
@@ -532,14 +500,14 @@ void AlidNdPtAnalysisPbPb::Init() {
   fRecEventHist1->Sumw2();
 
   //
-  Int_t binsRecEventHist2[3]={zvNbins, multNbins, centralityBins};
+  Int_t binsRecEventHist2[3]={fZvNbins, fMultNbins, fCentralityNbins};
   Double_t minRecEventHist2[3]={-30., -0.5, 0.}; 
   Double_t maxRecEventHist2[3]={30., 10000.5, 100.}; 
   
   fRecEventHist2 = new THnSparseF("fRecEventHist2","Zv:multMB:Centrality",3,binsRecEventHist2,minRecEventHist2,maxRecEventHist2);
-  fRecEventHist2->SetBinEdges(0,binsZv);
-  fRecEventHist2->SetBinEdges(1,binsMult);
-  fRecEventHist2->SetBinEdges(2,binsCentrality);
+  fRecEventHist2->SetBinEdges(0,fBinsZv);
+  fRecEventHist2->SetBinEdges(1,fBinsMult);
+  fRecEventHist2->SetBinEdges(2,fBinsCentrality);
   fRecEventHist2->GetAxis(0)->SetTitle("Zv (cm)");
   fRecEventHist2->GetAxis(1)->SetTitle("multiplicity MB");
   fRecEventHist2->GetAxis(2)->SetTitle("Centrality"); 
@@ -547,12 +515,12 @@ void AlidNdPtAnalysisPbPb::Init() {
 
   //
   Double_t kFact = 0.1;
-  Int_t binsRecMCEventHist1[4]={100,100,100, centralityBins};
+  Int_t binsRecMCEventHist1[4]={100,100,100, fCentralityNbins};
   Double_t minRecMCEventHist1[4]={-10.0*kFact,-10.0*kFact,-10.0*kFact, 0.}; 
   Double_t maxRecMCEventHist1[4]={10.0*kFact,10.0*kFact,10.0*kFact, 100.}; 
    
   fRecMCEventHist1 = new THnSparseF("fRecMCEventHist1","Xv-mcXv:Yv-mcYv:Zv-mcZv:Centrality",4,binsRecMCEventHist1,minRecMCEventHist1,maxRecMCEventHist1);
-  fRecMCEventHist1->SetBinEdges(3,binsCentrality);
+  fRecMCEventHist1->SetBinEdges(3,fBinsCentrality);
   fRecMCEventHist1->GetAxis(0)->SetTitle("Xv-mcXv (cm)");
   fRecMCEventHist1->GetAxis(1)->SetTitle("Yv-mcYv (cm)");
   fRecMCEventHist1->GetAxis(2)->SetTitle("Zv-mcZv (cm)");
@@ -561,13 +529,13 @@ void AlidNdPtAnalysisPbPb::Init() {
   fRecMCEventHist1->Sumw2();
 
   //
-  Int_t binsRecMCEventHist2[4]={100,100,multNbins, centralityBins};
+  Int_t binsRecMCEventHist2[4]={100,100,fMultNbins, fCentralityNbins};
   Double_t minRecMCEventHist2[4]={-10.0*kFact,-10.0*kFact,-0.5, 0.}; 
   Double_t maxRecMCEventHist2[4]={10.0*kFact,10.0*kFact,10000.5, 100.}; 
 
   fRecMCEventHist2 = new THnSparseF("fRecMCEventHist2","Xv-mcXv:Zv-mcZv:mult:Centrality",4,binsRecMCEventHist2,minRecMCEventHist2,maxRecMCEventHist2);
-  fRecMCEventHist2->SetBinEdges(2,binsMult);
-  fRecMCEventHist2->SetBinEdges(3,binsCentrality);
+  fRecMCEventHist2->SetBinEdges(2,fBinsMult);
+  fRecMCEventHist2->SetBinEdges(3,fBinsCentrality);
   fRecMCEventHist2->GetAxis(0)->SetTitle("Xv-mcXv (cm)");
   fRecMCEventHist2->GetAxis(1)->SetTitle("Zv-mcZv (cm)");
   fRecMCEventHist2->GetAxis(2)->SetTitle("multiplicity");
@@ -580,32 +548,32 @@ void AlidNdPtAnalysisPbPb::Init() {
   {
   // THnSparse track histograms
  
-  Int_t binsMCTrackHist1[4]=  {ptNbins, etaNbins, 90, centralityBins};
+  Int_t binsMCTrackHist1[4]=  {fPtNbins, fEtaNbins, 90, fCentralityNbins};
   Double_t minMCTrackHist1[4]={0.,-1.5,0., 0.}; 
   Double_t maxMCTrackHist1[4]={50,1.5,2.*TMath::Pi(), 100.}; 
   sprintf(name,"fMCTrackHist1_%d",i);
   sprintf(title,"mcPt:mcEta:mcPhi:Centrality");
   
   fMCTrackHist1[i] = new THnSparseF(name,title,4,binsMCTrackHist1,minMCTrackHist1,maxMCTrackHist1);
-  fMCTrackHist1[i]->SetBinEdges(0,binsPt);
-  fMCTrackHist1[i]->SetBinEdges(1,binsEta);
-  fMCTrackHist1[i]->SetBinEdges(3,binsCentrality);
+  fMCTrackHist1[i]->SetBinEdges(0,fBinsPt);
+  fMCTrackHist1[i]->SetBinEdges(1,fBinsEta);
+  fMCTrackHist1[i]->SetBinEdges(3,fBinsCentrality);
   fMCTrackHist1[i]->GetAxis(0)->SetTitle("mcPt (GeV/c)");
   fMCTrackHist1[i]->GetAxis(1)->SetTitle("mcEta");
   fMCTrackHist1[i]->GetAxis(2)->SetTitle("mcPhi (rad)");
   fMCTrackHist1[i]->GetAxis(3)->SetTitle("Centrality"); 
   fMCTrackHist1[i]->Sumw2();
 
-  Int_t binsMCPrimTrackHist1[6]=  {ptNbins,etaNbins,6,20,4000, centralityBins};
+  Int_t binsMCPrimTrackHist1[6]=  {fPtNbins,fEtaNbins,6,20,4000, fCentralityNbins};
   Double_t minMCPrimTrackHist1[6]={0.,-1.5,0.,0.,0., 0.}; 
   Double_t maxMCPrimTrackHist1[6]={50.,1.5,6.,20.,4000., 100.}; 
   sprintf(name,"fMCPrimTrackHist1_%d",i);
   sprintf(title,"mcPt:mcEta:pid:mech:mother:Centrality");
   
   fMCPrimTrackHist1[i] = new THnSparseF(name,title,6,binsMCPrimTrackHist1,minMCPrimTrackHist1,maxMCPrimTrackHist1);
-  fMCPrimTrackHist1[i]->SetBinEdges(0,binsPt);
-  fMCPrimTrackHist1[i]->SetBinEdges(1,binsEta);
-  fMCPrimTrackHist1[i]->SetBinEdges(5,binsCentrality);
+  fMCPrimTrackHist1[i]->SetBinEdges(0,fBinsPt);
+  fMCPrimTrackHist1[i]->SetBinEdges(1,fBinsEta);
+  fMCPrimTrackHist1[i]->SetBinEdges(5,fBinsCentrality);
   fMCPrimTrackHist1[i]->GetAxis(0)->SetTitle("mcPt (GeV/c)");
   fMCPrimTrackHist1[i]->GetAxis(1)->SetTitle("mcEta");
   fMCPrimTrackHist1[i]->GetAxis(2)->SetTitle("pid");
@@ -614,30 +582,30 @@ void AlidNdPtAnalysisPbPb::Init() {
   fMCPrimTrackHist1[i]->GetAxis(5)->SetTitle("Centrality");
   fMCPrimTrackHist1[i]->Sumw2();
 
-  Int_t binsMCPrimTrackHist2[4]=  {4000,20,4000,centralityBins};
+  Int_t binsMCPrimTrackHist2[4]=  {4000,20,4000,fCentralityNbins};
   Double_t minMCPrimTrackHist2[4]={0.,0.,0., 0.}; 
   Double_t maxMCPrimTrackHist2[4]={4000.,20.,4000., 100.}; 
   sprintf(name,"fMCPrimTrackHist2_%d",i);
   sprintf(title,"pdg:mech:mother:Centrality");
   
   fMCPrimTrackHist2[i] = new THnSparseF(name,title,4,binsMCPrimTrackHist2,minMCPrimTrackHist2,maxMCPrimTrackHist2);
-  fMCPrimTrackHist2[i]->SetBinEdges(3,binsCentrality);
+  fMCPrimTrackHist2[i]->SetBinEdges(3,fBinsCentrality);
   fMCPrimTrackHist2[i]->GetAxis(0)->SetTitle("pdg");
   fMCPrimTrackHist2[i]->GetAxis(1)->SetTitle("mech");
   fMCPrimTrackHist2[i]->GetAxis(2)->SetTitle("mother");
   fMCPrimTrackHist2[i]->GetAxis(3)->SetTitle("Centrality");
   fMCPrimTrackHist2[i]->Sumw2();
 
-  Int_t binsMCSecTrackHist1[6]=  {ptNbins,etaNbins,6,20,4000, centralityBins};
+  Int_t binsMCSecTrackHist1[6]=  {fPtNbins,fEtaNbins,6,20,4000, fCentralityNbins};
   Double_t minMCSecTrackHist1[6]={0.,-1.5,0.,0.,0., 0.}; 
   Double_t maxMCSecTrackHist1[6]={50.,1.5,6.,20.,4000., 100.}; 
   sprintf(name,"fMCSecTrackHist1_%d",i);
   sprintf(title,"mcPt:mcEta:pid:mech:mother:Centrality");
   
   fMCSecTrackHist1[i] = new THnSparseF(name,title,6,binsMCSecTrackHist1,minMCSecTrackHist1,maxMCSecTrackHist1);
-  fMCSecTrackHist1[i]->SetBinEdges(0,binsPt);
-  fMCSecTrackHist1[i]->SetBinEdges(1,binsEta);
-  fMCSecTrackHist1[i]->SetBinEdges(5,binsCentrality);
+  fMCSecTrackHist1[i]->SetBinEdges(0,fBinsPt);
+  fMCSecTrackHist1[i]->SetBinEdges(1,fBinsEta);
+  fMCSecTrackHist1[i]->SetBinEdges(5,fBinsCentrality);
   fMCSecTrackHist1[i]->GetAxis(0)->SetTitle("mcPt (GeV/c)");
   fMCSecTrackHist1[i]->GetAxis(1)->SetTitle("mcEta");
   fMCSecTrackHist1[i]->GetAxis(2)->SetTitle("pid");
@@ -646,15 +614,15 @@ void AlidNdPtAnalysisPbPb::Init() {
   fMCSecTrackHist1[i]->GetAxis(5)->SetTitle("Centrality");
   fMCSecTrackHist1[i]->Sumw2();
 
-  Int_t binsRecTrackHist1[4]={ptNbins,etaNbins,90, centralityBins};
+  Int_t binsRecTrackHist1[4]={fPtNbins,fEtaNbins,90, fCentralityNbins};
   Double_t minRecTrackHist1[4]={0.,-1.5,0., 0.}; 
   Double_t maxRecTrackHist1[4]={50.,1.5,2.*TMath::Pi(), 100.};
   sprintf(name,"fRecTrackHist1_%d",i);
   sprintf(title,"Pt:Eta:Phi:Centrality");
   fRecTrackHist1[i] = new THnSparseF(name,title,4,binsRecTrackHist1,minRecTrackHist1,maxRecTrackHist1);
-  fRecTrackHist1[i]->SetBinEdges(0,binsPt);
-  fRecTrackHist1[i]->SetBinEdges(1,binsEta);
-  fRecTrackHist1[i]->SetBinEdges(3,binsCentrality);
+  fRecTrackHist1[i]->SetBinEdges(0,fBinsPt);
+  fRecTrackHist1[i]->SetBinEdges(1,fBinsEta);
+  fRecTrackHist1[i]->SetBinEdges(3,fBinsCentrality);
   fRecTrackHist1[i]->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
   fRecTrackHist1[i]->GetAxis(1)->SetTitle("#eta");
   fRecTrackHist1[i]->GetAxis(2)->SetTitle("#phi (rad)");
@@ -664,10 +632,10 @@ void AlidNdPtAnalysisPbPb::Init() {
   sprintf(name,"fRecTrackHist2_%d",i);
   sprintf(title,"Zv:Pt:Eta:Centrality");
   fRecTrackHist2[i] = new THnSparseF(name,title,4,binsTrackEvent);
-  fRecTrackHist2[i]->SetBinEdges(0,binsZv);
-  fRecTrackHist2[i]->SetBinEdges(1,binsPt);
-  fRecTrackHist2[i]->SetBinEdges(2,binsEta);
-  fRecTrackHist2[i]->SetBinEdges(3,binsCentrality); 
+  fRecTrackHist2[i]->SetBinEdges(0,fBinsZv);
+  fRecTrackHist2[i]->SetBinEdges(1,fBinsPt);
+  fRecTrackHist2[i]->SetBinEdges(2,fBinsEta);
+  fRecTrackHist2[i]->SetBinEdges(3,fBinsCentrality); 
   fRecTrackHist2[i]->GetAxis(0)->SetTitle("Zv (cm)");
   fRecTrackHist2[i]->GetAxis(1)->SetTitle("p_{T} (GeV/c)");
   fRecTrackHist2[i]->GetAxis(2)->SetTitle("#eta");
@@ -675,60 +643,60 @@ void AlidNdPtAnalysisPbPb::Init() {
   fRecTrackHist2[i]->Sumw2();
 
   // 
-  Int_t binsRecTrackMultHist1[3]={ptNbins,multNbins, centralityBins};
+  Int_t binsRecTrackMultHist1[3]={fPtNbins,fMultNbins, fCentralityNbins};
   Double_t minRecTrackMultHist1[3]={0.,-0.5, -0.}; 
   Double_t maxRecTrackMultHist1[3]={50.,10000.5, 100.};
   sprintf(name,"fRecTrackMultHist_%d",i);
   sprintf(title,"Pt:Mult:Centrality");
   fRecTrackMultHist1[i] = new THnSparseF(name,title,3,binsRecTrackMultHist1,minRecTrackMultHist1,maxRecTrackMultHist1);
-  fRecTrackMultHist1[i]->SetBinEdges(0,binsPt);
-  fRecTrackMultHist1[i]->SetBinEdges(1,binsMult);
-  fRecTrackMultHist1[i]->SetBinEdges(2,binsCentrality);   
+  fRecTrackMultHist1[i]->SetBinEdges(0,fBinsPt);
+  fRecTrackMultHist1[i]->SetBinEdges(1,fBinsMult);
+  fRecTrackMultHist1[i]->SetBinEdges(2,fBinsCentrality);   
   fRecTrackMultHist1[i]->GetAxis(0)->SetTitle("Pt (GeV/c)");
   fRecTrackMultHist1[i]->GetAxis(1)->SetTitle("multiplicity");
   fRecTrackMultHist1[i]->GetAxis(2)->SetTitle("Centrality");  
   fRecTrackMultHist1[i]->Sumw2();
   }
 
-  Int_t binsRecMCTrackHist1[5] = {ptNbins,etaNbins,100,100, centralityBins};
+  Int_t binsRecMCTrackHist1[5] = {fPtNbins,fEtaNbins,100,100, fCentralityNbins};
   Double_t minRecMCTrackHist1[5]={0.,-1.5,-0.5,-0.5, 0.}; 
   Double_t maxRecMCTrackHist1[5]={50.,1.5,0.5,0.5, 100.}; 
 
   sprintf(name,"fRecMCTrackHist1");
   sprintf(title,"mcPt:mcEta:(Pt-mcPt)/mcPt:(Eta-mcEta):Centrality");
   fRecMCTrackHist1 = new THnSparseF(name,title,5,binsRecMCTrackHist1,minRecMCTrackHist1,maxRecMCTrackHist1);
-  fRecMCTrackHist1->SetBinEdges(0,binsPt);
-  fRecMCTrackHist1->SetBinEdges(1,binsEta);
-  fRecMCTrackHist1->SetBinEdges(4,binsCentrality);  
+  fRecMCTrackHist1->SetBinEdges(0,fBinsPt);
+  fRecMCTrackHist1->SetBinEdges(1,fBinsEta);
+  fRecMCTrackHist1->SetBinEdges(4,fBinsCentrality);  
   fRecMCTrackHist1->GetAxis(0)->SetTitle("mcPt (GeV/c)");
   fRecMCTrackHist1->GetAxis(1)->SetTitle("mcEta");
   fRecMCTrackHist1->GetAxis(2)->SetTitle("(Pt-mcPt)/mcPt");
   fRecMCTrackHist1->GetAxis(3)->SetTitle("Eta-mcEta");
   fRecMCTrackHist1->GetAxis(4)->SetTitle("Centrality"); 
 
-  Int_t binsMCMultRecTrackHist1[4] = {ptNbins,etaNbins,6, centralityBins};
+  Int_t binsMCMultRecTrackHist1[4] = {fPtNbins,fEtaNbins,6, fCentralityNbins};
   Double_t minMCMultRecTrackHist1[4]={0.,-1.5,0., 0.}; 
   Double_t maxMCMultRecTrackHist1[4]={50.,1.5,6., 100.}; 
   sprintf(name,"fMCMultRecTrackHist1");
   sprintf(title,"mcPt:mcEta:pid:Centrality");
   fMCMultRecTrackHist1 = new THnSparseF(name,title,4,binsMCMultRecTrackHist1,minMCMultRecTrackHist1,maxMCMultRecTrackHist1);
-  fMCMultRecTrackHist1->SetBinEdges(0,binsPt);
-  fMCMultRecTrackHist1->SetBinEdges(1,binsEta);
-  fMCMultRecTrackHist1->SetBinEdges(3,binsCentrality);  
+  fMCMultRecTrackHist1->SetBinEdges(0,fBinsPt);
+  fMCMultRecTrackHist1->SetBinEdges(1,fBinsEta);
+  fMCMultRecTrackHist1->SetBinEdges(3,fBinsCentrality);  
   fMCMultRecTrackHist1->GetAxis(0)->SetTitle("mcPt (GeV/c)");
   fMCMultRecTrackHist1->GetAxis(1)->SetTitle("mcEta");
   fMCMultRecTrackHist1->GetAxis(2)->SetTitle("pid");
   fMCMultRecTrackHist1->GetAxis(3)->SetTitle("Centrality"); 
 
   //nClust:chi2PerClust:pt:eta:phi:Centrality
-  Int_t binsRecTrackHist3[6]={160,100,ptNbins,etaNbins,90, centralityBins};
+  Int_t binsRecTrackHist3[6]={160,100,fPtNbins,fEtaNbins,90, fCentralityNbins};
   Double_t minRecTrackHist3[6]={0., 0., 0., -1.5, 0., 0.};
   Double_t maxRecRecTrackHist3[6]={160.,10., 50., 1.5, 2.*TMath::Pi(), 100.};
 
   fRecTrackHist3 = new THnSparseF("fRecTrackHist3","nClust:chi2PerClust:pt:eta:phi:Centrality",6,binsRecTrackHist3,minRecTrackHist3,maxRecRecTrackHist3);
-  fRecTrackHist3->SetBinEdges(2,binsPt);
-  fRecTrackHist3->SetBinEdges(3,binsEta);
-  fRecTrackHist3->SetBinEdges(5,binsCentrality);  
+  fRecTrackHist3->SetBinEdges(2,fBinsPt);
+  fRecTrackHist3->SetBinEdges(3,fBinsEta);
+  fRecTrackHist3->SetBinEdges(5,fBinsCentrality);  
   fRecTrackHist3->GetAxis(0)->SetTitle("nClust");
   fRecTrackHist3->GetAxis(1)->SetTitle("chi2PerClust");
   fRecTrackHist3->GetAxis(2)->SetTitle("p_{T} (GeV/c)");
