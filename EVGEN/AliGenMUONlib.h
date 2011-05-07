@@ -47,6 +47,9 @@ class AliGenMUONlib :
     static Double_t YEta( const Double_t *px, const Double_t *dummy);
     static Int_t    IpEta(TRandom *ran);
 // J/Psi     
+    static Double_t PtJpsiPP7000( const Double_t *px, const Double_t *dummy);
+    static Double_t PtJpsiPP2760( const Double_t *px, const Double_t *dummy);
+    static Double_t PtJpsiPbPb2760( const Double_t *px, const Double_t *dummy);
     static Double_t PtJpsi( const Double_t *px, const Double_t *dummy);
     static Double_t PtJpsiCDFscaled( const Double_t *px, const Double_t *dummy);
     static Double_t PtJpsiCDFscaledPP( const Double_t *px, const Double_t *dummy);
@@ -54,12 +57,17 @@ class AliGenMUONlib :
     static Double_t PtJpsiCDFscaledPP9( const Double_t *px, const Double_t *dummy);
     static Double_t PtJpsiCDFscaledPP7( const Double_t *px, const Double_t *dummy);
     static Double_t PtJpsiCDFscaledPP4( const Double_t *px, const Double_t *dummy);
+    static Double_t PtJpsiCDFscaledPP3( const Double_t *px, const Double_t *dummy);
+    static Double_t PtJpsiCDFscaledPP2( const Double_t *px, const Double_t *dummy);
     static Double_t PtJpsiCDFscaledPPb9( const Double_t *px, const Double_t *dummy);
     static Double_t PtJpsiCDFscaledPbP9( const Double_t *px, const Double_t *dummy);
     static Double_t PtJpsiCDFscaledPbPb4( const Double_t *px, const Double_t *dummy);
     static Double_t YJpsi(const Double_t *py, const Double_t *dummy);
     static Double_t PtJpsiPbPb( const Double_t *px, const Double_t *dummy);
     static Double_t PtJpsiBPbPb( const Double_t *px, const Double_t *dummy);
+    static Double_t YJpsiPP7000( const Double_t *px, const Double_t *dummy);
+    static Double_t YJpsiPP2760( const Double_t *px, const Double_t *dummy);
+    static Double_t YJpsiPbPb2760( const Double_t *px, const Double_t *dummy);
     static Double_t YJpsiPbPb(const Double_t *py, const Double_t *dummy);
     static Double_t YJpsiCDFscaled(const Double_t *py, const Double_t *dummy);
     static Double_t YJpsiCDFscaledPP( const Double_t *px, const Double_t *dummy);
@@ -68,6 +76,8 @@ class AliGenMUONlib :
     static Double_t YJpsiCDFscaledPP9dummy(Double_t px);
     static Double_t YJpsiCDFscaledPP7( const Double_t *px, const Double_t *dummy);
     static Double_t YJpsiCDFscaledPP4( const Double_t *px, const Double_t *dummy);
+    static Double_t YJpsiCDFscaledPP3( const Double_t *px, const Double_t *dummy);
+    static Double_t YJpsiCDFscaledPP2( const Double_t *px, const Double_t *dummy);
     static Double_t YJpsiCDFscaledPPb9( const Double_t *px, const Double_t *dummy);
     static Double_t YJpsiCDFscaledPbP9( const Double_t *px, const Double_t *dummy);
     static Double_t YJpsiCDFscaledPbPb4( const Double_t *px, const Double_t *dummy);

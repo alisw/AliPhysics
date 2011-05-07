@@ -97,6 +97,7 @@ Double_t AliGenMUONlib::PtScal(Double_t pt, Int_t np)
   const Double_t khm[10] = {.13957,.493,.5488,.769,.7826,.958,1.02,0,0,0};
   //     VALUE MESON/PI AT 5 GEV
   const Double_t kfmax[10]={1.,0.3,0.55,1.0,1.0,1.0,1.0,0,0,0};
+  np--;
   Double_t f5=TMath::Power(((sqrt(100.018215)+2.)/(sqrt(100.+khm[np]*khm[np])+2.0)),12.3);
   Double_t fmax2=f5/kfmax[np];
   // PIONS
@@ -113,7 +114,7 @@ Double_t AliGenMUONlib::PtScal(Double_t pt, Int_t np)
 Double_t AliGenMUONlib::PtKaon( const Double_t *px, const Double_t */*dummy*/)
 {
 // Kaon pT
-  return PtScal(*px,1);
+  return PtScal(*px,2);
 }
 
 // y-distribution
@@ -150,6 +151,53 @@ Int_t AliGenMUONlib::IpKaon(TRandom *ran)
 //
 //                pt-distribution
 //____________________________________________________________
+Double_t AliGenMUONlib::PtJpsiPP7000( const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi pT
+//
+// pp 7 TeV
+// using ALICE data at 2.5<y<4, see arXiv:1103.2394
+
+  const Double_t kpt0 = 2.44;
+  const Double_t kxn  = 3.9;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+0.36*(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtJpsiPP2760( const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi pT
+//
+// pp 2.76 TeV
+// from the fit of RHIC + LHC data, see arXiv:1103.2394
+
+  const Double_t kpt0 = 2.31;
+  const Double_t kxn  = 3.9;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+0.36*(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtJpsiPbPb2760( const Double_t *px, const Double_t *dummy)
+{
+// J/Psi pT
+//
+// PbPb 2.76 TeV, for EKS98 with minimum bias shadowing factor 0.66
+//
+  Double_t c[5] = {6.01022e-01, 4.70988e-02, -2.27917e-03, 3.09885e-05, 1.31955e-06};
+  Double_t x=*px;
+  Double_t y;
+  Int_t j;
+  y = c[j = 4];
+  while (j > 0) y  = y * x + c[--j];
+  //  
+  Double_t d = 1.+c[4]*TMath::Power(x,4);
+  return y/d * AliGenMUONlib::PtJpsiPP2760(px,dummy);
+}
+
 Double_t AliGenMUONlib::PtJpsi( const Double_t *px, const Double_t */*dummy*/)
 {
 // J/Psi pT
@@ -245,6 +293,36 @@ Double_t AliGenMUONlib::PtJpsiCDFscaledPP4( const Double_t *px, const Double_t *
 // scaled from CDF data at 2 TeV
 //
   const Double_t kpt0 = 4.647;
+  const Double_t kxn  = 4.071;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtJpsiCDFscaledPP3( const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi pT
+//
+// pp 2.76 TeV
+// scaled from CDF data at 1.9 TeV
+//
+  const Double_t kpt0 = 4.435;
+  const Double_t kxn  = 4.071;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtJpsiCDFscaledPP2( const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi pT
+//
+// pp 1.9 TeV
+// fit of the CDF data at 1.9 TeV
+//
+  const Double_t kpt0 = 4.233;
   const Double_t kxn  = 4.071;
   Double_t x=*px;
   //
@@ -376,6 +454,51 @@ Double_t AliGenMUONlib::PtJpsiPP( const Double_t *px, const Double_t */*dummy*/)
 //
 //               y-distribution
 //____________________________________________________________
+Double_t AliGenMUONlib::YJpsiPP7000( const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+//
+// pp 7 TeV
+// from the fit of RHIC + LHC data, see arXiv:1103.2394
+//
+    Double_t x = px[0]/7.72;
+    x = x*x;
+    Double_t y = TMath::Exp(-x/0.383/0.383/2);
+    if(x > 1) y=0;
+    return y;
+}
+
+Double_t AliGenMUONlib::YJpsiPP2760( const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+//
+// pp 2.76 TeV
+// from the fit of RHIC + LHC data, see arXiv:1103.2394
+//
+    Double_t x = px[0]/6.79;
+    x = x*x;
+    Double_t y = TMath::Exp(-x/0.383/0.383/2);
+    if(x > 1) y=0;
+    return y;
+}
+
+Double_t AliGenMUONlib::YJpsiPbPb2760( const Double_t *px, const Double_t *dummy)
+{
+// J/Psi y
+//
+// PbPb 2.76 TeV, for EKS98 with minimum bias shadowing factor 0.66
+//
+    Double_t c[4] = {5.95228e-01, 9.45069e-03, 2.44710e-04, -1.32894e-05}; 
+    Double_t x = px[0]*px[0];
+    Double_t y;
+    Int_t j;
+    y = c[j = 3];
+    while (j > 0) y  = y * x + c[--j];
+    if(y<0) y=0;
+
+    return y * AliGenMUONlib::YJpsiPP2760(px,dummy);
+}
+
 Double_t AliGenMUONlib::YJpsi(const Double_t *py, const Double_t */*dummy*/)
 {
 // J/psi y
@@ -549,6 +672,26 @@ Double_t AliGenMUONlib::YJpsiCDFscaledPP4( const Double_t *px, const Double_t */
 
     if(y<0) y=0;
 
+    return y;
+}
+
+Double_t AliGenMUONlib::YJpsiCDFscaledPP3( const Double_t *px, const Double_t *dummy)
+{
+// J/Psi y 
+    return AliGenMUONlib::YJpsiPP2760(px, dummy);
+}
+
+Double_t AliGenMUONlib::YJpsiCDFscaledPP2( const Double_t *px, const Double_t */*dummy*/)
+{
+// J/Psi y
+//
+// pp 1.9 TeV
+// from the fit of RHIC + LHC data, see arXiv:1103.2394
+//
+    Double_t x = px[0]/6.42;
+    x = x*x;
+    Double_t y = TMath::Exp(-x/0.383/0.383/2);
+    if(x > 1) y=0;
     return y;
 }
 
@@ -1159,7 +1302,7 @@ Int_t AliGenMUONlib::IpUpsilonFamily(TRandom *)
 Double_t AliGenMUONlib::PtPhi( const Double_t *px, const Double_t */*dummy*/)
 {
 // Phi pT
-  return PtScal(*px,6);
+  return PtScal(*px,7);
 }
 //    y-distribution
 Double_t AliGenMUONlib::YPhi( const Double_t *px, const Double_t */*dummy*/)
@@ -1185,7 +1328,7 @@ Int_t AliGenMUONlib::IpPhi(TRandom *)
 Double_t AliGenMUONlib::PtOmega( const Double_t *px, const Double_t */*dummy*/)
 {
 // Omega pT
-  return PtScal(*px,4);
+  return PtScal(*px,5);
 }
 //    y-distribution
 Double_t AliGenMUONlib::YOmega( const Double_t *px, const Double_t */*dummy*/)
@@ -1212,7 +1355,7 @@ Int_t AliGenMUONlib::IpOmega(TRandom *)
 Double_t AliGenMUONlib::PtEta( const Double_t *px, const Double_t */*dummy*/)
 {
 // Eta pT
-  return PtScal(*px,2);
+  return PtScal(*px,3);
 }
 //    y-distribution
 Double_t AliGenMUONlib::YEta( const Double_t *px, const Double_t */*dummy*/)
@@ -2142,6 +2285,12 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtJpsiPbPb;
 	} else if (sname == "Vogt pp") {
 	    func=PtJpsiPP;
+	} else if (sname == "pp 7") {
+	    func=PtJpsiPP7000;
+	} else if (sname == "pp 2.76") {
+	    func=PtJpsiPP2760;
+	} else if (sname == "PbPb 2.76") {
+	    func=PtJpsiPbPb2760;
 	} else if (sname == "CDF scaled") {
 	    func=PtJpsiCDFscaled;
 	} else if (sname == "CDF pp") {
@@ -2154,6 +2303,10 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtJpsiCDFscaledPP7;
 	} else if (sname == "CDF pp 3.94") {
 	    func=PtJpsiCDFscaledPP4;
+	} else if (sname == "CDF pp 2.76") {
+	    func=PtJpsiCDFscaledPP3;
+	} else if (sname == "CDF pp 1.9") {
+	    func=PtJpsiCDFscaledPP2;
 	} else if (sname == "CDF pPb 8.8") {
 	    func=PtJpsiCDFscaledPPb9;
 	} else if (sname == "CDF Pbp 8.8") {
@@ -2305,6 +2458,12 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YJpsiPbPb;
 	} else if (sname == "Vogt pp"){
 	    func=YJpsiPP;
+	} else if (sname == "pp 7") {
+	    func=YJpsiPP7000;
+	} else if (sname == "pp 2.76") {
+	    func=YJpsiPP2760;
+	} else if (sname == "PbPb 2.76") {
+	    func=YJpsiPbPb2760;
 	} else if (sname == "CDF scaled") {
 	    func=YJpsiCDFscaled;
 	} else if (sname == "CDF pp") {
@@ -2317,6 +2476,10 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YJpsiCDFscaledPP7;
 	} else if (sname == "CDF pp 3.94") {
 	    func=YJpsiCDFscaledPP4;
+	} else if (sname == "CDF pp 2.76") {
+	    func=YJpsiCDFscaledPP3;
+	} else if (sname == "CDF pp 1.9") {
+	    func=YJpsiCDFscaledPP2;
 	} else if (sname == "CDF pPb 8.8") {
 	    func=YJpsiCDFscaledPPb9;
 	} else if (sname == "CDF Pbp 8.8") {
