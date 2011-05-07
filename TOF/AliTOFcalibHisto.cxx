@@ -481,8 +481,10 @@ AliTOFcalibHisto::LoadCalibStat()
 
   /* open input file */
   TFile *fileIn = TFile::Open(GetCalibStatFileName());
-  if (!fileIn || !fileIn->IsOpen())
+  if (!fileIn || !fileIn->IsOpen()) {
     AliError(Form("cannot open input file %s", GetCalibStatFileName()));
+    return;
+  }
 
   /* set calib par file */
   fgCalibStatFile = fileIn;
