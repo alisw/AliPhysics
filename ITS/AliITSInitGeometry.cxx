@@ -1092,6 +1092,9 @@ Bool_t AliITSInitGeometry::ReadVersionString(const Char_t *str,Int_t length,
     Bool_t ok;
     Char_t cvsRevision[10],cvsDate[11],cvsTime[9];
     Int_t i,m,n=strlen(str),year,month,day,hours,minuits,seconds;
+    memset(cvsRevision,0,10*sizeof(Char_t));
+    memset(cvsDate,0,11*sizeof(Char_t));    
+    memset(cvsTime,0,9*sizeof(Char_t));
 
     if(GetDebug()>1)printf("AliITSInitGeometry::ReadVersionString:"
                        "str=%s length=%d\n",
