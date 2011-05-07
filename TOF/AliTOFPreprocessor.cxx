@@ -562,7 +562,11 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 		  AliInfo("The following sources produced files with the id DELAYS");
 		  listTot->Print();
 		  for (Int_t jj=0;jj<listTot->GetEntries();jj++){
-			  TObjString * str = dynamic_cast<TObjString*> (listTot->At(jj));
+		    TObjString * str = dynamic_cast<TObjString*> (listTot->At(jj));
+		    if (!str) {
+		      AliError("dynamic_cast returned NULL");
+				    return 4;
+			  }
 			  AliInfo(Form("found source %s", str->String().Data()));
 			  
 			  // file with summed histos, to extract calib params
