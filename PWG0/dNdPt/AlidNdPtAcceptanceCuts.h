@@ -26,6 +26,8 @@ public:
   void SetPtRange(const Float_t min=-1e99, const Float_t max=1e99)   { fMinPt=min;  fMaxPt=max;}
   void SetExcludeEtaPhiRange(const Float_t etaMin, const Float_t etaMax, const Float_t phiMin, const Float_t phiMax)
   	{ fExcludeMinEta = etaMin; fExcludeMaxEta = etaMax; fExcludeMinPhi = phiMin; fExcludeMaxPhi = phiMax; fCheckRange=kTRUE; }
+  void SetExcludeEtaPhiRange2(const Float_t etaMin, const Float_t etaMax, const Float_t phiMin, const Float_t phiMax)
+  	{ fExcludeMinEta2 = etaMin; fExcludeMaxEta2 = etaMax; fExcludeMinPhi2 = phiMin; fExcludeMaxPhi2 = phiMax; fCheckRange=kTRUE; }  	
 
   void SetMaxDCAr(const Float_t max=1e99) { fMaxDCAr=max;}
   void SetMaxDCAz(const Float_t max=1e99) { fMaxDCAz=max;}
@@ -75,6 +77,10 @@ private:
   Float_t fExcludeMaxEta;
   Float_t fExcludeMinPhi;
   Float_t fExcludeMaxPhi;
+  Float_t fExcludeMinEta2;
+  Float_t fExcludeMaxEta2;
+  Float_t fExcludeMinPhi2;
+  Float_t fExcludeMaxPhi2;  
   Bool_t  fCheckRange;
 
   // max DCAr and DCAz with respect
@@ -85,7 +91,7 @@ private:
   AlidNdPtAcceptanceCuts(const AlidNdPtAcceptanceCuts&); // not implemented
   AlidNdPtAcceptanceCuts& operator=(const AlidNdPtAcceptanceCuts&); // not implemented
 
-  ClassDef(AlidNdPtAcceptanceCuts, 2)
+  ClassDef(AlidNdPtAcceptanceCuts, 3)
 };
 
 #endif // 

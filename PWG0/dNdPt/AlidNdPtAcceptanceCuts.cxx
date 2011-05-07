@@ -41,6 +41,10 @@ AliAnalysisCuts(name, title)
 , fExcludeMaxEta(0)
 , fExcludeMinPhi(0)
 , fExcludeMaxPhi(0)
+, fExcludeMinEta2(0)
+, fExcludeMaxEta2(0)
+, fExcludeMinPhi2(0)
+, fExcludeMaxPhi2(0)
 , fCheckRange(kFALSE)
 , fMaxDCAr(0)
 , fMaxDCAz(0)
@@ -100,6 +104,7 @@ Bool_t AlidNdPtAcceptanceCuts::AcceptTrackLocalTPC(AliESDtrack *track)
 
   if (fCheckRange) {
       if ((eta > fExcludeMinEta) && (eta < fExcludeMaxEta) && (phi > fExcludeMinPhi) && (phi < fExcludeMaxPhi)) { return kFALSE; }
+      if ((eta > fExcludeMinEta2) && (eta < fExcludeMaxEta2) && (phi > fExcludeMinPhi2) && (phi < fExcludeMaxPhi2)) { return kFALSE; }
   }
 
 return kTRUE;
