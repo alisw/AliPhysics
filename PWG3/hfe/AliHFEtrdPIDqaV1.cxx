@@ -177,18 +177,20 @@ void AliHFEtrdPIDqaV1::Initialize(){
   const Double_t kMaxPID = (Double_t)AliPID::kSPECIES;
   const Double_t kMaxP = 20.;
 
+  // Define number of bins
+  Int_t tpcSigmaBins = fQAmanager->HasHighResolutionHistos() ? 1400 : 140;
+  Int_t trdLikelihoodBins = fQAmanager->HasHighResolutionHistos() ? 200 : 100;
+
   fHistos = new AliHFEcollection("trdqahistos", "Collection of TRD QA histograms");
   
   // Create Control Histogram monitoring the TPC sigma between the selection steps
-  const Int_t kTPCSigmaBins = 140;
-  Int_t nBinsTPCSigma[4] = {kPIDbins, kPbins, kTPCSigmaBins, kSteps};
+  Int_t nBinsTPCSigma[4] = {kPIDbins, kPbins, tpcSigmaBins, kSteps};
   Double_t minTPCSigma[4] = {kMinPID, kMinP, -12., 0};
   Double_t maxTPCSigma[4] = {kMaxPID, kMaxP, 12., 2.};
   fHistos->CreateTHnSparse("hTPCsigma", "TPC sigma; species p [GeV/c]; TPC dEdx - <dE/dx>|_{el} [#sigma]; selection step", 4, nBinsTPCSigma, minTPCSigma, maxTPCSigma);
   fHistos->Sumw2("hTPCsigma");
   // Create Monitoring histogram for the Likelihood distribution
-  const Int_t kTRDLikelihoodBins = 100;
-  Int_t nBinsTRDlike[4] = {kPIDbins, kPbins, kTRDLikelihoodBins, kSteps};
+  Int_t nBinsTRDlike[4] = {kPIDbins, kPbins, trdLikelihoodBins, kSteps};
   Double_t minTRDlike[4] = {kMinPID, kMinP, 0., 0.};
   Double_t maxTRDlike[4] = {kMaxPID, kMaxP, 1., 2.};
   fHistos->CreateTHnSparse("hTRDlikelihood", "TRD Likelihood Distribution; species; p [GeV/c]; TRD electron Likelihood; selection step", 4, nBinsTRDlike, minTRDlike, maxTRDlike);
@@ -229,15 +231,15 @@ void AliHFEtrdPIDqaV1::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa
   container[3] = step;
   fHistos->Fill("hTPCsigma", container);
 
-  container[2] = trdpid->GetElectronLikelihood(track->GetRecTrack(), anatype);
+  container[2] = trdpid ? trdpid->GetElectronLikelihood(track->GetRecTrack(), anatype) : 0;
   fHistos->Fill("hTRDlikelihood", container);
 
   if(track->IsESDanalysis()){
-    container[2] = trdpid->GetTRDSignalV1(dynamic_cast<const AliESDtrack *>(track->GetRecTrack()));
+    container[2] = trdpid ? trdpid->GetTRDSignalV1(dynamic_cast<const AliESDtrack *>(track->GetRecTrack())) : 0;
     fHistos->Fill("hTRDtruncatedMean", container);
   }
   for(UInt_t ily = 0; ily < 6; ily++){
-    container[2] = trdpid->GetChargeLayer(track->GetRecTrack(), ily, anatype);
+    container[2] = trdpid ? trdpid->GetChargeLayer(track->GetRecTrack(), ily, anatype) : 0;
     fHistos->Fill("hTRDcharge", container);
   }
 }

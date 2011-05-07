@@ -110,10 +110,14 @@ AliHFEpidQA::~AliHFEpidQA(){
   //
   // Destructor
   //
-  if(fV0pid) delete fV0pid;
-  if(fV0pidMC) delete fV0pidMC;
-  if(fTRDpidQA) delete fTRDpidQA;
-  if(fOutput) delete fOutput;
+
+  // the pointers bellow are not dfeleted to prevend double-deleting of some of the content
+  // these pointers are defined only once during the program call and should not cause a problem, 
+  // but cleaner solution is necessary.
+  //if(fV0pid) delete fV0pid;
+  //if(fV0pidMC) delete fV0pidMC;
+  //if(fOutput) delete fOutput;
+
   //  if(fTRDpidResponse) delete fTRDpidResponse; 
 }
 
@@ -1043,7 +1047,8 @@ TObjArray * AliHFEpidQA::MakeCleanListElectrons(const TObjArray *electrons) cons
       if((nSigmaTrack < kSigmaTight && nSigmaPartner < kSigmaLoose) || (nSigmaTrack < kSigmaLoose && nSigmaPartner < kSigmaTight))
         tracks->Add(track);
     }
-  } else {
+  } 
+  /*else {
     aod = dynamic_cast<AliAODEvent *>(fEvent);
     if(!aod) return NULL;
     //AliAODTrack *track = NULL, *partnerTrack = NULL;
@@ -1053,7 +1058,7 @@ TObjArray * AliHFEpidQA::MakeCleanListElectrons(const TObjArray *electrons) cons
       //partnerTrack = aod->GetTrack(hfetrack->GetPartnerID());
       // will be coming soon
     }
-  }
+  }*/
   return tracks;
 }
 //___________________________________________________________
