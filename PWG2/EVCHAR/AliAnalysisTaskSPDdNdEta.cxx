@@ -485,13 +485,13 @@ void AliAnalysisTaskSPDdNdEta::UserExec(Option_t *)
 //  Printf("User exec..........");
 
   AliESDInputHandlerRP *hand = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if (!hand) { printf("No RP handler\n"); return; }
 
   fmyESD = dynamic_cast<AliESDEvent*>(InputEvent()); 
   if (!fmyESD) {
     Printf("ERROR: fESD not available");
     return;
   }
-
     
   AliMagF* field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!field && !fmyESD->InitMagneticField()) {Printf("Failed to initialize the B field\n");return;}
