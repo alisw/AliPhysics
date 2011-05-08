@@ -250,6 +250,9 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     //
     // 2. Propagate track to the MIP cluster using the STEER method
     //
+        
+    if(!bestHmpCluster) {delete hmpTrk;hmpTrk=0x0; delete hmpTrkConstrained;hmpTrkConstrained=0x0;  continue;}     
+        
     TVector3 vG = pParam->Lors2Mars(ipCh,bestHmpCluster->X(),bestHmpCluster->Y());    
     Double_t gx = vG[0];
     Double_t gy = vG[1];
@@ -367,7 +370,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     if(!isMatched) {delete hmpTrk;hmpTrk=0x0;delete hmpTrkConstrained;hmpTrkConstrained=0x0;continue;}                                           // If matched continue...
 
     Bool_t isOk = kTRUE; 
-    if(!isOk) {delete hmpTrk;hmpTrk=0x0;continue; delete hmpTrkConstrained;hmpTrkConstrained=0x0;}
+    if(!isOk) {delete hmpTrk;hmpTrk=0x0; delete hmpTrkConstrained;hmpTrkConstrained=0x0; continue;}
     pTrk->SetOuterHmpParam(hmpTrkConstrained,AliESDtrack::kHMPIDout);                 
 
     FillResiduals(hmpTrk,bestHmpCluster,kFALSE);
