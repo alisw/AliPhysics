@@ -35,7 +35,7 @@
 using namespace std;
 
 Int_t PlotSpectraPbPb();
-Int_t PlotSpectraPbPb2();
+Int_t PlotSpectraPbPb2(UInt_t iPlotFlag = 0xFF,UInt_t iCenFlag = 0xFF,UInt_t iSpecFlag = 0xFF);
 Int_t PlotJetBFluctuations();
 Int_t PlotJetBFluctuations2(UInt_t iPlotFlag = 0xFFFFF,UInt_t iPlotType = 0xFFFFF,Float_t inPtLo = 50,Float_t inPtUp = 100);
 Int_t PlotSubtract();
@@ -54,23 +54,29 @@ void SetStyleH1(TH1 *h,Int_t color = 0,Int_t fillStyle = 0,Int_t markerStyle = 0
 void ScaleH2(TH2* h,char* cX = "",char* cY = "",char* cZ = "",Float_t fScale = 1,Bool_t bWidth = true);
 TH1F* GetPythia8Spectrum(const char *cHist,const char *cPythia,Float_t deta,Int_t iRebin = 1,Int_t iMask = 0);
 Double_t GetPoissonFluctuation(TH1 *h1,Double_t areaIn,Double_t areaJet);
-TObject* GetObjectFromFile(const char *cName,const char *cFile,const char* cDir,const char* cRep = "pwg4");
-TF1* FitLHSgaus(TH1D *hDeltaPt, double minPt = -60., double maxPt = 5., int minIterations = 1, int maxIterations = 1, double maxDeltaMean = 0.01, int mode=1, double minBoundSigma = 3., double maxBoundSigma = 0.5 );
+TObject* GetObjectFromFile(const char *cName,const char *cFile,const char* cDir,const char* cRep2 = "pwg4",const char* cRep1 = "PWG4_");
+TF1* FitLHSgaus(TH1D *hDeltaPt, double minPt = -60., double maxPt = 5., int minIterations = 3, int maxIterations = 20, double maxDeltaMean = 0.01, int mode=1, double minBoundSigma = 3., double maxBoundSigma = 0.5 );
 Double_t Gamma(Double_t *x,Double_t *par);
 Double_t Gamma0(Double_t *x,Double_t *par);
 TH2F* GetTH2PlotB(const char *cPath,Int_t embType=0, Int_t classType=0, Int_t cl=-1, Int_t rp=-1);
-void SetHistoAttributes(TH1* h1,Int_t iMarker = kFullCircle,Int_t iColor = kBlack);
+void SetHistoAttributes(TH1* h1,Int_t iMarker = kFullCircle,Int_t iColor = kBlack,Float_t fMarkerSize = 1.7);
+void SetHistAxisStyle(TH1* h1,Float_t titleOffsetX = 0,Float_t titleSizeX= 0,Float_t labelSizeX= 0,
+		      Float_t titleOffsetY = 0,Float_t titleSizeY = 0,Float_t labelSizeY = 0);
 void SetGraphAttributes(TGraph* gr,Int_t iMarker = kFullCircle,Int_t iColor = kBlack);
 
 void CloseFiles();
-
+void DrawDate();
+void DrawALICE(TCanvas *c,Float_t xCenter = 0.7,Float_t yCenter = 0.7,Int_t iType = 2,TString cExtra2 = "");
 const char *cPrintMask = "110116_%s.eps";
 void set_plot_style();
 TCanvas *cTmp = 0;
 
-TString picPrefix = "110504_";
-TString picSuffix = "png";
+TString picPrefix = "notePlot_";
+TString picSuffix = "eps";
 TString picName = "";
+
+
+
 
 TH1F* GetPythia8Spectrum(const char *cHist,const char *cPythia,Float_t deta,Int_t iRebin,Int_t iMask){
   TDirectory *opwd = gDirectory;
@@ -133,61 +139,41 @@ void PlotNote(){
   set_plot_style();
 
 
-  UInt_t iPlotFlag = 0xFFF;  
-  // plot only RC
-  //  iPlotFlag = (1<<0)|(1<<1)|(1<<2);//RC
-  //  iPlotFlag = (1<<0);//RC
-  //  iPlotFlag = (1<<3)|(1<<5)|(1<<6);//jets
-  //  iPlotFlag = (1<<4);//tracks
-  //  iPlotFlag = (1<<7);//tracks and poission
-  //  iPlotFlag = (1<<0)|(1<<1)|(1<<3)|(1<<4);//similars
-  //  PlotJetBFluctuations2(iPlotFlag,1<<0);
-  // plot only jets
-  // iPlotFlag = (1<<3)|(1<<5)|(1<<6);
-  // plot only tracks
-  //
-
   // QM Plots
 
-  // All Random Cones NO RP
-  UInt_t iEst = 1<<7|1<<8;
-  /*
-  iPlotFlag = (1<<0)|(1<<1)|(1<<2)|iEst;//RC
-  PlotJetBFluctuations2(iPlotFlag,1<<0);
-  iPlotFlag = (1<<3)|(1<<5)|(1<<6)|iEst;//jets
-  PlotJetBFluctuations2(iPlotFlag,1<<0);
-  iPlotFlag = (1<<4)|iEst;//single tracks
-  PlotJetBFluctuations2(iPlotFlag,1<<0);
-  // the essentials 
+  // BD
+  PlotSubtract(); // do not call before others changes style
   
-  iPlotFlag = (1<<0)|(1<<3)|(1<<4)|iEst;//jets
-  PlotJetBFluctuations2(iPlotFlag,1<<0);
-
-
-  // vs mult
+  // BF 01 + 04
+  //  PlotJetBFluctuations2((1<<0)|(1<<1)|(1<<2),1<<0);  
   
-  iPlotFlag = (1<<0)|(1<<1)|(1<<4)|iEst;//jets
-  PlotJetBFluctuations2(iPlotFlag,1<<1);
-  */
+  // BF 02 + 05
+  // PlotJetBFluctuations2((1<<4)|(1<<5)|(1<<6),1<<0);  
 
+  // BF 03 + 06
+  //  PlotJetBFluctuations2((1<<3),1<<0);  
 
+  // BF 07 + 08  BF 09 + 10
+  //  PlotJetBFluctuations2((1<<0)|(1<<3)|(1<<4)|(1<<7)|(1<<8),1<<0);  
 
-  // vs cent wit RP
-  iPlotFlag = (1<<4)|iEst;//jets
-  PlotJetBFluctuations2(iPlotFlag,1<<0|1<<2);
+  // BF 11 
+  // PlotJetBFluctuations2((1<<0)|(1<<1)|(1<<3)|(1<<4)|(1<<7)|(1<<8),1<<1);  
+ 
+  // BF 13
+  //  PlotJetBFluctuations2((1<<3),1<<0|1<<2);  
 
-  iPlotFlag = (1<<0)|iEst;//jets
-  PlotJetBFluctuations2(iPlotFlag,1<<0|1<<2);
+  // BF 14 
+  //  PlotJetBFluctuations2((1<<0),1<<0|1<<2);  
 
-  return;
-  // vs mult with RP
-  iPlotFlag = (1<<4)|iEst;//jets
-  PlotJetBFluctuations2(iPlotFlag,1<<1|1<<2);
+  // BF 15 + 16 may add random cones here 
+  //  PlotJetBFluctuations2((1<<3),1<<1|1<<2);  
 
-  // vs 
+  // JS 01 + 02 
+  //  PlotSpectraPbPb2(1<<0|1<<1,1<<0|1<<1|1<<2|1<<3,0);
 
-  //  PlotSpectraPbPb2();
-  //  PlotSubtract();
+  // not for external usage with tracks...
+  // PlotSpectraPbPb2(1<<1,1<<0|1<<1|1<<2|1<<3,1);
+
 }
 
 TList *GetList(const char *cFile,const char *cName){
@@ -405,7 +391,6 @@ Int_t PlotJetQA(){
     TH2F *h2AreaPtLead[nJets+2] = {0,};
     TH2F *h2AreaPtLeadFull[nJets+2] = {0,};
     TH2F *h2AreaPtAll[nJets+2] = {0,};
-
     HistsFromSingleJets(Form("fh2AreaPt%s_j%%d",cAdd.Data()),inputList,1,h2AreaPtLead);
     HistsFromSingleJets(Form("fh2AreaPt%s_j%%d",cAddFull.Data()),inputList,1,h2AreaPtLeadFull);
     HistsFromSingleJets(Form("fh2AreaPt%s_j%%d",cAddFull.Data()),inputList,nJets+1,h2AreaPtAll,1,nJets);
@@ -475,80 +460,252 @@ Int_t PlotJetQA(){
   return 0;
 }
 
-Int_t PlotSpectraPbPb2(){
+Int_t PlotSpectraPbPb2(UInt_t iPlotFlag,UInt_t iCenFlag,UInt_t iSpecFlag){
 
   // Using now the THNSparse histos
   // 
   const int kMaxFiles = 2;
   TString sinputFile[kMaxFiles];
   TString sinputDir[kMaxFiles];
+  TString sinputJet[kMaxFiles];
 
-  TCanvas *c1 = new TCanvas();
+  TCanvas *c1 = new TCanvas("c1","",800,600);
   c1->SetLogy();
   THnSparseF *fhnJetPtRec[kMaxFiles] = {0,};
   THnSparseF *fhnTrackPtRec[kMaxFiles] = {0,};
   THnSparseF *fhnEvent[kMaxFiles] = {0,};
+  TH1F *fh1Centrality[kMaxFiles] = {0,};
 
   const int nCen = 4;
   const Float_t nColl[nCen] = {1502,742.5,250,46.6};
   const Float_t fCentLo[nCen] = {0,10,30,50};
   const Float_t fCentUp[nCen] = {10,30,50,80};
-  const Int_t iColCen[nCen] = {kRed+4,kRed,kBlue,kGray+1};
+  const Int_t iColCen[nCen] = {kRed,kOrange+1,kBlue,kGray+1};
+
+  const Int_t iMarkerF[kMaxFiles] = {kFullCircle,kOpenCircle};// for putting different jet cents onto one plot
+  
+  TH1D* hSpectrumTracks[kMaxFiles][nCen] = {0,};
+  TH1D* hSpectrumJets[kMaxFiles][nCen] = {0,};
+
+  bool scaleNevent = true; 
 
   Int_t iF = 0;
-  sinputFile[iF] = "~/Dropbox/SharedJets/Christian/Files/PWG4_JetTasksOutput_LHC10h_AOD_tmp.root";
+  sinputFile[iF] = "~/Dropbox/SharedJets/Christian/Files/PWG4_JetTasksOutput_Merge_LHC10h_AOD_110429a.root";
   //  sinputDir[iF] = "PWG4_spec2_clustersAOD_ANTIKT04_B2_Filter00128_Cut02000_Skip02_clustersAOD_ANTIKT04_B0_Filter00128_Cut02000_Skip02_0000000000_Class00";
   sinputDir[iF] = "PWG4_spec2_clustersAOD_ANTIKT04_B2_Filter00128_Cut00150_Skip02__0000000000_Class00";
+  sinputJet[iF] = "anti-k_{T}, R = 0.4 (150 MeV cut)";
   fhnJetPtRec[iF] =  (THnSparseF*)GetObjectFromFile("fhnJetPtRec",sinputFile[iF].Data(),sinputDir[iF].Data());
   fhnTrackPtRec[iF] =  (THnSparseF*)GetObjectFromFile("fhnTrackPtRec",sinputFile[iF].Data(),sinputDir[iF].Data());
+  fhnEvent[iF] = (THnSparseF*) GetObjectFromFile("fhnEvent",sinputFile[iF].Data(),sinputDir[iF].Data());
+  fh1Centrality[iF] = (TH1F*)GetObjectFromFile("fh1Centrality",sinputFile[iF].Data(),sinputDir[iF].Data());
 
+  Int_t iF = 1;
+  sinputFile[iF] = "~/Dropbox/SharedJets/Christian/Files/PWG4_JetTasksOutput_Merge_LHC10h_AOD_110429a.root";
+  sinputDir[iF] = "PWG4_spec2_clustersAOD_ANTIKT04_B2_Filter00128_Cut02000_Skip02_clustersAOD_ANTIKT04_B0_Filter00128_Cut02000_Skip02_0000000000_Class00";
+  sinputJet[iF] = "anti-k_{T}, R = 0.4 (2 GeV cut)";
+  fhnJetPtRec[iF] =  (THnSparseF*)GetObjectFromFile("fhnJetPtRec",sinputFile[iF].Data(),sinputDir[iF].Data());
+  fhnTrackPtRec[iF] =  (THnSparseF*)GetObjectFromFile("fhnTrackPtRec",sinputFile[iF].Data(),sinputDir[iF].Data());
+  fh1Centrality[iF] = (TH1F*)GetObjectFromFile("fh1Centrality",sinputFile[iF].Data(),sinputDir[iF].Data());
 
   fhnEvent[iF] = (THnSparseF*) GetObjectFromFile("fhnEvent",sinputFile[iF].Data(),sinputDir[iF].Data());
 
-  Bool_t bFirst1 = true;
-  for(int ic = 0;ic <nCen;ic++){
-    // project out the jets
-    Int_t ibLo =      fhnJetPtRec[iF]->GetAxis(2)->FindBin(fCentLo[ic]+0.001);
-    Int_t ibUp =      fhnJetPtRec[iF]->GetAxis(2)->FindBin(fCentUp[ic]-0.001);
-    fhnJetPtRec[iF]->GetAxis(2)->SetRange(ibLo,ibUp);
-    fhnJetPtRec[iF]->GetAxis(0)->SetRange(3,3); // take all jets
-    TH1D *hSpectrumJets = fhnJetPtRec[iF]->Projection(1,"E");
-    hSpectrumJets->SetName(Form("hSpectrumJets_C%d",ic));
-    hSpectrumJets->SetMarkerColor(iColCen[ic]);
-    hSpectrumJets->SetMarkerStyle(kFullCircle);
-    hSpectrumJets->Rebin(2);
-    hSpectrumJets->SetAxisRange(0,120);
-    // project out the tracks
-    fhnTrackPtRec[iF]->GetAxis(2)->SetRange(ic+1,ic+1);
-    //    fhnTrackPtRec[iF]->GetAxis(0)->SetRange(2,2); // take all tracks
-    TH1D *hSpectrumTracks = fhnTrackPtRec[iF]->Projection(1,"E");
-    hSpectrumTracks->SetName(Form("hSpectrumTracks_C%d",ic));
+  TLatex *txtHead = new TLatex();
+  txtHead->SetNDC();
+  txtHead->SetTextAlign(23);
+  
+  
+  Float_t yMin = 1;
+
+  for(int iF = 0;iF<kMaxFiles;iF++){
+    Bool_t bFirst1 = true;
+    for(int ic = 0;ic <nCen;ic++){
+      // project out the jets
+      Int_t ibLo =      fhnJetPtRec[iF]->GetAxis(2)->FindBin(fCentLo[ic]+0.001);
+      Int_t ibUp =      fhnJetPtRec[iF]->GetAxis(2)->FindBin(fCentUp[ic]-0.001);
+
+      Float_t nEvents =   fh1Centrality[iF]->Integral(fh1Centrality[iF]->FindBin(fCentLo[ic]+0.001),
+						       fh1Centrality[iF]->FindBin(fCentUp[ic]-0.001));
+
+      fhnJetPtRec[iF]->GetAxis(2)->SetRange(ibLo,ibUp);
+      fhnJetPtRec[iF]->GetAxis(0)->SetRange(3,3); // take all jets
+
+      hSpectrumJets[iF][ic] = fhnJetPtRec[iF]->Projection(1,"E");
+      hSpectrumJets[iF][ic]->SetName(Form("hSpectrumJets_%d_C%d",iF,ic));
+
+      SetHistoAttributes(hSpectrumJets[iF][ic],kFullCircle,iColCen[ic]);
+      hSpectrumJets[iF][ic]->Rebin(2);
+      hSpectrumJets[iF][ic]->SetAxisRange(0,300);
+      hSpectrumJets[iF][ic]->SetMinimum(0.1);
+      hSpectrumJets[iF][ic]->SetXTitle("p_{T} (GeV/c)");      
 
 
-    c1->cd();
-    if(bFirst1){
-      hSpectrumJets->DrawCopy("p");
-      // hSpectrumTracks->DrawCopy("p");
-      bFirst1 = false;
+      for(int ib = 1;ib <=hSpectrumJets[iF][ic]->GetNbinsX();ib++){
+	Float_t width =  hSpectrumJets[iF][ic]->GetBinWidth(ib);
+	hSpectrumJets[iF][ic]->SetBinContent(ib,hSpectrumJets[iF][ic]->GetBinContent(ib)/width);
+	hSpectrumJets[iF][ic]->SetBinError(ib,hSpectrumJets[iF][ic]->GetBinError(ib)/width);
+      }
+      if(scaleNevent&&nEvents>0){
+	Printf("%d %E events",ic,nEvents);
+	hSpectrumJets[iF][ic]->Scale(1./nEvents);
+	hSpectrumJets[iF][ic]->SetYTitle("1/N_{evt} dN/dp_{T}d#eta");      
+	if(yMin>1./nEvents&&(iCenFlag&1<<ic))yMin=1./nEvents;
+      }
+      else{
+	hSpectrumJets[iF][ic]->SetYTitle("dN/dp_{T}d#eta");      
+      }
+
+      // project out the tracks
+      fhnTrackPtRec[iF]->GetAxis(2)->SetRange(ic+1,ic+1);
+      fhnTrackPtRec[iF]->GetAxis(0)->SetRange(2,2); // take all tracks
+
+      hSpectrumTracks[iF][ic] = fhnTrackPtRec[iF]->Projection(1,"E");
+      hSpectrumTracks[iF][ic]->SetName(Form("hSpectrumTracks_%d_C%d",iF,ic));
+
+      SetHistoAttributes(hSpectrumTracks[iF][ic],kFullCircle,iColCen[ic]);
+      hSpectrumTracks[iF][ic]->SetAxisRange(0,300);
+      hSpectrumTracks[iF][ic]->SetMinimum(0.1);
+      hSpectrumTracks[iF][ic]->SetXTitle("p_{T} (GeV/c)");
+
+      
+      for(int ib = 1;ib <=hSpectrumTracks[iF][ic]->GetNbinsX();ib++){
+	Float_t width =  hSpectrumTracks[iF][ic]->GetBinWidth(ib);
+	hSpectrumTracks[iF][ic]->SetBinContent(ib,hSpectrumTracks[iF][ic]->GetBinContent(ib)/width/1.8);
+	hSpectrumTracks[iF][ic]->SetBinError(ib,hSpectrumTracks[iF][ic]->GetBinError(ib)/width);
+      }
+      if(scaleNevent&&nEvents>0){
+	Printf("%d %E events",ic,nEvents);
+	hSpectrumTracks[iF][ic]->Scale(1./nEvents);
+	hSpectrumTracks[iF][ic]->SetYTitle("1/N_{evt} dN/dp_{T}d#eta");      
+      }
+      else{
+	hSpectrumTracks[iF][ic]->SetYTitle("dN/dp_{T}d#eta");      
+      }
+    }   
+  }   
+
+  // the drawin part
+
+  // draw the spectra for all cents
+  if(iPlotFlag&1<<0){
+    
+    for(int iF = 0;iF<kMaxFiles;iF++){
+      Bool_t bFirst1 = true;
+
+      TLegend *leg1 = new TLegend(0.45,0.55,0.8,0.85);
+      leg1->SetFillColor(0);
+      leg1->SetTextFont(gStyle->GetTextFont());
+      leg1->SetBorderSize(0);
+      leg1->SetTextAlign(12);
+
+
+      for(int ic = 0;ic <nCen;ic++){
+	if(!(iCenFlag&(1<<ic)))continue;
+	c1->cd();
+	if(bFirst1){
+	  hSpectrumJets[iF][ic]->SetMinimum(yMin/10.);
+	  hSpectrumJets[iF][ic]->DrawCopy("p");
+	  bFirst1 = false;
+	}
+	else {
+	  hSpectrumJets[iF][ic]->DrawCopy("psame");
+	}
+	leg1->AddEntry((TObject*)0,Form("%2.0f - %2.0f%%",fCentLo[ic],fCentUp[ic]),"");  
+	leg1->AddEntry(hSpectrumJets[iF][ic],Form("jets: %s",sinputJet[iF].Data()), "P");
+	
+	if(iSpecFlag&1){
+	  hSpectrumTracks[iF][ic]->DrawCopy("histsame");
+	  leg1->AddEntry(hSpectrumTracks[iF][ic],Form("tracks"), "L");
+	}
+	
+      }
+
+
+
+
+
+  
+      txtHead->DrawLatex(0.5,0.99,"LHC2010 Pb+Pb #sqrt{s_{NN}} = 2.76 TeV");
+      leg1->Draw();
+      DrawDate();
+      DrawALICE(c1);
+      c1->Update();
+      picName = Form("%sCentSpectraPbPb_Jets%s_%d_%d.%s",picPrefix.Data(),(iSpecFlag&1?"Tracks":""),iCenFlag,iF,picSuffix.Data());
+      c1->SaveAs(picName.Data());
+      if(getchar()=='q')return 1;
     }
-    else {
-      hSpectrumJets->DrawCopy("psame");
-      //      hSpectrumTracks->DrawCopy("psame");
-    }
-
-    c1->Update();
-    if(getchar()=='q')return 1;
   }
+
+  // draw the spectra for each cent togeter
+  if(iPlotFlag&1<<1){
+
+
+      for(int ic = 0;ic <nCen;ic++){
+
+	if(!(iCenFlag&(1<<ic)))continue;
+    
+
+	Bool_t bFirst1 = true;
+	
+	TLegend *leg1 = new TLegend(0.45,0.55,0.8,0.85);
+	leg1->SetFillColor(0);
+	leg1->SetTextFont(gStyle->GetTextFont());
+	leg1->SetBorderSize(0);
+	leg1->SetTextAlign(12);
+	
+	for(int iF = 0;iF<kMaxFiles;iF++){
+	  c1->cd();
+	  hSpectrumJets[iF][ic]->SetMarkerStyle(iMarkerF[iF]);
+	  if(bFirst1){
+	    leg1->AddEntry((TObject*)0,Form("%2.0f - %2.0f%%",fCentLo[ic],fCentUp[ic]),"");  
+	  }
+	  if(bFirst1){
+	    hSpectrumJets[iF][ic]->SetMinimum(yMin/10.);
+	    hSpectrumJets[iF][ic]->DrawCopy("p");
+	    if(iSpecFlag&1){
+	      hSpectrumTracks[iF][ic]->DrawCopy("histsame");
+	      leg1->AddEntry(hSpectrumTracks[iF][ic],Form("tracks"), "L");
+	    }
+	    bFirst1 = false;
+	  }
+	  else {
+	    hSpectrumJets[iF][ic]->DrawCopy("psame");
+	  }
+	  leg1->AddEntry(hSpectrumJets[iF][ic],Form("jets: %s",sinputJet[iF].Data()), "P");
+	}
+	txtHead->DrawLatex(0.5,0.99,"LHC2010 Pb+Pb #sqrt{s_{NN}} = 2.76 TeV");
+	leg1->Draw();
+
+	DrawALICE(c1);
+	DrawDate();
+	c1->Update();
+	picName = Form("%sCmpSpectraPbPb_Jets%s_%d.%s",picPrefix.Data(),(iSpecFlag&1?"Tracks":""),ic,picSuffix.Data());
+	c1->SaveAs(picName.Data());
+	if(getchar()=='q')return 1;
+      }
+  }
+
+
   return 0;
 }
 
 Int_t PlotSubtract(){
 
+
+
+  gStyle->SetTitleYSize(0.7*gStyle->GetTitleYSize());
+  gStyle->SetTitleXSize(0.7*gStyle->GetTitleXSize());
+  gStyle->SetPadRightMargin(1.1*gStyle->GetPadRightMargin());
+  gStyle->SetPadLeftMargin(0.9*gStyle->GetPadLeftMargin());
+  gStyle->SetPadBottomMargin(0.7*gStyle->GetPadBottomMargin());
+  gROOT->ForceStyle();
+
+
   // Using now the THNSparse histos
   // 
 
-  TCanvas *c1 = new TCanvas(); // create with good aspect ratios...
+  TCanvas *c1 = new TCanvas("c11","",700,600); // create with good aspect ratios...
   c1->SetLogz();
+
 
   const int kMaxFiles = 2;
   TString sinputFile[kMaxFiles];
@@ -561,10 +718,13 @@ Int_t PlotSubtract(){
   // Parameter
   Float_t fMaxMult[kMaxFiles] = {0,};
   Float_t fMaxRho[kMaxFiles] = {0,};
+  Float_t fMaxSigma[kMaxFiles] = {0,};
 
 
   TH2F* fh2CentvsRho[kMaxFiles]= {0,};
   TH2F* fh2MultvsRho[kMaxFiles]= {0,};
+  TH2F* fh2CentvsSigma[kMaxFiles]= {0,};
+  TH2F* fh2MultvsSigma[kMaxFiles]= {0,};
   
 
 
@@ -572,38 +732,69 @@ Int_t PlotSubtract(){
   THnSparseF* hnDPtAreaCentMult[kMaxFiles][nSub] = {0,};
 
   Int_t iF = 0;
-  sinputFile[iF] = "~/Dropbox/SharedJets/Christian/Files/PWG4_JetTasksOutput_LHC10h_AOD_tmp.root";
-  sinputDir[iF] = "PWG4_JetSubtract_B2";
+  sinputFile[iF] = "~/Dropbox/SharedJets/Bastian/Files/PWG4_JetTasksOutput.root";
+  sinputDir[iF] = "pwg4JetSubtract_B2";
   sLegend[iF] = "B2 (150 MeV)";
   fMaxMult[iF] = 3500;
   fMaxRho[iF] = 250;
+  fMaxSigma[iF] = 40;
   iF++;
   
-  sinputFile[iF] = "~/Dropbox/SharedJets/Christian/Files/PWG4_JetTasksOutput_LHC10h_AOD_tmp.root";
-  sinputDir[iF] = "PWG4_JetSubtract_B2_Cut2000";
+  sinputFile[iF] = "~/Dropbox/SharedJets/Bastian/Files/PWG4_JetTasksOutput.root";
+  sinputDir[iF] = "pwg4JetSubtract_B2_Cut2000";
   sLegend[iF] = "B2 (2000 MeV)";
   fMaxMult[iF] = 300;
   fMaxRho[iF] = 50;
+  fMaxSigma[iF] = 10;
   
   
 
   for(iF = 0;iF<kMaxFiles;iF++){
     if(sinputFile[iF].Length()==0)continue;
     // fetch all the histos
-    fh2CentvsRho[iF]= (TH2F*) GetObjectFromFile("fh2CentvsRho",sinputFile[iF].Data(),sinputDir[iF].Data(),"pwg");
-    fh2MultvsRho[iF]= (TH2F*) GetObjectFromFile("fh2MultvsRho",sinputFile[iF].Data(),sinputDir[iF].Data(),"pwg");
-    
+    fh2CentvsRho[iF]= (TH2F*) GetObjectFromFile("fh2CentvsRho",sinputFile[iF].Data(),sinputDir[iF].Data(),"PWG4_","pwg4");
+    fh2MultvsRho[iF]= (TH2F*) GetObjectFromFile("fh2MultvsRho",sinputFile[iF].Data(),sinputDir[iF].Data(),"PWG4_","pwg4");
+    fh2CentvsSigma[iF]= (TH2F*) GetObjectFromFile("fh2CentvsSigma",sinputFile[iF].Data(),sinputDir[iF].Data(),"PWG4_","pwg4");
+    fh2MultvsSigma[iF]= (TH2F*) GetObjectFromFile("fh2MultvsSigma",sinputFile[iF].Data(),sinputDir[iF].Data(),"PWG4_","pwg4");
+
+
+    if(!fh2CentvsRho[iF])continue;
 
     for(int iSub = 0;iSub<nSub;iSub++){
       hnDPtAreaCentMult[iF][iSub] = (THnSparseF*) GetObjectFromFile(Form("hnDPtAreaCentMult_%d",iSub),sinputFile[iF].Data(),sinputDir[iF].Data(),"pwg");
     }
-    
+
+    SetHistAxisStyle(fh2CentvsRho[iF],1.5,1.2,1.1,
+		     0,1.1,1.1);
+    SetHistAxisStyle(fh2MultvsRho[iF],1.5,1.2,1.1,
+		     0,1.1,1.1);
+
+    SetHistAxisStyle(fh2CentvsSigma[iF],1.5,1.2,1.1,
+		     0,1.1,1.1);
+    SetHistAxisStyle(fh2MultvsSigma[iF],1.5,1.2,1.1,
+		     0,1.1,1.1);
+
+
+
     TLatex *txt = new TLatex();
     txt->SetNDC();
+    txt->SetTextSize(gStyle->GetTextSize()*0.8);
+
+    TLatex *txtHead = new TLatex();
+    txtHead->SetNDC();
+    txtHead->SetTextAlign(23);
+
+
 
     fh2CentvsRho[iF]->SetAxisRange(0.,fMaxRho[iF],"Y");
+    fh2CentvsRho[iF]->SetYTitle("#rho (GeV/c)");
+    fh2CentvsRho[iF]->SetXTitle("V0 centrality (%)");
+    fh2CentvsRho[iF]->GetXaxis()->SetRangeUser(0,80);
     fh2CentvsRho[iF]->Draw("colz");
-    txt->DrawLatex(0.6,0.8,sLegend[iF].Data());
+    txt->DrawLatex(0.5,0.7,sLegend[iF].Data());
+    txtHead->DrawLatex(0.5,0.99,"LHC2010 PbPb #sqrt{s_{NN}} = 2.76 TeV");
+
+    DrawDate(); 
     c1->Update();
     picName = Form("%sCentVsRho_%d.%s",picPrefix.Data(),iF,picSuffix.Data());
     c1->SaveAs(picName.Data());
@@ -611,12 +802,52 @@ Int_t PlotSubtract(){
     
     fh2MultvsRho[iF]->SetAxisRange(0.,fMaxRho[iF],"Y");
     fh2MultvsRho[iF]->SetAxisRange(0.,fMaxMult[iF]);
+    fh2MultvsRho[iF]->SetXTitle("N^{raw}_{input}");
+    fh2MultvsRho[iF]->SetYTitle("#rho (GeV/c)");
+
     fh2MultvsRho[iF]->Draw("colz");
-    txt->DrawLatex(0.9,0.6,sLegend[iF].Data());
+    txt->DrawLatex(0.3,0.7,sLegend[iF].Data());
+    txtHead->DrawLatex(0.5,0.99,"LHC2010 PbPb #sqrt{s_{NN}} = 2.76 TeV");
+    DrawDate();
     c1->Update();
     picName = Form("%sMultVsRho_%d.%s",picPrefix.Data(),iF,picSuffix.Data());
     c1->SaveAs(picName.Data());
     if(getchar()=='q')return 1;
+
+
+    fh2MultvsSigma[iF]->SetAxisRange(0.,fMaxMult[iF]);
+    fh2MultvsSigma[iF]->SetAxisRange(0.,fMaxSigma[iF],"Y");
+    fh2MultvsSigma[iF]->SetXTitle("N^{raw}_{input}");
+    fh2MultvsSigma[iF]->SetYTitle("#sigma (GeV/c)");
+
+    fh2MultvsSigma[iF]->Draw("colz");
+    txt->DrawLatex(0.3,0.7,sLegend[iF].Data());
+    txtHead->DrawLatex(0.5,0.99,"LHC2010 PbPb #sqrt{s_{NN}} = 2.76 TeV");
+    DrawDate();
+    c1->Update();
+    picName = Form("%sMultVsSigma_%d.%s",picPrefix.Data(),iF,picSuffix.Data());
+    c1->SaveAs(picName.Data());
+    if(getchar()=='q')return 1;
+
+
+    fh2CentvsSigma[iF]->SetAxisRange(0.,fMaxSigma[iF],"Y");
+    fh2CentvsSigma[iF]->SetYTitle("#sigma (GeV/c)");
+    fh2CentvsSigma[iF]->SetXTitle("V0 centrality (%)");
+    fh2CentvsSigma[iF]->GetXaxis()->SetRangeUser(0,80);
+    fh2CentvsSigma[iF]->Draw("colz");
+
+
+    fh2CentvsSigma[iF]->Draw("colz");
+    txt->DrawLatex(0.3,0.7,sLegend[iF].Data());
+    txtHead->DrawLatex(0.5,0.99,"LHC2010 PbPb #sqrt{s_{NN}} = 2.76 TeV");
+    DrawDate();
+    c1->Update();
+    picName = Form("%sCentVsSigma_%d.%s",picPrefix.Data(),iF,picSuffix.Data());
+    c1->SaveAs(picName.Data());
+    if(getchar()=='q')return 1;
+
+
+
   }
 
   return 0;
@@ -1005,6 +1236,44 @@ void set_plot_style() {
     Double_t blue[NRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00 };
     TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
     gStyle->SetNumberContours(NCont);
+
+    //  TGaxis::SetMaxDigits(3) // set the maximum number of axis digits (exp otherwise)                                             
+    //    gStyle->SetPalette(1);
+    gStyle->SetCanvasColor(10);
+    gStyle->SetHistFillColor(10);
+    gStyle->SetHistFillStyle(0);
+    gStyle->SetOptTitle(0);
+    gStyle->SetOptStat(0);
+    gStyle->SetPadLeftMargin(0.17);
+    gStyle->SetPadRightMargin(0.14);
+    gStyle->SetPadBottomMargin(0.15);
+    gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
+  gStyle->SetAxisColor(1, "X");
+  gStyle->SetAxisColor(1, "Y");
+  gStyle->SetAxisColor(1, "Z");
+  gStyle->SetLabelColor(1, "X");
+  gStyle->SetLabelColor(1, "Y");
+  gStyle->SetLabelColor(1, "Z");
+  gStyle->SetTickLength(0.03, "X");
+  gStyle->SetTickLength(0.03, "Y");
+  gStyle->SetTickLength(0.03, "Z");
+  gStyle->SetTitleXSize(0.07);
+  gStyle->SetTitleYSize(0.07);
+  gStyle->SetNdivisions(505, "X");
+  gStyle->SetNdivisions(505, "Y");
+  gStyle->SetNdivisions(505, "Z");
+  gStyle->SetTitleXOffset(1.0);
+  gStyle->SetTitleYOffset(1.0);
+  gStyle->SetLabelOffset(0.02, "X");
+  gStyle->SetLabelOffset(0.02, "Y");
+  gStyle->SetLabelOffset(0.02, "Z");
+  gStyle->SetLabelSize(0.05, "X");
+  gStyle->SetLabelSize(0.05, "Y");
+  gStyle->SetLabelSize(0.05, "Z");
+  gROOT->ForceStyle();
+
+
 }
 
 
@@ -1218,7 +1487,7 @@ Int_t PlotJetBFluctuations(){
   TH1D *hDeltaPtB2[nCen] = {0};
   TString sDeltaPtB2 = "";
   for(int ic = 0;ic < nCen;ic++){
-    sDeltaPtB2 = Form("anti-k_{T} embedded track %2.0f-%2.0f GeV BB",fMinPtB,fMaxPtB);
+    sDeltaPtB2 = Form("anti-k_{T} embedded track %2.0f-%2.0f GeV",fMinPtB,fMaxPtB);
     TH2F *hTmp = GetTH2PlotB("~/Dropbox/SharedJets/Bastian/Files/110430/",0,0,ic); // emb jets
     if(!hTmp)Printf("%d %s not found",__LINE__,tmpName.Data());
     int ibLo = hTmp->GetYaxis()->FindBin(fMinPtB);
@@ -1415,7 +1684,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
   hFrame->SetTitleSize(hFrame->GetTitleSize("Y")*0.7,"Y");
   hFrame->SetTitleSize(hFrame->GetTitleSize("X")*0.7,"X");
 
-  TCanvas *c1 = new TCanvas("c11","c1",600,600);
+  TCanvas *c1 = new TCanvas("c11","c1",800,800);
   c1->SetLogy();
 
 
@@ -1432,9 +1701,9 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
   TGraphErrors *grSigmaDeltaPtMult[kDeltaTypes][nRP] = {0,};
 
   // 
-  const Int_t kMarkerDelta[kDeltaTypes] = {kFullCircle,kFullCircle,kOpenCircle,kFullSquare,    33,kFullSquare,kFullSquare,          31,        31};
-  const Int_t kColorDelta[kDeltaTypes] =         {kRed,      kBlue,       kRed,      kBlue,kBlack,    kBlue+4,     kRed+3,  kOrange+10,kOrange+10};
-  const Int_t kFitDelta[kDeltaTypes] =    {          1,          1,          1,          1,     1,          1,          1,           0,         0};
+  const Int_t kMarkerDelta[kDeltaTypes] = {kFullCircle,kFullCircle,kOpenCircle,         33,kFullSquare,kFullSquare,kFullSquare, kFullSquare,     31};
+  const Int_t kColorDelta[kDeltaTypes] =         {kRed,      kBlue,       kRed,      kBlue,     kBlue+2,    kGray+1,     kRed+2,     kOrange,kOrange};
+  const Int_t kFitDelta[kDeltaTypes] =    {          1,          1,          1,          1,          1,          1,          1,           0,      0};
 
 
   const Int_t kMarkerRP[nRP] = {kFullSquare,22,29,23}; // first no used
@@ -1444,7 +1713,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 
 
   const Int_t kNormType = 7; // normaize this spectrum at fixed p_T
-  const Float_t kNormPt = 10.; // normaize this spectrum at fixed p_T
+  const Float_t kNormPt = 20.; // normaize this spectrum at fixed p_T
   Float_t kNormValue[nMult][nCen] = {0,}; // normaize the spectrum with this value, if negative take from the first delta p_T histo
   Float_t kNormValueMult[nMult][nRP] = {0,}; // normaize the spectrum with this value, if negative take from the first delta p_T histo
   
@@ -1473,7 +1742,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
   if(fL){
     iDelta = 0;
     // leticia BiA Randome cones
-    sDelta[iDelta][0] = "BiA RC";
+    sDelta[iDelta][0] = "random cones";
     if(iB==1)tmpName = "BiA sa RC skip0 centrality";
     else if (iB==2)tmpName = "BiA RC skip0 va centrality";
     TH2F *h2Tmp = (TH2F*)fL->Get(tmpName.Data());
@@ -1524,7 +1793,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
     //------------
 
     iDelta = 1;
-    sDelta[iDelta][0] = "BiA RC (randomized event)";
+    sDelta[iDelta][0] = "RC (randomized event)";
     if(iB==1)tmpName = "BiA RC random input sa centrality";
     else if (iB==2)tmpName = "BiA RC random input va centrality";
     h2Tmp = (TH2F*)fL->Get(tmpName.Data());
@@ -1574,7 +1843,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
     // ------------------------------------------
     // leticia random cones skip leading jets
     iDelta = 2;
-    sDelta[iDelta][0] = "BiA RC (excl. 2 leading jets)";
+    sDelta[iDelta][0] = "RC (excl. 2 leading jets)";
     if(fDebug)Printf("Line: %d",__LINE__);
     if(iB==1)tmpName = "BiA sa RC skip2 centrality";
     else if (iB==2)tmpName = "BiA RC skip2 va centrality";
@@ -1611,39 +1880,8 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 
   // jet embedded
   TString cBB = "/Users/kleinb/Dropbox/SharedJets/Bastian/Files/"; 
-
   iDelta = 3;
-  sDelta[iDelta][0] = Form("anti-k_{T} embedded jet %2.0f-%2.0f GeV",fMinPt[iDelta],fMaxPt[iDelta]);
-  for(iRP = 0;iRP<nRP;iRP++){
-    for(int ic = 0;ic < nCen;ic++){
-      TH2F *hTmp = GetTH2PlotB(cBB.Data(),1,0,ic,iRP-1); // emb jets
-      if(!hTmp)Printf("%d %s not found",__LINE__,tmpName.Data());
-      int ibLo = hTmp->GetYaxis()->FindBin(fMinPt[iDelta]);
-      int ibUp = hTmp->GetYaxis()->FindBin(fMaxPt[iDelta])-1;
-      hDeltaPt[iDelta][ic][iRP] = hTmp->ProjectionX(Form("fHistDeltaPtB1_c%d_rp%d",ic,iRP),ibLo,ibUp,"E");
-      hDeltaPt[iDelta][ic][iRP]->Rebin(2);
-      Float_t fScale = hDeltaPt[iDelta][ic][iRP]->Integral("width");
-      if(fScale)  hDeltaPt[iDelta][ic][iRP]->Scale(1./fScale);
-    }
-  }
-  iRP = 0;
-  for(iRP = 0;iRP<nRP;iRP++){
-    for(int im = 0;im <nMult;im++){
-      TH2F *hTmp = GetTH2PlotB(cBB.Data(),1,1,im,iRP-1); // emb jets
-      if(!hTmp)Printf("%d %s not found",__LINE__,tmpName.Data());
-      int ibLo = hTmp->GetYaxis()->FindBin(fMinPt[iDelta]);
-      int ibUp = hTmp->GetYaxis()->FindBin(fMaxPt[iDelta])-1;
-      Printf("Line:%d bin %d - %d",__LINE__,ibLo,ibUp);
-      hDeltaPtMult[iDelta][im][iRP] = hTmp->ProjectionX(Form("fHistDeltaPtB2_%d_mult%d_rp%d",iDelta,im,iRP),ibLo,ibUp,"E");
-      hDeltaPtMult[iDelta][im][iRP]->Rebin(2);
-      Float_t fScale =   hDeltaPtMult[iDelta][im][iRP]->Integral("width");
-      if(fScale)   hDeltaPtMult[iDelta][im][iRP]->Scale(1./fScale);
-    }
-  }
-  iRP = 0;
-
-  iDelta = 4;
-  sDelta[iDelta][0] = Form("anti-k_{T} embedded track %2.0f-%2.0f GeV BB",fMinPt[iDelta],fMaxPt[iDelta]);
+  sDelta[iDelta][0] = Form("anti-k_{T} embedded track %2.0f-%2.0f GeV",fMinPt[iDelta],fMaxPt[iDelta]);
   
   for(iRP = 0;iRP<nRP;iRP++){
     for(int ic = 0;ic < nCen;ic++){
@@ -1671,6 +1909,37 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
       if(fScale)   hDeltaPtMult[iDelta][im][iRP]->Scale(1./fScale);
     }
   }
+  iRP = 0;
+
+  iDelta = 4;
+  sDelta[iDelta][0] = Form("anti-k_{T} embedded jet %2.0f-%2.0f GeV",fMinPt[iDelta],fMaxPt[iDelta]);
+  for(iRP = 0;iRP<nRP;iRP++){
+    for(int ic = 0;ic < nCen;ic++){
+      TH2F *hTmp = GetTH2PlotB(cBB.Data(),1,0,ic,iRP-1); // emb jets
+      if(!hTmp)Printf("%d %s not found",__LINE__,tmpName.Data());
+      int ibLo = hTmp->GetYaxis()->FindBin(fMinPt[iDelta]);
+      int ibUp = hTmp->GetYaxis()->FindBin(fMaxPt[iDelta])-1;
+      hDeltaPt[iDelta][ic][iRP] = hTmp->ProjectionX(Form("fHistDeltaPtB1_c%d_rp%d",ic,iRP),ibLo,ibUp,"E");
+      hDeltaPt[iDelta][ic][iRP]->Rebin(2);
+      Float_t fScale = hDeltaPt[iDelta][ic][iRP]->Integral("width");
+      if(fScale)  hDeltaPt[iDelta][ic][iRP]->Scale(1./fScale);
+    }
+  }
+  iRP = 0;
+  for(iRP = 0;iRP<nRP;iRP++){
+    for(int im = 0;im <nMult;im++){
+      TH2F *hTmp = GetTH2PlotB(cBB.Data(),1,1,im,iRP-1); // emb jets
+      if(!hTmp)Printf("%d %s not found",__LINE__,tmpName.Data());
+      int ibLo = hTmp->GetYaxis()->FindBin(fMinPt[iDelta]);
+      int ibUp = hTmp->GetYaxis()->FindBin(fMaxPt[iDelta])-1;
+      Printf("Line:%d bin %d - %d",__LINE__,ibLo,ibUp);
+      hDeltaPtMult[iDelta][im][iRP] = hTmp->ProjectionX(Form("fHistDeltaPtB2_%d_mult%d_rp%d",iDelta,im,iRP),ibLo,ibUp,"E");
+      hDeltaPtMult[iDelta][im][iRP]->Rebin(2);
+      Float_t fScale =   hDeltaPtMult[iDelta][im][iRP]->Integral("width");
+      if(fScale)   hDeltaPtMult[iDelta][im][iRP]->Scale(1./fScale);
+    }
+  }
+
   iRP = 0;
     // Data from marta
     iDelta = 5;
@@ -1727,7 +1996,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
       Printf("Could not open %s",fOTFQon.Data());
     }
 
-    TString sinputFile = "~/Dropbox/SharedJets/Christian/Files/PWG4_JetTasksOutput_LHC10h_AOD_tmp.root";
+    TString sinputFile = "~/Dropbox/SharedJets/Christian/Files/PWG4_JetTasksOutput_Merge_LHC10h_AOD_110429a.root";
     TString sinputDir = "PWG4_spec2_clustersAOD_ANTIKT04_B2_Filter00128_Cut00150_Skip02__0000000000_Class00";
     // Plot the real jet spectrum, to be normalized later...
     iDelta = 7;
@@ -1767,11 +2036,13 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
     iRP = 0;
 
 
+    TString sinputFileP = "~/Dropbox/SharedJets/Christian/Files/PWG4_JetTasksOutput_Merge_000139107_AOD_110505a.root";
+    TString sinputDirP = "PWG4_spec2_clustersAOD_ANTIKT02_B2_Filter00128_Cut00150_Skip00_clustersAOD_ANTIKT02_B0_Filter00128_Cut00150_Skip00_0000000000_Class00";
       // fetch the poissonian fluctuations! CKB
       iDelta = 8;
       sDelta[iDelta][0] = "Poissonian limit";
       if(true){
-	THnSparseF* fhnTrackPtRec =  (THnSparseF*)GetObjectFromFile("fhnTrackPtRec",sinputFile.Data(),sinputDir.Data());
+	THnSparseF* fhnTrackPtRec =  (THnSparseF*)GetObjectFromFile("fhnTrackPtRec",sinputFileP.Data(),sinputDirP.Data());
 	fhnTrackPtRec->GetAxis(0)->SetRange(2,2); // take all tracks
 
       THnSparseF* fhnEvent =  (THnSparseF*)GetObjectFromFile("fhnEvent",sinputFile.Data(),sinputDir.Data());
@@ -1900,7 +2171,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 
     }
 
-    for(iDelta = 1;iDelta < kDeltaTypes;iDelta++){
+    for(iDelta = 0;iDelta < kDeltaTypes;iDelta++){
       sDelta[iDelta][1] = sDelta[iDelta][0] + " in plane";
       sDelta[iDelta][2] = sDelta[iDelta][0] + " in between";
       sDelta[iDelta][3] = sDelta[iDelta][0] + " out of plane";
@@ -1975,7 +2246,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 	      sigma_error = tmpGaus->GetParError(2);	
 	      
 	      tmpGaus->SetRange(-40,40);
-	      tmpGaus->SetLineColor(kColorDelta[iDelta]);
+	      tmpGaus->SetLineColor(hDeltaPt[iDelta][ic][iRP]->GetLineColor());
 	      tmpGaus->Draw("same");
 	      leg1->AddEntry(tmpGaus,Form("LHS Gaus fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
 	      Double_t cent = (fCentUp[ic]+fCentLo[ic])/2;
@@ -1993,6 +2264,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 	
 	txt2->SetNDC();
 	//    txt2->DrawLatex(0.5,0.97,"ALICE Performance 01/03/2011");
+	DrawDate();
 	c1->Update();
 	c1->SaveAs(Form("%sdeltaPt_pT%s%s_B%d_cen%02d_%03d.%s",
 			picPrefix.Data(),
@@ -2034,6 +2306,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 	}
       }
       legSM->Draw();
+      DrawDate();
       c1->Update();
       c1->SaveAs(Form("%sMeanVsCent_pT%s%s_B%d_%03d.%s",
 		      picPrefix.Data(),
@@ -2069,9 +2342,8 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 	}
       }
       legSC->Draw();
+      DrawDate();
       c1->Update();
-
-
       c1->SaveAs(Form("%sSigmaVsCent_pT%s%s_B%d_%03d.%s",
 		      picPrefix.Data(),
 		      Form("%03.0f_%03.0f",inPtLo,inPtUp),
@@ -2157,14 +2429,17 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 	      grMeanDeltaPtMult[iDelta][iRP]->SetPoint(im,mult,mean);
 	      grMeanDeltaPtMult[iDelta][iRP]->SetPointError(im,mult_e,mean_error);
 	      
-	      grSigmaDeltaPtMult[iDelta][iRP]->SetPoint(im,mult,sigma);
-	      grSigmaDeltaPtMult[iDelta][iRP]->SetPointError(im,mult_e,sigma_error);
+
+		grSigmaDeltaPtMult[iDelta][iRP]->SetPoint(im,mult,sigma);
+		grSigmaDeltaPtMult[iDelta][iRP]->SetPointError(im,mult_e,sigma_error);
+
 	    }
 	  }
 	}
 	leg1->Draw();
 	txt2->SetNDC();
 	//    txt2->DrawLatex(0.5,0.97,"ALICE Performance 01/03/2011");
+	DrawDate();
 	c1->Update();
 	c1->SaveAs(Form("%sdeltaPt_pT%s%s_B%d_mult%02d_%03d.%s",
 			picPrefix.Data(),
@@ -2200,13 +2475,21 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 	  for(iDelta = 0;iDelta <kDeltaTypes;iDelta++){
 	    if(!(iPlotFlag&(1<<iDelta)))continue;
 	    if(!grMeanDeltaPtMult[iDelta][iRP])continue;
-	    grMeanDeltaPtMult[iDelta][iRP]->Draw("psame");
-	    legMM->AddEntry(grSigmaDeltaPtMult[iDelta][iRP],sDelta[iDelta][iRP].Data(),"P");
+
+	    if(iDelta==7){
+	      grMeanDeltaPtMult[iDelta][iRP]->Draw("Csame");
+	      legMM->AddEntry(grSigmaDeltaPtMult[iDelta][iRP],sDelta[iDelta][iRP].Data(),"L");
+	    }
+	    else{
+	      grMeanDeltaPtMult[iDelta][iRP]->Draw("psame");
+	      legMM->AddEntry(grSigmaDeltaPtMult[iDelta][iRP],sDelta[iDelta][iRP].Data(),"P");
+	    }
+
 	  }
 	}
 	legMM->Draw();
+	DrawDate();
 	c1->Update();
-
 	c1->SaveAs(Form("%sMeanVsMult_pT%s%s_B%d_%03d.%s",
 			picPrefix.Data(),
 			Form("%03.0f_%03.0f",inPtLo,inPtUp),
@@ -2539,7 +2822,7 @@ TH2F* GetTH2PlotB(const char *cPath,Int_t embType, Int_t classType, Int_t cl, In
    return h2;
 }
 
-TObject* GetObjectFromFile(const char *cName,const char *cFile,const char* cDir,const char *cRep){
+TObject* GetObjectFromFile(const char *cName,const char *cFile,const char* cDir,const char *cRep2,const char* cRep1){
    TDirectory *opwd = gDirectory;
    TFile *fIn = (TFile*)gROOT->GetListOfFiles()->FindObject(cFile);
    if(!fIn)fIn = TFile::Open(cFile);
@@ -2555,7 +2838,7 @@ TObject* GetObjectFromFile(const char *cName,const char *cFile,const char* cDir,
      return 0;
    }
    TString sList(cDir);
-   sList.ReplaceAll("PWG4_",cRep);
+   sList.ReplaceAll(cRep1,cRep2);
    TList *list = (TList*)dir->Get(sList.Data());
    if(!list){
      Printf("list %s not found",sList.Data());
@@ -2584,18 +2867,31 @@ Double_t GetPoissonFluctuation(TH1 *h1,Double_t areaIn,Double_t areaJet){
   return sigma;
 }
 
-void SetHistoAttributes(TH1* h1,Int_t iMarker,Int_t iColor){
+void SetHistoAttributes(TH1* h1,Int_t iMarker,Int_t iColor,Float_t fMarkerSize){
   if(!h1)return;
-  h1->SetMarkerColor(iColor);
+
+
+  h1->SetLineWidth(gStyle->GetLineWidth());
   h1->SetLineColor(iColor);
+
+  h1->SetMarkerColor(iColor);
   h1->SetMarkerStyle(iMarker);
+  if(fMarkerSize>0){
+    h1->SetMarkerSize(fMarkerSize);
+    if(iMarker==29||iMarker==33)  h1->SetMarkerSize(fMarkerSize * 1.2); // st
+  }
 }
 
 void SetGraphAttributes(TGraph* gr,Int_t iMarker,Int_t iColor){
   if(!gr)return;
-  gr->SetMarkerColor(iColor);
+
   gr->SetLineColor(iColor);
+  gr->SetLineWidth(gStyle->GetLineWidth());
+
+  gr->SetMarkerColor(iColor);
   gr->SetMarkerStyle(iMarker);
+  gr->SetMarkerSize(1.7);
+  if(iMarker==29||iMarker==33||iMarker==31)  gr->SetMarkerSize(2.2); // st
 }
 
 
@@ -2606,4 +2902,104 @@ void CloseFiles(){
     Printf("Closing %d %s",i,f->GetName());
     f->Close();
   }
+}
+
+    
+void SetHistAxisStyle(TH1* h1,Float_t titleOffsetX,Float_t titleSizeX,Float_t labelSizeX,
+		      Float_t titleOffsetY,Float_t titleSizeY,Float_t labelSizeY){
+
+  
+  if(titleOffsetX>0)h1->SetTitleOffset(titleOffsetX,"Y");
+  if(titleOffsetY>0)h1->SetTitleOffset(titleOffsetY,"X");
+  
+  if(titleSizeX>0)h1->SetTitleSize(h1->GetTitleSize("X")*titleSizeX,"X");
+  if(titleSizeY>0)h1->SetTitleSize(h1->GetTitleSize("Y")*titleSizeX,"Y");
+
+  if(labelSizeX>0)h1->SetLabelSize(h1->GetLabelSize("X")*labelSizeX,"X");
+  if(labelSizeY>0)h1->SetLabelSize(h1->GetLabelSize("Y")*labelSizeX,"Y");
+
+}
+
+void DrawDate(){
+  static  TDatime *time = new TDatime();
+  static TLatex *labelDate= new TLatex();
+  labelDate->SetNDC(kTRUE);
+  labelDate->SetTextAlign(11);
+  labelDate->SetTextSize(0.04);
+  labelDate->SetTextFont(52);
+  labelDate->DrawLatex(0.01,0.01,Form("%d-%d",time->GetDate(),time->GetTime()));
+}
+
+
+void DrawALICE(TCanvas *c,Float_t xCenter,Float_t yCenter,Int_t iType,TString cExtra2){
+  static  TDatime *time = new TDatime();
+  // iType = 1 Work in p
+  // 
+  TString cType = "";
+  TString cExtra1 = "";
+  if((iType%10)==1){
+    cType = "ALICE work in progress";
+  }
+  else if((iType%10)==2){
+    cType = "ALICE Performance";
+    cExtra1 = "Uncorrected";
+    if(cExtra2.Length()==0){
+      cExtra2 = Form("%04d/%02d/%02d",time->GetYear(),time->GetMonth(),time->GetDay());
+    }
+  }
+  else if((iType%10)==2){
+    cType = "ALICE Preliminary";
+  }
+  else{
+    Printf("No ALICE type %d",iType);
+    return;
+  }
+
+
+
+  if(iType>10){
+    cType = Form("%s request",cType.Data());
+  }
+  
+  if(cExtra2.Length()!=0&&cExtra1.Length()==0){
+    cExtra1 = cExtra2;
+    cExtra2 = "";
+  }
+
+
+  const float  yHW = 1.5* 0.0415;
+  const float  xHW = 1.5* 0.0399;
+
+  TPad *myPadLogo = new TPad("myPadLogo", "Pad for ALICE Logo",
+			     xCenter-xHW,
+			     yCenter-yHW,xCenter+xHW,yCenter+yHW); // check the aspect ratio 821 × 798
+
+  myPadLogo->SetFillColor(0); 
+  myPadLogo->SetBorderMode(0);
+  myPadLogo->SetBorderSize(0);
+  myPadLogo->SetFrameBorderMode(0);
+  myPadLogo->SetLeftMargin(0.0);
+  myPadLogo->SetTopMargin(0.0);
+  myPadLogo->SetBottomMargin(0.0);
+  myPadLogo->SetRightMargin(0.0);
+  myPadLogo->Draw();
+  myPadLogo->cd();
+  TASImage *myAliceLogo = new TASImage("/Users/kleinb/Pictures/Logo/alice_logo.png");
+  myAliceLogo->Draw();
+  c->cd();
+  TLatex* t1=new TLatex();
+  t1->SetNDC();
+  t1->SetTextColor(kRed);
+  t1->SetTextFont(42);
+  t1->SetTextAlign(22);
+
+  const Float_t textSize = 0.03;
+  t1->SetTextSize(textSize);
+
+  Float_t line = yCenter - yHW - 1.1 *textSize;
+  t1->DrawLatex(xCenter,line,cType.Data());
+  line = line - 1.1 *textSize;
+  if(cExtra1.Length())t1->DrawLatex(xCenter,line,cExtra1.Data());
+  line = line - 1.1 *textSize;
+  if(cExtra2.Length())t1->DrawLatex(xCenter,line,cExtra2.Data());
 }
