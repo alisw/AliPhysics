@@ -121,7 +121,7 @@ int AliHLTRecoParamComponent::ScanConfigurationArgument(int argc, const char** a
   if (argc == 1) {
     int argLen = strlen(argv[0]);
     char argument[argLen+1];
-    strcpy(argument, argv[0]);
+    strncpy(argument, argv[0], argLen+1);
     argument[argLen] = '\0';
     if (strstr(argument, "-configfile")) {
       strtok(argument, "=");
