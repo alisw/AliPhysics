@@ -460,19 +460,12 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	  AliESDtrack* track = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent, ipart);
 	  if(!track) return 0;
     
-	  // laser warm up tracks
-	  if (track->GetTPCsignal() < 10.)
-	  {
-	    delete track;
-	    return 0;
-	  }
-    
 	  if(track->Pt()>0.){
 	    // only constrain tracks above threshold
 	    AliExternalTrackParam exParam;
 	    // take the B-feild from the ESD, no 3D fieldMap available at this point
 	    Bool_t relate = kFALSE;
-	    relate = track->RelateToVertex(vtxSPD,esdEvent->GetMagneticField(),kVeryBig,&exParam);
+	    relate = track->RelateToVertexTPC(vtxSPD,esdEvent->GetMagneticField(),kVeryBig,&exParam);
 	    if(!relate)
 	    {
 //                 Printf("relating failed");
