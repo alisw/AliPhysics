@@ -163,6 +163,7 @@ AliFMDEnergyFitterTask::UserCreateOutputObjects()
   // 
   //
   fList = new TList;
+  fList->SetOwner();
 
   fEventInspector.DefineOutput(fList);
   fEnergyFitter.DefineOutput(fList);
@@ -285,6 +286,7 @@ AliFMDEnergyFitterTask::Terminate(Option_t*)
   // Make a deep copy and post that as output 2 
   TList* list2 = static_cast<TList*>(list->Clone(Form("%sResults", 
 						      list->GetName())));
+  list2->SetOwner();
   PostData(2, list2);
 }
 
