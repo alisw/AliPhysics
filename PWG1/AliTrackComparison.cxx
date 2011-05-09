@@ -223,7 +223,7 @@ Int_t AliTrackComparison::AddTracks(AliExternalTrackParam *param0,  AliTrackPoin
   Double_t pos[3], pxyz[3];
   for(Int_t i=0; i<3; i++) 
     pos[i] = gPos[i]-vxyz[i];
-  Double_t R = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[3]);
+  Double_t R = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]);
   for(Int_t i=0; i<3; i++) pxyz[i]= energy*pos[i]/R;
 
   Double_t cv[21];
@@ -289,8 +289,9 @@ void  AliTrackComparison::Add(AliTrackComparison *const comp){
   //
   // Add THnSparse
   //
-  if (!fResolHisto) return;
   for (Int_t i=0;i<6;i++){
+    if (!fResolHisto[i]) 
+      continue;
     THnSparse * h0 = (THnSparse*)fResolHisto[i];
     THnSparse * h1 = (THnSparse*)comp->GetHnSparse(i);
     if (h0&&h1) h0->Add(h1);
