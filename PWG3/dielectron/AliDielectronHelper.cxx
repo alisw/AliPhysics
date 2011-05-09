@@ -184,10 +184,11 @@ Int_t AliDielectronHelper::GetNaccTrcklts(const AliVEvent *ev){
 
 
 //_____________________________________________________________________________
-Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
+Int_t AliDielectronHelper::GetNacc(const AliVEvent */*ev*/){
   // put a robust Nacc definition here
 
   return -1;
+/*  
   if (!ev || ev->IsA()!=AliESDEvent::Class()) return -1;
   
   // basic track cuts for the N_acc definition
@@ -211,6 +212,7 @@ Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
   }
 
   return nAcc;
+*/
 }
 
 
