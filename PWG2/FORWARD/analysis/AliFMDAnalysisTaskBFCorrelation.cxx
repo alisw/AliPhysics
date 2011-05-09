@@ -399,6 +399,10 @@ void AliFMDAnalysisTaskBFCorrelation::ProjectAndMirror(TString sType) {
   // Get Single Event histograms for storing hits without rebinning
   
   TH1D *hMult = dynamic_cast<TH1D*>(fInternalList->FindObject(Form("hSEMult%s", sType.Data())));
+  if(!hMult) {
+    AliWarning("no hist - returning"); 
+    return; 
+  }
   hMult->Reset();
   
   // Create generic names for retrieving histograms 
