@@ -39,7 +39,8 @@ set ( SRCS  GammaConv/AliV0Reader.cxx
     GammaConv/ConvCorrelations/AliAnaConvCorrBase.cxx 
     GammaConv/ConvCorrelations/AliAnaConvCorrPion.cxx 
     GammaConv/ConvCorrelations/AliAnaConvCorrPhoton.cxx 
-    GammaConv/ConvCorrelations/AliAnaConvCorrPhotonJet.cxx)
+    GammaConv/ConvCorrelations/AliAnaConvCorrPhotonJet.cxx
+    GammaConv/ConvCorrelations/AliAnaConvCorrPionJet.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 

@@ -35,12 +35,18 @@ ClassImp(AliAnaConvCorrPhotonJet)
 
 //________________________________________________________________________________
 AliAnaConvCorrPhotonJet::AliAnaConvCorrPhotonJet() :
-AliAnaConvCorrBase("photonJet") {
+AliAnaConvCorrBase("photonJet"),
+  fhPtFracGamma(NULL), 
+  fhPtFracPion(NULL)
+{
   //consctructor
 }
 //________________________________________________________________________________
 AliAnaConvCorrPhotonJet::AliAnaConvCorrPhotonJet(TString name) :
-AliAnaConvCorrBase(name) {
+  AliAnaConvCorrBase(name), 
+  fhPtFracGamma(NULL), 
+  fhPtFracPion(NULL)
+{
   //consctructor
 }
 
@@ -70,7 +76,7 @@ void AliAnaConvCorrPhotonJet::DoJetAnalysisGamma(AliAODJet * jet, const TClonesA
     if(photon) {
       trackIDs[0] = photon->GetLabel1();
       trackIDs[1] = photon->GetLabel2();
-      if(IsParticleInJet(jet, photon, 2, trackIDs)){
+      if(IsParticleInJet(jet, 2, trackIDs)){
 	fhPtFracGamma->Fill(photon->Pt()/jet->Pt());
       }
     }
@@ -82,7 +88,7 @@ void AliAnaConvCorrPhotonJet::DoJetAnalysisGamma(AliAODJet * jet, const TClonesA
     AliAODConversionParticle * pion = dynamic_cast<AliAODConversionParticle*>(pions->At(i));
     if(pion) {
       pion->GetGrandChildren(photons, trackIDs);
-      if(IsParticleInJet(jet, pion, 4, trackIDs)){
+      if(IsParticleInJet(jet, 4, trackIDs)){
 	fhPtFracPion->Fill(pion->Pt()/jet->Pt());
       }
     }
@@ -95,7 +101,7 @@ void AliAnaConvCorrPhotonJet::DoJetAnalysisGamma(AliAODJet * jet, const TClonesA
 }
 
 //________________________________________________________________________________
-Bool_t AliAnaConvCorrPhotonJet::IsParticleInJet(AliAODJet * jet, const AliAODConversionParticle * const particle, Int_t nTracks, Int_t * trackIds) const {
+Bool_t AliAnaConvCorrPhotonJet::IsParticleInJet(AliAODJet * jet, Int_t nTracks, Int_t * trackIds) const {
 
   Int_t mTracks = 0;
   TRefArray * refTracks = jet->GetRefTracks();

@@ -19,5 +19,6 @@
 #pragma link C++ class AliAnaConvCorrPion++;
 #pragma link C++ class AliAnaConvCorrPhoton++;
 #pragma link C++ class AliAnaConvCorrPhotonJet++;
+#pragma link C++ class AliAnaConvCorrPionJet++;
 
 #endif
