@@ -370,6 +370,10 @@ Bool_t AliAnalysisTaskGammaJet::EventIsSynced(const TClonesArray * const tracks,
       }
     }
   }
+
+  if(pions) { 
+    //placeholder
+  }
   
   //cout  <<"insync"<<endl;
   return kTRUE;
