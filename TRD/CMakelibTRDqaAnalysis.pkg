@@ -25,7 +25,15 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  qaAnalysis/AliTRDqaElectronSpectra.cxx qaAnalysis/AliTRDqaESDFriends.cxx qaAnalysis/AliTRDqaEnergyDeposit.cxx qaAnalysis/AliTRDqaJPsi.cxx qaAnalysis/AliTRDqaBasic.cxx qaAnalysis/AliTRDqaAT.cxx qaAnalysis/AliAnalysisTaskTRDmon.cxx)
+set ( SRCS
+    qaAnalysis/AliTRDqaElectronSpectra.cxx
+    qaAnalysis/AliTRDqaESDFriends.cxx
+    qaAnalysis/AliTRDqaEnergyDeposit.cxx
+    qaAnalysis/AliTRDqaJPsi.cxx
+    qaAnalysis/AliTRDqaBasic.cxx
+    qaAnalysis/AliTRDqaAT.cxx
+    qaAnalysis/AliAnalysisTaskTRDmon.cxx
+   )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 

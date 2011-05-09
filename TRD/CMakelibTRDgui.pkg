@@ -25,7 +25,22 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  qaGui/AliTRDqaGuiMain.cxx qaGui/AliTRDqaGuiClusters.cxx qaGui/AliTRDqaGuiClustersSM.cxx qaGui/AliTRDqaGuiClustersStack.cxx qaGui/AliTRDqaGuiESDs.cxx qaGui/AliTRDqaGuiMainBlack.cxx qaGui/AliTRDqaGuiBlackSM.cxx qaGui/AliTRDqaGuiBlackChamber.cxx qaGui/AliTRDqaGuiBlackError.cxx qaGui/AliTRDqaGuiBlackGlobal.cxx qaGui/AliTRDqaGuiBlackGTU.cxx qaGui/AliTRDqaGuiJPsi.cxx qaGui/AliTRDqaGuiEnergyDeposit.cxx qaGui/AliTRDqaGuiMainAnalysis.cxx)
+set ( SRCS
+    qaGui/AliTRDqaGuiMain.cxx
+    qaGui/AliTRDqaGuiClusters.cxx
+    qaGui/AliTRDqaGuiClustersSM.cxx
+    qaGui/AliTRDqaGuiClustersStack.cxx
+    qaGui/AliTRDqaGuiESDs.cxx
+    qaGui/AliTRDqaGuiMainBlack.cxx
+    qaGui/AliTRDqaGuiBlackSM.cxx
+    qaGui/AliTRDqaGuiBlackChamber.cxx
+    qaGui/AliTRDqaGuiBlackError.cxx
+    qaGui/AliTRDqaGuiBlackGlobal.cxx
+    qaGui/AliTRDqaGuiBlackGTU.cxx
+    qaGui/AliTRDqaGuiJPsi.cxx
+    qaGui/AliTRDqaGuiEnergyDeposit.cxx
+    qaGui/AliTRDqaGuiMainAnalysis.cxx
+   )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -34,7 +49,7 @@ set ( DHDR  TRDguiLinkDef.h)
 set ( EINCLUDE  TRD/qaGui)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
-	
+
 		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -L${ROOTLIBDIR} -lGui)
 
 endif( ALICE_TARGET STREQUAL "win32gcc")

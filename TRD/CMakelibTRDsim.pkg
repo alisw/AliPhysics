@@ -25,7 +25,19 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliTRDsimTR.cxx AliTRD.cxx AliTRDv1.cxx AliTRDdigitizer.cxx AliTRDTrigger.cxx AliTRDTriggerL0.cxx AliTRDTriggerL1.cxx AliTRDptrgFEB.cxx AliTRDptrgLUT.cxx AliTRDptrgCBB.cxx AliTRDptrgCBAC.cxx AliTRDptrgTLMU.cxx AliTRDptrgParam.cxx AliTRDQADataMakerSim.cxx)
+set ( SRCS
+    AliTRDsimTR.cxx
+    AliTRD.cxx
+    AliTRDv1.cxx AliTRDdigitizer.cxx
+    AliTRDTrigger.cxx
+    AliTRDTriggerL0.cxx AliTRDTriggerL1.cxx AliTRDptrgFEB.cxx
+    AliTRDptrgLUT.cxx
+    AliTRDptrgCBB.cxx
+    AliTRDptrgCBAC.cxx
+    AliTRDptrgTLMU.cxx
+    AliTRDptrgParam.cxx
+    AliTRDQADataMakerSim.cxx
+   )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -34,7 +46,7 @@ set ( DHDR  TRDsimLinkDef.h)
 set ( EINCLUDE  RAW)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
-	
+
 			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lTRDbase -lSTEER -lSTEERBase -L${ROOTLIBDIR} -lGeom -lVMC)
 
 endif( ALICE_TARGET STREQUAL "win32gcc")

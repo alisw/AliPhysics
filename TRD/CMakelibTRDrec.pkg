@@ -25,7 +25,28 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliTRDcluster.cxx AliTRDclusterizer.cxx AliTRDtransform.cxx AliTRDtracklet.cxx AliTRDtrackletOflHelper.cxx AliTRDpidUtil.cxx AliTRDpidESD.cxx AliTRDReconstructor.cxx AliTRDseedV1.cxx AliTRDtrackV1.cxx AliTRDtrackerV1.cxx AliTRDtrackerDebug.cxx AliTRDtrackingSector.cxx AliTRDtrackingChamber.cxx AliTRDchamberTimeBin.cxx AliTRDQADataMakerRec.cxx AliTRDqaBuildReference.cxx AliTRDCalibraFillHisto.cxx Cal/AliTRDCalPIDLQ.cxx Cal/AliTRDCalPIDNN.cxx AliTRDqaRecPoints.cxx)
+set ( SRCS
+    AliTRDcluster.cxx
+    AliTRDclusterizer.cxx
+    AliTRDtransform.cxx
+    AliTRDtracklet.cxx
+    AliTRDtrackletOflHelper.cxx
+    AliTRDpidUtil.cxx
+    AliTRDpidESD.cxx
+    AliTRDReconstructor.cxx
+    AliTRDseedV1.cxx AliTRDtrackV1.cxx
+    AliTRDtrackerV1.cxx
+    AliTRDtrackerDebug.cxx
+    AliTRDtrackingSector.cxx
+    AliTRDtrackingChamber.cxx
+    AliTRDchamberTimeBin.cxx
+    AliTRDQADataMakerRec.cxx
+    AliTRDqaBuildReference.cxx
+    AliTRDCalibraFillHisto.cxx
+    Cal/AliTRDCalPIDLQ.cxx
+    Cal/AliTRDCalPIDNN.cxx
+    AliTRDqaRecPoints.cxx
+   )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -34,7 +55,7 @@ set ( DHDR  TRDrecLinkDef.h)
 set ( EINCLUDE  RAW STAT)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
-	
+
 				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lTRDbase -lSTEER -lESD -lCDB -lSTEERBase -lRAWDatarec -lRAWDatabase -L${ROOTLIBDIR} -lMinuit -lGeom)
 
 endif( ALICE_TARGET STREQUAL "win32gcc")
