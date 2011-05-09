@@ -88,6 +88,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Double_t     GetTrigEnergy(const AliVCluster *c)                                                        const;
   Bool_t       IsShared(const AliVCluster *c)                                                             const;
   void         PrintDaughters(AliMCParticle *p)                                                           const;
+  void         PrintDaughters(AliVParticle *p, TObjArray *arr)                                           const;
   void         PrintTrackRefs(AliMCParticle *p)                                                           const;
 
     // input members
@@ -119,7 +120,6 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Bool_t                 fMcMode;                 // monte carlo mode
   AliEMCALGeoUtils      *fGeom;                   // geometry utils
   AliEMCALRecoUtils     *fReco;                   // reco utils
-
     // derived members (ie with ! after //)
   Bool_t                 fIsGeoMatsSet;           //!indicate that geo matrices are set 
   ULong64_t              fNEvs;                   //!accepted events 
@@ -274,7 +274,7 @@ class AliStaCluster : public TObject
   AliStaCluster() : TObject(), fE(0), fR(0), fEta(0), fPhi(0), fN(0), fN1(0), fN3(0), fIdMax(0), fEmax(0),  
                     fDbc(-1), fDisp(-1), fM20(0), fM02(0), fEcc(0), fSig(0), fIsTrackM(0), fTrDz(0), fTrDr(-1), 
                     fTrEp(0), fTrIso(0), fTrIso1(0), fTrIso2(0), fCeIso(0), fCeCore(0), fIsTrigM(0), fTrigE(-1), 
-                    fTrigMaskE(-1), fIsShared(0) {;}
+                    fTrigMaskE(-1), fIsShared(0), fMcLabel(-1) {;}
 
  public:
   Double32_t    fE;                //[0,0,16] energy
@@ -305,8 +305,9 @@ class AliStaCluster : public TObject
   Double32_t    fTrigE;            //[0,0,16] trigger tower energy
   Double32_t    fTrigMaskE;        //[0,0,16] masked trigger tower energy
   Bool_t        fIsShared;         //         =true then extends across more than one super module
+  Short_t       fMcLabel;          //         index of closest MC particle
 
-  ClassDef(AliStaCluster,4) // Cluster class
+  ClassDef(AliStaCluster,5) // Cluster class
 };
 
 class AliStaTrackRef : public TObject
@@ -340,12 +341,10 @@ class AliStaTrigger : public TObject
   ClassDef(AliStaTrigger,1) // Trigger class
 };
 
-
-#if 0
 class AliStaPart : public TObject
 {
  public:
-  AliStaTrigger() : TObject(), fE(0), fEta(0), fPhi(0), fAmp(0), fMinTime(0), fMaxTime(0) {}
+  AliStaPart() : TObject(), fE(0), fEta(0), fPhi(0), fId(0) {}
 
  public:
   Double32_t    fE;                //[0,0,16] pt
@@ -353,8 +352,7 @@ class AliStaPart : public TObject
   Double32_t    fPhi;              //[0,0,16] phi
   Int_t         fId;               //[0,0,16] id
 
-  ClassDef(AliStaTrigger,1) // Trigger class
+  ClassDef(AliStaPart,1) // Particle class
 };
-#endif
 
 #endif
