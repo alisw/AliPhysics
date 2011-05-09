@@ -15,7 +15,7 @@
 #include "TH1.h"
 
 class TH1F;
-class TH1I;
+class TH3F;
 class TH2F;
 class AliAODConversionParticle;
 class TClonesArray;
@@ -34,16 +34,18 @@ public:
   virtual ~AliAnaConvCorrBase();
   
   //Set and get min pt for triggers
-  void SetTriggerPt(Float_t pt) { fTriggerPt = pt; }
-  inline Float_t GetTriggerPt() const {return fTriggerPt; }
+  // void SetTriggerPt(Float_t pt) { fTriggerPt = pt; }
+  // inline Float_t GetTriggerPt() const {return fTriggerPt; }
 
 
-  //Set and get min pt for correlation particles
-  void SetCorrelatedPt(Float_t pt) { fCorrelatedPt = pt; }
-  inline Float_t GetCorrelatedPt() const {return fCorrelatedPt; }
+  // //Set and get min pt for correlation particles
+  // void SetCorrelatedPt(Float_t pt) { fCorrelatedPt = pt; }
+  // inline Float_t GetCorrelatedPt() const {return fCorrelatedPt; }
 
   //CreateHistograms
-  void CreateHistograms();
+  void CreateBaseHistograms();
+  //To be overrriden by children. Should always call CreateBaseHistograms()
+  virtual void CreateHistograms();
   
   //Get list of histograms
   TList * GetHistograms() const { return fHistograms;}
@@ -61,15 +63,8 @@ public:
     else return ( (dPhi>0)? dPhi - TMath::TwoPi() : dPhi + TMath::TwoPi() ); 
   }
 
-  ///Get bin limits of various pt bins
-  Float_t GetLowerBinLimit(const Int_t bin, const Float_t * const bins) const;
-  Float_t GetUpperBinLimit(const Int_t bin, const Float_t * const bins) const;
 
-  //Get trigger bin for particle carrying given pt
-  Int_t GetTriggerBin(Float_t pt) const;
-  //Get correlation particle pt bin for particle carrying given pt
-  Int_t GetCorrBin(Float_t pt) const;
-
+  TArrayD * GetTriggerBins() const { return fPtBins; }
 
   //Print statistics for histograms
   void PrintStatistics();
@@ -85,32 +80,22 @@ protected:
  private:
   
   TString fName; //name of analysis
-
-  static const Int_t fNTBins = 3; //Number of trigger pt bins
-  static const Int_t fNCBins = 3; //Number of corr particles pt bins
-
   TList * fHistograms; //List of histograms
 
-  TH2F * fHEtaPhiPt[2]; //2D eta phi correlations histogram
-  TH1F * fHdEta[2]; //Eta correlations histogram
-  TH1F * fHdPhi[2]; //Phi correlations histogram
+  Int_t fNPhiBins;  //Nbins in phi direction
+  TArrayD * fdPhiBins; //!transient phi bin array
+  TArrayD * fPtBins; //!Array of trigger bins
+  
 
-  TH1F * fHdPhiBins[2][fNTBins][fNCBins]; //dPhi correlations histograms in several bins
-  TH1I * fHNTriggers[2]; //Histograms containing number of triggers in various bins
-  
-  Float_t fTBins[fNTBins]; ///Array of trigger bin limits
-  Float_t fCBins[fNCBins];///Array of corr particle pt bin limits
-  
-  Float_t fTriggerPt; //Min trigger particle pt
-  Float_t fCorrelatedPt; // Min correlation particle pt
+  TH3F * fHdPhi[2]; //dPhi pt histogram
+  TH1F * fHNTriggers[2]; //Histograms containing number of triggers in various bins
 
-  Int_t fNPhiBins; //Number of bins in phi 
-  
+
   //Default constructor prohibited
   AliAnaConvCorrBase(); //not implemented
   AliAnaConvCorrBase(const AliAnaConvCorrBase&); // not implemented
   AliAnaConvCorrBase& operator=(const AliAnaConvCorrBase&); // not implemented
-  ClassDef(AliAnaConvCorrBase, 2); // example of analysis
+  ClassDef(AliAnaConvCorrBase, 3); // example of analysis
 };
 
 #endif

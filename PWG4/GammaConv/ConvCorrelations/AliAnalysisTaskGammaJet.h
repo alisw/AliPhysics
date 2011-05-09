@@ -44,7 +44,8 @@ public:
   AliAnaConvIsolation * GetIsolation() const {return fAnaIsolation;}
   void SetIsolation( AliAnaConvIsolation * isolation) { fAnaIsolation = isolation; }
 
-  void SetConversionCutId(TString cut) { fConversionCutString = Form("GammaConv_%s", cut.Data());}
+  void SetGammaCutId(TString cut) { fGammaCutString = Form("GammaConv_%s", cut.Data());}
+  void SetPionCutId(TString cut) { fPionCutString = Form("GammaConv_%s", cut.Data());}
 
   void SetMinPt(Float_t minpt) { fMinPt = minpt;}
   void SetMinNTracks(Int_t nTracks) { fMinNTracks = nTracks; }
@@ -52,17 +53,20 @@ public:
   void AddIsolationAna(TObject * isoAna) { fAnaIsolationArray->Add(isoAna);}
   void AddPhotonHadronAna(TObject * ana) { fAnaPhotonArray->Add(ana);}
   void AddPhotonJetAna(TObject * ana) { fAnaPhotonJetArray->Add(ana);}
+  void AddPionJetAna(TObject * ana) { fAnaPionJetArray->Add(ana);}
   void AddPionHadronAna(TObject * ana) { fAnaPionArray->Add(ana);}
 
   void GetPionGrandChildren(const AliAODConversionParticle * const pion, const TClonesArray * photons, Int_t* trackLabels);
+  void SetEtaLimits(Float_t eta) { fEtaLimit = eta; }
+
 
  private:
 
   void NotifyRun();
   Bool_t UserNotify();
-
-
-  //Get the AOD event from whereever it might be accessible
+  Bool_t EventIsSynced(const TClonesArray * const tracks, const TClonesArray * const convGamma, const TClonesArray * const pions);
+  Bool_t BothTracksPresent(const AliAODConversionParticle * const photon, const TClonesArray * const tracks) const;
+  Bool_t BothGammaPresent(const AliAODConversionParticle * const pion, const TClonesArray * const photons, const TClonesArray * const tracks) const;
   AliAODEvent * GetAODEvent();
 
   //Get Conversion gammas branch
@@ -82,8 +86,10 @@ public:
 
 
   TList       *fOutputList;       //! Output list
+  Float_t     fEtaLimit;
   TString     fDeltaAODFileName;  //! File where Gamma Conv AOD is located, if not in default AOD
-  TString fConversionCutString;   //! The cut string of the conversion analysis used to produce input AOD
+  TString     fGammaCutString;   //! The cut string of the conversion analysis used to produce input AOD
+  TString     fPionCutString;   //! The cut string of the conversion analysis used to produce input AOD
 
 
   AliAnaConvIsolation * fAnaIsolation;
@@ -92,9 +98,15 @@ public:
   TObjArray * fAnaPionArray;      //!Array of pion - hadron ana objects
   TObjArray * fAnaPhotonArray;    //!Array of photon - hadron ana objects
   TObjArray * fAnaPhotonJetArray; //!Array of photon - jet ana objects
+  TObjArray * fAnaPionJetArray; //!Array of photon - jet ana objects
 
   Float_t fMinPt; //Minimum pt for leading particles
   Int_t fMinNTracks; //Minimum number of tracks in event
+  
+  TH2F * fhTracksMissingPt[2];
+ 
+
+
   
   AliAnalysisTaskGammaJet(const AliAnalysisTaskGammaJet&); // not implemented
   AliAnalysisTaskGammaJet& operator=(const AliAnalysisTaskGammaJet&); // not implemented

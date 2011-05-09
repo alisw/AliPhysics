@@ -23,10 +23,8 @@
 
 #include "TClonesArray.h"
 #include "TH1F.h"
-#include "TH1I.h"
-#include "TH2F.h"
+#include "TH3.h"
 #include "TList.h"
-#include "TNtuple.h"
 #include "AliAODConversionParticle.h"
 
 
@@ -43,187 +41,118 @@ ClassImp(AliAnaConvCorrBase)
 AliAnaConvCorrBase::AliAnaConvCorrBase(TString name) : TObject(),
   fName(name),
   fHistograms(NULL),
-  fTriggerPt(0), 
-  fCorrelatedPt(0),
-  fNPhiBins(32)
+  fNPhiBins(32),
+  fdPhiBins(NULL),
+  fPtBins(NULL)
 {
   //Constructor
-  fTBins[0] = 7.0;
-  fTBins[1] = 5.0;
-  fTBins[2] = 3.0;
-
-  fCBins[0] = 5.0;
-  fCBins[1] = 3.0;
-  fCBins[2] = 1.5;
-
-  for(int iIso = 0; iIso < 2; iIso++) {
-    fHEtaPhiPt[iIso] = NULL;
-    fHdEta[iIso] = NULL;
-    fHdPhi[iIso] = NULL;
-    fHNTriggers[iIso] = NULL;
-    for(Int_t tBin = 0; tBin < fNTBins; tBin++) {
-      for(Int_t cBin = 0; cBin < fNCBins; cBin++) {
-	fHdPhiBins[iIso][tBin][cBin] = NULL;
-      }
-    }
+  fPtBins = new TArrayD(41);
+  for(Int_t i = 0; i < 10; i++) {
+    fPtBins->SetAt(i*0.5, i);
+    fPtBins->SetAt(5 + i*0.5, i + 10);
+    
+    fPtBins->SetAt(10. + i, i+20);
+    fPtBins->SetAt(20. + 2*i, i+30);
   }
 
- 
+  fPtBins->SetAt(50., fPtBins->GetSize() -1);
+
+  fdPhiBins = new TArrayD(fNPhiBins + 1);
+  for(Int_t i = 0; i < fNPhiBins+1; i++) {
+    fdPhiBins->SetAt(-TMath::PiOver2() + i*TMath::TwoPi()/fNPhiBins, i);
+  }
+  
+  for(int iIso = 0; iIso < 2; iIso++) {
+    fHdPhi[iIso] = NULL;
+    fHNTriggers[iIso] = NULL;
+  }
+
+
+
 }
 
 
 //________________________________________________________________________________
 AliAnaConvCorrBase::~AliAnaConvCorrBase() {
-  
   ///destructor
-  // delete[] fCBins;
-  // delete[] fTBins;
+  if(fPtBins)
+    delete fPtBins;
+  fPtBins = NULL;
+  
+  if(fdPhiBins)
+    delete fdPhiBins;
+  fdPhiBins = NULL;
+  
 
 }
 
 
-//________________________________________________________________________
 void AliAnaConvCorrBase::CreateHistograms() {
+  CreateBaseHistograms();
+}
+
+//________________________________________________________________________
+void AliAnaConvCorrBase::CreateBaseHistograms() {
   //Create histograms add, to outputlis
+
+  cout << "Createing histograms for "<< fName.Data() << endl;
 
   fHistograms = new TList();
   fHistograms->SetOwner(kFALSE);
   fHistograms->SetName(fName);
 
-
-
   for(int iIso = 0; iIso < 2; iIso++) {
-    fHEtaPhiPt[iIso] = new TH2F(
-				  Form("%s_deta_dphi_corr_%s", fName.Data(),  (iIso==0)?"nonIso":"isolated"),
-				  Form("%s_deta_dphi_corr_%s", fName.Data(),  (iIso==0)?"nonIso":"isolated"),
-				  200, -2., 2., fNPhiBins, -TMath::PiOver2(), 3*TMath::PiOver2());
-      fHistograms->Add(fHEtaPhiPt[iIso]);
-  }
 
-  for(int iIso = 0; iIso < 2; iIso++) {
-    fHdEta[iIso] = new TH1F(Form("%s_deta_corr_%s", fName.Data(),  (iIso==0)?"nonIso":"isolated"),
-			    Form("%s_deta_corr_%s", fName.Data(),  (iIso==0)?"nonIso":"isolated"),
-			    200, -2, 2);
-    fHistograms->Add(fHdEta[iIso]);
-  }
-
-  for(int iIso = 0; iIso < 2; iIso++) {
-    fHdPhi[iIso] = new TH1F(Form("%s_dphi_corr_%s", fName.Data(),  (iIso==0)?"nonIso":"isolated"),
-			    Form("%s_dphi_corr_%s", fName.Data(),  (iIso==0)?"nonIso":"isolated"),
-			    fNPhiBins, -TMath::PiOver2(), 3*TMath::PiOver2());
+    fHdPhi[iIso] = new TH3F(Form("%s_%s_dPhi", fName.Data(),  (iIso==0)?"nonIso":"isolated"),
+			    Form("%s_%s_dPhi", fName.Data(),  (iIso==0)?"nonIso":"isolated"),
+			    fPtBins->GetSize() -1, fPtBins->GetArray(),
+			    fPtBins->GetSize() - 1, fPtBins->GetArray(),
+			    fdPhiBins->GetSize() - 1, fdPhiBins->GetArray());
+    fHdPhi[iIso]->Sumw2();
+    
     fHistograms->Add(fHdPhi[iIso]);
-  }
+
+    fHNTriggers[iIso] = new TH1F(Form("%s_%s_fNTriggers", fName.Data(), (iIso==0)?"nonIso":"isolated"), 
+				 Form("%s_%s_fNTriggers", fName.Data(), (iIso==0)?"nonIso":"isolated"), 
+				 fPtBins->GetSize() - 1, fPtBins->GetArray());
+    fHNTriggers[iIso]->Sumw2();
+    fHistograms->Add(fHNTriggers[iIso]);
   
-  for(int iIso = 0; iIso < 2; iIso++) {
-      fHNTriggers[iIso] = new TH1I(Form("%s_%s_fNTriggers", fName.Data(), (iIso==0)?"nonIso":"isolated"), 
-				   Form("%s_%s_fNTriggers", fName.Data(), (iIso==0)?"nonIso":"isolated"), 
-				   fNTBins, 0, fNTBins );
-      fHistograms->Add(fHNTriggers[iIso]);
   }
 
-
-  for(int iIso = 0; iIso < 2; iIso++) {
-    for(Int_t tBin = 0; tBin < fNTBins; tBin++) {
-      for(Int_t cBin = 0; cBin < fNCBins; cBin++) {
-	fHdPhiBins[iIso][tBin][cBin] =  new TH1F(Form("%s_%s_phi_corr_tBin_%d_cBin_%d", fName.Data(), (iIso==0)?"nonIso":"isolated", tBin, cBin),
-						 Form("%s particles dPhi %f<tPt< %f  %f<cPt<%f", (iIso==0)?"not isolated":"isolated", GetLowerBinLimit(tBin, fTBins), GetUpperBinLimit(tBin, fTBins), 
-						      GetLowerBinLimit(cBin, fCBins), GetUpperBinLimit(cBin, fCBins)),
-						 fNPhiBins, -TMath::PiOver2(), 3*TMath::PiOver2());
-	fHistograms->Add(fHdPhiBins[iIso][tBin][cBin]);
-      }
-    }
-  }
 }
 
 
 ///____________________________________________________________________________
 void AliAnaConvCorrBase::FillTriggerCounters(Float_t tPt, Bool_t isolated){ 
   //Fill histogram with trigger counters
-  fHNTriggers[0]->Fill(GetTriggerBin(tPt));
-  if(isolated)   fHNTriggers[isolated]->Fill(GetTriggerBin(tPt));
 
-
+  fHNTriggers[0]->Fill(tPt);
+  
+  if(isolated) {
+    fHNTriggers[isolated]->Fill(tPt);
+    
+  }
 }
 
 ///_____________________________________________________________________________
 void AliAnaConvCorrBase::FillHistograms(Float_t tPt, Float_t cPt, Float_t dPhi, Float_t dEta, Bool_t isolated) {
   //Fill histograms
-  Float_t ptFrac = cPt/tPt;
 
-  Int_t triggerBin = GetTriggerBin(tPt);
-  Int_t corrBin = GetCorrBin(cPt);
-
-  if(triggerBin < 0 ||corrBin < 0) return;
-
-  fHEtaPhiPt[0]->Fill(dEta, dPhi, cPt);
-  fHdEta[0]->Fill(dEta, cPt);
-  fHdPhi[0]->Fill(dPhi, cPt);
-  fHdPhiBins[0][triggerBin][corrBin]->Fill(dPhi);
-  
-
+  if(dEta) { ;}
+  fHdPhi[0]->Fill(tPt, cPt, dPhi);
   if(isolated) {
-    fHEtaPhiPt[isolated]->Fill(dEta, dPhi, cPt);
-    fHdEta[isolated]->Fill(dEta, ptFrac);
-    fHdPhi[isolated]->Fill(dPhi, ptFrac);
-    fHdPhiBins[isolated][triggerBin][corrBin]->Fill(dPhi);
-
+    fHdPhi[isolated]->Fill(tPt, cPt, dPhi);
   }
 }
-
-///____________________________________________________________________________
-Int_t AliAnaConvCorrBase::GetTriggerBin(Float_t pt) const {
-  //Get trigger bin
-  for(Int_t i = 0; i < fNTBins; i++) {
-    if(pt > fTBins[i]) return i;
-  }
-
-  return -1;
-}
-
-///____________________________________________________________________________
-Int_t AliAnaConvCorrBase::GetCorrBin(Float_t pt) const {
-  //Get correlation particle bin
-  for(Int_t i = 0; i < fNCBins; i++) {
-    if(pt > fCBins[i]) return i;
-  }
-
-  return -1;
-}
-
-
-
-///______________________________________________________________________________
-Float_t AliAnaConvCorrBase::GetLowerBinLimit(const Int_t bin, const Float_t * const bins) const {
-  //Get lower bin limit for bin 
-  return bins[bin];
-}
-
-///______________________________________________________________________________
-Float_t AliAnaConvCorrBase::GetUpperBinLimit(const Int_t bin, const Float_t * const bins) const {
-  //Get upper bin limit for bin 
-
-  Float_t limit = -999.;
-  if(bin < 1)
-    limit = 999.;
-  else
-    limit = bins[bin - 1];
-
-  return limit;
-
-}
-
 
 //_______________________________________________________________________________
 
 void AliAnaConvCorrBase::PrintStatistics()  { 
   //Print some statistics between each file
-  
-  for(Int_t i = 0; i < fNTBins; i++) {
+  for(Int_t i = 1; i <= fHNTriggers[0]->GetNbinsX(); i++) {
     Int_t nTrig = (Int_t) fHNTriggers[0]->GetBinContent(i+1);
     cout << "triggers: " << nTrig << endl;
-    for(int j = 0; j < fNCBins; j++) {
-      cout << fHdPhiBins[0][i][j]->GetEntries() << "/" << ((nTrig>0)? fHdPhiBins[0][i][j]->GetEntries()/nTrig : 0) << ";  ";
-    }
-    cout << endl;
+
   }
 }
