@@ -1719,6 +1719,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       fRunLoader->GetHeader()->Reset(fRawReader->GetRunNumber(), 
 				     iEvent, iEvent);
     fRunLoader->TreeE()->Fill();
+
     if (fRawReader && fRawReader->UseAutoSaveESD())
       fRunLoader->TreeE()->AutoSave("SaveSelf");
   }
@@ -2178,6 +2179,7 @@ void AliReconstruction::SlaveTerminate()
 
   if (fIsNewRunLoader) { // galice.root didn't exist
     fRunLoader->WriteHeader("OVERWRITE");
+    fRunLoader->WriteTrigger("OVERWRITE");
     fRunLoader->CdGAFile();
     fRunLoader->Write(0, TObject::kOverwrite);
   }
@@ -2916,7 +2918,12 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
           if(TMath::Abs(Int_t(orbit-(input.GetIR(i))->GetOrbit()))<=1){
 	     esdheader->AddTriggerIR(input.GetIR(i));
 	  }
+       AliCentralTrigger* rlCTP = fRunLoader->GetTrigger();
+       rlCTP->SetL0TriggerInputs(input.GetL0Inputs());
+       rlCTP->SetL1TriggerInputs(input.GetL1Inputs());
+       rlCTP->SetL2TriggerInputs(input.GetL2Inputs());
     }
+    if (fIsNewRunLoader) fRunLoader->TreeCT()->Fill();
   }
   return kTRUE;
 }
@@ -3045,6 +3052,7 @@ Bool_t AliReconstruction::InitRunLoader()
     }
     fIsNewRunLoader = kTRUE;
     fRunLoader->MakeTree("E");
+    fRunLoader->MakeTree("GG");
 
     if (fNumberOfEventsPerFile > 0)
       fRunLoader->SetNumberOfEventsPerFile(fNumberOfEventsPerFile);
@@ -3683,6 +3691,10 @@ Bool_t AliReconstruction::GetEventInfo()
     }
     aCTP->SetClassMask(mask);
     aCTP->SetClusterMask(clmask);
+
+    AliCentralTrigger* rlCTP = fRunLoader->GetTrigger();
+    rlCTP->SetClassMask(mask);
+    rlCTP->SetClusterMask(clmask);
   }
   else {
     fEventInfo.SetEventType(AliRawEventHeaderBase::kPhysicsEvent);
