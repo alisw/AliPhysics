@@ -34,6 +34,10 @@ public:
 
   void SetDebugLevel(Int_t debugLevel) { fDebugLevel = debugLevel; }
   Int_t GetDebugLevel() const { return fDebugLevel; }
+
+  void SetGammaCutId(TString cut) { fGammaCutString = Form("GammaConv_%s", cut.Data());}
+  void SetPionCutId(TString cut) { fPionCutString = Form("GammaConv_%s", cut.Data());}
+
   
  private:
 
@@ -43,19 +47,28 @@ public:
   //Get the AOD event from whereever it might be accessible
   AliAODEvent * GetAODEvent();
 
+  Bool_t BothTracksPresent(const AliAODConversionParticle * const photon, const TClonesArray * const tracks) const;
+  Bool_t BothGammaPresent(const AliAODConversionParticle * const pion, const TClonesArray * const photons, const TClonesArray * const tracks) const;
+
   //Get Conversion gammas branch
-  TClonesArray * GetConversionGammas(const AliAODEvent * aodEvent);
+  TClonesArray * GetConversionGammas(const AliAODEvent * aodEvent) const;
+  TClonesArray * GetPions(const AliAODEvent * aodEvent) const;
+  TClonesArray * GetAODBranch(const AliAODEvent * aodEvent, TString branchName) const;
 
   //Fill AOD tree with PWG4 particles
   AliAODPWG4ParticleCorrelation * AddToAOD(AliGammaConversionAODObject * aodO, TClonesArray * branch, TString detector);
   AliAODPWG4ParticleCorrelation * AddToAOD(AliAODConversionParticle * aodO, TClonesArray * branch, TString detector);
-  
+  AliAODPWG4ParticleCorrelation * AddPionToAOD(AliAODConversionParticle * pion, TClonesArray * branch, TString detector, TClonesArray * photons);  
   //Process conv gamma
   void ProcessConvGamma( const AliAODEvent * const aodEvent );
 
   TString     fDeltaAODFileName;//! File where Gamma Conv AOD is located, if not in default AOD
+  TString     fGammaCutString;   //! The cut string of the conversion analysis used to produce input AOD
+  TString     fPionCutString;   //! The cut string of the conversion analysis used to produce input AOD
   TString     fAODBranchName;
-  TClonesArray * fAODPWG4Particles;
+  TClonesArray * fAODPWG4Photons;
+  TClonesArray * fAODPWG4Pi0;
+
 
   Int_t fDebugLevel;
 
