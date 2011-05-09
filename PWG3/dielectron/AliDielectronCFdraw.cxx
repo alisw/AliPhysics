@@ -210,6 +210,7 @@ void AliDielectronCFdraw::UnsetRangeUser(Int_t ivar, const char* slices)
     // all slices in case of 0 entries
     for (Int_t istep=0; istep<fCfContainer->GetNStep(); ++istep){
       fCfContainer->GetAxis(ivar,istep)->SetRange(0,0);
+      fCfContainer->GetAxis(ivar,istep)->SetBit(TAxis::kAxisRange,0);
     }
   } else {
     TIter next(arr);
@@ -217,6 +218,7 @@ void AliDielectronCFdraw::UnsetRangeUser(Int_t ivar, const char* slices)
     while ( (ostr=static_cast<TObjString*>(next())) ) {
       Int_t istep=ostr->GetString().Atoi();
       fCfContainer->GetAxis(ivar,istep)->SetRange(0,0);
+      fCfContainer->GetAxis(ivar,istep)->SetBit(TAxis::kAxisRange,0);
     }
   }
   delete arr;

@@ -831,6 +831,10 @@ Bool_t AliDielectronMC::IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, 
   //if(label<0) return kFALSE;
   if(label<0) label *= -1; 
   AliVParticle* part = GetMCTrackFromMCEvent(label);
+  if (!part) {
+    AliError(Form("Could not find MC particle with label %d",label));
+    return kFALSE;
+  }
   // check the leg
   if(!ComparePDG(part->PdgCode(),signalMC->GetLegPDG(branch),signalMC->GetCheckBothChargesLegs(branch))) return kFALSE;
   if(!CheckParticleSource(label, signalMC->GetLegSource(branch))) return kFALSE;

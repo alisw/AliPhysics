@@ -137,6 +137,7 @@ Bool_t AliDielectronTRDpidCut::IsSelected(TObject *track) {
   // step function
   //
   const AliESDtrack *part = dynamic_cast<const AliESDtrack *>(track);
+  if (!part) return kFALSE;
   
   if (fRequirePIDbit==AliDielectronTRDpidCut::kRequire&&!(part->GetStatus()&AliESDtrack::kTRDpid)) return kFALSE;
   if (fRequirePIDbit==AliDielectronTRDpidCut::kIfAvailable&&!(part->GetStatus()&AliESDtrack::kTRDpid)) return kTRUE;
