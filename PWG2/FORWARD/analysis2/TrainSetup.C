@@ -513,6 +513,11 @@ struct TrainSetup
 
 protected:
   //__________________________________________________________________
+  /** 
+   * Copy constructor 
+   * 
+   * @param o Object to copy from
+   */
   TrainSetup(const TrainSetup& o)
     : fName(o.fName),
       fRootVersion(o.fRootVersion),
@@ -544,6 +549,13 @@ protected:
     while ((obj = nextExa())) fListOfExtras.Add(obj->Clone());
   }
   //__________________________________________________________________
+  /** 
+   * Assignment operator 
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this object. 
+   */
   TrainSetup& operator=(const TrainSetup& o)
   {
     fName		= o.fName;
@@ -675,8 +687,8 @@ protected:
     if (outputHandler) mgr->SetOutputEventHandler(outputHandler);
     
     // --- Include analysis macro path in search path ----------------
-    gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/ANALYSIS/macros",
-			     gROOT->GetMacroPath()));
+    gROOT->SetMacroPath(Form("%s:%s:$ALICE_ROOT/ANALYSIS/macros",
+			     cwd.Data(), gROOT->GetMacroPath()));
 
     // --- Physics selction - only for ESD ---------------------------
     if (type == kESD) CreatePhysicsSelection(mc, mgr);
@@ -861,7 +873,7 @@ protected:
     // Merge parameters 
     plugin->SetMaxMergeFiles(20);
     plugin->SetMergeExcludes("AliAOD.root "
-			    "EventStat_temp.root "
+			    "*EventStat*.root "
 			    "*event_stat*.root");
 
     // Set number of runs per master - set to one to per run
@@ -1572,9 +1584,9 @@ public:
    * @param mc       If true, assume simulated events 
    */
   void Run(const char* mode, const char* oper, 
-	   Int_t nEvents=-1, Bool_t mc=false)
+	   Int_t nEvents=-1, Bool_t mc=false, Bool_t par=false)
   {
-    Exec("ESD", mode, oper, nEvents, mc);
+    Exec("ESD", mode, oper, nEvents, mc, par);
   }
   //__________________________________________________________________
   /** 
@@ -1585,9 +1597,10 @@ public:
    * @param nEvents  Number of events (negative means all)
    * @param mc       If true, assume simulated events 
    */
-  void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false)
+  void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false,
+	   Bool_t par=false)
   {
-    Exec(kESD, mode, oper, nEvents, mc, true);
+    Exec(kESD, mode, oper, nEvents, mc, par);
   }
 protected:
   //__________________________________________________________________
@@ -1614,7 +1627,24 @@ protected:
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskFMDEloss.C(%d,%d)", mc, fUseCent));
+    gROOT->Macro(Form("AddTaskFMDELoss.C(%d,%d)", mc, fUseCent));
+  }
+  /** 
+   * Create entrality selection if enabled 
+   * 
+   * @param mc   Whether this is MC or not
+   * @param mgr  Analysis manager 
+   */
+  virtual void CreateCentralitySelection(Bool_t mc, AliAnalysisManager* mgr)
+  {
+    if (!fUseCent) return;
+
+    gROOT->Macro("AddTaskCentrality.C");
+    AliCentralitySelectionTask* ctask = 
+      dynamic_cast<AliCentralitySelectionTask*>(mgr->GetTask("CentralitySelection"));
+    if (!ctask) return;
+    // ctask->SetPass(fESDPass);
+    if (mc) ctask->SetMCInput();
   }
   /** 
    * Crete output handler - we don't want one here. 
