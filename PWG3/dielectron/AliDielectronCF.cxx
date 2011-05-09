@@ -605,7 +605,7 @@ void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
   if (step!=fNSteps) {
     AliError("Something went wrong in the step filling!!!");
   }
-  
+  if(isMCTruth) delete isMCTruth;  
 }
 
 //________________________________________________________________

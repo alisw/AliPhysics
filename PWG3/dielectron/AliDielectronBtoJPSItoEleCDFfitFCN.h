@@ -155,11 +155,11 @@ class AliDielectronBtoJPSItoEleCDFfitFCN : public TNamed {
 
 		Double_t EvaluateCDFfuncSignalPart(Double_t x, Double_t m) const ;      // Signal part 
 		Double_t EvaluateCDFDecayTimeSigDistr(Double_t x) const ;
-		Double_t EvaluateCDFDecayTimeSigDistrFunc(const Double_t* x, const Double_t *par) const { par = 0x0;  return EvaluateCDFDecayTimeSigDistr(x[0]);}
+		Double_t EvaluateCDFDecayTimeSigDistrFunc(const Double_t* x, const Double_t */*par*/) const { return EvaluateCDFDecayTimeSigDistr(x[0]);}
 		Double_t EvaluateCDFInvMassSigDistr(Double_t m) const ;
 		Double_t EvaluateCDFfuncBkgPart(Double_t x,Double_t m) const ;          // Background part
 		Double_t EvaluateCDFDecayTimeBkgDistr(Double_t x) const ;
-		Double_t EvaluateCDFDecayTimeBkgDistrFunc(const Double_t* x, const Double_t *par) const { par = 0x0;  return EvaluateCDFDecayTimeBkgDistr(x[0]);}
+		Double_t EvaluateCDFDecayTimeBkgDistrFunc(const Double_t* x, const Double_t */*par*/) const { return EvaluateCDFDecayTimeBkgDistr(x[0]);}
 		Double_t EvaluateCDFInvMassBkgDistr(Double_t m) const ;
 
 		////
@@ -167,12 +167,12 @@ class AliDielectronBtoJPSItoEleCDFfitFCN : public TNamed {
 		Double_t FunB(Double_t x) const;
 		Double_t FunP(Double_t x) const ;
 		Double_t CsiMC(Double_t x) const;
-		Double_t CsiMCfunc(const Double_t* x, const Double_t *par) const {  par = 0x0; return CsiMC(x[0]);}
+		Double_t CsiMCfunc(const Double_t* x, const Double_t */*par*/) const {  return CsiMC(x[0]);}
 		Double_t FunBkgPos(Double_t x) const ;
 		Double_t FunBkgNeg(Double_t x) const ;
 		Double_t FunBkgSym(Double_t x) const ;
 		Double_t ResolutionFunc(Double_t x) const ;
-		Double_t ResolutionFuncf(const Double_t* x, const Double_t *par) const { par = 0x0;  return ResolutionFunc(x[0]);}
+		Double_t ResolutionFuncf(const Double_t* x, const Double_t */*par*/) const { return ResolutionFunc(x[0]);}
 
 		ClassDef (AliDielectronBtoJPSItoEleCDFfitFCN,1);         // Unbinned log-likelihood fit 
 
