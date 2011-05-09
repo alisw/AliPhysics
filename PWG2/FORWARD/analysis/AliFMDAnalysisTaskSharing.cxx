@@ -786,6 +786,8 @@ void AliFMDAnalysisTaskSharing::ProcessPrimary() {
   //Get the unspoiled MC dN/deta before event cuts
   
   AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  if(!eventHandler) 
+    return;
   AliMCEvent* mcEvent = eventHandler->MCEvent();
   if(!mcEvent)
     return;
