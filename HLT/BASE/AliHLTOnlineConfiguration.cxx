@@ -356,7 +356,11 @@ int AliHLTOnlineConfiguration::ParseRORCPublisher(const char* id,
     int res;
     if (strstr(cmd, "-hwcoproc")) {
       // HW Co-processor has complex argument rules, so skip full validation
-      res = sscanf(strstr(cmd, "-ddlid"), "-ddlid %d", &ddlID);
+      const char* key=strstr(cmd, "-ddlid");
+      if (key)
+	res = sscanf(key, "-ddlid %d", &ddlID);
+      else
+	res=0;
     } else {
       res = sscanf(cmd, "RORCPublisher -slot %*d %*d %*d %*d -rorcinterface %*d -sleep "
         "-sleeptime %*d -maxpendingevents %*d -alicehlt -ddlid %d", &ddlID);
