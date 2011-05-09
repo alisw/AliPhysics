@@ -212,3 +212,20 @@ Bool_t AliAODConversionParticle::IsMySpawn(const Int_t trackId, const Int_t nSpa
   return kFALSE;
 }
 
+///_______________________________________________________________________________
+void AliAODConversionParticle::GetGrandChildren(const TClonesArray * photons, Int_t* trackLabels) {
+  ///Get the track labels of the electrons reconstructed as gamma forming the pion
+
+  for(Int_t i = 0; i< 2; i++) {
+    AliAODConversionParticle * gamma = dynamic_cast<AliAODConversionParticle*>(photons->At(GetTrackLabel(i)));
+
+    if(gamma) { 
+      for(Int_t j = 0; j< 2; j++) {
+	trackLabels[ i*2+ j] = gamma->GetTrackLabel(j);
+      }
+
+    } else {
+      cout << "AliAODConversionParticle::GetTrackLabels() :: Not good!!!"<<endl;
+    }
+  }
+}

@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -27,6 +28,8 @@
 #include "TObjArray.h"
 
 
+#include "TH2F.h"
+
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskGammaJet.h"
@@ -49,7 +52,11 @@
 
 #include "AliAnaConvCorrPhoton.h"
 #include "AliAnaConvCorrPhotonJet.h"
+#include "AliAnaConvCorrPionJet.h"
 #include "AliAnaConvCorrPion.h"
+
+#include "AliAODTrack.h"
+
 // Gamma - jet correlation analysis task
 // Authors: Svein Lindal
 
@@ -62,14 +69,17 @@ ClassImp(AliAnalysisTaskGammaJet)
 AliAnalysisTaskGammaJet::AliAnalysisTaskGammaJet() : 
 AliAnalysisTaskSE(), 
   fOutputList(NULL), 
+  fEtaLimit(0.8),
   fDeltaAODFileName("AliAODGammaConversion.root"),
-  fConversionCutString("GammaConv"),
+  fGammaCutString("GammaConv"),
+  fPionCutString("GammaConv"),
   fAnaIsolation(NULL), 
   fAnaIsolationArray(NULL), 
   fAnaPionArray(NULL), 
   fAnaPhotonArray(NULL),
   fAnaPhotonJetArray(NULL),
-  fMinPt(3.0), 
+  fAnaPionJetArray(NULL),
+  fMinPt(1.0), 
   fMinNTracks(20)
 {
   // Dummy Constructor
@@ -85,14 +95,17 @@ AliAnalysisTaskGammaJet::~AliAnalysisTaskGammaJet() {
 AliAnalysisTaskGammaJet::AliAnalysisTaskGammaJet(const char *name) : 
   AliAnalysisTaskSE(name), 
   fOutputList(0), 
+  fEtaLimit(0.8),
   fDeltaAODFileName("AliAODGammaConversion.root"),
-  fConversionCutString("GammaConv"),
+  fGammaCutString("GammaConv"),
+  fPionCutString("GammaConv"),
   fAnaIsolation(NULL),
   fAnaIsolationArray(NULL),
   fAnaPionArray(NULL),
   fAnaPhotonArray(NULL),
   fAnaPhotonJetArray(NULL), 
-  fMinPt(3.0),
+  fAnaPionJetArray(NULL),
+  fMinPt(1.0),
   fMinNTracks(20)
 {
   // Constructor
@@ -110,10 +123,94 @@ AliAnalysisTaskGammaJet::AliAnalysisTaskGammaJet(const char *name) :
   fAnaPhotonJetArray = new TObjArray();
   fAnaPhotonJetArray->SetOwner(kTRUE);
 
+  fAnaPionJetArray = new TObjArray();
+  fAnaPionJetArray->SetOwner(kTRUE);
+
   fAnaIsolationArray = new TObjArray();
   fAnaIsolationArray->SetOwner(kTRUE);
 
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskGammaJet::UserExec(Option_t *) 
+{
+  //Inherited from AliAnalysisTaskSE
+
+  ///Get AOD event
+  AliAODEvent * aodEvent = GetAODEvent();
+  if(!aodEvent) {
+    cout << "No AOD event!!" << endl;
+    return;
+  }
+
+  TClonesArray * photons = GetConversionGammas(aodEvent);
+  if(!photons) {
+    cout << "No Conversion gamma!!" << endl;
+    return;
+  }
+
+  TClonesArray * pions = GetConversionPions(aodEvent);
+  if(!pions) {
+    cout << "No Conversion pion branch!!" << endl;
+    return;
+  }
+
+  TClonesArray * tracks = aodEvent->GetTracks();
+  if(!tracks) {
+    cout << "Can't get tracks!!" << endl;
+    return;
+  }
+
+  if(!((Entry() )%10000)) {
+    AliInfo(Form("%s ----> Processing event # %lld", CurrentFileName(), Entry()));
+    AliInfo(Form("%d %d", photons->GetEntriesFast(), pions->GetEntriesFast()));
+  }
+
+
+  if(pions->GetEntriesFast() > photons->GetEntriesFast() ) {
+    cout << "WTF!!!!"<<endl;
+  }
+
+ // if( (photons->GetEntriesFast() > 0) ) {
+ //   cout << "Neext evetn !!!!!!!!!!!!!!!!"  << Entry() << endl;
+ // } else {
+ //   cout << "____________________________"<<endl;
+ // }
+
+
+  if(aodEvent->GetNumberOfTracks() < 2 && photons->GetEntriesFast() > 0 ) {
+    cout << "we have a photon but less than 2 tracks" << endl;
+    return;
+  }
+
+  if(aodEvent->GetNumberOfTracks() < fMinNTracks) return;
+
+  if( (photons->GetEntriesFast() > 0) ) {
+    ProcessConvGamma(photons, pions, tracks);
+    ProcessPions(pions, photons, tracks);
+  }
+
+
+
+  TClonesArray * jets = aodEvent->GetJets();
+  if(jets && jets->GetEntriesFast() > 0) {
+    for(int i = 0; i < fAnaPhotonJetArray->GetEntriesFast(); i++) {
+      AliAnaConvCorrPhotonJet * jetAna = dynamic_cast<AliAnaConvCorrPhotonJet*>(fAnaPhotonJetArray->At(i));
+      if(jetAna) {
+	for(Int_t iJet = 0; iJet < jets->GetEntriesFast(); iJet++) {
+	  AliAODJet * jet = dynamic_cast<AliAODJet*>(jets->At(iJet));
+	  if(jet) {
+	    jetAna->DoJetAnalysisGamma(jet, photons, pions);
+	  }		   
+	}
+      }
+    }
+  }
+  PostData(1, fOutputList);
+
+}
+
+
 
 //________________________________________________________________________
 void AliAnalysisTaskGammaJet::UserCreateOutputObjects()
@@ -121,6 +218,12 @@ void AliAnalysisTaskGammaJet::UserCreateOutputObjects()
   //Create histograms add, to outputlist
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
+
+
+  fhTracksMissingPt[0] = new TH2F("hpttracksmissing", "hpttracksmissing",200,  0, 200, 200, 0, 200);
+  fOutputList->Add(fhTracksMissingPt[0]);
+  fhTracksMissingPt[1] = new TH2F("hpttrackpresent", "hptbothtrackspresent" ,200,  0, 200, 200, 0, 200);
+  fOutputList->Add(fhTracksMissingPt[1]);
 
   fAnaIsolation->CreateHistograms();
   fOutputList->Add(fAnaIsolation->GetHistograms());
@@ -166,6 +269,17 @@ void AliAnalysisTaskGammaJet::UserCreateOutputObjects()
       AliError("problem getting jet  ana pointer!!!");
     }
   }
+
+  for(int i = 0; i < fAnaPionJetArray->GetEntriesFast(); i++) {
+    AliAnaConvCorrPionJet * jetAna = dynamic_cast<AliAnaConvCorrPionJet*>(fAnaPionJetArray->At(i));
+    if(jetAna) {
+      jetAna->CreateHistograms();
+      fOutputList->Add(jetAna->GetHistograms());
+    } else {
+      AliError("problem getting jet  ana pointer!!!");
+    }
+  }
+
   
 
   PostData(1, fOutputList);
@@ -173,58 +287,6 @@ void AliAnalysisTaskGammaJet::UserCreateOutputObjects()
 
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskGammaJet::UserExec(Option_t *) 
-{
-  //Inherited from AliAnalysisTaskSE
-
-  ///Get AOD event
-  AliAODEvent * aodEvent = GetAODEvent();
-  if(!aodEvent) {
-    AliError("No AOD event!!");
-    return;
-  }
-
-  TClonesArray * photons = GetConversionGammas(aodEvent);
-  if(!photons) {
-    AliError("No Conversion gamma!!");
-    return;
-  }
-
-  TClonesArray * pions = GetConversionPions(aodEvent);
-  if(!pions) {
-    AliError("No Conversion gamma!!");
-    return;
-  }
-
-  TClonesArray * tracks = aodEvent->GetTracks();
-  if(!tracks) {
-    AliError("Can't get tracks!!");
-    return;
-  }
-
-  if(!((Entry() )%10000)) {
-    AliInfo(Form("%s ----> Processing event # %lld", CurrentFileName(), Entry()));
-    AliInfo(Form("%d %d", photons->GetEntriesFast(), pions->GetEntriesFast()));
-  }
-
-
- if(aodEvent->GetNumberOfTracks() < fMinNTracks) return;
-
-  if(photons->GetEntriesFast() > aodEvent->GetNumberOfTracks()) {
-    AliError(Form("more conv gamma than tracks, ntracks %d, nconvGamma %d:  ", aodEvent->GetNumberOfTracks(), photons->GetEntriesFast()));
-    return;
-
-  } else if(photons->GetEntriesFast() > 0) {
-    
-    ProcessConvGamma(photons, pions, tracks);
-    ProcessPions(pions, photons, tracks);
-  } 
-
-	
-  PostData(1, fOutputList);
-
-}
 
 
 
@@ -258,10 +320,107 @@ void AliAnalysisTaskGammaJet::ProcessCalorimeters( const AliAODEvent * const aod
   
 }
 
+//______________________________________________________________________________________________
+Bool_t AliAnalysisTaskGammaJet::EventIsSynced(const TClonesArray * const tracks, const TClonesArray * const convGamma, const TClonesArray * const pions)  {
+ //See header file for documentation
+
+  for (Int_t iPhot = 0; iPhot < convGamma->GetEntriesFast(); iPhot++) {
+    AliAODConversionParticle * photon = dynamic_cast<AliAODConversionParticle*>(convGamma->At(iPhot));
+    if(photon) {
+      AliAODTrack * track1 = NULL;
+      AliAODTrack * track2 = NULL;
+      for(Int_t i = 0; i < tracks->GetEntriesFast(); i++) {
+	AliAODTrack * track = dynamic_cast<AliAODTrack*>(tracks->At(i));
+	if(track->GetID() == photon->GetLabel1()) track1 = track;
+	else if (track->GetID() == photon->GetLabel2()) track2 = track;
+	if(track1 && track2) break;
+      }
+      
+      if(track1 && track2) {
+	Float_t totE = track1->E() + track2->E();
+	if(TMath::Abs(totE - photon->E()) > 1.0)  {
+	  cout << "BALLE BALLE "<<TMath::Abs(totE - photon->P()) << endl;
+
+	  cout <<  track2->Px() << " "
+	       <<  track2->Py() << " "
+	       <<  track2->Pz() << " "
+	       <<  track2->P() << " "
+	       <<  track2->E() << endl;
+
+	  cout << track1->Px() << " "
+	       << track1->Py() << " "
+	       << track1->Pz() << " "
+	       << track1->P()  << " "
+	       << track1->E()  << endl;
+
+
+	  cout << track1->Px() + track2->Px() << " "
+	       << track1->Py() + track2->Py() << " "
+	       << track1->Pz() + track2->Pz() << " "
+	       << track1->P() + track2->P() << " "
+	       << track1->E() + track2->E() << endl;
+	  
+	  cout << photon->Px() << " " <<  photon->Py() << " " <<  photon->Pz() << " " << photon->P() << " " <<  photon->E() << endl;
+	  return kFALSE;
+	}
+      } else {
+	cout << Entry() << " " << convGamma->GetEntriesFast() << " " << photon->GetLabel1() << " " << photon->GetLabel2() << endl;
+	cout << "Could not get both tracks!!! " <<endl;
+	return kFALSE;
+      }
+    }
+  }
+  
+  //cout  <<"insync"<<endl;
+  return kTRUE;
+}
+
+
+//______________________________________________________________________________________________
+Bool_t AliAnalysisTaskGammaJet::BothTracksPresent(const AliAODConversionParticle * const photon, const TClonesArray * const tracks)  const {
+
+  AliAODTrack * track1 = NULL;
+  AliAODTrack * track2 = NULL;
+  for(Int_t i = 0; i < tracks->GetEntriesFast(); i++) {
+    AliAODTrack * track = dynamic_cast<AliAODTrack*>(tracks->At(i));
+    if(track->GetID() == photon->GetLabel1()) track1 = track;
+    else if (track->GetID() == photon->GetLabel2()) track2 = track;
+    if(track1 && track2) break;
+  }
+  
+  if(track1 && track2) {
+    return kTRUE;
+  }
+  cout << "Could not get both tracks!!! labels "  << photon->GetLabel1() << " " << photon->GetLabel2()  <<endl;
+  return kFALSE;
+  
+
+}
+
+//______________________________________________________________________________________________
+Bool_t AliAnalysisTaskGammaJet::BothGammaPresent(const AliAODConversionParticle * const pion, const TClonesArray * const photons, const TClonesArray * const tracks)  const {
+
+  AliAODConversionParticle * photon1 = dynamic_cast<AliAODConversionParticle*>(photons->At(pion->GetLabel1()));
+  AliAODConversionParticle * photon2 = dynamic_cast<AliAODConversionParticle*>(photons->At(pion->GetLabel2()));
+
+  if(photon1 && photon2) {
+    if( BothTracksPresent(photon1, tracks) &&  BothTracksPresent(photon1, tracks)) {
+      return kTRUE;
+    }
+  } else {
+    cout << "can't find both photons "<< endl;
+  }
+  
+  return kFALSE;
+}
+
+
+
+
 //___________________________________________________________________________________________
 void AliAnalysisTaskGammaJet::ProcessConvGamma( const TClonesArray * convGamma, const TClonesArray * const pions, const TClonesArray * tracks ) {
   //See header file for documentation
-  
+
 
   for (Int_t iPhot = 0; iPhot < convGamma->GetEntriesFast(); iPhot++) {
     Bool_t delP = kFALSE;
@@ -277,7 +436,9 @@ void AliAnalysisTaskGammaJet::ProcessConvGamma( const TClonesArray * convGamma, 
       delP = kTRUE;
     } 
     
-    if(photon->Pt() < fMinPt) {
+    Bool_t btp = BothTracksPresent(photon, tracks);
+    fhTracksMissingPt[btp]->Fill(photon->Pt(), tracks->GetEntriesFast());
+    if(!btp || photon->Pt() < fMinPt || TMath::Abs(photon->Eta()) > fEtaLimit) {
       if(delP) delete photon;
       continue;
     }
@@ -319,24 +480,24 @@ void AliAnalysisTaskGammaJet::ProcessConvGamma( const TClonesArray * convGamma, 
 void AliAnalysisTaskGammaJet::ProcessPions( const TClonesArray * const pions, const TClonesArray * const photons, const TClonesArray * const tracks) {
   //See header file for documentation
 
+
   for (Int_t iPi = 0; iPi < pions->GetEntriesFast(); iPi++) {
     Bool_t delP = kFALSE;
     AliAODConversionParticle * pion = dynamic_cast<AliAODConversionParticle*>(pions->At(iPi));
     if(!pion) {
       AliGammaConversionAODObject * aodO = dynamic_cast<AliGammaConversionAODObject*>(pions->At(iPi));
       if (!aodO) {
-	AliError(Form("ERROR: Could not receive ga %d\n", iPi));
-	continue;
+  	AliError(Form("ERROR: Could not receive ga %d\n", iPi));
+  	continue;
       }
       
       pion = new AliAODConversionParticle(aodO);
       delP = kTRUE;
     } 
 
-
-    if(pion->Pt() < fMinPt) {
+    if (!BothGammaPresent(pion, photons, tracks) || pion->Pt() < fMinPt || TMath::Abs(pion->Eta()) > fEtaLimit ) {
       if(delP) delete pion;
-      continue;
+      return;
     }
 
     
@@ -352,14 +513,51 @@ void AliAnalysisTaskGammaJet::ProcessPions( const TClonesArray * const pions, co
     Bool_t isolated = fAnaIsolation->IsIsolated(pion, tracks, 4, trackLabels, leading);
     if(leading) {
       for(Int_t i = 0; i < fAnaPionArray->GetEntriesFast(); i ++) {
-	AliAnaConvCorrPion * ana = dynamic_cast<AliAnaConvCorrPion*>(fAnaPionArray->At(i));
-	if(ana) ana->CorrelateWithHadrons(pion, tracks, isolated, 4, trackLabels );
+  	AliAnaConvCorrPion * ana = dynamic_cast<AliAnaConvCorrPion*>(fAnaPionArray->At(i));
+  	if(ana) ana->CorrelateWithHadrons(pion, tracks, isolated, 4, trackLabels );
       }
+
+
+      TClonesArray * jets = GetAODEvent()->GetJets();
+      if(jets) {
+	for(Int_t i = 0; i < fAnaPionJetArray->GetEntriesFast(); i ++) {
+	  AliAnaConvCorrPionJet * ana = static_cast<AliAnaConvCorrPionJet*>(fAnaPionJetArray->At(i));
+	  if(ana) {
+	    ana->CorrelateWithHadrons(pion, jets, isolated);
+	  } 
+	}
+      } else {
+	cout << "No jets "<<endl;
+      }
+      
+      
     } 
     if (delP) delete pion;
   } // 
+ 
 
-
+  
+  // for (Int_t iPhot = 0; iPhot < photons->GetEntriesFast(); iPhot++) {
+  //   AliAODConversionParticle * photon = dynamic_cast<AliAODConversionParticle*>(photons->At(iPhot));
+  //   if(photon) {
+  //     for (Int_t iPhot2 = iPhot+1; iPhot2 < photons->GetEntriesFast(); iPhot2++) {
+  // 	AliAODConversionParticle * photon2 = dynamic_cast<AliAODConversionParticle*>(photons->At(iPhot2));
+  // 	if(photon2) {
+  // 	  Int_t trackLabels[4] = {photon->GetTrackLabel(0), photon->GetTrackLabel(1), photon2->GetTrackLabel(0), photon2->GetTrackLabel(1)};
+  // 	  AliAODConversionParticle * pion = new AliAODConversionParticle(photon, photon2);
+  // 	  Bool_t leading = kTRUE;
+  // 	  Bool_t isolated = fAnaIsolation->IsIsolated(pion, tracks, 4, trackLabels, leading);
+  // 	  if(leading) {
+  // 	    for(Int_t i = 0; i < fAnaPionArray->GetEntriesFast(); i ++) {
+  // 	      AliAnaConvCorrPion * ana = dynamic_cast<AliAnaConvCorrPion*>(fAnaPionArray->At(i));
+  // 	      if(ana) ana->CorrelateWithHadrons(pion, tracks, isolated, 4, trackLabels );
+  // 	    }
+  // 	    delete pion;
+  // 	  }
+  // 	}
+  //     }
+  //   }
+  // }
 }
 
 ///_______________________________________________________________________________________________
@@ -393,8 +591,8 @@ Bool_t AliAnalysisTaskGammaJet::UserNotify() {
 
     AliInfo(Form("%s ----> Processing event # %lld", CurrentFileName(), Entry()));
 
-    AliAnaConvCorrPhoton * phJetAna = dynamic_cast<AliAnaConvCorrPhoton*>(fAnaPhotonArray->At(0));
-    phJetAna->PrintStatistics();
+    // AliAnaConvCorrPhoton * phJetAna = dynamic_cast<AliAnaConvCorrPhoton*>(fAnaPhotonArray->At(0));
+    // phJetAna->PrintStatistics();
 
     return kTRUE;
 
@@ -446,10 +644,14 @@ void AliAnalysisTaskGammaJet::Terminate(Option_t *) {
 AliAODEvent * AliAnalysisTaskGammaJet::GetAODEvent() {
   //Get the AOD event from whereever it might be
   AliAODEvent * aodEvent = dynamic_cast<AliAODEvent*>(InputEvent());
-  if(!aodEvent) {
-    aodEvent = AODEvent();
-  }
   
+
+  if(!aodEvent) {
+    cout << "!!!!!!!!!!!!!!!!!!!!!!!!Getting AODEvent();" << endl;
+    aodEvent = AODEvent();
+  } else {
+    //cout << "got aod from input event1" << endl;
+  }
   return aodEvent;
 
 }
@@ -458,11 +660,15 @@ AliAODEvent * AliAnalysisTaskGammaJet::GetAODEvent() {
 TClonesArray * AliAnalysisTaskGammaJet::GetConversionGammas(const AliAODEvent * aodEvent) {
 
   //Get Conversion gamma branch of AOD. First try standard AOD
-  TClonesArray * convGamma = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(Form("%s_gamma", fConversionCutString.Data())));
+  TClonesArray * convGamma = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(Form("%s_gamma", fGammaCutString.Data())));
   
   //If it's there, send it back
-  if(convGamma)  return convGamma;
-
+  if(convGamma)  {
+    //cout << "found conv gamma branch in aod event!!!"<<endl;
+    return convGamma;
+  }else {
+    cout << "did NOT !!! find conv gamma branch in aod event!!!"<<endl;
+  }
 
   //If AOD not in standard file have to locate it in delta AOD
   if( !(fDeltaAODFileName.Length() > 0)  ) return NULL;
@@ -472,11 +678,11 @@ TClonesArray * AliAnalysisTaskGammaJet::GetConversionGammas(const AliAODEvent * 
     AliAODExtension * gExt = dynamic_cast<AliAODExtension*>(aodHandler->GetExtensions()->FindObject(fDeltaAODFileName));
     if(gExt) {
       AliAODEvent * gcEvent = gExt->GetAOD();
-      return dynamic_cast<TClonesArray*>(gcEvent->FindListObject(Form("%s_gamma", fConversionCutString.Data())));
+      return dynamic_cast<TClonesArray*>(gcEvent->FindListObject(Form("%s_gamma", fGammaCutString.Data())));
     }
   }
 
-  cout << "could not find branch " << Form("%s_gamma", fConversionCutString.Data()) << endl; 
+  cout << "could not find branch " << Form("%s_gamma", fPionCutString.Data()) << endl; 
   return NULL;
 }
 
@@ -486,7 +692,7 @@ TClonesArray * AliAnalysisTaskGammaJet::GetConversionGammas(const AliAODEvent * 
 TClonesArray * AliAnalysisTaskGammaJet::GetConversionPions(const AliAODEvent * aodEvent) {
 
   //Get Conversion pion branch of AOD. First try standard AOD
-  TClonesArray * convGamma = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(Form("%s_Pi0", fConversionCutString.Data()) ));
+  TClonesArray * convGamma = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(Form("%s_Pi0", fPionCutString.Data()) ));
   
   //If it's there, send it back
   if(convGamma)  return convGamma;
@@ -500,7 +706,7 @@ TClonesArray * AliAnalysisTaskGammaJet::GetConversionPions(const AliAODEvent * a
     AliAODExtension * gExt = dynamic_cast<AliAODExtension*>(aodHandler->GetExtensions()->FindObject(fDeltaAODFileName));
     if(gExt) {
       AliAODEvent * gcEvent = gExt->GetAOD();
-      return dynamic_cast<TClonesArray*>(gcEvent->FindListObject(Form("%s_Pi0", fConversionCutString.Data())));
+      return dynamic_cast<TClonesArray*>(gcEvent->FindListObject(Form("%s_Pi0", fPionCutString.Data())));
     }
   }  
   return NULL;

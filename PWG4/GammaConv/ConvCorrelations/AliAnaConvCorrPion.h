@@ -11,6 +11,7 @@
 #define ALIANACONVCORRPION_CXX
 
 #include "AliAnaConvCorrBase.h"
+#include "THnSparse.h"
 
 class AliAODConversionParticle;
 class TClonesArray;
@@ -25,11 +26,17 @@ public:
 
   //Correlate pions with charged tracks
   virtual void CorrelateWithHadrons(AliAODConversionParticle * pion, const TClonesArray * tracks, const Bool_t isolated, const Int_t nSpawn, const Int_t * const spawn );
+
+  void CreateHistograms();
   
  private:
 
   //Get array of track labels of the 4 decay electrons (2gamma * 2 electrons)
   void GetTrackLabels(const AliAODConversionParticle * pion, const TClonesArray * photons, Int_t* trackLabels);
+
+  THnSparseF * fhdPhiVsInvMassPi0; //!
+  THnSparseF * fhdPhiVsInvMassEta; //!
+  TH2F * fhPtVsInvMass;
 
   AliAnaConvCorrPion(const AliAnaConvCorrPion&); // not implemented
   AliAnaConvCorrPion& operator=(const AliAnaConvCorrPion&); // not implemented
