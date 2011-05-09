@@ -257,10 +257,6 @@ void AliHFSystErr::InitD0toKpi2010PbPb4080() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.02); // 2% (1% per track)
-
-  // Tracking efficiency
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
   for(Int_t i=2;i<=12;i++) fTrackingEff->SetBinContent(i,0.5*(0.05+0.005*(Float_t)i));
 
 
@@ -268,20 +264,16 @@ void AliHFSystErr::InitD0toKpi2010PbPb4080() {
   fRawYield = new TH1F("fRawYield","fRawYield",20,0,20);
   fRawYield->SetBinContent(1,0);
   fRawYield->SetBinContent(2,0);
-  fRawYield->SetBinContent(3,0.05);
-  fRawYield->SetBinContent(4,0.05);
-  fRawYield->SetBinContent(5,0.10);
-  fRawYield->SetBinContent(6,0.10);
-  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=3;i<=12;i++) fRawYield->SetBinContent(i,0.05);
   for(Int_t i=13;i<=20;i++) fRawYield->SetBinContent(i,0);
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",20,0,20);
   fCutsEff->SetBinContent(1,0.);
   fCutsEff->SetBinContent(2,0.);
-  fCutsEff->SetBinContent(3,0.25);
-  fCutsEff->SetBinContent(4,0.18);
-  fCutsEff->SetBinContent(5,0.18);
+  fCutsEff->SetBinContent(3,0.23);
+  fCutsEff->SetBinContent(4,0.15);
+  fCutsEff->SetBinContent(5,0.15);
   fCutsEff->SetBinContent(6,0.15);
   fCutsEff->SetBinContent(7,0.15);
   fCutsEff->SetBinContent(8,0.15);
@@ -294,8 +286,6 @@ void AliHFSystErr::InitD0toKpi2010PbPb4080() {
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",20,0,20);
   for(Int_t i=3;i<=12;i++) fPIDEff->SetBinContent(i,0.05);
-  fPIDEff->SetBinContent(5,0.10);
-  fPIDEff->SetBinContent(6,0.10);
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,0,20);
@@ -304,9 +294,6 @@ void AliHFSystErr::InitD0toKpi2010PbPb4080() {
   // particle-antiparticle
   fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
   for(Int_t i=3;i<=12;i++) fPartAntipart->SetBinContent(i,0.05);
-  fPartAntipart->SetBinContent(4,0.10);
-  fPartAntipart->SetBinContent(7,0.10);
-  fPartAntipart->SetBinContent(8,0.10);
   
   return;
 }
