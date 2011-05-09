@@ -47,6 +47,7 @@ class AliAODPidHF : public AliAODPid{
  void SetMatch(Int_t match){fMatch=match;return;}
  void SetCompat(Bool_t comp){fCompat=comp;return;}
  void SetMC(Bool_t mc){fMC=mc;return;}
+ void SetMClowenpp2011(Bool_t mc){fMCLowEn2011=mc;return;}
  void SetOnePad(Bool_t onepad){fOnePad=onepad;return;}
  void SetPbPb(Bool_t pbpb){fPbPb=pbpb;return;}
  void SetPCompatTOF(Double_t pTOF){fPCompatTOF=pTOF;return;}
@@ -67,6 +68,7 @@ class AliAODPidHF : public AliAODPid{
  Bool_t GetCompat() const{return fCompat;}
  Bool_t GetMC() const{return fMC;}
  Bool_t GetOnePad() const{return fOnePad;}
+ Bool_t GetMCLowEn2011() const {return fMCLowEn2011;}
  Bool_t GetPbPb() const{return fPbPb;}
  Double_t GetPCompatTOF() const{return fPCompatTOF;}
  Double_t GetnSigmaCompatTPC() const{return fnSigmaCompat[0];}
@@ -120,11 +122,12 @@ class AliAODPidHF : public AliAODPid{
  Double_t *fnSigmaCompat; //[fnNSigmaCompat]  0: n sigma for TPC compatibility band, 1: for TOF  
  Bool_t fMC; // MC(kTRUE) or real data (kFALSE, default option)
  Bool_t fOnePad; //  real data with one pad clusters 
+ Bool_t fMCLowEn2011; //  MC for low energy MC
  Bool_t fPbPb; //  real data PbPb 
  
 
 
- ClassDef(AliAODPidHF,9) // AliAODPid for heavy flavor PID
+ ClassDef(AliAODPidHF,10) // AliAODPid for heavy flavor PID
 
 };
 
