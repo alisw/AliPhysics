@@ -15,6 +15,7 @@
 #include <TString.h>
 #include <TVector2.h>
 #include "AliAODEvent.h"
+#include "AliAODMCParticle.h"
 #include "AliAODVertex.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskEMCALClusterizeFast.h"
@@ -847,6 +848,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
 
   for(Int_t i=0, ncl=0; i<nclus; ++i) {
     AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
+
     if (!clus)
       continue;
     if (!clus->IsEMCAL())
@@ -1351,7 +1353,31 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcMcInfo()
   if (!fMcMode)
     return;
 
-// todo: treat mc differently for AOD and ESD. Check with Amorsch when we get MC handler also for AOD case.
+  if (fAodEv) {
+    TClonesArray *tca = dynamic_cast<TClonesArray*>(fAodEv->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (!tca) 
+      return;
+
+    Int_t nents = tca->GetEntries();
+    for(int it = 0;it < nents; ++it) {
+      AliAODMCParticle *part = static_cast<AliAODMCParticle*>(tca->At(it));
+
+      // pion or eta meson
+      if(part->GetPdgCode() == 111) {
+      } else if(part->GetPdgCode() == 221) {
+      } else
+        continue;
+
+      // primary particle
+      Double_t dR = TMath::Sqrt((part->Xv()*part->Xv())+(part->Yv()*part->Yv()));
+      if(dR > 1.0)
+        continue;
+      //if (part->IsPrimary()) continue;
+
+      PrintDaughters(part,tca);
+    } 
+  }
+
 
   AliMCEvent *mcEvent = MCEvent();
   if (!mcEvent)
@@ -1362,7 +1388,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcMcInfo()
     return;
 
   mcEvent->PreReadAll();
-  AliStack *stack = mcEvent->Stack();
+  //AliStack *stack = mcEvent->Stack();
 
   Int_t nTracks = mcEvent->GetNumberOfPrimaries();
   for (Int_t iTrack = 0; iTrack<nTracks; ++iTrack) {
@@ -2027,14 +2053,42 @@ Bool_t AliAnalysisTaskEMCALPi0PbPb::IsShared(const AliVCluster *c) const
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEMCALPi0PbPb::PrintDaughters(AliMCParticle *p) const
+void AliAnalysisTaskEMCALPi0PbPb::PrintDaughters(AliVParticle *p, TObjArray *arr) const
 {
-  // Print daugher information. TODO
+  // Print recursively daughter information.
+  
+  if (!p || !arr)
+    return;
+
+  p->Print();
+  AliMCParticle *pmc = dynamic_cast<AliMCParticle*>(p);
+  if (pmc) {
+  } else {
+    AliAODMCParticle *amc = dynamic_cast<AliAODMCParticle*>(p);
+    if (!amc)
+      return;
+    Int_t n = amc->GetNDaughters();
+    for (Int_t i=0; i<n; ++i) {
+      Int_t d = amc->GetDaughter(i);
+      AliVParticle *dmc = static_cast<AliVParticle*>(arr->At(d));
+      PrintDaughters(dmc,arr);
+    }
+  }
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPi0PbPb::PrintTrackRefs(AliMCParticle *p) const
 {
-  // Print track ref array. TODO
+  // Print track ref array.
+
+  if (!p)
+    return;
+
+  Int_t n = p->GetNumberOfTrackReferences();
+  for (Int_t i=0; i<n; ++i) {
+    AliTrackReference *ref = p->GetTrackReference(i);
+    ref->SetUserId(ref->DetectorId());
+    ref->Print();
+  }
 }
 
