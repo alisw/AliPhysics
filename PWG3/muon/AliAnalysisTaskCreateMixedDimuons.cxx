@@ -116,11 +116,6 @@ void AliAnalysisTaskCreateMixedDimuons::UserCreateOutputObjects() {
 
 void AliAnalysisTaskCreateMixedDimuons::UserExec(Option_t *) {
 
-  if (!fInputAOD) {
-    Printf("ERROR: fInputAOD not available\n");
-    return;
-  }
-
   if (!fOutputUserAOD) {
     Printf("ERROR: fOutputUserAOD not available\n");
     return;

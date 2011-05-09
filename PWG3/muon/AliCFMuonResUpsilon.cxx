@@ -479,7 +479,10 @@ void AliCFMuonResUpsilon::UserExec(Option_t *)
 
 		if(fReadMCInfo) {
 			TClonesArray *mcArr = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-
+			if( ! mcArr) {
+			  AliError("Cannot get MC innf in AOD MC branch");
+			  return;
+			}
 			Int_t npart=mcArr->GetEntries();
 
 			for(Int_t i=0; i<npart; i++) {
