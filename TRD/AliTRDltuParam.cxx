@@ -56,7 +56,7 @@ Int_t AliTRDltuParam::GetDyCorrection(Int_t det, Int_t rob, Int_t mcm) const
 
   Int_t layer = det % 6;
 
-  Float_t dyTilt = ( fgDriftLength * TMath::Tan(fgTiltingAngle[layer]) *
+  Float_t dyTilt = ( fgDriftLength * TMath::Tan(fgTiltingAngle[layer] * TMath::Pi()/180.) *
   		     GetLocalZ(det, rob, mcm) / fgX[layer] );
 
   // calculate Lorentz correction
