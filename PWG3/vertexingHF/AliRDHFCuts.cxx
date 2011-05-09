@@ -247,6 +247,8 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     if(event->GetRunNumber()>=136851 && event->GetRunNumber()<=139517) fPidHF->SetPbPb(kTRUE);
     // MC
     if(isMC) fPidHF->SetMC(kTRUE);
+    if(isMC && (event->GetRunNumber()>=146686 && event->GetRunNumber()<=146860))
+      fPidHF->SetMClowenpp2011(kTRUE);
   }
 
 

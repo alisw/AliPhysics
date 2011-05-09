@@ -55,6 +55,7 @@ AliAODPidHF::AliAODPidHF():
   fnSigmaCompat(),
   fMC(kFALSE),
   fOnePad(kFALSE),
+  fMCLowEn2011(kFALSE),
   fPbPb(kFALSE)
 {
  //
@@ -109,6 +110,7 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fnSigmaCompat(pid.fnSigmaCompat),
   fMC(pid.fMC),
   fOnePad(pid.fOnePad),
+  fMCLowEn2011(pid.fMCLowEn2011),
   fPbPb(pid.fPbPb)
   {
   
@@ -705,13 +707,19 @@ void AliAODPidHF::SetBetheBloch(AliTPCPIDResponse &tpcResp) const{
      alephParameters[4] = 4.62254e+00;
 
    } else {  // pp MC
-
-     alephParameters[0] = 2.15898/50.;
-     alephParameters[1] = 1.75295e+01;
-     alephParameters[2] = 3.40030e-09;
-     alephParameters[3] = 1.96178e+00;
-     alephParameters[4] = 3.91720e+00;
-
+     if(fMCLowEn2011){
+       alephParameters[0]=0.0207667;
+       alephParameters[1]=29.9936;
+       alephParameters[2]=3.87866e-11;
+       alephParameters[3]=2.17291;
+       alephParameters[4]=7.1623;
+     }else{
+       alephParameters[0] = 2.15898/50.;
+       alephParameters[1] = 1.75295e+01;
+       alephParameters[2] = 3.40030e-09;
+       alephParameters[3] = 1.96178e+00;
+       alephParameters[4] = 3.91720e+00;
+     }
    }
 
  } else { // Real Data
