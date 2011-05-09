@@ -17,11 +17,13 @@ Trigger types used: CALIBRATION_EVENT
 
 TPCda_pulser.cxx - calibration algorithm for TPC pulser events
 
-10/06/2007  sylvain.chapeland@cern.ch :  first version - clean skeleton based on DAQ DA case1
-30/09/2007  haavard.helstrup@cern.ch  :  created pulser DA based on pedestal code
+10/06/2007  sylvain.chapeland@cern.ch  :  first version - clean skeleton based on DAQ DA case1
+30/09/2007  haavard.helstrup@cern.ch   :  created pulser DA based on pedestal code
 19/09/2008  J.Wiechula@gsi.de:            Added export of the calibration data to the AMORE data base.
                                           Added support for configuration files.
-contact: marian.ivanov@cern.ch
+23/04/2011  Christian.Lippmann@cern.ch :  Added output of acsii files for online
+
+ contact: marian.ivanov@cern.ch
 
 
 This process reads RAW data from the files provided as command line arguments
@@ -33,6 +35,8 @@ and save results in a file (named from RESULT_FILE define - see below).
 #define FILE_ID "pulser"
 #define MAPPING_FILE "tpcMapping.root"
 #define CONFIG_FILE "TPCPULSERda.conf"
+#define Q_FILE "tpcPulserQ.data"
+#define DEAD_FILE "tpcDeadChannelsPulser.data"
 #define AliDebugLevel() -1
 
 
@@ -41,6 +45,7 @@ and save results in a file (named from RESULT_FILE define - see below).
 #include "monitor.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <fstream>
 
 //
 //Root includes
@@ -97,6 +102,19 @@ int main(int argc, char **argv) {
                                         "RIO",
                                         "TStreamerInfo()");
 
+
+  TString daterolename(gSystem->Getenv("DATE_ROLE_NAME"));
+  if ( daterolename == "" ) {
+    printf("Error: Variable DATE_ROLE_NAME not defined! Exiting ...\n");
+    return -1;
+  }
+  bool inner;
+  if      ( daterolename.EndsWith("-0") ) inner = true;
+  else if ( daterolename.EndsWith("-1") ) inner = false;
+  else {
+    printf("Error: Variable DATE_ROLE_NAME neither ends with -0 nor -1 (E.g. ldc-TPC-C12-1)! Exiting ...\n");
+    return -1;
+  }
 
   /* declare monitoring program */
   int i,status;
@@ -243,8 +261,8 @@ int main(int argc, char **argv) {
     if (mapping->GetSideFromRoc(roc)==1) sideName='C';
     sector = mapping->GetSectorFromRoc(roc);
   }
-//   gSystem->Setenv("AMORE_DA_NAME",Form("TPC-%c%02d-%s",sideName,sector,FILE_ID));
-  gSystem->Setenv("AMORE_DA_NAME",Form("%s-%s",gSystem->Getenv("DATE_ROLE_NAME"),FILE_ID));
+  //gSystem->Setenv("AMORE_DA_NAME",Form("TPC-%c%02d-%s",sideName,sector,FILE_ID));
+  gSystem->Setenv("AMORE_DA_NAME",Form("%s-%s", gSystem->Getenv("DATE_ROLE_NAME"), FILE_ID));
   
   // 
   // end cheet
@@ -267,5 +285,61 @@ int main(int argc, char **argv) {
   // reset env var
   if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
 
-  return status;
+  //
+  // Now prepare ASCII files for local ALTRO configuration through DDL. 
+  //
+  ofstream deadchannelfile;
+  ofstream qfile;
+
+  qfile.open(Q_FILE);
+  deadchannelfile.open(DEAD_FILE);
+
+  qfile           << 19 << std::endl; // Pulser Q
+  deadchannelfile << 14 << std::endl; // Mark file to contain NOISY or DEAD CHANNELS 
+
+  Int_t ctr_channel = 0;
+  Int_t ctr_dead= 0;
+
+  // inner==true : calROC from ldc-0 contains: rcus 0,1 for IROC and rcu 2 for OROC 
+  // inner==false: calROC from ldc-1 contains: nothingfor IROC and rcus 3,4,5 for OROC
+  for ( Int_t roc = 0; roc < 72; roc++ ) {
+    if ( !calibPulser.GetCalRocQ(roc) ) continue;
+    bool isIROC= mapping->IsIROC(roc);
+    Int_t side = mapping->GetSideFromRoc(roc);
+    Int_t sec= mapping->GetSectorFromRoc(roc);
+    Int_t minrcu, maxrcu;
+    if( isIROC ) { minrcu=0; maxrcu=1; }
+    else if ( inner) { minrcu=2; maxrcu=2; }
+    else { minrcu=3; maxrcu=5; }
+    for ( int rcu = minrcu; rcu <= maxrcu; rcu++ ) {
+      //Int_t patch = mapping->IsIROC(roc) ? rcu : rcu+2; 
+      for ( int branch = 0; branch < 2; branch++ ) {
+	for ( int fec = 0; fec < mapping->GetNfec(rcu, branch); fec++ ) {
+	  for ( int altro = 0; altro < 8; altro++ ) {
+	    for ( int channel = 0; channel < 16; channel++ ) {
+	      Int_t hwadd = mapping->CodeHWAddress(branch, fec, altro, channel);
+	      Int_t row = mapping->GetPadRow(rcu, hwadd);              // row in a ROC
+	      Int_t globalrow = mapping->GetGlobalPadRow(rcu, hwadd);  // row in full sector
+	      Int_t pad = mapping->GetPad(rcu, hwadd);
+	      // skip edge pads
+	      if ( (pad<1) || (pad>mapping->GetNpads(globalrow)-2) ) continue;
+	      Float_t Q = calibPulser.GetCalRocQ(roc)->GetValue(row,pad);
+	      qfile << ctr_channel++ << "\t" << side << "\t" << sec << "\t" << rcu << "\t" << hwadd << "\t" << Q << std::endl;
+	      if ( fabs(Q) < 2) { // dead channel
+		deadchannelfile << ctr_dead++ << "\t" << side << "\t" << sec << "\t"
+				<< rcu << "\t" << hwadd << "\t" << Q << std::endl;
+	      }
+	    } // end channel for loop 
+	  } // end altro for loop 
+	} // end fec for loop 
+      } // end branch for loop
+    } // end rcu for loop 
+  } // end roc loop 
+  
+  qfile.close();
+  deadchannelfile.close();
+
+  printf("Wrote ASCII file. Found %d dead channels.\n", ctr_dead);
+
+return status;
 }

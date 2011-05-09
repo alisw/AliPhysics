@@ -1173,6 +1173,14 @@ void AliTPCCalibPulser::Analyse()
       rocT0->SetValue(iChannel, cogTime0+meanTsec); //offset by mean time of the sector
       rocRMS->SetValue(iChannel, cogRMS);
       rocOut->SetValue(iChannel, cogOut);
+
+      // in case a channel has no data set the value to 0
+      if (TMath::Abs(cogTime0-fXminT0)<1e-10){
+        rocQ->SetValue(iChannel, 0);
+        rocT0->SetValue(iChannel, 0); //offset by mean time of the sector
+        rocRMS->SetValue(iChannel, 0);
+      }
+      
       //debug
       if ( GetStreamLevel() > 2 ){
         TTreeSRedirector *streamer=GetDebugStreamer();
