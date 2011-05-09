@@ -28,11 +28,13 @@ public:
   //Process particles identified as pion / eta decay 
   void SkipDecayParticles() { fSkipDecayParticles = kTRUE; }
   void DoDecayParticles() { fSkipDecayParticles = kFALSE; }
-  
+  void DoDecayOnly() { fSkipDecayParticles = kFALSE; fDecayOnly = kTRUE; }
+
  private:
 
   
   Bool_t fSkipDecayParticles; //Process particles identified as pion / eta decay particles
+  Bool_t fDecayOnly;
 
   AliAnaConvCorrPhoton(const AliAnaConvCorrPhoton&); // not implemented
   AliAnaConvCorrPhoton& operator=(const AliAnaConvCorrPhoton&); // not implemented

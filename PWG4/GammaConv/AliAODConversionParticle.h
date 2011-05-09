@@ -85,7 +85,7 @@ class AliAODConversionParticle : public AliAODPhoton {
   Int_t GetElectronMCLabel2() const;
 
   Bool_t IsMySpawn(const Int_t trackId, const Int_t nSpawn, const Int_t * const spawn) const;
-
+  void GetGrandChildren(const TClonesArray * photons, Int_t* trackLabels);
  private:
 
   Int_t fLabel[2];

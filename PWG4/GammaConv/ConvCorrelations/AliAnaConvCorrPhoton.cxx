@@ -33,14 +33,16 @@ ClassImp(AliAnaConvCorrPhoton)
 //________________________________________________________________________
 AliAnaConvCorrPhoton::AliAnaConvCorrPhoton() :
 AliAnaConvCorrBase("photon_hadron_corr"), 
-  fSkipDecayParticles(kFALSE)
+  fSkipDecayParticles(kFALSE),
+  fDecayOnly(kFALSE)
 {
   //consctructor
 }
 //________________________________________________________________________
 AliAnaConvCorrPhoton::AliAnaConvCorrPhoton(TString name) :
 AliAnaConvCorrBase(name), 
-fSkipDecayParticles(kFALSE)
+fSkipDecayParticles(kFALSE),
+fDecayOnly(kFALSE)
 {
   //consctructor
 }
@@ -53,12 +55,14 @@ AliAnaConvCorrPhoton::~AliAnaConvCorrPhoton() {
 
 ///__________________________________________________________________________
 void AliAnaConvCorrPhoton::CorrelateWithHadrons(const AliAODConversionParticle * const photon, const TClonesArray * const tracks, const Bool_t isolated, const Bool_t decayParticle) {
+  //See header file for documentation
 
 
   if( decayParticle && fSkipDecayParticles ) return;
+  else if ( fDecayOnly && !decayParticle ) return;
 
   FillTriggerCounters(photon->Pt(), isolated);
-  //See header file for documentation
+
   if (tracks) {
       
     for(int ij = 0; ij < tracks->GetEntriesFast(); ij++) {

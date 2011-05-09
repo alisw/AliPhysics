@@ -1,4 +1,5 @@
 
+
 void ConfigGammaJet (TString inputfile = "files.txt" ) {
 
   Int_t debugLevel = 0;
@@ -39,7 +40,10 @@ void ConfigGammaJet (TString inputfile = "files.txt" ) {
 
   AliAnalysisTaskGammaJet * gammaJetAna = new AliAnalysisTaskGammaJet("gamma jet analysis");
   gammaJetAna->SetDebugLevel(0);
-  gammaJetAna->SetConversionCutId("90022670901120321036000000090");
+  //gammaJetAna->SetConversionCutId("90022670901120321036000000090");
+  gammaJetAna->SetGammaCutId("90035620801003321136000000090"); 
+  gammaJetAna->SetPionCutId("90036620801003321136000000090"); 
+
   gammaJetAna->SetMinNTracks(0);
   mgr->AddTask(gammaJetAna);
 
@@ -57,29 +61,28 @@ void ConfigGammaJet (TString inputfile = "files.txt" ) {
   ghAna2->SkipDecayParticles();
   gammaJetAna->AddPhotonHadronAna(dynamic_cast<TObject*>(ghAna2));
 
+  AliAnaConvCorrPhoton * ghAna3 = new AliAnaConvCorrPhoton("photon_DecOnly");
+  ghAna3->DoDecayOnly();
+  gammaJetAna->AddPhotonHadronAna(dynamic_cast<TObject*>(ghAna3));
+
   AliAnaConvCorrPion * gPiAna = new AliAnaConvCorrPion("pionHadron");
   gammaJetAna->AddPionHadronAna(dynamic_cast<TObject*>(gPiAna));
 
   inpHandler->AddFriend("AliAODs.pwg4jets.root");
   AliAnaConvCorrPhotonJet* gJetAna = new AliAnaConvCorrPhotonJet("photonJet");
-  gJetAna->SetTriggerPt(0.0);
-  gJetAna->SetCorrelatedPt(0.0);
   gammaJetAna->AddPhotonJetAna(gJetAna);
-
-  // gROOT->LoadMacro("AddTaskGammaJet.C");
-  // AliAnalysisTaskGammaJet * gj2 =  AddTaskGammaJet("test", 3.0, 40, 0.4);
-  // isolation = gj2->GetIsolation();
-  // isolation->SetMinPt(0.3);
-
+ 
+  AliAnaConvCorrPionJet* pJetAna = new AliAnaConvCorrPionJet("pionJet");
+  gammaJetAna->AddPionJetAna(pJetAna);
 
   mgr->ConnectInput  (gammaJetAna,  0, cinput1  );
   mgr->ConnectOutput (gammaJetAna,  1, coutput2 );
   
   mgr->InitAnalysis();
   mgr->PrintStatus();
-  mgr->StartAnalysis("local",chain);
-  //mgr->StartAnalysis("local",chain, 10000);
-
+  //mgr->StartAnalysis("local",chain);
+  mgr->StartAnalysis("local",chain, 100000);
+  
 }
 
 
