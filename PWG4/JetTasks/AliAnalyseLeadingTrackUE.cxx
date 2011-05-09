@@ -194,7 +194,11 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
     
     if (useEtaPtCuts)
       if (TMath::Abs(part->Eta()) > fTrackEtaCut || part->Pt() < fTrackPtMin)
+      {
+	if (hasOwnership)
+	  delete part;
         continue;
+      }
     
     if (arrayMC) {
       Int_t label = part->GetLabel();
