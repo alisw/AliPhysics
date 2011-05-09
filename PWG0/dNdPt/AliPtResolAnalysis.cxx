@@ -57,7 +57,8 @@ ClassImp(AliPtResolAnalysis)
 //_____________________________________________________________________________
   AliPtResolAnalysis::AliPtResolAnalysis(): AlidNdPt(),
   fAnalysisFolder(0),
-  fTrackParamHist(0)
+  fTrackParamHist(0),
+  fTrackParamHist2(0)
 {
   // default constructor
   Init();
@@ -66,7 +67,8 @@ ClassImp(AliPtResolAnalysis)
 //_____________________________________________________________________________
 AliPtResolAnalysis::AliPtResolAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,title),
   fAnalysisFolder(0),
-  fTrackParamHist(0)
+  fTrackParamHist(0),
+  fTrackParamHist2(0)
 {
   Init();
 }
@@ -78,6 +80,7 @@ AliPtResolAnalysis::~AliPtResolAnalysis() {
   //
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
   if(fTrackParamHist) delete fTrackParamHist; fTrackParamHist=0;
+  if(fTrackParamHist2) delete fTrackParamHist2; fTrackParamHist2=0;
 }
 
 //_____________________________________________________________________________
@@ -92,12 +95,25 @@ void AliPtResolAnalysis::Init(){
 
   fTrackParamHist = new THnSparseF("fTrackParamHist","1/pT:#sigma(1/pT)",2,binsTrackParamHist,minTrackParamHist,maxTrackParamHist);
   fTrackParamHist->GetAxis(0)->SetTitle("1/pT (GeV/c)^{-1}");
-  fTrackParamHist->GetAxis(1)->SetTitle("#sigma(1/pT)" );
+  fTrackParamHist->GetAxis(1)->SetTitle("#sigma(1/pT)");
   fTrackParamHist->Sumw2();
   
+  //pt:sigma(1/pT)*pT
+  const Int_t ptNbins = 73;
+  Double_t bins[74] = {0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0 };
+
+  Int_t binsTrackParamHist2[2]={ptNbins,200};
+  Double_t minTrackParamHist2[2]={0,0}; 
+  Double_t maxTrackParamHist2[2]={100,0.2};
+
+  fTrackParamHist2 = new THnSparseF("fTrackParamHist2","pT:#sigma(1/pT)*pT",2,binsTrackParamHist2,minTrackParamHist2,maxTrackParamHist2);
+  fTrackParamHist2->SetBinEdges(0,bins);
+  fTrackParamHist2->GetAxis(0)->SetTitle("pT (GeV/c)");
+  fTrackParamHist2->GetAxis(1)->SetTitle("#sigma(1/pT)*pT");
+  fTrackParamHist2->Sumw2();
+
   // init folder
   fAnalysisFolder = CreateFolder("folderdNdPt","Analysis dNdPt Folder");
-  
 }
 
 //_____________________________________________________________________________
@@ -200,8 +216,11 @@ void AliPtResolAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const 
 	  //track->GetExternalParameters(x, p);
 	  //track->GetExternalCovariance(cov);
 
-	  Double_t v[2] = {track->OneOverPt(),TMath::Sqrt(track->GetSigma1Pt2())};
-	  fTrackParamHist->Fill(v);
+	  Double_t v1[2] = {track->OneOverPt(),TMath::Sqrt(track->GetSigma1Pt2())};
+	  fTrackParamHist->Fill(v1);
+
+	  Double_t v2[2] = {track->Pt(),track->Pt()*TMath::Sqrt(track->GetSigma1Pt2())};
+	  fTrackParamHist2->Fill(v2);
         }
       }  
     }
@@ -235,6 +254,7 @@ Long64_t AliPtResolAnalysis::Merge(TCollection* const list)
     
     //
     fTrackParamHist->Add(entry->fTrackParamHist);
+    fTrackParamHist2->Add(entry->fTrackParamHist2);
   }
 
 return count;
