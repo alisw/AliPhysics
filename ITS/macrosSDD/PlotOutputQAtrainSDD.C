@@ -22,6 +22,7 @@ Double_t LangausFun(Double_t *x, Double_t *par);
 void PlotOutputQAtrainSDD(TString option="local",
 			  Int_t nRun=0,
 			  TString period="LHC11a",
+			  TString recoPass="pass2_with_SDD",
 			  TString qaTrain="",
 			  TString fileName="QAresults.root"){
 
@@ -38,7 +39,7 @@ void PlotOutputQAtrainSDD(TString option="local",
     printf("Opened file %s\n",f->GetName());
   }else{
     TGrid::Connect("alien:");
-    path=Form("/alice/data/%d/%s/%09d/ESDs/",year,period.Data(),nRun);
+    path=Form("/alice/data/%d/%s/%09d/ESDs/%s",year,period.Data(),nRun,recoPass.Data());    
     printf("search in path %s\n",path.Data());
     if(!gGrid||!gGrid->IsConnected()) {
       printf("gGrid not found! exit macro\n");
