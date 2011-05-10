@@ -102,7 +102,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
 	fCentralitySelection(kTRUE),
 	fFakeSelection(0),
 	fRejectIfNoQuark(kTRUE),	
-	fUseMCVertex(kFALSE)
+	fUseMCVertex(kFALSE),
+	fDsOption(1)
 {
 	//
 	//Default ctor
@@ -138,7 +139,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
 	fCentralitySelection(kTRUE),
 	fFakeSelection(0),
 	fRejectIfNoQuark(kTRUE),
-	fUseMCVertex(kFALSE)
+	fUseMCVertex(kFALSE),
+	fDsOption(1)
 {
 	//
 	// Constructor. Initialization of Inputs and Outputs
@@ -200,7 +202,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
 	fCentralitySelection(c.fCentralitySelection),
 	fFakeSelection(c.fFakeSelection),
 	fRejectIfNoQuark(c.fRejectIfNoQuark),
-	fUseMCVertex(c.fUseMCVertex)
+	fUseMCVertex(c.fUseMCVertex),
+	fDsOption(c.fDsOption)
 {
 	//
 	// Copy Constructor
@@ -692,14 +695,11 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 						fCuts->SetUsePID(kFALSE);
 						recoAnalysisCuts = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kCandidate, aodEvent);
 
-						if (recoAnalysisCuts > 3){ // Ds case, where more possibilities are considered
-							if (recoAnalysisCuts >= 8){
-								recoAnalysisCuts -= 8; // removing K0star mass
-							}
-							if (recoAnalysisCuts >= 4){
-								recoAnalysisCuts -= 4; // removing Phi mass
-							}
+						if (fDecayChannel==33){ // Ds case, where more possibilities are considered
+						  Bool_t keepDs=ProcessDs(recoAnalysisCuts);
+						  if(keepDs) recoAnalysisCuts=3;
 						}
+						    
 
 						fCuts->SetUsePID(iscutsusingpid); //restoring usage of the PID from the cuts object	
 						if (recoAnalysisCuts == 3 || recoAnalysisCuts == isPartOrAntipart){
@@ -710,6 +710,12 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 							//recoPidSelection = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kPID);
 							//if((fCuts->CombineSelectionLevels(3,recoAnalysisCuts,recoPidSelection)==isPartOrAntipart)||(fCuts->CombineSelectionLevels(3,recoAnalysisCuts,recoPidSelection)==3)){
 							recoPidSelection = fCuts->IsSelected(charmCandidate, AliRDHFCuts::kCandidate, aodEvent);
+
+							if (fDecayChannel==33){ // Ds case, where more possibilities are considered
+							  Bool_t keepDs=ProcessDs(recoPidSelection);
+							  if(keepDs) recoPidSelection=3;							  
+							}
+
 							if (recoPidSelection == 3 || recoPidSelection == isPartOrAntipart){
 								fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPID, fWeight);
 								icountRecoPID++;
@@ -1004,4 +1010,29 @@ Double_t AliCFTaskVertexingHF::dNdptFit(Float_t pt, Double_t* par)
 	Double_t dNdpt = par[0]*pt/TMath::Power(1.+denom, par[2]);
 	
 	return dNdpt;
+}
+
+
+//__________________________________________________________________________________________________
+Bool_t AliCFTaskVertexingHF::ProcessDs(Int_t recoAnalysisCuts) const{
+  // processes output of Ds is selected
+  Bool_t keep=kFALSE;
+  if(recoAnalysisCuts > 0){
+    Int_t isKKpi=recoAnalysisCuts&1;
+    Int_t ispiKK=recoAnalysisCuts&2;
+    Int_t isPhiKKpi=recoAnalysisCuts&4;
+    Int_t isPhipiKK=recoAnalysisCuts&8;
+    Int_t isK0starKKpi=recoAnalysisCuts&16;
+    Int_t isK0starpiKK=recoAnalysisCuts&32;
+    if(fDsOption==1){
+      if(isKKpi && isPhiKKpi) keep=kTRUE;
+      if(ispiKK && isPhipiKK) keep=kTRUE;
+    }
+    else if(fDsOption==2){
+      if(isKKpi && isK0starKKpi) keep=kTRUE;
+      if(ispiKK && isK0starpiKK) keep=kTRUE;
+    }
+    else if(fDsOption==3)keep=kTRUE;
+  }
+  return keep;
 }

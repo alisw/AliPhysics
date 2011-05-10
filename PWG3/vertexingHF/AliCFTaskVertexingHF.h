@@ -109,6 +109,13 @@ public:
 	void SetUseMCVertex(Bool_t opt){fUseMCVertex=opt;}
 	Bool_t GetUseMCVertex(){return fUseMCVertex;}
 	
+
+	void SetKeepDsViaPhi(){fDsOption=1;}
+	void SetKeepDsViaK0star(){fDsOption=2;}
+	void SetKeepAllDs(){fDsOption=3;}
+
+	Bool_t ProcessDs(Int_t returnCodeDs) const;
+	
 protected:
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
 	TH1I *fHistEventsProcessed;   //! simple histo for monitoring the number of events processed
@@ -138,6 +145,7 @@ protected:
 	Int_t  fFakeSelection;  //selection flag for fakes tracks 
 	Bool_t fRejectIfNoQuark;  // flag to remove events not geenrated with PYTHIA
 	Bool_t fUseMCVertex;  // flag to use MC vertex (useful when runnign in pp)
+	Int_t  fDsOption;     // Ds decay option
 
 	ClassDef(AliCFTaskVertexingHF,7); // class for HF corrections as a function of many variables
 };
