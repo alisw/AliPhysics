@@ -51,6 +51,7 @@ public :
   // Get analysis folder
   TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
   THnSparseF *GetTrackParamHist() const {return fTrackParamHist;} 
+  THnSparseF *GetTrackParamHist2() const {return fTrackParamHist2;} 
 
   void SetCentralityEstimator(TString centEst="V0M") { fCentralityEstimator = centEst; }
   TString GetCentralityEstimator() const {return fCentralityEstimator; }
@@ -58,15 +59,16 @@ public :
 private:
 
   // analysis folder 
-  TFolder *fAnalysisFolder; // folder for analysed histograms
+  TFolder *fAnalysisFolder;     // folder for analysed histograms
   THnSparseF *fTrackParamHist;  //-> sigma(1/pT):1/pT:centr
+  THnSparseF *fTrackParamHist2; //-> sigma(1/pT)*pT:pT:centr
 
   TString fCentralityEstimator;     // use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"
 
   AliPtResolAnalysisPbPb(const AliPtResolAnalysisPbPb&); // not implemented
   AliPtResolAnalysisPbPb& operator=(const AliPtResolAnalysisPbPb&); // not implemented
 
-  ClassDef(AliPtResolAnalysisPbPb,1);
+  ClassDef(AliPtResolAnalysisPbPb,2);
 };
 
 #endif
