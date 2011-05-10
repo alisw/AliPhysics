@@ -340,7 +340,11 @@ class AliStaTrigger : public TObject
 class AliStaPart : public TObject
 {
  public:
-    AliStaPart() : TObject(), fPt(0), fEta(0), fPhi(0), fVR(0), fVEta(0), fVPhi(0), fPid(0), fMo(-1), fDet(-2), fNs(0) {}
+  AliStaPart() : TObject(), fPt(0), fEta(0), fPhi(0), fVR(0), fVEta(0), fVPhi(0), fPid(0), fMo(-1), fDet(-2), 
+                 fLab(-1), fNs(0) {}
+
+  Int_t         OnEmcal() const { return (fDet==8);  }
+  Int_t         IsSim()   const { return (fDet!=-2); }
     
  public:
   Double32_t    fPt;               //[0,0,16] pt
@@ -351,11 +355,12 @@ class AliStaPart : public TObject
   Double32_t    fVPhi;             //[0,0,16] prod phi
   Short_t       fPid;              //         pid
   Short_t       fMo;               //         index of mother
-  Short_t       fDet;              //         detector in which particle left trace (8 for EMCAL)
+  Short_t       fDet;              //         detector in which particle left trace (8 for EMCAL, see AliTrackReference.h)
+    // the following must be filled before first usage
+  Short_t       fLab;              //!        label (index in array)
   Short_t       fNs;               //!        number of daughters
-  Short_t       fDs[9];            //!        daughters (must be filled before first usage)
+  Short_t       fDs[9];            //!        daughters
 
   ClassDef(AliStaPart,1) // Particle class
 };
-
 #endif
