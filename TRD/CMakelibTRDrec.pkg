@@ -29,7 +29,6 @@ set ( SRCS
     AliTRDcluster.cxx
     AliTRDclusterizer.cxx
     AliTRDtransform.cxx
-    AliTRDtracklet.cxx
     AliTRDtrackletOflHelper.cxx
     AliTRDpidUtil.cxx
     AliTRDpidESD.cxx
