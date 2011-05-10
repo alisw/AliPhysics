@@ -47,6 +47,7 @@ public:
                ULong64_t  GetMask() const { return fClassMask; }
     AliTriggerDescriptor* GetDescriptor() const { return fDescriptor; }
        AliTriggerCluster* GetCluster() const { return fCluster; }
+        AliTriggerBCMask* GetBCMask() const { return fMask; }
 
                     void  Trigger( const TObjArray& inputs , const TObjArray& functions);
 		    void  Print( const Option_t* ) const;
@@ -64,7 +65,7 @@ private:
                   Bool_t  fAllRare;      // All or Rare trigger
 		  Bool_t  fStatus;       //! true = Condition has been satisfied after Trigger
 
-  ClassDef( AliTriggerClass, 2 )  // Define a trigger class object
+  ClassDef( AliTriggerClass, 3 )  // Define a trigger class object
 };
 
 #endif
