@@ -85,11 +85,11 @@ void AlidNdPtEfficiency::Init(){
   //
   // Init histograms
   //
-  const Int_t ptNbins = 58; 
+  const Int_t ptNbins = 63; 
   const Double_t ptMin = 0.; 
   const Double_t ptMax = 20.; 
 
-  Double_t binsPt[ptNbins+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,18.0, 20.};
+  Double_t binsPt[ptNbins+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,18.0, 20.,25.,30.,35.,40.,50};
 
   // 
   // THnSparse track histograms
@@ -130,7 +130,6 @@ void AlidNdPtEfficiency::Init(){
 
   // init output folder
   fAnalysisFolder = CreateFolder("folderdNdPt","Analysis dNdPt Folder");
-
 }
 
 //_____________________________________________________________________________
@@ -242,15 +241,16 @@ void AlidNdPtEfficiency::Process(AliESDEvent *const esdEvent, AliMCEvent * const
 
       if(track->Charge()==0) continue;
       if(!track->GetTPCInnerParam()) continue;
-      if(!(track->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+      if(!(track->GetStatus()&AliESDtrack::kTPCrefit)) continue;
 
       // Get TPC only tracks (must be deleted by user) 
-      AliESDtrack* tpcTrack = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent,iTrack);
-      if(!tpcTrack) continue;
-      if(!tpcTrack->RelateToVertex(vtxESD,esdEvent->GetMagneticField(),100.)) { delete tpcTrack; continue; } 
+      // AliESDtrack* tpcTrack = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent,iTrack);
+      // if(!tpcTrack) continue;
+      // if(!tpcTrack->RelateToVertex(vtxESD,esdEvent->GetMagneticField(),100.)) { delete tpcTrack; continue; } 
 
       // check loose cuts for TPC tracks
-      if(!esdTrackCuts->AcceptTrack(tpcTrack))  { delete tpcTrack; continue; } 
+      // if(!esdTrackCuts->AcceptTrack(tpcTrack))  { delete tpcTrack; continue; } 
+      if(!esdTrackCuts->AcceptTrack(track))  { continue; } 
 
       isTPC = kTRUE;
       isMatch = kFALSE;
@@ -261,8 +261,8 @@ void AlidNdPtEfficiency::Process(AliESDEvent *const esdEvent, AliMCEvent * const
       }
 
       //
-      FillHistograms(tpcTrack, stack, isMatch, isTPC, kFALSE);
-      if(tpcTrack) delete tpcTrack;
+      FillHistograms(track, stack, isMatch, isTPC, kFALSE);
+      //if(tpcTrack) delete tpcTrack;
     } 
 
     //
