@@ -74,14 +74,21 @@ AddTaskFMDELoss(Bool_t mc, Bool_t useCent)
   AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 10;
     
   // --- Make the output container and connect it --------------------
-  TString outputfile = AliAnalysisManager::GetCommonFileName();
+  TString outputfile = ;
   // outputfile += ":PWG2forwardDnDeta"; 
   // Form(":%s",pars->GetDndetaAnalysisName());
   AliAnalysisDataContainer* histOut = 
     mgr->CreateContainer("Forward", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer,outputfile);
+			 AliAnalysisManager::kOutputContainer,
+			 AliAnalysisManager::GetCommonFileName());
+  AliAnalysisDataContainer *output = 
+    mgr->CreateContainer("ForwardResults", TList::Class(), 
+			 AliAnalysisManager::kParamContainer, 
+			 AliAnalysisManager::GetCommonFileName());
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, histOut);
+  mgr->ConnectOutput(task, 2, output);
+
 
   return task;
 }
