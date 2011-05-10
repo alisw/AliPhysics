@@ -579,8 +579,8 @@ void AliTPCQADataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
   // The AliTPCdataQA elements that does the internal processing are
   // in the case they have processed data deleted and new are created
 
-  if ( task != AliQAv1::kRAWS )
-    AliQADataMakerRec::ResetDetector(task);
+  // Reset histograms for all tasks
+  AliQADataMakerRec::ResetDetector(task);
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     
