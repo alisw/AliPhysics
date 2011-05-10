@@ -75,6 +75,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fMcMode(0),
     fGeom(0),
     fReco(0),
+    fDoPSel(kTRUE),
     fIsGeoMatsSet(0),
     fNEvs(0),
     fOutput(0),
@@ -98,6 +99,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fTpcVert(0),
     fClusters(0),
     fTriggers(0),
+    fMcParts(0),
     fHCuts(0x0),
     fHVertexZ(0x0),
     fHVertexZ2(0x0),
@@ -199,6 +201,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   cout << " fMcMode:        " << fMcMode << endl;
   cout << " fGeom:          " << fGeom << endl;
   cout << " fReco:          " << fReco << endl;
+  cout << " fDoPSel:        " << fDoPSel << endl;
 
   if (!fGeom)
     fGeom = new AliEMCALGeoUtils(fGeoName,"EMCAL");
@@ -244,6 +247,12 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
         TClass::GetClass("AliStaTrigger")->IgnoreTObjectStreamer();
       fTriggers = new TClonesArray("AliStaTrigger");
       fNtuple->Branch("l0prim", &fTriggers, 16*1024, 99);
+      if (fMcMode) {
+        if (TClass::GetClass("AliStaPart"))
+          TClass::GetClass("AliStaPart")->IgnoreTObjectStreamer();
+        fMcParts = new TClonesArray("AliStaPart");
+        fNtuple->Branch("mcparts", &fMcParts, 8*16*1024, 99);
+      }
     }  
   }
 
@@ -543,8 +552,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
       fHTclsBeforeCuts->Fill(1+i);
   }
 
-  UInt_t res = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if (res==0)
+  if (fDoPSel && offtrigger==0)
     return;
 
   fHCuts->Fill(cut++);
@@ -690,6 +698,8 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     fSelTracks->Clear();
     fSelPrimTracks->Clear();
     fTriggers->Clear();
+    if (fMcMode)
+      fMcParts->Clear();
   }
 
   PostData(1, fOutput);
@@ -1353,14 +1363,27 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcMcInfo()
   if (!fMcMode)
     return;
 
+  cout << "------------------------------------------ DEBUG CALCMC -------------------------------------" << endl;
+
+  fMcParts->Clear();
+
+  AliEMCALEMCGeometry *emc = fGeom->GetEMCGeometry();
+  Double_t etamin = -0.7;
+  Double_t etamax = +0.7;
+  Double_t phimin = emc->GetArm1PhiMin()*TMath::DegToRad();
+  Double_t phimax = emc->GetArm1PhiMax()*TMath::DegToRad();
+
   if (fAodEv) {
+    AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+    am->LoadBranch(AliAODMCParticle::StdBranchName());
     TClonesArray *tca = dynamic_cast<TClonesArray*>(fAodEv->FindListObject(AliAODMCParticle::StdBranchName()));
     if (!tca) 
       return;
 
     Int_t nents = tca->GetEntries();
-    for(int it = 0;it < nents; ++it) {
+    for(int it=0; it<nents; ++it) {
       AliAODMCParticle *part = static_cast<AliAODMCParticle*>(tca->At(it));
+      part->Print();
 
       // pion or eta meson
       if(part->GetPdgCode() == 111) {
@@ -1372,12 +1395,23 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcMcInfo()
       Double_t dR = TMath::Sqrt((part->Xv()*part->Xv())+(part->Yv()*part->Yv()));
       if(dR > 1.0)
         continue;
-      //if (part->IsPrimary()) continue;
 
-      PrintDaughters(part,tca);
+      // kinematic cuts
+      Double_t pt = part->Pt() ;
+      if (pt<0.5)
+        continue;
+      Double_t eta = part->Eta();
+      if (eta<etamin||eta>etamax)
+        continue;
+      Double_t phi  = part->Phi();
+      if (phi<phimin||phi>phimax)
+        continue;
+
+      ProcessDaughters(part, it, tca);
     } 
-  }
 
+    return;
+  }
 
   AliMCEvent *mcEvent = MCEvent();
   if (!mcEvent)
@@ -1388,7 +1422,6 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcMcInfo()
     return;
 
   mcEvent->PreReadAll();
-  //AliStack *stack = mcEvent->Stack();
 
   Int_t nTracks = mcEvent->GetNumberOfPrimaries();
   for (Int_t iTrack = 0; iTrack<nTracks; ++iTrack) {
@@ -1397,31 +1430,31 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcMcInfo()
       continue;
 
     // pion or eta meson
-    TParticle *tP = mcP->Particle();
-    if(tP->GetPdgCode() == 111) {
-    } else if(tP->GetPdgCode() == 221) {
+    if(mcP->PdgCode() == 111) {
+    } else if(mcP->PdgCode() == 221) {
     } else
       continue;
 
     // primary particle
-    Double_t dR = TMath::Sqrt((tP->Vx()-evtVtx->GetX())*(tP->Vx()-evtVtx->GetX())+(tP->Vy()-evtVtx->GetY())*(tP->Vy()-evtVtx->GetY()));
+    Double_t dR = TMath::Sqrt((mcP->Xv()-evtVtx->GetX())*(mcP->Xv()-evtVtx->GetX()) + 
+                              (mcP->Yv()-evtVtx->GetY())*(mcP->Yv()-evtVtx->GetY()));
     if(dR > 1.0)
       continue;
 
-    // do not account dalitz decays
-    if(tP->GetNDaughters()!=2)
-     continue; 
-
     // kinematic cuts
-    Double_t pt = tP->Pt() ;
-    if (pt<0.5) {
+    Double_t pt = mcP->Pt() ;
+    if (pt<0.5)
       continue;
-    }
-    Double_t rap = tP->Y();
-    if (TMath::Abs(rap)>1){
+    Double_t eta = mcP->Eta();
+    if (eta<etamin||eta>etamax)
       continue;
-    }
+    Double_t phi  = mcP->Phi();
+    if (phi<phimin||phi>phimax)
+      continue;
 
+    ProcessDaughters(mcP, iTrack, mcEvent);
+
+#if 0
     // get daughters
     TParticle *tD1 = 0;
     TClonesArray *tD1refs = 0;
@@ -1524,71 +1557,6 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcMcInfo()
           }
         }
       }
-    }
-#if 0
-    TParticle * gamma1 = fStack->Particle(particle->GetFirstDaughter());
-    TParticle * gamma2 = fStack->Particle(particle->GetLastDaughter());
-    //Number of pi0s decayed into acceptance
-    Bool_t inAcc1 = (TMath::Abs(gamma1->Eta())<0.9) ;
-    Bool_t inAcc2 = (TMath::Abs(gamma2->Eta())<0.9) ;
-    Int_t mod1,mod2 ;
-    Double_t x=0.,z=0. ;
-    Bool_t hitPHOS1 = fPHOSgeom->ImpactOnEmc(gamma1, mod1, z,x) ;
-    Bool_t hitPHOS2 = fPHOSgeom->ImpactOnEmc(gamma2, mod2, z,x) ;
-    Bool_t hitEMCAL1= fEMCALgeom->Impact(gamma1) ;
-    Bool_t hitEMCAL2= fEMCALgeom->Impact(gamma2) ;
-
-
-    TParticle *mcP2 = 0;
-    TClonesArray *refs = 0;
-    mcEvent->GetParticleAndTR(iTrack,mcP2,refs);
-    if (!refs) 
-      continue;
-
-    Int_t nrefs = refs->GetEntries();
-    if (nrefs == 0)
-      continue;
-
-    AliTrackReference *trEmcal = 0;
-    for (Int_t j=0;j<nrefs;++j) {
-      AliTrackReference *tr = (AliTrackReference*)refs->At(j);
-      Int_t did = tr->DetectorId();
-      if (did!=AliTrackReference::kEMCAL)
-        continue;
-      trEmcal = tr;
-      break;
-    }
-
-    if (!trEmcal)
-      continue;
-
-    Double_t distA = TMath::Sqrt((trEmcal->X()-tP->Vx())*(trEmcal->X()-tP->Vx()) +
-                                  (trEmcal->Y()-tP->Vy())*(trEmcal->Y()-tP->Vy()) +
-                                  (trEmcal->Z()-tP->Vz())*(trEmcal->Z()-tP->Vz()));
-    cout << "dist label to particle " << distA << " --------- " << endl;
-    trEmcal->Print();
-    tP->Print();
-
-    Int_t moi = tP->GetFirstMother();
-    if (moi>=0) {
-      AliMCParticle *mcMo = static_cast<AliMCParticle*>(mcEvent->GetTrack(moi));
-      TParticle *tMo = mcMo->Particle();
-      Double_t dist3d = TMath::Sqrt((tMo->Vx()-tP->Vx())*(tMo->Vx()-tP->Vx()) +
-                                    (tMo->Vy()-tP->Vy())*(tMo->Vy()-tP->Vy()) +
-                                    (tMo->Vz()-tP->Vz())*(tMo->Vz()-tP->Vz()));
-      cout << "dist 3d " << dist3d << endl;
-      tMo->Print();
-      while (1) {
-        Int_t newm = tMo->GetFirstMother();
-        if (newm>=0) {
-          AliMCParticle *newmo = static_cast<AliMCParticle*>(mcEvent->GetTrack(newm));
-          tMo = newmo->Particle();
-          tMo->Print();
-        } else {
-          break;
-        }
-      }
-      cout << " ------- " << endl;
     }
 #endif
   }
@@ -1716,7 +1684,6 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
     }
     fHeader->fNClus = nclus;
   }
-
 
   if (fAodEv) { 
     am->LoadBranch("vertices");
@@ -2053,26 +2020,47 @@ Bool_t AliAnalysisTaskEMCALPi0PbPb::IsShared(const AliVCluster *c) const
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEMCALPi0PbPb::PrintDaughters(AliVParticle *p, TObjArray *arr) const
+void AliAnalysisTaskEMCALPi0PbPb::PrintDaughters(const AliVParticle *p, const TObjArray *arr, Int_t level) const
 {
   // Print recursively daughter information.
   
   if (!p || !arr)
     return;
 
-  p->Print();
-  AliMCParticle *pmc = dynamic_cast<AliMCParticle*>(p);
-  if (pmc) {
-  } else {
-    AliAODMCParticle *amc = dynamic_cast<AliAODMCParticle*>(p);
-    if (!amc)
-      return;
-    Int_t n = amc->GetNDaughters();
-    for (Int_t i=0; i<n; ++i) {
-      Int_t d = amc->GetDaughter(i);
-      AliVParticle *dmc = static_cast<AliVParticle*>(arr->At(d));
-      PrintDaughters(dmc,arr);
-    }
+  const AliAODMCParticle *amc = dynamic_cast<const AliAODMCParticle*>(p);
+  if (!amc)
+    return;
+  for (Int_t i=0; i<level; ++i) printf(" ");
+  amc->Print();
+
+  Int_t n = amc->GetNDaughters();
+  for (Int_t i=0; i<n; ++i) {
+    Int_t d = amc->GetDaughter(i);
+    const AliVParticle *dmc = static_cast<const AliVParticle*>(arr->At(d));
+    PrintDaughters(dmc,arr,level+1);
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::PrintDaughters(const AliMCParticle *p, const AliMCEvent *arr, Int_t level) const
+{
+  // Print recursively daughter information.
+  
+  if (!p || !arr)
+    return;
+
+  for (Int_t i=0; i<level; ++i) printf(" ");
+  Int_t d1 = p->GetFirstDaughter();
+  Int_t d2 = p->GetLastDaughter();
+  printf("pid=%d: %.2f %.2f %.2f (%.2f %.2f %.2f); nd=%d,%d\n",
+         p->PdgCode(),p->Px(),p->Py(),p->Pz(),p->Xv(),p->Yv(),p->Zv(),d1,d2);
+  if (d1<0)
+    return;
+  if (d2<0)
+    d2=d1;
+  for (Int_t i=d1;i<=d2;++i) {
+    const AliMCParticle *dmc = static_cast<const AliMCParticle *>(arr->GetTrack(i));
+      PrintDaughters(dmc,arr,level+1);
   }
 }
 
@@ -2092,3 +2080,103 @@ void AliAnalysisTaskEMCALPi0PbPb::PrintTrackRefs(AliMCParticle *p) const
   }
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::ProcessDaughters(AliVParticle *p, Int_t index, const TObjArray *arr)
+{
+  // Process and create daughters.
+
+  if (!p || !arr)
+    return;
+
+  AliAODMCParticle *amc = dynamic_cast<AliAODMCParticle*>(p);
+  if (!amc)
+    return;
+
+  //amc->Print();
+  
+  Int_t nparts = arr->GetEntries();
+  Int_t nents  = fMcParts->GetEntries();
+
+  AliStaPart *newp = static_cast<AliStaPart*>(fMcParts->New(nents));
+  newp->fPt  = amc->Pt();
+  newp->fEta = amc->Eta();
+  newp->fPhi = amc->Phi();
+  if (amc->Xv() != 0 || amc->Yv() != 0 || amc->Zv() != 0) {
+    TVector3 vec(amc->Xv(),amc->Yv(),amc->Zv());
+    newp->fVR = vec.Perp();
+    newp->fVEta = vec.Eta();
+    newp->fVPhi = vec.Phi();
+  }
+  newp->fPid  = amc->PdgCode();
+  Int_t moi = amc->GetMother();
+  if (moi>=0&&moi<nparts) {
+    const AliAODMCParticle *mmc = static_cast<const AliAODMCParticle*>(arr->At(moi));
+    moi = mmc->GetUniqueID();
+  }
+  newp->fMo = moi;
+  p->SetUniqueID(nents);
+  Int_t n = amc->GetNDaughters();
+  for (Int_t i=0; i<n; ++i) {
+    Int_t d = amc->GetDaughter(i);
+    if (d<=index || d>=nparts) 
+      continue;
+    AliVParticle *dmc = static_cast<AliVParticle*>(arr->At(d));
+    ProcessDaughters(dmc,d,arr);
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::ProcessDaughters(AliMCParticle *p, Int_t index, const AliMCEvent *arr)
+{
+  // Process and create daughters.
+
+  if (!p || !arr)
+    return;
+
+  Int_t d1 = p->GetFirstDaughter();
+  Int_t d2 = p->GetLastDaughter();
+  if (0) {
+    printf("%d pid=%d: %.3f %.3f %.3f (%.2f %.2f %.2f); nd=%d,%d, mo=%d\n",
+           index,p->PdgCode(),p->Px(),p->Py(),p->Pz(),p->Xv(),p->Yv(),p->Zv(),d1,d2, p->GetMother());
+    //PrintTrackRefs(p);
+  }  
+  Int_t nents  = fMcParts->GetEntries();
+
+  AliStaPart *newp = static_cast<AliStaPart*>(fMcParts->New(nents));
+  newp->fPt  = p->Pt();
+  newp->fEta = p->Eta();
+  newp->fPhi = p->Phi();
+  if (p->Xv() != 0 || p->Yv() != 0 || p->Zv() != 0) {
+    TVector3 vec(p->Xv(),p->Yv(),p->Zv());
+    newp->fVR = vec.Perp();
+    newp->fVEta = vec.Eta();
+    newp->fVPhi = vec.Phi();
+  }
+  newp->fPid  = p->PdgCode();
+  Int_t moi = p->GetMother();
+  if (moi>=0) {
+    const AliMCParticle *mmc = static_cast<const AliMCParticle *>(arr->GetTrack(moi));
+    moi = mmc->GetUniqueID();
+  }
+  newp->fMo = moi;
+  p->SetUniqueID(nents);
+
+  Int_t nref = p->GetNumberOfTrackReferences();
+  if (nref>0) {
+    AliTrackReference *ref = p->GetTrackReference(nref-1);
+    if (ref) {
+      newp->fDet = ref->DetectorId();
+    }
+  }
+
+  if (d1<0)
+    return;
+  if (d2<0)
+    d2=d1;
+  for (Int_t i=d1;i<=d2;++i) {
+    AliMCParticle *dmc = static_cast<AliMCParticle *>(arr->GetTrack(i));
+    if (dmc->P()<0.01)
+      continue;
+    ProcessDaughters(dmc,i,arr);
+  }
+}
