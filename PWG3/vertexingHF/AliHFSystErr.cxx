@@ -192,7 +192,7 @@ void AliHFSystErr::InitD0toKpi2010PbPb020() {
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
   for(Int_t i=2;i<=12;i++) fTrackingEff->SetBinContent(i,0.05+0.005*(Float_t)i);
-
+ 
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",20,0,20);
@@ -203,23 +203,23 @@ void AliHFSystErr::InitD0toKpi2010PbPb020() {
   fRawYield->SetBinContent(5,0.10);
   fRawYield->SetBinContent(6,0.10);
   for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.05);
-  for(Int_t i=13;i<=20;i++) fRawYield->SetBinContent(i,0);
+ // for(Int_t i=13;i<=20;i++) fRawYield->SetBinContent(i,0);
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",20,0,20);
   fCutsEff->SetBinContent(1,0.);
   fCutsEff->SetBinContent(2,0.);
-  fCutsEff->SetBinContent(3,0.25);
+  fCutsEff->SetBinContent(3,0.18);
   fCutsEff->SetBinContent(4,0.18);
   fCutsEff->SetBinContent(5,0.18);
   fCutsEff->SetBinContent(6,0.15);
   fCutsEff->SetBinContent(7,0.15);
   fCutsEff->SetBinContent(8,0.15);
-  fCutsEff->SetBinContent(9,0.15);
-  fCutsEff->SetBinContent(10,0.15);
+fCutsEff->SetBinContent(9,0.15);
+ fCutsEff->SetBinContent(10,0.15);
   fCutsEff->SetBinContent(11,0.15);
   fCutsEff->SetBinContent(12,0.15);
-  for(Int_t i=13;i<=20;i++) fCutsEff->SetBinContent(i,0.);
+ // for(Int_t i=13;i<=20;i++) fCutsEff->SetBinContent(i,0.);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",20,0,20);
@@ -234,6 +234,7 @@ void AliHFSystErr::InitD0toKpi2010PbPb020() {
   // particle-antiparticle
   fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
   for(Int_t i=3;i<=12;i++) fPartAntipart->SetBinContent(i,0.05);
+  fPartAntipart->SetBinContent(3,0.10);
   fPartAntipart->SetBinContent(4,0.10);
   fPartAntipart->SetBinContent(7,0.10);
   fPartAntipart->SetBinContent(8,0.10);
@@ -265,13 +266,13 @@ void AliHFSystErr::InitD0toKpi2010PbPb4080() {
   fRawYield->SetBinContent(1,0);
   fRawYield->SetBinContent(2,0);
   for(Int_t i=3;i<=12;i++) fRawYield->SetBinContent(i,0.05);
-  for(Int_t i=13;i<=20;i++) fRawYield->SetBinContent(i,0);
+  //for(Int_t i=13;i<=20;i++) fRawYield->SetBinContent(i,0);
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",20,0,20);
   fCutsEff->SetBinContent(1,0.);
   fCutsEff->SetBinContent(2,0.);
-  fCutsEff->SetBinContent(3,0.23);
+  fCutsEff->SetBinContent(3,0.15);
   fCutsEff->SetBinContent(4,0.15);
   fCutsEff->SetBinContent(5,0.15);
   fCutsEff->SetBinContent(6,0.15);
@@ -281,7 +282,7 @@ void AliHFSystErr::InitD0toKpi2010PbPb4080() {
   fCutsEff->SetBinContent(10,0.15);
   fCutsEff->SetBinContent(11,0.15);
   fCutsEff->SetBinContent(12,0.15);
-  for(Int_t i=13;i<=20;i++) fCutsEff->SetBinContent(i,0.);
+ // for(Int_t i=13;i<=20;i++) fCutsEff->SetBinContent(i,0.);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",20,0,20);
@@ -367,17 +368,26 @@ void AliHFSystErr::InitDplustoKpipi2010PbPb020() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.03); // 3% (1% per track)
+  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,i,0.075+0.005*(Float_t)i); 
 
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",20,0,20);
   for(Int_t i=1;i<=20;i++) fRawYield->SetBinContent(i,1);  //5 to 10%
-  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,31./156.);
+//   for(Int_t i=6;i<=7;i++) fRawYield->SetBinContent(i,0.32);
+//   for(Int_t i=7;i<=9;i++) fRawYield->SetBinContent(i,0.32);
+//   for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.05);//31./156.);
+  fRawYield->SetBinContent(6,0.32);
+  fRawYield->SetBinContent(7,0.32);
+  fRawYield->SetBinContent(8,0.32);
+  fRawYield->SetBinContent(9,0.05);
+  fRawYield->SetBinContent(10,0.05);
+  fRawYield->SetBinContent(11,0.05);
+  fRawYield->SetBinContent(12,0.05);
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fCutsEff->SetBinContent(i,0.10); // 10%
+  for(Int_t i=1;i<=20;i++) fCutsEff->SetBinContent(i,0.15); // 10%
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",20,0,20);
