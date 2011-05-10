@@ -34,8 +34,10 @@ ClassImp(AliITSdEdxSamples)
 //______________________________________________________________________
 AliITSdEdxSamples::AliITSdEdxSamples():TObject(),
   fNSamples(0),
+  fClusterMap(0),
   fP(0.),
-  fParticleSpecie(0)
+  fParticleSpecie(0),
+  fLayersForPid(0xFFFF)
 {
   // Default constructor
   for(Int_t i=0; i<kMaxSamples; i++){
@@ -49,20 +51,25 @@ AliITSdEdxSamples::AliITSdEdxSamples():TObject(),
 AliITSdEdxSamples::AliITSdEdxSamples(Int_t nSamples, Double_t* esamples, Double_t* xsamples, Double_t mom, Int_t specie) :
   TObject(),
   fNSamples(nSamples),
+  fClusterMap(0),
   fP(mom),
-  fParticleSpecie(specie)
+  fParticleSpecie(specie),
+  fLayersForPid(0xFFFF)
 {
   // Standard constructor
   SetdESamples(nSamples,esamples);
   SetdxSamples(nSamples,xsamples);
+  SetClusterMapFromdE();
 }
 
 //______________________________________________________________________
 AliITSdEdxSamples::AliITSdEdxSamples(const AliITSdEdxSamples& source) :
   TObject(),
   fNSamples(source.fNSamples),
+  fClusterMap(source.fClusterMap),
   fP(source.fP),
-  fParticleSpecie(source.fParticleSpecie)
+  fParticleSpecie(source.fParticleSpecie),
+  fLayersForPid(source.fLayersForPid)
 {
   // Copy constructor
   for(Int_t i=0; i<kMaxSamples; i++){
@@ -110,6 +117,22 @@ void AliITSdEdxSamples::SetSamplesAndMomenta(Int_t nSamples, Double_t* esamples,
   return;
 }
 //______________________________________________________________________
+void AliITSdEdxSamples::SetLayerSample(Int_t iLayer, Bool_t haspoint, Double_t dE, Double_t dx, Double_t p){
+  // set info from single layer
+  if(haspoint){
+    SetPointOnLayer(iLayer);
+    fdESamples[iLayer]=dE; 
+    fdxSamples[iLayer]=dx; 
+    fPAtSample[iLayer]=p;
+  }else{
+    if(HasPointOnLayer(iLayer)) fClusterMap-=(1<<iLayer);
+    fdESamples[iLayer]=0.; 
+    fdxSamples[iLayer]=0.; 
+    fPAtSample[iLayer]=0.;
+       
+  }
+}
+//______________________________________________________________________
 Double_t AliITSdEdxSamples::GetTruncatedMean(Double_t frac, Double_t mindedx) const {
   // compute truncated mean 
 
@@ -117,13 +140,13 @@ Double_t AliITSdEdxSamples::GetTruncatedMean(Double_t frac, Double_t mindedx) co
   Double_t dedx[kMaxSamples];
   for (Int_t il=0; il<fNSamples; il++) { // count good (>0) dE/dx values
     Double_t dedxsamp=GetdEdxSample(il);
-    if(dedxsamp>mindedx){
+    if(HasPointOnLayer(il) && UseLayerForPid(il) && dedxsamp>mindedx){
       dedx[nc]= dedxsamp;
       nc++;
     }    
   }
   if(nc<1) return 0.;
-  
+
   Int_t swap; // sort in ascending order
   do {
     swap=0;
@@ -160,7 +183,7 @@ Double_t AliITSdEdxSamples::GetWeightedMean(Double_t mindedx) const {
   Double_t dedx[kMaxSamples];
   for (Int_t il=0; il<fNSamples; il++) { // count good (>0) dE/dx values
     Double_t dedxsamp=GetdEdxSample(il);
-    if(dedxsamp>mindedx){
+    if(HasPointOnLayer(il) && UseLayerForPid(il) && dedxsamp>mindedx){
       dedx[nc]= dedxsamp;
       nc++;      
     }
@@ -183,6 +206,8 @@ void  AliITSdEdxSamples::GetConditionalProbabilities(AliITSPidParams* pars, Doub
   Double_t itsProb[nPart] = {1,1,1}; // p, K, pi
 
   for(Int_t iS=0; iS<fNSamples; iS++){
+    if(!HasPointOnLayer(iS)) continue;
+    if(!UseLayerForPid(iS)) continue;
     Int_t iLayer=iS+3; // to match with present ITS
     if(iLayer>6) iLayer=6; // all extra points are treated as SSD
     Float_t dedx = GetdEdxSample(iS);
@@ -216,4 +241,49 @@ void  AliITSdEdxSamples::GetConditionalProbabilities(AliITSPidParams* pars, Doub
   condprob[AliPID::kProton] = itsProb[0];
   return;
 
+}
+//______________________________________________________________________
+void  AliITSdEdxSamples::PrintAll() const{
+  // print all the infos
+  printf("Particle %d momentum %f GeV/c, number of points %d\n",
+	 GetParticleSpecieMC(),
+	 fP,
+	 GetNumberOfEffectiveSamples());
+  for(Int_t iLay=0; iLay<fNSamples; iLay++){
+    printf("   Layer %d   Point %d   dE %f keV  dx %f cm  mom %f GeV/c\n",iLay,
+	   HasPointOnLayer(iLay),
+	   GetdESample(iLay),
+	   GetdxSample(iLay),
+	   GetMomentumAtSample(iLay));
+  }
+
+  printf("Layers used for PID:\n");
+  printf("Layer ");
+  for(Int_t iLay=0; iLay<fNSamples; iLay++){
+    printf("%d ",iLay);
+  }
+  printf("\n");
+  
+  printf("Use   ");
+  for(Int_t iLay=0; iLay<fNSamples; iLay++){
+    printf("%d ",UseLayerForPid(iLay));
+  }
+  printf("\n");
+  printf("Truncated mean = %f\n",GetTruncatedMean());
+}
+//______________________________________________________________________
+void  AliITSdEdxSamples::PrintClusterMap() const{
+  // print the cluster map
+
+  printf("Layer ");
+  for(Int_t iLay=0; iLay<fNSamples; iLay++){
+    printf("%d ",iLay);
+  }
+  printf("\n");
+  
+  printf("Point ");
+  for(Int_t iLay=0; iLay<fNSamples; iLay++){
+    printf("%d ",HasPointOnLayer(iLay));
+  }
+  printf("\n");
 }
