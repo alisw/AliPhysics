@@ -31,13 +31,14 @@
 
 #include "Normalize2d.C"
 #include "ALICEWorkInProgress.C"
+#include "utils.C"
 
 using namespace std;
 
 Int_t PlotSpectraPbPb();
 Int_t PlotSpectraPbPb2(UInt_t iPlotFlag = 0xFF,UInt_t iCenFlag = 0xFF,UInt_t iSpecFlag = 0xFF,Int_t iALICEType  =100);
 Int_t PlotJetBFluctuations();
-Int_t PlotJetBFluctuations2(UInt_t iPlotFlag = 0xFFFFF,UInt_t iPlotType = 0xFFFFF,Float_t inPtLo = 50,Float_t inPtUp = 100);
+Int_t PlotJetBFluctuations2(UInt_t iPlotFlag = 0xFFFFF,UInt_t iPlotType = 0xFFFFF,Float_t inPtLo = 50,Float_t inPtUp = 100,Int_t iALICEType = 100);
 Int_t PlotSubtract(Int_t iALICEtype = 100);
 Int_t PlotJetQA();
 TH1* CorrectForEff(TH1 *hTrack);
@@ -143,25 +144,25 @@ void PlotNote(){
   PlotSubtract(12); // do not call before others changes style
   
   // BF 01a-d Random cones
-  //  PlotJetBFluctuations2((1<<0)|(1<<1)|(1<<2),1<<0);  
+  // PlotJetBFluctuations2((1<<0)|(1<<1)|(1<<2),1<<0,50,100,13);  
   
   // BF 02 a-d jet, take out unquenched
   //  PlotJetBFluctuations2((1<<4)|(1<<6),1<<0);  
 
   // BF 03 a-d
-  //  PlotJetBFluctuations2((1<<3),1<<0);  
+  // PlotJetBFluctuations2((1<<3),1<<0);  
 
   // BF 04 a-d 05 06
-  //  PlotJetBFluctuations2((1<<0)|(1<<3)|(1<<4)|(1<<7)|(1<<8),1<<0);  
+  // PlotJetBFluctuations2((1<<0)|(1<<3)|(1<<4)|(1<<7)|(1<<8),1<<0,50,100,13);  
 
   // BF 07 08 (vs. Mult)
-  //  PlotJetBFluctuations2((1<<0)|(1<<1)|(1<<3)|(1<<4)|(1<<7)|(1<<8),1<<1);
+  //  PlotJetBFluctuations2((1<<0)|(1<<1)|(1<<3)|(1<<4)|(1<<7)|(1<<8),1<<1,50,100,13);
 
   // BF08
   //  PlotJetBFluctuations2((1<<8)|(1<<11),1<<1);  
  
   // BF 11a-d
-  // PlotJetBFluctuations2((1<<3),1<<0|1<<2);  
+  //  PlotJetBFluctuations2((1<<3),1<<0|1<<2);  
 
   // BF 12a-d Random cones vs RP 
   //  PlotJetBFluctuations2((1<<0),1<<0|1<<2);  
@@ -234,9 +235,9 @@ Int_t PlotJetQA(){
 
   TString sFile =  "~/alice/data/analysis/train_maf/output_110216.root";
   TString sinputName  = "spec2_clustersAOD_ANTIKT04_B2_Filter00256_Cut00150_Skip00_clustersAOD_ANTIKT04_B1_Filter00256_Cut00150_Skip00_0000000000";
-  TString sinputJet = "%% Pb+Pb Anti-k_{T} R = 0.4 (B2)";
+  TString sinputJet = "%% Pb-Pb Anti-k_{T} R = 0.4 (B2)";
   TString sinputPrint = "PbPb_antikt04_B2";
-  sinputName  = "spec2_clustersAOD_ANTIKT04_B1_Filter00256_Cut00150_Skip00_clustersAOD_ANTIKT04_B0_Filter00256_Cut00150_Skip00_0000000000";cAdd = "Gen";cAddFull = "GenFull";sinputJet = "%% Pb+Pb Anti-k_{T} R = 0.4 (B0)";sinputPrint = "PbPb_antikt04_B0";
+  sinputName  = "spec2_clustersAOD_ANTIKT04_B1_Filter00256_Cut00150_Skip00_clustersAOD_ANTIKT04_B0_Filter00256_Cut00150_Skip00_0000000000";cAdd = "Gen";cAddFull = "GenFull";sinputJet = "%% Pb-Pb Anti-k_{T} R = 0.4 (B0)";sinputPrint = "PbPb_antikt04_B0";
 
   if(isPP){
     sinputName  = "spec2_clustersAOD_ANTIKT04_B0_Filter00256_Cut00150_Skip00_clustersAOD_ANTIKT04_B0_Filter00256_Cut00150_Skip00_0000000000";sinputJet = "p+p #sqrt{s} = 7 TeV Anti-k_{T} R = 0.4 (B0)";sinputPrint = "pp_antikt04_B0";
@@ -640,7 +641,7 @@ Int_t PlotSpectraPbPb2(UInt_t iPlotFlag,UInt_t iCenFlag,UInt_t iSpecFlag,Int_t i
 
 
   
-      txtHead->DrawLatex(0.5,0.99,"LHC2010 Pb+Pb #sqrt{s_{NN}} = 2.76 TeV");
+      txtHead->DrawLatex(0.5,0.99,"LHC2010 Pb-Pb #sqrt{s_{NN}} = 2.76 TeV");
       leg1->Draw();
       
 
@@ -692,11 +693,10 @@ Int_t PlotSpectraPbPb2(UInt_t iPlotFlag,UInt_t iCenFlag,UInt_t iSpecFlag,Int_t i
 	  }
 	  leg1->AddEntry(hSpectrumJets[iF][ic],Form("jets: %s",sinputJet[iF].Data()), "P");
 	}
-	txtHead->DrawLatex(0.5,0.99,"LHC2010 Pb+Pb #sqrt{s_{NN}} = 2.76 TeV");
+	txtHead->DrawLatex(0.5,0.99,"LHC2010 Pb-Pb #sqrt{s_{NN}} = 2.76 TeV");
 	leg1->Draw();
 
 	DrawALICE(c1,iALICEType,0.26,0.35);
-	  DrawDate();
 	c1->Update();
 	picName = Form("%sCmpSpectraPbPb_Jets%s_%d.%s",picPrefix.Data(),(iSpecFlag&1?"Tracks":""),ic,picSuffix.Data());
 	c1->SaveAs(picName.Data());
@@ -807,6 +807,24 @@ Int_t PlotSubtract(Int_t iALICEType){
     txtHead->SetNDC();
     txtHead->SetTextAlign(23);
 
+    TProfile *hProf = fh2CentvsRho[iF]->ProfileY(Form("%s_profile_%d",fh2CentvsRho[iF]->GetName(),iF,1,-1,"s"));
+    
+    fh2CentvsRho[iF]->SetAxisRange(0,400,"Y");
+    TGraphErrors *grRho = new TGraphErrors(fh2CentvsRho[iF]->GetNbinsX());
+    grRho->SetLineColor(kBlack);
+    for(int ib=1;ib<=fh2CentvsRho[iF]->GetNbinsX();ib++){
+      TH1D *hProj = fh2CentvsRho[iF]->ProjectionY("hProj",ib,ib);
+      hProj->SetBinContent(1,0);
+      hProj->SetBinError(1,0);
+      Float_t mean = hProj->GetMean();
+      Float_t cent = fh2CentvsRho[iF]->GetXaxis()->GetBinCenter(ib);
+      Float_t rms = hProj->GetRMS();
+      Float_t nEntries = hProj->Integral();
+      grRho->SetPoint(ib-1,cent,mean);
+      //  if(nEntries)grRho->SetPointError(ib-1,0,rms/TMath::Sqrt(nEntries));
+      hProj->Delete();
+    }
+
 
 
     fh2CentvsRho[iF]->SetAxisRange(0.,fMaxRho[iF],"Y");
@@ -814,6 +832,9 @@ Int_t PlotSubtract(Int_t iALICEType){
     fh2CentvsRho[iF]->SetXTitle("V0 centrality (%)");
     fh2CentvsRho[iF]->GetXaxis()->SetRangeUser(0,80);
     fh2CentvsRho[iF]->Draw("colz");
+
+    grRho->Draw("sameC");
+    
     txt->DrawLatex(0.5,0.8,sLegend[iF].Data());
     txtHead->DrawLatex(0.5,0.99,"LHC2010 PbPb #sqrt{s_{NN}} = 2.76 TeV");
 
@@ -824,12 +845,35 @@ Int_t PlotSubtract(Int_t iALICEType){
     if(!gROOT->IsBatch()){
       if(getchar()=='q')return 1;
     }
+
     fh2MultvsRho[iF]->SetAxisRange(0.,fMaxRho[iF],"Y");
     fh2MultvsRho[iF]->SetAxisRange(0.,fMaxMult[iF]);
     fh2MultvsRho[iF]->SetXTitle("N^{raw}_{input}");
     fh2MultvsRho[iF]->SetYTitle("#rho (GeV/c)");
 
+    fh2CentvsRho[iF]->SetAxisRange(0,400,"Y");
+    Int_t ibMaxM = fh2MultvsRho[iF]->GetXaxis()->FindBin(2600);
+    TGraphErrors *grRhoM = new TGraphErrors(ibMaxM-6);
+    grRhoM->SetLineColor(kBlack);
+    for(int ib=1;ib<ibMaxM;ib++){
+      if(ib<4)continue;
+      TH1D *hProj = fh2MultvsRho[iF]->ProjectionY("hProj",ib,ib);
+      hProj->SetBinContent(1,0);
+      hProj->SetBinError(1,0);
+      Float_t mean = hProj->GetMean();
+      Float_t cent = fh2MultvsRho[iF]->GetXaxis()->GetBinCenter(ib);
+      Float_t rms = hProj->GetRMS();
+      Float_t nEntries = hProj->Integral();
+      if(nEntries>0){
+	grRhoM->SetPoint(ib-6,cent,mean);
+	//	grRhoM->SetPointError(ib-6,0,rms/TMath::Sqrt(nEntries));
+      }
+      hProj->Delete();
+    }
+    grRhoM->Print();
+
     fh2MultvsRho[iF]->Draw("colz");
+    grRhoM->Draw("Csame");
     txt->DrawLatex(0.5,0.8,sLegend[iF].Data());
     txtHead->DrawLatex(0.5,0.99,"LHC2010 PbPb #sqrt{s_{NN}} = 2.76 TeV");
     DrawALICE(c1,iALICEType,0.4,0.7); 
@@ -1074,7 +1118,7 @@ Int_t PlotSpectraPbPb(){
   if(bLogLog)picName += "LogLog";
   leg1->Draw("same");
   TLatex *txt = 0;
-  txt = new TLatex(5,0.1,"LHC2010 Pb+Pb #sqrt{s_{NN}} = 2.76 TeV");
+  txt = new TLatex(5,0.1,"LHC2010 Pb-Pb #sqrt{s_{NN}} = 2.76 TeV");
   txt->SetTextSize(gStyle->GetTextSize()*0.8);
   txt->Draw();
   ALICEWorkInProgress(c1,"02/15/2011");
@@ -1311,7 +1355,7 @@ Int_t PlotJetBFluctuations(){
   const Float_t nColl[nCen] = {1502,742.5,250,46.6};
    const Float_t fCentLo[nCen] = {0,10,30,50};
   const Float_t fCentUp[nCen] = {10,30,50,80};
-  TH2F *hFrame = new TH2F("hFrame",";#delta p_{T} (GeV/c);Probability/GeV",200,-70,70,100,1E-5,50); 
+  TH2F *hFrame = new TH2F("hFrame",";#deltap_{T} (GeV/c);Probability/GeV",200,-70,70,100,1E-5,50); 
   hFrame->SetTitleOffset(1.5,"Y");
   hFrame->SetTitleOffset(1.5,"X");
   hFrame->SetLabelSize(hFrame->GetLabelSize("Y")*0.9,"Y");
@@ -1347,7 +1391,7 @@ Int_t PlotJetBFluctuations(){
 
   for(int ic = 0;ic < nCen;ic++){
     tmpName = Form("PWG4_BkgFluctCent%dB%d",ic,iB);
-    sDeltaPtM = Form("anti-k_{T} embedded tracks %2.0f-%2.0f GeV (MV)",fMinPtM,fMaxPtM);
+    sDeltaPtM = Form("tracks %2.0f-%2.0f GeV (MV)",fMinPtM,fMaxPtM);
     TDirectory *dir = (TDirectory*)fM->Get(tmpName.Data());
     if(!dir)Printf("Line:%d %s not found",__LINE__,tmpName.Data());
     tmpName = Form("taskBkgFluctCent%dB%d",ic,iB);
@@ -1459,7 +1503,7 @@ Int_t PlotJetBFluctuations(){
   h2RhoVsMult->SetAxisRange(0,3000.);
   h2RhoVsMult->Draw("colz");
   txt->Draw();
-  txt->DrawLatex(100,180,"LHC 2010 Pb+Pb Run #sqrt{s_{NN}} = 2.76 TeV");
+  txt->DrawLatex(100,180,"LHC 2010 Pb-Pb Run #sqrt{s_{NN}} = 2.76 TeV");
   //  txt2->DrawLatex(800,150,"ALICE Performance");
   //  txt2->DrawLatex(800,140,"01/03/2011");
   c1->Update();
@@ -1481,7 +1525,7 @@ Int_t PlotJetBFluctuations(){
   h2RhoVsCent->SetTitleSize(h2RhoVsCent->GetTitleSize("X")*0.7,"X");
   h2RhoVsCent->SetAxisRange(3,200,"Y");
   h2RhoVsCent->Draw("colz");
-  //  txt->DrawLatex(20,180,"LHC 2010 Pb+Pb Run #sqrt{s_{NN}} = 2.76 TeV");
+  //  txt->DrawLatex(20,180,"LHC 2010 Pb-Pb Run #sqrt{s_{NN}} = 2.76 TeV");
   //  txt2->DrawLatex(50,150,"ALICE Performance");
   //  txt2->DrawLatex(50,140,"01/03/2011");
   c1->Update();
@@ -1542,9 +1586,12 @@ Int_t PlotJetBFluctuations(){
   TF1 *gamma0 = new TF1("gamma0",Gamma0,-40,40,4);
   gamma0->SetParameters(1,1,1,1);
 
+
+
   for(int ic = 0;ic < nCen;ic++){
     TLegend *leg1 = new TLegend(0.2,0.65,0.3,0.93);
-    leg1->SetHeader(Form("Pb+Pb %2.0f-%2.0f%% R = 0.4 (B%d)",fCentLo[ic],fCentUp[ic],iB));
+
+    leg1->SetHeader(Form("Pb-Pb %2.0f-%2.0f%% R = 0.4 (B%d)",fCentLo[ic],fCentUp[ic],iB));
     leg1->SetFillColor(0);
     leg1->SetTextFont(gStyle->GetTextFont());
     leg1->SetTextSize(gStyle->GetTextSize()*0.6);
@@ -1579,7 +1626,7 @@ Int_t PlotJetBFluctuations(){
     tmpGaus->SetLineColor( hBiaRC[ic]->GetLineColor());
     tmpGaus->Draw("same");
     leg1->AddEntry(hBiaRC[ic],sBiaRC.Data(),"P");
-    leg1->AddEntry(tmpGaus,Form("LHS Gaus fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
+    leg1->AddEntry(tmpGaus,Form("LHS Gauss fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
     
     hDeltaPtB1[ic]->Draw("psame");
     tmpGaus = FitLHSgaus(hDeltaPtB1[ic],sigma,sigma_err,mean);
@@ -1587,7 +1634,7 @@ Int_t PlotJetBFluctuations(){
     tmpGaus->SetLineColor( hDeltaPtB1[ic]->GetLineColor());
     tmpGaus->Draw("same");
     leg1->AddEntry(hDeltaPtB1[ic],sDeltaPtB1.Data(),"P");
-    leg1->AddEntry(tmpGaus,Form("LHS Gaus fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
+    leg1->AddEntry(tmpGaus,Form("LHS Gauss fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
 
 
     hDeltaPtB2[ic]->Draw("psame");
@@ -1596,7 +1643,7 @@ Int_t PlotJetBFluctuations(){
     tmpGaus->SetLineColor( hDeltaPtB2[ic]->GetLineColor());
     tmpGaus->Draw("same");
     leg1->AddEntry(hDeltaPtB2[ic],sDeltaPtB2.Data(),"P");
-    leg1->AddEntry(tmpGaus,Form("LHS Gaus fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
+    leg1->AddEntry(tmpGaus,Form("LHS Gauss fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
     
     hDeltaPtM[ic]->DrawCopy("psame");
     tmpGaus = FitLHSgaus(hDeltaPtM[ic],sigma,sigma_err,mean);
@@ -1604,7 +1651,7 @@ Int_t PlotJetBFluctuations(){
     tmpGaus->SetLineColor( hDeltaPtM[ic]->GetLineColor());
     tmpGaus->Draw("same");
     leg1->AddEntry(hDeltaPtM[ic],sDeltaPtM.Data(),"P");
-    leg1->AddEntry(tmpGaus,Form("LHS Gaus fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
+    leg1->AddEntry(tmpGaus,Form("LHS Gauss fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
 
     leg1->Draw();
 
@@ -1678,7 +1725,7 @@ Int_t PlotJetBFluctuations(){
 }
 
 
-Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Float_t inPtUp){
+Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Float_t inPtUp,int iALICEType){
   // plot the diffent background estimates
 
   const int nCen = 4;
@@ -1703,7 +1750,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
   // bins wrt. reactions
   const Int_t nRP = 4; // 0 --> all 1,2,3
 
-  TH2F *hFrame = new TH2F("hFrame",";#delta p_{T} (GeV/c);probability density (c/GeV)",200,-70,100,1000,1E-7,50); 
+  TH2F *hFrame = new TH2F("hFrame",";#deltap_{T} (GeV/c);probability density (c/GeV)",200,-70,100,1000,1E-7,50); 
   hFrame->SetTitleOffset(1.5,"Y");
   hFrame->SetTitleOffset(1.5,"X");
   hFrame->SetLabelSize(hFrame->GetLabelSize("Y")*0.9,"Y");
@@ -1729,10 +1776,10 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 
   // 
   const Int_t kMarkerDelta[kDeltaTypes] = {kFullCircle,kFullCircle,kOpenCircle,         33,kFullSquare,kFullSquare,kFullSquare, kFullSquare,     31,kFullCircle,kOpenCircle,31};
-  const Int_t kColorDelta[kDeltaTypes] =         {kRed,      kBlue,       kRed,      kBlue,     kBlue+2,    kGray+1,     kRed+2,     kOrange,kOrange,kRed,kRed,kBlue};
+  const Int_t kColorDelta[kDeltaTypes] =         {kRed,      kBlue,       kRed,      kBlue,     kBlue+2,    kGray+1,     kRed+2,     kOrange+2,kOrange+2,kRed,kRed,kBlue};
   const Int_t kFitDelta[kDeltaTypes] =    {          1,          1,          1,          1,          1,          1,          1,           0,       1,1,1,0};
   const Int_t kNormDelta[kDeltaTypes] =   {          2,          0,          0,          2,          2,          0,          0,           0,      1,2,0,0};
-
+  const Int_t kLineDelta[kDeltaTypes] = {            1,          1,          2,          1,          1,          1,          1,           1,      1,1,1,1};
   const Int_t kMarkerRP[nRP] = {kFullSquare,22,29,23}; // first no used
   const Int_t kColorRP[nRP] = {kBlack,kBlue+2,kCyan+2,kGreen+2};
 
@@ -1772,7 +1819,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
   if(fL){
     iDelta = 0;
     // leticia BiA Randome cones
-    sDelta[iDelta][0] = "random cones";
+    sDelta[iDelta][0] = "rand. cones";
     if(iB==1)tmpName = "BiA sa RC skip0 centrality";
     else if (iB==2)tmpName = "BiA RC skip0 va centrality";
     TH2F *h2Tmp = (TH2F*)fL->Get(tmpName.Data());
@@ -1839,19 +1886,20 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
     //------------
 
     iDelta = 1;
-    sDelta[iDelta][0] = "RC (randomized event)";
+    sDelta[iDelta][0] = "RC (randomized #eta#phi)";
     if(iB==1)tmpName = "BiA RC random input sa centrality";
     else if (iB==2)tmpName = "BiA RC random input va centrality";
     h2Tmp = (TH2F*)fL->Get(tmpName.Data());
     if(!h2Tmp)Printf("Line:%d %s not found",__LINE__,tmpName.Data());
     if(fDebug)Printf("Line: %d",__LINE__);
     for(int ic = 0;ic < nCen;ic++){
+      if(!h2Tmp)Printf("Line:%d %s not found",__LINE__,tmpName.Data());
       if(!h2Tmp)continue;
       iRP = 0;
       Int_t ibLo = h2Tmp->GetXaxis()->FindBin(fCentLo[ic]);
       Int_t ibUp = h2Tmp->GetXaxis()->FindBin(fCentUp[ic])-1;
       Printf("Line:%d bin %d - %d",__LINE__,ibLo,ibUp);
-      hDeltaPt[iDelta][ic][iRP] = h2Tmp->ProjectionY(Form("hBiaL%d",ic),ibLo,ibUp,"E");
+      hDeltaPt[iDelta][ic][iRP] = h2Tmp->ProjectionY(Form("hBia1L%d",ic),ibLo,ibUp,"E");
       Float_t fScale =  hDeltaPt[iDelta][ic][iRP]->Integral("width");
       if(fScale)  hDeltaPt[iDelta][ic][iRP]->Scale(1./fScale);
       if(fRP){
@@ -1866,9 +1914,10 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 	  if(fScale)  hDeltaPt[iDelta][ic][iRP]->Scale(1./fScale);
 	}
       }
+      Printf(hDeltaPt[iDelta][ic][iRP])
     }
-    iRP = 0;
 
+    iRP = 0;
     for(int im = 0;im < nMult;im++){
       for(iRP=1;iRP<nRP;iRP++){
 	tmpName = Form("hBia_random_RP%d_M%d_cut0.15",iRP-1,im);
@@ -1909,8 +1958,8 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 
     // ------------------------------------------
     // leticia random cones skip leading jets
-    iDelta = 2;
-    sDelta[iDelta][0] = "RC (excl. 2 leading jets)";
+    iDelta = 2;iRP = 0;
+    sDelta[iDelta][0] = "RC (w/o 2 lead. jets)";
     if(fDebug)Printf("Line: %d",__LINE__);
     if(iB==1)tmpName = "BiA sa RC skip2 centrality";
     else if (iB==2)tmpName = "BiA RC skip2 va centrality";
@@ -1918,7 +1967,6 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
     if(!h2Tmp)Printf("Line:%d %s not found",__LINE__,tmpName.Data());      
     for(int ic = 0;ic < nCen;ic++){
       if(!h2Tmp)continue;
-
       Int_t ibLo = h2Tmp->GetXaxis()->FindBin(fCentLo[ic]);
       Int_t ibUp = h2Tmp->GetXaxis()->FindBin(fCentUp[ic])-1;
       Printf("Line:%d bin %d - %d",__LINE__,ibLo,ibUp);
@@ -1996,7 +2044,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
     // jet embedded
     TString cBB = "/Users/kleinb/Dropbox/SharedJets/Bastian/Files/"; 
     iDelta = 3;
-    sDelta[iDelta][0] = Form("anti-k_{T} embedded track %2.0f-%2.0f GeV",fMinPt[iDelta],fMaxPt[iDelta]);
+    sDelta[iDelta][0] = Form("track: %2.0f-%2.0f GeV",fMinPt[iDelta],fMaxPt[iDelta]);
     normRP = 1;  
     for(iRP = 0;iRP<nRP;iRP++){
       for(int ic = 0;ic < nCen;ic++){
@@ -2032,7 +2080,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
   iRP = 0;
 
   iDelta = 4;
-  sDelta[iDelta][0] = Form("anti-k_{T} embedded jet %2.0f-%2.0f GeV",fMinPt[iDelta],fMaxPt[iDelta]);
+  sDelta[iDelta][0] = Form("jet: %2.0f-%2.0f GeV",fMinPt[iDelta],fMaxPt[iDelta]);
 
 
   for(iRP = 0;iRP<nRP;iRP++){
@@ -2068,7 +2116,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
     iDelta = 5;
     TString fOTFQoff = "~/Dropbox/SharedJets/OnTheFlyOutput/PWG4_JetTasksOutput_110422_p2_OTFQOff_000139107_Total.root";
     TFile *fQoff = TFile::Open(fOTFQoff.Data());
-    sDelta[iDelta][0] = Form("anti-k_{T} embedded unquenched jet %2.0f-%2.0f GeV",fMinPt[iDelta],fMaxPt[iDelta]);
+    sDelta[iDelta][0] = Form("unquenched jet: %2.0f-%2.0f GeV",fMinPt[iDelta],fMaxPt[iDelta]);
     if(fQoff){
       for(int ic = 0;ic < nCen;ic++){
       tmpName = Form("PWG4_BkgFluct%sCent%dB%d","ANTIKT",ic,iB);
@@ -2096,7 +2144,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
     iDelta = 6;
     TString fOTFQon = "/Users/kleinb/Dropbox/SharedJets/OnTheFlyOutput/LeadingJet/PWG4_JetTasksOutput_110505_p2_OTFQOnL_Merged_v2.root";
     TFile *fQon = TFile::Open(fOTFQon.Data());
-    sDelta[iDelta][0] = Form("anti-k_{T} emb. quenched leading jet %2.0f-%2.0f GeV",fMinPt[iDelta],fMaxPt[iDelta]);
+    sDelta[iDelta][0] = Form("quen. lead. jet: %2.0f-%2.0f GeV",fMinPt[iDelta],fMaxPt[iDelta]);
     if(fQon){
       for(int ic = 0;ic < nCen;ic++){
 	tmpName = Form("PWG4_BkgFluct%sCent%dB%d","ANTIKT",ic,iB);
@@ -2123,7 +2171,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
     TString sinputDir = "PWG4_spec2_clustersAOD_ANTIKT04_B2_Filter00128_Cut00150_Skip02__0000000000_Class00";
     // Plot the real jet spectrum, to be normalized later...
     iDelta = 7;
-    sDelta[iDelta][0] = "anti k_{T} scaled jet spectrum"; 
+    sDelta[iDelta][0] = "scaled jet spectrum"; 
     
     if(true){
       THnSparseF* fhnJetPtRec =  (THnSparseF*)GetObjectFromFile("fhnJetPtRec",sinputFile.Data(),sinputDir.Data());
@@ -2352,9 +2400,10 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
     }
 
     for(iDelta = 0;iDelta < kDeltaTypes;iDelta++){
-      sDelta[iDelta][1] = sDelta[iDelta][0] + " in plane";
-      sDelta[iDelta][2] = sDelta[iDelta][0] + " in between";
-      sDelta[iDelta][3] = sDelta[iDelta][0] + " out of plane";
+      sDelta[iDelta][0] += (iPlotType&(1<<2))?" (all)":"";
+      sDelta[iDelta][1] = "in plane";
+      sDelta[iDelta][2] =  "in between";
+      sDelta[iDelta][3] =  "out of plane";
     }
 
     // THIS IS FOR THE ALICE LABELS AND THE WORK IN PROGRESS PRELIMINARY ETC.
@@ -2363,19 +2412,21 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
     txt2->SetTextSize(gStyle->GetTextSize()*0.7);
     txt2->SetTextAlign(22);
     txt2->SetTextColor(kRed);
-    
-
+    TLatex* txtHead = new TLatex();
+    txtHead->SetTextSize(0.04);
+    txtHead->SetNDC();
+    txtHead->SetTextAlign(23);
     
     if(iPlotType&(1<<0)){
       for(int ic = 0;ic < nCen;ic++){
 	TLegend *leg1 = new TLegend(0.2,0.7,0.3,0.98);
-	leg1->SetHeader(Form("Pb+Pb %2.0f-%2.0f%% R = 0.4 (B%d)",fCentLo[ic],fCentUp[ic],iB));
 	leg1->SetFillColor(0);
 	leg1->SetTextFont(gStyle->GetTextFont());
 	leg1->SetTextSize(gStyle->GetTextSize()*0.6);
 	leg1->SetBorderSize(0);
 	hFrame->DrawCopy();
 
+	Int_t iLegCount = -1;
 	for(iRP = 0;iRP<((iPlotType&(1<<2))?nRP:1);iRP++){
 	  Double_t mean = 0;
 	  Double_t sigma = 0;
@@ -2416,10 +2467,13 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 		hDeltaPt[iDelta][ic][iRP]->Scale(kNormValue[ic][iRP]/val1);
 	      }
 	    }
-
-
+	    iLegCount++;
 	    hDeltaPt[iDelta][ic][iRP]->DrawCopy("psame");
-	    leg1->AddEntry(hDeltaPt[iDelta][ic][iRP],sDelta[iDelta][iRP].Data(),"P");
+	    //	    leg1->AddEntry(hDeltaPt[iDelta][ic][iRP],sDelta[iDelta][iRP].Data(),"P");
+	    c1->Update();
+	    draw_legend_m(0.01,0.95,(TAttMarker*)hDeltaPt[iDelta][ic][iRP],sDelta[iDelta][iRP].Data(),iLegCount,1,0.026); 
+
+
 	    if(kFitDelta[iDelta]){
 	      tmpGaus = FitLHSgaus(hDeltaPt[iDelta][ic][iRP]);
 	      mean = tmpGaus->GetParameter(1);
@@ -2429,8 +2483,10 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 	      
 	      tmpGaus->SetRange(-40,40);
 	      tmpGaus->SetLineColor(hDeltaPt[iDelta][ic][iRP]->GetLineColor());
+	      tmpGaus->SetLineStyle(kLineDelta[iDelta]);
 	      tmpGaus->Draw("same");
-	      leg1->AddEntry(tmpGaus,Form("LHS Gaus fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
+	      //	      leg1->AddEntry(tmpGaus,Form("LHS Gauss fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
+	      draw_legend_l(0.45,0.95,tmpGaus,Form("LHS fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),iLegCount,1,0.026); 
 	      Double_t cent = (fCentUp[ic]+fCentLo[ic])/2;
 	      Double_t cent_e = (fCentUp[ic]-fCentLo[ic])/2;
 	      Printf("cent %3.3f +- %3.3f",cent,cent_e);
@@ -2442,12 +2498,9 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 	    }
 	  } //deltatypes
 	}// RP
-	leg1->Draw();
-	
-	txt2->SetNDC();
-	//    txt2->DrawLatex(0.5,0.97,"ALICE Performance 01/03/2011");
-	DrawALICE(c1,100,0.75,0.93);
-	DrawDate();
+	//	leg1->Draw();
+	txtHead->DrawLatex(0.5,0.99,Form("LHC2010 Pb-Pb %2.0f-%2.0f%% R = 0.4 (B%d)",fCentLo[ic],fCentUp[ic],iB));
+	DrawALICE(c1,iALICEType,0.7,0.72);
 	c1->Update();
 	c1->SaveAs(Form("%sdeltaPt_pT%s%s_B%d_cen%02d_%03d.%s",
 			picPrefix.Data(),
@@ -2462,7 +2515,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 
       // Draw the trending plots vs cent...
       c1->SetLogy(0);    
-      TH2F* hFrameMeanCent = new TH2F("hMeanCent",";centrality (%);#mu of LHS Gaus",1,0.,100.,1,-10.,10.);
+      TH2F* hFrameMeanCent = new TH2F("hMeanCent",";centrality (%);#mu of LHS Gauss (GeV/c)",1,0.,100.,1,-10.,15.);
       hFrameMeanCent->SetLabelSize(hFrame->GetLabelSize("Y")*0.9,"Y");
       hFrameMeanCent->SetLabelSize(hFrame->GetLabelSize("X")*0.9,"X");
       hFrameMeanCent->SetTitleSize(hFrame->GetTitleSize("Y")*0.9,"Y");
@@ -2473,23 +2526,31 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
       hFrameMeanCent->DrawCopy();
       
       TLegend *legSM = new TLegend(0.2,0.7,0.3,0.98);
-      legSM->SetHeader(Form("Pb+Pb R = 0.4 (B%d)",iB));
+      //      legSM->SetHeader(Form("Pb-Pb R = 0.4 (B%d)",iB));
       legSM->SetFillColor(0);
       legSM->SetTextFont(gStyle->GetTextFont());
       legSM->SetTextSize(gStyle->GetTextSize()*0.6);
       legSM->SetBorderSize(0);
       
-      
+      Int_t iLegCount = 0;      
       for(iRP = 0;iRP<((iPlotType&(1<<2))?nRP:1);iRP++){
 	for(iDelta = 0;iDelta <kDeltaTypes;iDelta++){
 	  if(!(iPlotFlag&(1<<iDelta)))continue;
 	  if(!grMeanDeltaPtCent[iDelta][iRP])continue;
-	  grMeanDeltaPtCent[iDelta][iRP]->Draw("psame");
-	  legSM->AddEntry(grMeanDeltaPtCent[iDelta][iRP],sDelta[iDelta][iRP].Data(),"P");
+	  c1->Update();
+	  if(iDelta==8||iDelta==8){
+	  }
+	  else{
+	    grMeanDeltaPtCent[iDelta][iRP]->Draw("psame");
+	    draw_legend_m(0.01,0.95,grMeanDeltaPtCent[iDelta][iRP],sDelta[iDelta][iRP].Data(),iLegCount,1,0.026); 
+	    //	  legSM->AddEntry(grMeanDeltaPtCent[iDelta][iRP],sDelta[iDelta][iRP].Data(),"P");
+	    iLegCount++;
+	  }
 	}
       }
-      legSM->Draw();
-      DrawDate();
+      //      legSM->Draw();
+      txtHead->DrawLatex(0.5,0.99,Form("LHC2010 Pb-Pb #sqrt{s} = 2.76 TeV"));
+      DrawALICE(c1,iALICEType,0.7,0.8);
       c1->Update();
       c1->SaveAs(Form("%sMeanVsCent_pT%s%s_B%d_%03d.%s",
 		      picPrefix.Data(),
@@ -2499,7 +2560,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 	if(!gROOT->IsBatch()){
       if(getchar()=='q')return 1;
 	}
-      TH2F* hFrameSigmaCent = new TH2F("hSigmaCent",";centrality (%);#sigma of LHS Gaus",1,0.,100.,10,0.,18.);
+      TH2F* hFrameSigmaCent = new TH2F("hSigmaCent",";centrality (%);#sigma of LHS Gauss (GeV/c)",1,0.,100.,10,0.,18.);
       hFrameSigmaCent->SetLabelSize(hFrame->GetLabelSize("Y")*0.9,"Y");
       hFrameSigmaCent->SetLabelSize(hFrame->GetLabelSize("X")*0.9,"X");
       hFrameSigmaCent->SetTitleSize(hFrame->GetTitleSize("Y")*0.9,"Y");
@@ -2509,23 +2570,31 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
       hFrameSigmaCent->SetStats(kFALSE);
       hFrameSigmaCent->DrawCopy();
       
+      /*
       TLegend *legSC = new TLegend(0.2,0.7,0.3,0.98);
-      legSC->SetHeader(Form("Pb+Pb R = 0.4 (B%d)",iB));
+      legSC->SetHeader(Form("Pb-Pb R = 0.4 (B%d)",iB));
       legSC->SetFillColor(0);
       legSC->SetTextFont(gStyle->GetTextFont());
       legSC->SetTextSize(gStyle->GetTextSize()*0.6);
       legSC->SetBorderSize(0);
-      
+      */
+
+      iLegCount = 0;
+
       for(iRP = 0;iRP<((iPlotType&(1<<2))?nRP:1);iRP++){
 	for(iDelta = 0;iDelta <kDeltaTypes;iDelta++){
 	  if(!(iPlotFlag&(1<<iDelta)))continue;
 	  if(!grSigmaDeltaPtCent[iDelta][iRP])continue;
 	  grSigmaDeltaPtCent[iDelta][iRP]->Draw("psame");
-	  legSC->AddEntry(grSigmaDeltaPtCent[iDelta][iRP],sDelta[iDelta][iRP].Data(),"P");
+	  //	  legSC->AddEntry(grSigmaDeltaPtCent[iDelta][iRP],sDelta[iDelta][iRP].Data(),"P");
+	  c1->Update();
+	  draw_legend_m(0.01,0.95,grSigmaDeltaPtCent[iDelta][iRP],sDelta[iDelta][iRP].Data(),iLegCount,1,0.026); 
+	  iLegCount++;
 	}
       }
-      legSC->Draw();
-      DrawDate();
+      //      legSC->Draw();
+      txtHead->DrawLatex(0.5,0.99,Form("LHC2010 Pb-Pb #sqrt{s} = 2.76 TeV"));
+      DrawALICE(c1,iALICEType,0.7,0.8);
       c1->Update();
       c1->SaveAs(Form("%sSigmaVsCent_pT%s%s_B%d_%03d.%s",
 		      picPrefix.Data(),
@@ -2542,13 +2611,15 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
     if(iPlotType&(1<<1)){
       for(int im = 0;im < nMult;im++){
 	TLegend *leg1 = new TLegend(0.2,0.7,0.3,0.98);
-	leg1->SetHeader(Form("Pb+Pb mult. %03d-%03d R = 0.4 (B%d)",multMin[im],multMax[im],iB));
+
 	leg1->SetFillColor(0);
 	leg1->SetTextFont(gStyle->GetTextFont());
 	leg1->SetTextSize(gStyle->GetTextSize()*0.6);
 	leg1->SetBorderSize(0);
+	c1->SetLogy();
 	hFrame->DrawCopy();
 	
+	Int_t iLegCount = -1;
 	for(iRP = 0;iRP<((iPlotType&(1<<2))?nRP:1);iRP++){
 	  Double_t mean = 0;
 	  Double_t sigma = 0;
@@ -2597,6 +2668,9 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 
 	    hDeltaPtMult[iDelta][im][iRP]->DrawCopy("psame");
 	    leg1->AddEntry(hDeltaPtMult[iDelta][im][iRP],sDelta[iDelta][iRP].Data(),"P");
+	    c1->Update();
+	    iLegCount++;
+	    draw_legend_m(0.01,0.95,hDeltaPtMult[iDelta][im][iRP],sDelta[iDelta][iRP].Data(),iLegCount,1,0.026); 
 	    if(kFitDelta[iDelta]){
 	      tmpGaus = FitLHSgaus(hDeltaPtMult[iDelta][im][iRP]);
 	      mean = tmpGaus->GetParameter(1);
@@ -2604,11 +2678,17 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 	      mean_error = tmpGaus->GetParError(1);
 	      sigma_error = tmpGaus->GetParError(2);	
 	      
+	      /*
+	      if(iDelta==8){
+		mean= hDeltaPtMult[iDelta][im][iRP]->GetMean();
+		sigma= hDeltaPtMult[iDelta][im][iRP]->GetRMS();
+	      }
+	      */ 
 	      tmpGaus->SetRange(-40,40);
 	      tmpGaus->SetLineColor(hDeltaPtMult[iDelta][im][iRP]->GetLineColor());
 	      tmpGaus->Draw("same");
-	      leg1->AddEntry(tmpGaus,Form("LHS Gaus fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
-	      
+	      leg1->AddEntry(tmpGaus,Form("LHS Gauss fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
+	      draw_legend_l(0.45,0.95,tmpGaus,sDelta[iDelta][iRP].Data(),iLegCount,1,0.026); 
 	      // to be replaced by actual mean of the mutliplicity
 	      Double_t mult = (multMin[im]+multMax[im])/2;
 	      Double_t mult_e = (multMax[im]-multMin[im])/2;
@@ -2623,10 +2703,12 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 	    }
 	  }
 	}
-	leg1->Draw();
+	//	leg1->Draw();
+	txtHead->DrawLatex(0.5,0.99,Form("Pb-Pb mult. %03d-%03d R = 0.4 (B%d)",multMin[im],multMax[im],iB));
 	txt2->SetNDC();
+
 	//    txt2->DrawLatex(0.5,0.97,"ALICE Performance 01/03/2011");
-	DrawDate();
+	DrawALICE(c1,iALICEType,0.7,0.72);
 	c1->Update();
 	c1->SaveAs(Form("%sdeltaPt_pT%s%s_B%d_mult%02d_%03d.%s",
 			picPrefix.Data(),
@@ -2640,7 +2722,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
       }
 	// Draw the trending plots vs cent...
 	c1->SetLogy(0);    
-	TH2F* hFrameMeanMult = new TH2F("hMeanMult",";raw #tracks;#mu of LHS Gaus",500,0.,3200.,12,-10.,10.);
+	TH2F* hFrameMeanMult = new TH2F("hMeanMult",";raw #tracks;#mu of LHS Gauss (GeV/c)",500,0.,3200.,12,-10.,15.);
 	hFrameMeanMult->SetLabelSize(hFrame->GetLabelSize("Y")*0.9,"Y");
 	hFrameMeanMult->SetLabelSize(hFrame->GetLabelSize("X")*0.9,"X");
 	hFrameMeanMult->SetTitleSize(hFrame->GetTitleSize("Y")*0.9,"Y");
@@ -2651,31 +2733,38 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 	hFrameMeanMult->DrawCopy();
 	
 	TLegend *legMM = new TLegend(0.2,0.7,0.3,0.98);
-	legMM->SetHeader(Form("Pb+Pb R = 0.4 (B%d)",iB));
+	legMM->SetHeader(Form("Pb-Pb R = 0.4 (B%d)",iB));
 	legMM->SetFillColor(0);
 	legMM->SetTextFont(gStyle->GetTextFont());
 	legMM->SetTextSize(gStyle->GetTextSize()*0.6);
 	legMM->SetBorderSize(0);
 	
-	
+	iLegCount = -1;
+	c1->Update();
 	for(iRP = 0;iRP<((iPlotType&(1<<2))?nRP:1);iRP++){
 	  for(iDelta = 0;iDelta <kDeltaTypes;iDelta++){
 	    if(!(iPlotFlag&(1<<iDelta)))continue;
 	    if(!grMeanDeltaPtMult[iDelta][iRP])continue;
 
 	    if(iDelta==8||iDelta==11){
-	      grMeanDeltaPtMult[iDelta][iRP]->Draw("Csame");
-	      legMM->AddEntry(grSigmaDeltaPtMult[iDelta][iRP],sDelta[iDelta][iRP].Data(),"L");
+	      //	      iLegCount++;
+	      //	      grMeanDeltaPtMult[iDelta][iRP]->Draw("Csame");
+	      //	      legMM->AddEntry(grSigmaDeltaPtMult[iDelta][iRP],sDelta[iDelta][iRP].Data(),"L");
+	      //	      draw_legend_l(0.01,0.95,grMeanMultPtCent[iDelta][iRP],sDelta[iDelta][iRP].Data(),iLegCount,1,0.026); 
 	    }
 	    else{
+	      iLegCount++;
 	      grMeanDeltaPtMult[iDelta][iRP]->Draw("psame");
-	      legMM->AddEntry(grSigmaDeltaPtMult[iDelta][iRP],sDelta[iDelta][iRP].Data(),"P");
+	      //	      legMM->AddEntry(grSigmaDeltaPtMult[iDelta][iRP],sDelta[iDelta][iRP].Data(),"P");
+	      draw_legend_m(0.01,0.95,grMeanDeltaPtMult[iDelta][iRP],sDelta[iDelta][iRP].Data(),iLegCount,1,0.026); 
 	    }
 
 	  }
 	}
-	legMM->Draw();
-	DrawDate();
+	//	legMM->Draw();
+	txtHead->DrawLatex(0.5,0.99,Form("LHC2010 Pb-Pb #sqrt{s} = 2.76 TeV"));
+	DrawALICE(c1,iALICEType,0.7,0.8);
+      
 	c1->Update();
 	c1->SaveAs(Form("%sMeanVsMult_pT%s%s_B%d_%03d.%s",
 			picPrefix.Data(),
@@ -2685,7 +2774,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 	if(!gROOT->IsBatch()){
 	if(getchar()=='q')return 1;
 	}
-	TH2F* hFrameSigmaMult = new TH2F("hSigmaMult",";raw #tracks;#sigma of LHS Gaus",500,0.,3200.,10,0.,18.);
+	TH2F* hFrameSigmaMult = new TH2F("hSigmaMult",";raw #tracks;#sigma of LHS Gauss (GeV/c)",500,0.,3200.,10,0.,18.);
 	hFrameSigmaMult->SetLabelSize(hFrame->GetLabelSize("Y")*0.9,"Y");
 	hFrameSigmaMult->SetLabelSize(hFrame->GetLabelSize("X")*0.9,"X");
 	hFrameSigmaMult->SetTitleSize(hFrame->GetTitleSize("Y")*0.9,"Y");
@@ -2696,27 +2785,42 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 	hFrameSigmaMult->DrawCopy();
 	
 	TLegend *legSM = new TLegend(0.2,0.7,0.3,0.98);
-	legSM->SetHeader(Form("Pb+Pb R = 0.4 (B%d)",iB));
+	legSM->SetHeader(Form("Pb-Pb R = 0.4 (B%d)",iB));
 	legSM->SetFillColor(0);
 	legSM->SetTextFont(gStyle->GetTextFont());
 	legSM->SetTextSize(gStyle->GetTextSize()*0.6);
 	legSM->SetBorderSize(0);
-	
+
+	iLegCount=-1;
+	c1->Update();
 	for(iRP = ((iPlotType&(1<<2))?1:0);iRP<((iPlotType&(1<<2))?nRP:1);iRP++){
 	  for(iDelta = 0;iDelta <kDeltaTypes;iDelta++){
 	    if(!(iPlotFlag&(1<<iDelta)))continue;
 	    if(!grSigmaDeltaPtMult[iDelta][iRP])continue;
+	    Printf("%d leg coutn",iLegCount);
 	    if(iDelta==8||iDelta==11){
+	      iLegCount++;
 	      grSigmaDeltaPtMult[iDelta][iRP]->Draw("Csame");
-	      legSM->AddEntry(grSigmaDeltaPtMult[iDelta][iRP],sDelta[iDelta][iRP].Data(),"L");
+	      TString cTmp1 = sDelta[iDelta][0];
+	      cTmp1.ReplaceAll(" (all)"," ");
+	      sDelta[iDelta][iRP] = cTmp1 + sDelta[iDelta][iRP];
+	      draw_legend_l(0.01,0.95,grSigmaDeltaPtMult[iDelta][iRP],sDelta[iDelta][iRP].Data(),iLegCount,1,0.026); 
 	    }
 	    else{
+	      iLegCount++;
+	      TString cTmp1 = sDelta[iDelta][0];
+	      cTmp1.ReplaceAll(" (all)"," ");
+	      sDelta[iDelta][iRP] = cTmp1 + sDelta[iDelta][iRP];
 	      grSigmaDeltaPtMult[iDelta][iRP]->Draw("psame");
-	      legSM->AddEntry(grSigmaDeltaPtMult[iDelta][iRP],sDelta[iDelta][iRP].Data(),"P");
+	      draw_legend_m(0.01,0.95,grSigmaDeltaPtMult[iDelta][iRP],sDelta[iDelta][iRP].Data(),iLegCount,1,0.026); 
 	    }
+
 	  }
 	}
-	legSM->Draw();
+	//	legSM->Draw();
+	txtHead->DrawLatex(0.5,0.99,Form("LHC2010 Pb-Pb #sqrt{s} = 2.76 TeV"));
+
+	DrawALICE(c1,iALICEType,0.7,0.8);
 	c1->Update();
 	c1->SaveAs(Form("%sSigmaVsMult_pT%s%s_B%d_%03d.%s",
 			picPrefix.Data(),
@@ -2737,7 +2841,7 @@ Int_t PlotJetBFluctuations2(UInt_t iPlotFlag,UInt_t iPlotType,Float_t inPtLo,Flo
 }
 
 
-    void ScaleH1(TH1* h,char* cX,char* cY,Float_t fScale,Bool_t bWidth){
+void ScaleH1(TH1* h,char* cX,char* cY,Float_t fScale,Bool_t bWidth){
   if(!h)return;
   if(!fScale)return;
 
