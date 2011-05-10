@@ -856,6 +856,16 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     map[id]=pos;
   }
 
+  TObjArray filtMcParts;
+  if (fMcMode) {
+    Int_t nmc = fMcParts->GetEntries();
+    for (Int_t i=0; i<nmc; ++i) {
+      AliStaPart *pa = static_cast<AliStaPart*>(fMcParts->At(i));
+      if (pa->OnEmcal())
+        filtMcParts.Add(pa);
+    }
+  }
+
   for(Int_t i=0, ncl=0; i<nclus; ++i) {
     AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
 
@@ -1002,6 +1012,26 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
       fHMatchDr->Fill(cl->fTrDr);
       fHMatchDz->Fill(cl->fTrDz);
       fHMatchEp->Fill(cl->fTrEp);
+    }
+
+    //mc matching
+    if (fMcMode) {
+      Int_t nmc = filtMcParts.GetEntries();
+      Double_t diffR2 = 1e9;
+      AliStaPart *msta = 0;
+      for (Int_t j=0; j<nmc; ++j) {
+        AliStaPart *pa = static_cast<AliStaPart*>(filtMcParts.At(j));
+        Double_t t1=clsVec.Eta()-pa->fVEta;
+        Double_t t2=TVector2::Phi_mpi_pi(clsVec.Phi()-pa->fVPhi);
+        Double_t tmp = t1*t1+t2*t2;
+        if (tmp<diffR2) {
+          diffR2 = tmp;
+          msta   = pa;
+        }
+      }
+      if (diffR2>10)
+        continue;
+      cl->fMcLabel = msta->fLab;
     }
   }
 }
@@ -1363,8 +1393,6 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcMcInfo()
   if (!fMcMode)
     return;
 
-  cout << "------------------------------------------ DEBUG CALCMC -------------------------------------" << endl;
-
   fMcParts->Clear();
 
   AliEMCALEMCGeometry *emc = fGeom->GetEMCGeometry();
@@ -1409,7 +1437,6 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcMcInfo()
 
       ProcessDaughters(part, it, tca);
     } 
-
     return;
   }
 
@@ -1453,112 +1480,6 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcMcInfo()
       continue;
 
     ProcessDaughters(mcP, iTrack, mcEvent);
-
-#if 0
-    // get daughters
-    TParticle *tD1 = 0;
-    TClonesArray *tD1refs = 0;
-    mcEvent->GetParticleAndTR(tP->GetFirstDaughter(),tD1,tD1refs);
-
-    TParticle *tD2 = 0;
-    TClonesArray *tD2refs = 0;
-    mcEvent->GetParticleAndTR(tP->GetLastDaughter(),tD2,tD2refs);
-
-    TParticle *tD11 = 0;
-    TClonesArray *tD11refs = 0;
-    TParticle *tD12 = 0;
-    TClonesArray *tD12refs = 0;
-    Bool_t d1Dec = 0;
-    if (tD1->GetNDaughters()>2) {
-      AliWarning(Form("Decay photon has more than two daughters: %d", tD1->GetNDaughters()));
-      return;
-    }
-    if (tD1->GetNDaughters()>=1)
-      mcEvent->GetParticleAndTR(tD1->GetFirstDaughter(),tD11,tD11refs);
-    if (tD1->GetNDaughters()==2) {
-      mcEvent->GetParticleAndTR(tD1->GetLastDaughter(),tD12,tD12refs);
-      d1Dec = 1;
-    }
-
-    TParticle *tD21 = 0;
-    TClonesArray *tD21refs = 0;
-    TParticle *tD22 = 0;
-    TClonesArray *tD22refs = 0;
-    Bool_t d2Dec = 0;
-    if (tD2->GetNDaughters()>2) {
-      AliWarning(Form("Decay photon has more than two daughters: %d", tD2->GetNDaughters()));
-      return;
-    }
-    if (tD2->GetNDaughters()>=1)
-      mcEvent->GetParticleAndTR(tD2->GetFirstDaughter(),tD21,tD21refs);
-    if (tD2->GetNDaughters()==2) {
-      mcEvent->GetParticleAndTR(tD2->GetLastDaughter(),tD22,tD22refs);
-      d2Dec = 1;
-    }
-
-    Bool_t pDec = d1Dec && d2Dec;
-    if (!pDec) 
-      continue;
-
-    if (tD11) {
-      cout << " Dau 11 with " << tD11->GetNDaughters() << endl;
-      tD11->Print();
-    }
-
-    if (0) {
-      tP->Print();
-      tD1->Print();
-      tD2->Print();
-      if (tD11) {
-        cout << " Dau 11 with " << tD11->GetNDaughters() << endl;
-        tD11->Print();
-        if (tD11refs) {
-          Int_t nrefs = tD11refs->GetEntries();
-          for (Int_t j=0;j<nrefs;++j) {
-            AliTrackReference *tr = (AliTrackReference*)tD11refs->At(j);
-            tr->SetUserId(tr->DetectorId());
-            tr->Print();
-          }
-        }
-      }
-      if (tD12){
-        cout << " Dau 12 with " << tD12->GetNDaughters() << endl;
-        tD12->Print();
-        if (tD12refs) {
-          Int_t nrefs = tD12refs->GetEntries();
-          for (Int_t j=0;j<nrefs;++j) {
-            AliTrackReference *tr = (AliTrackReference*)tD12refs->At(j);
-            tr->SetUserId(tr->DetectorId());
-            tr->Print();
-          }
-        }
-      }
-      if (tD21) {
-        cout << " Dau 21 with " << tD21->GetNDaughters() << endl;
-        tD21->Print();
-        if (tD21refs) {
-          Int_t nrefs = tD21refs->GetEntries();
-          for (Int_t j=0;j<nrefs;++j) {
-            AliTrackReference *tr = (AliTrackReference*)tD21refs->At(j);
-            tr->SetUserId(tr->DetectorId());
-            tr->Print();
-          }
-        }
-      }
-      if (tD22) {
-        cout << " Dau 22 with " << tD22->GetNDaughters() << endl;
-        tD22->Print();
-        if (tD22refs) {
-          Int_t nrefs = tD22refs->GetEntries();
-          for (Int_t j=0;j<nrefs;++j) {
-            AliTrackReference *tr = (AliTrackReference*)tD22refs->At(j);
-            tr->SetUserId(tr->DetectorId());
-            tr->Print();
-          }
-        }
-      }
-    }
-#endif
   }
 }
 
@@ -2108,6 +2029,7 @@ void AliAnalysisTaskEMCALPi0PbPb::ProcessDaughters(AliVParticle *p, Int_t index,
     newp->fVPhi = vec.Phi();
   }
   newp->fPid  = amc->PdgCode();
+  newp->fLab  = nents;
   Int_t moi = amc->GetMother();
   if (moi>=0&&moi<nparts) {
     const AliAODMCParticle *mmc = static_cast<const AliAODMCParticle*>(arr->At(moi));
@@ -2115,6 +2037,10 @@ void AliAnalysisTaskEMCALPi0PbPb::ProcessDaughters(AliVParticle *p, Int_t index,
   }
   newp->fMo = moi;
   p->SetUniqueID(nents);
+
+  // TODO: Determine which detector was hit
+  //newp->fDet = ???
+
   Int_t n = amc->GetNDaughters();
   for (Int_t i=0; i<n; ++i) {
     Int_t d = amc->GetDaughter(i);
@@ -2153,6 +2079,7 @@ void AliAnalysisTaskEMCALPi0PbPb::ProcessDaughters(AliMCParticle *p, Int_t index
     newp->fVPhi = vec.Phi();
   }
   newp->fPid  = p->PdgCode();
+  newp->fLab  = nents;
   Int_t moi = p->GetMother();
   if (moi>=0) {
     const AliMCParticle *mmc = static_cast<const AliMCParticle *>(arr->GetTrack(moi));
