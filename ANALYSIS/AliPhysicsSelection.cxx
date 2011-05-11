@@ -1292,14 +1292,15 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
     // With the same strategy update fBGStatOffset
     Int_t bgstatoffset = entry->GetBGStatOffset();
     
-    // Nothing to merge with since run number was not initialized.
-    if (bgstatoffset < 0) continue;
-    if (fBGStatOffset < 0) 
-    {
-      fBGStatOffset = bgstatoffset;
+    // Nothing to merge with since BG was not initialized.
+    if (!(bgstatoffset < 0)){
+      if (fBGStatOffset < 0) 
+	{
+	  fBGStatOffset = bgstatoffset;
+	}
     }
     if (fBGStatOffset != bgstatoffset)
-       AliWarning(Form("Current run %d not matching the one to be merged with %d", fBGStatOffset, bgstatoffset));
+      AliWarning(Form("Current run %d not matching the one to be merged with %d", fBGStatOffset, bgstatoffset));
     
 
     
