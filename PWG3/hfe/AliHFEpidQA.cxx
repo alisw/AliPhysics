@@ -1029,7 +1029,8 @@ TObjArray * AliHFEpidQA::MakeCleanListElectrons(const TObjArray *electrons) cons
   //
   TObjArray *tracks = new TObjArray;
   TIter candidates(electrons);
-  AliESDEvent *esd; AliAODEvent *aod;
+  AliESDEvent *esd; 
+  //AliAODEvent *aod;
   AliHFEV0info *hfetrack;
   // const Double_t kSigmaTight = 1.;
   // const Double_t kSigmaLoose = 4.;
