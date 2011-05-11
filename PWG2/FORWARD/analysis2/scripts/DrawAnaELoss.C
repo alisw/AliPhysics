@@ -28,7 +28,7 @@ const char* pdfName = "FitResults.pdf";
  *
  * @verbatim 
  *  file
- *   +- Forward 
+ *   +- ForwardResults
  *       +- fmdEnergyFitter 
  *           +- chi2   (THStack)
  *           +- c      (THStack)
@@ -60,7 +60,7 @@ TList* OpenFile(const char* fname)
     return 0;
   }
     
-  TList* forward = static_cast<TList*>(file->Get("Forward"));
+  TList* forward = static_cast<TList*>(file->Get("ForwardResults"));
   // static_cast<TList*>(file->Get("PWG2forwardDnDeta/Forward"));
   if (!forward) { 
     Error("DrawFits", "Couldn't get forward list from %s", fname);
@@ -259,6 +259,7 @@ void DrawRings(const char* fname="AnalysisResults.root")
     p->SetGridx();
     p->SetFillColor(0);
     p->SetFillStyle(0);
+    p->SetLogy();
     TList* d = static_cast<TList*>(fitter->FindObject(dets[i]));
     if (!d) { 
       Warning("DrawFits", "List %s not found", dets[i]);
@@ -372,7 +373,7 @@ void DrawEtaBins(const char* fname="AnalysisResults.root")
  * 
  * @verbatim 
  *  file
- *   +- Forward 
+ *   +- ForwardResults 
  *       +- fmdEnergyFitter 
  *           +- chi2   (THStack)
  *           +- c      (THStack)

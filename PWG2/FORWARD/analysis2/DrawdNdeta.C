@@ -35,6 +35,8 @@
 #include <TImage.h>
 #include <TRandom.h>
 #include <fstream>
+#define SYSERR_COLOR 
+#define SYSERR_STYLE 
 
 Double_t myFunc(Double_t* xp, Double_t* pp);
 
@@ -784,10 +786,10 @@ struct dNdetaDrawer
       // Add entry for systematic errors 
       TLegendEntry* d0 = l->AddEntry("d0", Form("%4.1f%% Systematic error", 
 						100*fFwdSysErr), "f");
-      d0->SetLineColor(kGray);
-      d0->SetMarkerColor(kGray);
-      d0->SetFillColor(kGray);
-      d0->SetFillStyle(3001);
+      d0->SetLineColor(SYSERR_COLOR);
+      d0->SetMarkerColor(SYSERR_COLOR);
+      d0->SetFillColor(SYSERR_COLOR);
+      d0->SetFillStyle(SYSERR_STYLE);
       d0->SetMarkerStyle(0);
       d0->SetLineWidth(0);
       i++;
@@ -1794,8 +1796,10 @@ struct dNdetaDrawer
     TString name(tmp->GetName());
     name.ReplaceAll("Merged", "SysError");
     tmp->SetName(name);
-    tmp->SetFillColor(kGray);
-    tmp->SetFillStyle(3001);
+    tmp->SetMarkerColor(SYSERR_COLOR);
+    tmp->SetLineColor(SYSERR_COLOR);
+    tmp->SetFillColor(SYSERR_COLOR);
+    tmp->SetFillStyle(SYSERR_STYLE);
     tmp->SetMarkerStyle(0);
     tmp->SetLineWidth(0);
   }
