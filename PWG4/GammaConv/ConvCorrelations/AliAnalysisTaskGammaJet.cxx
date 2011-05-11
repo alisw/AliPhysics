@@ -331,9 +331,11 @@ Bool_t AliAnalysisTaskGammaJet::EventIsSynced(const TClonesArray * const tracks,
       AliAODTrack * track2 = NULL;
       for(Int_t i = 0; i < tracks->GetEntriesFast(); i++) {
 	AliAODTrack * track = dynamic_cast<AliAODTrack*>(tracks->At(i));
-	if(track->GetID() == photon->GetLabel1()) track1 = track;
-	else if (track->GetID() == photon->GetLabel2()) track2 = track;
-	if(track1 && track2) break;
+	if(track) {
+	  if(track->GetID() == photon->GetLabel1()) track1 = track;
+	  else if (track->GetID() == photon->GetLabel2()) track2 = track;
+	  if(track1 && track2) break;
+	}
       }
       
       if(track1 && track2) {
@@ -387,9 +389,11 @@ Bool_t AliAnalysisTaskGammaJet::BothTracksPresent(const AliAODConversionParticle
   AliAODTrack * track2 = NULL;
   for(Int_t i = 0; i < tracks->GetEntriesFast(); i++) {
     AliAODTrack * track = dynamic_cast<AliAODTrack*>(tracks->At(i));
-    if(track->GetID() == photon->GetLabel1()) track1 = track;
-    else if (track->GetID() == photon->GetLabel2()) track2 = track;
-    if(track1 && track2) break;
+    if(track) {
+      if(track->GetID() == photon->GetLabel1()) track1 = track;
+      else if (track->GetID() == photon->GetLabel2()) track2 = track;
+      if(track1 && track2) break;
+    }
   }
   
   if(track1 && track2) {

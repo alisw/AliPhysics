@@ -257,7 +257,7 @@ void AliAnalysisTaskGammaConvDalitz::UserExec(Option_t */*option*/)
     // yes: MC parameters
     // no:  data parameters
         if (!AliV0Reader::GetESDpid()){
-            if (fMCEvent ) {
+	  if (MCEvent() ) {
                 AliV0Reader::InitESDpid();
             } else {
                 AliV0Reader::InitESDpid(1);
