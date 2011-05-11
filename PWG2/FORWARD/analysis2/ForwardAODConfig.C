@@ -67,7 +67,7 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Set the maximum number of particle to try to reconstruct 
   task->GetDensityCalculator().SetMaxParticles(10);
   // Wet whether to use poisson statistics to estimate N_ch
-  task->GetDensityCalculator().SetUsePoisson(false);
+  task->GetDensityCalculator().SetUsePoisson(true);
   // Set the lower multiplicity cut.  Overrides setting in energy loss fits.
   task->GetDensityCalculator().SetMultCut(.3); //was 0.3
   // Set the lower per-ring multiplicity cuts 
