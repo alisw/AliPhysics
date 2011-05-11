@@ -361,6 +361,10 @@ public:
    * - The centrality is within the specified limits, or if lower
    *   limit is equal to or larger than the upper limit.
    * 
+   * Note, for data with out a centrality estimate (e.g., pp), one
+   * must pass equal centrality cuts, or no data will be accepted.  In
+   * other words, for pp data, always pass cMin=0, cMax=0
+   *
    * If a histogram is passed in the last parameter, then that
    * histogram is filled with the trigger bits. 
    * 
