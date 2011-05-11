@@ -35,8 +35,8 @@
 #include <TImage.h>
 #include <TRandom.h>
 #include <fstream>
-#define SYSERR_COLOR 
-#define SYSERR_STYLE 
+#define SYSERR_COLOR kBlue-10
+#define SYSERR_STYLE 1001
 
 Double_t myFunc(Double_t* xp, Double_t* pp);
 
