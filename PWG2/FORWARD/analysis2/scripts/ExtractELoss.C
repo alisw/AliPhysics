@@ -38,7 +38,7 @@ ExtractELoss(const char* fname="forward_eloss.root",
     return;
   }
     
-  TList* forward = static_cast<TList*>(file->Get("Forward"));
+  TList* forward = static_cast<TList*>(file->Get("ForwardResults"));
   // static_cast<TList*>(file->Get("PWG2forwardDnDeta/Forward"));
   if (!forward) { 
     Error("ExtractELoss", "Couldn't get forward list from %s", fname);
