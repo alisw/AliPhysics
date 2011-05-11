@@ -379,6 +379,8 @@ void AliMultiplicityTask::Exec(Option_t*)
       if (!mult)
       {
         AliDebug(AliLog::kError, "AliMultiplicity not available");
+	if (labelArr) delete[] labelArr;
+	if (etaArr) delete[] etaArr;
         return;
       }
   
@@ -386,8 +388,8 @@ void AliMultiplicityTask::Exec(Option_t*)
       if ((fAnalysisMode & AliPWG0Helper::kSPD) && !(fAnalysisMode & AliPWG0Helper::kTPC || fAnalysisMode & AliPWG0Helper::kTPCITS || fAnalysisMode & AliPWG0Helper::kTPCSPD)) {
 	// if we are counting both tracks and tracklets, these arrays were already initialized above 
 	AliDebug(AliLog::kInfo, "Booking arrays");
-	labelArr = new Int_t[mult->GetNumberOfTracklets()];
-	etaArr = new Float_t[mult->GetNumberOfTracklets()];
+	if (!labelArr) labelArr = new Int_t[mult->GetNumberOfTracklets()];
+	if (!etaArr) etaArr = new Float_t[mult->GetNumberOfTracklets()];
       }
       if (inputCount) foundInEta10 = kTRUE; // by definition, if we found a track.
       
@@ -496,12 +498,16 @@ void AliMultiplicityTask::Exec(Option_t*)
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     if (!eventHandler) {
       Printf("ERROR: Could not retrieve MC event handler");
+      if (labelArr) delete[] labelArr;
+      if (etaArr) delete[] etaArr;
       return;
     }
 
     AliMCEvent* mcEvent = eventHandler->MCEvent();
     if (!mcEvent) {
       Printf("ERROR: Could not retrieve MC event");
+      if (labelArr) delete[] labelArr;
+      if (etaArr) delete[] etaArr;
       return;
     }
 
@@ -509,6 +515,8 @@ void AliMultiplicityTask::Exec(Option_t*)
     if (!stack)
     {
       AliDebug(AliLog::kError, "Stack not available");
+      if (labelArr) delete[] labelArr;
+      if (etaArr) delete[] etaArr;
       return;
     }
     
@@ -516,6 +524,8 @@ void AliMultiplicityTask::Exec(Option_t*)
     if (!header)
     {
       AliDebug(AliLog::kError, "Header not available");
+      if (labelArr) delete[] labelArr;
+      if (etaArr) delete[] etaArr;
       return;
     }
 
