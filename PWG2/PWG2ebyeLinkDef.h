@@ -17,4 +17,7 @@
 
 #pragma link C++ class AliEbyEFluctuationAnalysisTask+;
 
+#pragma link C++ class AliAnalysisTaskPtFluc+;
+#pragma link C++ class AliAnalysisTaskPtFlucPbPb+;
+
 #endif
