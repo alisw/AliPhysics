@@ -30,6 +30,7 @@
 
 #include "AliHeader.h"  
 #include "AliGenEventHeader.h"  
+#include "AliInputEventHandler.h"  
 #include "AliStack.h"  
 #include "AliESDEvent.h"  
 #include "AliMCEvent.h"  
@@ -94,11 +95,16 @@ void AlidNdPtCutAnalysis::Init(){
   //
   // Init histograms
   //
+  /*
   const Int_t ptNbins = 56; 
   const Double_t ptMin = 0.; 
   const Double_t ptMax = 16.; 
-
   Double_t binsPt[ptNbins+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0};
+  */
+  // set pt bins
+  const Int_t ptNbins = 50;
+  const Double_t ptMin = 1.e-2, ptMax = 50.;
+  Double_t *binsPt = CreateLogAxis(ptNbins,ptMin,ptMax);
 
   // 
   Int_t binsEventCount[2]={2,2};
@@ -148,7 +154,30 @@ void AlidNdPtCutAnalysis::Init(){
   // THnSparse track histograms
   //
 
+ //nCrossRows:chi2PerClust:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge
+  Int_t binsRecMCTrackHist[13]=  {160, 10, 20, 20, 50,  50,  20,  90,             ptNbins, 2,  2,  2,  3};
+  Double_t minRecMCTrackHist[13]={0.,  0., 0., 0.,-0.5,-0.5,-1.0, 0.,             ptMin,   0., 0., 0.,-1.};
+  Double_t maxRecMCTrackHist[13]={160.,10.,1.,  1., 0.5, 0.5, 1.0, 2.*TMath::Pi(), ptMax,   2., 2., 2., 2.};
+
+  fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nCrossRows:chi2PerClust:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge",13,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
+  fRecMCTrackHist->SetBinEdges(8,binsPt);
+  fRecMCTrackHist->GetAxis(0)->SetTitle("nCrossRows");
+  fRecMCTrackHist->GetAxis(1)->SetTitle("chi2PerClust");
+  fRecMCTrackHist->GetAxis(2)->SetTitle("nCrossRows/nFindableClust");
+  fRecMCTrackHist->GetAxis(3)->SetTitle("fracSharedClust");
+  fRecMCTrackHist->GetAxis(4)->SetTitle("DCAy (cm)");
+  fRecMCTrackHist->GetAxis(5)->SetTitle("DCAz (cm)");
+  fRecMCTrackHist->GetAxis(6)->SetTitle("#eta");
+  fRecMCTrackHist->GetAxis(7)->SetTitle("#phi (rad)");
+  fRecMCTrackHist->GetAxis(8)->SetTitle("p_{T} (GeV/c)");
+  fRecMCTrackHist->GetAxis(9)->SetTitle("hasStrangeMother");
+  fRecMCTrackHist->GetAxis(10)->SetTitle("isFromMaterial");
+  fRecMCTrackHist->GetAxis(11)->SetTitle("isPrim");
+  fRecMCTrackHist->GetAxis(12)->SetTitle("charge");
+  fRecMCTrackHist->Sumw2();
+
   //nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:kinkIdx:isPrim:polarity
+  /*
   Int_t binsRecMCTrackHist[11]={160,80,80,100,100,90,90,ptNbins, 3, 2, 2};
   Double_t minRecMCTrackHist[11]={0., 0., 0., -1.,-1.,-1.5, 0., ptMin, -1., 0., 0.};
   Double_t maxRecMCTrackHist[11]={160.,10.,1.2, 1.,1.,1.5, 2.*TMath::Pi(), ptMax, 2., 2., 2.};
@@ -168,6 +197,7 @@ void AlidNdPtCutAnalysis::Init(){
   fRecMCTrackHist->GetAxis(9)->SetTitle("isPrim");
   fRecMCTrackHist->GetAxis(10)->SetTitle("polarity");
   fRecMCTrackHist->Sumw2();
+  */
 
   // init output folder
   fAnalysisFolder = CreateFolder("folderdNdPt","Analysis dNdPt Folder");
@@ -196,50 +226,33 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
   }
 
   // trigger selection
+
   Bool_t isEventTriggered = kTRUE;
-  AliPhysicsSelection *trigSel = NULL;
-  AliTriggerAnalysis *trigAna = NULL; // needed for andV0
+  AliPhysicsSelection *physicsSelection = NULL;
+  AliTriggerAnalysis* triggerAnalysis = NULL;
+
+  // 
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if (!inputHandler)
+  {
+    Printf("ERROR: Could not receive input handler");
+    return;
+  }
 
   if(evtCuts->IsTriggerRequired())  
   {
-    //
-    trigSel = GetPhysicsTriggerSelection();
-    if(!trigSel) {
-      AliDebug(AliLog::kError, "cannot get trigSel");
-      return;
-    }
-    
-    if(IsUseMCInfo()) { 
-      trigSel->SetAnalyzeMC();
-      isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
+    // always MB
+    isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
 
-      trigAna = trigSel->GetTriggerAnalysis();
-      if(!trigAna) 
-        return;
+    physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
+    if(!physicsSelection) return;
+    //SetPhysicsTriggerSelection(physicsSelection);
 
-      if(GetTrigger() == AliTriggerAnalysis::kV0AND)
-        isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
-    }
-    else {
-      //
-      // 0-multiplicity bin for LHC background correction
-      //
-      if(GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCTrackSPDvtxUpdate || 
-         GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt) 
-      {
-        trigSel->SetBin0CallbackViaPointer(&AlidNdPtAnalysis::IsBinZeroTrackSPDvtx);
-      } else {
-        trigSel->SetBin0CallbackViaPointer(&AlidNdPtAnalysis::IsBinZeroSPDvtx);
-      }
-
-      isEventTriggered = trigSel->IsCollisionCandidate(esdEvent);
-
-      trigAna = trigSel->GetTriggerAnalysis();
-      if(!trigAna) 
-        return;
-
-      if(GetTrigger() == AliTriggerAnalysis::kV0AND)
-        isEventTriggered = trigAna->IsOfflineTriggerFired(esdEvent, GetTrigger());
+    if (isEventTriggered && (GetTrigger() == AliTriggerAnalysis::kV0AND)) {
+      // set trigger (V0AND)
+      triggerAnalysis = physicsSelection->GetTriggerAnalysis();
+      if(!triggerAnalysis) return;
+      isEventTriggered = triggerAnalysis->IsOfflineTriggerFired(esdEvent, GetTrigger());
     }
   }
 
@@ -415,19 +428,44 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
   Float_t pt = esdTrack->Pt();
   Float_t eta = esdTrack->Eta();
   Float_t phi = esdTrack->Phi();
-  //Int_t nClust = esdTrack->GetTPCclusters(0);
-  Int_t nClust = esdTrack->GetTPCNclsIter1();
-  Int_t nFindableClust = esdTrack->GetTPCNclsF();
+
+
+  Int_t nClust = 0;
+  if(GetAnalysisMode() == AlidNdPtHelper::kTPC) { 
+    nClust = esdTrack->GetTPCNclsIter1();
+  } else {
+    nClust = esdTrack->GetTPCclusters(0);
+  }
 
   Float_t chi2PerCluster = 0.;
-  //if(nClust>0.) chi2PerCluster = esdTrack->GetTPCchi2()/Float_t(nClust);
-  if(nClust>0.) chi2PerCluster = esdTrack->GetTPCchi2Iter1()/Float_t(nClust);
+  if(GetAnalysisMode() == AlidNdPtHelper::kTPC) { 
+    if(nClust>0.) chi2PerCluster = esdTrack->GetTPCchi2Iter1()/Float_t(nClust);
+  } else {
+    chi2PerCluster = esdTrack->GetTPCchi2()/Float_t(nClust);
+  }
 
+  Int_t nFindableClust = esdTrack->GetTPCNclsF();
+
+  
   Float_t clustPerFindClust = 0.;
   if(nFindableClust>0.) clustPerFindClust = Float_t(nClust)/nFindableClust;
 
   Float_t b[2], bCov[3];
   esdTrack->GetImpactParameters(b,bCov);
+
+  // 
+  Float_t nCrossedRowsTPC = esdTrack->GetTPCClusterInfo(2,1);
+
+  Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
+  if (esdTrack->GetTPCNclsF()>0) {
+     ratioCrossedRowsOverFindableClustersTPC = esdTrack->GetTPCClusterInfo(2,1)/esdTrack->GetTPCNclsF();
+  }
+
+  //
+  Int_t nClustersTPCShared = esdTrack->GetTPCnclsS();
+  Float_t fracClustersTPCShared = -1.;
+  fracClustersTPCShared = Float_t(nClustersTPCShared)/Float_t(nClust);
+
 
   // kink idx
   Int_t kinkIdx = 0;
@@ -445,6 +483,8 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
   // Fill rec vs MC information
   //
   Bool_t isPrim = kTRUE;
+  Bool_t hasStrangeMother = kFALSE;
+  Bool_t isFromMaterial = kFALSE;
 
   if(IsUseMCInfo()) {
     if(!stack) return;
@@ -454,15 +494,38 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
     if(particle->GetPDG() && particle->GetPDG()->Charge()==0.) return;
     isPrim = stack->IsPhysicalPrimary(label);
 
+    // check whether has stange mother
+    //
+    Int_t motherPdg = -1; 
+    TParticle* mother = 0; 
+       
+    Int_t motherLabel = particle->GetMother(0);  
+    if(motherLabel>0) mother = stack->Particle(motherLabel); 
+    if(mother) motherPdg = TMath::Abs(mother->GetPdgCode()); // take abs for visualisation only 
+    Int_t mech = particle->GetUniqueID(); // production mechanism 
+
+    if( (motherPdg == 3122) || (motherPdg == -3122) || (motherPdg == 310)) // lambda, antilambda, k0s
+    {
+      if( (mech == 4) || (mech == 5) ) hasStrangeMother = kTRUE;
+    } 
+    else {
+      //if(isPrim==0 && mech == 13)   
+      //printf("mech %d \n", mech);
+      if(!isPrim) isFromMaterial = kTRUE; 
+    }
+
     //if(isPrim && pt > 1.5 && kinkIdx == -1) printf("nClust  %d \n", nClust);
   }
   
   // fill histo
-  Int_t polarity = -2;
-  if (esdTrack->Charge() < 0.) polarity = 0; 
-  else polarity = 1; 
-  Double_t vRecMCTrackHist[11] = { nClust,chi2PerCluster,clustPerFindClust,b[0],b[1],eta,phi,pt,kinkIdx,isPrim, polarity }; 
+  Int_t charge = esdTrack->Charge(); 
+
+  //Double_t vRecMCTrackHist[11] = { nClust,chi2PerCluster,clustPerFindClust,b[0],b[1],eta,phi,pt,kinkIdx,isPrim, polarity }; 
+  //fRecMCTrackHist->Fill(vRecMCTrackHist);
+
+  Double_t vRecMCTrackHist[13] = { nCrossedRowsTPC, chi2PerCluster, ratioCrossedRowsOverFindableClustersTPC, fracClustersTPCShared , b[0], b[1], eta, phi, pt, hasStrangeMother, isFromMaterial, isPrim, charge }; 
   fRecMCTrackHist->Fill(vRecMCTrackHist);
+
 }
 
 //_____________________________________________________________________________
