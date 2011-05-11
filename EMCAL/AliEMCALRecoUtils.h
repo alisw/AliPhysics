@@ -113,9 +113,14 @@ public:
     if(i < 7 ){fNonLinearityParams[i] = param; }
     else { AliInfo(Form("Index %d larger than 7, do nothing\n",i));}
   }
-  
-  Int_t GetNonLinearityFunction() const    { return fNonLinearityFunction ;}
-  void  SetNonLinearityFunction(Int_t fun) { fNonLinearityFunction = fun  ;}
+  void  InitNonLinearityParam();
+
+  Int_t GetNonLinearityFunction() const    { return fNonLinearityFunction ; }
+  void  SetNonLinearityFunction(Int_t fun) { fNonLinearityFunction = fun  ; InitNonLinearityParam() ; }
+
+  void  SetNonLinearityThreshold(Int_t threshold) {fNonLinearThreshold = threshold ;} //only for Alexie's non linearity correction
+  Int_t GetNonLinearityThreshold() const   {return fNonLinearThreshold ;}
+
     
   //-----------------------------------------------------
   //Recalibration
@@ -270,6 +275,7 @@ private:
   Int_t      fParticleType;              // Particle type for depth calculation
   Int_t      fPosAlgo;                   // Position recalculation algorithm
   Float_t    fW0;                        // Weight0
+  Int_t	     fNonLinearThreshold;        // Non linearity threshold value for kBeamTesh non linearity function 
   
   // Recalibration 
   Bool_t     fRecalibration;             // Switch on or off the recalibration
@@ -317,7 +323,7 @@ private:
   Bool_t     fUseTimeCorrectionFactors;  // Use Time Dependent Correction
   Bool_t     fTimeCorrectionFactorsSet;  // Time Correction set at leat once
   
-  ClassDef(AliEMCALRecoUtils, 10)
+  ClassDef(AliEMCALRecoUtils, 11)
   
 };
 

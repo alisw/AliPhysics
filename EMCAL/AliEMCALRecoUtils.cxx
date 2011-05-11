@@ -62,7 +62,7 @@ ClassImp(AliEMCALRecoUtils)
 //______________________________________________
 AliEMCALRecoUtils::AliEMCALRecoUtils():
   fNonLinearityFunction (kNoCorrection), fParticleType(kPhoton),
-  fPosAlgo(kUnchanged),fW0(4.),
+  fPosAlgo(kUnchanged),fW0(4.), fNonLinearThreshold(30),
   fRecalibration(kFALSE), fEMCALRecalibrationFactors(),
   fRemoveBadChannels(kFALSE), fRecalDistToBadChannels(kFALSE), fEMCALBadChannelMap(),
   fNCellsFromEMCALBorder(0), fNoEMCALBorderAtEta0(kTRUE),
@@ -120,7 +120,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
 //______________________________________________________________________
 AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco) 
 : TNamed(reco), fNonLinearityFunction(reco.fNonLinearityFunction), 
-  fParticleType(reco.fParticleType), fPosAlgo(reco.fPosAlgo), fW0(reco.fW0), 
+  fParticleType(reco.fParticleType), fPosAlgo(reco.fPosAlgo), fW0(reco.fW0), fNonLinearThreshold(reco.fNonLinearThreshold),
   fRecalibration(reco.fRecalibration),fEMCALRecalibrationFactors(reco.fEMCALRecalibrationFactors),
   fRemoveBadChannels(reco.fRemoveBadChannels),fRecalDistToBadChannels(reco.fRecalDistToBadChannels),
   fEMCALBadChannelMap(reco.fEMCALBadChannelMap),
@@ -163,6 +163,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fParticleType              = reco.fParticleType;
   fPosAlgo                   = reco.fPosAlgo; 
   fW0                        = reco.fW0;
+  fNonLinearThreshold        = reco.fNonLinearThreshold;
   fRecalibration             = reco.fRecalibration;
   fEMCALRecalibrationFactors = reco.fEMCALRecalibrationFactors;
   fRemoveBadChannels         = reco.fRemoveBadChannels;
@@ -459,6 +460,68 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster){
   return energy;
 
 }
+//__________________________________________________
+void AliEMCALRecoUtils::InitNonLinearityParam()
+{
+	//Initialising Non Linearity Parameters
+	
+	if(fNonLinearityFunction == kPi0MC)
+		{
+			fNonLinearityParams[0] = 1.014;
+      fNonLinearityParams[1] = -0.03329;
+      fNonLinearityParams[2] = -0.3853;
+      fNonLinearityParams[3] = 0.5423;
+      fNonLinearityParams[4] = -0.4335;
+		}
+
+	if(fNonLinearityFunction == kPi0GammaGamma)
+		{
+			fNonLinearityParams[0] = 1.04;
+			fNonLinearityParams[1] = -0.1445;
+			fNonLinearityParams[2] = 1.046;
+		}	
+
+	if(fNonLinearityFunction == kPi0GammaConversion)
+		{
+      fNonLinearityParams[0] = 0.139393;
+      fNonLinearityParams[1] = 0.0566186;
+      fNonLinearityParams[2] = 0.982133;
+		}	
+
+	if(fNonLinearityFunction == kBeamTest)
+		{
+			if(fNonLinearThreshold == 30)
+			{
+				fNonLinearityParams[0] = 1.007; 
+				fNonLinearityParams[1] = 0.894; 
+				fNonLinearityParams[2] = 0.246; 
+			}
+			if(fNonLinearThreshold == 45)
+			{
+				fNonLinearityParams[0] = 1.003; 
+				fNonLinearityParams[1] = 0.719; 
+				fNonLinearityParams[2] = 0.334; 
+			}
+			if(fNonLinearThreshold == 75)
+			{
+				fNonLinearityParams[0] = 1.002; 
+				fNonLinearityParams[1] = 0.797; 
+				fNonLinearityParams[2] = 0.358; 
+			}
+		}
+
+	if(fNonLinearityFunction == kBeamTestCorrected)
+		{
+			fNonLinearityParams[0] =  0.99078;
+			fNonLinearityParams[1] =  0.161499;
+			fNonLinearityParams[2] =  0.655166; 
+			fNonLinearityParams[3] =  0.134101;
+			fNonLinearityParams[4] =  163.282;
+			fNonLinearityParams[5] =  23.6904;
+			fNonLinearityParams[6] =  0.978;
+		}
+}
+
 //__________________________________________________
 Float_t  AliEMCALRecoUtils::GetDepth(const Float_t energy, const Int_t iParticle, const Int_t iSM) const 
 {
