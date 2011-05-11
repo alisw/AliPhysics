@@ -103,7 +103,7 @@ void MakeELossFits(const char* esddir,
 
   // Run the train 
   t.Start();
-  Printf("=== RUNNING ANALYSIS on %9 events ========================",nEvents);
+  Printf("=== RUNNING ANALYSIS on %9d events ========================",nEvents);
   mgr->StartAnalysis(proof > 0 ? "proof" : "local", chain, nEvents);
   t.Stop();
   t.Print();

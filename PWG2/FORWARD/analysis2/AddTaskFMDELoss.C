@@ -48,7 +48,7 @@ AddTaskFMDELoss(Bool_t mc, Bool_t useCent)
   // Set maximum energy loss to consider 
   task->GetEnergyFitter().SetMaxE(15); 
   // Set number of energy loss bins 
-  task->GetEnergyFitter().SetNEbins(200);
+  task->GetEnergyFitter().SetNEbins(500);
   // Set whether to use increasing bin sizes 
   task->GetEnergyFitter().SetUseIncreasingBins(true);
   // Set whether to do fit the energy distributions 
@@ -71,7 +71,7 @@ AddTaskFMDELoss(Bool_t mc, Bool_t useCent)
   // Least weight to use 
   AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
   // Maximum value of reduced chi^2 
-  AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 10;
+  AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 20;
     
   // --- Make the output container and connect it --------------------
   TString outputfile = ;
