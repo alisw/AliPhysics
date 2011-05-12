@@ -25,6 +25,7 @@
 #include "AliTriggerScalersRecordESD.h"
 #include "AliTriggerIR.h"
 #include "AliLog.h" 
+#include "AliTriggerConfiguration.h"
 
 ClassImp(AliESDHeader)
 
@@ -44,7 +45,10 @@ AliESDHeader::AliESDHeader() :
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
   fTriggerScalers(),
-  fTriggerInputsNames(kNTriggerInputs)
+  fTriggerScalersDeltaEvent(),
+  fTriggerScalersDeltaRun(),
+  fTriggerInputsNames(kNTriggerInputs),
+  fCTPConfig(NULL)
 {
   // default constructor
 
@@ -52,10 +56,12 @@ AliESDHeader::AliESDHeader() :
   for(Int_t i = 0; i<kNMaxIR ; i++) fIRArray[i] = 0;
   fTriggerInputsNames.SetOwner(kTRUE);
 }
+
 AliESDHeader::~AliESDHeader() 
 {
   // destructor
   for(Int_t i=0;i<kNMaxIR;i++)if(fIRArray[i])delete fIRArray[i];
+  delete fCTPConfig;
 }
 
 
@@ -74,8 +80,10 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   fL1TriggerInputs(header.fL1TriggerInputs),
   fL2TriggerInputs(header.fL2TriggerInputs),
   fTriggerScalers(header.fTriggerScalers),
-  fTriggerInputsNames(TObjArray(kNTriggerInputs))
-  
+  fTriggerScalersDeltaEvent(header.fTriggerScalersDeltaEvent),
+  fTriggerScalersDeltaRun(header.fTriggerScalersDeltaRun),
+  fTriggerInputsNames(TObjArray(kNTriggerInputs)),
+  fCTPConfig(header.fCTPConfig)
 {
   // copy constructor
   SetName(header.fName);
@@ -108,21 +116,22 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
     fL1TriggerInputs = header.fL1TriggerInputs;
     fL2TriggerInputs = header.fL2TriggerInputs;
     fTriggerScalers = header.fTriggerScalers;
-    
+    fTriggerScalersDeltaEvent = header.fTriggerScalersDeltaEvent;
+    fTriggerScalersDeltaRun = header.fTriggerScalersDeltaRun;
+    fCTPConfig = header.fCTPConfig;
+
     fTriggerInputsNames.Clear();
     for(Int_t i = 0; i < kNTriggerInputs; i++) {
       TNamed *str = (TNamed *)((header.fTriggerInputsNames).At(i));
       if (str) fTriggerInputsNames.AddAt(new TNamed(*str),i);
     }
-
     for(Int_t i = 0; i<kNMaxIR ; i++) {
        if(header.fIRArray[i])fIRArray[i] = new AliTriggerIR(*header.fIRArray[i]);
        else fIRArray[i]=0;
     }
     SetName(header.fName);
     SetTitle(header.fTitle);
-
-  } 
+  }
   return *this;
 }
 
@@ -155,7 +164,11 @@ void AliESDHeader::Reset()
   fL1TriggerInputs   = 0;
   fL2TriggerInputs   = 0;
   fTriggerScalers.Reset();
+  fTriggerScalersDeltaEvent.Reset();
+  fTriggerScalersDeltaRun.Reset();
   fTriggerInputsNames.Clear();
+  delete fCTPConfig;
+  fCTPConfig = 0;
   for(Int_t i=0;i<kNMaxIR;i++)if(fIRArray[i]){
    delete fIRArray[i];
    fIRArray[i]=0;
@@ -190,7 +203,6 @@ void AliESDHeader::Print(const Option_t *) const
          }
          printf("\n");
 }
-
 
 //______________________________________________________________________________
 void AliESDHeader::SetActiveTriggerInputs(const char*name, Int_t index)
@@ -280,4 +292,3 @@ Bool_t AliESDHeader::IsTriggerInputFired(const char *name) const
   else if (fL2TriggerInputs & (1 << (inputIndex-48))) return kTRUE;
   else return kFALSE;
 }
-//_______________________________________________________________________________

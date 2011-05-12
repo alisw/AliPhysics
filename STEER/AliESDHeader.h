@@ -16,10 +16,12 @@
 #include "AliVHeader.h"
 #include "AliTriggerScalersESD.h"
 #include "AliTriggerScalersRecordESD.h"
+#include "AliTriggerConfiguration.h"
 
 class AliTriggerScalersESD;
 class AliTriggerScalersRecordESD;
 class AliTriggerIR;
+class AliTriggerConfiguration;
 
 class AliESDHeader: public AliVHeader {
 public:
@@ -39,7 +41,7 @@ public:
   void      SetPeriodNumber(UInt_t n) {fPeriodNumber=n;}
   void      SetTriggerCluster(UChar_t n) {fTriggerCluster = n;}
   Bool_t    AddTriggerIR(const AliTriggerIR* ir);
-
+  void      SetCTPConfig(AliTriggerConfiguration* ctpConfig) {fCTPConfig=ctpConfig;};
 //************Setters/Getters for Trigger Inputs and TriggerScalersRecordESD
   void SetL0TriggerInputs(UInt_t n) {fL0TriggerInputs=n;}
   void SetL1TriggerInputs(UInt_t n) {fL1TriggerInputs=n;}
@@ -48,13 +50,18 @@ public:
   UInt_t      GetL1TriggerInputs() const {return fL1TriggerInputs;} 
   UShort_t    GetL2TriggerInputs() const {return fL2TriggerInputs;} 
   void SetTriggerScalersRecord(AliTriggerScalersESD *scalerRun) {fTriggerScalers.AddTriggerScalers(scalerRun); }
+  void SetTriggerScalersDeltaEvent(const AliTriggerScalersRecordESD *scalerRun) {fTriggerScalersDeltaEvent = *scalerRun; }
+  void SetTriggerScalersDeltaRun(const AliTriggerScalersRecordESD *scalerRun) {fTriggerScalersDeltaRun = *scalerRun; }
   const AliTriggerScalersRecordESD* GetTriggerScalersRecord() const {return &fTriggerScalers; }
+  const AliTriggerScalersRecordESD* GetTriggerScalersDeltaEvent() const {return &fTriggerScalersDeltaEvent; }
+  const AliTriggerScalersRecordESD* GetTriggerScalersDeltaRun() const {return &fTriggerScalersDeltaRun; }
   const AliTriggerIR* GetTriggerIR(Int_t i) const { return fIRArray[i]; }
-  void  SetActiveTriggerInputs(const char*name, Int_t index);
+  void SetActiveTriggerInputs(const char*name, Int_t index);
   const char* GetTriggerInputName(Int_t index, Int_t trglevel) const;
   TString     GetActiveTriggerInputs() const;
   TString     GetFiredTriggerInputs() const;
   Bool_t      IsTriggerInputFired(const char *name) const;
+  const AliTriggerConfiguration*  GetCTPConfig() const { return fCTPConfig;}
 //**************************************************************************
 
   ULong64_t GetTriggerMask() const {return fTriggerMask;}
@@ -70,7 +77,8 @@ public:
   void      Reset();
   void      Print(const Option_t *opt=0) const;
 
-  enum {kNTriggerInputs = 60};  //24 L0, 24 L1 and 12 L2 inputs
+  enum {kNTriggerInputs = 60};   //24 L0, 24 L1 and 12 L2 inputs
+
 private:
 
   // Event Identification
@@ -83,14 +91,18 @@ private:
   Int_t        fEventNumberInFile; // Running Event count in the file
   UShort_t     fBunchCrossNumber;  // Bunch Crossing Number
   UChar_t      fTriggerCluster;    // Trigger cluster (mask)
-  UInt_t       fL0TriggerInputs;   //L0 Trigger Inputs (mask)
-  UInt_t       fL1TriggerInputs;   //L1 Trigger Inputs (mask)
-  UShort_t     fL2TriggerInputs;   //L2 Trigger Inputs (mask)
-  AliTriggerScalersRecordESD fTriggerScalers;  //Trigger counters of triggered classes in event
+  UInt_t       fL0TriggerInputs;   // L0 Trigger Inputs (mask)
+  UInt_t       fL1TriggerInputs;   // L1 Trigger Inputs (mask)
+  UShort_t     fL2TriggerInputs;   // L2 Trigger Inputs (mask)
+  AliTriggerScalersRecordESD fTriggerScalers;  //Trigger counters of triggered classes in event, interpolated to the event time
+  AliTriggerScalersRecordESD fTriggerScalersDeltaEvent;  // Change in the trigger scalers between the two counter readings closest to the event time 
+  AliTriggerScalersRecordESD fTriggerScalersDeltaRun;  // Total number of counts in the trigger scalers for the duration of the run
   enum {kNMaxIR = 3};              // Max number of interaction records (IR)
   AliTriggerIR*  fIRArray[kNMaxIR];// Array with trigger IRs 
   TObjArray    fTriggerInputsNames;// Array of TNamed of the active trigger inputs (L0,L1 and L2)
-  ClassDef(AliESDHeader,8)
+  AliTriggerConfiguration*  fCTPConfig; // Trigger configuration for the run
+
+  ClassDef(AliESDHeader,9)
 };
 
 #endif
