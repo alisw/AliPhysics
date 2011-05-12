@@ -196,7 +196,6 @@ void AliAnalysisTaskPtFlucPbPb::UserExec(Option_t *)
     return;
   }
 
-  if(!fESDTrackCuts) Printf("ERROR: No esd track cut");
 
   // --- End event handler ---
 
@@ -255,9 +254,9 @@ void AliAnalysisTaskPtFlucPbPb::UserExec(Option_t *)
   Double_t *centbins = 0x0; // Mean pT values for centrality bin analysis
 
   Double_t centralityVZERO = 0.;
-  Int_t centralityVZEROBin = 0.;
+  Int_t centralityVZEROBin = 0;
 
-  Int_t centBin = 0.;
+  Int_t centBin = 0;
   Double_t evMptCent = 0.;
 
 
@@ -368,9 +367,14 @@ else { // - Data -
       Printf("ERROR: Could not receive track %d\n", iTracks);
       continue;
     }
-
-      if(!fESDTrackCuts->AcceptTrack(track))continue;
-
+    if(!fESDTrackCuts) {
+      Printf("ERROR: No esd track cut");
+      continue;
+    }
+    else {
+      if(!fESDTrackCuts->AcceptTrack(track))
+	continue;
+    }
 	trackPt = track->Pt();
 	fPtSpec->Fill(trackPt);
 	tracks[nrTracks] = trackPt;
