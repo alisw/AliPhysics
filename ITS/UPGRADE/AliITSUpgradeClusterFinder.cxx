@@ -811,7 +811,7 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
   AliITSRecPointU  recpnt;
   Int_t nClusters =0;
   TClonesArray &lrecp = *fRecPoints;
-  for(Int_t ilayer=0; ilayer < 6 ;ilayer ++){
+  for(Int_t ilayer=0; ilayer < segmentation->GetNLayers() ;ilayer ++){
     NewModule();
     TClonesArray *pArrDig= (TClonesArray*)digList->At(ilayer);
     StartEvent(); 

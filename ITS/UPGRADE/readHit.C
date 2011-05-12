@@ -12,12 +12,14 @@ void readHit(){
   zGlob->SetXTitle("cm");
 
   Int_t nbins=100;
-  Int_t xmin=0;
-  Int_t xmax=0.1;//00*1e-09;
+  Double_t xmin=0;
+  Double_t xmax=0.0001;//00*1e-09;
 
-  const Int_t nLayers = 6;
+ AliITSsegmentationUpgrade *segmentation = new AliITSsegmentationUpgrade();
+ const Int_t nLayers = segmentation->GetNLayers();
 
-  TH1D *hDeLoss[nLayers];
+  TH1D **hDeLoss;
+  hDeLoss = new TH1D[nLayers];
   for(Int_t i=0; i< nLayers; i++ ) {
     hDeLoss[i] = new TH1D(Form("hDeLossl%i",i),Form("E loss distribution [ Layer %i] ",i),nbins,xmin,xmax);
     hDeLoss[i]->SetXTitle("GeV");
@@ -59,7 +61,8 @@ void readHit(){
 	  pHit->GetPositionG(xg,yg,zg);
 	  xyGlob->Fill(xg,yg);
 	  zGlob->Fill(zg);
-	  hDeLoss[pHit->GetModule()]->Fill(pHit->GetIonization());
+          Int_t layer = segmentation->GetLayerFromIdIndex(pHit->GetModule());
+          hDeLoss[layer]->Fill(pHit->GetIonization());
 	} // is primary
       }//loop hit 
     }//entryloopHitList
