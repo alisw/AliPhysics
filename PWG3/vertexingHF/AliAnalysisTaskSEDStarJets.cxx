@@ -552,6 +552,9 @@ double AliAnalysisTaskSEDStarJets::FillMCFF(AliAODMCParticle* mcPart, TClonesArr
   Double_t PtLeading = -999;
   Int_t counter =-999;
 
+  if (!mcPart) return zMC2;
+  if (!mcArray) return zMC2;
+
   //find leading particle
   for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
     AliAODMCParticle* Part = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
