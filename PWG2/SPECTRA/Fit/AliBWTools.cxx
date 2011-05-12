@@ -878,7 +878,7 @@ void AliBWTools::GetYield(TH1* h,  TF1 * f, Double_t &yield, Double_t &yieldErro
   Double_t integralBelow      = min < bin1Edge ? f->Integral(min,bin1Edge) : 0;
   Double_t integralBelowError = min < bin1Edge ? f->IntegralError(min,bin1Edge) : 0;
   Double_t integralAbove      = max > bin2Edge ? f->Integral(bin2Edge,max) : 0;
-  Double_t integralAboveError = max > bin2Edge ? f->Integral(bin2Edge,max) : 0;
+  Double_t integralAboveError = max > bin2Edge ? f->IntegralError(bin2Edge,max) : 0;
 
 //   cout << "GetYield INFO" << endl;
 //   cout << " " << bin1Edge << " " << bin2Edge << endl;  
@@ -926,13 +926,18 @@ TGraphErrors * AliBWTools::DivideGraphByHisto(const TGraphErrors * g, TH1 * h, B
 
   // Divides g/h. If invert == true => h/g
 
-
+  Bool_t skipError = kFALSE;
+  if(!strcmp(g->ClassName(),"TGraph")) skipError = kTRUE;
+  if(!strcmp(g->ClassName(),"TGraphAsymmErrors")) skipError = kTRUE;
+  if(skipError) {
+    Printf("WARNING: Skipping graph errors");
+  }
   TGraphErrors * gRatio = new TGraphErrors();
   Int_t npoint = g->GetN();
   for(Int_t ipoint = 0; ipoint < npoint; ipoint++){
     Double_t xj  = g->GetX()[ipoint];
     Double_t yj  = g->GetY()[ipoint];
-    Double_t yje = g->GetEY()[ipoint];
+    Double_t yje = skipError ? 0 : g->GetEY()[ipoint];
 
     Int_t binData = h->FindBin(xj);
     Double_t yd   = h->GetBinContent(binData);
