@@ -70,6 +70,7 @@ AliTRDTenderSupply::AliTRDTenderSupply() :
   //
   // default ctor
   //
+  memset(fBadChamberID, 0, sizeof(Int_t) * kNChambers);
 }
 
 //_____________________________________________________
