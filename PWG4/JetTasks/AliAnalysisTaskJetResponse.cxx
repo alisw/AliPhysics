@@ -365,13 +365,15 @@ void AliAnalysisTaskJetResponse::UserExec(Option_t *)
   if(fDebug) Printf("Multiplicity from jet branch %s", jbname.Data());
   TClonesArray *tmpAODjets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(jbname.Data()));
     
-  for (Int_t iJet=0; iJet<tmpAODjets->GetEntriesFast(); iJet++){
+  if (tmpAODjets) {
+    for (Int_t iJet=0; iJet<tmpAODjets->GetEntriesFast(); iJet++){
       AliAODJet *jet = dynamic_cast<AliAODJet*>((*tmpAODjets)[iJet]);
 	  if(!jet) continue;
 	  TRefArray *trackList = jet->GetRefTracks();
 	  Int_t nTracks = trackList->GetEntriesFast();
 	  nInputTracks += nTracks;
 	  if(fDebug) Printf("#jet%d: %d tracks", iJet, nTracks);
+    }
   }
   if(fDebug) Printf("---> input tracks: %d", nInputTracks);
 
