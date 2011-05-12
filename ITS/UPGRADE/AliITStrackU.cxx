@@ -40,6 +40,7 @@ ClassImp(AliITStrackU)
   SetNumberOfClustersU(0);
   ResetIndexU();
   for(Int_t nlay=0;nlay<fgMaxNLayer;nlay++){ 
+    fNM[nlay]=0;
     fDy[nlay]=0; fDz[nlay]=0; fSigmaY[nlay]=0; fSigmaZ[nlay]=0; fSigmaYZ[nlay]=0;
     fClIndex[nlay]=-1; 
     fNy[nlay]=0; fNz[nlay]=0; fNormQ[nlay]=0; fNormChi2[nlay]=1000;
@@ -59,6 +60,7 @@ AliITStrackU:: AliITStrackU(Int_t nlay) :
   SetNumberOfClustersU(0);
   ResetIndexU();
   for(Int_t nl=0;nl<fgMaxNLayer;nl++){
+    fNM[nlay]=0;
     fDy[nl]=0; fDz[nl]=0; fSigmaY[nl]=0; fSigmaZ[nl]=0; fSigmaYZ[nl]=0;
     fClIndex[nl]=-1;
     fNy[nl]=0; fNz[nl]=0; fNormQ[nl]=0; fNormChi2[nl]=1000;
@@ -81,6 +83,7 @@ AliITStrackU::AliITStrackU(AliESDtrack& t,Bool_t c):
  ResetIndexU();
  ResetMarked();
   for(Int_t nlay=0;nlay<fgMaxNLayer;nlay++){
+    fNM[nlay]=0;
     fDy[nlay]=0; fDz[nlay]=0; fSigmaY[nlay]=0; fSigmaZ[nlay]=0; fSigmaYZ[nlay]=0;
     fClIndex[nlay]=-1; fNy[nlay]=0; fNz[nlay]=0; fNormQ[nlay]=0; fNormChi2[nlay]=1000;  
   }
@@ -111,6 +114,7 @@ AliITStrackU::AliITStrackU(const AliITStrackU& t, Bool_t trackMI) :
     }
   }
   for(Int_t nlay=0;nlay<fgMaxNLayer;nlay++){
+    fNM[nlay]=t.fNM[nlay];
     fDy[nlay]=t.fDy[nlay]; fDz[nlay]=t.fDz[nlay];
      fSigmaY[nlay]=t.fSigmaY[nlay]; fSigmaZ[nlay]=t.fSigmaZ[nlay]; fSigmaYZ[nlay]=t.fSigmaYZ[nlay];
     fClIndex[nlay]= t.fClIndex[nlay]; fNy[nlay]=t.fNy[nlay]; fNz[nlay]=t.fNz[nlay]; fNormQ[nlay]=t.fNormQ[nlay]; fNormChi2[nlay] = t.fNormChi2[nlay];
@@ -136,7 +140,7 @@ AliITStrackU::AliITStrackU(Double_t alpha, Double_t radius, Double_t Ycoor, Doub
 
   // get the azimuthal angle of the detector containing the innermost
   // cluster of this track (data member fAlpha)
-  for(Int_t i=0; i<fgMaxNLayer; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fSigmaYZ[i]=0;}
+  for(Int_t i=0; i<fgMaxNLayer; i++) {fNM[i]=0;fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fSigmaYZ[i]=0;}
 
   if (alpha<0) alpha+=TMath::TwoPi();
   else if (alpha>=TMath::TwoPi()) alpha-=TMath::TwoPi();
