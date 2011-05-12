@@ -157,7 +157,6 @@ void AliAnalysisTaskPtFluc::UserExec(Option_t *)
     return;
   }
 
-  if(!fESDTrackCuts) Printf("ERROR: No esd track cut");
 
   // --- End event handler ---
 
@@ -322,9 +321,14 @@ else { // - Data -
       Printf("ERROR: Could not receive track %d\n", iTracks);
       continue;
     }
-
-      if(!fESDTrackCuts->AcceptTrack(track))continue;
-
+    if(!fESDTrackCuts) {
+      Printf("ERROR: No esd track cut");
+      continue;
+    }
+    else {
+      if(!fESDTrackCuts->AcceptTrack(track))
+	continue;
+    }
 	trackPt = track->Pt();
 	fPtSpec->Fill(trackPt);
 	tracks[nrTracks] = trackPt;
