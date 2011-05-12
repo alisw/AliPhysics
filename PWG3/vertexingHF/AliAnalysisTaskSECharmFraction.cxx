@@ -7032,7 +7032,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
 	if(mcD0Parent==0x0)continue;
 	Bool_t notfound=kFALSE,bMeson=kFALSE,bBaryon=kFALSE;
 	//CheckOrigin
-	while(TMath::Abs(mcD0Parent->GetPdgCode())!=4&&TMath::Abs(mcD0Parent->GetPdgCode())!=5){
+	while(mcD0Parent && TMath::Abs(mcD0Parent->GetPdgCode())!=4&&TMath::Abs(mcD0Parent->GetPdgCode())!=5){
 	  if(500<TMath::Abs(mcD0Parent->GetPdgCode())%10000&&TMath::Abs(mcD0Parent->GetPdgCode())<600){
 	    bMeson=kTRUE;
 	    break;
