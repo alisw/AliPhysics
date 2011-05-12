@@ -727,7 +727,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 
   // Loop through the TRD layers
   TGeoHMatrix *matrix = NULL;
-  Double_t x, y, z;
+  Double_t x(0.), y(0.), z(0.);
   for (Int_t ily=startLayer, sm=-1, stk=-1, det=-1; ily < AliTRDgeometry::kNlayer; ily++) {
     AliDebug(2, Form("Propagate to x[%d] = %7.2f", ily, fR[ily]));
 
@@ -832,11 +832,6 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       t.SetStatus(AliTRDtrackV1::kBoundary, ily);
       AliDebug(4, "Failed Track on Boundary");
       continue;
-    }
-    // mark track as entering the FIDUCIAL volume of TRD
-    if(kStoreIn){
-      t.SetTrackIn(); 
-      kStoreIn = kFALSE;
     }
 
     ptrTracklet  = tracklets[ily];
@@ -957,6 +952,11 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       }
       AliDebug(4, Form("Failed Chi2[%f]", chi2));
       continue; 
+    }
+    // mark track as entering the FIDUCIAL volume of TRD
+    if(kStoreIn){
+      t.SetTrackIn();
+      kStoreIn = kFALSE;
     }
     if(kUseTRD){
       if(!((AliExternalTrackParam&)t).Update(p, cov)) {
