@@ -1445,10 +1445,6 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
   //loop and read DDL headers 
   while(fRawReader->ReadHeader()){
 
-    //memory leak prevention (actually data should be always 0x0 here)
-    if (data != 0x0)
-      delete [] data;
-
     //get equipment infos
     currentEquipment = fRawReader->GetEquipmentId();
 
