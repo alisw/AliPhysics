@@ -342,8 +342,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     else
       fHistos->FillEvent(centrality, AliUEHist::kCFStepTriggered);
       
-    if (!inputEvent)
+    if (!inputEvent) {
       AliFatal("UNEXPECTED: inputEvent is 0. Trigger selection should have failed");
+      return;
+    }
     
     // Vertex selection *************************************************
     if (fAnalyseUE->VertexSelection(inputEvent, fnTracksVertex, fZVertex))
