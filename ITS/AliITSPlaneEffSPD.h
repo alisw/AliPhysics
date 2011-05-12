@@ -30,24 +30,26 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
     // Simple way to add another class (i.e. statistics). 
     AliITSPlaneEffSPD& operator +=( const AliITSPlaneEffSPD &add);
     // Getters for average Plane efficiency (including dead/noisy)
-    Double_t PlaneEff(const UInt_t mod, const UInt_t chip) const;
-    Double_t ErrPlaneEff(const UInt_t mod, const UInt_t chip) const;
+    Double_t PlaneEff(const UInt_t mod, const UInt_t chip, Bool_t FO=kFALSE, const UInt_t BCm4=0) const;
+    Double_t ErrPlaneEff(const UInt_t mod, const UInt_t chip, Bool_t FO=kFALSE, const UInt_t BCm4=0) const;
     Double_t PlaneEff(const UInt_t key) const 
-        {return PlaneEff(GetModFromKey(key),GetChipFromKey(key));};
+        {return PlaneEff(GetModFromKey(key),GetChipFromKey(key),IsForFO(key),GetBCm4FromKey(key));};
     Double_t ErrPlaneEff(const UInt_t key) const 
-        {return ErrPlaneEff(GetModFromKey(key),GetChipFromKey(key));};
+        {return ErrPlaneEff(GetModFromKey(key),GetChipFromKey(key),IsForFO(key),GetBCm4FromKey(key));};
     // Getters for fFound[] and fTried[]
     Int_t GetFound(const UInt_t key) const; 
     Int_t GetTried(const UInt_t key) const; 
     // Methods to update the Plane efficiency (specific of the SPD segmentation) 
-    Bool_t UpDatePlaneEff(const Bool_t Kfound, const UInt_t mod, const UInt_t chip);
+    Bool_t UpDatePlaneEff(const Bool_t Kfound, const UInt_t mod, const UInt_t chip, Bool_t FO=kFALSE, const UInt_t BCm4=0);
     Bool_t UpDatePlaneEff(const Bool_t Kfound, const UInt_t key)
-        {return UpDatePlaneEff(Kfound,GetModFromKey(key),GetChipFromKey(key));};
+        {return UpDatePlaneEff(Kfound,GetModFromKey(key),GetChipFromKey(key),IsForFO(key),GetBCm4FromKey(key));};
     //
     enum {kNModule = 240}; // The number of modules
+    enum {kNModuleLy1 = 80}; // The number of modules in Inner Layer
     enum {kNChip = 5};     // The number of chips per module
     enum {kNCol = 32};     // The number of columns per chip
     enum {kNRow = 256};    // The number of rows per chip (and per module)
+    enum {kNClockPhase = 4}; // The number of clock phases between LHC (40 MHz clock) and SPD (10 MHz clock), for FO studies
 
     virtual Double_t LivePlaneEff(UInt_t key) const;
     Double_t LivePlaneEff(const UInt_t mod, const UInt_t chip) const
@@ -66,8 +68,10 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
    // method to locate a basic block from Detector Local coordinate (to be used in tracking)
    // see file cxx for numbering convention.
    // here idet runs from 0 to 79 for layer 0 and from 0 to 159 for layer 1
-    UInt_t GetKey(const UInt_t mod, const UInt_t chip) const; // unique key to locate the basic
-                                                              // block of the SPD
+    UInt_t GetKey(const UInt_t mod, const UInt_t chip, const Bool_t FO=kFALSE, const UInt_t BCm4=0) const; // unique key to locate the basic
+                                                                                                           // block of the SPD for detector and FO efficiency
+    UInt_t SwitchChipKeyNumbering(UInt_t key) const; //  method to switch from offline chip key numbering to online Raw Stream chip numbering 
+                                                     // and viceversa. Used for Fast-Or studies.
     UInt_t GetKeyFromDetLocCoord(Int_t ilay,Int_t idet, Float_t, Float_t locz) const;
     UInt_t Nblock() const; // return the number of basic blocks
     // compute the geometrical limit of a basic block (chip) in detector local coordinate system 
@@ -89,6 +93,8 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
     Int_t GetMissingTracksForGivenEff(Double_t eff, Double_t RelErr, UInt_t im, UInt_t ic) const;
     UInt_t GetModFromKey(const UInt_t key) const;
     UInt_t GetChipFromKey(const UInt_t key) const;
+    Bool_t IsForFO(const UInt_t key) const;
+    UInt_t GetBCm4FromKey(const UInt_t key) const;  // return the "Bunch Crossing modulo 4" (for Fast Or studies)
     UInt_t GetChipFromCol(const UInt_t col) const;  // get the chip number (from 0 to kNChip)
     UInt_t GetColFromLocZ(Float_t zloc) const;      // get the Column from the local z
     Float_t GetLocZFromCol(const UInt_t col) const; // get the local Z from the column number,
@@ -98,8 +104,12 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
     void GetModAndChipFromKey(const UInt_t key, UInt_t& mod, UInt_t& chip) const;
     void GetDeadAndNoisyInChip(const UInt_t key, UInt_t& dead, UInt_t& noisy) const;
 // 
-    Int_t fFound[kNModule*kNChip];  // number of associated clusters in a given chip
-    Int_t fTried[kNModule*kNChip];  // number of tracks used for chip efficiency evaluation
+    Int_t fFound[kNModule*kNChip*(kNClockPhase+1)];  // if(<kNModule*kNChip) is the number of associated clusters in a given chip
+    Int_t fTried[kNModule*kNChip*(kNClockPhase+1)];  // if(<kNModule*kNChip) is the number of tracks used for chip efficiency evaluation
+                                                     // if(>=kNModule*kNChip) Same tale but for Fast-Or
+                                                     // studies (in the 4 phase relationship between LHC and SPD clocks)
+    Bool_t FillHistosStd(UInt_t key, Bool_t found, Float_t *track, Float_t *cluster, Int_t *ctype, Float_t *angtrkmod);
+    Bool_t FillHistosFO(UInt_t key, Bool_t found, Float_t *track);
 
  private:
     enum {kNHisto = kNModule}; // The number of histograms: module by module.
@@ -129,18 +139,26 @@ class AliITSPlaneEffSPD :  public AliITSPlaneEff {
     TH1F **fHisTrackErrZ; //! histos with track prediction error on Local Z
     TH1F **fHisClusErrX; //! histos with Local_X cluster error
     TH1F **fHisClusErrZ; //! histos with Local_Z cluster error
-
-    ClassDef(AliITSPlaneEffSPD,3) // SPD Plane Efficiency class
+    TH1F ***fHisTrackXFOtrue; //! histos with track prediction along local X (r-phi) if FastOr bit is found
+    TH1F ***fHisTrackZFOtrue; //! histos with track prediction along local Z if FastOr bit is found
+    TH1F ***fHisTrackXFOfalse; //! histos with track prediction along local X (r-phi) if FastOr bit is not found
+    TH1F ***fHisTrackZFOfalse; //! histos with track prediction along local Z if FastOr bit is not found
+    TH2F ***fHisTrackXZFOtrue; //! histos with track prediction along local X (r-phi) and Z if FastOr bit is found
+    TH2F ***fHisTrackXZFOfalse; //! histos with track prediction along local X (r-phi) and Z if FastOr bit is not found
+    
+    ClassDef(AliITSPlaneEffSPD,4) // SPD Plane Efficiency class
 };
 //
 inline UInt_t AliITSPlaneEffSPD::Nblock() const {return kNModule*kNChip;}
 
 inline Int_t AliITSPlaneEffSPD::GetFound(const UInt_t key) const {
- if(key>=kNModule*kNChip) {AliWarning("GetFound: you asked for a non existing key"); return -1;}
+ if(key>=kNModule*kNChip*(kNClockPhase+1)) {AliWarning("GetFound: you asked for a non existing key"); return -1;}
+ if(key>=kNModule*kNChip)AliWarning("GetFound: you asked for FO efficiency studies");
  return fFound[key];
 }
 inline Int_t AliITSPlaneEffSPD::GetTried(const UInt_t key) const {
- if(key>=kNModule*kNChip) {AliWarning("GetTried: you asked for a non existing key"); return -1;}
+ if(key>=kNModule*kNChip*(kNClockPhase+1)) {AliWarning("GetTried: you asked for a non existing key"); return -1;}
+ if(key>=kNModule*kNChip)AliWarning("GetTried: you asked for FO efficiency studies");
  return fTried[key];
 }
 //

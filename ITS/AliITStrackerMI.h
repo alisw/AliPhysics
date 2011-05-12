@@ -331,12 +331,13 @@ protected:
   AliITSChannelStatus *fITSChannelStatus;//! bitmaps with channel status for SPD and SDD
   const AliITSDetTypeRec *fkDetTypeRec;         //! ITS det type rec, from AliITSReconstructor
   AliITSPlaneEff *fPlaneEff;             //! Pointer to the ITS plane efficicency
+  Bool_t* fSPDChipIntPlaneEff;      //! Map of the SPD chips already intersected by a track (for FO studies)
   AliITSPIDResponse *fITSPid;            //! parameters for ITS pid 
   //
 private:
   AliITStrackerMI(const AliITStrackerMI &tracker);
   AliITStrackerMI & operator=(const AliITStrackerMI &tracker);
-  ClassDef(AliITStrackerMI,10)   //ITS tracker MI
+  ClassDef(AliITStrackerMI,11)   //ITS tracker MI
 };
 
 
