@@ -25,7 +25,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  TenderSupplies/AliTOFTenderSupply.cxx TenderSupplies/AliPIDTenderSupply.cxx   TenderSupplies/AliTPCTenderSupply.cxx TenderSupplies/AliTRDTenderSupply.cxx TenderSupplies/AliVtxTenderSupply.cxx TenderSupplies/AliVZEROTenderSupply.cxx)
+set ( SRCS  TenderSupplies/AliTOFTenderSupply.cxx TenderSupplies/AliPIDTenderSupply.cxx   TenderSupplies/AliTPCTenderSupply.cxx TenderSupplies/AliTRDTenderSupply.cxx TenderSupplies/AliVtxTenderSupply.cxx TenderSupplies/AliVZEROTenderSupply.cxx TenderSupplies/AliEMCALTenderSupply.cxx)
 
 string ( REPLACE ".cxx" ".h"  HDRS "${SRCS}")
 
