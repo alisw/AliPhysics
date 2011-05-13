@@ -289,6 +289,10 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   //    option Not used
   //  
 
+  // Read production details 
+  if (fFirstEvent) 
+    fEventInspector.ReadProductionDetails(MCEvent());
+    
   // Get the input data 
   AliESDEvent* esd     = GetESDEvent();
   AliMCEvent*  mcEvent = MCEvent();

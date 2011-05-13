@@ -612,6 +612,15 @@ public:
    *
    */
   void Print(Option_t* option="R") const; //*MENU*
+    /** 
+     * Get a list of THStack - one for each parameter 
+     * 
+     * @param err Show errors
+     * @param rel Show relative errors 
+     * 
+     * @return List of THStack
+     */
+  TList* GetStacks(Bool_t err, Bool_t rel, UShort_t maxN=5) const;
   /* @} */
 protected:
   /** 

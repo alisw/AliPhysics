@@ -964,39 +964,12 @@ namespace {
 #define IDX2RING(I) (i == 0 || i == 1 || i == 3 ? 'I' : 'O')
 #define IDX2DET(I)  (i == 0 ? 1 : (i == 1 || i == 2 ? 2 : 3))
 //____________________________________________________________________
-void
-AliFMDCorrELossFit::Draw(Option_t* option)
+TList*
+AliFMDCorrELossFit::GetStacks(Bool_t err, Bool_t rel, UShort_t maxN) const
 {
-  // 
-  // Draw this object 
-  // 
-  // Parameters:
-  //    option Options.  Possible values are 
-  //  - err Plot error bars 
-  //
-  TString opt(Form("nostack %s", option));
-  opt.ToLower();
-  Bool_t  rel = (opt.Contains("relative"));
-  Bool_t  err = (opt.Contains("error"));
-  if (rel) opt.ReplaceAll("relative","");
-  if (err) opt.ReplaceAll("error","");
-  Int_t    nRings = fRings.GetEntriesFast();
-  UShort_t maxN   = 0;
-  for (Int_t i = 0; i < nRings; i++) { 
-    if (!fRings.At(i)) continue;
-    TObjArray* a     = static_cast<TObjArray*>(fRings.At(i));
-    Int_t      nFits = a->GetEntriesFast();
-
-    for (Int_t j = 0; j < nFits; j++) {
-      ELossFit* fit = static_cast<ELossFit*>(a->At(j));
-      if (!fit) continue;
-      maxN          = TMath::Max(maxN, UShort_t(fit->fN));
-    }
-  }
-  // AliInfo(Form("Maximum N is %d", maxN));
-  Int_t nPad = 6+maxN-1; // 7 regular params, and maxN-1 weights
-  TVirtualPad* pad = gPad;
-  pad->Divide(2, (nPad+1)/2, 0.1, 0, 0);
+  // Get a list of THStacks 
+  Int_t nRings = fRings.GetEntriesFast();
+  Int_t nPad   = 6+maxN-1; // 7 regular params, and maxN-1 weights
 
   enum { 
     kChi2nu = 0, 
@@ -1014,18 +987,18 @@ AliFMDCorrELossFit::Draw(Option_t* option)
   THStack* sSigma;
   // THStack* sigman;
   THStack* n;
-  TList stacks;
-  stacks.AddAt(sChi2nu= new THStack("chi2",   "#chi^{2}/#nu"), kChi2nu);
-  stacks.AddAt(sC     = new THStack("c",       "C"),           kC);
-  stacks.AddAt(sDelta = new THStack("delta",  "#Delta_{mp}"),  kDelta);
-  stacks.AddAt(sXi    = new THStack("xi",     "#xi"),          kXi);
-  stacks.AddAt(sSigma = new THStack("sigma",  "#sigma"),       kSigma);
-  //stacks.AddAt(sigman= new THStack("sigman", "#sigma_{n}"),   5);
-  stacks.AddAt(n     = new THStack("n",      "N"),            kN);
+  TList* stacks = new TList;
+  stacks->AddAt(sChi2nu= new THStack("chi2",   "#chi^{2}/#nu"), kChi2nu);
+  stacks->AddAt(sC     = new THStack("c",       "C"),           kC);
+  stacks->AddAt(sDelta = new THStack("delta",  "#Delta_{mp}"),  kDelta);
+  stacks->AddAt(sXi    = new THStack("xi",     "#xi"),          kXi);
+  stacks->AddAt(sSigma = new THStack("sigma",  "#sigma"),       kSigma);
+  //stacks->AddAt(sigman= new THStack("sigman", "#sigma_{n}"),   5);
+  stacks->AddAt(n     = new THStack("n",      "N"),            kN);
   for (Int_t i = 1; i <= maxN; i++) {
-    stacks.AddAt(new THStack(Form("a_%02d", i+1), Form("a_{%d}", i+1)), kN+i);
+    stacks->AddAt(new THStack(Form("a_%02d", i+1), Form("a_{%d}", i+1)), kN+i);
   }
-
+  
   TArrayD min(nPad);
   TArrayD max(nPad);
   min.Reset(100000);
@@ -1060,7 +1033,7 @@ AliFMDCorrELossFit::Draw(Option_t* option)
 
     for (Int_t k = 1; k <= maxN; k++) { 
       hA[k-1] = MakeHist(fEtaAxis,a->GetName(), Form("a%02d",k+1), color);
-      static_cast<THStack*>(stacks.At(kN+k))->Add(hA[k-1], ho);
+      static_cast<THStack*>(stacks->At(kN+k))->Add(hA[k-1], ho);
     }
 			  
     for (Int_t j = 0; j < nFits; j++) {
@@ -1130,6 +1103,47 @@ AliFMDCorrELossFit::Draw(Option_t* option)
       }
     }
   }
+  return stacks;
+}
+
+//____________________________________________________________________
+void
+AliFMDCorrELossFit::Draw(Option_t* option)
+{
+  // 
+  // Draw this object 
+  // 
+  // Parameters:
+  //    option Options.  Possible values are 
+  //  - err Plot error bars 
+  //
+  TString opt(Form("nostack %s", option));
+  opt.ToLower();
+  Bool_t  rel = (opt.Contains("relative"));
+  Bool_t  err = (opt.Contains("error"));
+  if (rel) opt.ReplaceAll("relative","");
+  if (err) opt.ReplaceAll("error","");
+
+  UShort_t maxN   = 0;
+  Int_t nRings = fRings.GetEntriesFast();
+  for (Int_t i = 0; i < nRings; i++) { 
+    if (!fRings.At(i)) continue;
+    TObjArray* a     = static_cast<TObjArray*>(fRings.At(i));
+    Int_t      nFits = a->GetEntriesFast();
+
+    for (Int_t j = 0; j < nFits; j++) {
+      ELossFit* fit = static_cast<ELossFit*>(a->At(j));
+      if (!fit) continue;
+      maxN          = TMath::Max(maxN, UShort_t(fit->fN));
+    }
+  }
+  // AliInfo(Form("Maximum N is %d", maxN));
+  Int_t nPad = 6+maxN-1; // 7 regular params, and maxN-1 weights
+  TVirtualPad* pad = gPad;
+  pad->Divide(2, (nPad+1)/2, 0.1, 0, 0);
+
+  TList* stacks = GetStacks(err, rel, maxN);
+
   Int_t nPad2 = (nPad+1) / 2;
   for (Int_t i = 0; i < nPad; i++) {
     Int_t iPad = 1 + i/nPad2 + 2 * (i % nPad2);
@@ -1141,11 +1155,13 @@ AliFMDCorrELossFit::Draw(Option_t* option)
     p->SetGridy();
     if (rel && i != 0 && i != 6 && i != 5 && i != 4) p->SetLogy();
 
-    Double_t powMax = TMath::Log10(max[i]);
-    Double_t powMin = min[i] <= 0 ? powMax : TMath::Log10(min[i]);
-    if (powMax-powMin > 2. && min[i] != 0) p->SetLogy();
 
-    THStack* stack = static_cast<THStack*>(stacks.At(i));
+    THStack* stack = static_cast<THStack*>(stacks->At(i));
+
+    // Double_t powMax = TMath::Log10(max[i]);
+    // Double_t powMin = min[i] <= 0 ? powMax : TMath::Log10(min[i]);
+    // if (powMax-powMin > 2. && min[i] != 0) p->SetLogy();
+
     // stack->SetMinimum(min[i]);
     // stack->SetMaximum(max[i]);
     stack->Draw(opt.Data());

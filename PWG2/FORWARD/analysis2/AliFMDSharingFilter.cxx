@@ -32,6 +32,7 @@
 #include <AliLog.h>
 #include <TROOT.h>
 #include <THStack.h>
+#include <TParameter.h>
 #include <iostream>
 #include <iomanip>
 
@@ -59,7 +60,7 @@ AliFMDSharingFilter::AliFMDSharingFilter()
     fHighCuts(0),
     fOper(0),
     fDebug(0),
-    fZeroSharedHitsBelowThreshold(0)
+    fZeroSharedHitsBelowThreshold(false)
 {
   // 
   // Default Constructor - do not use 
@@ -78,7 +79,7 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
     fHighCuts(0),
     fOper(0),
     fDebug(0),
-    fZeroSharedHitsBelowThreshold(0)
+    fZeroSharedHitsBelowThreshold(false)
 {
   // 
   // Constructor 
@@ -558,9 +559,7 @@ AliFMDSharingFilter::MultiplicityOfStrip(Double_t thisE,
   DBGL(3, Form(" %9f<%9f<%9f (was %9f), zeroed, candidate", 
 		   lowCut, totalE, highCut, thisE));
   thisStatus = kCandidate;
-  if(fZeroSharedHitsBelowThreshold)
-    return 0;
-  else return totalE; 
+  return (fZeroSharedHitsBelowThreshold ? 0 : totalE); 
 }
 	   
 //_____________________________________________________________________
@@ -784,6 +783,25 @@ AliFMDSharingFilter::DefineOutput(TList* dir)
   fHighCuts->SetDirectory(0);
   d->Add(fHighCuts);
 
+  TParameter<double>* lowCut = new TParameter<double>("lowCut", fLowCut);
+  TParameter<double>* nXi    = new TParameter<double>("nXi", fNXi);
+  TNamed*             sigma  = new TNamed("sigma", fIncludeSigma ? 
+					  "included" : "excluded");
+  sigma->SetUniqueID(fIncludeSigma);
+  TNamed*             angle  = new TNamed("angle", fCorrectAngles ? 
+					  "corrected" : "uncorrected");
+  angle->SetUniqueID(fCorrectAngles);
+  TNamed*             low    = new TNamed("lowSignal", 
+					  fZeroSharedHitsBelowThreshold ? 
+					  "zeroed" : "kept");
+  low->SetUniqueID(fZeroSharedHitsBelowThreshold);
+  d->Add(lowCut);
+  d->Add(nXi);
+  d->Add(sigma);
+  d->Add(angle);
+  d->Add(low);
+  
+
 
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
@@ -810,7 +828,9 @@ AliFMDSharingFilter::Print(Option_t* /*option*/) const
 	    << ind << " Low cut:                " << fLowCut << '\n'
 	    << ind << " N xi factor:            " << fNXi    << '\n'
 	    << ind << " Include sigma in cut:   " << fIncludeSigma << '\n'
-	    << ind << " Use corrected angles:   " << fCorrectAngles 
+	    << ind << " Use corrected angles:   " << fCorrectAngles << '\n'
+	    << ind << " Zero below threshold:   " 
+	    << fZeroSharedHitsBelowThreshold 
 	    << std::noboolalpha << std::endl;
 }
   
@@ -852,16 +872,19 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
   //    r ring 
   //
   fBefore = new TH1D("esdEloss", "Energy loss (reconstruction)", 
-		     1000, 0, 25);
+		     600, 0, 15);
   fBefore->SetXTitle("#Delta E/#Delta E_{mip}");
   fBefore->SetYTitle("P(#Delta E/#Delta E_{mip})");
   fBefore->SetFillColor(Color());
   fBefore->SetFillStyle(3001);
+  fBefore->SetLineColor(kBlack);
+  fBefore->SetLineStyle(2);
   fBefore->SetDirectory(0);
 
   fAfter  = static_cast<TH1D*>(fBefore->Clone("anaEloss"));
   fAfter->SetTitle("Energy loss in %s (sharing corrected)");
   fAfter->SetFillColor(Color()+2);
+  fAfter->SetLineStyle(1);
   fAfter->SetDirectory(0);
 
   Double_t max = 15;
@@ -875,7 +898,7 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
   fBeforeAfter->SetDirectory(0);
 
   fNeighborsBefore = static_cast<TH2D*>(fBeforeAfter->Clone("neighborsBefore"));
-  fNeighborsBefore->SetTitle("Correlation of neighbors befire");
+  fNeighborsBefore->SetTitle("Correlation of neighbors before");
   fNeighborsBefore->SetXTitle("#Delta E_{i}/#Delta E_{mip}");
   fNeighborsBefore->SetYTitle("#Delta E_{i+1}/#Delta E_{mip}");
   fNeighborsBefore->SetDirectory(0);
@@ -984,11 +1007,14 @@ AliFMDSharingFilter::RingHistos::ScaleHistograms(const TList* dir,
   TList* l = GetOutputList(dir);
   if (!l) return; 
 
-  TH1D* before = static_cast<TH1D*>(l->FindObject("esdELoss"));
-  TH1D* after  = static_cast<TH1D*>(l->FindObject("anaELoss"));
-  TH2D* summed = static_cast<TH2D*>(l->FindObject("summed"));
+#if 0
+  TH1D* before = static_cast<TH1D*>(l->FindObject("esdEloss"));
+  TH1D* after  = static_cast<TH1D*>(l->FindObject("anaEloss"));
   if (before) before->Scale(1./nEvents);
   if (after)  after->Scale(1./nEvents);
+#endif
+
+  TH2D* summed = static_cast<TH2D*>(l->FindObject("summed"));
   if (summed) summed->Scale(1./nEvents);
   
 }

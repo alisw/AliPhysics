@@ -395,6 +395,7 @@ AliFMDEnergyFitter::MakeCorrectionsObject(TList* d)
   TString fileName(mgr.GetFilePath(AliForwardCorrectionManager::kELossFits));
   AliInfo(Form("Object %s created in output - should be extracted and copied "
 	       "to %s", oName.Data(), fileName.Data()));
+  d->Add(new TNamed("filename", fileName.Data()));
   d->Add(obj, oName.Data());
 }
 
