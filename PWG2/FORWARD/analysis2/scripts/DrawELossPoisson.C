@@ -17,14 +17,21 @@ DrawRingELossPoisson(TList* p, UShort_t d, Char_t r,
 	  d, r);
     return;
   }
-  gPad->SetGridy();
-  gPad->SetGridx();
-  gPad->SetLogz();
-  gPad->SetFillColor(0);
+  TPad* pad = static_cast<TPad*>(gPad);
+  pad->SetGridy();
+  pad->SetGridx();
+  pad->SetLogz();
+  if (d == 3) { 
+    pad->SetPad(pad->GetXlowNDC(), pad->GetYlowNDC(), .99, 
+		 pad->GetYlowNDC()+pad->GetHNDC());
+    pad->SetRightMargin(0.15);
+  }
+  pad->SetFillColor(0);
   if (xmax < 0) xmax = corr->GetXaxis()->GetXmax();
   corr->GetXaxis()->SetRangeUser(xmin,xmax);
   corr->GetYaxis()->SetRangeUser(xmin,xmax);
   corr->SetTitle(Form("FMD%d%c",d,r));
+  Info("", "Entries: %d, integral: %f", corr->GetEntries(), corr->Integral()); 
   corr->Draw("colz");
 
   // Calculate the linear regression 
@@ -63,18 +70,21 @@ DrawRingELossPoisson(TList* p, UShort_t d, Char_t r,
   Info("", "FMD%d%c correlation coefficient: %9.5f%% "
        "line y = %f + %f * x", d, r, 100*rxy, alpha, beta);
 
-  Double_t x = xmin + dx * .1;
-  Double_t y = xmax - dx * .2;
-  TLatex* ltx = new TLatex(x, y, "Deming regression: y=#alpha+#beta x");
+  Double_t x = pad->GetLeftMargin()+.01;
+  Double_t y = 1-pad->GetTopMargin()-.01;
+  TLatex* ltx = new TLatex(x, y, Form("FMD%d%c", d, r));
+  ltx->SetNDC();
   ltx->SetTextAlign(13);
-  ltx->SetTextSize(0.06);
-  // ltx->SetNDC();
+  ltx->SetTextSize(0.08);
   ltx->Draw();
+  y -= 0.12;
+  ltx->SetTextSize(0.06);
+  ltx->DrawLatex(x,y,"Deming regression: y=#alpha+#beta x");
+  x += .02;
+  y -= .06;
   ltx->SetTextSize(0.05);
-  x = xmin + dx / 8;
-  y = xmax - dx * .25;
   ltx->DrawLatex(x, y, Form("#alpha=%5.3f", alpha));
-  y = xmax - dx * .3;
+  y -= .06;
   ltx->DrawLatex(x, y, Form("#beta= %5.3f", beta));
 
   TLinearFitter* fitter = new TLinearFitter(1);
@@ -106,9 +116,11 @@ DrawRingELossPoisson(TList* p, UShort_t d, Char_t r,
   Double_t chi2 = fitter->GetChisquare();
   Int_t    ndf  = (fitter->GetNpoints() - 
 		   fitter->GetNumberFreeParameters() );
-  std::cout << chi2 << '/' << ndf << '=' << chi2 / ndf << std::endl;
+  std::cout << "chi2/ndf: " << chi2 << '/' << ndf 
+	    << '=' << chi2 / ndf << std::endl;
 
-  gPad->cd();
+  // corr->Scale(1. / corr->GetMaximum());
+  pad->cd();
   return corr->GetCorrelationFactor();
 }
 
@@ -116,17 +128,19 @@ DrawRingELossPoisson(TList* p, UShort_t d, Char_t r,
 void
 DrawELossPoisson(const char* filename="forward.root", 
 		 Double_t xmax=-1,
-		 Double_t xmin=0)
+		 Double_t xmin=-1)
 {
   gStyle->SetPalette(1);
   gStyle->SetOptFit(0);
   gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
   gStyle->SetTitleW(.4);
   gStyle->SetTitleH(.1);
+  gStyle->SetTitleX(.4);
+  // gStyle->SetTitleY(.1);
   gStyle->SetTitleColor(0);
   gStyle->SetTitleStyle(0);
   gStyle->SetTitleBorderSize(0);
-  gStyle->SetTitleX(.6);
   
   TFile* file = TFile::Open(filename, "READ");
   if (!file) { 

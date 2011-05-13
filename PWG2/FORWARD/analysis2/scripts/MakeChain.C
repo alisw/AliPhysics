@@ -31,7 +31,8 @@ ScanDirectory(TSystemDirectory* dir, TChain* chain,
     // Check if this is a directory 
     if (file->IsDirectory()) { 
       if (recursive) 
-	ScanDirectory(static_cast<TSystemDirectory*>(file),chain,pattern,recursive);
+	ScanDirectory(static_cast<TSystemDirectory*>(file),chain,
+		      pattern,recursive);
       continue;
     }
     
@@ -40,10 +41,17 @@ ScanDirectory(TSystemDirectory* dir, TChain* chain,
 
     // If this file does not contain the pattern, ignore 
     if (!name.Contains(pattern)) continue;
+    if (name.Contains("friends")) continue;
     
     // Get the path 
     TString data(Form("%s/%s", file->GetTitle(), name.Data()));
 
+    TFile* test = TFile::Open(data.Data(), "READ");
+    if (!test || test->IsZombie()) { 
+      Warning("ScanDirectory", "Failed to open file %s", data.Data());
+      continue;
+    }
+    test->Close();
     chain->Add(data);
 
   }

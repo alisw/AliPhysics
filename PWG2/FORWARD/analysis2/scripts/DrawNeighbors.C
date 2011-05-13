@@ -23,12 +23,28 @@ DrawRingNeighbors(TList* p, UShort_t d, Char_t r)
   }
   gPad->SetLogz();
   gPad->SetFillColor(0);
+  TPad* pad = (TPad*)gPad;
+  if (d == 3) { 
+    pad->SetPad(pad->GetXlowNDC(), pad->GetYlowNDC(), .99, 
+		 pad->GetYlowNDC()+pad->GetHNDC());
+    pad->SetRightMargin(0.15);
+  }
+  // gStyle->SetTitleY(gPad->GetBottomMargin());
+
   before->SetTitle(Form("FMD%d%c",d,r));
   before->Draw("colz");
   after->Draw("same box");
 
   before->GetXaxis()->SetRangeUser(-.5, 2);
   before->GetYaxis()->SetRangeUser(-.5, 2);
+
+  TLatex* ltx = new TLatex(gPad->GetLeftMargin()+.01, 
+			   gPad->GetBottomMargin()+.01, 
+			   before->GetTitle());
+  ltx->SetNDC();
+  ltx->SetTextSize(.07);
+  ltx->Draw();
+
   gPad->cd();
 }
 
@@ -41,10 +57,12 @@ DrawNeighbors(const char* filename="forward.root")
   gStyle->SetOptStat(0);
   gStyle->SetTitleW(.4);
   gStyle->SetTitleH(.1);
+  gStyle->SetTitleX(.1);
+  gStyle->SetTitleY(.1);
   gStyle->SetTitleColor(0);
   gStyle->SetTitleStyle(0);
   gStyle->SetTitleBorderSize(0);
-  gStyle->SetTitleX(.6);
+  gStyle->SetOptTitle(0);
 
   TFile* file = TFile::Open(filename, "READ");
   if (!file) { 
