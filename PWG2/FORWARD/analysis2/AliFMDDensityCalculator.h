@@ -368,10 +368,12 @@ protected:
     TH2D*     fTotalStrips;    // Total number of strips in a region
     TH2D*     fEmptyStrips;    // Total number of strips in a region
     TH2D*     fBasicHits  ;    // Total number basic hits in a region
-    TH2D*     fEmptyVsTotal;   // # of empty strips vs total number of strips 
+    TH2D*     fEmptyVsTotal;   // # of empty strips vs total number of # strips 
+    TH1D*     fELoss;          // Energy loss as seen by this 
+    TH1D*     fELossUsed;      // Energy loss in strips with signal 
+    Double_t  fMultCut;        // If set, use this
     
-    
-    ClassDef(RingHistos,4);
+    ClassDef(RingHistos,5);
   };
   /** 
    * Get the ring histogram container 
@@ -405,9 +407,9 @@ protected:
   Int_t    fEtaLumping;    //  How to lump eta bins for Poisson 
   Int_t    fPhiLumping;    //  How to lump phi bins for Poisson 
   Int_t    fDebug;         //  Debug level 
-  Double_t fMultCuts[5];   //  Per-ring multiplicity cuts
+  // Double_t fMultCuts[5];   //  Per-ring multiplicity cuts
 
-  ClassDef(AliFMDDensityCalculator,3); // Calculate Nch density 
+  ClassDef(AliFMDDensityCalculator,4); // Calculate Nch density 
 };
 
 #endif

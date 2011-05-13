@@ -145,13 +145,15 @@ AliFMDEnergyFitterTask::InitializeSubs()
   // 
   //
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
-  fcm.Init(fEventInspector.GetCollisionSystem(), 
-	   fEventInspector.GetEnergy(),
-	   fEventInspector.GetField(), 0);
+  UShort_t sys = fEventInspector.GetCollisionSystem();
+  UShort_t sNN = fEventInspector.GetEnergy();
+  Short_t  fld = fEventInspector.GetField();
+  fcm.Init(sys, sNN, fld, 0);
   TAxis eAxis(0,0,0);
   TAxis vAxis(10,-10,10);
   fEnergyFitter.Init(eAxis);
   fEventInspector.Init(vAxis);
+
 }
 
 //____________________________________________________________________

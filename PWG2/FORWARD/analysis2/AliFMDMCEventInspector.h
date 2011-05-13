@@ -117,6 +117,22 @@ public:
   virtual Bool_t CompareResults(Double_t vz,    Double_t trueVz, 
 				Double_t cent,  Double_t b,
 				Int_t    npart, Int_t    nbin);
+  /** 
+   * Store information about running conditions in output list 
+   * 
+   * The 3 TNamed objects from AliFMDEventInspector::StoreInformation
+   * are defined.  In addition, a fourth TNamed object is defined.
+   * The presence of this indicate MC data.
+   *
+   * - mc    Nothing special, and unique id is 1
+   */
+  virtual void StoreInformation();
+  /** 
+   * Read the production details 
+   * 
+   * @param event MC event
+   */
+  virtual void ReadProductionDetails(AliMCEvent* event);
 protected:
   /** 
    * Read centrality from event 
@@ -150,7 +166,8 @@ protected:
   TH2F* fHVzComp;  // True vs reconstructed vz
   TH2F* fHCentVsPart; // Centrality versus # participants 
   TH2F* fHCentVsBin;  // Centrality versus # binary collisions 
-  ClassDef(AliFMDMCEventInspector,2); // Inspect the event 
+  TString fProduction; // Production information 
+  ClassDef(AliFMDMCEventInspector,3); // Inspect the event 
 };
 
 #endif

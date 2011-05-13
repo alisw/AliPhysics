@@ -116,7 +116,7 @@ void MakeAOD(const char* esddir,
     static_cast<AliPhysicsSelection*>(ih->GetEventSelection());
   // Ignore trigger class when selecting events.  This mean that we
   // get offline+(A,C,E) events too
-  ps->SetSkipTriggerClassSelection(true);
+  // ps->SetSkipTriggerClassSelection(true);
   
 
 #if 0

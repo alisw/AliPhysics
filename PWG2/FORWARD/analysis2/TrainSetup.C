@@ -1761,7 +1761,7 @@ protected:
     LoadLibrary("PWG2forward2", mode, par, true);
     
     // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form(".:%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
     // --- Check if this is MC ---------------------------------------
@@ -1799,11 +1799,11 @@ protected:
     AliPhysicsSelection* ps = 
       dynamic_cast<AliPhysicsSelection*>(ih->GetEventSelection());
     if (!ps) 
-      Fatal("CreatePhysicsSelection", "Couldn't get PhysicsSelection (%p)", ps);
+      Fatal("CreatePhysicsSelection", "Couldn't get PhysicsSelection (%p)",ps);
 
     // --- Ignore trigger class when selecting events.  This means ---
     // --- that we get offline+(A,C,E) events too --------------------
-    ps->SetSkipTriggerClassSelection(true);
+    // ps->SetSkipTriggerClassSelection(true);
   }
   //__________________________________________________________________
   /** 
@@ -2071,7 +2071,7 @@ protected:
     LoadLibrary("PWG2forward2", mode, par, true);
     
     // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form(".:%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
     // --- Check if this is MC ---------------------------------------

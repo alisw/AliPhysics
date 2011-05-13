@@ -43,8 +43,8 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
     mcTask->SetOnlyPrimary(true);
   }
 #endif
-  Double_t nXi = 1; // mc ? 1 : .5;
-  Bool_t   includeSigma = true;
+  Double_t nXi = 2; // mc ? 1 : .5;
+  Bool_t   includeSigma = false; 
 
   // --- Event inspector ---------------------------------------------
   // Set the number of SPD tracklets for which we consider the event a
@@ -55,13 +55,14 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
 
   // --- Sharing filter ----------------------------------------------
   // Set the low cut used for sharing - overrides settings in eloss fits
-  task->GetSharingFilter().SetLowCut(mc ? 0.15 : 0.2);
+  task->GetSharingFilter().SetLowCut(0.15); // mc ? 0.15 : 0.2);
   // Set the number of xi's (width of landau peak) to stop at 
   task->GetSharingFilter().SetNXi(nXi);
   // Set whether or not to include sigma in cut
   task->GetSharingFilter().SetIncludeSigma(includeSigma);
   // Enable use of angle corrected signals in the algorithm 
   task->GetSharingFilter().SetUseAngleCorrectedSignals(true);
+  task->GetSharingFilter().SetZeroSharedHitsBelowThreshold(false);
 
   // --- Density calculator 
   // Set the maximum number of particle to try to reconstruct 
@@ -69,9 +70,10 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Wet whether to use poisson statistics to estimate N_ch
   task->GetDensityCalculator().SetUsePoisson(true);
   // Set the lower multiplicity cut.  Overrides setting in energy loss fits.
-  task->GetDensityCalculator().SetMultCut(.3); //was 0.3
+  task->GetDensityCalculator().SetMultCut(-1); //was 0.3
   // Set the lower per-ring multiplicity cuts 
-  task->GetDensityCalculator().SetMultCuts(-1,-1,-1,-1,-1);
+  task->GetDensityCalculator().SetMultCuts(0.3,0.3,0.3,0.3,0.3);
+  // task->GetDensityCalculator().SetMultCuts(-1,-1,-1,-1,-1);
   // USe this many times xi+sigma below MPV 
   task->GetDensityCalculator().SetNXi(nXi);
   // Set whether or not to include sigma in cut

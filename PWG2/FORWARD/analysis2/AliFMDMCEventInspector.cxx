@@ -46,7 +46,8 @@ AliFMDMCEventInspector::AliFMDMCEventInspector()
     fHBvsCent(0),
     fHVzComp(0),
     fHCentVsPart(0),
-    fHCentVsBin(0)
+    fHCentVsBin(0),
+    fProduction("")
 {
   // 
   // Constructor 
@@ -64,7 +65,8 @@ AliFMDMCEventInspector::AliFMDMCEventInspector(const char* /* name */)
     fHBvsCent(0),
     fHVzComp(0),
     fHCentVsPart(0),
-    fHCentVsBin(0)
+    fHCentVsBin(0),
+    fProduction("")
 {
   // 
   // Constructor 
@@ -85,7 +87,8 @@ AliFMDMCEventInspector::AliFMDMCEventInspector(const AliFMDMCEventInspector& o)
     fHBvsCent(0),
     fHVzComp(0),
     fHCentVsPart(0),
-    fHCentVsBin(0)
+    fHCentVsBin(0),
+    fProduction("")
 {
   // 
   // Copy constructor 
@@ -215,6 +218,63 @@ AliFMDMCEventInspector::Init(const TAxis& vtxAxis)
   fHCentVsBin->SetZTitle("Event");
   fHCentVsBin->SetDirectory(0);
   fList->Add(fHCentVsBin);
+}
+
+//____________________________________________________________________
+void
+AliFMDMCEventInspector::StoreInformation()
+{
+  // Store information about running conditions in the output list 
+  if (!fList) return;
+  AliFMDEventInspector::StoreInformation();
+  TNamed* mc = new TNamed("mc", fProduction.Data());
+  mc->SetUniqueID(1);
+  fList->Add(mc);
+}
+
+namespace
+{
+  TString& AppendField(TString& s, bool test, const char* f)
+  {
+    if (!test) return s;
+    if (!s.IsNull()) s.Append(",");
+    s.Append(f);
+    return s;
+  }
+}
+
+//____________________________________________________________________
+void
+AliFMDMCEventInspector::ReadProductionDetails(AliMCEvent* event)
+{
+  //Assign MC only triggers : True NSD etc.
+  AliHeader*               header          = event->Header();
+  AliGenEventHeader*       genHeader       = header->GenEventHeader();
+  AliCollisionGeometry*    colGeometry     = 
+    dynamic_cast<AliCollisionGeometry*>(genHeader);
+  AliGenPythiaEventHeader* pythiaHeader    = 
+    dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+  AliGenDPMjetEventHeader* dpmHeader       = 
+    dynamic_cast<AliGenDPMjetEventHeader*>(genHeader);
+  AliGenGeVSimEventHeader* gevHeader       = 
+    dynamic_cast<AliGenGeVSimEventHeader*>(genHeader);
+  AliGenHerwigEventHeader* herwigHeader    = 
+    dynamic_cast<AliGenHerwigEventHeader*>(genHeader);
+  AliGenHijingEventHeader* hijingHeader    = 
+    dynamic_cast<AliGenHijingEventHeader*>(genHeader);
+  // AliGenHydjetEventHeader* hydjetHeader    = 
+  //   dynamic_cast<AliGenHydjetEventHeader*>(genHeader);
+  AliGenEposEventHeader*   eposHeader      = 
+    dynamic_cast<AliGenEposEventHeader*>(genHeader);
+
+  AppendField(fProduction, colGeometry,  "Geometry");
+  AppendField(fProduction, pythiaHeader, "Pythia");
+  AppendField(fProduction, dpmHeader,    "DPM");
+  AppendField(fProduction, gevHeader,    "GevSim");
+  AppendField(fProduction, herwigHeader, "Herwig");
+  AppendField(fProduction, hijingHeader, "Hijing");
+  // AppendField(fProduction, hydjetHeader, "Hydjet");
+  AppendField(fProduction, eposHeader,   "EPOS");
 }
 
 //____________________________________________________________________

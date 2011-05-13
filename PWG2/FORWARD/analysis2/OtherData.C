@@ -1238,10 +1238,29 @@ GetSingle(UShort_t which,
       }
     }
   }
+#if 0
+  if (ret) {
+    if (!wn.IsNull()) wn.Append(",");
+    switch (which) { 
+    case PYTHIA: wn.Append("Pythia"); break;
+    case UA5:    wn.Append("UA5");    break;
+    case CMS:    wn.Append("CMS");    break;
+    case ALICE:  wn.Append("ALICE");  break;
+    }      
+  }
+#endif
   return ret;
 }
 
-	  
+//____________________________________________________________________
+TString&
+AppendItem(TString& s, char delim, const char* what)	  
+{
+  if (!s.IsNull()) s.Append(Form("%c", delim));
+  s.Append(what);
+  return s;
+}
+
 //____________________________________________________________________
 /** 
  * Get a multi graph of data for a given energy and trigger type 
@@ -1293,6 +1312,10 @@ GetData(UShort_t sys,
     if (!(type & 0x7)) 
       Warning("GetData", "Unknown trigger mask 0x%x", type);
 
+    if (TMath::Abs(energy-2750) < 11) {
+      Warning("GetData", "Using 2360GeV data for %dGeV comparison", energy);
+      energy = 2360;
+    }
     if (!(TMath::Abs(energy-900) < 10 || 
 	  TMath::Abs(energy-2360) < 10 || 
 	  TMath::Abs(energy-7000) < 10)) {
@@ -1303,19 +1326,19 @@ GetData(UShort_t sys,
     
     sn = "pp";
 
-    if (type & 0x1) tn.Append("INEL");
-    if (type & 0x2) { if (!tn.IsNull()) tn.Append("|"); tn.Append("INEL>0"); }
-    if (type & 0x4) { if (!tn.IsNull()) tn.Append("|"); tn.Append("NSD"); }
+    if (type & 0x1) AppendItem(tn, '|', "INEL");
+    if (type & 0x2) AppendItem(tn, '|', "INEL>0");
+    if (type & 0x4) AppendItem(tn, '|', "NSD");
 
     Bool_t seenUA5 = false;
     for (Int_t i = 0; i < 3; i++) { 
       UShort_t mask = (1 << i);
       if ((type & mask) == 0) continue;
-      TGraphAsymmErrors* gUAp = (ua5   ? GetSingle(UA5,   sys,energy,mask): 0);
-      TGraphAsymmErrors* gUAn = (ua5   ? GetSingle(UA5+10,sys,energy,mask): 0);
-      TGraphAsymmErrors* gCMS = (cms   ? GetSingle(CMS,   sys,energy,mask): 0);
-      TGraphAsymmErrors* gALI = (alice ? GetSingle(ALICE, sys,energy,mask): 0);
-      TGraphAsymmErrors* gPYT = (pythia? GetSingle(PYTHIA,sys,energy,mask): 0);
+      TGraphAsymmErrors* gUAp =(ua5   ?GetSingle(UA5,   sys,energy,mask):0);
+      TGraphAsymmErrors* gUAn =(ua5   ?GetSingle(UA5+10,sys,energy,mask):0);
+      TGraphAsymmErrors* gCMS =(cms   ?GetSingle(CMS,   sys,energy,mask):0);
+      TGraphAsymmErrors* gALI =(alice ?GetSingle(ALICE, sys,energy,mask):0);
+      TGraphAsymmErrors* gPYT =(pythia?GetSingle(PYTHIA,sys,energy,mask):0);
       if (gUAp) mp->Add(gUAp);
       if (gUAn) mp->Add(gUAn);
       if (gCMS) mp->Add(gCMS);

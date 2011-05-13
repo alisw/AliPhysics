@@ -316,7 +316,8 @@ AliAODForwardMult::CheckEvent(Int_t    triggerMask,
     if (IsTriggerBits(kNClusterGt0))    hist->AddBinContent(kBinNClusterGt0);
   }
   // Check if we have an event of interest. 
-  if (!IsTriggerBits(triggerMask|kB)) return false;
+  Int_t mask = triggerMask; //|kB
+  if (!IsTriggerBits(mask)) return false;
   
   // Check for pileup
   if (IsTriggerBits(kPileUp)) return false;

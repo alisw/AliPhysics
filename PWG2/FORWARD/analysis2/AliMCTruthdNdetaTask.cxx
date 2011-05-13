@@ -217,13 +217,14 @@ AliMCTruthdNdetaTask::CentralityBin::End(TList*      sums,
 					shapeCorr, trigEff, 
 					symmetrice, rebin, 
 					rootProj, corrEmpty, cutEdges,
-					triggerMask, marker, color, mclist, truthlist);
+					triggerMask, marker, color, mclist, 
+					truthlist);
 
   fSumTruth     = static_cast<TH2D*>(fSums->FindObject("truth"));
   
 
   if (fSumTruth) { 
-    Int_t n0 = fSumTruth->GetBinContent(0,0);
+    Int_t n0 = Int_t(fSumTruth->GetBinContent(0,0));
     Int_t n  = (triggerMask == AliAODForwardMult::kNSD ? 
 		Int_t(fTriggers->GetBinContent(AliAODForwardMult::kBinMCNSD)) : 
 		Int_t(fTriggers->GetBinContent(AliAODForwardMult::kBinAll)));
