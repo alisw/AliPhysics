@@ -279,8 +279,8 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   }
 
   // Calculate the inclusive charged particle density 
-  //if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux)) { 
-  if (!fDensityCalculator.Calculate(*esdFMD, fHistos, ivz, lowFlux)) { 
+  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux)) { 
+    // if (!fDensityCalculator.Calculate(*esdFMD, fHistos, ivz, lowFlux)) { 
     AliWarning("Density calculator failed!");
     return;
   }

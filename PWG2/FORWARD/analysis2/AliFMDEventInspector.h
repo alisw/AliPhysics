@@ -221,6 +221,19 @@ public:
    * @param option Not used 
    */
   void Print(Option_t* option="") const;
+  /** 
+   * Store information about running conditions in output list 
+   * 
+   * 3 TNamed objects are defined.   The names are fixed, but the
+   * title is a string representation of the information, and the
+   * unique ID contains the identifier 
+   *
+   * - sys   Contains the collision system string and identifier. 
+   * - sNN   Contains the center-of-mass energy per nucleon (GeV)
+   * - field Contains the L3 magnetic field (kG)
+   * 
+   */
+  virtual void StoreInformation();
 protected:
   /** 
    * Read the trigger information from the ESD event 
