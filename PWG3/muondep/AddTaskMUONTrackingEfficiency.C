@@ -44,12 +44,19 @@ AliAnalysisTaskMuonTrackingEff *AddTaskMUONTrackingEfficiency(Bool_t matchTrig =
   // Create and connect output containers
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("TracksDetectedPerDE", TList::Class(),AliAnalysisManager::kOutputContainer,  fileName);
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("TotalTracksPerDE", TList::Class(),AliAnalysisManager::kOutputContainer,  fileName);
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("TracksDetectedPerChamber", TList::Class(),AliAnalysisManager::kOutputContainer,  fileName);
-  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("TotalTracksPerChamber", TList::Class(),AliAnalysisManager::kOutputContainer,  fileName);
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("SingleDetectedPerDE", TList::Class(),AliAnalysisManager::kOutputContainer,  fileName);
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("TracksDetectedPerChamber", TList::Class(),AliAnalysisManager::kOutputContainer,  fileName);
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("TotalTracksPerChamber", TList::Class(),AliAnalysisManager::kOutputContainer,  fileName);
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("SingleDetectedPerChamber", TList::Class(),AliAnalysisManager::kOutputContainer,  fileName);
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("ExtraHistos", TList::Class(),AliAnalysisManager::kOutputContainer,  fileName);
   mgr->ConnectOutput(taskMuonTrackingEff, 1, coutput1);
   mgr->ConnectOutput(taskMuonTrackingEff, 2, coutput2);
   mgr->ConnectOutput(taskMuonTrackingEff, 3, coutput3);
   mgr->ConnectOutput(taskMuonTrackingEff, 4, coutput4);
+  mgr->ConnectOutput(taskMuonTrackingEff, 5, coutput5);
+  mgr->ConnectOutput(taskMuonTrackingEff, 6, coutput6);
+  mgr->ConnectOutput(taskMuonTrackingEff, 7, coutput7);
   
   return taskMuonTrackingEff;
 }
+
