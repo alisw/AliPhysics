@@ -233,4 +233,12 @@ Bool_t AliTriggerBCMask::Bcm2Bits(TObjArray *tokens, Int_t &index, TBits &bits, 
   return kTRUE;
 
 }
-
+//_____________________________________________________________________________
+UShort_t AliTriggerBCMask::GetNUnmaskedBCs() const
+{
+  UShort_t nBCs=0;
+  for (Int_t i=0; i<kNBits; i++){
+    if (!GetMask(i)) nBCs++;
+  }
+  return nBCs;
+}
