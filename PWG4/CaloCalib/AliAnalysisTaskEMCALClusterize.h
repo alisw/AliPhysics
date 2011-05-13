@@ -71,6 +71,10 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SetConfigFileName(TString name)                { fConfigName          = name  ; }
   void           SetMaxEvent(Int_t max)                         { fMaxEvent            = max   ; }
   
+  void           SwitchOnTrackMatching()                        { fDoTrackMatching    = kTRUE  ; }
+  void           SwitchOffTrackMatching()                       { fDoTrackMatching    = kFALSE ; } 
+
+  
  private:
     
   virtual void  RecPoints2Clusters(TClonesArray *fdigitsArr, TObjArray *fRecPoints, TObjArray *clusArray);
@@ -117,7 +121,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   Int_t                  fMaxEvent;         // Set a maximum event
   
-  ClassDef(AliAnalysisTaskEMCALClusterize, 7);
+  Bool_t                 fDoTrackMatching;  // On/Off the matching recalulation to speed up analysis in PbPb
+  
+  ClassDef(AliAnalysisTaskEMCALClusterize, 8);
 };
 
 #endif //ALIANALYSISTASKEMCALCLUSTERIZE_H
