@@ -209,7 +209,7 @@ DrawStep(THStack* deltas, THStack* nchs, THStack* prims,
 }
 
 
-void DrawSteps(const char* filename, Bool_t single)
+void DrawSteps(const char* filename="forward.root", Bool_t single=true)
 {
   gStyle->SetPalette(1);
   gStyle->SetOptFit(0);
@@ -259,6 +259,7 @@ void DrawSteps(const char* filename, Bool_t single)
   gStyle->SetTitleY(.95);
   gStyle->SetTitleH(.1);
   gStyle->SetTitleW(.25);
+  gStyle->SetOptTitle(1);
   // gStyle->SetTitleColor(kBlack);
 
 
@@ -271,6 +272,7 @@ void DrawSteps(const char* filename, Bool_t single)
     c->SetRightMargin(0.05);
 
     DrawStep(deltas, nchs, prims, dndeta, 0);
+    c->SaveAs("steps_all.png");
     return;
   }
   Int_t nSteps = 0;
@@ -303,7 +305,10 @@ void DrawSteps(const char* filename, Bool_t single)
 
     DrawStep(deltas, nchs, prims, dndeta, i);
   }
-  c->SaveAs("steps.png");
+  c->SaveAs("steps_comic.png");
 }
+//
+// EOF
+//
 
     
