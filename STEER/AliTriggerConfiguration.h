@@ -86,7 +86,9 @@ public:
        const TObjArray&   GetClasses() const { return fClasses; }
 
                   Int_t   GetVersion() const { return fVersion; }
-
+	          Int_t   GetClassIndexFromName(const char* className) const;
+             const char*  GetClassNameFromIndex(Int_t classIndex) const;
+	AliTriggerClass*  GetTriggerClass(Int_t classIndex) const;
        //     AliTriggerCluster*   GetTriggerCluster(UInt_t index)
        //       { return (index < kNMaxClusters) ? (AliTriggerCluster*)fClusters[index] : NULL; }
 

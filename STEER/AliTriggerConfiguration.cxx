@@ -953,7 +953,42 @@ Bool_t AliTriggerConfiguration::CheckConfiguration( TString& configfile )
 
    return check;
 }
-
+//_____________________________________________________________________________
+Int_t AliTriggerConfiguration::GetClassIndexFromName(const char* className) const
+{
+   //const TObjArray& classes = cfg->GetClasses();
+   Int_t nclasses = (Int_t)fClasses.GetEntriesFast();
+   for (Int_t i=0;i<nclasses;i++) {
+       AliTriggerClass* trgclass = (AliTriggerClass*)fClasses.At(i);
+       if (TString(trgclass->GetName()).CompareTo(className) == 0) { 
+          ULong64_t classmask = (ULong64_t)trgclass->GetMask();
+          return TMath::Nint(TMath::Log2(classmask))+1;
+       }
+   }
+   return -1;
+}
+//_____________________________________________________________________________
+const char* AliTriggerConfiguration::GetClassNameFromIndex(Int_t classIndex) const
+{
+   Int_t nclasses = (Int_t)fClasses.GetEntriesFast();
+   for (Int_t i=0;i<nclasses;i++) {
+       AliTriggerClass* trgclass = (AliTriggerClass*)fClasses.At(i);
+       ULong64_t classmask = (ULong64_t)trgclass->GetMask();
+       if (TMath::Nint(TMath::Log2(classmask))+1 == classIndex) return trgclass->GetName();
+   }
+   return 0;
+}
+//_____________________________________________________________________________
+AliTriggerClass* AliTriggerConfiguration::GetTriggerClass(Int_t classIndex) const
+{
+   Int_t nclasses = (Int_t)fClasses.GetEntriesFast();
+   for (Int_t i=0;i<nclasses;i++) {
+       AliTriggerClass* trgclass = (AliTriggerClass*)fClasses.At(i);
+       ULong64_t classmask = (ULong64_t)trgclass->GetMask();
+       if (TMath::Nint(TMath::Log2(classmask))+1 == classIndex) return trgclass;
+   }
+   return 0;
+}
 //_____________________________________________________________________________
 void AliTriggerConfiguration::Reset()
 {
