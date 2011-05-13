@@ -74,7 +74,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   , fOutputAODBranch(0), fOutputAODBranchName("newEMCALClusters")
   , fFillAODFile(kTRUE), fFillAODHeader(0),    fFillAODCaloCells(0)
   , fRun(-1),            fRecoUtils(0),        fConfigName("")
-  , fCellLabels(),       fCellSecondLabels(),  fMaxEvent(1000000000)
+  , fCellLabels(),       fCellSecondLabels(),  fMaxEvent(1000000000),  fDoTrackMatching(kFALSE)
   
   {
   //ctor
@@ -101,7 +101,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   , fOutputAODBranch(0),  fOutputAODBranchName("newEMCALClusters")
   , fFillAODFile(kFALSE), fFillAODHeader(0),    fFillAODCaloCells(0)
   , fRun(-1),             fRecoUtils(0),        fConfigName("") 
-  , fCellLabels(),        fCellSecondLabels(),  fMaxEvent(1000000000)
+  , fCellLabels(),        fCellSecondLabels(),  fMaxEvent(1000000000),  fDoTrackMatching(kFALSE)
 {
   // Constructor
   for(Int_t i = 0; i < 10;    i++)  fGeomMatrix[i] =  0;
@@ -623,7 +623,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   }
   
   //Recalculate track-matching for the new clusters, only with ESDs
-  fRecoUtils->FindMatches(event,fCaloClusterArr,fGeom);
+  if(fDoTrackMatching) fRecoUtils->FindMatches(event,fCaloClusterArr,fGeom);
 
   
   //-------------------------------------------------------------------------------------
@@ -637,7 +637,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     //if(Entry()==0) Info("UserExec","newCluster E %f\n", newCluster->E());
     
     //Add matched track, if any, only with ESDs
-    if(esdevent){
+    if(esdevent && fDoTrackMatching){
       Int_t trackIndex = fRecoUtils->GetMatchedTrackIndex(i);
       if(trackIndex >= 0){
         newCluster->AddTrackMatched(event->GetTrack(trackIndex));
