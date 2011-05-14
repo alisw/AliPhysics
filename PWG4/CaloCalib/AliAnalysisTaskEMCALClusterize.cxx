@@ -322,13 +322,13 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
-  //printf("Clusterizer --- Event %d-- \n",eventN);
 
   AliAODInputHandler* aodIH = dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   Int_t eventN = Entry();
   if(aodIH) eventN = aodIH->GetReadEntry(); 
   
   if (eventN > fMaxEvent) return;
+  //printf("Clusterizer --- Event %d-- \n",eventN);
 
   //Remove the contents of output list set in the previous event 
   fOutputAODBranch->Clear("C");
@@ -496,10 +496,10 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     //In case of MC, first loop on the clusters and fill MC label to array
     //.....................................................................
     
-    for(Int_t j = 0; j < 24*48*11; j++)  {
-      if(fCellLabels[j]      !=-1) printf("Not well initialized cell %d, label1 %d\n",j,fCellLabels[j]      ) ;
-      if(fCellSecondLabels[j]!=-1) printf("Not well initialized cell %d, label2 %d\n",j,fCellSecondLabels[j]) ;
-    }
+//    for(Int_t j = 0; j < 24*48*11; j++)  {
+//      if(fCellLabels[j]      !=-1) printf("Not well initialized cell %d, label1 %d\n",j,fCellLabels[j]      ) ;
+//      if(fCellSecondLabels[j]!=-1) printf("Not well initialized cell %d, label2 %d\n",j,fCellSecondLabels[j]) ;
+//    }
     
     Int_t nClusters = event->GetNumberOfCaloClusters();
     if(aodIH && aodIH->GetEventToMerge())  //Embedding
