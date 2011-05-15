@@ -2105,6 +2105,7 @@ void AliHLTTPCCAPerformance::ReadMCEvent( istream &in )
   fNMCPoints = 0;
 
   in >> fNMCTracks;
+  if( fNMCTracks<0 || fNMCTracks>1000000 ) fNMCTracks = 0;
   fMCTracks = new AliHLTTPCCAMCTrack[fNMCTracks];
   for ( int it = 0; it < fNMCTracks; it++ ) {
     AliHLTTPCCAMCTrack &t = fMCTracks[it];
