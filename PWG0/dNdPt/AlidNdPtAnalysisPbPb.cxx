@@ -1153,6 +1153,7 @@ void AlidNdPtAnalysisPbPb::FillHistograms(AliESDtrack *const esdTrack, AliStack 
   Int_t label = TMath::Abs(esdTrack->GetLabel()); 
   //if(label == 0) return;
 
+  if(label > stack->GetNtrack()) return;
   TParticle* particle = stack->Particle(label);
   if(!particle) return;
 
@@ -1194,6 +1195,7 @@ void AlidNdPtAnalysisPbPb::FillHistograms(AliStack *const stack, Int_t label, Al
   // Fill MC histograms
   if(!stack) return;
 
+  if(label > stack->GetNtrack()) return;
   TParticle* particle = stack->Particle(label);
   if(!particle) return;
 
