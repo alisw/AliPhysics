@@ -243,13 +243,7 @@ void AlidNdPtEfficiency::Process(AliESDEvent *const esdEvent, AliMCEvent * const
       if(!track->GetTPCInnerParam()) continue;
       if(!(track->GetStatus()&AliESDtrack::kTPCrefit)) continue;
 
-      // Get TPC only tracks (must be deleted by user) 
-      // AliESDtrack* tpcTrack = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent,iTrack);
-      // if(!tpcTrack) continue;
-      // if(!tpcTrack->RelateToVertex(vtxESD,esdEvent->GetMagneticField(),100.)) { delete tpcTrack; continue; } 
-
       // check loose cuts for TPC tracks
-      // if(!esdTrackCuts->AcceptTrack(tpcTrack))  { delete tpcTrack; continue; } 
       if(!esdTrackCuts->AcceptTrack(track))  { continue; } 
 
       isTPC = kTRUE;
