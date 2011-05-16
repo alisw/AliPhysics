@@ -31,7 +31,7 @@ string ( REPLACE ".cxx" ".h"  HDRS "${SRCS}")
 
 set ( DHDR  TenderSuppliesLinkDef.h)
 
-set ( EINCLUDE  ANALYSIS ANALYSIS/Tender STEER TOF TRD/Cal VZERO ANALYSIS/TenderSupplies TPC T0)
+set ( EINCLUDE  ANALYSIS ANALYSIS/Tender STEER TOF TRD/Cal VZERO ANALYSIS/TenderSupplies TPC T0 OADB)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
 	
