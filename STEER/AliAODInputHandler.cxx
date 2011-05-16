@@ -127,8 +127,11 @@ Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
     // Begin event
     TClonesArray* mcParticles = (TClonesArray*) (fEvent->FindListObject("mcparticles"));
     if (mcParticles) fMCEvent->SetParticleArray(mcParticles);
-    if (fTreeToMerge) fTreeToMerge->GetEntry(entry + fMergeOffset);
-    
+
+    // When merging, get current event number from GetReadEntry(), 
+    // entry gives the events in the current file
+    if (fTreeToMerge) fTreeToMerge->GetEntry(GetReadEntry() + fMergeOffset);
+  
     fIsSelectedResult = fEvent->GetHeader()->GetOfflineTrigger();
 
     if (fMixingHandler) fMixingHandler->BeginEvent(entry);
