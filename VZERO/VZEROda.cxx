@@ -86,7 +86,10 @@ int main(int argc, char **argv) {
   Int_t    kClockMax;   // = 19;   LHC Clock Max for pedestal calculation
   Int_t    kLowCut;     // = 60;   low cut on signal distribution - to be tuned
   Int_t    kHighCut;    // = 50;   high cut on pedestal distribution - to be tuned
-  
+  Int_t    kClockMinRef;   // = 16;   LHC Clock Min for Flag checking
+  Int_t    kClockMaxRef;   // = 20;   LHC Clock Max for Flag checking
+  Float_t  kChi2Max; 		// = 1.  Maximum chi2 
+
   status = daqDA_DB_getFile("V00DA.config","./V00DA.config");
   if (status) {
       printf("Failed to get Config file (V00DA.config) from DAQ DB, status=%d\n", status);
@@ -95,16 +98,22 @@ int main(int argc, char **argv) {
       kClockMax  =  19; 
       kLowCut    =  60;   
       kHighCut   =  50;  
+      kClockMinRef  =  16; 
+      kClockMaxRef  =  20; 
+      kChi2Max		=  1.;
   } else {
       /* open the config file and retrieve cuts */
       FILE *fpConfig = fopen("V00DA.config","r");
-      int res = fscanf(fpConfig,"%d %d %d %d ",&kClockMin,&kClockMax,&kLowCut,&kHighCut);
-      if(res!=4) {
+      int res = fscanf(fpConfig,"%d %d %d %d %d %d %f",&kClockMin,&kClockMax,&kLowCut,&kHighCut,&kClockMinRef,&kClockMaxRef,&kChi2Max);
+      if(res!=7) {
 	    printf("Failed to get values from Config file (V00DA.config): wrong file format - 4 integers are expected - \n");
 	    kClockMin  =  16; 
-            kClockMax  =  19; 
-            kLowCut    =  60;   
-            kHighCut   =  50; 
+        kClockMax  =  19; 
+    	kLowCut    =  60;   
+        kHighCut   =  50; 
+      	kClockMinRef  =  16; 
+      	kClockMaxRef  =  20; 
+      	kChi2Max	  =  1.;
       }
       fclose(fpConfig);
   }
@@ -210,24 +219,43 @@ int main(int argc, char **argv) {
 	   AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
 	   if (rawStream->Next()) {	
            for(Int_t i=0; i<64; i++) {
-	   	Int_t nFlag = 0;
-		for(Int_t j=kClockMin; j <= kClockMax; j++) {  // Check flags on clock range used for pedestal calculation
-		   if((rawStream->GetBBFlag(i,j)) || (rawStream->GetBGFlag(i,j))) nFlag++; 
-		}
-		if(nFlag == 0){       // Fill 64*2 pedestal histograms  - 2 integrators -
-		   for(Int_t j=kClockMin;j <= kClockMax;j++){
-		       Int_t integrator = rawStream->GetIntegratorFlag(i,j);
-		       Float_t pedestal = (float)(rawStream->GetPedestal(i,j));
-		       hPEDname[i + 64 * integrator]->Fill(pedestal);
-		   }	
-		} 
-		if((rawStream->GetBBFlag(i,10)) || (rawStream->GetBGFlag(i,10))){ // Charge
-		    Int_t integrator = rawStream->GetIntegratorFlag(i,10);
-		    Float_t charge = (float)(rawStream->GetADC(i));   // Fill 64*2 ADCmax histograms 
-		    hADCname[i + 64 * integrator]->Fill(charge);
-		}   			   
-             } 
-	   }   
+	   		Int_t nFlag = 0;
+			for(Int_t j=kClockMinRef; j <= kClockMaxRef; j++) {  // Check flags on clock range used for pedestal calculation
+		   		if((rawStream->GetBBFlag(i,j)) || (rawStream->GetBGFlag(i,j))) nFlag++; 
+			}
+			if(nFlag == 0){       // Fill 64*2 pedestal histograms  - 2 integrators -
+				Float_t sum[2] = {0.,0.};
+				Float_t sumwi[2] = {0.,0.};
+		   		for(Int_t j=kClockMin;j <= kClockMax;j++){
+		       		Int_t integrator = rawStream->GetIntegratorFlag(i,j);
+		       		Float_t pedestal = (float)(rawStream->GetPedestal(i,j));
+		       		sum[integrator] += pedestal;
+		   			sumwi[integrator] += 1.;
+		   		}	
+		   		Float_t mean[2] =  {0.,0.};
+		   		Float_t chi2[2] =  {0.,0.};
+	   			
+	   			for(int ii=0;ii<2;ii++) if(sumwi[ii]>1.e-6) mean[ii] = sum[ii] / sumwi[ii];
+
+				for(Int_t j=kClockMin;j <= kClockMax;j++){
+		       		Int_t integrator = rawStream->GetIntegratorFlag(i,j);
+		       		Float_t pedestal = (float)(rawStream->GetPedestal(i,j));
+		   			chi2[integrator] += (mean[integrator] - pedestal) * (mean[integrator] - pedestal);
+	   			}	
+	   			if(chi2[0]<kChi2Max && chi2[1]<kChi2Max) {
+					for(int ii=0;ii<2;ii++){
+						if(mean[ii] >1.e-6) hPEDname[i + 64*ii]->Fill(mean[ii]);
+					}
+				}
+
+			} 
+			if((rawStream->GetBBFlag(i,10)) || (rawStream->GetBGFlag(i,10))){ // Charge
+		    	Int_t integrator = rawStream->GetIntegratorFlag(i,10);
+		    	Float_t charge = (float)(rawStream->GetADC(i));   // Fill 64*2 ADCmax histograms 
+		    	hADCname[i + 64 * integrator]->Fill(charge);
+			}   			   
+    	} // End loop over channels
+	   }   // End : if rawstream
            delete rawStream;
            rawStream = 0x0;      
            delete rawReader;
