@@ -58,6 +58,10 @@ class AliHFSystErr : public TNamed
     fCentralityClass = centrality; 
     AliInfo(Form(" Settings for centrality class %s",fCentralityClass.Data()));
   }
+  void SetIsLowEnergy(Bool_t flag) { 
+    fIsLowEnergy = flag; 
+    AliInfo(" Settings for the low energy run");
+  }
 
   // Function to initialize the variables/histograms
   void Init(Int_t decay);
@@ -79,6 +83,9 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2010PbPb4080();
   void InitDstartoD0pi2010PbPb4080();
 
+  void InitD0toKpi2010ppLowEn();
+  void InitDplustoKpipi2010ppLowEn();
+
 
   TH1F* ReflectHisto(TH1F *hin) const;
 
@@ -95,8 +102,9 @@ class AliHFSystErr : public TNamed
   Int_t fCollisionType;    // Collision type: pp=0, PbPb=1
   TString fCentralityClass;  // Centrality class
                            // MB:0100, 0-10:010, 0-20:020 ...40-80:4080...
+  Bool_t fIsLowEnergy;     // flag for the low energy (2.76TeV) run
 
-  ClassDef(AliHFSystErr,2);  // class for systematic errors of charm hadrons
+  ClassDef(AliHFSystErr,3);  // class for systematic errors of charm hadrons
 };
 
 #endif
