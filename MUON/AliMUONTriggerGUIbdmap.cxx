@@ -854,7 +854,7 @@ void AliMUONTriggerGUIbdmap::DrawDigits(Bool_t bx, Bool_t by)
   Float_t xg1, xg2, yg1, yg2, zg1;
   Float_t xdw, ydw, xcw, ycw;
   Double_t xc1, xc2, yc1, yc2;
-  Char_t cln[2];
+  Char_t cln[3];
   TBox *boxd;
   Double_t xMin, xMax, yMin, yMax;
   Double_t *px, *py;
@@ -1186,7 +1186,7 @@ void AliMUONTriggerGUIbdmap::DrawStrips(Bool_t bx, Bool_t by)
   Int_t detElemId, maxX, maxY;
   Float_t xdw, ydw, xpmin, xpmax, ypmin, ypmax;
   Float_t ptx1, ptx2, pty1, pty2;
-  Char_t cln[2];
+  Char_t cln[3];
   Double_t xc1, xc2, yc1, yc2;
   Float_t xcw, ycw;
 
