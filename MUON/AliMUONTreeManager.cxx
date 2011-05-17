@@ -250,7 +250,7 @@ AliMUONTreeManager::GetClassName(const TTree& tree, const char* pattern,
   
   if ( makeDefault ) return DefaultClassName(tree.GetName(),pattern);
   
-  return 0x0;
+  return "";
 }
 
 //_____________________________________________________________________________
