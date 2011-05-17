@@ -42,14 +42,14 @@ class AliTRDqaGuiBlackGTU : public TGCompositeFrame {
   
   TRootEmbeddedCanvas *fCanvasList[6];    // list of canvases
   TH1    *fHistList[3];                   // and histograms
-  TGraph *fGraphList[2];                  // trand graphs
+  TGraph *fGraphList[3];                  // trend graphs
 
  private:
 
   AliTRDqaGuiBlackGTU& operator = (const AliTRDqaGuiBlackGTU& /*g*/) { return *this; };
   AliTRDqaGuiBlackGTU(const AliTRDqaGuiBlackGTU&);
 
-  ClassDef(AliTRDqaGuiBlackGTU,1)      // Gui class for black events 
+  ClassDef(AliTRDqaGuiBlackGTU,2)      // Gui class for black events 
 
 };
 
