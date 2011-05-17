@@ -159,11 +159,8 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	      int n = last - first;  
 	      int pfindex = n - fNsampleCut; 
 	      pfindex = pfindex > PF::SAMPLERANGE ? PF::SAMPLERANGE : pfindex;
-
 	      int dt =  maxampindex - startbin -2; 
 	      int tmpindex = 0;
-
-
 	      Float_t tmptof = ScanCoarse( &fReversed[dt] , n );
 	      
 	      if( tmptof < -1 )
@@ -181,26 +178,24 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 		  }
 
 	      double tof = 0;
-	    
 	      for(int k=0; k < PF::SAMPLERANGE; k++   )
 		{
 		  tof +=  fPFTofVectors[0][pfindex][k]*fReversed[ dt  +k + tmpindex -1 ];   
 		}
-	    
 	      for( int i=0; i < PF::SAMPLERANGE; i++ )
 		{
 		  {
+		    
 		    fAmp += fPFAmpVectors[0][pfindex][i]*fReversed[ dt  +i  +tmpindex -1 ];
 		  }
 		}
+
 	      if( TMath::Abs(  (maxf - fAmp  )/maxf )  >   0.1 )
 		{
 		  fAmp = maxf;
 		}
 	      
 	      tof = timebinOffset - 0.01*tof/fAmp - fL1Phase/TIMEBINWITH; // clock
-	      
-	      // use local-array time for chi2 estimate
 	      Float_t chi2 = CalculateChi2(fAmp, tof-timebinOffset+maxrev, first, last);
 	      Int_t ndf = last - first - 1; // nsamples - 2
 	      return AliCaloFitResults( maxamp, ped , Ret::kFitPar, fAmp, tof, 

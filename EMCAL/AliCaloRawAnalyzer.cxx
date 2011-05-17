@@ -291,7 +291,7 @@ AliCaloRawAnalyzer::IsInTimeRange( const int maxindex, const int maxtindx, const
 
 
 void 
-AliCaloRawAnalyzer::PrintBunches( const vector<AliCaloBunchInfo> &bvctr ) const
+AliCaloRawAnalyzer::PrintBunches( const vector<AliCaloBunchInfo> &bvctr ) 
 {
   //comment
   cout << __FILE__ << __LINE__<< "*************** Printing Bunches *******************" << endl;
@@ -307,7 +307,7 @@ AliCaloRawAnalyzer::PrintBunches( const vector<AliCaloBunchInfo> &bvctr ) const
 
 
 void 
-AliCaloRawAnalyzer::PrintBunch( const AliCaloBunchInfo &bunch ) const
+AliCaloRawAnalyzer::PrintBunch( const AliCaloBunchInfo &bunch )
 {
   //comment
   cout << __FILE__ << ":" << __LINE__ << endl;

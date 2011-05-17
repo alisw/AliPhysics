@@ -20,53 +20,6 @@
 #include "AliCaloConstants.h"
 
 
-// namespace CaloHLTConst
-// {
-//   const int MAXHOSTS=20;
-//   //Constants related to the ALTRO chip (Common to EMCAL / PHOS )
-//   const int MAXBINVALUE = 1023;
-//   const int NGAINS         =   2;    
-//   const int HIGHGAIN    =   1;
-//   const int LOWGAIN     =   0;
-//   const int ALTROMAXSAMPLES = 1008;    /**<The maximum number of samples of the ALTRO*/
-//   const int ALTROMAXPRESAMPLES = 15;        
-//   const int NALTROS        =   4;      /**<Number of ALTROs per frontend card*/
-//   const int NALTROCHANNELS =  16;
-
-//   //FEE constants common to PHOS EMCAL
-//   const int CSPSPERFEE    = 32;
-//   const int NBRANCHES      =   2;   
-//   const int MAXHWADDRESSES = 4096;
-  
-//   namespace EmcalHLTConst
-//   {
-//     const int NZROWSMOD      =  48;   /**<Number of rows per module*/       
-//     const int NXCOLUMNSMOD   =  24;   /**<Number of columns per module*/ 
-//     const int NRCUSPERSECTOR = 4;     /**<Number of RCUs per sector*/
-//     const int NMODULES    =    10;    /**<Number of modules of the EMCAL detector*/
-//     const int NRCUSPERMODULE =  2 ;   /**<Number of RCUs per Module*/
-//     const int NFEECS         =  9;    /**<Number of Frontend cards per branch*/
-//   };
-  
-//   namespace PhosHLTConst
-//   {
-//     const int NZROWSMOD      =  56;   /**<Number of rows per module*/       
-//     const int NXCOLUMNSMOD   =  64;   /**<Number of columns per module*/ 
-//     const int NMODULES    =    5;     /**<Number of modules of the PHOS detector*/
-//     const int NRCUSPERMODULE =  4 ;   /**<Number of RCUs per Module*/
-//     const int NFEECS         =  14;   /**<Number of Frontend cards per branch*/
-//   };
-  
-// };
-
-
-// namespace CALO  =  CaloHLTConst; // just for easier notation
-// namespace EMCAL =  CaloHLTConst::EmcalHLTConst;
-// namespace PHOS  =  CaloHLTConst::PhosHLTConst;
-
-
-
-
 class AliHLTCaloConstants
 {
 public:
@@ -84,8 +37,8 @@ public:
   static  Int_t GetNALTROS()           { return ALTRO::NALTROS; };
   static  Int_t GetNALTROCHANNELS()    { return ALTRO::NALTROCHANNELS; };
   static  Int_t GetNBRANCHES()         { return CALO::NBRANCHES; }; 	
-  static Int_t GetMAXHWADDRESSES() { return CALO::MAXHWADDRESSES; }
-
+  //static  Int_t GetMAXHWADDRESSES() { return CALO::MAXHWADDRESSES; }
+  static  Int_t GetMAXHWADDRESSES() { return PHOS::MAXHWADDR; }
   // Detector specific stuff
   // PHOS Only, bad move somewher else, PTH
   virtual Int_t GetNZROWSRCU() const  { return   56 ; } ; 

@@ -45,8 +45,8 @@ public:
   virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &/*bunchvector*/, 
   				      const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/ )  = 0;
 
-  void PrintBunches( const std::vector<AliCaloBunchInfo> &bunchvector ) const;
-  void PrintBunch( const AliCaloBunchInfo &bunch ) const ;
+  static void PrintBunches( const std::vector<AliCaloBunchInfo> &bunchvector );
+  static void PrintBunch( const AliCaloBunchInfo &bunch );
   
   int PreFitEvaluateSamples( const std::vector<AliCaloBunchInfo>  &bunchvector, 
 				     const UInt_t altrocfg1,  const UInt_t altrocfg2, Int_t & index, 

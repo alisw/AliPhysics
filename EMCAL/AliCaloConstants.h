@@ -49,7 +49,7 @@ namespace CaloConstants
     const int NALTROS        =   4;      // Number of ALTROs per frontend card
     const int NALTROCHANNELS =  16;      // Number of readout channels per ALTRO chip
     const int MINHARDWAREADDRESS = -2;   // Smallest possible HW address ( in offline )
-    const int MAXHARDWAREADDRESS = 4096; // Max harware address,  ( its to high ) 
+    //    const int MAXHARDWAREADDRESS = 4096; // Max harware address,  ( its to high ) 
     const int MAXBINVALUE = 1023;        // Max possible ALTRO ADC value ( 10 bit )
     const int NGAINS         =   2;      // Number of gains ( high + low )
     const int HIGHGAIN    =   1;         // Mnemonic for High Gain
@@ -61,22 +61,16 @@ namespace CaloConstants
   //FEE constants common to PHOS EMCAL
   const int CSPSPERFEE       =   32;    // Charge Sensitive Preamplifiers (CSPs) per FEE
   const int NBRANCHES        =    2;    // Branches per RCU   
-  const int MAXHWADDRESSES   = 4096;    // Highest possible harware address
+  //  const int MAXHWADDRESSES   = 4096;    // Highest possible harware address
   
   namespace EMCALConstants
   {
-    // const int NZROWSMOD      =  48;   // Number of rows per module
-    // const int NXCOLUMNSMOD   =  24;   // Number of columns per module 
+    const int MAXHWADDR = 3279;
     const double ECENTRALHIT = 0.845678; //Percentage of total enegry contain in a single tower for a central hit  
-    
     const int NZROWSMOD      =  24;   // Number of rows per module
     const int NXCOLUMNSMOD   =  48;   // Number of columns per module 
-    
     const int NROWSMOD     = NZROWSMOD;   // Number of rows per module
     const int NCOLUMNSMOD  = NXCOLUMNSMOD;   // Number of columns per module 
-    
-    //   const int NZROWSMOD      =  24;   // Number of rows per module
-    //   const int NXCOLUMNSMOD   =  48;   // Number of columns per module 
     
     const int NRCUSPERSECTOR = 4;     // Number of RCUs per sector
     const int NMODULES    =    10;    // Number of modules of the EMCAL detector
@@ -91,6 +85,8 @@ namespace CaloConstants
 
   namespace PHOSConstants
   {
+    const int MAXHWADDR = 4096; 
+    //    const int MAXHARDWAREADDRESS = 4096; // Max harware address,  ( its to high )  
     const int NZROWSMOD      =  56;   // Number of rows per module       
     const int NXCOLUMNSMOD   =  64;   // Number of columns per module
     const int NMODULES    =     5;    // Number of modules of the PHOS detector
@@ -98,12 +94,6 @@ namespace CaloConstants
     const int NFEECS         =  14;   // Number of Frontend cards per branch
   }
 
-
-  //namespace FitAlgorithm
-  // {
-  //  enum fitAlgorithm { kStandard = 0, kCrude = 1, kPeakFinder = 2, kNeuralNet = 3, kFastFit= 4,
-  //			kLogFit = 5, kLMS = 6,  kLMSOffline = 7, kFakeAltro = 9, kNONE = 8}; // possible return values
-  // }
   
   namespace FitAlgorithm
   {

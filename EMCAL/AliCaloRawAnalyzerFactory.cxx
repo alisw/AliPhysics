@@ -57,6 +57,7 @@ AliCaloRawAnalyzerFactory::CreateAnalyzer( const int algo )
       return new AliCaloRawAnalyzerNN();
       break;
     case kPeakFinder:
+      //    cout << __FILE__ << ":" << __LINE__ << ": Returning new peakFinder " << endl;
       return new AliCaloRawAnalyzerPeakFinder();
       break;
     case kCrude:
