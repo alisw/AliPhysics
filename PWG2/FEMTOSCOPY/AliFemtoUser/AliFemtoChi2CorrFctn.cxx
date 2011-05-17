@@ -30,20 +30,20 @@ AliFemtoChi2CorrFctn::AliFemtoChi2CorrFctn(char* title, const int& nbins, const 
   fSigmaToVertexDenominator(0)
 {
   // set up numerator
-  char tTitNum[100] = "NumChi2ITSSUM";
+  char tTitNum[101] = "NumChi2ITSSUM";
   strncat(tTitNum,title, 100);
   fChi2ITSSUMNumerator = new TH2D(tTitNum,title,nbins,QinvLo,QinvHi,200,0.0,6.0);
   // set up denominator
-  char tTitDen[100] = "DenChi2ITSSUM";
+  char tTitDen[101] = "DenChi2ITSSUM";
   strncat(tTitDen,title, 100);
   fChi2ITSSUMDenominator = new TH2D(tTitDen,title,nbins,QinvLo,QinvHi,200,0.0,6.0);
 
   // set up numerator
-  char tTit2Num[100] = "NumChi2TPCSUM";
+  char tTit2Num[101] = "NumChi2TPCSUM";
   strncat(tTit2Num,title, 100);
   fChi2TPCSUMNumerator = new TH2D(tTit2Num,title,nbins,QinvLo,QinvHi,200,0.0,6.0);
   // set up denominator
-  char tTit2Den[100] = "DenChi2TPCSUM";
+  char tTit2Den[101] = "DenChi2TPCSUM";
   strncat(tTit2Den,title, 100);
   fChi2TPCSUMDenominator = new TH2D(tTit2Den,title,nbins,QinvLo,QinvHi,200,0.0,6.0);
 

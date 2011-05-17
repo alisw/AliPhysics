@@ -48,72 +48,72 @@ AliFemtoModelCorrFctnDEtaDPhi::AliFemtoModelCorrFctnDEtaDPhi(char* title, const 
   fDCosPtDenominator(0)
 {
   // set up numerator
-  char tTitNumDT[100] = "NumDPhiDEtaTrue";
+  char tTitNumDT[101] = "NumDPhiDEtaTrue";
   strncat(tTitNumDT,title, 100);
   fDPhiDEtaNumeratorTrue = new TH2D(tTitNumDT,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
 
-  char tTitNumDF[100] = "NumDPhiDEtaFake";
+  char tTitNumDF[101] = "NumDPhiDEtaFake";
   strncat(tTitNumDF,title, 100);
   fDPhiDEtaNumeratorFake = new TH2D(tTitNumDF,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
 
 
   // set up denominator
-  char tTitDenD[100] = "DenDPhiDEta";
+  char tTitDenD[101] = "DenDPhiDEta";
   strncat(tTitDenD,title, 100);
   fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
 
   // set up numerator
-  char tTitNumR[100] = "NumDPhiDEtaCol";
+  char tTitNumR[101] = "NumDPhiDEtaCol";
   strncat(tTitNumR,title, 100);
   fDPhiDEtaColNumerator = new TH2D(tTitNumR,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
   // set up denominator
-  char tTitDenR[100] = "DenDPhiDEtaCol";
+  char tTitDenR[101] = "DenDPhiDEtaCol";
   strncat(tTitDenR,title, 100);
   fDPhiDEtaColDenominator = new TH2D(tTitDenR,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
 
   // set up numerator
-  char tTitNumDPhiT[100] = "NumDPhiTrue";
+  char tTitNumDPhiT[101] = "NumDPhiTrue";
   strncat(tTitNumDPhiT,title, 100);
   fDPhiNumeratorTrue = new TH1D(tTitNumDPhiT,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi());
   // set up numerator
-  char tTitNumDPhiF[100] = "NumDPhiFake";
+  char tTitNumDPhiF[101] = "NumDPhiFake";
   strncat(tTitNumDPhiF,title, 100);
   fDPhiNumeratorFake = new TH1D(tTitNumDPhiF,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi());
 
   // set up denominator
-  char tTitDenDPhi[100] = "DenDPhi";
+  char tTitDenDPhi[101] = "DenDPhi";
   strncat(tTitDenDPhi,title, 100);
   fDPhiDenominator = new TH1D(tTitDenDPhi,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi());
 
   // set up numerator
-  char tTitNumDCosT[100] = "NumDCosTrue";
+  char tTitNumDCosT[101] = "NumDCosTrue";
   strncat(tTitNumDCosT,title, 100);
   fDCosNumeratorTrue = new TH1D(tTitNumDCosT,title,aPhiBins*2,-1.0,1.0);
   // set up numerator
-  char tTitNumDCosF[100] = "NumDCosFake";
+  char tTitNumDCosF[101] = "NumDCosFake";
   strncat(tTitNumDCosF,title, 100);
   fDCosNumeratorFake = new TH1D(tTitNumDCosF,title,aPhiBins*2,-1.0,1.0);
 
   // set up denominator
-  char tTitDenDCos[100] = "DenDCos";
+  char tTitDenDCos[101] = "DenDCos";
   strncat(tTitDenDCos,title, 100);
   fDCosDenominator = new TH1D(tTitDenDCos,title,aPhiBins*2,-1.0,1.0);
 
   // set up numerator
-  char tTitNumDPhiPt[100] = "NumDPhiPt";
+  char tTitNumDPhiPt[101] = "NumDPhiPt";
   strncat(tTitNumDPhiPt,title, 100);
   fDPhiPtNumerator = new TH2D(tTitNumDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi(), 30, 0.0, 3.0);
   // set up denominator
-  char tTitDenDPhiPt[100] = "DenDPhiPt";
+  char tTitDenDPhiPt[101] = "DenDPhiPt";
   strncat(tTitDenDPhiPt,title, 100);
   fDPhiPtDenominator = new TH2D(tTitDenDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi(), 30, 0.0, 3.0);
 
   // set up numerator
-  char tTitNumDCosPt[100] = "NumDCosPt";
+  char tTitNumDCosPt[101] = "NumDCosPt";
   strncat(tTitNumDCosPt,title, 100);
   fDCosPtNumerator = new TH2D(tTitNumDCosPt,title,aPhiBins*2,-1.0,1.0, 30, 0.0, 3.0);
   // set up denominator
-  char tTitDenDCosPt[100] = "DenDCosPt";
+  char tTitDenDCosPt[101] = "DenDCosPt";
   strncat(tTitDenDCosPt,title, 100);
   fDCosPtDenominator = new TH2D(tTitDenDCosPt,title,aPhiBins*2,-1.0,1.0, 30, 0.0, 3.0);
 

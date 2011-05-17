@@ -27,15 +27,15 @@ AliFemtoModelCorrFctn3DSpherical::AliFemtoModelCorrFctn3DSpherical(char* title, 
   fPairCut(0x0)
 {
   // set up numerator
-  char tTitNum[100] = "NumTrue";
+  char tTitNum[101] = "NumTrue";
   strncat(tTitNum,title, 100);
   fTrueNumeratorSph = new TH3D(tTitNum,title,nqbins,QLo,QHi,nphibins,-TMath::Pi(),TMath::Pi(),ncthetabins,-1.0,1.0);
   // set up numerator
-  char tTitNumF[100] = "NumFake";
+  char tTitNumF[101] = "NumFake";
   strncat(tTitNumF,title, 100);
   fFakeNumeratorSph = new TH3D(tTitNumF,title,nqbins,QLo,QHi,nphibins,-TMath::Pi(),TMath::Pi(),ncthetabins,-1.0,1.0);
   // set up denominator
-  char tTitDen[100] = "Den";
+  char tTitDen[101] = "Den";
   strncat(tTitDen,title, 100);
   fDenominatorSph = new TH3D(tTitDen,title,nqbins,QLo,QHi,nphibins,-TMath::Pi(),TMath::Pi(),ncthetabins,-1.0,1.0);
 
