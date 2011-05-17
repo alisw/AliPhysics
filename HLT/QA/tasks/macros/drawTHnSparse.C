@@ -120,14 +120,15 @@ void drawTHnSparse(TString inputFile="HLT-OFFLINE-CentralBarrel-comparison.root"
     if(heventHLT->GetEntries()==0) printf("\nThe HLT event THnSparse contains 0 entries\n");
     if(heventOFF->GetEntries()==0) printf("\nThe OFF event THnSparse contains 0 entries\n");
   }   
-  
-  static const int nCutSets=4;
-  cuts *p = new cuts[nCutSets];
-          // eta    pt     DCAr     DCAz    TPCclus  ITSclus  vtxStatus  |vtxZ|   V0cent 
-  p[0] = {-2, 2,  0,   10, -10, 10, -10, 10,  0, 200,   0, 10,	  2,	   10,   0, 100};
-  p[1] = {-1, 1,  0,   10, -10, 10, -10, 10,  0, 200,   0, 10,	  2,	   10,   0, 100};
-  p[2] = {-1, 1,  0.3, 10,  -7,  7,  -7,  7,  0, 200,   0, 10,	  2,	   10,   0, 100};
-  p[3] = {-1, 1,  0.3, 10,  -7,  7,  -7,  7,  0, 200,   1, 10,	  2,	   10,   0, 100};
+   
+  cuts p[] = {                                                                                                                                                                               
+         // eta    pt      DCAr     DCAz    TPCclus  ITSclus  vtxStatus  |vtxZ|   V0cent                                                                                                
+       {-1, 1,  0,   10, -10, 10, -10, 10,  0, 200,   0, 10,      2,       10,   0, 100},                                                                                                    
+       {-1, 1,  0.3, 10,  -7,  7,  -7,  7,  0, 200,   0, 10,      2,       10,   0, 100},                                                                                                    
+       {-1, 1,  0.6, 10,  -7,  7,  -7,  7,  0, 200,   0, 10,      2,       10,   0, 100},                                                                                                    
+       {-1, 1,  0.9, 10,  -7,  7,  -7,  7,  0, 200,   0, 10,      2,       10,   0, 100}                                                                                                     
+  };                                                                                                                                                                                         
+  const int nCutSets = sizeof(p)/sizeof(cuts);
  
   for(int i=0; i<nCutSets; ++i) cutStudies(folder, htrackHLT, htrackOFF, hText, p[i]); 
   
@@ -148,7 +149,7 @@ void drawTHnSparse(TString inputFile="HLT-OFFLINE-CentralBarrel-comparison.root"
      TCanvas *ca; TFile *ff; TPad *pad; 
      TH1D *hlt[outputNames.size()];
      TH1D *off[outputNames.size()];
- 
+     
      for(int j=1; j<9; j++){ // loop over the pads of the canvas "ov" with dimension 3x3     
        for(UInt_t i=0; i<outputNames.size(); i++){ // loop over the files with different sets of cuts
      	      
@@ -167,13 +168,21 @@ void drawTHnSparse(TString inputFile="HLT-OFFLINE-CentralBarrel-comparison.root"
      	      printf("Empty pad in canvas %s.\n", ca->GetName());
      	      continue; 	
      	   }
-     	   hlt[i] =(TH1D*)pad->FindObject(Form("fTrackHLT_proj_%d",j-1));
-     	   off[i] =(TH1D*)pad->FindObject(Form("fTrackOFF_proj_%d",j-1));
-     	   if(!hlt[i] || !off[i]){
-     	      printf("Empty histogram for i=%d, file %s.\n", i, outputNames[i].Data());
+     	   hlt[i] =(TH1D*)pad->FindObject(Form("fTrackHLT_proj_%d",j-1)); 
+	   	   	   
+     	   if(!hlt[i]){
+     	      printf("Empty HLT histogram for i=%d, file %s.\n", i, outputNames[i].Data());
      	      continue;
      	   }
-     	   ovHLT->cd(j);	   
+     	   
+	   off[i] =(TH1D*)pad->FindObject(Form("fTrackOFF_proj_%d",j-1));
+	   if(!off[i]){
+     	      printf("Empty OFF histogram for i=%d, file %s.\n", i, outputNames[i].Data());
+     	      continue;
+     	   }
+     	   
+	   ovHLT->cd(j);	
+
      	   if(i==0){
               TPaveStats *st = (TPaveStats*)hlt[i]->FindObject("stats"); 
               st->SetTextColor(kBlack);
