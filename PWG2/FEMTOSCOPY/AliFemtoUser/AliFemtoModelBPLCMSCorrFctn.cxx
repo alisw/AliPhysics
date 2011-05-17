@@ -29,19 +29,19 @@ AliFemtoModelBPLCMSCorrFctn::AliFemtoModelBPLCMSCorrFctn(char* title, const int&
   fUseRPSelection(0)
 {
   // set up true numerator
-  char tTitNumT[100] = "Num3DTrue";
+  char tTitNumT[101] = "Num3DTrue";
   strncat(tTitNumT,title, 100);
   fNumerator3DTrue = new TH3D(tTitNumT,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   // set up fake numerator
-  char tTitNumF[100] = "Num3DFake";
+  char tTitNumF[101] = "Num3DFake";
   strncat(tTitNumF,title, 100);
   fNumerator3DFake = new TH3D(tTitNumF,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   // set up denominator
-  char tTitDen[100] = "Den3D";
+  char tTitDen[101] = "Den3D";
   strncat(tTitDen,title, 100);
   fDenominator3D = new TH3D(tTitDen,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   // set up ave qInv
-  char tTitQinv[100] = "Qinv";
+  char tTitQinv[101] = "Qinv";
   strncat(tTitQinv,title, 100);
   fQinvHisto = new TH3D(tTitQinv,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
 
