@@ -22,7 +22,7 @@ class AliQAThresholds: public TObject {
 
  public:
 
-  AliQAThresholds(Int_t detId = -1);
+  AliQAThresholds(Int_t detId);
   virtual ~AliQAThresholds();
 
   Int_t GetDetectorId();
@@ -30,17 +30,20 @@ class AliQAThresholds: public TObject {
   void AddThreshold(TParameter<long>* item);
   void AddThreshold(TParameter<int>* item);
   void AddThreshold(TParameter<double>* item);
+  void AddThreshold(TParameter<float>* item);
   void AddThresholdAt(TParameter<long>* item, Int_t index);
   void AddThresholdAt(TParameter<int>* item, Int_t index);
   void AddThresholdAt(TParameter<double>* item, Int_t index);
+  void AddThresholdAt(TParameter<float>* item, Int_t index);
   TObject* GetThreshold(Int_t i);
+  Int_t GetSize();
 
  private:
 
   TObjArray fThresholds;
   Int_t fDetectorId;       // in the sense of the class AliDAQ
 
-  ClassDef(AliQAThresholds, 1)
+  ClassDef(AliQAThresholds, 2)
 };
 
 #endif

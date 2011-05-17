@@ -20,6 +20,7 @@ ClassImp(AliQAThresholds)
   AliQAThresholds::AliQAThresholds(Int_t detId): TObject(), fThresholds(), fDetectorId(detId)
 {
   // constructor
+
   fThresholds.SetOwner(kTRUE);
 }
 
@@ -59,6 +60,13 @@ void AliQAThresholds::AddThreshold(TParameter<double>* item)
 
   fThresholds.Add(item);
 }
+void AliQAThresholds::AddThreshold(TParameter<float>* item)
+{
+  // Add a threshold at the end of the array of thresholds.
+  // Ownership of the object is transfered to AliQAThresholds.
+
+  fThresholds.Add(item);
+}
 
 void AliQAThresholds::AddThresholdAt(TParameter<int>* item, Int_t index)
 {
@@ -84,10 +92,26 @@ void AliQAThresholds::AddThresholdAt(TParameter<double>* item, Int_t index)
 
   fThresholds.AddAtAndExpand(item, index);
 }
+void AliQAThresholds::AddThresholdAt(TParameter<float>* item, Int_t index)
+{
+  // Add a threshold at index 'index' in the array of thresholds.
+  // If index is larger than the current size of the array, expand the array.
+  // Ownership of the object is transfered to AliQAThresholds.
+
+  fThresholds.AddAtAndExpand(item, index);
+}
 
 TObject* AliQAThresholds::GetThreshold(Int_t i)
 {
   // Return the object at position i. Returns 0 if i is out of bounds.
 
   return fThresholds.At(i);
+}
+
+Int_t AliQAThresholds::GetSize()
+{
+  // Return the number of elements in the thresholds array. 
+  // Beware that it is not the number of thresholds, as some elements of the array can be null. 
+
+  return fThresholds.GetSize();
 }
