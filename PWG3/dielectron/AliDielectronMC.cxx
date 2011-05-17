@@ -128,7 +128,7 @@ Int_t AliDielectronMC::GetNMCTracksFromStack()
 }
 
 //____________________________________________________________
-Int_t AliDielectronMC::GetNPrimary()
+Int_t AliDielectronMC::GetNPrimary() const
 {
   //
   //  return the number of primary track from MC event
@@ -148,7 +148,7 @@ Int_t AliDielectronMC::GetNPrimaryFromStack()
 }
 
 //____________________________________________________________
-AliVParticle* AliDielectronMC::GetMCTrackFromMCEvent(Int_t itrk)
+AliVParticle* AliDielectronMC::GetMCTrackFromMCEvent(Int_t itrk) const
 {
   //
   // return MC track directly from MC event
@@ -652,7 +652,7 @@ void AliDielectronMC::GetDaughters(const TObject *mother, AliVParticle* &d1, Ali
 
 
 //________________________________________________________________________________
-Int_t AliDielectronMC::GetMothersLabel(Int_t daughterLabel) {
+Int_t AliDielectronMC::GetMothersLabel(Int_t daughterLabel) const {
   //
   //  Get the label of the mother for particle with label daughterLabel
   //
@@ -669,7 +669,7 @@ Int_t AliDielectronMC::GetMothersLabel(Int_t daughterLabel) {
 
 
 //________________________________________________________________________________
-Int_t AliDielectronMC::GetPdgFromLabel(Int_t label) {
+Int_t AliDielectronMC::GetPdgFromLabel(Int_t label) const {
   //
   //  Get particle code using the label from stack
   //
@@ -788,7 +788,7 @@ Bool_t AliDielectronMC::ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t 
 
 
 //________________________________________________________________________________
-Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source) {
+Bool_t AliDielectronMC::CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source) const {
   //
   //  Check the source for the particle 
   //
@@ -872,7 +872,7 @@ Bool_t AliDielectronMC::IsMCTruth(Int_t label, AliDielectronSignalMC* signalMC, 
 
 
 //________________________________________________________________________________
-Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, AliDielectronSignalMC* signalMC) {
+Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielectronSignalMC* signalMC) const {
   //
   // Check if the pair corresponds to the MC truth in signalMC 
   //
@@ -1011,7 +1011,7 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, AliDielectronSi
 
 
 //____________________________________________________________
-Bool_t AliDielectronMC::HaveSameMother(const AliDielectronPair * pair)
+Bool_t AliDielectronMC::HaveSameMother(const AliDielectronPair * pair) const
 {
   //
   // Check whether two particles have the same mother

@@ -152,6 +152,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
   
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  if (!inputHandler) return;
   
   if ( inputHandler->GetPIDResponse() ){
     AliDielectronVarManager::SetPIDResponse( inputHandler->GetPIDResponse() );

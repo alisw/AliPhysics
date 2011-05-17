@@ -48,7 +48,7 @@ public:
   void SetRejectPileup(Bool_t pileup=kTRUE)     { fRejectPileup=pileup;     }
   void AddDielectron(AliDielectron * const die) { fListDielectron.Add(die); }
   
-private:
+protected:
   enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};
   TList fListDielectron;             // List of dielectron framework instances
   TList fListHistos;                 //! List of histogram manager lists in the framework classes
