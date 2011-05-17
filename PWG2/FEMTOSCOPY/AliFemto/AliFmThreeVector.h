@@ -418,8 +418,8 @@ inline T& AliFmThreeVector<T>::operator() (size_t i)
     throw out_of_range("AliFmThreeVector<T>::operator(): bad index");
 #else
     cerr << "AliFmThreeVector<T>::operator(): bad index" << endl;
-#endif
     return mX1;
+#endif
 }
 
 template<class T>
@@ -442,8 +442,8 @@ inline T &AliFmThreeVector<T>::operator[] (size_t i)
       throw out_of_range("AliFmThreeVector<T>::operator[]: bad index"); 
 #else
       cerr << "AliFmThreeVector<T>::operator[]: bad index" << endl;
-#endif
       return mX1;
+#endif
 }
 
 template<class T>
