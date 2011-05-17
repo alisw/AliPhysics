@@ -78,15 +78,8 @@ void AliAnalysisTaskDielectronFilter::Init()
   
 // require AOD handler
   AliAODHandler *aodH = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
-  if (!aodH) Fatal("Init", "No AOD handler. Halting.");
-  
-//require dielectron framework 
-  if (!fDielectron) {
-    Error("Init","Dielectron framework class required. Please create and instance with proper cuts and set it via 'SetDielectron' before executing this task!!!");
-    return;
-  }
-  fDielectron->Init();
-  
+  if (!aodH) AliFatal("No AOD handler. Halting.");
+    
   aodH->AddFilteredAOD("AliAOD.Dielectron.root", "DielectronEvents");
 //   AddAODBranch("AliDielectronCandidates",fDielectron->GetPairArraysPointer(),"deltaAOD.Dielectron.root");
 }
@@ -97,6 +90,14 @@ void AliAnalysisTaskDielectronFilter::UserCreateOutputObjects()
   //
   // Initilise histograms
   //
+
+  //require dielectron framework
+  if (!fDielectron) {
+    AliFatal("Dielectron framework class required. Please create and instance with proper cuts and set it via 'SetDielectron' before executing this task!!!");
+    return;
+  }
+  fDielectron->Init();
+
   if (!fEventStat){
     fEventStat=new TH1D("hEventStat","Event statistics",5,0,5);
     fEventStat->GetXaxis()->SetBinLabel(1,"Before Phys. Sel.");

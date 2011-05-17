@@ -222,6 +222,8 @@ void AliAnalysisTaskDielectronReadAODBranch::UserExec(Option_t */*option*/)
 {
 	// Execute analysis for current event:
 	AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
+	if (!aod) return;
+	
 	Double_t vtxPrim[3] = {0.,0.,0.};
 
 	AliAODVertex* primvtx = aod->GetPrimaryVertex();
@@ -345,7 +347,9 @@ Bool_t AliAnalysisTaskDielectronReadAODBranch::MatchToMC(Int_t pdgabs,const TObj
         // Check if this candidate is matched to a MC signal
 	// If no, return kFALSE
 	// If yes, return kTRUE
-	// 
+	//
+	if (!mcArray) return kFALSE;
+	
 	Int_t labMom[2]={0,0};
 	Int_t i,j,lab,labMother,pdgMother,pdgPart,labJPSIMother,pdgJPSIMother;
 	AliAODMCParticle *part=0;

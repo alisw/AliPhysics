@@ -44,7 +44,7 @@ public:
   void Initialize();                              // initialization
   Int_t GetNMCTracks();                                     // return number of generated tracks
   Int_t GetNMCTracksFromStack();                            // return number of generated tracks from stack
-  Int_t GetNPrimary();                                            // return number of primary tracks
+  Int_t GetNPrimary() const;                                      // return number of primary tracks
   Int_t GetNPrimaryFromStack();                                   // return number of primary tracks from stack
   Int_t GetMCPID(const AliESDtrack* _track);                      // return MC PID
   Int_t GetMCPID(const AliAODTrack* _track);                      // return MC PID for AODtrack
@@ -63,18 +63,18 @@ public:
   Bool_t IsMotherPdg(const AliDielectronPair* pair, Int_t pdgMother);
   Bool_t IsMotherPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   Bool_t IsMCMotherToEE(const AliVParticle *particle, Int_t pdgMother);
-  Bool_t IsMCTruth(const AliDielectronPair* pair, AliDielectronSignalMC* signalMC);
+  Bool_t IsMCTruth(const AliDielectronPair* pair, const AliDielectronSignalMC* signalMC) const;
   Bool_t IsMCTruth(Int_t ipart, AliDielectronSignalMC* signalMC, Int_t branch);
-  Int_t GetMothersLabel(Int_t daughterLabel);
-  Int_t GetPdgFromLabel(Int_t label);
+  Int_t GetMothersLabel(Int_t daughterLabel) const;
+  Int_t GetPdgFromLabel(Int_t label) const;
 
-  Bool_t HaveSameMother(const AliDielectronPair *pair);
+  Bool_t HaveSameMother(const AliDielectronPair *pair) const;
   
   Int_t GetLabelMotherWithPdg(const AliDielectronPair* pair, Int_t pdgMother);
   Int_t GetLabelMotherWithPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   
   AliVParticle* GetMCTrackFromMCEvent(AliVParticle *track);   // return MC track directly from MC event
-  AliVParticle* GetMCTrackFromMCEvent(Int_t itrk);           // return MC track directly from MC event
+  AliVParticle* GetMCTrackFromMCEvent(Int_t itrk) const;           // return MC track directly from MC event
   TParticle* GetMCTrackFromStack(const AliESDtrack* _track);        // return MC track from stack
   AliMCParticle* GetMCTrack(const AliESDtrack* _track);             // return MC track associated with reco track
   AliAODMCParticle* GetMCTrack( const AliAODTrack* _track);          // return MC track associated with reco AOD track
@@ -117,7 +117,7 @@ private:
   Int_t GetLabelMotherWithPdgAOD(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother);
   
   Bool_t ComparePDG(Int_t particlePDG, Int_t requiredPDG, Bool_t checkBothCharges) const;
-  Bool_t CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source);
+  Bool_t CheckParticleSource(Int_t label, AliDielectronSignalMC::ESource source) const;
   ClassDef(AliDielectronMC, 0)
 };
 

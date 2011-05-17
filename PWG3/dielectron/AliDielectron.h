@@ -75,6 +75,7 @@ public:
   TObjArray** GetPairArraysPointer() { return &fPairCandidates; }
   
   void SetHistogramManager(AliDielectronHistos * const histos) { fHistos=histos; }
+  AliDielectronHistos* GetHistoManager() const { return fHistos; }
   const THashList * GetHistogramList() const { return fHistos?fHistos->GetHistogramList():0x0; }
 
   Bool_t HasCandidates() const { return GetPairArray(1)?GetPairArray(1)->GetEntriesFast()>0:0; }
@@ -97,7 +98,8 @@ public:
   void AddSignalMC(AliDielectronSignalMC* signal);  
 
   void SetDebugTree(AliDielectronDebugTree * const tree) { fDebugTree=tree; }
-  
+
+  const TObjArray* GetMCSignals() const { return fSignalsMC; }
   static const char* TrackClassName(Int_t i) { return (i>=0&&i<4)?fgkTrackClassNames[i]:""; }
   static const char* PairClassName(Int_t i)  { return (i>=0&&i<11)?fgkPairClassNames[i]:""; }
 
