@@ -359,28 +359,25 @@ void AliQACheckerBase::Finish() const
 void AliQACheckerBase::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) 
 {
   // makes the QA image for sim and rec
-  Int_t nImages = 0 ;
-  for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
-    if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) ) 
-      continue ;
-    TIter next(list[esIndex]) ;  
-    TH1 * hdata = NULL ; 
-    while ( (hdata=static_cast<TH1 *>(next())) ) {
-      TString cln(hdata->ClassName()) ; 
-      if ( ! cln.Contains("TH") )
-        continue ; 
-      if ( hdata->TestBit(AliQAv1::GetImageBit()) )
-        nImages++; 
-    }
-    break ; 
-  }
-  if ( nImages == 0 ) {
-    AliDebug(AliQAv1::GetQADebugLevel(), Form("No histogram will be plotted for %s %s\n", GetName(), AliQAv1::GetTaskName(task).Data())) ;  
-  } else {
-    AliDebug(AliQAv1::GetQADebugLevel(), Form("%d histograms will be plotted for %s %s\n", nImages, GetName(), AliQAv1::GetTaskName(task).Data())) ;  
     for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
       if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) || list[esIndex]->GetEntries() == 0) 
         continue ;
+      Int_t nImages = 0 ;      
+      TIter next(list[esIndex]) ;  
+      TH1 * hdata = NULL ; 
+      while ( (hdata=static_cast<TH1 *>(next())) ) {
+        TString cln(hdata->ClassName()) ; 
+        if ( ! cln.Contains("TH") )
+          continue ; 
+        if ( hdata->TestBit(AliQAv1::GetImageBit()) )
+          nImages++; 
+      }
+      if ( nImages == 0 ) {
+        AliDebug(AliQAv1::GetQADebugLevel(), Form("No histogram will be plotted for %s %s %s\n", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex))) ;  
+        continue;
+      }
+      AliDebug(AliQAv1::GetQADebugLevel(), Form("%d histograms will be plotted for %s %s %s\n", nImages, GetName(), AliQAv1::GetTaskName(task).Data(),AliRecoParam::GetEventSpecieName(esIndex))) ;  
+        
       const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)) ; 
       if ( !fImage[esIndex] ) {
         fImage[esIndex] = new TCanvas(title, title) ;
@@ -423,7 +420,6 @@ void AliQACheckerBase::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, 
       }
       fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
     }
-  }  
 }
 
 //____________________________________________________________________________
