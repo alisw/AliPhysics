@@ -25,11 +25,11 @@ AliFemtoCorrFctn3DLCMSSym::AliFemtoCorrFctn3DLCMSSym(char* title, const int& nbi
   // Basic constructor
 
   // set up numerator
-  char tTitNum[100] = "Num";
+  char tTitNum[101] = "Num";
   strncat(tTitNum,title, 100);
   fNumerator = new TH3F(tTitNum,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins/2,0.0,QHi);
   // set up denominator
-  char tTitDen[100] = "Den";
+  char tTitDen[101] = "Den";
   strncat(tTitDen,title, 100);
   fDenominator = new TH3F(tTitDen,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins/2,0.0,QHi);
 

@@ -22,20 +22,20 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(char* title, const int& nbins, const 
 {
   // set up numerator
   //  title = "Num Qinv (MeV/c)";
-  char tTitNum[100] = "Num";
+  char tTitNum[101] = "Num";
   strncat(tTitNum,title, 100);
   fNumerator = new TH1D(tTitNum,title,nbins,QinvLo,QinvHi);
   // set up denominator
   //title = "Den Qinv (MeV/c)";
-  char tTitDen[100] = "Den";
+  char tTitDen[101] = "Den";
   strncat(tTitDen,title, 100);
   fDenominator = new TH1D(tTitDen,title,nbins,QinvLo,QinvHi);
   // set up ratio
   //title = "Ratio Qinv (MeV/c)";
-  char tTitRat[100] = "Rat";
+  char tTitRat[101] = "Rat";
   strncat(tTitRat,title, 100);
   fRatio = new TH1D(tTitRat,title,nbins,QinvLo,QinvHi);
-  char tTitkT[100] = "kTDep";
+  char tTitkT[101] = "kTDep";
   strncat(tTitkT,title, 100);
   fkTMonitor = new TH1D(tTitkT,title,200,0.0,2.0);
   // this next bit is unfortunately needed so that we can have many histos of same "title"
