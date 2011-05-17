@@ -5,7 +5,7 @@
  *
  * The output is a root file containing the objects defined in the
  * analysis task. These could be histograms or THnSparse objects.
- * There is one output file per task. 
+ * There is one output file per task containing a TList of TH1 or THnSparse objects. 
  *
  * Run without arguments to get a few examples how to use the macro
  * and which tasks are available in svn.
@@ -25,7 +25,12 @@
  * If alien:// is placed before the input filename, then the macro connects to the grid to access the file.
  * 
  * In case you want to run over many ESD files, then prepare a list of them in a .txt file and they will be chained for the analysis.
- * The .txt file takes the place of the first argument in that case.
+ * The .txt file takes the place of the first argument in that case. The chain can take up to 200 files at the moment. The user
+ * can modify this in the call CreateESDChain(file.Data(),200); 
+ *
+ * If the files are not sitting locally but on the GRID, then their location should be designated like:
+ * alien:///alice/data/2011/LHC11a/000146018/ESDs/pass1/11000146018023.20/AliESDs.root in the *txt file.
+ * The macro takes care of connecting to the GRID, as soon as the first file is found that begins with alien://
  *
  * @ingroup alihlt_qa
  * @author Kalliopi.Kanaki@ift.uib.no, Hege.Erdal@student.uib.no
@@ -153,18 +158,32 @@ void compare_HLT_offline_local( TString file
   
   if(bPWG1) gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/macros/AddTaskPerformance.C");
    
-  if(file.Contains("alien")) TGrid::Connect("alien://");
+  if(file.BeginsWith("alien://")) TGrid::Connect("alien://");
     
   if(file.Contains("AliESDs.root")){
     TChain *chain = new TChain("esdTree"); 
     chain->Add(file);
   }
   
-  //Constructs chain from filenames in *.txt
-  //on the form $DIR/AliESDs.root
+  // Constructs chain from filenames in *.txt
+  // in the form $DIR/AliESDs.root  
   else if(file.Contains(".txt")){
     gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
-    chain=CreateESDChain(file.Data(),200);
+    chain = CreateESDChain(file.Data(),200); 
+    // chain can contain up to 200 files, value can be modified to 
+    // include a subset of what the *txt file contains
+    
+    TObjArray *fileElements = chain->GetListOfFiles();
+    TIter next(fileElements);
+    TChainElement *chEl = 0;
+    bool alienList = kFALSE;
+    while(( chEl = (TChainElement*)next() )){
+    // loop over the list of files in the *txt and as soon as one is found that starts with alien://, 
+    // the boolean alienList turns to kTRUE, which allows the TGrid::Connect call outside the loop.
+            TString tmp = chEl->GetTitle();	    
+            if(tmp.BeginsWith("alien://")) alienList = kTRUE;           
+    }
+    if(alienList==kTRUE) TGrid::Connect("alien://");
   }
   
   else if(!file){
@@ -281,7 +300,7 @@ void compare_HLT_offline_local( TString file
 }
 
 void compare_HLT_offline_local(){
-  cout << "\n The following tasks are available and maintained in $ALICE_ROOT/HLT/QA/tasks/ :\n"<< endl;
+  cout << "\n The following tasks and respective plotting macros are available and maintained in $ALICE_ROOT/HLT/QA/tasks/ :\n"<< endl;
   cout << " AliAnalysisTaskHLTCentralBarrel (macros/drawTHnSparse.C)\n AliAnalysisTaskHLT.cxx (macros/drawGlobalESDHistograms.C)" << endl;
   cout << " AliAnalysisTaskHLTCalo (EMCAL+PHOS) (macros/drawCaloHistograms.C) \n AliAnalysisTaskD0Trigger (no plotting macro committed)\n" << endl;
   
