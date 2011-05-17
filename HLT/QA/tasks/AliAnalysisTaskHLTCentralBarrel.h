@@ -11,6 +11,11 @@
     @author Per Ivar Lønne, Hege Erdal, Kalliopi Kanaki
     @date   
     @brief An analysis task to compare the offline and HLT esd trees
+  
+    After the task has been run, HLT/QA/tasks/macros/drawTHnSparse.C 
+    can be used to visualize the contents of the THnSparse objects stored
+    in the output file. Documentation about how to run it is included 
+    in the macro.
 */
 
 // forward declarations

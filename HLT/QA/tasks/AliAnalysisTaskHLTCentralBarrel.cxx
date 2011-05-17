@@ -22,6 +22,11 @@
     @brief An analysis task containing
     loops over HLT and offline ESD trees for comparing
     event and track properties
+    
+    After the task has been run, HLT/QA/tasks/macros/drawTHnSparse.C 
+    can be used to visualize the contents of the THnSparse objects stored
+    in the output file. Documentation about how to run it is included 
+    in the macro.
 */
 
 #include <iostream>
