@@ -334,8 +334,8 @@ T& AliFmLorentzVector<T>::operator() (size_t i)
       throw out_of_range("AliFmLorentzVector<T>::operator(): bad index");  
 #else
       cerr << "AliFmLorentzVector<T>::operator(): bad index." << endl;
-#endif
       return fX4;
+#endif
     }
 }
 
@@ -351,8 +351,8 @@ T AliFmLorentzVector<T>::operator[] (size_t i) const
       throw out_of_range("AliFmLorentzVector<T>::operator[]: bad index"); 
 #else
       cerr << "AliFmLorentzVector<T>::operator[]: bad index." << endl;
-#endif
       return 0;
+#endif
     }
 }
 
@@ -368,8 +368,8 @@ T& AliFmLorentzVector<T>::operator[] (size_t i)
       throw out_of_range("AliFmLorentzVector<T>::operator[]: bad index"); 
 #else
       cerr << "AliFmLorentzVector<T>::operator[]: bad index." << endl;
-#endif
       return fX4;
+#endif
     }
 }
 
