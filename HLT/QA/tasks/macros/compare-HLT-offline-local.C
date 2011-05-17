@@ -3,10 +3,12 @@
  * Example macro to run locally an analysis task for comparing the offline
  * with the HLT esd tree.
  *
- * The output is a root file containing the histograms defined in the
- * analysis task. There is one output file per detector.
+ * The output is a root file containing the objects defined in the
+ * analysis task. These could be histograms or THnSparse objects.
+ * There is one output file per task. 
  *
- * Run without arguments to get a few examples how to use the macro.
+ * Run without arguments to get a few examples how to use the macro
+ * and which tasks are available in svn.
  * 
  * The arguments are:
  * - the input file or txt file containing a list of ESDs to be processed (CreateESDChain takes 20 files as a default argument)
@@ -279,7 +281,10 @@ void compare_HLT_offline_local( TString file
 }
 
 void compare_HLT_offline_local(){
-  cout << " " << endl;
+  cout << "\n The following tasks are available and maintained in $ALICE_ROOT/HLT/QA/tasks/ :\n"<< endl;
+  cout << " AliAnalysisTaskHLTCentralBarrel (macros/drawTHnSparse.C)\n AliAnalysisTaskHLT.cxx (macros/drawGlobalESDHistograms.C)" << endl;
+  cout << " AliAnalysisTaskHLTCalo (EMCAL+PHOS) (macros/drawCaloHistograms.C) \n AliAnalysisTaskD0Trigger (no plotting macro committed)\n" << endl;
+  
   cout << " Usage examples:" << endl;
   cout << "    compare-HLT-offline-local.C'(file, taskOption, taskFolder, beamType, options, fUseHLTTrigger, nEvents)' 2>&1 | tee log" << endl;
   cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global\")' 2>&1 | tee log" << endl;
