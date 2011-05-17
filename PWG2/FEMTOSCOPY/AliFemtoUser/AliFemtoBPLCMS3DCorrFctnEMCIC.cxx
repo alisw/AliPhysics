@@ -68,11 +68,11 @@ AliFemtoCorrFctn(),
 {
   
   // set up numerator
-  char tTitNum[100] = "Num";
+  char tTitNum[101] = "Num";
   strncat(tTitNum,title, 100);
   fNumerator = new TH3D(tTitNum,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   // set up denominator
-  char tTitDen[100] = "Den";
+  char tTitDen[101] = "Den";
   strncat(tTitDen,title, 100);
   fDenominator = new TH3D(tTitDen,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
 
@@ -97,22 +97,22 @@ AliFemtoCorrFctn(),
   fPtMultReal = new TH3D(tTitNum4,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);  */
   
   //Setup EnergyTotalMix
-  char tTitNum5[100] = "ESumMix";
+  char tTitNum5[101] = "ESumMix";
   strncat(tTitNum5,title, 100);
   fEnergyTotalMix = new TH3D(tTitNum5,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   
   //Setup EnergyMultMix
-  char tTitNum6[100] = "EMultMix";
+  char tTitNum6[101] = "EMultMix";
   strncat(tTitNum6,title, 100);
   fEnergyMultMix = new TH3D(tTitNum6,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   
   //Setup Pz MultMix
-  char tTitNum7[100] = "PzMultMix";
+  char tTitNum7[101] = "PzMultMix";
   strncat(tTitNum7,title, 100);
   fPzMultMix = new TH3D(tTitNum7,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   
   //Setup Pt MultMix
-  char tTitNum8[100] = "PtMultMix";
+  char tTitNum8[101] = "PtMultMix";
   strncat(tTitNum8,title, 100);
   fPtMultMix = new TH3D(tTitNum8,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   // To enable error bar calculation
@@ -145,11 +145,11 @@ AliFemtoCorrFctn(),
 {
   
   // set up numerator
-  char tTitNum[100] = "Num";
+  char tTitNum[101] = "Num";
   strncat(tTitNum,title, 100);
   fNumerator = new TH3D(tTitNum,title,nbins,qBins,nbins,qBins,nbins,qBins);
   // set up denominator
-  char tTitDen[100] = "Den";
+  char tTitDen[101] = "Den";
   strncat(tTitDen,title, 100);
   fDenominator = new TH3D(tTitDen,title,nbins,qBins,nbins,qBins,nbins,qBins);
 
@@ -174,22 +174,22 @@ AliFemtoCorrFctn(),
   fPtMultReal = new TH3D(tTitNum4,title,nbins,qBins,nbins,qBins,nbins,qBins);  */
   
   //Setup EnergyTotalMix
-  char tTitNum5[100] = "ESumMix";
+  char tTitNum5[101] = "ESumMix";
   strncat(tTitNum5,title, 100);
   fEnergyTotalMix = new TH3D(tTitNum5,title,nbins,qBins,nbins,qBins,nbins,qBins);
   
   //Setup EnergyMultMix
-  char tTitNum6[100] = "EMultMix";
+  char tTitNum6[101] = "EMultMix";
   strncat(tTitNum6,title, 100);
   fEnergyMultMix = new TH3D(tTitNum6,title,nbins,qBins,nbins,qBins,nbins,qBins);
   
   //Setup Pz MultMix
-  char tTitNum7[100] = "PzMultMix";
+  char tTitNum7[101] = "PzMultMix";
   strncat(tTitNum7,title, 100);
   fPzMultMix = new TH3D(tTitNum7,title,nbins,qBins,nbins,qBins,nbins,qBins);
   
   //Setup Pt MultMix
-  char tTitNum8[100] = "PtMultMix";
+  char tTitNum8[101] = "PtMultMix";
   strncat(tTitNum8,title, 100);
   fPtMultMix = new TH3D(tTitNum8,title,nbins,qBins,nbins,qBins,nbins,qBins);
   // To enable error bar calculation

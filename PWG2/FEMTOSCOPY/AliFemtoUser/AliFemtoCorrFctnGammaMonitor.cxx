@@ -26,20 +26,20 @@ AliFemtoCorrFctnGammaMonitor::AliFemtoCorrFctnGammaMonitor(char* title, const in
   fDenNMinvDTheta(0)
 {
   // set up numerator
-  char tTitNumD[100] = "NumPMinvTheta";
+  char tTitNumD[101] = "NumPMinvTheta";
   strncat(tTitNumD,title, 100);
   fNumPMinvDTheta = new TH2D(tTitNumD,title,aMinvBins,0.0,0.2,aDThetaBins,0.0,0.2);
   // set up denominator
-  char tTitDenD[100] = "DenPMinvTheta";
+  char tTitDenD[101] = "DenPMinvTheta";
   strncat(tTitDenD,title, 100);
   fDenPMinvDTheta = new TH2D(tTitDenD,title,aMinvBins,0.0,0.2,aDThetaBins,0.0,0.2);
 
   // set up numerator
-  char tTitNumR[100] = "NumNMinvTheta";
+  char tTitNumR[101] = "NumNMinvTheta";
   strncat(tTitNumR,title, 100);
   fNumNMinvDTheta = new TH2D(tTitNumR,title,aMinvBins,0.0,0.2,aDThetaBins,0.0,0.2);
   // set up denominator
-  char tTitDenR[100] = "DenNMinvTheta";
+  char tTitDenR[101] = "DenNMinvTheta";
   strncat(tTitDenR,title, 100);
   fDenNMinvDTheta = new TH2D(tTitDenR,title,aMinvBins,0.0,0.2,aDThetaBins,0.0,0.2);
 

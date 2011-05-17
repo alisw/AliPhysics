@@ -51,16 +51,16 @@ AliFemtoQinvCorrFctn(title, nbins, QinvLo, QinvHi),
   strncat(tTitPz,title, 100);
   fPzMultReal = new TH1D(tTitPz,title,nbins,QinvLo,QinvHi);*/
  
-  char tTitESum2[100] = "ESumMix";
+  char tTitESum2[101] = "ESumMix";
   strncat(tTitESum2,title, 100);
   fESumMix = new TH1D(tTitESum2,title,nbins,QinvLo,QinvHi);
-  char tTitEMult2[100] = "EMultMix";
+  char tTitEMult2[101] = "EMultMix";
   strncat(tTitEMult2,title, 100);
   fEMultMix = new TH1D(tTitEMult2,title,nbins,QinvLo,QinvHi);
-  char tTitPt2[100] = "PtMultMix";
+  char tTitPt2[101] = "PtMultMix";
   strncat(tTitPt2,title, 100);
   fPtMultMix = new TH1D(tTitPt2,title,nbins,QinvLo,QinvHi);
-  char tTitPz2[100] = "PzMultMix";
+  char tTitPz2[101] = "PzMultMix";
   strncat(tTitPz2,title, 100);
   fPzMultMix = new TH1D(tTitPz2,title,nbins,QinvLo,QinvHi);
 
