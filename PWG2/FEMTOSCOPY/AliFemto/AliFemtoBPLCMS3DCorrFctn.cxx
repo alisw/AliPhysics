@@ -57,23 +57,23 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
   //  fSmearPair = 0; // no resolution correction unless user sets SmearPair
 
   // set up numerator
-  char tTitNum[100] = "Num";
+  char tTitNum[101] = "Num";
   strncat(tTitNum,title, 100);
   fNumerator = new TH3D(tTitNum,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   // set up denominator
-  char tTitDen[100] = "Den";
+  char tTitDen[101] = "Den";
   strncat(tTitDen,title, 100);
   fDenominator = new TH3D(tTitDen,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   // set up uncorrected denominator
-  char tTitDenUncoul[100] = "DenNoCoul";
+  char tTitDenUncoul[101] = "DenNoCoul";
   strncat(tTitDenUncoul,title, 100);
   //  fUncorrectedDenominator = new TH3D(tTitDenUncoul,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   // set up ratio
-  char tTitRat[100] = "Rat";
+  char tTitRat[101] = "Rat";
   strncat(tTitRat,title, 100);
   fRatio = new TH3D(tTitRat,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   // set up ave qInv
-  char tTitQinv[100] = "Qinv";
+  char tTitQinv[101] = "Qinv";
   strncat(tTitQinv,title, 100);
   fQinvHisto = new TH3D(tTitQinv,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 
@@ -86,13 +86,13 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
 //   // Following histos are for the momentum resolution correction
 //   // they are filled only if a AliFemtoSmear object is plugged in
 //   // here comes the "idea" numerator and denominator and ratio...
-//   char tTitNumID[100] = "IDNum";
+//   char tTitNumID[101] = "IDNum";
 //   strncat(tTitNumID,title, 100);
 //   fIDNumHisto = new TH3D(tTitNumID,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
-//   char tTitDenID[100] = "IDDen";
+//   char tTitDenID[101] = "IDDen";
 //   strncat(tTitDenID,title, 100);
 //   fIDDenHisto = new TH3D(tTitDenID,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
-//   char tTitRatID[100] = "IDRat";
+//   char tTitRatID[101] = "IDRat";
 //   strncat(tTitRatID,title, 100);
 //   fIDRatHisto = new TH3D(tTitRatID,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 
@@ -102,13 +102,13 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
 
 //   //
 //   // here comes the "smeared" numerator and denominator...
-//   char tTitNumSM[100] = "SMNum";
+//   char tTitNumSM[101] = "SMNum";
 //   strncat(tTitNumSM,title, 100);
 //   fSMNumHisto = new TH3D(tTitNumSM,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
-//   char tTitDenSM[100] = "SMDen";
+//   char tTitDenSM[101] = "SMDen";
 //   strncat(tTitDenSM,title, 100);
 //   fSMDenHisto = new TH3D(tTitDenSM,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
-//   char tTitRatSM[100] = "SMRat";
+//   char tTitRatSM[101] = "SMRat";
 //   strncat(tTitRatSM,title, 100);
 //   fSMRatHisto = new TH3D(tTitRatSM,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 //   //
@@ -117,12 +117,12 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
 //   fSMRatHisto->Sumw2();
 //   //
 //   // here comes the correction factor (which is just ratio of ideal ratio to smeared ratio)
-//   char tTitCorrection[100] = "CorrectionFactor";
+//   char tTitCorrection[101] = "CorrectionFactor";
 //   strncat(tTitCorrection,title, 100);
 //   fCorrectionHisto = new TH3D(tTitCorrection,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);  
 //   fCorrectionHisto->Sumw2();
 //   // here comes the fully corrected correlation function
-//   char tTitCorrCF[100] = "CorrectedCF";
+//   char tTitCorrCF[101] = "CorrectedCF";
 //   strncat(tTitCorrCF,title, 100);
 //   fCorrCFHisto = new TH3D(tTitCorrCF,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 //   fCorrCFHisto->Sumw2();
