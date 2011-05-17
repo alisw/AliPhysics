@@ -1,24 +1,28 @@
 // $Id$
-/*
- * Macro to overlay the histograms produced by  
- * HLT/QA/tasks/macros/drawTHnSparse.C
- * 
- * It assumes a file where the input is specified in 
- * the following format:
- * 
- * number of files
- * file1 legend1
- * file2 legend2
- * ...
- * ...
- * 
- * @ingroup alihlt_qa
- * @author Kalliopi.Kanaki@ift.uib.no 
- */
+// 
+//  Macro to overlay the histograms produced by  
+//  HLT/QA/tasks/macros/drawTHnSparse.C
+//  
+//  It assumes a txt file where the input is specified in 
+//  the following format:
+//  
+//   number of files
+//   file1 legend1
+//   file2 legend2
+//  //file3 legend3
+//  //file4 legend4
+//  ...
+//  So it is possible to "comment out" a file by a // in the beginning of the name. While reading the 
+//  the names of the input files, the macro skips the ones that have the // in front of them.
+// 
+//  @ingroup alihlt_qa
+//  @author Kalliopi.Kanaki@ift.uib.no 
+
 void overlayPlots(const char* option="HLT"/* or "OFF" */, string fi="files.txt"){
   
   gROOT->SetStyle("Plain");
   gStyle->SetPalette(1);
+  gStyle->SetOptStat("emr");
   gStyle->SetTitleX(gStyle->GetPadLeftMargin());
  
   char filenames[100];
@@ -46,9 +50,9 @@ void overlayPlots(const char* option="HLT"/* or "OFF" */, string fi="files.txt")
     if(!in.good()) break;
     file[nr_textfile] = f;
     cutnames[nr_textfile] = c; 
-    Printf("\nfile %d : %s", nr_textfile, f.Data());
+    if(f.BeginsWith("//")) continue;
+    printf("\nfile %d : %s\n", nr_textfile, f.Data());
     nr_textfile++;
-
   }
   in.close();
   
@@ -96,11 +100,15 @@ void overlayPlots(const char* option="HLT"/* or "OFF" */, string fi="files.txt")
 	}
         
         d->cd(j);
+		
         if(i==0){
 	  g[i]->SetLineColor(kBlack); 
-	  TPaveStats *st = (TPaveStats*)g[i]->FindObject("stats"); 
-	  st->SetTextColor(kBlack);
 	  g[i]->Draw();
+	  if(option=="OFF"){
+	     TPaveStats *st = (TPaveStats*)g[i]->FindObject("stats");
+	     st->SetTextColor(kBlack);
+	     d->Update();
+	  }
 	}
         else { 
 	  g[i]->SetLineColor(i+1); 
