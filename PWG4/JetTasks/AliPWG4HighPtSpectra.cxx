@@ -428,10 +428,10 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	  //Container with secondaries
 	  if (!fStack->IsPhysicalPrimary(label) ) {
 	    if(particle->GetPDG()->Charge()>0.) {
-	      fCFManagerPos->GetParticleContainer()->Fill(containerInputRec,kStepSecondaries);
+	      fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepSecondaries);
 	    }
 	    if(particle->GetPDG()->Charge()<0.) {
-	      fCFManagerNeg->GetParticleContainer()->Fill(containerInputRec,kStepSecondaries);
+	      fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepSecondaries);
 	    }
 	  }
 	}

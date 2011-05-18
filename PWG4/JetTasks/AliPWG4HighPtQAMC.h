@@ -55,6 +55,7 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   void SetCutsITS(AliESDtrackCuts* trackCutsITS) {fTrackCutsITS = trackCutsITS;}
 
   void SetTrackType(Int_t trackType) {fTrackType = trackType;}
+  void SetSigmaConstrainedMax(Double_t sigma) {fSigmaConstrainedMax=sigma;}
   void SetPtMax(Float_t ptmax) {fPtMax = ptmax;}
   Float_t GetPtMax()           {return fPtMax;}
 
@@ -78,6 +79,7 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
 
   Int_t   fTrackType;             // 0: global track; 1:TPConly track 2: TPConly constrained track 3: global ITSrefit
 
+  Double_t fSigmaConstrainedMax;  // max sigma on constrained fit
   Float_t fPtMax;                 // Maximum pT for histograms
 
   Float_t fAvgTrials;             // Average number of trials

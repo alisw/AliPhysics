@@ -36,6 +36,7 @@ class AliESDEvent;
 class AliESDtrackCuts;
 class AliESDVertex;
 class AliAODTrack;
+class AliESDtrack;
 
 class AliGenPythiaEventHeader;
 class AliMCEvent;
@@ -65,6 +66,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   void DoAnalysisAOD();
   void FillHistograms();
 
+  void FillSystematicCutHist(AliESDtrack *track);
 
   //Setters
   void SetDataType(DataType d)             {fDataType = d;}
@@ -76,6 +78,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   void SetSigmaConstrainedMax(Double_t sigma) {fSigmaConstrainedMax=sigma;}
   void SetPtMax(Float_t ptmax) {fPtMax = ptmax;}
+  void SetPtBinEdges(Int_t region, Double_t ptmax, Double_t ptBinWidth);
   void SetNVariables(Int_t nv) {fNVariables = nv;}
 
   Float_t GetPtMax()           {return fPtMax;}
@@ -92,16 +95,17 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   DataType fDataType;             //! kESD or kAOD
 
-  AliVEvent   *fEvent;
-  AliESDEvent *fESD;      //! ESD object
+  AliVEvent   *fEvent;            //! AliVEvent object
+  AliESDEvent *fESD;              //! ESD object
   const AliESDVertex   *fVtx;     //! vertex object
 
   AliESDtrackCuts *fTrackCuts;    // TrackCuts
-  Int_t   fTrackType;             // 0: global track; 1:TPConly track 2: TPConly constrained track 3: global ITSrefit
+  Int_t   fTrackType;             // 0: global track; 1:TPConly track 2: TPConly constrained track 3: global ITSrefit 4: TPConly constrained track with QA selection based on global track
   UInt_t fFilterMask;             //! Select tracks from specific track cuts belonging to certain filter mask for AOD analysis
 
   Double_t fSigmaConstrainedMax;  // max sigma on constrained fit
   Float_t fPtMax;                 // Maximum pT for histograms
+  Float_t fPtBinEdges[3][2];      // 3 regions total with different binning for pT axis of histos
 
   Bool_t   fIsPbPb;               //  kTRUE if PbPb
   Int_t fCentClass;               // Select only events from predefined centrality class
@@ -152,18 +156,30 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH2F *fPtChi2C;                              //! Pt vs Chi2C
   TH2F *fPtNSigmaToVertex;                     //! Pt vs nSigmaToVertex
   TH2F *fPtRelUncertainty1Pt;                  //! Pt vs relUncertainty1Pt
-  TH2F *fPtUncertainty1Pt;                   //! Pt vs Uncertainty1Pt
+  TH2F *fPtUncertainty1Pt;                     //! Pt vs Uncertainty1Pt
   TH2F *fPtChi2PerClusterTPC;                  //! Pt vs Chi2PerClusterTPC
   TH2F *fPtNCrossedRows;                       //! Pt vs NCrossedRows
   TH2F *fPtNCrossedRowsNClusF;                 //! Pt vs NCrossedRows/NClusF
   TH3F *fPtNCrRNCrRNClusF;                     //! Pt vs NCrossedRows vs NCrossedRows/NClusF 
 
   //histos for covariance matrix elements
-  TH2F *fPtSigmaY2;                            //! Pt vs sigma(y)^2 extCov[0]
-  TH2F *fPtSigmaZ2;                            //! Pt vs sigma(z)^2 extCov[2]
-  TH2F *fPtSigmaSnp2;                          //! Pt vs sigma(Snp)^2 extCov[5]
-  TH2F *fPtSigmaTgl2;                          //! Pt vs sigma(Tgl)^2 extCov[9]
-  TH2F *fPtSigma1Pt2;                          //! Pt vs sigma(1/pT)^2 extCov[14]
+  TH2F *fPtSigmaY2;                            //! 1/Pt vs sigma(y) extCov[0]
+  TH2F *fPtSigmaZ2;                            //! 1/Pt vs sigma(z) extCov[2]
+  TH2F *fPtSigmaSnp2;                          //! 1/Pt vs sigma(Snp) extCov[5]
+  TH2F *fPtSigmaTgl2;                          //! 1/Pt vs sigma(Tgl) extCov[9]
+  TH2F *fPtSigma1Pt2;                          //! 1/Pt vs sigma(1/pT) extCov[14]
+
+  //profiles for covariance matrix elements
+  TProfile *fProfPtSigmaY2;                    //! 1/Pt vs sigma(y) extCov[0]
+  TProfile *fProfPtSigmaZ2;                    //! 1/Pt vs sigma(z) extCov[2]
+  TProfile *fProfPtSigmaSnp2;                  //! 1/Pt vs sigma(Snp) extCov[5]
+  TProfile *fProfPtSigmaTgl2;                  //! 1/Pt vs sigma(Tgl) extCov[9]
+  TProfile *fProfPtSigma1Pt2;                  //! 1/Pt vs sigma(1/pT) extCov[14]
+
+  TProfile *fProfPtSigma1Pt;                   //! pT vs sigma(1/Pt)
+  TProfile *fProfPtPtSigma1Pt;                 //! pT vs pT*sigma(1/Pt)
+
+  TH1F *fSystTrackCuts;                        //! Bookkeeping for track cuts
 
   TList *fHistList; //! List of Histograms
   
