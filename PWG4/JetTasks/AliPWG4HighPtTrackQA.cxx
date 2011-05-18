@@ -67,7 +67,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fTrackCuts(0), 
   fTrackType(0),
   fFilterMask(0),
-  fSigmaConstrainedMax(5.),
+  fSigmaConstrainedMax(-1.),
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
@@ -106,9 +106,25 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtSigmaSnp2(0x0),
   fPtSigmaTgl2(0x0),
   fPtSigma1Pt2(0x0),
+  fProfPtSigmaY2(0x0),
+  fProfPtSigmaZ2(0x0),
+  fProfPtSigmaSnp2(0x0),
+  fProfPtSigmaTgl2(0x0),
+  fProfPtSigma1Pt2(0x0),
+  fProfPtSigma1Pt(0x0),
+  fProfPtPtSigma1Pt(0x0),
+  fSystTrackCuts(0x0),
   fHistList(0)
 {
   SetNVariables(18);
+
+  fPtBinEdges[0][0] = 10.;
+  fPtBinEdges[0][1] = 1.;
+  fPtBinEdges[1][0] = 20.;
+  fPtBinEdges[1][1] = 2.;
+  fPtBinEdges[2][0] = 50.;
+  fPtBinEdges[2][1] = 5.;
+
 }
 //________________________________________________________________________
 AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name): 
@@ -120,7 +136,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fTrackCuts(),
   fTrackType(0),
   fFilterMask(0),
-  fSigmaConstrainedMax(5.),
+  fSigmaConstrainedMax(-1.),
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
@@ -159,6 +175,14 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtSigmaSnp2(0x0),
   fPtSigmaTgl2(0x0),
   fPtSigma1Pt2(0x0),
+  fProfPtSigmaY2(0x0),
+  fProfPtSigmaZ2(0x0),
+  fProfPtSigmaSnp2(0x0),
+  fProfPtSigmaTgl2(0x0),
+  fProfPtSigma1Pt2(0x0),
+  fProfPtSigma1Pt(0x0),
+  fProfPtPtSigma1Pt(0x0),
+  fSystTrackCuts(0x0),
   fHistList(0)
 {
   //
@@ -168,10 +192,31 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
 
   SetNVariables(18);
 
+  fPtBinEdges[0][0] = 10.;
+  fPtBinEdges[0][1] = 1.;
+  fPtBinEdges[1][0] = 20.;
+  fPtBinEdges[1][1] = 2.;
+  fPtBinEdges[2][0] = 50.;
+  fPtBinEdges[2][1] = 5.;
+
   // Input slot #0 works with a TChain ESD
   DefineInput(0, TChain::Class());
   // Output slot #1 write into a TList
   DefineOutput(1, TList::Class());
+}
+
+//________________________________________________________________________
+void AliPWG4HighPtTrackQA::SetPtBinEdges(Int_t region, Double_t ptmax, Double_t ptBinWidth) {
+
+  if(region<3) {
+    fPtBinEdges[region][0] = ptmax;
+    fPtBinEdges[region][1] = ptBinWidth;
+  }
+  else {
+    AliError("Only 3 regions alowed. Use region 0/1/2\n");
+    return;
+  }
+
 }
 
 //________________________________________________________________________
@@ -189,29 +234,30 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   Float_t fgkPtMin = 0.;
   Float_t fgkPtMax = fPtMax;
 
-  Float_t ptBinEdges[2][2];
-  ptBinEdges[0][0] = 10.;
-  ptBinEdges[0][1] = 1.;
-  ptBinEdges[1][0] = 20.;
-  ptBinEdges[1][1] = 2.;
-  Float_t binWidth3 = 5.;
-  if(fPtMax>100.) {
-    ptBinEdges[0][0] = 100.;
-    ptBinEdges[0][1] = 5.;
-    ptBinEdges[1][0] = 300.;
-    ptBinEdges[1][1] = 10.;
-    binWidth3 = 20.;
-  }
+  //  Float_t ptBinEdges[2][2];
+  // ptBinEdges[0][0] = 10.;
+  // ptBinEdges[0][1] = 1.;
+  // ptBinEdges[1][0] = 20.;
+  // ptBinEdges[1][1] = 2.;
+  // Float_t binWidth3 = 5.;
+  // if(fPtMax>100.) {
+  //   ptBinEdges[0][0] = 100.;
+  //   ptBinEdges[0][1] = 5.;
+  //   ptBinEdges[1][0] = 300.;
+  //   ptBinEdges[1][1] = 10.;
+  //   binWidth3 = 20.;
+  // }
 
+  //fPtBinEdges[region][0] = ptmax of region ; fPtBinEdges[region][1] = binWidth of region
   const Float_t ptmin1 =  fgkPtMin;
-  const Float_t ptmax1 =  ptBinEdges[0][0];
+  const Float_t ptmax1 =  fPtBinEdges[0][0];
   const Float_t ptmin2 =  ptmax1 ;
-  const Float_t ptmax2 =  ptBinEdges[1][0];
+  const Float_t ptmax2 =  fPtBinEdges[1][0];
   const Float_t ptmin3 =  ptmax2 ;
   const Float_t ptmax3 =  fgkPtMax;
-  const Int_t nbin11 = (int)((ptmax1-ptmin1)/ptBinEdges[0][1]);
-  const Int_t nbin12 = (int)((ptmax2-ptmin2)/ptBinEdges[1][1])+nbin11;
-  const Int_t nbin13 = (int)((ptmax3-ptmin3)/binWidth3)+nbin12;
+  const Int_t nbin11 = (int)((ptmax1-ptmin1)/fPtBinEdges[0][1]);
+  const Int_t nbin12 = (int)((ptmax2-ptmin2)/fPtBinEdges[1][1])+nbin11;
+  const Int_t nbin13 = (int)((ptmax3-ptmin3)/fPtBinEdges[2][2])+nbin12;
   Int_t fgkNPtBins=nbin13;
   //Create array with low edges of each bin
   Double_t *binsPt=new Double_t[fgkNPtBins+1];
@@ -242,7 +288,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   Int_t fgkNDCA2DBins=80;
   Float_t fgkDCA2DMin = -0.2;
   Float_t fgkDCA2DMax = 0.2;
-  if(fTrackType==1 || fTrackType==2) {
+  if(fTrackType==1 || fTrackType==2 || fTrackType==4) {
     fgkDCA2DMin = -2.;
     fgkDCA2DMax = 2.;
   }
@@ -252,7 +298,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   Int_t fgkNDCAZBins=80;
   Float_t fgkDCAZMin = -2.;
   Float_t fgkDCAZMax = 2.;
-  if(fTrackType==1 || fTrackType==2) {
+  if(fTrackType==1 || fTrackType==2 || fTrackType==4) {
     fgkDCAZMin = -5.;
     fgkDCAZMax = 5.;
   }
@@ -280,14 +326,16 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   Int_t fgkNRel1PtUncertaintyBins=30;
   Float_t fgkRel1PtUncertaintyMin = 0.;
   Float_t fgkRel1PtUncertaintyMax = 0.3;
-  if(fTrackType==1 || fTrackType==2) fgkRel1PtUncertaintyMax = 0.5; 
+  if(fTrackType==1 || fTrackType==2 || fTrackType==4) 
+    fgkRel1PtUncertaintyMax = 0.5; 
   Double_t *binsRel1PtUncertainty=new Double_t[fgkNRel1PtUncertaintyBins+1];
   for(Int_t i=0; i<=fgkNRel1PtUncertaintyBins; i++) binsRel1PtUncertainty[i]=(Double_t)fgkRel1PtUncertaintyMin + (fgkRel1PtUncertaintyMax-fgkRel1PtUncertaintyMin)/fgkNRel1PtUncertaintyBins*(Double_t)i ;
 
   Int_t fgkNUncertainty1PtBins = 30;
   Float_t fgkUncertainty1PtMin = 0.;
   Float_t fgkUncertainty1PtMax = 0.1;
-  if(fTrackType==1 || fTrackType==2) fgkUncertainty1PtMax = 0.2; 
+  if(fTrackType==1 || fTrackType==2 || fTrackType==4) 
+    fgkUncertainty1PtMax = 0.2; 
   Double_t *binsUncertainty1Pt=new Double_t[fgkNUncertainty1PtBins+1];
   for(Int_t i=0; i<=fgkNUncertainty1PtBins; i++) binsUncertainty1Pt[i]=(Double_t)fgkUncertainty1PtMin + (fgkUncertainty1PtMax-fgkUncertainty1PtMin)/fgkNUncertainty1PtBins*(Double_t)i ;
 
@@ -303,39 +351,56 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   Double_t *binsNCrossedRowsNClusF=new Double_t[fgkNCrossedRowsNClusFBins+1];
   for(Int_t i=0; i<=fgkNCrossedRowsNClusFBins; i++) binsNCrossedRowsNClusF[i]=(Double_t)fgkNCrossedRowsNClusFMin + (fgkNCrossedRowsNClusFMax-fgkNCrossedRowsNClusFMin)/fgkNCrossedRowsNClusFBins*(Double_t)i ;
 
-  Int_t fgkN1PtBins = 50;
   Float_t fgk1PtMin = 0.;
   Float_t fgk1PtMax = 6.;
+  Float_t binEdge1Pt1 = 1.;
+  Float_t binWidth1Pt1 = 0.05;
+  Int_t fgkN1PtBins1 = (int)((binEdge1Pt1-fgk1PtMin)/binWidth1Pt1);
+  Float_t binWidth1Pt2 = 0.1;
+  Int_t fgkN1PtBins2 = (int)((fgk1PtMax-binEdge1Pt1)/binWidth1Pt2);
+  Int_t fgkN1PtBins = fgkN1PtBins1+fgkN1PtBins2;
   Double_t *bins1Pt=new Double_t[fgkN1PtBins+1];
-  for(Int_t i=0; i<=fgkN1PtBins; i++) bins1Pt[i]=(Double_t)fgk1PtMin + (fgk1PtMax-fgk1PtMin)/fgkN1PtBins*(Double_t)i ;
+
+  for(Int_t i=0; i<=fgkN1PtBins; i++) {
+    if(i<=fgkN1PtBins1) 
+      bins1Pt[i]=(Double_t)fgk1PtMin + (Double_t)(binEdge1Pt1-fgk1PtMin)/(Double_t)fgkN1PtBins1*(Double_t)i;
+    if(i<=fgkN1PtBins && i>fgkN1PtBins1)
+      bins1Pt[i]=(Double_t)binEdge1Pt1 + (Double_t)(fgk1PtMax-binEdge1Pt1)/(Double_t)fgkN1PtBins2*(Double_t)(i-fgkN1PtBins1);
+  }
 
   Int_t fgkNSigmaY2Bins = 50;
   Float_t fgkSigmaY2Min = 0.;
-  Float_t fgkSigmaY2Max = 2.;
+  Float_t fgkSigmaY2Max = 1.;
+  if(fTrackType==1) fgkSigmaY2Max = 4.;
+  if(fTrackType==2 || fTrackType==4) fgkSigmaY2Max = 0.1;
   Double_t *binsSigmaY2=new Double_t[fgkNSigmaY2Bins+1];
   for(Int_t i=0; i<=fgkNSigmaY2Bins; i++) binsSigmaY2[i]=(Double_t)fgkSigmaY2Min + (fgkSigmaY2Max-fgkSigmaY2Min)/fgkNSigmaY2Bins*(Double_t)i ;
 
   Int_t fgkNSigmaZ2Bins = 50;
   Float_t fgkSigmaZ2Min = 0.;
-  Float_t fgkSigmaZ2Max = 2.;
+  Float_t fgkSigmaZ2Max = 0.4;
   Double_t *binsSigmaZ2=new Double_t[fgkNSigmaZ2Bins+1];
   for(Int_t i=0; i<=fgkNSigmaZ2Bins; i++) binsSigmaZ2[i]=(Double_t)fgkSigmaZ2Min + (fgkSigmaZ2Max-fgkSigmaZ2Min)/fgkNSigmaZ2Bins*(Double_t)i ;
 
   Int_t fgkNSigmaSnp2Bins = 50;
   Float_t fgkSigmaSnp2Min = 0.;
-  Float_t fgkSigmaSnp2Max = 2.;
+  Float_t fgkSigmaSnp2Max = 0.05;
+  if(fTrackType==1) fgkSigmaSnp2Max = 0.2;
+  if(fTrackType==2 || fTrackType==4) fgkSigmaSnp2Max = 0.1;
   Double_t *binsSigmaSnp2=new Double_t[fgkNSigmaSnp2Bins+1];
   for(Int_t i=0; i<=fgkNSigmaSnp2Bins; i++) binsSigmaSnp2[i]=(Double_t)fgkSigmaSnp2Min + (fgkSigmaSnp2Max-fgkSigmaSnp2Min)/fgkNSigmaSnp2Bins*(Double_t)i ;
 
   Int_t fgkNSigmaTgl2Bins = 50;
   Float_t fgkSigmaTgl2Min = 0.;
-  Float_t fgkSigmaTgl2Max = 2.;
+  Float_t fgkSigmaTgl2Max = 0.1;
+  if(fTrackType==1) fgkSigmaTgl2Max = 0.2;
+  if(fTrackType==2 || fTrackType==4) fgkSigmaTgl2Max = 0.1;
   Double_t *binsSigmaTgl2=new Double_t[fgkNSigmaTgl2Bins+1];
   for(Int_t i=0; i<=fgkNSigmaTgl2Bins; i++) binsSigmaTgl2[i]=(Double_t)fgkSigmaTgl2Min + (fgkSigmaTgl2Max-fgkSigmaTgl2Min)/fgkNSigmaTgl2Bins*(Double_t)i ;
 
   Int_t fgkNSigma1Pt2Bins = 50;
   Float_t fgkSigma1Pt2Min = 0.;
-  Float_t fgkSigma1Pt2Max = 2.;
+  Float_t fgkSigma1Pt2Max = 1.;
   Double_t *binsSigma1Pt2=new Double_t[fgkNSigma1Pt2Bins+1];
   for(Int_t i=0; i<=fgkNSigma1Pt2Bins; i++) binsSigma1Pt2[i]=(Double_t)fgkSigma1Pt2Min + (fgkSigma1Pt2Max-fgkSigma1Pt2Min)/fgkNSigma1Pt2Bins*(Double_t)i ;
 
@@ -390,6 +455,16 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fh1NTracksSel = new TH1F("fh1NTracksSel","fh1NTracksSel",1,-0.5,0.5);
   fHistList->Add(fh1NTracksSel);
 
+  fSystTrackCuts = new TH1F("fSystTrackCuts","fSystTrackCuts",1,-0.5,0.5);
+  fSystTrackCuts->Fill("noCut",0);
+  fSystTrackCuts->Fill("eta",0);
+  fSystTrackCuts->Fill("0.15<pT<1e10",0);
+  fSystTrackCuts->Fill("kink",0);
+  fSystTrackCuts->Fill("NClusterTPC",0);
+  fSystTrackCuts->Fill("Chi2PerNClusTPC",0);
+  fSystTrackCuts->Fill("DCA2D",0);
+  fHistList->Add(fSystTrackCuts);
+
 
   fPtAll = new TH1F("fPtAll","PtAll",fgkNPtBins, binsPt);
   fHistList->Add(fPtAll);
@@ -438,20 +513,41 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fPtNCrRNCrRNClusF = new TH3F("fPtNCrRNCrRNClusF","fPtNCrRNCrRNClusF",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNCrossedRowsNClusFBins,binsNCrossedRowsNClusF);
   fHistList->Add(fPtNCrRNCrRNClusF);
 
-  fPtSigmaY2 = new TH2F("fPtSigmaY2","fPtSigmaY2",fgkN1PtBins,bins1Pt,fgkNSigmaZ2Bins,binsSigmaY2);
+  fPtSigmaY2 = new TH2F("fPtSigmaY2","fPtSigmaY2",fgkN1PtBins,bins1Pt,fgkNSigmaY2Bins,binsSigmaY2);
   fHistList->Add(fPtSigmaY2);
 
   fPtSigmaZ2 = new TH2F("fPtSigmaZ2","fPtSigmaZ2",fgkN1PtBins,bins1Pt,fgkNSigmaZ2Bins,binsSigmaZ2);
   fHistList->Add(fPtSigmaZ2);
 
-  fPtSigmaSnp2 = new TH2F("fPtSigmaSnp2","fPtSigmaSnp2",fgkN1PtBins,bins1Pt,fgkNSigmaZ2Bins,binsSigmaSnp2);
+  fPtSigmaSnp2 = new TH2F("fPtSigmaSnp2","fPtSigmaSnp2",fgkN1PtBins,bins1Pt,fgkNSigmaSnp2Bins,binsSigmaSnp2);
   fHistList->Add(fPtSigmaSnp2);
 
-  fPtSigmaTgl2 = new TH2F("fPtSigmaTgl2","fPtSigmaTgl2",fgkN1PtBins,bins1Pt,fgkNSigmaZ2Bins,binsSigmaTgl2);
+  fPtSigmaTgl2 = new TH2F("fPtSigmaTgl2","fPtSigmaTgl2",fgkN1PtBins,bins1Pt,fgkNSigmaTgl2Bins,binsSigmaTgl2);
   fHistList->Add(fPtSigmaTgl2);
 
-  fPtSigma1Pt2 = new TH2F("fPtSigma1Pt2","fPtSigma1Pt2",fgkN1PtBins,bins1Pt,fgkNSigmaZ2Bins,binsSigma1Pt2);
+  fPtSigma1Pt2 = new TH2F("fPtSigma1Pt2","fPtSigma1Pt2",fgkN1PtBins,bins1Pt,fgkNSigma1Pt2Bins,binsSigma1Pt2);
   fHistList->Add(fPtSigma1Pt2);
+
+  fProfPtSigmaY2 = new TProfile("fProfPtSigmaY2","fProfPtSigmaY2",fgkN1PtBins,bins1Pt);
+  fHistList->Add(fProfPtSigmaY2);
+
+  fProfPtSigmaZ2 = new TProfile("fProfPtSigmaZ2","fProfPtSigmaZ2",fgkN1PtBins,bins1Pt);
+  fHistList->Add(fProfPtSigmaZ2);
+
+  fProfPtSigmaSnp2 = new TProfile("fProfPtSigmaSnp2","fProfPtSigmaSnp2",fgkN1PtBins,bins1Pt);
+  fHistList->Add(fProfPtSigmaSnp2);
+
+  fProfPtSigmaTgl2 = new TProfile("fProfPtSigmaTgl2","fProfPtSigmaTgl2",fgkN1PtBins,bins1Pt);
+  fHistList->Add(fProfPtSigmaTgl2);
+
+  fProfPtSigma1Pt2 = new TProfile("fProfPtSigma1Pt2","fProfPtSigma1Pt2",fgkN1PtBins,bins1Pt);
+  fHistList->Add(fProfPtSigma1Pt2);
+
+  fProfPtSigma1Pt = new TProfile("fProfPtSigma1Pt","fProfPtSigma1Pt;p_{T};#sigma(1/p_{T})",fgkNPtBins,binsPt);
+  fHistList->Add(fProfPtSigma1Pt);
+
+  fProfPtPtSigma1Pt = new TProfile("fProfPtPtSigma1Pt","fProfPtPtSigma1Pt;p_{T};p_{T}#sigma(1/p_{T})",fgkNPtBins,binsPt);
+  fHistList->Add(fProfPtPtSigma1Pt);
 
   TH1::AddDirectory(oldStatus); 
 
@@ -744,9 +840,17 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
       continue;
     }
 
+    if(fTrackType==4) {
+      FillSystematicCutHist(esdtrack);
+      if (!(fTrackCuts->AcceptTrack(esdtrack))) {
+	fh1NTracksReject->Fill("trackCuts",1);
+	continue;
+      }
+    }
+
     if(fTrackType==1)
       track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
-    else if(fTrackType==2) {
+    else if(fTrackType==2 || fTrackType==4) {
       track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
       if(!track) {
 	fh1NTracksReject->Fill("noTPConly",1);
@@ -765,28 +869,34 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
       track = esdtrack;
     
     if(!track) {
+      if(fTrackType==1 || fTrackType==2 || fTrackType==4) delete track;
       continue;
     }
 
-    if(fTrackType==2) {
+    if(fTrackType==2 || fTrackType==4) {
       //Cut on chi2 of constrained fit
-      if(track->GetConstrainedChi2TPC() > fSigmaConstrainedMax*fSigmaConstrainedMax) {
+      if(track->GetConstrainedChi2TPC() > fSigmaConstrainedMax*fSigmaConstrainedMax && fSigmaConstrainedMax>0.) {
 	fh1NTracksReject->Fill("chi2",1);
 	delete track;
 	continue;
       }
     }
 
+    if(fTrackType!=4)
+      FillSystematicCutHist(track);
+
     fPtAll->Fill(track->Pt());
 
-    if (!(fTrackCuts->AcceptTrack(track))) {
+    if (!(fTrackCuts->AcceptTrack(track)) && fTrackType!=4) {
       fh1NTracksReject->Fill("trackCuts",1);
       if(fTrackType==1 || fTrackType==2) delete track;
       continue;
     }
+
+    //Cut out laser tracks
     if(track->GetTPCsignal()<10) { //Cut on laser tracks
       fh1NTracksReject->Fill("laser",1);
-      if(fTrackType==1 || fTrackType==2) delete track;
+      if(fTrackType==1 || fTrackType==2 || fTrackType==4) delete track;
       continue; 
     }
 
@@ -803,11 +913,11 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     if(fTrackType==0) {       //Global
       track->GetImpactParameters(dca2D,dcaz);
     }
-    else if(fTrackType==1 || fTrackType==2) {  //TPConly
+    else if(fTrackType==1 || fTrackType==2 || fTrackType==4) {  //TPConly
       track->GetImpactParametersTPC(dca2D,dcaz);
     }
     fVariables->SetAt(dca2D,3);
-    fVariables->SetAt(dcaz,4);
+    fVariables->SetAt(dcaz,5);
 
     fVariables->SetAt((float)track->GetTPCNcls(),5);
 
@@ -819,7 +929,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     }
     fVariables->SetAt((float)nPointITS,6);
     Float_t chi2C = (float)track->GetConstrainedChi2();
-    if(fTrackType==1 || fTrackType==2)
+    if(fTrackType==1 || fTrackType==2 || fTrackType==4)
       chi2C = (float)track->GetConstrainedChi2TPC();
     fVariables->SetAt(chi2C,7);
     fVariables->SetAt(fTrackCuts->GetSigmaToVertex(track),8);// Calculates the number of sigma to the vertex for a track.
@@ -844,7 +954,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
   
     //      int mult = fTrackCuts->CountAcceptedTracks(fESD);
 
-    if(fTrackType==1  || fTrackType==2) delete track;
+    if(fTrackType==1  || fTrackType==2 || fTrackType==4) delete track;
     
   }//track loop
 
@@ -875,7 +985,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
 
     fVariables->SetAt((float)aodtrack->GetTPCNcls(),5);
     fVariables->SetAt((float)aodtrack->GetITSNcls(),6);
-    fVariables->SetAt(0.,7);
+    fVariables->SetAt(aodtrack->Chi2perNDF(),7);
     fVariables->SetAt(0.,8);
     fVariables->SetAt(0.,9);
     fVariables->SetAt(aodtrack->Chi2perNDF(),10);
@@ -912,6 +1022,14 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
     fPtSigmaSnp2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(15)));
     fPtSigmaTgl2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(16)));
     fPtSigma1Pt2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
+
+    fProfPtSigmaY2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(13)));
+    fProfPtSigmaZ2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(14)));
+    fProfPtSigmaSnp2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(15)));
+    fProfPtSigmaTgl2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(16)));
+    fProfPtSigma1Pt2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
+    fProfPtSigma1Pt->Fill(fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
+    fProfPtPtSigma1Pt->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)));
   }
   fPtChi2PerClusterTPC->Fill(fVariables->At(0),fVariables->At(10));
   fPtNCrossedRows->Fill(fVariables->At(0),fVariables->At(11));
@@ -1106,6 +1224,32 @@ Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfo(AliAODTrack *tr,Int_t nNeighbour
   return 0;  // undefined type - default value
 }
 
+void AliPWG4HighPtTrackQA::FillSystematicCutHist(AliESDtrack *track) {
+
+  fSystTrackCuts->Fill("noCut",1);
+  if(TMath::Abs(track->Eta())>0.9) 
+    fSystTrackCuts->Fill("eta",1);
+  if(track->Pt()<0.15 || track->Pt()>1e10) 
+    fSystTrackCuts->Fill("0.15<pT<1e10",1);
+  if(track->GetKinkIndex(0)>0)
+    fSystTrackCuts->Fill("kink",1);
+  if(track->GetTPCclusters(0)<70)
+    fSystTrackCuts->Fill("NClusterTPC",1);
+  if(track->GetTPCclusters(0)>0.) {
+    if(track->GetTPCchi2()/Float_t(track->GetTPCclusters(0))>4.)
+      fSystTrackCuts->Fill("Chi2PerNClusTPC",1);
+  }
+  
+  Float_t dcaToVertexXY = 0.;
+  Float_t dcaToVertexZ  = 0.;
+  track->GetImpactParameters(dcaToVertexXY,dcaToVertexZ);
+  Float_t fCutMaxDCAToVertexXY = 2.4;
+  Float_t fCutMaxDCAToVertexZ  = 3.2;
+  Float_t dcaToVertex = TMath::Sqrt(dcaToVertexXY*dcaToVertexXY/fCutMaxDCAToVertexXY/fCutMaxDCAToVertexXY + dcaToVertexZ*dcaToVertexZ/fCutMaxDCAToVertexZ/fCutMaxDCAToVertexZ);
+  if(dcaToVertex>1.) 
+    fSystTrackCuts->Fill("DCA2D",1);
+  
+}
 
 //________________________________________________________________________
 void AliPWG4HighPtTrackQA::Terminate(Option_t *)
