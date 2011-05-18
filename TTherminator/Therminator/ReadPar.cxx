@@ -115,7 +115,7 @@ STR ReadPar::getPar(const char *name) throw(STR)
       }
   throw *(new STR(name));
 
-  return TString("");
+  //  return TString("");
 }
 
 
