@@ -49,8 +49,9 @@ public:
   virtual void      SetCrossSection(Double_t f){fXsection = f;}
   virtual Double_t  GetCrossSection() const {return fXsection;}
 
-  virtual void      SetTrials(Double_t f){fTrials = f;}
-  virtual Double_t  GetTrials() const {return fTrials;}
+  virtual void      AddTrial(Int_t i) {fTrials+=i;}
+  virtual void      SetTrials(Int_t f){fTrials = f;}
+  virtual Int_t  GetTrials() const {return fTrials;}
 
   virtual void      SetReactionPlaneAngle(Double_t b){fReactionPlaneAngle = b;}
   virtual Double_t  GetReactionPlaneAngle() const {return fReactionPlaneAngle;}
@@ -80,11 +81,11 @@ private:
   Double32_t   fImpactPar;         // Impact parameter in case of Pb+Pb
   Double32_t   fPtHard;            // [0,0,12] Pt hard for jet events
   Double32_t   fXsection;          // Cross section for particlar process
-  Double32_t   fTrials;            // Number of trials
+  UInt_t       fTrials;            // Number of trials
   UInt_t       fEventType;         // MC Process Type of Event
   Double32_t   fReactionPlaneAngle;// MC Reaction Plane Angle
   
-  ClassDef(AliAODMCHeader,4)
+  ClassDef(AliAODMCHeader,5)
 
 };
 
