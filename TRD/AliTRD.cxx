@@ -30,6 +30,7 @@
 #include "AliMC.h"
 #include "AliMagF.h"
 #include "AliRun.h"
+#include "AliLoader.h"
 
 #include "AliTRD.h"
 #include "AliTRDdigitizer.h"

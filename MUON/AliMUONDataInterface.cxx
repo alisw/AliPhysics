@@ -37,6 +37,7 @@
 #include "AliRunLoader.h"
 #include "AliHeader.h"
 #include "AliCDBManager.h"
+#include "AliLog.h"
 
 #include <Riostream.h>
 #include <TFile.h>

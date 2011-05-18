@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+#include <TTree.h>
 #include <TArrayD.h>            //new constructor
 #include <TFile.h>  
 #include <TGeoManager.h>    

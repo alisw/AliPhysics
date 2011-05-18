@@ -92,6 +92,7 @@
 #include <TRandom.h>
 #include <TROOT.h>
 
+#include "AliLoader.h"
 #include "AliMC.h"
 #include "AliRun.h"
 

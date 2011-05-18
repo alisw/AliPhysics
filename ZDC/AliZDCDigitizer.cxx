@@ -36,6 +36,7 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
+#include "AliLoader.h"
 #include "AliGRPObject.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"

@@ -49,6 +49,7 @@
 //#include <TTree.h>
 #include <TClonesArray.h>
 #include <TVirtualMC.h>
+#include <TTree.h>
 
 // --- Standard library ---
 
@@ -58,6 +59,7 @@
 #include "AliPHOSImpact.h"
 #include "AliPHOSvImpacts.h"
 #include "AliRun.h"
+#include "AliLoader.h"
 #include "AliMC.h"
 #include "AliLog.h"
 

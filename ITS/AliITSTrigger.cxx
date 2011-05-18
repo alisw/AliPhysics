@@ -28,6 +28,7 @@
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
+#include <TTree.h>
 #include "AliITSTrigger.h"
 #include "AliLog.h"
 #include "AliRun.h"

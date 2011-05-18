@@ -12,7 +12,11 @@
 
 /* $Id$ */
 
+class TObject;
+class AliDataLoader;
+
 #include "AliBaseLoader.h"
+#include <TTask.h>
  
 class AliTaskLoader: public AliBaseLoader
  {

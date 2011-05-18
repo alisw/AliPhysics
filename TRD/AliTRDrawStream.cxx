@@ -39,6 +39,7 @@
 #include "AliTRDtrackletWord.h"
 #include "AliESDTrdTrack.h"
 #include "AliTreeLoader.h"
+#include "AliLoader.h"
 
 #include "AliTRDrawStream.h"
 

@@ -13,6 +13,7 @@
 /////////////////////////////////////////////////
 
 #include "AliTriggerDetector.h"
+#include "AliLog.h"
 
 class AliTOFrawData;
 class AliTOFTriggerMask;

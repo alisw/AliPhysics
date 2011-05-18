@@ -42,11 +42,13 @@
 #include "AliMpCDB.h"
 
 #include "AliLog.h"
+#include "AliLoader.h"
 #include "AliRunLoader.h"
 #include "AliHeader.h"
 #include "AliStack.h"
 #include "AliCDBManager.h"
 
+#include <TTree.h>
 #include <Riostream.h>
 #include <TClonesArray.h>
 #include <TList.h>

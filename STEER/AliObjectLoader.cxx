@@ -26,9 +26,10 @@
 //                                                                                         //
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "AliLog.h"
 #include "AliObjectLoader.h"
-#include "AliRunLoader.h"
+#include "AliDataLoader.h"
+#include "AliLog.h"
+#include <TFolder.h>
 
 ClassImp(AliObjectLoader)
 

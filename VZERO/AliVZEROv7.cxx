@@ -48,6 +48,7 @@
 #include "TGeoTube.h"
 #include "TGeoArb8.h"
 #include "TGeoCompositeShape.h"
+#include <TTree.h>
 
 // --- AliRoot header files ---
 #include "AliRun.h"

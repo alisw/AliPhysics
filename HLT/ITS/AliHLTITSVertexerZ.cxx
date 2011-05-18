@@ -15,6 +15,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include "AliHLTITSVertexerZ.h"
+#include <TTree.h>
 #include<TString.h>
 #include<TH1.h>
 #include<TMath.h>

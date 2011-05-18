@@ -27,6 +27,7 @@
 #include "AliHMPID.h"
 #include "AliHMPIDParam.h"
 #include <TRandom.h>
+#include <TTree.h>
 
 ClassImp(AliHMPIDDigitizer)
 

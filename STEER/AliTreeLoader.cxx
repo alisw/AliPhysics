@@ -27,12 +27,13 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 /* $Id$ */
-#include <TFile.h>
 
 #include "AliTreeLoader.h"
-#include "AliLog.h"
 #include "AliRunLoader.h"
+#include "AliLog.h"
 
+#include <TFile.h>
+#include <TFolder.h>
 
 ClassImp(AliTreeLoader)
 

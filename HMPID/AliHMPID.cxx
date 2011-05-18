@@ -13,6 +13,7 @@
 //  * provided "as is" without express or implied warranty.                  *
 //  **************************************************************************
 
+#include <TTree.h>
 #include "AliHMPID.h"
 #include "AliHMPIDHit.h"   //OccupancyPrint(), HitQa()
 #include "AliHMPIDDigit.h" //
@@ -25,6 +26,7 @@
 #include <AliHeader.h>
 #include <TH1F.h>        //HitQA()
 #include <AliLog.h>      //in many methods to print AliInfo 
+#include "AliLoader.h"
 
 ClassImp(AliHMPID)    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

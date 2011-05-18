@@ -28,6 +28,7 @@
 #include "AliEMCALSpaceFrame.h"
 #include "AliMagF.h"
 #include "AliRun.h"
+#include "AliLog.h"
  
 ClassImp(AliEMCALSpaceFrame)
  

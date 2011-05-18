@@ -44,6 +44,7 @@ Revision 0.01  2008/05/10 A. De Caro
 #include "AliDAQ.h"
 #include "AliLog.h"
 #include "AliRawReader.h"
+#include "AliLoader.h"
 #include "AliRunLoader.h"
 #include "AliGeomManager.h"
 

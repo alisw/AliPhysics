@@ -26,6 +26,7 @@
 
 #include "AliLog.h"
 #include "AliRun.h"
+#include "AliLoader.h"
 #include "AliRunLoader.h"
 #include "AliTriggerInput.h"
 #include "AliT0Parameters.h"

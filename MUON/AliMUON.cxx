@@ -22,6 +22,7 @@
 // providing simulation data management 
 //-----------------------------------------------------------------------------
 
+#include <TTree.h>
 #include "AliMUON.h"
 
 #include "AliMUONSDigitizerV2.h"

@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+#include <TTree.h>
 #include "AliMUONTrigger.h"
 
 #include "AliLog.h"
@@ -22,6 +23,7 @@
 #include "AliMUONVTriggerStore.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
+#include "AliLoader.h"
 #include "AliTriggerInput.h"
 
 

@@ -62,6 +62,7 @@
 #include "AliMUONRegHeader.h"
 #include "AliRunLoader.h"
 #include "AliCentralTrigger.h"
+#include "AliLog.h"
 #include <cstring>
 #include <cstdlib>
 #include <cmath>

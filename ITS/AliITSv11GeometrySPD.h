@@ -17,6 +17,7 @@
  * $Id$
  */
 
+#include <TArrayD.h>
 #include <TGeoManager.h>
 #include <TVirtualMC.h>
 #include <TString.h>

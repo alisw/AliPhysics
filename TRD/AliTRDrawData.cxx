@@ -30,6 +30,7 @@
 #include "AliRawReader.h"
 #include "AliLog.h"
 #include "AliFstream.h"
+#include "AliLoader.h"
 #include "AliTreeLoader.h"
 
 #include "AliTRDrawData.h"

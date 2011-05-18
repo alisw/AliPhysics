@@ -43,7 +43,7 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  TRDsimLinkDef.h)
 
-set ( EINCLUDE  RAW)
+set ( EINCLUDE  RAW VZERO T0 TOF)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
 

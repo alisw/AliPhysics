@@ -32,6 +32,7 @@
 /////////////////////////////////////////////////////////////////////
 
 #include <TClonesArray.h>
+#include <TTree.h>
 
 #include "AliLoader.h"
 #include "AliLog.h"

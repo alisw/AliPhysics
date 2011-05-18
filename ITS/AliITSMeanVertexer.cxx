@@ -1,6 +1,7 @@
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TTree.h>
 #include "AliGeomManager.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSInitGeometry.h"

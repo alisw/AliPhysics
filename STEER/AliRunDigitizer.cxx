@@ -92,8 +92,9 @@
 
 // ROOT includes
 
-#include <Riostream.h>
 class TList;
+#include <Riostream.h>
+#include <TTree.h>
 
 // AliROOT includes
 

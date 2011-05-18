@@ -21,20 +21,13 @@
 //                                        //
 ////////////////////////////////////////////
 
-#include <TDirectory.h>
-#include <TNamed.h>
-#include <TString.h>
-#include <TTask.h>
-#include <TTree.h>
-class TFile;
+class TObject;
 class TFolder;
-
-class AliLoader;
 class AliDataLoader;
-class AliObjectLoader;
-class AliRunLoader;
-class AliTaskLoader;
-class AliTreeLoader;
+
+#include <TNamed.h>
+#include <TDirectory.h>
+#include <TString.h>
 
 class AliBaseLoader: public TNamed
 {

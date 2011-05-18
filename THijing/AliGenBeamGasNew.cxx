@@ -35,7 +35,7 @@
 #include "AliGenCocktail.h" 
 #include "AliGenCocktailEntry.h"
 #include "AliGenCocktailEventHeader.h"
-#include "../THijing/AliGenHijing.h" 
+#include "AliGenHijing.h" 
 #include "AliCollisionGeometry.h"
 #include "AliRun.h"
 #include "AliMC.h"

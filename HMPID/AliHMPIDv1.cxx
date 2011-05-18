@@ -35,6 +35,7 @@
 #include <TF2.h>              //DefineOpticalProperties()
 #include <TGeoGlobalMagField.h>
 #include <TLorentzVector.h>   //IsLostByFresnel() 
+#include <TTree.h>
  
 ClassImp(AliHMPIDv1)    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

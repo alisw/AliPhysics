@@ -32,6 +32,7 @@
   list. This have been implemented but not tested.
 */
 
+#include <TTree.h>
 #include "AliTPCQADataMakerSim.h"
 
 // --- ROOT system ---

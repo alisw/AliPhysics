@@ -33,6 +33,7 @@
 #include <TStyle.h>
 #include <TObjArray.h>
 
+#include "AliLoader.h"
 #include "AliRunLoader.h"
 
 #include "AliMUONVDigit.h"

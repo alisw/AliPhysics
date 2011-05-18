@@ -22,13 +22,6 @@
 //                                                                 //
 /////////////////////////////////////////////////////////////////////
 
-#include <TNamed.h>
-
-#include "AliConfig.h"
-#include "AliLoader.h"
-#include "AliDataLoader.h"
-#include "AliLog.h"
-
 class TFile;
 class TString;
 class TFolder;
@@ -42,9 +35,13 @@ class AliLoader;
 class AliDetector;
 class AliHeader;
 class AliStack;
-class AliRunDigitizer;
 class AliCDBEntry;
 class AliCentralTrigger;
+
+#include <TNamed.h>
+
+#include "AliConfig.h"
+#include "AliDataLoader.h"
 
 class AliRunLoader: public TNamed
 {

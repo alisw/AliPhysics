@@ -35,6 +35,7 @@
 #include <TObjArray.h>
 #include <TCanvas.h>
 
+#include "AliLoader.h"
 #include "AliRunLoader.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONGeometryTransformer.h"

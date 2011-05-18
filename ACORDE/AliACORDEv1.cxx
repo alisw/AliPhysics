@@ -44,6 +44,7 @@
 #include <TMath.h>
 #include <TString.h>
 #include <TSystem.h>
+#include <TTree.h>
 
 #include "AliConst.h"
 #include "AliRun.h"

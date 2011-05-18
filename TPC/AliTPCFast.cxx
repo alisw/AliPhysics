@@ -24,8 +24,10 @@
 #include <TParticle.h>
 #include <TVector.h>
 #include <TRandom.h>
+#include <TTree.h>
 
 #include "AliRunLoader.h"
+#include "AliLoader.h"
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliTPC.h"

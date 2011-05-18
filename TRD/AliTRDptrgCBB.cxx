@@ -34,6 +34,7 @@
 #include "AliTRDptrgCBAC.h"
 #include "AliTRDptrgTLMU.h"
 #include "AliTRDptrgCBB.h"
+#include "AliLog.h"
 ClassImp(AliTRDptrgCBB)
 
 AliTRDptrgCBB::AliTRDptrgCBB(AliRunLoader *rl) 

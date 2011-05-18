@@ -31,13 +31,14 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 
-#include "../TOF/AliTOFdigit.h"
-#include "../RAW/AliRawReader.h" // needed for AliTOFTrigger's raw digit support
-#include "../TOF/AliTOFTrigger.h"
+#include "AliTOFdigit.h"
+#include "AliRawReader.h" // needed for AliTOFTrigger's raw digit support
+#include "AliTOFTrigger.h"
 
 #include "AliTRDptrgParam.h"
 
 #include "AliTRDptrgTLMU.h"
+#include "AliLog.h"
 
 ClassImp(AliTRDptrgTLMU)
 

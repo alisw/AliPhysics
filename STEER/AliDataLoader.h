@@ -21,9 +21,6 @@
 //                                        //
 ////////////////////////////////////////////
 
-#include <TDirectory.h>
-#include <TNamed.h>
-#include <TString.h>
 class TTask;
 class TTree;
 class TFile;
@@ -35,6 +32,10 @@ class AliObjectLoader;
 class AliRunLoader;
 class AliTaskLoader;
 class AliTreeLoader;
+
+#include <TDirectory.h>
+#include <TNamed.h>
+#include <TString.h>
 
 class AliDataLoader: public TNamed
  {

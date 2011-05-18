@@ -24,8 +24,11 @@
 
 
 #include <TClonesArray.h>
+#include <TTree.h>
 
 #include "AliRun.h"
+#include "AliLoader.h"
+#include "AliLog.h"
 #include "AliRunLoader.h"
 #include "AliTriggerInput.h"
 

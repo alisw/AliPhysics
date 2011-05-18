@@ -50,6 +50,7 @@
 #include <TArrayF.h>		// ROOT_TArrayI
 #include <TArrayC.h>		// ROOT_TArrayI
 #include <TClonesArray.h>	// ROOT_TClonesArray
+#include <TTree.h>
 // #include <fstream>
 #include "AliDAQ.h"
 

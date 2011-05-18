@@ -37,6 +37,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TGeoGlobalMagField.h>
+#include <TArrayI.h>
 
 #include "AliABSO.h"
 #include "AliRun.h"

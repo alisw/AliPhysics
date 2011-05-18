@@ -36,6 +36,7 @@
 #include <TSystem.h>
 #include <TMath.h>
 
+#include "AliLoader.h"
 #include <AliRunLoader.h>
 #include <TObject.h>
 #include <TFile.h>

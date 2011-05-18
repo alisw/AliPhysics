@@ -37,6 +37,7 @@
 #include <TGeoGlobalMagField.h>
 #include <TGeoPhysicalNode.h> //AddAlignableVolumes()
 #include <TLorentzVector.h>   //IsLostByFresnel() 
+#include <TTree.h>
 
 ClassImp(AliHMPIDv2)    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

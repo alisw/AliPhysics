@@ -47,6 +47,7 @@
 #include <TGeoPgon.h>
 #include <TGeoArb8.h>
 #include <TGeoMedium.h>
+#include <TArrayI.h>
 
 #include "AliABSOv0.h"
 #include "AliConst.h"

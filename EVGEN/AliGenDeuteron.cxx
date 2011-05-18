@@ -51,6 +51,7 @@
 #include "AliGenCocktailEntry.h"
 #include "AliGenCocktailAfterBurner.h"
 #include "AliGenDeuteron.h"
+#include "AliLog.h"
 
 ClassImp(AliGenDeuteron)
 

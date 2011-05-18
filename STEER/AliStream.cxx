@@ -18,6 +18,7 @@
 #include <TROOT.h>
 #include <TFile.h>
 #include <TObjString.h>
+#include <TTree.h>
 
 #include "AliLog.h"
 #include "AliLoader.h"

@@ -38,6 +38,7 @@
 #include <TGeoGlobalMagField.h>
 #include <TGeoVolume.h>
 #include <TVirtualMC.h>
+#include <TArrayI.h>
 
 #include "AliConst.h"
 #include "AliDIPOv2.h"

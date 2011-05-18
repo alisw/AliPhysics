@@ -46,6 +46,7 @@
 #include <TSystem.h>
 #include <TVirtualMC.h>
 #include <TGeoManager.h>
+#include <TTree.h>
 // 
 #include "AliLog.h"
 #include "AliDetector.h"

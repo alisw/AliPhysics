@@ -33,6 +33,7 @@
 #include "AliMpDetElement.h"
 #include "AliMpPlaneType.h"
 #include "AliRawDataHeaderSim.h"
+#include "AliLoader.h"
 #include "AliRunLoader.h"
 #include <TClonesArray.h>
 #include <TMath.h>
@@ -40,6 +41,7 @@
 #include <TRandom.h>
 #include <TStopwatch.h>
 #include <TSystem.h>
+#include <TTree.h>
 
 #include <cstdio>
 

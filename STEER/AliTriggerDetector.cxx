@@ -35,6 +35,7 @@
 #include "AliLog.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
+#include "AliLoader.h"
 
 #include "AliTriggerInput.h"
 #include "AliTriggerDetector.h"

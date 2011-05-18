@@ -29,9 +29,9 @@
 
 /* $Id$ */
 
-#include "AliLog.h"
-#include "AliRunLoader.h"
 #include "AliTaskLoader.h"
+#include "AliDataLoader.h"
+#include "AliLog.h"
 
 ClassImp(AliTaskLoader)
 

@@ -34,6 +34,7 @@
 #include <TStopwatch.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
+#include <TTree.h>
  
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"

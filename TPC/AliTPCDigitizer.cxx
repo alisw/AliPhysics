@@ -46,6 +46,7 @@
 #include "AliTPCParam.h"
 #include "AliTPCParamSR.h" 
 #include "AliRun.h"
+#include "AliLoader.h"
 #include "AliPDG.h"
 #include "AliRunDigitizer.h"
 #include "AliSimDigits.h"

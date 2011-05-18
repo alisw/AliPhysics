@@ -27,6 +27,7 @@
 #include <TGeoGlobalMagField.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
+#include <TArrayI.h>
 
 #include "AliConst.h"
 #include "AliMagF.h"

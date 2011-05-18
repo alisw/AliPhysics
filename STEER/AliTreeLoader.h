@@ -21,9 +21,10 @@
 ////////////////////////////////////////////
 
 class TString;
-class TTree;
 
 #include "AliObjectLoader.h"
+#include <TTree.h>
+#include <TObject.h>
 
 class AliTreeLoader: public AliObjectLoader
  {

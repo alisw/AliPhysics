@@ -18,6 +18,7 @@
 #include <TClonesArray.h>
 #include <TClass.h>
 #include <TGeoManager.h>
+#include <TTree.h>
 
 #include "AliITSdigit.h"
 #include "AliITSLoader.h"

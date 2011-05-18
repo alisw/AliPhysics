@@ -40,6 +40,7 @@
 #include <TGeoXtru.h>           //CradleBaseVolume()
 #include <TLorentzVector.h>     //IsLostByFresnel() 
 #include <TString.h>            //StepManager()
+#include <TTree.h>
 
 ClassImp(AliHMPIDv3)    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

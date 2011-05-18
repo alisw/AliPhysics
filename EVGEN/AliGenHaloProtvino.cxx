@@ -29,6 +29,7 @@
 #include <TPDGCode.h>
 #include <TSystem.h>
 
+#include "AliLog.h"
 #include "AliGenHaloProtvino.h"
 #include "AliRun.h"
 

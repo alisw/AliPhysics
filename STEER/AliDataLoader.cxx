@@ -28,16 +28,18 @@
 
 /* $Id$ */
 
-#include <TBits.h>
+#include "AliDataLoader.h"
+#include "AliRunLoader.h"
+#include "AliLoader.h"
+#include "AliObjectLoader.h"
+#include "AliTreeLoader.h"
+#include "AliTaskLoader.h"
+#include "AliLog.h"
+
 #include <TFile.h>
 #include <TROOT.h>
 #include <TString.h>
-
-#include "AliDataLoader.h"
-#include "AliLog.h"
-#include "AliObjectLoader.h"
-#include "AliRunLoader.h"
-#include "AliTreeLoader.h"
+#include <TBits.h>
 
 ClassImp(AliDataLoader)
 

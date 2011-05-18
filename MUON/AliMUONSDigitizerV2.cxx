@@ -17,6 +17,7 @@
 
 #include <TClonesArray.h>
 #include <TParticle.h>
+#include <TTree.h>
 
 #include "AliMUONSDigitizerV2.h"
 

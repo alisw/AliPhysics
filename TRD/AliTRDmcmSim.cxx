@@ -35,6 +35,7 @@
 #include "TRandom.h"
 #include "TClonesArray.h"
 #include "TMath.h"
+#include <TTree.h>
 
 #include "AliLog.h"
 #include "AliRunLoader.h"

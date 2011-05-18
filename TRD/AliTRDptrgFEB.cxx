@@ -29,13 +29,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include <TClonesArray.h> 
+#include <TTree.h>
 
 #include "AliRunLoader.h"
+#include "AliLoader.h"
 #include "AliLog.h"
 
-#include "../VZERO/AliVZEROdigit.h" 
-#include "../VZERO/AliVZEROCalibData.h"
-#include "../T0/AliT0digit.h"
+#include "AliVZEROdigit.h" 
+#include "AliVZEROCalibData.h"
+#include "AliT0digit.h"
 
 #include "AliTRDptrgParam.h"
 #include "AliTRDptrgLUT.h"

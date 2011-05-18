@@ -27,6 +27,7 @@
 #include "AliITSsegmentationUpgrade.h"
 #include <TObjArray.h>
 #include <TClonesArray.h>
+#include <TTree.h>
 
 extern TRandom *gRandom;
 

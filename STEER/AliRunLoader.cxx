@@ -45,18 +45,9 @@
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-#include <TROOT.h>
-#include <TBranch.h>
-#include <TFile.h>
-#include <TFolder.h>
-#include <TObjArray.h>
-#include <TString.h>
-class TTask;
-#include <TTree.h>
-
+#include "AliRunLoader.h"
 #include "AliLog.h"
 #include "AliRun.h"
-#include "AliConfig.h"
 #include "AliLoader.h"
 #include "AliHeader.h"
 #include "AliStack.h"
@@ -64,6 +55,15 @@ class TTask;
 #include "AliCDBManager.h"
 #include "AliCDBLocal.h"
 #include "AliCentralTrigger.h"
+
+#include <TTree.h>
+#include <TBranch.h>
+#include <TROOT.h>
+#include <TFile.h>
+#include <TFolder.h>
+#include <TObjArray.h>
+#include <TString.h>
+#include <TTask.h>
 
 ClassImp(AliRunLoader)
 

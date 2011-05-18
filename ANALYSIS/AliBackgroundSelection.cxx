@@ -29,7 +29,7 @@
 #include "TTree.h"
 #include "AliMultiplicity.h"
 #ifdef PASS1RECO
-#include "../ITS/AliITSRecPoint.h"
+#include "AliITSRecPoint.h"
 #endif
 
 

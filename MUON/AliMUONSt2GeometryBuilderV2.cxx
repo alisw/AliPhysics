@@ -27,6 +27,7 @@
 #include <TVirtualMC.h>
 #include <TGeoMatrix.h>
 #include <Riostream.h>
+#include <TArrayI.h>
 
 #include "AliRun.h"
 #include "AliLog.h"

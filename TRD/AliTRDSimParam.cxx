@@ -30,6 +30,7 @@
 
 #include "AliTRDSimParam.h"
 #include "AliTRDCommonParam.h"
+#include "AliLog.h"
 
 ClassImp(AliTRDSimParam)
 

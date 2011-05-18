@@ -11,8 +11,9 @@
 //
 // --------------------------------------------------------
 
-#include "TObject.h"
 #include "AliTRDptrgParam.h"
+#include <TObjArray.h>
+#include <TObject.h>
 
 class AliRunLoader;
 

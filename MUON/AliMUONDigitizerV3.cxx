@@ -44,6 +44,7 @@
 #include "AliLog.h"
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
+#include "AliLoader.h"
 #include "AliRunLoader.h"
 
 #include <Riostream.h>
@@ -53,6 +54,7 @@
 #include <TRandom.h>
 #include <TString.h>
 #include <TSystem.h>
+#include <TTree.h>
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONDigitizerV3

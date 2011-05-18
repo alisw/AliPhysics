@@ -12,6 +12,11 @@
 //                                        //
 ////////////////////////////////////////////
 
+class TObject;
+class TFolder;
+class TString;
+class AliDataLoader;
+
 #include "AliBaseLoader.h"
 
 class AliObjectLoader: public AliBaseLoader

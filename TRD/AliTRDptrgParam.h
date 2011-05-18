@@ -10,6 +10,9 @@
 // Singleton class to hold the parameters steering the PTRG 
 // 
 // --------------------------------------------------------
+
+class TArrayI;
+class TObjArray;
 #include "TObject.h"
 
   enum AliTRDptrgFEBType_t{ kUndefined = (Int_t)0, 

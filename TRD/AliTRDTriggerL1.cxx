@@ -26,6 +26,7 @@
 
 
 #include "TObjArray.h"
+#include <TTree.h>
 
 #include "AliLog.h"
 #include "AliTriggerInput.h"

@@ -19,6 +19,7 @@
 //
 // ****************************************************************
 
+#include <TTree.h>
 #include "AliLog.h"
 #include "AliRun.h"
 #include "AliLoader.h"

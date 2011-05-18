@@ -5,6 +5,7 @@
 //-------------------------------------------------------------------------
 
 
+#include "AliLoader.h"
 #include "AliRun.h"
 
 #include "AliITSclustererV2.h"
