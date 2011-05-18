@@ -294,7 +294,7 @@ Int_t AliITStrackerSA::Clusters2Tracks(AliESDEvent *event){
 void AliITStrackerSA::Init(){
   //  Reset all data members
     fPhiEstimate=0;
-    for(Int_t i=0;i<3;i++){fPoint1[i]=0;fPoint2[i]=0;fPoint3[i]=0;}
+    for(Int_t i=0;i<2;i++){fPoint1[i]=0;fPoint2[i]=0;fPoint3[i]=0;}
     fLambdac=0;
     fPhic=0;
     fCoef1=0;
@@ -328,7 +328,7 @@ void AliITStrackerSA::Init(){
 void AliITStrackerSA::ResetForFinding(){
   //  Reset data members used in all loops during track finding
     fPhiEstimate=0;
-    for(Int_t i=0;i<3;i++){fPoint1[i]=0;fPoint2[i]=0;fPoint3[i]=0;}
+    for(Int_t i=0;i<2;i++){fPoint1[i]=0;fPoint2[i]=0;fPoint3[i]=0;}
     fLambdac=0;
     fPhic=0;
     fCoef1=0;
