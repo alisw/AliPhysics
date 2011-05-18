@@ -341,11 +341,17 @@ Int_t nf=-1;
 Int_t nt=-1;
 if(fo) {
  AliWarning("PlaneEff: you asked for FO efficiency");
- nf=fFound[GetKey(im,ic,fo,bcm4)];
- nt=fTried[GetKey(im,ic,fo,bcm4)];
+ UInt_t key=GetKey(im,ic,fo,bcm4);
+ if(key<kNModule*kNChip*(kNClockPhase+1)) {
+   nf=fFound[key];
+   nt=fTried[key];
+ }
 } else {
- nf=fFound[GetKey(im,ic)];
- nt=fTried[GetKey(im,ic)];
+ UInt_t key=GetKey(im,ic);
+ if (key<kNModule*kNChip) {
+  nf=fFound[key];
+  nt=fTried[key];
+ }
 }
 return AliITSPlaneEff::PlaneEff(nf,nt);
 }
@@ -366,11 +372,17 @@ Int_t nf=-1;
 Int_t nt=-1;
 if(fo) {
  AliWarning("ErrPlaneEff: you asked for FO efficiency");
- nf=fFound[GetKey(im,ic,fo,bcm4)];
- nt=fTried[GetKey(im,ic,fo,bcm4)];
+ UInt_t key=GetKey(im,ic,fo,bcm4);
+ if(key<kNModule*kNChip*(kNClockPhase+1)) {
+   nf=fFound[key];
+   nt=fTried[key];
+ }
 } else {
- nf=fFound[GetKey(im,ic)];
- nt=fTried[GetKey(im,ic)];
+ UInt_t key=GetKey(im,ic);
+ if (key<kNModule*kNChip) {
+   nf=fFound[key];
+   nt=fTried[key];
+ }
 }
 return AliITSPlaneEff::ErrPlaneEff(nf,nt);
 } 
@@ -383,14 +395,20 @@ if (im>=kNModule || ic>=kNChip)
 if(fo && bcm4>=kNClockPhase)
  {AliError("UpDatePlaneEff: you asked for Fast Or in a wrong phase"); return kFALSE;}
 if (!fo) {
- fTried[GetKey(im,ic)]++;
- if(Kfound) fFound[GetKey(im,ic)]++;
- return kTRUE;
+ UInt_t key=GetKey(im,ic);
+ if(key<kNModule*kNChip) {
+   fTried[key]++;
+   if(Kfound) fFound[key]++;
+   return kTRUE;
+ }
 }
 else {
- fTried[GetKey(im,ic,fo,bcm4)]++;
- if(Kfound) fFound[GetKey(im,ic,fo,bcm4)]++;
- return kTRUE;
+ UInt_t key=GetKey(im,ic,fo,bcm4);
+ if(kNModule*kNChip*(kNClockPhase+1)) {
+   fTried[key]++;
+   if(Kfound) fFound[key]++;
+   return kTRUE;
+ }
 }
 return kFALSE;
 }
