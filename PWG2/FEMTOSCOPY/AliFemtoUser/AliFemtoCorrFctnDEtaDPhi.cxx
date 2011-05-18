@@ -17,91 +17,60 @@
 #ifdef __ROOT__ 
 ClassImp(AliFemtoCorrFctnDEtaDPhi)
 #endif
+  
+#define PIH 1.57079632679489656
+#define PIT 6.28318530717958623
+#define PIQ 4.71238898038468967
 
 //____________________________
 AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(char* title, const int& aPhiBins=20, const int& aEtaBins=20):
   AliFemtoCorrFctn(),
   fDPhiDEtaNumerator(0),
   fDPhiDEtaDenominator(0),
-  fDPhiDEtaColNumerator(0),
-  fDPhiDEtaColDenominator(0),
   fDPhiNumerator(0),
   fDPhiDenominator(0),
   fDCosNumerator(0),
   fDCosDenominator(0),
+  fDoPtAnalysis(0),
   fDPhiPtNumerator(0),
   fDPhiPtDenominator(0),
   fDCosPtNumerator(0),
   fDCosPtDenominator(0)
 {
   // set up numerator
-  char tTitNumD[100] = "NumDPhiDEta";
+  char tTitNumD[101] = "NumDPhiDEta";
   strncat(tTitNumD,title, 100);
-  fDPhiDEtaNumerator = new TH2D(tTitNumD,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
+  fDPhiDEtaNumerator = new TH2D(tTitNumD,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.5,2.5);
   // set up denominator
-  char tTitDenD[100] = "DenDPhiDEta";
+  char tTitDenD[101] = "DenDPhiDEta";
   strncat(tTitDenD,title, 100);
-  fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
+  fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.5,2.5);
 
   // set up numerator
-  char tTitNumR[100] = "NumDPhiDEtaCol";
-  strncat(tTitNumR,title, 100);
-  fDPhiDEtaColNumerator = new TH2D(tTitNumR,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
-  // set up denominator
-  char tTitDenR[100] = "DenDPhiDEtaCol";
-  strncat(tTitDenR,title, 100);
-  fDPhiDEtaColDenominator = new TH2D(tTitDenR,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
-
-  // set up numerator
-  char tTitNumDPhi[100] = "NumDPhi";
+  char tTitNumDPhi[101] = "NumDPhi";
   strncat(tTitNumDPhi,title, 100);
   fDPhiNumerator = new TH1D(tTitNumDPhi,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi());
   // set up denominator
-  char tTitDenDPhi[100] = "DenDPhi";
+  char tTitDenDPhi[101] = "DenDPhi";
   strncat(tTitDenDPhi,title, 100);
   fDPhiDenominator = new TH1D(tTitDenDPhi,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi());
 
   // set up numerator
-  char tTitNumDCos[100] = "NumDCos";
+  char tTitNumDCos[101] = "NumDCos";
   strncat(tTitNumDCos,title, 100);
   fDCosNumerator = new TH1D(tTitNumDCos,title,aPhiBins*2,-1.0,1.0);
   // set up denominator
-  char tTitDenDCos[100] = "DenDCos";
+  char tTitDenDCos[101] = "DenDCos";
   strncat(tTitDenDCos,title, 100);
   fDCosDenominator = new TH1D(tTitDenDCos,title,aPhiBins*2,-1.0,1.0);
-
-  // set up numerator
-  char tTitNumDPhiPt[100] = "NumDPhiPt";
-  strncat(tTitNumDPhiPt,title, 100);
-  fDPhiPtNumerator = new TH2D(tTitNumDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi(), 30, 0.0, 3.0);
-  // set up denominator
-  char tTitDenDPhiPt[100] = "DenDPhiPt";
-  strncat(tTitDenDPhiPt,title, 100);
-  fDPhiPtDenominator = new TH2D(tTitDenDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi(), 30, 0.0, 3.0);
-
-  // set up numerator
-  char tTitNumDCosPt[100] = "NumDCosPt";
-  strncat(tTitNumDCosPt,title, 100);
-  fDCosPtNumerator = new TH2D(tTitNumDCosPt,title,aPhiBins*2,-1.0,1.0, 30, 0.0, 3.0);
-  // set up denominator
-  char tTitDenDCosPt[100] = "DenDCosPt";
-  strncat(tTitDenDCosPt,title, 100);
-  fDCosPtDenominator = new TH2D(tTitDenDCosPt,title,aPhiBins*2,-1.0,1.0, 30, 0.0, 3.0);
 
   // to enable error bar calculation...
   fDPhiDEtaNumerator->Sumw2();
   fDPhiDEtaDenominator->Sumw2();
-  fDPhiDEtaColNumerator->Sumw2();
-  fDPhiDEtaColDenominator->Sumw2();
   fDPhiNumerator->Sumw2();
   fDPhiDenominator->Sumw2();
   fDCosNumerator->Sumw2();
   fDCosDenominator->Sumw2();
-  fDPhiPtNumerator->Sumw2();
-  fDPhiPtDenominator->Sumw2();
-  fDCosPtNumerator->Sumw2();
-  fDCosPtDenominator->Sumw2();
-
 }
 
 //____________________________
@@ -109,12 +78,11 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(const AliFemtoCorrFctnDEtaDPh
   AliFemtoCorrFctn(),
   fDPhiDEtaNumerator(0),
   fDPhiDEtaDenominator(0),
-  fDPhiDEtaColNumerator(0),
-  fDPhiDEtaColDenominator(0),
   fDPhiNumerator(0),
   fDPhiDenominator(0),
   fDCosNumerator(0),
   fDCosDenominator(0),
+  fDoPtAnalysis(0),
   fDPhiPtNumerator(0),
   fDPhiPtDenominator(0),
   fDCosPtNumerator(0),
@@ -129,15 +97,6 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(const AliFemtoCorrFctnDEtaDPh
     fDPhiDEtaDenominator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
   else
     fDPhiDEtaDenominator = 0;
-
-  if (aCorrFctn.fDPhiDEtaColNumerator)
-    fDPhiDEtaColNumerator = new TH2D(*aCorrFctn.fDPhiDEtaColNumerator);
-  else
-    fDPhiDEtaColNumerator = 0;
-  if (aCorrFctn.fDPhiDEtaColDenominator)
-    fDPhiDEtaColDenominator = new TH2D(*aCorrFctn.fDPhiDEtaColDenominator);
-  else
-    fDPhiDEtaColDenominator = 0;
 
   if (aCorrFctn.fDPhiNumerator)
     fDPhiNumerator = new TH1D(*aCorrFctn.fDPhiNumerator);
@@ -181,16 +140,16 @@ AliFemtoCorrFctnDEtaDPhi::~AliFemtoCorrFctnDEtaDPhi(){
   // destructor
   delete fDPhiDEtaNumerator;
   delete fDPhiDEtaDenominator;
-  delete fDPhiDEtaColNumerator;
-  delete fDPhiDEtaColDenominator;
   delete fDPhiNumerator;
   delete fDPhiDenominator;
   delete fDCosNumerator;
   delete fDCosDenominator;
-  delete fDPhiPtNumerator;
-  delete fDPhiPtDenominator;
-  delete fDCosPtNumerator;
-  delete fDCosPtDenominator;
+  if (fDoPtAnalysis) {
+    delete fDPhiPtNumerator;
+    delete fDPhiPtDenominator;
+    delete fDCosPtNumerator;
+    delete fDCosPtDenominator;
+  }
 }
 //_________________________
 AliFemtoCorrFctnDEtaDPhi& AliFemtoCorrFctnDEtaDPhi::operator=(const AliFemtoCorrFctnDEtaDPhi& aCorrFctn)
@@ -207,15 +166,6 @@ AliFemtoCorrFctnDEtaDPhi& AliFemtoCorrFctnDEtaDPhi::operator=(const AliFemtoCorr
     fDPhiDEtaDenominator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
   else
     fDPhiDEtaDenominator = 0;
-
-  if (aCorrFctn.fDPhiDEtaColNumerator)
-    fDPhiDEtaColNumerator = new TH2D(*aCorrFctn.fDPhiDEtaColNumerator);
-  else
-    fDPhiDEtaColNumerator = 0;
-  if (aCorrFctn.fDPhiDEtaColDenominator)
-    fDPhiDEtaColDenominator = new TH2D(*aCorrFctn.fDPhiDEtaColDenominator);
-  else
-    fDPhiDEtaColDenominator = 0;
 
   if (aCorrFctn.fDPhiNumerator)
     fDPhiNumerator = new TH1D(*aCorrFctn.fDPhiNumerator);
@@ -292,40 +242,35 @@ void AliFemtoCorrFctnDEtaDPhi::AddRealPair( AliFemtoPair* pair){
   double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
 
   double dphi = phi1 - phi2;
-  while (dphi<-TMath::Pi()/2) dphi+=TMath::Pi()*2;
-  while (dphi>3*TMath::Pi()/2) dphi-=TMath::Pi()*2;
+  while (dphi<-PIH) dphi+=PIT;
+  while (dphi>PIQ) dphi-=PIT;
 
   double deta = eta1 - eta2;
 
-  double px1 = pair->Track1()->Track()->P().x();
-  double py1 = pair->Track1()->Track()->P().y();
-  double pz1 = pair->Track1()->Track()->P().z();
+//   double px1 = pair->Track1()->Track()->P().x();
+//   double py1 = pair->Track1()->Track()->P().y();
+//   double pz1 = pair->Track1()->Track()->P().z();
 
-  double px2 = pair->Track2()->Track()->P().x();
-  double py2 = pair->Track2()->Track()->P().y();
-  double pz2 = pair->Track2()->Track()->P().z();
+//   double px2 = pair->Track2()->Track()->P().x();
+//   double py2 = pair->Track2()->Track()->P().y();
+//   double pz2 = pair->Track2()->Track()->P().z();
 
-  double pt1 = TMath::Hypot(px1, py1);
-  double pt2 = TMath::Hypot(px2, py2);
-  double ptmin = pt1>pt2 ? pt2 : pt1;
+//   double pt1 = TMath::Hypot(px1, py1);
+//   double pt2 = TMath::Hypot(px2, py2);
+//   double ptmin = pt1>pt2 ? pt2 : pt1;
 
-  double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
-    sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
+//   double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
+//     sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
 
   fDPhiDEtaNumerator->Fill(dphi, deta);
 
-  if (cosphi > 0) {
-    fDPhiDEtaColNumerator->Fill(dphi, deta);
-  }
-  else {
-    fDPhiDEtaColNumerator->Fill(dphi, -eta1-eta2);
-  }
-
   fDPhiNumerator->Fill(dphi);
-  fDCosNumerator->Fill(cosphi);
+//   fDCosNumerator->Fill(cosphi);
 
-  fDPhiPtNumerator->Fill(dphi, ptmin);
-  fDCosPtNumerator->Fill(cosphi, ptmin);
+  if (fDoPtAnalysis) {
+//     fDPhiPtNumerator->Fill(dphi, ptmin);
+//     fDCosPtNumerator->Fill(cosphi, ptmin);
+  }
 
 }
 //____________________________
@@ -340,41 +285,35 @@ void AliFemtoCorrFctnDEtaDPhi::AddMixedPair( AliFemtoPair* pair){
   double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
 
   double dphi = phi1 - phi2;
-  while (dphi<-TMath::Pi()/2) dphi+=TMath::Pi()*2;
-  while (dphi>3*TMath::Pi()/2) dphi-=TMath::Pi()*2;
+  while (dphi<-PIH) dphi+=PIT;
+  while (dphi>PIQ) dphi-=PIT;
 
   double deta = eta1 - eta2;
 
-  double px1 = pair->Track1()->Track()->P().x();
-  double py1 = pair->Track1()->Track()->P().y();
-  double pz1 = pair->Track1()->Track()->P().z();
+//   double px1 = pair->Track1()->Track()->P().x();
+//   double py1 = pair->Track1()->Track()->P().y();
+//   double pz1 = pair->Track1()->Track()->P().z();
 
-  double px2 = pair->Track2()->Track()->P().x();
-  double py2 = pair->Track2()->Track()->P().y();
-  double pz2 = pair->Track2()->Track()->P().z();
+//   double px2 = pair->Track2()->Track()->P().x();
+//   double py2 = pair->Track2()->Track()->P().y();
+//   double pz2 = pair->Track2()->Track()->P().z();
 
-  double pt1 = TMath::Hypot(px1, py1);
-  double pt2 = TMath::Hypot(px2, py2);
-  double ptmin = pt1>pt2 ? pt2 : pt1;
+//   double pt1 = TMath::Hypot(px1, py1);
+//   double pt2 = TMath::Hypot(px2, py2);
+//   double ptmin = pt1>pt2 ? pt2 : pt1;
 
-  double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
-    sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
+//   double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
+//     sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
 
   fDPhiDEtaDenominator->Fill(dphi, deta);
 
-  if (cosphi > 0) {
-    fDPhiDEtaColDenominator->Fill(dphi, deta);
-  }
-  else {
-    fDPhiDEtaColDenominator->Fill(dphi, -eta1-eta2);
-  }
-
   fDPhiDenominator->Fill(dphi);
-  fDCosDenominator->Fill(cosphi);
+//   fDCosDenominator->Fill(cosphi);
 
-  fDPhiPtDenominator->Fill(dphi, ptmin);
-  fDCosPtDenominator->Fill(cosphi, ptmin);
-
+  if (fDoPtAnalysis) {
+    //   fDPhiPtDenominator->Fill(dphi, ptmin);
+    //   fDCosPtDenominator->Fill(cosphi, ptmin);
+  }
 }
 
 
@@ -383,16 +322,16 @@ void AliFemtoCorrFctnDEtaDPhi::WriteHistos()
   // Write out result histograms
   fDPhiDEtaNumerator->Write();
   fDPhiDEtaDenominator->Write();
-  fDPhiDEtaColNumerator->Write();
-  fDPhiDEtaColDenominator->Write();
   fDPhiNumerator->Write();
   fDPhiDenominator->Write();
   fDCosNumerator->Write();
   fDCosDenominator->Write();
-  fDPhiPtNumerator->Write();
-  fDPhiPtDenominator->Write();
-  fDCosPtNumerator->Write();
-  fDCosPtDenominator->Write();
+  if (fDoPtAnalysis) {
+    fDPhiPtNumerator->Write();
+    fDPhiPtDenominator->Write();
+    fDCosPtNumerator->Write();
+    fDCosPtDenominator->Write();
+  }
 }
 
 TList* AliFemtoCorrFctnDEtaDPhi::GetOutputList()
@@ -402,17 +341,49 @@ TList* AliFemtoCorrFctnDEtaDPhi::GetOutputList()
 
   tOutputList->Add(fDPhiDEtaNumerator);
   tOutputList->Add(fDPhiDEtaDenominator);
-  tOutputList->Add(fDPhiDEtaColNumerator);
-  tOutputList->Add(fDPhiDEtaColDenominator);
   tOutputList->Add(fDPhiNumerator);
   tOutputList->Add(fDPhiDenominator);
   tOutputList->Add(fDCosNumerator);
   tOutputList->Add(fDCosDenominator);
-  tOutputList->Add(fDPhiPtNumerator);
-  tOutputList->Add(fDPhiPtDenominator);
-  tOutputList->Add(fDCosPtNumerator);
-  tOutputList->Add(fDCosPtDenominator);
+  if (fDoPtAnalysis) {
+    tOutputList->Add(fDPhiPtNumerator);
+    tOutputList->Add(fDPhiPtDenominator);
+    tOutputList->Add(fDCosPtNumerator);
+    tOutputList->Add(fDCosPtDenominator);
+  }
 
   return tOutputList;
 
+}
+
+void AliFemtoCorrFctnDEtaDPhi::SetDoPtAnalysis(int do2d)
+{
+  fDoPtAnalysis = do2d;
+  
+  int aPhiBins = fDPhiDEtaNumerator->GetNbinsX();
+  const char *title = fDPhiDEtaNumerator->GetTitle();
+
+  // set up numerator
+  char tTitNumDPhiPt[101] = "NumDPhiPt";
+  strncat(tTitNumDPhiPt,title, 100);
+  fDPhiPtNumerator = new TH2D(tTitNumDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi(), 30, 0.0, 3.0);
+  // set up denominator
+  char tTitDenDPhiPt[101] = "DenDPhiPt";
+  strncat(tTitDenDPhiPt,title, 100);
+  fDPhiPtDenominator = new TH2D(tTitDenDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi(), 30, 0.0, 3.0);
+
+  // set up numerator
+  char tTitNumDCosPt[101] = "NumDCosPt";
+  strncat(tTitNumDCosPt,title, 100);
+  fDCosPtNumerator = new TH2D(tTitNumDCosPt,title,aPhiBins*2,-1.0,1.0, 30, 0.0, 3.0);
+  // set up denominator
+  char tTitDenDCosPt[101] = "DenDCosPt";
+  strncat(tTitDenDCosPt,title, 100);
+  fDCosPtDenominator = new TH2D(tTitDenDCosPt,title,aPhiBins*2,-1.0,1.0, 30, 0.0, 3.0);
+
+  fDPhiPtNumerator->Sumw2();
+  fDPhiPtDenominator->Sumw2();
+  fDCosPtNumerator->Sumw2();
+  fDCosPtDenominator->Sumw2();
+  
 }
