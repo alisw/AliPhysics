@@ -26,21 +26,21 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(char* title, const in
 {
   // set up numerator
   //  title = "Num Qinv (MeV/c)";
-  char tTitNum[100] = "NumShare";
+  char tTitNum[101] = "NumShare";
   strncat(tTitNum,title, 100);
   fShareNumerator = new TH2D(tTitNum,title,nbins,QinvLo,QinvHi,100,0.0,1.00001);
   // set up denominator
   //title = "Den Qinv (MeV/c)";
-  char tTitDen[100] = "DenShare";
+  char tTitDen[101] = "DenShare";
   strncat(tTitDen,title, 100);
   fShareDenominator = new TH2D(tTitDen,title,nbins,QinvLo,QinvHi,100,0.0,1.00001);
 
-  char tTit2Num[100] = "NumQuality";
+  char tTit2Num[101] = "NumQuality";
   strncat(tTit2Num,title, 100);
   fQualityNumerator = new TH2D(tTit2Num,title,nbins,QinvLo,QinvHi,150,-0.500001,1.000001);
   // set up denominator
   //title = "Den Qinv (MeV/c)";
-  char tTit2Den[100] = "DenQuality";
+  char tTit2Den[101] = "DenQuality";
   strncat(tTit2Den,title, 100);
   fQualityDenominator = new TH2D(tTit2Den,title,nbins,QinvLo,QinvHi,150,-0.500001,1.000001);
   // set up ratio
@@ -51,12 +51,12 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(char* title, const in
   //mShareDenominator->SetDirectory(0);
   //mRatio->SetDirectory(0);
 
-  char tTit3Num[100] = "NumTPCSep";
+  char tTit3Num[101] = "NumTPCSep";
   strncat(tTit3Num,title, 100);
   fTPCSepNumerator = new TH2D(tTit3Num,title,nbins,QinvLo,QinvHi,150,0.0,100.0);
   // set up denominator
   //title = "Den Qinv (MeV/c)";
-  char tTit3Den[100] = "DenTPCSep";
+  char tTit3Den[101] = "DenTPCSep";
   strncat(tTit3Den,title, 100);
   fTPCSepDenominator = new TH2D(tTit3Den,title,nbins,QinvLo,QinvHi,150,0.0,100.0);
 
