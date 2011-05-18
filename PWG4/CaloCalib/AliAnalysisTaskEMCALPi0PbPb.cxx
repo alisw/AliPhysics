@@ -1029,7 +1029,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
           msta   = pa;
         }
       }
-      if (diffR2>10)
+      if (diffR2>10 || msta==0)
         continue;
       cl->fMcLabel = msta->fLab;
     }

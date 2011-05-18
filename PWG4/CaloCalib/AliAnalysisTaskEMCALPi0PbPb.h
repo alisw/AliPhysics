@@ -341,7 +341,7 @@ class AliStaPart : public TObject
 {
  public:
   AliStaPart() : TObject(), fPt(0), fEta(0), fPhi(0), fVR(0), fVEta(0), fVPhi(0), fPid(0), fMo(-1), fDet(-2), 
-                 fLab(-1), fNs(0) {}
+                 fLab(-1), fNs(0) { memset(fDs,-1,sizeof(Short_t)*9); }
 
   Int_t         OnEmcal() const { return (fDet==8);  }
   Int_t         IsSim()   const { return (fDet!=-2); }
