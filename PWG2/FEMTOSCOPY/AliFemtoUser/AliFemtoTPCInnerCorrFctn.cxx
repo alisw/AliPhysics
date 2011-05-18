@@ -25,21 +25,21 @@ AliFemtoTPCInnerCorrFctn::AliFemtoTPCInnerCorrFctn(char* title, const int& nbins
 {
   // set up numerator
   //  title = "Num Qinv (MeV/c)";
-  char tTitNum[100] = "NumDTPC";
+  char tTitNum[101] = "NumDTPC";
   strncat(tTitNum,title, 100);
   fDTPCNumerator = new TH2D(tTitNum,title,nbins,QinvLo,QinvHi,100,0.0,20.0);
   // set up denominator
   //title = "Den Qinv (MeV/c)";
-  char tTitDen[100] = "DenDTPC";
+  char tTitDen[101] = "DenDTPC";
   strncat(tTitDen,title, 100);
   fDTPCDenominator = new TH2D(tTitDen,title,nbins,QinvLo,QinvHi,100,0.0,20.0);
 
-  char tTitNumR[100] = "NumRadD";
+  char tTitNumR[101] = "NumRadD";
   strncat(tTitNumR,title, 100);
   fRadDNumerator = new TH2D(tTitNumR,title,50,-0.1,0.1,50,-0.1,0.1);
   // set up denominator
   //title = "Den Qinv (MeV/c)";
-  char tTitDenR[100] = "DenRadD";
+  char tTitDenR[101] = "DenRadD";
   strncat(tTitDenR,title, 100);
   fRadDDenominator = new TH2D(tTitDenR,title,50,-0.1,0.1,50,-0.1,0.1);
 
@@ -134,6 +134,12 @@ AliFemtoString AliFemtoTPCInnerCorrFctn::Report(){
 //____________________________
 void AliFemtoTPCInnerCorrFctn::AddRealPair( AliFemtoPair* pair){
   // add real (effect) pair
+  if (fPairCut)
+    if (!fPairCut->Pass(pair)) return;
+
+  double pih = TMath::Pi();
+  double pit = TMath::Pi()*2;
+
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   double distx = pair->Track1()->Track()->NominalTpcEntrancePoint().x() - pair->Track2()->Track()->NominalTpcEntrancePoint().x();
   double disty = pair->Track1()->Track()->NominalTpcEntrancePoint().y() - pair->Track2()->Track()->NominalTpcEntrancePoint().y();
@@ -142,22 +148,35 @@ void AliFemtoTPCInnerCorrFctn::AddRealPair( AliFemtoPair* pair){
 
   fDTPCNumerator->Fill(tQinv, dist);
 
-  double phi1 = pair->Track1()->Track()->P().Phi();
-  double phi2 = pair->Track2()->Track()->P().Phi();
-  double chg1 = pair->Track1()->Track()->Charge();
-  double chg2 = pair->Track2()->Track()->Charge();
-  double ptv1 = pair->Track1()->Track()->Pt();
-  double ptv2 = pair->Track2()->Track()->Pt();
-  double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
-  double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
+  if (tQinv < 0.1) {
+    double phi1 = pair->Track1()->Track()->P().Phi();
+    double phi2 = pair->Track2()->Track()->P().Phi();
+    double chg1 = pair->Track1()->Track()->Charge();
+    double chg2 = pair->Track2()->Track()->Charge();
+    double ptv1 = pair->Track1()->Track()->Pt();
+    double ptv2 = pair->Track2()->Track()->Pt();
+    double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
+    double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
+    double arg1 = -0.3 * 0.5 * chg1 * fRadius/(2*ptv1);
+    double arg2 = -0.3 * 0.5 * chg2 * fRadius/(2*ptv2);
+    double phid = phi2 - phi1 + TMath::ASin(arg2) - TMath::ASin(arg1);
 
-  dist = phi2 - phi1 + TMath::ASin(-0.3 * 0.5 * chg2 * fRadius/(2*ptv2)) - TMath::ASin(-0.3 * 0.5 * chg1 * fRadius/(2*ptv1));
-  double etad = eta2 - eta1;
-  fRadDNumerator->Fill(dist, etad);
+    while (phid>pih) phid -= pit;
+    while (phid<-pih) phid += pit;
+    //    dist = phi2 - phi1 + TMath::ASin(-0.3 * 0.5 * chg2 * fRadius/(2*ptv2)) - TMath::ASin(-0.3 * 0.5 * chg1 * fRadius/(2*ptv1));
+    double etad = eta2 - eta1;
+    fRadDNumerator->Fill(phid, etad);
+  }
 }
 //____________________________
 void AliFemtoTPCInnerCorrFctn::AddMixedPair( AliFemtoPair* pair){
   // add mixed (background) pair
+  if (fPairCut)
+    if (!fPairCut->Pass(pair)) return;
+
+  double pih = TMath::Pi();
+  double pit = TMath::Pi()*2;
+
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   double distx = pair->Track1()->Track()->NominalTpcEntrancePoint().x() - pair->Track2()->Track()->NominalTpcEntrancePoint().x();
   double disty = pair->Track1()->Track()->NominalTpcEntrancePoint().y() - pair->Track2()->Track()->NominalTpcEntrancePoint().y();
@@ -166,18 +185,25 @@ void AliFemtoTPCInnerCorrFctn::AddMixedPair( AliFemtoPair* pair){
 
   fDTPCDenominator->Fill(tQinv,dist);
 
-  double phi1 = pair->Track1()->Track()->P().Phi();
-  double phi2 = pair->Track2()->Track()->P().Phi();
-  double chg1 = pair->Track1()->Track()->Charge();
-  double chg2 = pair->Track2()->Track()->Charge();
-  double ptv1 = pair->Track1()->Track()->Pt();
-  double ptv2 = pair->Track2()->Track()->Pt();
-  double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
-  double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
+  if (tQinv < 0.1) {
+    double phi1 = pair->Track1()->Track()->P().Phi();
+    double phi2 = pair->Track2()->Track()->P().Phi();
+    double chg1 = pair->Track1()->Track()->Charge();
+    double chg2 = pair->Track2()->Track()->Charge();
+    double ptv1 = pair->Track1()->Track()->Pt();
+    double ptv2 = pair->Track2()->Track()->Pt();
+    double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
+    double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
+    double arg1 = -0.3 * 0.5 * chg1 * fRadius/(2*ptv1);
+    double arg2 = -0.3 * 0.5 * chg2 * fRadius/(2*ptv2);
+    double phid = phi2 - phi1 + TMath::ASin(arg2) - TMath::ASin(arg1);
 
-  dist = phi2 - phi1 + TMath::ASin(-0.3 * 0.5 * chg2 * fRadius/(2*ptv2)) - TMath::ASin(-0.3 * 0.5 * chg1 * fRadius/(2*ptv1));
-  double etad = eta2 - eta1;
-  fRadDDenominator->Fill(dist, etad);
+    while (phid>pih) phid -= pit;
+    while (phid<-pih) phid += pit;
+    //    dist = phi2 - phi1 + TMath::ASin(-0.3 * 0.5 * chg2 * fRadius/(2*ptv2)) - TMath::ASin(-0.3 * 0.5 * chg1 * fRadius/(2*ptv1));
+    double etad = eta2 - eta1;
+    fRadDDenominator->Fill(phid, etad);
+  }
 }
 
 
