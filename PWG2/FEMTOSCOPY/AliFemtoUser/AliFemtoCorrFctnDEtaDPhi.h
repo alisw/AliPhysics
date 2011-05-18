@@ -28,6 +28,7 @@ public:
   virtual void AddMixedPair(AliFemtoPair* aPair);
 
   virtual void Finish();
+  void SetDoPtAnalysis(int do2d);
 
   void WriteHistos();
   virtual TList* GetOutputList();
@@ -36,14 +37,13 @@ private:
   TH2D *fDPhiDEtaNumerator;          // Numerator of dEta dPhi function
   TH2D *fDPhiDEtaDenominator;        // Denominator of dEta dPhi function
 
-  TH2D *fDPhiDEtaColNumerator;       // Numerator of colinear dEta dPhi function 
-  TH2D *fDPhiDEtaColDenominator;     // Denominator of colinear dEta dPhi function
-
   TH1D *fDPhiNumerator;              // Numerator of dPhi correlation
   TH1D *fDPhiDenominator;            // Denominator of dPhi correlation
 
   TH1D *fDCosNumerator;              // Numerator of colinearity correlation
   TH1D *fDCosDenominator;            // Denominator of colinearity correlation
+
+  int   fDoPtAnalysis;               // set to 1 to do 2D Pt analysis
 
   TH2D *fDPhiPtNumerator;            // Numerator of dPhi correlation vs. Pt min
   TH2D *fDPhiPtDenominator;          // Denominator of dPhi correlation vs. Pt min
