@@ -66,6 +66,7 @@ namespace CaloConstants
   namespace EMCALConstants
   {
     const int MAXHWADDR = 3279;
+    const int MAXCHANNELS = 1408;
     const double ECENTRALHIT = 0.845678; //Percentage of total enegry contain in a single tower for a central hit  
     const int NZROWSMOD      =  24;   // Number of rows per module
     const int NXCOLUMNSMOD   =  48;   // Number of columns per module 

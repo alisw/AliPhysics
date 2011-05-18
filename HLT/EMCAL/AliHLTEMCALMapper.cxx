@@ -26,6 +26,7 @@ using EMCAL::NMODULES;
 using EMCAL::NRCUSPERMODULE;
 using EMCAL::NRCUSPERSECTOR;
 using EMCAL::MAXHWADDR;
+using EMCAL::MAXCHANNELS; 
 
 AliHLTEMCALMapper::AliHLTEMCALMapper(const unsigned long specification ) : AliHLTCaloMapper(specification, "EMCAL")
 {
@@ -82,21 +83,29 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 	      fHw2geomapPtr[i].fZRow = 0;
 	      fHw2geomapPtr[i].fGain = 0;
 	    }
-	  for(int i=0; i<nChannels; i ++)
+	  // MAXCHANNELS
+	  if( nChannels <= MAXCHANNELS )
 	    {
-	      res = fscanf(fp, "%d %d %d %d\n", &tmpHwaddr, &tmpXCol, &tmpZRow,  &tmpGain);
-	      
-	      if(tmpGain < 2)
+	      for(int i=0; i<nChannels; i ++)
 		{
-		  if( tmpHwaddr <= MAXHWADDR  )
+		  res = fscanf(fp, "%d %d %d %d\n", &tmpHwaddr, &tmpXCol, &tmpZRow,  &tmpGain);
+		  
+		  if(tmpGain < 2)
 		    {
-		      fHw2geomapPtr[tmpHwaddr].fXCol   = (char)tmpXCol;
-		      fHw2geomapPtr[tmpHwaddr].fZRow   = (char)tmpZRow;
-		      fHw2geomapPtr[tmpHwaddr].fGain  =  (char)tmpGain;
-		    }
-		} 
+		      if( tmpHwaddr <= MAXHWADDR  )
+			{
+			  fHw2geomapPtr[tmpHwaddr].fXCol   = (char)tmpXCol;
+			  fHw2geomapPtr[tmpHwaddr].fZRow   = (char)tmpZRow;
+			  fHw2geomapPtr[tmpHwaddr].fGain  =  (char)tmpGain;
+			}
+		    } 
+		}
+	      fIsInitializedMapping = true;	  
 	    }
-	  fIsInitializedMapping = true;	  
+	  else
+	    {
+	      fIsInitializedMapping = false;	   
+	    }
 	  fclose(fp);
 	}
       else
