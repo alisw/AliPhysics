@@ -22,11 +22,11 @@ AliFemtoCorrFctnTPCNcls::AliFemtoCorrFctnTPCNcls(char* title, const int& nbins, 
   fNclsTPCMinDenominator(0)
 {
   // set up numerator
-  char tTitNum[100] = "NumNclsTPCMin";
+  char tTitNum[101] = "NumNclsTPCMin";
   strncat(tTitNum,title, 100);
   fNclsTPCMinNumerator = new TH2D(tTitNum,title,nbins,QinvLo,QinvHi,159,0.5,159.5);
   // set up denominator
-  char tTitDen[100] = "DenNclsTPCMin";
+  char tTitDen[101] = "DenNclsTPCMin";
   strncat(tTitDen,title, 100);
   fNclsTPCMinDenominator = new TH2D(tTitDen,title,nbins,QinvLo,QinvHi,159,0.5,159.5);
 
