@@ -17,8 +17,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Photon Multiplicity Detector Version 1                                   //
-//  Bedanga Mohanty : February 14th 2006
 //                                                                           //
 //Begin_Html
 /*
@@ -41,26 +39,6 @@
 #include "AliPMDv2008.h"
 #include "AliRun.h"
 
-const Int_t   AliPMDv2008::fgkNcolUM1    = 48;  // Number of cols in UM, type 1
-const Int_t   AliPMDv2008::fgkNcolUM2    = 96;  // Number of cols in UM, type 2
-const Int_t   AliPMDv2008::fgkNrowUM1    = 96;  // Number of rows in UM, type 1
-const Int_t   AliPMDv2008::fgkNrowUM2    = 48;  // Number of rows in UM, type 2
-const Float_t AliPMDv2008::fgkCellRadius = 0.25;     // Radius of a hexagonal cell
-const Float_t AliPMDv2008::fgkCellWall   = 0.02;     // Thickness of cell Wall
-const Float_t AliPMDv2008::fgkCellDepth  = 0.50;     // Gas thickness
-const Float_t AliPMDv2008::fgkThBase     = 0.2;      // Thickness of Base plate
-const Float_t AliPMDv2008::fgkThBKP      = 0.1;      // Thickness of Back plane
-const Float_t AliPMDv2008::fgkThAir      = 1.03;      // Thickness of Air
-const Float_t AliPMDv2008::fgkThPCB      = 0.16;     // Thickness of PCB
-const Float_t AliPMDv2008::fgkThLead     = 1.5;      // Thickness of Pb
-const Float_t AliPMDv2008::fgkThSteel    = 0.5;      // Thickness of Steel
-const Float_t AliPMDv2008::fgkGap        = 0.025;    // Air Gap
-const Float_t AliPMDv2008::fgkZdist      = 361.5;    // z-position of the detector
-const Float_t AliPMDv2008::fgkSqroot3    = 1.7320508;// Square Root of 3
-const Float_t AliPMDv2008::fgkSqroot3by2 = 0.8660254;// Square Root of 3 by 2
-const Float_t AliPMDv2008::fgkSSBoundary = 0.3;
-const Float_t AliPMDv2008::fgkThSS       = 1.03;
-const Float_t AliPMDv2008::fgkThG10      = 1.03;
 ClassImp(AliPMDv2008)
  
 //_____________________________________________________________________________
@@ -1583,7 +1561,8 @@ void AliPMDv2008::AddAlignableVolumes() const
 // ----------------------------------------------------------------
 void AliPMDv2008::SetSectorAlignable() const
 {
-  // 
+  // To align each sector
+  // Each plane has four sectors
 
   TString vpsector = "ALIC_1/EPM";
   TString vpappend = "_1";

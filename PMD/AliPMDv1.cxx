@@ -17,19 +17,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  Photon Multiplicity Detector Version 1                                   //
-//  Bedanga Mohanty : February 14th 2006
-//---------------------------------------------------     
-//  ALICE PMD FEE BOARDS IMPLEMENTATION
-//  Dt: 25th February 2006 
-//  M.M. Mondal, S.K. Prasad and P.K. Netrakanti
-//---------------------------------------------------
-//   Create final detector from Unit Modules
-//   Author : Bedanga and Viyogi June 2003
-//---------------------------------------------------
-// Modified by
-// Dr. Y.P. Viyogi and Ranbir Singh
-// Dt: 2nd February 2009
 //
 //Begin_Html
 /*
@@ -52,25 +39,6 @@
 #include "AliPMDv1.h"
 #include "AliRun.h"
 #include "AliTrackReference.h"
-
-const Int_t   AliPMDv1::fgkNcolUM1    = 48;     // Number of cols in UM, type 1
-const Int_t   AliPMDv1::fgkNcolUM2    = 96;     // Number of cols in UM, type 2
-const Int_t   AliPMDv1::fgkNrowUM1    = 96;     // Number of rows in UM, type 1
-const Int_t   AliPMDv1::fgkNrowUM2    = 48;     // Number of rows in UM, type 2
-const Float_t AliPMDv1::fgkCellRadius = 0.25;     // Radius of a hexagonal cell
-const Float_t AliPMDv1::fgkCellWall   = 0.02;     // Thickness of cell Wall
-const Float_t AliPMDv1::fgkCellDepth  = 0.50;     // Gas thickness
-const Float_t AliPMDv1::fgkThPCB      = 0.16;     // Thickness of PCB 
-const Float_t AliPMDv1::fgkThLead     = 1.5;      // Thickness of Pb
-const Float_t AliPMDv1::fgkThSteel    = 0.5;      // Thickness of Steel
-const Float_t AliPMDv1::fgkGap        = 0.025;    // Air Gap
-const Float_t AliPMDv1::fgkZdist      = 361.5;    // z-position of the detector
-const Float_t AliPMDv1::fgkSqroot3    = 1.7320508;// Square Root of 3
-const Float_t AliPMDv1::fgkSqroot3by2 = 0.8660254;// Square Root of 3 by 2
-const Float_t AliPMDv1::fgkSSBoundary = 0.3;
-const Float_t AliPMDv1::fgkThSS       = 1.23;     // Old thickness of SS frame was 1.03
-const Float_t AliPMDv1::fgkThTopG10   = 0.33;
-const Float_t AliPMDv1::fgkThBotG10   = 0.4;
 
 
 ClassImp(AliPMDv1)
@@ -2351,7 +2319,8 @@ void AliPMDv1::AddAlignableVolumes() const
 // ----------------------------------------------------------------
 void AliPMDv1::SetSectorAlignable() const
 {
-  // 
+  // To align each sector
+  // Each plane has four sectors
   
   TString vpsector = "ALIC_1/EPM";
   TString vpappend = "_1";
