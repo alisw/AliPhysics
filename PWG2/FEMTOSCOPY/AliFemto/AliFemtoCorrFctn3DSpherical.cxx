@@ -23,11 +23,11 @@ ClassImp(AliFemtoCorrFctn3DSpherical)
 							  //  fPairCut(0x0)
 {
   // set up numerator
-  char tTitNum[100] = "Num";
+  char tTitNum[101] = "Num";
   strncat(tTitNum,title, 100);
   fNumerator = new TH3D(tTitNum,title,nqbins,QLo,QHi,nphibins,-TMath::Pi(),TMath::Pi(),ncthetabins,-1.0,1.0);
   // set up denominator
-  char tTitDen[100] = "Den";
+  char tTitDen[101] = "Den";
   strncat(tTitDen,title, 100);
   fDenominator = new TH3D(tTitDen,title,nqbins,QLo,QHi,nphibins,-TMath::Pi(),TMath::Pi(),ncthetabins,-1.0,1.0);
 
