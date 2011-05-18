@@ -64,6 +64,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC()
   fTrackCuts(0), 
   fTrackCutsITS(0),
   fTrackType(0),
+  fSigmaConstrainedMax(5.),
   fPtMax(100.),
   fAvgTrials(1),
   fNEventAll(0),
@@ -121,6 +122,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   fTrackCuts(),
   fTrackCutsITS(),
   fTrackType(0),
+  fSigmaConstrainedMax(5.),
   fPtMax(100.),
   fAvgTrials(1),
   fNEventAll(0),
@@ -602,6 +604,14 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
     if(!track) {
       if(fTrackType==1 || fTrackType==2) delete track;
       continue;
+    }
+
+    if(fTrackType==2) {
+      //Cut on chi2 of constrained fit
+      if(track->GetConstrainedChi2TPC() > fSigmaConstrainedMax*fSigmaConstrainedMax) {
+	delete track;
+	continue;
+      }
     }
 
     Int_t label = TMath::Abs(track->GetLabel());

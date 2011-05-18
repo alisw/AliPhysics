@@ -774,6 +774,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
 
   // Getting some global properties
   fCentrality = GetCentrality();
+  if(fCentrality<=0)fCentrality = 0;
   fh1Centrality->Fill(fCentrality);
 
 

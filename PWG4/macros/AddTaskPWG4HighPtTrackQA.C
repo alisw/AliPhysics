@@ -9,6 +9,8 @@ void AddTaskPWG4HighPtTrackQAAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
   AliPWG4HighPtTrackQA *taskTrackQA11cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,1,1);
   AliPWG4HighPtTrackQA *taskTrackQA20cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,0);
   AliPWG4HighPtTrackQA *taskTrackQA21cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,1);
+  AliPWG4HighPtTrackQA *taskTrackQA20cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0);
+  AliPWG4HighPtTrackQA *taskTrackQA20cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,1);
     
   if(isPbPb) {
     for(cent=0; cent<4; cent++) {
@@ -19,6 +21,8 @@ void AddTaskPWG4HighPtTrackQAAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
       AliPWG4HighPtTrackQA *taskTrackQA11 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,1,1);
       AliPWG4HighPtTrackQA *taskTrackQA20 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,0);
       AliPWG4HighPtTrackQA *taskTrackQA21 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,1);
+      AliPWG4HighPtTrackQA *taskTrackQA40 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0);
+      AliPWG4HighPtTrackQA *taskTrackQA41 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,1);
     }
   }
 
@@ -30,6 +34,8 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
     trackType: 0 = global
                1 = TPC stand alone
                2 = TPC stand alone constrained to SPD vertex
+               3 = global w/o SPD layer requirements
+               4 = TPC stand alone constrained to SPD vertex with QA track selection on global tracks
     cuts:      0 (global) = standard ITSTPC2010
                1 (global) = ITSrefit, no SPD requirements
                2 (global) = SPD || SDD
@@ -123,6 +129,18 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
     trackCuts = trackCuts->GetStandardTPCOnlyTrackCuts();
     trackCuts->SetMinNClustersTPC(0);
   }
+
+  if(trackType==4 && cuts==0) {
+     //	      Set track cuts for TPConly constrained tracks
+    trackCuts = trackCuts->GetStandardTPCOnlyTrackCuts();
+    trackCuts->SetMinNClustersTPC(70);
+  }
+  if(trackType==4 && cuts==1) {
+     //	      Set track cuts for TPConly constrained tracks
+    trackCuts = trackCuts->GetStandardTPCOnlyTrackCuts();
+    trackCuts->SetMinNClustersTPC(0);
+  }
+
   trackCuts->SetEtaRange(-0.9,0.9);
   trackCuts->SetPtRange(0.15, 1e10);
   
@@ -144,6 +162,7 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
     taskPWG4TrackQA->SetIsPbPb(kTRUE);
     taskPWG4TrackQA->SetCentralityClass(centClass);
   }
+  //  taskPWG4TrackQA->SetSigmaConstrainedMax(5.);
 
   taskPWG4TrackQA->SelectCollisionCandidates();
 
