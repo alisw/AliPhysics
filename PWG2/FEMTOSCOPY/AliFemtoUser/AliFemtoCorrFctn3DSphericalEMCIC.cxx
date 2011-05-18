@@ -57,37 +57,37 @@ AliFemtoCorrFctn3DSphericalEMCIC::AliFemtoCorrFctn3DSphericalEMCIC(char* title, 
   // To better sample on phi shift bin low edge by binsize/2 = Pi/numBins.
   Double_t shiftPhi=TMath::Pi()/nphibins;
   // set up numerator
-  char tTitNum[100] = "Num";
+  char tTitNum[101] = "Num";
   strncat(tTitNum,title, 100);
   fNumerator = new TH3D(tTitNum,title,nqbins,QLo,QHi,nphibins,
 			-TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
   // set up denominator
-  char tTitDen[100] = "Den";
+  char tTitDen[101] = "Den";
   strncat(tTitDen,title, 100);
   fDenominator = new TH3D(tTitDen,title,nqbins,QLo,QHi,nphibins,
 			  -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
 
   //Added histograms to calculate EMCICs , Nicolas Bock 19.01.2010
   //Setup EnergyTotalReal
-  /*char tTitNum1[100] = "ESumReal";
+  /*char tTitNum1[101] = "ESumReal";
   strncat(tTitNum1,title, 100);
   fEnergyTotalReal = new TH3D(tTitNum1,title,nqbins,QLo,QHi,nphibins,
 			      -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
  
   //Setup EnergyMultReal
-  char tTitNum2[100] = "EMultReal";
+  char tTitNum2[101] = "EMultReal";
   strncat(tTitNum2,title, 100);
   fEnergyMultReal = new TH3D(tTitNum2,title,nqbins,QLo,QHi,nphibins,
 			     -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
   
   //Setup Pz MultReal
-  char tTitNum3[100] = "PzMultReal";
+  char tTitNum3[101] = "PzMultReal";
   strncat(tTitNum3,title, 100);
   fPzMultReal = new TH3D(tTitNum3,title,nqbins,QLo,QHi,nphibins,
 			 -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
 
   //Setup Pt MultReal
-  char tTitNum4[100] = "PtMultReal";
+  char tTitNum4[101] = "PtMultReal";
   strncat(tTitNum4,title, 100);
   fPtMultReal = new TH3D(tTitNum4,title,nqbins,QLo,QHi,nphibins,
 			 -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
@@ -95,25 +95,25 @@ AliFemtoCorrFctn3DSphericalEMCIC::AliFemtoCorrFctn3DSphericalEMCIC(char* title, 
 
 
   //Setup EnergyTotalMix
-  char tTitNum5[100] = "ESumMix";
+  char tTitNum5[101] = "ESumMix";
   strncat(tTitNum5,title, 100);
   fEnergyTotalMix = new TH3D(tTitNum5,title,nqbins,QLo,QHi,nphibins,
 			     -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
   
   //Setup EnergyMultMix
-  char tTitNum6[100] = "EMultMix";
+  char tTitNum6[101] = "EMultMix";
   strncat(tTitNum6,title, 100);
   fEnergyMultMix = new TH3D(tTitNum6,title,nqbins,QLo,QHi,nphibins,
 			    -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
   
   //Setup Pz MultMix
-  char tTitNum7[100] = "PzMultMix";
+  char tTitNum7[101] = "PzMultMix";
   strncat(tTitNum7,title, 100);
   fPzMultMix = new TH3D(tTitNum7,title,nqbins,QLo,QHi,nphibins,
 			-TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
 
   //Setup Pt MultMix
-  char tTitNum8[100] = "PtMultMix";
+  char tTitNum8[101] = "PtMultMix";
   strncat(tTitNum8,title, 100);
   fPtMultMix = new TH3D(tTitNum8,title,nqbins,QLo,QHi,nphibins,
 			-TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,
