@@ -21,6 +21,15 @@
  * root[0] .L drawTHnSparse.C++
  * root[1] drawTHnSparse("HLT-OFFLINE-CentralBarrel-comparison.root")
  *
+ * In case more than 1 sets of cuts have been used, the macro creates a canvas
+ * and overlays the different histograms both for HLT and OFF, if the latter
+ * is available.
+ * 
+ * If the user wants more flexibility adding the TLegend that explains the cuts,
+ * the macro HLT/QA/tasks/macros/overlayPlots.C should be used. For the current one
+ * the legends of the histograms are somewhat difficult to print at the moment.
+ * The text keeps appearing in the wrong location (Kelly, 17.05.2011).
+ *
  * @ingroup alihlt_qa
  * @author Kalliopi.Kanaki@ift.uib.no 
  */
@@ -149,43 +158,34 @@ void drawTHnSparse(TString inputFile="HLT-OFFLINE-CentralBarrel-comparison.root"
      TCanvas *ca; TFile *ff; TPad *pad; 
      TH1D *hlt[outputNames.size()];
      TH1D *off[outputNames.size()];
-     
+          
      for(int j=1; j<9; j++){ // loop over the pads of the canvas "ov" with dimension 3x3     
        for(UInt_t i=0; i<outputNames.size(); i++){ // loop over the files with different sets of cuts
-     	      
+    	      
      	   ff = TFile::Open(outputNames[i].Data());   
      	   if(!ff || ff->IsZombie()){
      	      printf("Non-existent, corrupted or zombie file %s\n", outputNames[i].Data());
-     	      return;
+     	      continue;
      	   } 
      	   ca  = (TCanvas*)ff->GetObjectUnchecked("can3");	       
      	   if(!ca){
-     	      printf("Empty canvas in file %s.\n", outputNames[i].Data());
+     	      printf("Empty canvas in file %s\n", outputNames[i].Data());
      	      continue;
      	   }	   
      	   pad = (TPad*)ca->GetListOfPrimitives()->FindObject(Form("can3_%d",j));	   
      	   if(!pad){
-     	      printf("Empty pad in canvas %s.\n", ca->GetName());
+     	      printf("Empty pad in canvas %s\n", ca->GetName());
      	      continue; 	
      	   }
-     	   hlt[i] =(TH1D*)pad->FindObject(Form("fTrackHLT_proj_%d",j-1)); 
-	   	   	   
-     	   if(!hlt[i]){
-     	      printf("Empty HLT histogram for i=%d, file %s.\n", i, outputNames[i].Data());
-     	      continue;
-     	   }
-     	   
-	   off[i] =(TH1D*)pad->FindObject(Form("fTrackOFF_proj_%d",j-1));
-	   if(!off[i]){
-     	      printf("Empty OFF histogram for i=%d, file %s.\n", i, outputNames[i].Data());
-     	      continue;
-     	   }
-     	   
-	   ovHLT->cd(j);	
 
-     	   if(i==0){
-              TPaveStats *st = (TPaveStats*)hlt[i]->FindObject("stats"); 
-              st->SetTextColor(kBlack);
+     	   hlt[i] =(TH1D*)pad->FindObject(Form("fTrackHLT_proj_%d",j-1)); 	   	   	   
+     	   if(!hlt[i]){
+     	      printf("Empty HLT histogram for cuts i=%d, file %s\n", i, outputNames[i].Data());
+     	      continue;
+     	   }
+	   
+	   ovHLT->cd(j); 	       	  
+   	   if(i==0){
 	      hlt[i]->Draw();
 	   }
      	   else { 
@@ -194,13 +194,20 @@ void drawTHnSparse(TString inputFile="HLT-OFFLINE-CentralBarrel-comparison.root"
      	     hlt[i]->Draw("sames");
      	   }
      	   if(i>0) printStats(hlt[i-1], hlt[i]);
-	  
+	   
+  	   off[i] =(TH1D*)pad->FindObject(Form("fTrackOFF_proj_%d",j-1));
+	   if(!off[i]){
+     	      printf("Empty OFF histogram for cuts i=%d, file %s\n", i, outputNames[i].Data());
+     	      continue;
+     	   }
+	   
 	   ovOFF->cd(j);	   
      	   if(i==0){
 	      off[i]->SetLineColor(kBlack); 
+	      off[i]->Draw();
               TPaveStats *st = (TPaveStats*)off[i]->FindObject("stats"); 
               st->SetTextColor(kBlack);
-	      off[i]->Draw();
+	      ovOFF->Update();
 	   }
      	   else { 
      	     off[i]->SetLineColor(i+1); 
