@@ -37,6 +37,8 @@ AliAODMCHeader::AliAODMCHeader() :
   ,fGenerator("")
   ,fImpactPar(0)
   ,fPtHard(0)
+  ,fXsection(0)
+  ,fTrials(0)
   ,fEventType(0)
   ,fReactionPlaneAngle(0)  
 {
@@ -57,6 +59,8 @@ AliAODMCHeader::AliAODMCHeader(const AliAODMCHeader &header) :
   ,fGenerator(header.fGenerator)
   ,fImpactPar(header.fImpactPar)
   ,fPtHard(header.fPtHard)
+  ,fXsection(0)
+  ,fTrials(0)
   ,fEventType(header.fEventType)
   ,fReactionPlaneAngle(header.fReactionPlaneAngle)  
 {
@@ -75,6 +79,8 @@ AliAODMCHeader& AliAODMCHeader::operator=(const AliAODMCHeader &header)
     for(int i = 0;i<3;++i)fVertex[i] = header.fVertex[i];
     fImpactPar = header.fImpactPar;
     fPtHard = header.fPtHard;
+    fXsection = header.fXsection;
+    fTrials = header.fTrials;
     fEventType = header.fEventType;
     fReactionPlaneAngle = header.fReactionPlaneAngle;
   } 
@@ -104,6 +110,8 @@ void AliAODMCHeader::Reset()
   fImpactPar = 0;
   fEventType = 0;
   fPtHard = 0;
+  fXsection = 0;
+  fTrials = 0;
   fVertex[0] = fVertex[1] = fVertex[2] = 0;  
   fReactionPlaneAngle = 0;
 }
