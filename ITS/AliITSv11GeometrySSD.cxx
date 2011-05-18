@@ -652,7 +652,7 @@ AliITSv11GeometrySSD::AliITSv11GeometrySSD():
   for (Int_t i=0; i < fgkendlabbercarbonfiberjunctionumber; i++) {
     fendladdercarbonfiberjunction[i] = 0;
   }
-  for (Int_t i=0; i < fgkendladdercabonfiberjunctionmatrixnumber; i++) {
+  for (Int_t i=0; i < fgkendladdercarbonfiberjunctionmatrixnumber; i++) {
     fendladdercarbonfiberjunctionmatrix[i] = 0;
   }
   for (Int_t i=0; i < fgkendladdercarbonfibermatrixnumber; i++) {
@@ -1226,21 +1226,21 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
   TGeoTranslation** localendladdercarbonfiberjunctiontrans[fgkendlabbercarbonfiberjunctionumber];    
   for(Int_t i=0; i<fgkendlabbercarbonfiberjunctionumber; i++){
       localendladdercarbonfiberjunctionmatrix[i] 
-            = new TGeoCombiTrans*[fgkendladdercabonfiberjunctionmatrixnumber];
+            = new TGeoCombiTrans*[fgkendladdercarbonfiberjunctionmatrixnumber];
       localendladdercarbonfiberjunctionrot[i] 
-            = new TGeoRotation*[fgkendladdercabonfiberjunctionmatrixnumber];
+            = new TGeoRotation*[fgkendladdercarbonfiberjunctionmatrixnumber];
       localendladdercarbonfiberjunctiontrans[i] 
-            = new TGeoTranslation*[fgkendladdercabonfiberjunctionmatrixnumber];
+            = new TGeoTranslation*[fgkendladdercarbonfiberjunctionmatrixnumber];
       fendladdercarbonfiberjunctionmatrix[i]
-            = new TGeoHMatrix*[fgkendladdercabonfiberjunctionmatrixnumber];
+            = new TGeoHMatrix*[fgkendladdercarbonfiberjunctionmatrixnumber];
   }
   for(Int_t i=0; i<fgkendlabbercarbonfiberjunctionumber; i++)    
-      for(Int_t j=0; j<fgkendladdercabonfiberjunctionmatrixnumber; j++){
+      for(Int_t j=0; j<fgkendladdercarbonfiberjunctionmatrixnumber; j++){
             localendladdercarbonfiberjunctionrot[i][j] = new TGeoRotation();
             localendladdercarbonfiberjunctiontrans[i][j] = new TGeoTranslation();
       }
   for(Int_t i=0; i<fgkendlabbercarbonfiberjunctionumber; i++)     
-      for(Int_t j=0; j<fgkendladdercabonfiberjunctionmatrixnumber; j++)
+      for(Int_t j=0; j<fgkendladdercarbonfiberjunctionmatrixnumber; j++)
           localendladdercarbonfiberjunctionrot[i][j]->SetAngles(120.*j,0.,0.);
   for(Int_t i=0; i<fgkendlabbercarbonfiberjunctionumber; i++){
       localendladdercarbonfiberjunctiontrans[i][1]->SetTranslation(fgkCarbonFiberTriangleLength,
@@ -1265,7 +1265,7 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
                                *localendladdercarbonfiberjunctionglobalrot[i]);
   }
   for(Int_t i=0; i<fgkendlabbercarbonfiberjunctionumber; i++)    
-      for(Int_t j=0; j<fgkendladdercabonfiberjunctionmatrixnumber; j++){
+      for(Int_t j=0; j<fgkendladdercarbonfiberjunctionmatrixnumber; j++){
             localendladdercarbonfiberjunctionmatrix[i][j] = 
                   new TGeoCombiTrans(*localendladdercarbonfiberjunctiontrans[i][j],
                                      *localendladdercarbonfiberjunctionrot[i][j]);
@@ -1692,7 +1692,7 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
   }
  delete localladdermotherrot;
  for(Int_t i=0; i<fgkendlabbercarbonfiberjunctionumber; i++){    
-      for(Int_t j=0; j<fgkendladdercabonfiberjunctionmatrixnumber; j++){
+      for(Int_t j=0; j<fgkendladdercarbonfiberjunctionmatrixnumber; j++){
             delete localendladdercarbonfiberjunctionmatrix[i][j];
             delete localendladdercarbonfiberjunctionrot[i][j];
             delete localendladdercarbonfiberjunctiontrans[i][j];
@@ -3901,7 +3901,7 @@ void AliITSv11GeometrySSD::SetEndLadderSegment(){
   if(!fTransformationMatrices) CreateTransformationMatrices();
   if(!fBasicObjects) CreateBasicObjects();
   for(Int_t i=0; i<fgkendlabbercarbonfiberjunctionumber; i++){
-	for(Int_t j=0; j<fgkendladdercabonfiberjunctionmatrixnumber; j++)
+	for(Int_t j=0; j<fgkendladdercarbonfiberjunctionmatrixnumber; j++)
 		fendladdersegment[i]->AddNode(j==2 ? 
 							fendladdercarbonfiberjunction[i][1] : 
 							fendladdercarbonfiberjunction[i][0],

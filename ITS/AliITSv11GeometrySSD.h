@@ -580,8 +580,8 @@ private:
   ///////////////////////////////////
   static const Int_t fgkendlabbercarbonfiberjunctionumber = 2; // End Ladder Carbon fiber Junction Number
   TGeoVolume** fendladdercarbonfiberjunction[fgkendlabbercarbonfiberjunctionumber]; // End Ladder Carbon fiber Junction Volumes
-  static const Int_t fgkendladdercabonfiberjunctionmatrixnumber = 3; // End Ladder Carbon fiber Junction Matrix Number
-  TGeoHMatrix** fendladdercarbonfiberjunctionmatrix[fgkendlabbercarbonfiberjunctionumber]; // End Ladder Carbon fiber Junction Matrix 
+  static const Int_t fgkendladdercarbonfiberjunctionmatrixnumber = 3; // End Ladder Carbon fiber Junction Matrix Number
+  TGeoHMatrix** fendladdercarbonfiberjunctionmatrix[fgkendladdercarbonfiberjunctionmatrixnumber]; // End Ladder Carbon fiber Junction Matrix 
   ///////////////////////////////////
   // End Ladder Carbon Fiber Support
   ///////////////////////////////////
