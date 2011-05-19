@@ -729,14 +729,16 @@ void AliITSMultReconstructor::LoadClusterFiredChips(TTree* itsClusterTree) {
     // number of clusters in each chip of the current module
     Int_t nClustersInChip[5] = {0,0,0,0,0};
     Int_t layer = 0;
+    Int_t ladder=0;
+    Int_t det=0;
+    AliITSgeomTGeo::GetModuleId(iIts,layer,ladder,det);
+    --layer;  // layer is from 1 to 6 in AliITSgeomTGeo, but from 0 to 5 here
+    if(layer<0 || layer >1)continue;
     
     // loop over clusters
     while(nClusters--) {
       AliITSRecPoint* cluster = (AliITSRecPoint*)itsClusters->UncheckedAt(nClusters);
-      
-      layer = cluster->GetLayer();
-      if (layer>1) continue;            
-
+          
       // find the chip for the current cluster
       Float_t locz = cluster->GetDetLocalZ();
       Int_t iChip = fSPDSeg.GetChipFromLocal(0,locz);
