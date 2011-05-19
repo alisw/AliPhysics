@@ -29,6 +29,7 @@ using namespace std;
 #include "AliHLTTPCCADef.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCSpacePointData.h"
+#include "AliHLTTPCClusterMCData.h"
 
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
@@ -36,7 +37,6 @@ using namespace std;
 #include "TObjArray.h"
 #include "AliHLTExternalTrackParam.h"
 #include "AliHLTTrackMCLabel.h"
-#include "AliHLTTPCClusterFinder.h"
 #include <climits>
 #include <cstdlib>
 #include <cerrno>
@@ -50,8 +50,7 @@ AliHLTTPCTrackMCMarkerComponent::AliHLTTPCTrackMCMarkerComponent()
 {
   // see header file for class documentation
   for( int i=0; i<36*6; i++ ){
-    fClusterLabels[i] = 0;
-    fNClusterLabels[i] = 0; 
+    fClusterLabels[i] = 0;    
   }
 }
 
@@ -247,20 +246,20 @@ Int_t AliHLTTPCTrackMCMarkerComponent::GetTrackMCLabel( unsigned int *hits, int 
     UInt_t id = hits[ih];
     int iSlice = AliHLTTPCSpacePointData::GetSlice(id);
     int iPatch = AliHLTTPCSpacePointData::GetPatch(id);
-    int iCluster = AliHLTTPCSpacePointData::GetNumber(id);
+    unsigned int iCluster = AliHLTTPCSpacePointData::GetNumber(id);
     if( iSlice<0 || iSlice>=36 || iPatch<0 || iPatch>5 ){
       HLTError("Corrupted TPC cluster Id: slice %d, patch %d, cluster %d",
 	       iSlice, iPatch,iCluster );
       continue;
     }
-    AliHLTTPCClusterFinder::ClusterMCInfo *patchLabels = fClusterLabels[iSlice*6 + iPatch];
+    AliHLTTPCClusterMCData *patchLabels = fClusterLabels[iSlice*6 + iPatch];
     if( !patchLabels ) continue;
-    if( iCluster >= fNClusterLabels[iSlice*6 + iPatch] ){
+    if( iCluster >= patchLabels->fCount ){
       HLTError("TPC slice %d, patch %d: ClusterID==%d >= N MC labels==%d ",
-	       iSlice, iPatch,iCluster, fNClusterLabels[iSlice*6 + iPatch] );
+	       iSlice, iPatch,iCluster, patchLabels->fCount);
       continue;
     }
-    AliHLTTPCClusterFinder::ClusterMCInfo &lab = patchLabels[iCluster];	    
+    AliHLTTPCClusterMCLabel &lab = patchLabels->fLabels[iCluster];	    
     if ( lab.fClusterID[0].fMCID >= 0 ) labels.push_back( lab.fClusterID[0].fMCID );
     if ( lab.fClusterID[1].fMCID >= 0 ) labels.push_back( lab.fClusterID[1].fMCID );
     if ( lab.fClusterID[2].fMCID >= 0 ) labels.push_back( lab.fClusterID[2].fMCID );
@@ -311,7 +310,6 @@ int AliHLTTPCTrackMCMarkerComponent::DoEvent( const AliHLTComponentEventData &ev
 
   for( int i=0; i<36*6; i++ ){
     fClusterLabels[i] = 0;
-    fNClusterLabels[i] = 0;
   }
 
   int nBlocks = (int)evtData.fBlockCnt;
@@ -325,9 +323,8 @@ int AliHLTTPCTrackMCMarkerComponent::DoEvent( const AliHLTComponentEventData &ev
     if(iter->fDataType == AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo ) {
       Int_t slice=AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
       Int_t patch=AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
-      fClusterLabels[ slice*6 + patch] = (AliHLTTPCClusterFinder::ClusterMCInfo *)iter->fPtr;
-      fNClusterLabels[ slice*6 + patch] = iter->fSize/sizeof(AliHLTTPCClusterFinder::ClusterMCInfo);
-      nInputMCLabels+=fNClusterLabels[ slice*6 + patch];
+      fClusterLabels[ slice*6 + patch] = (AliHLTTPCClusterMCData*)iter->fPtr;
+      nInputMCLabels+=fClusterLabels[ slice*6 + patch]->fCount;
     }
   }
       

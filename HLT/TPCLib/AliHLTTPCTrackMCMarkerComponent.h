@@ -16,7 +16,7 @@
 */
 
 #include "AliHLTProcessor.h"
-#include "AliHLTTPCClusterFinder.h"
+class AliHLTTPCClusterMCData;
 
 /**
  * @class AliHLTTPCTrackMCMarkerComponent
@@ -115,8 +115,7 @@ class AliHLTTPCTrackMCMarkerComponent : public AliHLTProcessor
 
     /** array of pointers to cluster MC labels **/
 
-    AliHLTTPCClusterFinder::ClusterMCInfo *fClusterLabels[36*6]; //! cluster MC labels for each TPC patch
-    Int_t fNClusterLabels[36*6]; //! Number of MC labels, for check of consistensy
+    AliHLTTPCClusterMCData *fClusterLabels[36*6]; //! cluster MC labels for each TPC patch
 
     ClassDef( AliHLTTPCTrackMCMarkerComponent, 0 )
 };

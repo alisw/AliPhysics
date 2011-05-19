@@ -541,7 +541,7 @@ Int_t AliHLTTPCClusterFinder::FillHWAddressList(AliHLTUInt16_t *hwaddlist, Int_t
 }
  
 
-Int_t AliHLTTPCClusterFinder::FillOutputMCInfo(AliHLTTPCClusterFinder::ClusterMCInfo * outputMCInfo, Int_t maxNumberOfClusterMCInfo){
+Int_t AliHLTTPCClusterFinder::FillOutputMCInfo(AliHLTTPCClusterMCLabel * outputMCInfo, Int_t maxNumberOfClusterMCInfo){
   // see header file for class documentation
   
   Int_t counter=0;
@@ -584,10 +584,10 @@ void AliHLTTPCClusterFinder::FindClusters(){
 	  fClusters.push_back(*tmpCandidate);
 	  if(fDoMC){
 	    //sort the vector (large->small) according to weight and remove elements above 2 (keep 0 1 and 2) 
-	    sort(fClusterMCVector.begin(),fClusterMCVector.end(), MCWeight::CompareWeights );
-	    ClusterMCInfo tmpClusterMCInfo;
+	    sort(fClusterMCVector.begin(),fClusterMCVector.end(), CompareWeights );
+	    AliHLTTPCClusterMCLabel tmpClusterMCInfo;
 
-	    MCWeight zeroMC;
+	    AliHLTTPCClusterMCWeight zeroMC;
 	    zeroMC.fMCID=-1;
 	    zeroMC.fWeight=0;
 
@@ -705,7 +705,7 @@ void AliHLTTPCClusterFinder::FillMCClusterVector(vector<AliHLTTPCDigitData> *dig
     for(Int_t id=0; id<3; id++){
       if(digitData->at(d).fTrackID[id]>=0){
 	Bool_t matchFound = kFALSE;
-	MCWeight mc;
+	AliHLTTPCClusterMCWeight mc;
 	mc.fMCID = digitData->at(d).fTrackID[id];
 	mc.fWeight = ((Float_t)digitData->at(d).fCharge)/nIDsInDigit;
 	for(UInt_t i=0;i<fClusterMCVector.size();i++){

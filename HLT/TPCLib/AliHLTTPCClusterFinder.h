@@ -19,6 +19,7 @@
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCDigitReader.h"
 #include "AliTPCRecoParam.h"
+#include "AliHLTTPCClusterMCData.h"
 
 class AliHLTTPCPad;
 class AliHLTTPCSpacePointData;
@@ -124,18 +125,8 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   };
   typedef struct AliClusterData AliClusterData; //!
 
-  struct MCWeight{
-    Int_t fMCID; //!
-    Float_t fWeight; //!
-    static Bool_t CompareWeights( const MCWeight &mc1,  const MCWeight &mc2 ){ return mc1.fWeight > mc2.fWeight; }
-  };
-  typedef struct MCWeight MCWeight;
-
-  struct ClusterMCInfo{
-    MCWeight fClusterID[3]; //!
-  };
-  typedef struct ClusterMCInfo ClusterMCInfo;
-
+  static Bool_t CompareWeights( const AliHLTTPCClusterMCWeight &mc1,  const AliHLTTPCClusterMCWeight &mc2 ){ return mc1.fWeight > mc2.fWeight; }
+  
 
   /** standard constructor */
   AliHLTTPCClusterFinder();
@@ -168,7 +159,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   Int_t FillHWAddressList(AliHLTUInt16_t *hwaddlist, Int_t maxHWAddress);
 
  /**  Fills the mc info */
-  Int_t FillOutputMCInfo(AliHLTTPCClusterFinder::ClusterMCInfo * outputMCInfo, Int_t maxNumberOfClusterMCInfo);
+  Int_t FillOutputMCInfo(AliHLTTPCClusterMCLabel * outputMCInfo, Int_t maxNumberOfClusterMCInfo);
 
   /** Set the pointer to the outputbuffer */
   void SetOutputArray(AliHLTTPCSpacePointData *pt);
@@ -219,7 +210,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   
   void FillMCClusterVector(vector<AliHLTTPCDigitData> *digitData);
 
-  vector<AliHLTTPCClusterFinder::MCWeight> GetClusterMCInfo() const {return fClusterMCVector;}
+  vector<AliHLTTPCClusterMCWeight> GetClusterMCInfo() const {return fClusterMCVector;}
 
   Bool_t UpdateCalibDB();
 
@@ -260,7 +251,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
  
   vector<AliHLTTPCClusters> fClusters;                             //! transient
 
-  vector<ClusterMCInfo> fClustersMCInfo;                           //! transient
+  vector<AliHLTTPCClusterMCLabel> fClustersMCInfo;                           //! transient
 
   vector<AliHLTTPCDigitData> fMCDigits;                            //! transient
   
@@ -284,7 +275,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   Bool_t fDoMC;                                                    //! transient
 
-  vector<MCWeight> fClusterMCVector;                               //! transient
+  vector<AliHLTTPCClusterMCWeight> fClusterMCVector;                               //! transient
 
   AliTPCTransform * fOfflineTransform;                             //! transient
 

@@ -42,6 +42,7 @@ using namespace std;
 #include "AliTPCCalPad.h"
 #include "AliTPCParam.h"
 #include "AliTPCTransform.h"
+#include "AliHLTTPCClusterMCData.h"
 
 //#include "AliHLTTPCCAInputDataCompressorComponent.h"
 //#include "AliHLTTPCCADef.h"
@@ -553,21 +554,21 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       */
 
       if(fDoMC){
-	Int_t maxNumberOfClusterMCInfo = (Int_t)((size-tSize)/sizeof(AliHLTTPCClusterFinder::ClusterMCInfo)-1);
-	AliHLTTPCClusterFinder::ClusterMCInfo* outputMCInfo= (AliHLTTPCClusterFinder::ClusterMCInfo*)(outputPtr+tSize);
-	Int_t nMCInfo = fClusterFinder->FillOutputMCInfo(outputMCInfo, maxNumberOfClusterMCInfo);
-	
-	AliHLTComponentBlockData bdMCInfo;
-	FillBlockData( bdMCInfo );
-	bdMCInfo.fOffset = tSize ;
-	bdMCInfo.fSize = nMCInfo*sizeof(AliHLTTPCClusterFinder::ClusterMCInfo);
-	bdMCInfo.fSpecification = iter->fSpecification;
-	bdMCInfo.fDataType = AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo;
-	outputBlocks.push_back( bdMCInfo );
-	fBenchmark.AddOutput(bdMCInfo.fSize);
-
-	tSize+=nMCInfo*sizeof(AliHLTTPCClusterFinder::ClusterMCInfo);
-
+	Int_t maxNumberOfClusterMCInfo = (Int_t)((size-tSize-sizeof(AliHLTTPCClusterMCData))/sizeof(AliHLTTPCClusterMCLabel)-1);
+	if( maxNumberOfClusterMCInfo>0 ){
+	  AliHLTTPCClusterMCData* outputMCInfo= (AliHLTTPCClusterMCData*)(outputPtr+tSize);
+	  outputMCInfo->fCount = fClusterFinder->FillOutputMCInfo(outputMCInfo->fLabels, maxNumberOfClusterMCInfo);
+	  
+	  AliHLTComponentBlockData bdMCInfo;
+	  FillBlockData( bdMCInfo );
+	  bdMCInfo.fOffset = tSize;
+	  bdMCInfo.fSize = sizeof(AliHLTTPCClusterMCData)+outputMCInfo->fCount*sizeof(AliHLTTPCClusterMCLabel);
+	  bdMCInfo.fSpecification = iter->fSpecification;
+	  bdMCInfo.fDataType = AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo;
+	  outputBlocks.push_back( bdMCInfo );
+	  fBenchmark.AddOutput(bdMCInfo.fSize);
+	  tSize+=bdMCInfo.fSize;
+	}
       }
     }
 
