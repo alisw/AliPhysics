@@ -4,15 +4,14 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Rectangular geometry - Bedanga Mohanty - Spetember 2003
 
 /////////////////////////////////////////////////
 //  Manager and hits classes for set:PMD      //
 ////////////////////////////////////////////////
-
-class TGeoManager;
  
 #include "AliPMD.h"
-
+#include "TGeoManager.h"
 //___________________________________________
  
 class AliPMDv1 : public AliPMD {
@@ -37,26 +36,26 @@ public:
 
 private:
 
-  static const Int_t   fgkNcolUM1 = 48;  // Number of cols in UM, type 1
-  static const Int_t   fgkNcolUM2 = 96;  // Number of cols in UM, type 2
-  static const Int_t   fgkNrowUM1 = 96;  // Number of rows in UM, type 1
-  static const Int_t   fgkNrowUM2 = 48;  // Number of rows in UM, type 2
-  static const Float_t fgkCellRadius = 0.25;   // Radius of a hexagonal cell
-  static const Float_t fgkCellWall   = 0.02;   // Thickness of cell Wall
-  static const Float_t fgkCellDepth  = 0.50;   // Gas thickness
-  static const Float_t fgkThPCB      = 0.16;   // Thickness of PCB
-  static const Float_t fgkThLead     = 1.5;    // Thickness of Pb
-  static const Float_t fgkThSteel    = 0.5;    // Thickness of Steel
-  static const Float_t fgkGap        = 0.025;  // Air Gap
-  static const Float_t fgkZdist      = 361.5;   // z-position of the detector
-  static const Float_t fgkSqroot3    = 1.7320508;   // Square Root of 3
-  static const Float_t fgkSqroot3by2 = 0.8660254;   // Square Root of 3 by 2
-  static const Float_t fgkSSBoundary = 0.3;  // Stainless steel boundary
-  static const Float_t fgkThSS       = 1.23; // thickness of SS frame
-  static const Float_t fgkThTopG10   = 0.33; // top G10 material thickness
-  static const Float_t fgkThBotG10   = 0.4;  // bottom G10 material thickness
+  static const Int_t   fgkNcolUM1;  // Number of cols in UM, type 1
+  static const Int_t   fgkNcolUM2;  // Number of cols in UM, type 2
+  static const Int_t   fgkNrowUM1;  // Number of rows in UM, type 1
+  static const Int_t   fgkNrowUM2;  // Number of rows in UM, type 2
+  static const Float_t fgkCellRadius;    // Radius of a hexagonal cell
+  static const Float_t fgkCellWall;      // Thickness of cell Wall
+  static const Float_t fgkCellDepth;     // Gas thickness
+  static const Float_t fgkThPCB;         // Thickness of PCB
+  static const Float_t fgkThLead;        // Thickness of Pb
+  static const Float_t fgkThSteel;       // Thickness of Steel
+  static const Float_t fgkGap;           // Air Gap
+  static const Float_t fgkZdist;         // z-position of the detector
+  static const Float_t fgkSqroot3;       // Square Root of 3
+  static const Float_t fgkSqroot3by2;    // Square Root of 3 by 2
+  static const Float_t fgkSSBoundary;
+  static const Float_t fgkThSS ;
+  static const Float_t fgkThTopG10;
+  static const Float_t fgkThBotG10;
 
-  Int_t   fModStatus[48];    // To position different modules
+  Int_t   fModStatus[48];
 
   Float_t fSMthick;     // Thickness of the full PMD profile
   Float_t fSMthickpmd;  // Thickness of the PMD detector only
@@ -72,7 +71,7 @@ private:
   Float_t fDboxmm22[3]; // Master MODULE EMCB of aluminum for CPV
 
  
-  ClassDef(AliPMDv1,5)     //Hits manager for set:PMD
+  ClassDef(AliPMDv1,4)     //Hits manager for set:PMD
 };
  
 #endif
