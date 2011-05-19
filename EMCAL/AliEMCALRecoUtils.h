@@ -207,9 +207,9 @@ public:
 
   void    FindMatches(AliVEvent *event, TObjArray * clusterArr=0x0, AliEMCALGeometry *geom=0x0);
   Int_t   FindMatchedCluster(AliESDtrack *track, AliVEvent *event, AliEMCALGeometry *geom);
-  Bool_t  ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Float_t &tmpR, Float_t &tmpZ);
-  void    GetMatchedResiduals(Int_t clsIndex, Float_t &dR, Float_t &dZ);
-  void    GetMatchedClusterResiduals(Int_t trkIndex, Float_t &dR, Float_t &dZ);
+  Bool_t  ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Float_t &tmpEta, Float_t &tmpPhi);
+  void    GetMatchedResiduals(Int_t clsIndex, Float_t &dEta, Float_t &dPhi);
+  void    GetMatchedClusterResiduals(Int_t trkIndex, Float_t &dEta, Float_t &dPhi);
   Int_t   GetMatchedTrackIndex(Int_t clsIndex);
   Int_t   GetMatchedClusterIndex(Int_t trkIndex);
   Bool_t  IsClusterMatched(Int_t clsIndex);
@@ -217,10 +217,16 @@ public:
   UInt_t  FindMatchedPosForCluster(Int_t clsIndex) const;
   UInt_t  FindMatchedPosForTrack(Int_t trkIndex) const;
 
-  Float_t  GetCutR()       const { return fCutR ;}
-  Float_t  GetCutZ()       const { return fCutZ ;}
-  void     SetCutR(Float_t cutR) { fCutR=cutR   ;}
-  void     SetCutZ(Float_t cutZ) { fCutZ=cutZ   ;}
+  void     SwitchOnCutEtaPhiSum()      {fCutEtaPhiSum=kTRUE;fCutEtaPhiSeparate=kFALSE;}
+  void     SwitchOnCutEtaPhiSeparate() {fCutEtaPhiSeparate=kTRUE;fCutEtaPhiSum=kFALSE;}
+
+  Float_t  GetCutR()           const { return fCutR     ;}
+  Float_t  GetCutEta()         const { return fCutEta   ;}
+  Float_t  GetCutPhi()         const { return fCutPhi   ;}
+  void     SetCutR(Float_t cutR)     { fCutR=cutR       ;}
+  void     SetCutEta(Float_t cutEta) { fCutEta=cutEta   ;}
+  void     SetCutPhi(Float_t cutPhi) { fCutPhi=cutPhi   ;}
+  void     SetCutZ(Float_t cutZ)     {printf("Obsolete fucntion of cutZ=%1.1f\n",cutZ);} //Obsolete
 
   Double_t GetMass()       const { return fMass ;}
   Double_t GetStep()       const { return fStep ;}
@@ -241,6 +247,7 @@ public:
   void    InitTrackCuts();
 
   // track quality cut setters  
+  void    SetMinTrackPt(Double_t pt=0)              { fCutMinTrackPt           = pt   ;}
   void    SetMinNClustersTPC(Int_t min=-1)          { fCutMinNClusterTPC       = min  ;}
   void    SetMinNClustersITS(Int_t min=-1)          { fCutMinNClusterITS       = min  ;}
   void    SetMaxChi2PerClusterTPC(Float_t max=1e10) { fCutMaxChi2PerClusterTPC = max  ;}
@@ -252,7 +259,8 @@ public:
   void    SetMaxDCAToVertexZ(Float_t dist=1e10)     { fCutMaxDCAToVertexZ      = dist ;}
   void    SetDCAToVertex2D(Bool_t b=kFALSE)         { fCutDCAToVertex2D        = b    ;}
 
-  // getters
+  // getters								
+  Double_t GetMinTrackPt()                  const   { return fCutMinTrackPt           ;}
   Int_t   GetMinNClusterTPC()               const   { return fCutMinNClusterTPC       ;}
   Int_t   GetMinNClustersITS()              const   { return fCutMinNClusterITS       ;}
   Float_t GetMaxChi2PerClusterTPC()         const   { return fCutMaxChi2PerClusterTPC ;}
@@ -294,10 +302,13 @@ private:
   UInt_t     fAODFilterMask;             // Filter mask to select AOD tracks. Refer to $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C
   TArrayI  * fMatchedTrackIndex;         // Array that stores indexes of matched tracks      
   TArrayI  * fMatchedClusterIndex;       // Array that stores indexes of matched clusters
-  TArrayF  * fResidualZ;                 // Array that stores the residual z
-  TArrayF  * fResidualR;                 // Array that stores the residual r
-  Float_t    fCutR;                      // dR cut on matching
-  Float_t    fCutZ;                      // dZ cut on matching
+  TArrayF  * fResidualEta;               // Array that stores the residual eta
+  TArrayF  * fResidualPhi;               // Array that stores the residual phi
+  Bool_t     fCutEtaPhiSum;              // Place cut on sqrt(dEta^2+dPhi^2)
+  Bool_t     fCutEtaPhiSeparate;         // Cut on dEta and dPhi separately
+  Float_t    fCutR;                      // sqrt(dEta^2+dPhi^2) cut on matching
+  Float_t    fCutEta;                    // dEta cut on matching
+  Float_t    fCutPhi;                    // dPhi cut on matching
   Double_t   fMass;                      // Mass hypothesis of the track
   Double_t   fStep;                      // Length of each step used in extrapolation in the unit of cm.
 
@@ -305,6 +316,7 @@ private:
   Bool_t     fRejectExoticCluster;      // Switch on or off exotic cluster rejection
 
   // Track cuts  
+  Double_t   fCutMinTrackPt;             // Cut on track pT
   Int_t      fCutMinNClusterTPC;         // Min number of tpc clusters
   Int_t      fCutMinNClusterITS;         // Min number of its clusters  
   Float_t    fCutMaxChi2PerClusterTPC;   // Max tpc fit chi2 per tpc cluster
@@ -323,7 +335,7 @@ private:
   Bool_t     fUseTimeCorrectionFactors;  // Use Time Dependent Correction
   Bool_t     fTimeCorrectionFactorsSet;  // Time Correction set at leat once
   
-  ClassDef(AliEMCALRecoUtils, 11)
+  ClassDef(AliEMCALRecoUtils, 12)
   
 };
 
