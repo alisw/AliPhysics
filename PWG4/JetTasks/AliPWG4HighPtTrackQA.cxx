@@ -257,7 +257,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   const Float_t ptmax3 =  fgkPtMax;
   const Int_t nbin11 = (int)((ptmax1-ptmin1)/fPtBinEdges[0][1]);
   const Int_t nbin12 = (int)((ptmax2-ptmin2)/fPtBinEdges[1][1])+nbin11;
-  const Int_t nbin13 = (int)((ptmax3-ptmin3)/fPtBinEdges[2][2])+nbin12;
+  const Int_t nbin13 = (int)((ptmax3-ptmin3)/fPtBinEdges[2][1])+nbin12;
   Int_t fgkNPtBins=nbin13;
   //Create array with low edges of each bin
   Double_t *binsPt=new Double_t[fgkNPtBins+1];
