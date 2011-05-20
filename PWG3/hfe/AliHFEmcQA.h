@@ -37,6 +37,7 @@ class TParticle;
 class TString;
 class AliMCEvent;
 class AliGenEventHeader;
+class AliMCParticle;
 class AliAODMCParticle;
 class AliHFEcollection;
 
@@ -50,6 +51,11 @@ class AliHFEmcQA: public TObject {
     enum ProcessType {
       kPairCreationFromq,  kPairCreationFromg,  kFlavourExitation,  kGluonSplitting, kInitialPartonShower, kLightQuarkShower
     };
+    enum{
+      kBgPtBins = 44,
+      kElecBgSpecies = 6
+    };
+
 
     AliHFEmcQA();
     AliHFEmcQA(const AliHFEmcQA &p); // copy constructor
@@ -69,12 +75,16 @@ class AliHFEmcQA: public TObject {
     void GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark); // get heavy quark kinematics distribution
     void GetHadronKine(TParticle *part, const Int_t kquark); // get heavy hadron kinematics distribution
     void GetDecayedKine(TParticle *part, const Int_t kquark, const Int_t kdecayed, Int_t icut); // get decay electron kinematics distribution
-		void GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, Int_t kdecayed, Int_t icut); // get decay electron kinematics for AOD 
+    void GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, Int_t kdecayed, Int_t icut); // get decay electron kinematics for AOD 
     void GetMesonKine(); // get meson and its decay electron pt spectra
     void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
-		Int_t GetSource(const TParticle * const mcpart); // return source id 
-		Int_t GetElecSource(TParticle * const mcpart); // return electron source id 
-		Int_t GetSource(const AliAODMCParticle * const mcpart); // return electron source id for AOD
+    Int_t GetSource(const TParticle * const mcpart); // return source id 
+    Int_t GetElecSource(TParticle * const mcpart); // return electron source id 
+    Int_t GetSource(const AliAODMCParticle * const mcpart); // return electron source id for AOD
+    Double_t GetWeightFactor(AliMCParticle *mctrack); // return weighting factor for electron's mother meson
+
+    void SetBackgroundWeightFactor(Double_t *elecBackgroundFactor, Double_t *binLimit);
+//    void SetBackgroundWeightFactor(Double_t const elecBackgroundFactor[6][44], Double_t const binLimit[45]) {fElecBackgroundFactor=elecBackgroundFactor; fBinLimit=binLimit;} 
 
   protected:
     void IdentifyMother(Int_t motherlabel, Int_t &motherpdg, Int_t &grandmotherlabel); // 
@@ -180,6 +190,9 @@ class AliHFEmcQA: public TObject {
     Int_t fIsHeavy[2]; // count of heavy flavour
     Int_t fNparents; // number of heavy hadrons to be considered
     Int_t fParentSelect[2][7]; // heavy hadron species
+
+    Double_t fElecBackgroundFactor[6][44];     // Electron background factors
+    Double_t fBinLimit[45];      // Electron background bins
 
   ClassDef(AliHFEmcQA,1);
 };
