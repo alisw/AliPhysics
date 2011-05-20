@@ -404,7 +404,7 @@ if (!fo) {
 }
 else {
  UInt_t key=GetKey(im,ic,fo,bcm4);
- if(kNModule*kNChip*(kNClockPhase+1)) {
+ if(key<kNModule*kNChip*(kNClockPhase+1)) {
    fTried[key]++;
    if(Kfound) fFound[key]++;
    return kTRUE;
