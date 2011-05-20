@@ -189,7 +189,7 @@ void TEpos::GenerateInputFile() {
 	} else {
 		strncpy(epo, getenv("ALICE_ROOT"), 255);
 	}
-	strncat(epo, "/EPOS/epos167", 256);
+	strncat(epo, "/EPOS/epos167", 255);
 
 	file << "fname pathnx " << epo << "/" << endl;
 	file << "fname histo none" << endl;
