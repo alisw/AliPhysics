@@ -16,7 +16,6 @@
 #include "AliVHeader.h"
 #include "AliTriggerScalersESD.h"
 #include "AliTriggerScalersRecordESD.h"
-#include "AliTriggerConfiguration.h"
 
 class AliTriggerScalersESD;
 class AliTriggerScalersRecordESD;
