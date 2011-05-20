@@ -46,7 +46,8 @@ class AliTRDSimParam : public TObject {
           void     SetTimeStruct(Bool_t tsOn = 1)            { fTimeStructOn      = tsOn;             }
           void     SetPadResponse(Int_t prfOn = 1)           { fPRFOn             = prfOn;            }
           void     SetNTimeBins(Int_t ntb)                   { fNTimeBins         = ntb;              }
-    
+          void     SetNTBoverwriteOCDB(Bool_t over = kTRUE)  { fNTBoverwriteOCDB  = over;             }
+
           Float_t  GetGasGain() const                        { return fGasGain;                       }
           Float_t  GetNoise() const                          { return fNoise;                         }
           Float_t  GetChipGain() const                       { return fChipGain;                      }
@@ -58,6 +59,7 @@ class AliTRDSimParam : public TObject {
           Float_t  GetPadCoupling() const                    { return fPadCoupling;                   }
           Float_t  GetTimeCoupling() const                   { return fTimeCoupling;                  }
           Int_t    GetNTimeBins() const                      { return fNTimeBins;                     }
+          Bool_t   GetNTBoverwriteOCDB() const               { return fNTBoverwriteOCDB;              }
 
           Bool_t   DiffusionOn() const                       { return fDiffusionOn;                   }
           Bool_t   ElAttachOn() const                        { return fElAttachOn;                    } 
@@ -75,7 +77,7 @@ class AliTRDSimParam : public TObject {
  protected:
 
   static AliTRDSimParam* fgInstance;   //  Instance of this class (singleton implementation)
-  static  Bool_t   fgTerminated;       //  Defines if this class has already been terminated and
+  static Bool_t          fgTerminated; //  Defines if this class has already been terminated and
                                        //  therefore does not return instances in GetInstance anymore
   
           // Digitization parameter
@@ -108,7 +110,8 @@ class AliTRDSimParam : public TObject {
   
           Int_t    fPRFOn;             //  Switch for the pad response
 
-          Int_t    fNTimeBins;         //  Number of time bins
+          Int_t    fNTimeBins;         //  Number of time bins (only used it fNTBoverwriteOCDB = true)
+          Bool_t   fNTBoverwriteOCDB;  //  Switch to overwrite number of time bins from PCDB
 
  private:
 
@@ -119,7 +122,7 @@ class AliTRDSimParam : public TObject {
           void Init();
           void SampleTRF();
   
-  ClassDef(AliTRDSimParam,5)          // The TRD simulation parameters
+  ClassDef(AliTRDSimParam,6)          // The TRD simulation parameters
 
 };
 
