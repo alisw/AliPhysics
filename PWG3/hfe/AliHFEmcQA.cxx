@@ -66,6 +66,8 @@ AliHFEmcQA::AliHFEmcQA() :
   for(Int_t mom = 0; mom < 2; mom++){
     fIsHeavy[mom] = 0;
   }
+  memset(fElecBackgroundFactor, 0, sizeof(Double_t) * kElecBgSpecies * kBgPtBins);
+  memset(fBinLimit, 0, sizeof(Double_t) * (kBgPtBins+1));
 }
 
 //_______________________________________________________________________________________________
@@ -89,6 +91,8 @@ AliHFEmcQA::AliHFEmcQA(const AliHFEmcQA&p):
   for(Int_t mom = 0; mom < 2; mom++){
     fIsHeavy[mom] = 0;
   }
+  memset(fElecBackgroundFactor, 0, sizeof(Double_t) * kElecBgSpecies * kBgPtBins);
+  memset(fBinLimit, 0, sizeof(Double_t) * (kBgPtBins+1));
 }
 
 //_______________________________________________________________________________________________
@@ -117,6 +121,23 @@ void AliHFEmcQA::PostAnalyze() const
         //
 }
 
+//_______________________________________________________________________________________________
+void AliHFEmcQA::SetBackgroundWeightFactor(Double_t *elecBackgroundFactor, Double_t *binLimit)
+{
+   memcpy(fElecBackgroundFactor,elecBackgroundFactor,sizeof(Double_t) * kElecBgSpecies * kBgPtBins);
+   memcpy(fBinLimit,binLimit,sizeof(Double_t) * (kBgPtBins+1));
+/*
+   for(Int_t j=0;j < 6;j++){
+     for(Int_t i=0;i < 44;i++){ 
+       fElecBackgroundFactor[j][i] = elecBackgroundFactor[j][i]; 
+     }
+   }
+   for(Int_t i=0;i < 45;i++){
+     fBinLimit[i]=binLimit[i];
+   }
+   */
+}
+
 //__________________________________________
 void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
 {      
@@ -138,15 +159,6 @@ void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
   CreateHistograms(AliHFEmcQA::kCharm,2,"mcqa_unitY_");         // create histograms for charm 
   CreateHistograms(AliHFEmcQA::kBeauty,2,"mcqa_unitY_");        // create histograms for beauty
   CreateHistograms(AliHFEmcQA::kOthers,2,"mcqa_unitY_");        // create histograms for beauty
-  CreateHistograms(AliHFEmcQA::kCharm,3,"mcqa_reccut_");        // create histograms for charm 
-  CreateHistograms(AliHFEmcQA::kBeauty,3,"mcqa_reccut_");       // create histograms for beauty
-  CreateHistograms(AliHFEmcQA::kOthers,3,"mcqa_reccut_");       // create histograms for beauty
-  CreateHistograms(AliHFEmcQA::kCharm,4,"mcqa_recpidcut_");     // create histograms for charm 
-  CreateHistograms(AliHFEmcQA::kBeauty,4,"mcqa_recpidcut_");    // create histograms for beauty
-  CreateHistograms(AliHFEmcQA::kOthers,4,"mcqa_recpidcut_");    // create histograms for beauty
-  CreateHistograms(AliHFEmcQA::kCharm,5,"mcqa_secvtxcut_");     // create histograms for charm 
-  CreateHistograms(AliHFEmcQA::kBeauty,5,"mcqa_secvtxcut_");    // create histograms for beauty
-  CreateHistograms(AliHFEmcQA::kOthers,5,"mcqa_secvtxcut_");    // create histograms for beauty
  
 // check D spectra
   TString kDspecies[9];
@@ -168,12 +180,12 @@ void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
   binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
 
   // bin size is chosen to consider ALICE D measurement
-  Double_t xbins[13]={0,0.5,1.0,2.0,3.0,4.0,5.0,6.0,8.0,12,16,20,50};
+  Double_t xbins[15]={0,0.5,1.0,2.0,3.0,4.0,5.0,6.0,8.0,12,16,20,30,40,50};
   Double_t ybins[10]={-7.5,-1.0,-0.9,-0.8,-0.5,0.5,0.8,0.9,1.0,7.5};
   TString hname;
   for (Int_t iDmeson=0; iDmeson<9; iDmeson++){
      hname = "Dmeson"+kDspecies[iDmeson];
-     fhD[iDmeson] = new TH2F(hname,hname+";p_{T} (GeV/c)",12,xbins,9,ybins);
+     fhD[iDmeson] = new TH2F(hname,hname+";p_{T} (GeV/c)",14,xbins,9,ybins);
      hname = "DmesonLogbin"+kDspecies[iDmeson];
      fhDLogbin[iDmeson] = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]);
      if(fQAhistos) fQAhistos->Add(fhD[iDmeson]);
@@ -250,8 +262,8 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
   binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
 
 
-  Double_t xcorrbin[201];
-  for (int icorrbin = 0; icorrbin< 201; icorrbin++){
+  Double_t xcorrbin[501];
+  for (int icorrbin = 0; icorrbin< 501; icorrbin++){
     xcorrbin[icorrbin]=icorrbin*0.1;
   }
 
@@ -295,16 +307,16 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
   hname = hnopt+"ePtRatio_"+kqTypeLabel[kQuark];
   fHistComm[iq][icut].fePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",200,0,20,100,0,1);
   hname = hnopt+"PtCorr_"+kqTypeLabel[kQuark];
-  fHistComm[iq][icut].fPtCorr = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,xcorrbin,44,binEdges[0]);
+  fHistComm[iq][icut].fPtCorr = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",500,xcorrbin,44,binEdges[0]);
   //fHistComm[iq][icut].fPtCorr = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,0,20,200,0,20);
   hname = hnopt+"PtCorrDp_"+kqTypeLabel[kQuark];
-  fHistComm[iq][icut].fPtCorrDp= new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,xcorrbin,44,binEdges[0]);
+  fHistComm[iq][icut].fPtCorrDp= new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",500,xcorrbin,44,binEdges[0]);
   //fHistComm[iq][icut].fPtCorrDp= new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,0,20,200,0,20);
   hname = hnopt+"PtCorrD0_"+kqTypeLabel[kQuark];
-  fHistComm[iq][icut].fPtCorrD0 = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,xcorrbin,44,binEdges[0]);
+  fHistComm[iq][icut].fPtCorrD0 = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",500,xcorrbin,44,binEdges[0]);
   //fHistComm[iq][icut].fPtCorrD0 = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,0,20,200,0,20);
   hname = hnopt+"PtCorrDrest_"+kqTypeLabel[kQuark];
-  fHistComm[iq][icut].fPtCorrDrest = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,xcorrbin,44,binEdges[0]);
+  fHistComm[iq][icut].fPtCorrDrest = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",500,xcorrbin,44,binEdges[0]);
   //fHistComm[iq][icut].fPtCorrDrest = new TH2F(hname,hname+";D p_{T} (GeV/c);e p_{T} (GeV/c)",200,0,20,200,0,20);
   hname = hnopt+"DePtRatio_"+kqTypeLabel[kQuark];
   fHistComm[iq][icut].fDePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",100,0,20,100,0,1);
@@ -344,6 +356,7 @@ void AliHFEmcQA::Init()
 
 }
 
+//__________________________________________
 void AliHFEmcQA::GetMesonKine() 
 {
   //
@@ -372,7 +385,7 @@ void AliHFEmcQA::GetMesonKine()
           if(!((id2-id1)==2)) continue;
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
-            mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt);
+            if(!(mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt))) continue;
             if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
              fMCQACollection->Fill("piondaughters",mctrackd->Pt());
           }
@@ -388,7 +401,7 @@ void AliHFEmcQA::GetMesonKine()
           if(!((id2-id1)==2||(id2-id1)==3)) continue;
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
-            mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt);
+            if(!(mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt))) continue;
             if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
              fMCQACollection->Fill("etadaughters",mctrackd->Pt());
           }
@@ -404,7 +417,7 @@ void AliHFEmcQA::GetMesonKine()
           if(!((id2-id1)==1||(id2-id1)==2)) continue;
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
-            mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt);
+            if(!(mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt))) continue;
             if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
              fMCQACollection->Fill("omegadaughters",mctrackd->Pt());
           }
@@ -420,7 +433,7 @@ void AliHFEmcQA::GetMesonKine()
           if(!((id2-id1)==1)) continue;
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
-            mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt);
+            if(!(mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt))) continue;
             if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
              fMCQACollection->Fill("phidaughters",mctrackd->Pt());
           }
@@ -436,7 +449,7 @@ void AliHFEmcQA::GetMesonKine()
           if(!((id2-id1)==2||(id2-id1)==3)) continue;
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
-            mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt);
+            if(!(mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt))) continue;
             if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
              fMCQACollection->Fill("etapdaughters",mctrackd->Pt());
           }
@@ -452,7 +465,7 @@ void AliHFEmcQA::GetMesonKine()
           if(!((id2-id1)==1)) continue;
           for(int idx=id1; idx<=id2; idx++){
             if(!(mctrackdaugt = fMCEvent->GetTrack(idx))) continue;
-            mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt);
+            if(!(mctrackd = dynamic_cast<AliMCParticle *>(mctrackdaugt))) continue;
             if(abs(mctrackd->PdgCode()) == 11 && TMath::Abs(mctrackd->Eta())<0.8)
              fMCQACollection->Fill("rhodaughters",mctrackd->Pt());
           }
@@ -1418,6 +1431,58 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
    else origin = kElse;
 
    return origin;
+}
+
+//__________________________________________
+Double_t AliHFEmcQA::GetWeightFactor(AliMCParticle *mctrack){
+  //
+  // Get weighting factor for the realistic background estimation
+  //
+  AliMCParticle *mctrackmother = NULL;  
+  Double_t weightElecBg = 0.;
+  Double_t mesonPt = 0.;
+  Double_t bgcategory = 0.;
+  Int_t mArr = -1;  
+  Int_t mesonID = GetElecSource(mctrack->Particle());
+  if(mesonID==kGammaPi0 || mesonID==kPi0) mArr=0;                //pion
+  else if(mesonID==kGammaEta || mesonID==kEta) mArr=1;           //eta
+  else if(mesonID==kGammaOmega || mesonID==kOmega) mArr=2;       //omega
+  else if(mesonID==kGammaPhi || mesonID==kPhi) mArr=3;           //phi
+  else if(mesonID==kGammaEtaPrime || mesonID==kEtaPrime) mArr=4; //etaprime
+  else if(mesonID==kGammaRho0 || mesonID==kRho0) mArr=5;         //rho
+
+  if(!(mArr<0)){
+     if(mesonID>=kGammaPi0) {  // conversion electron, be careful with the enum odering 
+        Int_t glabel=TMath::Abs(mctrack->GetMother()); // gamma label
+        if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
+          glabel=TMath::Abs(mctrackmother->GetMother()); // gamma's mother's label
+          if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
+            mesonPt = mctrackmother->Pt(); //meson pt
+            bgcategory = 1.;
+          } 
+        }
+     }
+     else{ // nonHFE except for the conversion electron
+        Int_t glabel=TMath::Abs(mctrack->GetMother()); 
+        if((mctrackmother = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(glabel)))){
+          mesonPt=mctrackmother->Pt(); //meson pt
+          bgcategory = -1.;
+        }
+     }
+     weightElecBg=fElecBackgroundFactor[mArr][kBgPtBins-1];                         
+     for(int ii=0; ii<kBgPtBins; ii++){              
+        if( (mesonPt > fBinLimit[ii]) && (mesonPt < fBinLimit[ii+1])){
+          weightElecBg = fElecBackgroundFactor[mArr][ii];
+        }
+     }
+     /*for(int jj=0; jj<6; jj++){              
+       for(int ii=0; ii<kBgPtBins; ii++){              
+        printf("species= %d   ptbin= %d  wfactor= %lf\n",jj,ii,fElecBackgroundFactor[jj][ii]);
+       }
+     }*/
+  }
+
+  return bgcategory*weightElecBg;
 }
 
 //__________________________________________

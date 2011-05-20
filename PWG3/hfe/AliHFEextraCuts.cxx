@@ -61,6 +61,8 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   fTOFmismatch(kFALSE),
   fTPCclusterDef(0),
   fTPCclusterRatioDef(0),
+  fMaxImpactParameterRpar(kFALSE),
+  fFractionOfTPCSharedClusters(-1.0),
   fCheck(kFALSE),
   fQAlist(0x0) ,
   fDebugLevel(0)
@@ -86,6 +88,8 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   fTOFmismatch(c.fTOFmismatch),
   fTPCclusterDef(c.fTPCclusterDef),
   fTPCclusterRatioDef(c.fTPCclusterRatioDef),
+  fMaxImpactParameterRpar(c.fMaxImpactParameterRpar),
+  fFractionOfTPCSharedClusters(c.fFractionOfTPCSharedClusters),
   fCheck(c.fCheck),
   fQAlist(0x0),
   fDebugLevel(0)
@@ -119,6 +123,8 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     fPixelITS = c.fPixelITS;
     fTPCclusterDef = c.fTPCclusterDef;
     fTPCclusterRatioDef = c.fTPCclusterRatioDef;
+    fMaxImpactParameterRpar = c.fMaxImpactParameterRpar;
+    fFractionOfTPCSharedClusters = c.fFractionOfTPCSharedClusters;
     fTOFpid = c.fTOFpid;
     fTOFmismatch = c.fTOFmismatch;
     fCheck = c.fCheck;
@@ -188,6 +194,9 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   Float_t impactR, impactZ;
   Double_t hfeimpactR, hfeimpactnsigmaR;
   Double_t hfeimpactRcut, hfeimpactnsigmaRcut;
+  Double_t maximpactRcut; 
+  Bool_t passimpactRcut = kTRUE;
+  Bool_t passsharedTPCcut = kTRUE;
   Bool_t tofstep = kTRUE;
   Bool_t tofmismatchstep = kTRUE;
   GetImpactParameters(track, impactR, impactZ);
@@ -196,8 +205,12 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
     GetHFEImpactParameterCuts(track, hfeimpactRcut, hfeimpactnsigmaRcut);
     GetHFEImpactParameters(track, hfeimpactR, hfeimpactnsigmaR);
   }
+  if(fMaxImpactParameterRpar) {
+    GetMaxImpactParameterCutR(track,maximpactRcut);
+  }
   UInt_t nclsTPC = GetTPCncls(track);
   // printf("Check TPC findable clusters: %d, found Clusters: %d\n", track->GetTPCNclsF(), track->GetTPCNcls());
+  Float_t fractionSharedClustersTPC = GetTPCsharedClustersRatio(track);
   Double_t ratioTPC = GetTPCclusterRatio(track);
   UChar_t trdTracklets;
   trdTracklets = GetTRDnTrackletsPID(track);
@@ -206,6 +219,9 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   Int_t status2 = GetITSstatus(track, 1);
   Bool_t statusL0 = CheckITSstatus(status1);
   Bool_t statusL1 = CheckITSstatus(status2);
+  if(fFractionOfTPCSharedClusters > 0.0) {
+    if(TMath::Abs(fractionSharedClustersTPC) >= fFractionOfTPCSharedClusters) passsharedTPCcut = kFALSE;    
+  }
   if(TESTBIT(fRequirements, kMinImpactParamR)){
     // cut on min. Impact Parameter in Radial direction
     if(TMath::Abs(impactR) >= fImpactParamCut[0]) SETBIT(survivedCut, kMinImpactParamR);
@@ -217,6 +233,9 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   if(TESTBIT(fRequirements, kMaxImpactParamR)){
     // cut on max. Impact Parameter in Radial direction
     if(TMath::Abs(impactR) <= fImpactParamCut[2]) SETBIT(survivedCut, kMaxImpactParamR);
+  }
+  if(fMaxImpactParameterRpar) {
+    if(TMath::Abs(impactR) >= maximpactRcut) passimpactRcut = kFALSE;
   }
   if(TESTBIT(fRequirements, kMaxImpactParamZ)){
     // cut on max. Impact Parameter in Z direction
@@ -302,7 +321,7 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   }
 
 
-  if(fRequirements == survivedCut && tofstep && tofmismatchstep){
+  if(fRequirements == survivedCut && tofstep && tofmismatchstep && passimpactRcut && passsharedTPCcut){
     //
     // Track selected
     //
@@ -544,6 +563,26 @@ UInt_t AliHFEextraCuts::GetTPCncls(AliVTrack *track){
 }
 
 //______________________________________________________
+Float_t AliHFEextraCuts::GetTPCsharedClustersRatio(AliVTrack *track){
+  //
+  // Get fraction of shared TPC clusters
+  //
+  Float_t fracClustersTPCShared = 0.0; 
+  TString type = track->IsA()->GetName();
+  if(!type.CompareTo("AliESDtrack")){
+    AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
+    if(esdtrack){ // coverity
+      Float_t nClustersTPC = esdtrack->GetTPCclusters(0);
+      Int_t nClustersTPCShared = esdtrack->GetTPCnclsS();
+      if (nClustersTPC!=0) {
+	fracClustersTPCShared = Float_t(nClustersTPCShared)/Float_t(nClustersTPC);
+      }
+    }
+  }
+  return fracClustersTPCShared;
+}
+
+//______________________________________________________
 Double_t AliHFEextraCuts::GetTPCclusterRatio(AliVTrack *track){
   //
   // Get Ratio of found / findable clusters for different definitions
@@ -655,5 +694,22 @@ void AliHFEextraCuts::GetHFEImpactParameterCuts(AliVTrack *track, Double_t &hfei
     Double_t pt = esdtrack->Pt();	
     hfeimpactRcut = fIPcutParam[0]+fIPcutParam[1]*exp(fIPcutParam[2]*pt);  // abs R cut
     hfeimpactnsigmaRcut = fIPcutParam[3];                                  // sigma cut
+  }
+}
+//______________________________________________________
+void AliHFEextraCuts::GetMaxImpactParameterCutR(AliVTrack *track, Double_t &maximpactRcut){
+	//
+	// Get max impact parameter cut r (pt dependent)
+	//
+  
+  TString type = track->IsA()->GetName();
+  if(!type.CompareTo("AliESDtrack")){
+    AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
+    if(!esdtrack) return;
+    Double_t pt = esdtrack->Pt();	
+    if(pt > 0.15) {
+      maximpactRcut = 0.0182 + 0.035/TMath::Power(pt,1.01);  // abs R cut
+    }
+    else maximpactRcut = 9999999999.0;
   }
 }
