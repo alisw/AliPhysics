@@ -160,11 +160,6 @@ class AliHLTPredictionProcessorInterface : public AliPreprocessor {
         */
        virtual Bool_t includeAliCDBEntryInList(const TString& entryPath);
 
-  // template functionality disabled
-  // can be enabled if AliDCSValue defines type conversion operators
-  // the define HAVE_NOT_ALIDCSVALUE_OPERATORS can be set for backward
-  // compatibility reasons in the HLT build system
-#define HAVE_NOT_ALIDCSVALUE_OPERATORS
   /**
    * Function to retrieve a sensor value from the DCS value map
    * The value is extracted from the last entry, because online reconstruction
@@ -176,13 +171,8 @@ class AliHLTPredictionProcessorInterface : public AliPreprocessor {
    *
    * @return true if sucessful, else false
    */
-#ifndef HAVE_NOT_ALIDCSVALUE_OPERATORS
   template<typename T>
   Bool_t GetSensorValue(TMap* dcsAliasMap,const char* stringId, T * value) const;
-#else // !HAVE_NOT_ALIDCSVALUE_OPERATORS
-  Bool_t GetSensorValue(TMap* dcsAliasMap,const char* stringId, Float_t * value) const;
-  Bool_t GetSensorValue(TMap* dcsAliasMap,const char* stringId, Bool_t * value) const;
-#endif // HAVE_NOT_ALIDCSVALUE_OPERATORS
 
 	private:
 		/**
@@ -228,7 +218,6 @@ class AliHLTPredictionProcessorInterface : public AliPreprocessor {
 	
 };
 
-#ifndef HAVE_NOT_ALIDCSVALUE_OPERATORS
 template<typename T>
 Bool_t AliHLTPredictionProcessorInterface::GetSensorValue(TMap* dcsAliasMap,
 							  const char* stringId, T *value) const
@@ -252,7 +241,6 @@ Bool_t AliHLTPredictionProcessorInterface::GetSensorValue(TMap* dcsAliasMap,
   }
   return kFALSE;
 }
-#endif // !HAVE_NOT_ALIDCSVALUE_OPERATORS
 
 template <typename T>
 AliDCSSensor* AliHLTPredictionProcessorInterface::CreateSensor(const char* id, T value, UInt_t starttime, UInt_t endtime) 
