@@ -869,7 +869,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
       track = esdtrack;
     
     if(!track) {
-      if(fTrackType==1 || fTrackType==2 || fTrackType==4) delete track;
+      //      if(fTrackType==1 || fTrackType==2 || fTrackType==4) delete track;
       continue;
     }
 
