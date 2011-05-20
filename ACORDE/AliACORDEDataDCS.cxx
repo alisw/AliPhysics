@@ -73,7 +73,10 @@ AliACORDEDataDCS::AliACORDEDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime)
 //---------------------------------------------------------------
 AliACORDEDataDCS::~AliACORDEDataDCS() {
 
-	for(int i=0;i<kNHistos;i++) {delete fHv[i]; fHv[i]=0;}
+	for(int i=0;i<kNHistos;i++) 
+	{
+		delete fHv[i]; fHv[i]=0;
+	}
 	fGraphs.Clear("C");
 	fFunc=0;
 }
@@ -100,7 +103,12 @@ fIsProcessed(kFALSE)
 
         for(int i=0;i<kNAliases;i++){fAliasNames[i] = data.fAliasNames[i];}
 
-        for(int i=0;i<kNHistos;i++){fHv[i]=data.fHv[i];}
+        for(int i=0;i<kNHistos;i++)
+	{
+		fHv[i]=data.fHv[i];
+		fMean[i]=data.fMean[i];
+		fWidth[i]=data.fWidth[i];
+	}
 
 
 
@@ -119,7 +127,10 @@ AliACORDEDataDCS& AliACORDEDataDCS:: operator=(const AliACORDEDataDCS & data) {
 
         for(int i=0;i<kNAliases;i++){this->fAliasNames[i] = data.fAliasNames[i];}
 
-        for(int i=0;i<kNHistos;i++){this->fHv[i]=data.fHv[i];}
+        for(int i=0;i<kNHistos;i++)
+	{
+		this->fHv[i]=data.fHv[i];
+	}
 
 	
          return *this;
