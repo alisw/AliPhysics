@@ -370,7 +370,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
       binLimitsPt[iPt] = 0.0;
     }
     else {// 1.0
-      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 2.0;
+      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 2.5;
     }
   }
   const Int_t nBinPhi = 90;
@@ -497,7 +497,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
       const Int_t nBinsSparse1 = 6;
       const Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,100, 10,  25,    fNRPBins, 10};
       const Double_t xmin1[nBinsSparse1]  = {        -0.5,  0,  0,   0,        -0.5, 0.};
-      const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,200,100,5000,fNRPBins-0.5,1.0};
+      const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,250,100,5000,fNRPBins-0.5,1.0};
 
       fhnJetPt[ij] = new THnSparseF(Form("fhnJetPt%s",cAdd.Data()),";jet number;p_{T,jet};cent;# tracks;RP;area",nBinsSparse1,nBins1,xmin1,xmax1);
       fHistList->Add(fhnJetPt[ij]);
@@ -506,7 +506,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
       const Int_t nBinsSparse2 = 6;
       const Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 20,  10, 18,             90, 10};
       const Double_t xmin2[nBinsSparse2]  = {        -0.5,  0,   0,-0.9,              0,  0.};
-      const Double_t xmax2[nBinsSparse2]  = {kMaxJets+0.5,100, 100, 0.9, 2.*TMath::Pi(),1.0};
+      const Double_t xmax2[nBinsSparse2]  = {kMaxJets+0.5,200, 100, 0.9, 2.*TMath::Pi(),1.0};
       fhnJetPtQA[ij] = new THnSparseF(Form("fhnJetPtQA%s",cAdd.Data()),";jet number;p_{T,jet};cent;#eta;#phi;area",nBinsSparse2,nBins2,xmin2,xmax2);
       fHistList->Add(fhnJetPtQA[ij]);
 
@@ -523,7 +523,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 	if(xPt3[i-1]<2)xPt3[i] = xPt3[i-1] + 0.1;
 	else if(xPt3[i-1]<10)xPt3[i] = xPt3[i-1] + 0.5;
 	else if(xPt3[i-1]<20)xPt3[i] = xPt3[i-1] +  1.;
-	else if(xPt3[i-1]<40)xPt3[i] = xPt3[i-1] +  2.;
+	else if(xPt3[i-1]<30)xPt3[i] = xPt3[i-1] + 2.5;
 	else xPt3[i] = xPt3[i-1] + 5.;
       }
       
@@ -545,7 +545,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 	if(xPt4[i-1]<2)xPt4[i] = xPt4[i-1] + 0.1;
 	else if(xPt4[i-1]<10)xPt4[i] = xPt4[i-1] + 0.5;
 	else if(xPt4[i-1]<20)xPt4[i] = xPt4[i-1] +  1.;
-	else if(xPt4[i-1]<40)xPt4[i] = xPt4[i-1] +  2.;
+	else if(xPt4[i-1]<30)xPt4[i] = xPt4[i-1] +  2.5;
 	else xPt4[i] = xPt4[i-1] + 5.;
       }
       fhnTrackPtQA[ij] = new THnSparseF(Form("fhnTrackPtQA%s",cAdd.Data()),";track number;p_{T};cent;#eta;#phi",nBinsSparse4,nBins4,xmin4,xmax4);
