@@ -125,16 +125,24 @@ set ( CLASS_HDRS
     AliHLTTPCHWCFDataReverterComponent.h
     AliHLTTPCTrackMCMarkerComponent.h
     AliHLTTPCdEdxComponent.h
+    HWCFemulator/AliHLTTPCHWCFExtractorUnit.h
+    HWCFemulator/AliHLTTPCHWCFProcessorUnit.h
+    HWCFemulator/AliHLTTPCHWCFMergerUnit.h
+    HWCFemulator/AliHLTTPCHWCFDivisionUnit.h
+    HWCFemulator/AliHLTTPCHWCFEmulator.h
+    HWCFemulator/AliHLTTPCHWCFSupport.h
+    HWCFemulator/AliHLTTPCHWCFEmulatorComponent.h
+    HWCFemulator/AliHLTTPCHWCFConsistencyControlComponent.h
 )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}")
 list(APPEND MODULE_SRCS AliHLTTPCLog.cxx)
 
-set ( MODULE_HDRS  	${CLASS_HDRS} AliHLTTPCLog.h AliHLTTPCLogging.h AliHLTTPCSpacePointData.h AliHLTTPCRootTypes.h AliHLTTPCDigitData.h AliHLTTPCTrackSegmentData.h AliHLTTPCVertexData.h AliHLTTPCTrackletDataFormat.h AliHLTTPCClusterDataFormat.h AliHLTTPCModels.h AliHLTTPCClusterMCData.h )
+set ( MODULE_HDRS  	${CLASS_HDRS} AliHLTTPCLog.h AliHLTTPCLogging.h AliHLTTPCSpacePointData.h AliHLTTPCRootTypes.h AliHLTTPCDigitData.h AliHLTTPCTrackSegmentData.h AliHLTTPCVertexData.h AliHLTTPCTrackletDataFormat.h AliHLTTPCClusterDataFormat.h AliHLTTPCModels.h AliHLTTPCClusterMCData.h HWCFemulator/AliHLTTPCHWCFDataTypes.h)
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/TPCLib HLT/TPCLib/tracking HLT/TPCLib/comp HLT/TPCLib/tracking-ca HLT/TPCLib/merger-ca HLT/TPCLib/offline HLT/BASE HLT/BASE/util HLT/RCU TPC RAW STEER)
+set ( EINCLUDE  HLT/TPCLib HLT/TPCLib/tracking HLT/TPCLib/comp HLT/TPCLib/tracking-ca HLT/TPCLib/merger-ca HLT/TPCLib/offline HLT/TPCLib/HWCFemulator HLT/BASE HLT/BASE/util HLT/RCU TPC RAW STEER)
 set ( ELIBS  dl)
 
 set ( ELIBS  "HLTbase AliHLTRCU AliHLTUtil CDB ESD STEER STEERBase TPCrec TPCcalib TPCbase RAWDatarec RAWDatabase -lEG")
@@ -161,7 +169,7 @@ if(NOT DHDR)
 endif(NOT DHDR)
 
 set ( EDEFINE  ${HLTDEFS})
-set ( PACKCXXFLAGS  "${HLTCXXFLAGS} -Wshadow")
+set ( PACKCXXFLAGS  "${HLTCXXFLAGS} -Wshadow -Wall -O3")
 set ( PACKCFLAGS  ${HLTCLFAGS})
 set ( PACKDCXXFLAGS  ${HLTDCXXFLAGS})
 set ( PACKSOFLAGS ${HLTSOFLAGS})
