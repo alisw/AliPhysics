@@ -92,7 +92,7 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 		  
 		  if(tmpGain < 2)
 		    {
-		      if( tmpHwaddr <= MAXHWADDR  )
+		      if( tmpHwaddr <= MAXHWADDR  &&  tmpHwaddr >= 0  )
 			{
 			  fHw2geomapPtr[tmpHwaddr].fXCol   = (char)tmpXCol;
 			  fHw2geomapPtr[tmpHwaddr].fZRow   = (char)tmpZRow;
