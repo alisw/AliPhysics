@@ -86,7 +86,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel);
   void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index, Int_t isSel);
   void FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel,Int_t optDecay);
-  void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel);
+  void FillDstar(AliAODRecoCascadeHF* dstarD0pi,TClonesArray *arrayMC,Int_t index,Int_t isSel);
   void FillD04p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel);
   void FillLambdac(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index, Int_t isSel);
 
@@ -121,9 +121,10 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   Int_t fNBins;  //number of bins in the mass histograms
   Int_t fPartOrAndAntiPart;  //fill histograms with particle only (+1), antiparticle only (-1), both (0)
   Int_t fDsChannel;          // Ds resonant channel selected
+  Int_t fPDGDStarToD0pi[2]; //PDG codes for the particles in the D* -> pi + D0 decay
+  Int_t fPDGD0ToKpi[2];    //PDG codes for the particles in the D0 -> K + pi decay
 
   ClassDef(AliAnalysisTaskSESignificance,4); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
-
