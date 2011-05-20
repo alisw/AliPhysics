@@ -67,6 +67,11 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
       kGammaConv = 2,
       kOther = 3
     };
+    enum{
+      kBgPtBins = 44,
+      kElecBgSpecies = 6
+    };
+
     AliAnalysisTaskHFE();
     AliAnalysisTaskHFE(const char * name);
     AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref);
@@ -107,9 +112,12 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
     void SetESDAnalysis() { SetBit(kAODanalysis, kFALSE); };
     void SetPbPbAnalysis(Bool_t isPbPb = kFALSE) { SetBit(kBeamType, isPbPb); };
+    void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
     void SetBackGroundFactorsFunction(TF1 * const backGroundFactorsFunction, Int_t centralitybin=0)
     {  fBackGroundFactorArray[centralitybin]=backGroundFactorsFunction;
        fBackGroundFactorApply=kTRUE;};
+    void SetElecBackGroundFactors(Int_t iPt, Int_t iType, Double_t elecBackGroundFactor) {fElecBackgroundFactor[iType][iPt] = elecBackGroundFactor; };
+    void SetBinLimits(Int_t iPt, Double_t momentum){fBinLimit[iPt] = momentum;};
     void PrintStatus() const;
     Bool_t ReadCentrality();
     void RejectionPileUpVertexRangeEventCut();  
@@ -142,12 +150,15 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t fIdentifiedAsOutInz;           // Out Of Range in z
     Bool_t fPassTheEventCut;              // Pass The Event Cut
     Bool_t fHasSpecialTriggerSelection;   // Select special triggered events
+    Bool_t fRejectKinkMother;             // Reject Kink Mother
     TString fSpecialTrigger;              // Special trigger selection
     Float_t fCentralityF;                 // Centrality
     Float_t fContributors;                // Contributors
     Double_t fWeightBackGround;            // weight background function
     Double_t fVz;                         // z position of the primary vertex
     TF1  *fBackGroundFactorArray[12];     // Array of BackGround factors for each centrality bin, bin0 = min bias
+    Double_t fElecBackgroundFactor[kElecBgSpecies][kBgPtBins];     // Electron background factors
+    Double_t fBinLimit[kBgPtBins+1];      // Electron pt bin edges
     AliHFEcontainer *fContainer;          //! The HFE container
     AliHFEvarManager *fVarManager;        // The var manager as the backbone of the analysis
     AliHFEsignalCuts *fSignalCuts;        //! MC true signal (electron coming from certain source) 
