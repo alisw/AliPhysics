@@ -14,10 +14,12 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 class TObject;
+class TGraphErrors;
 class AliTimeStamp;
 class AliTriggerScalersESD;
 class AliTriggerScalersRecord;
 class AliTriggerScalersRecordESD;
+class AliTriggerConfiguration;
 
 #include "TArrayC.h"
 
@@ -36,6 +38,9 @@ public:
   AliTriggerScalersRecord*   GetScalersRecord( Int_t index ) const { return (AliTriggerScalersRecord*)fScalersRecord.At(index); }
                     Int_t    FindNearestScalersRecord( const AliTimeStamp *stamp ) const;
      AliTriggerScalersESD*   GetScalersForEventClass(const AliTimeStamp* stamp,const Int_t classIndex) const;
+     const AliTriggerScalersRecordESD*   GetScalersDeltaForEvent(const AliTimeStamp* stamp) const;
+     const AliTriggerScalersRecordESD*   GetScalersDeltaForRun() const;
+
  // Analysis		    
                     Int_t    ConsistencyCheck(Int_t position,Bool_t correctOverflow, UInt_t** overflow);
 		    Int_t    CorrectScalersOverflow();
@@ -50,8 +55,27 @@ public:
      AliTriggerRunScalers( const AliTriggerRunScalers &run );
      AliTriggerRunScalers&    operator=(const AliTriggerRunScalers& run);
                                         
-static AliTriggerRunScalers*  ReadScalers( TString & filename );
-                                      
+static AliTriggerRunScalers* ReadScalers( TString & filename );
+	  static Double_t    CalculateMu(ULong64_t countsB, ULong64_t countsAC, ULong64_t countsE, UShort_t nB, UShort_t nAC, UShort_t nE, UInt_t orbits, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1.);
+	  static Double_t    CalculateMu(ULong64_t countsB, ULong64_t countsAC, ULong64_t countsE, ULong64_t beamB, UShort_t nB, UShort_t nAC, UShort_t nE, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1.);
+          static Double_t    CalculateMuError(ULong64_t countsB, ULong64_t countsAC, ULong64_t countsE, UShort_t nB, UShort_t nAC, UShort_t nE, UInt_t orbits, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1., Double_t errorEff=0.);
+	  static Double_t    CalculateMuError(ULong64_t countsB, ULong64_t countsAC, ULong64_t countsE, ULong64_t beamB, UShort_t nB, UShort_t nAC, UShort_t nE, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1., Double_t errorEff=0.);
+	  static ULong64_t    GetDeltaScaler(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex, Int_t level);
+	  static Double_t    GetDeltaTime(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2);
+	  static UInt_t    GetDeltaOrbits(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2);
+	  static Double_t    GetScalerRate(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex, Int_t level);
+	  static Double_t    GetScalerRateError(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex, Int_t level);
+	  static Double_t    GetClassL2L0(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex);
+	  static Double_t    GetClassL2L0Error(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex);
+          static Bool_t    GetMuFromMinBiasTrg(Double_t &mu, Double_t &muerr, const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, AliTriggerConfiguration* cfg, Bool_t colBCsFromFillScheme=kTRUE, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1., Double_t errorEff=0.);
+	        ULong64_t    GetDeltaScalerForRun(Int_t classIndex, Int_t level);
+	         Double_t    GetScalerRateForRun(Int_t classIndex, Int_t level);
+	         Double_t    GetClassL2L0ForRun(Int_t classIndex);
+             TGraphErrors*   GetGraphScalerRate(const char* className, Int_t level, AliTriggerConfiguration* cfg);
+             TGraphErrors*   GetGraphScalerL2L0Ratio(const char* className, AliTriggerConfiguration* cfg);
+             TGraphErrors*   GetGraphMu(AliTriggerConfiguration* cfg, Bool_t colBCsFromFillScheme=kTRUE, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1., Double_t errorEff=0.);
+
+
 private:
                   Short_t    fVersion;            // Version
                   ULong_t    fRunNumber;          // Run number
@@ -62,7 +86,7 @@ private:
 
     
 
-   ClassDef( AliTriggerRunScalers, 3 )  // Define a Run Trigger Scalers (Scalers)
+   ClassDef( AliTriggerRunScalers, 4 )  // Define a Run Trigger Scalers (Scalers)
 };
 
 #endif
