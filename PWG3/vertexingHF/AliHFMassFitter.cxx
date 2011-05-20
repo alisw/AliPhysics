@@ -37,6 +37,7 @@
 #include <TMinuit.h>
 #include <TStyle.h>
 #include <TPaveText.h>
+#include <TDatabasePDG.h>
 
 #include "AliHFMassFitter.h"
 
@@ -246,6 +247,11 @@ void AliHFMassFitter::ComputeNFinalPars() {
     break;
   case 3:
     fNFinalPars=1;
+  case 4:
+    fNFinalPars=2;	
+    break;
+  case 5:
+    fNFinalPars=3;	
     break;
   default:
     cout<<"Error in computing fNFinalPars: check ftypeOfFit4Bkg"<<endl;
@@ -273,6 +279,12 @@ void AliHFMassFitter::ComputeParSize() {
     break;
   case 3:
     fParsSize = 1*3;
+    break;
+  case 4:
+    fParsSize = 2*3; 
+    break;
+  case 5:
+    fParsSize = 3*3; 
     break;
   default:
     cout<<"Error in computing fParsSize: check ftypeOfFit4Bkg"<<endl;
@@ -608,6 +620,52 @@ Double_t AliHFMassFitter::FitFunction4MassDistr (Double_t *x, Double_t *par){
     }
   }
 
+  //Power fit
+
+    // par[0] = tot integral
+    // par[1] = coef1
+    // par[2] = gaussian integral
+    // par[3] = gaussian mean
+    // par[4] = gaussian sigma
+
+  if (ftypeOfFit4Bkg==4) {
+    
+    if(ftypeOfFit4Sgn == 0) {
+      
+      Double_t parbkg[2] = {par[0]-par[2], par[1]}; 
+      bkg = FitFunction4Bkg(x,parbkg);
+    }
+    if(ftypeOfFit4Sgn == 1) {
+      
+      Double_t parbkg[5] = {par[2],par[3],ffactor*par[4],par[0]-par[2], par[1]}; 
+      bkg = FitFunction4Bkg(x,parbkg);
+    }
+    sgn = FitFunction4Sgn(x,&par[2]);
+  }
+
+
+  //Power and exponential fit
+
+    // par[0] = tot integral
+    // par[1] = coef1
+    // par[2] = coef2
+    // par[3] = gaussian integral
+    // par[4] = gaussian mean
+    // par[5] = gaussian sigma
+
+  if (ftypeOfFit4Bkg==5) {      
+   
+    if(ftypeOfFit4Sgn == 0) {
+	Double_t parbkg[3] = {par[0]-par[3],par[1],par[2]}; 
+	bkg = FitFunction4Bkg(x,parbkg); 
+    }
+    if(ftypeOfFit4Sgn == 1) {
+     Double_t parbkg[6] = {par[3],par[4],ffactor*par[5],par[0]-par[3], par[1], par[2]}; 
+     bkg = FitFunction4Bkg(x,parbkg);
+    }
+    sgn = FitFunction4Sgn(x,&par[3]);
+  }                            
+
   total = bkg + sgn;
   
   return  total;
@@ -683,12 +741,37 @@ Double_t AliHFMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
   case 3:
     total=par[0+firstPar];
     break;
+  case 4:  
+    //power function 
+    //y=a(x-m_pi)^b -> integral = a/(b+1)*((max-m_pi)^(b+1)-(min-m_pi)^(b+1))
+    //
+    //a = integral*(b+1)/((max-m_pi)^(b+1)-(min-m_pi)^(b+1))
+    // * [0] = integralBkg;
+    // * [1] = b;
+    // a(power function) = [0]*([1]+1)/((max-m_pi)^([1]+1)-(min-m_pi)^([1]+1))*(x-m_pi)^[1]
+    {
+    Double_t mpi = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+
+    total = par[0+firstPar]*(par[1+firstPar]+1.)/(TMath::Power(fmaxMass-mpi,par[1+firstPar]+1.)-TMath::Power(fminMass-mpi,par[1+firstPar]+1.))*TMath::Power(x[0]-mpi,par[1+firstPar]);
+    }
+    break;
+  case 5:
+   //power function wit exponential
+    //y=a*Sqrt(x-m_pi)*exp(-b*(x-m_pi))  
+    { 
+    Double_t mpi = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+
+    total = par[1+firstPar]*TMath::Sqrt(x[0] - mpi)*TMath::Exp(-1.*par[2+firstPar]*(x[0]-mpi));
+    } 
+    break;
 //   default:
 //     Types of Fit Functions for Background:
 //     * 0 = exponential;
 //     * 1 = linear;
 //     * 2 = polynomial 2nd order
 //     * 3 = no background"<<endl;
+//     * 4 = Power function 
+//     * 5 = Power function with exponential 
 
   }
   return total+gaus2;
@@ -937,6 +1020,14 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
       funcbkg->FixParameter(0,0.);
     }
     break;
+  case 4:
+    funcbkg->SetParNames("BkgInt","Coef2");  
+    funcbkg->SetParameters(sideBandsInt,0.5);
+    break;
+ case 5:
+    funcbkg->SetParNames("BkgInt","Coef1","Coef2");
+    funcbkg->SetParameters(sideBandsInt, 0.5, 50.);
+    break;
   default:
     cout<<"Wrong choise of ftypeOfFit4Bkg ("<<ftypeOfFit4Bkg<<")"<<endl;
     return kFALSE;
@@ -963,6 +1054,9 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     intbkg1 = funcbkg->Integral(fminMass,fmaxMass);
     if(ftypeOfFit4Bkg!=3) slope1 = funcbkg->GetParameter(1);
     if(ftypeOfFit4Bkg==2) conc1 = funcbkg->GetParameter(2);
+    if(ftypeOfFit4Bkg==5) conc1 = funcbkg->GetParameter(2); 
+ 
+
     //cout<<"First fit: \nintbkg1 = "<<intbkg1<<"\t(Compare with par0 = "<<funcbkg->GetParameter(0)<<")\nslope1= "<<slope1<<"\nconc1 = "<<conc1<<endl;
   } 
   else cout<<"\t\t//"<<endl;
@@ -980,27 +1074,55 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
 
     funcbkg1->SetLineColor(2); //red
 
-    if(ftypeOfFit4Bkg==2){
-      cout<<"*** Polynomial Fit ***"<<endl;
-      funcbkg1->SetParNames("IntGB","MeanGB","SigmaGB","BkgInt","Coef1","Coef2");
-      funcbkg1->SetParameters(0.5*(totInt-intbkg1),fMass,ffactor*fSigmaSgn,intbkg1,slope1,conc1);
-
+ switch (ftypeOfFit4Bkg) {
+    case 0:
+	{
+        cout<<"*** Exponential Fit ***"<<endl;
+        funcbkg1->SetParNames("IntGB","MeanGB","SigmaGB","BkgInt","Slope");
+	funcbkg1->SetParameters(0.5*(totInt-intbkg1),fMass,ffactor*fSigmaSgn,intbkg1,slope1);
+	}
+        break;
+     case 1: 
+	{
+	cout<<"*** Linear Fit ***"<<endl;
+        funcbkg1->SetParNames("IntGB","MeanGB","SigmaGB","BkgInt","Slope");
+	funcbkg1->SetParameters(0.5*(totInt-intbkg1),fMass,ffactor*fSigmaSgn,intbkg1,slope1);
+	}
+        break;    
+     case 2:
+        {
+        cout<<"*** Polynomial Fit ***"<<endl;
+        funcbkg1->SetParNames("IntGB","MeanGB","SigmaGB","BkgInt","Coef1","Coef2");
+        funcbkg1->SetParameters(0.5*(totInt-intbkg1),fMass,ffactor*fSigmaSgn,intbkg1,slope1,conc1);
+        }
+        break;
+    case 3:
+       //no background: gaus sign+ gaus broadened
+	{
+	cout<<"*** No background Fit ***"<<endl;
+	funcbkg1->SetParNames("IntGB","MeanGB","SigmaGB","Const");
+	funcbkg1->SetParameters(0.5*totInt,fMass,ffactor*fSigmaSgn,0.); 
+	funcbkg1->FixParameter(3,0.);
+	} 
+        break;
+     case 4:
+	{	
+ 	cout<<"*** Power function Fit ***"<<endl;
+	funcbkg1->SetParNames("IntGB","MeanGB","SigmaGB","BkgInt","Coef2");
+        funcbkg1->SetParameters(0.5*(totInt-intbkg1),fMass,ffactor*fSigmaSgn,intbkg1,slope1);
+       	}
+        break;
+      case 5:
+	{ 
+	cout<<"*** Power function conv. with exponential Fit ***"<<endl;
+        funcbkg1->SetParNames("IntGB","MeanGB","SigmaGB","BkgInt","Coef1","Coef2");
+        funcbkg1->SetParameters(0.5*(totInt-intbkg1),fMass,ffactor*fSigmaSgn,intbkg1,slope1,conc1);
+	}
+        break;
+    }
       //cout<<"Parameters set to: "<<0.5*(totInt-intbkg1)<<"\t"<<fMass<<"\t"<<ffactor*fSigmaSgn<<"\t"<<intbkg1<<"\t"<<slope1<<"\t"<<conc1<<"\t"<<endl;
       //cout<<"Limits: ("<<fminMass<<","<<fmaxMass<<")\tnPar = "<<bkgPar<<"\tgsidebands = "<<fSideBands<<endl;
-    } else{
-      if(ftypeOfFit4Bkg==3) //no background: gaus sign+ gaus broadened
-	{
-	  cout<<"*** No background Fit ***"<<endl;
-	  funcbkg1->SetParNames("IntGB","MeanGB","SigmaGB","Const");
-	  funcbkg1->SetParameters(0.5*totInt,fMass,ffactor*fSigmaSgn,0.); 
-	  funcbkg1->FixParameter(3,0.);
-	} else{ //expo or linear
-	  if(ftypeOfFit4Bkg==0) cout<<"*** Exponential Fit ***"<<endl;
-	  if(ftypeOfFit4Bkg==1) cout<<"*** Linear Fit ***"<<endl;
-	  funcbkg1->SetParNames("IntGB","MeanGB","SigmaGB","BkgInt","Slope");
-	  funcbkg1->SetParameters(0.5*(totInt-intbkg1),fMass,ffactor*fSigmaSgn,intbkg1,slope1);
-	}
-    }
+
     Int_t status=fhistoInvMass->Fit(bkg1name.Data(),"R,L,E,+,0");
     if (status != 0){
       cout<<"Minuit returned "<<status<<endl;
@@ -1017,6 +1139,8 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     intbkg1=funcbkg1->GetParameter(3);
     if(ftypeOfFit4Bkg!=3) slope1 = funcbkg1->GetParameter(4);
     if(ftypeOfFit4Bkg==2) conc1 = funcbkg1->GetParameter(5);
+    if(ftypeOfFit4Bkg==5) conc1 = funcbkg1->GetParameter(5); 
+
 
   } else {
     bkgPar+=3;
@@ -1095,7 +1219,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     if(fFixPar[2])funcmass->FixParameter(2,conc1);
     if(fFixPar[3])funcmass->FixParameter(3,sgnInt);
     if(fFixPar[4])funcmass->FixParameter(4,fMass);
-    if(fFixPar[5])funcmass->FixParameter(5,fSigmaSgn);
+    if(fFixPar[5])funcmass->FixParameter(5,fSigmaSgn); 
     //
     //funcmass->FixParameter(2,sgnInt);
   }
@@ -1241,12 +1365,20 @@ Bool_t AliHFMassFitter::RefitWithBkgOnly(Bool_t draw){
     funcbkg->SetParameters(integral,-10.,5);
     break;
   case 3:
-    cout<<"Warning! This choice does not have a lot of sense..."<<endl;
+    cout<<"Warning! This choice does not make a lot of sense..."<<endl;
     if(ftypeOfFit4Sgn==0){
       funcbkg->SetParNames("Const");
       funcbkg->SetParameter(0,0.);
       funcbkg->FixParameter(0,0.);
     }
+    break;
+  case 4:     
+    funcbkg->SetParNames("BkgInt","Coef1");
+    funcbkg->SetParameters(integral,0.5);
+    break;
+  case 5:    
+    funcbkg->SetParNames("BkgInt","Coef1","Coef2");
+    funcbkg->SetParameters(integral,-10.,5.);
     break;
   default:
     cout<<"Wrong choise of ftypeOfFit4Bkg ("<<ftypeOfFit4Bkg<<")"<<endl;
@@ -1269,6 +1401,7 @@ Bool_t AliHFMassFitter::RefitWithBkgOnly(Bool_t draw){
 }
 //_________________________________________________________________________
 Double_t AliHFMassFitter::GetChiSquare() const{
+  //Get Chi^2 method
   TF1 *funcmass=(TF1*)fhistoInvMass->GetFunction("funcmass");
   if(!funcmass) {
     cout<<"funcmass not found"<<endl;
@@ -1279,6 +1412,7 @@ Double_t AliHFMassFitter::GetChiSquare() const{
 
 //_________________________________________________________________________
 Double_t AliHFMassFitter::GetReducedChiSquare() const{
+  //Get reduced Chi^2 method
   TF1 *funcmass=(TF1*)fhistoInvMass->GetFunction("funcmass");
   if(!funcmass) {
     cout<<"funcmass not found"<<endl;
@@ -1498,6 +1632,12 @@ void AliHFMassFitter::WriteCanvas(TString userIDstring,TString path,Double_t nsi
     break;
   case 3:
     type="noB"; //3+1
+    break;
+  case 4:  
+    type="Pow"; //3+3
+    break;
+  case 5:
+    type="PowExp"; //3+3
     break;
   }
 

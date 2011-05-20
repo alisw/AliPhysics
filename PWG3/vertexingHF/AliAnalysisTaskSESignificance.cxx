@@ -114,7 +114,12 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance(const char *name, T
 
   SetPDGCodes();
   SetDsChannel(kPhi);
-  SetMassLimits(0.15,fPDGmother); //check range
+  if (fDecChannel!=2) SetMassLimits(0.15,fPDGmother); //check range
+  else {
+    Float_t min = 0.13;
+    Float_t max = 0.19;
+    SetMassLimits(min, max);
+  }
   fNPtBins=fRDCuts->GetNPtBins();
 
   fNVars=fRDCuts->GetNVarsForOpt();
@@ -418,6 +423,7 @@ void AliAnalysisTaskSESignificance::UserCreateOutputObjects()
   fOutput->Add(fHistNEvents);
 
  
+  PostData(1,fOutput);    
   return;
 }
 
@@ -504,6 +510,18 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
   for (Int_t iProng = 0; iProng < nProng; iProng++) {
     fHistNEvents->Fill(6);
     d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iProng);
+
+    AliAODRecoCascadeHF* DStarToD0pi = NULL;
+    AliAODRecoDecayHF2Prong* D0Particle = NULL;
+    fPDGDStarToD0pi[0] = 421; fPDGDStarToD0pi[1] = 211;
+    fPDGD0ToKpi[0] = 321; fPDGD0ToKpi[1] = 211;
+
+    if (fDecChannel==2) {
+      DStarToD0pi = (AliAODRecoCascadeHF*)arrayProng->At(iProng);
+      if (!DStarToD0pi->GetSecondaryVtx()) continue;
+      D0Particle = (AliAODRecoDecayHF2Prong*)DStarToD0pi->Get2Prong();
+      if (!D0Particle) continue;
+      }
     
     Bool_t isFidAcc = fRDCuts->IsInFiducialAcceptance(d->Pt(),d->Y(fPDGmother));
     Int_t isSelected=fRDCuts->IsSelected(d,fSelectionlevel,aod);
@@ -564,7 +582,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	  FillD02p(d,arrayMC,(Int_t)(ptbin*nHistpermv+addresses[ivals]),isSelected);
 	  break;
 	case 2:
-	  FillDstar(d,arrayMC,(Int_t)(ptbin*nHistpermv+addresses[ivals]),isSelected);
+	  FillDstar(DStarToD0pi,arrayMC,(Int_t)(ptbin*nHistpermv+addresses[ivals]),isSelected);
 	  break;
 	case 3:
 	  if(isSelected&1){
@@ -700,10 +718,56 @@ void AliAnalysisTaskSESignificance::FillD02p(AliAODRecoDecayHF* d,TClonesArray *
   }
 }
 
-void AliAnalysisTaskSESignificance::FillDstar(AliAODRecoDecayHF* /*d*/,TClonesArray */*arrayMC*/,Int_t /*index*/,Int_t /*matchtoMC*/){
+void AliAnalysisTaskSESignificance::FillDstar(AliAODRecoCascadeHF* dstarD0pi,TClonesArray *arrayMC,Int_t index,Int_t isSel){
     //D* channel
 
-  AliInfo("Dstar channel not implemented\n");
+    AliInfo("Dstar selected\n");
+    
+    Double_t mass = dstarD0pi->DeltaInvMass();
+
+    if((isSel==1 || isSel==3) && fPartOrAndAntiPart>=0) fMassHist[index]->Fill(mass);
+    if(isSel>=2 && fPartOrAndAntiPart<=0) fMassHist[index]->Fill(mass);
+	
+    if(fReadMC) {
+       Int_t matchtoMC = -1; 
+       matchtoMC = dstarD0pi->MatchToMC(413,421,fPDGDStarToD0pi, fPDGD0ToKpi, arrayMC);
+
+       Int_t prongPdgDStarPlus=413,prongPdgDStarMinus=(-1)*413;
+	
+       if ((isSel==1 || isSel==3) && fPartOrAndAntiPart>=0) { 
+          //D*+
+      	  if(matchtoMC>=0) {
+             AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(matchtoMC);
+	     Int_t pdgMC = dMC->GetPdgCode();
+	
+	     if (pdgMC==prongPdgDStarPlus) fSigHist[index]->Fill(mass);
+	     else {
+	        dstarD0pi->SetCharge(-1*dstarD0pi->GetCharge());
+		mass =	dstarD0pi->DeltaInvMass();
+		fRflHist[index]->Fill(mass);
+		dstarD0pi->SetCharge(-1*dstarD0pi->GetCharge());
+	      }	
+      	    } 
+	  else fBkgHist[index]->Fill(mass);
+        }
+    
+	if (isSel>=2 && fPartOrAndAntiPart<=0) { 
+           //D*-
+      	   if (matchtoMC>=0) {
+	      AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(matchtoMC);
+	      Int_t pdgMC = dMC->GetPdgCode();
+	
+	      if (pdgMC==prongPdgDStarMinus) fSigHist[index]->Fill(mass);
+	      else {
+		 dstarD0pi->SetCharge(-1*dstarD0pi->GetCharge());
+		 mass =	dstarD0pi->DeltaInvMass();
+		 fRflHist[index]->Fill(mass);
+		 dstarD0pi->SetCharge(-1*dstarD0pi->GetCharge());
+	      }
+      	    } 
+	    else fBkgHist[index]->Fill(mass);
+    	  }
+       }
 
 }
 
@@ -926,4 +990,3 @@ void AliAnalysisTaskSESignificance::Terminate(Option_t */*option*/)
   return;
 }
 //-------------------------------------------
-

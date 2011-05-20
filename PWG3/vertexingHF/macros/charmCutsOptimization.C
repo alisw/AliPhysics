@@ -1,6 +1,7 @@
 #include <fstream>
 #include <Riostream.h>
 #include <TSystem.h>
+#include <TMath.h>
 #include <TH1F.h>
 #include <TF1.h>
 #include <TFile.h>
@@ -26,10 +27,10 @@
 
 //global variables
 Double_t nsigma=3;
-Int_t decCh=0;
-Int_t fitbtype=0;
+Int_t decCh=2;
+Int_t fitbtype=5;
 Int_t rebin=2;
-Double_t sigma=0.012;
+Double_t sigma=0.0005;
 Int_t pdg;
 Double_t mass;
 
@@ -48,14 +49,22 @@ Bool_t MC(TH1F* hs,TH1F* hb, Double_t& sgn, Double_t& errsgn, Double_t& bkg, Dou
 //decCh:
 //- 0 = kDplustoKpipi
 //- 1 = kD0toKpi
-//- 2 = kDstartoKpipi
+//- 2 = kDStartoKpipi
 //- 3 = kDstoKKpi
 //- 4 = kD0toKpipipi
 //- 5 = kLambdactopKpi
 
 //Note: writefit=kTRUE writes the root files with the fit performed but it also draw all the canvas, so if your computer is not powerfull enough I suggest to run it in batch mode (root -b)
 
-Bool_t charmCutsOptimization(Bool_t isData=kTRUE,TString part="both"/*"A" anti-particle, "P" particle*/,TString centr="no",Bool_t writefit=kFALSE,Int_t minentries=50,Double_t *rangefit=0x0, Bool_t useBinCounting=kFALSE){
+// Method using this code:
+// root -b
+// .L macros/LoadLibraries
+// Loadlibraries()
+// .L macros/CharmCutsOptimization
+// charmCutsOptimization(/*options*/)
+
+Bool_t charmCutsOptimization(Bool_t isData=kTRUE,TString part="both"/*"A" anti-particle, "P" particle*/,TString centr="no",Bool_t writefit=kTRUE,Int_t minentries=50,Double_t *rangefit=0x0, Bool_t useBinCounting=kTRUE){
+
   outcheck.open("output.dat",ios::out);
   outdetail.open("discarddetails.dat",ios::out);
 
@@ -83,8 +92,8 @@ Bool_t charmCutsOptimization(Bool_t isData=kTRUE,TString part="both"/*"A" anti-p
     pdg=421;
     break;
   case 2:
-    listname+="Dstar";
-    mdvlistname+="Dstar";
+    listname+="Dstar0100";
+    mdvlistname+="Dstar0100";
     pdg=413;
     break;
   case 3:
@@ -107,6 +116,7 @@ Bool_t charmCutsOptimization(Bool_t isData=kTRUE,TString part="both"/*"A" anti-p
     return kFALSE;
   }
   mass=TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
+  if (decCh==2) mass=(TDatabasePDG::Instance()->GetParticle(pdg)->Mass() - TDatabasePDG::Instance()->GetParticle(421)->Mass()); 
 
   if(part!="both"){
     listname.Append(part);
@@ -293,8 +303,11 @@ Bool_t charmCutsOptimization(Bool_t isData=kTRUE,TString part="both"/*"A" anti-p
 	  cout<<name.Data()<<" not found"<<endl;
 	  continue;
 	}
+
 	MC(h,g,signal,errSignal,background,errBackground,signif,errSignif,sigmafit,status);
+
       }
+
       hstatus->Fill(status);
 
       if(status==1){
@@ -305,7 +318,6 @@ Bool_t charmCutsOptimization(Bool_t isData=kTRUE,TString part="both"/*"A" anti-p
 	mdvB->SetElement(ih,background);
 	mdvBerr->SetElement(ih,errBackground);
 	hSigma[i]->Fill(sigmafit);
-      
       }else{
 	mdvSgnf->SetElement(ih,0);
 	mdvSgnferr->SetElement(ih,0);
@@ -322,18 +334,15 @@ Bool_t charmCutsOptimization(Bool_t isData=kTRUE,TString part="both"/*"A" anti-p
 
     }
   
-  
-
     fout->cd();
     mdvS->Write();
     mdvB->Write();
     mdvSgnf->Write();
-
     mdvSerr->Write();
     mdvBerr->Write();
     mdvSgnferr->Write();
     hSigma[i]->Write();
- 
+
   }
   
 
@@ -341,16 +350,16 @@ Bool_t charmCutsOptimization(Bool_t isData=kTRUE,TString part="both"/*"A" anti-p
   cinfo->cd();
   cinfo->SetGrid();
   hstatus->Draw("htext0");
-
   fout->cd();
   hstatus->Write();
-
   fout->Close();
-
   outcheck<<"\nSummary:\n - Total number of histograms: "<<nhist<<"\n - "<<count<<" histograms with more than "<<minentries<<" entries; \n - Too few entries in histo "<<countNoHist<<" times;\n - Fit failed "<<countFitFail<<" times \n - no sense Signal/Background/Significance "<<countSgnfFail<<" times\n - only background "<<countBkgOnly<<" times"<<endl;
   outcheck.close();
+
+cout << "test1\n";
   return kTRUE;
 }
+
 
 //this function fit the hMass histograms
 //status = 0 -> fit fail
@@ -364,7 +373,8 @@ Bool_t Data(TH1F* h,Double_t* rangefit,Bool_t writefit, Double_t& sgn, Double_t&
   Double_t min=h->GetBinLowEdge(7);
   Double_t max=h->GetBinLowEdge(nbin-5)+h->GetBinWidth(nbin-5);
 
-  min=h->GetBinLowEdge(1);
+  if(decCh != 2) min = h->GetBinLowEdge(1);
+  else min = TDatabasePDG::Instance()->GetParticle(211)->Mass();
   max=h->GetBinLowEdge(nbin+1);
 
   if(rangefit) {
@@ -490,14 +500,45 @@ Double_t ExpoBkgWoPeak(Double_t *x, Double_t *par){
 }
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// par[0], par[1] expo params, par[2], par[3] exclusion range
+
+Double_t PowerBkgWoPeak(Double_t *x, Double_t *par){
+
+  if( reject && x[0]>par[2] && x[0]<par[3] ){
+    TF1::RejectPoint();
+    return 0;
+  }
+
+  Double_t xminusmpi = x[0]-TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  return par[0]*TMath::Power(TMath::Abs(xminusmpi),par[1]) ;
+}
+
+//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// par[0], par[1] expo params, par[2], par[3] exclusion range
+
+Double_t PowerExpoBkgWoPeak(Double_t *x, Double_t *par){
+
+  if( reject && x[0]>par[2] && x[0]<par[3] ){
+    TF1::RejectPoint();
+    return 0;
+  }
+  Double_t xminusmpi = x[0]-TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  return par[0]*TMath::Sqrt(xminusmpi)*TMath::Exp(-1.*par[1]*xminusmpi);
+}
+
+
+//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 //this function fit the hMass histograms
 //status = 0 -> fit fail
 //         1 -> fit ok and good results
 //         2 -> negative signif
 Bool_t BinCounting(TH1F* h,Double_t* rangefit,Bool_t writefit, Double_t& sgn, Double_t& errsgn, Double_t& bkg, Double_t& errbkg, Double_t& sgnf, Double_t& errsgnf, Int_t& status){
 
+
+
   Int_t nbin=h->GetNbinsX();
-  Double_t min=h->GetBinLowEdge(1);
+  if(decCh != 2) Double_t min = h->GetBinLowEdge(1);
+  else Double_t min = TDatabasePDG::Instance()->GetParticle(211)->Mass();
   Double_t max=h->GetBinLowEdge(nbin+1);
 
   if(rangefit) {
@@ -505,9 +546,14 @@ Bool_t BinCounting(TH1F* h,Double_t* rangefit,Bool_t writefit, Double_t& sgn, Do
     max=rangefit[1];
   }
 
-  // Bkg fit : exponential = A*exp(B*x) 
   reject = true;
-  TF1 *fBkgFit = new TF1("fBkgFit",ExpoBkgWoPeak,min,max,4);
+//Bkg fit : exponential = A*exp(B*x) 
+  if(decCh != 2) TF1 *fBkgFit = new TF1("fBkgFit",ExpoBkgWoPeak,min,max,4);          
+  else { 
+   if (fitbtype == 5) TF1 *fBkgFit = new TF1("fBkgFit",PowerExpoBkgWoPeak,min,max,4); //Bkg fit : PowerExpo = A*(x-mpi)^(1/2)*exp(-B*(x-mpi))
+   else TF1 *fBkgFit = new TF1("fBkgFit",PowerBkgWoPeak,min,max,4); //Bkg fit : Power = A*(x-mpi)^B
+  }
+
   fBkgFit->FixParameter(2,mass-nsigma*sigma);
   fBkgFit->FixParameter(3,mass+nsigma*sigma);
   TFitResultPtr r = h->Fit(fBkgFit,"RS+");
@@ -521,11 +567,16 @@ Bool_t BinCounting(TH1F* h,Double_t* rangefit,Bool_t writefit, Double_t& sgn, Do
   } 
 
   reject = false;
-  TF1 *fBkgFct = new TF1("fBkgFct",ExpoBkgWoPeak,min,max,4);
+  if(decCh !=2) TF1 *fBkgFct = new TF1("fBkgFct",ExpoBkgWoPeak,min,max,4);  
+  else {
+   if (fitbtype == 5) TF1 *fBkgFct = new TF1("fBkgFct",PowerExpoBkgWoPeak,min,max,4);  
+   else TF1 *fBkgFct = new TF1("fBkgFct",PowerBkgWoPeak,min,max,4);
+  }
   fBkgFct->SetLineStyle(2);
   for(Int_t i=0; i<4; i++) fBkgFct->SetParameter(i,fBkgFit->GetParameter(i));
   h->GetListOfFunctions()->Add(fBkgFct);
   TH1F * hBkgFct = (TH1F*)fBkgFct->GetHistogram();
+
 
   status = 1;    
   Double_t binStartCount = h->FindBin(mass-nsigma*sigma);
@@ -535,9 +586,11 @@ Bool_t BinCounting(TH1F* h,Double_t* rangefit,Bool_t writefit, Double_t& sgn, Do
     counts += h->GetBinContent( ibin );
     errcounts += counts ;
     Double_t center =  h->GetBinCenter(ibin);
-    bkgcounts += hBkgFct->GetBinContent( hBkgFct->FindBin(center) );
+    bkgcounts += hBkgFct->GetBinContent( hBkgFct->FindBin(center) ); 
+    
     errbkgcounts += bkgcounts ;
   }
+  
   bkg = bkgcounts;
   errbkg = TMath::Sqrt( errbkgcounts );
   sgn = counts - bkg ;
@@ -545,14 +598,20 @@ Bool_t BinCounting(TH1F* h,Double_t* rangefit,Bool_t writefit, Double_t& sgn, Do
   errsgn = TMath::Sqrt( counts + errbkg*errbkg );
   sgnf = sgn / TMath::Sqrt( sgn + bkg );
   errsgnf = TMath::Sqrt( sgnf*sgnf/(sgn+bkg)/(sgn+bkg)*(1/4.*errsgn*errsgn+errbkg*errbkg) + sgnf*sgnf/sgn/sgn*errsgn*errsgn );
-  //    cout << " Signal "<<sgn<<" +- "<<errsgn<<", bkg "<<bkg<<" +- "<<errbkg<<", significance "<<sgnf<<" +- "<<errsgnf<<endl;
+      cout << " Signal "<<sgn<<" +- "<<errsgn<<", bkg "<<bkg<<" +- "<<errbkg<<", significance "<<sgnf<<" +- "<<errsgnf<<endl;
   
   if(writefit) {
+
     TString filename = Form("%sMassFit.root",h->GetName());
+
     TFile* outputcv = new TFile(filename.Data(),"recreate");      
+
     TCanvas* c = new TCanvas();
+
     c->SetName(Form("%s",h->GetName()));
+
     h->Draw();
+
     TPaveText *pavetext=new TPaveText(0.4,0.7,0.85,0.9,"NDC");     
     pavetext->SetBorderSize(0);
     pavetext->SetFillStyle(0);
@@ -560,17 +619,26 @@ Bool_t BinCounting(TH1F* h,Double_t* rangefit,Bool_t writefit, Double_t& sgn, Do
     pavetext->AddText(Form("Bkg = %4.2e #pm %4.2e",bkg,errbkg));
     pavetext->AddText(Form("Signif = %3.2f #pm %3.2f",sgnf,errsgnf));
     c->cd();
+
     pavetext->DrawClone();
+
     outputcv->cd();
+
     c->Write();
+
+
     outputcv->Close();
+
     delete outputcv;
+
     delete c;
   }
 
-  
+
   delete fBkgFit;
+
   delete fBkgFct;
+
 
   return kTRUE; 
 }
@@ -1030,7 +1098,7 @@ Float_t* GetCutValuesFromNHist(AliMultiDimVector* vct,Int_t ptbin,Int_t nhist){
 // valsgiven = array of dimention = to the number of variables optimized. For each variable put kTRUE if the value is given (in values), kFALSE otherwise
 // 
 
-void DrawPossibilities(Int_t ptbin,Bool_t* valsgiven,Float_t* values,TString path="./",Int_t decCh=1){
+void DrawPossibilities(Int_t ptbin,Bool_t* valsgiven,Float_t* values,TString path="./",Int_t decCh=2){
   gStyle->SetFrameBorderMode(0);
   gStyle->SetCanvasColor(0);
   gStyle->SetFrameFillColor(0);
@@ -1063,8 +1131,8 @@ void DrawPossibilities(Int_t ptbin,Bool_t* valsgiven,Float_t* values,TString pat
     
     break;
   case 2:
-    listname+="Dstar";
-    mdvlistname+="Dstar";
+    listname+="Dstar0100";
+    mdvlistname+="Dstar0100";
     
     break;
   case 3:
@@ -1121,7 +1189,7 @@ void DrawPossibilities(Int_t ptbin,Bool_t* valsgiven,Float_t* values,TString pat
   }
 }
 
-void Merge2Bins(Int_t b1, Int_t b2,TString pathin="./",Int_t decCh=1,TString part="both"/*"A" anti-particle, "P" particle*/){
+void Merge2Bins(Int_t b1, Int_t b2,TString pathin="./",Int_t decCh=2,TString part="both"/*"A" anti-particle, "P" particle*/){
 
   if(b2!=b1+1){
     printf("The bins to be merget must be consecutive. Check! [b1 = %d, b2= %d]\n",b1,b2);
@@ -1146,8 +1214,8 @@ void Merge2Bins(Int_t b1, Int_t b2,TString pathin="./",Int_t decCh=1,TString par
     mdvlistname+="D0";
     break;
   case 2:
-    listname+="Dstar";
-    mdvlistname+="Dstar";
+    listname+="Dstar0100";
+    mdvlistname+="Dstar0100";
     break;
   case 3:
     listname+="Ds";
@@ -1392,3 +1460,4 @@ void SubtractBkg(Int_t nhisto){
   c->SaveAs(Form("h%d%sSubtr.png",nhisto,fitType.Data()));
   cvnewfits->SaveAs(Form("h%d%sFitNew.png",nhisto,fitType.Data()));
 }
+
