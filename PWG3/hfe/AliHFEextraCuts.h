@@ -70,6 +70,8 @@ class AliHFEextraCuts : public AliCFCutBase{
     inline void SetMinNClustersTPC(Int_t minclusters, ETPCclusterDef_t def);
     void SetTOFPID(Bool_t tofPid) { fTOFpid = tofPid;}
     void SetTOFMISMATCH(Bool_t tofMismatch) { fTOFmismatch = tofMismatch;}
+    void SetMaxImpactParameterRpar(Bool_t maxImpactParameterRpar) {fMaxImpactParameterRpar = maxImpactParameterRpar;}
+    void SetFractionOfTPCSharedClusters(Double_t fractionOfTPCSharedClusters) {fFractionOfTPCSharedClusters = fractionOfTPCSharedClusters;}
 
     void SetCheckITSstatus(Bool_t check) { fCheck = check; };
     Bool_t GetCheckITSstatus() const { return fCheck; };
@@ -95,6 +97,8 @@ class AliHFEextraCuts : public AliCFCutBase{
     void GetImpactParameters(AliVTrack *track, Float_t &radial, Float_t &z);
     void GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy);
     void GetHFEImpactParameterCuts(AliVTrack *track, Double_t &hfeimpactRcut, Double_t &hfeimpactnsigmaRcut);
+    void GetMaxImpactParameterCutR(AliVTrack *track, Double_t &maximpactRcut);
+    Float_t GetTPCsharedClustersRatio(AliVTrack *track);
 
   private:
     typedef enum{
@@ -130,6 +134,8 @@ class AliHFEextraCuts : public AliCFCutBase{
     Bool_t  fTOFmismatch;             // TOF mismatch
     UChar_t fTPCclusterDef;           // TPC cluster definition Bitmap
     UChar_t fTPCclusterRatioDef;      // TPC cluster ratio definition Bitmap
+    Bool_t  fMaxImpactParameterRpar;  // Parametrized max impact parameter cut
+    Double_t  fFractionOfTPCSharedClusters; // Cut on fraction of shared clusters
 
     Bool_t  fCheck;                     // check
     TList *fQAlist;			//! Directory for QA histograms

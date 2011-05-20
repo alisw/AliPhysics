@@ -42,8 +42,9 @@ class AliHFEcuts : public TNamed{
       kStepRecKineITSTPC = 1,
       kStepRecPrim = 2,
       kStepHFEcutsITS = 3,
-      kStepHFEcutsTRD = 4,
-      kNcutStepsRecTrack = 5
+      kStepHFEcutsTOF = 4,
+      kStepHFEcutsTRD = 5,
+      kNcutStepsRecTrack = 6
     } RecoCutStep_t;
     typedef enum{
       kStepHFEcutsDca = 0, 
@@ -145,6 +146,8 @@ class AliHFEcuts : public TNamed{
     void SetTOFPIDStep(Bool_t tofPidStep) {fTOFPIDStep = tofPidStep;};
     void SetTOFMISMATCHStep(Bool_t tofMismatchStep) {fTOFMISMATCHStep = tofMismatchStep;};
     void SetUseMixedVertex(Bool_t useMixedVertex) {fUseMixedVertex = useMixedVertex;};    
+    void SetFractionOfSharedTPCClusters( Bool_t fractionOfSharedTPCClusters) {fFractionOfSharedTPCClusters = fractionOfSharedTPCClusters;};
+    void SetMaxImpactParameterRpar(Bool_t maxImpactParameterRpar) { fMaxImpactParameterRpar = maxImpactParameterRpar; };
     
     inline void CreateStandardCuts();
     
@@ -179,6 +182,7 @@ class AliHFEcuts : public TNamed{
     void SetRecKineITSTPCCutList();
     void SetRecPrimaryCutList();
     void SetHFElectronITSCuts();
+    void SetHFElectronTOFCuts();
     void SetHFElectronTRDCuts();
     void SetHFElectronDcaCuts();
     void SetEventCutList(Int_t istep);
@@ -210,6 +214,9 @@ class AliHFEcuts : public TNamed{
     Bool_t   fUseMixedVertex;         // Use primary vertex from track only as before
     Float_t  fIPCutParams[4];         // Parameters of impact parameter cut parametrization
     Bool_t   fIsIPSigmacut;           // if abs IP cut or IP sigma cut 
+    Double_t fFractionOfSharedTPCClusters; // Fraction of shared TPC clusters
+    Bool_t   fMaxImpactParameterRpar;      // Max impact parameter
+
 
     
     TList *fHistQA;		            //! QA Histograms
