@@ -942,7 +942,8 @@ AliITSCorrMap1DSDD* CreateCorrMap(TH1* mapHisto, int imd, int side, AliITSCorrMa
   nbCorr = b1-b0+1;
   AliITSCorrMap1DSDD* mpCorr = 0;
   //
-  if (updateMap && nbCorr>1) {
+  // check if the updateMap is meaningful
+  if (updateMap && updateMap->GetNBinsDrift()>2 && nbCorr>1) {
     if (mapHisto) {
       TSpline3 spl(mapHisto);
       nbOld = updateMap->GetNBinsDrift();
