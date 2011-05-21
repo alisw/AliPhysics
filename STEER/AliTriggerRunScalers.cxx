@@ -591,27 +591,27 @@ Double_t AliTriggerRunScalers::CalculateMu(ULong64_t countsB, ULong64_t countsAC
    return 0.;
 }
 //_____________________________________________________________________________
-Double_t AliTriggerRunScalers::CalculateMuError(ULong64_t countsB, ULong64_t countsAC, ULong64_t countsE, UShort_t nB, UShort_t nAC, UShort_t nE, UInt_t orbits, Bool_t bkgCorr, Double_t triggerEff, Double_t errorEff) 
+Double_t AliTriggerRunScalers::CalculateMuError(/*ULong64_t countsB, ULong64_t countsAC, ULong64_t countsE, UShort_t nB, UShort_t nAC, UShort_t nE, UInt_t orbits, Bool_t bkgCorr, Double_t triggerEff, Double_t errorEff*/) 
 { 
-
+   // method for mu error to be added
    return 0.;
 }
 //_____________________________________________________________________________
-Double_t AliTriggerRunScalers::CalculateMuError(ULong64_t countsB, ULong64_t countsAC, ULong64_t countsE, ULong64_t beamB, UShort_t nB, UShort_t nAC, UShort_t nE, Bool_t bkgCorr, Double_t triggerEff, Double_t errorEff) 
+/*Double_t AliTriggerRunScalers::CalculateMuError(ULong64_t countsB, ULong64_t countsAC, ULong64_t countsE, ULong64_t beamB, UShort_t nB, UShort_t nAC, UShort_t nE, Bool_t bkgCorr, Double_t triggerEff, Double_t errorEff) 
 {
-
+   // method for mu error to be added
    return 0.;
-}
+}*/
 //_____________________________________________________________________________
 ULong64_t AliTriggerRunScalers::GetDeltaScaler(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex, Int_t level)
 {
   // level=0 -> L0CB, 1->L0CA, 2->L1CB, 3->L1CA, 4->L2CB, 5->L2CA
-  if (level < 0 && level > 5) return 0;
+  if (level < 0 || level > 5) return 0;
   
   const AliTriggerScalersESD* scalers1 = scalRec1->GetTriggerScalersForClass(classIndex);
   const AliTriggerScalersESD* scalers2 = scalRec2->GetTriggerScalersForClass(classIndex);
-  ULong64_t s1;
-  ULong64_t s2;
+  ULong64_t s1=0;
+  ULong64_t s2=0;
   if (level==0) {s1=scalers1->GetLOCB(); s2=scalers2->GetLOCB();}
   if (level==1) {s1=scalers1->GetLOCA(); s2=scalers2->GetLOCA();}
   if (level==2) {s1=scalers1->GetL1CB(); s2=scalers2->GetL1CB();}
@@ -649,8 +649,8 @@ UInt_t AliTriggerRunScalers::GetDeltaOrbits(const AliTriggerScalersRecordESD* sc
 Double_t AliTriggerRunScalers::GetScalerRate(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex, Int_t level)
 {
   // level=0 -> L0CB, 1->L0CA, 2->L1CB, 3->L1CA, 4->L2CB, 5->L2CA
-  if (level < 0 && level > 5) return 0;
-  
+  if (level < 0 || level > 5) return 0;
+ 
   ULong64_t scaler = GetDeltaScaler(scalRec1, scalRec2, classIndex, level);
   Double_t time = GetDeltaTime(scalRec1, scalRec2 );
   if (time==0.) return 0.;
@@ -660,7 +660,7 @@ Double_t AliTriggerRunScalers::GetScalerRate(const AliTriggerScalersRecordESD* s
 Double_t AliTriggerRunScalers::GetScalerRateError(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex, Int_t level)
 {
   // level=0 -> L0CB, 1->L0CA, 2->L1CB, 3->L1CA, 4->L2CB, 5->L2CA
-  if (level < 0 && level > 5) return 0;
+  if (level < 0 || level > 5) return 0;
   ULong64_t scaler = GetDeltaScaler(scalRec1, scalRec2, classIndex, level);
   Double_t time = GetDeltaTime(scalRec1, scalRec2 );
   if (time!=0.) return (Double_t)sqrt(scaler)/time;
@@ -683,7 +683,7 @@ Double_t AliTriggerRunScalers::GetClassL2L0Error(const AliTriggerScalersRecordES
   return 0.;
 }
 //_____________________________________________________________________________
-Bool_t AliTriggerRunScalers::GetMuFromMinBiasTrg(Double_t &mu, Double_t &muerr, const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, AliTriggerConfiguration* cfg, Bool_t colBCsFromFillScheme, Bool_t bkgCorr, Double_t triggerEff, Double_t errorEff)
+Bool_t AliTriggerRunScalers::GetMuFromMinBiasTrg(Double_t &mu, Double_t &muerr, const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, AliTriggerConfiguration* cfg, Bool_t colBCsFromFillScheme, Bool_t bkgCorr, Double_t triggerEff/*, Double_t errorEff*/)
 {
   // colBCsFromFillScheme=kTRUE - use filling scheme and orbit counter
   // colBCsFromFillScheme=kFALSE - use cbeamb scaler to get number of colliding BCs
@@ -737,7 +737,7 @@ Bool_t AliTriggerRunScalers::GetMuFromMinBiasTrg(Double_t &mu, Double_t &muerr, 
   cbeambNames.Add(new TNamed("CBEAMB-B-NOPF-ALLNOTRD",NULL));
   cbeambNames.Add(new TNamed("CBEAMB-B-NOPF-ALL",NULL));
   cbeambNames.Add(new TNamed("CTRUE-B-NOPF-ALL",NULL));
-  Int_t cbeambIndex;
+  Int_t cbeambIndex=-1;
   for (Int_t i=0; i<cbeambNames.GetEntriesFast(); i++ ) {
      if (cfg->GetClassIndexFromName(cbeambNames.At(i)->GetName()) != -1) cbeambIndex = cfg->GetClassIndexFromName(cbeambNames.At(i)->GetName());
   }
@@ -747,7 +747,7 @@ Bool_t AliTriggerRunScalers::GetMuFromMinBiasTrg(Double_t &mu, Double_t &muerr, 
   if (cint1bIndex!=-1) {
      cint1b=GetDeltaScaler(scalRec1, scalRec2, cint1bIndex, 0);
      const AliTriggerClass* cint1bClass = cfg->GetTriggerClass(cint1bIndex);
-     AliTriggerBCMask* cint1bBCMask;
+     AliTriggerBCMask* cint1bBCMask = new AliTriggerBCMask();
      if (cint1bClass) cint1bBCMask = (AliTriggerBCMask*)cint1bClass->GetBCMask();
      if (TString(cint1bBCMask->GetName()).CompareTo("NONE")!=0){
         nB = (UShort_t)cint1bBCMask->GetNUnmaskedBCs();
@@ -758,7 +758,7 @@ Bool_t AliTriggerRunScalers::GetMuFromMinBiasTrg(Double_t &mu, Double_t &muerr, 
   if (cint1acIndex!=-1) {
      cint1ac=GetDeltaScaler(scalRec1, scalRec2, cint1acIndex, 0);
      AliTriggerClass* cint1acClass = cfg->GetTriggerClass(cint1acIndex);
-     AliTriggerBCMask* cint1acBCMask;
+     AliTriggerBCMask* cint1acBCMask = new AliTriggerBCMask();
      if (cint1acClass) cint1acBCMask = (AliTriggerBCMask*)cint1acClass->GetBCMask();
      if (TString(cint1acBCMask->GetName()).CompareTo("NONE")!=0){
         nAC = (UShort_t)cint1acBCMask->GetNUnmaskedBCs();
@@ -769,7 +769,7 @@ Bool_t AliTriggerRunScalers::GetMuFromMinBiasTrg(Double_t &mu, Double_t &muerr, 
   if (cint1eIndex!=-1) {
      cint1e=GetDeltaScaler(scalRec1, scalRec2, cint1eIndex, 0);
      AliTriggerClass* cint1eClass = cfg->GetTriggerClass(cint1eIndex);
-     AliTriggerBCMask* cint1eBCMask;
+     AliTriggerBCMask* cint1eBCMask = new AliTriggerBCMask();
      if (cint1eClass) cint1eBCMask = (AliTriggerBCMask*)cint1eClass->GetBCMask();
      if (TString(cint1eBCMask->GetName()).CompareTo("NONE")!=0){
         nE = (UShort_t)cint1eBCMask->GetNUnmaskedBCs();
@@ -783,12 +783,12 @@ Bool_t AliTriggerRunScalers::GetMuFromMinBiasTrg(Double_t &mu, Double_t &muerr, 
   //
   if (colBCsFromFillScheme) {
      mu = CalculateMu(cint1b, cint1ac, cint1e, nB, nAC, nE, orbits, bkgCorr, triggerEff);
-     muerr = CalculateMuError(cint1b, cint1ac, cint1e, nB, nAC, nE, orbits, bkgCorr, triggerEff, errorEff);
+     muerr = CalculateMuError(/*cint1b, cint1ac, cint1e, nB, nAC, nE, orbits, bkgCorr, triggerEff, errorEff*/);
   }
   else {
      if (cint1b!=0 && cbeamb==0) return kFALSE;
      mu = CalculateMu(cint1b, cint1ac, cint1e, cbeamb, nB, nAC, nE, bkgCorr, triggerEff);
-     muerr = CalculateMuError(cint1b, cint1ac, cint1e, cbeamb, nB, nAC, nE, bkgCorr, triggerEff, errorEff);
+     muerr = CalculateMuError(/*cint1b, cint1ac, cint1e, cbeamb, nB, nAC, nE, bkgCorr, triggerEff, errorEff*/);
   }
   //
   return kTRUE;
@@ -800,12 +800,10 @@ ULong64_t AliTriggerRunScalers::GetDeltaScalerForRun(Int_t classIndex, Int_t lev
      if (CorrectScalersOverflow()==1) return 0;
   }
   // level=0 -> L0CB, 1->L0CA, 2->L1CB, 3->L1CA, 4->L2CB, 5->L2CA
-  if (level < 0 && level > 5) return 0;
+  if (level < 0 || level > 5) return 0;
   if (fScalersRecordESD.GetEntriesFast()>1) { 
      const AliTriggerScalersRecordESD* scalRec1 = (AliTriggerScalersRecordESD*)fScalersRecordESD.At(0);
      const AliTriggerScalersRecordESD* scalRec2 = (AliTriggerScalersRecordESD*)fScalersRecordESD.At(fScalersRecordESD.GetEntriesFast()-1);
-     const AliTriggerScalersESD* scalers1 = scalRec1->GetTriggerScalersForClass(classIndex);
-     const AliTriggerScalersESD* scalers2 = scalRec2->GetTriggerScalersForClass(classIndex);
      return GetDeltaScaler(scalRec1, scalRec2, classIndex, level);
   }
   return 0;
@@ -818,7 +816,7 @@ Double_t AliTriggerRunScalers::GetScalerRateForRun(Int_t classIndex, Int_t level
      if (CorrectScalersOverflow()==1) return 0;
   }
   if (fScalersRecordESD.GetEntriesFast()>=4) {
-     if (level < 0 && level > 5) return 0;
+     if (level < 0 || level > 5) return 0;
      const AliTriggerScalersRecordESD* scalRec1 = (AliTriggerScalersRecordESD*)fScalersRecordESD.At(0);
      const AliTriggerScalersRecordESD* scalRec2 = (AliTriggerScalersRecordESD*)fScalersRecordESD.At(fScalersRecordESD.GetEntriesFast()-1);
      return GetScalerRate(scalRec1, scalRec2, classIndex, level);
@@ -873,8 +871,6 @@ TGraphErrors* AliTriggerRunScalers::GetGraphScalerL2L0Ratio(const char* classNam
   Double_t* etime = new Double_t[nent];
   Double_t* ratio = new Double_t[nent];
   Double_t* eratio = new Double_t[nent];
-  ULong64_t l0=0;
-  ULong64_t l2=0;
 
   for (Int_t i=0;i<nent-1;i++) {
      if (i>0) time[i] = time[i-1]+GetDeltaTime((AliTriggerScalersRecordESD*)fScalersRecordESD.At(i-1), (AliTriggerScalersRecordESD*)fScalersRecordESD.At(i))/2.+GetDeltaTime((AliTriggerScalersRecordESD*)fScalersRecordESD.At(i), (AliTriggerScalersRecordESD*)fScalersRecordESD.At(i+1))/2.;
@@ -887,7 +883,7 @@ TGraphErrors* AliTriggerRunScalers::GetGraphScalerL2L0Ratio(const char* classNam
   return graph;
 }
 //_____________________________________________________________________________
-TGraphErrors* AliTriggerRunScalers::GetGraphMu(AliTriggerConfiguration* cfg, Bool_t colBCsFromFillScheme, Bool_t bkgCorr, Double_t triggerEff, Double_t errorEff)
+TGraphErrors* AliTriggerRunScalers::GetGraphMu(AliTriggerConfiguration* cfg, Bool_t colBCsFromFillScheme, Bool_t bkgCorr, Double_t triggerEff/*, Double_t errorEff*/)
 {
   if (fScalersRecordESD.GetEntriesFast()==0) {
      if (CorrectScalersOverflow()==1) return 0;
@@ -904,7 +900,7 @@ TGraphErrors* AliTriggerRunScalers::GetGraphMu(AliTriggerConfiguration* cfg, Boo
      if (i!=0) time[i] = time[i-1]+GetDeltaTime((AliTriggerScalersRecordESD*)fScalersRecordESD.At(i-1), (AliTriggerScalersRecordESD*)fScalersRecordESD.At(i))/2.+GetDeltaTime((AliTriggerScalersRecordESD*)fScalersRecordESD.At(i), (AliTriggerScalersRecordESD*)fScalersRecordESD.At(i+1))/2.;
      else time[0] = GetDeltaTime((AliTriggerScalersRecordESD*)fScalersRecordESD.At(0), (AliTriggerScalersRecordESD*)fScalersRecordESD.At(1))/2.;
      etime[i] = GetDeltaTime((AliTriggerScalersRecordESD*)fScalersRecordESD.At(i), (AliTriggerScalersRecordESD*)fScalersRecordESD.At(i+1))/2.;
-     if (GetMuFromMinBiasTrg( m,err, (AliTriggerScalersRecordESD*)fScalersRecordESD.At(i), (AliTriggerScalersRecordESD*)fScalersRecordESD.At(i+1), cfg, colBCsFromFillScheme, bkgCorr, triggerEff, errorEff)==kFALSE) {mu[i]=m; emu[i]=err;}
+     if (GetMuFromMinBiasTrg( m,err, (AliTriggerScalersRecordESD*)fScalersRecordESD.At(i), (AliTriggerScalersRecordESD*)fScalersRecordESD.At(i+1), cfg, colBCsFromFillScheme, bkgCorr, triggerEff/*, errorEff*/)!=kFALSE) {mu[i]=m; emu[i]=err;}
      else {mu[i]=-1.; emu[i]=0.;}
   }
   TGraphErrors* graph = new TGraphErrors(nent-1, time, mu, etime, emu);  
