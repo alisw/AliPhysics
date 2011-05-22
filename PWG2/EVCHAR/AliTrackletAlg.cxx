@@ -891,7 +891,7 @@ AliTrackletAlg::LoadClusterFiredChips(TTree* itsClusterTree) {
       AliITSRecPoint* cluster = (AliITSRecPoint*)itsClusters->UncheckedAt(nClusters);
       
       layer = cluster->GetLayer();
-      if (layer>1) continue;            
+      if (layer>1) break; // no point in further check for this module            
 
       // find the chip for the current cluster
       Float_t locz = cluster->GetDetLocalZ();
@@ -900,7 +900,7 @@ AliTrackletAlg::LoadClusterFiredChips(TTree* itsClusterTree) {
         nClustersInChip[iChip]++; 
       
     }// end of cluster loop
-
+    if (layer>1) continue; // make sure we are in the SPD layer
     // get number of fired chips in the current module
     for(Int_t ifChip=0; ifChip<5; ifChip++) {
       if(nClustersInChip[ifChip] >= 1)  fNFiredChips[layer]++;
