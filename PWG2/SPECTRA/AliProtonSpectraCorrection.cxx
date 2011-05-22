@@ -254,6 +254,7 @@ void AliProtonSpectraCorrection::FillCorrectionMaps(AliESDEvent *esd,
     Int_t label = track->GetLabel();
     if (label<0) continue;
     AliMCParticle *mcPart  = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(label));
+    if (!mcPart) continue;
 
     if((fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kTPC)||(fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kHybrid)) {
       AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();

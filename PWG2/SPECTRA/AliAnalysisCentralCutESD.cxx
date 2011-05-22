@@ -180,10 +180,12 @@ Bool_t AliAnalysisCentralCutESD::IsA(AliESDtrack *track, PDG_t reqPartType){
 		return kFALSE;
     }
 
-    if(partType<0.) return kFALSE;
-
-    else if((AliPID::ParticleCode(partType)) != reqPartType) return kFALSE;
-
+    if(partType<0.) {
+      return kFALSE;
+    }
+    else { // then here partType >=0 so ok for ParticleCode !
+      if((AliPID::ParticleCode(partType)) != reqPartType) return kFALSE;
+    }
     if(track->Charge() != charge) return kFALSE;
     
     return kTRUE;
