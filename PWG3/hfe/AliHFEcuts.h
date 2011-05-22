@@ -124,6 +124,7 @@ class AliHFEcuts : public TNamed{
     Bool_t IsRequireDCAToVertex() const {return TESTBIT(fRequirements, kDCAToVertex); };
     Bool_t IsRequireKineMCCuts() const {return TESTBIT(fRequirements, kKineMCCuts); };
     Double_t GetVertexRange() const {return fVertexRangeZ; };
+    Int_t GetMinTrackletsTRD() const { return fMinTrackletsTRD; }
     
     // Setters
     inline void SetCutITSpixel(UChar_t cut);

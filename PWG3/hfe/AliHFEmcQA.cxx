@@ -374,6 +374,7 @@ void AliHFEmcQA::GetMesonKine()
      TParticle* mcpart0 = fMCEvent->Stack()->Particle(imc);
      if(!mcpart0) continue;
      mctrack0 = dynamic_cast<AliMCParticle *>(mctrack2);
+     if(!mctrack0) continue;
      if(abs(mctrack0->PdgCode()) == 111) // pi0 
        {
           if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8) {

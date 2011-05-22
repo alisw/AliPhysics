@@ -369,6 +369,11 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fQACollection->BinLogAxis("TPCclusters2_0_Selected", 0);
   fQACollection->BinLogAxis("TPCncls_Signal", 0); 
   fQACollection->BinLogAxis("TPCclr_Signal", 0);
+  // Temporary histograms for TRD efficiency maps (Markus Fasel)
+  fQACollection->CreateTH2F("TRDmapPosBefore", "Pos. charged tracks before TRD; #eta; #phi", 100, -1., 1., 180, 0., 2*TMath::Pi());
+  fQACollection->CreateTH2F("TRDmapNegBefore", "Neg. charged tracks before TRD; #eta; #phi", 100, -1., 1., 180, 0., 2*TMath::Pi());
+  fQACollection->CreateTH2F("TRDmapPosAfter", "Pos. charged tracks after TRD; #eta; #phi", 100, -1., 1., 180, 0., 2*TMath::Pi());
+  fQACollection->CreateTH2F("TRDmapNegAfter", "Neg. charged tracks after TRD; #eta; #phi", 100, -1., 1., 180, 0., 2*TMath::Pi());
 
   InitPIDperformanceQA();
   InitContaminationQA();
@@ -798,7 +803,6 @@ void AliAnalysisTaskHFE::ProcessESD(){
   Int_t nElectronCandidates = 0;
   AliESDtrack *track = NULL, *htrack = NULL;
   AliMCParticle *mctrack = NULL;
-  TParticle* mctrack4QA = NULL;
   Int_t pid = 0;
 
   Bool_t signal = kTRUE;
@@ -848,7 +852,6 @@ void AliAnalysisTaskHFE::ProcessESD(){
     if(HasMCData()){
       // Check if it is electrons near the vertex
       if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(track->GetLabel()))))) continue;
-      mctrack4QA = mctrack->Particle();
 
       if(fFillSignalOnly && !fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, mctrack)) signal = kFALSE; 
       else AliDebug(3, "Signal Electron");
@@ -885,6 +888,20 @@ void AliAnalysisTaskHFE::ProcessESD(){
     if(fRejectKinkMother) { 
       if(track->GetKinkIndex(0) != 0) continue; } // Quick and dirty fix to reject both kink mothers and daughters
     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
+
+    // Temporary eta-phi maps for TRD (Markus Fasel) 
+    Int_t minTrackletsTRD = fCuts->GetMinTrackletsTRD();
+    if(minTrackletsTRD && track->Pt() > 2.){
+      if(track->Charge() > 0){
+        // positive charge
+        fQACollection->Fill("TRDmapPosBefore", track->Eta(), track->Phi());
+        if(track->GetTRDntrackletsPID() >= minTrackletsTRD) fQACollection->Fill("TRDmapPosAfter",track->Eta(), track->Phi());
+      } else {
+        // negative charge
+        fQACollection->Fill("TRDmapNegBefore", track->Eta(), track->Phi());
+        if(track->GetTRDntrackletsPID() >= minTrackletsTRD) fQACollection->Fill("TRDmapNegAfter",track->Eta(), track->Phi());
+      }
+    }
 
     // HFEcuts: ITS layers cuts
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
@@ -1085,7 +1102,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   Int_t pid;
   Bool_t signal;
   for(Int_t itrack = 0; itrack < fAOD->GetNumberOfTracks(); itrack++){
-    track = fAOD->GetTrack(itrack);
+    track = fAOD->GetTrack(itrack); mctrack = NULL;
     if(!track) continue;
     if(track->GetFlags() != 1<<4) continue;  // Only process AOD tracks where the HFE is set
 
@@ -1130,9 +1147,8 @@ void AliAnalysisTaskHFE::ProcessAOD(){
       dataE[4] = -1;
       dataE[5] = -1;
       // Track selected: distinguish between true and fake
-      // COVERITY: missing test if mctrack != 0
-      AliDebug(1, Form("Candidate Selected, filling THnSparse, PID: %d\n", mctrack->GetPdgCode()));
-      if((pid = TMath::Abs(mctrack->GetPdgCode())) == 11){
+      AliDebug(1, Form("Candidate Selected, filling THnSparse, PID: %d\n", mctrack ? mctrack->GetPdgCode(): -1));
+      if(mctrack && ((pid = TMath::Abs(mctrack->GetPdgCode())) == 11)){
       
         Int_t type = 0;
         if(fSignalCuts->IsCharmElectron(track))
