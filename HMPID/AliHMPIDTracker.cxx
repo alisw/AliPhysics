@@ -279,8 +279,8 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     //
     Float_t xPc0=0, yPc0=0;
     
-    IntTrkCha(ipCh, hmpTrk, xPc0,yPc0,xRa,yRa,theta,phi);  
-    IntTrkCha(ipCh, hmpTrkConstrained, xPc,yPc,xRa,yRa,theta,phi);  
+    Int_t ipChPC = IntTrkCha(ipCh, hmpTrk, xPc0,yPc0,xRa,yRa,theta,phi);  
+    Int_t ipChRAD = IntTrkCha(ipCh, hmpTrkConstrained, xPc,yPc,xRa,yRa,theta,phi);  
     //
     // 6. Set ESDtrack information
     //
@@ -298,7 +298,19 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       trackTPC->Rotate(alpha);
       trackCurrent->Rotate(alpha);      
       Bool_t statusTPC= AliTracker::PropagateTrackToBxByBz(trackTPC,radiusH,pTrk->GetMass(),1,kFALSE,kMaxSnp,-1);      
-      Bool_t statusCurrent=AliTracker::PropagateTrackToBxByBz(trackCurrent,radiusH,pTrk->GetMass(),1,kFALSE,kMaxSnp,-1);    
+      Bool_t statusCurrent=AliTracker::PropagateTrackToBxByBz(trackCurrent,radiusH,pTrk->GetMass(),1,kFALSE,kMaxSnp,-1);  
+      AliExternalTrackParam * trackTPCNB=new AliExternalTrackParam(*(ftrack->GetTPCOut()));
+      trackTPCNB->Rotate(alpha);
+      Bool_t statusTPCNB=kTRUE;
+      Double_t bfield[3]={0,0,0};
+      for (Double_t radius=trackTPCNB->GetX(); radius<radiusH; radius+=1){
+	Double_t xyz[3];
+	trackTPCNB->GetXYZ(xyz);
+	GetBxByBz(xyz,bfield);
+	statusTPCNB&=trackTPCNB->PropagateToBxByBz(radius,bfield);
+      }
+      statusTPCNB&=trackTPCNB->PropagateToBxByBz(radiusH,bfield);
+      //        
       Double_t tanAlpha=TMath::Tan(TMath::ASin(trackTPC->GetSnp()));
       Double_t deltaC= trackTPC->GetC(AliTrackerBase::GetBz())-ftrack->GetTPCOut()->GetC(AliTrackerBase::GetBz());    
       //
@@ -311,9 +323,10 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 	"rH="<<radiusH<<                      // radius of cluster
 	"angle="<<tanAlpha<<                  // tan of the local inlination angle
 	"dC="<<deltaC<<                       // delta of the curvature
-	"trackTPC.="<<trackTPC<<              // TPc outer param extrapolated to the HMPID
+	"trackTPC.="<<trackTPC<<              // TPC outer param extrapolated to the HMPID
+	"trackTPCNB.="<<trackTPCNB<<          // TPC track prpagated with material budget correction
 	"chi2C="<<chi2C<<
-	"trackTPCC.="<<trackTPCConstrained<<  // TPc outer param extrapolated to the HMPID
+	"trackTPCC.="<<trackTPCConstrained<<  // TPC outer param extrapolated to the HMPID constrained
 	"trackCurrent.="<<trackCurrent<<      // current track extrapolated to the HMPID
 	"sTPC="<<statusTPC<<                  // status for the current TPC  track
 	"sCurrent="<<statusCurrent<<          // status for the current global track
@@ -322,7 +335,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 	"t.="<<pTrk<<                        // curent esd track
 	"ft.="<<ftrack<<                     // friend track
 	"hmpTrk.="<<hmpTrk<<                 // hmpid tracks as used in the following code
-	"hmpTrkC.="<<hmpTrkConstrained<<     // hmpid tracks as used in the following code
+	"hmpTrkC.="<<hmpTrkConstrained<<     // constrained hmpid tracks as used in the following code
 	"gx="<<gx<<                          // global cluster position X
 	"gy="<<gy<<                          // Y
 	"gz="<<gz<<                          // Z
@@ -417,6 +430,18 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
       Double_t tanAlpha=TMath::Tan(TMath::ASin(trackTPC->GetSnp()));
       Double_t deltaC= trackTPC->GetC(AliTrackerBase::GetBz())-ftrack->GetTPCOut()->GetC(AliTrackerBase::GetBz());    
       //
+      AliExternalTrackParam * trackTPCNB=new AliExternalTrackParam(*(ftrack->GetTPCOut()));
+      trackTPCNB->Rotate(alpha);
+      Bool_t statusTPCNB=kTRUE;
+      Double_t bfield[3]={0,0,0};
+      for (Double_t radius=trackTPCNB->GetX(); radius<radiusH; radius+=1){
+	Double_t xyz[3];
+	trackTPCNB->GetXYZ(xyz);
+	GetBxByBz(xyz,bfield);
+	statusTPCNB&=trackTPCNB->PropagateToBxByBz(radius,bfield);
+      }
+      statusTPCNB&=trackTPCNB->PropagateToBxByBz(radiusH,bfield);
+
       AliExternalTrackParam * trackTPCConstrained= new AliExternalTrackParam(*trackTPC);
       Double_t pos[2]={0,gz};
       Double_t cov[3]={0.1*0.1, 0, 0.1*0.1};
@@ -426,9 +451,10 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 	"rH="<<radiusH<<                      // radius of cluster
 	"angle="<<tanAlpha<<                  // tan of the local inlination angle
 	"dC="<<deltaC<<                       // delta of the curvature
-	"trackTPC.="<<trackTPC<<              // TPc outer param extrapolated to the HMPID
+	"trackTPC.="<<trackTPC<<              // TPC outer param extrapolated to the HMPID
+	"trackTPCNB.="<<trackTPCNB<<          // TPC outer param extrapolated to the HMPID
 	"chi2C="<<chi2C<<
-	"trackTPCC.="<<trackTPCConstrained<<  // TPc outer param extrapolated to the HMPID
+	"trackTPCC.="<<trackTPCConstrained<<  // TPC outer param extrapolated to the HMPID constrained
 	"trackCurrent.="<<trackCurrent<<      // current track extrapolated to the HMPID
 	"sTPC="<<statusTPC<<                  // status for the current TPC  track
 	"sCurrent="<<statusCurrent<<          // status for the current global track
@@ -437,7 +463,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
 	"t.="<<pTrk<<                         // curent esd track
 	"ft.="<<ftrack<<                      // friend track
 	"hmpTrk.="<<hmpTrk<<                  // hmpid tracks as used in the following code
-	"hmpTrkC.="<<hmpTrkConstrained<<      // hmpid tracks as used in the following code
+	"hmpTrkC.="<<hmpTrkConstrained<<      // constrained hmpid tracks as used in the following code
 	"gx="<<gx<<                           // global cluster position X
 	"gy="<<gy<<                           // Y
 	"gz="<<gz<<                           // Z
