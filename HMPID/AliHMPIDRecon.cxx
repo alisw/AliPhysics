@@ -484,6 +484,7 @@ Double_t AliHMPIDRecon::HoughResponse()
     Double_t sumPhots=phots->Integral(bin1,bin2);
     if(sumPhots<3) continue;                            // if less then 3 photons don't trust to this ring
     Double_t sumPhotsw=photsw->Integral(bin1,bin2);
+    if((Double_t)((i+0.5)*fDTheta)>0.7) continue;
     resultw->Fill((Double_t)((i+0.5)*fDTheta),sumPhotsw);
   } 
 // evaluate the "BEST" theta ckov as the maximum value of histogramm
