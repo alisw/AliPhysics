@@ -149,7 +149,7 @@ private:
   
   //Time
   TH2F*   fhClusterTime ;                  // Timing of clusters vs energy
-  TH2F*   fhClusterTimeSM[10] ;            // Timing of clusters vs energy per SM
+  TH2F*   fhClusterTimeSM[AliEMCALGeoParams::fgkEMCALModules] ;            // Timing of clusters vs energy per SM
   TH2F*   fhClusterPairDiffTime;           // Diference in time of clusters
   TH2F*   fhClusterPairDiffTimeSameSM[AliEMCALGeoParams::fgkEMCALModules];       // Diference in time of clusters same SM
   TH2F*   fhClusterPairDiffTimeSameSector[AliEMCALGeoParams::fgkEMCALModules/2]; // Diference in time of clusters same sector
