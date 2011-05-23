@@ -76,7 +76,8 @@ void hlt_rec(const char* input="./") {
           // digit maker components
           dm.Form("EMC-DM_%02d_%d", module, rcu);
           arg="";
-          arg.Form("-highgainfactor 0.005 -lowgainfactor 0.08");
+	  // HI-GAIN ~ 15/256 ------ CHECK LOW GAIN FACTOR
+          arg.Form("-highgainfactor 0.057 -lowgainfactor 0.08");
           AliHLTConfiguration dmConf(dm.Data(), "EmcalDigitMaker", rawanalyzer.Data(), arg.Data());
           if(clInput.Length() > 0) clInput += " ";
           clInput+=dm;
@@ -88,21 +89,24 @@ void hlt_rec(const char* input="./") {
 
       	cl.Form("EMC-CL_%02d", module);
       	arg = "";
-      	arg.Form("-digitthreshold 0.005 -recpointthreshold 0.1");
+	// digitthreshold was 0.005
+      	arg.Form("-digitthreshold 0.057 -recpointthreshold 0.1");
       	AliHLTConfiguration clConf(cl.Data(), "EmcalClusterizer", clInput.Data(), arg.Data());
       	if(ecInput.Length() > 0) ecInput += " ";
       	ecInput += cl;
 
     } // end of module loop
 
-	TString ec;
+  TString ec, test;
 
      // The call the histo maker 
   	arg.Form("");
   	arg.Form("-pushfraction 5 -beverbose 1");
-  	AliHLTConfiguration hfConf("emcalHisto","EmcalRawHistoMaker",fwInput.Data(), arg.Data());
+	test = ecInput + " " + fwInput + " ";
+  	AliHLTConfiguration hfConf("emcalHisto","EmcalRawHistoMaker",test.Data(), arg.Data());
 	ecInput += " emcalHisto";
-
+	cout << ">>>>>>>>>> test:" << test << endl;	
+		
     	ec.Form("ESD-CONVERTER");
     	arg = "";
  	AliHLTConfiguration esdcconf(ec.Data(), "GlobalEsdConverter"   , ecInput.Data(), "");
