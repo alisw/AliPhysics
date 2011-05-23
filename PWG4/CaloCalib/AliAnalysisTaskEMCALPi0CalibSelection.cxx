@@ -39,8 +39,6 @@
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
 #include "AliEMCALRecoUtils.h"
-//#include "AliEMCALAodCluster.h"
-//#include "AliEMCALCalibData.h"
 
 ClassImp(AliAnalysisTaskEMCALPi0CalibSelection)
 
