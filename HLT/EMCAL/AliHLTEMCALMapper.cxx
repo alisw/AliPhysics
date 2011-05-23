@@ -84,7 +84,7 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 	      fHw2geomapPtr[i].fGain = 0;
 	    }
 	  // MAXCHANNELS
-	  if( nChannels <= MAXCHANNELS )
+	  if( nChannels > 0 && nChannels <= MAXCHANNELS )
 	    {
 	      for(int i=0; i<nChannels; i ++)
 		{
