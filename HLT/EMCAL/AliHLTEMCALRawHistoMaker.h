@@ -26,14 +26,22 @@
 
 
 #include "AliHLTCaloConstantsHandler.h"
-#include "AliHLTCaloDigitDataStruct.h"
+
+#include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTCaloChannelDataStruct.h"
+#include "AliHLTCaloClusterReader.h"
+
 #include "AliHLTDataTypes.h"
-#include "AliAltroRawStreamV3.h"
-#include "AliRawReaderMemory.h"
-#include "AliAltroRawStreamV3.h"
-#include "AliCaloRawStreamV3.h"
-#include "AliEMCALTriggerSTURawStream.h"
+
+
+// Includes for RAW data 
+
+//#include "AliAltroRawStreamV3.h"
+//#include "AliRawReaderMemory.h"
+//#include "AliAltroRawStreamV3.h"
+//#include "AliCaloRawStreamV3.h"
+//#include "AliEMCALTriggerSTURawStream.h"
+
 
 // include root stuff
 #include "TFile.h"
@@ -47,14 +55,23 @@
 
 
 class AliHLTEMCALConstants;
-class AliHLTCaloSharedMemoryInterfacev2;
-class AliHLTCaloChannelDataHeaderStruct;
 class AliHLTEMCALMapper;
-class AliRawReaderMemory;
-class AliAltroRawStreamV3;
-class AliEMCALTriggerSTURawStream;
-class AliCaloRawStreamV3;
-class AliCaloRawAnalyzer;
+
+class AliHLTCaloSharedMemoryInterfacev2;
+
+class AliHLTCaloChannelDataHeaderStruct;
+class AliHLTCaloClusterHeaderStruct;
+
+class AliHLTCaloClusterReader;
+
+//class AliHLTCaloRecPointHeaderStruct;
+
+//class AliRawReaderMemory;
+//class AliAltroRawStreamV3;
+//class AliEMCALTriggerSTURawStream;
+//class AliCaloRawStreamV3;
+//class AliCaloRawAnalyzer;
+
 class TString;
 class TH2F;
 class TH2I;
@@ -70,11 +87,6 @@ public:
   /** Destructor */
   virtual ~AliHLTEMCALRawHistoMaker();
 
-  /** Assignment */
-  AliHLTEMCALRawHistoMaker & operator = (const AliHLTEMCALRawHistoMaker)
-  {
-    return *this; 
-  }
 
   /**
    * Make the digits for one event.
@@ -82,9 +94,7 @@ public:
    * @return the number of digits found
    */
 
-  Int_t MakeHisto(AliHLTCaloChannelDataHeaderStruct* channelDataHeader,
-		  const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr,
-		  const AliHLTUInt32_t size, int beverbose);
+  Int_t MakeHisto(AliHLTCaloChannelDataHeaderStruct* channelDataHeader,  AliHLTCaloClusterHeaderStruct *caloClusterHeaderPtr, int beverbose);
 
   TObjArray * GetHistograms();
 
@@ -103,29 +113,27 @@ private:
   AliHLTCaloSharedMemoryInterfacev2* fShmPtr;                    //! transient
 
   /** Pointer to the raw data reader which reads from memory */
-   AliRawReaderMemory* fRawCounterMemoryPtr;            //!transient
+  //   AliRawReaderMemory* fRawCounterMemoryPtr;            //!transient
 
    /** Pointer to the raw stream */
-   AliAltroRawStreamV3* fAltroRawStreamPtr;               //!transient
+  //   AliAltroRawStreamV3* fAltroRawStreamPtr;               //!transient
 
    /** Pointer to the calo raw stream */
-   AliCaloRawStreamV3* fRawStreamPtr;              //!transient
+  // AliCaloRawStreamV3* fRawStreamPtr;              //!transient
 
    /** Pointer to the STU raw stream */
-   AliEMCALTriggerSTURawStream* fSTURawStreamPtr;
+  // AliEMCALTriggerSTURawStream* fSTURawStreamPtr;
 
   /** Mapper */
   AliHLTEMCALMapper* fMapperPtr;                                  //COMMENT
-
-
-  /** Pointer to an analyzer object used for raw data anlysis */
-  AliCaloRawAnalyzer *fAnalyzerPtr;   //COMMENT
-
+ 
   /** Constants class */
   AliHLTEMCALConstants* fEMCALConstants;
 
+  AliHLTCaloClusterReader* fClusterReaderPtr; // !transient The reader
+
   AliHLTEMCALRawHistoMaker(const AliHLTEMCALRawHistoMaker &);
-    //AliHLTEMCALRawHistoMaker & operator = (const AliHLTEMCALRawHistoMaker &);
+  AliHLTEMCALRawHistoMaker & operator = (const AliHLTEMCALRawHistoMaker &);
   
   ClassDef(AliHLTEMCALRawHistoMaker, 0); 
 

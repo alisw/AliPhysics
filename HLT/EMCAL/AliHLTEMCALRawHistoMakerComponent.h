@@ -24,10 +24,17 @@
 
 
 #include "AliHLTCaloProcessor.h"
-#include  "AliHLTEMCALDefinitions.h"
+#include "AliHLTCaloClusterDataStruct.h"
+
+#include "AliHLTCaloConstantsHandler.h"
+#include "AliHLTEMCALDefinitions.h"
+#include "AliHLTDataTypes.h"
 #include "TString.h"
 
+
 class AliHLTEMCALRawHistoMaker;
+class AliHLTCaloClusterHeaderStruct;
+
 
 
 class AliHLTEMCALRawHistoMakerComponent : public AliHLTCaloProcessor
@@ -40,13 +47,6 @@ public:
 	/** Destructor */
 	virtual ~AliHLTEMCALRawHistoMakerComponent();
 
-
-	/** Assignment */
-	AliHLTEMCALRawHistoMakerComponent & operator = (const AliHLTEMCALRawHistoMakerComponent)
-	{
-		//Assignment
-		return *this;
-	}
 
 	/** interface function, see @ref AliHLTComponent for description */
 	const char* GetComponentID();
@@ -82,6 +82,8 @@ protected:
 	/** interface function, see @ref AliHLTComponent for description */
 	virtual int Deinit(); ////////// PTH WARNING
 
+	
+
 private:
 	TString fRootFileName;
 	int fPushFraction;
@@ -91,8 +93,9 @@ private:
 	/** Pointer to the histo maker itself */
 	AliHLTEMCALRawHistoMaker *fRawHistoMakerPtr;                    //! transient
 
+	
 	AliHLTEMCALRawHistoMakerComponent(const AliHLTEMCALRawHistoMakerComponent & );
-
+	AliHLTEMCALRawHistoMakerComponent & operator = (const AliHLTEMCALRawHistoMakerComponent &);
 };
 
 #endif

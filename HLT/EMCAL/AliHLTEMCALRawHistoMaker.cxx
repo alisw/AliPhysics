@@ -17,20 +17,24 @@
  * @file   AliHLTEMCALRawHistoMaker.cxx
  * @author Federico Ronchetti
  * @date 
- * @brief  Histogram maker/pusher for EMCAL HLT  
+ * @brief  Online Monitoring Histogram maker for EMCAL  
  */
   
 
 #include "AliHLTEMCALRawHistoMaker.h"
 #include "AliHLTEMCALConstants.h"
 #include "AliHLTEMCALMapper.h"
-#include "AliHLTCaloChannelDataStruct.h"
+//#include "AliHLTCaloChannelDataStruct.h"
+
 #include "AliHLTCaloChannelDataHeaderStruct.h"
 #include "AliHLTCaloSharedMemoryInterfacev2.h"
-//#include "AliHLTCaloRawAnalyzer.h"
-#include "AliCaloRawAnalyzer.h"
-#include "AliCaloBunchInfo.h"
-#include "AliCaloFitResults.h"
+
+//#include "AliCaloRawAnalyzer.h"
+//#include "AliCaloBunchInfo.h"
+//#include "AliCaloFitResults.h"
+
+
+
 
 ClassImp(AliHLTEMCALRawHistoMaker);
 
@@ -38,32 +42,34 @@ AliHLTEMCALRawHistoMaker::AliHLTEMCALRawHistoMaker():
   AliHLTCaloConstantsHandler("EMCAL"),
   fShmPtr(0),
   fMapperPtr(0),
-  fRawCounterMemoryPtr(0),
-  fAltroRawStreamPtr(0),
-  fRawStreamPtr(0),
-  fSTURawStreamPtr(0),
-  fAnalyzerPtr(0),
+  //  fRawCounterMemoryPtr(0),
+  //fAltroRawStreamPtr(0),
+  //fRawStreamPtr(0),
+  //fSTURawStreamPtr(0),
+  //fAnalyzerPtr(0),
   fEMCALConstants(NULL),
   hList(0),
-  fChannelEMap(0), fChannelTMap(0), fChannelETMap(0), h2DTRU(0), h2DSTU(0)
+  fChannelEMap(0), fChannelTMap(0), fChannelETMap(0), h2DTRU(0), h2DSTU(0),
+  fClusterReaderPtr(0)
 
 {
   // See header file for documentation
 
   fShmPtr = new AliHLTCaloSharedMemoryInterfacev2("EMCAL");
 
-  fRawCounterMemoryPtr = new AliRawReaderMemory();
+  //fRawCounterMemoryPtr = new AliRawReaderMemory();
 
-  fAltroRawStreamPtr = new AliAltroRawStreamV3(fRawCounterMemoryPtr);
+  //fAltroRawStreamPtr = new AliAltroRawStreamV3(fRawCounterMemoryPtr);
 
-  fRawStreamPtr = new AliCaloRawStreamV3(fRawCounterMemoryPtr, "EMCAL");
+  //fRawStreamPtr = new AliCaloRawStreamV3(fRawCounterMemoryPtr, "EMCAL");
 
-  fSTURawStreamPtr = new AliEMCALTriggerSTURawStream(fRawCounterMemoryPtr);
+  //fSTURawStreamPtr = new AliEMCALTriggerSTURawStream(fRawCounterMemoryPtr);
 
   fEMCALConstants = new AliHLTEMCALConstants();
 
+  fClusterReaderPtr = new AliHLTCaloClusterReader();
 
-  // Booking sample histograms
+  // Booking histograms
 
   char id[100];
   char title[100];
@@ -94,7 +100,7 @@ AliHLTEMCALRawHistoMaker::AliHLTEMCALRawHistoMaker():
 
     hList->Add(fChannelTMap[i]);
 
-    printf(title, "(E vs T): SM %d ", i);
+    sprintf(title, "(E vs T): SM %d ", i);
     sprintf(id, "fChannelETMap%d", i);
     fChannelETMap[i] = new TH2F(id,title,100 ,0, 50, 100, 0, 500);
     
@@ -109,7 +115,7 @@ AliHLTEMCALRawHistoMaker::~AliHLTEMCALRawHistoMaker()
   //See header file for documentation
 }
 
-// Pointer for histograms objects
+// Pointer to histograms objects
 TObjArray* AliHLTEMCALRawHistoMaker::GetHistograms()
 {
   return hList;
@@ -117,222 +123,92 @@ TObjArray* AliHLTEMCALRawHistoMaker::GetHistograms()
 
 
 Int_t
-AliHLTEMCALRawHistoMaker::MakeHisto(AliHLTCaloChannelDataHeaderStruct* channelDataHeader,
-		const AliHLTComponentBlockData* iter, AliHLTUInt8_t* outputPtr,
-		const AliHLTUInt32_t size, int beverbose)
+AliHLTEMCALRawHistoMaker::MakeHisto(AliHLTCaloChannelDataHeaderStruct* channelDataHeader,  
+				    AliHLTCaloClusterHeaderStruct *caloClusterHeaderPtr, 
+				    int beverbose)
 {
 	//int tmpsize =  0;
 	Int_t crazyness          = 0;
 	Int_t nSamples           = 0;
 	Short_t channelCount     = 0;
 
+
+	// Channel variables
 	AliHLTCaloCoordinate coord;
 	AliHLTCaloChannelDataStruct* currentchannel = 0;
-	fShmPtr->SetMemory(channelDataHeader);
 
-	AliHLTCaloChannelDataHeaderStruct *channelDataHeaderPtr = reinterpret_cast<AliHLTCaloChannelDataHeaderStruct*>(outputPtr);
-	AliHLTCaloChannelDataStruct *channelDataPtr = reinterpret_cast<AliHLTCaloChannelDataStruct*>(outputPtr+sizeof(AliHLTCaloChannelDataHeaderStruct));
 
-	fRawCounterMemoryPtr->SetMemory( reinterpret_cast<UChar_t*>( iter->fPtr ),  static_cast<ULong_t>( iter->fSize )  );
-	fRawCounterMemoryPtr->SetEquipmentID(    fMapperPtr->GetDDLFromSpec(  iter->fSpecification) + fCaloConstants->GetDDLOFFSET() );
-	fRawCounterMemoryPtr->Reset();
+	// Cluster variables
+	// Pointer to Cluster struture
+	AliHLTCaloClusterDataStruct* caloClusterStructPtr = 0;
+	Int_t nClusters = 0;
 
-	//fRawCounterMemoryPtr->NextEvent();
+	if (!caloClusterHeaderPtr) {
+	  
+	  // NULL pointer
+	  cout << "FROM HISTOMAKER NO CLUSTER POINTER: " << caloClusterHeaderPtr << endl;
+	  
+	} else {
+	  
+	  // stuff to handle clusters here
+	  fClusterReaderPtr->SetMemory(caloClusterHeaderPtr);
 
-	//--- from STU macro
-   	//while ( rawReader->NextEvent() )
+	  cout << "FROM HISTOMAKER WE HAVE THE CLUSTER POINTER: " << caloClusterHeaderPtr << endl;
 
-	while (fRawCounterMemoryPtr->NextEvent())
-	{
-		fRawCounterMemoryPtr->Reset();
-		fRawCounterMemoryPtr->Select("EMCAL",44);
 
-		const UInt_t* evtId = fRawCounterMemoryPtr->GetEventId();
-		int evno_raw = (int)evtId[0];
+	  while((caloClusterStructPtr = fClusterReaderPtr->NextCluster()) != 0)
+	    { 
+	       
+	      cout << "cluster type: " << caloClusterStructPtr->fClusterType << endl;
+	       
+	      cout << " COORDINATES FROM HISTOMAKER: " << 
+		" fX:" << caloClusterStructPtr->fGlobalPos[0] <<
+		" fY:" << caloClusterStructPtr->fGlobalPos[1] <<
+		" fZ:" << caloClusterStructPtr->fGlobalPos[2] << endl;
+ 	     
 
-		UInt_t eventType = fRawCounterMemoryPtr->GetType();
-
-		if (beverbose)
-			cout << "I-RAWHISTOMAKER: event type: " << eventType << endl;
-
-//		if (eventType != AliRawEventHeaderBase::kPhysicsEvent) continue;
-
-//		fRawCounterMemoryPtr->DumpData();
-
-//		fRawCounterMemoryPtr->Reset();
-
-		fSTURawStreamPtr->ReadPayLoad();
-//		fSTURawStreamPtr->DumpPayLoad("ALL");
-
-		UInt_t adc[96];
-
-		for (Int_t i=0;i<96;i++)
-			adc[i] = 0;
-
-		fSTURawStreamPtr->GetADC(29, adc);
-
-		for (Int_t i=0;i<96;i++)
+	      UShort_t *idArrayPtr = new UShort_t[caloClusterStructPtr->fNCells];
+	      Double32_t *ampFracArrayPtr = new Double32_t[caloClusterStructPtr->fNCells];
+      
+	      for(UInt_t index = 0; index < caloClusterStructPtr->fNCells; index++)
 		{
-			Int_t x = i / 4;
-			Int_t y = i % 4;
-
-			h2DSTU->Fill( x , y , adc[i] );
+		  fClusterReaderPtr->GetCell(caloClusterStructPtr, idArrayPtr[index], ampFracArrayPtr[index], index);
+		  printf("EM: cellId: %d\n", idArrayPtr[index]);;
 		}
 
-		fRawCounterMemoryPtr->Reset();
-		fRawCounterMemoryPtr->Select("EMCAL",0,43);
+	      delete [] idArrayPtr;
+	      delete [] ampFracArrayPtr;
 
-		while (fRawStreamPtr->NextDDL())
-		{
-			Int_t iRCU = fRawStreamPtr->GetDDLNumber() % 2;
+	      nClusters++;
 
-			while (fRawStreamPtr->NextChannel())
-			{
-				Int_t iSM = fRawStreamPtr->GetModule();
+	    }
 
-				Int_t iTRUId = 3 * iSM + iRCU * fRawStreamPtr->GetBranch() + iRCU;
-
-				if (iSM==0)
-				{
-					Int_t nsamples = 0;
-					vector<AliCaloBunchInfo> bunchlist;
-					while (fRawStreamPtr->NextBunch())
-					{
-						nsamples += fRawStreamPtr->GetBunchLength();
-						bunchlist.push_back( AliCaloBunchInfo(fRawStreamPtr->GetStartTimeBin(), fRawStreamPtr->GetBunchLength(), fRawStreamPtr->GetSignals() ) );
-					}
-
-					Int_t max = 0;
-
-					for (std::vector<AliCaloBunchInfo>::iterator itVectorData = bunchlist.begin(); itVectorData != bunchlist.end(); itVectorData++)
-					{
-                        AliCaloBunchInfo bunch = *(itVectorData);
-
-                        const UShort_t* sig = bunch.GetData();
-                        Int_t startBin = bunch.GetStartBin();
-
-                        for (Int_t iS = 0; iS < bunch.GetLength(); iS++)
-                        {
-							if ( sig[iS] > max ) max = sig[iS];
-						}
-					}
-
-					if (nsamples) // this check is needed for when we have zero-supp. on, but not sparse readout
-					{
-						if (fRawStreamPtr->IsTRUData() && fRawStreamPtr->GetColumn() < 96)
-						{
-							if (iTRUId == 2)
-							{
-								Int_t x = fRawStreamPtr->GetColumn() / 4;
-								Int_t y = fRawStreamPtr->GetColumn() % 4;
-
-							h2DTRU->Fill( x , y , max );
-							}
-						}
-					}
-				}
-			}
-		}
-
-//		c_0->cd(1);
-//		h2DTRU->Draw("TEXT");
-//
-//		c_0->cd(2);
-//		h2DSTU->Draw("TEXT");
-//
-//		c_0->Update();
-//
-//		h2DTRU->Reset();
-//		h2DSTU->Reset();
 	}
 
-	//--- end of while
 
 
-//------ FIXME
-//------ old stuff to be removed or re-utilized
-	//fRawDataWriter->NewEvent( );
+	// begin scan channel data and fill histograms
 
-	if(fAltroRawStreamPtr->NextDDL())
-	  {
-	    int cnt = 0;
-	    int fOffset = 0;
+	fShmPtr->SetMemory(channelDataHeader);
 
-	    while( fAltroRawStreamPtr->NextChannel()  )
-	      {
-		//	 cout << __FILE__  << ":" << __LINE__ << ":" <<__FUNCTION__ << "T3"  << endl;
-		if(  fAltroRawStreamPtr->GetHWAddress() < 128 || ( fAltroRawStreamPtr->GetHWAddress() ^ 0x800) < 128 )
-		  {
-		    continue;
-		  }
-		else
-		  {
-		    ++ cnt;
-		    UShort_t* firstBunchPtr = 0;
-		    int chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress());
-		    //HLTError("Channel HW address: %d", fAltroRawStreamPtr->GetHWAddress());
-
-
-		   //cout << fRawStreamPtr->GetCaloFlag() << endl;
-		    //	    return 1;
-
-		    vector <AliCaloBunchInfo> bvctr;
-		    while( fAltroRawStreamPtr->NextBunch() == true )
-		      {
-			bvctr.push_back( AliCaloBunchInfo( fAltroRawStreamPtr->GetStartTimeBin(), fAltroRawStreamPtr->GetBunchLength(), fAltroRawStreamPtr->GetSignals() ) );
-
-			nSamples = fAltroRawStreamPtr->GetBunchLength();
-
-
-			   // fRawDataWriter->WriteBunchData( fAltroRawStreamPtr->GetSignals(), nSamples,  fAltroRawStreamPtr->GetEndTimeBin()  );
-			firstBunchPtr = const_cast< UShort_t* >(  fAltroRawStreamPtr->GetSignals()  );
-		      }
-
-		    //return 1;
-
-
-		    //    fAnalyzerPtr->SetData( firstBunchPtr, nSamples);
-		  AliCaloFitResults res = fAnalyzerPtr->Evaluate( bvctr,  fAltroRawStreamPtr->GetAltroCFG1(), fAltroRawStreamPtr->GetAltroCFG2() );
-
-		    HLTDebug("Channel energy: %f, max sig: %d, gain = %d, x = %d, z = %d", res.GetAmp(), res.GetMaxSig(), (chId >> 12)&0x1, chId&0x3f, (chId >> 6)&0x3f);
-
-		    //	      if(fAnalyzerPtr->GetTiming() > fMinPeakPosition && fAnalyzerPtr->GetTiming() < fMaxPeakPosition)
-		    {
-		      channelDataPtr->fChannelID =  chId;
-		      channelDataPtr->fEnergy = static_cast<Float_t>( res.GetAmp()  ) - fOffset;
-
-		      channelDataPtr->fTime = static_cast<Float_t>(  res.GetTof() );
-		      channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
-		      channelCount++;
-		      channelDataPtr++; // Updating position of the free output.
-		    }
-		  }
-
-
-		  }
-
-		   //fRawDataWriter->NewChannel();
-
-	  }
-
-
-//-------
 	currentchannel = fShmPtr->NextChannel();
 
 	while(currentchannel != 0) {
+	  
+	  fMapperPtr->ChannelId2Coordinate(currentchannel->fChannelID, coord);
 
-		AliHLTCaloChannelRawDataStruct rawdata = fShmPtr->GetRawData();
+	  cout << " from histo maker ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << currentchannel->fEnergy << endl;
+	  cout << " fX: " << coord.fX << " fZ: " << coord.fZ << endl;
 
-		fMapperPtr->ChannelId2Coordinate(currentchannel->fChannelID, coord);
-
-		fChannelTMap[coord.fModuleId]->Fill( coord.fZ,  coord.fX , currentchannel->fTime);
-		fChannelEMap[coord.fModuleId]->Fill( coord.fZ,  coord.fX , currentchannel->fEnergy);
-		fChannelETMap[coord.fModuleId]->Fill(currentchannel->fEnergy, currentchannel->fTime);
-
-		currentchannel = fShmPtr->NextChannel(); // Get the next channel
-
+	  fChannelTMap[coord.fModuleId]->Fill( coord.fZ,  coord.fX , currentchannel->fTime);
+	  fChannelEMap[coord.fModuleId]->Fill( coord.fZ,  coord.fX , currentchannel->fEnergy);
+	  fChannelETMap[coord.fModuleId]->Fill(currentchannel->fEnergy, currentchannel->fTime);
+	  
+	  currentchannel = fShmPtr->NextChannel(); // Get the next channel
+	  
 	}
-
+	
+	
 
 return (0); 
 }

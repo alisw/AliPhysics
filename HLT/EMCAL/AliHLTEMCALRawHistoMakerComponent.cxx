@@ -21,6 +21,12 @@
 #include "AliHLTCaloChannelDataHeaderStruct.h"
 #include "AliHLTCaloChannelDataStruct.h"
 
+#include "AliHLTCaloDefinitions.h"
+
+#include "TString.h"
+
+
+
 // root stuff
 #include "TFile.h"
 #include "TProfile2D.h"
@@ -58,6 +64,34 @@ AliHLTEMCALRawHistoMakerComponent::~AliHLTEMCALRawHistoMakerComponent()
 {
 	//see header file for documentation
 }
+
+
+int
+AliHLTEMCALRawHistoMakerComponent::DoInit(int argc, const char** argv )
+{
+	//see header file for documentation
+
+	fRawHistoMakerPtr = new AliHLTEMCALRawHistoMaker();
+
+	for(int i = 0; i < argc; i++)
+	{
+		if(!strcmp("-roothistofilename", argv[i]))
+			fRootFileName = argv[i+1];
+
+		if(!strcmp("-pushfraction", argv[i]))
+			fPushFraction = atoi(argv[i+1]);
+
+		if(!strcmp("-beverbose", argv[i]))
+			fBeVerbose = atoi(argv[i+1]);
+
+	}
+
+	if (fBeVerbose)
+		cout << "I-RAWHISTOMAKERCOMPONENT: local root file name is: " << fRootFileName << endl;
+
+	return 0;
+}
+
 
 int 
 AliHLTEMCALRawHistoMakerComponent::Deinit()
@@ -120,88 +154,91 @@ AliHLTEMCALRawHistoMakerComponent::DoEvent(const AliHLTComponentEventData& evtDa
 	unsigned long ndx;
 
 	UInt_t specification = 0;
+	
 	AliHLTCaloChannelDataHeaderStruct* tmpChannelData = 0;
-
+	
+	AliHLTCaloClusterHeaderStruct *caloClusterHeaderPtr = 0;
 
 	for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
 	{
 		iter = blocks+ndx;
-
+		
 		if (fBeVerbose) {
 			PrintComponentDataTypeInfo(iter->fDataType);
-			cout << "I-RAWHISTOMAKERCOMPONENT: verbose mode enabled:  " << fBeVerbose << endl;
+			cout << "\nI-RAWHISTOMAKERCOMPONENT: verbose mode enabled:  " << fBeVerbose << endl;
 		}
 
-		if(iter->fDataType != AliHLTEMCALDefinitions::fgkChannelDataType)
-		{
+		
+		if(iter->fDataType == kAliHLTDataTypeCaloCluster)
+		  {
+		    
+		    cout << "\nI-RAWHISTOMAKERCOMPONENT: cluster data handling HERE !" <<  endl;
+		    
+		    //specification |= iter->fSpecification;
+		    caloClusterHeaderPtr = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(iter->fPtr);
+		    cout << " --------------------> cluster pointer here !!!!!!!! ->>>>>>>>>>>>>>>>>>>>>: " << caloClusterHeaderPtr << endl;
+		  } 
 
-			if (fBeVerbose)
-				HLTWarning("I-RAWHISTOMAKERCOMPONENT: Data block is not of type fgkChannelDataType");
-			else
-				HLTDebug("I-RAWHISTOMAKERCOMPONENT: Data block is not of type fgkChannelDataType");
+		else 
 
-			continue;
-		}
+		  {
+		    
+		    if (fBeVerbose)
+		      HLTWarning("\nI-RAWHISTOMAKERCOMPONENT: Data block does not contain clusters\n");
+		    else
+		      HLTDebug("\nI-RAWHISTOMAKERCOMPONENT: Data block does not contain clusters\n");
+		    
+		    // continue;
 
+		  }
+
+
+		if (iter->fDataType == AliHLTEMCALDefinitions::fgkChannelDataType)
+		  {
+		  
+
+		    tmpChannelData = reinterpret_cast<AliHLTCaloChannelDataHeaderStruct*>(iter->fPtr);
+		    cout << " --------------------> channel  pointer here !!!!!!!! ->>>>>>>>>>>>>>>>>>>>>: " << tmpChannelData  << endl;
+		    
+		    if (fBeVerbose)
+		      HLTWarning ("\nI-RAWHISTOMAKERCOMPONENT: reading channel number %d\n",tmpChannelData->fNChannels);
+
+		
+		  } 
+		
+		else
+		  
+		  {
+		    if (fBeVerbose)
+		      HLTWarning("\nI-RAWHISTOMAKERCOMPONENT: Data block does not contain signal amplitude\n");
+		    else
+		      HLTDebug("\nI-RAWHISTOMAKERCOMPONENT: Data block does not contain signal amplitude\n");
+
+		    continue;
+	  }
+
+	
 		specification |= iter->fSpecification;
-		tmpChannelData = reinterpret_cast<AliHLTCaloChannelDataHeaderStruct*>(iter->fPtr);
+		ret = fRawHistoMakerPtr->MakeHisto(tmpChannelData, caloClusterHeaderPtr, fBeVerbose);
 
-		if (fBeVerbose)
-		HLTWarning ("I-RAWHISTOMAKERCOMPONENT: channel number %d",tmpChannelData->fNChannels);
-
-		ret = fRawHistoMakerPtr->MakeHisto(tmpChannelData, iter, outputPtr, size, fBeVerbose);
-
-		//if(ret == -1)
-		//{
-		//  HLTError("Trying to write over buffer size");
-		//  return -ENOBUFS;
-		//}
-		//digitCount += ret;
 	}
 
 	fLocalEventCount++;
 
 	TFile rootHistFile(fRootFileName,"recreate");
-
+	
 	fRawHistoMakerPtr->GetHistograms()->Write();
-
+	
 	if (fLocalEventCount%fPushFraction == 0) {
-
-		if (fBeVerbose)
-			cout << "I-RAWHISTOMAKERCOMPONENT: pushback done at " << fLocalEventCount << " events " << endl;
-
-		PushBack(fRawHistoMakerPtr->GetHistograms(), kAliHLTDataTypeTObjArray | kAliHLTDataOriginEMCAL , specification);
+	  
+	  if (fBeVerbose)
+	    cout << "I-RAWHISTOMAKERCOMPONENT: pushback done at " << fLocalEventCount << " events " << endl;
+	  
+	  PushBack(fRawHistoMakerPtr->GetHistograms(), kAliHLTDataTypeTObjArray | kAliHLTDataOriginEMCAL , specification);
 	}
-
+	
 	size = mysize;
-
-	return 0;
-}
-
-
-int
-AliHLTEMCALRawHistoMakerComponent::DoInit(int argc, const char** argv )
-{
-	//see header file for documentation
-
-	fRawHistoMakerPtr = new AliHLTEMCALRawHistoMaker();
-
-	for(int i = 0; i < argc; i++)
-	{
-		if(!strcmp("-roothistofilename", argv[i]))
-			fRootFileName = argv[i+1];
-
-		if(!strcmp("-pushfraction", argv[i]))
-			fPushFraction = atoi(argv[i+1]);
-
-		if(!strcmp("-beverbose", argv[i]))
-			fBeVerbose = atoi(argv[i+1]);
-
-	}
-
-	if (fBeVerbose)
-		cout << "I-RAWHISTOMAKERCOMPONENT: local root file name is: " << fRootFileName << endl;
-
+	
 	return 0;
 }
 
