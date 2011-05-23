@@ -279,8 +279,8 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     //
     Float_t xPc0=0, yPc0=0;
     
-    Int_t ipChPC = IntTrkCha(ipCh, hmpTrk, xPc0,yPc0,xRa,yRa,theta,phi);  
-    Int_t ipChRAD = IntTrkCha(ipCh, hmpTrkConstrained, xPc,yPc,xRa,yRa,theta,phi);  
+    IntTrkCha(ipCh, hmpTrk, xPc0,yPc0,xRa,yRa,theta,phi);  
+    IntTrkCha(ipCh, hmpTrkConstrained, xPc,yPc,xRa,yRa,theta,phi);  
     //
     // 6. Set ESDtrack information
     //
