@@ -155,73 +155,47 @@ AliHLTEMCALRawHistoMakerComponent::DoEvent(const AliHLTComponentEventData& evtDa
 
 	UInt_t specification = 0;
 	
-	AliHLTCaloChannelDataHeaderStruct* tmpChannelData = 0;
-	
-	AliHLTCaloClusterHeaderStruct *caloClusterHeaderPtr = 0;
-
 	for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
 	{
+	  
+	  	AliHLTCaloClusterHeaderStruct *caloClusterHeaderPtr = 0;
+		AliHLTCaloChannelDataHeaderStruct* tmpChannelData = 0;
+
 		iter = blocks+ndx;
 		
-		if (fBeVerbose) {
-			PrintComponentDataTypeInfo(iter->fDataType);
-			cout << "\nI-RAWHISTOMAKERCOMPONENT: verbose mode enabled:  " << fBeVerbose << endl;
-		}
-
+		if (fBeVerbose) 
+		  PrintComponentDataTypeInfo(iter->fDataType);
 		
-		if(iter->fDataType == kAliHLTDataTypeCaloCluster)
-		  {
-		    
-		    cout << "\nI-RAWHISTOMAKERCOMPONENT: cluster data handling HERE !" <<  endl;
-		    
-		    //specification |= iter->fSpecification;
-		    caloClusterHeaderPtr = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(iter->fPtr);
-		    cout << " --------------------> cluster pointer here !!!!!!!! ->>>>>>>>>>>>>>>>>>>>>: " << caloClusterHeaderPtr << endl;
-		  } 
-
-		else 
-
-		  {
-		    
-		    if (fBeVerbose)
-		      HLTWarning("\nI-RAWHISTOMAKERCOMPONENT: Data block does not contain clusters\n");
-		    else
-		      HLTDebug("\nI-RAWHISTOMAKERCOMPONENT: Data block does not contain clusters\n");
-		    
-		    // continue;
-
-		  }
-
-
+		
 		if (iter->fDataType == AliHLTEMCALDefinitions::fgkChannelDataType)
 		  {
 		  
-
 		    tmpChannelData = reinterpret_cast<AliHLTCaloChannelDataHeaderStruct*>(iter->fPtr);
-		    cout << " --------------------> channel  pointer here !!!!!!!! ->>>>>>>>>>>>>>>>>>>>>: " << tmpChannelData  << endl;
-		    
+				    
 		    if (fBeVerbose)
-		      HLTWarning ("\nI-RAWHISTOMAKERCOMPONENT: reading channel number %d\n",tmpChannelData->fNChannels);
-
-		
+		      printf ("\nI-RAWHISTOMAKERCOMPONENT: Number of active channels in block: %d\n",tmpChannelData->fNChannels);
+		    
 		  } 
-		
+
+		else if (iter->fDataType == kAliHLTDataTypeCaloCluster)
+		  caloClusterHeaderPtr = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(iter->fPtr);
+		    
 		else
 		  
 		  {
 		    if (fBeVerbose)
-		      HLTWarning("\nI-RAWHISTOMAKERCOMPONENT: Data block does not contain signal amplitude\n");
+		      HLTWarning("\nI-RAWHISTOMAKERCOMPONENT: Data block does not of channel or cluster type \n");
 		    else
-		      HLTDebug("\nI-RAWHISTOMAKERCOMPONENT: Data block does not contain signal amplitude\n");
-
+		      HLTDebug("\nI-RAWHISTOMAKERCOMPONENT: Data block does not of channel or cluster type \n");
 		    continue;
-	  }
+		  }
 
 	
 		specification |= iter->fSpecification;
 		ret = fRawHistoMakerPtr->MakeHisto(tmpChannelData, caloClusterHeaderPtr, fBeVerbose);
 
 	}
+
 
 	fLocalEventCount++;
 
@@ -232,7 +206,7 @@ AliHLTEMCALRawHistoMakerComponent::DoEvent(const AliHLTComponentEventData& evtDa
 	if (fLocalEventCount%fPushFraction == 0) {
 	  
 	  if (fBeVerbose)
-	    cout << "I-RAWHISTOMAKERCOMPONENT: pushback done at " << fLocalEventCount << " events " << endl;
+	    cout << "\nI-RAWHISTOMAKERCOMPONENT: pushback done at " << fLocalEventCount << " events " << endl;
 	  
 	  PushBack(fRawHistoMakerPtr->GetHistograms(), kAliHLTDataTypeTObjArray | kAliHLTDataOriginEMCAL , specification);
 	}

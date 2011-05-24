@@ -49,7 +49,7 @@ AliHLTEMCALRawHistoMaker::AliHLTEMCALRawHistoMaker():
   //fAnalyzerPtr(0),
   fEMCALConstants(NULL),
   hList(0),
-  fChannelEMap(0), fChannelTMap(0), fChannelETMap(0), h2DTRU(0), h2DSTU(0),
+  fChannelEMap(0), fChannelTMap(0), fChannelETMap(0), fCellVsEne(0),
   fClusterReaderPtr(0)
 
 {
@@ -76,17 +76,18 @@ AliHLTEMCALRawHistoMaker::AliHLTEMCALRawHistoMaker():
  
   hList = new TObjArray;
 
+  // channel histograms
   fChannelEMap = new TProfile2D *[fCaloConstants->GetNMODULES()];
   fChannelTMap = new TProfile2D *[fCaloConstants->GetNMODULES()];
   fChannelETMap = new TH2F *[fCaloConstants->GetNMODULES()];
   
-  h2DTRU = new TH2I ("h2DTRU","",24,0,24,4,0,4);
-  hList->Add(h2DTRU);
+  // cluster histograms
+  fCellVsEne = new TH2F  *[fCaloConstants->GetNMODULES()];
 
-  h2DSTU = new TH2I ("h2DSTU","",24,0,24,4,0,4);
-  hList->Add(h2DSTU);
+  //  fCellVsClus = new TH1F ("fCellVsClus","",100,0,50);
+  //hList->Add(fCellVsClus);
 
-  
+
   for (int i=0; i<fCaloConstants->GetNMODULES(); i++) {
     sprintf(title, "E(X vs Z): SM %d ", i);
     sprintf(id, "fChannelEMap%d", i);
@@ -105,6 +106,13 @@ AliHLTEMCALRawHistoMaker::AliHLTEMCALRawHistoMaker():
     fChannelETMap[i] = new TH2F(id,title,100 ,0, 50, 100, 0, 500);
     
     hList->Add(fChannelETMap[i]);
+
+    sprintf(title, "(Cell vs Energy): SM %d ", i);
+    sprintf(id, "fCellVsEne%d", i);
+    fCellVsEne[i] = new TH2F(id,title,50 ,0, 50, 10, 0, 10);
+    
+    hList->Add(fCellVsEne[i]);
+
   }
   
   
@@ -151,12 +159,15 @@ AliHLTEMCALRawHistoMaker::MakeHisto(AliHLTCaloChannelDataHeaderStruct* channelDa
 	} else {
 	  
 	  // stuff to handle clusters here
+
 	  fClusterReaderPtr->SetMemory(caloClusterHeaderPtr);
 
-	  cout << "FROM HISTOMAKER WE HAVE THE CLUSTER POINTER: " << caloClusterHeaderPtr << endl;
+	  cout << "FROM HISTOMAKER: CLUSTER POINTER IS NON ZERO: " << caloClusterHeaderPtr << endl;
 
-
+	  int numcl = 0 ;
+	  
 	  while((caloClusterStructPtr = fClusterReaderPtr->NextCluster()) != 0)
+	  
 	    { 
 	       
 	      cout << "cluster type: " << caloClusterStructPtr->fClusterType << endl;
@@ -164,8 +175,14 @@ AliHLTEMCALRawHistoMaker::MakeHisto(AliHLTCaloChannelDataHeaderStruct* channelDa
 	      cout << " COORDINATES FROM HISTOMAKER: " << 
 		" fX:" << caloClusterStructPtr->fGlobalPos[0] <<
 		" fY:" << caloClusterStructPtr->fGlobalPos[1] <<
-		" fZ:" << caloClusterStructPtr->fGlobalPos[2] << endl;
+		" fZ:" << caloClusterStructPtr->fGlobalPos[2] <<
+		" fModule: " << caloClusterStructPtr->fModule << 
+		" fCell: " << caloClusterStructPtr->fNCells   <<
+		" fEnergy " << caloClusterStructPtr->fEnergy << endl;
  	     
+	      fCellVsEne[caloClusterStructPtr->fModule-1]->Fill(caloClusterStructPtr->fNCells, caloClusterStructPtr->fEnergy);
+	      
+	      numcl++;
 
 	      UShort_t *idArrayPtr = new UShort_t[caloClusterStructPtr->fNCells];
 	      Double32_t *ampFracArrayPtr = new Double32_t[caloClusterStructPtr->fNCells];
@@ -182,6 +199,8 @@ AliHLTEMCALRawHistoMaker::MakeHisto(AliHLTCaloChannelDataHeaderStruct* channelDa
 	      nClusters++;
 
 	    }
+	  
+	  cout << " from histo maker -----------> while ran " << numcl << " times." << endl;
 
 	}
 
@@ -189,25 +208,29 @@ AliHLTEMCALRawHistoMaker::MakeHisto(AliHLTCaloChannelDataHeaderStruct* channelDa
 
 	// begin scan channel data and fill histograms
 
-	fShmPtr->SetMemory(channelDataHeader);
 
-	currentchannel = fShmPtr->NextChannel();
+	if (channelDataHeader) {
+	 
+	  fShmPtr->SetMemory(channelDataHeader);
 
-	while(currentchannel != 0) {
+	  currentchannel = fShmPtr->NextChannel();
+
+	  while(currentchannel != 0) {
 	  
-	  fMapperPtr->ChannelId2Coordinate(currentchannel->fChannelID, coord);
-
-	  cout << " from histo maker ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << currentchannel->fEnergy << endl;
-	  cout << " fX: " << coord.fX << " fZ: " << coord.fZ << endl;
-
-	  fChannelTMap[coord.fModuleId]->Fill( coord.fZ,  coord.fX , currentchannel->fTime);
-	  fChannelEMap[coord.fModuleId]->Fill( coord.fZ,  coord.fX , currentchannel->fEnergy);
-	  fChannelETMap[coord.fModuleId]->Fill(currentchannel->fEnergy, currentchannel->fTime);
-	  
-	  currentchannel = fShmPtr->NextChannel(); // Get the next channel
-	  
+	    fMapperPtr->ChannelId2Coordinate(currentchannel->fChannelID, coord);
+	    
+	    cout << " from histo maker ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << currentchannel->fEnergy << endl;
+	    cout << " fX: " << coord.fX << " fZ: " << coord.fZ << endl;
+	    cout << " channel ID: " << currentchannel->fChannelID << endl;
+	    
+	    fChannelTMap[coord.fModuleId]->Fill( coord.fZ,  coord.fX , currentchannel->fTime);
+	    fChannelEMap[coord.fModuleId]->Fill( coord.fZ,  coord.fX , currentchannel->fEnergy);
+	    fChannelETMap[coord.fModuleId]->Fill(currentchannel->fEnergy, currentchannel->fTime);
+	    
+	    currentchannel = fShmPtr->NextChannel(); // Get the next channel
+	    
+	  }
 	}
-	
 	
 
 return (0); 
