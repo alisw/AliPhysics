@@ -94,7 +94,6 @@ public:
 
        //AliTriggerPFProtection*   GetPFProtection(UInt_t index)
        //	       { return (index < kNMaxPFProtections) ? (AliTriggerPFProtection*)fPFProtections[index] : NULL; }
-                Bool_t    CheckConfiguration( TString & configfile );
                   void    Print( const Option_t* opt ="" ) const;
 
   //  Configurations Database (root file)
@@ -103,6 +102,7 @@ public:
 
       static AliTriggerConfiguration* LoadConfiguration(TString & des);
       static AliTriggerConfiguration* LoadConfigurationFromString(const char* configuration);
+      Bool_t    IsSelected( TString detName, TString & detectors ) const;
 
       enum {kNMaxInputs = 60}; // CTP handles up to 60 trigger detector inputs
       enum {kNMaxInteractions = 2}; // CTP handles up to two different interactions
@@ -126,7 +126,6 @@ private:
 
       Int_t                fVersion;                          // Configuration format version
 
-                 Bool_t    IsSelected( TString detName, TString & detectors ) const;
    static const TString    fgkConfigurationFileName;        //! name of default configurations file
 
    AliTriggerConfiguration&   operator=(const AliTriggerConfiguration& des);

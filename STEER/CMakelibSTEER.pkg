@@ -127,6 +127,7 @@ set ( SRCS
     AliCTPInputTimeParams.cxx 
     AliLHCClockPhase.cxx 
     AliLTUConfig.cxx
+    AliTriggerUtils.cxx
     )
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")

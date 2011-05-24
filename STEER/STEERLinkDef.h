@@ -68,6 +68,7 @@
 #pragma link C++ class AliCentralTrigger+;
 #pragma link C++ class AliTriggerCluster+;
 #pragma link C++ class AliTriggerPFProtection+;
+#pragma link C++ class AliTriggerUtils+;
 
 #pragma link C++ class AliGeomManager+;
 #pragma link C++ class AliAlignObj+;

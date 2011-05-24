@@ -68,14 +68,9 @@
 #include <TROOT.h>
 #include <TString.h>
 #include <TSystem.h>
+#include <TMath.h>
 
-#include "AliCDBManager.h"
 #include "AliLog.h"
-#include "AliMC.h"
-#include "AliModule.h"
-#include "AliPDG.h"
-#include "AliRun.h"
-#include "AliRunLoader.h"
 #include "AliTriggerBCMask.h"
 #include "AliTriggerClass.h"
 #include "AliTriggerCluster.h"
@@ -843,116 +838,6 @@ void AliTriggerConfiguration::WriteConfiguration( const char* filename )
    file.Close();
 }
 
-//_____________________________________________________________________________
-Bool_t AliTriggerConfiguration::CheckConfiguration( TString& configfile )
-{
-   // To be used on the pre-creation of Configurations to check if the
-   // conditions have valid inputs names.
-   //
-   // Initiate detectors modules from a Config file
-   // Ask to each active module present in the fDetectorCluster
-   // to create a Trigger detector and retrive the inputs from it
-   // to create a list of inputs.
-   // Each condition in the configuration is then checked agains 
-   // the list of inputs
-
-
-   if (!gAlice) {
-      AliError( "no gAlice object. Restart aliroot and try again." );
-      return kFALSE;
-   }
-   if (gAlice->Modules()->GetEntries() > 0) {
-      AliError( "gAlice was already run. Restart aliroot and try again." );
-      return kFALSE;
-   }
-
-   AliInfo( Form( "initializing gAlice with config file %s",
-            configfile.Data() ) );
-//_______________________________________________________________________
-   gAlice->Announce();
-   
-   gROOT->LoadMacro(configfile.Data());
-   gInterpreter->ProcessLine(gAlice->GetConfigFunction());
-   
-   if(AliCDBManager::Instance()->GetRun() >= 0) { 
-     AliRunLoader::Instance()->SetRunNumber(AliCDBManager::Instance()->GetRun());
-   } else {
-     AliWarning("Run number not initialized!!");
-   }
-  
-   AliRunLoader::Instance()->CdGAFile();
-    
-   AliPDG::AddParticlesToPdgDataBase();  
-
-   gAlice->GetMCApp()->Init();
-   
-   //Must be here because some MCs (G4) adds detectors here and not in Config.C
-   gAlice->InitLoaders();
-   AliRunLoader::Instance()->MakeTree("E");
-   AliRunLoader::Instance()->LoadKinematics("RECREATE");
-   AliRunLoader::Instance()->LoadTrackRefs("RECREATE");
-   AliRunLoader::Instance()->LoadHits("all","RECREATE");
-   //
-   // Save stuff at the beginning of the file to avoid file corruption
-   AliRunLoader::Instance()->CdGAFile();
-   gAlice->Write();
-
-   AliRunLoader* runLoader = AliRunLoader::Instance();
-   if( !runLoader ) {
-      AliError( Form( "gAlice has no run loader object. "
-                      "Check your config file: %s", configfile.Data() ) );
-      return kFALSE;
-   }
-
-   // get the possible inputs to check the condition
-   TObjArray inputs;
-   TObjArray* detArray = runLoader->GetAliRun()->Detectors();
-
-   TString detStr = GetTriggeringModules();
-
-   for( Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++ ) {
-      AliModule* det = (AliModule*) detArray->At(iDet);
-      if( !det || !det->IsActive() ) continue;
-      if( IsSelected( det->GetName(), detStr ) ) {
-         AliInfo( Form( "Creating inputs for %s", det->GetName() ) );
-         AliTriggerDetector* dtrg = det->CreateTriggerDetector();
-         dtrg->AssignInputs(GetInputs());
-         TObjArray* detInp = dtrg->GetInputs();
-         for( Int_t i=0; i<detInp->GetEntriesFast(); i++ ) {
-            AliInfo( Form( "Adding input %s", ((AliTriggerInput*)detInp->At(i))->GetName() ) );
-            inputs.AddLast( detInp->At(i) );
-         }
-      }
-   }
-
-   // check if the condition is compatible with the triggers inputs
-   Int_t ndesc = fClasses.GetEntriesFast();
-   Bool_t check = kTRUE;
-   ULong64_t mask = 0L;
-   for( Int_t j=0; j<ndesc; j++ ) {
-     AliTriggerClass *trclass = (AliTriggerClass*)fClasses.At( j );
-     if( !(trclass->CheckClass( this )) ) check = kFALSE;
-     else {
-       if (trclass->IsActive(this->GetInputs(),this->GetFunctions())) {
-	 AliInfo( Form( "Trigger Class (%s) OK, class mask (0x%Lx)",
-			trclass->GetName(), trclass->GetMask( ) ) );
-       }
-       else {
-	 AliWarning( Form( "Trigger Class (%s) is NOT active, class mask (0x%Lx)",
-			   trclass->GetName(), trclass->GetMask( ) ) );
-       }
-     }
-     // check if condition mask is duplicated
-     if( mask & trclass->GetMask() ) {
-       AliError( Form("Class (%s). The class mask (0x%Lx) is ambiguous. It was already defined",
-		      trclass->GetName(), trclass->GetMask()  ) );
-       check = kFALSE;
-     }
-     mask |= trclass->GetMask();
-   }
-
-   return check;
-}
 //_____________________________________________________________________________
 Int_t AliTriggerConfiguration::GetClassIndexFromName(const char* className) const
 {
