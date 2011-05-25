@@ -445,7 +445,7 @@ int AliHLTTPCHWCFSupport::CreateRawEvent
 	      fEventMCMemory[mcIndex].fClusterID[i].fMCID = digit.fTrackID[i];
 	      fEventMCMemory[mcIndex].fClusterID[i].fWeight = 0;
 	      if( digit.fTrackID[i] >=0 ){      		
-		fEventMCMemory[mcIndex].fClusterID[i].fWeight  = ((float)bunchData[i])/nmc;
+		fEventMCMemory[mcIndex].fClusterID[i].fWeight  = ((float)bunchData[is])/nmc;
 	      }
 	    }	  
 	    mcIndex++;
