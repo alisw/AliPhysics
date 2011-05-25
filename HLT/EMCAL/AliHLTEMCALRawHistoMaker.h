@@ -100,12 +100,12 @@ public:
 
 private:
 
-  TProfile2D **fChannelEMap;
-  TProfile2D **fChannelTMap;
-  TH2F **fChannelETMap;
+  TProfile2D **fAmp;
+  TProfile2D **fTime;
+  TH2F **fAT;
 
-  TH2I* h2DTRU;
-  TH2I* h2DSTU;
+  TH2F **fCellVsEne;
+  
 
   TObjArray *hList;
 

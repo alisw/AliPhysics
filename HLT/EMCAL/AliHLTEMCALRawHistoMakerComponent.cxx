@@ -87,7 +87,7 @@ AliHLTEMCALRawHistoMakerComponent::DoInit(int argc, const char** argv )
 	}
 
 	if (fBeVerbose)
-		cout << "I-RAWHISTOMAKERCOMPONENT: local root file name is: " << fRootFileName << endl;
+		cout << "\nI-RAWHISTOMAKERCOMPONENT: local root file name is: " << fRootFileName << endl;
 
 	return 0;
 }
