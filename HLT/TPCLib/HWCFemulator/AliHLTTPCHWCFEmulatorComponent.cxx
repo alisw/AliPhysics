@@ -495,7 +495,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 	    AliHLTFloat32_t p2 = *((AliHLTFloat32_t*)&c[3]);
 	    AliHLTFloat32_t t2 = *((AliHLTFloat32_t*)&c[4]);
 	    printf("N: %3d    R: %3d    C: %4d    P:  %7.4f    T:  %8.4f    DP: %6.4f    DT: %6.4f\n", 
-		   i/5+1, padRow, q, p, t, sqrt(p2-p*p), sqrt(t2-t*t));
+		   i/5+1, padRow, q, p, t, sqrt(fabs(p2-p*p)), sqrt(fabs(t2-t*t)));
 
 	    if( outMC && outMC->fCount>0 ){
 	      printf("        MC: (%3d,%6.1f) (%3d,%6.1f) (%3d,%6.1f)\n",
