@@ -27,6 +27,9 @@ class AliHLTTPCHWCFProcessorUnit
   /** destructor */
   ~AliHLTTPCHWCFProcessorUnit();
 
+  /** set debug level */
+  void SetDebugLevel( int val ){ fDebug = val; }
+
   /** do cluster deconvolution in time direction */
   void SetDeconvolution( bool val ){ fDeconvolute = val; }
 
@@ -58,6 +61,7 @@ class AliHLTTPCHWCFProcessorUnit
   AliHLTUInt32_t fBunchIndex; // index in bunch
   bool fDeconvolute;    // do deconvolution in time direction
   AliHLTUInt64_t fSingleSeqLimit; // lower charge limit for isolated signals
+  int fDebug; // debug level
 };
 
 #endif

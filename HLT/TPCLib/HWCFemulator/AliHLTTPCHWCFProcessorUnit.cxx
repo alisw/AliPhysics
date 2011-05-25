@@ -34,7 +34,8 @@ AliHLTTPCHWCFProcessorUnit::AliHLTTPCHWCFProcessorUnit()
   fkBunch(0),
   fBunchIndex(0),
   fDeconvolute(0),
-  fSingleSeqLimit(0)
+  fSingleSeqLimit(0),
+  fDebug(0)
 {
   //constructor 
   Init();
@@ -52,7 +53,8 @@ AliHLTTPCHWCFProcessorUnit::AliHLTTPCHWCFProcessorUnit(const AliHLTTPCHWCFProces
   fkBunch(0),
   fBunchIndex(0),
   fDeconvolute(0),
-  fSingleSeqLimit(0)
+  fSingleSeqLimit(0),
+  fDebug(0)
 {
   // dummy
   Init();
@@ -76,10 +78,19 @@ int AliHLTTPCHWCFProcessorUnit::InputStream( const AliHLTTPCHWCFBunch *bunch )
 {
   // input stream of data 
   
-  //if( bunch && bunch->fRow==0 ){
-  //std::cout<<"Processor: input bunch F "<<bunch->fFlag<<" R "<<bunch->fRow<<" P "<<bunch->fPad <<" Br "<<bunch->fBranch<<" bord "<<bunch->fBorder
-  //<<" Time "<<bunch->fTime<<" NS= "<<bunch->fData.size()<<std::endl;
-  //}
+  if( bunch && fDebug ){
+    printf("\nHWCF Processor: input bunch F %1d R %3d P %3d T %3d NS %2ld:\n",
+	   bunch->fFlag, bunch->fRow, bunch->fPad, bunch->fTime, bunch->fData.size());
+    for( unsigned int i=0; i<bunch->fData.size(); i++ ){
+      printf("   %2d ", bunch->fData[i]);
+      if( i*3+2<bunch->fMC.size() ){
+	printf("(");
+	for( int j=0; j<3; j++ ) printf(" {%d,%2.0f}",bunch->fMC[i*3+j].fMCID, bunch->fMC[i*3+j].fWeight );
+	printf(" )\n");
+      }
+    }
+  }
+
   fkBunch = bunch;
   fBunchIndex = 0;
   return 0;
@@ -129,7 +140,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
   for( ; fBunchIndex<fkBunch->fData.size() && bunchTime>=0; fBunchIndex++, bunchTime--, length++ ){
     AliHLTUInt64_t q = fkBunch->fData[fBunchIndex]*fkBunch->fGain;
     if( fDeconvolute && slope && q>qLast ){
-      cout<<"deconvolution time!!!"<<endl;
+      //cout<<"deconvolution time!!!"<<endl;
       if( length==1 && fOutput.fQ<fSingleSeqLimit ){
 	fOutput.fQ = 0;
 	fOutput.fT = 0;
