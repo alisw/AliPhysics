@@ -128,7 +128,11 @@ void hwcfCheck(const char* basedir="./")
   //
   AliReconstruction rec;
   rec.SetInput(basedir);
-  rec.SetRunVertexFinder(kFALSE);
+  rec.SetRunVertexFinder(0);
+  rec.SetRunVertexFinder(0);
+  rec.SetRunVertexFinderTracks(0);
+  rec.SetRunCascadeFinder(0);
+  rec.SetRunMultFinder(0);
   rec.SetRunReconstruction("HLT");
   rec.SetLoadAlignFromCDB(0);
   rec.SetRunQA(":");
