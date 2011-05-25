@@ -30,6 +30,7 @@ using namespace std;
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
+#include "AliRawDataHeader.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -219,12 +220,13 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
      
      // skip the first 8 32-bit CDH words
      buffer += 8;
+     UInt_t bufferSize32 = ((Int_t)iter->fSize - sizeof(AliRawDataHeader) )/sizeof(AliHLTUInt32_t);
 
      //PrintDebug(buffer, (Int_t)iter->fSize/sizeof(AliHLTUInt32_t));
 
      unsigned long nAddedClusters = 0;
      
-     for(UInt_t nWords=0; nWords<(iter->fSize/sizeof(AliHLTUInt32_t)); nWords+=5){
+     for(UInt_t nWords=0; nWords<bufferSize32; nWords+=5){
      //     for(UInt_t nWords=0; nWords<5; nWords+=5){
 
     	// check if bit 31 and 30 of the 32-bit word is 11 -> cluster (10 is RCU trailer)
