@@ -63,7 +63,7 @@ AliHLTTPCClusterTransformation& AliHLTTPCClusterTransformation::operator=(const 
 AliHLTTPCClusterTransformation::~AliHLTTPCClusterTransformation() 
 { 
   // see header file for class documentation
-  delete fOfflineTransform;
+  //delete fOfflineTransform;
 }
 
 
@@ -71,7 +71,8 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t TimeStamp )
 {
   // Initialisation
 
-  delete fOfflineTransform;
+  //delete fOfflineTransform;
+  fOfflineTransform = 0;
   fOfflineTPCParam = 0;
 
   AliTPCcalibDB* pCalib=AliTPCcalibDB::Instance();
@@ -86,7 +87,8 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t TimeStamp )
 
   if( !pCalib->GetTransform() ) return -2; 
 
-  fOfflineTransform = new AliTPCTransform (*pCalib->GetTransform());
+  //fOfflineTransform = new AliTPCTransform (*pCalib->GetTransform());
+  fOfflineTransform = pCalib->GetTransform();
   fOfflineTransform->SetCurrentRecoParam( AliTPCRecoParam::GetHLTParam() );
   fOfflineTransform->SetCurrentTimeStamp( TimeStamp );
   fOfflineTPCParam = pCalib->GetParameters(); 
