@@ -133,14 +133,10 @@ protected:
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
   int DoDeinit();
   
-  int Reconfigure(const char* cdbEntry, const char* chainId);
+  int Reconfigure(const char* cdbEntry, const char* chainId);  
 
   using AliHLTProcessor::DoEvent;
-  Bool_t fDataId;
-  UInt_t fChargeThreshold;  //!transient 
-  AliHLTTPCClusterTransformation fTransform;
-  AliHLTComponentBenchmark fBenchmark; // benchmarks
-
+  
 private:
    
   int ScanConfigurationArgument(int argc, const char** argv);
@@ -153,6 +149,11 @@ private:
 
   static const char* fgkOCDBEntryHWTransform; //!transient
   
+  Bool_t fDataId;
+  UInt_t fChargeThreshold;  //!transient 
+  AliHLTTPCClusterTransformation fTransform;
+  AliHLTComponentBenchmark fBenchmark; // benchmarks
+
   ClassDef(AliHLTTPCHWClusterTransformComponent, 0)
 };
 
