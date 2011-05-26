@@ -296,6 +296,8 @@ public:
   }
   Int_t  AddTrack(const AliESDtrack *t);
 
+  /// add new track at the end of tracks array and return instance
+  AliESDtrack* NewTrack();
   
   AliESDHLTtrack *GetHLTConfMapTrack(Int_t /*i*/) const {
     //    return (AliESDHLTtrack *)fHLTConfMapTracks->UncheckedAt(i);

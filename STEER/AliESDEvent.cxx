@@ -914,6 +914,15 @@ Int_t  AliESDEvent::AddTrack(const AliESDtrack *t)
     return  track->GetID();    
 }
 
+AliESDtrack*  AliESDEvent::NewTrack() 
+{
+    // Add a new track
+    TClonesArray &ftr = *fTracks;
+    AliESDtrack * track = new(ftr[fTracks->GetEntriesFast()])AliESDtrack();
+    track->SetID(fTracks->GetEntriesFast()-1);
+    return  track;
+}
+
  void AliESDEvent::AddMuonTrack(const AliESDMuonTrack *t) 
 {
     TClonesArray &fmu = *fMuonTracks;
