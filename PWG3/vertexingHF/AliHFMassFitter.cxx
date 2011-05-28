@@ -247,6 +247,7 @@ void AliHFMassFitter::ComputeNFinalPars() {
     break;
   case 3:
     fNFinalPars=1;
+    break;
   case 4:
     fNFinalPars=2;	
     break;
