@@ -240,6 +240,7 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
 
       
   AliESDEvent* esd = dynamic_cast<AliESDEvent*> (InputEvent());
+  if(!esd) return;
   // Select PHYSICS events (type=7, for data)
   if(!fIsMCInput && esd->GetEventType()!=7) return; 
   
