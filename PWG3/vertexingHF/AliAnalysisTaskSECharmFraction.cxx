@@ -7047,7 +7047,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
 	  }
 	  mcD0Parent=dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcD0Parent->GetMother()));
 	}
-	if(notfound)continue;
+	if(notfound || mcD0Parent==0x0)continue;
 	if(TMath::Abs(mcD0Parent->GetPdgCode())==4)continue;//D0 from c quarks already counted
 	((TH1F*)flistMCproperties->FindObject("hMCfromBpdgB"))->Fill(TMath::Abs(mcD0Parent->GetPdgCode()));
 	if(bBaryon)nD0bBaryon++;
