@@ -205,6 +205,7 @@ void AliHLTTPCHWCFEmulatorComponent::SetDefaultConfiguration()
   fBypassMerger = 0;
   fClusterLowerLimit = 0;
   fSingleSeqLimit = 0;
+  fDebug = 0;
   fBenchmark.Reset();
   fBenchmark.SetTimer(0,"total");
   fBenchmark.SetTimer(1,"reco");    
@@ -374,6 +375,9 @@ int AliHLTTPCHWCFEmulatorComponent::Configure( const char* cdbEntry, const char*
     HLTInfo( "received configuration string from HLT framework: \"%s\"", commandLine );
     iResult3 = ReadConfigurationString( commandLine );
   }
+  
+  if( fDebug>1 ) fCFEmulator.SetDebugLevel( fDebug );
+  else fCFEmulator.SetDebugLevel(0);
 
   return iResult1 ? iResult1 : ( iResult2 ? iResult2 : iResult3 );
 }

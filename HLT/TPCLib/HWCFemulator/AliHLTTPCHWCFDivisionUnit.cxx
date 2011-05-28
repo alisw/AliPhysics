@@ -31,7 +31,7 @@
 
 AliHLTTPCHWCFDivisionUnit::AliHLTTPCHWCFDivisionUnit()
   : 
-  fSinglePadSuppression(1), fClusterLowerLimit(0), fkInput(0),fOutput()
+  fSinglePadSuppression(1), fClusterLowerLimit(0), fkInput(0),fOutput(), fDebug(0)
 {
   //constructor 
 }
@@ -44,7 +44,7 @@ AliHLTTPCHWCFDivisionUnit::~AliHLTTPCHWCFDivisionUnit()
 
 AliHLTTPCHWCFDivisionUnit::AliHLTTPCHWCFDivisionUnit(const AliHLTTPCHWCFDivisionUnit&)
   : 
-  fSinglePadSuppression(1),fClusterLowerLimit(0),fkInput(0),fOutput()
+  fSinglePadSuppression(1),fClusterLowerLimit(0),fkInput(0),fOutput(), fDebug(0)
 {
 }
 
@@ -67,18 +67,24 @@ int AliHLTTPCHWCFDivisionUnit::InputStream( const AliHLTTPCHWCFClusterFragment *
 {
   // input stream of data
   fkInput = fragment;
-  if( fkInput ){
-    //if( fInput->fFlag==1 && fInput->fQ>0 ){
-    //std::cout<<"Division: input F "<<fInput->fFlag<<" R "<<fInput->fRow
-    //       <<" C "<<(fInput->fQ>>12)
-    //       <<" P "<<fInput->fPad
-    //       <<" T "<<fInput->fTMean
-    //       <<" CoGPad "<<((float)fInput->fP)/fInput->fQ
-    //       <<" CoGTime "<<((float)fInput->fT)/fInput->fQ
-    //       <<std::endl;
-    //} else std::cout<<"Division: input F "<<fInput->fFlag<<" R "<<fInput->fRow<<" P "<<fInput->fPad
-    //	    <<" Q "<<(fInput->fQ>>12)<<std::endl;
+  if( fkInput && fDebug ){
+    std::cout<<"HWCF Division: input F: "<<fragment->fFlag<<" R: "<<fragment->fRow
+	     <<" Q: "<<(fragment->fQ>>AliHLTTPCHWCFDefinitions::kFixedPoint)
+	     <<" P: "<<fragment->fPad<<" Tmean: "<<fragment->fTMean;	        
+    if( fragment->fFlag==1 && fragment->fQ > 0 ){
+      std::cout<<" Pw: "<<((float)fragment->fP)/fragment->fQ
+	       <<" Tw: "<<((float)fragment->fT)/fragment->fQ;
+      std::cout<<"   MC: ";
+      for( unsigned int j=0; j<fragment->fMC.size(); j++ ){
+	for( int k=0; k<3; k++ ){
+	  std::cout<<"("<<fragment->fMC[j].fClusterID[k].fMCID<<" "<<fragment->fMC[j].fClusterID[k].fWeight<<") ";
+	}
+      }
+      std::cout<<std::endl;
+    }
+    else std::cout<<std::endl;      
   }
+
   return 0;
 }
 
@@ -118,12 +124,17 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
   fOutput.fMC.fClusterID[1] = emptyWeight;
   fOutput.fMC.fClusterID[2] = emptyWeight;
   
-  vector<AliHLTTPCClusterMCWeight> labels = fkInput->fMC;
+  vector<AliHLTTPCClusterMCWeight> labels;
+  for( unsigned i=0; i<fkInput->fMC.size(); i++){
+    labels.push_back(fkInput->fMC[i].fClusterID[0]);
+    labels.push_back(fkInput->fMC[i].fClusterID[1]);
+    labels.push_back(fkInput->fMC[i].fClusterID[2]);
+  }
   sort(labels.begin(), labels.end(), CompareMCLabels);
   for( unsigned int i=1; i<labels.size(); i++ ){
     if(labels[i-1].fMCID==labels[i].fMCID ){
-      labels[i-1].fWeight+=labels[i].fWeight;
-      labels[i].fWeight = 0;
+      labels[i].fWeight+=labels[i-1].fWeight;
+      labels[i-1].fWeight = 0;
     }
   }
 

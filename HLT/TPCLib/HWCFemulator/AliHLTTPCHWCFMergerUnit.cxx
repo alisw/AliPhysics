@@ -101,7 +101,9 @@ int AliHLTTPCHWCFMergerUnit::InputStream( const AliHLTTPCHWCFClusterFragment *fr
 		 <<" Tw: "<<((float)fragment->fT)/fragment->fQ;
 	std::cout<<"   MC: ";
 	for( unsigned int j=0; j<fragment->fMC.size(); j++ ){
-	  std::cout<<"("<<fragment->fMC[j].fMCID<<" "<<fragment->fMC[j].fWeight<<") ";
+	  for( int k=0; k<3; k++ ){
+	    std::cout<<"("<<fragment->fMC[j].fClusterID[k].fMCID<<" "<<fragment->fMC[j].fClusterID[k].fWeight<<") ";
+	  }
 	}
 	std::cout<<std::endl;
       }

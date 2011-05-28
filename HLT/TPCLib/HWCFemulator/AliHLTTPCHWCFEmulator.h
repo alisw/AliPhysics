@@ -29,6 +29,9 @@ class AliHLTTPCHWCFEmulator
   /** destructor */
   virtual ~AliHLTTPCHWCFEmulator();
    
+  /** set debug level */
+  void SetDebugLevel( int val ){ fDebug = val; }
+
   /** initialisation 
    */
   void Init( const AliHLTUInt32_t *mapping, AliHLTUInt32_t configWord );
@@ -74,6 +77,7 @@ class AliHLTTPCHWCFEmulator
   /** assignment operator prohibited */
   AliHLTTPCHWCFEmulator& operator=(const AliHLTTPCHWCFEmulator&);
  
+  int  fDebug; // debug level
   const AliHLTUInt32_t *fkMapping; //! mapping array
   AliHLTTPCHWCFExtractorUnit fChannelExtractor; //! transient
   AliHLTTPCHWCFProcessorUnit fChannelProcessor; //! transient

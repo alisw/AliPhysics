@@ -26,7 +26,7 @@ class AliHLTTPCHWCFMergerUnit
   /** destructor */
   ~AliHLTTPCHWCFMergerUnit();
 
-  /** do cluster deconvolution in pad direction */
+  /** set debug level */
   void SetDebugLevel( int val ){ fDebug = val; }
 
   /** do cluster deconvolution in pad direction */

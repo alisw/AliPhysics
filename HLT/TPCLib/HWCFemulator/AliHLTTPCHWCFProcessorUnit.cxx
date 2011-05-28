@@ -83,9 +83,9 @@ int AliHLTTPCHWCFProcessorUnit::InputStream( const AliHLTTPCHWCFBunch *bunch )
 	   bunch->fFlag, bunch->fRow, bunch->fPad, bunch->fTime, bunch->fData.size());
     for( unsigned int i=0; i<bunch->fData.size(); i++ ){
       printf("   %2d ", bunch->fData[i]);
-      if( i*3+2<bunch->fMC.size() ){
+      if( i < bunch->fMC.size() ){
 	printf("(");
-	for( int j=0; j<3; j++ ) printf(" {%d,%2.0f}",bunch->fMC[i*3+j].fMCID, bunch->fMC[i*3+j].fWeight );
+	for( int j=0; j<3; j++ ) printf(" {%d,%2.0f}",bunch->fMC[i].fClusterID[j].fMCID, bunch->fMC[i].fClusterID[j].fWeight );
 	printf(" )\n");
       }
     }
@@ -112,8 +112,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
   fOutput.fT2 = 0;
   fOutput.fP = 0;
   fOutput.fP2 = 0;
-  fOutput.fTMean =  fkBunch->fTime;
-
+  fOutput.fTMean =  fkBunch->fTime;  
   fOutput.fMC.clear();
   
   if( fkBunch->fFlag==2 && fkBunch->fData.size()==1 ){ // rcu trailer word, forward it 
@@ -147,6 +146,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
 	fOutput.fT2 = 0;
 	fOutput.fP = 0;
 	fOutput.fP2 = 0;
+	fOutput.fMC.clear();
 	bunchTime0 = fkBunch->fTime - fBunchIndex;
 	qLast = 0;
 	slope = 0;
@@ -162,7 +162,9 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
     fOutput.fT2+= q*bunchTime*bunchTime;
     fOutput.fP += q*fkBunch->fPad;
     fOutput.fP2+= q*fkBunch->fPad*fkBunch->fPad;
-    fOutput.fMC.insert(fOutput.fMC.end(),fkBunch->fMC.begin(), fkBunch->fMC.end() );
+    if( fBunchIndex<fkBunch->fMC.size() ){
+      fOutput.fMC.push_back(fkBunch->fMC[fBunchIndex]);
+    }
   }
   
   fOutput.fTMean = (AliHLTUInt64_t)( (bunchTime0 + bunchTime + 1)/2 );

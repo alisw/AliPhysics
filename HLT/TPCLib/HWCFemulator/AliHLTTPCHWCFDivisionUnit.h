@@ -20,7 +20,7 @@ class AliHLTTPCHWCFDivisionUnit
  public:  
 
   static bool CompareMCWeights(const AliHLTTPCClusterMCWeight &a, const AliHLTTPCClusterMCWeight &b){
-    return a.fWeight < b.fWeight;
+    return a.fWeight > b.fWeight;
   }
   static bool CompareMCLabels(const AliHLTTPCClusterMCWeight &a, const AliHLTTPCClusterMCWeight &b){
     return a.fMCID < b.fMCID;
@@ -31,6 +31,9 @@ class AliHLTTPCHWCFDivisionUnit
   
   /** destructor */
   ~AliHLTTPCHWCFDivisionUnit();
+
+  /** set debug level */
+  void SetDebugLevel( int val ){ fDebug = val; }
 
   /** Suppress clusters wich were not mmerged (except of clusters at branch borders)
    */
@@ -62,6 +65,7 @@ class AliHLTTPCHWCFDivisionUnit
   AliHLTUInt64_t fClusterLowerLimit; // lower charge limit for clusters 
   const AliHLTTPCHWCFClusterFragment *fkInput; // current input 
   AliHLTTPCHWCFCluster fOutput;  // current output
+  int  fDebug; // debug level
 };
 
 #endif

@@ -36,6 +36,7 @@ using namespace std;
 
 AliHLTTPCHWCFEmulator::AliHLTTPCHWCFEmulator()
   :
+  fDebug(0),
   fkMapping(0),
   fChannelExtractor(),
   fChannelProcessor(),
@@ -52,6 +53,7 @@ AliHLTTPCHWCFEmulator::~AliHLTTPCHWCFEmulator()
 
 AliHLTTPCHWCFEmulator::AliHLTTPCHWCFEmulator(const AliHLTTPCHWCFEmulator&)
   :
+  fDebug(0),
   fkMapping(0),
   fChannelExtractor(),
   fChannelProcessor(),
@@ -78,8 +80,10 @@ void AliHLTTPCHWCFEmulator::Init( const AliHLTUInt32_t *mapping, AliHLTUInt32_t 
   fChannelMerger.SetByPassMerger( (config>>4) & 0x1 );
   fDivisionUnit.SetClusterLowerLimit( (config>>8) & 0xFF );
   fChannelProcessor.SetSingleSeqLimit( (config>>16) & 0xFF );
-
-  //fChannelMerger.SetDebugLevel(1);
+ 
+  fChannelProcessor.SetDebugLevel(fDebug);
+  fChannelMerger.SetDebugLevel(fDebug);
+  fDivisionUnit.SetDebugLevel(fDebug);
 }
 
  

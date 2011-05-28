@@ -228,9 +228,7 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFExtractorUnit::OutputStream()
 	} else { // read the signal
 	  fBunch->fData.push_back(word10);
 	  if( fkMCLabels && fCurrentMCLabel<=fNMCLabels ){
-	    fBunch->fMC.push_back( fkMCLabels[fCurrentMCLabel].fClusterID[0] );
-	    fBunch->fMC.push_back( fkMCLabels[fCurrentMCLabel].fClusterID[1] );
-	    fBunch->fMC.push_back( fkMCLabels[fCurrentMCLabel].fClusterID[2] );
+	    fBunch->fMC.push_back( fkMCLabels[fCurrentMCLabel] );
 	    fCurrentMCLabel++;
 	  }
 	  //cout<<"Extractor: Bunch signal["<<fBunch->fNSignals<<"]: "<<word10<<endl;

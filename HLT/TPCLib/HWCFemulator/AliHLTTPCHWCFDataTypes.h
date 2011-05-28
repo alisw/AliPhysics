@@ -41,7 +41,7 @@ struct AliHLTTPCHWCFBunch
   AliHLTUInt64_t fGain; // gain correction factor 
                         //   (fixed point integer with kFixedPoint bits after the point)
   std::vector<AliHLTUInt32_t> fData;      // signals
-  std::vector<AliHLTTPCClusterMCWeight> fMC; // mc labels
+  std::vector<AliHLTTPCClusterMCLabel> fMC; // mc labels
 };
 typedef struct AliHLTTPCHWCFBunch AliHLTTPCHWCFBunch;
 
@@ -67,7 +67,7 @@ struct AliHLTTPCHWCFClusterFragment
                          //    fragment bein merged, needed for deconvolution
   bool fSlope;           // for merged fragments, ==1 if fLastQ decreases
                          //   ( needed for deconvolution )
-  std::vector<AliHLTTPCClusterMCWeight> fMC; // mc labels
+  std::vector<AliHLTTPCClusterMCLabel> fMC; // mc labels
 };
 typedef struct AliHLTTPCHWCFClusterFragment AliHLTTPCHWCFClusterFragment;
 
