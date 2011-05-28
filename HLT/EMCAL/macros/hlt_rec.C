@@ -36,7 +36,7 @@ void hlt_rec(const char* input="./") {
 
   // Define which modules and RCUs to use
   int moduleStart = 0;
-  int moduleEnd = 3;
+  int moduleEnd = 9;
   int rcuStart = 0;
   int rcuEnd = 1;
   
@@ -77,7 +77,7 @@ void hlt_rec(const char* input="./") {
           dm.Form("EMC-DM_%02d_%d", module, rcu);
           arg="";
 	  // HI-GAIN ~ 15/256 ------ CHECK LOW GAIN FACTOR
-          arg.Form("-highgainfactor 0.057 -lowgainfactor 0.08");
+          arg.Form("-highgainfactor 0.0167 -lowgainfactor 0.08");
           AliHLTConfiguration dmConf(dm.Data(), "EmcalDigitMaker", rawanalyzer.Data(), arg.Data());
           if(clInput.Length() > 0) clInput += " ";
           clInput+=dm;
@@ -90,7 +90,7 @@ void hlt_rec(const char* input="./") {
       	cl.Form("EMC-CL_%02d", module);
       	arg = "";
 	// digitthreshold was 0.005
-      	arg.Form("-digitthreshold 0.057 -recpointthreshold 0.1");
+      	arg.Form("-digitthreshold 0.0167 -recpointthreshold 0.1");
       	AliHLTConfiguration clConf(cl.Data(), "EmcalClusterizer", clInput.Data(), arg.Data());
       	if(ecInput.Length() > 0) ecInput += " ";
       	ecInput += cl;
@@ -139,7 +139,7 @@ void hlt_rec(const char* input="./") {
   //option+="rootFileHisto loglevel=0x5f";
 
   AliReconstruction rec;
-  Char_t outname[256];
+  
 
   // uncomment for simulation
   rec.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
@@ -161,57 +161,5 @@ void hlt_rec(const char* input="./") {
   
   rec.Run();
 
-  TCanvas *c1 = new TCanvas("c1","",0,0,600,400);
-  c1->Divide(2,2);
-
- // for (int i=0; i<3; i++) {
-//  c1->cd(i+1);
-//  fChannelETMap[i]->Draw("colz");
-
-//  }
-
- c1->cd(1);
- fChannelETMap0->Draw("colz");
- c1->cd(2);
- fChannelETMap1->Draw("colz");
- c1->cd(3);
- fChannelETMap2->Draw("colz");
- c1->cd(4);
- fChannelETMap3->Draw("colz");
-
- sprintf(outname, "ChannleETMap.gif");
- c1->SaveAs(outname);
-
-
- TCanvas *c2 = new TCanvas("c2","",0,0,600,400);
- c2->Divide(2,2);
-
-
- c2->cd(1);
- fChannelEMap0->Draw("colz");
- c2->cd(2);
- fChannelEMap1->Draw("colz");
- c2->cd(3);
- fChannelEMap2->Draw("colz");
- c2->cd(4);
- fChannelEMap3->Draw("colz");
-
- sprintf(outname, "ChannleEMap.gif");
- c2->SaveAs(outname);
-
- TCanvas *c3 = new TCanvas("c3","",0,0,600,400);
- c3->Divide(2,2);
-
- c3->cd(1);
- fChannelTMap0->Draw("colz");
- c3->cd(2);
- fChannelTMap1->Draw("colz");
- c3->cd(3);
- fChannelTMap2->Draw("colz");
- c3->cd(4);
- fChannelTMap3->Draw("colz");
-
- sprintf(outname, "ChannleTMap.gif");
- c3->SaveAs(outname);
 
 }
