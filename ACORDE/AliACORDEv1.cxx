@@ -271,7 +271,7 @@ void AliACORDEv1::CreateAcorde()
 	boxLongSupport[2]=500.0;
 
 	boxThinSupport[0]=1.0;
-	boxThinSupport[1]=7.0;
+	boxThinSupport[1]=5.0;
 	boxThinSupport[2]=500.0;
 
 	TGeoBBox *acordeLongSupport = new TGeoBBox("ACORDELONGSUPPORT",boxLongSupport[0],boxLongSupport[1],boxLongSupport[2]);
@@ -280,7 +280,7 @@ void AliACORDEv1::CreateAcorde()
 	TGeoVolume *acordeLSupport = new TGeoVolume("ACORDELS",acordeLongSupport,aluminium);
 	TGeoVolume *acordeTSupport = new TGeoVolume("ACORDETS",acordeThinSupport,aluminium);
 	TGeoVolume *acordeMainSupport = new TGeoVolumeAssembly("ACORDE_SUPPORT"); 
-	acordeMainSupport->AddNode(acordeLSupport,1,new TGeoTranslation("ACOLSA",0,7.5,0));
+	acordeMainSupport->AddNode(acordeLSupport,1,new TGeoTranslation("ACOLSA",0,5.5,0));
 	acordeMainSupport->AddNode(acordeLSupport,2,new TGeoTranslation("ACOLSB",0,-7.5,0));
 	acordeMainSupport->AddNode(acordeTSupport,3);
 

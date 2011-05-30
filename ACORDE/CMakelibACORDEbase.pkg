@@ -1,5 +1,5 @@
 set(SRCS AliACORDEConstants.cxx AliACORDECalibData.cxx AliACORDERawReader.cxx 
-    AliGenACORDE.cxx AliACORDEQAChecker.cxx  AliACORDELoader.cxx AliACORDEPreprocessor.cxx AliACORDEdigit.cxx AliACORDEDataDCS.cxx AliACORDERawStream.cxx )
+    AliGenACORDE.cxx AliACORDEQAChecker.cxx  AliACORDELoader.cxx AliACORDEPreprocessor.cxx AliACORDEdigit.cxx AliACORDEDataDCS.cxx AliACORDERawStream.cxx AliACORDEAlign.cxx)
 
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 

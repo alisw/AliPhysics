@@ -18,4 +18,5 @@
 #pragma link C++ class  AliACORDERawStream+;
 #pragma link C++ class  AliACORDERawReader+;
 #pragma link C++ class  AliACORDEQAChecker+;
+#pragma link C++ class  AliACORDEAlign+;
 #endif
