@@ -26,6 +26,7 @@
 
 #include "AliHLTTPCHWCFProcessorUnit.h"
 #include <iostream>
+#include <cstdio>
 
 
 AliHLTTPCHWCFProcessorUnit::AliHLTTPCHWCFProcessorUnit()
