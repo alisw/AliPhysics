@@ -62,35 +62,41 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
         if (pTPC) { run = pTPC->GetRunNumber(); }
     }
     TObjString runType;
-    AliTPCcalibDB     *calibDB=0;
+
+    //AliTPCcalibDB     *calibDB=0;
+
 //     AliTPCcalibDButil *dbutil =0;
     Int_t startTimeGRP=0;
     Int_t stopTimeGRP=0;   
     Int_t time=0;
     Int_t duration=0;
-    Float_t currentL3 =0;
-    Int_t polarityL3 = 0;
-    Float_t bz = 0;
-    calibDB = AliTPCcalibDB::Instance();
+
+    //Float_t currentL3 =0;
+    //Int_t polarityL3 = 0;
+    //Float_t bz = 0;
+
+    //calibDB = AliTPCcalibDB::Instance();
+
 //     dbutil= new AliTPCcalibDButil;   
         
-    printf("Processing run %d ...\n",run);
-    if (calibDB) { 
-        AliTPCcalibDB::Instance()->SetRun(run); 
+    //printf("Processing run %d ...\n",run);
+    //if (calibDB) { 
+    //AliTPCcalibDB::Instance()->SetRun(run); 
+
 //     dbutil->UpdateFromCalibDB();
 //     dbutil->SetReferenceRun(run);
 //     dbutil->UpdateRefDataFromOCDB();     
      
-  if (calibDB->GetGRP(run)){
-    startTimeGRP = AliTPCcalibDB::GetGRP(run)->GetTimeStart();
-    stopTimeGRP  = AliTPCcalibDB::GetGRP(run)->GetTimeEnd();
-    currentL3 = AliTPCcalibDB::GetL3Current(run);
-    polarityL3 = AliTPCcalibDB::GetL3Polarity(run);
-    bz = AliTPCcalibDB::GetBz(run);
+    //if (calibDB->GetGRP(run)){
+    //startTimeGRP = AliTPCcalibDB::GetGRP(run)->GetTimeStart();
+    //stopTimeGRP  = AliTPCcalibDB::GetGRP(run)->GetTimeEnd();
+    //currentL3 = AliTPCcalibDB::GetL3Current(run);
+    //polarityL3 = AliTPCcalibDB::GetL3Polarity(run);
+    //bz = AliTPCcalibDB::GetBz(run);
     
-  }    
-  runType = AliTPCcalibDB::GetRunType(run).Data();  
-}  
+    //}    
+    //runType = AliTPCcalibDB::GetRunType(run).Data();  
+    //}  
   time = (startTimeGRP+stopTimeGRP)/2;
   duration = (stopTimeGRP-startTimeGRP);
     
