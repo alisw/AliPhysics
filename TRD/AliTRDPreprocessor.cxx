@@ -1033,165 +1033,106 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
 //_____________________________________________________________________________
 UInt_t AliTRDPreprocessor::ProcessDCSConfigData()
 {
-  // 
   // process the configuration of FEE, PTR and GTU
   // reteive XML filei(s) from the DCS FXS
   // parse it/them and store TObjArrays in the CDB
-  //
-  // return 0 for success, otherwise:
-  //  5 : Could not get the SOR file from the FXS
-  //  8 : SOR file is not valid
-  // 10 : SOR XML is not well-formed
-  // 12 : ERROR in SOR XML SAX validation: something wrong with the content
-  // 14 : ERROR while creating SOR calibration objects in the handler
-  // 16 : ERROR while storing data in the CDB
-  //
 
   Log("Processing the DCS config summary files.");
 
+  if(fCalDCSObjSOR) delete fCalDCSObjSOR;
+  if(fCalDCSObjEOR) delete fCalDCSObjEOR;
+
+  TString xmlFile[2];
+  TString esor[2] = {"SOR", "EOR"};
   // get the XML files
-  Log("Requesting the two XML files from the FXS..");
-  TString xmlFileS   = GetFile(kDCS,"CONFIGSUMMARYSOR","");
-  TString xmlFileE   = GetFile(kDCS,"CONFIGSUMMARYEOR","");
-  Bool_t  fileExistE = kTRUE;
+  xmlFile[0] = GetFile(kDCS,"CONFIGSUMMARYSOR","");
+  xmlFile[1] = GetFile(kDCS,"CONFIGSUMMARYEOR","");
 
 
-  // check if the files are there
-  if (xmlFileS.IsNull()) {
-    Log("ERROR: SOR file not found!");
-    return 5;
-  }
-  Log(Form("SOR file found: %s", xmlFileS.Data()));
+  // check both files
+  for (Int_t iFile=0; iFile<2; iFile++) {
 
-  if (xmlFileE.IsNull()) {
-    Log("Warning: EOR file not found!");
-    fileExistE = kFALSE;
-  } else Log(Form("EOR file found: %s", xmlFileE.Data()));
-
-
-  // test the files
-  std::ifstream fileTestS;
-  fileTestS.open(xmlFileS.Data(), std::ios_base::binary | std::ios_base::in);
-  if (!fileTestS.good() || fileTestS.eof() || !fileTestS.is_open()) {
-    Log("ERROR: SOR file not valid!");
-    return 8;
-  }
-  fileTestS.seekg(0, std::ios_base::end);
-  if (static_cast<int>(fileTestS.tellg()) < 2) {
-    Log("ERROR: SOR file is empty!");
-    return 8;
-  }
-  Log("SOR file is valid.");
-  
-  if (fileExistE) {
-    std::ifstream fileTestE;
-    fileTestE.open(xmlFileE.Data(), std::ios_base::binary | std::ios_base::in);
-    if (!fileTestE.good() || fileTestE.eof() || !fileTestE.is_open()) {
-      Log("Warning: EOR file is not valid!");
-      fileExistE = kFALSE;
-    } else {
-      fileTestE.seekg(0, std::ios_base::end);
-      if (static_cast<int>(fileTestE.tellg()) < 2) {
-        Log("Warning: EOR file is empty!");
-        fileExistE = kFALSE;
-      }
+    // check if the file are there
+    if (xmlFile[iFile].IsNull()) {
+      Log(Form("Warning: %s file not found!", esor[iFile].Data()));
+      continue;
     }
-  }
-  if (fileExistE) Log("EOR file is valid.");
+    Log(Form("%s file found: %s", esor[iFile].Data(), xmlFile[iFile].Data()));
 
-
-  // make a robust XML validation
-  TSAXParser testParserS, testParserE;
-  if (testParserS.ParseFile(xmlFileS.Data()) < 0 ) {
-    Log("ERROR: SOR XML content is not well-formed!");
-    return 10;
-  }
-  Log("SOR XML content is well-formed.");
-
-  if (fileExistE) {
-    if (testParserE.ParseFile(xmlFileE.Data()) < 0 ) {
-      Log("Warning: XML content (EOR) is not well-formed!");
-      fileExistE = kFALSE;
+    // test the file
+    std::ifstream fileTest;
+    fileTest.open(xmlFile[iFile].Data(), std::ios_base::binary | std::ios_base::in);
+    if (!fileTest.good() || fileTest.eof() || !fileTest.is_open()) {
+      Log(Form("Warning: %s file not valid!", esor[iFile].Data()));
+      continue;
+    } 
+    // check if the file is empty
+    fileTest.seekg(0, std::ios_base::end);
+    if (static_cast<int>(fileTest.tellg()) < 2) {
+      Log(Form("Warning: %s file empty!", esor[iFile].Data()));
+      continue;
     }
-  }
-  if (fileExistE) Log("EOR XML content is well-formed.");
+    Log(Form("%s file is valid.", esor[iFile].Data()));
 
-
-  // create parser and parse
-  TSAXParser saxParserS, saxParserE;
-  AliTRDSaxHandler saxHandlerS, saxHandlerE;
-  saxParserS.ConnectToHandler("AliTRDSaxHandler", &saxHandlerS);
-  saxParserS.ParseFile(xmlFileS.Data());
-
-  // report errors of the parser if present
-  if (saxParserS.GetParseCode() != 0) {
-    Log(Form("ERROR: SOR XML file validation failed! Parse code: %d", saxParserS.GetParseCode()));
-    return 12;
-  }
-  Log("SOR XML file validation OK.");
-
-  if (fileExistE) {
-    saxParserE.ConnectToHandler("AliTRDSaxHandler", &saxHandlerE);
-    saxParserE.ParseFile(xmlFileE.Data());
-    if (saxParserE.GetParseCode() != 0) {
-      Log(Form("Warning: EOR XML file validation failed! Parse code: %d", saxParserE.GetParseCode()));
-      fileExistE = kFALSE;
+    // make a robust XML validation
+    TSAXParser testParser;
+    if (testParser.ParseFile(xmlFile[iFile].Data()) < 0 ) {
+      Log(Form("Warning: %s XML content is not well-formed!", esor[iFile].Data()));
+      continue;
     }
-  }
-  if (fileExistE) Log("EOR XML file validation OK.");
+    Log(Form("%s XML content is well-formed.", esor[iFile].Data()));
 
+    // create parser and parse
+    TSAXParser saxParser;
+    AliTRDSaxHandler saxHandler;
+    saxParser.ConnectToHandler("AliTRDSaxHandler", &saxHandler);
+    saxParser.ParseFile(xmlFile[iFile].Data());
 
-  // report errors of the handler if present
-  if (saxHandlerS.GetHandlerStatus() != 0) {
-    Log(Form("ERROR: Creating SOR calibration object failed! Error code: %d", saxHandlerS.GetHandlerStatus()));
-    return 14;
-  }
-  Log("SOR SAX handler reports no errors.");
-
-  if (fileExistE) {
-    if (saxHandlerE.GetHandlerStatus() != 0) {
-      Log(Form("Warning: Creating EOR calibration object failed! Error code: %d", saxHandlerE.GetHandlerStatus()));
-      fileExistE = kFALSE;
+    // report errors of the parser if present
+    if (saxParser.GetParseCode() != 0) {
+      Log(Form("Warning: %s XML file validation failed! Parse code: %d", esor[iFile].Data(), saxParser.GetParseCode()));
+      continue;
     }
-  }
-  if (fileExistE) Log("EOR SAX handler reports no errors.");
+    Log(Form("%s XML validation OK.", esor[iFile].Data()));
 
+    // report errors of the handler if present
+    if (saxHandler.GetHandlerStatus() != 0) {
+      Log(Form("Warning: Creating %s calibration object failed! Error code: %d", esor[iFile].Data(), saxHandler.GetHandlerStatus()));
+      continue;
+    }
+    Log(Form("%s SAX handler reports no errors.", esor[iFile].Data()));
+
+    // get the calibration object storing the data from the handler
+    AliTRDCalDCSv2 *calDCSObj = (AliTRDCalDCSv2*)saxHandler.GetCalDCSObj()->Clone();
+    calDCSObj->EvaluateGlobalParameters();
+    calDCSObj->SetRunType(GetRunType());
+    calDCSObj->SetStartTime(GetStartTimeDCSQuery());
+    calDCSObj->SetEndTime(GetEndTimeDCSQuery());
+    if (iFile == 0) fCalDCSObjSOR = calDCSObj;
+    if (iFile == 1) fCalDCSObjEOR = calDCSObj;
+  }
+
+  if (!fCalDCSObjSOR && !fCalDCSObjEOR) { Log("ERROR: Failed reading both files!"); return 1; }
 
   // put both objects in one TObjArray to store them
   TObjArray* calObjArray = new TObjArray(2);
   calObjArray->SetOwner();
 
-  // get the calibration object storing the data from the handler
-  if(fCalDCSObjSOR) delete fCalDCSObjSOR;
-  fCalDCSObjSOR = (AliTRDCalDCSv2 *) saxHandlerS.GetCalDCSObj()->Clone();
-  fCalDCSObjSOR->EvaluateGlobalParameters();
-  fCalDCSObjSOR->SetRunType(GetRunType());
-  fCalDCSObjSOR->SetStartTime(GetStartTimeDCSQuery());
-  fCalDCSObjSOR->SetEndTime(GetEndTimeDCSQuery());
-  calObjArray->AddAt(fCalDCSObjSOR,0);
-  Log("TRDCalDCS object for SOR created.");
-
-  if (fileExistE) {
-    if(fCalDCSObjEOR) delete fCalDCSObjEOR;
-    fCalDCSObjEOR = (AliTRDCalDCSv2 *) saxHandlerE.GetCalDCSObj()->Clone();
-    fCalDCSObjEOR->EvaluateGlobalParameters();
-    fCalDCSObjEOR->SetRunType(GetRunType());
-    fCalDCSObjEOR->SetStartTime(GetStartTimeDCSQuery());
-    fCalDCSObjEOR->SetEndTime(GetEndTimeDCSQuery());
+  if (fCalDCSObjSOR) {
+    calObjArray->AddAt(fCalDCSObjSOR,0);
+    Log("TRDCalDCS object for SOR created.");
+  }
+  if (fCalDCSObjEOR) {
     calObjArray->AddAt(fCalDCSObjEOR,1);
     Log("TRDCalDCS object for EOR created.");
   }
-
 
   // store the DCS calib data in the CDB
   AliCDBMetaData metaData1;
   metaData1.SetBeamPeriod(0);
   metaData1.SetResponsible("Frederick Kramer");
   metaData1.SetComment("DCS configuration data in two AliTRDCalDCSv2 objects in one TObjArray (0:SOR, 1:EOR).");
-  if (!Store("Calib", "DCS", calObjArray, &metaData1, 0, kTRUE)) {
-    Log("ERROR: Storing DCS config data object failed!");
-    return 16;
-  }
+  if (!Store("Calib", "DCS", calObjArray, &metaData1, 0, kTRUE)) { Log("ERROR: Storing DCS config data object failed!"); return 1; }
 
   delete calObjArray;
 
