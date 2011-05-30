@@ -417,14 +417,29 @@ void AliT0QADataMakerRec::InitRaws()
    Add2RawsList( fhOrCminOrATvdcOffcal,218+250, expert, !image, !saveCorr);
    
    //satellite  & beam background
-  TH2F* fhBeam = new TH2F("fhBeam", " Mean vs Vertex; (T0A-T0C)/2 [ns]; (T0A+T0C)/2 [ns] ", 120, -30, 30, 120, -30, 30);
-   Add2RawsList( fhBeam,220, !expert, image, !saveCorr);
-   TH2F* fhBeamTVDCon = new TH2F("fhBeamTVDCon", " Mean vs Vertex TVDC on; (T0A-T0C)/2 [ns]; (T0A+T0C)/2 [ns]",50, -5, 5, 50, -5, 5) ;
+  TH2F* fhBeam = new TH2F("fhBeam", " Mean vs Vertex ", 120, -30, 30, 120, -30, 30);
+  fhBeam->SetOption("COLZ");
+  fhBeam->GetXaxis()->SetTitle("(T0C-T0A/2, ns");
+  fhBeam->GetYaxis()->SetTitle("(T0C+T0A/2, ns");
+  Add2RawsList( fhBeam,220, !expert, image, !saveCorr);
+   TH2F* fhBeamTVDCon = new TH2F("fhBeamTVDCon", " Mean vs Vertex TVDC on ",50, -5, 5, 50, -5, 5) ;
+   fhBeamTVDCon->SetOption("COLZ");
+   fhBeamTVDCon->GetXaxis()->SetTitle("(T0C-T0A/2, ns");
+   fhBeamTVDCon->GetYaxis()->SetTitle("(T0C+T0A/2, ns");
    Add2RawsList( fhBeamTVDCon,221, expert, image, !saveCorr);
-   TH2F* fhBeamTVDCoff = new TH2F("fhBeamTVDCoff", " Mean vs Vertex TVDC off; (T0A-T0C)/2 [ns]; (T0A+T0C)/2 [ns]", 120, -30, 30, 120, -30, 30);
+   TH2F* fhBeamTVDCoff = new TH2F("fhBeamTVDCoff", " Mean vs Vertex TVDC off", 120, -30, 30, 120, -30, 30);
+   fhBeamTVDCoff->GetXaxis()->SetTitle("(T0C-T0A/2, ns");
+   fhBeamTVDCoff->GetYaxis()->SetTitle("(T0C+T0A/2, ns");
+   fhBeamTVDCoff->SetOption("COLZ");
    Add2RawsList( fhBeamTVDCoff,222, expert, image, !saveCorr);
-   TH1F* fhMean = new TH1F("fhMean", " (T0A+T0C)/2; (T0A+T0C)/2 [ps] ", 200, -2000, 2000);
+   TH1F* fhMean = new TH1F("fhMean", " (T0A+T0C)/2, ns ", 200, -2000, 2000);
    Add2RawsList( fhMean,223, !expert, image, !saveCorr);
+
+   TH2F* fhBCID = new TH2F("fhBCID", "header BCID vs TRM BC ID ", 500, 0, 5000, 500, 0, 5000);
+   fhBCID->SetOption("COLZ");
+   fhBCID->GetXaxis()->SetTitle("TRM BC ID");
+   fhBCID->GetYaxis()->SetTitle("event header BC ID");
+   Add2RawsList(fhBCID ,224, !expert, image, !saveCorr);
 
    //triggers
    const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
@@ -517,10 +532,17 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
     AliDebug(AliQAv1::GetQADebugLevel(),Form(" no raw data found!!"));
   else
     {  
+
       UInt_t type =rawReader->GetType();
       if (type == 8){ shift=250; fnEventCal++;} 
       if (type == 7){ shift=0;   fnEventPhys++;}
-      //    if (type == 7){ shift=1;   fnEventPhys++;}
+       //BC ID
+      if (type == 7){
+	UInt_t bcid = rawReader->GetBCID();
+	UInt_t	trmbcid = start->GetTRMBunchID();
+	GetRawsData(224)->Fill(trmbcid, bcid);
+      }
+     //    if (type == 7){ shift=1;   fnEventPhys++;}
       Int_t allData[110][5];
       for (Int_t i0=0; i0<110; i0++)
 	{
@@ -704,13 +726,13 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	    for ( Int_t ipmt=12; ipmt<24; ipmt++){
 	      if(allData[ipmt+45][0] > 0) {
 		time[ipmt] = allData[ipmt+45][0] - fMeans[ipmt] ;
-		if(TMath::Abs(time[ipmt]) < TMath::Abs(besttimeA) );
+		if(TMath::Abs(time[ipmt]) < TMath::Abs(besttimeA) )
 		  besttimeA=time[ipmt]; //timeA
 	      }
 	    }
 	    if(besttimeA<99999 &&besttimeC< 99999) {
 	      Float_t t0 =  24.4 * (Float_t( besttimeA+besttimeC)/2. );
-	      Float_t ver = 24.4 * Float_t( besttimeA-besttimeC)/2.;
+	      Float_t ver = 24.4 * Float_t( besttimeC-besttimeA)/2.;
 	      GetRawsData(220)->Fill(0.001*ver, 0.001*(t0));
 	      if(allData[50][0] > 0)  GetRawsData(221)->Fill(0.001*ver, 0.001*(t0));
 	      if(allData[50][0] <= 0) GetRawsData(222)->Fill(0.001*ver, 0.001*(t0));
