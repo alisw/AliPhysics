@@ -32,9 +32,6 @@ public:
   virtual void   Init();
   virtual void   ProcessEvent();
   
-  Bool_t  InitBadChannels();
-  Bool_t  InitRecalibCluster();
-  Bool_t  InitMisalignMatrix();
   
   void SetEMCALGeometryName(TString name)  { fEMCALGeoName = name  ;}
   TString EMCALGeometryName()       const  { return fEMCALGeoName  ;}
@@ -47,8 +44,11 @@ public:
   void  SetNonLinearityThreshold(Int_t threshold) { fNonLinearThreshold = threshold ;} //only for Alexei's non linearity correction
   Int_t GetNonLinearityThreshold() const          { return fNonLinearThreshold      ;}
 
-  void  SwitchOnReCalibrate()              { fReCalib = kTRUE  ;}
-  void  SwitchOffReCalibrate()             { fReCalib = kFALSE ;}
+  void  SwitchOnReCalibrateCluster()       { fReCalibCluster = kTRUE  ;}
+  void  SwitchOffReCalibrateCluster()      { fReCalibCluster = kFALSE ;}
+
+  void  SwitchOnReCalibrateCell()          { fReCalibCell = kTRUE  ;}
+  void  SwitchOffReCalibrateCell()         { fReCalibCell = kFALSE ;}
 
   void  SwitchOnRecalculateClusPos()       { fRecalClusPos = kTRUE  ;}
   void  SwitchOffRecalculateClusPos()      { fRecalClusPos = kFALSE ;}
@@ -71,43 +71,51 @@ public:
   Double_t GetStep()       const { return fStep ;}
   void     SetStep(Double_t step){ fStep=step   ;}
 
-  void SetClusterMatchedToTrack(AliESDEvent *event);
-  void SetTracksMatchedToCluster(AliESDEvent *event);
  
 private:
 
-  AliEMCALGeometry  * fEMCALGeo;               //! EMCAL geometry
-  TString             fEMCALGeoName;           // Name of geometry to use.
+  Bool_t  InitBadChannels();
+  Bool_t  InitRecalibCluster();
+  Bool_t  InitMisalignMatrix();
   
-  AliEMCALRecoUtils * fEMCALRecoUtils;         // Pointer to EMCAL utilities for clusterization
-  TString             fConfigName;             // Name of analysis configuration file
+  void SetClusterMatchedToTrack(AliESDEvent *event);
+  void SetTracksMatchedToCluster(AliESDEvent *event);
+
+  void RecalibrateCells();	 		//Recalibrate cells 
+
+  AliEMCALGeometry   *fEMCALGeo;               //! EMCAL geometry
+  TString       fEMCALGeoName;           // Name of geometry to use.
   
-  Int_t 	      fDebugLevel;             // debug level
-
-  Int_t 	      fNonLinearFunc;          // Non linearity function 
-  Int_t		      fNonLinearThreshold;     // Non linearity threshold value for kBeamTesh non linearity function   
-
-  Bool_t	      fReCalib; 	       // switch for Recalibrate clusters
-
-  TGeoHMatrix       * fEMCALMatrix[10];        // Geometry matrices with alignments
-  Bool_t	      fRecalClusPos; 	       // switch for applying missalignment
-
-  Bool_t 	      fFiducial; 	       // switch for checking cells in the fiducial region
-  Int_t 	      fNCellsFromEMCALBorder;  // number os cells from EMCAL border	
-  Bool_t	      fRecalDistToBadChannels; // switch for recalculation cluster position from bad channel	  
-
-  TTree             * fInputTree;              // input data tree
-  TFile             * fInputFile;              // input data file 
-  TString             fFilepass;               // input data pass number
-
-  Double_t 	      fMass;                   // mass for track matching
-  Double_t            fStep;                   // step size during track matching
-  Float_t             fRcut;                   // residual cut for track matching   
+  AliEMCALRecoUtils  *fEMCALRecoUtils;         // Pointer to EMCAL utilities for clusterization
+  TString       fConfigName;             // Name of analysis configuration file
   
+  Int_t         fDebugLevel;             // debug level
+
+  Int_t         fNonLinearFunc;          // Non linearity function 
+  Int_t         fNonLinearThreshold;     // Non linearity threshold value for kBeamTesh non linearity function   
+
+  Bool_t        fReCalibCluster; 	       // switch for Recalibrate clusters
+  Bool_t        fReCalibCell; 	       // switch for Recalibrate cell
+
+  TGeoHMatrix  *fEMCALMatrix[10];        // Geometry matrices with alignments
+  Bool_t        fRecalClusPos; 	       // switch for applying missalignment
+
+  Bool_t        fFiducial; 	       // switch for checking cells in the fiducial region
+  Int_t         fNCellsFromEMCALBorder;  // number os cells from EMCAL border	
+  Bool_t        fRecalDistToBadChannels; // switch for recalculation cluster position from bad channel	  
+
+  TTree        *fInputTree;              // input data tree
+  TFile        *fInputFile;              // input data file 
+  TString       fFilepass;               // input data pass number
+
+  Double_t      fMass;                   // mass for track matching
+  Double_t      fStep;                   // step size during track matching
+  Float_t       fRcut;                   // residual cut for track matching  
+
   AliEMCALTenderSupply(const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 1); // TPC tender task
+  ClassDef(AliEMCALTenderSupply, 2); // TPC tender task
 };
 
 
