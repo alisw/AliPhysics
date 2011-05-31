@@ -56,7 +56,8 @@ AliAODPidHF::AliAODPidHF():
   fMC(kFALSE),
   fOnePad(kFALSE),
   fMCLowEn2011(kFALSE),
-  fPbPb(kFALSE)
+  fPbPb(kFALSE),
+  fTOFdecide(kFALSE)
 {
  //
  // Default constructor
@@ -111,7 +112,8 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fMC(pid.fMC),
   fOnePad(pid.fOnePad),
   fMCLowEn2011(pid.fMCLowEn2011),
-  fPbPb(pid.fPbPb)
+  fPbPb(pid.fPbPb),
+  fTOFdecide(pid.fTOFdecide)
   {
   
   for(Int_t i=0;i<5;i++){
@@ -552,6 +554,12 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track,Int_t mode,Int_t specie,Bool_t
     SetSigma(3,sig0tmp);
    }
   }
+ }
+
+ 
+ if(tTPCinfo+tTOFinfo==0 && fTOFdecide){
+  if(!CheckStatus(track,"TOF")) return tTPCinfo;
+  return tTOFinfo;
  }
 
  if(tTPCinfo+tTOFinfo==0 && fITS){
