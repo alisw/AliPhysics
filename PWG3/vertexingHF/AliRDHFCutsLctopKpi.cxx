@@ -45,11 +45,11 @@ fRecoKF(kFALSE)
   //
   // Default Constructor
   //
-  Int_t nvars=12;
+  Int_t nvars=13;
   SetNVars(nvars);
-  TString varNames[12]={"inv. mass [GeV]",
+  TString varNames[13]={"inv. mass [GeV]",
 			"pTK [GeV/c]",
-			"pTPi [GeV/c]",
+			"pTP [GeV/c]",
 			"d0K [cm]   lower limit!",
 			"d0Pi [cm]  lower limit!",
 			"dist12 (cm)",
@@ -58,8 +58,9 @@ fRecoKF(kFALSE)
 			"pM=Max{pT1,pT2,pT3} (GeV/c)",
 			"cosThetaPoint",
 			"Sum d0^2 (cm^2)",
-			"dca cut (cm)"};
-  Bool_t isUpperCut[12]={kTRUE,
+			"dca cut (cm)",
+			"cut on pTpion [GeV/c]"};
+  Bool_t isUpperCut[13]={kTRUE,
 			 kFALSE,
 			 kFALSE,
 			 kFALSE,
@@ -70,21 +71,24 @@ fRecoKF(kFALSE)
 			 kFALSE,
 			 kFALSE,
 			 kFALSE,
-			 kTRUE};
+			 kTRUE,
+			 kFALSE
+			 };
   SetVarNames(nvars,varNames,isUpperCut);
-  Bool_t forOpt[12]={kFALSE,
-		     kFALSE,
+  Bool_t forOpt[13]={kFALSE,
+		     kTRUE,
+		     kTRUE,
 		     kFALSE,
 		     kFALSE,
 		     kFALSE,
 		     kFALSE,
 		     kTRUE,
-		     kTRUE,
-		     kTRUE,
-		     kTRUE,
-		     kTRUE,
-		     kFALSE};
-  SetVarsForOpt(5,forOpt);
+		     kFALSE,
+		     kFALSE,
+		     kFALSE,
+		     kFALSE,
+		     kTRUE};
+  SetVarsForOpt(4,forOpt);
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
 }
@@ -152,7 +156,7 @@ void AliRDHFCutsLctopKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
   if(fVarsForOpt[1]){
     iter++;
     for(Int_t iprong=0;iprong<3;iprong++){
-      if(TMath::Abs(pdgdaughters[iprong])==2212) {
+      if(TMath::Abs(pdgdaughters[iprong])==321) {
 	vars[iter]=dd->PtProng(iprong);
       }
     }
@@ -160,7 +164,7 @@ void AliRDHFCutsLctopKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
   if(fVarsForOpt[2]){
     iter++;
     for(Int_t iprong=0;iprong<3;iprong++){
-      if(TMath::Abs(pdgdaughters[iprong])==211) {
+      if(TMath::Abs(pdgdaughters[iprong])==2212) {
 	vars[iter]=dd->PtProng(iprong);
       }
     }
@@ -213,6 +217,14 @@ void AliRDHFCutsLctopKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
     iter++;
     vars[iter]=dd->GetDCA();
   }
+  if(fVarsForOpt[12]){
+    iter++;
+    for(Int_t iprong=0;iprong<3;iprong++){
+      if(TMath::Abs(pdgdaughters[iprong])==211) {
+	vars[iter]=dd->PtProng(iprong);
+      }
+    }
+  }
 
   return;
 }
@@ -263,10 +275,8 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     if(!okLcpKpi && !okLcpiKp) return 0;
 
     if(TMath::Abs(d->PtProng(1)) < fCutsRD[GetGlobalIndex(1,ptbin)] || TMath::Abs(d->Getd0Prong(1))<fCutsRD[GetGlobalIndex(3,ptbin)]) return 0;//Kaon
-    //if(TMath::Abs(d->PtProng(0)) < fCutsRD[GetGlobalIndex(2,ptbin)] || TMath::Abs(d->Getd0Prong(0))<fCutsRD[GetGlobalIndex(4,ptbin)]) return 0;//Proton
-    //if(TMath::Abs(d->PtProng(2)) < fCutsRD[GetGlobalIndex(2,ptbin)] || TMath::Abs(d->Getd0Prong(2))<fCutsRD[GetGlobalIndex(4,ptbin)]) return 0;//Pion
-    if((TMath::Abs(d->PtProng(0)) < fCutsRD[GetGlobalIndex(2,ptbin)]) || (TMath::Abs(d->PtProng(2)) < 0.4)) okLcpKpi=0;
-    if((TMath::Abs(d->PtProng(2)) < fCutsRD[GetGlobalIndex(2,ptbin)]) || (TMath::Abs(d->PtProng(0)) < 0.4))okLcpiKp=0;
+    if((TMath::Abs(d->PtProng(0)) < fCutsRD[GetGlobalIndex(2,ptbin)]) || (TMath::Abs(d->PtProng(2)) < fCutsRD[GetGlobalIndex(12,ptbin)])) okLcpKpi=0;
+    if((TMath::Abs(d->PtProng(2)) < fCutsRD[GetGlobalIndex(2,ptbin)]) || (TMath::Abs(d->PtProng(0)) < fCutsRD[GetGlobalIndex(12,ptbin)]))okLcpiKp=0;
     if(!okLcpKpi && !okLcpiKp) return 0;
 
     
@@ -337,15 +347,18 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedPID(AliAODRecoDecayHF* obj) {
     Int_t okLcpKpi=0,okLcpiKp=0;
     Int_t returnvalue=0;
     Bool_t isPeriodd=fPidHF->GetOnePad();
-    Bool_t isPbPb=fPidHF->GetPbPb();
+    Bool_t isMC=fPidHF->GetMC();
     Bool_t ispion0=kTRUE,ispion2=kTRUE;
     Bool_t isproton0=kFALSE,isproton2=kFALSE;
     Bool_t iskaon1=kFALSE;
-    Double_t sigmaTOF=120.;
-    if(isPeriodd) sigmaTOF=160.;
-    if(isPbPb) sigmaTOF=160.;
-    fPidObjprot->SetTofSigma(sigmaTOF);
-    fPidHF->SetTofSigma(sigmaTOF);
+    if(isPeriodd) {
+     fPidObjprot->SetOnePad(kTRUE);
+     fPidObjpion->SetOnePad(kTRUE);
+    }
+    if(isMC) {
+     fPidObjprot->SetMC(kTRUE);
+     fPidObjpion->SetMC(kTRUE);
+    }
 
     for(Int_t i=0;i<3;i++){
      AliAODTrack *track=(AliAODTrack*)obj->GetDaughter(i);
@@ -436,7 +449,7 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPP2010() {
  AddTrackCuts(esdTrackCuts);
 
  const Int_t nptbins=4;
- const Int_t nvars=12;
+ const Int_t nvars=13;
  Float_t* ptbins;
  ptbins=new Float_t[nptbins+1];
  
@@ -468,6 +481,7 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPP2010() {
   prodcutsval[9][ipt]=0.;
   prodcutsval[10][ipt]=0.;
   prodcutsval[11][ipt]=0.05;
+  prodcutsval[12][ipt]=0.4;
  }
  SetCuts(nvars,nptbins,prodcutsval);
 
@@ -481,6 +495,7 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPP2010() {
  pidObjK->SetITS(kTRUE);
  Double_t plimK[2]={0.5,0.8};
  pidObjK->SetPLimit(plimK,2);
+ pidObjK->SetTOFdecide(kTRUE);
 
  SetPidHF(pidObjK);
 
@@ -488,6 +503,7 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPP2010() {
  pidObjpi->SetTPC(kTRUE);
  Double_t sigmaspi[5]={3.,0.,0.,0.,0.};
  pidObjpi->SetSigma(sigmaspi);
+ pidObjpi->SetTOFdecide(kTRUE);
  SetPidpion(pidObjpi);
 
  AliAODPidHF* pidObjp=new AliAODPidHF();
@@ -500,6 +516,7 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPP2010() {
  pidObjp->SetITS(kTRUE);
  Double_t plimp[2]={1.,2.};
  pidObjp->SetPLimit(plimp,2);
+ pidObjp->SetTOFdecide(kTRUE);
 
  SetPidprot(pidObjp);
 
@@ -542,7 +559,7 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2010() {
  AddTrackCuts(esdTrackCuts);
 
  const Int_t nptbins=4;
- const Int_t nvars=12;
+ const Int_t nvars=13;
  Float_t* ptbins;
  ptbins=new Float_t[nptbins+1];
  
@@ -574,6 +591,7 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2010() {
   prodcutsval[9][ipt]=0.3;
   prodcutsval[10][ipt]=0.;
   prodcutsval[11][ipt]=0.05;
+  prodcutsval[12][ipt]=0.4;
  }
  SetCuts(nvars,nptbins,prodcutsval);
 
