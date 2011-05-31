@@ -459,15 +459,13 @@ Bool_t AliEMCALTenderSupply::InitRecalibCluster()
 	}
 	else AliError("Tree not found");
 	//        else {cout << "Tree not found " <<endl; return kFALSE;}
+  
+	Int_t runRC = event->GetRunNumber();
 
-	//	if (event->GetRunNumber()==runRC)
-       return kFALSE;
-
-	Int_t runRC= 0;	    
-	runRC = event->GetRunNumber();
+  //if (event->GetRunNumber()==runRC)
+  //     return kFALSE;
 
 	fEMCALRecoUtils->SwitchOnRecalibration();
-
 
 	TFile* fRecalib;
 
