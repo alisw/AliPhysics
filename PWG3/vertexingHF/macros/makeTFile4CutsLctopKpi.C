@@ -44,7 +44,7 @@ void makeInputAliAnalysisTaskSELctopKpi(){
   RDHFLctopKpiProd->AddTrackCuts(esdTrackCuts);
   RDHFLctopKpiAn->AddTrackCuts(esdTrackCuts);
 
-  const Int_t nvars=12;
+  const Int_t nvars=13;
 
   const Int_t nptbins=4;
   Float_t* ptbins;
@@ -53,7 +53,7 @@ void makeInputAliAnalysisTaskSELctopKpi(){
   ptbins[1]=2.;
   ptbins[2]=3.;
   ptbins[3]=4.;
-  ptbins[4]=9999.;
+  ptbins[4]=12.;
   
 
   Float_t** prodcutsval;
@@ -87,6 +87,7 @@ void makeInputAliAnalysisTaskSELctopKpi(){
     prodcutsval[9][ipt]=0.;
     prodcutsval[10][ipt]=0.;
     prodcutsval[11][ipt]=0.05;
+    prodcutsval[12][ipt]=0.4;
   }
 
   RDHFLctopKpiProd->SetPtBins(nptbins+1,ptbins);
@@ -105,28 +106,42 @@ void makeInputAliAnalysisTaskSELctopKpi(){
    anacutsval[9][ipt2]=0.;
    anacutsval[10][ipt2]=0.;
    anacutsval[11][ipt2]=0.05;
+   anacutsval[12][ipt2]=0.4;
   }
 
-  anacutsval[2][0]=0.6;
-  anacutsval[2][1]=0.8;
-  anacutsval[2][2]=1.;
-  anacutsval[2][3]=1.2;
+  // pt kaon
+  anacutsval[1][0]=0.5;
+  anacutsval[1][1]=0.85;
+  anacutsval[1][2]=0.9;
+  anacutsval[1][3]=0.4;
+  //pt proton
+  anacutsval[2][0]=0.5;
+  anacutsval[2][1]=0.6;
+  anacutsval[2][2]=0.9;
+  anacutsval[2][3]=0.9;
 
-  anacutsval[7][0]=0.005;
-  anacutsval[7][1]=0.015;
-  anacutsval[7][2]=0.018;
-  anacutsval[7][3]=0.018;
+  //pt pion
+  anacutsval[12][0]=0.475;
+  anacutsval[12][1]=0.75;
+  anacutsval[12][2]=0.75;
+  anacutsval[12][3]=0.7;
 
-  anacutsval[8][0]=0.6;
-  anacutsval[8][1]=0.8;
-  anacutsval[8][2]=1.;
-  anacutsval[8][3]=1.2;
+  anacutsval[5][0]=0.02;
+  anacutsval[5][1]=0.025;
+  anacutsval[5][2]=0.02;
+  anacutsval[5][3]=0.01;
 
-  anacutsval[11][0]=0.04;
-  anacutsval[11][1]=0.04;
-  anacutsval[11][2]=0.03;
-  anacutsval[11][3]=0.03;
+  anacutsval[7][0]=0.00625;
+  anacutsval[7][1]=0.0125;
+  anacutsval[7][2]=0.005;
+  anacutsval[7][3]=0.007;
 
+  anacutsval[9][0]=0.5;
+  anacutsval[9][1]=0.2;
+  anacutsval[9][2]=0.6;
+  anacutsval[9][3]=0.;
+
+  anacutsval[10][0]=0.00125;
 
   RDHFLctopKpiAn->SetPtBins(nptbins+1,ptbins);
   RDHFLctopKpiAn->SetCuts(nvars,nptbins,anacutsval);
@@ -144,6 +159,7 @@ void makeInputAliAnalysisTaskSELctopKpi(){
   pidObjK->SetITS(kTRUE);
   Double_t plimK[2]={0.5,0.8};
   pidObjK->SetPLimit(plimK,2);
+  pidObjK->SetTOFdecide(kTRUE);
   
   RDHFLctopKpiProd->SetPidHF(pidObjK);
   RDHFLctopKpiAn->SetPidHF(pidObjK);
@@ -153,6 +169,7 @@ void makeInputAliAnalysisTaskSELctopKpi(){
   pidObjpi->SetTPC(kTRUE);
   Double_t sigmaspi[5]={3.,0.,0.,0.,0.};
   pidObjpi->SetSigma(sigmaspi);
+  pidObjpi->SetTOFdecide(kTRUE);
 
   RDHFLctopKpiProd->SetPidpion(pidObjpi);
   RDHFLctopKpiAn->SetPidpion(pidObjpi);
@@ -168,6 +185,7 @@ void makeInputAliAnalysisTaskSELctopKpi(){
   pidObjp->SetITS(kTRUE);
   Double_t plimp[2]={1.,2.};
   pidObjp->SetPLimit(plimp,2);
+  pidObjp->SetTOFdecide(kTRUE);
 
   RDHFLctopKpiProd->SetPidprot(pidObjp);
   RDHFLctopKpiAn->SetPidprot(pidObjp);
@@ -219,7 +237,7 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   
   RDHFLctopKpi->AddTrackCuts(esdTrackCuts);
 
-  const Int_t nvars=12;
+  const Int_t nvars=13;
 
   const Int_t nptbins=4; //change this when adding pt bins!
   Float_t ptbins[nptbins+1];
@@ -227,7 +245,7 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   ptbins[1]=2.;
   ptbins[2]=3.;
   ptbins[3]=4.;
-  ptbins[4]=9999.;
+  ptbins[4]=12.;
 
   RDHFLctopKpi->SetPtBins(nptbins+1,ptbins);
 
@@ -240,7 +258,7 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   //setting my cut values
   //  inv. mass [GeV]
   // pTK [GeV/c]
-  // pTPi [GeV/c]
+  // pTP [GeV/c]
   // d0K [cm]   lower limit!
   // d0Pi [cm]  lower limit!
   // dist12 (cm)
@@ -250,11 +268,12 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   // cosThetaPoint
   // Sum d0^2 (cm^2)
   // dca cut (cm)
+  // pt pion
   Float_t cutsMatrixLctopKpiStand[nptbins][nvars]=
-  {{0.18,0.4,0.5,0.,0.,0.01,0.06,0.005,0.7,0.,0.,0.05},
-   {0.18,0.4,0.5,0.,0.,0.01,0.06,0.005,0.7,0.,0.,0.05},
-   {0.18,0.4,0.5,0.,0.,0.01,0.06,0.005,0.7,0.,0.,0.05},
-   {0.18,0.4,0.5,0.,0.,0.01,0.06,0.005,0.7,0.,0.,0.05}};
+  {{0.18,0.4,0.5,0.,0.,0.01,0.06,0.005,0.7,0.,0.,0.05,0.4},
+   {0.18,0.4,0.5,0.,0.,0.01,0.06,0.005,0.7,0.,0.,0.05,0.4},
+   {0.18,0.4,0.5,0.,0.,0.01,0.06,0.005,0.7,0.,0.,0.05,0.4},
+   {0.18,0.4,0.5,0.,0.,0.01,0.06,0.005,0.7,0.,0.,0.05,0.4}};
 
   //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
   Float_t **cutsMatrixTransposeStand=new Float_t*[nvars];
@@ -350,6 +369,7 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   pidObjK->SetITS(kTRUE);
   Double_t plimK[2]={0.5,0.8};
   pidObjK->SetPLimit(plimK,2);
+  pidObjK->SetTOFdecide(kTRUE);
   
   RDHFLctopKpi->SetPidHF(pidObjK);
 
@@ -358,6 +378,7 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   pidObjpi->SetTPC(kTRUE);
   Double_t sigmaspi[5]={3.,0.,0.,0.,0.};
   pidObjpi->SetSigma(sigmaspi);
+  pidObjpi->SetTOFdecide(kTRUE);
 
   RDHFLctopKpi->SetPidpion(pidObjpi);
 
@@ -372,6 +393,7 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   pidObjp->SetITS(kTRUE);
   Double_t plimp[2]={1.,2.};
   pidObjp->SetPLimit(plimp,2);
+  pidObjp->SetTOFdecide(kTRUE);
 
   RDHFLctopKpi->SetPidprot(pidObjp);
 
