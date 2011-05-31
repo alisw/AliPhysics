@@ -92,7 +92,7 @@ public:
   Bool_t                 IsSet(DETECTORINDEX_t det, ALITASK_t tsk, Int_t es, QABIT_t bit) const ;
   Bool_t                 IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk, AliRecoParam::EventSpecie_t es) const ;
   Bool_t                 IsSetAny(DETECTORINDEX_t det, AliRecoParam::EventSpecie_t es) const ;
-  void                   Merge(const TCollection * list) ; 
+  Long64_t               Merge(const TCollection * list) ; 
   static MODE_t          Mode(TASKINDEX_t task) ;
   void                   Set(QABIT_t bit, AliRecoParam::EventSpecie_t es) ;
   void                   Set(QABIT_t bit, Int_t es) ;

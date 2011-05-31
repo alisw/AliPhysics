@@ -686,25 +686,28 @@ AliQAv1 *  AliQAv1::Instance(const TASKINDEX_t tsk)
 }
 
 //_______________________________________________________________
-void AliQAv1::Merge(const TCollection * list) {
+Long64_t AliQAv1::Merge(const TCollection * list) {
 	// Merge the QA resuls in the list into this single AliQAv1 object
 	
-	for (Int_t det = 0 ; det < kNDET ; det++) {
-		Set(DETECTORINDEX_t(det)) ; 
-		for (Int_t task = 0 ; task < kNTASK ; task++) {
-			Set(ALITASK_t(task)) ; 
-			for (Int_t bit = 0 ; bit < kNBIT ; bit++) {
-				TIter next(list) ;
-				AliQAv1 * qa ; 
-				while ( (qa = (AliQAv1*)next() ) ) {
+  Long64_t nmerge = 0;
+  for (Int_t det = 0 ; det < kNDET ; det++) {
+    Set(DETECTORINDEX_t(det)) ; 
+    for (Int_t task = 0 ; task < kNTASK ; task++) {
+      Set(ALITASK_t(task)) ; 
+      for (Int_t bit = 0 ; bit < kNBIT ; bit++) {
+	TIter next(list) ;
+	AliQAv1 * qa ; 
+	while ( (qa = (AliQAv1*)next() ) ) {
           for (Int_t es = 0 ; es < fNEventSpecies ; es++) {
+	    ++nmerge;
             if (qa->IsSet(DETECTORINDEX_t(det), ALITASK_t(task), es, QABIT_t(bit)))
               Set(QABIT_t(bit), es) ; 
           }
-				} // qa list
-			} // bit
-		} // task
-	} // detector
+	} // qa list
+      } // bit
+    } // task
+  } // detector
+  return nmerge;
 }
 
 //_______________________________________________________________
