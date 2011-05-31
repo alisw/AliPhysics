@@ -117,7 +117,11 @@ char* AliHLTTPCCATracker::SetGPUTrackerHitsMemory(char* pGPUMemory, int MaxNHits
 	return(pGPUMemory);
 }
 
-char* AliHLTTPCCATracker::SetGPUTrackerTrackletsMemory(char* pGPUMemory, int MaxNTracks, int constructorBlockCount)
+char* AliHLTTPCCATracker::SetGPUTrackerTrackletsMemory(char* pGPUMemory, int MaxNTracks, int 
+#ifndef HLTCA_GPU_ALTERNATIVE_SCHEDULER
+constructorBlockCount
+#endif
+)
 {
 	//Set up Tracklet Memory Pointers for GPU Tracker
 	fTrackletMemory = (char*) pGPUMemory;
