@@ -66,13 +66,15 @@ void ITSQArecoparam(char *iFile,Int_t idet=2,Int_t FirstEvt=0, Int_t MaxEvts=100
   AliCDBManager* man = AliCDBManager::Instance();
   if (!man->IsDefaultStorageSet()) {
     printf("Setting a local default storage and run number \n");
-    if(namefile.Contains("alien")){
-      man->SetDefaultStorage("raw://");
-    }
-    else{man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");}
+    //  if(namefile.Contains("alien")){
+      man->SetDefaultStorage("alien://folder=/alice/data/2011/OCDB");
+      //}
+      //else{man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");}
     man->SetRun(runNumber);
     AliQAv1::SetQARefStorage("local://$ALICE_ROOT/QARef") ;
   }
+  AliCDBManager::Instance()->GetAll(Form("ITS/Calib/*"));
+  
 
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
 
@@ -364,3 +366,46 @@ pluginHandler = pluginManager->FindHandler("AliReconstructor", "ITS");
 
 }
 
+void ITSQArecoparam(Int_t runNb,Int_t year,Char_t period[10],Int_t idet=2,Int_t FirstEvt=0, Int_t MaxEvts=1000000)
+{
+  //TString namefile(iFile);
+  //if(namefile.Contains("alien"))
+  //{
+      TGrid::Connect("alien://");
+      if(!gGrid) {
+        printf("gGrid not found! exit macro\n");
+        return;
+      }
+      //}
+
+  gSystem->AddIncludePath("-I. -I$ALICE_ROOT/include");
+
+  char path2[200];
+
+  sprintf(path2,"/alice/data/");
+  printf("path %s\n",path2);
+  char rawfilename[200];
+  sprintf(rawfilename,"%04i/%s/%09i/raw/%02i%09i*.*.root",year,period,runNb,year-2000,runNb);
+
+
+  Int_t number=0;
+
+  TGridResult *gr = gGrid->Query(path2,rawfilename);
+  if (gr->GetEntries() < 1) {
+    printf("In this run there are not raws files: Exit macro\n");
+    return;
+  }
+  if(gr->GetEntries() > 10) number=8;
+  else number=3;
+
+
+  const char *filename = gr->GetKey(number,"turl");
+    printf("-> FILE %s \n",filename);
+    //TString namefile(filename);
+    char *filetouse;//=NULL;
+    sprintf(filetouse,"%s",filename);
+    ITSQArecoparam(filetouse,idet,FirstEvt,MaxEvts);
+
+
+
+}

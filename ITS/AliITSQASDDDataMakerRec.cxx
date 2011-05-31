@@ -154,7 +154,11 @@ void AliITSQASDDDataMakerRec::StartOfDetectorCycle()
   //Start of a QA cycle
 
   AliDebug(AliQAv1::GetQADebugLevel(),Form("Start of SDD Cycle with event specie %s for task %s\n",AliRecoParam::GetEventSpecieName(fAliITSQADataMakerRec->GetEventSpecie()),AliQAv1::GetTaskName(fAliITSQADataMakerRec->GetTaskIndexSelected()).Data()));
-  if(!fCalibration) {CreateTheCalibration();}
+  if(!fCalibration) 
+    {
+      //fAliITSQADataMakerRec->GetRawsData(9+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
+      CreateTheCalibration();
+  }
 
   if(fAliITSQADataMakerRec->GetEventSpecie()==0) return;//not the kDefault EventSpecie
     //Detector specific actions at start of cycle
@@ -163,7 +167,7 @@ void AliITSQASDDDataMakerRec::StartOfDetectorCycle()
       if(fAliITSQADataMakerRec->ListExists(AliQAv1::kRAWS)==kFALSE)return;
 
 	AliDebug(AliQAv1::GetQADebugLevel(),Form("Reset of Raw Data normalized histograms with eventspecie %s ",AliRecoParam::GetEventSpecieName(fAliITSQADataMakerRec->GetEventSpecie())));
-
+	fAliITSQADataMakerRec->GetRawsData(10+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();  
 	fAliITSQADataMakerRec->GetRawsData(3+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
 	fAliITSQADataMakerRec->GetRawsData(4+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
 	fAliITSQADataMakerRec->GetRawsData(5+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
@@ -177,6 +181,8 @@ void AliITSQASDDDataMakerRec::StartOfDetectorCycle()
 	fAliITSQADataMakerRec->GetRecPointsData(9+  fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
 	fAliITSQADataMakerRec->GetRecPointsData(10+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
 	fAliITSQADataMakerRec->GetRecPointsData(11+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
+	fAliITSQADataMakerRec->GetRecPointsData(27+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
+
       }
 }
 
@@ -185,9 +191,39 @@ void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 {
   //end of a QA cycle
 	AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
+
+	Double_t entriescalibration1= 0.;
+	Double_t entriescalibrationL3=0.;
+	Double_t entriescalibrationL4=0.;
+
+	if(fHistoCalibration){
+	  entriescalibration1= ((TH1D*)(fHistoCalibration->At(0)))->GetEntries();
+	  entriescalibrationL3=((TH2D*)(fHistoCalibration->At(1)))->GetEntries();
+	  entriescalibrationL4=((TH2D*)(fHistoCalibration->At(2)))->GetEntries();
+	}
 	if(task==AliQAv1::kRAWS){
 	  //	  printf("fNevent %d \n",fNEvent);
+
+	  ((TH1F*)fAliITSQADataMakerRec->GetRawsData(10+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinContent(1,fNEvent);
+
 	  if(fNEvent!=0){
+
+	    Double_t entriesmodpattern=((TH1D*)fAliITSQADataMakerRec->GetRawsData(0 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->GetEntries();
+	    Double_t entriesL3=((TH2D*)fAliITSQADataMakerRec->GetRawsData(1 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->GetEntries();
+	    Double_t entriesL4=((TH2D*)fAliITSQADataMakerRec->GetRawsData(2 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->GetEntries();
+
+	    Double_t normentriesmodpattern=0.; 
+	    Double_t normentriesL3= 0.;       
+	    Double_t normentriesL4= 0.;     
+	    
+	    if(entriescalibration1!=0.)normentriesmodpattern=entriesmodpattern/(entriescalibration1*fNEvent);
+	    if(entriesL3!=0.)   normentriesL3= entriesL3/(entriescalibrationL3*fNEvent);
+	    if(entriesL4!=0.)   normentriesL4= entriesL4/(entriescalibrationL4*fNEvent);
+	    
+	    ((TH1F*)fAliITSQADataMakerRec->GetRawsData(10+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinContent(2,normentriesmodpattern);
+	    ((TH1F*)fAliITSQADataMakerRec->GetRawsData(10+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinContent(3,normentriesL3);
+	    ((TH1F*)fAliITSQADataMakerRec->GetRawsData(10+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinContent(4,normentriesL4);
+	    
 	    ((TH1D*)fAliITSQADataMakerRec->GetRawsData(3 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->Divide((TH1D*)fAliITSQADataMakerRec->GetRawsData(0 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]),((TH1D*) (fHistoCalibration->At(0))),1.,(Double_t)fNEvent);
 	  
 	    ((TH2D*)fAliITSQADataMakerRec->GetRawsData(4 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->Divide((TH2D*)fAliITSQADataMakerRec->GetRawsData(1 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]),((TH2D*)(fHistoCalibration->At(1))),1.,(Double_t)fNEvent);
@@ -212,12 +248,91 @@ void AliITSQASDDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 				((TH1D*)fAliITSQADataMakerRec->GetRawsData(7 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->Fill(((TH1D*)fAliITSQADataMakerRec->GetRawsData(5 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->GetBinContent(i,j));
 			}
 		}
-			
+		
+
+		for(Int_t inumb=8;inumb<10;inumb++)
+		  {
+		    for(Int_t ii=1; ii<fAliITSQADataMakerRec->GetRawsData(inumb + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->GetNbinsX()+1;ii++)
+		      {
+			for(Int_t jj=1; jj<fAliITSQADataMakerRec->GetRawsData(inumb+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->GetNbinsY()+1;jj++)
+			  {
+			    
+			    if(((TH1D*)(fHistoCalibration->At(inumb-7)))->GetBinContent(ii,jj) != 0. )
+			      {
+				fAliITSQADataMakerRec->GetRawsData(inumb+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->SetBinContent(ii,jj,1);
+			      }
+			    else if(((TH1D*)(fHistoCalibration->At(inumb-7)))->GetBinContent(ii,jj) == 0. )
+			      {
+				fAliITSQADataMakerRec->GetRawsData(inumb+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->SetBinContent(ii,jj,0);
+			      }	
+			    //printf("%d \t %d \t %d \t %02f \n",inumb,ii,jj,fAliITSQADataMakerRec->GetRawsData(inumb+ fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->GetBinContent(ii,jj));
+			  }//end x axis
+		      }//end y axis
+		  }//end for inumb
+		
+		
+		
 	}//end raws
 	
 	if(task==AliQAv1::kRECPOINTS){
+
+
+	  Double_t chargeL3=((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(0+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->GetMean();
+	  Double_t errchargeL3=((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(0+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->GetMeanError();
+
+	  Double_t chargeL4=((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(1+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->GetMean();
+	  Double_t errchargeL4=((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(1+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->GetMeanError();
+
+
+	  Double_t radiusL3=((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(13+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->GetMean();
+	  Double_t errradiusL3=((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(13+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->GetMeanError();
+
+	  Double_t radiusL4=((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(14+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->GetMean();
+	  Double_t errradiusL4=((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(14+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->GetMeanError();
+
+
+
 	  //	  printf("fNeventRP %d \n",fNEventRP);
+	  ((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(27+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinContent(1,fNEventRP);
+
+	  ((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(27+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinContent(31,chargeL3);
+	  ((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(27+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinError(31,errchargeL3);
+
+	  ((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(27+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinContent(47,chargeL4);
+	  ((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(27+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinError(47,errchargeL4);
+
+	  ((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(27+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinContent(32,radiusL3);
+	  ((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(27+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinError(32,errradiusL3);
+
+	  ((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(27+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinContent(48,radiusL4);
+	  ((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(27+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinError(48,errradiusL4);
+
+
+	  Double_t entriesmodpattern=((TH1D*)fAliITSQADataMakerRec->GetRecPointsData(6 + fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->GetEntries();
+	  Double_t entriesL3=((TH2D*)fAliITSQADataMakerRec->GetRecPointsData(7 + fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->GetEntries();
+	  Double_t entriesL4=((TH2D*)fAliITSQADataMakerRec->GetRecPointsData(8 + fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->GetEntries();
+	  
+	  //printf("entries modpatternrp = %02f \t L3= %02f \t L4 =%02f \n",entriesmodpattern,entriesL3,entriesL4 );
+
 	  if(fNEventRP!=0){
+
+
+
+	    Double_t normentriesmodpattern=0.; 
+	    Double_t normentriesL3= 0.;       
+	    Double_t normentriesL4= 0.;     
+	    
+	    if(entriescalibration1!=0.)normentriesmodpattern=entriesmodpattern/(entriescalibration1*fNEventRP);
+	    if(entriesL3!=0.)   normentriesL3= entriesL3/(entriescalibrationL3*fNEventRP);
+	    if(entriesL4!=0.)   normentriesL4= entriesL4/(entriescalibrationL4*fNEventRP);
+
+	    ((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(27+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinContent(2,normentriesmodpattern);
+	    ((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(27+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinContent(3,normentriesL3);
+	    ((TH1F*)fAliITSQADataMakerRec->GetRecPointsData(27+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->SetBinContent(4,normentriesL4);	      
+
+	    // printf("NORM entries modpatternrp = %02f \t L3= %02f \t L4 =%02f \n",normentriesmodpattern,normentriesL3,normentriesL4 );
+
+
 	    ((TH1D*)fAliITSQADataMakerRec->GetRecPointsData(9 + fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->Divide((TH1D*)fAliITSQADataMakerRec->GetRecPointsData(6 + fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]),((TH1D*) (fHistoCalibration->At(0))),1.,(Double_t)fNEventRP);
 	    
 		  ((TH2D*)fAliITSQADataMakerRec->GetRecPointsData(10+ fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]))->Divide((TH2D*)fAliITSQADataMakerRec->GetRecPointsData(7 + fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()]),((TH2D*)(fHistoCalibration->At(1))),1.,(Double_t)fNEventRP);
@@ -303,6 +418,10 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   TH1D *h0 = new TH1D("SDDModPattern","HW Modules pattern",fgknSDDmodules,239.5,499.5); //0
   h0->GetXaxis()->SetTitle("Module Number");
   h0->GetYaxis()->SetTitle("Counts");
+  h0->SetOption("bar1");
+  h0->SetBarOffset(0.01);
+  h0->SetBarWidth(0.95);
+  h0->SetFillColor(45);
   rv = fAliITSQADataMakerRec->Add2RawsList(h0,0+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr);
   fSDDhRawsTask++;
   
@@ -310,19 +429,26 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   TH2D *hphil3 = new TH2D("SDDphizL3","SDD #varphiz Layer3 ",12,0.5,6.5,14,0.5,14.5);//1
   hphil3->GetXaxis()->SetTitle("z[Module Number L3 ]");
   hphil3->GetYaxis()->SetTitle("#varphi[ Ladder Number L3]");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hphil3,1+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); 
+  hphil3->SetStats(0);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hphil3,1+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, !saveCorr); 
   fSDDhRawsTask++;
   
   TH2D *hphil4 = new TH2D("SDDphizL4","SDD #varphiz Layer4 ",16,0.5,8.5,22,0.5,22.5); //2
   hphil4->GetXaxis()->SetTitle("z[Module Number L4]");
   hphil4->GetYaxis()->SetTitle("#varphi[Ladder Number L4]");
-   rv = fAliITSQADataMakerRec->Add2RawsList(hphil4,2+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); 
+  hphil4->SetStats(0);
+   rv = fAliITSQADataMakerRec->Add2RawsList(hphil4,2+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, !saveCorr); 
   fSDDhRawsTask++;
   
   //normalized histograms
   TH1D *h0norm = new TH1D("SDDModPatternNORM","NORM HW Modules pattern",fgknSDDmodules,239.5,499.5); //3
   h0norm->GetXaxis()->SetTitle("Module Number");
   h0norm->GetYaxis()->SetTitle("Counts");
+  h0norm->SetOption("bar1");
+  h0norm->SetBarOffset(0.01);
+  h0norm->SetBarWidth(0.95);
+  h0norm->SetFillColor(46);
+  //h0norm->SetStats(0);
   rv = fAliITSQADataMakerRec->Add2RawsList(h0norm,3+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr);
   fSDDhRawsTask++;
   
@@ -330,78 +456,176 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
   TH2D *hphil3norm = new TH2D("SDDphizL3NORM","NORM SDD #varphiz Layer3 ",12,0.5,6.5,14,0.5,14.5);//4
   hphil3norm->GetXaxis()->SetTitle("z[Module Number L3 ]");
   hphil3norm->GetYaxis()->SetTitle("#varphi[ Ladder Number L3]");
-  rv = fAliITSQADataMakerRec->Add2RawsList(hphil3norm,4+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, !saveCorr); 
+  hphil3norm->SetStats(0);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hphil3norm,4+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); 
   fSDDhRawsTask++;
   
   TH2D *hphil4norm = new TH2D("SDDphizL4NORM","NORM SDD #varphiz Layer4 ",16,0.5,8.5,22,0.5,22.5); //5
   hphil4norm->GetXaxis()->SetTitle("z[Module Number L4]");
   hphil4norm->GetYaxis()->SetTitle("#varphi[Ladder Number L4]");
-   rv = fAliITSQADataMakerRec->Add2RawsList(hphil4norm,5+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, !saveCorr); 
+  hphil4norm->SetStats(0);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hphil4norm,5+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); 
   fSDDhRawsTask++;
 
 	
-	Float_t hMax = 0.2;
-	
-	TH1F *oL3 = new TH1F("SDDL3_RelativeOccupancy","Layer 3 Relative Occupancy",200,0.,hMax);
-	rv = fAliITSQADataMakerRec->Add2RawsList(oL3,6+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); //6  
-	fSDDhRawsTask++;
-	
-	TH1F *oL4 = new TH1F("SDDL4_RelativeOccupancy","Layer 4 Relative Occupancy",200,0.,hMax);
-	rv = fAliITSQADataMakerRec->Add2RawsList(oL4,7+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); //7   
-	fSDDhRawsTask++;
-	
-	fOnlineOffsetRaws = fSDDhRawsTask;
-	if(fkOnline){
-      //DDL Pattern 
-      TH2D *hddl = new TH2D("SDDDDLPattern","SDD DDL Pattern ",24,-0.5,11.5,24,-0.5,23.5); //8
-      hddl->GetXaxis()->SetTitle("Channel");
-      hddl->GetYaxis()->SetTitle("DDL Number");
-      rv = fAliITSQADataMakerRec->Add2RawsList(hddl,fOnlineOffsetRaws+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr);
-      fSDDhRawsTask++;
-      Int_t indexlast1 = 0;
+  Float_t hMax = 0.2;
   
-      fTimeBinSize = 4;
-      indexlast = 0;
-      index1 = 0;
-      indexlast1 = fSDDhRawsTask;
-      for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
-		  for(Int_t iside=0;iside<fgknSide;iside++){
-			  AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
-			  TProfile2D *fModuleChargeMapFSE = new TProfile2D(Form("SDDchargeMapFSE_L%d_%d_%d_%d",lay,lad,det,iside),Form("SDDChargeMapForSingleEvent_L%d_%d_%d_%d",lay,lad,det,iside)  ,256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
-			  fModuleChargeMapFSE->GetXaxis()->SetTitle("Time Bin");
-			  fModuleChargeMapFSE->GetYaxis()->SetTitle("Anode");
-			  rv = fAliITSQADataMakerRec->Add2RawsList(fModuleChargeMapFSE,indexlast1 + index1 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr);	  
-			  fSDDhRawsTask++;
-			  index1++;	 
-		  }
+  TH1F *oL3 = new TH1F("SDDL3_RelativeOccupancy","Layer 3 Relative Occupancy",200,0.,hMax);
+  rv = fAliITSQADataMakerRec->Add2RawsList(oL3,6+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); //6  
+  fSDDhRawsTask++;
+  
+  TH1F *oL4 = new TH1F("SDDL4_RelativeOccupancy","Layer 4 Relative Occupancy",200,0.,hMax);
+  rv = fAliITSQADataMakerRec->Add2RawsList(oL4,7+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); //7   
+  fSDDhRawsTask++;
+  
+  //zPhi distribution using ladder and modules numbers
+  TH2D *hcalibl3 = new TH2D("SDDphizCalibL3","SDDCalibL3 ",12,0.5,6.5,14,0.5,14.5);//8
+  hcalibl3->GetXaxis()->SetTitle("z[Module Number L3]");
+  hcalibl3->GetYaxis()->SetTitle("#varphi[ Ladder Number L3]");
+  hcalibl3->SetStats(0);
+  hcalibl3->SetMaximum(2);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hcalibl3,8+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, !saveCorr); 
+  fSDDhRawsTask++;
+  
+  TH2D *hcalibl4 = new TH2D("SDDphizCalibL4","SDDCalibL4 ",16,0.5,8.5,22,0.5,22.5); //9
+  hcalibl4->GetXaxis()->SetTitle("z[Module Number L4]");
+  hcalibl4->GetYaxis()->SetTitle("#varphi[Ladder Number L4]");
+  hcalibl4->SetStats(0);
+  hcalibl4->SetMaximum(2);
+  rv = fAliITSQADataMakerRec->Add2RawsList(hcalibl4,9+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], !expert, image, !saveCorr); 
+  fSDDhRawsTask++;
+
+  TH1F *hsummarydata = new TH1F("SDDRawDataCheck","SDDRawDataCheck",46,-0.5,45.5);//10 summary of raw data checks
+  hsummarydata->GetXaxis()->SetLabelSize(0.02);
+  hsummarydata->GetXaxis()->SetTickLength(0.01);
+  hsummarydata->GetXaxis()->SetNdivisions(110);
+  hsummarydata->GetXaxis()->SetTicks("-");
+  hsummarydata->GetYaxis()->SetLabelSize(0.02);
+  hsummarydata->GetYaxis()->SetTitleSize(0.02);
+  hsummarydata->GetYaxis()->SetTitleOffset(1.5);
+  hsummarydata->GetYaxis()->SetTitle("#events(norm) or #modules (m) or #drift regions (dr)");
+  hsummarydata->SetStats(0);
+  hsummarydata->SetMaximum(272);
+  hsummarydata->SetMinimum(0.);
+
+  hsummarydata->SetOption("textbar1");
+  hsummarydata->SetBarOffset(0.01);
+  hsummarydata->SetBarWidth(0.95);
+  hsummarydata->SetFillColor(8);
+
+  //information about the events
+  hsummarydata->GetXaxis()->SetBinLabel(1,"Events");
+  hsummarydata->GetXaxis()->SetBinLabel(2,"Ent_NORM");
+  hsummarydata->GetXaxis()->SetBinLabel(3,"Ent_NORML3");
+  hsummarydata->GetXaxis()->SetBinLabel(4,"Ent_NORML4");
+  //all
+
+  hsummarydata->GetXaxis()->SetBinLabel(5,"m_act");
+  hsummarydata->GetXaxis()->SetBinLabel(6,"m_fil");
+  hsummarydata->GetXaxis()->SetBinLabel(7,"dr_act");
+  hsummarydata->GetXaxis()->SetBinLabel(8,"dr_fil");
+  hsummarydata->GetXaxis()->SetBinLabel(9,"m_exc");
+  hsummarydata->GetXaxis()->SetBinLabel(10,"m_emp");
+  hsummarydata->GetXaxis()->SetBinLabel(11,"dr_exc");
+  hsummarydata->GetXaxis()->SetBinLabel(12,"dr_emp");
+  hsummarydata->GetXaxis()->SetBinLabel(13,"m_exc-act");
+  hsummarydata->GetXaxis()->SetBinLabel(14,"m_act-emp");
+  hsummarydata->GetXaxis()->SetBinLabel(15,"dr_exc-act");
+  hsummarydata->GetXaxis()->SetBinLabel(16,"dr_act-emp");
+  hsummarydata->GetXaxis()->SetBinLabel(17,"m_overth");
+  hsummarydata->GetXaxis()->SetBinLabel(18,"dr_overth");
+
+  //l3
+
+  hsummarydata->GetXaxis()->SetBinLabel(19,"m_actl3");
+  hsummarydata->GetXaxis()->SetBinLabel(20,"m_fill3");
+  hsummarydata->GetXaxis()->SetBinLabel(21,"dr_actl3");
+  hsummarydata->GetXaxis()->SetBinLabel(22,"dr_fill3");
+  hsummarydata->GetXaxis()->SetBinLabel(23,"m_excl3");
+  hsummarydata->GetXaxis()->SetBinLabel(24,"m_empl3");
+  hsummarydata->GetXaxis()->SetBinLabel(25,"dr_excl3");
+  hsummarydata->GetXaxis()->SetBinLabel(26,"dr_empl3");
+  hsummarydata->GetXaxis()->SetBinLabel(27,"m_exc-actl3");
+  hsummarydata->GetXaxis()->SetBinLabel(28,"m_act-empl3");
+  hsummarydata->GetXaxis()->SetBinLabel(29,"dr_exc-actl3");
+  hsummarydata->GetXaxis()->SetBinLabel(30,"dr_act-empl3");
+  hsummarydata->GetXaxis()->SetBinLabel(31,"m_overthl3");
+  hsummarydata->GetXaxis()->SetBinLabel(32,"dr_overthl3");
+
+  //l4
+
+  hsummarydata->GetXaxis()->SetBinLabel(33,"m_actl4");
+  hsummarydata->GetXaxis()->SetBinLabel(34,"m_fill4");
+  hsummarydata->GetXaxis()->SetBinLabel(35,"dr_actl4");
+  hsummarydata->GetXaxis()->SetBinLabel(36,"dr_fill4");
+  hsummarydata->GetXaxis()->SetBinLabel(37,"m_excl4");
+  hsummarydata->GetXaxis()->SetBinLabel(38,"m_empl4");
+  hsummarydata->GetXaxis()->SetBinLabel(39,"dr_excl4");
+  hsummarydata->GetXaxis()->SetBinLabel(40,"dr_empl4");
+  hsummarydata->GetXaxis()->SetBinLabel(41,"m_exc-actl4");
+  hsummarydata->GetXaxis()->SetBinLabel(42,"m_act-empl4");
+  hsummarydata->GetXaxis()->SetBinLabel(43,"dr_exc-actl4");
+  hsummarydata->GetXaxis()->SetBinLabel(44,"dr_act-empl4");
+  hsummarydata->GetXaxis()->SetBinLabel(45,"m_overthl4");
+  hsummarydata->GetXaxis()->SetBinLabel(46,"dr_overthl4");
+  hsummarydata->GetXaxis()->LabelsOption("v");
+
+  rv = fAliITSQADataMakerRec->Add2RawsList(hsummarydata,10+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); 
+  fSDDhRawsTask++;
+  fOnlineOffsetRaws = fSDDhRawsTask;
+
+  //online part
+  if(fkOnline){
+      //DDL Pattern 
+    TH2D *hddl = new TH2D("SDDDDLPattern","SDD DDL Pattern ",24,-0.5,11.5,24,-0.5,23.5); //11
+    hddl->GetXaxis()->SetTitle("Channel");
+    hddl->GetYaxis()->SetTitle("DDL Number");
+    rv = fAliITSQADataMakerRec->Add2RawsList(hddl,fOnlineOffsetRaws+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr);
+    fSDDhRawsTask++;
+    Int_t indexlast1 = 0;
+    
+    fTimeBinSize = 4;
+    indexlast = 0;
+    index1 = 0;
+    indexlast1 = fSDDhRawsTask;
+    for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
+      for(Int_t iside=0;iside<fgknSide;iside++){
+	AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
+	TProfile2D *fModuleChargeMapFSE = new TProfile2D(Form("SDDchargeMapFSE_L%d_%d_%d_%d",lay,lad,det,iside),Form("SDDChargeMapForSingleEvent_L%d_%d_%d_%d",lay,lad,det,iside)  ,256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
+	fModuleChargeMapFSE->GetXaxis()->SetTitle("Time Bin");
+	fModuleChargeMapFSE->GetYaxis()->SetTitle("Anode");
+	rv = fAliITSQADataMakerRec->Add2RawsList(fModuleChargeMapFSE,indexlast1 + index1 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr);	  
+	fSDDhRawsTask++;
+	index1++;	 
       }
+    }
       
-      for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
-		  for(Int_t iside=0;iside<fgknSide;iside++){
-			  AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
-			  TProfile2D *fModuleChargeMap = new TProfile2D(Form("SDDchargeMap_L%d_%d_%d_%d",lay,lad,det,iside),Form("SDDChargeMap_L%d_%d_%d_%d",lay,lad,det,iside),256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
-			  fModuleChargeMap->GetXaxis()->SetTitle("Time Bin");
-			  fModuleChargeMap->GetYaxis()->SetTitle("Anode Number");
-			  rv = fAliITSQADataMakerRec->Add2RawsList(fModuleChargeMap,indexlast1 + index1 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); 
-			  fSDDhRawsTask++;
-			  index1++;	 
-		  }
+    for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
+      for(Int_t iside=0;iside<fgknSide;iside++){
+	AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
+	TProfile2D *fModuleChargeMap = new TProfile2D(Form("SDDchargeMap_L%d_%d_%d_%d",lay,lad,det,iside),Form("SDDChargeMap_L%d_%d_%d_%d",lay,lad,det,iside),256/fTimeBinSize,-0.5,255.5,256,-0.5,255.5);
+	fModuleChargeMap->GetXaxis()->SetTitle("Time Bin");
+	fModuleChargeMap->GetYaxis()->SetTitle("Anode Number");
+	rv = fAliITSQADataMakerRec->Add2RawsList(fModuleChargeMap,indexlast1 + index1 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); 
+	fSDDhRawsTask++;
+	index1++;	 
       }
-      
-      //Event Size 
-      TH1F *hsize = new TH1F("SDDEventSize","SDD Event Size ",500,-0.5,199.5); 
-      hsize->SetBit(TH1::kCanRebin);
-      hsize->GetXaxis()->SetTitle("Event Size [kB]");
-      hsize->GetYaxis()->SetTitle("Entries");
-      rv = fAliITSQADataMakerRec->Add2RawsList(hsize,indexlast1 + index1 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); 
-      fSDDhRawsTask++;
-	  
-    }  // kONLINE
-	
-	cout << fSDDhRawsTask << " SDD Raws histograms booked" << endl;
-	
-	AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SDD Raws histograms booked\n",fSDDhRawsTask));
-	return rv ; 
+    }
+    
+    //Event Size 
+    TH1F *hsize = new TH1F("SDDEventSize","SDD Event Size ",500,-0.5,199.5); 
+    hsize->SetBit(TH1::kCanRebin);
+    hsize->GetXaxis()->SetTitle("Event Size [kB]");
+    hsize->GetYaxis()->SetTitle("Entries");
+    rv = fAliITSQADataMakerRec->Add2RawsList(hsize,indexlast1 + index1 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image, !saveCorr); 
+    fSDDhRawsTask++;
+    
+  }  // kONLINE
+  
+  cout << fSDDhRawsTask << " SDD Raws histograms booked" << endl;
+  
+  AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SDD Raws histograms booked\n",fSDDhRawsTask));
+  return rv ; 
 }
 
 
@@ -489,8 +713,8 @@ Int_t AliITSQASDDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 
     //printf(" \n%i %i %i %i \n ",lay, lad, det,iside );
     fAliITSQADataMakerRec->GetRawsData( 0 + fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()] )->Fill(isddmod);   
-    if(lay==3) fAliITSQADataMakerRec->GetRawsData(1+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(det+0.5*iside-0.25,lad); 
-    if(lay==4) fAliITSQADataMakerRec->GetRawsData(2+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(det+0.5*iside-0.25,lad);
+    if(lay==3) fAliITSQADataMakerRec->GetRawsData(1+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(det+0.5*iside-0.25,lad); //phiz l3 not norm
+    if(lay==4) fAliITSQADataMakerRec->GetRawsData(2+fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(det+0.5*iside-0.25,lad); //phiz l4 not norm
  
     if(fkOnline) {
 
@@ -667,6 +891,10 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   TH1D *h6 = new TH1D("SDDModPatternRP","Modules pattern RP",fgknSDDmodules,239.5,499.5); //position number 6
   h6->GetXaxis()->SetTitle("Module number"); //spd offset = 240
   h6->GetYaxis()->SetTitle("Entries");
+  h6->SetOption("bar1");
+  h6->SetBarOffset(0.01);
+  h6->SetBarWidth(0.95);
+  h6->SetFillColor(39);
   rv = fAliITSQADataMakerRec->Add2RecPointsList(h6,6 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);// expert NO image
   fSDDhRecPointsTask++;
 
@@ -689,6 +917,10 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   TH1D *h9 = new TH1D("SDDModPatternRPNORM","Modules pattern RP NORM",fgknSDDmodules,239.5,499.5); //position number 9
   h9->GetXaxis()->SetTitle("Module number"); //spd offset = 240
   h9->GetYaxis()->SetTitle("Entries");
+  h9->SetOption("bar1");
+  h9->SetBarOffset(0.01);
+  h9->SetBarWidth(0.95);
+  h9->SetFillColor(49);
   rv = fAliITSQADataMakerRec->Add2RecPointsList(h9,9 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);// expert NO image
   fSDDhRecPointsTask++;
 
@@ -790,6 +1022,93 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
 	rv = fAliITSQADataMakerRec->Add2RecPointsList(dedxL4,fSDDhRecPointsTask+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image); // 26
 	fSDDhRecPointsTask++;
 	
+
+  TH1F *hsummarydatarp = new TH1F("SDDRecPointCheck","SDDRecPointCheck",50,-0.5,49.5);//27 summary of recpoint checks
+  hsummarydatarp->GetXaxis()->SetLabelSize(0.02);
+  hsummarydatarp->GetXaxis()->SetTickLength(0.01);
+  hsummarydatarp->GetXaxis()->SetNdivisions(110);
+  hsummarydatarp->GetXaxis()->SetTicks("-");
+  hsummarydatarp->GetYaxis()->SetLabelSize(0.02);
+  hsummarydatarp->GetYaxis()->SetTitleSize(0.02);
+  hsummarydatarp->GetYaxis()->SetTitleOffset(1.5);
+  hsummarydatarp->GetYaxis()->SetTitle("#events(norm) or #modules (m) or #drift regions (dr)");
+  hsummarydatarp->SetStats(0);
+  hsummarydatarp->SetMaximum(272);
+
+  hsummarydatarp->SetOption("text bar1 hist");
+  hsummarydatarp->SetBarOffset(0.05);
+  hsummarydatarp->SetBarWidth(0.95);
+  hsummarydatarp->SetFillColor(32);
+  hsummarydatarp->SetMinimum(0.);
+
+  //information about the events
+  hsummarydatarp->GetXaxis()->SetBinLabel(1,"Events");
+  hsummarydatarp->GetXaxis()->SetBinLabel(2,"Ent_NORM");
+  hsummarydatarp->GetXaxis()->SetBinLabel(3,"Ent_NORML3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(4,"Ent_NORML4");
+  //all
+
+  hsummarydatarp->GetXaxis()->SetBinLabel(5, "m_act");
+  hsummarydatarp->GetXaxis()->SetBinLabel(6, "m_fil");
+  hsummarydatarp->GetXaxis()->SetBinLabel(7, "dr_act");
+  hsummarydatarp->GetXaxis()->SetBinLabel(8, "dr_fil");
+  hsummarydatarp->GetXaxis()->SetBinLabel(9, "m_exc");
+  hsummarydatarp->GetXaxis()->SetBinLabel(10,"m_emp");
+  hsummarydatarp->GetXaxis()->SetBinLabel(11,"dr_exc");
+  hsummarydatarp->GetXaxis()->SetBinLabel(12,"dr_emp");
+  hsummarydatarp->GetXaxis()->SetBinLabel(13,"m_exc-act");
+  hsummarydatarp->GetXaxis()->SetBinLabel(14,"m_act-emp");
+  hsummarydatarp->GetXaxis()->SetBinLabel(15,"dr_exc-act");
+  hsummarydatarp->GetXaxis()->SetBinLabel(16,"dr_act-emp");
+  hsummarydatarp->GetXaxis()->SetBinLabel(17,"m_overth");
+  hsummarydatarp->GetXaxis()->SetBinLabel(18,"dr_overth");
+
+  //l3
+
+  hsummarydatarp->GetXaxis()->SetBinLabel(19,"m_actl3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(20,"m_fill3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(21,"dr_actl3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(22,"dr_fill3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(23,"m_excl3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(24,"m_empl3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(25,"dr_excl3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(26,"dr_empl3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(27,"m_exc-actl3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(28,"m_act-empl3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(29,"dr_exc-actl3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(30,"dr_act-empl3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(31,"meanch_l3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(32,"meanrad_l3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(33,"m_overthl3");
+  hsummarydatarp->GetXaxis()->SetBinLabel(34,"dr_overthl3");
+
+  //l4
+
+  hsummarydatarp->GetXaxis()->SetBinLabel(35,"m_actl4");
+  hsummarydatarp->GetXaxis()->SetBinLabel(36,"m_fill4");
+  hsummarydatarp->GetXaxis()->SetBinLabel(37,"dr_actl4");
+  hsummarydatarp->GetXaxis()->SetBinLabel(38,"dr_fill4");
+  hsummarydatarp->GetXaxis()->SetBinLabel(39,"m_excl4");
+  hsummarydatarp->GetXaxis()->SetBinLabel(40,"m_empl4");
+  hsummarydatarp->GetXaxis()->SetBinLabel(41,"dr_excl4");
+  hsummarydatarp->GetXaxis()->SetBinLabel(42,"dr_empl4");
+  hsummarydatarp->GetXaxis()->SetBinLabel(43,"m_exc-actl4");
+  hsummarydatarp->GetXaxis()->SetBinLabel(44,"m_act-empl4");
+  hsummarydatarp->GetXaxis()->SetBinLabel(45,"dr_exc-actl4");
+  hsummarydatarp->GetXaxis()->SetBinLabel(46,"dr_act-empl4");
+  hsummarydatarp->GetXaxis()->SetBinLabel(47,"meanch_l4");
+  hsummarydatarp->GetXaxis()->SetBinLabel(48,"meanrad_l4");
+  hsummarydatarp->GetXaxis()->SetBinLabel(49,"m_overthl4");
+  hsummarydatarp->GetXaxis()->SetBinLabel(50,"dr_overthl4");
+
+  hsummarydatarp->GetXaxis()->LabelsOption("v");
+
+  rv = fAliITSQADataMakerRec->Add2RecPointsList(hsummarydatarp,fSDDhRecPointsTask+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()], expert, !image);// expert NO image
+
+
+
+  fSDDhRecPointsTask++;
+
 	fOnlineOffsetRecPoints = fSDDhRecPointsTask;
 	if(fkOnline){
       TH2F *h19 = new TH2F("SDDGlobalCoordDistribYXFSE","YX Global Coord Distrib FSE",112,-28,28,112,-28,28);//position number 27
@@ -831,7 +1150,7 @@ Int_t AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
   Int_t npoints = 0;      
   Float_t cluglo[3]={0.,0.,0.}; 
   if(fkOnline){
-      for(Int_t i=27;i<29;i++){
+      for(Int_t i=28;i<30;i++){
 	  fAliITSQADataMakerRec->GetRecPointsData(i+fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Reset();
 	}
     }
@@ -860,8 +1179,8 @@ Int_t AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
 		fAliITSQADataMakerRec->GetRecPointsData(2 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluglo[0],cluglo[1]);//global distribution YX
 		fAliITSQADataMakerRec->GetRecPointsData(3 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluglo[2],rad);//global distribution rz
 		if(fkOnline) {
-			fAliITSQADataMakerRec->GetRecPointsData(27 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluglo[0],cluglo[1]);//global distribution YX FSE
-			fAliITSQADataMakerRec->GetRecPointsData(28 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluglo[2],rad);//global distribution rz FSE
+			fAliITSQADataMakerRec->GetRecPointsData(28 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluglo[0],cluglo[1]);//global distribution YX FSE
+			fAliITSQADataMakerRec->GetRecPointsData(29 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluglo[2],rad);//global distribution rz FSE
 		}
 		Int_t iside=recp->GetDriftSide();
                 lay=recp->GetLayer();
@@ -1033,11 +1352,12 @@ void AliITSQASDDDataMakerRec::CreateTheCalibration()
 	      fillmodhisto3side1-=badmodhisto3side1;
 	      ((TH1D*)(fHistoCalibration->At(0)))->SetBinContent(imod+1,fillmodhisto1);
 	      ((TH2D*)(fHistoCalibration->At(2)))->SetBinContent(index,lad,fillmodhisto3side0);
-	      ((TH2D*)(fHistoCalibration->At(2)))->SetBinContent(index+1,lad,fillmodhisto2side1);
+	      ((TH2D*)(fHistoCalibration->At(2)))->SetBinContent(index+1,lad,fillmodhisto3side1);
 	    }//end layer 4
 	  }//end else bad module
 	}//end module for
     }
+
 }
 
 //____________________________________________________________________
@@ -1080,3 +1400,15 @@ void AliITSQASDDDataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
   
 }
 
+//____________________________________________________________________
+
+Int_t AliITSQASDDDataMakerRec::GetNumberOfEvents(AliQAv1::TASKINDEX_t task)
+{
+  //return the number of the processed events for a given task fod SDD only
+
+  if(task==AliQAv1::kRAWS){return fNEvent;}
+  else if(task==AliQAv1::kRECPOINTS){return fNEventRP;}
+  else{ AliWarning("The selected TASKINDEX is not valid!! return 0\n"); return 0;}
+
+
+}

@@ -122,6 +122,9 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
   AliInfo("Calib SDD Created\n ");
 
   TIter next(list);
+  TString results1;
+  TString results2;
+  Int_t color=1;
 
   switch(index) {
     case AliQAv1::kRAW:{
@@ -129,28 +132,107 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 //       if(fRawModulePattern) { delete fRawModulePattern; fRawModulePattern = 0; }
 //       if(fRawL3Pattern) { delete fRawL3Pattern; fRawL3Pattern = 0; }
 //       if(fRawL4Pattern) { delete fRawL4Pattern; fRawL4Pattern = 0; }
-      if (list->GetEntries() == 0){SDDQACheckerValue += fHighSDDValue[AliQAv1::kFATAL];	break;}
+      if (list->GetEntries() == 0){AliError("Raw List for SDD is empty \n");SDDQACheckerValue += fHighSDDValue[AliQAv1::kFATAL];	break;}
       TH1 *hmodule=NULL;
       TH2 *hlayer[2]; 
       hdata=NULL;
-      Int_t emptymodules[2], filledmodules[2],emptyladders[2],filledladders[2];
-      for(Int_t i=0;i<2;i++){emptymodules[i]=0; filledmodules[i]=0; emptyladders[i]=0; filledladders[i]=0; }
-      for(Int_t i=0;i<2;i++)hlayer[i]=NULL;   
+      for(Int_t i=0;i<2;i++)hlayer[i]=NULL;
+
+      //check counters
+      Int_t emptymodules[2], filledmodules[2],emptyladders[2],filledladders[2],emptydriftregion[2], filleddriftregion[2], excludedmoduleperlayer[2], excludeddrperlayer[2], activemoduleperlayer[2],activedrperlayer[2],exactivemoduleperlayer[2],exactivedrperlayer[2];
+      Int_t excluded=0;            //excluded modules  
+      Int_t excludeddriftregion=0; //excluded single drift region
+      Int_t active=0;              //active modules  
+      Int_t activedriftregion=0;   //active single drift region
+      Int_t exactive=0;            //excluded modules but taking data
+      Int_t exactivedriftregion=0; //excluded single drift region but taking data   
+      Int_t empty=0;
+      Int_t filled=0;
+      Int_t emptydr=0;
+      Int_t filleddr=0;
+      //Int_t emptyactivemodule=0;
+      Int_t emptyactivemoduleperlayer[2];
+      //Int_t emptydractivemodule=0;
+      Int_t emptyactivedrperlayer[2];
+      Int_t emptysum=0;
+      Int_t emptydiff=0;
+      Int_t emptydrsum=0;
+      Int_t emptydrdiff=0;
+
+    for(Int_t i=0;i<2;i++)
+      {
+	emptymodules[i]=0; 
+	filledmodules[i]=0; 
+	emptyladders[i]=0; 
+	filledladders[i]=0; 
+	emptydriftregion[i]=0;
+	filleddriftregion[i]=0; 
+	excludedmoduleperlayer[i]=0;
+	excludeddrperlayer[i]=0;
+	activemoduleperlayer[i]=0;
+	activedrperlayer[i]=0;
+	exactivemoduleperlayer[i]=0;
+	exactivedrperlayer[i]=0;
+	emptyactivemoduleperlayer[i]=0;
+	emptyactivedrperlayer[i]=0;
+      }  
+
+    Int_t neventsraw=0;
+
+    //take the number of events
+
+      while( (hdata = dynamic_cast<TH1* >(next())) ){
+	if (hdata){
+	  TString hname=hdata->GetName();
+
+	  if(hname.Contains("SDDRawDataCheck"))
+	    { 
+	      neventsraw=(Int_t)hdata->GetBinContent(1); 
+	      //break;
+	    }
+	  else continue;
+	}//end if hdata
+      }//end while
+
+      next.Begin();
       while( (hdata = dynamic_cast<TH1* >(next())) ){
 	if (hdata){TString hname=hdata->GetName();
 	  if(hname.Contains("SDDchargeMap"))continue;
+	  if(hname.Contains("SDDDDLPattern"))continue;
+	  if(hname.Contains("SDDEventSize"))continue;
+	  if(hname.Contains("_RelativeOccupancy"))continue;
 	  if(hname.Contains("SDDModPattern")){
 	    if(hname.Contains("NORM")) continue;
 	    hmodule=(TH1*)hdata->Clone();
 	    entries= hdata->GetEntries();
 	    if(AliITSQADataMakerRec::AreEqual(entries,0.)){AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];}//endif entries
-	    else{int modmax=hdata->GetNbinsX();
-	      Int_t empty=0;
-	      Int_t filled=0;
+	    else{
+	      int modmax=hdata->GetNbinsX();
 	      Double_t content=0;
-	      for(Int_t i=1;i<=modmax;i++){content=hdata->GetBinContent(i);if(AliITSQADataMakerRec::AreEqual(content,0.)) empty++; else filled++; }//end for
-	      AliInfo(Form(" %s : empty modules %i \t filled modules %i",hname.Data(), empty, filled));}//end else pattern entries !=0
-	  } 		
+	      Int_t llay=0;
+	      for(Int_t i=1;i<=modmax;i++)
+		{
+		  if(i<85)llay=0;
+		  else llay=1;
+		  content=hdata->GetBinContent(i);
+		  if(AliITSQADataMakerRec::AreEqual(content,0.))
+		    {
+		    empty++;
+		    emptymodules[llay]++;
+		    } 
+		  else 
+		    {
+		      filled++;
+		      filledmodules[llay]++;
+		    }
+		}//end for
+	      //output of the check at the level of the modules. Drift region in the following checks
+
+	      AliInfo(Form(" %s : empty modules %i \t filled modules %i",hname.Data(), empty, filled));
+	      AliInfo(Form(" %s : Layer 3 empty modules %i \t filled modules %i",hname.Data(), emptymodules[0], filledmodules[0]));
+	      AliInfo(Form(" %s : Layer 4 empty modules %i \t filled modules %i",hname.Data(), emptymodules[1], filledmodules[1]));
+	    }//end else pattern entries !=0
+	  } //modpattern (1d histogram) 		
 	  if(hname.Contains("_RelativeOccupancy")) {
 	    //fRawModulePattern = (TH1F *) hdata;
 	    Float_t threshold = hdata->GetMean() + 4*hdata->GetRMS();
@@ -164,10 +246,9 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 2, L4: Raw fractionAboveThreshold: %f",fractionAboveThreshold));
 	    if(fractionAboveThreshold > fThresholdForRelativeOccupancy) {SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
 	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 1: Set Warning (L3 Raw)"));
-	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 2: Set Warning (L4 Raw)")); } }
+	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 2: Set Warning (L4 Raw)")); } }//relativeoccupancy
+
 	  if(hname.Contains("SDDphizL3") || hname.Contains("SDDphizL4")){if(hname.Contains("NORM"))continue;
-	    //if(hname.Contains("L3")) {fRawL3Pattern = (TH2F *) hdata;}
-	    //if(hname.Contains("L4")) {fRawL4Pattern = (TH2F *) hdata;}
 	    Int_t layer=0;
 	    if(hname.Contains("3"))layer=0;
 	    else  if(hname.Contains("4"))layer=1;
@@ -182,7 +263,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	      if(htemp){
 		hlayer[layer1]=(TH2*)htemp->Clone();
 		hlayer[layer1]->SetName(Form("%s_copy",hname.Data()));
-		hlayer[layer1]->RebinX(2);
+		//hlayer[layer1]->RebinX(2);
 		int modmay=hlayer[layer1]->GetNbinsY();
 		TH1D* hproj= hlayer[layer1]->ProjectionY();
 		Double_t ladcontent=0;
@@ -190,7 +271,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		  ladcontent=hproj->GetBinContent(i);
 		  if(AliITSQADataMakerRec::AreEqual(ladcontent,0.)) emptyladders[layer1]++;
 		  else filledladders[layer1]++;}//end for
-		AliInfo(Form(" %s : empty ladders %i \t filled ladders %i\n",hname.Data(), emptyladders[layer], filledladders[layer]));//end else layer 3
+		AliInfo(Form(" %s : empty ladders %i \t filled ladders %i\n",hname.Data(), emptyladders[layer1], filledladders[layer1]));//end else layer 3
 		delete hproj;
 		hproj=NULL;
 	      }//end if htemp
@@ -198,12 +279,16 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  }//end check on phiz	      
 	}//end if hdata	
       }//end while
-      if(AliITSQADataMakerRec::AreEqual(entries,0.)&&AliITSQADataMakerRec::AreEqual(entries2[0],0.)&&AliITSQADataMakerRec::AreEqual(entries2[1],0.)) break;
+      for(Int_t ii=0;ii<2;ii++)
+	{
+	  filledmodules[ii]=0;
+	  emptymodules[ii]=0;
+	}
+      filled=0;
+      empty=0;
+      if(AliITSQADataMakerRec::AreEqual(entries,0.)&& AliITSQADataMakerRec::AreEqual(entries2[0],0.)&& AliITSQADataMakerRec::AreEqual(entries2[1],0.)) break;
       //else{
       if(hmodule || (hlayer[0] && hlayer[1])){
-	Int_t excluded=0;
-	Int_t active=0;
-	Int_t exactive=0;//excluded but taking data
 	for(Int_t imod=0;imod<fgknSDDmodules;imod++){
 	  Int_t lay=0;
 	  Int_t lad=0;
@@ -215,44 +300,229 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  AliITSgeomTGeo::GetModuleId(module,lay,lad,det);
 	  if (cal->IsBad()){
 	    excluded++;
+	    excludedmoduleperlayer[lay-3]++;
 	    Double_t content=0.;
 	    Double_t contentlayer[2];
 	    for(Int_t i=0;i<2;i++)contentlayer[i]=0.;
-	    if(hmodule)content=hmodule->GetBinContent(imod+1);//if expert bit is active the histogram has been created 
-	    if(hlayer[lay-3]) contentlayer[lay-3]=hlayer[lay-3]->GetBinContent(det,lad);
-	    if(AliITSQADataMakerRec::AreEqual(content,0.)== kFALSE || AliITSQADataMakerRec::AreEqual(contentlayer[lay-3],0.)==kFALSE) {
+	    if(hmodule)content=hmodule->GetBinContent(imod+1);//if expert bit is active the histogram will be stored in the QA file otherwise the histogram will not be written on the logbook
+	    //	    if(hlayer[lay-3]) contentlayer[lay-3]=hlayer[lay-3]->GetBinContent(det,lad);
+	    if(AliITSQADataMakerRec::AreEqual(content,0.)== kFALSE) {
 	      filledmodules[lay-3]++;
-	      AliWarning(Form("The module %d (layer %i, ladder %i det %i ) excluded from the acquisition, took data \n ",module,lay,lad,det));
+	      filled++;
+	      AliError(Form("The module %d (layer %i, ladder %i det %i ) excluded from the acquisition, took data \n ",module,lay,lad,det));
 	      exactive++;
-	    } else if(AliITSQADataMakerRec::AreEqual(content,0.) && AliITSQADataMakerRec::AreEqual(contentlayer[lay-3],0.)) 
-	      emptymodules[lay-3]++;
+	      exactivemoduleperlayer[lay-3]++;
+	    } else if(AliITSQADataMakerRec::AreEqual(content,0.)) 
+	      {
+		emptymodules[lay-3]++; //it has to be empty
+		empty++;
+	      }
 	  } else {
+	    Int_t totside=0;
+	    Int_t totactiveside=0;
+	    //Int_t totbadside=0;
 	    Double_t contentgood=0.;
-	    active++;
-	    if(hlayer[lay-3]) contentgood=hlayer[lay-3]->GetBinContent(det,lad);
-	    if(AliITSQADataMakerRec::AreEqual(contentgood,0.)) 
+
+	    for(Int_t i=0;i<2;i++){
+	      if(hlayer[lay-3]) contentgood=hlayer[lay-3]->GetBinContent(2*det+i-1,lad);
+	      if(cal->IsWingBad(i))
+		{ 
+		  excludeddriftregion++; 
+		  excludeddrperlayer[lay-3]++; 
+		  if(AliITSQADataMakerRec::AreEqual(contentgood,0.)==kFALSE){
+		    AliError(Form("The side %d of the module %d (layer %i, ladder %i det %i ) excluded from the acquisition, took data \n ",i,module,lay,lad,det));
+		    exactivedriftregion++; 
+		    exactivedrperlayer[lay-3]++;
+		    filleddr++;
+		    filleddriftregion[lay-3]++;
+		  }
+		}//end wingbad
+	      else{
+		if(AliITSQADataMakerRec::AreEqual(contentgood,0.)==kTRUE)
+		  {
+		    AliWarning(Form("The side %d of the module %d (layer %i, ladder %i det %i ) is in acquisition, but it didn't take data\n ",i,module, lay, lad, det));
+		  }
+		else 
+		  {
+		    totside++;
+		  }
+		totactiveside++;
+	      }
+	    }//end for
+	    if(totside==0){
+	    AliWarning(Form("The  module %d (layer %i, ladder %i det %i ) is in acquisition, but it didn't take data\n ",module, lay, lad, det));
 	      emptymodules[lay-3]++;
-	    else 
-	      filledmodules[lay-3]++;
+	      empty++;
+
+	    }
+	      else 
+		if(totside==2){
+		filledmodules[lay-3]++;
+		filled++;
+		}
+		else
+		  if(totside==1)
+		    {
+		      //		      emptydr++;
+		      //emptydriftregion[lay-3]++; //it has to be empty
+		      emptydriftregion[lay-3]++; 
+		      emptydr++;
+		      filleddr++;
+		      filleddriftregion[lay-3]++;
+		    }
+	    if(totactiveside==1)
+	      {
+		activedriftregion++;
+		activedrperlayer[lay-3]++;
+	      }else if(totactiveside==2)
+	      {
+		active++;
+		activemoduleperlayer[lay-3]++;
+	      }
+
 	  }
 	}//end for
-	for(Int_t i=0;i<2;i++){AliInfo(Form("Layer %i \tempty modules %i \t filled modules %i\n", i+3,emptymodules[i], filledmodules[i]));}//end else layers
-	if(exactive==0){
-	  AliInfo(Form("All the active modules (%i) are in acquisition. The number of excluded modules are %i \n",active,excluded));
+	AliInfo(Form("In total %d modules and %d single drift regions took data.\n ",filled, filleddr));
+	AliInfo(Form("In total %d modules and %d single drift regions were empty\n",empty, emptydr));
+	for(Int_t i=0;i<2;i++)
+	  {
+	    AliInfo(Form("Layer %i   \tempty modules %i             \t filled modules %i\n", i+3,emptymodules[i], filledmodules[i]));
+	    AliInfo(Form("Layer %i   \tempty single drift regions %i \t filled single drift regions %i\n",i+3,emptydriftregion[i], filleddriftregion[i]));
+	  }//end else layers
+	emptysum=emptymodules[0]+emptymodules[1];
+	emptydiff=emptysum-excluded;
+	emptyactivemoduleperlayer[0]=emptymodules[0]- excludedmoduleperlayer[0];
+	emptyactivemoduleperlayer[1]=emptymodules[1]- excludedmoduleperlayer[1];
+
+	emptydrsum=emptydriftregion[0]+emptydriftregion[1];
+	emptydrdiff=emptydrsum-excludeddriftregion;
+	emptyactivedrperlayer[0]=emptydriftregion[0]- excludeddrperlayer[0];
+	emptyactivedrperlayer[1]=emptydriftregion[1]- excludeddrperlayer[1];
+
+
+ 	if(emptysum>excluded||emptydrsum>excludeddriftregion){ 
+	  AliWarning(Form(" %i good module(s) and %i good single drift regions didn't take data! Check the calibration\n",emptydiff,emptydrdiff));
+	  AliWarning(Form(" Layer 3: %i good module(s) and %i good single drift regions didn't take data! Check the calibration\n",emptyactivemoduleperlayer[0] ,emptyactivedrperlayer[0] ));
+	  AliWarning(Form(" Layer 4: %i good module(s) and %i good single drift regions didn't take data! Check the calibration\n",emptyactivemoduleperlayer[1] ,emptyactivedrperlayer[1] ));
+	  
+	  
+	  results1.Form("%i good module(s) and %i good drift regions didn't take data!",emptydiff,emptydrdiff);
+	  if(neventsraw<500)
+	    {
+	      results2.Form(" Events %d .Too few events.DO NOT CALL the Expert ",neventsraw);
+	      color=5;
+	      SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+	    }
+	  else
+	    {
+	      results2.Form(" Events %d .Follow the TWiki instruction and call the Expert ",neventsraw);
+	      color=2;
+	      SDDQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
+	    }
+	}
+
+	if(exactive==0 && emptydiff==0 && exactivedriftregion==0 && emptydrdiff==0){
+	  AliInfo(Form("All the active modules (%i) and single drift regions (%i) are in acquisition. The number of excluded modules are %i and the excluded single drift regions are %i\n",active,activedriftregion,excluded,excludeddriftregion));
+	  results1.Form("OK.");
+	  results2.Form(" All active modules and drift regions in acquisition");
+	  color=3;
 	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kINFO];
 	}
-	if(exactive!=0){
-	  AliWarning(Form("%i modules excluded from the acquisition took data. Active modules%i \n ",exactive,active));
-	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+	if(exactive!=0||exactivedriftregion!=0){
+	  AliError(Form("%i modules and %i single  drift regions excluded from the acquisition took data. Active modules%i single drift region %i \n ",exactive,exactivedriftregion,active,activedriftregion));
+	  AliError(Form("Layer 3: %i modules and %i single  drift regions excluded from the acquisition took data. Active modules%i single drift region %i \n ",exactivemoduleperlayer[0],exactivedrperlayer[0],activemoduleperlayer[0],activedrperlayer[0]));
+	  AliError(Form("Layer 3: %i modules and %i single  drift regions excluded from the acquisition took data. Active modules%i single drift region %i \n ",exactivemoduleperlayer[1],exactivedrperlayer[1],activemoduleperlayer[1],activedrperlayer[1]));
+	  results1.Form("%i modules and %i drift region excluded from the acquisition took data",exactive,exactivedriftregion);
+	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
+	  color=2;	
+	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
 	}
-	if(excluded==exactive){
-	  AliWarning(Form("All the modules excluded from the acquisition (%d) took data!  Active modules %i\n",excluded,active));
-	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
-	}
-	if(active==0){
-	  AliWarning(Form("No modules took data: excluded %i \t exactive %i \n", excluded, exactive)); 
+	if(excluded==exactive||excludeddriftregion==exactivedriftregion){
+	  AliError(Form("All the modules (%d) or single drift regions (%d) excluded from the acquisition  took data!\n  Active modules %i \t Active drfift regions %i\n",excluded,excludeddriftregion,active,activedriftregion));
+	  results1.Form("All the modules (%d) or drift regions (%d) excluded from the acquisition took data!",excluded,excludeddriftregion );
+	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
+	  color=6;
 	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	}
+	if(active==0||activedriftregion==0){
+	  AliError(Form("No modules or single drift regions took data: excluded %i \t excluded active %i \n\t\t excluded single drift regions %i \t excluded active drift regions %i \n", excluded, exactive, excludeddriftregion, exactivedriftregion)); 
+	  results1.Form("No modules or drift region took data: excluded modules %i  excluded drift regions %i ", excluded, excludeddriftregion );
+	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
+	  color=6;
+	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+	}
+
+	TPaveText *pave[2];
+	next.Begin();
+
+	while( (hdata=dynamic_cast<TH1* >(next())) )
+	  {
+	    if (hdata){
+	      TString hname=hdata->GetName();
+	      if(hname.Contains("SDDphizL3") || hname.Contains("SDDphizL4")){
+		if(hname.Contains("NORM"))continue;
+		//AliInfo("========================================Found histo 11\n");
+		Int_t lay=0;
+		if(hname.Contains("3"))lay=0;
+		else if(hname.Contains("4"))lay=1;
+		pave[lay]=new TPaveText(0.3,0.88,0.9,0.99,"NDC");
+		pave[lay]->AddText(results1.Data());
+		pave[lay]->AddText(results2.Data());
+		pave[lay]->SetFillColor(color);
+		pave[lay]->SetBorderSize(1);
+		pave[lay]->SetLineWidth(1);
+		hdata->GetListOfFunctions()->Add(pave[lay]);
+	      }
+	      else
+		if(hname.Contains("SDDRawDataCheck"))
+		  {
+		    
+		    //AliInfo("========================================Found histo\n");
+		    ((TH1F*)hdata)->SetBinContent(5,active);
+		    ((TH1F*)hdata)->SetBinContent(6,filled);
+		    ((TH1F*)hdata)->SetBinContent(7,activedriftregion);
+		    ((TH1F*)hdata)->SetBinContent(8,filleddr);
+		    ((TH1F*)hdata)->SetBinContent(9,excluded);
+		    ((TH1F*)hdata)->SetBinContent(10,empty);
+		    ((TH1F*)hdata)->SetBinContent(11,excludeddriftregion);
+		    ((TH1F*)hdata)->SetBinContent(12,emptydr);
+		    ((TH1F*)hdata)->SetBinContent(13,exactive);
+		    ((TH1F*)hdata)->SetBinContent(14,emptydiff);
+		    ((TH1F*)hdata)->SetBinContent(15,exactivedriftregion);
+		    ((TH1F*)hdata)->SetBinContent(16,emptydr);
+		    
+		    //layer 3
+		    ((TH1F*)hdata)->SetBinContent(19,activemoduleperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(20,filledmodules[0]);
+		    ((TH1F*)hdata)->SetBinContent(21,activedrperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(22,filleddriftregion[0]);
+		    ((TH1F*)hdata)->SetBinContent(23,excludedmoduleperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(24,emptymodules[0]);
+		    ((TH1F*)hdata)->SetBinContent(25,excludeddrperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(26,emptydriftregion[0]);
+		    ((TH1F*)hdata)->SetBinContent(27,exactivemoduleperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(28,emptyactivemoduleperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(29,activedrperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(30,emptyactivedrperlayer[0]);
+		    
+		    //layer 4
+		    ((TH1F*)hdata)->SetBinContent(33,activemoduleperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(34,filledmodules[1]);
+		    ((TH1F*)hdata)->SetBinContent(35,activedrperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(36,filleddriftregion[1]);
+		    ((TH1F*)hdata)->SetBinContent(37,excludedmoduleperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(38,emptymodules[1]);
+		    ((TH1F*)hdata)->SetBinContent(39,excludeddrperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(40,emptydriftregion[1]);
+		    ((TH1F*)hdata)->SetBinContent(41,exactivemoduleperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(42,emptyactivemoduleperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(43,activedrperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(44,emptyactivedrperlayer[1]);
+		    //break; 
+		  }
+	    }//if hdata
+	    
+	  }//end while 
 	
       }//end else 
       delete hmodule;
@@ -260,9 +530,9 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
       for(Int_t i=0;i<2;i++) {
 	delete hlayer[i];
 	hlayer[i]=NULL;
-      }
+      }//end for
 
-    }
+    }//end raw
       
       break;
       
@@ -281,9 +551,71 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	if (list->GetEntries() == 0){ //check if the list is empty
 	  //printf("SDDQACheckerValue = %f \t value %f\n",SDDQACheckerValue,fHighSDDValue[AliQAv1::kFATAL]);
 	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL]; 
-	  break;			
+	  //break;			
 	}//end if getentries
       
+
+      TH1 *hmodule=NULL;
+      TH2 *hlayer[2]; 
+      hdata=NULL;
+      for(Int_t i=0;i<2;i++)hlayer[i]=NULL;
+
+      //check counters
+      Int_t emptymodules[2], filledmodules[2],emptyladders[2],filledladders[2],emptydriftregion[2], filleddriftregion[2], excludedmoduleperlayer[2], excludeddrperlayer[2], activemoduleperlayer[2],activedrperlayer[2],exactivemoduleperlayer[2],exactivedrperlayer[2];
+      Int_t excluded=0;            //excluded modules  
+      Int_t excludeddriftregion=0; //excluded single drift region
+      Int_t active=0;              //active modules  
+      Int_t activedriftregion=0;   //active single drift region
+      Int_t exactive=0;            //excluded modules but taking data
+      Int_t exactivedriftregion=0; //excluded single drift region but taking data   
+      Int_t empty=0;
+      Int_t filled=0;
+      Int_t emptydr=0;
+      Int_t filleddr=0;
+      //Int_t emptyactivemodule=0;
+      Int_t emptyactivemoduleperlayer[2];
+      //Int_t emptydractivemodule=0;
+      Int_t emptyactivedrperlayer[2];
+      Int_t emptysum=0;
+      Int_t emptydiff=0;
+      Int_t emptydrsum=0;
+      Int_t emptydrdiff=0;
+
+    for(Int_t i=0;i<2;i++)
+      {
+	emptymodules[i]=0; 
+	filledmodules[i]=0; 
+	emptyladders[i]=0; 
+	filledladders[i]=0; 
+	emptydriftregion[i]=0;
+	filleddriftregion[i]=0; 
+	excludedmoduleperlayer[i]=0;
+	excludeddrperlayer[i]=0;
+	activemoduleperlayer[i]=0;
+	activedrperlayer[i]=0;
+	exactivemoduleperlayer[i]=0;
+	exactivedrperlayer[i]=0;
+	emptyactivemoduleperlayer[i]=0;
+	emptyactivedrperlayer[i]=0;
+      }  
+
+    Int_t neventsrecpoints=0;
+
+      while( (hdata = dynamic_cast<TH1* >(next())) ){
+	if (hdata){
+	  TString hname=hdata->GetName();
+
+	  if(hname.Contains("SDDRecPointCheck"))
+	    { 
+	      neventsrecpoints=(Int_t)hdata->GetBinContent(1); 
+	      //break;
+	    }
+	  else{continue;}
+	}//end if hdata
+      }//end while
+
+      next.Begin();
+
 	while((hdata=dynamic_cast<TH1* >(next()))){
 	  if (hdata){
 	    TString hname=hdata->GetName();
@@ -328,12 +660,330 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	    if(hname.Contains("dedx")) {
 	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 7: L3 average charge: %f, rms: ,%f",hdata->GetMean(),hdata->GetRMS()));
 	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 8: L4 average charge: %f, rms: ,%f",hdata->GetMean(),hdata->GetRMS()));
+	    }//end if dedx
+	  if(hname.Contains("SDDModPatternRP")){
+	    if(hname.Contains("NORM")) continue;
+	    hmodule=(TH1*)hdata->Clone();
+	    entries= hdata->GetEntries();
+	    if(AliITSQADataMakerRec::AreEqual(entries,0.)){AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];}//endif entries
+	    else{
+	      int modmax=hdata->GetNbinsX();
+	      Double_t content=0;
+	      Int_t llay=0;
+	      for(Int_t i=1;i<=modmax;i++)
+		{
+		  if(i<85)llay=0;
+		  else llay=1;
+		  content=hdata->GetBinContent(i);
+		  if(AliITSQADataMakerRec::AreEqual(content,0.))
+		    {
+		    empty++;
+		    emptymodules[llay]++;
+		    } 
+		  else 
+		    {
+		      filled++;
+		      filledmodules[llay]++;
+		    }
+		}//end for
+	      //output of the check at the level of the modules. Drift region in the following checks
+
+	      AliInfo(Form(" %s : empty modules %i \t filled modules %i",hname.Data(), empty, filled));
+	      AliInfo(Form(" %s : Layer 3 empty modules %i \t filled modules %i",hname.Data(), emptymodules[0], filledmodules[0]));
+	      AliInfo(Form(" %s : Layer 4 empty modules %i \t filled modules %i",hname.Data(), emptymodules[1], filledmodules[1]));
+	    }//end else pattern entries !=0
+	  } //modpattern (1d histogram) 		
+
+	  if(hname.Contains("SDDModPatternL3RP") || hname.Contains("SDDModPatternL4RP")){if(hname.Contains("NORM"))continue;
+	    Int_t layer=0;
+	    if(hname.Contains("3"))layer=0;
+	    else  if(hname.Contains("4"))layer=1;
+	    entries2[layer]=hdata->GetEntries();
+	    if(entries2[layer]==0){AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));
+	      SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];}//end if getentries
+	    else{
+	      Int_t layer1=0;
+	      if(hname.Contains("3"))layer1=0;
+	      else  if(hname.Contains("4"))layer1=1;
+	      TH2* htemp=dynamic_cast<TH2*>(hdata);
+	      if(htemp){
+		hlayer[layer1]=(TH2*)htemp->Clone();
+		hlayer[layer1]->SetName(Form("%s_copy",hname.Data()));
+		//hlayer[layer1]->RebinX(2);
+		int modmay=hlayer[layer1]->GetNbinsY();
+		TH1D* hproj= hlayer[layer1]->ProjectionY();
+		Double_t ladcontent=0;
+		for(Int_t i=1;i<=modmay;i++) {//loop on the ladders
+		  ladcontent=hproj->GetBinContent(i);
+		  if(AliITSQADataMakerRec::AreEqual(ladcontent,0.)) emptyladders[layer1]++;
+		  else filledladders[layer1]++;}//end for
+		AliInfo(Form(" %s : empty ladders %i \t filled ladders %i\n",hname.Data(), emptyladders[layer1], filledladders[layer1]));//end else layer 3
+		delete hproj;
+		hproj=NULL;
+	      }//end if htemp
+	    }//end else entries !=0
+	  }//end check on phiz
+	  }//end if hdata
+	}//end while				
+      for(Int_t ii=0;ii<2;ii++)
+	{
+	  filledmodules[ii]=0;
+	  emptymodules[ii]=0;
+	}
+      filled=0;
+      empty=0;
+      if(AliITSQADataMakerRec::AreEqual(entries,0.)&& AliITSQADataMakerRec::AreEqual(entries2[0],0.)&& AliITSQADataMakerRec::AreEqual(entries2[1],0.)) break;
+      //else{
+      if(hmodule || (hlayer[0] && hlayer[1])){
+	for(Int_t imod=0;imod<fgknSDDmodules;imod++){
+	  Int_t lay=0;
+	  Int_t lad=0;
+	  Int_t det=0;
+	  Int_t module=0;
+	  module=imod+fgkmodoffset;
+	  AliITSCalibrationSDD * cal=(AliITSCalibrationSDD*)fCalibration->At(imod);
+	  if(cal==0) { continue;}
+	  AliITSgeomTGeo::GetModuleId(module,lay,lad,det);
+	  if (cal->IsBad()){
+	    excluded++;
+	    excludedmoduleperlayer[lay-3]++;
+	    Double_t content=0.;
+	    Double_t contentlayer[2];
+	    for(Int_t i=0;i<2;i++)contentlayer[i]=0.;
+	    if(hmodule)content=hmodule->GetBinContent(imod+1);//if expert bit is active the histogram will be stored in the QA file otherwise the histogram will not be written on the logbook
+	    //	    if(hlayer[lay-3]) contentlayer[lay-3]=hlayer[lay-3]->GetBinContent(det,lad);
+	    if(AliITSQADataMakerRec::AreEqual(content,0.)== kFALSE) {
+	      filledmodules[lay-3]++;
+	      filled++;
+	      AliError(Form("The module %d (layer %i, ladder %i det %i ) excluded from the acquisition,has recpoints \n ",module,lay,lad,det));
+	      exactive++;
+	      exactivemoduleperlayer[lay-3]++;
+	    } else if(AliITSQADataMakerRec::AreEqual(content,0.)) 
+	      {
+		emptymodules[lay-3]++; //it has to be empty
+		empty++;
+	      }
+	  } else {
+	    Int_t totside=0;
+	    Int_t totactiveside=0;
+	    //Int_t totbadside=0;
+	    Double_t contentgood=0.;
+
+	    for(Int_t i=0;i<2;i++){
+	      if(hlayer[lay-3]) contentgood=hlayer[lay-3]->GetBinContent(2*det+i-1,lad);
+	      if(cal->IsWingBad(i))
+		{ 
+		  excludeddriftregion++; 
+		  excludeddrperlayer[lay-3]++; 
+		  if(AliITSQADataMakerRec::AreEqual(contentgood,0.)==kFALSE){
+		    AliError(Form("The side %d of the module %d (layer %i, ladder %i det %i ) excluded from the acquisition, has recpoints \n ",i,module,lay,lad,det));
+		    exactivedriftregion++; 
+		    exactivedrperlayer[lay-3]++;
+		    filleddr++;
+		    filleddriftregion[lay-3]++;
+		  }
+		}//end wingbad
+	      else{
+		if(AliITSQADataMakerRec::AreEqual(contentgood,0.)==kTRUE)
+		  {
+		    AliWarning(Form("The side %d of the module %d (layer %i, ladder %i det %i ) is in acquisition, but no recpoints are present\n ",i,module, lay, lad, det));
+		  }
+		else 
+		  {
+		    totside++;
+		  }
+		totactiveside++;
+	      }
+	    }//end for
+	    if(totside==0){
+	    AliWarning(Form("The  module %d (layer %i, ladder %i det %i ) is in acquisition, but no recpoints are present \n ",module, lay, lad, det));
+	      emptymodules[lay-3]++;
+	      empty++;
+
 	    }
+	      else 
+		if(totside==2){
+		filledmodules[lay-3]++;
+		filled++;
+		}
+		else
+		  if(totside==1)
+		    {
+		      //		      emptydr++;
+		      //emptydriftregion[lay-3]++; //it has to be empty
+		      emptydriftregion[lay-3]++; 
+		      emptydr++;
+		      filleddr++;
+		      filleddriftregion[lay-3]++;
+		    }
+	    if(totactiveside==1)
+	      {
+		activedriftregion++;
+		activedrperlayer[lay-3]++;
+	      }else if(totactiveside==2)
+	      {
+		active++;
+		activemoduleperlayer[lay-3]++;
+	      }
+
 	  }
-	}				
+	}//end for
+	AliInfo(Form("In total %d modules and %d single drift regions have recpoints.\n ",filled, filleddr));
+	AliInfo(Form("In total %d modules and %d single drift regions are empty\n",empty, emptydr));
+	for(Int_t i=0;i<2;i++)
+	  {
+	    AliInfo(Form("Layer %i   \tempty modules %i             \t filled modules %i\n", i+3,emptymodules[i], filledmodules[i]));
+	    AliInfo(Form("Layer %i   \tempty single drift regions %i \t filled single drift regions %i\n",i+3,emptydriftregion[i], filleddriftregion[i]));
+	  }//end else layers
+	emptysum=emptymodules[0]+emptymodules[1];
+	emptydiff=emptysum-excluded;
+	emptyactivemoduleperlayer[0]=emptymodules[0]- excludedmoduleperlayer[0];
+	emptyactivemoduleperlayer[1]=emptymodules[1]- excludedmoduleperlayer[1];
+
+	emptydrsum=emptydriftregion[0]+emptydriftregion[1];
+	emptydrdiff=emptydrsum-excludeddriftregion;
+	emptyactivedrperlayer[0]=emptydriftregion[0]- excludeddrperlayer[0];
+	emptyactivedrperlayer[1]=emptydriftregion[1]- excludeddrperlayer[1];
+
+
+ 	if(emptysum>excluded||emptydrsum>excludeddriftregion){ 
+	  AliWarning(Form(" %i good module(s) and %i good single drift regions have not recpoints! Check the calibration\n",emptydiff,emptydrdiff));
+	  AliWarning(Form(" Layer 3: %i good module(s) and %i good single drift regions have not recpoints! Check the calibration\n",emptyactivemoduleperlayer[0] ,emptyactivedrperlayer[0] ));
+	  AliWarning(Form(" Layer 4: %i good module(s) and %i good single drift regions have not recpoints! Check the calibration\n",emptyactivemoduleperlayer[1] ,emptyactivedrperlayer[1] ));
+	  
+	  //SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+	  
+	  results1.Form("%i good module(s) and %i good drift region(s) have not recpoints!",emptydiff,emptydrdiff);
+	  if(neventsrecpoints<500)
+	    {
+	      results2.Form(" Events %d .Too few events.DO NOT CALL the Expert ",neventsrecpoints);
+	      color=5;
+	      SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+	    }
+	  else
+	    {
+	      results2.Form(" Events %d .Follow the TWiki instruction and call the Expert ",neventsrecpoints);
+	      color=2;
+	      SDDQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
+	    }
+	}
+	
       
-	SDDQACheckerValue=1.;
-      }
+
+	if(exactive==0 && emptydiff==0 && exactivedriftregion==0 && emptydrdiff==0){
+	  AliInfo(Form("All the active modules (%i) and single drift regions (%i) are in acquisition. The number of excluded modules are %i and the excluded single drift regions are %i\n",active,activedriftregion,excluded,excludeddriftregion));
+	  results1.Form("OK.");
+	  results2.Form(" All active modules have recpoints");
+	  color=3;
+	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kINFO];
+	}
+	if(exactive!=0||exactivedriftregion!=0){
+	  AliError(Form("%i modules and %i single  drift regions excluded from the acquisition have recpoints. Active modules %i single drift region %i \n ",exactive,exactivedriftregion,active,activedriftregion));
+	  AliError(Form("Layer 3: %i modules and %i single  drift regions excluded from the acquisition have recpoints. Active modules %i single drift region %i \n ",exactivemoduleperlayer[0],exactivedrperlayer[0],activemoduleperlayer[0],activedrperlayer[0]));
+	  AliError(Form("Layer 3: %i modules and %i single  drift regions excluded from the acquisition have recpoints. Active modules %i single drift region %i \n ",exactivemoduleperlayer[1],exactivedrperlayer[1],activemoduleperlayer[1],activedrperlayer[1]));
+	  results1.Form("%i modules and %i drift region excluded from the acquisition have recpoints",exactive,exactivedriftregion);
+	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
+	  color=2;	
+	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
+	}
+	if(excluded==exactive||excludeddriftregion==exactivedriftregion){
+	  AliError(Form("All the modules (%d) or single drift regions (%d) excluded from the acquisition have recpoints!\n  Active modules %i \t Active drfift regions %i\n",excluded,excludeddriftregion,active,activedriftregion));
+	  results1.Form("All the modules (%d) or drift regions (%d) excluded from the acquisition have recpoints!",excluded,excludeddriftregion );
+	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
+	  color=6;
+	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+	}
+	if(active==0||activedriftregion==0){
+	  AliError(Form("No modules or single drift regions have recpoints: excluded %i \t excluded active %i \n\t\t excluded single drift regions %i \t excluded active drift regions %i \n", excluded, exactive, excludeddriftregion, exactivedriftregion)); 
+	  results1.Form("No modules or drift region have recpoints: excluded modules %i  excluded drift regions %i ", excluded, excludeddriftregion );
+	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
+	  color=6;
+	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+	}
+
+	TPaveText *pave[2];
+	next.Begin();
+
+	while( (hdata=dynamic_cast<TH1* >(next())) )
+	  {
+	    if (hdata){
+	      TString hname=hdata->GetName();
+	      if(hname.Contains("SDDModPatternL3RP") || hname.Contains("SDDModPatternL4RP")){
+		if(hname.Contains("NORM"))continue;
+		//AliInfo("========================================Found histo 11\n");
+		Int_t lay=0;
+		if(hname.Contains("3"))lay=0;
+		else if(hname.Contains("4"))lay=1;
+		pave[lay]=new TPaveText(0.3,0.88,0.9,0.99,"NDC");
+		pave[lay]->AddText(results1.Data());
+		pave[lay]->AddText(results2.Data());
+		pave[lay]->SetFillColor(color);
+		pave[lay]->SetBorderSize(1);
+		pave[lay]->SetLineWidth(1);
+		hdata->GetListOfFunctions()->Add(pave[lay]);
+	      }
+	      else
+		if(hname.Contains("SDDRecPointCheck"))
+		  {
+		    
+		    //AliInfo("========================================Found histo\n");
+		    ((TH1F*)hdata)->SetBinContent(5,active);
+		    ((TH1F*)hdata)->SetBinContent(6,filled);
+		    ((TH1F*)hdata)->SetBinContent(7,activedriftregion);
+		    ((TH1F*)hdata)->SetBinContent(8,filleddr);
+		    ((TH1F*)hdata)->SetBinContent(9,excluded);
+		    ((TH1F*)hdata)->SetBinContent(10,empty);
+		    ((TH1F*)hdata)->SetBinContent(11,excludeddriftregion);
+		    ((TH1F*)hdata)->SetBinContent(12,emptydr);
+		    ((TH1F*)hdata)->SetBinContent(13,exactive);
+		    ((TH1F*)hdata)->SetBinContent(14,emptydiff);
+		    ((TH1F*)hdata)->SetBinContent(15,exactivedriftregion);
+		    ((TH1F*)hdata)->SetBinContent(16,emptydr);
+		    
+		    //layer 3
+		    ((TH1F*)hdata)->SetBinContent(19,activemoduleperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(20,filledmodules[0]);
+		    ((TH1F*)hdata)->SetBinContent(21,activedrperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(22,filleddriftregion[0]);
+		    ((TH1F*)hdata)->SetBinContent(23,excludedmoduleperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(24,emptymodules[0]);
+		    ((TH1F*)hdata)->SetBinContent(25,excludeddrperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(26,emptydriftregion[0]);
+		    ((TH1F*)hdata)->SetBinContent(27,exactivemoduleperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(28,emptyactivemoduleperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(29,activedrperlayer[0]);
+		    ((TH1F*)hdata)->SetBinContent(30,emptyactivedrperlayer[0]);
+		    
+		    //layer 4
+		    ((TH1F*)hdata)->SetBinContent(35,activemoduleperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(36,filledmodules[1]);
+		    ((TH1F*)hdata)->SetBinContent(37,activedrperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(38,filleddriftregion[1]);
+		    ((TH1F*)hdata)->SetBinContent(39,excludedmoduleperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(40,emptymodules[1]);
+		    ((TH1F*)hdata)->SetBinContent(41,excludeddrperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(42,emptydriftregion[1]);
+		    ((TH1F*)hdata)->SetBinContent(43,exactivemoduleperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(44,emptyactivemoduleperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(45,activedrperlayer[1]);
+		    ((TH1F*)hdata)->SetBinContent(46,emptyactivedrperlayer[1]);
+		    
+		  }
+	    }//if hadata
+	    
+	  }//end while 
+	
+      }//end else 
+      delete hmodule;
+      hmodule=NULL;
+      for(Int_t i=0;i<2;i++) {
+	delete hlayer[i];
+	hlayer[i]=NULL;
+      }//end for      
+
+
+      //SDDQACheckerValue=1.;
+      }//end recpoint list uid = 20
       else if(uidrec==40)
 	{
 	  //digitsr
@@ -576,7 +1226,7 @@ Bool_t AliITSQASDDChecker::MakeSDDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
 	fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
 	fImage[esIndex]->Clear() ; 
 	Int_t nx =2; //TMath::Nint(TMath::Sqrt(nImages));
-	Int_t ny =1; // nx  ; 
+	Int_t ny =2; // nx  ; 
 	//if (nx < TMath::Sqrt(nImages))
 	//ny++ ;  
 	fImage[esIndex]->Divide(nx, ny) ; 

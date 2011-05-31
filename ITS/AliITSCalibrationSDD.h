@@ -97,6 +97,13 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual Bool_t IsChipBad(Int_t nChip) const { 
       return fIsChipBad[nChip]; 
     }
+    virtual Bool_t IsWingBad(Int_t nwing) const 
+    {
+      if(nwing<0 || nwing>1) return kFALSE;
+      if(IsChipBad(nwing*4) && IsChipBad(nwing*4+1) && IsChipBad(nwing*4+2) && IsChipBad(nwing*4+3)) return kTRUE; 
+      return kFALSE;
+    }
+
     Int_t Wings()const{return fgkWings;}//Total number of SDD wings
     Int_t Chips() const{return fgkChips;} // Number of chips/module
     Int_t Channels() const{ return fgkChannels;}//Number of channels/chip

@@ -36,6 +36,7 @@ class AliITSCalibration : public TObject {
     // Return 1 if the module/chip is dead, 0 if it is ok
     virtual Bool_t IsBad() const {AliError("This method must be implemented in a derived class"); return kFALSE;}
     virtual Bool_t IsChipBad(Int_t) const {AliError("This method must be implemented in a derived class"); return kFALSE;}
+    virtual Bool_t IsWingBad(Int_t) const {AliError("This method must be implemented in a derived class"); return kFALSE;}
     //
     // Configuration methods
     //
