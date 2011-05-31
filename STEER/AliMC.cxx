@@ -857,7 +857,7 @@ void AliMC::ReadTransPar()
     if(!iret) continue;
     if(line[0]=='*') continue;
     // Read the numbers
-    iret=sscanf(line,"%s %d %f %f %f %f %f %f %f %f %f %f %d %d %d %d %d %d %d %d %d %d %d %d",
+    iret=sscanf(line,"%6s %d %f %f %f %f %f %f %f %f %f %f %d %d %d %d %d %d %d %d %d %d %d %d",
 		detName,&itmed,&cut[0],&cut[1],&cut[2],&cut[3],&cut[4],&cut[5],&cut[6],&cut[7],&cut[8],
 		&cut[9],&flag[0],&flag[1],&flag[2],&flag[3],&flag[4],&flag[5],&flag[6],&flag[7],
 		&flag[8],&flag[9],&flag[10],&flag[11]);
