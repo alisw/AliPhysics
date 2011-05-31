@@ -51,6 +51,7 @@ class AliAODPidHF : public AliAODPid{
  void SetOnePad(Bool_t onepad){fOnePad=onepad;return;}
  void SetPbPb(Bool_t pbpb){fPbPb=pbpb;return;}
  void SetPCompatTOF(Double_t pTOF){fPCompatTOF=pTOF;return;}
+ void SetTOFdecide(Bool_t tOFdecide){fTOFdecide=tOFdecide;return;}
  
  //Getters
  Double_t GetSigma(Int_t idet) const{return fnSigma[idet];}
@@ -70,6 +71,7 @@ class AliAODPidHF : public AliAODPid{
  Bool_t GetOnePad() const{return fOnePad;}
  Bool_t GetMCLowEn2011() const {return fMCLowEn2011;}
  Bool_t GetPbPb() const{return fPbPb;}
+ Bool_t GetTOFdecide() const{return fTOFdecide;}
  Double_t GetPCompatTOF() const{return fPCompatTOF;}
  Double_t GetnSigmaCompatTPC() const{return fnSigmaCompat[0];}
  Double_t GetnSigmaCompatTOF() const{return fnSigmaCompat[1];}
@@ -124,10 +126,11 @@ class AliAODPidHF : public AliAODPid{
  Bool_t fOnePad; //  real data with one pad clusters 
  Bool_t fMCLowEn2011; //  MC for low energy MC
  Bool_t fPbPb; //  real data PbPb 
+ Bool_t fTOFdecide; //  real data PbPb 
  
 
 
- ClassDef(AliAODPidHF,10) // AliAODPid for heavy flavor PID
+ ClassDef(AliAODPidHF,11) // AliAODPid for heavy flavor PID
 
 };
 
