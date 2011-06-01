@@ -260,7 +260,7 @@ void AliCFTaskVertexingHF::Init()
 	}
 	case 32:{
 		copyfCuts = new AliRDHFCutsLctopKpi(*(static_cast<AliRDHFCutsLctopKpi*>(fCuts)));
-		fNvar = 14;
+		fNvar = 18;
 		fPartName="Lambdac";
 		fDauNames="p+K+pi";
 		break;
