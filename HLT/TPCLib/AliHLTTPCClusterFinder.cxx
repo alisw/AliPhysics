@@ -1127,6 +1127,11 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 	UInt_t q2=list[j].fTotalCharge*list[j].fTotalCharge;
 	//	Float_t sy2=list[j].fPad2 * list[j].fTotalCharge - list[j].fPad * list[j].fPad;
 	Float_t sy2=(Float_t)list[j].fPad2 * list[j].fTotalCharge - (Float_t)list[j].fPad * list[j].fPad;
+	if(q2 == 0) {
+	  LOG(AliHLTTPCLog::kError,"AliHLTTPCClusterFinder::WriteClusters","Cluster width")
+	    <<"zero charge "<< list[j].fTotalCharge <<" on row "<<fCurrentRow<<" "<<fpad<<" "<<ftime<<ENDLOG;
+	  continue;
+	}
 	sy2/=q2;
 	if(sy2 < 0) {
 	    LOG(AliHLTTPCLog::kError,"AliHLTTPCClusterFinder::WriteClusters","Cluster width")
