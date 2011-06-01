@@ -22,7 +22,7 @@
 // in bins of cut variables                                      //
 // Origin:       Francesco Prino (prino@to.infn.it)              //
 //               Renu Bala       (bala@to.infn.it)               //
-//                                                               //
+//               Davide Caffarri (cafarri@pd.infn.it)            //
 ///////////////////////////////////////////////////////////////////
 
 #include "AliAODMCParticle.h"
@@ -107,8 +107,10 @@ Bool_t AliCFVertexingHF3Prong::SetRecoCandidateParam(AliAODRecoDecayHF *recoCand
     pdgDaughter[1]=321;
     pdgDaughter[2]=211;
   }else if(fDecay==kLctopKpi){
-    AliError("LambdaC not yet implemented");
-    return bSignAssoc;
+	  pdgCand=4122;
+	  pdgDaughter[0]=2212;
+	  pdgDaughter[1]=321;
+	  pdgDaughter[2]=211;	  
   }else{
     AliError("WRONG DECAY SETTING");
     return bSignAssoc;    
@@ -164,8 +166,7 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
   }else if(fDecay==kDstoKKpi){
     pdgCand=431;
   }else if(fDecay==kLctopKpi){
-    AliError("LambdaC not yet implemented");
-    return bGenValues;
+	pdgCand=4122;
   }else{
     AliError("WRONG DECAY SETTING");
     return bGenValues;
@@ -301,6 +302,13 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
   vectorMC[12] = fCentValue; // reconstructed centrality value 
   vectorMC[13] = 1.;           // always filling with 1 at MC level 
 
+	if (fDecay==kLctopKpi){
+		vectorMC[14] = 0.;
+		vectorMC[15] = 0.;
+		vectorMC[16] = 0.;
+		vectorMC[17] = 0.;
+	}
+	
 
   bGenValues = kTRUE;
   return bGenValues;
@@ -319,8 +327,9 @@ Bool_t AliCFVertexingHF3Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
   }else if(fDecay==kDstoKKpi){
     pdgCand=431;
   }else if(fDecay==kLctopKpi){
-    AliError("LambdaC not yet implemented");
-    return bFillRecoValues;
+	pdgCand=4122;
+   // AliError("LambdaC not yet implemented");
+   // return bFillRecoValues;
   }else{
     AliError("WRONG DECAY SETTING");
     return bFillRecoValues;
@@ -333,6 +342,10 @@ Bool_t AliCFVertexingHF3Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
   Double_t pt = decay3->Pt();
   Double_t cosPointingAngle = decay3->CosPointingAngle();
   Double_t phi = decay3->Phi();
+  Double_t dist12= decay3->GetDist12toPrim();
+  Double_t dist23 = decay3->GetDist23toPrim();
+  Double_t sigmVert = decay3->GetSigmaVert();
+	
 
   Int_t daughtSorted[3];
   Int_t tmpIndex=0;
@@ -363,7 +376,10 @@ Bool_t AliCFVertexingHF3Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
     daughtSorted[2]=tmp;
   }
   
-  
+	Double_t d0prong0 = decay3->Getd0Prong(daughtSorted[0]);
+	Double_t d0prong1 = decay3->Getd0Prong(daughtSorted[1]);
+	Double_t d0prong2 = decay3->Getd0Prong(daughtSorted[2]);
+	
   vectorReco[0] = pt;
   vectorReco[1] = rapidity;
   vectorReco[2] = phi;
@@ -379,6 +395,14 @@ Bool_t AliCFVertexingHF3Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
   vectorReco[12] = fCentValue; //reconstructed centrality value
   vectorReco[13] = fFake;      // whether the reconstructed candidate was a fake (fFake = 0) or not (fFake = 2) 
 
+	if(fDecay==kLctopKpi){  
+		Double_t sumd02 =(d0prong0*d0prong0 + d0prong1*d0prong1 + d0prong2*d0prong2); 
+		vectorReco[14] = dist12*1.E4;
+		vectorReco[15] = dist23*1.E4;
+		vectorReco[16] = sigmVert*1.E4;
+		vectorReco[17] = sumd02*1.E8;
+	}
+	
 
   bFillRecoValues = kTRUE;
   return bFillRecoValues;
@@ -404,8 +428,13 @@ Bool_t AliCFVertexingHF3Prong::CheckMCChannelDecay() const
     pdgDaughter[1]=321;
     pdgDaughter[2]=211;
   }else if(fDecay==kLctopKpi){
-    AliError("LambdaC not yet implemented");
-    return checkCD;
+	  pdgCand=4122;
+	  pdgDaughter[0]=2212;
+	  pdgDaughter[1]=321;
+	  pdgDaughter[2]=211;
+	  
+  //  AliError("LambdaC not yet implemented");
+  //  return checkCD;
   }else{
     AliError("WRONG DECAY SETTING");
     return checkCD;    
