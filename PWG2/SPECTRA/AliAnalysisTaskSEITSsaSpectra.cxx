@@ -415,12 +415,27 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
     fHistMCSecMatDCANegK[i]  = new TH1F(Form("fHistMCSecMatDCANegK%d",i),Form("fHistMCSecMatDCANegK%d",i),2000,-1,1);	
     fHistMCSecMatDCANegP[i]  = new TH1F(Form("fHistMCSecMatDCANegP%d",i),Form("fHistMCSecMatDCANegP%d",i),2000,-1,1);	
     
-    fHistMCPosPi[i] = new TH1F(Form("fHistMCPosPi%d",i),Form("fHistMCPosPi%d",i),175,-3.5,3.5);	//MC truth
-    fHistMCPosK[i]  = new TH1F(Form("fHistMCPosK%d",i),Form("fHistMCPosK%d",i),175,-3.5,3.5);	
-    fHistMCPosP[i]  = new TH1F(Form("fHistMCPosP%d",i),Form("fHistMCPosP%d",i),175,-3.5,3.5);	
-    fHistMCNegPi[i] = new TH1F(Form("fHistMCNegPi%d",i),Form("fHistMCNegPi%d",i),175,-3.5,3.5);	
-    fHistMCNegK[i]  = new TH1F(Form("fHistMCNegK%d",i),Form("fHistMCNegK%d",i),175,-3.5,3.5);	
-    fHistMCNegP[i]  = new TH1F(Form("fHistMCNegP%d",i),Form("fHistMCNegP%d",i),175,-3.5,3.5);	
+    fHistMCPosPiHypPion[i] = new TH1F(Form("fHistMCPosPiHypPion%d",i),Form("fHistMCPosPiHypPion%d",i),175,-3.5,3.5);	//MC truth
+    fHistMCPosPiHypKaon[i] = new TH1F(Form("fHistMCPosPiHypKaon%d",i),Form("fHistMCPosPiHypKaon%d",i),175,-3.5,3.5);
+    fHistMCPosPiHypProton[i] = new TH1F(Form("fHistMCPosPiHypProton%d",i),Form("fHistMCPosPiHypProton%d",i),175,-3.5,3.5);
+    fHistMCPosKHypPion[i] = new TH1F(Form("fHistMCPosKHypPion%d",i),Form("fHistMCPosKHypPion%d",i),175,-3.5,3.5);	
+    fHistMCPosKHypKaon[i]  = new TH1F(Form("fHistMCPosKHypKaon%d",i),Form("fHistMCPosKHypKaon%d",i),175,-3.5,3.5);	
+    fHistMCPosKHypProton[i] = new TH1F(Form("fHistMCPosKHypProton%d",i),Form("fHistMCPosKHypProton%d",i),175,-3.5,3.5);
+    fHistMCPosPHypPion[i] = new TH1F(Form("fHistMCPosPHypPion%d",i),Form("fHistMCPosPHypPion%d",i),175,-3.5,3.5);	
+    fHistMCPosPHypKaon[i] = new TH1F(Form("fHistMCPosPHypKaon%d",i),Form("fHistMCPosPHypKaon%d",i),175,-3.5,3.5);
+    fHistMCPosPHypProton[i]  = new TH1F(Form("fHistMCPosPHypProton%d",i),Form("fHistMCPosPHypProton%d",i),175,-3.5,3.5);	
+    
+    fHistMCNegPiHypPion[i] = new TH1F(Form("fHistMCNegPiHypPion%d",i),Form("fHistMCNegPiHypPion%d",i),175,-3.5,3.5);	//MC truth
+    fHistMCNegPiHypKaon[i] = new TH1F(Form("fHistMCNegPiHypKaon%d",i),Form("fHistMCNegPiHypKaon%d",i),175,-3.5,3.5);
+    fHistMCNegPiHypProton[i] = new TH1F(Form("fHistMCNegPiHypProton%d",i),Form("fHistMCNegPiHypProton%d",i),175,-3.5,3.5);
+    fHistMCNegKHypPion[i] = new TH1F(Form("fHistMCNegKHypPion%d",i),Form("fHistMCNegKHypPion%d",i),175,-3.5,3.5);	
+    fHistMCNegKHypKaon[i]  = new TH1F(Form("fHistMCNegKHypKaon%d",i),Form("fHistMCNegKHypKaon%d",i),175,-3.5,3.5);	
+    fHistMCNegKHypProton[i] = new TH1F(Form("fHistMCNegKHypProton%d",i),Form("fHistMCNegKHypProton%d",i),175,-3.5,3.5);
+    fHistMCNegPHypPion[i] = new TH1F(Form("fHistMCNegPHypPion%d",i),Form("fHistMCNegPHypPion%d",i),175,-3.5,3.5);	
+    fHistMCNegPHypKaon[i] = new TH1F(Form("fHistMCNegPHypKaon%d",i),Form("fHistMCNegPHypKaon%d",i),175,-3.5,3.5);
+    fHistMCNegPHypProton[i]  = new TH1F(Form("fHistMCNegPHypProton%d",i),Form("fHistMCNegPHypProton%d",i),175,-3.5,3.5);	
+    
+    
     fOutput->Add(fHistPosPi[i]);
     fOutput->Add(fHistPosK[i]);
     fOutput->Add(fHistPosP[i]);
@@ -456,12 +471,26 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
     fOutput->Add(fHistMCSecMatDCANegK[i]);
     fOutput->Add(fHistMCSecMatDCANegP[i]);
 
-    fOutput->Add(fHistMCPosPi[i]);//MC truth
-    fOutput->Add(fHistMCPosK[i]);
-    fOutput->Add(fHistMCPosP[i]);
-    fOutput->Add(fHistMCNegPi[i]);
-    fOutput->Add(fHistMCNegK[i]);
-    fOutput->Add(fHistMCNegP[i]);
+    fOutput->Add(fHistMCPosPiHypPion[i]);//MC truth
+    fOutput->Add(fHistMCPosPiHypKaon[i]);
+    fOutput->Add(fHistMCPosPiHypProton[i]);
+    fOutput->Add(fHistMCPosKHypPion[i]);
+    fOutput->Add(fHistMCPosKHypKaon[i]);
+    fOutput->Add(fHistMCPosKHypProton[i]);
+    fOutput->Add(fHistMCPosPHypPion[i]);
+    fOutput->Add(fHistMCPosPHypKaon[i]);
+    fOutput->Add(fHistMCPosPHypProton[i]);
+    
+    fOutput->Add(fHistMCNegPiHypPion[i]);//MC truth
+    fOutput->Add(fHistMCNegPiHypKaon[i]);
+    fOutput->Add(fHistMCNegPiHypProton[i]);
+    fOutput->Add(fHistMCNegKHypPion[i]);
+    fOutput->Add(fHistMCNegKHypKaon[i]);
+    fOutput->Add(fHistMCNegKHypProton[i]);
+    fOutput->Add(fHistMCNegPHypPion[i]);
+    fOutput->Add(fHistMCNegPHypKaon[i]);
+    fOutput->Add(fHistMCNegPHypProton[i]);
+    
   }
   
   //NSigma Histos
@@ -1134,18 +1163,42 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	if(TMath::Abs(y[1]) < fMaxY)fHistPosK[theBin]->Fill(logdiff[1]);
 	if(TMath::Abs(y[2]) < fMaxY)fHistPosP[theBin]->Fill(logdiff[2]);
 	if(fMC){
-	  if((TMath::Abs(y[0])<fMaxY) && (TMath::Abs(code)==211))  fHistMCPosPi[theBin]->Fill(logdiff[0]);
-	  if((TMath::Abs(y[1])<fMaxY) && (TMath::Abs(code)==321))  fHistMCPosK[theBin]->Fill(logdiff[1]);
-	  if((TMath::Abs(y[2])<fMaxY) && (TMath::Abs(code)==2212)) fHistMCPosP[theBin]->Fill(logdiff[2]);
+	  if(TMath::Abs(y[0])<fMaxY){
+	    if(TMath::Abs(code)==211)fHistMCPosPiHypPion[theBin]->Fill(logdiff[0]);
+	    if(TMath::Abs(code)==311)fHistMCPosKHypPion[theBin]->Fill(logdiff[0]);
+	    if(TMath::Abs(code)==2212)fHistMCPosPHypPion[theBin]->Fill(logdiff[0]);
+	  }
+	  if(TMath::Abs(y[1])<fMaxY){
+	    if(TMath::Abs(code)==211)fHistMCPosPiHypKaon[theBin]->Fill(logdiff[1]);
+	    if(TMath::Abs(code)==311)fHistMCPosKHypKaon[theBin]->Fill(logdiff[1]);
+	    if(TMath::Abs(code)==2212)fHistMCPosPHypKaon[theBin]->Fill(logdiff[1]);
+	  }
+	  if(TMath::Abs(y[2])<fMaxY){
+	    if(TMath::Abs(code)==211)fHistMCPosPiHypProton[theBin]->Fill(logdiff[2]);
+	    if(TMath::Abs(code)==311)fHistMCPosKHypProton[theBin]->Fill(logdiff[2]);
+	    if(TMath::Abs(code)==2212)fHistMCPosPHypProton[theBin]->Fill(logdiff[2]);
+	  }
 	}
       }else{
 	if(TMath::Abs(y[0]) < fMaxY)fHistNegPi[theBin]->Fill(logdiff[0]);
 	if(TMath::Abs(y[1]) < fMaxY)fHistNegK[theBin]->Fill(logdiff[1]);
 	if(TMath::Abs(y[2]) < fMaxY)fHistNegP[theBin]->Fill(logdiff[2]);
 	if(fMC){
-	  if((TMath::Abs(y[0])<fMaxY) && (TMath::Abs(code)==211))  fHistMCNegPi[theBin]->Fill(logdiff[0]);
-	  if((TMath::Abs(y[1])<fMaxY) && (TMath::Abs(code)==321))  fHistMCNegK[theBin]->Fill(logdiff[1]);
-	  if((TMath::Abs(y[2])<fMaxY) && (TMath::Abs(code)==2212)) fHistMCNegP[theBin]->Fill(logdiff[2]);
+	  if(TMath::Abs(y[0])<fMaxY){
+	    if(TMath::Abs(code)==211)fHistMCPosPiHypPion[theBin]->Fill(logdiff[0]);
+	    if(TMath::Abs(code)==311)fHistMCPosKHypPion[theBin]->Fill(logdiff[0]);
+	    if(TMath::Abs(code)==2212)fHistMCPosPHypPion[theBin]->Fill(logdiff[0]);
+	  }
+	  if(TMath::Abs(y[1])<fMaxY){
+	    if(TMath::Abs(code)==211)fHistMCPosPiHypKaon[theBin]->Fill(logdiff[1]);
+	    if(TMath::Abs(code)==311)fHistMCPosKHypKaon[theBin]->Fill(logdiff[1]);
+	    if(TMath::Abs(code)==2212)fHistMCPosPHypKaon[theBin]->Fill(logdiff[1]);
+	  }
+	  if(TMath::Abs(y[2])<fMaxY){
+	    if(TMath::Abs(code)==211)fHistMCPosPiHypProton[theBin]->Fill(logdiff[2]);
+	    if(TMath::Abs(code)==311)fHistMCPosKHypProton[theBin]->Fill(logdiff[2]);
+	    if(TMath::Abs(code)==2212)fHistMCPosPHypProton[theBin]->Fill(logdiff[2]);
+	  }
 	}
       }
     }							     
@@ -1258,12 +1311,26 @@ void AliAnalysisTaskSEITSsaSpectra::Terminate(Option_t *) {
       fHistMCSecMatDCANegK[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCSecMatDCANegK%d",i)));
       fHistMCSecMatDCANegP[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCSecMatDCANegP%d",i)));  
       
-      fHistMCPosPi[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPosPi%d",i)));
-      fHistMCPosK[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPosK%d",i)));
-      fHistMCPosP[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPosP%d",i)));
-      fHistMCNegPi[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCNegPi%d",i)));
-      fHistMCNegK[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCNegK%d",i)));
-      fHistMCNegP[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCNegP%d",i)));
+      fHistMCPosPiHypPion[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPosPiHypPion%d",i)));
+      fHistMCPosPiHypKaon[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPosPiHypKaon%d",i)));
+      fHistMCPosPiHypProton[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPosPiHypProton%d",i)));
+      fHistMCPosKHypPion[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPosKHypPion%d",i)));
+      fHistMCPosKHypKaon[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPosKHypKaon%d",i)));
+      fHistMCPosKHypProton[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPosKHypProton%d",i)));
+      fHistMCPosPHypPion[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPosPHypPion%d",i)));
+      fHistMCPosPHypKaon[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPosPHypKaon%d",i)));
+      fHistMCPosPHypProton[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCPosPHypProton%d",i)));
+      
+      fHistMCNegPiHypPion[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCNegPiHypPion%d",i)));
+      fHistMCNegPiHypKaon[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCNegPiHypKaon%d",i)));
+      fHistMCNegPiHypProton[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCNegPiHypProton%d",i)));
+      fHistMCNegKHypPion[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCNegKHypPion%d",i)));
+      fHistMCNegKHypKaon[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCNegKHypKaon%d",i)));
+      fHistMCNegKHypProton[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCNegKHypProton%d",i)));
+      fHistMCNegPHypPion[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCNegPHypPion%d",i)));
+      fHistMCNegPHypKaon[i] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCNegPHypKaon%d",i)));
+      fHistMCNegPHypProton[i]  = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistMCNegPHypProton%d",i)));
+      
     }
   }
   

@@ -163,13 +163,26 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TH1F *fHistMCSecMatDCANegPi[kNbins]; //! histo with DCA distibution, MC truth 
   TH1F *fHistMCSecMatDCANegK[kNbins]; //! histo with DCA distibution, MC truth 
   TH1F *fHistMCSecMatDCANegP[kNbins]; //! histo with DCA distibution, MC truth
- 
-  TH1F *fHistMCPosPi[kNbins]; //! histo with dedx using the MC truth in the pions hypotesis (positive)
-  TH1F *fHistMCPosK[kNbins]; //! histo with dedx  using the MC truth in the kaons hypotesis (positive)
-  TH1F *fHistMCPosP[kNbins]; //! histo with dedx  using the MC truth in the protons hypotesis (positive)
-  TH1F *fHistMCNegPi[kNbins]; //! histo with dedx using the MC truth in the pions hypotesis (negative)
-  TH1F *fHistMCNegK[kNbins]; //! histo with dedx  using the MC truth in the kaons hypotesis (negative)
-  TH1F *fHistMCNegP[kNbins]; //! histo with dedx  using the MC truth in the protons hypotesis (negative)
+  
+  TH1F *fHistMCPosPiHypPion[kNbins]; //! histo with dedx using the MC truth 
+  TH1F *fHistMCPosPiHypKaon[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCPosPiHypProton[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCPosKHypPion[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCPosKHypKaon[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCPosKHypProton[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCPosPHypPion[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCPosPHypKaon[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCPosPHypProton[kNbins]; //! histo with dedx using the MC truth
+  
+  TH1F *fHistMCNegPiHypPion[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCNegPiHypKaon[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCNegPiHypProton[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCNegKHypPion[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCNegKHypKaon[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCNegKHypProton[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCNegPHypPion[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCNegPHypKaon[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCNegPHypProton[kNbins]; //! histo with dedx using the MC truth
   
   TH1F *fHistPosNSigmaMean[3];       //! NSigma histos for 6 species
   TH1F *fHistPosNSigmaMCMean[3];       //! NSigma histos for 6 species
