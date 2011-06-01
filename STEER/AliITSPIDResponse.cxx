@@ -152,7 +152,7 @@ Double_t AliITSPIDResponse::GetResolution(Double_t bethe,
 
 
 //_________________________________________________________________________
-void AliITSPIDResponse::GetITSProbabilities(Float_t mom, Double_t qclu[4], Double_t condprobfun[AliPID::kSPECIES]) const {
+void AliITSPIDResponse::GetITSProbabilities(Float_t mom, Double_t qclu[4], Double_t condprobfun[AliPID::kSPECIES], Bool_t isMC) const {
   //
   // Method to calculate PID probabilities for a single track
   // using the likelihood method
@@ -160,7 +160,7 @@ void AliITSPIDResponse::GetITSProbabilities(Float_t mom, Double_t qclu[4], Doubl
   const Int_t nLay = 4;
   const Int_t nPart = 3;
 
-  static AliITSPidParams pars;  // Pid parametrisation parameters
+  static AliITSPidParams pars(isMC);  // Pid parametrisation parameters
   
   Double_t itsProb[nPart] = {1,1,1}; // p, K, pi
 

@@ -18,14 +18,15 @@
 class AliITSPidParams : public TNamed {
 
  public:
-  AliITSPidParams();
-  AliITSPidParams(Char_t * name);
+  AliITSPidParams(Bool_t isMC = kFALSE);
+  AliITSPidParams(Char_t * name, Bool_t isMC = kFALSE);
   ~AliITSPidParams();
-
+  
   void InitMC();
+  void InitData();
   Double_t GetLandauGausNormPdgCode(Double_t dedx, Int_t pdgCode, Double_t mom, Int_t lay) const;
   Double_t GetLandauGausNorm(Double_t dedx, Int_t partType, Double_t mom, Int_t lay) const;
-
+  
   // pion setters
   void SetSDDPionMPV(const TFormula* form){
     if(fSDDPionMPV) delete fSDDPionMPV;
@@ -167,7 +168,7 @@ class AliITSPidParams : public TNamed {
   }
 
  private:
-
+  
   AliITSPidParams(const AliITSPidParams& rec);
   AliITSPidParams& operator=(const AliITSPidParams &source);
 

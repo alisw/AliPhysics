@@ -32,8 +32,8 @@
 ClassImp(AliITSPidParams)
 
 //______________________________________________________________________
-AliITSPidParams::AliITSPidParams():
-  TNamed("default",""),
+AliITSPidParams::AliITSPidParams(Bool_t isMC):
+TNamed("default",""),
   fSDDPionMPV(0),
   fSDDPionLandauWidth(0),
   fSDDPionGaussWidth(0),
@@ -54,10 +54,11 @@ AliITSPidParams::AliITSPidParams():
   fSSDProtGaussWidth(0)
 {
   // default constructor
-  InitMC();
+  if (isMC) InitMC();
+  else InitData();
 }
 //______________________________________________________________________
-AliITSPidParams::AliITSPidParams(Char_t * name):
+AliITSPidParams::AliITSPidParams(Char_t * name, Bool_t isMC):
   TNamed(name,""),
   fSDDPionMPV(0),
   fSDDPionLandauWidth(0),
@@ -75,11 +76,12 @@ AliITSPidParams::AliITSPidParams(Char_t * name):
   fSDDProtLandauWidth(0),
   fSDDProtGaussWidth(0),
   fSSDProtMPV(0),
-  fSSDProtLandauWidth(0),
+  fSSDProtLandauWidth(0), 
   fSSDProtGaussWidth(0)
 {
   // standard constructor
-  InitMC();
+  if (isMC) InitMC();
+  else InitData();
 }
 //______________________________________________________________________
 AliITSPidParams::~AliITSPidParams(){
@@ -91,11 +93,11 @@ AliITSPidParams::~AliITSPidParams(){
   if(fSSDPionMPV) delete fSSDPionMPV;
   if(fSSDPionLandauWidth) delete fSSDPionLandauWidth;
   if(fSSDPionGaussWidth) delete fSSDPionGaussWidth;
-
+  
   if(fSDDKaonMPV) delete fSDDKaonMPV;
   if(fSDDKaonLandauWidth) delete fSDDKaonLandauWidth;
   if(fSDDKaonGaussWidth) delete fSDDKaonGaussWidth;
-
+  
   if(fSSDKaonMPV) delete fSSDKaonMPV;
   if(fSSDKaonLandauWidth) delete fSSDKaonLandauWidth;
   if(fSSDKaonGaussWidth) delete fSSDKaonGaussWidth;
@@ -117,77 +119,158 @@ void AliITSPidParams::InitMC(){
   // pions
   if(fSDDPionMPV) delete fSDDPionMPV;
   fSDDPionMPV=new TFormula("fSDDPionMPV","[0]/(x*x)*TMath::Log(x)+[1]/(x*x*x*x)*TMath::Log(x)+[2]*TMath::Log(x)+[3]");
-  fSDDPionMPV->SetParameters(-0.690010, 0.002602, 1.185083, 78.454691);
+  fSDDPionMPV->SetParameters(-0.892291, 0.003630, 1.866484, 78.378179);
 
   if(fSDDPionLandauWidth) delete fSDDPionLandauWidth;
   fSDDPionLandauWidth=new TFormula("fSDDPionLandauWidth","[0]/(x*x)+[1]");
-  fSDDPionLandauWidth->SetParameters(0.061606, 5.960376);
+  fSDDPionLandauWidth->SetParameters(0.080999, 5.917715);
 
   if(fSDDPionGaussWidth) delete fSDDPionGaussWidth;
   fSDDPionGaussWidth=new TFormula("fSDDPionGaussWidth","[0]/(x*x)*TMath::Log(x)+[1]");
-  fSDDPionGaussWidth->SetParameters(-0.065307, 7.896339);
+  fSDDPionGaussWidth->SetParameters(-0.092822, 7.839729);
 
   if(fSSDPionMPV) delete fSSDPionMPV;
   fSSDPionMPV=new TFormula("fSSDPionMPV","[0]/(x*x)*TMath::Log(x)+[1]/(x*x*x*x)*TMath::Log(x)+[2]*TMath::Log(x)+[3]");
-  fSSDPionMPV->SetParameters(-0.699466, 0.002429, 1.366895, 80.759188);
+  fSSDPionMPV->SetParameters(-0.896507, 0.003173, 2.017155, 80.682567);
 
   if(fSSDPionLandauWidth) delete fSSDPionLandauWidth;
   fSSDPionLandauWidth=new TFormula("fSSDPionLandauWidth","[0]/(x*x)+[1]");
-  fSSDPionLandauWidth->SetParameters(0.066319, 5.889438);
+  fSSDPionLandauWidth->SetParameters(0.087182, 5.843610);
 
   if(fSSDPionGaussWidth) delete fSSDPionGaussWidth;
   fSSDPionGaussWidth=new TFormula("fSSDPionGaussWidth","[0]/(x*x)*TMath::Log(x)+[1]");
-  fSSDPionGaussWidth->SetParameters(-0.077798, 5.903887);
+  fSSDPionGaussWidth->SetParameters(-0.110444, 5.837737);
 
   // kaons
   if(fSDDKaonMPV) delete fSDDKaonMPV;
-  fSDDKaonMPV=new TFormula("fSDDKaonMPV","[0]/(x*x)+[1]/(x*x*x*x)*TMath::Log(x)+[2]");
-  fSDDKaonMPV->SetParameters(15.924230, 0.085357, 73.528107);
+  fSDDKaonMPV=new TFormula("fSDDKaonMPV","[0]/(x*x)+[1]/(x*x*x*x)+[2]");
+  fSDDKaonMPV->SetParameters(17.581590, -0.120134, 72.550701);
 
   if(fSDDKaonLandauWidth) delete fSDDKaonLandauWidth;
   fSDDKaonLandauWidth=new TFormula("fSDDKaonLandauWidth","[0]/(x*x)+[1]");
-  fSDDKaonLandauWidth->SetParameters(1.121062, 5.925409);
+  fSDDKaonLandauWidth->SetParameters(1.271756, 5.778888);
 
   if(fSDDKaonGaussWidth) delete fSDDKaonGaussWidth;
-  fSDDKaonGaussWidth=new TFormula("fSDDKaonGaussWidth","[0]/(x*x)+[1]");
-  fSDDKaonGaussWidth->SetParameters(2.010609, 5.973445);
+  fSDDKaonGaussWidth=new TFormula("fSDDKaonGaussWidth","[0]/(x*x)*TMath::Log(x)+[1]");
+  fSDDKaonGaussWidth->SetParameters(-1.650298, 8.322084);
 
   if(fSSDKaonMPV) delete fSSDKaonMPV;
-  fSSDKaonMPV=new TFormula("fSSDKaonMPV","[0]/(x*x)+[1]/(x*x*x*x)*TMath::Log(x)+[2]");
-  fSSDKaonMPV->SetParameters(15.197250, 0.016714, 76.446132);
+  fSSDKaonMPV=new TFormula("fSSDKaonMPV","[0]/(x*x)+[1]/(x*x*x*x)+[2]");
+  fSSDKaonMPV->SetParameters(16.238778, 0.039318, 75.863719);
 
   if(fSSDKaonLandauWidth) delete fSSDKaonLandauWidth;
   fSSDKaonLandauWidth=new TFormula("fSSDKaonLandauWidth","[0]/(x*x)+[1]");
-  fSSDKaonLandauWidth->SetParameters(1.036749, 6.106413);
+  fSSDKaonLandauWidth->SetParameters(1.179541, 5.961353);
 
   if(fSSDKaonGaussWidth) delete fSSDKaonGaussWidth;
-  fSSDKaonGaussWidth=new TFormula("fSSDKaonGaussWidth","[0]/(x*x)+[1]");
-  fSSDKaonGaussWidth->SetParameters(2.426498, 3.383779);
+  fSSDKaonGaussWidth=new TFormula("fSSDKaonGaussWidth","[0]/(x*x)*TMath::Log(x)+[1]");
+  fSSDKaonGaussWidth->SetParameters(-2.019126, 6.155977);
 
   // protons
   if(fSDDProtMPV) delete fSDDProtMPV;
-  fSDDProtMPV=new TFormula("fSDDProtMPV","[0]/(x*x)+[1]/(x*x*x*x)*TMath::Log(x)+[2]");
-  fSDDProtMPV->SetParameters(56.888592, 1.115447, 75.416075);
+  fSDDProtMPV=new TFormula("fSDDProtMPV","[0]/(x*x)+[1]/(x*x*x*x)+[2]");
+  fSDDProtMPV->SetParameters(64.482762, -1.667823, 71.850731);
 
   if(fSDDProtLandauWidth) delete fSDDProtLandauWidth;
   fSDDProtLandauWidth=new TFormula("fSDDProtLandauWidth","[0]/(x*x)+[1]");
-  fSDDProtLandauWidth->SetParameters(6.350805, 4.312568);
+  fSDDProtLandauWidth->SetParameters(6.948997, 3.928018);
 
   if(fSDDProtGaussWidth) delete fSDDProtGaussWidth;
-  fSDDProtGaussWidth=new TFormula("fSDDProtGaussWidth","[0]/(x*x)+[1]");
-  fSDDProtGaussWidth->SetParameters(6.556759, 5.953683);
+  fSDDProtGaussWidth=new TFormula("fSDDProtGaussWidth","[0]/(x*x)*TMath::Log(x)+[1]");
+  fSDDProtGaussWidth->SetParameters(-6.522760, 12.673959);
 
   if(fSSDProtMPV) delete fSSDProtMPV;
-  fSSDProtMPV=new TFormula("fSSDProtMPV","[0]/(x*x)+[1]/(x*x*x*x)*TMath::Log(x)+[2]");
-  fSSDProtMPV->SetParameters(57.385512, 0.884585, 76.138989);
+  fSSDProtMPV=new TFormula("fSSDProtMPV","[0]/(x*x)+[1]/(x*x*x*x)+[2]");
+  fSSDProtMPV->SetParameters(63.817375, -1.221779, 73.233644);
 
   if(fSSDProtLandauWidth) delete fSSDProtLandauWidth;
   fSSDProtLandauWidth=new TFormula("fSSDProtLandauWidth","[0]/(x*x)+[1]");
-  fSSDProtLandauWidth->SetParameters(6.653282, 3.997930);
+  fSSDProtLandauWidth->SetParameters(7.286942, 3.581451);
+
+  if(fSSDProtGaussWidth) delete fSSDProtGaussWidth;
+  fSSDProtGaussWidth=new TFormula("fSSDProtGaussWidth","[0]/(x*x)*TMath::Log(x)+[1]");
+  fSSDProtGaussWidth->SetParameters(-8.327867, 9.723422);
+
+}
+//______________________________________________________________________
+void AliITSPidParams::InitData(){
+  // initialize TFormulas to Real Data values (=p-p simulations PYTHIA+GEANT)
+  // parameter values from LHC10b 
+  
+  // pions
+  if(fSDDPionMPV) delete fSDDPionMPV;
+  fSDDPionMPV=new TFormula("fSDDPionMPV","[0]/(x*x)*TMath::Log(x)+[1]/(x*x*x*x)*TMath::Log(x)+[2]*TMath::Log(x)+[3]");
+  fSDDPionMPV->SetParameters(-0.907609, 0.006521, 3.340347, 81.297942);
+
+  if(fSDDPionLandauWidth) delete fSDDPionLandauWidth;
+  fSDDPionLandauWidth=new TFormula("fSDDPionLandauWidth","[0]/(x*x)+[1]");
+  fSDDPionLandauWidth->SetParameters(0.077272, 5.478557);
+
+  if(fSDDPionGaussWidth) delete fSDDPionGaussWidth;
+  fSDDPionGaussWidth=new TFormula("fSDDPionGaussWidth","[0]/(x*x)*TMath::Log(x)+[1]");
+  fSDDPionGaussWidth->SetParameters(-0.098529, 10.265711);
+
+  if(fSSDPionMPV) delete fSSDPionMPV;
+  fSSDPionMPV=new TFormula("fSSDPionMPV","[0]/(x*x)*TMath::Log(x)+[1]/(x*x*x*x)*TMath::Log(x)+[2]*TMath::Log(x)+[3]");
+  fSSDPionMPV->SetParameters(-0.920046, 0.006061, 3.428578, 81.401816);
+
+  if(fSSDPionLandauWidth) delete fSSDPionLandauWidth;
+  fSSDPionLandauWidth=new TFormula("fSSDPionLandauWidth","[0]/(x*x)+[1]");
+  fSSDPionLandauWidth->SetParameters(0.071243, 5.388830);
+
+  if(fSSDPionGaussWidth) delete fSSDPionGaussWidth;
+  fSSDPionGaussWidth=new TFormula("fSSDPionGaussWidth","[0]/(x*x)*TMath::Log(x)+[1]");
+  fSSDPionGaussWidth->SetParameters(-0.099189, 7.412309);
+
+  // kaons
+  if(fSDDKaonMPV) delete fSDDKaonMPV;
+  fSDDKaonMPV=new TFormula("fSDDKaonMPV","[0]/(x*x)+[1]/(x*x*x*x)+[2]");
+  fSDDKaonMPV->SetParameters(15.429146, 0.178251, 74.640293);
+
+  if(fSDDKaonLandauWidth) delete fSDDKaonLandauWidth;
+  fSDDKaonLandauWidth=new TFormula("fSDDKaonLandauWidth","[0]/(x*x)+[1]");
+  fSDDKaonLandauWidth->SetParameters(0.975202, 5.699311);
+
+  if(fSDDKaonGaussWidth) delete fSDDKaonGaussWidth;
+  fSDDKaonGaussWidth=new TFormula("fSDDKaonGaussWidth","[0]/(x*x)+[1]");
+  fSDDKaonGaussWidth->SetParameters(1.660840, 9.389192);
+
+  if(fSSDKaonMPV) delete fSSDKaonMPV;
+  fSSDKaonMPV=new TFormula("fSSDKaonMPV","[0]/(x*x)+[1]/(x*x*x*x)+[2]");
+  fSSDKaonMPV->SetParameters(15.170715, 0.181379, 74.951884);
+
+  if(fSSDKaonLandauWidth) delete fSSDKaonLandauWidth;
+  fSSDKaonLandauWidth=new TFormula("fSSDKaonLandauWidth","[0]/(x*x)+[1]");
+  fSSDKaonLandauWidth->SetParameters(0.756466, 5.818274);
+
+  if(fSSDKaonGaussWidth) delete fSSDKaonGaussWidth;
+  fSSDKaonGaussWidth=new TFormula("fSSDKaonGaussWidth","[0]/(x*x)+[1]");
+  fSSDKaonGaussWidth->SetParameters(1.546693, 6.389872);
+
+  // protons
+  if(fSDDProtMPV) delete fSDDProtMPV;
+  fSDDProtMPV=new TFormula("fSDDProtMPV","[0]/(x*x)+[1]/(x*x*x*x)+[2]");
+  fSDDProtMPV->SetParameters(61.452534, 0.372908, 71.668352);
+
+  if(fSDDProtLandauWidth) delete fSDDProtLandauWidth;
+  fSDDProtLandauWidth=new TFormula("fSDDProtLandauWidth","[0]/(x*x)+[1]");
+  fSDDProtLandauWidth->SetParameters(3.667023, 5.430721);
+
+  if(fSDDProtGaussWidth) delete fSDDProtGaussWidth;
+  fSDDProtGaussWidth=new TFormula("fSDDProtGaussWidth","[0]/(x*x)+[1]");
+  fSDDProtGaussWidth->SetParameters(5.503814, 9.657439);
+
+  if(fSSDProtMPV) delete fSSDProtMPV;
+  fSSDProtMPV=new TFormula("fSSDProtMPV","[0]/(x*x)+[1]/(x*x*x*x)+[2]");
+  fSSDProtMPV->SetParameters(60.246538, 0.000323, 71.992031);
+
+  if(fSSDProtLandauWidth) delete fSSDProtLandauWidth;
+  fSSDProtLandauWidth=new TFormula("fSSDProtLandauWidth","[0]/(x*x)+[1]");
+  fSSDProtLandauWidth->SetParameters(2.568323, 5.939774);
 
   if(fSSDProtGaussWidth) delete fSSDProtGaussWidth;
   fSSDProtGaussWidth=new TFormula("fSSDProtGaussWidth","[0]/(x*x)+[1]");
-  fSSDProtGaussWidth->SetParameters(8.203296, 1.491822);
+  fSSDProtGaussWidth->SetParameters(5.050541, 6.290964);
 
 }
 //_______________________________________________________________________
@@ -199,9 +282,9 @@ Double_t AliITSPidParams::GetLandauGausNormPdgCode(Double_t dedx, Int_t pdgCode,
   else return 0.;
 }
 //_______________________________________________________________________
-  Double_t AliITSPidParams::GetLandauGausNorm(Double_t dedx, Int_t partType, Double_t mom, Int_t lay) const{
+Double_t AliITSPidParams::GetLandauGausNorm(Double_t dedx, Int_t partType, Double_t mom, Int_t lay) const{
   // Computes Landau Gauss convolution for given particle specie and given momentum in a given ITS layer
-
+  
   Double_t par[3];
   Bool_t isSet=kFALSE;
   if(partType==AliPID::kPion){

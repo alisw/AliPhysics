@@ -31,7 +31,7 @@ public:
  Double_t BetheAleph(Double_t p,Double_t mass) const;
  Double_t Bethe(Double_t p, Double_t mass, Bool_t iSA=kFALSE) const;
  Double_t GetResolution(Double_t bethe, Int_t nPtsForPid=4, Bool_t isSA=kFALSE) const;
- void GetITSProbabilities(Float_t mom, Double_t qclu[4], Double_t condprobfun[AliPID::kSPECIES]) const;
+ void GetITSProbabilities(Float_t mom, Double_t qclu[4], Double_t condprobfun[AliPID::kSPECIES],Bool_t isMC=kFALSE) const;
  Float_t GetNumberOfSigmas(Float_t mom, Float_t signal, AliPID::EParticleType type, Int_t nPtsForPid=4, Bool_t isSA=kFALSE) const {
    Float_t bethe = Bethe(mom,AliPID::ParticleMass(type),isSA);
    return (signal - bethe)/GetResolution(bethe,nPtsForPid,isSA);
