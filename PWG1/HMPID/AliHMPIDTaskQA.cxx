@@ -231,7 +231,7 @@ void AliHMPIDTaskQA::ConnectInputData(Option_t *option)
 //___________________________________________________________________________
 void AliHMPIDTaskQA::UserExec(Option_t *)
 {
-  Double_t priors[5]={1.,1.,1.,1.,1.}; //{0.01,0.01,0.83,0.10,0.5};
+  Double_t priors[10]={1.,1.,1.,1.,1.,0.,0.,0.,0.,0.}; //{0.01,0.01,0.83,0.10,0.5};
   Double_t probs[5];
   AliPID *pPid = new AliPID();
   pPid->SetPriors(priors);
