@@ -80,7 +80,7 @@ public:
   Bool_t                 IsSet(DETECTORINDEX_t det, ALITASK_t tsk, QABIT_t bit) const ;
   Bool_t                 IsSetAny(DETECTORINDEX_t det, ALITASK_t tsk) const ;
   Bool_t                 IsSetAny(DETECTORINDEX_t det) const ;
-	void                   Merge(TCollection * list) ; 
+	Long64_t         Merge(TCollection * list) ; 
 	void                   Set(QABIT_t bit) ;
 	static void			       SetQAResultDirName(const char * name) ; 
 	static void            SetQARefStorage(const char * name) ; 

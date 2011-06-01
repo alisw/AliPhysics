@@ -544,23 +544,26 @@ AliQA *  AliQA::Instance(const TASKINDEX_t tsk)
 }
 
 //_______________________________________________________________
-void AliQA::Merge(TCollection * list) {
-	// Merge the QA resuls in the list into this single AliQA object
-	
-	for (Int_t det = 0 ; det < kNDET ; det++) {
-		Set(DETECTORINDEX_t(det)) ; 
-		for (Int_t task = 0 ; task < kNTASK ; task++) {
-			Set(ALITASK_t(task)) ; 
-			for (Int_t bit = 0 ; bit < kNBIT ; bit++) {
-				TIter next(list) ;
-				AliQA * qa ; 
-				while ( (qa = (AliQA*)next() ) ) {
-					qa->IsSet(DETECTORINDEX_t(det), ALITASK_t(task), QABIT_t(bit)) ;
-					Set(QABIT_t(bit)) ; 
-				} // qa list
-			} // bit
-		} // task
-	} // detector
+Long64_t AliQA::Merge(TCollection * list) {
+  // Merge the QA resuls in the list into this single AliQA object
+  
+  Long64_t nmerge=0;
+  for (Int_t det = 0 ; det < kNDET ; det++) {
+    Set(DETECTORINDEX_t(det)) ; 
+    for (Int_t task = 0 ; task < kNTASK ; task++) {
+      Set(ALITASK_t(task)) ; 
+      for (Int_t bit = 0 ; bit < kNBIT ; bit++) {
+	TIter next(list) ;
+	AliQA * qa ; 
+	while ( (qa = (AliQA*)next() ) ) {
+	  ++nmerge;
+	  qa->IsSet(DETECTORINDEX_t(det), ALITASK_t(task), QABIT_t(bit)) ;
+	  Set(QABIT_t(bit)) ; 
+	} // qa list
+      } // bit
+    } // task
+  } // detector
+  return nmerge;
 }
 
 //_______________________________________________________________
