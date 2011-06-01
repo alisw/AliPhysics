@@ -43,11 +43,11 @@
 #endif
 
 
-// .x PlotMuonQA.C("alien:///alice/cern.ch/user/c/cynthia/muon/QA/pp/LHC10e/pass2_test/results",0,kFALSE)
-// .x PlotMuonQA.C("/Users/cynthia/Documents/alice/data/MuonQA/results",0,kFALSE)
-// .x PlotMuonQA.C("/Users/cynthia/Documents/alice/data/MuonQA/results","/Users/cynthia/Documents/alice/data/MuonQA/LHC10e/pass2/runlist_period3_test3_3runs.txt",kFALSE)
+// .x PlotMuonQApp.C("alien:///alice/cern.ch/user/c/cynthia/muon/QA/pp/LHC10e/pass2_test/results",0,kFALSE)
+// .x PlotMuonQApp.C("/Users/cynthia/Documents/alice/data/MuonQA/results",0,kFALSE)
+// .x PlotMuonQApp.C("/Users/cynthia/Documents/alice/data/MuonQA/results","/Users/cynthia/Documents/alice/data/MuonQA/LHC10e/pass2/runlist_period3_test3_3runs.txt",kFALSE)
 //--------------------------------------------------------------------------
-void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhysics = kFALSE)
+void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, Bool_t selectPhysics = kFALSE)
 {
   /// Macro for QA monitoring.
   /// Example: baseDir = "alien:///alice/cern.ch/user/p/ppillot/pp7TeV/LHC10d/MuonQA/pass1/results/".
@@ -119,7 +119,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
     // only the ones in the runList
     ifstream inFile(runList);
     if (!inFile.is_open()) {
-      Error("PlotQA",Form("unable to open file %s", runList));
+      Error("PlotMUONQApp",Form("unable to open file %s", runList));
       return;
     }
     
@@ -128,7 +128,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
       currRun.ReadLine(inFile, kTRUE);
       if (currRun.IsNull()) continue;
       if (!currRun.IsDigit()) {
-	Error("PlotQA","invalid run number: %s", currRun.Data());
+	Error("PlotMUONQApp","invalid run number: %s", currRun.Data());
 	return;
       }
       runs.AddLast(new TObjString(Form("%09d", currRun.Atoi())));
@@ -169,95 +169,115 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   
   // Histo trigger without Phys. Sel. 
   TH1* hAllTriggersNoPS = eventCounters->Draw("run",Form("trigger:CINT1B,CMUS1B,CSH1B/%s", selectRuns.Data()));
-	if(!hAllTriggersNoPS) return;
+  if(!hAllTriggersNoPS) return;
   hAllTriggersNoPS->Sumw2();
+	hAllTriggersNoPS->LabelsOption("a");
   TH1* hCINT1BNoPS = eventCounters->Draw("run",Form("trigger:CINT1B/%s", selectRuns.Data()));
-	if(!hCINT1BNoPS) return;
+  if(!hCINT1BNoPS) return;
   hCINT1BNoPS->Sumw2();
+	hCINT1BNoPS->LabelsOption("a");
   Int_t NumOfCINT1BNoPS = hCINT1BNoPS->Integral();
   TH1* hCMUS1BNoPS = eventCounters->Draw("run",Form("trigger:CMUS1B/%s", selectRuns.Data()));
-	if(!hCMUS1BNoPS) return;
+  if(!hCMUS1BNoPS) return;
   hCMUS1BNoPS->Sumw2();
+	hCMUS1BNoPS->LabelsOption("a");
   Int_t NumOfCMUS1BNoPS = hCMUS1BNoPS->Integral();
   TH1* hCSH1BNoPS = eventCounters->Draw("run",Form("trigger:CSH1B/%s", selectRuns.Data()));
-	Int_t NumOfCSH1BNoPS = 0;
-	if(!hCMUS1BNoPS) return;
-	hCSH1BNoPS->Sumw2();
-	NumOfCSH1BNoPS = hCSH1BNoPS->Integral();
-	
+  Int_t NumOfCSH1BNoPS = 0;
+  if(!hCMUS1BNoPS) return;
+  hCSH1BNoPS->Sumw2();
+	hCSH1BNoPS->LabelsOption("a");
+  NumOfCSH1BNoPS = hCSH1BNoPS->Integral();
+  
 
   // Histo trigger with Phys. Sel. 
   TH1* hAllTriggersWithPS = eventCounters->Draw("run",Form("trigger:CINT1B,CMUS1B,CSH1B/%s/selected:yes", selectRuns.Data()));
   hAllTriggersWithPS->Sumw2();
+	hAllTriggersWithPS->LabelsOption("a");
   TH1* hCINT1BWithPS = eventCounters->Draw("run",Form("trigger:CINT1B/%s/selected:yes", selectRuns.Data()));
   hCINT1BWithPS->Sumw2();
+	hCINT1BWithPS->LabelsOption("a");
   Int_t NumOfCINT1BWithPS = hCINT1BWithPS->Integral();
   TH1* hCMUS1BWithPS = eventCounters->Draw("run",Form("trigger:CMUS1B/%s/selected:yes", selectRuns.Data()));
   hCMUS1BWithPS->Sumw2();
+	hCMUS1BWithPS->LabelsOption("a");
   Int_t NumOfCMUS1BWithPS = hCMUS1BWithPS->Integral();
   TH1* hCSH1BWithPS = eventCounters->Draw("run",Form("trigger:CSH1B/%s/selected:yes", selectRuns.Data()));
   hCSH1BWithPS->Sumw2();
+	hCSH1BWithPS->LabelsOption("a");
   Int_t NumOfCSH1BWithPS = hCSH1BWithPS->Integral();
 
   //Background estimator in CMUS1
   TH1* hCMUS1ACNoPS = eventCounters->Draw("run",Form("trigger:CMUS1AC/%s", selectRuns.Data()));
   hCMUS1ACNoPS->Sumw2();
+	hCMUS1ACNoPS->LabelsOption("a");
   TH1* hCMUS1ENoPS = eventCounters->Draw("run",Form("trigger:CMUS1E/%s", selectRuns.Data()));
 	Int_t NumOfCMUS1ENoPS = 0;
 	if(hCMUS1ENoPS){
 		hCMUS1ENoPS->Sumw2();
+		hCMUS1ENoPS->LabelsOption("a");
 		NumOfCMUS1ENoPS = hCMUS1ENoPS->Integral();
 	}
 
   // Histo trigger : Phys. Sel.  is selected or not depending on the macro arguments
   TH1* hAllTriggers = eventCounters->Draw("run",Form("trigger:CINT1B,CMUS1B,CSH1B/%s/%s", selectRuns.Data(), select.Data()));
   hAllTriggers->Sumw2();
+	  hAllTriggers->LabelsOption("a");	
   TH1* hCINT1B = eventCounters->Draw("run",Form("trigger:CINT1B/%s/%s", selectRuns.Data(), select.Data()));
   hCINT1B->Sumw2();
+	  hCINT1B->LabelsOption("a");
   TH1* hCMUS1B = eventCounters->Draw("run",Form("trigger:CMUS1B/%s/%s", selectRuns.Data(), select.Data()));
   hCMUS1B->Sumw2();
+	  hCMUS1B->LabelsOption("a");
   TH1* hCSH1B = eventCounters->Draw("run",Form("trigger:CSH1B/%s/%s", selectRuns.Data(), select.Data()));
   hCSH1B->Sumw2();
+	  hCSH1B->LabelsOption("a");
 
   // Histo tracking : Phys. Sel.  is selected or not depending on the macro arguments
   TH1* hTriggerCINT1B = trackCounters->Draw("run",Form("track:triggeronly/trigger:CINT1B/%s/%s", selectRuns.Data(), select.Data()));
   hTriggerCINT1B->Sumw2();
+	  hTriggerCINT1B->LabelsOption("a");
   TH1* hTrackerCINT1B = trackCounters->Draw("run",Form("track:trackeronly/trigger:CINT1B/%s/%s", selectRuns.Data(), select.Data()));
   hTrackerCINT1B->Sumw2();
+	  hTrackerCINT1B->LabelsOption("a");
   TH1* hMatchedCINT1B = trackCounters->Draw("run",Form("track:matched/trigger:CINT1B/%s/%s", selectRuns.Data(), select.Data()));
   hMatchedCINT1B->Sumw2();
+	  hMatchedCINT1B->LabelsOption("a");
   TH1* hTriggerCMUS1B = trackCounters->Draw("run",Form("track:triggeronly/trigger:CMUS1B/%s/%s", selectRuns.Data(), select.Data()));
   hTriggerCMUS1B->Sumw2();
+	  hTriggerCMUS1B->LabelsOption("a");
   TH1* hTrackerCMUS1B = trackCounters->Draw("run",Form("track:trackeronly/trigger:CMUS1B/%s/%s", selectRuns.Data(), select.Data()));
-  hTrackerCMUS1B->Sumw2();
+  hTrackerCMUS1B->Sumw2();  hTrackerCMUS1B->LabelsOption("a");
   TH1* hMatchedCMUS1B = trackCounters->Draw("run",Form("track:matched/trigger:CMUS1B/%s/%s", selectRuns.Data(), select.Data()));
-  hMatchedCMUS1B->Sumw2();
+  hMatchedCMUS1B->Sumw2();  hMatchedCMUS1B->LabelsOption("a");
   TH1* hAllTracksCINT1B = trackCounters->Draw("run",Form("trigger:CINT1B/%s/%s", selectRuns.Data(), select.Data()));
-  hAllTracksCINT1B->Sumw2();
+  hAllTracksCINT1B->Sumw2();  hAllTracksCINT1B->LabelsOption("a");
   TH1* hAllTracksCMUS1B = trackCounters->Draw("run",Form("trigger:CMUS1B/%s/%s", selectRuns.Data(), select.Data()));
-  hAllTracksCMUS1B->Sumw2();
+  hAllTracksCMUS1B->Sumw2();  hAllTracksCMUS1B->LabelsOption("a");
   
-  TH1* hMatchedLowPtCMUS1B = trackCounters->Draw("run",Form("track:matched/trigger:CMUS1B/%s/%s/pt:low", selectRuns.Data(), select.Data()));
-  hMatchedLowPtCMUS1B->Sumw2();
-  TH1* hMatchedHighPtCMUS1B = trackCounters->Draw("run",Form("track:matched/trigger:CMUS1B/%s/%s/pt:high", selectRuns.Data(), select.Data()));
-  hMatchedHighPtCMUS1B->Sumw2();
+  TH1* hMatchedLowPtCMUS1B = trackCounters->Draw("run",Form("track:matched/trigger:CMUS1B/%s/%s/pt:low/acc:in", selectRuns.Data(), select.Data()));
+  hMatchedLowPtCMUS1B->Sumw2();  hMatchedLowPtCMUS1B->LabelsOption("a");
+  TH1* hMatchedHighPtCMUS1B = trackCounters->Draw("run",Form("track:matched/trigger:CMUS1B/%s/%s/pt:high/acc:in", selectRuns.Data(), select.Data()));
+  hMatchedHighPtCMUS1B->Sumw2();  hMatchedHighPtCMUS1B->LabelsOption("a");
 
-  TH1 *hPosMatched =  trackCounters->Draw("run",Form("track:matched/%s/charge:pos/%s",select.Data(),selectRuns.Data()));
-  hPosMatched->Sumw2();
-  TH1 *hNegMatched =  trackCounters->Draw("run",Form("track:matched/%s/charge:neg/%s",select.Data(),selectRuns.Data())); 
-  hNegMatched->Sumw2();
-  TH1 *hAllMatched=  trackCounters->Draw("run",Form("track:matched/%s/%s",select.Data(),selectRuns.Data())); 
-  hAllMatched->Sumw2();
+  TH1 *hPosMatched =  trackCounters->Draw("run",Form("track:matched/%s/charge:pos/%s/acc:in",select.Data(),selectRuns.Data()));
+  hPosMatched->Sumw2();  hPosMatched->LabelsOption("a");
+  TH1 *hNegMatched =  trackCounters->Draw("run",Form("track:matched/%s/charge:neg/%s/acc:in",select.Data(),selectRuns.Data())); 
+  hNegMatched->Sumw2();  hNegMatched->LabelsOption("a");
+  TH1 *hAllMatched=  trackCounters->Draw("run",Form("track:matched/%s/%s/acc:in",select.Data(),selectRuns.Data())); 
+  hAllMatched->Sumw2();  hAllMatched->LabelsOption("a");
    // for CMUS1B only 
-  TH1 *hPosMatchedCMUS1B =  trackCounters->Draw("run",Form("track:matched/%s/charge:pos/trigger:CMUS1B/%s",select.Data(),selectRuns.Data()));
-  hPosMatchedCMUS1B->Sumw2();
-  TH1 *hNegMatchedCMUS1B=  trackCounters->Draw("run",Form("track:matched/%s/charge:neg/trigger:CMUS1B/%s",select.Data(),selectRuns.Data())); 
-  hNegMatchedCMUS1B->Sumw2();
-  TH1 *hAllMatchedCMUS1B=  trackCounters->Draw("run",Form("track:matched/%s/trigger:CMUS1B/%s",select.Data(),selectRuns.Data())); 
-  hAllMatchedCMUS1B->Sumw2();
+  TH1 *hPosMatchedCMUS1B =  trackCounters->Draw("run",Form("track:matched/%s/charge:pos/trigger:CMUS1B/%s/acc:in",select.Data(),selectRuns.Data()));
+  hPosMatchedCMUS1B->Sumw2();  hPosMatchedCMUS1B->LabelsOption("a");
+  TH1 *hNegMatchedCMUS1B=  trackCounters->Draw("run",Form("track:matched/%s/charge:neg/trigger:CMUS1B/%s/acc:in",select.Data(),selectRuns.Data())); 
+  hNegMatchedCMUS1B->Sumw2();  hNegMatchedCMUS1B->LabelsOption("a");
+  TH1 *hAllMatchedCMUS1B=  trackCounters->Draw("run",Form("track:matched/%s/trigger:CMUS1B/%s/acc:in",select.Data(),selectRuns.Data())); 
+  hAllMatchedCMUS1B->Sumw2();  hAllMatchedCMUS1B->LabelsOption("a");
 
-  //TH1* hAll = eventCounters->Draw("trigger","run","run:any");
-  //hAll->Draw();
+  TH1* hAll = eventCounters->Draw("trigger","run",Form("run:any/%s",select.Data()));
+  hAll->LabelsOption("a");
+  hAll->Draw("TEXT");
+
   
   //===================================================================================
   // Put all plots in a ps file, easier to publish (Twiki)
@@ -268,6 +288,24 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
 
   TFile *rootFileOut = TFile::Open(OutFileNameROOT.Data(),"RECREATE");
   
+  //===================================================================================
+  // new canvas with the total number of trigger
+  /*
+  CanvasName =  LHCPeriod.Data() ; 
+  CanvasName += "_TriggerContent"; 
+  TCanvas *cTriggerContent = new TCanvas(CanvasName.Data(),"cTriggerContent",1200,900);
+  cTriggerContent->SetTopMargin(0.05);
+  cTriggerContent->SetRightMargin(0.01);
+  cTriggerContent->SetGridy(1);
+  cTriggerContent->cd();
+
+  hAll->Draw("TEXT");
+	hAll->SetMaximum(1.5);
+  hAll->SetMinimum(0.001);
+  hAll->SetTitle("");
+  hAll->SetLabelSize(0.02);
+  hAll->GetYaxis()->SetTitle("Trigger content w/ and w/o Phys. Sel."); 
+	*/
   //===================================================================================
   // new canvas with the relative content of each trigger w/ and w/o  physics selection
   TH1 *ratioCMUS1B = static_cast<TH1*>(hCMUS1BWithPS->Clone("ratioCMUS1B"));
@@ -282,7 +320,6 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   ratioCSH1B->Divide(hAllTriggersNoPS);
   ratioCSH1B->SetLineColor(kGreen);
   ratioCSH1B->SetLineWidth(2);
-
   TH1 *ratioCMUS1BNoPS = static_cast<TH1*>(hCMUS1BNoPS->Clone("ratioCMUS1BNoPS"));
   ratioCMUS1BNoPS->Divide(hAllTriggersNoPS);
   ratioCMUS1BNoPS->SetLineColor(kRed);
@@ -323,7 +360,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   ratioCMUS1B->SetLabelSize(0.02);
   ratioCMUS1B->GetYaxis()->SetTitle("Relative trigger content w/ and w/o Phys. Sel."); 
 
-  ratioCMUS1B->Draw();
+  ratioCMUS1B->Draw("E");
   ratioCINT1B->Draw("ESAME");
   ratioCSH1B->Draw("ESAME");
   ratioCINT1BNoPS->Draw("EPSAME");
@@ -374,7 +411,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   ratioBckCMUS1BNoPS->SetLabelSize(0.02);
   ratioBckCMUS1BNoPS->GetYaxis()->SetTitle("Ratio"); 
 
-  ratioBckCMUS1BNoPS->Draw();
+  ratioBckCMUS1BNoPS->Draw("E");
   ratioBckCMUS1BWithPS->Draw("ESAME");
 
   TLegend* legcBTS = new TLegend(0.2,0.25,0.50,0.40);
@@ -402,7 +439,6 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   hMatchedPerCINT1B->Divide(hCINT1B);
   hMatchedPerCINT1B->SetLineWidth(2);
   hMatchedPerCINT1B->SetLineColor(kViolet);
-
 
   TH1* hAllTracksPerCINT1B= static_cast<TH1*>(hAllTracksCINT1B->Clone("hAllTracksPerCINT1B"));
   hAllTracksPerCINT1B->Divide(hCINT1B);
@@ -619,7 +655,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   cRatioTrackCMUS1B->Write();
 
   //==================================================
-  // Draw matched tracks asymetry :  
+  // Draw matched tracks asymmetry :  
   // for all triggers  
   TH1 *hDiffMatched= static_cast<TH1*>(hPosMatched->Clone("hDiffMatched"));
   hDiffMatched->Add(hNegMatched,-1);
@@ -642,7 +678,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   hAsymMatchedCMUS1B->SetMinimum(-0.1);
   hAsymMatchedCMUS1B->SetMaximum(0.1);
   hAsymMatchedCMUS1B->SetLabelSize(0.02);
-  hAsymMatchedCMUS1B->SetTitle("Matched tracks asymetry in Physics Selected events for CMUS1B");
+  hAsymMatchedCMUS1B->SetTitle("Matched tracks asymmetry for CMUS1B with acc. cuts");
   
   CanvasName =  LHCPeriod.Data() ; 
   CanvasName += "_AsymMatched"; 
@@ -650,7 +686,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   cAsymMatched->SetRightMargin(0.01);
   cAsymMatched->SetGridy(1);
   cAsymMatched->cd();
-  hAsymMatchedCMUS1B->GetYaxis()->SetTitle("Asymetry");  
+  hAsymMatchedCMUS1B->GetYaxis()->SetTitle("Asymmetry");  
   hAsymMatchedCMUS1B->Draw("EH");
 
   cAsymMatched->Print(OutFileNamePDF.Data());
@@ -711,12 +747,17 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   TH1F* hChi2_Mean = new TH1F("hChi2_Mean", "averaged normalized #chi^{2} distribution;run;<#chi^{2} / ndf>",10000,1,10000);
   TH1F* hChi2_Sigma = new TH1F("hChi2_Sigma", "dispersion of normalized #chi^{2} distribution;run;#sigma_{#chi^{2} / ndf}",10000,1,10000);
   TH1F* hNClustersInCh[10];
-  for (Int_t ich=0; ich<10; ich++) hNClustersInCh[ich] = new TH1F(Form("hNClustersInCh%d",ich+1), Form("averaged number of clusters in chamber %d per track;run;<n_{clusters}>",ich+1),10000,1,10000);
+  for (Int_t ich=0; ich<10; ich++){
+    hNClustersInCh[ich] = new TH1F(Form("hNClustersInCh%d",ich+1), Form("averaged number of clusters in chamber %d per track;run;<n_{clusters}>",ich+1),10000,1,10000);
+  }
   TH1F* hClusterHitMapXInCh[10];
-  for (Int_t ich=0; ich<10; ich++) hClusterHitMapXInCh[ich] = new TH1F(Form("hClusterHitMapXInCh%d",ich+1), Form("averaged cluster position distribution in chamber %d;X (cm)",ich+1),10000,1,10000);
+  for (Int_t ich=0; ich<10; ich++){
+    hClusterHitMapXInCh[ich] = new TH1F(Form("hClusterHitMapXInCh%d",ich+1), Form("averaged cluster position distribution in chamber %d;X (cm)",ich+1),10000,1,10000);
+  }
   TH1F* hClusterHitMapYInCh[10];
-  for (Int_t ich=0; ich<10; ich++) hClusterHitMapYInCh[ich] = new TH1F(Form("hClusterHitMapYInCh%d",ich+1), Form("averaged cluster position distribution in chamber %d;Y (cm)",ich+1),10000,1,10000);
-  
+  for (Int_t ich=0; ich<10; ich++){
+    hClusterHitMapYInCh[ich] = new TH1F(Form("hClusterHitMapYInCh%d",ich+1), Form("averaged cluster position distribution in chamber %d;Y (cm)",ich+1),10000,1,10000);
+  }
   Int_t ibin = 1;
   
   // Are the runs stored locally or in alien?
@@ -730,7 +771,6 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   for ( Int_t irun=0; irun<runs.GetEntriesFast(); irun++ ) {
     
     TString run = ((TObjString*)runs.UncheckedAt(irun))->GetString();
-    cout << "processing run nr="<<run <<endl;
     // get the file (or list of files) to be analyzed
     TString command;
     TGridResult *res = 0;
@@ -740,7 +780,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
       command = Form("find %s/ %s/AnalysisResults.root", alienBaseDir.Data(), run.Data());
       res = gGrid->Command(command);
       if (!res) {
-	Error("PlotQA",Form("no result for the command: %s",command.Data()));
+	Error("PlotMUONQApp",Form("no result for the command: %s",command.Data()));
 	return;
       }
     }
@@ -793,39 +833,39 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
       if(iLoop>iLoopMax) break;
       
       if (!objs || !objs->GetString().Length()) {
-	Error("PlotQA","turl/obj not found for the run %s... SKIPPING", run.Data());
+	Error("PlotMUONQApp","turl/obj not found for the run %s... SKIPPING", run.Data());
 	continue;
       }
       
       // open the outfile for this run
       TFile *runFile = TFile::Open(objs->GetString());
       if (!runFile || ! runFile->IsOpen()) {
-	Error("PlotQA", Form("failed to open file: %s", objs->GetName()));
+	Error("PlotMUONQApp", Form("failed to open file: %s", objs->GetName()));
 	continue;//return;
       }
       runFile->Cd("MUON_QA");
       
       // get interesting histos
       TObjArray* general1 = static_cast<TObjArray*>(runFile->FindObjectAny("general1"));
-			TObjArray* general2 = static_cast<TObjArray*>(runFile->FindObjectAny("general2"));
+      TObjArray* general2 = static_cast<TObjArray*>(runFile->FindObjectAny("general2"));
       TObjArray* expert = static_cast<TObjArray*>(runFile->FindObjectAny("expert"));
 	
-			if (!general1 || !general2 || !expert){
-			 Error("PlotMUONQA", Form("All objects not here !!! ===> Skipping..."));		
-			 continue;
-			}
-			TH1* hNClustersPerTrack = static_cast<TH1*>(general1->FindObject("hNClustersPerTrack"));
+      if (!general1 || !general2 || !expert){
+	Error("PlotMUONQApp", Form("All objects not here !!! ===> Skipping...for %s",objs->GetName()));		
+	continue;
+      }
+
+      TH1* hNClustersPerTrack = static_cast<TH1*>(general1->FindObject("hNClustersPerTrack"));
       TH1* hNChamberHitPerTrack = static_cast<TH1*>(general1->FindObject("hNChamberHitPerTrack"));
       TH1* hChi2 = static_cast<TH1*>(general1->FindObject("hChi2"));
-			TH1* hNClustersPerCh = static_cast<TH1*>(general2->FindObject("hNClustersPerCh"));
-      
+      TH1* hNClustersPerCh = static_cast<TH1*>(general2->FindObject("hNClustersPerCh"));
 				
       TH2* hClusterHitMapInCh[10];
       for(Int_t ich=0; ich<10; ich++) hClusterHitMapInCh[ich] = static_cast<TH2*>(expert->FindObject(Form("hClusterHitMapInCh%d",ich+1)));
       
       // skip empty runs... not anymore ! cs !
       if (!hNClustersPerCh) {
-	Warning("PlotQA", Form("File: %s has empty histograms !", objs->GetName()));
+	Warning("PlotMUONQApp", Form("File: %s has empty histograms !", objs->GetName()));
 	hNClustersPerTrackVsRun_Mean->SetBinContent(ibin, 0.);
 	hNClustersPerTrackVsRun_Mean->SetBinError(ibin, 1.);
 	hNClustersPerTrackVsRun_Sigma->SetBinContent(ibin, 0.);
@@ -869,8 +909,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
 	  hClusterHitMapXInCh[ich]->SetBinContent(ibin,hClusterHitMapInCh[ich]->GetMean(1));
 	  hClusterHitMapXInCh[ich]->SetBinError(ibin,hClusterHitMapInCh[ich]->GetMeanError(1));
 	  hClusterHitMapYInCh[ich]->SetBinContent(ibin,hClusterHitMapInCh[ich]->GetMean(2));
-	  hClusterHitMapYInCh[ich]->SetBinError(ibin,hClusterHitMapInCh[ich]->GetMeanError(2));
-	  
+	  hClusterHitMapYInCh[ich]->SetBinError(ibin,hClusterHitMapInCh[ich]->GetMeanError(2));	  
 	}
       }
       
@@ -900,6 +939,20 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
     delete res;
   }
   
+  //sort label
+  hNClustersPerTrackVsRun_Mean->LabelsOption("a");
+  hNClustersPerTrackVsRun_Sigma->LabelsOption("a");
+  hNChamberHitPerTrack_Mean->LabelsOption("a");
+  hNChamberHitPerTrack_Sigma->LabelsOption("a");
+  hChi2_Mean->LabelsOption("a");
+  hChi2_Sigma->LabelsOption("a");
+  
+  for(Int_t ich=0; ich<10; ich++){
+    hNClustersInCh[ich]->LabelsOption("a");
+    hClusterHitMapXInCh[ich]->LabelsOption("a");
+    hClusterHitMapYInCh[ich]->LabelsOption("a");
+  }
+
   TString dirToGo =  OutFileNameROOT.Data(); dirToGo+=":/";
   gDirectory->Cd(dirToGo.Data());
   //==================================================
@@ -917,7 +970,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   hNClustersPerTrackVsRun_Mean->GetXaxis()->SetRange(1,ibin-1);
   hNClustersPerTrackVsRun_Mean->GetXaxis()->SetNdivisions(1,kFALSE);
   //hNClustersPerTrackVsRun_Mean->LabelsOption("u");
-  hNClustersPerTrackVsRun_Mean->SetLabelSize(0.02);
+  hNClustersPerTrackVsRun_Mean->SetLabelSize(0.04);
   hNClustersPerTrackVsRun_Mean->SetTitle("averaged number of associated clusters or of the number of chamber hit per track");
   hNClustersPerTrackVsRun_Mean->SetLineWidth(2);
   hNClustersPerTrackVsRun_Mean->Draw("e");
@@ -933,7 +986,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   hNClustersPerTrackVsRun_Sigma->GetXaxis()->SetRange(1,ibin-1);
   hNClustersPerTrackVsRun_Sigma->GetXaxis()->SetNdivisions(1,kFALSE);
   //hNClustersPerTrackVsRun_Sigma->LabelsOption("u");
-  hNClustersPerTrackVsRun_Sigma->SetLabelSize(0.02);
+  hNClustersPerTrackVsRun_Sigma->SetLabelSize(0.04);
   hNClustersPerTrackVsRun_Sigma->SetTitle("dispersion of the number of associated clusters or of the number of chamber hit per track");
   hNClustersPerTrackVsRun_Sigma->SetLineWidth(2);
   hNClustersPerTrackVsRun_Sigma->Draw("e");
@@ -956,7 +1009,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   hNClustersInCh[0]->GetXaxis()->SetRange(1,ibin-1);
   hNClustersInCh[0]->GetXaxis()->SetNdivisions(1,kFALSE);
   //hNClustersInCh[0]->LabelsOption("u");
-  hNClustersInCh[0]->SetLabelSize(0.02);
+  hNClustersInCh[0]->SetLabelSize(0.04);
   hNClustersInCh[0]->SetTitle("averaged number of clusters in chamber i per track");
   hNClustersInCh[0]->SetMaximum(1.2);
   hNClustersInCh[0]->SetMinimum(0.01);
@@ -985,7 +1038,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   hClusterHitMapXInCh[0]->GetXaxis()->SetRange(1,ibin-1);
   hClusterHitMapXInCh[0]->GetXaxis()->SetNdivisions(1,kFALSE);
   //hNClustersInCh[0]->LabelsOption("u");
-  hClusterHitMapXInCh[0]->SetLabelSize(0.02);
+  hClusterHitMapXInCh[0]->SetLabelSize(0.04);
   hClusterHitMapXInCh[0]->SetTitle("<X> of clusters - associated to a track - in chamber i");
   hClusterHitMapXInCh[0]->SetMaximum(30);
   hClusterHitMapXInCh[0]->SetMinimum(-30);
@@ -1004,7 +1057,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   hClusterHitMapYInCh[0]->GetXaxis()->SetRange(1,ibin-1);
   hClusterHitMapYInCh[0]->GetXaxis()->SetNdivisions(1,kFALSE);
   //hNClustersInCh[0]->LabelsOption("u");
-  hClusterHitMapYInCh[0]->SetLabelSize(0.02);
+  hClusterHitMapYInCh[0]->SetLabelSize(0.04);
   hClusterHitMapYInCh[0]->SetTitle("<Y> of clusters - associated to a track - in chamber i");
   hClusterHitMapYInCh[0]->SetMaximum(30);
   hClusterHitMapYInCh[0]->SetMinimum(-30);
@@ -1029,7 +1082,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   hChi2_Mean->GetXaxis()->SetRange(1,ibin-1);
   hChi2_Mean->GetXaxis()->SetNdivisions(1,kFALSE);
   //hChi2_Mean->LabelsOption("u");
-  hChi2_Mean->SetLabelSize(0.02);
+  hChi2_Mean->SetLabelSize(0.04);
   hChi2_Mean->SetLineWidth(2);
   hChi2_Mean->Draw("e");
 
@@ -1038,7 +1091,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
   hChi2_Sigma->GetXaxis()->SetRange(1,ibin-1);
   hChi2_Sigma->GetXaxis()->SetNdivisions(1,kFALSE);
   //hChi2_Sigma->LabelsOption("u");
-  hChi2_Sigma->SetLabelSize(0.02);
+  hChi2_Sigma->SetLabelSize(0.04);
   hChi2_Sigma->SetLineWidth(2);
   hChi2_Sigma->Draw("e");
 
@@ -1068,7 +1121,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, Bool_t selectPhy
       Int_t bin = (Int_t) label->GetUniqueID();
       printf(format.Data(), label->String().Data(), (Int_t) hCMUS1B->GetBinContent(bin));
     }
-		printf("\n========== Total #runs = %d ==============\n",nRuns);
+    printf("\n========== Total #runs = %d ==============\n",nRuns);
     printf("\n\n");
 
 
