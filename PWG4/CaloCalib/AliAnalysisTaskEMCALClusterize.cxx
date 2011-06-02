@@ -32,6 +32,7 @@
 #include "TROOT.h"
 #include "TInterpreter.h"
 #include "TFile.h"
+//#include "string.h"
 
 // --- AliRoot Analysis Steering
 #include "AliAnalysisTask.h"
@@ -580,7 +581,6 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
       //if(fCellLabels[id]>=0)printf("2) Digit cell %d, label %d\n",id,fCellLabels[id]) ;
       //else                  printf("2) Digit cell %d, no label, amp %f \n",id,amp) ;
       fCellLabels[id]      =-1; //reset the entry in the array for next event
-      fCellSecondLabels[id]=-1; //reset the entry in the array for next event
 
       //AliEMCALDigit *digit = (AliEMCALDigit*) fDigitsArr->New(idigit);
       //digit->SetId(id);
@@ -618,6 +618,9 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     branch->GetEntry(0);
 
     RecPoints2Clusters(fDigitsArr, fClusterArr, fCaloClusterArr);
+    
+    //Reset the array with second labels for this event
+    memset(fCellSecondLabels, -1, sizeof(fCellSecondLabels));
     
     //---CLEAN UP-----
     fClusterizer->Clear();
