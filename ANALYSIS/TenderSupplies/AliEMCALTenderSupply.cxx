@@ -172,8 +172,8 @@ void AliEMCALTenderSupply::ProcessEvent()
 	if(fTender->RunChanged()){ 
 		//Initialising parameters once per run number
 		if (!InitBadChannels()) return;
-		if (fReCalibCluster || fReCalibCell){ if (!InitRecalibCluster()) return;}
 		if (fRecalClusPos){ if (!InitMisalignMatrix()) return;}
+		if (fReCalibCluster || fReCalibCell){ if (!InitRecalib()) return;}
 	}
 
 	AliESDCaloCells *cells= event->GetEMCALCells();
@@ -234,6 +234,7 @@ void AliEMCALTenderSupply::ProcessEvent()
 		SetClusterMatchedToTrack(event);
 		SetTracksMatchedToCluster(event);
 	}
+	
 }
 
 //_____________________________________________________
@@ -371,6 +372,8 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
 		}
 	}
 
+	else AliInfo("MISALLIGNMENT NOT APPLIED");
+
 	return kTRUE;
 }
 
@@ -436,7 +439,7 @@ Bool_t AliEMCALTenderSupply::InitBadChannels()
 }
 
 //_____________________________________________________
-Bool_t AliEMCALTenderSupply::InitRecalibCluster()
+Bool_t AliEMCALTenderSupply::InitRecalib()
 {
 	//Initialising Recalibration Factors
 
@@ -499,8 +502,8 @@ Bool_t AliEMCALTenderSupply::InitRecalibCluster()
 				fRecalib = TFile::Open("alien:///alice/cern.ch/user/g/gconesab/RecalDB/summer2010/RecalibrationFactors.root");
 			}
 			else {
-				AliError("Run number not found");
-				return kFALSE;
+				AliError("Run number or pass number not found; RECALIBRATION NOT APPLIED");
+				return kTRUE;
 			}
 
 		}
@@ -550,7 +553,6 @@ Bool_t AliEMCALTenderSupply::InitRecalibCluster()
 
 	}
 
-	delete fRecalib;
 	return kTRUE;
 }
 

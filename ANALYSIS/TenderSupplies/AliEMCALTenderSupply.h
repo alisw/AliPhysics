@@ -75,7 +75,7 @@ public:
 private:
 
   Bool_t  InitBadChannels();
-  Bool_t  InitRecalibCluster();
+  Bool_t  InitRecalib();
   Bool_t  InitMisalignMatrix();
   
   void SetClusterMatchedToTrack(AliESDEvent *event);
