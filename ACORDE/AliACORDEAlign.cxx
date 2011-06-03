@@ -71,8 +71,8 @@ AliACORDEAlign::AliACORDEAlign(Int_t reportloc,Int_t reportglob):
   //fRepLoc = new reportloc[80];
   //fRepGlob = new reportglob[80];
   Char_t path[50];
-  fFileGlob = new Char_t[80];
-  fUser = new Char_t[10];
+  //fFileGlob = new Char_t[80];
+  //fUser = new Char_t[10];
   snprintf(path,50,gSystem->Getenv("ALICE_ROOT")); 
   // 
   snprintf(fFileGlob,80,"%s/ACORDE/Survey_%d_ACORDE.txt",path,reportglob);
@@ -145,7 +145,7 @@ if(fRepLoc != 0)
 
  //s1->GetEntries();
  //s1->GetUnits();
- TObjArray* arr = s1->GetData();
+ //TObjArray* arr = s1->GetData();
  //cout<< "number of entries " << arr->GetEntries() <<endl;
  //arr->UncheckedAt(0)->ClassName();
  //AliSurveyPoint *sp0 = (AliSurveyPoint*) arr->UncheckedAt(0);   
@@ -465,7 +465,7 @@ void AliACORDEAlign::StoreAlignObj()
 
     
 
-    sprintf(fullname,filename);
+    snprintf(fullname,80,filename);
        
    
     TFile *f = new TFile(fullname,"RECREATE");
