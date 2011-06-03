@@ -150,7 +150,7 @@ TH1F * AliTreeDraw::Eff(const char *variable, const char* selection, const char 
   snprintf(inputGen,1000,"%s>>hGen", variable);
   fTree->Draw(inputGen, selection, "groff");
   char selectionRec[256];
-  snprintf(selectionRec,1000, "%s && %s", selection, quality);
+  snprintf(selectionRec,256, "%s && %s", selection, quality);
   char inputRec[1000];  
   snprintf(inputRec,1000,"%s>>hRec", variable);
   fTree->Draw(inputRec, selectionRec, "groff");
@@ -179,7 +179,7 @@ TH1F * AliTreeDraw::EffLog(const char *variable, const char* selection, const ch
   snprintf(inputGen,1000,"%s>>hGen", variable);
   fTree->Draw(inputGen, selection, "groff");
   char selectionRec[256];
-  snprintf(selectionRec,1000, "%s && %s", selection, quality);
+  snprintf(selectionRec,256, "%s && %s", selection, quality);
   char inputRec[1000];  
   snprintf(inputRec,1000,"%s>>hRec", variable);
   fTree->Draw(inputRec, selectionRec, "groff");
