@@ -230,8 +230,6 @@ void AliT0CalibLaserData::ReadData()
   Int_t allData[110][50];
   Int_t numberOfHits[105];
   
-  Char_t  buf1[20], buf2[20], buf3[20], buf4[20], buf7[20];
-  
   Int_t channels[106];
   
   TString names[106], type;
@@ -271,12 +269,7 @@ void AliT0CalibLaserData::ReadData()
     } 
   for(Int_t ic=0; ic<24; ic++) {
     {
-      sprintf(buf1,"QTC%i",ic+1);
-      sprintf(buf2,"CFDvsQTC%i",ic+1);
-      sprintf(buf3,"CFDvsLED%i",ic+1);
-      sprintf(buf4,"LEDminCFD%i",ic+1);
-      sprintf(buf7,"mpd%i",ic+1);
-      
+     
       hQTC[ic] = new TH1I(Form("QTC%i",ic+1),"QTC",(Int_t)fHistLimits[2],fHistLimits[0],fHistLimits[1]);
       h1CFDminLED[ic] = new TH1I(Form("LEDminCFD%i",ic+1),"LED - CFD",(Int_t)fHistLimits[5],fHistLimits[3],fHistLimits[4]);
       
