@@ -22,6 +22,8 @@ class TRandom3;
 class AliESDEvent;
 class TNtuple;
 class AliESDtrackCuts;
+class AliITSPIDResponse;
+
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
@@ -79,7 +81,6 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
     fSmearP=smearp;
     fSmeardEdx=smeardedx;
   }
-  Double_t BetheBloch(Double_t bg,Bool_t optMC) const;
   Double_t CookdEdx(Double_t *s) const; 
   Double_t Eta2y(Double_t pt, Double_t m, Double_t eta) const;
   Bool_t DCAcut(Double_t impactXY, Double_t impactZ, Double_t pt, Bool_t optMC) const;
@@ -93,7 +94,6 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   AliESDEvent *fESD; //ESD object
   AliESDtrackCuts *fesdTrackCutsMult;//cuts for multiplicity 
   
-  
   TList *fOutput; //! tlist with output
   TH1F *fHistNEvents; //! histo with number of events
   TH1F *fHistMult; //! histo with multiplicity of the events
@@ -104,6 +104,8 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   
   TH2F *fHistDEDX; //! histo with dedx versus momentum
   TH2F *fHistDEDXdouble; //! histo with dedx versus signed momentum
+  TH2F *fHistPosNSigmaSep[3]; //! histo nsigma separation vs momentum
+  TH2F *fHistNegNSigmaSep[3]; //! histo nsigma separation vs momentum
   
   TH1F *fHistBeforeEvSel; //! histo with pt distribution before my event selection
   TH1F *fHistAfterEvSel; //! histo with pt distribution after my event selection
@@ -203,6 +205,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TH1F *fHistNegNSigmaPrimMC[3]; //! NSigma histos for 6 species
 
   Double_t fPtBinLimits[kNbins+1]; // limits of Pt Bins
+  AliITSPIDResponse* fITSPIDResponse; //! class with BB parameterizations
   Int_t    fMinSPDPts;       // minimum number of SPD Points
   Int_t    fMinNdEdxSamples; // minimum number of SDD+SSD points
   Double_t fMindEdx;         // minimum dE/dx value in a layer (to cut noise)
@@ -228,7 +231,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TNtuple     *fNtupleNSigma;//! output ntuple
   TNtuple     *fNtupleMC;//! output MC ntuple
   
-  ClassDef(AliAnalysisTaskSEITSsaSpectra, 5);
+  ClassDef(AliAnalysisTaskSEITSsaSpectra, 6);
 };
 
 #endif
