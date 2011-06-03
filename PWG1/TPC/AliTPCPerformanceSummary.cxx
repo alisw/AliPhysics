@@ -1295,6 +1295,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     static Double_t vertOK = 0;
     
     TH1* his1D=0;
+    TH1* hc=0;
     if (pTPC->GetHistos()->FindObject("h_tpc_event_6") && !fgForceTHnSparse) {    
         his1D = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_6")->Clone());
     } else {
@@ -1339,18 +1340,25 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
     
     
     if (pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_2") && !fgForceTHnSparse) {    
-        his1D = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_2")->Clone());
+        hc = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_2"));
+	if(!hc) return 1;
+        //his1D = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_2")->Clone());
+        his1D = (TH1*)hc->Clone();
     } else {
        his1D = pTPC->GetTPCEventHisto()->Projection(2);
-    }    meanVertZ = his1D->GetMean();
+    }    
     if(!his1D) return 1;
 
+    meanVertZ = his1D->GetMean();
     rmsVertZ    = his1D->GetRMS();
     delete his1D;
     
     
     if (pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_3") && !fgForceTHnSparse) {    
-        his1D = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_3")->Clone());
+        hc = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_3"));
+	if(!hc) return 1;
+        //his1D = dynamic_cast<TH1*>(pTPC->GetHistos()->FindObject("h_tpc_event_recvertex_3")->Clone());
+        his1D = (TH1*)hc->Clone();
     } else {
        his1D = pTPC->GetTPCEventHisto()->Projection(3);
     }
