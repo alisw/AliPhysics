@@ -379,7 +379,7 @@ TH1F* AlidNdPtHelper::CreateResHisto(TH2F* const hRes2, TH1F **phMean, Int_t int
   TVirtualPad* currentPad = gPad;
   TAxis* axis = hRes2->GetXaxis();
   Int_t nBins = axis->GetNbins();
-  Bool_t overflowBinFits = kFALSE;
+  //Bool_t overflowBinFits = kFALSE;
   TH1F* hRes, *hMean;
   if (axis->GetXbins()->GetSize()){
     hRes = new TH1F("hRes", "", nBins, axis->GetXbins()->GetArray());
@@ -404,7 +404,8 @@ TH1F* AlidNdPtHelper::CreateResHisto(TH2F* const hRes2, TH1F **phMean, Int_t int
   fitFunc->SetFillStyle(0);
   // create canvas for fits
   TCanvas* canBinFits = NULL;
-  Int_t nPads = (overflowBinFits) ? nBins+2 : nBins;
+  //Int_t nPads = (overflowBinFits) ? nBins+2 : nBins;
+  Int_t nPads = nBins;
   Int_t nx = Int_t(sqrt(nPads-1.));// + 1;
   Int_t ny = (nPads-1) / nx + 1;
   if (drawBinFits) {
@@ -415,7 +416,8 @@ TH1F* AlidNdPtHelper::CreateResHisto(TH2F* const hRes2, TH1F **phMean, Int_t int
   }
 
   // loop over x bins and fit projection
-  Int_t dBin = ((overflowBinFits) ? 1 : 0);
+  //Int_t dBin = ((overflowBinFits) ? 1 : 0);
+  Int_t dBin = 0;
   for (Int_t bin = 1-dBin; bin <= nBins+dBin; bin++) {
     if (drawBinFits) canBinFits->cd(bin + dBin);
     Int_t bin0=TMath::Max(bin-integ,0);

@@ -324,18 +324,18 @@ void AlidNdPtCutAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent * 
 
   // get reconstructed vertex  
   const AliESDVertex* vtxESD = 0; 
-  if(evtCuts->IsRecVertexRequired()) 
-  {
-     if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
+  if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
         vtxESD = esdEvent->GetPrimaryVertexTPC();
-    }
-    else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
-      vtxESD = esdEvent->GetPrimaryVertexTracks();
-    }
-    else {
-    	return;
-    }
   }
+  else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
+     vtxESD = esdEvent->GetPrimaryVertexTracks();
+  }
+  else {
+    	return;
+  }
+
+  if(!vtxESD) return;
+
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
   //printf("GetAnalysisMode() %d \n",GetAnalysisMode());

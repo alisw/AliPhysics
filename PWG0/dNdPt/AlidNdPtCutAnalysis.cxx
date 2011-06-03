@@ -155,9 +155,9 @@ void AlidNdPtCutAnalysis::Init(){
   //
 
  //nCrossRows:chi2PerClust:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge
-  Int_t binsRecMCTrackHist[13]=  {160, 10, 20, 20, 50,  50,  20,  90,             ptNbins, 2,  2,  2,  3};
-  Double_t minRecMCTrackHist[13]={0.,  0., 0., 0.,-0.5,-0.5,-1.0, 0.,             ptMin,   0., 0., 0.,-1.};
-  Double_t maxRecMCTrackHist[13]={160.,10.,1.,  1., 0.5, 0.5, 1.0, 2.*TMath::Pi(), ptMax,   2., 2., 2., 2.};
+  Int_t binsRecMCTrackHist[13]=  { 160,  10,  20,  20, 50,  50,   20,  90,             ptNbins, 2,  2,  2,  3  };
+  Double_t minRecMCTrackHist[13]={ 0.,   0.,  0.,  0., -0.5,-0.5,-1.0, 0.,             ptMin,   0., 0., 0.,-1. };
+  Double_t maxRecMCTrackHist[13]={ 160., 10., 1.,  1., 0.5, 0.5,  1.0, 2.*TMath::Pi(), ptMax,   2., 2., 2., 2. };
 
   fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nCrossRows:chi2PerClust:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge",13,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
   fRecMCTrackHist->SetBinEdges(8,binsPt);
@@ -581,6 +581,8 @@ void AlidNdPtCutAnalysis::Analyse()
   //
   TH1::AddDirectory(kFALSE);
   TObjArray *aFolderObj = new TObjArray;
+  if(!aFolderObj) return;
+
   TH1D *h1D = 0; 
   TH2D *h2D = 0; 
 
@@ -611,11 +613,13 @@ void AlidNdPtCutAnalysis::Analyse()
   // Event counters
   //
   h2D = (TH2D*)fEventCount->Projection(0,1);
+  if(!h2D) return;
   h2D->SetName("trig_vs_trigANDvertex");
   aFolderObj->Add(h2D);
 
   fEventCount->GetAxis(0)->SetRange(2,2); // triggered
   h1D = (TH1D*)fEventCount->Projection(1);
+  if(!h1D) return;
   h1D->SetTitle("rec. vertex for triggered events");
   h1D->SetName("trigANDvertex");
   aFolderObj->Add(h1D);
@@ -624,30 +628,37 @@ void AlidNdPtCutAnalysis::Analyse()
   // Create rec. event histograms
   //
   h1D = (TH1D *)fRecEventHist->Projection(0);
+  if(!h1D) return;
   h1D->SetName("rec_xv");
   aFolderObj->Add(h1D);
 
   h1D = (TH1D *)fRecEventHist->Projection(1);
+  if(!h1D) return;
   h1D->SetName("rec_yv");
   aFolderObj->Add(h1D);
 
   h1D = (TH1D *)fRecEventHist->Projection(2);
+  if(!h1D) return;
   h1D->SetName("rec_zv");
   aFolderObj->Add(h1D);
 
   h2D = (TH2D *)fRecEventHist->Projection(3,4);
+  if(!h2D) return;
   h2D->SetName("rec_resZv_vs_Mult");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecEventHist->Projection(0,1);
+  if(!h2D) return;
   h2D->SetName("rec_xv_vs_yv");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecEventHist->Projection(0,2);
+  if(!h2D) return;
   h2D->SetName("rec_xv_vs_zv");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecEventHist->Projection(3,4);
+  if(!h2D) return;
   h2D->SetName("rec_resZv_vs_Mult");
   aFolderObj->Add(h2D);
 
@@ -660,10 +671,12 @@ void AlidNdPtCutAnalysis::Analyse()
   // Create mc event histograms
   //
   h2D = (TH2D *)fMCEventHist->Projection(0,1);
+  if(!h2D) return;
   h2D->SetName("mc_xv_vs_yv");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fMCEventHist->Projection(0,2);
+  if(!h2D) return;
   h2D->SetName("mc_xv_vs_zv");
   aFolderObj->Add(h2D);
 
@@ -671,14 +684,17 @@ void AlidNdPtCutAnalysis::Analyse()
   // Create rec-mc event histograms
   //
   h2D = (TH2D *)fRecMCEventHist->Projection(0,3);
+  if(!h2D) return;
   h2D->SetName("rec_mc_deltaXv_vs_mult");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecMCEventHist->Projection(1,3);
+  if(!h2D) return;
   h2D->SetName("rec_mc_deltaYv_vs_mult");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecMCEventHist->Projection(2,3);
+  if(!h2D) return;
   h2D->SetName("rec_mc_deltaZv_vs_mult");
   aFolderObj->Add(h2D);
 
@@ -695,24 +711,29 @@ void AlidNdPtCutAnalysis::Analyse()
   fRecMCTrackHist->GetAxis(4)->SetRangeUser(-maxDCAr,maxDCAr);
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(7,5);
+  if(!h2D) return;
   h2D->SetName("pt_vs_eta");
   aFolderObj->Add(h2D);
 
   fRecMCTrackHist->GetAxis(7)->SetRangeUser(minPt,maxPt);  
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(0,5);
+  if(!h2D) return;
   h2D->SetName("nClust_vs_eta");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(1,5);
+  if(!h2D) return;
   h2D->SetName("chi2PerClust_vs_eta");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(2,5);
+  if(!h2D) return;
   h2D->SetName("ratio_nClust_nFindableClust_vs_eta");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(5,6);
+  if(!h2D) return;
   h2D->SetName("eta_vs_phi");
   aFolderObj->Add(h2D);
 
@@ -720,14 +741,17 @@ void AlidNdPtCutAnalysis::Analyse()
   fRecMCTrackHist->GetAxis(5)->SetRangeUser(minEta,maxEta);  
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(0,6);
+  if(!h2D) return;
   h2D->SetName("nClust_vs_phi");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(1,6);
+  if(!h2D) return;
   h2D->SetName("chi2PerClust_vs_phi");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(2,6);
+  if(!h2D) return;
   h2D->SetName("ratio_nClust_nFindableClust_vs_phi");
   aFolderObj->Add(h2D);
 
@@ -735,18 +759,22 @@ void AlidNdPtCutAnalysis::Analyse()
   fRecMCTrackHist->GetAxis(7)->SetRangeUser(0.0,maxPt);  
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(0,7);
+  if(!h2D) return;
   h2D->SetName("nClust_vs_pt");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(1,7);
+  if(!h2D) return;
   h2D->SetName("chi2PerClust_vs_pt");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(2,7);
+  if(!h2D) return;
   h2D->SetName("ratio_nClust_nFindableClust_vs_pt");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(6,7);
+  if(!h2D) return;
   h2D->SetName("phi_vs_pt");
   aFolderObj->Add(h2D);
 
@@ -760,10 +788,12 @@ void AlidNdPtCutAnalysis::Analyse()
   fRecMCTrackHist->GetAxis(4)->SetRangeUser(-maxDCAr,maxDCAr);
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(0,1);
+  if(!h2D) return;
   h2D->SetName("nClust_vs_chi2PerClust");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecMCTrackHist->Projection(0,2);
+  if(!h2D) return;
   h2D->SetName("nClust_vs_ratio_nClust_nFindableClust");
   aFolderObj->Add(h2D);
 
@@ -779,12 +809,14 @@ void AlidNdPtCutAnalysis::Analyse()
   // sec
   fRecMCTrackHist->GetAxis(9)->SetRange(1,1);
   h1D = (TH1D *)fRecMCTrackHist->Projection(3);
+  if(!h1D) return;
   h1D->SetName("dcay_sec");
   aFolderObj->Add(h1D);
 
   // prim
   fRecMCTrackHist->GetAxis(9)->SetRange(2,2);
   h1D = (TH1D *)fRecMCTrackHist->Projection(3);
+  if(!h1D) return;
   h1D->SetName("dcay_prim");
   aFolderObj->Add(h1D);
 
@@ -795,18 +827,24 @@ void AlidNdPtCutAnalysis::Analyse()
   // sec
   fRecMCTrackHist->GetAxis(9)->SetRange(1,1);
   h1D = (TH1D *)fRecMCTrackHist->Projection(4);
+  if(!h1D) return;
   h1D->SetName("dcaz_sec");
   aFolderObj->Add(h1D);
 
   // prim
   fRecMCTrackHist->GetAxis(9)->SetRange(2,2);
   h1D = (TH1D *)fRecMCTrackHist->Projection(4);
+  if(!h1D) return;
   h1D->SetName("dcaz_prim");
   aFolderObj->Add(h1D);
 
 
   // export objects to analysis folder
   fAnalysisFolder = ExportToFolder(aFolderObj);
+  if(!fAnalysisFolder) {
+      if(aFolderObj) delete aFolderObj;
+      return;
+  }
 
   // delete only TObjArray
   if(aFolderObj) delete aFolderObj;
