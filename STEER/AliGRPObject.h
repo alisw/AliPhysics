@@ -151,6 +151,9 @@ class AliGRPObject : public TObject {
 
 	void ReadValuesFromMap(const TMap* map);	
 
+	void SetSingleBeamType(Int_t ibeamType, TString beamType)  {fSeparateBeamType[ibeamType] = beamType;}
+	TString   GetSingleBeamType(Int_t ibeamType) const {return fBeamType[ibeamType];}
+
  private:
 
 	static const Float_t fgkInvalidFloat;   // value to identify invalid data - float
@@ -196,8 +199,9 @@ class AliGRPObject : public TObject {
 	TObjArray* fMachineModeArray;  // Array of values for the LHC State
 
 	Double_t fMaxTimeLHCValidity;    // time until which the LHC Data Machine Mode and Beam Mode didn't change 
+	TString  fSeparateBeamType[2];   // separate beam Types from LHC
 
-	ClassDef(AliGRPObject,6)
+	ClassDef(AliGRPObject,7)
 
 };
 

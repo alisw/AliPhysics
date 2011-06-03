@@ -78,7 +78,7 @@ ClassImp(AliGRPPreprocessor)
   const Int_t AliGRPPreprocessor::fgknDAQLbPar = 6; // num parameters in the logbook used to fill the GRP object
   const Int_t AliGRPPreprocessor::fgknDCSDP = 48;   // number of dcs dps
   const Int_t AliGRPPreprocessor::fgknDCSDPHallProbes = 40;   // number of dcs dps
-  const Int_t AliGRPPreprocessor::fgknLHCDP = 6;   // number of dcs dps from LHC data
+  const Int_t AliGRPPreprocessor::fgknLHCDP = 8;   // number of dcs dps from LHC data
   const Int_t AliGRPPreprocessor::fgkDCSDPHallTopShift = 4;   // shift from the top to get tp the Hall Probes names in the list of DCS DPs
   const Int_t AliGRPPreprocessor::fgkDCSDPNonWorking = 5; // number of non working DCS DPs
   const char* AliGRPPreprocessor::fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
@@ -185,7 +185,9 @@ ClassImp(AliGRPPreprocessor)
 	  "LHC_BeamMode",
           "LHC_Beams_Particle_Type",
 	  "BPTX_Phase_Shift_B1",
-	  "BPTX_Phase_Shift_B2"
+	  "BPTX_Phase_Shift_B2",
+	  "LHC_Particle_Type_B1",
+	  "LHC_Particle_Type_B2"
   };
 
   const char* kppError[] = {
@@ -737,20 +739,33 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 
 		Double_t timeBeamModeEnd = timeEnd;        // max validity for Beam Mode 
 		Double_t timeMachineModeEnd = timeEnd;     // max validity for Machine Mode
-		Double_t timeBeamEnd = timeEnd;            // max validity for Beam Type
+ 		Double_t timeBeamEnd = timeEnd;            // max validity for Beam Type
+ 		Double_t timeBeamTypeEnd[2] = {timeEnd, timeEnd}; // max validity for Beam Type1,2
 		Double_t timeBeamModeStart = -1;    // min validity for Beam Mode
 		Double_t timeMachineModeStart = -1; // min validity for Machine Mode
 		Double_t timeBeamStart = -1;        // min validity for Beam Type
+		Double_t timeBeamTypeStart[2] = {-1,-1};        // min validity for Beam Type1,2
 		Int_t indexBeamMode = -1;                  // index of measurement used to set Beam Mode
-	        Int_t indexMachineMode = -1;               // index of measurement used to set Beam Mode
-		Int_t indexBeam = -1;                      // index of measurement used to set Beam Mode
+	        Int_t indexMachineMode = -1;               // index of measurement used to set Machine Mode
+		Int_t indexBeam = -1;                      // index of measurement used to set Beam Type
+		Int_t indexBeamType[2] = {-1, -1};                      // index of measurement used to set Beam Type1,2
 		Bool_t foundBeamModeStart = kFALSE;        // flag to be set in case an entry for the Beam Mode is found before (or at) SOR
-		Bool_t foundMachineModeStart = kFALSE;     // flag to be set in case an entry for the Beam Mode is found before (or at) SOR
-		Bool_t foundBeamStart = kFALSE;            // flag to be set in case an entry for the Beam Mode is found before (or at) SOR
+		Bool_t foundMachineModeStart = kFALSE;     // flag to be set in case an entry for the Machine Mode is found before (or at) SOR
+		Bool_t foundBeamStart = kFALSE;            // flag to be set in case an entry for the Beam Type is found before (or at) SOR
+		Bool_t foundBeamTypeStart[2] = {kFALSE, kFALSE};            // flag to be set in case an entry for the Beam Type1,2 is found before (or at) SOR
 		Bool_t flagBeamMode = kFALSE;  //flag set true if a changed occurred in BeamMode
 		Bool_t flagMachineMode = kFALSE;  //flag set true if a changed occurred in MachineMode
 		Bool_t flagBeam = kFALSE;  //flag set true if a changed occurred in BeamType
+		Bool_t flagBeamType[2] = {kFALSE, kFALSE};  //flag set true if a changed occurred in BeamType1,2
 		
+		Double_t arrayTimes[5]={2.E9, 2.E9, 2.E9, 2.E9, 2.E9}; // array to keep track of the times of the possible changes of the LHC DPs; each entry set to Wed May 18 2033, 03:33:20 GMT (ALICE should not be running anymore...)
+		                                                       // arrayTimes elements order correspond to the one used in the array of the strings fgkLHCDataPoints, i.e.:
+		                                                       // arrayTimes[0] --> MachineMode
+		                                                       // arrayTimes[1] --> BeamMode
+		                                                       // arrayTimes[2] --> BeamType (when written together)
+		                                                       // arrayTimes[3] --> BeamType1 (when written separate)
+		                                                       // arrayTimes[4] --> BeamType2 (when written separate)
+
 		// BeamMode
 		Log("*************BeamMode (LHCState) ");
 		TObjArray* beamModeArray = lhcReader.ReadSingleLHCDP(fileName.Data(),fgkLHCDataPoints[2]);
@@ -797,6 +812,8 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 								if (bmString0.CompareTo(bmString1.Data(),TString::kIgnoreCase) == -1){
 									AliWarning(Form("The beam mode changed from %s to %s during the run at timestamp %f! Setting it to %s and keeping track of the time of the change to set MaxTimeLHCValidity afterward",bmString0.Data(), bmString1.Data(), timeBeamModeEnd, bmString0.Data()));
 									flagBeamMode = kTRUE;
+									arrayTimes[1]=timeBeamModeEnd;
+
 								}
 							}
 						}
@@ -854,6 +871,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 								if (mmString0.CompareTo(mmString1.Data(),TString::kIgnoreCase) == -1){
 									AliWarning(Form("The machine mode changed from %s to %s during the run at timestamp %f! Setting it to %s and keeping track of the time of the change to set MaxTimeLHCValidity afterward",mmString0.Data(),mmString1.Data(),timeMachineModeEnd,mmString0.Data()));
 									flagMachineMode = kTRUE;
+									arrayTimes[0]=timeMachineModeEnd;
 								}
 							}
 						}
@@ -892,7 +910,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 					}
 				}
 				if (!foundBeamStart){
-					AliInfo("No value for the Beam Type found before start of run, the Machine Mode will remain empty");
+					AliInfo("No value for the Beam Type found before start of run, the (common) Beam Type will remain empty");
 				}
 				else {
 					AliDCSArray* beam = (AliDCSArray*)beamArray->At(indexBeam);
@@ -926,6 +944,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 								if (beamType.CompareTo(beamType1.Data(),TString::kIgnoreCase) == -1){
 									AliWarning(Form("The Beam Type changed from %s to %s during the run at timestamp %f! Setting it to %s and keeping track of the time of the change to set MaxTimeLHCValidity afterward",beamType.Data(),(beamString1->String()).Data(),timeBeamEnd,beamType.Data()));
 									flagBeam = kTRUE;
+									arrayTimes[2] = timeBeamEnd;
 								}
 							}
 						}
@@ -940,11 +959,100 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 		else{
 			AliError("Beam Type array not found in LHC Data file!!!");
 		}		
+
+		// BeamType1 and BeamType2 - in separete string
+		Log("*************BeamType, 1 and 2 ");
+		Int_t indexBeamTypeString = 6;  // index of the string with the alias of BeanType1 in the array fgkLHCDataPoints
+		TString combinedBeamType = "-";  // combined beam tyope, built from beam type 1 and beam type 2
+		for (Int_t ibeamType = 0; ibeamType<2; ibeamType++){
+			beamArray = lhcReader.ReadSingleLHCDP(fileName.Data(),fgkLHCDataPoints[indexBeamTypeString+ibeamType]);
+			if (beamArray){			
+				Int_t nBeam = beamArray->GetEntries();
+				if (nBeam==0){
+					AliInfo(Form("No Beam Type %s found, leaving it empty",fgkLHCDataPoints[indexBeamTypeString+ibeamType]));
+				}
+				else{
+					for (Int_t iBeam = 0; iBeam<nBeam; iBeam++){
+						AliDCSArray* beam = (AliDCSArray*)beamArray->At(iBeam);
+						if (beam){
+							if (beam->GetTimeStamp()<=timeStart && beam->GetTimeStamp()>=timeBeamTypeStart[ibeamType]){// taking always the very last entry: of two measurements have the same timestamp, the last one is taken
+								timeBeamTypeStart[ibeamType] = beam->GetTimeStamp();
+								indexBeamType[ibeamType] = iBeam;
+								foundBeamTypeStart[ibeamType] = kTRUE;
+							}
+							else{
+								break;
+							}
+						}
+					}
+					if (!foundBeamTypeStart[ibeamType]){
+						AliInfo(Form("No value for the Beam Type %s found before start of run, the Beam Type %d will remain empty", fgkLHCDataPoints[indexBeamTypeString+ibeamType], ibeamType));
+					}
+					else {
+						AliDCSArray* beam = (AliDCSArray*)beamArray->At(indexBeam);
+						TObjString* beamString = beam->GetStringArray(0);
+						TString beamType = beamString->String();
+						AliInfo(Form("Beam Type (for %s) = %s", fgkLHCDataPoints[indexBeamTypeString+ibeamType], beamType.Data()));	
+						if (beamType.CompareTo("PROTON",TString::kIgnoreCase) == 0){
+							AliInfo(Form("Setting beam type %s to p", fgkLHCDataPoints[indexBeamTypeString+ibeamType]));
+							grpobj->SetSingleBeamType(ibeamType,"p");
+							if (ibeamType == 0) combinedBeamType.Prepend("p");
+							else combinedBeamType.Append("p");
+						}
+						else { // if there is no PROTON beam, we suppose it is Pb, and we put A-A
+							AliInfo("Setting beam type to A");
+							grpobj->SetSingleBeamType(ibeamType,"A");
+							if (ibeamType == 0) combinedBeamType.Prepend("A");
+							else combinedBeamType.Append("A");
+						}
+						/*
+						  else if (beamType.CompareTo("LEAD82",TString::kIgnoreCase) == 0){
+						  AliInfo("Setting beam type to Pb-Pb");
+						  grpobj->SetSingleBeamType(ibeamType, "Pb-Pb");
+						  }
+						  else{
+						  AliError("Beam Type not known, leaving it empty");
+						  }
+						*/
+						if (indexBeamType[ibeamType] < nBeam-1){
+							AliDCSArray* beam1 = (AliDCSArray*)beamArray->At(indexBeam+1);
+							if (beam1){
+								if (beam1->GetTimeStamp()>timeStart && beam1->GetTimeStamp()<=timeEnd){
+									timeBeamTypeEnd[ibeamType] = beam1->GetTimeStamp();
+									TObjString* beamString1 = beam1->GetStringArray(0);
+									TString beamType1 = beamString1->String();
+									if (beamType.CompareTo(beamType1.Data(),TString::kIgnoreCase) == -1){
+										AliWarning(Form("The Beam Type for %s changed from %s to %s during the run at timestamp %f! Setting it to %s and keeping track of the time of the change to set MaxTimeLHCValidity afterward",fgkLHCDataPoints[indexBeamTypeString+ibeamType],beamType.Data(),(beamString1->String()).Data(),timeBeamEnd,beamType.Data()));
+										flagBeamType[ibeamType] = kTRUE;
+										arrayTimes[3+ibeamType] = timeBeamTypeEnd[ibeamType];
+									}
+								}
+							}
+							else {
+								AliInfo(Form("Invalid pointer for the first entry for Beam Type %s after the first valid one, not considering anything after what has already been found",fgkLHCDataPoints[indexBeamTypeString+ibeamType]));
+							}
+						}
+					}
+				}
+				delete beamArray;
+			}
+			else{
+				AliError(Form("Beam Type %s array not found in LHC Data file!!!",fgkLHCDataPoints[indexBeamTypeString+ibeamType]));
+			}		
+		}
+		AliInfo(Form("Setting combined beam type to %s",combinedBeamType.Data()));
+		grpobj->SetBeamType(combinedBeamType);
 		
 		// Setting minTimeLHCValidity
+		if (flagBeamMode == kTRUE || flagMachineMode == kTRUE || flagBeam == kTRUE || flagBeamType[0] == kTRUE || flagBeamType[1] == kTRUE){ 
+			Double_t minTimeLHCValidity= TMath::MinElement(5,arrayTimes);
+			AliWarning(Form("Setting MaxTimeLHCValidity to %f",minTimeLHCValidity));
+			grpobj->SetMaxTimeLHCValidity(minTimeLHCValidity);
+		}
+		/*
 		if (timeBeamModeEnd!=0 || timeMachineModeEnd!=0 || timeBeamEnd !=0){
 			Double_t minTimeLHCValidity;
-			if (flagBeamMode == kFALSE && flagMachineMode == kFALSE && flagBeam == kTRUE){ // flagBeam only true
+			if (flagBeamMode == kFALSE && flagMachineMode == kFALSE && flagBeam == kTRUE){ // flagBeam only true --> it is the only one that changed
 				minTimeLHCValidity = timeBeamEnd;
 			}
 			else if (flagBeamMode == kFALSE && flagMachineMode == kTRUE && flagBeam == kFALSE){ // flagMachineMode only true
@@ -969,6 +1077,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 			AliWarning(Form("Setting MaxTimeLHCValidity to %f",minTimeLHCValidity));
 			grpobj->SetMaxTimeLHCValidity(minTimeLHCValidity);
 		}
+		*/
 		
 		// Processing data to go to AliLHCData object
 		AliLHCData* dt = new AliLHCData(fileName.Data(),timeStart,timeEnd);
@@ -1089,6 +1198,8 @@ Int_t AliGRPPreprocessor::ProcessDaqLB(AliGRPObject* grpObj)
 	UInt_t  detectorMask = (UInt_t)(((TString)GetRunParameter("detectorMask")).Atoi());
 	TString lhcPeriod = (TString)GetRunParameter("LHCperiod");
 	TString runType = (TString)GetRunType();
+
+	if (timeEnd >= 2.E9) AliFatal("ALICE run finshed later than Wed May 18 2033, 03:33:20 GMT, maximum time allowed for LHC data --> fix the GRP preprocessor!!!");
 
 	UInt_t nparameter = 0;
 	if (timeStart != 0){
