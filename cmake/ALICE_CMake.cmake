@@ -266,6 +266,7 @@ macro(ALICE_BuildPackage)
 
   ALICE_SetPackageVariable(PEDEFINE "EDEFINE" "${EDEFINE}" "${EDEFINE}")
   ALICE_SetPackageVariable(PEXPORT "EXPORT" "${EXPORT}" "${EXPORT}")
+  message(${CMAKE_INCLUDE_EXPORT_DIRECTORY})
   ALICE_SetPackageVariable(PEXPORTDEST "EXPORTDEST" "${CMAKE_INCLUDE_EXPORT_DIRECTORY}" "${CMAKE_INCLUDE_EXPORT_DIRECTORY}")
   ALICE_SetPackageVariable(PINC "INC" "${EINCLUDE};${MODULE}" "${EINCLUDE};${MODULE}")
   ALICE_SetPackageVariable(PELIBS "ELIBS" "${ELIBS}" "${ELIBS}")
@@ -327,7 +328,7 @@ endmacro(ALICE_BuildPackage)
 
 macro(ALICE_BuildModule)
 
-  add_definitions(-D_MODULE="${MODULE}")
+  add_definitions(-D_MODULE_="${MODULE}")
   foreach(PACKAGEFILE ${PACKAGES})
       set(lib)
       set(bin)
