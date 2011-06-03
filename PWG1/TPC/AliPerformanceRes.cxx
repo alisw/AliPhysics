@@ -915,8 +915,6 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
       if(!friendTrack) continue;
     }
 
-    // check stack
-    if(!stack) continue;
     Int_t label = TMath::Abs(track->GetLabel()); 
     if ( label > stack->GetNtrack() ) 
     {

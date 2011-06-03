@@ -881,11 +881,15 @@ Int_t AliRecInfoMaker::TreeGenLoop(Int_t eventNr)
 	}
       }	
       //
+      fRecInfo->SetESDtrack(track);
+
+      /*
       if (track) {
 	fRecInfo->SetESDtrack(track);
       }else{
 	fRecInfo->SetESDtrack(&dummytrack);
       }
+      */
       //
 
       fRecInfo->fReconstructed = 1;

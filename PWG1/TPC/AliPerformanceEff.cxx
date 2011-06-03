@@ -188,7 +188,6 @@ void AliPerformanceEff::Init()
 void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent)
 {
   // Fill TPC only efficiency comparison information 
-  if(!mcEvent) return;
   if(!esdEvent) return;
 
   Int_t *labelsRec =  NULL;
@@ -315,7 +314,6 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
 {
   // Fill TPC only efficiency comparison information for secondaries
 
-  if(!mcEvent) return;
   if(!esdEvent) return;
 
   Int_t *labelsRec =  NULL;
@@ -453,25 +451,23 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
 void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent)
 {
   // Fill efficiency comparison information
-  if(!mcEvent) return;
-  if(!esdEvent) return;
 
-  Int_t *labelsRec =  NULL;
-  labelsRec =  new Int_t[esdEvent->GetNumberOfTracks()];
-  if(!labelsRec) 
+  Int_t *labelsRecTPCITS =  NULL;
+  labelsRecTPCITS =  new Int_t[esdEvent->GetNumberOfTracks()];
+  if(!labelsRecTPCITS) 
   {
-     Printf("Cannot create labelsRec");
+     Printf("Cannot create labelsRecTPCITS");
      return;
   }
-  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsRec[i] = 0; }
+  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsRecTPCITS[i] = 0; }
 
-  Int_t *labelsAllRec =  NULL;
-  labelsAllRec =  new Int_t[esdEvent->GetNumberOfTracks()];
-  if(!labelsAllRec) { 
-     Printf("Cannot create labelsAllRec");
+  Int_t *labelsAllRecTPCITS =  NULL;
+  labelsAllRecTPCITS =  new Int_t[esdEvent->GetNumberOfTracks()];
+  if(!labelsAllRecTPCITS) { 
+     Printf("Cannot create labelsAllRecTPCITS");
      return;
   }
-  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsAllRec[i] = 0; }
+  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsAllRecTPCITS[i] = 0; }
 
   // loop over rec. tracks
   AliESDtrack *track=0;
@@ -485,11 +481,11 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *co
     if(!fUseKinkDaughters && track->GetKinkIndex(0) > 0) continue;
 
     Int_t label = TMath::Abs(track->GetLabel()); 
-    labelsAllRec[iTrack]=label;
+    labelsAllRecTPCITS[iTrack]=label;
 
     // iTPC+ITS
     if(IsRecTPCITS(track) != 0) 
-      labelsRec[iTrack]=label;
+      labelsRecTPCITS[iTrack]=label;
   }
 
   // 
@@ -520,7 +516,7 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *co
     for(Int_t iRec=0; iRec<esdEvent->GetNumberOfTracks(); ++iRec) 
     {
       // check findable
-      if(iMc == labelsAllRec[iRec]) 
+      if(iMc == labelsAllRecTPCITS[iRec]) 
       {
         findable = IsFindable(mcEvent,iMc);
 	break;
@@ -531,7 +527,7 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *co
     for(Int_t iRec=0; iRec<esdEvent->GetNumberOfTracks(); ++iRec) 
     {
       // check reconstructed
-      if(iMc == labelsRec[iRec]) 
+      if(iMc == labelsRecTPCITS[iRec]) 
       {
         recStatus = kTRUE;
         break;
@@ -558,33 +554,32 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *co
     fEffHisto->Fill(vEffHisto);
   }
 
-  if(labelsRec) delete [] labelsRec; labelsRec = 0;
-  if(labelsAllRec) delete [] labelsAllRec; labelsAllRec = 0;
+  if(labelsRecTPCITS) delete [] labelsRecTPCITS; labelsRecTPCITS = 0;
+  if(labelsAllRecTPCITS) delete [] labelsAllRecTPCITS; labelsAllRecTPCITS = 0;
 }
 
 //_____________________________________________________________________________
 void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent)
 {
   // Process comparison information 
-  if(!mcEvent) return;
   if(!esdEvent) return;
 
-  Int_t *labelsRec =  NULL;
-  labelsRec =  new Int_t[esdEvent->GetNumberOfTracks()];
-  if(!labelsRec) 
+  Int_t *labelsRecConstrained =  NULL;
+  labelsRecConstrained =  new Int_t[esdEvent->GetNumberOfTracks()];
+  if(!labelsRecConstrained) 
   {
-     Printf("Cannot create labelsRec");
+     Printf("Cannot create labelsRecConstrained");
      return;
   }
-  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsRec[i] = 0; }
+  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsRecConstrained[i] = 0; }
 
-  Int_t *labelsAllRec =  NULL;
-  labelsAllRec =  new Int_t[esdEvent->GetNumberOfTracks()];
-  if(!labelsAllRec) { 
-     Printf("Cannot create labelsAllRec");
+  Int_t *labelsAllRecConstrained =  NULL;
+  labelsAllRecConstrained =  new Int_t[esdEvent->GetNumberOfTracks()];
+  if(!labelsAllRecConstrained) { 
+     Printf("Cannot create labelsAllRecConstrained");
      return;
   }
-  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsAllRec[i] = 0; }
+  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsAllRecConstrained[i] = 0; }
 
   // loop over rec. tracks
   AliESDtrack *track=0;
@@ -598,11 +593,11 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEven
     if(!fUseKinkDaughters && track->GetKinkIndex(0) > 0) continue;
 
     Int_t label = TMath::Abs(track->GetLabel()); 
-    labelsAllRec[iTrack]=label;
+    labelsAllRecConstrained[iTrack]=label;
 
     // Constrained
     if(IsRecConstrained(track) != 0) 
-      labelsRec[iTrack]=label;
+      labelsRecConstrained[iTrack]=label;
 
   }
 
@@ -634,7 +629,7 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEven
     for(Int_t iRec=0; iRec<esdEvent->GetNumberOfTracks(); ++iRec) 
     {
       // check findable
-      if(iMc == labelsAllRec[iRec]) 
+      if(iMc == labelsAllRecConstrained[iRec]) 
       {
         findable = IsFindable(mcEvent,iMc);
 	break;
@@ -645,7 +640,7 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEven
     for(Int_t iRec=0; iRec<esdEvent->GetNumberOfTracks(); ++iRec) 
     {
       // check reconstructed
-      if(iMc == labelsRec[iRec]) 
+      if(iMc == labelsRecConstrained[iRec]) 
       {
         recStatus = kTRUE;
         break;
@@ -672,8 +667,8 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEven
     fEffHisto->Fill(vEffHisto);
   }
 
-  if(labelsRec) delete [] labelsRec; labelsRec = 0;
-  if(labelsAllRec) delete [] labelsAllRec; labelsAllRec = 0;
+  if(labelsRecConstrained) delete [] labelsRecConstrained; labelsRecConstrained = 0;
+  if(labelsAllRecConstrained) delete [] labelsAllRecConstrained; labelsAllRecConstrained = 0;
 }
 
 //_____________________________________________________________________________
