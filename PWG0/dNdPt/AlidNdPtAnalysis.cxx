@@ -874,8 +874,8 @@ void AlidNdPtAnalysis::Init()
   Int_t binsMCTrackHist1[3]=  {fPtCorrNbins, fEtaNbins, 90};
   Double_t minMCTrackHist1[3]={0.,-1.,0.}; 
   Double_t maxMCTrackHist1[3]={10.,1.,2.*TMath::Pi()}; 
-  sprintf(name,"fMCTrackHist1_%d",i);
-  sprintf(title,"mcPt:mcEta:mcPhi");
+  snprintf(name,256,"fMCTrackHist1_%d",i);
+  snprintf(title,256,"mcPt:mcEta:mcPhi");
   
   fMCTrackHist1[i] = new THnSparseF(name,title,3,binsMCTrackHist1,minMCTrackHist1,maxMCTrackHist1);
   fMCTrackHist1[i]->SetBinEdges(0,fBinsPtCorr);
@@ -888,8 +888,8 @@ void AlidNdPtAnalysis::Init()
   Int_t binsMCPrimTrackHist1[5]=  {fPtCorrNbins,fEtaNbins,6,20,4000};
   Double_t minMCPrimTrackHist1[5]={0.,-1.,0.,0.,0.}; 
   Double_t maxMCPrimTrackHist1[5]={10.,1.,6.,20.,4000.}; 
-  sprintf(name,"fMCPrimTrackHist1_%d",i);
-  sprintf(title,"mcPt:mcEta:pid:mech:mother");
+  snprintf(name,256,"fMCPrimTrackHist1_%d",i);
+  snprintf(title,256,"mcPt:mcEta:pid:mech:mother");
   
   fMCPrimTrackHist1[i] = new THnSparseF(name,title,5,binsMCPrimTrackHist1,minMCPrimTrackHist1,maxMCPrimTrackHist1);
   fMCPrimTrackHist1[i]->SetBinEdges(0,fBinsPtCorr);
@@ -904,8 +904,8 @@ void AlidNdPtAnalysis::Init()
   Int_t binsMCPrimTrackHist2[3]=  {4000,20,4000};
   Double_t minMCPrimTrackHist2[3]={0.,0.,0.}; 
   Double_t maxMCPrimTrackHist2[3]={4000.,20.,4000.}; 
-  sprintf(name,"fMCPrimTrackHist2_%d",i);
-  sprintf(title,"pdg:mech:mother");
+  snprintf(name,256,"fMCPrimTrackHist2_%d",i);
+  snprintf(title,256,"pdg:mech:mother");
   
   fMCPrimTrackHist2[i] = new THnSparseF(name,title,3,binsMCPrimTrackHist2,minMCPrimTrackHist2,maxMCPrimTrackHist2);
   fMCPrimTrackHist2[i]->GetAxis(0)->SetTitle("pdg");
@@ -916,8 +916,8 @@ void AlidNdPtAnalysis::Init()
   Int_t binsMCSecTrackHist1[5]=  {fPtCorrNbins,fEtaNbins,6,20,4000};
   Double_t minMCSecTrackHist1[5]={0.,-1.,0.,0.,0.}; 
   Double_t maxMCSecTrackHist1[5]={10.,1.,6.,20.,4000.};   
-  sprintf(name,"fMCSecTrackHist1_%d",i);
-  sprintf(title,"mcPt:mcEta:pid:mech:mother");
+  snprintf(name,256,"fMCSecTrackHist1_%d",i);
+  snprintf(title,256,"mcPt:mcEta:pid:mech:mother");
   
   fMCSecTrackHist1[i] = new THnSparseF(name,title,5,binsMCSecTrackHist1,minMCSecTrackHist1,maxMCSecTrackHist1);
   fMCSecTrackHist1[i]->SetBinEdges(0,fBinsPtCorr);
@@ -936,8 +936,8 @@ void AlidNdPtAnalysis::Init()
   Int_t binsRecTrackHist1[3]={fPtNbins,fEtaNbins,90};
   Double_t minRecTrackHist1[3]={0.,-1.,0.}; 
   Double_t maxRecTrackHist1[3]={10.,1.,2.*TMath::Pi()};
-  sprintf(name,"fRecTrackHist1_%d",i);
-  sprintf(title,"Pt:Eta:Phi");
+  snprintf(name,256,"fRecTrackHist1_%d",i);
+  snprintf(title,256,"Pt:Eta:Phi");
   fRecTrackHist1[i] = new THnSparseF(name,title,3,binsRecTrackHist1,minRecTrackHist1,maxRecTrackHist1);
   fRecTrackHist1[i]->SetBinEdges(0,fBinsPt);
   fRecTrackHist1[i]->SetBinEdges(1,fBinsEta);
@@ -948,10 +948,8 @@ void AlidNdPtAnalysis::Init()
 
   // 
   Int_t binsRecTrackMultHist1[2]={fPtNbins,fMultNbins};
-//   Double_t minRecTrackMultHist1[2]={0.,-0.5}; 
-//   Double_t maxRecTrackMultHist1[2]={10.,149.5};
-  sprintf(name,"fRecTrackMultHist_%d",i);
-  sprintf(title,"Pt:Mult");
+  snprintf(name,256,"fRecTrackMultHist_%d",i);
+  snprintf(title,256,"Pt:Mult");
   fRecTrackMultHist1[i] = new THnSparseF(name,title,2,binsRecTrackMultHist1); //,minRecTrackMultHist1,maxRecTrackMultHist1);
   fRecTrackMultHist1[i]->SetBinEdges(0,fBinsPt);
   fRecTrackMultHist1[i]->SetBinEdges(1,fBinsMult);
@@ -963,8 +961,9 @@ void AlidNdPtAnalysis::Init()
   Int_t binsRecMCTrackHist1[4] = {fPtCorrNbins,fEtaNbins,100,100};
   Double_t minRecMCTrackHist1[4]={0.,-1.,-0.5,-0.5}; 
   Double_t maxRecMCTrackHist1[4]={20.,1.,0.5,0.5}; 
-  sprintf(name,"fRecMCTrackHist1");
-  sprintf(title,"mcPt:mcEta:(Pt-mcPt)/mcPt:(Eta-mcEta)");
+  snprintf(name,256,"fRecMCTrackHist1");
+  snprintf(title,256,"mcPt:mcEta:(Pt-mcPt)/mcPt:(Eta-mcEta)");
+
   fRecMCTrackHist1 = new THnSparseF(name,title,4,binsRecMCTrackHist1,minRecMCTrackHist1,maxRecMCTrackHist1);
   fRecMCTrackHist1->SetBinEdges(0,fBinsPtCorr);
   fRecMCTrackHist1->SetBinEdges(1,fBinsEta);
@@ -976,8 +975,8 @@ void AlidNdPtAnalysis::Init()
   Int_t binsMCMultRecTrackHist1[3] = {fPtCorrNbins,fEtaNbins,6};
   Double_t minMCMultRecTrackHist1[3]={0.,-1.,0.}; 
   Double_t maxMCMultRecTrackHist1[3]={20.,1.,6.}; 
-  sprintf(name,"fMCMultRecTrackHist1");
-  sprintf(title,"mcPt:mcEta:pid");
+  snprintf(name,256,"fMCMultRecTrackHist1");
+  snprintf(title,256,"mcPt:mcEta:pid");
   fMCMultRecTrackHist1 = new THnSparseF(name,title,3,binsMCMultRecTrackHist1,minMCMultRecTrackHist1,maxMCMultRecTrackHist1);
   fMCMultRecTrackHist1->SetBinEdges(0,fBinsPtCorr);
   fMCMultRecTrackHist1->SetBinEdges(1,fBinsEta);
@@ -2594,13 +2593,13 @@ void AlidNdPtAnalysis::Analyse()
 
   for(Int_t i = 0; i<6; i++) 
   { 
-    sprintf(name,"mc_pt_rec_prim_pid_%d",i); 
+    snprintf(name,256,"mc_pt_rec_prim_pid_%d",i); 
     fMCPrimTrackHist1[2]->GetAxis(2)->SetRange(i+1,i+1);
     h = fMCPrimTrackHist1[2]->Projection(0);
     h->SetName(name);
     aFolderObj->Add(h);
 
-    sprintf(name,"mc_pt_rec_sec_pid_%d",i); 
+    snprintf(name,256,"mc_pt_rec_sec_pid_%d",i); 
     fMCSecTrackHist1[2]->GetAxis(2)->SetRange(i+1,i+1);
     h = fMCSecTrackHist1[2]->Projection(0);
     h->SetName(name);
@@ -2613,19 +2612,19 @@ void AlidNdPtAnalysis::Analyse()
       if(j == 4) {
         // decay
 	
-        sprintf(name,"mc_pt_rec_sec_pid_%d_decay",i); 
+        snprintf(name,256,"mc_pt_rec_sec_pid_%d_decay",i); 
         fMCSecTrackHist1[2]->GetAxis(3)->SetRange(j+1,j+1);
         h = fMCSecTrackHist1[2]->Projection(0);
         h->SetName(name);
         aFolderObj->Add(h);
 
-        sprintf(name,"mc_eta_rec_sec_pid_%d_decay",i); 
+        snprintf(name,256,"mc_eta_rec_sec_pid_%d_decay",i); 
         fMCSecTrackHist1[2]->GetAxis(3)->SetRange(j+1,j+1);
         h = fMCSecTrackHist1[2]->Projection(1);
         h->SetName(name);
         aFolderObj->Add(h);
 
-        sprintf(name,"mc_mother_rec_sec_pid_%d_decay",i); 
+        snprintf(name,256,"mc_mother_rec_sec_pid_%d_decay",i); 
         fMCSecTrackHist1[2]->GetAxis(3)->SetRange(j+1,j+1);
         h = fMCSecTrackHist1[2]->Projection(4);
         h->SetName(name);
@@ -2634,19 +2633,19 @@ void AlidNdPtAnalysis::Analyse()
       } else if (j == 5) {
        // conversion
 
-        sprintf(name,"mc_pt_rec_sec_pid_%d_conv",i); 
+        snprintf(name,256,"mc_pt_rec_sec_pid_%d_conv",i); 
         fMCSecTrackHist1[2]->GetAxis(3)->SetRange(j+1,j+1);
         h = fMCSecTrackHist1[2]->Projection(0);
         h->SetName(name);
         aFolderObj->Add(h);
 
-        sprintf(name,"mc_eta_rec_sec_pid_%d_conv",i); 
+        snprintf(name,256,"mc_eta_rec_sec_pid_%d_conv",i); 
         fMCSecTrackHist1[2]->GetAxis(3)->SetRange(j+1,j+1);
         h = fMCSecTrackHist1[2]->Projection(1);
         h->SetName(name);
         aFolderObj->Add(h);
 
-        sprintf(name,"mc_mother_rec_sec_pid_%d_conv",i); 
+        snprintf(name,256,"mc_mother_rec_sec_pid_%d_conv",i); 
         fMCSecTrackHist1[2]->GetAxis(3)->SetRange(j+1,j+1);
         h = fMCSecTrackHist1[2]->Projection(4);
         h->SetName(name);
@@ -2655,31 +2654,31 @@ void AlidNdPtAnalysis::Analyse()
      } else if (j == 13) {
        // mat
        
-        sprintf(name,"mc_pt_rec_sec_pid_%d_mat",i); 
+        snprintf(name,256,"mc_pt_rec_sec_pid_%d_mat",i); 
         fMCSecTrackHist1[2]->GetAxis(3)->SetRange(j+1,j+1);
         h = fMCSecTrackHist1[2]->Projection(0);
         h->SetName(name);
         aFolderObj->Add(h);
 
-        sprintf(name,"mc_eta_rec_sec_pid_%d_mat",i); 
+        snprintf(name,256,"mc_eta_rec_sec_pid_%d_mat",i); 
         fMCSecTrackHist1[2]->GetAxis(3)->SetRange(j+1,j+1);
         h = fMCSecTrackHist1[2]->Projection(1);
         h->SetName(name);
         aFolderObj->Add(h);
 
-        sprintf(name,"mc_eta_mother_rec_sec_pid_%d_mat",i); 
+        snprintf(name,256,"mc_eta_mother_rec_sec_pid_%d_mat",i); 
         fMCSecTrackHist1[2]->GetAxis(3)->SetRange(j+1,j+1);
         h = fMCSecTrackHist1[2]->Projection(4,1);
         h->SetName(name);
         aFolderObj->Add(h);
 
-        sprintf(name,"mc_mother_rec_sec_pid_%d_mat",i); 
+        snprintf(name,256,"mc_mother_rec_sec_pid_%d_mat",i); 
         fMCSecTrackHist1[2]->GetAxis(3)->SetRange(j+1,j+1);
         h = fMCSecTrackHist1[2]->Projection(4);
         h->SetName(name);
         aFolderObj->Add(h);
 
-        sprintf(name,"mc_pt_mother_rec_sec_pid_%d_mat",i); 
+        snprintf(name,256,"mc_pt_mother_rec_sec_pid_%d_mat",i); 
         fMCSecTrackHist1[2]->GetAxis(3)->SetRange(j+1,j+1);
         h = fMCSecTrackHist1[2]->Projection(4,0);
         h->SetName(name);

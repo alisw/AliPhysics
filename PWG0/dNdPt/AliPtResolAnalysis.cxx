@@ -267,6 +267,7 @@ void AliPtResolAnalysis::Analyse()
   //
   TH1::AddDirectory(kFALSE);
   TObjArray *aFolderObj = new TObjArray;
+  if(!aFolderObj) return;
   
   //
   // Reconstructed event vertex
@@ -274,6 +275,10 @@ void AliPtResolAnalysis::Analyse()
   
   // export objects to analysis folder
   fAnalysisFolder = ExportToFolder(aFolderObj);
+  if(!fAnalysisFolder) { 
+    if(aFolderObj) delete aFolderObj;
+    return;
+  }
 
   // delete only TObjArray
   if(aFolderObj) delete aFolderObj;
@@ -282,8 +287,10 @@ void AliPtResolAnalysis::Analyse()
 //_____________________________________________________________________________
 TFolder* AliPtResolAnalysis::ExportToFolder(TObjArray * const array) 
 {
-  // recreate folder avery time and export objects to new one
+  // recreate folder every time and export objects to new one
   //
+  if(!array) return NULL;
+
   AliPtResolAnalysis * comp=this;
   TFolder *folder = comp->GetAnalysisFolder();
 

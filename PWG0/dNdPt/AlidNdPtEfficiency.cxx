@@ -396,6 +396,8 @@ void AlidNdPtEfficiency::Analyse()
   //
   TH1::AddDirectory(kFALSE);
   TObjArray *aFolderObj = new TObjArray;
+  if(!aFolderObj) return; 
+
   TH1D *h1Dall = 0; 
   TH1D *h1D = 0; 
   TH1D *h1Dc = 0; 
@@ -420,8 +422,10 @@ void AlidNdPtEfficiency::Analyse()
   //eff vs eta
   fRecMCTrackHistTPCITS->GetAxis(6)->SetRange(2,2);  
   h1Dall = (TH1D *)fRecMCTrackHistTPCITS->Projection(0);
+  if(!h1Dall) return;
   fRecMCTrackHistTPCITS->GetAxis(5)->SetRange(2,2);  
   h1D = (TH1D *)fRecMCTrackHistTPCITS->Projection(0);
+  if(!h1D) return;
 
   h1Dc = (TH1D *)h1D->Clone("eff_vs_eta_TPCITS");
   h1Dc->Divide(h1Dall);
@@ -433,8 +437,10 @@ void AlidNdPtEfficiency::Analyse()
   fRecMCTrackHistTPCITS->GetAxis(6)->SetRange(2,2);  
   fRecMCTrackHistTPCITS->GetAxis(0)->SetRangeUser(-0.8, 0.799);  
   h1Dall = (TH1D *)fRecMCTrackHistTPCITS->Projection(1);
+  if(!h1Dall) return;
   fRecMCTrackHistTPCITS->GetAxis(5)->SetRange(2,2);  
   h1D = (TH1D *)fRecMCTrackHistTPCITS->Projection(1);
+  if(!h1D) return;
 
   h1Dc = (TH1D *)h1D->Clone("eff_vs_phi_TPCITS");
   h1Dc->Divide(h1Dall);
@@ -446,8 +452,10 @@ void AlidNdPtEfficiency::Analyse()
   fRecMCTrackHistTPCITS->GetAxis(6)->SetRange(2,2);  
   fRecMCTrackHistTPCITS->GetAxis(0)->SetRangeUser(-0.8, 0.799);  
   h1Dall = (TH1D *)fRecMCTrackHistTPCITS->Projection(2);
+  if(!h1Dall) return;
   fRecMCTrackHistTPCITS->GetAxis(5)->SetRange(2,2);  
   h1D = (TH1D *)fRecMCTrackHistTPCITS->Projection(2);
+  if(!h1D) return;
 
   h1Dc = (TH1D *)h1D->Clone("eff_vs_pT_TPCITS");
   h1Dc->Divide(h1Dall);
@@ -465,8 +473,10 @@ void AlidNdPtEfficiency::Analyse()
 
   //eff vs eta
   h1Dall = (TH1D *)fRecMCTrackHistITSTPC->Projection(0);
+  if(!h1Dall) return;
   fRecMCTrackHistITSTPC->GetAxis(5)->SetRange(2,2);  
   h1D = (TH1D *)fRecMCTrackHistITSTPC->Projection(0);
+  if(!h1D) return;
 
   h1Dc = (TH1D *)h1D->Clone("eff_vs_eta_ITSTPC");
   h1Dc->Divide(h1Dall);
@@ -476,8 +486,10 @@ void AlidNdPtEfficiency::Analyse()
   //eff vs phi
   fRecMCTrackHistITSTPC->GetAxis(0)->SetRangeUser(-0.8, 0.799);  
   h1Dall = (TH1D *)fRecMCTrackHistITSTPC->Projection(1);
+  if(!h1Dall) return;
   fRecMCTrackHistITSTPC->GetAxis(5)->SetRange(2,2);  
   h1D = (TH1D *)fRecMCTrackHistITSTPC->Projection(1);
+  if(!h1D) return;
 
   h1Dc = (TH1D *)h1D->Clone("eff_vs_phi_ITSTPC");
   h1Dc->Divide(h1Dall);
@@ -487,8 +499,10 @@ void AlidNdPtEfficiency::Analyse()
   //eff vs pT
   fRecMCTrackHistITSTPC->GetAxis(0)->SetRangeUser(-0.8, 0.799);  
   h1Dall = (TH1D *)fRecMCTrackHistITSTPC->Projection(2);
+  if(!h1Dall) return;
   fRecMCTrackHistITSTPC->GetAxis(5)->SetRange(2,2);  
   h1D = (TH1D *)fRecMCTrackHistITSTPC->Projection(2);
+  if(!h1D) return;
 
   h1Dc = (TH1D *)h1D->Clone("eff_vs_pT_ITSTPC");
   h1Dc->Divide(h1Dall);
@@ -497,6 +511,10 @@ void AlidNdPtEfficiency::Analyse()
   
   // export objects to analysis folder
   fAnalysisFolder = ExportToFolder(aFolderObj);
+  if(!fAnalysisFolder) {
+    if(aFolderObj) delete aFolderObj;
+    return;
+  }
 
   // delete only TObjArray
   if(aFolderObj) delete aFolderObj;
