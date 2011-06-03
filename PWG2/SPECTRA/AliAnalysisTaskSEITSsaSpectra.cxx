@@ -46,6 +46,7 @@
 #include "AliCentrality.h"
 #include "AliMultiplicity.h"
 #include "AliESDUtils.h"
+#include "AliITSPIDResponse.h"
 
 ClassImp(AliAnalysisTaskSEITSsaSpectra)
 /* $Id$ */
@@ -66,6 +67,7 @@ AliAnalysisTaskSE("Task CFit"),
   fHistDEDXdouble(0),
   fHistBeforeEvSel(0),
   fHistAfterEvSel(0),
+  fITSPIDResponse(0),
   fMinSPDPts(1),
   fMinNdEdxSamples(3),
   fMindEdx(0.),
@@ -96,6 +98,7 @@ AliAnalysisTaskSE("Task CFit"),
   for(Int_t iBin=0; iBin<kNbins+1; iBin++) fPtBinLimits[iBin]=xbins[iBin];
   fRandGener=new TRandom3(0);
   fesdTrackCutsMult = new AliESDtrackCuts;
+ 
    // TPC  
   fesdTrackCutsMult->SetMinNClustersTPC(70);
   fesdTrackCutsMult->SetMaxChi2PerClusterTPC(4);
@@ -124,6 +127,7 @@ AliAnalysisTaskSEITSsaSpectra::~AliAnalysisTaskSEITSsaSpectra(){
     fOutput = 0;
   }
   if(fRandGener) delete fRandGener;
+  if(fITSPIDResponse) delete fITSPIDResponse;
 }
 
 //________________________________________________________________________
@@ -238,35 +242,6 @@ Double_t AliAnalysisTaskSEITSsaSpectra::Eta2y(Double_t pt, Double_t m, Double_t 
 
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskSEITSsaSpectra::BetheBloch(Double_t bg,Bool_t optMC) const{
-  // BB PHOBOS parametrization tuned by G. Ortona on 900 GeV pp data of 2009
-  Double_t par[5];
-  if(optMC){//Double_t par[5]={139.1,23.36,0.06052,0.2043,-0.0004999};
-    
-    par[0]=-2.48;   //new parameter from LHC10d2
-    par[1]=23.13;
-    par[2]=1.161;
-    par[3]=0.93;
-    par[4]=-1.2973;
-    
-  }else {
-    //Double_t par[5]={5.33458e+04,1.65303e+01,2.60065e-03,3.59533e-04,7.51168e-05};}
-  par[0]=5.33458e+04;
-  par[1]=1.65303e+01;
-  par[2]=2.60065e-03;
-  par[3]=3.59533e-04;
-  par[4]=7.51168e-05;
-  }
-  Double_t beta = bg/TMath::Sqrt(1.+ bg*bg);
-  Double_t gamma=bg/beta;
-  Double_t eff=1.0;
-  if(bg<par[2]) eff=(bg-par[3])*(bg-par[3])+par[4];
-  else eff=(par[2]-par[3])*(par[2]-par[3])+par[4];
-  return (par[1]+2.0*TMath::Log(gamma)-beta*beta)*(par[0]/(beta*beta))*eff;
-}
-
-
-//________________________________________________________________________
 void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
   // Create a TList with histograms and a TNtuple
   // Called once
@@ -324,7 +299,6 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
   fHistDEDXdouble = new TH2F("fHistDEDXdouble","",500,-5,5,900,0,1000);
   fOutput->Add(fHistDEDXdouble);
   
-
   fHistBeforeEvSel = new TH1F("fHistBeforeEvSel","fHistBeforeEvSel",kNbins,fPtBinLimits);
   fHistAfterEvSel = new TH1F("fHistAfterEvSel","fHistAfterEvSel",kNbins,fPtBinLimits);
   fOutput->Add(fHistBeforeEvSel);
@@ -333,6 +307,12 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
   
   
   for(Int_t j=0;j<3;j++){
+    
+    fHistPosNSigmaSep[j] = new TH2F(Form("fHistPosNSigmaSep%d",j),"",hnbins,hxbins,1000,-10,10);
+    fOutput->Add(fHistPosNSigmaSep[j]);
+    fHistNegNSigmaSep[j] = new TH2F(Form("fHistNegNSigmaSep%d",j),"",hnbins,hxbins,1000,-10,10);
+    fOutput->Add(fHistNegNSigmaSep[j]);
+    
     fHistPrimMCpos[j] = new TH1F(Form("fHistPrimMCpos%d",j),Form("fHistPrimMCpos%d",j),kNbins,fPtBinLimits);
     fHistPrimMCneg[j] = new TH1F(Form("fHistPrimMCneg%d",j),Form("fHistPrimMCneg%d",j),kNbins,fPtBinLimits);
     fOutput->Add(fHistPrimMCneg[j]);
@@ -570,19 +550,6 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
   TParticle *part=0;
   TParticlePDG *pdgPart=0;
 	
-  //Nsigma Method
-  Float_t resodedx[4];
-  if(fMC){
-    resodedx[0]=0.0001; //default value
-    resodedx[1]=0.0001; //default value
-    resodedx[2]=0.108;
-    resodedx[3]=0.0998;
-  }else{
-    resodedx[0]=0.0001; //default value
-    resodedx[1]=0.0001; //default value
-    resodedx[2]=0.116;
-    resodedx[3]=0.103;
-  }
   /////////////////////
   if(fMC){
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -602,6 +569,10 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     }
   }
   //flags for MC
+  if(!fITSPIDResponse){
+    fITSPIDResponse=new AliITSPIDResponse(fMC); 
+  }
+
   Int_t nTrackMC=0; 
   if(stack) nTrackMC = stack->GetNtrack();	
   const AliESDVertex *vtx =  fESD->GetPrimaryVertexSPD();
@@ -993,16 +964,22 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
       dedx=fRandGener->Gaus(dedx,fSmeardEdx*dedx);
       p=fRandGener->Gaus(p,fSmearP*p);     
     }
-
+    
+    //Nsigma Method
+    Float_t resodedx[4];
+    for(Int_t ires=0;ires<4;ires++){
+      resodedx[ires]=fITSPIDResponse->GetResolution(1,ires+1,kTRUE);
+    }
+    
     for(Int_t i=0;i<4;i++){
       y[i] = Eta2y(pt,pdgmass[i],track->Eta());
-      bbtheo[i]=BetheBloch(p/pdgmass[i],fMC);
+      bbtheo[i]=fITSPIDResponse->Bethe(p,pdgmass[i],kTRUE);
       logdiff[i]=TMath::Log(dedx) - TMath::Log(bbtheo[i]);
     }
+    
     Int_t resocls=(Int_t)count-1;
     
     //NSigma Method, with asymmetric bands
-    
     Int_t minPosMean=-1;
     for(Int_t isp=0; isp<3; isp++){
       if(dedx<bbtheo[0])continue;
@@ -1021,7 +998,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     if(dedx<bbtheo[0] && TMath::Abs((dedx-bbtheo[0])/(resodedx[resocls]*bbtheo[0]))<2)minPosMean=0;
     
     //NSigma method with simmetric bands
-
+    
     Double_t nsigmas[3];
     Double_t min=999999.;
     Int_t minPos=-1;
@@ -1032,6 +1009,9 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	min=nsigmas[isp];
 	minPos=isp;
       }
+      //Filling histos with nsigma separation
+      if(track->GetSign()>0)fHistPosNSigmaSep[isp]->Fill(track->GetP(),((dedx-bb)/(resodedx[resocls]*bb)));
+      else fHistNegNSigmaSep[isp]->Fill(track->GetP(),((dedx-bb)/(resodedx[resocls]*bb)));
     }
     
     // y calculation
@@ -1165,17 +1145,17 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	if(fMC){
 	  if(TMath::Abs(y[0])<fMaxY){
 	    if(TMath::Abs(code)==211)fHistMCPosPiHypPion[theBin]->Fill(logdiff[0]);
-	    if(TMath::Abs(code)==311)fHistMCPosKHypPion[theBin]->Fill(logdiff[0]);
+	    if(TMath::Abs(code)==321)fHistMCPosKHypPion[theBin]->Fill(logdiff[0]);
 	    if(TMath::Abs(code)==2212)fHistMCPosPHypPion[theBin]->Fill(logdiff[0]);
 	  }
 	  if(TMath::Abs(y[1])<fMaxY){
 	    if(TMath::Abs(code)==211)fHistMCPosPiHypKaon[theBin]->Fill(logdiff[1]);
-	    if(TMath::Abs(code)==311)fHistMCPosKHypKaon[theBin]->Fill(logdiff[1]);
+	    if(TMath::Abs(code)==321)fHistMCPosKHypKaon[theBin]->Fill(logdiff[1]);
 	    if(TMath::Abs(code)==2212)fHistMCPosPHypKaon[theBin]->Fill(logdiff[1]);
 	  }
 	  if(TMath::Abs(y[2])<fMaxY){
 	    if(TMath::Abs(code)==211)fHistMCPosPiHypProton[theBin]->Fill(logdiff[2]);
-	    if(TMath::Abs(code)==311)fHistMCPosKHypProton[theBin]->Fill(logdiff[2]);
+	    if(TMath::Abs(code)==321)fHistMCPosKHypProton[theBin]->Fill(logdiff[2]);
 	    if(TMath::Abs(code)==2212)fHistMCPosPHypProton[theBin]->Fill(logdiff[2]);
 	  }
 	}
@@ -1185,19 +1165,19 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	if(TMath::Abs(y[2]) < fMaxY)fHistNegP[theBin]->Fill(logdiff[2]);
 	if(fMC){
 	  if(TMath::Abs(y[0])<fMaxY){
-	    if(TMath::Abs(code)==211)fHistMCPosPiHypPion[theBin]->Fill(logdiff[0]);
-	    if(TMath::Abs(code)==311)fHistMCPosKHypPion[theBin]->Fill(logdiff[0]);
-	    if(TMath::Abs(code)==2212)fHistMCPosPHypPion[theBin]->Fill(logdiff[0]);
+	    if(TMath::Abs(code)==211)fHistMCNegPiHypPion[theBin]->Fill(logdiff[0]);
+	    if(TMath::Abs(code)==321)fHistMCNegKHypPion[theBin]->Fill(logdiff[0]);
+	    if(TMath::Abs(code)==2212)fHistMCNegPHypPion[theBin]->Fill(logdiff[0]);
 	  }
 	  if(TMath::Abs(y[1])<fMaxY){
-	    if(TMath::Abs(code)==211)fHistMCPosPiHypKaon[theBin]->Fill(logdiff[1]);
-	    if(TMath::Abs(code)==311)fHistMCPosKHypKaon[theBin]->Fill(logdiff[1]);
-	    if(TMath::Abs(code)==2212)fHistMCPosPHypKaon[theBin]->Fill(logdiff[1]);
+	    if(TMath::Abs(code)==211)fHistMCNegPiHypKaon[theBin]->Fill(logdiff[1]);
+	    if(TMath::Abs(code)==321)fHistMCNegKHypKaon[theBin]->Fill(logdiff[1]);
+	    if(TMath::Abs(code)==2212)fHistMCNegPHypKaon[theBin]->Fill(logdiff[1]);
 	  }
 	  if(TMath::Abs(y[2])<fMaxY){
-	    if(TMath::Abs(code)==211)fHistMCPosPiHypProton[theBin]->Fill(logdiff[2]);
-	    if(TMath::Abs(code)==311)fHistMCPosKHypProton[theBin]->Fill(logdiff[2]);
-	    if(TMath::Abs(code)==2212)fHistMCPosPHypProton[theBin]->Fill(logdiff[2]);
+	    if(TMath::Abs(code)==211)fHistMCNegPiHypProton[theBin]->Fill(logdiff[2]);
+	    if(TMath::Abs(code)==321)fHistMCNegKHypProton[theBin]->Fill(logdiff[2]);
+	    if(TMath::Abs(code)==2212)fHistMCNegPHypProton[theBin]->Fill(logdiff[2]);
 	  }
 	}
       }
@@ -1239,11 +1219,14 @@ void AliAnalysisTaskSEITSsaSpectra::Terminate(Option_t *) {
   fHistDEDX = dynamic_cast<TH2F*>(fOutput->FindObject("fHistDEDX"));
   fHistDEDXdouble = dynamic_cast<TH2F*>(fOutput->FindObject("fHistDEDXdouble"));
 
+  
   fHistBeforeEvSel = dynamic_cast<TH1F*>(fOutput->FindObject("fHistBeforeEvSel"));
   fHistAfterEvSel = dynamic_cast<TH1F*>(fOutput->FindObject("fHistAfterEvSel"));
 
 	
   for(Int_t j=0;j<3;j++){
+    fHistPosNSigmaSep[j] = dynamic_cast<TH2F*>(fOutput->FindObject(Form("fHistPosNSigmaSep%d",j)));
+    fHistNegNSigmaSep[j] = dynamic_cast<TH2F*>(fOutput->FindObject(Form("fHistNegNSigmaSep%d",j)));
     if(fMC){
     fHistPrimMCpos[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistPrimMCpos%d",j)));
     fHistPrimMCneg[j] = dynamic_cast<TH1F*>(fOutput->FindObject(Form("fHistPrimMCneg%d",j)));
