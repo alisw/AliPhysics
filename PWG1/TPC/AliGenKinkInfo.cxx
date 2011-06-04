@@ -124,7 +124,8 @@ void AliGenKinkInfo::Update()
   p1[0] = pdaughter.Px();
   p1[1] = pdaughter.Py();
   p1[2] = pdaughter.Pz();
-  Double_t sign = (pdaughter.GetPDG()->Charge()>0)? -1:1;
+  Double_t sign = 0;
+  sign = (pdaughter.GetPDG()->Charge()>0)? -1:1;
   AliHelix dhelix1(x1,p1,sign);
   //
   //
