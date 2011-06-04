@@ -189,6 +189,13 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
 {
   // Fill TPC only efficiency comparison information 
   if(!esdEvent) return;
+  if(!mcEvent) return;
+
+  AliStack *stack = mcEvent->Stack();
+  if (!stack) {
+    AliDebug(AliLog::kError, "Stack not available");
+    return;
+  }
 
   Int_t *labelsRec =  NULL;
   labelsRec =  new Int_t[esdEvent->GetNumberOfTracks()];
@@ -202,6 +209,7 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
   Int_t *labelsAllRec =  NULL;
   labelsAllRec =  new Int_t[esdEvent->GetNumberOfTracks()];
   if(!labelsAllRec) { 
+     delete  [] labelsRec;
      Printf("Cannot create labelsAllRec");
      return;
   }
@@ -231,14 +239,6 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
   // 
   // MC histograms for efficiency studies
   //
-  if(!mcEvent) return;
- 
-  AliStack *stack = mcEvent->Stack();
-  if (!stack) {
-    AliDebug(AliLog::kError, "Stack not available");
-    return;
-  }
-
   Int_t nPart  = stack->GetNtrack();
   //Int_t nPart  = stack->GetNprimary();
   for (Int_t iMc = 0; iMc < nPart; ++iMc) 
@@ -316,22 +316,23 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
 
   if(!esdEvent) return;
 
-  Int_t *labelsRec =  NULL;
-  labelsRec =  new Int_t[esdEvent->GetNumberOfTracks()];
-  if(!labelsRec) 
+  Int_t *labelsRecSec =  NULL;
+  labelsRecSec =  new Int_t[esdEvent->GetNumberOfTracks()];
+  if(!labelsRecSec) 
   {
-     Printf("Cannot create labelsRec");
+     Printf("Cannot create labelsRecSec");
      return;
   }
-  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsRec[i] = 0; }
+  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsRecSec[i] = 0; }
 
-  Int_t *labelsAllRec =  NULL;
-  labelsAllRec =  new Int_t[esdEvent->GetNumberOfTracks()];
-  if(!labelsAllRec) { 
-     Printf("Cannot create labelsAllRec");
+  Int_t *labelsAllRecSec =  NULL;
+  labelsAllRecSec =  new Int_t[esdEvent->GetNumberOfTracks()];
+  if(!labelsAllRecSec) { 
+     delete [] labelsRecSec;
+     Printf("Cannot create labelsAllRecSec");
      return;
   }
-  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsAllRec[i] = 0; }
+  for(Int_t i=0;i<esdEvent->GetNumberOfTracks();i++) { labelsAllRecSec[i] = 0; }
 
   // loop over rec. tracks
   AliESDtrack *track=0;
@@ -346,12 +347,12 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
     if(!fUseKinkDaughters && track->GetKinkIndex(0) > 0) continue;
 
     Int_t label = TMath::Abs(track->GetLabel()); 
-    labelsAllRec[multAll]=label;
+    labelsAllRecSec[multAll]=label;
     multAll++;
 
     // TPC only
     if(IsRecTPC(track) != 0) {
-      labelsRec[multRec]=label;
+      labelsRecSec[multRec]=label;
       multRec++;
     }
   }
@@ -389,7 +390,7 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
     for(Int_t iRec=0; iRec<multAll; ++iRec) 
     {
       // check findable
-      if(iMc == labelsAllRec[iRec]) 
+      if(iMc == labelsAllRecSec[iRec]) 
       {
         findable = IsFindable(mcEvent,iMc);
 	break;
@@ -400,7 +401,7 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
     for(Int_t iRec=0; iRec<multRec; ++iRec) 
     {
       // check reconstructed
-      if(iMc == labelsRec[iRec]) 
+      if(iMc == labelsRecSec[iRec]) 
       {
         recStatus = kTRUE;
         break;
@@ -440,8 +441,8 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
   }
   }
 
-  if(labelsRec) delete [] labelsRec; labelsRec = 0;
-  if(labelsAllRec) delete [] labelsAllRec; labelsAllRec = 0;
+  if(labelsRecSec) delete [] labelsRecSec; labelsRecSec = 0;
+  if(labelsAllRecSec) delete [] labelsAllRecSec; labelsAllRecSec = 0;
 }
 
 
@@ -451,6 +452,15 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
 void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent)
 {
   // Fill efficiency comparison information
+
+  if(!esdEvent) return;
+  if(!mcEvent) return;
+
+  AliStack *stack = mcEvent->Stack();
+  if (!stack) {
+    AliDebug(AliLog::kError, "Stack not available");
+    return;
+  }
 
   Int_t *labelsRecTPCITS =  NULL;
   labelsRecTPCITS =  new Int_t[esdEvent->GetNumberOfTracks()];
@@ -464,6 +474,7 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *co
   Int_t *labelsAllRecTPCITS =  NULL;
   labelsAllRecTPCITS =  new Int_t[esdEvent->GetNumberOfTracks()];
   if(!labelsAllRecTPCITS) { 
+     delete [] labelsRecTPCITS;
      Printf("Cannot create labelsAllRecTPCITS");
      return;
   }
@@ -491,14 +502,6 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *co
   // 
   // MC histograms for efficiency studies
   //
-  if(!mcEvent) return;
- 
-  AliStack *stack = mcEvent->Stack();
-  if (!stack) {
-    AliDebug(AliLog::kError, "Stack not available");
-    return;
-  }
-
   //Int_t nPart  = stack->GetNtrack();
   Int_t nPart  = stack->GetNprimary();
   for (Int_t iMc = 0; iMc < nPart; ++iMc) 
@@ -563,6 +566,13 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEven
 {
   // Process comparison information 
   if(!esdEvent) return;
+  if(!mcEvent) return;
+
+  AliStack *stack = mcEvent->Stack();
+  if (!stack) {
+    AliDebug(AliLog::kError, "Stack not available");
+    return;
+  }
 
   Int_t *labelsRecConstrained =  NULL;
   labelsRecConstrained =  new Int_t[esdEvent->GetNumberOfTracks()];
@@ -576,6 +586,7 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEven
   Int_t *labelsAllRecConstrained =  NULL;
   labelsAllRecConstrained =  new Int_t[esdEvent->GetNumberOfTracks()];
   if(!labelsAllRecConstrained) { 
+     delete [] labelsRecConstrained;
      Printf("Cannot create labelsAllRecConstrained");
      return;
   }
@@ -604,13 +615,7 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEven
   // 
   // MC histograms for efficiency studies
   //
-  if(!mcEvent) return;
  
-  AliStack *stack = mcEvent->Stack();
-  if (!stack) {
-    AliDebug(AliLog::kError, "Stack not available");
-    return;
-  }
 
   //Int_t nPart  = stack->GetNtrack();
   Int_t nPart  = stack->GetNprimary();

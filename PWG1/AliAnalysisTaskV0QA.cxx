@@ -1554,7 +1554,7 @@ void AliAnalysisTaskV0QA::InspectListOfV0s(){
 
     AliESDtrack* trackPosTest = fESD->GetTrack(fV0MIs->GetPindex());
     AliESDtrack* trackNegTest = fESD->GetTrack(fV0MIs->GetNindex());
-
+     
 
     if ( trackPosTest->GetSign() == trackNegTest->GetSign()){
      continue;
@@ -1584,6 +1584,9 @@ void AliAnalysisTaskV0QA::InspectListOfV0s(){
       nIndex=fV0MIs->GetPindex();
 
     }
+
+    if(!trackPos) return;
+    if(!trackNeg) return;
 
     Int_t labelNeg=TMath::Abs(trackNeg->GetLabel());
     if(labelNeg > fStack->GetNtrack() ) continue;
