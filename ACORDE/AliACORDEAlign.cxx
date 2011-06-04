@@ -57,10 +57,10 @@ AliACORDEAlign::AliACORDEAlign() :
 
 AliACORDEAlign::AliACORDEAlign(Int_t reportloc,Int_t reportglob):
   TObject(),
-  fFileGlob(0x0),
+  fFileGlob(),
   fRepLoc(reportloc),
   fRepGlob(reportglob),
-  fUser(0x0),
+  fUser(),
   fX(120,4),
   fAlignACORDEObjArray(0x0),
   fDebug(0)
@@ -71,13 +71,13 @@ AliACORDEAlign::AliACORDEAlign(Int_t reportloc,Int_t reportglob):
   //fRepLoc = new reportloc[80];
   //fRepGlob = new reportglob[80];
   Char_t path[50];
-  //fFileGlob = new Char_t[80];
-  //fUser = new Char_t[10];
+ // fFileGlob = new Char_t[80];
+ // fUser = new Char_t[10];
   snprintf(path,50,gSystem->Getenv("ALICE_ROOT")); 
   // 
   snprintf(fFileGlob,80,"%s/ACORDE/Survey_%d_ACORDE.txt",path,reportglob);
   //
- snprintf(fUser,80,gSystem->Getenv("alien_API_USER"));
+ snprintf(fUser,10,gSystem->Getenv("alien_API_USER"));
 
 }
 
