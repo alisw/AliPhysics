@@ -209,8 +209,8 @@ void AliAnalysisNoiseTPC::UserExec(Option_t *)
     if (track->GetKinkIndex(0) > 0) continue;
     
     UInt_t status = track->GetStatus();
-    if ((status&AliESDtrack::kITSrefit)==1) continue; // explicitly ask for tracks without ITS refit
-    if ((status&AliESDtrack::kTPCrefit)==0) continue;
+    if ((status&AliESDtrack::kITSrefit)==AliESDtrack::kITSrefit) continue; // explicitly ask for tracks without ITS refit
+    if ((status&AliESDtrack::kTPCrefit)!=AliESDtrack::kTPCrefit) continue;
     
     if (track->GetTPCsignal() > 10) continue;          // explicitly ask for tracks without dE/dx
     
