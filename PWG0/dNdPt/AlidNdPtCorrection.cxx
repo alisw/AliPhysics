@@ -1213,11 +1213,13 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
     Bool_t bRedoTPCVertex = evtCuts->IsRedoTPCVertex();
     Bool_t bUseConstraints = evtCuts->IsUseBeamSpotConstraint();
     vtxESD = AlidNdPtHelper::GetVertex(esdEvent,evtCuts,accCuts,esdTrackCuts,GetAnalysisMode(),kFALSE,bRedoTPCVertex,bUseConstraints); 
+    if(!vtxESD) return;
     isRecVertex = AlidNdPtHelper::TestRecVertex(vtxESD, esdEvent->GetPrimaryVertexSPD(), GetAnalysisMode(), kFALSE);
   }
 
   if( IsUseMCInfo() && !evtCuts->IsRecVertexRequired() ) {
     vtxESD = new AliESDVertex(vtxMC[2],10.,genHeader->NProduced(),"smearMC");
+    if(!vtxESD) return;
     isRecVertex = kTRUE;
   }
 
@@ -2041,6 +2043,7 @@ void AlidNdPtCorrection::Analyse()
   TH2 *h2D = 0; 
 
   TObjArray *aFolderObj = new TObjArray;
+  if(!aFolderObj) return;
 
   //
   // get cuts
