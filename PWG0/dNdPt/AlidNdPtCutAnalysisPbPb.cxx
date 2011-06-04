@@ -540,6 +540,8 @@ void AlidNdPtCutAnalysisPbPb::Analyse()
   //
   TH1::AddDirectory(kFALSE);
   TObjArray *aFolderObj = new TObjArray;
+  if(!aFolderObj) return;
+
   TH1D *h1D = 0; 
   TH2D *h2D = 0; 
 
@@ -766,6 +768,10 @@ void AlidNdPtCutAnalysisPbPb::Analyse()
 
   // export objects to analysis folder
   fAnalysisFolder = ExportToFolder(aFolderObj);
+  if(!fAnalysisFolder) {
+    if(aFolderObj) delete aFolderObj;
+    return;
+  }
 
   // delete only TObjArray
   if(aFolderObj) delete aFolderObj;

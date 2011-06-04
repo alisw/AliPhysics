@@ -823,18 +823,17 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
 
   // get reconstructed vertex  
   const AliESDVertex* vtxESD = 0; 
-  if(evtCuts->IsRecVertexRequired()) 
-  {
-    if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
-      vtxESD = esdEvent->GetPrimaryVertexTPC();
-    }
-    else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
-      vtxESD = esdEvent->GetPrimaryVertexTracks();
-    }
-    else {
-    	return;
-    }
+  if(GetAnalysisMode() == AlidNdPtHelper::kTPC) {
+     vtxESD = esdEvent->GetPrimaryVertexTPC();
   }
+  else if(GetAnalysisMode() == AlidNdPtHelper::kTPCITS) {
+     vtxESD = esdEvent->GetPrimaryVertexTracks();
+  }
+  else {
+     return;
+  }
+
+  if(!vtxESD) return;
 
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD); 
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
@@ -1358,6 +1357,7 @@ void AlidNdPtAnalysisPbPb::Analyse()
 
   char name[256];
   TObjArray *aFolderObj = new TObjArray;
+  if(!aFolderObj) return;
   
   //
   // LHC backgraund in all and 0-bins

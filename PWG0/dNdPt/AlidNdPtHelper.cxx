@@ -130,6 +130,7 @@ const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, const Ali
 	}
       } 
       AliESDVertex *vTPC = vertexer.VertexForSelectedTracks(&array,id, kTRUE, kTRUE, bUseMeanVertex);
+      if(!vTPC) return 0;
       
       // set recreated TPC vertex
       aEsd->SetPrimaryVertexTPC(vTPC);
@@ -454,11 +455,11 @@ TH1F* AlidNdPtHelper::CreateResHisto(TH2F* const hRes2, TH1F **phMean, Int_t int
     if (drawBinFits) {
       char name[256];
       if (bin == 0) {
-	sprintf(name, "%s < %.4g", axis->GetTitle(), axis->GetBinUpEdge(bin));
+	snprintf(name,256, "%s < %.4g", axis->GetTitle(), axis->GetBinUpEdge(bin));
       } else if (bin == nBins+1) {
-	sprintf(name, "%.4g < %s", axis->GetBinLowEdge(bin), axis->GetTitle());
+	snprintf(name,256, "%.4g < %s", axis->GetBinLowEdge(bin), axis->GetTitle());
       } else {
-	sprintf(name, "%.4g < %s < %.4g", axis->GetBinLowEdge(bin),
+	snprintf(name,256, "%.4g < %s < %.4g", axis->GetBinLowEdge(bin),
 		axis->GetTitle(), axis->GetBinUpEdge(bin));
       }
       canBinFits->cd(bin + dBin);
@@ -882,6 +883,8 @@ Int_t AlidNdPtHelper::GetTPCMBTrackMult(const AliESDEvent *const esdEvent,const 
     const Double_t kMaxStep = 1;   //max step over the material
 
     AliExternalTrackParam  *tpcTrack  = new AliExternalTrackParam(*(t->GetTPCInnerParam()));
+    if(!tpcTrack) return 0;
+
     if (!tpcTrack->PropagateToDCABxByBz(&vtx0,b,kMaxStep,dca,cov)) 
     {
       if(tpcTrack) delete tpcTrack; 
@@ -951,6 +954,8 @@ Int_t AlidNdPtHelper::GetTPCMBPrimTrackMult(const AliESDEvent *const esdEvent, A
     const Double_t kMaxStep = 1;   //max step over the material
 
     AliExternalTrackParam  *tpcTrack  = new AliExternalTrackParam(*(t->GetTPCInnerParam()));
+    if(!tpcTrack) return 0;
+
     if (!tpcTrack->PropagateToDCABxByBz(&vtx0,b,kMaxStep,dca,cov)) 
     {
       if(tpcTrack) delete tpcTrack; 
@@ -1195,10 +1200,10 @@ TH1* AlidNdPtHelper::NormalizeToEvent(const TH2 *const hist1, const TH1 *const h
 
  TH1D *histNorm = 0;
  for(Int_t i=0; i<=nbinsX+1; i++) {
-   sprintf(name,"mom_%d",i);
+   snprintf(name,256,"mom_%d",i);
    TH1D *hist = (TH1D*)hist1->ProjectionY(name,i+1,i+1);
 
-   sprintf(name,"mom_norm");
+   snprintf(name,256,"mom_norm");
    if(i==0) { 
      histNorm = (TH1D *)hist->Clone(name);
      histNorm->Reset();
@@ -1364,6 +1369,7 @@ const AliESDVertex* AlidNdPtHelper::GetTPCVertexZ(const AliESDEvent* const esdEv
     const Double_t kMaxStep = 1;   //max step over the material
 
     AliExternalTrackParam  *tpcTrack  = new AliExternalTrackParam(*(t->GetTPCInnerParam()));
+    if(!tpcTrack) return 0;
     if (!tpcTrack->PropagateToDCABxByBz(&vtx0,b,kMaxStep,dca,cov)) continue;
 
     //
