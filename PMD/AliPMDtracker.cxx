@@ -433,7 +433,7 @@ void AliPMDtracker::AssignTrPidToCluster(Int_t nentry, Int_t *itra,
 
       trenergy  = new Float_t [nghadtrack];
       trpid     = new Int_t [nghadtrack];
-      sortcoord = new Int_t [nghadtrack];
+      sortcoord = new Int_t [2*nghadtrack];
       for (Int_t i = 0; i < ngtrack; i++)
 	{
 	  trenergy[i] = 0.;
