@@ -26,11 +26,10 @@ public:
 // ,kDCAL  = 2      // not implemented
   };
 
-  AliAnalysisTaskCaloCellsQA(); 
-  AliAnalysisTaskCaloCellsQA(const char *name, char *outfile = NULL);                                                
+  AliAnalysisTaskCaloCellsQA();
+  AliAnalysisTaskCaloCellsQA(const char *name, Int_t nmods = 10, Int_t det = kEMCAL, char *outfile = NULL);
   virtual ~AliAnalysisTaskCaloCellsQA();
 
-  void   InitCaloCellsQA(Int_t nmods = 10, Int_t det = kEMCAL);                                                      
   void   UserCreateOutputObjects();
   void   UserExec(Option_t *);
   void   Terminate(Option_t *);
@@ -38,11 +37,11 @@ public:
   void   SetBadCells(Int_t badcells[], Int_t nbad);
 
   // getters and setters
-  AliCaloCellsQA*  GetCaloCellsQA()    { return fCellsQA; }
-  Bool_t           GetAvoidPileup()    { return fkAvoidPileup; }
-  const char*      GetOutputFileName() { return fOutfile->Data(); }
-  void             SetAvoidPileup(Bool_t flag) { fkAvoidPileup = flag; }
-  void             SetOutputFileName(char* fname) { *fOutfile = fname; }
+  AliCaloCellsQA*  GetCaloCellsQA()                { return fCellsQA; }
+  Bool_t           GetAvoidPileup()                { return fkAvoidPileup; }
+  const char*      GetOutputFileName()             { return fOutfile.Data(); }
+  void             SetAvoidPileup(Bool_t flag)     { fkAvoidPileup = flag; }
+  void             SetOutputFileName(char* fname)  { fOutfile = fname; }
 
 protected:
   Bool_t IsClusterBad(AliVCluster *clus);
@@ -52,13 +51,13 @@ private:
   AliAnalysisTaskCaloCellsQA & operator = (const AliAnalysisTaskCaloCellsQA &);
 
 private:
-  Bool_t              fkAvoidPileup;   // flag not to process pileup events
-  AliCaloCellsQA*     fCellsQA;        // analysis instance
-  TString*            fOutfile;        // output file name
-  Int_t               fNBad;           // number of entries in fBadCells
-  Int_t*              fBadCells;       //[fNBad] bad cells array                                                     
+  Bool_t           fkAvoidPileup;     // flag not to process pileup events
+  AliCaloCellsQA*  fCellsQA;          // analysis instance
+  TString          fOutfile;          // output file name
+  Int_t            fNBad;             // number of entries in fBadCells
+  Int_t*           fBadCells;         //[fNBad] bad cells array
 
-  ClassDef(AliAnalysisTaskCaloCellsQA, 1);
+  ClassDef(AliAnalysisTaskCaloCellsQA, 2);
 };
 
 #endif

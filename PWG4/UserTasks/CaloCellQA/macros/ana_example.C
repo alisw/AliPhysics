@@ -8,7 +8,7 @@ void ana_example()
   // change next line to a working code
   TChain* chain = NULL; //CreateChain("wn.xml");
   if (!chain) {
-    fprintf(stderr, "FATAL: chain is NULL\n");
+    fprintf(stderr, "FATAL: the chain is NULL\n");
     abort();
   }
 
