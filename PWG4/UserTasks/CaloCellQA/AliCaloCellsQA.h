@@ -18,7 +18,7 @@
 #include <AliVCaloCells.h>
 #include <AliVCluster.h>
 
-class AliCaloCellsQA {
+class AliCaloCellsQA : public TObject {
 
 public:
 
@@ -58,12 +58,13 @@ public:
 protected:
 
   virtual void    Init(Int_t nmods, Int_t det, Int_t startRunNumber, Int_t endRunNumber);
-  virtual Int_t   FindCurrentRunIndex(Int_t runNumber);
-  virtual void    InitHistosForRun(Int_t run, Int_t ri);
+  virtual void    InitTransientFindCurrentRun(Int_t runNumber);
+  virtual void    InitTransientMembers(Int_t run);
+  virtual void    InitHistosForRun(Int_t run);
 
-  virtual void    FillCellsInCluster(Int_t ri, TObjArray *clusArray, AliVCaloCells *cells);
-  virtual void    FillJustCells(Int_t ri, AliVCaloCells *cells);
-  virtual void    FillPi0Mass(Int_t ri, TObjArray *clusArray, Double_t vertexXYZ[3]);
+  virtual void    FillCellsInCluster(TObjArray *clusArray, AliVCaloCells *cells);
+  virtual void    FillJustCells(AliVCaloCells *cells);
+  virtual void    FillPi0Mass(TObjArray *clusArray, Double_t vertexXYZ[3]);
 
   virtual Int_t   CheckClusterGetSM(AliVCluster* clus);
   virtual Int_t   GetSM(Int_t absId);
@@ -96,42 +97,49 @@ private:
   Double_t  fXMaxNCellsInCluster;       // X axis maximum in hNCellsInCluster
 
   // internal parameters
-  Int_t  fRunNumbers[1000];             // already encountered runs
-  Int_t  fNRuns;                        // number of encountered runs
-  Int_t  fRI;                           // current (cached) run index
+  Int_t     fRunNumbers[1000];          // already encountered runs
+  Int_t     fNRuns;                     // number of encountered runs
+  Int_t     fRI;                        //! current (cached) run index
 
   // internal parameters, used for coding convenience
-  Int_t  fAbsIdMin;                     // minimum absId number (0/EMCAL, 1/PHOS)
-  Int_t  fAbsIdMax;                     // maximum absId number + 1
+  Int_t     fAbsIdMin;                  // minimum absId number (0/EMCAL, 1/PHOS)
+  Int_t     fAbsIdMax;                  // maximum absId number + 1
 
   TObjArray  *fListOfHistos;            // array with all the histograms
-  TH1D  *fhNEventsProcessedPerRun;      // number of processed events per run
 
-  // per run histograms, X axis -- cell absId number;
-  // NOTE: the maximum number of runs to handle per analysis instance is set to 1000;
-  //       this simplifies the code at expence of a small increase of memory usage
-  TH1F *fhCellLocMaxNTimesInClusterElow[1000];      // number of times cell was local maximum in a low energy cluster
-  TH1F *fhCellLocMaxNTimesInClusterEhigh[1000];     // number of times cell was local maximum in a high energy cluster
-  TH1F *fhCellLocMaxETotalClusterElow[1000];        // total cluster energy for local maximum cell, low energy
-  TH1F *fhCellLocMaxETotalClusterEhigh[1000];       // total cluster energy for local maximum cell, high energy
-  TH1F *fhCellNonLocMaxNTimesInClusterElow[1000];   // number of times cell wasn't local maximum in a low energy cluster
-  TH1F *fhCellNonLocMaxNTimesInClusterEhigh[1000];  // number of times cell wasn't local maximum in a high energy cluster
-  TH1F *fhCellNonLocMaxETotalClusterElow[1000];     // total cluster energy for not local maximum cell, low energy
-  TH1F *fhCellNonLocMaxETotalClusterEhigh[1000];    // total cluster energy for not local maximum cell, high energy
 
-  // per run, per supermodule histograms; the maximum number of supermodules is 10
-  TH1F *fhECells[1000][10];             // cell amplitude distribution
-  TH1F *fhPi0Mass[1000][10][10];        // pi0 mass spectrum
-  TH2F *fhNCellsInCluster[1000][10];    // distribution of number of cells in cluster vs cluster energy
+  /* All the histograms below are present in fListOfHistos.
+   *
+   * NOTE: strictly speaking, the transient members below are not necessary, but the
+   * caching mechanism used in this class boosts the analysis speed considerably
+   * (no searching for a histogram by its name is performed in each event).
+   */
+
+  TH1D *fhNEventsProcessedPerRun;             //! number of processed events per run
+
+  // current run histograms; X axis -- cell absId number;
+  TH1F *fhCellLocMaxNTimesInClusterElow;      //! number of times cell was local maximum in a low energy cluster
+  TH1F *fhCellLocMaxNTimesInClusterEhigh;     //! number of times cell was local maximum in a high energy cluster
+  TH1F *fhCellLocMaxETotalClusterElow;        //! total cluster energy for local maximum cell, low energy
+  TH1F *fhCellLocMaxETotalClusterEhigh;       //! total cluster energy for local maximum cell, high energy
+  TH1F *fhCellNonLocMaxNTimesInClusterElow;   //! number of times cell wasn't local maximum in a low energy cluster
+  TH1F *fhCellNonLocMaxNTimesInClusterEhigh;  //! number of times cell wasn't local maximum in a high energy cluster
+  TH1F *fhCellNonLocMaxETotalClusterElow;     //! total cluster energy for not local maximum cell, low energy
+  TH1F *fhCellNonLocMaxETotalClusterEhigh;    //! total cluster energy for not local maximum cell, high energy
+
+  // current run, per supermodule histograms; the maximum number of supermodules is 10
+  TH1F *fhECells[10];                         //! cell amplitude distribution
+  TH1F *fhPi0Mass[10][10];                    //! pi0 mass spectrum
+  TH2F *fhNCellsInCluster[10];                //! distribution of number of cells in cluster vs cluster energy
 
   // summary histograms: cells spectra at different conditions; X axis -- cell absId number
-  TH2F *fhCellAmplitude;                // amplitude distribution per cell
-  TH2F *fhCellAmplitudeEhigh;           // amplitude distribution per cell, high energies
-  TH2F *fhCellAmplitudeNonLocMax;       // amplitude distribution per cell which is not a local maximum
-  TH2F *fhCellAmplitudeEhighNonLocMax;  // amplitude distribution per cell which is not a local maximum, high energies
-  TH2F *fhCellTime;                     // time distribution per cell
+  TH2F *fhCellAmplitude;                      //! amplitude distribution per cell
+  TH2F *fhCellAmplitudeEhigh;                 //! amplitude distribution per cell, high energies
+  TH2F *fhCellAmplitudeNonLocMax;             //! amplitude distribution per not a local maximum cell
+  TH2F *fhCellAmplitudeEhighNonLocMax;        //! amplitude distribution per not a local maximum cell, high energies
+  TH2F *fhCellTime;                           //! time distribution per cell
 
-//   ClassDef(AliCaloCellsQA,1)
+  ClassDef(AliCaloCellsQA,2)
 };
 
 #endif

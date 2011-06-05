@@ -22,7 +22,7 @@
 //
 // See also AliAnalysisTaskCellsQA.
 // Works for EMCAL and PHOS. Requires initialized geometry.
-// Class parameters are optimized for EMCAL.
+// Class defaults are optimized for EMCAL.
 //
 // Usage example for EMCAL:
 //
@@ -69,7 +69,6 @@
 //
 // d) Do not forget to post data, where necessary:
 //    PostData(1,cellsQA->GetListOfHistos());
-//    See also comments in AliAnalysisTaskCellsQA::Terminate().
 //
 // TODO: add DCAL (up to 6 supermodules?)
 //
@@ -84,7 +83,7 @@
 #include <AliPHOSGeometry.h>
 #include <AliCaloCellsQA.h>
 
-// ClassImp(AliCaloCellsQA)
+ClassImp(AliCaloCellsQA)
 
 //_________________________________________________________________________
 AliCaloCellsQA::AliCaloCellsQA() :
@@ -103,7 +102,7 @@ AliCaloCellsQA::AliCaloCellsQA() :
   fXMaxNCellsInCluster(0),
   fRunNumbers(),
   fNRuns(0),
-  fRI(-1),
+  fRI(0),
   fAbsIdMin(0),
   fAbsIdMax(0),
   fListOfHistos(0),
@@ -125,11 +124,10 @@ AliCaloCellsQA::AliCaloCellsQA() :
   fhCellAmplitudeEhighNonLocMax(0),
   fhCellTime(0)
 {
-  // Use this constructor if unsure.
-  // Defaults: EMCAL, 10 supermodules, fClusElowMin = 0.3 GeV, fClusEhighMin = 1.0 GeV,
-  //           fPi0EClusMin = 0.5 GeV, fkFullAnalysis = false.
+  // Default constructor (for root I/O). Do not use it.
 
-  Init(10, kEMCAL, 100000, 200000);
+  // tells the class to reinitialize its transient members
+  fRI = -1;
 }
 
 //_________________________________________________________________________
@@ -149,7 +147,7 @@ AliCaloCellsQA::AliCaloCellsQA(Int_t nmods, Int_t det, Int_t startRunNumber, Int
   fXMaxNCellsInCluster(0),
   fRunNumbers(),
   fNRuns(0),
-  fRI(-1),
+  fRI(0),
   fAbsIdMin(0),
   fAbsIdMax(0),
   fListOfHistos(0),
@@ -183,6 +181,8 @@ AliCaloCellsQA::AliCaloCellsQA(Int_t nmods, Int_t det, Int_t startRunNumber, Int
   //
   // startRunNumber, endRunNumber -- run range the analysis will run on
   //   (to allow later merging); wide (but reasonable) range can be provided.
+
+  fRI = -1;
 
   Init(nmods, det, startRunNumber, endRunNumber);
 }
@@ -273,12 +273,13 @@ void AliCaloCellsQA::Fill(Int_t runNumber, TObjArray *clusArray, AliVCaloCells *
   // cells -- EMCAL or PHOS cells;
   // vertexXYZ -- primary vertex position.
 
-  fhNEventsProcessedPerRun->Fill(runNumber);
-  Int_t ri = FindCurrentRunIndex(runNumber);
+  InitTransientFindCurrentRun(runNumber);
 
-  FillCellsInCluster(ri, clusArray, cells);
-  FillJustCells(ri, cells);
-  FillPi0Mass(ri, clusArray, vertexXYZ);
+  fhNEventsProcessedPerRun->Fill(runNumber);
+
+  FillCellsInCluster(clusArray, cells);
+  FillJustCells(cells);
+  FillPi0Mass(clusArray, vertexXYZ);
 }
 
 //_________________________________________________________________________
@@ -354,105 +355,132 @@ void AliCaloCellsQA::Init(Int_t nmods, Int_t det, Int_t startRunNumber, Int_t en
   fhNEventsProcessedPerRun->SetXTitle("Run number");
   fhNEventsProcessedPerRun->SetYTitle("Events");
   fListOfHistos->Add(fhNEventsProcessedPerRun);
-
-  // will indicate whether InitSummaryHistograms() was called
-  fhCellAmplitude = NULL;
-
-  // fill with NULLs (will indicate which supermodules can be filled)
-  for (Int_t ri = 0; ri < 1000; ri++)
-    for (Int_t sm = 0; sm < 10; sm++) {
-      fhECells[ri][sm] = NULL;
-      fhNCellsInCluster[ri][sm] = NULL;
-
-      for (Int_t sm2 = 0; sm2 < 10; sm2++) fhPi0Mass[ri][sm][sm2] = NULL;
-    }
 }
 
 //_________________________________________________________________________
-Int_t AliCaloCellsQA::FindCurrentRunIndex(Int_t runNumber)
+void AliCaloCellsQA::InitTransientFindCurrentRun(Int_t runNumber)
 {
-  // Return current run index; add a new run if necessary.
+  // Initialize transient members, add a new run if necessary.
 
   // try previous value ...
-  if (fRI >= 0 && fRunNumbers[fRI] == runNumber) return fRI;
+  if (fRI >= 0 && fRunNumbers[fRI] == runNumber) return;
 
   // ... or find current run index ...
   for (fRI = 0; fRI < fNRuns; fRI++)
-    if (fRunNumbers[fRI] == runNumber) return fRI;
+    if (fRunNumbers[fRI] == runNumber) break;
 
   // ... or add a new run
-  if (fNRuns >= 1000)
-    Fatal("AliCaloCellsQA::FindCurrentRunIndex", "Too many runs, how is this possible?");
+  if (fRI == fNRuns) {
+    if (fNRuns >= 1000) Fatal("AliCaloCellsQA::FindCurrentRunIndex", "Too many runs, how is this possible?");
 
-  // fRI = fNRuns
-  fRunNumbers[fRI] = runNumber;
-  InitHistosForRun(runNumber, fRI);
-  fNRuns++;
+    fRunNumbers[fNRuns] = runNumber;
+    InitHistosForRun(runNumber);
+    fNRuns++;
+  }
 
-  return fRI;
+  // initialize transient class members;
+  // this happens once per run, i.e. not a big overhead
+  InitTransientMembers(runNumber);
 }
 
 //_________________________________________________________________________
-void AliCaloCellsQA::InitHistosForRun(Int_t run, Int_t ri)
+void AliCaloCellsQA::InitTransientMembers(Int_t run)
+{
+  // Initializes transient data members -- references to histograms
+  // (e.g. in case the class was restored from a file);
+  // run -- current run number.
+
+  fhNEventsProcessedPerRun = (TH1D*) fListOfHistos->FindObject("hNEventsProcessedPerRun");
+
+  fhCellAmplitude               = (TH2F*) fListOfHistos->FindObject("hCellAmplitude");
+  fhCellAmplitudeEhigh          = (TH2F*) fListOfHistos->FindObject("hCellAmplitudeEhigh");
+  fhCellAmplitudeNonLocMax      = (TH2F*) fListOfHistos->FindObject("hCellAmplitudeNonLocMax");
+  fhCellAmplitudeEhighNonLocMax = (TH2F*) fListOfHistos->FindObject("hCellAmplitudeEhighNonLocMax");
+  fhCellTime                    = (TH2F*) fListOfHistos->FindObject("hCellTime");
+
+  fhCellLocMaxNTimesInClusterElow     = (TH1F*) fListOfHistos->FindObject(Form("run%i_hCellLocMaxNTimesInClusterElow",run));
+  fhCellLocMaxNTimesInClusterEhigh    = (TH1F*) fListOfHistos->FindObject(Form("run%i_hCellLocMaxNTimesInClusterEhigh",run));
+  fhCellLocMaxETotalClusterElow       = (TH1F*) fListOfHistos->FindObject(Form("run%i_hCellLocMaxETotalClusterElow",run));
+  fhCellLocMaxETotalClusterEhigh      = (TH1F*) fListOfHistos->FindObject(Form("run%i_hCellLocMaxETotalClusterEhigh",run));
+  fhCellNonLocMaxNTimesInClusterElow  = (TH1F*) fListOfHistos->FindObject(Form("run%i_hCellNonLocMaxNTimesInClusterElow",run));
+  fhCellNonLocMaxNTimesInClusterEhigh = (TH1F*) fListOfHistos->FindObject(Form("run%i_hCellNonLocMaxNTimesInClusterEhigh",run));
+  fhCellNonLocMaxETotalClusterElow    = (TH1F*) fListOfHistos->FindObject(Form("run%i_hCellNonLocMaxETotalClusterElow",run));
+  fhCellNonLocMaxETotalClusterEhigh   = (TH1F*) fListOfHistos->FindObject(Form("run%i_hCellNonLocMaxETotalClusterEhigh",run));
+
+  Int_t minsm = 0;
+  if (fDetector == kPHOS) minsm = 1;
+
+  // per supermodule histograms
+  for (Int_t sm = minsm; sm < fNMods; sm++) {
+    fhECells[sm]          = (TH1F*) fListOfHistos->FindObject(Form("run%i_hECellsSM%i",run,sm));
+    fhNCellsInCluster[sm] = (TH2F*) fListOfHistos->FindObject(Form("run%i_hNCellsInClusterSM%i",run,sm));
+
+    for (Int_t sm2 = sm; sm2 < fNMods; sm2++)
+      fhPi0Mass[sm][sm2]  = (TH1F*) fListOfHistos->FindObject(Form("run%i_hPi0MassSM%iSM%i",run,sm,sm2));
+  }
+}
+
+//_________________________________________________________________________
+void AliCaloCellsQA::InitHistosForRun(Int_t run)
 {
   // Initialize per run histograms for a new run number;
-  // run -- run number; ri -- run index.
+  // run -- run number.
 
   // do not add histograms to the current directory
   Bool_t ads = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-  fhCellLocMaxNTimesInClusterElow[ri] = new TH1F(Form("run%i_hCellLocMaxNTimesInClusterElow",run),
+  fhCellLocMaxNTimesInClusterElow = new TH1F(Form("run%i_hCellLocMaxNTimesInClusterElow",run),
       "Number of times cell was local maximum in a low energy cluster", fAbsIdMax-fAbsIdMin,fAbsIdMin,fAbsIdMax);
-  fhCellLocMaxNTimesInClusterElow[ri]->SetXTitle("AbsId");
-  fhCellLocMaxNTimesInClusterElow[ri]->SetYTitle("Counts");
+  fhCellLocMaxNTimesInClusterElow->SetXTitle("AbsId");
+  fhCellLocMaxNTimesInClusterElow->SetYTitle("Counts");
 
-  fhCellLocMaxNTimesInClusterEhigh[ri] = new TH1F(Form("run%i_hCellLocMaxNTimesInClusterEhigh",run),
+  fhCellLocMaxNTimesInClusterEhigh = new TH1F(Form("run%i_hCellLocMaxNTimesInClusterEhigh",run),
       "Number of times cell was local maximum in a high energy cluster", fAbsIdMax-fAbsIdMin,fAbsIdMin,fAbsIdMax);
-  fhCellLocMaxNTimesInClusterEhigh[ri]->SetXTitle("AbsId");
-  fhCellLocMaxNTimesInClusterEhigh[ri]->SetYTitle("Counts");
+  fhCellLocMaxNTimesInClusterEhigh->SetXTitle("AbsId");
+  fhCellLocMaxNTimesInClusterEhigh->SetYTitle("Counts");
 
-  fhCellLocMaxETotalClusterElow[ri] = new TH1F(Form("run%i_hCellLocMaxETotalClusterElow",run),
+  fhCellLocMaxETotalClusterElow = new TH1F(Form("run%i_hCellLocMaxETotalClusterElow",run),
       "Total cluster energy for local maximum cell, low energy", fAbsIdMax-fAbsIdMin,fAbsIdMin,fAbsIdMax);
-  fhCellLocMaxETotalClusterElow[ri]->SetXTitle("AbsId");
-  fhCellLocMaxETotalClusterElow[ri]->SetYTitle("Energy");
+  fhCellLocMaxETotalClusterElow->SetXTitle("AbsId");
+  fhCellLocMaxETotalClusterElow->SetYTitle("Energy");
 
-  fhCellLocMaxETotalClusterEhigh[ri] = new TH1F(Form("run%i_hCellLocMaxETotalClusterEhigh",run),
+  fhCellLocMaxETotalClusterEhigh = new TH1F(Form("run%i_hCellLocMaxETotalClusterEhigh",run),
       "Total cluster energy for local maximum cell, high energy", fAbsIdMax-fAbsIdMin,fAbsIdMin,fAbsIdMax);
-  fhCellLocMaxETotalClusterEhigh[ri]->SetXTitle("AbsId");
-  fhCellLocMaxETotalClusterEhigh[ri]->SetYTitle("Energy");
+  fhCellLocMaxETotalClusterEhigh->SetXTitle("AbsId");
+  fhCellLocMaxETotalClusterEhigh->SetYTitle("Energy");
 
-  fListOfHistos->Add(fhCellLocMaxNTimesInClusterElow[ri]);
-  fListOfHistos->Add(fhCellLocMaxNTimesInClusterEhigh[ri]);
-  fListOfHistos->Add(fhCellLocMaxETotalClusterElow[ri]);
-  fListOfHistos->Add(fhCellLocMaxETotalClusterEhigh[ri]);
+  fListOfHistos->Add(fhCellLocMaxNTimesInClusterElow);
+  fListOfHistos->Add(fhCellLocMaxNTimesInClusterEhigh);
+  fListOfHistos->Add(fhCellLocMaxETotalClusterElow);
+  fListOfHistos->Add(fhCellLocMaxETotalClusterEhigh);
 
 
   if (fkFullAnalysis) {
-    fhCellNonLocMaxNTimesInClusterElow[ri] = new TH1F(Form("run%i_hCellNonLocMaxNTimesInClusterElow",run),
+    fhCellNonLocMaxNTimesInClusterElow = new TH1F(Form("run%i_hCellNonLocMaxNTimesInClusterElow",run),
         "Number of times cell wasn't local maximum in a low energy cluster", fAbsIdMax-fAbsIdMin,fAbsIdMin,fAbsIdMax);
-    fhCellNonLocMaxNTimesInClusterElow[ri]->SetXTitle("AbsId");
-    fhCellNonLocMaxNTimesInClusterElow[ri]->SetYTitle("Counts");
+    fhCellNonLocMaxNTimesInClusterElow->SetXTitle("AbsId");
+    fhCellNonLocMaxNTimesInClusterElow->SetYTitle("Counts");
 
-    fhCellNonLocMaxNTimesInClusterEhigh[ri] = new TH1F(Form("run%i_hCellNonLocMaxNTimesInClusterEhigh",run),
+    fhCellNonLocMaxNTimesInClusterEhigh = new TH1F(Form("run%i_hCellNonLocMaxNTimesInClusterEhigh",run),
         "Number of times cell wasn't local maximum in a high energy cluster", fAbsIdMax-fAbsIdMin,fAbsIdMin,fAbsIdMax);
-    fhCellNonLocMaxNTimesInClusterEhigh[ri]->SetXTitle("AbsId");
-    fhCellNonLocMaxNTimesInClusterEhigh[ri]->SetYTitle("Counts");
+    fhCellNonLocMaxNTimesInClusterEhigh->SetXTitle("AbsId");
+    fhCellNonLocMaxNTimesInClusterEhigh->SetYTitle("Counts");
 
-    fhCellNonLocMaxETotalClusterElow[ri] = new TH1F(Form("run%i_hCellNonLocMaxETotalClusterElow",run),
+    fhCellNonLocMaxETotalClusterElow = new TH1F(Form("run%i_hCellNonLocMaxETotalClusterElow",run),
         "Total cluster energy for not local maximum cell, low energy", fAbsIdMax-fAbsIdMin,fAbsIdMin,fAbsIdMax);
-    fhCellNonLocMaxETotalClusterElow[ri]->SetXTitle("AbsId");
-    fhCellNonLocMaxETotalClusterElow[ri]->SetYTitle("Energy");
+    fhCellNonLocMaxETotalClusterElow->SetXTitle("AbsId");
+    fhCellNonLocMaxETotalClusterElow->SetYTitle("Energy");
 
-    fhCellNonLocMaxETotalClusterEhigh[ri] = new TH1F(Form("run%i_hCellNonLocMaxETotalClusterEhigh",run),
+    fhCellNonLocMaxETotalClusterEhigh = new TH1F(Form("run%i_hCellNonLocMaxETotalClusterEhigh",run),
         "Total cluster energy for not local maximum cell, high energy", fAbsIdMax-fAbsIdMin,fAbsIdMin,fAbsIdMax);
-    fhCellNonLocMaxETotalClusterEhigh[ri]->SetXTitle("AbsId");
-    fhCellNonLocMaxETotalClusterEhigh[ri]->SetYTitle("Energy");
+    fhCellNonLocMaxETotalClusterEhigh->SetXTitle("AbsId");
+    fhCellNonLocMaxETotalClusterEhigh->SetYTitle("Energy");
 
-    fListOfHistos->Add(fhCellNonLocMaxNTimesInClusterElow[ri]);
-    fListOfHistos->Add(fhCellNonLocMaxNTimesInClusterEhigh[ri]);
-    fListOfHistos->Add(fhCellNonLocMaxETotalClusterElow[ri]);
-    fListOfHistos->Add(fhCellNonLocMaxETotalClusterEhigh[ri]);
+    fListOfHistos->Add(fhCellNonLocMaxNTimesInClusterElow);
+    fListOfHistos->Add(fhCellNonLocMaxNTimesInClusterEhigh);
+    fListOfHistos->Add(fhCellNonLocMaxETotalClusterElow);
+    fListOfHistos->Add(fhCellNonLocMaxETotalClusterEhigh);
   }
 
 
@@ -461,31 +489,31 @@ void AliCaloCellsQA::InitHistosForRun(Int_t run, Int_t ri)
 
   // per supermodule histograms
   for (Int_t sm = minsm; sm < fNMods; sm++) {
-    fhECells[ri][sm] = new TH1F(Form("run%i_hECellsSM%i",run,sm),
+    fhECells[sm] = new TH1F(Form("run%i_hECellsSM%i",run,sm),
       "Cell amplitude distribution", fNBinsECells,0,fXMaxECells);
-    fhECells[ri][sm]->SetXTitle("Amplitude, GeV");
-    fhECells[ri][sm]->SetYTitle("Number of cells");
+    fhECells[sm]->SetXTitle("Amplitude, GeV");
+    fhECells[sm]->SetYTitle("Number of cells");
 
-    fhNCellsInCluster[ri][sm] = new TH2F(Form("run%i_hNCellsInClusterSM%i",run,sm),
+    fhNCellsInCluster[sm] = new TH2F(Form("run%i_hNCellsInClusterSM%i",run,sm),
       "Distrubution of number of cells in cluster vs cluster energy",
         fNBinsXNCellsInCluster,0,fXMaxNCellsInCluster, fNBinsYNCellsInCluster,0,fNBinsYNCellsInCluster);
-    fhNCellsInCluster[ri][sm]->SetXTitle("Energy, GeV");
-    fhNCellsInCluster[ri][sm]->SetYTitle("Number of cells");
-    fhNCellsInCluster[ri][sm]->SetZTitle("Counts");
+    fhNCellsInCluster[sm]->SetXTitle("Energy, GeV");
+    fhNCellsInCluster[sm]->SetYTitle("Number of cells");
+    fhNCellsInCluster[sm]->SetZTitle("Counts");
 
-    fListOfHistos->Add(fhECells[ri][sm]);
-    fListOfHistos->Add(fhNCellsInCluster[ri][sm]);
+    fListOfHistos->Add(fhECells[sm]);
+    fListOfHistos->Add(fhNCellsInCluster[sm]);
   }
 
   // pi0 mass spectrum
   for (Int_t sm = minsm; sm < fNMods; sm++)
     for (Int_t sm2 = sm; sm2 < fNMods; sm2++) {
-      fhPi0Mass[ri][sm][sm2] = new TH1F(Form("run%i_hPi0MassSM%iSM%i",run,sm,sm2),
+      fhPi0Mass[sm][sm2] = new TH1F(Form("run%i_hPi0MassSM%iSM%i",run,sm,sm2),
                                         "#pi^{0} mass spectrum", fNBinsPi0Mass,0,fXMaxPi0Mass);
-      fhPi0Mass[ri][sm][sm2]->SetXTitle("M_{#gamma#gamma}, GeV");
-      fhPi0Mass[ri][sm][sm2]->SetYTitle("Counts");
+      fhPi0Mass[sm][sm2]->SetXTitle("M_{#gamma#gamma}, GeV");
+      fhPi0Mass[sm][sm2]->SetYTitle("Counts");
 
-      fListOfHistos->Add(fhPi0Mass[ri][sm][sm2]);
+      fListOfHistos->Add(fhPi0Mass[sm][sm2]);
     }
 
   // return to the previous add directory status
@@ -493,10 +521,9 @@ void AliCaloCellsQA::InitHistosForRun(Int_t run, Int_t ri)
 }
 
 //_________________________________________________________________________
-void AliCaloCellsQA::FillCellsInCluster(Int_t ri, TObjArray *clusArray, AliVCaloCells *cells)
+void AliCaloCellsQA::FillCellsInCluster(TObjArray *clusArray, AliVCaloCells *cells)
 {
-  // Fill histograms related to a cluster;
-  // ri -- run index.
+  // Fill histograms related to a cluster
 
   Int_t sm;
 
@@ -505,8 +532,8 @@ void AliCaloCellsQA::FillCellsInCluster(Int_t ri, TObjArray *clusArray, AliVCalo
     AliVCluster *clus = (AliVCluster*) clusArray->At(i);
     if ((sm = CheckClusterGetSM(clus)) < 0) continue;
 
-    if (fhNCellsInCluster[ri][sm])
-      fhNCellsInCluster[ri][sm]->Fill(clus->E(), clus->GetNCells());
+    if (fhNCellsInCluster[sm])
+      fhNCellsInCluster[sm]->Fill(clus->E(), clus->GetNCells());
 
     if (clus->E() >= fClusElowMin)
       for (Int_t c = 0; c < clus->GetNCells(); c++) {
@@ -514,20 +541,20 @@ void AliCaloCellsQA::FillCellsInCluster(Int_t ri, TObjArray *clusArray, AliVCalo
 
         if (IsCellLocalMaximum(c, clus, cells)) {// local maximum
           if (clus->E() < fClusEhighMin) {
-            fhCellLocMaxNTimesInClusterElow[ri]->Fill(absId);
-            fhCellLocMaxETotalClusterElow[ri]->Fill(absId, clus->E());
+            fhCellLocMaxNTimesInClusterElow->Fill(absId);
+            fhCellLocMaxETotalClusterElow->Fill(absId, clus->E());
           } else {
-            fhCellLocMaxNTimesInClusterEhigh[ri]->Fill(absId);
-            fhCellLocMaxETotalClusterEhigh[ri]->Fill(absId, clus->E());
+            fhCellLocMaxNTimesInClusterEhigh->Fill(absId);
+            fhCellLocMaxETotalClusterEhigh->Fill(absId, clus->E());
           }
         }
         else if (fkFullAnalysis) {// not a local maximum
           if (clus->E() < fClusEhighMin) {
-            fhCellNonLocMaxNTimesInClusterElow[ri]->Fill(absId);
-            fhCellNonLocMaxETotalClusterElow[ri]->Fill(absId, clus->E());
+            fhCellNonLocMaxNTimesInClusterElow->Fill(absId);
+            fhCellNonLocMaxETotalClusterElow->Fill(absId, clus->E());
           } else {
-            fhCellNonLocMaxNTimesInClusterEhigh[ri]->Fill(absId);
-            fhCellNonLocMaxETotalClusterEhigh[ri]->Fill(absId, clus->E());
+            fhCellNonLocMaxNTimesInClusterEhigh->Fill(absId);
+            fhCellNonLocMaxETotalClusterEhigh->Fill(absId, clus->E());
           }
         }
       } // cells loop
@@ -537,10 +564,9 @@ void AliCaloCellsQA::FillCellsInCluster(Int_t ri, TObjArray *clusArray, AliVCalo
 }
 
 //_________________________________________________________________________
-void AliCaloCellsQA::FillJustCells(Int_t ri, AliVCaloCells *cells)
+void AliCaloCellsQA::FillJustCells(AliVCaloCells *cells)
 {
-  // Fill cell histograms not related with a cluster;
-  // ri -- run index.
+  // Fill cell histograms not related with a cluster
 
   Short_t absId;
   Double_t amp, time;
@@ -550,7 +576,7 @@ void AliCaloCellsQA::FillJustCells(Int_t ri, AliVCaloCells *cells)
     cells->GetCell(c, absId, amp, time);
     if ((sm = GetSM(absId)) < 0) continue;
 
-    if (fhECells[ri][sm]) fhECells[ri][sm]->Fill(amp);
+    if (fhECells[sm]) fhECells[sm]->Fill(amp);
 
     if (fhCellAmplitude) { // in case InitSummaryHistograms() was not called
       fhCellAmplitude->Fill(absId, amp);
@@ -568,7 +594,7 @@ void AliCaloCellsQA::FillJustCells(Int_t ri, AliVCaloCells *cells)
 }
 
 //_________________________________________________________________________
-void AliCaloCellsQA::FillPi0Mass(Int_t ri, TObjArray *clusArray, Double_t vertexXYZ[3])
+void AliCaloCellsQA::FillPi0Mass(TObjArray *clusArray, Double_t vertexXYZ[3])
 {
   // Fill gamma+gamma invariant mass histograms.
   // ri -- run index.
@@ -601,8 +627,8 @@ void AliCaloCellsQA::FillPi0Mass(Int_t ri, TObjArray *clusArray, Double_t vertex
       Int_t s1 = (sm1 <= sm2) ? sm1 : sm2;
       Int_t s2 = (sm1 <= sm2) ? sm2 : sm1;
 
-      if (fhPi0Mass[ri][s1][s2])
-        fhPi0Mass[ri][s1][s2]->Fill(psum.M());
+      if (fhPi0Mass[s1][s2])
+        fhPi0Mass[s1][s2]->Fill(psum.M());
     } // second cluster loop
   } // cluster loop
 }

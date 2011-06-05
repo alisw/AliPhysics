@@ -52,45 +52,30 @@ ClassImp(AliAnalysisTaskCaloCellsQA)
 AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA() : AliAnalysisTaskSE(),
   fkAvoidPileup(kTRUE),
   fCellsQA(0),
-  fOutfile(0),
+  fOutfile(""),
   fNBad(0),
   fBadCells(0)
 {
+  // Constructor for root I/O, do not use it
 }
 
 //________________________________________________________________
-AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA(const char *name, char *outfile) : AliAnalysisTaskSE(name),
+AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA(const char *name, Int_t nmods, Int_t det, char *outfile) :
+  AliAnalysisTaskSE(name),
   fkAvoidPileup(kTRUE),
   fCellsQA(0),
-  fOutfile(0),
+  fOutfile(""),
   fNBad(0),
   fBadCells(0)
 {
+  // Main constructor.
+  //
+  // nmods -- number of supermodules + 1;
+  // det -- detector;
   // outfile -- file name to write to; if NULL, write into output container;
   //   allows to avoid limitation of AliAnalysisManager, which always
   //   writes with TObject::kSingleKey option.
 
-  if (outfile)
-    fOutfile = new TString(outfile);
-  else
-    DefineOutput(1, TObjArray::Class());
-}
-
-//________________________________________________________________
-AliAnalysisTaskCaloCellsQA::~AliAnalysisTaskCaloCellsQA()
-{
-  if (fCellsQA) delete fCellsQA;
-  if (fOutfile) delete fOutfile;
-  if (fBadCells) delete [] fBadCells;
-}
-
-//________________________________________________________________
-void AliAnalysisTaskCaloCellsQA::InitCaloCellsQA(Int_t nmods, Int_t det)
-{
-  // Must be called at the very beginning.
-  //
-  // nmods -- number of supermodules + 1;
-  // det -- detector;
 
   if (det == kEMCAL)
     fCellsQA = new AliCaloCellsQA(nmods, AliCaloCellsQA::kEMCAL);
@@ -98,6 +83,17 @@ void AliAnalysisTaskCaloCellsQA::InitCaloCellsQA(Int_t nmods, Int_t det)
     fCellsQA = new AliCaloCellsQA(nmods, AliCaloCellsQA::kPHOS);
   else
     Fatal("AliAnalysisTaskCaloCellsQA::InitCellsQA", "Wrong detector provided");
+
+  if (outfile) fOutfile = outfile;
+  else
+    DefineOutput(1, TObjArray::Class());
+}
+
+//________________________________________________________________
+AliAnalysisTaskCaloCellsQA::~AliAnalysisTaskCaloCellsQA()
+{
+  delete fCellsQA;
+  if (fBadCells) delete [] fBadCells;
 }
 
 //________________________________________________________________
@@ -107,7 +103,7 @@ void AliAnalysisTaskCaloCellsQA::UserCreateOutputObjects()
 
   fCellsQA->InitSummaryHistograms();
 
-  if (!fOutfile)
+  if (fOutfile.Length() == 0)
     PostData(1, fCellsQA->GetListOfHistos());
 }
 
@@ -117,7 +113,7 @@ void AliAnalysisTaskCaloCellsQA::UserExec(Option_t *)
   // Does the job for one event
 
   // check geometry
-  if (fCellsQA->GetDetector() == kEMCAL) {
+  if (fCellsQA->GetDetector() == AliCaloCellsQA::kEMCAL) {
     if (!AliEMCALGeometry::GetInstance()) {
       Info("UserExec", "EMCAL geometry not initialized, initializing it for you");
       AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
@@ -180,7 +176,7 @@ void AliAnalysisTaskCaloCellsQA::UserExec(Option_t *)
   vertex->GetXYZ(vertexXYZ);
   fCellsQA->Fill(event->GetRunNumber(), &clusArray, cells, vertexXYZ);
 
-  if (!fOutfile)
+  if (fOutfile.Length() == 0)
     PostData(1, fCellsQA->GetListOfHistos());
 }
 
@@ -189,8 +185,8 @@ void AliAnalysisTaskCaloCellsQA::Terminate(Option_t*)
 {
   // Handle direct saving of the histograms into a file
 
-  if (fOutfile) {
-    TFile f(fOutfile->Data(), "RECREATE");
+  if (fOutfile.Length() > 0) {
+    TFile f(fOutfile.Data(), "RECREATE");
     fCellsQA->GetListOfHistos()->Write();
   }
 }
