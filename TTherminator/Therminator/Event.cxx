@@ -288,7 +288,7 @@ Event::GenerateMultiplicities()
 void 
 Event::DecayParticles()
 {
-  Particle *tPart1, *tPart2, *tPart3, *tFather;
+  Particle *tPart1=NULL, *tPart2=NULL, *tPart3=NULL, *tFather=NULL;
   ParticleDecayer* tDecayer;
   int tCount = 0;
   
