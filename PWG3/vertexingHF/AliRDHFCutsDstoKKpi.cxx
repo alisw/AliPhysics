@@ -39,9 +39,9 @@ AliRDHFCuts(name)
   //
   // Default Constructor
   //
-  Int_t nvars=14;
+  Int_t nvars=16;
   SetNVars(nvars);
-  TString varNames[14]={"inv. mass [GeV]",   
+  TString varNames[16]={"inv. mass [GeV]",   
 			"pTK [GeV/c]",
 			"pTPi [GeV/c]",
 			"d0K [cm]",
@@ -54,8 +54,11 @@ AliRDHFCuts(name)
 			"Sum d0^2 (cm^2)",
 			"dca [cm]",
 			"inv. mass (Mphi-MKK) [GeV]",
-			"inv. mass (MKo*-MKpi) [GeV]"};
-  Bool_t isUpperCut[14]={kTRUE,
+			"inv. mass (MKo*-MKpi) [GeV]",
+			"Abs(CosineKpiPhiRFrame)^3",
+			"CosPiDsLabFrame"};
+			
+  Bool_t isUpperCut[16]={kTRUE,
 			 kFALSE,
 			 kFALSE,
 			 kFALSE,
@@ -68,9 +71,11 @@ AliRDHFCuts(name)
 			 kFALSE,
 			 kTRUE,
 			 kTRUE,
+			 kTRUE,
+			 kFALSE,
 			 kTRUE};
-  SetVarNames(14,varNames,isUpperCut);
-  Bool_t forOpt[14]={kFALSE,
+  SetVarNames(16,varNames,isUpperCut);
+  Bool_t forOpt[16]={kFALSE,
 		    kFALSE,
 		    kFALSE,
 		    kFALSE,
@@ -83,7 +88,9 @@ AliRDHFCuts(name)
 		    kTRUE,
 		    kFALSE,
 		    kTRUE,
-		    kTRUE};
+		    kTRUE,
+		    kFALSE,
+		    kFALSE};
   SetVarsForOpt(7,forOpt);
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
@@ -247,7 +254,22 @@ void AliRDHFCutsDstoKKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
       //	vars[iter]=dd->InvMass2Prongs(0,1,211,321);      
     }
   }
-
+  if(fVarsForOpt[14]){
+    iter++;
+    if(TMath::Abs(pdgdaughters[0])==321){
+      vars[iter]=dd->CosPiKPhiRFrameKKpi();
+    }else{
+      vars[iter]=dd->CosPiKPhiRFramepiKK();
+    }
+  }
+  if(fVarsForOpt[15]){
+    iter++;
+    if(TMath::Abs(pdgdaughters[0])==321){
+      vars[iter]=dd->CosPiDsLabFrameKKpi();
+    }else{
+      vars[iter]=dd->CosPiDsLabFramepiKK();
+    }
+  }
   
   return;
 }
@@ -492,7 +514,39 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
 
      // unset recalculated primary vertex when not needed any more
     CleanOwnPrimaryVtx(d,aod,origownvtx);
-   
+    
+    if(okDsKKpi){
+      Double_t cosPiKPhiRFKKpi=d->CosPiKPhiRFrameKKpi();
+      Double_t kincutPiKPhiKKpi=TMath::Abs(cosPiKPhiRFKKpi*cosPiKPhiRFKKpi*cosPiKPhiRFKKpi);
+      if(kincutPiKPhiKKpi<fCutsRD[GetGlobalIndex(14,ptbin)]) okDsKKpi=0;
+    }
+    if(okDspiKK){
+      Double_t cosPiKPhiRFpiKK=d->CosPiKPhiRFramepiKK();
+      Double_t kincutPiKPhipiKK=TMath::Abs(cosPiKPhiRFpiKK*cosPiKPhiRFpiKK*cosPiKPhiRFpiKK);
+      if(kincutPiKPhipiKK<fCutsRD[GetGlobalIndex(14,ptbin)]) okDspiKK=0;
+    }
+    if(!okDsKKpi && !okDspiKK){
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
+      return 0;
+    }
+    
+    
+    
+    if(okDsKKpi){
+      Double_t cosPiDsLabFrameKKpi=d->CosPiDsLabFrameKKpi();
+      if(TMath::Abs(cosPiDsLabFrameKKpi)>fCutsRD[GetGlobalIndex(15,ptbin)]) okDsKKpi=0;
+    }
+    if(okDspiKK){
+      Double_t cosPiDsLabFramepiKK=d->CosPiDsLabFramepiKK();
+      if(TMath::Abs(cosPiDsLabFramepiKK)>fCutsRD[GetGlobalIndex(15,ptbin)]) okDspiKK=0;
+    }
+    if(!okDsKKpi && !okDspiKK){
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
+      return 0;
+    }
+    
+    
+    
 
     if(!okDsKKpi){
       okDsPhiKKpi=0;

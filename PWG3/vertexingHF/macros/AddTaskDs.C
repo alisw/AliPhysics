@@ -1,4 +1,4 @@
-AliAnalysisTaskSEDs *AddTaskDs(Bool_t readMC=kFALSE,
+AliAnalysisTaskSEDs *AddTaskDs(Int_t storeNtuple=0,Bool_t readMC=kFALSE,
 				     TString filename="DstoKKpiCuts.root")
 {
   //                                                                                                                                    
@@ -20,6 +20,7 @@ AliAnalysisTaskSEDs *AddTaskDs(Bool_t readMC=kFALSE,
   TFile* filecuts=new TFile(filename.Data());
   if(!filecuts->IsOpen()){
     cout<<"Error: Input file not found!"<<endl;
+    return 0;
   }
   
   
@@ -35,8 +36,7 @@ AliAnalysisTaskSEDs *AddTaskDs(Bool_t readMC=kFALSE,
   //AliRDHFCutsDstoKKpi *prodcuts = (AliRDHFCutsDstoKKpi*)fileCuts->Get("ProdCuts");
   //AliRDHFCutsDstoKKpi *analysiscuts = (AliRDHFCutsDstoKKpi*)fileCuts->Get("AnalysisCuts");
 
-  
-  AliAnalysisTaskSEDs *dsTask = new AliAnalysisTaskSEDs("DsAnalysis",prodcuts,analysiscuts);
+  AliAnalysisTaskSEDs *dsTask = new AliAnalysisTaskSEDs("DsAnalysis",prodcuts,analysiscuts,storeNtuple);
   dsTask->SetReadMC(readMC);
   //dsTask->SetDoLikeSign(kTRUE);
   //  dsTask->SetUseTPCpid(kTRUE);
@@ -63,6 +63,14 @@ AliAnalysisTaskSEDs *AddTaskDs(Bool_t readMC=kFALSE,
 								AliAnalysisManager::kOutputContainer,
 								outputfile.Data());
   
+   if(storeNtuple){
+    AliAnalysisDataContainer *coutputDs2 = mgr->CreateContainer("coutputDs2",TNtuple::Class(),
+								   AliAnalysisManager::kOutputContainer,
+								   "InvMassDs_nt1.root");
+    
+    coutputDs2->SetSpecialOutput();
+  }
+  
   mgr->ConnectInput(dsTask,0,mgr->GetCommonInputContainer());
   
   mgr->ConnectOutput(dsTask,1,coutputDs);
@@ -70,6 +78,10 @@ AliAnalysisTaskSEDs *AddTaskDs(Bool_t readMC=kFALSE,
   mgr->ConnectOutput(dsTask,2,coutputDsCuts);
 
   mgr->ConnectOutput(dsTask,3,coutputDsNorm);  
+  
+  if(storeNtuple){
+    mgr->ConnectOutput(dsTask,4,coutputDs2);
+  }
   
   return dsTask;
 }

@@ -55,6 +55,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fPtVsMass(0),
   fYVsPt(0),
   fYVsPtSig(0),
+  fNtupleDs(0),
+  fFillNtuple(0),
   fReadMC(kFALSE),
   fDoCutVarHistos(kTRUE),
   fUseSelectionBit(kFALSE),
@@ -70,13 +72,15 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* productioncuts, AliRDHFCutsDstoKKpi* analysiscuts):
+AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* productioncuts, AliRDHFCutsDstoKKpi* analysiscuts,Int_t fillNtuple):
   AliAnalysisTaskSE(name),
   fOutput(0),
   fHistNEvents(0),
   fPtVsMass(0),
   fYVsPt(0),
   fYVsPtSig(0),
+  fNtupleDs(0),
+  fFillNtuple(fillNtuple),
   fReadMC(kFALSE),
   fDoCutVarHistos(kTRUE),
   fUseSelectionBit(kFALSE),
@@ -99,6 +103,12 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* 
   DefineOutput(2,TList::Class());
 
   DefineOutput(3,AliNormalizationCounter::Class());
+  
+  if(fFillNtuple>0){
+    // Output slot #4 writes into a TNtuple container
+    DefineOutput(4,TNtuple::Class());  //My private output
+  }
+  
 }
 
 //________________________________________________________________________
@@ -174,6 +184,10 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
     delete fYVsPtSig;
     fYVsPtSig=0;
   }
+  if(fNtupleDs){
+    delete fNtupleDs;
+    fNtupleDs=0;
+  }
   if(fCounter){
     delete fCounter;
     fCounter = 0;
@@ -224,6 +238,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fOutput->SetName("OutputHistos");
 
   Double_t massDs=TDatabasePDG::Instance()->GetParticle(431)->Mass();
+  
   Int_t nInvMassBins=(Int_t)(fMassRange/fMassBinSize+0.5);
   if(nInvMassBins%2==1) nInvMassBins++;
   // Double_t minMass=massDs-1.0*nInvMassBins*fMassBinSize;
@@ -346,7 +361,15 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fCounter = new AliNormalizationCounter("NormalizationCounter");
 
   PostData(1,fOutput); 
-  PostData(3,fCounter);    
+  PostData(3,fCounter);   
+  
+  if(fFillNtuple>0){
+    OpenFile(4); // 4 is the slot number of the ntuple
+    
+    fNtupleDs = new TNtuple("fNtupleDs","Ds","labDs:retcode:pdgcode0:Pt0:Pt1:Pt2:PtRec:PointingAngle:DecLeng:VxRec:VyRec:VzRec:InvMassKKpi:InvMasspiKK:sigvert:d00:d01:d02:dca:d0square:InvMassPhiKKpi:InvMassPhipiKK:cosinePiDsFrameKKpi:cosinePiDsFramepiKK:cosineKPhiFrameKKpi:cosineKPhiFramepiKK"); 
+    
+  }
+  
 
   return;
 }
@@ -358,7 +381,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   // separate signal and backgound if fReadMC is activated
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
-  
 
   TClonesArray *array3Prong = 0;
   if(!aod && AODEvent() && IsStandardAOD()) {
@@ -428,6 +450,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   Int_t nSelectedtight=0;
 
   for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
+  
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
     
     if(fUseSelectionBit && !(d->HasSelectionBit(AliRDHFCuts::kDsCuts))) continue;
@@ -467,12 +490,14 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     Int_t indexMCKKpi=-1;
     Int_t indexMCpiKK=-1;
     Int_t labDs=-1;
+    Int_t pdgCode0=-999;
+    
     if(fReadMC){
       labDs = d->MatchToMC(431,arrayMC,3,pdgDstoKKpi);
       if(labDs>=0){
 	Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
 	AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau0));
-	Int_t pdgCode0=TMath::Abs(p->GetPdgCode());
+	pdgCode0=TMath::Abs(p->GetPdgCode());
 
 	if(isKKpi){
 	  if(pdgCode0==321) {	  
@@ -505,7 +530,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
       Double_t invMass=d->InvMassDsKKpi();
       fMassHist[index]->Fill(invMass);
       fPtVsMass->Fill(invMass,ptCand);
-      if(isPhiKKpi) fMassHistPhi[index]->Fill(invMass);
+      if(isPhiKKpi) fMassHistPhi[index]->Fill(invMass); 
       if(isK0starKKpi) fMassHistK0st[index]->Fill(invMass);
       if(fReadMC  && indexMCKKpi!=-1){
 	fMassHist[indexMCKKpi]->Fill(invMass);
@@ -576,6 +601,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	fDalitz[index]->Fill(massKK,massKp);
 	if(isPhipiKK) fDalitzPhi[index]->Fill(massKK,massKp);
 	if(isK0starpiKK) fDalitzK0st[index]->Fill(massKK,massKp);
+
+	
 	if(fReadMC && indexMCpiKK!=-1){
 	  fDalitz[indexMCpiKK]->Fill(massKK,massKp);
 	  if(isPhipiKK) fDalitzPhi[indexMCpiKK]->Fill(massKK,massKp);
@@ -592,9 +619,48 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	  fPtProng2Hist[indexMCpiKK]->Fill(pt2);
 	}
       }
-
+     
+   
     }
-
+    
+    Float_t tmp[26];
+    if(fFillNtuple>0){
+      
+      if ((fFillNtuple==1 && (isPhiKKpi || isPhipiKK)) || (fFillNtuple==2 && (isK0starKKpi || isK0starpiKK)) || (fFillNtuple==3 && (isKKpi || ispiKK))){
+	
+	tmp[0]=Float_t(labDs);
+	tmp[1]=Float_t(retCodeAnalysisCuts);
+	tmp[2]=Float_t(pdgCode0);  
+	tmp[3]=d->PtProng(0);
+	tmp[4]=d->PtProng(1);
+	tmp[5]=d->PtProng(2);
+	tmp[6]=d->Pt();
+	tmp[7]=d->CosPointingAngle();
+	tmp[8]=d->DecayLength();
+	tmp[9]=d->Xv();
+	tmp[10]=d->Yv();
+	tmp[11]=d->Zv();
+	tmp[12]=d->InvMassDsKKpi();
+	tmp[13]=d->InvMassDspiKK();
+	tmp[14]=d->GetSigmaVert();
+	tmp[15]=d->Getd0Prong(0);
+	tmp[16]=d->Getd0Prong(1);
+	tmp[17]=d->Getd0Prong(2);
+	tmp[18]=d->GetDCA();
+	tmp[19]=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
+	tmp[20]=d->InvMass2Prongs(0,1,321,321);
+	tmp[21]=d->InvMass2Prongs(1,2,321,321);
+	tmp[22]=d->CosPiDsLabFrameKKpi();	   
+	tmp[23]=d->CosPiDsLabFramepiKK();	
+	tmp[24]=d->CosPiKPhiRFrameKKpi();	   
+	tmp[25]=d->CosPiKPhiRFramepiKK();	
+	
+ 	
+	fNtupleDs->Fill(tmp);
+	PostData(4,fNtupleDs);
+      }  
+    }
+    
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
  

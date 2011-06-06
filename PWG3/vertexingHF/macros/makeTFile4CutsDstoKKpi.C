@@ -42,17 +42,21 @@ void makeInputAliAnalysisTaskSEDs(){
     
     
     
-    const Int_t nptbins=4;
+    const Int_t nptbins=7;
     Float_t* ptbins;
     ptbins=new Float_t[nptbins+1];
-    ptbins[0]=0.;
-    ptbins[1]=2.;
-    ptbins[2]=3.;
+    ptbins[0]=2.;
+    ptbins[1]=3.;
+    ptbins[2]=4.;
     ptbins[3]=5.;
-    ptbins[4]=99999.;
-    const Int_t nvars=14;
+    ptbins[4]=6.;
+    ptbins[5]=8.;
+    ptbins[6]=12.;
+    ptbins[7]=999999999999.;
     
-    // Float_t cutsArrayDstoKKpi[14]={0.2,0.3,0.3,0.,0.,0.005,0.06,0.,0.,0.7,0.,1000.,0.1,0.1};
+    
+    const Int_t nvars=16;
+   
     
     Float_t** prodcutsval;
     prodcutsval=new Float_t*[nvars];
@@ -72,6 +76,9 @@ void makeInputAliAnalysisTaskSEDs(){
       prodcutsval[11][ipt]=1000.0;
       prodcutsval[12][ipt]=0.1;
       prodcutsval[13][ipt]=0.1;
+      prodcutsval[14][ipt]=0.;
+      prodcutsval[15][ipt]=1.;
+      
     }
     
     
@@ -80,22 +87,49 @@ void makeInputAliAnalysisTaskSEDs(){
   
     for(Int_t ic=0;ic<nvars;ic++){anacutsval[ic]=new Float_t[nptbins];}  
     for(Int_t ipt=0;ipt<nptbins;ipt++){
-    anacutsval[0][ipt]=0.2;
-    anacutsval[1][ipt]=0.4;
-    anacutsval[2][ipt]=0.4;
-    anacutsval[3][ipt]=0.;
-    anacutsval[4][ipt]=0.;
-    anacutsval[5][ipt]=0.005;
-    anacutsval[6][ipt]=0.038;
-    anacutsval[7][ipt]=0.;
-    anacutsval[8][ipt]=0.;
-    anacutsval[9][ipt]=0.95;
-    anacutsval[10][ipt]=0.;
-    anacutsval[11][ipt]=0.1;
-    anacutsval[12][ipt]=0.004;
-    anacutsval[13][ipt]=0.035;
+      
+      anacutsval[0][ipt]=0.2;
+      anacutsval[1][ipt]=0.3;
+      anacutsval[2][ipt]=0.3;
+      anacutsval[3][ipt]=0.;
+      anacutsval[4][ipt]=0.;
+      anacutsval[5][ipt]=0.005;
+      anacutsval[6][ipt]=0.06;
+      anacutsval[7][ipt]=0.0;
+      anacutsval[8][ipt]=0.;
+      anacutsval[9][ipt]=0.7;
+      anacutsval[10][ipt]=0.;
+      anacutsval[11][ipt]=1000.0;
+      anacutsval[12][ipt]=0.1;
+      anacutsval[13][ipt]=0.1;
+      anacutsval[14][ipt]=0.;
+      anacutsval[15][ipt]=1.;
+      
+   
     }
     
+        
+    /*    
+    Spiegazione della selezione di ALiRDHFCutsDstoKKpi      condizione di rejection
+
+    0           "inv. mass [GeV]",                          invmassDS-massDspdg>fCutsRD
+    1			"pTK [GeV/c]",                              pTK<fCutsRd
+    2			"pTPi [GeV/c]",                             pTPi<fCutsRd
+    3			"d0K [cm]",                                 d0K<fCutsRd
+    4			"d0Pi [cm]",                                d0Pi<fCutsRd
+    5			"dist12 [cm]",                              dist12<fCutsRd
+    6			"sigmavert [cm]",                           sigmavert>fCutsRd
+    7			"decLen [cm]",                              decLen<fCutsRD
+    8			"ptMax [GeV/c]",                            ptMax<fCutsRD
+    9			"cosThetaPoint",                            CosThetaPoint<fCutsRD
+    10			"Sum d0^2 (cm^2)",                          sumd0<fCutsRD
+    11			"dca [cm]",                                 dca(i)>fCutsRD
+    12			"inv. mass (Mphi-MKK) [GeV]",               invmass-pdg>fCutsRD
+    13			"inv. mass (MKo*-MKpi) [GeV]"};             invmass-pdg>fCutsRD
+    14    		"Abs(CosineKpiPhiRFrame)^3",
+	15  		"CosPiDsLabFrame"};
+    */
+ 
     AliRDHFCutsDstoKKpi *prodcuts = new AliRDHFCutsDstoKKpi();
     prodcuts->SetName("ProdCuts");
     prodcuts->SetPtBins(nptbins+1,ptbins);
@@ -108,7 +142,7 @@ void makeInputAliAnalysisTaskSEDs(){
     analysiscuts->SetPtBins(nptbins+1,ptbins);
     analysiscuts->SetCuts(nvars,nptbins,anacutsval);
     analysiscuts->AddTrackCuts(esdTrackCuts);
-    analysiscuts->SetUsePID(kFALSE);
+    analysiscuts->SetUsePID(kTRUE);
     cout<<"This is the odject I'm going to save:"<<nptbins<<endl;
     
     analysiscuts->PrintAll();
@@ -125,6 +159,7 @@ void makeInputAliAnalysisTaskSEDs(){
 void makeInputAliAnalysisTaskSESignificanceMaximization(){
   
   AliRDHFCutsDstoKKpi* RDHFDstoKKpi=new AliRDHFCutsDstoKKpi();
+  RDHFDstoKKpi->SetUsePID(kTRUE);
   RDHFDstoKKpi->SetName("loosercuts");
   RDHFDstoKKpi->SetTitle("Cuts for significance maximization");
 
@@ -143,45 +178,54 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
 
   RDHFDstoKKpi->AddTrackCuts(esdTrackCuts);
 
-  const Int_t nvars=14;
+  const Int_t nvars=16;
 
-  const Int_t nptbins=4;
+  const Int_t nptbins=7;
   Float_t* ptbins;
   ptbins=new Float_t[nptbins+1];
-  ptbins[0]=0.;
-  ptbins[1]=2.;
-  ptbins[2]=3.;
+  ptbins[0]=2.;
+  ptbins[1]=3.;
+  ptbins[2]=4.;
   ptbins[3]=5.;
-  ptbins[4]=99999.;
+  ptbins[4]=6.;
+  ptbins[5]=8.;
+  ptbins[6]=12.;
+  ptbins[7]=999999999999.;
   
   RDHFDstoKKpi->SetPtBins(nptbins+1,ptbins);
     
   //setting my cut values
     
+  
+  
+  
   Float_t** prodcutsval;
   prodcutsval=new Float_t*[nvars];
   for(Int_t ic=0;ic<nvars;ic++){prodcutsval[ic]=new Float_t[nptbins];}  
   for(Int_t ipt=0;ipt<nptbins;ipt++){
-     prodcutsval[0][ipt]=0.2;
-     prodcutsval[1][ipt]=0.4;
-     prodcutsval[2][ipt]=0.4;
-     prodcutsval[3][ipt]=0.;
-     prodcutsval[4][ipt]=0.;
-     prodcutsval[5][ipt]=0.005;
-     prodcutsval[6][ipt]=0.03;
-     prodcutsval[7][ipt]=0.1;
-     prodcutsval[8][ipt]=0.5;
-     prodcutsval[9][ipt]=0.9;
-     prodcutsval[10][ipt]=0.;
-     prodcutsval[11][ipt]=1000.0;
-     prodcutsval[12][ipt]=0.02;
-     prodcutsval[13][ipt]=0.1;
+      prodcutsval[0][ipt]=0.2;
+      prodcutsval[1][ipt]=0.3;
+      prodcutsval[2][ipt]=0.3;
+      prodcutsval[3][ipt]=0.;
+      prodcutsval[4][ipt]=0.;
+      prodcutsval[5][ipt]=0.005;
+      prodcutsval[6][ipt]=0.06;
+      prodcutsval[7][ipt]=0.0;
+      prodcutsval[8][ipt]=0.;
+      prodcutsval[9][ipt]=0.9;
+      prodcutsval[10][ipt]=0.;
+      prodcutsval[11][ipt]=1000.0;
+      prodcutsval[12][ipt]=0.03;
+      prodcutsval[13][ipt]=0.1;
+      prodcutsval[14][ipt]=0.;
+      prodcutsval[15][ipt]=1.;
   }
 
   RDHFDstoKKpi->SetCuts(nvars,nptbins,prodcutsval);
 
   Int_t nvarsforopt=RDHFDstoKKpi->GetNVarsForOpt();
-  const Int_t dim=3; //set this!!
+  //Int_t nvarsforopt=2;
+  const Int_t dim=4; //set this!!
   Bool_t *boolforopt;
   boolforopt=new Bool_t[nvars];
   if(dim>nvarsforopt){
@@ -215,28 +259,66 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
 
 
   Float_t tighterval[dim][nptbins];
-  //sigmavert
-  //costhetapoint
-  //inv. mass (Mphi-MKK)
-
+ 
   //number of steps for each variable is 4 now
   //set this!!
-
-  // tighterval[var][ptbin]
-  tighterval[0][0]=0.02;
-  tighterval[0][1]=0.02;
-  tighterval[0][2]=0.02;
-  tighterval[0][3]=0.02;
-
-  tighterval[1][0]=1.;
-  tighterval[1][1]=1.;
-  tighterval[1][2]=1.;
-  tighterval[1][3]=1.;
   
-  tighterval[2][0]=0.004;
-  tighterval[2][1]=0.004;
-  tighterval[2][2]=0.004;
-  tighterval[2][3]=0.004;
+  /*    
+   Spiegazione della selezione di ALiRDHFCutsDstoKKpi      condizione di rejection
+
+   0           "inv. mass [GeV]",                          invmassDS-massDspdg>fCutsRD
+   1			"pTK [GeV/c]",                              pTK<fCutsRd
+   2			"pTPi [GeV/c]",                             pTPi<fCutsRd
+   3			"d0K [cm]",                                 d0K<fCutsRd
+   4			"d0Pi [cm]",                                d0Pi<fCutsRd
+   5			"dist12 [cm]",                              dist12<fCutsRd
+   6			"sigmavert [cm]",                           sigmavert>fCutsRd
+   7			"decLen [cm]",                              decLen<fCutsRD
+   8			"ptMax [GeV/c]",                            ptMax<fCutsRD
+   9			"cosThetaPoint",                            CosThetaPoint<fCutsRD
+   10			"Sum d0^2 (cm^2)",                          sumd0<fCutsRD
+   11			"dca [cm]",                                 dca(i)>fCutsRD
+   12			"inv. mass (Mphi-MKK) [GeV]",               invmass-pdg>fCutsRD
+   13			"inv. mass (MKo*-MKpi) [GeV]"};             invmass-pdg>fCutsRD
+   14    		"Abs(CosineKpiPhiRFrame)^3",
+   15  	    	"CosPiDsLabFrame"}
+   */  
+  
+  // tighterval[var][ptbin]
+  
+  //sigmavert [cm]
+  
+   
+  tighterval[0][0]=0.0;
+  tighterval[0][1]=0.0;
+  tighterval[0][2]=0.0;
+  tighterval[0][3]=0.0;
+  tighterval[0][4]=0.0;
+  
+  
+   
+  tighterval[1][0]=0.05;
+  tighterval[1][1]=0.05;
+  tighterval[1][2]=0.05;
+  tighterval[1][3]=0.05;
+  tighterval[1][4]=0.05;
+  
+ 
+  //costhetapoint
+  
+  tighterval[2][0]=1.;
+  tighterval[2][1]=1.;
+  tighterval[2][2]=1.;
+  tighterval[2][3]=1.;
+  tighterval[2][4]=1.;
+  
+  //inv mass phi meson
+  
+  tighterval[3][0]=0.002;
+  tighterval[3][1]=0.002;
+  tighterval[3][2]=0.002;
+  tighterval[3][3]=0.002;
+  tighterval[3][4]=0.002;
   
 
   TString name=""; 

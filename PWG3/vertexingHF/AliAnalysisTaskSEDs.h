@@ -25,11 +25,12 @@
 class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 {
  public:
-
+ 
   AliAnalysisTaskSEDs();
-  AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* productioncuts, AliRDHFCutsDstoKKpi* analysiscuts);
+  AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* productioncuts, AliRDHFCutsDstoKKpi* analysiscuts, Int_t fillNtuple=0);
   virtual ~AliAnalysisTaskSEDs();
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
+  void SetFillNtuple(Int_t fill=0){fFillNtuple=fill;}
   void SetMassRange(Double_t rang=0.4){fMassRange=rang;}
   void SetDoCutVarHistos(Bool_t opt=kTRUE) {fDoCutVarHistos=opt;}
   void SetUseSelectionBit(Bool_t opt=kFALSE){ fUseSelectionBit=opt;}
@@ -78,7 +79,13 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH2F *fPtVsMass;    //! hist. of pt vs. mass (prod. cuts)
   TH2F *fYVsPt;       //! hist. of Y vs. Pt (prod. cuts)
   TH2F *fYVsPtSig;    //! hist. of Y vs. Pt (MC, only sig, prod. cuts)
-  
+  TNtuple *fNtupleDs; //! output ntuple
+  Int_t fFillNtuple;                 // 0 not to fill ntuple
+                                     // 1 for filling ntuple for events through Phi
+                                     // 2 for filling ntuple for events through K0Star
+                                     // 3 for filling all 
+                                    
+                                     
   Bool_t  fReadMC;                    //  flag for access to MC
   Bool_t  fDoCutVarHistos;            //  flag to create and fill histos with distributions of cut variables
   Bool_t  fUseSelectionBit;           // flag for useage of HasSelectionBit
@@ -92,7 +99,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliRDHFCutsDstoKKpi *fProdCuts;     // Cuts for Analysis
   AliRDHFCutsDstoKKpi *fAnalysisCuts; // Cuts for Analysis
   
-  ClassDef(AliAnalysisTaskSEDs,8);    //  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,9);    //  AliAnalysisTaskSE for Ds mass spectra
 };
 
 #endif

@@ -18,7 +18,7 @@
 class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
 
  public:
-
+  
   AliAODRecoDecayHF3Prong();
    AliAODRecoDecayHF3Prong(AliAODVertex *vtx2,
 			   Double_t *px,Double_t *py,Double_t *pz,
@@ -58,6 +58,14 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
   Double_t CtDs(AliAODVertex *vtx1) const {return AliAODRecoDecay::Ct(431,vtx1);}
   Double_t InvMassDsKKpi() const {UInt_t pdg[3]={321,321,211};return InvMass(3,pdg);}
   Double_t InvMassDspiKK() const {UInt_t pdg[3]={211,321,321};return InvMass(3,pdg);}
+  
+  Double_t CosPiKPhiRFrameKKpi() const {return CosPiKPhiRFrame(0);}
+  Double_t CosPiKPhiRFramepiKK() const {return CosPiKPhiRFrame(1);}
+  Double_t CosPiDsLabFrameKKpi() const {return CosPiDsLabFrame(0);}
+  Double_t CosPiDsLabFramepiKK() const {return CosPiDsLabFrame(1);}
+  
+  Double_t CosPiKPhiRFrame(Int_t option) const;
+  Double_t CosPiDsLabFrame(Int_t option) const;
   Bool_t   SelectDs(const Double_t* cuts,Int_t &okDsKKpi,Int_t &okDspiKK, Int_t &okMassPhi, Int_t &okMassK0star) 
     const; // same variables as D+, for now
 
