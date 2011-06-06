@@ -1249,7 +1249,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
            GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtx || 
 	   GetAnalysisMode() == AlidNdPtHelper::kTPCITSHybridTrackSPDvtxDCArPt )
   {
-     if(vtxESD->GetStatus() && isRecVertex)
+     if(vtxESD && vtxESD->GetStatus() && isRecVertex)
        multMBTracks = vtxESD->GetNContributors();
 
   }
