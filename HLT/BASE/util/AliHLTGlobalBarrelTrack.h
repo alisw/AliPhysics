@@ -19,6 +19,7 @@
 using namespace std;
 
 class TClonesArray;
+class AliHLTSpacePointContainer;
 
 /**
  * @class AliHLTGlobalBarrelTrack
@@ -38,7 +39,15 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
   /** copy constructor */
   AliHLTGlobalBarrelTrack(const AliExternalTrackParam& p);
 
-  /** assignment operator */
+  /// assignment operator
+  /// the standard assignment operator for AliHLTGlobalBarrelTrack is in principle
+  /// covered by the template definition, however, compiler does not seem to recognize
+  /// correctly -> effC++ warning, 
+  AliHLTGlobalBarrelTrack& operator=(const AliHLTGlobalBarrelTrack& t) {
+    if (this==&t) return *this;
+    this->~AliHLTGlobalBarrelTrack(); new (this) AliHLTGlobalBarrelTrack(t);
+    return *this;
+  }
   template <class c>
   AliHLTGlobalBarrelTrack& operator=(const c& t) {
     this->~AliHLTGlobalBarrelTrack(); new (this) AliHLTGlobalBarrelTrack(t);
@@ -75,6 +84,9 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
   /// Get the list of associated points
   const UInt_t* GetPoints() const;
 
+  /// Set the space point data
+  void SetSpacePointContainer(AliHLTSpacePointContainer* points) {fSpacePoints=points;}
+
   /// Set the list of associated points
   int SetPoints(const UInt_t* pArray, UInt_t arraySize);
 
@@ -92,11 +104,25 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
   /// Inherited from TObject, prints the track parameters
   virtual void Print(Option_t* option = "") const;
 
+  /// Inherited from TObject, draw the track
+  virtual void Draw(Option_t *option="");
+
+  int DrawProjXYSpacePoints(Option_t *option, const AliHLTSpacePointContainer* fSpacePoints, const float scale, float center[2]);
+  int DrawProjXYTrack(Option_t *option, const float scale, float center[2]);
+  int DrawProjXYTrackPoints(Option_t *option, const float scale, const float center[2], int firstpadrow, int step, float lastpoint[2]);
+
   Double_t GetPathLengthTo( Double_t x, Double_t b ) const;
 
   static int ReadTracks(const char* filename, TClonesArray& tgt, AliHLTComponentDataType dt=kAliHLTVoidDataType, unsigned specification=kAliHLTVoidDataSpec);
+  static int ReadTrackList(const char* listfile, TClonesArray& tgt, AliHLTComponentDataType dt=kAliHLTVoidDataType, unsigned specification=kAliHLTVoidDataSpec);
 
  protected:
+  /// calculate and set internal helix parameters
+  int CalculateHelixParams();
+
+  /// calculate crossing point with a plane parallel to z axis, at distance x
+  /// and phi
+  int CalculateCrossingPoint(float xPlane, float phiPlane, float& u, float& v);
 
  private:
 
@@ -110,6 +136,14 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
 
   /// track Id for identification during the reconstruction
   Int_t   fTrackID; //
+
+  /// helix parameters
+  Float_t fHelixRadius; //
+  Float_t fHelixCenterX; //
+  Float_t fHelixCenterY; //
+
+  /// the space points assigned to the track
+  AliHLTSpacePointContainer* fSpacePoints; //!
 
   ClassDef(AliHLTGlobalBarrelTrack, 0)
 };
