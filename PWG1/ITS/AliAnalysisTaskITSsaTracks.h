@@ -96,6 +96,11 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
   TH2F*   fHistEtaPhiGood[kNtrackTypes];  //! etaphi distr. good tracks, no PID
   TH2F*   fHistEtaPhiFake[kNtrackTypes];  //! etaphi distr. fake tracks, no PID
 
+  TH2F*   fHistEtaPhiAny[kNtrackTypes];   //! etaphi distr., no PID, no ITS requirements
+  TH2F*   fHistEtaPhi1SPD[kNtrackTypes];  //! etaphi distr., no PID, at least 1 SPD
+  TH2F*   fHistEtaPhi4Clu[kNtrackTypes];  //! etaphi distr., no PID, 1SPD+ 3 dEdx
+  TH2F*   fHistEtaPhi6Clu[kNtrackTypes];  //! etaphi distr., no PID, 6 Clu
+
   TH1F*   fHistChi2[kNtrackTypes];        //! chi2 distr., no PID
   TH1F*   fHistChi2Good[kNtrackTypes];    //! chi2 distr., good tracks, no PID
   TH1F*   fHistChi2Fake[kNtrackTypes];    //! chi2 distr., fake tracks, no PID
@@ -104,8 +109,9 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
   TH1F*   fHistNcluGood[kNtrackTypes];    //! ITS clu distr., good tracks, no PID
   TH1F*   fHistNcluFake[kNtrackTypes];    //! ITS clu distr., fake tracks, no PID
 
-  TH2F*   fHistdedxvsPt3cls[kNtrackTypes]; //! dedx vs. pt for tracks with 3 clus in SDD+SSD
-  TH2F*   fHistdedxvsPt4cls[kNtrackTypes]; //! dedx vs. pt for tracks with 4 clus in SDD+SSD
+  TH2F*   fHistdedxvsP2cls[kNtrackTypes]; //! dedx vs. p for tracks with 2 clus in SDD+SSD
+  TH2F*   fHistdedxvsP3cls[kNtrackTypes]; //! dedx vs. p for tracks with 3 clus in SDD+SSD
+  TH2F*   fHistdedxvsP4cls[kNtrackTypes]; //! dedx vs. p for tracks with 4 clus in SDD+SSD
 
 
   TH1F*   fHistPtTPCITS[kNspecies];    //! pt distribution of TPC+ITS tracks
@@ -152,7 +158,7 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;          // flag read/not-read MC truth info
   Bool_t  fUseMCId;         // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskITSsaTracks,2);  
+  ClassDef(AliAnalysisTaskITSsaTracks,3);  
 };
 
 
