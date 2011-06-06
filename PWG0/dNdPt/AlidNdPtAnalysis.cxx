@@ -1156,6 +1156,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
     if(!vtxESD) return;
     isRecVertex = kTRUE;
   }
+  if(!vtxESD) return;
 
   Bool_t isEventOK = evtCuts->AcceptEvent(esdEvent,mcEvent,vtxESD) && isRecVertex; 
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK, isEventTriggered);
@@ -1170,14 +1171,14 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
   Int_t multMBTracks = 0; 
   if(GetAnalysisMode() == AlidNdPtHelper::kTPC) 
   {  
-     if(vtxESD->GetStatus() && isRecVertex)
+     if(vtxESD && vtxESD->GetStatus() && isRecVertex)
        multMBTracks = AlidNdPtHelper::GetTPCMBTrackMult(esdEvent,evtCuts,accCuts,esdTrackCuts);
   } 
   else if( GetAnalysisMode() == AlidNdPtHelper::kTPCSPDvtx || 
            GetAnalysisMode()==AlidNdPtHelper::kTPCSPDvtxUpdate ) 
   {
      const AliMultiplicity* mult = esdEvent->GetMultiplicity();
-     if(mult && vtxESD->GetStatus() && isRecVertex)
+     if(mult && vtxESD && vtxESD->GetStatus() && isRecVertex)
        multMBTracks = mult->GetNumberOfTracklets();
   } 
   else if( GetAnalysisMode() == AlidNdPtHelper::kTPCITS || 
@@ -1190,7 +1191,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 	   GetAnalysisMode() == AlidNdPtHelper::kITSStandAloneTPCTrackSPDvtx
 	   )
   {
-     if(vtxESD->GetStatus() && isRecVertex)
+     if(vtxESD && vtxESD->GetStatus() && isRecVertex)
        multMBTracks = vtxESD->GetNContributors();
   }
   else {

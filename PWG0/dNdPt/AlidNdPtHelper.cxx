@@ -115,6 +115,7 @@ const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, const Ali
       TObjArray array(ntracks);
       UShort_t *id = new UShort_t[ntracks];
 
+
       Int_t count=0;
       for (Int_t i=0;i <ntracks; i++) {
         AliESDtrack *t = aEsd->GetTrack(i);
@@ -130,7 +131,10 @@ const AliESDVertex* AlidNdPtHelper::GetVertex(AliESDEvent* const aEsd, const Ali
 	}
       } 
       AliESDVertex *vTPC = vertexer.VertexForSelectedTracks(&array,id, kTRUE, kTRUE, bUseMeanVertex);
-      if(!vTPC) return 0;
+      if(!vTPC) { 
+        delete [] id; id=NULL;
+        return 0;
+      }
       
       // set recreated TPC vertex
       aEsd->SetPrimaryVertexTPC(vTPC);
