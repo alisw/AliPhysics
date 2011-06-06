@@ -76,6 +76,8 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   void SetYear(Int_t year);
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillNtuple(Bool_t fill=kTRUE) {fFillNtuple=fill;}
+  void SetLowEnergypp(Bool_t opt=kTRUE) {fLowEnergypp=opt;}
+
   void SetSmearMC(Double_t smearp, Double_t smeardedx){
     fSmearMC=kTRUE;
     fSmearP=smearp;
@@ -228,10 +230,11 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   Double_t fSmeardEdx; // extra relative smearing on simulated dE/dx
   TRandom3* fRandGener;    // generator for smearing
   Bool_t       fFillNtuple;      // fill ntuple  
+  Bool_t   fLowEnergypp; // flag for counrint ev. in p-p 2.76
   TNtuple     *fNtupleNSigma;//! output ntuple
   TNtuple     *fNtupleMC;//! output MC ntuple
   
-  ClassDef(AliAnalysisTaskSEITSsaSpectra, 6);
+  ClassDef(AliAnalysisTaskSEITSsaSpectra, 7);
 };
 
 #endif
