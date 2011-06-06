@@ -303,7 +303,7 @@ Event::DecayParticles()
 	  {
 	    tDecayer->DecayParticle(tFather, &tPart1, &tPart2, &tPart3);
 #ifndef _RESCALE_CHANNELS_
-	    if (!tPart1) {
+	    if ((!tPart1) && (!tPart2)) {
 	      tCount++;
 	      continue;
 	    }
