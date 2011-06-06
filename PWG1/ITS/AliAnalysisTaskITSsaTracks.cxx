@@ -85,14 +85,19 @@ AliAnalysisTaskITSsaTracks::~AliAnalysisTaskITSsaTracks(){
     delete fHistEtaPhi[iType];
     delete fHistEtaPhiGood[iType];
     delete fHistEtaPhiFake[iType];
+    delete fHistEtaPhiAny[iType];
+    delete fHistEtaPhi1SPD[iType];
+    delete fHistEtaPhi4Clu[iType];
+    delete fHistEtaPhi6Clu[iType];
     delete fHistChi2[iType];
     delete fHistChi2Good[iType];
     delete fHistChi2Fake[iType];
     delete fHistNclu[iType];
     delete fHistNcluGood[iType];
     delete fHistNcluFake[iType];
-    delete fHistdedxvsPt3cls[iType];
-    delete fHistdedxvsPt4cls[iType];
+    delete fHistdedxvsP2cls[iType];
+    delete fHistdedxvsP3cls[iType];
+    delete fHistdedxvsP4cls[iType];
   }
   for(Int_t iSpec=0; iSpec<kNspecies; iSpec++){
     delete fHistPtTPCITS[iSpec];
@@ -200,6 +205,19 @@ void AliAnalysisTaskITSsaTracks::UserCreateOutputObjects() {
     fHistEtaPhiFake[iType]->Sumw2();
     fOutput->Add(fHistEtaPhiFake[iType]);
 
+    fHistEtaPhiAny[iType] = new TH2F(Form("hEtaPhiAny%s",tit[iType].Data()),"",50,-1,1.,100,0.,2.*TMath::Pi());
+    fHistEtaPhiAny[iType]->Sumw2();
+    fOutput->Add(fHistEtaPhiAny[iType]);
+    fHistEtaPhi1SPD[iType] = new TH2F(Form("hEtaPhi1SPD%s",tit[iType].Data()),"",50,-1,1.,100,0.,2.*TMath::Pi());
+    fHistEtaPhi1SPD[iType]->Sumw2();
+    fOutput->Add(fHistEtaPhi1SPD[iType]);
+    fHistEtaPhi4Clu[iType] = new TH2F(Form("hEtaPhi4Clu%s",tit[iType].Data()),"",50,-1,1.,100,0.,2.*TMath::Pi());
+    fHistEtaPhi4Clu[iType]->Sumw2();
+    fOutput->Add(fHistEtaPhi4Clu[iType]);
+    fHistEtaPhi6Clu[iType] = new TH2F(Form("hEtaPhi6Clu%s",tit[iType].Data()),"",50,-1,1.,100,0.,2.*TMath::Pi());
+    fHistEtaPhi6Clu[iType]->Sumw2();
+    fOutput->Add(fHistEtaPhi6Clu[iType]);
+
     fHistChi2[iType]=new TH1F(Form("hChi2%s",tit[iType].Data()),"",100,0.,10.);
     fHistChi2[iType]->Sumw2();
     fOutput->Add(fHistChi2[iType]);
@@ -220,13 +238,17 @@ void AliAnalysisTaskITSsaTracks::UserCreateOutputObjects() {
     fHistNcluFake[iType]->Sumw2();
     fOutput->Add(fHistNcluFake[iType]);
 
-    fHistdedxvsPt3cls[iType] = new TH2F(Form("hdedxvsPt3cls%s",tit[iType].Data()),"",hnbinsdedx,hxbinsdedx,900,0,1000);
-    fHistdedxvsPt3cls[iType]->Sumw2();
-    fOutput->Add(fHistdedxvsPt3cls[iType]);
+    fHistdedxvsP2cls[iType] = new TH2F(Form("hdedxvsP2cls%s",tit[iType].Data()),"",hnbinsdedx,hxbinsdedx,900,0,1000);
+    fHistdedxvsP2cls[iType]->Sumw2();
+    fOutput->Add(fHistdedxvsP2cls[iType]);
 
-    fHistdedxvsPt4cls[iType] = new TH2F(Form("hdedxvsPt4cls%s",tit[iType].Data()),"",hnbinsdedx,hxbinsdedx,900,0,1000);
-    fHistdedxvsPt4cls[iType]->Sumw2();
-    fOutput->Add(fHistdedxvsPt4cls[iType]);
+    fHistdedxvsP3cls[iType] = new TH2F(Form("hdedxvsP3cls%s",tit[iType].Data()),"",hnbinsdedx,hxbinsdedx,900,0,1000);
+    fHistdedxvsP3cls[iType]->Sumw2();
+    fOutput->Add(fHistdedxvsP3cls[iType]);
+
+    fHistdedxvsP4cls[iType] = new TH2F(Form("hdedxvsP4cls%s",tit[iType].Data()),"",hnbinsdedx,hxbinsdedx,900,0,1000);
+    fHistdedxvsP4cls[iType]->Sumw2();
+    fOutput->Add(fHistdedxvsP4cls[iType]);
   }
 
   //-----------------------------------------------------------
@@ -506,19 +528,6 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     if(fFillNtuple) fNtupleTracks->Fill(xnt);
 
     if(!(status&AliESDtrack::kITSrefit)) continue;
-    if(nITSclus<fMinITSpts)continue;
-    if((chi2/nITSclus) > fMaxITSChi2Clu) continue;
-
-    Int_t nSPDPoints=0;
-    for(Int_t i=0; i<2; i++){
-      if(clumap&(1<<i)) ++nSPDPoints;
-    }
-    if(nSPDPoints<fMinSPDpts) continue;
-
-    Int_t nPointsForPid=0;
-    for(Int_t i=2; i<6; i++){
-      if(clumap&(1<<i)) ++nPointsForPid;
-    }
 
     Int_t iTrackType=-1;
     if(status&AliESDtrack::kTPCin){
@@ -528,15 +537,39 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
       else iTrackType=kTypeITSsa;
     }
     if(iTrackType<0 || iTrackType>=kNtrackTypes) continue;
+
+    Int_t nSPDPoints=0;
+    for(Int_t i=0; i<2; i++){
+      if(clumap&(1<<i)) ++nSPDPoints;
+    }
+    Int_t nPointsForPid=0;
+    for(Int_t i=2; i<6; i++){
+      if(clumap&(1<<i)) ++nPointsForPid;
+    }
+
+    fHistEtaPhiAny[iTrackType]->Fill(track->Eta(),track->Phi());
+    if(nSPDPoints>=1) fHistEtaPhi1SPD[iTrackType]->Fill(track->Eta(),track->Phi());
+    if(nSPDPoints>=1 && nPointsForPid>=3) fHistEtaPhi4Clu[iTrackType]->Fill(track->Eta(),track->Phi());
+    if(nITSclus==6) fHistEtaPhi6Clu[iTrackType]->Fill(track->Eta(),track->Phi());
+
+
+    if(nITSclus<fMinITSpts)continue;
+    if((chi2/nITSclus) > fMaxITSChi2Clu) continue;
+    if(nSPDPoints<fMinSPDpts) continue;
+
     fHistPt[iTrackType]->Fill(pttrack);
     fHistEtaPhi[iTrackType]->Fill(track->Eta(),track->Phi());
+
     fHistChi2[iTrackType]->Fill(chi2/nITSclus);
     fHistNclu[iTrackType]->Fill(nITSclus);
-    if(nPointsForPid==3){
-      fHistdedxvsPt3cls[iTrackType]->Fill(pttrack,dedx);
+    if(nPointsForPid==2){
+      fHistdedxvsP2cls[iTrackType]->Fill(ptrack,dedx);
     }
-    if(nPointsForPid==4){
-      fHistdedxvsPt4cls[iTrackType]->Fill(pttrack,dedx);
+    else if(nPointsForPid==3){
+      fHistdedxvsP3cls[iTrackType]->Fill(ptrack,dedx);
+    }
+    else if(nPointsForPid==4){
+      fHistdedxvsP4cls[iTrackType]->Fill(ptrack,dedx);
     }
     if(fReadMC){
       if(trlabel<0){
