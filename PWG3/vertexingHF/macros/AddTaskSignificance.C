@@ -123,10 +123,10 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
   
   AliAnalysisTaskSESignificance *sigTask = new AliAnalysisTaskSESignificance("SignificanceAnalysis",listMDV,analysiscuts,decCh,AliRDHFCuts::kAll);//AliRDHFCuts::kCandidate
   sigTask->SetReadMC(readMC);
-  //sigTask->SetDoLikeSign(kTRUE);
   sigTask->SetBFeedDown(fromcb);
-  sigTask->SetDebugLevel(3);
+  sigTask->SetDebugLevel(0);
   sigTask->SetFillWithPartAntiPartBoth(flagOPartAntiPart);
+  sigTask->SetUseSelBit(kTRUE);
   mgr->AddTask(sigTask);
 
   TString contname=Form("cinputSig%s",suffix.Data());
