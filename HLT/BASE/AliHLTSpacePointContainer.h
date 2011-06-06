@@ -45,6 +45,7 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
   /// add input block to the collection
   virtual int AddInputBlock(const AliHLTComponentBlockData* pDesc)=0;
 
+  int GetNumberOfSpacePoints() const;
   virtual int GetClusterIDs(vector<AliHLTUInt32_t>& tgt) const = 0;
   virtual float GetX(AliHLTUInt32_t clusterID) const = 0;
   virtual float GetXWidth(AliHLTUInt32_t clusterID) const = 0;
@@ -93,6 +94,8 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
   virtual void Print(Option_t *option="") const;
 
   virtual void Print(ostream& out, Option_t *option="") const;
+
+  void Draw(Option_t *option);
 
   TH1* DrawProjection(const char* plane) const {
     vector<AliHLTUInt32_t> selection; // empty list -> no selection

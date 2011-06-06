@@ -30,6 +30,7 @@
 #include "TObjArray.h"
 #include "TH2F.h"
 #include "TMath.h"
+#include "TMarker.h"
 #include <memory>
 #include <iostream>
 
@@ -205,6 +206,14 @@ int AliHLTSpacePointContainer::SetMCID(int /*mcID*/, const AliHLTUInt32_t* /*clu
   return -ENOSYS;
 }
 
+int AliHLTSpacePointContainer::GetNumberOfSpacePoints() const
+{
+  // get number of space points
+  vector<AliHLTUInt32_t> clusterIDs;
+  if (GetClusterIDs(clusterIDs)<0) return 0;
+  return clusterIDs.size();
+}
+
 TH1* AliHLTSpacePointContainer::DrawProjection(const char* plane, const vector<AliHLTUInt32_t>& selection) const
 {
   // draw the projection of space points in a specified plane
@@ -287,6 +296,57 @@ TH1* AliHLTSpacePointContainer::DrawProjection(const char* plane, const vector<A
   }
 
   return histogram;
+}
+
+void AliHLTSpacePointContainer::Draw(Option_t *option)
+{
+  /// Inherited from TObject, draw clusters
+  float scale=250;
+  float center[2]={0.5,0.5};
+
+  TString strOption(option);
+  std::auto_ptr<TObjArray> tokens(strOption.Tokenize(" "));
+  if (!tokens.get()) return;
+  for (int i=0; i<tokens->GetEntriesFast(); i++) {
+    if (!tokens->At(i)) continue;
+    const char* key="";
+    TString arg=tokens->At(i)->GetName();
+
+    key="scale=";
+    if (arg.BeginsWith(key)) {
+      arg.ReplaceAll(key, "");
+      scale=arg.Atof();
+    }
+    key="centerx=";
+    if (arg.BeginsWith(key)) {
+      arg.ReplaceAll(key, "");
+      center[0]=arg.Atof();
+    }
+    key="centery=";
+    if (arg.BeginsWith(key)) {
+      arg.ReplaceAll(key, "");
+      center[1]=arg.Atof();
+    }
+  }
+
+  vector<AliHLTUInt32_t> clusterIDs;
+  GetClusterIDs(clusterIDs);
+  for (vector<AliHLTUInt32_t>::iterator clusterID=clusterIDs.begin();
+       clusterID!=clusterIDs.end();
+       clusterID++) {
+    float clusterphi=GetPhi(*clusterID);
+    float cosphi=TMath::Cos(clusterphi);
+    float sinphi=TMath::Sin(clusterphi);
+    float clusterx=GetX(*clusterID);
+    float clustery=GetY(*clusterID);
+    // rotate
+    float pointx= clusterx*sinphi + clustery*cosphi;
+    float pointy=-clusterx*cosphi + clustery*sinphi;
+
+    TMarker* m=new TMarker(pointx/(2*scale)+center[0], pointy/(2*scale)+center[1], 3);
+    m->SetMarkerColor(5);
+    m->Draw("same");    
+  }  
 }
 
 ostream& operator<<(ostream &out, const AliHLTSpacePointContainer& c)
