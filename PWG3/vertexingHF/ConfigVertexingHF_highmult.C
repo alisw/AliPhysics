@@ -65,9 +65,9 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   AliRDHFCutsDplustoKpipi *cutsDplustoKpipi = new AliRDHFCutsDplustoKpipi("CutsDplustoKpipi");
   cutsDplustoKpipi->SetStandardCutsPbPb2010();
   cutsDplustoKpipi->SetUsePID(kFALSE);
-  Float_t cutsArrayDplustoKpipi[12]={0.2,0.8,0.8,0.,0.,0.01,0.06,0.05,1.,0.85,0.,10000000000.};
+  Float_t cutsArrayDplustoKpipi[14]={0.2,0.8,0.8,0.,0.,0.01,0.06,0.05,1.,0.85,0.,10000000000.,0.,0.};
   cutsDplustoKpipi->SetPtBins(nptbins,ptlimits);
-  cutsDplustoKpipi->SetCuts(12,cutsArrayDplustoKpipi);
+  cutsDplustoKpipi->SetCuts(14,cutsArrayDplustoKpipi);
   cutsDplustoKpipi->AddTrackCuts(esdTrackCuts);
   cutsDplustoKpipi->SetMinPtCandidate(3.);
   vHF->SetCutsDplustoKpipi(cutsDplustoKpipi);
