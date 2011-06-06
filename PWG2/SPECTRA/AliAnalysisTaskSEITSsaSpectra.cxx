@@ -90,6 +90,7 @@ AliAnalysisTaskSE("Task CFit"),
   fSmeardEdx(0.),
   fRandGener(0),
   fFillNtuple(kFALSE),
+  fLowEnergypp(kFALSE),
   fNtupleNSigma(0),
   fNtupleMC(0)
 {
@@ -250,7 +251,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
   fOutput->SetOwner();
   fOutput->SetName("Spiderman");
   
-  fHistNEvents = new TH1F("fHistNEvents", "Number of processed events",7,-0.5,6.5);
+  fHistNEvents = new TH1F("fHistNEvents", "Number of processed events",8,-1.5,6.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
@@ -512,7 +513,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
 
   }
   
-  fNtupleNSigma = new TNtuple("fNtupleNSigma","fNtupleNSigma","p:pt:dedx:ncls:sign:run:eta:impactXY:impactZ:isph:pdgcode:mfl:chi2ncls");
+  fNtupleNSigma = new TNtuple("fNtupleNSigma","fNtupleNSigma","p:pt:dedx:dedx3:dedx4:dedx5:dedx6:ncls:nclspid:sign:run:eta:impactXY:impactZ:isph:pdgcode:mfl:chi2ncls");
   fOutput->Add(fNtupleNSigma);
   fNtupleMC = new TNtuple("fNtupleMC","fNtupleMC","ptMC:pdgcode:signMC:etaMC:yMC:isph:evSel:run");
   fOutput->Add(fNtupleMC);
@@ -528,18 +529,11 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
   // Main loop
   // Called for each event
   
-  fESD=(AliESDEvent*)InputEvent();
-  if(!fESD) {
-    printf("AliAnalysisTaskSDDRP::Exec(): bad ESD\n");
-    return;
-  } 
-  fHistNEvents->Fill(0);
-  
   ///////////////////////////////////////
   //variables
   Float_t pdgmass[4]={0.13957,0.493677,0.938272,1.8756}; //mass for pi, K, P (Gev/c^2)
   Int_t listcode[3]={211,321,2212};//code for pi, K, P (Gev/c^2)
-  Double_t s[4];
+  Double_t dedxLay[4];
   Float_t ptMC=-999;
   Int_t code=-999, signMC=-999,isph=-999,mfl=-999;
   Float_t impactXY=-999, impactZ=-999;
@@ -551,6 +545,29 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
   TParticlePDG *pdgPart=0;
 	
   /////////////////////
+
+  fESD=(AliESDEvent*)InputEvent();
+  if(!fESD) {
+    printf("AliAnalysisTaskSDDRP::Exec(): bad ESD\n");
+    return;
+  } 
+  fHistNEvents->Fill(-1);
+  
+  if(fLowEnergypp){ // remove events without SDD in pp 2.6 TeV
+    Bool_t hasSDD=kFALSE;
+    for (Int_t iTrack=0; iTrack<fESD->GetNumberOfTracks(); iTrack++) {  
+      track = (AliESDtrack*)fESD->GetTrack(iTrack);      
+      if (!track) continue;
+      UInt_t clumap = track->GetITSClusterMap();
+      if(clumap&4) hasSDD=kTRUE;
+      if(clumap&8) hasSDD=kTRUE;
+      if(hasSDD) break;
+    }
+    if(!hasSDD) return;
+  }
+  fHistNEvents->Fill(0);
+
+
   if(fMC){
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     if (!eventHandler) {
@@ -568,11 +585,11 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
       return;
     }
   }
-  //flags for MC
   if(!fITSPIDResponse){
     fITSPIDResponse=new AliITSPIDResponse(fMC); 
   }
 
+  //flags for MC
   Int_t nTrackMC=0; 
   if(stack) nTrackMC = stack->GetNtrack();	
   const AliESDVertex *vtx =  fESD->GetPrimaryVertexSPD();
@@ -665,6 +682,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
       }
     }
   }
+
+
 /////first loop on stack, before event selection, filling MC ntuple
 	
   for(Int_t imc=0; imc<nTrackMC; imc++){
@@ -814,9 +833,9 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     fHistNTracksNeg->GetXaxis()->SetBinLabel(fHistNTracksNeg->FindBin(countBinTrk),label.Data());
     countBinTrk++;  
     
-    Int_t count=0;
-    for(Int_t j=2;j<6;j++) if(TESTBIT(clumap,j)) count++;
-    if(count<fMinNdEdxSamples) continue; //at least 3 points on SSD/SDD
+    Int_t nPtsForPid=0;
+    for(Int_t j=2;j<6;j++) if(TESTBIT(clumap,j)) nPtsForPid++;
+    if(nPtsForPid<fMinNdEdxSamples) continue; //at least 3 points on SSD/SDD
     
     label="SDD+SSD cls";
     fHistNTracks->Fill(countBinTrk);
@@ -828,7 +847,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     countBinTrk++;  
     
     //chisquare/nclusters	
-    Int_t nclu=nSPD+count;
+    Int_t nclu=nSPD+nPtsForPid;
     if(track->GetITSchi2()/nclu > fMaxChi2Clu) continue; 
     
     label="chi2/ncls";
@@ -853,9 +872,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     countBinTrk++;  
     
     //truncated mean
-    //if(fMC) for(Int_t j=0;j<2;j++) s[j]*=3.34/5.43;//correction for SDD miscalibration of the MCpass4
-    track->GetITSdEdxSamples(s);
-    Double_t dedx = CookdEdx(s);
+    track->GetITSdEdxSamples(dedxLay);
+    Double_t dedx = CookdEdx(dedxLay);
     if(dedx<0) continue;
 
     label="de/dx<0";
@@ -937,12 +955,17 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	}
       }
     }
-  Float_t xnt[13];
+    Float_t xnt[18];
     Int_t index=0;
     xnt[index++]=(Float_t)track->GetP();
     xnt[index++]=(Float_t)track->Pt();
     xnt[index++]=(Float_t)dedx;
-    xnt[index++]=(Float_t)count;
+    xnt[index++]=(Float_t)dedxLay[0];
+    xnt[index++]=(Float_t)dedxLay[1];
+    xnt[index++]=(Float_t)dedxLay[2];
+    xnt[index++]=(Float_t)dedxLay[3];
+    xnt[index++]=(Float_t)nclu;
+    xnt[index++]=(Float_t)nPtsForPid;
     xnt[index++]=(Float_t)track->GetSign();
     xnt[index++]=(Float_t)fESD->GetRunNumber();
     xnt[index++]=(Float_t)track->Eta();
@@ -977,7 +1000,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
       logdiff[i]=TMath::Log(dedx) - TMath::Log(bbtheo[i]);
     }
     
-    Int_t resocls=(Int_t)count-1;
+    Int_t resocls=(Int_t)nPtsForPid-1;
     
     //NSigma Method, with asymmetric bands
     Int_t minPosMean=-1;
@@ -1190,8 +1213,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	  
     //fill charge distribution histo to check the calibration
     for(Int_t j=0;j<4;j++){
-      if(s[j]<5) continue;
-      fHistCharge[j]->Fill(s[j]);
+      if(dedxLay[j]<5) continue;
+      fHistCharge[j]->Fill(dedxLay[j]);
     }
   }
 		
