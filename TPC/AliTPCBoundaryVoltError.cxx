@@ -41,10 +41,10 @@
 //   and the corresponding offset in z is added.
 // End_Html
 //
-// Begin_Macro(source) 
+// Begin_Macro(source)
 //   {
 //   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
-//   TCanvas *c2 = new TCanvas("c2","c2",500,300); 
+//   TCanvas *c2 = new TCanvas("cAliTPCBoundaryVoltError","cAliTPCBoundaryVoltError",500,300); 
 //   AliTPCBoundaryVoltError bve;     
 //   Float_t val = 40;// [Volt]; 40V corresponds to 1mm
 //   /* IFC shift, CE follows, ROC follows by factor half */

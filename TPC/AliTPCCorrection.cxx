@@ -55,10 +55,10 @@
 //   Note: This class is normally used via the class AliTPCComposedCorrection
 // End_Html
 //
-// Begin_Macro(source) 
+// Begin_Macro(source)
 //   {
 //   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
-//   TCanvas *c2 = new TCanvas("c2","c2",700,1050);  c2->Divide(2,3);
+//   TCanvas *c2 = new TCanvas("cAliTPCCorrection","cAliTPCCorrection",700,1050);  c2->Divide(2,3);
 //   AliTPCROCVoltError3D roc; // EXAMPLE PLOTS - SEE BELOW
 //   roc.SetOmegaTauT1T2(0,1,1); // B=0
 //   Float_t z0 = 1; // at +1 cm -> A side

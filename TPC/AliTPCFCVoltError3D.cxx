@@ -46,10 +46,10 @@
 //   </ul>
 // End_Html
 //
-// Begin_Macro(source) 
+// Begin_Macro(source)
 //   {
 //   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
-//   TCanvas *c2 = new TCanvas("c2","c2",500,450); 
+//   TCanvas *c2 = new TCanvas("cAliTPCVoltError3D","cAliTPCVoltError3D",500,450); 
 //   AliTPCFCVoltError3D fc;
 //   fc.SetOmegaTauT1T2(0,1,1); 
 //   fc.SetRotatedClipVoltA(0,40);

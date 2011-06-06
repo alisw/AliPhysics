@@ -49,10 +49,10 @@
 //   function SetElectronArrivalCorrection, the electron-arrival correction is added to the dz calculation.
 // End_Html
 //
-// Begin_Macro(source) 
+// Begin_Macro(source)
 //   {
 //   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
-//   TCanvas *c2 = new TCanvas("c2","c2",500,400); 
+//   TCanvas *c2 = new TCanvas("cAliTPCROCVoltError3D","cAliTPCROCVoltError3D",500,400); 
 //   AliTPCROCVoltError3D roc; 
 //   roc.SetElectronArrivalCorrection(kFALSE);  // Correction for electron arrival offset, IROC vs OROC
 //   roc.SetROCDisplacement(kTRUE);   // include the chamber offset in z when calculating the dz 

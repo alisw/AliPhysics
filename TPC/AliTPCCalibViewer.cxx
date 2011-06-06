@@ -687,7 +687,7 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, Int_t sector, const c
    // sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma, Begin_Latex t #sigma End_Latex)
    // sigmaStep: the binsize of the generated histogram
    // Begin_Latex 
-   // f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx + #int_{#mu}^{#mu - t #sigma} f(x, #mu, #sigma) dx }{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx }
+   // f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = (#int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx + #int_{#mu}^{#mu - t #sigma} f(x, #mu, #sigma) dx) / (#int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx)
    // End_Latex
    // 
    //
@@ -899,7 +899,7 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand,       Int_t sector, 
    // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
    // The actual work is done on the array.
    /* Begin_Latex 
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx}{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx }
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
       End_Latex  
    */
    if (sector >= 0 && sector < 72) {
@@ -920,7 +920,7 @@ Int_t AliTPCCalibViewer::IntegrateOld(const char* drawCommand, const char* secto
    // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
    // The actual work is done on the array.
    /* Begin_Latex 
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx}{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx }
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
       End_Latex  
    */
    
@@ -1004,7 +1004,7 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
    // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
    // The actual work is done on the array.
    /* Begin_Latex 
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx}{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx }
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
       End_Latex  
    */
    
@@ -1263,22 +1263,22 @@ TH1F* AliTPCCalibViewer::SigmaCut(TH1F *const histogram, Float_t mean, Float_t s
    // pm: Decide weather Begin_Latex t > 0 End_Latex (first case) or Begin_Latex t End_Latex arbitrary (secound case)
    // The actual work is done on the array.
    /* Begin_Latex 
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx + #int_{#mu}^{#mu - t #sigma} f(x, #mu, #sigma) dx }{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx } ,    for  t > 0    
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = (#int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx + #int_{#mu}^{#mu - t #sigma} f(x, #mu, #sigma) dx) / (#int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx),    for  t > 0    
          or      
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx}{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx }
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
       End_Latex  
-      begin_macro(source)
+      Begin_Macro(source)
       {
          Float_t mean = 0;
          Float_t sigma = 1.5;
          Float_t sigmaMax = 4;
          gROOT->SetStyle("Plain");
-         TH1F *distribution = new TH1F("Distribution1", "Distribution f(x, #mu, #sigma)", 1000,-5,5);
+         TH1F *distribution = new TH1F("Distrib1", "Distribution f(x, #mu, #sigma)", 1000,-5,5);
          TRandom rand(23);
          for (Int_t i = 0; i <50000;i++) distribution->Fill(rand.Gaus(mean, sigma));
          Float_t *ar = distribution->GetArray();
          
-         TCanvas* macro_example_canvas = new TCanvas("macro_example_canvas_SigmaCut", "", 350, 350);
+         TCanvas* macro_example_canvas = new TCanvas("cAliTPCCalibViewer1", "", 350, 350);
          macro_example_canvas->Divide(0,3);
          TVirtualPad *pad1 = macro_example_canvas->cd(1);
          pad1->SetGridy();
@@ -1298,7 +1298,7 @@ TH1F* AliTPCCalibViewer::SigmaCut(TH1F *const histogram, Float_t mean, Float_t s
          shistPM->Draw();   
          return macro_example_canvas;
       }  
-      end_macro
+      End_Macro
    */ 
    
    Float_t *array = histogram->GetArray();
@@ -1410,20 +1410,20 @@ TH1F* AliTPCCalibViewer::Integrate(TH1F *const histogram, Float_t mean, Float_t 
    // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
    // The actual work is done on the array.
    /* Begin_Latex 
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx}{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx }
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
       End_Latex  
-      begin_macro(source)
+      Begin_Macro(source)
       {
          Float_t mean = 0;
          Float_t sigma = 1.5;
          Float_t sigmaMax = 4;
          gROOT->SetStyle("Plain");
-         TH1F *distribution = new TH1F("Distribution2", "Distribution f(x, #mu, #sigma)", 1000,-5,5);
+         TH1F *distribution = new TH1F("Distrib2", "Distribution f(x, #mu, #sigma)", 1000,-5,5);
          TRandom rand(23);
          for (Int_t i = 0; i <50000;i++) distribution->Fill(rand.Gaus(mean, sigma));
          Float_t *ar = distribution->GetArray();
          
-         TCanvas* macro_example_canvas = new TCanvas("macro_example_canvas_Integrate", "", 350, 350);
+         TCanvas* macro_example_canvas = new TCanvas("cAliTPCCalibViewer2", "", 350, 350);
          macro_example_canvas->Divide(0,2);
          TVirtualPad *pad1 = macro_example_canvas->cd(1);
          pad1->SetGridy();
@@ -1438,7 +1438,7 @@ TH1F* AliTPCCalibViewer::Integrate(TH1F *const histogram, Float_t mean, Float_t 
          
          return macro_example_canvas_Integrate;
       }  
-      end_macro
+      End_Macro
    */ 
 
    

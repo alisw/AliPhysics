@@ -18,10 +18,10 @@
 //   in cartesian coordinates. They can be set via the member functions SetXTwist and SetYTwist.
 // End_Html
 //
-// Begin_Macro(source) 
+// Begin_Macro(source)
 //   {
 //   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
-//   TCanvas *c2 = new TCanvas("c2","c2",500,300); 
+//   TCanvas *c2 = new TCanvas("cAliTPCExBTwist","cAliTPCExBTwist",500,300); 
 //   AliTPCExBTwist twist;
 //   twist.SetXTwist(0.001);  // x angle in [rad]
 //   twist.SetXTwist(0.0005); // y angle in [rad]

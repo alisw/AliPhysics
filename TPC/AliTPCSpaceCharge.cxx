@@ -33,10 +33,10 @@
 //   the shape of the distortions is given below.
 // End_Html
 //
-// Begin_Macro(source) 
+// Begin_Macro(source)
 //   {
 //   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
-//   TCanvas *c2 = new TCanvas("c2","c2",500,300); 
+//   TCanvas *c2 = new TCanvas("cAliTPCSpaceCharge","cAliTPCSpaceCharge",500,300); 
 //   AliTPCSpaceCharge sc;
 //   sc.SetOmegaTauT1T2(-0.32,1,1); // B=0.5 Tesla
 //   sc.SetCorrectionFactor(0.0015);

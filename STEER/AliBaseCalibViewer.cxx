@@ -338,11 +338,11 @@ TH1F* AliBaseCalibViewer::SigmaCut(TH1F *histogram, Float_t mean, Float_t sigma,
    // pm: Decide weather Begin_Latex t > 0 End_Latex (first case) or Begin_Latex t End_Latex arbitrary (secound case)
    // The actual work is done on the array.
    /* Begin_Latex 
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx + #int_{#mu}^{#mu - t #sigma} f(x, #mu, #sigma) dx }{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx } ,    for  t > 0    
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = (#int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx + #int_{#mu}^{#mu - t #sigma} f(x, #mu, #sigma) dx) / (#int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx),    for  t > 0    
          or      
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx}{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx }
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
       End_Latex  
-      begin_macro(source)
+      Begin_Macro(source)
       {
          Float_t mean = 0;
          Float_t sigma = 1.5;
@@ -353,7 +353,7 @@ TH1F* AliBaseCalibViewer::SigmaCut(TH1F *histogram, Float_t mean, Float_t sigma,
          for (Int_t i = 0; i <50000;i++) distribution->Fill(rand.Gaus(mean, sigma));
          Float_t *ar = distribution->GetArray();
          
-         TCanvas* macro_example_canvas = new TCanvas("macro_example_canvas_SigmaCut", "", 350, 350);
+         TCanvas* macro_example_canvas = new TCanvas("cAliBaseCalibViewer", "", 350, 350);
          macro_example_canvas->Divide(0,3);
          TVirtualPad *pad1 = macro_example_canvas->cd(1);
          pad1->SetGridy();
@@ -373,7 +373,7 @@ TH1F* AliBaseCalibViewer::SigmaCut(TH1F *histogram, Float_t mean, Float_t sigma,
          shistPM->Draw();   
          return macro_example_canvas;
       }  
-      end_macro
+      End_Macro
    */ 
    
    Float_t *array = histogram->GetArray();
@@ -693,7 +693,7 @@ Int_t AliBaseCalibViewer::Integrate(const Char_t* drawCommand, const Char_t* sec
    // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
    // The actual work is done on the array.
    /* Begin_Latex 
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx}{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx }
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
       End_Latex  
    */
    
@@ -804,9 +804,9 @@ TH1F* AliBaseCalibViewer::Integrate(TH1F *histogram, Float_t mean, Float_t sigma
    // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
    // The actual work is done on the array.
    /* Begin_Latex 
-         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx}{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx }
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx / #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx
       End_Latex  
-      begin_macro(source)
+      Begin_Macro(source)
       {
          Float_t mean = 0;
          Float_t sigma = 1.5;
@@ -832,7 +832,7 @@ TH1F* AliBaseCalibViewer::Integrate(TH1F *histogram, Float_t mean, Float_t sigma
          
          return macro_example_canvas_Integrate;
       }  
-      end_macro
+      End_Macro
    */ 
 
    

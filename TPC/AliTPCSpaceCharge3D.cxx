@@ -41,10 +41,10 @@
 //   is superpositioned with a few leaking wires at arbitrary positions. 
 // End_Html
 //
-// Begin_Macro(source) 
+// Begin_Macro(source)
 //   {
 //   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
-//   TCanvas *c2 = new TCanvas("c2","c2",500,400); 
+//   TCanvas *c2 = new TCanvas("cAliTPCSpaceCharge3D","cAliTPCSpaceCharge3D",500,400); 
 //   AliTPCSpaceCharge3D sc;
 //   sc.WriteChargeDistributionToFile("SC_zr2_GGleaks.root");
 //   sc.SetSCDataFileName("SC_zr2_GGleaks.root");

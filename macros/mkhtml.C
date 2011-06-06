@@ -1,3 +1,7 @@
+#include <THtml.h>
+#include <TROOT.h>
+#include <TSystem.h>
+
 void mkhtml (char *macro=0, Int_t force=0) {
 // to run this macro, you must have the correct .rootrc file
 // in your galice directory.
@@ -9,8 +13,6 @@ void mkhtml (char *macro=0, Int_t force=0) {
   // loadlibs();
   THtml html;
   html.SetProductName("AliRoot");
-  TStopwatch timer;
-  timer.Start();
   if(macro) {
     gROOT->LoadMacro(macro);
     html.Convert(macro,"Example Macro");
@@ -68,6 +70,4 @@ void mkhtml (char *macro=0, Int_t force=0) {
 
     html.MakeAll(force,"[A-Z]*");
   }
-  timer.Stop();
-  timer.Print();
 }

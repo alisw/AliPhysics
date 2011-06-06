@@ -15,10 +15,10 @@
 //   <p>
 //   The class allows "effective Omega Tau" corrections.                    
 //   End_Html
-//   Begin_Macro(source) 
+//   Begin_Macro(source)
 //   {
 //   gROOT->SetStyle("Plain"); gStyle->SetPalette(1);
-//   TCanvas *c2 = new TCanvas("c2","c2",500,300); 
+//   TCanvas *c2 = new TCanvas("cAliTPCExBBShape","cAliTPCExBBShape",500,300); 
 //   AliTPCExBBShape exb;                                                 
 //   AliMagF mag("mag","mag");        // 0.5 Tesla (solenoid)
 //   exb.SetBField(&mag);             // use Bfield from AliMagF        
