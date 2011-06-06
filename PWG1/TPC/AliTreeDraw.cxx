@@ -625,14 +625,19 @@ TString* AliTreeDraw::FitPlane(const char* drawCommand, const char* formula, con
    Int_t entries = fTree->Draw(drawStr.Data(), cutStr.Data(), "goff",  stop-start, start);
    if (entries == -1) return new TString("An ERROR has occured during fitting!");
    Double_t **values = new Double_t*[dim+1] ; 
-   
+
    for (Int_t i = 0; i < dim + 1; i++){
+     *values[i] = 0;
+   }
+   
+   for (Int_t i = 0; i < dim + 1; i++) {
       Int_t centries = 0;
       if (i < dim) centries = fTree->Draw(((TObjString*)formulaTokens->At(i))->GetName(), cutStr.Data(), "goff", stop-start,start);
       else  centries = fTree->Draw(drawStr.Data(), cutStr.Data(), "goff", stop-start,start);
       
       if (entries != centries) { 
-        delete[] *values;
+        if(*values) delete[] *values;
+        if(values) delete[] values;
         return new TString("An ERROR has occured during fitting!");
       }
       
@@ -641,7 +646,7 @@ TString* AliTreeDraw::FitPlane(const char* drawCommand, const char* formula, con
    }
    
    // add points to the fitter
-   for (Int_t i = 0; i < entries; i++){
+   for (Int_t i = 0; i < entries; i++) {
       Double_t x[1000];
       for (Int_t j=0; j<dim;j++) x[j]=values[j][i];
       fitter->AddPoint(x, values[dim][i], 1);
