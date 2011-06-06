@@ -46,12 +46,11 @@ ClassImp(AliT0PreprocessorOffline)
 //____________________________________________________
 AliT0PreprocessorOffline::AliT0PreprocessorOffline():
 TNamed("AliT0PreprocessorOffline","AliT0PreprocessorOffline"),
-  startRun(0),                         // start Run - used to make fast selection in THnSparse
-  endRun(0),                           // end   Run - used to make fast selection in THnSparse
-  startTime(0),                        // startTime - used to make fast selection in THnSparse
-  endTime(0),                          // endTime   - used to make fast selection in THnSparse
-  ocdbStorage("")                  // path to the OCDB storage
-  
+  startRun(0),      
+  endRun(0),  
+  startTime(0),    
+  endTime(0),     
+  ocdbStorage("")  
 {
   //constructor
 }
@@ -113,16 +112,16 @@ void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t u
        timecdb = clb->GetTimeEq();
        cfdvalue = clb->GetCFDvalue();
        for (Int_t i=0; i<24; i++) {
-	 if( cfdvalue[i] < 500 ) cfdvalue[i] =( 1000.*fLatencyHPTDC - 1000.*fLatencyL1 + 1000.*fGRPdelays)/24.4;
+	 if( cfdvalue[i] < 500 || cfdvalue[i] > 30000) cfdvalue[i] =( 1000.*fLatencyHPTDC - 1000.*fLatencyL1 + 1000.*fGRPdelays)/24.4;
 	 printf("Calc  mean CFD time %i %f \n",i,cfdvalue[i]);
        }
     }
-  AliCDBEntry *entryCalibreco = AliCDBManager::Instance()->Get("T0/Calib/RecoParam");
-  if(entryCalibreco) {
-    AliT0RecoParam *rpr = (AliT0RecoParam*) entryCalibreco->GetObject();
-    badpmt = rpr->GetRefPoint();
-    printf(" bad PMT %i \n", badpmt);
-  }
+  //AliCDBEntry *entryCalibreco = AliCDBManager::Instance()->Get("T0/Calib/RecoParam");
+  //  if(entryCalibreco) {
+  //  AliT0RecoParam *rpr = (AliT0RecoParam*) entryCalibreco->GetObject();
+    //    badpmt = rpr->GetRefPoint();
+    badpmt = -1;
+    // }
   AliT0CalibTimeEq *offline = new AliT0CalibTimeEq();
   Bool_t writeok = offline->ComputeOfflineParams(filePhysName.Data(), timecdb, cfdvalue, badpmt);
   AliCDBMetaData metaData;
@@ -171,9 +170,9 @@ void AliT0PreprocessorOffline::CalibT0sPosition(TString filePhysName, Int_t usta
   
   if (writeok)  {
     AliCDBId* id1=NULL;
-	id1=new AliCDBId("T0/Calib/TimeAdjust", ustartRun, uendRun);
-	AliCDBStorage* gStorage = AliCDBManager::Instance()->GetStorage(ocdbStorage);
-	gStorage->Put(offline, (*id1), &metaData);
+    id1=new AliCDBId("T0/Calib/TimeAdjust", ustartRun, uendRun);
+    AliCDBStorage* gStorage = AliCDBManager::Instance()->GetStorage(ocdbStorage);
+    gStorage->Put(offline, (*id1), &metaData);
   }
 
 }
