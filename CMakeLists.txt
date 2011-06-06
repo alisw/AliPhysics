@@ -219,10 +219,23 @@ add_custom_target(DA-all)
 add_custom_target(check-all) 
 add_custom_target(check-hxml)
 add_custom_target(smell-all) 
+add_custom_target(htmldoc) 
 add_custom_target(par-all)
 add_custom_target(test-par-all)
 
-# Add Modules
+#NY file(GLOB CFILES_LIST ${CMAKE_SOURCE_DIR}/macros/*.C)
+
+add_custom_command(TARGET htmldoc
+		   PRE_BUILD
+		   COMMAND mkdir -p html
+		   COMMAND rm -rf html/roothtml
+		   COMMAND rm -f html/picts
+		   COMMAND cd html &&
+		   	    aliroot -q -b \"mkhtml.C(0,1)\"
+		   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+
+# Add Modules	
 # ------------------------------
 foreach(MODULE ${MODDIRS})
   set(${MODULE}ALIBS)
@@ -233,7 +246,24 @@ foreach(MODULE ${MODDIRS})
   add_custom_target(${MODULE}-all-static)
   add_dependencies(alilibs-static "${MODULE}-static")
   add_subdirectory(${MODULE})
+  
+#NY  set(dir "${CMAKE_SOURCE_DIR}/${MODULE}")
+#NY  if (EXISTS "${dir}")
+#NY      file(GLOB CFILES_MOD ${dir}/*.C)
+#NY      list(LENGTH CFILES_MOD len)
+#NY      if (${len} GREATER 0)
+#NY        list(APPEND CFILES_LIST "${CFILES_MOD}")
+#NY      endif (${len} GREATER 0)
+#NY  endif(EXISTS "${dir}")
 endforeach(MODULE)
+
+#NY foreach(cfile ${CFILES_LIST})
+#NY     add_custom_command(TARGET htmldoc
+#NY 		       PRE_BUILD
+#NY 		       COMMAND cd html && 
+#NY 		    	       aliroot -b -q \"mkhtml.C(\"${cfile}\")\" > /dev/null
+#NY  		       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+#NY endforeach(cfile)
 
 if(DATE_FOUND AND AMORE_FOUND)
   include (CMakeDA)
