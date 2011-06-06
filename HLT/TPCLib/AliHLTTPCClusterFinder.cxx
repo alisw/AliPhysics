@@ -1223,8 +1223,8 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 
       fSpacePointData[counter].fQMax = list[j].fQMax;
 
-      fSpacePointData[counter].fUsed = kFALSE;         // only used / set in AliHLTTPCDisplay
-      fSpacePointData[counter].fTrackN = -1;           // only used / set in AliHLTTPCDisplay
+      fSpacePointData[counter].SetUsed(kFALSE);         // only used / set in AliHLTTPCDisplay
+      fSpacePointData[counter].SetTrackNumber(-1);      // only used / set in AliHLTTPCDisplay
 
       Int_t patch=fCurrentPatch;
       if(patch==-1) patch=0; //never store negative patch number
@@ -1374,8 +1374,8 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
 
       fSpacePointData[counter].fQMax = list[j].fQMax;
 
-      fSpacePointData[counter].fUsed = kFALSE;         // only used / set in AliHLTTPCDisplay
-      fSpacePointData[counter].fTrackN = -1;           // only used / set in AliHLTTPCDisplay
+      fSpacePointData[counter].SetUsed(kFALSE);         // only used / set in AliHLTTPCDisplay
+      fSpacePointData[counter].SetTrackNumber(-1);      // only used / set in AliHLTTPCDisplay
 
       Int_t patch=fCurrentPatch;
       if(patch==-1) patch=0; //never store negative patch number
