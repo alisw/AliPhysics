@@ -26,6 +26,8 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODTrack.h"
+#include "TVector3.h"
+#include "TLorentzVector.h"
 
 ClassImp(AliAODRecoDecayHF3Prong)
 
@@ -286,3 +288,99 @@ Bool_t AliAODRecoDecayHF3Prong::SelectLc(const Double_t *cuts,Int_t &okLcpKpi,In
 
   return kTRUE;
 }
+
+
+//----------------------------------------------------------------------
+Double_t AliAODRecoDecayHF3Prong::CosPiKPhiRFrame(Int_t option)
+const {
+  // computes cosine of angle between pi and K in the phi rest frame
+
+ Int_t indexPi;
+ Int_t indexK1;
+ Int_t indexK2;
+
+  if (option==0){ //KKpi
+    indexPi=2;
+    indexK1=0;
+    indexK2=1;
+  }
+ 
+  if (option==1){ //piKK
+    indexPi=0;
+    indexK1=1;
+    indexK2=2;
+  }
+          
+  Double_t ePhi=EProng(indexK1,321)+EProng(indexK2,321);
+  Double_t pxPhi=PxProng(indexK1)+PxProng(indexK2);
+  Double_t pyPhi=PyProng(indexK1)+PyProng(indexK2);
+  Double_t pzPhi=PzProng(indexK1)+PzProng(indexK2);
+  Double_t bxPhi=pxPhi/ePhi;
+  Double_t byPhi=pyPhi/ePhi;
+  Double_t bzPhi=pzPhi/ePhi;
+ 
+  TVector3 vecK1Phiframe;
+  TLorentzVector* vecK1=new TLorentzVector(PxProng(indexK1),PyProng(indexK1),PzProng(indexK1),EProng(indexK1,321));
+  vecK1->Boost(-bxPhi,-byPhi,-bzPhi);                                          
+  vecK1->Boost(vecK1Phiframe); 
+  vecK1Phiframe=vecK1->BoostVector();   
+    
+  TVector3 vecPiPhiframe;
+  TLorentzVector* vecPi=new TLorentzVector(PxProng(indexPi),PyProng(indexPi),PzProng(indexPi),EProng(indexPi,211));
+  vecPi->Boost(-bxPhi,-byPhi,-bzPhi);                                         
+  vecPi->Boost(vecPiPhiframe); 
+  vecPiPhiframe=vecPi->BoostVector();   
+                                                             
+  Double_t innera=vecPiPhiframe.Dot(vecK1Phiframe);
+  Double_t norm1a=TMath::Sqrt(vecPiPhiframe.Dot(vecPiPhiframe));
+  Double_t norm2a=TMath::Sqrt(vecK1Phiframe.Dot(vecK1Phiframe));
+  Double_t cosK1PhiFrame=innera/(norm1a*norm2a);                                                      
+
+  return cosK1PhiFrame;
+
+}
+
+//----------------------------------------------------------------------
+Double_t AliAODRecoDecayHF3Prong::CosPiDsLabFrame(Int_t option)
+const {
+  // computes cosine of angle between pi and Ds in the Ds rest frame
+
+ Int_t indexPi;
+ Int_t indexK1;
+ Int_t indexK2;
+
+  if (option==0){ //KKpi
+    indexPi=2;
+    indexK1=0;
+    indexK2=1;
+  }
+ 
+  if (option==1){ //piKK
+    indexPi=0;
+    indexK1=1;
+    indexK2=2;
+  }
+
+ 
+  Double_t bxD=Px()/E(431);
+  Double_t byD=Py()/E(431);
+  Double_t bzD=Pz()/E(431);
+
+  TVector3 piDsframe;
+  TLorentzVector* vecPi=new TLorentzVector(PxProng(indexPi),PyProng(indexPi),PzProng(indexPi),EProng(indexPi,211));  
+  vecPi->Boost(-bxD,-byD,-bzD);                                                
+  vecPi->Boost(piDsframe); 
+  piDsframe=vecPi->BoostVector();   
+ 
+  TVector3 vecDs(Px(),Py(),Pz());
+      
+  Double_t inner=vecDs.Dot(piDsframe);
+  Double_t norm1=TMath::Sqrt(vecDs.Dot(vecDs));
+  Double_t norm2=TMath::Sqrt(piDsframe.Dot(piDsframe));
+  Double_t cosPiDsFrame=inner/(norm1*norm2);	
+ 
+
+  return cosPiDsFrame;
+
+}
+
