@@ -222,8 +222,8 @@ int AliHLTTPCCompModelDeconverter::DeconvertClusters( UInt_t slice, UInt_t patch
 	      clusters[clusterData->fSpacePointCnt].fSigmaY2 = sigmaY2*pow(AliHLTTPCTransform::GetPadPitchWidth(patch),2);
 	      clusters[clusterData->fSpacePointCnt].fSigmaZ2 = sigmaZ2*pow(AliHLTTPCTransform::GetZWidth(),2);;
 	      clusters[clusterData->fSpacePointCnt].fCharge = charge;
-	      clusters[clusterData->fSpacePointCnt].fUsed = kTRUE;
-	      clusters[clusterData->fSpacePointCnt].fTrackN = i;
+	      clusters[clusterData->fSpacePointCnt].SetUsed(kTRUE);
+	      clusters[clusterData->fSpacePointCnt].SetTrackNumber(i);
 	      clusters[clusterData->fSpacePointCnt].SetID(slice,patch,clusterData->fSpacePointCnt);
 
 	      clusterData->fSpacePointCnt++;
@@ -275,8 +275,8 @@ int AliHLTTPCCompModelDeconverter::DeconvertClusters( UInt_t slice, UInt_t patch
 			      clusters[clusterData->fSpacePointCnt].fSigmaY2 = cl[ii].fSigmaY2*pow(AliHLTTPCTransform::GetPadPitchWidth(patch),2);
 			      clusters[clusterData->fSpacePointCnt].fSigmaZ2 = cl[ii].fSigmaZ2*pow(AliHLTTPCTransform::GetZWidth(),2);;
 			      clusters[clusterData->fSpacePointCnt].fCharge = cl[ii].fCharge;
-			      clusters[clusterData->fSpacePointCnt].fUsed = kFALSE;
-			      clusters[clusterData->fSpacePointCnt].fTrackN = -1;
+			      clusters[clusterData->fSpacePointCnt].SetUsed(kFALSE);
+			      clusters[clusterData->fSpacePointCnt].SetTrackNumber(-1);
 			      clusters[clusterData->fSpacePointCnt].SetID(slice,patch,clusterData->fSpacePointCnt);
 			      clusterData->fSpacePointCnt++;
 			      outSize += sizeof(AliHLTTPCSpacePointData);

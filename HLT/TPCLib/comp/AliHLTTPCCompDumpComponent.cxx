@@ -289,7 +289,7 @@ int AliHLTTPCCompDumpComponent::DoEvent( const AliHLTComponent_EventData& evtDat
 	      for ( unsigned long ii=0; ii<clusters->fSpacePointCnt; ii++ )
 		{
 		  HLTInfo( "  Cluster % 5lu: fX: %f - fY: %f - fZ: %f - fZ - fID: %u (0x%08X) - fPadRow: %u - fSigmaY2: %f - fSigmaZ2: %f - fCharge: %u - fUsed: %s - fTrackN: %d", 
-			   ii, clusters->fSpacePoints[ii].fX, clusters->fSpacePoints[ii].fY, clusters->fSpacePoints[ii].fZ, clusters->fSpacePoints[ii].fID, clusters->fSpacePoints[ii].fID, (unsigned)clusters->fSpacePoints[ii].fPadRow, clusters->fSpacePoints[ii].fSigmaY2, clusters->fSpacePoints[ii].fSigmaZ2, clusters->fSpacePoints[ii].fCharge, (clusters->fSpacePoints[ii].fUsed ? "yes" : "no"), clusters->fSpacePoints[ii].fTrackN );
+			   ii, clusters->fSpacePoints[ii].fX, clusters->fSpacePoints[ii].fY, clusters->fSpacePoints[ii].fZ, clusters->fSpacePoints[ii].fID, clusters->fSpacePoints[ii].fID, (unsigned)clusters->fSpacePoints[ii].fPadRow, clusters->fSpacePoints[ii].fSigmaY2, clusters->fSpacePoints[ii].fSigmaZ2, clusters->fSpacePoints[ii].fCharge, (clusters->fSpacePoints[ii].IsUsed() ? "yes" : "no"), clusters->fSpacePoints[ii].GetTrackNumber() );
 #if 0
 		  Float_t xyzG[3] = { clusters->fSpacePoints[ii].fX, clusters->fSpacePoints[ii].fY, clusters->fSpacePoints[ii].fZ };
 		  Float_t xyzR[3] = { clusters->fSpacePoints[ii].fX, clusters->fSpacePoints[ii].fY, clusters->fSpacePoints[ii].fZ };
