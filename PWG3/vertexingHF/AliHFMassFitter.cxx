@@ -1704,7 +1704,7 @@ void AliHFMassFitter::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo
       TF1* f=hdraw->GetFunction("funcbkgonly");
       for (Int_t i=0;i<fNFinalPars-3;i++){
 	pinfo->SetTextColor(kBlue+3);
-	TString str=Form("%s = %f #pm %f",f->GetParName(i),f->GetParameter(i),f->GetParError(i));
+	TString str=Form("%s = %.3f #pm %.3f",f->GetParName(i),f->GetParameter(i),f->GetParError(i));
 	pinfo->AddText(str);
       }
 
@@ -1738,7 +1738,7 @@ void AliHFMassFitter::PlotFit(TVirtualPad* pd,Double_t nsigma,Int_t writeFitInfo
 
     for (Int_t i=fNFinalPars-3;i<fNFinalPars;i++){
       pinfom->SetTextColor(kBlue);
-      TString str=Form("%s = %f #pm %f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
+      TString str=Form("%s = %.3f #pm %.3f",ff->GetParName(i),ff->GetParameter(i),ff->GetParError(i));
       if(!(writeFitInfo==1 && i==fNFinalPars-3)) pinfom->AddText(str);
     }
     pd->cd();
