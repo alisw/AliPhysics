@@ -139,6 +139,10 @@ bool AliHLTOUTDigitReader::ReadArrays()
     return false;
   }
 
+  // 2011-06-06 in order to support AliHLTReconstructor option 'ignore-hltout' for
+  // digits, the file name can be set to NULL, nothing done in that case 
+  if (!fDigitFileName) return false;
+
   if (!fpDigitFile) {
     fpDigitFile=new TFile(fDigitFileName);
   }

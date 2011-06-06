@@ -275,9 +275,7 @@ void AliHLTReconstructor::Reconstruct(TTree* /*digitsTree*/, TTree* /*clustersTr
 {
   // reconstruct simulated data
 
-  // all reconstruction has been moved to FillESD
-  //AliReconstructor::Reconstruct(digitsTree,clustersTree);
-  AliInfo("running digit data reconstruction");
+  // all data processing has been moved to FillESD
 }
 
 void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/, AliESDEvent* esd) const
@@ -290,10 +288,12 @@ void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/
   TString option = GetOption();
   if (!option.IsNull() && 
       (option.Contains("config=") || option.Contains("chains="))) {
-    AliWarning(Form("HLT reconstruction can be run embedded into Alireconstruction from\n"
-		    "raw data (real or simulated)). Reconstruction of of digit data takes\n"
-		    "place in AliSimulation, appropriate input conversion is needed.\n"
-		    "Consider running embedded into AliSimulation."
+    AliWarning(Form("You are trying to run a custom HLT chain on digits data.\n\n"
+		    "HLT reconstruction can be run embedded into AliReconstruction from\n"
+		    "raw data (real or simulated)). Reconstruction of digit data takes\n"
+		    "place in AliSimulation, appropriate input conversion is needed to\n"
+		    "feed data from the detector digits into the HLT chain.\n"
+		    "Consider running embedded into AliSimulation.\n"
 		    "        /***  run macro *****************************************/\n"
 		    "        AliSimulation sim;\n"
 		    "        sim.SetRunHLT(\"%s\");\n"
@@ -302,7 +302,8 @@ void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/
 		    "        sim.SetMakeSDigits(\"\");\n"
 		    "        sim.SetMakeDigitsFromHits(\"\");\n"
 		    "        sim.Run();\n"
-		    "        /*********************************************************/", option.Data()));
+		    "        /*********************************************************/\n\n",
+		    option.Data()));
   }
   if (!fpPluginBase) {
     AliError("internal memory error: can not get AliHLTSystem instance from plugin");
@@ -320,7 +321,12 @@ void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/
       return;
     }
 
-    AliHLTOUTDigitReader* pHLTOUT=new AliHLTOUTDigitReader(esd->GetEventNumberInFile(), fpEsdManager);
+    const char* digitfile=NULL;
+    if ((fFlags&kAliHLTReconstructorIgnoreHLTOUT) == 0 ) {
+      digitfile="HLT.Digits.root";
+    }
+
+    AliHLTOUTDigitReader* pHLTOUT=new AliHLTOUTDigitReader(esd->GetEventNumberInFile(), fpEsdManager, digitfile);
     if (pHLTOUT) {
       ProcessHLTOUT(pHLTOUT, esd, (pSystem->GetGlobalLoggingLevel()&kHLTLogDebug)!=0);
       delete pHLTOUT;
