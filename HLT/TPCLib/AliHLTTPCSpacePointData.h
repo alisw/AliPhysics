@@ -50,7 +50,7 @@ struct AliHLTTPCSpacePointData{
   Bool_t IsUsed() const {return fUsed;}
   void SetUsed(Bool_t used) {fUsed=used;}
   Int_t GetTrackNumber() const {return fTrackN;}
-  void GetTrackNumber(Int_t trackN) {fTrackN=trackN;}
+  void SetTrackNumber(Int_t trackN) {fTrackN=trackN;}
 };
 typedef struct AliHLTTPCSpacePointData AliHLTTPCSpacePointData;
 
