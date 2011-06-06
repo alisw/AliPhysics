@@ -68,7 +68,7 @@ AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kT0),
       feffPhysC[i]=0;
       feffPhysA[i]=0;
       feffqtcPhys[i]=0;
-      fMeans[i]=0;
+      fMeans[i]=2500;
    }
 
   // for(Int_t ic=0; ic<24; ic++) 
@@ -663,14 +663,14 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	  if (allData[trChannel[itr]][iHt] >0) {
 	     if(type == 7  )fNumTriggers[itr]++;
 	     if(type == 8  )fNumTriggersCal[itr]++;
-	     AliDebug(50,Form(" triggers %i  data %s", 170+itr+shift,  GetRawsData(170+itr+shift)->GetName()));
+	     AliDebug(50,Form(" hit %i channel %i triggers %i  data %s",iHt, trChannel[itr],  170+itr+shift,  GetRawsData(170+itr+shift)->GetName()));
 
 	    GetRawsData(170+itr+shift)->Fill(allData[trChannel[itr]][iHt]);
 	  }
 	}
 	    
 	if(type == 7) if(allData[51][iHt] >0) nhitsOrA++;
-	if(type == 7)if(allData[52][iHt] >0) nhitsOrC++;
+	if(type == 7) if(allData[52][iHt] >0) nhitsOrC++;
 	
 	//mult trigger signals phys
 	//C side
@@ -706,7 +706,8 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 		TF1* fit= new TF1("fit","gaus", meanEstimate - 40, meanEstimate + 40);
 		fit->SetParameters (GetRawsData(ik+1)->GetBinContent(maxBin), meanEstimate, 80);
 		GetRawsData(ik+1) -> Fit("fit","RQ","Q",  meanEstimate-40,  meanEstimate+40);
-		fMeans[ik]= (Int_t) fit->GetParameter(1);
+		if(fit->GetParameter(1)>2000 && fit->GetParameter(1)<3000)
+		  fMeans[ik]= (Int_t) fit->GetParameter(1);
 		GetRawsData(ik+1)->GetXaxis()->SetRangeUser(0, 30000);
 
 	      }
@@ -724,7 +725,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 		}
 	    }
 	    for ( Int_t ipmt=12; ipmt<24; ipmt++){
-	      if(allData[ipmt+45][0] > 0) {
+	      if(allData[ipmt+45][0] > 1) {
 		time[ipmt] = allData[ipmt+45][0] - fMeans[ipmt] ;
 		if(TMath::Abs(time[ipmt]) < TMath::Abs(besttimeA) )
 		  besttimeA=time[ipmt]; //timeA
