@@ -44,6 +44,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   void SetNBins(Int_t nbins){fNBins=nbins;}
   void SetFillWithPartAntiPartBoth(Int_t value){fPartOrAndAntiPart=value;}
   void SetDsChannel(Int_t chan){fDsChannel=chan;}
+  void SetUseSelBit(Bool_t selBit=kTRUE){fUseSelBit=selBit;}
 
   //void SetMultiVector(const AliMultiDimVector *MultiDimVec){fMultiDimVec->CopyStructure(MultiDimVec);}
   Float_t GetUpperMassLimit()const {return fUpmasslimit;}
@@ -52,6 +53,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   Int_t GetFillWithPartAntiPartBoth()const {return fPartOrAndAntiPart;}
   Int_t GetBFeedDown()const {return fBFeedDown;}
   Int_t GetDsChannel()const {return fDsChannel;}
+  Bool_t GetUseSelBit()const {return fUseSelBit;}
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -81,7 +83,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   Int_t GetSignalHistoIndex(Int_t iPtBin) const { return iPtBin*3+1;}
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*3+2;}
   Int_t GetLSHistoIndex(Int_t iPtBin)const { return iPtBin*5;}
-
+  Int_t CheckOrigin(const AliAODMCParticle* mcPart, const TClonesArray* mcArray) const;
 
   void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel);
   void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index, Int_t isSel);
@@ -109,6 +111,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   AliRDHFCuts *fRDCuts;//prong cut values
   Int_t fNPtBins; //number of pt bins
   Bool_t fReadMC;    //flag for access to MC
+  Bool_t fUseSelBit;    //flag to use selection bit (speed up candidates selection)
   FeedDownEnum fBFeedDown; //flag to search for D from B decays
   Int_t fDecChannel; //decay channel identifier
   Int_t fPDGmother;  // PDG code of D meson
@@ -124,7 +127,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   Int_t fPDGDStarToD0pi[2]; //PDG codes for the particles in the D* -> pi + D0 decay
   Int_t fPDGD0ToKpi[2];    //PDG codes for the particles in the D0 -> K + pi decay
 
-  ClassDef(AliAnalysisTaskSESignificance,4); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSESignificance,5); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
