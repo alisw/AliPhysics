@@ -1571,6 +1571,8 @@ TH1F* AliTRDcheckESD::EfficiencyTRD(TH3F* tpc3D, TH3F* trd3D, Bool_t useAcceptan
   // Calculate the TRD-TPC matching efficiency as function of pt
   //
  
+  if(!tpc3D || !trd3D) return NULL;
+
   Int_t nBinsZ = trd3D->GetZaxis()->GetNbins();
   // project everything on the eta-phi map to obtain an acceptance map (make sure there is enough statistics)
   Float_t nada = 0.;
@@ -1950,21 +1952,21 @@ void AliTRDcheckESD::PlotTrackingSummary(Int_t centralityClass) {
   pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
   TH1F* hFeffP = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+centralityClass)),
-			       dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos+centralityClass)), kTRUE);
+              dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos+centralityClass)), kTRUE);
   TH1F* hFeffN = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+centralityClass)),
-			       dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg+centralityClass)), kTRUE);
+              dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg+centralityClass)), kTRUE);
   TH1F* hFeffP4 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+centralityClass)),
-				dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos4+centralityClass)), kTRUE);
+        dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos4+centralityClass)), kTRUE);
   TH1F* hFeffN4 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+centralityClass)),
-				dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg4+centralityClass)), kTRUE);
+        dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg4+centralityClass)), kTRUE);
   TH1F* hFeffP5 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+centralityClass)),
-				dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos5+centralityClass)), kTRUE);
+        dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos5+centralityClass)), kTRUE);
   TH1F* hFeffN5 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+centralityClass)),
-				dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg5+centralityClass)), kTRUE);
+        dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg5+centralityClass)), kTRUE);
   TH1F* hFeffP6 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+centralityClass)),
-				dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos6+centralityClass)), kTRUE);
+        dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos6+centralityClass)), kTRUE);
   TH1F* hFeffN6 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+centralityClass)),
-				dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg6+centralityClass)), kTRUE);
+        dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg6+centralityClass)), kTRUE);
   
   TH2F* h2F=new TH2F("rangeEffPt", "",10,0.,10.,10,0.,1.3);
   h2F->SetStats(kFALSE);
@@ -1979,6 +1981,7 @@ void AliTRDcheckESD::PlotTrackingSummary(Int_t centralityClass) {
   h2F->GetYaxis()->SetLabelSize(0.05);
   h2F->GetYaxis()->CenterTitle();
   h2F->Draw();
+  //++++++++++++++++++
   TLine line;
   line.SetLineStyle(2);
   line.SetLineWidth(2);
@@ -1987,50 +1990,56 @@ void AliTRDcheckESD::PlotTrackingSummary(Int_t centralityClass) {
   line.SetLineStyle(1);
   line.SetLineWidth(1);
   line.DrawLine(h2F->GetXaxis()->GetXmin(), 1.0, h2F->GetXaxis()->GetXmax(), 1.0);
-  hFeffP->SetMarkerStyle(24);
-  hFeffP->SetMarkerColor(2);
-  hFeffP->SetLineColor(2);
-  hFeffP4->SetMarkerStyle(25);
-  hFeffP4->SetMarkerColor(2);
-  hFeffP4->SetLineColor(2);
-  hFeffP5->SetMarkerStyle(26);
-  hFeffP5->SetMarkerColor(2);
-  hFeffP5->SetLineColor(2);
-  hFeffP6->SetMarkerStyle(27);
-  hFeffP6->SetMarkerColor(2);
-  hFeffP6->SetLineColor(2);
-  hFeffN->SetMarkerStyle(24);
-  hFeffN->SetMarkerColor(4);
-  hFeffN->SetLineColor(4);
-  hFeffN4->SetMarkerStyle(25);
-  hFeffN4->SetMarkerColor(4);
-  hFeffN4->SetLineColor(4);
-  hFeffN5->SetMarkerStyle(26);
-  hFeffN5->SetMarkerColor(4);
-  hFeffN5->SetLineColor(4);
-  hFeffN6->SetMarkerStyle(27);
-  hFeffN6->SetMarkerColor(4);
-  hFeffN6->SetLineColor(4);
-  hFeffP->Draw("same");
-  hFeffN->Draw("same");
-  hFeffP4->Draw("same");
-  hFeffN4->Draw("same");
-  hFeffP5->Draw("same");
-  hFeffN5->Draw("same");
-  hFeffP6->Draw("same");
-  hFeffN6->Draw("same");
- 
   TLegend* leg=new TLegend(0.65, 0.18, 0.95, 0.5);
   leg->SetFillColor(0);
-  leg->AddEntry(hFeffP, "positives (#geq 1 tracklet)", "p");
-  leg->AddEntry(hFeffN, "negatives (#geq 1 tracklet)", "p");
-  leg->AddEntry(hFeffP4, "positives (4 tracklets)", "p");
-  leg->AddEntry(hFeffN4, "negatives (4 tracklets)", "p");
-  leg->AddEntry(hFeffP5, "positives (5 tracklets)", "p");
-  leg->AddEntry(hFeffN5, "negatives (5 tracklets)", "p");
-  leg->AddEntry(hFeffP6, "positives (6 tracklets)", "p");
-  leg->AddEntry(hFeffN6, "negatives (6 tracklets)", "p");
-
+  if(hFeffP){
+    hFeffP->SetMarkerStyle(24);
+    hFeffP->SetMarkerColor(2);
+    hFeffP->SetLineColor(2);
+    hFeffP->Draw("same"); leg->AddEntry(hFeffP, "positives (#geq 1 tracklet)", "p");
+  }
+  if(hFeffP4){
+    hFeffP4->SetMarkerStyle(25);
+    hFeffP4->SetMarkerColor(2);
+    hFeffP4->SetLineColor(2);
+    hFeffP4->Draw("same"); leg->AddEntry(hFeffP4, "positives (4 tracklets)", "p");
+  }
+  if(hFeffP5){
+    hFeffP5->SetMarkerStyle(26);
+    hFeffP5->SetMarkerColor(2);
+    hFeffP5->SetLineColor(2);
+    hFeffP5->Draw("same"); leg->AddEntry(hFeffP5, "positives (5 tracklets)", "p");
+  }
+  if(hFeffP6){
+    hFeffP6->SetMarkerStyle(27);
+    hFeffP6->SetMarkerColor(2);
+    hFeffP6->SetLineColor(2);
+    hFeffP6->Draw("same"); leg->AddEntry(hFeffP6, "positives (6 tracklets)", "p");
+  }
+  if(hFeffN){
+    hFeffN->SetMarkerStyle(24);
+    hFeffN->SetMarkerColor(4);
+    hFeffN->SetLineColor(4);
+    hFeffN->Draw("same"); leg->AddEntry(hFeffN, "negatives (#geq 1 tracklet)", "p");
+  }
+  if(hFeffN4){
+    hFeffN4->SetMarkerStyle(25);
+    hFeffN4->SetMarkerColor(4);
+    hFeffN4->SetLineColor(4);
+    hFeffN4->Draw("same"); leg->AddEntry(hFeffN4, "negatives (4 tracklets)", "p");
+  }
+  if(hFeffN5){
+    hFeffN5->SetMarkerStyle(26);
+    hFeffN5->SetMarkerColor(4);
+    hFeffN5->SetLineColor(4);
+    hFeffN5->Draw("same"); leg->AddEntry(hFeffN5, "negatives (5 tracklets)", "p");
+  }
+  if(hFeffN6){
+    hFeffN6->SetMarkerStyle(27);
+    hFeffN6->SetMarkerColor(4);
+    hFeffN6->SetLineColor(4);
+    hFeffN6->Draw("same"); leg->AddEntry(hFeffN6, "negatives (6 tracklets)", "p");
+  }
   leg->Draw();
   
   //--------------------------------------------------------------
