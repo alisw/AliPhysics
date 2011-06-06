@@ -1,5 +1,4 @@
-// @(#) $Id$
-// Original: AliHLTSpacePointData.h,v 1.4 2003/07/27 21:02:09 loizides 
+// $Id$
 
 #ifndef SPACEPOINTDATA_H
 #define SPACEPOINTDATA_H
@@ -39,6 +38,8 @@ struct AliHLTTPCSpacePointData{
     return ((Slice&0x3F)<<25)+((Patch&0x7)<<22) + (Number&0x003FFFFF);
   }
 
+  AliHLTTPCSpacePointData() 
+  : fX(0.), fY(0.), fZ(0.), fID(0), fPadRow(0), fSigmaY2(0.), fSigmaZ2(0.), fCharge(0), fQMax(0), fUsed(kFALSE), fTrackN(0) {}
   void SetID( UInt_t Slice, UInt_t Patch, UInt_t Number ){
     fID = GetID(Slice, Patch,Number);
   }
@@ -46,6 +47,10 @@ struct AliHLTTPCSpacePointData{
   UInt_t GetPatch() const { return GetPatch(fID); }
   UInt_t GetNumber() const { return GetNumber(fID); }
 
+  Bool_t IsUsed() const {return fUsed;}
+  void SetUsed(Bool_t used) {fUsed=used;}
+  Int_t GetTrackNumber() const {return fTrackN;}
+  void GetTrackNumber(Int_t trackN) {fTrackN=trackN;}
 };
 typedef struct AliHLTTPCSpacePointData AliHLTTPCSpacePointData;
 
