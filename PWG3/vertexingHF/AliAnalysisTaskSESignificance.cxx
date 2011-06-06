@@ -73,6 +73,7 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance():
   fRDCuts(0),
   fNPtBins(0),
   fReadMC(kFALSE),
+  fUseSelBit(kFALSE),
   fBFeedDown(kBoth),
   fDecChannel(0),
   fPDGmother(0),
@@ -100,6 +101,7 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance(const char *name, T
   fRDCuts(rdCuts),
   fNPtBins(0),
   fReadMC(kFALSE),
+  fUseSelBit(kFALSE),
   fBFeedDown(kBoth),
   fDecChannel(decaychannel),
   fPDGmother(0),
@@ -516,12 +518,34 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     fPDGDStarToD0pi[0] = 421; fPDGDStarToD0pi[1] = 211;
     fPDGD0ToKpi[0] = 321; fPDGD0ToKpi[1] = 211;
 
+    Bool_t isSelBit=kTRUE;
+    if(fUseSelBit){
+      if(fDecChannel==0) {
+	isSelBit=d->HasSelectionBit(AliRDHFCuts::kDplusCuts);
+      }else{ 
+	if(fDecChannel==1) {
+	  isSelBit=d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts);
+	}else{
+	  if(fDecChannel==2) {
+	    isSelBit=d->HasSelectionBit(AliRDHFCuts::kDstarCuts);
+	  }else{
+	    if(fDecChannel==3) {
+	      isSelBit=d->HasSelectionBit(AliRDHFCuts::kDsCuts);
+	    }else{
+	      if(fDecChannel==5) isSelBit=d->HasSelectionBit(AliRDHFCuts::kLcCuts);
+	    }
+	  }
+	}
+      }
+    }
+    if(!isSelBit) continue; 
+
     if (fDecChannel==2) {
       DStarToD0pi = (AliAODRecoCascadeHF*)arrayProng->At(iProng);
       if (!DStarToD0pi->GetSecondaryVtx()) continue;
       D0Particle = (AliAODRecoDecayHF2Prong*)DStarToD0pi->Get2Prong();
       if (!D0Particle) continue;
-      }
+    }
     
     Bool_t isFidAcc = fRDCuts->IsInFiducialAcceptance(d->Pt(),d->Y(fPDGmother));
     Int_t isSelected=fRDCuts->IsSelected(d,fSelectionlevel,aod);
@@ -530,26 +554,22 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
       Int_t labD = d->MatchToMC(fPDGmother,arrayMC,fNProngs,fPDGdaughters);
       if(labD>=0){
 	AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
-	Int_t label=partD->GetMother();
-	AliAODMCParticle *mot = (AliAODMCParticle*)arrayMC->At(label);
-	while(label>=0){//get first mother
-	  mot = (AliAODMCParticle*)arrayMC->At(label);
-	  label=mot->GetMother();
-	}
-	Int_t pdgMotCode = mot->GetPdgCode();
-	
-	if(TMath::Abs(pdgMotCode)<=4){
-	  fHistNEvents->Fill(6);
-	  if(fBFeedDown==kBeautyOnly)isSelected=kFALSE; //from primary charm
-	}else{
+	Int_t pdgGranma = CheckOrigin(partD, arrayMC);
+	Int_t abspdgGranma = TMath::Abs(pdgGranma);
+	if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
+	  //feed down particle
+	  AliDebug(2,Form("Particle has a b-meson, or b-baryon mother (pdg code mother = %d )--> not coming from a c-quark, skipping...", pdgGranma));
 	  fHistNEvents->Fill(7);
 	  if(fBFeedDown==kCharmOnly) isSelected=kFALSE; //from beauty
 	}
-	
+	else { 
+	  //prompt particle
+	  fHistNEvents->Fill(6);
+	  if(fBFeedDown==kBeautyOnly)isSelected=kFALSE;
+	} 
       }
     }
     
-
     if(isSelected&&isFidAcc) {
       fHistNEvents->Fill(2); // count selected with loosest cuts
       if(fDebug>1) printf("+++++++Is Selected\n");
@@ -989,4 +1009,30 @@ void AliAnalysisTaskSESignificance::Terminate(Option_t */*option*/)
   
   return;
 }
-//-------------------------------------------
+//_________________________________________________________________________________________________
+Int_t AliAnalysisTaskSESignificance::CheckOrigin(const AliAODMCParticle* mcPart, const TClonesArray* mcArray)const{
+
+	//
+	// checking whether the very mother of the D0 is a charm or a bottom quark
+	//
+
+	Int_t pdgGranma = 0;
+	Int_t mother = 0;
+	mother = mcPart->GetMother();
+	Int_t istep = 0;
+	while (mother >0 ){
+		istep++;
+		AliDebug(2,Form("mother at step %d = %d", istep, mother));
+		AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(mcArray->At(mother));
+		if(!mcGranma) break;
+		pdgGranma = mcGranma->GetPdgCode();
+		AliDebug(2,Form("Pdg mother at step %d = %d", istep, pdgGranma));
+		Int_t abspdgGranma = TMath::Abs(pdgGranma);
+		if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
+			break;
+		}
+		mother = mcGranma->GetMother();
+	}
+	return pdgGranma;
+}
+//_________________________________________________________________________________________________
