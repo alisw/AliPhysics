@@ -260,7 +260,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	   break;
 	 }
 	   
-	 AliHLTTPCSpacePointData cluster = { 0.,0.,0.,0,0,0.,0.,0,0,kFALSE,0 };
+	 AliHLTTPCSpacePointData cluster;
               
 	 //get the first word
 	 AliHLTUInt32_t  rowCharge = buffer[nWords];

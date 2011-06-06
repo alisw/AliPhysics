@@ -80,7 +80,7 @@ AliTPCclusterMI* AliHLTTPCOfflineCluster::ConvertHLTToOffline(AliHLTTPCSpacePoin
 AliHLTTPCSpacePointData AliHLTTPCOfflineCluster::ConvertOfflineToHLT(AliTPCclusterMI *offCluster){
 
      
-   AliHLTTPCSpacePointData spacePoint = { 0.,0.,0.,0,0,0.,0.,0,0,kFALSE,0 };
+   AliHLTTPCSpacePointData spacePoint;
        
    spacePoint.fPadRow  = offCluster->GetRow();
    spacePoint.fX       = offCluster->GetX(); // these are in the detector system
