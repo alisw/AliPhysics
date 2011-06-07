@@ -40,7 +40,7 @@ void makeInputAliAnalysisTaskSED0Mass(){
 
   RDHFD0toKpi->AddTrackCuts(esdTrackCuts);
 
-  const Int_t nvars=9;
+  const Int_t nvars=11;
 
   const Int_t nptbins=13;
   Float_t* ptbins;
@@ -80,9 +80,11 @@ void makeInputAliAnalysisTaskSED0Mass(){
     //     printf("    |d0pi| [cm]  < %f\n",fD0toKpiCuts[6]);
     //     printf("    d0d0  [cm^2] < %f\n",fD0toKpiCuts[7]);
     //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
+    //     printf("    |cosThetaPointXY| < %f\n",fD0toKpiCuts[9]);
+    //     printf("    NormDecayLenghtXY    > %f\n",fD0toKpiCuts[10]);
 
 
-  Double_t arrcuts[9]={0.3,0.03,0.8,0.8,0.8,0.1,0.1,-0.0004,0.9};
+  Double_t arrcuts[11]={0.3,0.03,0.8,0.8,0.8,0.1,0.1,-0.0004,0.9,0.998,5.}; //put the last 2 values at 0. for pp
 
   //setting my cut values
   //0-0.5 GeV
@@ -97,6 +99,7 @@ void makeInputAliAnalysisTaskSED0Mass(){
 
   //2-3 GeV
   arrcuts[7]=-0.00026;
+  arrcuts[9]=0.998;
   for(Int_t ic=0;ic<nvars;ic++) rdcutsvalmine[ic][3]=arrcuts[ic];
 
   //3-4 GeV
@@ -174,7 +177,7 @@ void makeInputAliAnalysisTaskSED0Mass(){
   RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0M); //kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentInvalid
 
   //temporary
-  RDHFD0toKpi->SetFixRefs();
+  //RDHFD0toKpi->SetFixRefs();
 
   cout<<"This is the odject I'm going to save:"<<endl;
   RDHFD0toKpi->PrintAll();
@@ -185,7 +188,7 @@ void makeInputAliAnalysisTaskSED0Mass(){
   fout->Close();
 
 }
-
+ 
 //macro to make a .root file (for significance maximization) which contains an AliRDHFCutsD0toKpi with loose set of cuts  and TParameter with the tighest value of these cuts
 
 void makeInputAliAnalysisTaskSESignificanceMaximization(){
@@ -209,9 +212,9 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   
   RDHFD0toKpi->AddTrackCuts(esdTrackCuts);
 
-  const Int_t nvars=9;
+  const Int_t nvars=11;
 
-  const Int_t nptbins=13; //change this when adding pt bins!
+  const Int_t nptbins=14; //change this when adding pt bins!
   Float_t ptbins[nptbins+1];
   ptbins[0]=0.;
   ptbins[1]=0.5;
@@ -222,11 +225,12 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   ptbins[6]=5.;
   ptbins[7]=6.;
   ptbins[8]=8.;
-  ptbins[9]=12.;
-  ptbins[10]=16.;
-  ptbins[11]=20.;
-  ptbins[12]=24.;
-  ptbins[13]=9999.;
+  ptbins[9]=10.;
+  ptbins[10]=12.;
+  ptbins[11]=16.;
+  ptbins[12]=20.;
+  ptbins[13]=24.;
+  ptbins[14]=9999.;
 
   RDHFD0toKpi->SetPtBins(nptbins+1,ptbins);
 
@@ -247,21 +251,24 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
     //     printf("    |d0pi| [cm]  < %f\n",fD0toKpiCuts[6]);
     //     printf("    d0d0  [cm^2] < %f\n",fD0toKpiCuts[7]);
     //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
+    //     printf("    |cosThetaPointXY| < %f\n",fD0toKpiCuts[9]);
+    //     printf("    NormDecayLenghtXY    > %f\n",fD0toKpiCuts[10]);
 
 
-  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.3,400.*1E-4,0.8,0.8,0.8,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 0<pt<0.5 */
-  						  {0.3,400.*1E-4,0.8,0.8,0.8,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 0.5<pt<1 */
-  						  {0.3,400.*1E-4,0.8,0.8,0.8,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 1<pt<2 */
-  						  {0.3,400.*1E-4,0.8,0.8,0.8,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 2<pt<3 */
-  						  {0.3,400.*1E-4,0.8,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6},/* 3<pt<4 */
-						  {0.3,400.*1E-4,0.8,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6},/* 4<pt<5 */ 
-						  {0.3,400.*1E-4,0.8,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*5<pt<6*/
-						  {0.3,400.*1E-4,1.,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*6<pt<8*/
-						  {0.3,400.*1E-4,1.,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*8<pt<12*/
-						  {0.3,400.*1E-4,1.,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*12<pt<16*/
-						  {0.3,400.*1E-4,1.,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*16<pt<20*/
-						  {0.3,400.*1E-4,1.,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*20<pt<24*/
-						  {0.3,400.*1E-4,1.,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6}}; /*pt>24*/
+    Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,400.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-40000.*1E-8,0.75,0.,2.},/* pt<0.5*/
+						  {0.400,400.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-40000.*1E-8,0.75,0.,2.},/* 0.5<pt<1*/
+						  {0.400,400.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-33000.*1E-8,0.75,0.,2.},/* 1<pt<2 */
+						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-30000.*1E-8,0.85,0.994,2.},/* 2<pt<3 */
+						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-26000.*1E-8,0.85,0.994,2.},/* 3<pt<4 */
+						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-15000.*1E-8,0.85,0.994,2.},/* 4<pt<5 */
+						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-11000.*1E-8,0.82,0.994,2.},/* 5<pt<6 */
+						  {0.400,270.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.78,0.994,2.},/* 6<pt<8 */
+						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-1000.*1E-8,0.7,0.994,2.},/* 8<pt<10 */
+						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-1000.*1E-8,0.7,0.994,2.},/* 10<pt<12 */
+						  {0.400,350.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-500.*1E-8,0.7,0.994,2.},/* 12<pt<16 */
+						  {0.400,400.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-500.*1E-8,0.7,0.994,2.},/* 16<pt<20 */
+						  {0.400,400.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-500.*1E-8,0.7,0.994,2.},/* 20<pt<24 */
+						  {0.400,400.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-500.*1E-8,0.7,0.994,2.}};/* pt>24 */
 
   //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
   Float_t **cutsMatrixTransposeStand=new Float_t*[nvars];
@@ -274,37 +281,32 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   RDHFD0toKpi->SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
 
 
-  Int_t nvarsforopt=RDHFD0toKpi->GetNVarsForOpt();
-  Int_t dim=2; //set this!!
+  Bool_t stdvaropt=kFALSE;
+  Int_t dim=4; //set this!!
   Bool_t *boolforopt;
   boolforopt=new Bool_t[nvars];
-  if(dim>nvarsforopt){
-    cout<<"Number of variables for optimization has probably changed, check and edit accordingly"<<endl;
-    return;
-  } else {
-    if(dim==nvarsforopt){
-      boolforopt=RDHFD0toKpi->GetVarsForOpt();
-    }else{
-      TString *names;
-      names=new TString[nvars];
-      TString answer="";
-      Int_t checktrue=0;
-      names=RDHFD0toKpi->GetVarNames();
-      for(Int_t i=0;i<nvars;i++){
-	cout<<names[i]<<" for opt? (y/n)"<<endl;
-	cin>>answer;
-	if(answer=="y") {
-	  boolforopt[i]=kTRUE;
-	  checktrue++;
-	}
-	else boolforopt[i]=kFALSE;
+  if(stdvaropt){
+    boolforopt=RDHFD0toKpi->GetVarsForOpt();
+  }else{
+    TString *names;
+    names=new TString[nvars];
+    TString answer="";
+    Int_t checktrue=0;
+    names=RDHFD0toKpi->GetVarNames();
+    for(Int_t i=0;i<nvars;i++){
+      cout<<names[i]<<" for opt? (y/n)"<<endl;
+      cin>>answer;
+      if(answer=="y") {
+	boolforopt[i]=kTRUE;
+	checktrue++;
       }
-      if (checktrue!=dim) {
-	cout<<"Error! You set "<<checktrue<<" kTRUE instead of "<<dim<<endl;
-	return;
-      }
-      RDHFD0toKpi->SetVarsForOpt(dim,boolforopt);
+      else boolforopt[i]=kFALSE;
     }
+    if (checktrue!=dim) {
+      cout<<"Error! You set "<<checktrue<<" kTRUE instead of "<<dim<<endl;
+      return;
+    }
+    RDHFD0toKpi->SetVarsForOpt(dim,boolforopt);
   }
 
 
@@ -313,78 +315,95 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   //costhetastar
   //d0d0 <-this 
   //costhetapoint <-this 
-
+  //cosThetaPointXY <-this 
+  //NormDecayLength <-this 
   
   //number of steps for each variable is set in the AddTask arguments (default=8)
   //set this!!
-  // tighterval[0][0]=0.01;
-  // tighterval[0][0]=100e-4;
-  // tighterval[1][0]=-0.0006;
-  // tighterval[2][0]=1.;
+  //0-0.5
   tighterval[0][0]=-0.00065;
   tighterval[1][0]=1.;
+  tighterval[2][0]=0.4;
+  tighterval[3][0]=6.;
 
-  // tighterval[0][1]=0.01;
-  // tighterval[0][1]=100e-4;
-  // tighterval[1][1]=-0.0007; //try with tighter in this bin
-  // tighterval[2][1]=1.;
+  //0.5-1.
   tighterval[0][1]=-0.00065;
   tighterval[1][1]=1.;
+  tighterval[2][1]=0.4;
+  tighterval[3][1]=6.;
 
- // tighterval[0][2]=0.01;
-  // tighterval[0][2]=100e-4;
-  // tighterval[1][2]=-0.0006;
-  // tighterval[2][2]=1.;
+  //1-2
   tighterval[0][2]=-0.00065;
   tighterval[1][2]=1.;
+  tighterval[2][2]=0.4;
+  tighterval[3][2]=6.;
  
-  // tighterval[0][3]=0.01;
-  // tighterval[0][3]=100e-4;
-  // tighterval[1][3]=-0.0006;
-  // tighterval[2][3]=0.95;
-  tighterval[0][3]=-0.00065;
+  //2-3
+  tighterval[0][3]=-0.0006;
   tighterval[1][3]=1.;
+  tighterval[2][3]=1.;
+  tighterval[3][3]=6.;
 
-  // tighterval[0][4]=0.01;
-  // tighterval[0][4]=100e-4;
-  // tighterval[1][4]=-0.0006;
-  // tighterval[2][4]=0.95;
-  tighterval[0][4]=-0.00027;
+  //3-4
+  tighterval[0][4]=-0.00046;
   tighterval[1][4]=1.;
+  tighterval[2][4]=1.;
+  tighterval[3][4]=6.;
  
-  // tighterval[0][5]=0.01;
-  //  tighterval[0][5]=100e-4;
-  tighterval[0][5]=-0.00027;
+  //4-5
+  tighterval[0][5]=-0.00045;
   tighterval[1][5]=1.;
+  tighterval[2][5]=1.;
+  tighterval[3][5]=6.;
  
-  // tighterval[0][6]=0.01;
-  //  tighterval[0][6]=100e-4;
-  tighterval[0][6]=-0.00027;
+  //5-6
+  tighterval[0][6]=-0.00031;
   tighterval[1][6]=1.;
+  tighterval[2][6]=1.;
+  tighterval[3][6]=6.;
 
-  // tighterval[0][6]=0.01;
-  //tighterval[0][7]=100e-4;
-  tighterval[0][7]=-0.00027;
-  tighterval[1][7]=1.;
+  //6-8
+  tighterval[0][7]=-0.00021;
+  tighterval[1][7]=0.98;
+  tighterval[2][7]=1.;
+  tighterval[3][7]=6.;
 
-  // tighterval[0][6]=0.01;
-  //tighterval[0][8]=100e-4;
-  tighterval[0][8]=-0.00027;
-  tighterval[1][8]=1.;
+  //8-10
+  tighterval[0][8]=-0.0001;
+  tighterval[1][8]=0.98;
+  tighterval[2][8]=1.;
+  tighterval[3][8]=6.;
 
-  // tighterval[0][6]=0.01;
-  //tighterval[0][9]=100e-4;
-  tighterval[0][9]=-0.00027;
-  tighterval[1][9]=1.;
+  //10-12
+  tighterval[0][9]=-0.0001;
+  tighterval[1][9]=0.9;
+  tighterval[2][9]=1.;
+  tighterval[3][9]=6.;
  
-  tighterval[0][10]=-0.00027;
-  tighterval[1][10]=1.;
+  //12-16
+  tighterval[0][10]=-0.00005;
+  tighterval[1][10]=0.9;
+  tighterval[2][10]=1.;
+  tighterval[3][10]=6.;
 
-  tighterval[0][11]=-0.00027;
-  tighterval[1][11]=1.;
+  //16-20
+  tighterval[0][11]=-0.00005;
+  tighterval[1][11]=0.9;
+  tighterval[2][11]=1.;
+  tighterval[3][11]=6.;
 
-  tighterval[0][12]=-0.00027;
-  tighterval[1][12]=1.;
+  //20-24
+  tighterval[0][12]=-0.00005;
+  tighterval[1][12]=0.9;
+  tighterval[2][12]=1.;
+  tighterval[3][12]=6.;
+
+  //>24
+  tighterval[0][13]=-0.00005;
+  tighterval[1][13]=0.9;
+  tighterval[2][13]=1.;
+  tighterval[3][13]=6.;
+
 
   TString name=""; 
   Int_t arrdim=dim*nptbins;
