@@ -697,6 +697,10 @@ Bool_t AliPWG4HighPtTrackQA::SelectEvent() {
 
 //________________________________________________________________________
 Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliVEvent *ev){
+  //
+  // Get centrality from ESD or AOD
+  //
+
   if(fDataType==kESD)
     return CalculateCentrality(dynamic_cast<AliESDEvent*>(ev));
   else if(fDataType==kAOD)
@@ -707,35 +711,48 @@ Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliVEvent *ev){
 
 //________________________________________________________________________
 Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliESDEvent *esd){
+  //
+  // Get centrality from ESD
+  //
 
-
-  Float_t cent = 999;
+  Float_t cent = -1;
 
   if(esd){
     if(esd->GetCentrality()){
       cent = esd->GetCentrality()->GetCentralityPercentile("V0M");
-      if(fDebug>3) cout << "centrality: " << cent << endl;
+      if(fDebug>3) printf("centrality: %f\n",cent);
     }
   }
 
-  if(cent>80)return 4;
-  if(cent>50)return 3;
-  if(cent>30)return 2;
-  if(cent>10)return 1;
-  return 0;
+  return GetCentralityClass(cent);
 
 }
 
 //________________________________________________________________________
 Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliAODEvent *aod){
+  //
+  // Get centrality from AOD
+  //
 
-  if(!aod)return 4;
+  if(!aod) return 5;
   Float_t cent = aod->GetHeader()->GetCentrality();
-  cout << "centrality: " << cent << endl;
-  if(cent>80)return 4;
-  if(cent>50)return 3;
-  if(cent>30)return 2;
-  if(cent>10)return 1;
+  if(fDebug>3) printf("centrality: %f\n",cent);
+
+  return GetCentralityClass(cent);
+
+}
+
+//________________________________________________________________________
+Int_t AliPWG4HighPtTrackQA::GetCentralityClass(Float_t cent) {
+  //
+  // Get centrality class
+  //
+
+  if(cent<0)  return 5; // OB - cent sometimes negative
+  if(cent>80) return 4;
+  if(cent>50) return 3;
+  if(cent>30) return 2;
+  if(cent>10) return 1;
   return 0;
 
 }
