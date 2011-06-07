@@ -41,6 +41,7 @@
 #include "AliAnalysisTaskJetSpectrum2.h"
 #include "AliAnalysisManager.h"
 #include "AliJetFinder.h"
+#include "AliTHn.h"
 #include "AliJetHeader.h"
 #include "AliJetReader.h"
 #include "AliJetReaderHeader.h"
@@ -72,6 +73,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fAODIn(0x0),
   fAODOut(0x0),
   fAODExtension(0x0),
+  fhnJetContainer(0x0),
   fhnCorrelation(0x0),
   fhnEvent(0x0),
   f1PtScale(0x0),
@@ -87,6 +89,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fUseGlobalSelection(kFALSE),
   fUseExternalWeightOnly(kFALSE),
   fLimitGenJetEta(kFALSE),
+  fDoMatching(kFALSE),
   fNMatchJets(5),
   fNRPBins(3),
   fFilterMask(0),
@@ -134,9 +137,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fFlatB[0] =   fFlatB[1] = 0;
   fDeltaQxy[0] =   fDeltaQxy[1] = 0; 
 
-  for(int i = 0;i < kMaxStep*2;++i){
-    fhnJetContainer[i] = 0;
-  }
+
  
   for(int ij = 0;ij <kJetTypes;++ij){    
     fFlagJetType[ij] = 1; // default = on
@@ -172,6 +173,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fAODIn(0x0),
   fAODOut(0x0),
   fAODExtension(0x0),
+  fhnJetContainer(0x0),
   fhnCorrelation(0x0),
   fhnEvent(0x0),
   f1PtScale(0x0),
@@ -187,6 +189,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fUseGlobalSelection(kFALSE),
   fUseExternalWeightOnly(kFALSE),
   fLimitGenJetEta(kFALSE),
+  fDoMatching(kFALSE),
   fNMatchJets(5),
   fNRPBins(3),
   fFilterMask(0),
@@ -233,10 +236,6 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fFlatA[0] =   fFlatA[1] = 0;
   fFlatB[0] =   fFlatB[1] = 0;
   fDeltaQxy[0] =   fDeltaQxy[1] = 0; 
-
-  for(int i = 0;i < kMaxStep*2;++i){
-    fhnJetContainer[i] = 0;
-  }  
 
   for(int ij = 0;ij <kJetTypes;++ij){    
     fFlagJetType[ij] = 1; // default = on
@@ -353,11 +352,11 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 			    nBins0,xmin0,xmax0);
   fHistList->Add(fhnEvent);
 
-  /*
-  MakeJetContainer();
-  fHistList->Add(fhnCorrelation);
-  for(int i = 0;i<kMaxStep*2;++i)fHistList->Add(fhnJetContainer[i]);
-  */
+  if(fDoMatching){
+    MakeJetContainer();
+    fHistList->Add(fhnCorrelation);
+    fHistList->Add(fhnJetContainer);
+  }
   //
   //  Histogram
     
@@ -863,8 +862,10 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   // Here follows the jet matching part
   // delegate to a separated method?
 
-  //  FillMatchHistos(recJetsList,genJetsList);
-  
+  if(fDoMatching){
+    FillMatchHistos(recJetsList,genJetsList);
+  }
+
   if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
   PostData(1, fHistList);
 }
@@ -1154,15 +1155,15 @@ void AliAnalysisTaskJetSpectrum2::FillMatchHistos(TList &recJetsList,TList &genJ
     container[3] = ptGen;
     container[4] = etaGen;
     container[5] = phiGen;
-    fhnJetContainer[kStep0]->Fill(&container[3]);
+    fhnJetContainer->Fill(&container[3],kStep0);
     if(JetSelected(genJet)){
-      fhnJetContainer[kStep1]->Fill(&container[3]);
+      fhnJetContainer->Fill(&container[3],kStep1);
       Int_t ir = aRecIndex[ig];
       if(ir>=0&&ir<recJetsList.GetEntries()){   
-	fhnJetContainer[kStep2]->Fill(&container[3]);
+	fhnJetContainer->Fill(&container[3],kStep2);
 	AliAODJet* recJet = (AliAODJet*)recJetsList.At(ir); 
-	if(JetSelected(recJet))fhnJetContainer[kStep4]->Fill(&container[3]);
-	if(JetSelected(recJet))fhnJetContainer[kStep3]->Fill(&container[3]);
+	if(JetSelected(recJet))fhnJetContainer->Fill(&container[3],kStep4);
+	if(JetSelected(recJet))fhnJetContainer->Fill(&container[3],kStep3);
       }
     }
   }// loop over generated jets used for matching...
@@ -1182,15 +1183,15 @@ void AliAnalysisTaskJetSpectrum2::FillMatchHistos(TList &recJetsList,TList &genJ
     container[1] = etaRec;
     container[2] = phiRec;
 
-    fhnJetContainer[kStep0+kMaxStep]->Fill(container);
+    fhnJetContainer->Fill(container,kStep0+kMaxStep);
     if (fDebug > 10)Printf("%s:%d",(char*)__FILE__,__LINE__);
   
     if(JetSelected(recJet)){
-      fhnJetContainer[kStep1+kMaxStep]->Fill(container);
+      fhnJetContainer->Fill(container,kStep1+kMaxStep);
       // Fill Correlation
       Int_t ig = aGenIndex[ir];
       if(ig>=0 && ig<genJetsList.GetEntries()){
-	fhnJetContainer[kStep2+kMaxStep]->Fill(container);
+	fhnJetContainer->Fill(container,kStep2+kMaxStep);
 	if (fDebug > 10)Printf("%s:%d ig = %d ir = %d",(char*)__FILE__,__LINE__,ig,ir);
 	AliAODJet *genJet = (AliAODJet*)genJetsList.At(ig);
 	Double_t ptGen  = genJet->Pt();
@@ -1204,9 +1205,9 @@ void AliAnalysisTaskJetSpectrum2::FillMatchHistos(TList &recJetsList,TList &genJ
 	// 
 	// we accept only jets which are detected within a smaller window, to avoid ambigious pair association at the edges of the acceptance
 	// 
-	if(JetSelected(genJet))fhnJetContainer[kStep4+kMaxStep]->Fill(container);
-	fhnJetContainer[kStep3+kMaxStep]->Fill(container);
-	fhnCorrelation->Fill(container);
+	if(JetSelected(genJet))fhnJetContainer->Fill(container,kStep4+kMaxStep);
+	fhnJetContainer->Fill(container,kStep3+kMaxStep);
+	fhnCorrelation->Fill(container,0);
 	if(ptGen>0){
 	  Float_t delta = (ptRec-ptGen)/ptGen;
 	  fh2RelPtFGen->Fill(ptGen,delta);
@@ -1252,12 +1253,11 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
   for(Int_t i=0; i<=iBin[2]; i++) binEdges[2][i]=(Double_t)kPhimin  + (kPhimax-kPhimin)/iBin[2]*(Double_t)i;
 
 
-  for(int i = 0;i < kMaxStep*2;++i){
-    fhnJetContainer[i] = new THnSparseF(Form("fhnJetContainer%d",i),Form("THnSparse jet info %d",i),kNvar,iBin);
-    for (int k=0; k<kNvar; k++) {
-      fhnJetContainer[i]->SetBinEdges(k,binEdges[k]);
-    }
+  fhnJetContainer = new AliTHn(Form("fahnJetContainer"),Form("AliTHn jet info"),kMaxStep*2,kNvar,iBin);
+  for (int k=0; k<kNvar; k++) {
+    fhnJetContainer->SetBinLimits(k,binEdges[k]);
   }
+
   //create correlation matrix for unfolding
   Int_t thnDim[2*kNvar];
   for (int k=0; k<kNvar; k++) {
@@ -1267,13 +1267,11 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
     thnDim[k+kNvar] = iBin[k];
   }
 
-  fhnCorrelation = new THnSparseF("fhnCorrelation","THnSparse with correlations",2*kNvar,thnDim);
+  fhnCorrelation = new AliTHn("fahnCorrelation","AliTHn with correlations",1,2*kNvar,thnDim);
   for (int k=0; k<kNvar; k++) {
-    fhnCorrelation->SetBinEdges(k,binEdges[k]);
-    fhnCorrelation->SetBinEdges(k+kNvar,binEdges[k]);
+    fhnCorrelation->SetBinLimits(k,binEdges[k]);
+    fhnCorrelation->SetBinLimits(k+kNvar,binEdges[k]);
   }
-  fhnCorrelation->Sumw2();
-
 
   for(Int_t ivar = 0; ivar < kNvar; ivar++)
     delete [] binEdges[ivar];
