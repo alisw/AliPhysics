@@ -40,7 +40,7 @@ ClassImp(AliRDHFCutsD0toKpi)
 //--------------------------------------------------------------------------
 AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const char* name) : 
 AliRDHFCuts(name),
-fUseSpecialCuts(kFALSE),
+fUseSpecialCuts(kTRUE),
 fLowPt(kTRUE),
 fDefaultPID(kFALSE),
 fUseKF(kFALSE)
@@ -48,36 +48,42 @@ fUseKF(kFALSE)
   //
   // Default Constructor
   //
-  Int_t nvars=9;
+  Int_t nvars=11;
   SetNVars(nvars);
-  TString varNames[9]={"inv. mass [GeV]",   
-		       "dca [cm]",
-		       "cosThetaStar", 
-		       "pTK [GeV/c]",
-		       "pTPi [GeV/c]",
-		       "d0K [cm]",
-		       "d0Pi [cm]",
-		       "d0d0 [cm^2]",
-		       "cosThetaPoint"};
-  Bool_t isUpperCut[9]={kTRUE,
-			kTRUE,
-			kTRUE,
-			kFALSE,
-			kFALSE,
-			kTRUE,
-			kTRUE,
-			kTRUE,
-			kFALSE};
+  TString varNames[11]={"inv. mass [GeV]",   
+			"dca [cm]",
+			"cosThetaStar", 
+			"pTK [GeV/c]",
+			"pTPi [GeV/c]",
+			"d0K [cm]",
+			"d0Pi [cm]",
+			"d0d0 [cm^2]",
+			"cosThetaPoint",
+			"|cosThetaPointXY|", 
+			"NormDecayLenghtXY"};
+  Bool_t isUpperCut[11]={kTRUE,
+			 kTRUE,
+			 kTRUE,
+			 kFALSE,
+			 kFALSE,
+			 kTRUE,
+			 kTRUE,
+			 kTRUE,
+			 kFALSE,
+			 kFALSE, 
+			 kFALSE};
   SetVarNames(nvars,varNames,isUpperCut);
-  Bool_t forOpt[9]={kFALSE,
-		    kTRUE,
-		    kTRUE,
-		    kFALSE,
-		    kFALSE,
-		    kFALSE,
-		    kFALSE,
-		    kTRUE,
-		    kTRUE};
+  Bool_t forOpt[11]={kFALSE,
+		     kTRUE,
+		     kTRUE,
+		     kFALSE,
+		     kFALSE,
+		     kFALSE,
+		     kFALSE,
+		     kTRUE,
+		     kTRUE,
+		     kFALSE,
+		     kFALSE};
   SetVarsForOpt(4,forOpt);
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
@@ -192,6 +198,16 @@ void AliRDHFCutsD0toKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int
     vars[iter]=dd->CosPointingAngle();
   }
   
+  if(fVarsForOpt[9]){
+		iter++;
+		vars[iter]=TMath::Abs(dd->CosPointingAngleXY());
+	}
+  
+   if(fVarsForOpt[10]){
+		iter++;
+	   vars[iter]=(dd->NormalizedDecayLengthXY()*(dd->P()/dd->Pt()));
+	}
+	
   return;
 }
 //---------------------------------------------------------------------------
@@ -291,6 +307,12 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
       if(!okD0 && !okD0bar)   {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
     
       if(d->CosPointingAngle() < fCutsRD[GetGlobalIndex(8,ptbin)])  {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+
+      
+      if(TMath::Abs(d->CosPointingAngleXY()) < fCutsRD[GetGlobalIndex(9,ptbin)])  {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+	
+      Double_t normalDecayLengXY=(d->NormalizedDecayLengthXY()*(d->P()/d->Pt()));
+      if (normalDecayLengXY < fCutsRD[GetGlobalIndex(10, ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
       
       if (returnvalueCuts!=0) {
 	if (okD0) returnvalueCuts=1; //cuts passed as D0
@@ -1037,8 +1059,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedSpecialCuts(AliAODRecoDecayHF *d) const
   }
   if(d->DecayLength2()<decLengthCut*decLengthCut)  return 0; //decLengthCut not passed
   if(d->NormalizedDecayLength2()<normDecLengthCut*normDecLengthCut)  return 0; //decLengthCut not passed
-    
-
+	
   return returnvalue;
 }
 
@@ -1084,8 +1105,8 @@ void AliRDHFCutsD0toKpi::SetUseKF(Bool_t useKF)
 		    kFALSE,
 		    kTRUE,
 		    kTRUE,
-                    kFALSE,
-                    kFALSE};
+		    kFALSE,
+		    kFALSE};
     SetVarsForOpt(4,forOpt);
   }
   return;
@@ -1123,7 +1144,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2010() {
   
   const Int_t nptbins =13;
   const Double_t ptmax = 9999.;
-  const Int_t nvars=9;
+  const Int_t nvars=11;
   Float_t ptbins[nptbins+1];
   ptbins[0]=0.;
   ptbins[1]=0.5;	
@@ -1143,19 +1164,19 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2010() {
   SetGlobalIndex(nvars,nptbins);
   SetPtBins(nptbins+1,ptbins);
   
-  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-35000.*1E-8,0.73},/* pt<0.5*/
-						  {0.400,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-35000.*1E-8,0.73},/* 0.5<pt<1*/
-						  {0.400,200.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-25000.*1E-8,0.75},/* 1<pt<2 */
-						  {0.400,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-15000.*1E-8,0.8},/* 2<pt<3 */
-						  {0.400,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85},/* 3<pt<4 */
-						  {0.400,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85},/* 4<pt<5 */
-						  {0.400,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85},/* 5<pt<6 */
-						  {0.400,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85},/* 6<pt<8 */
-						  {0.400,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.85},/* 8<pt<12 */
-						  {0.400,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.*1E-8,0.85},/* 12<pt<16 */
-						  {0.400,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,0.*1E-8,0.85},/* 16<pt<20 */
-						  {0.400,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,0.*1E-8,0.85},/* 20<pt<24 */
-						  {0.400,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,0.*1E-8,0.85}};/* pt>24 */
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-35000.*1E-8,0.73,0.,0.},/* pt<0.5*/
+						  {0.400,300.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-35000.*1E-8,0.73,0.,0.},/* 0.5<pt<1*/
+						  {0.400,200.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-25000.*1E-8,0.75,0.,0.},/* 1<pt<2 */
+						  {0.400,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-15000.*1E-8,0.8,0.,0.},/* 2<pt<3 */
+						  {0.400,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 3<pt<4 */
+						  {0.400,200.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 4<pt<5 */
+						  {0.400,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 5<pt<6 */
+						  {0.400,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 6<pt<8 */
+						  {0.400,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.85,0.,0.},/* 8<pt<12 */
+						  {0.400,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.*1E-8,0.85,0.,0.},/* 12<pt<16 */
+						  {0.400,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,0.*1E-8,0.85,0.,0.},/* 16<pt<20 */
+						  {0.400,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,0.*1E-8,0.85,0.,0.},/* 20<pt<24 */
+						  {0.400,150.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,0.*1E-8,0.85,0.,0.}};/* pt>24 */
   
   
   //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
@@ -1251,7 +1272,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   // CANDIDATE CUTS  
   const Int_t nptbins =13;
   const Double_t ptmax = 9999.;
-  const Int_t nvars=9;
+  const Int_t nvars=11;
   Float_t ptbins[nptbins+1];
   ptbins[0]=0.;
   ptbins[1]=0.5;	
@@ -1272,19 +1293,19 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   SetPtBins(nptbins+1,ptbins);
   SetMinPtCandidate(2.);
 
-  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,400.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-50000.*1E-8,0.85},/* pt<0.5*/
-						  {0.400,400.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-50000.*1E-8,0.85},/* 0.5<pt<1*/
-						  {0.400,400.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-43000.*1E-8,0.85},/* 1<pt<2 */
-						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-40000.*1E-8,0.95},/* 2<pt<3 */
-						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-36000.*1E-8,0.95},/* 3<pt<4 */
-						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-27000.*1E-8,0.95},/* 4<pt<5 */
-						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-21000.*1E-8,0.92},/* 5<pt<6 */
-						  {0.400,270.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-14000.*1E-8,0.88},/* 6<pt<8 */
-						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.85},/* 8<pt<12 */
-						  {0.400,350.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-1000.*1E-8,0.83},/* 12<pt<16 */
-						  {0.400,400.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-1000.*1E-8,0.82},/* 16<pt<20 */
-						  {0.400,400.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-1000.*1E-8,0.81},/* 20<pt<24 */
-						  {0.400,400.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-1000.*1E-8,0.8}};/* pt>24 */
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,400.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-50000.*1E-8,0.85,0.,5.},/* pt<0.5*/
+						  {0.400,400.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-50000.*1E-8,0.85,0.,5.},/* 0.5<pt<1*/
+						  {0.400,400.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-43000.*1E-8,0.85,0.,5.},/* 1<pt<2 */
+						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-40000.*1E-8,0.95,0.998,5.},/* 2<pt<3 */
+						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-36000.*1E-8,0.95,0.998,5.},/* 3<pt<4 */
+						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-27000.*1E-8,0.95,0.998,5.},/* 4<pt<5 */
+						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-21000.*1E-8,0.92,0.998,5.},/* 5<pt<6 */
+						  {0.400,270.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-14000.*1E-8,0.88,0.998,5.},/* 6<pt<8 */
+						  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.85,0.998,5.},/* 8<pt<12 */
+						  {0.400,350.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-1000.*1E-8,0.83,0.998,5.},/* 12<pt<16 */
+						  {0.400,400.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-1000.*1E-8,0.82,0.998,5.},/* 16<pt<20 */
+						  {0.400,400.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-1000.*1E-8,0.81,0.998,5.},/* 20<pt<24 */
+						  {0.400,400.*1E-4,1.0,0.7,0.7,1000.*1E-4,1000.*1E-4,-1000.*1E-8,0.8,0.998,5.}};/* pt>24 */
   
   
   //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
