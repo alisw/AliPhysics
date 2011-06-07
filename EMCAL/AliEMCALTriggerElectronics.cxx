@@ -120,6 +120,8 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 		
 		Bool_t isOK1 = geom->GetTRUFromAbsFastORIndex(id, iTRU, iADC);
 		
+		if ((isOK1 && iTRU >= kNTRU) || !isOK1) continue;
+
 		for (Int_t j = 0; j < digit->GetNSamples(); j++)
 		{
 			Int_t time, amp;
