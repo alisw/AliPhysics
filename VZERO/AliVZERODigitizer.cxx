@@ -198,8 +198,8 @@ Bool_t AliVZERODigitizer::Init()
     fNBinsLT[i] = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0)/
 			      fCalibData->GetTimeResolution(board));
     fBinSize[i] = fCalibData->GetTimeResolution(board);
-    fHptdcOffset[i] = (((Float_t)fCalibData->GetTriggerCountOffset(board)-
-			(Float_t)fCalibData->GetRollOver(board))*25.0+
+    fHptdcOffset[i] = (((Float_t)fCalibData->GetRollOver(board)-
+			(Float_t)fCalibData->GetTriggerCountOffset(board))*25.0+
 		       fCalibData->GetTimeOffset(i)-
 		       l1Delay-
 		       phase->GetMeanPhase()+
