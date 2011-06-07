@@ -31,6 +31,8 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PHOSbaseLinkDef.h)
 
+set ( EXPORT AliPHOSGeometry.h AliPHOSEMCAGeometry.h AliPHOSCPVGeometry.h AliPHOSSupportGeometry.h AliPHOSCalibData.h)
+
 set ( EINCLUDE RAW)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
