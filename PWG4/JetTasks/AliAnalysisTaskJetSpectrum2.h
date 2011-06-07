@@ -1,3 +1,4 @@
+
 #ifndef ALIANALYSISTASKJETSPECTRUM2_H
 #define ALIANALYSISTASKJETSPECTRUM2_H
  
@@ -22,6 +23,7 @@ class AliVParticle;
 class AliAODJetEventBackground;
 class AliGenPythiaEventHeader;
 class AliCFManager;
+class AliTHn;
 
 class TList;
 class TChain;
@@ -134,10 +136,10 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     AliAODEvent  *fAODIn; //! where we take the jets from 
     AliAODEvent  *fAODOut; //! where we take the jets from 
     AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
-    THnSparseF   *fhnJetContainer[kMaxStep*2];   //! like particle container in corrfw with different steps need AliCFContainer with Scale(), and clone() to do the same
-    THnSparseF   *fhnCorrelation;           //! response matrix for unfolding 
-    THnSparseF   *fhnEvent;                 //! event counts 
-    TF1          *f1PtScale;                //! correction function to correct to the average true jet energy depending on p_T,rec
+    AliTHn   *fhnJetContainer;               //! like particle container in corrfw with different steps need AliCFContainer with Scale(), and clone() to do the same
+    AliTHn   *fhnCorrelation;                //! response matrix for unfolding 
+    THnSparseF   *fhnEvent;                  //! event counts 
+    TF1          *f1PtScale;                 //! correction function to correct to the average true jet energy depending on p_T,rec
 
     TString       fBranchRec;  // AOD branch name for reconstructed
     TString       fBranchGen;  // AOD brnach for genereated
@@ -153,6 +155,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Bool_t        fUseGlobalSelection;    // Limit the eta of the generated jets
     Bool_t        fUseExternalWeightOnly; // use only external weight
     Bool_t        fLimitGenJetEta;        // Limit the eta of the generated jets
+    Bool_t        fDoMatching;            // switch on the matching between rec and gen
     Short_t       fNMatchJets;            // number of leading jets considered from the list
     Short_t       fNRPBins;               // number of bins with respect to RP
     UInt_t        fFilterMask;            // filter bit for slecected tracks
@@ -233,7 +236,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList;                  //! Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 15) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 16) // Analysis task for standard jet analysis
 };
  
 #endif
