@@ -339,7 +339,31 @@ int AliHLTMUONProcessor::FetchTMapFromCDB(const char* pathToEntry, TMap*& map) c
 	/// \return Zero if the object could be found. Otherwise an error code,
 	///      which is compatible with the HLT framework, is returned.
 	
-	TObject* obj = LoadAndExtractOCDBObject(pathToEntry);
+	assert(AliCDBManager::Instance() != NULL);
+	
+	AliCDBStorage* store = AliCDBManager::Instance()->GetDefaultStorage();
+	if (store == NULL)
+	{
+		HLTError("Could not get the the default storage for the CDB.");
+		return -EIO;
+	}
+
+	Int_t version = store->GetLatestVersion(pathToEntry, GetRunNo());
+	Int_t subVersion = store->GetLatestSubVersion(pathToEntry, GetRunNo(), version);
+	AliCDBId* entryId = AliCDBManager::Instance()->GetId(pathToEntry, GetRunNo(), version, subVersion);
+	if (entryId == NULL)
+	{
+		HLTError("Could not find the CDB entry for \"%s\".", pathToEntry);
+		return -ENOENT;
+	}
+	AliCDBEntry* entry = AliCDBManager::Instance()->Get(*entryId);
+	if (entry == NULL)
+	{
+		HLTError("Could not fetch the CDB entry for \"%s\".", pathToEntry);
+		return -EIO;
+	}
+	
+	TObject* obj = entry->GetObject();
 	if (obj == NULL)
 	{
 		HLTError("Configuration object for \"%s\" is missing.", pathToEntry);
@@ -682,8 +706,32 @@ int AliHLTMUONProcessor::LoadRecoParamsFromCDB(AliMUONRecoParam*& params) const
 	/// \return Zero if the object could be found. Otherwise an error code,
 	///      which is compatible with the HLT framework, is returned.
 	
+	assert(AliCDBManager::Instance() != NULL);
+
+	AliCDBStorage* store = AliCDBManager::Instance()->GetDefaultStorage();
+	if (store == NULL)
+	{
+		HLTError("Could not get the the default storage for the CDB.");
+		return -EIO;
+	}
+
 	const char* pathToEntry = "MUON/Calib/RecoParam";
-	TObject* obj = LoadAndExtractOCDBObject(pathToEntry);
+	Int_t version = store->GetLatestVersion(pathToEntry, GetRunNo());
+	Int_t subVersion = store->GetLatestSubVersion(pathToEntry, GetRunNo(), version);
+	AliCDBId* entryId = AliCDBManager::Instance()->GetId(pathToEntry, GetRunNo(), version, subVersion);
+	if (entryId == NULL)
+	{
+		HLTError("Could not find the CDB entry for \"%s\".", pathToEntry);
+		return -ENOENT;
+	}
+	AliCDBEntry* entry = AliCDBManager::Instance()->Get(*entryId);
+	if (entry == NULL)
+	{
+		HLTError("Could not fetch the CDB entry for \"%s\".", pathToEntry);
+		return -EIO;
+	}
+	
+	TObject* obj = entry->GetObject();
 	if (obj == NULL)
 	{
 		HLTError("Reconstruction parameters object for \"%s\" is missing.", pathToEntry);

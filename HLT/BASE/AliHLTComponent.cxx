@@ -581,7 +581,7 @@ int AliHLTComponent::ConfigureFromCDBTObjString(const char* entries, const char*
   return iResult;
 }
 
-TObject* AliHLTComponent::LoadAndExtractOCDBObject(const char* path, int version, int subVersion, const char* key) const
+TObject* AliHLTComponent::LoadAndExtractOCDBObject(const char* path, int version, int subVersion, const char* key)
 {
   // see header file for function documentation
   AliCDBEntry* pEntry=AliHLTMisc::Instance().LoadOCDBEntry(path, GetRunNo(), version, subVersion);

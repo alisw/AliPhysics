@@ -1112,9 +1112,9 @@ class AliHLTComponent : public AliHLTLogging {
    * @param subVersion  subversion of the entry
    * @param key       key of the object within TMap
    */
-  TObject* LoadAndExtractOCDBObject(const char* path, int version = -1, int subVersion = -1, const char* key=NULL) const;
+  TObject* LoadAndExtractOCDBObject(const char* path, int version = -1, int subVersion = -1, const char* key=NULL);
 
-  TObject* LoadAndExtractOCDBObject(const char* path, const char* key) const {
+  TObject* LoadAndExtractOCDBObject(const char* path, const char* key) {
     return LoadAndExtractOCDBObject(path, -1, -1, key);
   }
 
