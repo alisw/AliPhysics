@@ -226,7 +226,7 @@ void compare_HLT_offline_grid( TString runNumber
 void compare_HLT_offline_grid(){
   cout << " " << endl;
   cout << " Usage examples:" << endl;
-  cout << "    compare-HLT-offline-grid.C'(runNumber, dataDir, gridWorkingDir, gridOutputDir, mode, taskOption, taskFolder, fUseHLTTrigger)' 2>&1 | tee log" << endl;
-  cout << "    compare-HLT-offline-grid.C'(\"000115322\",\"/alice/data/2010/LHC10b\",\"ESDcomparison\",\"output\",\"full\",\"global\",\"./\",kTRUE)' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-grid.C'(runNumber, dataDir, gridWorkingDir, gridOutputDir, mode, taskOption, taskFolder, beamType, THnSparse_names, fUseHLTTrigger)'" << endl;
+  cout << "    compare-HLT-offline-grid.C'(\"000115322\",\"/alice/data/2010/LHC10b\",\"ESDcomparison\",\"output\",\"full\",\"global\",\"./\",\"p-p\",\"event-off event-hlt track-off track-hlt\",kTRUE)'" << endl;
   cout << " " << endl;
 }
