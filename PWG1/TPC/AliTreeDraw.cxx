@@ -625,11 +625,10 @@ TString* AliTreeDraw::FitPlane(const char* drawCommand, const char* formula, con
    Int_t entries = fTree->Draw(drawStr.Data(), cutStr.Data(), "goff",  stop-start, start);
    if (entries == -1) return new TString("An ERROR has occured during fitting!");
    Double_t **values = new Double_t*[dim+1] ; 
+   if(!(*values)) {
+      return new TString("Cannot create *values !");
+   } 
 
-   for (Int_t i = 0; i < dim + 1; i++){
-     *values[i] = 0;
-   }
-   
    for (Int_t i = 0; i < dim + 1; i++) {
       Int_t centries = 0;
       if (i < dim) centries = fTree->Draw(((TObjString*)formulaTokens->At(i))->GetName(), cutStr.Data(), "goff", stop-start,start);
@@ -640,7 +639,8 @@ TString* AliTreeDraw::FitPlane(const char* drawCommand, const char* formula, con
         if(values) delete[] values;
         return new TString("An ERROR has occured during fitting!");
       }
-      
+      *values[i] = 0;
+
       values[i] = new Double_t[entries];
       memcpy(values[i],  fTree->GetV1(), entries*sizeof(Double_t)); 
    }
