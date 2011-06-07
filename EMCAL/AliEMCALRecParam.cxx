@@ -47,15 +47,12 @@ AliEMCALRecParam::AliEMCALRecParam() :
   fTimeMin(-1.),// small value, accept all
   fTimeMax(1.),// high value, accept all//clustering
   fClusterizerFlag(AliEMCALRecParam::kClusterizerv1),
-  fTrkCutX(6.0), 
-  fTrkCutY(6.0), 
-  fTrkCutZ(6.0),  
-  fTrkCutR(10.0),
-  fTrkCutAlphaMin(-50.0), 
-  fTrkCutAlphaMax(50.0), 
-  fTrkCutAngle(10000.0),
-  fTrkCutNITS(3.0),
-  fTrkCutNTPC(20.0), //track matching
+  fMthCutEta(0.025), 
+  fMthCutPhi(0.05),
+  fStep(50),
+  fTrkCutPt(0.0),
+  fTrkCutNITS(0.0),
+  fTrkCutNTPC(50.0), //track matching
   fHighLowGainFactor(16.0), 
   fOrderParameter(2), 
   fTau(2.35), 
@@ -251,13 +248,10 @@ AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
   fTimeMin(rp.fTimeMin),
   fTimeMax(rp.fTimeMax),//clustering
   fClusterizerFlag(rp.fClusterizerFlag),
-  fTrkCutX(rp.fTrkCutX), 
-  fTrkCutY(rp.fTrkCutY), 
-  fTrkCutZ(rp.fTrkCutZ),  
-  fTrkCutR(rp.fTrkCutR),
-  fTrkCutAlphaMin(rp.fTrkCutAlphaMin), 
-  fTrkCutAlphaMax(rp.fTrkCutAlphaMax), 
-  fTrkCutAngle(rp.fTrkCutAngle), 
+  fMthCutEta(rp.fMthCutEta), 
+  fMthCutPhi(rp.fMthCutPhi),
+  fStep(rp.fStep),
+  fTrkCutPt(rp.fTrkCutPt),
   fTrkCutNITS(rp.fTrkCutNITS),
   fTrkCutNTPC(rp.fTrkCutNTPC), // track matching
   fHighLowGainFactor(rp.fHighLowGainFactor), 
@@ -313,16 +307,13 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
     fTimeCut   = rp.fTimeCut;
     fTimeMax   = rp.fTimeMax;
     fTimeMin   = rp.fTimeMin;//clustering
-    fClusterizerFlag = rp.fClusterizerFlag;
-    fTrkCutX   = rp.fTrkCutX;
-    fTrkCutY   = rp.fTrkCutY;
-    fTrkCutZ   = rp.fTrkCutZ;
-    fTrkCutR   = rp.fTrkCutR;
-    fTrkCutAlphaMin = rp.fTrkCutAlphaMin;
-    fTrkCutAlphaMax = rp.fTrkCutAlphaMax;
-    fTrkCutAngle    = rp.fTrkCutAngle; 
-    fTrkCutNITS     = rp.fTrkCutNITS;
-    fTrkCutNTPC     = rp.fTrkCutNTPC; //track matching
+    fClusterizerFlag   = rp.fClusterizerFlag;
+    fMthCutEta         = rp.fMthCutEta;
+    fMthCutPhi         = rp.fMthCutPhi;
+    fStep              = rp.fStep;
+    fTrkCutPt          = rp.fTrkCutPt;
+    fTrkCutNITS        = rp.fTrkCutNITS;
+    fTrkCutNTPC        = rp.fTrkCutNTPC; //track matching
     fHighLowGainFactor = rp.fHighLowGainFactor; 
     fOrderParameter    = rp.fOrderParameter;
     fTau               = rp.fTau;
@@ -577,6 +568,7 @@ AliEMCALRecParam* AliEMCALRecParam::GetHighFluxParam()
   params->SetName("High Flux - Pb+Pb");
   params->SetTitle("High Flux - Pb+Pb");
   params->SetEventSpecie(AliRecoParam::kHighMult);
+  params->SetTrkCutPt(0.15);//This value can be higher if necessary
   
   return params;
   
@@ -593,8 +585,8 @@ void AliEMCALRecParam::Print(Option_t * opt) const
     AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f,\n fTimeCut=%2.1f ns\n fTimeMin=%2.1f ns\n fTimeMax=%2.1f ns\n",
 		 fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut*1.e9,fTimeMin*1e9,fTimeMax*1e9));
     
-    AliInfo(Form("Track-matching cuts :\n x %f, y %f, z %f, R %f \n alphaMin %f, alphaMax %f, Angle %f, NITS %f, NTPC %f\n", 
-				 fTrkCutX, fTrkCutY, fTrkCutZ, fTrkCutR,fTrkCutAlphaMin,fTrkCutAlphaMax, fTrkCutAngle,fTrkCutNITS,fTrkCutNTPC));
+    AliInfo(Form("Track-matching cuts :\n dEta<%f, dPhi<%f, step=%f[cm], pT>%f, NITS>%f, NTPC>%f\n", 
+		 fMthCutEta, fMthCutPhi, fStep, fTrkCutPt, fTrkCutNITS,fTrkCutNTPC));
 
     AliInfo(Form("Unfolding parameters, Shower shape function :\n")); 
     for(Int_t i = 0; i < 8; i++){

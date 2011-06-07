@@ -74,27 +74,21 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   void SetPiZero(Int_t i, Int_t j,Double_t param)       {fPiZero[i][j]=param;}
   void SetPiZeroEnergyProb(Int_t i,Double_t param)      {fPiZeroEnergyProb[i]=param;}
   
-  //Track Matching (Alberto)
+  //Track Matching (Alberto; Revised by Rongrong)
   /* track matching cut setters */
-  void SetTrkCutX(Double_t value)        {fTrkCutX = value;}
-  void SetTrkCutY(Double_t value)        {fTrkCutY = value;}
-  void SetTrkCutZ(Double_t value)        {fTrkCutZ = value;}
-  void SetTrkCutR(Double_t value)        {fTrkCutR = value;}
-  void SetTrkCutAlphaMin(Double_t value) {fTrkCutAlphaMin = value;}
-  void SetTrkCutAlphaMax(Double_t value) {fTrkCutAlphaMax = value;}
-  void SetTrkCutAngle(Double_t value)    {fTrkCutAngle = value;}
-  void SetTrkCutNITS(Double_t value)     {fTrkCutNITS = value;}
-  void SetTrkCutNTPC(Double_t value)     {fTrkCutNTPC = value;}
+  void SetMthCutEta(Double_t value)        {fMthCutEta = value;}
+  void SetMthCutPhi(Double_t value)        {fMthCutPhi = value;}
+  void SetExtrapolateStep(Double_t value)  {fStep = value;}
+  void SetTrkCutPt(Double_t value)         {fTrkCutPt = value;}
+  void SetTrkCutNITS(Double_t value)       {fTrkCutNITS = value;}
+  void SetTrkCutNTPC(Double_t value)       {fTrkCutNTPC = value;}
   /* track matching cut getters */
-  Double_t GetTrkCutX() const        {return fTrkCutX;}
-  Double_t GetTrkCutY() const        {return fTrkCutY;}
-  Double_t GetTrkCutZ() const        {return fTrkCutZ;}
-  Double_t GetTrkCutR() const        {return fTrkCutR;}
-  Double_t GetTrkCutAlphaMin() const {return fTrkCutAlphaMin;}
-  Double_t GetTrkCutAlphaMax() const {return fTrkCutAlphaMax;}
-  Double_t GetTrkCutAngle() const    {return fTrkCutAngle;}
-  Double_t GetTrkCutNITS() const     {return fTrkCutNITS;}
-  Double_t GetTrkCutNTPC() const     {return fTrkCutNTPC;}
+  Double_t GetMthCutEta() const         {return fMthCutEta;}
+  Double_t GetMthCutPhi() const         {return fMthCutPhi;}
+  Double_t GetExtrapolateStep() const   {return fStep;}
+  Double_t GetTrkCutPt() const          {return fTrkCutPt;}
+  Double_t GetTrkCutNITS() const        {return fTrkCutNITS;}
+  Double_t GetTrkCutNTPC() const        {return fTrkCutNTPC;}
   
   //Raw signal fitting (Jenn)
   /* raw signal setters */
@@ -165,14 +159,11 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Double_t fPiZero[6][6];        // Parameter to Compute PID for pi0  	 
   
   
-  //Track-Matching (Alberto)
-  Double_t  fTrkCutX;              // X-difference cut for track matching
-  Double_t  fTrkCutY;              // Y-difference cut for track matching
-  Double_t  fTrkCutZ;              // Z-difference cut for track matching
-  Double_t  fTrkCutR;              // cut on allowed track-cluster distance
-  Double_t  fTrkCutAlphaMin;       // cut on 'alpha' parameter for track matching (min)
-  Double_t  fTrkCutAlphaMax;       // cut on 'alpha' parameter for track matching (min)
-  Double_t  fTrkCutAngle;          // cut on relative angle between different track points for track matching
+  //Track-Matching (Alberto; Revised by Rongrong)
+  Double_t  fMthCutEta;            // eta-difference cut for track matching
+  Double_t  fMthCutPhi;            // phi-difference cut for track matching
+  Double_t  fStep;                 // Extrapolate length of each step
+  Double_t  fTrkCutPt;             // Minimum pT cut on tracks. Needed for Pb-Pb runs
   Double_t  fTrkCutNITS;           // Number of ITS hits for track matching
   Double_t  fTrkCutNTPC;           // Number of TPC hits for track matching
   
@@ -194,7 +185,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
 
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
   
-  ClassDef(AliEMCALRecParam,14)     // Reconstruction parameters
+  ClassDef(AliEMCALRecParam,15)     // Reconstruction parameters
     
     } ;
 

@@ -66,6 +66,32 @@ class AliEMCALReconstructor : public AliReconstructor {
   static TClonesArray* GetDigitsArr() {return fgDigitsArr;}
   
   void           FillMisalMatrixes(AliESDEvent* esd)const ;
+
+  //New class used to sort the matched tracks
+  class  AliEMCALMatch : public TObject
+  {
+  public:
+    AliEMCALMatch();
+    AliEMCALMatch(const AliEMCALMatch& copy);
+    virtual ~AliEMCALMatch() { }
+    //----------------------------------------------------------------------------
+    Int_t     Compare(const TObject *obj) const;
+    Bool_t    IsSortable() const {return kTRUE;}
+    Double_t  GetDistance() const {return fDistance;}
+    Double_t  GetdEta() const {return fdEta;}
+    Double_t  GetdPhi() const {return fdPhi;}
+    Int_t     GetIndexT() const {return fIndexT;}
+    void      SetIndexT(Int_t itr) {fIndexT=itr;}
+    void      SetDistance(Double_t dist) {fDistance=dist;}
+    void      SetdEta(Double_t dEta) {fdEta=dEta;}
+    void      SetdPhi(Double_t dPhi) {fdPhi=dPhi;}
+  private:
+    Int_t      fIndexT;      // track index in 'fTracks' array
+    Double_t   fDistance;    // track - cluster distance
+    Double_t   fdEta;        // track - cluster residual in eta
+    Double_t   fdPhi;        // track - cluster residual in phi
+  };
+  Bool_t CalculateResidual(AliESDtrack *track, AliESDCaloCluster *cluster, Double_t &dEta, Double_t &dPhi) const;
   
  private:
   
@@ -89,10 +115,12 @@ class AliEMCALReconstructor : public AliReconstructor {
   //Trigger specific
   static AliEMCALTriggerElectronics* fgTriggerProcessor; // Trigger preprocessor  
   AliEMCALTriggerData        * fTriggerData;      // Trigger parameters data container
+
+  //Track matching
+  TList                      * fMatches;          //! collection of matches between tracks and clusters
   
-  ClassDef(AliEMCALReconstructor,11)  // Reconstruction algorithm class (Base Class)
-    
-    }; 
+  ClassDef(AliEMCALReconstructor,12)  // Reconstruction algorithm class (Base Class)
+}; 
 
 #endif // ALIEMCALRECONSTRUCTOR_H
 

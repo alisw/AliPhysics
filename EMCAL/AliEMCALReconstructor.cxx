@@ -68,7 +68,7 @@
 
 ClassImp(AliEMCALReconstructor) 
   
- const AliEMCALRecParam*     AliEMCALReconstructor::fgkRecParam        = 0;   // EMCAL rec. parameters
+const AliEMCALRecParam*     AliEMCALReconstructor::fgkRecParam        = 0;   // EMCAL rec. parameters
 AliEMCALRawUtils*           AliEMCALReconstructor::fgRawUtils         = 0;   // EMCAL raw utilities class
 AliEMCALClusterizer*        AliEMCALReconstructor::fgClusterizer      = 0;   // EMCAL clusterizer class
 TClonesArray*               AliEMCALReconstructor::fgDigitsArr        = 0;   // list of digits, to be used multiple times
@@ -77,7 +77,7 @@ TClonesArray*               AliEMCALReconstructor::fgTriggerDigits    = 0;   // 
 AliEMCALTriggerElectronics* AliEMCALReconstructor::fgTriggerProcessor = 0x0;
 //____________________________________________________________________________
 AliEMCALReconstructor::AliEMCALReconstructor() 
-  : fGeom(0),fCalibData(0),fPedestalData(0),fTriggerData(0x0) 
+  : fGeom(0),fCalibData(0),fPedestalData(0),fTriggerData(0x0), fMatches(0x0)
 {
   // ctor
   
@@ -133,6 +133,10 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   fgDigitsArr     = new TClonesArray("AliEMCALDigit",1000);
   fgClustersArr   = new TObjArray(1000);
   fgTriggerDigits = new TClonesArray("AliEMCALTriggerRawDigit",1000);	
+
+  //Track matching
+  fMatches = new TList();
+  fMatches->SetOwner(kTRUE);
 } 
 
 //____________________________________________________________________________
@@ -164,6 +168,8 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
   if(fgRawUtils)         delete fgRawUtils;
   if(fgClusterizer)      delete fgClusterizer;
   if(fgTriggerProcessor) delete fgTriggerProcessor;
+  
+  if(fMatches) { fMatches->Delete(); delete fMatches; fMatches = 0;}
   
   AliCodeTimer::Instance()->Print();
 } 
@@ -444,31 +450,14 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   
   Int_t nClusters = fgClustersArr->GetEntries(),  nClustersNew=0;
   AliDebug(1,Form("%d clusters",nClusters));
-  
-  //######################################################
-  //#######################TRACK MATCHING###############
-  //######################################################
-  //Fill list of integers, each one is index of track to which the cluster belongs.
-  
-  // step 1 - initialize array of matched track indexes
-  Int_t *matchedTrack = new Int_t[nClusters];
-  for (Int_t iclus = 0; iclus < nClusters; iclus++)
-    matchedTrack[iclus] = -1;  // neg. index --> no matched track
-  
-  // step 2, change the flag for all matched clusters found in tracks
-  Int_t iemcalMatch = -1;
-  Int_t endtpc = esd->GetNumberOfTracks();
-  for (Int_t itrack = 0; itrack < endtpc; itrack++) {
-    AliESDtrack * track = esd->GetTrack(itrack) ; // retrieve track
-    iemcalMatch = track->GetEMCALcluster();
-    if(iemcalMatch >= 0) matchedTrack[iemcalMatch] = itrack;
-  } 
+
   
   //########################################
   //##############Fill CaloClusters#############
   //########################################
   for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
     const AliEMCALRecPoint * clust = (const AliEMCALRecPoint*)fgClustersArr->At(iClust);
+    if(!clust) continue;
     //if(clust->GetClusterType()== AliVCluster::kEMCALClusterv1) nRP++; else nPC++;
     // clust->Print(); //For debugging
     // Get information from EMCAL reconstruction points
@@ -536,22 +525,74 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       ec->SetM20(elipAxis[1]*elipAxis[1]) ;
       ec->SetTOF(clust->GetTime()) ; //time-of-fligh
       ec->SetNExMax(clust->GetNExMax());          //number of local maxima
-      TArrayI arrayTrackMatched(1);// Only one track, temporal solution.
-      arrayTrackMatched[0]= matchedTrack[iClust];
-      ec->AddTracksMatched(arrayTrackMatched);
+  
       
       TArrayI arrayParents(parentMult,parentList);
       ec->AddLabels(arrayParents);
-      
-      // add the cluster to the esd object
+      //
+      //Track matching
+      //
+      fMatches->Clear();
+      Int_t nTracks = esd->GetNumberOfTracks();
+      for (Int_t itrack = 0; itrack < nTracks; itrack++)
+      	{
+      	  AliESDtrack * track = esd->GetTrack(itrack) ; // retrieve track
+      	  if(track->GetEMCALcluster()==iClust)
+      	    {
+      	      Double_t dEta=-999, dPhi=-999;
+      	      Bool_t isMatch =  CalculateResidual(track, ec, dEta, dPhi);
+      	      if(!isMatch) 
+      		{
+      		  continue;
+      		  cout<<"Not good"<<endl;
+      		}
+      	      AliEMCALMatch *match = new AliEMCALMatch();
+      	      match->SetIndexT(itrack);
+      	      match->SetDistance(TMath::Sqrt(dEta*dEta+dPhi*dPhi));
+      	      match->SetdEta(dEta);
+      	      match->SetdPhi(dPhi);
+      	      fMatches->Add(match);
+      	    }
+      	} 
+      fMatches->Sort(kSortAscending); //Sort matched tracks from closest to furthest
+      Int_t nMatch = fMatches->GetEntries();
+      TArrayI arrayTrackMatched(nMatch);
+      for(Int_t imatch=0; imatch<nMatch; imatch++)
+      	{
+      	  AliEMCALMatch *match = (AliEMCALMatch*)fMatches->At(imatch);
+      	  arrayTrackMatched[imatch] = match->GetIndexT();
+      	  if(imatch==0)
+      	    {
+      	      ec->SetTrackDistance(match->GetdPhi(), match->GetdEta());
+      	    }
+      	}
+      ec->AddTracksMatched(arrayTrackMatched);
+    
+      //add the cluster to the esd object
       esd->AddCaloCluster(ec);
+
       delete ec;
       delete [] newAbsIdList ;
       delete [] newFracList ;
     }
   } // cycle on clusters
+
+  //
+  //Reset the index of matched cluster for tracks
+  //to the one in CaloCluster array
+  Int_t ncls = esd->GetNumberOfCaloClusters();
+  for(Int_t icl=0; icl<ncls; icl++)
+    {
+      AliESDCaloCluster *cluster = esd->GetCaloCluster(icl);
+      if(!cluster || !cluster->IsEMCAL()) continue;
+      TArrayI *trackIndex = cluster->GetTracksMatched();
+      for(Int_t itr=0; itr<trackIndex->GetSize(); itr++)
+	{
+	  AliESDtrack *track = esd->GetTrack(trackIndex->At(itr));
+	  track->SetEMCALcluster(cluster->GetID());
+	}
+    }
   
-  delete [] matchedTrack;
   
   //Fill ESDCaloCluster with PID weights
   AliEMCALPID *pid = new AliEMCALPID;
@@ -629,4 +670,98 @@ void AliEMCALReconstructor::ReadDigitsArrayFromTree(TTree *digitsTree) const
   branch->GetEntry(0);
 }
 
+//==================================================================================
+Bool_t AliEMCALReconstructor::CalculateResidual(AliESDtrack *track, AliESDCaloCluster *cluster, Double_t &dEta, Double_t &dPhi)const
+{
+  //
+  // calculate the residual between track and cluster
+  //
 
+  // If the esdFriend is available, use the TPCOuter point as the starting point of extrapolation
+  // Otherwise use the TPCInner point
+  AliExternalTrackParam *trkParam;
+  const AliESDfriendTrack*  friendTrack = track->GetFriendTrack();
+  if(friendTrack && friendTrack->GetTPCOut())
+    trkParam = const_cast<AliExternalTrackParam*>(friendTrack->GetTPCOut());
+  else
+    trkParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());
+  if(!trkParam) return kFALSE;
+
+  //Perform extrapolation
+  Double_t trkPos[3];
+  Float_t  clsPos[3];
+
+  AliExternalTrackParam *trkParamTmp = new AliExternalTrackParam(*trkParam);
+  cluster->GetPosition(clsPos);
+  TVector3 vec(clsPos[0],clsPos[1],clsPos[2]);
+  Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
+  //Rotate to proper local coordinate
+  vec.RotateZ(-alpha); 
+  trkParamTmp->Rotate(alpha); 
+  //extrapolation is done here
+  if(!AliTrackerBase::PropagateTrackToBxByBz(trkParamTmp, vec.X(), track->GetMass(), GetRecParam()->GetExtrapolateStep(), kFALSE)) 
+    return kFALSE; 
+
+  //Calculate the residuals
+  trkParamTmp->GetXYZ(trkPos);     
+  delete trkParamTmp;
+   
+  TVector3 clsPosVec(clsPos[0],clsPos[1],clsPos[2]);
+  TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
+      
+  Double_t clsPhi = clsPosVec.Phi();
+  if(clsPhi<0) clsPhi+=2*TMath::Pi();
+  Double_t trkPhi = trkPosVec.Phi();
+  if(trkPhi<0) trkPhi+=2*TMath::Pi();
+
+  dPhi = clsPhi-trkPhi;
+  dEta = clsPosVec.Eta()-trkPosVec.Eta();
+
+  return kTRUE;
+}
+
+//
+//==================================================================================
+//
+AliEMCALReconstructor::AliEMCALMatch::AliEMCALMatch() 
+  : TObject(),  
+    fIndexT(-1), 
+    fDistance(-999.),
+    fdEta(-999.),
+    fdPhi(-999.)
+{
+  //default constructor
+
+}
+
+//
+//==================================================================================
+//
+AliEMCALReconstructor::AliEMCALMatch::AliEMCALMatch(const AliEMCALMatch& copy)
+  : TObject(),
+    fIndexT(copy.fIndexT),
+    fDistance(copy.fDistance),
+    fdEta(copy.fdEta),
+    fdPhi(copy.fdPhi)
+{
+  //copy ctor
+}
+
+//
+//==================================================================================
+//
+Int_t AliEMCALReconstructor::AliEMCALMatch::Compare(const TObject *obj) const 
+{
+  //
+  // Compare wrt the residual
+  //
+	
+  AliEMCALReconstructor::AliEMCALMatch *that = (AliEMCALReconstructor::AliEMCALMatch*)obj;
+	
+  Double_t thisDist = fDistance;//fDistance;
+  Double_t thatDist = that->fDistance;//that->GetDistance();
+	
+  if (thisDist > thatDist) return 1;
+  else if (thisDist < thatDist) return -1;
+  return 0;
+}
