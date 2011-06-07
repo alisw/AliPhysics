@@ -17,6 +17,8 @@
  * - run in full mode, i.e. completely on the GRID with all the chunks of the run processed
  * - specify the analysis task you want to run
  * - specify the path where the task is located, by default it takes $ALICE_ROOT/HLT/QA/tasks
+ * - specify the beam type
+ * - specify which THnSparse objects you want to have filled
  * - specify whether you are interested only in HLT triggered events
  * - specify how many events you want to analyze
  *
