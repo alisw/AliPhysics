@@ -476,6 +476,7 @@ AliFMDEventInspector::ReadCentrality(const AliESDEvent* esd,
   //              centObj, centObj->GetQuality()));
   // centObj->Print();
   cent = centObj->GetCentralityPercentile("V0M");  
+  //cent = centObj->GetCentralityPercentile("ZEMvsZDC");  
   qual = centObj->GetQuality();
 
   return true;
