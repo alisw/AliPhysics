@@ -26,7 +26,7 @@
 #include "AliStack.h"
 #include "AliESD.h"
 #include "AliLog.h"
-
+#include "AliCentrality.h"
 #include "AliAnalysisTaskV0QA.h"
 
 ClassImp(AliAnalysisTaskV0QA)
@@ -41,7 +41,7 @@ fSparseK0(0),
 fSparseL(0),
 fSparseAL(0),
 fnEv(0),
-fgDim(50),
+fgDim(500),
 fnConvGamGeant(-1),
 fgConvGamGeantIndex(0),
 feNegConvGamGeantIndex(0),
@@ -97,7 +97,7 @@ ftpcRefit(0),
 fitsRefit(0),
 ftrdRefit(0),
 ftrdOut(0),
-fDim(37),
+fDim(38),
 fValueL(0),
 fValueAL(0),
 fValueK0(0),
@@ -105,19 +105,14 @@ fValueV0(0),
 fxminV0(0),
 fxmaxV0(0),
 fbinsV0(0),
+fCentralityC(-1),
 fRefTPC(0),
 fclRefsN(0),
 fclRefsP(0)
 
  {
   // Default Constructor.
-   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-     fprobabilityPos[i] = 0.;
-     fprobabilityNeg[i] = 0.;
-   }
-   for (Int_t i = 0; i < 100000; i++) {
-     fLabelsTPC[i] = 0;
-   }
+
  }
 
 //________________________________________________________________________
@@ -132,7 +127,7 @@ fSparseK0(0),
 fSparseL(0),
 fSparseAL(0),
 fnEv(0),
-fgDim(50),
+fgDim(500),
 fnConvGamGeant(-1),
 fgConvGamGeantIndex(0),
 feNegConvGamGeantIndex(0),
@@ -188,7 +183,7 @@ ftpcRefit(0),
 fitsRefit(0),
 ftrdRefit(0),
 ftrdOut(0),
-fDim(37),
+fDim(38),
 fValueL(0),
 fValueAL(0),
 fValueK0(0),
@@ -196,21 +191,15 @@ fValueV0(0),
 fxminV0(0),
 fxmaxV0(0),
 fbinsV0(0),
+fCentralityC(-1),
 fRefTPC(0),
 fclRefsN(0),
 fclRefsP(0)
 
  {
-   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-     fprobabilityPos[i] = 0.;
-     fprobabilityNeg[i] = 0.;
-   }
-   for (Int_t i = 0; i < 100000; i++) {
-     fLabelsTPC[i] = 0;
-   }
 
    fnEv=0;
-   fDim=37; 
+   fDim=38; 
 
    fValueK0 = new Double_t[fDim];
    fValueL = new Double_t[fDim];
@@ -221,7 +210,7 @@ fclRefsP(0)
    fbinsV0 = new Int_t[fDim];
 
 
-  fgDim=50; 
+  fgDim=500; 
   fgConvGamGeantIndex = new Int_t[fgDim];
   feNegConvGamGeantIndex = new Int_t[fgDim];
   fePosConvGamGeantIndex = new Int_t[fgDim];
@@ -539,9 +528,12 @@ void AliAnalysisTaskV0QA::UserCreateOutputObjects() {
   fxminV0[36]=   -2;     // Status V0 TPC rec Neg
   fxmaxV0[36]=   2;
 
+  fxminV0[37]=   -1;     // Centrality
+  fxmaxV0[37]=   10;   
 
 
-  TString  axisName[37]={"ptGammaGeant", 
+
+  TString  axisName[38]={"ptGammaGeant", 
 			 "etaGammaGeant",
 			 "phiGammaGeant",
 			 "rGeant",
@@ -577,7 +569,8 @@ void AliAnalysisTaskV0QA::UserCreateOutputObjects() {
 			 "ptResEMinusRecV0", 
 			 "etaEMinusRecV0",
 			 "phiEMinusRecV0",
-                         "statusV0SingleNeg"};
+                         "statusV0SingleNeg",
+	                 "centrality"};
 
 
   fSparseV0= new THnSparseF("sparseV0","sparseV0",fDim,fbinsV0,fxminV0,fxmaxV0);
@@ -587,7 +580,7 @@ void AliAnalysisTaskV0QA::UserCreateOutputObjects() {
    fSparseV0->GetAxis(iaxis)->SetTitle(axisName[iaxis]);
   }
 
-  TString  axisNameK0[37]={"ptK0Geant", 
+  TString  axisNameK0[38]={"ptK0Geant", 
 			 "etaK0Geant",
 			 "phiK0Geant",
 			 "rGeant",
@@ -623,7 +616,8 @@ void AliAnalysisTaskV0QA::UserCreateOutputObjects() {
 			 "ptResPiMinusRecV0", 
 			 "etaPiMinusRecV0",
 			 "phiPiMinusRecV0",
-                         "statusRecV0Neg"};
+                         "statusRecV0Neg",	                 
+                         "centrality"};
 
 
 
@@ -633,7 +627,7 @@ void AliAnalysisTaskV0QA::UserCreateOutputObjects() {
    fSparseK0->GetAxis(iaxis)->SetTitle(axisNameK0[iaxis]);
   }
 
-  TString  axisNameL[37]={"ptLGeant", 
+  TString  axisNameL[38]={"ptLGeant", 
 			 "etaLGeant",
 			 "phiLGeant",
 			 "rGeant",
@@ -669,7 +663,8 @@ void AliAnalysisTaskV0QA::UserCreateOutputObjects() {
 			 "ptResPiMinusRecV0", 
 			 "etaPiMinusRecV0",
 			 "phiPiMinusRecV0",
-                         "statusRecV0Neg"};
+                         "statusRecV0Neg",
+	                 "centrality"};
 
 
   fSparseL= new THnSparseF("sparseL","sparseL",fDim,fbinsV0,fxminV0,fxmaxV0);
@@ -678,7 +673,7 @@ void AliAnalysisTaskV0QA::UserCreateOutputObjects() {
    fSparseL->GetAxis(iaxis)->SetTitle(axisNameL[iaxis]);
   }
 
-  TString  axisNameAL[37]={"ptALGeant", 
+  TString  axisNameAL[38]={"ptALGeant", 
 			 "etaALGeant",
 			 "phiALGeant",
 			 "rGeant",
@@ -714,7 +709,9 @@ void AliAnalysisTaskV0QA::UserCreateOutputObjects() {
 			 "ptResAPMinusRecV0", 
 			 "etaAPMinusRecV0",
 			 "phiAPMinusRecV0",
-                         "statusRecV0Neg"};
+                         "statusRecV0Neg",
+	                 "centrality"};
+
 
 
   fSparseAL= new THnSparseF("sparseAL","sparseAL",fDim,fbinsV0,fxminV0,fxmaxV0);
@@ -755,8 +752,8 @@ void AliAnalysisTaskV0QA::UserExec(Option_t *) {
 
   //  Double_t vertex[3];
   Double_t maxVertex=150.;
-  Double_t maxEta=1.2;
-  Double_t lineCutZRSlope=0.662486;
+  Double_t maxEta=0.9;
+  Double_t lineCutZRSlope=tan(2*atan(exp(-maxEta)));
   Double_t lineCutZValue=7.;
   Int_t elecGIndex=-1;
   Int_t posiGIndex=-1;
@@ -852,7 +849,7 @@ void AliAnalysisTaskV0QA::UserExec(Option_t *) {
      }
      
      if(particle->Pt()<0.050) continue;
-     if(TMath::Abs(particle->Eta())> 1.2) continue;
+     if(TMath::Abs(particle->Eta())> maxEta) continue;
 
      
      if (particle->GetPdgCode()== 22){
@@ -1373,6 +1370,11 @@ void AliAnalysisTaskV0QA::UserExec(Option_t *) {
   Double_t xyzVtx[3];
   pvertex->GetXYZ(xyzVtx);
 
+  AliCentrality *esdCentrality = fESD->GetCentrality();
+//  Int_t centralityC = -1;
+  fCentralityC =-1;
+  fCentralityC = esdCentrality->GetCentralityClass10("V0M");
+ 
   if(fnTracksPrim>0) {
 
     InspectListOfChargedParticles();
@@ -1544,7 +1546,8 @@ void AliAnalysisTaskV0QA::InspectListOfV0s(){
     AliESDv0 * fV0MIs = fESD->GetV0(iV0MI);
     
 
-    if ( !fV0MIs->GetOnFlyStatus() ){
+    if ( !fV0MIs->GetOnFlyStatus() ){ //Onfly V0 finder
+//    if ( fV0MIs->GetOnFlyStatus() ){   //Offline V0 finder
 	continue;
     }
     if(fnTracksPrim<=0) {
@@ -1554,7 +1557,7 @@ void AliAnalysisTaskV0QA::InspectListOfV0s(){
 
     AliESDtrack* trackPosTest = fESD->GetTrack(fV0MIs->GetPindex());
     AliESDtrack* trackNegTest = fESD->GetTrack(fV0MIs->GetNindex());
-     
+
 
     if ( trackPosTest->GetSign() == trackNegTest->GetSign()){
      continue;
@@ -1923,7 +1926,7 @@ void AliAnalysisTaskV0QA::FillHnSparseGamma()
     fValueV0[34] = negV0Eta;
     fValueV0[35] = negV0Phi;
     fValueV0[36] = statusV0Neg;
-
+    fValueV0[37] = fCentralityC;
     fSparseV0->Fill(fValueV0);
   }
 
@@ -2145,6 +2148,7 @@ void AliAnalysisTaskV0QA::FillHnSparseK0()
     fValueK0[34] = negV0Eta;
     fValueK0[35] = negV0Phi;
     fValueK0[36] = statusV0Neg;
+    fValueK0[37] = fCentralityC;
 
     fSparseK0->Fill(fValueK0);
   }
@@ -2368,6 +2372,7 @@ void AliAnalysisTaskV0QA::FillHnSparseL()
     fValueL[34] = negV0Eta;
     fValueL[35] = negV0Phi;
     fValueL[36] = statusV0Neg;
+    fValueL[37] = fCentralityC;
 
     fSparseL->Fill(fValueL);
   }
@@ -2593,6 +2598,7 @@ void AliAnalysisTaskV0QA::FillHnSparseAL()
     fValueAL[34] = negV0Eta;
     fValueAL[35] = negV0Phi;
     fValueAL[36] = statusV0Neg;
+    fValueAL[37] = fCentralityC;
 
     fSparseAL->Fill(fValueAL);
   }
