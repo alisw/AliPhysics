@@ -49,6 +49,7 @@
 #include "AliTriggerClass.h"
 #include "AliTriggerCluster.h"
 #include "AliDAQ.h"
+#include "AliRunLoader.h"
 
 class AliCDBEntry;
 
@@ -78,6 +79,9 @@ AliHLTReconstructor::~AliHLTReconstructor()
 { 
   //destructor
 
+  if (fpEsdManager) AliHLTEsdManager::Delete(fpEsdManager);
+  fpEsdManager=NULL;
+
   if (fpPluginBase) {
   AliHLTSystem* pSystem=fpPluginBase->GetInstance();
   if (pSystem) {
@@ -91,8 +95,6 @@ AliHLTReconstructor::~AliHLTReconstructor()
   }
   fpPluginBase=NULL;
 
-  if (fpEsdManager) AliHLTEsdManager::Delete(fpEsdManager);
-  fpEsdManager=NULL;
 }
 
 void AliHLTReconstructor::Init(const char* options)
@@ -208,6 +210,7 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
   // For each event, HLT reconstruction chains can be executed and
   // added to the existing HLTOUT data
   // The HLTOUT data is finally processed in FillESD
+
   if (!fpPluginBase) {
     AliError("internal memory error: can not get AliHLTSystem instance from plugin");
     return;
@@ -217,6 +220,7 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
   AliHLTSystem* pSystem=fpPluginBase->GetInstance();
 
   if (pSystem) {
+    pSystem->InvalidateHLTOUT();
     if (pSystem->CheckStatus(AliHLTSystem::kError)) {
       AliError("HLT system in error state");
       return;
@@ -225,6 +229,33 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
       AliError("HLT system in wrong state");
       return;
     }
+
+    // init the HLTOUT instance for the current event
+    // not nice. Have to query the global run loader to get the current event no.
+    Int_t eventNo=-1;
+    AliRunLoader* runloader = AliRunLoader::Instance();
+    if (runloader) {
+      eventNo=runloader->GetEventNumber();
+    }
+    if (eventNo>=0) {
+      AliRawReader* input=NULL;
+      if ((fFlags&kAliHLTReconstructorIgnoreHLTOUT) == 0 ) {
+	input=rawReader;
+      }
+      AliHLTOUT* pHLTOUT=new AliHLTOUTRawReader(input, eventNo, fpEsdManager);
+      if (pHLTOUT) {
+	if (pHLTOUT->Init()>=0) {
+	  pSystem->InitHLTOUT(pHLTOUT);
+	} else {
+	  AliError("error : initialization of HLTOUT handler failed");
+	}
+      } else {
+	AliError("memory allocation failed: can not create AliHLTOUT object");
+      }
+    } else {
+      AliError("can not get event number");
+    }
+
     if ((iResult=pSystem->Reconstruct(1, NULL, rawReader))>=0) {
     }
   }
@@ -257,11 +288,18 @@ void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree
     }
     pSystem->FillESD(-1, NULL, esd);
 
-    AliRawReader* input=NULL;
-    if ((fFlags&kAliHLTReconstructorIgnoreHLTOUT) == 0 ) {
-      input=rawReader;
+    // the HLTOUT handler has either been created in the AliHLTReconstructor::Reconstruct
+    // step of this event or is created now. In either case the instance is deleted after
+    // the processing
+    AliHLTOUT* pHLTOUT=NULL;
+    pSystem->InvalidateHLTOUT(&pHLTOUT);
+    if (!pHLTOUT) {
+      AliRawReader* input=NULL;
+      if ((fFlags&kAliHLTReconstructorIgnoreHLTOUT) == 0 ) {
+	input=rawReader;
+      }
+      pHLTOUT=new AliHLTOUTRawReader(input, esd->GetEventNumberInFile(), fpEsdManager);
     }
-    AliHLTOUTRawReader* pHLTOUT=new AliHLTOUTRawReader(input, esd->GetEventNumberInFile(), fpEsdManager);
     if (pHLTOUT) {
       ProcessHLTOUT(pHLTOUT, esd, (pSystem->GetGlobalLoggingLevel()&kHLTLogDebug)!=0);
       delete pHLTOUT;
@@ -275,7 +313,43 @@ void AliHLTReconstructor::Reconstruct(TTree* /*digitsTree*/, TTree* /*clustersTr
 {
   // reconstruct simulated data
 
-  // all data processing has been moved to FillESD
+  AliHLTSystem* pSystem=fpPluginBase->GetInstance();
+
+  if (pSystem) {
+    // create the HLTOUT instance in order to be available for other detector reconstruction
+    pSystem->InvalidateHLTOUT();
+
+    // not nice. Have to query the global run loader to get the current event no.
+    // This is related to the missing AliLoader for HLT.
+    // Since AliReconstruction can not provide a digits tree, the file needs to be accessed
+    // explicitely, and the corresponding event needs to be selected.
+    Int_t eventNo=-1;
+    AliRunLoader* runloader = AliRunLoader::Instance();
+    if (runloader) {
+      eventNo=runloader->GetEventNumber();
+    }
+    if (eventNo>=0) {
+      const char* digitfile=NULL;
+      if ((fFlags&kAliHLTReconstructorIgnoreHLTOUT) == 0 ) {
+	digitfile="HLT.Digits.root";
+      }
+
+      AliHLTOUT* pHLTOUT=new AliHLTOUTDigitReader(eventNo, fpEsdManager, digitfile);
+      if (pHLTOUT) {
+	if (pHLTOUT->Init()>=0) {
+	  pSystem->InitHLTOUT(pHLTOUT);
+	} else {
+	  AliError("error : initialization of HLTOUT handler failed");
+	}
+      } else {
+	AliError("memory allocation failed: can not create AliHLTOUT object");
+      }
+    } else {
+      AliError("can not get event number");
+    }
+
+    // all data processing happens in FillESD
+  }
 }
 
 void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/, AliESDEvent* esd) const
@@ -321,12 +395,19 @@ void AliHLTReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/
       return;
     }
 
-    const char* digitfile=NULL;
-    if ((fFlags&kAliHLTReconstructorIgnoreHLTOUT) == 0 ) {
-      digitfile="HLT.Digits.root";
+    // the HLTOUT handler has either been created in the AliHLTReconstructor::Reconstruct
+    // step of this event or is created now. In either case the instance is deleted after
+    // the processing
+    AliHLTOUT* pHLTOUT=NULL;
+    pSystem->InvalidateHLTOUT(&pHLTOUT);
+    if (!pHLTOUT) {
+      const char* digitfile=NULL;
+      if ((fFlags&kAliHLTReconstructorIgnoreHLTOUT) == 0 ) {
+	digitfile="HLT.Digits.root";
+      }
+      pHLTOUT=new AliHLTOUTDigitReader(esd->GetEventNumberInFile(), fpEsdManager, digitfile);
     }
 
-    AliHLTOUTDigitReader* pHLTOUT=new AliHLTOUTDigitReader(esd->GetEventNumberInFile(), fpEsdManager, digitfile);
     if (pHLTOUT) {
       ProcessHLTOUT(pHLTOUT, esd, (pSystem->GetGlobalLoggingLevel()&kHLTLogDebug)!=0);
       delete pHLTOUT;
