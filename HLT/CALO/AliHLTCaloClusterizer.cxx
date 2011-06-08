@@ -84,8 +84,8 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
 AliHLTCaloClusterizer::~AliHLTCaloClusterizer()
 {
     //See header file for documentation
-  delete [] fRecPointDataPtr;
-  delete [] fRecPointArray;
+  //delete [] fRecPointDataPtr;
+  //delete [] fRecPointArray;
 }
 
 void
