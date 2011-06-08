@@ -433,10 +433,9 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     if (!mcHandler){ 
       AliError("Could not retrive MC event handler!"); 
-      return; 
-
       eventQuality=0;
       fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+      return; 
     }
     if (!mcHandler->InitOk() ){
       eventQuality=0;
@@ -593,17 +592,15 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
   fV0Reader->GetESDEvent()->EstimateMultiplicity(tTracklet, tITSTPC, tITSPure, 0.8);
   Int_t fMultiplicityITS = tITSTPC;
 
-  
-
   fMultiplicity =  fEsdTrackCuts->CountAcceptedTracks(fV0Reader->GetESDEvent());
-
+  Int_t fMultiplicityStandard = fMultiplicity;
 
   if( fUseHBTMultiplicity==1) {
     fMultiplicity = fMultiplicityITS;
 
   }
 
-  fHistograms->FillHistogram("ESD_MultiplicityDeviation",fMultiplicity,fMultiplicityITS);
+  fHistograms->FillHistogram("ESD_MultiplicityDeviation",fMultiplicityStandard,fMultiplicityITS);
 
   
 
