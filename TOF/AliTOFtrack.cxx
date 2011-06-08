@@ -129,6 +129,10 @@ Bool_t AliTOFtrack::PropagateTo(Double_t xk,Double_t /*x0*/,Double_t /*rho*/)
   Double_t xTimesRho = mparam[4]*mparam[0];
   Double_t xOverX0   = mparam[1];
 
+  if (oldX < xk) {
+	  xTimesRho = -xTimesRho;  // should be negative in case of outward propagation (--> energy decreases)
+  }
+
   /* correct for mean material */
   if (!AliExternalTrackParam::CorrectForMeanMaterial(xOverX0,xTimesRho,GetMass())) return kFALSE;
 
