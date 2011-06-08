@@ -79,7 +79,6 @@ int AliHLTOUT::Init()
 
   // ignore if already initialized
   if (fBlockDescList.size()>0) {
-    fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "Init" , __FILE__ , __LINE__ , "instance %p already initialized, skipping ...", this);
     return 0;
   }
 

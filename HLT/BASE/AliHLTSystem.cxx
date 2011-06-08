@@ -89,6 +89,8 @@ AliHLTSystem::AliHLTSystem(AliHLTComponentLogSeverity loglevel, const char* name
   fpEsdHandlers(NULL),
   fpProprietaryHandlers(NULL),
   fpHLTOUTTask(NULL),
+  fpHLTOUT(NULL),
+  fHLTOUTUse(0),
   fpControlTask(NULL),
   fName(name)
   , fECSParams()
@@ -132,7 +134,7 @@ AliHLTSystem::~AliHLTSystem()
 {
   // see header file for class documentation
   fgNofInstances--;
-  CleanHLTOUT();
+  CleanupHLTOUTHandlers();
   CleanTaskList();
   if (fpConfigurationHandler) {
     fpConfigurationHandler->Destroy();
@@ -734,7 +736,7 @@ int AliHLTSystem::DeinitTasks()
   return iResult;
 }
 
-int AliHLTSystem::CleanHLTOUT()
+int AliHLTSystem::CleanupHLTOUTHandlers()
 {
   // see header file for class documentation
   if (fpChainHandlers) {
@@ -814,7 +816,7 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
 	if (!CheckStatus(kError)) {
 	StopTasks();
 	DeinitTasks();
-	CleanHLTOUT();
+	CleanupHLTOUTHandlers();
 	}
       } else {
       if ((iResult=AliHLTOfflineInterface::SetParamsToComponents(runLoader, rawReader))>=0) {
@@ -1633,4 +1635,47 @@ int AliHLTSystem::LoggingVarargs(AliHLTComponentLogSeverity severity,
   va_end(args);
 
   return iResult;
+}
+
+int AliHLTSystem::InitHLTOUT(AliHLTOUT* instance)
+{
+  // Init the HLTOUT instance for the current event.
+  // The instance can be used by other classes to get hold on the data
+  // from HLTOUT.
+  if (!instance) return -EINVAL;
+  if (fpHLTOUT && fpHLTOUT!=instance) return -EBUSY;
+  fpHLTOUT=instance;
+  return 0;
+}
+
+int AliHLTSystem::InvalidateHLTOUT(AliHLTOUT** target)
+{
+  // Clear the HLTOUT instance.
+  int iResult=0;
+  if (fHLTOUTUse>0) {
+    HLTWarning("HLTOUT instance still in use, potential problem due to invalid pointer ahead");
+    fHLTOUTUse=0;
+    iResult=-EBUSY;
+  }
+  if (target) *target=fpHLTOUT;
+  fpHLTOUT=NULL;
+  return iResult;
+}
+
+AliHLTOUT* AliHLTSystem::RequestHLTOUT()
+{
+  // Get the HLTOUT instance.
+  // User method for processing classes. To be released after use.
+  if (!fpHLTOUT) return NULL;
+  fHLTOUTUse++;
+  return fpHLTOUT;
+}
+
+int AliHLTSystem::ReleaseHLTOUT(const AliHLTOUT* instance)
+{
+  // Release the HLTOUT instance after use.
+  if (!instance) return -EINVAL;
+  if (instance!=fpHLTOUT) return -ENOENT;
+  fHLTOUTUse--;
+  return 0;
 }

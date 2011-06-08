@@ -311,8 +311,9 @@ class AliHLTSystem : public AliHLTLogging {
 
   /**
    * Cleanup all internal objects from HLTOUT processing.
+   * Go through the list of HLTOUT handlers and release them.
    */
-  int CleanHLTOUT();
+  int CleanupHLTOUTHandlers();
 
   /**
    * The memory allocation function for components.
@@ -389,6 +390,36 @@ class AliHLTSystem : public AliHLTLogging {
    * @return neg. error code if failed 
    */
   int FillESD(int eventNo, AliRunLoader* runLoader, AliESDEvent* esd);
+
+  /**
+   * Init the HLTOUT instance for the current event.
+   * The instance can be used by other classes to get hold on the data
+   * from HLTOUT.
+   * @param  instance     instance to be set as the active HLTOUT
+   * @return -EBUSY other active instance already existing
+   */
+  int InitHLTOUT(AliHLTOUT* instance);
+
+  /**
+   * Invalidate the HLTOUT instance.
+   * @param  instance     target variable for the instance
+   * @return -EBUSY if instance in use
+   */
+  int InvalidateHLTOUT(AliHLTOUT** instance=NULL);
+
+  /**
+   * Get the HLTOUT instance.
+   * User method for processing classes. To be released after use.
+   * @return pointer to HLTOUT instance
+   */
+  AliHLTOUT* RequestHLTOUT();
+
+  /**
+   * Release the HLTOUT instance after use.
+   * @param instance      pointer to instance to be released
+   * @return -ENOENT if instance does not match
+   */
+  int ReleaseHLTOUT(const AliHLTOUT* instance);
 
   /**
    * Process the HLTOUT data.
@@ -613,6 +644,12 @@ class AliHLTSystem : public AliHLTLogging {
   /** active HLTOUT task for the reconstruction */
   AliHLTOUTTask* fpHLTOUTTask;                                     //!transient
 
+  /** HLTOUT instance for the current event */
+  AliHLTOUT* fpHLTOUT;                                            //!transient
+
+  /** HLTOUT use counter */
+  int fHLTOUTUse;                                                  //!transient
+
   /** special task to publish the control events */
   AliHLTControlTask* fpControlTask;                                //!transient
 
@@ -625,7 +662,7 @@ class AliHLTSystem : public AliHLTLogging {
   /// indicate the argument 'hltout-type'
   bool fUseHLTOUTComponentTypeGlobal;                              //!transient
 
-  ClassDef(AliHLTSystem, 14);
+  ClassDef(AliHLTSystem, 0);
 };
 
 #endif
