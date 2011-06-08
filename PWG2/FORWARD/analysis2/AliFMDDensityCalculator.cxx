@@ -27,9 +27,6 @@ ClassImp(AliFMDDensityCalculator)
 AliFMDDensityCalculator::AliFMDDensityCalculator()
   : TNamed(), 
     fRingHistos(),
-    fMultCut(0),
-    fNXi(1),
-    fIncludeSigma(true),
     fSumOfWeights(0),
     fWeightedSum(0),
     fCorrections(0),
@@ -47,7 +44,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fLowCuts(0),
     fEtaLumping(5), 
     fPhiLumping(5),    
-    fDebug(0)
+    fDebug(0),
+    fCuts()
 {
   // 
   // Constructor 
@@ -59,9 +57,6 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
 AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
   : TNamed("fmdDensityCalculator", title), 
     fRingHistos(), 
-    fMultCut(0),
-    fNXi(1),
-    fIncludeSigma(true),
     fSumOfWeights(0),
     fWeightedSum(0),
     fCorrections(0),
@@ -79,7 +74,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fLowCuts(0),
     fEtaLumping(5), 
     fPhiLumping(5),
-    fDebug(0)
+    fDebug(0),
+    fCuts()
 {
   // 
   // Constructor 
@@ -126,9 +122,6 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
 						 AliFMDDensityCalculator& o)
   : TNamed(o), 
     fRingHistos(), 
-    fMultCut(o.fMultCut),
-    fNXi(o.fNXi),
-    fIncludeSigma(o.fIncludeSigma),
     fSumOfWeights(o.fSumOfWeights),
     fWeightedSum(o.fWeightedSum),
     fCorrections(o.fCorrections),
@@ -146,7 +139,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
     fLowCuts(o.fLowCuts),
     fEtaLumping(o.fEtaLumping), 
     fPhiLumping(o.fPhiLumping),
-    fDebug(o.fDebug)
+    fDebug(o.fDebug),
+    fCuts(o.fCuts)
 {
   // 
   // Copy constructor 
@@ -183,24 +177,23 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
   //
   TNamed::operator=(o);
 
-  fMultCut      = o.fMultCut;
-  fNXi          = o.fNXi;
-  fIncludeSigma = o.fIncludeSigma;
-  fDebug        = o.fDebug;
-  fMaxParticles = o.fMaxParticles;
-  fUsePoisson   = o.fUsePoisson;
-  fUsePhiAcceptance  = o.fUsePhiAcceptance;
-  fAccI         = o.fAccI;
-  fAccO         = o.fAccO;
-  fFMD1iMax     = o.fFMD1iMax;
-  fFMD2iMax     = o.fFMD2iMax;
-  fFMD2oMax     = o.fFMD2oMax;
-  fFMD3iMax     = o.fFMD3iMax;
-  fFMD3oMax     = o.fFMD3oMax;
-  fMaxWeights   = o.fMaxWeights;
-  fLowCuts      = o.fLowCuts;
-  fEtaLumping   = o.fEtaLumping;
-  fPhiLumping   = o.fPhiLumping;
+  fDebug              = o.fDebug;
+  fMaxParticles       = o.fMaxParticles;
+  fUsePoisson         = o.fUsePoisson;
+  fUsePhiAcceptance   = o.fUsePhiAcceptance;
+  fAccI               = o.fAccI;
+  fAccO               = o.fAccO;
+  fFMD1iMax           = o.fFMD1iMax;
+  fFMD2iMax           = o.fFMD2iMax;
+  fFMD2oMax           = o.fFMD2oMax;
+  fFMD3iMax           = o.fFMD3iMax;
+  fFMD3oMax           = o.fFMD3oMax;
+  fMaxWeights         = o.fMaxWeights;
+  fLowCuts            = o.fLowCuts;
+  fEtaLumping         = o.fEtaLumping;
+  fPhiLumping         = o.fPhiLumping;
+  fCuts               = o.fCuts;
+
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
@@ -221,8 +214,10 @@ AliFMDDensityCalculator::Init(const TAxis& axis)
 
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
-  while ((o = static_cast<RingHistos*>(next())))
+  while ((o = static_cast<RingHistos*>(next()))) {
     o->Init(axis);
+    o->fMultCut = fCuts.GetFixedCut(o->fDet, o->fRing);
+  }
 }
 
 //____________________________________________________________________
@@ -254,22 +249,6 @@ AliFMDDensityCalculator::GetRingHistos(UShort_t d, Char_t r) const
 }
 
 //____________________________________________________________________
-void 
-AliFMDDensityCalculator::SetMultCuts(Double_t fmd1i, 
-				     Double_t fmd2i, 
-				     Double_t fmd2o, 
-				     Double_t fmd3i, 
-				     Double_t fmd3o) 
-{
-  GetRingHistos(1,'I')->fMultCut = fmd1i;
-  GetRingHistos(2,'I')->fMultCut = fmd2i;
-  GetRingHistos(2,'O')->fMultCut = fmd2o;
-  GetRingHistos(3,'I')->fMultCut = fmd3i;
-  GetRingHistos(3,'O')->fMultCut = fmd3o;
-  fMultCut = (fmd1i+fmd2i+fmd2o+fmd3i+fmd3o) / 5;
-}
-
-//____________________________________________________________________
 Double_t
 AliFMDDensityCalculator::GetMultCut(UShort_t d, Char_t r, Int_t ieta,
 				    Bool_t errors) const
@@ -282,16 +261,7 @@ AliFMDDensityCalculator::GetMultCut(UShort_t d, Char_t r, Int_t ieta,
   // Return:
   //    Lower cut on multiplicity
   //
-  Double_t rcut = GetRingHistos(d, r)->fMultCut;
-  // Int_t    idx = (d == 1 ? 0 : 2*(d - 2) + 1 + ((r=='I' || r=='i') ? 0 : 1));
-  // if (fMultCuts[idx] > 0) return fMultCuts[idx];
-  if (rcut > 0) return rcut;
-
-  AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
-  AliFMDCorrELossFit* fits = fcm.GetELossFit();
-  if (fNXi < 0) return fits->GetLowCut();
-
-  return fits->GetLowerBound(d, r, ieta, fNXi, errors, fIncludeSigma);
+  return fCuts.GetMultCut(d,r,ieta,errors);
 }
     
 //____________________________________________________________________
@@ -307,15 +277,7 @@ AliFMDDensityCalculator::GetMultCut(UShort_t d, Char_t r, Double_t eta,
   // Return:
   //    Lower cut on multiplicity
   //
-  Double_t rcut = GetRingHistos(d, r)->fMultCut;
-  if (rcut > 0) return rcut;
-  if (fMultCut > 0) return fMultCut;
-
-  AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
-  AliFMDCorrELossFit* fits = fcm.GetELossFit();
-  Int_t iEta = fits->FindEtaBin(eta);
-  
-  return GetMultCut(d, r, iEta, errors);
+  return fCuts.GetMultCut(d,r,eta,errors);
 }
   
 //____________________________________________________________________
@@ -833,8 +795,8 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
   d->Add(fMaxWeights);
   d->Add(fLowCuts);
 
-  TNamed* sigma  = new TNamed("sigma",
-			       (fIncludeSigma ? "included" : "excluded"));
+  // TNamed* sigma  = new TNamed("sigma",
+  // (fIncludeSigma ? "included" : "excluded"));
   TNamed* maxP   = new TNamed("maxParticle", Form("%d", fMaxParticles));
   TNamed* method = new TNamed("method", 
 			      (fUsePoisson ? "Poisson" : "Energy loss"));
@@ -842,15 +804,16 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
 			      (fUsePhiAcceptance ? "enabled" : "disabled"));
   TNamed* etaL   = new TNamed("etaLumping", Form("%d", fEtaLumping));
   TNamed* phiL   = new TNamed("phiLumping", Form("%d", fPhiLumping));
-  TParameter<double>* nxi = new TParameter<double>("nXi", fNXi);
+  // TParameter<double>* nxi = new TParameter<double>("nXi", fNXi);
 
-  d->Add(sigma);
+  // d->Add(sigma);
   d->Add(maxP);
   d->Add(method);
   d->Add(phiA);
   d->Add(etaL);
   d->Add(phiL);
-  d->Add(nxi);
+  // d->Add(nxi);
+  fCuts.Output(d,0);
 
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
@@ -873,12 +836,6 @@ AliFMDDensityCalculator::Print(Option_t* option) const
   ind[gROOT->GetDirLevel()] = '\0';
   std::cout << ind << ClassName() << ": " << GetName() << '\n'
 	    << std::boolalpha 
-	    << ind << " Multiplicity cut:       " << fMultCut << '\n'
-	    << ind << " # of (xi+sigma) factor: " << fNXi << '\n'
-	    << ind << " Include sigma in cut:   " << fIncludeSigma << '\n'
-	    << ind << " Low cut method:         " 
-	    << (fMultCut > 0 ? "fixed" : 
-		(fNXi >= 0 ? "xi+sigma" : "fit range")) << '\n'
 	    << ind << " Max(particles):         " << fMaxParticles << '\n'
 	    << ind << " Poisson method:         " << fUsePoisson << '\n'
 	    << ind << " Use phi acceptance:     " << fUsePhiAcceptance << '\n'
@@ -886,6 +843,8 @@ AliFMDDensityCalculator::Print(Option_t* option) const
 	    << ind << " Phi lumping:            " << fPhiLumping << '\n'
 	    << std::noboolalpha
 	    << std::flush;
+  std::cout << ind << " Lower cut:" << std::endl;
+  fCuts.Print();
   TString opt(option);
   opt.ToLower();
   if (opt.Contains("nomax")) return;
@@ -954,6 +913,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
     fEmptyStrips(0),
     fBasicHits(0),
     fEmptyVsTotal(0),
+    fELoss(0),
     fELossUsed(0),
     fMultCut(0)
 {

@@ -20,6 +20,7 @@
 #include <TH2.h>
 #include <TList.h>
 #include "AliForwardUtil.h"
+#include "AliFMDMultCuts.h"
 class AliESDFMD;
 class TAxis;
 class TList;
@@ -99,12 +100,12 @@ public:
    * 
    * @param lowCut Low cut
    */
-  void SetLowCut(Double_t lowCut=0) { fLowCut = lowCut; }
+  void SetLowCut(Double_t lowCut=0) { fLCuts.SetMultCuts(lowCut); }
   /** 
    * Reset the low cut for sharing to use the fit range lower cut 
    * 
    */
-  void UnsetLowCut() { fLowCut = 0; }
+  void UnsetLowCut() { fLCuts.SetMultCuts(0); }
   /** 
    * Set the debug level.  The higher the value the more output 
    * 
@@ -133,14 +134,14 @@ public:
    * 
    * @param n Number of @f$ \xi@f$ 
    */
-  void SetNXi(Double_t n) { fNXi = n; }
+  void SetNXi(Double_t n) { fHCuts.SetNXi(n); /* fNXi = n; */ }
   /** 
    * Whether to include sigma in the number subtracted from the MPV to
    * get the high cut
    * 
    * @param u If true, then high cut is @f$ \Delta_{mp} - n(\xi+\sigma)@f$ 
    */
-  void SetIncludeSigma(Bool_t u) { fIncludeSigma = u; }
+  void SetIncludeSigma(Bool_t u) { fHCuts.SetIncludeSigma(u); /*fIncludeSigma = u;*/ }
   /** 
    * Filter the input AliESDFMD object
    * 
@@ -153,6 +154,13 @@ public:
   Bool_t Filter(const AliESDFMD& input, 
 		Bool_t           lowFlux, 
 		AliESDFMD&       output);
+  /** 
+   * 
+   * Set the fraction of MPV
+   * 
+   * @param u if true cut at fraction of MPV 
+   */
+  void SetFractionOfMPV(Double_t cut) { fHCuts.SetMPVFraction(cut); /* fFractionOfMPV = cut;*/ }
   /** 
    * Scale the histograms to the total number of events 
    * 
@@ -175,6 +183,13 @@ public:
    * @param option Not used 
    */
   virtual void Print(Option_t* option="") const;
+
+  AliFMDMultCuts& GetLCuts() { return fLCuts; }
+  AliFMDMultCuts& GetHCuts() { return fHCuts; }
+  const AliFMDMultCuts& GetLCuts() const { return fLCuts; }
+  const AliFMDMultCuts& GetHCuts() const { return fHCuts; }
+  void SetLCuts(const AliFMDMultCuts& c) { fLCuts = c; }
+  void SetHCuts(const AliFMDMultCuts& c) { fHCuts = c; }
 protected:
   /** 
    * Internal data structure to keep track of the histograms
@@ -359,17 +374,20 @@ protected:
   virtual Double_t GetLowCut(UShort_t d, Char_t r, Double_t eta) const;
 
   TList    fRingHistos;    // List of histogram containers
-  Double_t fLowCut;        // Low cut on sharing
+  // Double_t fLowCut;        // Low cut on sharing
   Bool_t   fCorrectAngles; // Whether to work on angle corrected signals
   Double_t fNXi;           // Number of xi's from Delta to stop merging
   Bool_t   fIncludeSigma;  // Whether to include sigma in cut 
   TH2*     fSummed;        // Operations histogram 
   TH2*     fHighCuts;      // High cuts used
+  TH2*     fLowCuts;       // High cuts used
   AliFMDFloatMap* fOper;   // Operation done per strip 
   Int_t    fDebug;         // Debug level 
   Bool_t   fZeroSharedHitsBelowThreshold; //Whether to zero shared strip below cut
-  
-  ClassDef(AliFMDSharingFilter,2); //
+  AliFMDMultCuts fLCuts;
+  AliFMDMultCuts fHCuts;
+
+  ClassDef(AliFMDSharingFilter,3); //
 };
 
 #endif

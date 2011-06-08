@@ -17,6 +17,7 @@
 #include <TList.h>
 #include <TArrayI.h>
 #include "AliForwardUtil.h"
+#include "AliFMDMultCuts.h"
 class AliESDFMD;
 class TH2D;
 class TH1D;
@@ -144,7 +145,7 @@ public:
    * 
    * @param cut Cut to use 
    */
-  void SetMultCut(Double_t cut) { SetMultCuts(cut,cut,cut,cut,cut); }
+  void SetMultCut(Double_t cut) { fCuts.SetMultCuts(cut,cut,cut,cut,cut); }
   /** 
    * Set the lower multiplicity cuts 
    * 
@@ -175,14 +176,21 @@ public:
    * 
    * @param n Number of @f$ \xi@f$ 
    */
-  void SetNXi(Double_t nXi) { fNXi = nXi; } 
+  void SetNXi(Double_t nXi) { fCuts.SetNXi(nXi); /* fNXi = nXi;*/ } 
   /** 
    * Whether to include sigma in the number subtracted from the MPV to
    * get the low cut
    * 
    * @param u If true, then low cut is @f$ \Delta_{mp} - n(\xi+\sigma)@f$ 
    */
-  void SetIncludeSigma(Bool_t u) { fIncludeSigma = u; }
+  void SetIncludeSigma(Bool_t u) { fCuts.SetIncludeSigma(u); /*fIncludeSigma = u;*/ }
+  /** 
+   * 
+   * Set the fraction of MPV
+   * 
+   * @param cut if true cut at fraction of MPV 
+   */
+  void SetFractionOfMPV(Double_t cut) { fCuts.SetMPVFraction(cut); /*fFractionOfMPV = cut;*/ }
   /** 
    * Get the multiplicity cut.  If the user has set fMultCut (via
    * SetMultCut) then that value is used.  If not, then the lower
@@ -208,6 +216,8 @@ public:
    *   - max  Print max weights 
    */
   void Print(Option_t* option="") const;
+  AliFMDMultCuts& GetCuts() { return fCuts; }
+  void SetCuts(const AliFMDMultCuts& c) { fCuts = c; }
 protected:
   /** 
    * Find the max weight to use for FMD<i>dr</i> in eta bin @a iEta
@@ -384,11 +394,7 @@ protected:
    * @return Ring histogram container 
    */
   RingHistos* GetRingHistos(UShort_t d, Char_t r) const;
-
   TList    fRingHistos;    //  List of histogram containers
-  Double_t fMultCut;       //  Low cut on scaled energy loss
-  Double_t fNXi;           //  Delta-n(xi+sigma) factor 
-  Bool_t   fIncludeSigma;  //  Whether or not to include sigma in cut
   TH1D*    fSumOfWeights;  //  Histogram
   TH1D*    fWeightedSum;   //  Histogram
   TH1D*    fCorrections;   //  Histogram
@@ -407,9 +413,9 @@ protected:
   Int_t    fEtaLumping;    //  How to lump eta bins for Poisson 
   Int_t    fPhiLumping;    //  How to lump phi bins for Poisson 
   Int_t    fDebug;         //  Debug level 
-  // Double_t fMultCuts[5];   //  Per-ring multiplicity cuts
+  AliFMDMultCuts fCuts; // Cuts
 
-  ClassDef(AliFMDDensityCalculator,4); // Calculate Nch density 
+  ClassDef(AliFMDDensityCalculator,6); // Calculate Nch density 
 };
 
 #endif
