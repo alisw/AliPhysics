@@ -303,9 +303,7 @@ const {
     indexPi=2;
     indexK1=0;
     indexK2=1;
-  }
- 
-  if (option==1){ //piKK
+  }else{   //piKK
     indexPi=0;
     indexK1=1;
     indexK2=2;
@@ -346,19 +344,11 @@ const {
   // computes cosine of angle between pi and Ds in the Ds rest frame
 
  Int_t indexPi;
- Int_t indexK1;
- Int_t indexK2;
 
   if (option==0){ //KKpi
     indexPi=2;
-    indexK1=0;
-    indexK2=1;
-  }
- 
-  if (option==1){ //piKK
+  }else{ //piKK
     indexPi=0;
-    indexK1=1;
-    indexK2=2;
   }
 
  
