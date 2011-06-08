@@ -903,7 +903,7 @@ protected:
       TString extra = mgr->GetExtraFiles();
       extra.ReplaceAll(" ", ",");
       listOfAODs.Append(extra);
-    }
+   }
     TString outArchive = Form("stderr, stdout@disk=%d", fNReplica);
     if (!listOfHists.IsNull()) 
       outArchive.Append(Form(" hist_archive.zip:%s@disk=%d", 
@@ -1039,7 +1039,7 @@ protected:
     AliCentralitySelectionTask* ctask = 
       dynamic_cast<AliCentralitySelectionTask*>(mgr->GetTask("CentralitySelection"));
     if (!ctask) return;
-    // ctask->SetPass(fESDPass);
+    ctask->SetPass(fESDPass);
     if (mc) ctask->SetMCInput();
   }
   //__________________________________________________________________
