@@ -52,15 +52,17 @@ ClassImp(AliFMDSharingFilter)
 AliFMDSharingFilter::AliFMDSharingFilter()
   : TNamed(), 
     fRingHistos(),
-    fLowCut(0.),
     fCorrectAngles(kFALSE), 
     fNXi(1),
     fIncludeSigma(true),
     fSummed(0),
     fHighCuts(0),
+    fLowCuts(0),
     fOper(0),
     fDebug(0),
-    fZeroSharedHitsBelowThreshold(false)
+    fZeroSharedHitsBelowThreshold(false),
+    fLCuts(),
+    fHCuts()
 {
   // 
   // Default Constructor - do not use 
@@ -71,15 +73,17 @@ AliFMDSharingFilter::AliFMDSharingFilter()
 AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
   : TNamed("fmdSharingFilter", title), 
     fRingHistos(), 
-    fLowCut(0.),
     fCorrectAngles(kFALSE), 
     fNXi(1),
     fIncludeSigma(true),
     fSummed(0),
     fHighCuts(0),
+    fLowCuts(0),
     fOper(0),
     fDebug(0),
-    fZeroSharedHitsBelowThreshold(false)
+    fZeroSharedHitsBelowThreshold(false),
+    fLCuts(),
+    fHCuts()
 {
   // 
   // Constructor 
@@ -92,21 +96,27 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
   fRingHistos.Add(new RingHistos(2, 'O'));
   fRingHistos.Add(new RingHistos(3, 'I'));
   fRingHistos.Add(new RingHistos(3, 'O'));
+
+  fHCuts.SetNXi(1);
+  fHCuts.SetIncludeSigma(1);
+  fLCuts.SetMultCuts(.15);
 }
 
 //____________________________________________________________________
 AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
   : TNamed(o), 
     fRingHistos(), 
-    fLowCut(o.fLowCut),
     fCorrectAngles(o.fCorrectAngles), 
     fNXi(o.fNXi),
     fIncludeSigma(o.fIncludeSigma),
     fSummed(o.fSummed),
     fHighCuts(o.fHighCuts),
+    fLowCuts(o.fLowCuts),
     fOper(o.fOper),
     fDebug(o.fDebug),
-    fZeroSharedHitsBelowThreshold(o.fZeroSharedHitsBelowThreshold)
+    fZeroSharedHitsBelowThreshold(o.fZeroSharedHitsBelowThreshold),
+    fLCuts(o.fLCuts),
+    fHCuts(o.fHCuts)
 {
   // 
   // Copy constructor 
@@ -143,16 +153,18 @@ AliFMDSharingFilter::operator=(const AliFMDSharingFilter& o)
   //
   TNamed::operator=(o);
 
-  fLowCut                       = o.fLowCut;
   fCorrectAngles                = o.fCorrectAngles;
   fNXi                          = o.fNXi;
   fDebug                        = o.fDebug;
   fOper                         = o.fOper;
   fSummed                       = o.fSummed;
   fHighCuts                     = o.fHighCuts;
+  fLowCuts                      = o.fLowCuts;
   fIncludeSigma                 = o.fIncludeSigma;
   fZeroSharedHitsBelowThreshold = o.fZeroSharedHitsBelowThreshold;
-
+  fLCuts                        = o.fLCuts;
+  fHCuts                        = o.fHCuts;
+    
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
@@ -207,6 +219,13 @@ AliFMDSharingFilter::Init()
   fHighCuts->GetYaxis()->SetBinLabel(4, "FMD3i");
   fHighCuts->GetYaxis()->SetBinLabel(5, "FMD3o");
 
+  fLowCuts->SetBins(nEta, eAxis.GetXmin(), eAxis.GetXmax(), 5, .5, 5.5);
+  fLowCuts->GetYaxis()->SetBinLabel(1, "FMD1i");
+  fLowCuts->GetYaxis()->SetBinLabel(2, "FMD2i");
+  fLowCuts->GetYaxis()->SetBinLabel(3, "FMD2o");
+  fLowCuts->GetYaxis()->SetBinLabel(4, "FMD3i");
+  fLowCuts->GetYaxis()->SetBinLabel(5, "FMD3o");
+
   UShort_t ybin = 0;
   for (UShort_t d = 1; d <= 3; d++) {
     UShort_t nr = (d == 1 ? 1 : 2);
@@ -215,9 +234,10 @@ AliFMDSharingFilter::Init()
       ybin++;
       for (UShort_t e = 1; e <= nEta; e++) { 
 	Double_t eta = eAxis.GetBinCenter(e);
-	Double_t cut = GetHighCut(d, r, eta, false);
-	if (cut <= 0) continue;
-	fHighCuts->SetBinContent(e, ybin, cut);
+	Double_t hcut = GetHighCut(d, r, eta, false);
+	Double_t lcut = GetLowCut(d, r, eta);
+	if (hcut > 0) fHighCuts->SetBinContent(e, ybin, hcut);
+	if (lcut > 0) fLowCuts ->SetBinContent(e, ybin, lcut);
       }
     }
   }
@@ -406,7 +426,7 @@ AliFMDSharingFilter::SignalInStrip(const AliESDFMD& input,
 }
 //_____________________________________________________________________
 Double_t 
-AliFMDSharingFilter::GetLowCut(UShort_t, Char_t, Double_t) const
+AliFMDSharingFilter::GetLowCut(UShort_t d, Char_t r, Double_t eta) const
 {
   //
   // Get the low cut.  Normally, the low cut is taken to be the lower
@@ -414,10 +434,19 @@ AliFMDSharingFilter::GetLowCut(UShort_t, Char_t, Double_t) const
   // However, if fLowCut is set (using SetLowCit) to a value greater
   // than 0, then that value is used.
   //
-  if (fLowCut > 0) return fLowCut;
+  return fLCuts.GetMultCut(d,r,eta,false);
+#if 0
+  if (!fCutAtFractionOfMPV && fLowCut > 0) return fLowCut;
+  
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
   AliFMDCorrELossFit* fits = fcm.GetELossFit();
+  
+  if (fCutAtFractionOfMPV) {
+    AliFMDCorrELossFit::ELossFit* func = fits->GetFit(d,r,eta);
+    return fFractionOfMPV*func->GetDelta() ;
+  }  
   return fits->GetLowCut();
+#endif
 }
 			
 //_____________________________________________________________________
@@ -430,6 +459,8 @@ AliFMDSharingFilter::GetHighCut(UShort_t d, Char_t r,
   // most-probably-value peak found from the energy distributions, minus 
   // 2 times the width of the corresponding Landau.
   //
+  return fHCuts.GetMultCut(d,r,eta,errors); 
+#if 0
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
 
  
@@ -439,6 +470,7 @@ AliFMDSharingFilter::GetHighCut(UShort_t d, Char_t r,
   AliFMDCorrELossFit* fits = fcm.GetELossFit();
   
   return fits->GetLowerBound(d, r, eta, fNXi, errors, fIncludeSigma);
+#endif
 }
 
 //_____________________________________________________________________
@@ -783,11 +815,16 @@ AliFMDSharingFilter::DefineOutput(TList* dir)
   fHighCuts->SetDirectory(0);
   d->Add(fHighCuts);
 
-  TParameter<double>* lowCut = new TParameter<double>("lowCut", fLowCut);
-  TParameter<double>* nXi    = new TParameter<double>("nXi", fNXi);
-  TNamed*             sigma  = new TNamed("sigma", fIncludeSigma ? 
-					  "included" : "excluded");
-  sigma->SetUniqueID(fIncludeSigma);
+  fLowCuts = new TH2D("lowCuts", "Low cuts used", 1,0,1, 1,0,1);
+  fLowCuts->SetXTitle("#eta");
+  fLowCuts->SetDirectory(0);
+  d->Add(fLowCuts);
+
+  // TParameter<double>* lowCut = new TParameter<double>("lowCut", fLowCut);
+  // TParameter<double>* nXi    = new TParameter<double>("nXi", fNXi);
+  // TNamed*             sigma  = new TNamed("sigma", fIncludeSigma ? 
+  //  					  "included" : "excluded");
+  // sigma->SetUniqueID(fIncludeSigma);
   TNamed*             angle  = new TNamed("angle", fCorrectAngles ? 
 					  "corrected" : "uncorrected");
   angle->SetUniqueID(fCorrectAngles);
@@ -795,13 +832,13 @@ AliFMDSharingFilter::DefineOutput(TList* dir)
 					  fZeroSharedHitsBelowThreshold ? 
 					  "zeroed" : "kept");
   low->SetUniqueID(fZeroSharedHitsBelowThreshold);
-  d->Add(lowCut);
-  d->Add(nXi);
-  d->Add(sigma);
+  // d->Add(lowCut);
+  // d->Add(nXi);
+  // d->Add(sigma);
   d->Add(angle);
   d->Add(low);
-  
-
+  fLCuts.Output(d,"lCuts");
+  fHCuts.Output(d,"hCuts");
 
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
@@ -825,13 +862,14 @@ AliFMDSharingFilter::Print(Option_t* /*option*/) const
   std::cout << ind << ClassName() << ": " << GetName() << '\n'
 	    << std::boolalpha 
 	    << ind << " Debug:                  " << fDebug << "\n"
-	    << ind << " Low cut:                " << fLowCut << '\n'
-	    << ind << " N xi factor:            " << fNXi    << '\n'
-	    << ind << " Include sigma in cut:   " << fIncludeSigma << '\n'
 	    << ind << " Use corrected angles:   " << fCorrectAngles << '\n'
 	    << ind << " Zero below threshold:   " 
 	    << fZeroSharedHitsBelowThreshold 
 	    << std::noboolalpha << std::endl;
+  std::cout << ind << " Low cuts: " << std::endl;
+  fLCuts.Print();
+  std::cout << ind << " High cuts: " << std::endl;
+  fHCuts.Print();
 }
   
 //====================================================================
