@@ -171,7 +171,7 @@ class AliAnalysisTaskV0QA : public AliAnalysisTaskSE {
   Double_t * fxminV0;   //[fDim] min value to THnSparse
   Double_t * fxmaxV0;   //[fDim] max value to THnSparse
   Int_t    * fbinsV0;   //[fDim] number of bins to THnSparse
-
+  Int_t	 fCentralityC;  // centrality
 
 
 
