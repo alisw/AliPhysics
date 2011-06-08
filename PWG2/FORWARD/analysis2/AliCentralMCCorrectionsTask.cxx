@@ -602,7 +602,7 @@ AliCentralMCCorrectionsTask::VtxBin::Finish(const TList* input,
 
   TH2D* h = static_cast<TH2D*>(hits->Clone("bgCorr"));
   h->SetDirectory(0);
-  h->Divide(fPrimary);
+  h->Divide(prim);
 
   map->SetCorrection(iVz, h);
 
