@@ -305,6 +305,12 @@ fi
 #_____________________________________________________________________
 # Pass 2 
 if test $dopass2 -gt 0 ; then
+    if test -f forward_dndeta_mc.root ; then
+	if test "x$mcfilename" = "xnone"  || 
+	    test "x$mcfilename" = "x" ; then 
+	    mcfilename=forward_dndeta_mc.root
+	fi
+    fi
     args="(\"${pass2dir}\",$nev,\"$type\",$cent,\"$scheme\",$vzmin,$vzmax,$proof,\"$name\",\"$mcfilename\")"
     if test "x$pass1" = "xMakeELossFits.C" ; then 
 	args=(\(\"${pass2dir}${output1}\"\))
