@@ -17,14 +17,15 @@
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCCompModelAnalysis.h"
 #include "AliHLTLogging.h"
+#include "AliHLTGlobalBarrelTrack.h"
+#include <vector>
+
+class AliHLTSpacePointContainer;
 
 /**
  * @class AliHLTTPCCompModelConverter
- * @brief A dummy HLT processing component. 
+ * @brief
  *
- * An implementiation of a copy component that just copies its input data
- * to debug a components input data
- * @ingroup alihlt_tpc
  */
 class AliHLTTPCCompModelConverter: public AliHLTLogging
     {
@@ -44,10 +45,11 @@ class AliHLTTPCCompModelConverter: public AliHLTLogging
       int Init();
       
       /** function to set input tracks
-       * @param tracklets pointer to AliHLTTPCTrackletData
+       * @param tracklets pointer to AliHLTTracksData
+       * @param size of the buffer in byte
        * @return zero upon success
        */
-      int SetInputTracks( AliHLTTPCTrackletData* tracklets );
+      int SetInputTracks( const AliHLTTracksData* pTracks, unsigned sizeInByte );
 
       /** function to set input tracks
        * @param clusters pointer to AliHLTTPCClusterData
@@ -63,13 +65,14 @@ class AliHLTTPCCompModelConverter: public AliHLTLogging
       /** function to get output model data size
        * @return unsigned long value of output model data size
        */
-      unsigned long GetOutputModelDataSize();
+      unsigned long GetOutputModelDataSize() const;
       
       /** function to output model data
-       * @param data AliHLTUInt8_t* pointer to ouptut data
+       * @param data       pointer to target buffer
+       * @param dataSize   [in] size of buffer, [out] size of data
        * @return zero upon success
        */
-      int OutputModelData( AliHLTUInt8_t* data );
+      int OutputModelData( AliHLTUInt8_t* data, unsigned long& dataSize ) const;
       
       /** function to select remaining clusters */
       void SelectRemainingClusters();
@@ -77,13 +80,13 @@ class AliHLTTPCCompModelConverter: public AliHLTLogging
       /** function to get remaining clusters output data size
        * @return unsigned long value = size
        */
-      unsigned long GetRemainingClustersOutputDataSize();
+      unsigned long GetRemainingClustersOutputDataSize() const;
 
       /** function to get remaining clusters
-       * @param data     AliHLTUInt8_t* const
-       * @param dataSize unsigned long& 
+       * @param data       pointer to target buffer
+       * @param dataSize   [in] size of buffer, [out] size of data
        */
-      int GetRemainingClusters( AliHLTUInt8_t* const data, unsigned long& dataSize );
+      int GetRemainingClusters( AliHLTUInt8_t* const data, unsigned long& dataSize ) const;
       
       /** function to define minimal hits for one track
        * @param minHits unsigned
@@ -99,7 +102,7 @@ class AliHLTTPCCompModelConverter: public AliHLTLogging
       void ExpandTrackData();
 
       /** member variable input track array */
-      AliHLTTPCTrackArray fInputTrackArray;
+      vector<AliHLTGlobalBarrelTrack> fInputTrackArray;
       /** member variable output track array */
       AliHLTTPCTrackArray fOutputTrackArray;
       
@@ -122,7 +125,7 @@ class AliHLTTPCCompModelConverter: public AliHLTLogging
       /** assignment operator prohibited */
       AliHLTTPCCompModelConverter& operator=(const AliHLTTPCCompModelConverter&);
      
-      ClassDef(AliHLTTPCCompModelConverter, 1)
+      ClassDef(AliHLTTPCCompModelConverter, 0)
 
     };
 #endif

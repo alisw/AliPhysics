@@ -31,13 +31,15 @@ using namespace std;
 #include "AliHLTTPCTrack.h"
 #include "AliHLTTPCModelTrack.h"
 #include "AliHLTTPCCompDataCompressorHelper.h"
+#include "AliHLTTPCSpacePointContainer.h"
 #include <cerrno>
 
-AliHLTTPCCompModelConverter::AliHLTTPCCompModelConverter():
-  fInputTrackArray(),
-  fOutputTrackArray("AliHLTTPCModelTrack"),
-  fModelAnalysisInstance(NULL),
-  fMinHits(0)
+AliHLTTPCCompModelConverter::AliHLTTPCCompModelConverter()
+  : AliHLTLogging()
+  , fInputTrackArray()
+  , fOutputTrackArray("AliHLTTPCModelTrack")
+  , fModelAnalysisInstance(NULL)
+  , fMinHits(0)
     {
       // see header file for class documentation
       for ( UInt_t slice=0; slice<36; slice++ )
@@ -50,11 +52,12 @@ AliHLTTPCCompModelConverter::AliHLTTPCCompModelConverter():
       fMinHits = 5;
     }
 
-AliHLTTPCCompModelConverter::AliHLTTPCCompModelConverter(AliHLTTPCCompModelAnalysis* modelanalysis):
-  fInputTrackArray(),
-  fOutputTrackArray("AliHLTTPCModelTrack"),
-  fModelAnalysisInstance(modelanalysis),
-  fMinHits(0)
+AliHLTTPCCompModelConverter::AliHLTTPCCompModelConverter(AliHLTTPCCompModelAnalysis* modelanalysis)
+  : AliHLTLogging()
+  , fInputTrackArray()
+  , fOutputTrackArray("AliHLTTPCModelTrack")
+  , fModelAnalysisInstance(modelanalysis)
+  , fMinHits(0)
     {
       // see header file for class documentation
       for ( UInt_t slice=0; slice<36; slice++ )
@@ -79,12 +82,13 @@ AliHLTTPCCompModelConverter::~AliHLTTPCCompModelConverter()
 		fClusterUsed[slice][patch] = NULL;
 	      }
 	  }
+
     }
 
 int AliHLTTPCCompModelConverter::Init()
     {
       // see header file for class documentation
-      fInputTrackArray.Reset();
+      fInputTrackArray.clear();
       fOutputTrackArray.Reset();
       for ( UInt_t slice=0; slice<36; slice++ )
 	for ( UInt_t patch=0; patch<6; patch++ )
@@ -93,21 +97,20 @@ int AliHLTTPCCompModelConverter::Init()
       return 0;
     }
 
-int AliHLTTPCCompModelConverter::SetInputTracks( AliHLTTPCTrackletData* tracklets )
+int AliHLTTPCCompModelConverter::SetInputTracks( const AliHLTTracksData* pTracks, unsigned sizeInByte )
     {
       // see header file for class documentation
-      HLTDebug( "Filling %u tracks", (unsigned)tracklets->fTrackletCnt );
-      fInputTrackArray.FillTracks( tracklets->fTrackletCnt, tracklets->fTracklets );
-      return 0;
+      HLTDebug( "Filling %u tracks", (unsigned)pTracks->fCount );
+      return AliHLTGlobalBarrelTrack::ConvertTrackDataArray(pTracks, sizeInByte, fInputTrackArray);
     }
 
 int AliHLTTPCCompModelConverter::SetInputClusters( AliHLTTPCClusterData* clusters, UInt_t slice, UInt_t patch )
     {
-      // see header file for class documentation
+      // set input clusters for a partition
       if ( slice>=36 || patch>=6 )
-	return EINVAL;
+	return -EINVAL;
       if ( fClusters[slice][patch] )
-	return EBUSY;
+	return -EBUSY;
       fClusters[slice][patch] = clusters;
       if ( fClusterUsedSizes[slice][patch]<clusters->fSpacePointCnt ||
 	   fClusterUsedSizes[slice][patch]>clusters->fSpacePointCnt*8 )
@@ -120,62 +123,68 @@ int AliHLTTPCCompModelConverter::SetInputClusters( AliHLTTPCClusterData* cluster
 	  fClusterUsed[slice][patch] = new bool[clusters->fSpacePointCnt];
 	  if ( !fClusterUsed[slice][patch] )
 	    {
-	      HLTDebug( "Out of memory trying to allocate usage data for  %u clusters", (unsigned)clusters->fSpacePointCnt );
-	      return ENOMEM;
+	      return -ENOMEM;
 	    }
 	}
       for ( unsigned long nn=0; nn<clusters->fSpacePointCnt; nn++ )
 	fClusterUsed[slice][patch][nn]=false;
-      HLTDebug( "Filling %u clusters", (unsigned)clusters->fSpacePointCnt );
+
       return 0;
     }
 
 void AliHLTTPCCompModelConverter::Convert()
     {
-      // see header file for class documentation
-      fInputTrackArray.QSort();
-      for(Int_t i=0; i<fInputTrackArray.GetNTracks(); i++)
+      // convert tracks to the track model
+
+      // FIXME: the tracks have supposedly been sorted according to momentum to
+      // process the high momentum tracks first, QSort however builds upon
+      // AliTPCtrack::Compare, it's implementation has been changed
+      //fInputTrackArray.QSort();
+
+      for(unsigned i=0; i<fInputTrackArray.size(); i++)
 	{
-	  AliHLTTPCTrack *intrack = fInputTrackArray.GetCheckedTrack(i);
-	  
-	  // NO WARNING IF intrack = NULL!
+	  AliHLTGlobalBarrelTrack *intrack = &(fInputTrackArray[i]);
 	  if(!intrack) continue;
 	  
-	  if((unsigned)intrack->GetNHits()<fMinHits) 
+	  if(intrack->GetNumberOfPoints()<fMinHits) 
 	    {
 	      HLTDebug("Track %d with %d clusters is below minimum of %d clusters",i,intrack->GetNHits(),fMinHits);
-	      break;
+	      continue;
 	    };
 	  
 	  // LOSS OF TRACKS due to following statement possible!
-	  if(intrack->GetPt()<0.1)
+	  // FIXME: make this configurable
+	  if(intrack->Pt()<0.1)
 	    {
 	      HLTDebug("Discarding track with low pt.");
 	      if(fModelAnalysisInstance)
 		{
 		  if(fModelAnalysisInstance->GetfModelAnalysis()) // analysis of model
 		    {
-		      fModelAnalysisInstance->MarkTrashTrack(intrack);
+		      HLTError("FIXME: correct parameter");
+		      //fModelAnalysisInstance->MarkTrashTrack(intrack);
 		    }
 		}
 	      
 	      continue;
 	    }
 	  
-	  intrack->CalculateHelix();
+	  // check if this is necessary
+	  //intrack->CalculateHelix();
 	  
 	  AliHLTTPCModelTrack *outtrack = (AliHLTTPCModelTrack*)fOutputTrackArray.NextTrack();
-	  outtrack->SetNHits(intrack->GetNHits());
-	  outtrack->SetRowRange(intrack->GetFirstRow(),intrack->GetLastRow());
-	  outtrack->SetFirstPoint(intrack->GetFirstPointX(),intrack->GetFirstPointY(),intrack->GetFirstPointZ());
-	  outtrack->SetLastPoint(intrack->GetLastPointX(),intrack->GetLastPointY(),intrack->GetLastPointZ());
-	  outtrack->SetPt(intrack->GetPt());
-	  outtrack->SetPsi(intrack->GetPsi());
+	  outtrack->SetNHits(intrack->GetNumberOfPoints());
+	  //outtrack->SetRowRange(intrack->GetFirstRow(),intrack->GetLastRow());
+	  //outtrack->SetFirstPoint(intrack->GetFirstPointX(),intrack->GetFirstPointY(),intrack->GetFirstPointZ());
+	  //outtrack->SetLastPoint(intrack->GetLastPointX(),intrack->GetLastPointY(),intrack->GetLastPointZ());
+	  outtrack->SetPt(intrack->Pt());
+	  outtrack->SetPsi(intrack->GetSnp());
 	  outtrack->SetTgl(intrack->GetTgl());
-	  outtrack->SetCharge(intrack->GetCharge());
+	  // FIXME: charge is not propagated with AliHLTExternalTrackParam, check if it is needed
+	  //outtrack->SetCharge(intrack->GetCharge());
 	  outtrack->CalculateHelix();
-	  Int_t nhits = intrack->GetNHits();
-	  UInt_t *hitids = intrack->GetHitNumbers();
+	  Int_t nhits = intrack->GetNumberOfPoints();
+	  const UInt_t *hitids = intrack->GetPoints();
 	  Int_t origslice = AliHLTTPCSpacePointData::GetSlice(hitids[nhits-1]);
 	  outtrack->Init(origslice,-1);
 	  
@@ -208,19 +217,21 @@ void AliHLTTPCCompModelConverter::Convert()
 	    bool* clustersUsed = fClusterUsed[slice][patch];
 	    Float_t xyz[3] = {points[pos].fX,points[pos].fY,points[pos].fZ};
 	    Int_t padrow = points[pos].fPadRow;
+	    //HLTInfo("track %d cluster %d: slice %d part %d nr %d:\n\t x=%f y=%f z=%f padrow=%d", i, j, slice, patch, pos, xyz[0], xyz[1], xyz[2], padrow);
 	    
 	    //Calculate the crossing point between track and padrow
 	    Float_t angle = 0; //Perpendicular to padrow in local coordinates
 	    AliHLTTPCTransform::Local2GlobalAngle(&angle,slice);
-	    if(!intrack->CalculateReferencePoint(angle,AliHLTTPCTransform::Row2X(padrow)))
-	      {
-		HLTError( "AliHLTDataCompressor::FillData : Error in crossing point calc on slice %d, padrow %d", slice, padrow );
-		break;
-		//outtrack->Print(kFALSE);
-		//exit(5);
-	      }
+	    // FIXME: CalculateReferencePoint not available
+	    // if(!intrack->CalculateReferencePoint(angle,AliHLTTPCTransform::Row2X(padrow)))
+	    //   {
+	    // 	HLTError( "AliHLTDataCompressor::FillData : Error in crossing point calc on slice %d, padrow %d", slice, padrow );
+	    // 	break;
+	    // 	//outtrack->Print(kFALSE);
+	    // 	//exit(5);
+	    //   }
 	    
-	    Float_t xyzCross[3] = {intrack->GetPointX(),intrack->GetPointY(),intrack->GetPointZ()};
+	    Float_t xyzCross[3] = {intrack->GetX(),intrack->GetY(),intrack->GetZ()};
 	    
 	    Int_t sector,row;
 	    AliHLTTPCTransform::Slice2Sector(slice,padrow,sector,row);
@@ -233,8 +244,10 @@ void AliHLTTPCCompModelConverter::Convert()
 	    
 	    outtrack->SetPadHit(padrow,xyzCross[1]);
 	    outtrack->SetTimeHit(padrow,xyzCross[2]);
+	    //HLTInfo("track %d cluster %d: xyzCross={%f,%f,%f}", i, j, xyzCross[0], xyzCross[1], xyzCross[2]);
+	    //HLTInfo("track %d cluster %d:      xyz={%f,%f,%f}", i, j, xyz[0], xyz[1], xyz[2]);
 
-	    outtrack->SetCrossingAngleLUT(padrow,intrack->GetCrossingAngle(padrow,slice));
+	    //outtrack->SetCrossingAngleLUT(padrow,intrack->GetCrossingAngle(padrow,slice));
 	    outtrack->CalculateClusterWidths(padrow,kTRUE); // calculates parSigmas (with parametrisation) in raw coordinates
 	    //HLTInfo("angle %f", outtrack->GetCrossingAngleLUT(padrow));
 	    //HLTInfo("parsigma %f",outtrack->GetParSigmaY2(padrow));
@@ -432,7 +445,7 @@ void AliHLTTPCCompModelConverter::ExpandTrackData()
   
     }
 
-unsigned long AliHLTTPCCompModelConverter::GetOutputModelDataSize()
+unsigned long AliHLTTPCCompModelConverter::GetOutputModelDataSize() const
     {
       // see header file for class documentation
       unsigned long dataSize=0;
@@ -451,7 +464,7 @@ unsigned long AliHLTTPCCompModelConverter::GetOutputModelDataSize()
       return dataSize;
     }
 
-int AliHLTTPCCompModelConverter::OutputModelData( AliHLTUInt8_t* data )
+int AliHLTTPCCompModelConverter::OutputModelData( AliHLTUInt8_t* data, unsigned long& /*dataSize*/ ) const
     {
       // see header file for class documentation 
       unsigned long dataOffset=0;
@@ -560,7 +573,7 @@ void AliHLTTPCCompModelConverter::SelectRemainingClusters()
       
     }
 
-unsigned long AliHLTTPCCompModelConverter::GetRemainingClustersOutputDataSize()
+unsigned long AliHLTTPCCompModelConverter::GetRemainingClustersOutputDataSize() const
     {
       // see header file for class documentation
       int iResult=0;
@@ -683,7 +696,7 @@ unsigned long AliHLTTPCCompModelConverter::GetRemainingClustersOutputDataSize()
 #endif
     }
 
-int AliHLTTPCCompModelConverter::GetRemainingClusters( AliHLTUInt8_t* const pTgt, unsigned long& dataSize )
+int AliHLTTPCCompModelConverter::GetRemainingClusters( AliHLTUInt8_t* const pTgt, unsigned long& dataSize ) const
     { 
       // see header file for class documentation
       int iResult=0;

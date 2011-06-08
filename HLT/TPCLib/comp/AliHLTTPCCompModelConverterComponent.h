@@ -18,6 +18,9 @@
 #include "AliHLTTPCCompModelConverter.h"
 #include "AliHLTStdIncludes.h"
 
+class AliHLTSpacePointContainer;
+class AliHLTComponentBenchmark;
+
 /**
  * @class AliHLTTPCCompModelConverterComponent
  * @brief A dummy HLT processing component. 
@@ -113,6 +116,8 @@ private:
   /** assignment operator prohibited */
   AliHLTTPCCompModelConverterComponent& operator=(const AliHLTTPCCompModelConverterComponent&);
 
+  AliHLTComponentBenchmark* GetBenchmarkInstance() const {return fpBenchmark;}
+
   /** flags to decide wheter to do track or model loss analysis */
   /** switch on model analysis */
   Bool_t fModelAnalysis;            // switch on model analysis
@@ -120,7 +125,13 @@ private:
   Bool_t fTrackAnalysis;           // switch on track analysis
   /** flag to check if first or second array is filled */
   Bool_t fFillingFirstTrackArray;  // 1 if first array is processed, 0 for second filling process
-  
+
+  /// input cluster handler
+  AliHLTSpacePointContainer* fInputClusters; //! input cluster handler
+
+  /// benchmark
+  AliHLTComponentBenchmark* fpBenchmark; //! benchmark instance
+
   ClassDef(AliHLTTPCCompModelConverterComponent, 0)
     
     };

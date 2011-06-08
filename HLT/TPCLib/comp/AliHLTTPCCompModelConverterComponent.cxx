@@ -27,9 +27,14 @@ using namespace std;
 #endif
 
 #include "AliHLTTPCCompModelConverterComponent.h"
+#include "AliHLTGlobalBarrelTrack.h"
+#include "AliHLTTPCSpacePointContainer.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliHLTComponentBenchmark.h"
 //#include "AliHLTTPCCompModelAnalysis.h"
 #include <errno.h>
+#include <vector>
+
 /** An implementiation of a converter component that
  * takes in clusters and tracks in the standard HLT format
  * and converts them into the Vestbo-format
@@ -40,57 +45,58 @@ using namespace std;
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCCompModelConverterComponent)
     
-  AliHLTTPCCompModelConverterComponent::AliHLTTPCCompModelConverterComponent() :
-    fConverter(NULL),
-    fModelAnalysisInstance(NULL),
-    fDumpFileName(),
-    fGraphFileName(),
-    fModelAnalysis(0),
-    fTrackAnalysis(0),
-    fFillingFirstTrackArray(0)
-    {
-      // see header file for class documentation
-    }
+AliHLTTPCCompModelConverterComponent::AliHLTTPCCompModelConverterComponent()
+  : AliHLTProcessor()
+  , fConverter(NULL)
+  , fModelAnalysisInstance(NULL)
+  , fDumpFileName()
+  , fGraphFileName()
+  , fModelAnalysis(0)
+  , fTrackAnalysis(0)
+  , fFillingFirstTrackArray(0)
+  , fInputClusters(NULL)
+  , fpBenchmark(NULL)
+{
+  // constructor
+}
 
 AliHLTTPCCompModelConverterComponent::~AliHLTTPCCompModelConverterComponent()
-    {
-      // see header file for class documentation
-    }
+{
+  // destructor
+}
 
 const char* AliHLTTPCCompModelConverterComponent::GetComponentID()
-    {
-      // see header file for class documentation
-      return "TPCCompModelConverter"; // The ID of this component
-    }
+{
+  // AliHLTComponent interface function: return component id
+  return "TPCCompModelConverter";
+}
 
 void AliHLTTPCCompModelConverterComponent::GetInputDataTypes( vector<AliHLTComponent_DataType>& list)
-    {
-      // see header file for class documentation
-      list.clear(); // We do not have any requirements for our input data type(s).
-      list.push_back( AliHLTTPCDefinitions::fgkClustersDataType );
-      list.push_back( AliHLTTPCDefinitions::fgkTracksDataType );
-    }
+{
+  // AliHLTComponent interface function: get list of input data types
+  list.clear(); // We do not have any requirements for our input data type(s).
+  list.push_back( AliHLTTPCDefinitions::fgkClustersDataType );
+  list.push_back( kAliHLTDataTypeTrack|kAliHLTDataOriginTPC );
+}
 
 AliHLTComponent_DataType AliHLTTPCCompModelConverterComponent::GetOutputDataType()
-    {
-      // see header file for class documentation
-      return AliHLTTPCDefinitions::fgkClusterTracksModelDataType;
-    }
+{
+  // AliHLTComponent interface function: get output data type
+  return AliHLTTPCDefinitions::fgkClusterTracksModelDataType;
+}
 
 void AliHLTTPCCompModelConverterComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
-    {
-      // see header file for class documentation
-      constBase = 4+4+216; // Format versions + 1 byte per patch
-      inputMultiplier = 4.;
-      //#warning Adapt input Multiplier to something more realistic
-    }
+{
+  // AliHLTComponent interface function: output data size estimator
+  constBase = 4+4+216; // Format versions + 1 byte per patch
+  inputMultiplier = 4.;
+}
 
-// Spawn function, return new instance of this class
 AliHLTComponent* AliHLTTPCCompModelConverterComponent::Spawn()
-    {
-      // see header file for class documentation
-      return new AliHLTTPCCompModelConverterComponent;
-    };
+{
+  // AliHLTComponent interface function: return new instance of this class
+  return new AliHLTTPCCompModelConverterComponent;
+}
 
 int AliHLTTPCCompModelConverterComponent::DoInit( int argc, const char** argv )
 {
@@ -199,6 +205,13 @@ int AliHLTTPCCompModelConverterComponent::DoInit( int argc, const char** argv )
     return EINVAL;
     }*/
   
+  fpBenchmark=new AliHLTComponentBenchmark;
+  if (GetBenchmarkInstance()) {
+    GetBenchmarkInstance()->SetTimer(0,"total");
+    GetBenchmarkInstance()->SetTimer(1,"clusterinput");
+    GetBenchmarkInstance()->SetTimer(2,"trackinput");
+  }
+
   return 0;
 }
 
@@ -228,10 +241,104 @@ int AliHLTTPCCompModelConverterComponent::DoEvent( const AliHLTComponent_EventDa
 				      AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
     {
       // see header file for class documentation
+      int iResult=0;
+      AliHLTUInt32_t capacity=size;
+      size=0;
+      if (!IsDataEvent()) return 0;
+
+      if (GetBenchmarkInstance()) {
+	GetBenchmarkInstance()->StartNewEvent();
+	GetBenchmarkInstance()->Start(0);
+      }
+
       fConverter->Init();
       // Process an event
       // Loop over all input blocks in the event
       AliHLTUInt8_t minSlice=0xFF, maxSlice=0xFF, minPatch=0xFF, maxPatch=0xFF;
+      const AliHLTComponentBlockData* pDesc=NULL;
+
+      /// input track array
+      vector<AliHLTGlobalBarrelTrack> inputTrackArray;
+
+      if (GetBenchmarkInstance()) {
+	GetBenchmarkInstance()->Start(1);
+      }
+      for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkClustersDataType);
+	   pDesc!=NULL; pDesc=GetNextInputBlock()) {
+	if (GetBenchmarkInstance()) {
+	  GetBenchmarkInstance()->AddInput(pDesc->fSize);
+	}
+	AliHLTUInt8_t slice = 0;
+	AliHLTUInt8_t patch = 0;
+	slice = AliHLTTPCDefinitions::GetMinSliceNr( pDesc->fSpecification );
+	patch = AliHLTTPCDefinitions::GetMinPatchNr( pDesc->fSpecification );
+	if ( minSlice==0xFF || slice<minSlice )	minSlice = slice;
+	if ( maxSlice==0xFF || slice>maxSlice )	maxSlice = slice;
+	if ( minPatch==0xFF || patch<minPatch )	minPatch = patch;
+	if ( maxPatch==0xFF || patch>maxPatch )	maxPatch = patch;
+	if (!fInputClusters) {
+	  fInputClusters=new AliHLTTPCSpacePointContainer;	  
+	  if (!fInputClusters) return -ENOMEM;
+	}
+	if (fInputClusters) {
+	  fInputClusters->AddInputBlock(pDesc);
+	}
+      }
+      if (GetBenchmarkInstance()) {
+	GetBenchmarkInstance()->Stop(1);
+	GetBenchmarkInstance()->Start(2);
+      }
+
+      for (pDesc=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
+	   pDesc!=NULL; pDesc=GetNextInputBlock()) {
+	if (GetBenchmarkInstance()) {
+	  GetBenchmarkInstance()->AddInput(pDesc->fSize);
+	}
+	AliHLTUInt8_t slice = 0;
+	AliHLTUInt8_t patch = 0;
+	slice = AliHLTTPCDefinitions::GetMinSliceNr( pDesc->fSpecification );
+	patch = AliHLTTPCDefinitions::GetMinPatchNr( pDesc->fSpecification );
+	if ( minSlice==0xFF || slice<minSlice )	minSlice = slice;
+	if ( maxSlice==0xFF || slice>maxSlice )	maxSlice = slice;
+	if ( minPatch==0xFF || patch<minPatch )	minPatch = patch;
+	if ( maxPatch==0xFF || patch>maxPatch )	maxPatch = patch;
+	const AliHLTTracksData* pTracks=reinterpret_cast<const AliHLTTracksData*>(pDesc->fPtr);
+	if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(pTracks, pDesc->fSize, inputTrackArray))<0) {
+	  return iResult;
+	}
+	for (vector<AliHLTGlobalBarrelTrack>::const_iterator track=inputTrackArray.begin();
+	     track!=inputTrackArray.end();
+	     track++) {
+	  if (!fInputClusters) continue;
+	  int trackID=track->GetID();
+	  if (trackID<0) {
+	    // FIXME: error guard
+	    HLTError("invalid track ID");
+	    continue;
+	  }
+	  if ((iResult=fInputClusters->SetTrackID(trackID, track->GetPoints(), track->GetNumberOfPoints()))<0) {
+	    HLTError("failed to set cluster id for track %d: error %d", trackID, iResult);
+	    iResult=0;
+	    continue;
+	  }
+	}
+	// for (vector<AliHLTGlobalBarrelTrack>::const_iterator track=inputTrackArray.begin();
+	//      track!=inputTrackArray.end();
+	//      track++) {
+	//   AliHLTSpacePointContainer* trackClusters=fInputClusters->SelectByTrack(track->GetID());
+	//   if (!trackClusters) {
+	//     HLTError("failed to select clusters assigned to track %d", track->GetID());
+	//     continue;
+	//   }
+	//   track->Print();
+	//   trackClusters->Print();
+	// }
+      }
+
+      if (GetBenchmarkInstance()) {
+	GetBenchmarkInstance()->Stop(2);
+      }
+
       for ( unsigned long n = 0; n < evtData.fBlockCnt; n++ )
 	{
 	  AliHLTUInt8_t slice = 0;
@@ -255,9 +362,9 @@ int AliHLTTPCCompModelConverterComponent::DoEvent( const AliHLTComponent_EventDa
 	    {
 	      fConverter->SetInputClusters( (AliHLTTPCClusterData*)blocks[n].fPtr, slice, patch );
 	    }
-	  if ( blocks[n].fDataType == AliHLTTPCDefinitions::fgkTracksDataType )
+	  if ( blocks[n].fDataType == kAliHLTDataTypeTrack )
 	    {
-	      fConverter->SetInputTracks( (AliHLTTPCTrackletData*)blocks[n].fPtr );
+	      fConverter->SetInputTracks( reinterpret_cast<AliHLTTracksData*>(blocks[n].fPtr), blocks[n].fSize );
 	      
 	      // if track analysis is desired, fill tracklets into track arrays of ModelAnalysis class to be compared
 	      if(fTrackAnalysis)
@@ -278,15 +385,16 @@ int AliHLTTPCCompModelConverterComponent::DoEvent( const AliHLTComponent_EventDa
       
       fConverter->Convert();
       
+      unsigned long dataSize=0;
       unsigned long outputSize = fConverter->GetOutputModelDataSize();
-      if ( outputSize> size )
+      if ( outputSize+dataSize> capacity )
 	{
 	  HLTError( "Not enough output memory size for clusters&tracks model data. %lu needed",
 		    outputSize );
-	  return ENOBUFS;
+	  return -ENOSPC;
 	}
-      
-      fConverter->OutputModelData( outputPtr );
+
+      fConverter->OutputModelData( outputPtr, outputSize );
       
       AliHLTComponent_BlockData ob;
       // Let the structure be filled with the default values.
@@ -294,7 +402,7 @@ int AliHLTTPCCompModelConverterComponent::DoEvent( const AliHLTComponent_EventDa
       // so that they can be filled in by the calling code.
       FillBlockData( ob );
       // This block's start (offset) is after all other blocks written so far
-      ob.fOffset = 0;
+      ob.fOffset = dataSize;
       // the size of this block's data.
       ob.fSize = outputSize;
       // The specification of the data is copied from the input block.
@@ -305,23 +413,22 @@ int AliHLTTPCCompModelConverterComponent::DoEvent( const AliHLTComponent_EventDa
       outputBlocks.push_back( ob );
       
       outputPtr += ob.fSize;
+      dataSize += ob.fSize;
       
-      if ( outputSize+fConverter->GetRemainingClustersOutputDataSize()>size )
+      if ( dataSize+fConverter->GetRemainingClustersOutputDataSize()>capacity )
 	{
 	  HLTError( "Not enough output memory size for remaining clusters model data. %lu needed in total (clusters&tracks + rem. clusters)",
-		    outputSize+fConverter->GetRemainingClustersOutputDataSize() );
-	  return ENOBUFS;
+		    dataSize+fConverter->GetRemainingClustersOutputDataSize() );
+	  return -ENOSPC;
 	}
-      unsigned long clusterSize = size-outputSize;
-      printf( "clusterSize0: %lu\n", clusterSize );
-      fConverter->GetRemainingClusters( outputPtr, clusterSize );
-      printf( "clusterSize1: %lu\n", clusterSize );
+      fConverter->GetRemainingClusters( outputPtr, outputSize );
+      printf( "clusterSize1: %lu\n", outputSize );
       
       FillBlockData( ob );
       // This block's start (offset) is after all other blocks written so far
-      ob.fOffset = outputSize;
+      ob.fOffset = dataSize;
       // the size of this block's data.
-      ob.fSize = clusterSize;
+      ob.fSize = outputSize;
       // The specification of the data is copied from the input block.
       ob.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( minSlice, maxSlice, minPatch, maxPatch );
       // The type of the data is copied from the input block.
@@ -329,9 +436,15 @@ int AliHLTTPCCompModelConverterComponent::DoEvent( const AliHLTComponent_EventDa
       // Place this block into the list of output blocks
       outputBlocks.push_back( ob );
       
-      outputSize += ob.fSize;
+      outputPtr += ob.fSize;
+      dataSize += ob.fSize;
+
+      if (GetBenchmarkInstance()) {
+	GetBenchmarkInstance()->Stop(0);
+	HLTBenchmark(GetBenchmarkInstance()->GetStatistics());
+      }
       
       // Finally we set the total size of output memory we consumed.
-      size = outputSize;
+      size = dataSize;
       return 0;
     }

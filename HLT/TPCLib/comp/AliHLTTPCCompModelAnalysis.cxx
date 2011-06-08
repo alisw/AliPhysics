@@ -515,7 +515,7 @@ Int_t AliHLTTPCCompModelAnalysis::CompareClusters(Bool_t relativedifferences)
 		{
 		  // if fTrackN != -1 -> draw histograms out of used clusters
 		  // if fTrackN == -1 -> draw histograms out of unused clusters
-		  if (fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fTrackN == -1)
+		  if (fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].GetTrackNumber() == -1)
 		    {
 		      if((fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fCharge == fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fCharge) && (fOriginalClusters[slicecntr][patchcntr]->fSpacePoints[ii].fPadRow == fSecondaryClusters[slicecntr][patchcntr]->fSpacePoints[jj].fPadRow) )
 			{
@@ -609,7 +609,7 @@ Int_t AliHLTTPCCompModelAnalysis::CompareClusters(Bool_t relativedifferences)
 
 	      ++totalsecondary;
 
-	      if(fSecondaryClusters[slicecount][patchcount]->fSpacePoints[count].fTrackN != -1)
+	      if(fSecondaryClusters[slicecount][patchcount]->fSpacePoints[count].GetTrackNumber() != -1)
 		{
 		  ++usedclusters;
 		};

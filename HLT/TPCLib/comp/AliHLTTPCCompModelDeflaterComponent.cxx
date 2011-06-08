@@ -197,9 +197,9 @@ int AliHLTTPCCompModelDeflaterComponent::DoEvent( const AliHLTComponent_EventDat
 	    {
 	    fConverter.SetInputClusters( (AliHLTTPCClusterData*)blocks[n].fPtr, slice, patch );
 	    }
-	  if ( blocks[n].fDataType == AliHLTTPCDefinitions::fgkTracksDataType )
+	  if ( blocks[n].fDataType == (kAliHLTDataTypeTrack|kAliHLTDataOriginTPC) )
 	    {
-	      fConverter.SetInputTracks( (AliHLTTPCTrackletData*)blocks[n].fPtr );
+	      fConverter.SetInputTracks( (AliHLTTracksData*)blocks[n].fPtr, blocks[n].fSize );
 	    }
 	  
 	}
@@ -216,7 +216,7 @@ int AliHLTTPCCompModelDeflaterComponent::DoEvent( const AliHLTComponent_EventDat
 	      return ENOMEM;
 	    }
 	  
-	  fConverter.OutputModelData( trackModelData );
+	  fConverter.OutputModelData( trackModelData, trackSize );
 	  
 	  unsigned long clusterSize = fConverter.GetRemainingClustersOutputDataSize();
 	  AliHLTUInt8_t* remainingClustersModelData = new AliHLTUInt8_t[ clusterSize ];
