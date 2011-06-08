@@ -129,7 +129,10 @@ void MakeAOD(const char* esddir,
 #endif
   if(centrality) {
     gROOT->LoadMacro("AddTaskCentrality.C");
-    AddTaskCentrality();
+    AliCentralitySelectionTask* centTask = AddTaskCentrality();
+    centTask->SetPass(1);
+    if(mc)
+      centTask->SetMCInput();
   }
   // FMD 
   gROOT->LoadMacro("AddTaskForwardMult.C");
