@@ -514,6 +514,15 @@ AliFMDCorrELossFit::ELossFit::Draw(Option_t* option)
 
 //____________________________________________________________________
 Double_t
+AliFMDCorrELossFit::ELossFit::GetLowerBound(Double_t f) const
+{
+  // 
+  // Return 
+  //    Delta * f
+  return f * fDelta;
+}
+//____________________________________________________________________
+Double_t
 AliFMDCorrELossFit::ELossFit::GetLowerBound(Double_t f, 
 					    Bool_t includeSigma) const
 {
@@ -909,6 +918,24 @@ AliFMDCorrELossFit::GetOrMakeRingArray(UShort_t d, Char_t r)
   return static_cast<TObjArray*>(fRings.At(idx));
 }
 
+//____________________________________________________________________
+Double_t
+AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Int_t etabin,
+				  Double_t f) const
+{
+  ELossFit* fit = GetFit(d, r, etabin);
+  if (!fit) return -1024;
+  return fit->GetLowerBound(f);
+}
+//____________________________________________________________________
+Double_t
+AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Double_t eta,
+				  Double_t f) const
+{
+  Int_t bin = FindEtaBin(eta);
+  if (bin <= 0) return -1024;
+  return GetLowerBound(d, r, Int_t(bin), f);
+}
 //____________________________________________________________________
 Double_t
 AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Int_t etabin,
