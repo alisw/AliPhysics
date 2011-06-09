@@ -240,6 +240,8 @@ private:
   /** Assignment operator, prohibited */
   AliHLTCaloClusterizer & operator = (const AliHLTCaloClusterizer &); //COMMENT
 
+  UChar_t* fBuffer; // Buffer for storing of Cluster Data
+
   ClassDef(AliHLTCaloClusterizer, 0);
 
 };

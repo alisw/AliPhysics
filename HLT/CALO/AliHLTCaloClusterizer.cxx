@@ -59,7 +59,8 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
         fNDigits(0),
         fSortedByPosition(false),
         fSortedByEnergy(false),
-        fSortDigits(false)
+        fSortDigits(false),
+	fBuffer(0)
 {
     //See header file for documentation
     //fEmcClusteringThreshold = 0.2;
@@ -76,7 +77,10 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
     fRecPointArray = new AliHLTCaloRecPointDataStruct*[fArraySize];
 
     fAvailableSize = sizeof(AliHLTCaloRecPointDataStruct) * 20;
-    fFirstRecPointPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(new UChar_t[fAvailableSize]);
+    fBuffer = new UChar_t[fAvailableSize]; //FR
+
+    //    fFirstRecPointPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(new UChar_t[fAvailableSize]);
+    fFirstRecPointPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(fBuffer);
     fRecPointDataPtr = fFirstRecPointPtr;
 
 }//end
@@ -84,7 +88,8 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
 AliHLTCaloClusterizer::~AliHLTCaloClusterizer()
 {
     //See header file for documentation
-  delete [] fRecPointDataPtr;
+  delete [] fBuffer;
+  //delete [] fRecPointDataPtr;
   delete [] fRecPointArray;
 }
 
