@@ -235,14 +235,30 @@ void AliVZEROQADataMakerRec::InitESDs()
    const Bool_t saveCorr = kTRUE ; 
    const Bool_t image    = kTRUE ; 
 
+    const Int_t kNTdcWidthBins =  128;
+
+	Float_t maxTdc = 0.;
+	Int_t   nTdcBin = 0;
+	Float_t maxWidth = 0.;
+	for(int i=0;i<8;i++){
+		if(fCalibData->GetTimeResolution(i)>0.){
+			Int_t matchWin = 25.*fCalibData->GetMatchWindow(i);
+			if(matchWin>maxTdc) {
+				maxTdc = matchWin;
+				nTdcBin = matchWin/fCalibData->GetTimeResolution(i);
+			}
+		}
+		Int_t w = kNTdcWidthBins*fCalibData->GetWidthResolution(i);
+		if(w>maxWidth) maxWidth = w;
+	}
+
   const Int_t kNintegrator  =    2;
  
-  const Int_t kNTdcTimeBins  = 1280;
+  const Int_t kNTdcTimeBins  = nTdcBin;
   const Float_t kTdcTimeMin    =    0.;
-  const Float_t kTdcTimeMax    = 125.;
-  const Int_t kNTdcWidthBins =  128;
+  const Float_t kTdcTimeMax    = maxTdc;
   const Float_t kTdcWidthMin   =    0;
-  const Float_t kTdcWidthMax   =  50.;
+  const Float_t kTdcWidthMax   =  maxWidth;
   const Int_t kNChargeBins   = 1024;
   const Float_t kChargeMin     =    0;
   const Float_t kChargeMax     = 1024;
@@ -252,8 +268,6 @@ void AliVZEROQADataMakerRec::InitESDs()
   const Int_t kNPedestalBins =  200;
   const Float_t kPedestalMin   =    0;
   const Float_t kPedestalMax   =  200;
-  const Float_t kTimeMin       =   0;
-  const Float_t kTimeMax       = 100;
   const Int_t kNMIPBins      = 512;
   const Float_t kMIPMin        =   0;
   const Float_t kMIPMax        = 16;
@@ -275,6 +289,21 @@ void AliVZEROQADataMakerRec::InitESDs()
 	h1d->GetXaxis()->SetBinLabel(2, "V0-OR");
    	h1d->GetXaxis()->SetBinLabel(3, "V0-BGA");
 	h1d->GetXaxis()->SetBinLabel(4, "V0-BGC");
+
+  h2d = new TH2D("H2D_Trigger_Type", "V0 Trigger Type;V0A;V0C", 4,0 ,4,4,0,4) ;  
+  Add2RawsList(h2d,kTriggers2, !expert, image, saveCorr);   iHisto++;
+ 	h2d->SetDrawOption("coltext");
+	h2d->GetXaxis()->SetLabelSize(0.06);
+    h2d->GetXaxis()->SetNdivisions(808,kFALSE);
+    h2d->GetYaxis()->SetNdivisions(808,kFALSE);
+	h2d->GetXaxis()->SetBinLabel(1, "Empty");
+	h2d->GetXaxis()->SetBinLabel(2, "Fake");
+   	h2d->GetXaxis()->SetBinLabel(3, "BB");
+	h2d->GetXaxis()->SetBinLabel(4, "BG");
+	h2d->GetYaxis()->SetBinLabel(1, "Empty");
+	h2d->GetYaxis()->SetBinLabel(2, "Fake");
+   	h2d->GetYaxis()->SetBinLabel(3, "BB");
+	h2d->GetYaxis()->SetBinLabel(4, "BG");
 
    // Creation of Cell Multiplicity Histograms
   h1i = new TH1I("H1I_Multiplicity_V0A", "Cell Multiplicity in V0A;# of Cells;Entries", 35, 0, 35) ;  
@@ -386,11 +415,11 @@ void AliVZEROQADataMakerRec::InitESDs()
  	h1d = new TH1D("H1D_V0C_Time", "V0C Time;Time [ns];Counts",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
  	Add2RawsList(h1d,kV0CTime, expert, !image, saveCorr); iHisto++;
 	
- 	h1d = new TH1D("H1D_Diff_Time","Diff V0A-V0C Time;Time [ns];Counts",2*kNTdcTimeBins, -50., 50.);
- 	Add2RawsList(h1d,kDiffTime, expert, !image, saveCorr); iHisto++;
+ 	h1d = new TH1D("H1D_Diff_Time","Diff V0A-V0C Time;Time [ns];Counts",kNTdcTimeBins, -50., 50.);
+ 	Add2RawsList(h1d,kDiffTime, expert, image, saveCorr); iHisto++;
 
     h2d = new TH2D("H2D_TimeV0A_V0C", "Mean Time in V0C versus V0A;Time V0A [ns];Time V0C [ns]", 
-  		150, kTimeMin,kTimeMax,150,kTimeMin,kTimeMax) ;  
+  		kNTdcTimeBins/8, kTdcTimeMin,kTdcTimeMax,kNTdcTimeBins/8, kTdcTimeMin,kTdcTimeMax) ;  
     Add2RawsList(h2d,kTimeV0AV0C, !expert, image, !saveCorr);   iHisto++;
 	
  	// Creation of Flag versus LHC Clock histograms 
@@ -752,25 +781,52 @@ void AliVZEROQADataMakerRec::MakeESDs(AliESDEvent * esd)
 		Bool_t v0CBB = kFALSE;
 		Bool_t v0ABG = kFALSE;
 		Bool_t v0CBG = kFALSE;
-		
-		if(timeV0A>kMinBBA && timeV0A<kMaxBBA) {
+		Bool_t v0AFake = kFALSE;
+		Bool_t v0CFake = kFALSE;
+		Bool_t v0AEmpty = kFALSE;
+		Bool_t v0CEmpty = kFALSE;
+		Int_t v0ATrigger=0;
+		Int_t v0CTrigger=0; 
+
+		// Change default BB and BG windows according to the Trigger Count Offset setting with respect to the default one which is 3247.
+		Float_t winOffset = (fCalibData->GetTriggerCountOffset(0) - 3247)*25.;
+
+		if((timeV0A>kMinBBA-winOffset) && (timeV0A<kMaxBBA-winOffset)) {
 			v0ABB = kTRUE;
-		} else if(timeV0A>kMinBGA && timeV0A<kMaxBGA) {
+			v0ATrigger=2;
+		} else if((timeV0A>kMinBGA-winOffset) && (timeV0A<kMaxBGA-winOffset)) {
 			v0ABG = kTRUE;
+			v0ATrigger=3;
+		} else if(timeV0A>-1024.+1.e-6) {
+			v0AFake = kTRUE;
+			v0ATrigger=1;
+		} else {
+			v0AEmpty = kTRUE;
+			v0ATrigger=0;
 		}
-		if(timeV0C>kMinBBC && timeV0C<kMaxBBC) {
+		
+		if((timeV0C>kMinBBC-winOffset) && (timeV0C<kMaxBBC-winOffset)) {
 			v0CBB = kTRUE;
-		} else if(timeV0C>kMinBGC && timeV0C<kMaxBGC) {
+			v0CTrigger=2;
+		} else if((timeV0C>kMinBGC-winOffset) && (timeV0C<kMaxBGC-winOffset)) {
 			v0CBG = kTRUE;
+			v0CTrigger=3;
+		} else if(timeV0C>-1024.+1.e-6) {
+			v0CFake = kTRUE;
+			v0CTrigger=1;
+		} else {
+			v0CEmpty = kTRUE;
+			v0CTrigger=0;
 		}
 
-// Fill Trigger output histogram
+// Fill Trigger output histograms
 		if(v0ABB && v0CBB) GetRawsData(kTriggers)->Fill(0);
 		if((v0ABB || v0CBB) && !(v0ABG || v0CBG)) GetRawsData(kTriggers)->Fill(1);
 		if(v0ABG && v0CBB) GetRawsData(kTriggers)->Fill(2);
 		if(v0ABB && v0CBG) GetRawsData(kTriggers)->Fill(3);
 		
-
+		GetRawsData(kTriggers2)->Fill(v0ATrigger,v0CTrigger);
+		
 		GetRawsData(kV0ATime)->Fill(timeV0A);
 		GetRawsData(kV0CTime)->Fill(timeV0C);
 		GetRawsData(kDiffTime)->Fill(diffTime);

@@ -36,7 +36,7 @@ public:
 		  ,kMultiV0A,kMultiV0C,kChargeV0A,kChargeV0C,kChargeV0 
 		  ,kV0ATime,kV0CTime,kDiffTime
 		  ,kRawMIPV0A,kRawMIPV0C,kRawMIPV0,kRawMIPChannel
-		  ,kBBFlagsPerChannel, kTriggers,kTimeV0AV0C} ;
+		  ,kBBFlagsPerChannel, kTriggers,kTriggers2,kTimeV0AV0C} ;
 	
  enum HESDType_t {kCellMultiV0A,kCellMultiV0C,kMIPMultiV0A,kMIPMultiV0C,kMIPMultiChannel
 		  ,kBBFlag,kBGFlag,kChargeChannel,kTimeChannel
