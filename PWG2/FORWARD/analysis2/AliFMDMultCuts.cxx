@@ -47,8 +47,8 @@ AliFMDMultCuts::GetFixedCut(UShort_t d, Char_t r) const
   Int_t idx = -1;
   switch (d) { 
   case 1: idx = 0; break;
-  case 2: idx = 1 + (r == 'I' || r == 'i') ? 0 : 1; break;
-  case 3: idx = 3 + (r == 'I' || r == 'i') ? 0 : 1; break;
+  case 2: idx = 1 + ((r == 'I' || r == 'i') ? 0 : 1); break;
+  case 3: idx = 3 + ((r == 'I' || r == 'i') ? 0 : 1); break;
   }
   if (idx < 0) return 1024;
   return fMultCuts[idx];
