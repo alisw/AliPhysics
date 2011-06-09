@@ -32,11 +32,16 @@ public:
   enum EOfflineTriggerTypes { 
       kMB           = BIT(0), // Minimum bias trigger, i.e. interaction trigger, offline SPD or V0 selection
                               // empty slot
+      kINT7         = BIT(1), // V0AND trigger, offline V0 selection
       kMUON         = BIT(2), // Muon trigger, offline SPD or V0 selection
       kHighMult     = BIT(3), // High-multiplicity trigger (threshold defined online), offline SPD or V0 selection
       kEMC1         = BIT(4), // EMCAL trigger
       kCINT5        = BIT(5), // Minimum bias trigger without SPD. i.e. interaction trigger, offline V0 selection
       kCMUS5        = BIT(6), // Muon trigger, offline V0 selection
+      kMUSH7        = BIT(7), // Muon trigger: high pt, single muon, offline V0 selection, CINT7 suite
+      kMUL7         = BIT(8), // Muon trigger: like sign dimuon, offline V0 selection, CINT7 suite
+      kMUU7         = BIT(9), // Muon trigger, unlike sign dimuon, offline V0 selection, CINT7 suite
+      kEMC7         = BIT(10), // EMCAL trigger, CINT7 suite
       kFastOnly     = BIT(30), // The fast cluster fired. This bit is set in to addition another trigger bit, e.g. kMB
       kUserDefined  = BIT(31), // Set when custom trigger classes are set in AliPhysicsSelection, offline SPD or V0 selection
       kAny          = 0xffffffff // to accept any trigger

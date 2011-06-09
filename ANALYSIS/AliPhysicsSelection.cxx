@@ -873,7 +873,7 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber)
   /// Open OADB file and fetch OADB objects
   TString oadbfilename = AliPhysicsSelection::GetOADBFileName();
 
-  TFile * foadb = new TFile (oadbfilename); 
+  TFile * foadb = TFile::Open(oadbfilename);
   if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));
 
 
@@ -1305,10 +1305,10 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
 
     
     // Merge the OADBs (Take just the first instance you find
-    if (!fPSOADB) {
+    if (!fPSOADB && entry->GetOADBPhysicsSelection()) {
       fPSOADB = (AliOADBPhysicsSelection*) entry->GetOADBPhysicsSelection()->Clone();
     }
-    if (!fFillOADB){
+    if (!fFillOADB && entry->GetOADBFillingScheme()){
       fFillOADB = (AliOADBFillingScheme*) entry->GetOADBFillingScheme()->Clone();
     }
 
