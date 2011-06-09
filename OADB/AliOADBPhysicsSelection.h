@@ -35,7 +35,7 @@ class AliOADBPhysicsSelection : public TNamed {
 
  public :
   AliOADBPhysicsSelection();
-  AliOADBPhysicsSelection(char* name);
+  AliOADBPhysicsSelection(const char* name);
   virtual ~AliOADBPhysicsSelection();
   AliOADBPhysicsSelection(const AliOADBPhysicsSelection& cont); 
   AliOADBPhysicsSelection& operator=(const AliOADBPhysicsSelection& cont);

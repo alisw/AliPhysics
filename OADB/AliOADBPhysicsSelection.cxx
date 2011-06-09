@@ -19,7 +19,7 @@ TNamed("AliOADBPhysicsSelection", "OADB object for the physics selection"), fNtr
   // default ctor
   
 }
-AliOADBPhysicsSelection::AliOADBPhysicsSelection(char* name) : 
+AliOADBPhysicsSelection::AliOADBPhysicsSelection(const char* name) : 
   TNamed(name, "OADB object for the physics selection"), fNtriggerBits(NTRIGGERBITS), fNtriggerLogics(NTRIGGERLOGICS),fCollTrigClasses(0),fBGTrigClasses(0),fHardwareTrigger(0),fOfflineTrigger(0),fBeamSide(0)
 {
   // ctor, better use this one
