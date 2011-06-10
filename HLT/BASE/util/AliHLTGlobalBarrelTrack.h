@@ -20,6 +20,7 @@ using namespace std;
 
 class TClonesArray;
 class AliHLTSpacePointContainer;
+class AliHLTTrackGeometry;
 
 /**
  * @class AliHLTGlobalBarrelTrack
@@ -86,6 +87,13 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
 
   /// Set the space point data
   void SetSpacePointContainer(AliHLTSpacePointContainer* points) {fSpacePoints=points;}
+  /// Set track point container
+  void SetTrackGeometry(AliHLTTrackGeometry* points);
+  /// Get track point container
+  AliHLTTrackGeometry* GetTrackGeometry() const {return fTrackPoints;}
+
+  /// associate the track space points to the calculated track points
+  int AssociateSpacePoints(AliHLTTrackGeometry* trackpoints, AliHLTSpacePointContainer& spacepoints) const;
 
   /// Set the list of associated points
   int SetPoints(const UInt_t* pArray, UInt_t arraySize);
@@ -116,13 +124,13 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
   static int ReadTracks(const char* filename, TClonesArray& tgt, AliHLTComponentDataType dt=kAliHLTVoidDataType, unsigned specification=kAliHLTVoidDataSpec);
   static int ReadTrackList(const char* listfile, TClonesArray& tgt, AliHLTComponentDataType dt=kAliHLTVoidDataType, unsigned specification=kAliHLTVoidDataSpec);
 
- protected:
-  /// calculate and set internal helix parameters
-  int CalculateHelixParams();
-
   /// calculate crossing point with a plane parallel to z axis, at distance x
   /// and phi
   int CalculateCrossingPoint(float xPlane, float phiPlane, float& u, float& v);
+
+ protected:
+  /// calculate and set internal helix parameters
+  int CalculateHelixParams();
 
  private:
 
@@ -144,6 +152,8 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
 
   /// the space points assigned to the track
   AliHLTSpacePointContainer* fSpacePoints; //!
+  /// the track points according to a geometry
+  AliHLTTrackGeometry* fTrackPoints; //!
 
   ClassDef(AliHLTGlobalBarrelTrack, 0)
 };

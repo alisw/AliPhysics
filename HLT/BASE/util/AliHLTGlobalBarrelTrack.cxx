@@ -33,6 +33,7 @@
 #include <iostream>
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTSpacePointContainer.h"
+#include "AliHLTTrackGeometry.h"
 #include "AliHLTMisc.h"
 #include "TClonesArray.h"
 #include "TFile.h"
@@ -54,6 +55,7 @@ AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack()
   , fHelixCenterX(0.0)
   , fHelixCenterY(0.0)
   , fSpacePoints(NULL)
+  , fTrackPoints(NULL)
 {
   // see header file for class documentation
   // or
@@ -72,6 +74,7 @@ AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliHLTGlobalBarrelTrack& 
   , fHelixCenterX(t.fHelixCenterX)
   , fHelixCenterY(t.fHelixCenterY)
   , fSpacePoints(NULL)
+  , fTrackPoints(NULL)
 {
   // see header file for class documentation
   fPoints.assign(t.fPoints.begin(), t.fPoints.end());
@@ -87,6 +90,7 @@ AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliHLTExternalTrackParam&
   , fHelixCenterX(0.0)
   , fHelixCenterY(0.0)
   , fSpacePoints(NULL)
+  , fTrackPoints(NULL)
 {
   // see header file for class documentation
 
@@ -109,6 +113,7 @@ AliHLTGlobalBarrelTrack::AliHLTGlobalBarrelTrack(const AliExternalTrackParam& p 
   , fHelixCenterX(0.0)
   , fHelixCenterY(0.0)
   , fSpacePoints(NULL)
+  , fTrackPoints(NULL)
 {
   // see header file for class documentation
   *(dynamic_cast<AliExternalTrackParam*>(this))=p;
@@ -661,11 +666,32 @@ int AliHLTGlobalBarrelTrack::DrawProjXYTrackPoints(Option_t */*option*/, const f
 
     //cout << x << " : x=" << x << " y=" << y << endl;
     // FIXME: cleanup of TMarker objects?
-    TMarker* m=new TMarker(point[0]/(2*scale)+center[0], point[1]/(2*scale)+center[1], 2);
+    TMarker* m=new TMarker(point[0]/(2*scale)+center[0], point[1]/(2*scale)+center[1], z>=0?2:5);
     m->SetMarkerColor(markerColor);
     m->Draw("same");
   }
   return 0;
+}
+
+void AliHLTGlobalBarrelTrack::SetTrackGeometry(AliHLTTrackGeometry* points)
+{
+  /// set the instance to the track points container
+  fTrackPoints=points; 
+  if (!fTrackPoints) return; 
+  fTrackPoints->SetTrackId(GetID());
+}
+
+int AliHLTGlobalBarrelTrack::AssociateSpacePoints(AliHLTTrackGeometry* trackpoints, AliHLTSpacePointContainer& spacepoints) const
+{
+  /// associate the track space points to the calculated track points
+  AliHLTTrackGeometry* instance=trackpoints;
+  if (!instance) instance=fTrackPoints;
+  if (!instance) return 0;
+
+  UInt_t nofIds=GetNumberOfPoints();
+  const UInt_t* ids=GetPoints();
+  int result=instance->AssociateSpacePoints(ids, nofIds, spacepoints);
+  return result;
 }
 
 int AliHLTGlobalBarrelTrack::ReadTracks(const char* filename, TClonesArray& tgt, AliHLTComponentDataType /*dt*/, unsigned /*specification*/)
