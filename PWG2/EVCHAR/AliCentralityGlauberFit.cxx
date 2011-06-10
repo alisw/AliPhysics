@@ -145,10 +145,11 @@ void AliCentralityGlauberFit::MakeFits()
   TH1F *thistGlau; 
   TFile *inrootfile;
   TFile *outrootfile;  
-  FILE* fTxt = fopen ("parameters.txt","w");
+  //FILE* fTxt = fopen ("parameters.txt","w");
   
   // open inrootfile, outrootfile
-  std::cout << "input file " << fInrootfilename << std::endl;
+  std::cout << "input file "  << fInrootfilename  << std::endl;
+  std::cout << "output file " << fOutrootfilename << std::endl;
   inrootfile  = new TFile(fInrootfilename,"OPEN");
   outrootfile = new TFile(fOutrootfilename,"RECREATE");
   
@@ -161,7 +162,7 @@ void AliCentralityGlauberFit::MakeFits()
       hDATA  = (TH1F*) (list->FindObject(*hni));
     } 
     hDATA->Rebin(fRebinFactor);
-    TH1F *hGLAU = new TH1F("hGLAU","hGLAU",hDATA->GetNbinsX(),0,hDATA->GetNbinsX()*hDATA->GetBinWidth(1));
+    //TH1F *hGLAU = new TH1F("hGLAU","hGLAU",hDATA->GetNbinsX(),0,hDATA->GetNbinsX()*hDATA->GetBinWidth(1));
     Double_t chi2min = 9999999.0;
     Double_t alpha_min=-1;
     Double_t mu_min=-1;
@@ -180,7 +181,7 @@ void AliCentralityGlauberFit::MakeFits()
 	  	    
 	  thistGlau = GlauberHisto(mu,k,alpha,hDATA,kFALSE);
 	  chi2 = CalculateChi2(hDATA,thistGlau);
-	  fprintf(fTxt, "%3.3f %3.3f %3.3f %3.3f\n", (float) mu, (float) k, (float) alpha, chi2);
+	  //fprintf(fTxt, "%3.3f %3.3f %3.3f %3.3f\n", (float) mu, (float) k, (float) alpha, chi2);
 	  if ( chi2 < chi2min ) {
 	    chi2min = chi2;
 	    alpha_min=alpha;
@@ -193,6 +194,7 @@ void AliCentralityGlauberFit::MakeFits()
     
     thistGlau = GlauberHisto(mu_min,k_min,alpha_min,hDATA,kTRUE);
     
+    TH1F * hGLAU = 0x0;
     hGLAU = (TH1F *) thistGlau->Clone("hGLAU");
     hGLAU->SetName( ((TString)hDATA->GetName()).Append(Form("_GLAU")));
     hGLAU->SetTitle( ((TString)hDATA->GetName()).Append(Form("_GLAU_%.3f_%.3f_%.3f",
@@ -204,7 +206,7 @@ void AliCentralityGlauberFit::MakeFits()
 
     fhEffi = GetTriggerEfficiencyFunction(hDATA, hGLAU);
     SaveHisto(hDATA,hGLAU,fhEffi,outrootfile);
-    fclose (fTxt);
+    //fclose (fTxt);
 
     std::cout << "chi2 min is " << chi2min << std::endl;
     std::cout << "fitted " << hGLAU->Integral(hGLAU->FindBin(fMultmin),
@@ -238,9 +240,11 @@ void AliCentralityGlauberFit::MakeFitsMinuitNBD(Double_t alpha, Double_t mu, Dou
   TFile *outrootfile;
   
   // open inrootfile, outrootfile
+  std::cout << "input file "  << fInrootfilename  << std::endl;
+  std::cout << "output file " << fOutrootfilename << std::endl;
   inrootfile  = new TFile(fInrootfilename,"OPEN");
   outrootfile = new TFile(fOutrootfilename,"RECREATE");
-  
+
   // loop over all distribution names  
   std::vector<TString>::const_iterator hni;
   for(hni=fHistnames.begin(); hni!=fHistnames.end(); hni++) {
