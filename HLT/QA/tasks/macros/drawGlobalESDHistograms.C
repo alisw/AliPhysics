@@ -3,9 +3,7 @@
  * Plotting macro for comparing offline- and HLT- ESD trees from
  * HLT-OFFLINE-GLOBAL-comparison.root produced using $ALICE_ROOT/HLT/QA/tasks/AliAnalysisTaskHLT.*
  *
- * Usage: aliroot drawGlobalESDHistograms.C'("HLT-OFFLINE-GLOBAL-comparison.root")'
- *
- * or aliroot drawGlobalESDHistograms.C++ in compiled mode
+ * Usage: aliroot drawGlobalESDHistograms.C++ in compiled mode
  *
  * It saves all canvases with the output histograms in a png and a ROOT file.
  * The second argument of the macro will produce individual files for all pads,
