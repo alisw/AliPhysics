@@ -45,6 +45,8 @@
 Float_t EtaToTheta(Float_t arg);
 void    LoadPythia();
 
+Int_t year =2011;
+
 void Config()
 {
   //AliLog::SetGlobalDebugLevel(2);
@@ -136,9 +138,20 @@ void Config()
         nParticles = atoi(gSystem->Getenv("CONFIG_NPARTICLES"));
     }
 
+    if (gSystem->Getenv("CONFIG_YEAR"))
+    {
+        year = atoi(gSystem->Getenv("CONFIG_YEAR"));
+    }
+
     AliGenBox *gener = new AliGenBox(nParticles);
     gener->SetMomentumRange(1.,10.);
-    gener->SetPhiRange(80.0,180.0);
+    if(year > 2010)
+      gener->SetPhiRange(80.0,180.0);
+    else if(year == 2010)
+      gener->SetPhiRange(80.0,120.0);
+    else
+      gener->SetPhiRange(80.0,190.0);
+
     gener->SetThetaRange(EtaToTheta(0.7), EtaToTheta(-0.7));
 
     gener->SetOrigin(0,0,0);        //vertex position
@@ -308,8 +321,13 @@ void Config()
     if (iEMCAL)
     {
         //=================== EMCAL parameters ============================
-        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_FIRSTYEARV1");
-        //AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETEV1 pbTh=0.144 scTh=0.176");
+
+      if(year == 2010)        // d phi = 40 degrees
+	AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_FIRSTYEARV1");
+      else if (year > 2010)  // d phi = 100 degrees
+	AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETEV1");
+      else // Old configuration with 110 degrees but not perfect geometry
+        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE");
     }
 
      if (iACORDE)
