@@ -60,6 +60,10 @@ void AliCentralityBy1D::SetPercentileCrossSection(Float_t xsec) {
   percentXsec = xsec;
 }
 
+void AliCentralityBy1D::SetMultLowBound(Float_t mult) {
+  multLowBound = mult;
+}
+
 void AliCentralityBy1D::MakePercentiles(TString infilename) {
   TH1D *thist;
   
@@ -74,7 +78,8 @@ void AliCentralityBy1D::MakePercentiles(TString infilename) {
   vector<TString>::const_iterator hni;
   for(hni=histnames.begin(); hni!=histnames.end(); hni++) {
     thist = MakePercentHisto(*hni);
-    SaveHisto(thist,outrootfile);
+    TH1D *htemp  = (TH1D*) (inrootfile->Get(*hni)); 
+    SaveHisto(htemp,thist,outrootfile);
     delete thist; //??
   }
   // close inrootfile, outrootfile
@@ -85,16 +90,21 @@ void AliCentralityBy1D::MakePercentiles(TString infilename) {
 
 TH1D * AliCentralityBy1D::MakePercentHisto(TString hdistributionName) {
   TH1D *htemp  = (TH1D*) (inrootfile->Get(hdistributionName)); 
+  // TList *list  = (TList*) (inrootfile->Get("chist")); 
+  // TH1D *htemp  = (TH1D*) (list->FindObject(hdistributionName)); 
   TH1D *hpercent  = (TH1D*) htemp->Clone("hpercent");
   hpercent->SetName(hdistributionName.Append("_percentile"));
   hpercent->Reset();
 
+  int start_bin=htemp->FindBin(multLowBound);
   for (int ibin=1; ibin<=htemp->GetNbinsX(); ibin++) {
     
-    hpercent->SetBinContent(ibin, percentXsec *
-			    htemp->Integral(ibin,htemp->GetNbinsX())  / 
-			    htemp->Integral(1,htemp->GetNbinsX()));
-    
+    if (ibin>=start_bin)
+      hpercent->SetBinContent(ibin, percentXsec *
+			      htemp->Integral(ibin,htemp->GetNbinsX())  / 
+			      htemp->Integral(start_bin,htemp->GetNbinsX()));
+    else
+      hpercent->SetBinContent(ibin, 100);
   }
   
   delete htemp;
@@ -102,9 +112,20 @@ TH1D * AliCentralityBy1D::MakePercentHisto(TString hdistributionName) {
   
 }
 
-void AliCentralityBy1D::SaveHisto(TH1D *hist, TFile *outrootfile) {
+void AliCentralityBy1D::SaveHisto(TH1D *hist1, TH1D *hist2, TFile *outrootfile) {
   outrootfile->cd();
-  hist->Write();
+  hist1->Write();
+  hist2->Write();
+
+  // int n=12;
+  // Float_t x1[n];
+  // Float_t centrality[]= {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.,100.};
+  // for (int i=n-1; i>=0; i--) {
+  //   x1[i] = hist2->GetBinCenter(hist2->FindLastBinAbove(centrality[i]));
+  //   cout << x1[i] << ",";
+  // }
+  // cout << endl;
+  
 }
 
 
