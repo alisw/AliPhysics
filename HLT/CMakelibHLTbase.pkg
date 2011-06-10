@@ -89,6 +89,7 @@ set ( CLASS_HDRS
     AliHLTScalars.h
     AliHLTRunStatistics.h
     AliHLTSpacePointContainer.h
+    AliHLTTrackGeometry.h
     AliHLTComponentBenchmark.h
     )
 
