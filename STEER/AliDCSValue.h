@@ -38,11 +38,11 @@ public:
   AliDCSValue(UInt_t value, UInt_t timeStamp);
   AliDCSValue(Float_t value, UInt_t timeStamp);
 
-  Bool_t GetBool() const { return fBool; }
-  Char_t GetChar() const { return fChar; }
-  Int_t GetInt() const { return fInt; }
-  UInt_t GetUInt() const { return fUInt; }
-  Float_t GetFloat() const { return fFloat; }
+  Bool_t GetBool() const;
+  Char_t GetChar() const;
+  Int_t GetInt() const;
+  UInt_t GetUInt() const;
+  Float_t GetFloat() const;
 
   operator Bool_t() const { return GetBool(); }
   operator Char_t() const { return GetChar(); }

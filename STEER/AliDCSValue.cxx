@@ -56,6 +56,7 @@ some more descriptions added
 //
 
 #include "AliDCSValue.h"
+#include "AliLog.h"
 
 #include "TTimeStamp.h"
 #include <TString.h>
@@ -250,4 +251,39 @@ const Char_t* AliDCSValue::ToString() const
 void AliDCSValue::Print(Option_t* /*opt*/) const
 {
   printf("%s\n", ToString());
+}
+
+Bool_t AliDCSValue::GetBool() const
+{
+  // return bool value
+  if (fType!=kBool) AliError(Form("invalid request, object is not of type kBool (%d) but %d", kBool, fType));
+  return fBool;
+}
+
+Char_t AliDCSValue::GetChar() const
+{ 
+  // return char value
+  if (fType!=kChar) AliError(Form("invalid request, object is not of type kChar (%d) but %d", kChar, fType));
+  return fChar;
+}
+
+Int_t AliDCSValue::GetInt() const
+{
+  // return int value
+  if (fType!=kInt) AliError(Form("invalid request, object is not of type kInt (%d) but %d", kInt, fType));
+  return fInt;
+}
+
+UInt_t AliDCSValue::GetUInt() const
+{
+  // return uint value
+  if (fType!=kUInt) AliError(Form("invalid request, object is not of type kUInt (%d) but %d", kUInt, fType));
+  return fUInt;
+}
+
+Float_t AliDCSValue::GetFloat() const
+{
+  // return float value
+  if (fType!=kFloat) AliError(Form("invalid request, object is not of type kFloat (%d) but %d", kFloat, fType));
+  return fFloat;
 }
