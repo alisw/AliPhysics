@@ -26,8 +26,14 @@
 
 #include "AliAnalysisTaskResonanceQA.h"
 
+//
 // analysis task creating basic QA plots for resonance particles
 // Author: Ayben Karasu Uysal
+// Computes some QA histograms useful for checking productions and data
+// both for counting resonances inside MC, and for checking PID performances
+//
+// Revised by A. Pulvirenti
+//
 
 
 ClassImp(AliAnalysisTaskResonanceQA)
@@ -68,10 +74,11 @@ AliAnalysisTaskResonanceQA::AliAnalysisTaskResonanceQA(const char *name) :
    // setup to NULL all remaining histos
    Int_t i;
    for (i = 0; i < kResonances; i++) fRsnYPt[0][i] = fRsnYPt[1][i] = 0;
+   for (i = 0; i < kResonances; i++) fRsnYPtCINT1B[0][i] = fRsnYPtCINT1B[1][i] = 0;
 }
 
 //________________________________________________________________________
-const char* AliAnalysisTaskResonanceQA::RsnName(ERsn type)
+const char* AliAnalysisTaskResonanceQA::RsnName(ERsn type) const
 {
 //
 // Return a short string with name of resonance
@@ -83,9 +90,7 @@ const char* AliAnalysisTaskResonanceQA::RsnName(ERsn type)
       case kRho       : return "Rho";
       case kLambdaStar: return "LambdaStar";
       case kXiStar0   : return "XiStar0";
-      case kXiStarM   : return "XiStarM";
       case kSigmaStarP: return "SigmaStarP";
-      case kSigmaStar0: return "SigmaStar0";
       case kSigmaStarM: return "SigmaStarM";
       case kDeltaPP   : return "DeltaPP";
       default         : return "Unknown";
@@ -93,7 +98,7 @@ const char* AliAnalysisTaskResonanceQA::RsnName(ERsn type)
 }
 
 //________________________________________________________________________
-const char* AliAnalysisTaskResonanceQA::RsnSymbol(ERsn type)
+const char* AliAnalysisTaskResonanceQA::RsnSymbol(ERsn type) const
 {
 //
 // Return a short string with name of resonance
@@ -105,9 +110,7 @@ const char* AliAnalysisTaskResonanceQA::RsnSymbol(ERsn type)
       case kRho       : return "#rho";
       case kLambdaStar: return "#Lambda^{*}";
       case kXiStar0   : return "#Xi^{*0}";
-      case kXiStarM   : return "#Xi^{*-}";
       case kSigmaStarP: return "#Sigma^{*+}";
-      case kSigmaStar0: return "#Sigma^{*0}";
       case kSigmaStarM: return "#Sigma^{*-}";
       case kDeltaPP   : return "#Delta^{++}";
       default         : return "Unknown";
@@ -115,7 +118,7 @@ const char* AliAnalysisTaskResonanceQA::RsnSymbol(ERsn type)
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskResonanceQA::RsnPDG(ERsn type)
+Int_t AliAnalysisTaskResonanceQA::RsnPDG(ERsn type) const
 {
 //
 // Return PDG code of resonance
@@ -127,9 +130,7 @@ Int_t AliAnalysisTaskResonanceQA::RsnPDG(ERsn type)
       case kRho       : return  113;
       case kLambdaStar: return 3124;
       case kXiStar0   : return 3324;
-      case kXiStarM   : return 3314;
       case kSigmaStarP: return 3224;
-      case kSigmaStar0: return 3214;
       case kSigmaStarM: return 3114;
       case kDeltaPP   : return 2224;
       default         : return    0;
@@ -144,10 +145,10 @@ void AliAnalysisTaskResonanceQA::UserCreateOutputObjects()
 //
 
    Int_t i;
-   Int_t ESDdEdxBin = 1000;  Double_t ESDdEdxMin = 0;  Double_t ESDdEdxMax = 1000;
-   Int_t ESDQPBin = 900;     Double_t ESDQPMin = -4.5; Double_t ESDQPMax = 4.5;
-   Int_t PtBin = 500;        Double_t PtMin = 0.;      Double_t PtMax = 10.;
-   Int_t YBin = 600;         Double_t YMin = -15.;     Double_t YMax = 15.;
+   Int_t vESDdEdxBin = 1000;  Double_t vESDdEdxMin = 0;  Double_t vESDdEdxMax = 1000;
+   Int_t vESDQPBin = 900;     Double_t vESDQPMin = -4.5; Double_t vESDQPMax = 4.5;
+   Int_t vPtBin = 500;        Double_t vPtMin = 0.;      Double_t vPtMax = 10.;
+   Int_t vYBin = 600;         Double_t vYMin = -15.;     Double_t vYMax = 15.;
 
    // standard objects
    fESDpid = new AliESDpid();
@@ -161,22 +162,24 @@ void AliAnalysisTaskResonanceQA::UserCreateOutputObjects()
 
    // output histograms for PID signal
    fSelectedEvts = new TH1I("fSelectedEvts", "fSelectedEvts;fSelectedEvts", 3, 0, 3);
-   fdEdxTPC = new TH2F("fdEdxTPC", "dEdxTPC, After all cuts;chargexmomentum p (GeV/c); TPC signal (a.u.)", ESDQPBin, ESDQPMin, ESDQPMax, ESDdEdxBin, ESDdEdxMin, ESDdEdxMax);
-   fdEdxITS = new TH2F("fdEdxITS", "dEdxITS, After all cuts;chargexmomentum p (GeV/c); TPC signal (a.u.)", ESDQPBin, ESDQPMin, ESDQPMax, ESDdEdxBin, ESDdEdxMin, ESDdEdxMax);
-   fTOFpid = new TH2F("fTOFpid", "TOF PID;p (GeV/c);#beta;", ESDQPBin, ESDQPMin, ESDQPMax, 300, 0.1, 1.2);
+   fdEdxTPC = new TH2F("fdEdxTPC", "dEdxTPC, After all cuts;chargexmomentum p (GeV/c); TPC signal (a.u.)", vESDQPBin, vESDQPMin, vESDQPMax, vESDdEdxBin, vESDdEdxMin, vESDdEdxMax);
+   fdEdxITS = new TH2F("fdEdxITS", "dEdxITS, After all cuts;chargexmomentum p (GeV/c); TPC signal (a.u.)", vESDQPBin, vESDQPMin, vESDQPMax, vESDdEdxBin, vESDdEdxMin, vESDdEdxMax);
+   fTOFpid = new TH2F("fTOFpid", "TOF PID;p (GeV/c);#beta;", vESDQPBin, vESDQPMin, vESDQPMax, 300, 0.1, 1.2);
    
    // output histograms for track quality
-   fDCAXYvsPtBeforeCuts = new TH2F("DCAXYvsPtBeforeCuts", "DCAXYvsPtBeforeCuts;p_{t} (GeV/c);DCAXY", PtBin, PtMin, PtMax, 500, -10.0, 10.0);
-   fDCAZvsPtBeforeCuts = new TH2F("DCAZvsPtBeforeCuts", "DCAZvsPtBeforeCuts;p_{t} (GeV/c);DCAZ", PtBin, PtMin, PtMax, 500, -10.0, 10.0);
-   fNClusterPtBeforeCuts = new TH2F("NClusterPtBeforeCuts", "NClusterPtBeforeCuts;p_{t} (GeV/c);NClusters", PtBin, PtMin, PtMax, 180, 0., 180.);
-   fNFindableClusterPtBeforeCuts = new TH2F("NFindableClusterPtBeforeCuts", "NFindableClusterPtBeforeCuts;p_{t} (GeV/c);NClusters", PtBin, PtMin, PtMax, 180, 0., 180.);
-   fNCrossedRowsTPCPtBeforeCuts = new TH2F("NCrossedRowsTPCPtBeforeCuts", "NCrossedRowsTPCPtBeforeCuts;p_{t} (GeV/c);NCrossedRowsTPC", PtBin, PtMin, PtMax, 180, 0., 180.);
+   fDCAXYvsPtBeforeCuts = new TH2F("DCAXYvsPtBeforeCuts", "DCAXYvsPtBeforeCuts;p_{t} (GeV/c);DCAXY", vPtBin, vPtMin, vPtMax, 500, -10.0, 10.0);
+   fDCAZvsPtBeforeCuts = new TH2F("DCAZvsPtBeforeCuts", "DCAZvsPtBeforeCuts;p_{t} (GeV/c);DCAZ", vPtBin, vPtMin, vPtMax, 500, -10.0, 10.0);
+   fNClusterPtBeforeCuts = new TH2F("NClusterPtBeforeCuts", "NClusterPtBeforeCuts;p_{t} (GeV/c);NClusters", vPtBin, vPtMin, vPtMax, 180, 0., 180.);
+   fNFindableClusterPtBeforeCuts = new TH2F("NFindableClusterPtBeforeCuts", "NFindableClusterPtBeforeCuts;p_{t} (GeV/c);NClusters", vPtBin, vPtMin, vPtMax, 180, 0., 180.);
+   fNCrossedRowsTPCPtBeforeCuts = new TH2F("NCrossedRowsTPCPtBeforeCuts", "NCrossedRowsTPCPtBeforeCuts;p_{t} (GeV/c);NCrossedRowsTPC", vPtBin, vPtMin, vPtMax, 180, 0., 180.);
    
    // output histograms for resonances
    fProducedParticles = new TH1I("ProducedParticles", "ProducedParticles;Produced Particles", kResonances, 0, kResonances);
    for (i = 0; i < kResonances; i++) {
-      fRsnYPt[0][i] = new TH2F(Form("%s_all", RsnName(i)), Form("%s -- ALL;p_{t} (GeV/c);Rapidity", RsnName(i)), PtBin, PtMin, PtMax, YBin, YMin, YMax);
-      fRsnYPt[1][i] = new TH2F(Form("%s_prim", RsnName(i)), Form("%s -- PRIMARY;p_{t} (GeV/c);Rapidity", RsnName(i)), PtBin, PtMin, PtMax, YBin, YMin, YMax);
+      fRsnYPt[0][i] = new TH2F(Form("%s_all", RsnName(i)), Form("%s -- ALL;p_{t} (GeV/c);Rapidity", RsnName(i)), vPtBin, vPtMin, vPtMax, vYBin, vYMin, vYMax);
+      fRsnYPt[1][i] = new TH2F(Form("%s_prim", RsnName(i)), Form("%s -- PRIMARY;p_{t} (GeV/c);Rapidity", RsnName(i)), vPtBin, vPtMin, vPtMax, vYBin, vYMin, vYMax);
+      fRsnYPtCINT1B[0][i] = new TH2F(Form("%s_CINT1B_all", RsnName(i)), Form("%s -- ALL;p_{t} (GeV/c);Rapidity", RsnName(i)), vPtBin, vPtMin, vtMax, vYBin, vYMin, vYMax);
+      fRsnYPtCINT1B[1][i] = new TH2F(Form("%s_CINT1B_prim", RsnName(i)), Form("%s -- PRIMARY;p_{t} (GeV/c);Rapidity", RsnName(i)), vPtBin, vPtMin, vPtMax, vYBin, vYMin, vYMax);
       fProducedParticles->GetXaxis()->SetBinLabel(i + 1, RsnSymbol(i));
    }
    
@@ -213,79 +216,37 @@ void AliAnalysisTaskResonanceQA::UserExec(Option_t *)
    Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
    if (!isSelected) return;
    
-   // count selected events
+   // count CINT1B selected events
    fSelectedEvts->Fill(1.1);
-   
-   // loop on MC, if MC event and stack are available
-   AliMCEvent *mcEvent = MCEvent();
-   if (mcEvent) {
-      // MC primary vertex
-      TArrayF mcVertex(3);
-      AliGenEventHeader *genEH = mcEvent->GenEventHeader();
-      genEH->PrimaryVertex(mcVertex);
-      // loop on particles
-      AliStack *stack = mcEvent->Stack();
-      if (stack) {
-         Int_t iTrack, irsn, pdg, mother, motherPDG, nTracks = stack->GetNtrack();
-         Double_t dx, dy, dz, dist;
-         TLorentzVector vprod;
-         for (iTrack = 0; iTrack < nTracks; iTrack++) {
-            
-            // get particle
-            TParticle *part = stack->Particle(iTrack);
-            if (!part) {
-               AliError(Form("Could not receive track %d", iTrack));
-               continue;
-            }
-            
-            // get PDG code of particle and check physical primary
-            pdg = part->GetPdgCode();
-            mother = part->GetFirstMother();
-            motherPDG = 0;
-                        
-            // loop over possible resonances
-            for (irsn = 0; irsn < kResonances; irsn++) {
-               if (TMath::Abs(pdg) == RsnPDG(irsn)) {
-                  // debug check
-                  if (mother >= 0) {
-                     TParticle *p = stack->Particle(mother);
-                     motherPDG = p->GetPdgCode();
-                  }
-                  part->ProductionVertex(vprod);
-                  dx = mcVertex[0] - vprod.X();
-                  dy = mcVertex[1] - vprod.Y();
-                  dz = mcVertex[2] - vprod.Z();
-                  dist = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
-                  AliDebugClass(1, Form("PDG = %d -- mother ID = %d, pdg = %d -- dist. from MC vertex = %f -- prod. time = %f", pdg, mother, motherPDG, dist, vprod.T())); 
-                  // global counter is always filled
-                  fRsnYPt[0][irsn]->Fill(part->Pt(), part->Y());
-                  // counter for primaries is filled only if mother is less than 0 (primary)
-                  if (dist < fPrimaryThr) fRsnYPt[1][irsn]->Fill(part->Pt(), part->Y());
-                  // fill the global histogram
-                  fProducedParticles->Fill(irsn + 1);
-                  // if one PDG match was found, no need to continue loop
-                  break;
-               }
-            }
-         }
-      }
-   }
    
    // try to cast input event to ESD and loop on tracks
    fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+   
+   // check if event is accepted w.r. to all additional selection criteria
+   Bool_t eventAccepted = kFALSE;
    if (fESD) {
       // check primary vertex:
       // we accept only tracks/SPD with at least 1 contributor
       const AliESDVertex *v0 = fESD->GetPrimaryVertexTracks();
-      if (!v0) return;
+      if (!v0) eventAccepted = kFALSE;
       if (v0->GetNContributors() < 1) {
          v0 = fESD->GetPrimaryVertexSPD();
-         if (!v0) return;
-         if (v0->GetNContributors() < 1) return;
+         if (!v0) eventAccepted = kFALSE;
+         if (v0->GetNContributors() < 1) eventAccepted = kFALSE;
       }
-      if (!v0) return;
-      if (TMath::Abs(v0->GetZv()) > fVz) return;
+      if (!v0) eventAccepted = kFALSE;
+      if (TMath::Abs(v0->GetZv()) > fVz) eventAccepted = kFALSE;
+      
+      // if we reach this point, all exits due to bad vertex were skipped
+      eventAccepted = kTRUE;
+   }
    
+   // if event is OK, loop on tracks to fill QA
+   if (fESD && eventAccepted) {
+      // if we arrive here, the event was processed successfully
+      // then we fill last bin in first histogram
+      fSelectedEvts->Fill(2.1);
+      
       // settings for TOF time zero
       if (fESD->GetTOFHeader()) 
          fESDpid->SetTOFResponse(fESD, AliESDpid::kTOF_T0);
@@ -371,10 +332,65 @@ void AliAnalysisTaskResonanceQA::UserExec(Option_t *)
          } // end TOF
       } // end track loop
    } // end ESD check
-
-   // if we arrive here, the event was processed successfully
-   // then we fill last bin in first histogram
-   fSelectedEvts->Fill(2.1);
+   
+   // loop on MC, if MC event and stack are available
+   AliMCEvent *mcEvent = MCEvent();
+   if (mcEvent) {
+      // MC primary vertex
+      TArrayF mcVertex(3);
+      AliGenEventHeader *genEH = mcEvent->GenEventHeader();
+      genEH->PrimaryVertex(mcVertex);
+      // loop on particles
+      AliStack *stack = mcEvent->Stack();
+      if (stack) {
+         Int_t iTrack, irsn, pdg, mother, motherPDG, nTracks = stack->GetNtrack();
+         Double_t dx, dy, dz, dist;
+         TLorentzVector vprod;
+         for (iTrack = 0; iTrack < nTracks; iTrack++) {
+            
+            // get particle
+            TParticle *part = stack->Particle(iTrack);
+            if (!part) {
+               AliError(Form("Could not receive track %d", iTrack));
+               continue;
+            }
+            
+            // get PDG code of particle and check physical primary
+            pdg = part->GetPdgCode();
+            mother = part->GetFirstMother();
+            motherPDG = 0;
+                        
+            // loop over possible resonances
+            for (irsn = 0; irsn < kResonances; irsn++) {
+               if (TMath::Abs(pdg) == RsnPDG(irsn)) {
+                  // debug check
+                  if (mother >= 0) {
+                     TParticle *p = stack->Particle(mother);
+                     motherPDG = p->GetPdgCode();
+                  }
+                  part->ProductionVertex(vprod);
+                  dx = mcVertex[0] - vprod.X();
+                  dy = mcVertex[1] - vprod.Y();
+                  dz = mcVertex[2] - vprod.Z();
+                  dist = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
+                  AliDebugClass(1, Form("PDG = %d -- mother ID = %d, pdg = %d -- dist. from MC vertex = %f -- prod. time = %f", pdg, mother, motherPDG, dist, vprod.T())); 
+                  // global counter is always filled
+                  fRsnYPtCINT1B[0][irsn]->Fill(part->Pt(), part->Y());
+                  if (eventAccepted) fRsnYPt[0][irsn]->Fill(part->Pt(), part->Y());
+                  // counter for primaries is filled only if mother is less than 0 (primary)
+                  if (dist < fPrimaryThr) {
+                     fRsnYPtCINT1B[1][irsn]->Fill(part->Pt(), part->Y());
+                     if (eventAccepted) fRsnYPt[1][irsn]->Fill(part->Pt(), part->Y());
+                  }
+                  // fill the global histogram
+                  fProducedParticles->Fill(irsn + 1);
+                  // if one PDG match was found, no need to continue loop
+                  break;
+               }
+            }
+         }
+      }
+   }
    
    PostData(1, fOutputList);
 }
