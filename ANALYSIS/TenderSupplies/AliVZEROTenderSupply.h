@@ -17,6 +17,7 @@
 
 class TF1;
 class AliVZEROCalibData;
+class AliVZERORecoParam;
 
 class AliVZEROTenderSupply: public AliTenderSupply {
   
@@ -36,13 +37,14 @@ public:
 private:
   AliVZEROCalibData* fCalibData;      //! calibration data
   TF1*               fTimeSlewing;    //! Function for time slewing correction
+  AliVZERORecoParam* fRecoParam;      //! pointer to reco-param object
   Float_t            fLHCClockPhase;  //! the correction to the LHC-clock phase
   Bool_t             fDebug;          //  debug on/off
   
   AliVZEROTenderSupply(const AliVZEROTenderSupply&c);
   AliVZEROTenderSupply& operator= (const AliVZEROTenderSupply&c);
   
-  ClassDef(AliVZEROTenderSupply, 1)  // VZERO tender task
+  ClassDef(AliVZEROTenderSupply, 2)  // VZERO tender task
 };
 
 

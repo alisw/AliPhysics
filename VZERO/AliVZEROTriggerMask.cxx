@@ -42,21 +42,9 @@ ClassImp(AliVZEROTriggerMask)
 
 AliVZEROTriggerMask::AliVZEROTriggerMask()
   :TObject(),
-   fAdcThresHold(0.0),
-   fTimeWindowBBALow(-9.5),
-   fTimeWindowBBAUp(22.5),
-   fTimeWindowBGALow(-2.5),
-   fTimeWindowBGAUp(5.0),
-   fTimeWindowFakeALow(-17.5),
-   fTimeWindowFakeAUp(-9.5),
-   fTimeWindowBBCLow(-2.5),
-   fTimeWindowBBCUp(22.5),
-   fTimeWindowBGCLow(-2.5),
-   fTimeWindowBGCUp(2.5),
-   fTimeWindowFakeCLow(-22.5),
-   fTimeWindowFakeCUp(-8.5),
    fV0ADist(0),
-   fV0CDist(0)
+   fV0CDist(0),
+   fRecoParam(NULL)
 {
   // Default constructor
   //
@@ -109,11 +97,6 @@ void AliVZEROTriggerMask::FillMasks(AliESDVZERO *esdV0,
   esdV0->SetBit(AliESDVZERO::kTriggerBitsFilled,kTRUE);
   esdV0->SetBit(AliESDVZERO::kDecisionFilled,kTRUE);
 
-  UInt_t aBBtriggerV0A = 0; // bit mask for Beam-Beam trigger in V0A
-  UInt_t aBGtriggerV0A = 0; // bit mask for Beam-Gas trigger in V0A
-  UInt_t aBBtriggerV0C = 0; // bit mask for Beam-Beam trigger in V0C
-  UInt_t aBGtriggerV0C = 0; // bit mask for Beam-Gas trigger in V0C
-
   const Float_t p1 = 2.50; // photostatistics term in the time resolution
   const Float_t p2 = 3.00; // slewing related term in the time resolution
 
@@ -121,9 +104,12 @@ void AliVZEROTriggerMask::FillMasks(AliESDVZERO *esdV0,
   Float_t timeAW = 0,timeCW = 0;
   Float_t weightA = 0,weightC = 0;
   Int_t ntimeA = 0, ntimeC = 0;
+  Double_t timesA[32], timesC[32];
+  Double_t wA[32],wC[32];
+  Int_t indA[32], indC[32];
   for (Int_t i = 0; i < 64; ++i) {
     Float_t adc = esdV0->GetAdc(i);
-    if (adc > fAdcThresHold) {
+    if (adc > GetRecoParam()->GetAdcThresHold()) {
       Float_t tdc = esdV0->GetTime(i);
       if (tdc > (AliVZEROReconstructor::kInvalidTime + 1e-6)) {
 	Float_t nphe = adc*kChargePerADC/(cal->GetGain(i)*TMath::Qe());
@@ -134,38 +120,24 @@ void AliVZEROTriggerMask::FillMasks(AliESDVZERO *esdV0,
 				      (cal->GetCalibDiscriThr(i,kTRUE)*cal->GetCalibDiscriThr(i,kTRUE)));
 
 	if (i < 32) { // in V0C
+	  timesC[ntimeC] = tdc;
+	  wC[ntimeC] = 1.0/(timeErr*timeErr);
+	  indC[ntimeC] = i;
 	  ntimeC++;
 	  timeCW += tdc/(timeErr*timeErr);
 	  weightC += 1.0/(timeErr*timeErr);
-
-	  if (tdc > (fV0CDist + fTimeWindowBBCLow) &&
-	      tdc < (fV0CDist + fTimeWindowBBCUp))
-	    aBBtriggerV0C |= (1 << i);
-	  if (tdc > (-fV0CDist + fTimeWindowBGCLow) &&
-	      tdc < (-fV0CDist + fTimeWindowBGCUp))
-	    aBGtriggerV0C |= (1 << i); 
 	}
 	else { // in V0A
+	  timesA[ntimeA] = tdc;
+	  wA[ntimeA] = 1.0/(timeErr*timeErr);
+	  indA[ntimeA] = i - 32;
 	  ntimeA++;
 	  timeAW += tdc/(timeErr*timeErr);
 	  weightA += 1.0/(timeErr*timeErr);
-
-	  Int_t shift = i - 32;
-	  if (tdc > (fV0ADist + fTimeWindowBBALow) &&
-	      tdc < (fV0ADist + fTimeWindowBBAUp)) 
-	    aBBtriggerV0A |= (1 << shift);
-	  if (tdc > (-fV0ADist + fTimeWindowBGALow) &&
-	      tdc < (-fV0ADist + fTimeWindowBGAUp))
-	    aBGtriggerV0A |= (1 << shift); 
 	}
       }
     }
   } // end of loop over channels
-
-  esdV0->SetBBtriggerV0A(aBBtriggerV0A);
-  esdV0->SetBGtriggerV0A(aBGtriggerV0A);
-  esdV0->SetBBtriggerV0C(aBBtriggerV0C);
-  esdV0->SetBGtriggerV0C(aBGtriggerV0C);
 
   if (weightA > 0) timeAW = timeAW/weightA;
   else timeAW = AliVZEROReconstructor::kInvalidTime;
@@ -173,32 +145,94 @@ void AliVZEROTriggerMask::FillMasks(AliESDVZERO *esdV0,
   if (weightC > 0) timeCW = timeCW/weightC;
   else timeCW = AliVZEROReconstructor::kInvalidTime;
 
-  esdV0->SetV0ATime(timeAW);
-  esdV0->SetV0CTime(timeCW);
-  esdV0->SetV0ATimeError((weightA > 0) ? (1./TMath::Sqrt(weightA)) : 0);
-  esdV0->SetV0CTimeError((weightC > 0) ? (1./TMath::Sqrt(weightC)) : 0);
+  esdV0->SetBit(AliESDVZERO::kRobustMeanTime,kTRUE);
+
+  Double_t medianTimeA = AliVZEROReconstructor::kInvalidTime;
+  if (ntimeA > 0) medianTimeA = TMath::Median(ntimeA,timesA,wA);
+  Double_t medianTimeC = AliVZEROReconstructor::kInvalidTime;
+  if (ntimeC > 0) medianTimeC = TMath::Median(ntimeC,timesC,wC);
+
+  Float_t robTimeAW = 0,robTimeCW = 0;
+  Float_t robWeightA = 0,robWeightC = 0;
+  Int_t nrobTimeA = 0, nrobTimeC = 0;
+  Int_t robIndA[32], robIndC[32];
+  for(Int_t i = 0; i < ntimeA; ++i) {
+    AliDebug(1,Form("ChannelsAResiduals %f %f %d",timesA[i]-medianTimeA,1./TMath::Sqrt(wA[i]),ntimeA));
+    if (TMath::Abs(timesA[i]-medianTimeA) < GetRecoParam()->GetMaxResid()/TMath::Sqrt(wA[i])) {
+      robIndA[nrobTimeA] = indA[i];
+      nrobTimeA++;
+      robTimeAW += timesA[i]*wA[i];
+      robWeightA += wA[i];
+    }
+  }
+  for(Int_t i = 0; i < ntimeC; ++i) {
+    AliDebug(1,Form("ChannelsCResiduals %f %f %d",timesC[i]-medianTimeC,1./TMath::Sqrt(wC[i]),ntimeC));
+    if (TMath::Abs(timesC[i]-medianTimeC) < GetRecoParam()->GetMaxResid()/TMath::Sqrt(wC[i])) {
+      robIndC[nrobTimeC] = indC[i];
+      nrobTimeC++;
+      robTimeCW += timesC[i]*wC[i];
+      robWeightC += wC[i];
+    }
+  }
+
+  if (robWeightA > 0) robTimeAW = robTimeAW/robWeightA;
+  else robTimeAW = AliVZEROReconstructor::kInvalidTime;
+
+  if (robWeightC > 0) robTimeCW = robTimeCW/robWeightC;
+  else robTimeCW = AliVZEROReconstructor::kInvalidTime;
+
+  AliDebug(1,Form("V0timesA %f %f %f %f %d",timeAW,(weightA > 0) ? (1./TMath::Sqrt(weightA)) : 0,
+		  medianTimeA,robTimeAW,ntimeA));
+  AliDebug(1,Form("V0timesC %f %f %f %f %d",timeCW,(weightC > 0) ? (1./TMath::Sqrt(weightC)) : 0,
+		  medianTimeC,robTimeCW,ntimeC));
+
+  esdV0->SetV0ATime(robTimeAW);
+  esdV0->SetV0CTime(robTimeCW);
+  esdV0->SetV0ATimeError((robWeightA > 0) ? (1./TMath::Sqrt(robWeightA)) : 0);
+  esdV0->SetV0CTimeError((robWeightC > 0) ? (1./TMath::Sqrt(robWeightC)) : 0);
 
   esdV0->SetV0ADecision(AliESDVZERO::kV0Empty);
   esdV0->SetV0CDecision(AliESDVZERO::kV0Empty);
 
-  if (timeAW > (fV0ADist + fTimeWindowBBALow) &&
-      timeAW < (fV0ADist + fTimeWindowBBAUp)) 
+  if (robTimeAW > (fV0ADist + GetRecoParam()->GetTimeWindowBBALow()) &&
+      robTimeAW < (fV0ADist + GetRecoParam()->GetTimeWindowBBAUp())) 
     esdV0->SetV0ADecision(AliESDVZERO::kV0BB);
-  else if (timeAW > (-fV0ADist + fTimeWindowBGALow) &&
-	   timeAW < (-fV0ADist + fTimeWindowBGAUp))
+  else if (robTimeAW > (-fV0ADist + GetRecoParam()->GetTimeWindowBGALow()) &&
+	   robTimeAW < (-fV0ADist + GetRecoParam()->GetTimeWindowBGAUp()))
     esdV0->SetV0ADecision(AliESDVZERO::kV0BG);
-  else if (timeAW > (fV0ADist + fTimeWindowFakeALow) &&
-	   timeAW < (fV0ADist + fTimeWindowFakeAUp))
+  else if (robTimeAW > (AliVZEROReconstructor::kInvalidTime + 1e-6))
     esdV0->SetV0ADecision(AliESDVZERO::kV0Fake);
 
-  if (timeCW > (fV0CDist + fTimeWindowBBCLow) &&
-      timeCW < (fV0CDist + fTimeWindowBBCUp)) 
+  if (robTimeCW > (fV0CDist + GetRecoParam()->GetTimeWindowBBCLow()) &&
+      robTimeCW < (fV0CDist + GetRecoParam()->GetTimeWindowBBCUp())) 
     esdV0->SetV0CDecision(AliESDVZERO::kV0BB);
-  else if (timeCW > (-fV0CDist + fTimeWindowBGCLow) &&
-	   timeCW < (-fV0CDist + fTimeWindowBGCUp))
+  else if (robTimeCW > (-fV0CDist + GetRecoParam()->GetTimeWindowBGCLow()) &&
+	   robTimeCW < (-fV0CDist + GetRecoParam()->GetTimeWindowBGCUp()))
     esdV0->SetV0CDecision(AliESDVZERO::kV0BG);
-  else if (timeCW > (fV0CDist + fTimeWindowFakeCLow) &&
-	   timeCW < (fV0CDist + fTimeWindowFakeCUp))
+  else if (robTimeCW > (AliVZEROReconstructor::kInvalidTime + 1e-6))
     esdV0->SetV0CDecision(AliESDVZERO::kV0Fake);
 
+  UInt_t aBBtriggerV0A = 0; // bit mask for Beam-Beam trigger in V0A
+  UInt_t aBGtriggerV0A = 0; // bit mask for Beam-Gas trigger in V0A
+  UInt_t aBBtriggerV0C = 0; // bit mask for Beam-Beam trigger in V0C
+  UInt_t aBGtriggerV0C = 0; // bit mask for Beam-Gas trigger in V0C
+
+  for(Int_t i = 0; i < nrobTimeA; ++i) {
+    if (esdV0->GetV0ADecision() == AliESDVZERO::kV0BB)
+      aBBtriggerV0A |= (1 << (robIndA[i]));
+    else if (esdV0->GetV0ADecision() == AliESDVZERO::kV0BG)
+      aBGtriggerV0A |= (1 << (robIndA[i]));
+  }
+
+  for(Int_t i = 0; i < nrobTimeC; ++i) {
+    if (esdV0->GetV0CDecision() == AliESDVZERO::kV0BB)
+      aBBtriggerV0C |= (1 << (robIndC[i]));
+    else if (esdV0->GetV0CDecision() == AliESDVZERO::kV0BG)
+      aBGtriggerV0C |= (1 << (robIndC[i]));
+  }
+
+  esdV0->SetBBtriggerV0A(aBBtriggerV0A);
+  esdV0->SetBGtriggerV0A(aBGtriggerV0A);
+  esdV0->SetBBtriggerV0C(aBBtriggerV0C);
+  esdV0->SetBGtriggerV0C(aBGtriggerV0C);
 }

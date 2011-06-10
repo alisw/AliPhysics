@@ -384,6 +384,7 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   // now fill the V0 decision and channel flags
   {
     AliVZEROTriggerMask triggerMask;
+    triggerMask.SetRecoParam(GetRecoParam());
     triggerMask.FillMasks(fESDVZERO, fCalibData, fTimeSlewing);
   }
 

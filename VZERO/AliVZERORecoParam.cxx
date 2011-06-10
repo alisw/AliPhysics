@@ -32,7 +32,18 @@ AliVZERORecoParam::AliVZERORecoParam() : AliDetectorRecoParam(),
   fStartClock(8),
   fEndClock(12),
   fNPreClocks(2),
-  fNPostClocks(1)
+  fNPostClocks(1),
+  fAdcThresHold(0.0),
+  fTimeWindowBBALow(-9.5),
+  fTimeWindowBBAUp(22.5),
+  fTimeWindowBGALow(-2.5),
+  fTimeWindowBGAUp(5.0),
+  fTimeWindowBBCLow(-2.5),
+  fTimeWindowBBCUp(22.5),
+  fTimeWindowBGCLow(-2.5),
+  fTimeWindowBGCUp(2.5),
+  fMaxResid(4.)  	
+
 {
   //
   // constructor

@@ -46,6 +46,7 @@ AliVZEROTenderSupply::AliVZEROTenderSupply() :
   AliTenderSupply(),
   fCalibData(NULL),
   fTimeSlewing(NULL),
+  fRecoParam(NULL),
   fLHCClockPhase(0),
   fDebug(kFALSE)
 {
@@ -59,6 +60,7 @@ AliVZEROTenderSupply::AliVZEROTenderSupply(const char *name, const AliTender *te
   AliTenderSupply(name,tender),
   fCalibData(NULL),
   fTimeSlewing(NULL),
+  fRecoParam(NULL),
   fLHCClockPhase(0),
   fDebug(kFALSE)
 {
@@ -117,9 +119,19 @@ void AliVZEROTenderSupply::ProcessEvent()
       fTimeSlewing = (TF1*)entrySlew->GetObject();
       if (fDebug) printf("AliVZEROTenderSupply::Used VZERO time slewing entry: %s\n",entrySlew->GetId().ToString().Data());
     }
+
+    AliCDBEntry *entryRecoParam = fTender->GetCDBManager()->Get("VZERO/Calib/RecoParam",fTender->GetRun());
+    if (!entryRecoParam) {
+      AliError("VZERO reco-param object is not found in OCDB !");
+      fRecoParam = NULL;
+      return;
+    } else {
+      fRecoParam = (AliVZERORecoParam*)entryRecoParam->GetObject();
+      if (fDebug) printf("AliVZEROTenderSupply::Used VZERO reco-param entry: %s\n",entryRecoParam->GetId().ToString().Data());
+    }
   }
 
-  if (!fCalibData || !fTimeSlewing) {
+  if (!fCalibData || !fTimeSlewing || !fRecoParam) {
     AliWarning("VZERO calibration objects not found!");
     return;
   }
@@ -151,6 +163,7 @@ void AliVZEROTenderSupply::ProcessEvent()
 
   {
     AliVZEROTriggerMask triggerMask;
+    triggerMask.SetRecoParam(fRecoParam);
     triggerMask.FillMasks(esdVZERO, fCalibData, fTimeSlewing);
   }
   if (fDebug) printf("Modified VZERO decision %d (%f ns) and %d (%f ns)\n",
