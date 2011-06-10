@@ -116,7 +116,7 @@ AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Dou
   CheckRangeFit();
   ftypeOfFit4Bkg=fittypeb;
   ftypeOfFit4Sgn=fittypes;
-  if(ftypeOfFit4Bkg!=0 && ftypeOfFit4Bkg!=1 && ftypeOfFit4Bkg!=2) fWithBkg=kFALSE;
+  if(ftypeOfFit4Bkg!=0 && ftypeOfFit4Bkg!=1 && ftypeOfFit4Bkg!=2 && ftypeOfFit4Bkg!=4 && ftypeOfFit4Bkg!=5) fWithBkg=kFALSE;
   else fWithBkg=kTRUE;
   if (!fWithBkg) cout<<"Fit Histogram of Signal only"<<endl;
   else  cout<<"Type of fit For Background = "<<ftypeOfFit4Bkg<<endl;
@@ -1027,7 +1027,7 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     break;
  case 5:
     funcbkg->SetParNames("BkgInt","Coef1","Coef2");
-    funcbkg->SetParameters(sideBandsInt, 0.5, 50.);
+    funcbkg->SetParameters(sideBandsInt, -10., 5.);
     break;
   default:
     cout<<"Wrong choise of ftypeOfFit4Bkg ("<<ftypeOfFit4Bkg<<")"<<endl;
