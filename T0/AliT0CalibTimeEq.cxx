@@ -199,7 +199,6 @@ Bool_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *tim
   // compute online equalized time
   Float_t meandiff, sigmadiff, meanver, meancfdtime, sigmacfdtime;
   meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime =0;
-  Double_t rmsver=0;
   Int_t nent=0;
   Bool_t ok=false;
   TH1F *cfddiff = NULL; 
@@ -236,7 +235,7 @@ Bool_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *tim
 	    if(!cfdtime) AliWarning(Form("no CFD histograms collected by pass0 %i", i));
 	  if(cfddiff) {
 	    nent = Int_t(cfddiff->GetEntries());
-	    if(nent>500 )  { //!!!!!
+	    if(nent>20 )  { //!!!!!
 	      if(cfddiff->GetRMS()>1.5 )
 		GetMeanAndSigma(cfddiff, meandiff, sigmadiff);
 	      if(cfddiff->GetRMS()<=1.5) 
@@ -258,7 +257,7 @@ Bool_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *tim
 	  
 	  if(cfdtime) {
 	    nent = Int_t(cfdtime->GetEntries());
-	    if(nent>500 )  { //!!!!!
+	    if(nent>20 )  { //!!!!!
 	      if(cfdtime->GetRMS()>1.5 )
 		GetMeanAndSigma(cfdtime,meancfdtime, sigmacfdtime);
 	      if(cfdtime->GetRMS()<=1.5) 
