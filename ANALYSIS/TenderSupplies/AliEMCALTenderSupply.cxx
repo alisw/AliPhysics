@@ -24,7 +24,7 @@
 
 #include "TROOT.h"
 #include "TFile.h"
-#include "TAlienFile.h"
+//#include "TAlienFile.h"
 #include "TGrid.h"
 #include "TTree.h"
 #include "TInterpreter.h"
