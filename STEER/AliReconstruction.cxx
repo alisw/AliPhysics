@@ -2308,22 +2308,28 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
   AliCodeTimerAuto("",0)
 
   TString detStr = detectors;
-  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
-    if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
-    AliReconstructor* reconstructor = GetReconstructor(iDet);
-    if (!reconstructor) continue;
-    AliLoader* loader = fLoader[iDet];
-    // Matthias April 2008: temporary fix to run HLT reconstruction
-    // although the HLT loader is missing
-    if (strcmp(fgkDetectorName[iDet], "HLT")==0) {
+  // execute HLT reconstruction first since other detector reconstruction
+  // might depend on HLT data
+  // key 'HLT' is removed from detStr by IsSelected
+  if (!IsSelected("HLT", detStr)) {
+    AliReconstructor* reconstructor = GetReconstructor(kNDetectors-1);
+    if (reconstructor) {
+      // there is no AliLoader for HLT, see
+      // https://savannah.cern.ch/bugs/?35473
+      AliInfo("running reconstruction for HLT");
       if (fRawReader) {
         reconstructor->Reconstruct(fRawReader, NULL);
       } else {
         TTree* dummy=NULL;
         reconstructor->Reconstruct(dummy, NULL);
       }
-      continue;
     }
+  }
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+    AliReconstructor* reconstructor = GetReconstructor(iDet);
+    if (!reconstructor) continue;
+    AliLoader* loader = fLoader[iDet];
     if (!loader) {
       AliWarning(Form("No loader is defined for %s!",fgkDetectorName[iDet]));
       continue;
