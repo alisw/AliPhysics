@@ -379,7 +379,9 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
   //------------------------------------------------------------------
   // This function corrects the track parameters for the crossed material.
   // "xOverX0"   - X/X0, the thickness in units of the radiation length.
-  // "xTimesRho" - is the product length*density (g/cm^2). 
+  // "xTimesRho" - is the product length*density (g/cm^2).
+  //     It should be passed as negative when propagating tracks 
+  //     from the intreaction point to the outside of the central barrel. 
   // "mass" - the mass of this particle (GeV/c^2).
   // "dEdx" - mean enery loss (GeV/(g/cm^2)
   // "anglecorr" - switch for the angular correction
@@ -462,6 +464,8 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
   // This function corrects the track parameters for the crossed material.
   // "xOverX0"   - X/X0, the thickness in units of the radiation length.
   // "xTimesRho" - is the product length*density (g/cm^2). 
+  //     It should be passed as negative when propagating tracks 
+  //     from the intreaction point to the outside of the central barrel. 
   // "mass" - the mass of this particle (GeV/c^2).
   // "anglecorr" - switch for the angular correction
   // "Bethe" - function calculating the energy loss (GeV/(g/cm^2)) 
@@ -486,6 +490,8 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialZA
   // using the full Geant-like Bethe-Bloch formula parameterization
   // "xOverX0"   - X/X0, the thickness in units of the radiation length.
   // "xTimesRho" - is the product length*density (g/cm^2). 
+  //     It should be passed as negative when propagating tracks 
+  //     from the intreaction point to the outside of the central barrel. 
   // "mass" - the mass of this particle (GeV/c^2).
   // "density"  - mean density (g/cm^3)
   // "zOverA"   - mean Z/A
@@ -514,6 +520,8 @@ Bool_t AliExternalTrackParam::CorrectForMaterial
   //
   // This function corrects the track parameters for the crossed material
   // "d"    - the thickness (fraction of the radiation length)
+  //     It should be passed as negative when propagating tracks 
+  //     from the intreaction point to the outside of the central barrel. 
   // "x0"   - the radiation length (g/cm^2) 
   // "mass" - the mass of this particle (GeV/c^2)
   //------------------------------------------------------------------
