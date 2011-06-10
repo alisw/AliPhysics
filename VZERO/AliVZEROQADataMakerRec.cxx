@@ -242,13 +242,13 @@ void AliVZEROQADataMakerRec::InitESDs()
 	Float_t maxWidth = 0.;
 	for(int i=0;i<8;i++){
 		if(fCalibData->GetTimeResolution(i)>0.){
-			Int_t matchWin = 25.*fCalibData->GetMatchWindow(i);
-			if(matchWin>maxTdc) {
-				maxTdc = matchWin;
-				nTdcBin = matchWin/fCalibData->GetTimeResolution(i);
-			}
+		  Float_t matchWin = 25.*(Float_t)fCalibData->GetMatchWindow(i);
+		  if(matchWin>maxTdc) {
+		    maxTdc = matchWin;
+		    nTdcBin = TMath::Nint(matchWin/fCalibData->GetTimeResolution(i));
+		  }
 		}
-		Int_t w = kNTdcWidthBins*fCalibData->GetWidthResolution(i);
+		Float_t w = (Float_t)kNTdcWidthBins*fCalibData->GetWidthResolution(i);
 		if(w>maxWidth) maxWidth = w;
 	}
 
