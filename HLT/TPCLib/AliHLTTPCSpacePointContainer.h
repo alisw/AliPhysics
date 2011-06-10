@@ -69,6 +69,7 @@ class AliHLTTPCSpacePointContainer : public AliHLTSpacePointContainer
 
   virtual int MarkUsed(const AliHLTUInt32_t* clusterIDs, int arraySize);
   virtual int SetTrackID(int trackID, const AliHLTUInt32_t* clusterIDs, int arraySize);
+  virtual int GetTrackID(AliHLTUInt32_t clusterID) const;
   virtual int SetMCID(int clusterID, const AliHLTUInt32_t* clusterIDs, int arraySize);
 
   class AliHLTTPCSpacePointProperties {

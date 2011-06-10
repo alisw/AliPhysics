@@ -25,6 +25,7 @@
 #include "AliHLTTPCSpacePointContainer.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliHLTTPCTransform.h"
 #include "AliHLTComponent.h"
 #include "AliHLTTemplates.h"
 #include "TMath.h"
@@ -116,6 +117,16 @@ int AliHLTTPCSpacePointContainer::AddInputBlock(const AliHLTComponentBlockData* 
 	}
       }
     }
+    {
+      UInt_t clusterSlice =AliHLTTPCSpacePointData::GetSlice(clusterID);
+      UInt_t clusterPart  =AliHLTTPCSpacePointData::GetPatch(clusterID);
+      int row=AliHLTTPCTransform::GetPadRow(pClusterData->fSpacePoints[i].fX);
+      if (row<AliHLTTPCTransform::GetFirstRow(clusterPart) || row>AliHLTTPCTransform::GetLastRow(clusterPart)) {
+	HLTError("row number %d calculated from x value %f is outside slice %d partition %d, expected row %d"
+		 , row, pClusterData->fSpacePoints[i].fX, clusterSlice, clusterPart, pClusterData->fSpacePoints[i].fPadRow);
+      }
+    }
+
     if (fClusters.find(clusterID)==fClusters.end()) {
       // new cluster
       fClusters[clusterID]=AliHLTTPCSpacePointProperties(&pClusterData->fSpacePoints[i]);
@@ -142,7 +153,12 @@ float AliHLTTPCSpacePointContainer::GetX(AliHLTUInt32_t clusterID) const
   // get X coordinate
   if (fClusters.find(clusterID)==fClusters.end() ||
       fClusters.find(clusterID)->second.Data()==NULL) return 0.0;
-  return fClusters.find(clusterID)->second.Data()->fX;
+  // FIXME: understand deviation from the nominal x value
+  // there is a small deviation in the x coordinate - padrow number correlation
+  // in principle, the clusterfinder only uses the mapping to set the x parameter.
+  // now extracting the x value from the padrow no.
+  //return fClusters.find(clusterID)->second.Data()->fX;
+  return AliHLTTPCTransform::Row2X(fClusters.find(clusterID)->second.Data()->fPadRow);
 }
 
 float AliHLTTPCSpacePointContainer::GetXWidth(AliHLTUInt32_t clusterID) const
@@ -196,9 +212,10 @@ float AliHLTTPCSpacePointContainer::GetCharge(AliHLTUInt32_t clusterID) const
 float AliHLTTPCSpacePointContainer::GetPhi(AliHLTUInt32_t clusterID) const
 {
   // get charge
-  if (fClusters.find(clusterID)==fClusters.end() ||
-      fClusters.find(clusterID)->second.Data()==NULL) return 0.0;
-  int slice=AliHLTTPCSpacePointData::GetSlice(fClusters.find(clusterID)->second.Data()->fID);
+
+  // phi can be derived directly from the id, no need to search
+  // for existing cluster
+  int slice=AliHLTTPCSpacePointData::GetSlice(clusterID);
   return ( slice + 0.5 ) * TMath::Pi() / 9.0;
 }
 
@@ -282,6 +299,14 @@ int AliHLTTPCSpacePointContainer::SetTrackID(int trackID, const AliHLTUInt32_t* 
     iCount++;
   }
   return iCount;
+}
+
+int AliHLTTPCSpacePointContainer::GetTrackID(AliHLTUInt32_t clusterID) const
+{
+  /// get track id for specified cluster
+  map<AliHLTUInt32_t, AliHLTTPCSpacePointProperties>::const_iterator element=fClusters.find(clusterID);
+  if (element==fClusters.end()) return -1;
+  return element->second.GetTrackId();
 }
 
 int AliHLTTPCSpacePointContainer::SetMCID(int mcID, const AliHLTUInt32_t* clusterIDs, int arraySize)
