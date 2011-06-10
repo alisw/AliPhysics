@@ -27,11 +27,9 @@ class TFile;
 class TFolder;
 
 class AliBaseLoader;
-class AliLoader;
 class AliObjectLoader;
 class AliRunLoader;
 class AliTaskLoader;
-class AliTreeLoader;
 
 #include <TDirectory.h>
 #include <TNamed.h>
