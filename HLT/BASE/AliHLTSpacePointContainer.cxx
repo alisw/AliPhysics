@@ -32,6 +32,7 @@
 #include "TMath.h"
 #include "TMarker.h"
 #include <memory>
+#include <algorithm>
 #include <iostream>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -212,6 +213,14 @@ int AliHLTSpacePointContainer::GetNumberOfSpacePoints() const
   vector<AliHLTUInt32_t> clusterIDs;
   if (GetClusterIDs(clusterIDs)<0) return 0;
   return clusterIDs.size();
+}
+
+bool AliHLTSpacePointContainer::Check(AliHLTUInt32_t id) const
+{
+  // check if space point exists
+  vector<AliHLTUInt32_t> clusterIDs;
+  if (GetClusterIDs(clusterIDs)<0) return false;
+  return find(clusterIDs.begin(), clusterIDs.end(), id)!=clusterIDs.end();
 }
 
 TH1* AliHLTSpacePointContainer::DrawProjection(const char* plane, const vector<AliHLTUInt32_t>& selection) const

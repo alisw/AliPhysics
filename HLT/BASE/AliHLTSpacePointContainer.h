@@ -45,7 +45,8 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
   /// add input block to the collection
   virtual int AddInputBlock(const AliHLTComponentBlockData* pDesc)=0;
 
-  int GetNumberOfSpacePoints() const;
+  virtual int GetNumberOfSpacePoints() const;
+  virtual bool Check(AliHLTUInt32_t clusterID) const;
   virtual int GetClusterIDs(vector<AliHLTUInt32_t>& tgt) const = 0;
   virtual float GetX(AliHLTUInt32_t clusterID) const = 0;
   virtual float GetXWidth(AliHLTUInt32_t clusterID) const = 0;
@@ -75,6 +76,8 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
     return SetTrackID(trackID, &clusterID, sizeof(clusterID));
   }
   virtual int SetTrackID(int trackID, const AliHLTUInt32_t* clusterIDs, int arraySize);
+
+  virtual int GetTrackID(AliHLTUInt32_t /*clusterID*/) const {return -1;}
 
   int SetMCID(int mcID, AliHLTUInt32_t clusterID) {
     return SetMCID(mcID, &clusterID, sizeof(clusterID));

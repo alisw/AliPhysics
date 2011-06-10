@@ -1,0 +1,252 @@
+//-*- Mode: C++ -*-
+// $Id$
+#ifndef ALIHLTTRACKGEOMETRY_H
+#define ALIHLTTRACKGEOMETRY_H
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
+
+/// @file   AliHLTTrackGeometry.h
+/// @author Matthias Richter
+/// @date   2011-05-20
+/// @brief  Desciption of a track by a sequence of track points
+///
+
+#include <vector>
+#include <TObject.h>
+#include "AliHLTLogging.h"
+#include "AliHLTDataTypes.h"
+#include "AliHLTStdIncludes.h"
+#include "AliHLTExternalTrackParam.h"
+
+class AliHLTGlobalBarrelTrack;
+class AliHLTSpacePointContainer;
+
+/**
+ * @class AliHLTTrackGeometry
+ * Description of a track by a sequence of track points given by the
+ * intersection of the track with a set of planes.
+ *
+ * Each plane describes a local 2D coordinate system with origin at the
+ * norm vector going through global {0,0,0}. The local coordinates u and v
+ * correspond to global y and z at zero alpha and theta. In that case, r
+ * corresponds to global x.
+ *
+ * Each plane is identified by
+ * - rotation angle alpha in the global xy plane
+ * - rotation angle theta
+ * - unique 32bit AliHLTUInt32_t plane id
+ *
+ * The geometry of planes can be defined in child classes defining the
+ * plane id.
+ * @ingroup alihlt_base
+ */
+class AliHLTTrackGeometry : public TObject, public AliHLTLogging
+{
+ public:
+  /// standard constructor
+  AliHLTTrackGeometry();
+  /// copy constructor
+  AliHLTTrackGeometry(const AliHLTTrackGeometry&);
+  /// assignment operator
+  AliHLTTrackGeometry& operator=(const AliHLTTrackGeometry&);
+
+  /// destructor
+  ~AliHLTTrackGeometry();
+
+  /// set the track id
+  void SetTrackId(int trackId) {fTrackId=trackId;}
+  /// get the track id
+  int GetTrackId() const {return fTrackId;}
+
+  enum {
+    kLower = 0,
+    kUpper = 1,
+    kBoundsDimension
+  };
+
+  /**
+   * class AliHLTTrackPlane
+   * Helper class to describe a plane
+   */
+  class AliHLTTrackPlane {
+  public:
+    AliHLTTrackPlane(AliHLTUInt32_t id, float alpha, float r, float theta) 
+      : fId(id), fAlpha(alpha), fR(r), fTheta(theta), fBoundsU(), fBoundsV() {
+      fBoundsU[kLower]=-5.0; fBoundsU[kUpper]=5.0; fBoundsV[kLower]=-5.0; fBoundsV[kUpper]=5.0;
+    }
+    virtual ~AliHLTTrackPlane() {}
+
+    /// id of the plane
+    AliHLTUInt32_t GetId() const {return fId;}
+    /// alpha of the plane
+    float GetPlaneAlpha() const {return fAlpha;}
+    /// radial distance from global {0,0,0}
+    float GetPlaneR() const {return fR;}
+    /// theta of the plane
+    float GetPlaneTheta() const {return fTheta;}
+
+    // set bounds of u coordinate
+    void SetBoundsU(const float bounds[kBoundsDimension]) {
+      fBoundsU[kLower]=bounds[kLower]; fBoundsU[kUpper]=bounds[kUpper];
+    }
+    // set bounds of v coordinate
+    void SetBoundsV(const float bounds[kBoundsDimension]) {
+      fBoundsV[kLower]=bounds[kLower]; fBoundsV[kUpper]=bounds[kUpper];
+    }
+
+    bool CheckBounds(float u, float v) const {
+      return (u>=fBoundsU[kLower]) && (u<=fBoundsU[kUpper]) 
+	&& (v>=fBoundsV[kLower]) && (v<=fBoundsV[kUpper]);
+    }
+
+  private:
+    // standard constructor prohibited
+    AliHLTTrackPlane();
+
+    AliHLTUInt32_t fId; // unique id
+    float fAlpha;       // alpha of the plane
+    float fR;           // radial distance from global {0,0,0}
+    float fTheta;       // theta of the plane
+    float fBoundsU[kBoundsDimension];  // bounds u coordinate
+    float fBoundsV[kBoundsDimension];  // bounds v coordinate
+  };
+
+  class AliHLTTrackPlaneYZ : public AliHLTTrackPlane {
+  public:
+    AliHLTTrackPlaneYZ(AliHLTUInt32_t id, float alpha, float r) 
+      : AliHLTTrackPlane(id, alpha, r, 0.0) {}
+    ~AliHLTTrackPlaneYZ() {}
+
+  private:
+    // standard constructor prohibited
+    AliHLTTrackPlaneYZ();
+  };
+
+  class AliHLTTrackPoint {
+  public:
+    // constructor
+    AliHLTTrackPoint(AliHLTUInt32_t id, float u, float v)
+      : fId(id), fU(u), fV(v), fSpacePoint(0), fSpacePointStatus(-1) {}
+    // copy constructor
+    AliHLTTrackPoint(const AliHLTTrackPoint& src)
+      : fId(src.fId), fU(src.fU), fV(src.fV), fSpacePoint(src.fSpacePoint), fSpacePointStatus(src.fSpacePointStatus) {}
+    // assignment operator
+    AliHLTTrackPoint& operator=(const AliHLTTrackPoint& src) {
+      if (this!=&src) {fId=src.fId; fU=src.fU; fV=src.fV; fSpacePoint=src.fSpacePoint; fSpacePointStatus=src.fSpacePointStatus;}
+      return *this;
+    }
+    ~AliHLTTrackPoint() {}
+
+    bool operator==(const AliHLTTrackPoint& point) const {
+      return point.fId==fId;
+    }
+    bool operator==(AliHLTUInt32_t id) const {
+      return id==fId;
+    }
+
+    /// id of the plane
+    AliHLTUInt32_t GetId() const {return fId;}
+    /// u coordinate
+    float GetU() const {return fU;}
+    /// u coordinate
+    float GetV() const {return fV;}
+
+    /// check associate space point
+    bool HaveAssociatedSpacePoint() const {
+      return fSpacePointStatus>=0;
+    }
+
+    /// associate a space point
+    int SetAssociatedSpacePoint(AliHLTUInt32_t spacepointId, int status) {
+      fSpacePoint=spacepointId; fSpacePointStatus=status; return 0;
+    }
+
+    int GetAssociatedSpacePoint(AliHLTUInt32_t& spacepointId) const {
+      spacepointId=fSpacePoint; return fSpacePointStatus<0?-ENOENT:fSpacePointStatus;
+    }
+
+  private:
+    // standard constructor prohibited
+    AliHLTTrackPoint();
+
+    AliHLTUInt32_t fId; // unique id
+    float fU;           // u coordinate
+    float fV;           // v coordinate
+    AliHLTUInt32_t fSpacePoint; // associated space point id
+    int fSpacePointStatus; // space point status
+  };
+
+  // interface to plane description
+
+  /// alpha of the plane
+  virtual float GetPlaneAlpha(AliHLTUInt32_t planeId) const = 0;
+  /// radial distance from global {0,0,0}
+  virtual float GetPlaneR(AliHLTUInt32_t planeId) const = 0;
+  /// theta of the plane
+  virtual float GetPlaneTheta(AliHLTUInt32_t planeId) const = 0;
+  /// check bounds in u and v coordinate
+  virtual bool CheckBounds(AliHLTUInt32_t planeId, float u, float v) const =0;
+
+  // track interface
+
+  /// calculate the track points, expects the global magnetic field to be initialized
+  virtual int CalculateTrackPoints(const AliHLTExternalTrackParam& track) = 0;
+
+  /// calculate the track points, expects the global magnetic field to be initialized
+  virtual int CalculateTrackPoints(AliHLTGlobalBarrelTrack& track) = 0;
+
+  /// associate all space points of the container to the calculated track points
+  int AssociateSpacePoints(AliHLTSpacePointContainer& points);
+  /// associate specified space points of the container to the calculated track points
+  int AssociateSpacePoints(const AliHLTUInt32_t* trackpoints, AliHLTUInt32_t nofPoints, AliHLTSpacePointContainer& points);
+  int AssociateUnusedSpacePoints(AliHLTSpacePointContainer& points);
+
+  /// find the track point which can be associated to a spacepoint with coordinates and id
+  virtual int FindMatchingTrackPoint(AliHLTUInt32_t spacepointId, float spacepoint[3], AliHLTUInt32_t& planeId) = 0;
+
+  /// get track point of id
+  const AliHLTTrackPoint* GetTrackPoint(AliHLTUInt32_t id) const;
+  /// get track point of id
+  AliHLTTrackPoint* GetTrackPoint(AliHLTUInt32_t id);
+
+  /// set the spacepoint associated with a track point
+  /// @param  planeId       track point
+  /// @param  spacepointId  space point id to be associated with track point
+  /// @param  status        status flag
+  /// @return 0 on success, -ENOENT planeId not found
+  int SetAssociatedSpacePoint(AliHLTUInt32_t planeId, AliHLTUInt32_t spacepointId, int status);
+
+  /// get the spacepoint associated with a track point
+  /// @param  planeId       id of the track point
+  /// @param  spacepointId  target to get the spacepoint data
+  /// @return status flag if found, -ENOENT planeId not found, -ENODATA no associated spacepoint found
+  int GetAssociatedSpacePoint(AliHLTUInt32_t planeId, AliHLTUInt32_t& spacepointId) const;
+
+  // services
+
+  /// inherited from TObject: clear the object and reset pointer references
+  virtual void Clear(Option_t * /*option*/ ="");
+
+  /// inherited from TObject
+  virtual void Print(Option_t *option="") const;
+
+  virtual void Print(ostream& out, Option_t *option="") const;
+
+  /// Inherited from TObject, draw the track points
+  virtual void Draw(Option_t *option="");
+
+ protected:
+  int AddTrackPoint(const AliHLTTrackPoint& point);
+
+ private:
+  vector<AliHLTTrackPoint> fTrackPoints; // list of points
+
+  int fTrackId; // track id
+
+  ClassDef(AliHLTTrackGeometry, 0)
+};
+
+ostream& operator<<(ostream &out, const AliHLTTrackGeometry& c);
+
+#endif
