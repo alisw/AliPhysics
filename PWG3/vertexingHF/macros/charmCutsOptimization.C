@@ -535,11 +535,11 @@ Double_t PowerExpoBkgWoPeak(Double_t *x, Double_t *par){
 Bool_t BinCounting(TH1F* h,Double_t* rangefit,Bool_t writefit, Double_t& sgn, Double_t& errsgn, Double_t& bkg, Double_t& errbkg, Double_t& sgnf, Double_t& errsgnf, Int_t& status){
 
 
-
+  Double_t min, max;
   Int_t nbin=h->GetNbinsX();
-  if(decCh != 2) Double_t min = h->GetBinLowEdge(1);
-  else Double_t min = TDatabasePDG::Instance()->GetParticle(211)->Mass();
-  Double_t max=h->GetBinLowEdge(nbin+1);
+  if(decCh != 2) min = h->GetBinLowEdge(1);
+  else min = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  max=h->GetBinLowEdge(nbin+1);
 
   if(rangefit) {
     min=rangefit[0];
@@ -548,10 +548,11 @@ Bool_t BinCounting(TH1F* h,Double_t* rangefit,Bool_t writefit, Double_t& sgn, Do
 
   reject = true;
 //Bkg fit : exponential = A*exp(B*x) 
-  if(decCh != 2) TF1 *fBkgFit = new TF1("fBkgFit",ExpoBkgWoPeak,min,max,4);          
-  else { 
-   if (fitbtype == 5) TF1 *fBkgFit = new TF1("fBkgFit",PowerExpoBkgWoPeak,min,max,4); //Bkg fit : PowerExpo = A*(x-mpi)^(1/2)*exp(-B*(x-mpi))
-   else TF1 *fBkgFit = new TF1("fBkgFit",PowerBkgWoPeak,min,max,4); //Bkg fit : Power = A*(x-mpi)^B
+  TF1 *fBkgFit;
+  if(decCh != 2) fBkgFit = new TF1("fBkgFit",ExpoBkgWoPeak,min,max,4);         
+  else {
+   if (fitbtype == 5) fBkgFit = new TF1("fBkgFit",PowerExpoBkgWoPeak,min,max,4); //Bkg fit : PowerExpo = A*(x-mpi)^(1/2)*exp(-B*(x-mpi))
+   else fBkgFit = new TF1("fBkgFit",PowerBkgWoPeak,min,max,4); //Bkg fit : Power = A*(x-mpi)^B
   }
 
   fBkgFit->FixParameter(2,mass-nsigma*sigma);
@@ -567,10 +568,11 @@ Bool_t BinCounting(TH1F* h,Double_t* rangefit,Bool_t writefit, Double_t& sgn, Do
   } 
 
   reject = false;
-  if(decCh !=2) TF1 *fBkgFct = new TF1("fBkgFct",ExpoBkgWoPeak,min,max,4);  
+  TF1 *fBkgFct;
+  if(decCh !=2) fBkgFct = new TF1("fBkgFct",ExpoBkgWoPeak,min,max,4); 
   else {
-   if (fitbtype == 5) TF1 *fBkgFct = new TF1("fBkgFct",PowerExpoBkgWoPeak,min,max,4);  
-   else TF1 *fBkgFct = new TF1("fBkgFct",PowerBkgWoPeak,min,max,4);
+   if (fitbtype == 5) fBkgFct = new TF1("fBkgFct",PowerExpoBkgWoPeak,min,max,4); 
+   else fBkgFct = new TF1("fBkgFct",PowerBkgWoPeak,min,max,4);
   }
   fBkgFct->SetLineStyle(2);
   for(Int_t i=0; i<4; i++) fBkgFct->SetParameter(i,fBkgFit->GetParameter(i));
