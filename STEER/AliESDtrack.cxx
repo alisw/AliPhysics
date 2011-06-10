@@ -163,7 +163,7 @@ AliESDtrack::AliESDtrack() :
   fTPCInner(0),
   fOp(0),
   fHMPIDp(0),  
-  fFriendTrack(new AliESDfriendTrack()),
+  fFriendTrack(NULL),
   fTPCClusterMap(159),//number of padrows
   fTPCSharedMap(159),//number of padrows
   fFlags(0),
@@ -232,6 +232,8 @@ AliESDtrack::AliESDtrack() :
   //
   // The default ESD constructor 
   //
+  if (!OnlineMode()) fFriendTrack=new AliESDfriendTrack();
+
   Int_t i;
   for (i=0; i<AliPID::kSPECIES; i++) {
     fTrackTime[i]=0.;
@@ -254,6 +256,8 @@ AliESDtrack::AliESDtrack() :
   for (i=0;i<10;i++) {fTOFInfo[i]=0;}
   for (i=0;i<12;i++) {fITSModule[i]=-1;}
 }
+
+bool AliESDtrack::fgkOnlineMode=false;
 
 //_______________________________________________________________________
 AliESDtrack::AliESDtrack(const AliESDtrack& track):
@@ -705,7 +709,8 @@ AliESDtrack::~AliESDtrack(){
   delete fOp;
   delete fHMPIDp;
   delete fCp; 
-  delete fFriendTrack;
+  if (fFriendTrack) delete fFriendTrack;
+  fFriendTrack=NULL;
   if(fTRDnSlices)
     delete[] fTRDslices;
 }
@@ -931,6 +936,7 @@ void AliESDtrack::AddCalibObject(TObject * object){
   // add calib object to the list
   //
   if (!fFriendTrack) fFriendTrack  = new AliESDfriendTrack;
+  if (!fFriendTrack) return;
   fFriendTrack->AddCalibObject(object);
 }
 
@@ -1221,9 +1227,11 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
   }
 
   Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
+  if (fFriendTrack) {
   if (flags==kITSout) fFriendTrack->SetITSOut(*t);
   if (flags==kTPCout) fFriendTrack->SetTPCOut(*t);
   if (flags==kTRDrefit) fFriendTrack->SetTRDIn(*t);
+  }
   
   switch (flags) {
     
@@ -1231,6 +1239,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     {
     fITSClusterMap=0;
     fITSncls=t->GetNumberOfClusters();
+    if (fFriendTrack) {
     Int_t* indexITS = new Int_t[AliESDfriendTrack::kMaxITScluster];
     for (Int_t i=0;i<AliESDfriendTrack::kMaxITScluster;i++) {
 	indexITS[i]=t->GetClusterIndex(i);
@@ -1242,6 +1251,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     }
     fFriendTrack->SetITSIndices(indexITS,AliESDfriendTrack::kMaxITScluster);
     delete [] indexITS;
+    }
 
     fITSchi2=t->GetChi2();
     fITSsignal=t->GetPIDsignal();
@@ -1269,7 +1279,6 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     }
   case kTPCout:
     {
-    Int_t* indexTPC = new Int_t[AliESDfriendTrack::kMaxTPCcluster];
     if (flags & kTPCout){
       if (!fOp) fOp=new AliExternalTrackParam(*t);
       else 
@@ -1278,8 +1287,10 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     fTPCncls=t->GetNumberOfClusters();    
     fTPCchi2=t->GetChi2();
     
+    if (fFriendTrack)
      {//prevrow must be declared in separate namespace, otherwise compiler cries:
       //"jump to case label crosses initialization of `Int_t prevrow'"
+       Int_t* indexTPC = new Int_t[AliESDfriendTrack::kMaxTPCcluster];
        Int_t prevrow = -1;
        //       for (Int_t i=0;i<fTPCncls;i++) 
        for (Int_t i=0;i<AliESDfriendTrack::kMaxTPCcluster;i++) 
@@ -1343,12 +1354,13 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     fTRDLabel = t->GetLabel(); 
     fTRDchi2  = t->GetChi2();
     fTRDncls  = t->GetNumberOfClusters();
+    if (fFriendTrack) {
       Int_t* indexTRD = new Int_t[AliESDfriendTrack::kMaxTRDcluster];
       for (Int_t i=0;i<AliESDfriendTrack::kMaxTRDcluster;i++) indexTRD[i]=-2;
       for (Int_t i=0;i<6;i++) indexTRD[i]=t->GetTrackletIndex(i);
       fFriendTrack->SetTRDIndices(indexTRD,AliESDfriendTrack::kMaxTRDcluster);
       delete [] indexTRD;
-    
+    }    
     
     fTRDsignal=t->GetPIDsignal();
     }
@@ -1617,7 +1629,7 @@ Char_t AliESDtrack::GetITSclusters(Int_t *idx) const {
   //---------------------------------------------------------------------
   // This function returns indices of the assgined ITS clusters 
   //---------------------------------------------------------------------
-  if (idx) {
+  if (idx && fFriendTrack) {
     Int_t *index=fFriendTrack->GetITSindices();
     for (Int_t i=0; i<AliESDfriendTrack::kMaxITScluster; i++) {
       if ( (i>=fITSncls) && (i<6) ) idx[i]=-1;
@@ -1694,7 +1706,7 @@ UShort_t AliESDtrack::GetTPCclusters(Int_t *idx) const {
   //---------------------------------------------------------------------
   // This function returns indices of the assgined ITS clusters 
   //---------------------------------------------------------------------
-  if (idx) {
+  if (idx && fFriendTrack) {
     Int_t *index=fFriendTrack->GetTPCindices();
 
     if (index){
@@ -1728,7 +1740,9 @@ Float_t AliESDtrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/
   Int_t findable=0;
   Int_t last=-nNeighbours;
   
-  for (Int_t i=row0; i<row1; ++i){
+  Int_t upperBound=fTPCClusterMap.GetNbits();
+  if (upperBound>row1) upperBound=row1;
+  for (Int_t i=row0; i<upperBound; ++i){
     //look to current row
     if (fTPCClusterMap[i]) {
       last=i;
@@ -1768,6 +1782,7 @@ Double_t AliESDtrack::GetTPCdensity(Int_t row0, Int_t row1) const{
   // GetDensity of the clusters on given region between row0 and row1
   // Dead zone effect takin into acoount
   //
+  if (!fFriendTrack) return 0.0;
   Int_t good  = 0;
   Int_t found = 0;
   //  
@@ -1800,7 +1815,7 @@ UChar_t AliESDtrack::GetTRDclusters(Int_t *idx) const {
   //---------------------------------------------------------------------
   // This function returns indices of the assgined TRD clusters 
   //---------------------------------------------------------------------
-  if (idx) {
+  if (idx && fFriendTrack) {
     Int_t *index=fFriendTrack->GetTRDindices();
 
     if (index) {
@@ -1825,6 +1840,7 @@ UChar_t AliESDtrack::GetTRDtracklets(Int_t *idx) const {
 //   2. The idx array store not only the index but also the layer of the tracklet. 
 //      Therefore tracks with TRD gaps contain default values for indices [-1] 
 
+  if (!fFriendTrack) return 0;
   if (!idx) return GetTRDntracklets();
   Int_t *index=fFriendTrack->GetTRDindices();
   Int_t n = 0;
