@@ -45,6 +45,7 @@ set ( CLASS_HDRS
     AliHLTTPCTrackArray.h
     AliHLTTPCTrack.h
     AliHLTTPCSpacePointContainer.h
+    AliHLTTPCTrackGeometry.h
     offline/AliHLTTPCDigitPublisherComponent.h
     offline/AliHLTTPCOfflineClustererComponent.h
     offline/AliHLTTPCOfflineTrackerComponent.h
@@ -72,6 +73,7 @@ set ( CLASS_HDRS
     AliHLTTPCEsdWriterComponent.h
     AliHLTTPCHistogramHandlerComponent.h
     AliHLTTPCClusterConverterComponent.h
+    AliHLTTPCClusterAccessHLTOUT.h
     tracking-ca/AliHLTTPCCATrack.h
     tracking-ca/AliHLTTPCCATracklet.h
     tracking-ca/AliHLTTPCCATracker.h
