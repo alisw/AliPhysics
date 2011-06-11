@@ -636,7 +636,7 @@ TString* AliTreeDraw::FitPlane(const char* drawCommand, const char* formula, con
       else  centries = fTree->Draw(drawStr.Data(), cutStr.Data(), "goff", stop-start,start);
 
       if (entries != centries) { 
-	for (Int_t j = 0; j < dim + 1; i++) {
+	for (Int_t j = 0; j < dim + 1; j++) {
           if(values[j]) delete values[j];
 	} 
         delete[] values;
