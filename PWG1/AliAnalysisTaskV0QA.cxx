@@ -112,7 +112,7 @@ fclRefsP(0)
 
  {
   // Default Constructor.
-
+  for(Int_t i=0;i<100000;i++) fLabelsTPC[i] = 0;
  }
 
 //________________________________________________________________________
@@ -209,7 +209,7 @@ fclRefsP(0)
    fxmaxV0 = new Double_t[fDim];
    fbinsV0 = new Int_t[fDim];
 
-  for(Int_t i=0;i<100000;i++) fLabelsTPC[100000] = 0;
+  for(Int_t i=0;i<100000;i++) fLabelsTPC[i] = 0;
 
   fgDim=500; 
   fgConvGamGeantIndex = new Int_t[fgDim];

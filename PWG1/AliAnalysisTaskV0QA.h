@@ -159,8 +159,8 @@ class AliAnalysisTaskV0QA : public AliAnalysisTaskSE {
 
 
 
-  Double_t fprobabilityPos[AliPID::kSPECIES];
-  Double_t fprobabilityNeg[AliPID::kSPECIES];
+  //Double_t fprobabilityPos[AliPID::kSPECIES];
+  //Double_t fprobabilityNeg[AliPID::kSPECIES];
 
   Int_t    fDim;        // number of dimensions THnSparse
   Double_t * fValueL;   //[fDim] values to THnSparse for L
