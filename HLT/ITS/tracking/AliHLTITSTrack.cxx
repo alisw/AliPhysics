@@ -98,6 +98,8 @@ AliHLTITSTrack::AliHLTITSTrack(AliESDtrack& t,Bool_t c) throw (const Char_t *) :
   // Conversion ESD track -> ITS track.
   // If c==kTRUE, create the ITS track out of the constrained params.
   //------------------------------------------------------------------
+  for(Int_t i=0; i<2*AliITSgeomTGeo::kNLayers; i++) {fIndex[i]=-1; }
+
   const AliExternalTrackParam *par=&t;
   if (c) {
     par=t.GetConstrainedParam();
