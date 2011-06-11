@@ -78,8 +78,7 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
 
     fAvailableSize = sizeof(AliHLTCaloRecPointDataStruct) * 20;
     fBuffer = new UChar_t[fAvailableSize]; //FR
-
-    //    fFirstRecPointPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(new UChar_t[fAvailableSize]);
+    
     fFirstRecPointPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(fBuffer);
     fRecPointDataPtr = fFirstRecPointPtr;
 
@@ -88,8 +87,10 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
 AliHLTCaloClusterizer::~AliHLTCaloClusterizer()
 {
     //See header file for documentation
-  delete [] fBuffer;
-  //delete [] fRecPointDataPtr;
+  delete [] fBuffer; //FR
+  fBuffer = NULL;    //FR
+  fAvailableSize = 0;  //FR
+
   delete [] fRecPointArray;
 }
 
@@ -280,14 +281,22 @@ Int_t AliHLTCaloClusterizer::CheckBuffer()
         Int_t recPointOffset = reinterpret_cast<UChar_t*>(fRecPointDataPtr) - reinterpret_cast<UChar_t*>(fFirstRecPointPtr);
         Int_t digitIndexOffset = reinterpret_cast<UChar_t*>(fDigitIndexPtr) - reinterpret_cast<UChar_t*>(fRecPointDataPtr);
         UChar_t *tmp = new UChar_t[fAvailableSize*2];
-
+	
+	if (tmp == NULL)
+	  {
+	    HLTError("Pointer error");
+	    return(-1);
+	  }
+	
         memcpy(tmp, fFirstRecPointPtr, fUsedSize);
         fAvailableSize *= 2;
         for (Int_t n = 0; n < fNRecPoints; n++)
         {
             fRecPointArray[n] = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(reinterpret_cast<UChar_t*>(fRecPointArray[n]) - reinterpret_cast<UChar_t*>(fFirstRecPointPtr) + reinterpret_cast<UChar_t*>(tmp));
         }
-        delete [] fFirstRecPointPtr;
+	delete [] fBuffer; //FR
+        fBuffer = tmp; //FR
+	
         fFirstRecPointPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(tmp);
         fRecPointDataPtr = reinterpret_cast<AliHLTCaloRecPointDataStruct*>(tmp + recPointOffset);
         fDigitIndexPtr = reinterpret_cast<Int_t*>(reinterpret_cast<UChar_t*>(fRecPointDataPtr) + digitIndexOffset);
