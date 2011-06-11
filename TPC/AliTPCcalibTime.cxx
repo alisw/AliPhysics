@@ -359,7 +359,13 @@ void AliTPCcalibTime::Process(AliESDEvent *event){
   // main function to make calibration
   //
   if(!event) return;
-  if (event->GetNumberOfTracks()<2) return;
+  if (event->GetNumberOfTracks()<2) return; 
+  AliESDfriend *ESDfriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  if (!ESDfriend) {
+    return;
+  }
+  if (ESDfriend->TestSkipBit()) return;
+  
   ResetCurrent();
   //if(IsLaser  (event)) 
   ProcessLaser (event);
@@ -1084,7 +1090,7 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
       }
     }
     //
-    if (fTPCVertexCorrelation && cal->fTPCVertexCorrelation){
+    if (fTPCVertexCorrelation[0] && cal->fTPCVertexCorrelation[0]){
       for (Int_t imeas=0; imeas<5; imeas++){
 	if (fTPCVertexCorrelation[imeas] && cal->fTPCVertexCorrelation[imeas]) fTPCVertexCorrelation[imeas]->Add(cal->fTPCVertexCorrelation[imeas]);
       }

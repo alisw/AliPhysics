@@ -1965,6 +1965,7 @@ AliTPCCalPad* AliTPCcalibDB::MakeDeadMap(Double_t notInMap, const char* nameMapp
     Int_t patch = mapping->GetPatchFromEquipmentID(idDDL);   
     if (patch<0) continue;
     Int_t roc=mapping->GetRocFromEquipmentID(idDDL);
+    if (roc<0) continue;
     AliTPCCalROC *calRoc=deadMap->GetCalROC(roc);
     if (calRoc) {
      for ( Int_t branch = 0; branch < 2; branch++ ) {
