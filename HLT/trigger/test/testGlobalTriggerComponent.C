@@ -51,7 +51,7 @@
 #include "AliHLTTriggerDomain.h"
 #include "AliHLTTriggerDecision.h"
 #include "AliHLTGlobalTriggerDecision.h"
-#include "AliHLTEventSummary.h"
+#include "AliHLTScalars.h"
 #include "AliHLTSystem.h"
 #include "AliHLTConfiguration.h"
 #include "Riostream.h"
@@ -94,11 +94,11 @@ void GenerateInputData()
 	triggerDomain3.Add(readoutList3);
 	AliHLTTriggerDecision decision3(true, "triggerSSD", triggerDomain3, "SSD has data");
 	
-	AliHLTEventSummary summary1;
-	summary1.SetTriggerClass(0x1);
+	AliHLTScalars summary1;
+	summary1.GetScalar("TrigClass").Value(0x1);
 	
-	AliHLTEventSummary summary2;
-	summary2.SetTriggerClass(0x2);
+	AliHLTScalars summary2;
+	summary2.GetScalar("TrigClass").Value(0x2);
 	
 	TFile* file = new TFile("testInputFile1.root", "RECREATE");
 	decision1.Write("triggerTPC");
@@ -143,6 +143,7 @@ void GenerateInputData()
 	file = new TFile("testInputFile8.root", "RECREATE");
 	delete file;
 	
+	/*FIXME This has stopped working in AliRoot, it causes a segfault now within the AliHLTReadoutList vtable.
 	if (loadedLibs)
 	{
 		gSystem->Unload("libAliHLTTrigger.so");
@@ -150,6 +151,7 @@ void GenerateInputData()
 		gSystem->Unload("libAliHLTTRD.so");
 		gSystem->Unload("libAliHLTUtil.so");
 	}
+	*/
 }
 
 /**
@@ -189,7 +191,7 @@ void RunTrigger(int config = 0, bool usecint = false, bool debug = false, int nu
 	
 	cmdline = Form("-config $ALICE_ROOT/HLT/trigger/test/TriggerConfig.C(%d)"
 		" -includepath $ALICE_ROOT/include -includepath $ALICE_ROOT/HLT/BASE"
-		" -includepath $ALICE_ROOT/HLT/trigger -include AliHLTEventSummary.h",
+		" -includepath $ALICE_ROOT/HLT/trigger -include AliHLTScalars.h",
 		config
 		);
 	if (customClass != NULL) cmdline += Form(" -usecode %s.cxx %s", customClass, customClass);
@@ -280,7 +282,7 @@ void RunTriggerSW(int config = 0, bool usecint = false, bool debug = false, cons
 	
 	cmdline = Form("-config $ALICE_ROOT/HLT/trigger/test/TriggerConfig.C(%d)"
 		" -includepath $ALICE_ROOT/include -includepath $ALICE_ROOT/HLT/BASE"
-		" -includepath $ALICE_ROOT/HLT/trigger -include AliHLTEventSummary.h"
+		" -includepath $ALICE_ROOT/HLT/trigger -include AliHLTScalars.h"
 		" -process-all-events",
 		config
 		);
@@ -625,7 +627,7 @@ bool CheckSymbolTestConfig(const char* testName = "Symbol config")
 
 	TFile* file = new TFile("testOutputFile.root", "READ");
 	
-	// Triggers in events (i.e. input triggers) and trigger classes in AliHLTEventSummary:
+	// Triggers in events (i.e. input triggers) and trigger classes in AliHLTScalars:
 	// event 1: TPC MUON SSD, 0x2
 	// event 2: TPC         , 0x2
 	// event 3: MUON        , 0x1
@@ -691,7 +693,7 @@ bool CheckComplexTestConfig(const char* testName = "Complex config")
 
 	TFile* file = new TFile("testOutputFile.root", "READ");
 	
-	// Triggers in events (i.e. input triggers) and trigger classes in AliHLTEventSummary:
+	// Triggers in events (i.e. input triggers) and trigger classes in AliHLTScalars:
 	// event 1: TPC MUON SSD, 0x2
 	// event 2: TPC         , 0x2
 	// event 3: MUON        , 0x1

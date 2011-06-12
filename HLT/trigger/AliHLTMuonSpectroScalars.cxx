@@ -21,7 +21,7 @@
 ///  @brief  Implementation of the muon spectrometer trigger scalars.
 ///
 /// This implements the trigger scalars for the muon spectrometer that can be used
-/// in the HLT global trigger and/or added to the AliHLTEventSummary.
+/// in the HLT global trigger and/or added to the AliESDEvent.
 
 #include "AliHLTMuonSpectroScalars.h"
 #include "AliLog.h"

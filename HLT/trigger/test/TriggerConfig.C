@@ -76,7 +76,7 @@ void SymbolTestConfig()
 	config.AddSymbol("PHOStracks", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"TRACKS:PHOS\")");
 	config.AddSymbol("domainPHOS", "AliHLTTriggerDomain", "", "PHOSclusters | PHOStracks");
 	config.AddSymbol("triggerTPC", "bool", "this->Result()", "false", "AliHLTTriggerDecision");
-	config.AddSymbol("trigClasses", "AliHLTUInt64_t", "this->GetTriggerClasses()", "0x0", "AliHLTEventSummary");
+	config.AddSymbol("trigClasses", "Double_t", "this->GetScalar(\"TrigClass\")", "0", "AliHLTScalars");
 	config.AddItem(2, "true", "domain-All", 4, "Pass through");
 	config.AddItem(1, "trigClasses == 0x2", "triggerTPC | domainPHOS", "Trigger class 2");
 }

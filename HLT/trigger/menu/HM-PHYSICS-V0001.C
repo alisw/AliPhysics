@@ -82,9 +82,6 @@ void HM_PHYSICS_V0001(
   // Create the trigger menu.
   AliHLTGlobalTriggerConfig config("HM-COSMICS-V0001");
 
-  //config.AddSymbol("triggerClasses", "AliHLTUInt64_t", "this->GetTriggerClasses()", "0x0", "AliHLTEventSummary");
-  //config.AddItem("triggerClasses != 0x0", "domainAll", "CTP triggered");
-
   config.AddSymbol("domainAll", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"*******:***\")");
   
   // /////////////////////////////////////////////////////////////////////////////////////////	

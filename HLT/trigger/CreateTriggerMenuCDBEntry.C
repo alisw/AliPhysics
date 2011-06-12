@@ -81,10 +81,6 @@ void CreateTriggerMenuCDBEntry(
 	// Create the trigger menu.
 	AliHLTGlobalTriggerConfig config("Default Global Trigger Config");
 
-
-	//config.AddSymbol("triggerClasses", "AliHLTUInt64_t", "this->GetTriggerClasses()", "0x0", "AliHLTEventSummary");
-	//config.AddItem("triggerClasses != 0x0", "domainAll", "CTP triggered");
-
 	config.AddSymbol("domainAll", "AliHLTTriggerDomain", "", "AliHLTTriggerDomain(\"*******:***\")");
 
 	///////////////////////////////////////////////////////////////////////////////////////////	
