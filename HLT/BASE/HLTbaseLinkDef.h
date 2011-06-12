@@ -112,7 +112,7 @@
 
 // Need to initialise the hash table which is transient after reading the class.
 #pragma read sourceClass="AliHLTScalars" version="[1-]" targetClass="AliHLTScalars"\
-  source="" target="fMap,fScalars" code="{fMap.AddAll(&fScalars);}"
+  source="" target="fMap" code="{fMap.AddAll(&newObj->fScalars);}"
 
 #pragma link C++ struct AliHLTComponentEventData+;
 #pragma link C++ struct AliHLTComponentBlockData+;

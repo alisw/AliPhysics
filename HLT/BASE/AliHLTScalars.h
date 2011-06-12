@@ -13,7 +13,6 @@
 
 #include "TObject.h"
 #include "TNamed.h"
-#include "TTimeStamp.h"
 #include "TClonesArray.h"
 #include "THashTable.h"
 
@@ -102,7 +101,7 @@ public:
 		}
 		
 		/// Typecast operator for returning the value directly.
-		operator Double_t () { return fValue; }
+		operator Double_t () const { return fValue; }
 		
 	private:
 		Double_t fValue; // The scalar's value.
@@ -224,7 +223,7 @@ public:
 	/// Returns the named scalar or a zero sentinel if no such scalar is found.
 	const AliScalar& operator [] (const TString& name) const { return GetScalar(name.Data()); }
 
-	/// Returns the named scalar for editing. A new scalar is created if n is out of range.
+	/// Returns the named scalar for editing. A new scalar is created if the named scalar is not found.
 	AliScalar& operator [] (const TString& name) { return GetScalar(name.Data()); }
 
 	/**
