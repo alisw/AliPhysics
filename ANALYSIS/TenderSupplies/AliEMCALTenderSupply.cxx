@@ -45,6 +45,9 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
 
+// mfasel:
+//  Remove all calls to TGrid::Connect - grid connection is global and better steer by the run macro
+
 AliEMCALTenderSupply::AliEMCALTenderSupply() :
 	AliTenderSupply()
 	,fEMCALGeo(0x0)
@@ -66,6 +69,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
 	,fMass(0.139)
 	,fStep(1)
 	,fRcut(0.05)	
+  	,fBasePath(".")
 {
 	//
 	// default ctor
@@ -95,6 +99,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *te
 	,fMass(0.139)
 	,fStep(1)
 	,fRcut(0.05)
+  	,fBasePath(".")
 {
 	//
 	// named ctor
@@ -126,6 +131,7 @@ void AliEMCALTenderSupply::Init()
 	fInputTree = mgr->GetTree();
 
 	if(gROOT->LoadMacro(fConfigName) >=0){
+    		AliDebug(1, Form("Loading settings from macro %s", fConfigName.Data()));
 		AliEMCALTenderSupply *tender = (AliEMCALTenderSupply*)gInterpreter->ProcessLine("ConfigEMCALTenderSupply()");
 		fDebugLevel         = tender->fDebugLevel;
 		fEMCALGeoName       = tender->fEMCALGeoName; 
@@ -350,6 +356,7 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
 		for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
 		{
 			//if(DebugLevel() > 1)  fEMCALMatrix[mod]->Print();
+      			fEMCALMatrix[mod] = new TGeoHMatrix();           // mfasel: prevent tender from crashing
 			fEMCALMatrix[mod]->SetRotation(rotationMatrix[mod]);
 			fEMCALMatrix[mod]->SetTranslation(translationMatrix[mod]);		
 			fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod); 
@@ -357,10 +364,10 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
 	}
 
 
-	if(runGM>140000 && runGM <148531 && (fFilepass = "pass1"))
+	else if(runGM>140000 && runGM <148531 && (fFilepass = "pass1"))
 	{ // 2011 LHC11a pass1 data
 		AliOADBContainer emcalgeoCont(Form("emcal2011"));
-		emcalgeoCont.InitFromFile(Form("BetaGood.root"),Form("AliEMCALgeo"));
+		emcalgeoCont.InitFromFile(Form("%s/BetaGood.root",fBasePath),Form("AliEMCALgeo"));
 
 		TObjArray *mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byS");
 
@@ -403,9 +410,11 @@ Bool_t AliEMCALTenderSupply::InitBadChannels()
 	if(fRunBC <=140000){
 		fbad = new TFile("BadChannels.root","read");
 		if (fbad->IsZombie()){
-			if (fDebugLevel>1) AliInfo("Connecting to alien to get BadChannels.root \n");	
-			TGrid::Connect("alien://");
-			fbad = TFile::Open("alien:///alice/cern.ch/user/g/gconesab/BadChannelsDB/BadChannels.root");
+			TString fPath = TString(fBasePath);
+			if(fPath.Contains("alien")) {
+				if (fDebugLevel>1) AliInfo("Connecting to alien to get BadChannels.root \n");	
+				fbad = TFile::Open(Form("%s/BadChannelsDB/BadChannels.root",fBasePath));
+			}
 		}
 
 		TH2I * hb0 = ( TH2I *)fbad->Get("EMCALBadChannelMap_Mod0");
@@ -416,6 +425,7 @@ Bool_t AliEMCALTenderSupply::InitBadChannels()
 		fEMCALRecoUtils->SetEMCALChannelStatusMap(1,hb1);
 		fEMCALRecoUtils->SetEMCALChannelStatusMap(2,hb2);
 		fEMCALRecoUtils->SetEMCALChannelStatusMap(3,hb3); 
+		
 	}
 
 	//2011
@@ -475,37 +485,37 @@ Bool_t AliEMCALTenderSupply::InitRecalib()
 	if(runRC <=140000){
 		fRecalib = new TFile("RecalibrationFactors.root","read");
 		if (fRecalib->IsZombie()){
-			if (fDebugLevel>1) AliInfo("Connecting to alien to get RecalibrationFactors.root \n");	
+			TString fPath = TString(fBasePath);
+			if(fPath.Contains("alien")) {
 
-			if(     (runRC >= 114737 && runRC <= 117223 && (fFilepass = "pass2")) || //LHC10b pass2 
-					(runRC >= 118503 && runRC <= 121040 && ((fFilepass = "pass2")||(fFilepass = "pass3"))) || //LHC10c pass2, LHC10c pass3
-					(runRC >= 122195 && runRC <= 126437 && (fFilepass = "pass1")) || //LHC10d pass1
-					(runRC >= 127712 && runRC <= 130850 && (fFilepass = "pass1")) || //LHC10e pass1
-					(runRC >= 133004 && runRC < 134657  && (fFilepass = "pass1")))// LHC10f pass1 <134657
-			{
-				TGrid::Connect("alien://");
-				fRecalib = TFile::Open("alien:///alice/cern.ch/user/g/gconesab/RecalDB/summer_december_2010/RecalibrationFactors.root");
-			}
+				if (fDebugLevel>1) AliInfo("Connecting to alien to get RecalibrationFactors.root \n");	
 
-			else if((runRC >= 122195 && runRC <= 126437 && (fFilepass = "pass2")) || //LHC10d pass2
-					(runRC >= 134657 && runRC <= 135029 && (fFilepass = "pass1")) || //LHC10f pass1 >= 134657
-					(runRC >= 135654 && runRC <= 136377 && (fFilepass = "pass1")) || //LHC10g pass1
-					(runRC >= 136851 && runRC < 137231  && (fFilepass = "pass1"))) //LHC10h pass1 untill christmas
-			{
-				TGrid::Connect("alien://");
-				fRecalib = TFile::Open("alien:///alice/cern.ch/user/g/gconesab/RecalDB/december2010/RecalibrationFactors.root");
-			}
+				if(     (runRC >= 114737 && runRC <= 117223 && (fFilepass = "pass2")) || //LHC10b pass2 
+						(runRC >= 118503 && runRC <= 121040 && ((fFilepass = "pass2")||(fFilepass = "pass3"))) || //LHC10c pass2, LHC10c pass3
+						(runRC >= 122195 && runRC <= 126437 && (fFilepass = "pass1")) || //LHC10d pass1
+						(runRC >= 127712 && runRC <= 130850 && (fFilepass = "pass1")) || //LHC10e pass1
+						(runRC >= 133004 && runRC < 134657  && (fFilepass = "pass1")))// LHC10f pass1 <134657
+				{
+					fRecalib = TFile::Open(Form("%s/RecalDB/summer_december_2010/RecalibrationFactors.root",fBasePath));
+				}
 
-			else if(runRC >= 137231 && runRC <= 139517 && (fFilepass = "pass1")) //LHC10h pass1 from christmas
-			{
-				TGrid::Connect("alien://");
-				fRecalib = TFile::Open("alien:///alice/cern.ch/user/g/gconesab/RecalDB/summer2010/RecalibrationFactors.root");
-			}
-			else {
-				AliError("Run number or pass number not found; RECALIBRATION NOT APPLIED");
-				return kTRUE;
-			}
+				else if((runRC >= 122195 && runRC <= 126437 && (fFilepass = "pass2")) || //LHC10d pass2
+						(runRC >= 134657 && runRC <= 135029 && (fFilepass = "pass1")) || //LHC10f pass1 >= 134657
+						(runRC >= 135654 && runRC <= 136377 && (fFilepass = "pass1")) || //LHC10g pass1
+						(runRC >= 136851 && runRC < 137231  && (fFilepass = "pass1"))) //LHC10h pass1 untill christmas
+				{
+					fRecalib = TFile::Open(Form("%s/RecalDB/december2010/RecalibrationFactors.root",fBasePath));
+				}
 
+				else if(runRC >= 137231 && runRC <= 139517 && (fFilepass = "pass1")) //LHC10h pass1 from christmas
+				{
+					fRecalib = TFile::Open(Form("%s/RecalDB/summer2010/RecalibrationFactors.root",fBasePath));
+				}
+				else {
+					AliError("Run number or pass number not found; RECALIBRATION NOT APPLIED");
+				}
+
+			}
 		}
 
 		TH2F * r0 = ( TH2F *)fRecalib->Get("EMCALRecalFactors_SM0");
@@ -521,12 +531,13 @@ Bool_t AliEMCALTenderSupply::InitRecalib()
 	if(runRC > 140000){
 		fRecalib = new TFile("RecalibrationFactors.root","read");
 		if (fRecalib->IsZombie()){
-			if (fDebugLevel>1) AliInfo("Connecting to alien to get RecalibrationFactors.root \n");
+			TString fPath = TString(fBasePath);
+			if(fPath.Contains("alien")) {
+				if (fDebugLevel>1) AliInfo("Connecting to alien to get RecalibrationFactors.root \n");
 
-			TGrid::Connect("alien://");
-			fRecalib = TFile::Open("alien:///alice/cern.ch/user/g/gconesab/RecalDB/2011_v0/RecalibrationFactors.root");
-			if(!fRecalib) AliError("Recalibration file not found");
-			return kFALSE;
+				fRecalib = TFile::Open(Form("%s/RecalDB/2011_v0/RecalibrationFactors.root",fBasePath));
+				if(!fRecalib) AliError("Recalibration file not found");
+			}
 		}
 
 		TH2F * r0 = ( TH2F *)fRecalib->Get("EMCALRecalFactors_SM0");
@@ -567,10 +578,10 @@ void AliEMCALTenderSupply::RecalibrateCells()
 	for(Int_t icell=0; icell<nEMCcell; icell++){
 		Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
 		fEMCALGeo->GetCellIndex(cells->GetCellNumber(icell),imod,iTower,iIphi,iIeta);
-		fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
-		calibFactor = fEMCALRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
-		cells->SetCell(icell,cells->GetCellNumber(icell),cells->GetAmplitude(icell)*calibFactor,cells->GetTime(icell));	
-	}	
+			fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
+			calibFactor = fEMCALRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
+			cells->SetCell(icell,cells->GetCellNumber(icell),cells->GetAmplitude(icell)*calibFactor,cells->GetTime(icell));	
+		}	
 
-}
+	}
 

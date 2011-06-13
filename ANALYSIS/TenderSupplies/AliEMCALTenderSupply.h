@@ -38,6 +38,8 @@ public:
 
   void  SetDebugLevel(Int_t level)         {fDebugLevel=level      ;}
 
+  void  SetBasePath(const Char_t *basePath) { fBasePath = basePath; }                 // mfasel: add function to set a path where to find the root files
+
   void  SetNonLinearityFunction(Int_t fun) { fNonLinearFunc = fun  ;}
   Int_t GetNonLinearityFunction() const    { return fNonLinearFunc ;}
   
@@ -111,11 +113,13 @@ private:
   Double_t      fMass;                   // mass for track matching
   Double_t      fStep;                   // step size during track matching
   Float_t       fRcut;                   // residual cut for track matching  
+  
+  const Char_t* fBasePath;                   // mfasel: Base Folder path to get root files 
 
   AliEMCALTenderSupply(const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 2); // TPC tender task
+  ClassDef(AliEMCALTenderSupply, 3); // TPC tender task
 };
 
 
