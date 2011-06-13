@@ -42,7 +42,7 @@
 #include "AliGRPObject.h"
 #include "AliRunInfo.h"
 #endif
-void ITSQArecoparam(char *iFile,Int_t idet=2,Int_t FirstEvt=0, Int_t MaxEvts=1000000)
+void ITSQArecoparam(char *iFile, Int_t runNb=150000, Int_t idet=2, Int_t FirstEvt=0, Int_t MaxEvts=1000000)
 {
   TString namefile(iFile);
   if(namefile.Contains("alien"))
@@ -58,8 +58,8 @@ void ITSQArecoparam(char *iFile,Int_t idet=2,Int_t FirstEvt=0, Int_t MaxEvts=100
   AliRawReader *rd=NULL; 
   if(strstr(iFile,".root")!=0){rd = new AliRawReaderRoot(iFile,FirstEvt);}
   else{rd=new AliRawReaderDate(iFile,FirstEvt);}
-  Int_t runNumber = rd->GetRunNumber();
-  cout << "ITS Quality Assurance Prototype" << endl; 
+  //Int_t runNumber = rd->GetRunNumber();
+  cout << "ITS Quality Assurance Prototype for run "<< runNb << endl; 
   //TStopwatch mytimer;
   //TString namefile(iFile);
   // Set OCDB if needed
@@ -70,7 +70,7 @@ void ITSQArecoparam(char *iFile,Int_t idet=2,Int_t FirstEvt=0, Int_t MaxEvts=100
       man->SetDefaultStorage("alien://folder=/alice/data/2011/OCDB");
       //}
       //else{man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");}
-    man->SetRun(runNumber);
+    man->SetRun(runNb);
     AliQAv1::SetQARefStorage("local://$ALICE_ROOT/QARef") ;
   }
   AliCDBManager::Instance()->GetAll(Form("ITS/Calib/*"));
@@ -197,7 +197,7 @@ void ITSQArecoparam(char *iFile,Int_t idet=2,Int_t FirstEvt=0, Int_t MaxEvts=100
 
   AliITSQADataMakerRec *itsQAdm = new AliITSQADataMakerRec(kTRUE,idet,0); //online kTRUE
   itsQAdm->SetWriteExpert() ;
-  itsQAdm->SetRunNumber(runNumber);  
+  itsQAdm->SetRunNumber(runNb);  
   //________________________For the RecPoints____________________________________
   /************************************************/
   TPluginManager* pluginManager=NULL;
@@ -269,13 +269,13 @@ pluginHandler = pluginManager->FindHandler("AliReconstructor", "ITS");
   cout<<"raw tobjarray :"<<objArray<<"\n"<<endl;
   for(Int_t spec = 0 ; spec < 5 ; spec++){
     if(spec==1){
-      itsQAdm->SetEventSpecie(AliRecoParam::kLowMult);
-      AliQAv1::Instance()->SetEventSpecie(AliRecoParam::kLowMult);
+      itsQAdm->SetEventSpecie(AliRecoParam::kCosmic);
+      AliQAv1::Instance()->SetEventSpecie(AliRecoParam::kCosmic);
       itsQAdm->InitRaws();
     }
     else{continue;}
   }
-  itsQAdm->StartOfCycle(AliQAv1::kRAWS,runNumber,kFALSE);
+  itsQAdm->StartOfCycle(AliQAv1::kRAWS,runNb,kFALSE);
   /*********************************************************************/
 
     cout << "Init: " << AliQAv1::kRECPOINTS << endl;
@@ -283,13 +283,13 @@ pluginHandler = pluginManager->FindHandler("AliReconstructor", "ITS");
     cout<<"recpoint tobjarray :"<<objArray1<<"\n"<<endl;
     for(Int_t spec = 0 ; spec < 5 ; spec++){
       if(spec==1){
-	itsQAdm->SetEventSpecie(AliRecoParam::kLowMult);
-	AliQAv1::Instance()->SetEventSpecie(AliRecoParam::kLowMult);
+	itsQAdm->SetEventSpecie(AliRecoParam::kCosmic);
+	AliQAv1::Instance()->SetEventSpecie(AliRecoParam::kCosmic);
 	itsQAdm->InitRecPoints();
       }
       else{continue;}
     }
-    itsQAdm->StartOfCycle(AliQAv1::kRECPOINTS,runNumber,kTRUE);
+    itsQAdm->StartOfCycle(AliQAv1::kRECPOINTS,runNb,kTRUE);
 
   /*********************************************************************/
   Int_t iev = 0;
@@ -315,8 +315,8 @@ pluginHandler = pluginManager->FindHandler("AliReconstructor", "ITS");
     /*************************************************/
     cout<<"Beginning Exec"<<endl;
     cout<<"AliQAv1::kRAWS   "<<AliQAv1::kRAWS<<endl;
-    itsQAdm->SetEventSpecie(AliRecoParam::kLowMult);
-    AliQAv1::Instance()->SetEventSpecie(AliRecoParam::kLowMult);
+    itsQAdm->SetEventSpecie(AliRecoParam::kCosmic);
+    AliQAv1::Instance()->SetEventSpecie(AliRecoParam::kCosmic);
     itsQAdm->Exec(AliQAv1::kRAWS,rd);
     /***************************************************/
     //  if(kRecPoints){
@@ -334,8 +334,8 @@ pluginHandler = pluginManager->FindHandler("AliReconstructor", "ITS");
       rpcont->PrepareToRead();
       reconstructor->Reconstruct(rd,fTreeR);
 
-      itsQAdm->SetEventSpecie(AliRecoParam::kLowMult);
-      AliQAv1::Instance()->SetEventSpecie(AliRecoParam::kLowMult)  ; 
+      itsQAdm->SetEventSpecie(AliRecoParam::kCosmic);
+      AliQAv1::Instance()->SetEventSpecie(AliRecoParam::kCosmic)  ; 
       itsQAdm->Exec(AliQAv1::kRECPOINTS,fTreeR);
       cout<<"Finishing Exec"<<endl;
     
@@ -366,7 +366,7 @@ pluginHandler = pluginManager->FindHandler("AliReconstructor", "ITS");
 
 }
 
-void ITSQArecoparam(Int_t runNb,Int_t year,Char_t period[10],Int_t idet=2,Int_t FirstEvt=0, Int_t MaxEvts=1000000)
+void ITSQArecoparam(Int_t runNb=150000,Int_t year=2011,Char_t period[10]="LHC11a",Int_t idet=2,Int_t FirstEvt=0, Int_t MaxEvts=1000000)
 {
   //TString namefile(iFile);
   //if(namefile.Contains("alien"))
@@ -395,17 +395,33 @@ void ITSQArecoparam(Int_t runNb,Int_t year,Char_t period[10],Int_t idet=2,Int_t 
     printf("In this run there are not raws files: Exit macro\n");
     return;
   }
-  if(gr->GetEntries() > 10) number=8;
-  else number=3;
+  //if(gr->GetEntries() > 10) number=3;
+  //else number=3;
+  Bool_t chunkok=kFALSE;
+  TString filenamedef; //= gr->GetKey(number,"turl");
+  //printf("-> FILE %s \n",filename);
+  while(chunkok==kFALSE || number<gr->GetEntries())
+    {
+      const char* filename = gr->GetKey(number,"turl");
+      printf("-> FILE %s \n",filename);
+      TString namefile(filename);
+      if(namefile.Contains(".10.root")==kFALSE){chunkok=kTRUE; filenamedef.Form("%s",filename); break;} 
+      else{
+	chunkok=kFALSE;
+	number++;
+      }
+      if(number==gr->GetEntries()-1) {chunkok=kTRUE; filenamedef.Form("%s",filename); break;}       
+    }
 
+  char *filetouse=(char*)filenamedef.Data();//=filenamedef.Data(); //=NULL;
+  //sprintf(filetouse,"%s",(char*)filenamedef.Data());
 
-  const char *filename = gr->GetKey(number,"turl");
-    printf("-> FILE %s \n",filename);
-    //TString namefile(filename);
-    char *filetouse;//=NULL;
-    sprintf(filetouse,"%s",filename);
-    ITSQArecoparam(filetouse,idet,FirstEvt,MaxEvts);
+  printf("File to use = %s\n\n",filetouse);
 
+  Int_t runn=runNb;
 
+  printf("Run: %d \n",runn);
+
+  ITSQArecoparam(filetouse,runn,idet,FirstEvt,MaxEvts);
 
 }

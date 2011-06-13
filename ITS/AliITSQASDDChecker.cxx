@@ -92,7 +92,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 
   AliDebug(1,Form("AliITSQASDDChecker called with offset: %d\n", fSubDetOffset));
 
-  Double_t SDDQACheckerValue = 0.;
+  Double_t sddQACheckerValue = 0.;
   TH1 *hdata=NULL;
   Double_t entries=0.;
   Double_t entries2[2];
@@ -105,7 +105,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
       {
 	AliError("Calibration object retrieval failed! SDD will not be processed");
 	fCalibration = NULL;
-	SDDQACheckerValue= fHighSDDValue[AliQAv1::kWARNING];
+	sddQACheckerValue= fHighSDDValue[AliQAv1::kWARNING];
       }
     else{
       fCalibration = (TObjArray *)calibSDD->GetObject();
@@ -132,7 +132,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 //       if(fRawModulePattern) { delete fRawModulePattern; fRawModulePattern = 0; }
 //       if(fRawL3Pattern) { delete fRawL3Pattern; fRawL3Pattern = 0; }
 //       if(fRawL4Pattern) { delete fRawL4Pattern; fRawL4Pattern = 0; }
-      if (list->GetEntries() == 0){AliError("Raw List for SDD is empty \n");SDDQACheckerValue += fHighSDDValue[AliQAv1::kFATAL];	break;}
+      if (list->GetEntries() == 0){AliError("Raw List for SDD is empty \n");sddQACheckerValue += fHighSDDValue[AliQAv1::kFATAL];	break;}
       TH1 *hmodule=NULL;
       TH2 *hlayer[2]; 
       hdata=NULL;
@@ -205,7 +205,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	    if(hname.Contains("NORM")) continue;
 	    hmodule=(TH1*)hdata->Clone();
 	    entries= hdata->GetEntries();
-	    if(AliITSQADataMakerRec::AreEqual(entries,0.)){AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];}//endif entries
+	    if(AliITSQADataMakerRec::AreEqual(entries,0.)){AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));sddQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];}//endif entries
 	    else{
 	      int modmax=hdata->GetNbinsX();
 	      Double_t content=0;
@@ -244,7 +244,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	    if(hdata->GetEntries()>0.)fractionAboveThreshold=((Float_t) aboveThreshold)/hdata->GetEntries();
 	    if(hname.Contains("L3")) AliInfo(Form("SDD check number 1, L3: Raw fractionAboveThreshold: %f",fractionAboveThreshold));
 	    if(hname.Contains("L4")) AliInfo(Form("SDD check number 2, L4: Raw fractionAboveThreshold: %f",fractionAboveThreshold));
-	    if(fractionAboveThreshold > fThresholdForRelativeOccupancy) {SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+	    if(fractionAboveThreshold > fThresholdForRelativeOccupancy) {sddQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
 	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 1: Set Warning (L3 Raw)"));
 	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 2: Set Warning (L4 Raw)")); } }//relativeoccupancy
 
@@ -254,7 +254,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	    else  if(hname.Contains("4"))layer=1;
 	    entries2[layer]=hdata->GetEntries();
 	    if(entries2[layer]==0){AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));
-	      SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];}//end if getentries
+	      sddQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];}//end if getentries
 	    else{
 	      Int_t layer1=0;
 	      if(hname.Contains("3"))layer1=0;
@@ -399,34 +399,57 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	emptyactivedrperlayer[0]=emptydriftregion[0]- excludeddrperlayer[0];
 	emptyactivedrperlayer[1]=emptydriftregion[1]- excludeddrperlayer[1];
 
+	Int_t numlimit=1000;
 
- 	if(emptysum>excluded||emptydrsum>excludeddriftregion){ 
-	  AliWarning(Form(" %i good module(s) and %i good single drift regions didn't take data! Check the calibration\n",emptydiff,emptydrdiff));
-	  AliWarning(Form(" Layer 3: %i good module(s) and %i good single drift regions didn't take data! Check the calibration\n",emptyactivemoduleperlayer[0] ,emptyactivedrperlayer[0] ));
-	  AliWarning(Form(" Layer 4: %i good module(s) and %i good single drift regions didn't take data! Check the calibration\n",emptyactivemoduleperlayer[1] ,emptyactivedrperlayer[1] ));
-	  
-	  
-	  results1.Form("%i good module(s) and %i good drift regions didn't take data!",emptydiff,emptydrdiff);
-	  if(neventsraw<500)
-	    {
-	      results2.Form(" Events %d .Too few events.DO NOT CALL the Expert ",neventsraw);
-	      color=5;
-	      SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
-	    }
+ 	if(emptysum>excluded||emptydrsum>excludeddriftregion){
+	  AliWarning(Form(" %i good module(s) and %i good single drift regions didn't take data! \n",emptydiff,emptydrdiff));
+	  AliWarning(Form(" Layer 3: %i good module(s) and %i good single drift regions didn't take data! \n",emptyactivemoduleperlayer[0] ,emptyactivedrperlayer[0] ));
+	  AliWarning(Form(" Layer 4: %i good module(s) and %i good single drift regions didn't take data! \n",emptyactivemoduleperlayer[1] ,emptyactivedrperlayer[1] ));
+	  //printf("========================= %d",AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::kCosmic));
+	  if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kFALSE){     
+	    
+	    results1.Form("%i good module(s) and %i good drift regions didn't take data!",emptydiff,emptydrdiff);
+	    if(neventsraw<numlimit)
+	      {
+		results2.Form(" Events %d .Too few events.DO NOT CALL the Expert ",neventsraw);
+		color=5;
+		sddQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+	      }
+	    else
+	      {
+		results2.Form(" Events %d .Follow the TWiki instruction and call the Expert ",neventsraw);
+		color=2;
+		sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
+	      }
+	  }
 	  else
-	    {
-	      results2.Form(" Events %d .Follow the TWiki instruction and call the Expert ",neventsraw);
-	      color=2;
-	      SDDQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
-	    }
+	    if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kTRUE)
+	      {
+		numlimit=10000;
+		if(neventsraw<numlimit)
+		  {
+		    AliWarning(Form("This is a cosmic run. Some module and drift region are empty but all is OK. "));
+		    results1.Form("OK. Thi is a cosmic run. you need a lot of events");
+		    results2.Form("%i good module(s) and %i good drift are empty! DO NOT CALL THE EXPERT",emptydiff,emptydrdiff);
+		    color=5;
+		    sddQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+		  }
+		else
+		  {
+		    results1.Form("%i good module(s) and %i good drift region(s) have not recpoints!",emptydiff,emptydrdiff);
+		    results2.Form(" Events %d .Follow the TWiki instruction and call the Expert ",neventsraw);
+		    color=2;
+		    sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
+		  }
+	      }
 	}
-
+	
 	if(exactive==0 && emptydiff==0 && exactivedriftregion==0 && emptydrdiff==0){
 	  AliInfo(Form("All the active modules (%i) and single drift regions (%i) are in acquisition. The number of excluded modules are %i and the excluded single drift regions are %i\n",active,activedriftregion,excluded,excludeddriftregion));
 	  results1.Form("OK.");
 	  results2.Form(" All active modules and drift regions in acquisition");
 	  color=3;
-	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kINFO];
+	  sddQACheckerValue=fHighSDDValue[AliQAv1::kINFO];
 	}
 	if(exactive!=0||exactivedriftregion!=0){
 	  AliError(Form("%i modules and %i single  drift regions excluded from the acquisition took data. Active modules%i single drift region %i \n ",exactive,exactivedriftregion,active,activedriftregion));
@@ -435,21 +458,21 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  results1.Form("%i modules and %i drift region excluded from the acquisition took data",exactive,exactivedriftregion);
 	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
 	  color=2;	
-	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
+	  sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
 	}
 	if(excluded==exactive||excludeddriftregion==exactivedriftregion){
 	  AliError(Form("All the modules (%d) or single drift regions (%d) excluded from the acquisition  took data!\n  Active modules %i \t Active drfift regions %i\n",excluded,excludeddriftregion,active,activedriftregion));
 	  results1.Form("All the modules (%d) or drift regions (%d) excluded from the acquisition took data!",excluded,excludeddriftregion );
 	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
 	  color=6;
-	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+	  sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	}
 	if(active==0||activedriftregion==0){
 	  AliError(Form("No modules or single drift regions took data: excluded %i \t excluded active %i \n\t\t excluded single drift regions %i \t excluded active drift regions %i \n", excluded, exactive, excludeddriftregion, exactivedriftregion)); 
 	  results1.Form("No modules or drift region took data: excluded modules %i  excluded drift regions %i ", excluded, excludeddriftregion );
 	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
 	  color=6;
-	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+	  sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	}
 
 	TPaveText *pave[2];
@@ -538,7 +561,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
       
   case AliQAv1::kNULLTASK:{
     AliInfo(Form("No Check on %s\n",AliQAv1::GetAliTaskName(index))); 
-    SDDQACheckerValue=1.;
+    sddQACheckerValue=1.;
   }
     break;
     
@@ -549,8 +572,8 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
       if(uidrec==20){
 	//recpoints
 	if (list->GetEntries() == 0){ //check if the list is empty
-	  //printf("SDDQACheckerValue = %f \t value %f\n",SDDQACheckerValue,fHighSDDValue[AliQAv1::kFATAL]);
-	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL]; 
+	  //printf("sddQACheckerValue = %f \t value %f\n",sddQACheckerValue,fHighSDDValue[AliQAv1::kFATAL]);
+	  sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL]; 
 	  //break;			
 	}//end if getentries
       
@@ -632,7 +655,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 3, L3: RecPoints fractionAboveThreshold: %f",fractionAboveThreshold));
 	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 4, L4: RecPoints fractionAboveThreshold: %f",fractionAboveThreshold));
 	      if(fractionAboveThreshold > fThresholdForRelativeOccupancy) { 
-		SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+		sddQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
 		if(hname.Contains("L3")) AliInfo(Form("SDD check number 3: Set Warning (L3 RecPoints)"));
 		if(hname.Contains("L4")) AliInfo(Form("SDD check number 4: Set Warning (L4 RecPoints)"));
 	      }
@@ -652,7 +675,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	      if(hname.Contains("L3")) AliInfo(Form("SDD check number 5, L3: RecPoints2Raws fractionBelowThreshold: %f",fractionBelowThreshold));
 	      if(hname.Contains("L4")) AliInfo(Form("SDD check number 6, L4: RecPoints2Raws fractionBelowThreshold: %f",fractionBelowThreshold));
 	      if(fractionBelowThreshold > fThresholdForRelativeOccupancy) { 
-		SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+		sddQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
 		if(hname.Contains("L3")) AliInfo(Form("SDD check number 5: Set Warning (L3 RecPoints2Raws)"));
 		if(hname.Contains("L4")) AliInfo(Form("SDD check number 6: Set Warning (L4 RecPoints2Raws)"));
 	      }
@@ -665,7 +688,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	    if(hname.Contains("NORM")) continue;
 	    hmodule=(TH1*)hdata->Clone();
 	    entries= hdata->GetEntries();
-	    if(AliITSQADataMakerRec::AreEqual(entries,0.)){AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];}//endif entries
+	    if(AliITSQADataMakerRec::AreEqual(entries,0.)){AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));sddQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];}//endif entries
 	    else{
 	      int modmax=hdata->GetNbinsX();
 	      Double_t content=0;
@@ -700,7 +723,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	    else  if(hname.Contains("4"))layer=1;
 	    entries2[layer]=hdata->GetEntries();
 	    if(entries2[layer]==0){AliWarning(Form("===================>>>>>> No entries in  %s \n",hname.Data()));
-	      SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];}//end if getentries
+	      sddQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];}//end if getentries
 	    else{
 	      Int_t layer1=0;
 	      if(hname.Contains("3"))layer1=0;
@@ -845,27 +868,51 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	emptyactivedrperlayer[0]=emptydriftregion[0]- excludeddrperlayer[0];
 	emptyactivedrperlayer[1]=emptydriftregion[1]- excludeddrperlayer[1];
 
-
+	Int_t numlimit=1000;
  	if(emptysum>excluded||emptydrsum>excludeddriftregion){ 
-	  AliWarning(Form(" %i good module(s) and %i good single drift regions have not recpoints! Check the calibration\n",emptydiff,emptydrdiff));
-	  AliWarning(Form(" Layer 3: %i good module(s) and %i good single drift regions have not recpoints! Check the calibration\n",emptyactivemoduleperlayer[0] ,emptyactivedrperlayer[0] ));
-	  AliWarning(Form(" Layer 4: %i good module(s) and %i good single drift regions have not recpoints! Check the calibration\n",emptyactivemoduleperlayer[1] ,emptyactivedrperlayer[1] ));
+	  AliWarning(Form(" %i good module(s) and %i good single drift regions have not recpoints! \n",emptydiff,emptydrdiff));
+	  AliWarning(Form(" Layer 3: %i good module(s) and %i good single drift regions have not recpoints! \n",emptyactivemoduleperlayer[0] ,emptyactivedrperlayer[0] ));
+	  AliWarning(Form(" Layer 4: %i good module(s) and %i good single drift regions have not recpoints! \n",emptyactivemoduleperlayer[1] ,emptyactivedrperlayer[1] ));
 	  
-	  //SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
-	  
+	  //sddQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+	  Int_t numlimits=1000;	  
+
 	  results1.Form("%i good module(s) and %i good drift region(s) have not recpoints!",emptydiff,emptydrdiff);
-	  if(neventsrecpoints<500)
+	  if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kFALSE)
 	    {
-	      results2.Form(" Events %d .Too few events.DO NOT CALL the Expert ",neventsrecpoints);
-	      color=5;
-	      SDDQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+	      if(neventsrecpoints<numlimits)
+		{
+		  results2.Form(" Events %d .Too few events.DO NOT CALL the Expert ",neventsrecpoints);
+		  color=5;
+		  sddQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+		}
+	      else
+		{
+		  results2.Form(" Events %d .Follow the TWiki instruction and call the Expert ",neventsrecpoints);
+		  color=2;
+		  sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
+		}
 	    }
 	  else
-	    {
-	      results2.Form(" Events %d .Follow the TWiki instruction and call the Expert ",neventsrecpoints);
-	      color=2;
-	      SDDQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
-	    }
+	    if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kTRUE)
+	      {
+		numlimit=10000;
+		if(neventsrecpoints<numlimit)
+		  {
+		    AliWarning(Form("This is a cosmic run. Some module and drift region are empty but all is OK. "));
+		    results1.Form("OK. Thi is a cosmic run. You need a lot of events");
+		    results2.Form("%i good module(s) and %i good drift are empty! DO NOT CALL THE EXPERT",emptydiff,emptydrdiff);
+		    color=5;
+		    sddQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
+		  }
+		else
+		  {
+		    results1.Form("%i good module(s) and %i good drift region(s) have not recpoints!",emptydiff,emptydrdiff);
+		    results2.Form(" Events %d .Follow the TWiki instruction and call the Expert ",neventsrecpoints);
+		    color=2;
+		    sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
+		  }
+	      }
 	}
 	
       
@@ -875,7 +922,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  results1.Form("OK.");
 	  results2.Form(" All active modules have recpoints");
 	  color=3;
-	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kINFO];
+	  sddQACheckerValue=fHighSDDValue[AliQAv1::kINFO];
 	}
 	if(exactive!=0||exactivedriftregion!=0){
 	  AliError(Form("%i modules and %i single  drift regions excluded from the acquisition have recpoints. Active modules %i single drift region %i \n ",exactive,exactivedriftregion,active,activedriftregion));
@@ -884,21 +931,21 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  results1.Form("%i modules and %i drift region excluded from the acquisition have recpoints",exactive,exactivedriftregion);
 	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
 	  color=2;	
-	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
+	  sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
 	}
 	if(excluded==exactive||excludeddriftregion==exactivedriftregion){
 	  AliError(Form("All the modules (%d) or single drift regions (%d) excluded from the acquisition have recpoints!\n  Active modules %i \t Active drfift regions %i\n",excluded,excludeddriftregion,active,activedriftregion));
 	  results1.Form("All the modules (%d) or drift regions (%d) excluded from the acquisition have recpoints!",excluded,excludeddriftregion );
 	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
 	  color=6;
-	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+	  sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	}
 	if(active==0||activedriftregion==0){
 	  AliError(Form("No modules or single drift regions have recpoints: excluded %i \t excluded active %i \n\t\t excluded single drift regions %i \t excluded active drift regions %i \n", excluded, exactive, excludeddriftregion, exactivedriftregion)); 
 	  results1.Form("No modules or drift region have recpoints: excluded modules %i  excluded drift regions %i ", excluded, excludeddriftregion );
 	  results2.Form("Follow the TWiki instructions and Call the SDD expert ");
 	  color=6;
-	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+	  sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	}
 
 	TPaveText *pave[2];
@@ -982,39 +1029,39 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
       }//end for      
 
 
-      //SDDQACheckerValue=1.;
+      //sddQACheckerValue=1.;
       }//end recpoint list uid = 20
       else if(uidrec==40)
 	{
 	  //digitsr
 	  if (list->GetEntries() == 0){ 
-	    SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+	    sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	    break;
 	  } else{
 	
 	    while( (hdata = dynamic_cast<TH1* >(next())) ){
 	      if (hdata){
-		if(hdata->GetEntries()==0)SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];
+		if(hdata->GetEntries()==0)sddQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];
 		else {
 		  TString hname=hdata->GetName();
 		  if(hname.Contains("SDD DIGITS Module Pattern")) {
 		    //see raws
 		
-		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		    sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 		  } else if(hname.Contains("SDD Anode Distribution")) {
-		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		    sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 		  } else if(hname.Contains("SDD Tbin Distribution")) {
 		    //to do as rp
-		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		    sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 		  } else if(hname.Contains("SDD ADC Counts Distribution")) {
-		    SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		    sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 		  }//end adc counts
 	      
 		}//end entries !=0
 	      }//end hdata
 	    }//end while
 	  }//end else
-	  SDDQACheckerValue=1.;
+	  sddQACheckerValue=1.;
 	}
 
     }
@@ -1022,18 +1069,18 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
   case AliQAv1::kANA:
     {
       AliInfo(Form("===================> No Check on %s\n",AliQAv1::GetAliTaskName(index)));
-      SDDQACheckerValue=1.; 
+      sddQACheckerValue=1.; 
     }
     break;
   case AliQAv1::kESD:
     {
       AliInfo(Form("==================>  No Check on %s\n",AliQAv1::GetAliTaskName(index)));
-      SDDQACheckerValue=1.;
+      sddQACheckerValue=1.;
     } 
     break;
   case AliQAv1::kNTASK:{
     AliInfo(Form("==================>  No Check on %s\n",AliQAv1::GetAliTaskName(index))); 
-    SDDQACheckerValue=1.;
+    sddQACheckerValue=1.;
   }
     break;
   case AliQAv1::kSIM:{
@@ -1042,26 +1089,26 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
     if(uid==60) {
       //digits
       if (list->GetEntries() == 0){ 
-	SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+	sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	break;
       } else{
 	
 	while( (hdata = dynamic_cast<TH1* >(next())) ){
 	  if (hdata){
-	    if(hdata->GetEntries()==0)SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];
+	    if(hdata->GetEntries()==0)sddQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];
 	    else {
 	      TString hname=hdata->GetName();
 	      if(hname.Contains("SDDDIGITSModulePattern")) {
 		//see raws
 		
-		SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 	      } else if(hname.Contains("SDDAnodeDistribution")) {
-		SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 	      } else if(hname.Contains("SDDTbinDistribution")) {
 		//to do as rp
-		SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 	      } else if(hname.Contains("SDDADCCountsDistribution")) {
-		SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 	      }//end adc counts
 	      
 	    }//end entries !=0
@@ -1072,25 +1119,25 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
       {
 	//hits
 	if (list->GetEntries() == 0){ 
-	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+	  sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	  break;
 	} 
 	else{
 	  
 	  while( (hdata = dynamic_cast<TH1* >(next())) ){
 	    if (hdata){
-	      if(hdata->GetEntries()==0)SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];
+	      if(hdata->GetEntries()==0)sddQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];
 	      else {
 		TString hname=hdata->GetName();
 		if(hname.Contains("SDDHITSModulePattern")) {
 		  //to do as raws
-		  SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 		} else if(hname.Contains("SDDHITlenghtalonglocalYCoord")) {
-		  SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 		} else if(hname.Contains("SDDHITlenghtalonglocalYCoordZoom")) {
-		  SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 		} else if(hname.Contains("SDDDepositedEnergyDistribution")) {
-		  SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 		}//end deposited energy
 		
 	      }//end entries !=0
@@ -1101,32 +1148,32 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
       {
 	//sdigits
 	if (list->GetEntries() == 0){ 
-	  SDDQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
+	  sddQACheckerValue=fHighSDDValue[AliQAv1::kFATAL];
 	  break;
 	} else{
 	  
 	  while( (hdata = dynamic_cast<TH1* >(next())) ){
 	    if (hdata){
-	      if(hdata->GetEntries()==0)SDDQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];
+	      if(hdata->GetEntries()==0)sddQACheckerValue += fStepBitSDD[AliQAv1::kFATAL];
 	      else {
 		TString hname=hdata->GetName();
 		if(hname.Contains("SDDSDIGITSModulePattern")) {
 		  //to do as raws
-		  SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 		} else if(hname.Contains("SDDAnodeDistribution")) {
-		  SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 		} else if(hname.Contains("SDDTbinDistribution")) {
 		  //to do as rp
-		  SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 		} else if(hname.Contains("SDDADCCountsDistribution")) {
-		  SDDQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
+		  sddQACheckerValue += fStepBitSDD[AliQAv1::kINFO];    
 		}//end adc counts bindistribution
 	      }//end entries !=0
 	    }//end hdata
 	  }//end while
 	}//end else
       }//end sdigits
-    SDDQACheckerValue=1.;
+    sddQACheckerValue=1.;
   }
     break;
     
@@ -1136,7 +1183,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
   if(hdata) delete hdata;
 
 
-  return SDDQACheckerValue;	
+  return sddQACheckerValue;	
 }
 
 //__________________________________________________________________
@@ -1175,9 +1222,11 @@ void  AliITSQASDDChecker::SetSDDLimits(const Float_t *lowvalue, const Float_t * 
 //__________________________________________________________________
 Bool_t  AliITSQASDDChecker::MakeSDDImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode)
 {
+  //create the image for raws and recpoints. In the other case, the default methodof CheckerBase class will be used
+  //
   Bool_t rval=kFALSE;
   fImage=(TCanvas**)AliQAChecker::Instance()->GetDetQAChecker(0)->GetImage();
-  //create the image for raws and recpoints. In the other case, the default methodof CheckerBase class will be used
+
   switch(task)
     {
     case AliQAv1::kRAWS:{
@@ -1203,6 +1252,7 @@ return rval;
 //_______________________________________________________________________
 Bool_t AliITSQASDDChecker::MakeSDDRawsImage(TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode )
 {
+  // MakeSDDRawsImage: raw data QA plots
 
     for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
       //printf("-------------------------> %i \n", esIndex);
@@ -1272,6 +1322,7 @@ Bool_t AliITSQASDDChecker::MakeSDDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
 //_______________________________________________________________________
 Bool_t AliITSQASDDChecker::MakeSDDRecPointsImage(TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode )
 {
+  // MakeSDDRecPointsImage: rec point QA plots
 
     for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
       if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) || list[esIndex]->GetEntries() == 0) 
