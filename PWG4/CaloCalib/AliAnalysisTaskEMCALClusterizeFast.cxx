@@ -201,6 +201,7 @@ void AliAnalysisTaskEMCALClusterizeFast::Clusterize()
     fClusterizer->SetInputCalibrated(kTRUE);   
     fClusterizer->SetCalibrationParameters(0);
   }
+
   fClusterizer->Digits2Clusters("");
   if (fSubBackground) {
     if (fCalibData) {
@@ -422,7 +423,7 @@ void AliAnalysisTaskEMCALClusterizeFast::UpdateClusters()
     if (!c)
       continue;
     if (c->IsEMCAL())
-      clus->RemoveAt(i);
+      delete clus->RemoveAt(i);
   }
   clus->Compress();
   RecPoints2Clusters(clus);
