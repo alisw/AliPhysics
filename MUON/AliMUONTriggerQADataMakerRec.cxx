@@ -878,8 +878,8 @@ AliMUONTriggerQADataMakerRec::FillTriggerDCSHistos()
   /// Get HV and currents values for one trigger chamber
   
   AliCodeTimerAuto("",0);
-
-  TMap* triggerDcsMap = fCalibrationData->TriggerDCS();
+  
+  TMap* triggerDcsMap = CalibrationData()->TriggerDCS();
 
   if ( !triggerDcsMap ) 
   {
@@ -1136,7 +1136,7 @@ UChar_t AliMUONTriggerQADataMakerRec::RawTriggerInGlobal2OutGlobal(UInt_t global
 
     AliCodeTimerAuto("",0);
 
-    AliMUONGlobalCrateConfig* globalConfig = fCalibrationData->GlobalTriggerCrateConfig();
+    AliMUONGlobalCrateConfig* globalConfig = CalibrationData()->GlobalTriggerCrateConfig();
 
     AliMUONGlobalTriggerBoard globalTriggerBoard;
     globalTriggerBoard.Reset();
@@ -1450,9 +1450,17 @@ AliMUONTriggerElectronics* AliMUONTriggerQADataMakerRec::TriggerElectronics()
 {
   /// Return trigger electronics
   /// (create it if necessary)
-  if ( ! fTriggerProcessor ) { 
-    if ( ! fCalibrationData ) fCalibrationData = new AliMUONCalibrationData(AliCDBManager::Instance()->GetRun());
-    fTriggerProcessor = new AliMUONTriggerElectronics(fCalibrationData);
-  }
+  if ( ! fTriggerProcessor ) 
+    fTriggerProcessor = new AliMUONTriggerElectronics(CalibrationData());
   return fTriggerProcessor;
+}
+
+
+//____________________________________________________________________________ 
+AliMUONCalibrationData* AliMUONTriggerQADataMakerRec::CalibrationData()
+{
+  /// Return calibration data
+  /// (create it if necessary)
+  if ( ! fCalibrationData ) fCalibrationData = new AliMUONCalibrationData(AliCDBManager::Instance()->GetRun());
+  return fCalibrationData;
 }

@@ -66,6 +66,7 @@ private:
 				AliMUONGlobalTrigger& recoGlobalTrigger,
 				Char_t histo);
   AliMUONTriggerElectronics* TriggerElectronics();
+  AliMUONCalibrationData* CalibrationData();
 
   //Int_t fTriggerOutputRegionalData[16]; ///< Data Regional Trigger decision for each Regional Board (1R:0, 2R:1, ... , 1L:8, ...) -> 4 bits LPt, 4 bits HPt
   //Int_t fTriggerInputRegionalRecLPt[2][16][16]; ///< Reconstructed Regional Input LPt for each Regional Board ([bit][reg][loc]) (reg -> 1R:0, 2R:1, ... , 1L:8, ...)
