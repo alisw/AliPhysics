@@ -47,6 +47,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
 	//
 	// default ctor
 	//
+   for(Int_t i=0;i<10;i++)fNonlinearityParams[i]=0. ;
 }
 
 //_____________________________________________________
@@ -60,6 +61,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
 	//
 	// named ctor
 	//
+   for(Int_t i=0;i<10;i++)fNonlinearityParams[i]=0. ;
 }
 
 //_____________________________________________________
