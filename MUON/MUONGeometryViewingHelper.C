@@ -29,10 +29,6 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
-#include "AliMpCDB.h"
-
-#include "AliRun.h"
-
 #include <Riostream.h>
 #include <TObjArray.h>
 #include <TBrowser.h>
@@ -47,8 +43,10 @@ void visibilityOff()
 /// Set all volumes invisible
 
   TObjArray* volumes = gGeoManager->GetListOfVolumes();
-  for (Int_t i=0; i<volumes->GetEntriesFast(); i++)
-    ((TGeoVolume*)volumes->At(i))->SetVisibility(kFALSE);
+  for (Int_t i=0; i<volumes->GetEntriesFast(); i++) {
+    if ( !((TGeoVolume*)volumes->At(i))->IsAssembly() )
+      ((TGeoVolume*)volumes->At(i))->SetVisibility(kFALSE);
+  }    
     
 }  
 
