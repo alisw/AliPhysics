@@ -543,8 +543,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       	      Bool_t isMatch =  CalculateResidual(track, ec, dEta, dPhi);
       	      if(!isMatch) 
       		{
-		  // AliDebug(10, "Not a good match");
       		  continue;
+      		  cout<<"Not good"<<endl;
       		}
       	      AliEMCALMatch *match = new AliEMCALMatch();
       	      match->SetIndexT(itrack);
@@ -699,7 +699,7 @@ Bool_t AliEMCALReconstructor::CalculateResidual(AliESDtrack *track, AliESDCaloCl
   vec.RotateZ(-alpha); 
   trkParamTmp->Rotate(alpha); 
   //extrapolation is done here
-  if(!AliTrackerBase::PropagateTrackToBxByBz(trkParamTmp, vec.X(), track->GetMass(), GetRecParam()->GetExtrapolateStep(), kFALSE)) 
+  if(!AliTrackerBase::PropagateTrackToBxByBz(trkParamTmp, vec.X(), track->GetMass(), GetRecParam()->GetExtrapolateStep(), kFALSE, 0.8, -1)) 
     return kFALSE; 
 
   //Calculate the residuals

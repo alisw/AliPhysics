@@ -413,7 +413,7 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
       vec.RotateZ(-alpha); 
       trkParamTmp->Rotate(alpha); 
       //extrapolation is done here
-      if(!AliTrackerBase::PropagateTrackToBxByBz(trkParamTmp, vec.X(), track->GetMass(), fStep, kFALSE)) continue; 
+      if(!AliTrackerBase::PropagateTrackToBxByBz(trkParamTmp, vec.X(), track->GetMass(), fStep, kFALSE, 0.8, -1)) continue; 
 
       //Calculate the residuals
       trkParamTmp->GetXYZ(trkPos);        
