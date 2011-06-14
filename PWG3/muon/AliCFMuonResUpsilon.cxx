@@ -71,7 +71,7 @@ AliCFMuonResUpsilon::AliCFMuonResUpsilon() :
 	fReadAODData(kFALSE),
 	fReadMCInfo(kFALSE),
   fCFManager(0x0),
-	hnevts(0x0),
+	fnevts(0x0),
 	fIsPhysSelMB(kFALSE),
 	fIsPhysSelMUON(kFALSE),
   fQAHistList(0x0),
@@ -94,7 +94,7 @@ AliCFMuonResUpsilon::AliCFMuonResUpsilon(const Char_t* name) :
 	fReadAODData(kFALSE),
 	fReadMCInfo(kFALSE),
   fCFManager(0x0),
-	hnevts(0x0),
+	fnevts(0x0),
 	fIsPhysSelMB(kFALSE),
 	fIsPhysSelMUON(kFALSE),
   fQAHistList(0x0),
@@ -112,7 +112,7 @@ AliCFMuonResUpsilon::AliCFMuonResUpsilon(const Char_t* name) :
 
   Info("AliCFMuonResUpsilon","Calling Constructor");
 
- 	hnevts	= new TH1D("hnevts","hnevts",5,0,5);							// nevent CINT1B,CMUS1B + PhysSel
+ 	fnevts	= new TH1D("fnevts","fnevts",5,0,5);							// nevent CINT1B,CMUS1B + PhysSel
 
 	TString nameside[3]={"AC","B","E"};
 
@@ -137,7 +137,7 @@ AliCFMuonResUpsilon& AliCFMuonResUpsilon::operator=(const AliCFMuonResUpsilon& c
 		fReadMCInfo = c.fReadMCInfo;
     fCFManager  = c.fCFManager;
     fQAHistList = c.fQAHistList;
-		hnevts = c.hnevts;
+		fnevts = c.fnevts;
 		fPDG = c.fPDG;
 		fPtMin = c.fPtMin;
 		fPtMax = c.fPtMax;
@@ -153,7 +153,7 @@ AliCFMuonResUpsilon::AliCFMuonResUpsilon(const AliCFMuonResUpsilon& c) :
   fReadAODData(c.fReadAODData),
 	fReadMCInfo(c.fReadMCInfo),
   fCFManager(c.fCFManager),
-	hnevts(c.hnevts),
+	fnevts(c.fnevts),
 	fIsPhysSelMB(kFALSE),
 	fIsPhysSelMUON(kFALSE),
   fQAHistList(c.fQAHistList),
@@ -178,16 +178,16 @@ AliCFMuonResUpsilon::~AliCFMuonResUpsilon() {
  
   Info("~AliCFMuonResUpsilon","Calling Destructor");
   if (fCFManager)           delete fCFManager ;
-	if (hnevts)								delete hnevts ;
+	if (fnevts)								delete fnevts ;
   if (fQAHistList) 					{fQAHistList->Clear(); delete fQAHistList;}
 }
 //___________________________________________________________________________
 void AliCFMuonResUpsilon::UserCreateOutputObjects() {
 	// UserCreateOutputObjects
 
- 	//TH1D *hnevts	= new TH1D("hnevts","hnevts",5,0,5);							// nevent CINT1B,CMUS1B + PhysSel
+ 	//TH1D *fnevts	= new TH1D("fnevts","fnevts",5,0,5);							// nevent CINT1B,CMUS1B + PhysSel
 
-  PostData(1,hnevts) ;
+  PostData(1,fnevts) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
 }
 
@@ -203,7 +203,7 @@ void AliCFMuonResUpsilon::UserExec(Option_t *)
 
   Double_t containerInput[14] = {0,} ;
 
-  hnevts->Fill(0.5);
+  fnevts->Fill(0.5);
 	containerInput[0] = 0.5;
  
 	if(!fReadAODData) { 	// ESD-based ANALYSIS
@@ -349,17 +349,17 @@ void AliCFMuonResUpsilon::UserExec(Option_t *)
   		if(trigside==1) {	// Beam-Beam event
 				if(trigfired) {	// CMUS1-B
 					containerInput[0]=3.5;
-					hnevts->Fill(3.5);
+					fnevts->Fill(3.5);
 					if(fIsPhysSelMUON) { 
 						containerInput[0]=4.5;
-						hnevts->Fill(4.5);	// PhysSel
+						fnevts->Fill(4.5);	// PhysSel
 					}
 				} else {	// CINT1-B
 					containerInput[0]=1.5;
-					hnevts->Fill(1.5);
+					fnevts->Fill(1.5);
 					if(fIsPhysSelMB) {
 						containerInput[0]=2.5;
-						hnevts->Fill(2.5);	// PhysSel
+						fnevts->Fill(2.5);	// PhysSel
 					}
 				}
 			}
@@ -386,10 +386,10 @@ void AliCFMuonResUpsilon::UserExec(Option_t *)
 				Double_t vzr1 = mu1->GetZ();
 				Double_t dcar1 = mu1->GetDCA();
 				Double_t rabsr1 = mu1->GetRAtAbsorberEnd();
-				Double_t theta_absr1 = 180.*(1.-TMath::ATan(rabsr1/505.)/TMath::Pi());  // [deg]
-				Double_t theta_absr1_2 = (theta_absr1*TMath::Pi()/180.)/2.;
-				Double_t tan_theta_absr1 = TMath::Tan(theta_absr1_2);
-				Double_t etar1 = -TMath::Log(tan_theta_absr1);
+				Double_t thetaabsr1 = 180.*(1.-TMath::ATan(rabsr1/505.)/TMath::Pi());  // [deg]
+				Double_t thetaabsr12 = (thetaabsr1*TMath::Pi()/180.)/2.;
+				Double_t tanthetaabsr1 = TMath::Tan(thetaabsr12);
+				Double_t etar1 = -TMath::Log(tanthetaabsr1);
 
 				if(Rap(er1,pzr1)<-4 || Rap(er1,pzr1)>-2.5) continue;
 
@@ -404,10 +404,10 @@ void AliCFMuonResUpsilon::UserExec(Option_t *)
 				Double_t vzr2 = mu2->GetZ();
 				Double_t dcar2 = mu2->GetDCA();
 				Double_t rabsr2 = mu2->GetRAtAbsorberEnd();
-				Double_t theta_absr2 = 180.*(1.-TMath::ATan(rabsr2/505.)/TMath::Pi());  // [deg]
-				Double_t theta_absr2_2 = (theta_absr2*TMath::Pi()/180.)/2.;
-				Double_t tan_theta_absr2 = TMath::Tan(theta_absr2_2);
-				Double_t etar2 = -TMath::Log(tan_theta_absr2);
+				Double_t thetaabsr2 = 180.*(1.-TMath::ATan(rabsr2/505.)/TMath::Pi());  // [deg]
+				Double_t thetaabsr22 = (thetaabsr2*TMath::Pi()/180.)/2.;
+				Double_t tanthetaabsr2 = TMath::Tan(thetaabsr22);
+				Double_t etar2 = -TMath::Log(tanthetaabsr2);
 
 				if(Rap(er2,pzr2)<-4 || Rap(er2,pzr2)>-2.5) continue;
 
@@ -416,12 +416,12 @@ void AliCFMuonResUpsilon::UserExec(Option_t *)
 					//mu1
 					rabsr1 = 0;
 					Double_t thetar1 = (180./TMath::Pi())*TMath::ATan2(TMath::Sqrt(pxr1*pxr1+pyr1*pyr1),pzr1);
-					theta_absr1 = thetar1;
+					thetaabsr1 = thetar1;
 					etar1 = mu1->Eta();
 					//mu2
 					rabsr2 = 0;
 					Double_t thetar2 = (180./TMath::Pi())*TMath::ATan2(TMath::Sqrt(pxr2*pxr2+pyr2*pyr2),pzr2);
-					theta_absr2 = thetar2;
+					thetaabsr2 = thetar2;
 					etar2 = mu2->Eta();
 				}
 					
@@ -447,8 +447,8 @@ void AliCFMuonResUpsilon::UserExec(Option_t *)
 				containerInput[9] = zr1 + zr2;
 				containerInput[10] = etar1;
 				containerInput[10] = etar2;
-				containerInput[11] = theta_absr1;
-				containerInput[11] = theta_absr2;
+				containerInput[11] = thetaabsr1;
+				containerInput[11] = thetaabsr2;
 				containerInput[12] = vzr1;
 				containerInput[12] = vzr2;
 				containerInput[13] = dcar1;
@@ -572,17 +572,17 @@ if(fReadMCInfo && !flag) return;
   		if(trigside==1) {	// Beam-Beam event
 				if(trigfired) {	// CMUS1-B
 					containerInput[0]=3.5;
-					hnevts->Fill(3.5);
+					fnevts->Fill(3.5);
 					if(fIsPhysSelMUON) { 
 						containerInput[0]=4.5;
-						hnevts->Fill(4.5);	// PhysSel
+						fnevts->Fill(4.5);	// PhysSel
 					}
 				} else {	// CINT1-B
 					containerInput[0]=1.5;
-					hnevts->Fill(1.5);
+					fnevts->Fill(1.5);
 					if(fIsPhysSelMB) {
 						containerInput[0]=2.5;
-						hnevts->Fill(2.5);	// PhysSel
+						fnevts->Fill(2.5);	// PhysSel
 					}
 				}
 			}
@@ -612,10 +612,10 @@ if(fReadMCInfo && !flag) return;
 				Double_t vzr1 = mu1->Zv();
 				Double_t dcar1 = mu1->DCA();
 				Double_t rabsr1 = mu1->GetRAtAbsorberEnd();
-				Double_t theta_absr1 = 180.*(1.-TMath::ATan(rabsr1/505.)/TMath::Pi());	// [deg]
-				Double_t theta_absr1_2 = (theta_absr1*TMath::Pi()/180.)/2.;
-				Double_t tan_theta_absr1 = TMath::Tan(theta_absr1_2);
-				Double_t etar1 = -TMath::Log(tan_theta_absr1);
+				Double_t thetaabsr1 = 180.*(1.-TMath::ATan(rabsr1/505.)/TMath::Pi());	// [deg]
+				Double_t thetaabsr12 = (thetaabsr1*TMath::Pi()/180.)/2.;
+				Double_t tanthetaabsr1 = TMath::Tan(thetaabsr12);
+				Double_t etar1 = -TMath::Log(tanthetaabsr1);
 
 				// mu2
 				Double_t zr2 = mu2->Charge();
@@ -628,22 +628,22 @@ if(fReadMCInfo && !flag) return;
 				Double_t vzr2 = mu2->Zv();
 				Double_t dcar2 = mu2->DCA();
 				Double_t rabsr2 = mu1->GetRAtAbsorberEnd();
-				Double_t theta_absr2 = 180.*(1.-TMath::ATan(rabsr2/505.)/TMath::Pi());	// [deg]
-				Double_t theta_absr2_2 = (theta_absr2*TMath::Pi()/180.)/2.;
-				Double_t tan_theta_absr2 = TMath::Tan(theta_absr2_2);
-				Double_t etar2 = -TMath::Log(tan_theta_absr2);
+				Double_t thetaabsr2 = 180.*(1.-TMath::ATan(rabsr2/505.)/TMath::Pi());	// [deg]
+				Double_t thetaabsr22 = (thetaabsr2*TMath::Pi()/180.)/2.;
+				Double_t tanthetaabsr2 = TMath::Tan(thetaabsr22);
+				Double_t etar2 = -TMath::Log(tanthetaabsr2);
 
 				// for MC
 				if(fReadMCInfo) {
 					//mu1
 					rabsr1 = 0;
 					Double_t thetar1 = (180./TMath::Pi())*TMath::ATan2(TMath::Sqrt(pxr1*pxr1+pyr1*pyr1),pzr1);
-					theta_absr1 = thetar1;
+					thetaabsr1 = thetar1;
 					etar1 = mu1->Eta();
 					//mu2
 					rabsr2 = 0;
 					Double_t thetar2 = (180./TMath::Pi())*TMath::ATan2(TMath::Sqrt(pxr2*pxr2+pyr2*pyr2),pzr2);
-					theta_absr2 = thetar2;
+					thetaabsr2 = thetar2;
 					etar2 = mu2->Eta();
 				}
 	
@@ -669,8 +669,8 @@ if(fReadMCInfo && !flag) return;
 				containerInput[9] = zr1 + zr2;
 				containerInput[10] = etar1;
 				containerInput[10] = etar2;
-				containerInput[11] = theta_absr1;
-				containerInput[11] = theta_absr2;
+				containerInput[11] = thetaabsr1;
+				containerInput[11] = thetaabsr2;
 				containerInput[12] = vzr1;
 				containerInput[12] = vzr2;
 				containerInput[13] = dcar1;
@@ -715,46 +715,47 @@ Double_t AliCFMuonResUpsilon::CostCS(Double_t px1, Double_t py1, Double_t pz1, D
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2,
 Double_t Energy)
 {
-  TLorentzVector PMu1CM, PMu2CM, PProjCM, PTargCM, PDimuCM; // In the CM. frame
-  TLorentzVector PMu1Dimu, PMu2Dimu, PProjDimu, PTargDimu; // In the dimuon rest frame
+	// CS angle
+  TLorentzVector pMu1CM, pMu2CM, pProjCM, pTargCM, pDimuCM; // In the CM. frame
+  TLorentzVector pMu1Dimu, pMu2Dimu, pProjDimu, pTargDimu; // In the dimuon rest frame
   TVector3 beta,zaxisCS;
   Double_t mp=0.93827231;
   //
   // --- Fill the Lorentz vector for projectile and target in the CM frame
   //
-  PProjCM.SetPxPyPzE(0.,0.,-Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
-  PTargCM.SetPxPyPzE(0.,0.,Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
+  pProjCM.SetPxPyPzE(0.,0.,-Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
+  pTargCM.SetPxPyPzE(0.,0.,Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
   //
   // --- Get the muons parameters in the CM frame 
   //
-  PMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
-  PMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
+  pMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
+  pMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
   //
   // --- Obtain the dimuon parameters in the CM frame
   //
-  PDimuCM=PMu1CM+PMu2CM;
+  pDimuCM=pMu1CM+pMu2CM;
   //
   // --- Translate the dimuon parameters in the dimuon rest frame
   //
-  beta=(-1./PDimuCM.E())*PDimuCM.Vect();
-  PMu1Dimu=PMu1CM;
-  PMu2Dimu=PMu2CM;
-  PProjDimu=PProjCM;
-  PTargDimu=PTargCM;
-  PMu1Dimu.Boost(beta);
-  PMu2Dimu.Boost(beta);
-  PProjDimu.Boost(beta);
-  PTargDimu.Boost(beta);
+  beta=(-1./pDimuCM.E())*pDimuCM.Vect();
+  pMu1Dimu=pMu1CM;
+  pMu2Dimu=pMu2CM;
+  pProjDimu=pProjCM;
+  pTargDimu=pTargCM;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
+  pProjDimu.Boost(beta);
+  pTargDimu.Boost(beta);
   //
   // --- Determine the z axis for the CS angle 
   //
-  zaxisCS=(((PProjDimu.Vect()).Unit())-((PTargDimu.Vect()).Unit())).Unit();
+  zaxisCS=(((pProjDimu.Vect()).Unit())-((pTargDimu.Vect()).Unit())).Unit();
   //				     
   // --- Determine the CS angle (angle between mu+ and the z axis defined above)
   Double_t cost;
   
-  if(charge1>0) cost = zaxisCS.Dot((PMu1Dimu.Vect()).Unit());
-  else cost = zaxisCS.Dot((PMu2Dimu.Vect()).Unit());
+  if(charge1>0) cost = zaxisCS.Dot((pMu1Dimu.Vect()).Unit());
+  else cost = zaxisCS.Dot((pMu2Dimu.Vect()).Unit());
   return cost;
 }
 //________________________________________________________________________
@@ -763,36 +764,37 @@ Double_t Energy)
 Double_t AliCFMuonResUpsilon::CostHE(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2)
 {
-  TLorentzVector PMu1CM, PMu2CM, PDimuCM; // In the CM frame 
-  TLorentzVector PMu1Dimu, PMu2Dimu; // In the dimuon rest frame
+	// Helicity 
+  TLorentzVector pMu1CM, pMu2CM, pDimuCM; // In the CM frame 
+  TLorentzVector pMu1Dimu, pMu2Dimu; // In the dimuon rest frame
   TVector3 beta,zaxisCS;
   //
   // --- Get the muons parameters in the CM frame
   //
-  PMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
-  PMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
+  pMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
+  pMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
   //
   // --- Obtain the dimuon parameters in the CM frame
   //
-  PDimuCM=PMu1CM+PMu2CM;
+  pDimuCM=pMu1CM+pMu2CM;
   //
   // --- Translate the muon parameters in the dimuon rest frame
   //
-  beta=(-1./PDimuCM.E())*PDimuCM.Vect();
-  PMu1Dimu=PMu1CM;
-  PMu2Dimu=PMu2CM;
-  PMu1Dimu.Boost(beta);
-  PMu2Dimu.Boost(beta);
+  beta=(-1./pDimuCM.E())*pDimuCM.Vect();
+  pMu1Dimu=pMu1CM;
+  pMu2Dimu=pMu2CM;
+  pMu1Dimu.Boost(beta);
+  pMu2Dimu.Boost(beta);
   //
   // --- Determine the z axis for the calculation of the polarization angle (i.e. the direction of the dimuon in the CM system)
   //
   TVector3 zaxis;
-  zaxis=(PDimuCM.Vect()).Unit();
+  zaxis=(pDimuCM.Vect()).Unit();
   
   // --- Calculation of the polarization angle (angle between mu+ and the z axis defined above)
   Double_t cost;
-  if(charge1>0) cost = zaxis.Dot((PMu1Dimu.Vect()).Unit()); 
-  else cost = zaxis.Dot((PMu2Dimu.Vect()).Unit()); 
+  if(charge1>0) cost = zaxis.Dot((pMu1Dimu.Vect()).Unit()); 
+  else cost = zaxis.Dot((pMu2Dimu.Vect()).Unit()); 
   
   return cost;
 }
@@ -803,46 +805,47 @@ Double_t AliCFMuonResUpsilon::PhiCS(Double_t px1, Double_t py1, Double_t pz1, Do
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2,
 Double_t Energy)
 {
-   TLorentzVector PMu1CM, PMu2CM, PProjCM, PTargCM, PDimuCM; // In the CM frame
-   TLorentzVector PMu1Dimu, PMu2Dimu, PProjDimu, PTargDimu; // In the dimuon rest frame
+	// CS phi
+   TLorentzVector pMu1CM, pMu2CM, pProjCM, pTargCM, pDimuCM; // In the CM frame
+   TLorentzVector pMu1Dimu, pMu2Dimu, pProjDimu, pTargDimu; // In the dimuon rest frame
    TVector3 beta,yaxisCS, xaxisCS, zaxisCS;
    Double_t mp=0.93827231;
    //
    // --- Fill the Lorentz vector for projectile and target in the CM frame
    //
-   PProjCM.SetPxPyPzE(0.,0.,-Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
-   PTargCM.SetPxPyPzE(0.,0.,Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
+   pProjCM.SetPxPyPzE(0.,0.,-Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
+   pTargCM.SetPxPyPzE(0.,0.,Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
    //
    // --- Get the muons parameters in the CM frame 
    //
-   PMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
-   PMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
+   pMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
+   pMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
    //
    // --- Obtain the dimuon parameters in the CM frame
    //
-   PDimuCM=PMu1CM+PMu2CM;
+   pDimuCM=pMu1CM+pMu2CM;
    //
    // --- Translate the dimuon parameters in the dimuon rest frame
    //
-   beta=(-1./PDimuCM.E())*PDimuCM.Vect();
-   PMu1Dimu=PMu1CM;
-   PMu2Dimu=PMu2CM;
-   PProjDimu=PProjCM;
-   PTargDimu=PTargCM;
-   PMu1Dimu.Boost(beta);
-   PMu2Dimu.Boost(beta);
-   PProjDimu.Boost(beta);
-   PTargDimu.Boost(beta);
+   beta=(-1./pDimuCM.E())*pDimuCM.Vect();
+   pMu1Dimu=pMu1CM;
+   pMu2Dimu=pMu2CM;
+   pProjDimu=pProjCM;
+   pTargDimu=pTargCM;
+   pMu1Dimu.Boost(beta);
+   pMu2Dimu.Boost(beta);
+   pProjDimu.Boost(beta);
+   pTargDimu.Boost(beta);
    //
    // --- Determine the z axis for the CS angle 
    //
-   zaxisCS=(((PProjDimu.Vect()).Unit())-((PTargDimu.Vect()).Unit())).Unit();
-   yaxisCS=(((PProjDimu.Vect()).Unit()).Cross((PTargDimu.Vect()).Unit())).Unit();
+   zaxisCS=(((pProjDimu.Vect()).Unit())-((pTargDimu.Vect()).Unit())).Unit();
+   yaxisCS=(((pProjDimu.Vect()).Unit()).Cross((pTargDimu.Vect()).Unit())).Unit();
    xaxisCS=(yaxisCS.Cross(zaxisCS)).Unit();
  
    Double_t phi;
-   if(charge1>0) phi = TMath::ATan2((PMu1Dimu.Vect()).Dot(yaxisCS),((PMu1Dimu.Vect()).Dot(xaxisCS)));
-   else phi = TMath::ATan2((PMu2Dimu.Vect()).Dot(yaxisCS),((PMu2Dimu.Vect()).Dot(xaxisCS)));
+   if(charge1>0) phi = TMath::ATan2((pMu1Dimu.Vect()).Dot(yaxisCS),((pMu1Dimu.Vect()).Dot(xaxisCS)));
+   else phi = TMath::ATan2((pMu2Dimu.Vect()).Dot(yaxisCS),((pMu2Dimu.Vect()).Dot(xaxisCS)));
      
    return phi;
 }
@@ -852,47 +855,48 @@ Double_t Energy)
 Double_t AliCFMuonResUpsilon::PhiHE(Double_t px1, Double_t py1, Double_t pz1, Double_t e1,
 Double_t charge1, Double_t px2, Double_t py2, Double_t pz2, Double_t e2, Double_t Energy)
 {
-   TLorentzVector PMu1CM, PMu2CM, PProjCM, PTargCM, PDimuCM; // In the CM frame 
-   TLorentzVector PMu1Dimu, PMu2Dimu, PProjDimu, PTargDimu; // In the dimuon rest frame
+	// Helicity phi
+   TLorentzVector pMu1CM, pMu2CM, pProjCM, pTargCM, pDimuCM; // In the CM frame 
+   TLorentzVector pMu1Dimu, pMu2Dimu, pProjDimu, pTargDimu; // In the dimuon rest frame
    TVector3 beta,xaxis,yaxis,zaxis;
    Double_t mp=0.93827231;
  
    //
    // --- Get the muons parameters in the CM frame
    //
-   PMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
-   PMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
+   pMu1CM.SetPxPyPzE(px1,py1,pz1,e1);
+   pMu2CM.SetPxPyPzE(px2,py2,pz2,e2);
    //
    // --- Obtain the dimuon parameters in the CM frame
    //
-   PDimuCM=PMu1CM+PMu2CM;
+   pDimuCM=pMu1CM+pMu2CM;
    //
    // --- Translate the muon parameters in the dimuon rest frame
    // 
-   zaxis=(PDimuCM.Vect()).Unit();
+   zaxis=(pDimuCM.Vect()).Unit();
  
-   beta=(-1./PDimuCM.E())*PDimuCM.Vect();
+   beta=(-1./pDimuCM.E())*pDimuCM.Vect();
  
-   PProjCM.SetPxPyPzE(0.,0.,-Energy,TMath::Sqrt(Energy*Energy+mp*mp));
-   PTargCM.SetPxPyPzE(0.,0.,Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
+   pProjCM.SetPxPyPzE(0.,0.,-Energy,TMath::Sqrt(Energy*Energy+mp*mp));
+   pTargCM.SetPxPyPzE(0.,0.,Energy,TMath::Sqrt(Energy*Energy+mp*mp)); 
  
-   PProjDimu=PProjCM;
-   PTargDimu=PTargCM;
+   pProjDimu=pProjCM;
+   pTargDimu=pTargCM;
  
-   PProjDimu.Boost(beta);
-   PTargDimu.Boost(beta);
+   pProjDimu.Boost(beta);
+   pTargDimu.Boost(beta);
    
-   yaxis=((PProjDimu.Vect()).Cross(PTargDimu.Vect())).Unit();
+   yaxis=((pProjDimu.Vect()).Cross(pTargDimu.Vect())).Unit();
    xaxis=(yaxis.Cross(zaxis)).Unit();
    
-   PMu1Dimu=PMu1CM;
-   PMu2Dimu=PMu2CM;
-   PMu1Dimu.Boost(beta);
-   PMu2Dimu.Boost(beta);
+   pMu1Dimu=pMu1CM;
+   pMu2Dimu=pMu2CM;
+   pMu1Dimu.Boost(beta);
+   pMu2Dimu.Boost(beta);
  
    Double_t phi;
-   if(charge1>0) phi = TMath::ATan2((PMu1Dimu.Vect()).Dot(yaxis),(PMu1Dimu.Vect()).Dot(xaxis));
-   else phi = TMath::ATan2((PMu2Dimu.Vect()).Dot(yaxis),(PMu2Dimu.Vect()).Dot(xaxis));
+   if(charge1>0) phi = TMath::ATan2((pMu1Dimu.Vect()).Dot(yaxis),(pMu1Dimu.Vect()).Dot(xaxis));
+   else phi = TMath::ATan2((pMu2Dimu.Vect()).Dot(yaxis),(pMu2Dimu.Vect()).Dot(xaxis));
    
    return phi;
 }
