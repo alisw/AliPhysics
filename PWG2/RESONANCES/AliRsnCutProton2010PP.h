@@ -18,7 +18,7 @@ class AliRsnCutProton2010PP : public AliRsnCut {
 public:
 
    AliRsnCutProton2010PP(const char *name = "");
-   virtual ~AliRsnCutProton2010PP();
+   virtual ~AliRsnCutProton2010PP() { }
    
    virtual Bool_t IsSelected(TObject *obj);
    
