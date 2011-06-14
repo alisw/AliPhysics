@@ -1,8 +1,11 @@
-#ifndef AliRsnCutKaonForPhi2010PP_H
-#define AliRsnCutKaonForPhi2010PP_H
+#ifndef ALIRSNCUTKAONFORPHI2010PP_H
+#define ALIRSNCUTKAONFORPHI2010PP_H
 
 //
-// All cuts for single kaons in phi analysis 2010
+// This cut implements all the checks done to accept a track as a Kaon
+// for the pp analysis using 2010 runs. 
+// It is based on standard cuts on track quality and nsigma cuts
+// with respect to the TPC and TOF signals for the PID.
 //
 
 #include "AliVTrack.h"
@@ -14,6 +17,7 @@ class AliRsnCutKaonForPhi2010PP : public AliRsnCut {
 public:
 
    AliRsnCutKaonForPhi2010PP(const char *name = "");
+   virtual ~AliRsnCutKaonForPhi2010PP() { }
    
    void           SetTPCNSigmaLow (Double_t v) {fNSigmaTPCLow  = v;}
    void           SetTPCNSigmaHigh(Double_t v) {fNSigmaTPCHigh = v;}
@@ -26,7 +30,7 @@ public:
 
 private:
 
-   Bool_t MatchTOF(AliVTrack *vtrack);
+   Bool_t MatchTOF(const AliVTrack *vtrack);
    
    Double_t              fNSigmaTPCLow;   // TPC: nsigma cut below limit
    Double_t              fNSigmaTPCHigh;  // TPC: nsigma cut above limit
@@ -40,7 +44,7 @@ private:
 };
 
 //__________________________________________________________________________________________________
-inline Bool_t AliRsnCutKaonForPhi2010PP::MatchTOF(AliVTrack *vtrack)
+inline Bool_t AliRsnCutKaonForPhi2010PP::MatchTOF(const AliVTrack *vtrack)
 {
 //
 // Checks if the track has matched the TOF detector
