@@ -134,7 +134,7 @@ int AliHLTTPCTrackGeometry::CalculateTrackPoints(AliHLTGlobalBarrelTrack& track,
     if (result<1) continue;
     float planealpha=track.GetAlpha()-offsetAlpha;
     if (planealpha<0) planealpha+=TMath::TwoPi();
-    int slice=9*planealpha/TMath::Pi();
+    int slice=int(9*planealpha/TMath::Pi());
     //if (z<0) slice+=18;
     int partition=AliHLTTPCTransform::GetPatch(padrow);
     int row=padrow-AliHLTTPCTransform::GetFirstRow(partition);
