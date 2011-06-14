@@ -49,6 +49,12 @@ public AliAnalysisTaskSE
 
   /* post-processing methods */
   Bool_t ProcessOutput(const Char_t *filename, const Char_t *dbString); // process output
+
+  /* static setters */
+  static void SetMinVertexIntegral(Double_t value) {fgMinVertexIntegral = value;}; // setter
+  static void SetMinDeltatIntegal(Double_t value) {fgMinDeltatIntegral = value;}; // setter
+  static void SetMinVertexIntegralSample (Double_t value) {fgMinVertexIntegralSample = value;}; // setter
+  static void SetMinDeltatIntegralSample (Double_t value) {fgMinDeltatIntegralSample = value;}; // setter
   
  protected:
 
@@ -100,8 +106,10 @@ public AliAnalysisTaskSE
 
   /* post-processing variables */
   static const Int_t fgkMaxNumberOfPoints; // max number of points
-  static const Double_t fgkMinVertexIntegral; // min vertex integral
-  static const Double_t fgkMinDeltatIntegral; // min vertex integral
+  static Double_t fgMinVertexIntegral; // min vertex integral
+  static Double_t fgMinDeltatIntegral; // min vertex integral
+  static Double_t fgMinVertexIntegralSample; // min vertex integral sample
+  static Double_t fgMinDeltatIntegralSample; // min vertex integral sample
 
 
   ClassDef(AliTOFAnalysisTaskCalibPass0, 1);

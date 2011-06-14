@@ -52,8 +52,10 @@ ClassImp(AliTOFAnalysisTaskCalibPass0)
 //_______________________________________________________
 
 const Int_t AliTOFAnalysisTaskCalibPass0::fgkMaxNumberOfPoints = 10000; // max number of points
-const Double_t AliTOFAnalysisTaskCalibPass0::fgkMinVertexIntegral = 1000.;
-const Double_t AliTOFAnalysisTaskCalibPass0::fgkMinDeltatIntegral = 20000.;
+Double_t AliTOFAnalysisTaskCalibPass0::fgMinVertexIntegral = 100.;
+Double_t AliTOFAnalysisTaskCalibPass0::fgMinDeltatIntegral = 2000.;
+Double_t AliTOFAnalysisTaskCalibPass0::fgMinVertexIntegralSample = 1000.;
+Double_t AliTOFAnalysisTaskCalibPass0::fgMinDeltatIntegralSample = 20000.;
 
 //_______________________________________________________
   
@@ -525,14 +527,14 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
     /* define time window */
     Int_t startBin = ibin;
     Int_t endBin = ibin;
-    while(histoVertexTimestamppx->Integral(startBin, endBin) < fgkMinVertexIntegral ||
-	  histoDeltatTimestamppx->Integral(startBin, endBin) < fgkMinDeltatIntegral) {
+    while(histoVertexTimestamppx->Integral(startBin, endBin) < fgMinVertexIntegralSample ||
+	  histoDeltatTimestamppx->Integral(startBin, endBin) < fgMinDeltatIntegralSample) {
       if (endBin < maxBin) endBin++;
       else if (startBin > minBin) startBin--;
       else break;
     }
-    if (histoVertexTimestamppx->Integral(startBin, endBin) <= 0 ||
-        histoDeltatTimestamppx->Integral(startBin, endBin) <= 0) continue;
+    if (histoVertexTimestamppx->Integral(startBin, endBin) < fgMinVertexIntegral ||
+        histoDeltatTimestamppx->Integral(startBin, endBin) < fgMinDeltatIntegral) continue;
     Float_t startTime = histoVertexTimestamppx->GetBinLowEdge(startBin);
     Float_t endTime = histoVertexTimestamppx->GetBinLowEdge(endBin + 1);
     Float_t vertexIntegral = histoVertexTimestamppx->Integral(startBin, endBin);
