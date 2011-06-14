@@ -3,8 +3,10 @@
 // Implements a simple loop on tracks from one of the entry lists
 // filled by the task AliRsnInputHandler, adding a check on their
 // definition specified in the daughter def.
+// Author: A. Pulvirenti
 //
 
+#include <Riostream.h>
 #include <TEntryList.h>
 
 #include "AliLog.h"
@@ -20,6 +22,7 @@ ClassImp(AliRsnLoopDaughter)
 //_____________________________________________________________________________
 AliRsnLoopDaughter::AliRsnLoopDaughter(const char *name, Int_t listID, AliRsnDaughterDef *def) :
    AliRsnLoop(name),
+   fTrueMC(kFALSE),
    fOnlyTrue(kFALSE),
    fListID(listID),
    fDef(def),
@@ -33,6 +36,7 @@ AliRsnLoopDaughter::AliRsnLoopDaughter(const char *name, Int_t listID, AliRsnDau
 //_____________________________________________________________________________
 AliRsnLoopDaughter::AliRsnLoopDaughter(const AliRsnLoopDaughter& copy) :
    AliRsnLoop(copy),
+   fTrueMC(copy.fTrueMC),
    fOnlyTrue(copy.fOnlyTrue),
    fListID(copy.fListID),
    fDef(copy.fDef),
@@ -51,6 +55,7 @@ AliRsnLoopDaughter& AliRsnLoopDaughter::operator=(const AliRsnLoopDaughter& copy
 //
 
    AliRsnLoop::operator=(copy);
+   fTrueMC = copy.fTrueMC;
    fOnlyTrue = copy.fOnlyTrue;
    fListID = copy.fListID;
    fDaughter = copy.fDaughter;
@@ -117,6 +122,9 @@ Int_t AliRsnLoopDaughter::DoLoop
       }
    }
    
+   // if it is required to loop over True MC, do this here and skip the rest of the method
+   if (fTrueMC) return LoopTrueMC(evMain);
+   
    TObjArrayIter next(&fOutputs);
    AliRsnListOutput *out = 0x0;
    
@@ -131,6 +139,7 @@ Int_t AliRsnLoopDaughter::DoLoop
          if (fOnlyTrue && !fDef->MatchesPID(&fDaughter)) continue;
          if (!fDef->MatchesCharge(&fDaughter)) continue;
          if (!fDef->MatchesRefType(&fDaughter)) continue;
+         fDaughter.FillP(fDef->GetMass());
          // fill outputs
          nadd++;
          next.Reset();
@@ -141,4 +150,78 @@ Int_t AliRsnLoopDaughter::DoLoop
    }
    
    return nadd;
+}
+
+//_____________________________________________________________________________
+Int_t AliRsnLoopDaughter::LoopTrueMC(AliRsnEvent *rsn)
+{
+//
+// Loop on event and fill containers
+//
+
+   // check presence of MC reference
+   if (!rsn->GetRefMC()) {
+      AliError("Need a MC to compute efficiency");
+      return 0;
+   }
+   
+   // check event type:
+   // must be ESD or AOD, and then use a bool to know in the rest
+   if (!rsn->IsESD() && !rsn->IsAOD()) {
+      AliError("Need to process ESD or AOD input");
+      return 0;
+   }
+   
+   // retrieve the MC primary vertex position
+   // and do some additional coherence checks
+   Int_t npart = 0;
+   TClonesArray *listAOD = 0x0;
+   if (rsn->IsESD()) {
+      npart = rsn->GetRefMCESD()->GetNumberOfTracks();
+   } else {
+      AliAODEvent *aod = rsn->GetRefMCAOD();
+      listAOD = (TClonesArray*)(aod->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+      if (listAOD) npart = listAOD->GetEntries();
+   }
+   
+   // check number of particles
+   if (!npart) {
+      AliInfo("Empty event");
+      return 0;
+   }
+   
+   // utility variables
+   Int_t ipart, count = 0;
+   TObjArrayIter next(&fOutputs);
+   AliRsnListOutput *out = 0x0;
+   Int_t pdg = AliRsnDaughter::SpeciesPDG(fDef->GetPID());
+   
+   
+   // loop over particles
+   for (ipart = 0; ipart < npart; ipart++) {
+      // check i-th particle
+      if (rsn->IsESD()) {
+         if (!rsn->GetRefMCESD()->Stack()->IsPhysicalPrimary(ipart)) continue;
+         AliMCParticle *part = (AliMCParticle*)rsn->GetRefMCESD()->GetTrack(ipart);
+         if (TMath::Abs(part->Particle()->GetPdgCode()) != pdg) continue;
+         fDaughter.SetRef  (rsn->GetRefMCESD()->GetTrack(ipart));
+         fDaughter.SetRefMC(rsn->GetRefMCESD()->GetTrack(ipart));
+      } else {
+         AliAODMCParticle *part = (AliAODMCParticle*)listAOD->At(ipart);
+         if (!part->IsPhysicalPrimary()) continue;
+         if (TMath::Abs(part->GetPdgCode()) != pdg) continue;
+         fDaughter.SetRef  ((AliAODMCParticle*)listAOD->At(ipart));
+         fDaughter.SetRefMC((AliAODMCParticle*)listAOD->At(ipart));
+      }
+      //if (fDaughter.GetPDG() != AliRsnDaughter::SpeciesPDG(fDef->GetPID())) continue;
+      fDaughter.FillP(fDef->GetMass());
+      // fill outputs
+      count++;
+      next.Reset();
+      while ( (out = (AliRsnListOutput*)next()) ) {
+         out->Fill(&fDaughter);
+      }
+   }
+   
+   return count;
 }

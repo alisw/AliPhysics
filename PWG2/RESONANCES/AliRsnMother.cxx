@@ -31,7 +31,6 @@
 
 #include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
-#include "AliRsnDaughter.h"
 #include "AliRsnEvent.h"
 
 #include "AliRsnMother.h"

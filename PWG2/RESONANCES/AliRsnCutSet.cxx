@@ -10,6 +10,7 @@
 #include "AliLog.h"
 
 #include "AliRsnExpression.h"
+#include "AliRsnCut.h"
 
 #include "AliRsnCutSet.h"
 
@@ -284,7 +285,7 @@ Bool_t AliRsnCutSet::IsValidScheme()
 }
 
 //_____________________________________________________________________________
-TString AliRsnCutSet::ShowCutScheme()
+TString AliRsnCutSet::ShowCutScheme() const
 {
 //
 // Utility method to check validity of expression

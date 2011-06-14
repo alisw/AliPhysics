@@ -10,6 +10,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <TClonesArray.h>
+
 #include "AliLog.h"
 
 #include "AliStack.h"
@@ -17,6 +19,7 @@
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
+#include "AliAODMCParticle.h"
 
 #include "AliRsnDaughter.h"
 
@@ -33,7 +36,7 @@ public:
 
    // basic setters/getters
    void             SetRef(AliVEvent *ref)              {fRef = ref;}
-   void             SetRefMC(AliVEvent *refmc)          {fRefMC = refmc;}
+   void             SetRefMC(AliVEvent *refmc);
    void             SetPIDResponse(AliPIDResponse *pid) {fPID = pid;}
    AliVEvent*       GetRef()                            {return fRef;}
    AliVEvent*       GetRefMC()                          {return fRefMC;}
@@ -49,6 +52,8 @@ public:
    AliMCEvent*      GetRefMCESD()                     {if (IsESD()) return (AliMCEvent *)fRefMC; return 0x0;}
    AliAODEvent*     GetRefAOD()                       {if (IsAOD()) return (AliAODEvent*)fRef;   return 0x0;}
    AliAODEvent*     GetRefMCAOD()                     {if (IsAOD()) return (AliAODEvent*)fRefMC; return 0x0;}
+   TClonesArray*    GetAODList()                      {return fAODList;}
+   Bool_t           HasMC()                           {if (IsESD()) return (fRefMC != 0x0); else if (IsAOD()) return (fRefMC != 0x0 && fAODList != 0x0); return kFALSE;}
 
    // setters for a daughter
    void             SetDaughter          (AliRsnDaughter &daughter, Int_t index, Bool_t fromMC = kFALSE);
@@ -79,8 +84,9 @@ private:
    AliVEvent      *fRefMC;          //  pointer to reference MC event (if any)
    Int_t           fLeading;        //  index of leading track
    AliPIDResponse *fPID;            //  pointer to PID response
+   TClonesArray   *fAODList;        //  pointer to AOD list of particles (if any)
 
-   ClassDef(AliRsnEvent, 5);
+   ClassDef(AliRsnEvent, 6);
 };
 
 inline Bool_t AliRsnEvent::InputOK()
@@ -98,6 +104,27 @@ inline Bool_t AliRsnEvent::InputOK()
    } else {
       AliError("Need to process ESD or AOD input");
       return kFALSE;
+   }
+}
+
+inline void AliRsnEvent::SetRefMC(AliVEvent *mc) 
+{
+//
+// Assign pointer to MC event.
+// If it is an AOD, retrieve the list of MC particles
+//
+
+   if (!mc) {
+      fRefMC = 0x0;
+      fAODList = 0x0;
+   }
+
+   fRefMC = mc;
+   fAODList = 0x0;
+   if (fRefMC->InheritsFrom(AliAODEvent::Class())) {
+      AliAODEvent *aod = (AliAODEvent*)mc;
+      fAODList = (TClonesArray*)(aod->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+      if (!fAODList) fRefMC = 0x0;
    }
 }
 

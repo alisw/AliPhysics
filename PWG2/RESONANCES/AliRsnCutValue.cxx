@@ -15,6 +15,7 @@
 // author: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
+#include "AliRsnValue.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnMother.h"
 #include "AliRsnEvent.h"

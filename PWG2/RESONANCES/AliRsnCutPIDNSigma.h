@@ -2,7 +2,9 @@
 #define ALIRSNCUTPIDNSIGMA_H
 
 //
-// Class for generalized n-sigma PID cuts with detectors
+// Class for generalized n-sigma PID cuts with detectors.
+// Allows to choose the detector to check and define a momentum range
+// in order to permit different cuts in different ranges.
 //
 
 #include "AliPID.h"
@@ -32,9 +34,9 @@ public:
    void             SetNSigmaRange(Double_t min, Double_t max)    {AliRsnCut::SetRangeD(min, max);}
    void             SetSpecies(AliPID::EParticleType type)        {fSpecies = type;}
    
-   Bool_t           IsITS(AliVTrack *vtrack);
-   Bool_t           IsTPC(AliVTrack *vtrack);
-   Bool_t           IsTOF(AliVTrack *vtrack);
+   Bool_t           IsITS(const AliVTrack *vtrack) const;
+   Bool_t           IsTPC(const AliVTrack *vtrack) const;
+   Bool_t           IsTOF(const AliVTrack *vtrack) const;
    
    virtual Bool_t   IsSelected(TObject *object);
    virtual void     Print(const Option_t *option = "") const;
@@ -50,7 +52,7 @@ private:
    ClassDef(AliRsnCutPIDNSigma, 1)
 };
 
-inline Bool_t AliRsnCutPIDNSigma::IsITS(AliVTrack *vtrack)
+inline Bool_t AliRsnCutPIDNSigma::IsITS(const AliVTrack *vtrack) const
 {
 //
 // Checks if the track has the status flags required for an ITS standalone track
@@ -62,7 +64,7 @@ inline Bool_t AliRsnCutPIDNSigma::IsITS(AliVTrack *vtrack)
    return kTRUE;
 }
 
-inline Bool_t AliRsnCutPIDNSigma::IsTPC(AliVTrack *vtrack)
+inline Bool_t AliRsnCutPIDNSigma::IsTPC(const AliVTrack *vtrack) const
 {
 //
 // Checks if the track has the status flags required for a TPC track
@@ -73,7 +75,7 @@ inline Bool_t AliRsnCutPIDNSigma::IsTPC(AliVTrack *vtrack)
    return kTRUE;
 }
 
-inline Bool_t AliRsnCutPIDNSigma::IsTOF(AliVTrack *vtrack)
+inline Bool_t AliRsnCutPIDNSigma::IsTOF(const AliVTrack *vtrack) const
 {
 //
 // Checks if the track has the status flags required for an ITS standalone track

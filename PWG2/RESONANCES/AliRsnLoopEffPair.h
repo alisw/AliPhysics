@@ -2,7 +2,8 @@
 // Class AliRsnLoopEffPair
 //
 // Inherits from basic AliRsnAnalysisTaskEff for efficiency,
-// and computed efficiencies for single-tracks
+// and computed efficiencies for pairs
+// using cut sets definition
 //
 // author: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //

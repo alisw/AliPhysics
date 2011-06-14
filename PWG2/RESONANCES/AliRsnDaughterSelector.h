@@ -4,8 +4,6 @@
 #include <TNamed.h>
 #include <TClonesArray.h>
 
-//#include "AliRsnMiniEvent.h"
-
 class TEntryList;
 
 class AliRsnCutSet;
@@ -27,7 +25,6 @@ public:
    TEntryList*   GetSelected(Int_t i, Char_t charge);
    TEntryList*   GetSelected(Int_t i, Short_t charge);
    void          ScanEvent(AliRsnEvent *ev);
-   //AliRsnMiniEvent CreateMiniEvent(AliRsnEvent *ev);
    
    virtual void  Print(Option_t* option = "") const;
 

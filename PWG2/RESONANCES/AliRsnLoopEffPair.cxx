@@ -158,6 +158,15 @@ Bool_t AliRsnLoopEffPair::AssignMotherAndDaughtersESD(AliRsnEvent *rsnEvent, Int
 //__________________________________________________________________________________________________
 Bool_t AliRsnLoopEffPair::AssignMotherAndDaughtersAOD(AliRsnEvent *rsnEvent, Int_t ipart)
 {
+//
+// Gets a particle in the MC event and try to assign it to the mother.
+// If it has two daughters, retrieve them and assign also them.
+// NOTE: assignment is done only for MC, since reconstructed match is assigned in the same way
+//       for ESD and AOD, if available
+// ---
+// Implementation for AOD inputs
+//
+
    AliAODEvent      *aod     = rsnEvent->GetRefAOD();
    TClonesArray     *listAOD = (TClonesArray*)(aod->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
    AliAODMCParticle *mother  = (AliAODMCParticle*)listAOD->At(ipart);

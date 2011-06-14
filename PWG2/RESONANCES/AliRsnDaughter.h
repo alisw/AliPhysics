@@ -2,7 +2,9 @@
 #define ALIRSNDAUGHTER_H
 
 //
-//  Interface to single daughter candidate.
+// Interface to single daughter candidate.
+// Used for old-version analysis and for
+// selecting tracks in mini package
 //
 
 #include <TMath.h>

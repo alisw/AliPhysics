@@ -109,6 +109,7 @@ const char* AliRsnValuePair::GetTypeName() const
       case kPtRatio:      return "PairPtRatio";
       case kDipAngle:     return "PairDipAngle";
       case kCosThetaStar: return "PairCosThetaStar";
+      case kAngleLeading: return "PairAngleToLeading";
       default:            return "Undefined";
    }
 }
@@ -132,6 +133,9 @@ Bool_t AliRsnValuePair::Eval(TObject *object)
    TLorentzVector &ref   = fMother->Ref(fUseMCInfo);
    TLorentzVector &p1    = fMother->GetDaughter(0)->P(fUseMCInfo);
    TLorentzVector &p2    = fMother->GetDaughter(1)->P(fUseMCInfo);
+   
+   // utility variables
+   Bool_t success;
    
    // compute value depending on types in the enumeration
    // if the type does not match any available choice, or if
@@ -169,6 +173,9 @@ Bool_t AliRsnValuePair::Eval(TObject *object)
       case kCosThetaStar:
          fComputedValue = fMother->CosThetaStar();
          return kTRUE;
+      case kAngleLeading:
+         fComputedValue = fMother->AngleToLeading(success);
+         return success;
       default:
          AliError(Form("[%s] Invalid value type for this computation", GetName()));
          return kFALSE;

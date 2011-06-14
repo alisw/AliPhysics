@@ -51,6 +51,10 @@ AliRsnLoopEff::AliRsnLoopEff(const AliRsnLoopEff& copy) :
 //_____________________________________________________________________________
 AliRsnLoopEff& AliRsnLoopEff::operator=(const AliRsnLoopEff& copy)
 {
+//
+// Assignment operator
+//
+
    AliRsnLoop::operator=(copy);
 
    fAddSteps = copy.fAddSteps;
@@ -121,7 +125,7 @@ Bool_t AliRsnLoopEff::Init(const char *prefix, TList *list)
 }
 
 //_____________________________________________________________________________
-Int_t AliRsnLoopEff::FindTrack(Int_t label, AliVEvent *event)
+Int_t AliRsnLoopEff::FindTrack(Int_t label, const AliVEvent *event)
 {
 //
 // Loops an event and find all tracks which have a label

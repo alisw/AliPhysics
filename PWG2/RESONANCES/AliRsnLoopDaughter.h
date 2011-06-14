@@ -2,7 +2,10 @@
 #define ALIRSNLOOPDAUGHTER_H
 
 //
-// Class for computations on single daughters
+// Computator for single daughters.
+// Implements a simple loop on tracks from one of the entry lists
+// filled by the task AliRsnInputHandler, adding a check on their
+// definition specified in the daughter def.
 //
 
 #include "AliRsnDaughter.h"
@@ -15,13 +18,14 @@ public:
 
    AliRsnLoopDaughter(const char *name = "default", Int_t listID = 0, AliRsnDaughterDef *def = 0);
    AliRsnLoopDaughter(const AliRsnLoopDaughter &copy);
-   AliRsnLoopDaughter& operator=(const AliRsnLoopDaughter&);
+   AliRsnLoopDaughter& operator=(const AliRsnLoopDaughter &copy);
    ~AliRsnLoopDaughter();
    
-   Int_t              GetListID()                    {return  fListID;}
+   Int_t              GetListID() const              {return  fListID;}
    AliRsnDaughterDef* GetDef()                       {return  fDef;}
    AliRsnDaughter*    GetDaughter()                  {return &fDaughter;}
-                                                     
+
+   void               SetTrueMC(Bool_t yn = kTRUE)   {fTrueMC = yn;}
    void               SetOnlyTrue(Bool_t yn = kTRUE) {fOnlyTrue = yn;}
    void               SetListID(Int_t i)             {fListID = i;}
    void               SetDef(AliRsnDaughterDef *def) {fDef = def;}
@@ -32,6 +36,9 @@ public:
 
 protected:
 
+   Int_t LoopTrueMC(AliRsnEvent *rsn);
+
+   Bool_t             fTrueMC;     //  if this flag is TRUE, scan the MC for all true resonances from MC
    Bool_t             fOnlyTrue;   //  for selecting only true particles
    Int_t              fListID;     //  index of entry list to use
    AliRsnDaughterDef *fDef;        //  definition for selection
