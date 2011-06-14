@@ -1,5 +1,8 @@
 //
-// All cuts for single kaons in phi analysis 2010
+// This cut implements all the checks done to accept a track as a Kaon
+// for the PbPb analysis using 2010 runs. 
+// It is based on standard cuts on track quality and nsigma cuts
+// with respect to the TPC and TOF signals for the PID.
 //
 
 #include <Riostream.h>
@@ -13,7 +16,13 @@ ClassImp(AliRsnCutKaonForPhi2010)
 //__________________________________________________________________________________________________
 AliRsnCutKaonForPhi2010::AliRsnCutKaonForPhi2010(const char *name) :
    AliRsnCut(name, AliRsnTarget::kDaughter, 0.0, 3.0),
-   fCutQuality(Form("%sQuality", name))
+   fOnlyQuality(kFALSE),
+   fOnlyTPC(kFALSE),
+   fOnlyTOF(kFALSE),
+   fCutTPC(2.0),
+   fCutTOF(2.0),
+   fTOFthreshold(0.8),
+   fCutQuality(Form("%s_quality", name))
 {
 //
 // Constructor
@@ -62,6 +71,9 @@ Bool_t AliRsnCutKaonForPhi2010::IsSelected(TObject *obj)
    // quality
    if (!fCutQuality.IsSelected(obj)) return kFALSE;
    
+   // if not PID is done, exit here
+   if (fOnlyQuality) return kTRUE;
+   
    // check initialization of PID object
    AliPIDResponse *pid = fEvent->GetPIDResponse();
    if (!pid) {
@@ -69,26 +81,28 @@ Bool_t AliRsnCutKaonForPhi2010::IsSelected(TObject *obj)
       return kFALSE;
    }
    
-   // PID ITS :
-   // depends on momentum
-   //SetRangeD(0.0, 4.0);
-   //fCutValueD = TMath::Abs(pid->NumberOfSigmasITS(track, AliPID::kKaon));
-   //if (!OkRangeD()) return kFALSE;
+   // PID 
+   Double_t nsigmaTPC = TMath::Abs(pid->NumberOfSigmasTPC(track, AliPID::kKaon));
+   Double_t nsigmaTOF = TMath::Abs(pid->NumberOfSigmasTOF(track, AliPID::kKaon));
+   Bool_t   matchTOF  = MatchTOF(track);
    
-   // PID TPC :
-   // depends on momentum
-   //SetRangeD(0.0, 3.0);
-   //if (track->GetTPCmomentum() < 0.350) SetRangeD(0.0, 5.0);
-   fCutValueD = TMath::Abs(pid->NumberOfSigmasTPC(track, AliPID::kKaon));
-   if (!OkRangeD()) return kFALSE;
-   
-   // if TOF is not matched, end here
-   // otherwise check TOF
-   if (!MatchTOF(track)) 
+   // if only one detector is chosen, do this here
+   if (fOnlyTPC) {
+      return (nsigmaTPC <= fCutTPC);
+   } else if (fOnlyTOF) {
+      return (matchTOF && (nsigmaTOF <= fCutTOF));
+   } else {
+      // combined PID:
+      // below momentum threshold, start with TPC
+      if (track->P() < fTOFthreshold) {
+         if (nsigmaTPC > fCutTPC) return kFALSE;
+         if (matchTOF && (nsigmaTOF > fCutTOF)) return kFALSE;
+         return kTRUE;
+      } else {
+         if (!matchTOF) return kFALSE;
+         if (nsigmaTOF > fCutTOF) return kFALSE;
+         if (nsigmaTPC > 4.0) return kFALSE;
+      }
       return kTRUE;
-   else {
-      //SetRangeD(0.0, 3.0);
-      fCutValueD = TMath::Abs(pid->NumberOfSigmasTOF(track, AliPID::kKaon));
-      return OkRangeD();
    }
 }

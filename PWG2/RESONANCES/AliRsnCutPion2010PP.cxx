@@ -1,25 +1,22 @@
 //
-// This cut implements all the checks done to accept a track as a Kaon
-// for the pp analysis using 2010 runs. 
-// It is based on standard cuts on track quality and nsigma cuts
-// with respect to the TPC and TOF signals for the PID.
+// All cuts for single pions in phi analysis 2010,
+// based on track quality and particle identification
+// with TPC and TOF.
+// Author: Serguey Kiselev.
+//
 //
 
 #include <Riostream.h>
 
 #include "AliPID.h"
 #include "AliPIDResponse.h"
-#include "AliRsnCutKaonForPhi2010PP.h"
+#include "AliRsnCutPion2010PP.h"
 
-ClassImp(AliRsnCutKaonForPhi2010PP)
+ClassImp(AliRsnCutPion2010PP)
 
 //__________________________________________________________________________________________________
-AliRsnCutKaonForPhi2010PP::AliRsnCutKaonForPhi2010PP(const char *name) :
+AliRsnCutPion2010PP::AliRsnCutPion2010PP(const char *name) :
    AliRsnCut(name, AliRsnTarget::kDaughter, -3.0, 3.0),
-   fNSigmaTPCLow(5.0),
-   fNSigmaTPCHigh(3.0),
-   fLimitTPC(0.350),
-   fNSigmaTOF(3.0),
    fCutQuality(Form("%sQuality", name))
 {
 //
@@ -45,7 +42,7 @@ AliRsnCutKaonForPhi2010PP::AliRsnCutKaonForPhi2010PP(const char *name) :
 }
 
 //__________________________________________________________________________________________________
-Bool_t AliRsnCutKaonForPhi2010PP::IsSelected(TObject *obj)
+Bool_t AliRsnCutPion2010PP::IsSelected(TObject *obj)
 {
 //
 // Global check
@@ -76,13 +73,17 @@ Bool_t AliRsnCutKaonForPhi2010PP::IsSelected(TObject *obj)
       return kFALSE;
    }
    
+   // PID ITS :
+   // depends on momentum
+   //SetRangeD(0.0, 4.0);
+   //fCutValueD = TMath::Abs(pid->NumberOfSigmasITS(track, AliPID::kPion));
+   //if (!OkRangeD()) return kFALSE;
+   
    // PID TPC :
    // depends on momentum
-   if (track->GetTPCmomentum() < fLimitTPC) 
-      SetRangeD(0.0, fNSigmaTPCLow);
-   else
-      SetRangeD(0.0, fNSigmaTPCHigh);
-   fCutValueD = TMath::Abs(pid->NumberOfSigmasTPC(track, AliPID::kKaon));
+   SetRangeD(0.0, 3.0);
+   if (track->GetTPCmomentum() < 0.350) SetRangeD(0.0, 5.0);
+   fCutValueD = TMath::Abs(pid->NumberOfSigmasTPC(track, AliPID::kPion));
    if (!OkRangeD()) return kFALSE;
    
    // if TOF is not matched, end here
@@ -90,8 +91,8 @@ Bool_t AliRsnCutKaonForPhi2010PP::IsSelected(TObject *obj)
    if (!MatchTOF(track)) 
       return kTRUE;
    else {
-      SetRangeD(0.0, fNSigmaTOF);
-      fCutValueD = TMath::Abs(pid->NumberOfSigmasTOF(track, AliPID::kKaon));
+      //SetRangeD(0.0, 3.0);
+      fCutValueD = TMath::Abs(pid->NumberOfSigmasTOF(track, AliPID::kPion));
       return OkRangeD();
    }
 }
