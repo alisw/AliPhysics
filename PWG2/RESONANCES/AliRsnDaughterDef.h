@@ -48,11 +48,11 @@ public:
    void SetRefType(AliRsnDaughter::ERefType type) {fRefType = type;}
    
    Bool_t MatchesPID(AliRsnDaughter *daughter);
-   Bool_t MatchesCharge(AliRsnDaughter *daughter);
-   Bool_t MatchesRefType(AliRsnDaughter *daughter);
+   Bool_t MatchesCharge(AliRsnDaughter *daughter)  const;
+   Bool_t MatchesRefType(AliRsnDaughter *daughter) const;
    Bool_t MatchesPDG(Int_t pdgCode)                  {return (AliRsnDaughter::SpeciesPDG(fPID) == pdgCode);}
-   Bool_t MatchesChargeS(Short_t charge)             {return (GetChargeS() == charge);}
-   Bool_t MatchesChargeC(Char_t charge)              {return (GetChargeC() == charge);}
+   Bool_t MatchesChargeS(Short_t charge) const       {return (GetChargeS() == charge);}
+   Bool_t MatchesChargeC(Char_t charge)  const       {return (GetChargeC() == charge);}
 
 private:
 
@@ -89,7 +89,7 @@ inline Bool_t AliRsnDaughterDef::MatchesPID(AliRsnDaughter *daughter)
 }
  
 //__________________________________________________________________________________________________
-inline Bool_t AliRsnDaughterDef::MatchesCharge(AliRsnDaughter *daughter)
+inline Bool_t AliRsnDaughterDef::MatchesCharge(AliRsnDaughter *daughter) const
 {
 //
 // Checks if the passed daughter charge matches that defined in fCharge data member.
@@ -106,7 +106,7 @@ inline Bool_t AliRsnDaughterDef::MatchesCharge(AliRsnDaughter *daughter)
 }
 
 //__________________________________________________________________________________________________
-inline Bool_t AliRsnDaughterDef::MatchesRefType(AliRsnDaughter *daughter)
+inline Bool_t AliRsnDaughterDef::MatchesRefType(AliRsnDaughter *daughter) const
 {
 //
 // Checks that the daughter object type matches that defined in fRefType data member.

@@ -2,7 +2,24 @@
 #define ALIRSNLISTOUTPUT_H
 
 //
-// General class for outputs which can stay into a TList
+// Class AliRsnListOutput
+//
+// This class defines a base classe to implement a Output
+// which uses the internal RSN package event format (AliRsnEvent).
+// It contains some default flags which turn out to be useful:
+//  - a flag to select only the "true" pairs (tracks from same resonance)
+//  - a flag to know if the computation is done over two events (mixing)
+//
+// Any kind of analysis object should be implemented as inheriting from this
+// because the AliRsnAnalyzer which executes the analysis will accept a collection
+// of such objects, in order to have a unique format of processing method
+//
+// The user who implements a kind of computation type should inherit from
+// this class and override the virtual Outputs defined in it, which
+// initialize the final output histogram and define how to process data.
+//
+//
+// author: A. Pulvirenti             (email: alberto.pulvirenti@ct.infn.it)
 //
 
 #include <TRef.h>
@@ -16,8 +33,7 @@
 #include <TNtuple.h>
 #include <THnSparse.h>
 
-#include "AliCFContainer.h"
-
+class AliCFContainer;
 class AliRsnValue;
 
 class AliRsnListOutput : public TNamed {
@@ -35,12 +51,12 @@ public:
    const AliRsnListOutput& operator=(const AliRsnListOutput &copy);
    virtual ~AliRsnListOutput();
 
-   EOut            GetType()               {return  fType;}
-   Int_t           GetSteps()              {return  fSteps;}
+   EOut            GetType() const         {return  fType;}
+   Int_t           GetSteps() const        {return  fSteps;}
    TObjArray*      GetValues()             {return &fValues;}
    Int_t           GetNValues()            {return (fNValues = fValues.GetEntries());}
-   AliRsnValue*    GetValue(Int_t i)       {return (AliRsnValue*)fValues[i];}
-   Int_t           GetIndex()              {return  fIndex;}
+   AliRsnValue*    GetValue(Int_t i) const {return (AliRsnValue*)fValues[i];}
+   Int_t           GetIndex() const        {return  fIndex;}
    void            SetType(EOut type)      {fType = type;}
    void            SetSteps(Int_t n)       {fSteps = n;}
    void            SetSkipFailed(Bool_t y) {fSkipFailed = y;}

@@ -1,8 +1,9 @@
 //
-// Computator for single daughters.
-// Implements a simple loop on tracks from one of the entry lists
-// filled by the task AliRsnInputHandler, adding a check on their
-// definition specified in the daughter def.
+// Computator for events.
+// Fills the outputs once per event,
+// using values computed on them,
+// and inheriting the same definitions of outputs
+// as in the mother AliRsnLoop class.
 //
 
 #include "AliLog.h"

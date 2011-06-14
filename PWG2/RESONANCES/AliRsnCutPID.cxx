@@ -86,7 +86,7 @@ AliRsnCutPID::AliRsnCutPID(const char *name, AliPID::EParticleType pid, Double_t
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnCutPID::CheckThreshold(EDetector det, Double_t value)
+Bool_t AliRsnCutPID::CheckThreshold(EDetector det, Double_t value) const
 {
 //
 // Checks if the passed value (track pT) stays in the

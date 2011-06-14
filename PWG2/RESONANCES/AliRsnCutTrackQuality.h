@@ -97,7 +97,7 @@ inline const char * AliRsnCutTrackQuality::Binary(UInt_t number)
 
     UInt_t z;
     for (z = 512; z > 0; z >>= 1)
-      strncat(b, ((number & z) == z) ? "1" : "0",1);
+        strcat(b, ((number & z) == z) ? "1" : "0");
 
     return b;
 }

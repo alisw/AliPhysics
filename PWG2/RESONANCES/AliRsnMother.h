@@ -11,6 +11,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <TMath.h>
+#include <TLorentzVector.h>
+
 #include "AliRsnDaughter.h"
 
 class AliRsnEvent;
@@ -34,6 +36,7 @@ public:
    TLorentzVector&   Sum(Bool_t mc)              {return (mc ? fSumMC : fSum);}
    TLorentzVector&   Ref(Bool_t mc)              {return (mc ? fRefMC : fRef);}
    Bool_t            GetResolution(Double_t &value);
+   Double_t          Rapidity(Bool_t mc)         {if (mc) return fRefMC.Rapidity(); else return fRef.Rapidity();}
    
    // checks
    Bool_t    IsLabelEqual()  const {return TMath::Abs(fDaughter[0]->GetLabel()) == TMath::Abs(fDaughter[1]->GetLabel());}
@@ -53,7 +56,7 @@ public:
 
 private:
 
-   Int_t CkID(Int_t i) {if (i < 1) return 0; else return 1;}
+   Int_t CkID(Int_t i) const {if (i < 1) return 0; else return 1;}
 
    AliRsnDaughter  *fDaughter[2];      // elements of the pair
    AliRsnEvent     *fRefEvent;         // reference event

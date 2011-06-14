@@ -16,8 +16,12 @@
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
+#include "AliESDtrackCuts.h"
+#include "AliAODpidUtil.h"
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h"
+
+#include "AliRsnDaughter.h"
 
 #include "AliRsnCutPIDITS.h"
 

@@ -16,8 +16,8 @@
 #include <TObjArray.h>
 
 #include "AliRsnTarget.h"
-#include "AliRsnCut.h"
 
+class AliRsnCut;
 class AliRsnDaughter;
 class AliRsnExpression;
 class AliRsnPairParticle;
@@ -38,7 +38,7 @@ public:
    Int_t     GetIndexByCutName(TString s);
    Bool_t    Passed();
    Bool_t    IsValidScheme();
-   TString   ShowCutScheme();
+   TString   ShowCutScheme() const;
    Int_t     TestExpression(TString opt = "short");
    void      PrintSetInfo();
 

@@ -30,13 +30,13 @@ public:
    AliRsnCut& operator=(const AliRsnCut& copy);
    virtual ~AliRsnCut() { };
 
-   Int_t            GetMinI()        {return fMinI;}
-   Int_t            GetMaxI()        {return fMaxI;}
-   Double_t         GetMinD()        {return fMinD;}
-   Double_t         GetMaxD()        {return fMaxD;}
-   Int_t            GetCutValueI()   {return fCutValueI;}
-   Double_t         GetCutValueD()   {return fCutValueD;}
-   Bool_t           GetCutResult()   {return fCutResult;}
+   Int_t            GetMinI()      const {return fMinI;}
+   Int_t            GetMaxI()      const {return fMaxI;}
+   Double_t         GetMinD()      const {return fMinD;}
+   Double_t         GetMaxD()      const {return fMaxD;}
+   Int_t            GetCutValueI() const {return fCutValueI;}
+   Double_t         GetCutValueD() const {return fCutValueD;}
+   Bool_t           GetCutResult() const {return fCutResult;}
 
    void             SetRangeI(Int_t    min, Int_t    max) {fMinI = min; fMaxI = max;}
    void             SetRangeD(Double_t min, Double_t max) {fMinD = min; fMaxD = max;}

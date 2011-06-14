@@ -22,6 +22,7 @@
 #include <Riostream.h>
 
 #include "AliLog.h"
+#include "AliCFContainer.h"
 
 #include "AliRsnValue.h"
 #include "AliRsnLoop.h"
