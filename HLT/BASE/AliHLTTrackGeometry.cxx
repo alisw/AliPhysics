@@ -165,7 +165,7 @@ void AliHLTTrackGeometry::Draw(Option_t *option)
       m->Draw("same");
       firstalpha=alpha;
     } else {
-      color+=9*TMath::Abs(alpha-firstalpha)/TMath::Pi();
+      color+=int(9*TMath::Abs(alpha-firstalpha)/TMath::Pi());
     }
     TMarker* m=new TMarker(x/(2*scale)+center[0], y/(2*scale)+center[1], point->GetV()>0?2:5);
     m->SetMarkerColor(color);
