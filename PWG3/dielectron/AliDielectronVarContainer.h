@@ -166,60 +166,60 @@ public:
 
   enum ValueTypesMC {
     // Leg specific variables
-    kPx_MC = 0,              // px
-    kPy_MC,                  // py
-    kPz_MC,                  // pz
-    kPt_MC,                  // transverse momentum
-    kP_MC,                   // momentum
-    kXv_MC,                  // vertex position in x
-    kYv_MC,                  // vertex position in y
-    kZv_MC,                  // vertex position in z
-    kOneOverPt_MC,           // 1/pt
-    kPhi_MC,                 // phi angle
-    kTheta_MC,               // theta angle
-    kEta_MC,                 // pseudo-rapidity
-    kY_MC,                   // rapidity
-    kE_MC,                   // energy
-    kM_MC,                   // mass
-    kCharge_MC,              // charge
-    kImpactParXY_MC,         // Impact parameter in XY plane
-    kImpactParZ_MC,          // Impact parameter in Z
+    kPxMC = 0,              // px
+    kPyMC,                  // py
+    kPzMC,                  // pz
+    kPtMC,                  // transverse momentum
+    kPMC,                   // momentum
+    kXvMC,                  // vertex position in x
+    kYvMC,                  // vertex position in y
+    kZvMC,                  // vertex position in z
+    kOneOverPtMC,           // 1/pt
+    kPhiMC,                 // phi angle
+    kThetaMC,               // theta angle
+    kEtaMC,                 // pseudo-rapidity
+    kYMC,                   // rapidity
+    kEMC,                   // energy
+    kMMC,                   // mass
+    kChargeMC,              // charge
+    kImpactParXYMC,         // Impact parameter in XY plane
+    kImpactParZMC,          // Impact parameter in Z
     kPdgCode,                // PDG code
     kPdgCodeMother,          // PDG code of the mother
     kPdgCodeGrandMother,     // PDG code of the grand mother
     kNumberOfDaughters,      // number of daughters
     kHaveSameMother,         // check that particles have the same mother (MC)
     kIsJpsiPrimary,          // check if the particle is primary (MC)
-    kParticleMax_MC,         //
+    kParticleMaxMC,         //
 
 // Pair specific variables
-    kDecayLengthv_MC = kParticleMax_MC, // decay length
-    kR_MC,                      // distance to the origin
-    kOpeningAngle_MC,           // opening angle
+    kDecayLengthvMC = kParticleMaxMC, // decay length
+    kRMC,                      // distance to the origin
+    kOpeningAngleMC,           // opening angle
     // Helicity picture: Z-axis is considered the direction of the mother's 3-momentum vector
-    kThetaHE_MC,                // theta in mother's rest frame in the helicity picture 
-    kPhiHE_MC,                  // phi in mother's rest frame in the helicity picture
+    kThetaHEMC,                // theta in mother's rest frame in the helicity picture
+    kPhiHEMC,                  // phi in mother's rest frame in the helicity picture
     // Collins-Soper picture: Z-axis is considered the direction of the vectorial difference between 
     // the 3-mom vectors of target and projectile beams
-    kThetaCS_MC,                // theta in mother's rest frame in Collins-Soper picture
-    kPhiCS_MC,                  // phi in mother's rest frame in Collins-Soper picture
-    kLegDist_MC,                // distance of the legs
-    kLegDistXY_MC,              // distance of the legs in XY
-    kDeltaEta_MC,               // Absolute value of Delta Eta for the legs
-    kDeltaPhi_MC,               // Absolute value of Delta Phi for the legs
-    kDCA_MC,                    // distance of closest approach TODO: not implemented yet
-    kPairType_MC,               // type of the pair, like like sign ++ unlikesign ...
-    kPseudoProperTime_MC,       // pseudo proper time
-    kPairMax_MC,                //
+    kThetaCSMC,                // theta in mother's rest frame in Collins-Soper picture
+    kPhiCSMC,                  // phi in mother's rest frame in Collins-Soper picture
+    kLegDistMC,                // distance of the legs
+    kLegDistXYMC,              // distance of the legs in XY
+    kDeltaEtaMC,               // Absolute value of Delta Eta for the legs
+    kDeltaPhiMC,               // Absolute value of Delta Phi for the legs
+    kDCAMC,                    // distance of closest approach TODO: not implemented yet
+    kPairTypeMC,               // type of the pair, like like sign ++ unlikesign ...
+    kPseudoProperTimeMC,       // pseudo proper time
+    kPairMaxMC,                //
 
 // Event specific variables
-    kXvPrim_MC = kPairMax_MC,   // prim vertex x
-    kYvPrim_MC,                 // prim vertex y
-    kZvPrim_MC,                 // prim vertex z
+    kXvPrimMC = kPairMaxMC,   // prim vertex x
+    kYvPrimMC,                 // prim vertex y
+    kZvPrimMC,                 // prim vertex z
     kNch,                       // Number of charged MC tracks
-    kCentrality_MC,             // event centrality fraction
-    kNevents_MC,                // event counter
-    kNMaxValues_MC              // TODO: (for A+A) ZDCEnergy, impact parameter, Iflag??
+    kCentralityMC,             // event centrality fraction
+    kNeventsMC,                // event counter
+    kNMaxValuesMC              // TODO: (for A+A) ZDCEnergy, impact parameter, Iflag??
   };
 
 
@@ -249,9 +249,9 @@ public:
 private:
 
   static Double_t fgData[kNMaxValues];                   //! data
-  static Double_t fgDataMC[kNMaxValues_MC];              //! MC data
+  static Double_t fgDataMC[kNMaxValuesMC];              //! MC data
   static const char* fgkParticleNames[kNMaxValues];      // variable names
-  static const char* fgkParticleNamesMC[kNMaxValues_MC]; // MC variable names
+  static const char* fgkParticleNamesMC[kNMaxValuesMC]; // MC variable names
 
   static void FillVarVParticle(const AliVParticle *particle);
   static void FillVarVParticleMC(const AliVParticle *particle);
@@ -325,7 +325,7 @@ inline void AliDielectronVarContainer::ResetArrayData(Int_t to)
 inline void AliDielectronVarContainer::ResetArrayDataMC(Int_t to)
 {
   // Protect
-  if (to >= AliDielectronVarContainer::kNMaxValues_MC) return;
+  if (to >= AliDielectronVarContainer::kNMaxValuesMC) return;
   // Reset
   //for (Int_t i=0; i<to; ++i) fgDataMC[i] = 0.;
 
@@ -383,7 +383,7 @@ inline void AliDielectronVarContainer::FillVarVParticleMC(const AliVParticle *pa
   if (!mc->HasMC()) return;
 
   // Reset
-  ResetArrayDataMC(AliDielectronVarContainer::kPairMax_MC);
+  ResetArrayDataMC(AliDielectronVarContainer::kPairMaxMC);
 
   // If called for a reco track, get the MC track first
   if (particle->IsA() == AliESDtrack::Class()) particle = mc->GetMCTrack((AliESDtrack*)particle);
@@ -413,22 +413,22 @@ inline void AliDielectronVarContainer::FillVarVParticleMC(const AliVParticle *pa
   // Set the common info
   fgData[AliDielectronVarContainer::kIsJpsiPrimary]       = mc->IsJpsiPrimary(particle);
   fgDataMC[AliDielectronVarContainer::kPdgCode]           = particle->PdgCode();
-  fgDataMC[AliDielectronVarContainer::kPx_MC]             = particle->Px();
-  fgDataMC[AliDielectronVarContainer::kPy_MC]             = particle->Py();
-  fgDataMC[AliDielectronVarContainer::kPz_MC]             = particle->Pz();
-  fgDataMC[AliDielectronVarContainer::kPt_MC]             = particle->Pt();
-  fgDataMC[AliDielectronVarContainer::kP_MC]              = particle->P();
-  fgDataMC[AliDielectronVarContainer::kXv_MC]             = particle->Xv();
-  fgDataMC[AliDielectronVarContainer::kYv_MC]             = particle->Yv();
-  fgDataMC[AliDielectronVarContainer::kZv_MC]             = particle->Zv();
-  fgDataMC[AliDielectronVarContainer::kOneOverPt_MC]      = particle->OneOverPt();
-  fgDataMC[AliDielectronVarContainer::kPhi_MC]            = particle->Phi();
-  fgDataMC[AliDielectronVarContainer::kTheta_MC]          = particle->Theta();
-  fgDataMC[AliDielectronVarContainer::kEta_MC]            = particle->Eta();
-  fgDataMC[AliDielectronVarContainer::kY_MC]              = particle->Y();
-  fgDataMC[AliDielectronVarContainer::kE_MC]              = particle->E();
-  fgDataMC[AliDielectronVarContainer::kM_MC]              = particle->M();
-  fgDataMC[AliDielectronVarContainer::kCharge_MC]         = particle->Charge();
+  fgDataMC[AliDielectronVarContainer::kPxMC]             = particle->Px();
+  fgDataMC[AliDielectronVarContainer::kPyMC]             = particle->Py();
+  fgDataMC[AliDielectronVarContainer::kPzMC]             = particle->Pz();
+  fgDataMC[AliDielectronVarContainer::kPtMC]             = particle->Pt();
+  fgDataMC[AliDielectronVarContainer::kPMC]              = particle->P();
+  fgDataMC[AliDielectronVarContainer::kXvMC]             = particle->Xv();
+  fgDataMC[AliDielectronVarContainer::kYvMC]             = particle->Yv();
+  fgDataMC[AliDielectronVarContainer::kZvMC]             = particle->Zv();
+  fgDataMC[AliDielectronVarContainer::kOneOverPtMC]      = particle->OneOverPt();
+  fgDataMC[AliDielectronVarContainer::kPhiMC]            = particle->Phi();
+  fgDataMC[AliDielectronVarContainer::kThetaMC]          = particle->Theta();
+  fgDataMC[AliDielectronVarContainer::kEtaMC]            = particle->Eta();
+  fgDataMC[AliDielectronVarContainer::kYMC]              = particle->Y();
+  fgDataMC[AliDielectronVarContainer::kEMC]              = particle->E();
+  fgDataMC[AliDielectronVarContainer::kMMC]              = particle->M();
+  fgDataMC[AliDielectronVarContainer::kChargeMC]         = particle->Charge();
 }
 
 
@@ -624,7 +624,7 @@ inline void AliDielectronVarContainer::FillVarDielectronPair(const AliDielectron
   // Fill common AliVParticle interface information
   FillVarVParticle(pair);
   // Reset MC array
-  ResetArrayDataMC(AliDielectronVarContainer::kPairMax_MC);
+  ResetArrayDataMC(AliDielectronVarContainer::kPairMaxMC);
 
   // Fill AliDielectronPair specific information
   const AliKFParticle &kfPair = pair->GetKFParticle();
@@ -672,7 +672,7 @@ inline void AliDielectronVarContainer::FillVarKFParticle(const AliKFParticle *pa
   // Reset data array
   ResetArrayData(AliDielectronVarContainer::kPairMax);
   // Reset MC array
-  ResetArrayDataMC(AliDielectronVarContainer::kPairMax_MC);
+  ResetArrayDataMC(AliDielectronVarContainer::kPairMaxMC);
 
 
   fgData[AliDielectronVarContainer::kPx]        = particle->GetPx();
@@ -701,7 +701,7 @@ inline void AliDielectronVarContainer::FillVarVEvent(const AliVEvent *event)
   // Reset data array
   ResetArrayData(AliDielectronVarContainer::kNMaxValues);
   // Reset MC array
-  ResetArrayDataMC(AliDielectronVarContainer::kNMaxValues_MC);
+  ResetArrayDataMC(AliDielectronVarContainer::kNMaxValuesMC);
 
   // set the KF vertex
   if (fgKFVertex) delete fgKFVertex;
