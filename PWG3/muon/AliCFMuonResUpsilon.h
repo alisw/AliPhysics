@@ -62,17 +62,17 @@ class AliCFMuonResUpsilon : public AliAnalysisTaskSE {
  protected:
   
   Bool_t          fReadAODData;   // flag for AOD/ESD input files
-  Bool_t          fReadMCInfo;   // flag for reading MC info (ESD->Kinematics, AOD->MCbranch)
-  AliCFManager   *fCFManager;   // pointer to the CF manager
- 	TH1D					 *hnevts;
-	Bool_t					fIsPhysSelMB;
-	Bool_t					fIsPhysSelMUON;
-  TList          *fQAHistList;   // list of QA histograms
-	Int_t						fPDG;
-	Double_t				fPtMin;
-	Double_t				fPtMax;
-	Double_t				fYMin;
-	Double_t				fYMax;
+  Bool_t          fReadMCInfo;   	// flag for reading MC info (ESD->Kinematics, AOD->MCbranch)
+  AliCFManager   *fCFManager;   	// pointer to the CF manager
+ 	TH1D					 *fnevts;					// TH1 for event statistics
+	Bool_t					fIsPhysSelMB;		// flag for the physics selection : MB
+	Bool_t					fIsPhysSelMUON;	// flag for the physics selection : MUON
+  TList          *fQAHistList;   	// list of QA histograms
+	Int_t						fPDG;						// PDG code of resonance
+	Double_t				fPtMin;					// min Pt of resonance
+	Double_t				fPtMax;					// max Pt of resonance
+	Double_t				fYMin;					// min rapidity of resonance
+	Double_t				fYMax;					// max rapidity of resonance
 
   // CUTS ON THE FIRED TRIGGER CLASS
   TString					fTrigClassMuon		;    // name of the muon trigger class (CMU by default)
