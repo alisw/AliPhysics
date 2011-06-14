@@ -2,7 +2,9 @@
 #define ALIRSNLOOPEVENT_H
 
 //
-// Class for computations on events
+// Computator for events.
+// The simplest loop, 
+// which is filled once per event.
 //
 
 #include "AliRsnLoop.h"
@@ -12,7 +14,7 @@ public:
 
    AliRsnLoopEvent(const char *name = "default");
    AliRsnLoopEvent(const AliRsnLoopEvent &copy);
-   AliRsnLoopEvent& operator=(const AliRsnLoopEvent&);
+   AliRsnLoopEvent& operator=(const AliRsnLoopEvent &copy);
    ~AliRsnLoopEvent();
    
    virtual void       Print(Option_t *opt = "") const;

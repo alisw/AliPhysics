@@ -38,6 +38,7 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnValueEvent.cxx
            RESONANCES/AliRsnCutPrimaryVertex.cxx
            RESONANCES/AliRsnCutTrackQuality.cxx
+           RESONANCES/AliRsnCutTrue.cxx
            RESONANCES/AliRsnCutValue.cxx
            RESONANCES/AliRsnCutPID.cxx
            RESONANCES/AliRsnCutPIDITS.cxx
@@ -47,6 +48,8 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnCutMomentumComparison.cxx
            RESONANCES/AliRsnCutKaonForPhi2010.cxx
            RESONANCES/AliRsnCutKaonForPhi2010PP.cxx
+           RESONANCES/AliRsnCutPion2010PP.cxx
+           RESONANCES/AliRsnCutProton2010PP.cxx
            RESONANCES/AliRsnCutSet.cxx
            RESONANCES/AliRsnExpression.cxx
            RESONANCES/AliRsnVariableExpression.cxx
@@ -60,7 +63,15 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnLoopEffPair.cxx
            RESONANCES/AliRsnDaughterSelector.cxx
            RESONANCES/AliRsnInputHandler.cxx
-           RESONANCES/AliRsnAnalysisTask.cxx )
+           RESONANCES/AliRsnAnalysisTask.cxx
+           RESONANCES/AliRsnMiniParticle.cxx
+           RESONANCES/AliRsnMiniPair.cxx
+           RESONANCES/AliRsnCutMiniPair.cxx
+           RESONANCES/AliRsnMiniEvent.cxx
+           RESONANCES/AliRsnMiniAxis.cxx
+           RESONANCES/AliRsnMiniOutput.cxx
+           RESONANCES/AliRsnMiniValue.cxx
+           RESONANCES/AliRsnMiniAnalysisTask.cxx )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 

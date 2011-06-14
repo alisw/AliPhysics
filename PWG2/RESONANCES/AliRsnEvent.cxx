@@ -42,7 +42,8 @@ AliRsnEvent::AliRsnEvent(AliVEvent *ref, AliVEvent *refMC) :
    fRef(ref),
    fRefMC(refMC),
    fLeading(-1),
-   fPID(0x0)
+   fPID(0x0),
+   fAODList(0x0)
 {
 //
 // Default constructor.
@@ -55,7 +56,8 @@ AliRsnEvent::AliRsnEvent(const AliRsnEvent &event) :
    fRef(event.fRef),
    fRefMC(event.fRefMC),
    fLeading(event.fLeading),
-   fPID(event.fPID)
+   fPID(event.fPID),
+   fAODList(event.fAODList)
 {
 //
 // Copy constructor.
@@ -74,6 +76,7 @@ AliRsnEvent& AliRsnEvent::operator= (const AliRsnEvent & event)
    fRefMC           = event.fRefMC;
    fLeading         = event.fLeading;
    fPID             = event.fPID;
+   fAODList         = event.fAODList;
 
    return (*this);
 }

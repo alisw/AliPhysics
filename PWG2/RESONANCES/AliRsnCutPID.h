@@ -43,14 +43,14 @@ public:
    Bool_t         ComputeWeights(AliRsnDaughter *daughter);
    Int_t          RealisticPID(AliRsnDaughter * const daughter, Double_t &prob);
    Int_t          PerfectPID(AliRsnDaughter * const daughter);
-   Double_t       GetWeight(Int_t i) {if (i >= 0 && i < AliPID::kSPECIES) return fWeight[i]; return 0.0;}
+   Double_t       GetWeight(Int_t i) const {if (i >= 0 && i < AliPID::kSPECIES) return fWeight[i]; return 0.0;}
 
    virtual Bool_t IsSelected(TObject *object);
 
 protected:
 
    Bool_t   CheckBounds(EDetector det) const {return (det >= kITS && det < kDetectors);}
-   Bool_t   CheckThreshold(EDetector det, Double_t value);
+   Bool_t   CheckThreshold(EDetector det, Double_t value) const;
 
    Double_t              fPrior[AliPID::kSPECIES];        // prior probability
    Double_t              fWeight[AliPID::kSPECIES];       // PID weights used for combinations

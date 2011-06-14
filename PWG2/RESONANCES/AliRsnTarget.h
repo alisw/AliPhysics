@@ -33,18 +33,18 @@ public:
    AliRsnTarget& operator=(const AliRsnTarget& copy) { TNamed::operator=(copy); fTargetType = copy.fTargetType; return (*this); }
    virtual ~AliRsnTarget() { /*nothing*/ }
 
-   Bool_t           IsAllNull()                       {return (!fDaughter && !fMother && !fEvent);}
-   Bool_t           IsTarget(ETargetType targetType)  {return (fTargetType == targetType);}
+   Bool_t           IsAllNull() const                      {return (!fDaughter && !fMother && !fEvent);}
+   Bool_t           IsTarget(ETargetType targetType) const {return (fTargetType == targetType);}
    Bool_t           TargetOK(TObject *object);
    
-   void             SetTargetType(ETargetType type)   {fTargetType = type;}
-   ETargetType      GetTargetType() const             {return fTargetType;}
-   Char_t           GetTargetTypeChar() const;
-   const char*      GetTargetTypeName() const;
-   
-   AliRsnDaughter*  GetTargetDaughter()               {return fDaughter;}
-   AliRsnMother*    GetTargetMother()                 {return fMother;}
-   AliRsnEvent*     GetTargetEvent()                  {return fEvent;}
+   void             SetTargetType(ETargetType type)        {fTargetType = type;}
+   ETargetType      GetTargetType() const                  {return fTargetType;}
+   Char_t           GetTargetTypeChar() const;            
+   const char*      GetTargetTypeName() const;            
+                                                         
+   AliRsnDaughter*  GetTargetDaughter()                    {return fDaughter;}
+   AliRsnMother*    GetTargetMother()                      {return fMother;}
+   AliRsnEvent*     GetTargetEvent()                       {return fEvent;}
 
 protected:
 

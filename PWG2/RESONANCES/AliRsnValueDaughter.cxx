@@ -37,6 +37,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <Riostream.h>
 #include "AliVVertex.h"
 #include "AliMultiplicity.h"
 #include "AliESDtrackCuts.h"
@@ -44,6 +45,7 @@
 #include "AliAODPid.h"
 #include "AliCentrality.h"
 #include "AliESDUtils.h"
+#include "AliPIDResponse.h"
 
 #include "AliRsnEvent.h"
 #include "AliRsnDaughter.h"
@@ -98,14 +100,17 @@ const char* AliRsnValueDaughter::GetTypeName() const
 //
 
    switch (fType) {
-      case kP:         return "SingleTrackPtot";
-      case kPt:        return "SingleTrackPt";
-      case kPtpc:      return "SingleTrackPtpc";
-      case kEta:       return "SingleTrackEta";
-      case kITSsignal: return "SingleTrackITSsignal";
-      case kTPCsignal: return "SingleTrackTPCsignal";
-      case kTOFsignal: return "SingleTrackTOFsignal";
-      default:         return "Undefined";
+      case kP:           return "SingleTrackPtot";
+      case kPt:          return "SingleTrackPt";
+      case kPtpc:        return "SingleTrackPtpc";
+      case kEta:         return "SingleTrackEta";
+      case kITSsignal:   return "SingleTrackITSsignal";
+      case kTPCsignal:   return "SingleTrackTPCsignal";
+      case kTOFsignal:   return "SingleTrackTOFsignal";
+      case kTOFnsigmaPi: return "SingleTrackTOFnsigmaPion";
+      case kTOFnsigmaK:  return "SingleTrackTOFnsigmaKaon";
+      case kTOFnsigmaP:  return "SingleTrackTOFnsigmaProton";
+      default:           return "Undefined";
    }
 }
 
@@ -126,8 +131,17 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
    if (!TargetOK(object)) return kFALSE;
 
    // set a reference to the mother momentum
-   TLorentzVector &p     = fDaughter->P(fUseMCInfo);
+   AliVParticle   *ref   = fDaughter->GetRef();
+   AliVParticle   *refMC = fDaughter->GetRefMC();
    AliVTrack      *track = fDaughter->Ref2Vtrack();
+   if (fUseMCInfo && !refMC) {
+      AliError("No MC");
+      return kFALSE;
+   }
+   if (!fUseMCInfo && !ref) {
+      AliError("No DATA");
+      return kFALSE;
+   }
    
    // compute value depending on types in the enumeration
    // if the type does not match any available choice, or if
@@ -136,13 +150,13 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
    // the method returng kFALSE and sets the computed value to a meaningless number
    switch (fType) {
       case kP:
-         fComputedValue = p.Mag();
+         fComputedValue = (fUseMCInfo ? refMC->P() : ref->P());
          return kTRUE;
       case kPt:
-         fComputedValue = p.Perp();
+         fComputedValue = (fUseMCInfo ? refMC->Pt() : ref->Pt());
          return kTRUE;
       case kEta:
-         fComputedValue = p.Eta();
+         fComputedValue = (fUseMCInfo ? refMC->Eta() : ref->Eta());
          return kTRUE;
       case kPtpc:
          if (track) {
@@ -174,6 +188,36 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
       case kTOFsignal:
          if (track) {
             fComputedValue = track->GetTOFsignal();
+            return kTRUE;
+         } else {
+            AliWarning("Cannot get TOF signal for non-track object");
+            fComputedValue = 0.0;
+            return kFALSE;
+         }
+      case kTOFnsigmaPi:
+         if (track) {
+            AliPIDResponse *pid = fEvent->GetPIDResponse();
+            fComputedValue = pid->NumberOfSigmasTOF(track, AliPID::kPion);
+            return kTRUE;
+         } else {
+            AliWarning("Cannot get TOF signal for non-track object");
+            fComputedValue = 0.0;
+            return kFALSE;
+         }
+      case kTOFnsigmaK:
+         if (track) {
+            AliPIDResponse *pid = fEvent->GetPIDResponse();
+            fComputedValue = pid->NumberOfSigmasTOF(track, AliPID::kKaon);
+            return kTRUE;
+         } else {
+            AliWarning("Cannot get TOF signal for non-track object");
+            fComputedValue = 0.0;
+            return kFALSE;
+         }
+      case kTOFnsigmaP:
+         if (track) {
+            AliPIDResponse *pid = fEvent->GetPIDResponse();
+            fComputedValue = pid->NumberOfSigmasTOF(track, AliPID::kProton);
             return kTRUE;
          } else {
             AliWarning("Cannot get TOF signal for non-track object");

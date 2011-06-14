@@ -23,6 +23,9 @@ public:
       kITSsignal,  // ITS signal
       kTPCsignal,  // TPC signal
       kTOFsignal,  // TOF signal
+      kTOFnsigmaPi,// TOF number of sigmas pion
+      kTOFnsigmaK, // TOF number of sigmas kaon
+      kTOFnsigmaP, // TOF number of sigmas proton
       kTypes
    };
 

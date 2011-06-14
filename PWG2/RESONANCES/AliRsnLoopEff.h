@@ -2,7 +2,9 @@
 #define ALIRSNLOOPEFF_H
 
 //
-// Class to combine pairs of daughters.
+// Class to compute an efficiency.
+// Builds a 2-elements CF container
+// to fill with resonances generated and passing some defined cuts.
 //
 
 #include "AliLog.h"
@@ -15,7 +17,7 @@ public:
 
    AliRsnLoopEff(const char *name = "default", Int_t nSteps = 0, Double_t maxDistPV = 1E-2);
    AliRsnLoopEff(const AliRsnLoopEff &copy);
-   AliRsnLoopEff& operator=(const AliRsnLoopEff&);
+   AliRsnLoopEff& operator=(const AliRsnLoopEff &copy);
    ~AliRsnLoopEff();
 
    AliRsnListOutput* GetOutput()          {return fOutput;}
@@ -27,7 +29,7 @@ public:
 
 protected:
 
-   Int_t             FindTrack(Int_t label, AliVEvent *event);
+   Int_t             FindTrack(Int_t label, const AliVEvent *event);
    Int_t             GetMatchedDaughter(Int_t label, AliRsnEvent *event);
    Double_t          DistanceFromPV(Double_t x, Double_t y, Double_t z);
    Bool_t            CheckDistanceFromPV(Double_t x, Double_t y, Double_t z) {return (DistanceFromPV(x,y,z) <= fMaxDistPV);}

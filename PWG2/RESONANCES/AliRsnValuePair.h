@@ -26,6 +26,7 @@ public:
       kPtRatio,       // ratio |pt1 - pt2|/(pt1 + pt2) of daughter transverse momenta
       kDipAngle,      // inverse cosine of the angle between daughter vector momenta
       kCosThetaStar,  // polarization angle
+      kAngleLeading,  // angle to leading particle
       kTypes
    };
 

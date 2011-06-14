@@ -19,7 +19,8 @@
 #define ALIRSNCUTVALUE_H
 
 #include "AliRsnCut.h"
-#include "AliRsnValue.h"
+
+class AliRsnValue;
 
 class AliRsnCutValue : public AliRsnCut {
 public:
@@ -39,7 +40,7 @@ public:
 
 protected:
 
-   AliRsnValue *fValue;
+   AliRsnValue *fValue;   // value object used for cuts
 
    ClassDef(AliRsnCutValue, 1)
 };

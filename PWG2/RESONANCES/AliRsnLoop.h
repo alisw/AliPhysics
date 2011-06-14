@@ -2,7 +2,11 @@
 #define ALIRSNLOOP_H
 
 //
-// Base class object for all computation devices.
+// Base class to implement any computation within the RSN package.
+// It contains only an array of output objects which must derive 
+// from AliRsnOutput.
+// Its core functions ar Init() and DoLoop() which must be 
+// overloaded by any class which inherits from this.
 //
 
 #include "TNamed.h"
@@ -28,7 +32,7 @@ public:
 
    AliRsnLoop(const char *name = "default", Bool_t isMixed = kFALSE);
    AliRsnLoop(const AliRsnLoop &copy);
-   AliRsnLoop& operator=(const AliRsnLoop&);
+   AliRsnLoop& operator=(const AliRsnLoop &copy);
    ~AliRsnLoop();
    
    void           SetMixed(Bool_t yn = kTRUE)     {fIsMixed = yn;}

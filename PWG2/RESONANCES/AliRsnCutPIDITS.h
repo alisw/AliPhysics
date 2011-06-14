@@ -16,13 +16,14 @@
 #include "AliPID.h"
 
 #include "AliESDtrack.h"
-#include "AliESDtrackCuts.h"
 #include "AliESDpid.h"
-
 #include "AliAODpidUtil.h"
 
-#include "AliRsnDaughter.h"
 #include "AliRsnCut.h"
+
+class AliESDtrackCuts;
+class AliAODpidUtil;
+class AliRsnDaughter;
 
 class AliRsnCutPIDITS : public AliRsnCut {
 public:
@@ -46,8 +47,8 @@ public:
    void             SetNSigmaRange(Double_t min, Double_t max)    {fMinD = min; fMaxD = max;}
    void             SetRefType(EPARTYPE type)                     {fRefType = type;}
 
-   Bool_t           IsTPC(AliVTrack *vtrack);
-   Bool_t           IsSA(AliVTrack *vtrack);
+   Bool_t           IsTPC(const AliVTrack *vtrack);
+   Bool_t           IsSA(const AliVTrack *vtrack);
    virtual Bool_t   IsSelected(TObject *object);
    virtual void     Print(const Option_t *option = "") const;
 
@@ -64,7 +65,7 @@ private:
    ClassDef(AliRsnCutPIDITS, 1)
 };
 
-inline Bool_t AliRsnCutPIDITS::IsTPC(AliVTrack *vtrack)
+inline Bool_t AliRsnCutPIDITS::IsTPC(const AliVTrack *vtrack)
 {
 //
 // Checks if the track has the status flags required for a global track
@@ -80,7 +81,7 @@ inline Bool_t AliRsnCutPIDITS::IsTPC(AliVTrack *vtrack)
    return (isTPCin);
 }
 
-inline Bool_t AliRsnCutPIDITS::IsSA(AliVTrack *vtrack)
+inline Bool_t AliRsnCutPIDITS::IsSA(const AliVTrack *vtrack)
 {
 //
 // Checks if the track has the status flags required for an ITS standalone track

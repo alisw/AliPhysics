@@ -13,10 +13,9 @@
 #ifndef ALIRSNCUTPIDTPC_H
 #define ALIRSNCUTPIDTPC_H
 
-#include "AliPID.h"
-
 #include "AliRsnCut.h"
 
+class AliPID;
 class AliESDpid;
 class AliAODpidUtil;
 
@@ -40,7 +39,7 @@ public:
    void             SetMomentumRange(Double_t min, Double_t max)  {fMomMin = min; fMomMax = max;}
    void             SetNSigmaRange(Double_t min, Double_t max)    {fMinD = min; fMaxD = max;}
    void             SetRefType(EPARTYPE type)                     {fRefType = type;}
-   void             SetBBParam(Double_t *p)                       {SetBBParam(p[0], p[1], p[2], p[3], p[4]);}
+   void             SetBBParam(const Double_t *p)                 {SetBBParam(p[0], p[1], p[2], p[3], p[4]);}
    void             SetBBParam(Double_t p0, Double_t p1, Double_t p2, Double_t p3, Double_t p4);
 
    virtual Bool_t   IsSelected(TObject *object);

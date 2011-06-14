@@ -15,10 +15,13 @@
 #include "AliRsnDaughterSelector.h"
 
 class AliRsnEvent;
+class AliRsnCutSet;
 class AliRsnInputHandler : public AliInputEventHandler {
 
 public:
    AliRsnInputHandler(const char *name = "rsnInputHandler");
+   AliRsnInputHandler(const AliRsnInputHandler& handler);
+   AliRsnInputHandler &operator=(const AliRsnInputHandler &handler);
    virtual ~AliRsnInputHandler();
 
    // From the interface
@@ -30,18 +33,16 @@ public:
    virtual Bool_t  Notify(const char *path);
    virtual Bool_t  GetEntry();
 
+   void SetEventCuts(AliRsnCutSet *cuts) {fRsnEventCuts = cuts;}
    AliRsnEvent *GetRsnEvent() { return fRsnEvent; }
    //AliRsnPIDManager *GetPIDManager() { return &fRsnPIDManager; }
    AliRsnDaughterSelector *GetSelector() { return &fRsnSelector; }
 
 private:
 
-   AliRsnEvent *fRsnEvent; //!
-   //AliRsnPIDManager fRsnPIDManager;
-   AliRsnDaughterSelector fRsnSelector;
-
-   AliRsnInputHandler(const AliRsnInputHandler& handler);
-   AliRsnInputHandler &operator=(const AliRsnInputHandler &handler);
+   AliRsnEvent *fRsnEvent;               //! pointer to current event
+   AliRsnDaughterSelector fRsnSelector;  //  pointer to selector for building lists
+   AliRsnCutSet *fRsnEventCuts;          //  unique set of cuts to be used for whole analysis
 
    ClassDef(AliRsnInputHandler, 1)
 };

@@ -16,6 +16,7 @@
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
+#include "AliPID.h"
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h"
 #include "AliESDpid.h"

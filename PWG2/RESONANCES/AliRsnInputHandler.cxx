@@ -1,3 +1,12 @@
+//
+// Class AliRsnInputHandler
+//
+// AliRsnInputHandler
+// TODO example
+// author:
+//        Martin Vala (martin.vala@cern.ch)
+//
+
 #include <Riostream.h>
 #include "AliLog.h"
 
@@ -6,6 +15,7 @@
 #include "AliMixInputEventHandler.h"
 #include "AliMCEventHandler.h"
 
+#include "AliRsnCutSet.h"
 #include "AliRsnInputHandler.h"
 ClassImp(AliRsnInputHandler)
 
@@ -13,7 +23,8 @@ ClassImp(AliRsnInputHandler)
 AliRsnInputHandler::AliRsnInputHandler(const char *name) :
    AliInputEventHandler(name, name),
    fRsnEvent(0),
-   fRsnSelector()
+   fRsnSelector(),
+   fRsnEventCuts(0)
 {
 //
 // Default constructor.
@@ -21,6 +32,31 @@ AliRsnInputHandler::AliRsnInputHandler(const char *name) :
    AliDebug(AliLog::kDebug + 10, "<-");
    AliDebug(AliLog::kDebug + 10, "->");
 }
+
+//_____________________________________________________________________________
+AliRsnInputHandler::AliRsnInputHandler(const AliRsnInputHandler &copy) :
+   AliInputEventHandler(),
+   fRsnEvent(0),
+   fRsnSelector(),
+   fRsnEventCuts(copy.fRsnEventCuts)
+{
+//
+// Default constructor.
+//
+   AliDebug(AliLog::kDebug + 10, "<-");
+   AliDebug(AliLog::kDebug + 10, "->");
+}
+
+//_____________________________________________________________________________
+AliRsnInputHandler& AliRsnInputHandler::operator=(const AliRsnInputHandler &copy)
+{
+//
+// Default constructor.
+//
+   fRsnEventCuts = copy.fRsnEventCuts;
+   return *this;
+}
+
 
 //_____________________________________________________________________________
 AliRsnInputHandler::~AliRsnInputHandler()
@@ -108,6 +144,9 @@ Bool_t AliRsnInputHandler::BeginEvent(Long64_t entry)
 
             //fRsnPIDManager.ApplyCuts(fRsnEvent);
             fRsnSelector.Reset();
+            
+            // reject event if needed
+            if (fRsnEventCuts) if (!fRsnEventCuts->IsSelected(fRsnEvent)) return kTRUE;
             fRsnSelector.ScanEvent(fRsnEvent);
          }
       }

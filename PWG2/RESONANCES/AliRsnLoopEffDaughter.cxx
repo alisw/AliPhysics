@@ -3,6 +3,7 @@
 //
 // Inherits from basic AliRsnLoopEff for efficiency,
 // and computed efficiencies for single-tracks
+// using cut set definitions.
 //
 // author: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
