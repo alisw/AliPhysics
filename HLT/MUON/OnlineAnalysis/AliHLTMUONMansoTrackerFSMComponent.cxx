@@ -1009,13 +1009,16 @@ void AliHLTMUONMansoTrackerFSMComponent::AddRecHits(
 		}
 		else
 		{
-			Logging(kHLTLogError,
-				"AliHLTMUONMansoTrackerFSMComponent::AddRecHits",
-				"Invalid chamber",
-				"Received a data block with data from chamber %d"
-				  " which is outside the expected range: [7..10].",
-				chamberMap[i]
-			);
+			if (fWarnForUnexpecedBlock)
+			{
+				Logging(kHLTLogWarning,
+					"AliHLTMUONMansoTrackerFSMComponent::AddRecHits",
+					"Invalid chamber",
+					"Received a data block with data from chamber %d"
+					 " which is outside the expected range: [7..10].",
+					chamberMap[i]
+				);
+			}
 			return;
 		}
 	}
