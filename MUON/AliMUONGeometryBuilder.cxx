@@ -44,18 +44,38 @@
 #include <TVirtualMC.h>
 #include <TGeoManager.h>
 
-// static data members
- 
-const TString  AliMUONGeometryBuilder::fgkDefaultVolPathsFileName = "volpath.dat";   
-const TString  AliMUONGeometryBuilder::fgkDefaultTransformFileName = "transform.dat";   
-const TString  AliMUONGeometryBuilder::fgkDefaultSVMapFileName = "svmap.dat";    
-const TString  AliMUONGeometryBuilder::fgkOutFileNameExtension = ".out";    
-
 /// \cond CLASSIMP
 ClassImp(AliMUONGeometryBuilder)
 /// \endcond
 
+//
 // static functions
+//
+
+//______________________________________________________________________________
+const TString& AliMUONGeometryBuilder::GetDefaultTransformFileName()
+{
+  ///< default transformations file name                                     
+  static const TString kDefaultTransformFileName = "transform.dat";   
+  return kDefaultTransformFileName;
+}    
+
+//______________________________________________________________________________
+const TString& AliMUONGeometryBuilder::GetDefaultSVMapFileName() 
+{
+  ///< default svmaps file name                                      
+  static const TString kDefaultSVMapFileName = "svmap.dat";    
+  return kDefaultSVMapFileName;
+}    
+
+//______________________________________________________________________________
+const TString& AliMUONGeometryBuilder::GetOutFileNameExtension()
+{
+  ///< default output file name extension                                    
+  static const TString kOutFileNameExtension = ".out";    
+  return kOutFileNameExtension;
+}    
+
 
 //______________________________________________________________________________
 TGeoHMatrix AliMUONGeometryBuilder::Multiply(const TGeoMatrix& m1, 
@@ -113,13 +133,17 @@ TGeoHMatrix AliMUONGeometryBuilder::Multiply(const TGeoMatrix& m1,
   return m1 * m2 * m3 * m4;
 }
 
+//
+// ctors, dtor
+//
+
 //______________________________________________________________________________
 AliMUONGeometryBuilder::AliMUONGeometryBuilder(AliModule* module)
   : TObject(),
     fModule(module),
     fAlign(false),
-    fTransformFileName(fgkDefaultTransformFileName),
-    fSVMapFileName(fgkDefaultSVMapFileName),
+    fTransformFileName(GetDefaultTransformFileName()),
+    fSVMapFileName(GetDefaultSVMapFileName()),
     fGlobalTransformation(), 
     fGeometryBuilders(0),
     fGeometry(0)

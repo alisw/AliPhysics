@@ -65,12 +65,26 @@ ClassImp(AliMpDDLStore)
 AliMpDDLStore* AliMpDDLStore::fgInstance = 0;
 const Int_t    AliMpDDLStore::fgkNofDDLs = 20;
 const Int_t    AliMpDDLStore::fgkNofTriggerDDLs = 2;
-const TString  AliMpDDLStore::fgkRevertKeyword = "REVERT"; 
-const TString  AliMpDDLStore::fgkExplicitKeyword = "EXPLICIT";
 
 //
 // static methods
 //
+
+//______________________________________________________________________________
+const TString&  AliMpDDLStore::GetRevertKeyword()
+{
+  /// A keyword for ReadBusPatchSpecial()
+  static const TString kRevertKeyword = "REVERT"; 
+  return kRevertKeyword;
+}  
+
+//______________________________________________________________________________
+const TString&  AliMpDDLStore::GetExplicitKeyword()
+{
+  /// A keyword for ReadBusPatchSpecial()
+  static const TString  kExplicitKeyword = "EXPLICIT";
+  return kExplicitKeyword;
+}  
 
 //______________________________________________________________________________
 AliMpDDLStore* AliMpDDLStore::Instance(Bool_t warn) 
@@ -516,14 +530,14 @@ Bool_t AliMpDDLStore::ReadBusPatchSpecial()
           return kFALSE;
         }
      
-        if ( sKey == fgkRevertKeyword ) {
+        if ( sKey == GetRevertKeyword() ) {
           AliDebugStream(3)
             << "Reverting readout of bus patch " << busPatchID  << endl;
         
           // Now revert the manus in this bus patch
           busPatch->RevertReadout();     
         }
-        else if ( sKey == fgkExplicitKeyword ) {
+        else if ( sKey == GetExplicitKeyword() ) {
         
           busPatch->ResetReadout();
 

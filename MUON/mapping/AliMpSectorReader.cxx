@@ -63,17 +63,86 @@
 ClassImp(AliMpSectorReader)
 /// \endcond
 
-const TString  AliMpSectorReader::fgkSectorKeyword  = "SECTOR_DATA";
-const TString  AliMpSectorReader::fgkZoneKeyword    = "ZONE";
-const TString  AliMpSectorReader::fgkSubZoneKeyword = "SUBZONE";
-const TString  AliMpSectorReader::fgkRowKeyword     = "ROW_SEGMENT";
-const TString  AliMpSectorReader::fgkEofKeyword     = "EOF";
-const TString  AliMpSectorReader::fgkSectorSpecialKeyword  = "SECTOR_SPECIAL_DATA";
-const TString  AliMpSectorReader::fgkMotifKeyword          = "MOTIF";
-const TString  AliMpSectorReader::fgkRowSpecialKeyword     = "ROW";
-const TString  AliMpSectorReader::fgkPadRowsKeyword        = "PAD_ROWS";
-const TString  AliMpSectorReader::fgkPadRowSegmentKeyword  = "PAD_ROW_SEGMENT";
+//
+// static private methods
+//
 
+//_____________________________________________________________________________
+const TString& AliMpSectorReader::GetSectorKeyword()
+{
+  /// sector keyword
+  static const TString kSectorKeyword  = "SECTOR_DATA";
+  return kSectorKeyword;
+}  
+
+//_____________________________________________________________________________
+const TString& AliMpSectorReader::GetZoneKeyword()
+{
+  /// zone keyword
+  static const TString kZoneKeyword = "ZONE";
+  return kZoneKeyword;
+}  
+
+//_____________________________________________________________________________
+const TString& AliMpSectorReader::GetSubZoneKeyword() 
+{
+  /// subzone keyword
+  static const TString kSubZoneKeyword = "SUBZONE";
+  return kSubZoneKeyword;
+}  
+
+//_____________________________________________________________________________
+const TString& AliMpSectorReader::GetRowKeyword()
+{
+  /// row keyword
+  static const TString kRowKeyword = "ROW_SEGMENT";
+  return kRowKeyword;
+}  
+
+//_____________________________________________________________________________
+const TString& AliMpSectorReader::GetSectorSpecialKeyword()
+{
+  /// sector special keyword
+  static const TString kSectorSpecialKeyword = "SECTOR_SPECIAL_DATA";
+  return kSectorSpecialKeyword;
+}  
+
+//_____________________________________________________________________________
+const TString& AliMpSectorReader::GetMotifKeyword()
+{
+  /// motif keyword
+  static const TString kMotifKeyword = "MOTIF";
+  return kMotifKeyword;
+}  
+
+//_____________________________________________________________________________
+const TString& AliMpSectorReader::GetRowSpecialKeyword()
+{
+  /// row special keyword
+  static const TString kRowSpecialKeyword = "ROW";
+  return kRowSpecialKeyword;
+}  
+
+//_____________________________________________________________________________
+const TString& AliMpSectorReader::GetPadRowsKeyword()
+{
+  /// pad rows keyword
+  static const TString kPadRowsKeyword = "PAD_ROWS";
+  return kPadRowsKeyword;
+}  
+
+//_____________________________________________________________________________
+const TString& AliMpSectorReader::GetPadRowSegmentKeyword()
+{
+  /// pad row segment keyword
+  static const TString kPadRowSegmentKeyword = "PAD_ROW_SEGMENT";
+  return kPadRowSegmentKeyword;
+}  
+
+//
+// ctors, dtor
+//
+  
 //_____________________________________________________________________________
 AliMpSectorReader::AliMpSectorReader(const AliMpDataStreams& dataStreams,
                                      AliMq::Station12Type station, 
@@ -112,7 +181,7 @@ void  AliMpSectorReader::ReadSectorData(istream& in)
   
   AliDebugStream(2) << keyword << endl;
 
-  if (keyword != fgkSectorKeyword) {
+  if (keyword != GetSectorKeyword()) {
      AliErrorStream() << "Wrong file format." << endl;
      return;
   }   
@@ -143,7 +212,7 @@ void  AliMpSectorReader::ReadSectorData(istream& in)
   TString nextKeyword;
   in >> nextKeyword;
     
-  if (nextKeyword != fgkZoneKeyword) {
+  if (nextKeyword != GetZoneKeyword()) {
      AliErrorStream() << "Wrong file format." << endl;
      return;
   }      
@@ -163,7 +232,7 @@ void AliMpSectorReader::ReadZoneData(istream& in)
   in >> sizex;
   in >> sizey;
   AliDebugStream(2)
-     << fgkZoneKeyword << " " <<  zoneID << "  " 
+     << GetZoneKeyword() << " " <<  zoneID << "  " 
      << sizex << " " << sizey << endl;
   
   AliMpZone* zone =  fSector->GetZone(zoneID);
@@ -172,7 +241,7 @@ void AliMpSectorReader::ReadZoneData(istream& in)
   TString nextKeyword;
   in >> nextKeyword;
     
-  if (nextKeyword != fgkSubZoneKeyword) {
+  if (nextKeyword != GetSubZoneKeyword()) {
      AliErrorStream() << "Wrong file format." << endl;
      return;
   }  
@@ -186,7 +255,7 @@ void AliMpSectorReader::ReadSubZoneData(istream& in, AliMpZone* zone)
 /// Read subzone input data;
 /// create subzone and its to the specified zone.
 
-  AliDebugStream(2) << fgkSubZoneKeyword << endl;
+  AliDebugStream(2) << GetSubZoneKeyword() << endl;
 
   AliMpVMotif* motif = ReadMotifData(in, zone);
   AliMpSubZone* subZone = new AliMpSubZone(motif); 
@@ -195,7 +264,7 @@ void AliMpSectorReader::ReadSubZoneData(istream& in, AliMpZone* zone)
   TString nextKeyword;
   in >> nextKeyword;
     
-  if (nextKeyword != fgkRowKeyword) {
+  if (nextKeyword != GetRowKeyword()) {
      AliErrorStream() << "Wrong file format." << endl;
      return;
   }  
@@ -266,7 +335,7 @@ void AliMpSectorReader::ReadRowSegmentsData(istream& in,
     firstMotifPositionId |= AliMpConstants::ManuMask(fPlaneType);
     
     AliDebugStream(2)
-      << fgkRowKeyword << " " 
+      << GetRowKeyword() << " " 
       << offX << " " << offY << " " << inRow << " " << nofMotifs << " " 
       << firstMotifPositionId << " " << firstMotifPositionDId
       << endl;
@@ -287,14 +356,14 @@ void AliMpSectorReader::ReadRowSegmentsData(istream& in,
     subZone->AddRowSegment(rowSegment);
     row->AddRowSegment(rowSegment);
   }
-  while (!in.eof() && (nextKeyword == fgkRowKeyword));
+  while (!in.eof() && (nextKeyword == GetRowKeyword()));
 
   if (in.eof()) return;
 
-  if (nextKeyword == fgkZoneKeyword) {
+  if (nextKeyword == GetZoneKeyword()) {
     ReadZoneData(in);
   }
-  else if (nextKeyword == fgkSubZoneKeyword) {
+  else if (nextKeyword == GetSubZoneKeyword()) {
     ReadSubZoneData(in, zone);
   }   
   else {
@@ -313,7 +382,7 @@ void AliMpSectorReader::ReadSectorSpecialData(istream& in, AliMp::XDirection dir
 
   AliDebugStream(2) << keyword << endl;
 
-  if (keyword != fgkSectorSpecialKeyword) {
+  if (keyword != GetSectorSpecialKeyword()) {
      AliErrorStream() << "Wrong file format." << endl;
      return;
   }   
@@ -323,7 +392,7 @@ void AliMpSectorReader::ReadSectorSpecialData(istream& in, AliMp::XDirection dir
 
   AliDebugStream(2) << keyword << endl;
     
-  if (nextKeyword != fgkMotifKeyword) {
+  if (nextKeyword != GetMotifKeyword()) {
     AliErrorStream() << "Wrong file format." << endl;
     return;
   }  
@@ -337,7 +406,7 @@ void AliMpSectorReader::ReadMotifsSpecialData(istream& in)
 {
 /// Read the special (irregular) motifs input data.
 
-  AliDebugStream(2) << fgkMotifKeyword << endl;
+  AliDebugStream(2) << GetMotifKeyword() << endl;
 
   TString nextKeyword;
   do {
@@ -351,9 +420,9 @@ void AliMpSectorReader::ReadMotifsSpecialData(istream& in)
 
     AliDebugStream(2) << nextKeyword << endl;      
   }
-  while (nextKeyword == fgkMotifKeyword);
+  while (nextKeyword == GetMotifKeyword());
     
-  if (nextKeyword != fgkRowSpecialKeyword) {
+  if (nextKeyword != GetRowSpecialKeyword()) {
      AliErrorStream() << "Wrong file format." << endl;
      return;
   }      
@@ -397,7 +466,7 @@ void AliMpSectorReader::ReadRowSpecialData(istream& in, AliMp::XDirection direct
   
   AliDebugStream(2) << nextKeyword << endl;
     
-  if (nextKeyword != fgkPadRowsKeyword) {
+  if (nextKeyword != GetPadRowsKeyword()) {
      AliErrorStream() << "Wrong file format." << endl;
      return;
   }  
@@ -443,7 +512,7 @@ void AliMpSectorReader::ReadRowSegmentSpecialData(istream& in,
 
   AliDebugStream(2) << keyword << endl;
     
-  if (keyword != fgkPadRowSegmentKeyword) {
+  if (keyword != GetPadRowSegmentKeyword()) {
      AliErrorStream() << "Wrong file format." << endl;
      return;
   }  
@@ -505,14 +574,14 @@ void AliMpSectorReader::ReadRowSegmentSpecialData(istream& in,
                                motifPositionId, nofPadsInRow);
     }  
   }
-  while (!in.eof() && (nextKeyword == fgkPadRowSegmentKeyword));
+  while (!in.eof() && (nextKeyword == GetPadRowSegmentKeyword()));
   
   if (in.eof()) return;
 
-  if (nextKeyword == fgkPadRowsKeyword) {
+  if (nextKeyword == GetPadRowsKeyword()) {
     ReadRowSegmentSpecialData(in, segment, direction);
   }
-  else if (nextKeyword == fgkRowSpecialKeyword) {
+  else if (nextKeyword == GetRowSpecialKeyword()) {
     ReadRowSpecialData(in, direction);
   }   
   else {

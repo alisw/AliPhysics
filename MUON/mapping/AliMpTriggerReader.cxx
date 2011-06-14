@@ -57,11 +57,53 @@
 ClassImp(AliMpTriggerReader)
 /// \endcond
 
-const TString AliMpTriggerReader::fgkKeywordLayer("LAYER");
-const TString AliMpTriggerReader::fgkKeywordScale("SCALE");
-const TString AliMpTriggerReader::fgkKeywordPcb("PCB");  
-const TString AliMpTriggerReader::fgkKeywordFlipX("FLIP_X");
-const TString AliMpTriggerReader::fgkKeywordFlipY("FLIP_Y");
+//
+// static private methods
+//
+
+//_____________________________________________________________________________
+const TString& AliMpTriggerReader::GetKeywordLayer()
+{
+  /// Keyword: LAYER
+  static const TString kKeywordLayer("LAYER");
+  return kKeywordLayer;
+}  
+
+//_____________________________________________________________________________
+const TString& AliMpTriggerReader::GetKeywordScale()
+{
+  /// Keyword: SCALE
+  static const TString kKeywordScale("SCALE");
+  return kKeywordScale;
+}
+
+//_____________________________________________________________________________
+const TString& AliMpTriggerReader::GetKeywordPcb()
+{
+  /// Keyword : PCB
+  static const TString kKeywordPcb("PCB");  
+  return kKeywordPcb;
+}    
+  
+//_____________________________________________________________________________
+const TString& AliMpTriggerReader::GetKeywordFlipX()
+{
+  /// Keyword : FLIPX
+  static const TString kKeywordFlipX("FLIP_X");
+  return kKeywordFlipX;
+}  
+  
+//_____________________________________________________________________________
+const TString& AliMpTriggerReader::GetKeywordFlipY()
+{
+  /// Keyword : FLIPY
+  static const TString kKeywordFlipY("FLIP_Y");
+  return kKeywordFlipY;
+}  
+
+//
+// ctors, dtor
+//
 
 //_____________________________________________________________________________
 AliMpTriggerReader::AliMpTriggerReader(const AliMpDataStreams& dataStreams, AliMpSlatMotifMap* motifMap) 
@@ -115,7 +157,7 @@ AliMpTriggerReader::BuildSlat(const char* slatName,
     
     TString& keyword = ((TObjString*)tokens->At(0))->String();
     
-    if ( keyword == fgkKeywordPcb )
+    if ( keyword == GetKeywordPcb() )
     {
       if ( tokens->GetEntriesFast() != 3 )
       {
@@ -202,7 +244,7 @@ AliMpTriggerReader::GetBoardNameFromPCBLine(const TString& s)
   
   TString& keyword = ((TObjString*)tokens->At(0))->String();
 
-  if ( keyword == fgkKeywordPcb &&
+  if ( keyword == GetKeywordPcb() &&
        tokens->GetEntriesFast() == 3 )
   {
     boardName = ((TObjString*)tokens->At(2))->String();
@@ -267,7 +309,7 @@ AliMpTriggerReader::FlipLines(TList& lines, Bool_t flipX, Bool_t flipY,
         
         TString& s = oline->String();
         
-        if ( !s.Contains(fgkKeywordPcb) )
+        if ( !s.Contains(GetKeywordPcb()) )
         {
           // Only consider PCB lines.
           continue;
@@ -341,7 +383,7 @@ AliMpTriggerReader::IsLayerLine(const TString& sline) const
 {
   /// Whether sline contains LAYER keyword
 
-  if ( sline.BeginsWith(fgkKeywordLayer) )
+  if ( sline.BeginsWith(GetKeywordLayer()) )
   {
     return 1;
   }
@@ -364,10 +406,10 @@ AliMpTriggerReader::DecodeFlipLine(const TString& sline,
   
   TString keyword(sline(0,blankPos));
   
-  if ( keyword == fgkKeywordFlipX )
+  if ( keyword == GetKeywordFlipX() )
   {
     flipX = kTRUE;
-  } else if ( keyword == fgkKeywordFlipY )
+  } else if ( keyword == GetKeywordFlipY() )
   {
     flipY = kTRUE;
   }
@@ -387,10 +429,10 @@ AliMpTriggerReader::DecodeScaleLine(const TString& sline,
 {
   /// Decode sline containing SCALE keyword
 
-  if ( sline(0,fgkKeywordScale.Length()) == fgkKeywordScale )
+  if ( sline(0,GetKeywordScale().Length()) == GetKeywordScale() )
   {
-    TString tmp(sline(fgkKeywordScale.Length()+1,
-                      sline.Length()-fgkKeywordScale.Length()-1));
+    TString tmp(sline(GetKeywordScale().Length()+1,
+                      sline.Length()-GetKeywordScale().Length()-1));
     Ssiz_t blankPos = tmp.First(' ');
     if ( blankPos < 0 )
     {
@@ -481,11 +523,11 @@ AliMpTriggerReader::ReadLines(const char* slatType,
     if ( sline.Length() == 0 || sline[0] == '#' ) continue;
     
     Bool_t isKeywordThere = 
-      sline.Contains(fgkKeywordPcb) || 
-      sline.Contains(fgkKeywordLayer) ||
-      sline.Contains(fgkKeywordScale) || 
-      sline.Contains(fgkKeywordFlipX) || 
-      sline.Contains(fgkKeywordFlipY);
+      sline.Contains(GetKeywordPcb()) || 
+      sline.Contains(GetKeywordLayer()) ||
+      sline.Contains(GetKeywordScale()) || 
+      sline.Contains(GetKeywordFlipX()) || 
+      sline.Contains(GetKeywordFlipY());
     
     if ( !isKeywordThere ) 
     {
@@ -503,7 +545,7 @@ AliMpTriggerReader::ReadLines(const char* slatType,
 
     if ( isScaleLine < 0 )
     {
-      AliFatalClass(Form("Syntax error near %s keyword\n",fgkKeywordScale.Data()));
+      AliFatalClass(Form("Syntax error near %s keyword\n",GetKeywordScale().Data()));
     }
     else if ( isScaleLine > 0 && slatType2 != slatType )
     {
@@ -758,7 +800,7 @@ AliMpTriggerReader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
   if ( !IsLayerLine(firstLine) ) 
   {
     std::ostringstream s;
-    s << fgkKeywordLayer;
+    s << GetKeywordLayer();
     lines.AddFirst(new TObjString(s.str().c_str()));
   }
   

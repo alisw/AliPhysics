@@ -44,9 +44,31 @@
 ClassImp(AliMUONGMSSubprocessor)
 /// \endcond
 
-const Int_t    AliMUONGMSSubprocessor::fgkSystem = AliPreprocessor::kDCS;
-const TString  AliMUONGMSSubprocessor::fgkDataId = "GMS";
-const TString  AliMUONGMSSubprocessor::fgkMatrixArrayName = "GMSarray";
+const Int_t AliMUONGMSSubprocessor::fgkSystem = AliPreprocessor::kDCS;
+
+//
+// static methods
+//
+
+//______________________________________________________________________________
+const TString& AliMUONGMSSubprocessor::GetDataId()
+{
+  /// The data Id
+  static const TString kDataId = "GMS";
+  return kDataId;
+}  
+  
+//______________________________________________________________________________
+const TString& AliMUONGMSSubprocessor::GetMatrixArrayName()
+{
+  /// The fixed matrix array name
+  static const TString kMatrixArrayName = "GMSarray";
+  return kMatrixArrayName;
+}  
+
+//
+// ctor, dtor
+//
 
 //______________________________________________________________________________
 AliMUONGMSSubprocessor::AliMUONGMSSubprocessor(AliMUONPreprocessor* master) 
@@ -68,7 +90,6 @@ AliMUONGMSSubprocessor::~AliMUONGMSSubprocessor()
 //
 // private methods
 //
-
 
 //______________________________________________________________________________
 Bool_t  AliMUONGMSSubprocessor::Initialize(Int_t /*run*/, 
@@ -98,7 +119,7 @@ UInt_t AliMUONGMSSubprocessor::ProcessFile(const TString& fileName)
   }  
   
   // Get array with matrices
-  TClonesArray* array = (TClonesArray*)f.Get(fgkMatrixArrayName);
+  TClonesArray* array = (TClonesArray*)f.Get(GetMatrixArrayName());
   if ( ! array ) {
     Master()->Log(Form("TClonesArray not found in file %s",fileName.Data()));
     return 2;
@@ -274,11 +295,11 @@ UInt_t AliMUONGMSSubprocessor::Process(TMap* /*dcsAliasMap*/)
 /// Return failure (0) in case procession of some file has failed
 
   UInt_t result = 1;
-  TList* sources = Master()->GetFileSources(fgkSystem, fgkDataId);
+  TList* sources = Master()->GetFileSources(fgkSystem, GetDataId());
   TIter next(sources);
   TObjString* o(0x0);
   while ( ( o = static_cast<TObjString*>(next()) ) ) {
-    TString fileName(Master()->GetFile(fgkSystem, fgkDataId, o->GetName()));
+    TString fileName(Master()->GetFile(fgkSystem, GetDataId(), o->GetName()));
     result *= ProcessFile(fileName);
   }
   delete sources;

@@ -37,8 +37,8 @@ class AliMUONGeometryModuleTransformer : public TObject
     virtual ~AliMUONGeometryModuleTransformer();
 
     // static methods
-    static TString GetModuleNamePrefix();
-    static TString GetModuleName(Int_t moduleId);
+    static const TString& GetModuleNamePrefix();
+    static       TString  GetModuleName(Int_t moduleId);
 
     // methods
     void Global2Local(Int_t detElemId,
@@ -81,9 +81,6 @@ class AliMUONGeometryModuleTransformer : public TObject
       operator = (const AliMUONGeometryModuleTransformer& rhs);
 
   private:
-    // static data members
-    static const TString  fgkModuleNamePrefix; ///< Geometry module name prefix
-
     // data members
     Int_t                 fModuleId;   ///< the module Id
     TString               fModuleName; ///< the module name
@@ -97,11 +94,6 @@ class AliMUONGeometryModuleTransformer : public TObject
 };
 
 // inline functions
-
-/// Return module name prefix
-inline TString 
-AliMUONGeometryModuleTransformer::GetModuleNamePrefix()
-{ return fgkModuleNamePrefix; }
 
 /// Set the full path of aligned module volume or envelope in geometry
 inline void 

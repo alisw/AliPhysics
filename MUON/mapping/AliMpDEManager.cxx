@@ -42,17 +42,20 @@ ClassImp(AliMpDEManager)
 /// \endcond
 
 const Int_t AliMpDEManager::fgkCoefficient = 100;
-TArrayI     AliMpDEManager::fgNofDEPerChamber;
-
-//______________________________________________________________________________
-
-AliMpDEManager::~AliMpDEManager()
-{
-/// Destructor
-}
 
 //
 // static private methods
+//
+//______________________________________________________________________________
+TArrayI& AliMpDEManager::GetNofDEPerChamber() 
+{
+  /// number of detElemId per chamber
+  static TArrayI nofDEPerChamber;
+  return nofDEPerChamber;
+}
+
+//
+// static public methods
 //
 
 //______________________________________________________________________________
@@ -231,17 +234,17 @@ Int_t AliMpDEManager::GetNofDEInChamber(Int_t chamberId, Bool_t warn)
   if ( ! IsValidChamberId(chamberId,warn) ) return 0;
 
   // Fill array if it is empty
-  if ( ! fgNofDEPerChamber.GetSize() ) {
-    fgNofDEPerChamber.Set(AliMpConstants::NofChambers());
+  if ( ! GetNofDEPerChamber().GetSize() ) {
+    GetNofDEPerChamber().Set(AliMpConstants::NofChambers());
     AliMpDEIterator it;
     for ( Int_t i=0; i<AliMpConstants::NofChambers(); i++ ) {
       Int_t counter = 0;
       for ( it.First(i); ! it.IsDone(); it.Next() ) ++counter;
-      fgNofDEPerChamber[i] = counter;
+      GetNofDEPerChamber()[i] = counter;
     }  
   }
   
-  return fgNofDEPerChamber[chamberId];    
+  return GetNofDEPerChamber()[chamberId];    
 
 }
 
@@ -257,5 +260,15 @@ MpPair_t AliMpDEManager::GetDetElemIdRange(Int_t chamberId)
            (chamberId+1)*fgkCoefficient,
            (chamberId+1)*fgkCoefficient + GetNofDEInChamber(chamberId) - 1);
   
+}
+
+//
+// ctors, dtor
+//
+
+//______________________________________________________________________________
+AliMpDEManager::~AliMpDEManager()
+{
+/// Destructor
 }
 

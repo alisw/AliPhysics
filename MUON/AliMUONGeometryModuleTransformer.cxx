@@ -39,17 +39,31 @@
 ClassImp(AliMUONGeometryModuleTransformer)
 /// \endcond
 
-const TString AliMUONGeometryModuleTransformer::fgkModuleNamePrefix = "GM";
+//
+// static methods
+//
+
+//______________________________________________________________________________
+const TString& AliMUONGeometryModuleTransformer::GetModuleNamePrefix()
+{
+  /// Geometry module name prefix
+  static const TString& kModuleNamePrefix = "GM";
+  return kModuleNamePrefix;
+}  
 
 //______________________________________________________________________________
 TString AliMUONGeometryModuleTransformer::GetModuleName(Int_t moduleId)
 {
 /// Return the module name for given moduleId
 
-  TString moduleName(fgkModuleNamePrefix);
+  TString moduleName(GetModuleNamePrefix());
   moduleName += moduleId;
   return moduleName;
 }   
+
+//
+// ctor, dtor
+//
 
 //______________________________________________________________________________
 AliMUONGeometryModuleTransformer::AliMUONGeometryModuleTransformer(Int_t moduleId)

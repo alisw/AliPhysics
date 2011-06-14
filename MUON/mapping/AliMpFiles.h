@@ -110,30 +110,30 @@ class AliMpFiles : public TObject
     AliMpFiles(const AliMpFiles& right);
     /// Not implemented
     AliMpFiles& operator=(const AliMpFiles& right);    
-
-    // static data members  
-    static const TString fgkDataDir;       ///< data directory
-    static const TString fgkDataRunDir;    ///< directory for run dependent data
-    static const TString fgkStationDir;    ///< station directory
-    static const TString fgkBendingDir;    ///< bending plane directory
-    static const TString fgkNonBendingDir; ///< non-bending plane directory
-    static const TString fgkDENames;       ///< DE names data file name
-    static const TString fgkSector;        ///< sector data file name
-    static const TString fgkSectorSpecial; ///< sector special data file name
-    static const TString fgkSectorSpecial2;///< sector special data file name
-    static const TString fgkMotifPrefix;   ///< motif data file name
-    static const TString fgkMotifSpecialPrefix; ///< special motif data file name 
-    static const TString fgkManuToSerial;  ///< manu to serial file name suffix
-    static const TString fgkPadPosPrefix;  ///< pad position data file name
-    static const TString fgkDataExt;       ///< file extension
-    static const TString fgkBergToGCFileName;  ///< BergToGC mapping file name
-    static const TString fgkTriggerLocalBoards;///<  local board name to id mapping
-    static const TString fgkTriggerGlobalBoards;///<  global board name to id mapping
-    static const TString fgkBusPatchFileName;  ///< DetElemIdToBusPatch file name
-    static const TString fgkBusPatchInfoFileName;///< BusPatch length file name
-    static const TString fgkBusPatchSpecialFileName;///< BusPatch special file name
-    static const TString fgkSerialToBinFileName; ///< serial to bin  number file name
     
+    // static methods
+    static const TString& GetDataDir();       
+    static const TString& GetDataRunDir();    
+    static const TString& GetStationDir();    
+    static const TString& GetBendingDir();    
+    static const TString& GetNonBendingDir(); 
+    static const TString& GetDENames();       
+    static const TString& GetSector();        
+    static const TString& GetSectorSpecial(); 
+    static const TString& GetSectorSpecial2();
+    static const TString& GetMotifPrefix();   
+    static const TString& GetMotifSpecialPrefix();
+    static const TString& GetManuToSerial();
+    static const TString& GetPadPosPrefix();
+    static const TString& GetDataExt();     
+    static const TString& GetBergToGCFileName();  
+    static const TString& GetTriggerLocalBoards();
+    static const TString& GetTriggerGlobalBoards();
+    static const TString& GetBusPatchFileName();
+    static const TString& GetBusPatchInfoFileName();
+    static const TString& GetBusPatchSpecialFileName();
+    static const TString& GetSerialToBinFileName();
+
   ClassDef(AliMpFiles, 0) //File names and paths 
 };  
 

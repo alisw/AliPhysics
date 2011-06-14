@@ -35,7 +35,21 @@
 ClassImp(AliMpStringObjMap)
 /// \endcond
 
-const TString AliMpStringObjMap::fgkUndefinedKey = "Undefined";
+//
+// static private methods
+//
+
+//______________________________________________________________________________
+const TString& AliMpStringObjMap::GetUndefinedKey()
+{
+  /// Undefined key string
+  static const TString kUndefinedKey = "Undefined";
+  return kUndefinedKey;
+}  
+
+//
+// ctors, dtor
+//
 
 //______________________________________________________________________________
 AliMpStringObjMap::AliMpStringObjMap(Bool_t isOwner)
@@ -178,7 +192,7 @@ TString AliMpStringObjMap::CurrentKey()
 {
 /// Set iterator to the first item and return its object
 
-  if ( fCurrentIndex >= fNofItems ) return fgkUndefinedKey;
+  if ( fCurrentIndex >= fNofItems ) return GetUndefinedKey();
   
   return ((TObjString*)fFirstArray.At(fCurrentIndex))->GetString();
 }  

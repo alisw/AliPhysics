@@ -26,7 +26,7 @@ class AliMUONGeometryDetElement : public TObject
     virtual ~AliMUONGeometryDetElement();
 
     // static methods
-    static TString GetDENamePrefix();
+    static const TString& GetDENamePrefix();
     static TString GetDEName(Int_t detElemId);
 
     // methods
@@ -72,9 +72,6 @@ class AliMUONGeometryDetElement : public TObject
     // methods
     void PrintTransform(const TGeoHMatrix* transform) const;
  
-     // static data members
-    static const TString  fgkDENamePrefix;///< Geometry module name prefix
- 
     // data members
     TString       fDEName;     ///< detection element name
     TString       fVolumePath; ///< \brief the full path of aligned volume
@@ -86,10 +83,6 @@ class AliMUONGeometryDetElement : public TObject
 };
 
 // inline functions
-
-/// Return module name prefix
-inline TString AliMUONGeometryDetElement::GetDENamePrefix()
-{ return fgkDENamePrefix; }
 
 /// Set the full path of the aligned volume or envelope in geometry
 inline void AliMUONGeometryDetElement::SetVolumePath(const TString& volumePath)

@@ -58,13 +58,27 @@
 ClassImp(AliMUONGeometryTransformer)
 /// \endcond
 
-const TString  AliMUONGeometryTransformer::fgkDefaultDetectorName = "MUON";
+//
+// static private methods
+//
+
+//______________________________________________________________________________
+const TString& AliMUONGeometryTransformer::GetDefaultDetectorName()
+{ 
+  /// Default detector name
+  static const TString kDefaultDetectorName = "MUON";
+  return kDefaultDetectorName;
+}  
  
+//
+// ctor, dtor
+//
+
 //______________________________________________________________________________
 AliMUONGeometryTransformer::AliMUONGeometryTransformer()
 
   : TObject(),
-    fDetectorName(fgkDefaultDetectorName),
+    fDetectorName(GetDefaultDetectorName()),
     fModuleTransformers(0),
     fMisAlignArray(0),
     fDEAreas(0x0)

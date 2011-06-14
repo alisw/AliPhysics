@@ -63,15 +63,22 @@
 ClassImp(AliMUONCheck)
 /// \endcond
 
-const TString AliMUONCheck::fgkDefaultOutFileName = "output.txt"; //!< default output file name 
+//_____________________________________________________________________________
+const TString& AliMUONCheck::GetDefaultOutFileName()
+{
+  /// Default output file name 
+  static const TString kDefaultOutFileName = "output.txt";
+  return kDefaultOutFileName;
+}  
 
+//_____________________________________________________________________________
 AliMUONCheck::AliMUONCheck(const char* galiceFile, const char* esdFile,Int_t firstEvent, Int_t lastEvent,const char* outDir) 
 : TObject(),
 fFileName(galiceFile),
 fFileNameSim(),
 fesdFileName(esdFile),
 fkOutDir(outDir),
-fOutFileName(fgkDefaultOutFileName),
+fOutFileName(GetDefaultOutFileName()),
 fFirstEvent(firstEvent),
 fLastEvent(lastEvent)
 {
@@ -87,7 +94,7 @@ fFileName(galiceFile),
 fFileNameSim(galiceFileSim),
 fesdFileName(esdFile),
 fkOutDir(outDir),
-fOutFileName(fgkDefaultOutFileName),
+fOutFileName(GetDefaultOutFileName()),
 fFirstEvent(firstEvent),
 fLastEvent(lastEvent)
 {

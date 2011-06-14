@@ -45,8 +45,8 @@ class AliMpStringObjMap : public TObject
     /// Not implemented
     AliMpStringObjMap& operator = (const AliMpStringObjMap& rhs);
     
-    // static data members
-    static const TString fgkUndefinedKey; ///< Undefined key string
+    // static methods
+    static const TString& GetUndefinedKey(); 
 
     // data members
     Int_t      fNofItems;     ///<  number of items

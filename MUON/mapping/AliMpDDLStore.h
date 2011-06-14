@@ -81,6 +81,10 @@ class AliMpDDLStore : public  TObject {
     /// Not implemented
     AliMpDDLStore& operator=(const AliMpDDLStore& rhs);
 
+    // static methods
+    static const TString&  GetRevertKeyword();
+    static const TString&  GetExplicitKeyword();
+
     // methods
     Int_t  GetManuListIndex(Int_t detElemId) const;
     Int_t  GetBusPatchIndex(Int_t detElemId, Int_t manuId) const;
@@ -97,8 +101,6 @@ class AliMpDDLStore : public  TObject {
     static AliMpDDLStore* fgInstance; ///< Singleton instance
     static const Int_t    fgkNofDDLs; ///< Total number of DDLs
     static const Int_t    fgkNofTriggerDDLs; ///< Total number of trigger DDLs
-    static const TString  fgkRevertKeyword; ///< A keyword for ReadBusPatchSpecial()
-    static const TString  fgkExplicitKeyword; ///< A keyword for ReadBusPatchSpecial()
 
     // data members	
     const AliMpDataStreams&  fkDataStreams;  //!< Data streams

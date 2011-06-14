@@ -88,17 +88,19 @@ private:
   /// Not implemented
   AliMpTriggerReader& operator=(const AliMpTriggerReader& rhs);
     
+  // static methods
+  static const TString& GetKeywordLayer();
+  static const TString& GetKeywordScale();
+  static const TString& GetKeywordPcb();
+  static const TString& GetKeywordFlipX();
+  static const TString& GetKeywordFlipY();
+  
+  // data members
   const AliMpDataStreams&  fkDataStreams; //!< data streams
   AliMpSlatMotifMap* fMotifMap; //!< storage for motifTypes and motifs...
   
   TMap fLocalBoardMap; //!< map of TObjString to TObjString
 
-  static const TString fgkKeywordLayer; //!< Keyword: LAYER
-  static const TString fgkKeywordScale; //!< Keyword: SCALE
-  static const TString fgkKeywordPcb; //!< Keyword : PCB
-  static const TString fgkKeywordFlipX; //!< Keyword : FLIPX
-  static const TString fgkKeywordFlipY; //!< Keyword : FLIPY
-  
   ClassDef(AliMpTriggerReader,0) // Reader for trigger slats mapping files 
 };
 

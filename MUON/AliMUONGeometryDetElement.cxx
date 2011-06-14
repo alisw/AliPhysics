@@ -35,14 +35,24 @@
 ClassImp(AliMUONGeometryDetElement)
 /// \endcond
 
-const TString AliMUONGeometryDetElement::fgkDENamePrefix = "DE";
+//
+// static methods
+//
+
+//______________________________________________________________________________
+const TString& AliMUONGeometryDetElement::GetDENamePrefix()
+{
+  ///< Geometry DE name prefix
+  static const TString kDENamePrefix = "DE";
+  return kDENamePrefix;
+}  
 
 //______________________________________________________________________________
 TString AliMUONGeometryDetElement::GetDEName(Int_t detElemId)
 {
 /// Return the module name for given moduleId
 
-  TString deName(fgkDENamePrefix);
+  TString deName(GetDENamePrefix());
   deName += detElemId;
   return deName;
 }   

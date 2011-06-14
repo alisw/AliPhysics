@@ -39,9 +39,29 @@
 #include <sstream>
 #include <map>
 
-const TString AliMpDataProcessor::fgkHeaderFileName = "add.h";
-const TString AliMpDataProcessor::fgkImplFileName = "add.cxx";
+//
+// static private methods
+//
 
+//_____________________________________________________________________________
+const TString& AliMpDataProcessor::GetHeaderFileName() 
+{
+  /// Return the default name for generated header file
+  static const TString kHeaderFileName = "add.h";
+  return kHeaderFileName;
+}    
+
+//_____________________________________________________________________________
+const TString& AliMpDataProcessor::GetImplFileName() 
+{
+  /// Return the default name for generated implementation file
+  static const TString kImplFileName = "add.cxx";
+  return kImplFileName;
+}  
+
+//
+// ctors, dtor
+//
 
 //_____________________________________________________________________________
 AliMpDataProcessor::AliMpDataProcessor()
@@ -52,8 +72,8 @@ AliMpDataProcessor::AliMpDataProcessor()
 {
 /// Default and standar constructor
 
-  fHeaderFile.open(fgkHeaderFileName.Data(), std::ios::out);
-  fImplFile.open(fgkImplFileName.Data(), std::ios::out);
+  fHeaderFile.open(GetHeaderFileName().Data(), std::ios::out);
+  fImplFile.open(GetImplFileName().Data(), std::ios::out);
   
   // Add check
 

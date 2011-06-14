@@ -104,9 +104,12 @@ class AliMUONGeometryTransformer : public TObject
     AliMUONGeometryTransformer&  operator = (const AliMUONGeometryTransformer& right);
  
   private:
+    // static methods
+    static const TString&  GetDefaultDetectorName(); 
+
     // methods
       
-      void CreateDEAreas() const;
+    void CreateDEAreas() const;
     
     Bool_t LoadMapping() const;
     AliMUONGeometryModuleTransformer* GetModuleTransformerNonConst(
@@ -136,10 +139,6 @@ class AliMUONGeometryTransformer : public TObject
     
     TString GetModuleSymName(Int_t moduleId) const;
     TString GetDESymName(Int_t detElemId) const;
-    
-    // static data members
-    static const TString  fgkDefaultDetectorName; ///< Default detector name
-    
 
     // data members
     TString        fDetectorName;       ///< Detector name

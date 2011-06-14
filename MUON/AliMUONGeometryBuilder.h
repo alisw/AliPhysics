@@ -66,6 +66,11 @@ class AliMUONGeometryBuilder : public TObject
     AliMUONGeometryBuilder&  operator = (const AliMUONGeometryBuilder& right);
  
   private:
+    // static methods
+    static const TString& GetDefaultTransformFileName();    
+    static const TString& GetDefaultSVMapFileName();    
+    static const TString& GetOutFileNameExtension();        
+
     // method
     void PlaceVolume(const TString& name, const TString& mName, Int_t copyNo, 
              const TGeoHMatrix& matrix, Int_t npar, Double_t* param,
@@ -73,12 +78,6 @@ class AliMUONGeometryBuilder : public TObject
     void CreateGeometryWithTGeo();
     void CreateGeometryWithoutTGeo();
     void SetAlignToBuilder(AliMUONVGeometryBuilder* builder) const;	     
-
-    // static data members
-    static const TString  fgkDefaultVolPathsFileName;  ///< default volume paths file name					   
-    static const TString  fgkDefaultTransformFileName; ///< default transformations file name					   
-    static const TString  fgkDefaultSVMapFileName;     ///< default svmaps file name					   
-    static const TString  fgkOutFileNameExtension;     ///< default output file name extension					   
 
     // data members
     AliModule*       fModule;              ///< the AliRoot module
@@ -102,7 +101,7 @@ inline void  AliMUONGeometryBuilder::InitGeometry()
 
 /// Write sensitive volume maps
 inline void  AliMUONGeometryBuilder::WriteSVMaps()
-{ WriteSVMaps(fSVMapFileName + fgkOutFileNameExtension); }
+{ WriteSVMaps(fSVMapFileName + GetOutFileNameExtension()); }
 
 /// Return geometry parametrisation
 inline 

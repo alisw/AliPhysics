@@ -52,7 +52,18 @@ class AliMpSectorReader : public TObject
     /// Not implemented
     AliMpSectorReader& operator = (const AliMpSectorReader& right);
 
-    // methods
+     // static methods
+    static const TString&  GetSectorKeyword();       
+    static const TString&  GetZoneKeyword();         
+    static const TString&  GetSubZoneKeyword();      
+    static const TString&  GetRowKeyword();          
+    static const TString&  GetSectorSpecialKeyword();
+    static const TString&  GetMotifKeyword();        
+    static const TString&  GetRowSpecialKeyword();   
+    static const TString&  GetPadRowsKeyword();      
+    static const TString&  GetPadRowSegmentKeyword();
+  
+   // methods
     void  ReadSectorData(istream& in);
     void  ReadZoneData(istream& in);
     void  ReadSubZoneData(istream& in, AliMpZone* zone);
@@ -65,18 +76,6 @@ class AliMpSectorReader : public TObject
     void  ReadRowSegmentSpecialData(istream& in,
                           AliMpVRowSegmentSpecial* segment,
 			  AliMp::XDirection direction);
-    
-    // static data members
-    static const TString  fgkSectorKeyword;        ///< sector keyword
-    static const TString  fgkZoneKeyword;          ///< zone keyword
-    static const TString  fgkSubZoneKeyword;       ///< subzone keyword
-    static const TString  fgkRowKeyword;           ///< row keyword
-    static const TString  fgkEofKeyword;           ///< eof keyword
-    static const TString  fgkSectorSpecialKeyword; ///< sector special keyword
-    static const TString  fgkMotifKeyword;         ///< motif keyword
-    static const TString  fgkRowSpecialKeyword;    ///< row special keyword
-    static const TString  fgkPadRowsKeyword;       ///< pad rows keyword
-    static const TString  fgkPadRowSegmentKeyword; ///< pad row segment keyword
   
     // data members  
     const AliMpDataStreams&  fkDataStreams; ///< data streams

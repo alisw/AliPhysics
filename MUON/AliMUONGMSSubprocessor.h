@@ -38,13 +38,16 @@ class AliMUONGMSSubprocessor : public AliMUONVSubprocessor
     /// Not implemented
     AliMUONGMSSubprocessor& operator=(const AliMUONGMSSubprocessor&);
 
+    // static methods
+    static const TString& GetDataId();         
+    static const TString& GetMatrixArrayName();
+
+    // methods
     UInt_t ProcessFile(const TString& filename);
 
     // static data members
     static const Int_t    fgkSystem;           ///< The data system
-    static const TString  fgkDataId;           ///< The data Id
-    static const TString  fgkMatrixArrayName;  ///< The fixed matrix array name
-  
+
     // data members
     AliMUONGeometryTransformer* fTransformer; ///< Geometry transformer
 

@@ -65,6 +65,9 @@ class AliMpExMap : public TObject
     AliMpExMapIterator* CreateIterator() const;
     
   private:  
+    // static methods
+    static const TString&  GetCharacterMap();
+
     // methods
 
     // conversion between Int_t pair key and Long_t
@@ -84,8 +87,6 @@ class AliMpExMap : public TObject
                                          ///  of Int_t pair to Int_t
     static const Int_t    fgkSeparator2; ///< \brief the separator used for conversion
                                          ///  of TString to Int_t
-    static const TString  fgkCharacterMap; ///< \brief the string mapping characters 
-                                           ///  to integers 
     
     // data members
     mutable TExMap  fMap;     //!<  Transient map class

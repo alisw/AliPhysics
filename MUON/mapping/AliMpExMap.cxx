@@ -49,12 +49,18 @@ const Bool_t  AliMpExMap::fgkDefaultOwnership = true;
 const Int_t AliMpExMap::fgkSeparator1 = 10000;
 const Int_t AliMpExMap::fgkSeparator2 = 100;
 
-const TString  AliMpExMap::fgkCharacterMap 
-  = " 1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-";
-
 //
 // static methods
 //
+
+//_____________________________________________________________________________
+const TString&  AliMpExMap::GetCharacterMap()
+{
+  /// Return the string mapping characters to integers
+  static const TString kCharacterMap 
+    = " 1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-";
+  return kCharacterMap;  
+}
 
 //_____________________________________________________________________________
 Long_t  AliMpExMap::GetIndex(const TString& s)
@@ -68,7 +74,7 @@ Long_t  AliMpExMap::GetIndex(const TString& s)
 
   Long_t index = 0;
   for (Int_t i=s.Length()-1; i>=0; --i)  
-    index = index*fgkSeparator2 + fgkCharacterMap.First(s(i));
+    index = index*fgkSeparator2 + GetCharacterMap().First(s(i));
   
   return index;
 }
@@ -80,7 +86,7 @@ TString  AliMpExMap::GetString(Long_t index)
 
   TString s;
   while (index >0) {
-    Char_t c = fgkCharacterMap(index%fgkSeparator2);
+    Char_t c = GetCharacterMap()(index%fgkSeparator2);
     s += c;
     index = index/fgkSeparator2;
   }

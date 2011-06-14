@@ -64,10 +64,12 @@ class AliMpDEManager : public  TObject {
     AliMpDEManager(const AliMpDEManager& rhs);
     /// Not implemented
     AliMpDEManager& operator=(const AliMpDEManager& rhs);
+
+    // static methods
+    static  TArrayI&  GetNofDEPerChamber();
       
     // static data members	
-    static const Int_t   fgkCoefficient; ///< Coefficient used in DE Id <-> station
-    static    TArrayI fgNofDEPerChamber; ///< Number of detElemId per chamber
+    static const Int_t  fgkCoefficient; ///< Coefficient used in DE Id <-> station
 
   ClassDef(AliMpDEManager,0)  // The manager class for definition of detection element types
 };

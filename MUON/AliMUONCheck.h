@@ -47,7 +47,7 @@ private:
   AliMUONCheck& operator=(const AliMUONCheck& rhs);
   
 private:
-  static const TString fgkDefaultOutFileName; //!< default output file name 
+  static const TString& GetDefaultOutFileName(); 
 
   TString fFileName;   //!< File (galice.root) to read from fro reconstructed data
   TString fFileNameSim; //!< File (galiceSim.root) for simulated data

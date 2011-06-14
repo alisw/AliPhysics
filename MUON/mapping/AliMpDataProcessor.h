@@ -32,17 +32,16 @@ class AliMpDataProcessor : public TObject
     Bool_t        GenerateCode(AliMpDataMap* dataMap);
     
   private:
-  
+    // static methods
+    static const TString& GetHeaderFileName();
+    static const TString& GetImplFileName();  
+ 
     // methods  
     void ProcessDirectory(const TString& path, AliMpDataMap* map);
     void ProcessFile(const TString& path, AliMpDataMap* map );
     void GenerateFunction(const TString& path, const TString& data);
     void GenerateFileCode(const TString& path);
     void GenerateFill();
-
-    // static data
-    static const TString fgkHeaderFileName;///< default name for generated header file
-    static const TString fgkImplFileName;  ///< default name for generated implementation file
 
     // data
     Int_t     fCounter;    ///< data files counter
