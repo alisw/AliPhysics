@@ -29,6 +29,7 @@
 #pragma link C++ class AliRsnCutKaonForPhi2010PP+;
 #pragma link C++ class AliRsnCutPion2010PP+;
 #pragma link C++ class AliRsnCutProton2010PP+;
+#pragma link C++ class AliRsnCutDaughterKStar2010PP+;
 
 
 #pragma link C++ class AliRsnCutSet+;
