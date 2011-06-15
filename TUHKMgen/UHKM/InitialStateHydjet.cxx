@@ -511,13 +511,14 @@ Bool_t InitialStateHydjet::MultIni() {
     }    
     
     if(particleDensity > 0.) {
-      //      outMult<<encoding<< "         " <<particleDensity<< "      "<<mu<<std::endl;
+      if(fParams.fNPartTypes>=kNPartTypes) {
+	Error("in Bool_t MultIni:", "fNPartTypes exceeds the maximum allowed particle species of %d. Check it out!", kNPartTypes);
+	return kFALSE;
+      }
       fParams.fPartEnc[fParams.fNPartTypes] = encoding;
       fParams.fPartMult[2 * fParams.fNPartTypes] = particleDensity;
       fParams.fPartMu[2 * fParams.fNPartTypes] = mu;
       ++fParams.fNPartTypes;
-      if(fParams.fNPartTypes > 1000)
-	Error("in Bool_t MultIni:", "fNPartTypes is too large %d", fParams.fNPartTypes);
     }
   }
   return kTRUE;
