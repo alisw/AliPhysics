@@ -73,6 +73,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
+    virtual void SetMatching(Bool_t b = kTRUE){fDoMatching = b;}
     virtual void SetEventSelectionMask(UInt_t i){fEventSelectionMask = i;}
     virtual void SetPhiWeights(TH3F *phiw){fh3PhiWeights = phiw;}
     virtual void SetFlatteningCoeff(Float_t *fA,Float_t *fB){
