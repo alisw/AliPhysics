@@ -40,6 +40,7 @@ AliAODPid::AliAODPid():
 {
   // default constructor
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]   = 0; 
+    for(Int_t i=0; i<5; i++) fHMPIDprobs[i] = 0.;
     for(Int_t i=0; i<3; i++) fEMCALPosition[i]    = 0.;
     for(Int_t i=0; i<5; i++) fTOFpidResolution[i] = 0.;
     for(Int_t i=0; i<6; i++) fTRDmomentum[i]      = 0.;
@@ -72,6 +73,7 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
     fTRDslices = new Double32_t[fTRDnSlices];
     for(Int_t i=0; i< fTRDnSlices; i++) fTRDslices[i]=pid.fTRDslices[i];
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
+    for(Int_t i=0; i<5; i++) fHMPIDprobs[i] = pid.fHMPIDprobs[i];
     for(Int_t i=0; i<3; i++) {
       fEMCALPosition[i]=pid.fEMCALPosition[i];
       fEMCALMomentum[i]=pid.fEMCALMomentum[i];
@@ -102,6 +104,7 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
     fTOFesdsignal=pid.fTOFesdsignal;
     fHMPIDsignal=pid.fHMPIDsignal;
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
+    for(Int_t i=0; i<5; i++) fHMPIDprobs[i] = pid.fHMPIDprobs[i];
     for(Int_t i=0; i<6; i++) fTRDmomentum[i]=pid.fTRDmomentum[i];
     for(Int_t i=0; i<3; i++) {
       fEMCALPosition[i]=pid.fEMCALPosition[i];
@@ -160,3 +163,19 @@ void AliAODPid::GetTOFpidResolution(Double_t tofRes[5]) const
   for (Int_t i=0; i<5; i++) tofRes[i]=fTOFpidResolution[i];
 }
 
+//______________________________________________________________________________
+void AliAODPid::SetHMPIDprobs(Double_t hmpPid[5]) 
+{
+  //
+  // Set the HMPID PID probablities that are read from ESD
+  //  
+  for(Int_t i = 0; i < 5; i++ ) fHMPIDprobs[i] =  hmpPid[i];
+}
+//______________________________________________________________________________
+void AliAODPid::GetHMPIDprobs(Double_t *p) 
+{
+  //
+  // Set the HMPID PID probablities that are read from ESD
+  //  
+  for(Int_t i = 0; i < AliPID::kSPECIES; i++ ) p[i] =  fHMPIDprobs[i];
+}

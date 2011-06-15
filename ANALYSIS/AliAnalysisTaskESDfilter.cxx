@@ -1772,6 +1772,10 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
  aodpid->SetEMCALPosition(emcpos);
  aodpid->SetEMCALMomentum(emcmom);
 
+ Double_t hmpPid[5] = {0};
+ track->GetHMPIDpid(hmpPid);
+ aodpid->SetHMPIDprobs(hmpPid);
+
  AliExternalTrackParam *outerparam = (AliExternalTrackParam*)track->GetOuterParam();
  if(!outerparam) return;
 
