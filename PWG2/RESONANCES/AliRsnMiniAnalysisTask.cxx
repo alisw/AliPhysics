@@ -42,6 +42,7 @@ ClassImp(AliRsnMiniAnalysisTask)
 //__________________________________________________________________________________________________
 AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    AliAnalysisTaskSE(),
+   fUseMC(kFALSE),
    fEvNum(0),
    fUseCentrality(kFALSE),
    fCentralityType("QUALITY"),
@@ -56,9 +57,10 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fEventCuts(0x0),
    fTrackCuts(0),
    fRsnEvent(),
-   fTempTree(0x0),
+   fEvBuffer(0x0),
    fNMixed(0),
-   fTriggerAna(0x0)
+   fTriggerAna(0x0),
+   fESDtrackCuts(0x0)
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
@@ -66,8 +68,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
 }
 
 //__________________________________________________________________________________________________
-AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name) :
+AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    AliAnalysisTaskSE(name),
+   fUseMC(useMC),
    fEvNum(0),
    fUseCentrality(kFALSE),
    fCentralityType("QUALITY"),
@@ -82,9 +85,10 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name) :
    fEventCuts(0x0),
    fTrackCuts(0),
    fRsnEvent(),
-   fTempTree(0x0),
+   fEvBuffer(0x0),
    fNMixed(0),
-   fTriggerAna(0x0)
+   fTriggerAna(0x0),
+   fESDtrackCuts(0x0)
 {
 //
 // Default constructor.
@@ -99,6 +103,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name) :
 //__________________________________________________________________________________________________
 AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask& copy) :
    AliAnalysisTaskSE(copy),
+   fUseMC(copy.fUseMC),
    fEvNum(0),
    fUseCentrality(copy.fUseCentrality),
    fCentralityType(copy.fCentralityType),
@@ -113,9 +118,10 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask& cop
    fEventCuts(copy.fEventCuts),
    fTrackCuts(copy.fTrackCuts),
    fRsnEvent(),
-   fTempTree(0x0),
+   fEvBuffer(0x0),
    fNMixed(0),
-   fTriggerAna(copy.fTriggerAna)
+   fTriggerAna(copy.fTriggerAna),
+   fESDtrackCuts(copy.fESDtrackCuts)
 {
 //
 // Copy constructor.
@@ -135,6 +141,7 @@ AliRsnMiniAnalysisTask& AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
 
    AliAnalysisTaskSE::operator=(copy);
    
+   fUseMC = copy.fUseMC;
    fUseCentrality = copy.fUseCentrality;
    fCentralityType = copy.fCentralityType;
    fNMix = copy.fNMix;
@@ -146,6 +153,7 @@ AliRsnMiniAnalysisTask& AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fEventCuts = copy.fEventCuts;
    fTrackCuts = copy.fTrackCuts;
    fTriggerAna = copy.fTriggerAna;
+   fESDtrackCuts = copy.fESDtrackCuts;
    
    return (*this);
 }
@@ -199,7 +207,12 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fEvNum = 0;
 
    // initialize trigger analysis
+   if (fTriggerAna) delete fTriggerAna;
    fTriggerAna = new AliTriggerAnalysis;
+   
+   // initialize ESD quality cuts
+   if (fESDtrackCuts) delete fESDtrackCuts;
+   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
 
    // create list and set it as owner of its content (MANDATORY)
    fOutput = new TList();
@@ -215,8 +228,8 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    
    // create temporary tree for filtered events
    AliRsnMiniEvent *mini = 0x0;
-   fTempTree = new TTree("TempTree", "Temporary tree for events");
-   fTempTree->Branch("events", "AliRsnMiniEvent", &mini);
+   fEvBuffer = new TTree("EventBuffer", "Temporary buffer for mini events");
+   fEvBuffer->Branch("events", "AliRsnMiniEvent", &mini);
    
    // create one histogram per each stored definition (event histograms)
    Int_t i, ndef = fHistograms.GetEntries();
@@ -259,7 +272,7 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
       
    // if the check is successful, the mini-event is created and stored
    AliRsnMiniEvent *miniEvent = 0x0;
-   fTempTree->SetBranchAddress("events", &miniEvent);
+   fEvBuffer->SetBranchAddress("events", &miniEvent);
    
    // assign event-related values
    miniEvent = new AliRsnMiniEvent;
@@ -279,10 +292,12 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
    }
    
    // fill all histograms for mother only (if MC is present)
-   if (fRsnEvent.IsESD() && fMCEvent)
-      FillTrueMotherESD(miniEvent);
-   else if (fRsnEvent.IsAOD() && fRsnEvent.GetAODList())
-      FillTrueMotherAOD(miniEvent);
+   if (fUseMC) {
+      if (fRsnEvent.IsESD() && fMCEvent)
+         FillTrueMotherESD(miniEvent);
+      else if (fRsnEvent.IsAOD() && fRsnEvent.GetAODList())
+         FillTrueMotherAOD(miniEvent);
+   }
    
    // loop on daughters
    // and store only those that pass at least one cut
@@ -307,7 +322,7 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
    AliDebugClass(1, Form("Event %d: selected tracks = %d", fEvNum, miniEvent->Particles().GetEntriesFast()));
    
    // store event
-   fTempTree->Fill();
+   fEvBuffer->Fill();
    
    // process single event
    ProcessEvents(miniEvent);
@@ -324,9 +339,9 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
 // perform mixing with all found events
 //
 
-   Int_t i1, i2, imix, nEvents = fTempTree->GetEntries();
+   Int_t i1, i2, imix, nEvents = fEvBuffer->GetEntries();
    AliRsnMiniEvent *evMix = 0x0, evMain;
-   fTempTree->SetBranchAddress("events", &evMix);
+   fEvBuffer->SetBranchAddress("events", &evMix);
    
    // initialize mixing counter
    fNMixed.Set(nEvents);
@@ -335,7 +350,7 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
    // loop on events
    for (i1 = 0; i1 < nEvents; i1++) {
       if (fNMixed[i1] >= fNMix) continue;
-      fTempTree->GetEntry(i1);
+      fEvBuffer->GetEntry(i1);
       evMain = (*evMix);
       for (i2 = 1; i2 < nEvents; i2++) {
          imix = i1 + i2;
@@ -343,7 +358,7 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
          if (imix == i1) continue;
          if (fNMixed[i1] >= fNMix) break;
          if (fNMixed[imix] >= fNMix) continue;
-         fTempTree->GetEntry(imix);
+         fEvBuffer->GetEntry(imix);
          // exit if events are not matched
          if (TMath::Abs(evMain.Vz() - evMix->Vz()) > fMaxDiffVz) continue;
          if (TMath::Abs(evMain.Mult() - evMix->Mult()) > fMaxDiffMult) continue;
@@ -382,9 +397,17 @@ void AliRsnMiniAnalysisTask::Terminate(Option_t *)
 Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
 {
 //
-// This method fills the statistic histogram which counts the CINT1B, V0AND and CANDLE
-// and checks current event against eventually defined local cuts.
-// Its return values can be:
+// This method checks if current event is OK for analysis.
+// In case it is, the pointers of the local AliRsnEvent data member
+// will point to it, in order to allow cut checking, otherwise the
+// function exits with a failure message.
+// ---
+// ESD events must pass the physics selection, AOD are supposed to do.
+// ---
+// While checking the event, a histogram is filled to count the number
+// of CINT1B, V0AND and CANDLE events, which are needed for normalization
+// ---
+// Return values can be:
 //    -- 'E' if the event is accepted and is ESD
 //    -- 'A' if the event is accepted and is AOD
 //    --  0  if the event is not accepted
@@ -394,40 +417,60 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
    TString msg("");
    
    // check input type
+   // exit points are provided in all cases an event is bad
+   // if this block is passed, an event can be rejected only
+   // if it does not pass the set of event cuts defined in the task
    Char_t output = 0;
-   if (fInputEvent->InheritsFrom(AliESDEvent::Class()))
+   Bool_t isSelected;
+   if (fInputEvent->InheritsFrom(AliESDEvent::Class())) {
+      // type ESD
       output = 'E';
-   else if (fInputEvent->InheritsFrom(AliAODEvent::Class()))
+      // ESD specific check: Physics Selection
+      // --> if this is failed, the event is rejected
+      isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+      if (!isSelected) {
+         AliDebugClass(1, "Event does not pass physics selections");
+         fRsnEvent.SetRef(0x0);
+         fRsnEvent.SetRefMC(0x0);
+         return 0;
+      }
+      // set reference to input
+      fRsnEvent.SetRef(fInputEvent);
+      // add MC if requested and available
+      if (fUseMC) {
+         if (fMCEvent) 
+            fRsnEvent.SetRefMC(fMCEvent);
+         else {
+            AliWarning("MC event requested but not available");
+            fRsnEvent.SetRefMC(0x0);
+         }
+      }
+   } else if (fInputEvent->InheritsFrom(AliAODEvent::Class())) {
+      // type AOD
       output = 'A';
-   else {
-      AliError(Form("Bad input event class: %s", fInputEvent->ClassName()));
-      return 0;
-   }
-   
-   // set reference to input
-   fRsnEvent.SetRef(fInputEvent);
-   
-   // assign MC event, if present
-   // for ESD it is the 'fMCEvent' data member in mother class
-   // for AOD it is the same event, but a check is done to look for the list of MC particles
-   // since there is an exit point above, if an event is not ESD here, it is surely AOD
-   if ((output == 'E') && fMCEvent) 
-      fRsnEvent.SetRefMC(fMCEvent);
-   else {
-      fRsnEvent.SetRefMC(fInputEvent);
-   }
-   
-   // check physics selection
-   Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
-   if (isSelected) {
-      msg += "PHSEL = YES";
-      fHEventStat->Fill(0.1);
+      // set reference to input
+      fRsnEvent.SetRef(fInputEvent);
+      // add MC if requested and available (it is in the same object)
+      if (fUseMC) {
+         fRsnEvent.SetRefMC(fInputEvent);
+         if (!fRsnEvent.GetAODList()) {
+            AliWarning("MC event requested but not available");
+            fRsnEvent.SetRefMC(0x0);
+         }
+      }
    } else {
-      AliDebugClass(1, "Event does not pass physics selections");
+      AliError(Form("Bad input event class: %s", fInputEvent->ClassName()));
+      // reset pointers in local AliRsnEvent object
+      fRsnEvent.SetRef(0x0);
+      fRsnEvent.SetRefMC(0x0);
       return 0;
    }
+   
+   // fill counter of accepted events
+   fHEventStat->Fill(0.1);
    
    // check if it is V0AND
+   // --> uses a cast to AliESDEvent even if the input is an AliAODEvent
    Bool_t v0A = fTriggerAna->IsOfflineTriggerFired((AliESDEvent*)fInputEvent, AliTriggerAnalysis::kV0A);
    Bool_t v0C = fTriggerAna->IsOfflineTriggerFired((AliESDEvent*)fInputEvent, AliTriggerAnalysis::kV0C);
    if (v0A && v0C) {
@@ -438,17 +481,17 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
    }
    
    // check candle
-   static AliESDtrackCuts *cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
-   Int_t ntracksLoop = fInputEvent->GetNumberOfTracks();
+   // --> requires at least one good quality track with Pt > 0.5 and |eta| <= 0.8
+   Int_t iTrack, ntracksLoop = fInputEvent->GetNumberOfTracks();
    Bool_t candle = kFALSE;
-   for (Int_t iTrack = 0; iTrack<ntracksLoop; iTrack++) {    
+   for (iTrack = 0; iTrack < ntracksLoop; iTrack++) {    
       AliVTrack   *track = (AliVTrack*)fInputEvent->GetTrack(iTrack);
       AliESDtrack *esdt  = dynamic_cast<AliESDtrack*>(track);
       AliAODTrack *aodt  = dynamic_cast<AliAODTrack*>(track);
-      if (esdt && !cuts->AcceptTrack(esdt)) continue;
-      if (aodt && !aodt->TestFilterBit(5)) continue;
       if (track->Pt() < 0.5) continue;
       if(TMath::Abs(track->Eta()) > 0.8) continue;
+      if (esdt) if (!fESDtrackCuts->AcceptTrack(esdt)) continue;
+      if (aodt) if (!aodt->TestFilterBit(5)) continue;
       candle = kTRUE;
       break;
    }
@@ -459,24 +502,30 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       msg += " -- CANDLE = NO "; 
    }
    
-   // if event cuts are defined, they are checked here:
-   // an exit point is provided in case they are not passed
+   // if event cuts are defined, they are checked here
+   // final decision on the event depends on this
+   isSelected = kTRUE;
    if (fEventCuts) {
       if (!fEventCuts->IsSelected(&fRsnEvent)) {
          msg += " -- Local cuts = REJECTED";
-         AliDebugClass(1, Form("Stats for event %d: %s", fEvNum, msg.Data()));
-         return 0;
+         isSelected = kFALSE;
       } else {
          msg += " -- Local cuts = ACCEPTED";
+         isSelected = kTRUE;
       }
    } else {
       msg += " -- Local cuts = NONE";
+      isSelected = kTRUE;
    }
    
    // if the above exit point is not taken, the event is accepted
    AliDebugClass(1, Form("Stats for event %d: %s", fEvNum, msg.Data()));
-   fHEventStat->Fill(3.1);
-   return output;
+   if (isSelected) {
+      fHEventStat->Fill(3.1);
+      return output;
+   } else {
+      return 0;
+   }
 }
 
 //__________________________________________________________________________________________________
@@ -496,19 +545,33 @@ Double_t AliRsnMiniAnalysisTask::ComputeCentrality(Bool_t isESD)
       }
       return centrality->GetCentralityPercentile(fCentralityType.Data());
    } else {
-      if (!isESD) {
-         AliInfo("Can compute only number of tracks for multiplicity");
-         fCentralityType = "TRACKS";
-      }
       if (!fCentralityType.CompareTo("TRACKS"))
          return fInputEvent->GetNumberOfTracks();
       else if (!fCentralityType.CompareTo("QUALITY"))
-         return AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)fInputEvent, kTRUE);
+         if (isESD)
+            return AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)fInputEvent, kTRUE);
+         else {
+            Double_t count = 0.;
+            Int_t iTrack, ntracksLoop = fInputEvent->GetNumberOfTracks();
+            for (iTrack = 0; iTrack < ntracksLoop; iTrack++) {    
+               AliVTrack   *track = (AliVTrack*)fInputEvent->GetTrack(iTrack);
+               AliAODTrack *aodt  = dynamic_cast<AliAODTrack*>(track);
+               if (!aodt) continue;
+               if (!aodt->TestFilterBit(5)) continue;
+               count++;
+            }
+            return count;
+         }
       else if (!fCentralityType.CompareTo("TRACKLETS")) {
-         const AliMultiplicity *mult = ((AliESDEvent*)fInputEvent)->GetMultiplicity();
-         Float_t nClusters[6] = {0.0,0.0,0.0,0.0,0.0,0.0};
-         for(Int_t ilay = 0; ilay < 6; ilay++) nClusters[ilay] = (Float_t)mult->GetNumberOfITSClusters(ilay);
-         return AliESDUtils::GetCorrSPD2(nClusters[1], fInputEvent->GetPrimaryVertex()->GetZ());
+         if (isESD) {
+            const AliMultiplicity *mult = ((AliESDEvent*)fInputEvent)->GetMultiplicity();
+            Float_t nClusters[6] = {0.0,0.0,0.0,0.0,0.0,0.0};
+            for(Int_t ilay = 0; ilay < 6; ilay++) nClusters[ilay] = (Float_t)mult->GetNumberOfITSClusters(ilay);
+            return AliESDUtils::GetCorrSPD2(nClusters[1], fInputEvent->GetPrimaryVertex()->GetZ());
+         } else {
+            AliWarning("Cannot compute multiplicity with SPD tracklets from AOD");
+            return 1E20;
+         }
       } else {
          AliError(Form("String '%s' does not define a possible multiplicity/centrality computation", fCentralityType.Data()));
          return -1.0;
