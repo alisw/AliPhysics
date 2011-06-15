@@ -57,14 +57,14 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsDplustoKpipi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsDplustoKpipi(cutsDplustoKpipi);
   AliRDHFCutsDstoKKpi *cutsDstoKKpi = new AliRDHFCutsDstoKKpi("CutsDstoKKpi");
-  Float_t cutsArrayDstoKKpi[14]={0.2,0.3,0.3,0.,0.,0.005,0.06,0.,0.,0.7,0.,1000.,0.1,0.1};
-  cutsDstoKKpi->SetCuts(14,cutsArrayDstoKKpi);
+  Float_t cutsArrayDstoKKpi[16]={0.2,0.3,0.3,0.,0.,0.005,0.06,0.,0.,0.7,0.,1000.,0.1,0.1,-1.,-1.};
+  cutsDstoKKpi->SetCuts(16,cutsArrayDstoKKpi);
   cutsDstoKKpi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsDstoKKpi(cutsDstoKKpi);
   AliRDHFCutsLctopKpi *cutsLctopKpi = new AliRDHFCutsLctopKpi("CutsLctopKpi");
   //Float_t cutsArrayLctopKpi[12]={0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0.,10000000000.};
-  Float_t cutsArrayLctopKpi[12]={0.18,0.4,0.5,0.,0.,0.01,0.06,0.005,0.7,0.,0.,0.05};
-  cutsLctopKpi->SetCuts(12,cutsArrayLctopKpi);
+  Float_t cutsArrayLctopKpi[13]={0.18,0.4,0.5,0.,0.,0.01,0.06,0.005,0.7,0.,0.,0.05,0.4};
+  cutsLctopKpi->SetCuts(13,cutsArrayLctopKpi);
   cutsLctopKpi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsLctopKpi(cutsLctopKpi);
   AliRDHFCutsD0toKpipipi *cutsD0toKpipipi = new AliRDHFCutsD0toKpipipi("CutsD0toKpipipi");
