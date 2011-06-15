@@ -29,7 +29,7 @@ class AliRsnMiniAnalysisTask : public AliAnalysisTaskSE {
 public:
 
    AliRsnMiniAnalysisTask();
-   AliRsnMiniAnalysisTask(const char *name);
+   AliRsnMiniAnalysisTask(const char *name, Bool_t isMC = kFALSE);
    AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &copy);
    AliRsnMiniAnalysisTask& operator=(const AliRsnMiniAnalysisTask &copy);
    virtual ~AliRsnMiniAnalysisTask();
@@ -38,14 +38,15 @@ public:
    virtual void        UserExec(Option_t *option);
    virtual void        Terminate(Option_t *);
    virtual void        FinishTaskOutput();
-                       
+  
+   void                UseMC(Bool_t yn = kTRUE)           {fUseMC = yn;}                     
+   void                UseCentrality(const char *type)    {fUseCentrality = kTRUE; fCentralityType = type; fCentralityType.ToUpper();}
+   void                UseMultiplicity(const char *type)  {fUseCentrality = kFALSE; fCentralityType = type; fCentralityType.ToUpper();}
    void                SetNMix(Int_t nmix)                {fNMix = nmix;}
    void                SetMaxDiffMult (Double_t val)      {fMaxDiffMult  = val;}
    void                SetMaxDiffVz   (Double_t val)      {fMaxDiffVz    = val;}
    void                SetMaxDiffAngle(Double_t val)      {fMaxDiffAngle = val;}
    void                SetEventCuts(AliRsnCutSet *cuts)   {fEventCuts    = cuts;}
-   void                UseCentrality(const char *type)    {fUseCentrality = kTRUE; fCentralityType = type; fCentralityType.ToUpper();}
-   void                UseMultiplicity(const char *type)  {fUseCentrality = kFALSE; fCentralityType = type; fCentralityType.ToUpper();}
    Int_t               AddTrackCuts(AliRsnCutSet *cuts);
    
    TClonesArray       *Outputs()        {return &fHistograms;}
@@ -55,18 +56,17 @@ public:
    Int_t               CreateValue(AliRsnMiniValue::EType type, Bool_t useMC = kFALSE); 
    AliRsnMiniOutput   *CreateOutput(const char *name, AliRsnMiniOutput::EOutputType type, AliRsnMiniOutput::EComputation src);
    AliRsnMiniOutput   *CreateOutput(const char *name, const char *outType, const char *compType);
-   
-   void                ProcessEvents(AliRsnMiniEvent *evMain, AliRsnMiniEvent *evMix = 0x0);
   
 private:
 
-   void     InitHistograms(TClonesArray *array);
    Char_t   CheckCurrentEvent();
    Double_t ComputeCentrality(Bool_t isESD);
    void     FillTrueMotherESD(AliRsnMiniEvent *event);
    void     FillTrueMotherAOD(AliRsnMiniEvent *event);
    void     StoreTrueMother(AliRsnMiniPair *pair, AliRsnMiniEvent *event);
+   void     ProcessEvents(AliRsnMiniEvent *evMain, AliRsnMiniEvent *evMix = 0x0);
 
+   Bool_t               fUseMC;           //  use or not MC info
    Int_t                fEvNum;           //! absolute event counter
    Bool_t               fUseCentrality;   //  if true, use centrality for event, otherwise use multiplicity
    TString              fCentralityType;  //  definition used to choose what centrality or multiplicity to use
@@ -84,9 +84,10 @@ private:
    AliRsnCutSet        *fEventCuts;       //  cuts on events
    TObjArray            fTrackCuts;       //  list of single track cuts
    AliRsnEvent          fRsnEvent;        //! interface object to the event
-   TTree               *fTempTree;        //! tree to contain converted events (temporary)
+   TTree               *fEvBuffer;        //! mini-event buffer
    TArrayI              fNMixed;          //! array to keep trace of how many times an event was mixed
    AliTriggerAnalysis  *fTriggerAna;      //! trigger analysis
+   AliESDtrackCuts     *fESDtrackCuts;    //! quality cut for ESD tracks
 
    ClassDef(AliRsnMiniAnalysisTask, 1); // AliRsnMiniAnalysisTask
 };
