@@ -59,31 +59,31 @@ private:
 
     AliRawReader* fRawReader;   // object for reading the raw data
 
-	UInt_t              	             fL1JetThreshold;          //
-	UInt_t              	           fL1GammaThreshold;          //
-	UShort_t                          fL0GammaPatchIndex[3100];    //
-	UShort_t                          fL1GammaPatchIndex[3100];    //
-	UShort_t                            fL1JetPatchIndex[200];     //
-	
-	Int_t                                 fNL0GammaPatch;          //
-	Int_t                                   fNL1JetPatch;          //
-	Int_t                                 fNL1GammaPatch;          //
-	
-	Int_t                                    fGetRawData;          //
-	
-	UInt_t                                          fADC[32][96];  //
-	
-	UInt_t                                          fV0A;
-    UInt_t                                          fV0C;
-    UInt_t                                           fGA;
-    UInt_t                                           fGB;
-    UInt_t                                           fGC;
-    UInt_t                                           fJA;
-    UInt_t                                           fJB;
-    UInt_t                                           fJC;
-    UInt_t                                 fRegionEnable;
-    UInt_t                                fFrameReceived;
-    UInt_t                                    fFwVersion;
+	UInt_t              	             fL1JetThreshold;          // L1 Jet Threshold
+	UInt_t              	           fL1GammaThreshold;          // L1 Gamma Threshold
+	UShort_t                          fL0GammaPatchIndex[3100];    // L0 Gamma Patch Index
+	UShort_t                          fL1GammaPatchIndex[3100];    // L1 Gamma Patch Index
+	UShort_t                            fL1JetPatchIndex[200];     // L1 Jet Patch Index
+	                                                                  
+	Int_t                                 fNL0GammaPatch;          // N L0 Gamma Patch
+	Int_t                                   fNL1JetPatch;          // N L1 Jet Patch
+	Int_t                                 fNL1GammaPatch;          // N L1 Gamma Patch
+	                                                                  
+	Int_t                                    fGetRawData;          // Get Raw Data
+	                                                                  
+	UInt_t                                          fADC[32][96];  // ADC
+	                                                                  
+	UInt_t                                          fV0A;          // V0A
+    UInt_t                                          fV0C;          // V0C
+    UInt_t                                           fGA;          // GA
+    UInt_t                                           fGB;          // GB
+    UInt_t                                           fGC;          // GC
+    UInt_t                                           fJA;          // JA
+    UInt_t                                           fJB;          // JB
+    UInt_t                                           fJC;          // JC
+    UInt_t                                 fRegionEnable;          // Region Enable
+    UInt_t                                fFrameReceived;          // Frame Received
+    UInt_t                                    fFwVersion;          // Fw Version
 
     ClassDef(AliEMCALTriggerSTURawStream,1)   // class for reading EMCAL STU DDL raw data
 };
