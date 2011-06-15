@@ -543,8 +543,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       	      Bool_t isMatch =  CalculateResidual(track, ec, dEta, dPhi);
       	      if(!isMatch) 
       		{
+      		  // AliDebug(10, "Not good");
       		  continue;
-      		  cout<<"Not good"<<endl;
       		}
       	      AliEMCALMatch *match = new AliEMCALMatch();
       	      match->SetIndexT(itrack);
