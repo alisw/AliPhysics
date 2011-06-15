@@ -29,6 +29,7 @@
 #include "AliAODEvent.h"
 #include "AliMCParticle.h"
 #include "AliAODMCParticle.h"
+#include "AliEventplane.h"
 
 #include "AliRsnCutSet.h"
 #include "AliRsnMiniEvent.h"
@@ -277,7 +278,7 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
    // assign event-related values
    miniEvent = new AliRsnMiniEvent;
    miniEvent->Vz() = fInputEvent->GetPrimaryVertex()->GetZ();
-   miniEvent->Angle() = 0.0;
+   miniEvent->Angle() = ComputeAngle();
    miniEvent->Mult() = ComputeCentrality((check == 'E'));
    AliDebugClass(1, Form("Event %d: vz = %f -- mult = %f -- angle = %f", fEvNum, miniEvent->Vz(), miniEvent->Mult(), miniEvent->Angle()));
    
@@ -366,6 +367,7 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
          // found a match: increment counter for both events
          fNMixed[i1]++;
          fNMixed[imix]++;
+         //cout << "Mixed " << i1 << " with " << imix << endl;
          ProcessEvents(&evMain, evMix);
          // if mixed enough times, stop
       }
@@ -525,6 +527,22 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       return output;
    } else {
       return 0;
+   }
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniAnalysisTask::ComputeAngle()
+{
+//
+// Get the plane angle
+//
+
+   AliEventplane *plane = fInputEvent->GetEventplane();
+   if (plane) 
+      return plane->GetEventplane("Q");
+   else {
+      AliWarning("No event plane defined");
+      return 1E20;
    }
 }
 
