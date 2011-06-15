@@ -117,6 +117,7 @@ inline void AliRsnEvent::SetRefMC(AliVEvent *mc)
    if (!mc) {
       fRefMC = 0x0;
       fAODList = 0x0;
+      return;
    }
 
    fRefMC = mc;
