@@ -13,16 +13,60 @@
 ///
 
 #include "TObject.h"
+#include "AliHLTDataTypes.h"
+#include "AliHLTTPCClusterMCData.h"
+#include <map>
 
 class AliTPCClustersRow;
 class AliHLTOUT;
 class TClonesArray;
 
+typedef std::map<AliHLTUInt32_t, AliHLTTPCClusterMCLabel> AliHLTTPCClusterMCDataList;
+
 /**
  * @class AliHLTTPCClusterAccessHLTOUT
  * Generator for TPC cluster array from HLT TPC clusters in the HLTOUT
- * data stream.
+ * data stream. It uses the TObject method interface. Combined with dynamic
+ * loading, any cross dependency between the TPC code and HLT libraries
+ * can be avoided.
  *
+ * Creating the instance: 
+ * The class is implemented in libAliHLTTPC.so and can be loaded
+ * through the TClass interface (you might want to add
+ * further error messages on the various error conditions).
+ * <pre>
+ *     TObject* pClusterAccess=NULL;
+ *     TClass* pCl=NULL;
+ *     ROOT::NewFunc_t pNewFunc=NULL;
+ *     do {
+ *       pCl=TClass::GetClass("AliHLTTPCClusterAccessHLTOUT");
+ *     } while (!pCl && gSystem->Load("libAliHLTTPC.so")==0);
+ *     if (pCl && (pNewFunc=pCl->GetNew())!=NULL) {
+ *       void* p=(*pNewFunc)(NULL);
+ *       if (p) {
+ *         pClusterAccess=reinterpret_cast<TObject*>(p);
+ *       }
+ *     }
+ * </pre>
+ * 
+ * Usage:
+ * TObject::Execute can be used to execute commands. Command 'read'
+ * will get hold on the HLTOUT data and read the clusters. The const char*
+ * parameter 'param' is used to select the region.
+ * - param=NULL: read all
+ * - param="sector=sectorno"
+ * 'sectorno' specifies sector number in the offline code, range 0 and 71,
+ * enumerating first the 36 inner (partitions 0+1)  and then 36 outer sectors
+ * (partitions 2-5).
+ * 
+ * Command 'verbosity=level' sets the verbositylevel which is default 0
+ * (no info output).
+ * <pre>
+ *     pClusterAccess->Clear();
+ *     pClusterAccess->Execute("read", param);
+ *     TObject* pClusterAccess->FindObject("clusterarray");
+ * </pre>
+ * 
  * @ingroup alihlt_tpc
  */
 class AliHLTTPCClusterAccessHLTOUT : public TObject
@@ -46,10 +90,13 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   virtual void        Print(Option_t *option="") const;
 
   /// process the cluster data block of various formats from HLTOUT
-  int ProcessClusters();
+  int ProcessClusters(const char* params);
+
+  /// process the cluster mc data block {CLMCINFO:TPC } from HLTOUT
+  int ReadAliHLTTPCClusterMCData(AliHLTOUT* pHLTOUT, AliHLTTPCClusterMCDataList &tpcClusterLabels) const;
 
   /// process the cluster data block {CLUSTERS:TPC } from HLTOUT
-  int ReadAliHLTTPCClusterData(AliHLTOUT* pHLTOUT, TClonesArray* pClusters) const;
+  int ReadAliHLTTPCClusterData(AliHLTOUT* pHLTOUT, TClonesArray* pClusters, const AliHLTTPCClusterMCDataList *tpcClusterLabels=NULL) const;
 
  private:
   /// copy constructor prohibited
@@ -57,7 +104,8 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   /// assignment operator prohibited
   AliHLTTPCClusterAccessHLTOUT& operator=(const AliHLTTPCClusterAccessHLTOUT&);
 
-  TClonesArray* fClusters;
+  int fVerbosity; //! verbosity level
+  TClonesArray* fClusters; //! cluster array
 
   ClassDef(AliHLTTPCClusterAccessHLTOUT, 0)
 };
