@@ -81,28 +81,30 @@ Bool_t AliRsnCutKaonForPhi2010::IsSelected(TObject *obj)
       return kFALSE;
    }
    
-   // PID 
-   Double_t nsigmaTPC = TMath::Abs(pid->NumberOfSigmasTPC(track, AliPID::kKaon));
-   Double_t nsigmaTOF = TMath::Abs(pid->NumberOfSigmasTOF(track, AliPID::kKaon));
-   Bool_t   matchTOF  = MatchTOF(track);
+   // check if TOF is matched
+   // and computes all values used in the PID cut
+   Bool_t   isTOF  = MatchTOF(track);
+   Double_t nsTPC  = TMath::Abs(pid->NumberOfSigmasTPC(track, AliPID::kKaon));
+   Double_t nsTOF  = TMath::Abs(pid->NumberOfSigmasTOF(track, AliPID::kKaon));
    
    // if only one detector is chosen, do this here
    if (fOnlyTPC) {
-      return (nsigmaTPC <= fCutTPC);
+      return (nsTPC <= fCutTPC);
    } else if (fOnlyTOF) {
-      return (matchTOF && (nsigmaTOF <= fCutTOF));
+      return (isTOF && (nsTOF <= fCutTOF));
    } else {
       // combined PID:
       // below momentum threshold, start with TPC
       if (track->P() < fTOFthreshold) {
-         if (nsigmaTPC > fCutTPC) return kFALSE;
-         if (matchTOF && (nsigmaTOF > fCutTOF)) return kFALSE;
-         return kTRUE;
+         if (isTOF)
+            return ((nsTPC <= fCutTPC) && (nsTOF <= fCutTOF));
+         else
+            return (nsTPC <= fCutTPC);
       } else {
-         if (!matchTOF) return kFALSE;
-         if (nsigmaTOF > fCutTOF) return kFALSE;
-         if (nsigmaTPC > 4.0) return kFALSE;
+         if (isTOF) 
+            return ((nsTPC <= fCutTPC) && (nsTOF <= fCutTOF));
+         else
+            return kFALSE;
       }
-      return kTRUE;
    }
 }

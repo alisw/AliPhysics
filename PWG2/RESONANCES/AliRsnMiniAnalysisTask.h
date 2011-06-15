@@ -60,6 +60,7 @@ public:
 private:
 
    Char_t   CheckCurrentEvent();
+   Double_t ComputeAngle();
    Double_t ComputeCentrality(Bool_t isESD);
    void     FillTrueMotherESD(AliRsnMiniEvent *event);
    void     FillTrueMotherAOD(AliRsnMiniEvent *event);

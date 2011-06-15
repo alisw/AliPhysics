@@ -24,16 +24,15 @@ public:
    AliRsnCutTrackQuality *CutQuality()            {return &fCutQuality;}
    Double_t               GetTOFthreshold() const {return fTOFthreshold;}
    
-   void  SetTOFthreshold(Double_t value)   {fTOFthreshold = value;}
-   void  SetOnlyQuality(Bool_t yn = kTRUE) {fOnlyQuality = yn;}
-   void  SetOnlyTPC(Bool_t yn = kTRUE)     {fOnlyTPC = yn;}
-   void  SetOnlyTOF(Bool_t yn = kTRUE)     {fOnlyTOF = yn;}
-   void  SetCutTPC(Double_t cut)           {fCutTPC = cut;}
-   void  SetCutTOF(Double_t cut)           {fCutTOF = cut;}
+   void   SetTOFthreshold(Double_t value)   {fTOFthreshold = value;}
+   void   SetOnlyQuality(Bool_t yn = kTRUE) {fOnlyQuality = yn;}
+   void   SetOnlyTPC(Bool_t yn = kTRUE)     {fOnlyTPC = yn;}
+   void   SetOnlyTOF(Bool_t yn = kTRUE)     {fOnlyTOF = yn;}
+   void   SetCutTPC(Double_t cut)           {fCutTPC = cut;}
+   void   SetCutTOF(Double_t cut)           {fCutTOF = cut;}
+   Bool_t MatchTOF(const AliVTrack *vtrack);
 
 private:
-
-   Bool_t MatchTOF(const AliVTrack *vtrack);
 
    Bool_t                fOnlyQuality;   // switch off PID
    Bool_t                fOnlyTPC;       // use only TPC PID
@@ -59,11 +58,10 @@ inline Bool_t AliRsnCutKaonForPhi2010::MatchTOF(const AliVTrack *vtrack)
       return kFALSE;
    }
 
-   Bool_t isTOFpid = ((vtrack->GetStatus() & AliESDtrack::kTOFpid) != 0);
-   Bool_t isTOFout = ((vtrack->GetStatus() & AliESDtrack::kTOFout) != 0);
-   Bool_t isTIME   = ((vtrack->GetStatus() & AliESDtrack::kTIME)   != 0);
+   if (!(vtrack->GetStatus() & AliESDtrack::kTOFout)) return kFALSE;
+   if (!(vtrack->GetStatus() & AliESDtrack::kTIME  )) return kFALSE;
 
-   return (isTOFout && isTIME && isTOFpid);
+   return kTRUE;
 }
 
 #endif
