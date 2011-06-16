@@ -64,6 +64,7 @@ ClassImp(AliGenParam)
 	fBias(0.),
 	fTrials(0),
 	fDeltaPt(0.01),
+	fSelectAll(kFALSE),
 	fDecayer(0)
 {
 // Default constructor
@@ -83,6 +84,7 @@ AliGenParam::AliGenParam(Int_t npart, const AliGenLib * Library,  Int_t param, c
      fBias(0.),
      fTrials(0),
      fDeltaPt(0.01),
+     fSelectAll(kFALSE),
      fDecayer(0)
 {
 // Constructor using number of particles parameterisation id and library
@@ -106,6 +108,7 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param, const char* tname, const char
     fBias(0.),
     fTrials(0),
     fDeltaPt(0.01),
+    fSelectAll(kFALSE),
     fDecayer(0)
 {
 // Constructor using parameterisation id and number of particles
@@ -148,6 +151,7 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param,
      fBias(0.),
      fTrials(0),
      fDeltaPt(0.01),
+     fSelectAll(kFALSE),
      fDecayer(0)
 {
 // Constructor
@@ -413,7 +417,7 @@ void AliGenParam::Generate()
 //
 // children
 		      
-		      if ((ChildSelected(TMath::Abs(kf)) || fForceDecay == kAll) && trackIt[i])
+		      if ((ChildSelected(TMath::Abs(kf)) || fForceDecay == kAll || fSelectAll) && trackIt[i])
 		      {
 			  if (fCutOnChild) {
 			      pc[0]=iparticle->Px();

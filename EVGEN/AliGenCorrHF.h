@@ -44,6 +44,8 @@ class AliGenCorrHF : public AliGenMC
     // fG - input file with QQbar kinematical grid (TTree) and fragm. functions (24 TH2-s)
     static void GetQuarkPair(TFile* fG, Double_t* fInt, Double_t &y1, Double_t &y2, Double_t &pt1, Double_t &pt2, Double_t &dphi);              
     static void GetHadronPair(TFile* fG, Int_t idq, Double_t y1, Double_t y2, Double_t pt1, Double_t pt2, Int_t &id3, Int_t &id4, Double_t &pz3, Double_t &pz4, Double_t &pt3, Double_t &pt4); 
+   //Setting the flag for Background transportation while using SetForceDecay()
+    void SetSelectAll(Bool_t selectall) {fSelectAll = selectall;}
 
  protected:
     TString     fFileName;    // Name of the input file
@@ -52,13 +54,15 @@ class AliGenCorrHF : public AliGenMC
     Int_t       fEnergy;      // p-p c.m.s. energy 
     Float_t     fBias;        // Biasing factor
     Int_t       fTrials;      // Number of trials
+    Bool_t      fSelectAll;   // Flag for transportation of Background while using SetForceDecay()
     AliDecayer* fDecayer;     //! Pointer to pythia object for decays
 
  private:
     AliGenCorrHF(const AliGenCorrHF &CorrHF);
     AliGenCorrHF & operator=(const AliGenCorrHF & rhs);
 
-    Double_t* fgIntegral; //! Pointer to array of cumulative sums of wght-s
+    Double_t* fgIntegral;  //! Pointer to array of cumulative sums of wght-s
+	
     static Int_t  fgnptbins;             // =12 Number of bins for the fragm. 
                                          //   function dependence on quark pt
     // Number of the grid bins in deltaphi, y and pt:  18, 30 and 50
@@ -67,8 +71,7 @@ class AliGenCorrHF : public AliGenMC
     static Double_t fgpt[51];            // pt bin coordinates
     static Double_t fgptbmin[12];        // min & max coordinates of pt bins for
     static Double_t fgptbmax[12];        // the fragm. function
-
-    ClassDef(AliGenCorrHF,1)  // Generator using parameterized QQbar & fragm. functions
+    ClassDef(AliGenCorrHF,2)  // Generator using parameterized QQbar & fragm. functions
 };
 #endif
 

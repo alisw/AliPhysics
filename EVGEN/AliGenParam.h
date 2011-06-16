@@ -38,6 +38,8 @@ class AliGenParam : public AliGenMC
     virtual void Init();
     // select particle type
     virtual void SetParam(Int_t param) {fParam = param;}
+    //Setting the flag for Background transportation while using SetForceDecay()
+    void SetSelectAll(Bool_t selectall) {fSelectAll = selectall;}
     // force decay type
     virtual void SetWeighting(Weighting_t flag = kAnalog) {fAnalog = flag;}	
     virtual void SetDeltaPt(Float_t delta=0.01) {fDeltaPt = delta;}
@@ -60,13 +62,14 @@ class AliGenParam : public AliGenMC
     Float_t     fBias;         // Biasing factor
     Int_t       fTrials;       // Number of trials
     Float_t     fDeltaPt;      // pT sampling in steps of fDeltaPt
+    Bool_t      fSelectAll;    // Flag for transportation of Background while using SetForceDecay()
     AliDecayer  *fDecayer;     // ! Pointer to pythia object for decays
 
  private:
     AliGenParam(const AliGenParam &Param);
     AliGenParam & operator=(const AliGenParam & rhs);
 
-    ClassDef(AliGenParam,1) // Generator using parameterised pt- and y-distribution
+    ClassDef(AliGenParam, 2) // Generator using parameterised pt- and y-distribution
 };
 #endif
 

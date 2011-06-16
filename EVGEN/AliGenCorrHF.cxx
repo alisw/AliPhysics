@@ -132,6 +132,7 @@ Double_t AliGenCorrHF::fgptbmax[12] = {0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 9, 10
 	fEnergy(0),
 	fBias(0.),
 	fTrials(0),
+	fSelectAll(kFALSE),
 	fDecayer(0),
 	fgIntegral(0)
 {
@@ -147,7 +148,7 @@ AliGenCorrHF::AliGenCorrHF(Int_t npart, Int_t idquark, Int_t energy):
     fEnergy(energy),
     fBias(0.),
     fTrials(0),
-    //    fDecayer(new AliDecayerPythia())
+    fSelectAll(kFALSE),
     fDecayer(0),
     fgIntegral(0)
 {
@@ -202,7 +203,7 @@ AliGenCorrHF::AliGenCorrHF(char* tname, Int_t npart, Int_t idquark, Int_t energy
     fEnergy(energy),
     fBias(0.),
     fTrials(0),
-    //    fDecayer(new AliDecayerPythia())
+    fSelectAll(kFALSE),
     fDecayer(0),
     fgIntegral(0)
 {
@@ -487,7 +488,7 @@ void AliGenCorrHF::Generate()
 	    //
 	    // children
 	    
-	    if ((ChildSelected(TMath::Abs(kf)) || fForceDecay == kAll) && trackIt[i])
+	    if ((ChildSelected(TMath::Abs(kf)) || fForceDecay == kAll || fSelectAll) && trackIt[i])
 	      {
 		if (fCutOnChild) {
 		  pc[0]=iparticle->Px();
