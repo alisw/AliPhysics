@@ -73,6 +73,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fMinL0Time(-1),
     fMaxL0Time(1024),
     fMcMode(0),
+    fEmbedMode(0),
     fGeom(0),
     fReco(0),
     fDoPSel(kTRUE),
@@ -199,6 +200,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   cout << " fMinL0Time:     " << fMinL0Time << endl;
   cout << " fMaxL0Time:     " << fMaxL0Time << endl;
   cout << " fMcMode:        " << fMcMode << endl;
+  cout << " fEmbedMode:     " << fEmbedMode << endl;
   cout << " fGeom:          " << fGeom << endl;
   cout << " fReco:          " << fReco << endl;
   cout << " fDoPSel:        " << fDoPSel << endl;
@@ -247,7 +249,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
         TClass::GetClass("AliStaTrigger")->IgnoreTObjectStreamer();
       fTriggers = new TClonesArray("AliStaTrigger");
       fNtuple->Branch("l0prim", &fTriggers, 16*1024, 99);
-      if (fMcMode) {
+      if (fMcMode||fEmbedMode) {
         if (TClass::GetClass("AliStaPart"))
           TClass::GetClass("AliStaPart")->IgnoreTObjectStreamer();
         fMcParts = new TClonesArray("AliStaPart");
@@ -698,7 +700,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     fSelTracks->Clear();
     fSelPrimTracks->Clear();
     fTriggers->Clear();
-    if (fMcMode)
+    if (fMcParts)
       fMcParts->Clear();
   }
 
@@ -857,7 +859,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
   }
 
   TObjArray filtMcParts;
-  if (fMcMode) {
+  if (fMcParts) {
     Int_t nmc = fMcParts->GetEntries();
     for (Int_t i=0; i<nmc; ++i) {
       AliStaPart *pa = static_cast<AliStaPart*>(fMcParts->At(i));
@@ -1015,7 +1017,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     }
 
     //mc matching
-    if (fMcMode) {
+    if (fMcParts) {
       Int_t nmc = filtMcParts.GetEntries();
       Double_t diffR2 = 1e9;
       AliStaPart *msta = 0;
@@ -1390,7 +1392,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcMcInfo()
 {
   // Get Mc truth particle information.
 
-  if (!fMcMode)
+  if (!fMcParts)
     return;
 
   fMcParts->Clear();
@@ -1696,7 +1698,7 @@ void AliAnalysisTaskEMCALPi0PbPb::FillMcHists()
 {
   // Fill additional MC information histograms.
 
-  if (!fMcMode)
+  if (!fMcParts)
     return;
 
   // check if aod or esd mc mode and the fill histos
