@@ -211,6 +211,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
 	    }
 	  //
 	  //      Number of signals is calculated from Collision Geometry
+	  //      and entry with given centrality bin is selected
 	  //
 	  if (entry->Formula() != 0)
 	    {
@@ -221,14 +222,19 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
 	      AliCollisionGeometry* coll = (collentry->Generator())->CollisionGeometry();
 	      Float_t b  = coll->ImpactParameter();
 	      Int_t nsig = Int_t(entry->Formula()->Eval(b));
-	      if (nsig < 1) nsig = 1;
-	      AliInfo(Form("Signal Events %13.3f %5d %5d\n", b, coll->HardScatters(), nsig));
-	      ntimes = nsig;
+	      Int_t bin = entry->Bin() - 100;
+	      if (bin > 0) {
+		if (bin != nsig) continue;
+	      } else {
+		if (nsig < 1) nsig = 1;
+		AliInfo(Form("Signal Events %13.3f %5d %5d\n", b, coll->HardScatters(), nsig));
+		ntimes = nsig;
+	      }
 	    }
 	  
-	  entry->Generator()->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
+	  gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
 	  
-	  for (Int_t i = 0; i < ntimes; i++) entry->Generator()->Generate();
+	  for (Int_t i = 0; i < ntimes; i++) gen->Generate();
 	  entry->SetLast(partArray->GetEntriesFast());
 	  preventry = entry;
 	}

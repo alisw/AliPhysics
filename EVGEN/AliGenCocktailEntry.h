@@ -30,6 +30,7 @@ class AliGenCocktailEntry : public TNamed
     Int_t GetFirst() const {return fFirst;}
     Int_t GetLast () const {return fLast;}
     Float_t Rate()   const {return fRate;}
+    Int_t   Bin()    const {return Int_t(fRate);}
     void  PrintInfo() const;
     TFormula* Formula() const {return fFormula;}
     AliGenCocktailEntry & operator =(const AliGenCocktailEntry & rhs);
