@@ -95,6 +95,8 @@ public:
   static const AliHLTComponentDataType fgkUnpackedRawDataType;          // see above
   /** cluster data */
   static const AliHLTComponentDataType fgkClustersDataType;             // see above
+  /** raw cluster data (not transformed) */
+  static const AliHLTComponentDataType fgkRawClustersDataType;          // see above
   /** HW cluster data */
   static const AliHLTComponentDataType fgkHWClustersDataType;           // see above
   /** HW alternative output cluster data */

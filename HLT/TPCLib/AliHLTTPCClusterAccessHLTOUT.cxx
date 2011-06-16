@@ -25,6 +25,7 @@
 #include "AliHLTTPCClusterAccessHLTOUT.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCClusterDataFormat.h"
+#include "AliHLTTPCRawCluster.h"
 #include "AliHLTOUT.h"
 #include "AliHLTComponent.h"
 #include "AliLog.h"
@@ -172,8 +173,10 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 	iResult=ReadAliHLTTPCClusterMCData(pHLTOUT, tpcClusterLabels);
       }
 
-      if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::fgkClustersDataType, spec)>=0) {
-	iResult=ReadAliHLTTPCClusterData(pHLTOUT, fClusters);
+      if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::fgkRawClustersDataType, spec)>=0) {
+	iResult=ReadAliHLTTPCRawClusterData(pHLTOUT, fClusters, &tpcClusterLabels);
+      } else if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::fgkClustersDataType, spec)>=0) {
+	iResult=ReadAliHLTTPCClusterData(pHLTOUT, fClusters, &tpcClusterLabels);
       }
     }
   }
@@ -271,8 +274,8 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCClusterData(AliHLTOUT* pHLTOUT, T
 	break; // this is a problem of all objects
       }
       pCluster->SetRow(clusters[i].fPadRow);
-      pCluster->SetTimeBin(clusters[i].fZ);
       pCluster->SetPad(clusters[i].fY);
+      pCluster->SetTimeBin(clusters[i].fZ);
       pCluster->SetSigmaY2(clusters[i].fSigmaY2);
       pCluster->SetSigmaZ2(clusters[i].fSigmaZ2);
       pCluster->SetQ(clusters[i].fCharge);
@@ -291,6 +294,74 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCClusterData(AliHLTOUT* pHLTOUT, T
       }
     }
     if (fVerbosity>0) AliInfo(Form("converted %d cluster(s) from block 0x%08x", nSpacepoints, specification));
+  } while (pHLTOUT->SelectNextDataBlock()>=0);
+  return iResult;
+}
+
+int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCRawClusterData(AliHLTOUT* pHLTOUT, TClonesArray* pClusters, const AliHLTTPCClusterMCDataList *tpcClusterLabels)
+{
+  // read cluster data from AliHLTTPCClusterData
+
+  // FIXME: this is in large parts like ReadAliHLTTPCClusterData,
+  // make a common method
+  int iResult=0;
+  if (!pHLTOUT || !pClusters) return -EINVAL;
+  do {
+    const AliHLTUInt8_t* pBuffer=NULL;
+    AliHLTUInt32_t size=0;
+    if ((iResult=pHLTOUT->GetDataBuffer(pBuffer, size))<0) {
+      continue;
+    }
+    if (pBuffer==NULL || size<4) {
+      AliError("invalid cluster data block");
+      continue;
+    }
+    AliHLTComponentDataType dt=kAliHLTVoidDataType;
+    AliHLTUInt32_t specification=kAliHLTVoidDataSpec;
+    if (pHLTOUT->GetDataBlockDescription(dt, specification)<0) {
+      AliError("failed to retrieve data block description, skipping mc cluster data block ...");
+      continue;
+    }
+    const AliHLTTPCRawClusterData* clusterData = reinterpret_cast<const AliHLTTPCRawClusterData*>(pBuffer);
+    Int_t nCount = (Int_t) clusterData->fCount;
+    if (nCount*sizeof(AliHLTTPCRawCluster) + sizeof(AliHLTTPCRawClusterData) != size) {
+      AliError("inconsistent cluster data block size, skipping block");
+      continue;
+    }
+    const AliHLTTPCRawCluster *clusters = clusterData->fClusters;
+    int offset=pClusters->GetEntries();
+    pClusters->ExpandCreate(offset+nCount);
+    for (int i=0; i<nCount; i++) {
+      if (!pClusters->At(offset+i)) continue;
+      AliTPCclusterMI* pCluster=dynamic_cast<AliTPCclusterMI*>(pClusters->At(offset+i));
+      if (!pCluster) {
+	AliError("invalid object type, expecting AliTPCclusterMI");
+	break; // this is a problem of all objects
+      }
+      pCluster->SetRow(clusters[i].GetPadRow());
+      pCluster->SetPad(clusters[i].GetPad());
+      pCluster->SetTimeBin(clusters[i].GetTime());
+      pCluster->SetSigmaY2(clusters[i].GetSigmaY2());
+      pCluster->SetSigmaZ2(clusters[i].GetSigmaZ2());
+      pCluster->SetQ(clusters[i].GetCharge());
+      pCluster->SetMax(clusters[i].GetQMax());
+      if (tpcClusterLabels) {
+	AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(specification);
+	AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(specification);
+	UInt_t clusterID=AliHLTTPCSpacePointData::GetID(slice, partition, i);
+	if (tpcClusterLabels->find(clusterID)!=tpcClusterLabels->end()) {
+	  const AliHLTTPCClusterMCWeight* mcWeights=tpcClusterLabels->find(clusterID)->second.fClusterID;
+	  for (int k=0; k<3; k++) {
+	    // TODO: sort the labels according to the weight in order to assign the most likely mc label
+	    // to the first component 
+	    pCluster->SetLabel(mcWeights[k].fMCID, k);
+	  }
+	} else {
+	  AliError(Form("can not find mc label of cluster with id %0x08x", clusterID));
+	}
+      }
+    }
+    if (fVerbosity>0) AliInfo(Form("converted %d cluster(s) from block %s 0x%08x", nCount, AliHLTComponent::DataType2Text(dt).c_str(), specification));
   } while (pHLTOUT->SelectNextDataBlock()>=0);
   return iResult;
 }

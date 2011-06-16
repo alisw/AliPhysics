@@ -140,18 +140,12 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
 	// cluster finder components
 	cf.Form("TPC-CF_%02d_%d", slice, part);
-	arg="-release-memory";
+	arg="-release-memory -publish-raw";
 	if (!rawReader && runloader) {
 	  arg+=" -do-mc";
 	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), arg.Data());
 	} else {
-#ifndef HAVE_NOT_ALTRORAWSTREAMV3
 	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinder32Bit", publisher.Data(),arg.Data());
-#else
-	  // using the AltroDecoder if the official V3 decoder is not
-	  // available in the offline code
-	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinderDecoder", publisher.Data(), arg.Data());
-#endif 
 	}
 	if (trackerInput.Length()>0) trackerInput+=" ";
 	trackerInput+=cf;
@@ -163,7 +157,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
       TString tracker;
       // tracker finder components
       tracker.Form("TPC-TR_%02d", slice);
-      handler->CreateConfiguration(tracker.Data(), "TPCCATracker", trackerInput.Data(), "");
+      handler->CreateConfiguration(tracker.Data(), "TPCCATracker", trackerInput.Data(), "-minTrackPt 0.0");
 
       if (mergerInput.Length()>0) mergerInput+=" ";
       mergerInput+=tracker;
@@ -190,7 +184,8 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     handler->CreateConfiguration("TPC-esd-converter", "TPCEsdConverter"   , converterInput.Data(), "");
 
     // cluster dump collection
-    handler->CreateConfiguration("TPC-clusters", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLUSTERS' 'TPC '");
+    handler->CreateConfiguration("TPC-clusters", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLUSTERS' 'TPC ' -datatype 'CLMCINFO' 'TPC '");
+    handler->CreateConfiguration("TPC-raw-clusters", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLUSTRAW' 'TPC ' -datatype 'CLMCINFO' 'TPC '");
 
     /////////////////////////////////////////////////////////////////////////////////////
     //
@@ -339,6 +334,18 @@ int AliHLTTPCAgent::GetHandlerDescription(AliHLTComponentDataType dt,
   // dump for {'CLUSTERS':'TPC '} blocks stored in a 'digit' file
   if (dt==AliHLTTPCDefinitions::fgkClustersDataType) {
       desc=AliHLTOUTHandlerDesc(kChain, dt, GetModuleId());
+      return 1;
+  }
+
+  // {'CLUSTRAW':'TPC '} 
+  if (dt==AliHLTTPCDefinitions::fgkRawClustersDataType) {
+      desc=AliHLTOUTHandlerDesc(kProprietary, dt, GetModuleId());
+      return 1;
+  }
+
+  // {'CLMCINFO':'TPC '} 
+  if (dt==AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo) {
+      desc=AliHLTOUTHandlerDesc(kProprietary, dt, GetModuleId());
       return 1;
   }
 

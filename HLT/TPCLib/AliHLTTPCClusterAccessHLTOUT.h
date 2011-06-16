@@ -98,6 +98,9 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   /// process the cluster data block {CLUSTERS:TPC } from HLTOUT
   int ReadAliHLTTPCClusterData(AliHLTOUT* pHLTOUT, TClonesArray* pClusters, const AliHLTTPCClusterMCDataList *tpcClusterLabels=NULL) const;
 
+  /// process the cluster data block {CLUSTRAW:TPC } from HLTOUT
+  int ReadAliHLTTPCRawClusterData(AliHLTOUT* pHLTOUT, TClonesArray* pClusters, const AliHLTTPCClusterMCDataList *tpcClusterLabels);
+
  private:
   /// copy constructor prohibited
   AliHLTTPCClusterAccessHLTOUT(const AliHLTTPCClusterAccessHLTOUT&);

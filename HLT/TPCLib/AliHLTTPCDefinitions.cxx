@@ -35,6 +35,7 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDDLEncodedEntropyRawDataT
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkPackedRawDataType = AliHLTComponentDataTypeInitializer("RAWPAKED", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkUnpackedRawDataType = AliHLTComponentDataTypeInitializer("RAWUNPAK", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClustersDataType = AliHLTComponentDataTypeInitializer("CLUSTERS", kAliHLTDataOriginTPC);
+const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRawClustersDataType = AliHLTComponentDataTypeInitializer("CLUSTRAW", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkHWClustersDataType = AliHLTComponentDataTypeInitializer("HWCLUST1", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkAlterClustersDataType = AliHLTComponentDataTypeInitializer("HWCL_ALT", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkVertexDataType = AliHLTComponentDataTypeInitializer("VERTEX  ", kAliHLTDataOriginTPC);

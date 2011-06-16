@@ -81,6 +81,7 @@ AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(int mode)
   fLastTimeBin(-1),
   fDoMC(kFALSE),
   fReleaseMemory( kFALSE ),
+  fPublishRawClusters(kFALSE),
   fBenchmark("TPCClusterFinder")
 {
   // see header file for class documentation
@@ -444,6 +445,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 
       maxPoints = (size-tSize-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
 
+      fClusterFinder->SetFillRawClusters(fPublishRawClusters);
       fClusterFinder->InitSlice( slice, patch, maxPoints );
       fClusterFinder->SetOutputArray( (AliHLTTPCSpacePointData*)outPtr->fSpacePoints );
 	
@@ -570,6 +572,21 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	  tSize+=bdMCInfo.fSize;
 	}
       }
+
+      if (fPublishRawClusters) {
+	AliHLTTPCRawClusterData* outputRaw= (AliHLTTPCRawClusterData*)(outputPtr+tSize);
+	outputRaw->fCount = fClusterFinder->FillOutputRaw(outputRaw->fClusters, size-tSize);
+
+	AliHLTComponentBlockData bdRawClusters;
+	FillBlockData( bdRawClusters );
+	bdRawClusters.fOffset = tSize;
+	bdRawClusters.fSize = sizeof(AliHLTTPCRawClusterData)+outputRaw->fCount*sizeof(AliHLTTPCRawCluster);
+	bdRawClusters.fSpecification = iter->fSpecification;
+	bdRawClusters.fDataType = AliHLTTPCDefinitions::fgkRawClustersDataType;
+	outputBlocks.push_back( bdRawClusters );
+	fBenchmark.AddOutput(bdRawClusters.fSize);
+	tSize+=bdRawClusters.fSize;
+      }
     }
 
   if (iResult>=0)
@@ -678,6 +695,11 @@ int AliHLTTPCClusterFinderComponent::ScanConfigurationArgument(int argc, const c
     fReleaseMemory=kTRUE;
     fClusterFinder->SetReleaseMemory( fReleaseMemory );
     HLTDebug("Setting fReleaseMemory to true.");
+    return 1;
+  }
+  if (argument.CompareTo("-publish-raw")==0) {
+    fPublishRawClusters=kTRUE;
+    fClusterFinder->SetFillRawClusters(fPublishRawClusters);
     return 1;
   }
 

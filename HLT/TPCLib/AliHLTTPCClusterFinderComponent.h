@@ -1,3 +1,4 @@
+//-*- Mode: C++ -*-
 // $Id$
 
 #ifndef ALIHLTTPCCLUSTERFINDERCOMPONENT_H
@@ -227,6 +228,7 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 
 	Bool_t fDoMC; // flag to provide MC labels
 	Bool_t fReleaseMemory; // flag to release the memory after each event
+	Bool_t fPublishRawClusters; // publish raw clusters in addition
 	AliHLTComponentBenchmark fBenchmark; // benchmark
 
 	ClassDef(AliHLTTPCClusterFinderComponent, 0)

@@ -1,5 +1,5 @@
-// @(#) $Id$
-// Original: AliHLTClustFinderNew.h,v 1.13 2004/06/18 10:55:26 loizides 
+//-*- Mode: C++ -*-
+// $Id$
 
 #ifndef ALIHLTTPCCLUSTERFINDER_H
 #define ALIHLTTPCCLUSTERFINDER_H
@@ -20,6 +20,7 @@
 #include "AliHLTTPCDigitReader.h"
 #include "AliTPCRecoParam.h"
 #include "AliHLTTPCClusterMCData.h"
+#include "AliHLTTPCRawCluster.h"
 
 class AliHLTTPCPad;
 class AliHLTTPCSpacePointData;
@@ -161,6 +162,8 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
  /**  Fills the mc info */
   Int_t FillOutputMCInfo(AliHLTTPCClusterMCLabel * outputMCInfo, Int_t maxNumberOfClusterMCInfo);
 
+  Int_t FillOutputRaw(AliHLTTPCRawCluster* rawClusters, unsigned sizeInByte) const;
+
   /** Set the pointer to the outputbuffer */
   void SetOutputArray(AliHLTTPCSpacePointData *pt);
 
@@ -195,7 +198,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void SetMatchWidth(UInt_t i) {fMatch=i;}
   void SetSTDOutput(Bool_t f=kFALSE) {fStdout=f;}  
   void SetCalcErr(Bool_t f=kTRUE) {fCalcerr=f;}
-  void SetRawSP(Bool_t f=kFALSE) {fRawSP=f;}
+  void SetFillRawClusters(Bool_t f=kFALSE) {fFillRawClusters=f;}
   void SetReader(AliHLTTPCDigitReader* f){fDigitReader = f;}
 
   void Set32BitFormat(Bool_t flag){f32BitFormat = flag;}
@@ -229,7 +232,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   Bool_t fDeconvPad;       //! deconv in pad direction
   Bool_t fStdout;          //! have print out in write clusters
   Bool_t fCalcerr;         //! calculate centroid sigmas
-  Bool_t fRawSP;           //! store centroids in raw system
+  Bool_t fFillRawClusters; //! store centroids in raw system in separate array
 
 
   Int_t fFirstRow;       //! first row
@@ -254,6 +257,8 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   vector<AliHLTTPCClusterMCLabel> fClustersMCInfo;                           //! transient
 
   vector<AliHLTTPCDigitData> fMCDigits;                            //! transient
+
+  vector<AliHLTTPCRawCluster> fRawClusters;                        //! transient
   
   UInt_t* fNumberOfPadsInRow;                                      //! transient
   

@@ -57,7 +57,7 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fDeconvPad(kFALSE),
   fStdout(kFALSE),
   fCalcerr(kTRUE),
-  fRawSP(kFALSE),
+  fFillRawClusters(kFALSE),
   fFirstRow(0),
   fLastRow(0),
   fCurrentRow(0),
@@ -75,6 +75,7 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fClusters(),
   fClustersMCInfo(),
   fMCDigits(),
+  fRawClusters(),
   fNumberOfPadsInRow(NULL),
   fNumberOfRows(0),
   fRowOfFirstCandidate(0),
@@ -142,6 +143,7 @@ void AliHLTTPCClusterFinder::InitSlice(Int_t slice,Int_t patch,Int_t nmaxpoints)
   fClustersMCInfo.clear();
   fMCDigits.clear();
   fClusterMCVector.clear();   
+  fRawClusters.clear();
 }
 
 void AliHLTTPCClusterFinder::InitializePadArray(){
@@ -556,6 +558,17 @@ Int_t AliHLTTPCClusterFinder::FillOutputMCInfo(AliHLTTPCClusterMCLabel * outputM
     }
   }
   return counter;
+}
+
+Int_t AliHLTTPCClusterFinder::FillOutputRaw(AliHLTTPCRawCluster* rawClusters, unsigned sizeInByte) const
+{
+  // fill the raw clusters
+  if (fRawClusters.size()*sizeof(AliHLTTPCRawCluster)>sizeInByte) {
+    HLTError("not enough space to write raw clusters");
+    return 0;
+  }
+  memcpy(rawClusters, &fRawClusters[0], fRawClusters.size()*sizeof(AliHLTTPCRawCluster));
+  return fRawClusters.size();
 }
 
 void AliHLTTPCClusterFinder::FindClusters(){
@@ -1088,6 +1101,10 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
   Int_t thisrow=-1,thissector=-1;
   UInt_t counter = fNClusters;
   
+  if (fFillRawClusters) {
+    fRawClusters.resize(nclusters);
+  }
+
   for(int j=0; j<nclusters; j++)
     {
 
@@ -1138,14 +1155,14 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 	      <<"SigmaY2 negative "<<sy2<<" on row "<<fCurrentRow<<" "<<fpad<<" "<<ftime<<ENDLOG;
 	    continue;
 	} else {
-	  if(!fRawSP){
+	  {
 	    fpad2 = (sy2 + 1./12)*AliHLTTPCTransform::GetPadPitchWidth(patch)*AliHLTTPCTransform::GetPadPitchWidth(patch);
 	    if(sy2 != 0){
 	      fpad2*=0.108; //constants are from offline studies
 	      if(patch<2)
 		fpad2*=2.07;
 	    }
-	  } else fpad2=sy2; //take the width not the error
+	  }
 	}
 	//	Float_t sz2=list[j].fTime2*list[j].fTotalCharge - list[j].fTime*list[j].fTime;
 	Float_t sz2=(Float_t)list[j].fTime2*list[j].fTotalCharge - (Float_t)list[j].fTime*list[j].fTime;
@@ -1155,20 +1172,25 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 	    <<"SigmaZ2 negative "<<sz2<<" on row "<<fCurrentRow<<" "<<fpad<<" "<<ftime<<ENDLOG;
 	  continue;
 	} else {
-	  if(!fRawSP){
+	  {
 	    ftime2 = (sz2 + 1./12)*AliHLTTPCTransform::GetZWidth()*AliHLTTPCTransform::GetZWidth();
 	    if(sz2 != 0) {
 	      ftime2 *= 0.169; //constants are from offline studies
 	      if(patch<2)
 		ftime2 *= 1.77;
 	    }
-	  } else ftime2=sz2; //take the width, not the error
+	  }
 	}
       }
       if(fStdout==kTRUE)
 	HLTInfo("WriteCluster: padrow %d pad %d +- %d time +- %d charge %d",fCurrentRow, fpad, fpad2, ftime, ftime2, list[j].fTotalCharge);
       
-      if(!fRawSP){
+      if (fFillRawClusters && fRawClusters.size()>(unsigned)counter) {
+	fRawClusters[counter].SetPadRow(fCurrentRow);
+	fRawClusters[counter].SetPad(fpad);  
+	fRawClusters[counter].SetTime(ftime);
+      }
+      {
 	AliHLTTPCTransform::Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
 
 	if(fOfflineTransform == NULL){
@@ -1210,11 +1232,6 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 	}
 
       } 
-      else {
-	fSpacePointData[counter].fX = fCurrentRow;
-	fSpacePointData[counter].fY = fpad;
-	fSpacePointData[counter].fZ = ftime;
-      }
       
       fSpacePointData[counter].fCharge = list[j].fTotalCharge;
       fSpacePointData[counter].fPadRow = fCurrentRow;
@@ -1229,6 +1246,13 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
       Int_t patch=fCurrentPatch;
       if(patch==-1) patch=0; //never store negative patch number
       fSpacePointData[counter].SetID( fCurrentSlice, patch, counter );
+
+      if (fFillRawClusters && fRawClusters.size()>(unsigned)counter) {
+	fRawClusters[counter].SetSigmaY2(fSpacePointData[counter].fSigmaY2);
+	fRawClusters[counter].SetSigmaZ2(fSpacePointData[counter].fSigmaZ2);
+	fRawClusters[counter].SetCharge(fSpacePointData[counter].fCharge);
+	fRawClusters[counter].SetQMax(fSpacePointData[counter].fQMax);
+      }
 
 #ifdef do_mc
       Int_t trackID[3];
@@ -1286,6 +1310,10 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
   //write cluster to output pointer
   Int_t thisrow,thissector;
   UInt_t counter = fNClusters;
+
+  if (fFillRawClusters) {
+    fRawClusters.resize(nclusters);
+  }
   
   for(int j=0; j<nclusters; j++)
     {
@@ -1309,14 +1337,14 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
 	      <<"SigmaY2 negative "<<sy2<<" on row "<<fCurrentRow<<" "<<fpad<<" "<<ftime<<ENDLOG;
 	    continue;
 	} else {
-	  if(!fRawSP){
+	  {
 	    fpad2 = (sy2 + 1./12)*AliHLTTPCTransform::GetPadPitchWidth(patch)*AliHLTTPCTransform::GetPadPitchWidth(patch);
 	    if(sy2 != 0){
 	      fpad2*=0.108; //constants are from offline studies
 	      if(patch<2)
 		fpad2*=2.07;
 	    }
-	  } else fpad2=sy2; //take the width not the error
+	  }
 	}
 	Float_t sz2=list[j].fTime2*list[j].fTotalCharge - list[j].fTime*list[j].fTime;
 	sz2/=q2;
@@ -1325,20 +1353,25 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
 	    <<"SigmaZ2 negative "<<sz2<<" on row "<<fCurrentRow<<" "<<fpad<<" "<<ftime<<ENDLOG;
 	  continue;
 	} else {
-	  if(!fRawSP){
+	  {
 	    ftime2 = (sz2 + 1./12)*AliHLTTPCTransform::GetZWidth()*AliHLTTPCTransform::GetZWidth();
 	    if(sz2 != 0) {
 	      ftime2 *= 0.169; //constants are from offline studies
 	      if(patch<2)
 		ftime2 *= 1.77;
 	    }
-	  } else ftime2=sz2; //take the width, not the error
+	  }
 	}
       }
       if(fStdout==kTRUE)
 	HLTInfo("WriteCluster: padrow %d pad %d +- %d time +- %d charge %d",fCurrentRow, fpad, fpad2, ftime, ftime2, list[j].fTotalCharge);
 
-      if(!fRawSP){
+      if (fFillRawClusters && fRawClusters.size()>(unsigned)counter) {
+	fRawClusters[counter].SetPadRow(fCurrentRow);
+	fRawClusters[counter].SetPad(fpad);  
+	fRawClusters[counter].SetTime(ftime);
+      }
+      {
 	AliHLTTPCTransform::Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
 	AliHLTTPCTransform::Raw2Local(xyz,thissector,thisrow,fpad,ftime);
 	
@@ -1361,10 +1394,6 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
 	}
 	fSpacePointData[counter].fZ = xyz[2];
 	
-      } else {
-	fSpacePointData[counter].fX = fCurrentRow;
-	fSpacePointData[counter].fY = fpad;
-	fSpacePointData[counter].fZ = ftime;
       }
       
       fSpacePointData[counter].fCharge = list[j].fTotalCharge;
@@ -1380,6 +1409,13 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
       Int_t patch=fCurrentPatch;
       if(patch==-1) patch=0; //never store negative patch number
       fSpacePointData[counter].SetID( fCurrentSlice, patch, counter );
+
+      if (fFillRawClusters && fRawClusters.size()>(unsigned)counter) {
+	fRawClusters[counter].SetSigmaY2(fSpacePointData[counter].fSigmaY2);
+	fRawClusters[counter].SetSigmaZ2(fSpacePointData[counter].fSigmaZ2);
+	fRawClusters[counter].SetCharge(fSpacePointData[counter].fCharge);
+	fRawClusters[counter].SetQMax(fSpacePointData[counter].fQMax);
+      }
 
 #ifdef do_mc
       Int_t trackID[3];
