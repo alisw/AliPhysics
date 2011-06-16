@@ -240,7 +240,7 @@ void AliVZEROQADataMakerRec::InitESDs()
  
   const Int_t kNTdcTimeBins  = 1280;
   const Float_t kTdcTimeMin    =    0.;
-  const Float_t kTdcTimeMax    = 125.;
+  const Float_t kTdcTimeMax    = 75.;
     const Int_t kNTdcWidthBins =  128;
   const Float_t kTdcWidthMin   =    0;
   const Float_t kTdcWidthMax   =  50.;
