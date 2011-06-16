@@ -178,8 +178,13 @@ Bool_t AliESDInputHandler::Notify(const char* path)
     // Try to add ESDfriend. branch as friend
     TString esdTreeFName, esdFriendTreeFName;    
     esdTreeFName = (fTree->GetCurrentFile())->GetName();
-    esdFriendTreeFName = esdTreeFName;
-    esdFriendTreeFName.ReplaceAll("AliESDs.root", fFriendFileName.Data());
+
+    if(esdFriendTreeFName.Contains("AliESDs.root")) {
+      esdFriendTreeFName.ReplaceAll("AliESDs.root", fFriendFileName.Data());
+    } else if(esdFriendTreeFName.Contains("AliESDs_wSDD.root")) {
+      esdFriendTreeFName.ReplaceAll("AliESDs_wSDD.root", fFriendFileName.Data());
+    }
+
     TTree* cTree = fTree->GetTree();
     if (!cTree) cTree = fTree;      
     cTree->AddFriend("esdFriendTree", esdFriendTreeFName.Data());
