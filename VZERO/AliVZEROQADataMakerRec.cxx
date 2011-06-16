@@ -235,30 +235,15 @@ void AliVZEROQADataMakerRec::InitESDs()
    const Bool_t saveCorr = kTRUE ; 
    const Bool_t image    = kTRUE ; 
 
-    const Int_t kNTdcWidthBins =  128;
-
-	Float_t maxTdc = 0.;
-	Int_t   nTdcBin = 0;
-	Float_t maxWidth = 0.;
-	for(int i=0;i<8;i++){
-		if(fCalibData->GetTimeResolution(i)>0.){
-		  Float_t matchWin = 25.*(Float_t)fCalibData->GetMatchWindow(i);
-		  if(matchWin>maxTdc) {
-		    maxTdc = matchWin;
-		    nTdcBin = TMath::Nint(matchWin/fCalibData->GetTimeResolution(i));
-		  }
-		}
-		Float_t w = (Float_t)kNTdcWidthBins*fCalibData->GetWidthResolution(i);
-		if(w>maxWidth) maxWidth = w;
-	}
 
   const Int_t kNintegrator  =    2;
  
-  const Int_t kNTdcTimeBins  = nTdcBin;
+  const Int_t kNTdcTimeBins  = 1280;
   const Float_t kTdcTimeMin    =    0.;
-  const Float_t kTdcTimeMax    = maxTdc;
+  const Float_t kTdcTimeMax    = 125.;
+    const Int_t kNTdcWidthBins =  128;
   const Float_t kTdcWidthMin   =    0;
-  const Float_t kTdcWidthMax   =  maxWidth;
+  const Float_t kTdcWidthMax   =  50.;
   const Int_t kNChargeBins   = 1024;
   const Float_t kChargeMin     =    0;
   const Float_t kChargeMax     = 1024;
