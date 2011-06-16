@@ -1185,11 +1185,9 @@ Bool_t AliITStrackerUpgrade::RefitAtBase(Double_t xx,AliITStrackU *track,
       if (cl) {                                                                  
 	Int_t cllayer = (idx & 0xf0000000) >> 28;;                               
        // edge effect correction 
-       /*
         if(trkModule!=cl->GetModule()){
 	if (!track->Propagate(fSegmentation->GetAlpha(cl->GetModule()),fSegmentation->GetRadius(ilayer))) return kFALSE;
         }
-       */
 	Double_t chi2=GetPredictedChi2MI(track,cl,cllayer);                      
 	if (chi2<maxchi2) {                                                      
 	  clAcc=cl;                                                              
