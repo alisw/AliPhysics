@@ -47,7 +47,7 @@ ClassImp(AliMUONGeometryModuleTransformer)
 const TString& AliMUONGeometryModuleTransformer::GetModuleNamePrefix()
 {
   /// Geometry module name prefix
-  static const TString& kModuleNamePrefix = "GM";
+  static const TString kModuleNamePrefix = "GM";
   return kModuleNamePrefix;
 }  
 
