@@ -41,11 +41,12 @@ class AliITSUpgradeClusterFinder :public TObject{
   void DeActivateClusterTypeSearch(){fClusterTypeFlag=kFALSE;}
 
   void  StartEvent();
-  Int_t ProcessHit(Int_t layer, UInt_t col, UInt_t row, UShort_t charge,Int_t label[3]);
+  enum {kMaxLab=24}; // maximum number of MC labels associated to the cluster
+  Int_t ProcessHit(Int_t layer, UInt_t col, UInt_t row, UShort_t charge,Int_t label[kMaxLab]);
   void  FinishEvent();
 
   void AddLabelIndex(UInt_t col, UInt_t row);
-  void SetLabels(Int_t label[3]);
+  void SetLabels(Int_t label[kMaxLab]);
   void MakeRecPointBranch(TTree *treeR);
   void SetRecPointTreeAddress(TTree *treeR);
 
@@ -79,7 +80,7 @@ class AliITSUpgradeClusterFinder :public TObject{
   enum {kSHIFTRIGHT,kSHIFTDOWN};  // used for shifting the region of interest for cluster type pattern
   
   UInt_t   fNhitsLeft;     // number of hits still left to process for this module
-  Bool_t   fHits[39530][39530];// hit map for this module
+  Bool_t   fHits[80000][39530]; // hit map for this module 
   UShort_t fHitCol[999999]; // these two arrays remember which pixels are hit for this module
   UShort_t fHitRow[999999]; // these two arrays remember which pixels are hit for this module
   Short_t  fOldModule;     // remember previous module (-1 at start of event)
@@ -90,8 +91,8 @@ class AliITSUpgradeClusterFinder :public TObject{
   UInt_t   fColSum; // used to determine the center of a cluster
   UInt_t   fRowSum; // used to determine the center of a cluster
   UShort_t fCharge;        // cluster charge 
-  Int_t    fTmpLabel[3];   // label array to be kept temporarily during the clustering procedure
-  Int_t    fLabels[kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY];    // label array to be attached to the cluster
+  Int_t    fTmpLabel[kMaxLab];   // label array to be kept temporarily during the clustering procedure
+  Int_t    fLabels[kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY*kMaxLab];    // label array to be attached to the cluster
 
   UShort_t fClusterWidthMaxCol; //max column ID of the cluster
   UShort_t fClusterWidthMinCol; //min column ID of the cluster
@@ -102,7 +103,8 @@ class AliITSUpgradeClusterFinder :public TObject{
   TObjArray *fChargeArray;  // charge identifier
   TClonesArray *fRecPoints; // used to fill treeR
   
-  Int_t fNSectors;
+  Int_t fNLayers;           // Number of layers
+  Int_t fNSectors;          // Number of sectors per layer
   AliITSUpgradeClusterFinder(const AliITSUpgradeClusterFinder &source); // copy constructor
   // assignment operator
   AliITSUpgradeClusterFinder& operator=(const AliITSUpgradeClusterFinder &source);

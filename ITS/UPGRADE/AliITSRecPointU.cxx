@@ -24,20 +24,28 @@ ClassImp(AliITSRecPointU)
 //_____________________________________________________________
 AliITSRecPointU::AliITSRecPointU():
     AliITSRecPoint(),
-    fModule(0)
+    fModule(0),
+    fNTracksIdMC(0)
 {
  //
  // Default constructor
  // 
+ for(Int_t i=0; i<kMaxLab ; i++) {
+    fTrackIdMC[i]=-3;
+ }
 }
 //_____________________________________________________________
 AliITSRecPointU::AliITSRecPointU(const AliITSRecPointU& pt):
     AliITSRecPoint(pt),
-    fModule(pt.fModule)
+    fModule(pt.fModule),
+    fNTracksIdMC(pt.fNTracksIdMC)
 {
   //
   // Copy constructor
   //
+  for(Int_t i=0; i<kMaxLab ; i++) {
+    fTrackIdMC[i]=pt.fTrackIdMC[i];
+  }
 }
 //______________________________________________________________________
 AliITSRecPointU& AliITSRecPointU::operator=(const AliITSRecPointU& source)
@@ -51,3 +59,38 @@ AliITSRecPointU& AliITSRecPointU::operator=(const AliITSRecPointU& source)
   return *this;
 
 }
+
+//______________________________________________________________________________
+void AliITSRecPointU::AddTrackID(Int_t tid) { 
+  // 
+  // Add an MC label (track ID) to the "expanded list"
+  //
+  if (fNTracksIdMC==kMaxLab) {
+    AliWarning("Max. numbers of labels reached!"); 
+  } else {
+    fTrackIdMC[fNTracksIdMC]=tid; 
+    fNTracksIdMC++;
+  } 
+}
+
+//______________________________________________________________________________
+void AliITSRecPointU::Print(Option_t* /*option*/) const
+{
+  // Print cluster information.
+  
+  printf("AliITSRecPointU pos=(%.4f, %.4f, %.4f), s_y2=%f, s_z2=%f, s_yz=%f, vol=%hu\n",
+         GetX(), GetY(), GetZ(), GetSigmaY2(), GetSigmaZ2(), GetSigmaYZ(), GetVolumeId());
+  printf("      MC Track Ids =(");
+  if (kMaxLab<=fNTracksIdMC) {
+    for (Int_t i=0; i<kMaxLab; i++) { printf("%d,",fTrackIdMC[i]); }
+  } else {
+    for (Int_t i=0; i<fNTracksIdMC; i++) { printf("%d,",fTrackIdMC[i]); }
+  }  
+  printf(")\n");
+  Float_t g[3];
+  if (GetGlobalXYZ(g))
+    printf("    global_pos=(%.4f, %.4f, %.4f)\n", g[0], g[1], g[2]);
+  
+}
+
+

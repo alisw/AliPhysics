@@ -56,11 +56,10 @@ ClassImp(AliITSUpgradeReconstructor)
   fDigits = new TObjArray(fNlayers);
   fDigits->SetOwner(kTRUE);
   for(Int_t iLay =0; iLay<fNlayers; iLay++) fDigits->AddAt(new TClonesArray("AliITSDigitUpgrade",5000),iLay);
-  AliInfo("    ************* Using the upgrade reconstructor! ****** ");
-
-
+  AliInfo("    ************* Using the ITS upgrade reconstructor! ****** ");
 
 }//AliITSReconstructor
+
 //-----------------------------------------------------------------------
 AliITSUpgradeReconstructor::~AliITSUpgradeReconstructor(){
   //Destructor
@@ -129,19 +128,20 @@ AliTracker* AliITSUpgradeReconstructor::CreateTracker() const
   // 
 
   if(GetRecoParam()->GetTrackerSAOnly()){
-    AliITStrackerUpgrade *trackUp = new AliITStrackerUpgrade(fNlayers);
-    if(GetRecoParam()->GetTrackerSAOnly()) trackUp->SetSAFlag(kTRUE);
-    if(trackUp->GetSAFlag())AliDebug(1,"Tracking Performed in ITS only\n");
+    AliITStrackerUpgrade *trackerUp = new AliITStrackerUpgrade(fNlayers);
+    trackerUp->SetSAFlag(kTRUE); 
+    if(trackerUp->GetSAFlag()) AliDebug(1,"Tracking Performed in ITS only\n");
     if(GetRecoParam()->GetInwardFindingSA()){
-      trackUp->SetInwardFinding();
-      trackUp->SetInnerStartLayer(GetRecoParam()->GetInnerStartLayerSA());
+      trackerUp->SetInwardFinding();
+      trackerUp->SetInnerStartLayer(GetRecoParam()->GetInnerStartLayerSA());
     }else{
-      trackUp->SetOutwardFinding();
-      trackUp->SetOuterStartLayer(GetRecoParam()->GetOuterStartLayerSA());
+      trackerUp->SetOutwardFinding();
+      trackerUp->SetOuterStartLayer(GetRecoParam()->GetOuterStartLayerSA());
     }
-    trackUp->SetMinNPoints(GetRecoParam()->GetMinNPointsSA());
-    return trackUp;
+    trackerUp->SetMinNPoints(GetRecoParam()->GetMinNPointsSA());
+    return trackerUp;
   } else {
+    AliDebug(1,"Tracking Performed in ITS using TPC track as seed\n");
     AliITStrackerU *t = new AliITStrackerU();
     return t;
   }

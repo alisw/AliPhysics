@@ -4,7 +4,7 @@ void readDigits(){
   gSystem->Load("libITSUpgradeSim");
   gROOT->SetStyle("Plain");
 
-  const Int_t nLayers = 6;
+  const Int_t nLayers = 7;
   Int_t nbins=100;
   Int_t xmin=0;
   Int_t xmax=50000;//00*1e-09;
@@ -17,8 +17,6 @@ void readDigits(){
     hNelDig[i] = new TH1D(Form("hNelDig%i",i),Form("electron distribution in Digits [ Layer %i] ",i),nbins,xmin,xmax);
     hNelDig[i]->SetXTitle("N electrons");
   }
-
-  const Int_t layers = 6;
 
   gAlice=NULL;
   AliRunLoader* runLoader = AliRunLoader::Open("galice.root");
@@ -36,13 +34,13 @@ void readDigits(){
 
   //SDIGITS INIT
   TTree * sDigTree = 0x0;
-  TObjArray *sDigList= new TObjArray(layers);
-  for(Int_t i=0; i<layers; i++) sDigList->AddAt(new TClonesArray("AliITSDigitUpgrade"),i);
+  TObjArray *sDigList= new TObjArray(nLayers);
+  for(Int_t i=0; i<nLayers; i++) sDigList->AddAt(new TClonesArray("AliITSDigitUpgrade"),i);
 
   //DIGITS INIT
   TTree * digTree = 0x0;
-  TObjArray *digList= new TObjArray(layers);
-  for(Int_t i=0; i<layers; i++) digList->AddAt(new TClonesArray("AliITSDigitUpgrade"),i);
+  TObjArray *digList= new TObjArray(nLayers);
+  for(Int_t i=0; i<nLayers; i++) digList->AddAt(new TClonesArray("AliITSDigitUpgrade"),i);
 
   printf("N Events : %i \n",(Int_t)runLoader->GetNumberOfEvents());
 
@@ -53,7 +51,7 @@ void readDigits(){
     sDigTree=dl->TreeS();
     digTree=dl->TreeD();
 
-    for(Int_t ilayer=0; ilayer<layers; ilayer ++) {
+    for(Int_t ilayer=0; ilayer<nLayers; ilayer ++) {
       digTree->SetBranchAddress(Form("Layer%d",ilayer),&(*digList)[ilayer]);
       sDigTree->SetBranchAddress(Form("Layer%d",ilayer),&(*sDigList)[ilayer]);
     }
@@ -63,7 +61,7 @@ void readDigits(){
     digTree->GetEntry(0);
     sDigTree->GetEntry(0);
 
-    for(Int_t il=0; il<layers; il++){
+    for(Int_t il=0; il<nLayers; il++){
       TClonesArray *pArrDig= (TClonesArray*)digList->At(il);
       TClonesArray *pArrSdig= (TClonesArray*)sDigList->At(il);
       for(Int_t isdentry=0;  isdentry< pArrSdig->GetEntries(); isdentry++) {
@@ -77,17 +75,18 @@ void readDigits(){
 	cout << " --- Digit ---"<<endl;
 	AliITSDigitUpgrade *pDig = (AliITSDigitUpgrade*)pArrDig->At(ientry); 
 	hNelDig[pDig->GetLayer()]->Fill(pDig->GetNelectrons()); 
-	pDig->PrintInfo();
+	//	pDig->PrintInfo();
       }
     }
 
   }//event loop
-  TCanvas *cSd = new TCanvas("cSd","Summable Digits",1000,800);
-  cSd->Divide(3,2);
-  TCanvas *cD = new TCanvas("cD","Digits",1000,800);
-  cD->Divide(3,2);
 
-  for(Int_t ip =1; ip<=6; ip++){
+  TCanvas *cSd = new TCanvas("cSd","Summable Digits",1000,800);
+  cSd->Divide(3,3);
+  TCanvas *cD = new TCanvas("cD","Digits",1000,800);
+  cD->Divide(3,3);
+
+  for(Int_t ip =1; ip<=nLayers; ip++){
     cSd->cd(ip);
     hNelSDig[ip-1]->Draw();
     cD->cd(ip);

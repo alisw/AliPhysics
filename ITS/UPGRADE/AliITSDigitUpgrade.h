@@ -15,7 +15,7 @@
 /* $Id$ */
 
 #include <AliDigit.h>
-
+#include <TArrayI.h>
 //______________________________________________________________________
 class AliITSDigitUpgrade: public AliDigit {
 
@@ -25,23 +25,29 @@ class AliITSDigitUpgrade: public AliDigit {
   AliITSDigitUpgrade(ULong_t pixid, Float_t eloss);
   AliITSDigitUpgrade(const AliITSDigitUpgrade &d); //copy ctor
 
-  virtual ~AliITSDigitUpgrade(){/*destructor*/;}
+  virtual ~AliITSDigitUpgrade() {/*destructor*/};
   //____________________________________________________________________________________________________
     
+  enum {kMaxLab=12}; // maximum number of MC labels associated to the digit (4 times as much as can be stored in the "mother class")
 
-  void AddTidOffset(Int_t offset) {for(Int_t i=0; i<3; i++) if (fTracks[i]>0) fTracks[i]+=offset;} //needed for merging
+  void AddTidOffset(Int_t offset) {for(Int_t i=0; i<kMaxLab; i++) if (fTrackIdMC[i]>-1) fTrackIdMC[i]+=offset;} //needed for merging
     
   // setters
        
   void SetSignal(Float_t sig) {fSignal = sig;}
   void SetLayer(Int_t layer) {fNLayer = layer;}
   void SetModule(Int_t module) {fModule = module ;}
+  void SetNTracksIdMC(Int_t nLabels) {fNTracksIdMC = nLabels;}
   void SetNelectrons(Double_t nele) {fNelectrons = nele;}
-  void SetTrackID(Int_t tid) {fTracks[0]=tid;}
-  void SetPixId(ULong_t nx, ULong_t nz) {fPixId = 100000*nx + nz ;}
+
+
+  void SetTrackID(Int_t tid) {fTrackIdMC[0]=tid; }
+  void SetTids(Int_t tids[kMaxLab]){ for(Int_t i=0; i<kMaxLab; i++) fTrackIdMC[i]=tids[i];} // tracks participating to form the digit
+  void AddTrackID(Int_t tid); 
+  void SetPixId(ULong_t nx, ULong_t nz) {fPixId = 100000*nx + nz;}
   void SetPixId(ULong_t pixid){fPixId = pixid;}
-  void SetTids(Int_t tids[3]){ for(Int_t i=0; i<3; i++) fTracks[i]=tids[i];} // tracks participating to form the digit
-  void SetSignalID(Float_t eloss[3]){for(Int_t i=0; i< 3; i++) fSignalID[i]=eloss[i];}
+
+  void SetSignalID(Float_t eloss[kMaxLab]){for(Int_t i=0; i< kMaxLab; i++) fSignalID[i]=eloss[i];}
 
   // getters
     
@@ -52,9 +58,12 @@ class AliITSDigitUpgrade: public AliDigit {
   ULong_t  GetPixId(){return fPixId;}
   Int_t    GetxPixelNumber() const {return fPixId/100000;}
   Int_t    GetzPixelNumber() const {return fPixId%100000;}
+  Int_t    GetNTracksIdMC() const {return fNTracksIdMC;}
+  Int_t*   GetTracks() {return fTrackIdMC; }
+  Int_t    GetTrackID(Int_t ipart)  {if(ipart<0 || ipart>=kMaxLab) return -1; else return fTrackIdMC[ipart];}
+  Float_t  GetSignalID(Int_t ipart) {if(ipart<0 || ipart>=kMaxLab) return -1; else return fSignalID[ipart];}
     
   void GetPosition(Int_t ilayer, Int_t nx, Int_t nz, Double_t &xloc, Double_t &zloc);
-  Float_t GetSignalID(Int_t ipart) {if(ipart<0 || ipart >2) return -1; else return fSignalID[ipart];}
     
   void PrintInfo(); 
   inline Int_t   Compare     (const TObject *pObj)const;
@@ -65,28 +74,38 @@ class AliITSDigitUpgrade: public AliDigit {
   ULong_t fPixId;
   Float_t fSignal;   // Signal as Eloss in the medium
   Int_t fNLayer;     
-  Int_t fModule;
+  Int_t fModule;     
   Double_t fNelectrons; 
-  Float_t fSignalID[3];
+  Int_t fNTracksIdMC;
+  Int_t fTrackIdMC[kMaxLab];  // MC track labels 
+  Float_t fSignalID[kMaxLab];
+  
 
-    
+ private:
+  AliITSDigitUpgrade &operator=(const AliITSDigitUpgrade &);    // not implemented
+
+
   ClassDef(AliITSDigitUpgrade,3)   // Simulated digit object for ITS upgrade
 
-    };
+
+
+};
 #endif
+
 Int_t AliITSDigitUpgrade::Compare(const TObject *pObj) const
 {
   // Arguments: pObj - pointer to object to compare with
   //        
 
   Int_t result = -1;
-   if (fModule>((AliITSDigitUpgrade*)pObj)->GetModule()) result=1;      
-
+  if (fModule>((AliITSDigitUpgrade*)pObj)->GetModule()) result=1;      
+  
   else  if(fModule==((AliITSDigitUpgrade*)pObj)->GetModule()){
-   if     (fPixId==((AliITSDigitUpgrade*)pObj)->GetPixId()) result=0;
-   else if(fPixId >((AliITSDigitUpgrade*)pObj)->GetPixId()) result=1;
-   }
+    if     (fPixId==((AliITSDigitUpgrade*)pObj)->GetPixId()) result=0;
+    else if(fPixId >((AliITSDigitUpgrade*)pObj)->GetPixId()) result=1;
+  }
   return result;
+
 }
 
 

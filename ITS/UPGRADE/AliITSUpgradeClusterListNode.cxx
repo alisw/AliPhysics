@@ -37,7 +37,7 @@ AliITSUpgradeClusterListNode::AliITSUpgradeClusterListNode():
   fLastDigitLabel(0),
   fNext(NULL)
 {
-for(Int_t i=0; i < 10; i++) fDigitLabel[i]=-2;
+for(Int_t i=0; i < kMaxLab; i++) fDigitLabel[i]=-2;
 }
 
 AliITSUpgradeClusterListNode::AliITSUpgradeClusterListNode(Float_t col, Float_t row, UShort_t size, UShort_t widthZ, UShort_t widthPhi, UShort_t type, UShort_t charge, AliITSUpgradeClusterListNode* next):
@@ -51,7 +51,7 @@ AliITSUpgradeClusterListNode::AliITSUpgradeClusterListNode(Float_t col, Float_t 
   fLastDigitLabel(0),
   fNext(next)
 {
-for(Int_t i=0; i < 10; i++) fDigitLabel[i]=-2;
+for(Int_t i=0; i < kMaxLab; i++) fDigitLabel[i]=-2;
 
 }
 
@@ -67,7 +67,7 @@ AliITSUpgradeClusterListNode::AliITSUpgradeClusterListNode(const AliITSUpgradeCl
   fNext(obj.fNext)
 {
   // copy constructor
-for(Int_t i=0; i< 10; i++) fDigitLabel[i]=obj.fDigitLabel[i];
+for(Int_t i=0; i< kMaxLab; i++) fDigitLabel[i]=obj.fDigitLabel[i];
 }
 
 AliITSUpgradeClusterListNode::~AliITSUpgradeClusterListNode() 

@@ -125,9 +125,10 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
   
   static Int_t GetErrorOrigRecPoint(const AliITSRecPointU*cl,
                                     Float_t &erry,Float_t &errz,Float_t &covyz);
-  static void GetNTeor(Int_t layer,const AliITSRecPointU* cl,
-                       Float_t tgl,Float_t tgphitr,
-                       Float_t &ny,Float_t &nz);
+  //  static void GetNTeor(Int_t layer,const AliITSRecPointU* cl,
+  //                       Float_t tgl,Float_t tgphitr,
+  //                       Float_t &ny,Float_t &nz);
+
   static const Int_t fgMaxNLayer = 8; //max number of layers in ITSUpgrade
   Int_t fNLayers;//number of layer in ITSUpgrade
   Double_t fPhiEstimate; //Estimation of phi angle on next layer

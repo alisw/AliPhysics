@@ -56,7 +56,7 @@ class AliITSupgrade : public AliITS //TObject-TNamed-AliModule-AliDetector-AliIT
   //create containers++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   void     HitCreate()  	   {if(fHits)return; fHits=new TClonesArray("AliITShit"); fNhits=0;     }//create hits list 
 
-  TObjArray*      SDigitsList()            const{return fSdigits;}//get digits list for all layers
+  TObjArray*      SDigitsList()            const{return fSdigits;} //get digits list for all layers
   TClonesArray*   SDigitsList(Int_t layer) const{return fSdigits ? (TClonesArray *)fSdigits->At(layer):0;}//get sdigits list for a layer
   void            SDigitsCreate()            {if (fSdigits) return; 
     fSdigits=new  TObjArray(fNlayers);

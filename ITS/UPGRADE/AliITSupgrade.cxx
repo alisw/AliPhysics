@@ -104,9 +104,9 @@ AliITSupgrade::AliITSupgrade(const char *name,const char *title, Bool_t isBeamPi
 
   // adding beam pipe upgrade
   if(isBeamPipe){
-    fRadiusBP = 2.9;
+    fRadiusBP = 2.0;
     fWidthBP = 0.08;
-    fHalfLengthBP = halfL[0];
+    fHalfLengthBP = 400;
   }
 
   // setting the geonetry parameters and the segmentation
@@ -366,10 +366,10 @@ TGeoVolumeAssembly * AliITSupgrade::CreateVol()
     }
   }
   
-
+  
   if(fBeampipe) {
     TGeoVolume *beampipe=gGeoManager->MakeTube("BeamPipe", be   ,    fRadiusBP   ,  fRadiusBP+ fWidthBP ,  fHalfLengthBP  ); //upgraded situation
-     vol->AddNode(beampipe,0);
+     vol->AddNode(beampipe,fNlayers);
    }
   return vol;
 }
@@ -399,7 +399,7 @@ void AliITSupgrade::SetFullSegmentation(TArrayD xsize,TArrayD zsize){
 }
 //_________________________________________________________________________________________________
 void AliITSupgrade::StepHistory()
-{
+{ 
   // This methode is invoked from StepManager() in order to print out
   TString volumeName=gMC->CurrentVolName();
   if(!volumeName.Contains("Silicon")) return;
@@ -416,13 +416,14 @@ void AliITSupgrade::StepHistory()
   default:           sParticle="not known" ;break;
   }
 
-  TString flag="fanny combination";
-  if(gMC->IsTrackAlive())
+  TString flag="funny combination";
+  if(gMC->IsTrackAlive()) {
     if(gMC->IsTrackEntering())      flag="enters to";
     else if(gMC->IsTrackExiting())  flag="exits from";
     else if(gMC->IsTrackInside())   flag="inside";
     else if(gMC->IsTrackStop())     flag="stopped in";
-  
+  }
+
   Int_t vid=0,copy=0;
   TString path=gMC->CurrentVolName(); path.Prepend("-");path.Prepend(gMC->CurrentVolOffName(1));//current volume and his mother are always there
   vid=gMC->CurrentVolOffID(2,copy);  if(vid) {path.Prepend("-");path.Prepend(gMC->VolName(vid));}
@@ -462,7 +463,8 @@ void AliITSupgrade::StepHistory()
 //______________________________________________________
 void AliITSupgrade::Hits2SDigits(){
   
-  // Interface method ivoked from AliSimulation to create a list of sdigits corresponding to list of hits. Every hit generates one or more sdigits.
+  // Interface method invoked from AliSimulation to create a list of sdigits corresponding to list of hits. 
+  // Every hit generates one or more sdigits.
   // Arguments: none
   //   Returns: none
   AliDebug(1,"Start Hits2SDigits.");
@@ -480,8 +482,8 @@ void AliITSupgrade::Hits2SDigits(){
       }
       SetTreeAddress();
       Int_t nSdigit[10]; for(Int_t i=0;i<10;i++)  nSdigit[i] =0; 
-      for(Int_t iEnt=0;iEnt<GetLoader()->TreeH()->GetEntries();iEnt++){//prims loop
-        GetLoader()->TreeH()->GetEntry(iEnt);     
+      for(Int_t iEnt=0;iEnt<GetLoader()->TreeH()->GetEntries();iEnt++){ // prims loop
+        GetLoader()->TreeH()->GetEntry(iEnt);    
         Hit2SumDig(Hits(),SDigitsList(),nSdigit);//convert this hit to list of sdigits  
       }//prims loop
       GetLoader()->TreeS()->Fill();
@@ -500,18 +502,21 @@ void AliITSupgrade::Hit2SumDig(TClonesArray *hits,const TObjArray *pSDig, Int_t 
   //   Returns: none
   
   AliDebug(1,"Start Hit2SumDig");
-  
-  
+    
   if(!fSegmentation){    
     AliDebug(1,"Segmentation Not inizialized!!");
     return ;
   }
-  
+
   TClonesArray *pSdigList[8]; // is is the max number of layers allowed in the tracking 
   for(Int_t il=0; il<8; il++) pSdigList[il]=0x0; 
+
   for(Int_t i=0;i<fNlayers;i++){ 
     pSdigList[i]=(TClonesArray*)(*pSDig)[i];
-    if(pSdigList[i]->GetEntries()!=0) AliErrorClass("Some of sdigits lists is not empty");         //in principle those lists should be empty 
+    if(pSdigList[i]->GetEntries()!=0 && nSdigit[i]==0) {
+      AliDebug(1,Form("Entries of pSdigList %d;   layer: %d,",pSdigList[i]->GetEntries(),i));
+      AliErrorClass(" -> Some of sdigits lists is not empty");         //in principle those lists should be empty 
+    }
   }
   
   for(Int_t iHit=0;iHit<hits->GetEntries();iHit++){         //hits loop
@@ -525,6 +530,7 @@ void AliITSupgrade::Hit2SumDig(TClonesArray *hits,const TObjArray *pSDig, Int_t 
     digit.SetNelectrons(hit->GetIonization()/(3.62*1e-09));
     digit.SetLayer(fSegmentation->GetLayerFromIdIndex(hit->GetModule()));
     digit.SetModule(fSegmentation->GetModuleFromIdIndex(hit->GetModule()));//set the module (=sector) of ITSupgrade 
+    
     digit.SetTrackID(hit->GetTrack()); 
     
     Int_t xpix = 999;
@@ -532,7 +538,7 @@ void AliITSupgrade::Hit2SumDig(TClonesArray *hits,const TObjArray *pSDig, Int_t 
     fSegmentation->DetToPixID(xz[0], xz[1],fSegmentation->GetLayerFromIdIndex(hit->GetModule()), xpix, zpix);
     digit.SetPixId(xpix,zpix);
     new((*pSdigList[fSegmentation->GetLayerFromIdIndex(hit->GetModule())])[nSdigit[fSegmentation->GetLayerFromIdIndex(hit->GetModule())]++]) AliITSDigitUpgrade(digit);
-    
+
   }
   
   AliDebug(1,"Stop Hit2SumDig.");

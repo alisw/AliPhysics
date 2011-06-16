@@ -20,14 +20,16 @@ class AliITSUpgradeClusterList {
 
  public:
   AliITSUpgradeClusterList();
- AliITSUpgradeClusterList(AliITSUpgradeClusterListNode* first,UInt_t nrEntries);
+  AliITSUpgradeClusterList(AliITSUpgradeClusterListNode* first,UInt_t nrEntries);
   AliITSUpgradeClusterList(const AliITSUpgradeClusterList& ilist);
   virtual ~AliITSUpgradeClusterList();
   AliITSUpgradeClusterList& operator=(const AliITSUpgradeClusterList& ilist);
 
   void                   Clear();
   AliITSUpgradeClusterList*     Clone() const;
- Bool_t                 Insert(Float_t col, Float_t row, UShort_t size, UShort_t widthZ, UShort_t widthPhi, UShort_t type, UShort_t charge, Int_t labels[12]);
+
+  enum {kMaxLab=12}; // maximum number of MC labels associated to the cluster
+  Bool_t  Insert(Float_t col, Float_t row, UShort_t size, UShort_t widthZ, UShort_t widthPhi, UShort_t type, UShort_t charge, Int_t labels[24*kMaxLab]);
 
   UInt_t   GetNrEntries() const {return fNrEntries;}
   Float_t  GetColIndex(UInt_t index);

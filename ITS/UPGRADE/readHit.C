@@ -13,13 +13,11 @@ void readHit(){
 
   Int_t nbins=100;
   Double_t xmin=0;
-  Double_t xmax=0.0001;//00*1e-09;
+  Double_t xmax=1e-04;
 
- AliITSsegmentationUpgrade *segmentation = new AliITSsegmentationUpgrade();
- const Int_t nLayers = segmentation->GetNLayers();
+  const Int_t nLayers = 8;
 
-  TH1D **hDeLoss;
-  hDeLoss = new TH1D[nLayers];
+  TH1D *hDeLoss[nLayers];
   for(Int_t i=0; i< nLayers; i++ ) {
     hDeLoss[i] = new TH1D(Form("hDeLossl%i",i),Form("E loss distribution [ Layer %i] ",i),nbins,xmin,xmax);
     hDeLoss[i]->SetXTitle("GeV");
@@ -61,8 +59,9 @@ void readHit(){
 	  pHit->GetPositionG(xg,yg,zg);
 	  xyGlob->Fill(xg,yg);
 	  zGlob->Fill(zg);
-          Int_t layer = segmentation->GetLayerFromIdIndex(pHit->GetModule());
-          hDeLoss[layer]->Fill(pHit->GetIonization());
+	  Int_t module = pHit->GetModule();
+	  cout<<module<<" "<<(module%100)<<endl;
+	  hDeLoss[pHit->GetModule()%100]->Fill(pHit->GetIonization());
 	} // is primary
       }//loop hit 
     }//entryloopHitList
@@ -78,7 +77,7 @@ void readHit(){
 
   TCanvas *c = new TCanvas("c","E loss  distribution per layer",1000,800);
   c->Divide(3,2);
-  for(Int_t ip =1; ip<=6; ip++){
+  for(Int_t ip =1; ip<=nLayers; ip++){
     c->cd(ip);
     hDeLoss[ip-1]->Draw();
   }

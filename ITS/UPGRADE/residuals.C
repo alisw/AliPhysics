@@ -111,9 +111,9 @@ void residuals(){
       xz[0]= recp->GetDetLocalX(); //gets fXloc
       xz[1]= recp->GetDetLocalZ();   //gets fZloc
       segmentation2->DetToGlobal(il,recp->GetModule(),xz[0], xz[1],xr,yr,zr);
-      for(Int_t iLabel =0; iLabel<3; iLabel++){
-	if(recp->GetLabel(iLabel)<0) continue; 
-	trackRefTree->GetEntry(stack->TreeKEntry(recp->GetLabel(iLabel)));  	
+      for(Int_t iLabel =0; iLabel<12; iLabel++){
+	if(recp->GetTrackID(iLabel)<0) continue; 
+	trackRefTree->GetEntry(stack->TreeKEntry(recp->GetTrackID(iLabel)));  	
 	Int_t nref=trackRef->GetEntriesFast();
 	for(Int_t iref =0; iref<nref; iref++){
 	  Double_t x,y,z=0.;
@@ -121,7 +121,7 @@ void residuals(){
 	  AliTrackReference *trR = (AliTrackReference*)trackRef->At(iref);
 	  if(!trR) continue;
 	  if(trR->DetectorId()!=AliTrackReference::kITS) continue;
-	  if(!stack->IsPhysicalPrimary(recp->GetLabel(iLabel))) continue;   
+	  if(!stack->IsPhysicalPrimary(recp->GetTrackID(iLabel))) continue;   
 	  Int_t lay = GetLayer(trR, seg);    
 	  if(TMath::Abs(lay-il)>0.5) continue;          
 	  x=trR->X();

@@ -170,7 +170,8 @@ Int_t AliITStrackerUpgrade::Clusters2Tracks(AliESDEvent *event){
   // can be set via AliReconstruction::SetOption("ITS","onlyITS")
   Int_t rc=0;
   if(!fITSStandAlone){
-    rc=AliITStrackerMI::Clusters2Tracks(event);
+    rc=AliITStrackerMI::Clusters2Tracks(event); // should not be used !!
+    // Note standalone tracking is implememted in "AliITStrackerU"
   }
   else {
     AliDebug(1,"Stand Alone flag set: doing tracking in ITS alone\n");
@@ -178,7 +179,7 @@ Int_t AliITStrackerUpgrade::Clusters2Tracks(AliESDEvent *event){
   if(!rc){
     rc=FindTracks(event,kFALSE);
     if(AliITSReconstructor::GetRecoParam()->GetSAUseAllClusters()==kTRUE) {
-      rc=FindTracks(event,kTRUE);
+      rc=FindTracks(event,kTRUE); // eventually a 2nd time ??????
     }
   }
   return rc;
@@ -274,13 +275,13 @@ Int_t AliITStrackerUpgrade::FindTracks(AliESDEvent* event,Bool_t useAllClusters)
 
   // Track finder using the ESD object
   AliDebug(2,Form(" field is %f",event->GetMagneticField()));
-  AliDebug(2,Form("SKIPPING %d %d %d %d %d %d",ForceSkippingOfLayer(0),ForceSkippingOfLayer(1),ForceSkippingOfLayer(2),ForceSkippingOfLayer(3),ForceSkippingOfLayer(4),ForceSkippingOfLayer(5)));
+
   if(!fITSclusters){
     Fatal("FindTracks","ITS cluster tree is not accessed - Abort!!!\n Please use method SetClusterTree to pass the pointer to the tree\n");
     return -1;
   }
 
-  //Reads event and mark clusters of traks already found, with flag kITSin
+  // Reads event and mark clusters of tracks already found, with flag kITSin
   Int_t nentr=event->GetNumberOfTracks();
   if(!useAllClusters) {
     while (nentr--) {
@@ -453,14 +454,14 @@ Int_t AliITStrackerUpgrade::FindTracks(AliESDEvent* event,Bool_t useAllClusters)
             }
           }
 	  if(layOK>=minNPoints){
-	    AliDebug(2,Form("---NPOINTS: %d; MAP: %d %d %d %d %d %d\n",layOK,nClusLay[0],nClusLay[1],nClusLay[2],nClusLay[3],nClusLay[4],nClusLay[5]));
+	    //    AliDebug(2,Form("---NPOINTS: %d; MAP: %d %d %d %d %d %d %d\n",layOK,nClusLay[0],nClusLay[1],nClusLay[2],nClusLay[3],nClusLay[4],nClusLay[5],nClusLay[6]));
             AliITStrackV2* tr2 = 0;
             Bool_t onePoint = kFALSE;
 	    tr2 = FitTrack(&trs,primaryVertex,onePoint);
 	    if(!tr2){
 	      continue;
 	    }
-	    AliDebug(2,Form("---NPOINTS fit: %d\n",tr2->GetNumberOfClusters()));
+	    //	    AliDebug(2,Form("---NPOINTS fit: %d\n",tr2->GetNumberOfClusters()));
 
 	    StoreTrack(tr2,event,useAllClusters);
 	    ntrack++;
@@ -483,7 +484,6 @@ Int_t AliITStrackerUpgrade::FindTracks(AliESDEvent* event,Bool_t useAllClusters)
 AliITStrackV2* AliITStrackerUpgrade::FitTrack(AliITStrackU* tr,Double_t *primaryVertex,Bool_t onePoint) {
 
   const Int_t kMaxClu=AliITStrackU::kMaxNumberOfClusters;
-
   
   static Int_t clind[fgMaxNLayer][kMaxClu];
   static Int_t clmark[fgMaxNLayer][kMaxClu];
@@ -675,15 +675,20 @@ AliITStrackV2* AliITStrackerUpgrade::FitTrack(AliITStrackU* tr,Double_t *primary
     return 0;
   }
 
-  CookLabel(otrack,0.); //MI change - to see fake ratio
+  //  CookLabel(otrack,0.); //MI change - to see fake ratio
+  //  printf("  label from CookLabel: %d  \n   ",otrack->GetLabel());
+
   Int_t label=FindLabel(otrack);
   otrack->SetLabel(label);
+  //  printf("  label from FindLabel: %d  \n   ",otrack->GetLabel());
 
   Int_t indexc[fNLayers];
   for(Int_t i=0;i<fNLayers;i++) indexc[i]=0;
   for(Int_t nind=0;nind<otrack->GetNumberOfClusters();nind++){
     indexc[nind] = otrack->GetClusterIndex(nind);
   }      
+
+  
   //remove clusters of found track
   for(Int_t nlay=0;nlay<fNLayers;nlay++){
     for(Int_t cln=0;cln<otrack->GetNumberOfMarked(nlay);cln++){
@@ -693,6 +698,7 @@ AliITStrackV2* AliITStrackerUpgrade::FitTrack(AliITStrackU* tr,Double_t *primary
       fCluLayer[nlay]->Compress();
     }    
   }
+  
   return otrack;
 
 }
@@ -894,11 +900,13 @@ Int_t AliITStrackerUpgrade::FindTrackLowChiSquare() const {
 //__________________________________________________________
 Int_t AliITStrackerUpgrade::FindLabel(AliITStrackV2* track) const {
   //
+  // max number of labels in AliITSRecPointU is 24;
+  enum {kMaxLab=24};
 
-  Int_t labl[fNLayers][3];
-  Int_t cnts[fNLayers][3];
+  Int_t labl[fNLayers][kMaxLab];
+  Int_t cnts[fNLayers][kMaxLab];
   for(Int_t j=0;j<fNLayers;j++){
-    for(Int_t k=0;k<3;k++){
+    for(Int_t k=0;k<kMaxLab;k++){
       labl[j][k]=-2;
       cnts[j][k]=1;
     }
@@ -907,19 +915,20 @@ Int_t AliITStrackerUpgrade::FindLabel(AliITStrackV2* track) const {
   for(Int_t i=0;i<track->GetNumberOfClusters(); i++) {
     Int_t indexc = track->GetClusterIndex(i);
     AliITSRecPointU* cl = (AliITSRecPointU*)GetCluster(indexc);
-    AliDebug(2,Form(" cluster index %i  ",indexc));
+    //  AliDebug(2,Form("Layer %d; cluster index %i; MClabels=(%d,%d,%d) ",
+    //		    cl->GetLayer(),indexc,cl->GetLabel(0),cl->GetLabel(1),cl->GetLabel(2)));
     Int_t iLayer=cl->GetLayer();
-    for(Int_t k=0;k<3;k++){
-      labl[iLayer][k]=cl->GetLabel(k);
+    for(Int_t k=0;k<kMaxLab;k++){
+      labl[iLayer][k]=cl->GetTrackID(k);
       if(labl[iLayer][k]<0) iNotLabel++;
     }
   }
-  if(iNotLabel==3*track->GetNumberOfClusters()) return -2;
+  if(iNotLabel==kMaxLab*track->GetNumberOfClusters()) return -2; // No MC label found at all
 
   for(Int_t j1=0;j1<fNLayers; j1++) {
     for(Int_t j2=0; j2<j1;  j2++){
-      for(Int_t k1=0; k1<3; k1++){
-        for(Int_t k2=0; k2<3; k2++){
+      for(Int_t k1=0; k1<kMaxLab; k1++){
+        for(Int_t k2=0; k2<kMaxLab; k2++){
           if(labl[j1][k1]>=0 && labl[j1][k1]==labl[j2][k2] && cnts[j2][k2]>0){
             cnts[j2][k2]++;
             cnts[j1][k1]=0;
@@ -933,7 +942,7 @@ Int_t AliITStrackerUpgrade::FindLabel(AliITStrackV2* track) const {
   Int_t cntMax=0;
   Int_t label=-1;
   for(Int_t j=0;j<fNLayers;j++){
-    for(Int_t k=0;k<3;k++){
+    for(Int_t k=0;k<kMaxLab;k++){
       if(cnts[j][k]>cntMax && labl[j][k]>=0){
         cntMax=cnts[j][k];
         label=labl[j][k];
@@ -942,11 +951,36 @@ Int_t AliITStrackerUpgrade::FindLabel(AliITStrackV2* track) const {
   }
 
   Int_t lflag=0;
-  for(Int_t i=0;i<fNLayers;i++)
-    if(labl[i][0]==label || labl[i][1]==label || labl[i][2]==label) lflag++;
-  if(lflag<track->GetNumberOfClusters()) label = -label;
+  for(Int_t i=0;i<fNLayers;i++) {
+    Bool_t labelOkInLayer = kFALSE;
+    for(Int_t k=0;k<kMaxLab;k++){
+      if (labl[i][k]==label) {
+	labelOkInLayer=kTRUE;
+	break;
+      }
+    }
+    if(labelOkInLayer) lflag++;
+  }
+  if(lflag<track->GetNumberOfClusters()) {
+    if (label==0) {
+      label = -1; // to avoid label 0 which can not be identified as as fake with -0
+    } else {
+      label = -label;
+    }
+  }
+  if (label<0) {
+    for(Int_t i=0;i<track->GetNumberOfClusters(); i++) {
+      Int_t indexc = track->GetClusterIndex(i);
+      AliITSRecPointU* cl = (AliITSRecPointU*)GetCluster(indexc);
+      AliDebug(2,Form("Layer %d; cluster index %i; MClabels=(%d,%d,%d...) ",
+		      cl->GetLayer(),indexc,cl->GetTrackID(0),cl->GetTrackID(1),cl->GetTrackID(2)));
+    }
+  }
+
+
   return label;
 }
+
 //_____________________________________________________________________________
 void AliITStrackerUpgrade::SetCalculatedWindowSizes(Int_t n, Float_t phimin, Float_t phimax, Float_t lambdamin, Float_t lambdamax){
   // Set sizes of the phi and lambda windows used for track finding
@@ -1133,7 +1167,9 @@ Bool_t AliITStrackerUpgrade::RefitAtBase(Double_t xx,AliITStrackU *track,
     if (phi<0) phi+=TMath::TwoPi();//from 0 to 360 (rad) 
     else if (phi>=TMath::TwoPi()) phi-=TMath::TwoPi();//
 
-    Double_t alpha = fSegmentation->GetAlpha(fSegmentation->GetModule(phi));
+    Int_t trkModule = fSegmentation->GetModule(phi);
+
+    Double_t alpha = fSegmentation->GetAlpha(trkModule);
     if (!track->Propagate(alpha,r)) {
       return kFALSE;
     }
@@ -1144,10 +1180,16 @@ Bool_t AliITStrackerUpgrade::RefitAtBase(Double_t xx,AliITStrackU *track,
     Int_t idx=index[ilayer];
     if (idx>=0) { // cluster in this layer   
       Int_t cli = idx&0x0fffffff;
-      const AliITSRecPointU *cl=(AliITSRecPointU *)fLayers[ilayer]->GetCluster(cli);
+      AliITSRecPointU *cl=(AliITSRecPointU *)fLayers[ilayer]->GetCluster(cli);
 
       if (cl) {                                                                  
 	Int_t cllayer = (idx & 0xf0000000) >> 28;;                               
+       // edge effect correction 
+       /*
+        if(trkModule!=cl->GetModule()){
+	if (!track->Propagate(fSegmentation->GetAlpha(cl->GetModule()),fSegmentation->GetRadius(ilayer))) return kFALSE;
+        }
+       */
 	Double_t chi2=GetPredictedChi2MI(track,cl,cllayer);                      
 	if (chi2<maxchi2) {                                                      
 	  clAcc=cl;                                                              
@@ -1261,8 +1303,7 @@ Int_t AliITStrackerUpgrade::CorrectForLayerMaterial(AliITStrackU *t,
     mode=0;
   }
   Float_t  dir = (direction.Contains("inward") ? 1. : -1.);
-  Double_t r = 0.;
-  r=fSegmentation->GetRadius(layerindex);
+  Double_t r = fSegmentation->GetRadius(layerindex);
   Double_t deltar=(layerindex<2 ? 0.10*r : 0.05*r);
   Double_t rToGo=TMath::Sqrt(t->GetX()*t->GetX()+t->GetY()*t->GetY())-deltar*dir;
   Double_t xToGo;
@@ -1270,7 +1311,6 @@ Int_t AliITStrackerUpgrade::CorrectForLayerMaterial(AliITStrackU *t,
     return 0;
   }
   Int_t index=fNLayers*fCurrentEsdTrack+layerindex;
-
 
   Double_t xOverX0=0.0,x0=0.0,lengthTimesMeanDensity=0.0;
   Int_t nsteps=1;
@@ -1341,11 +1381,11 @@ Double_t AliITStrackerUpgrade::GetPredictedChi2MI(AliITStrackU* track, const Ali
   Float_t phi   = track->GetSnp();
   phi = TMath::Abs(phi)*TMath::Sqrt(1./((1.-phi)*(1.+phi)));
   GetError(layer,cluster,theta,phi,track->GetExpQ(),erry,errz,covyz);
-  AliDebug(2,Form(" chi2: tr-cl   %f  %f   tr X %f cl X %f",track->GetY()-cluster->GetY(),track->GetZ()-cluster->GetZ(),track->GetX(),cluster->GetX()));
+  AliDebug(3,Form(" chi2: tr-cl   %f  %f   tr X %f cl X %f",track->GetY()-cluster->GetY(),track->GetZ()-cluster->GetZ(),track->GetX(),cluster->GetX()));
   // Take into account the mis-alignment (bring track to cluster plane)
   Double_t xTrOrig=track->GetX();
   if (!track->Propagate(xTrOrig+cluster->GetX())) return 1000.;
-  AliDebug(2,Form(" chi2: tr-cl   %f  %f   tr X %f cl X %f",track->GetY()-cluster->GetY(),track->GetZ()-cluster->GetZ(),track->GetX(),cluster->GetX()));
+  AliDebug(3,Form(" chi2: tr-cl   %f  %f   tr X %f cl X %f",track->GetY()-cluster->GetY(),track->GetZ()-cluster->GetZ(),track->GetX(),cluster->GetX()));
   Double_t chi2 = track->GetPredictedChi2MI(cluster->GetY(),cluster->GetZ(),erry,errz,covyz);
   // Bring the track back to detector plane in ideal geometry
   // [mis-alignment will be accounted for in UpdateMI()]
@@ -1400,8 +1440,8 @@ Int_t AliITStrackerUpgrade::GetErrorOrigRecPoint(const AliITSRecPointU *cl,
   return 1;
 }
 //__________________________
-void AliITStrackerUpgrade::GetNTeor(Int_t layer,const AliITSRecPointU* /*cl*/,
-				    Float_t tgl,Float_t tgphitr,
+//void AliITStrackerUpgrade::GetNTeor(Int_t layer,const AliITSRecPointU* /*cl*/,
+/*				    Float_t tgl,Float_t tgphitr,
 				    Float_t &ny,Float_t &nz)
 {
   //
@@ -1431,7 +1471,8 @@ void AliITStrackerUpgrade::GetNTeor(Int_t layer,const AliITSRecPointU* /*cl*/,
   ny  = 6.6-2.7*tgphitr;
   nz  = 2.8-3.11*tgphitr+0.45*tgl;
   return;
-}
+  }*/
+
 //_________________________________________________________________
 Int_t AliITStrackerUpgrade::PropagateBack(AliESDEvent *event) {
   //--------------------------------------------------------------------
@@ -1517,8 +1558,12 @@ AliCluster *AliITStrackerUpgrade::GetCluster(Int_t index) const {
   //--------------------------------------------------------------------
   Int_t l=(index & 0xf0000000) >> 28;
   Int_t c=(index & 0x0fffffff) >> 0;
-  AliDebug(2,Form("index %i  cluster index %i layer %i", index,c,l));
-  return fLayers[l]->GetCluster(c);
+
+  AliCluster *cl = fLayers[l]->GetCluster(c);
+
+  //  AliDebug(2,Form("index %i; cluster index %i; layer %i; Pointer to cluster:%p", index,c,l,cl));
+
+  return cl;
 }
 //______________________________________________________________________________
 Int_t AliITStrackerUpgrade::CorrectForPipeMaterial(AliITStrackU *t, TString direction) {

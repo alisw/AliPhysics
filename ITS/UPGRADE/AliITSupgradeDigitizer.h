@@ -37,6 +37,8 @@ class AliITSupgradeDigitizer : public AliDigitizer //TObject-TNamed-TTask-AliDig
  
  protected:
  
+      enum {maxLab=12}; // maximum number of MC labels associated to the digit (4 times as much as can be stored in the "mother class")
+
       TArrayD fNxCells;
       TArrayD fNzCells;
       Short_t fNlayers;    

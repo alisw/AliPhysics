@@ -52,12 +52,14 @@ AliITSUpgradeClusterFinder::AliITSUpgradeClusterFinder() :
   fClusterList(0x0),
   fChargeArray(0x0),
   fRecPoints(0x0),
+  fNLayers(),
   fNSectors()
 { 
   //
   // Default constructor
   //
   AliITSsegmentationUpgrade *s = new AliITSsegmentationUpgrade();
+  fNLayers  = s->GetNLayers();
   fNSectors = s->GetNSectors();
   delete s;
   fClusterList = new AliITSUpgradeClusterList*[fNSectors];  
@@ -68,10 +70,8 @@ AliITSUpgradeClusterFinder::AliITSUpgradeClusterFinder() :
   fChargeArray = new TObjArray();
   fChargeArray->SetOwner(kTRUE);
   fRecPoints = new TClonesArray("AliITSRecPointU",3000);
-  fTmpLabel[0]=-5;
-  fTmpLabel[1]=-5;
-  fTmpLabel[2]=-5;
-  for(int il=0; il<10;il++) fLabels[il]=-5;
+  for (Int_t i=0; i<kMaxLab; i++) fTmpLabel[i]=-5;
+  for(int il=0; il<kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY*kMaxLab;il++) fLabels[il]=-5;
   for(int k=0; k<999999; k++){
     fHitCol[k]=999;
     fHitRow[k]=999;
@@ -89,21 +89,20 @@ void AliITSUpgradeClusterFinder::StartEvent() {
   NewEvent();
 }
 //___________________________________________________________________________________
-Int_t AliITSUpgradeClusterFinder::ProcessHit(Int_t module , UInt_t col, UInt_t row, UShort_t charge, Int_t label[3]) {
+Int_t AliITSUpgradeClusterFinder::ProcessHit(Int_t module , UInt_t col, UInt_t row, UShort_t charge, Int_t label[kMaxLab]) {
   //
   // Adds one pixel to the cluster 
   //
-  AliDebug(2,Form("module,col,row,charge,label(0,1,2) = %d,%d,%d,%d,(%d,%d,%d)\n",module ,col,row,charge,label[0],label[1],label[2])); 
+  AliDebug(2,Form("module,col,row,charge,label(0,1,2...) = %d,%d,%d,%d,(%d,%d,%d ...)\n",module ,col,row,charge,label[0],label[1],label[2])); 
   if (module>=fNSectors) {
-    AliError(Form("Out of bounds: module ,col,row, charge, label(0,1,2)= %d,%d,%d,%d,(%d,%d,%d)\n",module ,col,row,charge,label[0],label[1],label[2])); 
+    AliError(Form("Out of bounds: module ,col,row, charge, label(0,1,2...)= %d,%d,%d,%d,(%d,%d,%d...)\n",module ,col,row,charge,label[0],label[1],label[2])); 
     return 1;
   }
   // do we need to perform clustering on previous module?
   if (fOldModule!=-1 && (Int_t)module!=fOldModule) {
     //fChargeArray->AddLast(new TObjString(Form("%i %i %i %i %i %i",col,row,charge,label[0],label[1],label[2])));
     AliITSUPixelModule *pix = new AliITSUPixelModule(module,col, row, charge, label);
-    fChargeArray->AddLast(pix);
-    
+    fChargeArray->AddLast(pix);    
     DoModuleClustering(fOldModule,charge);
     NewModule();
   }
@@ -111,15 +110,15 @@ Int_t AliITSUpgradeClusterFinder::ProcessHit(Int_t module , UInt_t col, UInt_t r
   AliITSUPixelModule *pix = new AliITSUPixelModule(module,col, row, charge, label);
   fChargeArray->AddLast(pix);
   //  fChargeArray->AddLast(new TObjString(Form("%i %i %i %i %i %i",col,row,charge,label[0],label[1],label[2])));
-
+  
   fOldModule=module;
   fHitCol[fNhitsLeft]=col;
   fHitRow[fNhitsLeft]=row;
   fHits[col][row]=kTRUE;
-  fTmpLabel[0]=label[0];
-  fTmpLabel[1]=label[1];
-  fTmpLabel[2]=label[2];
+  for (Int_t i=0; i<kMaxLab; i++) 
+    fTmpLabel[i]=label[i];
   fNhitsLeft++;
+
   return 0;
 }
 //___________________________________________________________________________________
@@ -282,10 +281,14 @@ Int_t AliITSUpgradeClusterFinder::DoModuleClustering(Int_t module, UShort_t char
       AddLabelIndex(fColSum,fRowSum);
     }
     if (size>0) {
-      if(size>1) AliDebug(2,Form("DoModuleClustering, size %i , labels :  %i  %i  %i \n",size,fLabels[0],fLabels[1],fLabels[2]));
-      fClusterList[module]->Insert((Float_t)fColSum/size, (Float_t)fRowSum/size, size, GetClusterWidthZ(), GetClusterWidthPhi(), GetClusterType(size), fCharge,fLabels);
+      if(size>1) 
+	AliDebug(2,Form("DoModuleClustering, size %i , labels :  %i  %i  %i %i  %i  %i\n",
+			size,fLabels[0],fLabels[1],fLabels[2],fLabels[3],fLabels[4],fLabels[5]));
+      fClusterList[module]->Insert((Float_t)fColSum/size, (Float_t)fRowSum/size, size, 
+				   GetClusterWidthZ(), GetClusterWidthPhi(), 
+				   GetClusterType(size), fCharge,fLabels);
       fCharge=0;
-      for(Int_t i=0; i<kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY; i++) fLabels[i]=-5;
+      for(Int_t i=0; i<kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY*kMaxLab; i++) fLabels[i]=-5;
     }
     if (fNhitsLeft==0) break;
   }
@@ -733,46 +736,31 @@ void AliITSUpgradeClusterFinder::AddLabelIndex(UInt_t col, UInt_t row){
     AliITSUPixelModule *pix= (AliITSUPixelModule*)fChargeArray->At(entry);
     if(col!=pix->GetCol())continue;
     if(row!=pix->GetRow())continue;
-    Int_t label[3]={-1,-1,-1};
-    for(Int_t i=0;i<3;i++){
-      label[i] = pix->GetLabels(i);
+    Int_t label[kMaxLab];
+    for(Int_t i=0; i< kMaxLab; i++) label[i]=-1;
+    for(Int_t i=0;i<kMaxLab;i++){
+      label[i] = pix->GetLabel(i);
     }   
     SetLabels(label);
   }
 }
 //____________________________________________________
 
-void AliITSUpgradeClusterFinder::SetLabels(Int_t label[3]){
+void AliITSUpgradeClusterFinder::SetLabels(Int_t label[kMaxLab]){
   
   //Set the MC lables to the cluster
+  for(Int_t k=0; k<kMaxLab; k++){
+    if(label[k]<0) break; // digit label is dummy -> rest is dummy
+    for(Int_t i=0; i<kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY*kMaxLab; i++){
+      if (fLabels[i]==label[k]) 
+	break; // label already exists in the cluster
+      if (fLabels[i]<0) {// assign label to "cluster labels"
+	fLabels[i]=label[k];
+	break;
+      }
+    } // end "cluster label" loop
+  } // end "digit label" loop
 
-  Int_t position=0; 
-  Bool_t isAssigned[3]={kFALSE,kFALSE,kFALSE};
-  for(Int_t k=0; k<3; k++){
-    if(label[k]<0) continue;
-    for(Int_t i=0; i<kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY; i++){
-      if(position>=kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY) continue;
-      // if there is no label assigned and it is not present in previous labels
-      if(fLabels[position]<0) {
-        if(!isAssigned[k]) {
-	  fLabels[position]=label[k];
-	  isAssigned[k]=kTRUE;
-	}
-        position++;
-      }
-      else {
-	// check if this label has been already assigned, if this is the case, go to the next label[k]
-	if(fLabels[position]==label[k]) {
-	  isAssigned[k]=kTRUE;
-	  continue;
-	}
-	else {
-	  position++;
-	  continue;
-        } 
-      }
-    }
-  }
 }
 
 //____________________________________________________
@@ -802,6 +790,7 @@ void AliITSUpgradeClusterFinder::SetRecPointTreeAddress(TTree *treeR){
   } else AliError("No RecPoint branch available");
 
 }
+
 //____________________________________________________
 void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
   //
@@ -811,7 +800,7 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
   AliITSRecPointU  recpnt;
   Int_t nClusters =0;
   TClonesArray &lrecp = *fRecPoints;
-  for(Int_t ilayer=0; ilayer < segmentation->GetNLayers() ;ilayer ++){
+  for(Int_t ilayer=0; ilayer < fNLayers; ilayer ++){
     NewModule();
     TClonesArray *pArrDig= (TClonesArray*)digList->At(ilayer);
     StartEvent(); 
@@ -822,6 +811,7 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
       Int_t colz=dig->GetzPixelNumber();
       Int_t rowx=dig->GetxPixelNumber();
       Double_t hitcharge= (dig->GetNelectrons());
+      
       ProcessHit(dig->GetModule(),colz, rowx,(Short_t)hitcharge,dig->GetTracks());
     }//ientr
     FinishEvent();
@@ -834,8 +824,18 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
 	recpnt.SetQ(charge);
 	recpnt.SetLayer(ilayer);
 	recpnt.SetModule(module);
+	recpnt.SetNTracksIdMC(0);
 	Int_t *lab=GetLabels(module,nClu);
-	for(Int_t l=0; l<3; l++) {recpnt.SetLabel(lab[l],l);}
+	Int_t nLabels =0;
+	for (Int_t il=0; il<kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY*kMaxLab;il++) {
+	  if (lab[il]>-1) {
+	    nLabels++; // count how many labels have been sent
+	    recpnt.AddTrackID(lab[il]);
+	  }
+	}
+	if (nLabels>kMaxLab) 
+	  AliWarning(Form(" Not all MC labels are stored in the RecPoint (lay,mod)=(%d,%d): Skipping %d labels (out of %d)",ilayer,module,nLabels-kMaxLab,nLabels));
+	recpnt.SetNTracksIdMC(nLabels); // sets number of ALL label (even the ones which are skipped)
 
 	Double_t xzl2[2]={0.,0.};
 	Double_t xPixC2,zPixC2=0.;

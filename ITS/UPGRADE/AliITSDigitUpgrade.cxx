@@ -33,33 +33,72 @@ ClassImp(AliITSDigitUpgrade)
 					   fPixId(9999),
 					   fSignal(0),
 					   fNLayer(0),
-						fModule(0),
-					   fNelectrons(0)
-{for(Int_t i=0; i<3 ; i++) fSignalID[i]=-1;} //default creator
+					   fModule(0),
+					   fNelectrons(0),
+					   fNTracksIdMC(0)
+{
+  for(Int_t i=0; i<kMaxLab ; i++) {
+    fTrackIdMC[i]=-1;
+    fSignalID[i]=-1;
+  }
+} //default creator
 //_______________________________________________________________________
 AliITSDigitUpgrade::AliITSDigitUpgrade(Int_t *digits): AliDigit(digits),
 						       fPixId(9999), 
 						       fSignal(0),
 						       fNLayer(0),
-							fModule(0), 
-						       fNelectrons(0)
-{for(Int_t i=0; i<3 ; i++) fSignalID[i]=-1;} //standard creator digits only
+						       fModule(0), 
+						       fNelectrons(0),
+						       fNTracksIdMC(0)
+{
+  for(Int_t i=0; i<kMaxLab ; i++) {
+    fTrackIdMC[i]=-1;
+    fSignalID[i]=-1;
+  }
+} //default creator
 //____________________________________________________________________________________________________
 AliITSDigitUpgrade::AliITSDigitUpgrade(ULong_t pixid, Float_t eloss): AliDigit(),
 								      fPixId(pixid), 
 								      fSignal(eloss),
 								      fNLayer(0), 
-									fModule(0),
-								      fNelectrons(0)
-{for(Int_t i=0; i<3 ; i++) fSignalID[i]=-1;} //standard creator digits only
+								      fModule(0),
+								      fNelectrons(0),
+								      fNTracksIdMC(0)
+{
+  for(Int_t i=0; i<kMaxLab ; i++) {
+    fTrackIdMC[i]=-1;
+    fSignalID[i]=-1;
+  }
+} //standard creator digits only
 //____________________________________________________________________________________________________
 AliITSDigitUpgrade::AliITSDigitUpgrade(const AliITSDigitUpgrade &d):AliDigit(d),
 								    fPixId(d.fPixId),
 								    fSignal(d.fSignal),
 								    fNLayer(d.fNLayer), 
 								    fModule(d.fModule), 
-								    fNelectrons(d.fNelectrons)
-{for(Int_t i=0; i<3 ; i++) fSignalID[i]=d.fSignalID[i];} //copy constructor
+								    fNelectrons(d.fNelectrons),
+								    fNTracksIdMC(d.fNTracksIdMC)
+{
+  for(Int_t i=0; i<kMaxLab ; i++) {
+    fTrackIdMC[i]=d.fTrackIdMC[i];
+    fSignalID[i]=d.fSignalID[i];
+  }
+  for(Int_t i=0; i<3 ; i++) fSignalID[i]=d.fSignalID[i];
+} //copy constructor
+
+//____________________________________________________________________________________________________
+void AliITSDigitUpgrade::AddTrackID(Int_t tid) { 
+  // 
+  // Add an MC label (track ID) to the "expanded list"
+  //
+  if (fNTracksIdMC==kMaxLab) {
+    AliWarning("Max. numbers of labels reached!"); 
+  } else {
+    fTrackIdMC[fNTracksIdMC]=tid; 
+    fNTracksIdMC++;
+  } 
+}
+
 //____________________________________________________________________________________________________
 void  AliITSDigitUpgrade::GetPosition(Int_t ilayer, Int_t nx, Int_t nz, Double_t &xloc, Double_t &zloc){
   AliITSsegmentationUpgrade *s =new AliITSsegmentationUpgrade();
@@ -80,7 +119,17 @@ void AliITSDigitUpgrade::PrintInfo(){
   printf("pixid  %10.0i (%6.3f,%6.3f) in layer %i \n",(Int_t)fPixId,xz[0],xz[1],fNLayer);
   printf("pixid  %u ",(UInt_t)fPixId);
   printf(" (xloc, zloc)= (%6.3f, %6.3f) in layer %i and module %i \n",xz[0],xz[1],fNLayer, fModule);
-  printf(" Eloss %f  Nel %f   track ID %i   %i  %i ", fSignal, fNelectrons,fTracks[0],fTracks[1],fTracks[2]);
-  printf(" ElossID %f  %f %f  \n", fSignalID[0],fSignalID[1],fSignalID[2]);
+  printf(" Eloss %f  Nel %f \n ",fSignal, fNelectrons);
+  printf(" MC Track Ids =(");
+  if (kMaxLab<=fNTracksIdMC) {
+    for (Int_t i=0; i<kMaxLab; i++) { printf("%d,",fTrackIdMC[i]); }
+    printf(")\n ElossID = (");
+    for (Int_t i=0; i<kMaxLab; i++) { printf("%lf,",fSignalID[i]); }
+  } else {
+    for (Int_t i=0; i<fNTracksIdMC; i++) { printf("%d,",fTrackIdMC[i]); }
+    printf(")\n ElossID = (");
+    for (Int_t i=0; i<fNTracksIdMC; i++) { printf("%lf,",fSignalID[i]); }
+  }
+  printf(")\n");
 }
 

@@ -1,6 +1,6 @@
 void readRecPoint(){
-   gSystem->Load("libITSUpgradeSim");
   gSystem->Load("libITSUpgradeBase");
+  gSystem->Load("libITSUpgradeSim");
   gSystem->Load("libITSUpgradeRec");
   gROOT->SetStyle("Plain");
   gStyle->SetOptStat(1111111);
@@ -68,6 +68,7 @@ void readRecPoint(){
     Int_t nCluster = ITSCluster->GetEntriesFast();
     for(Int_t i=0; i<nCluster; i++){
       AliITSRecPointU *recp = (AliITSRecPointU*)ITSCluster->UncheckedAt(i);
+      //  cout<<"layer "<<recp->GetLayer()<<endl;
       Double_t xyz[3]={-1,-1,-1};
       seg->DetToGlobal(recp->GetLayer(), recp->GetModule(), recp->GetDetLocalX(), recp->GetDetLocalZ(), xyz[0],xyz[1],xyz[2]) ;
       xyGlob->Fill(xyz[0],xyz[1]);
@@ -79,7 +80,7 @@ void readRecPoint(){
     }
   }
   
- Int_t size = 400;
+  Int_t size = 400;
 
   TCanvas *xyCanv =  new TCanvas("xvCanvClus","RecPoint X-Y Positions",10,10,size,size);
   xyCanv->cd();
@@ -93,14 +94,14 @@ void readRecPoint(){
 
 
   TCanvas *c = new TCanvas("c","Cluster charge distribution",900,0, 1000,550);
-   c->Divide(3,(nLayers/3));
+   c->Divide(3,(nLayers/3)+1);
   for(Int_t ip =1; ip<=nLayers; ip++){
     c->cd(ip);
     hNel[ip-1]->Draw();
   }
  
   TCanvas *cS = new TCanvas("cS","clusters in sectors",900,640,1000,550);
-   cS->Divide(3,(nLayers/3));
+   cS->Divide(3,(nLayers/3)+1);
   for(Int_t ip =1; ip<=nLayers; ip++){
     cS->cd(ip);
     hNsect[ip-1]->Draw();

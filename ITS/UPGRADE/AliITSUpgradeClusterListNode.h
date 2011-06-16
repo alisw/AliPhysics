@@ -57,7 +57,9 @@ class AliITSUpgradeClusterListNode {
   UShort_t fCharge;
   Int_t  fLastDigitLabel;   // last meaningful position in fDigitLabel
   AliITSUpgradeClusterListNode* fNext;
-  Int_t  fDigitLabel[10]; // needed to attach MC truth to the cluster
+
+  enum {kMaxLab=24*12}; // maximum number of MC labels associated to the cluster
+  Int_t  fDigitLabel[kMaxLab]; // needed to attach MC truth to the cluster
 };
 
 #endif

@@ -123,6 +123,7 @@ void AliITSupgradeDigitizer::Exec(Option_t*)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliITSupgradeDigitizer::Sdigits2Digits(TClonesArray *pSDigitList,TObjArray *pDigitList)
 {   
+
   TClonesArray *pLst[100]; Int_t iCnt[100];
  
   for(Int_t i=0;i<fNlayers;i++){ 
@@ -130,67 +131,135 @@ void AliITSupgradeDigitizer::Sdigits2Digits(TClonesArray *pSDigitList,TObjArray 
     iCnt[i]=0; if(pLst[i]->GetEntries()!=0) AliErrorClass("Some of digits lists is not empty");  //in principle those lists should be empty 
   }
    
-  //AliInfo("starting loop over gli sdigits to create the digits");
-  Double_t eloss =0.;
+  Double_t eloss= 0.;
   Double_t nele = 0.;
-  ULong_t  pixid = 999;
-  Int_t tids[3]={-1,-1,-1};
   
-  Float_t elossID[3]={-1.,-1.,-1.};
-  //AliInfo("starting layers");
+  Int_t tids[maxLab];           // track with id#
+  Float_t elossPart[maxLab];    // eloss produced by track with id#
+  for(Int_t i=0; i<maxLab ; i++) {
+    tids[i]=-1;
+    elossPart[i]=-1;
+  }
+  TArrayI labelsMC(0);          // all track with id#   
+
   AliDebug(1,"starting loop over layers");
    
   for(Int_t ilay=0;ilay<fNlayers;ilay++){ 
-     
+
     AliITSDigitUpgrade *tmpdig=0x0;
     pSDigitList[ilay].Sort();
-    Int_t module=999; 
-    Int_t iNdigPart=0; 
+
+    Int_t prevModule=999; 
+    ULong_t  prevPixId = 999;
+    Int_t iNdigPart=0;  
+    Int_t iNtrackPart = 0;
+
     AliDebug(1,"starting loop over sdigits to create digits");
-    for(Int_t isdigentr=0; isdigentr<pSDigitList[ilay].GetEntries(); isdigentr++){
+
+    Int_t nSDigits = pSDigitList[ilay].GetEntries();
+    Int_t nDigits = 0;
+
+    for(Int_t isdigentr=0; isdigentr<nSDigits; isdigentr++){
+
       tmpdig = (AliITSDigitUpgrade*)(pSDigitList[ilay].At(isdigentr) )  ;
-     if(tmpdig->GetPixId()==pixid && tmpdig->GetModule()==module) {
-	iNdigPart++; 
-	if(iNdigPart<=3) {
-          tids[iNdigPart-1] = tmpdig->GetTrack(0);
-          elossID[iNdigPart-1] = tmpdig->GetSignal();
-	}     
-	eloss+=tmpdig->GetSignal();
-	nele+=tmpdig->GetNelectrons();
-	continue;
-      }
-      AliITSDigitUpgrade digit(pixid,eloss);
       
-      digit.SetNelectrons(nele); 
-      digit.SetLayer(ilay);
-      digit.SetModule(module);
-      digit.SetTids(tids);
-      digit.SetSignalID(elossID);       
-      if(isdigentr!=0) new((*pLst[ilay])[iCnt[ilay]++]) AliITSDigitUpgrade(digit);
-      eloss = tmpdig->GetSignal();
-      nele = tmpdig->GetNelectrons();
-      pixid=tmpdig->GetPixId(); 
-      tids[0]=tmpdig->GetTrack(0);
-      tids[1]=tids[2]=-1;      
-      elossID[0]=tmpdig->GetSignal();
-      elossID[1]=elossID[2]=-1;
-      module=tmpdig->GetModule();   
-    }
-     
-    if(!tmpdig) AliDebug(1,"\n \n---------> tmpdig is null...break is expected ! \n");
-    else AliDebug(1," tmpdig exists \n");
-     
-    if(tmpdig){
-      tmpdig->SetSignal(eloss);  
-      tmpdig->SetPixId(pixid); 
-      tmpdig->SetTids(tids); 
-      tmpdig->SetSignalID(elossID);
-      tmpdig->SetNelectrons(nele);  
-      tmpdig->SetLayer(ilay); 
-      tmpdig->SetModule(module);
-      //cout<<" tmpdigit : pixid "<< pixid<< "  tids "<< tids << " nele " << nele << " ilay "<<ilay<<endl;     
-      new((*pLst[ilay])[iCnt[ilay]++]) AliITSDigitUpgrade(*tmpdig);
-    }     
+      Int_t    module  = tmpdig->GetModule(); 
+      ULong_t  pixId   = tmpdig->GetPixId();
+      Int_t    trackId = tmpdig->GetTrackID(0);	 
+      
+      AliDebug(3,Form("  #tracks %d; #summed digits = %d, TrackIds (%d,%d,%d) ... ",iNtrackPart,iNdigPart,tids[0],tids[1],tids[2]));
+      AliDebug(3,Form("\t adding lay:%d  mod:%d  pixId:%lu   trackID:%d \n",tmpdig->GetLayer(),tmpdig->GetModule(),tmpdig->GetPixId(),
+		      tmpdig->GetTrackID(0)));
+      
+      if (trackId<0)
+	AliError("Screw you! A track with label<0 produced a SDigit? Something is wrong with Geant?\n");
+
+      if(pixId==prevPixId && module==prevModule) { 
+	// This sdigit belongs to the same pixel as before
+
+	// check if trackId is already in the list, if yes just add eloss ...
+	Int_t iid =0;
+	while (iid<labelsMC.GetSize()) {
+	  if ( trackId==labelsMC.At(iid)) {
+	    if (iid<maxLab) elossPart[iid] += tmpdig->GetSignal(); // hardcoded limit for elossPart
+	    break;
+	  }
+	  iid++;
+	}
+	if (iid==labelsMC.GetSize()) { // the trackId is NEW!!
+	  if (iid<maxLab) { // hardcoded limits for trackID 
+	    tids[iNtrackPart] = tmpdig->GetTrackID(0);
+	    elossPart[iNtrackPart] = tmpdig->GetSignal();
+	  }
+	  iNtrackPart++; 
+	  // complete list of trackIDs
+	  labelsMC.Set(iNtrackPart); 
+	  labelsMC.SetAt(trackId,iNtrackPart-1);
+	} else {
+	  AliDebug(3,"  -> Track ID already in the list\n");
+	}
+
+	if(iNtrackPart>maxLab) {	
+	  AliWarning(Form(" Event %d: Number of summable digits for this pixel (lay=%d,mod=%d,pixId=%lu) is too large (%d<%d). Sum is ok but skipping track Id %d ... ",
+			  fManager->GetOutputEventNr(),ilay,module,pixId,maxLab,iNtrackPart,trackId));
+	}
+	eloss+=tmpdig->GetSignal();
+	nele +=tmpdig->GetNelectrons();
+	iNdigPart++;
+
+      } else { // new Pixel
+	
+	// write "previous" Digit
+	if(isdigentr!=0) {
+	  AliITSDigitUpgrade digit(prevPixId,eloss);
+	  digit.SetNelectrons(nele); 
+	  digit.SetLayer(ilay);
+	  digit.SetModule(prevModule);
+	  digit.SetTids(tids);
+	  digit.SetSignalID(elossPart);  
+	  digit.SetNTracksIdMC(iNtrackPart);
+	  //	  for (Int_t i=0; i<12; i++) { if (i<12)printf("%d ",tids[i]); if (i==11) printf("| ");}
+	  //	  for (Int_t i=0; i<digit.GetNTracksIdMC(); i++) { printf("%d ",digit.GetTrackID(i)); if (i==labelsMC.GetSize()-1) printf("\n"); };
+	  new((*pLst[ilay])[iCnt[ilay]++]) AliITSDigitUpgrade(digit);
+	  nDigits++;
+	  AliDebug(3,Form(" -> Wrote NEW digit in layer %d (%d)\n",ilay,nDigits));
+	}
+	
+	// Prepare newly found Pixel
+	eloss = tmpdig->GetSignal();
+	nele = tmpdig->GetNelectrons();
+	
+	iNtrackPart=1;  iNdigPart=1;   
+	labelsMC.Set(iNtrackPart); 
+	labelsMC.SetAt(tmpdig->GetTrackID(0),iNtrackPart-1);
+	tids[0]=tmpdig->GetTrackID(0);
+	elossPart[0]=tmpdig->GetSignal();
+	for(Int_t i=1; i<maxLab ; i++) {
+	  tids[i]=-1;
+	  elossPart[i]=-1;
+	}
+      }
+      
+      prevPixId=tmpdig->GetPixId(); 
+      prevModule=tmpdig->GetModule(); 
+      
+      
+    }  
+    // write "last" Digit
+    AliITSDigitUpgrade digit(prevPixId,eloss);
+    digit.SetNelectrons(nele); 
+    digit.SetLayer(ilay);
+    digit.SetModule(prevModule);
+    digit.SetTids(tids);
+    digit.SetSignalID(elossPart);      
+    digit.SetNTracksIdMC(iNtrackPart);
+    //   for (Int_t i=0; i<12; i++) { if (i<12)printf("%d ",tids[i]); if (i==11) printf("| ");}
+    //    for (Int_t i=0; i<digit.GetNTracksIdMC(); i++) { printf("%d ",digit.GetTrackID(i)); if (i==labelsMC.GetSize()-1) printf("\n"); };
+    new((*pLst[ilay])[iCnt[ilay]++]) AliITSDigitUpgrade(digit);
+    nDigits++;
+    AliDebug(3,Form(" -> Wrote LAST digit in layer %d (%d)\n",ilay,nDigits));
+
+    AliDebug(3,Form(" -> layer %d: Number of created digits %d",ilay,nDigits));	
     AliDebug(1,"ending loop over sdigits to create digits");
 
   }
