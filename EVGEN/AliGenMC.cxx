@@ -130,6 +130,7 @@ void AliGenMC::Init()
     case kBSemiMuonic:
     case kSemiMuonic:
     case kDiMuon:
+    case kJpsiDiMuon:
     case kBJpsiDiMuon:
     case kBPsiPrimeDiMuon:
     case kPiToMu:
