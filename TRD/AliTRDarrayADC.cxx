@@ -28,6 +28,8 @@
 #include "Cal/AliTRDCalPadStatus.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDSignalIndex.h"
+#include "AliLog.h"
+
 ClassImp(AliTRDarrayADC)
 
 Short_t *AliTRDarrayADC::fgLutPadNumbering = 0x0;
@@ -296,6 +298,12 @@ void AliTRDarrayADC::Compress()
   // Compress the array
   //
 
+  if(fNAdim!=fNrow*fNumberOfChannels*fNtime)
+    {
+      AliDebug(1,"The ADC array is already compressed");
+      return;
+    }
+
   Int_t counter=0;
   Int_t newDim=0;
   Int_t j;                  
@@ -456,7 +464,7 @@ void AliTRDarrayADC::Expand()
   
       if(verif==0)
         {
-          //AliDebug(1,"Nothing to expand");
+          AliDebug(1,"Nothing to expand");
           return;
         }
 
