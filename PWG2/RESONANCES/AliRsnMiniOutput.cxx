@@ -94,15 +94,17 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
 // the user sets the type of output and computations through conventional strings:
 //
 // Output:
-//    -- "HIST"   --> common histogram (up to 3 dimensions)
-//    -- "SPARSE" --> sparse histogram
-//
-// Computation:
-//    -- "EVENT"  --> event-only computations
-//    -- "PAIR"   --> track pair computations (default)
-//    -- "MIX"    --> event mixing (like track pair, but different events)
-//    -- "TRUE"   --> true pairs (like track pair, but checking that come from same mother)
-//    -- "MOTHER" --> mother (loop on MC directly for mothers --> denominator of efficiency)
+//    -- "HIST"    --> common histogram (up to 3 dimensions)
+//    -- "SPARSE"  --> sparse histogram
+//                 
+// Computation:    
+//    -- "EVENT"   --> event-only computations
+//    -- "PAIR"    --> track pair computations (default)
+//    -- "MIX"     --> event mixing (like track pair, but different events)
+//    -- "ROTATE1" --> rotated background (rotate first track)
+//    -- "ROTATE2" --> rotated background (rotate second track)
+//    -- "TRUE"    --> true pairs (like track pair, but checking that come from same mother)
+//    -- "MOTHER"  --> mother (loop on MC directly for mothers --> denominator of efficiency)
 //
 
    TString input;
@@ -126,6 +128,10 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
       fComputation = kTrackPair;
    else if (!input.CompareTo("MIX"))
       fComputation = kTrackPairMix;
+   else if (!input.CompareTo("ROTATE1"))
+      fComputation = kTrackPairRotated1;
+   else if (!input.CompareTo("ROTATE2"))
+      fComputation = kTrackPairRotated2;
    else if (!input.CompareTo("TRUE"))
       fComputation = kTruePair;
    else if (!input.CompareTo("MOTHER"))
@@ -241,10 +247,10 @@ Bool_t AliRsnMiniOutput::Init(const char *prefix, TList *list)
 
    switch (fOutputType) {
       case kHistogram:
-         CreateHistogram(Form("hist_%s_%s", prefix, GetName()));
+         CreateHistogram(Form("%s_%s", prefix, GetName()));
          return kTRUE;
       case kHistogramSparse:
-         CreateHistogramSparse(Form("hsparse_%s_%s", prefix, GetName()));
+         CreateHistogramSparse(Form("%s_%s", prefix, GetName()));
          return kTRUE;
       default:
          AliError("Wrong output histogram definition");
@@ -383,7 +389,12 @@ Bool_t AliRsnMiniOutput::Fill
 //
 
    // check computation type
-   if (fComputation != kTrackPair && fComputation != kTrackPairMix && fComputation != kTruePair) {
+   Bool_t okComp = kFALSE;
+   if (fComputation == kTrackPair) okComp = kTRUE;
+   if (fComputation == kTrackPairMix) okComp = kTRUE;
+   if (fComputation == kTrackPairRotated1)  okComp = kTRUE;
+   if (fComputation == kTrackPairRotated2)  okComp = kTRUE;
+   if (!okComp) {
       AliError("This method can be called only for pair-based computations");
       return kFALSE;
    }
@@ -403,6 +414,14 @@ Bool_t AliRsnMiniOutput::Fill
    } else {
       AliDebugClass(1, "Pair does not match definition in any order");
       return kFALSE;
+   }
+   
+   // if required, rotate one of the two backgrounds
+   if (fComputation == kTrackPairRotated1) {
+      fPair.InvertP(kTRUE);
+   }
+   else if (fComputation == kTrackPairRotated2){
+      fPair.InvertP(kFALSE);
    }
    
    // if required, check that this is a true pair

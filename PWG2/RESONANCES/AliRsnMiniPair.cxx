@@ -67,3 +67,19 @@ Double_t AliRsnMiniPair::CosThetaStar(Bool_t useMC)
 
    return cosThetaStar;
 }
+
+//__________________________________________________________________________________________________
+void AliRsnMiniPair::InvertP(Bool_t first)
+{
+//
+// Inverts one 4-momentum and recompute sum
+//
+
+   Int_t i;
+   for (i = 0; i < 2; i++) {
+      if (first) fP1[i].Vect() *= -1.0;
+      else       fP2[i].Vect() *= -1.0;
+      fSum[i] = fP1[i] + fP2[i];
+      fRef[i].SetXYZM(fSum[i].X(), fSum[i].Y(), fSum[i].Z(), fRef[i].M());
+   }
+}
