@@ -55,8 +55,6 @@ fCoef3(0),
 fNloop(0),
 fPhiWin(0),
 fLambdaWin(0),
-fVert(0),
-fVertexer(0),
 fListOfTracks(0),
 fListOfSATracks(0),
 fITSclusters(0),
@@ -65,7 +63,6 @@ fOuterStartLayer(0),
 fInnerStartLayer(5),
 fMinNPoints(0),
 fMinQ(0.),
-fCluLayer(0),
 fCluCoord(0){
   // Default constructor
   Init();
@@ -83,8 +80,6 @@ fCoef3(0),
 fNloop(0),
 fPhiWin(0),
 fLambdaWin(0),
-fVert(0),
-fVertexer(0),
 fListOfTracks(0),
 fListOfSATracks(0),
 fITSclusters(0),
@@ -93,7 +88,6 @@ fOuterStartLayer(0),
 fInnerStartLayer(5),
 fMinNPoints(0),
 fMinQ(0.),
-fCluLayer(0),
 fCluCoord(0) 
 {
   // Standard constructor (Vertex is known and passed to this obj.)
@@ -102,138 +96,12 @@ fCluCoord(0)
   }
 
   Init();
-  fVert = 0;
  
 }
 
-//____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(const Char_t *geom, AliESDVertex *vert):AliITStrackerMI(0),
-fPhiEstimate(0),
-fITSStandAlone(0),
-fLambdac(0),
-fPhic(0),
-fCoef1(0),
-fCoef2(0),
-fCoef3(0),
-fNloop(0),
-fPhiWin(0),
-fLambdaWin(0),
-fVert(vert),
-fVertexer(0),
-fListOfTracks(0),
-fListOfSATracks(0),
-fITSclusters(0),
-fInwardFlag(0),
-fOuterStartLayer(0),
-fInnerStartLayer(5),
-fMinNPoints(0),
-fMinQ(0.),
-fCluLayer(0),
-fCluCoord(0)
-{
-  // Standard constructor (Vertex is known and passed to this obj.)
-  if (geom) {
-    AliWarning("\"geom\" is actually a dummy argument !");
-  }
-  Init();
- 
-}
-
-//____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(const Char_t *geom, AliITSVertexer *vertexer):AliITStrackerMI(0),
-fPhiEstimate(0),
-fITSStandAlone(0),
-fLambdac(0),
-fPhic(0),
-fCoef1(0),
-fCoef2(0),
-fCoef3(0),
-fNloop(0),
-fPhiWin(0),
-fLambdaWin(0),
-fVert(),
-fVertexer(vertexer),
-fListOfTracks(0),
-fListOfSATracks(0),
-fITSclusters(0),
-fInwardFlag(0),
-fOuterStartLayer(0),
-fInnerStartLayer(5),
-fMinNPoints(0),
-fMinQ(0.),
-fCluLayer(0),
-fCluCoord(0)
-{
-  // Standard constructor (Vertex is unknown - vertexer is passed to this obj)
-  if (geom) {
-    AliWarning("\"geom\" is actually a dummy argument !");
-  }
-  Init();
-  fVertexer = vertexer;
- 
-}
-/*
-//____________________________________________________________________________
-AliITStrackerSA::AliITStrackerSA(const AliITStrackerSA& tracker):AliITStrackerMI(),
-fPhiEstimate(tracker.fPhiEstimate),
-fITSStandAlone(tracker.fITSStandAlone),
-fLambdac(tracker.fLambdac),
-fPhic(tracker.fPhic),
-fCoef1(tracker.fCoef1),
-fCoef2(tracker.fCoef2),
-fCoef3(tracker.fCoef3),
-fNloop(tracker.fNloop),
-fPhiWin(tracker.fPhiWin),
-fLambdaWin(tracker.fLambdaWin),
-fVert(tracker.fVert),
-fVertexer(tracker.fVertexer),
-fListOfTracks(tracker.fListOfTracks),
-fListOfSATracks(tracker.fListOfSATracks),
-fITSclusters(tracker.fITSclusters),
-fInwardFlag(tracker.fInwardFlag),
-fOuterStartLayer(tracker.fOuterStartLayer),
-fInnerStartLayer(tracker.fInnerStartLayer),
-fMinNPoints(tracker.fMinNPoints),
-fMinQ(tracker.fMinQ),
-fCluLayer(tracker.fCluLayer),
-fCluCoord(tracker.fCluCoord) {
-  // Copy constructor
-  for(Int_t i=0;i<2;i++){
-    fPoint1[i]=tracker.fPoint1[i];
-    fPoint2[i]=tracker.fPoint2[i];
-    fPoint3[i]=tracker.fPoint3[i];
-    fPointc[i]=tracker.fPointc[i];
-  }
-  if(tracker.fVertexer && tracker.fVert){
-    fVert = new AliESDVertex(*tracker.fVert);
-  }
-  else {
-    fVert = tracker.fVert;
-  }
-  for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++){
-    fCluLayer[i] = tracker.fCluLayer[i];
-    fCluCoord[i] = tracker.fCluCoord[i];
-  } 
-}
-//______________________________________________________________________
-AliITStrackerSA& AliITStrackerSA::operator=(const AliITStrackerSA& source){
-    // Assignment operator. 
-  this->~AliITStrackerSA();
-  new(this) AliITStrackerSA(source);
-  return *this;
- 
-}
-*/
 //____________________________________________________________________________
 AliITStrackerSA::~AliITStrackerSA(){
   // destructor
-  // if fVertexer is not null, the AliESDVertex obj. is owned by this class
-  // and is deleted here
-  if(fVertexer){
-    if(fVert)delete fVert;
-  }
-  fVert = 0;
-  fVertexer = 0;
  
   if(fPhiWin)delete []fPhiWin;
   if(fLambdaWin)delete []fLambdaWin;
@@ -241,15 +109,6 @@ AliITStrackerSA::~AliITStrackerSA(){
   delete fListOfTracks;
   fListOfSATracks->Delete();
   delete fListOfSATracks;
-  if(fCluLayer){
-    for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++){
-      if(fCluLayer[i]){
-	fCluLayer[i]->Delete();
-	delete fCluLayer[i];
-      }
-    }
-    delete [] fCluLayer;
-  }
   if(fCluCoord){
     for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++){
       if(fCluCoord[i]){
@@ -259,7 +118,6 @@ AliITStrackerSA::~AliITStrackerSA(){
     }
     delete [] fCluCoord;
   }
-  
 }
 
 //____________________________________________________________________________
@@ -302,8 +160,6 @@ void AliITStrackerSA::Init(){
     fCoef3=0;
     fPointc[0]=0;
     fPointc[1]=0;
-    fVert = 0;
-    fVertexer = 0;
     Int_t nLoops=AliITSReconstructor::GetRecoParam()->GetNLoopsSA();
     if(nLoops==33){
       SetFixedWindowSizes();
@@ -320,7 +176,6 @@ void AliITStrackerSA::Init(){
     SetSAFlag(kFALSE);
     fListOfTracks=new TClonesArray("AliITStrackMI",100);
     fListOfSATracks=new TClonesArray("AliITStrackSA",100);
-    fCluLayer = 0;
     fCluCoord = 0;
     fMinNPoints = 3;
  }
@@ -351,7 +206,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
   AliDebug(2,Form("SKIPPING %d %d %d %d %d %d",ForceSkippingOfLayer(0),ForceSkippingOfLayer(1),ForceSkippingOfLayer(2),ForceSkippingOfLayer(3),ForceSkippingOfLayer(4),ForceSkippingOfLayer(5)));
 
   if(!fITSclusters){
-    Fatal("FindTracks","ITS cluster tree is not accessed - Abort!!!\n Please use method SetClusterTree to pass the pointer to the tree\n");
+    Fatal("FindTracks","ITS cluster tree is not accessed!!!\n Please use method SetClusterTree to pass the pointer to the tree\n");
     return -1;
   }
   //Reads event and mark clusters of traks already found, with flag kITSin
@@ -388,11 +243,9 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
   //by AliITStrackerMI are not considered
   Int_t nclusters[AliITSgeomTGeo::kNLayers]={0,0,0,0,0,0};
   Int_t dmar[AliITSgeomTGeo::kNLayers]={0,0,0,0,0,0};
-  if (fCluLayer == 0) {
-    fCluLayer = new TClonesArray*[AliITSgeomTGeo::kNLayers];
+  if (fCluCoord == 0) {
     fCluCoord = new TClonesArray*[AliITSgeomTGeo::kNLayers];
     for(Int_t i=0;i<AliITSgeomTGeo::GetNLayers();i++) {
-      fCluLayer[i]=0;
       fCluCoord[i]=0;
     }
   }
@@ -408,12 +261,6 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
       }
     }
     dmar[i]=0;
-    if(!fCluLayer[i]){
-      fCluLayer[i] = new TClonesArray("AliITSRecPoint",nclusters[i]);
-    }else{
-      fCluLayer[i]->Delete();
-      fCluLayer[i]->Expand(nclusters[i]);
-    }
     if(!fCluCoord[i]){
       fCluCoord[i] = new TClonesArray("AliITSclusterTable",nclusters[i]);
     }else{
@@ -423,7 +270,6 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
   }
 
   for(Int_t ilay=0;ilay<AliITSgeomTGeo::GetNLayers();ilay++){
-    TClonesArray &clulay = *fCluLayer[ilay];
     TClonesArray &clucoo = *fCluCoord[ilay];
     AliITSlayer &layer=fgLayers[ilay];
     if (!ForceSkippingOfLayer(ilay)) {
@@ -437,7 +283,6 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
 	Double_t sx=0;Double_t sy=0;Double_t sz=0;
 	GetCoorAngles(cls,phi,lambda,x,y,z,primaryVertex);
 	GetCoorErrors(cls,sx,sy,sz);
-	new (clulay[dmar[ilay]]) AliITSRecPoint(*cls);
 	new (clucoo[dmar[ilay]]) AliITSclusterTable(x,y,z,sx,sy,sz,phi,lambda,cli);
 	dmar[ilay]++;
       }
@@ -475,7 +320,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
 
       // loop on phi and lambda window size
       for(Int_t nloop=0;nloop<fNloop;nloop++){
-	Int_t nclTheLay=fCluLayer[theLay]->GetEntries();
+	Int_t nclTheLay=fCluCoord[theLay]->GetEntries();
 	while(nclTheLay--){ 
 	  ResetForFinding();
 	  Bool_t useRP=SetFirstPoint(theLay,nclTheLay,primaryVertex);
@@ -548,7 +393,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
       //   counter for clusters on each layer  
 
       for(Int_t nloop=0;nloop<fNloop;nloop++){
-	Int_t nclInnLay=fCluLayer[innLay]->GetEntries();
+	Int_t nclInnLay=fCluCoord[innLay]->GetEntries();
 	while(nclInnLay--){ //loop starting from layer innLay
 	  ResetForFinding();
 	  Bool_t useRP=SetFirstPoint(innLay,nclInnLay,primaryVertex);
@@ -788,9 +633,7 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
   for(Int_t nlay=0;nlay<AliITSgeomTGeo::GetNLayers();nlay++){
     for(Int_t cln=0;cln<trsa->GetNumberOfMarked(nlay);cln++){
       Int_t index = trsa->GetClusterMark(nlay,cln);
-      fCluLayer[nlay]->RemoveAt(index);
       RemoveClusterCoord(nlay,index);
-      fCluLayer[nlay]->Compress();
     }    
   }
 
@@ -864,7 +707,7 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
   Double_t phiExpect=fPhiEstimate;
   Double_t lamExpect=fLambdac;
 
-  Int_t ncl = fCluLayer[layer]->GetEntriesFast();
+  Int_t ncl = fCluCoord[layer]->GetEntriesFast();
   for (Int_t index=0; index<ncl; index++) {
     
     AliITSclusterTable* arr = (AliITSclusterTable*)GetClusterCoord(layer,index);
@@ -897,11 +740,6 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
 //________________________________________________________________
 Bool_t AliITStrackerSA::SetFirstPoint(Int_t lay, Int_t clu, Double_t* primaryVertex){
   // Sets the first point (seed) for tracking
-
-  AliITSRecPoint* cl = (AliITSRecPoint*)fCluLayer[lay]->UncheckedAt(clu);
-  if(!cl) return kFALSE;
-  if (cl->GetQ()<=0) return kFALSE;
-  if(lay>1 && cl->GetQ()<=fMinQ) return kFALSE;
 
   AliITSclusterTable* arr = (AliITSclusterTable*)GetClusterCoord(lay,clu);
   fPhic = arr->GetPhi();
@@ -1022,7 +860,7 @@ Int_t AliITStrackerSA::FindTrackLowChiSquare() const {
 
 //__________________________________________________________
 Int_t AliITStrackerSA::FindLabel(AliITStrackV2* track){
-  //
+  // compute the track label starting from cluster labels
   
   Int_t labl[AliITSgeomTGeo::kNLayers][3];
   Int_t cnts[AliITSgeomTGeo::kNLayers][3];
@@ -1137,7 +975,7 @@ void AliITStrackerSA::SetFixedWindowSizes(Int_t n, Double_t *phi, Double_t *lam)
 
 }
 //_______________________________________________________________________
-void AliITStrackerSA::GetCoorAngles(AliITSRecPoint* cl,Double_t &phi,Double_t &lambda, Double_t &x, Double_t &y,Double_t &z,Double_t* vertex){
+void AliITStrackerSA::GetCoorAngles(AliITSRecPoint* cl,Double_t &phi,Double_t &lambda, Double_t &x, Double_t &y,Double_t &z, const Double_t* vertex){
   //Returns values of phi (azimuthal) and lambda angles for a given cluster
 /*  
   Double_t rot[9];     fGeom->GetRotMatrix(module,rot);

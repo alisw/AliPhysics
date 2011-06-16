@@ -34,8 +34,6 @@ class AliITStrackerSA : public AliITStrackerMI {
 
   AliITStrackerSA();
   AliITStrackerSA(const Char_t *geom);
-  AliITStrackerSA(const Char_t *geom,AliESDVertex *vert);
-  AliITStrackerSA(const Char_t *geom,AliITSVertexer *vertexer);
   virtual ~AliITStrackerSA();  
   virtual Int_t Clusters2Tracks(AliESDEvent *event);
   Int_t FindTracks(AliESDEvent* event, Bool_t useAllClusters=kFALSE);
@@ -44,7 +42,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   void StoreTrack(AliITStrackV2 *t,AliESDEvent *event, Bool_t pureSA) const; 
   Int_t FindTrackLowChiSquare() const;
   Int_t LoadClusters(TTree *cf) {Int_t rc=AliITStrackerMI::LoadClusters(cf); SetClusterTree(cf); return rc;}
-  void SetVertex(AliESDVertex *vtx){fVert = vtx;}
+
   void SetClusterTree(TTree * itscl){fITSclusters = itscl;}
 
   void SetOutwardFinding() {fInwardFlag=kFALSE;}
@@ -91,7 +89,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   Int_t SearchClusters(Int_t layer,Double_t phiwindow,Double_t lambdawindow, 
                        AliITStrackSA* trs,Double_t zvertex,Int_t flagp); 
 
-  void GetCoorAngles(AliITSRecPoint* cl,Double_t &phi,Double_t &lambda,Double_t &x,Double_t &y,Double_t &z,Double_t* vertex);
+  void GetCoorAngles(AliITSRecPoint* cl,Double_t &phi,Double_t &lambda,Double_t &x,Double_t &y,Double_t &z,const Double_t* vertex);
   void GetCoorErrors(AliITSRecPoint* cl,Double_t &sx,Double_t &sy, Double_t &sz);
 
   AliITSclusterTable* GetClusterCoord(Int_t layer,Int_t n) const {return (AliITSclusterTable*)fCluCoord[layer]->UncheckedAt(n);}
@@ -112,8 +110,6 @@ class AliITStrackerSA : public AliITStrackerMI {
   Int_t fNloop;         //  Number of iterqations on phi and lambda windows
   Double_t *fPhiWin;    // phi window sizes
   Double_t *fLambdaWin; // lambda window sizes
-  AliESDVertex *fVert;        //! primary vertex
-  AliITSVertexer *fVertexer;  //! vertexer 
   TClonesArray *fListOfTracks;   //! container for found tracks 
   TClonesArray *fListOfSATracks; //! container for found SA tracks 
   TTree *fITSclusters;        //! pointer to ITS tree of clusters
@@ -123,14 +119,13 @@ class AliITStrackerSA : public AliITStrackerMI {
   Int_t fMinNPoints;        // minimum number of clusters for a track
   Double_t fMinQ;              // lower cut on cluster charge (SDD and SSD)
 
-  TClonesArray** fCluLayer; //! array with clusters 
   TClonesArray** fCluCoord; //! array with cluster info
 
  private:
   AliITStrackerSA(const AliITStrackerSA& tracker);
   AliITStrackerSA& operator=(const AliITStrackerSA& source);
 
-  ClassDef(AliITStrackerSA,11)
+  ClassDef(AliITStrackerSA,12)
 };
 
 #endif
