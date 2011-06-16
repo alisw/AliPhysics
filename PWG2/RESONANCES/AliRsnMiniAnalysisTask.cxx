@@ -12,29 +12,27 @@
 
 #include <Riostream.h>
 
-#include <TList.h>
 #include <TH1.h>
-#include <TH2.h>
-#include <TH3.h>
-#include <THnSparse.h>
+#include <TList.h>
+#include <TTree.h>
 
 #include "AliLog.h"
+#include "AliEventplane.h"
+#include "AliMultiplicity.h"
+#include "AliTriggerAnalysis.h"
 #include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+
 #include "AliESDtrackCuts.h"
 #include "AliESDUtils.h"
-#include "AliMultiplicity.h"
-#include "AliInputEventHandler.h"
-#include "AliTriggerAnalysis.h"
-#include "AliMCEvent.h"
+
 #include "AliAODEvent.h"
-#include "AliMCParticle.h"
 #include "AliAODMCParticle.h"
-#include "AliEventplane.h"
 
 #include "AliRsnCutSet.h"
+#include "AliRsnMiniPair.h"
 #include "AliRsnMiniEvent.h"
 #include "AliRsnMiniParticle.h"
-#include "AliRsnMiniPair.h"
 
 #include "AliRsnMiniAnalysisTask.h"
 
@@ -61,7 +59,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fEvBuffer(0x0),
    fNMixed(0),
    fTriggerAna(0x0),
-   fESDtrackCuts(0x0)
+   fESDtrackCuts(0x0),
+   fMiniEvent(0x0)
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
@@ -89,7 +88,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fEvBuffer(0x0),
    fNMixed(0),
    fTriggerAna(0x0),
-   fESDtrackCuts(0x0)
+   fESDtrackCuts(0x0),
+   fMiniEvent(0x0)
 {
 //
 // Default constructor.
@@ -122,7 +122,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask& cop
    fEvBuffer(0x0),
    fNMixed(0),
    fTriggerAna(copy.fTriggerAna),
-   fESDtrackCuts(copy.fESDtrackCuts)
+   fESDtrackCuts(copy.fESDtrackCuts),
+   fMiniEvent(0x0)
 {
 //
 // Copy constructor.
@@ -228,9 +229,9 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fOutput->Add(fHEventStat);
    
    // create temporary tree for filtered events
-   AliRsnMiniEvent *mini = 0x0;
+   if (fMiniEvent) delete fMiniEvent;
    fEvBuffer = new TTree("EventBuffer", "Temporary buffer for mini events");
-   fEvBuffer->Branch("events", "AliRsnMiniEvent", &mini);
+   fEvBuffer->Branch("events", "AliRsnMiniEvent", &fMiniEvent);
    
    // create one histogram per each stored definition (event histograms)
    Int_t i, ndef = fHistograms.GetEntries();
@@ -257,11 +258,10 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
 void AliRsnMiniAnalysisTask::UserExec(Option_t *)
 {
 //
-// Main computation loop.
-// To be precise, this loop only checks if events are OK and eventually
-// stores them in the temporary tree used for the analysis.
-// The computation of correlations is done only at the end,
-// in the automatic function which is called every time
+// Computation loop.
+// In this case, it checks if the event is acceptable, and eventually
+// creates the corresponding mini-event and stores it in the buffer.
+// The real histogram filling is done at the end, in "FinishTaskOutput".
 //
 
    // event counter
@@ -270,65 +270,28 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
    // check current event
    Char_t check = CheckCurrentEvent();
    if (!check) return;
-      
-   // if the check is successful, the mini-event is created and stored
-   AliRsnMiniEvent *miniEvent = 0x0;
-   fEvBuffer->SetBranchAddress("events", &miniEvent);
    
-   // assign event-related values
-   miniEvent = new AliRsnMiniEvent;
-   miniEvent->Vz() = fInputEvent->GetPrimaryVertex()->GetZ();
-   miniEvent->Angle() = ComputeAngle();
-   miniEvent->Mult() = ComputeCentrality((check == 'E'));
-   AliDebugClass(1, Form("Event %d: vz = %f -- mult = %f -- angle = %f", fEvNum, miniEvent->Vz(), miniEvent->Mult(), miniEvent->Angle()));
-   
-   // fill all histograms for events only
-   Int_t id, ndef = fHistograms.GetEntries();
-   AliRsnMiniOutput *def = 0x0;
-   for (id = 0; id < ndef; id++) {
-      def = (AliRsnMiniOutput*)fHistograms[id];
-      if (!def) continue;
-      if (!def->IsEventOnly()) continue;
-      def->Fill(miniEvent, &fValues);
+   // fill a mini-event from current
+   // and skip this event if no tracks were accepted
+   Int_t nacc = FillMiniEvent(check);
+   if (nacc < 1) {
+      AliDebugClass(1, Form("Event %d: skipping event with no tracks accepted", fEvNum));
+      return;
    }
    
-   // fill all histograms for mother only (if MC is present)
+   // fill MC based histograms on mothers,
+   // which do need the original event
    if (fUseMC) {
       if (fRsnEvent.IsESD() && fMCEvent)
-         FillTrueMotherESD(miniEvent);
+         FillTrueMotherESD(fMiniEvent);
       else if (fRsnEvent.IsAOD() && fRsnEvent.GetAODList())
-         FillTrueMotherAOD(miniEvent);
+         FillTrueMotherAOD(fMiniEvent);
    }
-   
-   // loop on daughters
-   // and store only those that pass at least one cut
-   Int_t it, ic, ncuts = fTrackCuts.GetEntries(), ntot = fRsnEvent.GetAbsoluteSum();
-   AliRsnDaughter cursor;
-   AliRsnMiniParticle miniParticle;
-   for (it = 0; it < ntot; it++) {
-      fRsnEvent.SetDaughter(cursor, it);
-      miniParticle.CopyDaughter(&cursor);
-      for (ic = 0; ic < ncuts; ic++) {
-         AliRsnCutSet *cuts = (AliRsnCutSet*)fTrackCuts[ic];
-         if (cuts->IsSelected(&cursor)) miniParticle.SetCutBit(ic);
-      }
-      AliDebugClass(3, Form("-- Track %d: REC px = %f -- py = %f -- pz = %f", it, miniParticle.Px(0), miniParticle.Py(0), miniParticle.Pz(0)));
-      AliDebugClass(3, Form("-- Track %d: SIM px = %f -- py = %f -- pz = %f", it, miniParticle.Px(1), miniParticle.Py(1), miniParticle.Pz(1)));
-      AliDebugClass(3, Form("-- Track %d: Charge = %c -- PDG = %d -- mother = %d -- motherPDG = %d", it, miniParticle.Charge(), miniParticle.PDG(), miniParticle.Mother(), miniParticle.MotherPDG()));
-      AliDebugClass(2, Form("-- Track %d: Cutbit = %u", it, miniParticle.CutBits()));
-      if (miniParticle.CutBits()) {
-         miniEvent->AddParticle(miniParticle);
-      }
-   }
-   AliDebugClass(1, Form("Event %d: selected tracks = %d", fEvNum, miniEvent->Particles().GetEntriesFast()));
    
    // store event
    fEvBuffer->Fill();
    
-   // process single event
-   ProcessEvents(miniEvent);
-   
-   // post outputs
+   // post data for computed stuff
    PostData(1, fOutput);
 }
 
@@ -336,47 +299,96 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
 void AliRsnMiniAnalysisTask::FinishTaskOutput()
 {
 //
-// At the end of execution, when the temporary tree is filled,
-// perform mixing with all found events
+// This function is called at the end of the loop on available events,
+// and then the buffer will be full with all the corresponding mini-events,
+// each one containing all tracks selected by each of the available track cuts.
+// Here a loop is done on each of these events, and both single-event and mixing are computed
 //
 
-   Int_t i1, i2, imix, nEvents = fEvBuffer->GetEntries();
-   AliRsnMiniEvent *evMix = 0x0, evMain;
-   fEvBuffer->SetBranchAddress("events", &evMix);
+   // security code: reassign the buffer to the mini-event cursor
+   fEvBuffer->SetBranchAddress("events", &fMiniEvent);
+   
+   Int_t ievt, nEvents = (Int_t)fEvBuffer->GetEntries();
+   Int_t idef, nDefs   = fHistograms.GetEntries();
+   Int_t imix, iloop;
+   AliRsnMiniOutput *def = 0x0;
+   AliRsnMiniOutput::EComputation compType;
+   AliRsnMiniEvent evMain;
    
    // initialize mixing counter
    fNMixed.Set(nEvents);
-   TString msg();
-   
-   // loop on events
-   for (i1 = 0; i1 < nEvents; i1++) {
-      if (fNMixed[i1] >= fNMix) continue;
-      fEvBuffer->GetEntry(i1);
-      evMain = (*evMix);
-      for (i2 = 1; i2 < nEvents; i2++) {
-         imix = i1 + i2;
-         if (imix >= nEvents) imix -= nEvents;
-         if (imix == i1) continue;
-         if (fNMixed[i1] >= fNMix) break;
-         if (fNMixed[imix] >= fNMix) continue;
-         fEvBuffer->GetEntry(imix);
-         // exit if events are not matched
-         if (TMath::Abs(evMain.Vz() - evMix->Vz()) > fMaxDiffVz) continue;
-         if (TMath::Abs(evMain.Mult() - evMix->Mult()) > fMaxDiffMult) continue;
-         if (TMath::Abs(evMain.Angle() - evMix->Angle()) > fMaxDiffAngle) continue;
-         // found a match: increment counter for both events
-         fNMixed[i1]++;
-         fNMixed[imix]++;
-         //cout << "Mixed " << i1 << " with " << imix << endl;
-         ProcessEvents(&evMain, evMix);
-         // if mixed enough times, stop
+   for (ievt = 0; ievt < nEvents; ievt++) fNMixed[ievt] = 0;
+
+   // loop on events, and for each one fill all outputs
+   // using the appropriate procedure depending on its type
+   // only mother-related histograms are filled in UserExec,
+   // since they require direct access to MC event
+   for (ievt = 0; ievt < nEvents; ievt++) {
+      // get next entry
+      fEvBuffer->GetEntry(ievt);
+      // store in temp variable
+      evMain = (*fMiniEvent);
+      // fill non-mixed histograms
+      for (idef = 0; idef < nDefs; idef++) {
+         def = (AliRsnMiniOutput*)fHistograms[idef];
+         if (!def) continue;
+         compType = def->GetComputation();
+         // execute computation in the appropriate way
+         switch (compType) {
+            case AliRsnMiniOutput::kEventOnly:
+               AliDebugClass(1, Form("Event %d, def %d: event-value histogram filling", ievt, idef));
+               def->Fill(&evMain, &fValues);
+               break;
+            case AliRsnMiniOutput::kTruePair:
+               AliDebugClass(1, Form("Event %d, def %d: true-pair histogram filling", ievt, idef));
+               ProcessEvents(&evMain, 0x0);
+               break;
+            case AliRsnMiniOutput::kTrackPair:
+               AliDebugClass(1, Form("Event %d, def %d: pair-value histogram filling", ievt, idef));
+               ProcessEvents(&evMain, 0x0);
+               break;
+            case AliRsnMiniOutput::kTrackPairRotated1:
+               AliDebugClass(1, Form("Event %d, def %d: rotated (1) background histogram filling", ievt, idef));
+               ProcessEvents(&evMain, 0x0);
+               break;
+            case AliRsnMiniOutput::kTrackPairRotated2:
+               AliDebugClass(1, Form("Event %d, def %d: rotated (2) background histogram filling", ievt, idef));
+               ProcessEvents(&evMain, 0x0);
+               break;
+            case AliRsnMiniOutput::kTrackPairMix:
+               for (iloop = 1; iloop < nEvents; iloop++) {
+                  imix = ievt + iloop;
+                  AliDebugClass(1, Form("Event %d, def %d: event mixing (%d with %d)", ievt, idef, ievt, imix));
+                  // restart from beginning if reached last event
+                  if (imix >= nEvents) imix -= nEvents;
+                  // avoid to mix an event with itself
+                  if (imix == ievt) continue;
+                  // skip all events already mixed enough times
+                  if (fNMixed[ievt] >= fNMix) break;
+                  if (fNMixed[imix] >= fNMix) continue;
+                  fEvBuffer->GetEntry(imix);
+                  // skip if events are not matched
+                  if (TMath::Abs(evMain.Vz()    - fMiniEvent->Vz()   ) > fMaxDiffVz   ) continue;
+                  if (TMath::Abs(evMain.Mult()  - fMiniEvent->Mult() ) > fMaxDiffMult ) continue;
+                  if (TMath::Abs(evMain.Angle() - fMiniEvent->Angle()) > fMaxDiffAngle) continue;
+                  // found a match: increment counter for both events
+                  fNMixed[ievt]++;
+                  fNMixed[imix]++;
+                  // process mixing
+                  ProcessEvents(&evMain, fMiniEvent);
+               }
+               break;
+            default:
+               // other kinds are processed elsewhere
+               AliDebugClass(2, Form("Computation = %d", (Int_t)compType));
+         }
       }
    }
    
-   // message
-   for (Int_t ii = 0; ii < nEvents; ii++) cout << Form("Event #%6d mixed %3d times", ii, fNMixed[ii]) << endl;
+   // print number of mixings done with each event
+   for (ievt = 0; ievt < nEvents; ievt++) cout << Form("Event #%6d mixed %3d times", ievt, fNMixed[ievt]) << endl;
    
-   // post outputs
+   // post computed data
    PostData(1, fOutput);
 }
 
@@ -528,6 +540,46 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
    } else {
       return 0;
    }
+}
+
+//__________________________________________________________________________________________________
+Int_t AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
+{
+//
+// Refresh cursor mini-event data member to fill with current event.
+// Returns the total number of tracks selected.
+//
+
+   // assign event-related values
+   fMiniEvent = new AliRsnMiniEvent;
+   fMiniEvent->Vz()    = fInputEvent->GetPrimaryVertex()->GetZ();
+   fMiniEvent->Angle() = ComputeAngle();
+   fMiniEvent->Mult()  = ComputeCentrality((evType == 'E'));
+   AliDebugClass(1, Form("Event %d: type = %c -- vz = %f -- mult = %f -- angle = %f", fEvNum, evType, fMiniEvent->Vz(), fMiniEvent->Mult(), fMiniEvent->Angle()));
+   
+   // loop on daughters and assign track-related values
+   Int_t ic, ncuts = fTrackCuts.GetEntries();
+   Int_t ip, npart = fRsnEvent.GetAbsoluteSum();
+   AliRsnDaughter cursor;
+   AliRsnMiniParticle miniParticle;
+   for (ip = 0; ip < npart; ip++) {
+      // point cursor to next particle
+      fRsnEvent.SetDaughter(cursor, ip);
+      // copy momentum and MC info if present
+      miniParticle.CopyDaughter(&cursor);
+      // switch on the bits corresponding to passed cuts
+      for (ic = 0; ic < ncuts; ic++) {
+         AliRsnCutSet *cuts = (AliRsnCutSet*)fTrackCuts[ic];
+         if (cuts->IsSelected(&cursor)) miniParticle.SetCutBit(ic);
+      }
+      // if a track passes at least one track cut, it is added to the pool
+      if (miniParticle.CutBits()) fMiniEvent->AddParticle(miniParticle);
+   }
+   
+   // get number of accepted tracks
+   Int_t nacc = (Int_t)fMiniEvent->Particles().GetEntriesFast();
+   AliDebugClass(1, Form("Event %d: total = %d, accepted = %d", fEvNum, npart, nacc));
+   return nacc;
 }
 
 //__________________________________________________________________________________________________
@@ -711,7 +763,6 @@ void AliRsnMiniAnalysisTask::ProcessEvents(AliRsnMiniEvent *evMain, AliRsnMiniEv
       evMix = evMain;
       isMix = kFALSE;
    }
-   AliDebugClass(1, Form("Event %d: processing %s", fEvNum, (isMix ? "mixing" : "single event")));
    
    // 2 nested loops on tracks
    // inner starts from next track or from first, depending if is mixing or not

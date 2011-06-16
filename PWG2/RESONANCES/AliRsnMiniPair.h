@@ -21,6 +21,7 @@ public:
    Int_t&          MotherPDG() {return fMotherPDG;}
    void            Fill(AliRsnMiniParticle *p1, AliRsnMiniParticle *p2, Double_t m1, Double_t m2, Double_t refMass);
    void            FillRef(Double_t mass);
+   void            InvertP(Bool_t first);
       
    Int_t           ID(Bool_t mc) const {if (mc) return 1; else return 0;}
    
