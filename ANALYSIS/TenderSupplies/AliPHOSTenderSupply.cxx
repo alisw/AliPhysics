@@ -37,6 +37,8 @@
 #include "AliPHOSGeometry.h"
 #include "AliPHOSEsdCluster.h"
 
+ClassImp(AliPHOSTenderSupply)
+
 AliPHOSTenderSupply::AliPHOSTenderSupply() :
   AliTenderSupply()
   ,fOCDBpass("local://OCDB")

@@ -47,6 +47,7 @@
 
 #include "AliTPCTenderSupply.h"
 
+ClassImp(AliTPCTenderSupply)
 
 AliTPCTenderSupply::AliTPCTenderSupply() :
 AliTenderSupply(),

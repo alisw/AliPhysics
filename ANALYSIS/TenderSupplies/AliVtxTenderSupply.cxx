@@ -31,6 +31,8 @@
 
 #include "AliVtxTenderSupply.h"
 
+ClassImp(AliVtxTenderSupply)
+
 AliVtxTenderSupply::AliVtxTenderSupply() :
   AliTenderSupply(),
   fDiamond(0x0)

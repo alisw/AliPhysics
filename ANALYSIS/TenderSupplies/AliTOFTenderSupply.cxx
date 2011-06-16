@@ -42,6 +42,8 @@
 
 #include "AliTOFTenderSupply.h"
 
+ClassImp(AliTOFTenderSupply)
+
 Float_t AliTOFTenderSupply::fgT0Aresolution = 75.;
 Float_t AliTOFTenderSupply::fgT0Cresolution = 65.;
 
