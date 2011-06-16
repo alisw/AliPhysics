@@ -51,6 +51,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetL0TimeRange(Int_t l, Int_t h)               { fMinL0Time=l; fMaxL0Time=h; }
   void         SetMarkCells(const char *n)                    { fMarkCells     = n;         }
   void         SetMcMode(Bool_t b)                            { fMcMode        = b;         }
+  void         SetEmbedMode(Bool_t b)                         { fEmbedMode     = b;         }
   void         SetMinClusEnergy(Double_t e)                   { fMinE          = e;         }
   void         SetMinEcc(Double_t ecc)                        { fMinEcc        = ecc;       }
   void         SetMinErat(Double_t erat)                      { fMinErat       = erat;      }
@@ -122,6 +123,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Int_t                  fMinL0Time;              // minimum accepted time for trigger
   Int_t                  fMaxL0Time;              // maximum accepted time for trigger
   Bool_t                 fMcMode;                 // monte carlo mode
+  Bool_t                 fEmbedMode;              // embedding mode
   AliEMCALGeoUtils      *fGeom;                   // geometry utils
   AliEMCALRecoUtils     *fReco;                   // reco utils
   Bool_t                 fDoPSel;                 // if false then accept all events
@@ -196,7 +198,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskEMCALPi0PbPb(const AliAnalysisTaskEMCALPi0PbPb&);            // not implemented
   AliAnalysisTaskEMCALPi0PbPb &operator=(const AliAnalysisTaskEMCALPi0PbPb&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 9) // Analysis task for neutral pions in Pb+Pb
+  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 10) // Analysis task for neutral pions in Pb+Pb
 };
 #endif
 
