@@ -38,6 +38,8 @@ public:
       kEventOnly,
       kTrackPair,
       kTrackPairMix,
+      kTrackPairRotated1,
+      kTrackPairRotated2,
       kTruePair,
       kMother,
       kComputations

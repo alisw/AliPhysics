@@ -10,16 +10,17 @@
 // -- values to be computed.
 //
 
-#include "AliAnalysisTaskSE.h"
-
 #include <TString.h>
 #include <TClonesArray.h>
+
+#include "AliAnalysisTaskSE.h"
 
 #include "AliRsnEvent.h"
 #include "AliRsnMiniValue.h"
 #include "AliRsnMiniOutput.h"
 
 class TList;
+
 class AliTriggerAnalysis;
 class AliRsnMiniEvent;
 class AliRsnCutSet;
@@ -34,11 +35,6 @@ public:
    AliRsnMiniAnalysisTask& operator=(const AliRsnMiniAnalysisTask &copy);
    virtual ~AliRsnMiniAnalysisTask();
 
-   virtual void        UserCreateOutputObjects();
-   virtual void        UserExec(Option_t *option);
-   virtual void        Terminate(Option_t *);
-   virtual void        FinishTaskOutput();
-  
    void                UseMC(Bool_t yn = kTRUE)           {fUseMC = yn;}                     
    void                UseCentrality(const char *type)    {fUseCentrality = kTRUE; fCentralityType = type; fCentralityType.ToUpper();}
    void                UseMultiplicity(const char *type)  {fUseCentrality = kFALSE; fCentralityType = type; fCentralityType.ToUpper();}
@@ -48,9 +44,13 @@ public:
    void                SetMaxDiffAngle(Double_t val)      {fMaxDiffAngle = val;}
    void                SetEventCuts(AliRsnCutSet *cuts)   {fEventCuts    = cuts;}
    Int_t               AddTrackCuts(AliRsnCutSet *cuts);
+   TClonesArray       *Outputs()                          {return &fHistograms;}
+   TClonesArray       *Values()                           {return &fValues;}
    
-   TClonesArray       *Outputs()        {return &fHistograms;}
-   TClonesArray       *Values()         {return &fValues;}
+   virtual void        UserCreateOutputObjects();
+   virtual void        UserExec(Option_t*);
+   virtual void        Terminate(Option_t*);
+   virtual void        FinishTaskOutput();
    
    Int_t               ValueID(AliRsnMiniValue::EType type, Bool_t useMC = kFALSE);
    Int_t               CreateValue(AliRsnMiniValue::EType type, Bool_t useMC = kFALSE); 
@@ -60,6 +60,7 @@ public:
 private:
 
    Char_t   CheckCurrentEvent();
+   Int_t    FillMiniEvent(Char_t evType);
    Double_t ComputeAngle();
    Double_t ComputeCentrality(Bool_t isESD);
    void     FillTrueMotherESD(AliRsnMiniEvent *event);
@@ -89,6 +90,7 @@ private:
    TArrayI              fNMixed;          //! array to keep trace of how many times an event was mixed
    AliTriggerAnalysis  *fTriggerAna;      //! trigger analysis
    AliESDtrackCuts     *fESDtrackCuts;    //! quality cut for ESD tracks
+   AliRsnMiniEvent     *fMiniEvent;       //! mini-event cursor
 
    ClassDef(AliRsnMiniAnalysisTask, 1); // AliRsnMiniAnalysisTask
 };
