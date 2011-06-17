@@ -738,7 +738,11 @@ void AliITSUpgradeClusterFinder::AddLabelIndex(UInt_t col, UInt_t row){
     if(row!=pix->GetRow())continue;
     Int_t label[kMaxLab];
     for(Int_t i=0; i< kMaxLab; i++) label[i]=-1;
-    for(Int_t i=0;i<kMaxLab;i++){
+
+    Int_t max = kMaxLab;
+    // maximum number of labels stored in the AliITSDigitUpgrade (or AliITSUPixelModule) is normally less!
+    if (AliITSUPixelModule::kMaxLab<max) max = AliITSUPixelModule::kMaxLab;
+    for(Int_t i=0;i<max;i++){
       label[i] = pix->GetLabel(i);
     }   
     SetLabels(label);
