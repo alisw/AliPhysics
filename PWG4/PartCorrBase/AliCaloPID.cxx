@@ -47,6 +47,7 @@
 //---- ANALYSIS system ----
 #include "AliCaloPID.h"
 #include "AliVCluster.h"
+#include "AliVTrack.h"
 #include "AliAODPWG4Particle.h"
 #include "AliEMCALPIDUtils.h"
 #include "AliCalorimeterUtils.h"
@@ -65,7 +66,12 @@ fPHOSNeutralWeight(0.), //fPHOSWeightFormula(0),
 //fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
 fDispCut(0.),fTOFCut(0.), fDebug(-1), 
 fRecalculateBayesian(kFALSE), fParticleFlux(kLow), 
-fEMCALPIDUtils(new AliEMCALPIDUtils)
+fEMCALPIDUtils(new AliEMCALPIDUtils),
+fHistoNEBins(100),   fHistoEMax(100.),   fHistoEMin(0.),
+fHistoNDEtaBins(100),fHistoDEtaMax(0.15),fHistoDEtaMin(-0.15),
+fHistoNDPhiBins(100),fHistoDPhiMax(0.15),fHistoDPhiMin(-0.15),
+fhTrackMatchedDEta(),fhTrackMatchedDPhi(),fhTrackMatchedDEtaDPhi()
+
 {
   //Ctor
   
@@ -84,7 +90,12 @@ fPHOSNeutralWeight(0.), //fPHOSWeightFormula(0),
 //fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
 fDispCut(0.),fTOFCut(0.), fDebug(-1), 
 fRecalculateBayesian(kTRUE), fParticleFlux(flux), 
-fEMCALPIDUtils(new AliEMCALPIDUtils)
+fEMCALPIDUtils(new AliEMCALPIDUtils),
+fHistoNEBins(100),   fHistoEMax(100.),   fHistoEMin(0.),
+fHistoNDEtaBins(100),fHistoDEtaMax(0.15),fHistoDEtaMin(-0.15),
+fHistoNDPhiBins(100),fHistoDPhiMax(0.15),fHistoDPhiMin(-0.15),
+fhTrackMatchedDEta(),fhTrackMatchedDPhi(),fhTrackMatchedDEtaDPhi()
+
 {
 	//Ctor
 	
@@ -103,73 +114,18 @@ fPHOSNeutralWeight(0.), //fPHOSWeightFormula(0),
 //fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
 fDispCut(0.),fTOFCut(0.), fDebug(-1), 
 fRecalculateBayesian(kTRUE), fParticleFlux(-1), 
-fEMCALPIDUtils( (AliEMCALPIDUtils*) emcalpid)
+fEMCALPIDUtils( (AliEMCALPIDUtils*) emcalpid),
+fHistoNEBins(100),   fHistoEMax(100.),   fHistoEMin(0.),
+fHistoNDEtaBins(100),fHistoDEtaMax(0.15),fHistoDEtaMin(-0.15),
+fHistoNDPhiBins(100),fHistoDPhiMax(0.15),fHistoDPhiMin(-0.15),
+fhTrackMatchedDEta(),fhTrackMatchedDPhi(),fhTrackMatchedDEtaDPhi()
+
 {
 	//Ctor
 	
 	//Initialize parameters
 	InitParameters();
 }
-
-//____________________________________________________________________________
-AliCaloPID::AliCaloPID(const AliCaloPID & pid) :   
-TObject(pid), fEMCALPhotonWeight(pid.fEMCALPhotonWeight), 
-fEMCALPi0Weight(pid.fEMCALPi0Weight), 
-fEMCALElectronWeight(pid.fEMCALElectronWeight), 
-fEMCALChargeWeight(pid.fEMCALChargeWeight), 
-fEMCALNeutralWeight(pid.fEMCALNeutralWeight), 
-fPHOSPhotonWeight(pid.fPHOSPhotonWeight),
-fPHOSPi0Weight(pid.fPHOSPi0Weight),
-fPHOSElectronWeight(pid.fPHOSElectronWeight), 
-fPHOSChargeWeight(pid.fPHOSChargeWeight),
-fPHOSNeutralWeight(pid.fPHOSNeutralWeight),
-//fPHOSWeightFormula(pid.fPHOSWeightFormula), 
-//fPHOSPhotonWeightFormula(new TFormula(*pid.fPHOSPhotonWeightFormula)), 
-//fPHOSPi0WeightFormula   (new TFormula(*pid.fPHOSPi0WeightFormula)), 
-fDispCut(pid.fDispCut),fTOFCut(pid.fTOFCut),
-fDebug(pid.fDebug), fRecalculateBayesian(pid.fRecalculateBayesian),
-fParticleFlux(pid.fParticleFlux), 
-fEMCALPIDUtils(new AliEMCALPIDUtils(*pid.fEMCALPIDUtils))
-{
-  // cpy ctor
-	
-}
-
-//_________________________________________________________________________
-//AliCaloPID & AliCaloPID::operator = (const AliCaloPID & pid)
-//{
-//  // assignment operator
-//  
-//  if(&pid == this) return *this;
-//  
-//  fEMCALPhotonWeight   = pid. fEMCALPhotonWeight ;
-//  fEMCALPi0Weight      = pid.fEMCALPi0Weight ;
-//  fEMCALElectronWeight = pid.fEMCALElectronWeight; 
-//  fEMCALChargeWeight   = pid.fEMCALChargeWeight;
-//  fEMCALNeutralWeight  = pid.fEMCALNeutralWeight;
-//  
-//  fPHOSPhotonWeight    = pid.fPHOSPhotonWeight ;
-//  fPHOSPi0Weight       = pid.fPHOSPi0Weight ;
-//  fPHOSElectronWeight  = pid.fPHOSElectronWeight; 
-//  fPHOSChargeWeight    = pid.fPHOSChargeWeight;
-//  fPHOSNeutralWeight   = pid.fPHOSNeutralWeight;
-//  
-//  fPHOSWeightFormula   = pid.fPHOSWeightFormula; 
-//  delete fPHOSPhotonWeightFormula;  fPHOSPhotonWeightFormula = new TFormula(*pid.fPHOSPhotonWeightFormula); 
-//  delete fPHOSPi0WeightFormula;     fPHOSPi0WeightFormula    = new TFormula(*pid.fPHOSPi0WeightFormula);
-//  
-//  fDispCut  = pid.fDispCut;
-//  fTOFCut   = pid.fTOFCut;
-//  fDebug    = pid.fDebug;
-//  
-//  fRecalculateBayesian = pid.fRecalculateBayesian;
-//  fParticleFlux        = pid.fParticleFlux;
-//	
-//  delete fEMCALPIDUtils; fEMCALPIDUtils       = new AliEMCALPIDUtils(*pid.fEMCALPIDUtils);
-//		
-//  return *this;
-//  
-//}
 
 //_________________________________
 AliCaloPID::~AliCaloPID() {
@@ -179,6 +135,46 @@ AliCaloPID::~AliCaloPID() {
 //  if(fPHOSPi0WeightFormula)    delete fPHOSPi0WeightFormula ;
   if(fEMCALPIDUtils)           delete fEMCALPIDUtils ;
 }
+
+
+//________________________________________________________________________
+TList *  AliCaloPID::GetCreateOutputObjects()
+{  
+  // Create histograms to be saved in output file and 
+  // store them in outputContainer of the analysis class that calls this class.
+  
+  TList * outputContainer = new TList() ; 
+  outputContainer->SetName("CaloPIDHistos") ; 
+  
+  outputContainer->SetOwner(kFALSE);
+  
+  fhTrackMatchedDEta  = new TH2F
+  ("TrackMatchedDEta",
+   "d#eta of cluster-track vs cluster energy",fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNDEtaBins,fHistoDEtaMin,fHistoDEtaMax); 
+  fhTrackMatchedDEta->SetYTitle("d#eta");
+  fhTrackMatchedDEta->SetXTitle("E_{cluster} (GeV)");
+  
+  fhTrackMatchedDPhi  = new TH2F
+  ("TrackMatchedDPhi",
+   "d#phi of cluster-track vs cluster energy"
+   ,fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNDPhiBins,fHistoDPhiMin,fHistoDPhiMax); 
+  fhTrackMatchedDPhi->SetYTitle("d#phi (rad)");
+  fhTrackMatchedDPhi->SetXTitle("E_{cluster} (GeV)");
+  
+  fhTrackMatchedDEtaDPhi  = new TH2F
+  ("TrackMatchedDEtaDPhi",
+   "d#eta vs d#phi of cluster-track vs cluster energy"
+   ,fHistoNDEtaBins,fHistoDEtaMin,fHistoDEtaMax,fHistoNDPhiBins,fHistoDPhiMin,fHistoDPhiMax); 
+  fhTrackMatchedDEtaDPhi->SetYTitle("d#phi (rad)");
+  fhTrackMatchedDEtaDPhi->SetXTitle("d#eta");   
+  
+  outputContainer->Add(fhTrackMatchedDEta) ; 
+  outputContainer->Add(fhTrackMatchedDPhi) ;
+  outputContainer->Add(fhTrackMatchedDEtaDPhi) ; 
+  
+  return outputContainer;
+}
+
 
 
 //_______________________________________________________________
@@ -477,22 +473,38 @@ Bool_t AliCaloPID::IsTrackMatched(const AliVCluster* cluster, const AliCalorimet
   //Check if there is any track attached to this cluster
   
   Int_t nMatches = cluster->GetNTracksMatched();
+//  if(nMatches>0){
+//    printf("N matches %d, first match (ESD) %d or (AOD) %d\n",nMatches,cluster->GetTrackMatchedIndex(), cluster->GetTrackMatched(0));
+//    if     (cluster->GetTrackMatched(0))        printf("\t matched track id %d\n",((AliVTrack*)cluster->GetTrackMatched(0)) ->GetID() ) ;
+//  }
+//  else {
+//    printf("Not Matched");
+//  }
+
+  //If EMCAL track matching needs to be recalculated
+  if(cluster->IsEMCAL() && cu && cu->IsRecalculationOfClusterTrackMatchingOn()){
+    Float_t dR = 999., dZ = 999.;
+    cu->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dR,dZ);
+
+    if(dR < 999) {     
+      
+      fhTrackMatchedDEta->Fill(cluster->E(),dZ);
+      fhTrackMatchedDPhi->Fill(cluster->E(),dR);
+      if(cluster->E() > 0.5)fhTrackMatchedDEtaDPhi->Fill(dZ,dR);
+      //printf("dR %f, dZ %f \n",dR,dZ);
+      return kTRUE;
+    }
+    else         
+      return kFALSE;
+  }//EMCAL cluster and recalculation of matching on
   
-  //  printf("N matches %d, first match %d\n",nMatches,cluster->GetTrackMatchedIndex());
-  //  if     (cluster->GetTrackMatched(0))        printf("\t matched track id %d\n",((AliVTrack*)cluster->GetTrackMatched(0))->GetID()) ;
-  //  else if(cluster->GetTrackMatchedIndex()>=0) printf("\t matched track id %d\n",((AliVTrack*) GetReader()->GetInputEvent()->GetTrack(cluster->GetTrackMatchedIndex()))->GetID()) ;
+  fhTrackMatchedDEta->Fill(cluster->GetTrackDz(),cluster->E());
+  fhTrackMatchedDEta->Fill(cluster->GetTrackDx(),cluster->E());
+  if(cluster->E() > 0.5)fhTrackMatchedDEtaDPhi->Fill(cluster->GetTrackDz(),cluster->GetTrackDx());
   
   
   if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName())))
-  {
-    //If EMCAL track matching needs to be recalculated
-    if(cluster->IsEMCAL() && cu && cu->IsRecalculationOfClusterTrackMatchingOn()){
-      Float_t dR = 999., dZ = 999.;
-      cu->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dR,dZ);
-      if(dR < 999) return kTRUE;
-      else         return kFALSE;
-    }
-    
+  {    
     if (nMatches > 0) {
       if (nMatches == 1 ) {
         Int_t iESDtrack = cluster->GetTrackMatchedIndex();
@@ -507,16 +519,21 @@ Bool_t AliCaloPID::IsTrackMatched(const AliVCluster* cluster, const AliCalorimet
   }//ESDs
   else
   {
-    //AODs
-    if(cu && cu->IsRecalculationOfClusterTrackMatchingOn()){
-      Float_t dR = TMath::Abs(cluster->GetEmcCpvDistance()) ; //FIXME
-      if(dR > cu->GetCutR()) return kFALSE;
-      else                   return kTRUE;
-    }
-    else {
-      if(nMatches > 0) return kTRUE; //There is at least one match.
-      else             return kFALSE;
-    }
+//    //Patched AODs
+//    if(cu && cu->IsRecalculationOfClusterTrackMatchingOn()){
+//      Float_t dR = TMath::Abs(cluster->GetEmcCpvDistance()) ; //FIXME
+//      if(dR > cu->GetCutR()) return kFALSE;
+//      else                   return kTRUE;
+//    }
+//    else {
+//      if(nMatches > 0) return kTRUE; //There is at least one match.
+//      else             return kFALSE;
+    
+//    }
+    
+    if(nMatches > 0) return kTRUE; //There is at least one match.
+    else             return kFALSE;
+    
   }//AODs or MC (copy into AOD)
   
   return kFALSE;
