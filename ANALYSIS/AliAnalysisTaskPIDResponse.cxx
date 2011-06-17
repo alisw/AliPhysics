@@ -34,6 +34,7 @@ ClassImp(AliAnalysisTaskPIDResponse)
 AliAnalysisTaskPIDResponse::AliAnalysisTaskPIDResponse():
 AliAnalysisTaskSE(),
 fIsMC(kFALSE),
+fOADBPath(),
 fPIDResponse(0x0),
 fRun(0),
 fOldRun(0),
@@ -48,6 +49,7 @@ fRecoPass(0)
 AliAnalysisTaskPIDResponse::AliAnalysisTaskPIDResponse(const char* name):
 AliAnalysisTaskSE(name),
 fIsMC(kFALSE),
+fOADBPath(),
 fPIDResponse(0x0),
 fRun(0),
 fOldRun(0),
@@ -87,12 +89,12 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
   if (!fPIDResponse) AliFatal("PIDResponse object was not created");
 
   fPIDResponse->SetOADBPath(AliAnalysisManager::GetOADBPath());
+  if (!fOADBPath.IsNull()) fPIDResponse->SetOADBPath(fOADBPath.Data());
 }
 
 //______________________________________________________________________________
 void AliAnalysisTaskPIDResponse::UserExec(Option_t */*option*/)
 {
-  //
   // Setup the PID response functions and fill the QA histograms
   //
   AliVEvent *event=InputEvent();
@@ -139,5 +141,6 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
   } else if (fileName.Contains("/pass3")) {
     fRecoPass=3;
   }
-  
+
+  fPIDResponse->SetCurrentFile(fileName.Data());
 }

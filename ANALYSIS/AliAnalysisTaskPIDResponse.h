@@ -15,6 +15,7 @@
 //==============================================================================
 
 #include <TVectorDfwd.h>
+#include <TString.h>
 
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
@@ -37,9 +38,12 @@ public:
   
   virtual void UserExec(Option_t */*option*/);
 
-  
+  void SetOADBPath(const char* path) {fOADBPath=path;}
+  const char* GetOADBPath() const { return fOADBPath.Data(); }
+
 private:
   Bool_t fIsMC;                        //  If we run on MC data
+  TString fOADBPath;                   // OADB path to use
   
   AliPIDResponse *fPIDResponse;        //! PID response Handler
   Int_t   fRun;                        //! current run number
@@ -52,6 +56,6 @@ private:
   AliAnalysisTaskPIDResponse(const AliAnalysisTaskPIDResponse &other);
   AliAnalysisTaskPIDResponse& operator=(const AliAnalysisTaskPIDResponse &other);
   
-  ClassDef(AliAnalysisTaskPIDResponse,1)  // Task to properly set the PID response functions of all detectors
+  ClassDef(AliAnalysisTaskPIDResponse,2)  // Task to properly set the PID response functions of all detectors
 };
 #endif
