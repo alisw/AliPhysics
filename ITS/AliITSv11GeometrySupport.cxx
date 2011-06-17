@@ -8319,6 +8319,7 @@ void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
 // Creates the elements suspending the ITS to the TPC and other fixed
 // elements used to hook the rails (0872/C and its daughters)
 //
+// Input:
 //         moth : the TGeoVolume owing the volume structure
 //         mgr  : the GeoManager (default gGeoManager)
 // Output:
@@ -8326,6 +8327,7 @@ void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
 // Return:
 //
 // Created:      28 Oct 2010  Mario Sitta
+// Updated:      18 Feb 2011  Mario Sitta
 //
 // Technical data are taken from AutoCAD drawings, L.Simonetti technical
 // drawings and other (oral) information given by F.Tosello
@@ -8333,6 +8335,7 @@ void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
 
   // Dimensions and positions of the half ring C2/C3 (0872/C/04)
   const Double_t kRingCZPos           =   733.000*fgkmm;
+  const Double_t kRingCZToTPC         =     5.500*fgkmm;
 
   const Double_t kRingCThick          =    12.000*fgkmm;
   const Double_t kRingCRmin           =   565.000*fgkmm;
@@ -8440,7 +8443,7 @@ void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
   const Double_t kWebcamLength        =    35.000*fgkmm;//ESTIMATED!!!
 
   // Dimensions of the rear upper webcam supports (0872/C/V/05-06)
-  const Double_t kRearUpWebStirrWide  =    71.000*fgkmm;
+  const Double_t kRearUpWebStirrWide  =    76.000*fgkmm;
   const Double_t kRearUpWebStirrDep   =    15.000*fgkmm;
   const Double_t kRearUpWebStirrThick =     5.000*fgkmm;
   const Double_t kRearUpWebStirrH1    =    27.000*fgkmm;
@@ -8488,10 +8491,34 @@ void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
   const Double_t kLowerSlidePinH1     =    12.000*fgkmm;
   const Double_t kLowerSlidePinH2     =    10.000*fgkmm;
 
+  // Dimensions and positions of the C1/C2 rail stirrups (0872/C/01-02)
+  const Double_t kStirrCXPos          =   759.000*fgkmm;
+  const Double_t kStirrCZPos          =  1867.000*fgkmm;
+
+  const Double_t kStirrC12Thick       =    15.000*fgkmm;
+  const Double_t kStirrC12TotLen      =   314.000*fgkmm;
+  const Double_t kStirrC12BodyHalfHi  =    95.000*fgkmm;
+  const Double_t kStirrC12BodyLen     =   153.000*fgkmm;
+  const Double_t kStirrC12HeadLen     =    50.000*fgkmm;
+  const Double_t kStirrC12HeadHalfHi  =   165.000*fgkmm;
+  const Double_t kStirrC12HeadIntHi   =   114.000*fgkmm;
+  const Double_t kStirrC12HeadIntLen  =    45.000*fgkmm;
+  const Double_t kStirrC12TailLen     =    14.000*fgkmm;
+  const Double_t kStirrC12R100        =   100.000*fgkmm;
+  const Double_t kStirrC12R50         =    50.000*fgkmm;
+  const Double_t kStirrC12R10         =    10.000*fgkmm;
+  const Double_t kStirrC12HeadAng     =    40.000; // Degree
+
+  const Int_t kNumberOfStirrCPoints   =    23;
+
+  // Dimensions and positions of the C5 rail stirrups (0872/C/05)
+  const Double_t kStirrC5BodyLen      =   155.000*fgkmm;
+
 
   // Local variables
-  Double_t xprof[2*kNumberOfRingPoints],yprof[2*kNumberOfRingPoints];
+  Double_t xprof[2*kNumberOfStirrCPoints+1],yprof[2*kNumberOfStirrCPoints+1];
   Double_t xpos, ypos, zpos, alpha;
+  Double_t xdummy, ydummy;
   
 
   // First create all needed shapes
@@ -9131,15 +9158,90 @@ void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
   zpos += kLowerSlidePinH1;
   lwSlidePinSh->DefineSection(3, zpos, 0, kLowerSlidePinRmin);
 
+  // The Stirrup on the Muon side (0872/C/01-02): a really complex Xtru
+  // to approximate arcs with polylines
+  TGeoXtru *stirrupC1C2Sh = new TGeoXtru(2);
+
+  for (Int_t j=0; j<11; j++) { // The internal arc
+    xprof[j] = kStirrC12R50*(1 - CosD(90*j/10));
+    yprof[j] = kStirrC12R50*SinD(90*j/10);
+  }
+
+  xprof[11] = xprof[10] + kStirrC12TailLen;
+  yprof[11] = yprof[10];
+  xprof[12] = xprof[11];
+  yprof[12] = kStirrC12BodyHalfHi;
+  xprof[13] = xprof[12] - kStirrC12BodyLen;
+  yprof[13] = yprof[12];
+
+  xprof[17] = xprof[12] - kStirrC12TotLen + kStirrC12HeadLen;
+  yprof[17] = kStirrC12HeadHalfHi;
+  IntersectCircle(-TanD(kStirrC12HeadAng), xprof[17], yprof[17],
+		  kStirrC12R100, xprof[13], yprof[13]+kStirrC12R100,
+		  xprof[16], yprof[16], xdummy, ydummy);
+  alpha = TMath::ASin((xprof[13]-xprof[16])/kStirrC12R100);
+  xprof[14] = xprof[13] - kStirrC12R100*TMath::Sin(alpha/3);
+  yprof[14] = yprof[13] + kStirrC12R100*(1 - TMath::Cos(alpha/3));
+  xprof[15] = xprof[13] - kStirrC12R100*TMath::Sin(2*alpha/3);
+  yprof[15] = yprof[13] + kStirrC12R100*(1 - TMath::Cos(2*alpha/3));
+
+  xprof[18] = xprof[17] - kStirrC12HeadLen;
+  yprof[18] = yprof[17];
+  xprof[19] = xprof[18];
+  yprof[19] = kStirrC12HeadIntHi;
+  xprof[20] = xprof[19] + kStirrC12HeadIntLen - kStirrC12R10;
+  yprof[20] = yprof[19];
+  for (Int_t j=1; j<4; j++) {
+    xprof[20+j] = xprof[20] + kStirrC12R10*SinD(90*j/3);
+    yprof[20+j] = yprof[20] - kStirrC12R10*(1 - CosD(90*j/3));
+  }
+
+  // We did the up side, now reflex on the bottom side
+  for (Int_t jp = 0; jp < kNumberOfStirrCPoints; jp++) {
+    xprof[24+jp] =  xprof[23-jp];
+    yprof[24+jp] = -yprof[23-jp];
+  }
+
+  // Now the actual Xtru
+  stirrupC1C2Sh->DefinePolygon(2*kNumberOfStirrCPoints+1, xprof, yprof);
+  stirrupC1C2Sh->DefineSection(0,-kStirrC12Thick/2);
+  stirrupC1C2Sh->DefineSection(1, kStirrC12Thick/2);
+
+  // The first element of the Stirrup on the Forward side (0872/C/05):
+  // a really complex Xtru (equal to part of the Muon Stirrup)
+  // (0872/C/06 and 0872/C/07 are dismounted after positioning the TPC to I.P.)
+  TGeoXtru *stirrupC5Sh = new TGeoXtru(2);
+
+  for (Int_t j=0; j<13; j++) { // The internal arc and the tail
+    xprof[j] = stirrupC1C2Sh->GetX(j);
+    yprof[j] = stirrupC1C2Sh->GetY(j);
+  }
+
+  xprof[13] = xprof[12] - kStirrC5BodyLen;
+  yprof[13] = yprof[12];
+
+  // We did the up side, now reflex on the bottom side
+  for (Int_t jp = 0; jp < 13; jp++) {
+    xprof[14+jp] =  xprof[13-jp];
+    yprof[14+jp] = -yprof[13-jp];
+  }
+
+  // Now the actual Xtru
+  stirrupC5Sh->DefinePolygon(27, xprof, yprof);
+  stirrupC5Sh->DefineSection(0,-kStirrC12Thick/2);
+  stirrupC5Sh->DefineSection(1, kStirrC12Thick/2);
+
 
   // We have all shapes: now create the real volumes
   TGeoMedium *medAlcoa   = mgr->GetMedium("ITS_ALUMINUM$"); // To code!!!!!!
   TGeoMedium *medHokotol = mgr->GetMedium("ITS_HOKOTOL$");
   TGeoMedium *medAnticor = mgr->GetMedium("ITS_ANTICORODAL$");
+  TGeoMedium *medErgal   = mgr->GetMedium("ITS_ERGAL$");
   TGeoMedium *medAisi    = mgr->GetMedium("ITS_AISI304L$");
   TGeoMedium *medAir     = mgr->GetMedium("ITS_AIR$");
   TGeoMedium *medPlexy   = mgr->GetMedium("ITS_PLEXYGLAS$");
   TGeoMedium *medPVC     = mgr->GetMedium("ITS_PVC$");
+
 
   TGeoVolume *suppRingC2C3  = new TGeoVolume("ITSTPCsupportRingC2C3",
 					     ringC2C3, medAlcoa);
@@ -9313,6 +9415,24 @@ void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
   lwSlidePin->SetFillColor(lwSlidePin->GetLineColor());
   lwSlidePin->SetFillStyle(4000); // 0% transparent
 
+  TGeoVolume *stirrC1C2  = new TGeoVolume("ITSTPCsupportStirrupC1C2",
+					  stirrupC1C2Sh, medErgal);
+
+  stirrC1C2->SetVisibility(kTRUE);
+  stirrC1C2->SetLineColor(6); // Purple
+  stirrC1C2->SetLineWidth(1);
+  stirrC1C2->SetFillColor(stirrC1C2->GetLineColor());
+  stirrC1C2->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *stirrC5  = new TGeoVolume("ITSTPCsupportStirrupC5",
+					stirrupC5Sh, medErgal);
+
+  stirrC5->SetVisibility(kTRUE);
+  stirrC5->SetLineColor(6); // Purple
+  stirrC5->SetLineWidth(1);
+  stirrC5->SetFillColor(stirrC5->GetLineColor());
+  stirrC5->SetFillStyle(4000); // 0% transparent
+
 
   // Build up the wheel slides
   upSlideVol->AddNode(upSlideBlock,1,0);
@@ -9329,22 +9449,22 @@ void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
 
   // Finally put everything in the mother volume
   moth->AddNode(suppRingC2C3,1,
-		new TGeoTranslation(0, 0, kRingCZPos) );
+		new TGeoTranslation(0, 0, kRingCZPos+kRingCZToTPC) );
   moth->AddNode(suppRingC2C3,2,
 		new TGeoCombiTrans( 0, 0,-kRingCZPos,
 				   new TGeoRotation("",0.,180.,0.) ) );
   moth->AddNode(suppRingC2C3,3,
-		new TGeoCombiTrans( 0, 0, kRingCZPos,
+		new TGeoCombiTrans( 0, 0, kRingCZPos+kRingCZToTPC,
 				   new TGeoRotation("",0.,0.,180.) ) );
   moth->AddNode(suppRingC2C3,4,
 		new TGeoCombiTrans( 0, 0,-kRingCZPos,
 				   new TGeoRotation("",0.,180.,180.) ) );
 
-  zpos = kRingCZPos + kRingCThick;
+  zpos = kRingCZPos + kRingCThick + kRingCZToTPC;
   moth->AddNode(forwUpHook,1,
 		new TGeoTranslation( 0, 0, zpos) );
 
-  zpos = kRingCZPos + kRingCThick;
+  zpos = kRingCZPos + kRingCThick + kRingCZToTPC;
   moth->AddNode(forwLwHook,1,
 		new TGeoCombiTrans( 0, 0, zpos,
 				   new TGeoRotation("",0.,0.,180.) ) );
@@ -9369,7 +9489,7 @@ void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
 
   xpos = kForwUpHookWide/2;
   ypos = (forwUpHookMainBody->GetY(8) + forwUpHookMainBody->GetY(9))/2;
-  zpos = kRingCZPos + kRingCThick;
+  zpos = kRingCZPos + kRingCThick + kRingCZToTPC;
   moth->AddNode(forwWebSStirrup,1,
 		new TGeoCombiTrans( xpos, ypos, zpos,
 				   new TGeoRotation("", 0., 90., 0.) ) );
@@ -9445,10 +9565,10 @@ void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
   ypos = ringC2C3->GetY(14);
   zpos = kRingCZPos + kRingCThick;
   moth->AddNode(upSlideVol,1,
-		new TGeoCombiTrans( xpos, ypos, zpos,
+		new TGeoCombiTrans( xpos, ypos, zpos + kRingCZToTPC,
 				   new TGeoRotation("",-90.,-90., 90.) ) );
   moth->AddNode(upSlideVol,2,
-		new TGeoCombiTrans(-xpos, ypos, zpos,
+		new TGeoCombiTrans(-xpos, ypos, zpos + kRingCZToTPC,
 				   new TGeoRotation("",-90.,-90., 90.) ) );
   moth->AddNode(upSlideVol,3,
 		new TGeoCombiTrans( xpos, ypos, -zpos,
@@ -9458,17 +9578,49 @@ void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
 				   new TGeoRotation("", 90.,-90.,-90.) ) );
 
   moth->AddNode(lwSlideVol,1,
+		new TGeoCombiTrans( xpos,-ypos, zpos + kRingCZToTPC,
+				   new TGeoRotation("", 90.,-90., 90.) ) );
+  moth->AddNode(lwSlideVol,2,
+		new TGeoCombiTrans(-xpos,-ypos, zpos + kRingCZToTPC,
+				   new TGeoRotation("", 90.,-90., 90.) ) );
+  moth->AddNode(lwSlideVol,3,
 		new TGeoCombiTrans( xpos,-ypos,-zpos,
 				   new TGeoRotation("",-90.,-90.,-90.) ) );
-  moth->AddNode(lwSlideVol,2,
+  moth->AddNode(lwSlideVol,4,
 		new TGeoCombiTrans(-xpos,-ypos,-zpos,
 				   new TGeoRotation("",-90.,-90.,-90.) ) );
-  moth->AddNode(lwSlideVol,3,
+
+  xpos = kStirrCXPos;
+  zpos = kRingCZPos + kStirrCZPos + stirrupC1C2Sh->GetZ(1) + kRingCZToTPC;
+  moth->AddNode(stirrC1C2,1,
+		new TGeoTranslation( xpos, 0, zpos) );
+  moth->AddNode(stirrC1C2,2,
+		new TGeoCombiTrans(-xpos, 0, zpos,
+				   new TGeoRotation("", 90.,-180.,-90.) ) );
+
+  xpos = kStirrCXPos + stirrupC1C2Sh->GetX(18) + kUpperSlideWidth/2;
+  ypos = ringC2C3->GetY(14); // Slides are all at the same height
+  zpos = kRingCZPos + kStirrCZPos + kStirrC12Thick + kRingCZToTPC;
+  moth->AddNode(upSlideVol,5,
+		new TGeoCombiTrans( xpos, ypos, zpos,
+				   new TGeoRotation("",-90.,-90., 90.) ) );
+  moth->AddNode(upSlideVol,6,
+		new TGeoCombiTrans(-xpos, ypos, zpos,
+				   new TGeoRotation("",-90.,-90., 90.) ) );
+  moth->AddNode(lwSlideVol,5,
 		new TGeoCombiTrans( xpos,-ypos, zpos,
 				   new TGeoRotation("", 90.,-90., 90.) ) );
-  moth->AddNode(lwSlideVol,4,
+  moth->AddNode(lwSlideVol,6,
 		new TGeoCombiTrans(-xpos,-ypos, zpos,
 				   new TGeoRotation("", 90.,-90., 90.) ) );
+
+  xpos = kStirrCXPos;
+  zpos = kRingCZPos + kStirrCZPos + stirrupC5Sh->GetZ(1);
+  moth->AddNode(stirrC5,1,
+		new TGeoTranslation( xpos, 0,-zpos) );
+  moth->AddNode(stirrC5,2,
+		new TGeoCombiTrans(-xpos, 0,-zpos,
+				   new TGeoRotation("", 90.,-180.,-90.) ) );
 
 
   return;

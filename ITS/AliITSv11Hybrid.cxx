@@ -6103,6 +6103,36 @@ void AliITSv11Hybrid::CreateMaterials(){
     den = 2.69;
     AliMixture(34,"HOKOTOL$",aA,zZ,den,+10,wW);
     AliMedium(34,"HOKOTOL$",34,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
+
+    // Ergal (7075) (yet another Aluminium alloy) - 09 nov 10
+    // A,Z from Root TGeoElementTable, W from Web sites
+    zZ[0] = 13.0; aA[0] =  26.9815; // Aluminium
+    zZ[1] = 29.0; aA[1] =  63.546 ; // Copper
+    zZ[2] = 26.0; aA[2] =  55.845 ; // Iron
+    zZ[3] = 25.0; aA[3] =  54.938 ; // Manganese
+    zZ[4] = 12.0; aA[4] =  24.305 ; // Magnesium
+    zZ[5] = 14.0; aA[5] =  28.0855; // Silicon
+    zZ[6] = 30.0; aA[6] =  65.39  ; // Zinc
+    zZ[7] = 24.0; aA[7] =  51.9961; // Chromium
+    zZ[8] = 22.0; aA[8] =  47.867 ; // Titanium
+
+    wW[1] = 0.016000;//Cu - mean value
+    wW[2] = 0.005000;//Fe
+    wW[3] = 0.003000;//Mn
+    wW[4] = 0.025000;//Mg - mean value
+    wW[5] = 0.004000;//Si
+    wW[6] = 0.056000;//Zn - mean value
+    wW[7] = 0.002300;//Cr - mean value
+    wW[8] = 0.002000;//Ti
+
+    totFrac = 0;
+    for (Int_t j=1; j<9; j++)
+      totFrac += wW[j];
+    wW[0] = 1. - totFrac;//Al - the remainder
+
+    den = 2.69;
+    AliMixture(33,"ERGAL$",aA,zZ,den,+9,wW);
+    AliMedium(33,"ERGAL$",33,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
     
 }
 
