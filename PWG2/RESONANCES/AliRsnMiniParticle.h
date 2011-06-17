@@ -16,8 +16,9 @@ class AliRsnDaughter;
 class AliRsnMiniParticle : public TObject {
 public:
 
-   AliRsnMiniParticle() : fCharge(0), fPDG(0), fMother(0), fMotherPDG(0), fCutBits(0x0) {Int_t i = 3; while (i--) fPsim[i] = fPrec[i] = 0.0;}
+   AliRsnMiniParticle() : fIndex(-1), fCharge(0), fPDG(0), fMother(0), fMotherPDG(0), fCutBits(0x0) {Int_t i = 3; while (i--) fPsim[i] = fPrec[i] = 0.0;}
 
+   Int_t&         Index()                    {return fIndex;}
    Char_t&        Charge()                   {return fCharge;}
    Float_t&       PsimX()                    {return fPsim[0];}
    Float_t&       PsimY()                    {return fPsim[1];}
@@ -42,6 +43,7 @@ public:
 
 private:
 
+   Int_t     fIndex;        // ID of track in its event
    Char_t    fCharge;       // track charge *character*: '+', '-', '0' (whatever else = undefined)
    Float_t   fPsim[3];      // MC momentum of the track
    Float_t   fPrec[3];      // reconstructed momentum of the track
@@ -50,7 +52,7 @@ private:
    Short_t   fMotherPDG;    // PDG code of mother
    UShort_t  fCutBits;      // list of bits used to know what cuts were passed by this track
    
-   ClassDef(AliRsnMiniParticle,1)
+   ClassDef(AliRsnMiniParticle,2)
 };
 
 #endif
