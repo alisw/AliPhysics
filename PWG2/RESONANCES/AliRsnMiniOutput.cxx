@@ -13,6 +13,7 @@
 #include "TH2.h"
 #include "TH3.h"
 #include "TList.h"
+#include "TMath.h"
 #include "THnSparse.h"
 #include "TString.h"
 #include "TClonesArray.h"
@@ -244,10 +245,21 @@ Bool_t AliRsnMiniOutput::Init(const char *prefix, TList *list)
    }
    
    fList = list;
+   Int_t size = fAxes.GetEntries();
+   if (size < 1) {
+      AliWarning(Form("[%s] Cannot initialize histogram with less than 1 axis", GetName()));
+      return kFALSE;
+   }
 
    switch (fOutputType) {
       case kHistogram:
-         CreateHistogram(Form("%s_%s", prefix, GetName()));
+         if (size <= 3) {
+            CreateHistogram(Form("%s_%s", prefix, GetName()));
+         } else {
+            AliInfo(Form("[%s] Added %d > 3 axes. Creating a sparse histogram", GetName(), size));
+            fOutputType = kHistogramSparse;
+            CreateHistogramSparse(Form("%s_%s", prefix, GetName()));
+         }
          return kTRUE;
       case kHistogramSparse:
          CreateHistogramSparse(Form("%s_%s", prefix, GetName()));
@@ -335,7 +347,7 @@ void AliRsnMiniOutput::CreateHistogramSparse(const char *name)
 }
 
 //________________________________________________________________________________________
-Bool_t AliRsnMiniOutput::Fill(AliRsnMiniEvent *event, TClonesArray *valueList)
+Bool_t AliRsnMiniOutput::FillEvent(AliRsnMiniEvent *event, TClonesArray *valueList)
 {
 //
 // Compute values for event-based computations (does not use the pair)
@@ -347,15 +359,14 @@ Bool_t AliRsnMiniOutput::Fill(AliRsnMiniEvent *event, TClonesArray *valueList)
       return kFALSE;
    }
 
-   // get computed values
-   if (!ComputeValues(event, valueList)) return kFALSE;
-   
-   // call filling method
-   return FillHistogram();
+   // compute & fill
+   ComputeValues(event, valueList);
+   FillHistogram();
+   return kTRUE;
 }
 
 //________________________________________________________________________________________
-Bool_t AliRsnMiniOutput::Fill(const AliRsnMiniPair *pair, AliRsnMiniEvent *event, TClonesArray *valueList)
+Bool_t AliRsnMiniOutput::FillMother(const AliRsnMiniPair *pair, AliRsnMiniEvent *event, TClonesArray *valueList)
 {
 //
 // Compute values for mother-based computations
@@ -373,89 +384,113 @@ Bool_t AliRsnMiniOutput::Fill(const AliRsnMiniPair *pair, AliRsnMiniEvent *event
    // check pair against cuts
    if (fPairCuts) if (!fPairCuts->IsSelected(&fPair)) return kFALSE;
 
-   // get computed values
-   if (!ComputeValues(event, valueList)) return kFALSE;
-   
-   // call filling method
-   return FillHistogram();
+   // compute & fill
+   ComputeValues(event, valueList);
+   FillHistogram();
+   return kTRUE;
 }
 
 //________________________________________________________________________________________
-Bool_t AliRsnMiniOutput::Fill
-(AliRsnMiniParticle *p1, AliRsnMiniParticle *p2, AliRsnMiniEvent *event, TClonesArray *valueList)
+Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2, TClonesArray *valueList)
 {
 //
-// Compute values for pair-based comptuations
+// Loops on the passed mini-event, and for each pair of particles
+// which satisfy the charge and cut requirements defined here, add an entry.
+// Returns the number of successful fillings.
 //
 
    // check computation type
    Bool_t okComp = kFALSE;
-   if (fComputation == kTrackPair) okComp = kTRUE;
-   if (fComputation == kTrackPairMix) okComp = kTRUE;
-   if (fComputation == kTrackPairRotated1)  okComp = kTRUE;
-   if (fComputation == kTrackPairRotated2)  okComp = kTRUE;
+   if (fComputation == kTrackPair)         okComp = kTRUE;
+   if (fComputation == kTrackPairMix)      okComp = kTRUE;
+   if (fComputation == kTrackPairRotated1) okComp = kTRUE;
+   if (fComputation == kTrackPairRotated2) okComp = kTRUE;
+   if (fComputation == kTruePair)          okComp = kTRUE;
    if (!okComp) {
-      AliError("This method can be called only for pair-based computations");
-      return kFALSE;
-   }
-
-   // require that the two particles are well defined
-   if (!p1 || !p2) {
-      AliError("Required two particles");
+      AliError(Form("[%s] This method can be called only for pair-based computations", GetName()));
       return kFALSE;
    }
    
-   // match check #1: first particle with first def, second particle with second def
-   // match check #2: first particle with second def, second particle with first def
-   if (p1->Charge() == fCharge[0] && p1->HasCutBit(fCutID[0]) && p2->Charge() == fCharge[1] && p2->HasCutBit(fCutID[1])) {
-      fPair.Fill(p1, p2, GetMass(0), GetMass(1), fMotherMass);
-   } else if (p1->Charge() == fCharge[1] && p1->HasCutBit(fCutID[1]) && p2->Charge() == fCharge[0] && p2->HasCutBit(fCutID[0])) {
-      fPair.Fill(p2, p1, GetMass(0), GetMass(1), fMotherMass);
-   } else {
-      AliDebugClass(1, "Pair does not match definition in any order");
-      return kFALSE;
-   }
+   // loop variables
+   Int_t i1, i2, start, nadded = 0;
+   Int_t n1 = event1->Particles().GetEntriesFast();
+   Int_t n2 = event2->Particles().GetEntriesFast();
+   AliRsnMiniParticle *p1, *p2;
    
-   // if required, rotate one of the two backgrounds
-   if (fComputation == kTrackPairRotated1) {
-      fPair.InvertP(kTRUE);
-   }
-   else if (fComputation == kTrackPairRotated2){
-      fPair.InvertP(kFALSE);
-   }
+   // it is necessary to know if criteria for the two daughters are the same
+   // and if the two events are the same or not (mixing)
+   Bool_t sameCriteria = ((fCharge[0] == fCharge[1]) && (fCutID[0] == fCutID[1]));
+   Bool_t sameEvent = (event1->ID() == event2->ID());
    
-   // if required, check that this is a true pair
-   if (fComputation == kTruePair) {
-      //cout << fPair.Mother() << ' ' << fPair.MotherPDG() << ' ';
-      //cout << p1->PDG() << " (" << p1->Mother() << ") ";
-      //cout << p2->PDG() << " (" << p2->Mother() << ")" << endl;
-      if (fPair.Mother() < 0)  {
-         return kFALSE;
-      } else if (TMath::Abs(fPair.MotherPDG()) != fMotherPDG) {
-         return kFALSE;
-      }
-      //cout << fPair.Mother() << ' ' << fPair.MotherPDG() << ' ' << p1->PDG() << ' ' << p2->PDG() << endl;
-      Bool_t decayMatch = kFALSE;
-      if (p1->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[0]) && p2->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[1]))
-         decayMatch = kTRUE;
-      if (p2->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[0]) && p1->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[1]))
-         decayMatch = kTRUE;
-      //cout << " DECAY MATCH = " << (decayMatch ? " OK " : " NO ") << endl;
-      if (!decayMatch) return kFALSE;
-   }
+   //Int_t nsel1 = event1->CountParticles(fCharge[0], fCutID[0]);
+   //Int_t nsel2 = event2->CountParticles(fCharge[1], fCutID[1]);
+   //cout << "Charge #1 = " << fCharge[0] << " cut bit #1 = " << fCutID[0] << ", tracks = " << nsel1 << endl;
+   //cout << "Charge #2 = " << fCharge[1] << " cut bit #2 = " << fCutID[1] << ", tracks = " << nsel2 << endl;
+   //if (!nsel1 || !nsel2) {
+   //   cout << "Nothing to mix" << endl;
+   //   return 0;
+   //}
    
-   // check pair against cuts
-   if (fPairCuts) if (!fPairCuts->IsSelected(&fPair)) return kFALSE;
+   // external loop
+   for (i1 = 0; i1 < n1; i1++) {
+      p1 = event1->GetParticle(i1);
+      if (p1->Charge() != fCharge[0]) continue;
+      if (!p1->HasCutBit(fCutID[0])) continue;
+      // define starting point for inner loop
+      // if daughter selection criteria (charge, cuts) are the same
+      // and the two events coincide, internal loop must start from
+      // the first track *after* current one;
+      // otherwise it starts from the beginning
+      start = ((sameEvent && sameCriteria) ? i1 + 1 : 0);
+      // internal loop
+      for (i2 = start; i2 < n2; i2++) {
+         p2 = event2->GetParticle(i2);
+         if (p2->Charge() != fCharge[1]) continue;
+         if (!p2->HasCutBit(fCutID[1])) continue;
+         //cout << "Matching: " << i1 << ' ' << i2 << endl;
+         // avoid to mix a particle with itself
+         if (sameEvent && (p1->Index() == p2->Index())) {
+            //cout << "-- skipping same index" << endl;
+            continue;
+         }
+         // sum momenta
+         fPair.Fill(p1, p2, GetMass(0), GetMass(1), fMotherMass);
+         // do rotation if needed
+         if (fComputation == kTrackPairRotated1) fPair.InvertP(kTRUE);
+         if (fComputation == kTrackPairRotated2) fPair.InvertP(kFALSE);
+         // if required, check that this is a true pair
+         if (fComputation == kTruePair) {
+            if (fPair.Mother() < 0)  {
+               continue;
+            } else if (TMath::Abs(fPair.MotherPDG()) != fMotherPDG) {
+               continue;
+            }
+            Bool_t decayMatch = kFALSE;
+            if (p1->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[0]) && p2->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[1]))
+               decayMatch = kTRUE;
+            if (p2->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[0]) && p1->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[1]))
+               decayMatch = kTRUE;
+            if (!decayMatch) continue;
+         }
+         // check pair against cuts
+         if (fPairCuts) {
+            if (!fPairCuts->IsSelected(&fPair)) {
+               //cout << "-- cuts not passed: Y = " << TMath::Abs(fPair.Y(0)) << endl;
+               continue;
+            }
+         }
+         // get computed values & fill histogram
+         ComputeValues(event1, valueList);
+         FillHistogram();
+         nadded++;
+      } // end internal loop
+   } // end external loop
    
-   // get computed values
-   if (!ComputeValues(event, valueList)) return kFALSE;
-   
-   // call filling method
-   return FillHistogram();
+   return nadded;
 }
 
 //________________________________________________________________________________________
-Bool_t AliRsnMiniOutput::ComputeValues(AliRsnMiniEvent *event, TClonesArray *valueList)
+void AliRsnMiniOutput::ComputeValues(AliRsnMiniEvent *event, TClonesArray *valueList)
 {
 //
 // Using the arguments and the internal 'fPair' data member,
@@ -488,12 +523,10 @@ Bool_t AliRsnMiniOutput::ComputeValues(AliRsnMiniEvent *event, TClonesArray *val
       // if none of the above exit points is taken, compute value
       fComputed[i] = val->Eval(&fPair, event);
    }
-   
-   return kTRUE;
 }
 
 //________________________________________________________________________________________
-Bool_t AliRsnMiniOutput::FillHistogram()
+void AliRsnMiniOutput::FillHistogram()
 {
 //
 // Fills the internal histogram using the current values stored in the
@@ -504,7 +537,7 @@ Bool_t AliRsnMiniOutput::FillHistogram()
    // retrieve object from list
    if (!fList) {
       AliError("List pointer is NULL");
-      return kFALSE;
+      return;
    }
    TObject *obj = fList->At(fOutputID);
 
@@ -518,8 +551,5 @@ Bool_t AliRsnMiniOutput::FillHistogram()
       ((THnSparseF*)obj)->Fill(fComputed.GetArray());
    } else {
       AliError("No output initialized");
-      return kFALSE;
    }
-   
-   return kTRUE;
 }
