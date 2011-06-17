@@ -1887,8 +1887,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       if(ok){
         
         //Check if one of the clusters comes from a conversion 
-        if     (p1->IsTagged() && p2->IsTagged()) fhReConv2->Fill(pt,m);
-        else if(p1->IsTagged() || p2->IsTagged()) fhReConv ->Fill(pt,m);
+        if(fCheckConversion){
+          if     (p1->IsTagged() && p2->IsTagged()) fhReConv2->Fill(pt,m);
+          else if(p1->IsTagged() || p2->IsTagged()) fhReConv ->Fill(pt,m);
+        }
         
         //Fill histograms for different bad channel distance, centrality, assymmetry cut and pid bit
         for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
@@ -2095,9 +2097,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           if(ok){
             
             //Check if one of the clusters comes from a conversion 
-            if     (p1->IsTagged() && p2->IsTagged()) fhMiConv2->Fill(pt,m);
-            else if(p1->IsTagged() || p2->IsTagged()) fhMiConv ->Fill(pt,m);
-
+            if(fCheckConversion){
+              if     (p1->IsTagged() && p2->IsTagged()) fhMiConv2->Fill(pt,m);
+              else if(p1->IsTagged() || p2->IsTagged()) fhMiConv ->Fill(pt,m);
+            }
             //Fill histograms for different bad channel distance, centrality, assymmetry cut and pid bit
             for(Int_t ipid=0; ipid<fNPIDBits; ipid++){ 
               if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton))){ 

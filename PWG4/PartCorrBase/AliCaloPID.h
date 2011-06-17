@@ -33,6 +33,7 @@ class TString ;
 class TLorentzVector ;
 //class TFormula ;
 class TTask;
+class TH2F ;
 
 //--- AliRoot system ---
 class AliVCluster;
@@ -47,12 +48,12 @@ class AliCaloPID : public TObject {
   AliCaloPID() ; // ctor
   AliCaloPID(const Int_t particleFlux) ; // ctor, to be used when recalculating bayesian PID
   AliCaloPID(const TTask * emcalpid) ; // ctor, to be used when recalculating bayesian PID and need different parameters
-  AliCaloPID(const AliCaloPID & g) ; // cpy ctor
   virtual ~AliCaloPID() ;//virtual dtor
-
+  
 private:
   AliCaloPID & operator = (const AliCaloPID & g) ;//cpy assignment
-  
+  AliCaloPID(const AliCaloPID & g) ; // cpy ctor
+
 public:
 	
   enum PidType {
@@ -69,8 +70,10 @@ public:
   
   enum TagType {kPi0Decay, kEtaDecay, kOtherDecay, kConversion, kNoTag = -1};
   
+  TList * GetCreateOutputObjects();
+
   void InitParameters();
-  
+
   Int_t GetPdg(const TString calo, const Double_t * pid, const Float_t energy) const ;
   
   Int_t GetPdg(const TString calo,const TLorentzVector mom, const AliVCluster * cluster) const ;
@@ -132,6 +135,31 @@ public:
   void SetLowParticleFlux()  {fParticleFlux = kLow;}
   void SetHighParticleFlux() {fParticleFlux = kHigh;}
 
+  
+  
+  //Histogrammes setters and getters
+  
+  virtual void SetHistoERangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoNEBins = n ;
+    fHistoEMax = max ;
+    fHistoEMin = min ;
+  }
+  
+  virtual void SetHistoDEtaRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoNDEtaBins = n ;
+    fHistoDEtaMax = max ;
+    fHistoDEtaMin = min ;
+  }
+
+  
+  virtual void SetHistoDPhiRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoNDPhiBins = n ;
+    fHistoDPhiMax = max ;
+    fHistoDPhiMin = min ;
+  }
+  
+   
+  
 private:
   
   Float_t      fEMCALPhotonWeight; //Bayesian PID weight for photons in EMCAL 
@@ -158,7 +186,23 @@ private:
   Int_t  fParticleFlux;               // Particle flux for setting PID parameters
   AliEMCALPIDUtils * fEMCALPIDUtils;  // Pointer to EMCALPID to redo the PID Bayesian calculation
 	
-  ClassDef(AliCaloPID,4)
+  //Histograms
+  Int_t   fHistoNEBins ;    // Number of bins in cluster E axis
+  Float_t fHistoEMax ;      // Maximum value of cluster E histogram range
+  Float_t fHistoEMin ;      // Minimum value of cluster E histogram range
+  Int_t   fHistoNDEtaBins ; // Number of bins in dEta (cluster-track) axis
+  Float_t fHistoDEtaMax ;   // Maximum value of dEta (cluster-track) histogram range
+  Float_t fHistoDEtaMin ;   // Minimum value of dEta (cluster-track) histogram range		
+  Int_t   fHistoNDPhiBins ; // Number of bins in dPhi axis
+  Float_t fHistoDPhiMax ;   // Maximum value of dPhi (cluster-track) histogram range
+  Float_t fHistoDPhiMin ;   // Minimum value of dPhi (cluster-track) histogram range
+  
+  TH2F * fhTrackMatchedDEta     ;     //! Eta distance between track and cluster vs cluster E
+  TH2F * fhTrackMatchedDPhi     ;     //! Phi distance between track and cluster vs cluster E
+  TH2F * fhTrackMatchedDEtaDPhi ;     //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
+  
+  
+  ClassDef(AliCaloPID,5)
 } ;
 
 
