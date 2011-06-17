@@ -620,3 +620,47 @@ Float_t AliAODTrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/
   }
   return 0;  // undefined type - default value
 }
+
+//______________________________________________________________________________
+Double_t  AliAODTrack::GetTRDslice(Int_t plane, Int_t slice) const {
+  //
+  // return TRD Pid information
+  //
+  if (!fDetPid) return -1;
+  Double32_t *trdSlices=fDetPid->GetTRDsignal();
+  if (!trdSlices) return -1;
+  if ((plane<0) || (plane>=kTRDnPlanes)) {
+    return -1.;
+  }
+
+  Int_t ns=fDetPid->GetTRDnSlices();
+  if ((slice<-1) || (slice>=ns)) {
+    return -1.;
+  }
+
+  if(slice>=0) return trdSlices[plane*ns + slice];
+
+  // return average of the dEdx measurements
+  Double_t q=0.; Double32_t *s = &trdSlices[plane*ns];
+  for (Int_t i=0; i<ns; i++, s++) if((*s)>0.) q+=(*s);
+  return q/ns;
+}
+
+//______________________________________________________________________________
+Double_t AliAODTrack::GetTRDmomentum(Int_t plane, Double_t */*sp*/) const
+{
+  //Returns momentum estimation
+  // in TRD layer "plane".
+
+  if (!fDetPid) return -1;
+  Float_t *trdMomentum=fDetPid->GetTRDmomentum();
+
+  if (!trdMomentum) {
+    return -1.;
+  }
+  if ((plane<0) || (plane>=kTRDnPlanes)) {
+    return -1.;
+  }
+
+  return trdMomentum[plane];
+}

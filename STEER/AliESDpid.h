@@ -25,7 +25,7 @@ class AliVParticle;
 
 class AliESDpid : public AliPIDResponse  {
 public:
-  AliESDpid(Bool_t forMC=kFALSE): AliPIDResponse(forMC), fRange(5.), fRangeTOFMismatch(5.), fITSPIDmethod(kITSTruncMean) {;}
+  AliESDpid(Bool_t forMC=kFALSE): AliPIDResponse(forMC), fRangeTOFMismatch(5.) {;}
   virtual ~AliESDpid() {}
   
   Int_t MakePID(AliESDEvent *event, Bool_t TPCOnly = kFALSE, Float_t timeZeroTOF=9999) const;
@@ -36,9 +36,6 @@ public:
   //  void MakeHMPIDPID(AliESDtrack *track);
   void MakeTRDPID(AliESDtrack *track) const;
   void CombinePID(AliESDtrack *track) const;
-
-  enum ITSPIDmethod { kITSTruncMean, kITSLikelihood };
-  void SetITSPIDmethod(ITSPIDmethod pmeth) { fITSPIDmethod = pmeth; }
   
   virtual Float_t NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type, const Float_t timeZeroTOF) const;
   virtual Float_t NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const {return NumberOfSigmasTOF(vtrack,type,0); }
@@ -49,9 +46,7 @@ public:
   Float_t GetNMaxSigmaTOFTPCMismatch() const {return fRangeTOFMismatch;}
 
 private:
-  Float_t           fRange;          // nSigma max in likelihood
   Float_t           fRangeTOFMismatch; // nSigma max for TOF matching with TPC
-  ITSPIDmethod      fITSPIDmethod;   // 0 = trunc mean; 1 = likelihood 
 
   ClassDef(AliESDpid,6)  // PID calculation class
 };

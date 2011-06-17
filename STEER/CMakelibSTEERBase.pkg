@@ -65,6 +65,7 @@ set ( SRCS
     AliTPCPIDResponse.cxx 
     AliTOFPIDResponse.cxx 
     AliTRDPIDResponse.cxx 
+    AliPIDCombined.cxx
     AliDAQ.cxx 
     AliRefArray.cxx
     )
