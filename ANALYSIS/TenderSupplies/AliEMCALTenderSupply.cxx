@@ -57,6 +57,8 @@
 #include "AliEMCALClusterizerv2.h"
 #include "AliEMCALDigit.h"
 
+ClassImp(AliEMCALTenderSupply)
+
 // mfasel:
 //  Remove all calls to TGrid::Connect - grid connection is global and better steer by the run macro
 
