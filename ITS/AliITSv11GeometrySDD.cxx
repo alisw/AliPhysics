@@ -99,7 +99,7 @@ const Double_t AliITSv11GeometrySDD::fgkBTBthick           =  0.25 *fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkBTBlength          = 55. *fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkBTBwidth           = 18*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkBTBaxisAtoBottom   =  4*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkBTBaxisAtoBase     =  1.2*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkBTBaxisAtoBase     =  2.2*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkRadiusAminBTB      =  1. *fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkRadiusBminBTB      =  0.53 *fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkBTBHoleLength      = 15 *fgkmm;
@@ -134,7 +134,7 @@ const Double_t AliITSv11GeometrySDD::fgkEndLaddCardsShortRadiusLay4 = fgkLay4Det
 const Double_t AliITSv11GeometrySDD::fgkDistEndLaddCardsLadd = 0.*fgkmm;
 
 //hybrid 
-const Double_t AliITSv11GeometrySDD::fgkHybridAngle       = 46;           // approx !!!
+const Double_t AliITSv11GeometrySDD::fgkHybridAngle       = 48.5;           // approx !!!
 // Origine taken at the hybrid corner :
 const Double_t AliITSv11GeometrySDD::fgkHybridLength      = 65*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkHybridWidth       = 41*fgkmm;
@@ -160,9 +160,9 @@ const Double_t AliITSv11GeometrySDD::fgkHybFLUpperLength  = 59.878*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkHybFLUpperAlDZ    = 11.183*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkHybFLUpperAldx    =  2.307*fgkmm;
 
-const Double_t AliITSv11GeometrySDD::fgkHybCC2SensorLen   = 10.000*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkHybCC2SensorLen   =  9.500*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkHybCC2SensorWid   =  1.490*fgkcm; //???
-const Double_t AliITSv11GeometrySDD::fgkHybCC2SensorAng   = 30.0;
+const Double_t AliITSv11GeometrySDD::fgkHybCC2SensorAng   = 15.0;
 
 const Double_t AliITSv11GeometrySDD::fgkmu = 1*fgkmicron; // 1*fgkmicron; // can be increase for checking thin objects
 const Double_t AliITSv11GeometrySDD::fgkHybridThBridgeThick =  0.25*fgkmm;               // ???
@@ -2576,9 +2576,9 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
   yseg[ 1] = -yseg[0];
   xseg[ 2] =  0.87*xseg[1];
   yseg[ 2] =  yseg[1];
-  xseg[ 3] =  0.82*xseg[1];
-  yseg[ 3] = -yseg[0] - 0.82*fgkHybCC2SensorLen;
-  xseg[ 4] =  0.78*xseg[1];
+  xseg[ 3] =  0.77*xseg[1];
+  yseg[ 3] = -yseg[0] - 0.62*fgkHybCC2SensorLen;
+  xseg[ 4] =  0.72*xseg[1];
   yseg[ 4] =  yseg[3];
   xseg[ 5] =  0.83*xseg[1];
   yseg[ 5] =  yseg[1];

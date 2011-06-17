@@ -3289,7 +3289,7 @@ Int_t layer,Int_t idxCentral,Int_t idxSide,TArrayD &sizes,TGeoManager *mgr)
     CreateClip(clipSize, kTRUE, mgr);
     // define clip movements (width direction)
     sizes[3] = xBus + 0.5*busThickness;
-    sizes[4] = 0.5 * (fullWidth - busWidth) - clipSize[6] - fgkmm*0.48;
+    sizes[4] = 0.5 * (fullWidth - busWidth) - clipSize[6] - fgkmm*0.26;
     sizes[5] = zBus + busSize[4];
     sizes[6] = zBus + busSize[5];
 
