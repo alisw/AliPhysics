@@ -651,6 +651,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
   }//Histos with MC
     
+  //Store calo PID histograms
+  if(fRejectTrackMatch){
+    TList * caloPIDHistos = GetCaloPID()->GetCreateOutputObjects() ;
+    for(Int_t i = 0; i < caloPIDHistos->GetEntries(); i++) {
+      outputContainer->Add(caloPIDHistos->At(i)) ;
+    }
+    delete caloPIDHistos;
+  }
+  
   return outputContainer ;
   
 }
@@ -804,11 +813,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //Skip matched clusters with tracks
     if(fRejectTrackMatch){
       if(IsTrackMatched(calo)) {
-        if(GetDebug() > 2) printf("\t Reject matched clusters\n");
+        if(GetDebug() > 2) printf("\t Reject track-matched clusters\n");
         continue ;
       }
       else  
-        if(GetDebug() > 2)  printf(" matching cut passed cut passed \n");
+        if(GetDebug() > 2)  printf(" Track-matching cut passed \n");
     }// reject matched clusters
     
     //.......................................
@@ -957,8 +966,29 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
           
           Float_t asymmetry = TMath::Abs(mom.E()-mom2.E())/(mom.E()+mom2.E());
           Float_t dPhi      = mom.Phi()-mom2.Phi();
-          Float_t dEta      = mom.Eta()-mom2.Eta();          
+          Float_t dEta      = mom.Eta()-mom2.Eta();  
           
+          //Estimate conversion distance, T. Awes, M. Ivanov
+          //Under the assumption that the pair has zero mass, and that each electron 
+          //of the pair has the same momentum, they will each have the same bend radius 
+          //given by R=p/(qB) = p / (300 B) with p in [MeV/c], B in [Tesla] and R in [m]. 
+          //With nominal ALICE magnet current of 30kA B=0.5T, and so with E_cluster=p,  
+          //R = E/1.5 [cm].  Under these assumptions, the distance from the conversion 
+          //point to the EMCal can be related to the separation distance, L=2y, on the EMCal 
+          //as d = sqrt(R^2 -(R-y)^2) = sqrt(2Ry - y^2). And since R>>y we can write as 
+          //d = sqrt(E*L/1.5) where E is the cluster energy and L is the distance in cm between 
+          //the clusters.
+//          Float_t pos1[3];
+//          calo->GetPosition(pos1); 
+//          Float_t pos2[3];
+//          calo2->GetPosition(pos2); 
+//          Float_t l = TMath::Sqrt((pos1[0]-pos2[0])*(pos1[0]-pos2[0])+
+//                                  (pos1[1]-pos2[1])*(pos1[1]-pos2[1])+
+//                                  (pos1[2]-pos2[2])*(pos1[2]-pos2[2]));
+//          
+//          Float_t convDist  = TMath::Sqrt(mom.E() *l/1.5);
+//          Float_t convDist2 = TMath::Sqrt(mom2.E()*l/1.5);
+//          printf("l = %f, e1 = %f, d1=%f, e2 = %f, d2=%f\n",l,mom.E(),convDist,mom2.E(),convDist2);
           if(GetDebug() > 2)
             printf("AliAnaPhoton::MakeAnalysisFillAOD(): Pair with mass %2.3f < %2.3f, %1.2f < dPhi %2.2f < %2.2f, dEta %f < %2.2f, asymmetry %2.2f< %2.2f; \n    cluster1 id %d, e %2.3f  SM %d, eta %2.3f, phi %2.3f ; \n    cluster2 id %d, e %2.3f, SM %d,eta %2.3f, phi %2.3f\n",
                    pairM,fMassCut,fConvDPhiMinCut, dPhi, fConvDPhiMaxCut, dEta, fConvDEtaCut, asymmetry, fConvAsymCut,

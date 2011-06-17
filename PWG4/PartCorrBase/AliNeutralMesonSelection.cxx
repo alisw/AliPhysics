@@ -56,57 +56,7 @@ ClassImp(AliNeutralMesonSelection)
   //Initialize parameters
   InitParameters();
 }
-/*
-//____________________________________________________________________________
-AliNeutralMesonSelection::AliNeutralMesonSelection(const AliNeutralMesonSelection & g) :   
-  TObject(), fM(g.fM),
-  fInvMassMaxCut(g.fInvMassMaxCut), fInvMassMinCut(g.fInvMassMinCut),
-  fAngleMaxParam(g.fAngleMaxParam),
-  fKeepNeutralMesonHistos(g.fKeepNeutralMesonHistos),
-  fhAnglePairNoCut(g. fhAnglePairNoCut), 
-  fhAnglePairOpeningAngleCut(g. fhAnglePairOpeningAngleCut), 
-  fhAnglePairAllCut(g. fhAnglePairAllCut), 
-  fhInvMassPairNoCut(g.fhInvMassPairNoCut),  
-  fhInvMassPairOpeningAngleCut(g.fhInvMassPairOpeningAngleCut), 
-  fhInvMassPairAllCut(g.fhInvMassPairAllCut),
-  fHistoNEBins(g.fHistoNEBins),   fHistoEMax(g.fHistoEMax),   fHistoEMin(g.fHistoEMin),
-  fHistoNPtBins(g.fHistoNPtBins),   fHistoPtMax(g.fHistoPtMax),   fHistoPtMin(g.fHistoPtMin),
-  fHistoNAngleBins(g.fHistoNAngleBins), fHistoAngleMax(g.fHistoAngleMax), fHistoAngleMin(g.fHistoAngleMin),
-  fHistoNIMBins(g.fHistoNIMBins), fHistoIMMax(g.fHistoIMMax), fHistoIMMin(g.fHistoIMMin)
-{
-  // cpy ctor
-}
 
-//_________________________________________________________________________
-AliNeutralMesonSelection & AliNeutralMesonSelection::operator = (const AliNeutralMesonSelection & source)
-{
-  // assignment operator
-  
-  if(this == &source)return *this;
-  ((TObject *)this)->operator=(source);
-
-  fM = source.fM ;
-  fInvMassMaxCut = source.fInvMassMaxCut ; 
-  fInvMassMinCut = source.fInvMassMinCut ;
-  fAngleMaxParam = source.fAngleMaxParam ;
-  fKeepNeutralMesonHistos = source.fKeepNeutralMesonHistos;
- 
-  fhAnglePairNoCut = source. fhAnglePairNoCut ; 
-  fhAnglePairOpeningAngleCut = source. fhAnglePairOpeningAngleCut ; 
-  fhAnglePairAllCut = source. fhAnglePairAllCut ; 
-  fhInvMassPairNoCut = source.fhInvMassPairNoCut ; 
-  fhInvMassPairOpeningAngleCut = source.fhInvMassPairOpeningAngleCut ; 
-  fhInvMassPairAllCut = source.fhInvMassPairAllCut ; 
-  
-  fHistoNEBins = source.fHistoNEBins;   fHistoEMax = source.fHistoEMax;   fHistoEMin = source.fHistoEMin;
-  fHistoNPtBins = source.fHistoNPtBins;   fHistoPtMax = source.fHistoPtMax;   fHistoPtMin = source.fHistoPtMin;
-  fHistoNAngleBins = source.fHistoNAngleBins; fHistoAngleMax = source.fHistoAngleMax; fHistoAngleMin = source.fHistoAngleMin;
-  fHistoNIMBins = source.fHistoNIMBins; fHistoIMMax = source.fHistoIMMax; fHistoIMMin = source.fHistoIMMin;
-  
-  return *this;
-  
-}
-*/
 //____________________________________________________________________________
 AliNeutralMesonSelection::~AliNeutralMesonSelection() 
 {
