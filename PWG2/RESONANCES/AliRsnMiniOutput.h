@@ -85,16 +85,16 @@ public:
    
    AliRsnMiniPair& Pair() {return fPair;}
    Bool_t          Init(const char *prefix, TList *list);
-   Bool_t          Fill(AliRsnMiniParticle *p1, AliRsnMiniParticle *p2, AliRsnMiniEvent *event, TClonesArray *valueList);
-   Bool_t          Fill(const AliRsnMiniPair *pair, AliRsnMiniEvent *event, TClonesArray *valueList);
-   Bool_t          Fill(AliRsnMiniEvent *event, TClonesArray *valueList);
+   Bool_t          FillMother(const AliRsnMiniPair *pair, AliRsnMiniEvent *event, TClonesArray *valueList);
+   Bool_t          FillEvent(AliRsnMiniEvent *event, TClonesArray *valueList);
+   Int_t           FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2, TClonesArray *valueList);
                   
 private:
 
    void   CreateHistogram(const char *name);
    void   CreateHistogramSparse(const char *name);
-   Bool_t ComputeValues(AliRsnMiniEvent *event, TClonesArray *valueList);
-   Bool_t FillHistogram();
+   void   ComputeValues(AliRsnMiniEvent *event, TClonesArray *valueList);
+   void   FillHistogram();
 
    EOutputType      fOutputType;       //  type of output
    EComputation     fComputation;      //  type of computation

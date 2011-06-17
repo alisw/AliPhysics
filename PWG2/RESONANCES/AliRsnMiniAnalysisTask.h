@@ -60,13 +60,12 @@ public:
 private:
 
    Char_t   CheckCurrentEvent();
-   Int_t    FillMiniEvent(Char_t evType);
+   void     FillMiniEvent(Char_t evType);
    Double_t ComputeAngle();
    Double_t ComputeCentrality(Bool_t isESD);
    void     FillTrueMotherESD(AliRsnMiniEvent *event);
    void     FillTrueMotherAOD(AliRsnMiniEvent *event);
    void     StoreTrueMother(AliRsnMiniPair *pair, AliRsnMiniEvent *event);
-   void     ProcessEvents(AliRsnMiniEvent *evMain, AliRsnMiniEvent *evMix = 0x0);
 
    Bool_t               fUseMC;           //  use or not MC info
    Int_t                fEvNum;           //! absolute event counter
