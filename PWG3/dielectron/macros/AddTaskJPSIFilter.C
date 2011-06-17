@@ -45,6 +45,7 @@ AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kTRUE, Bool_t hasMC_aod = kF
   AliAnalysisTaskDielectronFilter *task=new AliAnalysisTaskDielectronFilter("jpsi_DielectronFilter");
   
   if (!hasMC) task->UsePhysicsSelection();
+  task->SetTriggerMask(AliVEvent::kMB|AliVEvent::kINT7|AliVEvent::kEMC7);
   task->SetDielectron(jpsi);
   if(storeLS) task->SetStoreLikeSignCandidates(storeLS);
   mgr->AddTask(task);
