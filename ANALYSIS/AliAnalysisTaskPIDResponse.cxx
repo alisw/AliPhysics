@@ -142,5 +142,5 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
     fRecoPass=3;
   }
 
-  fPIDResponse->SetCurrentFile(fileName.Data());
+//   fPIDResponse->SetCurrentFile(fileName.Data());
 }
