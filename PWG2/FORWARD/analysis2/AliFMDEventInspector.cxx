@@ -51,7 +51,8 @@ AliFMDEventInspector::AliFMDEventInspector()
     fCollisionSystem(kUnknown),
     fDebug(0),
     fCentAxis(0),
-    fVtxAxis(10,-10,10)
+    fVtxAxis(10,-10,10),
+    fUseFirstPhysicsVertex(true)
 {
   // 
   // Constructor 
@@ -77,7 +78,8 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fCollisionSystem(kUnknown),
     fDebug(0),
     fCentAxis(0),
-    fVtxAxis(10,-10,10)
+    fVtxAxis(10,-10,10),
+    fUseFirstPhysicsVertex(true)
 {
   // 
   // Constructor 
@@ -106,7 +108,8 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fCollisionSystem(o.fCollisionSystem),
     fDebug(0),
     fCentAxis(0),
-    fVtxAxis(o.fVtxAxis)
+    fVtxAxis(o.fVtxAxis),
+    fUseFirstPhysicsVertex(o.fUseFirstPhysicsVertex)
 {
   // 
   // Copy constructor 
@@ -155,6 +158,9 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fCollisionSystem   = o.fCollisionSystem;
   fVtxAxis.Set(o.fVtxAxis.GetNbins(), o.fVtxAxis.GetXmin(), 
 	       o.fVtxAxis.GetXmax());
+  
+  fUseFirstPhysicsVertex = o.fUseFirstPhysicsVertex;
+  
   if (fList) { 
     fList->SetName(GetName());
     if (fHEventsTr)    fList->Add(fHEventsTr);
@@ -687,68 +693,71 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, Double_t& vz)
   //    @c true on success, @c false otherwise 
   //
   vz = 0;
-#if 1
-  // This is the code used by the 1st physics people 
-  const AliESDVertex* vertex    = esd->GetPrimaryVertex();
-  if (!vertex  || !vertex->GetStatus()) {
-    if (fDebug > 2) {
-      AliWarning(Form("No primary vertex (%p) or bad status %d", 
-		      vertex, (vertex ? vertex->GetStatus() : -1)));
-    }
-    return false;
-  }
-  const AliESDVertex* vertexSPD = esd->GetPrimaryVertexSPD();
-  if (!vertexSPD || !vertexSPD->GetStatus()) {
-    if (fDebug > 2) {
-      AliWarning(Form("No primary SPD vertex (%p) or bad status %d", 
-		      vertexSPD, (vertexSPD ? vertexSPD->GetStatus() : -1)));
-    }
-    return false;
-  }
-
-  // if vertex is from SPD vertexZ, require more stringent cuts 
-  if (vertex->IsFromVertexerZ()) { 
-    if (vertex->GetDispersion() > fMaxVzErr || 
-	vertex->GetZRes() > 1.25 * fMaxVzErr) {
+  
+  if(fUseFirstPhysicsVertex) {
+    // This is the code used by the 1st physics people 
+    const AliESDVertex* vertex    = esd->GetPrimaryVertex();
+    if (!vertex  || !vertex->GetStatus()) {
       if (fDebug > 2) {
-	AliWarning(Form("Dispersion %f > %f or resolution %f > %f",
-			vertex->GetDispersion(), fMaxVzErr,
-			vertex->GetZRes(), 1.25 * fMaxVzErr)); 
+	AliWarning(Form("No primary vertex (%p) or bad status %d", 
+			vertex, (vertex ? vertex->GetStatus() : -1)));
       }
       return false;
     }
-  }
-  vz = vertex->GetZ();
-  return true;
-#else 
-  // Get the vertex 
-  const AliESDVertex* vertex = esd->GetPrimaryVertexSPD();
-  if (!vertex) { 
-    if (fDebug > 2) {
-      AliWarning("No SPD vertex found in ESD"); }
-    return kFALSE;
-  }
-  
-  // Check that enough tracklets contributed 
-  if(vertex->GetNContributors() <= 0) {
-    if (fDebug > 2) {
-      AliWarning(Form("Number of contributors to vertex is %d<=0",
-		      vertex->GetNContributors())); }
-    vz = 0;
-    return kFALSE;
+    const AliESDVertex* vertexSPD = esd->GetPrimaryVertexSPD();
+    if (!vertexSPD || !vertexSPD->GetStatus()) {
+      if (fDebug > 2) {
+	AliWarning(Form("No primary SPD vertex (%p) or bad status %d", 
+			vertexSPD, (vertexSPD ? vertexSPD->GetStatus() : -1)));
+      }
+      return false;
+    }
+    
+    // if vertex is from SPD vertexZ, require more stringent cuts 
+    if (vertex->IsFromVertexerZ()) { 
+      if (vertex->GetDispersion() > fMaxVzErr || 
+	  vertex->GetZRes() > 1.25 * fMaxVzErr) {
+	if (fDebug > 2) {
+	  AliWarning(Form("Dispersion %f > %f or resolution %f > %f",
+			  vertex->GetDispersion(), fMaxVzErr,
+			  vertex->GetZRes(), 1.25 * fMaxVzErr)); 
+	}
+	return false;
+      }
+    }
+    vz = vertex->GetZ();
+    return true;
   } 
-  // Check that the uncertainty isn't too large 
-  if (vertex->GetZRes() > fMaxVzErr) { 
-    if (fDebug > 2) {
-      AliWarning(Form("Uncertaintity in Z of vertex is too large %f > %f", 
+  else { //Use standard SPD vertex (perhaps preferable for Pb+Pb)
+   
+    // Get the vertex 
+    const AliESDVertex* vertex = esd->GetPrimaryVertexSPD();
+    if (!vertex) { 
+      if (fDebug > 2) {
+	AliWarning("No SPD vertex found in ESD"); }
+      return kFALSE;
+    }
+    
+    // Check that enough tracklets contributed 
+    if(vertex->GetNContributors() <= 0) {
+      if (fDebug > 2) {
+	AliWarning(Form("Number of contributors to vertex is %d<=0",
+			vertex->GetNContributors())); }
+      vz = 0;
+      return kFALSE;
+    } 
+    // Check that the uncertainty isn't too large 
+    if (vertex->GetZRes() > fMaxVzErr) { 
+      if (fDebug > 2) {
+	AliWarning(Form("Uncertaintity in Z of vertex is too large %f > %f", 
 		      vertex->GetZRes(), fMaxVzErr)); }
-    return kFALSE;
-  }
-  
-  // Get the z coordiante 
-  vz = vertex->GetZ();
-  return kTRUE;
-#endif 
+      return kFALSE;
+    }
+    
+    // Get the z coordiante 
+    vz = vertex->GetZ();
+    return kTRUE;
+  } 
 }
   
 //____________________________________________________________________

@@ -370,7 +370,9 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  // Mean in region of interest 
 	  Double_t poissonM = (total <= 0 || empty <= 0 ? 0 : 
 			       -TMath::Log(empty / total));
-
+	  //Full occupancy should give high correction not zero
+	  if(empty < 0.001 && total > 0 ) poissonM = -TMath::Log( 1. / total);
+	  
 	  // Note, that given filled=total-empty, and 
 	  //
 	  //     m = -log(empty/total)

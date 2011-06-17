@@ -169,6 +169,12 @@ public:
    */
   void SetMaxVzErr(Double_t c=0.1) { fMaxVzErr = c; }
   /** 
+   * Use the first physics vtx code.   
+   * 
+   * @param use Use it or not 
+   */
+  void SetUseFirstPhysicsVtx(Bool_t use) {fUseFirstPhysicsVertex = use; }
+  /** 
    * Set the debug level.  The higher the value the more output 
    * 
    * @param dbg Debug level 
@@ -284,6 +290,7 @@ protected:
   Int_t    fDebug;        //  Debug level 
   TAxis*   fCentAxis;     // Centrality axis used in histograms
   TAxis    fVtxAxis;
+  Bool_t   fUseFirstPhysicsVertex; //Use the vtx code from p+p first physics
   ClassDef(AliFMDEventInspector,3); // Inspect the event 
 };
 
