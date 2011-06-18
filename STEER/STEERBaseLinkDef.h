@@ -90,6 +90,7 @@
 #pragma link C++ class AliTPCPIDResponse+;
 #pragma link C++ class AliTOFPIDResponse+;
 #pragma link C++ class AliTRDPIDResponse+;
+#pragma link C++ class AliPIDCombined+;
 
 #pragma link C++ class AliDAQ+;
 #pragma link C++ class AliRefArray+;
