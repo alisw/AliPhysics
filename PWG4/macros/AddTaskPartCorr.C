@@ -112,11 +112,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr
     }
     else              {
       cu->GetEMCALRecoUtils()->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
-      cu->GetEMCALRecoUtils()->SetNonLinearityParam(0,1.001   ) ;
-      cu->GetEMCALRecoUtils()->SetNonLinearityParam(1,-0.01264) ;
-      cu->GetEMCALRecoUtils()->SetNonLinearityParam(2,-0.03632) ;
-      cu->GetEMCALRecoUtils()->SetNonLinearityParam(3,0.1798  ) ;
-      cu->GetEMCALRecoUtils()->SetNonLinearityParam(4,-0.522  ) ;
     }
   }
   
