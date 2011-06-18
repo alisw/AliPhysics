@@ -56,8 +56,7 @@ ClassImp(AliAnaPi0)
 
 //________________________________________________________________________________________________________________________________________________  
 AliAnaPi0::AliAnaPi0() : AliAnaPartCorrBaseClass(),
-fDoOwnMix(kFALSE),fNCentrBin(0),//fNZvertBin(0),fNrpBin(0),
-fNmaxMixEv(0), fCalorimeter(""),
+fDoOwnMix(kFALSE), fCalorimeter(""),
 fNModules(12), fUseAngleCut(kFALSE), fUseAngleEDepCut(kFALSE),fAngleCut(0), fAngleMaxCut(7.),fEventsList(0x0), 
 fMultiCutAna(kFALSE), fMultiCutAnaSim(kFALSE),
 fNPtCuts(0),fNAsymCuts(0), fNCellNCuts(0),fNPIDBits(0),  
@@ -78,6 +77,7 @@ fhReInvPt1(0x0), fhMiInvPt1(0x0),  fhReInvPt2(0x0), fhMiInvPt2(0x0), fhReInvPt3(
 fhRePtNCellAsymCuts(0x0), fhRePtNCellAsymCutsSM0(0x0), fhRePtNCellAsymCutsSM1(0x0), fhRePtNCellAsymCutsSM2(0x0), fhRePtNCellAsymCutsSM3(0x0), fhMiPtNCellAsymCuts(0x0),
 fhRePIDBits(0x0),fhRePtMult(0x0), fhRePtAsym(0x0), fhRePtAsymPi0(0x0),fhRePtAsymEta(0x0),  
 fhEvents(0x0),   fhCentrality(0x0),fhCentralityNoPair(0x0),
+fhEventPlaneAngle(0x0), fhEventPlaneResolution(0x0),
 fhRealOpeningAngle(0x0),fhRealCosOpeningAngle(0x0), fhMixedOpeningAngle(0x0),fhMixedCosOpeningAngle(0x0),
 fhPrimPi0Pt(0x0), fhPrimPi0AccPt(0x0), fhPrimPi0Y(0x0), fhPrimPi0AccY(0x0), fhPrimPi0Phi(0x0), fhPrimPi0AccPhi(0x0),
 fhPrimPi0OpeningAngle(0x0), fhPrimPi0CosOpeningAngle(0x0),
@@ -97,7 +97,7 @@ AliAnaPi0::~AliAnaPi0() {
   // Remove event containers
   
   if(fDoOwnMix && fEventsList){
-    for(Int_t ic=0; ic<fNCentrBin; ic++){
+    for(Int_t ic=0; ic<GetNCentrBin(); ic++){
       for(Int_t iz=0; iz<GetNZvertBin(); iz++){
         for(Int_t irp=0; irp<GetNRPBin(); irp++){
           fEventsList[ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp]->Delete() ;
@@ -120,10 +120,6 @@ void AliAnaPi0::InitParameters()
   
   AddToHistogramsName("AnaPi0_");
   fNModules = 12; // set maximum to maximum number of EMCAL modules
-  fNCentrBin = 1;
-//  fNZvertBin = 1;
-//  fNrpBin    = 1;
-  fNmaxMixEv = 10;
  
   fCalorimeter  = "PHOS";
   fUseAngleCut = kFALSE;
@@ -161,13 +157,13 @@ TObjString * AliAnaPi0::GetAnalysisCuts()
   char onePar[buffersize] ;
   snprintf(onePar,buffersize,"--- AliAnaPi0 ---\n") ;
   parList+=onePar ;	
-  snprintf(onePar,buffersize,"Number of bins in Centrality:  %d \n",fNCentrBin) ;
+  snprintf(onePar,buffersize,"Number of bins in Centrality:  %d \n",GetNCentrBin()) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"Number of bins in Z vert. pos: %d \n",GetNZvertBin()) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"Number of bins in Reac. Plain: %d \n",GetNRPBin()) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"Depth of event buffer: %d \n",fNmaxMixEv) ;
+  snprintf(onePar,buffersize,"Depth of event buffer: %d \n",GetNMaxEvMix()) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"Pair in same Module: %d ; Fill Different SM histos %d; CheckConversions %d; TrackMult as centrality: %d; PhotonMult as centrality: %d; cluster E as centrality: %d; cell as centrality: %d; Fill InvPt histos %d\n",
            fSameSM, fFillSMCombinations, fCheckConversion, fUseTrackMultBins, fUsePhotonMultBins, fUseAverClusterEBins, fUseAverCellEBins, fMakeInvPtPlots) ;
@@ -207,9 +203,9 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   // store them in fOutputContainer
   
   //create event containers
-  fEventsList = new TList*[fNCentrBin*GetNZvertBin()*GetNRPBin()] ;
+  fEventsList = new TList*[GetNCentrBin()*GetNZvertBin()*GetNRPBin()] ;
 	
-  for(Int_t ic=0; ic<fNCentrBin; ic++){
+  for(Int_t ic=0; ic<GetNCentrBin(); ic++){
     for(Int_t iz=0; iz<GetNZvertBin(); iz++){
       for(Int_t irp=0; irp<GetNRPBin(); irp++){
         fEventsList[ic*GetNZvertBin()*GetNRPBin()+iz*GetNRPBin()+irp] = new TList() ;
@@ -236,22 +232,22 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   }
   
   
-  fhRe1 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  fhMi1 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
+  fhRe1 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+  fhMi1 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
   if(fFillBadDistHisto){
-    fhRe2 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-    fhRe3 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-    fhMi2 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-    fhMi3 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
+    fhRe2 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+    fhRe3 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+    fhMi2 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+    fhMi3 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
   }
   if(fMakeInvPtPlots) {
-    fhReInvPt1 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-    fhMiInvPt1 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
+    fhReInvPt1 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+    fhMiInvPt1 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
     if(fFillBadDistHisto){
-      fhReInvPt2 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-      fhReInvPt3 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-      fhMiInvPt2 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-      fhMiInvPt3 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
+      fhReInvPt2 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+      fhReInvPt3 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+      fhMiInvPt2 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+      fhMiInvPt3 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
     }
   } 
   
@@ -279,7 +275,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   Int_t ntrmmax   = GetHistoTrackMultiplicityMax();
   Int_t ntrmmin   = GetHistoTrackMultiplicityMin(); 
   
-  if(fNCentrBin > 1 && (fUseAverCellEBins||fUseAverClusterEBins||fUseAverClusterEDenBins)){
+  if(GetNCentrBin() > 1 && (fUseAverCellEBins||fUseAverClusterEBins||fUseAverClusterEDenBins)){
     
     fhAverTotECluster = new TH1F("hAverTotECluster","hAverTotECluster",200,0,50) ;
     fhAverTotECluster->SetXTitle("E_{cluster, aver. SM} (GeV)");
@@ -378,7 +374,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-  for(Int_t ic=0; ic<fNCentrBin; ic++){
+  for(Int_t ic=0; ic<GetNCentrBin(); ic++){
       for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
         for(Int_t iasym=0; iasym<fNAsymCuts; iasym++){
           Int_t index = ((ic*fNPIDBits)+ipid)*fNAsymCuts + iasym;
@@ -610,7 +606,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }// multi cuts analysis
   
-  fhEvents=new TH3D("hEvents","Number of events",fNCentrBin,0.,1.*fNCentrBin,
+  fhEvents=new TH3D("hEvents","Number of events",GetNCentrBin(),0.,1.*GetNCentrBin(),
                     GetNZvertBin(),0.,1.*GetNZvertBin(),GetNRPBin(),0.,1.*GetNRPBin()) ;
   
   fhEvents->SetXTitle("Centrality bin");
@@ -618,14 +614,28 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   fhEvents->SetZTitle("RP bin");
   outputContainer->Add(fhEvents) ;
 	
-  if(fNCentrBin>1){
-    fhCentrality=new TH1D("hCentralityBin","Number of events in centrality bin",fNCentrBin,0.,1.*fNCentrBin) ;
+  if(GetNCentrBin()>1){
+    fhCentrality=new TH1D("hCentralityBin","Number of events in centrality bin",GetNCentrBin(),0.,1.*GetNCentrBin()) ;
     fhCentrality->SetXTitle("Centrality bin");
     outputContainer->Add(fhCentrality) ;
     
-    fhCentralityNoPair=new TH1D("hCentralityBinNoPair","Number of events in centrality bin, with no cluster pairs",fNCentrBin,0.,1.*fNCentrBin) ;
+    fhCentralityNoPair=new TH1D("hCentralityBinNoPair","Number of events in centrality bin, with no cluster pairs",GetNCentrBin(),0.,1.*GetNCentrBin()) ;
     fhCentralityNoPair->SetXTitle("Centrality bin");
     outputContainer->Add(fhCentralityNoPair) ;
+  }
+  
+  if(GetNRPBin() > 1 ){
+  
+    fhEventPlaneAngle=new TH1D("hEventPlaneAngleBin","Number of events in centrality bin",100,0.,TMath::TwoPi()) ;
+    fhEventPlaneAngle->SetXTitle("EP angle (rad)");
+    outputContainer->Add(fhEventPlaneAngle) ;
+    
+    if(GetNCentrBin()>1){
+      fhEventPlaneResolution=new TH2D("hEventPlaneResolution","Event plane resolution",GetNCentrBin(),0,GetNCentrBin(),100,0.,TMath::TwoPi()) ;
+      fhEventPlaneResolution->SetYTitle("Resolution");
+      fhEventPlaneResolution->SetXTitle("Centrality Bin");
+      outputContainer->Add(fhEventPlaneResolution) ;
+    }
   }
   
   fhRealOpeningAngle  = new TH2D
@@ -987,10 +997,10 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
   AliAnaPartCorrBaseClass::Print(" ");
 
-  printf("Number of bins in Centrality:  %d \n",fNCentrBin) ;
+  printf("Number of bins in Centrality:  %d \n",GetNCentrBin()) ;
   printf("Number of bins in Z vert. pos: %d \n",GetNZvertBin()) ;
   printf("Number of bins in Reac. Plain: %d \n",GetNRPBin()) ;
-  printf("Depth of event buffer: %d \n",fNmaxMixEv) ;
+  printf("Depth of event buffer: %d \n",GetNMaxEvMix()) ;
   printf("Pair in same Module: %d \n",fSameSM) ;
   printf("Cuts: \n") ;
 // printf("Z vertex position: -%2.3f < z < %2.3f \n",GetZvertexCut(),GetZvertexCut()) ; //It crashes here, why?
@@ -1664,7 +1674,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 //  Float_t pos2[3];
 //  Float_t emax     = 0;
   
-  if(fNCentrBin > 1 && (fUseAverCellEBins||fUseAverClusterEBins||fUseAverClusterEDenBins))
+  if(GetNCentrBin() > 1 && (fUseAverCellEBins||fUseAverClusterEBins||fUseAverClusterEDenBins))
     CountAndGetAverages(nClus,nCell,eClusTot,eCellTot,eDenClus,eDenCell);
 
   
@@ -1677,7 +1687,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     if(GetDebug() > 2)
       printf("AliAnaPi0::MakeAnalysisFillHistograms() - nPhotons %d, cent bin %d continue to next event\n",nPhot, GetEventCentrality());
     
-    if(fNCentrBin > 1) fhCentralityNoPair->Fill(GetEventCentrality() * fNCentrBin / GetReader()->GetCentralityOpt());
+    if(GetNCentrBin() > 1) fhCentralityNoPair->Fill(GetEventCentrality() * GetNCentrBin() / GetReader()->GetCentralityOpt());
     
     return ;
   }
@@ -1721,74 +1731,84 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       if(fUseTrackMultBins){ // Track multiplicity bins
         //printf("track  mult %d\n",GetTrackMultiplicity());
         curCentrBin = (GetTrackMultiplicity()-1)/5; 
-        if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
+        if(curCentrBin > GetNCentrBin()-1) curCentrBin=GetNCentrBin()-1;
         //printf("track mult bin %d\n",curCentrBin);
       }
       else if(fUsePhotonMultBins){ // Photon multiplicity bins
         //printf("photon  mult %d cluster mult %d\n",nPhot, nClus);
-        curRPBin = nPhot-2; 
-        if(curRPBin > GetNRPBin() -1) curRPBin=GetNRPBin()-1;
+        curCentrBin = nPhot-2; 
+        if(curCentrBin > GetNCentrBin() -1) curCentrBin=GetNCentrBin()-1;
         //printf("photon mult bin %d\n",curRPBin);        
       }
       else if(fUseAverClusterEBins){ // Cluster average energy bins
         //Bins for pp, if needed can be done in a more general way
-        curCentrBin = (Int_t) eClusTot/10 * fNCentrBin; 
-        if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
+        curCentrBin = (Int_t) eClusTot/10 * GetNCentrBin(); 
+        if(curCentrBin > GetNCentrBin()-1) curCentrBin=GetNCentrBin()-1;
         //printf("cluster E average %f, bin %d \n",eClusTot,curCentrBin);
       }
       else if(fUseAverCellEBins){ // Cell average energy bins
         //Bins for pp, if needed can be done in a more general way
-        curCentrBin = (Int_t) eCellTot/10*fNCentrBin; 
-        if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
+        curCentrBin = (Int_t) eCellTot/10*GetNCentrBin(); 
+        if(curCentrBin > GetNCentrBin()-1) curCentrBin=GetNCentrBin()-1;
         //printf("cell E average %f, bin %d \n",eCellTot,curCentrBin);
       }
       else if(fUseAverClusterEDenBins){ // Energy density bins
         //Bins for pp, if needed can be done in a more general way
-        curCentrBin = (Int_t) eDenClus/10*fNCentrBin; 
-        if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
+        curCentrBin = (Int_t) eDenClus/10*GetNCentrBin(); 
+        if(curCentrBin > GetNCentrBin()-1) curCentrBin=GetNCentrBin()-1;
         //printf("cluster Eden average %f, bin %d \n",eDenClus,curCentrBin);
       } 
 //      else if(fUseAverClusterPairRBins){ // Cluster average distance bins
 //        //Bins for pp, if needed can be done in a more general way
-//        curCentrBin = rxz/650*fNCentrBin; 
-//        if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
+//        curCentrBin = rxz/650*GetNCentrBin(); 
+//        if(curCentrBin > GetNCentrBin()-1) curCentrBin=GetNCentrBin()-1;
 //        //printf("cluster pair R average %f, bin %d \n",rxz,curCentrBin);
 //      }
 //      else if(fUseAverClusterPairRWeightBins){ // Cluster average distance bins
 //        //Bins for pp, if needed can be done in a more general way
-//        curCentrBin = rxzw/350*fNCentrBin; 
-//        if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
+//        curCentrBin = rxzw/350*GetNCentrBin(); 
+//        if(curCentrBin > GetNCentrBin()-1) curCentrBin=GetNCentrBin()-1;
 //        //printf("cluster pair rW average %f, bin %d \n",rxzw,curCentrBin);
 //      }    
 //      else if(fUseEMaxBins){ // Cluster average distance bins
 //        //Bins for pp, if needed can be done in a more general way
-//        curCentrBin = emax/20*fNCentrBin; 
-//        if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
+//        curCentrBin = emax/20*GetNCentrBin(); 
+//        if(curCentrBin > GetNCentrBin()-1) curCentrBin=GetNCentrBin()-1;
 //        //printf("cluster pair rW average %f, bin %d \n",rxzw,curCentrBin);
 //      }     
       else { //Event centrality
           // Centrality task returns at maximum 10, 20 or 100, depending on option chosen and 
           // number of bins, the bin has to be corrected
-          curCentrBin = GetEventCentrality() * fNCentrBin / GetReader()->GetCentralityOpt(); 
+          curCentrBin = GetEventCentrality() * GetNCentrBin() / GetReader()->GetCentralityOpt(); 
           if(GetDebug() > 0 )printf("AliAnaPi0::MakeAnalysisFillHistograms() - curCentrBin %d, centrality %d, n bins %d, max bin from centrality %d\n",
-                                    curCentrBin, GetEventCentrality(), fNCentrBin, GetReader()->GetCentralityOpt());
+                                    curCentrBin, GetEventCentrality(), GetNCentrBin(), GetReader()->GetCentralityOpt());
       }
       
-      if (curCentrBin < 0 || curCentrBin >= fNCentrBin){ 
+      if (curCentrBin < 0 || curCentrBin >= GetNCentrBin()){ 
         if(GetDebug() > 0) 
-          printf("AliAnaPi0::MakeAnalysisFillHistograms() - Centrality bin <%d> not expected, n bins <%d> , return\n",curCentrBin,fNCentrBin);
+          printf("AliAnaPi0::MakeAnalysisFillHistograms() - Centrality bin <%d> not expected, n bins <%d> , return\n",curCentrBin,GetNCentrBin());
         return;
       }
         
       //Reaction plane bin
       curRPBin    = 0 ;
-       
+      if(GetNRPBin()>1){
+        Float_t epAngle = GetEventPlane()->GetEventplane(GetEventPlaneMethod());
+        fhEventPlaneAngle->Fill(epAngle);
+        curRPBin = TMath::Nint(epAngle*(GetNRPBin()-1)/TMath::Pi());
+        if(curRPBin >= GetNRPBin()) printf("RP Bin %d out of range %d\n",curRPBin,GetNRPBin());
+        //printf("RP: %d, %f, angle %f, n bin %d\n", curRPBin,epAngle*(GetNRPBin()-1)/TMath::Pi(),epAngle,GetNRPBin());
+      }
+      
       //Get vertex z bin
       curZvertBin = (Int_t)(0.5*GetNZvertBin()*(vert[2]+GetZvertexCut())/GetZvertexCut()) ;
       
       //Fill event bin info
       fhEvents    ->Fill(curCentrBin+0.5,curZvertBin+0.5,curRPBin+0.5) ;
-      if(fNCentrBin > 1) fhCentrality->Fill(curCentrBin);
+      if(GetNCentrBin() > 1) {
+        fhCentrality->Fill(curCentrBin);
+        if(GetNRPBin() > 1) fhEventPlaneResolution->Fill(curCentrBin,TMath::Cos(2.*GetEventPlane()->GetQsubRes()));
+      }
       currentEvtIndex = evtIndex1 ; 
       if(GetDebug() > 1) 
         printf("AliAnaPi0::MakeAnalysisFillHistograms() - Centrality %d, Vertex Bin %d, RP bin %d \n",curCentrBin,curRPBin,curZvertBin);
@@ -2160,7 +2180,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     if(currentEvent->GetEntriesFast()>0){
       evMixList->AddFirst(currentEvent) ;
       currentEvent=0 ; //Now list of particles belongs to buffer and it will be deleted with buffer
-      if(evMixList->GetSize()>=fNmaxMixEv)
+      if(evMixList->GetSize() >= GetNMaxEvMix())
       {
         TClonesArray * tmp = (TClonesArray*) (evMixList->Last()) ;
         evMixList->RemoveLast() ;
@@ -2185,18 +2205,18 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
   // the first one and then add the next.
   Int_t index = outputList->IndexOf(outputList->FindObject(GetAddedHistogramsStringToName()+"hRe_cen0_pid0_dist1"));
   
-  if(!fhRe1) fhRe1 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  if(!fhRe2) fhRe2 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  if(!fhRe3) fhRe3 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  if(!fhMi1) fhMi1 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  if(!fhMi2) fhMi2 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  if(!fhMi3) fhMi3 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;	
-  if(!fhReInvPt1) fhReInvPt1  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  if(!fhReInvPt2) fhReInvPt2  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  if(!fhReInvPt3) fhReInvPt3  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  if(!fhMiInvPt1) fhMiInvPt1  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  if(!fhMiInvPt2) fhMiInvPt2  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
-  if(!fhMiInvPt3) fhMiInvPt3  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;	
+  if(!fhRe1) fhRe1 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+  if(!fhRe2) fhRe2 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+  if(!fhRe3) fhRe3 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+  if(!fhMi1) fhMi1 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+  if(!fhMi2) fhMi2 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+  if(!fhMi3) fhMi3 = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;	
+  if(!fhReInvPt1) fhReInvPt1  = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+  if(!fhReInvPt2) fhReInvPt2  = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+  if(!fhReInvPt3) fhReInvPt3  = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+  if(!fhMiInvPt1) fhMiInvPt1  = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+  if(!fhMiInvPt2) fhMiInvPt2  = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;
+  if(!fhMiInvPt3) fhMiInvPt3  = new TH2D*[GetNCentrBin()*fNPIDBits*fNAsymCuts] ;	
   
   if(fFillSMCombinations){
     if(!fhReMod)    fhReMod     = new TH2D*[fNModules]   ;	
@@ -2216,7 +2236,7 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
     fhMiConv2 = (TH2D*) outputList->At(index++);
   }
   
-  for(Int_t ic=0; ic<fNCentrBin; ic++){
+  for(Int_t ic=0; ic<GetNCentrBin(); ic++){
     for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
       for(Int_t iasym=0; iasym<fNAsymCuts; iasym++){
         Int_t ihisto = ((ic*fNPIDBits)+ipid)*fNAsymCuts + iasym;
@@ -2269,8 +2289,10 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
   }// multi cut analysis 
   
   fhEvents     = (TH3D *) outputList->At(index++); 
-  if(fNCentrBin)fhCentrality       = (TH1D *) outputList->At(index++); 
-  if(fNCentrBin)fhCentralityNoPair = (TH1D *) outputList->At(index++); 
+  if(GetNCentrBin()>1)fhCentrality       = (TH1D *) outputList->At(index++); 
+  if(GetNCentrBin()>1)fhCentralityNoPair = (TH1D *) outputList->At(index++); 
+  if(GetNRPBin()>1)   fhEventPlaneAngle  = (TH1D *) outputList->At(index++); 
+  if(GetNRPBin()>1 && GetNCentrBin()>1)fhEventPlaneResolution = (TH2D *) outputList->At(index++); 
 
   fhRealOpeningAngle     = (TH2D*)  outputList->At(index++);
   fhRealCosOpeningAngle  = (TH2D*)  outputList->At(index++);

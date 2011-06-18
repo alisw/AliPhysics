@@ -34,6 +34,7 @@ class AliEMCALGeoUtils;
 class AliPHOSGeoUtils;
 #include "AliMixedEvent.h" 
 #include "AliCentrality.h"
+#include "AliEventplane.h"
 
 class AliAnaPartCorrBaseClass : public TObject {
 	
@@ -95,9 +96,13 @@ public:
 	  return fCaloUtils->GetModuleNumber(cluster);}
  	
   //Centrality
-  AliCentrality* GetCentrality()      const  { return fReader->GetCentrality()      ;}
-  Int_t          GetEventCentrality() const  { return fReader->GetEventCentrality() ;}
+  AliCentrality* GetCentrality()       const { return fReader->GetCentrality()       ; }
+  Int_t          GetEventCentrality()  const { return fReader->GetEventCentrality()  ; }
 	
+  //Event plane
+  AliEventplane* GetEventPlane()       const { return fReader->GetEventPlane()       ; }           
+  TString        GetEventPlaneMethod() const { return fReader->GetEventPlaneMethod() ; }
+  
   //AOD branch
   virtual void AddAODParticle(AliAODPWG4Particle part) ;
   virtual void ConnectInputOutputAODBranches();
@@ -172,6 +177,8 @@ public:
   virtual void SetMultiBin(Int_t n=1)    { fMultiBin  = n ;} //number of bins in Multiplicity  
   virtual void SetNZvertBin(Int_t n=1)   { fNZvertBin = n ;} //number of bins for vertex position
   virtual void SetNRPBin(Int_t n=1)      { fNrpBin    = n ;} //number of bins in reaction plain  
+  virtual void SetNCentrBin(Int_t n=1)   { fNCentrBin = n ;} //number of bins in centrality 
+  virtual void SetNMaxEvMix(Int_t n=20)  { fNmaxMixEv = n ;} //maximal number of events for mixing
   virtual void SetMultiplicity(Int_t multimin, Int_t multimax) {fMinMulti = multimin ; fMaxMulti = multimax ; }
   virtual void SwitchOnEventSelection()  { fUseSelectEvent = kTRUE  ; }
   virtual void SwitchOffEventSelection() { fUseSelectEvent = kFALSE ; } 
@@ -179,7 +186,8 @@ public:
   virtual Int_t   GetMultiBin()    const { return fMultiBin  ; } //number of bins in Multiplicity 
   virtual Int_t   GetNZvertBin()   const { return fNZvertBin ; } //number of bins in vertex   
   virtual Int_t   GetNRPBin()      const { return fNrpBin    ; } //number of bins in reaction plain 
-  //Getters for event selection
+  virtual Int_t   GetNCentrBin()   const { return fNCentrBin ; } //number of bins in centrality
+  virtual Int_t   GetNMaxEvMix()   const { return fNmaxMixEv ; } //maximal number of events for mixin
   virtual Float_t GetZvertexCut()  const { return GetReader()->GetZvertexCut();} //cut on vertex position  
   virtual Int_t   GetMaxMulti()    const { return fMaxMulti  ; }  
   virtual Int_t   GetMinMulti()    const { return fMinMulti  ; }  
@@ -310,6 +318,8 @@ private:
   Int_t    fMultiBin ;	         // Number of bins in event container for multiplicity
   Int_t    fNZvertBin ;	         // Number of bins in event container for vertex position
   Int_t    fNrpBin ;	           // Number of bins in event container for reaction plain
+  Int_t    fNCentrBin ;	         // Number of bins in event container for centrality
+  Int_t    fNmaxMixEv ;	         // Maximal number of events stored in buffer for mixing
   Int_t    fMaxMulti ;           // Maximum multiplicity of particles in the analysis
   Int_t    fMinMulti ;           // Maximum multiplicity of particles in the analysis
   Bool_t   fUseSelectEvent ;     // Select events based on multiplicity and vertex cuts
