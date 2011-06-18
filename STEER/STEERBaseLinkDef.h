@@ -95,4 +95,6 @@
 #pragma link C++ class AliDAQ+;
 #pragma link C++ class AliRefArray+;
 
+#pragma link C++ class AliOADBContainer+;
+
 #endif

@@ -68,6 +68,7 @@ set ( SRCS
     AliPIDCombined.cxx
     AliDAQ.cxx 
     AliRefArray.cxx
+    AliOADBContainer.cxx	
     )
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")
