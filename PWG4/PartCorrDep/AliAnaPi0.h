@@ -64,12 +64,6 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
 
   void CountAndGetAverages(Int_t &nClus,Int_t &nCell, Float_t &eClusTot,Float_t &eCellTot, Float_t &eDenClus,Float_t &eDenCell) ;
   
-  //Setters for parameters of event buffers
-  void SetNCentrBin(Int_t n=5)    {fNCentrBin=n ;} //number of bins in centrality 
-//void SetNZvertBin(Int_t n=5)    {fNZvertBin=n ;} //number of bins for vertex position
-//void SetNRPBin(Int_t n=6)       {fNrpBin=n ;}    //number of bins in reaction plain
-  void SetNMaxEvMix(Int_t n=20)   {fNmaxMixEv=n ;} //Maximal number of events for mixing
-  
   //Switchs for event multiplicity bin option, by default, centrality
   void SwitchOnTrackMultBins()    {fUseTrackMultBins = kTRUE  ; }
   void SwitchOffTrackMultBins()   {fUseTrackMultBins = kFALSE ; }
@@ -162,17 +156,13 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   
   private:
   Bool_t   fDoOwnMix;            // Do combinatorial background not the one provided by the frame
-  Int_t    fNCentrBin ;	         // Number of bins in event container for centrality
-//Int_t    fNZvertBin ;	         // Number of bins in event container for vertex position
-//Int_t    fNrpBin ;	           // Number of bins in event container for reaction plain
-  Int_t    fNmaxMixEv ;	         // Maximal number of events stored in buffer for mixing
   TString  fCalorimeter ;        // Select Calorimeter for IM
   Int_t    fNModules ;           // Number of EMCAL/PHOS modules, set as many histogras as modules 
   Bool_t   fUseAngleCut ;        // Select pairs depending on their opening angle
   Bool_t   fUseAngleEDepCut ;    // Select pairs depending on their opening angle
   Float_t  fAngleCut ;           // Select pairs with opening angle larger than a threshold
   Float_t  fAngleMaxCut ;        // Select pairs with opening angle smaller than a threshold
-  TList ** fEventsList ;         //![fNCentrBin*GetNZvertBin()*GetNRPBin()] Containers for photons in stored events
+  TList ** fEventsList ;         //![GetNCentrBin()*GetNZvertBin()*GetNRPBin()] Containers for photons in stored events
   
   //Multiple cuts analysis
   Bool_t   fMultiCutAna;         // Do analysis with several or fixed cut
@@ -237,20 +227,20 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2D * fhReConv2 ;                //! REAL  two-photon invariant mass distribution both pair photons recombined from 2 clusters with small mass 
   TH2D * fhMiConv2 ;                //! MIXED two-photon invariant mass distribution both pair photons recombined from 2 clusters with small mass
 
-  TH2D ** fhRe1 ;                   //![fNCentrBin*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
-  TH2D ** fhMi1 ;                   //![fNCentrBin*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry
-  TH2D ** fhRe2 ;                   //![fNCentrBin*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
-  TH2D ** fhMi2 ;                   //![fNCentrBin*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry
-  TH2D ** fhRe3 ;                   //![fNCentrBin*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
-  TH2D ** fhMi3 ;                   //![fNCentrBin*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry
+  TH2D ** fhRe1 ;                   //![GetNCentrBin()*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
+  TH2D ** fhMi1 ;                   //![GetNCentrBin()*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry
+  TH2D ** fhRe2 ;                   //![GetNCentrBin()*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
+  TH2D ** fhMi2 ;                   //![GetNCentrBin()*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry
+  TH2D ** fhRe3 ;                   //![GetNCentrBin()*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
+  TH2D ** fhMi3 ;                   //![GetNCentrBin()*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry
   
   //Histograms weighted by inverse pT
-  TH2D ** fhReInvPt1 ;              //![fNCentrBin*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
-  TH2D ** fhMiInvPt1 ;              //![fNCentrBin*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
-  TH2D ** fhReInvPt2 ;              //![fNCentrBin*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT 
-  TH2D ** fhMiInvPt2 ;              //![fNCentrBin*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
-  TH2D ** fhReInvPt3 ;              //![fNCentrBin*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
-  TH2D ** fhMiInvPt3 ;              //![fNCentrBin*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
+  TH2D ** fhReInvPt1 ;              //![GetNCentrBin()*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
+  TH2D ** fhMiInvPt1 ;              //![GetNCentrBin()*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
+  TH2D ** fhReInvPt2 ;              //![GetNCentrBin()*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT 
+  TH2D ** fhMiInvPt2 ;              //![GetNCentrBin()*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
+  TH2D ** fhReInvPt3 ;              //![GetNCentrBin()*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
+  TH2D ** fhMiInvPt3 ;              //![GetNCentrBin()*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
   
   //Multiple cuts: Assymmetry, pt, n cells, PID
   TH2D ** fhRePtNCellAsymCuts ;     //![fNPtCuts*fNAsymCuts*fNCellNCuts] REAL two-photon invariant mass distribution for different pt cut, n cell cuts and assymetry
@@ -267,10 +257,14 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2D *  fhRePtAsymPi0 ;           //! REAL two-photon pt vs asymmetry, close to pi0 mass
   TH2D *  fhRePtAsymEta ;           //! REAL two-photon pt vs asymmetry, close to eta mass
 
+  //Centrality, Event plane bins
   TH3D * fhEvents;                  //! Number of events per centrality, RP, zbin
   TH1D * fhCentrality;              //! Histogram with centrality bins with at least one pare
   TH1D * fhCentralityNoPair;        //! Histogram with centrality bins with no pair
 
+  TH1D * fhEventPlaneAngle;         //! Histogram with Event plane angle
+  TH2D * fhEventPlaneResolution;    //! Histogram with Event plane resolution vs centrality
+  
   // Pair opening angle
   TH2D * fhRealOpeningAngle ;       //! Opening angle of pair versus pair energy
   TH2D * fhRealCosOpeningAngle ;    //! Cosinus of opening angle of pair version pair energy
@@ -318,7 +312,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2D *  fhMCPi0PtOrigin ;         //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
   TH2D *  fhMCEtaPtOrigin ;         //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
 
-  ClassDef(AliAnaPi0,18)
+  ClassDef(AliAnaPi0,19)
 } ;
 
 

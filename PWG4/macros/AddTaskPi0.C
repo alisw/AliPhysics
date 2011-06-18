@@ -226,16 +226,19 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   anapi0->SwitchOnOwnMix(); //Off when mixing done with general mixing frame
   if     (col=="pp"  ) {
     anapi0->SetNCentrBin(1);
-    anapi0->SetNZvertBin(50);
+    anapi0->SetNZvertBin(10);
+    anapi0->SetNRPBin(1);
+    anapi0->SetNMaxEvMix(100);    
     anapi0->SwitchOnSMCombinations();
   }
   else if(col=="PbPb") {
     anapi0->SetNCentrBin(10);
     anapi0->SetNZvertBin(10);
+    anapi0->SetNRPBin(4);
+    anapi0->SetNMaxEvMix(10);
     anapi0->SwitchOffSMCombinations();
   }
-  anapi0->SetNRPBin(1);
-  anapi0->SetNMaxEvMix(50);
+
   
   if(kUseKinematics)anapi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
   else              anapi0->SwitchOffDataMC() ;

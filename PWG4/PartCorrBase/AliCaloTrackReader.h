@@ -37,6 +37,7 @@ class AliAODMCHeader;
 class AliESDtrackCuts;
 class AliCentrality;
 class AliTriggerAnalysis;
+class AliEventplane;
 
 // --- PartCorr
 #include "AliCalorimeterUtils.h"
@@ -247,7 +248,7 @@ public:
   virtual void      SetZvertexCut(Float_t zcut=10.)       { fZvtxCut=zcut                       ; } //cut on vertex position
 
   //------------------------
-  // Centrality
+  // Centrality / Event Plane
   //------------------------
   virtual AliCentrality* GetCentrality()            const { return fInputEvent->GetCentrality() ; } //Look in AOD reader, different there
   virtual void      SetCentralityClass(TString name)      { fCentralityClass   = name           ; }
@@ -258,9 +259,13 @@ public:
   virtual void      SetCentralityBin(Int_t min, Int_t max) //Set the centrality bin to select the event. If used, then need to get percentile
                                                           { fCentralityBin[0]=min; fCentralityBin[1]=max;  
                                                            if(min>=0 && max > 0) fCentralityOpt = 100 ; }
-  virtual Float_t GetCentralityBin(Int_t i)        const { if(i < 0 || i > 1) return 0 ; 
-                                                           else return fCentralityBin[i]              ; }
+  virtual Float_t GetCentralityBin(Int_t i)         const { if(i < 0 || i > 1) return 0 ; 
+                                                            else return fCentralityBin[i]             ; }
   
+  virtual AliEventplane* GetEventPlane()            const { return fInputEvent->GetEventplane()   ; }           
+  virtual void           SetEventPlaneMethod(TString m)   { fEventPlaneMethod = m                 ; }
+  virtual TString        GetEventPlaneMethod()      const { return fEventPlaneMethod              ; }
+
   //-------------------------------------
   // Other methods
   //-------------------------------------
@@ -410,12 +415,13 @@ public:
   Bool_t           fUseEventsWithPrimaryVertex ; // Select events with primary vertex
   AliTriggerAnalysis* fTriggerAnalysis;          // Access to trigger selection algorithm for V0AND calculation
   
-  //Centrality
+  //Centrality/Event plane
   TString          fCentralityClass;     // Name of selected centrality class     
   Int_t            fCentralityOpt;       // Option for the returned value of the centrality, possible options 5, 10, 100
   Int_t            fCentralityBin[2];    // Minimum and maximum value of the centrality for the analysis
+  TString          fEventPlaneMethod;    // Name of event plane method, by default "Q"
   
-  ClassDef(AliCaloTrackReader,30)
+  ClassDef(AliCaloTrackReader,31)
 } ;
 
 

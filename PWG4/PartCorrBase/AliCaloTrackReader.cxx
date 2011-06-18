@@ -78,7 +78,8 @@ ClassImp(AliCaloTrackReader)
     fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),fCaloFilterPatch(kFALSE),
     fEMCALClustersListName(""),fZvtxCut(0.), 
     fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE), fUseEventsWithPrimaryVertex(kFALSE),
-    fTriggerAnalysis (new AliTriggerAnalysis), fCentralityClass("V0M"),fCentralityOpt(10)
+    fTriggerAnalysis (new AliTriggerAnalysis), fCentralityClass("V0M"),fCentralityOpt(10),
+    fEventPlaneMethod("Q")
    
 {
   //Ctor
