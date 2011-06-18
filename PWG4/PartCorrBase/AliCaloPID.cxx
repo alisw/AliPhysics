@@ -70,7 +70,7 @@ fEMCALPIDUtils(new AliEMCALPIDUtils),
 fHistoNEBins(100),   fHistoEMax(100.),   fHistoEMin(0.),
 fHistoNDEtaBins(100),fHistoDEtaMax(0.15),fHistoDEtaMin(-0.15),
 fHistoNDPhiBins(100),fHistoDPhiMax(0.15),fHistoDPhiMin(-0.15),
-fhTrackMatchedDEta(),fhTrackMatchedDPhi(),fhTrackMatchedDEtaDPhi()
+fhTrackMatchedDEta(0x0),fhTrackMatchedDPhi(0x0),fhTrackMatchedDEtaDPhi(0x0)
 
 {
   //Ctor
@@ -488,9 +488,11 @@ Bool_t AliCaloPID::IsTrackMatched(const AliVCluster* cluster, const AliCalorimet
 
     if(dR < 999) {     
       
-      fhTrackMatchedDEta->Fill(cluster->E(),dZ);
-      fhTrackMatchedDPhi->Fill(cluster->E(),dR);
-      if(cluster->E() > 0.5)fhTrackMatchedDEtaDPhi->Fill(dZ,dR);
+      if(fhTrackMatchedDEta){
+        fhTrackMatchedDEta->Fill(cluster->E(),dZ);
+        fhTrackMatchedDPhi->Fill(cluster->E(),dR);
+        if(cluster->E() > 0.5)fhTrackMatchedDEtaDPhi->Fill(dZ,dR);
+      }
       //printf("dR %f, dZ %f \n",dR,dZ);
       return kTRUE;
     }
@@ -498,10 +500,11 @@ Bool_t AliCaloPID::IsTrackMatched(const AliVCluster* cluster, const AliCalorimet
       return kFALSE;
   }//EMCAL cluster and recalculation of matching on
   
-  fhTrackMatchedDEta->Fill(cluster->GetTrackDz(),cluster->E());
-  fhTrackMatchedDEta->Fill(cluster->GetTrackDx(),cluster->E());
-  if(cluster->E() > 0.5)fhTrackMatchedDEtaDPhi->Fill(cluster->GetTrackDz(),cluster->GetTrackDx());
-  
+  if(fhTrackMatchedDEta){
+    fhTrackMatchedDEta->Fill(cluster->GetTrackDz(),cluster->E());
+    fhTrackMatchedDEta->Fill(cluster->GetTrackDx(),cluster->E());
+    if(cluster->E() > 0.5)fhTrackMatchedDEtaDPhi->Fill(cluster->GetTrackDz(),cluster->GetTrackDx());
+  }
   
   if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName())))
   {    
