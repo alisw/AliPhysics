@@ -1,4 +1,5 @@
 #include "AliOADBPWG2Spectra.h"
+#include "AliOADBContainer.h"
 #include "TNamed.h"
 #include "TString.h"
 #include "TH1D.h"
@@ -48,7 +49,7 @@ void AliOADBPWG2Spectra::Init() {
 const char * AliOADBPWG2Spectra::GetOADBPWG2SpectraFileName()  {
   // get file name to the OADB
   static TString filename;
-  filename.Form("%s/PWG2/SPECTRA/spectraResults.root", AliAnalysisManager::GetOADBPath()); 
+  filename.Form("%s/PWG2/SPECTRA/spectraResults.root", AliOADBContainer::GetOADBPath()); 
   return filename.Data();
 
 }
