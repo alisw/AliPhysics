@@ -28,9 +28,7 @@
 ClassImp(AliHLTCaloConstants)
 
 
-AliHLTCaloConstants::AliHLTCaloConstants() :  fkMAXCELLSTEPETA(-1),
-					      fkMINCELLSTEPETA(-1),
-					      fkCELLSTEPPHI(-1),
+AliHLTCaloConstants::AliHLTCaloConstants() :  fkCELLSTEPPHI(-1),
 					      fkCELLHEIGHT(-1),
 					      fkCELLANGLE(-1),
 					      fkRADLENGTH(-1),

@@ -32,6 +32,7 @@ public:
   static  Int_t GetNGAINS()             { return ALTRO::NGAINS; };
   static  Int_t GetHIGHGAIN()           { return ALTRO::HIGHGAIN; };
   static  Int_t GetLOWGAIN()          { return ALTRO::LOWGAIN; };
+  static  Int_t GetHGLGFACTOR()       { return CALO::HGLGFACTOR;}; //FR
   static  Int_t GetMAXBINVALUE()      { return ALTRO::MAXBINVALUE; };
   static  Int_t GetCSPSPERFEE()       { return CALO::CSPSPERFEE; };
   static  Int_t GetNALTROS()           { return ALTRO::NALTROS; };
@@ -55,8 +56,6 @@ public:
   Float_t GetCELLSTEP() const { return fkCELLSTEP; }
   
   //EMCAL specific, !! Move somewhere else, PTH
-  Float_t GetMAXCELLSTEPETA() const { return fkMAXCELLSTEPETA; }  //FR
-  Float_t GetMINCELLSTEPETA() const { return fkMINCELLSTEPETA; }  //FR
   Float_t GetCELLSTEPPHI() const { return fkCELLSTEPPHI; }        //FR
   Float_t GetCELLHEIGHT() const { return fkCELLHEIGHT; }        //FR
   Float_t GetCELLANGLE() const { return fkCELLANGLE; }        //FR
@@ -69,8 +68,7 @@ protected:
   //EMCAL specific, !! Move somewhere else, PTH
   // @todo: These variables should be declared constant, doesnt work right now
   // because the default copy contructor is called somewhere.
-  Float_t fkMAXCELLSTEPETA;
-  Float_t fkMINCELLSTEPETA;
+  
   Float_t fkCELLSTEPPHI;
   Float_t fkCELLHEIGHT;
   Float_t fkCELLANGLE;
