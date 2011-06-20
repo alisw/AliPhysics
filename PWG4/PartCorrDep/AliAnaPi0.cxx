@@ -1792,7 +1792,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         
       //Reaction plane bin
       curRPBin    = 0 ;
-      if(GetNRPBin()>1){
+      if(GetNRPBin()>1 && GetEventPlane()){
         Float_t epAngle = GetEventPlane()->GetEventplane(GetEventPlaneMethod());
         fhEventPlaneAngle->Fill(epAngle);
         curRPBin = TMath::Nint(epAngle*(GetNRPBin()-1)/TMath::Pi());
@@ -1807,7 +1807,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       fhEvents    ->Fill(curCentrBin+0.5,curZvertBin+0.5,curRPBin+0.5) ;
       if(GetNCentrBin() > 1) {
         fhCentrality->Fill(curCentrBin);
-        if(GetNRPBin() > 1) fhEventPlaneResolution->Fill(curCentrBin,TMath::Cos(2.*GetEventPlane()->GetQsubRes()));
+        if(GetNRPBin() > 1 && GetEventPlane()) fhEventPlaneResolution->Fill(curCentrBin,TMath::Cos(2.*GetEventPlane()->GetQsubRes()));
       }
       currentEvtIndex = evtIndex1 ; 
       if(GetDebug() > 1) 
