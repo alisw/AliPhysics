@@ -48,8 +48,6 @@ AliHLTEMCALConstants::InitConstants()
   fkDETNAME = "EMCAL";
   fkCELLSTEP = 6.0;
   fkDDLOFFSET =  4608;
-  fkMAXCELLSTEPETA = 6.32; 	// FR: max tower dimension along eta
-  fkMINCELLSTEPETA = 5.99; 	// FR: min tower dimension along eta
   fkCELLSTEPPHI = 6.04667; 	// FR: tower dimension along phi
   fkCELLHEIGHT = 27.74;  	// FR: tower height
   fkCELLANGLE = 1.50;  		// FR: tower tapeiring angle (DEG)
