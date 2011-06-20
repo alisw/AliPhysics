@@ -39,6 +39,9 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     // Setters
     virtual void SetTrackFilter   (AliAnalysisFilter*   trackF) {fTrackFilter    =   trackF;}
     virtual void SetTPCOnlyFilterMask (UInt_t filterMask)       {fTPCOnlyFilterMask    =  filterMask;}
+    virtual void SetHybridFilterMaskITSTPC(UInt_t filterMask)         {fHybridFilterMaskITSTPC    =  filterMask;}
+    virtual void SetHybridFilterMasksTPC(UInt_t filterMask0,UInt_t filterMask1)         {fHybridFilterMaskTPC0    =  filterMask0;
+fHybridFilterMaskTPC1   =  filterMask1;}
     virtual void SetKinkFilter    (AliAnalysisFilter*    KinkF) {fKinkFilter     =    KinkF;}
     virtual void SetV0Filter      (AliAnalysisFilter*      V0F) {fV0Filter       =      V0F;}
     virtual void SetCascadeFilter (AliAnalysisFilter* CascadeF) {fCascadeFilter  = CascadeF;}
@@ -113,6 +116,10 @@ private:
   Bool_t fOldESDformat; // is the ESD in old format ?
   AliAODVertex* fPrimaryVertex; // pointer to primary vertex of the event
   UInt_t fTPCOnlyFilterMask; //  Filter Mask used to select and store refitted TPC only tracks
+  UInt_t fHybridFilterMaskITSTPC; //  Filter Mask used to select and store refitted TPC only tracks which have not passed ITS cuts
+  UInt_t fHybridFilterMaskTPC0; //  Filter Mask flag refitted TPC only tracks with tight ITScuts
+  UInt_t fHybridFilterMaskTPC1; //  Filter Mask flag refitted TPC only tracks with lose ITScuts
+
   Bool_t fIsVZEROEnabled; // whether or not to fill the vzero branch (true by default)
   Bool_t fAreCascadesEnabled; // whether or not to fill the cascades branch (true by default)
   Bool_t fAreV0sEnabled; // whether or not to fill the v0 branch (true by default)
@@ -128,7 +135,7 @@ private:
   Int_t fTimeZeroType;  //  time zero type 
   AliESDtrackCuts* fTPCaloneTrackCuts; // TPC stand-alone track cuts
   
-  ClassDef(AliAnalysisTaskESDfilter, 9); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskESDfilter, 10); // Analysis task for standard ESD filtering
 };
  
 #endif

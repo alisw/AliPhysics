@@ -81,6 +81,9 @@ fNumberOfKinks(0),
 fOldESDformat(kFALSE),
 fPrimaryVertex(0x0),
 fTPCOnlyFilterMask(0),
+fHybridFilterMaskITSTPC(0),
+fHybridFilterMaskTPC0(0),
+fHybridFilterMaskTPC1(0),
 fIsVZEROEnabled(kTRUE),
 fAreCascadesEnabled(kTRUE),
 fAreV0sEnabled(kTRUE),
@@ -938,7 +941,18 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
 void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
 {
   // Convert TPC only tracks
-  
+  // Here we have wo hybrid appraoch to remove fakes
+  // ******* ITSTPC ********
+  // Uses a cut on the ITS properties to select global tracks
+  // which are than marked as HybdridITSTPC for the remainder the TPC only tracks are 
+  // flagged as HybridITSTPConly. Note, in order not to get fakes back in the TPC cuts, one needs 
+  // two "ITS" cuts one tight (1) (to throw out fakes) and one lose (2) (to NOT flag the trakcs in the TPC only)
+  // using cut number (3)
+  // so fHybridFilterMask == (1)|(2) fTPCFilterMask = (3), Usercode needs to slect with mask = (1)|(3) and track->IsHybridITSTPC()
+  // ******* TPC ********
+  // Here, only TPC tracks are flagged that pass the tight ITS cuts and tracks that pass the TPC cuts and NOT the loose ITS cuts
+  // the ITS cuts neeed to be added to the filter as extra cuts, since here the selections info is reset in the global and put to the TPC only track
+
   AliCodeTimerAuto("",0);
   
   // Loop over the tracks and extract and mask out all aod tracks that pass the selections for AODt racks
@@ -950,6 +964,11 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
     if(map&fTPCOnlyFilterMask){
       // we only reset the track select ionfo, no deletion...
       tr->SetFilterMap(map&~fTPCOnlyFilterMask);
+    }
+    if(map&fHybridFilterMaskITSTPC){
+      // this is one part of the hybrid tracks
+      // the others not passing the selection will be TPC only selected below
+      tr->SetIsHybridITSTPC(kTRUE);
     }
   }
   // Loop over the ESD trcks and pick out the tracks passing TPC only cuts
@@ -976,11 +995,30 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
     AliESDtrack* esdTrack = esd.GetTrack(nTrack); //carefull do not modify it othwise  need to work with a copy 
     
     UInt_t selectInfo = 0;
+    Bool_t isHybridITSTPC = false;
+    Bool_t isHybridTPC = false;
     //
     // Track selection
     if (fTrackFilter) {
       selectInfo = fTrackFilter->IsSelected(esdTrack);
     }
+
+    if(!(selectInfo&fHybridFilterMaskITSTPC)){
+      // not already selected tracks, use second part of hybrid tracks
+      isHybridITSTPC = true;
+      // too save space one could only store these...
+    }
+
+    if(selectInfo&fHybridFilterMaskTPC0){
+      isHybridTPC = true;
+    }
+    else if (!(selectInfo&fHybridFilterMaskTPC1)){
+      // select all that have not been chosen by the loose 
+      // cuts
+      isHybridTPC = true;
+    }
+
+
     selectInfo &= fTPCOnlyFilterMask;
     if (!selectInfo)continue;
     
@@ -1030,6 +1068,8 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
                                                             vtx->UsesTrack(track->GetID()),
                                                             AliAODTrack::kPrimary, 
                                                             selectInfo);
+    aodTrack->SetIsHybridITSTPC(isHybridITSTPC);    
+    aodTrack->SetIsHybridTPC(isHybridTPC);
     aodTrack->SetTPCClusterMap(track->GetTPCClusterMap());
     aodTrack->SetTPCSharedMap (track->GetTPCSharedMap());
     Float_t ndf = track->GetTPCNcls()+1 - 5 ;
