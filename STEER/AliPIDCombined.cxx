@@ -73,15 +73,22 @@ AliPIDCombined::~AliPIDCombined() {
 
 //-------------------------------------------------------------------------------------------------	
 void AliPIDCombined::SetPriorDistribution(AliPID::EParticleType type,TH1F *prior) {
-  if ( (type < 0) || (type>AliPID::kSPECIES+AliPID::kSPECIESLN) ) {
-    AliError(Form("Invalid EParticleType setting prior (type: %d)",type));
+  if ( (type < 0) || ( type >= (AliPID::kSPECIESN+AliPID::kSPECIESLN) ) ){
+    AliError(Form("Invalid EParticleType setting prior (offending type: %d)",type));
     return;
   }
   if(prior) {
-    if (fPriorsDistributions[type]) {
-      delete fPriorsDistributions[type]; 
+    Int_t i = type;
+    if (type >= (AliPID::EParticleType)AliPID::kSPECIES ) {
+      if (type < AliPID::kDeuteron) {
+	AliError(Form("Invalid EParticleType setting prior. Type: %d (neutral) not supported",type));
+	return;
+      } else i = (Int_t)type - (AliPID::kSPECIESN-AliPID::kSPECIES);
     }
-    fPriorsDistributions[type]=new TH1F(*prior);
+    if (fPriorsDistributions[i]) {
+      delete fPriorsDistributions[i]; 
+    }
+    fPriorsDistributions[i]=new TH1F(*prior);
   }
 }
 
@@ -179,7 +186,7 @@ void AliPIDCombined::GetPriors(const AliVTrack *track, Double_t* p) const {
 
 	// normalizing priors
 	if (sumPriors == 0) return;
-	for (Int_t i=0;i<AliPID::kSPECIES;++i){
+	for (Int_t i=0;i<fSelectedSpecies;++i){
 	   p[i]=p[i]/sumPriors;
 	}
 	return;
