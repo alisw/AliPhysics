@@ -33,7 +33,10 @@ class AliAODTrack : public AliVTrack {
   enum AODTrkBits_t {
     kIsDCA=BIT(14),   // set if fPosition is the DCA and not the position of the first point
     kUsedForVtxFit=BIT(15), // set if this track was used to fit the vertex it is attached to
-    kUsedForPrimVtxFit=BIT(16) // set if this track was used to fit the primary vertex
+    kUsedForPrimVtxFit=BIT(16), // set if this track was used to fit the primary vertex
+    kIsTPCOnly=BIT(17), // set if this track is a SA TPC track constrained to the SPD vertex, needs to be skipped in any track loop to avoid double counting
+    kIsHybridITSTPC=BIT(18), // set if this track can be used as a hybrid track i.e. Gbobal tracks with certain slecetion plus the TPC constrained tracks that did not pass the selection
+    kIsHybridTPC=BIT(19) //  for TPC tracks that have been selected with a combination of cuts involving the ITS, tracks without ITS information are taken from TPC only
   };
 
   enum AODTrkPID_t {
@@ -148,6 +151,9 @@ class AliAODTrack : public AliVTrack {
   Bool_t  IsPrimaryCandidate() const;
   Bool_t  GetUsedForVtxFit() const { return TestBit(kUsedForVtxFit); }
   Bool_t  GetUsedForPrimVtxFit() const { return TestBit(kUsedForPrimVtxFit); }
+  Bool_t  IsHybridITSTPC() const { return TestBit(kIsHybridITSTPC); }
+  Bool_t  IsHybridTPC() const { return TestBit(kIsHybridTPC); }
+  Bool_t  IsTPCOnly() const { return TestBit(kIsTPCOnly); }
 
   template <class T> void GetP(T *p) const {
     p[0]=fMomentum[0]; p[1]=fMomentum[1]; p[2]=fMomentum[2];}
@@ -248,6 +254,9 @@ class AliAODTrack : public AliVTrack {
   void SetDCA(Double_t d, Double_t z);
   void SetUsedForVtxFit(Bool_t used = kTRUE) { used ? SetBit(kUsedForVtxFit) : ResetBit(kUsedForVtxFit); }
   void SetUsedForPrimVtxFit(Bool_t used = kTRUE) { used ? SetBit(kUsedForPrimVtxFit) : ResetBit(kUsedForPrimVtxFit); }
+  void SetIsHybridITSTPC(Bool_t hybrid = kTRUE) { hybrid ? SetBit(kIsHybridITSTPC) : ResetBit(kIsHybridITSTPC); }
+  void SetIsHybridTPC(Bool_t hybrid = kTRUE) { hybrid ? SetBit(kIsHybridTPC) : ResetBit(kIsHybridTPC); }
+  void SetIsTPCOnly(Bool_t b = kTRUE) { b ? SetBit(kIsTPCOnly) : ResetBit(kIsTPCOnly); }
 
   void SetOneOverPt(Double_t oneOverPt) { fMomentum[0] = 1. / oneOverPt; }
   void SetPt(Double_t pt) { fMomentum[0] = pt; };
@@ -330,7 +339,7 @@ class AliAODTrack : public AliVTrack {
   AliAODPid    *fDetPid;            // more detailed or detector specific pid information
   TRef          fProdVertex;        // vertex of origin
 
-  ClassDef(AliAODTrack, 12);
+  ClassDef(AliAODTrack, 13);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const
