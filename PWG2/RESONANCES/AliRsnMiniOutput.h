@@ -57,6 +57,9 @@ public:
    Bool_t          IsTruePair()         const {return (fComputation == kTruePair);}
    Bool_t          IsMother()           const {return (fComputation == kMother);}
    Bool_t          IsDefined()          const {return (IsEventOnly() || IsTrackPair() || IsTrackPairMix() || IsTruePair() || IsMother());}
+   Bool_t          IsLikeSign()         const {return (fCharge[0] == fCharge[1]);}
+   Bool_t          IsSameCut()          const {return (fCutID[0] == fCutID[1]);}
+   Bool_t          IsSymmetric()        const {return (IsLikeSign() && IsSameCut());}
                                         
    EOutputType     GetOutputType()      const {return fOutputType;}
    EComputation    GetComputation()     const {return fComputation;}
@@ -87,7 +90,7 @@ public:
    Bool_t          Init(const char *prefix, TList *list);
    Bool_t          FillMother(const AliRsnMiniPair *pair, AliRsnMiniEvent *event, TClonesArray *valueList);
    Bool_t          FillEvent(AliRsnMiniEvent *event, TClonesArray *valueList);
-   Int_t           FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2, TClonesArray *valueList);
+   Int_t           FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2, TClonesArray *valueList, Bool_t refFirst = kTRUE);
                   
 private:
 
