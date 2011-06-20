@@ -31,11 +31,9 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Would like to use dynamic cast but CINT interprets that as a 
   // static cast - sigh!
   Bool_t mc = false;
-  if (task->IsA() == AliForwardMCMultiplicityTask::Class()) {
-    Info("ForwardAODConfig", "Assuming Monte-Carlo input");
+  if (task->IsA() == AliForwardMCMultiplicityTask::Class()) 
     mc = true;
-  }
-
+  
 #if 0 
   if (mc) {
     AliForwardMCMultiplicityTask* mcTask = 
@@ -43,9 +41,27 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
     mcTask->SetOnlyPrimary(true);
   }
 #endif
-  Double_t nXi = 2; // mc ? 1 : .5;
-  Bool_t   includeSigma = false; 
+  Double_t nXi = mc ? 2 : 2;   //HHD test
+  Bool_t   includeSigma = false; //true;
 
+  AliFMDMultCuts cSharing;
+  //c.SetNXi(mc ? 1 : 1);
+  //c.SetIncludeSigma(true);
+  //c.SetMPVFraction(0.5);
+  
+  Double_t factor = 1.;
+  //if(mc) factor = 1.15;
+  
+  cSharing.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
+ 
+  AliFMDMultCuts cDensity;
+  //c2.SetNXi(mc ? 1 : 1);
+  //  c2.SetIncludeSigma(false);
+  //c2.SetMPVFraction(0.5);
+  //Double_t factor = 1.2;
+  cDensity.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
+  
+  
   // --- Event inspector ---------------------------------------------
   // Set the number of SPD tracklets for which we consider the event a
   // low flux event
@@ -55,29 +71,33 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
 
   // --- Sharing filter ----------------------------------------------
   // Set the low cut used for sharing - overrides settings in eloss fits
-  task->GetSharingFilter().SetLowCut(0.15); // mc ? 0.15 : 0.2);
-  // Set the number of xi's (width of landau peak) to stop at 
-  task->GetSharingFilter().SetNXi(nXi);
-  // Set whether or not to include sigma in cut
-  task->GetSharingFilter().SetIncludeSigma(includeSigma);
+  //  Float_t factor = 1.;
+  //if(mc) factor = 1.2;
+  //task->GetSharingFilter().SetLowCut(0.3*factor);
   // Enable use of angle corrected signals in the algorithm 
   task->GetSharingFilter().SetUseAngleCorrectedSignals(true);
+  // Disable use of angle corrected signals in the algorithm 
   task->GetSharingFilter().SetZeroSharedHitsBelowThreshold(false);
-
+  // Enable use of angle corrected signals in the algorithm 
+  
+  task->GetSharingFilter().GetHCuts().SetMultCuts(-1);
+  // Set the number of xi's (width of landau peak) to stop at 
+  task->GetSharingFilter().GetHCuts().SetNXi(nXi);
+  // Set whether or not to include sigma in cut
+  task->GetSharingFilter().GetHCuts().SetIncludeSigma(includeSigma);
+  // Enable use of angle corrected signals in the algorithm 
+  task->GetSharingFilter().SetLCuts(cSharing);
+  
+   
   // --- Density calculator 
   // Set the maximum number of particle to try to reconstruct 
   task->GetDensityCalculator().SetMaxParticles(10);
   // Wet whether to use poisson statistics to estimate N_ch
   task->GetDensityCalculator().SetUsePoisson(true);
-  // Set the lower multiplicity cut.  Overrides setting in energy loss fits.
-  task->GetDensityCalculator().SetMultCut(-1); //was 0.3
-  // Set the lower per-ring multiplicity cuts 
-  task->GetDensityCalculator().SetMultCuts(0.3,0.3,0.3,0.3,0.3);
-  // task->GetDensityCalculator().SetMultCuts(-1,-1,-1,-1,-1);
-  // USe this many times xi+sigma below MPV 
-  task->GetDensityCalculator().SetNXi(nXi);
+
   // Set whether or not to include sigma in cut
-  task->GetDensityCalculator().SetIncludeSigma(includeSigma);
+  task->GetDensityCalculator().SetCuts(cDensity);
+  
   // Set whether or not to use the phi acceptance 
   task->GetDensityCalculator().SetUsePhiAcceptance(true);
 
