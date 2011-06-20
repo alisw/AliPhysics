@@ -253,7 +253,13 @@ Bool_t AliRsnMiniOutput::Init(const char *prefix, TList *list)
 
    switch (fOutputType) {
       case kHistogram:
-         CreateHistogram(Form("%s_%s", prefix, GetName()));
+         if (size <= 3) {
+            CreateHistogram(Form("%s_%s", prefix, GetName()));
+         } else {
+            AliInfo(Form("[%s] Added %d > 3 axes. Creating a sparse histogram", GetName(), size));
+            fOutputType = kHistogramSparse;
+            CreateHistogramSparse(Form("%s_%s", prefix, GetName()));
+         }
          return kTRUE;
       case kHistogramSparse:
          CreateHistogramSparse(Form("%s_%s", prefix, GetName()));
@@ -310,10 +316,12 @@ void AliRsnMiniOutput::CreateHistogramSparse(const char *name)
 // In case one of the expected axes is NULL, the initialization fails.
 //
 
+   Int_t size = fAxes.GetEntries();
+   AliInfo(Form("Sparse histogram name = '%s', with %d axes", name, size));
+   
    // retrieve binnings and sizes of all axes
    // since the check for null values is done in Init(),
    // we assume that here they must all be well defined
-   Int_t size = fAxes.GetEntries();
    Int_t i, *nbins = new Int_t[size];
    for (i = 0; i < size; i++) {
       AliRsnMiniAxis *axis = (AliRsnMiniAxis*)fAxes[i];
@@ -385,12 +393,13 @@ Bool_t AliRsnMiniOutput::FillMother(const AliRsnMiniPair *pair, AliRsnMiniEvent 
 }
 
 //________________________________________________________________________________________
-Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2, TClonesArray *valueList)
+Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2, TClonesArray *valueList, Bool_t refFirst)
 {
 //
 // Loops on the passed mini-event, and for each pair of particles
 // which satisfy the charge and cut requirements defined here, add an entry.
 // Returns the number of successful fillings.
+// Last argument tells if the reference event for event-based values is the first or the second.
 //
 
    // check computation type
@@ -416,14 +425,14 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
    Bool_t sameCriteria = ((fCharge[0] == fCharge[1]) && (fCutID[0] == fCutID[1]));
    Bool_t sameEvent = (event1->ID() == event2->ID());
    
-   //Int_t nsel1 = event1->CountParticles(fCharge[0], fCutID[0]);
-   //Int_t nsel2 = event2->CountParticles(fCharge[1], fCutID[1]);
-   //cout << "Charge #1 = " << fCharge[0] << " cut bit #1 = " << fCutID[0] << ", tracks = " << nsel1 << endl;
-   //cout << "Charge #2 = " << fCharge[1] << " cut bit #2 = " << fCutID[1] << ", tracks = " << nsel2 << endl;
-   //if (!nsel1 || !nsel2) {
-   //   cout << "Nothing to mix" << endl;
-   //   return 0;
-   //}
+   Int_t nsel1 = event1->CountParticles(fCharge[0], fCutID[0]);
+   Int_t nsel2 = event2->CountParticles(fCharge[1], fCutID[1]);
+   AliDebugClass(1, Form("Particle #1: [%s] -- event ID = %6d -- required charge = %c -- required cut ID = %d --> found %4d tracks", (event1 == event2 ? "def" : "mix"), event1->ID(), fCharge[0], fCutID[0], nsel1));
+   AliDebugClass(1, Form("Particle #2: [%s] -- event ID = %6d -- required charge = %c -- required cut ID = %d --> found %4d tracks", (event1 == event2 ? "def" : "mix"), event2->ID(), fCharge[1], fCutID[1], nsel2));
+   if (!nsel1 || !nsel2) {
+      AliDebugClass(1, "No pairs to mix");
+      return 0;
+   }
    
    // external loop
    for (i1 = 0; i1 < n1; i1++) {
@@ -436,15 +445,15 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
       // the first track *after* current one;
       // otherwise it starts from the beginning
       start = ((sameEvent && sameCriteria) ? i1 + 1 : 0);
+      cout << "START = " << endl;
       // internal loop
       for (i2 = start; i2 < n2; i2++) {
          p2 = event2->GetParticle(i2);
          if (p2->Charge() != fCharge[1]) continue;
          if (!p2->HasCutBit(fCutID[1])) continue;
-         //cout << "Matching: " << i1 << ' ' << i2 << endl;
          // avoid to mix a particle with itself
          if (sameEvent && (p1->Index() == p2->Index())) {
-            //cout << "-- skipping same index" << endl;
+            AliDebugClass(2, "Skipping same index");
             continue;
          }
          // sum momenta
@@ -469,17 +478,17 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
          // check pair against cuts
          if (fPairCuts) {
             if (!fPairCuts->IsSelected(&fPair)) {
-               //cout << "-- cuts not passed: Y = " << TMath::Abs(fPair.Y(0)) << endl;
                continue;
             }
          }
          // get computed values & fill histogram
-         ComputeValues(event1, valueList);
+         if (refFirst) ComputeValues(event1, valueList); else ComputeValues(event2, valueList); 
          FillHistogram();
          nadded++;
       } // end internal loop
    } // end external loop
    
+   AliDebugClass(1, Form("Pairs added in total = %4d", nadded));
    return nadded;
 }
 

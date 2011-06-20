@@ -166,9 +166,10 @@ AliRsnMiniAnalysisTask::~AliRsnMiniAnalysisTask()
 // (the list is owner and will clean-up these histograms). Protect in PROOF case.
 //
 
-   cout << "CIAO" << endl;
+
    if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
       delete fOutput;
+      delete fEvBuffer;
    }
 }
 
@@ -205,6 +206,9 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
 
    // reset counter
    fEvNum = 0;
+   
+   // message
+   AliInfo(Form("Selected event characterization: %s (%s)", (fUseCentrality ? "centrality" : "multiplicity"), fCentralityType.Data()));
 
    // initialize trigger analysis
    if (fTriggerAna) delete fTriggerAna;
@@ -243,11 +247,6 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
       }
    }
    
-   // setup PID response
-   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager(); 
-	AliInputEventHandler *inputHandler = (AliInputEventHandler*)man->GetInputEventHandler(); 
-	fRsnEvent.SetPIDResponse(inputHandler->GetPIDResponse());
-   
    // post data for ALL output slots >0 here, to get at least an empty histogram
    PostData(1, fOutput);
 }
@@ -268,6 +267,11 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
    // check current event
    Char_t check = CheckCurrentEvent();
    if (!check) return;
+   
+   // setup PID response
+   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager(); 
+	AliInputEventHandler *inputHandler = (AliInputEventHandler*)man->GetInputEventHandler(); 
+	fRsnEvent.SetPIDResponse(inputHandler->GetPIDResponse());
    
    // fill a mini-event from current
    // and skip this event if no tracks were accepted
@@ -409,7 +413,8 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
             def = (AliRsnMiniOutput*)fHistograms[idef];
             if (!def) continue;
             if (!def->IsTrackPairMix()) continue;
-            ifill += def->FillPair(&evMain, fMiniEvent, &fValues);
+            ifill += def->FillPair(&evMain, fMiniEvent, &fValues, kTRUE);
+            if (!def->IsSymmetric()) ifill += def->FillPair(fMiniEvent, &evMain, &fValues, kFALSE);
          }
       }
       delete list;
