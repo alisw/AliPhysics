@@ -886,7 +886,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                }   
                nstart += ncount;
             } else {
-               if (cbase) {
+               if (cbase && fNrunsPerMaster<2) {
                   cadd = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"__tmp%d__%s\", 1000000);",stage,file.Data()));
                   printf("... please wait - TAlienCollection::Add() scales badly...\n");
                   cbase->Add(cadd);
@@ -1024,7 +1024,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                }   
                nstart += ncount;
             } else {
-               if (cbase) {
+               if (cbase && fNrunsPerMaster<2) {
                   cadd = (TGridCollection*)gROOT->ProcessLine(Form("new TAlienCollection(\"__tmp%d__%s\", 1000000);",stage,file.Data()));
                   printf("... please wait - TAlienCollection::Add() scales badly...\n");
                   cbase->Add(cadd);
