@@ -16,7 +16,7 @@ class AliRsnMiniParticle;
 class AliRsnMiniEvent : public TObject {
 public:
 
-   AliRsnMiniEvent() : fVz(0.0), fMult(0.0), fAngle(0.0), fLeading(-1), fParticles("AliRsnMiniParticle", 0) {}
+   AliRsnMiniEvent() : fID(-1), fVz(0.0), fMult(0.0), fAngle(0.0), fLeading(-1), fParticles("AliRsnMiniParticle", 0) {}
    ~AliRsnMiniEvent() {fParticles.Delete();}
    
    Int_t&              ID()        {return fID;}
