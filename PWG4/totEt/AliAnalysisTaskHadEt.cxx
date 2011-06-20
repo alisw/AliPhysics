@@ -37,7 +37,7 @@ ClassImp(AliAnalysisTaskHadEt)
         AliAnalysisTaskTransverseEnergy(name, isMc)
 	,fRecAnalysis(0)
 	,fMCAnalysis(0)
-	,isSim(isMc)
+	,fIsSim(isMc)
 {
     // Constructor
   fMCConfigFile = mcConfigFile;
@@ -85,7 +85,7 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
   fOutputList->SetOwner();
   fMCAnalysis->SetHistoList(fOutputList);
   fRecAnalysis->SetHistoList(fOutputList);
-  if(isSim) fMCAnalysis->CreateHistograms();
+  if(fIsSim) fMCAnalysis->CreateHistograms();
   fRecAnalysis->CreateHistograms();
 
 
@@ -174,7 +174,7 @@ if(res == 0 && cent){
 // if (!mcEvent) {
 //   Printf("ERROR: Could not retrieve MC event");
 //  }
-  if (mcEvent && fESDEvent && isSim){
+  if (mcEvent && fESDEvent && fIsSim){
       ((AliAnalysisHadEtMonteCarlo*)fMCAnalysis)->AnalyseEvent((AliVEvent*)mcEvent,(AliVEvent*)fESDEvent);
       if(fMCAnalysis->Full()){
 	fMCAnalysis->FillSimTotEtMinusRecoTotEtFullAcceptanceTPC( fRecAnalysis->GetCorrectedTotEtFullAcceptanceTPC() );
