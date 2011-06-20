@@ -86,7 +86,6 @@ private:
    TObjArray            fTrackCuts;       //  list of single track cuts
    AliRsnEvent          fRsnEvent;        //! interface object to the event
    TTree               *fEvBuffer;        //! mini-event buffer
-   TArrayI              fNMixed;          //! array to keep trace of how many times an event was mixed
    AliTriggerAnalysis  *fTriggerAna;      //! trigger analysis
    AliESDtrackCuts     *fESDtrackCuts;    //! quality cut for ESD tracks
    AliRsnMiniEvent     *fMiniEvent;       //! mini-event cursor
