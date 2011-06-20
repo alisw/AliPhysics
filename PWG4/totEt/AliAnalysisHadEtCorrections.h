@@ -84,10 +84,10 @@ public:
     //...and these guys are too
     Float_t GetBackgroundCorrectionTPC(const float pT);//{return (1.0-fBackgroundTPC->GetBinContent(fBackgroundTPC->FindBin(pT)));}
     Float_t GetBackgroundCorrectionITS(const float pT);//{return (1.0-fBackgroundITS->GetBinContent(fBackgroundITS->FindBin(pT)));}
-    Float_t GetEfficiencyErrorLowBound(){return fEfficiencyErrorLow;}
-    Float_t GetEfficiencyErrorHighBound(){return fEfficiencyErrorHigh;}
-    Float_t GetBackgroundErrorLowBound(){return fBackgroundErrorLow;}
-    Float_t GetBackgroundErrorHighBound(){return fBackgroundErrorHigh;}
+    Float_t GetEfficiencyErrorLowBound() const {return fEfficiencyErrorLow;}
+    Float_t GetEfficiencyErrorHighBound() const {return fEfficiencyErrorHigh;}
+    Float_t GetBackgroundErrorLowBound() const {return fBackgroundErrorLow;}
+    Float_t GetBackgroundErrorHighBound() const {return fBackgroundErrorHigh;}
 
 
     void SetEtaCut(const Float_t val){fEtaCut=val;}
