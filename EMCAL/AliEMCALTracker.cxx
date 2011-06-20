@@ -392,7 +392,7 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
   
   // If the esdFriend is available, use the TPCOuter point as the starting point of extrapolation
   // Otherwise use the TPCInner point
-  AliExternalTrackParam *trkParam;
+  AliExternalTrackParam *trkParam = 0;
   const AliESDfriendTrack*  friendTrack = track->GetFriendTrack();
   if(friendTrack && friendTrack->GetTPCOut())
     trkParam = const_cast<AliExternalTrackParam*>(friendTrack->GetTPCOut());
@@ -405,18 +405,19 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
   Int_t nclusters = fClusters->GetEntries();
   for(Int_t ic=0; ic<nclusters; ic++)
     {
-      AliExternalTrackParam *trkParamTmp = new AliExternalTrackParam(*trkParam);
+      //AliExternalTrackParam *trkParamTmp = new AliExternalTrackParam(*trkParam);
+      AliExternalTrackParam trkParamTmp(*trkParam);
       AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(ic);
       TVector3 vec(cluster->X(),cluster->Y(),cluster->Z());
       Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
       //Rotate to proper local coordinate
       vec.RotateZ(-alpha); 
-      trkParamTmp->Rotate(alpha); 
+      trkParamTmp.Rotate(alpha); 
       //extrapolation is done here
-      if(!AliTrackerBase::PropagateTrackToBxByBz(trkParamTmp, vec.X(), track->GetMass(), fStep, kFALSE, 0.8, -1)) continue; 
+      if(!AliTrackerBase::PropagateTrackToBxByBz(&trkParamTmp, vec.X(), track->GetMass(), fStep, kFALSE, 0.8, -1)) continue; 
 
       //Calculate the residuals
-      trkParamTmp->GetXYZ(trkPos);        
+      trkParamTmp.GetXYZ(trkPos);        
       TVector3 clsPosVec(cluster->X(),cluster->Y(),cluster->Z());
       TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
       
@@ -434,7 +435,7 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
           maxEta=tmpEta;
           index=ic;
         }
-        delete trkParamTmp;
+      //delete trkParamTmp;
       }
   return index;
 }
