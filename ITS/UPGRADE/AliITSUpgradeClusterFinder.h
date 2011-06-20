@@ -80,7 +80,7 @@ class AliITSUpgradeClusterFinder :public TObject{
   enum {kSHIFTRIGHT,kSHIFTDOWN};  // used for shifting the region of interest for cluster type pattern
   
   UInt_t   fNhitsLeft;     // number of hits still left to process for this module
-  Bool_t   fHits[80000][39530]; // hit map for this module 
+  Bool_t   fHits[39530][39530]; // hit map for this module 
   UShort_t fHitCol[999999]; // these two arrays remember which pixels are hit for this module
   UShort_t fHitRow[999999]; // these two arrays remember which pixels are hit for this module
   Short_t  fOldModule;     // remember previous module (-1 at start of event)
