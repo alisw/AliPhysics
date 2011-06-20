@@ -253,13 +253,7 @@ Bool_t AliRsnMiniOutput::Init(const char *prefix, TList *list)
 
    switch (fOutputType) {
       case kHistogram:
-         if (size <= 3) {
-            CreateHistogram(Form("%s_%s", prefix, GetName()));
-         } else {
-            AliInfo(Form("[%s] Added %d > 3 axes. Creating a sparse histogram", GetName(), size));
-            fOutputType = kHistogramSparse;
-            CreateHistogramSparse(Form("%s_%s", prefix, GetName()));
-         }
+         CreateHistogram(Form("%s_%s", prefix, GetName()));
          return kTRUE;
       case kHistogramSparse:
          CreateHistogramSparse(Form("%s_%s", prefix, GetName()));

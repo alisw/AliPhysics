@@ -57,7 +57,6 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fTrackCuts(0),
    fRsnEvent(),
    fEvBuffer(0x0),
-   fNMixed(0),
    fTriggerAna(0x0),
    fESDtrackCuts(0x0),
    fMiniEvent(0x0)
@@ -86,7 +85,6 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fTrackCuts(0),
    fRsnEvent(),
    fEvBuffer(0x0),
-   fNMixed(0),
    fTriggerAna(0x0),
    fESDtrackCuts(0x0),
    fMiniEvent(0x0)
@@ -120,7 +118,6 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask& cop
    fTrackCuts(copy.fTrackCuts),
    fRsnEvent(),
    fEvBuffer(0x0),
-   fNMixed(0),
    fTriggerAna(copy.fTriggerAna),
    fESDtrackCuts(copy.fESDtrackCuts),
    fMiniEvent(0x0)
@@ -305,15 +302,12 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
    // security code: reassign the buffer to the mini-event cursor
    fEvBuffer->SetBranchAddress("events", &fMiniEvent);
    
+   // prepare variables
    Int_t ievt, nEvents = (Int_t)fEvBuffer->GetEntries();
    Int_t idef, nDefs   = fHistograms.GetEntries();
    Int_t imix, iloop, ifill;
    AliRsnMiniOutput *def = 0x0;
    AliRsnMiniOutput::EComputation compType;
-   
-   // initialize mixing counter
-   fNMixed.Set(nEvents);
-   for (ievt = 0; ievt < nEvents; ievt++) fNMixed[ievt] = 0;
    
    // loop on events, and for each one fill all outputs
    // using the appropriate procedure depending on its type
@@ -322,8 +316,6 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
    for (ievt = 0; ievt < nEvents; ievt++) {
       // get next entry
       fEvBuffer->GetEntry(ievt);
-      // store in temp variable
-      AliRsnMiniEvent evMain(*fMiniEvent);
       // fill
       for (idef = 0; idef < nDefs; idef++) {
          def = (AliRsnMiniOutput*)fHistograms[idef];
@@ -332,49 +324,25 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
          // execute computation in the appropriate way
          switch (compType) {
             case AliRsnMiniOutput::kEventOnly:
-               AliDebugClass(1, Form("Event %d, def %d: event-value histogram filling", ievt, idef));
+               AliDebugClass(1, Form("Event %d, def '%s': event-value histogram filling", ievt, def->GetName()));
                ifill = 1;
-               def->FillEvent(&evMain, &fValues);
+               def->FillEvent(fMiniEvent, &fValues);
                break;
             case AliRsnMiniOutput::kTruePair:
-               AliDebugClass(1, Form("Event %d, def %d: true-pair histogram filling", ievt, idef));
-               ifill = def->FillPair(&evMain, &evMain, &fValues);
+               AliDebugClass(1, Form("Event %d, def '%s': true-pair histogram filling", ievt, def->GetName()));
+               ifill = def->FillPair(fMiniEvent, fMiniEvent, &fValues);
                break;
             case AliRsnMiniOutput::kTrackPair:
-               AliDebugClass(1, Form("Event %d, def %d: pair-value histogram filling", ievt, idef));
-               ifill = def->FillPair(&evMain, &evMain, &fValues);
+               AliDebugClass(1, Form("Event %d, def '%s': pair-value histogram filling", ievt, def->GetName()));
+               ifill = def->FillPair(fMiniEvent, fMiniEvent, &fValues);
                break;
             case AliRsnMiniOutput::kTrackPairRotated1:
-               AliDebugClass(1, Form("Event %d, def %d: rotated (1) background histogram filling", ievt, idef));
-               ifill = def->FillPair(&evMain, &evMain, &fValues);
+               AliDebugClass(1, Form("Event %d, def '%s': rotated (1) background histogram filling", ievt, def->GetName()));
+               ifill = def->FillPair(fMiniEvent, fMiniEvent, &fValues);
                break;
             case AliRsnMiniOutput::kTrackPairRotated2:
-               AliDebugClass(1, Form("Event %d, def %d: rotated (2) background histogram filling", ievt, idef));
-               ifill = def->FillPair(&evMain, &evMain, &fValues);
-               break;
-            case AliRsnMiniOutput::kTrackPairMix:
-               ifill = 0;
-               for (iloop = 1; iloop < nEvents; iloop++) {
-                  imix = ievt + iloop;
-                  AliDebugClass(1, Form("Event %d, def %d: event mixing (%d with %d)", ievt, idef, ievt, imix));
-                  // restart from beginning if reached last event
-                  if (imix >= nEvents) imix -= nEvents;
-                  // avoid to mix an event with itself
-                  if (imix == ievt) continue;
-                  // skip all events already mixed enough times
-                  if (fNMixed[ievt] >= fNMix) break;
-                  if (fNMixed[imix] >= fNMix) continue;
-                  fEvBuffer->GetEntry(imix);
-                  // skip if events are not matched
-                  if (TMath::Abs(evMain.Vz()    - fMiniEvent->Vz()   ) > fMaxDiffVz   ) continue;
-                  if (TMath::Abs(evMain.Mult()  - fMiniEvent->Mult() ) > fMaxDiffMult ) continue;
-                  if (TMath::Abs(evMain.Angle() - fMiniEvent->Angle()) > fMaxDiffAngle) continue;
-                  // found a match: increment counter for both events
-                  fNMixed[ievt]++;
-                  fNMixed[imix]++;
-                  // process mixing
-                  ifill += def->FillPair(&evMain, fMiniEvent, &fValues);
-               }
+               AliDebugClass(1, Form("Event %d, def '%s': rotated (2) background histogram filling", ievt, def->GetName()));
+               ifill = def->FillPair(fMiniEvent, fMiniEvent, &fValues);
                break;
             default:
                // other kinds are processed elsewhere
@@ -386,10 +354,101 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
       }
    }
    
+   // if no mixing is required, stop here and post the output
+   if (fNMix < 1) {
+      AliDebugClass(2, "Stopping here, since no mixing is required");
+      PostData(1, fOutput);
+      return;
+   }
+   
+   // initialize mixing counter
+   TString *matched = new TString[nEvents];
+   for (ievt = 0; ievt < nEvents; ievt++) {
+      matched[ievt] = "|";
+   }
+   
+   // search for good matchings
+   for (ievt = 0; ievt < nEvents; ievt++) {
+      ifill = 0;
+      fEvBuffer->GetEntry(ievt);
+      AliRsnMiniEvent evMain(*fMiniEvent);
+      for (iloop = 1; iloop < nEvents; iloop++) {
+         imix = ievt + iloop;
+         if (imix >= nEvents) imix -= nEvents;
+         if (imix == ievt) continue;
+         // text next entry
+         fEvBuffer->GetEntry(imix);
+         // skip if events are not matched
+         if (TMath::Abs(evMain.Vz()    - fMiniEvent->Vz()   ) > fMaxDiffVz   ) continue;
+         if (TMath::Abs(evMain.Mult()  - fMiniEvent->Mult() ) > fMaxDiffMult ) continue;
+         if (TMath::Abs(evMain.Angle() - fMiniEvent->Angle()) > fMaxDiffAngle) continue;
+         // check that the array of good matches for mixed does not already contain main event
+         if (matched[imix].Contains(Form("|%d|", ievt))) continue;
+         // add new mixing candidate
+         matched[ievt].Append(Form("%d|", imix));
+         ifill++;
+         if (ifill >= fNMix) break;
+      }
+      //cout << "Matches for event " << Form("%5d", ievt) << ": " << matched[ievt].Data() << " (" << ifill << ")" << endl;
+   }
+   
+   // perform mixing
+   TObjArray *list = 0x0;
+   TObjString *os = 0x0;
+   for (ievt = 0; ievt < nEvents; ievt++) {
+      ifill = 0;
+      fEvBuffer->GetEntry(ievt);
+      AliRsnMiniEvent evMain(*fMiniEvent);
+      list = matched[ievt].Tokenize("|");
+      TObjArrayIter next(list);
+      while ( (os = (TObjString*)next()) ) {
+         imix = os->GetString().Atoi();
+         //cout << "Mixing " << ievt << " with " << imix << endl;
+         fEvBuffer->GetEntry(imix);
+         for (idef = 0; idef < nDefs; idef++) {
+            def = (AliRsnMiniOutput*)fHistograms[idef];
+            if (!def) continue;
+            if (!def->IsTrackPairMix()) continue;
+            ifill += def->FillPair(&evMain, fMiniEvent, &fValues);
+         }
+      }
+      delete list;
+   }
+   
+   delete [] matched;
+      
+   /*
+   OLD   
+   ifill = 0;
+   for (iloop = 1; iloop < nEvents; iloop++) {
+      imix = ievt + iloop;
+      // restart from beginning if reached last event
+      if (imix >= nEvents) imix -= nEvents;
+      // avoid to mix an event with itself
+      if (imix == ievt) continue;
+      // skip all events already mixed enough times
+      if (fNMixed[ievt] >= fNMix) break;
+      if (fNMixed[imix] >= fNMix) continue;
+      fEvBuffer->GetEntry(imix);
+      // skip if events are not matched
+      if (TMath::Abs(evMain.Vz()    - fMiniEvent->Vz()   ) > fMaxDiffVz   ) continue;
+      if (TMath::Abs(evMain.Mult()  - fMiniEvent->Mult() ) > fMaxDiffMult ) continue;
+      if (TMath::Abs(evMain.Angle() - fMiniEvent->Angle()) > fMaxDiffAngle) continue;
+      // found a match: increment counter for both events
+      AliDebugClass(1, Form("Event %d, def '%s': event mixing (%d with %d)", ievt, def->GetName(), ievt, imix));
+      fNMixed[ievt]++;
+      fNMixed[imix]++;
+      // process mixing
+      ifill += def->FillPair(&evMain, fMiniEvent, &fValues);
+      // stop if mixed enough times
+      if (fNMixed[ievt] >= fNMix) break;
+   }
+   break;      
    // print number of mixings done with each event
    for (ievt = 0; ievt < nEvents; ievt++) {
       AliDebugClass(2, Form("Event %6d: mixed %2d times", ievt, fNMixed[ievt]));
    }
+   */
    
    // post computed data
    PostData(1, fOutput);
