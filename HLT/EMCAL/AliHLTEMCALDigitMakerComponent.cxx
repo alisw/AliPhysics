@@ -36,7 +36,7 @@
 
 using EMCAL::NZROWSMOD;
 using EMCAL::NXCOLUMNSMOD;  
-
+using CALO::HGLGFACTOR;
 
 /** 
  * @file   AliHLTEMCALDigitMakerComponent.cxx
@@ -154,14 +154,15 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	}
       
       Int_t module = 0;
+      
       if(!fBCMInitialised)
-      {
-	 AliHLTEMCALMapper mapper(iter->fSpecification);
-	 module = mapper.GetModuleFromSpec(iter->fSpecification);
-	 //	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
-	 for(Int_t x = 0; x < NXCOLUMNSMOD ; x++) // PTH  
-	 {
-	   //   for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
+	{
+	  AliHLTEMCALMapper mapper(iter->fSpecification);
+	  module = mapper.GetModuleFromSpec(iter->fSpecification);
+	  
+	  for(Int_t x = 0; x < NXCOLUMNSMOD ; x++) // PTH  
+	    {
+
 	   for(Int_t z = 0; z <  NZROWSMOD ; z++) // PTH
 	      {
 	       fDigitMakerPtr->SetBadChannel(x, z, fPedestalData->IsBadChannel(module, z+1, x+1));
@@ -170,18 +171,19 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	 //delete fBadChannelMap;
 	 fBCMInitialised = true;
       }
+  
       if(!fGainsInitialised)
-      {
-	 AliHLTEMCALMapper mapper(iter->fSpecification);;
-	 module = mapper.GetModuleFromSpec(iter->fSpecification);
-	 //	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
-	 for(Int_t x = 0; x < NXCOLUMNSMOD; x++)   //PTH
-	   {
-	     //	    for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
+	{
+	  AliHLTEMCALMapper mapper(iter->fSpecification);;
+	  module = mapper.GetModuleFromSpec(iter->fSpecification);
+	  
+	  for(Int_t x = 0; x < NXCOLUMNSMOD; x++)   //PTH
+	    {
+	      
 	     for(Int_t z = 0; z < NZROWSMOD; z++)   //PTH
 	       {
-	       module = 0; //removing warning
-		//fDigitMakerPtr->SetGain(x, z, fCalibData->GE(module, z+1, x+1), fCalibData->GetADCchannelEmc(module, z+1, x+1));
+		 // FR setting gains 
+	       fDigitMakerPtr->SetGain(x, z, HGLGFACTOR, fCalibData->GetADCchannel(module, z+1, x+1));
 	    }
 	 }
 	 fGainsInitialised = true;
@@ -241,8 +243,17 @@ AliHLTEMCALDigitMakerComponent::DoInit(int argc, const char** argv )
 	{
 	  fDigitMakerPtr->SetGlobalHighGainFactor(atof(argv[i+1]));
 	}
+
     }
- GetBCMFromCDB();
+
+  
+  if (GetBCMFromCDB()) 
+    return -1;
+  
+  if (GetGainsFromCDB()) 
+    return -1; 
+
+  //GetBCMFromCDB();
   //fDigitMakerPtr->SetDigitThreshold(2);
 
   return 0;
