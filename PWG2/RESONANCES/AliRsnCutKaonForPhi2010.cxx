@@ -14,14 +14,15 @@
 ClassImp(AliRsnCutKaonForPhi2010)
 
 //__________________________________________________________________________________________________
-AliRsnCutKaonForPhi2010::AliRsnCutKaonForPhi2010(const char *name) :
-   AliRsnCut(name, AliRsnTarget::kDaughter, 0.0, 3.0),
+AliRsnCutKaonForPhi2010::AliRsnCutKaonForPhi2010
+(const char *name, Double_t nSigmaTPC, Double_t nSigmaTOF, Double_t tofLimit) :
+   AliRsnCut(name, AliRsnTarget::kDaughter),
    fOnlyQuality(kFALSE),
    fOnlyTPC(kFALSE),
    fOnlyTOF(kFALSE),
-   fCutTPC(2.0),
-   fCutTOF(2.0),
-   fTOFthreshold(0.8),
+   fCutTPC(nSigmaTPC),
+   fCutTOF(nSigmaTOF),
+   fTOFthreshold(tofLimit),
    fCutQuality(Form("%s_quality", name))
 {
 //

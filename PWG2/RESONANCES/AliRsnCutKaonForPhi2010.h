@@ -16,7 +16,7 @@ class AliRsnCutKaonForPhi2010 : public AliRsnCut {
 
 public:
 
-   AliRsnCutKaonForPhi2010(const char *name = "");
+   AliRsnCutKaonForPhi2010(const char *name = "", Double_t nSigmaTPC = 3.0, Double_t nSigmaTOF = 3.0, Double_t tofLimit = 0.8);
    virtual ~AliRsnCutKaonForPhi2010() { }
    
    virtual Bool_t IsSelected(TObject *obj);
