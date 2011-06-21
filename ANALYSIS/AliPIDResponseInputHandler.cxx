@@ -215,4 +215,6 @@ void AliPIDResponseInputHandler::SetRecoInfo()
   } else if (fileName.Contains("/pass3")) {
     fRecoPass=3;
   }
+
+  fPIDResponse->SetCurrentFile(fileName.Data());
 }
