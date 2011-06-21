@@ -172,7 +172,7 @@ void AliAODPid::SetHMPIDprobs(Double_t hmpPid[5])
   for(Int_t i = 0; i < 5; i++ ) fHMPIDprobs[i] =  hmpPid[i];
 }
 //______________________________________________________________________________
-void AliAODPid::GetHMPIDprobs(Double_t *p) 
+void AliAODPid::GetHMPIDprobs(Double_t *p) const
 {
   //
   // Set the HMPID PID probablities that are read from ESD

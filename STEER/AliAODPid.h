@@ -46,7 +46,7 @@ class AliAODPid : public TObject {
   Float_t*  GetTRDmomentum()           {return  fTRDmomentum;}
   Double_t  GetTOFsignal()       const {return  fTOFesdsignal;}
   Double_t  GetHMPIDsignal()     const {return  fHMPIDsignal;}
-  void  GetHMPIDprobs(Double_t *p);            
+  void      GetHMPIDprobs(Double_t *p) const;
 
   void      GetIntegratedTimes(Double_t timeint[5])  const; 
   void      GetEMCALPosition  (Double_t emcalpos[3]) const;

@@ -59,6 +59,7 @@ public:
   virtual Float_t NumberOfSigmasITS(const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasTPC(const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type) const = 0;
+  virtual Bool_t IdentifiedAsElectronTRD(const AliVTrack *track, Double_t efficiencyLevel) const;
 
   EDetPidStatus ComputePIDProbability  (EDetCode detCode, const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
   
@@ -73,9 +74,11 @@ public:
 
   void SetITSPIDmethod(ITSPIDmethod pmeth) { fITSPIDmethod = pmeth; }
   virtual void SetTOFResponse(AliVEvent */*event*/,EStartTimeType_t /*option*/) {;}
-
+  void SetTRDslicesForPID(UInt_t slice1, UInt_t slice2) {fTRDslicesForPID[0]=slice1;fTRDslicesForPID[1]=slice2;}
+  
   void SetOADBPath(const char* path) {fOADBPath=path;}
   void InitialiseEvent(AliVEvent *event, Int_t pass);
+  void SetCurrentFile(const char* file) { fCurrentFile=file; }
 
   // User settings for the MC period and reco pass
   void SetMCperiod(const char *mcPeriod) {fMCperiodUser=mcPeriod;}
@@ -102,6 +105,7 @@ private:
   TString fLHCperiod;                  //! LHC period
   TString fMCperiodTPC;                //! corresponding MC period to use for the TPC splines
   TString fMCperiodUser;               //  MC prodution requested by the user
+  TString fCurrentFile;                //! name of currently processed file
   Int_t   fRecoPass;                   //! reconstruction pass
   Int_t   fRecoPassUser;               //  reconstruction pass explicitly set by the user
   Int_t   fRun;                        //! current run number
@@ -109,6 +113,10 @@ private:
   
   TObjArray *fArrPidResponseMaster;    //!  TPC pid splines
   TF1       *fResolutionCorrection;    //! TPC resolution correction
+
+  TObjArray *fTRDPIDParams;             //! TRD PID Params
+  AliTRDPIDReference *fTRDPIDReference; //! TRD PID References
+  UInt_t fTRDslicesForPID[2];           //! TRD PID slices
 
   Int_t   fTOFTimeZeroType;            //! default start time type for tof (ESD)
   Float_t fTOFres;                     //! TOF resolution
@@ -126,6 +134,10 @@ private:
   void SetTPCPidResponseMaster();
   void SetTPCParametrisation();
   Double_t GetTPCMultiplicityBin(const AliVEvent * const event);
+
+  //TRD
+  void SetTRDPidResponseMaster();
+  void InitializeTRDResponse();
 
   //TOF
   

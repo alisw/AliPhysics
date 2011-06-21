@@ -246,16 +246,8 @@ void AliESDpid::MakeTRDPID(AliESDtrack *track) const
   //
   // Method to recalculate the TRD PID probabilities
   //
-  if((track->GetStatus()&AliESDtrack::kTRDout)==0) return;
-  Double_t prob[AliPID::kSPECIES]; Float_t mom[6];
-  Double_t dedx[48];  // Allocate space for the maximum number of TRD slices
-  for(Int_t ilayer = 0; ilayer < 6; ilayer++){
-    mom[ilayer] = track->GetTRDmomentum(ilayer);
-    for(Int_t islice = 0; islice < track->GetNumberOfTRDslices(); islice++){
-      dedx[ilayer*track->GetNumberOfTRDslices()+islice] = track->GetTRDslice(ilayer, islice);
-    }
-  }
-  fTRDResponse.GetResponse(track->GetNumberOfTRDslices(), dedx, mom, prob);
+  Double_t prob[AliPID::kSPECIES];
+  ComputeTRDProbability(track, AliPID::kSPECIES, prob);
   track->SetTRDpid(prob);
 }
 //_________________________________________________________________________
@@ -302,6 +294,9 @@ void AliESDpid::CombinePID(AliESDtrack *track) const
 }
 //_________________________________________________________________________
 Bool_t AliESDpid::CheckTOFMatching(AliESDtrack *track) const{
+  //
+  // Check pid matching of TOF with TPC as reference
+  //
     Bool_t status = kFALSE;
     
     Double_t exptimes[5];

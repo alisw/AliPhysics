@@ -231,9 +231,10 @@ class AliAODTrack : public AliVTrack {
   UShort_t  GetTPCsignalN()      const { return fDetPid?fDetPid->GetTPCsignalN():0;    }
   Double_t  GetTPCmomentum()     const { return fDetPid?fDetPid->GetTPCmomentum():0.;  }
   Double_t  GetTOFsignal()       const { return fDetPid?fDetPid->GetTOFsignal():0.; }
-  void GetIntegratedTimes(Double_t *times) const {if (fDetPid) fDetPid->GetIntegratedTimes(times); }
+  void      GetIntegratedTimes(Double_t *times) const {if (fDetPid) fDetPid->GetIntegratedTimes(times); }
   Double_t  GetTRDslice(Int_t plane, Int_t slice) const;
-  Double_t GetTRDmomentum(Int_t plane, Double_t */*sp*/=0x0) const;
+  Double_t  GetTRDmomentum(Int_t plane, Double_t */*sp*/=0x0) const;
+  void      GetHMPIDpid(Double_t *p) const { if (fDetPid) fDetPid->GetHMPIDprobs(p); }
 
   
   AliAODPid    *GetDetPid() const { return fDetPid; }

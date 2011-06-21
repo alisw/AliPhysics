@@ -25,7 +25,7 @@ class AliVParticle;
 class AliAODpidUtil : public AliPIDResponse  {
 public:
   //TODO: isMC???
-  AliAODpidUtil(Bool_t isMC = kFALSE): AliPIDResponse(isMC), fRange(5.) {;}
+  AliAODpidUtil(Bool_t isMC = kFALSE): AliPIDResponse(isMC) {;}
   virtual ~AliAODpidUtil() {;}
 
   Int_t MakePID(const AliAODTrack *track,Double_t *p) const;
@@ -38,9 +38,8 @@ public:
   virtual Float_t NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const;
   
 private:
-  Float_t           fRange;          // nSigma max in likelihood
   
-  ClassDef(AliAODpidUtil,2)  // PID calculation class
+  ClassDef(AliAODpidUtil,3)  // PID calculation class
 };
 
 inline Float_t AliAODpidUtil::NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const {

@@ -223,20 +223,7 @@ void AliAODpidUtil::MakeTOFPID(const AliAODTrack *track, Double_t *p) const
 //_________________________________________________________________________
 void AliAODpidUtil::MakeTRDPID(const AliAODTrack *track,Double_t *p) const
 {
-  
-  // Method to recalculate the TRD PID probabilities
-  if ((track->GetStatus()&AliESDtrack::kTRDout )==0)   return;
-
-  AliAODPid *pidObj = track->GetDetPid();
-  Float_t *mom=pidObj->GetTRDmomentum();
-  Int_t ntracklets=0;
-  for(Int_t iPl=0;iPl<6;iPl++){
-   if(mom[iPl]>0.) ntracklets++;
-  }
-   if(ntracklets<4) return;
-
-  Double_t* dedx=pidObj->GetTRDsignal();
-  Bool_t norm=kTRUE;
-  fTRDResponse.GetResponse(pidObj->GetTRDnSlices(),dedx,mom,p,norm);
+  ComputeTRDProbability(track, AliPID::kSPECIES, p); 
   return;
 }
+

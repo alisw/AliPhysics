@@ -34,6 +34,8 @@
 #include <AliVTrack.h>
 #include <AliLog.h>
 #include <AliPID.h>
+#include <AliOADBContainer.h>
+#include <AliTRDPIDReference.h>
 
 #include "AliPIDResponse.h"
 
@@ -53,12 +55,15 @@ fBeamType("PP"),
 fLHCperiod(),
 fMCperiodTPC(),
 fMCperiodUser(),
+fCurrentFile(),
 fRecoPass(0),
 fRecoPassUser(-1),
 fRun(0),
 fOldRun(0),
 fArrPidResponseMaster(0x0),
 fResolutionCorrection(0x0),
+fTRDPIDParams(0x0),
+fTRDPIDReference(0x0),
 fTOFTimeZeroType(kBest_T0),
 fTOFres(100.)
 {
@@ -68,6 +73,8 @@ fTOFres(100.)
   AliLog::SetClassDebugLevel("AliPIDResponse",10);
   AliLog::SetClassDebugLevel("AliESDpid",10);
   AliLog::SetClassDebugLevel("AliAODpidUtil",10);
+
+  memset(fTRDslicesForPID,0,sizeof(UInt_t)*2);
 }
 
 //______________________________________________________________________________
@@ -77,6 +84,8 @@ AliPIDResponse::~AliPIDResponse()
   // dtor
   //
   delete fArrPidResponseMaster;
+  delete fTRDPIDParams;
+  delete fTRDPIDReference;
 }
 
 //______________________________________________________________________________
@@ -94,18 +103,22 @@ fBeamType("PP"),
 fLHCperiod(),
 fMCperiodTPC(),
 fMCperiodUser(other.fMCperiodUser),
+fCurrentFile(),
 fRecoPass(0),
 fRecoPassUser(other.fRecoPassUser),
 fRun(0),
 fOldRun(0),
 fArrPidResponseMaster(0x0),
 fResolutionCorrection(0x0),
+fTRDPIDParams(0x0),
+fTRDPIDReference(0x0),
 fTOFTimeZeroType(AliPIDResponse::kBest_T0),
 fTOFres(100.)
 {
   //
   // copy ctor
   //
+  memset(fTRDslicesForPID,0,sizeof(UInt_t)*2);
 }
 
 //______________________________________________________________________________
@@ -129,12 +142,16 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fLHCperiod="";
     fMCperiodTPC="";
     fMCperiodUser=other.fMCperiodUser;
+    fCurrentFile="";
     fRecoPass=0;
     fRecoPassUser=other.fRecoPassUser;
     fRun=0;
     fOldRun=0;
     fArrPidResponseMaster=0x0;
     fResolutionCorrection=0x0;
+    fTRDPIDParams=0x0;
+    fTRDPIDReference=0x0;
+    memset(fTRDslicesForPID,0,sizeof(UInt_t)*2);
     fTOFTimeZeroType=AliPIDResponse::kBest_T0;
     fTOFres=100.;
   }
@@ -325,7 +342,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTOFProbability  (const AliV
   return kDetPidOk;
 }
 //______________________________________________________________________________
-AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTRDProbability  (const AliVTrack */*track*/, Int_t nSpecies, Double_t p[]) const
+AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
 {
   //
   // Compute PID response for the
@@ -333,7 +350,20 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTRDProbability  (const AliV
 
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
-  return kDetNoSignal;
+  if((track->GetStatus()&AliVTrack::kTRDout)==0) return kDetNoSignal;
+
+  Float_t mom[6];
+  Double_t dedx[48];  // Allocate space for the maximum number of TRD slices
+  Int_t nslices = fTRDslicesForPID[1] - fTRDslicesForPID[0] + 1;
+  AliDebug(1, Form("First Slice: %d, Last Slice: %d, Number of slices: %d",  fTRDslicesForPID[0], fTRDslicesForPID[1], nslices));
+  for(UInt_t ilayer = 0; ilayer < 6; ilayer++){
+    mom[ilayer] = track->GetTRDmomentum(ilayer);
+    for(UInt_t islice = fTRDslicesForPID[0]; islice <= fTRDslicesForPID[1]; islice++){
+      dedx[ilayer*nslices+islice-fTRDslicesForPID[0]] = track->GetTRDslice(ilayer, islice);
+    }
+  }
+  fTRDResponse.GetResponse(nslices, dedx, mom, p);
+  return kDetPidOk;
 }
 //______________________________________________________________________________
 AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeEMCALProbability(const AliVTrack */*track*/, Int_t nSpecies, Double_t p[]) const
@@ -358,7 +388,7 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputePHOSProbability (const AliV
   return kDetNoSignal;
 }
 //______________________________________________________________________________
-AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeHMPIDProbability(const AliVTrack */*track*/, Int_t nSpecies, Double_t p[]) const
+AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeHMPIDProbability(const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
 {
   //
   // Compute PID response for the HMPID
@@ -366,7 +396,11 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeHMPIDProbability(const AliV
 
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
-  return kDetNoSignal;
+  if((track->GetStatus()&AliVTrack::kHMPIDpid)==0) return kDetNoSignal;
+
+  track->GetHMPIDpid(p);
+  
+  return kDetPidOk;
 }
 
 //______________________________________________________________________________
@@ -445,6 +479,7 @@ void AliPIDResponse::SetRecoInfo()
     
   fBeamType="PP";
   
+  TPRegexp reg(".*(LHC11[a-z]+[0-9]+[a-z]*)/.*");
   //find the period by run number (UGLY, but not stored in ESD and AOD... )
   if (fRun>=114737&&fRun<=117223)      { fLHCperiod="LHC10B"; fMCperiodTPC="LHC10D1";  }
   else if (fRun>=118503&&fRun<=121040) { fLHCperiod="LHC10C"; fMCperiodTPC="LHC10D1";  }
@@ -452,7 +487,12 @@ void AliPIDResponse::SetRecoInfo()
   else if (fRun>=127719&&fRun<=130850) { fLHCperiod="LHC10E"; fMCperiodTPC="LHC10F6A"; }
   else if (fRun>=133004&&fRun<=135029) { fLHCperiod="LHC10F"; fMCperiodTPC="LHC10F6A"; }
   else if (fRun>=135654&&fRun<=136377) { fLHCperiod="LHC10G"; fMCperiodTPC="LHC10F6A"; }
-  else if (fRun>=136851&&fRun<=139517) { fLHCperiod="LHC10H"; fMCperiodTPC="LHC10H8"; fBeamType="PBPB"; }
+  else if (fRun>=136851&&fRun<=139517) {
+    fLHCperiod="LHC10H";
+    fMCperiodTPC="LHC10H8";
+    if (reg.MatchB(fCurrentFile)) fMCperiodTPC="LHC11A10";
+    fBeamType="PBPB";
+  }
   else if (fRun>=139699) { fLHCperiod="LHC11A"; fMCperiodTPC="LHC10F6A"; }
   
 }
@@ -481,11 +521,11 @@ void AliPIDResponse::SetTPCPidResponseMaster()
   
   TString fileName(Form("%s/COMMON/PID/data/TPCPIDResponse.root", fOADBPath.Data()));
   
-  TFile f(fileName.Data());
-  if (f.IsOpen() && !f.IsZombie()){
-    fArrPidResponseMaster=dynamic_cast<TObjArray*>(f.Get("TPCPIDResponse"));
-    f.Close();
+  TFile *f=TFile::Open(fileName.Data());
+  if (f && f->IsOpen() && !f->IsZombie()){
+    fArrPidResponseMaster=dynamic_cast<TObjArray*>(f->Get("TPCPIDResponse"));
   }
+  delete f;
   
   if (!fArrPidResponseMaster){
     AliFatal(Form("Could not retrieve the TPC pid response from: %s",fileName.Data()));
@@ -591,5 +631,54 @@ void AliPIDResponse::SetTPCParametrisation()
   fResolutionCorrection=(TF1*)fArrPidResponseMaster->FindObject(Form("TF1_%s_ALL_%s_PASS%d_%s_SIGMA",datatype.Data(),period.Data(),fRecoPass,fBeamType.Data()));
   
   if (fResolutionCorrection) AliInfo(Form("Setting multiplicity correction function: %s",fResolutionCorrection->GetName()));
+}
+
+//______________________________________________________________________________
+void AliPIDResponse::SetTRDPidResponseMaster()
+{
+  //
+  // Load the TRD pid params and references from the OADB
+  //
+  if(fTRDPIDParams) return;
+  AliOADBContainer contParams; 
+  contParams.InitFromFile(Form("%s/COMMON/PID/data/TRDPIDParams.root", fOADBPath.Data()), "AliTRDPIDParams");
+  fTRDPIDParams = (TObjArray *)contParams.GetObject(fRun);
+
+  AliOADBContainer contRefs;
+  contRefs.InitFromFile(Form("%s/COMMON/PID/dReferencesLQ1D.root", fOADBPath.Data()), "AliTRDPIDReference");
+  fTRDPIDReference = (AliTRDPIDReference *)contRefs.GetObject(fRun);
+}
+
+//______________________________________________________________________________
+void AliPIDResponse::InitializeTRDResponse(){
+  //
+  // Set PID Params and references to the TRD PID response
+  // 
+  fTRDResponse.SetPIDParams(fTRDPIDParams);
+  fTRDResponse.Load(fTRDPIDReference);
+  if(fLHCperiod == "LHC10b" || fLHCperiod == "LHC10c" || fLHCperiod == "LHC10d" || fLHCperiod == "LHC10e"){
+    fTRDslicesForPID[0] = 0;
+    fTRDslicesForPID[1] = 7;
+  }
+}
+
+//_________________________________________________________________________
+Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack, Double_t efficiencyLevel) const {
+  //
+  // Check whether track is identified as electron under a given electron efficiency hypothesis
+  //
+  Double_t probs[AliPID::kSPECIES];
+  ComputeTRDProbability(vtrack, AliPID::kSPECIES, probs);
+
+  Int_t ntracklets=0;
+  Double_t p = 0;
+  for(Int_t iPl=0;iPl<AliVTrack::kTRDnPlanes;iPl++){
+    if(vtrack->GetTRDmomentum(iPl) > 0.){
+      ntracklets++;
+      p = vtrack->GetTRDmomentum(iPl); 
+    }
+  }
+
+  return fTRDResponse.IdentifiedAsElectron(ntracklets, probs, p, efficiencyLevel);
 }
 
