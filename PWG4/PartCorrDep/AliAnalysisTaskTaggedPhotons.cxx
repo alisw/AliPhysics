@@ -931,7 +931,7 @@ void  AliAnalysisTaskTaggedPhotons::InitGeometry(){
     }
   }
   else{ //EMCAL
-    fEMCALgeom = new AliEMCALGeometry("EMCAL_FIRSTYEARV1");
+    fEMCALgeom = AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");
     for(Int_t mod=0; mod < (fEMCALgeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
       if(esd){
         const TGeoHMatrix* m=esd->GetEMCALMatrix(mod) ;

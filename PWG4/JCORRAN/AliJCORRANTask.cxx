@@ -910,7 +910,7 @@ AliEMCALGeometry * AliJCORRANTask::GetEMCALGeoUtils (bool doDelete){
   //include EMCAL singleton modul
   static AliEMCALGeometry* emcalgeo = 0x0;
   if( ! emcalgeo ){
-    emcalgeo = new AliEMCALGeometry("EMCAL_COMPLETE");
+    emcalgeo = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
   }
   if( emcalgeo && doDelete ){ //FK// !emcalgeo
     delete emcalgeo;
