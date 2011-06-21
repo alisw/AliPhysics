@@ -155,12 +155,15 @@ void AliAnalysisTaskEMCALClusterize::Init()
     AliAnalysisTaskEMCALClusterize *clus = (AliAnalysisTaskEMCALClusterize*)gInterpreter->ProcessLine("ConfigEMCALClusterize()");
     fGeomName         = clus->fGeomName; 
     fLoadGeomMatrices = clus->fLoadGeomMatrices;
-    fOCDBpath         = clus->fOCDBpath;
+    fOCDBpath         = clus->fOCDBpath;   
+    fAccessOCDB       = clus->fAccessOCDB;
     fRecParam         = clus->fRecParam;
     fJustUnfold       = clus->fJustUnfold;
     fFillAODFile      = clus->fFillAODFile;
     fRecoUtils        = clus->fRecoUtils; 
     fConfigName       = clus->fConfigName;
+    fMaxEvent         = clus->fMaxEvent;
+    fDoTrackMatching  = clus->fDoTrackMatching;
     fOutputAODBranchName = clus->fOutputAODBranchName;
     for(Int_t i = 0; i < 10; i++) fGeomMatrix[i] = clus->fGeomMatrix[i] ;
 

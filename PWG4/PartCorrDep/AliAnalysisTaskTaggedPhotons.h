@@ -23,7 +23,7 @@ class TH2D ;
 class TH2F ;
 class TH3D ;
 class AliPHOSGeoUtils;
-class AliEMCALGeoUtils;
+class AliEMCALGeometry;
 class AliAODPWG4Particle;
 
 class AliAnalysisTaskTaggedPhotons : public AliAnalysisTaskSE {
@@ -66,7 +66,7 @@ protected:
 private:
 
   AliPHOSGeoUtils  *fPHOSgeom;   //!PHOS geometry
-  AliEMCALGeoUtils *fEMCALgeom;  //!EMCAL geometry
+  AliEMCALGeometry *fEMCALgeom;  //!EMCAL geometry
 
   AliStack        *fStack ;      //Pointer to MC stack
   Bool_t           fPHOS ;       //Choose Calorimeter: PHOS/EMCAL

@@ -51,7 +51,7 @@ class AliESDEvent;
 class AliAODEvent; 
 class AliAODTrack; 
 class AliPHOSGeoUtils; 
-class AliEMCALGeoUtils; 
+class AliEMCALGeometry; 
 class AliESDtrackCuts;
 
 class AliJRunHeader;
@@ -89,7 +89,7 @@ public:
                                                          //are ESDs from real  exp or MonteCarlo 
   void SetOutputAODName(const char* aodname){ fAODName=aodname;}
 
-  AliEMCALGeoUtils* GetEMCALGeoUtils (bool doDelete=kFALSE);
+  AliEMCALGeometry* GetEMCALGeoUtils (bool doDelete=kFALSE);
 
 private:
   // methods to read data from ESD

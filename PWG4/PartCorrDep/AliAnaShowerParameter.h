@@ -26,7 +26,6 @@ class AliStack;
 class TParticle;
 
 class TList ;
-class AliEMCALGeoUtils;
 class AliAnaShowerParameter : public AliAnaPartCorrBaseClass {
 
 public: 

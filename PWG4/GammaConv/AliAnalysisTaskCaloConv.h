@@ -24,7 +24,7 @@ class AliCFContainer ;
 class AliStack;
 class AliESDpid ;
 class AliESDtrackCuts ;
-class AliEMCALGeoUtils ;
+class AliEMCALGeometry ;
 class AliPHOSGeoUtils ;
 class AliExternalTrackParam ;
 class AliKFParticle ;
@@ -129,7 +129,7 @@ class AliAnalysisTaskCaloConv : public AliAnalysisTaskSE
   Double_t fMinOpeningAngleGhostCut; // minimum angle cut
 		
   AliPHOSGeoUtils  *fPHOSgeom;      //!PHOS geometry
-  AliEMCALGeoUtils *fEMCALgeom;     //!EMCAL geometry
+  AliEMCALGeometry *fEMCALgeom;     //!EMCAL geometry
   Double_t fPi0Thresh1 ;    //Threshold 1 for pi0 calibration
   Double_t fPi0Thresh2 ;    //Threshold 2 for pi0 calibration
   Double_t fBadDistCutPHOS ; //Cut on distance to bad channel

@@ -30,7 +30,7 @@ class AliStack ;
 class AliHeader ; 
 class AliGenEventHeader ; 
 #include "AliAODPWG4ParticleCorrelation.h"
-class AliEMCALGeoUtils;
+class AliEMCALGeometry;
 class AliPHOSGeoUtils;
 #include "AliMixedEvent.h" 
 #include "AliCentrality.h"
@@ -85,7 +85,7 @@ public:
   AliCalorimeterUtils * GetCaloUtils()            const { return fCaloUtils                     ; }
   void    SetCaloUtils(AliCalorimeterUtils * caloutils) { fCaloUtils = caloutils                ; }	
 
-  AliEMCALGeoUtils *  GetEMCALGeometry()          const { return fCaloUtils->GetEMCALGeometry() ; }
+  AliEMCALGeometry *  GetEMCALGeometry()          const { return fCaloUtils->GetEMCALGeometry() ; }
   AliPHOSGeoUtils  *  GetPHOSGeometry()           const { return fCaloUtils->GetPHOSGeometry()  ; }
   
   Int_t GetModuleNumberCellIndexes(const Int_t absId, const TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const {
