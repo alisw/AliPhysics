@@ -116,8 +116,12 @@ int main(int argc, char **argv) {
   
   /* report progress */
   daqDA_progressReport(10);
+
   Int_t iev=0;
   Int_t ievInj=0;
+  Int_t ievUsed=0;
+  Int_t nEvToBeSkipped=5;
+
   /* read the data files */
   int n;
   for (n=1;n<argc;n++) {
@@ -170,8 +174,15 @@ int main(int argc, char **argv) {
       case CALIBRATION_EVENT:
 	break;  // uncomment this line for test raw data
       case PHYSICS_EVENT: // uncomment this line for test raw data
-	printf(" event number = %i \n",iev);
+	printf(" Event number = %i ",iev);
 	ievInj++; 
+	if(ievInj<=nEvToBeSkipped){
+	  printf(" -> SKIP\n");
+	  break;
+	}
+	printf("  -> Analyze\n");
+	ievUsed++;
+	  
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 	timeSt=rawReader->GetTimestamp();
 	rawReader->Reset();
@@ -222,14 +233,14 @@ int main(int argc, char **argv) {
 	/* free resources */
 	free(event);
       }
-      if(ievInj>=maxNEvents) break;
+      if(ievUsed>=maxNEvents) break;
     }
   }
 
   /* write report */
   TDatime time;
   TObjString timeinfo(Form("%02d%02d%02d%02d%02d%02d",time.GetYear()-2000,time.GetMonth(),time.GetDay(),time.GetHour(),time.GetMinute(),time.GetSecond()));
-  printf("Run #%s, received %d calibration events, time %s\n",getenv("DATE_RUN_NUMBER"),ievInj,timeinfo.GetString().Data());
+  printf("Run #%s, received %d calibration events, time %s\n",getenv("DATE_RUN_NUMBER"),ievUsed,timeinfo.GetString().Data());
 
   /* report progress */
   daqDA_progressReport(90);
