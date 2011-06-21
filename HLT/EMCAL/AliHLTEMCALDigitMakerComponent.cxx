@@ -183,7 +183,7 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	     for(Int_t z = 0; z < NZROWSMOD; z++)   //PTH
 	       {
 		 // FR setting gains 
-	       fDigitMakerPtr->SetGain(x, z, HGLGFACTOR, fCalibData->GetADCchannel(module, z+1, x+1));
+	       fDigitMakerPtr->SetGain(x, z, HGLGFACTOR, fCalibData->GetADCchannel(module, z, x));
 	    }
 	 }
 	 fGainsInitialised = true;
