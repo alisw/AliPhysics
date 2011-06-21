@@ -1,4 +1,5 @@
 
+
 AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE, 
                                            Bool_t writeMuonAOD=kFALSE,
                                            Bool_t writeDimuonAOD=kFALSE,
@@ -93,13 +94,23 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    // take the standard cuts, which include already 
    // ITSrefit and use only primaries...
 
-   // loose DCA cuts
-   AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE); 
-   esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
-   esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
-   esdTrackCutsH->SetDCAToVertex2D(kTRUE);
-   esdTrackCutsH->SetDCAToVertex2D(kTRUE);
-   esdTrackCutsH->SetPtRange(0.15,1E10);
+   // loose DCA cuts, tight 
+   AliESDtrackCuts* esdTrackCutsH0 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,1); 
+   
+   esdTrackCutsH0->SetMinNCrossedRowsTPC(120);
+   esdTrackCutsH0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.1);// essentially switsches it off
+   esdTrackCutsH0->SetMaxDCAToVertexXY(2.4);
+   esdTrackCutsH0->SetMaxDCAToVertexZ(3.2);
+   esdTrackCutsH0->SetDCAToVertex2D(kTRUE);
+   esdTrackCutsH0->SetMaxChi2PerClusterITS(32);
+   esdTrackCutsH0->SetPtRange(0.15,1E10);
+   // switch off ITS cluster requirment as well?
+
+   // 
+   AliESDtrackCuts* esdTrackCutsH1 = new AliESDtrackCuts(*esdTrackCutsH0);
+   esdTrackCutsH1->SetName("loose ITS fake cuts");
+   esdTrackCutsH1->SetMaxChi2PerClusterITS(1E10);
+
 
    // standard cuts with tight DCA cut
    AliESDtrackCuts* esdTrackCutsH2 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
@@ -110,20 +121,12 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    AliESDtrackCuts* esdTrackCutsH3 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(); 
    esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
    esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
- 
-
-   AliESDtrackCuts* esdTrackCutsH4 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);
-   esdTrackCutsH4->SetMaxDCAToVertexXY(2.4);
-   esdTrackCutsH4->SetMaxDCAToVertexZ(3.2);
-   esdTrackCutsH4->SetDCAToVertex2D(kTRUE);
-   esdTrackCutsH4->SetDCAToVertex2D(kTRUE);
-   esdTrackCutsH4->SetPtRange(0.15,1E10);
-   esdTrackCutsH4->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
-   esdTrackCutsH4->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
 
    // TPC only tracks
    AliESDtrackCuts* esdTrackCutsTPCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-   esdTrackCutsTPCOnly->SetMinNClustersTPC(70);
+   //   esdTrackCutsTPCOnly->SetMinNClustersTPC(70);
+   esdTrackCutsTPCOnly->SetMinNCrossedRowsTPC(120);
+   esdTrackCutsTPCOnly->SetMinRatioCrossedRowsOverFindableClustersTPC(0.1);// essentially switches it off
 
    // Compose the filter
    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
@@ -138,16 +141,25 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    trackFilter->AddCuts(electronID);
    electronID->SetFilterMask(4);       // AND with Pixel Cuts
    // 16 1<<4
-   trackFilter->AddCuts(esdTrackCutsH);
+   trackFilter->AddCuts(esdTrackCutsH0);
    // 32 1<<5
-   trackFilter->AddCuts(esdTrackCutsH2);
+   trackFilter->AddCuts(esdTrackCutsH1);
    // 64 1<<6
-   trackFilter->AddCuts(esdTrackCutsH3);
+   trackFilter->AddCuts(esdTrackCutsH2);
    // 128 1<<7
-   trackFilter->AddCuts(esdTrackCutsH4);
+   trackFilter->AddCuts(esdTrackCutsH3);
    // 256 1<<8
    trackFilter->AddCuts(esdTrackCutsTPCOnly);
-   esdfilter->SetTPCOnlyFilterMask(1<<8);
+   // 512 1<<9
+   trackFilter->AddCuts(esdTrackCutsH0); // add once more for tpc only tracks
+   // 1024 1<<10                         
+   trackFilter->AddCuts(esdTrackCutsH1); // add once more for tpc only tracks
+
+   esdfilter->SetTPCOnlyFilterMask((1<<8)|(1<<9)); // these tracks are written out as TPC only 
+   esdfilter->SetHybridFilterMaskITSTPC((1<<4)|(1<<5)); // these global tracks will be marked has hybrid
+   esdfilter->SetHybridFilterMasksTPC(1<<9,1<<10);   // arg0, these tpc tracks will be marked as TPC  hybrid, in addtion to thos that fail arg1
+
+
    // Filter with cuts on V0s
    AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("Standard V0 Cuts pp", "ESD V0 Cuts");
    esdV0Cuts->SetMinRadius(0.2);
