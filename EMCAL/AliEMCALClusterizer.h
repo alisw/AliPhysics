@@ -88,6 +88,8 @@ public:
   virtual void              SetDigitsArr(TClonesArray *arr) { fDigitsArr = arr;  }
   virtual const TObjArray  *GetRecPoints() const            { return fRecPoints; }
 
+  virtual void DeleteRecPoints();
+
 protected:
 
   virtual void MakeClusters() = 0;

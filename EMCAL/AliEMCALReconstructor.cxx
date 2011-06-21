@@ -80,7 +80,9 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   : fGeom(0),fCalibData(0),fPedestalData(0),fTriggerData(0x0), fMatches(0x0)
 {
   // ctor
-  
+
+  // AliDebug(2, "Mark.");  
+
   fgRawUtils = new AliEMCALRawUtils;
   
   //To make sure we match with the geometry in a simulation file,
@@ -143,7 +145,9 @@ AliEMCALReconstructor::AliEMCALReconstructor()
 AliEMCALReconstructor::~AliEMCALReconstructor()
 {
   // dtor
-  
+
+  //AliDebug(2, "Mark.");
+
   if(fGeom)              delete fGeom;
   
   //No need to delete, recovered from OCDB
@@ -255,6 +259,9 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
   }//not a LED event
   
   clustersTree->Fill();	
+
+  // Deleting the recpoints at the end of the reconstruction call
+  fgClusterizer->DeleteRecPoints();
 }
 
 //____________________________________________________________________________

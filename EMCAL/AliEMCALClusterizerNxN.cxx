@@ -313,9 +313,11 @@ void AliEMCALClusterizerNxN::MakeClusters()
       if (fNumberOfECAClusters >= fRecPoints->GetSize()) 
         fRecPoints->Expand(2*fNumberOfECAClusters+1);
       
-      AliEMCALRecPoint *recPoint = new  AliEMCALRecPoint(""); 
-      fRecPoints->AddAt(recPoint, fNumberOfECAClusters);
-      recPoint = static_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)); 
+      (*fRecPoints)[fNumberOfECAClusters] = new AliEMCALRecPoint("") ;
+      AliEMCALRecPoint *recPoint = dynamic_cast<AliEMCALRecPoint *>( fRecPoints->At(fNumberOfECAClusters) ) ;
+      // AliEMCALRecPoint *recPoint = new  AliEMCALRecPoint(""); 
+      // fRecPoints->AddAt(recPoint, fNumberOfECAClusters);
+      // recPoint = static_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)); 
       if (recPoint) {
         fNumberOfECAClusters++;       
         recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);

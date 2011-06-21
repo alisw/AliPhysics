@@ -158,6 +158,22 @@ AliEMCALClusterizer::~AliEMCALClusterizer()
   //Already deleted in AliEMCALReconstructor.
 
   if(fClusterUnfolding) delete fClusterUnfolding;
+
+  // make sure we delete the rec points array
+  DeleteRecPoints();
+}
+
+//____________________________________________________________________________
+void AliEMCALClusterizer::DeleteRecPoints()
+{
+  // free the cluster array
+  if (fRecPoints) 
+    {
+      AliDebug(2, "Deleting fRecPoints.");
+      fRecPoints->Delete();
+      delete fRecPoints;
+      fRecPoints = 0;
+    }
 }
 
 //____________________________________________________________________________
