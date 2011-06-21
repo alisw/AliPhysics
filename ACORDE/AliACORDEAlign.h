@@ -21,7 +21,7 @@ class AliACORDEAlign : public  TObject{
 
  public:
   AliACORDEAlign();
-  AliACORDEAlign(Int_t reportloc,Int_t reportglob);
+  AliACORDEAlign(/*Int_t reportloc,*/Int_t reportglob);
   AliACORDEAlign(const AliACORDEAlign &align); // copy constructor
   AliACORDEAlign &operator = (const AliACORDEAlign &align); //assignment operator
   void  ComputePosition();
