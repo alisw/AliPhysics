@@ -41,7 +41,7 @@
 #include "AliCFContainer.h"   // for CF
 #include "AliESDCaloCluster.h" 
 #include "AliPHOSGeoUtils.h" 
-#include "AliEMCALGeoUtils.h" 
+#include "AliEMCALGeometry.h" 
 #include "AliCFContainer.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
@@ -850,7 +850,7 @@ void AliAnalysisTaskCaloConv::UserCreateOutputObjects()
      }
    }
    if(!fEMCALgeom){
-     fEMCALgeom = new AliEMCALGeoUtils("EMCAL_FIRSTYEAR");
+     fEMCALgeom = new AliEMCALGeometry("EMCAL_FIRSTYEAR");
      for(Int_t mod=0; mod < (fEMCALgeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ //<---Gustavo, could you check???
        if(esd){
          const TGeoHMatrix* m=esd->GetEMCALMatrix(mod) ;

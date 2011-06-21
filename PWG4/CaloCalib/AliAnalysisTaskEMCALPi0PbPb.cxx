@@ -21,7 +21,7 @@
 #include "AliAnalysisTaskEMCALClusterizeFast.h"
 #include "AliCDBManager.h"
 #include "AliCentrality.h"
-#include "AliEMCALGeoUtils.h"
+#include "AliEMCALGeometry.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALRecoUtils.h"
@@ -206,7 +206,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   cout << " fDoPSel:        " << fDoPSel << endl;
 
   if (!fGeom)
-    fGeom = new AliEMCALGeoUtils(fGeoName,"EMCAL");
+    fGeom = new AliEMCALGeometry(fGeoName,"EMCAL");
   else {
     if (fGeom->GetMatrixForSuperModule(0))
       fIsGeoMatsSet = kTRUE;

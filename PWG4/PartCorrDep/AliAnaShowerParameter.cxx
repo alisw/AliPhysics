@@ -44,7 +44,6 @@
 #include "AliAODMCParticle.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskParticleCorrelation.h"
-#include "AliEMCALGeoUtils.h"
 #include "AliAODEvent.h"
 
 
