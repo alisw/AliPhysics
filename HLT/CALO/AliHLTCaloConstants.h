@@ -32,7 +32,7 @@ public:
   static  Int_t GetNGAINS()             { return ALTRO::NGAINS; };
   static  Int_t GetHIGHGAIN()           { return ALTRO::HIGHGAIN; };
   static  Int_t GetLOWGAIN()          { return ALTRO::LOWGAIN; };
-  static  Int_t GetHGLGFACTOR()       { return CALO::HGLGFACTOR;}; //FR
+  static  Double_t GetHGLGFACTOR()       { return CALO::HGLGFACTOR;}; //FR
   static  Int_t GetMAXBINVALUE()      { return ALTRO::MAXBINVALUE; };
   static  Int_t GetCSPSPERFEE()       { return CALO::CSPSPERFEE; };
   static  Int_t GetNALTROS()           { return ALTRO::NALTROS; };
