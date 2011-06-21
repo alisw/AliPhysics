@@ -164,16 +164,17 @@ AliHLTCaloMapper::GetDDLFromSpec( const AliHLTUInt32_t spec )
 Int_t 
 AliHLTCaloMapper::GetModuleFromSpec(Int_t specification)
 {
-  Int_t module = -1;
+  Int_t module;
       
   if(specification & 0xf) module = 0;
   else if((specification >> 4) & 0xf) module = 1;
   else if((specification >> 8) & 0xf) module = 2;
   else if((specification >> 12) & 0xf) module = 3;
   else if((specification >> 16) & 0xf) module = 4;
- 
-  else HLTError("Specification 0x%X not consistent with single module in PHOS", specification);
-
+  else {
+    HLTError("Specification 0x%X not consistent with single module in PHOS", specification);
+    module = -1;
+  }
   return module;
 }
 
