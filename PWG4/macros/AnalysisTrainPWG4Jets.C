@@ -37,6 +37,7 @@ Int_t       kSaveAOD = 8;        // Bit switch 1 = Full AOD 2 = Jet AOD , 4 = Pa
 //== general input and output variables
 
 Int_t       iAODanalysis       = 1;      // Analysis on input AOD's
+Int_t       iFilterAnalysis       = 0;      // Analysis on input AOD's
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iCentralitySelection  = 0;      // Use the centrality
 Int_t       iESDfilter         = 0;      // ESD to AOD filter (barrel + muon tracks)
@@ -671,7 +672,6 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        taskCl->SetEventSelection(kTRUE); // saves some computing time, not all vertices are processed
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
-       taskCl->SetCentralityCut(fCenLo,fCenUp);
        //       taskCl->SetDebugLevel(3);
  
        taskCl->SetNRandomCones(1);
@@ -691,6 +691,24 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranchCut1.Data());
        kJetSubtractBranchesCut1 += Form("%s ",taskCl->GetJetOutputBranch());
        kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
+
+       if(iFilterAnalysis==2){
+	 if(kIsPbPb)taskCl->SetJetTriggerPtCut(50.);
+	 else taskCl->SetJetTriggerPtCut(20.);
+       }
+
+       // tmp track qa...
+       taskCl = AddTaskJetCluster("AOD","",1<<4|1<<8,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),2.0);
+       taskCl->SetEventSelection(kTRUE); // saves some computing time, not all vertices are processed
+       taskCl->SetCentralityCut(fCenLo,fCenUp);
+       taskCl->SetFilterMask(1<<4|1<<8,1);
+
+
+       taskCl = AddTaskJetCluster("AOD","",1<<9|1<<8,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),2.0);
+       taskCl->SetEventSelection(kTRUE); // saves some computing time, not all vertices are processed
+       taskCl->SetCentralityCut(fCenLo,fCenUp);
+       taskCl->SetFilterMask(1<<9|1<<8,2);
+
        
 
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data(),0.15);
@@ -700,12 +718,6 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
        kJetSubtractBranches += Form("%s ",taskCl->GetJetOutputBranch());
        kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
-
-
-       if(kDeltaAODJetName.Length()==0&&kFilterAOD){
-	 if(kIsPbPb)taskCl->SetJetTriggerPtCut(0.0001);
-	 else taskCl->SetJetTriggerPtCut(20.);
-       }
 
        if(kUseAODMC){
 	 if(kIsPbPb){
