@@ -14,7 +14,7 @@ class AliAODCaloCluster;
 class AliAODEvent;
 class AliAODTrack;
 class AliAODVertex;
-class AliEMCALGeoUtils;
+class AliEMCALGeometry;
 class AliEMCALRecoUtils;
 class AliESDCaloCells;
 class AliESDCaloCluster;
@@ -46,7 +46,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetDoTrackMatWithGeom(Bool_t b)                { fDoTrMatGeom   = b;         }
   void         SetFillNtuple(Bool_t b)                        { fDoNtuple      = b;         }
   void         SetGeoName(const char *n)                      { fGeoName       = n;         }
-  void         SetGeoUtils(AliEMCALGeoUtils *geo)             { fGeom          = geo;       }
+  void         SetGeoUtils(AliEMCALGeometry *geo)             { fGeom          = geo;       }
   void         SetIsoDist(Double_t d)                         { fIsoDist       = d;         }
   void         SetL0TimeRange(Int_t l, Int_t h)               { fMinL0Time=l; fMaxL0Time=h; }
   void         SetMarkCells(const char *n)                    { fMarkCells     = n;         }
@@ -124,7 +124,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Int_t                  fMaxL0Time;              // maximum accepted time for trigger
   Bool_t                 fMcMode;                 // monte carlo mode
   Bool_t                 fEmbedMode;              // embedding mode
-  AliEMCALGeoUtils      *fGeom;                   // geometry utils
+  AliEMCALGeometry      *fGeom;                   // geometry utils
   AliEMCALRecoUtils     *fReco;                   // reco utils
   Bool_t                 fDoPSel;                 // if false then accept all events
     // derived members (ie with ! after //)

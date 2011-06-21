@@ -57,7 +57,7 @@
 #include "AliAODTrack.h"
 #include "AliAnalysisFilter.h"
 #include "AliPHOSGeoUtils.h"
-#include "AliEMCALGeoUtils.h"
+#include "AliEMCALGeometry.h"
 #include "AliESDtrackCuts.h"
 #include "AliAODVertex.h" 
 #include "AliAODTracklets.h" 
@@ -906,11 +906,11 @@ bool AliJCORRANTask::AcceptAODTrack(AliAODTrack* aodTrack){
 }
 
 //--------------------------------------------------------------------
-AliEMCALGeoUtils * AliJCORRANTask::GetEMCALGeoUtils (bool doDelete){
+AliEMCALGeometry * AliJCORRANTask::GetEMCALGeoUtils (bool doDelete){
   //include EMCAL singleton modul
-  static AliEMCALGeoUtils* emcalgeo = 0x0;
+  static AliEMCALGeometry* emcalgeo = 0x0;
   if( ! emcalgeo ){
-    emcalgeo = new AliEMCALGeoUtils("EMCAL_COMPLETE");
+    emcalgeo = new AliEMCALGeometry("EMCAL_COMPLETE");
   }
   if( emcalgeo && doDelete ){ //FK// !emcalgeo
     delete emcalgeo;
