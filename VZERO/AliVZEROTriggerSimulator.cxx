@@ -35,6 +35,7 @@
 #include "AliVZEROdigit.h"
 #include "AliVZEROCalibData.h"
 #include "AliVZEROConst.h"
+#include "AliCTPTimeParams.h"
 
 ClassImp(AliVZEROTriggerSimulator)
 
@@ -44,6 +45,7 @@ TObject(),fTriggerData(NULL),fDigitsTree(digitsTree),fDigits(digits),fTriggerWor
 {
 	// constructor
 	fTriggerData = LoadTriggerData();
+	LoadClockOffset();
 	
 	for(int i=0;i<64;i++) {
 		fBBFlags[i] = fBGFlags[i] = kFALSE;
@@ -64,6 +66,7 @@ TObject(),fTriggerData(NULL),fDigitsTree(NULL),fDigits(NULL),fTriggerWord(0)
 {
 	// Default constructor
 	fTriggerData = LoadTriggerData();
+	LoadClockOffset();
 
 	for(int i=0;i<64;i++) {
 		fBBFlags[i] = fBGFlags[i] = kFALSE;
@@ -125,11 +128,8 @@ AliVZEROTriggerData * AliVZEROTriggerSimulator::LoadTriggerData() const
 	
 	entry = man->Get("VZERO/Trigger/Data");
 	if(!entry){
-		AliWarning("Load of calibration data from default storage failed!");
-		AliWarning("Calibration data will be loaded from local storage ($ALICE_ROOT)");
-		
-		man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-		entry = man->Get("VZERO/Trigger/Data",0);
+		AliFatal("Load of trigger calibration data from default storage failed!");
+		return NULL;
 	}
 	
 	// Retrieval of data in directory VZERO/Calib/Trigger:
@@ -140,6 +140,46 @@ AliVZEROTriggerData * AliVZEROTriggerSimulator::LoadTriggerData() const
 	if (!triggerData)  AliError("No Trigger data from database !");
 	
 	return triggerData;
+}
+
+
+//_____________________________________________________________________________
+void AliVZEROTriggerSimulator::LoadClockOffset()
+{
+  // This method is used in order to
+  // retrieve the TDC clock offset including
+  // roll-over, trig count and CTP L0->L1 delay
+
+  AliCDBEntry *entry0 = AliCDBManager::Instance()->Get("VZERO/Calib/Data");
+  if (!entry0) {
+    AliFatal("V0 Calib object is not found in OCDB !");
+    return;
+  }
+  AliVZEROCalibData *calibdata = (AliVZEROCalibData*) entry0->GetObject();
+
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
+  if (!entry) {
+    AliFatal("CTP timing parameters are not found in OCDB !");
+    return;
+  }
+  AliCTPTimeParams *ctpParams = (AliCTPTimeParams*)entry->GetObject();
+  Float_t l1Delay = (Float_t)ctpParams->GetDelayL1L0()*25.0;
+
+  AliCDBEntry *entry1 = AliCDBManager::Instance()->Get("GRP/CTP/TimeAlign");
+  if (!entry1) {
+    AliFatal("CTP time-alignment is not found in OCDB !");
+    return;
+  }
+  AliCTPTimeParams *ctpTimeAlign = (AliCTPTimeParams*)entry1->GetObject();
+  l1Delay += ((Float_t)ctpTimeAlign->GetDelayL1L0()*25.0);
+
+  for(Int_t board = 0; board < AliVZEROTriggerData::kNCIUBoards; ++board) {
+    fClockOffset[board] = (((Float_t)calibdata->GetRollOver(board)-
+			    (Float_t)calibdata->GetTriggerCountOffset(board))*25.0-
+			   l1Delay+
+			   kV0Offset);
+    AliDebug(1,Form("Board %d Offset %f",board,fClockOffset[board]));
+  }
 }
 
 //_____________________________________________________________________________
@@ -176,7 +216,7 @@ void AliVZEROTriggerSimulator::Run() {
 			}
 			
 			Float_t time = digit->Time();
-			time -= kClockOffset;
+			time -= fClockOffset[board];
 
 			AliDebug(10,Form(" Digit: %f %d %d %d %d %d %d %d %d",digit->Time(),
 					 digit->ChargeADC(8),digit->ChargeADC(9),digit->ChargeADC(10),

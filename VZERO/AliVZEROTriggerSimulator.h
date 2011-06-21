@@ -70,6 +70,7 @@ private:
 	AliVZEROTriggerSimulator(const AliVZEROTriggerSimulator &/*triggerSim*/);
 	AliVZEROTriggerSimulator& operator= (const AliVZEROTriggerSimulator & /*triggerSim*/);
 	AliVZEROTriggerData * LoadTriggerData() const ;
+	void                  LoadClockOffset();
 	void GenerateBBWindows();
 	void GenerateBGWindows();
 	
@@ -83,6 +84,7 @@ private:
 	AliVZEROLogicalSignal * fBGReset[AliVZEROTriggerData::kNCIUBoards]; // BG Reset Window
 
 	AliVZEROTriggerData *fTriggerData; // Object holding the trigger configuration parameters
+	Float_t fClockOffset[AliVZEROTriggerData::kNCIUBoards]; // TDC clock offset including roll-over, trig count and L0->L1 delay
 	
 	TTree* fDigitsTree; //Pointer to VZERO digit tree
 	TClonesArray* fDigits; //Pointer to VZERO digit array
@@ -93,7 +95,7 @@ private:
 	
 	UShort_t fTriggerWord; // Word holding the 16 triggers return by the FEE
 		
-	ClassDef( AliVZEROTriggerSimulator, 2 )  
+	ClassDef( AliVZEROTriggerSimulator, 3 )  
 
 };
 
