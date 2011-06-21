@@ -850,7 +850,7 @@ void AliAnalysisTaskCaloConv::UserCreateOutputObjects()
      }
    }
    if(!fEMCALgeom){
-     fEMCALgeom = new AliEMCALGeometry("EMCAL_FIRSTYEAR");
+     fEMCALgeom = AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");
      for(Int_t mod=0; mod < (fEMCALgeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ //<---Gustavo, could you check???
        if(esd){
          const TGeoHMatrix* m=esd->GetEMCALMatrix(mod) ;
