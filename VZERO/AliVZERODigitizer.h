@@ -94,6 +94,7 @@ class AliVZERODigitizer: public AliDigitizer {
    Int_t    fNBinsLT[64];            //! Number of bins in fTime container (match window only)
    Float_t  fBinSize[64];            //! Bin size in fTime container
    Float_t  fHptdcOffset[64];        //! HPTDC time offsets channel by channel
+   Float_t  fClockOffset[64];        //! Clock offsets channel by channel
 
    Float_t *fTime[64];               //! Main container used in digitization
    Int_t    fLabels[64][3];          //! Container for MC labels
@@ -102,7 +103,7 @@ class AliVZERODigitizer: public AliDigitizer {
    DigiTask_t fTask;                 //! The task (to be) executed by the digitizer
    AliVZERO  *fVZERO;                //! Pointer to AliDetector object
 
-   ClassDef(AliVZERODigitizer,6)     // digitizer for VZERO
+   ClassDef(AliVZERODigitizer,7)     // digitizer for VZERO
 
 };
 

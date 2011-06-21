@@ -205,6 +205,11 @@ Bool_t AliVZERODigitizer::Init()
 		       phase->GetMeanPhase()+
 		       delays->GetBinContent(i+1)+
 		       kV0Offset);
+    fClockOffset[i] = (((Float_t)fCalibData->GetRollOver(board)-
+			(Float_t)fCalibData->GetTriggerCountOffset(board))*25.0+
+		       fCalibData->GetTimeOffset(i)-
+		       l1Delay+
+		       kV0Offset);
 
     fTime[i] = new Float_t[fNBins[i]];
     memset(fTime[i],0,fNBins[i]*sizeof(Float_t));
@@ -467,11 +472,12 @@ void AliVZERODigitizer::DigitizeSDigits()
 	  }
 	}
       }
-      Float_t tadc = t - kClockOffset - fCalibData->GetTimeOffset(ipmt);
+      Float_t tadc = t - fClockOffset[ipmt];
       Int_t clock = kNClocks/2 - Int_t(tadc/25.0);
       if (clock >= 0 && clock < kNClocks)
 	fAdc[ipmt][clock] += fTime[ipmt][iBin]/kChargePerADC;
     }
+    AliDebug(1,Form("Channel %d Offset %f Time %f",ipmt,fClockOffset[ipmt],fLeadingTime[ipmt]));
     Int_t board = AliVZEROCalibData::GetBoardNumber(ipmt);
     if (ltFound && ttFound) {
       fTimeWidth[ipmt] = fCalibData->GetWidthResolution(board)*
@@ -487,6 +493,7 @@ void AliVZERODigitizer::DigitizeSDigits()
   for (Int_t j=0; j<64; ++j){
     for (Int_t iClock = 0; iClock < kNClocks; ++iClock) {
       Int_t integrator = (iClock + fEvenOrOdd) % 2;
+      AliDebug(1,Form("ADC %d %d %f",j,iClock,fAdc[j][iClock]));
       fAdc[j][iClock]  += gRandom->Gaus(fAdcPedestal[j][integrator], fAdcSigma[j][integrator]);
     }
   }
