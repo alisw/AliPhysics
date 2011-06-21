@@ -206,7 +206,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   cout << " fDoPSel:        " << fDoPSel << endl;
 
   if (!fGeom)
-    fGeom = new AliEMCALGeometry(fGeoName,"EMCAL");
+    fGeom = AliEMCALGeometry::GetInstance(fGeoName);
   else {
     if (fGeom->GetMatrixForSuperModule(0))
       fIsGeoMatsSet = kTRUE;
