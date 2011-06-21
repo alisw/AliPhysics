@@ -37,21 +37,23 @@
 #include <TVector2.h>
 #include <cassert>
 
-//--- EMCAL system---
-#include "AliEMCALShishKebabTrd1Module.h"
-
 // --- Standard library ---
 
 //#include <stdio.h>
 
 // --- AliRoot header files ---
-
-#include "AliEMCALv0.h"
-#include "AliEMCALGeometry.h"
 #include "AliRun.h"
+#include "AliRunLoader.h"
 #include "AliLog.h"
 #include "AliGeomManager.h"
+
+//--- EMCAL system---
+#include "AliEMCALShishKebabTrd1Module.h"
+#include "AliEMCALv0.h"
+#include "AliEMCALGeometry.h"
 #include "AliEMCALSpaceFrame.h"
+
+
 
 ClassImp(AliEMCALv0)
 
@@ -115,6 +117,33 @@ void AliEMCALv0::CreateGeometry()
     Error("CreateGeometry","EMCAL Geometry class has not been set up.");
   } // end if
 
+  //Check if run number and requested geometry correspond to the same geometry as
+  //in real data taking. To prevent errors in official productions
+  if(fCheckRunNumberAndGeoVersion){
+    AliRunLoader *rl = AliRunLoader::Instance();
+    Int_t runNumber = rl->GetRunNumber();
+    TString geoName = geom->GetEMCGeometry()->GetGeoName();
+    Bool_t ok = kTRUE;
+    if(!geoName.Contains("V1")) {
+      ok = kFALSE;
+      AliFatal(Form("Add <<V1>> to set EMCAL geometry name <<%s>>", geoName.Data()));
+    }
+    else if(runNumber > 140000){
+      if(geoName.Contains("FIRSTYEAR")) ok = kFALSE;
+    }
+    else {
+      if(geoName.Contains("COMPLETE"))  ok = kFALSE;
+    }
+    
+    if(!ok) {
+      AliFatal(Form("Run number -%d-, does not correspond to the requested geometry <<%s>> with -%d- SuperModules", 
+                    runNumber, geoName.Data(), geom->GetNumberOfSuperModules()));
+    }
+    
+    AliDebug(0,Form("Run number %d and geometry  %s, N Super Modules %d\n",
+                    runNumber, geoName.Data(), geom->GetNumberOfSuperModules()));
+  }
+  
   // Get pointer to the array containing media indices
   fIdTmedArr = fIdtmed->GetArray() - 1599 ;
   

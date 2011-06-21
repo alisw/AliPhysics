@@ -57,7 +57,9 @@ AliEMCAL::AliEMCAL()
     fBirkC0(0),
     fBirkC1(0.),
     fBirkC2(0.),
-    fGeometry(0)
+    fGeometry(0), 
+    fCheckRunNumberAndGeoVersion(kTRUE)
+
 {
   // Default ctor 
   fName = "EMCAL" ;
@@ -72,7 +74,9 @@ AliEMCAL::AliEMCAL(const char* name, const char* title)
     fBirkC0(0),
     fBirkC1(0.),
     fBirkC2(0.),
-    fGeometry(0)
+    fGeometry(0), 
+    fCheckRunNumberAndGeoVersion(kTRUE)
+
 {
   //   ctor : title is used to identify the layout
   InitConstants();

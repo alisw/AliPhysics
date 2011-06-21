@@ -46,6 +46,7 @@ Float_t EtaToTheta(Float_t arg);
 void    LoadPythia();
 
 Int_t year =2011;
+Bool_t checkGeoAndRun=kFALSE;
 
 void Config()
 {
@@ -328,6 +329,8 @@ void Config()
 	AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETEV1");
       else // Old configuration with 110 degrees but not perfect geometry
         AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE");
+
+      EMCAL->SetCheckRunNumberAndGeoVersion(checkGeoAndRun);
     }
 
      if (iACORDE)

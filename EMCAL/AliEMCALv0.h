@@ -36,11 +36,11 @@ class AliEMCALv0 : public AliEMCAL {
 
   using AliEMCAL::AddHit;
 
-  virtual void  AddAlignableVolumes() const;
-  virtual void  AddAlignableVolumesInALICE() const;
-  virtual void  AddAlignableVolumesInWSUC() const;
-
-  virtual void CreateGeometry() ;// creates the geometry for GEANT
+  virtual void   AddAlignableVolumes()        const;
+  virtual void   AddAlignableVolumesInALICE() const;
+  virtual void   AddAlignableVolumesInWSUC()  const;
+  
+  virtual void   CreateGeometry() ;// creates the geometry for GEANT
   virtual void   Init(void) ;                                       // does nothing
   virtual Int_t  IsVersion(void) const { 
     // Gives the version number 
@@ -85,7 +85,7 @@ class AliEMCALv0 : public AliEMCAL {
   Double_t fSmodPar2;          //! z size of super module  
   Double_t fParEMOD[5];        //! parameters of EMCAL module (TRD1,2)
   AliEMCALSpaceFrame* fCalFrame; //EMCAL Space frame object
-
+  
   AliEMCALv0(const AliEMCALv0 & emcal);
   AliEMCALv0 & operator = (const AliEMCALv0  & /*rvalue*/);
  

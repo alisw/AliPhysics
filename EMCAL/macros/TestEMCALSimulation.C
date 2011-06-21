@@ -7,13 +7,13 @@ LLNL
  
 */
 
-void TestEMCALSimulation(Int_t nev =10) {
+void TestEMCALSimulation(Int_t nev =10, Bool_t raw = kFALSE) {
 
   AliSimulation simulator;
   simulator.SetConfigFile("Config.C");
   simulator.SetMakeSDigits("EMCAL");
   simulator.SetMakeDigits("EMCAL");
-  simulator.SetWriteRawData("EMCAL","raw.root",kTRUE);
+  if(raw)  simulator.SetWriteRawData("EMCAL","raw.root",kTRUE);
 
   //OCDB settings
   simulator.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
@@ -26,6 +26,8 @@ void TestEMCALSimulation(Int_t nev =10) {
   TStopwatch timer;
   timer.Start();
 
+//  simulator.SetRunNumber(140234);
+  
   simulator.Run(nev);
 
   timer.Stop();

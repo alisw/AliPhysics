@@ -72,21 +72,24 @@ class AliEMCAL : public AliDetector {
   virtual AliLoader* MakeLoader(const char* topfoldername);
   virtual const TString Version() const {return TString(" ") ; }   
 
+  virtual void  SetCheckRunNumberAndGeoVersion(Bool_t check) { fCheckRunNumberAndGeoVersion = check ; }
+
+  
 protected:
   void InitConstants();  //initializes some params
-  //void DefineMediumParameters();  // define tracking medium parameters; not needed set in galice.cuts 
 
-  Int_t fBirkC0;    // constants for Birk's Law implementation
+  Int_t    fBirkC0; // constants for Birk's Law implementation
   Double_t fBirkC1; // constants for Birk's Law implementation
   Double_t fBirkC2; // constants for Birk's Law implementation
 
-  AliEMCALGeometry* fGeometry;          //!
+  AliEMCALGeometry* fGeometry;              //!
+  Bool_t   fCheckRunNumberAndGeoVersion;    // Check if run number corresponds to the requested geometry and V1 is used
 
 private:
   AliEMCAL(const AliEMCAL& emcal);
   AliEMCAL & operator = (const AliEMCAL & /*rvalue*/);
 
-  ClassDef(AliEMCAL,10) // Electromagnetic calorimeter (base class)
+  ClassDef(AliEMCAL,11) // Electromagnetic calorimeter (base class)
     
 } ;
 
