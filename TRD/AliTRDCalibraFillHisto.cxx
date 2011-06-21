@@ -2542,6 +2542,8 @@ void AliTRDCalibraFillHisto::CreateCH2d(Int_t nn)
   name += fVersionGainUsed;
   name += "Subver";
   name += fSubVersionGainUsed;
+  name += "FirstRun";
+  name += fFirstRunGain;
   name += "Nz";
   name += fCalibraMode->GetNz(0);
   name += "Nrphi";

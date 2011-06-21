@@ -510,6 +510,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
 
   //printf("Analyse linear fit\n");
 
+  
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
   calibra->SetMinEntries(fMinStatsVdriftLinear); // If there is less than 1000 entries in the histo: no fit
   //printf("Fill PE Array\n");
@@ -999,12 +1000,14 @@ Int_t AliTRDPreprocessorOffline::GetVersion(TString name) const
   // Some patterns
   const Char_t *version = "Ver";
   if(!strstr(name.Data(),version)) return -1;
-  
+  const Char_t *after = "Subver";  
+  if(!strstr(name.Data(),after)) return -1;
+
   for(Int_t ver = 0; ver < 999999999; ver++) {
 
     TString vertry(version);
     vertry += ver;
-    vertry += "Subver";
+    vertry += after;
 
     //printf("vertry %s and name %s\n",vertry.Data(),name.Data());
 
@@ -1026,12 +1029,18 @@ Int_t AliTRDPreprocessorOffline::GetSubVersion(TString name) const
   // Some patterns
   const Char_t *subversion = "Subver";
   if(!strstr(name.Data(),subversion)) return -1;
+  const Char_t *after = "FirstRun";
+  if(!strstr(name.Data(),after)) {
+    after = "Nz";
+  }
+  if(!strstr(name.Data(),after)) return -1;
+
   
   for(Int_t ver = 0; ver < 999999999; ver++) {
     
     TString vertry(subversion);
     vertry += ver;
-    vertry += "FirstRun";
+    vertry += after;
 
     //printf("vertry %s and name %s\n",vertry.Data(),name.Data());
 
@@ -1053,12 +1062,15 @@ Int_t AliTRDPreprocessorOffline::GetFirstRun(TString name) const
   // Some patterns
   const Char_t *firstrun = "FirstRun";
   if(!strstr(name.Data(),firstrun)) return -1;
+  const Char_t *after = "Nz";  
+  if(!strstr(name.Data(),after)) return -1;
+  
   
   for(Int_t ver = 0; ver < 999999999; ver++) {
 
     TString vertry(firstrun);
     vertry += ver;
-    vertry += "Nz";
+    vertry += after;
 
     //printf("vertry %s and name %s\n",vertry.Data(),name.Data());
 
