@@ -96,6 +96,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   AliESDtrackCuts *GetTrackCuts() const {return fTrackCuts;}
   virtual AliESDtrackCuts *GetTrackCutsSoftPi() const {return 0;}
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) = 0;
+  //virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent * /*aod*/)
+  //{return GetCutVarsForOpt(d,vars,nvars,pdgdaughters);}
   Int_t   GetGlobalIndex(Int_t iVar,Int_t iPtBin) const;
   void    GetVarPtIndex(Int_t iGlob, Int_t& iVar, Int_t& iPtBin) const;
   Bool_t  GetIsUsePID() const {return fUsePID;}
@@ -190,7 +192,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t fMinPtCand; // minimum pt of the candidate
   Double_t fMaxPtCand; // minimum pt of the candidate
 
-  ClassDef(AliRDHFCuts,14);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,15);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
