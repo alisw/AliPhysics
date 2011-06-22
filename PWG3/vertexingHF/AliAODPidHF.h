@@ -14,7 +14,7 @@
 
 #include "AliAODPid.h"
 #include "AliAODTrack.h"
-#include "AliTPCPIDResponse.h"
+#include "AliPIDResponse.h"
 
 class AliAODPidHF : public AliAODPid{
 
@@ -52,6 +52,8 @@ class AliAODPidHF : public AliAODPid{
  void SetPbPb(Bool_t pbpb){fPbPb=pbpb;return;}
  void SetPCompatTOF(Double_t pTOF){fPCompatTOF=pTOF;return;}
  void SetTOFdecide(Bool_t tOFdecide){fTOFdecide=tOFdecide;return;}
+ void SetOldPid(Bool_t oldPid){fOldPid=oldPid;return;}
+ void SetPidResponse(AliPIDResponse *pidResp) {fPidResponse=pidResp;return;}
  
  //Getters
  Double_t GetSigma(Int_t idet) const{return fnSigma[idet];}
@@ -75,6 +77,8 @@ class AliAODPidHF : public AliAODPid{
  Double_t GetPCompatTOF() const{return fPCompatTOF;}
  Double_t GetnSigmaCompatTPC() const{return fnSigmaCompat[0];}
  Double_t GetnSigmaCompatTOF() const{return fnSigmaCompat[1];}
+ Bool_t GetOldPid(){return fOldPid;}
+ AliPIDResponse *GetPidResponse() const{return fPidResponse;}
 
  Int_t RawSignalPID (AliAODTrack *track, TString detector) const;
  Bool_t IsKaonRaw (AliAODTrack *track, TString detector) const;
@@ -127,10 +131,12 @@ class AliAODPidHF : public AliAODPid{
  Bool_t fMCLowEn2011; //  MC for low energy MC
  Bool_t fPbPb; //  real data PbPb 
  Bool_t fTOFdecide; //  real data PbPb 
+ Bool_t fOldPid; //  old PID method implemented
+ AliPIDResponse *fPidResponse; //pid response
  
 
 
- ClassDef(AliAODPidHF,11) // AliAODPid for heavy flavor PID
+ ClassDef(AliAODPidHF,12) // AliAODPid for heavy flavor PID
 
 };
 

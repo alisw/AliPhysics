@@ -24,9 +24,7 @@
 #include "AliAODPidHF.h"
 #include "AliAODPid.h"
 #include "AliPID.h"
-#include "AliTPCPIDResponse.h"
-#include "AliITSPIDResponse.h"
-#include "AliTOFPIDResponse.h"
+#include "AliPIDResponse.h"
 #include "AliAODpidUtil.h"
 #include "AliESDtrack.h"
 
@@ -57,7 +55,9 @@ AliAODPidHF::AliAODPidHF():
   fOnePad(kFALSE),
   fMCLowEn2011(kFALSE),
   fPbPb(kFALSE),
-  fTOFdecide(kFALSE)
+  fTOFdecide(kFALSE),
+  fOldPid(kFALSE),
+  fPidResponse(0)
 {
  //
  // Default constructor
@@ -113,7 +113,9 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fOnePad(pid.fOnePad),
   fMCLowEn2011(pid.fMCLowEn2011),
   fPbPb(pid.fPbPb),
-  fTOFdecide(pid.fTOFdecide)
+  fTOFdecide(pid.fTOFdecide),
+  fOldPid(pid.fOldPid),
+  fPidResponse(pid.fPidResponse)
   {
   
   for(Int_t i=0;i<5;i++){
@@ -189,6 +191,8 @@ Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
 // n-sigma cut, TPC PID
 
   if(!CheckStatus(track,"TPC")) return 0;
+  Int_t pid=-1;
+  if(fOldPid){
   AliAODPid *pidObj = track->GetDetPid();
   
   Double_t dedx=pidObj->GetTPCsignal();
@@ -198,7 +202,6 @@ Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
   UShort_t nTPCClus=pidObj->GetTPCsignalN();
   if(nTPCClus==0) {nTPCClus=track->GetTPCNcls();}
 
-  Int_t pid=-1;
   if(specie<0){  // from RawSignalPID : should return the particle specie to wich the de/dx is closer to the bethe-block curve -> performance to be checked
    Double_t nsigmaMax=fnSigma[0];
    for(Int_t ipart=0;ipart<5;ipart++){
@@ -218,6 +221,28 @@ Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
     pid=specie;
    }
   }
+ }else{ //old pid
+  if(specie<0){  // from RawSignalPID : should return the particle specie to wich the de/dx is closer to the bethe-block curve -> performance to be checked
+   Double_t nsigmaMax=fnSigma[0];
+   for(Int_t ipart=0;ipart<5;ipart++){
+    AliPID::EParticleType type=AliPID::EParticleType(ipart);
+    Double_t nsigma = TMath::Abs(fPidResponse->NumberOfSigmasTPC(track,type));
+    if((nsigma<nsigmaMax) && (nsigma<fnSigma[0])) {
+     pid=ipart;
+     nsigmaMax=nsigma;
+    }
+   }
+  }else{ // asks only for one particle specie
+   AliPID::EParticleType type=AliPID::EParticleType(specie);
+    Double_t nsigma = TMath::Abs(fPidResponse->NumberOfSigmasTPC(track,type));
+   if (nsigma>fnSigma[0]) {
+    pid=-1;
+   }else{
+    pid=specie;
+   }
+  }
+
+ } //new pid
 
  return pid;
 
@@ -227,7 +252,9 @@ Int_t AliAODPidHF::ApplyPidITSRaw(AliAODTrack *track,Int_t specie) const{
 // truncated mean, ITS PID
 
   if(!CheckStatus(track,"ITS")) return 0;
+  Int_t pid=-1;
 
+  if(fOldPid){
   Double_t mom=track->P();
   AliAODPid *pidObj = track->GetDetPid();
 
@@ -242,7 +269,6 @@ Int_t AliAODPidHF::ApplyPidITSRaw(AliAODTrack *track,Int_t specie) const{
   if(track->GetStatus() & AliESDtrack::kTPCin) isSA = kFALSE;
 
   AliITSPIDResponse itsResponse;
-  Int_t pid=-1;
   if(specie<0){  // from RawSignalPID : should return the particle specie to wich the de/dx is closer to the bethe-block curve -> performance to be checked
    Double_t nsigmaMax=fnSigma[4];
    for(Int_t ipart=0;ipart<5;ipart++){
@@ -262,6 +288,29 @@ Int_t AliAODPidHF::ApplyPidITSRaw(AliAODTrack *track,Int_t specie) const{
     pid=specie;
    }
   }
+ }else{ // old pid
+
+  if(specie<0){  // from RawSignalPID : should return the particle specie to wich the de/dx is closer to the bethe-block curve -> performance to be checked
+   Double_t nsigmaMax=fnSigma[4];
+   for(Int_t ipart=0;ipart<5;ipart++){
+    AliPID::EParticleType type=AliPID::EParticleType(ipart);
+    Double_t nsigma = TMath::Abs(fPidResponse->NumberOfSigmasITS(track,type));
+    if((nsigma<nsigmaMax) && (nsigma<fnSigma[4])) {
+     pid=ipart;
+     nsigmaMax=nsigma;
+    }
+   }
+  }else{ // asks only for one particle specie
+   AliPID::EParticleType type=AliPID::EParticleType(specie);
+    Double_t nsigma = TMath::Abs(fPidResponse->NumberOfSigmasITS(track,type));
+   if (nsigma>fnSigma[4]) {
+    pid=-1;
+   }else{
+    pid=specie;
+   }
+  }
+ } //new pid
+
  return pid; 
 }
 //----------------------------
@@ -466,6 +515,8 @@ Bool_t AliAODPidHF::TPCRawAsym(AliAODTrack* track,Int_t specie) const{
   if(!CheckStatus(track,"TPC")) return kFALSE;
   AliAODPid *pidObj = track->GetDetPid();
   Double_t mom = pidObj->GetTPCmomentum();
+  Double_t nsigma=999.;
+  if(fOldPid){
   Double_t dedx=pidObj->GetTPCsignal();
   UShort_t nTPCClus=pidObj->GetTPCsignalN();
   if(nTPCClus==0) {nTPCClus=track->GetTPCNcls();}
@@ -473,7 +524,12 @@ Bool_t AliAODPidHF::TPCRawAsym(AliAODTrack* track,Int_t specie) const{
   AliTPCPIDResponse tpcResponse;
   SetBetheBloch(tpcResponse); 
   AliPID::EParticleType type=AliPID::EParticleType(specie);
-  Double_t nsigma = TMath::Abs(tpcResponse.GetNumberOfSigmas(mom,dedx,nTPCClus,type)); 
+  nsigma = TMath::Abs(tpcResponse.GetNumberOfSigmas(mom,dedx,nTPCClus,type)); 
+
+  }else{ //old pid
+  AliPID::EParticleType type=AliPID::EParticleType(specie);
+  nsigma = TMath::Abs(fPidResponse->NumberOfSigmasTPC(track,type));
+ } //new pid
 
   if(mom<fPLimit[0] && nsigma<fnSigma[0]) return kTRUE;
   if(mom<fPLimit[1] && mom>fPLimit[0] && nsigma<fnSigma[1]) return kTRUE;

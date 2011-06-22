@@ -39,6 +39,9 @@
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliRDHFCuts.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliPIDResponse.h"
 
 ClassImp(AliRDHFCuts)
 
@@ -239,7 +242,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   if(mcArray) {isMC=kTRUE;fUseAOD049=kFALSE;}
 
   // settings for the TPC dE/dx BB parameterization
-  if(fPidHF) {
+  if(fPidHF && fPidHF->GetOldPid()) {
     // pp, from LHC10d onwards
     if((event->GetRunNumber()>121693 && event->GetRunNumber()<136851) ||
        event->GetRunNumber()>139517) fPidHF->SetOnePad(kTRUE);
@@ -249,6 +252,14 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     if(isMC) fPidHF->SetMC(kTRUE);
     if(isMC && (event->GetRunNumber()>=146686 && event->GetRunNumber()<=146860))
       fPidHF->SetMClowenpp2011(kTRUE);
+  } 
+  else if(fPidHF && !fPidHF->GetOldPid()) {
+   if(fPidHF->GetPidResponse()==0x0){
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+    AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+    fPidHF->SetPidResponse(pidResp);
+   }
   }
 
 
@@ -264,11 +275,11 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
 
   // TEMPORARY FIX FOR REFERENCES
   // Fix references to daughter tracks
-  if(fFixRefs) {
-    AliAnalysisVertexingHF *fixer = new AliAnalysisVertexingHF();
-    fixer->FixReferences((AliAODEvent*)event);
-    delete fixer;
-  }
+//  if(fFixRefs) {
+//    AliAnalysisVertexingHF *fixer = new AliAnalysisVertexingHF();
+//    fixer->FixReferences((AliAODEvent*)event);
+//    delete fixer;
+//  }
   //
 
 

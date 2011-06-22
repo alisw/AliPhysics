@@ -175,6 +175,10 @@ void RunAnalysisAODVertexingHF()
   //-------------------------------------------------------------------
   // Analysis tasks (wagons of the train)   
   //
+  // First add the task for the PID response setting
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  AliAnalysisTaskSE *setupTask = AddTaskPIDResponse(kFALSE,kTRUE);
+
   TString taskName;
   
   ////// ADD THE FULL D2H TRAIN
