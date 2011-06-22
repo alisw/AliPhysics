@@ -419,7 +419,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPhysicsSelection && !iAODanalysis){
      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-     Int_t iTriggerHIC = 0;
+     Int_t iTriggerC = 0;
      Bool_t rejectBkg = true;
      if(kIsPbPb){
        iTriggerHIC = 2;
@@ -708,8 +708,6 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        taskCl->SetEventSelection(kTRUE); // saves some computing time, not all vertices are processed
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        taskCl->SetFilterMask(1<<9|1<<8,2);
-
-       
 
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data(),0.15);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
