@@ -282,7 +282,7 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
     
   AliESDZDC *esdZDC = esd->GetESDZDC();
   
-  if((((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB)){
+  if((((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected())){
   
     fhZNCSpectrum->Fill(esdZDC->GetZDCN1Energy());	  
     fhZNASpectrum->Fill(esdZDC->GetZDCN2Energy());
