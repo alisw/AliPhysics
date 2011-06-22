@@ -45,7 +45,7 @@
 #include "AliESDtrack.h"
 #include "AliExternalTrackParam.h"
 #include "AliESDVertex.h"
-#include "AliESDEvent.h"
+#include "AliVEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliTrackReference.h"
 //#include "AliTriggerAnalysis.h"
@@ -106,7 +106,8 @@ AliAnalysisTaskSE(name),
   fhSPDVertexDiffZPileContr4(0),
   fhSPDVertexDiffZPileContr5(0),
   fhSPDContributorsPile(0),
-  fhSPDDispContributors(0)
+  fhSPDDispContributors(0),
+  fTriggerType(AliVEvent::kMB)	
 {
   // Constructor
 
@@ -328,13 +329,13 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   //Bool_t eventTriggered = (triggerMask & spdFO || ((triggerMask & v0left) || (triggerMask & v0right))); 
   //MB2: GFO && V0R
   //triggerMask & spdFO && ((triggerMask&v0left) || (triggerMask&v0right))
-  //Bool_t eventTriggered = (triggerMask & spdFO); 
+  //Bool_t eventTriggered = (triggerMask & spdFO);
  
   //static AliTriggerAnalysis* triggerAnalysis = new AliTriggerAnalysis();
   Bool_t eventTriggered = 0;//triggerAnalysis->IsTriggerFired(esdE, AliTriggerAnalysis::kSPDGFO /*| AliTriggerAnalysis::kOfflineFlag*/); 
 
   // use response of AliPhysicsSelection
-  eventTriggered = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+	eventTriggered = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerType);
 
 
   Int_t nInFile = esdE->GetEventNumberInFile();
