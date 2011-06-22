@@ -26,11 +26,11 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny);
-  // |d0|>100 micron for pt<2GeV, no cut above 2
+  // |d0|>75 micron for pt<2GeV, no cut above 2
   esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0075*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
   esdTrackCuts->SetMaxDCAToVertexXY(1.);  
   esdTrackCuts->SetMaxDCAToVertexZ(1.);
-  esdTrackCuts->SetPtRange(0.8,1.e10);
+  esdTrackCuts->SetPtRange(0.7,1.e10);
   esdTrackCuts->SetEtaRange(-0.8,+0.8);
   AliAnalysisFilter *trkFilter = new AliAnalysisFilter("trackFilter");
   trkFilter->AddCuts(esdTrackCuts);
@@ -49,6 +49,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   Int_t nptbins=2; Float_t ptlimits[2]={0.,1000000.};
   AliRDHFCutsD0toKpi *cutsD0toKpi = new AliRDHFCutsD0toKpi("CutsD0toKpi");
   cutsD0toKpi->SetStandardCutsPbPb2010();
+  cutsD0toKpi->SetMinPtCandidate(0.);
   cutsD0toKpi->SetUsePID(kFALSE);
   cutsD0toKpi->SetMaxVtxZ(1.e6);
   cutsD0toKpi->SetTriggerClass("");
