@@ -1,4 +1,4 @@
-AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber)
+AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber, UInt_t maskMB, UInt_t maskHM)
 
 {
   // Creates a QA task exploiting simple symmetries phi, eta +/-, charge ...
@@ -26,29 +26,29 @@ AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber)
    //Task for global tracks
    AliAnalysisTaskQASym *task0 = new AliAnalysisTaskQASym("AliAnalysisTaskQASym_Global");
    task0->SetTrackType(0);
-   task0->SelectCollisionCandidates(); // default setting: kMB = min bias trigger
+   task0->SelectCollisionCandidates(maskMB); // default setting: kMB = min bias trigger
    task0->SetNChargedRange(30,50); // comparison of different trigger settings
    //Task for global tracks (high multiplicity)
    AliAnalysisTaskQASym *task0HM = new AliAnalysisTaskQASym("AliAnalysisTaskQASym_Global_HighMult");
    task0HM->SetTrackType(0);
-   task0HM->SelectCollisionCandidates(AliVEvent::kHighMult);
+   task0HM->SelectCollisionCandidates(maskHM);
    task0HM->SetNChargedRange(30,50); 
    //Task for ITS tracks 
    AliAnalysisTaskQASym *task1 = new AliAnalysisTaskQASym("AliAnalysisTaskQASym_ITS");
    task1->SetTrackType(1);
    task1->SetStandAloneTrack(kFALSE);
-   task1->SelectCollisionCandidates();
+   task1->SelectCollisionCandidates(maskMB);
    task1->SetNChargedRange(30,50); 
    //Task for ITS tracks SA
    AliAnalysisTaskQASym *task1sa = new AliAnalysisTaskQASym("AliAnalysisTaskQASym_ITS_SA");
    task1sa->SetTrackType(1);
    task1sa->SetStandAloneTrack(kTRUE);
-   task1sa->SelectCollisionCandidates();
+   task1sa->SelectCollisionCandidates(maskMB);
    task1sa->SetNChargedRange(30,50); 
    //Task for TPC tracks 
    AliAnalysisTaskQASym *task2 = new AliAnalysisTaskQASym("AliAnalysisTaskQASym_TPC");
    task2->SetTrackType(2);
-   task2->SelectCollisionCandidates();
+   task2->SelectCollisionCandidates(maskMB);
    task2->SetNChargedRange(30,50); 
 
    //cuts for global tracks
@@ -69,7 +69,7 @@ AliAnalysisTaskQASym * AddTaskQAsym(Int_t runNumber)
    esdTrackCutsL1->SetRequireITSStandAlone(kTRUE); 
 
    //cuts for ITS tracks SA
-   AliESDtrackCuts* esdTrackCutsL1sa = new AliESDtrackCuts("AliESDtrackCuts1","ITS_SA");
+   AliESDtrackCuts* esdTrackCutsL1sa = new AliESDtrackCuts("AliESDtrackCuts1sa","ITS_SA");
    esdTrackCutsL1sa->SetMaxDCAToVertexXY(3.);
    esdTrackCutsL1sa->SetMaxDCAToVertexZ(3.);
    esdTrackCutsL1sa->SetAcceptKinkDaughters(kFALSE);
