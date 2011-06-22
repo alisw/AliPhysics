@@ -346,7 +346,7 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
   trigConfig->SetTRUArr(truArr);
 
   // loop through all TRUs
-  bool debug = false; // debug flag for AliInfo printouts for each TRU
+  bool debug = true; // debug flag for AliInfo printouts for each TRU
   for( iTRU = 0; iTRU < kNTRU; iTRU++){
     if (debug) AliInfo( Form("iTRU %d \n", iTRU) );
     // get the shuttled values
@@ -367,65 +367,90 @@ UInt_t AliEMCALPreprocessor::MapTriggerConfig(TMap* dcsAliasMap)
     // fill the objects
     AliEMCALTriggerTRUDCSConfig* truConfig = trigConfig->GetTRUDCSConfig(iTRU);
     if( ! truConfig ){
-      AliWarning( Form("EMC DCS TRU%02d config not retrieved!\n", iTRU ));
+      AliWarning( Form("EMC TRU%02d config not retrieved!\n", iTRU ));
       continue;
     }
 
     // get last entries. fill the TRU object
     if( ! arrL0ALGSEL ){
-      AliWarning( Form("EMC DCS TRU%02d L0ALGSEL alias not found!\n", iTRU ));
+      AliWarning( Form("EMC_TRU%02d_L0ALGSEL alias not found!\n", iTRU ));
     }
     else{
       if (debug) AliInfo( Form("arrL0ALGSEL has %d entries \n", arrL0ALGSEL->GetEntries()) );
       if ( arrL0ALGSEL->GetEntries() > 0 ) {
 	dcsVal = (AliDCSValue *) arrL0ALGSEL->At( arrL0ALGSEL->GetEntries() - 1 );
-	if (dcsVal) truConfig->SetL0SEL( dcsVal->GetUInt() );
+	if (dcsVal) {
+		truConfig->SetL0SEL( dcsVal->GetUInt() );
+    if (debug) AliInfo( Form("saving value: %u\n", dcsVal->GetUInt()) );
+	}
       }
+      else
+      AliWarning( Form("EMC_TRU%02d_L0ALGSEL has no entries!\n", iTRU ));
     }
 
     if( ! arrPEAKFINDER ){
-      AliWarning( Form("EMC DCS TRU%02d PEAKFINDER alias not found!\n", iTRU ));
+      AliWarning( Form("EMC_TRU%02d_PEAKFINDER alias not found!\n", iTRU ));
     }
     else{
       if (debug) AliInfo( Form("arrPEAKFINDER has %d entries \n", arrPEAKFINDER->GetEntries()) );
       if ( arrPEAKFINDER->GetEntries() > 0 ) {
 	dcsVal = (AliDCSValue *) arrPEAKFINDER->At( arrPEAKFINDER->GetEntries() - 1 );
-	if (dcsVal) truConfig->SetSELPF( dcsVal->GetUInt() );
+	if (dcsVal){
+		truConfig->SetSELPF( dcsVal->GetUInt() );
+    if (debug) AliInfo( Form("saving value: %u\n", dcsVal->GetUInt()) );
+	}
       }
+      else
+      AliWarning( Form("EMC_TRU%02d_PEAKFINDER has no entries!\n", iTRU ));
     }
 
     if( ! arrGLOBALTHRESH ){
-      AliWarning( Form("EMC DCS TRU%02d GLOBALTHRESH alias not found!\n", iTRU ));
+      AliWarning( Form("EMC_TRU%02d_GLOBALTHRESH alias not found!\n", iTRU ));
     }
     else{
       if (debug) AliInfo( Form("arrGLOBALTHRESH has %d entries \n", arrGLOBALTHRESH->GetEntries()) );
       if ( arrGLOBALTHRESH->GetEntries() > 0 ) {
 	dcsVal = (AliDCSValue *) arrGLOBALTHRESH->At( arrGLOBALTHRESH->GetEntries() - 1 );
-	if (dcsVal) truConfig->SetGTHRL0( dcsVal->GetUInt() );
+	if (dcsVal){
+		truConfig->SetGTHRL0( dcsVal->GetUInt() );
+    if (debug) AliInfo( Form("saving value: %u\n", dcsVal->GetUInt()) );
+	}
       }
+      else
+      AliWarning( Form("EMC_TRU%02d_GLOBALTHRESH has no entries!\n", iTRU ));
     }
 
     if( ! arrCOSMTHRESH ){
-      AliWarning( Form("EMC DCS TRU%02d COSMTHRESH alias not found!\n", iTRU ));
+      AliWarning( Form("EMC_TRU%02d_COSMTHRESH alias not found!\n", iTRU ));
     }
     else{
       if (debug) AliInfo( Form("arrCOSMTHRESH has %d entries \n", arrCOSMTHRESH->GetEntries()) );
       if ( arrCOSMTHRESH->GetEntries() > 0 ) {
 	dcsVal = (AliDCSValue *) arrCOSMTHRESH->At( arrCOSMTHRESH->GetEntries() - 1 );
-	if (dcsVal) truConfig->SetL0COSM( dcsVal->GetUInt() );
+	if (dcsVal){
+		truConfig->SetL0COSM( dcsVal->GetUInt() );
+    if (debug) AliInfo( Form("saving value: %u\n", dcsVal->GetUInt()) );
+	}
       }
+      else
+      AliWarning( Form("EMC_TRU%02d_COSMTHRESH has no entries!\n", iTRU ));
     }
     
     for( i = 0; i < 6; i++ ){
       if( ! arrMASK[i] ){
-	AliWarning( Form("EMC DCS TRU%02d MASK%d alias not found!\n", iTRU, i ));
+	AliWarning( Form("EMC_TRU%02d_MASK%d alias not found!\n", iTRU, i ));
       }
       else{
 	if (debug) AliInfo( Form("arrMASK[%d] has %d entries \n", i, arrMASK[i]->GetEntries()) );
 	if ( arrMASK[i]->GetEntries() > 0 ) {
 	  dcsVal = (AliDCSValue *) arrMASK[i]->At( arrMASK[i]->GetEntries() - 1 );
-	  if (dcsVal) truConfig->SetMaskReg( dcsVal->GetUInt(), i );
+	  if (dcsVal){
+			truConfig->SetMaskReg( dcsVal->GetUInt(), i );
+    if (debug) AliInfo( Form("saving value: %u\n", dcsVal->GetUInt()) );
 	}
+	}
+      else
+      AliWarning( Form("EMC_TRU%02d_MASK%d has no entries!\n", iTRU, i ));
       }
     }
     
