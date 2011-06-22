@@ -24,8 +24,6 @@
 
 #include "TROOT.h"
 #include "TFile.h"
-#include "TAlienFile.h"
-#include "TGrid.h"
 #include "TTree.h"
 #include "TInterpreter.h"
 #include "TObjArray.h"
@@ -327,6 +325,7 @@ void AliEMCALTenderSupply::SetClusterMatchedToTrack(AliESDEvent *event)
 
 		matchClusIndex = fEMCALRecoUtils->GetMatchedClusterIndex(iTrack);		   
 		track->SetEMCALcluster(matchClusIndex); //sets -1 if track not matched within residual
+		if(matchClusIndex != -1) track->SetStatus(AliESDtrack::kEMCALmatch);
 	}
 
 	if (fDebugLevel>2) AliInfo("Track matched to closest cluster\n");	
