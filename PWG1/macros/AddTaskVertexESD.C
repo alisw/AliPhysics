@@ -1,4 +1,4 @@
-AliAnalysisTaskVertexESD *AddTaskVertexESD(Bool_t readMC=kFALSE) 
+AliAnalysisTaskVertexESD *AddTaskVertexESD(Bool_t readMC=kFALSE, AliVEvent::EOfflineTriggerTypes triggerType = AliVEvent::kMB) 
 {
   //
   // Task for validation of the primary vertices (SPD,TPC,ITS+TPC)
@@ -22,6 +22,8 @@ AliAnalysisTaskVertexESD *AddTaskVertexESD(Bool_t readMC=kFALSE)
   taskVtxESD->SetRerecoVertexITSTPCHalfEvent(kFALSE);
   taskVtxESD->SetFillNtupleBeamSpot(kTRUE);
   taskVtxESD->SetRerecoVertexITSTPC(kTRUE);
+  taskVtxESD->SetTriggerType(triggerType);
+	
   AliLog::SetClassDebugLevel("AliAnalysisTaskVertexESD",10);
   // Add to the manager
   mgr->AddTask(taskVtxESD);
