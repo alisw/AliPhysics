@@ -32,7 +32,8 @@
 #include "AliHLTCaloClusterReader.h"
 #include "TEveTrans.h"
 #include "TGeoNode.h"
-#include "AliEMCALGeoUtils.h"
+//#include "AliEMCALGeoUtils.h"
+#include "AliEMCALGeometry.h"
 #include "TGeoManager.h"
 
 #include "TEveGeoShapeExtract.h"
@@ -45,7 +46,9 @@ AliHLTEveCalo(12, "EMCAL"),
 fGeoUtils(NULL)
 {
   //Constructor
-  fGeoUtils = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
+//  fGeoUtils = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
+  fGeoUtils = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+  //fGeoUtils = new AliEMCALGeometry("EMCAL_COMPLETEV1","EMCAL");
   CreateElementList();
 
 }

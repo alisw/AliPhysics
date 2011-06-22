@@ -11,8 +11,10 @@
 
 #include "AliESDEvent.h"
 #include "AliHLTEveCalo.h"
+
 class TEveElementList;
-class AliEMCALGeoUtils;
+//class AliEMCALGeoUtils;
+class AliEMCALGeometry;
 
 class AliHLTEveEmcal : public AliHLTEveCalo {
 
@@ -41,8 +43,8 @@ private:
 
   void CreateElementList();
 
-  AliEMCALGeoUtils * fGeoUtils;
-
+  //AliEMCALGeoUtils * fGeoUtils;
+  AliEMCALGeometry * fGeoUtils;
   ClassDef(AliHLTEveEmcal, 0);
 };
 
