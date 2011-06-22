@@ -1539,5 +1539,6 @@ void AliQAManager::ShowQA() {
   // Show the result of the QA checking
   // for all detectors 
 	for ( Int_t detIndex = 0 ; detIndex < AliQAv1::kNDET ; detIndex++) 
-    AliQAv1::Instance(AliQAv1::GetDetIndex(AliQAv1::GetDetName(detIndex)))->Show() ; 
+        if ( IsSelected(AliQAv1::GetDetName(detIndex)) ) 
+            AliQAv1::Instance(AliQAv1::GetDetIndex(AliQAv1::GetDetName(detIndex)))->Show() ; 
 }
