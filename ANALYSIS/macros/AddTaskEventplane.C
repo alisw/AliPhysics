@@ -20,12 +20,11 @@ AliEPSelectionTask *AddTaskEventplane()
   
   AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
   eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB);
-  eventplaneTask->SetESDtrackCuts("TPC");
-//   eventplaneTask->SetUseMCRP();
-//   eventplaneTask->SetPhiDistribution("Phidist.root","EPStat");
+  eventplaneTask->SetTrackType("TPC");
   eventplaneTask->SetUsePtWeight();
-//   eventplaneTask->SetUsePhiWeight();
-//   eventplaneTask->SetSaveTrackContribution();
+  eventplaneTask->SetUsePhiWeight();
+  eventplaneTask->SetSaveTrackContribution();
+  
   mgr->AddTask(eventplaneTask);
 
   AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();

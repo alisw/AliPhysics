@@ -55,6 +55,7 @@
 #include "AliPhysicsSelection.h"
 #include "AliBackgroundSelection.h"
 #include "AliESDUtils.h"
+#include "AliOADBContainer.h"
 
 #include "AliEventplane.h"
 
@@ -65,13 +66,17 @@ AliEPSelectionTask::AliEPSelectionTask():
 AliAnalysisTaskSE(),
   fDebug(0),
   fAnalysisInput("ESD"),
-  fStatus("TPC"),
+  fTrackType("TPC"),
   fUseMCRP(kFALSE),
   fUsePhiWeight(kFALSE),
   fUsePtWeight(kFALSE),
   fSaveTrackContribution(kFALSE),
+  fuserphidist(kFALSE),
+  fusercuts(kFALSE),
+  frunNumber(-15),
   fESDtrackCuts(0),
   ftracklist(0),
+  fEPContainer(0),
   fPhiDist(0),
   fQVector(0),
   fQContributionX(0),
@@ -99,13 +104,17 @@ AliEPSelectionTask::AliEPSelectionTask(const char *name):
   AliAnalysisTaskSE(name),
   fDebug(0),
   fAnalysisInput("ESD"),
-  fStatus("TPC"),
+  fTrackType("TPC"),
   fUseMCRP(kFALSE),
   fUsePhiWeight(kFALSE),
   fUsePtWeight(kFALSE),  
   fSaveTrackContribution(kFALSE),
+  fuserphidist(kFALSE),
+  fusercuts(kFALSE),
+  frunNumber(-15),
   fESDtrackCuts(0),
   ftracklist(0),
+  fEPContainer(0),
   fPhiDist(0),
   fQVector(0),
   fQContributionX(0),
@@ -149,9 +158,21 @@ AliEPSelectionTask::~AliEPSelectionTask()
       delete fQsub1;
       fQsub1 = 0;
   }
-    if (fQsub2){
+  if (fQsub2){
       delete fQsub2;
       fQsub2 = 0;
+  }
+  if (fPhiDist){
+      delete fPhiDist;
+      fPhiDist = 0;
+  }
+  if (ftracklist){
+      delete ftracklist;
+      ftracklist = 0;
+  }
+  if (fEPContainer){
+      delete fEPContainer;
+      fEPContainer = 0;
   }
 }  
 
@@ -183,6 +204,19 @@ void AliEPSelectionTask::UserCreateOutputObjects()
   fOutputList->Add(fHOutDiff);
   
   PostData(1, fOutputList); 
+  
+    if(!fuserphidist) { // if it's already set and custom class is required, we use the one provided by the user
+
+    TString oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist.root", AliAnalysisManager::GetOADBPath()));
+
+    TFile foadb(oadbfilename); 
+    if(!foadb.IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));
+
+    AliInfo("Using Standard OADB");
+    fEPContainer = (AliOADBContainer*) foadb.Get("epphidist");    
+    if (!fEPContainer) AliFatal("Cannot fetch OADB container for EP selection");
+    foadb.Close();
+    }
 }
 
 //________________________________________________________________________
@@ -190,6 +224,8 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 { 
   // Execute analysis for current event:
   if (fDebug>1) printf(" **** AliEPSelectionTask::UserExec() \n");
+  
+//   frunNumber = -15;
  
   AliEventplane* esdEP = 0;
   TVector2 QQ1;
@@ -200,6 +236,11 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
     
     AliVEvent* event = InputEvent();
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
+    if (!(frunNumber == esd->GetRunNumber())) {
+      frunNumber = esd->GetRunNumber();
+      SetPhiDist();      
+    }
+    
     
     if (fUseMCRP) {
       AliMCEvent* mcEvent  = MCEvent();      
@@ -215,8 +256,8 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	esdEP->GetQContributionYArray()->Set(esd->GetNumberOfTracks());
       }
       
-      if (fStatus.CompareTo("GLOBAL")==0) ftracklist = fESDtrackCuts->GetAcceptedTracks(esd,kFALSE);
-      if (fStatus.CompareTo("TPC")==0) ftracklist = fESDtrackCuts->GetAcceptedTracks(esd,kTRUE);
+      if (fTrackType.CompareTo("GLOBAL")==0) ftracklist = fESDtrackCuts->GetAcceptedTracks(esd,kFALSE);
+      if (fTrackType.CompareTo("TPC")==0) ftracklist = fESDtrackCuts->GetAcceptedTracks(esd,kTRUE);
       const int NT = ftracklist->GetEntries();
       
       if (NT>4){
@@ -226,6 +267,7 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	fQsub1 = new TVector2(QQ1);
 	fQsub2 = new TVector2(QQ2);
 	fQsubRes = (fQsub1->Phi()/2 - fQsub2->Phi()/2);
+	
 	esdEP->SetQVector(fQVector);
 	esdEP->SetEventplaneQ(fEventplaneQ);
 	esdEP->SetQsub(fQsub1,fQsub2);
@@ -357,49 +399,21 @@ void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklis
 }
 
 //________________________________________________________________________
-void AliEPSelectionTask::SetESDtrackCuts(TString status){
+void AliEPSelectionTask::SetPersonalESDtrackCuts(AliESDtrackCuts* trackcuts){
   
-  fStatus = status;
-  if (fStatus.CompareTo("GLOBAL")==0) fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
-  if (fStatus.CompareTo("TPC")==0)    fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-  fESDtrackCuts->SetPtRange(0.15,20);
-  fESDtrackCuts->SetEtaRange(-0.8,0.8);
+  fusercuts = kTRUE;
+  fESDtrackCuts = trackcuts;
 }
 
-//__________________________________________________________________________
-void AliEPSelectionTask::SetPhiDistribution(char* infilename, char* listname)
-{
-  TFile f(infilename);
-  TObject* list = f.Get(listname);
-  fPhiDist = (TH1F*)list->FindObject("fHOutPhi");
-  if (!fPhiDist) {
-    cout << "Phi Distribution not found!!!" << endl;
-    return;
+//_____________________________________________________________________________
+void AliEPSelectionTask::SetTrackType(TString tracktype){
+  fTrackType = tracktype;
+  if (!fusercuts) {
+  if (fTrackType.CompareTo("GLOBAL")==0) fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
+  if (fTrackType.CompareTo("TPC")==0)    fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  fESDtrackCuts->SetPtRange(0.15,20);
+  fESDtrackCuts->SetEtaRange(-0.8,0.8);
   }
-  
-  Bool_t emptybins;
-
-  int iter = 0;  
-  while (iter<3){
-      emptybins = kFALSE;
-   
-      for (int i=1; i<fPhiDist->GetNbinsX(); i++){
-	if (!((fPhiDist->GetBinContent(i))>0)) {
-	  emptybins = kTRUE;
-	}
-      }  
-      if (emptybins) {
-	cout << "empty bins - rebinning!" << endl;
-	fPhiDist->Rebin();
-	iter++;
-      }      
-      else iter = 3;
-  }
-  
-  if (emptybins) {
-    AliError("After Maximum of rebinning still empty Phi-bins!!!");
-  }
-  f.Close();
 }
 
 //________________________________________________________________________
@@ -434,3 +448,54 @@ Double_t AliEPSelectionTask::GetPhiWeight(AliESDtrack* track)
   }
   return phiweight;
 }
+
+//__________________________________________________________________________
+void AliEPSelectionTask::SetPhiDist() 
+{
+  if(!fuserphidist) { // if it's already set and custom class is required, we use the one provided by the user
+
+    fPhiDist = (TH1F*) fEPContainer->GetObject(frunNumber, "Default");
+    if (!fPhiDist) AliFatal(Form("Cannot find OADB phi distribution for run %d", frunNumber));
+
+  } 
+  else {
+    AliInfo("Using Custom Phi Distribution");
+  }
+    
+  Bool_t emptybins;
+
+  int iter = 0;  
+  while (iter<3){
+      emptybins = kFALSE;
+   
+      for (int i=1; i<fPhiDist->GetNbinsX(); i++){
+	if (!((fPhiDist->GetBinContent(i))>0)) {
+	  emptybins = kTRUE;
+	}
+      }  
+      if (emptybins) {
+	cout << "empty bins - rebinning!" << endl;
+	fPhiDist->Rebin();
+	iter++;
+      }      
+      else iter = 3;
+  }
+  
+  if (emptybins) {
+    AliError("After Maximum of rebinning still empty Phi-bins!!!");
+  }
+}
+
+//__________________________________________________________________________
+void AliEPSelectionTask::SetPersonalPhiDistribution(char* infilename, char* listname)
+{
+  
+  fuserphidist = kTRUE;
+  
+  TFile f(infilename);
+  TObject* list = f.Get(listname);
+  fPhiDist = (TH1F*)list->FindObject("fHOutPhi");
+  if (!fPhiDist) AliFatal("Phi Distribution not found!!!");
+
+  f.Close();
+} 

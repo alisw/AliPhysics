@@ -23,6 +23,7 @@ class AliESDEvent;
 class AliESDtrackCuts;
 class AliESDtrack;
 class AliEventplane;
+class AliOADBContainer;
 
 class AliEPSelectionTask : public AliAnalysisTaskSE {
 
@@ -48,8 +49,10 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
   void SetUsePhiWeight()		   {fUsePhiWeight = kTRUE;}
   void SetUsePtWeight()			   {fUsePtWeight = kTRUE;}
   void SetSaveTrackContribution()	   {fSaveTrackContribution = kTRUE;}
-  void SetESDtrackCuts(TString status);
-  void SetPhiDistribution(char* filename, char* listname);
+  void SetTrackType(TString tracktype);
+  void SetPhiDist();
+  void SetPersonalESDtrackCuts(AliESDtrackCuts* trackcuts);
+  void SetPersonalPhiDistribution(char* filename, char* listname);
   
  private:
    
@@ -58,15 +61,19 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
 
   Int_t    fDebug;	   		// Debug flag
   TString  fAnalysisInput; 		// "ESD", "AOD"
-  TString  fStatus;			// "GLOBAL", "TPC"
+  TString  fTrackType;			// "GLOBAL", "TPC"
   Bool_t   fUseMCRP;			// i.e. usable for Therminator, when MC RP is provided
   Bool_t   fUsePhiWeight;		// use of phi weights
   Bool_t   fUsePtWeight;		// use of pT weights
   Bool_t   fSaveTrackContribution;	// storage of contribution of each track to Q-Vector
+  Bool_t   fuserphidist;		// bool, if personal phi distribution should be used
+  Bool_t   fusercuts;			// bool, if personal cuts should be used
+  Int_t    frunNumber;			// runnumber
   
   AliESDtrackCuts* fESDtrackCuts;       //! track cuts
   
   TObjArray* ftracklist;		//! list of accepted tracks for Q-Vector
+  AliOADBContainer* fEPContainer;	//! OADB Container
   TH1F*	 fPhiDist;			// Phi distribution used to calculate phi weights
 
   TVector2* fQVector;			//! Q-Vector of the event  
@@ -87,7 +94,7 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
   TH2F*	 fHOutDiff;			//! control histogram: Difference of MC RP and EP - only filled if fUseMCRP is true!
   TH2F*  fHOutleadPTPsi;		//! control histogram: emission angle of leading pT track vs EP angle
 
-  ClassDef(AliEPSelectionTask,2); 
+  ClassDef(AliEPSelectionTask,3); 
 };
 
 #endif
