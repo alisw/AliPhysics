@@ -104,7 +104,8 @@ AliHLTEMCALGeometry::GetGeometryFromCDB()
 
 	  if(gGeoManager)
 	    {
-	      fGeo = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
+	      fGeo = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+	      //fGeo = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
 	      fReco = new AliEMCALRecoUtils;
 	      // FIXME
 	      // need to be parametrized

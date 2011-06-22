@@ -17,7 +17,8 @@
  **************************************************************************/
 
 #include "AliHLTCaloGeometry.h"
-#include "AliEMCALGeoUtils.h"
+//#include "AliEMCALGeoUtils.h"
+#include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
 
 class TGeoManager;
@@ -25,7 +26,8 @@ class AliCDBManager;
 class AliCDBPath;
 class AliHLTEMCALRecPointDataStruct;
 
-class AliEMCALGeoUtils;
+//class AliEMCALGeoUtils;
+class AliEMCALGeometry;
 
 class  AliHLTEMCALGeometry : public AliHLTCaloGeometry
 {
@@ -46,9 +48,9 @@ private:
 	AliHLTEMCALGeometry & operator = (const AliHLTEMCALGeometry &);	
 
 	// EMCal Geometry
-	AliEMCALGeoUtils *fGeo;
+	//AliEMCALGeoUtils *fGeo;
 	AliEMCALRecoUtils *fReco;
-
+	AliEMCALGeometry *fGeo;
 };
 
 #endif
