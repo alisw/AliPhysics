@@ -736,34 +736,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbContPS->AppendObject(oadbLHC11c1, 153056 , 153296);
   oadbContPS->AppendObject(oadbLHC11c1->Clone(), 153362 , 153578);
   oadbContPS->AppendObject(oadbLHC11c1->Clone(), 153587 , 153733);
-
-  //LHC11c2
-  AliOADBPhysicsSelection * oadbLHC11c2 = new AliOADBPhysicsSelection("oadbLHC11c2");
-  oadbLHC11c2->AddCollisionTriggerClass   ( AliVEvent::kINT7,"+CINT7-B-NOPF-ALLNOTRD","B",0);
-  oadbLHC11c2->AddBGTriggerClass          ( AliVEvent::kINT7,"+CINT7-AC-NOPF-ALLNOTRD","AC",0);
-  oadbLHC11c2->AddBGTriggerClass          ( AliVEvent::kINT7,"+CINT7-E-NOPF-ALLNOTRD","E",0);
-  oadbLHC11c2->SetHardwareTrigger         ( 0, "V0A && V0C");
-  oadbLHC11c2->SetOfflineTrigger          ( 0, "(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
-
-  oadbLHC11c2->AddCollisionTriggerClass   ( AliVEvent::kMUSH7,"+CMUSH7-B-NOPF-MUON","B",1);
-  oadbLHC11c2->AddBGTriggerClass          ( AliVEvent::kMUSH7,"+CMUSH7-AC-NOPF-MUON","AC",1);
-  oadbLHC11c2->AddBGTriggerClass          ( AliVEvent::kMUSH7,"+CMUSH7-E-NOPF-MUON","E",1);
-  oadbLHC11c2->SetHardwareTrigger         ( 1, "V0A && V0C");
-  oadbLHC11c2->SetOfflineTrigger          ( 1, "(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
-
-  oadbLHC11c2->AddCollisionTriggerClass   ( AliVEvent::kMUL7,"+CMUL7-B-NOPF-MUON","B",2);
-  oadbLHC11c2->AddBGTriggerClass          ( AliVEvent::kMUL7,"+CMUL7-AC-NOPF-MUON","AC",2);
-  oadbLHC11c2->AddBGTriggerClass          ( AliVEvent::kMUL7,"+CMUL7-E-NOPF-MUON","E",2);
-  oadbLHC11c2->SetHardwareTrigger         ( 2, "V0A && V0C");
-  oadbLHC11c2->SetOfflineTrigger          ( 2, "(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
-
-  oadbLHC11c2->AddCollisionTriggerClass   ( AliVEvent::kMUU7,"+CMUU7-B-NOPF-MUON","B",3);
-  oadbLHC11c2->AddBGTriggerClass          ( AliVEvent::kMUU7,"+CMUU7-AC-NOPF-MUON","AC",3);
-  oadbLHC11c2->AddBGTriggerClass          ( AliVEvent::kMUU7,"+CMUU7-E-NOPF-MUON","E",3);
-  oadbLHC11c2->SetHardwareTrigger         ( 3, "V0A && V0C");
-  oadbLHC11c2->SetOfflineTrigger          ( 3, "(V0A && V0C) && !V0ABG && !V0CBG && !TPCLaserWarmUp");
-
-  oadbContPS->AppendObject(oadbLHC11c2, 153583 , 153583);
+  oadbContPS->AppendObject(oadbLHC11c1->Clone(), 153583 , 153583);
   
   // Tests with CMUS7
   //LHC11c3
