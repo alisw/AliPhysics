@@ -29,7 +29,7 @@ ClassImp(AliESDZDC)
 
 //______________________________________________________________________________
 AliESDZDC::AliESDZDC() :
-  TObject(),
+  AliVZDC(),
   fZDCN1Energy(0),
   fZDCP1Energy(0),
   fZDCN2Energy(0),
@@ -64,7 +64,7 @@ AliESDZDC::AliESDZDC() :
 
 //______________________________________________________________________________
 AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
-  TObject(zdc),
+  AliVZDC(zdc),
   fZDCN1Energy(zdc.fZDCN1Energy),
   fZDCP1Energy(zdc.fZDCP1Energy),
   fZDCN2Energy(zdc.fZDCN2Energy),
@@ -108,7 +108,7 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
 {
   // assigment operator
   if(this!=&zdc) {
-    TObject::operator=(zdc);
+    AliVZDC::operator=(zdc);
     fZDCN1Energy = zdc.fZDCN1Energy;
     fZDCP1Energy = zdc.fZDCP1Energy;
     fZDCN2Energy = zdc.fZDCN2Energy;
@@ -204,20 +204,26 @@ void AliESDZDC::Reset()
 void AliESDZDC::Print(const Option_t *) const
 {
   //  Print ESD for the ZDC
-  printf("\n \t E_{ZNC} = %f TeV, E_{ZPC} = %f TeV, E_{ZNA} = %f TeV, E_{ZPA} = %f TeV,"
-  " E_{ZEM} = %f GeV, Npart = %d, b = %1.2f fm\n",
-  fZDCN1Energy/1000.,fZDCP1Energy/1000.,fZDCN2Energy/1000.,fZDCP2Energy/1000.,
-  fZDCEMEnergy+fZDCEMEnergy1, fZDCParticipants,fImpactParameter);
+  printf(" ### ZDC energies: \n");
+  printf("\n \t E_ZNC = %1.2f (%1.2f+%1.2f+%1.2f+%1.2f+%1.2f) GeV \n \t E_ZNA = %1.2f (%1.2f+%1.2f+%1.2f+%1.2f+%1.2f) GeV\n"
+  " \t E_ZPC = %1.2f GeV E_ZPA = %1.2f GeV"
+  "\n E_ZEM1 = %1.2f GeV,   E_ZEM2 = %1.2f GeV\n \t Npart = %d, b = %1.2f fm\n",
+  fZDCN1Energy, fZN1TowerEnergy[0], fZN1TowerEnergy[1], 
+  fZN1TowerEnergy[2], fZN1TowerEnergy[3], fZN1TowerEnergy[4], 
+  fZDCN2Energy,fZN2TowerEnergy[0], fZN2TowerEnergy[1], 
+  fZN2TowerEnergy[2], fZN2TowerEnergy[3], fZN2TowerEnergy[4], 
+  fZDCP1Energy,fZDCP2Energy, fZDCEMEnergy, fZDCEMEnergy1, 
+  fZDCParticipants,fImpactParameter);
   //
-  printf(" ### VMEScaler (!=0): \n");
+  /*printf(" ### VMEScaler (!=0): \n");
   for(Int_t i=0; i<32; i++) if(fVMEScaler[i]!=0) printf("\t %d \n",fVMEScaler[i]);
   printf("\n");
   //
   printf(" ### TDCData (!=0): \n");
   for(Int_t i=0; i<32; i++){
     for(Int_t j=0; j<4; j++)
-      if(fZDCTDCCorrected[i][j]!=0) printf("\t %1.0f \n",fZDCTDCCorrected[i][j]);
-  }
+      if(TMath::Abs(fZDCTDCCorrected[i][j])>1e-4) printf("\t %1.0f \n",fZDCTDCCorrected[i][j]);
+  }*/
   printf("\n");
 }
 

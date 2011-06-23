@@ -25,6 +25,7 @@
 class AliCentrality;
 class AliEventplane;
 class AliVVZERO;
+class AliVZDC;
 
 class AliVEvent : public TObject {
 
@@ -145,7 +146,8 @@ public:
   virtual Int_t        EventIndexForPHOSCell(Int_t icell)   const = 0;
   virtual Int_t        EventIndexForEMCALCell(Int_t icell)  const = 0;  
 
-  virtual AliVVZERO *GetVZEROData() const = 0;
+  virtual AliVVZERO *GetVZEROData() const = 0;   
+  virtual AliVZDC   *GetZDCData() const = 0;
 
   ClassDef(AliVEvent,1)  // base class for AliEvent data
 };

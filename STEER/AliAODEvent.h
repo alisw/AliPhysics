@@ -31,6 +31,7 @@
 #include "AliAODFmdCluster.h"
 #include "AliAODDimuon.h"
 #include "AliAODVZERO.h"
+#include "AliAODZDC.h"
 
 class TTree;
 class TFolder;
@@ -54,6 +55,7 @@ class AliAODEvent : public AliVEvent {
 		       kAODPmdClusters,
 		       kAODDimuons,
 		       kAODVZERO,
+		       kAODZDC,
 		       kAODListN
   };
 
@@ -244,6 +246,9 @@ class AliAODEvent : public AliVEvent {
   // VZERO 
   AliAODVZERO *GetVZEROData() const { return fAODVZERO; }
 
+  //ZDC
+  AliAODZDC   *GetZDCData() const { return fAODZDC; }
+
   private :
 
   TList   *fAODObjects; //  list of AODObjects
@@ -264,10 +269,11 @@ class AliAODEvent : public AliVEvent {
   TClonesArray    *fPmdClusters;  //! PMDclusters
   TClonesArray    *fDimuons;      //! dimuons
   AliAODVZERO     *fAODVZERO;     //! VZERO AOD
-
+  AliAODZDC       *fAODZDC;       //! ZDC AOD
+  
   static const char* fAODListName[kAODListN]; //!
 
-  ClassDef(AliAODEvent, 7);
+  ClassDef(AliAODEvent,87);
 };
 
 #endif

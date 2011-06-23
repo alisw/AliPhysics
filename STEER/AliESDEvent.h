@@ -182,7 +182,9 @@ public:
   UChar_t   GetTriggerCluster() const {return fHeader?fHeader->GetTriggerCluster():0;}
 
   // ZDC CKB: put this in the header?
-  AliESDZDC*    GetESDZDC() const {return fESDZDC;}
+  AliESDZDC*    GetESDZDC()  const {return fESDZDC;}
+  AliESDZDC*    GetZDCData() const {return fESDZDC;}
+
   void SetZDCData(AliESDZDC * obj);
 
   // Delegated methods for fESDZDC

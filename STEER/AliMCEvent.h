@@ -140,6 +140,7 @@ public:
   AliEventplane*       GetEventplane()  {return 0;} 
 
   virtual AliVVZERO    *GetVZEROData() const {return 0;}
+  virtual AliVZDC      *GetZDCData()   const {return 0;}
     
 private:
     virtual void      ReorderAndExpandTreeTR();
