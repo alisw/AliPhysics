@@ -108,9 +108,7 @@ fDoLS(0)
   // 
   // Standrd constructor
   //
-  //Double_t ptlim[5]={0.,2.,3.,5,9999999.};
-   //SetPtBinLimit(5, ptlim);
-  SetPtBinLimit(fRDCutsAnalysis->GetNPtBins()+1,fRDCutsAnalysis->GetPtBinLimits());
+  fNPtBins=fRDCutsAnalysis->GetNPtBins();
   // Default constructor
    // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
@@ -238,34 +236,6 @@ void  AliAnalysisTaskSEDplus::SetMassLimits(Float_t lowlimit, Float_t uplimit){
       SetBinWidth(bw);
     }
 }
-//________________________________________________________________________
-void AliAnalysisTaskSEDplus::SetPtBinLimit(Int_t n, Float_t* lim){
-  // define pt bins for analysis
-  if(n>kMaxPtBins){
-    printf("Max. number of Pt bins = %d\n",kMaxPtBins);
-    fNPtBins=kMaxPtBins;
-    fArrayBinLimits[0]=0.;
-    fArrayBinLimits[1]=2.;
-    fArrayBinLimits[2]=3.;
-    fArrayBinLimits[3]=5.;
-    for(Int_t i=4; i<kMaxPtBins+1; i++) fArrayBinLimits[i]=99999999.;
-  }else{
-    fNPtBins=n-1;
-    fArrayBinLimits[0]=lim[0];
-    for(Int_t i=1; i<fNPtBins+1; i++) 
-      if(lim[i]>fArrayBinLimits[i-1]){
-	fArrayBinLimits[i]=lim[i];
-      }
-      else {
-	fArrayBinLimits[i]=fArrayBinLimits[i-1];
-      }
-    for(Int_t i=fNPtBins; i<kMaxPtBins+1; i++) fArrayBinLimits[i]=99999999.;
-  }
-  if(fDebug > 1){
-    printf("Number of Pt bins = %d\n",fNPtBins);
-    for(Int_t i=0; i<fNPtBins; i++) printf(" Bin%d = %8.2f-%8.2f\n",i,fArrayBinLimits[i],fArrayBinLimits[i+1]);    
-  }
-}
 //________________________________________________________________
 void AliAnalysisTaskSEDplus::SetBinWidth(Float_t w){
   Float_t width=w;
@@ -281,12 +251,6 @@ void AliAnalysisTaskSEDplus::SetBinWidth(Float_t w){
   }
   fBinWidth=width;
 }
-//_________________________________________________________________
-Double_t  AliAnalysisTaskSEDplus::GetPtBinLimit(Int_t ibin){
-  // get pt bin limit
-  if(ibin>fNPtBins)return -1;
-  return fArrayBinLimits[ibin];
-} 
 //_________________________________________________________________
 Int_t AliAnalysisTaskSEDplus::GetNBinsHistos(){
   return (Int_t)((fUpmasslimit-fLowmasslimit)/fBinWidth+0.5);
@@ -925,15 +889,17 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 
     if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate,aod)) {
 
-      Int_t iPtBin = -1;
       Double_t ptCand = d->Pt();
-
-      for(Int_t ibin=0;ibin<fNPtBins&&iPtBin<0&&ptCand>fArrayBinLimits[0]&&ptCand<fArrayBinLimits[fNPtBins];ibin++){
-	if(ptCand<fArrayBinLimits[ibin+1])iPtBin=ibin;
-      }
+      Int_t iPtBin = fRDCutsProduction->PtBin(ptCand);
       
       Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
-     
+      Bool_t recVtx=kFALSE;
+      AliAODVertex *origownvtx=0x0;
+      if(fRDCutsProduction->GetIsPrimaryWithoutDaughters()){
+	if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());	
+	if(fRDCutsProduction->RecalcOwnPrimaryVtx(d,aod))recVtx=kTRUE;
+	else fRDCutsProduction->CleanOwnPrimaryVtx(d,aod,origownvtx);
+      }
       
       Int_t labDp=-1;
       Float_t deltaPx=0.;
@@ -961,6 +927,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  pdgCode=-1;
 	}
       }
+
       Double_t invMass=d->InvMassDplus();
       Double_t rapid=d->YDplus();
       fYVsPt->Fill(ptCand,rapid);
@@ -971,7 +938,16 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	if(passTightCuts) fPtVsMassTC->Fill(invMass,ptCand);
       }
       Float_t tmp[24];
-      if(fFillNtuple){  	  
+      Double_t  dlen=d->DecayLength();
+      Double_t cosp=d->CosPointingAngle();
+      Double_t sumD02=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
+      Double_t dca=d->GetDCA();
+      Double_t sigvert=d->GetSigmaVert();         
+      Double_t ptmax=0;
+      for(Int_t i=0;i<3;i++){
+	if(d->PtProng(i)>ptmax)ptmax=d->PtProng(i);
+      }
+        if(fFillNtuple){  	  
 	tmp[0]=pdgCode;
 	tmp[1]=deltaPx;
 	tmp[2]=deltaPy;
@@ -984,29 +960,20 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	tmp[9]=d->PtProng(1);
 	tmp[10]=d->PtProng(2);
 	tmp[11]=d->Pt();
-	tmp[12]=d->CosPointingAngle();
-	tmp[13]=d->DecayLength();
+	tmp[12]=cosp;
+	tmp[13]=dlen;
 	tmp[14]=d->Xv();
 	tmp[15]=d->Yv();
 	tmp[16]=d->Zv();
 	tmp[17]=d->InvMassDplus();
-	tmp[18]=d->GetSigmaVert();
+	tmp[18]=sigvert;
 	tmp[19]=d->Getd0Prong(0);
 	tmp[20]=d->Getd0Prong(1);
 	tmp[21]=d->Getd0Prong(2);
-	tmp[22]=d->GetDCA();
+	tmp[22]=dca;
 	tmp[23]=d->Prodd0d0(); 
 	fNtupleDplus->Fill(tmp);
 	PostData(4,fNtupleDplus);
-      }
-      Double_t dlen=d->DecayLength();
-      Double_t cosp=d->CosPointingAngle();
-      Double_t sumD02=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
-      Double_t dca=d->GetDCA();
-      Double_t sigvert=d->GetSigmaVert();         
-      Double_t ptmax=0;
-      for(Int_t i=0;i<3;i++){
-	if(d->PtProng(i)>ptmax)ptmax=d->PtProng(i);
       }
       if(iPtBin>=0){
 	Float_t dlxy=d->NormalizedDecayLengthXY();
@@ -1153,7 +1120,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	}
 	
       }
-      
+      if(recVtx)fRDCutsProduction->CleanOwnPrimaryVtx(d,aod,origownvtx);
     }
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
