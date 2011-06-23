@@ -172,7 +172,7 @@ AliHLTCaloMapper::GetModuleFromSpec(Int_t specification)
   else if((specification >> 12) & 0xf) module = 3;
   else if((specification >> 16) & 0xf) module = 4;
   else {
-    HLTError("Specification 0x%X not consistent with single module in PHOS", specification);
+    HLTDebug("Specification 0x%X not consistent with single module in PHOS", specification);
     module = -1;
   }
   return module;
