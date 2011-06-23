@@ -233,23 +233,24 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
   Double_t fRP = 0.; // the monte carlo reaction plane angle
     
   if (fAnalysisInput.CompareTo("ESD")==0){
-    
+
     AliVEvent* event = InputEvent();
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
-    if (!(frunNumber == esd->GetRunNumber())) {
-      frunNumber = esd->GetRunNumber();
-      SetPhiDist();      
-    }
-    
-    
-    if (fUseMCRP) {
-      AliMCEvent* mcEvent  = MCEvent();      
-      if (mcEvent && mcEvent->GenEventHeader()) {
-	AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
-	if (headerH) fRP = headerH->ReactionPlaneAngle();
+    if (esd){    
+      if (!(frunNumber == esd->GetRunNumber())) {
+	  frunNumber = esd->GetRunNumber();
+	    SetPhiDist();      
       }
-    }
-    if (esd){
+      
+      
+      if (fUseMCRP) {
+	  AliMCEvent* mcEvent  = MCEvent();      
+	  if (mcEvent && mcEvent->GenEventHeader()) {
+	      AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
+	      if (headerH) fRP = headerH->ReactionPlaneAngle();
+	  }
+      }
+      
       esdEP = esd->GetEventplane();
       if (fSaveTrackContribution) {
 	esdEP->GetQContributionXArray()->Set(esd->GetNumberOfTracks());
