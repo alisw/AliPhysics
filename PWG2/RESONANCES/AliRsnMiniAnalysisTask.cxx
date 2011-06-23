@@ -45,6 +45,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fEvNum(0),
    fUseCentrality(kFALSE),
    fCentralityType("QUALITY"),
+   fContinuousMix(kTRUE),
    fNMix(0),
    fMaxDiffMult(10),
    fMaxDiffVz(1.0),
@@ -59,7 +60,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fEvBuffer(0x0),
    fTriggerAna(0x0),
    fESDtrackCuts(0x0),
-   fMiniEvent(0x0)
+   fMiniEvent(0x0),
+   fBigOutput(kFALSE)
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
@@ -73,6 +75,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fEvNum(0),
    fUseCentrality(kFALSE),
    fCentralityType("QUALITY"),
+   fContinuousMix(kTRUE),
    fNMix(0),
    fMaxDiffMult(10),
    fMaxDiffVz(1.0),
@@ -87,7 +90,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fEvBuffer(0x0),
    fTriggerAna(0x0),
    fESDtrackCuts(0x0),
-   fMiniEvent(0x0)
+   fMiniEvent(0x0),
+   fBigOutput(kFALSE)
 {
 //
 // Default constructor.
@@ -106,6 +110,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask& cop
    fEvNum(0),
    fUseCentrality(copy.fUseCentrality),
    fCentralityType(copy.fCentralityType),
+   fContinuousMix(copy.fContinuousMix),
    fNMix(copy.fNMix),
    fMaxDiffMult(copy.fMaxDiffMult),
    fMaxDiffVz(copy.fMaxDiffVz),
@@ -120,7 +125,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask& cop
    fEvBuffer(0x0),
    fTriggerAna(copy.fTriggerAna),
    fESDtrackCuts(copy.fESDtrackCuts),
-   fMiniEvent(0x0)
+   fMiniEvent(0x0),
+   fBigOutput(copy.fBigOutput)
 {
 //
 // Copy constructor.
@@ -143,6 +149,7 @@ AliRsnMiniAnalysisTask& AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fUseMC = copy.fUseMC;
    fUseCentrality = copy.fUseCentrality;
    fCentralityType = copy.fCentralityType;
+   fContinuousMix = copy.fContinuousMix;
    fNMix = copy.fNMix;
    fMaxDiffMult = copy.fMaxDiffMult;
    fMaxDiffVz = copy.fMaxDiffVz;
@@ -153,6 +160,7 @@ AliRsnMiniAnalysisTask& AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fTrackCuts = copy.fTrackCuts;
    fTriggerAna = copy.fTriggerAna;
    fESDtrackCuts = copy.fESDtrackCuts;
+   fBigOutput = copy.fBigOutput;
    
    return (*this);
 }
@@ -219,6 +227,7 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
 
    // create list and set it as owner of its content (MANDATORY)
+   if (fBigOutput) OpenFile(1);
    fOutput = new TList();
    fOutput->SetOwner();
    
@@ -383,9 +392,7 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
          // text next entry
          fEvBuffer->GetEntry(imix);
          // skip if events are not matched
-         if (TMath::Abs(evMain.Vz()    - fMiniEvent->Vz()   ) > fMaxDiffVz   ) continue;
-         if (TMath::Abs(evMain.Mult()  - fMiniEvent->Mult() ) > fMaxDiffMult ) continue;
-         if (TMath::Abs(evMain.Angle() - fMiniEvent->Angle()) > fMaxDiffAngle) continue;
+         if (!EventsMatch(&evMain, fMiniEvent)) continue;
          // check that the array of good matches for mixed does not already contain main event
          if (matched[imix].Contains(Form("|%d|", ievt))) continue;
          // add new mixing candidate
@@ -818,3 +825,37 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
       }
    }
 }
+
+//__________________________________________________________________________________________________
+Bool_t AliRsnMiniAnalysisTask::EventsMatch(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2)
+{
+//
+// Check if two events are compatible.
+// If the mixing is continuous, this is true if differences in vz, mult and angle are smaller than
+// the specified values. 
+// If the mixing is binned, this is true if the events are in the same bin.
+//
+
+   if (!event1 || !event2) return kFALSE;
+   Int_t ivz1, ivz2, imult1, imult2, iangle1, iangle2;
+   
+   if (fContinuousMix) {
+      if (TMath::Abs(event1->Vz()    - event2->Vz()   ) > fMaxDiffVz   ) return kFALSE;
+      if (TMath::Abs(event1->Mult()  - event2->Mult() ) > fMaxDiffMult ) return kFALSE;
+      if (TMath::Abs(event1->Angle() - event2->Angle()) > fMaxDiffAngle) return kFALSE;
+      return kTRUE;
+   } else {
+      ivz1 = (Int_t)(event1->Vz() / fMaxDiffVz);
+      ivz2 = (Int_t)(event2->Vz() / fMaxDiffVz);
+      imult1 = (Int_t)(event1->Mult() / fMaxDiffMult);
+      imult2 = (Int_t)(event2->Mult() / fMaxDiffMult);
+      iangle1 = (Int_t)(event1->Angle() / fMaxDiffAngle);
+      iangle2 = (Int_t)(event2->Angle() / fMaxDiffAngle);
+      if (ivz1 != ivz2) return kFALSE;
+      if (imult1 != imult2) return kFALSE;
+      if (iangle1 != iangle2) return kFALSE;
+      return kTRUE;
+   }
+}
+
+      

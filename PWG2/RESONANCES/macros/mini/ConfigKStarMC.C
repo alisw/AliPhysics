@@ -8,7 +8,7 @@
 // (2) cuts at all levels: single daughters, tracks, events
 // (3) output objects: histograms or trees
 //
-Bool_t ConfigPhiMC
+Bool_t ConfigKStarMC
 (
    AliRsnMiniAnalysisTask *task, 
    Bool_t                  isPP, 
@@ -32,7 +32,7 @@ Bool_t ConfigPhiMC
    /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
    /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
    /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
-
+   
    //
    // -- Create all needed outputs -----------------------------------------------------------------
    //
@@ -41,16 +41,16 @@ Bool_t ConfigPhiMC
    if (!isPP) mode = "SPARSE";
    
    // create output
-   AliRsnMiniOutput *out = task->CreateOutput(Form("phi_TrueMC%s", suffix), mode.Data(), "MOTHER");
+   AliRsnMiniOutput *out = task->CreateOutput(Form("kstar_TrueMC%s", suffix), mode.Data(), "MOTHER");
    // selection settings
    out->SetDaughter(0, AliRsnDaughter::kKaon);
-   out->SetDaughter(1, AliRsnDaughter::kKaon);
-   out->SetMotherPDG(333);
-   out->SetMotherMass(1.019455);
+   out->SetDaughter(1, AliRsnDaughter::kPion);
+   out->SetMotherPDG(313);
+   out->SetMotherMass(0.896);
    // pair cuts
    out->SetPairCuts(cutsPair);
    // binnings
-   out->AddAxis(imID, 500, 0.9,  1.4);
+   out->AddAxis(imID,  90, 0.6,  1.5);
    out->AddAxis(ptID, 100, 0.0, 10.0);
    if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
    
