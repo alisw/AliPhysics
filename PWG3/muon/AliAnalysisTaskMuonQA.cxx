@@ -134,18 +134,26 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   fTriggerClass->Add(new TObjString("CINT1[AC]-"), new TObjString("CINT1AC"));
   fTriggerClass->Add(new TObjString("CMUS1[AC]-"), new TObjString("CMUS1AC"));
   fTriggerClass->Add(new TObjString("CINT1-E-"), new TObjString("CINT1E"));
-  fTriggerClass->Add(new TObjString("CINT5-E-"), new TObjString("CINT1E"));
+  fTriggerClass->Add(new TObjString("CINT5-E-"), new TObjString("CINT5E"));
   fTriggerClass->Add(new TObjString("CMUS1-E-"), new TObjString("CMUS1E"));
-  fTriggerClass->Add(new TObjString("CMUS5-E-"), new TObjString("CMUS1E"));
+  fTriggerClass->Add(new TObjString("CMUS5-E-"), new TObjString("CMUS5E"));
   fTriggerClass->Add(new TObjString("CINT1-B-"), new TObjString("CINT1B"));
-  fTriggerClass->Add(new TObjString("CINT5-B-"), new TObjString("CINT1B"));
+  fTriggerClass->Add(new TObjString("CINT5-B-"), new TObjString("CINT5B"));
   fTriggerClass->Add(new TObjString("CMUS1-B-"), new TObjString("CMUS1B"));
-  fTriggerClass->Add(new TObjString("CMUS5-B-"), new TObjString("CMUS1B"));
+  fTriggerClass->Add(new TObjString("CMUS5-B-"), new TObjString("CMUS5B"));
   fTriggerClass->Add(new TObjString("CINT1-AC-"), new TObjString("CINT1AC"));
-  fTriggerClass->Add(new TObjString("CINT5-AC-"), new TObjString("CINT1AC"));
+  fTriggerClass->Add(new TObjString("CINT5-AC-"), new TObjString("CINT5AC"));
   fTriggerClass->Add(new TObjString("CMUS1-AC-"), new TObjString("CMUS1AC"));
-  fTriggerClass->Add(new TObjString("CMUS5-AC-"), new TObjString("CMUS1AC"));
+  fTriggerClass->Add(new TObjString("CMUS5-AC-"), new TObjString("CMUS5AC"));
   fTriggerClass->Add(new TObjString("CSH1-B-"), new TObjString("CSH1B"));
+
+  TString side_pp[3] = {"B", "AC", "E"};
+	for(Int_t i = 0; i< 3; i++){
+		fTriggerClass->Add(new TObjString(Form("CINT7-%s-", side_pp[i].Data())), new TObjString(Form("CINT7%s",side_pp[i].Data())));
+		fTriggerClass->Add(new TObjString(Form("CMUSH7-%s-",side_pp[i].Data())), new TObjString(Form("CMUSH7%s",side_pp[i].Data())));
+		fTriggerClass->Add(new TObjString(Form("CMUL7-%s-",side_pp[i].Data())), new TObjString(Form("CMUL7%s",side_pp[i].Data())));
+		fTriggerClass->Add(new TObjString(Form("CMUU7-%s-",side_pp[i].Data())), new TObjString(Form("CMUU7%s",side_pp[i].Data())));
+	}
   // Pb-Pb trigger classes
   TString side[4] = {"B", "A", "C", "E"};
   for (Int_t i = 0; i < 4; i++) {
@@ -163,10 +171,15 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   fSelectTriggerClass->AddLast(new TObjString("CINT1B-ABCE-NOPF-ALL")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
   fSelectTriggerClass->AddLast(new TObjString("CMUS1B-ABCE-NOPF-MUON")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
   fSelectTriggerClass->AddLast(new TObjString("CINT1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
-  fSelectTriggerClass->AddLast(new TObjString("CINT5-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
+  fSelectTriggerClass->AddLast(new TObjString("CINT5-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kCINT5);
   fSelectTriggerClass->AddLast(new TObjString("CMUS1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
-  fSelectTriggerClass->AddLast(new TObjString("CMUS5-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
+  fSelectTriggerClass->AddLast(new TObjString("CMUS5-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kCMUS5);
+	fSelectTriggerClass->AddLast(new TObjString("CINT7-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kINT7);
+  fSelectTriggerClass->AddLast(new TObjString("CMUSH7-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUSH7);
+  fSelectTriggerClass->AddLast(new TObjString("CMUU7-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUU7);
+  fSelectTriggerClass->AddLast(new TObjString("CMUL7-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUL7);
   fSelectTriggerClass->AddLast(new TObjString("CSH1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kHighMult);
+	
   // Pb-Pb trigger classes
   fSelectTriggerClass->AddLast(new TObjString("CMBACS2-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
   fSelectTriggerClass->AddLast(new TObjString("CMBS2A-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMB);
