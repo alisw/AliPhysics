@@ -1,6 +1,14 @@
 #ifndef ALIRSNVALUEPID_H
 #define ALIRSNVALUEPID_H
 
+//
+// AliRsnValuePID
+// Implementation of values related to PID
+// which can be used to monitor or check cuts
+// based on tolerance ranges between detector signals
+// and expected responses for particle species
+//
+
 #include "AliPID.h"
 #include "AliRsnValue.h"
 
@@ -33,7 +41,7 @@ public:
    virtual ~AliRsnValuePID() { }
    
    void            SetValuePID(EValuePID type) {fValuePID = type;}
-   EValuePID       GetValuePID()               {return fValuePID;}
+   EValuePID       GetValuePID() const         {return fValuePID;}
    
    virtual Bool_t  Eval(TObject *object, Bool_t useMC = kFALSE);
    virtual void    Print(Option_t *option = "") const;

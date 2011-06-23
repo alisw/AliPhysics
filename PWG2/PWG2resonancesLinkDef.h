@@ -56,6 +56,7 @@
 #pragma link C++ class AliRsnMiniAxis+;
 #pragma link C++ class AliRsnMiniOutput+;
 #pragma link C++ class AliRsnMiniValue+;
+#pragma link C++ class AliRsnMiniMonitor+;
 #pragma link C++ class AliRsnMiniAnalysisTask+;
 
 
