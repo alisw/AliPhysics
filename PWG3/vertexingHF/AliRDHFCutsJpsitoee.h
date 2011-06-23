@@ -24,6 +24,7 @@ class AliRDHFCutsJpsitoee : public AliRDHFCuts
   AliRDHFCutsJpsitoee(const AliRDHFCutsJpsitoee& source);
   AliRDHFCutsJpsitoee& operator=(const AliRDHFCutsJpsitoee& source); 
  
+  using AliRDHFCuts::GetCutVarsForOpt;
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent *aod);
 
