@@ -96,8 +96,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   AliESDtrackCuts *GetTrackCuts() const {return fTrackCuts;}
   virtual AliESDtrackCuts *GetTrackCutsSoftPi() const {return 0;}
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) = 0;
-  //virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent * /*aod*/)
-  //{return GetCutVarsForOpt(d,vars,nvars,pdgdaughters);}
+  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent * /*aod*/)
+            {return GetCutVarsForOpt(d,vars,nvars,pdgdaughters);}
   Int_t   GetGlobalIndex(Int_t iVar,Int_t iPtBin) const;
   void    GetVarPtIndex(Int_t iGlob, Int_t& iVar, Int_t& iPtBin) const;
   Bool_t  GetIsUsePID() const {return fUsePID;}
@@ -142,6 +142,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t RecalcOwnPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod) const;
   Bool_t SetMCPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod) const;
   void   CleanOwnPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod,AliAODVertex *origownvtx) const;
+
+  Bool_t CountEventForNormalization() const 
+  { if(fWhyRejection==0) {return kTRUE;} else {return kFALSE;} }
 
  protected:
 

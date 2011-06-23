@@ -93,8 +93,8 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   void FillLambdac(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index, Int_t isSel);
 
 
-  enum {kMaxPtBins=5};
-  enum {kMaxCutVar=5};
+  enum {kMaxPtBins=8};
+  enum {kMaxCutVar=10};
   enum {kMaxSteps=10};
   enum {kMaxNHist=500000};
   enum {kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi,kD0toKpipipi,kLambdactopKpi};

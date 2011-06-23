@@ -37,7 +37,8 @@ ClassImp(AliRDHFCutsDplustoKpipi)
 //--------------------------------------------------------------------------
 AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const char* name) : 
 AliRDHFCuts(name),
-  fUseStrongPid(kFALSE),
+  fUseStrongPid(0),
+  fMaxPtStrongPid(0.),
   fUseImpParProdCorrCut(kFALSE)
 {
   //
@@ -120,6 +121,7 @@ AliRDHFCuts(name),
 AliRDHFCutsDplustoKpipi::AliRDHFCutsDplustoKpipi(const AliRDHFCutsDplustoKpipi &source) :
   AliRDHFCuts(source),
   fUseStrongPid(source.fUseStrongPid),
+  fMaxPtStrongPid(source.fMaxPtStrongPid),
   fUseImpParProdCorrCut(source.fUseImpParProdCorrCut)
 {
   //
@@ -143,7 +145,7 @@ AliRDHFCutsDplustoKpipi &AliRDHFCutsDplustoKpipi::operator=(const AliRDHFCutsDpl
 
 
 //---------------------------------------------------------------------------
-void AliRDHFCutsDplustoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) {
+void AliRDHFCutsDplustoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent *aod) {
   // 
   // Fills in vars the values of the variables 
   //
@@ -155,6 +157,18 @@ void AliRDHFCutsDplustoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *var
   }
 
   AliAODRecoDecayHF3Prong *dd = (AliAODRecoDecayHF3Prong*)d;
+ 
+  //recalculate vertex w/o daughters
+  Bool_t cleanvtx=kFALSE;
+  AliAODVertex *origownvtx=0x0;
+  if(fRemoveDaughtersFromPrimary) {
+    if(dd->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*dd->GetOwnPrimaryVtx());
+    cleanvtx=kTRUE;
+    if(!RecalcOwnPrimaryVtx(dd,aod)) {
+      CleanOwnPrimaryVtx(dd,aod,origownvtx);
+      cleanvtx=kFALSE;
+    }
+  }
 
   Int_t iter=-1;
   if(fVarsForOpt[0]){
@@ -250,6 +264,9 @@ void AliRDHFCutsDplustoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *var
     iter++;
     vars[iter]=dd->CosPointingAngleXY();
   }
+
+  if(cleanvtx)CleanOwnPrimaryVtx(dd,aod,origownvtx);
+
   return;
 }
 //---------------------------------------------------------------------------
@@ -297,14 +314,12 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelectedPID(AliAODRecoDecayHF *rd)
     if(isKaon<0) nNotKaons++;  
     if(sign==track->Charge()){//pions
       if(isPion<0)return 0;
-      if(rd->Pt()<2. && isPion<=0 && fUseStrongPid)return 0;
+      if(rd->Pt()<fMaxPtStrongPid && isPion<=0 && fUseStrongPid>1)return 0;
     }
-      else{//kaons
-	if(isKaon<0)return 0;
-	if(rd->Pt()<2. && isKaon<=0 && fUseStrongPid)return 0;
-      }
-    
-      
+    else{//kaons
+      if(isKaon<0)return 0;
+	if(rd->Pt()<fMaxPtStrongPid && isKaon<=0 && fUseStrongPid>0)return 0;
+    }
   }
   
   if(nkaons>1)return 0;

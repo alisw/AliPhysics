@@ -27,6 +27,8 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   AliRDHFCutsLctopKpi& operator=(const AliRDHFCutsLctopKpi& source); 
  
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
+  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent *aod);
+
   void SetPidpion(AliAODPidHF* pidPion) { 
       if(fPidObjpion) delete fPidObjpion;
       fPidObjpion=new AliAODPidHF(*pidPion);

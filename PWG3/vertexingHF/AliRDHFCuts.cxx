@@ -275,11 +275,11 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
 
   // TEMPORARY FIX FOR REFERENCES
   // Fix references to daughter tracks
-//  if(fFixRefs) {
-//    AliAnalysisVertexingHF *fixer = new AliAnalysisVertexingHF();
-//    fixer->FixReferences((AliAODEvent*)event);
-//    delete fixer;
-//  }
+  //  if(fFixRefs) {
+  //    AliAnalysisVertexingHF *fixer = new AliAnalysisVertexingHF();
+  //    fixer->FixReferences((AliAODEvent*)event);
+  //    delete fixer;
+  //  }
   //
 
 

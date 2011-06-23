@@ -120,7 +120,7 @@ AliRDHFCutsD0toKpi &AliRDHFCutsD0toKpi::operator=(const AliRDHFCutsD0toKpi &sour
 
 
 //---------------------------------------------------------------------------
-void AliRDHFCutsD0toKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) {
+void AliRDHFCutsD0toKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent *aod) {
   // 
   // Fills in vars the values of the variables 
   //
@@ -132,6 +132,18 @@ void AliRDHFCutsD0toKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int
 
   AliAODRecoDecayHF2Prong *dd = (AliAODRecoDecayHF2Prong*)d;
  
+  //recalculate vertex w/o daughters
+  Bool_t cleanvtx=kFALSE;
+  AliAODVertex *origownvtx=0x0;
+  if(fRemoveDaughtersFromPrimary) {
+    if(dd->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*dd->GetOwnPrimaryVtx());
+    cleanvtx=kTRUE;
+    if(!RecalcOwnPrimaryVtx(dd,aod)) {
+      CleanOwnPrimaryVtx(dd,aod,origownvtx);
+      cleanvtx=kFALSE;
+    }
+  }
+
   Int_t iter=-1;
   if(fVarsForOpt[0]){
     iter++;
@@ -207,7 +219,9 @@ void AliRDHFCutsD0toKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int
 		iter++;
 	   vars[iter]=(dd->NormalizedDecayLengthXY()*(dd->P()/dd->Pt()));
 	}
-	
+
+   if(cleanvtx)CleanOwnPrimaryVtx(dd,aod,origownvtx);
+
   return;
 }
 //---------------------------------------------------------------------------

@@ -26,8 +26,12 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
   virtual ~AliRDHFCutsDplustoKpipi(){};
   AliRDHFCutsDplustoKpipi(const AliRDHFCutsDplustoKpipi& source);
   AliRDHFCutsDplustoKpipi& operator=(const AliRDHFCutsDplustoKpipi& source); 
- 
-  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
+
+  using AliRDHFCuts::GetCutVarsForOpt;
+  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters){
+    return GetCutVarsForOpt(d,vars,nvars,pdgdaughters,0x0);
+  }
+  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent *aod);
 
   using AliRDHFCuts::IsSelected;
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel){
@@ -42,8 +46,10 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
 
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);}
-  void SetUseStrongPid(Bool_t spid){fUseStrongPid=spid;}
-  Bool_t GetStrongPid() const {return fUseStrongPid;}
+  void SetUseStrongPid(Int_t spid){fUseStrongPid=spid;}
+  void SetMaxPtStrongPid(Float_t spid){fMaxPtStrongPid=spid;}
+  Int_t GetStrongPid() const {return fUseStrongPid;}
+  Float_t GetMaxPtStrongPid(){return fMaxPtStrongPid;}
   void SetUseImpParProdCorrCut(Bool_t use){
     fUseImpParProdCorrCut=use;
   }
@@ -54,10 +60,11 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
  protected:
 
  private:
-  Bool_t fUseStrongPid;         //use strong pid
+  Int_t fUseStrongPid; //use strong pid 0 no,1 only for K,2 both pi and K
+  Float_t fMaxPtStrongPid;//Maximum pt to apply strong Pid
   Bool_t fUseImpParProdCorrCut; //switch for d0K*d0pi1 vs. d0K*d0pi2 cut
 
-  ClassDef(AliRDHFCutsDplustoKpipi,3);  // class for cuts on AOD reconstructed 
+  ClassDef(AliRDHFCutsDplustoKpipi,4);  // class for cuts on AOD reconstructed 
                                    // D+->Kpipi
 };
 
