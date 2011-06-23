@@ -1,7 +1,12 @@
-// Analysis task for jet chemistry analysis
-// Oliver Busch, o.busch@gsi.de
-// UE task & CDF jet finder based on UE task by Arian Abrahantes Quintana and Enesto Lopez
-
+/*************************************************************************
+ *                                                                       *
+ * Task for Jet Chemistry Analysis in PWG4 Jet Task Force Train          *
+ *                                                                       *
+ *                                                                       *
+ * contact: Oliver Busch                                                 *
+ * o.busch@gsi.de                                                        *
+ *                                                                       *
+ *************************************************************************/
 
 #ifndef ALIANALYSISTASKJETCHEM_H
 #define ALIANALYSISTASKJETCHEM_H
@@ -9,430 +14,202 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include "AliAnalysisTaskSE.h" 
-#include "AliPID.h"
+/* $Id$ */
 
-//class AliAnalysisTaskSE; 
-class AliESDEvent;
-class AliAODEvent;
-class TH1F;
-class TH2F;
-class TH1I;
-class TProfile;
-class TVector3;
-class TTree;
-class AliAODJet;
-class AliAODTrack;
-class AliPID;
-class TDatabasePDG;
+#include "AliAnalysisTaskFragmentationFunction.h"
 
-class  AliAnalysisTaskJetChem : public AliAnalysisTaskSE
-  {
-  public:
-    AliAnalysisTaskJetChem(const char* name="AliAnalysisTaskJetChem");
-    virtual           ~AliAnalysisTaskJetChem() {;}
-    
-    // Implementation of interface methods
-    virtual     Bool_t UserNotify();
-    virtual     void   UserCreateOutputObjects();
-    virtual     void   UserExec(Option_t *option);
-    virtual     void   Terminate(Option_t *);
-    
-    //  Setters
-    virtual     void   SetDebugLevel( Int_t level )  { fDebug = level; }
- 
-    // Read deltaAODs
-    void   ReadDeltaAOD()                       { fDeltaAOD = kTRUE; }
-    void   SelectDeltaAODBranch(const char* val){ fDeltaAODBranch = val;   }
-    void   SelectAODBranch(const char* val)     { fAODBranch = val;   }
-    void   SelectDeltaAODBranchMC(const char* val){ fDeltaAODBranchMC = val;   }
-    void   SelectAODBranchMC(const char* val)     { fAODBranchMC = val;   }
+class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
 
-    void   SetJetsOnFly( Bool_t val )           { fJetsOnFly = val;  }
-
-    // use internal jet finder 
-
-    void   SetUseLOConeJets( )              { fUseLOConeJets = kTRUE; }
-    void   SetUseLOConeMCJets()             { fUseLOConeMCJets = kTRUE;  fUsePythiaJets = kFALSE;}
-    void   SetUsePythiaJets()               { fUseLOConeMCJets = kFALSE; fUsePythiaJets = kTRUE; }
-    void   SetConeRadius( Double_t val )    { fConeRadius = val; }
-    void   SetTrackPtCutJF( Double_t val )  { fTrackPtCutJF = val; }
-
-    void   SetFilterBitJF( UInt_t val )     { fFilterBitJF = val; }
-    void   SetRequireITSRefitJF()           { fRequireITSRefitJF = kTRUE; }
-    void   SetRejectK0TracksJF()            { fRejectK0TracksJF  = kTRUE; }
-
-    // Jet cuts
-    void   SetJetPtCut( Double_t val )    { fJetPtCut = val;  }
-    void   SetJetEtaCut( Double_t val )   { fJetEtaCut = val; }
-
-    // track cuts
-    void   SetFilterBit( UInt_t val )     { fFilterBit = val;  }
-    void   SetTrackPtCut( Double_t val )  { fTrackPtCut = val; }
-    void   SetTrackEtaCut( Double_t val ) { fTrackEtaCut = val; }
-
-    // K0 cuts 
-
-    void SetUseOnFlyV0s()                 { fUseOnFlyV0s = kTRUE; }
-    void SetCutnSigdEdx( Double_t val)    { fCutnSigdEdx = val; }
-
-
-    // Setters for MC
-    void  SetUseAODMCTracksForUE(){ fUseAODMCTracksForUE = kTRUE;}
-
-    
-  private:
-    AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &det);
-    AliAnalysisTaskJetChem&   operator=(const  AliAnalysisTaskJetChem &det);
-    
-    void   AnalyseEvent();
-    Int_t  IsTrackInsideRegion(const AliAODJet* aodjetVect, const TVector3 *partVect);
-
-    void   FillPIDhisto(TH1F* hist,Int_t pdg,Float_t weight=1);
-    TH1F*  CreatePIDhisto(const char* name);
-    TH1F*  CreatePythiaIDhisto(const char* name);
-    void   FillPythiaIDhisto(TH1F* h, const Int_t PID);
-    void   CreateHistos();
-    void   FillSumPtRegion( Double_t leadingE, Double_t ptMax, Double_t ptMin );
-    void   FillMultRegion(Double_t leadingE, Double_t nTrackPtmax, Double_t nTrackPtmin);
-    TClonesArray* FindChargedParticleJets();
-    TClonesArray* FindChargedParticleJetsMC();
-    TClonesArray* GetPythiaJets();
-    void   QSortTracks(TObjArray &a, Int_t first, Int_t last);
-    void   WriteSettings();
-    
-    Bool_t IsK0InvMass(const Double_t mass) const;
-    Bool_t IsLambdaInvMass(const Double_t mass) const;
-    Bool_t IsAcceptedDCAK0(/*const Double_t dca*/) const;
-    Bool_t IsAcceptedDCALambda(/*const Double_t dca*/) const;
-    Bool_t IsAccepteddEdx(const Double_t mom, const Double_t dEdx, AliPID::EParticleType n, const Double_t cutnSig) const;
-    void   CheckV0s(AliAODJet* jetVect, Int_t maxPtRegionIndex, Bool_t& foundK0);
-    void   CheckMCParticles(AliAODJet* jetVect, Int_t maxPtRegionIndex,Bool_t& isK0event);
-    Double_t AssociateV0MC(const TVector3* V0Mom,const Int_t pdg);
-    void CompLeadingJets(AliAODJet* jetLeadingAOD,AliAODJet* jetLeadingMC,const Int_t pythiaPID,
-			 const Bool_t foundK0AID,const Bool_t foundK0MC);
-    Double_t GetJetRadius(const AliAODJet* jet, const Double_t energyFrac);
-    Bool_t IsTrackFromK0(const Int_t indexTrackCheck);
-
-    Bool_t IsQuarkHardScatteringEvent(const Int_t PID);
-    Bool_t IsGluonHardScatteringEvent(const Int_t PID);
-    Bool_t IsDiffractiveEvent(const Int_t PID);
-    Int_t  GetPythiaProcessID();
-
-    void GetJetTracksResum(TList* list, AliAODJet* jet, const Double_t radius);
-    void GetJetTracksTrackrefs(TList* list, AliAODJet* jet);
-    void FillReferenceFF(AliAODJet* jet);
-    void FillReferencePlotsTracks(); 
-
-    Int_t   fDebug;                 //  Debug flag
-
-    Bool_t      fDeltaAOD;          //  Read jets from delta AOD 
-    TString     fDeltaAODBranch;    //  Jet branch name from delta AOD
-    TString     fAODBranch;         //  Jet branch name from standard AOD
-    TString     fDeltaAODBranchMC;  //  MC Jet branch name from delta AOD
-    TString     fAODBranchMC;       //  MC Jet branch name from standard AOD
-
-    TClonesArray*  fArrayJetsAOD;   //  Array of AOD Jets from delta AOD
-    TClonesArray*  fArrayJetsMC;    //  Array of MC  Jets from delta AOD
-    
-
-    AliAODEvent*  fAOD;             //! AOD Event 
-    AliAODEvent*  fAODjets;         //! AOD Event for reconstructed on the fly (see ConnectInputData()
-    TList*  fListOfHistos;          //  Output list of histograms
-    Bool_t   fJetsOnFly;            // if jets are reconstructed on the fly from AOD tracks 
-
-    Bool_t   fUseLOConeJets;        // Use LO cone finder instead of jets from AOD
-    Bool_t   fUseLOConeMCJets;      // Use LO cone finder on aodmcparticles
-    Bool_t   fUsePythiaJets;        // use pythia internal jet finder output
-
-    Double_t fConeRadius;          // if selected Cone-like region type, set Radius (=0.7 default)
-    Double_t fTrackPtCutJF;        // track lower pt for JF     
-    UInt_t   fFilterBitJF;         // track filter for JetFinder 
-    Bool_t   fRequireITSRefitJF;   // additional ITS refit requirement in JF 
-    Bool_t   fRejectK0TracksJF;    // exclude tracks from K0 decay in JF 
-
-
-    // Jet cuts 
-    Double_t   fJetPtCut;          // Min Pt for charged Particle Jet
-    Double_t   fJetEtaCut;         // |jet1 eta| < fJet1EtaCut   (fAnaType = 1,2,3)
-
-    // track cuts
-    UInt_t   fFilterBit;           // Select tracks from an specific track cut (default 0xFF all track selected)
-    Double_t fTrackPtCut;          // Pt cut of tracks in the regions
-    Double_t fTrackEtaCut;         // Eta cut on tracks in the regions (fRegionType=1)
-
-    // K0 cuts 
-    Bool_t fUseOnFlyV0s;           // on-the-fly V0s versus vertex track 'offline' V0s
-    Double_t fCutnSigdEdx;         // TPC dEdx cut 
- 
-
-    // For MC
-    Bool_t fUseAODMCTracksForUE;   // use aodmcparticles branch to determine max/min transverse region
-    Double_t fAreaReg;             // Area of the region To be used as normalization factor when filling histograms
-    Double_t fAvgTrials;           // average trials used to fill the fh1Triasl histogram in case we do not have trials on a event by event basis
-    
-
-    // Histograms    ( are owned by fListOfHistos TList )
-    TH1F*  fhPrimVertexNCont;        //!
-    TH1F*  fhPrimVertexRho;          //!
-    TH1F*  fhPrimVertexZ;            //!
-    TH1F*  fhNJets;                  //!
-    TH1F*  fhNJetsMC;                //!
-    TH1F*  fhLeadingEta;             //!
-    TH2F*  fhLeadingNTracksVsEta;    //!
-    TH2F*  fhLeadingPtVsEta;         //!
-    TH1F*  fhLeadingPhi;             //!  
-    TH1F*  fhLeadingPt;              //!
-    TH1F*  fhLeadingPtDiffr;         //!
-    TH1F*  fhLeadingEtaMC;           //!
-    TH1F*  fhLeadingPhiMC;           //!  
-    TH1F*  fhLeadingPtMC;            //!
-    TH1F*  fhLeadingPtMCDiffr;       //!
-    TH2F*  fhPhiEtaTracksNoCut;      //!
-    TH1F*  fhPtTracksNoCut;          //!
-    TH2F*  fhPhiEtaTracks;           //!
-    TH1F*  fhPtTracks;               //!
-    TH1F*  fhTrackMult;              //!
-
-    TH1F*  fhEtaMCTracks;            //!
-    TH1F*  fhPhiMCTracks;            //!
-    TH1F*  fhPtMCTracks;             //!
-    TH2F*  fhnTracksVsPtLeading;     //!
+ public:
   
-    TH1F*  fhdNdEtaPhiDist;          //!
-   
-    TH1F*  fhRegionSumPtMaxVsEt;     //!
-    TH1F*  fhRegionMultMaxVsEt;      //!
-    TH1F*  fhRegionSumPtMinVsEt;     //!
-    TH1F*  fhRegionMultMinVsEt;      //!
-
-
-    TH1F* fhNV0s;                     //!
-    TH1F* fhV0onFly;                  //!
-    TH1F* fhV0DCADaughters;           //!
-    TH1F* fhV0Radius;                 //!
-    TH1F* fhV0DCAToVertex;            //!
-    TH1F* fhV0DCAToVertexK0;          //!
+  //----------------------------------------
+  class AliFragFuncHistosInvMass : public TObject
+  {
     
-    TH1F* fhV0InvMassK0;               //!
-    TH2F* fhV0PtVsInvMassK0;           //!
-    TH1F* fhV0InvMassK0JetEvt;         //!       
-    TH1F* fhV0InvMassLambda;           //!
-    TH1F* fhV0InvMassAntiLambda;       //!
-    TH1F* fhV0InvMassLambdaJetEvt;     //!
-    TH1F* fhV0InvMassAntiLambdaJetEvt; //!
-
-    TH2F* fhdROpanK0VsPt;             //!
-    TH1F* fhdPhiJetV0;                //!
-    TH1F* fhdPhiJetK0;                //!
-    TH1F* fhdRJetK0;                  //!
-
-    TH1F* fhdNdptV0;                  //!
-    TH1F* fhdNdptK0;                  //!
-    TH2F* fhPtVsEtaK0;                //!
-
-    TH1F* fhV0InvMassK0DCA;              //!
-    TH1F* fhV0InvMassK0DCAdEdx;          //!
-    TH2F* fhV0PtVsInvMassK0DCAdEdx;      //!
-
-    TH1F* fhV0InvMassK0DCAPID;           //!
-    TH1F* fhV0InvMassLambdaDCAdEdx;      //!
-    TH1F* fhV0InvMassAntiLambdaDCAdEdx;  //!
-    TH1F* fhdNdptK0DCA;                  //!
-    TH1F* fhdNdptK0DCAdEdx;              //!
-
-    TH1F* fhV0InvMassK0Min;          //!
-    TH1F* fhV0InvMassLambdaMin;      //!
-    TH1F* fhV0InvMassAntiLambdaMin;  //!
-
-    TH1F* fhV0InvMassK0Max;          //!
-    TH1F* fhV0InvMassLambdaMax;      //!
-    TH1F* fhV0InvMassAntiLambdaMax;  //!
-
-    TH1F* fhV0InvMassK0Jet;          //!
-    TH1F* fhV0InvMassLambdaJet;      //!
-    TH1F* fhV0InvMassAntiLambdaJet;  //!
-
-    TH1F* fhV0InvMassK0Lambda;       //!
-
-    TH1F* fhdNdptK0JetEvt;           //!
-
-    TH1F* fhdNdzK0;                   //!
-    TH1F* fhdNdzK05to10;              //!
-    TH1F* fhdNdzK010to20;             //!
-    TH1F* fhdNdzK020to30;             //!
-    TH1F* fhdNdzK030to40;             //!
-    TH1F* fhdNdzK040to60;             //!
-
-    TH1F* fhdNdxiK0;                 //!
-
-    TH1F* fhdNdzLambda;              //!
-    TH1F* fhdNdzAntiLambda;          //!
-
-    TH1F* fhdNdzK0Max;               //!
-    TH1F* fhdNdxiK0Max;              //!
-    TH1F* fhdNdzLambdaMax;           //!
-    TH1F* fhdNdxiLambdaMax;          //!
+    public:
     
-    TH1F* fhdNdptK0Max;              //!
-    TH1F* fhdNdptLambdaMax;          //!
+    AliFragFuncHistosInvMass(const char* name = "FFIMhistos", 
+			     Int_t nJetPt = 0, Float_t jetPtMin = 0, Float_t jetPtMax = 0,
+			     Int_t nInvMass = 0, Float_t invMassMin=0, Float_t invMassMax=0,  
+			     Int_t nPt = 0, Float_t ptMin = 0, Float_t ptMax = 0,
+			     Int_t nXi = 0, Float_t xiMin = 0, Float_t xiMax = 0,
+			     Int_t nZ  = 0, Float_t zMin  = 0, Float_t zMax  = 0);
+    AliFragFuncHistosInvMass(const AliFragFuncHistosInvMass& copy);
+    AliFragFuncHistosInvMass& operator=(const AliFragFuncHistosInvMass &o);
+    virtual ~AliFragFuncHistosInvMass();
     
-    TH1F* fhdNdzK0Min;               //!
-    TH1F* fhdNdxiK0Min;              //!
-    TH1F* fhdNdzLambdaMin;           //!
-    TH1F* fhdNdxiLambdaMin;          //!
+    virtual void DefineHistos();
+    virtual void FillFF(Float_t trackPt, Float_t invM, Float_t jetPt,Bool_t incrementJetPt);
+    virtual void AddToOutput(TList* list) const;
+
+  private:
+
+    Int_t   fNBinsJetPt;    // FF histos bins
+    Float_t fJetPtMin;      // FF histos limits
+    Float_t fJetPtMax;      // FF histos limits
+    Int_t   fNBinsInvMass;  // FF histos bins
+    Float_t fInvMassMin;    // FF histos limits
+    Float_t fInvMassMax;    // FF histos limits
+    Int_t   fNBinsPt;       // FF histos bins
+    Float_t fPtMin;         // FF histos limits
+    Float_t fPtMax;         // FF histos limits
+    Int_t   fNBinsXi;       // FF histos bins
+    Float_t fXiMin;         // FF histos limits
+    Float_t fXiMax;         // FF histos limits
+    Int_t   fNBinsZ;        // FF histos bins
+    Float_t fZMin;          // FF histos limits
+    Float_t fZMax;          // FF histos limits
+  
+    TH3F*   fh3TrackPt;     //! FF: track transverse momentum 
+    TH3F*   fh3Xi;          //! FF: xi 
+    TH3F*   fh3Z;           //! FF: z  
+    TH1F*   fh1JetPt;       //! jet pt 
+
+    TString fNameFF;        // histo names prefix
     
-    TH1F* fhdNdptK0Min;              //!
-    TH1F* fhdNdptLambdaMin;          //!
-
-    TH1F* fhdNdzK0Jet;               //!
-    TH1F* fhdNdxiK0Jet;              //!
-    TH1F* fhdNdzLambdaJet;           //!
-    TH1F* fhdNdxiLambdaJet;          //!
-
-    TH1F* fhdNdptK0Jet;              //!
-    TH1F* fhdNdptLambdaJet;          //!
-    
-    TH2F* fhdEdxVsMomV0;             //!
-    TH2F* fhdEdxVsMomV0pidEdx;       //! 
-    TH2F* fhdEdxVsMomV0piPID;        //! 
-
-    TH1F* fhdPhiJetK0MC;             //!
-    TH1F* fhdRJetK0MC;               //!
-    TH1F* fhdRV0MC;                  //!
-
-    TH1F* fhdNdptchPiMCMax;               //!
-    TH1F* fhdNdptK0MCMax;                 //!
-    TH1F* fhdNdptchKMCMax;                //!
-    TH1F* fhdNdptpMCMax;                  //!
-    TH1F* fhdNdptpBarMCMax;               //!
-    TH1F* fhdNdptLambdaMCMax;             //!
-    TH1F* fhdNdptLambdaBarMCMax;          //!
-
-    TH1F* fhdNdptchPiMCMin;               //!
-    TH1F* fhdNdptK0MCMin;                 //!
-    TH1F* fhdNdptchKMCMin;                //!
-    TH1F* fhdNdptpMCMin;                  //!
-    TH1F* fhdNdptpBarMCMin;               //!
-    TH1F* fhdNdptLambdaMCMin;             //!
-    TH1F* fhdNdptLambdaBarMCMin;          //!
-    TH1F* fhdNdptOmegaMCMin;              //!
-    TH1F* fhdNdptOmegaBarMCMin;           //!
-
-    TH1F* fhdNdptchPiMCJet;               //!
-    TH1F* fhdNdptK0MCJet;                 //!
-    TH1F* fhdNdptchKMCJet;                //!
-    TH1F* fhdNdptpMCJet;                  //!
-    TH1F* fhdNdptpBarMCJet;               //!
-    TH1F* fhdNdptLambdaMCJet;             //!
-    TH1F* fhdNdptLambdaBarMCJet;          //!
-
-
-    // kine tree 
-    TH1F* fhPIDMC;                    //!
-    TH1F* fhPIDMC_quarkEv;            //!
-    TH1F* fhPIDMC_gluonEv;            //!
-    TH1F* fhPIDMCAll;                 //!
-    TH1F* fhPIDMCMin;                 //!
-    TH1F* fhPIDMCJet;                 //!
- 
-    TH1F* fhPIDMCMotherK0;            //!
-    TH1F* fhPIDMCGrandMotherK0;       //!
-    TH1F* fhPIDMCMotherChK;           //!
-    TH1F* fhPIDMCMotherK0Trans;       //!
-    TH1F* fhPIDMCGrandMotherK0Trans;  //!
-    TH1F* fhPIDMCMotherChKTrans;      //!
-
-    TH1F* fhdNdptgammaMC;             //!
-    TH1F* fhdNdptchPiMC;              //!
-    TH1F* fhdNdptpi0MC;               //!
-    TH1F* fhdNdptK0MC;                //!
-    TH1F* fhdNdptchKMC;               //!
-    TH1F* fhdNdptpMC;                 //!
-    TH1F* fhdNdptpBarMC;              //!
-    TH1F* fhdNdptLambdaMC;            //!
-    TH1F* fhdNdptLambdaBarMC;         //!
-    TH1F* fhdNdptOmegaMC;             //!
-    TH1F* fhdNdptOmegaBarMC;          //!
-
-    TH1F* fhdNdxiMC;                 //!
-    TH1F* fhdNdxiK0MC;               //!
-    TH1F* fhdNdxiK0MCJet;            //!
-
-    TH1F* fhdNdzK0MC;                //!
-    TH1F* fhdNdzK0MCJet;             //!
-    TH1F* fhdNdptK0MCJetEvt;         //!
-      
-    TH2F* fhnJetsAODvsMC;             //!
-    TH2F* fhLeadingPtAODvsMC;         //!
-    TH2F* fhLeadingEtaAODvsMC;        //!
-    TH2F* fhLeadingPhiAODvsMC;        //!
-    TH2F* fhnTracksLeadingAODvsMC;    //!
-    
-    TH1F* fhLeadingdRAODMC;            //!
-    TH2F* fhLeadingPtAODvsMCdRcut;     //!
-    TH2F* fhdnTracksVsdPtLeadingAODMC; //!
-
-    TH2F* fhnTracksJetVsPtAOD;         //!
-    TH2F* fhnTracksJetVsPtAODquarkEv;  //!
-    TH2F* fhRadiusJetVsPtAOD;          //!
-    TH2F* fhnTracksJetVsPtMC;          //!
-    TH2F* fhnTracksJetVsPtMCquarkEv;   //!
-    TH2F* fhRadiusJetVsPtMC;           //!
-
-    TH2F* fhnTracksJetVsPtMCK0;         //!
-    TH2F* fhnTracksJetVsPtMCK0quarkEv;  //!
-    TH2F* fhRadiusJetVsPtMCK0;          //!
-
-    TH2F* fhnTracksJetVsPtAODK0;         //!
-    TH2F* fhnTracksJetVsPtAODK0quarkEv;  //!
-    TH2F* fhRadiusJetVsPtAODK0;          //!
-    TH2F* fhnTracksJetVsPtAODpKch;       //!
-    TH2F* fhRadiusJetVsPtAODpKch;        //!
-
-    TH1F* fhPythiaProcess;           //!
-    TH1F* fhPythiaProcessK0;         //!
-    TH1F* fhPythiaProcessKch;        //!
-    TH1F* fhPythiaProcessp;          //!
-    TH1F* fhPythiaProcesspbar;       //!
-
-    TH1F* fhdNdzJets5to10;  //!
-    TH1F* fhdNdzJets10to20; //!
-    TH1F* fhdNdzJets20to30; //!
-    TH1F* fhdNdzJets30to40; //!
-    TH1F* fhdNdzJets40to60; //!
-
-    TH1F* fhdNdxiJets5to10;  //!
-    TH1F* fhdNdxiJets10to20; //!
-    TH1F* fhdNdxiJets20to30; //!
-    TH1F* fhdNdxiJets30to40; //!
-    TH1F* fhdNdxiJets40to60; //!
-
-    TH1F* fhdNdptTracksJetPt5to10;  //!
-    TH1F* fhdNdptTracksJetPt10to20; //!
-    TH1F* fhdNdptTracksJetPt20to30; //!
-    TH1F* fhdNdptTracksJetPt30to40; //!
-    TH1F* fhdNdptTracksJetPt40to60; //!
-
-
-    TProfile* fh1Xsec;               //!
-    TH1F*  fh1Trials;                //!
-    
-    //TTree* fSettingsTree;            //! Fast Settings saving
-    
-    TDatabasePDG* fpdgdb;            //!
-
-    enum PythiaPIDHistoBin{kPythiaPIDP11Bin=1, kPythiaPIDP12Bin=3, kPythiaPIDP13Bin=5, kPythiaPIDP28Bin=7, 
-			   kPythiaPIDP53Bin=9, kPythiaPIDP68Bin=11, kPythiaPIDP92Bin=13, kPythiaPIDP93Bin=15, 
-			   kPythiaPIDP94Bin=17,kPythiaPIDP95Bin=19, kPythiaPIDPOtherBin=21}; 
-
-
-    enum PIDHistoBin{kPDGpm311Bin=48,kPDG333Bin=49,kPDGpm313Bin=50,kPDGp323Bin=51,kPDGm323Bin=52,
-		     kPDGNeutrinoBin=53,kPDGCharmedBaryonBin=54,kPDGQuarkBin=55,kPDGDiQuarkBin=56};
-   
-    ClassDef( AliAnalysisTaskJetChem, 2); // Analysis task for jet chemistry analysis 
+    ClassDef(AliFragFuncHistosInvMass, 1);
   };
+  
+
+ //----------------------------------------
+  class AliFragFuncHistosPhiCorrInvMass : public TObject
+  {
+				   
+    public:
+    
+    AliFragFuncHistosPhiCorrInvMass(const char* name = "FFPhiCorrIMhistos", 
+				    Int_t nPt = 0, Float_t ptMin = 0, Float_t ptMax = 0,
+				    Int_t nPhi = 0, Float_t phiMin = 0, Float_t phiMax = 0,
+				    Int_t nInvMass = 0, Float_t invMassMin=0, Float_t invMassMax=0);
+
+    AliFragFuncHistosPhiCorrInvMass(const AliFragFuncHistosPhiCorrInvMass& copy);
+    AliFragFuncHistosPhiCorrInvMass& operator=(const AliFragFuncHistosPhiCorrInvMass &o);
+    virtual ~AliFragFuncHistosPhiCorrInvMass();
+    
+    virtual void DefineHistos();
+    virtual void FillPhiCorr(Float_t pt, Float_t phi, Float_t invM);
+    virtual void AddToOutput(TList* list) const;
+
+  private:
+
+    Int_t   fNBinsPt;       // FF histos bins
+    Float_t fPtMin;         // FF histos limits
+    Float_t fPtMax;         // FF histos limits
+
+    Int_t   fNBinsPhi;      // FF histos bins
+    Float_t fPhiMin;        // FF histos limits
+    Float_t fPhiMax;        // FF histos limits
+    
+    Int_t   fNBinsInvMass;  // FF histos bins
+    Float_t fInvMassMin;    // FF histos limits
+    Float_t fInvMassMax;    // FF histos limits
+  
+    TH3F*   fh3PhiCorr;     //! FF: phi correlation histo 
+
+    TString fNamePhiCorr;   // histo names prefix
+    
+    ClassDef(AliFragFuncHistosPhiCorrInvMass, 1);
+  };
+  
+  //----------------------------------------
+
+  AliAnalysisTaskJetChem(); 
+  AliAnalysisTaskJetChem(const char *name);
+  AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &copy);
+  AliAnalysisTaskJetChem& operator=(const  AliAnalysisTaskJetChem &o);
+  virtual ~AliAnalysisTaskJetChem();
+  
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
+
+  static  void   SetProperties(TH3F* h,const char* x, const char* y,const char* z);
+
+  Bool_t IsAccepteddEdx(const Double_t mom,const Double_t signal, AliPID::EParticleType n, const Double_t cutnSig) const;
+  Bool_t IsK0InvMass(const Double_t mass) const; 
+  Int_t  GetListOfK0s(TList *list, const Int_t type);
+  virtual void SetK0Type(Int_t i){ fK0Type = i; }
+  virtual void SetFilterMaskK0(UInt_t i) {fFilterMaskK0 = i;}
+
+
+  void   SetFFInvMassHistoBins(Int_t nJetPt = 19, Float_t jetPtMin = 5, Float_t jetPtMax = 100, 
+			       Int_t nInvM = 50, Float_t invMMin = 0.450,  Float_t invMMax = 0.550,
+			       Int_t nPt = 20, Float_t ptMin = 0., Float_t ptMax = 20., 
+			       Int_t nXi = 35, Float_t xiMin = 0., Float_t xiMax = 7.,
+			       Int_t nZ = 11,  Float_t zMin = 0.,  Float_t zMax = 1.1)
+  { fFFIMNBinsJetPt = nJetPt; fFFIMJetPtMin = jetPtMin; fFFIMJetPtMax = jetPtMax; 
+    fFFIMNBinsInvM = nInvM; fFFIMInvMMin = invMMin; fFFIMInvMMax = invMMax; fFFIMNBinsPt = nPt; fFFIMPtMin = ptMin; fFFIMPtMax = ptMax; 
+    fFFIMNBinsXi = nXi; fFFIMXiMin = xiMin; fFFIMXiMax = xiMax; fFFIMNBinsZ  = nZ;  fFFIMZMin  = zMin;  fFFIMZMax  = zMax; }
+
+  void   SetPhiCorrInvMassHistoBins(Int_t nPt = 40, Float_t ptMin = 0., Float_t ptMax = 20., 
+				    Int_t nPhi = 20, Float_t phiMin = 0., Float_t phiMax = 2*TMath::Pi(),
+				    Int_t nInvM = 50, Float_t invMMin = 0.450,  Float_t invMMax = 0.550)
+				    
+  { fPhiCorrIMNBinsPt = nPt; fPhiCorrIMPtMin = ptMin; fPhiCorrIMPtMax = ptMax;
+    fPhiCorrIMNBinsPhi = nPhi; fPhiCorrIMPhiMin = phiMin; fPhiCorrIMPhiMax = phiMax;
+    fPhiCorrIMNBinsInvM = nInvM; fPhiCorrIMInvMMin = invMMin; fPhiCorrIMInvMMax = invMMax;
+  }
+  
+  
+  // consts
+  enum { kTrackUndef =0, kOnFly, kOnFlyPID, kOnFlydEdx, kOnFlyPrim, kOffl, kOfflPID, kOffldEdx, kOfflPrim };  
+  
+ private:
+  
+  Int_t fK0Type;                                           //! K0 cuts
+  UInt_t fFilterMaskK0;                                    //! K0 legs cuts
+  TList* fListK0s;                                         //! K0 list 
+
+  AliFragFuncQATrackHistos*  fV0QAK0;                      //! track QA: V0s in K0 inv mass range
+  AliFragFuncHistos*         fFFHistosRecCutsK0Evt;        //! inclusive FF for K0 evt
+  AliFragFuncHistosInvMass*  fFFHistosIMK0AllEvt;          //! K0 pt spec for all events
+  AliFragFuncHistosInvMass*  fFFHistosIMK0Jet;             //! K0 FF all dPhi   
+  AliFragFuncHistosInvMass*  fFFHistosIMK0Cone;            //! K0 FF jet cone   
+  AliFragFuncHistosPhiCorrInvMass*  fFFHistosPhiCorrIMK0;  //! K0 corelation to jet axis 
+
+  // histogram bins  
+
+  Int_t   fFFIMNBinsJetPt;    // FF histos bins
+  Float_t fFFIMJetPtMin;      // FF histos limits
+  Float_t fFFIMJetPtMax;      // FF histos limits
+
+  Int_t   fFFIMNBinsInvM;     // FF histos bins
+  Float_t fFFIMInvMMin;       // FF histos bins
+  Float_t fFFIMInvMMax;       // FF histos bins
+
+  Int_t   fFFIMNBinsPt;       // FF histos bins
+  Float_t fFFIMPtMin;         // FF histos limits
+  Float_t fFFIMPtMax;         // FF histos limits
+
+  Int_t   fFFIMNBinsXi;       // FF histos bins
+  Float_t fFFIMXiMin;         // FF histos limits
+  Float_t fFFIMXiMax;         // FF histos limits
+
+  Int_t   fFFIMNBinsZ;        // FF histos bins
+  Float_t fFFIMZMin;          // FF histos limits
+  Float_t fFFIMZMax;          // FF histos limits
+
+
+  Int_t fPhiCorrIMNBinsPt;    // FF histos bins
+  Float_t fPhiCorrIMPtMin;    // FF histos limits
+  Float_t fPhiCorrIMPtMax;    // FF histos limits
+
+  Int_t fPhiCorrIMNBinsPhi;   // FF histos bins
+  Float_t fPhiCorrIMPhiMin;   // FF histos limits
+  Float_t fPhiCorrIMPhiMax;   // FF histos limits
+		
+  Int_t fPhiCorrIMNBinsInvM;  // FF histos bins
+  Float_t fPhiCorrIMInvMMin;  // FF histos limits
+  Float_t fPhiCorrIMInvMMax;  // FF histos limits
+  
+
+
+  // Histograms
+
+  TH1F* fh1K0Mult;                  //!
+  TH1F* fh1dPhiJetK0;               //!
+
+
+  ClassDef(AliAnalysisTaskJetChem, 3);
+};
 
 #endif
-
-    

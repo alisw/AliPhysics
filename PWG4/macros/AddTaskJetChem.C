@@ -1,92 +1,92 @@
-AliAnalysisTask *AddTaskJetChem(UInt_t filterMask){
+AliAnalysisTaskJetChem *AddTaskJetChem(){
+        
+  AliAnalysisTaskJetChem *ff=0;
+   
+  ff = AddTask("clustersAOD_ANTIKT04_B1_Filter00256_Cut00150_Skip00",0,AliAnalysisTaskJetChem::kOnFly);
+    
+  return ff;
+}
 
+// _______________________________________________________________________________________
 
-
-  //cout<<" OB : add JetTasks inlcude path ! "<<endl;
-  //gSystem->AddIncludePath("-I$ALICE_ROOT/PWG4/JetTasks");
-
-  //get the current analysis manager
+AliAnalysisTaskJetChem *AddTask(const char* recJetsBranch,Int_t eventClass, Int_t K0type)
+{
+  // Creates a jet chem task,
+  // configures it and adds it to the analysis manager.
+  
+   
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_obusch_jets", "No analysis manager found.");
-    return 0;
+    ::Error("AddTaskJetChem", "No analysis manager to connect to.");
+    return NULL;
   }
-
-  // physics event selection task - not for AOD analysis
-
-  //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  //AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(); 
-  //AliPhysicsSelection* physSel = physSelTask->GetPhysicsSelection();
-  //physSel->AddBackgroundIdentification(new AliBackgroundSelection()); 
-  //physSel->SetAnalyzeMC();
-
-  /*
-  //============= Set Task Name ===================
-  TString taskName=("AliAnalysisTaskJetChem.cxx+");
-  //===============================================
-  //            Load the task
-  gROOT->LoadMacro(taskName.Data());
-  if (gProof){
-    TString taskSO=gSystem->pwd();
-    taskSO+="/";
-    taskSO+=taskName(0,taskName.First('.'))+"_cxx.so";
-    gProof->Exec(Form("gSystem->Load(\"%s\")",taskSO.Data()),kTRUE);
+  
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskJetChem", "This task requires an input event handler");
+    return NULL;
   }
-  */
-  //========= Add task to the ANALYSIS manager =====
-  AliAnalysisTaskJetChem *task = new AliAnalysisTaskJetChem;
   
-  // configure task 
-
-
-  //task->SetUseLOConeJets();
-  //task->SetUseLOConeMCJets();
+  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+  Printf("Data Type: %s", type.Data());
   
-  //task->SetUsePythiaJets();
-  task->SetConeRadius(0.4);
-  task->SetTrackPtCutJF(0.150); //
-  task->SetFilterBitJF(0x01);   // official PWG4 high pt filter bit 0x10, but not all AliAnalysisTaskESDFilter had configured this ESDTrackCut
-  task->SetRequireITSRefitJF(); // 0x01 + ITS refit = 0x10 
-  task->SetRejectK0TracksJF();  // uncomment for K0 analysis running jet finder in task - modifies jet spectrum
+  
+  // Create the task and configure it.
+  //===========================================================================
+  AliAnalysisTaskJetChem *task = new AliAnalysisTaskJetChem("bla");
 
-  task->SetJetPtCut(2.0);
-  //task->SetJetPtCut(0.150); // lower pt cut: for plot of diffractive contribution to jet spectrum (goes up to 2 GeV ...) 
-  task->SetJetEtaCut(0.5);
+  Int_t debug = -1; // debug level
+  if(debug>=0) task->SetDebugLevel(debug);
+  
+  TString branchRecJets(recJetsBranch);
+  if(!branchRecJets.Contains("noRecJets")) task->SetBranchRecJets(branchRecJets);
+  
+  task->SetFilterMask(256); // for h+/h-
+  task->SetEventClass(eventClass);
+  
+  task->SetK0Type(K0type);
 
-  task->SetFilterBit((UInt_t) 0X01); // std AOD track cuts
-  task->SetTrackPtCut(0.150); 
-  task->SetTrackEtaCut(0.9);
+  if(K0type == AliAnalysisTaskJetChem::kOnFlyPrim || AliAnalysisTaskJetChem::kOfflPrim) task->SetFilterMaskK0(256);
 
-  task->SetUseOnFlyV0s(); 
-  task->SetCutnSigdEdx(2); 
- 
-  task->ReadDeltaAOD(); // uncomment for DeltaAODs
-  task->SelectDeltaAODBranch(Form("jetsAOD_FASTJET04_Filter%05d",filterMask)); 
-  //task->SelectAODBranch("jetsAOD_FASTKT04");
-  //task->SelectAODBranch("jetsAOD_UA107");
-  //task->SelectAODBranch("jets");
+  task->SetFFRadius(); 
 
-  task->SelectCollisionCandidates(); // either here or in userExec of task - but not for AODs ...
+  task->SetTrackCuts(0.15, -0.75, 0.75, 0., 2*TMath::Pi());
+  task->SetJetCuts(5., -0.35, 0.35, 0., 2*TMath::Pi());
 
-  //  AliLog::SetGlobalLogLevel(AliLog::kInfo);    // kInfo // kDebug // kFatal
-  //  task->SetDebugLevel(10);
-  //  mgr->SetDebugLevel(10);
+  // Define histo bins
+   task->SetFFHistoBins();
+   task->SetQATrackHistoBins();
+   task->SetFFInvMassHistoBins();
+   task->SetPhiCorrInvMassHistoBins();
+   
+   mgr->AddTask(task);
 
-  mgr->AddTask(task);
+   // Create ONLY the output containers for the data produced by the task.
+   // Get and connect other common input/output containers via the manager as below
+   //==============================================================================
 
-
-  //================================================
-  //              data containers
-  //================================================
-  //            find input container
-  //below the trunk version
-  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer("PWG4_JetChem", 
-							   TList::Class(), AliAnalysisManager::kOutputContainer,
-							   Form("%s:PWG4_JetChem",AliAnalysisManager::GetCommonFileName()));
-
-  mgr->ConnectInput(task,0,cinput );
-  mgr->ConnectOutput(task,1,coutput);
- 
-  return task;
+   TString strK0type;
+   if(K0type ==  AliAnalysisTaskJetChem::kOnFly)     strK0type = "OnFly";
+   if(K0type ==  AliAnalysisTaskJetChem::kOnFlyPID)  strK0type = "OnFlyPID";
+   if(K0type ==  AliAnalysisTaskJetChem::kOnFlydEdx) strK0type = "OnFlydEdx";
+   if(K0type ==  AliAnalysisTaskJetChem::kOnFlyPrim) strK0type = "OnFlyPrim";
+   if(K0type ==  AliAnalysisTaskJetChem::kOffl)      strK0type = "Offl";
+   if(K0type ==  AliAnalysisTaskJetChem::kOfflPID)   strK0type = "OfflPID";
+   if(K0type ==  AliAnalysisTaskJetChem::kOffldEdx)  strK0type = "OffldEdx";
+   if(K0type ==  AliAnalysisTaskJetChem::kOfflPrim)  strK0type = "OfflPrim";
+   
+   TString listName(Form("PWG4_JetChem_%s_%s_cl%d",branchRecJets.Data(),strK0type.Data(),eventClass));
+		    
+   AliAnalysisDataContainer *coutput_FragFunc = mgr->CreateContainer(listName, 
+								     TList::Class(),
+								     AliAnalysisManager::kOutputContainer,
+								     Form("%s:PWG4_JetChem",AliAnalysisManager::GetCommonFileName()));
+   
+   mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectOutput (task, 1, coutput_FragFunc);
+   
+   return task;
 }
