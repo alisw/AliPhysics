@@ -161,7 +161,7 @@ void AliITStrackerSA::Init(){
     fPointc[0]=0;
     fPointc[1]=0;
     Int_t nLoops=AliITSReconstructor::GetRecoParam()->GetNLoopsSA();
-    if(nLoops==33){
+    if(nLoops==32){
       SetFixedWindowSizes();
     }else{
       Double_t phimin=AliITSReconstructor::GetRecoParam()->GetMinPhiSA();
@@ -287,6 +287,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
 	dmar[ilay]++;
       }
     }
+    fCluCoord[ilay]->Sort();
   }
    
   // track counter
@@ -690,6 +691,7 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
 
   if(ForceSkippingOfLayer(layer)) return 0;
 
+
   Int_t nc=0;
   AliITSlayer &lay = fgLayers[layer];
   Double_t r=lay.GetR();
@@ -708,12 +710,14 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
   Double_t lamExpect=fLambdac;
 
   Int_t ncl = fCluCoord[layer]->GetEntriesFast();
-  for (Int_t index=0; index<ncl; index++) {
-    
+  Int_t startcl=FindIndex(layer,lamExpect-lambdawindow*1.02);
+  Int_t endcl=FindIndex(layer,lamExpect+lambdawindow*1.02)+1;
+  if(endcl>=ncl) endcl=ncl-1;
+
+  for (Int_t index=startcl; index<=endcl; index++) {
+    //for (Int_t index=0; index<ncl; index++) {
     AliITSclusterTable* arr = (AliITSclusterTable*)GetClusterCoord(layer,index);
 
-    Double_t lambda = arr->GetLambda();
-    if (TMath::Abs(lambda-lamExpect)>lambdawindow) continue;
 
     Double_t phi = arr->GetPhi();
     Double_t deltaPhi = phi-phiExpect;
@@ -721,6 +725,9 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
     else if(deltaPhi<-TMath::Pi()) deltaPhi+=2*TMath::Pi();
     if (TMath::Abs(deltaPhi)>phiwindow) continue;
     
+    Double_t lambda = arr->GetLambda();
+    if (TMath::Abs(lambda-lamExpect)>lambdawindow) continue;
+
     if(trs->GetNumberOfClustersSA()==trs->GetMaxNumberOfClusters()) return 0;
     if(trs->GetNumberOfMarked(layer)==trs->GetMaxNMarkedPerLayer()) return 0;
     Int_t orind = arr->GetOrInd();
@@ -945,19 +952,23 @@ void AliITStrackerSA::SetFixedWindowSizes(Int_t n, Double_t *phi, Double_t *lam)
   }
   else {  // default values
             
-    Double_t phid[33]   = {0.002,0.003,0.004,0.0045,0.0047,
-			   0.005,0.0053,0.0055,
-			   0.006,0.0063,0.0065,0.007,0.0073,0.0075,0.0077,
-			   0.008,0.0083,0.0085,0.0087,0.009,0.0095,0.0097,
-			   0.01,0.0105,0.011,0.0115,0.012,0.0125,0.013,0.0135,0.0140,0.0145};
-    Double_t lambdad[33] = {0.003,0.004,0.005,0.005,0.005,
-			    0.005,0.005,0.006,
-			    0.006,0.006,0.006,0.007,0.007,0.007,0.007,
-			    0.007,0.007,0.007,0.007,0.007,0.007,0.007,
-			    0.008,0.008,0.008,0.008,0.008,0.008,0.008,0.008,0.008,0.008};
+    Double_t phid[32]   = {0.002,0.003,0.004,0.0045,0.0047,
+			   0.005,0.0053,0.0055,0.006,0.0063,
+			   0.0065,0.007,0.0073,0.0075,0.0077,
+			   0.008,0.0083,0.0085,0.0087,0.009,
+			   0.0095,0.0097,0.01,0.0105,0.011,
+			   0.0115,0.012,0.0125,0.013,0.0135,
+			   0.0140,0.0145};
+    Double_t lambdad[32] = {0.003,0.004,0.005,0.005,0.005,
+			    0.005,0.005,0.006,0.006,0.006,
+			    0.006,0.007,0.007,0.007,0.007,
+			    0.007,0.007,0.007,0.007,0.007,
+			    0.007,0.007,0.008,0.008,0.008,
+			    0.008,0.008,0.008,0.008,0.008,
+			    0.008,0.008};
     
-    if(fNloop!=33){
-      fNloop = 33;
+    if(fNloop!=32){
+      fNloop = 32;
     }
     
     
@@ -1028,5 +1039,28 @@ void AliITStrackerSA::GetCoorErrors(AliITSRecPoint* cl,Double_t &sx,Double_t &sy
   sy = TMath::Sqrt(cp*cp*cl->GetSigmaY2());
   sz = TMath::Sqrt(cl->GetSigmaZ2());
 */
+}
+
+//________________________________________________________________________
+Int_t AliITStrackerSA::FindIndex(Int_t lay, Double_t lamVal) const {
+  // Find the cluster at limit of lambda window 
+
+
+  Int_t base = 0;
+  Int_t last = fCluCoord[lay]->GetEntriesFast()-1;
+  Int_t position;
+  Double_t lamfirst=((AliITSclusterTable*)fCluCoord[lay]->At(base))->GetLambda();
+  if(lamfirst>lamVal) return base;
+  Double_t lamlast=((AliITSclusterTable*)fCluCoord[lay]->At(last))->GetLambda();
+  if(lamlast<=lamVal) return last;
+  while (last >= base) {
+    position = (base+last) / 2;
+    Double_t a=((AliITSclusterTable*)fCluCoord[lay]->At(position))->GetLambda()-lamVal;
+    Double_t b=((AliITSclusterTable*)fCluCoord[lay]->At(position+1))->GetLambda()-lamVal;
+    if(a*b<=0) return position;
+    if(a>0) last = position;
+    else  base = position;
+  }
+  return -1;
 }
 

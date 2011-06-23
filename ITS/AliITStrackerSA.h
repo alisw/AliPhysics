@@ -95,6 +95,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   AliITSclusterTable* GetClusterCoord(Int_t layer,Int_t n) const {return (AliITSclusterTable*)fCluCoord[layer]->UncheckedAt(n);}
   void RemoveClusterCoord(Int_t layer, Int_t n) {fCluCoord[layer]->RemoveAt(n);fCluCoord[layer]->Compress();}
 
+  Int_t FindIndex(Int_t lay, Double_t lamMin) const;
 
   Double_t fPhiEstimate; //Estimation of phi angle on next layer
   Bool_t fITSStandAlone; //Tracking is performed in the ITS alone if kTRUE

@@ -38,6 +38,14 @@ class AliITSclusterTable : public TObject {
   Double_t GetPhi() const {return fPhi;}
   Double_t GetLambda() const {return fLam;}
 
+  virtual Bool_t IsEqual(const TObject *obj) const 
+    {return fLam == ((AliITSclusterTable*)obj)->fLam;}
+  virtual Bool_t      IsSortable() const { return kTRUE; }
+  virtual Int_t       Compare(const TObject *obj) const 
+    {if(fLam<((AliITSclusterTable*)obj)->fLam) return -1;
+    else if(fLam>((AliITSclusterTable*)obj)->fLam) return 1;
+    else return 0; }
+
  protected: 
 
   Int_t   fOrInd; //! original index in tracker

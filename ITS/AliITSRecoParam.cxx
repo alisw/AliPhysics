@@ -122,7 +122,7 @@ fOuterStartLayerSA(2),
 fInnerStartLayerSA(3),
 fMinNPointsSA(3),
 fFactorSAWindowSizes(1.),
-fNLoopsSA(33),
+fNLoopsSA(32),
 fMinPhiSA(0.002),
 fMaxPhiSA(0.0145),
 fMinLambdaSA(0.003),
@@ -600,7 +600,7 @@ AliITSRecoParam *AliITSRecoParam::GetCosmicTestParam()
   param->SetMinNPointsSA(2);
 
   // larger seach windows for SA (in case of large misalignments)
-  param->SetNLoopsSA(33);
+  param->SetNLoopsSA(32);
   param->SetFactorSAWindowSizes(20);
 
   // additional error due to misal (B off)
