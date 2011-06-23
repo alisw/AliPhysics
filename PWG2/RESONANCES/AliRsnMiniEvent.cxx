@@ -50,7 +50,7 @@ AliRsnMiniParticle* AliRsnMiniEvent::LeadingParticle()
 }
 
 //__________________________________________________________________________________________________
-Int_t AliRsnMiniEvent::CountParticles(Char_t charge, Int_t cutID)
+TArrayI AliRsnMiniEvent::CountParticles(Char_t charge, Int_t cutID)
 {
 //
 // Counts how many particles have the specified charge and cut bit
@@ -58,20 +58,23 @@ Int_t AliRsnMiniEvent::CountParticles(Char_t charge, Int_t cutID)
 // if cut bit is < 0, it is not checked
 //
 
-   Int_t count = 0;
-   TObjArrayIter next(&fParticles);
+   Int_t i, npart = fParticles.GetEntriesFast();
+   Int_t    count = 0;
+   TArrayI  found(npart);
    AliRsnMiniParticle *part = 0x0;
    
-   while ( (part = (AliRsnMiniParticle*)next()) ) {
+   for (i = 0; i < npart; i++) {
+      part = (AliRsnMiniParticle*)fParticles[i];
       if (charge == '+' || charge == '-' || charge == '0') {
          if (part->Charge() != charge) continue;
       }
       if (cutID > 0) {
          if (!part->HasCutBit(cutID)) continue;
       }
+      found[count] = i;
       count++;
    }
    
-   return count;
+   found.Set(count);
+   return found;
 }
-

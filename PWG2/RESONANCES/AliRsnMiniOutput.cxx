@@ -416,8 +416,6 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
    
    // loop variables
    Int_t i1, i2, start, nadded = 0;
-   Int_t n1 = event1->Particles().GetEntriesFast();
-   Int_t n2 = event2->Particles().GetEntriesFast();
    AliRsnMiniParticle *p1, *p2;
    
    // it is necessary to know if criteria for the two daughters are the same
@@ -426,20 +424,27 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
    Bool_t sameCriteria = ((fCharge[0] == fCharge[1]) && (fDaughter[0] == fDaughter[1]));
    Bool_t sameEvent = (event1->ID() == event2->ID());
    
-   Int_t nsel1 = event1->CountParticles(fCharge[0], fCutID[0]);
-   Int_t nsel2 = event2->CountParticles(fCharge[1], fCutID[1]);
-   AliDebugClass(1, Form("Particle #1: [%s] -- event ID = %6d -- required charge = %c -- required cut ID = %d --> found %4d tracks", (event1 == event2 ? "def" : "mix"), event1->ID(), fCharge[0], fCutID[0], nsel1));
-   AliDebugClass(1, Form("Particle #2: [%s] -- event ID = %6d -- required charge = %c -- required cut ID = %d --> found %4d tracks", (event1 == event2 ? "def" : "mix"), event2->ID(), fCharge[1], fCutID[1], nsel2));
-   if (!nsel1 || !nsel2) {
+   TArrayI selected1 = event1->CountParticles(fCharge[0], fCutID[0]);
+   TArrayI selected2 = event2->CountParticles(fCharge[1], fCutID[1]);
+   TString selList1  = "";
+   TString selList2  = "";
+   Int_t   n1 = selected1.GetSize();
+   Int_t   n2 = selected2.GetSize();
+   for (i1 = 0; i1 < n1; i1++) selList1.Append(Form("%d ", selected1[i1]));
+   for (i2 = 0; i2 < n2; i2++) selList2.Append(Form("%d ", selected2[i2]));
+   AliDebugClass(1, Form("Particle #1: [%s] -- event ID = %6d -- required charge = %c -- required cut ID = %d --> found %4d tracks (%s)", (event1 == event2 ? "def" : "mix"), event1->ID(), fCharge[0], fCutID[0], n1, selList1.Data()));
+   AliDebugClass(1, Form("Particle #2: [%s] -- event ID = %6d -- required charge = %c -- required cut ID = %d --> found %4d tracks (%s)", (event1 == event2 ? "def" : "mix"), event2->ID(), fCharge[1], fCutID[1], n2, selList2.Data()));
+   if (!n1 || !n2) {
       AliDebugClass(1, "No pairs to mix");
       return 0;
    }
    
    // external loop
    for (i1 = 0; i1 < n1; i1++) {
-      p1 = event1->GetParticle(i1);
-      if (p1->Charge() != fCharge[0]) continue;
-      if (!p1->HasCutBit(fCutID[0])) continue;
+      p1 = event1->GetParticle(selected1[i1]);
+      //p1 = event1->GetParticle(i1);
+      //if (p1->Charge() != fCharge[0]) continue;
+      //if (!p1->HasCutBit(fCutID[0])) continue;
       // define starting point for inner loop
       // if daughter selection criteria (charge, cuts) are the same
       // and the two events coincide, internal loop must start from
@@ -449,9 +454,10 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
       AliDebugClass(2, Form("Start point = %d", start));
       // internal loop
       for (i2 = start; i2 < n2; i2++) {
-         p2 = event2->GetParticle(i2);
-         if (p2->Charge() != fCharge[1]) continue;
-         if (!p2->HasCutBit(fCutID[1])) continue;
+         p2 = event2->GetParticle(selected2[i2]);
+         //p2 = event2->GetParticle(i2);
+         //if (p2->Charge() != fCharge[1]) continue;
+         //if (!p2->HasCutBit(fCutID[1])) continue;
          // avoid to mix a particle with itself
          if (sameEvent && (p1->Index() == p2->Index())) {
             AliDebugClass(2, "Skipping same index");
@@ -479,13 +485,16 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
          // check pair against cuts
          if (fPairCuts) {
             if (!fPairCuts->IsSelected(&fPair)) {
+               AliDebugClass(2, Form("Pair rapidity = %f --> too large", fPair.Y(0)));
                continue;
+            } else {
+               AliDebugClass(2, Form("Pair rapidity = %f --> ok", fPair.Y(0)));
             }
          }
          // get computed values & fill histogram
+         nadded++;
          if (refFirst) ComputeValues(event1, valueList); else ComputeValues(event2, valueList); 
          FillHistogram();
-         nadded++;
       } // end internal loop
    } // end external loop
    
