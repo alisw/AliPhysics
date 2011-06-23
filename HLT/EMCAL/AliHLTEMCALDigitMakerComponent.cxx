@@ -158,40 +158,38 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       if(!fBCMInitialised)
 	{
 	  AliHLTEMCALMapper mapper(iter->fSpecification);
-	  module = mapper.GetModuleFromSpec(iter->fSpecification);
 	  
-	  for(Int_t x = 0; x < NXCOLUMNSMOD ; x++) // PTH  
-	    {
-
-	   for(Int_t z = 0; z <  NZROWSMOD ; z++) // PTH
-	      {
-	       fDigitMakerPtr->SetBadChannel(x, z, fPedestalData->IsBadChannel(module, z+1, x+1));
-	    }
-	 }
-	 //delete fBadChannelMap;
-	 fBCMInitialised = true;
-      }
-  
+	  if (module = mapper.GetModuleFromSpec(iter->fSpecification))
+	    
+	    for(Int_t x = 0; x < NXCOLUMNSMOD ; x++) // PTH  
+	      
+	      for(Int_t z = 0; z <  NZROWSMOD ; z++) // PTH
+		
+		fDigitMakerPtr->SetBadChannel(x, z, fPedestalData->IsBadChannel(module, z+1, x+1));
+	  
+	  //delete fBadChannelMap;
+	  fBCMInitialised = true;
+	}
+      
       if(!fGainsInitialised)
 	{
-	  AliHLTEMCALMapper mapper(iter->fSpecification);;
-	  module = mapper.GetModuleFromSpec(iter->fSpecification);
+	  AliHLTEMCALMapper mapper(iter->fSpecification);
+	  if (module = mapper.GetModuleFromSpec(iter->fSpecification))
+	    
+	    for(Int_t x = 0; x < NXCOLUMNSMOD; x++)   //PTH
+	      for(Int_t z = 0; z < NZROWSMOD; z++)   //PTH
+		// FR setting gains 
+		fDigitMakerPtr->SetGain(x, z, HGLGFACTOR, fCalibData->GetADCchannel(module, z, x));
 	  
-	  for(Int_t x = 0; x < NXCOLUMNSMOD; x++)   //PTH
-	    {
-	      
-	     for(Int_t z = 0; z < NZROWSMOD; z++)   //PTH
-	       {
-		 // FR setting gains 
-	       fDigitMakerPtr->SetGain(x, z, HGLGFACTOR, fCalibData->GetADCchannel(module, z, x));
-	    }
-	 }
-	 fGainsInitialised = true;
-      }
+	  
+	  fGainsInitialised = true;
+	}
+      
       specification |= iter->fSpecification;
       tmpChannelData = reinterpret_cast<AliHLTCaloChannelDataHeaderStruct*>(iter->fPtr);
     
       ret = fDigitMakerPtr->MakeDigits(tmpChannelData, size-(digitCount*sizeof(AliHLTCaloDigitDataStruct)));
+      
       if(ret == -1) 
 	{
 	  HLTError("Trying to write over buffer size");
