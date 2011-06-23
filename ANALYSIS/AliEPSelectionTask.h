@@ -52,14 +52,13 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
   void SetTrackType(TString tracktype);
   void SetPhiDist();
   void SetPersonalESDtrackCuts(AliESDtrackCuts* trackcuts);
-  void SetPersonalPhiDistribution(char* filename, char* listname);
+  void SetPersonalPhiDistribution(const char* filename, char* listname);
   
  private:
    
   AliEPSelectionTask(const AliEPSelectionTask& ep);
   AliEPSelectionTask& operator= (const AliEPSelectionTask& ep); 
 
-  Int_t    fDebug;	   		// Debug flag
   TString  fAnalysisInput; 		// "ESD", "AOD"
   TString  fTrackType;			// "GLOBAL", "TPC"
   Bool_t   fUseMCRP;			// i.e. usable for Therminator, when MC RP is provided
@@ -84,7 +83,7 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
   TVector2* fQsub2;			//! Q-Vector of sub-event 2
   Double_t  fQsubRes;			//! Difference of EP angles of subevents
   
-  TList* fOutputList;  
+  TList* fOutputList;                   // Output histograms
   TH1F*  fHOutEventplaneQ;    		//! control histogram: Event Plane angle
   TH1F*  fHOutPhi;			//! control histogram: original phi distribution
   TH1F*	 fHOutPhiCorr;			//! control histogram: corrected phi distribution
