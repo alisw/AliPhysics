@@ -73,7 +73,8 @@ AliAnalysisTaskSE(),
   fDaughterTracks(),
   fIsSelectedCandidate(0),
   fFillVarHists(kTRUE),
-  fSys(0)
+  fSys(0),
+  fIsRejectSDDClusters(0)
 {
   // Default constructor
 }
@@ -96,7 +97,8 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fDaughterTracks(),
   fIsSelectedCandidate(0),
   fFillVarHists(kTRUE),
-  fSys(0)
+  fSys(0),
+  fIsRejectSDDClusters(0)
 {
   // Default constructor
 
@@ -614,7 +616,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
   const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
 
-  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 16,-0.5,15.5);
+  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 17,-0.5,16.5);
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nCandSel(Cuts)");
@@ -637,6 +639,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(14,"Pile-up Rej");
   fNentries->GetXaxis()->SetBinLabel(15,"N. of 0SMH");
   if(fSys==1) fNentries->GetXaxis()->SetBinLabel(16,"Nev in centr");
+  if(fIsRejectSDDClusters) fNentries->GetXaxis()->SetBinLabel(17,"SDD-Cls Rej");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
@@ -747,6 +750,23 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       fNentries->Fill(13);
     if(fSys==1 && (fCuts->GetWhyRejection()==2 || fCuts->GetWhyRejection()==3)) fNentries->Fill(15);
     return;
+  }
+
+  // Check the Nb of SDD clusters
+  if (fIsRejectSDDClusters) { 
+    Bool_t skipEvent = kFALSE;
+    Int_t ntracks = 0;
+    if (aod) ntracks = aod->GetNTracks();
+    for(Int_t itrack=0; itrack<ntracks; itrack++) { // loop on tacks
+      //    ... get the track
+      AliAODTrack * track = aod->GetTrack(itrack);
+      if(TESTBIT(track->GetITSClusterMap(),2) || TESTBIT(track->GetITSClusterMap(),3) ){
+	skipEvent=kTRUE;
+	fNentries->Fill(16);
+	break;
+      }
+    }
+    if (skipEvent) return;
   }
   
   // AOD primary vertex
@@ -1415,14 +1435,14 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 
 	AliAODMCParticle *partD0 = (AliAODMCParticle*)arrMC->At(labD0);
 	Int_t pdgD0 = partD0->GetPdgCode();
-	//cout<<"pdg = "<<pdgD0<<endl;
+	//	cout<<"pdg = "<<pdgD0<<endl;
 	if (pdgD0==421){ //D0
-	  //cout<<"Fill S with D0"<<endl;
+	  //	  cout<<"Fill S with D0"<<endl;
 	  fillthis="histSgn_";
 	  fillthis+=ptbin;
 	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
 	  if(fSys==0){
-	    if(TMath::Abs(invmassD0 - mPDG) < 0.027){
+	    if(TMath::Abs(invmassD0 - mPDG) < 0.027 && fFillVarHists){
 	      fillthis="histSgn27_";
 	      fillthis+=ptbin;
 	      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
@@ -1442,9 +1462,9 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
     }else{
       fillthis="histMass_";
       fillthis+=ptbin;
-      //cout<<"Filling "<<fillthis<<endl;
+      //      cout<<"Filling "<<fillthis<<endl;
 
-      //printf("Fill mass with D0");
+      //      printf("Fill mass with D0");
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
     }
      
@@ -1455,7 +1475,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	if(fArray==1) cout<<"LS signal ERROR"<<endl;
 	AliAODMCParticle *partD0 = (AliAODMCParticle*)arrMC->At(labD0);
 	Int_t pdgD0 = partD0->GetPdgCode();
-	//cout<<" pdg = "<<pdgD0<<endl;
+	//	cout<<" pdg = "<<pdgD0<<endl;
 	if (pdgD0==-421){ //D0bar
 	  fillthis="histSgn_";
 	  fillthis+=ptbin;
@@ -1480,7 +1500,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
     }else{
       fillthis="histMass_";
       fillthis+=ptbin;
-      //printf("Fill mass with D0bar");
+      //      printf("Fill mass with D0bar");
       ((TH1F*)listout->FindObject(fillthis))->Fill(invmassD0bar);
 
     }
