@@ -143,6 +143,13 @@ void AliAnalyseLeadingTrackUE::DefineESDCuts(Int_t filterbit) {
     fEsdTrackCuts->SetMaxDCAToVertexZ(3.7);
     fEsdTrackCuts->SetMaxDCAToVertexXY(2.9);
   }
+  else if (filterbit == 1024)
+  {
+    fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    fEsdTrackCuts->SetMinNClustersTPC(-1);
+    fEsdTrackCuts->SetMinNCrossedRowsTPC(70);
+    fEsdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  }
   else
   {
     fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
