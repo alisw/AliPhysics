@@ -20,7 +20,8 @@ AliRsnAnalysisTask::AliRsnAnalysisTask() :
    fOutput(0),
    fRsnObjects(0),
    fInputEHMain(0),
-   fInputEHMix(0)
+   fInputEHMix(0),
+   fBigOutput(kFALSE)
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
@@ -33,7 +34,8 @@ AliRsnAnalysisTask::AliRsnAnalysisTask(const char *name) :
    fOutput(0),
    fRsnObjects(0),
    fInputEHMain(0),
-   fInputEHMix(0)
+   fInputEHMix(0),
+   fBigOutput(kFALSE)
 {
 //
 // Default constructor.
@@ -51,7 +53,8 @@ AliRsnAnalysisTask::AliRsnAnalysisTask(const AliRsnAnalysisTask& copy) :
    fOutput(0),
    fRsnObjects(copy.fRsnObjects),
    fInputEHMain(copy.fInputEHMain),
-   fInputEHMix(copy.fInputEHMix)
+   fInputEHMix(copy.fInputEHMix),
+   fBigOutput(copy.fBigOutput)
 {
 //
 // Copy constructor.
@@ -72,6 +75,7 @@ AliRsnAnalysisTask& AliRsnAnalysisTask::operator=(const AliRsnAnalysisTask& copy
    fRsnObjects = copy.fRsnObjects;
    fInputEHMain = copy.fInputEHMain;
    fInputEHMix = copy.fInputEHMix;
+   fBigOutput = copy.fBigOutput;
    
    return (*this);
 }
@@ -112,6 +116,7 @@ void AliRsnAnalysisTask::UserCreateOutputObjects()
    InitInputHandlers();
 
    // create list and set it as owner of its content (MANDATORY)
+   if (fBigOutput) OpenFile(1);
    fOutput = new TList();
    fOutput->SetOwner();
    
@@ -237,3 +242,4 @@ void AliRsnAnalysisTask::InitInputHandlers()
       fInputEHMix = dynamic_cast<AliMixInputEventHandler *>(fInputEHMain->GetFirstMultiInputHandler());
    }
 }
+

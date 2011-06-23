@@ -29,6 +29,9 @@ public:
    
    void             AddLoop(AliRsnLoop *object);
    void             InitInputHandlers();
+
+   void             UseBigOutput(Bool_t b=kTRUE) { fBigOutput = b; }
+   Bool_t           IsBigOutput() { return fBigOutput; }
    
 private:
 
@@ -38,7 +41,9 @@ private:
    AliMultiInputEventHandler  *fInputEHMain;   //! input multi handler
    AliMixInputEventHandler    *fInputEHMix;    //! mix input handler
 
-   ClassDef(AliRsnAnalysisTask, 1); // AliRsnAnalysisTask
+   Bool_t                      fBigOutput;     // flag if open file for output list
+
+   ClassDef(AliRsnAnalysisTask, 2); // AliRsnAnalysisTask
 };
 
 #endif
