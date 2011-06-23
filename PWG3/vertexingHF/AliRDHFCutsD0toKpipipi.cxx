@@ -97,7 +97,7 @@ AliRDHFCutsD0toKpipipi &AliRDHFCutsD0toKpipipi::operator=(const AliRDHFCutsD0toK
 
 
 //---------------------------------------------------------------------------
-void AliRDHFCutsD0toKpipipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) {
+void AliRDHFCutsD0toKpipipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent* aod) {
   // 
   // Fills in vars the values of the variables 
   //
@@ -108,6 +108,18 @@ void AliRDHFCutsD0toKpipipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars
   }
 
   AliAODRecoDecayHF4Prong *dd = (AliAODRecoDecayHF4Prong*)d;
+
+  //recalculate vertex w/o daughters
+  Bool_t cleanvtx=kFALSE;
+  AliAODVertex *origownvtx=0x0;
+  if(fRemoveDaughtersFromPrimary) {
+    if(dd->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*dd->GetOwnPrimaryVtx());
+    cleanvtx=kTRUE;
+    if(!RecalcOwnPrimaryVtx(dd,aod)) {
+      CleanOwnPrimaryVtx(dd,aod,origownvtx);
+      cleanvtx=kFALSE;
+    }
+  }
 
   Int_t iter=-1;
 
@@ -167,6 +179,7 @@ void AliRDHFCutsD0toKpipipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars
     printf("ERROR: optmization for PID cut not implemented\n");
   }
   
+    if(cleanvtx)CleanOwnPrimaryVtx(dd,aod,origownvtx);
   return;
 }
 //---------------------------------------------------------------------------

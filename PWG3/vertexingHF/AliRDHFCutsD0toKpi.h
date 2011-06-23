@@ -27,8 +27,12 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
 
   AliRDHFCutsD0toKpi(const AliRDHFCutsD0toKpi& source);
   AliRDHFCutsD0toKpi& operator=(const AliRDHFCutsD0toKpi& source); 
- 
-  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
+
+  using AliRDHFCuts::GetCutVarsForOpt;
+  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters){
+    return GetCutVarsForOpt(d,vars,nvars,pdgdaughters,0x0);
+  }
+  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent *aod);
 
   using AliRDHFCuts::IsSelected;
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel) 

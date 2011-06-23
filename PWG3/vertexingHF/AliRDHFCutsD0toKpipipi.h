@@ -24,8 +24,12 @@ class AliRDHFCutsD0toKpipipi : public AliRDHFCuts
   AliRDHFCutsD0toKpipipi(const AliRDHFCutsD0toKpipipi& source);
   AliRDHFCutsD0toKpipipi& operator=(const AliRDHFCutsD0toKpipipi& source); 
  
-  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
-
+    using AliRDHFCuts::GetCutVarsForOpt;
+    virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters){
+      return GetCutVarsForOpt(d,vars,nvars,pdgdaughters,0x0);
+    }
+    virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent* aod);
+      
   using AliRDHFCuts::IsSelected;
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel);
   virtual Int_t IsSelectedFromPID(AliAODRecoDecayHF4Prong *d, Int_t *hyp1, Int_t *hyp2, Int_t *hyp3, Int_t *hyp4);

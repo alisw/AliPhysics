@@ -576,7 +576,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     
       Int_t nVals=0;
       if(fDecChannel==3) SetPDGdaughterDstoKKpi();
-      fRDCuts->GetCutVarsForOpt(d,fVars,fNVars,fPDGdaughters);
+      fRDCuts->GetCutVarsForOpt(d,fVars,fNVars,fPDGdaughters,aod);
       Int_t ptbin=fRDCuts->PtBin(d->Pt());
       if(ptbin==-1) continue;
       TString mdvname=Form("multiDimVectorPtBin%d",ptbin);
@@ -624,7 +624,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
       if (fDecChannel==3 && isSelected&2){
 	SetPDGdaughterDstopiKK();
 	nVals=0;
-	fRDCuts->GetCutVarsForOpt(d,fVars,fNVars,fPDGdaughters);
+	fRDCuts->GetCutVarsForOpt(d,fVars,fNVars,fPDGdaughters,aod);
 	delete [] addresses;
 	addresses = muvec->GetGlobalAddressesAboveCuts(fVars,(Float_t)d->Pt(),nVals);
 	if(fDebug>1)printf("nvals = %d\n",nVals);
