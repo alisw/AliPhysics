@@ -51,11 +51,13 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetFillOnlyD0D0bar(Int_t flagfill){fFillOnlyD0D0bar=flagfill;}
   void SetFillVarHists(Bool_t flag) {fFillVarHists=flag;}
   void SetSystem(Int_t sys){fSys=sys; if(fSys==1) SetFillVarHists(kFALSE);}
+  void SetRejectSDDClusters(Bool_t flag) { fIsRejectSDDClusters=flag; }
 
   Bool_t GetCutOnDistr() const {return fCutOnDistr;}
   Bool_t GetUsePid4Distr() const {return fUsePid4Distr;}
   Int_t  GetFillOnlyD0D0bar() const {return fFillOnlyD0D0bar;}
   Int_t  GetSystem() const {return fSys;}
+  Bool_t GetRejectSDDClusters() { return fIsRejectSDDClusters; }
 
  private:
 
@@ -81,8 +83,9 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Int_t     fIsSelectedCandidate; // selection outcome
   Bool_t    fFillVarHists;        // flag to enable filling variable histos
   Int_t     fSys;                 // fSys=0 -> p-p; fSys=1 ->PbPb (in this case fFillVarHists=kFALSE by default: set it to kTRUE *after* if needed)
+  Bool_t    fIsRejectSDDClusters; // flag to reject events with SDD clusters
 
-  ClassDef(AliAnalysisTaskSED0Mass,14); // AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Mass,15); // AliAnalysisTaskSE for D0->Kpi
 };
 
 #endif
