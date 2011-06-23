@@ -14,6 +14,7 @@ set ( SRCS
     AliVEventPool.cxx 
     AliVCuts.cxx 
     AliVVZERO.cxx 
+    AliVZDC.cxx 
     AliCentrality.cxx 
     AliPID.cxx 
     AliLog.cxx 
