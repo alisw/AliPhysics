@@ -64,7 +64,9 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fEvent(0x0),
   fESD(0x0),
   fVtx(0x0),
-  fTrackCuts(0), 
+  fTrackCuts(0x0), 
+  fTrackCutsITSLoose(0x0), 
+  fTrackCutsTPConly(0x0), 
   fTrackType(0),
   fFilterMask(0),
   fSigmaConstrainedMax(-1.),
@@ -133,7 +135,9 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fEvent(0x0),
   fESD(0x0),
   fVtx(0x0),
-  fTrackCuts(),
+  fTrackCuts(0x0),
+  fTrackCutsITSLoose(0x0), 
+  fTrackCutsTPConly(0x0), 
   fTrackType(0),
   fFilterMask(0),
   fSigmaConstrainedMax(-1.),
@@ -882,6 +886,33 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
       }
       track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
     }
+    else if(fTrackType==5 || fTrackType==6) {
+      if(fTrackCuts->AcceptTrack(esdtrack)) {
+	continue;
+      }
+      else {
+	if( !(fTrackCutsITSLoose->AcceptTrack(esdtrack)) && fTrackCutsTPConly->AcceptTrack(esdtrack) ) {
+
+	  if(fTrackType==5) {
+	    //use TPConly constrained track
+	    track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
+	    AliExternalTrackParam exParam;
+	    Bool_t relate = track->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
+	    if( !relate ) {
+	      fh1NTracksReject->Fill("relate",1);
+	      delete track;
+	      continue;
+	    }
+	    track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
+	  }
+	  else if(fTrackType==6) {
+	    //use global constrained track
+	    track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
+
+	  }
+	}
+      }
+    }
     else
       track = esdtrack;
     
@@ -904,17 +935,10 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
 
     fPtAll->Fill(track->Pt());
 
-    if (!(fTrackCuts->AcceptTrack(track)) && fTrackType!=4) {
+    if (!(fTrackCuts->AcceptTrack(track)) && fTrackType!=4 && fTrackType!=5 && fTrackType!=6) {
       fh1NTracksReject->Fill("trackCuts",1);
       if(fTrackType==1 || fTrackType==2) delete track;
       continue;
-    }
-
-    //Cut out laser tracks
-    if(track->GetTPCsignal()<10) { //Cut on laser tracks
-      fh1NTracksReject->Fill("laser",1);
-      if(fTrackType==1 || fTrackType==2 || fTrackType==4) delete track;
-      continue; 
     }
 
     fh1NTracksSel->Fill(0.);
@@ -955,11 +979,9 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
   
     if(fVariables->At(5)>0.) fVariables->SetAt(track->GetTPCchi2()/fVariables->At(5),10);
     
-    //cout << "#crossed rows (1): " << track->GetTPCClusterInfo(1) << endl;
-    //cout << "#crossed rows (2): " << track->GetTPCClusterInfo(2) << endl;
     fVariables->SetAt(track->GetTPCClusterInfo(2,1),11); //#crossed rows
-    Float_t crossedRowsTPCNClsF = track->GetTPCClusterInfo(2,0);
-    //if(track->GetTPCNclsF()>0.) crossedRowsTPCNClsF = fVariables->At(11)/track->GetTPCNclsF();
+    Float_t crossedRowsTPCNClsF = 1.;//track->GetTPCClusterInfo(2,0);
+    if(track->GetTPCNclsF()>0.) crossedRowsTPCNClsF = fVariables->At(11)/track->GetTPCNclsF();
     fVariables->SetAt(crossedRowsTPCNClsF,12);//(#crossed rows)/(#findable clusters)
     fVariables->SetAt(track->GetSigmaY2(),13);
     fVariables->SetAt(track->GetSigmaZ2(),14);
@@ -971,7 +993,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
   
     //      int mult = fTrackCuts->CountAcceptedTracks(fESD);
 
-    if(fTrackType==1  || fTrackType==2 || fTrackType==4) delete track;
+    if(fTrackType==1  || fTrackType==2 || fTrackType==4 || fTrackType==5) delete track;
     
   }//track loop
 

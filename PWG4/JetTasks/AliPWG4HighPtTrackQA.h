@@ -74,6 +74,8 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   void SetIsPbPb(Bool_t cs)                {fIsPbPb = cs;}
   void SetCentralityClass(int cent)        {fCentClass=cent;}
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
+  void SetCutsITSLoose(AliESDtrackCuts* trackCuts) {fTrackCutsITSLoose = trackCuts;}
+  void SetCutsTPConly(AliESDtrackCuts* trackCuts) {fTrackCutsTPConly = trackCuts;}
   void SetTrackType(Int_t trackType) {fTrackType = trackType;}
   void SetFilterMask(UInt_t filterMask)    {fFilterMask = filterMask;}
 
@@ -100,9 +102,11 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   AliESDEvent *fESD;              //! ESD object
   const AliESDVertex   *fVtx;     //! vertex object
 
-  AliESDtrackCuts *fTrackCuts;    // TrackCuts
-  Int_t   fTrackType;             // 0: global track; 1:TPConly track 2: TPConly constrained track 3: global ITSrefit 4: TPConly constrained track with QA selection based on global track
-  UInt_t fFilterMask;             //! Select tracks from specific track cuts belonging to certain filter mask for AOD analysis
+  AliESDtrackCuts *fTrackCuts;         // TrackCuts
+  AliESDtrackCuts *fTrackCutsITSLoose; //Loose ITS track cuts
+  AliESDtrackCuts *fTrackCutsTPConly;  //TPC track cuts
+  Int_t   fTrackType;                  // 0: global track; 1:TPConly track 2: TPConly constrained track 3: global ITSrefit 4: TPConly constrained track with QA selection based on global track
+  UInt_t fFilterMask;                  //! Select tracks from specific track cuts belonging to certain filter mask for AOD analysis
 
   Double_t fSigmaConstrainedMax;  // max sigma on constrained fit
   Float_t fPtMax;                 // Maximum pT for histograms
