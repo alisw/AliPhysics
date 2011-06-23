@@ -393,7 +393,7 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
          ifill++;
          if (ifill >= fNMix) break;
       }
-      //cout << "Matches for event " << Form("%5d", ievt) << ": " << matched[ievt].Data() << " (" << ifill << ")" << endl;
+      AliDebugClass(1, Form("Matches for event %5d = %s", ievt, matched[ievt].Data()));
    }
    
    // perform mixing
@@ -407,7 +407,6 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
       TObjArrayIter next(list);
       while ( (os = (TObjString*)next()) ) {
          imix = os->GetString().Atoi();
-         //cout << "Mixing " << ievt << " with " << imix << endl;
          fEvBuffer->GetEntry(imix);
          for (idef = 0; idef < nDefs; idef++) {
             def = (AliRsnMiniOutput*)fHistograms[idef];

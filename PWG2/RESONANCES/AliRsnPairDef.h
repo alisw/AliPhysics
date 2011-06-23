@@ -32,9 +32,9 @@ public:
 
    void SetMotherPDG(Int_t pdg)                 {fMotherPDG = pdg;}
    void SetMotherMass(Double_t mass)            {fMotherMass = mass;}
-   void SetDef1(AliRsnDaughterDef *def)         {if (def) fDef1 = (*def);}
-   void SetDef2(AliRsnDaughterDef *def)         {if (def) fDef2 = (*def);}
-   void SetDef(Int_t i, AliRsnDaughterDef *def) {if (!def) return; if (i<1) fDef1 = (*def); else fDef2 = (*def);}
+   void SetDef1(const AliRsnDaughterDef *def)   {if (def) fDef1 = (*def);}
+   void SetDef2(const AliRsnDaughterDef *def)   {if (def) fDef2 = (*def);}
+   void SetDef(Int_t i, const AliRsnDaughterDef *def) {if (!def) return; if (i<1) fDef1 = (*def); else fDef2 = (*def);}
 
    Bool_t IsLikeSign()  const {return (fDef1.GetChargeC() == fDef2.GetChargeC());}
    Bool_t HasEqualPID() const {return (fDef1.GetPID() == fDef2.GetPID());}

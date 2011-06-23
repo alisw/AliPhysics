@@ -422,7 +422,8 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
    
    // it is necessary to know if criteria for the two daughters are the same
    // and if the two events are the same or not (mixing)
-   Bool_t sameCriteria = ((fCharge[0] == fCharge[1]) && (fCutID[0] == fCutID[1]));
+   //Bool_t sameCriteria = ((fCharge[0] == fCharge[1]) && (fCutID[0] == fCutID[1]));
+   Bool_t sameCriteria = ((fCharge[0] == fCharge[1]) && (fDaughter[0] == fDaughter[1]));
    Bool_t sameEvent = (event1->ID() == event2->ID());
    
    Int_t nsel1 = event1->CountParticles(fCharge[0], fCutID[0]);
@@ -445,7 +446,7 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
       // the first track *after* current one;
       // otherwise it starts from the beginning
       start = ((sameEvent && sameCriteria) ? i1 + 1 : 0);
-      cout << "START = " << endl;
+      AliDebugClass(2, Form("Start point = %d", start));
       // internal loop
       for (i2 = start; i2 < n2; i2++) {
          p2 = event2->GetParticle(i2);

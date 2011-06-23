@@ -1,3 +1,11 @@
+//
+// AliRsnValuePID
+// Implementation of values related to PID
+// which can be used to monitor or check cuts
+// based on tolerance ranges between detector signals
+// and expected responses for particle species
+//
+
 #include <Riostream.h>
 
 #include "AliVTrack.h"
