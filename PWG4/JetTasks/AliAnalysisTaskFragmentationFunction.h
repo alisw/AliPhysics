@@ -484,7 +484,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 	kBckgOut2JStat, kBckgOut3JStat, kBckgOutAJStat,  kBckgASide, kBckgASideWindow, kBckgPerpWindow};
 
  
- private:
+ protected:
   
   Int_t   GetListOfTracks(TList* list, Int_t type);
   Int_t	  GetListOfJets(TList* list, Int_t type);
