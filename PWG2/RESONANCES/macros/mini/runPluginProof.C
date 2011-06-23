@@ -19,7 +19,7 @@ void runPluginProof
    //const char *options     = "aod_mc_pbpb",
    
    const char *outName     = "proof.root",
-   const char *macroPath   = "..",
+   const char *macroPath   = ".",
    const char *testFile    = "",
    const char *addLibs     = "libEventMixing.so PWG2resonances.par",
    const char *addPars     = ""
@@ -34,7 +34,7 @@ void runPluginProof
    
    // execute the general setup from the apposite macro
    // it returns also a TString value with the input tree name
-   gROOT->LoadMacro("../AnalysisSetupRsnMini.C");
+   gROOT->LoadMacro("AnalysisSetupRsnMini.C");
    TString out = Setup(nmix, options, outName, macroPath);
    if (out.Length() < 1) return;
 
