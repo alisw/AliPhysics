@@ -112,15 +112,36 @@ Bool_t AliAnalyseLeadingTrackUE::ApplyCuts(TObject* track)
 
 
 //____________________________________________________________________
-void AliAnalyseLeadingTrackUE::DefineESDCuts(Int_t /*filterbit*/){
+void AliAnalyseLeadingTrackUE::DefineESDCuts(Int_t filterbit) {
   
   // Reproduces the cuts of the corresponding bit in the ESD->AOD filtering
   // (see $ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C)
+  
+  if (filterbit == -1)
+    filterbit = fFilterBit;
 
-  if (fFilterBit == 128)
+  if (filterbit == 128)
   {
     fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     fEsdTrackCuts->SetMinNClustersTPC(70);
+  }
+  else if (filterbit == 256)
+  {
+    // syst study
+    fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    fEsdTrackCuts->SetMinNClustersTPC(80);
+    fEsdTrackCuts->SetMaxChi2PerClusterTPC(3);
+    fEsdTrackCuts->SetMaxDCAToVertexZ(2.7);
+    fEsdTrackCuts->SetMaxDCAToVertexXY(1.9);
+  }
+  else if (filterbit == 512)
+  {
+    // syst study
+    fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    fEsdTrackCuts->SetMinNClustersTPC(60);
+    fEsdTrackCuts->SetMaxChi2PerClusterTPC(5);
+    fEsdTrackCuts->SetMaxDCAToVertexZ(3.7);
+    fEsdTrackCuts->SetMaxDCAToVertexXY(2.9);
   }
   else
   {
@@ -181,7 +202,7 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
   
   // for TPC only tracks
   Bool_t hasOwnership = kFALSE;
-  if (fFilterBit == 128 && obj->InheritsFrom("AliESDEvent"))
+  if ((fFilterBit == 128 || fFilterBit == 256 || fFilterBit == 512) && obj->InheritsFrom("AliESDEvent"))
     hasOwnership = kTRUE;
   
   if (!arrayMC)
@@ -451,7 +472,7 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	if (!( ApplyCuts(part)) )
 	 return 0; 
 	
-	if (fFilterBit == 128)
+	if (fFilterBit == 128 || fFilterBit == 256 || fFilterBit == 512)
 	{
 	  // create TPC only tracks constrained to the SPD vertex
 
