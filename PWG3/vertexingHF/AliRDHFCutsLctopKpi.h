@@ -26,6 +26,7 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   AliRDHFCutsLctopKpi(const AliRDHFCutsLctopKpi& source);
   AliRDHFCutsLctopKpi& operator=(const AliRDHFCutsLctopKpi& source); 
  
+  using AliRDHFCuts::GetCutVarsForOpt;
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent *aod);
 

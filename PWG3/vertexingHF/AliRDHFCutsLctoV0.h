@@ -23,6 +23,7 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   AliRDHFCutsLctoV0(const AliRDHFCutsLctoV0& source);
   AliRDHFCutsLctoV0& operator=(const AliRDHFCutsLctoV0& source); 
  
+  using AliRDHFCuts::GetCutVarsForOpt;
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent *aod);
 
