@@ -84,28 +84,49 @@ Bool_t AliRsnCutKaonForPhi2010::IsSelected(TObject *obj)
    
    // check if TOF is matched
    // and computes all values used in the PID cut
+   Bool_t   accept = kFALSE;
    Bool_t   isTOF  = MatchTOF(track);
    Double_t nsTPC  = TMath::Abs(pid->NumberOfSigmasTPC(track, AliPID::kKaon));
    Double_t nsTOF  = TMath::Abs(pid->NumberOfSigmasTOF(track, AliPID::kKaon));
    
    // if only one detector is chosen, do this here
    if (fOnlyTPC) {
-      return (nsTPC <= fCutTPC);
+      AliDebugClass(1, Form("Checking only TPC: nsigma = %f - cut = %f", nsTPC, fCutTPC));
+      accept = (nsTPC <= fCutTPC);
    } else if (fOnlyTOF) {
-      return (isTOF && (nsTOF <= fCutTOF));
+      if (!isTOF) {
+         AliDebugClass(1, "Checking only TOF: rejecting non-TOF track");
+         accept = kFALSE;
+      } else {
+         AliDebugClass(1, Form("Checking only TOF: nsigma = %f - cut = %f", nsTOF, fCutTOF));
+         accept = (nsTOF <= fCutTOF);
+      }
    } else {
       // combined PID:
       // below momentum threshold, start with TPC
       if (track->P() < fTOFthreshold) {
-         if (isTOF)
-            return ((nsTPC <= fCutTPC) && (nsTOF <= fCutTOF));
-         else
-            return (nsTPC <= fCutTPC);
+         AliDebugClass(1, Form("Checking both PID: p = %f below threshold (TOF not required)", track->P())); 
+         if (isTOF) {
+            AliDebugClass(1, Form("TOF present: nsigmaTPC: = %f - cut = %f", nsTPC, fCutTPC));
+            AliDebugClass(1, Form("TOF present: nsigmaTOF: = %f - cut = %f", nsTOF, fCutTOF));
+            accept = ((nsTPC <= fCutTPC) && (nsTOF <= fCutTOF));
+         } else {
+            AliDebugClass(1, Form("TOF absent : nsigmaTPC: = %f - cut = %f", nsTPC, fCutTPC));
+            accept = (nsTPC <= fCutTPC);
+         }
       } else {
-         if (isTOF) 
-            return ((nsTPC <= fCutTPC) && (nsTOF <= fCutTOF));
-         else
-            return kFALSE;
+         AliDebugClass(1, Form("Checking both PID: p = %f above threshold (TOF required)", track->P())); 
+         if (isTOF) {
+            AliDebugClass(1, Form("TOF present: nsigmaTPC: = %f - cut = %f", nsTPC, fCutTPC));
+            AliDebugClass(1, Form("TOF present: nsigmaTOF: = %f - cut = %f", nsTOF, fCutTOF));
+            accept = ((nsTPC <= fCutTPC) && (nsTOF <= fCutTOF));
+         } else {
+            AliDebugClass(1, "TOF absent : track rejected");
+            accept = kFALSE;
+         }
       }
    }
+   
+   AliDebugClass(1, Form("Track %s", (accept ? "accepted" : "rejected")));
+   return accept;
 }
