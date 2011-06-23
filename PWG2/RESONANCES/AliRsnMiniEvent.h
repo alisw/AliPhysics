@@ -25,7 +25,7 @@ public:
    Float_t&            Angle()     {return fAngle;}
    TClonesArray&       Particles() {return fParticles;}
    
-   Int_t               CountParticles(Char_t charge = 0, Int_t cutID = -1);
+   TArrayI             CountParticles(Char_t charge = 0, Int_t cutID = -1);
    AliRsnMiniParticle* GetParticle(Int_t i);
    AliRsnMiniParticle* LeadingParticle();
    void                AddParticle(AliRsnMiniParticle copy);
