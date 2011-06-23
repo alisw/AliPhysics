@@ -42,7 +42,7 @@ using namespace std;
 #include "TString.h"
 #include "TObjString.h"
 #include "TObjArray.h"
-
+#include "TH1F.h"
 
 #include <sys/time.h>
 #include "TFile.h"
@@ -52,13 +52,26 @@ AliHLTTPCHWCFConsistencyControlComponent::AliHLTTPCHWCFConsistencyControlCompone
   AliHLTProcessor(),
   fNDismatch(0),
   fNBlocks(0),
-  fBenchmark("TPCHWConsistencyControl")
+  fBenchmark("TPCHWConsistencyControl"), 
+  fHistHeaderAll(0),
+  fHistHeaderGood(0),
+  fHistClusterAll(0),
+  fHistClusterGood(0),
+  fProfHeader(0),
+  fProfCluster(0)
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
+  fHistHeaderAll = new TH1F("hHWCFHeaderAll", "fHistHeaderAll",6,0.,6.);
+  fHistHeaderGood = new TH1F("hHWCFHeaderGood", "fHistHeaderGood",6,0.,6.);
+  fHistClusterAll = new TH1F("hHWCFClusterAll", "fHistClusterAll",7,0.,7.);
+  fHistClusterGood = new TH1F("hHWCFClusterGood", "fHistClusterGood",7,0.,7.);
+  fProfHeader = new TH1F("pHWCFHeader", "HWCF: Consistency of header data", 6, 0., 6.);
+  fProfCluster = new TH1F("pHWCFClusters", "HWCF: Consisteny of cluster data", 7, 0., 7.);
 }
 
 
@@ -67,7 +80,13 @@ AliHLTTPCHWCFConsistencyControlComponent::AliHLTTPCHWCFConsistencyControlCompone
   AliHLTProcessor(),
   fNDismatch(0),
   fNBlocks(0),
-  fBenchmark("TPCHWConsistencyControl")
+  fBenchmark("TPCHWConsistencyControl"),
+  fHistHeaderAll(0),
+  fHistHeaderGood(0),
+  fHistClusterAll(0),
+  fHistClusterGood(0),
+  fProfHeader(0),
+  fProfCluster(0)
 {
   // dummy
 }
@@ -81,6 +100,13 @@ AliHLTTPCHWCFConsistencyControlComponent& AliHLTTPCHWCFConsistencyControlCompone
 AliHLTTPCHWCFConsistencyControlComponent::~AliHLTTPCHWCFConsistencyControlComponent()
 {
   // see header file for class documentation
+
+  delete fHistHeaderAll;
+  delete fHistHeaderGood;
+  delete fHistClusterAll;
+  delete fHistClusterGood;
+  delete fProfHeader;
+  delete fProfCluster;
 }
 
 // Public functions to implement AliHLTComponent's interface.
@@ -102,14 +128,7 @@ void AliHLTTPCHWCFConsistencyControlComponent::GetInputDataTypes( vector<AliHLTC
 AliHLTComponentDataType AliHLTTPCHWCFConsistencyControlComponent::GetOutputDataType()
 {
   // see header file for class documentation
-  return kAliHLTVoidDataType;//kMultipleDataType;
-}
-
-int AliHLTTPCHWCFConsistencyControlComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
-{
-  // see header file for class documentation
-  tgtList.clear();
-  return tgtList.size();
+  return kAliHLTDataTypeHistogram  | kAliHLTDataOriginTPC;
 }
 
 
@@ -117,8 +136,8 @@ void AliHLTTPCHWCFConsistencyControlComponent::GetOutputDataSize( unsigned long&
 {
   // see header file for class documentation
   // XXX TODO: Find more realistic values.  
-  constBase = 0;
-  inputMultiplier = 6;
+  constBase = 1000;
+  inputMultiplier = 0;
 }
 
 
@@ -329,89 +348,216 @@ int AliHLTTPCHWCFConsistencyControlComponent::DoEvent( const AliHLTComponentEven
     if( checkedBlocks[ndx1] ) continue;// block already checked
 
     checkedBlocks[ndx1] = 1;
+
     int slice1 = AliHLTTPCDefinitions::GetMinSliceNr( *iter1 );
     int patch1 = AliHLTTPCDefinitions::GetMinPatchNr( *iter1 );
+   
+    bool header1OK = 1;
+    if( iter1->fSize>0 ){
+      header1OK = ( iter1->fSize % sizeof(AliHLTUInt32_t) == 0 ) 
+	&& ( iter1->fSize >= sizeof(AliRawDataHeader) ) 
+	&& (iter1->fPtr != NULL );      
+    }
     
-    int nSecondBlocksFound=0;    
-    bool sizeInconsistency = 0;	
-    AliHLTInt64_t intDiff = 0;
-    AliHLTFloat64_t floatDiff = 0;
+    int  nMatchedBlocks=0;
+        
+    bool sameHLTHd = 1;     
+    bool sameCDH = 1;     
+    bool sameRCU = 1;      
+    bool sameSize = 1;
+   
+    bool sameFlag = 1;
+    bool sameCharge = 1;
+    bool sameRow = 1;
+    bool sameFloat[4] = {1,1,1,1};
     
-    for ( unsigned long ndx2 = ndx1+1; ndx2 < evtData.fBlockCnt; ndx2++ ){
-      
-      const AliHLTComponentBlockData* iter2 = blocks+ndx2;      
+    for ( unsigned long ndx2 = ndx1+1; ndx2 < evtData.fBlockCnt; ndx2++ ){      
+      const AliHLTComponentBlockData* iter2 = blocks+ndx2;
       if (  iter2->fDataType != (AliHLTTPCDefinitions::fgkHWClustersDataType | kAliHLTDataOriginTPC)
 	    ) continue;
             
       int slice2 = AliHLTTPCDefinitions::GetMinSliceNr( *iter2 );
       int patch2 = AliHLTTPCDefinitions::GetMinPatchNr( *iter2 );
       if( slice1!=slice2 || patch1!=patch2 ) continue;
-
+      
       if( checkedBlocks[ndx2] ) continue;
-
       checkedBlocks[ndx2] = 1;
 
-      nSecondBlocksFound++;
-      
-      int nWordsHeader =  sizeof(AliRawDataHeader)/4;
-      int nWords = iter1->fSize/4;
+      nMatchedBlocks++;
+
+      bool header2OK = 1;
+      if( iter2->fSize>0 ){
+	header2OK = ( iter2->fSize % sizeof(AliHLTUInt32_t) == 0 ) 
+	  && ( iter2->fSize >= sizeof(AliRawDataHeader) ) 
+	  && (iter2->fPtr != NULL );
+      }
  
+      fHistHeaderAll->Fill(2);
+      sameHLTHd = ( header1OK == header2OK );
+      if( sameHLTHd ) fHistHeaderGood->Fill(2);
+      if( !header1OK || !header2OK ) continue;
+      
+      int nWordsHeader =  sizeof(AliRawDataHeader)/sizeof(AliHLTUInt32_t);
+      int nWords1 = iter1->fSize/sizeof(AliHLTUInt32_t);
+      int nWords2 = iter2->fSize/sizeof(AliHLTUInt32_t);
       const AliHLTUInt32_t *p1 = (const AliHLTUInt32_t *) iter1->fPtr;
       const AliHLTUInt32_t *p2 = (const AliHLTUInt32_t *) iter2->fPtr;
 
-      // compare size 
-
-      bool sizeInc = 
-	( iter1->fSize != iter2->fSize )
-	|| ( iter1->fSize % 4 != 0 ) || ( iter2->fSize % 4 !=0 )
-	|| iter1->fSize < sizeof(AliRawDataHeader)      
-	|| iter2->fSize < sizeof(AliRawDataHeader)
-	|| (nWords>0 && (!iter1->fPtr || !iter2->fPtr) );
+      // compare CDH headers
       
-      sizeInconsistency = sizeInconsistency || sizeInc;
+       for(AliHLTInt32_t i=0; i<nWordsHeader; i++ ){
+	if( p1[i] != p2[i] ) sameCDH = 0;
+      }
 
-      if( !sizeInc ){
-	bool RCUtrailer = 0;
- 	for( AliHLTInt32_t i=0; i<nWords; i++){
-	  if( RCUtrailer || i<nWordsHeader || ( (i-nWordsHeader)%5==0) ){
-	    // integer data
-	    if( p1[i]>>30 == 0x2 ) RCUtrailer = 1;
-	    long int d = (long int) p1[i] - (long int) p2[i];
-	    if( abs(d)>intDiff ) intDiff = d;
-	  } else {
-	    // float data
-	    AliHLTFloat64_t f1 = *(AliHLTFloat32_t*)&p1[i];
-	    AliHLTFloat64_t f2 = *(AliHLTFloat32_t*)&p2[i];
-	    double w = fabs(f1 + f2)/2;
+      fHistHeaderAll->Fill(3);
+      if( sameCDH ) fHistHeaderGood->Fill(3);
+
+      // find rcu headers
+      
+      int startRCU1 = nWordsHeader;
+      int startRCU2 = nWordsHeader;
+      
+      for( AliHLTInt32_t i=nWordsHeader; i<nWords1; i+=5 ){
+	if( p1[i]>>30 == 0x2 ){
+	  startRCU1 = i; 
+	  break;
+	}
+      }
+      
+      for( AliHLTInt32_t i=nWordsHeader; i<nWords2; i+=5 ){
+	if( p2[i]>>30 == 0x2 ){
+	  startRCU2 = i; 
+	  break;
+	}
+      }     
+      
+
+      // compare RCU headers
+
+      if( startRCU1 < nWords1 || startRCU2 < nWords2 ){
+	if( nWords1 - startRCU1 != nWords2 - startRCU2 ) sameRCU = 0;
+	else{
+	  for( AliHLTInt32_t i1=startRCU1, i2=startRCU2; (i1<nWords1) && (i2<nWords2); i1++,i2++ ){
+	    if( p1[i1]!=p2[i2] ) sameRCU = 0;
+	  }
+	}
+	fHistHeaderAll->Fill(4);
+	if( sameRCU ) fHistHeaderGood->Fill(4);
+      }
+      
+      sameSize = ( startRCU1 == startRCU2 );
+
+      fHistHeaderAll->Fill(5);
+      if( sameSize ) fHistHeaderGood->Fill(5);
+
+      // compare clusters
+                       
+      if( startRCU1 == startRCU2 ){
+ 	for( AliHLTInt32_t i=nWordsHeader; i<startRCU1; i+=5){
+	  AliHLTUInt32_t header1 = p1[i];
+	  AliHLTUInt32_t header2 = p2[i];
+
+
+	  AliHLTUInt32_t flag1 = header1 >> 30;
+	  AliHLTUInt32_t charge1 = ( header1 & 0xFFFFFF ) >> 6;
+	  AliHLTUInt32_t row1 = header1 & 0x3f;
+	  AliHLTUInt32_t flag2 = header2 >> 30;
+	  AliHLTUInt32_t charge2 = ( header2 & 0xFFFFFF ) >> 6;
+	  AliHLTUInt32_t row2 = header2 & 0x3f;
+	  
+	  fHistClusterAll->Fill(0);
+	  if( flag1 == flag2 ) fHistClusterGood->Fill(0);
+	  else sameFlag = 0;
+	  
+	  if( flag1!=0x3 || flag2!=0x3 ) continue;
+	  
+	  // compare cluster charge
+	  
+	  fHistClusterAll->Fill(1);
+	  if( charge1 == charge2 ) fHistClusterGood->Fill(1);
+	  else sameCharge = 0;
+	  
+	  // compare cluster row index
+	  
+	  fHistClusterAll->Fill(2);
+	  if( row1 == row2 ) fHistClusterGood->Fill(2);
+	  else sameRow = 0;
+	  
+	  // compare floating point data
+
+	  for( int j=0; j<4; j++ ){
+	    AliHLTFloat64_t f1     = *((AliHLTFloat32_t*)&p1[i+j]);
+	    AliHLTFloat64_t f2     = *((AliHLTFloat32_t*)&p2[i+j]);
+	    double w = (fabs(f1) + fabs(f2))/2;
 	    if( w>1.e-20 ){
-	      AliHLTFloat64_t d = fabs(f1 - f2)/w;
-	      if( d > floatDiff ) floatDiff = d;	      
+	      fHistClusterAll->Fill(3+j);
+	      if( fabs(f1 - f2) < 1.e-6*w ) fHistClusterGood->Fill(3+j);
+	      else sameFloat[j] = 0;
 	    }
 	  }
 	}
-      }         
+      }
     }
-
-    HLTInfo("HWCF consistency check for slice %d patch %d: wrong NBlocks: %d, wrong size: %d, intDiff: %d, floatDiff: %.10f %s", slice1, patch1, 
-	    (nSecondBlocksFound!=1),sizeInconsistency,intDiff, floatDiff*100.,"%"); 
-    if( (nSecondBlocksFound!=1) || sizeInconsistency || intDiff!=0 || floatDiff>1.e-6 ){
-      fNDismatch++;
-      HLTWarning("HWCF consistency check for slice %d patch %d: wrong NBlocks: %d, wrong size: %d, intDiff: %d, floatDiff: %.10f %s", slice1, patch1, 
-		 (nSecondBlocksFound!=1),sizeInconsistency,intDiff, floatDiff*100.,"%"); 
-    }
+        
     fNBlocks++;
-  }
+      
+    bool err = 0;
+    TString warn;
+    warn.Form("HWCF consistency check for slice %d patch %d. Values  not matched:", slice1, patch1 );
+    
+    if( nMatchedBlocks!=1 ){ 
+      err=1; 
+      TString x;
+      x.Form(" NMatchedBlocks(%d)",nMatchedBlocks);
+      warn+=x;
+    }
+    if( !sameHLTHd ){ err=1; warn+=", HLT header";}
+    if( !sameCDH ){ err=1; warn+=", CDH header";}
+    if( !sameRCU ){ err=1; warn+=", RCU header";}
+    if( !sameSize ){ err=1; warn+=", N Clusters";}
+    if( !sameFlag ){ err=1; warn+=", Cluster Header";}
+    if( !sameCharge ){ err=1; warn+=", Cluster Charge";}
+    if( !sameRow ){ err=1; warn+=", Cluster Row";}
+    if( !sameFloat[0] ){ err=1; warn+=", Cluster Pad value";}
+    if( !sameFloat[1] ){ err=1; warn+=", Cluster Time value";}
+    if( !sameFloat[2] ){ err=1; warn+=", Cluster PadErr value";}
+    if( !sameFloat[3] ){ err=1; warn+=", Cluster TimeErr value";}
+      
+    if( err ){
+      fNDismatch++;		
+      HLTWarning(warn.Data());
+    } else {
+      //warn+=" NO ";
+      //HLTWarning(warn.Data());     
+    }
+       
+    fHistHeaderAll->Fill(0);
+    if( nMatchedBlocks >=1 ) fHistHeaderGood->Fill(0);
+    fHistHeaderAll->Fill(1);
+    if( nMatchedBlocks <=1 ) fHistHeaderGood->Fill(1);
+
+  } // first block
+    
   
   delete[] checkedBlocks;
    
   HLTInfo("HWCF consistency check: %.10f %s of %ld data blocks are OK",
 	  (double)(fNBlocks-fNDismatch)/(double)fNBlocks*100.,"%",fNBlocks);
   
-  if( fNDismatch>0 ){
-    HLTWarning("HWCF inconsistency: %ld of %ld data blocks are not OK",
-	       fNDismatch,fNBlocks);      
-  }  
+  //if( fNDismatch>0 ){
+  //HLTWarning("HWCF inconsistency: %ld of %ld data blocks are not OK",
+  //fNDismatch,fNBlocks);      
+  //}  
+
+  fProfHeader->Divide(fHistHeaderGood, fHistHeaderAll,1,1.,"b");
+  fProfCluster->Divide(fHistClusterGood, fHistClusterAll, 1, 1, "b");
+
+  PushBack( (TObject*) fProfHeader, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC,0);
+  fBenchmark.AddOutput(GetLastObjectSize());
+  PushBack( (TObject*) fProfCluster, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC,0);
+  fBenchmark.AddOutput(GetLastObjectSize());
   
+
   fBenchmark.Stop(0);  
   HLTInfo(fBenchmark.GetStatistics());
   return iResult;

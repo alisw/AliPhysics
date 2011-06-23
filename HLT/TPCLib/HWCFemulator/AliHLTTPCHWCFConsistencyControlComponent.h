@@ -16,6 +16,7 @@
 
 #include "AliHLTProcessor.h"
 #include "AliHLTComponentBenchmark.h"
+class TH1F;
 
 /**
  * @class AliHLTTPCHWCFConsistencyControlComponent
@@ -63,9 +64,6 @@ class AliHLTTPCHWCFConsistencyControlComponent : public AliHLTProcessor
 
   /** interface function, see AliHLTComponent for description */
   AliHLTComponentDataType GetOutputDataType();
-
-  /** interface function, see AliHLTComponent for description */
-  int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
 
   /** interface function, see AliHLTComponent for description */
   virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
@@ -130,5 +128,11 @@ class AliHLTTPCHWCFConsistencyControlComponent : public AliHLTProcessor
   AliHLTUInt64_t fNDismatch;// N inconsistent data blocks
   AliHLTUInt64_t fNBlocks;// N of data blocks processed
   AliHLTComponentBenchmark fBenchmark; // benchmark
+  TH1F *fHistHeaderAll; // checked parameters of block headers
+  TH1F *fHistHeaderGood; // consistent parameters of block headers
+  TH1F *fHistClusterAll; // checked parameters of clusters
+  TH1F *fHistClusterGood; // consistent parameters of clusters
+  TH1F *fProfHeader; // ratio of good headers
+  TH1F *fProfCluster; // ratio of good clusters
 };
 #endif
