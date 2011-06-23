@@ -38,6 +38,8 @@ public:
    void                UseMC(Bool_t yn = kTRUE)           {fUseMC = yn;}                     
    void                UseCentrality(const char *type)    {fUseCentrality = kTRUE; fCentralityType = type; fCentralityType.ToUpper();}
    void                UseMultiplicity(const char *type)  {fUseCentrality = kFALSE; fCentralityType = type; fCentralityType.ToUpper();}
+   void                UseContinuousMix()                 {fContinuousMix = kTRUE;}
+   void                UseBinnedMix()                     {fContinuousMix = kFALSE;}
    void                SetNMix(Int_t nmix)                {fNMix = nmix;}
    void                SetMaxDiffMult (Double_t val)      {fMaxDiffMult  = val;}
    void                SetMaxDiffVz   (Double_t val)      {fMaxDiffVz    = val;}
@@ -66,12 +68,14 @@ private:
    void     FillTrueMotherESD(AliRsnMiniEvent *event);
    void     FillTrueMotherAOD(AliRsnMiniEvent *event);
    void     StoreTrueMother(AliRsnMiniPair *pair, AliRsnMiniEvent *event);
+   Bool_t   EventsMatch(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2);
 
    Bool_t               fUseMC;           //  use or not MC info
    Int_t                fEvNum;           //! absolute event counter
    Bool_t               fUseCentrality;   //  if true, use centrality for event, otherwise use multiplicity
    TString              fCentralityType;  //  definition used to choose what centrality or multiplicity to use
                        
+   Bool_t               fContinuousMix;   //  mixing --> technique chosen (continuous or binned)
    Int_t                fNMix;            //  mixing --> required number of mixes
    Double_t             fMaxDiffMult;     //  mixing --> max difference in multiplicity
    Double_t             fMaxDiffVz;       //  mixing --> max difference in Vz of prim vert
@@ -89,8 +93,9 @@ private:
    AliTriggerAnalysis  *fTriggerAna;      //! trigger analysis
    AliESDtrackCuts     *fESDtrackCuts;    //! quality cut for ESD tracks
    AliRsnMiniEvent     *fMiniEvent;       //! mini-event cursor
+   Bool_t               fBigOutput;       // flag if open file for output list
 
-   ClassDef(AliRsnMiniAnalysisTask, 1); // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 2);   // AliRsnMiniAnalysisTask
 };
 
 inline Int_t AliRsnMiniAnalysisTask::CreateValue(AliRsnMiniValue::EType type, Bool_t useMC)
