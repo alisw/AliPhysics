@@ -2,13 +2,19 @@ void runLocal
 (
    Int_t       nReadFiles      =  0,
    Int_t       nSkipFiles      =  0,
-   Int_t       nmix            = 10,
+   Int_t       nmix            =  2,
    //const char *inputSource     = "file-collections/AOD048_LHC11a10b.txt",
-   //const char *options         = "aod",
+   //const char *options         = "aod_mc_pbpb",
    //const char *inputSource     = "file-collections/AOD049_LHC10h_pass2.txt",
-   //const char *options         = "aod",
+   //const char *options         = "aod_data_pbpb",
    const char *inputSource     = "file-collections/ESD_LHC10d1.txt",
    const char *options         = "esd_mc",
+   //const char *inputSource     = "000117112.xml",
+   //const char *options         = "esd_data",
+   //const char *inputSource     = "aod_test.xml",
+   //const char *options         = "aod_data",
+   //const char *inputSource     = "LHC11a10a_bis_test.xml",
+   //const char *options         = "esd_mc_pbpb",
    const char *outName         = "test.root",
    const char *macroPath       = ".",
    const char *setupName       = "AnalysisSetupRsnMini.C"
@@ -18,8 +24,9 @@ void runLocal
    // === PREPARATION ==============================================================================
    //
    
-// AliLog::SetClassDebugLevel("AliRsnMiniOutput"      , 2);
-// AliLog::SetClassDebugLevel("AliRsnMiniAnalysisTask", 1);
+   //AliLog::SetClassDebugLevel("AliRsnMiniOutput"      , 2);
+   //AliLog::SetClassDebugLevel("AliRsnMiniAnalysisTask", 2);
+   //AliLog::SetClassDebugLevel("AliRsnCutKaonForPhi2010", 2);
    
    // execute the general setup from the apposite macro
    // it returns also a TString value with the input tree name

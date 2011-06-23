@@ -41,6 +41,7 @@ TString Setup
    opt.ToUpper();
    
    Bool_t isMC      = opt.Contains("MC") || (!opt.Contains("DATA"));
+   Bool_t isPP      = opt.Contains("PP") || (!opt.Contains("PBPB"));
    Bool_t isESD     = opt.Contains("ESD");
    Bool_t useTender = opt.Contains("TENDER");
    Bool_t noV0      = opt.Contains("NOV0");
@@ -59,10 +60,12 @@ TString Setup
    gSystem->Load("libCORRFW.so");
    
    // tender-related libraries
-   if (useTender) {
+   if (isESD && useTender) {
       ::Info("AnalysisSetup", "Loading tender libraries");
       gSystem->Load("libTENDER.so");
       gSystem->Load("libTENDERSupplies.so");
+   } else if (!isESD) {
+      useTender = kFALSE;
    }
    
    // load development RSN library
@@ -79,9 +82,6 @@ TString Setup
    //
    // === INPUT / OUTPUT HANDLER CONFIGURATION =====================================================
    //
-
-   // create multi input event handler
-   AliMultiInputEventHandler *multiHandler = new AliMultiInputEventHandler();
 
    if (isESD) {
       out = "esdTree";
@@ -116,7 +116,6 @@ TString Setup
    //
 
    if (isESD) {
-      // setup physics selection
       ::Info("AnalysisSetup", "Add physics selection by default on ESD analysis");
       gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC);
@@ -127,11 +126,26 @@ TString Setup
    }
    
    //
+   // === CENTRALITY/PLANE (ESD only) ==============================================================
+   //
+
+   if (isESD && !isPP) {
+      ::Info("AnalysisSetup", "Add centrality and event plane computation tasks");
+      gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskCentrality.C");
+      gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskEventplane.C");
+      AddTaskCentrality();
+      AddTaskEventplane();
+   }
+
+   //
    // === PID RESPONSE =============================================================================
    //
    
    gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPIDResponse.C");
    AddTaskPIDResponse(isMC);
+   
+   //gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskPIDqa.C ");
+   //AddTaskPIDqa();
    
    //
    // === OTHER TASKS ==============================================================================
@@ -139,7 +153,7 @@ TString Setup
    
    // add RSN task
    gROOT->LoadMacro(Form("%s/AddAnalysisTaskRsnMini.C", macroPath));
-   if (!AddAnalysisTaskRsnMini(isMC, macroPath, nmix)) return kFALSE;
+   if (!AddAnalysisTaskRsnMini(isMC, isPP, macroPath, nmix)) return "";
    
    ::Info("AnalysisSetup", "Setup successful");
    return out;
