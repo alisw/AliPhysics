@@ -29,7 +29,6 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
  
   using AliRDHFCuts::GetCutVarsForOpt;
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters);
-  virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent *aod);
 
   using AliRDHFCuts::IsSelected;
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel);
