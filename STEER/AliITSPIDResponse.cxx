@@ -42,15 +42,20 @@ AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
     fBBtpcits[2]=0.905;
     fBBtpcits[3]=1.2;
     fBBtpcits[4]=6.6;
-    fBBsa[0]=5.33458E4;
-    fBBsa[1]=16.5303;
-    fBBsa[2]=2.60065E-3;
-    fBBsa[3]=3.59533E-4;
-    fBBsa[4]=7.51168E-5;  
+    fBBsa[0]=2.73198E7;
+    fBBsa[1]=6.92389;
+    fBBsa[2]=1.90088E-6;
+    fBBsa[3]=1.90088E-6;
+    fBBsa[4]=3.40644E-7;
+    fBBsaElectron[0]=4.05799E6;
+    fBBsaElectron[1]=38.5713;
+    fBBsaElectron[2]=1.46462E-7;
+    fBBsaElectron[3]=1.46462E-7;
+    fBBsaElectron[4]=4.40284E-7; 
     fResolSA[0]=1.;   // 0 cluster tracks should not be used
-    fResolSA[1]=0.25;  // rough values for tracks with 1 or 2
-    fResolSA[2]=0.2;   // clusters (not to be used)
-    fResolSA[3]=0.116; // value from pp 2010 run (L. Milano, 18-Jan-11)
+    fResolSA[1]=0.25;  // rough values for tracks with 1
+    fResolSA[2]=0.131;   // value from pp 2010 run (L. Milano, 16-Jun-11)
+    fResolSA[3]=0.113; // value from pp 2010 run 
     fResolSA[4]=0.104; // value from pp 2010 run
     for(Int_t i=0; i<5;i++) fResolTPCITS[i]=0.13;
   }else{
@@ -59,16 +64,21 @@ AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
     fBBtpcits[2]=1.00;
     fBBtpcits[3]=0.964;
     fBBtpcits[4]=2.59;
-    fBBsa[0]=-2.48;
-    fBBsa[1]=23.13;
-    fBBsa[2]=1.161;
-    fBBsa[3]=0.93;
-    fBBsa[4]=-1.2973;
+    fBBsa[0]=2.02078E7;
+    fBBsa[1]=14.0724;
+    fBBsa[2]=3.84454E-7;
+    fBBsa[3]=3.84454E-7;
+    fBBsa[4]=2.43913E-7;
+    fBBsaElectron[0]=2.26807E6;
+    fBBsaElectron[1]=99.985;
+    fBBsaElectron[2]=0.000714841;
+    fBBsaElectron[3]=0.000259585;
+    fBBsaElectron[4]=1.39412E-7;
     fResolSA[0]=1.;   // 0 cluster tracks should not be used
-    fResolSA[1]=0.25;  // rough values for tracks with 1 or 2
-    fResolSA[2]=0.2;   // clusters (not to be used)
-    fResolSA[3]=0.110; // value from pp 2010 simulations (L. Milano, 18-Jan-11)
-    fResolSA[4]=0.096; // value from pp 2010 simulations
+    fResolSA[1]=0.25;  // rough values for tracks with 1
+    fResolSA[2]=0.126;   // value from pp 2010 simulations (L. Milano, 16-Jun-11)
+    fResolSA[3]=0.109; // value from pp 2010 simulations
+    fResolSA[4]=0.097; // value from pp 2010 simulations
     for(Int_t i=0; i<5;i++) fResolTPCITS[i]=0.13;
   }
 }
@@ -118,7 +128,13 @@ Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const 
   Double_t gamma=bg/beta;
   Double_t par[5];
   if(isSA){
-    for(Int_t ip=0; ip<5;ip++) par[ip]=fBBsa[ip];
+    if(mass>0.0005 && mass<0.00052){
+      //if is an electron use a specific BB parameterization
+      //To be used only between 100 and 160 MeV/c
+      for(Int_t ip=0; ip<5;ip++) par[ip]=fBBsaElectron[ip];
+    }else{
+      for(Int_t ip=0; ip<5;ip++) par[ip]=fBBsa[ip];
+    }
   }else{
     for(Int_t ip=0; ip<5;ip++) par[ip]=fBBtpcits[ip];
   }
@@ -127,7 +143,7 @@ Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const 
     eff=(bg-par[3])*(bg-par[3])+par[4];
   else
     eff=(par[2]-par[3])*(par[2]-par[3])+par[4];
-
+  
   Double_t bb=0.;
   if(gamma>=0. && beta>0.){
     bb=(par[1]+2.0*TMath::Log(gamma)-beta*beta)*(par[0]/(beta*beta))*eff;

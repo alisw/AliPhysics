@@ -27,6 +27,9 @@ public:
  void SetBetheBlochParamsITSsa(Double_t* param){
    for(Int_t iPar=0; iPar<5; iPar++) fBBsa[iPar]=param[iPar];
  }
+ void SetElectronBetheBlochParamsITSsa(Double_t* param){
+   for(Int_t iPar=0; iPar<5; iPar++) fBBsaElectron[iPar]=param[iPar];
+ }
 
  Double_t BetheAleph(Double_t p,Double_t mass) const;
  Double_t Bethe(Double_t p, Double_t mass, Bool_t iSA=kFALSE) const;
@@ -49,11 +52,12 @@ private:
   Double_t fKp4;             // ALEPH BB param 4
   Double_t fKp5;             // ALEPH BB param 
   Double_t  fBBsa[5];         // parameters of BB for SA tracks
+  Double_t  fBBsaElectron[5];         // parameters of BB for SA tracks
   Double_t  fBBtpcits[5];     // parameters of BB for TPC+ITS tracks
   Float_t  fResolSA[5];      // resolutions vs. n. of SDD/SSD points
   Float_t  fResolTPCITS[5];  // resolutions vs. n. of SDD/SSD points
 
-  ClassDef(AliITSPIDResponse,2)   // ITS PID class
+  ClassDef(AliITSPIDResponse,3)   // ITS PID class
 };
 
 #endif
