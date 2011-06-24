@@ -881,7 +881,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
       Bool_t relate = track->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
       if( !relate ) {
 	fh1NTracksReject->Fill("relate",1);
-    	delete track;
+    	if(track) delete track;
 	continue;
       }
       track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
@@ -900,13 +900,14 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
 	    Bool_t relate = track->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
 	    if( !relate ) {
 	      fh1NTracksReject->Fill("relate",1);
-	      delete track;
+	      if(track) delete track;
 	      continue;
 	    }
 	    track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
 	  }
 	  else if(fTrackType==6) {
 	    //use global constrained track
+	    track = esdtrack;
 	    track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
 
 	  }
@@ -917,15 +918,14 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
       track = esdtrack;
     
     if(!track) {
-      //      if(fTrackType==1 || fTrackType==2 || fTrackType==4) delete track;
       continue;
     }
 
-    if(fTrackType==2 || fTrackType==4) {
+    if(fTrackType==2 || fTrackType==4 || fTrackType==5) {
       //Cut on chi2 of constrained fit
       if(track->GetConstrainedChi2TPC() > fSigmaConstrainedMax*fSigmaConstrainedMax && fSigmaConstrainedMax>0.) {
 	fh1NTracksReject->Fill("chi2",1);
-	delete track;
+	if(track) delete track;
 	continue;
       }
     }
@@ -937,7 +937,9 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
 
     if (!(fTrackCuts->AcceptTrack(track)) && fTrackType!=4 && fTrackType!=5 && fTrackType!=6) {
       fh1NTracksReject->Fill("trackCuts",1);
-      if(fTrackType==1 || fTrackType==2) delete track;
+      if(fTrackType==1 || fTrackType==2) {
+	if(track) delete track;
+      }
       continue;
     }
 
@@ -993,7 +995,9 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
   
     //      int mult = fTrackCuts->CountAcceptedTracks(fESD);
 
-    if(fTrackType==1  || fTrackType==2 || fTrackType==4 || fTrackType==5) delete track;
+    if(fTrackType==1  || fTrackType==2 || fTrackType==4 || fTrackType==5) {
+      if(track) delete track;
+    }
     
   }//track loop
 
@@ -1055,7 +1059,7 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
     fPtChi2C->Fill(fVariables->At(0),fVariables->At(7));
     fPtNSigmaToVertex->Fill(fVariables->At(0),fVariables->At(8));
     fPtRelUncertainty1Pt->Fill(fVariables->At(0),fVariables->At(9));
-    fPtUncertainty1Pt->Fill(fVariables->At(0),fVariables->At(0)/fVariables->At(9));
+    fPtUncertainty1Pt->Fill(fVariables->At(0),fVariables->At(0)*fVariables->At(9));
     fPtSigmaY2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(13)));
     fPtSigmaZ2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(14)));
     fPtSigmaSnp2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(15)));
