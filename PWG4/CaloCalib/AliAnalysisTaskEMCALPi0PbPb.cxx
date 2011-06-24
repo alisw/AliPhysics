@@ -22,7 +22,6 @@
 #include "AliCDBManager.h"
 #include "AliCentrality.h"
 #include "AliEMCALGeometry.h"
-#include "AliEMCALGeometry.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliESDCaloTrigger.h"
@@ -1595,6 +1594,8 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
     Int_t nclus = clusters->GetEntries();
     for(Int_t j=0; j<nclus; ++j) {
       AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(j));
+      if (!clus->IsEMCAL())
+        continue;
       Double_t clusen = clus->E();
       if (clusen>1)
         ++fHeader->fNClus1;
@@ -1983,7 +1984,7 @@ void AliAnalysisTaskEMCALPi0PbPb::PrintDaughters(const AliMCParticle *p, const A
     d2=d1;
   for (Int_t i=d1;i<=d2;++i) {
     const AliMCParticle *dmc = static_cast<const AliMCParticle *>(arr->GetTrack(i));
-      PrintDaughters(dmc,arr,level+1);
+    PrintDaughters(dmc,arr,level+1);
   }
 }
 
