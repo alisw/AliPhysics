@@ -53,6 +53,7 @@ class AliAODPidHF : public AliAODPid{
  void SetPCompatTOF(Double_t pTOF){fPCompatTOF=pTOF;return;}
  void SetTOFdecide(Bool_t tOFdecide){fTOFdecide=tOFdecide;return;}
  void SetOldPid(Bool_t oldPid){fOldPid=oldPid;return;}
+ void SetPtThresholdTPC(Double_t ptThresholdTPC){fPtThresholdTPC=ptThresholdTPC;return;}
  void SetPidResponse(AliPIDResponse *pidResp) {fPidResponse=pidResp;return;}
  
  //Getters
@@ -78,6 +79,7 @@ class AliAODPidHF : public AliAODPid{
  Double_t GetnSigmaCompatTPC() const{return fnSigmaCompat[0];}
  Double_t GetnSigmaCompatTOF() const{return fnSigmaCompat[1];}
  Bool_t GetOldPid(){return fOldPid;}
+ Double_t GetPtThresholdTPC(){return fPtThresholdTPC;}
  AliPIDResponse *GetPidResponse() const{return fPidResponse;}
 
  Int_t RawSignalPID (AliAODTrack *track, TString detector) const;
@@ -132,11 +134,12 @@ class AliAODPidHF : public AliAODPid{
  Bool_t fPbPb; //  real data PbPb 
  Bool_t fTOFdecide; //  real data PbPb 
  Bool_t fOldPid; //  old PID method implemented
+ Double_t fPtThresholdTPC; //  pT threshold to use TPC PID
  AliPIDResponse *fPidResponse; //pid response
  
 
 
- ClassDef(AliAODPidHF,12) // AliAODPid for heavy flavor PID
+ ClassDef(AliAODPidHF,13) // AliAODPid for heavy flavor PID
 
 };
 
