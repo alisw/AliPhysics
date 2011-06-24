@@ -56,7 +56,8 @@ AliAODPidHF::AliAODPidHF():
   fMCLowEn2011(kFALSE),
   fPbPb(kFALSE),
   fTOFdecide(kFALSE),
-  fOldPid(kFALSE),
+  fOldPid(kTRUE),
+  fPtThresholdTPC(999999.),
   fPidResponse(0)
 {
  //
@@ -115,6 +116,7 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fPbPb(pid.fPbPb),
   fTOFdecide(pid.fTOFdecide),
   fOldPid(pid.fOldPid),
+  fPtThresholdTPC(pid.fPtThresholdTPC),
   fPidResponse(pid.fPidResponse)
   {
   
@@ -197,6 +199,7 @@ Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
   
   Double_t dedx=pidObj->GetTPCsignal();
   Double_t mom = pidObj->GetTPCmomentum();
+  if(mom>fPtThresholdTPC) return 0;
   AliTPCPIDResponse tpcResponse;
   SetBetheBloch(tpcResponse); 
   UShort_t nTPCClus=pidObj->GetTPCsignalN();
@@ -515,6 +518,7 @@ Bool_t AliAODPidHF::TPCRawAsym(AliAODTrack* track,Int_t specie) const{
   if(!CheckStatus(track,"TPC")) return kFALSE;
   AliAODPid *pidObj = track->GetDetPid();
   Double_t mom = pidObj->GetTPCmomentum();
+  if(mom>fPtThresholdTPC) return 0;
   Double_t nsigma=999.;
   if(fOldPid){
   Double_t dedx=pidObj->GetTPCsignal();
