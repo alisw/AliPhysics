@@ -152,8 +152,8 @@ TString Setup
    //
    
    // add RSN task
-   gROOT->LoadMacro(Form("%s/AddAnalysisTaskRsnMini.C", macroPath));
-   if (!AddAnalysisTaskRsnMini(isMC, isPP, macroPath, nmix)) return "";
+   gROOT->LoadMacro(Form("%s/AddAnalysisTaskRsnMiniTest.C", macroPath));
+   if (!AddAnalysisTaskRsnMiniTest(isMC, isPP, macroPath, nmix)) return "";
    
    ::Info("AnalysisSetup", "Setup successful");
    return out;
