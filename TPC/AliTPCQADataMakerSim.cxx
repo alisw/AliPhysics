@@ -212,8 +212,8 @@ void AliTPCQADataMakerSim::MakeHits(TTree * hitTree)
 	      q += tpcHit->fQ;	      
 	    } else{ // Fill the histograms normalized to per cm 
 	      
-	      if(nprim==1)
-		cout << radius << ", " << radiusOld << ", " << dist << endl; 
+	      // if(nprim==1)
+	      // 	cout << radius << ", " << radiusOld << ", " << dist << endl; 
 	      
 	      GetHitsData(kPrimPerCm)->Fill((Float_t)nprim);
 	      GetHitsData(kElectronsPerCm)->Fill(q);
