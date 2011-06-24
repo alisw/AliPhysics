@@ -65,39 +65,40 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
     fHighPthreshold(0),
     fPtshape(0x0),
     fEnableFillAOD(kTRUE),
-fUsedTrack(0x0),
-fUsedKink(0x0),
-fUsedV0(0x0),
-fAODTrackRefs(0x0),
-fAODV0VtxRefs(0x0),
-fAODV0Refs(0x0),
-fMChandler(0x0),
-fNumberOfTracks(0),
-fNumberOfPositiveTracks(0),
-fNumberOfV0s(0),
-fNumberOfVertices(0),
-fNumberOfCascades(0),
-fNumberOfKinks(0),
-fOldESDformat(kFALSE),
-fPrimaryVertex(0x0),
-fTPCOnlyFilterMask(0),
-fHybridFilterMaskITSTPC(0),
-fHybridFilterMaskTPC0(0),
-fHybridFilterMaskTPC1(0),
-fIsVZEROEnabled(kTRUE),
-fAreCascadesEnabled(kTRUE),
-fAreV0sEnabled(kTRUE),
-fAreKinksEnabled(kTRUE),
-fAreTracksEnabled(kTRUE),
-fArePmdClustersEnabled(kTRUE),
-fAreCaloClustersEnabled(kTRUE),
-fAreEMCALCellsEnabled(kTRUE),
-fArePHOSCellsEnabled(kTRUE),
-fAreTrackletsEnabled(kTRUE),
-fESDpid(0x0),
-fIsPidOwner(kFALSE),
-fTimeZeroType(AliESDpid::kTOF_T0),
-fTPCaloneTrackCuts(0)
+    fUsedTrack(0x0),
+    fUsedKink(0x0),
+    fUsedV0(0x0),
+    fAODTrackRefs(0x0),
+    fAODV0VtxRefs(0x0),
+    fAODV0Refs(0x0),
+    fMChandler(0x0),
+    fNumberOfTracks(0),
+    fNumberOfPositiveTracks(0),
+    fNumberOfV0s(0),
+    fNumberOfVertices(0),
+    fNumberOfCascades(0),
+    fNumberOfKinks(0),
+    fOldESDformat(kFALSE),
+    fPrimaryVertex(0x0),
+    fTPCOnlyFilterMask(0),
+    fHybridFilterMaskITSTPC(0),
+    fHybridFilterMaskTPC0(0),
+    fHybridFilterMaskTPC1(0),
+    fIsVZEROEnabled(kTRUE),
+    fIsZDCEnabled(kTRUE),
+    fAreCascadesEnabled(kTRUE),
+    fAreV0sEnabled(kTRUE),
+    fAreKinksEnabled(kTRUE),
+    fAreTracksEnabled(kTRUE),
+    fArePmdClustersEnabled(kTRUE),
+    fAreCaloClustersEnabled(kTRUE),
+    fAreEMCALCellsEnabled(kTRUE),
+    fArePHOSCellsEnabled(kTRUE),
+    fAreTrackletsEnabled(kTRUE),
+    fESDpid(0x0),
+    fIsPidOwner(kFALSE),
+    fTimeZeroType(AliESDpid::kTOF_T0),
+    fTPCaloneTrackCuts(0)
 {
   // Default constructor
 }
@@ -112,44 +113,45 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     fHighPthreshold(0),
     fPtshape(0x0),
     fEnableFillAOD(kTRUE),
-fUsedTrack(0x0),
-fUsedKink(0x0),
-fUsedV0(0x0),
-fAODTrackRefs(0x0),
-fAODV0VtxRefs(0x0),
-fAODV0Refs(0x0),
-fMChandler(0x0),
-fNumberOfTracks(0),
-fNumberOfPositiveTracks(0),
-fNumberOfV0s(0),
-fNumberOfVertices(0),
-fNumberOfCascades(0),
-fNumberOfKinks(0),
-fOldESDformat(kFALSE),
-fPrimaryVertex(0x0),
-fTPCOnlyFilterMask(0),
-fHybridFilterMaskITSTPC(0),
-fHybridFilterMaskTPC0(0),
-fHybridFilterMaskTPC1(0),
-fIsVZEROEnabled(kTRUE),
-fAreCascadesEnabled(kTRUE),
-fAreV0sEnabled(kTRUE),
-fAreKinksEnabled(kTRUE),
-fAreTracksEnabled(kTRUE),
-fArePmdClustersEnabled(kTRUE),
-fAreCaloClustersEnabled(kTRUE),
-fAreEMCALCellsEnabled(kTRUE),
-fArePHOSCellsEnabled(kTRUE),
-fAreTrackletsEnabled(kTRUE),
-fESDpid(0x0),
-fIsPidOwner(kFALSE),
-fTimeZeroType(AliESDpid::kTOF_T0),
-fTPCaloneTrackCuts(0)
+    fUsedTrack(0x0),
+    fUsedKink(0x0),
+    fUsedV0(0x0),
+    fAODTrackRefs(0x0),
+    fAODV0VtxRefs(0x0),
+    fAODV0Refs(0x0),
+    fMChandler(0x0),
+    fNumberOfTracks(0),
+    fNumberOfPositiveTracks(0),
+    fNumberOfV0s(0),
+    fNumberOfVertices(0),
+    fNumberOfCascades(0),
+    fNumberOfKinks(0),
+    fOldESDformat(kFALSE),
+    fPrimaryVertex(0x0),
+    fTPCOnlyFilterMask(0),
+    fHybridFilterMaskITSTPC(0),
+    fHybridFilterMaskTPC0(0),
+    fHybridFilterMaskTPC1(0),
+    fIsVZEROEnabled(kTRUE),
+    fIsZDCEnabled(kTRUE),
+    fAreCascadesEnabled(kTRUE),
+    fAreV0sEnabled(kTRUE),
+    fAreKinksEnabled(kTRUE),
+    fAreTracksEnabled(kTRUE),
+    fArePmdClustersEnabled(kTRUE),
+    fAreCaloClustersEnabled(kTRUE),
+    fAreEMCALCellsEnabled(kTRUE),
+    fArePHOSCellsEnabled(kTRUE),
+    fAreTrackletsEnabled(kTRUE),
+    fESDpid(0x0),
+    fIsPidOwner(kFALSE),
+    fTimeZeroType(AliESDpid::kTOF_T0),
+    fTPCaloneTrackCuts(0)
 {
   // Constructor
 }
 AliAnalysisTaskESDfilter::~AliAnalysisTaskESDfilter(){
-  if(fIsPidOwner)delete fESDpid;
+    if(fIsPidOwner) delete fESDpid;
 }
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::UserCreateOutputObjects()
@@ -1560,6 +1562,39 @@ void AliAnalysisTaskESDfilter::ConvertVZERO(const AliESDEvent& esd)
   // Convert VZERO data
   AliAODVZERO* vzeroData = AODEvent()->GetVZEROData();
   *vzeroData = *(esd.GetVZEROData());
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
+{
+  // Convert ZDC data
+  AliESDZDC* esdZDC = esd.GetZDCData();
+  
+  const Double_t zem1Energy = esdZDC->GetZEM1Energy();
+  const Double_t zem2Energy = esdZDC->GetZEM2Energy();
+   
+  const Double_t *towZNC = esdZDC->GetZNCTowerEnergy();
+  const Double_t *towZPC = esdZDC->GetZPCTowerEnergy();
+  const Double_t *towZNA = esdZDC->GetZNATowerEnergy();
+  const Double_t *towZPA = esdZDC->GetZPATowerEnergy();
+  const Double_t *towZNCLG = esdZDC->GetZNCTowerEnergyLR();
+  const Double_t *towZNALG = esdZDC->GetZNATowerEnergyLR();
+  
+  AliAODZDC* zdcAOD = AODEvent()->GetZDCData();
+
+  zdcAOD->SetZEM1Energy(zem1Energy);
+  zdcAOD->SetZEM2Energy(zem2Energy);
+  zdcAOD->SetZNCTowers(towZNC, towZNCLG);
+  zdcAOD->SetZNATowers(towZNA, towZNALG);
+  zdcAOD->SetZPCTowers(towZPC);
+  zdcAOD->SetZPATowers(towZPA);
+  
+  zdcAOD->SetZDCParticipants(esdZDC->GetZDCParticipants(), esdZDC->GetZDCPartSideA(), esdZDC->GetZDCPartSideC());
+  zdcAOD->SetZDCImpactParameter(esdZDC->GetImpactParameter(), esdZDC->GetImpactParamSideA(), 
+  	esdZDC->GetImpactParamSideC());
+  zdcAOD->SetZDCTDCSum(esdZDC->GetZNTDCSum(0));	
+  zdcAOD->SetZDCTDCDiff(esdZDC->GetZNTDCDiff(0));	
+
 }
 
 //______________________________________________________________________________

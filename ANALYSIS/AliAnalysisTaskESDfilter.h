@@ -55,6 +55,7 @@ fHybridFilterMaskTPC1   =  filterMask1;}
   void PrintTask(Option_t *option="all", Int_t indent=0) const;
   
   void DisableVZERO() { fIsVZEROEnabled = kFALSE; }
+  void DisableZDC()   { fIsZDCEnabled   = kFALSE; }
   void DisableCascades() { fAreCascadesEnabled = kFALSE; }
   void DisableV0s() { fAreV0sEnabled = kFALSE; }
   void DisableKinks() { fAreKinksEnabled = kFALSE; }
@@ -85,6 +86,7 @@ private:
   void ConvertTracklets(const AliESDEvent& esd);
   void ConvertTPCOnlyTracks(const AliESDEvent& esd);
   void ConvertVZERO(const AliESDEvent& esd);
+  void ConvertZDC(const AliESDEvent& esd);
   
   TClonesArray& Tracks();
   TClonesArray& V0s();
@@ -121,6 +123,7 @@ private:
   UInt_t fHybridFilterMaskTPC1; //  Filter Mask flag refitted TPC only tracks with lose ITScuts
 
   Bool_t fIsVZEROEnabled; // whether or not to fill the vzero branch (true by default)
+  Bool_t fIsZDCEnabled; // whether or not to fill the zdc branch (true by default)
   Bool_t fAreCascadesEnabled; // whether or not to fill the cascades branch (true by default)
   Bool_t fAreV0sEnabled; // whether or not to fill the v0 branch (true by default)
   Bool_t fAreKinksEnabled; // whether or not to fill the kinks (true by default)
@@ -135,7 +138,7 @@ private:
   Int_t fTimeZeroType;  //  time zero type 
   AliESDtrackCuts* fTPCaloneTrackCuts; // TPC stand-alone track cuts
   
-  ClassDef(AliAnalysisTaskESDfilter, 10); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskESDfilter, 11); // Analysis task for standard ESD filtering
 };
  
 #endif
