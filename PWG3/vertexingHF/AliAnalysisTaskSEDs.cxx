@@ -415,7 +415,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   // Post the data already here
   PostData(1,fOutput);
 
-  fCounter->StoreEvent(aod,fReadMC);
+  fCounter->StoreEvent(aod,fProdCuts,fReadMC);
+  //fCounter->StoreEvent(aod,fReadMC);
 
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;

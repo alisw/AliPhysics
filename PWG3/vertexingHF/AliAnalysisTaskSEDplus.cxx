@@ -754,7 +754,6 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   AliAnalysisDataContainer *cont = GetOutputSlot(3)->GetContainer();
   if(cont)normName=(TString)cont->GetName();
   fCounter = new AliNormalizationCounter(normName.Data());
-  fCounter->SetRejectPileUp(fRDCutsProduction->GetOptPileUp());
 
   if(fFillNtuple){
     OpenFile(4); // 4 is the slot number of the ntuple
@@ -810,7 +809,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
-  fCounter->StoreEvent(aod,fReadMC);
+  fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC);
   fHistNEvents->Fill(0); // count event
 
   Bool_t isEvSel=fRDCutsAnalysis->IsEventSelected(aod);

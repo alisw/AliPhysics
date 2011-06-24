@@ -42,6 +42,7 @@
 #include "AliCounterCollection.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
+#include "AliRDHFCuts.h"
 //#include "AliAnalysisVertexingHF.h"
 
 class AliNormalizationCounter : public TNamed
@@ -56,28 +57,29 @@ class AliNormalizationCounter : public TNamed
   AliCounterCollection* GetCounter(){return &fCounters;}
   void Add(const AliNormalizationCounter*);
   void SetESD(Bool_t flag){fESD=flag;}
-  void StoreEvent(AliVEvent*,Bool_t mc=kFALSE);
+  void StoreEvent(AliVEvent*,AliRDHFCuts *,Bool_t mc=kFALSE);
   void StoreCandidates(AliVEvent*, Int_t nCand=0,Bool_t flagFilter=kTRUE);
   TH1D* DrawAgainstRuns(TString candle="candid(filter)",Bool_t drawHist=kTRUE);
   TH1D* DrawRatio(TString candle1="candid(filter)",TString candle2="triggered");
   void PrintRubrics();
   Double_t GetSum(TString candle="triggered");
-  Bool_t GetRejectPileUp(){return fRejectPileUp;}
-  void SetRejectPileUp(Int_t reject=kTRUE){fRejectPileUp=reject;}
   TH2F* GetHist(Bool_t filtercuts=kTRUE,Bool_t spdtracklets=kTRUE,Bool_t drawHist=kFALSE);
+  Double_t GetNEventsForNorm();
+  Double_t GetNEventsForNorm(Int_t runnumber);
+  TH1D* DrawNEventsForNorm();
+  TH1D* DrawNEventsForNormRatio();
 
  private:
   AliNormalizationCounter(const AliNormalizationCounter &source);
   AliNormalizationCounter& operator=(const AliNormalizationCounter& source);
   AliCounterCollection fCounters; //internal counter
   Bool_t fESD; //flag for ESD vs AOD
-  Int_t fRejectPileUp; //flag to reject candles in pile up events
   TH2F *fHistTrackFilterEvMult; //hist to store no of filter candidates vs no of tracks in the event 
   TH2F *fHistTrackAnaEvMult;//hist to store no of analysis candidates vs no of tracks in the event 
   TH2F *fHistTrackFilterSpdMult; //hist to store no of filter candidates vs  SPD multiplicity 
   TH2F *fHistTrackAnaSpdMult;//hist to store no of analysis candidates vs SPD multiplicity 
 
-  ClassDef(AliNormalizationCounter,3);
+  ClassDef(AliNormalizationCounter,4);
 
 };
 #endif
