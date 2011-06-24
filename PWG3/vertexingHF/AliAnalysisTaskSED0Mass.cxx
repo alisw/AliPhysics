@@ -739,7 +739,8 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   
   //histogram filled with 1 for every AOD
   fNentries->Fill(0);
-  fCounter->StoreEvent(aod,fReadMC); 
+  fCounter->StoreEvent(aod,fCuts,fReadMC); 
+  //fCounter->StoreEvent(aod,fReadMC); 
 
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL
   TString trigclass=aod->GetFiredTriggerClasses();

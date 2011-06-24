@@ -45,7 +45,6 @@ AliNormalizationCounter::AliNormalizationCounter():
 TNamed(),
 fCounters(),
 fESD(kFALSE),
-fRejectPileUp(kFALSE),
 fHistTrackFilterEvMult(0),
 fHistTrackAnaEvMult(0),
 fHistTrackFilterSpdMult(0),
@@ -59,14 +58,13 @@ AliNormalizationCounter::AliNormalizationCounter(const char *name):
 TNamed(name,name),
 fCounters(name),
 fESD(kFALSE),
-fRejectPileUp(kFALSE),
 fHistTrackFilterEvMult(0),
 fHistTrackAnaEvMult(0),
 fHistTrackFilterSpdMult(0),
 fHistTrackAnaSpdMult(0)
 {
   //default constructor
-  fCounters.AddRubric("Event","triggered/V0AND/PileUp/PbPbC0SMH-B-NOPF-ALLNOTRD/Candles0.2/Candles0.2spd1/Candles0.3/2xCandles0.2/CandleITSsa/Candle35clsTPC/PrimaryVTracks/PrimaryV/PrimaryVSPD/!V0A&Candle02/!V0A&Candle025/!V0A&Candle03/!V0A&PrimaryVTracks/!V0A&PrimaryV/!V0A&2xCandles02/Candid(Filter)/Candid(Analysis)/NCandid(Filter)/NCandid(Analysis)");
+  fCounters.AddRubric("Event","triggered/V0AND/PileUp/PbPbC0SMH-B-NOPF-ALLNOTRD/Candles0.3/PrimaryV/countForNorm/noPrimaryV/zvtxGT10/!V0A&Candle03/!V0A&PrimaryV/Candid(Filter)/Candid(Analysis)/NCandid(Filter)/NCandid(Analysis)");
   fCounters.AddRubric("Run", 1000000);
   fCounters.Init();
   fHistTrackFilterEvMult=new TH2F("FiltCandidvsTracksinEv","FiltCandidvsTracksinEv",10000,-0.5,9999.5,200,-0.5,199.5);
@@ -135,19 +133,18 @@ void AliNormalizationCounter::Add(const AliNormalizationCounter *norm){
   fHistTrackAnaSpdMult->Add(norm->fHistTrackAnaSpdMult);
 }
 //_______________________________________
-void AliNormalizationCounter::StoreEvent(AliVEvent *event,Bool_t mc){
+/*
+Stores the variables used for normalization as function of run number
+returns kTRUE if the event is to be counted for normalization
+(pass event selection cuts OR has no primary vertex)
+ */
+void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Bool_t mc){
   //
 
   Bool_t v0A=kFALSE; 
   Bool_t v0B=kFALSE;
-  Bool_t flag02=kFALSE;
   Bool_t flag03=kFALSE;
-  Int_t flag0202=0;
   Bool_t flagPV=kFALSE;
-  Bool_t flagPVT=kFALSE; 
-  Bool_t flag35cls=kFALSE;
-  Bool_t flagITSsa=kFALSE;
-  Bool_t flag02spd=kFALSE;
 
   //Run Number
   Int_t runNumber = event->GetRunNumber();
@@ -160,89 +157,57 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,Bool_t mc){
   if(!(event->GetEventType() == 7||event->GetEventType() == 0))return;
   
   fCounters.Count(Form("Event:triggered/Run:%d",runNumber));
-      
+   
   //Find V0AND
   AliTriggerAnalysis trAn; /// Trigger Analysis
   v0B = trAn.IsOfflineTriggerFired(eventESD , AliTriggerAnalysis::kV0C);
   v0A = trAn.IsOfflineTriggerFired(eventESD , AliTriggerAnalysis::kV0A);
   if(v0A&&v0B){fCounters.Count(Form("Event:V0AND/Run:%d",runNumber));}
   
- //FindPrimary vertex  
-  AliAODEvent *eventAOD = (AliAODEvent*)event;
-  AliVVertex *vtrc =  (AliVVertex*)event->GetPrimaryVertex();
-  if(vtrc && vtrc->GetNContributors()>0){
-    fCounters.Count(Form("Event:PrimaryV/Run:%d",runNumber));
-    flagPV=kTRUE;
-  }
-
-  AliAODVertex *vrtcSPD = (AliAODVertex*)eventAOD->GetPrimaryVertexSPD();
-  if(vrtcSPD){
-    if(vrtcSPD->GetNContributors()>0)fCounters.Count(Form("Event:PrimaryVSPD/Run:%d",runNumber));
-  }
-  
-  if(fESD){
-    const AliESDVertex *vtrc1 =  eventESD->GetPrimaryVertexTracks();
-    if(vtrc1 && vtrc1->GetNContributors()>0){
-      fCounters.Count(Form("Event:PrimaryVTracks/Run:%d",runNumber));
-      flagPVT=kTRUE;
-    }
-  }
+  //FindPrimary vertex  
+  // AliVVertex *vtrc =  (AliVVertex*)event->GetPrimaryVertex();
+  // if(vtrc && vtrc->GetNContributors()>0){
+  //   fCounters.Count(Form("Event:PrimaryV/Run:%d",runNumber));
+  //   flagPV=kTRUE;
+  // }
 
   //trigger
+  AliAODEvent *eventAOD = (AliAODEvent*)event;
   TString trigclass=eventAOD->GetFiredTriggerClasses();
   if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD")||trigclass.Contains("C0SMH-B-NOPF-ALL"))fCounters.Count(Form("Event:PbPbC0SMH-B-NOPF-ALLNOTRD/Run:%d",runNumber));
 
-  //PileUp
-  if(eventAOD->IsPileupFromSPD()){
-    fCounters.Count(Form("Event:PileUp/Run:%d",runNumber));
-    if(fRejectPileUp==1)return;
+  //FindPrimary vertex  
+  if(rdCut->IsEventSelected(event)){
+    fCounters.Count(Form("Event:PrimaryV/Run:%d",runNumber));
+    flagPV=kTRUE;
+  }else{
+    if(rdCut->GetWhyRejection()==0)fCounters.Count(Form("Event:noPrimaryV/Run:%d",runNumber));
+    //find good vtx outside range
+    if(rdCut->GetWhyRejection()==6){
+      fCounters.Count(Form("Event:zvtxGT10/Run:%d",runNumber));
+      fCounters.Count(Form("Event:PrimaryV/Run:%d",runNumber));
+      flagPV=kTRUE;
+    }
+    if(rdCut->GetWhyRejection()==1)fCounters.Count(Form("Event:PileUp/Run:%d",runNumber));
   }
+  //to be counted for normalization
+  if(rdCut->CountEventForNormalization())fCounters.Count(Form("Event:countForNorm/Run:%d",runNumber));
+  
 
   //Find Candle
   Int_t trkEntries = (Int_t)event->GetNumberOfTracks();
-  
-  for(Int_t i=0;i<trkEntries;i++){
+  for(Int_t i=0;i<trkEntries&&!flag03;i++){
     AliAODTrack *track=(AliAODTrack*)event->GetTrack(i);
-    UShort_t nClusTPC=track->GetTPCNcls();
-    Int_t nSPD=0;
-    if(TESTBIT(track->GetITSClusterMap(),1))nSPD++;
-    if(TESTBIT(track->GetITSClusterMap(),0))nSPD++;
-    if(nClusTPC==0&&(track->GetStatus()&AliESDtrack::kITSrefit)&&!flagITSsa){
-      flagITSsa=kTRUE;
-      fCounters.Count(Form("Event:CandleITSsa/Run:%d",runNumber));
+    if((track->Pt()>0.3)&&(!flag03)){
+      fCounters.Count(Form("Event:Candles0.3/Run:%d",runNumber));
+      flag03=kTRUE;
+      break;
     }
-    if((nClusTPC>=35)&&(track->GetStatus()&AliESDtrack::kITSrefit)&&(track->GetStatus()&AliESDtrack::kTPCrefit)&&(track->Pt()>0.2)&&(!flag35cls)){
-      fCounters.Count(Form("Event:Candle35clsTPC/Run:%d",runNumber));
-      flag35cls=kTRUE;
-    }
-    if((nClusTPC>=70)&&(track->GetStatus()&AliESDtrack::kITSrefit)&&(track->GetStatus()&AliESDtrack::kTPCrefit)){
-      
-      if((track->Pt()>0.2)&&flag0202<2){
-	if(!flag02)fCounters.Count(Form("Event:Candles0.2/Run:%d",runNumber));
-	flag02=kTRUE;
-	flag0202++;
-      }
-      if((track->Pt()>0.2)&&!flag02spd&&nSPD>=1){
-	fCounters.Count(Form("Event:Candles0.2spd1/Run:%d",runNumber));
-	flag02spd=kTRUE;
-      }
-      if((track->Pt()>0.3)&&(!flag03)){
-	fCounters.Count(Form("Event:Candles0.3/Run:%d",runNumber));
-	flag03=kTRUE;
-      }
-    }
-    if((flag02)&&(flag03)&&flag0202>=2&&flag35cls&&flagITSsa) break; 
   }
   
-  if(!(v0A&&v0B)&&(flag02))fCounters.Count(Form("Event:!V0A&Candle02/Run:%d",runNumber));
   if(!(v0A&&v0B)&&(flag03))fCounters.Count(Form("Event:!V0A&Candle03/Run:%d",runNumber));
-  if(!(v0A&&v0B)&&flagPVT)fCounters.Count(Form("Event:!V0A&PrimaryVTracks/Run:%d",runNumber));
   if(!(v0A&&v0B)&&flagPV)fCounters.Count(Form("Event:!V0A&PrimaryV/Run:%d",runNumber));
-  if(flag0202>1)fCounters.Count(Form("Event:2xCandles0.2/Run:%d",runNumber));
-  if(!(v0A&&v0B)&&flag0202>1)fCounters.Count(Form("Event:!V0A&2xCandles02/Run:%d",runNumber));
   
-  //delete eventESD;
-
   return;
 }
 //_____________________________________________________________________
@@ -335,4 +300,91 @@ TH2F* AliNormalizationCounter::GetHist(Bool_t filtercuts,Bool_t spdtracklets,Boo
       return fHistTrackAnaEvMult;
     }
   }
+}
+//___________________________________________________________________________
+Double_t AliNormalizationCounter::GetNEventsForNorm(){
+  Double_t noVtxzGT10=GetSum("noPrimaryV")*GetSum("zvtxGT10")/GetSum("PrimaryV");
+  return GetSum("countForNorm")-noVtxzGT10;
+}
+//___________________________________________________________________________
+Double_t AliNormalizationCounter::GetNEventsForNorm(Int_t runnumber){
+  TString listofruns = fCounters.GetKeyWords("RUN");
+  if(!listofruns.Contains(Form("%d",runnumber))){
+    printf("WARNING: %d is not a valid run number\n",runnumber);
+    fCounters.Print("Run","",kTRUE);
+    return 0.;
+  }
+  TString suffix;suffix.Form("/RUN:%d",runnumber);
+  TString zvtx;zvtx.Form("zvtxGT10%s",suffix.Data());
+  TString noPV;noPV.Form("noPrimaryV%s",suffix.Data());
+  TString pV;pV.Form("PrimaryV%s",suffix.Data());
+  TString tbc;tbc.Form("countForNorm%s",suffix.Data());
+  Double_t noVtxzGT10=GetSum(noPV.Data())*GetSum(zvtx.Data())/GetSum(pV.Data());
+  return GetSum(tbc.Data())-noVtxzGT10;
+}
+//___________________________________________________________________________
+TH1D* AliNormalizationCounter::DrawNEventsForNorm(){
+  //usare algebra histos
+  fCounters.SortRubric("Run");
+  TString selection;
+
+  selection.Form("event:noPrimaryV");
+  TH1D* hnoPrimV = fCounters.Get("run",selection.Data());
+  hnoPrimV->Sumw2();
+
+  selection.Form("event:zvtxGT10");
+  TH1D*  hzvtx= fCounters.Get("run",selection.Data());
+  hzvtx->Sumw2();
+
+  selection.Form("event:PrimaryV");
+  TH1D* hPrimV = fCounters.Get("run",selection.Data());
+  hPrimV->Sumw2();
+
+  hzvtx->Multiply(hnoPrimV);
+  hzvtx->Divide(hPrimV);
+  hnoPrimV->Add(hzvtx,-1.);
+
+  selection.Form("event:countForNorm");
+  TH1D* hCountForNorm = fCounters.Get("run",selection.Data());
+  hCountForNorm->Sumw2();
+
+  hCountForNorm->Add(hnoPrimV,-1.);
+  hCountForNorm->DrawClone();
+  return hCountForNorm;
+}
+//___________________________________________________________________________
+TH1D* AliNormalizationCounter::DrawNEventsForNormRatio(){
+   //usare algebra histos
+  fCounters.SortRubric("Run");
+  TString selection;
+
+  selection.Form("event:noPrimaryV");
+  TH1D* hnoPrimV = fCounters.Get("run",selection.Data());
+  hnoPrimV->Sumw2();
+
+  selection.Form("event:zvtxGT10");
+  TH1D*  hzvtx= fCounters.Get("run",selection.Data());
+  hzvtx->Sumw2();
+
+  selection.Form("event:PrimaryV");
+  TH1D* hPrimV = fCounters.Get("run",selection.Data());
+  hPrimV->Sumw2();
+
+  hzvtx->Multiply(hnoPrimV);
+  hzvtx->Divide(hPrimV);
+  hnoPrimV->Add(hzvtx,-1.);
+
+  selection.Form("event:countForNorm");
+  TH1D* hCountForNorm = fCounters.Get("run",selection.Data());
+  hCountForNorm->Sumw2();
+
+  hCountForNorm->Add(hnoPrimV,-1.);
+
+  selection.Form("event:triggered");
+  TH1D* htriggered = fCounters.Get("run",selection.Data());
+  htriggered->Sumw2();
+  hCountForNorm->Divide(htriggered);
+
+  hCountForNorm->DrawClone();
+  return hCountForNorm;
 }
