@@ -12,9 +12,9 @@
 
 #include "TNamed.h"
 
+#include "AliRsnDaughter.h"
 #include "AliRsnEvent.h"
 
-class AliRsnDaughter;
 class AliRsnMother;
 
 class AliRsnTarget : public TNamed {

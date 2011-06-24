@@ -1,6 +1,6 @@
 void runLocal
 (
-   Int_t       nReadFiles      =  0,
+   Int_t       nReadFiles      =  5,
    Int_t       nSkipFiles      =  0,
    Int_t       nmix            =  2,
    //const char *inputSource     = "file-collections/AOD048_LHC11a10b.txt",
