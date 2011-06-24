@@ -370,6 +370,7 @@ Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
 	      {
 		AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(index);
 		track->SetEMCALcluster(cluster->Index());
+		track->SetStatus(AliESDtrack::kEMCALmatch);
 	      }
 	  }
 
