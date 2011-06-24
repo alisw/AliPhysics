@@ -1,6 +1,6 @@
 void runPluginProof
 (
-   const char *runMode     = "full",
+   const char *runMode     = "test",
    
    Int_t       nmix        = 50,
    
@@ -20,7 +20,7 @@ void runPluginProof
    
    const char *outName     = "proof.root",
    const char *macroPath   = ".",
-   const char *testFile    = "",
+   const char *testFile    = "file-collections/ESD_LHC10d1.txt",
    const char *addLibs     = "libEventMixing.so PWG2resonances.par",
    const char *addPars     = ""
 )
