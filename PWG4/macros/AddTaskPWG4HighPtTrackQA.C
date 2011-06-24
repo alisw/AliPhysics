@@ -3,26 +3,32 @@ void AddTaskPWG4HighPtTrackQAAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
   int cent = 10;
   
   AliPWG4HighPtTrackQA *taskTrackQA00cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0);
-  AliPWG4HighPtTrackQA *taskTrackQA01cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1);
-  AliPWG4HighPtTrackQA *taskTrackQA02cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,2);
+  //  AliPWG4HighPtTrackQA *taskTrackQA01cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1);
+  //  AliPWG4HighPtTrackQA *taskTrackQA02cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,2);
+  AliPWG4HighPtTrackQA *taskTrackQA03cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,3);
   AliPWG4HighPtTrackQA *taskTrackQA10cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,1,0);
   AliPWG4HighPtTrackQA *taskTrackQA11cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,1,1);
   AliPWG4HighPtTrackQA *taskTrackQA20cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,0);
   AliPWG4HighPtTrackQA *taskTrackQA21cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,1);
-  AliPWG4HighPtTrackQA *taskTrackQA20cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0);
-  AliPWG4HighPtTrackQA *taskTrackQA20cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,1);
-    
+  AliPWG4HighPtTrackQA *taskTrackQA40cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0);
+  AliPWG4HighPtTrackQA *taskTrackQA41cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,1);
+  AliPWG4HighPtTrackQA *taskTrackQA50cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,5,0);
+  AliPWG4HighPtTrackQA *taskTrackQA60cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,6,0);
+
   if(isPbPb) {
     for(cent=0; cent<4; cent++) {
       AliPWG4HighPtTrackQA *taskTrackQA00 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0);
-      AliPWG4HighPtTrackQA *taskTrackQA01 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1);
-      AliPWG4HighPtTrackQA *taskTrackQA02 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,2);
+      // AliPWG4HighPtTrackQA *taskTrackQA01 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1);
+      // AliPWG4HighPtTrackQA *taskTrackQA02 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,2);
+      AliPWG4HighPtTrackQA *taskTrackQA03 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,3);
       AliPWG4HighPtTrackQA *taskTrackQA10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,1,0);
       AliPWG4HighPtTrackQA *taskTrackQA11 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,1,1);
       AliPWG4HighPtTrackQA *taskTrackQA20 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,0);
       AliPWG4HighPtTrackQA *taskTrackQA21 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,1);
       AliPWG4HighPtTrackQA *taskTrackQA40 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0);
       AliPWG4HighPtTrackQA *taskTrackQA41 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,1);
+      AliPWG4HighPtTrackQA *taskTrackQA50 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,5,0);
+      AliPWG4HighPtTrackQA *taskTrackQA60 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,6,0);
     }
   }
 
@@ -36,11 +42,16 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
                2 = TPC stand alone constrained to SPD vertex
                3 = global w/o SPD layer requirements
                4 = TPC stand alone constrained to SPD vertex with QA track selection on global tracks
-    cuts:      0 (global) = standard ITSTPC2010
+	       5 = Hybrid tracks: constrained TPConly for which no tight ITS is available
+               6 = Hybrid tracks: constrained loose global for which no tight ITS is available
+    cuts:      0 (global) = standard ITSTPC2010 
                1 (global) = ITSrefit, no SPD requirements
                2 (global) = SPD || SDD
+	       3 (global) = standard ITS tight cuts with nCrossed rows cut
                0 (TPC)    = standard TPC + NClusters>70
                1 (TPC)    = standard TPC + NClusters>0 --> to study new TPC QA recommendations
+               0 (hybrid 5) = constrained TPConly for which no tight ITS is available
+               0 (hybrid 6) = constrained loose global for which no tight ITS is available
    */
 
   // Creates HighPtTrackQA analysis task and adds it to the analysis manager.
@@ -67,6 +78,9 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
   //CREATE THE  CUTS -----------------------------------------------
   //Use AliESDtrackCuts
   AliESDtrackCuts *trackCuts = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts");
+  AliESDtrackCuts *trackCutsITSLoose = 0x0;
+  AliESDtrackCuts *trackCutsTPConly = new AliESDtrackCuts("AliESDtrackCutsTPConly","TPC only Cuts");
+
   //Standard Cuts
   //Set track cuts for global tracks
   if(trackType==0 && cuts==0) {
@@ -108,6 +122,17 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
     
     trackCuts->SetRequireITSRefit(kTRUE);
   }
+  if(trackType==0 && cuts==3) {
+    // tight global tracks
+    trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,1);
+    trackCuts->SetMinNCrossedRowsTPC(120);
+    trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.1);// essentially swittches it off
+    trackCuts->SetMaxDCAToVertexXY(2.4);
+    trackCuts->SetMaxDCAToVertexZ(3.2);
+    trackCuts->SetDCAToVertex2D(kTRUE);
+    trackCuts->SetMaxChi2PerClusterITS(32);
+  }
+
   if(trackType==1 && cuts==0) {
     //Set track cuts for TPConly tracks
     trackCuts = trackCuts->GetStandardTPCOnlyTrackCuts(); 
@@ -140,6 +165,24 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
     trackCuts = trackCuts->GetStandardTPCOnlyTrackCuts();
     trackCuts->SetMinNClustersTPC(0);
   }
+  if(trackType==5 || trackType==6) {
+    // tight global tracks
+    trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,1);
+    trackCuts->SetMinNCrossedRowsTPC(120);
+    trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.1);// essentially swittches it off
+    trackCuts->SetMaxDCAToVertexXY(2.4);
+    trackCuts->SetMaxDCAToVertexZ(3.2);
+    trackCuts->SetDCAToVertex2D(kTRUE);
+    trackCuts->SetMaxChi2PerClusterITS(32);
+
+    trackCutsITSLoose  = new AliESDtrackCuts(*trackCuts);
+    trackCutsITSLoose->SetName("loose ITS fake cuts");
+    trackCutsITSLoose->SetMaxChi2PerClusterITS(1E10);
+
+    trackCutsTPConly = trackCutsTPConly->GetStandardTPCOnlyTrackCuts();
+    trackCutsTPConly->SetMinNCrossedRowsTPC(120);
+    trackCutsTPConly->SetMinRatioCrossedRowsOverFindableClustersTPC(0.1);// essentially switches it off     
+  }
 
   trackCuts->SetEtaRange(-0.9,0.9);
   trackCuts->SetPtRange(0.15, 1e10);
@@ -148,8 +191,10 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
 
   //Create the task
   AliPWG4HighPtTrackQA *taskPWG4TrackQA = new AliPWG4HighPtTrackQA(Form("AliPWG4HighPtTrackQACent%dTrack%dCuts%d",centClass,trackType,cuts));
-  taskPWG4TrackQA->SetCuts(trackCuts);
   taskPWG4TrackQA->SetTrackType(trackType);
+  taskPWG4TrackQA->SetCuts(trackCuts);
+  taskPWG4TrackQA->SetCutsITSLoose(trackCutsITSLoose);
+  taskPWG4TrackQA->SetCutsTPConly(trackCutsTPConly);
   
   taskPWG4TrackQA->SetPtMax(100.);
  
