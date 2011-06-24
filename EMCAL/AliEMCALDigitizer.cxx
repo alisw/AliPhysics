@@ -475,9 +475,11 @@ void AliEMCALDigitizer::Digitize(Int_t event)
             sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
             if(sdigits){
               Int_t curNext = nextSig ;
-              AliEMCALDigit * tmpdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(index[i]));
-              if(sdigits->GetEntriesFast() > index[i] && tmpdigit){
-                curNext = tmpdigit->GetId() ;	  
+              if(sdigits->GetEntriesFast() > index[i]){
+                AliEMCALDigit * tmpdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(index[i]));
+                if (tmpdigit){
+                  curNext = tmpdigit->GetId() ;	  
+                }
               }
               if(curNext < nextSig) nextSig = curNext ;
             }// sdigits exist
