@@ -1045,9 +1045,9 @@ void AliITStrackerSA::GetCoorErrors(AliITSRecPoint* cl,Double_t &sx,Double_t &sy
 Int_t AliITStrackerSA::FindIndex(Int_t lay, Double_t lamVal) const {
   // Find the cluster at limit of lambda window 
 
-
   Int_t base = 0;
   Int_t last = fCluCoord[lay]->GetEntriesFast()-1;
+  if(last<0) return 0;
   Int_t position;
   Double_t lamfirst=((AliITSclusterTable*)fCluCoord[lay]->At(base))->GetLambda();
   if(lamfirst>lamVal) return base;
@@ -1061,6 +1061,6 @@ Int_t AliITStrackerSA::FindIndex(Int_t lay, Double_t lamVal) const {
     if(a>0) last = position;
     else  base = position;
   }
-  return -1;
+  return 0;
 }
 
