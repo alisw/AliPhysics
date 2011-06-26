@@ -66,8 +66,7 @@ class AliNormalizationCounter : public TNamed
   TH2F* GetHist(Bool_t filtercuts=kTRUE,Bool_t spdtracklets=kTRUE,Bool_t drawHist=kFALSE);
   Double_t GetNEventsForNorm();
   Double_t GetNEventsForNorm(Int_t runnumber);
-  TH1D* DrawNEventsForNorm();
-  TH1D* DrawNEventsForNormRatio();
+  TH1D* DrawNEventsForNorm(Bool_t drawRatio=kFALSE);
 
  private:
   AliNormalizationCounter(const AliNormalizationCounter &source);
