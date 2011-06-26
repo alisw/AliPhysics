@@ -84,15 +84,17 @@ AliAnalysisTaskJetCluster::~AliAnalysisTaskJetCluster(){
   delete fAODJetBackgroundOut;
 }
 
-AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
+AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): 
+  AliAnalysisTaskSE(),
   fAOD(0x0),
   fAODExtension(0x0),
   fRef(new TRefArray),
   fUseAODTrackInput(kFALSE),
   fUseAODMCInput(kFALSE),
   fUseBackgroundCalc(kFALSE),
-  fEventSelection(kFALSE),							
+  fEventSelection(kFALSE),     
   fFilterMask(0),
+  fFilterType(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),  
   fNSkipLeadingRan(0),
@@ -204,6 +206,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fUseBackgroundCalc(kFALSE),
   fEventSelection(kFALSE),							
   fFilterMask(0),
+  fFilterType(0),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
   fNSkipLeadingRan(0),
@@ -1354,7 +1357,11 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
       }
       for(int it = 0;it < aod->GetNumberOfTracks();++it){
 	AliAODTrack *tr = aod->GetTrack(it);
-	if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask))){
+	Bool_t bGood = false;
+	if(fFilterType == 0)bGood = true;
+	else if(fFilterType == 1)bGood = tr->IsHybridITSTPC();
+	else if(fFilterType == 2)bGood = tr->IsHybridTPC();
+	if((fFilterMask>0)&&((!tr->TestFilterBit(fFilterMask)||(!bGood)))){
 	  if(fDebug>10)Printf("%s:%d Not matching filter %d/%d %d/%d",(char*)__FILE__,__LINE__,it,aod->GetNumberOfTracks(),fFilterMask,tr->GetFilterMap());	
 	  continue;
 	}
@@ -1387,7 +1394,11 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 
 	AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*> (track);
 	if(!trackAOD)continue;
-        if((fFilterMask>0)&&!(trackAOD->TestFilterBit(fFilterMask))) continue;
+	Bool_t bGood = false;
+	if(fFilterType == 0)bGood = true;
+	else if(fFilterType == 1)bGood = trackAOD->IsHybridITSTPC();
+	else if(fFilterType == 2)bGood = trackAOD->IsHybridTPC();
+	if((fFilterMask>0)&&((!trackAOD->TestFilterBit(fFilterMask)||(!bGood))))continue;
         if(TMath::Abs(trackAOD->Eta())>fTrackEtaWindow) continue;
 	if(trackAOD->Pt()<fTrackPtCut) continue;
 	list->Add(trackAOD);
