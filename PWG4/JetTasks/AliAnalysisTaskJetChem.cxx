@@ -716,7 +716,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   Double_t centPercent = -1;
   if(fEventClass>0){
     Int_t cl = 0;
-    if(handler->InheritsFrom("AliAODInputHandler")){ 
+    if(handler && handler->InheritsFrom("AliAODInputHandler")){ 
       // since it is not supported by the helper task define own classes
       centPercent = fAOD->GetHeader()->GetCentrality();
       cl = 1;
@@ -726,7 +726,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     }
     else {
       cl = AliAnalysisHelperJetTasks::EventClass();
-      centPercent = fESD->GetCentrality()->GetCentralityPercentile("V0M"); // OB added
+      if(fESD) centPercent = fESD->GetCentrality()->GetCentralityPercentile("V0M"); // OB added
     }
     
     if(cl!=fEventClass){
@@ -855,7 +855,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
   for(Int_t ij=0; ij<nRecJetsCuts; ++ij){
 
-    AliAODJet* jet = dynamic_cast<AliAODJet*>(fJetsRecCuts->At(ij));
+    AliAODJet* jet = (AliAODJet*) (fJetsRecCuts->At(ij));
     
     if(ij==0){ // leading jet
       
@@ -870,8 +870,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       for(Int_t it=0; it<jettracklist->GetSize(); ++it){
 
-	AliVParticle* trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
-	
+	AliVParticle* trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));	
+	if(!trackVP)continue;
+
 	Float_t jetPt   = jet->Pt();
 	Float_t trackPt = trackVP->Pt();
 	
@@ -932,8 +933,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       if(fDebug>2)Printf("%s:%d nK0s total: %d, in jet cone: %d,FFRadius %f ",(char*)__FILE__,__LINE__,nK0s,jetConeK0list->GetEntries(),GetFFRadius());
       
       for(Int_t it=0; it<jetConeK0list->GetSize(); ++it){ // loop K0s in jet cone
-
+	
 	AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetConeK0list->At(it));
+	if(!v0) continue;
 
 	Double_t invM           = v0->MassK0Short();
 	Float_t  trackPt        = v0->Pt();
