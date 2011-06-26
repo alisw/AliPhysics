@@ -60,7 +60,8 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
     virtual void SetTrackPtCut(Float_t x){fTrackPtCut = x;}
     virtual void SetCentralityCut(Float_t xLo,Float_t xUp){fCentCutLo = xLo; fCentCutUp = xUp;}
-    virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
+    virtual void SetFilterMask(UInt_t i,Int_t iType = 0){fFilterMask = i;
+      fFilterType = iType;}
     virtual void SetJetTriggerPtCut(Float_t x){fJetTriggerPtCut = x;}    
     virtual void SetVtxCuts(Float_t z,Float_t r = 1){fVtxZCut = z; fVtxR2Cut = r *r;}    
     virtual void SetBackgroundBranch(const char* c){fBackgroundBranch = c;}
@@ -122,6 +123,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Bool_t        fUseBackgroundCalc;     // switches on background calculations
     Bool_t        fEventSelection;        // use the event selection of this task, otherwise analyse all
     UInt_t        fFilterMask;            // filter bit for slecected tracks
+    UInt_t        fFilterType;            // filter type 0 = all, 1 = ITSTPC, 2 = TPC
     Int_t         fTrackTypeRec;          // type of tracks used for FF 
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
     Int_t         fNSkipLeadingRan;       // number of leading tracks to be skipped in the randomized event
@@ -233,7 +235,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 17) 
+    ClassDef(AliAnalysisTaskJetCluster, 18) 
 };
  
 #endif
