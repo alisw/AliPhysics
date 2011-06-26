@@ -323,7 +323,7 @@ Double_t AliNormalizationCounter::GetNEventsForNorm(Int_t runnumber){
   return GetSum(tbc.Data())-noVtxzGT10;
 }
 //___________________________________________________________________________
-TH1D* AliNormalizationCounter::DrawNEventsForNorm(){
+TH1D* AliNormalizationCounter::DrawNEventsForNorm(Bool_t drawRatio){
   //usare algebra histos
   fCounters.SortRubric("Run");
   TString selection;
@@ -342,48 +342,19 @@ TH1D* AliNormalizationCounter::DrawNEventsForNorm(){
 
   hzvtx->Multiply(hnoPrimV);
   hzvtx->Divide(hPrimV);
-  hnoPrimV->Add(hzvtx,-1.);
 
   selection.Form("event:countForNorm");
   TH1D* hCountForNorm = fCounters.Get("run",selection.Data());
   hCountForNorm->Sumw2();
 
-  hCountForNorm->Add(hnoPrimV,-1.);
-  hCountForNorm->DrawClone();
-  return hCountForNorm;
-}
-//___________________________________________________________________________
-TH1D* AliNormalizationCounter::DrawNEventsForNormRatio(){
-   //usare algebra histos
-  fCounters.SortRubric("Run");
-  TString selection;
+  hCountForNorm->Add(hzvtx,-1.);
 
-  selection.Form("event:noPrimaryV");
-  TH1D* hnoPrimV = fCounters.Get("run",selection.Data());
-  hnoPrimV->Sumw2();
-
-  selection.Form("event:zvtxGT10");
-  TH1D*  hzvtx= fCounters.Get("run",selection.Data());
-  hzvtx->Sumw2();
-
-  selection.Form("event:PrimaryV");
-  TH1D* hPrimV = fCounters.Get("run",selection.Data());
-  hPrimV->Sumw2();
-
-  hzvtx->Multiply(hnoPrimV);
-  hzvtx->Divide(hPrimV);
-  hnoPrimV->Add(hzvtx,-1.);
-
-  selection.Form("event:countForNorm");
-  TH1D* hCountForNorm = fCounters.Get("run",selection.Data());
-  hCountForNorm->Sumw2();
-
-  hCountForNorm->Add(hnoPrimV,-1.);
-
-  selection.Form("event:triggered");
-  TH1D* htriggered = fCounters.Get("run",selection.Data());
-  htriggered->Sumw2();
-  hCountForNorm->Divide(htriggered);
+  if(drawRatio){
+    selection.Form("event:triggered");
+    TH1D* htriggered = fCounters.Get("run",selection.Data());
+    htriggered->Sumw2();
+    hCountForNorm->Divide(htriggered);
+  }
 
   hCountForNorm->DrawClone();
   return hCountForNorm;
