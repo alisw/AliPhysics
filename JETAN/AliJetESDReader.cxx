@@ -20,7 +20,7 @@
 //          Magali Estienne <magali.estienne@subatech.in2p3.fr>
 //
 // **February 2011
-// implemented standard geometry (AliEMCALGeoUtils) instead of dummy one (AliJetDummyGeo)
+// implemented standard geometry (AliEMCALGeometry) instead of dummy one (AliJetDummyGeo)
 // moved geometry definition in AliJetReader
 // marco.bregant@subatech.in2p3.fr
 //------------------------------------------------------------------------- 
@@ -51,7 +51,7 @@
 #include "AliVEvent.h"
 #include "AliESD.h"
 #include "AliESDtrack.h"
-#include "AliEMCALGeoUtils.h"
+#include "AliEMCALGeometry.h"
 #include "AliEMCALEMCGeometry.h"
 #include "AliJetESDFillUnitArrayTracks.h"
 #include "AliJetESDFillUnitArrayEMCalDigits.h"

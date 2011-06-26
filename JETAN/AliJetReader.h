@@ -18,7 +18,7 @@ class TChain;
 class TTask;
 class TClonesArray;
 class TRefArray;
-class AliEMCALGeoUtils;
+class AliEMCALGeometry;
 class AliJetReaderHeader;
 class AliESDEvent;
 class AliHeader;
@@ -84,7 +84,7 @@ class AliJetReader : public TObject
   
 
   TString                         fJetanOADBpath;          //! path to official OADB, to be set by the task
-  static AliEMCALGeoUtils         *fGeom;                  //! EMCAL Geometry 
+  static AliEMCALGeometry         *fGeom;                  //! EMCAL Geometry 
   TChain                          *fChain;                 // chain for reconstructed tracks
   TChain                          *fTree;                  // tree for reconstructed tracks
   TClonesArray                    *fMomentumArray;         // array of particle momenta
