@@ -21,7 +21,7 @@
 class TRefArray;
 class AliJetESDReaderHeader;
 class AliEMCALGeometry;
-class AliEMCALGeoUtils;
+class AliEMCALGeometry;
 class AliJetHadronCorrection;
 class AliJetUnitArray;
 class AliJetReaderHeader;

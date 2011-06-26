@@ -20,7 +20,7 @@
 //          magali.estienne@IReS.in2p3.fr
 //
 // **February 2011
-// implemented  standard geometry (AliEMCALGeoUtils) (was AliJetDummyGeo implented separately in ESDReader and AODReader
+// implemented  standard geometry (AliEMCALGeometry) (was AliJetDummyGeo implented separately in ESDReader and AODReader
 // local2master matrices are now get from $ALICE_ROOT/OADB/PWG4/JetReconstruction/EMCALlocal2master.root
 // you can choose the geometry (EMCAL_COMPLETE, EMCAL_FIRSTYEARv1, etc) via SetEMCALgeo2bLoad('Name_of_Geometry') in the Readerheader
 // different options for survey(ed) matrice are provided too
@@ -40,7 +40,7 @@
 #include "AliJetReaderHeader.h"
 #include "AliESDEvent.h"
 #include "AliHeader.h"
-#include "AliEMCALGeoUtils.h"
+#include "AliEMCALGeometry.h"
 #include "AliEMCALEMCGeometry.h"
 #include "AliJetESDFillUnitArrayTracks.h" 
 #include "AliJetESDFillUnitArrayEMCalDigits.h"
@@ -51,7 +51,7 @@
 ClassImp(AliJetReader)
 
 ////////////////////////////////////////////////////////////////////////
-AliEMCALGeoUtils *AliJetReader::fGeom=0;
+AliEMCALGeometry *AliJetReader::fGeom=0;
 
 AliJetReader::AliJetReader():
   // Constructor
@@ -195,7 +195,7 @@ if(myPath.Length()) {
   // Define EMCAL geometry
  
   if(fDebug>10) cout<<"which EMCALgeometry is going to be uploaded?"<<geoType<<endl; 
-  fGeom = new AliEMCALGeoUtils(geoType,"EMCAL");
+  fGeom = AliEMCALGeometry::GetInstance(geoType);
   
   
 	for (Int_t mod=0;mod<(fGeom->GetEMCGeometry())->GetNumberOfSuperModules();mod+=1)

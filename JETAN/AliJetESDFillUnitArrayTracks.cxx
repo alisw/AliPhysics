@@ -533,7 +533,7 @@ void AliJetESDFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 	      // For the moment I apply MIP correction if p >= 0.5 GeV/c
 	      if (fApplyMIPCorrection != 0 && p3.Mag() >= 0.5) 
 		{ 
-		  ((AliJetHadronCorrectionv1*)fHadCorr)->SetGeometry("EMCAL_COMPLETE",1.);
+		  ((AliJetHadronCorrectionv1*)fHadCorr)->SetGeometry("EMCAL_COMPLETEV1",1.);
 
 		  // Get track position at the outer part of the reconstruction ~ TRD
 		  Double_t phiOut = track->GetOuterParam()->Phi();

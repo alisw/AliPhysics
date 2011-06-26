@@ -14,7 +14,7 @@
 #include "AliJetUnitArray.h"
 #include "AliJetGrid.h"
 class AliJetUnitArray;
-class AliEMCALGeoUtils;
+class AliEMCALGeometry;
 class AliJetHadronCorrection;
 class AliJetAODReaderHeader;
 class AliJetReaderHeader;

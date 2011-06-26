@@ -518,7 +518,7 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 	      // End of if(fGrid==1) -> hadron correction for all tracks
 	      if (fApplyMIPCorrection != 0 && p3.Mag() >= 0.5) 
 		{ 
-		  ((AliJetHadronCorrectionv1*)fHadCorr)->SetGeometry("EMCAL_COMPLETE",1.);
+		  ((AliJetHadronCorrectionv1*)fHadCorr)->SetGeometry("EMCAL_COMPLETEV1",1.);
 
 		  Double_t etaOut = 0.;
 		  Double_t phiOut = 0.;
@@ -617,7 +617,7 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 	  // For the moment I apply MIP correction if p >= 0.5 GeV/c
 	  if (fApplyMIPCorrection != 0 && p3.Mag() >= 0.5) 
 	    { 
-	      ((AliJetHadronCorrectionv1*)fHadCorr)->SetGeometry("EMCAL_COMPLETE",1.);
+	      ((AliJetHadronCorrectionv1*)fHadCorr)->SetGeometry("EMCAL_COMPLETEV1",1.);
 	      
 	      Double_t etaOut = 0.;
 	      Double_t phiOut = 0.;

@@ -22,7 +22,7 @@
 // Author: Davide Perrino <davide.perrino@cern.ch>
 //
 // **February 2011
-// implemented standard geometry (AliEMCALGeoUtils) instead of dummy one (AliJetDummyGeo)
+// implemented standard geometry (AliEMCALGeometry) instead of dummy one (AliJetDummyGeo)
 // moved geometry definition in AliJetReader
 // marco.bregant@subatech.in2p3.fr
 //------------------------------------------------------------------------- 
@@ -43,7 +43,7 @@
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
-#include "AliEMCALGeoUtils.h"
+#include "AliEMCALGeometry.h"
 #include "AliJetAODFillUnitArrayTracks.h"
 #include "AliJetAODFillUnitArrayEMCalDigits.h"
 #include "AliJetHadronCorrectionv1.h"
