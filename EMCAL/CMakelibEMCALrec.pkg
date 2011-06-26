@@ -29,7 +29,7 @@ set ( SRCS  AliEMCALReconstructor.cxx AliEMCALClusterizer.cxx AliEMCALClusterize
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")
 
-set ( CINTHDRS  ${HDRS} AliEMCALGeometry.h AliEMCALGeoUtils.h)
+set ( CINTHDRS  ${HDRS} AliEMCALGeometry.h )
 
 set ( DHDR EMCALrecLinkDef.h)
 

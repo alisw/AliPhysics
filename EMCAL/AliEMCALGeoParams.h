@@ -6,8 +6,7 @@
 /* $Id: AliEMCALGeoParams.h $ */
 
 //////////////////////////////////////////////////////////
-// class for holding various parameters; to be used by new 
-// AliEMCALGeoUtils class //
+// class for holding various parameters; 
 //////////////////////////////////////////////////////////
 
 class AliEMCALGeoParams
@@ -58,7 +57,7 @@ public:
   Int_t GetCSPFromAddress(Int_t i) const { return ( i & 0x1f ); }; // 
 
   /* // Below is some placeholder info that can later be added
-     // in AliEMCALGeoUtils, together with the Get methods just above 
+     // in AliEMCALGeometry, together with the Get methods just above 
 
   // But which CSP (0..31) corresponds to which ALTRO and Channel is not 
   // given anywhere (CSPs are used for APD biases etc).
