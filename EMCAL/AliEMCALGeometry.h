@@ -45,7 +45,6 @@ public:
 					const Text_t* title="") ; 
   static AliEMCALGeometry * GetInstance();
 
-  void Init(void);     		           // initializes the parameters of EMCAL
 
   //////////
   // General
@@ -287,6 +286,8 @@ public:
 	
 protected:
 
+  void Init(void);     		           // initializes the parameters of EMCAL
+  
   AliEMCALEMCGeometry * fEMCGeometry;   // Geometry object for Electromagnetic calorimeter
 
   TString  fGeoName;                 // geometry name
