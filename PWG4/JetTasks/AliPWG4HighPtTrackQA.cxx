@@ -896,6 +896,10 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
 	  if(fTrackType==5) {
 	    //use TPConly constrained track
 	    track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
+	    if(!track) {
+	      fh1NTracksReject->Fill("noTPConly",1);
+	      continue;
+	    }
 	    AliExternalTrackParam exParam;
 	    Bool_t relate = track->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
 	    if( !relate ) {
