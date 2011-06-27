@@ -210,6 +210,7 @@ void AliEMCALTenderSupply::Init()
 
 	//Initialising Non linearity parameters
 	fEMCALRecoUtils->SetNonLinearityThreshold(fNonLinearThreshold);
+	fEMCALRecoUtils->SetNonLinearityFunction(fNonLinearFunc);
 
 	//Setting mass, step size and residual cut 
 	fEMCALRecoUtils->SwitchOnCutEtaPhiSum(); 
@@ -431,7 +432,7 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
 	else if(runGM>140000 && runGM <148531 && (fFilepass = "pass1"))
 	{ // 2011 LHC11a pass1 data
 		AliOADBContainer emcalgeoCont(Form("emcal2011"));
-		emcalgeoCont.InitFromFile(Form("BetaGood.root"),Form("AliEMCALgeo"));
+		emcalgeoCont.InitFromFile(Form("%s/BetaGood.root",fBasePath.Data()),Form("AliEMCALgeo"));
 
 		TObjArray *mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byS");
 
@@ -472,7 +473,7 @@ Bool_t AliEMCALTenderSupply::InitBadChannels()
 	TFile *fbad;
 	//2010 
 	if(fRunBC <=140000){
-		fbad = new TFile("BadChannels.root","read");
+		fbad = new TFile(Form("%s/BadChannels.root",fBasePath.Data()),"read");
 		if (fbad->IsZombie()){
 			TString fPath = TString(fBasePath.Data());
 			if(fPath.Contains("alien")) {
@@ -547,7 +548,7 @@ Bool_t AliEMCALTenderSupply::InitRecalib()
 	TFile* fRecalib;
 
 	if(runRC <=140000){
-		fRecalib = new TFile("RecalibrationFactors.root","read");
+		fRecalib = new TFile(Form("%s/RecalibrationFactors.root",fBasePath.Data()),"read");
 		if (fRecalib->IsZombie()){
 			TString fPath = TString(fBasePath.Data());
 			if(fPath.Contains("alien")) {
@@ -593,7 +594,7 @@ Bool_t AliEMCALTenderSupply::InitRecalib()
 	}
 
 	if(runRC > 140000){
-		fRecalib = new TFile("RecalibrationFactors.root","read");
+		fRecalib = new TFile(Form("%s/RecalibrationFactors.root",fBasePath.Data()),"read");
 		if (fRecalib->IsZombie()){
 			TString fPath = TString(fBasePath.Data());
 			if(fPath.Contains("alien")) {

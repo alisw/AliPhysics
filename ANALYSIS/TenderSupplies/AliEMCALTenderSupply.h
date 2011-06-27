@@ -37,9 +37,10 @@ public:
   AliEMCALTenderSupply(const char *name, const AliTender *tender=NULL);
   virtual ~AliEMCALTenderSupply();
 
+  enum NonlinearityFunctions{kPi0MC=0,kPi0GammaGamma=1,kPi0GammaConversion=2,kNoCorrection=3,kBeamTest=4,kBeamTestCorrected=5};
+
   virtual void   Init();
   virtual void   ProcessEvent();
-  
   
   void SetEMCALGeometryName(TString name)  { fEMCALGeoName = name  ;}
   TString EMCALGeometryName()       const  { return fEMCALGeoName  ;}
