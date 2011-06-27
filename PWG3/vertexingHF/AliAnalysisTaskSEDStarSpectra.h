@@ -23,9 +23,8 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAODEvent.h"
-#include "AliPID.h"
 #include "AliRDHFCutsDStartoKpipi.h"
-
+#include "AliNormalizationCounter.h"
 
 class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE 
 {
@@ -43,29 +42,22 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
  
-  //Background simulation
-  void     SideBandBackground(AliAODRecoCascadeHF *part, Bool_t PIDon, Int_t nSigma, AliRDHFCutsDStartoKpipi *cuts, TList *listout);
-  void     WrongSignForDStar(AliAODRecoCascadeHF *part, Bool_t PIDon, Int_t nSigma, AliRDHFCutsDStartoKpipi *cuts, TList *listout);
-  //cuts
-  Bool_t   SingleTrackSelections(const AliAODRecoDecayHF2Prong* theD0particle, const AliAODTrack *track2);
-  Bool_t   SelectPID(const AliAODTrack *track, AliPID::EParticleType pid, Double_t nsig);
-  Bool_t   SelectTOFPID(const AliAODRecoDecayHF2Prong* d, const AliAODTrack *tracksoft);
-  // histos
-  void   FillSpectrum(AliAODRecoCascadeHF *part, Int_t isDStar, Bool_t PIDon, Int_t nSigma, AliRDHFCutsDStartoKpipi *cuts, TList *listout);
+
+ //Background simulation
+  void     SideBandBackground(AliAODRecoCascadeHF *part, AliRDHFCutsDStartoKpipi *cuts, TList *listout);
+  void     WrongSignForDStar(AliAODRecoCascadeHF *part, AliRDHFCutsDStartoKpipi *cuts, TList *listout);
+    // histos
+  void   FillSpectrum(AliAODRecoCascadeHF *part, Int_t isDStar, AliRDHFCutsDStartoKpipi *cuts, TList *listout);
   void     DefineHistograms();
   // set analysis type
   void     SetAnalysisType(Int_t anaType) {fAnalysis = anaType;}
   void     PrintAnalysisType() {printf("Analysis type: %d\n(0: Heidelberg\t1: Utrecht)",fAnalysis);}
-
-  // kaon PID
-  void     SetPID(Bool_t usePID) {fPID = usePID;}
-  Int_t    GetPID() const {return fPID;}
-  // Set N sigmas for PID
-  void     SetNSigmasPID(Int_t numberOfSigmasPID) {fNSigma = numberOfSigmasPID;}
-  Int_t    GetNSigmasPID() const {return fNSigma;}
-  // set MC usage
+ // set MC usage
   void     SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t   GetMC() const {return fUseMCInfo;}
+ // set rare mesons
+  void     SetRareSearch(Bool_t theRareOn) {fDoSearch = theRareOn;}
+  Bool_t   GetRareSearch() const {return fDoSearch;}
   
  private:
   
@@ -77,20 +69,18 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   Double_t fD0Window;		 //  select width on D0Mass
   Double_t fPeakWindow;          //  select width on DstarMass
   Bool_t fUseMCInfo;             //  Use MC info
+  Bool_t fDoSearch;              //  Rare mesons
   TList *fOutput;                //!  User output
-  TList *fOutputSpectrum;        //!  User output1
   TList *fOutputAll;             //!  User output2
-  TList *fOutputPID3;            //!  User output3
-  TList *fOutputPID2;            //!  User output4
-  TList *fOutputPID1;            //!  User output5
+  TList *fOutputPID;             //!  User output3
   Int_t  fNSigma;                //  n sigma for kaon PID
-  Bool_t fPID;                   //  PID flag
-  AliRDHFCutsDStartoKpipi *fCuts; // Cuts - sent to output slot 7
+  AliRDHFCutsDStartoKpipi *fCuts; // Cuts - sent to output slot 3
   // define the histograms
   TH1F *fCEvents;             //!
   TH2F *fTrueDiff2;           //!
- 
-  ClassDef(AliAnalysisTaskSEDStarSpectra,7); // class for D* spectra
+  TH1F *fDeltaMassD1;         //! 
+  AliNormalizationCounter *fCounter;//!Counter for normalization slot 4
+  ClassDef(AliAnalysisTaskSEDStarSpectra,8); // class for D* spectra
 };
 
 #endif
