@@ -21,12 +21,15 @@
 #include <TNtuple.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TArrayD.h>
 
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliNormalizationCounter.h"
+#include "AliAODMCHeader.h"
+#include "AliAODMCParticle.h"
 
 class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
 {
@@ -38,6 +41,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
 
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetDoLikeSign(Int_t dols=0){fDoLS=dols;}
+  void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpPar=doImp;}
   void SetUseStrangeness(Bool_t uses=kTRUE){fUseStrangeness=uses;}
   void SetMassLimits(Float_t range);
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
@@ -53,6 +57,10 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t GetNBinsHistos();
   
   void LSAnalysis(TClonesArray *arrayOppositeSign,TClonesArray *arrayLikeSign,AliAODEvent *aod,AliAODVertex *vtx1, Int_t nDplusOS);
+  Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
+  void CreateLikeSignHistos();
+  void CreateImpactParameterHistos();
+
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -88,7 +96,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH1F *fDLxyTC[3*kMaxPtBins]; //!hist. for DLxy (TC)
   TH1F *fCosxy[3*kMaxPtBins]; //!hist. for Cosxy (LC)
   TH1F *fCosxyTC[3*kMaxPtBins]; //!hist. for Cosxy (TC)
-   TH1F *fMassHistTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
+  TH1F *fMassHistTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
   TH1F *fMassHistTCPlus[3*kMaxPtBins]; //!hist. for D+ inv mass (TC)
   TH1F *fMassHistTCMinus[3*kMaxPtBins]; //!hist. for D- inv mass (TC)
   TH1F *fMassHistLS[5*kMaxPtBins];//!hist. for LS inv mass (LC)
@@ -100,6 +108,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH1F *fDCAHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 6 (LC)
   TH1F *fMassHistLSTC[5*kMaxPtBins];//!hist. for LS inv mass (TC)
   TH1F *fHistCentrality[3];//!hist. for cent distr (all,sel ev, )
+  TH3F *fHistMassPtImpParTC[5];//! histograms for impact paramter studies
   TH2F *fPtVsMass;    //! hist. of pt vs. mass (prod. cuts)
   TH2F *fPtVsMassTC;  //! hist. of pt vs. mass (analysis cuts)
   TH2F *fYVsPt;       //! hist. of Y vs. Pt (prod. cuts)
@@ -119,10 +128,11 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Bool_t fFillNtuple;   // flag for filling ntuple
   Bool_t fReadMC;    //flag for access to MC
   Bool_t fUseStrangeness;//flag to enhance strangeness in MC to fit to data
-  Bool_t fUseBit;      //flag to use bitmask
-  Int_t fDoLS;      //flag to do LS analysis
+  Bool_t fUseBit;      // flag to use bitmask
+  Bool_t fDoImpPar;    // flag to activate impact paramter histos
+  Int_t  fDoLS;        // flag to do LS analysis
   
-  ClassDef(AliAnalysisTaskSEDplus,12); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,13); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
