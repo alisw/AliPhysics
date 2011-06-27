@@ -52,7 +52,8 @@ AliHLTCaloMapper::AliHLTCaloMapper( const unsigned long  specification , TString
   fCellSize(0),
   fSpecification(specification),
   fIsInitializedMapping(false),
-  fSpecificationMapPtr(0)
+  fSpecificationMapPtr(0),
+  fCaloDet(det)
 {  
   //see header file for class documentation
   fFilepath[0] = '\0';
@@ -162,20 +163,45 @@ AliHLTCaloMapper::GetDDLFromSpec( const AliHLTUInt32_t spec )
 
 
 Int_t 
-AliHLTCaloMapper::GetModuleFromSpec(Int_t specification)
+AliHLTCaloMapper::GetModuleFromSpec(UInt_t specification)
 {
-  Int_t module;
-      
-  if(specification & 0xf) module = 0;
-  else if((specification >> 4) & 0xf) module = 1;
-  else if((specification >> 8) & 0xf) module = 2;
-  else if((specification >> 12) & 0xf) module = 3;
-  else if((specification >> 16) & 0xf) module = 4;
-  else {
-    HLTDebug("Specification 0x%X not consistent with single module in PHOS", specification);
-    module = -1;
+
+  Int_t module = -1;
+
+  if (fCaloDet.CompareTo("PHOS") == 0) {
+    // 1 module = 4 bits
+    if(specification & 0xf) module = 0;
+    else if((specification >> 4) & 0xf) module = 1;
+    else if((specification >> 8) & 0xf) module = 2;
+    else if((specification >> 12) & 0xf) module = 3;
+    else if((specification >> 16) & 0xf) module = 4;
+    else {
+      HLTDebug("Specification 0x%X not consistent with single module in PHOS", specification);
+    }
+    
+    return module;
   }
-  return module;
+  else if (fCaloDet.CompareTo("EMCAL") == 0) {
+    // 1 module = 2 bits
+    if(specification & 0x3) module = 0;
+    else if((specification >> 2) & 0x3) module = 1;
+    else if((specification >> 4) & 0x3) module = 2;
+    else if((specification >> 6) & 0x3) module = 3;
+    else if((specification >> 8) & 0x3) module = 4;
+    else if((specification >> 10) & 0x3) module = 5;
+    else if((specification >> 12) & 0x3) module = 6;
+    else if((specification >> 14) & 0x3) module = 7;
+    else if((specification >> 16) & 0x3) module = 8;
+    else if((specification >> 18) & 0x3) module = 9;
+    else {
+      HLTDebug("Specification 0x%X not consistent with single module in EMCAL", specification);
+    }
+    return module;
+    
+  } else {
+    HLTDebug("Specification 0x%X not consistent with single module in EMCAL or PHOS", specification);
+  }
+
 }
 
 

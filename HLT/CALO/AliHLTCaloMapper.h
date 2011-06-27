@@ -49,7 +49,7 @@ public:
   static void ChannelId2Coordinate(const int channelId,    AliHLTCaloCoordinate &channelCoord);
   virtual void GetLocalCoord(const int channelId, Float_t* localCoord) const; 
   int GetDDLFromSpec( const AliHLTUInt32_t spec );
-  int GetModuleFromSpec(Int_t specification);
+  int GetModuleFromSpec(UInt_t specification);
   static unsigned long GetSpecFromDDLIndex( const int ddlindex );
   
 
@@ -80,6 +80,7 @@ protected:
   int fSpecification;
   bool fIsInitializedMapping;
   fDDLSpecificationMap* fSpecificationMapPtr;
+  TString fCaloDet;
   
  private:
   AliHLTCaloMapper();
