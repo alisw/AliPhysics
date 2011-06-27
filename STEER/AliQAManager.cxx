@@ -796,9 +796,9 @@ Bool_t AliQAManager::IsSelected(const Char_t * det)
 	Bool_t rv = kFALSE;
 	const TString detName(det) ;
   // always activates Correlation
-  if ( detName.Contains(AliQAv1::GetDetName(AliQAv1::kCORR)) || detName.Contains(AliQAv1::GetDetName(AliQAv1::kGLOBAL))) {
-    rv = kTRUE ; 
-  } else {
+//  if ( detName.Contains(AliQAv1::GetDetName(AliQAv1::kCORR)) || detName.Contains(AliQAv1::GetDetName(AliQAv1::kGLOBAL))) {
+//    rv = kTRUE ; 
+//  } else {
     // check if all detectors are selected
     if (fDetectors.Contains("ALL")) {
       fDetectors = "ALL";
@@ -809,7 +809,7 @@ Bool_t AliQAManager::IsSelected(const Char_t * det)
                fDetectors.Contains(" "+detName+" ")) {
       rv = kTRUE;
     }
-  }
+//  }
 	return rv ;
 }
 
