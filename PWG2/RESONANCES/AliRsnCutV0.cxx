@@ -187,7 +187,7 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
 }
 
 //_________________________________________________________________________________________________
-Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
+Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *)
 {
 //
 // Check an AOD V0.
