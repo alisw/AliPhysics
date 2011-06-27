@@ -839,7 +839,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     for(Int_t it=0; it<fListK0s->GetSize(); ++it){ // loop all K0s 
       
       AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListK0s->At(it));
-      
+      if(!v0) continue;
+    
       Float_t trackPt       = v0->Pt();
       Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
       Double_t invM         = v0->MassK0Short();
@@ -890,6 +891,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   for(Int_t ij=0; ij<nRecJetsCuts; ++ij){ // jet loop
 
     AliAODJet* jet = dynamic_cast<AliAODJet*>(fJetsRecCuts->At(ij));
+    if(!jet) continue;
     
     if(ij==0){ // leading jet
       
@@ -900,7 +902,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       for(Int_t it=0; it<fListK0s->GetSize(); ++it){ // loop all K0s 
 
 	AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListK0s->At(it));
-
+	if(!v0) continue;
+ 
 	Double_t v0Mom[3];
 	v0->PxPyPz(v0Mom);
 	TVector3 v0MomVect(v0Mom);
