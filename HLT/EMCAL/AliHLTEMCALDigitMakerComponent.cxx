@@ -133,17 +133,17 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
   UInt_t mysize           = 0;
   Int_t digitCount        = 0;
   Int_t ret               = 0;
-
+  
   const AliHLTComponentBlockData* iter = 0; 
   unsigned long ndx; 
-
+  
   UInt_t specification = 0;
   AliHLTCaloChannelDataHeaderStruct* tmpChannelData = 0;
   
   //  fDigitMakerPtr->SetDigitHeaderPtr(reinterpret_cast<AliHLTCaloDigitHeaderStruct*>(outputPtr));
-
+  
   fDigitMakerPtr->SetDigitDataPtr(reinterpret_cast<AliHLTCaloDigitDataStruct*>(outputPtr));
-
+  
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx;
@@ -158,31 +158,38 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
       if(!fBCMInitialised)
 	{
 	  AliHLTEMCALMapper mapper(iter->fSpecification);
+	  module = mapper.GetModuleFromSpec(iter->fSpecification);
+      	  
+	  if (module>=0) {
 	  
-	  if (module = mapper.GetModuleFromSpec(iter->fSpecification))
-	    
 	    for(Int_t x = 0; x < NXCOLUMNSMOD ; x++) // PTH  
-	      
 	      for(Int_t z = 0; z <  NZROWSMOD ; z++) // PTH
-		
 		fDigitMakerPtr->SetBadChannel(x, z, fPedestalData->IsBadChannel(module, z+1, x+1));
+	    //delete fBadChannelMap;  
+	    fBCMInitialised = true;
+	  }
+	  else 
+	    HLTError("Error setting pedestal with module value of %d", module);
 	  
-	  //delete fBadChannelMap;
-	  fBCMInitialised = true;
 	}
       
       if(!fGainsInitialised)
 	{
+	  
 	  AliHLTEMCALMapper mapper(iter->fSpecification);
-	  if (module = mapper.GetModuleFromSpec(iter->fSpecification))
+	  module = mapper.GetModuleFromSpec(iter->fSpecification);
 	    
-	    for(Int_t x = 0; x < NXCOLUMNSMOD; x++)   //PTH
-	      for(Int_t z = 0; z < NZROWSMOD; z++)   //PTH
-		// FR setting gains 
-		fDigitMakerPtr->SetGain(x, z, HGLGFACTOR, fCalibData->GetADCchannel(module, z, x));
-	  
-	  
-	  fGainsInitialised = true;
+	    if (module>=0) {
+	      
+	      for(Int_t x = 0; x < NXCOLUMNSMOD; x++)   //PTH
+		for(Int_t z = 0; z < NZROWSMOD; z++)   //PTH
+		  // FR setting gains 
+		  fDigitMakerPtr->SetGain(x, z, HGLGFACTOR, fCalibData->GetADCchannel(module, z, x));
+	      
+	      fGainsInitialised = true;
+	    }
+	    else
+	      HLTError("Error setting gains with module value of %d", module);
 	}
       
       specification |= iter->fSpecification;
