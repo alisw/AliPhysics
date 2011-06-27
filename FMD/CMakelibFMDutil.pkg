@@ -36,7 +36,8 @@ set ( SRCS
   AliFMDBaseDA.cxx
   AliFMDPedestalDA.cxx
   AliFMDGainDA.cxx
-  AliFMDSpectraDisplay.cxx)
+  AliFMDSpectraDisplay.cxx
+  AliFMDCalibDrawer.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set ( DHDR  FMDutilLinkDef.h)
