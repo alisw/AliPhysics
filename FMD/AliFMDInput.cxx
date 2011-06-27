@@ -161,6 +161,26 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
 }
 
 //____________________________________________________________________
+UShort_t 
+AliFMDInput::ParseLoad(const char* what)
+{
+  TString opt(what);
+  opt.ToLower();
+  if (opt.Contains("hit")) return kHits;	
+  if (opt.Contains("kine"))  return kKinematics; 
+  if (opt.Contains("sdig"))  return kSDigits;
+  if (opt.Contains("dig"))   return kDigits;
+  if (opt.Contains("head"))  return kHeader;
+  if (opt.Contains("rec"))   return kRecPoints;
+  if (opt.Contains("esd"))   return kESD;
+  if (opt.Contains("rawc"))  return kRawCalib;
+  if (opt.Contains("raw"))   return kRaw;
+  if (opt.Contains("geo"))   return kGeometry;
+  if (opt.Contains("track")) return kTrackRefs;
+  if (opt.Contains("user"))  return kUser;
+  return 0;
+}
+//____________________________________________________________________
 Int_t
 AliFMDInput::NEvents() const 
 {

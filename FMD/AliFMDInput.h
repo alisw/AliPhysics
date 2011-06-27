@@ -282,7 +282,14 @@ public:
   /** Set the raw data input 
       @param file File name - if empty, assume simulated raw. */
   void SetRawFile(const char* file) { if (file) fRawFile = file; }
-     
+  /** 
+   * Parse a string as a load option
+   * 
+   * @param what String to pass
+   * 
+   * @return Load option value, or 0 in case of error
+   */
+  static UShort_t ParseLoad(const char* what);     
 protected:
   /** Copy ctor 
       @param o Object to copy from  */
