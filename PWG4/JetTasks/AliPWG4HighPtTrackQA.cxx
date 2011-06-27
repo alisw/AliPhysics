@@ -98,6 +98,9 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtChi2C(0x0),
   fPtNSigmaToVertex(0x0),
   fPtRelUncertainty1Pt(0x0),
+  fPtRelUncertainty1PtNClus(0x0),
+  fPtRelUncertainty1PtChi2(0x0),
+  fPtRelUncertainty1PtTrkLength(0x0),
   fPtUncertainty1Pt(0x0),
   fPtChi2PerClusterTPC(0x0),
   fPtNCrossedRows(0x0),
@@ -169,6 +172,9 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtChi2C(0x0),
   fPtNSigmaToVertex(0x0),
   fPtRelUncertainty1Pt(0x0),
+  fPtRelUncertainty1PtNClus(0x0),
+  fPtRelUncertainty1PtChi2(0x0),
+  fPtRelUncertainty1PtTrkLength(0x0),
   fPtUncertainty1Pt(0x0),
   fPtChi2PerClusterTPC(0x0),
   fPtNCrossedRows(0x0),
@@ -502,6 +508,15 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fPtRelUncertainty1Pt = new TH2F("fPtRelUncertainty1Pt","fPtRelUncertainty1Pt",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty);
   fHistList->Add(fPtRelUncertainty1Pt);
 
+  fPtRelUncertainty1PtNClus = new TH3F("fPtRelUncertainty1PtNClus","fPtRelUncertainty1PtNClus",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
+  fHistList->Add(fPtRelUncertainty1PtNClus);
+
+  fPtRelUncertainty1PtChi2 = new TH3F("fPtRelUncertainty1PtChi2","fPtRelUncertainty1PtChi2",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNChi2PerClusBins,binsChi2PerClus);
+  fHistList->Add(fPtRelUncertainty1PtChi2);
+
+  fPtRelUncertainty1PtTrkLength = new TH3F("fPtRelUncertainty1PtTrkLength","fPtRelUncertainty1PtTrkLength",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
+  fHistList->Add(fPtRelUncertainty1PtTrkLength);
+
   fPtUncertainty1Pt = new TH2F("fPtUncertainty1Pt","fPtUncertainty1Pt",fgkNPtBins,binsPt,fgkNUncertainty1PtBins,binsUncertainty1Pt);
   fHistList->Add(fPtUncertainty1Pt);
  
@@ -798,6 +813,9 @@ void AliPWG4HighPtTrackQA::UserExec(Option_t *) {
 
 //________________________________________________________________________
 void AliPWG4HighPtTrackQA::DoAnalysisESD() {
+  //
+  // Run analysis on ESD
+  //
 
   if(!fESD) {
     PostData(1, fHistList);
@@ -839,7 +857,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     6: nPointITS   
     7: chi2C       
     8: nSigmaToVertex
-    9: relUncertainty1Pt
+    9: trackLengthTPC
     10: chi2PerClusterTPC
     11: #crossed rows
     12: (#crossed rows)/(#findable clusters)
@@ -981,7 +999,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     fVariables->SetAt(chi2C,7);
     fVariables->SetAt(fTrackCuts->GetSigmaToVertex(track),8);// Calculates the number of sigma to the vertex for a track.
   
-    fVariables->SetAt(TMath::Sqrt(track->GetSigma1Pt2())*fVariables->At(0),9);
+    fVariables->SetAt(GetTrackLengthTPC(track),9);
   
     if(fVariables->At(5)>0.) fVariables->SetAt(track->GetTPCchi2()/fVariables->At(5),10);
     
@@ -1062,8 +1080,11 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
   if(fDataType==kESD) {
     fPtChi2C->Fill(fVariables->At(0),fVariables->At(7));
     fPtNSigmaToVertex->Fill(fVariables->At(0),fVariables->At(8));
-    fPtRelUncertainty1Pt->Fill(fVariables->At(0),fVariables->At(9));
-    fPtUncertainty1Pt->Fill(fVariables->At(0),fVariables->At(0)*fVariables->At(9));
+    fPtRelUncertainty1Pt->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)));
+    fPtRelUncertainty1PtNClus->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(5));
+    fPtRelUncertainty1PtChi2->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(10));
+    fPtRelUncertainty1PtTrkLength->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(9));
+    fPtUncertainty1Pt->Fill(fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
     fPtSigmaY2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(13)));
     fPtSigmaZ2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(14)));
     fPtSigmaSnp2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(15)));
@@ -1271,6 +1292,28 @@ Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfo(AliAODTrack *tr,Int_t nNeighbour
   return 0;  // undefined type - default value
 }
 
+//_______________________________________________________________________
+Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(AliESDtrack *track) {
+  //
+  // returns distance between 2st and last hit in TPC
+  // distance given in number of padrows
+  //
+
+  TBits fTPCClusterMap = track->GetTPCClusterMap(); 
+  int firstHit = 0;
+  int lastHit = 0;
+
+  for(int i=0; i<159; i++) {
+    if(fTPCClusterMap[i]>0) firstHit = fTPCClusterMap[i];
+  }
+  for(int i=159; i>=0; i--) {
+    if(fTPCClusterMap[i]>0) lastHit = fTPCClusterMap[i];
+  }
+
+  return lastHit - firstHit;
+}
+
+//_______________________________________________________________________
 void AliPWG4HighPtTrackQA::FillSystematicCutHist(AliESDtrack *track) {
 
   fSystTrackCuts->Fill("noCut",1);
