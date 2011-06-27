@@ -86,6 +86,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   Float_t GetPtMax()           {return fPtMax;}
   Float_t GetTPCClusterInfo(AliAODTrack *tr,Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
+  Int_t   GetTrackLengthTPC(AliESDtrack *track);
 
   static AliGenPythiaEventHeader*  GetPythiaEventHeader(AliMCEvent *mcEvent);
   static Bool_t PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);// get the cross section and the trails either from pyxsec.root or from pysec_hists.root
@@ -103,8 +104,8 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   const AliESDVertex   *fVtx;     //! vertex object
 
   AliESDtrackCuts *fTrackCuts;         // TrackCuts
-  AliESDtrackCuts *fTrackCutsITSLoose; //Loose ITS track cuts
-  AliESDtrackCuts *fTrackCutsTPConly;  //TPC track cuts
+  AliESDtrackCuts *fTrackCutsITSLoose; // Loose ITS track cuts
+  AliESDtrackCuts *fTrackCutsTPConly;  // TPC track cuts
   Int_t   fTrackType;                  // 0: global track; 1:TPConly track 2: TPConly constrained track 3: global ITSrefit 4: TPConly constrained track with QA selection based on global track
   UInt_t fFilterMask;                  //! Select tracks from specific track cuts belonging to certain filter mask for AOD analysis
 
@@ -161,6 +162,9 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH2F *fPtChi2C;                              //! Pt vs Chi2C
   TH2F *fPtNSigmaToVertex;                     //! Pt vs nSigmaToVertex
   TH2F *fPtRelUncertainty1Pt;                  //! Pt vs relUncertainty1Pt
+  TH3F *fPtRelUncertainty1PtNClus;             //! Pt vs relUncertainty1Pt vs NClustersTPC
+  TH3F *fPtRelUncertainty1PtChi2;              //! Pt vs relUncertainty1Pt vs Chi2TPC/NClus
+  TH3F *fPtRelUncertainty1PtTrkLength;         //! Pt vs relUncertainty1Pt vs track length in TPC
   TH2F *fPtUncertainty1Pt;                     //! Pt vs Uncertainty1Pt
   TH2F *fPtChi2PerClusterTPC;                  //! Pt vs Chi2PerClusterTPC
   TH2F *fPtNCrossedRows;                       //! Pt vs NCrossedRows
