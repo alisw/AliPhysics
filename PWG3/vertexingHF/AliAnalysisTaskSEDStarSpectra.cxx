@@ -21,10 +21,10 @@
 //
 //
 //  The D* spectra study is done in pt bins:
-//  [0.7,1] [1,2] [2,3] [3,5] [5,8] [8,12],[12,18]
+//  [0,0.5] [0.5,1] [1,2] [2,3] [3,4] [4,5] [5,6] [6,7] [7,8],
+//  [8,10],[10,12], [12,16], [16,20] and [20,24]
 //
-//  Optimized cuts used and TPC PID is on request (flag in che .C) 
-//  Cuts option of analysis: 0 Heidelberg ; 1 Utrecht
+//  Cuts arew centralized in AliRDHFCutsDStartoKpipi
 //  Side Band and like sign background are implemented in the macro
 //
 //-----------------------------------------------------------------------
@@ -42,14 +42,10 @@
 #include <TParticle.h>
 #include <TH1I.h>
 #include "TROOT.h"
-
-
+#include <TDatabasePDG.h>
 #include <AliAnalysisDataSlot.h>
 #include <AliAnalysisDataContainer.h>
 #include "AliRDHFCutsDStartoKpipi.h"
-#include "AliPID.h"
-#include "AliTPCPIDResponse.h"
-//#include "AliAODPidHF.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliAnalysisManager.h"
@@ -57,42 +53,37 @@
 #include "AliAODHandler.h"
 #include "AliLog.h"
 #include "AliAODVertex.h"
-//#include "AliAODJet.h"
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoCascadeHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliESDtrack.h"
-//#include "AliVertexerTracks.h"
 #include "AliAODMCParticle.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSEDStarSpectra.h"
+#include "AliNormalizationCounter.h"
 
 ClassImp(AliAnalysisTaskSEDStarSpectra)
 
-
-// I like pink
-
 //__________________________________________________________________________
-AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra():
+AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra():  
   AliAnalysisTaskSE(),
   fEvents(0),
   fAnalysis(0),
   fD0Window(0),
   fPeakWindow(0),
-  fUseMCInfo(kFALSE), 
+  fUseMCInfo(kFALSE),
+  fDoSearch(kFALSE),
   fOutput(0),
-  fOutputSpectrum(0),
   fOutputAll(0),
-  fOutputPID3(0),
-  fOutputPID2(0),
-  fOutputPID1(0),
+  fOutputPID(0),
   fNSigma(3),
-  fPID(kTRUE),
   fCuts(0),
   fCEvents(0),     
-  fTrueDiff2(0)
+  fTrueDiff2(0),
+  fDeltaMassD1(0),
+  fCounter(0)
 {
   //
   // Default ctor
@@ -106,17 +97,16 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra(const Char_t* name,
   fD0Window(0),
   fPeakWindow(0),
   fUseMCInfo(kFALSE),
+  fDoSearch(kFALSE),
   fOutput(0),
-  fOutputSpectrum(0),
   fOutputAll(0),
-  fOutputPID3(0),
-  fOutputPID2(0),
-  fOutputPID1(0),
+  fOutputPID(0),
   fNSigma(3),
-  fPID(kTRUE),
   fCuts(0),
   fCEvents(0),     
-  fTrueDiff2(0)
+  fTrueDiff2(0),
+  fDeltaMassD1(0),
+  fCounter(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -126,13 +116,10 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra(const Char_t* name,
   fCuts=cuts;
 
   DefineOutput(1,TList::Class());  //conters
-  DefineOutput(2,TList::Class());  //Spectrum output
-  DefineOutput(3,TList::Class());  //All Entries output
-  DefineOutput(4,TList::Class());  //3sigma PID output
-  DefineOutput(5,TList::Class());  //2sigma PID output
-  DefineOutput(6,TList::Class());  //1sigma PID output
-  DefineOutput(7,AliRDHFCutsDStartoKpipi::Class());  //My private output
-
+  DefineOutput(2,TList::Class());  //All Entries output
+  DefineOutput(3,TList::Class());  //3sigma PID output
+  DefineOutput(4,AliRDHFCutsDStartoKpipi::Class());   //My private output
+  DefineOutput(5,AliNormalizationCounter::Class());   // normalization
 }
 
 //___________________________________________________________________________
@@ -146,25 +133,13 @@ AliAnalysisTaskSEDStarSpectra::~AliAnalysisTaskSEDStarSpectra() {
     delete fOutput;
     fOutput = 0;
   }
-  if (fOutputSpectrum) {
-    delete fOutputSpectrum;
-    fOutputSpectrum = 0;
-  }
   if (fOutputAll) {
     delete fOutputAll;
     fOutputAll = 0;
   }
-  if (fOutputPID3) {
-    delete fOutputPID3;
-    fOutputPID3 = 0;
-  }
-  if (fOutputPID2) {
-    delete fOutputPID2;
-    fOutputPID2 = 0;
-  }
-  if (fOutputPID1) {
-    delete fOutputPID1;
-    fOutputPID1 = 0;
+  if (fOutputPID) {
+    delete fOutputPID;
+    fOutputPID = 0;
   }
   if (fCuts) {
     delete fCuts;
@@ -173,6 +148,10 @@ AliAnalysisTaskSEDStarSpectra::~AliAnalysisTaskSEDStarSpectra() {
   if(fCEvents){
     delete fCEvents;
     fCEvents =0;
+  }
+  if(fDeltaMassD1){
+    delete fDeltaMassD1;
+    fDeltaMassD1 =0;
   }
 }
 //_________________________________________________
@@ -184,7 +163,7 @@ void AliAnalysisTaskSEDStarSpectra::Init(){
   if(fDebug > 1) printf("AnalysisTaskSEDStarSpectra::Init() \n");
    AliRDHFCutsDStartoKpipi* copyfCuts=new AliRDHFCutsDStartoKpipi(*fCuts);
   // Post the data
-  PostData(7,copyfCuts);
+  PostData(4,copyfCuts);
 
   return;
 }
@@ -197,10 +176,14 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     Error("UserExec","NO EVENT FOUND!");
     return;
   }
-  
+
+  fEvents++;
+
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
   TClonesArray *arrayDStartoD0pi=0;
- 
+
+  fCEvents->Fill(1);
+
   if(!aodEvent && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD 
     // event in memory rather than the input (ESD) event.    
@@ -218,15 +201,21 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     arrayDStartoD0pi=(TClonesArray*)aodEvent->GetList()->FindObject("Dstar");
   }
 
-
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aodEvent->GetPrimaryVertex() || TMath::Abs(aodEvent->GetMagneticField())<0.001) return;
  
+  fCEvents->Fill(2);
 
-  fCEvents->Fill(1);
+  fCounter->StoreEvent(aodEvent,fUseMCInfo);
+
+  if(!fCuts->IsEventSelected(aodEvent)) {
+    if(fCuts->GetWhyRejection()==6) // rejected for Z vertex
+      fCEvents->Fill(6);
+    return;
+  }
+
   // Load the event
-  fEvents++;
   AliInfo(Form("Event %d",fEvents));
   if (fEvents%10000 ==0) AliInfo(Form("Event %d",fEvents));
 
@@ -247,8 +236,10 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     return;
   }else AliDebug(2, Form("Found %d vertices",arrayDStartoD0pi->GetEntriesFast())); 
 
-  // loop over the tracks to search for candidates soft pion
-  
+  Int_t nSelectedAna =0;
+  Int_t nSelectedProd =0;
+
+  // loop over the tracks to search for candidates soft pion 
   for (Int_t iDStartoD0pi = 0; iDStartoD0pi<arrayDStartoD0pi->GetEntriesFast(); iDStartoD0pi++) {
 
     // D* candidates and D0 from D*
@@ -257,8 +248,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     AliAODRecoDecayHF2Prong* theD0particle = (AliAODRecoDecayHF2Prong*)dstarD0pi->Get2Prong();
     if (!theD0particle) continue;
     
-    Int_t isDStar = 0;
-    
+    Int_t isDStar = 0;   
     TClonesArray *mcArray = 0; // fix coverity
 
     // mc analysis 
@@ -273,25 +263,14 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
       Int_t mcLabel = dstarD0pi->MatchToMC(413,421,pdgDgDStartoD0pi,pdgDgD0toKpi,mcArray);
       if(mcLabel>=0) isDStar = 1;
     }
-
-    // soft pion candidate
-    AliAODTrack *track2 = (AliAODTrack*)dstarD0pi->GetBachelor(); 
-    
-    Double_t pt = dstarD0pi->Pt();
-    Int_t isTkSelected = fCuts->IsSelected(dstarD0pi,AliRDHFCuts::kTracks); // quality cuts on tracks
-    if(!isTkSelected) continue;
-
-    // cut in acceptance for the soft pion and for the D0 daughters  - TO BE REMOVED ONCE WILL BE IN THE CUTTING CLASS        
-    Bool_t okTracks = SingleTrackSelections(theD0particle, track2);
-    if (!okTracks) continue;
     
     Int_t ptbin=fCuts->PtBin(dstarD0pi->Pt());
     
-    // set the D0 search window bin by bin
+    // set the D0 search window bin by bin - useful to calculate side band bkg
     if (ptbin==0){
       if(fAnalysis==1){
-	fD0Window=0.015;
-	fPeakWindow=0.0018;
+	fD0Window=0.035;
+	fPeakWindow=0.03;
       }else{
 	fD0Window=0.020;
 	fPeakWindow=0.0018;
@@ -299,8 +278,8 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     }
     if (ptbin==1){
       if(fAnalysis==1){
-	fD0Window=0.015;
-	fPeakWindow=0.0018;
+	fD0Window=0.035;
+	fPeakWindow=0.03;
       }else{
 	fD0Window=0.020;
 	fPeakWindow=0.0018;
@@ -308,8 +287,8 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     }
     if (ptbin==2){
       if(fAnalysis==1){
-	fD0Window=0.018;
-	fPeakWindow=0.0018;
+	fD0Window=0.035;
+	fPeakWindow=0.03;
       }else{
 	fD0Window=0.020;
 	fPeakWindow=0.0018;
@@ -317,8 +296,8 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     }
     if (ptbin==3){
       if(fAnalysis==1){
-	fD0Window=0.036;
-	fPeakWindow=0.0018;
+	fD0Window=0.035;
+	fPeakWindow=0.03;
       }else{
 	fD0Window=0.022;
 	fPeakWindow=0.0016;
@@ -326,56 +305,126 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     }
     if (ptbin==4){ 
       if(fAnalysis==1){
-	fD0Window=0.036;
-	fPeakWindow=0.0016;
+	fD0Window=0.035;
+	fPeakWindow=0.03;
       }else{
 	fD0Window=0.026;
 	fPeakWindow=0.0014;
       }
     }
-    if (ptbin>=5){
+    if (ptbin==5){
       if(fAnalysis==1){
-	fD0Window=0.062;
-	fPeakWindow=0.0014;
+	fD0Window=0.045;
+	fPeakWindow=0.03;
       }else{
 	fD0Window=0.026;
 	fPeakWindow=0.0014;
       }
     } 
+   if (ptbin==6){
+      if(fAnalysis==1){
+	fD0Window=0.045;
+	fPeakWindow=0.03;
+      }else{
+	fD0Window=0.026;
+	fPeakWindow=0.006;
+      }
+    } 
+    if (ptbin==7){
+      if(fAnalysis==1){
+	fD0Window=0.055;
+	fPeakWindow=0.03;
+      }else{
+	fD0Window=0.026;
+	fPeakWindow=0.006;
+      }
+    }
+    if (ptbin>7){
+      if(fAnalysis==1){
+	fD0Window=0.074;
+	fPeakWindow=0.03;
+      }else{
+	fD0Window=0.026;
+	fPeakWindow=0.006;
+      }
+    }
+    fCEvents->Fill(9);
+    
+    nSelectedProd++;
+    nSelectedAna++;
+    
+    Double_t mPDGD0=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+    
+    // here for lead-lead
+    Double_t invmassD0   = dstarD0pi->InvMassD0();  
+    if (TMath::Abs(invmassD0-mPDGD0)>fD0Window) continue; 
+    
+    Double_t mPDGDstar=TDatabasePDG::Instance()->GetParticle(413)->Mass();
+    Double_t invmassDelta = dstarD0pi->DeltaInvMass();
+    
+    if (TMath::Abs(invmassDelta-(mPDGDstar-mPDGD0))>fPeakWindow) continue;
+    
+    Int_t isTkSelected = fCuts->IsSelected(dstarD0pi,AliRDHFCuts::kTracks); // quality cuts on tracks
+    if(!isTkSelected) continue;
+    
+    if(!fCuts->IsInFiducialAcceptance(dstarD0pi->Pt(),dstarD0pi->YDstar())) continue;    
+    
+    Int_t isSelected=fCuts->IsSelected(dstarD0pi,AliRDHFCuts::kCandidate); //selected
+    if (!isSelected) continue;
 
-    FillSpectrum(dstarD0pi,isDStar,1,3,fCuts,fOutputPID3);
-    FillSpectrum(dstarD0pi,isDStar,1,2,fCuts,fOutputPID2);
-    FillSpectrum(dstarD0pi,isDStar,1,1,fCuts,fOutputPID1);
-    FillSpectrum(dstarD0pi,isDStar,fPID,fNSigma,fCuts,fOutputSpectrum);
-    //FillSpectrum(dstarD0pi,isDStar,0,0,fCuts,fOutputAll);
+    // fill PID
+    FillSpectrum(dstarD0pi,isDStar,fCuts,fOutputPID);
+    SideBandBackground(dstarD0pi,fCuts,fOutputPID);
+    WrongSignForDStar(dstarD0pi,fCuts,fOutputPID);
 
-    SideBandBackground(dstarD0pi,1,3,fCuts,fOutputPID3);
-    SideBandBackground(dstarD0pi,1,2,fCuts,fOutputPID2);
-    SideBandBackground(dstarD0pi,1,1,fCuts,fOutputPID1);
-    SideBandBackground(dstarD0pi,fPID,fNSigma,fCuts,fOutputSpectrum);
-    //SideBandBackground(dstarD0pi,0,0,fCuts,fOutputAll);
+    // fill no pid
+    fCuts->SetUsePID(kFALSE);
+    FillSpectrum(dstarD0pi,isDStar,fCuts,fOutputAll);
+    SideBandBackground(dstarD0pi,fCuts,fOutputAll);
+    WrongSignForDStar(dstarD0pi,fCuts,fOutputAll);
+    fCuts->SetUsePID(kTRUE);
 
-    WrongSignForDStar(dstarD0pi,1,3,fCuts,fOutputPID3);
-    WrongSignForDStar(dstarD0pi,1,2,fCuts,fOutputPID2);
-    WrongSignForDStar(dstarD0pi,1,1,fCuts,fOutputPID1);
-    WrongSignForDStar(dstarD0pi,fPID,fNSigma,fCuts,fOutputSpectrum);
-    //WrongSignForDStar(dstarD0pi,0,0,fCuts,fOutputAll);
-   
+    // rare D search ------ 
+    if(fDoSearch){
+      TLorentzVector LorentzTrack1(0,0,0,0); // lorentz 4 vector
+      TLorentzVector LorentzTrack2(0,0,0,0); // lorentz 4 vector
+      
+      for (Int_t i=0; i<aodEvent->GetNTracks(); i++){ 
+	
+	AliAODTrack* aodTrack = aodEvent->GetTrack(i);
+	
+	if(dstarD0pi->Charge() == aodTrack->Charge()) continue;
+	if((!(aodTrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aodTrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+	if (TMath::Abs(invmassDelta-(mPDGDstar-mPDGD0))>0.02) continue;
+	
+	//build the D1 mass
+	Double_t mass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+
+	LorentzTrack1.SetPxPyPzE( dstarD0pi->Px(),dstarD0pi->Py(), dstarD0pi->Pz(), dstarD0pi->E(413) );
+	LorentzTrack2.SetPxPyPzE( aodTrack->Px(),aodTrack->Py(), aodTrack->Pz(),aodTrack->E(mass) );
+	
+	//D1 mass
+	Double_t d1mass = ((LorentzTrack1+LorentzTrack2).M());
+	//mass difference - at 0.4117 and 0.4566
+	fDeltaMassD1->Fill(d1mass-dstarD0pi->InvMassDstarKpipi());
+      }
+    }
+
     if(isDStar == 1) { 
-      fTrueDiff2->Fill(pt,dstarD0pi->DeltaInvMass());
+      fTrueDiff2->Fill(dstarD0pi->Pt(),dstarD0pi->DeltaInvMass());
     }
     
   }
   
+  fCounter->StoreCandidates(aodEvent,nSelectedProd,kTRUE);  
+  fCounter->StoreCandidates(aodEvent,nSelectedAna,kFALSE); 
+
   AliDebug(2, Form("Found %i Reco particles that are D*!!",icountReco));
   
   PostData(1,fOutput);
-  PostData(2,fOutputSpectrum);
-  PostData(3,fOutputAll);
-  PostData(4,fOutputPID3);
-  PostData(5,fOutputPID2);
-  PostData(6,fOutputPID1);
-
+  PostData(2,fOutputAll);
+  PostData(3,fOutputPID);
+  PostData(5,fCounter);
 
 }
 //________________________________________ terminate ___________________________
@@ -395,33 +444,20 @@ void AliAnalysisTaskSEDStarSpectra::Terminate(Option_t*)
   }
   
   fCEvents        = dynamic_cast<TH1F*>(fOutput->FindObject("fCEvents"));
+  fDeltaMassD1     = dynamic_cast<TH1F*>(fOutput->FindObject("fDeltaMassD1"));
   fTrueDiff2      = dynamic_cast<TH2F*>(fOutput->FindObject("fTrueDiff2"));
 
-  fOutputSpectrum = dynamic_cast<TList*> (GetOutputData(2));
-  if (!fOutputSpectrum) {
-    printf("ERROR: fOutputSpectrum not available\n");
-    return;
-  }
-  fOutputAll = dynamic_cast<TList*> (GetOutputData(3));
+  fOutputAll = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutputAll) {
     printf("ERROR: fOutputAll not available\n");
     return;
   }
-  fOutputPID3 = dynamic_cast<TList*> (GetOutputData(4));
-  if (!fOutputPID3) {
-    printf("ERROR: fOutputPID3 not available\n");
+  fOutputPID = dynamic_cast<TList*> (GetOutputData(2));
+  if (!fOutputPID) {
+    printf("ERROR: fOutputPID not available\n");
     return;
   }
-  fOutputPID2 = dynamic_cast<TList*> (GetOutputData(5));
-  if (!fOutputPID2) {
-    printf("ERROR: fOutputPID2 not available\n");
-    return;
-  }
-  fOutputPID1 = dynamic_cast<TList*> (GetOutputData(6));
-  if (!fOutputPID1) {
-    printf("ERROR: fOutputPID1 not available\n");
-    return;
-  }
+ 
 
   return;
 }
@@ -436,43 +472,34 @@ void AliAnalysisTaskSEDStarSpectra::UserCreateOutputObjects() {
   fOutput->SetOwner();
   fOutput->SetName("chist0");
 
- 
-  fOutputSpectrum = new TList();
-  fOutputSpectrum->SetOwner();
-  fOutputSpectrum->SetName("listSpectrum");
-
-  fOutputPID3 = new TList();
-  fOutputPID3->SetOwner();
-  fOutputPID3->SetName("listPID3");
-
-  fOutputPID2 = new TList();
-  fOutputPID2->SetOwner();
-  fOutputPID2->SetName("listPID2");
-    
-  fOutputPID1 = new TList();
-  fOutputPID1->SetOwner();
-  fOutputPID1->SetName("listPID1");
-    
   fOutputAll = new TList();
   fOutputAll->SetOwner();
   fOutputAll->SetName("listAll");
- 
+
+  fOutputPID = new TList();
+  fOutputPID->SetOwner();
+  fOutputPID->SetName("listPID");
+    
   // define histograms
   DefineHistograms();
 
+ //Counter for Normalization
+  TString normName="NormalizationCounter";
+  AliAnalysisDataContainer *cont = GetOutputSlot(4)->GetContainer();
+  if(cont)normName=(TString)cont->GetName();
+  fCounter = new AliNormalizationCounter(normName.Data());
+  fCounter->SetRejectPileUp(fCuts->GetOptPileUp());
+
   PostData(1,fOutput);
-  PostData(2,fOutputSpectrum);
-  PostData(3,fOutputAll);
-  PostData(4,fOutputPID3);
-  PostData(5,fOutputPID2);
-  PostData(6,fOutputPID1);
+  PostData(2,fOutputAll);
+  PostData(3,fOutputPID);
 
   return;
 }
 //___________________________________ hiostograms _______________________________________
 void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
 
-  fCEvents = new TH1F("fCEvents","conter",10,0,10);
+  fCEvents = new TH1F("fCEvents","conter",11,0,11);
   fCEvents->SetStats(kTRUE);
   fCEvents->GetXaxis()->SetTitle("1");
   fCEvents->GetYaxis()->SetTitle("counts");
@@ -481,7 +508,10 @@ void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
   fTrueDiff2 = new TH2F("DiffDstar_pt","True Reco diff vs pt",200,0,15,900,0,0.3);
   fOutput->Add(fTrueDiff2);
 
-  const Int_t nhist=9;
+  fDeltaMassD1 = new TH1F("DeltaMassD1","delta mass d1",600,0,0.8);
+  fOutput->Add(fDeltaMassD1);
+
+  const Int_t nhist=14;
   TString nameMass=" ", nameSgn=" ", nameBkg=" ";
 
   for(Int_t i=-2;i<nhist;i++){
@@ -623,132 +653,62 @@ void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
     TH1F* allSgn  = (TH1F*)spectrumSgn->Clone();
     TH1F* allBkg  = (TH1F*)spectrumBkg->Clone();
 
-    TH1F* pid3Mass = (TH1F*)spectrumMass->Clone();
-    TH1F* pid3Sgn  = (TH1F*)spectrumSgn->Clone();
-    TH1F* pid3Bkg  = (TH1F*)spectrumBkg->Clone();
-
-    TH1F* pid2Mass = (TH1F*)spectrumMass->Clone();
-    TH1F* pid2Sgn  = (TH1F*)spectrumSgn->Clone();
-    TH1F* pid2Bkg  = (TH1F*)spectrumBkg->Clone();
-
-    TH1F* pid1Mass = (TH1F*)spectrumMass->Clone();
-    TH1F* pid1Sgn  = (TH1F*)spectrumSgn->Clone();
-    TH1F* pid1Bkg  = (TH1F*)spectrumBkg->Clone();
-
-    fOutputSpectrum->Add(spectrumMass);
-    fOutputSpectrum->Add(spectrumSgn);
-    fOutputSpectrum->Add(spectrumBkg);
+    TH1F* pidMass = (TH1F*)spectrumMass->Clone();
+    TH1F* pidSgn  = (TH1F*)spectrumSgn->Clone();
+    TH1F* pidBkg  = (TH1F*)spectrumBkg->Clone();
 
     fOutputAll->Add(allMass);
     fOutputAll->Add(allSgn);
     fOutputAll->Add(allBkg);
 
-    fOutputPID3->Add(pid3Mass);
-    fOutputPID3->Add(pid3Sgn);
-    fOutputPID3->Add(pid3Bkg);
-
-    fOutputPID2->Add(pid2Mass);
-    fOutputPID2->Add(pid2Sgn);
-    fOutputPID2->Add(pid2Bkg);
-
-    fOutputPID1->Add(pid1Mass);
-    fOutputPID1->Add(pid1Sgn);
-    fOutputPID1->Add(pid1Bkg);
+    fOutputPID->Add(pidMass);
+    fOutputPID->Add(pidSgn);
+    fOutputPID->Add(pidBkg);
 
     TH1F* allD0Mass = (TH1F*)spectrumD0Mass->Clone();
     TH1F* allD0Sgn  = (TH1F*)spectrumD0Sgn->Clone();
     TH1F* allD0Bkg  = (TH1F*)spectrumD0Bkg->Clone();
 
-    TH1F* pid3D0Mass = (TH1F*)spectrumD0Mass->Clone();
-    TH1F* pid3D0Sgn  = (TH1F*)spectrumD0Sgn->Clone();
-    TH1F* pid3D0Bkg  = (TH1F*)spectrumD0Bkg->Clone();
-
-    TH1F* pid2D0Mass = (TH1F*)spectrumD0Mass->Clone();
-    TH1F* pid2D0Sgn  = (TH1F*)spectrumD0Sgn->Clone();
-    TH1F* pid2D0Bkg  = (TH1F*)spectrumD0Bkg->Clone();
-
-    TH1F* pid1D0Mass = (TH1F*)spectrumD0Mass->Clone();
-    TH1F* pid1D0Sgn  = (TH1F*)spectrumD0Sgn->Clone();
-    TH1F* pid1D0Bkg  = (TH1F*)spectrumD0Bkg->Clone();
-
-    fOutputSpectrum->Add(spectrumD0Mass);
-    fOutputSpectrum->Add(spectrumD0Sgn);
-    fOutputSpectrum->Add(spectrumD0Bkg);
+    TH1F* pidD0Mass = (TH1F*)spectrumD0Mass->Clone();
+    TH1F* pidD0Sgn  = (TH1F*)spectrumD0Sgn->Clone();
+    TH1F* pidD0Bkg  = (TH1F*)spectrumD0Bkg->Clone();
 
     fOutputAll->Add(allD0Mass);
     fOutputAll->Add(allD0Sgn);
     fOutputAll->Add(allD0Bkg);
 
-    fOutputPID3->Add(pid3D0Mass);
-    fOutputPID3->Add(pid3D0Sgn);
-    fOutputPID3->Add(pid3D0Bkg);
-
-    fOutputPID2->Add(pid2D0Mass);
-    fOutputPID2->Add(pid2D0Sgn);
-    fOutputPID2->Add(pid2D0Bkg);
-
-    fOutputPID1->Add(pid1D0Mass);
-    fOutputPID1->Add(pid1D0Sgn);
-    fOutputPID1->Add(pid1D0Bkg);
+    fOutputPID->Add(pidD0Mass);
+    fOutputPID->Add(pidD0Sgn);
+    fOutputPID->Add(pidD0Bkg);
   
     TH1F* allDstarMass = (TH1F*)spectrumDstarMass->Clone();
     TH1F* allDstarSgn = (TH1F*)spectrumDstarSgn->Clone();
     TH1F* allDstarBkg = (TH1F*)spectrumDstarBkg->Clone();
     
-    TH1F* pid3DstarMass = (TH1F*)spectrumDstarMass->Clone();
-    TH1F* pid3DstarSgn = (TH1F*)spectrumDstarSgn->Clone();
-    TH1F* pid3DstarBkg = (TH1F*)spectrumDstarBkg->Clone();
+    TH1F* pidDstarMass = (TH1F*)spectrumDstarMass->Clone();
+    TH1F* pidDstarSgn = (TH1F*)spectrumDstarSgn->Clone();
+    TH1F* pidDstarBkg = (TH1F*)spectrumDstarBkg->Clone();
     
-    TH1F* pid2DstarMass = (TH1F*)spectrumDstarMass->Clone();
-    TH1F* pid2DstarSgn = (TH1F*)spectrumDstarSgn->Clone();
-    TH1F* pid2DstarBkg = (TH1F*)spectrumDstarBkg->Clone();
-
-    TH1F* pid1DstarMass = (TH1F*)spectrumDstarMass->Clone();
-    TH1F* pid1DstarSgn = (TH1F*)spectrumDstarSgn->Clone();
-    TH1F* pid1DstarBkg = (TH1F*)spectrumDstarBkg->Clone();
-
-    fOutputSpectrum->Add(spectrumDstarMass);
-    fOutputSpectrum->Add(spectrumDstarSgn);
-    fOutputSpectrum->Add(spectrumDstarBkg);
-
     fOutputAll->Add(allDstarMass);
     fOutputAll->Add(allDstarSgn);
     fOutputAll->Add(allDstarBkg);
 
-    fOutputPID3->Add(pid3DstarMass);
-    fOutputPID3->Add(pid3DstarSgn);
-    fOutputPID3->Add(pid3DstarBkg);
-
-    fOutputPID2->Add(pid2DstarMass);
-    fOutputPID2->Add(pid2DstarSgn);
-    fOutputPID2->Add(pid2DstarBkg);
-
-    fOutputPID1->Add(pid1DstarMass);
-    fOutputPID1->Add(pid1DstarSgn);
-    fOutputPID1->Add(pid1DstarBkg);
+    fOutputPID->Add(pidDstarMass);
+    fOutputPID->Add(pidDstarSgn);
+    fOutputPID->Add(pidDstarBkg);
 
     TH1F* allSideBandMass = (TH1F*)spectrumSideBandMass->Clone();
-    TH1F* pid3SideBandMass = (TH1F*)spectrumSideBandMass->Clone();
-    TH1F* pid2SideBandMass = (TH1F*)spectrumSideBandMass->Clone();
-    TH1F* pid1SideBandMass = (TH1F*)spectrumSideBandMass->Clone();
+    TH1F* pidSideBandMass = (TH1F*)spectrumSideBandMass->Clone();
 
-    fOutputSpectrum->Add(spectrumSideBandMass);
     fOutputAll->Add(allSideBandMass);
-    fOutputPID3->Add(pid3SideBandMass);
-    fOutputPID2->Add(pid2SideBandMass);
-    fOutputPID1->Add(pid1SideBandMass);
-
+    fOutputPID->Add(pidSideBandMass);
+   
     TH1F* allWrongSignMass = (TH1F*)spectrumWrongSignMass->Clone();
-    TH1F* pid3WrongSignMass = (TH1F*)spectrumWrongSignMass->Clone();
-    TH1F* pid2WrongSignMass = (TH1F*)spectrumWrongSignMass->Clone();
-    TH1F* pid1WrongSignMass = (TH1F*)spectrumWrongSignMass->Clone();
+    TH1F* pidWrongSignMass = (TH1F*)spectrumWrongSignMass->Clone();
 
-    fOutputSpectrum->Add(spectrumWrongSignMass);
     fOutputAll->Add(allWrongSignMass);
-    fOutputPID3->Add(pid3WrongSignMass);
-    fOutputPID2->Add(pid2WrongSignMass);
-    fOutputPID1->Add(pid1WrongSignMass);
-    
+    fOutputPID->Add(pidWrongSignMass);
+   
   }
   
   // pt spectra
@@ -782,37 +742,17 @@ void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
   TH1F* ptallSgn = (TH1F*)ptspectrumSgn->Clone();
   TH1F* ptallBkg = (TH1F*)ptspectrumBkg->Clone();
   
-  TH1F* ptpid3Mass = (TH1F*)ptspectrumMass->Clone();
-  TH1F* ptpid3Sgn = (TH1F*)ptspectrumSgn->Clone();
-  TH1F* ptpid3Bkg = (TH1F*)ptspectrumBkg->Clone();
-  
-  TH1F* ptpid2Mass = (TH1F*)ptspectrumMass->Clone();
-  TH1F* ptpid2Sgn = (TH1F*)ptspectrumSgn->Clone();
-  TH1F* ptpid2Bkg = (TH1F*)ptspectrumBkg->Clone();
-  
-  TH1F* ptpid1Mass = (TH1F*)ptspectrumMass->Clone();
-  TH1F* ptpid1Sgn = (TH1F*)ptspectrumSgn->Clone();
-  TH1F* ptpid1Bkg = (TH1F*)ptspectrumBkg->Clone();
-  
-  fOutputSpectrum->Add(ptspectrumMass);
-  fOutputSpectrum->Add(ptspectrumSgn);
-  fOutputSpectrum->Add(ptspectrumBkg);
-  
+  TH1F* ptpidMass = (TH1F*)ptspectrumMass->Clone();
+  TH1F* ptpidSgn = (TH1F*)ptspectrumSgn->Clone();
+  TH1F* ptpidBkg = (TH1F*)ptspectrumBkg->Clone();
+    
   fOutputAll->Add(ptallMass);
   fOutputAll->Add(ptallSgn);
   fOutputAll->Add(ptallBkg);
   
-  fOutputPID3->Add(ptpid3Mass);
-  fOutputPID3->Add(ptpid3Sgn);
-  fOutputPID3->Add(ptpid3Bkg);
-  
-  fOutputPID2->Add(ptpid2Mass);
-  fOutputPID2->Add(ptpid2Sgn);
-  fOutputPID2->Add(ptpid2Bkg);
-  
-  fOutputPID1->Add(ptpid1Mass);
-  fOutputPID1->Add(ptpid1Sgn);
-  fOutputPID1->Add(ptpid1Bkg);
+  fOutputPID->Add(ptpidMass);
+  fOutputPID->Add(ptpidSgn);
+  fOutputPID->Add(ptpidBkg);
   
   // eta spectra
   nameMass="etaMass";
@@ -845,115 +785,43 @@ void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
   TH1F* etaallSgn = (TH1F*)etaspectrumSgn->Clone();
   TH1F* etaallBkg = (TH1F*)etaspectrumBkg->Clone();
   
-  TH1F* etapid3Mass = (TH1F*)etaspectrumMass->Clone();
-  TH1F* etapid3Sgn = (TH1F*)etaspectrumSgn->Clone();
-  TH1F* etapid3Bkg = (TH1F*)etaspectrumBkg->Clone();
-  
-  TH1F* etapid2Mass = (TH1F*)etaspectrumMass->Clone();
-  TH1F* etapid2Sgn = (TH1F*)etaspectrumSgn->Clone();
-  TH1F* etapid2Bkg = (TH1F*)etaspectrumBkg->Clone();
-  
-  TH1F* etapid1Mass = (TH1F*)etaspectrumMass->Clone();
-  TH1F* etapid1Sgn = (TH1F*)etaspectrumSgn->Clone();
-  TH1F* etapid1Bkg = (TH1F*)etaspectrumBkg->Clone();
-  
-  fOutputSpectrum->Add(etaspectrumMass);
-  fOutputSpectrum->Add(etaspectrumSgn);
-  fOutputSpectrum->Add(etaspectrumBkg);
-  
+  TH1F* etapidMass = (TH1F*)etaspectrumMass->Clone();
+  TH1F* etapidSgn = (TH1F*)etaspectrumSgn->Clone();
+  TH1F* etapidBkg = (TH1F*)etaspectrumBkg->Clone();
+    
   fOutputAll->Add(etaallMass);
   fOutputAll->Add(etaallSgn);
   fOutputAll->Add(etaallBkg);
   
-  fOutputPID3->Add(etapid3Mass);
-  fOutputPID3->Add(etapid3Sgn);
-  fOutputPID3->Add(etapid3Bkg);
-  
-  fOutputPID2->Add(etapid2Mass);
-  fOutputPID2->Add(etapid2Sgn);
-  fOutputPID2->Add(etapid2Bkg);
-  
-  fOutputPID1->Add(etapid1Mass);
-  fOutputPID1->Add(etapid1Sgn);
-  fOutputPID1->Add(etapid1Bkg);
+  fOutputPID->Add(etapidMass);
+  fOutputPID->Add(etapidSgn);
+  fOutputPID->Add(etapidBkg);
   
   return;
 }
 //________________________________________________________________________
-void AliAnalysisTaskSEDStarSpectra::FillSpectrum(AliAODRecoCascadeHF *part, Int_t isDStar, Bool_t PIDon, Int_t nSigma, AliRDHFCutsDStartoKpipi *cuts, TList *listout){
+void AliAnalysisTaskSEDStarSpectra::FillSpectrum(AliAODRecoCascadeHF *part, Int_t isDStar, AliRDHFCutsDStartoKpipi *cuts, TList *listout){
   //
   // Fill histos for D* spectrum
   //
 
   Int_t ptbin=cuts->PtBin(part->Pt());
-
-  Int_t isSelected=cuts->IsSelected(part,AliRDHFCuts::kCandidate); //selected
-  if (!isSelected){
-    return;
-  }
-
   Double_t invmassD0   = part->InvMassD0();  
-  if (TMath::Abs(invmassD0-1.865)>fD0Window) return;
   
   Double_t pt = part->Pt();
-  Double_t eta = part->Eta();
-  
-  AliAODTrack *softPi = (AliAODTrack*)part->GetBachelor();
-  
-  //PID of D0 daughters
-  AliAODTrack *pos = (AliAODTrack*)part->Get2Prong()->GetDaughter(0);
-  AliAODTrack *neg = (AliAODTrack*)part->Get2Prong()->GetDaughter(1);
-  
-  Bool_t isPID = kTRUE;
-  
-  //  Double_t cutsN = -1;
-    
-  //if(part->Charge()<0){
-  //  cutsN = (pos->Pt()-neg->Pt())/(part->Get2Prong()->Pt());
-  // }
-  //if(part->Charge()>0){
-  //  cutsN = (neg->Pt()-pos->Pt())/(part->Get2Prong()->Pt());
-  // }
- 
-  //  if(ptbin==1 || ptbin==2){
-  //  if(cutsN>0.7) return;
-  // }
-  //if(ptbin==3){
-  //  if(cutsN>0.8) return;
-  // }
-
-
-  if(fAnalysis==1 && ptbin==1){
-    if(part->Get2Prong()->DecayLength()>0.1 || part->Get2Prong()->DecayLength()<0.015)return; //(0.05)
-   }
-  if(fAnalysis==1 && ptbin==2){
-    if(part->Get2Prong()->DecayLength()>0.1 || part->Get2Prong()->DecayLength()<0.015)return;
-  }
- 
-  if (PIDon) {
-    if(fDebug > 1) printf("AnalysisTaskSEDStar::TPCPIDon \n");
-    if(fDebug > 1) printf("AnalysisTaskSEDStar::NSigmaTPC: %d\n", nSigma);
-    
-    if (part->Charge()>0){
-      if(!SelectPID(pos, AliPID::kPion, nSigma)) return;//pion+
-      if(!SelectPID(neg, AliPID::kKaon, nSigma)) return;//kaon-
-    }else{
-      if(!SelectPID(pos, AliPID::kKaon, nSigma)) return;//kaon+
-      if(!SelectPID(neg, AliPID::kPion, nSigma)) return;//pion-
-    }
-    if (ptbin>1){
-      isPID =SelectTOFPID(part->Get2Prong(), softPi);
-      if(!isPID) return;
-    }
-  }
+  Double_t eta = part->Eta();  
   
   Double_t invmassDelta = part->DeltaInvMass();
   Double_t invmassDstar = part->InvMassDstarKpipi();
   
   TString fillthis="";
   Bool_t massInRange=kFALSE;
-  if (TMath::Abs(invmassDelta-0.14557)<fPeakWindow) massInRange=kTRUE;
   
+  Double_t mPDGD0=TDatabasePDG::Instance()->GetParticle(421)->Mass();    
+  Double_t mPDGDstar=TDatabasePDG::Instance()->GetParticle(413)->Mass();
+  
+  // delta M(Kpipi)-M(Kpi)
+  if (TMath::Abs(invmassDelta-(mPDGDstar-mPDGD0))<fPeakWindow) massInRange=kTRUE;  
   
   if(fUseMCInfo) {
     if(isDStar==1) {
@@ -972,8 +840,7 @@ void AliAnalysisTaskSEDStarSpectra::FillSpectrum(AliAODRecoCascadeHF *part, Int_
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDelta);
       fillthis="histDeltaSgn";
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDelta);
-      //if (massInRange) {
-      if(ptbin<=1){
+    if (massInRange) {
 	fillthis="ptSgn";
 	((TH1F*)(listout->FindObject(fillthis)))->Fill(pt);
 	fillthis="etaSgn";
@@ -996,8 +863,7 @@ void AliAnalysisTaskSEDStarSpectra::FillSpectrum(AliAODRecoCascadeHF *part, Int_
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDelta);
       fillthis="histDeltaBkg";
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassDelta);
-      //if (massInRange) {
-      if(ptbin<=1){
+     if (massInRange) {
 	fillthis="ptBkg";
 	((TH1F*)(listout->FindObject(fillthis)))->Fill(pt);
 	fillthis="etaBkg";
@@ -1032,7 +898,7 @@ void AliAnalysisTaskSEDStarSpectra::FillSpectrum(AliAODRecoCascadeHF *part, Int_
   return;
 }
 //______________________________ side band background for D*___________________________________
-void AliAnalysisTaskSEDStarSpectra::SideBandBackground(AliAODRecoCascadeHF *part, Bool_t PIDon, Int_t nSigma,  AliRDHFCutsDStartoKpipi *cuts, TList *listout){
+void AliAnalysisTaskSEDStarSpectra::SideBandBackground(AliAODRecoCascadeHF *part,  AliRDHFCutsDStartoKpipi *cuts, TList *listout){
 
   //  D* side band background method. Two side bands, in M(Kpi) are taken at ~6 sigmas 
   // (expected detector resolution) on the left and right frm the D0 mass. Each band
@@ -1041,15 +907,7 @@ void AliAnalysisTaskSEDStarSpectra::SideBandBackground(AliAODRecoCascadeHF *part
   Int_t ptbin=cuts->PtBin(part->Pt());
   
   Bool_t massInRange=kFALSE;
-
-  Int_t isSelected=cuts->IsSelected(part,AliRDHFCuts::kCandidate); //selected
-  if (!isSelected){
-    return;
-  }
-  //  Double_t pt = part->Pt();
   
-  AliAODTrack *softPi = (AliAODTrack*)part->GetBachelor();
-
   // select the side bands intervall
   Double_t invmassD0    = part->InvMassD0();
   if(TMath::Abs(invmassD0-1.865)>4*fD0Window && TMath::Abs(invmassD0-1.865)<8*fD0Window){
@@ -1057,53 +915,6 @@ void AliAnalysisTaskSEDStarSpectra::SideBandBackground(AliAODRecoCascadeHF *part
     // for pt and eta
     Double_t invmassDelta = part->DeltaInvMass();
     if (TMath::Abs(invmassDelta-0.14557)<fPeakWindow) massInRange=kTRUE;
-    
-    //PID of D0 daughters
-    AliAODTrack *pos = (AliAODTrack*)part->Get2Prong()->GetDaughter(0);
-    AliAODTrack *neg = (AliAODTrack*)part->Get2Prong()->GetDaughter(1);
-    
-    //Double_t cutsN = -1;
-    
-
-    /* if(part->Charge()<0){
-      cutsN = (pos->Pt()-neg->Pt())/(part->Get2Prong()->Pt());
-    }
-    if(part->Charge()>0){
-      cutsN = (neg->Pt()-pos->Pt())/(part->Get2Prong()->Pt());
-    }
-    
-    if(ptbin==1 || ptbin==2){
-      if(cutsN>0.5) return;
-    }
-    if(ptbin==3){
-      if(cutsN>0.7) return;
-    }
-    */
-    if(fAnalysis==1 && ptbin==1){
-      if(part->Get2Prong()->DecayLength()>0.08 || part->Get2Prong()->DecayLength()<0.022)return; //(0.05)
-    }
-    if(fAnalysis==1 && ptbin==2){
-      if(part->Get2Prong()->DecayLength()>0.08 || part->Get2Prong()->DecayLength()<0.017)return;
-    }
-    
-    Bool_t isPID = kTRUE;
-
-    if (PIDon) {
-      if(fDebug > 1) printf("AnalysisTaskSEDStar::TPCPIDon \n");
-      if(fDebug > 1) printf("AnalysisTaskSEDStar::NSigmaTPC: %d\n", nSigma);
-      
-      if (part->Charge()>0){
-	if(!SelectPID(pos, AliPID::kPion, nSigma)) return;//pion+
-	if(!SelectPID(neg, AliPID::kKaon, nSigma)) return;//kaon-
-      }else{
-	if(!SelectPID(pos, AliPID::kKaon, nSigma)) return;//kaon+
-	if(!SelectPID(neg, AliPID::kPion, nSigma)) return;//pion-
-      }
-      if (ptbin>2){
-	isPID =SelectTOFPID(part->Get2Prong(), softPi);
-	if(!isPID) return;
-      }
-    }
     
     TString fillthis="";
     fillthis="histSideBandMass_";
@@ -1115,14 +926,13 @@ void AliAnalysisTaskSEDStarSpectra::SideBandBackground(AliAODRecoCascadeHF *part
   }
 }
 //________________________________________________________________________________________________________________
-void AliAnalysisTaskSEDStarSpectra::WrongSignForDStar(AliAODRecoCascadeHF *part, Bool_t PIDon, Int_t nSigma,  AliRDHFCutsDStartoKpipi *cuts, TList *listout){
+void AliAnalysisTaskSEDStarSpectra::WrongSignForDStar(AliAODRecoCascadeHF *part,  AliRDHFCutsDStartoKpipi *cuts, TList *listout){
   //
   // assign the wrong charge to the soft pion to create background
   //
   Int_t ptbin=cuts->PtBin(part->Pt());
   
   AliAODRecoDecayHF2Prong* theD0particle = (AliAODRecoDecayHF2Prong*)part->Get2Prong();
-  AliAODTrack *theSoftPi = (AliAODTrack*)part->GetBachelor(); 
 
   Int_t okD0WrongSign,okD0barWrongSign;
   Double_t wrongMassD0=0.;
@@ -1159,37 +969,6 @@ void AliAnalysisTaskSEDStarSpectra::WrongSignForDStar(AliAODRecoCascadeHF *part,
   
   if(TMath::Abs(wrongMassD0-1.865)<fD0Window){
     
-    //PID of D0 daughters
-    AliAODTrack *pos = (AliAODTrack*)part->Get2Prong()->GetDaughter(0);
-    AliAODTrack *neg = (AliAODTrack*)part->Get2Prong()->GetDaughter(1);
-    
-    Bool_t isPID = kTRUE;
-
-    
-    if(fAnalysis==1 && ptbin==1){
-      if(part->Get2Prong()->DecayLength()>0.08 || part->Get2Prong()->DecayLength()<0.022)return; //(0.05)
-    }
-    if(fAnalysis==1 && ptbin==2){
-      if(part->Get2Prong()->DecayLength()>0.08 || part->Get2Prong()->DecayLength()<0.017)return;
-    }
-
-    if (PIDon) {
-      if(fDebug > 1) printf("AnalysisTaskSEDStar::TPCPIDon \n");
-      if(fDebug > 1) printf("AnalysisTaskSEDStar::NSigmaTPC: %d\n", nSigma);
-      
-      if (part->Charge()>0){
-	if(!SelectPID(pos, AliPID::kPion, nSigma)) return;//pion+
-	if(!SelectPID(neg, AliPID::kKaon, nSigma)) return;//kaon-
-      }else{
-	if(!SelectPID(pos, AliPID::kKaon, nSigma)) return;//kaon+
-	if(!SelectPID(neg, AliPID::kPion, nSigma)) return;//pion-
-      }
-      if (ptbin>2){
-	isPID =SelectTOFPID(theD0particle, theSoftPi);
-	if(!isPID) return;
-      }
-    }
-    
     // wrong D* inv mass   
     Double_t e[3];
     if (part->Charge()>0){
@@ -1214,122 +993,4 @@ void AliAnalysisTaskSEDStarSpectra::WrongSignForDStar(AliAODRecoCascadeHF *part,
     ((TH1F*)(listout->FindObject(fillthis)))->Fill(wrongMassDstar-wrongMassD0);
     
   }
-}
-
-//_____________________________________________SINGLE TRACK PRE-SELECTION___________________________________________
-Bool_t AliAnalysisTaskSEDStarSpectra::SingleTrackSelections(const AliAODRecoDecayHF2Prong* theD0particle, const AliAODTrack *track2){
-  
-  // Preselection on D0 daughters and the soft pion
-  
-  // cut in acceptance for the soft pion and for the D0 daughters      
-  Bool_t acceptanceProng0 = (TMath::Abs(theD0particle->EtaProng(0))<= 0.9);
-  Bool_t acceptanceProng1 = (TMath::Abs(theD0particle->EtaProng(1))<= 0.9);
-  // soft pion acceptance ... is it fine 0.9?????
-  Bool_t acceptanceProng2 = (TMath::Abs(track2->Eta())<= 1.0);
-  
-  if (!(acceptanceProng0 && acceptanceProng1 && acceptanceProng2)) return kFALSE;
-  AliDebug(2,"D* reco daughters in acceptance");
-  
-  return kTRUE;
-}
-
-//_____________________________ pid _______________________________________-
-Bool_t AliAnalysisTaskSEDStarSpectra::SelectPID(const AliAODTrack *track,  AliPID::EParticleType type, Double_t nsig){//type(0-4): {e,mu,pi,K,p}
-  //
-  // Method to extract the PID for the pion/kaon. The particle type for PID can be set by user
-  // At the moment only TPC PID.
-  //
-
-  //TPC
-
-  Bool_t isParticle=kTRUE;
-  if ((track->GetStatus()&AliESDtrack::kTPCpid )==0) return isParticle;
-  AliAODPid *pid = track->GetDetPid();
-  static AliTPCPIDResponse theTPCpid;
-  Double_t nsigma = theTPCpid.GetNumberOfSigmas(track->P(),pid->GetTPCsignal(),track->GetTPCClusterMap().CountBits(), type);
-  if (TMath::Abs(nsigma)>nsig) isParticle=kFALSE;
-
-  return isParticle;
-}
-//-------------------------------------------------
-Bool_t AliAnalysisTaskSEDStarSpectra::SelectTOFPID(const AliAODRecoDecayHF2Prong* d, const AliAODTrack *tracksoft){
-  
-  
-  // ######### SPECIAL PID CUTS #################################
-  Int_t isKaon[2]={0,0};
-  Bool_t isD0D0barPID[2]={kTRUE,kTRUE};
-  for(Int_t daught=0;daught<2;daught++){
-    
-    
-    AliAODTrack *aodtrack=(AliAODTrack*)d->GetDaughter(daught);
-    // AliESDtrack *esdtrack=new
-    AliESDtrack((AliVTrack*)d->GetDaughter(daught)); 
-    if(!(aodtrack->GetStatus()&AliESDtrack::kTOFpid)){
-      isKaon[daught]=0;
-      //delete esdtrack;
-      return kTRUE;
-    }
-    if(!(aodtrack->GetStatus()&AliESDtrack::kTOFout)){
-      isKaon[daught]=0;
-      //	delete esdtrack;
-      return kTRUE;
-    } 
-    if(!(aodtrack->GetStatus()&AliESDtrack::kTIME)){
-      isKaon[daught]=0;
-      //delete esdtrack;
-      return kTRUE;
-    }
-    if(!(aodtrack->GetStatus()&AliESDtrack::kTPCrefit)){
-      isKaon[daught]=0;
-      //	delete esdtrack;
-      return kTRUE;
-    } 
-    if(!(aodtrack->GetStatus()&AliESDtrack::kITSrefit)){
-      isKaon[daught]=0;
-      //	delete esdtrack;
-      return kTRUE;
-    } 
-    
-    AliAODPid *pid=aodtrack->GetDetPid();
-    if(!pid) {
-      isKaon[daught]=0;
-      //delete esdtrack;
-      return kTRUE;
-    }
-    Double_t tofSig=pid->GetTOFsignal(); 
-    
-    Double_t times[5];
-    //      esdtrack->GetIntegratedTimes(times);
-    pid->GetIntegratedTimes(times);
-    //fHistCheck->Fill(esdtrack->P(),esdtrack->GetTOFsignal()-times[3]); //
-    //3 is the kaon
-
-    //  printf("Test momentum VS time %f, %f \n",aodtrack->P(),tofSig-times[3]);
-    if(TMath::Abs(tofSig-times[3])>3.*160.){
-      isKaon[daught]=2;
-      if(aodtrack->Charge()==-1){
-	isD0D0barPID[0]=kFALSE;
-      }
-      else isD0D0barPID[1]=kFALSE;
-    }
-    else {
-      isKaon[daught]=1;
-      
-      if(aodtrack->P()<1.5){
-	if(aodtrack->Charge()==-1){
-	  isD0D0barPID[1]=kFALSE;
-	}
-	else isD0D0barPID[0]=kFALSE;
-	
-      }
-      //delete esdtrack;
-    }
-  }
-  
-  Double_t psCharge = tracksoft->Charge();
-  
-  if(psCharge>0 &&  !isD0D0barPID[0]) return kFALSE;
-  if(psCharge<0 &&  !isD0D0barPID[1]) return kFALSE;
-  
-  return kTRUE;
 }
