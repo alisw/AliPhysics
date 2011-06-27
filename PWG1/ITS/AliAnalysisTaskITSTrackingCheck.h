@@ -35,6 +35,7 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   Bool_t         GetReadMC() const { return fReadMC; }
   void           SetReadMC(Bool_t flag=kTRUE) { fReadMC=flag; }
   void           SetUsePhysSel() { fUsePhysSel=kTRUE; }
+  void           SetRejPileupSPD() { fRejPileupSPD=kTRUE; }
   void           SetReadRPLabels(Bool_t flag=kTRUE) { fReadRPLabels=flag; }
   void           SetFillNtuples(Bool_t flag=kTRUE) { fFillNtuples=flag; }
   void           SetUseITSSAforNtuples(Bool_t flag=kTRUE) { fUseITSSAforNtuples=flag; }
@@ -48,6 +49,7 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   Bool_t       fFillNtuples; // fill expert ntuples
   Bool_t       fUseITSSAforNtuples; // fill expert ntuples with ITSSA tracks
   Bool_t       fUsePhysSel; // use AliPhysicsSelection
+  Bool_t       fRejPileupSPD; // reject pileup events based on SPD vertex
   AliESDEvent  *fESD;    // ESD object
   Int_t        fMinMult; // minimum multiplicity
   Int_t        fMaxMult; // maximum multiplicity
@@ -297,7 +299,7 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   Bool_t IsSelectedCentrality() const;
   void FillNClustersModuleMap();
 
-  ClassDef(AliAnalysisTaskITSTrackingCheck,12); // ITS tracks analysis
+  ClassDef(AliAnalysisTaskITSTrackingCheck,13); // ITS tracks analysis
 };
 
 #endif
