@@ -25,6 +25,7 @@
 # include <AliReconstructor.h>
 #endif
 #include "AliLog.h"
+#include <AliFMDBoolMap.h>
 
 //____________________________________________________________________
 class TTree;
@@ -416,6 +417,7 @@ protected:
   TH1*                  fDiagAll;	// Diagnostics histogram
   mutable Bool_t        fZS[3];         // Zero-suppredded?
   mutable UShort_t      fZSFactor[3];   // Noise factor for Zero-suppression
+  mutable AliFMDBoolMap fBad;           // Strip marked bad
 private:
    
   ClassDef(AliFMDReconstructor, 3)  // class for the FMD reconstruction

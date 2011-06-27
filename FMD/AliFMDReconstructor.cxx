@@ -291,13 +291,18 @@ AliFMDReconstructor::MarkDeadChannels(AliESDFMD* esd) const
 
       for (UShort_t s = 0; s < nS; s++) { 
 	for (UShort_t t = 0; t < nT; t++) {
+	  if (fBad(d, r, s, t)) { 
+	    AliDebug(5, Form("Marking FMD%d%c[%2d,%3d] as bad", d, r, s, t));
+	    esd->SetMultiplicity(d, r, s, t, AliESDFMD::kInvalidMult);
+	  }	    
 	  if (param->IsDead(d, r, s, t)) { 
 	    AliDebug(5, Form("Marking FMD%d%c[%2d,%3d] as dead", d, r, s, t));
 	    esd->SetMultiplicity(d, r, s, t, AliESDFMD::kInvalidMult);
-	    esd->SetEta(d, r, s, t, AliESDFMD::kInvalidEta);
+	    // esd->SetEta(d, r, s, t, AliESDFMD::kInvalidEta);
 	  }
 	  else if (esd->Multiplicity(d, r, s, t) == AliESDFMD::kInvalidMult) {
-	    AliDebug(10, Form("Setting null signal in FMD%d%c[%2d,%3d]", d, r, s, t));
+	    AliDebug(10, Form("Setting null signal in FMD%d%c[%2d,%3d]", 
+			      d, r, s, t));
 	    esd->SetMultiplicity(d, r, s, t, 0);
 	  }
 	}
@@ -318,7 +323,7 @@ AliFMDReconstructor::Reconstruct(AliRawReader* reader, TTree*) const
   //   ctree    Not used - 'cluster tree' to store rec-points in. 
   AliFMDDebug(1, ("Reconstructing from raw reader"));
   AliFMDRawReader rawReader(reader, 0);
-
+  fBad.Reset(false);
   UShort_t det, sec, str, fac;
   Short_t  adc, oldDet = -1;
   Bool_t   zs;
@@ -434,6 +439,7 @@ AliFMDReconstructor::ProcessDigits(TClonesArray* digits) const
   AliFMDDebug(2, ("Got %d digits", nDigits));
   fESDObj->SetNoiseFactor(fNoiseFactor);
   fESDObj->SetAngleCorrected(fAngleCorrect);
+  fBad.Reset(false);
   for (Int_t i = 0; i < nDigits; i++) {
     AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
     if (!digit) continue;
@@ -477,10 +483,17 @@ AliFMDReconstructor::ProcessSignal(UShort_t det,
   //    rng	Strip ID
   //    adc     ADC counts
   // 
-  AliFMDParameters* param  = AliFMDParameters::Instance();
+  if (adc >= AliFMDRawReader::kBadSignal) { 
+    AliFMDDebug(1, ("FMD%d%c[%2d,%3d] is marked bad", det, rng, sec, str));
+    fBad(det,rng,sec,str) = true;
+    return;
+  }
+
   // Check that the strip is not marked as dead 
+  AliFMDParameters* param  = AliFMDParameters::Instance();
   if (param->IsDead(det, rng, sec, str)) {
     AliFMDDebug(1, ("FMD%d%c[%2d,%3d] is dead", det, rng, sec, str));
+    fBad(det,rng,sec,str) = true;
     return;
   }
   
