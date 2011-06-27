@@ -67,6 +67,7 @@ fReadRPLabels(kFALSE),
 fFillNtuples(kFALSE),
 fUseITSSAforNtuples(kFALSE),
 fUsePhysSel(kFALSE),
+fRejPileupSPD(kFALSE),
 fESD(0), 
 fMinMult(0),
 fMaxMult(1000000),
@@ -314,6 +315,7 @@ fReadRPLabels(kFALSE),
 fFillNtuples(kFALSE),
 fUseITSSAforNtuples(kFALSE),
 fUsePhysSel(kFALSE),
+fRejPileupSPD(kFALSE),
 fESD(0), 
 fMinMult(0),
 fMaxMult(1000000),
@@ -1832,6 +1834,8 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     return;
   }
   //spdv->Print();
+
+  if(fRejPileupSPD) if(fESD->IsPileupFromSPD()) return;
 
   //
   // Tracks vertex
