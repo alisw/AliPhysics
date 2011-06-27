@@ -58,6 +58,7 @@
 #include "AliFMDCalibSampleRate.h"
 #include "AliFMDCalibStripRange.h"
 #include "AliFMDAltroMapping.h"
+#include "AliFMDUShortMap.h"
 // #include "AliFMDAltroIO.h"	// ALIFMDALTROIO_H 
 #include "AliAltroRawStreamV3.h"
 #include <TArrayS.h>		// ROOT_TArrayS
@@ -110,7 +111,7 @@ AliFMDRawReader::Exec(Option_t*)
   
   ReadAdcs(array);
   Int_t nWrite = fTree->Fill();
-  AliFMDDebug(1, ("Got a grand total of %d digits, wrote %d bytes to tree", 
+  AliDebug(1,Form("Got a grand total of %d digits, wrote %d bytes to tree", 
 		   array->GetEntriesFast(), nWrite));
   delete array;
 }
@@ -131,7 +132,7 @@ AliFMDRawReader::NewDDL(AliAltroRawStreamV3& input, UShort_t& det)
 
   // Get the DDL number
   UInt_t ddl = input.GetDDLNumber();
-  AliFMDDebug(2, ("DDL number %d", ddl));
+  AliDebug(2,Form("DDL number %d", ddl));
 
   // Note, previously, the ALTROCFG1 register was interpreted as 
   // 
@@ -188,14 +189,14 @@ AliFMDRawReader::NewDDL(AliAltroRawStreamV3& input, UShort_t& det)
   UInt_t cfg1 = input.GetAltroCFG1();
   if (((cfg1 >> 10) & 0x8) == 0x8) {
     UInt_t cfg2 = input.GetAltroCFG2();
-    AliFMDDebug(3, ("We have data from older MiniConf 0x%x cfg2=0x%08x", 
+    AliDebug(3,Form("We have data from older MiniConf 0x%x cfg2=0x%08x", 
 		    ((cfg1 >> 10) & 0x8), cfg2));
     fZeroSuppress[ddl] = (cfg1 >>  0) & 0x1;
     fNoiseFactor[ddl]  = (cfg1 >>  6) & 0xF;
     fSampleRate[ddl]   = (cfg2 >> 20) & 0xF;
   }
   else {
-    AliFMDDebug(3, ("We have data from newer MiniConf 0x%x", 
+    AliDebug(3,Form("We have data from newer MiniConf 0x%x", 
 		    ((cfg1 >> 10) & 0x8)));
     fZeroSuppress[ddl] = input.GetZeroSupp();
     // WARNING: We store the noise factor in the 2nd baseline
@@ -205,11 +206,15 @@ AliFMDRawReader::NewDDL(AliAltroRawStreamV3& input, UShort_t& det)
     // WARNING: We store the sample rate in the number of pre-trigger
     // samples, since we'll never use that mode.
     fSampleRate[ddl]     = input.GetNPretriggerSamples();
+    // 
   }
-  AliFMDDebug(3, ("RCU @ DDL %d zero suppression: %s", 
+  AliDebug(10,Form("Phase of DDL=%d is %g (%d)", ddl, input.GetL1Phase(),
+		   input.GetAltroCFG2() & 0x1F));
+  fL1Phase[ddl] = input.GetAltroCFG2() & 0x1F; // input.GetL1Phase();
+  AliDebug(3,Form("RCU @ DDL %d zero suppression: %s", 
 		   ddl, (fZeroSuppress[ddl] ? "yes" : "no")));
-  AliFMDDebug(3, ("RCU @ DDL %d noise factor: %d", ddl,fNoiseFactor[ddl]));    
-  AliFMDDebug(3, ("RCU @ DDL %d sample rate: %d", ddl,fSampleRate[ddl]));
+  AliDebug(3,Form("RCU @ DDL %d noise factor: %d", ddl,fNoiseFactor[ddl]));    
+  AliDebug(3,Form("RCU @ DDL %d sample rate: %d", ddl,fSampleRate[ddl]));
 
 
   // Get Errors seen 
@@ -255,7 +260,13 @@ AliFMDRawReader::NewChannel(const AliAltroRawStreamV3& input,  UShort_t det,
   Int_t    ddl    = input.GetDDLNumber();
   Int_t    hwaddr = input.GetHWAddress();
   if (input.IsChannelBad()) { 
-    AliError(Form("Channel 0x%03x is marked as bad!", hwaddr));
+    const char* msg = Form("Ignoring channel %03d/0x%03x with errors", 
+			   ddl, hwaddr); 
+    AliWarning(msg); 
+    if (AliDebugLevel() > 10) input.HexDumpChannel();
+    fReader->AddMinorErrorLog(AliAltroRawStreamV3::kAltroPayloadErr,msg);
+    fNErrors[ddl] += 1;
+    return 0xFFFF;
   }
   
   AliFMDParameters*    pars   = AliFMDParameters::Instance();
@@ -268,7 +279,7 @@ AliFMDRawReader::NewChannel(const AliAltroRawStreamV3& input,  UShort_t det,
 		  "hardware address 0x%03x", ddl, hwaddr));
     return -1;
   }
-  AliFMDDebug(4, ("Board: 0x%02x, Altro: 0x%x, Channel: 0x%x", 
+  AliDebug(4,Form("Board: 0x%02x, Altro: 0x%x, Channel: 0x%x", 
 		  board, chip, channel));
 
   // Get the 'conditions'
@@ -279,6 +290,54 @@ AliFMDRawReader::NewChannel(const AliAltroRawStreamV3& input,  UShort_t det,
     fSampleRate[ddl] = pars->GetSampleRate(det, ring, sec, strbase);
 
   return hwaddr;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDRawReader::NewBunch(const AliAltroRawStreamV3& input, 
+			  UShort_t&  start, UShort_t& length)
+{
+  // 
+  // Do some checks on the bunch data 
+  // 
+  Int_t    ddl      = input.GetDDLNumber();
+  Int_t    hwaddr   = input.GetHWAddress();  
+  UShort_t nSamples = input.GetNSamplesPerCh() + fPreSamp;
+  UShort_t tstart   = input.GetStartTimeBin();
+  length            = input.GetBunchLength();
+
+  if (tstart >= nSamples) {
+    const char* msg = Form("Bunch in %03d/0x%03x has an start time greater "
+			   "than number of samples: 0x%x >= 0x%x", 
+			   ddl, hwaddr, tstart, nSamples);
+    AliWarning(msg);
+    if (AliDebugLevel() > 10) input.HexDumpChannel();
+    fReader->AddMinorErrorLog(AliAltroRawStreamV3::kAltroPayloadErr,msg);
+    fNErrors[ddl]++;
+    return false;
+  }
+  if ((int(tstart) - length + 1) < 0) { 
+    const char* msg = Form("Bunch in %03d/0x%03x has an invalid length and "
+			   "start time: 0x%x,0x%x (%d-%d+1=%d<0)", 
+			   ddl, hwaddr, length, tstart, tstart, length, 
+			   int(tstart)-length+1);
+    AliWarning(msg);
+    if (AliDebugLevel() > 10) input.HexDumpChannel();
+    fReader->AddMinorErrorLog(AliAltroRawStreamV3::kAltroPayloadErr,msg);
+    fNErrors[ddl]++;				
+    return false;
+  }
+  if (tstart >= start) { 
+    const char* msg = Form("Bunch in %03d/0x%03x has early start time: "
+			   "0x%x >= 0x%x", ddl, hwaddr, tstart, start);
+    AliWarning(msg);
+    if (AliDebugLevel() > 10) input.HexDumpChannel();
+    fReader->AddMinorErrorLog(AliAltroRawStreamV3::kAltroPayloadErr,msg);
+    fNErrors[ddl]++;
+    return false;
+  }
+  start = tstart;
+  return true;
 }
 
 //____________________________________________________________________
@@ -305,7 +364,7 @@ AliFMDRawReader::NewSample(const AliAltroRawStreamV3& input,
   Int_t           hwa  = input.GetHWAddress();
   const UShort_t* data = input.GetSignals();
   Short_t         adc  = data[i];
-  AliFMDDebug(10, ("0x%04x/0x%03x/%04d %4d", ddl, hwa, t, adc));
+  AliDebug(10,Form("0x%04x/0x%03x/%04d %4d", ddl, hwa, t, adc));
 
   AliFMDParameters*    pars   = AliFMDParameters::Instance();
   AliFMDAltroMapping*  map    = pars->GetAltroMap();
@@ -315,22 +374,22 @@ AliFMDRawReader::NewSample(const AliAltroRawStreamV3& input,
   map->Timebin2Strip(sec, t, fPreSamp, fSampleRate[ddl], stroff, samp);
   str             = strbase + stroff;
       
-  AliFMDDebug(20, ("0x%04x/0x%03x/%04d=%4d maps to strip %3d sample %d " 
+  AliDebug(20,Form("0x%04x/0x%03x/%04d=%4d maps to strip %3d sample %d " 
 		   "(pre: %d, min: %d, max: %d, rate: %d)",
 		  ddl, hwa, t, adc, str, samp, fPreSamp, 
 		  fMinStrip, fMaxStrip, fSampleRate[ddl]));
   if (str < 0) { 
-    AliFMDDebug(10, ("Got presamples at timebin %d", i));
+    AliDebug(10,Form("Got presamples at timebin %d", i));
     return -1;
   }
 	  
   // VA1 Local strip number 
   Short_t lstrip = (t - fPreSamp) / fSampleRate[ddl] + fMinStrip;
       
-  AliFMDDebug(15, ("Checking if strip %d (%d) in range [%d,%d]", 
+  AliDebug(15,Form("Checking if strip %d (%d) in range [%d,%d]", 
 		   lstrip, str, fMinStrip, fMaxStrip));
   if (lstrip < fMinStrip || lstrip > fMaxStrip) {
-    AliFMDDebug(10, ("Strip %03d-%d (%d,%d) from t=%d out of range (%3d->%3d)", 
+    AliDebug(10,Form("Strip %03d-%d (%d,%d) from t=%d out of range (%3d->%3d)", 
 		    str, samp, lstrip, stroff, t, fMinStrip, fMaxStrip));
     adc = -1;
   }
@@ -341,13 +400,39 @@ AliFMDRawReader::NewSample(const AliAltroRawStreamV3& input,
 }
 
 //____________________________________________________________________
-Bool_t
+Int_t
 AliFMDRawReader::NextSample(UShort_t& det, Char_t&   rng, UShort_t& sec, 
 			    UShort_t& str, UShort_t& sam, UShort_t& rat, 
 			    Short_t&  adc, Bool_t&   zs,  UShort_t& fac)
 {
   // Scan current event for next signal.   It returns kFALSE when
   // there's no more data in the event. 
+  // 
+  // Note, that this member function is in principle very fast, but
+  // contains less error checking.  In particular, channels that have
+  // bad bunches cannot be checked here.  Seeing a bad bunch will only
+  // skip the remainder of the channel and not reset the already read
+  // digits.   This is potentially dangerous. 
+  //
+  // Parameters: 
+  //    det         On return, contain the detector number 
+  //    rng         On return, contain the ring identifier 
+  //    sec         On return, contain the sector number 
+  //    str         On return, contain the strip number 
+  //    sam         On return, contain the sample number 
+  //    rat         On return, contain the sample rate 
+  //    adc         On return, contain the ADC counts 
+  //    zs          On return, contain the zero-supp. flag 
+  //    fac         On return, contain the zero-supp. noise factor 
+  // 
+  // Return values: 
+  //    0    No more data 
+  //    -1   Read sample belongs to a bad bunch 
+  //    >0   Good status - contains bit mask of values 
+  //       Bit 1    New DDL
+  //       Bit 2    New Channel
+  //       Bit 3    New Bunch
+  //       Bit 4    New Sample
   static AliAltroRawStreamV3 stream(fReader); //    = 0;
   static Int_t               ddl      = -1;
   static UShort_t            tdet     = 0;
@@ -364,7 +449,12 @@ AliFMDRawReader::NextSample(UShort_t& det, Char_t&   rng, UShort_t& sec,
   static Int_t               i        = 0; 
   // First entry!
   if (stream.GetDDLNumber() < 0) { 
+    fReader->Reset();
     fReader->Select("FMD");
+    stream.Reset();
+    stream.SelectRawData("FMD");
+    stream.SetCheckAltroPayload(false);
+    for (Int_t j = 0; j < kNDDL; j++) fNErrors[j] = 0;
 
     // Reset variables
     ddl    = -1;  
@@ -377,24 +467,64 @@ AliFMDRawReader::NextSample(UShort_t& det, Char_t&   rng, UShort_t& sec,
     hwaddr = -1;
   }
 
+  UShort_t ret = 0;
   do { 
+    AliDebug(15,Form("t=%4d, start=%4d, length=%4d", t, start, length));
     if (t < start - length + 1) { 
-      if (!stream.NextBunch()) { 
-	if (!stream.NextChannel()) { 
+      AliDebug(10,Form("Time t=%d < start-length+1=%d-%d+1 (%3d/0x%03x)", 
+		       t, start, length, ddl, hwaddr));
+      if (hwaddr > 0xFFF || 
+	  hwaddr < 0 || 
+	  !stream.NextBunch()) { 
+	if (AliDebugLevel() >= 10 && hwaddr > 0xFFF) {
+	  AliDebug(10,"Last channel read was marked bad");
+	}
+	if (AliDebugLevel() >= 10 && hwaddr < 0) {
+	  AliDebug(10,"No more channels");
+	}
+	AliDebug(10,"No next bunch, or first entry");
+	if (ddl < 0 || !stream.NextChannel()) { 
+	  if (AliDebugLevel() >= 10 && ddl < 0) { 
+	    AliDebug(10,"No DDL");
+	  }
+	  AliDebug(10,"No next channel, or first entry");
 	  if (!stream.NextDDL()) {
+	    AliDebug(10,"No more DDLs");
 	    stream.Reset();
-	    return kFALSE;
+	    return 0;
 	  }
 	  ddl = NewDDL(stream, tdet);
+	  AliDebug(5,Form("New DDL: %d (%d)", ddl, tdet));
+	  ret |= 0x1;
+	  continue;
 	}
 	hwaddr = NewChannel(stream, tdet, trng, tsec, bstr);
+	if (hwaddr > 0xFFF) fNErrors[ddl] += 1;
+	AliDebug(5,Form("New Channel: %3d/0x%03x", ddl, hwaddr));
+	start  = 1024;
+	ret |= 0x2;
+	continue;
       }
-      start  = stream.GetStartTimeBin();
-      length = stream.GetBunchLength();
+      if (!NewBunch(stream, start, length)) { 
+	// AliWarning(Form("Bad bunch in %3d/0x%03x read - "
+	//                 "should progress to next channel "
+	//                 "(t=%4d,start=%4d,length=%4d)", 
+	//                 ddl, hwaddr, t,start, length));
+	hwaddr = 0xFFFF; // Bad channel
+	return -1;
+      }
+      AliDebug(5, Form("New bunch in  %3d/0x%03x: start=0x%03x, length=%4d", 
+		       ddl, hwaddr, start, length));
+      ret |= 0x4;
       t      = start;
       i      = 0;
+      AliDebug(10,Form("Got new bunch FMD%d%c[%2d], bunch @ %d, length=%d", 
+		       tdet, trng, tsec, start, length));
     }
     Int_t tadc = NewSample(stream, i, t, tsec, bstr, tstr, tsam);
+    AliDebug(10,Form("New sample FMD%d%c[%2d,%3d]-%d = 0x%03x", 
+		 tdet, trng, tsec, tstr, tsam, tadc));
+    ret |= 0x8;
     if (tadc >= 0) { 
       det = tdet;
       rng = trng;
@@ -407,16 +537,20 @@ AliFMDRawReader::NextSample(UShort_t& det, Char_t&   rng, UShort_t& sec,
       fac = fNoiseFactor[ddl];
       t--;
       i++;
+      AliDebug(10,Form("Returning FMD%d%c[%2d,%3d]-%d = 0x%03x (%d,%d,%d)",
+		   det, rng, sec, str, sam, adc, rat, zs, fac));
       break;
     }
+    t--;
+    i++;
   } while (true);
-
-  return kTRUE;
+  AliDebug(5,Form("Returning 0x%02x", ret));
+  return ret;
 }
 
 
 //____________________________________________________________________
-Bool_t
+Int_t
 AliFMDRawReader::NextSignal(UShort_t& det, Char_t&   rng, 
 			    UShort_t& sec, UShort_t& str, 
 			    Short_t&  adc, Bool_t&   zs, 
@@ -437,24 +571,17 @@ AliFMDRawReader::NextSignal(UShort_t& det, Char_t&   rng,
   // Return:
   //    true if valid data is returned
   //
-  
+  Int_t ret = 0;
   do { 
     UShort_t samp, rate;
-    if (!NextSample(det, rng, sec, str, samp, rate, adc, zs, fac)) 
-      return kFALSE;
+    if ((ret = NextSample(det, rng, sec, str, samp, rate, adc, zs, fac)) <= 0)
+      return ret;
 
-    Bool_t take = kFALSE;
-    switch (rate) { 
-    case 1:                      take = kTRUE; break;
-    case 2:  if (samp == 1)      take = kTRUE; break;
-    case 3:  if (samp == 1)      take = kTRUE; break; 
-    case 4:  if (samp == 2)      take = kTRUE; break;
-    default: if (samp == rate-2) take = kTRUE; break;
-    }
+    Bool_t take = SelectSample(samp, rate);
     if (!take) continue;
     break;
   } while (true);
-  return kTRUE;
+  return ret;
 }
 
 //____________________________________________________________________
@@ -480,7 +607,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 {
   // Read ADC values from raw input into passed TClonesArray of AliFMDDigit
   // objects. 
-  AliFMDDebug(2, ("Reading ADC values into a TClonesArray"));
+  AliDebug(3,Form("Reading ADC values into a TClonesArray"));
 
   // Read raw data into the digits array, using AliFMDAltroReader. 
   if (!array) {
@@ -489,9 +616,11 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
   }
   const UShort_t kUShortMax = (1 << 16) - 1;
   fSeen.Reset(kUShortMax);
+  for (Int_t ddl = 0; ddl < kNDDL; ddl++) fNErrors[ddl] = 0;
 
   AliAltroRawStreamV3  input(fReader);
   input.Reset();
+  input.SetCheckAltroPayload(false);
   input.SelectRawData("FMD");
   
   // Loop over input RORCs
@@ -499,21 +628,31 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
     UShort_t det = 0;
     Int_t    ddl = NewDDL(input, det);
     if (ddl < 0) break;
+    fNErrors[ddl] = 0;
 
     while (input.NextChannel()) { 
       // Get the hardware address, and map that to detector coordinates 
       Char_t   ring;
       UShort_t sec;
       Short_t  strbase;
-      Int_t    hwaddr = NewChannel(input, det, ring, sec, strbase);
+      Int_t    hwaddr   = NewChannel(input, det, ring, sec, strbase);
       if (hwaddr < 0) break;
+      if (hwaddr > 0xFFF) continue;  
 
+      UShort_t start    = 0x3FF;
+      Bool_t   errors   = false;
+      Int_t    first    = -1;
+      Int_t    last     = -1;
       // Loop over bunches 
       while (input.NextBunch()) { 
 	// Get Lenght of bunch, and pointer to the data 
 	const UShort_t* data   = input.GetSignals();
-	UShort_t        start  = input.GetStartTimeBin();
-	UShort_t        length = input.GetBunchLength();
+	UShort_t        length;
+	if (!NewBunch(input, start, length)) {
+	  errors = true;
+	  break;
+	}
+
       
 	// Loop over the data and store it. 
 	for (Int_t i = 0; i < length; i++) { 
@@ -525,28 +664,127 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 	  if (adc < 0) continue;
 	  UShort_t counts = adc;
       
-	  AliFMDDebug(10, ("FMD%d%c[%02d,%03d]-%d: %4d", 
-			   det, ring, sec, str, samp, counts));
+	  AliDebug(10, Form("FMD%d%c[%02d,%03d]-%d: %4d", 
+			    det, ring, sec, str, samp, counts));
 	  // Check the cache of indicies
 	  Int_t idx = fSeen(det, ring, sec, str);
 	  AliFMDDigit* digit = 0;
 	  if (idx == kUShortMax) { 
 	    // We haven't seen this strip yet. 
 	    fSeen(det, ring, sec, str) = idx = array->GetEntriesFast();
-	    AliFMDDebug(7,("making digit for FMD%d%c[%2d,%3d]-%d "
-			   "from timebin %4d", 
-			   det, ring, sec, str, samp, t));
+	    AliDebug(7,Form("making digit @ %5d for FMD%d%c[%2d,%3d]-%d "
+			    "from %3d/0x%03x/%4d", 
+			    idx, det, ring, sec, str, samp, ddl, hwaddr, t));
 	    digit = new ((*array)[idx]) AliFMDDigit(det, ring, sec, str);
 	    digit->SetDefaultCounts(fSampleRate[ddl]);
 	  }
-	  else 
+	  else {
 	    digit = static_cast<AliFMDDigit*>(array->At(idx));
-	  AliFMDDebug(10, ("Setting FMD%d%c[%2d,%3d]-%d "
-			   "from timebin %4d=%4d (%4d)", 
-			   det, ring, sec, str, samp, t, counts, data[i]));
+	  }
+	  if (first < 0) first = idx;
+	  last = idx;
+	  AliDebug(10, Form("Setting FMD%d%c[%2d,%3d]-%d from timebin "
+			    "%4d=%4d (%4d)", det, ring, sec, str, samp, t, 
+			    counts, data[i]));
 	  digit->SetCount(samp, counts);
 	} // for (i)
       } // while (bunch)
+      if (errors) { 
+	AliWarning(Form("Channel %3d/0x%03x contain errors, "
+			"resetting index %d to %d", ddl, hwaddr, first, last));
+	if (first >= 0) {
+	  for (Int_t i = first; i <= last; i++) { 
+	    AliFMDDigit* digit = static_cast<AliFMDDigit*>(array->At(i));
+	    for (Int_t j = 0; j < fSampleRate[ddl]; j++) {
+	      AliDebug(10,Form("Resetting strip %s=%d",
+			       digit->GetName(),digit->Counts()));
+	      digit->SetCount(j, kBadSignal);
+	    }
+	  }
+	}
+      }
+      // if (errors && (AliDebugLevel() > 0)) input.HexDumpChannel();
+    } // while (channel)
+  } // while (ddl)
+  return kTRUE;
+}
+//____________________________________________________________________
+Bool_t
+AliFMDRawReader::ReadAdcs(AliFMDUShortMap& map) 
+{
+  // Read ADC values from raw input into passed TClonesArray of AliFMDDigit
+  // objects. 
+  AliDebug(3,Form("Reading ADC values into a map"));
+
+  const UShort_t kUShortMax = (1 << 16) - 1;
+  for (Int_t ddl = 0; ddl < kNDDL; ddl++) fNErrors[ddl] = 0;
+
+  AliAltroRawStreamV3  input(fReader);
+  input.Reset();
+  input.SetCheckAltroPayload(false);
+  input.SelectRawData("FMD");
+  
+  // Loop over input RORCs
+  while (input.NextDDL()) { 
+    UShort_t det = 0;
+    Int_t    ddl = NewDDL(input, det);
+    if (ddl < 0) break;
+    fNErrors[ddl] = 0;
+
+    while (input.NextChannel()) { 
+      // Get the hardware address, and map that to detector coordinates 
+      Char_t   ring;
+      UShort_t sec;
+      Short_t  strbase;
+      Int_t    hwaddr   = NewChannel(input, det, ring, sec, strbase);
+      if (hwaddr < 0) break;
+      if (hwaddr > 0xFFF) continue;  
+
+      UShort_t start    = 0x3FF;
+      Bool_t   errors   = false;
+      Int_t    first    = -1;
+      Int_t    last     = -1;
+      // Loop over bunches 
+      while (input.NextBunch()) { 
+	// Get Lenght of bunch, and pointer to the data 
+	const UShort_t* data   = input.GetSignals();
+	UShort_t        length;
+	if (!NewBunch(input, start, length)) {
+	  errors = true;
+	  break;
+	}
+
+      
+	// Loop over the data and store it. 
+	for (Int_t i = 0; i < length; i++) { 
+	  // Time 
+	  Short_t  str;
+	  UShort_t samp;
+	  Int_t    t    = start - i;
+	  Int_t    adc  = NewSample(input, i, t, sec, strbase, str, samp);
+	  if (adc < 0) continue;
+	  UShort_t counts = adc;
+      
+	  AliDebug(10, Form("FMD%d%c[%02d,%03d]-%d: %4d", 
+			    det, ring, sec, str, samp, counts));
+	  if (SelectSample(samp, fSampleRate[ddl]))
+	    map(det,ring,sec,str) = counts; 
+	  if (first < 0) first = str;
+	  last = str;
+	} // for (i)
+      } // while (bunch)
+      if (errors) { 
+	AliWarning(Form("Channel %3d/0x%03x contain errors, "
+			"resetting strips %d to %d", ddl, hwaddr, first, last));
+	if (first >= 0) {
+	  Int_t ds = first <= last ? 1 : -1;
+	  for (Int_t i = first; i != last+ds; i += ds) { 
+	    AliDebug(10, Form("Resetting strip FMD%d%c[%02d,%03d]=%d",
+			      det,ring,sec,i,map(det,ring,sec,i)));
+	    map(det,ring,sec,i) = kBadSignal;
+	  }
+	}
+      }
     } // while (channel)
   } // while (ddl)
   return kTRUE;
@@ -571,7 +809,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
   // Return:
   //    @c true on success
   //  
-  AliFMDDebug(0, ("Start of SOD/EOD"));
+  AliDebug(0,Form("Start of SOD/EOD"));
   
   UInt_t shift_clk[18];
   UInt_t sample_clk[18];
@@ -598,7 +836,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
     Int_t ddl   = streamer.GetDDLNumber();
     Int_t detID = fReader->GetDetectorID();
     if (detectors) detectors[map->DDL2Detector(ddl)-1] = kTRUE;
-    AliFMDDebug(0, (" From reader: DDL number is %d , det ID is %d",ddl,detID));
+    AliDebug(0,Form(" From reader: DDL number is %d , det ID is %d",ddl,detID));
     
     ULong_t  nPayloadWords = streamer.GetRCUPayloadSizeInSOD();
     UChar_t* payloadData   = streamer.GetRCUPayloadInSOD();
@@ -742,7 +980,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
       case 0x24: break; // FMD: L2 timeout
       case 0x25: // FMD: Shift clk 
 	shift_clk[board] = ((data >> 8 ) & 0xFF); 
-	AliFMDDebug(30, ("Read shift_clk=%d for board 0x%02x", 
+	AliDebug(30,Form("Read shift_clk=%d for board 0x%02x", 
 			 shift_clk[board], board));
 	break; 
       case 0x26: // FMD: Strips 
@@ -757,7 +995,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
       case 0x2A: break; // FMD: Preamp ref
       case 0x2B: // FMD: Sample clk 
 	sample_clk[board] = ((data >> 8 ) & 0xFF); 
-	AliFMDDebug(30, ("Read sample_clk=%d for board 0x%02x", 
+	AliDebug(30,Form("Read sample_clk=%d for board 0x%02x", 
 			 sample_clk[board], board));
 	break; 
       case 0x2C: break; // FMD: Commands
@@ -767,7 +1005,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
       default: break;
 	
       }
-      AliFMDDebug(50, ("instruction 0x%x, dataword 0x%x",
+      AliDebug(50,Form("instruction 0x%x, dataword 0x%x",
 		       instruction,dataWord));
     } // End of loop over Result memory event
     
@@ -816,7 +1054,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
 	    strip_high[boards[i]] = strip_high[boards[idx]];
 	    pulse_length[boards[i]] = pulse_length[boards[idx]];
 	    pulse_size[boards[i]] = pulse_size[boards[idx]];
-	    AliFMDDebug(3, ("Vote taken for ddl %d, board 0x%x",
+	    AliDebug(3,Form("Vote taken for ddl %d, board 0x%x",
 			    ddl,boards[i]));
 	  }
 	}
@@ -825,13 +1063,13 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
       
       if(sample_clk[boards[i]])
 	samplerate = shift_clk[boards[i]]/sample_clk[boards[i]];
-      AliFMDDebug(10, ("Sample rate for board 0x%02x is %d", 
+      AliDebug(10,Form("Sample rate for board 0x%02x is %d", 
 		      boards[i], samplerate));
       sampleRate->Set(det,ring,sector,0,samplerate);
       stripRange->Set(det,ring,sector,0,
 		      strip_low[boards[i]],strip_high[boards[i]]);
       
-      AliFMDDebug(20, ("det %d, ring %c, ",det,ring));
+      AliDebug(20,Form("det %d, ring %c, ",det,ring));
       pulseLength.AddAt(pulse_length[boards[i]],
 			GetHalfringIndex(det,ring,boards[i]/16));
       pulseSize.AddAt(pulse_size[boards[i]],
@@ -839,7 +1077,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
       
       
       
-      AliFMDDebug(20, (": Board: 0x%02x\n"
+      AliDebug(20,Form(": Board: 0x%02x\n"
 		       "\tstrip_low  %3d, strip_high   %3d\n"
 		       "\tshift_clk  %3d, sample_clk   %3d\n"
 		       "\tpulse_size %3d, pulse_length %3d",
@@ -854,7 +1092,7 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
   AliFMDParameters::Instance()->SetSampleRate(sampleRate);
   AliFMDParameters::Instance()->SetStripRange(stripRange);
   
-  AliFMDDebug(0, ("End of SOD/EOD"));
+  AliDebug(0,Form("End of SOD/EOD"));
   
   return kTRUE;
 }
