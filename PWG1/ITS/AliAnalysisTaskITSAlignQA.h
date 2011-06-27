@@ -28,7 +28,7 @@ class AliTrackPointArray;
 class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
 
  public:
-  
+
   AliAnalysisTaskITSAlignQA();
   virtual ~AliAnalysisTaskITSAlignQA();
 
@@ -73,14 +73,18 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   void SetMinPt(Float_t minpt=1.0){
     fMinPt=minpt;
   }
+  void SetMinVtxContributors(Int_t n=5)     { fMinVtxContributors = n; }
+  void SetUseVertex(Bool_t v=kTRUE)         { fUseVertex = v; }
+  void SetUseVertexForZOnly(Bool_t v=kTRUE) { fUseVertexForZOnly = v; } // Use the vertex for SDD Z residuals only
+
   
   void     SetOCDBInfo(UInt_t runNb, const char *location) {
     fRunNb=runNb; 
     fOCDBLocation=location;
   }
 
-  Bool_t   AcceptTrack(AliESDtrack * track);
-
+  Bool_t   AcceptTrack(const AliESDtrack * track);
+  Bool_t   AcceptVertex(const AliESDVertex * vtx);
   void     CreateSPDHistos();
   void     CreateSDDHistos();
   void     CreateSSDHistos();
@@ -95,7 +99,8 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
     for(Int_t iBin=0; iBin<=fNPtBins; iBin++) fPtBinLimits[iBin]=xbins[iBin];
   }
   void     LoadGeometryFromOCDB();
-
+  AliTrackPointArray* PrepareTrack(const AliTrackPointArray* inp, const AliESDVertex* vtx=0);
+  void                PrepareVertexConstraint(const AliESDVertex* vtx, AliTrackPoint &point);
  private:
   AliAnalysisTaskITSAlignQA(const AliAnalysisTaskITSAlignQA &source);
   AliAnalysisTaskITSAlignQA& operator=(const AliAnalysisTaskITSAlignQA &source);
@@ -104,6 +109,7 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   enum {kNSDDmods = 260};
   enum {kNSSDmods = 1698};
   enum {kMaxPtBins = 12};
+  enum {kVtxSensVID=14371};    // dummy VID for "vertex" point
 
   TList* fOutput;              //! Histos with residuals
   TH1F*  fHistNEvents;         //! histo with N of events  
@@ -137,6 +143,9 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   Bool_t   fDoSDDdEdxCalib;   // Flag to enable histos for SDD dE/dx calibration
   Bool_t   fUseITSsaTracks;   // Flag for using standalone ITS tracks
   Bool_t   fLoadGeometry;     // Flag to control the loading of geometry from OCDB
+  Bool_t   fUseVertex;        // Use the vertex as an extra point
+  Bool_t   fUseVertexForZOnly; // Use the vertex for SDD Z residuals only
+  Int_t    fMinVtxContributors; // min N contributors to accept vertex if fUseVertex is on
   Int_t    fMinITSpts;        // Minimum number of ITS points per track
   Int_t    fMinTPCpts;        // Minimum number of TPC points per track
   Float_t  fMinPt;            // Minimum pt to accept tracks
@@ -152,3 +161,4 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
 
 
 #endif
+
