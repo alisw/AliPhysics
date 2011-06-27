@@ -156,7 +156,7 @@ Bool_t AliRsnMiniMonitor::Init(const char *name, TList *list)
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnMiniMonitor::Fill(AliRsnDaughter *track, AliRsnEvent *event)
+Bool_t AliRsnMiniMonitor::Fill(AliRsnDaughter *track, AliRsnEvent *)
 {
 //
 // Fill the histogram
