@@ -1,3 +1,22 @@
+/**
+ * A script that will run the most simple chain possible. 
+ *
+ * What is done, depends on a bit mask:
+ *
+ *  Bit | Job
+ *  ----+-----------------------
+ *   0  | Make fake hits
+ *   1  | Make digits from hits
+ *   2  | Make sdigits from hits
+ *   3  | Make raw DDL files from digits
+ *   4  | Make ESD from raw ddl files
+ *   5  | Display the data
+ *
+ *  So a mask of 0x3f means do everything, while 0x2 means
+ *  only make digits from hits, and 0x1F is all but display.
+ * 
+ */
+
 const char* path = "$ALICE_ROOT/FMD/scripts/";
 
 void
@@ -66,3 +85,6 @@ RunSimpleChain(Int_t what=0x3b)
 }
 
   
+//
+// EOF
+//

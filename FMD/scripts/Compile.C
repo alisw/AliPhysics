@@ -17,6 +17,13 @@
     @param option Compile option 
     @ingroup FMD_script
 */
+void
+AddInclude(const char* what)
+{
+  TString path(gSystem->GetIncludePath());
+  if (path.Contains(what)) return;
+  gSystem->AddIncludePath(what);
+}
 Bool_t
 Compile(const char* script, Option_t* option="g")
 {
@@ -27,15 +34,17 @@ Compile(const char* script, Option_t* option="g")
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libFMDutil.so");
-  gSystem->Load("libFMDflow.so");
   TString macroPath(gROOT->GetMacroPath());
   macroPath.Append(":${ALICE_ROOT}/FMD/scripts");
   gROOT->SetMacroPath(macroPath.Data());
-  gSystem->SetIncludePath("-I`root-config --incdir` "
-			  "-I${ALICE_ROOT} " 
-			  "-I${ALICE_ROOT}/include " 
-			  "-I${ALICE_ROOT}/FMD "
-			  "-I${ALICE_ROOT}/geant3/TGeant3");
+  AddInclude("-I`root-config --incdir`");
+  AddInclude("-I${ALICE_ROOT}");
+  AddInclude("-I${ALICE_ROOT}/include");
+  AddInclude("-I${ALICE_ROOT}/FMD");
+  AddInclude("-I${ALICE_ROOT}/geant3/TGeant3");
+  AddInclude("-I${ALICE_ROOT}/../aliroot.trunk");
+  AddInclude("-I${ALICE_ROOT}/../aliroot.trunk/FMD");
+  AddInclude("-I${ALICE_ROOT}/../aliroot.trunk/RAW");
   Long_t ret = gROOT->ProcessLine(Form(".L %s+%s", script, option));
   return ret == 0;
 }
