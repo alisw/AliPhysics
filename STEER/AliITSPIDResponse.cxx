@@ -83,6 +83,7 @@ AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
   }
 }
 
+/*
 //_________________________________________________________________________
 AliITSPIDResponse::AliITSPIDResponse(Double_t *param): 
   fRes(param[0]),
@@ -102,7 +103,7 @@ AliITSPIDResponse::AliITSPIDResponse(Double_t *param):
       fResolTPCITS[i]=0.;
   }
 }
-
+*/
 
 //_________________________________________________________________________
 Double_t AliITSPIDResponse::BetheAleph(Double_t p, Double_t mass) const {

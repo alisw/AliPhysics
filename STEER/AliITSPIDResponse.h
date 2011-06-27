@@ -18,7 +18,7 @@ class AliITSPIDResponse : public TObject {
 
 public:
   AliITSPIDResponse(Bool_t isMC=kFALSE);
-  AliITSPIDResponse(Double_t *param);
+  //AliITSPIDResponse(Double_t *param);
  ~AliITSPIDResponse() {}
 
  void SetBetheBlochParamsITSTPC(Double_t* param){
