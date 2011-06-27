@@ -59,6 +59,9 @@ AliAnalysisTaskITSAlignQA::AliAnalysisTaskITSAlignQA() : AliAnalysisTaskSE("SDD 
   fDoSDDdEdxCalib(kTRUE),
   fUseITSsaTracks(kFALSE),
   fLoadGeometry(kFALSE),
+  fUseVertex(kFALSE),
+  fUseVertexForZOnly(kFALSE),
+  fMinVtxContributors(5),
   fMinITSpts(3),
   fMinTPCpts(70),
   fMinPt(0.5),
@@ -285,6 +288,8 @@ void AliAnalysisTaskITSAlignQA::CreateSSDHistos(){
 void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
 {
   //
+  static AliTrackPointArray* arrayITS = 0;
+  //
   AliESDEvent *esd = (AliESDEvent*) (InputEvent());
 
   if(!esd) {
@@ -297,7 +302,13 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
     printf("AliAnalysisTaskITSAlignQA::Exec(): bad ESDfriend\n");
     return;
   }
-
+  //
+  const AliESDVertex* vtx = 0;
+  if (fUseVertex) {  // check the vertex if it is requested as an extra point
+    vtx = esd->GetPrimaryVertex();
+    if (!vtx || !AcceptVertex(vtx)) return;
+  }
+  //
   fHistNEvents->Fill(0);
   fFitter->SetBz(esd->GetMagneticField());
 
@@ -305,33 +316,40 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
   Int_t ntracks = esd->GetNumberOfTracks();
 
   for (Int_t itrack=0; itrack < ntracks; itrack++) {
+    //
+    if (arrayITS) {delete arrayITS; arrayITS = 0;}  // reset points from previous tracks 
+    //
     AliESDtrack * track = esd->GetTrack(itrack);
     if(!track) continue;
     if(!AcceptTrack(track)) continue;
     array = track->GetTrackPointArray();
     if(!array) continue;
-
-    Int_t npts=array->GetNPoints();
+    arrayITS = PrepareTrack(array, vtx);
+    //
+    Int_t npts  = arrayITS->GetNPoints();
+    Int_t npts1 = fUseVertexForZOnly ? npts-1 : npts;
+    //
     if(fDoSPDResiduals){ 
-      FitAndFillSPD(1,array,npts,track);
-      FitAndFillSPD(2,array,npts,track);
+      FitAndFillSPD(1,arrayITS,npts1,track);
+      FitAndFillSPD(2,arrayITS,npts1,track);
     }
     if(fDoSDDResiduals || fDoSDDdEdxCalib){
-      FitAndFillSDDrphi(array,npts,track);
-      FitAndFillSDDz(3,array,npts,track);
-      FitAndFillSDDz(4,array,npts,track);
+      FitAndFillSDDrphi(arrayITS,npts,track);
+      FitAndFillSDDz(3,arrayITS,npts1,track);
+      FitAndFillSDDz(4,arrayITS,npts1,track);
     }
     if(fDoSSDResiduals){ 
-      FitAndFillSSD(5,array,npts,track);
-      FitAndFillSSD(6,array,npts,track);
+      FitAndFillSSD(5,arrayITS,npts1,track);
+      FitAndFillSSD(6,arrayITS,npts1,track);
     }
   }
 
   PostData(1,fOutput);
   
 }
+
 //___________________________________________________________________________
-Bool_t AliAnalysisTaskITSAlignQA::AcceptTrack(AliESDtrack * track){
+Bool_t AliAnalysisTaskITSAlignQA::AcceptTrack(const AliESDtrack * track){
   // track selection cuts
   Bool_t accept=kTRUE;
   if(fUseITSsaTracks){ 
@@ -347,6 +365,15 @@ Bool_t AliAnalysisTaskITSAlignQA::AcceptTrack(AliESDtrack * track){
   if(accept) fHistPtAccept->Fill(pt);
   return accept;
 }
+
+//___________________________________________________________________________
+Bool_t AliAnalysisTaskITSAlignQA::AcceptVertex(const AliESDVertex * vtx) {
+  // vertex selection cuts
+  if (!vtx) return kFALSE;
+  if (vtx->GetNContributors()<fMinVtxContributors) return kFALSE;
+  return kTRUE;
+}
+
 //___________________________________________________________________________
 void AliAnalysisTaskITSAlignQA::FitAndFillSPD(Int_t iLayer, const AliTrackPointArray *array, Int_t npts,AliESDtrack * track){
   // fit track and fills histos for SPD
@@ -359,6 +386,7 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSPD(Int_t iLayer, const AliTrackPointA
     Int_t modId;
     array->GetPoint(point,ipt);
     Int_t volId = point.GetVolumeID();
+    if (volId == kVtxSensVID) continue; // this is a vertex constraint
     Int_t layerId = AliGeomManager::VolUIDToLayer(volId,modId);
     if(layerId==iLayer){
       modId+=AliITSgeomTGeo::GetModuleIndex(layerId,1,1);
@@ -402,6 +430,7 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDDrphi(const AliTrackPointArray *arra
     Int_t modId;
     array->GetPoint(point,ipt);
     Int_t volId = point.GetVolumeID();
+    if (volId == kVtxSensVID) continue; // this is a vertex constraint
     Int_t layerId = AliGeomManager::VolUIDToLayer(volId,modId);
     if(layerId==3 || layerId==4){
       drTime[nPtSDD] = point.GetDriftTime();
@@ -467,6 +496,7 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDDz(Int_t iLayer, const AliTrackPoint
     Int_t modId;
     array->GetPoint(point,ipt);
     Int_t volId = point.GetVolumeID();
+    if (volId == kVtxSensVID) continue; // this is a vertex constraint
     Int_t layerId = AliGeomManager::VolUIDToLayer(volId,modId);
     if(layerId==iLayer){
       modId+=AliITSgeomTGeo::GetModuleIndex(layerId,1,1);
@@ -508,6 +538,7 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSSD(Int_t iLayer, const AliTrackPointA
     Int_t modId;
     array->GetPoint(point,ipt);
     Int_t volId = point.GetVolumeID();
+    if (volId == kVtxSensVID) continue; // this is a vertex constraint
     Int_t layerId = AliGeomManager::VolUIDToLayer(volId,modId);
     if(layerId==iLayer){
       modId+=AliITSgeomTGeo::GetModuleIndex(layerId,1,1);
@@ -571,7 +602,53 @@ void AliAnalysisTaskITSAlignQA::LoadGeometryFromOCDB(){
 }
 
 
+//______________________________________________________________________________________
+AliTrackPointArray* AliAnalysisTaskITSAlignQA::PrepareTrack(const AliTrackPointArray* inp, const AliESDVertex* vtx)
+{
+  // Extract from the global TrackPointArray the ITS part and optionally add vertex as the last measured point
+  //
+  int npts = inp->GetNPoints();
+  int modID=0,nptITS = 0;
+  int itsRefs[24];
+  const UShort_t *vids = inp->GetVolumeID();
+  for(int ipt=0; ipt<npts; ipt++) { // count ITS points
+    if (vids[ipt]<=0) continue;
+    int layerId = AliGeomManager::VolUIDToLayer(vids[ipt],modID);
+    if(layerId<1 || layerId>6) continue;
+    itsRefs[nptITS++] = ipt;
+  }
+  //
+  AliTrackPointArray *trackCopy = new AliTrackPointArray(nptITS + (vtx ? 1:0)); // reserve extra space if vertex provided
+  AliTrackPoint point;
+  for(int ipt=0; ipt<nptITS; ipt++) {
+    inp->GetPoint(point,itsRefs[ipt]);
+    trackCopy->AddPoint(ipt,&point);
+  }
+  //
+  if (vtx) {
+    PrepareVertexConstraint(vtx,point);
+    trackCopy->AddPoint(nptITS,&point); // add vertex constraint as a last point
+  }
+  return trackCopy;
+}
 
-
-
+//_______________________________________________________________________________________
+void AliAnalysisTaskITSAlignQA::PrepareVertexConstraint(const AliESDVertex* vtx, AliTrackPoint &point)
+{
+  // convert vertex to measured point with dummy VID
+  if (!vtx) return;
+  //
+  double cmat[6];
+  float cmatF[6];
+  point.SetVolumeID(kVtxSensVID);
+  //
+  vtx->GetCovMatrix(cmat);
+  cmatF[0] = cmat[0]; // xx
+  cmatF[1] = cmat[1]; // xy
+  cmatF[2] = cmat[3]; // xz
+  cmatF[3] = cmat[2]; // yy
+  cmatF[4] = cmat[4]; // yz
+  cmatF[5] = cmat[5]; // zz
+  point.SetXYZ(vtx->GetX(),vtx->GetY(),vtx->GetZ(), cmatF);
+}
 
