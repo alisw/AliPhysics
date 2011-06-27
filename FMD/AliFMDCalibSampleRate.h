@@ -39,34 +39,52 @@ class AliFMDCalibSampleRate : public TObject
 public:
   /** CTOR */
   AliFMDCalibSampleRate();
-  /** Copy CTOR
-      @param o Object to copy from  */
+  /** 
+   * Copy CTOR
+   *
+   * @param o Object to copy from  
+   */
   AliFMDCalibSampleRate(const AliFMDCalibSampleRate& o);
-  /** Assignment operator 
-      @param o Object to assign from 
-      @return Reference to assign from  */
+  /** 
+   * Assignment operator 
+   *
+   * @param o Object to assign from 
+   *
+   * @return Reference to this object 
+   */
   AliFMDCalibSampleRate& operator=(const AliFMDCalibSampleRate& o);
-  /** Set sample for a DDL
-      @param det   Detector #
-      @param ring  Ring ID 
-      @param sec   Sector # 
-      @param str   Strip number (not used)
-      @param rate  Sample rate */
+  /** 
+   * Set sample for a sector
+   *
+   * @param det   Detector #
+   * @param ring  Ring ID 
+   * @param sec   Sector # 
+   * @param str   Strip number (not used)
+   * @param rate  Sample rate 
+   */
   void Set(UShort_t det, Char_t ring, UShort_t sec, UShort_t str, 
 	   UShort_t rate);
-  /** Get sample rate for a detector 
-      @param det  Detector #
-      @param ring Ring ID 
-      @param sec  Sector # 
-      @param str  Strip number (not used)
-      @return Sample rate */
+  /** 
+   * Get sample rate for a sector
+   *
+   * @param det  Detector #
+   * @param ring Ring ID 
+   * @param sec  Sector # 
+   * @param str  Strip number (not used)
+   *
+   * @return Sample rate 
+   */
   UShort_t Rate(UShort_t det, Char_t ring, UShort_t sec, UShort_t str=0) const;
-  /** Write stored samplerates to file
-      @param outFile Output file stream
+  /** 
+   * Write stored samplerates to file
+   *
+   * @param outFile Output file stream
    */
   void WriteToFile(std::ostream & outFile, Bool_t* detectors=0);
-  /** Read information from file and set sample rates
-      @param inFile input file stream
+  /** 
+   * Read information from file and set sample rates
+   *
+   * @param inFile input file stream
    */
   void ReadFromFile(std::istream & inFile);
 protected:
