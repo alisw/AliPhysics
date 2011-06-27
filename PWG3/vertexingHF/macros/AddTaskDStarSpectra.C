@@ -1,10 +1,7 @@
 //if like define a different number of signal for TPC PID
 //by default the task is anyway computing 1, 2 and 3 sigmas
-const Int_t    numberOfSigmasPID  = 2;
-// option to switch on and off the TPC PID.
-const Bool_t usePID = kTRUE;
-// analysis type... TO BE REMOVED!!!
-const Bool_t anaType   = 0;//0 HD; 1 UU;
+const Bool_t theRareOn = kFALSE;
+const Bool_t anaType   = 1;//0 HD; 1 UU;
 //----------------------------------------------------
 
 AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Bool_t theMCon=kFALSE)
@@ -41,9 +38,8 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Bool_t theMCon=kFALSE)
   // create the task
   AliAnalysisTaskSEDStarSpectra *task = new AliAnalysisTaskSEDStarSpectra("AliAnalysisTaskSEDStarSpectra",RDHFDStartoKpipi);
   task->SetAnalysisType(anaType);
-  task->SetNSigmasPID(numberOfSigmasPID);
   task->SetMC(theMCon);
-  task->SetPID(usePID);
+  task->SetRareSearch(theRareOn);
   task->SetDebugLevel(0);
 
   mgr->AddTask(task);
@@ -61,12 +57,10 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Bool_t theMCon=kFALSE)
   // ----- output data -----
   
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist1",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-  AliAnalysisDataContainer *coutputDStar1 = mgr->CreateContainer("DStarSpectrum",TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *coutputDStar2 = mgr->CreateContainer("DStarAll",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-  AliAnalysisDataContainer *coutputDStar3 = mgr->CreateContainer("DStarPID3",TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *coutputDStar4 = mgr->CreateContainer("DStarPID2",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-  AliAnalysisDataContainer *coutputDStar5 = mgr->CreateContainer("DStarPID1",TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *coutputDStar6 = mgr->CreateContainer("cuts",AliRDHFCutsDStartoKpipi::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //cuts
+  AliAnalysisDataContainer *coutputDStar1 = mgr->CreateContainer("DStarAll",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutputDStar2 = mgr->CreateContainer("DStarPID",TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *coutputDStar3 = mgr->CreateContainer("cuts",AliRDHFCutsDStartoKpipi::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //cuts
+  AliAnalysisDataContainer *coutputDstarNorm = mgr->CreateContainer("coutputDstarNorm",AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 
@@ -74,9 +68,7 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Bool_t theMCon=kFALSE)
   mgr->ConnectOutput(task,2,coutputDStar1);
   mgr->ConnectOutput(task,3,coutputDStar2);
   mgr->ConnectOutput(task,4,coutputDStar3);
-  mgr->ConnectOutput(task,5,coutputDStar4);
-  mgr->ConnectOutput(task,6,coutputDStar5);
-  mgr->ConnectOutput(task,7,coutputDStar6);
+  mgr->ConnectOutput(task,5,coutputDstarNorm);
   
   return task;
 }
