@@ -28,11 +28,12 @@ ReadRaw(const char* src=0, Int_t nEv=0, Int_t skip=0)
 
     std::cout << "Event # " << evCnt << std::endl;
 
-    AliFMDBoolMap read(0);
-    read.Reset(kFALSE);
     std::cout << "Read " << array->GetEntriesFast() << " digits" << std::endl;
   
 #if 0
+    AliFMDBoolMap read(0);
+    read.Reset(kFALSE);
+
     TIter next(array);
     AliFMDDigit* digit = 0;
     while ((digit = static_cast<AliFMDDigit*>(next()))) {
