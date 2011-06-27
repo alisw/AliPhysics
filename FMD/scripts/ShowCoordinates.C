@@ -1,5 +1,18 @@
+/**
+ * A script to dump the physical coordinates as given by the
+ * geometry. 
+ * 
+ */
 #include <iomanip>
 
+/** 
+ * Get the physical coordinates of a strip 
+ * 
+ * @param det Detector
+ * @param rng Ring
+ * @param sec Sector
+ * @param str Strip
+ */
 void
 PhysicalCoordinates(UShort_t det, Char_t rng, UShort_t sec, UShort_t str)
 {
@@ -22,6 +35,11 @@ PhysicalCoordinates(UShort_t det, Char_t rng, UShort_t sec, UShort_t str)
 	    << std::setw(9) << theta * deg << "," 
 	    << std::setw(9) << eta << std::endl;
 }
+
+/** 
+ * Show coordinates of all strips 
+ * 
+ */
 void
 ShowCoordinates()
 {
@@ -49,3 +67,6 @@ ShowCoordinates()
     }
   }
 }
+//
+// EOF
+//
