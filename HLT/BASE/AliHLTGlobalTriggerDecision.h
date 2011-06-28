@@ -219,6 +219,27 @@ class AliHLTGlobalTriggerDecision : public AliHLTTriggerDecision
    */
   virtual void Clear(Option_t* option = "C");
   
+  /**
+   * Finds a named input object from the list of contributing triggers and other input objects.
+   * i.e. Both the arrays returned by TriggerInputs() and InputObjects() will be searched,
+   * but the contributing triggers will be searched first.
+   * \param  name  The name of the object to match as returned by the objects GetName() method.
+   * \returns a pointer to the object found or NULL if none was found.
+   * The method is inherited from TObject.
+   */
+  virtual /*const*/ TObject* FindObject(const char* name) const;
+  
+  /**
+   * Finds a matching object from the list of contributing triggers and other input objects
+   * by comparing the given object to objects in the lists with the IsEqual() method.
+   * i.e. Both the arrays returned by TriggerInputs() and InputObjects() will be searched,
+   * but the contributing triggers will be searched first.
+   * \param  obj  The object to match to with the IsEqual() method.
+   * \returns a pointer to the object found or NULL if none was found.
+   * The method is inherited from TObject.
+   */
+  virtual /*const*/ TObject* FindObject(const TObject* obj) const;
+  
  private:
   
   /**

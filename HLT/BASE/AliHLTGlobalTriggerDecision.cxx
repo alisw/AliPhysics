@@ -317,6 +317,27 @@ void AliHLTGlobalTriggerDecision::Clear(Option_t* option)
 }
 
 
+TObject* AliHLTGlobalTriggerDecision::FindObject(const char* name) const
+{
+  // Finds the first object in fContributingTriggers or fInputObjects that has the given name.
+  
+  TObject* result = fContributingTriggers.FindObject(name);
+  if (result != NULL) return result;
+  return fInputObjects.FindObject(name);
+}
+
+
+TObject* AliHLTGlobalTriggerDecision::FindObject(const TObject* obj) const
+{
+  // Finds the first object in fContributingTriggers or fInputObjects that matches
+  // based on a IsEqual() comparison.
+  
+  TObject* result = fContributingTriggers.FindObject(obj);
+  if (result != NULL) return result;
+  return fInputObjects.FindObject(obj);
+}
+
+
 void AliHLTGlobalTriggerDecision::DeleteInputObjects()
 {
   // Deletes the objects marked with kCanDelete in fInputObjects and clears the array.
