@@ -34,6 +34,16 @@ class AliGenMUONlib :
     static Double_t PtKaon(const Double_t *px, const Double_t *dummy);
     static Double_t YKaon( const Double_t *py, const Double_t *dummy);
     static Int_t    IpKaon(TRandom *ran);
+//  XZhang 20100621
+    static Double_t PtPionPos2010PP(const Double_t *px, const Double_t *dummy);
+    static Double_t PtPionNeg2010PP(const Double_t *px, const Double_t *dummy);
+    static Double_t PtKaonPos2010PP(const Double_t *px, const Double_t *dummy);
+    static Double_t PtKaonNeg2010PP(const Double_t *px, const Double_t *dummy);
+    static Double_t YKaonPion2010PP(const Double_t *px, const Double_t *dummy);
+    static Int_t    IpPionPos(TRandom *ran);
+    static Int_t    IpPionNeg(TRandom *ran);
+    static Int_t    IpKaonPos(TRandom *ran);
+    static Int_t    IpKaonNeg(TRandom *ran);
 // Phi
     static Double_t PtPhi( const Double_t *px, const Double_t *dummy);
     static Double_t YPhi( const  Double_t *px, const Double_t *dummy);

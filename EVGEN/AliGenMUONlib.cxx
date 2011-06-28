@@ -26,6 +26,7 @@
 
 #include "TMath.h"
 #include "TRandom.h"
+#include "TDatabasePDG.h"
 
 #include "AliGenMUONlib.h"
 
@@ -2413,10 +2414,22 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	}
 	break;
     case kPion:
-	func=PtPion;
+        if (sname == "2010 Pos PP") {
+            func=PtPionPos2010PP;
+        } else if (sname == "2010 Neg PP") {
+            func=PtPionNeg2010PP;
+        } else {
+	    func=PtPion;
+        }
 	break;
     case kKaon:
-	func=PtKaon;
+        if (sname == "2010 Pos PP") {
+            func=PtKaonPos2010PP;
+        } else if (sname == "2010 Neg PP") {
+            func=PtKaonNeg2010PP;
+        } else {
+	    func=PtKaon;
+        }
 	break;
     case kChic0:
 	func=PtChic0;
@@ -2582,10 +2595,22 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	}
 	break;
     case kPion:
-	func=YPion;
+        if (sname == "2010 Pos PP") {
+            func=YKaonPion2010PP;
+        } else if (sname == "2010 Neg PP") {
+            func=YKaonPion2010PP;
+        } else {
+	    func=YPion;
+        }
 	break;
     case kKaon:
-	func=YKaon;
+        if (sname == "2010 Pos PP") {
+            func=YKaonPion2010PP;
+        } else if (sname == "2010 Neg PP") {
+            func=YKaonPion2010PP;
+        } else {
+	    func=YKaon;
+        }
 	break;
     case kChic0:
 	func=YChic0;
@@ -2747,9 +2772,10 @@ Int_t AliGenMUONlib::IpChic(TRandom *)
 //_____________________________________________________________
 
 typedef Int_t (*GenFuncIp) (TRandom *);
-GenFuncIp AliGenMUONlib::GetIp(Int_t param,  const char* /*tname*/) const
+GenFuncIp AliGenMUONlib::GetIp(Int_t param,  const char* tname) const
 {
 // Return pointer to particle type parameterisation
+    TString sname = TString(tname);
     GenFuncIp func;
     switch (param) 
     {
@@ -2791,10 +2817,22 @@ GenFuncIp AliGenMUONlib::GetIp(Int_t param,  const char* /*tname*/) const
 	func=IpBeauty;
 	break;
     case kPion:
-	func=IpPion;
+        if (sname == "2010 Pos PP") {
+            func=IpPionPos;
+        } else if (sname == "2010 Neg PP") {
+            func=IpPionNeg;
+        } else {
+	    func=IpPion;
+        }
 	break;
     case kKaon:
-	func=IpKaon;
+        if (sname == "2010 Pos PP") {
+            func=IpKaonPos;
+        } else if (sname == "2010 Neg PP") {
+            func=IpKaonNeg;
+        } else {
+	    func=IpKaon;
+        }
 	break;
     case kChic0:
 	func=IpChic0;
@@ -2867,4 +2905,101 @@ Float_t AliGenMUONlib::Interpolate(Float_t x, Float_t* y, Float_t x0,
     return y1;
 }
 
+//=============================================================================
+Double_t AliGenMUONlib::PtPionPos2010PP(const Double_t *px, const Double_t* /*dummy*/)
+{
+// Pos pion
+  const Double_t par[3] = {2.27501, 0.116141, 5.59591};
+  Double_t pt = px[0];
+  Double_t m0 = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  Double_t mt = TMath::Sqrt(m0*m0 + pt*pt);
+  Double_t nc = par[1]*par[2];
+  Double_t t1 = (par[2]-1.)/nc/(nc/(par[2]-2.)+m0);
+  Double_t t2 = TMath::Power(1.+(mt-m0)/nc, -1.*par[2]);
+  Double_t fn = par[0] * pt * t1 * t2;
+  return fn;
+}
 
+//=============================================================================
+Double_t AliGenMUONlib::PtPionNeg2010PP(const Double_t *px, const Double_t* /*dummy*/)
+{
+// Neg pion
+  const Double_t par[3] = {2.25188, 0.12176, 5.91166};
+  Double_t pt = px[0];
+  Double_t m0 = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  Double_t mt = TMath::Sqrt(m0*m0 + pt*pt);
+  Double_t nc = par[1]*par[2];
+  Double_t t1 = (par[2]-1.)/nc/(nc/(par[2]-2.)+m0);
+  Double_t t2 = TMath::Power(1.+(mt-m0)/nc, -1.*par[2]);
+  Double_t fn = par[0] * pt * t1 * t2;
+  return fn;
+}
+
+//=============================================================================
+Double_t AliGenMUONlib::PtKaonPos2010PP(const Double_t *px, const Double_t* /*dummy*/)
+{
+// Pos kaons
+  const Double_t par[3] = {0.279386, 0.195466, 6.59587};
+  Double_t pt = px[0];
+  Double_t m0 = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+  Double_t mt = TMath::Sqrt(m0*m0 + pt*pt);
+  Double_t nc = par[1]*par[2];
+  Double_t t1 = (par[2]-1.)/nc/(nc/(par[2]-2.)+m0);
+  Double_t t2 = TMath::Power(1.+(mt-m0)/nc, -1.*par[2]);
+  Double_t fn = par[0] * pt * t1 * t2;
+  return fn;
+}
+
+//=============================================================================
+Double_t AliGenMUONlib::PtKaonNeg2010PP(const Double_t *px, const Double_t* /*dummy*/)
+{
+// Neg kaons
+  const Double_t par[3] = {0.278927, 0.189049, 6.43006};
+  Double_t pt = px[0];
+  Double_t m0 = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+  Double_t mt = TMath::Sqrt(m0*m0 + pt*pt);
+  Double_t nc = par[1]*par[2];
+  Double_t t1 = (par[2]-1.)/nc/(nc/(par[2]-2.)+m0);
+  Double_t t2 = TMath::Power(1.+(mt-m0)/nc, -1.*par[2]);
+  Double_t fn = par[0] * pt * t1 * t2;
+  return fn;
+}
+
+//=============================================================================
+Double_t AliGenMUONlib::YKaonPion2010PP(const Double_t *px, const Double_t* /*dummy*/)
+{
+// pions and kaons
+  Double_t y = px[0];
+  Double_t sigma = 2.35;
+  Double_t kernal = y/2./sigma;
+  Double_t fxn = TMath::Exp(-1.*kernal*kernal);
+  return fxn;
+}
+
+//=============================================================================
+Int_t AliGenMUONlib::IpPionPos(TRandom *)
+{
+// Pos pions
+    return 211;
+}
+
+//=============================================================================
+Int_t AliGenMUONlib::IpPionNeg(TRandom *)
+{
+// Neg pions
+    return -211;
+}
+
+//=============================================================================
+Int_t AliGenMUONlib::IpKaonPos(TRandom *)
+{
+// pos Kaons
+    return 321;
+}
+
+//=============================================================================
+Int_t AliGenMUONlib::IpKaonNeg(TRandom *)
+{
+// neg Kaons 
+    return -321;
+}
