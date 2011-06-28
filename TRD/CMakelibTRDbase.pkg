@@ -61,6 +61,12 @@ set ( SRCS
     Cal/AliTRDCalSingleChamberStatus.cxx
     Cal/AliTRDCalPID.cxx
     Cal/AliTRDCalTrkAttach.cxx
+    Cal/AliTRDCalOnlineGainTable.cxx
+    Cal/AliTRDCalOnlineGainTableMCM.h
+    Cal/AliTRDCalOnlineGainTable.h  
+    Cal/AliTRDCalOnlineGainTableROC.cxx
+    Cal/AliTRDCalOnlineGainTableMCM.cxx
+    Cal/AliTRDCalOnlineGainTableROC.h
     AliTRDCalibraFit.cxx
     AliTRDCalibraMode.cxx
     AliTRDCalibraVector.cxx

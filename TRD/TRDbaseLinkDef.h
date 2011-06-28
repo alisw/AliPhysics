@@ -51,6 +51,9 @@
 #pragma link C++ class  AliTRDCalDCSGTUTmu+;
 #pragma link C++ class  AliTRDCalDCSGTU+;
 #pragma link C++ class  AliTRDCalMonitoring+;
+#pragma link C++ class  AliTRDCalOnlineGainTable+;
+#pragma link C++ class  AliTRDCalOnlineGainTableROC+;
+#pragma link C++ class  AliTRDCalOnlineGainTableMCM+;
 
 #pragma link C++ class  AliTRDCalChamberStatus+;
 #pragma link C++ class  AliTRDCalPadStatus+;
