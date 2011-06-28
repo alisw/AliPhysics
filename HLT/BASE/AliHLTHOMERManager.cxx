@@ -149,11 +149,11 @@ Int_t AliHLTHOMERManager::Initialize() {
   if ( fProxyHandler ) {
     iResult = fProxyHandler->Initialize();
     if (iResult)
-      HLTError(Form("Initialize of ProxyHandler failed."));
+      HLTError("Initialize of ProxyHandler failed.");
   
   } else {
     iResult = -1;
-    HLTError(Form("Creating of ProxyHandler failed."));
+    HLTError("Creating of ProxyHandler failed.");
   }
  
   // -- Initialize ReaderList
@@ -198,6 +198,12 @@ Int_t AliHLTHOMERManager::Initialize() {
 Int_t AliHLTHOMERManager::CreateSourcesList() {
   // see header file for class documentation
 
+  if (fProxyHandler == NULL)
+  {
+    HLTError("The object must first be initialised with a call to Initialize().");
+    return -1;
+  }
+
   Int_t iResult = 0;
 
   if ( fSourceList != NULL )
@@ -209,17 +215,17 @@ Int_t AliHLTHOMERManager::CreateSourcesList() {
 
   iResult = fProxyHandler->FillSourceList( fSourceList );
   if ( iResult < 0 ) {
-    HLTWarning(Form("There have been errors, while creating the sources list."));
+    HLTWarning("There have been errors, while creating the sources list.");
   }
   else if ( iResult > 0 ) {
-    HLTWarning(Form("No active services found."));
+    HLTWarning("No active services found.");
   }
   else if ( fSourceList->IsEmpty() ) {
-    HLTWarning(Form("No active services in the list."));
+    HLTWarning("No active services in the list.");
     iResult = 2;
   }
   else {
-     HLTInfo(Form("New sources list created."));
+     HLTInfo("New sources list created.");
 
     // -- New SourceList has been created 
     // --> All Sources are new --> State has changed
@@ -251,6 +257,12 @@ void AliHLTHOMERManager::SetSourceState( AliHLTHOMERSourceDesc * source, Bool_t 
 Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
   // see header file for class documentation
 
+  if (fReaderList == NULL)
+  {
+    HLTError("Must first create a source list with a call to CreateSourcesList().");
+    return -1;
+  }
+  
   Int_t iResult = 0;
 
   // HAck Jochen
@@ -259,13 +271,13 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
 
   // -- Check if LibManager is present
   if ( ! fLibManager ) {
-    HLTError(Form("No LibManager present."));
+    HLTError("No LibManager present.");
     return -1;
   }
   
   // -- Check if already connected and state has not changed
   if ( fStateHasChanged == kFALSE && IsConnected() ) {
-    HLTInfo(Form("No need for reconnection."));
+    HLTInfo("No need for reconnection.");
     return 0;
   }
   
@@ -285,7 +297,7 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
 
   CreateReadoutList( sourceHostnames, sourcePorts, sourceCount, detector );
   if ( sourceCount == 0 ) {
-    HLTError(Form("No sources selected, aborting."));
+    HLTError("No sources selected, aborting.");
     delete [] sourcePorts;
     delete [] sourceHostnames;
     return -2;
@@ -305,7 +317,7 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
     fReaderList->Add(dynamic_cast<TObject*>(fLibManager->OpenReader(sourceHostnames[idx], sourcePorts[idx])));
     AliHLTHOMERReader *reader = static_cast<AliHLTHOMERReader*>(fReaderList->Last());
     if ( !reader ) {
-      HLTError(Form("Adding reader failed, aborting"));
+      HLTError("Adding reader failed, aborting");
       delete [] sourcePorts;
       delete [] sourceHostnames;
       return -3;
@@ -375,7 +387,7 @@ void AliHLTHOMERManager::DisconnectHOMER(){
   fStateHasChanged = kTRUE;
   fConnected = kFALSE;
   
-  HLTInfo(Form("Connection closed."));
+  HLTInfo("Connection closed.");
 
   return;
 }
@@ -391,7 +403,7 @@ Int_t AliHLTHOMERManager::ReconnectHOMER( TString detector="" ){
 
   iResult = ConnectHOMER(detector);
   if ( iResult ) {
-    HLTError(Form("Error reconnecting."));
+    HLTError("Error reconnecting.");
   }
 
   return iResult;
@@ -417,7 +429,7 @@ Int_t AliHLTHOMERManager::NextEvent(){
     return 55;//ConnectHOMER();
   }
   if ( !IsConnected() ) {
-    HLTWarning(Form( "Not connected yet." ));
+    HLTWarning("Not connected yet.");
     return -1;
   }
 
@@ -487,7 +499,7 @@ Int_t AliHLTHOMERManager::NextEvent(){
     // -- Handle Blocks from current reader
     iResult = HandleBlocks();
     if ( iResult ) {
-      HLTError(Form("Handling of blocks failed."));
+      HLTError("Handling of blocks failed.");
     }
 
   } // while( (object = next()) ) {
@@ -823,7 +835,7 @@ void* AliHLTHOMERManager::GetBlk( Int_t ndx ) {
   // Get pointer to current block in current event
    
   if ( !fCurrentReader || !IsConnected() ) {
-    HLTError(Form("Not connected yet."));
+    HLTError("Not connected yet.");
     return NULL;
   }
   if ( ndx < static_cast<Int_t>(fNBlks) )
@@ -837,7 +849,7 @@ ULong_t AliHLTHOMERManager::GetBlkSize( Int_t ndx ) {
   // see header file for class documentation
    
   if ( !fCurrentReader || !IsConnected() ) {
-    HLTError(Form("Not connected yet."));
+    HLTError("Not connected yet.");
     return 0;
   }
   
@@ -855,7 +867,7 @@ TString AliHLTHOMERManager::GetBlkOrigin( Int_t ndx ) {
 
   // -- Check for Connection
   if ( !fCurrentReader || ! IsConnected() ) {
-    HLTError(Form("Not connected yet."));
+    HLTError("Not connected yet.");
     return origin;
   }
 
@@ -891,7 +903,7 @@ TString AliHLTHOMERManager::GetBlkType( Int_t ndx ) {
 
   // -- Check for Connection
   if ( !fCurrentReader || ! IsConnected() ) {
-    HLTError(Form("Not connected yet."));
+    HLTError("Not connected yet.");
     return type;
   }
 
@@ -925,7 +937,7 @@ ULong_t AliHLTHOMERManager::GetBlkSpecification( Int_t ndx ) {
 
   // -- Check for Connection
   if ( !fCurrentReader || ! IsConnected() ) {
-    HLTError(Form("Not connected yet."));
+    HLTError("Not connected yet.");
     return 0;
   }
 
@@ -987,7 +999,7 @@ Bool_t AliHLTHOMERManager::CheckTriggerDecision() {
   Bool_t triggered = kFALSE;
 
   if ( !fCurrentReader || !IsConnected() ) {
-    HLTError(Form("Not connected yet."));
+    HLTError("Not connected yet.");
     return kFALSE;
   }
 
@@ -1013,7 +1025,7 @@ Bool_t AliHLTHOMERManager::CheckTriggerDecision() {
   } while( GetNextBlk() );
   
   if ( !foundTriggerBlock ) {
-    HLTError(Form("No trigger decision object found"));
+    HLTError("No trigger decision object found");
     return kFALSE;
   }
 

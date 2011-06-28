@@ -231,7 +231,8 @@ Bool_t AliHLTHOMERBlockDesc::CheckIfTObject() {
   fMessage = new AliHLTMessage( fData, fSize );
   
   // -- Check if TMessage payload is TObject
-  if ( fMessage->What() == kMESS_OBJECT ) {
+  if ( fMessage->What() == kMESS_OBJECT and fMessage->GetClass() != NULL and fMessage->GetClass() != (TClass*)-1)
+  {
     fClassName = fMessage->GetClass()->GetName();
     fIsTObject = kTRUE;
     
