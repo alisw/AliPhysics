@@ -70,6 +70,7 @@ fUsePID(kFALSE),
 fUseAOD049(kFALSE),
 fPidHF(0),
 fWhyRejection(0),
+fEvRejectionBits(0),
 fRemoveDaughtersFromPrimary(kFALSE),
 fUseMCVertex(kFALSE),
 fOptPileup(0),
@@ -113,6 +114,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fUseAOD049(source.fUseAOD049),
   fPidHF(0),
   fWhyRejection(source.fWhyRejection),
+  fEvRejectionBits(source.fEvRejectionBits),
   fRemoveDaughtersFromPrimary(source.fRemoveDaughtersFromPrimary),
   fUseMCVertex(source.fUseMCVertex),
   fOptPileup(source.fOptPileup),
@@ -165,6 +167,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fUseAOD049=source.fUseAOD049;
   SetPidHF(source.GetPidHF());
   fWhyRejection=source.fWhyRejection;
+  fEvRejectionBits=source.fEvRejectionBits;
   fRemoveDaughtersFromPrimary=source.fRemoveDaughtersFromPrimary;
   fUseMCVertex=source.fUseMCVertex;
   fOptPileup=source.fOptPileup;
@@ -211,7 +214,6 @@ Int_t AliRDHFCuts::IsEventSelectedInCentrality(AliVEvent *event) {
   //
   // Centrality selection
   //
-  
   if(fUseCentrality<kCentOff||fUseCentrality>=kCentInvalid){    
     AliWarning("Centrality estimator not valid");    
     return 3;  
@@ -235,6 +237,8 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   //if(fTriggerMask && event->GetTriggerMask()!=fTriggerMask) return kFALSE;
 
   fWhyRejection=0;
+  fEvRejectionBits=0;
+  Bool_t accept=kTRUE;
 
   // check if it's MC
   Bool_t isMC=kFALSE;
@@ -269,7 +273,8 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   if(!isMC && (event->GetRunNumber()<136851 || event->GetRunNumber()>139517)) {
     if(!firedTriggerClasses.Contains(fTriggerClass.Data())) {
       fWhyRejection=5;
-      return kFALSE;
+      fEvRejectionBits+=1<<kNotSelTrigger;
+      accept=kFALSE;
     }
   }
 
@@ -288,18 +293,29 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
    
   const AliVVertex *vertex = event->GetPrimaryVertex();
 
-  if(!vertex) return kFALSE;
-
-  TString title=vertex->GetTitle();
-  if(title.Contains("Z") && fMinVtxType>1) return kFALSE; 
-  if(title.Contains("3D") && fMinVtxType>2) return kFALSE; 
-
-  if(vertex->GetNContributors()<fMinVtxContr) return kFALSE; 
-
-  if(TMath::Abs(vertex->GetZ())>fMaxVtxZ) {
-    fWhyRejection=6;
-    return kFALSE;
-  } 
+  if(!vertex){
+    accept=kFALSE;
+    fEvRejectionBits+=1<<kNoVertex;
+  }else{
+    TString title=vertex->GetTitle();
+    if(title.Contains("Z") && fMinVtxType>1){
+      accept=kFALSE;
+      fEvRejectionBits+=1<<kNoVertex;
+    }
+    else if(title.Contains("3D") && fMinVtxType>2){
+      accept=kFALSE;
+      fEvRejectionBits+=1<<kNoVertex;
+    }
+    if(vertex->GetNContributors()<fMinVtxContr){
+      accept=kFALSE;
+      fEvRejectionBits+=1<<kTooFewVtxContrib;
+    }
+    if(TMath::Abs(vertex->GetZ())>fMaxVtxZ) {
+      fEvRejectionBits+=1<<kZVtxOutFid;
+      if(accept) fWhyRejection=6;
+      accept=kFALSE;
+    } 
+  }
 
 
   // pile-up rejection
@@ -307,8 +323,9 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     Int_t cutc=(Int_t)fMinContrPileup;
     Double_t cutz=(Double_t)fMinDzPileup;
     if(event->IsPileupFromSPD(cutc,cutz,3.,2.,10.)) {
-      fWhyRejection=1;
-      return kFALSE;
+      if(accept) fWhyRejection=1;
+      fEvRejectionBits+=1<<kPileupSPD;
+      accept=kFALSE;
     }
   }
 
@@ -316,12 +333,13 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   if (fUseCentrality!=kCentOff) {  
     Int_t rejection=IsEventSelectedInCentrality(event);    
     if(rejection>1){      
-      fWhyRejection=rejection;      
-      return kFALSE;    
+      if(accept) fWhyRejection=rejection;      
+      fEvRejectionBits+=1<<kOutsideCentrality;
+      accept=kFALSE;
     }
   }
 
-  return kTRUE;
+  return accept;
 }
 //---------------------------------------------------------------------------
 Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d) const {
