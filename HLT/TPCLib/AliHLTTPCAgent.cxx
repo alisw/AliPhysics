@@ -304,7 +304,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 //   pHandler->AddComponent(new AliHLTTPCCalibrationComponent);
   pHandler->AddComponent(new AliHLTTPCDataCheckerComponent);
   pHandler->AddComponent(new AliHLTTPCHWCFEmulatorComponent);
-  pHandler->AddComponent(new AliHLTTPCHWCFConsistencyControlComponent);
+//  pHandler->AddComponent(new AliHLTTPCHWCFConsistencyControlComponent);  //FIXME: Causes crash: https://savannah.cern.ch/bugs/?83677
   return 0;
 }
 
