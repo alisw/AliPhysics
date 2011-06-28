@@ -148,18 +148,7 @@ AliEPSelectionTask::~AliEPSelectionTask()
       delete fESDtrackCuts;
       fESDtrackCuts = 0;
   }
-  if (fQVector){
-      delete fQVector;
-      fQVector = 0;
-  }
-  if (fQsub1){
-      delete fQsub1;
-      fQsub1 = 0;
-  }
-  if (fQsub2){
-      delete fQsub2;
-      fQsub2 = 0;
-  }
+
   if (fPhiDist){
       delete fPhiDist;
       fPhiDist = 0;
