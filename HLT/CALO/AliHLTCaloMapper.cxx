@@ -167,8 +167,12 @@ AliHLTCaloMapper::GetModuleFromSpec(UInt_t specification)
 {
 
   Int_t module = -1;
-
-  if (fCaloDet.CompareTo("PHOS") == 0) {
+  // get rid of too much string operations
+  
+  //  if (fCaloDet.CompareTo("PHOS") == 0) {
+  
+  if (fCaloDet[0]=='P') {  
+    // P = is the short for PHOS
     // 1 module = 4 bits
     if(specification & 0xf) module = 0;
     else if((specification >> 4) & 0xf) module = 1;
@@ -181,7 +185,10 @@ AliHLTCaloMapper::GetModuleFromSpec(UInt_t specification)
     
     return module;
   }
-  else if (fCaloDet.CompareTo("EMCAL") == 0) {
+    //else if (fCaloDet.CompareTo("EMCAL") == 0) {
+  else if (fCaloDet[0]=='E') {  
+
+    // E = is the short for EMCAL 
     // 1 module = 2 bits
     if(specification & 0x3) module = 0;
     else if((specification >> 2) & 0x3) module = 1;
@@ -201,7 +208,7 @@ AliHLTCaloMapper::GetModuleFromSpec(UInt_t specification)
   } else {
     HLTDebug("Specification 0x%X not consistent with single module in EMCAL or PHOS", specification);
   }
-
+  return module;
 }
 
 
