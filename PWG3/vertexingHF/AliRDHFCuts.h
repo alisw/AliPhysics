@@ -29,7 +29,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   enum ESelLevel {kAll,kTracks,kPID,kCandidate};
   enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
   enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID};
-
+  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileupSPD,kOutsideCentrality};
   AliRDHFCuts(const Char_t* name="RDHFCuts", const Char_t* title="");
   
   virtual ~AliRDHFCuts();
@@ -127,6 +127,25 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   void SetWhyRejection(Int_t why) {fWhyRejection=why; return;}
   Int_t GetWhyRejection() const {return fWhyRejection;}
+  UInt_t GetEventRejectionBitMap() const {return fEvRejectionBits;}
+  Bool_t IsEventRejectedDueToTrigger() const {
+    return fEvRejectionBits&(1<<kNotSelTrigger);
+  }
+  Bool_t IsEventRejectedDueToNotRecoVertex() const {
+    return fEvRejectionBits&(1<<kNoVertex);
+  }
+  Bool_t IsEventRejectedDueToVertexContributors() const {
+    return fEvRejectionBits&(1<<kTooFewVtxContrib);
+  }
+  Bool_t IsEventRejectedDueToZVertexOutsideFiducialRegion() const {
+    return fEvRejectionBits&(1<<kZVtxOutFid);
+  }
+  Bool_t IsEventRejectedDueToPileupSPD() const {
+    return fEvRejectionBits&(1<<kPileupSPD);
+  }
+  Bool_t IsEventRejectedDueToCentrality() const {
+    return fEvRejectionBits&(1<<kOutsideCentrality);
+  }
 
   void SetFixRefs(Bool_t fix=kTRUE) {fFixRefs=fix; return;}
 
@@ -145,6 +164,7 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   Bool_t CountEventForNormalization() const 
   { if(fWhyRejection==0) {return kTRUE;} else {return kFALSE;} }
+
 
  protected:
 
@@ -177,6 +197,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fUseAOD049; // enable AOD049 centrality cleanup
   AliAODPidHF *fPidHF; // PID for heavy flavours manager
   Int_t fWhyRejection; // used to code the step at which candidate was rejected
+  UInt_t fEvRejectionBits; //bit map storing the full info about event rejection
   Bool_t fRemoveDaughtersFromPrimary; // flag to switch on the removal of duaghters from the primary vertex computation
   Bool_t fUseMCVertex; // use MC primary vertex 
   Int_t  fOptPileup;      // option for pielup selection
@@ -195,7 +216,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t fMinPtCand; // minimum pt of the candidate
   Double_t fMaxPtCand; // minimum pt of the candidate
 
-  ClassDef(AliRDHFCuts,15);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,16);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
