@@ -158,15 +158,20 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH2F *fPtDCA2D;                              //! Pt vs DCA2D
   TH2F *fPtDCAZ;                               //! Pt vs DCAZ
   TH2F *fPtNClustersTPC;                       //! Pt vs nClustersTPC
+  TH2F *fPtNClustersTPCIter1;                  //! Pt vs nClustersTPCIter1
   TH2F *fPtNPointITS;                          //! Pt vs nPointITS
   TH2F *fPtChi2C;                              //! Pt vs Chi2C
   TH2F *fPtNSigmaToVertex;                     //! Pt vs nSigmaToVertex
   TH2F *fPtRelUncertainty1Pt;                  //! Pt vs relUncertainty1Pt
   TH3F *fPtRelUncertainty1PtNClus;             //! Pt vs relUncertainty1Pt vs NClustersTPC
+  TH3F *fPtRelUncertainty1PtNClusIter1;        //! Pt vs relUncertainty1Pt vs NClustersTPCIter1
   TH3F *fPtRelUncertainty1PtChi2;              //! Pt vs relUncertainty1Pt vs Chi2TPC/NClus
+  TH3F *fPtRelUncertainty1PtChi2Iter1;         //! Pt vs relUncertainty1Pt vs Chi2TPC/NClusIter1
+  TH3F *fPtRelUncertainty1PtPhi;               //! Pt vs relUncertainty1PtPhi
   TH3F *fPtRelUncertainty1PtTrkLength;         //! Pt vs relUncertainty1Pt vs track length in TPC
   TH2F *fPtUncertainty1Pt;                     //! Pt vs Uncertainty1Pt
   TH2F *fPtChi2PerClusterTPC;                  //! Pt vs Chi2PerClusterTPC
+  TH2F *fPtChi2PerClusterTPCIter1;                  //! Pt vs Chi2PerClusterTPCIter1
   TH2F *fPtNCrossedRows;                       //! Pt vs NCrossedRows
   TH2F *fPtNCrossedRowsNClusF;                 //! Pt vs NCrossedRows/NClusF
   TH3F *fPtNCrRNCrRNClusF;                     //! Pt vs NCrossedRows vs NCrossedRows/NClusF 
