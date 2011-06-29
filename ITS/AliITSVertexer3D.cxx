@@ -995,28 +995,35 @@ Int_t AliITSVertexer3D::RemoveTracklets(){
 //________________________________________________________
 void AliITSVertexer3D::FindOther3DVertices(TTree *itsClusterTree){
   // pileup identification based on 3D vertexing with not used clusters
-  MarkUsedClusters();
-  fLines.Clear("C");
-  Int_t nolines = FindTracklets(itsClusterTree,2);
-  if(nolines>=2){
-    Int_t nr=RemoveTracklets();
-    nolines-=nr;
+
+  fVertArray = new AliESDVertex[kMaxPileupVertices+1];
+  fVertArray[0]=(*fCurrentVertex);
+  Int_t nFoundVert=1;
+  for(Int_t iPilV=1; iPilV<=kMaxPileupVertices; iPilV++){
+    MarkUsedClusters();
+    fLines.Clear("C");
+    Int_t nolines = FindTracklets(itsClusterTree,2);
     if(nolines>=2){
-      Int_t rc=Prepare3DVertex(2);
-      if(rc==0){ 
-	fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0);
-	if(fVert3D.GetNContributors()>=fMinTrackletsForPilup){
-	  fIsPileup=kTRUE;
-	  fNoVertices=2;
-	  fVertArray = new AliESDVertex[2];
-	  fVertArray[0]=(*fCurrentVertex);
-	  fVertArray[1]=fVert3D;
-	  fZpuv=fVert3D.GetZv();
-	  fNTrpuv=fVert3D.GetNContributors();
+      Int_t nr=RemoveTracklets();
+      nolines-=nr;
+      if(nolines>=2){
+	Int_t rc=Prepare3DVertex(2);
+	if(rc==0){ 
+	  fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0);
+	  if(fVert3D.GetNContributors()>=fMinTrackletsForPilup){
+	    fIsPileup=kTRUE;
+	    fVertArray[nFoundVert]=fVert3D;
+	    nFoundVert++;
+	    if(nFoundVert==2){
+	      fZpuv=fVert3D.GetZv();
+	      fNTrpuv=fVert3D.GetNContributors();
+	    }
+	  }
 	}
       }
     }
   }
+  fNoVertices=nFoundVert;
 }
 //______________________________________________________________________
 void AliITSVertexer3D::PileupFromZ(){

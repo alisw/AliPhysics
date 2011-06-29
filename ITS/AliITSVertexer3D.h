@@ -76,6 +76,7 @@ protected:
   void  FindOther3DVertices(TTree *itsClusterTree);
 
   enum {kMaxCluPerMod=250};
+  enum {kMaxPileupVertices=10};
 
   TClonesArray fLines;      //! array of tracklets
   AliESDVertex fVert3D;        // 3D Vertex
