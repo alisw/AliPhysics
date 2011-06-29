@@ -26,12 +26,12 @@ ClassImp(AliAODZDC)
 
 AliAODZDC::AliAODZDC() :
   AliVZDC(),
-  fZNCEnergy(0),
-  fZNAEnergy(0),
-  fZPCEnergy(0),
-  fZPAEnergy(0),
-  fZEM1Energy(0),
-  fZEM2Energy(0),
+  fZNCEnergy(-999.),
+  fZNAEnergy(-999.),
+  fZPCEnergy(-999.),
+  fZPAEnergy(-999.),
+  fZEM1Energy(0.),
+  fZEM2Energy(0..),
   fZDCParticipants(0),
   fZDCPartSideA(0),
   fZDCPartSideC(0),
@@ -126,33 +126,41 @@ AliAODZDC& AliAODZDC::operator=(const AliAODZDC& zdcAOD)
 //______________________________________________________________________________
 Double_t  AliAODZDC::GetZNCEnergy() const
 {
-   Double_t sumZNC=0.;
-   for(Int_t i=0; i<5; i++) sumZNC += fZNCTowerEnergy[i];
-   return sumZNC;
+    if (fZNCEnergy < 0.) {
+	fZNCEnergy = 0.;
+	for(Int_t i=0; i<5; i++) fZNCEnergy += fZNCTowerEnergy[i];
+    }
+    return fZNCEnergy;
 }
 
 //______________________________________________________________________________
 Double_t  AliAODZDC::GetZNAEnergy() const
 {
-   Double_t sumZNA=0.;
-   for(Int_t i=0; i<5; i++) sumZNA += fZNATowerEnergy[i];
-   return sumZNA;
+    if (fZNAEnergy < 0.) {
+	fZNAEnergy = 0.;
+	for(Int_t i=0; i<5; i++) fZNAEnergy += fZNATowerEnergy[i];
+    }
+    return fZNAEnergy;
 }
 
 //______________________________________________________________________________
 Double_t  AliAODZDC::GetZPCEnergy() const
 {
-   Double_t sumZPC=0.;
-   for(Int_t i=0; i<5; i++) sumZPC += fZPCTowerEnergy[i];
-   return sumZPC;
+    if (fZPCEnergy < 0.) {
+	fZPCEnergy = 0.;
+	for(Int_t i=0; i<5; i++) fZPCEnergy += fZPCTowerEnergy[i];
+    }
+    return fZPCEnergy;
 }
 
 //______________________________________________________________________________
 Double_t  AliAODZDC::GetZPAEnergy() const
 {
-   Double_t sumZPA=0.;
-   for(Int_t i=0; i<5; i++) sumZPA += fZPATowerEnergy[i];
-   return sumZPA;
+    if (fZPAEnergy < 0.) {
+	fZPAEnergy = 0.;
+	for(Int_t i=0; i<5; i++) fZPAEnergy += fZPATowerEnergy[i];
+    }
+    return fZPAEnergy;
 }
 
 //______________________________________________________________________________

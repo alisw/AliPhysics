@@ -70,10 +70,10 @@ public:
  
 protected:
   
-  Double32_t   fZNCEnergy;   	      // E in ZNC
-  Double32_t   fZNAEnergy;   	      // E in ZNA
-  Double32_t   fZPCEnergy;   	      // E in ZPC
-  Double32_t   fZPAEnergy;   	      // E in ZPA
+  mutable Double32_t   fZNCEnergy;   	      //!E in ZNC
+  mutable Double32_t   fZNAEnergy;   	      //!E in ZNA
+  mutable Double32_t   fZPCEnergy;   	      //!E in ZPC
+  mutable Double32_t   fZPAEnergy;   	      //!E in ZPA
   Double32_t   fZEM1Energy;   	      // E in ZEM1
   Double32_t   fZEM2Energy;	      // E in ZEM2
   Double32_t   fZNCTowerEnergy[5];    // E in 5 ZNC sectors - high gain chain
