@@ -35,13 +35,16 @@ AddTaskForwardMult(Bool_t mc, UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
 
   // --- Make the task and add it to the manager ---------------------
   AliForwardMultiplicityBase* task = 0;
-  if (mc) task = new AliForwardMCMultiplicityTask("FMD");
-  else    task = new AliForwardMultiplicityTask("FMD");
+  
+  if (mc)
+    task = new AliForwardMCMultiplicityTask("FMD");
+  else    
+    task = new AliForwardMultiplicityTask("FMD");
   mgr->AddTask(task);
   
   // --- Do a local initialisation with assumed values ---------------
   if (sys > 0 && sNN > 0) 
-    AliForwardCorrectionManager::Instance().Init(sys,sNN,field);
+    AliForwardCorrectionManager::Instance().Init(sys,sNN,field,mc);
 
   // --- Configure the task ------------------------------------------
   const char* config = gSystem->Which(gROOT->GetMacroPath(),
