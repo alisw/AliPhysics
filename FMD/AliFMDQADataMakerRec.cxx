@@ -18,6 +18,7 @@
 #include <TFile.h> 
 #include <TH1F.h> 
 #include <TH1I.h> 
+#include <TH2I.h> 
 
 // --- AliRoot header files ---
 #include "AliESDEvent.h"
@@ -33,6 +34,9 @@
 #include "AliFMDAltroMapping.h"
 #include "AliFMDDebug.h"
 
+namespace {
+  Int_t colors[3] = {kRed,kGreen,kBlue};
+}
 //_____________________________________________________________________
 // This is the class that collects the QA data for the FMD during
 // reconstruction.  
@@ -112,16 +116,69 @@ AliFMDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task,
 }
 
 //_____________________________________________________________________ 
+TH1* AliFMDQADataMakerRec::MakeADCHist(UShort_t d, Char_t r, Short_t b)
+{
+  TString name("adc"); 
+  TString title("ADC counts");
+  Int_t   color = kRed+1; 
+  if (d > 0) { 
+    name.Append(Form("FMD%d%c", d, r));
+    title.Append(Form(" in FMD%d%c", d, r));
+    color = colors[d-1]+3+(r == 'I' || r == 'i' ? 0 : 1);
+    if (b >= 0) {
+      name.Append(Form("_0x%02x", b));
+      title.Append(Form("[0x%02x]", b));
+    }
+  }
+  TH1* hist = new TH1F(name, title,1024,0,1024);
+  hist->SetXTitle("Amplitude [ADC counts]");
+  hist->SetYTitle("Events [log]");
+  hist->SetFillStyle(3001);
+  hist->SetFillColor(color);
+  hist->SetLineColor(color);
+  hist->SetMarkerColor(color);
+  hist->GetXaxis()->SetNdivisions(408,false);
+  // hist->SetStats(0);
+
+  return hist;
+}
+//_____________________________________________________________________ 
+TH1* AliFMDQADataMakerRec::MakeELossHist(UShort_t d, Char_t r, Short_t b)
+{
+  TString name("eloss"); 
+  TString title("Energy loss");
+  Int_t   color = kBlue+1;
+  if (d > 0) { 
+    name.Append(Form("FMD%d%c", d, r));
+    title.Append(Form(" in FMD%d%c", d, r));
+    color = colors[d-1]+3+(r == 'I' || r == 'i' ? 0 : 1);
+    if (b >= 0) {
+      name.Append(Form("_0x%02x", b));
+      title.Append(Form("[0x%02x]", b));
+    }
+  }
+  TH1* hist = new TH1F(name, title,300,0, 15);
+  hist->SetXTitle("#Delta E/#Delta_{mip}");
+  hist->SetYTitle("Events [log]");
+  hist->SetFillStyle(3001);
+  hist->SetFillColor(color);
+  hist->SetLineColor(color);
+  hist->SetMarkerColor(color);
+  // hist->SetStats(0);
+
+  return hist;
+}
+
+
+//_____________________________________________________________________ 
 void AliFMDQADataMakerRec::InitESDs()
 {
   // create Digits histograms in Digits subdir
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1F* hEnergyOfESD = new TH1F("hEnergyOfESD","Energy distribution",100,0,3);
-  hEnergyOfESD->SetXTitle("Edep/Emip");
-  hEnergyOfESD->SetYTitle("Counts");
-  Add2ESDsList(hEnergyOfESD, 0, !expert, image);
+  TH1* hist = MakeELossHist();
+  Add2ESDsList(hist, 0, !expert, image);
     
 }
 
@@ -132,10 +189,8 @@ void AliFMDQADataMakerRec::InitDigits()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  TH1I* hADCCounts = new TH1I("hADCCounts",
-			      "Dist of ADC counts;ADC counts;Counts",
-			      1024,0,1024);
-  Add2DigitsList(hADCCounts, 0, !expert, image);
+  TH1* hist = MakeADCHist();
+  Add2DigitsList(hist, 0, !expert, image);
 }
 
 
@@ -146,11 +201,8 @@ void AliFMDQADataMakerRec::InitRecPoints()
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
 
-  TH1F* hEnergyOfRecpoints = new TH1F("hEnergyOfRecpoints",
-				      "Energy Distribution",100,0,3);
-  hEnergyOfRecpoints->SetXTitle("Edep/Emip");
-  hEnergyOfRecpoints->SetYTitle("Counts");
-  Add2RecPointsList(hEnergyOfRecpoints,0, !expert, image);
+  TH1* hist = MakeELossHist();
+  Add2RecPointsList(hist,0, !expert, image);
 }
 
 //_____________________________________________________________________ 
@@ -160,42 +212,38 @@ void AliFMDQADataMakerRec::InitRaws()
   const Bool_t expert   = kTRUE ; 
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
-  Int_t colors[3] = {kRed,kGreen,kBlue};
-  TH1I* hADCCounts;
-  for(Int_t det = 1; det<=3; det++) {
-    Int_t firstring = (det==1 ? 1 : 0);
-    for(Int_t iring = firstring;iring<=1;iring++) {
-      Char_t ring = (iring == 1 ? 'I' : 'O');
-      hADCCounts = 
-	new TH1I(Form("hADCCounts_FMD%d%c", det, ring), 
-		 Form("FMD%d%c ADC counts;Amplitude [ADC counts];Counts",
-		      det,ring),1024,0,1023);
-      hADCCounts->SetFillStyle(3001);
-      hADCCounts->SetFillColor(colors[det-1]+2+iring);
-      hADCCounts->SetDrawOption("LOGY");
+  TH2I* hErrors = new TH2I("readoutErrors", "Read out errors", 3, .5, 3.5,
+			   160, 0, 160); 
+  hErrors->GetXaxis()->SetBinLabel(1, "FMD1");
+  hErrors->GetXaxis()->SetBinLabel(2, "FMD2");
+  hErrors->GetXaxis()->SetBinLabel(3, "FMD3");
+  hErrors->SetYTitle("# errors");
+  hErrors->SetZTitle("Events [log]");
+  Add2RawsList(hErrors, 1, !expert, image, !saveCorr);
+  //AliInfo(Form("Adding %30s to raw list @ %2d", hErrors->GetName(), 1));
 
-      Int_t index1 = GetHalfringIndex(det, ring, 0,1);
-      Add2RawsList(hADCCounts, index1, !expert, image, !saveCorr);
+  TH1* hist;
+  Int_t idx = 0;
+  for(UShort_t d = 1; d<=3; d++) {
+    UShort_t nR = (d == 1 ? 1 : 2); 
+    for(UShort_t q = 0; q < nR; q++) {
+      Char_t r = (q == 1 ? 'O' : 'I');
+      hist = MakeADCHist(d, r, -1);
+
+      Int_t index1 = GetHalfringIndex(d, r, 0, 1);
+      idx          = TMath::Max(index1, idx);
+      Add2RawsList(hist, index1, !expert, image, !saveCorr);
+      //AliInfo(Form("Adding %30s to raw list @ %2d", hist->GetName(), index1));
       
-      for(Int_t b = 0; b<=1;b++) {
-	
+      for(UShort_t b = 0; b <= 1; b++) {
 	//Hexadecimal board numbers 0x0, 0x1, 0x10, 0x11;
-	UInt_t board = (iring == 1 ? 0 : 1);
-	board = board + b*16;
-	
-	
-	hADCCounts      = 
-	  new TH1I(Form("hADCCounts_FMD%d%c_0x%02x", det, ring, board), 
-		   Form("FMD%d%c_0x%x ADC counts;Amplitude [ADC counts];Counts",
-			det,ring, board),1024,0,1023);
-	hADCCounts->SetXTitle("ADC counts");
-	hADCCounts->SetYTitle("");
-	hADCCounts->SetFillStyle(3001);
-	hADCCounts->SetFillColor(colors[det-1]+2+iring);
-	hADCCounts->SetDrawOption("LOGY");
-	Int_t index2 = GetHalfringIndex(det, ring, board/16,0);
-	Add2RawsList(hADCCounts, index2, expert, !image, !saveCorr);
+	UShort_t board = (q == 1 ? 0 : 1) + b*16;
 
+	hist = MakeADCHist(d, r, board);
+	Int_t index2 = GetHalfringIndex(d, r, board/16,0);
+	idx          = TMath::Max(index2, idx);
+	Add2RawsList(hist, index2, expert, !image, !saveCorr);
+	//AliInfo(Form("Adding %30s to raw list @ %2d",hist->GetName(),index2));
       }
     }
   }
@@ -340,11 +388,15 @@ void AliFMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     Short_t           board = pars->GetAltroMap()->Sector2Board(ring, sec);
     
     Int_t index1 = GetHalfringIndex(det, ring, 0, 1);
-    GetRawsData(index1)->Fill(digit->Counts());
     Int_t index2 = GetHalfringIndex(det, ring, board/16,0);
-    GetRawsData(index2)->Fill(digit->Counts());
-    
+    // AliInfo(Form("FMD%d%c[0x%02x]->%2d,%2d", 
+    //              det, ring, board, index1, index2));
+    GetRawsData(index1)->Fill(digit->Counts());
+    GetRawsData(index2)->Fill(digit->Counts()); 
   }
+  GetRawsData(1)->Fill(1, fmdReader.GetNErrors(0));
+  GetRawsData(1)->Fill(2, fmdReader.GetNErrors(1));
+  GetRawsData(1)->Fill(3, fmdReader.GetNErrors(2));
 }
 
 //_____________________________________________________________________
@@ -399,10 +451,16 @@ Int_t AliFMDQADataMakerRec::GetHalfringIndex(UShort_t det,
   // Return:
   //    Half ring index
   //  
-  UShort_t iring  =  (ring == 'I' ? 1 : 0);
-  Int_t index = ( ((det-1) << 3) | (iring << 2) | (board << 1) | 
-		  (monitor << 0));
-  
+  UShort_t iring = (ring == 'I' || ring == 'i' ? 1 : 0);
+  Int_t    index = ((((det-1) & 0x3) << 3) | 
+		    ((iring   & 0x1) << 2) |
+		    ((board   & 0x1) << 1) | 
+		    ((monitor & 0x1) << 0));
+#if 0
+  AliInfo(Form("d=%d, r=%c, b=%d, m=%d -> (%d<<3)|(%d<<2)|(%d<<1)|(%d<<0)=%2d",
+	       det, ring, board, monitor, (det-1) & 0x3, iring & 0x1, 
+	       board & 0x1, monitor & 0x1, index));
+#endif
   return index-2;
 }
 

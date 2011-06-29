@@ -45,7 +45,27 @@ public:
 		  AliQAv1::TASKINDEX_t task, 
 		  AliQAv1::MODE_t mode);
 
-private:
+protected:
+  /** 
+   * Check one histogram 
+   * 
+   * @param specie 
+   * @param hist 
+   * 
+   * @return 
+   */
+  Double_t CheckOne(AliQAv1::ALITASK_t          what,
+		    AliRecoParam::EventSpecie_t specie, 
+		    TH1*                        hist) const;
+  Double_t CheckRaw(AliRecoParam::EventSpecie_t specie, 
+		    TH1*                        hist) const;
+  Double_t CheckSim(AliRecoParam::EventSpecie_t specie, 
+		    TH1*                        hist) const;
+  Double_t CheckESD(AliRecoParam::EventSpecie_t specie, 
+		    TH1*                        hist) const;
+  Double_t CheckRec(AliRecoParam::EventSpecie_t specie, 
+		    TH1*                        hist) const;
+
   ClassDef(AliFMDQAChecker,0)  // Yves? what to do? 
 };
 

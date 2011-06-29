@@ -44,6 +44,9 @@ public:
    */
   virtual ~AliFMDQADataMakerRec();
 private:
+  static TH1* MakeADCHist(UShort_t d=0, Char_t r='\0', Short_t b=-1);
+  static TH1* MakeELossHist(UShort_t d=0, Char_t r='\0', Short_t b=-1);
+  
   /** 
    * Called at end of monitor cycle 
    * 
@@ -114,6 +117,7 @@ private:
 			 UShort_t board, UShort_t monitor = 0) const;
   ClassDef(AliFMDQADataMakerRec,0)  // description 
   TClonesArray fRecPointsArray; // Rec points
+
 };
 
 #endif // AliFMDQADataMakerRec_H
