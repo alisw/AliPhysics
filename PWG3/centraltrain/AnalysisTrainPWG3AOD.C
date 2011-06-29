@@ -315,7 +315,7 @@ void AddAnalysisTasks()
    // PWG3 D2h
    if (iPWG3d2h) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/AddD2HTrain.C");
-      Bool_t readMC = (runOnData!=0 ? kTRUE : kFALSE);
+      Bool_t readMC = (runOnData!=0 ? kFALSE : kTRUE);
       AddD2HTrain(readMC);                                 
    }   
 
