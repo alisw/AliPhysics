@@ -31,7 +31,7 @@ AliAODZDC::AliAODZDC() :
   fZPCEnergy(-999.),
   fZPAEnergy(-999.),
   fZEM1Energy(0.),
-  fZEM2Energy(0..),
+  fZEM2Energy(0.),
   fZDCParticipants(0),
   fZDCPartSideA(0),
   fZDCPartSideC(0),
