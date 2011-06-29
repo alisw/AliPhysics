@@ -791,6 +791,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       Float_t yDecay=0.;
       Float_t zDecay=0.;
       Float_t pdgCode=-2;
+      Float_t trueImpParXY=0.;
       if(fReadMC){
 	labDp = d->MatchToMC(411,arrayMC,3,pdgDgDplustoKpipi);
 	if(labDp>=0){
@@ -805,6 +806,9 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  yDecay=dg0->Yv();	  
 	  zDecay=dg0->Zv();
 	  pdgCode=TMath::Abs(partDp->GetPdgCode());
+	  if(!isPrimary){
+	    trueImpParXY=GetTrueImpactParameter(mcHeader,arrayMC,partDp)*1000.;
+	  }
 	}else{
 	  pdgCode=-1;
 	}
@@ -892,13 +896,6 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       
 	if(fReadMC){
 	  if(labDp>=0) {
-	    if(fDoImpPar){
-	      if(isPrimary) fHistMassPtImpParTC[1]->Fill(invMass,ptCand,impparXY);
-	      else{
-		fHistMassPtImpParTC[2]->Fill(invMass,ptCand,impparXY);
-		fHistMassPtImpParTC[3]->Fill(invMass,ptCand,impparXY);
-	      }
-	    }
 	    index=GetSignalHistoIndex(iPtBin);
 	    if(isFidAcc){
 	      Float_t factor[3]={1.,1.,1.};
@@ -950,14 +947,18 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	
 		if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
 		else if(d->GetCharge()<0) fMassHistTCMinus[index]->Fill(invMass);
+		if(fDoImpPar){
+		  if(isPrimary) fHistMassPtImpParTC[1]->Fill(invMass,ptCand,impparXY);
+		  else{
+		    fHistMassPtImpParTC[2]->Fill(invMass,ptCand,impparXY);
+		    fHistMassPtImpParTC[3]->Fill(invMass,ptCand,trueImpParXY);
+		  }
+		}
 	      }
 	    }	    
 	    fYVsPtSig->Fill(ptCand,rapid);
 	    if(passTightCuts) fYVsPtSigTC->Fill(ptCand,rapid);
 	  }else{
-	    if(fDoImpPar){
-	      fHistMassPtImpParTC[4]->Fill(invMass,ptCand,impparXY);
-	    }
 	    index=GetBackgroundHistoIndex(iPtBin);
 	    if(isFidAcc){
 	      Float_t factor[3]={1.,1.,1.};
@@ -1009,6 +1010,9 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	
 		if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
 		else if(d->GetCharge()<0) fMassHistTCMinus[index]->Fill(invMass);
+		if(fDoImpPar){
+		  fHistMassPtImpParTC[4]->Fill(invMass,ptCand,impparXY);
+		}
 	      }
 	    }
 	  }
@@ -1240,4 +1244,65 @@ Int_t AliAnalysisTaskSEDplus::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticl
   
   if(isFromB) return 5;
   else return 4;
+}
+//_________________________________________________________________________________________________
+Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp) const {
+  // true impact parameter calculation
+
+  Double_t vtxTrue[3];
+  mcHeader->GetVertex(vtxTrue);
+  Double_t origD[3];
+  partDp->XvYvZv(origD);	  
+  Short_t charge=partDp->Charge();
+  Double_t pXdauTrue[3],pYdauTrue[3],pZdauTrue[3];
+  for(Int_t iDau=0; iDau<3; iDau++){
+    pXdauTrue[iDau]=0.;
+    pYdauTrue[iDau]=0.;
+    pZdauTrue[iDau]=0.;
+  }
+
+  Int_t nDau=partDp->GetNDaughters();
+  Int_t labelFirstDau = partDp->GetDaughter(0); 
+  if(nDau==3){
+    for(Int_t iDau=0; iDau<3; iDau++){
+      Int_t ind = labelFirstDau+iDau;
+      AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(ind));
+      pXdauTrue[iDau]=part->Px();
+      pYdauTrue[iDau]=part->Py();
+      pZdauTrue[iDau]=part->Pz();
+    }
+  }else if(nDau==2){
+    Int_t theDau=0;
+    for(Int_t iDau=0; iDau<2; iDau++){
+      Int_t ind = labelFirstDau+iDau;
+      AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(ind));
+      Int_t pdgCode=TMath::Abs(part->GetPdgCode());
+      if(pdgCode==211 || pdgCode==321){
+	pXdauTrue[theDau]=part->Px();
+	pYdauTrue[theDau]=part->Py();
+	pZdauTrue[theDau]=part->Pz();
+	++theDau;
+      }else{
+	Int_t nDauRes=part->GetNDaughters();
+	if(nDauRes==2){
+	  Int_t labelFirstDauRes = part->GetDaughter(0); 	
+	  for(Int_t iDauRes=0; iDauRes<2; iDauRes++){
+	    Int_t indDR = labelFirstDauRes+iDauRes;
+	    AliAODMCParticle* partDR = dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDR));
+	    if(pdgCode==211 || pdgCode==321){
+	      pXdauTrue[theDau]=partDR->Px();
+	      pYdauTrue[theDau]=partDR->Py();
+	      pZdauTrue[theDau]=partDR->Pz();
+	      ++theDau;
+	    }
+	  }
+	}
+      }
+    }
+  }
+
+  Double_t d0dummy[3]={0.,0.,0.};
+  AliAODRecoDecayHF aodDplusMC(vtxTrue,origD,3,charge,pXdauTrue,pYdauTrue,pZdauTrue,d0dummy);
+  return aodDplusMC.ImpParXY();
+
 }
