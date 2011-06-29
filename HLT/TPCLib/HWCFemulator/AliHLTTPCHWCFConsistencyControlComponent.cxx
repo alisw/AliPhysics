@@ -65,13 +65,6 @@ AliHLTTPCHWCFConsistencyControlComponent::AliHLTTPCHWCFConsistencyControlCompone
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
-  fHistHeaderAll = new TH1F("hHWCFHeaderAll", "fHistHeaderAll",6,0.,6.);
-  fHistHeaderGood = new TH1F("hHWCFHeaderGood", "fHistHeaderGood",6,0.,6.);
-  fHistClusterAll = new TH1F("hHWCFClusterAll", "fHistClusterAll",7,0.,7.);
-  fHistClusterGood = new TH1F("hHWCFClusterGood", "fHistClusterGood",7,0.,7.);
-  fProfHeader = new TH1F("pHWCFHeader", "HWCF: Consistency of header data", 6, 0., 6.);
-  fProfCluster = new TH1F("pHWCFClusters", "HWCF: Consisteny of cluster data", 7, 0., 7.);
 }
 
 
@@ -100,13 +93,7 @@ AliHLTTPCHWCFConsistencyControlComponent& AliHLTTPCHWCFConsistencyControlCompone
 AliHLTTPCHWCFConsistencyControlComponent::~AliHLTTPCHWCFConsistencyControlComponent()
 {
   // see header file for class documentation
-
-  delete fHistHeaderAll;
-  delete fHistHeaderGood;
-  delete fHistClusterAll;
-  delete fHistClusterGood;
-  delete fProfHeader;
-  delete fProfCluster;
+  DoDeinit();
 }
 
 // Public functions to implement AliHLTComponent's interface.
@@ -161,6 +148,13 @@ void AliHLTTPCHWCFConsistencyControlComponent::GetOCDBObjectDescription( TMap* c
 int AliHLTTPCHWCFConsistencyControlComponent::DoInit( int argc, const char** argv )
 {
   // see header file for class documentation
+
+  fHistHeaderAll = new TH1F("hHWCFHeaderAll", "fHistHeaderAll",6,0.,6.);
+  fHistHeaderGood = new TH1F("hHWCFHeaderGood", "fHistHeaderGood",6,0.,6.);
+  fHistClusterAll = new TH1F("hHWCFClusterAll", "fHistClusterAll",7,0.,7.);
+  fHistClusterGood = new TH1F("hHWCFClusterGood", "fHistClusterGood",7,0.,7.);
+  fProfHeader = new TH1F("pHWCFHeader", "HWCF: Consistency of header data", 6, 0., 6.);
+  fProfCluster = new TH1F("pHWCFClusters", "HWCF: Consisteny of cluster data", 7, 0., 7.);
 
   TString arguments = "";
   for ( int i = 0; i < argc; i++ ) {
@@ -313,6 +307,19 @@ int AliHLTTPCHWCFConsistencyControlComponent::Configure( const char* cdbEntry, c
 int AliHLTTPCHWCFConsistencyControlComponent::DoDeinit()
 {
   // see header file for class documentation 
+  if( fHistHeaderAll ) delete fHistHeaderAll;
+  if( fHistHeaderGood ) delete fHistHeaderGood;
+  if( fHistClusterAll ) delete fHistClusterAll;
+  if( fHistClusterGood ) delete fHistClusterGood;
+  if( fProfHeader ) delete fProfHeader;
+  if( fProfCluster ) delete fProfCluster;
+
+  fHistHeaderAll = 0;
+  fHistHeaderGood = 0;
+  fHistClusterAll = 0;
+  fHistClusterGood = 0;
+  fProfHeader = 0;
+  fProfCluster = 0;
   return 0;
 }
 
