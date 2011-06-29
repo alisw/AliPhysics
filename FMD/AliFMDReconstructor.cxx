@@ -82,7 +82,8 @@ AliFMDReconstructor::AliFMDReconstructor()
     fDiagStep2(0),
     fDiagStep3(0),
     fDiagStep4(0),
-    fDiagAll(0)
+    fDiagAll(0),
+    fBad(0)
 {
   // Make a new FMD reconstructor object - default CTOR.  
   SetNoiseFactor();
