@@ -420,10 +420,10 @@ void AliAnalysisTaskSECharmFraction::Init()
   }
   
   AliRDHFCutsD0toKpi* copyfCutsTight=new AliRDHFCutsD0toKpi(*fCutsTight);
-  const char* nameoutputTight=GetOutputSlot(21)->GetContainer()->GetName();
+  const char* nameoutputTight=GetOutputSlot(22)->GetContainer()->GetName();
   copyfCutsTight->SetName(nameoutputTight);
   AliRDHFCutsD0toKpi* copyfCutsLoose=new AliRDHFCutsD0toKpi(*fCutsLoose);
-  const char* nameoutputLoose=GetOutputSlot(22)->GetContainer()->GetName();
+  const char* nameoutputLoose=GetOutputSlot(23)->GetContainer()->GetName();
   copyfCutsLoose->SetName(nameoutputLoose);
 
   // Post the data
@@ -527,9 +527,9 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   fSignalTypeTghCuts=new TH1F("hsignaltypeTghCuts", "Histo for type of MC signal with tight cuts", 61,-1.,60.);
 
 
+
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
-  
-  
+ 
   //##########  DEFINE THE TLISTS ##################
   flistMCproperties=new TList();
   flistMCproperties->SetOwner();
@@ -626,6 +626,15 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     impparbins[nBins]=-1000+nBins*(2000.)/400.;
   }
 
+  
+  // Lxy and CosPointXY study
+  Int_t nbinsSparsCxyLxy[4]={84,fCutsTight->GetNPtBins(),10,25}; 
+  Double_t binLowLimitSparseCxyLxy[4]={1.680,fCutsTight->GetPtBinLimits()[0],0.99,0.};// Use OverFlow/UnderFlow to get other cases
+  Double_t binUpLimitSparseCxyLxy[4]={2.100,fCutsTight->GetPtBinLimits()[fCutsTight->GetNPtBins()],1.,50.};
+  Double_t ptbinlimitsCxyLxy[(const Int_t)fCutsTight->GetNPtBins()+1];
+  for(Int_t nBins=0;nBins<=fCutsTight->GetNPtBins();nBins++){
+    ptbinlimitsCxyLxy[nBins]=fCutsTight->GetPtBinLimits()[nBins];
+  }
   
 
   //################################################################################################
@@ -783,6 +792,23 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseNCsign->SetBinEdges(3,impparbins);
   hSparseNCsign->SetBinEdges(4,massHypoBins); 
   flistNoCutsSignal->Add(hSparseNCsign);
+
+
+
+
+  THnSparseF *hSparseCxyLxyNCsign=new THnSparseF("hSparseCxyLxyNCsign","Candidate Mass;massD0;Pt;CosXY;Lxy",4,nbinsSparsCxyLxy,binLowLimitSparseCxyLxy,binUpLimitSparseCxyLxy);
+  hSparseCxyLxyNCsign->SetBinEdges(1,ptbinlimitsCxyLxy);
+  hSparseCxyLxyNCsign->GetAxis(0)->SetName("mass");
+  hSparseCxyLxyNCsign->GetAxis(0)->SetTitle("Invariant Mass (K#pi) [GeV/c^{2}]");
+  hSparseCxyLxyNCsign->GetAxis(1)->SetName("pt");
+  hSparseCxyLxyNCsign->GetAxis(1)->SetTitle("p_{t} [GeV/c]");
+  hSparseCxyLxyNCsign->GetAxis(2)->SetName("CosPointXY");
+  hSparseCxyLxyNCsign->GetAxis(2)->SetTitle("Cos#theta_{point}^{XY}");
+  hSparseCxyLxyNCsign->GetAxis(3)->SetName("NormDecLengthXY");
+  hSparseCxyLxyNCsign->GetAxis(3)->SetTitle("Normalized XY decay length");
+  
+  flistNoCutsSignal->Add(hSparseCxyLxyNCsign);
+
   
 
   TH1F *hetaNCsign;
@@ -2313,6 +2339,20 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   TH1F *hCosPcPDLSCsign;
   flistLsCutsSignal->Add(hInvMassPtLSCsign);
 
+
+  
+ THnSparseF *hSparseCxyLxyLSCsign=new THnSparseF("hSparseCxyLxyLSCsign","Candidate Mass;massD0;Pt;CosXY;Lxy",4,nbinsSparsCxyLxy,binLowLimitSparseCxyLxy,binUpLimitSparseCxyLxy);
+  hSparseCxyLxyLSCsign->SetBinEdges(1,ptbinlimitsCxyLxy); 
+  hSparseCxyLxyLSCsign->GetAxis(0)->SetName("mass");
+  hSparseCxyLxyLSCsign->GetAxis(0)->SetTitle("Invariant Mass (K#pi) [GeV/c^{2}]");
+  hSparseCxyLxyLSCsign->GetAxis(1)->SetName("pt");
+  hSparseCxyLxyLSCsign->GetAxis(1)->SetTitle("p_{t} [GeV/c]");
+  hSparseCxyLxyLSCsign->GetAxis(2)->SetName("CosPointXY");
+  hSparseCxyLxyLSCsign->GetAxis(2)->SetTitle("Cos#theta_{point}^{XY}");
+  hSparseCxyLxyLSCsign->GetAxis(3)->SetName("NormDecLengthXY");
+  hSparseCxyLxyLSCsign->GetAxis(3)->SetTitle("Normalized XY decay length");
+
+  flistLsCutsSignal->Add(hSparseCxyLxyLSCsign);
   // %%%%%%%%%%% HERE THE ADDITIONAL HISTS %%%%%%%%%%%%%%%%%
   TH2F *hd0D0VSd0xd0LSCsignpt;
   TH2F *hangletracksVSd0xd0LSCsignpt;
@@ -3832,6 +3872,24 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   hSparseTGHCsign->SetBinEdges(3,impparbins);
   hSparseTGHCsign->SetBinEdges(4,massHypoBins); 
   flistTghCutsSignal->Add(hSparseTGHCsign);
+
+
+
+  THnSparseF *hSparseCxyLxyTGHCsign=new THnSparseF("hSparseCxyLxyTGHCsign","Candidate Mass;massD0;Pt;CosXY;Lxy",4,nbinsSparsCxyLxy,binLowLimitSparseCxyLxy,binUpLimitSparseCxyLxy);
+  hSparseCxyLxyTGHCsign->SetBinEdges(1,ptbinlimitsCxyLxy);
+  hSparseCxyLxyTGHCsign->GetAxis(0)->SetName("mass");
+  hSparseCxyLxyTGHCsign->GetAxis(0)->SetTitle("Invariant Mass (K#pi) [GeV/c^{2}]");
+  hSparseCxyLxyTGHCsign->GetAxis(1)->SetName("pt");
+  hSparseCxyLxyTGHCsign->GetAxis(1)->SetTitle("p_{t} [GeV/c]");
+  hSparseCxyLxyTGHCsign->GetAxis(2)->SetName("CosPointXY");
+  hSparseCxyLxyTGHCsign->GetAxis(2)->SetTitle("Cos#theta_{point}^{XY}");
+  hSparseCxyLxyTGHCsign->GetAxis(3)->SetName("NormDecLengthXY");
+  hSparseCxyLxyTGHCsign->GetAxis(3)->SetTitle("Normalized XY decay length");
+
+
+  flistTghCutsSignal->Add(hSparseCxyLxyTGHCsign);
+  
+  
   TH1F *hetaTGHCsign;
   TH1F *hCosPDPBTGHCsign;
   TH1F *hCosPcPDTGHCsign;
@@ -5259,6 +5317,10 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   Printf("AFTER DATA HISTOS CREATION \n");
 }
 
+
+
+
+
 //________________________________________________________________________
 void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 {
@@ -5328,7 +5390,6 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
   //histogram filled with 1 for every AOD
   fNentries->Fill(0);
   fCounter->StoreEvent(aod,fCutsLoose,fReadMC); 
-  //fCounter->StoreEvent(aod,fReadMC); 
   
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL
   //  TString trigclass=aod->GetFiredTriggerClasses();
@@ -6791,10 +6852,14 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
   
 
   // FILLING OF THE SPARSE HISTO
-  if(fFastAnalysis<2){ // ONLY IF NOT VERY FAST ANALYSIS
+  if(fFastAnalysis<=2){ // ONLY IF NOT VERY FAST ANALYSIS
     str="hSparse";
     str.Append(namehist.Data());
+
     Double_t point[5]={invMassD0,invMassD0bar,pt,impparxy,0.};
+    if(fReadMC&&aodDMC!=0x0&&namehist.Contains("fromB")){     
+      point[3]=aodDMC->ImpParXY()*10000.;
+    }
     if(okD0&&okD0bar)point[4]=3.5;
     else if(okD0)point[4]=1.5;
     else if(okD0bar)point[4]=2.5;
@@ -6806,6 +6871,28 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
     if(okD0bar)((TH2F*)list->FindObject(str.Data()))->Fill(invMassD0bar,pt);
 
   }
+
+
+
+
+  if(fFastAnalysis<=3&&namehist.Contains("sign")){
+    str="hSparseCxyLxy";
+    str.Append(namehist.Data()); 
+    Double_t nLxy=d->NormalizedDecayLengthXY()*d->P()/pt;
+    Double_t cosPxy=TMath::Abs(d->CosPointingAngleXY());
+    Double_t point[4]={invMassD0,pt,cosPxy,nLxy};
+    if(okD0){
+      //      printf("Listname: %s, Here the histo : %p \n",namehist.Data(),((THnSparseF*)list->FindObject(str.Data())));
+      ((THnSparseF*)list->FindObject(str.Data()))->Fill(point);
+    }
+    point[0]=invMassD0bar;
+    if(okD0bar){
+      ((THnSparseF*)list->FindObject(str.Data()))->Fill(point);
+    }
+  }
+
+
+
   /* if(isPeakD0||isPeakD0bar){
     str="hMass";
     str.Append(namehist.Data());
@@ -6909,7 +6996,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
     if(fReadMC&&aodDMC!=0x0){
       // WE NEED JUST THE SHAPE: AVOID TAKING THE IMPACT PAR FOR EACH MASS HYPO PASSING THE CUTS
       // aodDMC->Print("");
-      aodDMC->ImpParXY();
+      //aodDMC->ImpParXY();
       // aodDMC->Print("");
       str="hMCd0D0";
       str.Append(namehist.Data());
@@ -7033,7 +7120,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
 	if(mcD0Parent==0x0)continue;
 	Bool_t notfound=kFALSE,bMeson=kFALSE,bBaryon=kFALSE;
 	//CheckOrigin
-	while(mcD0Parent && TMath::Abs(mcD0Parent->GetPdgCode())!=4&&TMath::Abs(mcD0Parent->GetPdgCode())!=5){
+	while(TMath::Abs(mcD0Parent->GetPdgCode())!=4&&TMath::Abs(mcD0Parent->GetPdgCode())!=5){
 	  if(500<TMath::Abs(mcD0Parent->GetPdgCode())%10000&&TMath::Abs(mcD0Parent->GetPdgCode())<600){
 	    bMeson=kTRUE;
 	    break;
@@ -7048,7 +7135,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
 	  }
 	  mcD0Parent=dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcD0Parent->GetMother()));
 	}
-	if(notfound || mcD0Parent==0x0)continue;
+	if(notfound)continue;
 	if(TMath::Abs(mcD0Parent->GetPdgCode())==4)continue;//D0 from c quarks already counted
 	((TH1F*)flistMCproperties->FindObject("hMCfromBpdgB"))->Fill(TMath::Abs(mcD0Parent->GetPdgCode()));
 	if(bBaryon)nD0bBaryon++;
@@ -7251,6 +7338,7 @@ AliAODVertex* AliAnalysisTaskSECharmFraction::GetPrimaryVtxSkipped(AliAODEvent *
 
 void AliAnalysisTaskSECharmFraction::Terminate(const Option_t*){
   //TERMINATE METHOD: NOTHING TO DO
+
 
 
 }
