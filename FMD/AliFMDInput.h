@@ -54,6 +54,7 @@ class TTree;
 class TGeoManager;
 class TParticle;
 class TChain;
+class TSystemDirectory;
 
 //___________________________________________________________________
 /** @class AliFMDInput 
@@ -134,6 +135,37 @@ public:
   virtual void   RemoveLoad(ETrees tree)  { CLRBIT(fTreeMask, tree); }
   /** @return # of available events */
   virtual Int_t  NEvents() const;
+  /** @return true if passed tree is loaded */
+  virtual Bool_t IsLoaded(ETrees tree)const { return TESTBIT(fTreeMask, tree); }
+  /** 
+   * Set the trees to load.  
+   * 
+   * @param mask Bit mask of trees to load.  Should be constructed
+   * like for example 
+   *
+   * @code 
+   * UInt_t mask = ((1 << AliFMDInput::kHits) | 
+   *                (1 << AliFMDInput::kDigits) | 
+   *                (1 << AliFMDInput::kSDigits));
+   * @endcode
+   */
+  virtual void SetLoads(UInt_t mask);
+  /** 
+   * Set the trees to load. 
+   * 
+   * @param mask A comma or space separated list of trees to load.
+   * The case is not important, and a short from of the tree name can
+   * be used.  
+   */
+  virtual void SetLoads(const char* mask);
+  /** 
+   * Get a string that represents the loaded trees 
+   * 
+   * @param dataOnly If true, then only show data 
+   * 
+   * @return String representing the loaded trees. 
+   */
+  virtual const char* LoadedString(Bool_t dataOnly=false) const;
 
   /** Initialize the class.  If a user class overloads this member
       function, then this @e must be explicitly called
@@ -282,6 +314,8 @@ public:
   /** Set the raw data input 
       @param file File name - if empty, assume simulated raw. */
   void SetRawFile(const char* file) { if (file) fRawFile = file; }
+  void SetInputDir(const char* dir) { fInputDir = (dir && dir[0] != '\0') 
+      ? dir : "."; }
   /** 
    * Parse a string as a load option
    * 
@@ -289,7 +323,7 @@ public:
    * 
    * @return Load option value, or 0 in case of error
    */
-  static UShort_t ParseLoad(const char* what);     
+  static ETrees ParseLoad(const char* what);     
 protected:
   /** Copy ctor 
       @param o Object to copy from  */
@@ -324,6 +358,7 @@ protected:
       fGeoManager(0),
       fTreeMask(0),
       fRawFile(""),      
+      fInputDir("."),
       fIsInit(kFALSE),
       fEventCount(0),
       fNEvents(-1)
@@ -342,6 +377,36 @@ protected:
    * @return Value
    */
   virtual Float_t GetSignal(UShort_t d, Char_t r, UShort_t s, UShort_t t);
+
+  static const char* TreeName(ETrees tree, bool shortest=false);
+
+  /** 
+   * Make a chain of specified data 
+   * 
+   * @param what       What data to chain.  Possible values are 
+   *                   - ESD Event summary data (AliESD)
+   *                   - MC  Simulation data (galice)
+   * @param datadir    Data directory to scan 
+   * @param recursive  Whether to recurse into sub-directories 
+   * 
+   * @return Pointer to newly create chain, or null
+   */
+  static TChain* MakeChain(const char* what, const char* datadir, 
+			   bool recursive=false);
+  /** 
+   * Scan a directory (optionally recursive) for data files to add to
+   * the chain.  Only ROOT files, and files which name contain the
+   * passed pattern are considered.
+   * 
+   * @param dir        Directory to scan
+   * @param chain      Chain to add data to 
+   * @param pattern    Pattern that the file name must contain
+   * @param recursive  Whether to scan recursively 
+   */
+  static void ScanDirectory(TSystemDirectory* dir, 
+			    const TString& olddir, 
+			    TChain* chain, 
+			    const char* pattern, bool recursive);
 
   TString          fGAliceFile; // File name of gAlice file
   AliRunLoader*    fLoader;     // Loader of FMD data 
@@ -372,9 +437,11 @@ protected:
   TGeoManager*     fGeoManager; // Geometry manager
   Int_t            fTreeMask;   // Which tree's to load
   TString          fRawFile;    // Raw input file
+  TString          fInputDir;   // Input directory
   Bool_t           fIsInit;     // Have we been initialized 
   Int_t            fEventCount; // Event counter 
   Int_t            fNEvents;    // The maximum number of events
+  static const ETrees fgkAllLoads[kUser+1]; // List of all possible loads
   ClassDef(AliFMDInput,0)  //Hits for detector FMD
 };
 

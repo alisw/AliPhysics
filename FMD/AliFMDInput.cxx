@@ -71,6 +71,19 @@ ClassImp(AliFMDInput)
   ; // This is here to keep Emacs for indenting the next line
 #endif
 
+//____________________________________________________________________
+const AliFMDInput::ETrees AliFMDInput::fgkAllLoads[] = { kHits,       
+							 kKinematics,
+							 kDigits,    
+							 kSDigits,   
+							 kHeader,    
+							 kRecPoints, 
+							 kESD,       
+							 kRaw,       
+							 kGeometry,  
+							 kTrackRefs, 
+							 kRawCalib,  
+							 kUser };
 
 //____________________________________________________________________
 AliFMDInput::AliFMDInput()
@@ -104,6 +117,7 @@ AliFMDInput::AliFMDInput()
     fGeoManager(0),
     fTreeMask(0), 
     fRawFile(""),
+    fInputDir("."),
     fIsInit(kFALSE),
     fEventCount(0), 
     fNEvents(-1)
@@ -149,6 +163,7 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
     fGeoManager(0),
     fTreeMask(0), 
     fRawFile(""),
+    fInputDir("."),
     fIsInit(kFALSE),
     fEventCount(0),
     fNEvents(-1)
@@ -161,32 +176,118 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
 }
 
 //____________________________________________________________________
-UShort_t 
+void
+AliFMDInput::SetLoads(UInt_t mask)
+{
+  for (UInt_t i = 0; i < sizeof(mask); i++) { 
+    if (!(mask & (1 << i))) continue;
+    const ETrees *ptype = fgkAllLoads;
+    do { 
+      ETrees type = *ptype;
+      if (i != UInt_t(type)) continue;
+      AddLoad(type);
+      break;
+    } while (*ptype != kUser);
+  }
+}
+     
+//____________________________________________________________________
+void
+AliFMDInput::SetLoads(const char* what) 
+{
+  TString    l(what);
+  TObjArray* ll = l.Tokenize(", ");
+  TIter      next(ll);
+  TObject*   os = 0;
+  while ((os = next())) { 
+    ETrees type = ParseLoad(os->GetName());
+    AddLoad(type);
+  }
+}
+    
+
+//____________________________________________________________________
+AliFMDInput::ETrees
 AliFMDInput::ParseLoad(const char* what)
 {
   TString opt(what);
   opt.ToLower();
-  if (opt.Contains("hit")) return kHits;	
-  if (opt.Contains("kine"))  return kKinematics; 
-  if (opt.Contains("sdig"))  return kSDigits;
-  if (opt.Contains("dig"))   return kDigits;
-  if (opt.Contains("head"))  return kHeader;
-  if (opt.Contains("rec"))   return kRecPoints;
-  if (opt.Contains("esd"))   return kESD;
-  if (opt.Contains("rawc"))  return kRawCalib;
-  if (opt.Contains("raw"))   return kRaw;
-  if (opt.Contains("geo"))   return kGeometry;
-  if (opt.Contains("track")) return kTrackRefs;
-  if (opt.Contains("user"))  return kUser;
+  const ETrees* ptype = fgkAllLoads;
+  do { 
+    ETrees  type = *ptype;
+    if (opt.Contains(TreeName(type,true), TString::kIgnoreCase)) 
+      return type;
+  } while (*ptype++);
+  return kUser;
+}
+//____________________________________________________________________
+const char*
+AliFMDInput::LoadedString(Bool_t dataOnly) const
+{
+  static TString ret;
+  if (!ret.IsNull()) return ret.Data();
+
+  const ETrees* ptype = fgkAllLoads;
+  do { 
+    ETrees type = *ptype;
+    if (dataOnly && 
+	(type == kKinematics || 
+	 type == kHeader     || 
+	 type == kGeometry   || 
+	 type == kTrackRefs)) continue;
+    if (!IsLoaded(*ptype)) continue;
+    
+    if (!ret.IsNull()) ret.Append(",");
+    ret.Append(TreeName(type));
+  } while (*ptype++ != kUser);
+  return ret.Data();
+}
+
+//____________________________________________________________________
+const char* 
+AliFMDInput::TreeName(ETrees tree, Bool_t shortest) 
+{
+  if (shortest) {
+    switch (tree) {
+    case kHits:		return "hit";        
+    case kKinematics:	return "kin";
+    case kDigits:	return "dig";     
+    case kSDigits:	return "sdig";    
+    case kHeader:	return "hea";     
+    case kRecPoints:	return "recp";  
+    case kESD:		return "esd";        
+    case kRaw:		return "raw";        
+    case kGeometry:	return "geo";   
+    case kTrackRefs:	return "trackr";  
+    case kRawCalib:	return "rawc";   
+    case kUser:		return "user"; 
+    }
+    return 0;
+  }
+  switch (tree) {
+  case kHits:		return "Hits";        
+  case kKinematics:	return "Kinematics"; 
+  case kDigits:		return "Digits";     
+  case kSDigits:	return "SDigits";    
+  case kHeader:		return "Header";     
+  case kRecPoints:	return "RecPoints";  
+  case kESD:		return "ESD";        
+  case kRaw:		return "Raw";        
+  case kGeometry:	return "Geometry";   
+  case kTrackRefs:	return "TrackRefs";  
+  case kRawCalib:	return "RawCalib";   
+  case kUser:		return "User"; 
+  }
   return 0;
 }
+
 //____________________________________________________________________
 Int_t
 AliFMDInput::NEvents() const 
 {
   // Get number of events
-  if (TESTBIT(fTreeMask, kRaw) || 
-      TESTBIT(fTreeMask, kRawCalib)) return fReader->GetNumberOfEvents();
+  if (IsLoaded(kRaw) || 
+      IsLoaded(kRawCalib)) return fReader->GetNumberOfEvents();
   if (fChainE) return fChainE->GetEntriesFast();
   if (fTreeE) return fTreeE->GetEntries();
   return -1;
@@ -203,36 +304,21 @@ AliFMDInput::Init()
     AliWarning("Already initialized");
     return fIsInit;
   }
-  Info("Init","Initialising w/mask 0x%04x\n"
-       "\tHits:          %d\n"
-       "\tKinematics:    %d\n"
-       "\tDigits:        %d\n"
-       "\tSDigits:       %d\n"
-       "\tHeader:        %d\n"
-       "\tRecPoints:     %d\n"
-       "\tESD:           %d\n"
-       "\tRaw:           %d\n"
-       "\tRawCalib:      %d\n"
-       "\tGeometry:      %d\n"
-       "\tTracksRefs:    %d",
-       fTreeMask,
-       TESTBIT(fTreeMask, kHits),
-       TESTBIT(fTreeMask, kKinematics),
-       TESTBIT(fTreeMask, kDigits),
-       TESTBIT(fTreeMask, kSDigits),
-       TESTBIT(fTreeMask, kHeader),
-       TESTBIT(fTreeMask, kRecPoints),
-       TESTBIT(fTreeMask, kESD),
-       TESTBIT(fTreeMask, kRaw),
-       TESTBIT(fTreeMask, kRawCalib),
-       TESTBIT(fTreeMask, kGeometry),
-       TESTBIT(fTreeMask, kTrackRefs));
+  TString what;
+  const ETrees* ptype = fgkAllLoads;
+  do { 
+    ETrees type = *ptype;
+    what.Append(Form("\n\t%-20s: %s", TreeName(type), 
+		     IsLoaded(type) ? "yes" : "no"));
+  } while (*ptype++);
+  
+  Info("Init","Initialising w/mask 0x%04x%s", fTreeMask, what.Data());
   // Get the run 
-  if (TESTBIT(fTreeMask, kDigits)     ||
-      TESTBIT(fTreeMask, kSDigits)    || 
-      TESTBIT(fTreeMask, kKinematics) || 
-      TESTBIT(fTreeMask, kTrackRefs)  || 
-      TESTBIT(fTreeMask, kHeader)) {
+  if (IsLoaded(kDigits)     ||
+      IsLoaded(kSDigits)    || 
+      IsLoaded(kKinematics) || 
+      IsLoaded(kTrackRefs)  || 
+      IsLoaded(kHeader)) {
     if (!gSystem->FindFile(".:/", fGAliceFile)) {
       AliWarning(Form("Cannot find file %s in .:/", fGAliceFile.Data()));
     }
@@ -270,29 +356,16 @@ AliFMDInput::Init()
   }
 
   // Optionally, get the ESD files
-  if (TESTBIT(fTreeMask, kESD)) {
-    fChainE = new TChain("esdTree");
-    TSystemDirectory dir(".",".");
-    TList*           files = dir.GetListOfFiles();
-    TSystemFile*     file = 0;
-    if (!files) {
-      AliError("No files");
-      return kFALSE;
-    }
-    files->Sort();
-    TIter            next(files);
-    while ((file = static_cast<TSystemFile*>(next()))) {
-      TString fname(file->GetName());
-      if (fname.Contains("AliESDs")) fChainE->AddFile(fname.Data());
-    }
+  if (IsLoaded(kESD)) {
+    fChainE = MakeChain("ESD", fInputDir, true);
     fESDEvent = new AliESDEvent();
     fESDEvent->ReadFromTree(fChainE);
     //    fChainE->SetBranchAddress("ESD", &fMainESD);
     
   }
     
-  if (TESTBIT(fTreeMask, kRaw) || 
-      TESTBIT(fTreeMask, kRawCalib)) {
+  if (IsLoaded(kRaw) || 
+      IsLoaded(kRawCalib)) {
     AliInfo("Getting FMD raw data digits");
     fArrayA = new TClonesArray("AliFMDDigit");
 #if 0
@@ -312,7 +385,7 @@ AliFMDInput::Init()
   }
   
   // Optionally, get the geometry 
-  if (TESTBIT(fTreeMask, kGeometry)) {
+  if (IsLoaded(kGeometry)) {
     TString fname;
     if (fRun) {
       fname = gSystem->DirName(fGAliceFile);
@@ -375,14 +448,14 @@ AliFMDInput::Begin(Int_t event)
   if (fLoader && fLoader->GetEvent(event)) return kFALSE;
 
   // Possibly load global kinematics information 
-  if (TESTBIT(fTreeMask, kKinematics)) {
+  if (IsLoaded(kKinematics)) {
     // AliInfo("Getting kinematics");
     if (fLoader->LoadKinematics("READ")) return kFALSE;
     fStack = fLoader->Stack();
   }
 
   // Possibly load FMD Hit information 
-  if (TESTBIT(fTreeMask, kHits)) {
+  if (IsLoaded(kHits)) {
     // AliInfo("Getting FMD hits");
     if (!fFMDLoader || fFMDLoader->LoadHits("READ")) return kFALSE;
     fTreeH = fFMDLoader->TreeH();
@@ -390,7 +463,7 @@ AliFMDInput::Begin(Int_t event)
   }
   
   // Possibly load FMD TrackReference information 
-  if (TESTBIT(fTreeMask, kTrackRefs)) {
+  if (IsLoaded(kTrackRefs)) {
     // AliInfo("Getting FMD hits");
     if (!fLoader || fLoader->LoadTrackRefs("READ")) return kFALSE;
     fTreeTR = fLoader->TreeTR();
@@ -399,14 +472,14 @@ AliFMDInput::Begin(Int_t event)
   }
   
   // Possibly load heaedr information 
-  if (TESTBIT(fTreeMask, kHeader)) {
+  if (IsLoaded(kHeader)) {
     // AliInfo("Getting FMD hits");
     if (!fLoader /* || fLoader->LoadHeader()*/) return kFALSE;
     fHeader = fLoader->GetHeader();
   }
 
   // Possibly load FMD Digit information 
-  if (TESTBIT(fTreeMask, kDigits)) {
+  if (IsLoaded(kDigits)) {
     // AliInfo("Getting FMD digits");
     if (!fFMDLoader || fFMDLoader->LoadDigits("READ")) return kFALSE;
     fTreeD = fFMDLoader->TreeD();
@@ -420,7 +493,7 @@ AliFMDInput::Begin(Int_t event)
   }
 
   // Possibly load FMD Sdigit information 
-  if (TESTBIT(fTreeMask, kSDigits)) {
+  if (IsLoaded(kSDigits)) {
     // AliInfo("Getting FMD summable digits");
     if (!fFMDLoader || fFMDLoader->LoadSDigits("READ")) { 
       AliWarning("Failed to load SDigits!");
@@ -431,7 +504,7 @@ AliFMDInput::Begin(Int_t event)
   }
 
   // Possibly load FMD RecPoints information 
-  if (TESTBIT(fTreeMask, kRecPoints)) {
+  if (IsLoaded(kRecPoints)) {
     // AliInfo("Getting FMD reconstructed points");
     if (!fFMDLoader || fFMDLoader->LoadRecPoints("READ")) return kFALSE;
     fTreeR = fFMDLoader->TreeR();
@@ -440,7 +513,7 @@ AliFMDInput::Begin(Int_t event)
   }  
 
   // Possibly load FMD ESD information 
-  if (TESTBIT(fTreeMask, kESD)) {
+  if (IsLoaded(kESD)) {
     // AliInfo("Getting FMD event summary data");
     Int_t read = fChainE->GetEntry(event);
     if (read <= 0) return kFALSE;
@@ -449,7 +522,7 @@ AliFMDInput::Begin(Int_t event)
   }
 
   // Possibly load FMD Digit information 
-  if (TESTBIT(fTreeMask, kRaw) || TESTBIT(fTreeMask, kRawCalib)) {
+  if (IsLoaded(kRaw) || IsLoaded(kRawCalib)) {
     Bool_t mon = fRawFile.Contains("mem://");
     // AliInfo("Getting FMD raw data digits");
     if (mon) std::cout << "Waiting for event ..." << std::flush;
@@ -489,18 +562,18 @@ AliFMDInput::Event()
   //   -  ProcessRecPoints  if the reconstructed points are loaded. 
   //   -  ProcessESD        if the event summary data is loaded
   // 
-  if (TESTBIT(fTreeMask, kHits))     if (!ProcessHits())      return kFALSE; 
-  if (TESTBIT(fTreeMask, kTrackRefs))if (!ProcessTrackRefs()) return kFALSE; 
-  if (TESTBIT(fTreeMask, kKinematics) && 
-      TESTBIT(fTreeMask, kHits))     if (!ProcessTracks())    return kFALSE; 
-  if (TESTBIT(fTreeMask, kKinematics))if (!ProcessStack())     return kFALSE; 
-  if (TESTBIT(fTreeMask, kSDigits))  if (!ProcessSDigits())   return kFALSE;
-  if (TESTBIT(fTreeMask, kDigits))   if (!ProcessDigits())    return kFALSE;
-  if (TESTBIT(fTreeMask, kRaw))      if (!ProcessRawDigits()) return kFALSE;
-  if (TESTBIT(fTreeMask, kRawCalib)) if (!ProcessRawCalibDigits())return kFALSE;
-  if (TESTBIT(fTreeMask, kRecPoints))if (!ProcessRecPoints()) return kFALSE;
-  if (TESTBIT(fTreeMask, kESD))      if (!ProcessESDs())      return kFALSE;
-  if (TESTBIT(fTreeMask, kUser))     if (!ProcessUsers())     return kFALSE;
+  if (IsLoaded(kHits))     if (!ProcessHits())      return kFALSE; 
+  if (IsLoaded(kTrackRefs))if (!ProcessTrackRefs()) return kFALSE; 
+  if (IsLoaded(kKinematics) && 
+      IsLoaded(kHits))     if (!ProcessTracks())    return kFALSE; 
+  if (IsLoaded(kKinematics))if (!ProcessStack())     return kFALSE; 
+  if (IsLoaded(kSDigits))  if (!ProcessSDigits())   return kFALSE;
+  if (IsLoaded(kDigits))   if (!ProcessDigits())    return kFALSE;
+  if (IsLoaded(kRaw))      if (!ProcessRawDigits()) return kFALSE;
+  if (IsLoaded(kRawCalib)) if (!ProcessRawCalibDigits())return kFALSE;
+  if (IsLoaded(kRecPoints))if (!ProcessRecPoints()) return kFALSE;
+  if (IsLoaded(kESD))      if (!ProcessESDs())      return kFALSE;
+  if (IsLoaded(kUser))     if (!ProcessUsers())     return kFALSE;
   
   return kTRUE;
 }
@@ -533,7 +606,7 @@ AliFMDInput::ProcessHits()
       if (!hit) continue;
 
       TParticle* track = 0;
-      if (TESTBIT(fTreeMask, kKinematics) && fStack) {
+      if (IsLoaded(kKinematics) && fStack) {
 	Int_t trackno = hit->Track();
 	track = fStack->Particle(trackno);
       }
@@ -568,7 +641,7 @@ AliFMDInput::ProcessTrackRefs()
       if (!trackRef) continue;
       // if (trackRef->DetectorId() != AliTrackReference::kFMD) continue;
       TParticle* track = 0;
-      if (TESTBIT(fTreeMask, kKinematics) && fStack) {
+      if (IsLoaded(kKinematics) && fStack) {
 	Int_t trackno = trackRef->GetTrack();
 	track = fStack->Particle(trackno);
       }
@@ -842,28 +915,28 @@ AliFMDInput::End()
     return fIsInit;
   }
   // Possibly unload global kinematics information 
-  if (TESTBIT(fTreeMask, kKinematics)) {
+  if (IsLoaded(kKinematics)) {
     fLoader->UnloadKinematics();
     // fTreeK = 0;
     fStack = 0;
   }
   // Possibly unload FMD Hit information 
-  if (TESTBIT(fTreeMask, kHits)) {
+  if (IsLoaded(kHits)) {
     fFMDLoader->UnloadHits();
     fTreeH = 0;
   }
   // Possibly unload FMD Digit information 
-  if (TESTBIT(fTreeMask, kDigits)) {
+  if (IsLoaded(kDigits)) {
     fFMDLoader->UnloadDigits();
     fTreeD = 0;
   }
   // Possibly unload FMD Sdigit information 
-  if (TESTBIT(fTreeMask, kSDigits)) {
+  if (IsLoaded(kSDigits)) {
     fFMDLoader->UnloadSDigits();
     fTreeS = 0;
   }
   // Possibly unload FMD RecPoints information 
-  if (TESTBIT(fTreeMask, kRecPoints)) {
+  if (IsLoaded(kRecPoints)) {
     fFMDLoader->UnloadRecPoints();
     fTreeR = 0;
   }
@@ -921,6 +994,84 @@ AliFMDInput::MakeLogScale(Int_t n, Double_t min, Double_t max)
   return bins;
 }
 
+//____________________________________________________________________
+void
+AliFMDInput::ScanDirectory(TSystemDirectory* dir, 
+			   const TString& olddir, 
+			   TChain* chain, 
+			   const char* pattern, bool recursive)
+{
+  // Get list of files, and go back to old working directory
+  TString oldDir(gSystem->WorkingDirectory());
+  TList* files = dir->GetListOfFiles();
+  gSystem->ChangeDirectory(oldDir);
+  
+  // Sort list of files and check if we should add it 
+  if (!files) return;
+  files->Sort();
+  TIter next(files);
+  TSystemFile* file = 0;
+  while ((file = static_cast<TSystemFile*>(next()))) {
+    TString name(file->GetName());
+    
+    // Ignore special links 
+    if (name == "." || name == "..") continue;
+
+    // Check if this is a directory 
+    if (file->IsDirectory()) { 
+      if (recursive) 
+	ScanDirectory(static_cast<TSystemDirectory*>(file),
+		      olddir, chain,
+		      pattern,recursive);
+      continue;
+    }
+    
+    // If this is not a root file, ignore 
+    if (!name.EndsWith(".root")) continue;
+
+    // If this file does not contain the pattern, ignore 
+    if (!name.Contains(pattern)) continue;
+    if (name.Contains("friends")) continue;
+    
+    // Get the path 
+    TString data(Form("%s/%s", file->GetTitle(), name.Data()));
+
+    TFile* test = TFile::Open(data.Data(), "READ");
+    if (!test || test->IsZombie()) { 
+      ::Warning("ScanDirectory", "Failed to open file %s", data.Data());
+      continue;
+    }
+    test->Close();
+    chain->Add(data);
+  }
+}
+
+//____________________________________________________________________
+TChain*
+AliFMDInput::MakeChain(const char* what, const char* datadir, bool recursive)
+{
+  TString w(what);
+  w.ToUpper();
+  const char* treeName = 0;
+  const char* pattern  = 0;
+  if      (w.Contains("ESD")) { treeName = "esdTree"; pattern = "AliESD"; }
+  else if (w.Contains("MC"))  { treeName = "TE";      pattern = "galice"; }
+  else {
+    ::Error("MakeChain", "Unknown mode '%s' (not one of ESD, or MC)", what);
+    return 0;
+  }
+    
+  // --- Our data chain ----------------------------------------------
+  TChain* chain = new TChain(treeName);
+
+  // --- Get list of ESDs --------------------------------------------
+  // Open source directory, and make sure we go back to were we were 
+  TString oldDir(gSystem->WorkingDirectory());
+  TSystemDirectory d(datadir, datadir);
+  ScanDirectory(&d, oldDir, chain, pattern, recursive);
+
+  return chain;
+}
 
 
 //____________________________________________________________________
