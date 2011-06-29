@@ -716,7 +716,7 @@ AliFMDRawReader::ReadAdcs(AliFMDUShortMap& map)
   // objects. 
   AliDebug(3,Form("Reading ADC values into a map"));
 
-  const UShort_t kUShortMax = (1 << 16) - 1;
+  // const UShort_t kUShortMax = (1 << 16) - 1;
   for (Int_t ddl = 0; ddl < kNDDL; ddl++) fNErrors[ddl] = 0;
 
   AliAltroRawStreamV3  input(fReader);
@@ -747,7 +747,7 @@ AliFMDRawReader::ReadAdcs(AliFMDUShortMap& map)
       // Loop over bunches 
       while (input.NextBunch()) { 
 	// Get Lenght of bunch, and pointer to the data 
-	const UShort_t* data   = input.GetSignals();
+	// const UShort_t* data   = input.GetSignals();
 	UShort_t        length;
 	if (!NewBunch(input, start, length)) {
 	  errors = true;
