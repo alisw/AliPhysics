@@ -255,6 +255,7 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
     if      (s.CompareTo("INEL")  == 0) trgMask |= AliAODForwardMult::kInel;
     else if (s.CompareTo("INEL>0")== 0) trgMask |= AliAODForwardMult::kInelGt0;
     else if (s.CompareTo("NSD")   == 0) trgMask |= AliAODForwardMult::kNSD;
+    else if (s.CompareTo("MCNSD") == 0) trgMask |= AliAODForwardMult::kMCNSD;
     else if (s.CompareTo("B")     == 0) trgMask |= AliAODForwardMult::kB;
     else if (s.CompareTo("A")     == 0) trgMask |= AliAODForwardMult::kA;
     else if (s.CompareTo("C")     == 0) trgMask |= AliAODForwardMult::kC;
