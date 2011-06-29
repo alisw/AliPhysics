@@ -1,4 +1,4 @@
-AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t switchMC[5],Bool_t readmc=kFALSE,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c",Int_t ppPbPb=0,Int_t analysLevel=3)
+AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t switchMC[5],Bool_t readmc=kFALSE,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c",Int_t ppPbPb=0,Int_t analysLevel=2)
 {  
   //
   // Configuration macro for the task to analyze the fraction of prompt charm
@@ -74,11 +74,15 @@ AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.roo
   if(ppPbPb==1){// Switch Off recalctulation of primary vertex w/o candidate's daughters
     // a protection that must be kept here to be sure 
     //that this is done also if the cut objects are provided by outside 
-    Printf("AddTaskSECharmFraction: Switch Off recalctulation of primary vertex w/o candidate's daughters (PbPb analysis) \n");
+    Printf("AddTaskSECharmFraction: Switch Off recalculation of primary vertex w/o candidate's daughters (PbPb analysis) \n");
     AliRDHFCutsD0toKpi *cloose=hfTask->GetLooseCut();
     AliRDHFCutsD0toKpi *ctight=hfTask->GetTightCut();
     cloose->SetRemoveDaughtersFromPrim(kFALSE);
     ctight->SetRemoveDaughtersFromPrim(kFALSE);
+    if(analysLevel<2){
+      printf("Cannot activate the filling of all the histograms for PbPb analysis \n changing analysis level to 2 \n");
+      analysLevel=2;
+    }
     // Activate Default PID for proton rejection (TEMPORARY)
     // cloose->SetUseDefaultPID(kTRUE);
     // ctight->SetUseDefaultPID(kTRUE);
@@ -90,6 +94,7 @@ AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.roo
   hfTask->SetUsePID(usepid);
   hfTask->SetStandardMassSelection();
   hfTask->SetAnalysisLevel(analysLevel);
+
   // hfTask->SignalInvMassCut(0.27);
 
   /*  ############### HERE THE POSSIBILITY TO SWITCH ON/OFF THE TLISTS AND MC SELECTION WILL BE SET #########à

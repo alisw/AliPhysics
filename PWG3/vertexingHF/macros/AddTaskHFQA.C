@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString filecutsname="D0toKpiCuts.root",Bool_t readMC=kFALSE, Bool_t simplemode=kFALSE){
+AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString filecutsname="D0toKpiCuts.root",Bool_t readMC=kFALSE, Bool_t simplemode=kFALSE, Int_t system=1 /*0=pp, 1=PbPb*/){
   //
   // Test macro for the AliAnalysisTaskSE for HF mesons quality assurance
   //Author: C.Bianchin chiara.bianchin@pd.infn.it
@@ -16,7 +16,8 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     stdcuts=kTRUE;
   }
 
-  Bool_t onoff[4]={kTRUE,kTRUE,kFALSE,kTRUE};
+  Bool_t onoff[4]={kTRUE,kTRUE,kTRUE,kTRUE}; //tracks (0), PID (1), centrality (2), event selection(3) 
+  if(system==0) onoff[2]=kFALSE;
 
   AliRDHFCuts *analysiscuts=0x0;
 
@@ -29,7 +30,8 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     cutsobjname="AnalysisCuts";
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsDplustoKpipi();
-      analysiscuts->SetStandardCutsPP2010();
+      if (system == 0) analysiscuts->SetStandardCutsPP2010();
+      else analysiscuts->SetStandardCutsPbPb2010();
     }
     else analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(cutsobjname);
     suffix="Dplus";
@@ -38,7 +40,8 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     cutsobjname="D0toKpiCuts";
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsD0toKpi();
-      analysiscuts->SetStandardCutsPP2010();
+      if (system == 0) analysiscuts->SetStandardCutsPP2010();
+      else analysiscuts->SetStandardCutsPbPb2010();
     }
     else analysiscuts = (AliRDHFCutsD0toKpi*)filecuts->Get(cutsobjname);
     suffix="D0";
@@ -47,16 +50,18 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     cutsobjname="DStartoKpipiCuts";
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsDStartoKpipi();
-      analysiscuts->SetStandardCutsPP2010();
+      if (system == 0) analysiscuts->SetStandardCutsPP2010();
+      else analysiscuts->SetStandardCutsPbPb2010();
     }
-    else analysiscuts = (AliRDHFCutsDStartoKpipi*)filecuts->Get(cutsobjname);
+    else analysiscuts = (AliRDHFCutsDstartoKpipi*)filecuts->Get(cutsobjname);
     suffix="Dstar";
     break;
   case 3:
     cutsobjname="DstoKKpiCuts";
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsDstoKKpi();
-      analysiscuts->SetStandardCutsPP2010();
+      if (system == 0) analysiscuts->SetStandardCutsPP2010();
+      else analysiscuts->SetStandardCutsPbPb2010();
     }
     else analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get(cutsobjname);
     suffix="Ds";
@@ -65,7 +70,8 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     cutsobjname="D0toKpipipiCuts";
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsD0toKpipipi();
-      analysiscuts->SetStandardCutsPP2010();
+      if (system == 0) analysiscuts->SetStandardCutsPP2010();
+      else analysiscuts->SetStandardCutsPbPb2010();
     }
     else analysiscuts = (AliRDHFCutsD0toKpipipi*)filecuts->Get(cutsobjname);
     suffix="D04";
@@ -74,7 +80,8 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     cutsobjname="LctopKpiAnalysisCuts";
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsLctopKpi();
-      analysiscuts->SetStandardCutsPP2010();
+      if (system == 0) analysiscuts->SetStandardCutsPP2010();
+      else analysiscuts->SetStandardCutsPbPb2010();
     }
     else analysiscuts = (AliRDHFCutsLctopKpi*)filecuts->Get(cutsobjname);
     suffix="Lc";
