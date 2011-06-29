@@ -73,7 +73,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
-  fNVariables(18),
+  fNVariables(20),
   fVariables(0x0),
   fAvgTrials(1),
   fNEventAll(0),
@@ -94,15 +94,20 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtDCA2D(0x0),
   fPtDCAZ(0x0),
   fPtNClustersTPC(0x0),
+  fPtNClustersTPCIter1(0x0),
   fPtNPointITS(0x0),
   fPtChi2C(0x0),
   fPtNSigmaToVertex(0x0),
   fPtRelUncertainty1Pt(0x0),
   fPtRelUncertainty1PtNClus(0x0),
+  fPtRelUncertainty1PtNClusIter1(0x0),
   fPtRelUncertainty1PtChi2(0x0),
+  fPtRelUncertainty1PtChi2Iter1(0x0),
+  fPtRelUncertainty1PtPhi(0x0),
   fPtRelUncertainty1PtTrkLength(0x0),
   fPtUncertainty1Pt(0x0),
   fPtChi2PerClusterTPC(0x0),
+  fPtChi2PerClusterTPCIter1(0x0),
   fPtNCrossedRows(0x0),
   fPtNCrossedRowsNClusF(0x0),
   fPtNCrRNCrRNClusF(0x0),
@@ -121,7 +126,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fSystTrackCuts(0x0),
   fHistList(0)
 {
-  SetNVariables(18);
+  SetNVariables(20);
 
   fPtBinEdges[0][0] = 10.;
   fPtBinEdges[0][1] = 1.;
@@ -147,7 +152,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
-  fNVariables(18),
+  fNVariables(20),
   fVariables(0x0),
   fAvgTrials(1),
   fNEventAll(0),
@@ -168,15 +173,20 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtDCA2D(0x0),
   fPtDCAZ(0x0),
   fPtNClustersTPC(0x0),
+  fPtNClustersTPCIter1(0x0),
   fPtNPointITS(0x0),
   fPtChi2C(0x0),
   fPtNSigmaToVertex(0x0),
   fPtRelUncertainty1Pt(0x0),
   fPtRelUncertainty1PtNClus(0x0),
+  fPtRelUncertainty1PtNClusIter1(0x0),
   fPtRelUncertainty1PtChi2(0x0),
+  fPtRelUncertainty1PtChi2Iter1(0x0),
+  fPtRelUncertainty1PtPhi(0x0),
   fPtRelUncertainty1PtTrkLength(0x0),
   fPtUncertainty1Pt(0x0),
   fPtChi2PerClusterTPC(0x0),
+  fPtChi2PerClusterTPCIter1(0x0),
   fPtNCrossedRows(0x0),
   fPtNCrossedRowsNClusF(0x0),
   fPtNCrRNCrRNClusF(0x0),
@@ -200,7 +210,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   //
   AliDebug(2,Form("AliPWG4HighPtTrackQA Calling Constructor"));
 
-  SetNVariables(18);
+  SetNVariables(20);
 
   fPtBinEdges[0][0] = 10.;
   fPtBinEdges[0][1] = 1.;
@@ -321,7 +331,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   Double_t *binsNPointITS=new Double_t[fgkNNPointITSBins+1];
   for(Int_t i=0; i<=fgkNNPointITSBins; i++) binsNPointITS[i]=(Double_t)fgkNPointITSMin + (fgkNPointITSMax-fgkNPointITSMin)/fgkNNPointITSBins*(Double_t)i ;
 
-  Int_t fgkNNSigmaToVertexBins=40;
+  Int_t fgkNNSigmaToVertexBins=20;
   Float_t fgkNSigmaToVertexMin = 0.;
   Float_t fgkNSigmaToVertexMax = 8.;
   Double_t *binsNSigmaToVertex=new Double_t[fgkNNSigmaToVertexBins+1];
@@ -336,8 +346,10 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   Int_t fgkNRel1PtUncertaintyBins=30;
   Float_t fgkRel1PtUncertaintyMin = 0.;
   Float_t fgkRel1PtUncertaintyMax = 0.3;
-  if(fTrackType==1 || fTrackType==2 || fTrackType==4) 
-    fgkRel1PtUncertaintyMax = 0.5; 
+  if(fTrackType==1 || fTrackType==2 || fTrackType==4 || fTrackType==5 || fTrackType==6) {
+    fgkNRel1PtUncertaintyBins = 50;
+    fgkRel1PtUncertaintyMax = 1.; 
+  }
   Double_t *binsRel1PtUncertainty=new Double_t[fgkNRel1PtUncertaintyBins+1];
   for(Int_t i=0; i<=fgkNRel1PtUncertaintyBins; i++) binsRel1PtUncertainty[i]=(Double_t)fgkRel1PtUncertaintyMin + (fgkRel1PtUncertaintyMax-fgkRel1PtUncertaintyMin)/fgkNRel1PtUncertaintyBins*(Double_t)i ;
 
@@ -495,6 +507,9 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
  
   fPtNClustersTPC = new TH2F("fPtNClustersTPC","fPtNClustersTPC",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtNClustersTPC);
+
+  fPtNClustersTPCIter1 = new TH2F("fPtNClustersTPCIter1","fPtNClustersTPCIter1",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
+  fHistList->Add(fPtNClustersTPCIter1);
  
   fPtNPointITS = new TH2F("fPtNPointITS","fPtNPointITS",fgkNPtBins,binsPt,fgkNNPointITSBins,binsNPointITS);
   fHistList->Add(fPtNPointITS);
@@ -511,8 +526,17 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fPtRelUncertainty1PtNClus = new TH3F("fPtRelUncertainty1PtNClus","fPtRelUncertainty1PtNClus",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtRelUncertainty1PtNClus);
 
+  fPtRelUncertainty1PtNClusIter1 = new TH3F("fPtRelUncertainty1PtNClusIter1","fPtRelUncertainty1PtNClusIter1",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
+  fHistList->Add(fPtRelUncertainty1PtNClusIter1);
+
   fPtRelUncertainty1PtChi2 = new TH3F("fPtRelUncertainty1PtChi2","fPtRelUncertainty1PtChi2",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNChi2PerClusBins,binsChi2PerClus);
   fHistList->Add(fPtRelUncertainty1PtChi2);
+
+  fPtRelUncertainty1PtChi2Iter1 = new TH3F("fPtRelUncertainty1PtChi2Iter1","fPtRelUncertainty1PtChi2Iter1",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNChi2PerClusBins,binsChi2PerClus);
+  fHistList->Add(fPtRelUncertainty1PtChi2Iter1);
+
+  fPtRelUncertainty1PtPhi = new TH3F("fPtRelUncertainty1PtPhi","fPtRelUncertainty1PtPhi",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNPhiBins,binsPhi);
+  fHistList->Add(fPtRelUncertainty1PtPhi);
 
   fPtRelUncertainty1PtTrkLength = new TH3F("fPtRelUncertainty1PtTrkLength","fPtRelUncertainty1PtTrkLength",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtRelUncertainty1PtTrkLength);
@@ -522,6 +546,9 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
  
   fPtChi2PerClusterTPC = new TH2F("fPtChi2PerClusterTPC","fPtChi2PerClusterTPC",fgkNPtBins,binsPt,fgkNChi2PerClusBins,binsChi2PerClus);
   fHistList->Add(fPtChi2PerClusterTPC);
+ 
+  fPtChi2PerClusterTPCIter1 = new TH2F("fPtChi2PerClusterTPCIter1","fPtChi2PerClusterTPCIter1",fgkNPtBins,binsPt,fgkNChi2PerClusBins,binsChi2PerClus);
+  fHistList->Add(fPtChi2PerClusterTPCIter1);
 
   fPtNCrossedRows = new TH2F("fPtNCrossedRows","fPtNCrossedRows",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtNCrossedRows);
@@ -866,6 +893,8 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     15: SigmaSnp2
     16: SigmaTgl2
     17: Sigma1Pt2
+    18: NClustersTPCIter1
+    19: Chi2TPCIter1
   */
 
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
@@ -1012,6 +1041,9 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     fVariables->SetAt(track->GetSigmaSnp2(),15);
     fVariables->SetAt(track->GetSigmaTgl2(),16);
     fVariables->SetAt(track->GetSigma1Pt2(),17);
+
+    fVariables->SetAt(track->GetTPCNclsIter1(),18);
+    fVariables->SetAt(track->GetTPCchi2Iter1(),19);
     
     FillHistograms();
   
@@ -1078,11 +1110,19 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
   fPtNClustersTPC->Fill(fVariables->At(0),fVariables->At(5));
   fPtNPointITS->Fill(fVariables->At(0),fVariables->At(6));
   if(fDataType==kESD) {
+    fPtNClustersTPCIter1->Fill(fVariables->At(0),fVariables->At(18));
+    if(fVariables->At(18)>0.)
+      fPtChi2PerClusterTPCIter1->Fill(fVariables->At(0),fVariables->At(19)/fVariables->At(18));
+
     fPtChi2C->Fill(fVariables->At(0),fVariables->At(7));
     fPtNSigmaToVertex->Fill(fVariables->At(0),fVariables->At(8));
     fPtRelUncertainty1Pt->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)));
     fPtRelUncertainty1PtNClus->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(5));
+    fPtRelUncertainty1PtNClusIter1->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(18));
     fPtRelUncertainty1PtChi2->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(10));
+    if(fVariables->At(18)>0.)
+      fPtRelUncertainty1PtChi2Iter1->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(19)/fVariables->At(18));
+    fPtRelUncertainty1PtPhi->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(1));
     fPtRelUncertainty1PtTrkLength->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(9));
     fPtUncertainty1Pt->Fill(fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
     fPtSigmaY2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(13)));

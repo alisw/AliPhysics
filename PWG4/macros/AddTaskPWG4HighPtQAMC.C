@@ -88,10 +88,10 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14", int trackT
   taskPWG4QAMC->SetCutsITS(trackCutsITS);
   taskPWG4QAMC->SetTrackType(trackType);
   
-  if(!strcmp(prodType, "LHC10e14")  || !strcmp(prodType, "PbPb")) taskPWG4QAMC->SetPtMax(500.);
+  if(!strcmp(prodType, "LHC10e14")) taskPWG4QAMC->SetPtMax(500.);
   else taskPWG4QAMC->SetPtMax(100.);
 
-  taskPWG4QAMC->SetSigmaConstrainedMax(5.);
+  //taskPWG4QAMC->SetSigmaConstrainedMax(5.);
 
   // E. Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below

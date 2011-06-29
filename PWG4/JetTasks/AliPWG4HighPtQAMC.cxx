@@ -64,7 +64,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC()
   fTrackCuts(0), 
   fTrackCutsITS(0),
   fTrackType(0),
-  fSigmaConstrainedMax(5.),
+  fSigmaConstrainedMax(1e6),
   fPtMax(100.),
   fAvgTrials(1),
   fNEventAll(0),
@@ -122,7 +122,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   fTrackCuts(),
   fTrackCutsITS(),
   fTrackType(0),
-  fSigmaConstrainedMax(5.),
+  fSigmaConstrainedMax(1e6),
   fPtMax(100.),
   fAvgTrials(1),
   fNEventAll(0),
@@ -628,17 +628,13 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 
     ptMC = particle->Pt();
 
-    if(fTrackType==0) {       //Global
-      pt  = track->Pt();
-      phi = track->Phi();
-      track->GetImpactParameters(dca2D,dcaZ);
-    }
-    else if(fTrackType==1 || fTrackType==2) {  //TPConly
-      pt  = track->Pt();
-      phi = track->Phi();
-      track->GetImpactParametersTPC(dca2D,dcaZ);
-    }
-    else {continue;}
+    pt  = track->Pt();
+    phi = track->Phi();
+    if(fTrackType==0) 
+      track->GetImpactParameters(dca2D,dcaZ);     //Global
+    else if(fTrackType==1 || fTrackType==2) 
+      track->GetImpactParametersTPC(dca2D,dcaZ);  //TPConly
+      else {continue;}
 
     
     UChar_t itsMap = track->GetITSClusterMap();
@@ -677,6 +673,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
       fPtAllminPtMCvsPtAllvsMult->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC), mult);
 
       //Check if track is reconstructed multiple times
+      /*
       int multCounter = 1;
       for (Int_t iTrack2 = iTrack+1; iTrack2 < nTracks; iTrack2++) {
 	//   AliESDtrack *track2 = GetTrackForAnalysis(iTrack2);
@@ -719,6 +716,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 	if(fTrackType==1 || fTrackType==2) delete track2;
       }//track2 loop
       if(multCounter>1) fMultRec->Fill(multCounter);
+      */
 
     }//fTrackCuts selection
 
