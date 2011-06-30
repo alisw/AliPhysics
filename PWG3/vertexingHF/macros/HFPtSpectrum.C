@@ -9,12 +9,15 @@
 #include "TH1D.h"
 #include "TH1.h"
 #include "TH2F.h"
+#include "TNtuple.h"
 #include "TFile.h"
 #include "TGraphAsymmErrors.h"
 #include "TCanvas.h"
 #include "TROOT.h"
-
+#include "TStyle.h"
+#include "TLegend.h"
 #include "AliHFSystErr.h"
+
 #include "AliHFPtSpectrum.h"
 
 //
@@ -24,28 +27,38 @@
 //  2) reconstructed spectra file name 
 //  3) output file name
 //  4) Set the feed-down calculation option flag: 0=none, 1=fc only, 2=Nb only
-//  5) Set the luminosity
-//  6) Set the trigger efficiency
-//  7-14) If the efficiency histos do not have the right bin width, set the files & histo-names, they'll be computed, if the efficiencies are in file (6), don't set this parameters
+//  5-6) Set the luminosity: the number of events analyzed, and the cross-section of the sample
+//  7) Set the trigger efficiency
+//  8) Set the centrality class
+//  9) Flag to decide if there is need to evaluate the dependence on the energy loss
+//  10-17) If the efficiency histos do not have the right bin width, set the files & histo-names, they'll be computed, if the efficiencies are in file (6), don't set these parameters
 //
+
+enum centrality{ kpp7, kpp276, k010, k020, k2040, k4060, k6080, k4080, k80100 };
+
 void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    const char *efffilename="Efficiencies.root",
 		    const char *recofilename="Reconstructed.root", const char *recohistoname="hRawSpectrumD0",
 		    const char *outfilename="HFPtSpectrum.root",
-		    Int_t option=1, Double_t lumi=1.0, Double_t effTrig=1.0,
+		    //		    Int_t option=1, Double_t lumi=1.0, Double_t effTrig=1.0, Int_t cc=kpp, Bool_t PbPbEloss=false,
+		    Int_t option=1, Double_t nevents=1.0, Double_t sigma=1.0, // sigma[nb]
+		    Double_t effTrig=1.0, Int_t cc=kpp7, Bool_t PbPbEloss=false,
 		    const char *directsimufilename="", const char *directsimuhistoname="CFHFccontainer0_New_3Prong_SelStep0_proj-pt", 
 		    const char *directrecofilename="", const char *directrecohistoname="CFHFccontainer0_New_3Prong_SelStep8_proj-pt", 
 		    const char *feeddownsimufilename="", const char *feeddownsimuhistoname="CFHFccontainer0allD_New_3Prong_SelStep0_proj-pt", 
 		    const char *feeddownrecofilename="", const char *feeddownrecohistoname="CFHFccontainer0allD_New_3Prong_SelStep8_proj-pt") {
 
+
+  gROOT->Macro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
+
   //  Set if calculation considers asymmetric uncertainties or not 
-  bool asym = true;
+  Bool_t asym = true;
 
   // Set the meson and decay
   // (only D0 -> K pi, D+--> K pi pi & D* --> D0 pi implemented here)
-  bool isD0Kpi = true;
-  bool isDplusKpipi = false;
-  bool isDstarD0pi = false;
+  Bool_t isD0Kpi = true;
+  Bool_t isDplusKpipi = false;
+  Bool_t isDstarD0pi = false;
   if (isD0Kpi && isDplusKpipi && isDstarD0pi) {
     cout << "Sorry, can not deal with more than one correction at the same time"<<endl;
     return;
@@ -57,6 +70,31 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   }
   if (option==0) asym = false;
 
+
+  //
+  // Defining the Tab values for the given centrality class
+  //
+  Double_t tab = 1., tabUnc = 0.;
+  if ( cc == k010 ) {
+    tab = 23.48; tabUnc = 0.97;
+  } else if ( cc == k020 ) {
+    tab = 18.93; tabUnc = 0.74;
+  } else if ( cc == k2040 ) {
+    tab = 6.86; tabUnc = 0.28;
+  } else if ( cc == k4060 ) {
+    tab = 2.00;  tabUnc= 0.11;
+  } else if ( cc == k4080 ) {
+    tab = 1.20451; tabUnc = 0.071843;
+  } else if ( cc == k6080 ) {
+    tab = 0.419; tabUnc = 0.033;
+  } else if ( cc == k80100 ){
+    tab = 0.0690; tabUnc = 0.0062;
+  }
+  tab *= 1e-9; // to pass from mb^{-1} to pb^{-1}
+  tabUnc *= 1e-9;
+
+
+
   //
   // Get the histograms from the files
   //
@@ -66,7 +104,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   TH1D *hDirectMCptMin=0;        // Input MC minimum c-->D spectra
   TH1D *hFeedDownMCptMax=0;      // Input MC maximum b-->D spectra
   TH1D *hFeedDownMCptMin=0;      // Input MC minimum b-->D spectra
-  TGraphAsymmErrors *gPrediction=0; // Input MC c-->D spectra
+  //  TGraphAsymmErrors *gPrediction=0; // Input MC c-->D spectra
   TH1D *hDirectEffpt=0;          // c-->D Acceptance and efficiency correction
   TH1D *hFeedDownEffpt=0;        // b-->D Acceptance and efficiency correction
   TH1D *hRECpt=0;                // all reconstructed D
@@ -90,7 +128,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     hDirectMCptMin = (TH1D*)mcfile->Get("hD0Kpipred_min");
     hFeedDownMCptMax = (TH1D*)mcfile->Get("hD0KpifromBpred_max");
     hFeedDownMCptMin = (TH1D*)mcfile->Get("hD0KpifromBpred_min");
-    gPrediction = (TGraphAsymmErrors*)mcfile->Get("D0Kpiprediction");
+    //    gPrediction = (TGraphAsymmErrors*)mcfile->Get("D0Kpiprediction");
   }
   else if (isDplusKpipi){
     decay = 2;
@@ -100,7 +138,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     hDirectMCptMin = (TH1D*)mcfile->Get("hDpluskpipipred_min");
     hFeedDownMCptMax = (TH1D*)mcfile->Get("hDpluskpipifromBpred_max");
     hFeedDownMCptMin = (TH1D*)mcfile->Get("hDpluskpipifromBpred_min");
-    gPrediction = (TGraphAsymmErrors*)mcfile->Get("Dpluskpipiprediction");
+    //    gPrediction = (TGraphAsymmErrors*)mcfile->Get("Dpluskpipiprediction");
   }
   else if(isDstarD0pi){
     decay = 3;
@@ -110,7 +148,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     hDirectMCptMin = (TH1D*)mcfile->Get("hDstarD0pipred_min");
     hFeedDownMCptMax = (TH1D*)mcfile->Get("hDstarD0pifromBpred_max");
     hFeedDownMCptMin = (TH1D*)mcfile->Get("hDstarD0pifromBpred_min");
-    gPrediction = (TGraphAsymmErrors*)mcfile->Get("DstarD0piprediction");
+    //    gPrediction = (TGraphAsymmErrors*)mcfile->Get("DstarD0piprediction");
   }
   //
   hDirectMCpt->SetNameTitle("hDirectMCpt","direct MC spectra");
@@ -146,9 +184,9 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   }
   else {
     TFile * efffile = new TFile(efffilename,"read");
-    hDirectEffpt = (TH1D*)efffile->Get("hEffD");
+    hDirectEffpt = (TH1D*)efffile->Get("hEffD_rebin");//hDirectEffpt");//hRecoPIDGenLimAcc");//hDirectEffpt");//hEffD");
     hDirectEffpt->SetNameTitle("hDirectEffpt","direct acc x eff");
-    hFeedDownEffpt = (TH1D*)efffile->Get("hEffB");
+    hFeedDownEffpt = (TH1D*)efffile->Get("hEffB_rebin");//hFeedDownEffpt");//hRecoPIDGenLimAccFromB");//hFeedDownEffpt");//hEffB");
     hFeedDownEffpt->SetNameTitle("hFeedDownEffpt","feed-down acc x eff");
   }
   //
@@ -172,7 +210,12 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   TH1D *histoSigmaCorrMax=0;
   TH1D *histoSigmaCorrMin=0;
   //
-  int nbins = hRECpt->GetNbinsX();
+  TH2D *histofcRcb=0;
+  TH1D *histofcRcb_px=0;
+  TH2D *histoYieldCorrRcb=0;
+  TH2D *histoSigmaCorrRcb=0;
+  //
+  Int_t nbins = hRECpt->GetNbinsX();
   TGraphAsymmErrors * gYieldCorr = 0;
   TGraphAsymmErrors * gSigmaCorr = 0;
   TGraphAsymmErrors * gFcExtreme = 0;
@@ -181,6 +224,8 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   TGraphAsymmErrors * gSigmaCorrExtreme = 0;
   TGraphAsymmErrors * gYieldCorrConservative = 0;
   TGraphAsymmErrors * gSigmaCorrConservative = 0;
+  //
+  TNtuple * nSigma = 0;
 
 
   //
@@ -191,6 +236,8 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   AliHFPtSpectrum * spectra = new AliHFPtSpectrum("AliHFPtSpectrum","AliHFPtSpectrum",option);
   spectra->SetFeedDownCalculationOption(option);
   spectra->SetComputeAsymmetricUncertainties(asym);
+  // Set flag on whether to additional PbPb Eloss hypothesis have to be computed
+  spectra->SetComputeElossHypothesis(PbPbEloss);
 
   // Feed the input histograms
   //  reconstructed spectra
@@ -219,31 +266,50 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 
   cout << " and the normalization" <<endl;
   // Set normalization factors (uncertainties set to 0. as example)
-  double lumiUnc = 0.10*lumi; // 10% uncertainty on the luminosity
+  spectra->SetNormalization(nevents,sigma);
+  Double_t lumi = nevents / sigma ;
+  Double_t lumiUnc = 0.07*lumi; // 10% uncertainty on the luminosity
   spectra->SetLuminosity(lumi,lumiUnc);
   spectra->SetTriggerEfficiency(effTrig,0.);
 
   // Set the global uncertainties on the efficiencies (in percent)
-  double globalEffUnc = 0.15; 
-  double globalBCEffRatioUnc = 0.15;
-  //  double globalEffUnc = 0.; 
-  //  double globalBCEffRatioUnc = 0.;
+  Double_t globalEffUnc = 0.15; 
+  Double_t globalBCEffRatioUnc = 0.15;
   spectra->SetAccEffPercentageUncertainty(globalEffUnc,globalBCEffRatioUnc);
+
+  // Set the Tab parameter and uncertainties
+  if ( (cc != kpp7) && (cc != kpp276) ) {
+    spectra->SetTabParameter(tab,tabUnc);
+  }
 
   // Do the calculations
   cout << " Doing the calculation... "<< endl;
-  double deltaY = 1.0;
-  double branchingRatioC = 1.0;
-  double branchingRatioBintoFinalDecay = 1.0; // this is relative to the input theoretical prediction
+  Double_t deltaY = 1.0;
+  Double_t branchingRatioC = 1.0;
+  Double_t branchingRatioBintoFinalDecay = 1.0; // this is relative to the input theoretical prediction
   spectra->ComputeHFPtSpectrum(deltaY,branchingRatioC,branchingRatioBintoFinalDecay);
   cout << "   ended the calculation, getting the histograms back " << endl;
 
   // Set the systematics externally
+  Bool_t combineFeedDown = true;
   AliHFSystErr *systematics = new AliHFSystErr();
+  if( cc==kpp276 ) {
+    systematics->SetIsLowEnergy(true);
+  } else if( cc!=kpp7 )  {
+    systematics->SetCollisionType(1);
+    if ( cc == k020 ) {
+      systematics->SetCentrality("020");
+    }
+    else if ( cc == k4080 ) {
+      systematics->SetCentrality("4080");
+    }
+    else { 
+      cout << " Systematics not yet implemented " << endl;
+      return;
+    }
+  } else { systematics->SetCollisionType(0); }
   systematics->Init(decay);
-  bool combineFeedDown = true;
   spectra->ComputeSystUncertainties(systematics,combineFeedDown);
-
 
   //
   // Get the output histograms
@@ -264,6 +330,15 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   // the efficiencies
   if(!hDirectEffpt) hDirectEffpt = (TH1D*)spectra->GetDirectAccEffCorrection();
   if(!hFeedDownEffpt) hFeedDownEffpt = (TH1D*)spectra->GetFeedDownAccEffCorrection();
+  // Get the PbPb Eloss hypothesis histograms
+  if(PbPbEloss){
+    histofcRcb = spectra->GetHistoFeedDownCorrectionFcVsEloss();
+    histoYieldCorrRcb = spectra->GetHistoFeedDownCorrectedSpectrumVsEloss();
+    histoSigmaCorrRcb = spectra->GetHistoCrossSectionFromYieldSpectrumVsEloss();
+    histofcRcb->SetName("histofcRcb");
+    histoYieldCorrRcb->SetName("histoYieldCorrRcb");
+    histoSigmaCorrRcb->SetName("histoSigmaCorrRcb");
+  }
 
   // Get & Rename the TGraphs
   if (asym) {
@@ -312,9 +387,15 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     gFcConservative->SetNameTitle("gFcConservative","gFcConservative");
   }
 
+  if(PbPbEloss){
+    nSigma = spectra->GetNtupleCrossSectionVsEloss();
+  }
+
   //
   // Now, plot the results ! :)
   //
+
+  gROOT->SetStyle("Plain");
 
   cout << " Drawing the results ! " << endl;
 
@@ -546,6 +627,132 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     
  }
  
+  // Draw the PbPb Eloss hypothesis histograms
+  if(PbPbEloss){
+    AliHFPtSpectrum *CalcBins;
+    gStyle->SetPalette(1);
+    TCanvas *canvasfcRcb = new TCanvas("canvasfcRcb","fc vs pt vs Rcb");
+    //    histofcRcb->Draw("cont4z");
+    histofcRcb->Draw("colz");
+    canvasfcRcb->Update();
+    canvasfcRcb->cd(2);
+    TCanvas *canvasfcRcb1 = new TCanvas("canvasfcRcb1","fc vs pt vs Rcb=1");
+    histofcRcb_px = (TH1D*)histofcRcb->ProjectionX("histofcRcb_px",40,40);
+    histofcRcb_px->SetLineColor(2);
+    if (option==1) {
+      histofc->Draw();
+      histofcRcb_px->Draw("same");
+    } else histofcRcb_px->Draw("");
+    canvasfcRcb1->Update();
+    TCanvas *canvasfcRcb2 = new TCanvas("canvasfcRcb2","fc vs pt vs Rcb fixed Rcb");
+    Int_t bin0 = CalcBins->FindTH2YBin(histofcRcb,0.25);
+    Int_t bin1 = CalcBins->FindTH2YBin(histofcRcb,0.5);
+    Int_t bin2 = CalcBins->FindTH2YBin(histofcRcb,1.0);
+    Int_t bin3 = CalcBins->FindTH2YBin(histofcRcb,1.5);
+    Int_t bin4 = CalcBins->FindTH2YBin(histofcRcb,2.0);
+    Int_t bin5 = CalcBins->FindTH2YBin(histofcRcb,3.0);
+    Int_t bin6 = CalcBins->FindTH2YBin(histofcRcb,4.0);
+    TH1D * histofcRcb_px0a = (TH1D*)histofcRcb->ProjectionX("histofcRcb_px0a",bin0,bin0);
+    TH1D * histofcRcb_px0 = (TH1D*)histofcRcb->ProjectionX("histofcRcb_px0",bin1,bin1);
+    TH1D * histofcRcb_px1 = (TH1D*)histofcRcb->ProjectionX("histofcRcb_px1",bin2,bin2);
+    TH1D * histofcRcb_px2 = (TH1D*)histofcRcb->ProjectionX("histofcRcb_px2",bin3,bin3);
+    TH1D * histofcRcb_px3 = (TH1D*)histofcRcb->ProjectionX("histofcRcb_px3",bin4,bin4);
+    TH1D * histofcRcb_px4 = (TH1D*)histofcRcb->ProjectionX("histofcRcb_px4",bin5,bin5);
+    TH1D * histofcRcb_px5 = (TH1D*)histofcRcb->ProjectionX("histofcRcb_px5",bin6,bin6);
+    if (option==1) {
+      histofc->Draw();
+      //      histofcRcb_px->Draw("same");
+    } else {
+      //      histofcRcb_px->Draw("");
+      histofcRcb_px0a->SetLineColor(2);
+      histofcRcb_px0a->Draw("");
+    }
+    histofcRcb_px0a->SetLineColor(2);
+    histofcRcb_px0a->Draw("same");
+    histofcRcb_px0->SetLineColor(4);
+    histofcRcb_px0->Draw("same");
+    histofcRcb_px1->SetLineColor(3);
+    histofcRcb_px1->Draw("same");
+    histofcRcb_px2->SetLineColor(kCyan);
+    histofcRcb_px2->Draw("same");
+    histofcRcb_px3->SetLineColor(kMagenta+1);
+    histofcRcb_px3->Draw("same");
+    histofcRcb_px4->SetLineColor(kOrange+7);
+    histofcRcb_px4->Draw("same");
+    histofcRcb_px5->SetLineColor(kGreen+3);
+    histofcRcb_px5->Draw("same");
+    TLegend *legrcc = new TLegend(0.8,0.8,0.95,0.9);
+    legrcc->SetFillColor(0);
+    if (option==1) {
+      legrcc->AddEntry(histofcRcb_px0a,"Rc/b=0.25","l");
+      legrcc->AddEntry(histofcRcb_px0,"Rc/b=0.5","l");
+      legrcc->AddEntry(histofcRcb_px1,"Rc/b=1.0","l");
+      legrcc->AddEntry(histofcRcb_px2,"Rc/b=1.5","l");
+      legrcc->AddEntry(histofcRcb_px3,"Rc/b=2.0","l");
+      legrcc->AddEntry(histofcRcb_px4,"Rc/b=3.0","l");
+      legrcc->AddEntry(histofcRcb_px5,"Rc/b=4.0","l");
+    }else{
+      legrcc->AddEntry(histofcRcb_px0a,"Rb=0.25","l");
+      legrcc->AddEntry(histofcRcb_px0,"Rb=0.5","l");
+      legrcc->AddEntry(histofcRcb_px1,"Rb=1.0","l");
+      legrcc->AddEntry(histofcRcb_px2,"Rb=1.5","l");
+      legrcc->AddEntry(histofcRcb_px3,"Rb=2.0","l");
+      legrcc->AddEntry(histofcRcb_px4,"Rb=3.0","l");
+      legrcc->AddEntry(histofcRcb_px5,"Rb=4.0","l");
+    }
+    legrcc->Draw();
+    canvasfcRcb2->Update();
+    TCanvas *canvasYRcb = new TCanvas("canvasYRcb","corrected yield vs pt vs Rcb");
+    histoYieldCorrRcb->Draw("cont4z");
+    canvasYRcb->Update();
+    TCanvas *canvasSRcb = new TCanvas("canvasSRcb","sigma vs pt vs Rcb");
+    histoSigmaCorrRcb->Draw("cont4z");
+    canvasSRcb->Update();
+    TCanvas *canvasSRcb1 = new TCanvas("canvasSRcb1","sigma vs pt vs Rcb fixed Rcb");
+    TH1D * histoSigmaCorrRcb_px0a = (TH1D*)histoSigmaCorrRcb->ProjectionX("histoSigmaCorrRcb_px0a",bin0,bin0);
+    TH1D * histoSigmaCorrRcb_px0 = (TH1D*)histoSigmaCorrRcb->ProjectionX("histoSigmaCorrRcb_px0",bin1,bin1);
+    TH1D * histoSigmaCorrRcb_px1 = (TH1D*)histoSigmaCorrRcb->ProjectionX("histoSigmaCorrRcb_px1",bin2,bin2);
+    TH1D * histoSigmaCorrRcb_px2 = (TH1D*)histoSigmaCorrRcb->ProjectionX("histoSigmaCorrRcb_px2",bin3,bin3);
+    TH1D * histoSigmaCorrRcb_px3 = (TH1D*)histoSigmaCorrRcb->ProjectionX("histoSigmaCorrRcb_px3",bin4,bin4);
+    TH1D * histoSigmaCorrRcb_px4 = (TH1D*)histoSigmaCorrRcb->ProjectionX("histoSigmaCorrRcb_px4",bin5,bin5);
+    TH1D * histoSigmaCorrRcb_px5 = (TH1D*)histoSigmaCorrRcb->ProjectionX("histoSigmaCorrRcb_px5",bin6,bin6);
+    histoSigmaCorr->Draw();
+    histoSigmaCorrRcb_px0a->SetLineColor(2);
+    histoSigmaCorrRcb_px0a->Draw("hsame");
+    histoSigmaCorrRcb_px0->SetLineColor(4);
+    histoSigmaCorrRcb_px0->Draw("hsame");
+    histoSigmaCorrRcb_px1->SetLineColor(3);
+    histoSigmaCorrRcb_px1->Draw("hsame");
+    histoSigmaCorrRcb_px2->SetLineColor(kCyan);
+    histoSigmaCorrRcb_px2->Draw("hsame");
+    histoSigmaCorrRcb_px3->SetLineColor(kMagenta+1);
+    histoSigmaCorrRcb_px3->Draw("hsame");
+    histoSigmaCorrRcb_px4->SetLineColor(kOrange+7);
+    histoSigmaCorrRcb_px4->Draw("same");
+    histoSigmaCorrRcb_px5->SetLineColor(kGreen+3);
+    histoSigmaCorrRcb_px5->Draw("same");
+    TLegend *legrcb = new TLegend(0.8,0.8,0.95,0.9);
+    legrcb->SetFillColor(0);
+    if (option==1) {
+      legrcb->AddEntry(histoSigmaCorrRcb_px0a,"Rc/b=0.25","l");
+      legrcb->AddEntry(histoSigmaCorrRcb_px0,"Rc/b=0.5","l");
+      legrcb->AddEntry(histoSigmaCorrRcb_px1,"Rc/b=1.0","l");
+      legrcb->AddEntry(histoSigmaCorrRcb_px2,"Rc/b=1.5","l");
+      legrcb->AddEntry(histoSigmaCorrRcb_px3,"Rc/b=2.0","l");
+      legrcb->AddEntry(histoSigmaCorrRcb_px4,"Rc/b=3.0","l");
+      legrcb->AddEntry(histoSigmaCorrRcb_px5,"Rc/b=4.0","l");
+    }else{
+      legrcb->AddEntry(histoSigmaCorrRcb_px0a,"Rb=0.25","l");
+      legrcb->AddEntry(histoSigmaCorrRcb_px0,"Rb=0.5","l");
+      legrcb->AddEntry(histoSigmaCorrRcb_px1,"Rb=1.0","l");
+      legrcb->AddEntry(histoSigmaCorrRcb_px2,"Rb=1.5","l");
+      legrcb->AddEntry(histoSigmaCorrRcb_px3,"Rb=2.0","l");
+      legrcb->AddEntry(histoSigmaCorrRcb_px4,"Rb=3.0","l");
+      legrcb->AddEntry(histoSigmaCorrRcb_px5,"Rb=4.0","l");
+    }
+    legrcb->Draw();
+    canvasSRcb1->Update();
+  }
 
 
   //
@@ -566,6 +773,13 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   histoSigmaCorr->Write();
   histoSigmaCorrMax->Write();     histoSigmaCorrMin->Write();
 
+  if(PbPbEloss){
+    histofcRcb->Write();    histofcRcb_px->Write();
+    histoYieldCorrRcb->Write();
+    histoSigmaCorrRcb->Write();
+    nSigma->Write();
+  }
+
   if(asym){
     gYieldCorr->Write();
     gSigmaCorr->Write();
@@ -582,6 +796,15 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     if(asym && gFcExtreme) gFcExtreme->Write();
   }
 
+
+  TH1D * hStatUncEffcSigma = spectra->GetDirectStatEffUncOnSigma();
+  TH1D * hStatUncEffbSigma = spectra->GetFeedDownStatEffUncOnSigma();
+  TH1D * hStatUncEffcFD = spectra->GetDirectStatEffUncOnFc();
+  TH1D * hStatUncEffbFD = spectra->GetFeedDownStatEffUncOnFc();
+  hStatUncEffcSigma->Write(); 
+  hStatUncEffbSigma->Write(); 
+  hStatUncEffcFD->Write(); 
+  hStatUncEffbFD->Write(); 
 
   // Draw the cross-section 
   //  spectra->DrawSpectrum(gPrediction);
