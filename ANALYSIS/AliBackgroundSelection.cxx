@@ -231,7 +231,7 @@ void AliBackgroundSelection::BookClusterVsTrackletsHisto(const char * trigger_na
   TH2F * h1 = new TH2F(GetClusterVsTrackletsHistoName(trigger_name),trigger_name, 300, -0.5, 2999.5, 1000, -0.5, 9999.5);
   h1->SetXTitle("Tracklets");
   h1->SetYTitle("SPD Clusters");
-  AliInfo(Form("Creating histos: %s, all and accepted", GetClusterVsTrackletsHistoName(trigger_name)));
+  // AliInfo(Form("Creating histos: %s, all and accepted", GetClusterVsTrackletsHistoName(trigger_name)));
 
   TH2F * h2 = new TH2F(GetClusterVsTrackletsHistoNameAccepted(trigger_name),TString(trigger_name)+ "(accepted)", 
 		       300, -0.5, 2999.5, 1000, -0.5, 9999.5);
@@ -254,7 +254,7 @@ void AliBackgroundSelection::BookDeltaPhiHisto(const char * trigger_name){
 
   TH1F * h1 = new TH1F(GetDeltaPhiHistoName(trigger_name),trigger_name, 100,0,0.5);
   h1->SetXTitle("#Delta #phi");
-  AliInfo(Form("Creating histos: %s, all and accepted", GetDeltaPhiHistoName(trigger_name)));
+  // AliInfo(Form("Creating histos: %s, all and accepted", GetDeltaPhiHistoName(trigger_name)));
 
   TH1F * h2 = new TH1F(GetDeltaPhiHistoNameAccepted(trigger_name),TString(trigger_name)+ "(accepted)", 100,0,0.5);
   h2->SetXTitle("#Delta #phi");
