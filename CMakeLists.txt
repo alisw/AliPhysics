@@ -288,3 +288,13 @@ endif(RULECHECKER_FOUND)
 include (InstallRequiredSystemLibraries)
 include (CPack)
 
+# Install data
+# ------------------------------
+install ( DIRECTORY data 
+          DESTINATION . )
+
+
+#
+# EOF
+#
+
