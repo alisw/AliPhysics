@@ -18,6 +18,11 @@
 //
 //  (the corrected yields per bin are divided by the bin-width)
 //
+//
+//  In HIC you can also evaluate how the feed-down correction is influenced by an energy loss hypothesis: 
+//      Raa(c-->D) / Raa(b-->D) defined here as Rcb for the "fc" method
+//      Raa(b-->D) defined here as Rb for the "Nb" method
+//
 // Author: Z.Conesa, zconesa@in2p3.fr
 //***********************************************************************
 
@@ -25,8 +30,9 @@
 #include "TMath.h"
 
 class TH1;
+class TH2;
+class TNtuple;
 class TGraphAsymmErrors;
-class AliHFSystErr;
 
 
 class AliHFPtSpectrum: public TNamed
@@ -65,6 +71,8 @@ class AliHFPtSpectrum: public TNamed
   void SetFeedDownCalculationOption(Int_t option){ fFeedDownOption = option; }
   // Set if the calculation has to consider asymmetric uncertaInt_ties or not
   void SetComputeAsymmetricUncertainties(Bool_t flag){ fAsymUncertainties = flag; }
+  // Set if the calculation has to consider Ratio(c/b eloss) hypothesis 
+  void SetComputeElossHypothesis(Bool_t flag){ fPbPbElossHypothesis = flag; }
   // Set the luminosity and its uncertainty
   void SetLuminosity(Double_t luminosity, Double_t unc){
     fLuminosity[0]=luminosity;  fLuminosity[1]=unc;
@@ -80,16 +88,24 @@ class AliHFPtSpectrum: public TNamed
   }
   // Set the normalization factors
   void SetNormalization(Double_t normalization){
-    fLuminosity[0]=normalization; fTrigEfficiency[0]=1.0;
+    fLuminosity[0]=normalization;
   }
-  void SetNormalization(Double_t nevents, Double_t sigma){
-    fLuminosity[0]=nevents/sigma; fTrigEfficiency[0]=1.0;
+  void SetNormalization(Int_t nevents, Double_t sigma){
+    fLuminosity[0]=nevents/sigma;
+    fNevts = nevents;
   }
-  void SetNormalization(Double_t nevents, Double_t sigma, Double_t sigmaunc){
+  void SetNormalization(Int_t nevents, Double_t sigma, Double_t sigmaunc){
     fLuminosity[0] = nevents/sigma; 
-    fTrigEfficiency[0] = 1.0;
     fLuminosity[1] = fLuminosity[0] * TMath::Sqrt( (1/nevents) + (sigmaunc/sigma)*(sigmaunc/sigma) );
+    fNevts = nevents;
   }
+  //
+  // Set the Tab parameter and its uncertainty
+  void SetTabParameter(Double_t tabvalue, Double_t uncertainty){
+    fTab[0] = tabvalue;
+    fTab[1] = uncertainty;
+  }
+
 
   //
   // Getters
@@ -104,6 +120,8 @@ class AliHFPtSpectrum: public TNamed
   // Return the acceptance and efficiency corrections (rebinned if needed)
   TH1D * GetDirectAccEffCorrection() const { return (fhDirectEffpt ? (TH1D*)fhDirectEffpt : NULL); }
   TH1D * GetFeedDownAccEffCorrection() const { return (fhFeedDownEffpt ? (TH1D*)fhFeedDownEffpt : NULL); }
+  // Return whether the Ratio(c/b eloss) hypothesis has been considered
+  Bool_t IsElossHypothesisCalculated(){ return fPbPbElossHypothesis; }
   // Return the TGraphAsymmErrors of the feed-down correction (extreme systematics)
   TGraphAsymmErrors * GetFeedDownCorrectionFcExtreme() const { return (fgFcExtreme ?  fgFcExtreme : NULL); }
   // Return the TGraphAsymmErrors of the feed-down correction (conservative systematics)
@@ -113,6 +131,8 @@ class AliHFPtSpectrum: public TNamed
   // Return the histograms of the feed-down correction bounds
   TH1D * GetHistoUpperLimitFeedDownCorrectionFc() const { return (fhFcMax ? (TH1D*)fhFcMax : NULL); }
   TH1D * GetHistoLowerLimitFeedDownCorrectionFc() const { return (fhFcMin ? (TH1D*)fhFcMin : NULL); }
+  // Return the histogram of the feed-down correction times the Ratio(c/b eloss)
+  TH2D * GetHistoFeedDownCorrectionFcVsEloss() const { return (fhFcRcb ?  (TH2D*)fhFcRcb : NULL); }
   // Return the TGraphAsymmErrors of the yield after feed-down correction (systematics but feed-down) 
   TGraphAsymmErrors * GetFeedDownCorrectedSpectrum() const { return (fgYieldCorr ? fgYieldCorr : NULL); }
   // Return the TGraphAsymmErrors of the yield after feed-down correction (feed-down extreme systematics)
@@ -124,6 +144,8 @@ class AliHFPtSpectrum: public TNamed
   // Return the histogram of the yield after feed-down correction bounds
   TH1D * GetHistoUpperLimitFeedDownCorrectedSpectrum() const { return (fhYieldCorrMax ? (TH1D*)fhYieldCorrMax : NULL); }
   TH1D * GetHistoLowerLimitFeedDownCorrectedSpectrum() const { return (fhYieldCorrMin ? (TH1D*)fhYieldCorrMin : NULL); }
+  // Return the histogram of the yield after feed-down correction vs the Ratio(c/b eloss)
+  TH2D * GetHistoFeedDownCorrectedSpectrumVsEloss() const { return (fhYieldCorrRcb ? (TH2D*)fhYieldCorrRcb : NULL); }
   // Return the equivalent invariant cross-section TGraphAsymmErrors (systematics but feed-down) 
   TGraphAsymmErrors * GetCrossSectionFromYieldSpectrum() const { return (fgSigmaCorr ? fgSigmaCorr : NULL); }
   // Return the equivalent invariant cross-section TGraphAsymmErrors (feed-down extreme systematics)
@@ -135,6 +157,23 @@ class AliHFPtSpectrum: public TNamed
   // Return the equivalent invariant cross-section histogram bounds
   TH1D * GetHistoUpperLimitCrossSectionFromYieldSpectrum() const { return (fhSigmaCorrMax ? (TH1D*)fhSigmaCorrMax : NULL); }
   TH1D * GetHistoLowerLimitCrossSectionFromYieldSpectrum() const { return (fhSigmaCorrMin ? (TH1D*)fhSigmaCorrMin : NULL); }
+  // Return the cross section systematics from data systematics
+  TH1D * GetHistoCrossSectionDataSystematics() const { return (fhSigmaCorrDataSyst ? (TH1D*)fhSigmaCorrDataSyst : NULL); }
+  //
+  // PbPb special calculations 
+  // Return the equivalent invariant cross-section histogram vs the Ratio(c/b eloss)
+  TH2D * GetHistoCrossSectionFromYieldSpectrumVsEloss() const { return (fhSigmaCorrRcb ? (TH2D*)fhSigmaCorrRcb : NULL); }
+  // Return the ntuple of the calculation vs the Ratio(c/b eloss)
+  TNtuple * GetNtupleCrossSectionVsEloss() { return (fnSigma ? (TNtuple*)fnSigma : NULL); }
+  //
+  //
+  // Histograms to keep track of the influence of the efficiencies statistical uncertainty on the cross-section
+  TH1D * GetDirectStatEffUncOnSigma() const { return (TH1D*)fhStatUncEffcSigma; }
+  TH1D * GetFeedDownStatEffUncOnSigma() const { return (TH1D*)fhStatUncEffbSigma; }
+  // Histograms to keep track of the influence of the efficiencies statistical uncertainty on the feed-down correction factor
+  TH1D * GetDirectStatEffUncOnFc() const { return (TH1D*)fhStatUncEffcFD; }
+  TH1D * GetFeedDownStatEffUncOnFc() const { return (TH1D*)fhStatUncEffbFD; }
+
 
   //
   // Main function:
@@ -161,6 +200,8 @@ class AliHFPtSpectrum: public TNamed
   TH1D * ReweightHisto(TH1D *hToReweight, TH1D *hReference);
   //   to reweight the reco-histos: hRecToReweight is reweighted as hReference/hMCToReweight
   TH1D * ReweightRecHisto(TH1D *hRecToReweight, TH1D *hMCToReweight, TH1D *hMCReference);
+  // Functionality to find the y-axis bin of a TH2 for a given y-value
+  Int_t FindTH2YBin(TH2D *histo, Float_t yvalue);
 
 
  protected:
@@ -201,9 +242,11 @@ class AliHFPtSpectrum: public TNamed
   TGraphAsymmErrors *fgRECSystematics; // all reconstructed D Systematic uncertainties
   //
   // Normalization factors
+  Int_t fNevts;                      // nb of analyzed events
   Double_t fLuminosity[2];           // analyzed luminosity & uncertainty
   Double_t fTrigEfficiency[2];       // trigger efficiency & uncertainty
   Double_t fGlobalEfficiencyUncertainties[2]; // uncertainties on the efficiency [0]=c, b, [1]=b/c
+  Double_t fTab[2];                   // Tab parameter and its uncertainty
 
   //
   // Output spectra
@@ -211,27 +254,39 @@ class AliHFPtSpectrum: public TNamed
   TH1D *fhFc;                            // Correction histo fc = 1 / ( 1 + (eff_b/eff_c)*(N_b/N_c) ) 
   TH1D *fhFcMax;                         // Maximum fc histo
   TH1D *fhFcMin;                         // Minimum fc histo
+  TH2D *fhFcRcb;                         // Correction histo fc vs the Ratio(c/b eloss)
   TGraphAsymmErrors * fgFcExtreme;       // Extreme correction as TGraphAsymmErrors
   TGraphAsymmErrors * fgFcConservative;  // Extreme correction as TGraphAsymmErrors
   TH1D *fhYieldCorr;                     // Corrected yield (stat unc. only)
   TH1D *fhYieldCorrMax;                  // Maximum corrected yield  
   TH1D *fhYieldCorrMin;                  // Minimum corrected yield  
+  TH2D *fhYieldCorrRcb;                  // Corrected yield (stat unc. only) vs the Ratio(c/b eloss)
   TGraphAsymmErrors * fgYieldCorr;              // Corrected yield as TGraphAsymmErrors  (syst but feed-down)
   TGraphAsymmErrors * fgYieldCorrExtreme;       // Extreme corrected yield as TGraphAsymmErrors  (syst from feed-down)
   TGraphAsymmErrors * fgYieldCorrConservative;  // Conservative corrected yield as TGraphAsymmErrors  (syst from feed-down) 
   TH1D *fhSigmaCorr;                     // Corrected cross-section (stat unc. only)
   TH1D *fhSigmaCorrMax;                  // Maximum corrected cross-section  
   TH1D *fhSigmaCorrMin;                  // Minimum corrected cross-section
+  TH1D *fhSigmaCorrDataSyst;             // Corrected cross-section (syst. unc. from data only)
+  TH2D *fhSigmaCorrRcb;                  // Corrected cross-section (stat unc. only) vs the Ratio(c/b eloss)
   TGraphAsymmErrors * fgSigmaCorr;              // Corrected cross-section as TGraphAsymmErrors (syst but feed-down)
   TGraphAsymmErrors * fgSigmaCorrExtreme;       // Extreme corrected cross-section as TGraphAsymmErrors (syst from feed-down)
   TGraphAsymmErrors * fgSigmaCorrConservative;  // Conservative corrected cross-section as TGraphAsymmErrors  (syst from feed-down)
+  //
+  TNtuple *fnSigma;     // Ntuple of the calculation vs the Ratio(c/b eloss)
 
   //
   Int_t fFeedDownOption;            // feed-down correction flag: 0=none, 1=fc, 2=Nb 
   Bool_t fAsymUncertainties;        // flag: asymmetric uncertainties are (1) or not (0) considered
+  Bool_t fPbPbElossHypothesis;      // flag: whether to do estimates vs Ratio(c/b eloss) hypothesis
 
+  //
+  TH1D *fhStatUncEffcSigma;       // Uncertainty on the cross-section due to the prompt efficiency statistical uncertainty
+  TH1D *fhStatUncEffbSigma;       // Uncertainty on the cross-section due to the feed-down efficiency statistical uncertainty
+  TH1D *fhStatUncEffcFD;          // Uncertainty on the feed-down correction due to the prompt efficiency statistical uncertainty
+  TH1D *fhStatUncEffbFD;          // Uncertainty on the feed-down correction due to the feed-down efficiency statistical uncertainty
 
-  ClassDef(AliHFPtSpectrum,1) // Class for Heavy Flavor spectra corrections
+  ClassDef(AliHFPtSpectrum,2) // Class for Heavy Flavor spectra corrections
 };
 
 #endif
