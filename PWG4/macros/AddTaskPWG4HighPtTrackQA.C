@@ -1,5 +1,6 @@
 void AddTaskPWG4HighPtTrackQAAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0) 
 {    
+
   int cent = 10;
   
   AliPWG4HighPtTrackQA *taskTrackQA00cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0);
@@ -32,6 +33,12 @@ void AddTaskPWG4HighPtTrackQAAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
     }
   }
 
+}
+
+void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 1, Int_t filterBit) 
+{   
+  AliPWG4HighPtTrackQA *taskTrackQA = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,0,0,0);
+  taskTrackQA->SetFilterMask(filterBit);
 }
 
 AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_t isPbPb=kTRUE,Int_t iAODanalysis = 0, Int_t centClass = 0, Int_t trackType = 0, Int_t cuts = 0)
@@ -180,6 +187,7 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
     trackCutsITSLoose->SetMaxChi2PerClusterITS(1E10);
 
     trackCutsTPConly = trackCutsTPConly->GetStandardTPCOnlyTrackCuts();
+    trackCutsTPConly->SetMinNClustersTPC(0);
     trackCutsTPConly->SetMinNCrossedRowsTPC(120);
     trackCutsTPConly->SetMinRatioCrossedRowsOverFindableClustersTPC(0.1);// essentially switches it off     
   }
