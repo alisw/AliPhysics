@@ -11,6 +11,8 @@
 // Is a generalisation of AliGenParam class for correlated pairs of hadrons.
 // Author: S. Grigoryan, LPC Clermont-Fd & YerPhI, Smbat.Grigoryan@cern.ch
 //
+// May 11: Added Flag for transportation Background While using SetForceDecay() function (L. Manceau)
+// June 11 modification allowing Seting Cut on Children added (L. Manceau)
 
 #include "AliGenMC.h"
 
@@ -19,6 +21,7 @@ class TParticle;
 class TH2F;
 class TFile;
 class TString;
+class TClonesArray;
 
 //-------------------------------------------------------------
 class AliGenCorrHF : public AliGenMC
@@ -44,7 +47,14 @@ class AliGenCorrHF : public AliGenMC
     // fG - input file with QQbar kinematical grid (TTree) and fragm. functions (24 TH2-s)
     static void GetQuarkPair(TFile* fG, Double_t* fInt, Double_t &y1, Double_t &y2, Double_t &pt1, Double_t &pt2, Double_t &dphi);              
     static void GetHadronPair(TFile* fG, Int_t idq, Double_t y1, Double_t y2, Double_t pt1, Double_t pt2, Int_t &id3, Int_t &id4, Double_t &pz3, Double_t &pz4, Double_t &pt3, Double_t &pt4); 
-   //Setting the flag for Background transportation while using SetForceDecay()
+
+    //Loading tracks in the stack
+    void LoadTracks(Int_t iquark, Float_t *pq, Int_t iPart, 
+		    Float_t *p, Int_t np, TClonesArray* particles,
+		    Float_t *origine0, Float_t *polar, Float_t wgtp, 
+		    Float_t wgtch, Int_t &nt, Int_t ncsel, Int_t *pSelected, 
+		    Int_t *trackIt);
+    //Setting the flag for Background transportation while using SetForceDecay()
     void SetSelectAll(Bool_t selectall) {fSelectAll = selectall;}
 
  protected:
@@ -61,8 +71,7 @@ class AliGenCorrHF : public AliGenMC
     AliGenCorrHF(const AliGenCorrHF &CorrHF);
     AliGenCorrHF & operator=(const AliGenCorrHF & rhs);
 
-    Double_t* fgIntegral;  //! Pointer to array of cumulative sums of wght-s
-	
+    Double_t* fgIntegral; //! Pointer to array of cumulative sums of wght-s
     static Int_t  fgnptbins;             // =12 Number of bins for the fragm. 
                                          //   function dependence on quark pt
     // Number of the grid bins in deltaphi, y and pt:  18, 30 and 50
@@ -71,11 +80,10 @@ class AliGenCorrHF : public AliGenMC
     static Double_t fgpt[51];            // pt bin coordinates
     static Double_t fgptbmin[12];        // min & max coordinates of pt bins for
     static Double_t fgptbmax[12];        // the fragm. function
-    ClassDef(AliGenCorrHF,2)  // Generator using parameterized QQbar & fragm. functions
+
+    ClassDef(AliGenCorrHF,1)  // Generator using parameterized QQbar & fragm. functions
 };
 #endif
-
-
 
 
 

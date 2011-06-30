@@ -32,6 +32,15 @@
 // Oct 09: added energy choice between 7, 10, 14 TeV (for p-p), 4 TeV (for Pb-Pb),
 // 9 TeV (for p-Pb) and -9 TeV (for Pb-p) (S. Grigoryan)
 // April 10: removed "static" from definition of some variables (B. Vulpescu)
+// May 11: Added Flag for transportation Background While using SetForceDecay() function (L. Manceau)
+// June 11 modifications allowing the setting of cuts on Children added 
+//(L. Manceau)
+// Quarks, hadrons and decayed particles are loaded in the stack outside the 
+// main loop on heavy hadrons. 
+// The particles are loaded only when a pair containing
+// two heavy hadrons given children wich statify cut conditions 
+// are tagged in the main loop
+// 
 //-------------------------------------------------------------------------
 // How it works (for the given flavor and p-p energy):
 //
@@ -234,7 +243,7 @@ AliGenCorrHF::~AliGenCorrHF()
 void AliGenCorrHF::Init()
 {
 // Initialisation
-
+  AliInfo(Form("Number of HF-hadron pairs = %d",fNpart)); 
   AliInfo(Form(" QQbar kinematics and fragm. functions from:  %s",fFileName.Data() )); 
     fFile = TFile::Open(fFileName.Data());
     if(!fFile->IsOpen()){
@@ -266,20 +275,22 @@ void AliGenCorrHF::Generate()
 
   fDecayer->SetForceDecay(fForceDecay);
   fDecayer->Init();
-  
-  //
-  Float_t polar[3]= {0,0,0};  // Polarisation of the parent particle (for GEANT tracking)
-  Float_t origin0[3];         // Origin of the generated parent particle (for GEANT tracking)
+
+  Float_t polar[2][3];        // Polarisation of the parent particle (for GEANT tracking)
+  Float_t origin0[2][3];      // Origin of the generated parent particle (for GEANT tracking)
   Float_t pt, pl, ptot;       // Transverse, logitudinal and total momenta of the parent particle
   Float_t phi, theta;         // Phi and theta spherical angles of the parent particle momentum
-  Float_t p[3], pc[3], och[3];// Momentum, polarisation and origin of the children particles from lujet
-  Int_t nt, i, j, ipa, ihadron[2], iquark[2];
-  Float_t  wgtp, wgtch, random[6];
-  Float_t pq[2][3];           // Momenta of the two quarks
-  Int_t ntq[2] = {-1, -1};
+  Float_t p[2][3];            // Momenta
+  Int_t nt, i, j, ihad, ipa, ipa0, ipa1, ihadron[2], iquark[2];
+  Float_t  wgtp[2], wgtch[2], random[6];
+  Float_t pq[2][3], pc[3];    // Momenta of the two quarks
   Double_t tanhy2, qm = 0;
-
+  Int_t np[2];
   Double_t dphi=0, ptq[2], yq[2], pth[2], plh[2], ph[2], phih[2], phiq[2];
+  Int_t ncsel[2];
+  Int_t** pSelected = new Int_t* [2];
+  Int_t** trackIt = new Int_t* [2];
+
   for (i=0; i<2; i++) { 
     ptq[i]     =0; 
     yq[i]      =0; 
@@ -289,31 +300,40 @@ void AliGenCorrHF::Generate()
     phiq[i]    =0;
     ihadron[i] =0; 
     iquark[i]  =0;
+    for (j=0; j<3; j++) polar[i][j]=0;
   }
 
   // same quarks mass as in the fragmentation functions
   if (fQuark == 4) qm = 1.20;
   else             qm = 4.75;
-
-  TClonesArray *particles = new TClonesArray("TParticle",1000);
+  
+  TClonesArray *particleshad1 = new TClonesArray("TParticle",1000);
+  TClonesArray *particleshad2 = new TClonesArray("TParticle",1000);
+  
+  TList *particleslist = new TList();
+  particleslist->Add(particleshad1);
+  particleslist->Add(particleshad2);
   
   TDatabasePDG *pDataBase = TDatabasePDG::Instance();
-  //
-  
+
   // Calculating vertex position per event
-  for (j=0;j<3;j++) origin0[j]=fOrigin[j];
-  if (fVertexSmear==kPerEvent) {
-    Vertex();
-    for (j=0;j<3;j++) origin0[j]=fVertex[j];
+  for (i=0;i<2;i++){
+    for (j=0;j<3;j++) origin0[i][j]=fOrigin[j];
+    if (fVertexSmear==kPerEvent) {
+      Vertex();
+      for (j=0;j<3;j++) origin0[i][j]=fVertex[j];
+    }
   }
   
-  ipa=0;
+  ipa  = 0;
+  ipa1 = 0;
+  ipa0 = 0;
   
   // Generating fNpart HF-hadron pairs
   fNprimaries = 0;
-  
+ 
   while (ipa<2*fNpart) {
-    
+
     GetQuarkPair(fFile, fgIntegral, yq[0], yq[1], ptq[0], ptq[1], dphi);
     
     GetHadronPair(fFile, fQuark, yq[0], yq[1], ptq[0], ptq[1], ihadron[0], ihadron[1], plh[0], plh[1], pth[0], pth[1]);
@@ -334,7 +354,7 @@ void AliGenCorrHF::Generate()
 	plh[1] *= -1;
       }
     }      
-
+    
     // Cuts from AliGenerator
     
     // Cut on theta
@@ -363,7 +383,7 @@ void AliGenCorrHF::Generate()
     // quarks pdg
     iquark[0] = +fQuark;
     iquark[1] = -fQuark;
-
+    
     // px and py
     TVector2 qvect1 = TVector2();
     TVector2 qvect2 = TVector2();
@@ -373,7 +393,7 @@ void AliGenCorrHF::Generate()
     pq[0][1] = qvect1.Py();
     pq[1][0] = qvect2.Px();
     pq[1][1] = qvect2.Py();
-
+    
     // pz
     tanhy2 = TMath::TanH(yq[0]);
     tanhy2 *= tanhy2;
@@ -383,206 +403,192 @@ void AliGenCorrHF::Generate()
     tanhy2 *= tanhy2;
     pq[1][2] = TMath::Sqrt((ptq[1]*ptq[1]+qm*qm)*tanhy2/(1-tanhy2));
     pq[1][2] = TMath::Sign((Double_t)pq[1][2],yq[1]);
-
+    
     // Here we assume that  |phi_H1 - phi_H2| = |phi_Q1 - phi_Q2| = dphi
     // which is a good approximation for heavy flavors in Pythia
     // ... moreover, same phi angles as for the quarks ...
     
     phih[0] = phiq[0];    
     phih[1] = phiq[1];    
+    
+    ipa1 = 0;
 
-    for (Int_t ihad = 0; ihad < 2; ihad++) {
-    while(1) {
-      //
-      // particle type 
-      Int_t iPart = ihadron[ihad];
-      fChildWeight=(fDecayer->GetPartialBranchingRatio(iPart))*fParentWeight;
-      wgtp=fParentWeight;
-      wgtch=fChildWeight;
-      TParticlePDG *particle = pDataBase->GetParticle(iPart);
-      Float_t am = particle->Mass();
-      phi = phih[ihad];
-      pt  = pth[ihad];
-      pl  = plh[ihad];
-      ptot=TMath::Sqrt(pt*pt+pl*pl);
-
-      p[0]=pt*TMath::Cos(phi);
-      p[1]=pt*TMath::Sin(phi);
-      p[2]=pl;
-
-      if(fVertexSmear==kPerTrack) {
-	Rndm(random,6);
-	for (j=0;j<3;j++) {
-	  origin0[j]=
-	    fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-	    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+    for (ihad = 0; ihad < 2; ihad++) {
+      while(1) {
+	
+	ipa0=ipa1;
+	
+	// particle type 
+	fChildWeight=(fDecayer->GetPartialBranchingRatio(ihadron[ihad]))*fParentWeight;
+	wgtp[ihad]=fParentWeight;
+	wgtch[ihad]=fChildWeight;
+	TParticlePDG *particle = pDataBase->GetParticle(ihadron[ihad]);
+	Float_t am = particle->Mass();
+	phi = phih[ihad];
+	pt  = pth[ihad];
+	pl  = plh[ihad];
+	ptot=TMath::Sqrt(pt*pt+pl*pl);
+	
+	p[ihad][0]=pt*TMath::Cos(phi);
+	p[ihad][1]=pt*TMath::Sin(phi);
+	p[ihad][2]=pl;
+	
+	if(fVertexSmear==kPerTrack) {
+	  Rndm(random,6);
+	  for (j=0;j<3;j++) {
+	    origin0[ihad][j]=
+	      fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
+	      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+	  }
 	}
-      }
-      
-      // Looking at fForceDecay : 
-      // if fForceDecay != none Primary particle decays using 
-      // AliPythia and children are tracked by GEANT
-      //
-      // if fForceDecay == none Primary particle is tracked by GEANT 
-      // (In the latest, make sure that GEANT actually does all the decays you want)	  
-      //
-      
-      if (fForceDecay != kNoDecay) {
-	// Using lujet to decay particle
-	Float_t energy=TMath::Sqrt(ptot*ptot+am*am);
-	TLorentzVector pmom(p[0], p[1], p[2], energy);
-	fDecayer->Decay(iPart,&pmom);
+	
+	// Looking at fForceDecay : 
+	// if fForceDecay != none Primary particle decays using 
+	// AliPythia and children are tracked by GEANT
 	//
-	// select decay particles
-	Int_t np=fDecayer->ImportParticles(particles);
-	
-	//  Selecting  GeometryAcceptance for particles fPdgCodeParticleforAcceptanceCut;
-	if (fGeometryAcceptance) 
-	  if (!CheckAcceptanceGeometry(np,particles)) continue;
-	Int_t ncsel=0;
-	Int_t* pFlag      = new Int_t[np];
-	Int_t* pParent    = new Int_t[np];
-	Int_t* pSelected  = new Int_t[np];
-	Int_t* trackIt    = new Int_t[np];
-	
-	for (i=0; i<np; i++) {
-	  pFlag[i]     =  0;
-	  pSelected[i] =  0;
-	  pParent[i]   = -1;
-	}
-	
-	if (np >1) {
-	  TParticle* iparticle = 0;
-	  Int_t ipF, ipL;
-	  for (i = 1; i<np ; i++) {
-	    trackIt[i] = 1;
-	    iparticle = (TParticle *) particles->At(i);
-	    Int_t kf = iparticle->GetPdgCode();
-	    Int_t ks = iparticle->GetStatusCode();
-	    // flagged particle
+	// if fForceDecay == none Primary particle is tracked by GEANT 
+	// (In the latest, make sure that GEANT actually does all the decays you want)	  
+
+	if (fForceDecay != kNoDecay) {
+	  // Using lujet to decay particle
+	  Float_t energy=TMath::Sqrt(ptot*ptot+am*am);
+	  TLorentzVector pmom(p[ihad][0], p[ihad][1], p[ihad][2], energy);
+	  fDecayer->Decay(ihadron[ihad],&pmom);
+	  
+	  // select decay particles
+	 
+	  np[ihad]=fDecayer->ImportParticles((TClonesArray *)particleslist->At(ihad));
+
+	  //  Selecting  GeometryAcceptance for particles fPdgCodeParticleforAcceptanceCut;
+	  
+	  if (fGeometryAcceptance) 
+	    if (!CheckAcceptanceGeometry(np[ihad],(TClonesArray*)particleslist->At(ihad))) continue;
+	  
+	  trackIt[ihad]     = new Int_t [np[ihad]];
+	  pSelected[ihad]   = new Int_t [np[ihad]];
+	  Int_t* pFlag      = new Int_t [np[ihad]];
+	  
+	  for (i=0; i<np[ihad]; i++) {
+	    pFlag[i]     =  0;
+	    pSelected[ihad][i] =  0;
+	  }
+
+	  if (np[ihad] >1) {
+	    TParticle* iparticle = 0;
+	    Int_t ipF, ipL;
 	    
-	    if (pFlag[i] == 1) {
-	      ipF = iparticle->GetFirstDaughter();
-	      ipL = iparticle->GetLastDaughter();	
-	      if (ipF > 0) for (j=ipF-1; j<ipL; j++) pFlag[j]=1;
-	      continue;
-	    }
-	    
-	    // flag decay products of particles with long life-time (c tau > .3 mum)		      
-	    
-	    if (ks != 1) { 
-	      //TParticlePDG *particle = pDataBase->GetParticle(kf);
-	      
-	      Double_t lifeTime = fDecayer->GetLifetime(kf);
-	      //Double_t mass     = particle->Mass();
-	      //Double_t width    = particle->Width();
-	      if (lifeTime > (Double_t) fMaxLifeTime) {
+	    for (i = 1; i<np[ihad] ; i++) {
+	      trackIt[ihad][i] = 1;
+	      iparticle = 
+		(TParticle *) ((TClonesArray *) particleslist->At(ihad))->At(i);
+	      Int_t kf = iparticle->GetPdgCode();
+	      Int_t ks = iparticle->GetStatusCode();
+	      // flagged particle
+	      if (pFlag[i] == 1) {
 		ipF = iparticle->GetFirstDaughter();
 		ipL = iparticle->GetLastDaughter();	
 		if (ipF > 0) for (j=ipF-1; j<ipL; j++) pFlag[j]=1;
-	      } else {
-		trackIt[i]     = 0;
-		pSelected[i]   = 1;
+		continue;
 	      }
-	    } // ks==1 ?
-	    //
-	    // children
-	    
-	    if ((ChildSelected(TMath::Abs(kf)) || fForceDecay == kAll || fSelectAll) && trackIt[i])
-	      {
-		if (fCutOnChild) {
-		  pc[0]=iparticle->Px();
-		  pc[1]=iparticle->Py();
-		  pc[2]=iparticle->Pz();
-		  Bool_t  childok = KinematicSelection(iparticle, 1);
-		  if(childok) {
-		    pSelected[i]  = 1;
-		    ncsel++;
-		  } else {
-		    ncsel=-1;
-		    break;
-		  } // child kine cuts
+	      
+	      // flag decay products of particles with long life-time (c tau > .3 mum)
+	      if (ks != 1) { 
+		Double_t lifeTime = fDecayer->GetLifetime(kf);
+		if (lifeTime > (Double_t) fMaxLifeTime) {
+		  ipF = iparticle->GetFirstDaughter();
+		  ipL = iparticle->GetLastDaughter();	
+		  if (ipF > 0) for (j=ipF-1; j<ipL; j++) pFlag[j]=1;
 		} else {
-		  pSelected[i]  = 1;
-		  ncsel++;
-		} // if child selection
-	      } // select muon
-	  } // decay particle loop
-	} // if decay products
-	
-	Int_t iparent;
-	if ((fCutOnChild && ncsel >0) || !fCutOnChild){
-	  ipa++;
-	  //
-	  // Parent
-	  // quark
-	  PushTrack(0, -1, iquark[ihad], pq[ihad], origin0, polar, 0, kPPrimary, nt, wgtp);
-	  KeepTrack(nt);
-	  ntq[ihad] = nt;
-	  // hadron
-	  PushTrack(0, ntq[ihad], iPart, p, origin0, polar, 0, kPDecay, nt, wgtp);
-	  pParent[0] = nt;
-	  KeepTrack(nt); 
-	  fNprimaries++;
-	  
-	  //
-	  // Decay Products
-	  //		  
-	  for (i = 1; i < np; i++) {
-	    if (pSelected[i]) {
-	      TParticle* iparticle = (TParticle *) particles->At(i);
-	      Int_t kf  = iparticle->GetPdgCode();
-	      Int_t jpa = iparticle->GetFirstMother()-1;
-	      
-	      och[0] = origin0[0]+iparticle->Vx()/10;
-	      och[1] = origin0[1]+iparticle->Vy()/10;
-	      och[2] = origin0[2]+iparticle->Vz()/10;
-	      pc[0]  = iparticle->Px();
-	      pc[1]  = iparticle->Py();
-	      pc[2]  = iparticle->Pz();
-	      
-	      if (jpa > -1) {
-		iparent = pParent[jpa];
-	      } else {
-		iparent = -1;
-	      }
-	      
-	      PushTrack(fTrackIt*trackIt[i], iparent, kf,
-			pc, och, polar,
-			0, kPDecay, nt, wgtch);
-	      pParent[i] = nt;
-	      KeepTrack(nt); 
-	      fNprimaries++;
-	    } // Selected
-	  } // Particle loop 
-	}  // Decays by Lujet
-	particles->Clear();
-	if (pFlag)      delete[] pFlag;
-	if (pParent)    delete[] pParent;
-	if (pSelected)  delete[] pSelected;	   
-	if (trackIt)    delete[] trackIt;
-      } // kinematic selection
-      else  // nodecay option, so parent will be tracked by GEANT (pions, kaons, eta, omegas, baryons)
-	{
-	  gAlice->GetMCApp()->
-	    PushTrack(fTrackIt,-1,iPart,p,origin0,polar,0,kPPrimary,nt,wgtp);
-	  ipa++; 
-	  fNprimaries++;
-	}
-      break;
-    } // while(1) loop
-    } // hadron pair loop
-  }   // while (ipa<2*fNpart) loop
+		  trackIt[ihad][i]     = 0;
+		  pSelected[ihad][i]   = 1;
+		}
+	      } // ks==1 ?
+	      //
+	      // children
+	      if ((ChildSelected(TMath::Abs(kf)) || fForceDecay == kAll || fSelectAll) && trackIt[ihad][i])
+		{      
+		  if (fCutOnChild) {
+		    pc[0]=iparticle->Px();
+		    pc[1]=iparticle->Py();
+		    pc[2]=iparticle->Pz();
+		    //printf("px %f py %f pz %f\n",pc[0],pc[1],pc[2]);
+		    Bool_t  childok = KinematicSelection(iparticle, 1);
+		    if(childok) {
+		      pSelected[ihad][i]  = 1;
+		      ncsel[ihad]++;
+		    } else {
+		      ncsel[ihad]=-1;
+		      break;
+		    } // child kine cuts
+		  } else {
+		    pSelected[ihad][i]  = 1;
+		    ncsel[ihad]++;
+		  } // if child selection
+		} // select muon
+	    } // decay particle loop
+	  } // if decay products
 
+	  if ((fCutOnChild && ncsel[ihad] >0) || !fCutOnChild) ipa1++;
+
+	  if (pFlag) delete[] pFlag;
+
+	} // kinematic selection
+	else  // nodecay option, so parent will be tracked by GEANT (pions, kaons, eta, omegas, baryons)
+	  {
+	    gAlice->GetMCApp()->
+	      PushTrack(fTrackIt,-1,ihadron[ihad],p[ihad],origin0[ihad],polar[ihad],0,kPPrimary,nt,wgtp[ihad]);
+	    ipa1++; 
+	    fNprimaries++;
+	    
+	  }
+	break;
+      } // while(1) loop
+      if (ipa1<ipa0+1){
+	ipa1=0; 
+	if (pSelected[ihad]) delete pSelected[ihad];
+	if (trackIt[ihad])   delete trackIt[ihad];
+	particleshad1->Clear();
+	particleshad2->Clear();
+	break;
+      }//go out of loop and generate new pair if at least one hadron is rejected
+    } // hadron pair loop
+    if(ipa1==2){ 
+ 
+      ipa=ipa+ipa1;
+ 
+      if(fForceDecay != kNoDecay){
+	for(ihad=0;ihad<2;ihad++){
+
+	  //load tracks in the stack if both hadrons of the pair accepted
+	  LoadTracks(iquark[ihad],pq[ihad],ihadron[ihad],p[ihad],np[ihad],
+		     (TClonesArray *)particleslist->At(ihad),origin0[ihad],
+		     polar[ihad],wgtp[ihad],wgtch[ihad],nt,ncsel[ihad],
+		     pSelected[ihad],trackIt[ihad]);
+
+	  if (pSelected[ihad]) delete pSelected[ihad];
+	  if (trackIt[ihad])   delete trackIt[ihad];
+
+	}
+	  particleshad1->Clear();
+	  particleshad2->Clear();
+      }
+    }
+  }   // while (ipa<2*fNpart) loop
+  
   SetHighWaterMark(nt);
   
   AliGenEventHeader* header = new AliGenEventHeader("CorrHF");
   header->SetPrimaryVertex(fVertex);
   header->SetNProduced(fNprimaries);
   AddHeader(header);
-
-  delete particles;
-
+  
+  
+  delete particleshad1;
+  delete particleshad2;
+  delete particleslist;
+ 
+  delete pSelected;
+  delete trackIt;
 }
 //____________________________________________________________________________________
 void AliGenCorrHF::IpCharm(TH2F *hProbHH, Int_t &pdg3, Int_t &pdg4)
@@ -642,6 +648,7 @@ Double_t AliGenCorrHF::ComputeIntegral(TFile* fG)       // needed by GetQuarkPai
 
    return fgIntegral[nbins];
 }
+
 
 //____________________________________________________________________________________
 void AliGenCorrHF::GetQuarkPair(TFile* fG, Double_t* fInt, Double_t &y1, Double_t &y2, Double_t &pt1, Double_t &pt2, Double_t &dphi)              
@@ -753,5 +760,70 @@ void AliGenCorrHF::GetHadronPair(TFile* fG, Int_t idq, Double_t y1, Double_t y2,
 	pz3 = ptemp*TMath::SinH(y3);
 	pz4 = pz3;
       }
+}
+
+		
+//____________________________________________________________________________________
+void AliGenCorrHF::LoadTracks(Int_t iquark, Float_t *pq, 
+			      Int_t iPart, Float_t *p, 
+			      Int_t np, TClonesArray *particles,
+			      Float_t *origin0, Float_t *polar, 
+			      Float_t wgtp, Float_t wgtch,
+			      Int_t &nt, Int_t ncsel, Int_t *pSelected, 
+			      Int_t *trackIt){
+  Int_t i; 
+  Int_t ntq=-1;
+  Int_t* pParent = new Int_t[np];
+  Float_t pc[3], och[3];
+  Int_t iparent;
+
+  for(i=0;i<np;i++) pParent[i]=-1;
+
+  if ((fCutOnChild && ncsel >0) || !fCutOnChild){  
+    // Parents
+    // quark
+    PushTrack(0, -1, iquark, pq, origin0, polar, 0, kPPrimary, nt, wgtp);
+    KeepTrack(nt);
+    ntq = nt;
+    // hadron
+    PushTrack(0, ntq, iPart, p, origin0, polar, 0, kPDecay, nt, wgtp);
+    pParent[0] = nt;
+    KeepTrack(nt); 
+    fNprimaries++;
+
+    // Decay Products  
+    for (i = 1; i < np; i++) {
+      if (pSelected[i]) {
+
+	TParticle* iparticle = (TParticle *) particles->At(i);
+	Int_t kf  = iparticle->GetPdgCode();
+	Int_t jpa = iparticle->GetFirstMother()-1;
+
+	och[0] = origin0[0]+iparticle->Vx()/10;
+	och[1] = origin0[1]+iparticle->Vy()/10;
+	och[2] = origin0[2]+iparticle->Vz()/10;
+	pc[0]  = iparticle->Px();
+	pc[1]  = iparticle->Py();
+	pc[2]  = iparticle->Pz();
+	
+	if (jpa > -1) {
+	  iparent = pParent[jpa];
+	} else {
+	  iparent = -1;
+	}
+	
+	PushTrack(fTrackIt*trackIt[i], iparent, kf,
+		  pc, och, polar,
+		  0, kPDecay, nt, wgtch);
+	pParent[i] = nt;
+	KeepTrack(nt); 
+	fNprimaries++;
+
+      } // Selected
+    } // Particle loop
+  }
+  if (pParent) delete[] pParent;
+ 
+  return;
 }
 
