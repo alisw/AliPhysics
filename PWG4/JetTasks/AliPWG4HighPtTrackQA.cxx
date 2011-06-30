@@ -346,7 +346,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   Int_t fgkNRel1PtUncertaintyBins=30;
   Float_t fgkRel1PtUncertaintyMin = 0.;
   Float_t fgkRel1PtUncertaintyMax = 0.3;
-  if(fTrackType==1 || fTrackType==2 || fTrackType==4 || fTrackType==5 || fTrackType==6) {
+  if(fTrackType!=0 && fTrackType!=3) {
     fgkNRel1PtUncertaintyBins = 50;
     fgkRel1PtUncertaintyMax = 1.; 
   }
@@ -1062,6 +1062,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fEvent);
   if(!aod)return;
+  AliExternalTrackParam *exParam = new  AliExternalTrackParam();
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++) {
 
     AliAODTrack *aodtrack = aod->GetTrack(iTrack);
@@ -1084,12 +1085,31 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
     fVariables->SetAt((float)aodtrack->GetITSNcls(),6);
     fVariables->SetAt(aodtrack->Chi2perNDF(),7);
     fVariables->SetAt(0.,8);
-    fVariables->SetAt(0.,9);
+    fVariables->SetAt(GetTrackLengthTPC(aodtrack),9);
     fVariables->SetAt(aodtrack->Chi2perNDF(),10);
     fVariables->SetAt(GetTPCClusterInfo(aodtrack,2),11);
     Float_t crossedRowsTPCNClsF = 0.;
     if(aodtrack->GetTPCNclsF()>0.) crossedRowsTPCNClsF = fVariables->At(11)/aodtrack->GetTPCNclsF();
     fVariables->SetAt(crossedRowsTPCNClsF,12);
+
+    //get covariance matrix
+    Double_t cov[21] = {0,};
+    aodtrack->GetCovMatrix(cov);
+    Double_t pxpypz[3] = {0,};
+    aodtrack->PxPyPz(pxpypz);
+    Double_t xyz[3] = {0,};
+    aodtrack->GetXYZ(xyz);
+    Short_t sign = aodtrack->Charge();
+    exParam->Set(xyz,pxpypz,cov,sign);
+
+    fVariables->SetAt(exParam->GetSigmaY2(),13);
+    fVariables->SetAt(exParam->GetSigmaZ2(),14);
+    fVariables->SetAt(exParam->GetSigmaSnp2(),15);
+    fVariables->SetAt(exParam->GetSigmaTgl2(),16);
+    fVariables->SetAt(exParam->GetSigma1Pt2(),17);
+
+    fVariables->SetAt(0.,18);
+    fVariables->SetAt(0.,19);
     
     fPtAll->Fill(fVariables->At(0));
 
@@ -1109,36 +1129,38 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
   fPtDCAZ->Fill(fVariables->At(0),fVariables->At(4));
   fPtNClustersTPC->Fill(fVariables->At(0),fVariables->At(5));
   fPtNPointITS->Fill(fVariables->At(0),fVariables->At(6));
-  if(fDataType==kESD) {
-    fPtNClustersTPCIter1->Fill(fVariables->At(0),fVariables->At(18));
-    if(fVariables->At(18)>0.)
-      fPtChi2PerClusterTPCIter1->Fill(fVariables->At(0),fVariables->At(19)/fVariables->At(18));
 
-    fPtChi2C->Fill(fVariables->At(0),fVariables->At(7));
-    fPtNSigmaToVertex->Fill(fVariables->At(0),fVariables->At(8));
-    fPtRelUncertainty1Pt->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)));
-    fPtRelUncertainty1PtNClus->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(5));
-    fPtRelUncertainty1PtNClusIter1->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(18));
-    fPtRelUncertainty1PtChi2->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(10));
-    if(fVariables->At(18)>0.)
-      fPtRelUncertainty1PtChi2Iter1->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(19)/fVariables->At(18));
-    fPtRelUncertainty1PtPhi->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(1));
-    fPtRelUncertainty1PtTrkLength->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(9));
-    fPtUncertainty1Pt->Fill(fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
-    fPtSigmaY2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(13)));
-    fPtSigmaZ2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(14)));
-    fPtSigmaSnp2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(15)));
-    fPtSigmaTgl2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(16)));
-    fPtSigma1Pt2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
+  
+  fPtNClustersTPCIter1->Fill(fVariables->At(0),fVariables->At(18));
+  if(fVariables->At(18)>0.)
+    fPtChi2PerClusterTPCIter1->Fill(fVariables->At(0),fVariables->At(19)/fVariables->At(18));
+  
+  fPtChi2C->Fill(fVariables->At(0),fVariables->At(7));
+  fPtNSigmaToVertex->Fill(fVariables->At(0),fVariables->At(8));
+  fPtRelUncertainty1Pt->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)));
+  fPtRelUncertainty1PtNClus->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(5));
+  fPtRelUncertainty1PtNClusIter1->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(18));
+  fPtRelUncertainty1PtChi2->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(10));
+  if(fVariables->At(18)>0.)
+    fPtRelUncertainty1PtChi2Iter1->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(19)/fVariables->At(18));
+  fPtRelUncertainty1PtPhi->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(1));
+  fPtRelUncertainty1PtTrkLength->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(9));
+  
+  fPtUncertainty1Pt->Fill(fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
+  fPtSigmaY2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(13)));
+  fPtSigmaZ2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(14)));
+  fPtSigmaSnp2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(15)));
+  fPtSigmaTgl2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(16)));
+  fPtSigma1Pt2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
 
-    fProfPtSigmaY2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(13)));
-    fProfPtSigmaZ2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(14)));
-    fProfPtSigmaSnp2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(15)));
-    fProfPtSigmaTgl2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(16)));
-    fProfPtSigma1Pt2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
-    fProfPtSigma1Pt->Fill(fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
-    fProfPtPtSigma1Pt->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)));
-  }
+  fProfPtSigmaY2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(13)));
+  fProfPtSigmaZ2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(14)));
+  fProfPtSigmaSnp2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(15)));
+  fProfPtSigmaTgl2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(16)));
+  fProfPtSigma1Pt2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
+  fProfPtSigma1Pt->Fill(fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
+  fProfPtPtSigma1Pt->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)));
+
   fPtChi2PerClusterTPC->Fill(fVariables->At(0),fVariables->At(10));
   fPtNCrossedRows->Fill(fVariables->At(0),fVariables->At(11));
   fPtNCrossedRowsNClusF->Fill(fVariables->At(0),fVariables->At(12));
@@ -1335,7 +1357,7 @@ Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfo(AliAODTrack *tr,Int_t nNeighbour
 //_______________________________________________________________________
 Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(AliESDtrack *track) {
   //
-  // returns distance between 2st and last hit in TPC
+  // returns distance between 1st and last hit in TPC
   // distance given in number of padrows
   //
 
@@ -1343,14 +1365,39 @@ Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(AliESDtrack *track) {
   int firstHit = 0;
   int lastHit = 0;
 
-  for(int i=0; i<159; i++) {
-    if(fTPCClusterMap[i]>0) firstHit = fTPCClusterMap[i];
+  for(int i=0; i<=159; i++) {
+    if(fTPCClusterMap[i]>0) firstHit = i;
   }
   for(int i=159; i>=0; i--) {
-    if(fTPCClusterMap[i]>0) lastHit = fTPCClusterMap[i];
+    if(fTPCClusterMap[i]>0) lastHit = i;
   }
 
-  return lastHit - firstHit;
+  Int_t trackLength = lastHit - firstHit;
+
+  return trackLength;
+}
+
+//_______________________________________________________________________
+Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(AliAODTrack *track) {
+  //
+  // returns distance between 1st and last hit in TPC
+  // distance given in number of padrows
+  //
+
+  TBits fTPCClusterMap = track->GetTPCClusterMap(); 
+  int firstHit = 0;
+  int lastHit = 0;
+
+  for(int i=0; i<=159; i++) {
+    if(fTPCClusterMap[i]>0) firstHit = i;
+  }
+  for(int i=159; i>=0; i--) {
+    if(fTPCClusterMap[i]>0) lastHit = i;
+  }
+
+  Int_t trackLength = lastHit - firstHit;
+
+  return trackLength;
 }
 
 //_______________________________________________________________________
