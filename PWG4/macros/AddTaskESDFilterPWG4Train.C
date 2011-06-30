@@ -104,7 +104,18 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    esdTrackCutsH0->SetDCAToVertex2D(kTRUE);
    esdTrackCutsH0->SetMaxChi2PerClusterITS(32);
    esdTrackCutsH0->SetPtRange(0.15,1E10);
-   // switch off ITS cluster requirment as well?
+   // switch off ITS cluster requirment as well
+   esdTrackCutsH0->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+   // 
+   esdTrackCutsH0->SetMaxFractionSharedTPCClusters(0.4);
+   // throw out tracks with too low number of clusters in
+   // the first pass (be consistent with TPC only tracks)
+   // N.B. the number off crossed rows still acts on the tracks after
+   // all iterations if we require tpc standalone, number of clusters
+   // and chi2 TPC cuts act on track after the first iteration
+   esdTrackCutsH0->SetRequireTPCStandAlone(kTRUE);
+   esdTrackCutsH0->SetMinNClustersTPC(80); // <--- first pass
+
 
    // 
    AliESDtrackCuts* esdTrackCutsH1 = new AliESDtrackCuts(*esdTrackCutsH0);
@@ -127,6 +138,16 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    //   esdTrackCutsTPCOnly->SetMinNClustersTPC(70);
    esdTrackCutsTPCOnly->SetMinNCrossedRowsTPC(120);
    esdTrackCutsTPCOnly->SetMinRatioCrossedRowsOverFindableClustersTPC(0.1);// essentially switches it off
+   esdTrackCutsTPCOnly->SetMaxFractionSharedTPCClusters(0.4);
+   // throw out tracks with too low number of clusters in
+   // the first pass 
+   // N.B. the number off crossed rows still acts on the tracks after
+   // all iterations if we require tpc standalone, number of clusters
+   // and chi2 TPC cuts act on track after the first iteration
+   esdTrackCutsTPCOnly->SetRequireTPCStandAlone(kTRUE);
+   esdTrackCutsTPCOnly->SetMinNClustersTPC(80); // <--- first pass
+
+
 
    // Compose the filter
    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
