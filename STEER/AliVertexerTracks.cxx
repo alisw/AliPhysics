@@ -69,7 +69,9 @@ fFiducialR(3.),
 fFiducialZ(30.),
 fnSigmaForUi00(1.5),
 fAlgo(1),
-fAlgoIter0(4)
+fAlgoIter0(4),
+fSelectOnTOFBunchCrossing(kFALSE), 
+fKeepAlsoUnflaggedTOFBunchCrossing(kTRUE)
 {
 //
 // Default constructor
@@ -104,7 +106,9 @@ fFiducialR(3.),
 fFiducialZ(30.),
 fnSigmaForUi00(1.5),
 fAlgo(1),
-fAlgoIter0(4)
+fAlgoIter0(4),
+fSelectOnTOFBunchCrossing(kFALSE), 
+fKeepAlsoUnflaggedTOFBunchCrossing(kTRUE)
 {
 //
 // Standard constructor
@@ -196,6 +200,12 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
 	if(!t) continue;
 	Double_t radius = 2.8; //something less than the beam pipe radius
 	if(!PropagateTrackTo(t,radius)) continue;
+      }
+      // reject tracks according to bunch crossing id from TOF
+      if(fSelectOnTOFBunchCrossing) {
+	Int_t bcTOF = esdt->GetTOFBunchCrossing();
+	if(bcTOF>0) continue;
+	if(bcTOF==-1 && !fKeepAlsoUnflaggedTOFBunchCrossing) continue;
       }
     } else {          // AOD (only ITS mode)
       Int_t ncls0=0;

@@ -107,6 +107,7 @@ class AliVertexerTracks : public TObject {
     { fNominalCov[0]=sx*sx; fNominalCov[2]=sy*sy; fNominalCov[5]=sz*sz;
       fNominalCov[1]=0.; fNominalCov[3]=0.; fNominalCov[4]=0.; return; }
   void  SetVtxStart(AliESDVertex *vtx);
+  void  SetSelectOnTOFBunchCrossing(Bool_t select=kFALSE,Bool_t keepAlsoUnflagged=kTRUE) {fSelectOnTOFBunchCrossing=select; fKeepAlsoUnflaggedTOFBunchCrossing=keepAlsoUnflagged; return;}
   static Double_t GetStrLinMinDist(const Double_t *p0,const Double_t *p1,const Double_t *x0);
   static Double_t GetDeterminant3X3(Double_t matr[][3]);
   static void GetStrLinDerivMatrix(const Double_t *p0,const Double_t *p1,Double_t (*m)[3],Double_t *d);
@@ -179,13 +180,14 @@ class AliVertexerTracks : public TObject {
   //         and uses errors on track parameters as weights
   // fAlgo=5 finds the average point among DCA points of all pairs of tracks
   //         approximated as straight lines 
-
+  Bool_t    fSelectOnTOFBunchCrossing;  // tracks from bunch crossing 0 
+  Bool_t    fKeepAlsoUnflaggedTOFBunchCrossing; // also tracks w/o bunch crossing number (-1)
 
  private:
   AliVertexerTracks(const AliVertexerTracks & source);
   AliVertexerTracks & operator=(const AliVertexerTracks & source);
 
-  ClassDef(AliVertexerTracks,14) // 3D Vertexing with tracks 
+  ClassDef(AliVertexerTracks,15) // 3D Vertexing with tracks 
 };
 
 #endif
