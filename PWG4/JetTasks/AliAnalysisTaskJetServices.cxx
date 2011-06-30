@@ -476,7 +476,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
   Float_t cent = 0;
   if(aod)cent = aod->GetHeader()->GetCentrality();
-  if(cent<=0)cent = 101;
+  if(cent<0)cent = 101;
   fCentrality = cent;
   fRPAngle = 0;
 
@@ -534,7 +534,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       if(esd->GetCentrality()){
 	Float_t tmpCent = 100;
 	tmpCent = esd->GetCentrality()->GetCentralityPercentile("V0M");
-	if(tmpCent<=0)tmpCent = 101;
+	if(tmpCent<0)tmpCent = 101;
 	fh1CentralityESD->Fill(tmpCent);
       }
     }
@@ -892,7 +892,7 @@ Int_t AliAnalysisTaskJetServices::GetEventClass(AliESDEvent *esd){
   if(esd->GetCentrality()){
     cent = esd->GetCentrality()->GetCentralityPercentile("V0M");
   }
-  if(cent<=0)cent = 100;
+  if(cent<0)cent = 100;
   if(cent>80||cent<0)return 5;
   if(cent>50)return 4;
   if(cent>30)return 3;
@@ -905,7 +905,7 @@ Int_t AliAnalysisTaskJetServices::GetEventClass(AliESDEvent *esd){
 Int_t AliAnalysisTaskJetServices::GetEventClass(AliAODEvent *aod){
 
   Float_t cent = aod->GetHeader()->GetCentrality();
-  if(cent>80||cent<=0)return 5;
+  if(cent>80||cent<0)return 5;
   if(cent>50)return 4;
   if(cent>30)return 3;
   if(cent>10)return 2;
