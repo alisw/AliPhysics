@@ -154,7 +154,9 @@ class AliAODTrack : public AliVTrack {
   Bool_t  IsHybridITSTPC() const { return TestBit(kIsHybridITSTPC); }
   Bool_t  IsHybridTPC() const { return TestBit(kIsHybridTPC); }
   Bool_t  IsTPCOnly() const { return TestBit(kIsTPCOnly); }
-
+  //
+  Int_t   GetTOFBunchCrossing() const;
+  //
   template <class T> void GetP(T *p) const {
     p[0]=fMomentum[0]; p[1]=fMomentum[1]; p[2]=fMomentum[2];}
 

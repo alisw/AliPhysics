@@ -664,3 +664,21 @@ Double_t AliAODTrack::GetTRDmomentum(Int_t plane, Double_t */*sp*/) const
 
   return trdMomentum[plane];
 }
+
+//_______________________________________________________________________
+Int_t AliAODTrack::GetTOFBunchCrossing() const 
+{
+  // Returns the number of bunch crossings after trigger (assuming 25ns spacing)
+  const UInt_t kAskBits = kESDpid | kTOFout | kTIME;
+  const double kSpacing = 25e3; // min interbanch spacing
+  const double kShift = 0;
+  Int_t bcid = -1; // defualt one
+  if ( (GetStatus()&kAskBits) != kAskBits) return bcid;
+  int pid = (int)GetMostProbablePID();
+  if (pid<0) return bcid;
+  double ttimes[10]; 
+  GetIntegratedTimes(ttimes);
+  double tdif = GetTOFsignal()  - ttimes[pid];
+  bcid = TMath::Nint((tdif - kShift)/kSpacing);
+  return bcid;
+}
