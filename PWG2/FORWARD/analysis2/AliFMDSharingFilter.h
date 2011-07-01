@@ -128,6 +128,13 @@ public:
    * 
    */
   void SetZeroSharedHitsBelowThreshold(Bool_t use) { fZeroSharedHitsBelowThreshold = use; }
+ /** 
+   * Enable a simpler merging algorithm
+   * 
+   * @param use use the simpler algorithm
+   * 
+   */
+  void SetUseSimpleSharing(Bool_t use) { fUseSimpleMerging = use; }
   /** 
    * Set the number of landau width to subtract from the most probably
    * value to get the high cut for the merging algorithm.
@@ -386,7 +393,7 @@ protected:
   Bool_t   fZeroSharedHitsBelowThreshold; //Whether to zero shared strip below cut
   AliFMDMultCuts fLCuts;
   AliFMDMultCuts fHCuts;
-
+  Bool_t   fUseSimpleMerging;
   ClassDef(AliFMDSharingFilter,3); //
 };
 
