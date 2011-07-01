@@ -72,6 +72,9 @@ AliAnalysisTaskSE(),
   fUseStrangeness(kFALSE),
   fUseBit(kTRUE),
   fDoImpPar(kFALSE),
+  fNImpParBins(400),
+  fLowerImpPar(-2000.),
+  fHigherImpPar(2000.),
   fDoLS(0)
 {
    // Default constructor
@@ -79,30 +82,33 @@ AliAnalysisTaskSE(),
 
 //________________________________________________________________________
 AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplustoKpipi *dpluscutsana,AliRDHFCutsDplustoKpipi *dpluscutsprod,Bool_t fillNtuple):
-AliAnalysisTaskSE(name),
-fOutput(0),
-fHistNEvents(0),
-fPtVsMass(0),
-fPtVsMassTC(0),
-fYVsPt(0),
-fYVsPtTC(0),
-fYVsPtSig(0),
-fYVsPtSigTC(0),
-fNtupleDplus(0),
-fUpmasslimit(1.965),
-fLowmasslimit(1.765),
-fNPtBins(0),
-fBinWidth(0.002),
-fListCuts(0),
-fRDCutsProduction(dpluscutsprod),
-fRDCutsAnalysis(dpluscutsana),
-fCounter(0),
-fFillNtuple(fillNtuple),
-fReadMC(kFALSE),
-fUseStrangeness(kFALSE),
-fUseBit(kTRUE),
-fDoImpPar(kFALSE),
-fDoLS(0)
+  AliAnalysisTaskSE(name),
+  fOutput(0),
+  fHistNEvents(0),
+  fPtVsMass(0),
+  fPtVsMassTC(0),
+  fYVsPt(0),
+  fYVsPtTC(0),
+  fYVsPtSig(0),
+  fYVsPtSigTC(0),
+  fNtupleDplus(0),
+  fUpmasslimit(1.965),
+  fLowmasslimit(1.765),
+  fNPtBins(0),
+  fBinWidth(0.002),
+  fListCuts(0),
+  fRDCutsProduction(dpluscutsprod),
+  fRDCutsAnalysis(dpluscutsana),
+  fCounter(0),
+  fFillNtuple(fillNtuple),
+  fReadMC(kFALSE),
+  fUseStrangeness(kFALSE),
+  fUseBit(kTRUE),
+  fDoImpPar(kFALSE),
+  fNImpParBins(400),
+  fLowerImpPar(-2000.),
+  fHigherImpPar(2000.),
+  fDoLS(0)
 {
   // 
   // Standrd constructor
@@ -834,6 +840,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	if(d->PtProng(i)>ptmax)ptmax=d->PtProng(i);
       }
       Double_t impparXY=d->ImpParXY()*10000.;
+      Double_t arrayForSparse[3]={invMass,ptCand,impparXY};
+      Double_t arrayForSparseTrue[3]={invMass,ptCand,trueImpParXY};
       if(fFillNtuple){
 	tmp[0]=pdgCode;
 	tmp[1]=deltaPx;
@@ -889,7 +897,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	    if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
 	    else if(d->GetCharge()<0) fMassHistTCMinus[index]->Fill(invMass);
 	    if(fDoImpPar){
-	      fHistMassPtImpParTC[0]->Fill(invMass,ptCand,impparXY);
+	      fHistMassPtImpParTC[0]->Fill(arrayForSparse);
 	    }
  	  }
 	}
@@ -948,10 +956,10 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 		if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
 		else if(d->GetCharge()<0) fMassHistTCMinus[index]->Fill(invMass);
 		if(fDoImpPar){
-		  if(isPrimary) fHistMassPtImpParTC[1]->Fill(invMass,ptCand,impparXY);
+		  if(isPrimary) fHistMassPtImpParTC[1]->Fill(arrayForSparse);
 		  else{
-		    fHistMassPtImpParTC[2]->Fill(invMass,ptCand,impparXY);
-		    fHistMassPtImpParTC[3]->Fill(invMass,ptCand,trueImpParXY);
+		    fHistMassPtImpParTC[2]->Fill(arrayForSparse);
+		    fHistMassPtImpParTC[3]->Fill(arrayForSparseTrue);
 		  }
 		}
 	      }
@@ -1011,7 +1019,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 		if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
 		else if(d->GetCharge()<0) fMassHistTCMinus[index]->Fill(invMass);
 		if(fDoImpPar){
-		  fHistMassPtImpParTC[4]->Fill(invMass,ptCand,impparXY);
+		  fHistMassPtImpParTC[4]->Fill(arrayForSparse);
 		}
 	      }
 	    }
@@ -1168,12 +1176,27 @@ void AliAnalysisTaskSEDplus::CreateLikeSignHistos(){
 void AliAnalysisTaskSEDplus::CreateImpactParameterHistos(){
   // Histos for impact paramter study
 
-  Int_t nbins=GetNBinsHistos();
-  fHistMassPtImpParTC[0]=new TH3F("hMassPtImpParAll","",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.,200,-3000.,3000.);
-  fHistMassPtImpParTC[1]=new TH3F("hMassPtImpParPrompt","",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.,200,-3000.,3000.);
-  fHistMassPtImpParTC[2]=new TH3F("hMassPtImpParBfeed","",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.,200,-3000.,3000.);
-  fHistMassPtImpParTC[3]=new TH3F("hMassPtImpParTrueBfeed","",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.,200,-3000.,3000.);
-  fHistMassPtImpParTC[4]=new TH3F("hMassPtImpParBkg","",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.,200,-3000.,3000.);
+  Int_t nmassbins=GetNBinsHistos();
+  Int_t nbins[3]={nmassbins,200,fNImpParBins};
+  Double_t xmin[3]={fLowmasslimit,0.,fLowerImpPar};
+  Double_t xmax[3]={fUpmasslimit,20.,fHigherImpPar};
+
+  fHistMassPtImpParTC[0]=new THnSparseF("hMassPtImpParAll",
+					"Mass vs. pt vs.imppar - All",
+					3,nbins,xmin,xmax);
+  fHistMassPtImpParTC[1]=new THnSparseF("hMassPtImpParPrompt",
+					"Mass vs. pt vs.imppar - promptD",
+					3,nbins,xmin,xmax);
+  fHistMassPtImpParTC[2]=new THnSparseF("hMassPtImpParBfeed",
+					"Mass vs. pt vs.imppar - DfromB",
+					3,nbins,xmin,xmax);
+  fHistMassPtImpParTC[3]=new THnSparseF("hMassPtImpParTrueBfeed",
+					"Mass vs. pt vs.true imppar -DfromB",
+					3,nbins,xmin,xmax);
+  fHistMassPtImpParTC[4]=new THnSparseF("hMassPtImpParBkg",
+				        "Mass vs. pt vs.imppar - backgr.",
+					3,nbins,xmin,xmax);
+
   for(Int_t i=0; i<5;i++){
     fOutput->Add(fHistMassPtImpParTC[i]);
   }
@@ -1267,6 +1290,10 @@ Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(AliAODMCHeader *mcHeader,
     for(Int_t iDau=0; iDau<3; iDau++){
       Int_t ind = labelFirstDau+iDau;
       AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(ind));
+      if(!part){
+	AliError("Daughter particle not found in MC array");
+	return 99999.;
+      } 
       pXdauTrue[iDau]=part->Px();
       pYdauTrue[iDau]=part->Py();
       pZdauTrue[iDau]=part->Pz();
@@ -1276,6 +1303,10 @@ Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(AliAODMCHeader *mcHeader,
     for(Int_t iDau=0; iDau<2; iDau++){
       Int_t ind = labelFirstDau+iDau;
       AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(ind));
+      if(!part){
+	AliError("Daughter particle not found in MC array");
+	return 99999.;
+      } 
       Int_t pdgCode=TMath::Abs(part->GetPdgCode());
       if(pdgCode==211 || pdgCode==321){
 	pXdauTrue[theDau]=part->Px();
@@ -1289,7 +1320,13 @@ Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(AliAODMCHeader *mcHeader,
 	  for(Int_t iDauRes=0; iDauRes<2; iDauRes++){
 	    Int_t indDR = labelFirstDauRes+iDauRes;
 	    AliAODMCParticle* partDR = dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDR));
-	    if(pdgCode==211 || pdgCode==321){
+	    if(!partDR){
+	      AliError("Daughter particle not found in MC array");
+	      return 99999.;
+	    } 
+	    
+	    Int_t pdgCodeDR=TMath::Abs(partDR->GetPdgCode());
+ 	    if(pdgCodeDR==211 || pdgCodeDR==321){
 	      pXdauTrue[theDau]=partDR->Px();
 	      pYdauTrue[theDau]=partDR->Py();
 	      pZdauTrue[theDau]=partDR->Pz();
@@ -1298,6 +1335,10 @@ Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(AliAODMCHeader *mcHeader,
 	  }
 	}
       }
+    }
+    if(theDau!=3){
+      AliError("Wrong number of decay prongs");
+      return 99999.;
     }
   }
 

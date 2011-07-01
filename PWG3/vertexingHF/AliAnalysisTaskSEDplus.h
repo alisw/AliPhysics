@@ -21,7 +21,7 @@
 #include <TNtuple.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TH3F.h>
+#include <THnSparse.h>
 #include <TArrayD.h>
 
 #include "AliRDHFCutsDplustoKpipi.h"
@@ -42,12 +42,19 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetDoLikeSign(Int_t dols=0){fDoLS=dols;}
   void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpPar=doImp;}
+  void SetImpactParameterBinning(Int_t nbins, Float_t dmin, Float_t dmax){
+    fNImpParBins=nbins;
+    fLowerImpPar=dmin;
+    fHigherImpPar=dmax;
+  }
   void SetUseStrangeness(Bool_t uses=kTRUE){fUseStrangeness=uses;}
   void SetMassLimits(Float_t range);
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
   void SetPtBinLimit(Int_t n, Float_t *limitarray);
   void SetBinWidth(Float_t w);
   void SetUseBit(Bool_t dols=kTRUE){fUseBit=dols;}
+
+
   
   Float_t GetUpperMassLimit(){return fUpmasslimit;}
   Float_t GetLowerMassLimit(){return fLowmasslimit;}
@@ -109,7 +116,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH1F *fDCAHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 6 (LC)
   TH1F *fMassHistLSTC[5*kMaxPtBins];//!hist. for LS inv mass (TC)
   TH1F *fHistCentrality[3];//!hist. for cent distr (all,sel ev, )
-  TH3F *fHistMassPtImpParTC[5];//! histograms for impact paramter studies
+  THnSparseF *fHistMassPtImpParTC[5];//! histograms for impact paramter studies
   TH2F *fPtVsMass;    //! hist. of pt vs. mass (prod. cuts)
   TH2F *fPtVsMassTC;  //! hist. of pt vs. mass (analysis cuts)
   TH2F *fYVsPt;       //! hist. of Y vs. Pt (prod. cuts)
@@ -131,9 +138,12 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Bool_t fUseStrangeness;//flag to enhance strangeness in MC to fit to data
   Bool_t fUseBit;      // flag to use bitmask
   Bool_t fDoImpPar;    // flag to activate impact paramter histos
+  Int_t  fNImpParBins;   // nunber of bins in impact parameter histos
+  Float_t fLowerImpPar;  // lower limit in impact parameter (um)
+  Float_t fHigherImpPar; // higher limit in impact parameter (um)
   Int_t  fDoLS;        // flag to do LS analysis
   
-  ClassDef(AliAnalysisTaskSEDplus,13); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,14); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
