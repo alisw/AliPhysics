@@ -84,16 +84,13 @@ class AliITSInitGeometry : public TObject{
  private:
     // Decode module number into old layer, ladder, and detector numbers
     void DecodeDetectorLayersv11(Int_t mod,Int_t &lay,
-                                         Int_t &lad,Int_t &det)const{
-        lay=lad=det=mod;};
+				 Int_t &lad,Int_t &det);
     // find module number by layer, and copy numbers
-    void DecodeDetectorv11(Int_t &mod,Int_t lay,Int_t /* cpn0 */,
-                           Int_t /* cpn1 */,Int_t /* cpn2 */) const{
-        mod=lay;};
+    void DecodeDetectorv11(Int_t &mod,Int_t lay,Int_t cpn0,Int_t cpn1,
+			   Int_t cpn2)const;
     // Given module number, find copy numbers.
     void RecodeDetectorv11(Int_t mod,Int_t &cpn0,Int_t &cpn1,
-                                    Int_t &cpn2)const{
-        cpn0=cpn1=cpn2=mod;};
+			   Int_t &cpn2);
     // Decode module number into old layer, ladder, and detector numbers
     void DecodeDetectorv11Hybrid(Int_t &mod,Int_t lay,Int_t cpn0,Int_t cpn1,
                                  Int_t cpn2)const;
