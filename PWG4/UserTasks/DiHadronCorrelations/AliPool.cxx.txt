@@ -1,4 +1,4 @@
-#include "KiddiePoolClasses.h"
+#include "AliPool.h.txt"
 
 // ===================================================================
 //                             KiddiePool
