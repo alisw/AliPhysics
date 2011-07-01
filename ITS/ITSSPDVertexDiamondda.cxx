@@ -221,6 +221,9 @@ int main(int argc, char **argv) {
 
       // Auto save
       if ((nevents_physics%N_EVENTS_AUTOSAVE) == 0) {
+
+	((TH2F*)mv->GetVertexXY())->SetTitle(Form("%f events with vertex (%i out of %i processed events)",((Double_t)nevents_with_vertex)/((Double_t)nevents_physics),nevents_with_vertex,nevents_physics));
+
 	mv->WriteVertices(OUTPUT_FILE);
 
 #ifdef ALI_AMORE
@@ -242,6 +245,7 @@ int main(int argc, char **argv) {
       break;
     }
   }
+  ((TH2F*)mv->GetVertexXY())->SetTitle(Form("%f events with vertex (%i out of %i processed events)",((Double_t)nevents_with_vertex)/((Double_t)nevents_physics),nevents_with_vertex,nevents_physics));
 
   mv->WriteVertices(OUTPUT_FILE);
 
