@@ -326,8 +326,8 @@ Bool_t AliAltroRawStreamV3::NextBunch()
   fBunchLength = fBunchData[fBunchDataIndex];
   if (fBunchLength <= 2) {
     // Invalid bunch size
-    AliWarning(Form("Too short bunch length (%d) in Address=0x%x (DDL=%03d)!",
-		    fBunchLength,fDDLNumber,fHWAddress));
+    AliWarning(Form("Too short bunch length (%d) @ %d in Address=0x%x (DDL=%03d)!",
+		    fBunchLength,fBunchDataIndex,fHWAddress,fDDLNumber));
     fRawReader->AddMinorErrorLog(kAltroBunchHeadErr,Form("hw=0x%x",fHWAddress));
     if (AliDebugLevel() > 0) HexDumpChannel();
     fCount = fBunchLength = -1;
@@ -335,7 +335,7 @@ Bool_t AliAltroRawStreamV3::NextBunch()
   }
   if ((fBunchDataIndex + fBunchLength) > fCount) {
     // Too long bunch detected
-    AliWarning(Form("Too long bunch detected in Address=0x%x (DDL=%03d) ! Expected <= %d 10-bit words, found %d !",
+    AliWarning(Form("Too long bunch detected @ %d in Address=0x%x (DDL=%03d) ! Expected <= %d 10-bit words, found %d !", fBunchDataIndex,
 		    fHWAddress,fDDLNumber,fCount-fBunchDataIndex,fBunchLength));
     fRawReader->AddMinorErrorLog(kAltroBunchHeadErr,Form("hw=0x%x",fHWAddress));
     if (AliDebugLevel() > 0) HexDumpChannel();
@@ -348,7 +348,7 @@ Bool_t AliAltroRawStreamV3::NextBunch()
   fStartTimeBin = fBunchData[fBunchDataIndex++];
   if (fCheckAltroPayload) {
     if ((fStartTimeBin-fBunchLength+1) < 0) {
-      AliWarning(Form("Invalid start time-bin in Address=0x%x (DDL=%03d)! (%d-%d+1) < 0",
+      AliWarning(Form("Invalid start time-bin @ %d in Address=0x%x (DDL=%03d)! (%d-%d+1) < 0", fBunchDataIndex-1,
 		      fHWAddress,fDDLNumber,fStartTimeBin,fBunchLength));
       fRawReader->AddMinorErrorLog(kAltroPayloadErr,Form("hw=0x%x",fHWAddress));
       if (AliDebugLevel() > 0) HexDumpChannel();
@@ -356,7 +356,7 @@ Bool_t AliAltroRawStreamV3::NextBunch()
       return kFALSE;
     }
     if (fStartTimeBin >= prevTimeBin) {
-      AliWarning(Form("Invalid start time-bin in Address=0x%x (DDL=%03d)! (%d>=%d)",
+      AliWarning(Form("Invalid start time-bin @ %d in Address=0x%x (DDL=%03d)! (%d>=%d)", fBunchDataIndex-1,
 		      fHWAddress,fDDLNumber,fStartTimeBin,prevTimeBin));
       fRawReader->AddMinorErrorLog(kAltroPayloadErr,Form("hw=0x%x",fHWAddress));
       if (AliDebugLevel() > 0) HexDumpChannel();
@@ -730,8 +730,10 @@ void AliAltroRawStreamV3::HexDumpChannel() const
   if (fCount>0 && fPosition>0) {
     printf("Hex-Dump of DDL: %3d, RCU ID: %d, HWADDR: 0x%03x\n",
            fDDLNumber,fRCUId,fHWAddress);
-    printf("32-bit     - 2bit 10bit 10bit 10bit\n");
-    printf("**********   **** ***** ***** *****\n");
+    printf("32-bit     - 2bit 10bit 10bit 10bit - ");
+    printf("Index 10bit  10bit  10bit\n");
+    printf("**********   **** ***** ***** ***** - ");
+    printf("***** ****** ****** ******\n");
     Int_t nwords = (fCount+2)/3+1;
     for (Int_t iword = 0; iword < nwords; iword++) {
       UInt_t word32 = Get32bitWord(fPosition-nwords+iword);
@@ -739,8 +741,14 @@ void AliAltroRawStreamV3::HexDumpChannel() const
       UInt_t word101 = word32 >> 20 & 0x3FF;
       UInt_t word102 = word32 >> 10 & 0x3FF;
       UInt_t word103 = word32 >> 00 & 0x3FF; // nice octal number
-      printf("0x%08x - 0b%1d%1d 0x%03x 0x%03x 0x%03x\n",
+      printf("0x%08x - 0b%1d%1d 0x%03x 0x%03x 0x%03x",
 	     word32,marker>>1,marker&0x1,word101,word102,word103);
+      if (iword == 0) { printf(" - Channel Header\n"); continue; }
+      Int_t base = 3*(iword-1);
+      printf(" - %5d 0x%03x%c 0x%03x%c 0x%03x%c\n", base,
+	     fBunchData[base],   (fBunchDataIndex == base   ? '*' : ' '),
+	     fBunchData[base+1], (fBunchDataIndex == base+1 ? '*' : ' '),
+	     fBunchData[base+2], (fBunchDataIndex == base+2 ? '*' : ' '));
     }
   }
 }
