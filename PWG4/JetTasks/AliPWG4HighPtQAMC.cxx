@@ -601,7 +601,6 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
       track = esdtrack;
     
     if(!track) {
-      if(fTrackType==1 || fTrackType==2) delete track;
       continue;
     }
 
@@ -685,7 +684,6 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 	else if(fTrackType==2) {
 	  track2 = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack2->GetID());
 	  if(!track2) { 
-	    delete track2;
 	    continue;
 	  }
 	  AliExternalTrackParam exParam2;
@@ -699,7 +697,6 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 	else
 	  track2 = esdtrack2;
 	if(!track2) {
-	  if(fTrackType==1 || fTrackType==2) delete track2;
 	  continue;
 	}
       
