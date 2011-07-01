@@ -125,6 +125,10 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fHClustEnergySigma(0x0),
     fHClustSigmaSigma(0x0),
     fHClustNCellEnergyRatio(0x0),
+    fHClustEnergyNCell(0x0),
+    fHPrimTrackPt(0x0),
+    fHPrimTrackEta(0x0),
+    fHPrimTrackPhi(0x0),
     fHMatchDr(0x0),
     fHMatchDz(0x0),
     fHMatchEp(0x0),
@@ -393,8 +397,19 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
     fHClustNCellEnergyRatio->SetXTitle("N_{cells}");
     fHClustNCellEnergyRatio->SetYTitle("E^{max}_{cell}/E_{clus}");
     fOutput->Add(fHClustNCellEnergyRatio);
+    fHClustEnergyNCell = new TH2F("hClustEnergyNCell","",200,0,100,50,0,50);
+    fHClustEnergyNCell->SetXTitle("E_{clus}");
+    fHClustEnergyNCell->SetYTitle("N_{cells}");
+    fOutput->Add(fHClustEnergyNCell);
   }
 
+  // histograms for primary tracks
+  fHPrimTrackPt = new TH1F("hPrimTrackPt",";p_{T} [GeV/c]",500,0,50);
+  fOutput->Add(fHPrimTrackPt);
+  fHPrimTrackEta = new TH1F("hPrimTrackEta",";#eta",40,-2,2);
+  fOutput->Add(fHPrimTrackEta);
+  fHPrimTrackPhi = new TH1F("hPrimTrackPhi",";#varPhi [rad]",63,0,6.3);
+  fOutput->Add(fHPrimTrackPhi);
   // histograms for track matching
   fHMatchDr = new TH1F("hMatchDrDist",";dR [cm]",500,0,200);
   fOutput->Add(fHMatchDr);
@@ -1383,6 +1398,8 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
     fHClustEnergySigma->Fill(clus->E()*maxAxis,clus->E());
     fHClustSigmaSigma->Fill(max(clus->GetM02(),clus->GetM20()),clus->E()*maxAxis);
     fHClustNCellEnergyRatio->Fill(clus->GetNCells(),GetMaxCellEnergy(clus)/clus->E());
+    //====
+    fHClustEnergyNCell->Fill(clus->E(),clus->GetNCells());  
   }
 }
 
@@ -1553,6 +1570,15 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
 
   fHeader->fNSelTr     = fSelTracks->GetEntries();
   fHeader->fNSelPrimTr = fSelPrimTracks->GetEntries();
+  fHeader->fNSelPrimTr1   = 0;
+  fHeader->fNSelPrimTr2   = 0;
+  for(int iTracks=0; iTracks < fSelPrimTracks->GetEntries(); iTracks++){
+    AliESDtrack *track = static_cast<AliESDtrack*>(fSelPrimTracks->At(iTracks));
+    if(track->Pt()>1)
+      ++fHeader->fNSelPrimTr1;
+    if(track->Pt()>2)
+      ++fHeader->fNSelPrimTr2;
+  }
 
   fHeader->fNCells   = 0;
   fHeader->fNCells1  = 0;
@@ -1709,6 +1735,23 @@ void AliAnalysisTaskEMCALPi0PbPb::FillMcHists()
 void AliAnalysisTaskEMCALPi0PbPb::FillOtherHists()
 {
   // Fill other histograms.
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::FillTrackHists()
+{
+  // Fill track histograms.
+
+  if (fSelPrimTracks) {
+    for(int iTracks=0; iTracks < fSelPrimTracks->GetEntries(); iTracks++) {
+      AliESDtrack *track = static_cast<AliESDtrack*>(fSelPrimTracks->At(iTracks));
+      if(!track)
+        continue;
+      fHPrimTrackPt->Fill(track->Pt());
+      fHPrimTrackEta->Fill(track->Eta());
+      fHPrimTrackPhi->Fill(track->Phi());
+    }
+  }
 }
 
 //__________________________________________________________________________________________________
