@@ -344,7 +344,22 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     fOutput->Add(fChanHist[i]);
   }
 
-  fHistNEvents = new TH1F("hNEvents", "Number of processed events",3,-1.5,1.5);
+  fHistNEvents = new TH1F("hNEvents", "number of events ",12,-0.5,11.5);
+  fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"n. passing IsEvSelected");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"n. rejected due to trigger");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"n. rejected due to not reco vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"n. rejected for contr vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"n. rejected for vertex out of accept");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"n. rejected for pileup events");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"no. of out centrality events");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of candidate");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"no. of Ds after loose cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"no. of Ds after tight cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(12,"no. of cand wo bitmask");
+
+  fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
+
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
@@ -414,9 +429,23 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   fHistNEvents->Fill(0); // count event
   // Post the data already here
   PostData(1,fOutput);
-
+  
   fCounter->StoreEvent(aod,fProdCuts,fReadMC);
-  //fCounter->StoreEvent(aod,fReadMC);
+  
+
+  Bool_t isEvSel=fAnalysisCuts->IsEventSelected(aod);
+  if(fAnalysisCuts->IsEventRejectedDueToTrigger())fHistNEvents->Fill(2);
+  if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex())fHistNEvents->Fill(3);
+  if(fAnalysisCuts->IsEventRejectedDueToVertexContributors())fHistNEvents->Fill(4);
+  if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion())fHistNEvents->Fill(5);
+  if(fAnalysisCuts->IsEventRejectedDueToPileupSPD())fHistNEvents->Fill(6);
+  if(fAnalysisCuts->IsEventRejectedDueToCentrality())fHistNEvents->Fill(7);
+  
+  
+  
+  if(!isEvSel)return;
+  
+  fHistNEvents->Fill(1);
 
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
@@ -453,29 +482,51 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
   
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
+    fHistNEvents->Fill(8);
     
-    if(fUseSelectionBit && !(d->HasSelectionBit(AliRDHFCuts::kDsCuts))) continue;
+    if(fUseSelectionBit && !(d->HasSelectionBit(AliRDHFCuts::kDsCuts))){
+      fHistNEvents->Fill(11);
+      continue;
+    }
     
     Bool_t unsetvtx=kFALSE;
     if(!d->GetOwnPrimaryVtx()){
       d->SetOwnPrimaryVtx(vtx1);
       unsetvtx=kTRUE;
     }
-
+    
+    Bool_t recVtx=kFALSE;
+    AliAODVertex *origownvtx=0x0;
+    Int_t retCodeProdCuts=fProdCuts->IsSelected(d,AliRDHFCuts::kCandidate,aod);
+   
+    if(retCodeProdCuts) {
+      if(fProdCuts->GetIsPrimaryWithoutDaughters()){
+   	    if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());	
+   	    if(fProdCuts->RecalcOwnPrimaryVtx(d,aod))recVtx=kTRUE;
+   	    else fProdCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);
+      }
+    }  
+    
     Double_t ptCand = d->Pt();
     Int_t iPtBin=TMath::BinarySearch(fNPtBins,fPtLimits,(Float_t)ptCand);
-    Int_t retCodeAnalysisCuts=fAnalysisCuts->IsSelected(d,AliRDHFCuts::kCandidate);
+    Int_t retCodeAnalysisCuts=fAnalysisCuts->IsSelected(d,AliRDHFCuts::kCandidate,aod);
     Double_t rapid=d->YDs(); 
     fYVsPt->Fill(ptCand,rapid);
 
     Bool_t isFidAcc=fAnalysisCuts->IsInFiducialAcceptance(ptCand,rapid);
-    if(isFidAcc){
-      nSelectedloose++;
-      if(retCodeAnalysisCuts>0)nSelectedtight++;
+    
+    if(retCodeProdCuts>0){
+      if(isFidAcc){
+        nSelectedloose++;
+        fHistNEvents->Fill(9);
+        if(retCodeAnalysisCuts>0)nSelectedtight++;
+      }
     }
+  
     if(retCodeAnalysisCuts<=0) continue;
     if(!isFidAcc) continue;
-
+    fHistNEvents->Fill(10);
+    
     Int_t index=GetHistoIndex(iPtBin);
     fPtCandHist[index]->Fill(ptCand);
 
@@ -663,6 +714,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     }
     
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
+    if(recVtx)fProdCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);
   }
  
   fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);
