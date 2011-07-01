@@ -79,6 +79,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   virtual void FillOtherHists();
   virtual void FillPionHists();
   virtual void FillMcHists();
+  virtual void FillTrackHists();
   void         FillVertex(AliStaVertex *v, const AliESDVertex *esdv);
   void         FillVertex(AliStaVertex *v, const AliAODVertex *aodv);
   Double_t     GetCellIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2)                        const;
@@ -181,7 +182,12 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   TH2                   *fHClustEnergyPt;         //!histo for cluster energy vs. pT
   TH2                   *fHClustEnergySigma;      //!histo for cluster energy vs. variance over long axis 
   TH2                   *fHClustSigmaSigma;       //!histo for sigma vs. lambda_0 comparison
-  TH2                   *fHClustNCellEnergyRatio; //!histo for cluster n tow vs. energy ratio
+  TH2                   *fHClustNCellEnergyRatio; //!histo for cluster n cells vs. energy ratio
+  TH2			*fHClustEnergyNCell;      //!histo for cluster energy vs. cluster n cells
+    // histograms for primary tracks
+  TH1			*fHPrimTrackPt;           //!histo for primary track pt
+  TH1			*fHPrimTrackEta;          //!histo for primary track eta
+  TH1			*fHPrimTrackPhi;           //!histo for primary track phi
     // histograms for track matching
   TH1                   *fHMatchDr;               //!histo for dR track cluster matching
   TH1                   *fHMatchDz;               //!histo for dZ track cluster matching
@@ -210,8 +216,8 @@ class AliStaHeader
   AliStaHeader() : fRun(0), fOrbit(0), fPeriod(0), fBx(0), fL0(0), fL1(0), fL2(0),
                    fTrClassMask(0), fTrCluster(0), fOffTriggers(0), fFiredTriggers(),
                    fTcls(0), fV0Cent(0), fV0(0), fCl1Cent(0), fCl1(0), fTrCent(0), fTr(0),
-                   fCqual(-1), fPsi(0), fPsiRes(0), fNSelTr(0), fNSelPrimTr(0), 
-                   fNCells(0), fNCells1(0), fNCells2(0), fNCells5(0), 
+                   fCqual(-1), fPsi(0), fPsiRes(0), fNSelTr(0), fNSelPrimTr(0), fNSelPrimTr1(0),
+                   fNSelPrimTr2(0), fNCells(0), fNCells1(0), fNCells2(0), fNCells5(0), 
                    fNClus(0), fNClus1(0), fNClus2(0), fNClus5(0), 
                    fMaxCellE(0), fMaxClusE(0) {;}
   ULong64_t     GetEventId() const {
@@ -245,6 +251,8 @@ class AliStaHeader
   Double32_t    fPsiRes;         //[0,0,16] event-plane ange resolution
   UShort_t      fNSelTr;         //         # selected tracks         
   UShort_t      fNSelPrimTr;     //         # selected tracks (primary)
+  UShort_t      fNSelPrimTr1;    //         # selected tracks (primary) pt > 1 GeV/c
+  UShort_t      fNSelPrimTr2;    //         # selected tracks (primary) pt > 2 GeV/c
   UShort_t      fNCells;         //         # cells
   UShort_t      fNCells1;        //         # cells > 1 GeV
   UShort_t      fNCells2;        //         # cells > 2 GeV
