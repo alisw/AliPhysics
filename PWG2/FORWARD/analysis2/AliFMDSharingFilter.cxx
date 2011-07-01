@@ -1,3 +1,4 @@
+
 //
 // Class to do the sharing correction.  That is, a filter that merges 
 // adjacent strip signals presumably originating from a single particle 
@@ -62,7 +63,8 @@ AliFMDSharingFilter::AliFMDSharingFilter()
     fDebug(0),
     fZeroSharedHitsBelowThreshold(false),
     fLCuts(),
-    fHCuts()
+    fHCuts(),
+    fUseSimpleMerging(false)
 {
   // 
   // Default Constructor - do not use 
@@ -83,7 +85,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
     fDebug(0),
     fZeroSharedHitsBelowThreshold(false),
     fLCuts(),
-    fHCuts()
+    fHCuts(),
+    fUseSimpleMerging(false)
 {
   // 
   // Constructor 
@@ -116,7 +119,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
     fDebug(o.fDebug),
     fZeroSharedHitsBelowThreshold(o.fZeroSharedHitsBelowThreshold),
     fLCuts(o.fLCuts),
-    fHCuts(o.fHCuts)
+    fHCuts(o.fHCuts),
+    fUseSimpleMerging(o.fUseSimpleMerging)
 {
   // 
   // Copy constructor 
@@ -164,7 +168,8 @@ AliFMDSharingFilter::operator=(const AliFMDSharingFilter& o)
   fZeroSharedHitsBelowThreshold = o.fZeroSharedHitsBelowThreshold;
   fLCuts                        = o.fLCuts;
   fHCuts                        = o.fHCuts;
-    
+  fUseSimpleMerging             = o.fUseSimpleMerging;
+  
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
@@ -283,14 +288,23 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
       RingHistos* histos = GetRingHistos(d, r);
       
       for(UShort_t s = 0; s < nsec;  s++) {
+	
 	for (UShort_t t = 0; t < nstr; t++) status[t] = kCandidate;
+	
 #ifdef USE_OLDER_MERGING
 	Bool_t usedThis   = kFALSE;
 	Bool_t usedPrev   = kFALSE;
 #endif	
+	//For simple merging
+	Bool_t used = kFALSE;
 	for(UShort_t t = 0; t < nstr; t++) {
 	  output.SetMultiplicity(d,r,s,t,0.);
 	  Float_t mult = SignalInStrip(input,d,r,s,t);
+	  //For simple merging
+	  Float_t multNext = 0;
+	  if(t<nstr-1) multNext = SignalInStrip(input,d,r,s,t+1);
+	  if(multNext ==  AliESDFMD::kInvalidMult) multNext = 0;
+	  
 	  // Get the pseudo-rapidity 
 	  Double_t eta = input.Eta(d,r,s,t);
 	  Double_t phi = input.Phi(d,r,s,t) * TMath::Pi() / 180.;
@@ -299,7 +313,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	  // Keep dead-channel information. 
 	  if(mult == AliESDFMD::kInvalidMult)
 	    output.SetMultiplicity(d,r,s,t,AliESDFMD::kInvalidMult);
-
+	  
 	  // If no signal or dead strip, go on. 
 	  if (mult == AliESDFMD::kInvalidMult || mult == 0) {
 	    if (mult == 0) histos->fSum->Fill(eta,phi,mult);
@@ -309,54 +323,73 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 
 	  // Fill the diagnostics histogram 
 	  histos->fBefore->Fill(mult);
-
-	  // Get next and previous signal - if any 
-	  Double_t prevE = 0;
-	  Double_t nextE = 0;
-	  Status   prevStatus = (t == 0      ? kNone : status[t-1]);
-	  Status   thisStatus = status[t];
-	  Status   nextStatus = (t == nstr-1 ? kNone : status[t+1]);
-	  if (t != 0) {
-	    prevE = SignalInStrip(input,d,r,s,t-1);
-	    if (prevE == AliESDFMD::kInvalidMult) prevE = 0;
-	  }
-	  if (t != nstr - 1) {
-	    nextE = SignalInStrip(input,d,r,s,t+1);
-	    if (nextE == AliESDFMD::kInvalidMult) nextE = 0;
-	  }
-	  if (t != 0) histos->fNeighborsBefore->Fill(prevE, mult);
 	  
+	  Double_t mergedEnergy = 0;
+	  
+	  if(fUseSimpleMerging) {
+	    Float_t etot = 0;
+	    if(mult > GetLowCut(d, r, eta)) etot = mult;
+	    if(used) {used = kFALSE; continue; }
+	    
+	    if(mult > GetLowCut(d, r, eta) && 
+	       multNext > GetLowCut(d, r, eta) && 
+	       (mult < GetHighCut(d, r, eta ,false) ||
+		multNext < GetHighCut(d, r, eta ,false))) {
+	      etot = mult + multNext;
+	      used=kTRUE;
+	    }
+	    
+	    mergedEnergy = etot;
+	  }
+	  else {
+	    // Get next and previous signal - if any 
+	    Double_t prevE = 0;
+	    Double_t nextE = 0;
+	    Status   prevStatus = (t == 0      ? kNone : status[t-1]);
+	    Status   thisStatus = status[t];
+	    Status   nextStatus = (t == nstr-1 ? kNone : status[t+1]);
+	    if (t != 0) {
+	      prevE = SignalInStrip(input,d,r,s,t-1);
+	      if (prevE == AliESDFMD::kInvalidMult) prevE = 0;
+	    }
+	    if (t != nstr - 1) {
+	      nextE = SignalInStrip(input,d,r,s,t+1);
+	      if (nextE == AliESDFMD::kInvalidMult) nextE = 0;
+	    }
+	    if (t != 0) histos->fNeighborsBefore->Fill(prevE, mult);
+	    
 #ifdef USE_OLDER_MERGING
-	  Double_t mergedEnergy = MultiplicityOfStrip(mult,eta,prevE,nextE,
-						      lowFlux,d,r,s,t, 
-						      usedPrev,usedThis);
-	  status[t] = (usedPrev ? kMergedWithOther : kNone);
-	  if (t != nstr - 1) status[t] = (usedThis ? kMergedWithOther : kNone);
+	    /*Double_t*/ mergedEnergy = MultiplicityOfStrip(mult,eta,prevE,nextE,
+							lowFlux,d,r,s,t, 
+							usedPrev,usedThis);
+	    status[t] = (usedPrev ? kMergedWithOther : kNone);
+	    if (t != nstr - 1) status[t] = (usedThis ? kMergedWithOther : kNone);
 #else 
-	  Double_t mergedEnergy = MultiplicityOfStrip(mult, prevE, nextE, 
-						      eta, lowFlux, 
-						      d, r, s, t, 
-						      prevStatus, 
-						      thisStatus, 
-						      nextStatus);
-	  if (t != 0)      status[t-1] = prevStatus;
-	  if (t != nstr-1) status[t+1] = nextStatus;
-	  status[t] = thisStatus;
-
+	    /*Double_t*/ mergedEnergy = MultiplicityOfStrip(mult, prevE, nextE, 
+							eta, lowFlux, 
+							d, r, s, t, 
+							prevStatus, 
+							thisStatus, 
+							nextStatus);
+	    if (t != 0)      status[t-1] = prevStatus;
+	    if (t != nstr-1) status[t+1] = nextStatus;
+	    status[t] = thisStatus;
+	    
 #endif
-	  // If we're processing on non-angle corrected data, we
-	  // should do the angle correction here
+	    // If we're processing on non-angle corrected data, we
+	    // should do the angle correction here
+	  }
 	  if (!fCorrectAngles)
 	    mergedEnergy = AngleCorrect(mergedEnergy, eta);
 	  if (mergedEnergy > 0) histos->Incr();
-
+	  
 	  if (t != 0) 
 	    histos->fNeighborsAfter->Fill(output.Multiplicity(d,r,s,t-1), 
 					  mergedEnergy);
 	  histos->fBeforeAfter->Fill(mult, mergedEnergy);
 	  histos->fAfter->Fill(mergedEnergy);
 	  histos->fSum->Fill(eta,phi,mergedEnergy);
-
+	  
 	  output.SetMultiplicity(d,r,s,t,mergedEnergy);
 	} // for strip
 	for (UShort_t t = 0; t < nstr; t++) {
@@ -864,7 +897,8 @@ AliFMDSharingFilter::Print(Option_t* /*option*/) const
 	    << ind << " Debug:                  " << fDebug << "\n"
 	    << ind << " Use corrected angles:   " << fCorrectAngles << '\n'
 	    << ind << " Zero below threshold:   " 
-	    << fZeroSharedHitsBelowThreshold 
+	    << fZeroSharedHitsBelowThreshold << '\n'
+    	    << ind << " Use simple sharing:     " << fUseSimpleMerging << '\n'
 	    << std::noboolalpha << std::endl;
   std::cout << ind << " Low cuts: " << std::endl;
   fLCuts.Print();
