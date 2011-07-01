@@ -587,8 +587,8 @@ void AliGenCorrHF::Generate()
   delete particleshad2;
   delete particleslist;
  
-  delete pSelected;
-  delete trackIt;
+  delete[] pSelected;
+  delete[] trackIt;
 }
 //____________________________________________________________________________________
 void AliGenCorrHF::IpCharm(TH2F *hProbHH, Int_t &pdg3, Int_t &pdg4)
