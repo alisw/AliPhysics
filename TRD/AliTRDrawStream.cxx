@@ -800,7 +800,7 @@ Int_t AliTRDrawStream::ReadTriggerHeaders()
 	// index word
 	AliDebug(1, Form("trigger index word %i: 0x%08x\n", iTrigger, *fPayloadCurr));
 	fCurrTrgHeaderIndexWord[iTrigger] = *fPayloadCurr;
-	fCurrTrgHeaderSize[iTrigger]      = ((*fPayloadCurr) >> 16) & 0xffff;
+	fCurrTrgHeaderSize[iTrigger]      = ((*fPayloadCurr) >> 16) & 0x3ff;
 	fPayloadCurr++;
 	// data words
 	fPayloadCurr += fCurrTrgHeaderSize[iTrigger];
