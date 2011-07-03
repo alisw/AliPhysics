@@ -60,8 +60,8 @@ class AliEMCAL : public AliDetector {
   virtual void  Digits2Raw();
   
   virtual void  FinishRun() {}                  
-  virtual AliEMCALGeometry * GetGeometry() const 
-    {return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  }   
+  virtual AliEMCALGeometry * GetGeometry() const ;
+   // {return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  }   
   virtual void    Hits2SDigits();
   virtual Int_t   IsVersion(void) const = 0 ;   
   
@@ -84,7 +84,7 @@ protected:
 
   AliEMCALGeometry* fGeometry;              //!
   Bool_t   fCheckRunNumberAndGeoVersion;    // Check if run number corresponds to the requested geometry and V1 is used
-
+  
 private:
   AliEMCAL(const AliEMCAL& emcal);
   AliEMCAL & operator = (const AliEMCAL & /*rvalue*/);

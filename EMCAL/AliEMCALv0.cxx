@@ -43,7 +43,6 @@
 
 // --- AliRoot header files ---
 #include "AliRun.h"
-#include "AliRunLoader.h"
 #include "AliLog.h"
 #include "AliGeomManager.h"
 
@@ -99,8 +98,11 @@ AliEMCALv0::AliEMCALv0(const char *name, const char *title)
   fGeometry = g;
   fSampleWidth = double(g->GetECPbRadThick()+g->GetECScintThick());
   if(gn.Contains("V1")) fSampleWidth += 2.*g->GetTrd1BondPaperThick();
-  printf("<I> AliEMCALv0::AliEMCALv : fGeometry %p : gMC %p : fSampleWidth %5.4f\n", 
-	 fGeometry, gMC, fSampleWidth);
+  AliDebug(2,Form("fGeometry %p : gMC %p : fSampleWidth %5.4f\n", 
+	 fGeometry, gMC, fSampleWidth));
+  //Set geometry name again, in case it was changed during the initialization of the geometry.
+  SetTitle(fGeometry->GetEMCGeometry()->GetName());
+
 }
 
 //______________________________________________________________________
@@ -117,33 +119,6 @@ void AliEMCALv0::CreateGeometry()
     Error("CreateGeometry","EMCAL Geometry class has not been set up.");
   } // end if
 
-  //Check if run number and requested geometry correspond to the same geometry as
-  //in real data taking. To prevent errors in official productions
-  if(fCheckRunNumberAndGeoVersion){
-    AliRunLoader *rl = AliRunLoader::Instance();
-    Int_t runNumber = rl->GetRunNumber();
-    TString geoName = geom->GetEMCGeometry()->GetGeoName();
-    if(!geoName.Contains("V1")) {
-      AliFatal(Form("Add <<V1>> at the end when setting EMCAL geometry name <<%s>>", geoName.Data()));
-    }
-    else if(runNumber > 104064){//Check runs with collisions since year 2009
-      Bool_t ok = kTRUE;
-      if(runNumber > 140000){ // run transition year 2010-2011 
-        if(geoName.Contains("FIRSTYEAR")) ok = kFALSE;
-      }
-      else {
-        if(geoName.Contains("COMPLETE"))  ok = kFALSE;
-      }
-      
-      if(!ok) {
-        AliFatal(Form("Run number -%d-, does not correspond to the requested geometry <<%s>> with -%d- SuperModules", 
-                      runNumber, geoName.Data(), geom->GetNumberOfSuperModules()));
-      }
-      
-      AliDebug(0,Form("Run number %d and geometry  %s, N Super Modules %d\n",
-                      runNumber, geoName.Data(), geom->GetNumberOfSuperModules()));
-    }
-  }
   // Get pointer to the array containing media indices
   fIdTmedArr = fIdtmed->GetArray() - 1599 ;
   
