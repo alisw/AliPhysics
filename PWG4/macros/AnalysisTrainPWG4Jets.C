@@ -693,7 +693,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
 
        if(iFilterAnalysis==2){
-	 if(kIsPbPb)taskCl->SetJetTriggerPtCut(50.);
+	 if(kIsPbPb)taskCl->SetJetTriggerPtCut(20.);
 	 else taskCl->SetJetTriggerPtCut(20.);
        }
 
