@@ -95,7 +95,7 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
     trackCuts->SetMinNCrossedRowsTPC(120);
     trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.1);// essentially swittches it off
     trackCuts->SetMaxChi2PerClusterITS(36);
-    trackCuts->MaxFractionSharedTPCCluster(0.4);
+    trackCuts->SetMaxFractionSharedTPCClusters(0.4);
   }
   if(trackType==0 && cuts==1) {
     //Cuts global tracks with ITSrefit requirement for jet analysis
@@ -104,7 +104,7 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
     trackCuts->SetMaxChi2PerClusterTPC(4);
     trackCuts->SetAcceptKinkDaughters(kFALSE);
     trackCuts->SetRequireTPCRefit(kTRUE);
-    trackCuts->MaxFractionSharedTPCCluster(0.4);
+    trackCuts->SetMaxFractionSharedTPCClusters(0.4);
     // ITS
     trackCuts->SetRequireITSRefit(kTRUE);
     //accept secondaries
@@ -124,7 +124,7 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
     trackCuts->SetMaxChi2PerClusterTPC(4);
     trackCuts->SetAcceptKinkDaughters(kFALSE);
     trackCuts->SetRequireTPCRefit(kTRUE);
-    trackCuts->MaxFractionSharedTPCCluster(0.4);
+    trackCuts->SetMaxFractionSharedTPCClusters(0.4);
     // ITS
     trackCuts->SetRequireITSRefit(kTRUE);
     //accept secondaries
@@ -146,7 +146,7 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
     trackCuts->SetMaxDCAToVertexZ(3.2);
     trackCuts->SetDCAToVertex2D(kTRUE);
     trackCuts->SetMaxChi2PerClusterITS(36);
-    trackCuts->MaxFractionSharedTPCCluster(0.4);
+    trackCuts->SetMaxFractionSharedTPCClusters(0.4);
   }
 
   if(trackType==1 && cuts==0) {
