@@ -167,15 +167,15 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    // 64 1<<6
    trackFilter->AddCuts(esdTrackCutsH2);
    // 128 1<<7
-   trackFilter->AddCuts(esdTrackCutsTPCOnly);
-   // 256 1<<8
    trackFilter->AddCuts(esdTrackCutsH0); // add once more for tpc only tracks
+   // 256 1<<8
+   trackFilter->AddCuts(esdTrackCutsTPCOnly);
    // 512 1<<9                         
    trackFilter->AddCuts(esdTrackCutsH1); // add once more for tpc only tracks
 
    esdfilter->SetTPCOnlyFilterMask((1<<7)|(1<<8)); // these tracks are written out as TPC only 
    esdfilter->SetHybridFilterMaskITSTPC((1<<4)|(1<<5)); // these global tracks will be marked has hybrid
-   esdfilter->SetHybridFilterMasksTPC(1<<8,1<<9);   // arg0, these tpc tracks will be marked as TPC  hybrid, in addtion to thos that fail arg1
+   esdfilter->SetHybridFilterMasksTPC(1<<7,1<<9);   // arg0, these tpc tracks will be marked as TPC  hybrid, in addtion to thos that fail arg1
 
 
    // Filter with cuts on V0s
