@@ -52,7 +52,6 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   Bool_t SelectEvent();    //decides if event is used for analysis
 
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
-  void SetCutsITS(AliESDtrackCuts* trackCutsITS) {fTrackCutsITS = trackCutsITS;}
 
   void SetTrackType(Int_t trackType) {fTrackType = trackType;}
   void SetSigmaConstrainedMax(Double_t sigma) {fSigmaConstrainedMax=sigma;}
@@ -75,7 +74,6 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   const AliESDVertex   *fVtx;     //! vertex object
 
   AliESDtrackCuts *fTrackCuts;    // TrackCuts for global reconstructed vs MC comparison
-  AliESDtrackCuts *fTrackCutsITS; // TrackCuts including ITSrefit
 
   Int_t   fTrackType;             // 0: global track; 1:TPConly track 2: TPConly constrained track 3: global ITSrefit
 
@@ -107,6 +105,9 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   TH3F *fPtAllvsPtMCvsMult;                    //! Reconstructed momentum vs generated momentum vs multiplicity
   TH3F *fPtAllminPtMCvsPtAllvsMult;            //! Momentum resolution (global vs MC) vs multiplicity
   TH3F *fPtAllminPtMCvsPtAllNPointTPC;         //! Momentum resolution vs NPointTPC
+  TH3F *fPtAllminPtMCvsPtAllNPointTPCIter1;    //! Momentum resolution vs NPointTPC Iter1
+  TH3F *fPtAllminPtMCvsPtAllChi2TPC;           //! Momentum resolution vs Chi2TPC
+  TH3F *fPtAllminPtMCvsPtAllChi2TPCIter1;      //! Momentum resolution vs Chi2TPC Iter1
   TH3F *fPtAllminPtMCvsPtAllDCAR;              //! Momentum resolution vs DCAR
   TH3F *fPtAllminPtMCvsPtAllDCAZ;              //! Momentum resolution vs DCAZ
   TH3F *fPtAllminPtMCvsPtAllPhi;               //! Momentum resolution vs Phi
@@ -117,24 +118,9 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
 
   TH1F *fPtAllMC;     //! Pt spectrum all charged particles
   TH1F *fPtSelMC;     //! Pt spectrum all selected charged particles by fTrackCuts
-  TH1F *fPtSelMCITS;  //! Pt spectrum all selected charged particles by fTrackCutsITS
 
   TList *fHistList; //! List of Histograms
   
-  TH1F *fPtSelITS;                              //! Pt spectrum all selected charged particles by fTrackCutsITS
-  TH2F *fPtITSminPtMCvsPtITS;                  //! Momentum resolution (global with ITSrefit vs MC)
-  TH3F *fPtITSminPtMCvsPtITSNPointTPC;         //! Momentum resolution vs NPointTPC 
-  TH3F *fPtITSminPtMCvsPtITSDCAR;              //! Momentum resolution vs DCAR
-  TH3F *fPtITSminPtMCvsPtITSDCAZ;              //! Momentum resolution vs DCAZ
-  TH3F *fPtITSminPtMCvsPtITSPhi;               //! Momentum resolution vs Phi
-  TH3F *fPtITSminPtMCvsPtITSNPointITS;         //! Momentum resolution vs NPointITS
-  TH3F *fPtITSminPtMCvsPtITSNSigmaToVertex;    //! Momentum resolution vs NSigmaToVertex
-  TH3F *fPtITSminPtMCvsPtITSChi2C;             //! Momentum resolution vs Chi2Constrained
-  TH3F *fPtITSminPtMCvsPtITSRel1PtUncertainty; //! Momentum resolution vs relUncertainty1Pt
-
-  TList *fHistListITS; //! List of Histograms
-
- 
   ClassDef(AliPWG4HighPtQAMC,1) 
   
 };

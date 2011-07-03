@@ -62,7 +62,6 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC()
   fStack(0),
   fVtx(0x0),
   fTrackCuts(0), 
-  fTrackCutsITS(0),
   fTrackType(0),
   fSigmaConstrainedMax(1e6),
   fPtMax(100.),
@@ -87,6 +86,9 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC()
   fPtAllvsPtMCvsMult(0),
   fPtAllminPtMCvsPtAllvsMult(0),
   fPtAllminPtMCvsPtAllNPointTPC(0),
+  fPtAllminPtMCvsPtAllNPointTPCIter1(0),
+  fPtAllminPtMCvsPtAllChi2TPC(0),
+  fPtAllminPtMCvsPtAllChi2TPCIter1(0),
   fPtAllminPtMCvsPtAllDCAR(0),
   fPtAllminPtMCvsPtAllDCAZ(0),
   fPtAllminPtMCvsPtAllPhi(0),
@@ -96,19 +98,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC()
   fPtAllminPtMCvsPtAllRel1PtUncertainty(0),
   fPtAllMC(0),
   fPtSelMC(0),
-  fPtSelMCITS(0),
-  fHistList(0),
-  fPtSelITS(0),
-  fPtITSminPtMCvsPtITS(0),
-  fPtITSminPtMCvsPtITSNPointTPC(0),
-  fPtITSminPtMCvsPtITSDCAR(0),
-  fPtITSminPtMCvsPtITSDCAZ(0),
-  fPtITSminPtMCvsPtITSPhi(0),
-  fPtITSminPtMCvsPtITSNPointITS(0),
-  fPtITSminPtMCvsPtITSNSigmaToVertex(0),
-  fPtITSminPtMCvsPtITSChi2C(0),
-  fPtITSminPtMCvsPtITSRel1PtUncertainty(0),
-  fHistListITS(0)
+  fHistList(0)
 {
 
 }
@@ -120,7 +110,6 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   fStack(0),
   fVtx(0x0),
   fTrackCuts(),
-  fTrackCutsITS(),
   fTrackType(0),
   fSigmaConstrainedMax(1e6),
   fPtMax(100.),
@@ -145,6 +134,9 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   fPtAllvsPtMCvsMult(0),
   fPtAllminPtMCvsPtAllvsMult(0),
   fPtAllminPtMCvsPtAllNPointTPC(0),
+  fPtAllminPtMCvsPtAllNPointTPCIter1(0),
+  fPtAllminPtMCvsPtAllChi2TPC(0),
+  fPtAllminPtMCvsPtAllChi2TPCIter1(0),
   fPtAllminPtMCvsPtAllDCAR(0),
   fPtAllminPtMCvsPtAllDCAZ(0),
   fPtAllminPtMCvsPtAllPhi(0),
@@ -154,19 +146,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   fPtAllminPtMCvsPtAllRel1PtUncertainty(0),
   fPtAllMC(0),
   fPtSelMC(0),
-  fPtSelMCITS(0),
-  fHistList(0),
-  fPtSelITS(0),
-  fPtITSminPtMCvsPtITS(0),
-  fPtITSminPtMCvsPtITSNPointTPC(0),
-  fPtITSminPtMCvsPtITSDCAR(0),
-  fPtITSminPtMCvsPtITSDCAZ(0),
-  fPtITSminPtMCvsPtITSPhi(0),
-  fPtITSminPtMCvsPtITSNPointITS(0),
-  fPtITSminPtMCvsPtITSNSigmaToVertex(0),
-  fPtITSminPtMCvsPtITSChi2C(0),
-  fPtITSminPtMCvsPtITSRel1PtUncertainty(0),
-  fHistListITS(0)
+  fHistList(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -220,9 +200,6 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   OpenFile(0);
   fHistList = new TList();
   fHistList->SetOwner(kTRUE);
-  OpenFile(1);
-  fHistListITS = new TList();
-  fHistListITS->SetOwner(kTRUE);
 
   Int_t fgkNPhiBins=18;
   Float_t kMinPhi = 0.;
@@ -310,8 +287,26 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   fPtAllminPtMCvsPtAllNPointTPC = new TH3F("fPtAllminPtMCvsPtAllNPointTPC","PtAllminPtMCvsPtAllNPointTPC",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,160,0.5,160.5);
   fPtAllminPtMCvsPtAllNPointTPC->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAllNPointTPC->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
-  fPtAllminPtMCvsPtAllNPointTPC->SetZTitle("N_{point,TPC}");
+  fPtAllminPtMCvsPtAllNPointTPC->SetZTitle("N_{cls,TPC}");
   fHistList->Add(fPtAllminPtMCvsPtAllNPointTPC);
+
+  fPtAllminPtMCvsPtAllNPointTPCIter1 = new TH3F("fPtAllminPtMCvsPtAllNPointTPCIter1","PtAllminPtMCvsPtAllNPointTPCIter1",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,160,0.5,160.5);
+  fPtAllminPtMCvsPtAllNPointTPCIter1->SetXTitle("p_{t}^{MC}");
+  fPtAllminPtMCvsPtAllNPointTPCIter1->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
+  fPtAllminPtMCvsPtAllNPointTPCIter1->SetZTitle("N_{clsIter1,TPC}");
+  fHistList->Add(fPtAllminPtMCvsPtAllNPointTPCIter1);
+
+  fPtAllminPtMCvsPtAllChi2TPC = new TH3F("fPtAllminPtMCvsPtAllChi2TPC","PtAllminPtMCvsPtAllChi2TPC",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,40,0.,0.4);
+  fPtAllminPtMCvsPtAllChi2TPC->SetXTitle("p_{t}^{MC}");
+  fPtAllminPtMCvsPtAllChi2TPC->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
+  fPtAllminPtMCvsPtAllChi2TPC->SetZTitle("#chi^{2} TPC");
+  fHistList->Add(fPtAllminPtMCvsPtAllChi2TPC);
+
+  fPtAllminPtMCvsPtAllChi2TPCIter1 = new TH3F("fPtAllminPtMCvsPtAllChi2TPCIter1","PtAllminPtMCvsPtAllChi2TPCIter1",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,40,0.,0.4);
+  fPtAllminPtMCvsPtAllChi2TPCIter1->SetXTitle("p_{t}^{MC}");
+  fPtAllminPtMCvsPtAllChi2TPCIter1->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
+  fPtAllminPtMCvsPtAllChi2TPCIter1->SetZTitle("#chi^{2} TPC Iter1");
+  fHistList->Add(fPtAllminPtMCvsPtAllChi2TPCIter1);
 
   fPtAllminPtMCvsPtAllDCAR = new TH3F("fPtAllminPtMCvsPtAllDCAR","PtAllminPtMCvsPtAllDCAR",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,80,-0.2,0.2);
   fPtAllminPtMCvsPtAllDCAR->SetXTitle("p_{t}^{MC}");
@@ -355,75 +350,15 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   fPtAllminPtMCvsPtAllRel1PtUncertainty->SetZTitle("Rel1PtUncertainty");
   fHistList->Add(fPtAllminPtMCvsPtAllRel1PtUncertainty);
 
-  //ITSrefit
-  fPtSelITS = new TH1F("fPtSelITSrefit","PtSel",fgkNPtBins, fgkPtMin, fgkPtMax);
-  fHistListITS->Add(fPtSelITS);
-  
-  fPtITSminPtMCvsPtITS = new TH2F("fPtITSminPtMCvsPtITS","PtITSminPtMCvsPtITS",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
-  fPtITSminPtMCvsPtITS->SetXTitle("p_{t}^{MC}");
-  fPtITSminPtMCvsPtITS->SetYTitle("(1/p_{t}^{ITS}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
-  fHistListITS->Add(fPtITSminPtMCvsPtITS);
-  
-  fPtITSminPtMCvsPtITSNPointTPC = new TH3F("fPtITSminPtMCvsPtITSNPointTPC","PtITSminPtMCvsPtITSNPointTPC",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,160,0.5,160.5);
-  fPtITSminPtMCvsPtITSNPointTPC->SetXTitle("p_{t}^{MC}");
-  fPtITSminPtMCvsPtITSNPointTPC->SetYTitle("(1/p_{t}^{ITS}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
-  fPtITSminPtMCvsPtITSNPointTPC->SetZTitle("N_{point,TPC}");
-  fHistListITS->Add(fPtITSminPtMCvsPtITSNPointTPC);
-    
-  fPtITSminPtMCvsPtITSDCAR = new TH3F("fPtITSminPtMCvsPtITSDCAR","PtITSminPtMCvsPtITSDCAR",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,80,-0.2,0.2);
-  fPtITSminPtMCvsPtITSDCAR->SetXTitle("p_{t}^{MC}");
-  fPtITSminPtMCvsPtITSDCAR->SetYTitle("(1/p_{t}^{ITS}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
-  fPtITSminPtMCvsPtITSDCAR->SetZTitle("DCA_{R}");
-  fHistListITS->Add(fPtITSminPtMCvsPtITSDCAR);
-  
-  fPtITSminPtMCvsPtITSDCAZ = new TH3F("fPtITSminPtMCvsPtITSDCAZ","PtITSminPtMCvsPtITSDCAZ",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,80,-2.,2.);
-  fPtITSminPtMCvsPtITSDCAZ->SetXTitle("p_{t}^{MC}");
-  fPtITSminPtMCvsPtITSDCAZ->SetYTitle("(1/p_{t}^{ITS}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
-  fPtITSminPtMCvsPtITSDCAZ->SetZTitle("DCA_{Z}");
-  fHistListITS->Add(fPtITSminPtMCvsPtITSDCAZ);
-  
-  fPtITSminPtMCvsPtITSPhi = new TH3F("fPtITSminPtMCvsPtITSPhi","PtITSminPtMCvsPtITSPhi",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkNPhiBins,kMinPhi,kMaxPhi);
-  fPtITSminPtMCvsPtITSPhi->SetXTitle("p_{t}^{MC}");
-  fPtITSminPtMCvsPtITSPhi->SetYTitle("(1/p_{t}^{ITS}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
-  fPtITSminPtMCvsPtITSPhi->SetZTitle("#phi");
-  fHistListITS->Add(fPtITSminPtMCvsPtITSPhi);
-  
-  fPtITSminPtMCvsPtITSNPointITS = new TH3F("fPtITSminPtMCvsPtITSNPointITS","PtITSminPtMCvsPtITSNPointITS",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,9,-0.5,8.5);
-  fPtITSminPtMCvsPtITSNPointITS->SetXTitle("p_{t}^{MC}");
-  fPtITSminPtMCvsPtITSNPointITS->SetYTitle("(1/p_{t}^{ITS}-1/p_{t}^{MC})/(1/p_{t}^{MC})}");
-  fPtITSminPtMCvsPtITSNPointITS->SetZTitle("N_{point,ITS}}");
-  fHistListITS->Add(fPtITSminPtMCvsPtITSNPointITS); 
-  
-  fPtITSminPtMCvsPtITSNSigmaToVertex = new TH3F("fPtITSminPtMCvsPtITSNSigmaToVertex","PtITSminPtMCvsPtITSNSigmaToVertex",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,40,0.,8.);
-  fPtITSminPtMCvsPtITSNSigmaToVertex->SetXTitle("p_{t}^{MC}");
-  fPtITSminPtMCvsPtITSNSigmaToVertex->SetYTitle("(1/p_{t}^{ITS}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
-  fPtITSminPtMCvsPtITSNSigmaToVertex->SetZTitle("N#sigma to vertex");
-  fHistListITS->Add(fPtITSminPtMCvsPtITSNSigmaToVertex);
-
-  fPtITSminPtMCvsPtITSChi2C = new TH3F("fPtITSminPtMCvsPtITSChi2C","PtITSminPtMCvsPtITSChi2C",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,20,0.,10.);
-  fPtITSminPtMCvsPtITSChi2C->SetXTitle("p_{t}^{MC}");
-  fPtITSminPtMCvsPtITSChi2C->SetYTitle("(1/p_{t}^{ITS}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
-  fPtITSminPtMCvsPtITSChi2C->SetZTitle("Constrained #chi^{2}");
-  fHistListITS->Add(fPtITSminPtMCvsPtITSChi2C);
-
-  fPtITSminPtMCvsPtITSRel1PtUncertainty = new TH3F("fPtITSminPtMCvsPtITSRel1PtUncertainty","PtITSminPtMCvsPtITSRel1PtUncertainty",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,30,0.,0.3);
-  fPtITSminPtMCvsPtITSRel1PtUncertainty->SetXTitle("p_{t}^{MC}");
-  fPtITSminPtMCvsPtITSRel1PtUncertainty->SetYTitle("(1/p_{t}^{ITS}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
-  fPtITSminPtMCvsPtITSRel1PtUncertainty->SetZTitle("Rel1PtUncertainty");
-  fHistListITS->Add(fPtITSminPtMCvsPtITSRel1PtUncertainty);
 
   fPtAllMC = new TH1F("fPtAllMC","PtAll",fgkNPtBins, fgkPtMin, fgkPtMax);
   fHistList->Add(fPtAllMC);
   fPtSelMC = new TH1F("fPtSelMC","PtSel",fgkNPtBins, fgkPtMin, fgkPtMax);
   fHistList->Add(fPtSelMC);
-  fPtSelMCITS = new TH1F("fPtSelMCITS","PtSel",fgkNPtBins, fgkPtMin, fgkPtMax);
-  fHistList->Add(fPtSelMCITS);
   
   TH1::AddDirectory(oldStatus); 
 
   PostData(0, fHistList);
-  PostData(1, fHistListITS);
-
 }
 
 //________________________________________________________________________
@@ -537,7 +472,6 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
   if(!SelectEvent()) {
     // Post output data
     PostData(0, fHistList);
-    PostData(1, fHistListITS);
     return;
   }
 
@@ -658,6 +592,11 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
       fPtAllvsPtMC->Fill(ptMC,pt);
       fPtAllminPtMCvsPtAll->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC) );
       fPtAllminPtMCvsPtAllNPointTPC->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),track->GetTPCNcls());
+      fPtAllminPtMCvsPtAllNPointTPCIter1->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),track->GetTPCNclsIter1());
+      if(track->GetTPCNcls()>0.) 
+	fPtAllminPtMCvsPtAllChi2TPC->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),track->GetTPCchi2()/track->GetTPCNcls());
+      if(track->GetTPCNclsIter1()>0.) 
+	fPtAllminPtMCvsPtAllChi2TPCIter1->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),track->GetTPCchi2Iter1()/track->GetTPCNclsIter1());
       fPtAllminPtMCvsPtAllDCAR->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),dca2D);
       fPtAllminPtMCvsPtAllDCAZ->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),dcaZ);
       fPtAllminPtMCvsPtAllPhi->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),phi);
@@ -716,30 +655,16 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 
     }//fTrackCuts selection
 
-    //ITSrefit selection
-    if (fTrackCutsITS->AcceptTrack(track) && fTrackType==0) {
-      
-      fPtSelITS->Fill(pt);
-      fPtSelMCITS->Fill(ptMC);
-      fPtITSminPtMCvsPtITS->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC) );
-      fPtITSminPtMCvsPtITSNPointTPC->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),track->GetTPCNcls());
-      fPtITSminPtMCvsPtITSDCAR->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),dca2D);
-      fPtITSminPtMCvsPtITSDCAZ->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),dcaZ);
-      fPtITSminPtMCvsPtITSPhi->Fill(ptMC,(pt-ptMC)/(pt),phi);
-      fPtITSminPtMCvsPtITSNPointITS->Fill(ptMC,(pt-ptMC)/(pt),nPointITS);
-      fPtITSminPtMCvsPtITSNSigmaToVertex->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),nSigmaToVertex);
-      fPtITSminPtMCvsPtITSChi2C->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),chi2C);
-      fPtITSminPtMCvsPtITSRel1PtUncertainty->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),relUncertainty1Pt);
-    }//fTrackCutsITS loop
 
-    if(fTrackType==1 || fTrackType==2) delete track;    
+    if(fTrackType==1 || fTrackType==2) {
+      if(track) delete track;    
+    }
 
   }//ESD track loop
    
   // Post output data
   PostData(0, fHistList);
-  PostData(1, fHistListITS);
-
+  
 }
 //________________________________________________________________________
 Bool_t AliPWG4HighPtQAMC::PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials){

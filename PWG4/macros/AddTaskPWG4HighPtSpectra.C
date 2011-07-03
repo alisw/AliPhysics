@@ -13,14 +13,18 @@ void AddTaskPWG4HighPtSpectraAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
 
   AliPWG4HighPtSpectra *taskSpectra00cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0);
   AliPWG4HighPtSpectra *taskSpectra01cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1);
-  AliPWG4HighPtSpectra *taskSpectra10cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0);
+  AliPWG4HighPtSpectra *taskSpectra02cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2);
+  AliPWG4HighPtSpectra *taskSpectra03cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,3);
+  //  AliPWG4HighPtSpectra *taskSpectra10cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0);
   AliPWG4HighPtSpectra *taskSpectra20cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0);
 
   if(isPbPb) {
     for(cent=0; cent<4; cent++) {
       AliPWG4HighPtSpectra *taskSpectra00 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0);
       AliPWG4HighPtSpectra *taskSpectra01 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1);
-      AliPWG4HighPtSpectra *taskSpectra10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0);
+      AliPWG4HighPtSpectra *taskSpectra02 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2);
+      AliPWG4HighPtSpectra *taskSpectra03 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,3);
+      //      AliPWG4HighPtSpectra *taskSpectra10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0);
       AliPWG4HighPtSpectra *taskSpectra20 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0);
     }
   }
@@ -35,9 +39,10 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
     trackType: 0 = global
                1 = TPC stand alone
                2 = TPC stand alone constrained to SPD vertex
-    cuts:      0 (global) = standard ITSTPC2010
-               1 (global) = ITSrefit, no SPD requirements
-               2 (global) = SPD || SDD
+    cuts:      0 (global) = standard ITSTPC2010 a la RAA analysis
+               1 (global) = ITSrefit, no SPD requirements -> standard for jet analysis
+               2 (global) = ITSrefit + no hits in SPD
+	       3 (global) = standard ITS tight cuts with nCrossed rows cut for hybrid tracks
                0 (TPC)    = standard TPC + NClusters>70
                1 (TPC)    = standard TPC + NClusters>0 --> to study new TPC QA recommendations
    */
@@ -150,23 +155,63 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
   //Standard Cuts
   //Set track cuts for global tracks
   if(trackType==0 && cuts==0) {
-    trackCuts = trackCuts->GetStandardITSTPCTrackCuts2010(kTRUE);//Primary Track Selection
-    trackCuts->SetRequireITSRefit(kTRUE);
+    // tight global tracks
+    trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,1);
+    trackCuts->SetMinNCrossedRowsTPC(120);
+    trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.1);// essentially swittches it off
+    trackCuts->SetMaxChi2PerClusterITS(36);
+    trackCuts->MaxFractionSharedTPCCluster(0.4);
   }
   if(trackType==0 && cuts==1) {
-    //Cuts global tracks with ITSrefit requirement
+    //Cuts global tracks with ITSrefit requirement for jet analysis
     // TPC  
-    trackCuts->SetMinNClustersTPC(70);
+    trackCuts->SetMinNClustersTPC(80);
     trackCuts->SetMaxChi2PerClusterTPC(4);
     trackCuts->SetAcceptKinkDaughters(kFALSE);
     trackCuts->SetRequireTPCRefit(kTRUE);
+    trackCuts->MaxFractionSharedTPCCluster(0.4);
     // ITS
     trackCuts->SetRequireITSRefit(kTRUE);
+    //accept secondaries
+    trackCuts->SetMaxDCAToVertexXY(2.4);
+    trackCuts->SetMaxDCAToVertexZ(3.2);
+    trackCuts->SetDCAToVertex2D(kTRUE);
+    //reject fakes
+    trackCuts->SetMaxChi2PerClusterITS(36);    
     
-    trackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-    trackCuts->SetMaxDCAToVertexZ(2);
-    trackCuts->SetDCAToVertex2D(kFALSE);
     trackCuts->SetRequireSigmaToVertex(kFALSE);
+    
+  }
+  if(trackType==0 && cuts==2) {
+    //Cuts global tracks with ITSrefit requirement but without SPD
+    // TPC  
+    trackCuts->SetMinNClustersTPC(80);
+    trackCuts->SetMaxChi2PerClusterTPC(4);
+    trackCuts->SetAcceptKinkDaughters(kFALSE);
+    trackCuts->SetRequireTPCRefit(kTRUE);
+    trackCuts->MaxFractionSharedTPCCluster(0.4);
+    // ITS
+    trackCuts->SetRequireITSRefit(kTRUE);
+    //accept secondaries
+    trackCuts->SetMaxDCAToVertexXY(2.4);
+    trackCuts->SetMaxDCAToVertexZ(3.2);
+    trackCuts->SetDCAToVertex2D(kTRUE);
+    //reject fakes
+    trackCuts->SetMaxChi2PerClusterITS(36);    
+    trackCuts->SetRequireSigmaToVertex(kFALSE);
+    //no SPD points
+    trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+  }
+  if(trackType==0 && cuts==3) {
+    // tight global tracks
+    trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,1);
+    trackCuts->SetMinNCrossedRowsTPC(120);
+    trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.1);// essentially swittches it off
+    trackCuts->SetMaxDCAToVertexXY(2.4);
+    trackCuts->SetMaxDCAToVertexZ(3.2);
+    trackCuts->SetDCAToVertex2D(kTRUE);
+    trackCuts->SetMaxChi2PerClusterITS(36);
+    trackCuts->MaxFractionSharedTPCCluster(0.4);
   }
   if(trackType==1 && cuts==0) {
     //Set track cuts for TPConly tracks
