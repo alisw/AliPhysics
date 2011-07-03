@@ -693,7 +693,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
 
        if(iFilterAnalysis==2){
-	 if(kIsPbPb)taskCl->SetJetTriggerPtCut(20.);
+	 if(kIsPbPb)taskCl->SetJetTriggerPtCut(0.);
 	 else taskCl->SetJetTriggerPtCut(20.);
        }
 
@@ -1195,10 +1195,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliPWG4HighPtQAMC *taskQAMC = 0;
      if(kUseMC){
        if(iPWG4PtQAMC&1){
-	 taskQAMC = AddTaskPWG4HighPtQAMC(kGridDataSet.Data(),0);
-	 taskQAMC = AddTaskPWG4HighPtQAMC(kGridDataSet.Data(),1);
-	 taskQAMC = AddTaskPWG4HighPtQAMC(kGridDataSet.Data(),2);
-	 taskQAMC = AddTaskPWG4HighPtQAMC(kGridDataSet.Data(),3);
+	 taskQAMC = AddTaskPWG4HighPtQAMCAll(kGridDataSet.Data(),isPbPb,iAODanalysis);
        }
      }
      if (!taskQAMC) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQAMC cannot run for this train conditions - EXCLUDED");
@@ -1206,9 +1203,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPWG4PtTrackQA){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtTrackQA.C");
-
      AddTaskPWG4HighPtTrackQAAll(kGridDataSet.Data(),kIsPbPb,iAODanalysis);
-
    }
 
    if(iPWG4PtQATPC){
@@ -1232,9 +1227,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPWG4PtSpectra){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtSpectra.C");
-     AddTaskPWG4HighPtSpectraAll(kGridDataSet.Data(),kIsPbPb);
+     AddTaskPWG4HighPtSpectraAll(kGridDataSet.Data(),kIsPbPb,iAODanalysis);
    }
-
+   
    if(iPWG4KMeans){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskKMeans.C");
      AliAnalysisTaskKMeans *taskKMeans = AddTaskKMeans();
@@ -1507,8 +1502,6 @@ void CheckModuleFlags(const char *mode) {
       if( iPWG4Cosmics)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4 Comics disabled in analysis on AOD's");
       iPWG4Cosmics        = 0;
 
-      if( iPWG4PtSpectra)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4 PtQAMC disabled in analysis on AOD's");
-      iPWG4PtSpectra     = 0;
       if(iPWG4KMeans)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4KMeans disabled on AOD's");
       iPWG4KMeans       = 0;
       if (iPWG4JetCorr)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4Jetcorr disabled on AOD's");
