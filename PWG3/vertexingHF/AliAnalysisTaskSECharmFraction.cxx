@@ -631,7 +631,7 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   Int_t nbinsSparsCxyLxy[4]={84,fCutsTight->GetNPtBins(),10,25}; 
   Double_t binLowLimitSparseCxyLxy[4]={1.680,fCutsTight->GetPtBinLimits()[0],0.99,0.};// Use OverFlow/UnderFlow to get other cases
   Double_t binUpLimitSparseCxyLxy[4]={2.100,fCutsTight->GetPtBinLimits()[fCutsTight->GetNPtBins()],1.,50.};
-  Double_t ptbinlimitsCxyLxy[(const Int_t)fCutsTight->GetNPtBins()+1];
+  Double_t *ptbinlimitsCxyLxy=new Double_t[fCutsTight->GetNPtBins()+1];
   for(Int_t nBins=0;nBins<=fCutsTight->GetNPtBins();nBins++){
     ptbinlimitsCxyLxy[nBins]=fCutsTight->GetPtBinLimits()[nBins];
   }
@@ -5315,6 +5315,10 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
     flistTghCutsOther->Add(hd0D0VtxTrueptTGHCotherSB);
   }
   Printf("AFTER DATA HISTOS CREATION \n");
+
+  delete ptbinlimitsCxyLxy;
+  return;
+
 }
 
 
@@ -7129,6 +7133,10 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
 	    bBaryon=kTRUE;
 	    break;
 	  }
+	  if(mcD0Parent->GetMother()==0x0){
+	    notfound=kTRUE;
+	    break;
+	  };
 	  if(mcD0Parent->GetMother()<0){
 	    notfound=kTRUE;
 	    break;
