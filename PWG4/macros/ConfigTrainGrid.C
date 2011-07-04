@@ -39,7 +39,7 @@
   // bextra == 0 4 plus
   // bextra == 1 large pass1 split..
   // bextra == 2 3 plus
-  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "110702a";
+  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "110704a";
   iAODanalysis = 0; 
   // 1 == Read Jets and tracks form the input AOD
   // needs the jet branchnames set explicitly
@@ -554,39 +554,40 @@
       kGridFilesPerJob       = 30;
       /*
       // Thnsparses... 
+
       ############# Possible jet branches ###################
-      1: jetsAOD_UA104_B0_Filter00256_Cut01000
-      2: jetsAOD_UA104_B0_Filter00256_Cut02000
-      3: jetsAOD_UA104_B2_Filter00256_Cut01000
-      4: jetsAOD_UA104_B2_Filter00256_Cut02000
-      5: clustersAOD_KT04_B0_Filter00256_Cut00150_Skip00
-      6: clustersAOD_KT04_B0_Filter00256_Cut00150_Skip00RandomConeSkip00
-      7: clustersAOD_KT04_B0_Filter00256_Cut00150_Skip00RandomCone_random
-      8: clustersAOD_KT04_B0_Filter00256_Cut02000_Skip00
-      9: clustersAOD_KT04_B0_Filter00256_Cut02000_Skip00RandomConeSkip00
-      10: clustersAOD_KT04_B0_Filter00256_Cut02000_Skip00RandomCone_random
-      11: clustersAOD_KT02_B0_Filter00256_Cut00150_Skip00
-      12: clustersAOD_ANTIKT04_B0_Filter00256_Cut00150_Skip02
-      13: clustersAOD_ANTIKT04_B0_Filter00256_Cut00150_Skip02RandomConeSkip02
-      14: clustersAOD_ANTIKT04_B0_Filter00256_Cut00150_Skip02RandomCone_random
-      15: clustersAOD_ANTIKT04_B0_Filter00256_Cut02000_Skip02
-      16: clustersAOD_ANTIKT02_B0_Filter00256_Cut00150_Skip00
-      17: clustersAOD_KT04_B1_Filter00256_Cut00150_Skip00RandomConeSkip00
-      18: clustersAOD_KT04_B1_Filter00256_Cut00150_Skip00RandomCone_random
-      19: clustersAOD_ANTIKT04_B1_Filter00256_Cut00150_Skip02
-      20: clustersAOD_ANTIKT04_B1_Filter00256_Cut00150_Skip02RandomConeSkip02
-      21: clustersAOD_ANTIKT04_B1_Filter00256_Cut00150_Skip02RandomCone_random
-      22: clustersAOD_ANTIKT02_B1_Filter00256_Cut00150_Skip00
-      23: clustersAOD_KT04_B2_Filter00256_Cut00150_Skip00RandomConeSkip00
-      24: clustersAOD_KT04_B2_Filter00256_Cut00150_Skip00RandomCone_random
-      25: clustersAOD_ANTIKT04_B2_Filter00256_Cut00150_Skip02
-      26: clustersAOD_ANTIKT04_B2_Filter00256_Cut00150_Skip02RandomConeSkip02
-      27: clustersAOD_ANTIKT04_B2_Filter00256_Cut00150_Skip02RandomCone_random
-      28: clustersAOD_ANTIKT02_B2_Filter00256_Cut00150_Skip00
-      29: clustersAOD_KT04_B2_Filter00256_Cut02000_Skip00RandomConeSkip00
-      30: clustersAOD_KT04_B2_Filter00256_Cut02000_Skip00RandomCone_random
-      31: clustersAOD_ANTIKT04_B2_Filter00256_Cut02000_Skip02
-      */
+      1: jetsAOD_UA104_B0_Filter00016_Cut01000
+      2: jetsAOD_UA104_B0_Filter00016_Cut02000
+      3: jetsAOD_UA104_B2_Filter00016_Cut01000
+      4: jetsAOD_UA104_B2_Filter00016_Cut02000
+      5: clustersAOD_KT04_B0_Filter00016_Cut00150_Skip00
+      6: clustersAOD_KT04_B0_Filter00016_Cut00150_Skip00RandomConeSkip00
+      7: clustersAOD_KT04_B0_Filter00016_Cut00150_Skip00RandomCone_random
+      8: clustersAOD_KT04_B0_Filter00016_Cut02000_Skip00
+      9: clustersAOD_KT04_B0_Filter00016_Cut02000_Skip00RandomConeSkip00
+      10: clustersAOD_KT04_B0_Filter00016_Cut02000_Skip00RandomCone_random
+      11: clustersAOD_KT02_B0_Filter00016_Cut00150_Skip00
+      12: clustersAOD_ANTIKT04_B0_Filter00016_Cut00150_Skip02
+      13: clustersAOD_ANTIKT04_B0_Filter00016_Cut00150_Skip02RandomConeSkip02
+      14: clustersAOD_ANTIKT04_B0_Filter00016_Cut00150_Skip02RandomCone_random
+      15: clustersAOD_ANTIKT04_B0_Filter00016_Cut02000_Skip02
+      16: clustersAOD_ANTIKT02_B0_Filter00016_Cut00150_Skip00
+      17: clustersAOD_KT04_B1_Filter00016_Cut00150_Skip00RandomConeSkip00
+      18: clustersAOD_KT04_B1_Filter00016_Cut00150_Skip00RandomCone_random
+      19: clustersAOD_ANTIKT04_B1_Filter00016_Cut00150_Skip02
+      20: clustersAOD_ANTIKT04_B1_Filter00016_Cut00150_Skip02RandomConeSkip02
+      21: clustersAOD_ANTIKT04_B1_Filter00016_Cut00150_Skip02RandomCone_random
+      22: clustersAOD_ANTIKT02_B1_Filter00016_Cut00150_Skip00
+      23: clustersAOD_KT04_B2_Filter00016_Cut00150_Skip00RandomConeSkip00
+      24: clustersAOD_KT04_B2_Filter00016_Cut00150_Skip00RandomCone_random
+      25: clustersAOD_ANTIKT04_B2_Filter00016_Cut00150_Skip02
+      26: clustersAOD_ANTIKT04_B2_Filter00016_Cut00150_Skip02RandomConeSkip02
+      27: clustersAOD_ANTIKT04_B2_Filter00016_Cut00150_Skip02RandomCone_random
+      28: clustersAOD_ANTIKT02_B2_Filter00016_Cut00150_Skip00
+      29: clustersAOD_KT04_B2_Filter00016_Cut02000_Skip00RandomConeSkip00
+      30: clustersAOD_KT04_B2_Filter00016_Cut02000_Skip00RandomCone_random
+      31: clustersAOD_ANTIKT04_B2_Filter00016_Cut02000_Skip02
+            */
       // UA1
       kJetMapSpectrum.Add(4,2);
       kJetBackMapSpectrum.Add(4,8);

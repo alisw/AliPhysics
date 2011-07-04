@@ -82,6 +82,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices():
   fEventCutInfoESD(0),
   fFilterMask(0),
   fRPSubeventMethod(0),
+  fCollisionType(kPbPb),
   fAvgTrials(1),
   fVtxXMean(0),
   fVtxYMean(0),
@@ -141,6 +142,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fEventCutInfoESD(0),
   fFilterMask(0),
   fRPSubeventMethod(0),
+  fCollisionType(kPbPb),
   fAvgTrials(1),
   fVtxXMean(0),
   fVtxYMean(0),
@@ -475,8 +477,11 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
   // loop over all possible triggers for esd 
 
   Float_t cent = 0;
-  if(aod)cent = aod->GetHeader()->GetCentrality();
-  if(cent<0)cent = 101;
+  if(fCollisionType==kPbPb){
+    if(aod)cent = aod->GetHeader()->GetCentrality();
+    if(fDebug)Printf("%s:%d %3.3f",(char*)__FILE__,__LINE__,cent);
+    if(cent<0)cent = 101;
+  }
   fCentrality = cent;
   fRPAngle = 0;
 
@@ -584,7 +589,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       fh1Centrality->Fill(cent);
       AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
       if(aodH&&cand&&fFilterAODCollisions&&!esd){
-	if(cent<=80&&aodVtxIn){
+	if(fCentrality<=80&&aodVtxIn){
 	  aodH->SetFillAOD(kTRUE);
 	  aodH->SetFillExtension(kTRUE);
 	}
@@ -594,7 +599,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       GetListOfTracks(&recTracks);
       CalculateReactionPlaneAngle(&recTracks);
       AliAnalysisHelperJetTasks::ReactionPlane(kTRUE,fRPAngle); // set slection to false
-      if(fUseAODInput&&cent<=80){
+      if(fUseAODInput&&fCentrality<=80){
 	if(fFilterAODCollisions&&aod){
 	  aodH->SetFillAOD(kTRUE);
 	}
@@ -889,26 +894,31 @@ Bool_t AliAnalysisTaskJetServices::IsEventCosmic(const AliESDEvent* esd) const {
 Int_t AliAnalysisTaskJetServices::GetEventClass(AliESDEvent *esd){
 
   Float_t cent = 0;
-  if(esd->GetCentrality()){
-    cent = esd->GetCentrality()->GetCentralityPercentile("V0M");
+  if(fCollisionType==kPbPb){
+    if(esd->GetCentrality()){
+      cent = esd->GetCentrality()->GetCentralityPercentile("V0M");
+    }
+    if(cent<0)cent = 101;
+    if(cent>80||cent<0)return 5;
+    if(cent>50)return 4;
+    if(cent>30)return 3;
+    if(cent>10)return 2;
+    return 1;
   }
-  if(cent<0)cent = 100;
-  if(cent>80||cent<0)return 5;
-  if(cent>50)return 4;
-  if(cent>30)return 3;
-  if(cent>10)return 2;
   return 1;
-
 }
 
 
 Int_t AliAnalysisTaskJetServices::GetEventClass(AliAODEvent *aod){
 
-  Float_t cent = aod->GetHeader()->GetCentrality();
-  if(cent>80||cent<0)return 5;
-  if(cent>50)return 4;
-  if(cent>30)return 3;
-  if(cent>10)return 2;
+  if(fCollisionType==kPbPb){
+    Float_t cent = aod->GetHeader()->GetCentrality();
+    if(cent>80||cent<0)return 5;
+    if(cent>50)return 4;
+    if(cent>30)return 3;
+    if(cent>10)return 2;
+    return 1;
+  }
   return 1;
 
 }
