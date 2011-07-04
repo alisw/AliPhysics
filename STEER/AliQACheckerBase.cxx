@@ -420,7 +420,7 @@ void AliQACheckerBase::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, 
     TPaveText someText(0.015, 0.015, 0.98, 0.98);
     someText.AddText(title);
     someText.Draw(); 
-    fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps"); 
+    fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat())); 
     fImage[esIndex]->Clear(); 
     Int_t nx = TMath::Nint(TMath::Sqrt(nImages));
     Int_t ny = nx; 
