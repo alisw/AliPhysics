@@ -502,7 +502,7 @@ class AliFlowAnalysisWithQCumulants{
   TProfile *fIntFlowCorrelationsVsMPro[4]; // average correlations <<2>>, <<4>>, <<6>> and <<8>> versus multiplicity (error is wrong here!)
   TProfile *fIntFlowSquaredCorrelationsVsMPro[4]; // average correlations <<2>^2>, <<4>^2>, <<6>^2> and <<8>^2> versus multiplicity  
   TProfile *fIntFlowCorrelationsAllPro; // average all correlations for integrated flow (with wrong errors!)
-  TProfile *fIntFlowCorrelationsAllVsMPro[34]; // average all correlations vs M (errors via Sumw2 - to me improved)
+  TProfile *fIntFlowCorrelationsAllVsMPro[58]; // average all correlations vs M (errors via Sumw2 - to me improved)
   TProfile *fIntFlowExtraCorrelationsPro; // when particle weights are used some extra correlations appear 
   TProfile *fIntFlowProductOfCorrelationsPro; // average product of correlations <2>, <4>, <6> and <8>  
   TProfile *fIntFlowProductOfCorrelationsVsMPro[6]; // average product of correlations <2>, <4>, <6> and <8>  
