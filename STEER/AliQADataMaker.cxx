@@ -150,7 +150,10 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray ** list,
       const Char_t * cname = Form("%s_%s", list[AliRecoParam::AConvert(AliRecoParam::kDefault)]->GetName(), hist->GetName()) ;  
       TParameter<double> * p = new TParameter<double>(cname, 9999.9999) ;
       if ( fParameterList[AliRecoParam::AConvert(fEventSpecie)] == NULL )
+      {
         fParameterList[AliRecoParam::AConvert(fEventSpecie)] = new TList() ; 
+        fParameterList[AliRecoParam::AConvert(fEventSpecie)]->SetOwner(kTRUE);
+      }
       fParameterList[AliRecoParam::AConvert(fEventSpecie)]->Add(p) ;
     }
     TObject* old = list[AliRecoParam::AConvert(fEventSpecie)]->At(index);
