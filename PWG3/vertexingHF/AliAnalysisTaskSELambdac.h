@@ -27,6 +27,7 @@
 #include "AliRDHFCutsLctopKpi.h"
 #include "AliRDHFCuts.h"
 #include "TClonesArray.h"
+#include "AliAODpidUtil.h"
 
 class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
 {
@@ -38,13 +39,15 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
 
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetMCPid(){fMCPid=kTRUE;fReadMC=kTRUE;fRealPid=kFALSE;fResPid=kFALSE;return;}
-  void SetRealPid(){fRealPid=kTRUE;fMCPid=kFALSE;fResPid=kFALSE;return;}
-  void SetResonantPid(){fResPid=kTRUE;fRealPid=kFALSE;fMCPid=kFALSE;return;}
+  void SetRealPid(){fRealPid=kTRUE;fMCPid=kFALSE;return;}
+  void SetResonantPid(){fResPid=kTRUE;fRealPid=kTRUE;fMCPid=kFALSE;return;}
   void SetCutsKF(Float_t cutsKF[10]){for(Int_t i=0;i<10;i++){fCutsKF[i]=cutsKF[i];}return;}
   void SetUseKF(Bool_t useKF=kTRUE){fUseKF=useKF;}
+  void SetAnalysis(Bool_t analysis=kTRUE){fAnalysis=analysis;}
   void SetMassLimits(Float_t range);
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
   void SetPtBinLimit(Int_t n, Float_t *limitarray);
+  void SetFillVarHists(Bool_t setter) {fFillVarHists=setter;return;}
   
   Float_t GetUpperMassLimit() const {return fUpmasslimit;}
   Float_t GetLowerMassLimit() const {return fLowmasslimit;}
@@ -52,12 +55,14 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   Double_t GetPtBinLimit(Int_t ibin) const ;
   Bool_t IspiKpMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
   Bool_t IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
-  Bool_t IspiKpResonant(AliAODRecoDecayHF3Prong *d,Double_t field) const ;
-  Bool_t IspKpiResonant(AliAODRecoDecayHF3Prong *d,Double_t field) const ;
+  Int_t IspiKpResonant(AliAODRecoDecayHF3Prong *d,Double_t field) const ;
+  Int_t IspKpiResonant(AliAODRecoDecayHF3Prong *d,Double_t field) const ;
   Bool_t VertexingKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field) const ;
   Int_t MatchToMCLambdac(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
   Bool_t GetLambdacDaugh(AliAODMCParticle *part, TClonesArray *arrayMC) const ;
 
+  void FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3Prong *part, TClonesArray *arrayMC, AliRDHFCutsLctopKpi *cuts);
+  void FillVarHists(AliAODRecoDecayHF3Prong *part, TClonesArray *arrMC, AliRDHFCutsLctopKpi *cuts, TList *listout,AliAODEvent *aod);
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -83,22 +88,22 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   TH1F    *fhChi2; //!hist. for No. of events
   TH1F    *fhMassPtGreater3; //!hist. for No. of events
   TH1F    *fhMassPtGreater3TC; //!hist. for No. of events
+  TH1F    *fhMassPtGreater3Kp; //!hist. for No. of events
+  TH1F    *fhMassPtGreater3KpTC; //!hist. for No. of events
+  TH1F    *fhMassPtGreater3Lpi; //!hist. for No. of events
+  TH1F    *fhMassPtGreater3LpiTC; //!hist. for No. of events
+  TH1F    *fhMassPtGreater2; //!hist. for No. of events
+  TH1F    *fhMassPtGreater2TC; //!hist. for No. of events
+  TH1F    *fhMassPtGreater2Kp; //!hist. for No. of events
+  TH1F    *fhMassPtGreater2KpTC; //!hist. for No. of events
+  TH1F    *fhMassPtGreater2Lpi; //!hist. for No. of events
+  TH1F    *fhMassPtGreater2LpiTC; //!hist. for No. of events
   TH1F *fMassHist[3*kMaxPtBins]; //!hist. for inv mass (LC)
-  TH1F*   fCosPHist[3*kMaxPtBins]; //!hist. for PointingAngle (LC)
-  TH1F*   fDLenHist[3*kMaxPtBins]; //!hist. for Dec Length (LC)
-  TH1F*   fSumd02Hist[3*kMaxPtBins]; //!hist. for sum d02 (LC)
-  TH1F*   fSigVertHist[3*kMaxPtBins]; //!hist. for sigVert (LC)
-  TH1F*   fPtMaxHist[3*kMaxPtBins]; //!hist. for Pt Max (LC)
-  TH1F*   fDCAHist[3*kMaxPtBins]; //!hist. for DCA (LC)
   TH1F *fMassHistTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
-  TH1F *fMassHistLS[5*kMaxPtBins];//!hist. for LS inv mass (LC)
-  TH1F *fCosPHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 1 (LC)
-  TH1F *fDLenHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 2 (LC)
-  TH1F *fSumd02HistLS[3*kMaxPtBins];//!hist. for LS cuts variable 3 (LC)
-  TH1F *fSigVertHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 4 (LC)
-  TH1F *fPtMaxHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 5 (LC)
-  TH1F *fDCAHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 6 (LC)
-  TH1F *fMassHistLSTC[5*kMaxPtBins];//!hist. for LS inv mass (TC)
+  TH1F *fMassHistLpi[3*kMaxPtBins]; //!hist. for inv mass (LC)
+  TH1F *fMassHistLpiTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
+  TH1F *fMassHistKp[3*kMaxPtBins]; //!hist. for inv mass (LC)
+  TH1F *fMassHistKpTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
   TNtuple *fNtupleLambdac; //! output ntuple
   Float_t fUpmasslimit;  //upper inv mass limit for histos
   Float_t fLowmasslimit; //lower inv mass limit for histos
@@ -114,9 +119,14 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   Bool_t fRealPid;    //flag for real PID
   Bool_t fResPid;      //flag for PID with resonant channels
   Bool_t fUseKF;      //flag to cut with KF vertexer
+  Bool_t fAnalysis;      //apply analysis cuts
   AliAnalysisVertexingHF *fVHF;  // Vertexer heavy flavour (used to pass the cuts)
+  Bool_t fFillVarHists;
+  TH1F *fNentries;
+  TList *fOutputMC;
+  AliAODpidUtil* fUtilPid;
   
-  ClassDef(AliAnalysisTaskSELambdac,3); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
+  ClassDef(AliAnalysisTaskSELambdac,4); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
 };
 
 #endif
