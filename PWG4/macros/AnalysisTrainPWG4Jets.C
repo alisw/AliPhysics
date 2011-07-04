@@ -672,6 +672,14 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        taskCl->SetEventSelection(kTRUE); // saves some computing time, not all vertices are processed
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
+
+
+       if(iFilterAnalysis==2){
+	 if(kIsPbPb)taskCl->SetJetTriggerPtCut(40);
+	 else taskCl->SetJetTriggerPtCut(20.);
+       }
+
+
        //       taskCl->SetDebugLevel(3);
  
        taskCl->SetNRandomCones(1);
@@ -692,22 +700,11 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        kJetSubtractBranchesCut1 += Form("%s ",taskCl->GetJetOutputBranch());
        kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
 
-       if(iFilterAnalysis==2){
-	 if(kIsPbPb)taskCl->SetJetTriggerPtCut(0.);
-	 else taskCl->SetJetTriggerPtCut(20.);
-       }
-
        // tmp track qa...
-       taskCl = AddTaskJetCluster("AOD","",1<<4|1<<8,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),2.0);
+       taskCl = AddTaskJetCluster("AOD","",1<<8,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),2.0);
        taskCl->SetEventSelection(kTRUE); // saves some computing time, not all vertices are processed
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        taskCl->SetFilterMask(1<<4|1<<8,1);
-
-
-       taskCl = AddTaskJetCluster("AOD","",1<<9|1<<8,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),2.0);
-       taskCl->SetEventSelection(kTRUE); // saves some computing time, not all vertices are processed
-       taskCl->SetCentralityCut(fCenLo,fCenUp);
-       taskCl->SetFilterMask(1<<9|1<<8,2);
 
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data(),0.15);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
@@ -881,6 +878,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      taskjetServ->SetNonStdFile(kDeltaAODJetName.Data());
      taskjetServ->SetTrackEtaWindow(fTrackEtaWindow);
      taskjetServ->SetFilterMask(kHighPtFilterMask);
+     if(kIsPbPb)taskjetServ->SetCollisionType(AliAnalysisTaskJetServices::kPbPb);
+     else taskjetServ->SetCollisionType(AliAnalysisTaskJetServices::kPP);
      if(kIsPbPb){
        if(kDeltaAODJetName.Length()>0&&kFilterAOD)taskjetServ->SetFilterAODCollisions(kTRUE);
        //       else if(iAODanalysis)taskjetServ->SetFilterAODCollisions(kTRUE);
@@ -904,6 +903,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        Printf("%3d: %s",iJF+1,objStr->GetString().Data());
      }
 
+     // Printf("Type q to exit");if(getchar()=='q')return;
      if(iPWG4JetSpectrum&1){
        if(kIsPbPb){
 	 for(int iJF = 0;iJF < kJetListSpectrum.GetSize();iJF++){
