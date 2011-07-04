@@ -69,6 +69,10 @@ public:
   short TPCsignalN() const;    
   float TPCsignalS() const;   
 
+  float TOFpionTime() const;
+  float TOFkaonTime() const;
+  float TOFprotonTime() const;
+
   const TBits& TPCclusters() const;
   const TBits& TPCsharing()  const;
   
@@ -78,6 +82,7 @@ public:
   void SetPidProbKaon(const float& x);
   void SetPidProbProton(const float& x);
   void SetPidProbMuon(const float& x);
+  void SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr);
    
   void SetP(const AliFemtoThreeVector& p);
   void SetPt(const float& x);
@@ -148,7 +153,9 @@ public:
   float fPidProbProton;   // proton pid
   float fPidProbMuon;     // muon pid
   unsigned int fTrackId;  // track unique id
-
+  float fTofPionTime;     // TOF time - pion expected time
+  float fTofKaonTime;     // TOF time - kaon expected time
+  float fTofProtonTime;   // TOF time - proton expected time
 
   AliFemtoThreeVector fP; // track momentum
   float fPt;              // transverse momenta
