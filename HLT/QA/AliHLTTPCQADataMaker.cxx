@@ -59,7 +59,7 @@ void AliHLTTPCQADataMaker::StartOfDetectorCycle()
 void AliHLTTPCQADataMaker::EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray** /*list*/)
 {
   // see header file for class documentation
-  for (int itc=-1;itc=GetNTrigClasses();itc++) {
+  for (int itc=-1;itc<GetNTrigClasses();itc++) {
     TH1* hp = GetESDsData(kPHLT,itc);
     TH1* hr = GetESDsData(kPRatio,itc);
     TH1* ho = GetESDsData(kPOffline,itc);
