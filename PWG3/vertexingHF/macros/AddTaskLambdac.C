@@ -1,4 +1,4 @@
-AliAnalysisTaskSELambdac *AddTaskLambdac(TString *finname,Bool_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t useKF)
+AliAnalysisTaskSELambdac *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t useKF)
 {
   //==============================================================================                                                      
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
