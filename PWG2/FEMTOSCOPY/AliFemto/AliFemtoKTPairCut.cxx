@@ -150,25 +150,28 @@ bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair)
   if (!temp) return temp;
 
   if ((fPtMin > 0.0) || (fPtMax<1000.0)) {
-    double px1 = pair->Track1()->Track()->P().x();
-    double py1 = pair->Track1()->Track()->P().y();
+//     double px1 = pair->Track1()->Track()->P().x();
+//     double py1 = pair->Track1()->Track()->P().y();
 
-    double px2 = pair->Track2()->Track()->P().x();
-    double py2 = pair->Track2()->Track()->P().y();
+//     double px2 = pair->Track2()->Track()->P().x();
+//     double py2 = pair->Track2()->Track()->P().y();
     
-    double pt1 = TMath::Hypot(px1, py1);
-    double pt2 = TMath::Hypot(px2, py2);
+//     double pt1 = TMath::Hypot(px1, py1);
+//     double pt2 = TMath::Hypot(px2, py2);
     
-    if ((pt1<fPtMin) || (pt1>fPtMax)) return false;
-    if ((pt2<fPtMin) || (pt2>fPtMax)) return false;
+//     if ((pt1<fPtMin) || (pt1>fPtMax)) return false;
+//     if ((pt2<fPtMin) || (pt2>fPtMax)) return false;
+    if ((pair->Track1()->Track()->Pt()<fPtMin) || (pair->Track1()->Track()->Pt()>fPtMax)) return false;
+    if ((pair->Track2()->Track()->Pt()<fPtMin) || (pair->Track2()->Track()->Pt()>fPtMax)) return false;
   }
 
 //Taking care of the Phi cut
-  double rpangle = (pair->GetPairAngleEP())*180/TMath::Pi();
+//   double rpangle = (pair->GetPairAngleEP())*180/TMath::Pi();
+  double rpangle = pair->GetPairAngleEP();
 
   if (rpangle > 180.0) rpangle -= 180.0;
   if (rpangle < 0.0) rpangle += 180.0;
-
+  
   if (fPhiMin < 0) {
     if ((rpangle > fPhiMax) && (rpangle < 180.0+fPhiMin)) 
       temp = false;
