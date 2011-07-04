@@ -15,13 +15,11 @@
 #include "AliESDVertex.h"
 #include "AliMultiplicity.h"
 #include "AliCentrality.h"
+#include "AliEventplane.h"
 #include "AliESDVZERO.h"
-
 #include "AliFmPhysicalHelixD.h"
 #include "AliFmThreeVectorF.h"
-
 #include "SystemOfUnits.h"
-
 #include "AliFemtoEvent.h"
 #include "AliFemtoModelHiddenInfo.h"
 
@@ -274,9 +272,12 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   //  hbtEvent->SetTriggerCluster(fEvent->GetTriggerCluster());
 
   if ((fEvent->IsTriggerClassFired("CINT1WU-B-NOPF-ALL")) ||
-      (fEvent->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")))
+      (fEvent->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")) ||
+      (fEvent->IsTriggerClassFired("CINT1-B-NOPF-ALLNOTRD")) ||
+      (fEvent->IsTriggerClassFired("CINT1-B-NOPF-FASTNOTRD")))
     hbtEvent->SetTriggerCluster(1);
-  else if (fEvent->IsTriggerClassFired("CSH1WU-B-NOPF-ALL"))
+  else if ((fEvent->IsTriggerClassFired("CSH1WU-B-NOPF-ALL")) ||
+	   (fEvent->IsTriggerClassFired("CSH1-B-NOPF-ALLNOTRD")))
     hbtEvent->SetTriggerCluster(2);
   else 
     hbtEvent->SetTriggerCluster(0);
@@ -437,7 +438,22 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       trackCopy->SetPidProbPion(esdpid[2]);
       trackCopy->SetPidProbKaon(esdpid[3]);
       trackCopy->SetPidProbProton(esdpid[4]);
-						
+
+      esdpid[0] = -100000.0;
+      esdpid[1] = -100000.0;
+      esdpid[2] = -100000.0;
+      esdpid[3] = -100000.0;
+      esdpid[4] = -100000.0;
+      
+      double tTOF = 0.0;
+
+      if (esdtrack->GetStatus()&AliESDtrack::kTOFpid) {
+	tTOF = esdtrack->GetTOFsignal();
+	esdtrack->GetIntegratedTimes(esdpid);
+      }
+
+      trackCopy->SetTofExpectedTimes(tTOF-esdpid[2], tTOF-esdpid[3], tTOF-esdpid[4]);
+					
       double pxyz[3];
       double rxyz[3];
       double impact[2];
@@ -647,7 +663,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
     // centrality between 0 (central) and 1 (very peripheral)
 
     if (cent) {
-      if (cent->GetCentralityPercentile("V0M") < 0.0)
+      if (cent->GetCentralityPercentile("V0M") < 0.00001)
 	hbtEvent->SetNormalizedMult(-1);
       else
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("V0M")));
@@ -660,6 +676,12 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
     hbtEvent->SetZDCParticipants(tNormMultPos);
   else
     hbtEvent->SetZDCParticipants(tNormMultNeg);
+  
+  AliEventplane* ep = fEvent->GetEventplane();
+  if (ep) {
+    hbtEvent->SetEP(ep);
+    hbtEvent->SetReactionPlaneAngle(ep->GetEventplane("Q"));
+  }
 
   fCurEvent++;	
   cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
