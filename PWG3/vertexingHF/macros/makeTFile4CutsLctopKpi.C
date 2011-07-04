@@ -98,11 +98,14 @@ void makeInputAliAnalysisTaskSELctopKpi(){
   for(Int_t ic=0;ic<nvars;ic++){anacutsval[ic]=new Float_t[nptbins];}
   for(Int_t ipt2=0;ipt2<nptbins;ipt2++){
    anacutsval[0][ipt2]=0.18;
-   anacutsval[1][ipt2]=0.6;
+   anacutsval[1][ipt2]=0.4;
+   anacutsval[2][ipt2]=0.5;
    anacutsval[3][ipt2]=0.;
    anacutsval[4][ipt2]=0.;
    anacutsval[5][ipt2]=0.01;
-   anacutsval[6][ipt2]=0.03;
+   anacutsval[6][ipt2]=0.06;
+   anacutsval[7][ipt2]=0.005;
+   anacutsval[8][ipt2]=0.7;
    anacutsval[9][ipt2]=0.;
    anacutsval[10][ipt2]=0.;
    anacutsval[11][ipt2]=0.05;
@@ -169,7 +172,7 @@ void makeInputAliAnalysisTaskSELctopKpi(){
   pidObjpi->SetTPC(kTRUE);
   Double_t sigmaspi[5]={3.,0.,0.,0.,0.};
   pidObjpi->SetSigma(sigmaspi);
-  pidObjpi->SetTOFdecide(kTRUE);
+//  pidObjpi->SetTOFdecide(kTRUE);
 
   RDHFLctopKpiProd->SetPidpion(pidObjpi);
   RDHFLctopKpiAn->SetPidpion(pidObjpi);
