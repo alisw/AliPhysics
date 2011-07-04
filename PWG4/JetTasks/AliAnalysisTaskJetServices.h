@@ -55,6 +55,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     virtual void SetAODInput(Bool_t b){fUseAODInput = b;}
     virtual void SetRunRange(Float_t fLo,Float_t fUp){fRunRange[0] = fLo;fRunRange[1] = fUp;}
     virtual void SetMCData(Bool_t b){fMC = b;}
+    virtual void SetCollisionType(Int_t iType){fCollisionType = iType;}
     virtual void SetUsePhysicsSelection(Bool_t b){fUsePhysicsSelection = b;}
     virtual void SetPhysicsSelectionFlag(Int_t i){fPhysicsSelectionFlag = i;}
     virtual void SetFilterAODCollisions(Bool_t b){fFilterAODCollisions = b;}
@@ -108,6 +109,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
 	   kVertexZCut=1<<9,
 	   kVertexRCut=1<<10,
 	   kTotalEventCuts=(1<<11)-1};
+    enum {kPbPb = 0,kPP,kPbP};
 
  private:
 
@@ -123,6 +125,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     UInt_t        fEventCutInfoESD;   // event selection info of what is cutted after physics selection
     UInt_t        fFilterMask;         // filter bit for slecected tracks
     Int_t         fRPSubeventMethod;   // method for subevent calculation
+    Int_t         fCollisionType;           // type of collisions
     Float_t       fAvgTrials;          // Average number of trials
     Float_t       fVtxXMean;           // mean x for cuts
     Float_t       fVtxYMean;           // mean y for cuts
@@ -175,7 +178,7 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
         // Provisions for replication
     static AliAODHeader*    fgAODHeader;        //! Header for replication
     static TClonesArray*  fgAODVertices;        //! primary vertex for replication
-    ClassDef(AliAnalysisTaskJetServices,12)
+    ClassDef(AliAnalysisTaskJetServices,13)
 };
  
 #endif
