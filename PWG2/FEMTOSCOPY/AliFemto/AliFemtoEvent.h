@@ -21,15 +21,13 @@ class AliFemtoTrackCut;
 class AliFemtoV0Cut;
 class AliFemtoXiCut;
 class AliFemtoKinkCut;
-
+class AliEventplane;
 
 #ifdef __ROOT__
-
 // the following encapsulation by malisa 21apr2006
 #ifndef __NO_STAR_DEPENDENCE_ALLOWED__
 class StMuDst;
 #endif
-
 #endif
 
 class AliFemtoEvent{
@@ -40,6 +38,7 @@ public:
 //
 #endif
 #endif
+  
   AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut=0, AliFemtoV0Cut* vCut=0,  AliFemtoXiCut* xCut=0, AliFemtoKinkCut* kCut=0); // copy constructor with track and v0 cuts
   AliFemtoEvent(const AliFemtoEvent& ev); // copy constructor
   ~AliFemtoEvent();
@@ -69,6 +68,7 @@ public:
   unsigned char      TriggerCluster() const;  
 
   float ReactionPlaneAngle() const;
+  AliEventplane* EP() const;
   
   void SetEventNumber(const unsigned short& s);
   void SetRunNumber(const int& i);
@@ -99,6 +99,7 @@ public:
   void SetTriggerCluster(const unsigned char& c); 
 
   void SetReactionPlaneAngle(const float& a);
+  void SetEP(AliEventplane* ep);
   
   int UncorrectedNumberOfNegativePrimaries() const;
   int UncorrectedNumberOfPrimaries() const;
@@ -148,6 +149,7 @@ private:
   unsigned char      fTriggerCluster;  // Trigger cluster (mask)
 
   float      fReactionPlaneAngle; // reconstructed reaction plane angle
+  AliEventplane*  fEP; // pointer to full event plane information
 };
 
 

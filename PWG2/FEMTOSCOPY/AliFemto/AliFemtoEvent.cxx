@@ -18,10 +18,9 @@
 #include "AliFemtoKinkCut.h"
 #include "PhysicalConstants.h"
 #include "SystemOfUnits.h"
+#include "AliEventplane.h"
 
 // Mike removed all of the AliFemtoTTree stuff here 21apr2006 - it was not used for a long time.
-
-
 
 //___________________
 AliFemtoEvent::AliFemtoEvent():
@@ -53,7 +52,8 @@ AliFemtoEvent::AliFemtoEvent():
   fZDCParticipants(0),
   fTriggerMask(0),  
   fTriggerCluster(0),
-  fReactionPlaneAngle(0)
+  fReactionPlaneAngle(0),
+  fEP(0)
 {
   // Default constructor
   fPrimVertPos[0]=-999.0;
@@ -101,7 +101,8 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fZDCParticipants(0),
   fTriggerMask(0),  
   fTriggerCluster(0),
-  fReactionPlaneAngle(0)
+  fReactionPlaneAngle(0),
+  fEP(0)
 { // copy constructor with track and v0 cuts
   //cout << "AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, AliFemtoV0Cut* vCut, AliFemtoV0Cut* kCut)" << endl;
   fEventNumber = ev.fEventNumber;
@@ -130,6 +131,7 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fTriggerMask=ev.fTriggerMask;     // Trigger Type (mask)
   fTriggerCluster=ev.fTriggerCluster;
   fReactionPlaneAngle=ev.fReactionPlaneAngle;
+  fEP=ev.fEP;
 
   // create collections
   fTrackCollection = new AliFemtoTrackCollection;
@@ -196,7 +198,8 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fZDCParticipants(0),
   fTriggerMask(0),  
   fTriggerCluster(0),
-  fReactionPlaneAngle(0)
+  fReactionPlaneAngle(0),
+  fEP(0)
 { 
   // copy constructor 
   fEventNumber = ev.fEventNumber;
@@ -223,6 +226,7 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fTriggerMask=ev.fTriggerMask;     // Trigger Type (mask)
   fTriggerCluster=ev.fTriggerCluster;
   fReactionPlaneAngle=ev.fReactionPlaneAngle;
+  fEP=ev.fEP;
   // create collections
   fTrackCollection = new AliFemtoTrackCollection;
   fV0Collection = new AliFemtoV0Collection;
@@ -284,6 +288,7 @@ AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
   fTriggerMask=aEvent.fTriggerMask;     // Trigger Type (mask)
   fTriggerCluster=aEvent.fTriggerCluster;
   fReactionPlaneAngle=aEvent.fReactionPlaneAngle;
+  fEP=aEvent.fEP;
   // create collections
   fTrackCollection = new AliFemtoTrackCollection;
   fV0Collection = new AliFemtoV0Collection;
@@ -406,6 +411,8 @@ unsigned int  AliFemtoEvent::ZDCParticipants() const {return fZDCParticipants;}
 
 void AliFemtoEvent::SetReactionPlaneAngle(const float& a) { fReactionPlaneAngle = a;}
 float AliFemtoEvent::ReactionPlaneAngle() const { return fReactionPlaneAngle; }
+void AliFemtoEvent::SetEP(AliEventplane* ep) { fEP = ep;}
+AliEventplane* AliFemtoEvent::EP() const {return fEP; }
 
 //----------------------------- below here is only for star
 
