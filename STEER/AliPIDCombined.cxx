@@ -78,12 +78,16 @@ void AliPIDCombined::SetPriorDistribution(AliPID::EParticleType type,TH1F *prior
     return;
   }
   if(prior) {
-    Int_t i = type;
-    if (type >= (AliPID::EParticleType)AliPID::kSPECIES ) {
-      if (type < AliPID::kDeuteron) {
-	AliError(Form("Invalid EParticleType setting prior. Type: %d (neutral) not supported",type));
+    Int_t i = (Int_t)type;
+    if (i >= AliPID::kSPECIES ) {
+      if (i < (Int_t)AliPID::kDeuteron) {
+	AliError(Form("Invalid EParticleType setting prior. Type: %d (neutral) not supported",i));
 	return;
-      } else i = (Int_t)type - (AliPID::kSPECIESN-AliPID::kSPECIES);
+      } else i -= (AliPID::kSPECIESN-AliPID::kSPECIES);
+    }
+    if (i>(AliPID::kSPECIES+AliPID::kSPECIESLN)) {             // coverity fix (to put it mildly....)
+      AliError(Form("Unexpected EParticleType setting prior. Type: %d (neutral) not supported",i));
+      return;
     }
     if (fPriorsDistributions[i]) {
       delete fPriorsDistributions[i]; 
