@@ -30,6 +30,9 @@ AliFemtoTrack::AliFemtoTrack():
   fPidProbProton(0),
   fPidProbMuon(0),
   fTrackId(0),
+  fTofPionTime(-100000.0),
+  fTofKaonTime(-100000.0),
+  fTofProtonTime(-100000.0),
   fP(0,0,0),
   fPt(0),
   fHelix(),
@@ -72,6 +75,9 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fPidProbProton(0),
   fPidProbMuon(0),
   fTrackId(0),
+  fTofPionTime(-100000.0),
+  fTofKaonTime(-100000.0),
+  fTofProtonTime(-100000.0),
   fP(0,0,0),
   fPt(0),
   fHelix(),
@@ -104,6 +110,9 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fPidProbKaon = t.fPidProbKaon;
   fPidProbProton = t.fPidProbProton;
   fPidProbMuon=t.fPidProbMuon;
+  fTofPionTime=t.fTofPionTime;
+  fTofKaonTime=t.fTofKaonTime;
+  fTofProtonTime=t.fTofProtonTime;
   fP = t.fP;
   fPt = t.fPt;
   fHelix = t.fHelix;
@@ -149,6 +158,9 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fPidProbKaon = aTrack.fPidProbKaon;
   fPidProbProton = aTrack.fPidProbProton;
   fPidProbMuon=aTrack.fPidProbMuon;
+  fTofPionTime=aTrack.fTofPionTime;
+  fTofKaonTime=aTrack.fTofKaonTime;
+  fTofProtonTime=aTrack.fTofProtonTime;
   fP = aTrack.fP;
   fPt = aTrack.fPt;
   fHelix = aTrack.fHelix;
@@ -192,6 +204,7 @@ void AliFemtoTrack::SetPidProbPion(const float& x){fPidProbPion = x;}
 void AliFemtoTrack::SetPidProbKaon(const float& x){fPidProbKaon = x;}
 void AliFemtoTrack::SetPidProbProton(const float& x){fPidProbProton = x;}
 void AliFemtoTrack::SetPidProbMuon(const float& x){fPidProbMuon = x;}
+void AliFemtoTrack::SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr){fTofPionTime = tpi; fTofKaonTime = tkn; fTofProtonTime = tpr; }
  
 void AliFemtoTrack::SetP(const AliFemtoThreeVector& p){fP = p;}
 void AliFemtoTrack::SetPt(const float& pt){fPt = pt;} 
@@ -236,6 +249,10 @@ float AliFemtoTrack::TPCsignal() const{return fTPCsignal;}
 short AliFemtoTrack::TPCsignalN() const{return fTPCsignalN;}    
 float AliFemtoTrack::TPCsignalS() const{return fTPCsignalS;} 
 float AliFemtoTrack::SigmaToVertex() const{return fSigmaToVertex;} 
+float AliFemtoTrack::TOFpionTime() const{return fTofPionTime;}
+float AliFemtoTrack::TOFkaonTime() const{return fTofKaonTime;}
+float AliFemtoTrack::TOFprotonTime() const{return fTofProtonTime;}
+
 
 void AliFemtoTrack::SetHiddenInfo(AliFemtoHiddenInfo* aHiddenInfo) {fHiddenInfo=aHiddenInfo;}
 bool AliFemtoTrack::ValidHiddenInfo() const { if (fHiddenInfo) return true; else return false; }
