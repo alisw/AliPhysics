@@ -186,7 +186,8 @@ AliTOFDecoderV2::operator = (const AliTOFDecoderV2 &source)
 
 AliTOFDecoderV2::~AliTOFDecoderV2()
 {
-  delete fDecoderSummaryData;
+  if (fDecoderSummaryData)
+    delete fDecoderSummaryData;
 }
 
 //_________________________________________________________________

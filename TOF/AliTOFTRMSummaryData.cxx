@@ -94,8 +94,10 @@ AliTOFTRMSummaryData::operator = (const AliTOFTRMSummaryData &source)
 AliTOFTRMSummaryData::~AliTOFTRMSummaryData()
 {
   /* default destructor */
-  for (Int_t iChain = 0; iChain < N_CHAIN; iChain++)
-    delete fChainSummaryData[iChain];
+  for (Int_t iChain = 0; iChain < N_CHAIN; iChain++){
+    if (fChainSummaryData[iChain])
+      delete fChainSummaryData[iChain];
+  }
 }
 
 //_________________________________________________________________
