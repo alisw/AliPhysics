@@ -112,7 +112,8 @@ void AliMUONQADataMakerSim::InitHits()
 
   TH1F* h1 = new TH1F("hHitPtot", "P distribution in Hits;P [erg];Counts ", 300, 0., 300.); 
   Add2HitsList(h1, 1, !expert, image);
-  return;
+  //
+  ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line
 } 
 
 //__________________________________________________________________
@@ -127,7 +128,8 @@ void AliMUONQADataMakerSim::InitSDigits()
 
   TH1F* h1 = new TH1F("hSDigitsCharge", "Charge distribution in SDigits;Charge [??];Counts", 4096, 0, 4095); 
   Add2SDigitsList(h1, 1, !expert, image);
-
+  //
+  ClonePerTrigClass(AliQAv1::kSDIGITS); // this should be the last line
 }  
 
 //__________________________________________________________________
@@ -142,7 +144,8 @@ void AliMUONQADataMakerSim::InitDigits()
 
   TH1I* h1 = new TH1I("hDigitsADC", "ADC distribution in Digits;ACD value;Counts", 4096, 0, 4095); 
   Add2DigitsList(h1, 1, !expert, image);  
-
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 } 
 
 //__________________________________________________________________
@@ -161,11 +164,13 @@ void AliMUONQADataMakerSim::MakeHits(TTree* hitsTree)
 
   while ( ( hit = static_cast<AliMUONHit*>(next()) ) )
   {
-    GetHitsData(0)->Fill(hit->DetElemId());
-    GetHitsData(1)->Fill(hit->Momentum());
+    FillHitsData(0,hit->DetElemId());
+    FillHitsData(1,hit->Momentum());
   }
-
-  
+  //
+  IncEvCountCycleHits();
+  IncEvCountTotalHits();
+  //
 }
 
 //__________________________________________________________________
@@ -184,9 +189,13 @@ void AliMUONQADataMakerSim::MakeSDigits(TTree* sdigitsTree)
 
   while ( ( dig = static_cast<AliMUONVDigit*>(next()) ) )
   {
-    GetSDigitsData(0)->Fill(dig->DetElemId());
-    GetSDigitsData(1)->Fill(dig->Charge());
+    FillSDigitsData(0,dig->DetElemId());
+    FillSDigitsData(1,dig->Charge());
   }
+  //
+  IncEvCountCycleSDigits();
+  IncEvCountTotalSDigits();
+  //
 } 
 
 //__________________________________________________________________
@@ -205,9 +214,13 @@ void AliMUONQADataMakerSim::MakeDigits(TTree* digitsTree)
 
   while ( ( dig = static_cast<AliMUONVDigit*>(next()) ) )
   {
-    GetDigitsData(0)->Fill(dig->DetElemId());
-    GetDigitsData(1)->Fill(dig->ADC());
+    FillDigitsData(0,dig->DetElemId());
+    FillDigitsData(1,dig->ADC());
   }
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+  //
 }
       
 //____________________________________________________________________________ 
@@ -215,7 +228,8 @@ void AliMUONQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjAr
 {
     ///Detector specific actions at end of cycle
     // do the QA checking
-    AliQAChecker::Instance()->Run(AliQAv1::kMUON, task, list) ;  
+  ResetEventTrigClasses();
+  AliQAChecker::Instance()->Run(AliQAv1::kMUON, task, list) ;  
 }
 
 

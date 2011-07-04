@@ -192,15 +192,14 @@ void AliQACheckerBase::Check(Double_t * test, AliQAv1::ALITASK_t task, TObjArray
   // Performs a basic checking
   // Compares all the histograms in the list
 
-	Int_t count[AliRecoParam::kNSpecies]   = { 0 }; 
+  Int_t count[AliRecoParam::kNSpecies]   = { 0 }; 
 
   GetRefSubDir(GetName(), AliQAv1::GetTaskName(task), fRefSubDir, fRefOCDBSubDir) ;
  // SetRefandData(refDir, refOCDBDir) ; 
   
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     test[specie] = 1.0 ; 
-    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie)) 
-      continue ; 
+    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie)) continue ; 
     if (list[specie]->GetEntries() == 0)  
       test[specie] = 0. ; // nothing to check
     else {
@@ -214,11 +213,22 @@ void AliQACheckerBase::Check(Double_t * test, AliQAv1::ALITASK_t task, TObjArray
           if ( hdata->IsA()->InheritsFrom("TH1") ) {
             if ( hdata->TestBit(AliQAv1::GetExpertBit()) )  // does not perform the test for expert data
               continue ; 
-            TH1 * href = NULL ; 
-            if (fRefSubDir) 
-              href  = static_cast<TH1*>(fRefSubDir->Get(hdata->GetName())) ;
-            else if (fRefOCDBSubDir[specie])
-              href  = static_cast<TH1*>(fRefOCDBSubDir[specie]->FindObject(hdata->GetName())) ;
+            // 
+	    // First try to find the ref histo with exact name (with possible trigger clon ending)
+	    TString hname = hdata->GetName();
+	    TH1 * href = NULL ; 
+            if (fRefSubDir)                  href  = static_cast<TH1*>(fRefSubDir->Get(hname.Data())) ;
+            else if (fRefOCDBSubDir[specie]) href  = static_cast<TH1*>(fRefOCDBSubDir[specie]->FindObject(hname.Data()));
+	    //
+	    if (!href && hdata->TestBit(AliQAv1::GetClonedBit())) { // try to find the histo for the base name (w/o trigger ending
+	      int ind = hname.Index(AliQADataMaker::GetTriggerPrefix());
+	      if (ind>0) {
+		hname.Resize(ind);
+		if (fRefSubDir)                  href  = static_cast<TH1*>(fRefSubDir->Get(hname.Data())) ;
+		else if (fRefOCDBSubDir[specie]) href  = static_cast<TH1*>(fRefOCDBSubDir[specie]->FindObject(hname.Data()));
+	      }		    
+	    }
+	    //
             if (!href) 
               test[specie] = -1 ; // no reference data ; 
             else {
@@ -319,14 +329,14 @@ void AliQACheckerBase::PrintExternParam()
 //____________________________________________________________________________
 void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, AliDetectorRecoParam * recoParam) 
 { 
-	AliDebug(AliQAv1::GetQADebugLevel(), Form("Processing %s", AliQAv1::GetAliTaskName(index))) ; 
+  AliDebug(AliQAv1::GetQADebugLevel(), Form("Processing %s", AliQAv1::GetAliTaskName(index))) ; 
   
-	Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ;
+  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ;
   Check(rv, index, recoParam) ;
-	SetQA(index, rv) ; 	
-	
+  SetQA(index, rv) ; 	
+  
   AliDebug(AliQAv1::GetQADebugLevel(), Form("Test result of %s", AliQAv1::GetAliTaskName(index))) ;
-	
+  
   delete [] rv ; 
   Finish() ; 
 }
@@ -334,14 +344,29 @@ void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, AliDetectorRecoParam * reco
 //____________________________________________________________________________
 void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * recoParam) 
 { 
-	AliDebug(AliQAv1::GetQADebugLevel(), Form("Processing %s", AliQAv1::GetAliTaskName(index))) ; 
-  
-	Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ;
-  Check(rv, index, list, recoParam) ;
-	SetQA(index, rv) ; 	
-	
-  AliDebug(AliQAv1::GetQADebugLevel(), Form("Test result of %s", AliQAv1::GetAliTaskName(index))) ;
-	
+  // RS: perform check for all trigger classes in loop
+  Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ;
+  //
+  TObjArray ** listTrig = new TObjArray *[AliRecoParam::kNSpecies];
+  //
+  for (int itc=-1;itc<AliQADataMaker::GetNTrigClasses();itc++) {
+    //
+    // RS: fetch the histograms for each specie and for given trigger
+    //AliInfo(Form("Processing %s for trigger: %s", AliQAv1::GetAliTaskName(index),AliQADataMaker::GetTrigClassName(itc))); 
+    
+    for (int specie=0;specie<AliRecoParam::kNSpecies;specie++) {
+      listTrig[specie] = 0;
+      if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) || !list[specie]) continue;
+      listTrig[specie] = new TObjArray( list[specie]->GetSize() ); // destination for clones of this trigger
+      AliQADataMaker::GetDataOfTrigClass(list[specie],itc, listTrig[specie]);
+    }
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("Processing %s for trigger: %s", AliQAv1::GetAliTaskName(index),AliQADataMaker::GetTrigClassName(itc))); 
+    Check(rv, index, listTrig, recoParam) ;
+    SetQA(index, rv) ; 	
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("Test result of %s for trigger: %s", AliQAv1::GetAliTaskName(index),AliQADataMaker::GetTrigClassName(itc)));
+    //
+    for (int specie=0;specie<AliRecoParam::kNSpecies;specie++) if (listTrig[specie]) delete listTrig[specie]; // clean temporary container
+  }
   delete [] rv ; 
   Finish() ; 
 }
@@ -349,77 +374,72 @@ void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetec
 //____________________________________________________________________________
 void AliQACheckerBase::Finish() const 
 {
-	// wrap up and save QA in proper file
-	AliQAv1::GetQAResultFile() ; 
-	AliQAv1 * qa = AliQAv1::Instance() ; 
-	qa->Write(AliQAv1::GetQAName(), kWriteDelete) ;   
+  // wrap up and save QA in proper file
+  AliQAv1::GetQAResultFile() ; 
+  AliQAv1 * qa = AliQAv1::Instance() ; 
+  qa->Write(AliQAv1::GetQAName(), kWriteDelete) ;   
 }
 
 //____________________________________________________________________________ 
 void AliQACheckerBase::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) 
 {
   // makes the QA image for sim and rec
-    for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
-      if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) || list[esIndex]->GetEntries() == 0) 
-        continue ;
-      Int_t nImages = 0 ;      
-      TIter next(list[esIndex]) ;  
-      TH1 * hdata = NULL ; 
-      while ( (hdata=static_cast<TH1 *>(next())) ) {
-        TString cln(hdata->ClassName()) ; 
-        if ( ! cln.Contains("TH") )
-          continue ; 
-        if ( hdata->TestBit(AliQAv1::GetImageBit()) )
-          nImages++; 
+  TObjArray tmpArr;  // array to store flat version of original array (which may contain clones)
+  //
+  for (Int_t esIndex = 0; esIndex < AliRecoParam::kNSpecies; esIndex++) {
+    if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) || list[esIndex]->GetEntries() == 0) continue;
+    Int_t nImages = 0;
+    TIter next(list[esIndex]);
+    TObject* hdata = NULL;
+    tmpArr.Clear();
+    while ( (hdata=(next())) ) { // count histos and transfere to flat array
+      if (hdata->InheritsFrom(TH1::Class()) && hdata->TestBit(AliQAv1::GetImageBit()) ) {  // histo, not cloned
+	nImages++; 
+	tmpArr.AddLast(hdata); 
+	continue;
       }
-      if ( nImages == 0 ) {
-        AliDebug(AliQAv1::GetQADebugLevel(), Form("No histogram will be plotted for %s %s %s\n", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex))) ;  
-        continue;
-      }
-      AliDebug(AliQAv1::GetQADebugLevel(), Form("%d histograms will be plotted for %s %s %s\n", nImages, GetName(), AliQAv1::GetTaskName(task).Data(),AliRecoParam::GetEventSpecieName(esIndex))) ;  
-        
-      const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)) ; 
-      if ( !fImage[esIndex] ) {
-        fImage[esIndex] = new TCanvas(title, title) ;
-      }
-      fImage[esIndex]->Clear() ; 
-      fImage[esIndex]->SetTitle(title) ; 
-      fImage[esIndex]->cd() ; 
-      TPaveText someText(0.015, 0.015, 0.98, 0.98) ;
-      someText.AddText(title) ;
-      someText.Draw() ; 
-      fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
-      fImage[esIndex]->Clear() ; 
-      Int_t nx = TMath::Nint(TMath::Sqrt(nImages));
-      Int_t ny = nx  ; 
-      if (nx < TMath::Sqrt(nImages))
-        ny++ ; 
-      
-      fImage[esIndex]->Divide(nx, ny) ; 
-      TIter nexthist(list[esIndex]) ; 
-      TH1* hist = NULL ;
-      Int_t npad = 1 ; 
-      fImage[esIndex]->cd(npad) ; 
-      while ( (hist=static_cast<TH1*>(nexthist())) ) {
-        TString cln(hist->ClassName()) ; 
-        if ( ! cln.Contains("TH") )
-          continue ; 
-        if(hist->TestBit(AliQAv1::GetImageBit())) {
-          TString opts = hist->GetDrawOption();
-          if (opts.Contains("logy",TString::kIgnoreCase)) {
-            gPad->SetLogy();
-            opts.ReplaceAll("logy", "");
-          }
-          if (opts.Contains("logx", TString::kIgnoreCase)) {
-            gPad->SetLogx();
-            opts.ReplaceAll("logx", "");
-          }
-          hist->DrawCopy() ; 
-          fImage[esIndex]->cd(++npad) ; 
-        }
-      }
-      fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
+      if (!hdata->TestBit(AliQAv1::GetClonedBit())) continue;  // not an array of clones, unknown object
+      TIter nextCl((TObjArray*)hdata);   // array of histo clones
+      TObject* hcl = 0;
+      while ((hcl=nextCl())) if (hcl->InheritsFrom(TH1::Class()) && hcl->TestBit(AliQAv1::GetImageBit())) {tmpArr.AddLast(hcl); nImages++;}
     }
+    //
+    if ( nImages == 0 ) {
+      AliDebug(AliQAv1::GetQADebugLevel(), Form("No histogram will be plotted for %s %s %s\n", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)));  
+      continue;
+    }
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("%d histograms will be plotted for %s %s %s\n", nImages, GetName(), AliQAv1::GetTaskName(task).Data(),AliRecoParam::GetEventSpecieName(esIndex)));  
+    //        
+    const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)); 
+    //
+    if ( !fImage[esIndex] ) fImage[esIndex] = new TCanvas(title, title);
+    //
+    fImage[esIndex]->Clear(); 
+    fImage[esIndex]->SetTitle(title); 
+    fImage[esIndex]->cd(); 
+    TPaveText someText(0.015, 0.015, 0.98, 0.98);
+    someText.AddText(title);
+    someText.Draw(); 
+    fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps"); 
+    fImage[esIndex]->Clear(); 
+    Int_t nx = TMath::Nint(TMath::Sqrt(nImages));
+    Int_t ny = nx; 
+    if (nx < TMath::Sqrt(nImages)) ny++; 
+    //
+    fImage[esIndex]->Divide(nx, ny); 
+    TIter nexthist(&tmpArr);
+    Int_t npad = 1; 
+    fImage[esIndex]->cd(npad); 
+    TH1* histo = 0;
+    while ( (histo=(TH1*)nexthist()) ) { // tmpArr is guaranteed to contain only plottable histos, no checks needed
+      TString opts = histo->GetDrawOption();
+      if (opts.Contains("logy",TString::kIgnoreCase)) gPad->SetLogy();
+      if (opts.Contains("logx",TString::kIgnoreCase)) gPad->SetLogx();
+      histo->DrawCopy(); 
+      fImage[esIndex]->cd(++npad); 
+    }
+    fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps"); 
+  }
 }
 
 //____________________________________________________________________________

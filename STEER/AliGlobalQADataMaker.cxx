@@ -36,6 +36,7 @@ void AliGlobalQADataMaker::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 void AliGlobalQADataMaker::InitRaws()
 {
   // create Raws histograms in Raws subdir
+  ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
 
 //____________________________________________________________________________
@@ -85,8 +86,7 @@ void AliGlobalQADataMaker::InitRecPoints() {
   // as a part of global QA
   //------------------------------------------------------
   static Bool_t first = kTRUE ; 
-  if ( ! first ) 
-    return ; 
+  if ( ! first ) return; 
   const Char_t *name[]={
     "hGlobalSPD1ResidualsY","SPD1ResidualsZ",
     "hGlobalSPD2ResidualsY","SPD2ResidualsZ",
@@ -181,7 +181,9 @@ void AliGlobalQADataMaker::InitRecPoints() {
   new TH1F("hGlobalSSD2AbsoluteResidualsZPosZ",
            "SSD2Absolute Residuals Z Pos Z",100,-3.,3.),47);
   
-  first = kFALSE ; 
+  first = kFALSE;
+  //
+  ClonePerTrigClass(AliQAv1::kRECPOINTS); // this should be the last line 
 }
 
 //____________________________________________________________________________ 
@@ -314,7 +316,8 @@ void AliGlobalQADataMaker::InitESDs() {
     TH2F *h1=new TH2F(name[1],title[1],41,-0.5,40.5, 33,-0.5,32.5);
     Add2ESDsList(h1,kMlt1, !expert, image);
   }
-
+  //
+  ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line
 }
 
 //____________________________________________________________________________
@@ -322,7 +325,9 @@ void AliGlobalQADataMaker::MakeRaws(AliRawReader* rawReader)
 {
   //Fill prepared histograms with Raw digit properties
   rawReader->Reset() ;
-
+  IncEvCountCycleRaws();
+  IncEvCountTotalRaws();
+  //
 }
 
 //____________________________________________________________________________ 
@@ -341,7 +346,7 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
   Double_t xv=vtx->GetXv();
   Double_t yv=vtx->GetYv();
   Double_t zv=vtx->GetZv();
-  GetESDsData(kEvt0)->Fill(zv);
+  FillESDsData(kEvt0,zv);
 
 
   Int_t ntrk=esd->GetNumberOfTracks() ; 
@@ -351,7 +356,7 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
     // Cluster related QA
     if (track->IsOn(AliESDtrack::kITSrefit)) {
       Int_t n=track->GetITSclusters(0);
-      GetESDsData(kClr0)->Fill(Float_t(n)/6.); //6 is the number of ITS layers
+      FillESDsData(kClr0,Float_t(n)/6.); //6 is the number of ITS layers
     }
 
     for (Int_t j=0; j<6; ++j) {
@@ -360,7 +365,7 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
       if (!track->GetITSModuleIndexInfo(j,idet,sts,xloc,zloc)) continue;
       if (j>=2) idet+=240;
       if (j>=4) idet+=260;
-      if ((sts==1)||(sts==2)||(sts==4)) GetESDsData(kClr3)->Fill(idet);  
+      if ((sts==1)||(sts==2)||(sts==4)) FillESDsData(kClr3,idet);  
     }
 
     if (track->IsOn(AliESDtrack::kTPCrefit)) {
@@ -368,13 +373,13 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
       Int_t nf=track->GetTPCNclsF();      // number of crossed TPC pad rows
       if (nf>0) {
         Double_t val = n*1.0/nf; 
-        GetESDsData(kClr1)->Fill(val); 
+        FillESDsData(kClr1,val); 
       }
     }
 
     if (track->IsOn(AliESDtrack::kTRDrefit)) {
       Int_t n=track->GetTRDclusters(0);
-      GetESDsData(kClr2)->Fill(Float_t(n)/(6*24));//(6*24) is the number of TRD time bins
+      FillESDsData(kClr2,Float_t(n)/(6*24));//(6*24) is the number of TRD time bins
     }
 
     Double_t p=track->GetP();
@@ -385,15 +390,15 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
       track->GetDZ(xv,yv,zv,esd->GetMagneticField(),dz); 
       if ((TMath::Abs(dz[0])<3.) && (TMath::Abs(dz[1])<3.)) { // beam pipe
         Double_t phi=track->Phi();
-	GetESDsData(kTrk0)->Fill(phi);
+	FillESDsData(kTrk0,phi);
 	Double_t y=track->Eta();
-	GetESDsData(kTrk1)->Fill(y);
+	FillESDsData(kTrk1,y);
 
         if (TMath::Abs(y)<0.9) {
-	   GetESDsData(kTrk2)->Fill(p);
-	   if (track->IsOn(AliESDtrack::kITSrefit)) GetESDsData(kTrk3)->Fill(p);
-	  //if (track->IsOn(AliESDtrack::kTOFout)) GetESDsData(kTrk4)->Fill(p);
-	   if (track->GetTOFsignal()>0) GetESDsData(kTrk4)->Fill(p);
+	  FillESDsData(kTrk2,p);
+	  if (track->IsOn(AliESDtrack::kITSrefit)) FillESDsData(kTrk3,p);
+	  //if (track->IsOn(AliESDtrack::kTOFout)) FillESDsData(kTrk4,p);
+	  if (track->GetTOFsignal()>0) FillESDsData(kTrk4,p);
 	}
       }
     }
@@ -406,13 +411,13 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
        dz[0]*=10.; // in mm
        if (innTrack->GetZ()  > 0)
        if (innTrack->GetTgl()> 0) { // TPC side A
-	  if (tpcTrack->GetSign() > 0) GetESDsData(kTrk7)->Fill(dz[0]);
-          else                         GetESDsData(kTrk8)->Fill(dz[0]);
+	 if (tpcTrack->GetSign() > 0) FillESDsData(kTrk7,dz[0]);
+	 else                         FillESDsData(kTrk8,dz[0]);
        }
        if (innTrack->GetZ()  < 0)
        if (innTrack->GetTgl()< 0) { // TPC side C
-	  if (tpcTrack->GetSign() > 0) GetESDsData(kTrk9)->Fill(dz[0]);
-          else                         GetESDsData(kTrk10)->Fill(dz[0]);
+	 if (tpcTrack->GetSign() > 0) FillESDsData(kTrk9,dz[0]);
+	 else                         FillESDsData(kTrk10,dz[0]);
        }
     }
 
@@ -420,11 +425,11 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
     if ((p>0.4) && (p<0.5)) {
       if (track->IsOn(AliESDtrack::kITSpid)) {
 	Double_t dedx=track->GetITSsignal();
-        GetESDsData(kPid0)->Fill(dedx);
+        FillESDsData(kPid0,dedx);
       }
       if (track->IsOn(AliESDtrack::kTPCpid)) {
 	Double_t dedx=track->GetTPCsignal();
-        GetESDsData(kPid1)->Fill(dedx);
+        FillESDsData(kPid1,dedx);
       }
     }
     if (p>1.0) {
@@ -437,7 +442,7 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
             Double_t times[10];
             track->GetIntegratedTimes(times);
             Double_t tof=track->GetTOFsignal()/*-847055 -1771207*/;
-            GetESDsData(kPid2)->Fill(times[2]-tof);
+            FillESDsData(kPid2,times[2]-tof);
 	 }
       }
     }
@@ -445,8 +450,7 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
     if (par) {
       Double_t pp=par->GetP();
       Double_t dedx=track->GetTPCsignal();
-      TH2F *h = dynamic_cast<TH2F*>(GetESDsData(kPid3));
-      if (h) h->Fill(pp,dedx);
+      FillESDsData(kPid3,pp,dedx);
     }
  
   }
@@ -459,18 +463,25 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
        Short_t nv0a=mltV0->GetNbPMV0A();
        Short_t nv0c=mltV0->GetNbPMV0C();
        Int_t   nits=mltITS->GetNumberOfTracklets();
-       TH2F *h0=dynamic_cast<TH2F*>(GetESDsData(kMlt0));
-       if (h0) h0->Fill(nits,nv0a);
-       TH2F *h1=dynamic_cast<TH2F*>(GetESDsData(kMlt1));
-       if (h1) h1->Fill(nits,nv0c);
+       FillESDsData(kMlt0,nits,nv0a);
+       FillESDsData(kMlt1,nits,nv0c);
     }
 
-
-  TH1 *tpc=GetESDsData(kTrk2); tpc->Sumw2();
-  TH1 *its=GetESDsData(kTrk3); its->Sumw2();
-  TH1 *tof=GetESDsData(kTrk4); tof->Sumw2();
-  GetESDsData(kTrk5)->Divide(its,tpc,1,1.,"b");
-  GetESDsData(kTrk6)->Divide(tof,tpc,1,1.,"b");
+  // RS
+  for (int itr = -1; itr<GetNEventTrigClasses(); itr++) {
+    TH1 *tpc = GetMatchingESDsHisto(kTrk2,itr);
+    TH1 *its = GetMatchingESDsHisto(kTrk3,itr);
+    TH1 *tof = GetMatchingESDsHisto(kTrk4,itr);
+    TH1* h5 =  GetMatchingESDsHisto(kTrk5,itr);
+    TH1* h6 =  GetMatchingESDsHisto(kTrk6,itr);
+    if (h5 && h6 && tpc && its && tof) {
+      tpc->Sumw2();
+      its->Sumw2();
+      tof->Sumw2();
+      h5->Divide(its,tpc,1,1.,"b");
+      h6->Divide(tof,tpc,1,1.,"b");
+    }
+  }
 
   // V0 related QA
   Int_t nV0=esd->GetNumberOfV0s();
@@ -489,23 +500,26 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
     v0.ChangeMassHypothesis(kK0Short);
     mass=v0.GetEffMass();
     if (v0.GetOnFlyStatus())
-       GetESDsData(kK0on)->Fill(mass);
+      FillESDsData(kK0on,mass);
     else
-       GetESDsData(kK0off)->Fill(mass);
+      FillESDsData(kK0off,mass);
 
     v0.ChangeMassHypothesis(kLambda0);
     mass=v0.GetEffMass();
     if (v0.GetOnFlyStatus())
-       GetESDsData(kL0on)->Fill(mass);
+      FillESDsData(kL0on,mass);
     else
-       GetESDsData(kL0off)->Fill(mass);
+      FillESDsData(kL0off,mass);
 
     v0.ChangeMassHypothesis(kLambda0Bar);
     mass=v0.GetEffMass();
     if (v0.GetOnFlyStatus())
-       GetESDsData(kL0on)->Fill(mass);
+      FillESDsData(kL0on,mass);
     else
-       GetESDsData(kL0off)->Fill(mass);
+      FillESDsData(kL0off,mass);
   }
-
+  //
+  IncEvCountCycleESDs();
+  IncEvCountTotalESDs();
+  //
 }

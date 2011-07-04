@@ -24,8 +24,9 @@
 #  include "AliQAv1.h"
 #endif
 
+#include "AliQADataMakerRec.h"
+
 class AliESDEvent;
-class AliQADataMakerRec;
 class AliMUONRecoParam;
 class AliRawReader;
 class TH1;
@@ -73,7 +74,9 @@ public:
   virtual void ResetDetectorESDs(TObjArray* list) { ResetDetector(list); }
   /// Reset anything that must be reset for Digits
   virtual void ResetDetectorDigits(TObjArray* list) { ResetDetector(list); }
-  
+  ///
+  void   ForbidCloning(TH1* h, Bool_t v=kTRUE)  { if (fMaster) fMaster->ForbidCloning(h,v); }
+  ///  
 protected:
 
   void ResetDetector(const TObjArray* list);
@@ -84,16 +87,38 @@ protected:
   
   const AliMUONRecoParam* GetRecoParam() const;
   
-  TH1* GetDigitsData(Int_t index) const;
-  TH1* GetESDsData(Int_t index) const;
-  TH1* GetRecPointsData(Int_t index) const;
-  TH1* GetRawsData(Int_t index) const;
-                    
+  TObject* GetDigitsData(Int_t index)    const  {return fMaster ? fMaster->GetDigitsData(index)    : 0x0;}
+  TObject* GetESDsData(Int_t index)      const  {return fMaster ? fMaster->GetESDsData(index)      : 0x0;}
+  TObject* GetRecPointsData(Int_t index) const  {return fMaster ? fMaster->GetRecPointsData(index) : 0x0;}
+  TObject* GetRawsData(Int_t index)      const  {return fMaster ? fMaster->GetRawsData(index)      : 0x0;}
+  
+  TH1*     GetDigitsData(Int_t index, int trCl)    const  {return fMaster ? fMaster->GetDigitsData(index, trCl)    : 0x0;}
+  TH1*     GetESDsData(Int_t index, int trCl)      const  {return fMaster ? fMaster->GetESDsData(index, trCl)      : 0x0;}
+  TH1*     GetRecPointsData(Int_t index, int trCl) const  {return fMaster ? fMaster->GetRecPointsData(index, trCl) : 0x0;}
+  TH1*     GetRawsData(Int_t index, int trCl)      const  {return fMaster ? fMaster->GetRawsData(index,trCl)       : 0x0;}
+  
   Int_t Add2DigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE);  
   Int_t Add2ESDsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE);                      
   Int_t Add2RecPointsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE);                 
   Int_t Add2RawsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE, const Bool_t saveForCorr = kFALSE);  
-  
+  //
+  Int_t  FillDigitsData(Int_t index, double x)                 {return fMaster ? fMaster->FillDigitsData(index,x) : 0;}
+  Int_t  FillRawsData(Int_t index, double x)                   {return fMaster ? fMaster->FillRawsData(index,x) : 0;}
+  Int_t  FillRecPointsData(Int_t index, double x)              {return fMaster ? fMaster->FillRecPointsData(index,x) : 0;}
+  Int_t  FillESDsData(Int_t index, double x)                   {return fMaster ? fMaster->FillESDsData(index,x) : 0;}
+  //
+  Int_t  FillDigitsData(Int_t index, double x, double y)       {return fMaster ? fMaster->FillDigitsData(index,x,y) : 0;}
+  Int_t  FillRawsData(Int_t index, double x, double y)         {return fMaster ? fMaster->FillRawsData(index,x,y) : 0;}
+  Int_t  FillRecPointsData(Int_t index, double x, double y)    {return fMaster ? fMaster->FillRecPointsData(index,x,y) : 0;}
+  Int_t  FillESDsData(Int_t index, double x, double y)         {return fMaster ? fMaster->FillESDsData(index,x,y) : 0;}
+  //
+  Int_t  FillDigitsData(Int_t index, double x, double y, double w)     {return fMaster ? fMaster->FillDigitsData(index,x,y,w) : 0;}
+  Int_t  FillRawsData(Int_t index, double x, double y, double w)       {return fMaster ? fMaster->FillRawsData(index,x,y,w) : 0;}
+  Int_t  FillRecPointsData(Int_t index, double x, double y, double w)  {return fMaster ? fMaster->FillRecPointsData(index,x,y,w) : 0;}
+  Int_t  FillESDsData(Int_t index, double x, double y, double w)       {return fMaster ? fMaster->FillESDsData(index,x,y,w) : 0;}
+  //
+  void   ClonePerTrigClass(AliQAv1::TASKINDEX_t task);  
+
   AliQADataMakerRec* fMaster; ///< master to get access to its methods
 
 private:

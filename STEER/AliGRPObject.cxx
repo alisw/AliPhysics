@@ -109,6 +109,8 @@ AliGRPObject::AliGRPObject():
 	fMachineMode(fgkInvalidString),
 	fLHCStateArray(0x0),
 	fMachineModeArray(0x0),
+	fQATrigClasses(0x0),
+	fQACloningRequest(0x0),
 	fMaxTimeLHCValidity(0)
 {
 
@@ -174,6 +176,8 @@ AliGRPObject::AliGRPObject(const AliGRPObject &obj):
 	fMachineMode(obj.fMachineMode),
 	fLHCStateArray(obj.fLHCStateArray),
 	fMachineModeArray(obj.fMachineModeArray),
+	fQATrigClasses(obj.fQATrigClasses),
+	fQACloningRequest(obj.fQACloningRequest),
 	fMaxTimeLHCValidity(obj.fMaxTimeLHCValidity)
 
 {
@@ -250,6 +254,9 @@ AliGRPObject& AliGRPObject:: operator=(const AliGRPObject & obj)
 	this->fMachineModeArray = obj.fMachineModeArray;
 	this->fMaxTimeLHCValidity = obj.fMaxTimeLHCValidity;
 
+	this->fQATrigClasses = obj.fQATrigClasses;
+	this->fQACloningRequest = obj.fQACloningRequest;
+
 	for (Int_t ibeamType = 0; ibeamType<2; ibeamType++){
 		this->fSeparateBeamType[ibeamType] = obj.fSeparateBeamType[ibeamType];
 	}
@@ -290,6 +297,14 @@ AliGRPObject::~AliGRPObject() {
 	if (fMachineModeArray){
 		delete fMachineModeArray;
 		fMachineModeArray = 0x0;
+	}
+	if (fQATrigClasses) {
+	  delete fQATrigClasses;
+	  fQATrigClasses = 0x0;
+	}
+	if (fQACloningRequest) {
+	  delete fQACloningRequest;
+	  fQACloningRequest = 0x0;
 	}
 }
 

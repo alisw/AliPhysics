@@ -34,7 +34,7 @@ public:
   virtual Int_t MakeDigits(TTree *clustersTree);
   virtual Int_t MakeRecPoints(TTree *clustersTree);
   virtual void StartOfDetectorCycle();
-  virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * list);
+  virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list);
   virtual void CreateTheMap();
   virtual void CreateTheCalibration();
   virtual void InitCalibrationArray();
@@ -43,7 +43,7 @@ public:
   Int_t GetOffset(AliQAv1::TASKINDEX_t task,Int_t specie=0)const;
   void  SetOffset(AliQAv1::TASKINDEX_t task, Int_t offset, Int_t specie = 0);
   Int_t GetTaskHisto(AliQAv1::TASKINDEX_t task);
-  Int_t GetNumberOfEvents(AliQAv1::TASKINDEX_t task);
+  Int_t GetNumberOfEvents(AliQAv1::TASKINDEX_t task, Int_t trigCl=-1);
   virtual void ResetDetector(AliQAv1::TASKINDEX_t task);
   AliITSDDLModuleMapSDD* GetDDLSDDModuleMap()const{return fDDLModuleMap; };
 
@@ -71,8 +71,6 @@ private:
   Int_t   *fGenDigitsOffset;                   // QAchecking RecPoints offset       
   Int_t   *fGenRecPointsOffset;                // QAchecking RecPoints offset       
   Int_t   fTimeBinSize;			       // time bin width in number of clocks
-  Int_t   fNEvent;                             // Number of Events (raw data)
-  Int_t   fNEventRP;                           // Number of Events (rec points)
   AliITSDDLModuleMapSDD  *fDDLModuleMap;       // SDD Detector configuration for the decoding
   TObjArray *fCalibration;                     //Array of Calibration Object
   TObjArray *fHistoCalibration;                //Array of the Calibration histograms for the normalization

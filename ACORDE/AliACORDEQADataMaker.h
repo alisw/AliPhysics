@@ -63,7 +63,7 @@ private:
   virtual TObjArray* Init(AliQAv1::TASKINDEX_t, Int_t, Int_t){return 0;};
   virtual void   Init(AliQAv1::TASKINDEX_t, TObjArray*, Int_t, Int_t){};
   virtual void   StartOfCycle(AliQAv1::TASKINDEX_t, Bool_t){};
-  virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray*){};
+  virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray**) {}
   virtual void   InitSDigits(){};
   virtual void   MakeHits(TClonesArray*){};
   virtual void   MakeDigits(TClonesArray*){};

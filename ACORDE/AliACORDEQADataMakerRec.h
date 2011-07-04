@@ -28,13 +28,14 @@
 
 #include "AliQADataMakerRec.h"
 #include <TLine.h>
+
 class AliACORDEQADataMakerRec: public AliQADataMakerRec {
 
 public:
   AliACORDEQADataMakerRec() ;          // constructor
   AliACORDEQADataMakerRec(const AliACORDEQADataMakerRec& qadm) ;   
   AliACORDEQADataMakerRec& operator = (const AliACORDEQADataMakerRec& qadm) ;
-	virtual ~AliACORDEQADataMakerRec();// destructor
+  virtual ~AliACORDEQADataMakerRec(); // destructor
 
 private:
   virtual void   InitRaws() ;    //book Digit QA histo
@@ -46,22 +47,22 @@ private:
   virtual void   MakeRaws(AliRawReader* rawReader) ;
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
-  virtual void   StartOfDetectorCycle() ;
-	
-	//For DQM shifter histogram
-	// SL0 ACO trigger mode
-	TLine* fhACOMean; 
-	TLine* fhACOMin; 
-	TLine* fhACOMax; 
-	TLine* fhACOMulti;
-	// AMU trigger mode
-	TLine* fhACOMeanAMU; 
-	TLine* fhACOMinAMU; 
-	TLine* fhACOMaxAMU; 
-	TLine* fhACOMultiAMU;
-	// Trigger check (4 words from hits multiplicity)
-	TLine* fhACOTriggerCheck;
-
+  virtual void   StartOfDetectorCycle();
+  //
+  //For DQM shifter histogram
+  // SL0 ACO trigger mode
+  TLine* fhACOMean;
+  TLine* fhACOMin;
+  TLine* fhACOMax;
+  TLine* fhACOMulti;
+  // AMU trigger mode
+  TLine* fhACOMeanAMU;
+  TLine* fhACOMinAMU;
+  TLine* fhACOMaxAMU;
+  TLine* fhACOMultiAMU;
+  // Trigger check (4 words from hits multiplicity)
+  TLine* fhACOTriggerCheck;
+  //
   ClassDef(AliACORDEQADataMakerRec,1)  // description 
 
 };

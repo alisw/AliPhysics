@@ -43,6 +43,21 @@ private:
   virtual void   StartOfDetectorCycle() ;
 
   const AliT0RecoParam* GetRecoParam() { return dynamic_cast<const AliT0RecoParam*>(fRecoParam);}
+
+  // RS Commented by Ruben, read below:
+  /*
+  // RS: Don't use custom counters, they create problems with trigger cloning
+  //     Use instead framework counters, incremented in the end of this routine
+  // RS: There is some inconsistency here: the separation of physics and calib. events/histos is done by
+  // fEventSpecie. Why do we book separate histos on different slots for calib and physics ? 
+  // I am changing this in such way that we don't need local counters like fNumTriggers (the corresponding
+  // histos now incremented in the MakeRaws, and for the normalization I will use the framework's counters
+  // AliQADataMaker::GetEvCountCycle(...), AliQADataMaker::GetEvCountTotal(...)
+  //
+  // I think the histos xx+250 should be suppressed (the xx calib histos of specie==calibration will be 
+  // used automatically)
+  
+
   Int_t fNumTriggers[6];  //number of trigger signals;
   Int_t fNumTriggersCal[6];  //number of calibration  trigger signals;
 
@@ -58,9 +73,9 @@ private:
   Float_t fTrEffPhys[6];
   TH1F*  fhTimeDiff[24];
   Int_t fMeans[24];
- 
+  */ 
 
-  ClassDef(AliT0QADataMakerRec,6)  // description 
+  ClassDef(AliT0QADataMakerRec,7)  // description 
 
 };
 

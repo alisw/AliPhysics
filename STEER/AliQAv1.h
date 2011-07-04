@@ -81,7 +81,11 @@ public:
   QABIT_t                GetQAStatusBit(AliRecoParam::EventSpecie_t es = AliRecoParam::kDefault, DETECTORINDEX_t det=kNULLDET, ALITASK_t tsk=kNULLTASK) const ; 
   static const char  *   GetRefOCDBDirName() { return fgkRefOCDBDirName.Data() ; }
   static const char  *   GetRefDataDirName() { return fgRefDataDirName.Data() ; }
-
+  //
+  static       UInt_t    GetClonedBit()               { return fgkQAClonedBit; }
+  static       UInt_t    GetForbidCloningBit()        { return fgkForbidCloningBit; }
+  static       UInt_t    GetOrigHistoKeptBit()        { return fgkOrigHistoKeptBit; }
+  //
   static     TASKINDEX_t GetTaskIndex(const char * name) ; 
   static       TString   GetTaskName(UInt_t tsk) { return fgTaskNames[tsk] ; }
   static const char *    GetModeName(MODE_t mode) { return (mode == kSIMMODE || mode == kRECMODE || mode == kQAMODE) ? (fgModeNames[mode]).Data() : "" ; }
@@ -169,7 +173,10 @@ private:
   static const TString   fgkImageFileName           ; //! name of the file that contains all the QA images
   static const TString   fImageFileFormat         ; //! format of the file that contains all the QA images
   static const UShort_t  fgkMaxQAObjects          ;//! maximum number of QA objects allowed dor each task (Raws, digits,....) 
-
+  //
+  static const UInt_t    fgkQAClonedBit           ;//! flag that the histrogram was cloned per trigger class
+  static const UInt_t    fgkForbidCloningBit      ;//! flag that the histogram is forbiden to clone per trigger class
+  static const UInt_t    fgkOrigHistoKeptBit      ;//! flag that the histogram was clonned but original is kept
  ClassDef(AliQAv1,3)  //ALICE Quality Assurance Object
 };
 #endif

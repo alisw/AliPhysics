@@ -82,6 +82,7 @@ void AliFMDQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task,
 {
   //Detector specific actions at end of cycle
   // do the QA checking
+  ResetEventTrigClasses(); // reset triggers list to select all histos
   AliLog::Message(5,"FMD: end of detector cycle",
 		  "AliFMDQADataMakerSim","AliFMDQADataMakerSim",
 		  "AliFMDQADataMakerSim::EndOfDetectorCycle",
@@ -101,6 +102,8 @@ void AliFMDQADataMakerSim::InitSDigits()
 			      1024,0,1024);
   hADCCounts->SetXTitle("ADC counts");
   Add2SDigitsList(hADCCounts, 0, !expert, image);
+  //
+  ClonePerTrigClass(AliQAv1::kSDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________ 
@@ -116,6 +119,8 @@ void AliFMDQADataMakerSim::InitHits()
   hEnergyOfHits->SetXTitle("Edep");
   hEnergyOfHits->SetYTitle("Counts");
   Add2HitsList(hEnergyOfHits, 0, !expert, image);
+  //
+  ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line
 }
 
 //_____________________________________________________________________
@@ -130,6 +135,8 @@ void AliFMDQADataMakerSim::InitDigits()
 			      1024,0,1024);
   hADCCounts->SetXTitle("ADC counts");
   Add2DigitsList(hADCCounts, 0, !expert, image);
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //_____________________________________________________________________
@@ -141,8 +148,8 @@ void AliFMDQADataMakerSim::MakeHits()
 
   TIter next(fHitsArray);
   AliFMDHit * hit;
-  while ((hit = static_cast<AliFMDHit *>(next()))) 
-    GetHitsData(0)->Fill(hit->Edep()/hit->Length()*0.032);
+  while ((hit = static_cast<AliFMDHit *>(next()))) FillHitsData(0,hit->Edep()/hit->Length()*0.032);
+  //
 }
 
 //_____________________________________________________________________
@@ -164,12 +171,16 @@ void AliFMDQADataMakerSim::MakeHits(TTree * hitTree)
   }
     
   branch->SetAddress(&fHitsArray) ;
-  
+  //  
   for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
     branch->GetEntry(ientry);
     MakeHits();   //tmp); 
     fHitsArray->Clear() ; 
-  } 	
+  } 
+  //
+  IncEvCountCycleHits();
+  IncEvCountTotalHits();
+  //	
 }
 
 //_____________________________________________________________________
@@ -184,8 +195,9 @@ void AliFMDQADataMakerSim::MakeDigits()
   for(Int_t i = 0 ; i < fDigitsArray->GetEntriesFast() ; i++) {
     //Raw ADC counts
     AliFMDDigit* digit = static_cast<AliFMDDigit*>(fDigitsArray->At(i));
-    GetDigitsData(0)->Fill(digit->Counts());
+    FillDigitsData(0,digit->Counts());
   }
+  //
 }
 
 //_____________________________________________________________________
@@ -195,6 +207,7 @@ void AliFMDQADataMakerSim::MakeDigits(TTree * digitTree)
   // 
   // Parameters: 
   //    digitTree    Tree holding digits. 
+  // RS: counters are incremented in MakeDigits()
   
   if (!fDigitsArray) 
     fDigitsArray = new TClonesArray("AliFMDDigit", 1000) ; 
@@ -211,6 +224,10 @@ void AliFMDQADataMakerSim::MakeDigits(TTree * digitTree)
 
   branch->GetEntry(0) ; 
   MakeDigits() ; 
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+  //
 }
 
 //_____________________________________________________________________
@@ -222,11 +239,12 @@ void AliFMDQADataMakerSim::MakeSDigits()
   //   none 
   if(!fSDigitsArray) return;
   
-   for(Int_t i = 0 ; i < fSDigitsArray->GetEntriesFast() ; i++) {
+  for(Int_t i = 0 ; i < fSDigitsArray->GetEntriesFast() ; i++) {
     //Raw ADC counts
     AliFMDSDigit* sdigit = static_cast<AliFMDSDigit*>(fSDigitsArray->At(i));
-    GetSDigitsData(0)->Fill(sdigit->Counts());
+    FillSDigitsData(0,sdigit->Counts());
   }
+  //
 }
 
 //_____________________________________________________________________
@@ -236,7 +254,7 @@ void AliFMDQADataMakerSim::MakeSDigits(TTree * sdigitTree)
   // 
   // Parameters: 
   //    digitTree    Tree holding digits. 
-  
+  //
   if (!fSDigitsArray) 
     fSDigitsArray = new TClonesArray("AliFMDSDigit", 1000) ; 
   fSDigitsArray->Clear() ;
@@ -249,6 +267,10 @@ void AliFMDQADataMakerSim::MakeSDigits(TTree * sdigitTree)
   branch->SetAddress(&fSDigitsArray) ;
   branch->GetEntry(0) ; 
   MakeSDigits() ; 
+  //
+  IncEvCountCycleSDigits();
+  IncEvCountTotalSDigits();
+  //
 }
 
 //_____________________________________________________________________ 

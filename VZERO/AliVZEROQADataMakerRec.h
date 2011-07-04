@@ -36,7 +36,7 @@ public:
 		  ,kMultiV0A,kMultiV0C,kChargeV0A,kChargeV0C,kChargeV0 
 		  ,kV0ATime,kV0CTime,kDiffTime
 		  ,kRawMIPV0A,kRawMIPV0C,kRawMIPV0,kRawMIPChannel
-		  ,kBBFlagsPerChannel, kTriggers,kTriggers2,kTimeV0AV0C} ;
+                  ,kBBFlagsPerChannel, kTriggers,kTriggers2,kTimeV0AV0C} ;
 	
  enum HESDType_t {kCellMultiV0A,kCellMultiV0C,kMIPMultiV0A,kMIPMultiV0C,kMIPMultiChannel
 		  ,kBBFlag,kBGFlag,kChargeChannel,kTimeChannel
@@ -65,21 +65,21 @@ private:
   Float_t CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const;
   
  
-  Int_t   fEvent;                     // event index
+  //  Int_t   fEvent;                     // event index
   Int_t   fEven[64];                  // even charge integrators
   Int_t   fOdd[64];                   // odd charge intergators
   Float_t fADCmean[128];              // mean adc per integrator
-  size_t fNTotEvents;                 // total number of events
-  size_t fNSubEvents;                 // number of events used in trending histos
-  size_t fTrendingUpdateEvent;        // event index of last update of the trending histos
-  size_t fNTrendingUpdates;           // number of updates in trending histos
+  //  size_t fNTotEvents;                 // total number of events
+  //  size_t fNSubEvents;                 // number of events used in trending histos
+  //  size_t fTrendingUpdateEvent;        // event index of last update of the trending histos
+  //  size_t fNTrendingUpdates;           // number of updates in trending histos
   size_t fTrendingUpdateTime;         // trending histos update time
   UInt_t fCycleStartTime;             // timestamp of QA start-of-cycle
   UInt_t fCycleStopTime;              // timestamp of QA end-of-cycle
   Float_t            fTimeOffset[64]; //! HPTDC time offsets channel by channel
   TF1*               fTimeSlewing;    //! Function for time slewing correction
 
-  ClassDef(AliVZEROQADataMakerRec,2)  // description 
+  ClassDef(AliVZEROQADataMakerRec,3)  // description 
 
 };
 

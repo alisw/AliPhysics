@@ -105,8 +105,8 @@ void AliPMDQADataMakerRec::InitRaws()
   
   TH2F *hCpvXY = new TH2F("hCpvXY","CPV plane;X [cm];Y [cm]",200,-100.,100.,200,-100.,100.);
   Add2RawsList(hCpvXY, 5, !expert, !image, saveCorr);
-  
-
+  //  
+  ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
 
 //____________________________________________________________________________
@@ -131,6 +131,8 @@ void AliPMDQADataMakerRec::InitDigits()
   TH1I *h3 = new TH1I("hCpvDigitsMult","Digits multiplicity distribution in CPV(PMD);# of Digits;Entries", 500, 0, 1000);
   h3->Sumw2();
   Add2DigitsList(h3, 3, !expert, image);  
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -192,9 +194,8 @@ void AliPMDQADataMakerRec::InitRecPoints()
 
   TH2I *h8 = new TH2I("hCpv54","Cluster - DDL5 vs DDL4;DDL4;DDL5", 100,0,200,100,0,200);
   Add2RecPointsList(h8,8, !expert, image);
-
-
-
+  //
+  ClonePerTrigClass(AliQAv1::kRECPOINTS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -218,18 +219,19 @@ void AliPMDQADataMakerRec::InitESDs()
   h2->Sumw2();
   Add2ESDsList(h2, 2, !expert, image)  ;
 
-/*
-  TH1I * h3 = new TH1I("hCpvClMult","Cluster Multiplicity of CPV plane",100,0.,1000.);
-  h3->Sumw2();
-  Add2ESDsList(h3, 3, !expert, image)  ;
-*/
-
+  /*
+    TH1I * h3 = new TH1I("hCpvClMult","Cluster Multiplicity of CPV plane",100,0.,1000.);
+    h3->Sumw2();
+    Add2ESDsList(h3, 3, !expert, image)  ;
+  */
+  //
+  ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line
 }
 
 //____________________________________________________________________________
 void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
-    //Fill prepared histograms with Raw digit properties
+  //Fill prepared histograms with Raw digit properties
 
   TObjArray *pmdddlcont = 0x0;
     pmdddlcont = new TObjArray();
@@ -272,8 +274,8 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
 	    if (det == 0)
 	    {
-	      GetRawsData(0)->Fill(ipp, sig);
-	      GetRawsData(2)->Fill(ipp);
+	      FillRawsData(0,ipp, sig);
+	      FillRawsData(2,ipp);
 
 		if(smn < 12)
 		{
@@ -288,12 +290,12 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
 
 		cc.RectGeomCellPos(smn,xpad,ypad,xx,yy);
-		GetRawsData(4)->Fill(xx,yy);
+		FillRawsData(4,xx,yy);
 	    }
 	    if (det == 1)
 	    {
-	      GetRawsData(1)->Fill(ipp, sig);
-	      GetRawsData(3)->Fill(ipp);
+	      FillRawsData(1,ipp, sig);
+	      FillRawsData(3,ipp);
 	
 		if(smn < 12)
 		{
@@ -307,7 +309,7 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		}
 
 		cc.RectGeomCellPos(smn,xpad,ypad,xx,yy);
-		GetRawsData(5)->Fill(xx,yy);
+		FillRawsData(5,xx,yy);
 
 	    }
 
@@ -318,7 +320,10 @@ void AliPMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
     delete pmdddlcont;
     pmdddlcont = 0x0;
-
+    //
+    IncEvCountCycleRaws();
+    IncEvCountTotalRaws();
+    //
 }
 //____________________________________________________________________________
 void AliPMDQADataMakerRec::MakeDigits()
@@ -333,18 +338,18 @@ void AliPMDQADataMakerRec::MakeDigits()
     {
     if(digit->GetDetector() == 0)
       {
-	    GetDigitsData(0)->Fill( digit->GetADC()) ;
+	    FillDigitsData(0, digit->GetADC()) ;
 	    premul++;
       }
     if(digit->GetDetector() == 1)
       {
-	    GetDigitsData(1)->Fill( digit->GetADC());
+	    FillDigitsData(1, digit->GetADC());
 	    cpvmul++;
       }
     }  
   
-  if (premul > 0) GetDigitsData(2)->Fill(premul);
-  if (cpvmul > 0) GetDigitsData(3)->Fill(cpvmul);
+  if (premul > 0) FillDigitsData(2,premul);
+  if (cpvmul > 0) FillDigitsData(3,cpvmul);
   
   
 }
@@ -360,20 +365,17 @@ void AliPMDQADataMakerRec::MakeDigits(TTree * digitTree)
     fDigitsArray = new TClonesArray("AliPMDdigit", 1000) ; 
   
   TBranch * branch = digitTree->GetBranch("PMDDigit") ;
-  if ( ! branch )
-    {
-      AliWarning("PMD branch in Digit Tree not found") ; 
-    }
-  else
-    {
-      branch->SetAddress(&fDigitsArray) ;
-      for (Int_t ient = 0; ient < branch->GetEntries(); ient++)
-	{
-	  branch->GetEntry(ient) ; 
-	  MakeDigits() ; 
-	}
-      
-    }
+  if ( ! branch ) {AliWarning("PMD branch in Digit Tree not found"); return;} 
+  //
+  branch->SetAddress(&fDigitsArray) ;
+  for (Int_t ient = 0; ient < branch->GetEntries(); ient++) {
+    branch->GetEntry(ient) ; 
+    MakeDigits() ; 
+  }
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+  //
 }
 
 //____________________________________________________________________________
@@ -417,22 +419,22 @@ void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 		{
 		  if(recpoint->GetSMNumber() >= 0 && recpoint->GetSMNumber() < 6)
 		    {
-		      GetRecPointsData(0)->Fill(recpoint->GetClusCells());
+		      FillRecPointsData(0,recpoint->GetClusCells());
 		      multDdl0++;
 		    }
 		  if(recpoint->GetSMNumber() >= 6 && recpoint->GetSMNumber() < 12)
 		    {
-		      GetRecPointsData(1)->Fill(recpoint->GetClusCells());
+		      FillRecPointsData(1,recpoint->GetClusCells());
 		      multDdl1++;
 		    }
 		  if(recpoint->GetSMNumber() >= 12 && recpoint->GetSMNumber() < 18)
 		    {
-		      GetRecPointsData(2)->Fill(recpoint->GetClusCells());
+		      FillRecPointsData(2,recpoint->GetClusCells());
 		      multDdl2++;
 		    }
 		  if(recpoint->GetSMNumber() >= 18 && recpoint->GetSMNumber() < 24)
 		    {
-		      GetRecPointsData(3)->Fill(recpoint->GetClusCells());
+		      FillRecPointsData(3,recpoint->GetClusCells());
 		      multDdl3++;
 		    }
 		}
@@ -442,12 +444,12 @@ void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 		  if((recpoint->GetSMNumber() >= 0 && recpoint->GetSMNumber() < 6) || 
 		     (recpoint->GetSMNumber() >= 18 && recpoint->GetSMNumber() < 24))
 		    {
-		      GetRecPointsData(4)->Fill(recpoint->GetClusCells());
+		      FillRecPointsData(4,recpoint->GetClusCells());
 		      multDdl4++;
 		    }
 		  if(recpoint->GetSMNumber() >= 6 && recpoint->GetSMNumber() < 18 )
 		    {
-		      GetRecPointsData(5)->Fill(recpoint->GetClusCells());
+		      FillRecPointsData(5,recpoint->GetClusCells());
 		      multDdl5++;
 		    }
 		}
@@ -455,9 +457,13 @@ void AliPMDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
 	}
     }
   
-  GetRecPointsData(6)->Fill(multDdl0,multDdl1);
-  GetRecPointsData(7)->Fill(multDdl2,multDdl3);
-  GetRecPointsData(8)->Fill(multDdl4,multDdl5);
+  FillRecPointsData(6,multDdl0,multDdl1);
+  FillRecPointsData(7,multDdl2,multDdl3);
+  FillRecPointsData(8,multDdl4,multDdl5);
+  //
+  IncEvCountCycleRecPoints();
+  IncEvCountTotalRecPoints();  
+  //
 }
 
 //____________________________________________________________________________
@@ -482,18 +488,22 @@ void AliPMDQADataMakerRec::MakeESDs(AliESDEvent * esd)
 
       if (pmdtr->GetDetector() == 0)
 	{
-	  GetESDsData(0)->Fill(adc);
+	  FillESDsData(0,adc);
 	  premul++;
 	}
       if (pmdtr->GetDetector() == 1)
 	{
-	  GetESDsData(1)->Fill(adc) ;
+	  FillESDsData(1,adc) ;
 	  cpvmul++;
 	}
     }
   
-  GetESDsData(2)->Fill(cpvmul,premul) ;
-  //GetESDsData(3)->Fill(cpvmul) ;  
+  FillESDsData(2,cpvmul,premul) ;
+  //FillESDsData(3,cpvmul) ;  
+  //
+  IncEvCountCycleESDs();
+  IncEvCountTotalESDs(); 
+  //
 }
 
 //____________________________________________________________________________ 

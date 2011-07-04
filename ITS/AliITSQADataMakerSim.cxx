@@ -105,7 +105,9 @@ void AliITSQADataMakerSim::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
   AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM::Start of ITS Cycle\n");
-
+  ResetEventTrigClasses(); // reset triggers list to select all histos
+  ResetEvCountCycle();
+  //  
   if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->StartOfDetectorCycle();
   if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->StartOfDetectorCycle();
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->StartOfDetectorCycle();
@@ -114,48 +116,45 @@ void AliITSQADataMakerSim::StartOfDetectorCycle()
 //____________________________________________________________________________ 
 void AliITSQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray** list)
 {
-
+  //
   AliInfo(Form("End of Dedetctor Cycle called for %s\n",AliQAv1::GetTaskName(task).Data() ));
-
+  ResetEventTrigClasses(); // reset triggers list to select all histos
+  //
   // launch the QA checking
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if (! IsValidEventSpecie(specie, list) ){
-      continue ; 
-    }
+    if (! IsValidEventSpecie(specie, list) ) continue; 
+    SetEventSpecie(AliRecoParam::ConvertIndex(specie));
+    //
+    Int_t idnumber=list[specie]->GetUniqueID();
+    //printf("specie %s \t id number == %d\n",AliRecoParam::GetEventSpecieName(specie),idnumber);
+    if(idnumber==0) {
+      //AliInfo(Form("No check for %s\n",AliQAv1::GetTaskName(task).Data() ))
+      continue;
+    } //skip kDigitsR and not filled TobjArray specie
     else{
-      Int_t idnumber=list[specie]->GetUniqueID();
-      //printf("specie %s \t id number == %d\n",AliRecoParam::GetEventSpecieName(specie),idnumber);
-      if(idnumber==0)
-	{
-	  //AliInfo(Form("No check for %s\n",AliQAv1::GetTaskName(task).Data() ))
-	    continue;
-	} //skip kDigitsR and not filled TobjArray specie
-      else{
-	AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
-	if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->EndOfDetectorCycle(task, list[specie]);
-	if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->EndOfDetectorCycle(task, list[specie]);
-	if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->EndOfDetectorCycle(task, list[specie]);
-	
-	
-	AliQAChecker *qac = AliQAChecker::Instance();
-	AliITSQAChecker *qacb = (AliITSQAChecker *) qac->GetDetQAChecker(0);
-	Int_t subdet=GetSubDet();
-	qacb->SetSubDet(subdet);
-	
-	if(subdet== 0 ){
-	  qacb->SetTaskOffset(fSPDDataMaker->GetOffset(task,specie),fSDDDataMaker->GetOffset(task,specie),fSSDDataMaker->GetOffset(task,specie)); //Setting the offset for the QAChecker list
+      AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
+      if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->EndOfDetectorCycle(task, list); //[specie]);
+      if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->EndOfDetectorCycle(task, list); //[specie]);
+      if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->EndOfDetectorCycle(task, list); //[specie]);
+      //
+      AliQAChecker *qac = AliQAChecker::Instance();
+      AliITSQAChecker *qacb = (AliITSQAChecker *) qac->GetDetQAChecker(0);
+      Int_t subdet=GetSubDet();
+      qacb->SetSubDet(subdet);
+      
+      if(subdet== 0 ){
+	qacb->SetTaskOffset(fSPDDataMaker->GetOffset(task,specie),fSDDDataMaker->GetOffset(task,specie),fSSDDataMaker->GetOffset(task,specie)); //Setting the offset for the QAChecker list
 	qacb->SetHisto(fSPDDataMaker->GetTaskHisto(task), fSDDDataMaker->GetTaskHisto(task), fSSDDataMaker->GetTaskHisto(task));	
+      }
+      else
+	if(subdet!=0){
+	  Int_t offset=GetDetTaskOffset(subdet, task);
+	  qacb->SetDetTaskOffset(subdet,offset);
+	  Int_t histo=GetDetTaskHisto(subdet, task);
+	  qacb->SetDetHisto(subdet,histo);
 	}
-	else
-	  if(subdet!=0){
-	    Int_t offset=GetDetTaskOffset(subdet, task);
-	    qacb->SetDetTaskOffset(subdet,offset);
-	    Int_t histo=GetDetTaskHisto(subdet, task);
-	    qacb->SetDetHisto(subdet,histo);
-	  }
-	qac->Run( AliQAv1::kITS , task, list);
-      }//end else unique id 
-    }//end else event specie
+      qac->Run( AliQAv1::kITS , task, list);
+    }//end else unique id 
   }//end for
 }
 
@@ -182,33 +181,34 @@ void AliITSQADataMakerSim::InitDigits()
     fSSDDataMaker->SetOffset(AliQAv1::kDIGITS, fDigitsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries(),AliRecoParam::AConvert(fEventSpecie));
     fSSDDataMaker->InitDigits();
   }
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________
 void AliITSQADataMakerSim::MakeDigits()
 { 
   // Fill QA for digits   
-  if(fSubDetector == 0 || fSubDetector == 1) 
-    fSPDDataMaker->MakeDigits() ; 
-
-  
-  if(fSubDetector == 0 || fSubDetector == 2) 
-    fSDDDataMaker->MakeDigits() ; 
-
+  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeDigits(); 
+  if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeDigits(); 
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeDigits();
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+  //
 }
 
 //____________________________________________________________________________
 void AliITSQADataMakerSim::MakeDigits(TTree * digits)
 { 
   // Fill QA for digits   
-  if(fSubDetector == 0 || fSubDetector == 1) 
-    fSPDDataMaker->MakeDigits(digits) ; 
-
-  if(fSubDetector == 0 || fSubDetector == 2)
-    fSDDDataMaker->MakeDigits(digits) ; 
-
+  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeDigits(digits); 
+  if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeDigits(digits); 
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeDigits(digits);
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+  //
 }
 
 //____________________________________________________________________________ 
@@ -233,36 +233,34 @@ void AliITSQADataMakerSim::InitSDigits()
     fSSDDataMaker->SetOffset(AliQAv1::kSDIGITS, fSDigitsQAList [AliRecoParam::AConvert(fEventSpecie)]->GetEntries(),AliRecoParam::AConvert(fEventSpecie));
     fSSDDataMaker->InitSDigits();
   }
+  //
+  ClonePerTrigClass(AliQAv1::kSDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
 void AliITSQADataMakerSim::MakeSDigits()
 {
   // Fill QA for sdigits
-  if(fSubDetector == 0 || fSubDetector == 1)
-    fSPDDataMaker->MakeSDigits() ; 
-
-  
-  if(fSubDetector == 0 || fSubDetector == 2) 
-    fSDDDataMaker->MakeSDigits() ; 
-
-
+  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeSDigits(); 
+  if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeSDigits(); 
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeSDigits();
+  //
+  IncEvCountCycleSDigits();
+  IncEvCountTotalSDigits();
+  //
 }
 
 //____________________________________________________________________________ 
 void AliITSQADataMakerSim::MakeSDigits(TTree * sdigits)
 {
   // Fill QA for recpoints
-  if(fSubDetector == 0 || fSubDetector == 1){
-    fSPDDataMaker->MakeSDigits(sdigits) ; 
- }
-  
-  if(fSubDetector == 0 || fSubDetector == 2){
-    fSDDDataMaker->MakeSDigits(sdigits) ; 
-  }
-
+  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeSDigits(sdigits); 
+  if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeSDigits(sdigits); 
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeSDigits(sdigits);
+  //
+  IncEvCountCycleSDigits();
+  IncEvCountTotalSDigits();
+  //
 }
 
 //____________________________________________________________________________ 
@@ -286,35 +284,34 @@ void AliITSQADataMakerSim::InitHits()
     fSSDDataMaker->SetOffset(AliQAv1::kHITS, fHitsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries(),AliRecoParam::AConvert(fEventSpecie));
     fSSDDataMaker->InitHits();
   }
+  //
+  ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
 void AliITSQADataMakerSim::MakeHits()
 {
   // Fill QA for hits
-  if(fSubDetector == 0 || fSubDetector == 1) {
-    fSPDDataMaker->MakeHits() ; 
-    }
-  
-  if(fSubDetector == 0 || fSubDetector == 2) {
-    fSDDDataMaker->MakeHits() ; 
-  }
-
+  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeHits(); 
+  if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeHits(); 
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeHits();
+  //
+  IncEvCountCycleHits();
+  IncEvCountTotalHits();
+  //
 }
 
 //____________________________________________________________________________ 
 void AliITSQADataMakerSim::MakeHits(TTree * hits)
 {
   // Fill QA for hits
-  if(fSubDetector == 0 || fSubDetector == 1) {
-    fSPDDataMaker->MakeHits(hits) ; 
-   }
-  if(fSubDetector == 0 || fSubDetector == 2) {
-    fSDDDataMaker->MakeHits(hits) ; 
-  }
-
+  if(fSubDetector == 0 || fSubDetector == 1) fSPDDataMaker->MakeHits(hits);
+  if(fSubDetector == 0 || fSubDetector == 2) fSDDDataMaker->MakeHits(hits);
   if(fSubDetector == 0 || fSubDetector == 3) fSSDDataMaker->MakeHits(hits);
+  //
+  IncEvCountCycleHits();
+  IncEvCountTotalHits();
+  //
 }
 
 //_________________________________________________________________
@@ -324,7 +321,6 @@ Int_t AliITSQADataMakerSim::GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t t
   //return the offset for each subdetector
   switch(subdet)
     {
-
       Int_t offset;
     case 1:
       offset=fSPDDataMaker->GetOffset(task);

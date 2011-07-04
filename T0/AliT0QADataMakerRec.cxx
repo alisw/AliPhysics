@@ -48,11 +48,18 @@ ClassImp(AliT0QADataMakerRec)
 //____________________________________________________________________________ 
   AliT0QADataMakerRec::AliT0QADataMakerRec() : 
 AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kT0), 
-		  "T0 Quality Assurance Data Maker"),
-  fnEventCal(0),
-  fnEventPhys(0)
+		  "T0 Quality Assurance Data Maker")
+//  fnEventCal(0),
+//  fnEventPhys(0)
 {
   // ctor
+  // RS: There is some inconsistency here: the separation of physics and calib. events/histos is done by
+  // fEventSpecie. Why do we book separate histos on different slots for calib and physics ? 
+  // I am changing this in such way that we don't need local counters like fNumTriggers (the corresponding
+  // histos now incremented in the MakeRaws, and for the normalization I will use the framework's counters
+  // AliQADataMaker::GetEvCountCycle(...), AliQADataMaker::GetEvCountTotal(...)
+  // All these fTrEff.. feff.. will by directly filled in corresponding histos
+  /*
   for (Int_t i=0; i<6; i++) {
     fNumTriggers[i]=0;
     fNumTriggersCal[i]=0;
@@ -68,9 +75,9 @@ AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kT0),
       feffPhysC[i]=0;
       feffPhysA[i]=0;
       feffqtcPhys[i]=0;
-      fMeans[i]=2500;
+      fMeans[i]=0;
    }
-
+  */
   // for(Int_t ic=0; ic<24; ic++) 
   // fMeans[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),"CFD-CFD",100,-250,250);
 }
@@ -78,9 +85,9 @@ AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kT0),
 
 //____________________________________________________________________________ 
 AliT0QADataMakerRec::AliT0QADataMakerRec(const AliT0QADataMakerRec& qadm) :
-  AliQADataMakerRec(),
-  fnEventCal(0),
-  fnEventPhys(0)
+  AliQADataMakerRec()
+  //  fnEventCal(0),
+  //  fnEventPhys(0)
 {
   //copy ctor 
  SetName((const char*)qadm.GetName()) ; 
@@ -101,6 +108,54 @@ AliT0QADataMakerRec::~AliT0QADataMakerRec()
   //destructor
 }
 //____________________________________________________________________________
+void AliT0QADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
+{
+  //Detector specific actions at end of cycle
+  // do the QA checking
+  AliInfo(Form("Task: %d",task));
+  ResetEventTrigClasses();
+  AliQAChecker::Instance()->Run(AliQAv1::kT0, task, list) ;
+  //  const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
+  //
+  TH1* htmp = 0;
+  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+    //
+    // RS: There is some inconsistency here: the separation of physics and calib. events/histos is done by
+    // fEventSpecie. Why do we book separate histos on different slots for calib and physics ? 
+    // I am changing this in such way that we don't need local counters like fNumTriggers (the corresponding
+    // histos now incremented in the MakeRaws, and for the normalization I will use the framework's counters
+    // AliQADataMaker::GetEvCountCycle(...), AliQADataMaker::GetEvCountTotal(...)
+    //
+    // I think the histos xx+250 should be suppressed (the xx calib histos of specie==calibration will be 
+    // used automatically)
+    //
+    if (! IsValidEventSpecie(specie, list)) continue;
+    SetEventSpecie(AliRecoParam::ConvertIndex(specie));
+    //
+    for (int itc=-1;itc<GetNTrigClasses();itc++) { // RS: loop over eventual clones per trigger class
+      // 
+      if ( task == AliQAv1::kRAWS ) {
+	//
+	float nEvent = GetEvCountCycleRaws(itc);   // counted events for given trigger class
+	if (nEvent>0) {
+	  if ( (htmp=GetRawsData(169,itc))     ) htmp->Scale(1./nEvent); // RS 
+	  if ( (htmp=GetRawsData(169+250,itc)) ) htmp->Scale(1./nEvent); // RS I think this should be removed!!!
+	  //
+	  if ( (htmp=GetRawsData(207+250,itc)) ) htmp->Scale(1./nEvent); // RS  // former feffC count. Remove?
+	  if ( (htmp=GetRawsData(207,itc))     ) htmp->Scale(1./nEvent); // RS  // former feffPhysC count. 
+	  
+	  if ( (htmp=GetRawsData(208+250,itc)) ) htmp->Scale(1./nEvent); // RS  // former feffA count. Remove?
+	  if ( (htmp=GetRawsData(209+250,itc)) ) htmp->Scale(1./nEvent); // RS  // former feffqtc count. 
+	  //
+	}
+      } // kRAWS
+    } // RS: loop over eventual clones per trigger class
+  } // loop over species
+  //
+}
+
+/*
+// RS Old version using custom cunters
 void AliT0QADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
@@ -142,14 +197,13 @@ void AliT0QADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
 	  if ( fnEventPhys>0) effic = Float_t(feffPhysC[ik])/Float_t(fnEventPhys);
 	  GetRawsData(207)->SetBinContent(ik+1, effic);
 
-	}
-      
-      
-    }
-    
+	}           
+    }    
   }
-
 }
+
+*/
+
 //____________________________________________________________________________
 void AliT0QADataMakerRec::StartOfDetectorCycle()
 {
@@ -166,7 +220,9 @@ void AliT0QADataMakerRec::InitRaws()
   const Bool_t image    = kTRUE ; 
   Float_t low[500];
   Float_t high[500];
-
+  //triggers
+  const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
+   
   
   for (Int_t i=0; i<500; i++){
     low[i] = 0;
@@ -180,6 +236,7 @@ void AliT0QADataMakerRec::InitRaws()
   TString nhits;
 
   TH1F* fhRefPoint = new TH1F("hRefPoint","Ref Point", 10000, 0 ,50000);
+  fhRefPoint->SetLabelSize(0.02);
   Add2RawsList( fhRefPoint,0, expert, !image, !saveCorr);
 
   TH1F* fhRefPointcal = new TH1F("hRefPointcal","Ref Point laser", 5000, 0 ,20000);
@@ -211,6 +268,7 @@ void AliT0QADataMakerRec::InitRaws()
       ledname += i+1;
       nhits   += i+1;
       fhRawCFD[i] = new TH1F(timename.Data(), Form("%s;CFD [#channels];Counts", timename.Data()),Int_t((high[i+1]-low[i+1])/4),low[i+1],high[i+1]);
+      ForbidCloning(fhRawCFD[i]);       //RS I don't know how histos 1-24 should be processed in MakeRaws, for the moment forbidding the cloning
       Add2RawsList( fhRawCFD[i],i+1, expert, !image, !saveCorr);
       fhRawLED[i] = new TH1F(ledname.Data(),  Form("%s;LED[#channels];Counts", ledname.Data()),Int_t((high[i+25]-low[i+25])/4),low[i+25],high[i+25]);
       Add2RawsList( fhRawLED[i],i+25, expert, !image, !saveCorr);
@@ -261,6 +319,8 @@ void AliT0QADataMakerRec::InitRaws()
   
   
   TH1F* fhRawTrigger = new TH1F("hRawTrigger"," phys triggers;Trigger ;Counts",6,0,6);
+  for (Int_t itr=0; itr<6; itr++) fhRawTrigger->Fill(triggers[itr], 0); // RS Modified to allow cloning (no fNumTriggers member anymore)
+  
   Add2RawsList(fhRawTrigger ,169, expert, image, !saveCorr);
   
   TH1F* fhRawMean = new TH1F("hRawMean","online mean signal, physics event;",Int_t((high[170]-low[170])/4),low[170],high[170]);
@@ -279,7 +339,8 @@ void AliT0QADataMakerRec::InitRaws()
   Add2RawsList( fhMultSeCentr,175, expert, !image, !saveCorr);
 
 
-  TH1F* fhRawTriggerCal = new TH1F("hRawTriggerCal"," laser triggers",6,0,6);
+  TH1F* fhRawTriggerCal = new TH1F("hRawTriggerCal"," laser triggers",6,0,6);  // RS Modified to allow cloning (no fNumTriggersCall member anymore)
+  for (Int_t itr=0; itr<6; itr++) fhRawTriggerCal->Fill(triggers[itr], 0);
   Add2RawsList(fhRawTriggerCal ,169+250 , !expert, image, !saveCorr);
   
   TH1F* fhRawMeanCal = new TH1F("hRawMeanCal","online mean signal, calibration event",Int_t((high[170+250]-low[170+250])/4),low[170+250],high[170+250]);
@@ -358,7 +419,7 @@ void AliT0QADataMakerRec::InitRaws()
   Add2RawsList( fhEffQTC,209+250, !expert, image, !saveCorr);
   
   
- TH2F* fhCFD = new TH2F("hCFD","CFD phys; #PMT; CFD {#channnels}",25, 0 ,25,Int_t((high[210]-low[210])/4),low[210],high[210]);
+  TH2F* fhCFD = new TH2F("hCFD","CFD phys; #PMT; CFD {#channnels}",25, 0 ,25,Int_t((high[210]-low[210])/4),low[210],high[210]);
   fhCFD->SetOption("COLZ");
   Add2RawsList( fhCFD,210, expert, image, !saveCorr);
     
@@ -417,40 +478,16 @@ void AliT0QADataMakerRec::InitRaws()
    Add2RawsList( fhOrCminOrATvdcOffcal,218+250, expert, !image, !saveCorr);
    
    //satellite  & beam background
-  TH2F* fhBeam = new TH2F("fhBeam", " Mean vs Vertex ", 120, -30, 30, 120, -30, 30);
-  fhBeam->SetOption("COLZ");
-  fhBeam->GetXaxis()->SetTitle("(T0C-T0A/2, ns");
-  fhBeam->GetYaxis()->SetTitle("(T0C+T0A/2, ns");
-  Add2RawsList( fhBeam,220, !expert, image, !saveCorr);
-   TH2F* fhBeamTVDCon = new TH2F("fhBeamTVDCon", " Mean vs Vertex TVDC on ",50, -5, 5, 50, -5, 5) ;
-   fhBeamTVDCon->SetOption("COLZ");
-   fhBeamTVDCon->GetXaxis()->SetTitle("(T0C-T0A/2, ns");
-   fhBeamTVDCon->GetYaxis()->SetTitle("(T0C+T0A/2, ns");
+   TH2F* fhBeam = new TH2F("fhBeam", " Mean vs Vertex; (T0A-T0C)/2 [ns]; (T0A+T0C)/2 [ns] ", 120, -30, 30, 120, -30, 30);
+   Add2RawsList( fhBeam,220, !expert, image, !saveCorr);
+   TH2F* fhBeamTVDCon = new TH2F("fhBeamTVDCon", " Mean vs Vertex TVDC on; (T0A-T0C)/2 [ns]; (T0A+T0C)/2 [ns]",50, -5, 5, 50, -5, 5) ;
    Add2RawsList( fhBeamTVDCon,221, expert, image, !saveCorr);
-   TH2F* fhBeamTVDCoff = new TH2F("fhBeamTVDCoff", " Mean vs Vertex TVDC off", 120, -30, 30, 120, -30, 30);
-   fhBeamTVDCoff->GetXaxis()->SetTitle("(T0C-T0A/2, ns");
-   fhBeamTVDCoff->GetYaxis()->SetTitle("(T0C+T0A/2, ns");
-   fhBeamTVDCoff->SetOption("COLZ");
+   TH2F* fhBeamTVDCoff = new TH2F("fhBeamTVDCoff", " Mean vs Vertex TVDC off; (T0A-T0C)/2 [ns]; (T0A+T0C)/2 [ns]", 120, -30, 30, 120, -30, 30);
    Add2RawsList( fhBeamTVDCoff,222, expert, image, !saveCorr);
-   TH1F* fhMean = new TH1F("fhMean", " (T0A+T0C)/2, ns ", 200, -2000, 2000);
+   TH1F* fhMean = new TH1F("fhMean", " (T0A+T0C)/2; (T0A+T0C)/2 [ps] ", 200, -2000, 2000);
    Add2RawsList( fhMean,223, !expert, image, !saveCorr);
-
-   TH2F* fhBCID = new TH2F("fhBCID", "header BCID vs TRM BC ID ", 500, 0, 5000, 500, 0, 5000);
-   fhBCID->SetOption("COLZ");
-   fhBCID->GetXaxis()->SetTitle("TRM BC ID");
-   fhBCID->GetYaxis()->SetTitle("event header BC ID");
-   Add2RawsList(fhBCID ,224, !expert, image, !saveCorr);
-
-   //triggers
-   const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
-   for (Int_t itr=0; itr<6; itr++) {
-     GetRawsData(169)->Fill(triggers[itr], fNumTriggersCal[itr]);
-     GetRawsData(169)->SetBinContent(itr+1, fNumTriggersCal[itr]);
-     GetRawsData(169+250)->Fill(triggers[itr], fNumTriggers[itr]);
-     GetRawsData(169+250)->SetBinContent(itr+1, fNumTriggers[itr]);
-   }
-  
-    
+   //
+   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
   
 //____________________________________________________________________________ 
@@ -469,8 +506,8 @@ void AliT0QADataMakerRec::InitDigits()
   TH2F * fhDigQTC = new TH2F("fhDigQTC", " QTC digits; #PMT; QTC amplitude",25,-0.5,24.5,100,100,10000);
   fhDigQTC->SetOption("COLZ");
   Add2DigitsList( fhDigQTC,2, !expert, !image);
-
-
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -493,7 +530,8 @@ void AliT0QADataMakerRec::InitRecPoints()
   
   TH1F *fhMean = new TH1F("hMean","online - rec mean;online - rec mean[#channels];",2000, -1000, 1000);
   Add2RecPointsList ( fhMean,2, !expert, image);
-
+  //
+  ClonePerTrigClass(AliQAv1::kRECPOINTS); // this should be the last line
 }
 
 //____________________________________________________________________________
@@ -510,7 +548,8 @@ void AliT0QADataMakerRec::InitESDs()
   
   TH1F * fhESDResolution = new TH1F("hESDResolution","(T0A-T0C)/2 corrected by SPD vertex; ns",800,-2,2);
   Add2ESDsList(fhESDResolution, 2, !expert, image) ;
-
+  //
+  ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line
 }
 
 //____________________________________________________________________________
@@ -525,231 +564,247 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
   // Int_t refPointParam = GetRecoParam()->GetRefPoint();
   Int_t refpoint = 0;
   Int_t refPointParam = 0;
-
+  Int_t means[24] = {0};
   AliT0RawReader *start = new AliT0RawReader(rawReader);
   
   if (! start->Next())
     AliDebug(AliQAv1::GetQADebugLevel(),Form(" no raw data found!!"));
-  else
-    {  
-
-      UInt_t type =rawReader->GetType();
-      if (type == 8){ shift=250; fnEventCal++;} 
-      if (type == 7){ shift=0;   fnEventPhys++;}
-       //BC ID
-      if (type == 7){
-	UInt_t bcid = rawReader->GetBCID();
-	UInt_t	trmbcid = start->GetTRMBunchID();
-	GetRawsData(224)->Fill(trmbcid, bcid);
+  else {  
+    UInt_t type =rawReader->GetType();
+    
+    // RS: Don't use custom counters, they create problems with trigger cloning
+    //     Use instead framework counters, incremented in the end of this routine
+    // RS: There is some inconsistency here: the separation of physics and calib. events/histos is done by
+    // fEventSpecie. Why do we book separate histos on different slots for calib and physics ? 
+    // I am changing this in such way that we don't need local counters like fNumTriggers (the corresponding
+    // histos now incremented in the MakeRaws, and for the normalization I will use the framework's counters
+    // AliQADataMaker::GetEvCountCycle(...), AliQADataMaker::GetEvCountTotal(...)
+    //
+    // I think the histos xx+250 should be suppressed (the xx calib histos of specie==calibration will be 
+    // used automatically)
+      
+    if (type == 8){ shift=250; /*fnEventCal++;*/} 
+    if (type == 7){ shift=0;   /*fnEventPhys++;*/}
+    
+    //    if (type == 7){ shift=1;   fnEventPhys++;}
+    Int_t allData[110][5];
+    for (Int_t i0=0; i0<110; i0++)
+      {
+	for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0;
       }
-     //    if (type == 7){ shift=1;   fnEventPhys++;}
-      Int_t allData[110][5];
-      for (Int_t i0=0; i0<110; i0++)
-	{
-	  for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0;
-	}
-      for (Int_t i=0; i<107; i++) 
-	for (Int_t iHit=0; iHit<5; iHit++)
-	  allData[i][iHit]= start->GetData(i,iHit);
+    for (Int_t i=0; i<107; i++) 
+      for (Int_t iHit=0; iHit<5; iHit++)
+	allData[i][iHit]= start->GetData(i,iHit);
+    
+    if ( allData[0][0] > 0  && (type == 7))
+      FillRawsData(0, allData[0][0]);
+    if ( allData[0][0] > 0  && (type == 8))
+      FillRawsData(250,  allData[0][0]);
+    
+    refpoint = allData[refPointParam][0];
+    if (refPointParam <  0 ) refpoint=0; 
+    if (refPointParam == 0 ) refpoint = allData[0][0] - 5000;
+    
+    Int_t sideshift, sideshiftqtc;
+    Int_t numPmtC=0;    
+    Int_t numPmtA=0;    
+    for (Int_t ik = 0; ik<24; ik++) {
+      if(ik<12) {
+	sideshift=1;
+	sideshiftqtc=1;
+	if(allData[ik+sideshift][0]>0 && type == 7  )  numPmtC++;
+      }
+      else {
+	if(allData[ik+45][0]>0 && type == 7 ) numPmtA++;
+	sideshift=45;
+	sideshiftqtc=33;	
+      }
+      Int_t nhitsPMT=0;
       
-      if ( allData[0][0] > 0  && (type == 7))
- 	GetRawsData(0) -> Fill( allData[0][0]);
-     if ( allData[0][0] > 0  && (type == 8))
- 	GetRawsData(250) -> Fill( allData[0][0]);
-      
-      refpoint = allData[refPointParam][0];
-      if (refPointParam <  0 ) refpoint=0; 
-      if (refPointParam == 0 ) refpoint = allData[0][0] - 5000;
-      
-      Int_t sideshift, sideshiftqtc;
-      Int_t numPmtC=0;    
-      Int_t numPmtA=0;    
-      for (Int_t ik = 0; ik<24; ik++)
-	{
-	  if(ik<12) {
-	    sideshift=1;
-	    sideshiftqtc=1;
-	    if(allData[ik+sideshift][0]>0 && type == 7  )  numPmtC++;
-	  }
-	  else {
-	    if(allData[ik+45][0]>0 && type == 7 ) numPmtA++;
-	    sideshift=45;
-	    sideshiftqtc=33;
-
-	  }
-	  Int_t nhitsPMT=0;
-	  
-	  for (Int_t iHt=0; iHt<5; iHt++){
-	    //cfd
-	    if(allData[ik+sideshift][iHt]>0) {
-	      GetRawsData(shift+ik+1) -> Fill(allData[ik+sideshift][iHt]);
-	      GetRawsData(210+shift)->Fill(ik+1, allData[ik+sideshift][iHt]);
-	      if(type == 8 ) feffC[ik]++;
-	      AliDebug(50,Form("%i CFD %i  data %s",ik, ik+sideshift,  GetRawsData(shift+ik+1)->GetName()));
-	      if(type == 7  ) {
-		nhitsPMT++;
-		feffPhysC[ik]++;
-	      }
-	      
-	    }
-	    //led
-	    if(allData[ik+12+sideshift][iHt] > 0) { 
-	      GetRawsData(shift+ik+24+1)->  Fill(allData[ik+12+sideshift][iHt]);
-	      GetRawsData(211+shift)->Fill(ik+1, allData[ik+12+sideshift][iHt]);
-	      AliDebug(50,Form("%i LED %i  data %s",ik, ik+12+sideshift,  GetRawsData(shift+ik+1+24)->GetName()));
-	      if(type == 8  ) {
-		feffA[ik]++;
-	      }
-	    }
-	    //led -cfd
-	    
-	    if(allData[ik+12+sideshift][iHt] > 0 && allData[ik+sideshift][iHt] >0 )
-	      GetRawsData(shift+ik+48+1)->
-		Fill(allData[ik+12+sideshift][iHt]-allData[ik+sideshift][iHt]);
-	    
-	    //qtc
-	    if(allData[2*ik+sideshiftqtc+24][iHt] > 0 &&
-	       allData[2*ik+sideshiftqtc+25][iHt] > 0) {
-	      GetRawsData(shift+ik+72+1)->
-		Fill(allData[2*ik+sideshiftqtc+24][iHt]-allData[2*ik+sideshiftqtc+25][iHt]);
-	      GetRawsData(212+shift)->Fill(ik+1, allData[2*ik+sideshiftqtc+24][iHt]-allData[2*ik+sideshiftqtc+25][iHt]);
-	      if(type == 8) feffqtc[ik]++;
-	      AliDebug(50,Form("%i QTC %i  data %s",ik, 2*ik+sideshiftqtc+24,  GetRawsData(shift+ik+1+72)->GetName()));
-
-	    }
-		if(allData[2*ik+sideshiftqtc+24][iHt] > 0) {
-		  AliDebug(50,Form("%i QT0 %i  data %s",ik, 2*ik+sideshiftqtc+24,  GetRawsData(shift+ik+1+96)->GetName()));
- 	      GetRawsData(shift+ik+96+1)->Fill(allData[2*ik+sideshiftqtc+24][iHt]);
-	    }
-	    if(allData[2*ik+sideshiftqtc+25][iHt] > 0) {
-	      AliDebug(50,Form("%i QT0 %i  data %s",ik, 2*ik+sideshiftqtc+25,  GetRawsData(shift+ik+1+120)->GetName()));
-	      GetRawsData(shift+ik+120+1)->Fill(allData[2*ik+sideshiftqtc+25][iHt]);
-	    }
-	  }
-	
-	  if(type == 7  ) {
-	    GetRawsData(ik+176)->Fill(nhitsPMT);
-	    GetRawsData(213)->Fill(numPmtC);
-	    GetRawsData(214)->Fill(numPmtA);
-	  }  
-	}   
-       
-      Int_t trChannel[6] = {49,50,51,52,55,56};  
-      Float_t ch2cm = 24.4*0.029979;     
-      Int_t nhitsOrA=0;
-      Int_t nhitsOrC=0;
       for (Int_t iHt=0; iHt<5; iHt++) {
-	
-	//orA-orC phys tvdc 1 
-	if((allData[51][iHt]>0 && allData[52][iHt]>0) && allData[50][iHt]>0)
-	  {
-	    AliDebug(10,Form("orA-orC phys tvdc 1  %i  data %s", 217+shift,  GetRawsData(shift+217)->GetName()));
-
-	    GetRawsData(217+shift)->Fill((allData[52][iHt]-allData[51][iHt])*ch2cm);
-	    //	      GetRawsData(345) ->Fill((allData[51][iHt]+allData[52][iHt])/2.);
+	//cfd
+	if(allData[ik+sideshift][iHt]>0) {
+	  FillRawsData(shift+ik+1, allData[ik+sideshift][iHt]);
+	  FillRawsData(210+shift, ik+1, allData[ik+sideshift][iHt]);
+	  if(type == 8 ) { // RS I think the type check should be removed
+	    //feffC[ik]++;
+	    FillRawsData(207+shift,ik,1.); // instead of incrementing former feff's, increment histo directly
 	  }
-	//orA-orC phys tvdc 0 
-	if((allData[51][iHt]>0 && allData[52][iHt]>0) && allData[50][iHt]<=0)
-	  {
-	    AliDebug(10,Form("orA-orC phys tvdc 0  %i  data %s", 218+shift,  GetRawsData(shift+218)->GetName()));
-
-	    GetRawsData(218+shift)->Fill((allData[52][iHt]-allData[51][iHt])*ch2cm);
+	  AliDebug(50,Form("%i CFD %i  data %s",ik, ik+sideshift,  GetRawsData(shift+ik+1)->GetName()));
+	  if(type == 7  ) { // RS I think the type check should be removed
+	    nhitsPMT++;
+	    // feffPhysC[ik]++;
+	    FillRawsData(207 ,ik,1.); // instead of incrementing former feff's, increment histo directly
 	  }
-	if(allData[51][iHt]>0 && allData[52][iHt]>0) {
-	  AliDebug(50,Form("orA-orC phys tvdc all  %i  data %s", 219+shift,  GetRawsData(shift+219)->GetName()));
-	    GetRawsData(219+shift)->Fill((allData[52][iHt]-allData[51][iHt])*ch2cm);
+	  
 	}
-	for (Int_t itr=0; itr<6; itr++) {
-	  if (allData[trChannel[itr]][iHt] >0) {
-	     if(type == 7  )fNumTriggers[itr]++;
-	     if(type == 8  )fNumTriggersCal[itr]++;
-	     AliDebug(50,Form(" hit %i channel %i triggers %i  data %s",iHt, trChannel[itr],  170+itr+shift,  GetRawsData(170+itr+shift)->GetName()));
-
-	    GetRawsData(170+itr+shift)->Fill(allData[trChannel[itr]][iHt]);
+	//led
+	if(allData[ik+12+sideshift][iHt] > 0) { 
+	  FillRawsData(shift+ik+24+1,allData[ik+12+sideshift][iHt]);
+	  FillRawsData(211+shift,ik+1, allData[ik+12+sideshift][iHt]);
+	  AliDebug(50,Form("%i LED %i  data %s",ik, ik+12+sideshift,  GetRawsData(shift+ik+1+24)->GetName()));
+	  if(type == 8  ) {
+	    FillRawsData(208+shift,ik,1.); // instead of incrementing former feff's, increment histo directly
+	    // feffA[ik]++;
 	  }
 	}
-	    
-	if(type == 7) if(allData[51][iHt] >0) nhitsOrA++;
-	if(type == 7) if(allData[52][iHt] >0) nhitsOrC++;
+	//led -cfd
 	
-	//mult trigger signals phys
-	//C side
-	if(allData[53][iHt]>0 && allData[54][iHt]>0) {
-	  AliDebug(50,Form(" mpdA %i  data %s", 201+shift,  GetRawsData(201+shift)->GetName()));
-
-	  GetRawsData(201+shift)->Fill(allData[53][iHt]-allData[54][iHt]);
-	  if(allData[56][iHt]>0) GetRawsData(202+shift)->Fill(allData[53][iHt]-allData[54][iHt]);
-	  if(allData[55][iHt]>0) GetRawsData(203+shift)->Fill(allData[53][iHt]-allData[54][iHt]);
+	if(allData[ik+12+sideshift][iHt] > 0 && allData[ik+sideshift][iHt] >0 )
+	  FillRawsData(shift+ik+48+1, allData[ik+12+sideshift][iHt]-allData[ik+sideshift][iHt]);
+	
+	//qtc
+	if(allData[2*ik+sideshiftqtc+24][iHt] > 0 &&
+	   allData[2*ik+sideshiftqtc+25][iHt] > 0) {
+	  FillRawsData(shift+ik+72+1, allData[2*ik+sideshiftqtc+24][iHt]-allData[2*ik+sideshiftqtc+25][iHt]);
+	  FillRawsData(212+shift,ik+1, allData[2*ik+sideshiftqtc+24][iHt]-allData[2*ik+sideshiftqtc+25][iHt]);
+	  if(type == 8) {
+	    FillRawsData(209+shift,ik,1.); // instead of incrementing former feff's, increment histo directly
+	    // feffqtc[ik]++;
+	  }
+	  AliDebug(50,Form("%i QTC %i  data %s",ik, 2*ik+sideshiftqtc+24,  GetRawsData(shift+ik+1+72)->GetName()));
+	  
 	}
-	
-	//A side 
-	if(allData[105][iHt]>0 && allData[106][iHt]>0) {
-	  AliDebug(50,Form(" mpdC %i  data %s", 204+shift,  GetRawsData(204+shift)->GetName()));
-
-	     GetRawsData(204+shift)->Fill(allData[105][iHt]-allData[106][iHt]);
-	     if(allData[56][iHt]>0) GetRawsData(205+shift)->Fill(allData[105][iHt]-allData[106][iHt]);
-	     if(allData[55][iHt]>0) GetRawsData(206+shift)->Fill(allData[105][iHt]-allData[106][iHt]);
+	if(allData[2*ik+sideshiftqtc+24][iHt] > 0) {
+	  AliDebug(50,Form("%i QT0 %i  data %s",ik, 2*ik+sideshiftqtc+24,  GetRawsData(shift+ik+1+96)->GetName()));
+	  FillRawsData(shift+ik+96+1,allData[2*ik+sideshiftqtc+24][iHt]);
+	}
+	if(allData[2*ik+sideshiftqtc+25][iHt] > 0) {
+	  AliDebug(50,Form("%i QT0 %i  data %s",ik, 2*ik+sideshiftqtc+25,  GetRawsData(shift+ik+1+120)->GetName()));
+	  FillRawsData(shift+ik+120+1,allData[2*ik+sideshiftqtc+25][iHt]);
 	}
       }
       
-      GetRawsData(215)->Fill(nhitsOrA);
-      GetRawsData(216)->Fill(nhitsOrC);
-
-      //draw satellite
-       if(type == 7){	
-	  if(fnEventPhys == 1000) {
-	    for (Int_t ik=0; ik<24; ik++)
-	      {
-		GetRawsData(ik+1)->GetXaxis()->SetRangeUser(2000, 3000);
-		int  maxBin  =  GetRawsData(ik+1) ->GetMaximumBin(); 
-		double   meanEstimate  =  GetRawsData(ik+1)->GetBinCenter( maxBin);
-		TF1* fit= new TF1("fit","gaus", meanEstimate - 40, meanEstimate + 40);
-		fit->SetParameters (GetRawsData(ik+1)->GetBinContent(maxBin), meanEstimate, 80);
-		GetRawsData(ik+1) -> Fit("fit","RQ","Q",  meanEstimate-40,  meanEstimate+40);
-		if(fit->GetParameter(1)>2000 && fit->GetParameter(1)<3000)
-		  fMeans[ik]= (Int_t) fit->GetParameter(1);
-		GetRawsData(ik+1)->GetXaxis()->SetRangeUser(0, 30000);
-
-	      }
+      if(type == 7  ) {
+	FillRawsData(ik+176,nhitsPMT);
+	FillRawsData(213,numPmtC);
+	FillRawsData(214,numPmtA);
+      }  
+    }   
+    
+    Int_t trChannel[6] = {49,50,51,52,55,56};  
+    Float_t ch2cm = 24.4*0.029979;     
+    Int_t nhitsOrA=0;
+    Int_t nhitsOrC=0;
+    for (Int_t iHt=0; iHt<5; iHt++) {
+      
+      //orA-orC phys tvdc 1 
+      if((allData[51][iHt]>0 && allData[52][iHt]>0) && allData[50][iHt]>0) {
+	AliDebug(10,Form("orA-orC phys tvdc 1  %i  data %s", 217+shift,  GetRawsData(shift+217)->GetName()));
+	
+	FillRawsData(217+shift,(allData[52][iHt]-allData[51][iHt])*ch2cm);
+	//	      FillRawsData(345,(allData[51][iHt]+allData[52][iHt])/2.);
+      }
+      //orA-orC phys tvdc 0 
+      if((allData[51][iHt]>0 && allData[52][iHt]>0) && allData[50][iHt]<=0) {
+	AliDebug(10,Form("orA-orC phys tvdc 0  %i  data %s", 218+shift,  GetRawsData(shift+218)->GetName()));
+	
+	FillRawsData(218+shift,(allData[52][iHt]-allData[51][iHt])*ch2cm);
+      }
+      if(allData[51][iHt]>0 && allData[52][iHt]>0) {
+	AliDebug(50,Form("orA-orC phys tvdc all  %i  data %s", 219+shift,  GetRawsData(shift+219)->GetName()));
+	FillRawsData(219+shift,(allData[52][iHt]-allData[51][iHt])*ch2cm);
+      }
+      for (Int_t itr=0; itr<6; itr++) {
+	if (allData[trChannel[itr]][iHt] >0) {
+	  //
+	  // RS instead of incremented custom counters, fill directly the specie-specific histos
+	  FillRawsData(169+shift, 0.5+itr, 1.);  // RS: increment counters
+	  //	     if(type == 7  )fNumTriggers[itr]++;
+	  //	     if(type == 8  )fNumTriggersCal[itr]++;
+	  AliDebug(50,Form(" triggers %i  data %s", 170+itr+shift,  GetRawsData(170+itr+shift)->GetName()));
+	  
+	  FillRawsData(170+itr+shift,allData[trChannel[itr]][iHt]);
+	}
+      }
+      
+      if(type == 7) if(allData[51][iHt] >0) nhitsOrA++;
+      if(type == 7) if(allData[52][iHt] >0) nhitsOrC++;
+      
+      //mult trigger signals phys
+      //C side
+      if(allData[53][iHt]>0 && allData[54][iHt]>0) {
+	AliDebug(50,Form(" mpdA %i  data %s", 201+shift,  GetRawsData(201+shift)->GetName()));
+	
+	FillRawsData(201+shift,allData[53][iHt]-allData[54][iHt]);
+	if(allData[56][iHt]>0) FillRawsData(202+shift,allData[53][iHt]-allData[54][iHt]);
+	if(allData[55][iHt]>0) FillRawsData(203+shift,allData[53][iHt]-allData[54][iHt]);
+      }
+      
+      //A side 
+      if(allData[105][iHt]>0 && allData[106][iHt]>0) {
+	AliDebug(50,Form(" mpdC %i  data %s", 204+shift,  GetRawsData(204+shift)->GetName()));
+	
+	FillRawsData(204+shift,allData[105][iHt]-allData[106][iHt]);
+	if(allData[56][iHt]>0) FillRawsData(205+shift,allData[105][iHt]-allData[106][iHt]);
+	if(allData[55][iHt]>0) FillRawsData(206+shift,allData[105][iHt]-allData[106][iHt]);
+      }
+    }
+    
+    FillRawsData(215,nhitsOrA);
+    FillRawsData(216,nhitsOrC);
+    
+    //draw satellite
+    for (int itr=-1;itr<GetNEventTrigClasses();itr++) { //RS loop over all active trigger classes, including the global one
+      int itrID = itr==-1 ? -1 : GetEventTrigClass(itr)->GetUniqueID();
+      int nEvent = GetEvCountCycleRaws(itrID);
+      // 
+      if(type == 7) {	 // RS Do we need here event type check, specie should do the job
+	if(nEvent == 1000) {
+	  for (Int_t ik=0; ik<24; ik++) {
+	    //
+	    TH1* hik = (TH1*) GetRawsData(ik+1,itrID); if (!hik) continue; 
+	    hik->GetXaxis()->SetRangeUser(2000, 3000);
+	    int  maxBin  =  hik->GetMaximumBin(); 
+	    double   meanEstimate  =  hik->GetBinCenter( maxBin);
+	    TF1* fit= new TF1("fit","gaus", meanEstimate - 40, meanEstimate + 40);
+	    fit->SetParameters (hik->GetBinContent(maxBin), meanEstimate, 80);
+	    hik->Fit("fit","RQ","Q",  meanEstimate-40,  meanEstimate+40);
+	    means[ik]= (Int_t) fit->GetParameter(1);
+	    hik->GetXaxis()->SetRangeUser(0, 30000);
 	  }
-
-	  if( fnEventPhys > 1000) {
-	    Int_t besttimeA=9999999;
-	    Int_t besttimeC=9999999;
-	    for (Int_t ipmt=0; ipmt<12; ipmt++){
-		if(allData[ipmt+1][0] > 1 ) {
-		  //	      time[ipmt] = allData[ipmt+1][0] - Int_t(GetRawsData(1)->GetMean());
-		  time[ipmt] = allData[ipmt+1][0] - fMeans[ipmt];
-		  if(TMath::Abs(time[ipmt]) < TMath::Abs(besttimeC))
-		    besttimeC=time[ipmt]; //timeC
-		}
+	}
+	//
+	TH2 *h220 = (TH2*)GetRawsData(220,itrID);
+	TH2 *h221 = (TH2*)GetRawsData(221,itrID);
+	TH2 *h222 = (TH2*)GetRawsData(222,itrID);
+	TH1 *h223 = (TH1*)GetRawsData(223,itrID);
+	if( nEvent>1000 && (h220 || h221 || h222 || h223) ) {
+	  Int_t besttimeA=9999999;
+	  Int_t besttimeC=9999999;
+	  for (Int_t ipmt=0; ipmt<12; ipmt++){
+	    if(allData[ipmt+1][0] > 1 ) {
+	      //	      time[ipmt] = allData[ipmt+1][0] - Int_t(GetRawsData(1)->GetMean());
+	      time[ipmt] = allData[ipmt+1][0] - means[ipmt];
+	      if(TMath::Abs(time[ipmt]) < TMath::Abs(besttimeC))
+		besttimeC=time[ipmt]; //timeC
 	    }
-	    for ( Int_t ipmt=12; ipmt<24; ipmt++){
-	      if(allData[ipmt+45][0] > 1) {
-		time[ipmt] = allData[ipmt+45][0] - fMeans[ipmt] ;
-		if(TMath::Abs(time[ipmt]) < TMath::Abs(besttimeA) )
-		  besttimeA=time[ipmt]; //timeA
-	      }
+	  }
+	  for ( Int_t ipmt=12; ipmt<24; ipmt++){
+	    if(allData[ipmt+45][0] > 0) {
+	      time[ipmt] = allData[ipmt+45][0] - means[ipmt] ;
+	      if(TMath::Abs(time[ipmt]) < TMath::Abs(besttimeA) )
+		besttimeA=time[ipmt]; //timeA
 	    }
-	    if(besttimeA<99999 &&besttimeC< 99999) {
-	      Float_t t0 =  24.4 * (Float_t( besttimeA+besttimeC)/2. );
-	      Float_t ver = 24.4 * Float_t( besttimeC-besttimeA)/2.;
-	      GetRawsData(220)->Fill(0.001*ver, 0.001*(t0));
-	      if(allData[50][0] > 0)  GetRawsData(221)->Fill(0.001*ver, 0.001*(t0));
-	      if(allData[50][0] <= 0) GetRawsData(222)->Fill(0.001*ver, 0.001*(t0));
-	      GetRawsData(223) ->Fill(t0);
-	    }	  
-	  } //event >100
+	  }
+	  if(besttimeA<99999 &&besttimeC< 99999) {
+	    Float_t t0 =  24.4 * (Float_t( besttimeA+besttimeC)/2. );
+	    Float_t ver = 24.4 * Float_t( besttimeA-besttimeC)/2.;
+	    if (h220) h220->Fill(0.001*ver, 0.001*(t0));
+	    if(allData[50][0] > 0)  if (h221) h221->Fill(0.001*ver, 0.001*(t0));
+	    if(allData[50][0] <= 0) if (h222) h222->Fill(0.001*ver, 0.001*(t0));
+	    if (h223) h223->Fill(t0);
+	  }	  
+	} //event >100
       } //type 7
-    } //next
-  
-  
-
+    } // RS loop over all active trigger classes, including the global one
+  } //next
   delete start;
+  //
+  IncEvCountCycleRaws();
+  IncEvCountTotalRaws();
+  //
 }
-
-
-
 
 //____________________________________________________________________________
 void AliT0QADataMakerRec::MakeDigits( TTree *digitsTree)
@@ -768,6 +823,10 @@ void AliT0QADataMakerRec::MakeDigits( TTree *digitsTree)
     brDigits->SetAddress(&fDigits);
   }else{
     AliError(Form("EXEC Branch T0 digits not found"));
+    delete digCFD;
+    delete digLED;
+    delete digQT0;
+    delete digQT1;
     return;
   }
   digitsTree->GetEvent(0);
@@ -778,21 +837,23 @@ void AliT0QADataMakerRec::MakeDigits( TTree *digitsTree)
   fDigits->GetQT0(*digQT0);
   fDigits->GetQT1(*digQT1);
   refpoint = fDigits->RefPoint();
-  for (Int_t i=0; i<24; i++)
-    {
+  for (Int_t i=0; i<24; i++) {
     if (digCFD->At(i)>0) {
       Int_t cfd=digCFD->At(i)- refpoint;
-      GetDigitsData(0) ->Fill(i,cfd);
-      GetDigitsData(1) -> Fill(i, (digLED->At(i) - digCFD->At(i)));
-      GetDigitsData(2) -> Fill(i, (digQT1->At(i) - digQT0->At(i)));
+      FillDigitsData(0,i,cfd);
+      FillDigitsData(1,i, (digLED->At(i) - digCFD->At(i)));
+      FillDigitsData(2,i, (digQT1->At(i) - digQT0->At(i)));
     }
-    }  
+  }  
   
   delete digCFD;
   delete digLED;
   delete digQT0;
   delete digQT1;
-  
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+  //  
 }
 
 //____________________________________________________________________________
@@ -817,14 +878,17 @@ void AliT0QADataMakerRec::MakeRecPoints(TTree * clustersTree)
   
   for ( Int_t i=0; i<24; i++) {
     if(i<12)
-      GetRecPointsData(0) -> Fill(i, frecpoints -> GetTime(i) - frecpoints -> GetTime(0)); 
+      FillRecPointsData(0, i, frecpoints -> GetTime(i) - frecpoints -> GetTime(0)); 
     if(i>11)
-      GetRecPointsData(0) -> Fill(i,  frecpoints -> GetTime(i) - frecpoints -> GetTime(12)); 
-    GetRecPointsData(1) -> Fill( i, frecpoints -> GetAmp(i) - frecpoints->AmpLED(i));
+      FillRecPointsData(0, i,  frecpoints -> GetTime(i) - frecpoints -> GetTime(12)); 
+    FillRecPointsData(1, i, frecpoints -> GetAmp(i) - frecpoints->AmpLED(i));
   }
   Double_t mmm=frecpoints->GetOnlineMean()- frecpoints->GetMeanTime();
-  GetRecPointsData(2) ->Fill(mmm);
-  
+  FillRecPointsData(2,mmm);
+  //
+  IncEvCountCycleRecPoints();
+  IncEvCountTotalRecPoints();
+  //  
 }
 
 //____________________________________________________________________________
@@ -838,10 +902,13 @@ void AliT0QADataMakerRec::MakeESDs(AliESDEvent * esd)
   Double32_t orA= 0.001*mean[1];
   Double32_t orC=0.001* mean[2];
 
-  if (t0time<99)   GetESDsData(0) -> Fill(t0time);
-  if( esd->GetT0zVertex() <99) GetESDsData(1)-> Fill(esd->GetT0zVertex());
-  if( orA<99 && orC<99) GetESDsData(2)-> Fill((orA-orC)/2.);
-  
+  if (t0time<99)   FillESDsData(0,t0time);
+  if( esd->GetT0zVertex() <99) FillESDsData(1, esd->GetT0zVertex());
+  if( orA<99 && orC<99) FillESDsData(2,(orA-orC)/2.);
+  //
+  IncEvCountCycleESDs();
+  IncEvCountTotalESDs();
+  //
 }
 //____________________________________________________________________________
 

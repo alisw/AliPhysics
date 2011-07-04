@@ -126,6 +126,8 @@ void AliT0QADataMaker::InitHits()
   TH2F *fhHitsEffC = new TH2F("hHitsEffC", "Hits Efficiency C side", 25,-0.5,24.5, 100,2,3 );
   Add2HitsList(fhHitsEffC,1);
   */
+  //
+  ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -168,7 +170,8 @@ void AliT0QADataMaker::InitDigits()
   Add2DigitsList( fhDigEff,72);
   TH1F* fhDigMean = new TH1F("hDigMean","online mean signal", 100,500,600);
   Add2DigitsList( fhDigMean,73);
-  
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line  
 }
 
 //____________________________________________________________________________ 
@@ -198,7 +201,8 @@ void AliT0QADataMaker::InitRaws()
   
   TH1F* fhRawMean = new TH1F("hRawMean","online mean signal", 100,500,600);
   Add2RawsList( fhRawMean,72);
-  
+  //
+  ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line  
 }
 
 //____________________________________________________________________________ 
@@ -239,7 +243,8 @@ void AliT0QADataMaker::InitRecPoints()
   Add2RecPointsList ( fhRecEff,72);
   TH1F * fhRecMean = new TH1F("hRecMean"," reconstructed mean signal",100,500,600);
   Add2RecPointsList( fhRecMean,73);
-  
+  //
+  ClonePerTrigClass(AliQAv1::kRECPOINTS); // this should be the last line  
 }
 //____________________________________________________________________________
 void AliT0QADataMaker::InitESDs()
@@ -249,8 +254,8 @@ void AliT0QADataMaker::InitESDs()
   Add2ESDsList(fhESDMean, 0) ;
   TH1F * fhESDVertex = new TH1F("hESDvertex","EAD vertex",100,-50,50);
   Add2ESDsList(fhESDVertex, 1) ;
-  
-
+  //
+  ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line  
 }
 //____________________________________________________________________________
 
@@ -285,10 +290,14 @@ void AliT0QADataMaker::MakeHits(TTree *hitTree)
 	    break;
 	  }
 	  Int_t pmt=startHit->Pmt();
-	  GetHitsData(pmt-1)->Fill(startHit->Time()) ;
+	  FillHitsData(pmt-1,startHit->Time()) ;
 	}
     }
   }
+  //
+  IncEvCountCycleHits();
+  IncEvCountTotalHits();
+  //
 }
 
 //____________________________________________________________________________
@@ -308,7 +317,11 @@ void AliT0QADataMaker::MakeDigits( TTree *digitsTree)
     brDigits->SetAddress(&fDigits);
   }else{
     AliError(Form("EXEC Branch T0 digits not found"));
-     return;
+    delete digCFD;
+    delete digLED;
+    delete digQT0;
+    delete digQT1;
+    return;
   }
   
   digitsTree->GetEvent(0);
@@ -323,9 +336,9 @@ void AliT0QADataMaker::MakeDigits( TTree *digitsTree)
     {
       if (digCFD->At(i)>0) {
 	Int_t cfd=digCFD->At(i)- refpoint;
-	GetDigitsData(i) ->Fill(cfd);
-	GetDigitsData(i+24) -> Fill(digLED->At(i) - digCFD->At(i));
-	GetDigitsData(i+48) -> Fill(digQT1->At(i) - digQT0->At(i));
+	FillDigitsData(i,cfd);
+	FillDigitsData(i+24, digLED->At(i) - digCFD->At(i));
+	FillDigitsData(i+48, digQT1->At(i) - digQT0->At(i));
       }
     }  
       
@@ -333,7 +346,10 @@ void AliT0QADataMaker::MakeDigits( TTree *digitsTree)
   delete digLED;
   delete digQT0;
   delete digQT1;
-
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+  //
 }
 
 
@@ -358,11 +374,11 @@ void AliT0QADataMaker::MakeRaws( AliRawReader* rawReader)
       for (Int_t iHt=0; iHt<5; iHt++){
 	Int_t cc = ik/2;
        if(allData[cc+1][iHt]!=0){
-	 GetRawsData(cc) -> Fill(allData[cc+1][iHt]-allData[0][0]);
+	 FillRawsData(cc,allData[cc+1][iHt]-allData[0][0]);
 	if(allData[ik+25][iHt]!=0 && allData[ik+26][iHt]!=0)
-	  GetRawsData(cc+48)->Fill(allData[ik+26][iHt]-allData[ik+25][iHt]);
+	  FillRawsData(cc+48,allData[ik+26][iHt]-allData[ik+25][iHt]);
 	if(allData[cc+13][iHt]!=0 )
-	  GetRawsData(cc+24)->Fill(allData[cc+13][iHt]-allData[cc+1][iHt]);
+	  FillRawsData(cc+24,allData[cc+13][iHt]-allData[cc+1][iHt]);
 	}
       }
     }
@@ -371,15 +387,19 @@ void AliT0QADataMaker::MakeRaws( AliRawReader* rawReader)
       for (Int_t iHt=0; iHt<5; iHt++) {
 	Int_t cc = ik/2;
 	if(allData[cc+45][iHt]!=0) {
-	  GetRawsData(cc)->Fill(allData[cc+1][iHt]-allData[0][0]);
+	  FillRawsData(cc,allData[cc+1][iHt]-allData[0][0]);
 	  if(allData[ik+57][iHt]!=0 && allData[ik+58][iHt]!=0)
-	    GetRawsData(cc+48)->Fill(allData[ik+57][iHt]-allData[ik+58][iHt]);
+	    FillRawsData(cc+48,allData[ik+57][iHt]-allData[ik+58][iHt]);
 	  if(allData[cc+57][iHt]!=0 )
-	    GetRawsData(cc+48)->Fill(allData[cc+57][iHt]-allData[cc+45][iHt]);
+	    FillRawsData(cc+48,allData[cc+57][iHt]-allData[cc+45][iHt]);
 	}
       }
     }
     delete start;
+    //
+    IncEvCountCycleRaws();
+    IncEvCountTotalRaws();
+    //
 }
 
 //____________________________________________________________________________
@@ -403,13 +423,16 @@ void AliT0QADataMaker::MakeRecPoints(TTree * clustersTree)
   brRec->GetEntry(0);
   
   for ( Int_t i=0; i<24; i++) {
-    GetRecPointsData(i) -> Fill(frecpoints -> GetTime(i)); 
-    GetRecPointsData(i+24) -> Fill(frecpoints -> GetAmp(i));
-    GetRecPointsData(i+48) -> Fill(frecpoints->AmpLED(i));
+    FillRecPointsData(i,frecpoints -> GetTime(i)); 
+    FillRecPointsData(i+24,frecpoints -> GetAmp(i));
+    FillRecPointsData(i+48,frecpoints->AmpLED(i));
     //  if(frecpoints -> GetTime(i) > 0) fhRecEff->Fill(i);
   }
-     GetRecPointsData(72) ->Fill(frecpoints->GetMeanTime());
-  
+  FillRecPointsData(72,frecpoints->GetMeanTime());
+  //
+  IncEvCountCycleRecPoints();
+  IncEvCountTotalRecPoints();
+  //
 }
 
 //____________________________________________________________________________
@@ -417,8 +440,10 @@ void AliT0QADataMaker::MakeESDs(AliESDEvent * esd)
 {
   //fills QA histos for ESD
 
-  GetESDsData(0) -> Fill(esd->GetT0());
-  GetESDsData(1)-> Fill(esd->GetT0zVertex());
-
+  FillESDsData(0,esd->GetT0());
+  FillESDsData(1,esd->GetT0zVertex());
+  //
+  IncEvCountCycleESDs();
+  IncEvCountTotalESDs();
 }
 

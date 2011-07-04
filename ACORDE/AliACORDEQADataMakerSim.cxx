@@ -72,6 +72,7 @@ void AliACORDEQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 {
   //Detector specific actions at end of cycle
   // do the QA checking
+  ResetEventTrigClasses(); // reset triggers list to select all histos
   AliDebug(AliQAv1::GetQADebugLevel(), "ACORDE---->Detector specific actions at END of cycle\n................\n");
 
   AliQAChecker::Instance()->Run(AliQAv1::kACORDE, task, list) ;
@@ -86,33 +87,34 @@ void AliACORDEQADataMakerSim::StartOfDetectorCycle()
 void AliACORDEQADataMakerSim::InitHits()
 {
   // create Hits histograms in Hits subdir
-	
+  
   const Bool_t expert   = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
   TH1F * fHitsACORDE;  
-
-	fHitsACORDE = new TH1F("ACORDEBitPatternfromHits","Distribution of ACORDE fired modules from HITS",60,1,60);
-	Add2HitsList(fHitsACORDE,0,!expert,image);
-
-      const char *acoModule[60]={"0_0","0_1","0_2","0_3","0_4","0_5","0_6","0_7","0_8","0_9",
-                        "1_0","1_1","1_2","1_3","1_4","1_5","1_6","1_7","1_8","1_9",
-                        "2_0","2_1","2_2","2_3","2_4","2_5","2_6","2_7","2_8","2_9",
-                        "3_0","3_1","3_2","3_3","3_4","3_5","3_6","3_7","3_8","3_9",
-                        "4_0","4_1","4_2","4_3","4_4","4_5","4_6","4_7","4_8","4_9",
-                        "5_0","5_1","5_2","5_3","5_4","5_5","5_6","5_7","5_8","5_9"};
-
-
-	fHitsACORDE->SetXTitle("Modules");
-        fHitsACORDE->SetYTitle("Counts");
-        for (Int_t i=0;i<60;i++)
-        {
-                fHitsACORDE->GetXaxis()->SetBinLabel(i+1,acoModule[i]);
-        }
-
-
-
+  
+  fHitsACORDE = new TH1F("ACORDEBitPatternfromHits","Distribution of ACORDE fired modules from HITS",60,1,60);
+  Add2HitsList(fHitsACORDE,0,!expert,image);
+  
+  const char *acoModule[60]={"0_0","0_1","0_2","0_3","0_4","0_5","0_6","0_7","0_8","0_9",
+			     "1_0","1_1","1_2","1_3","1_4","1_5","1_6","1_7","1_8","1_9",
+			     "2_0","2_1","2_2","2_3","2_4","2_5","2_6","2_7","2_8","2_9",
+			     "3_0","3_1","3_2","3_3","3_4","3_5","3_6","3_7","3_8","3_9",
+			     "4_0","4_1","4_2","4_3","4_4","4_5","4_6","4_7","4_8","4_9",
+			     "5_0","5_1","5_2","5_3","5_4","5_5","5_6","5_7","5_8","5_9"};
+  
+  
+  fHitsACORDE->SetXTitle("Modules");
+  fHitsACORDE->SetYTitle("Counts");
+  for (Int_t i=0;i<60;i++)
+    {
+      fHitsACORDE->GetXaxis()->SetBinLabel(i+1,acoModule[i]);
+    }
+  //
+  //
+  ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line
 }
+
 //____________________________________________________________________________ 
 void AliACORDEQADataMakerSim::InitDigits()
 {
@@ -130,22 +132,24 @@ void AliACORDEQADataMakerSim::InitDigits()
                         "3_0","3_1","3_2","3_3","3_4","3_5","3_6","3_7","3_8","3_9",
                         "4_0","4_1","4_2","4_3","4_4","4_5","4_6","4_7","4_8","4_9",
                         "5_0","5_1","5_2","5_3","5_4","5_5","5_6","5_7","5_8","5_9"};
-
-
-	fhDigitsModule->SetXTitle("Modules");
-        fhDigitsModule->SetYTitle("Counts");
-        for (Int_t i=0;i<60;i++)
-        {
-                fhDigitsModule->GetXaxis()->SetBinLabel(i+1,acoModule[i]);
-        }
-
-
+  
+  
+  fhDigitsModule->SetXTitle("Modules");
+  fhDigitsModule->SetYTitle("Counts");
+  for (Int_t i=0;i<60;i++)
+    {
+      fhDigitsModule->GetXaxis()->SetBinLabel(i+1,acoModule[i]);
+    }
+    //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
-//____________________________________________________________________________
 
+//____________________________________________________________________________
 void AliACORDEQADataMakerSim::MakeHits(TTree *hitTree)
 {
   // Here we fill the QA histos for Hits declared above
+  IncEvCountCycleHits();
+  IncEvCountTotalHits();
 
 	if (fHitsArray) 
     	fHitsArray->Clear() ; 
@@ -169,7 +173,7 @@ void AliACORDEQADataMakerSim::MakeHits(TTree *hitTree)
 					AliError("The unchecked hit doesn't exist");
 					continue ;
 				}
-				GetHitsData(0)->Fill(AcoHit->GetModule());
+				FillHitsData(0,AcoHit->GetModule());
       			}			
     		}
   	}
@@ -179,6 +183,9 @@ void AliACORDEQADataMakerSim::MakeHits(TTree *hitTree)
 void AliACORDEQADataMakerSim::MakeDigits( TTree *digitsTree)
 {
   //fills QA histos for Digits
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+
   if (fDigitsArray) 
     fDigitsArray->Clear() ; 
   else
@@ -197,7 +204,7 @@ void AliACORDEQADataMakerSim::MakeDigits( TTree *digitsTree)
           AliError("The unchecked digit doesn't exist");
           continue ;
         }
-        GetDigitsData(0)->Fill(AcoDigit->GetModule());
+        FillDigitsData(0,AcoDigit->GetModule());
       }
     }
   }

@@ -198,7 +198,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	    
 	    Bool_t iDetPM = kTRUE;
 	    // --- Checks
-	    if(irawHisto==22){ 
+	    if(irawHisto==18){ 
 	      Float_t resADC=0.;
 	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
 		 if((hdata->GetBinContent(ibin))>10.){
@@ -226,7 +226,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      else if(iDetPM==kTRUE) messages.Add(new TObjString("Minor problem with ADCs"));
 	      SetupHisto(messages, *hdata, rv);
 	    }
-	    else if(irawHisto==23){
+	    else if(irawHisto==19){
 	      // Reference values from RUN 145456
 	      Double_t refTDCs[6] = {-322.5,-319.1,-320.9,-319.2,-319.7,-319.2};
 	      Float_t resTDC=0.;
@@ -317,18 +317,18 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	    //
             // Check ESD HIGH GAIN CHAIN histos
             if(hdata->GetEntries()>0){
-	      if(esdInd==2)      sumADCZNC = hdata->GetMean();
-	      else if(esdInd==3) sumADCZNA = hdata->GetMean();
-	      else if(esdInd==4) sumADCZPC = hdata->GetMean();
-	      else if(esdInd==5) sumADCZPA = hdata->GetMean();
-	      else if(esdInd==8)  pmQZNC = hdata->GetMean();
-	      else if(esdInd==9)  pmQZNA = hdata->GetMean();
-	      else if(esdInd==10) pmQZPC = hdata->GetMean();
-	      else if(esdInd==11) pmQZPA = hdata->GetMean();
-	      else if(esdInd==12) pmCZNC = hdata->GetMean();
-	      else if(esdInd==13) pmCZNA = hdata->GetMean();
-	      else if(esdInd==14) pmCZPC = hdata->GetMean();
-	      else if(esdInd==15) pmCZPA = hdata->GetMean();
+	      if(esdInd==0)      sumADCZNC = hdata->GetMean();
+	      else if(esdInd==1) sumADCZNA = hdata->GetMean();
+	      else if(esdInd==2) sumADCZPC = hdata->GetMean();
+	      else if(esdInd==3) sumADCZPA = hdata->GetMean();
+	      else if(esdInd==6)  pmQZNC = hdata->GetMean();
+	      else if(esdInd==7)  pmQZNA = hdata->GetMean();
+	      else if(esdInd==8)  pmQZPC = hdata->GetMean();
+	      else if(esdInd==9) pmQZPA = hdata->GetMean();
+	      else if(esdInd==10) pmCZNC = hdata->GetMean();
+	      else if(esdInd==11) pmCZNA = hdata->GetMean();
+	      else if(esdInd==12) pmCZPC = hdata->GetMean();
+	      else if(esdInd==13) pmCZPA = hdata->GetMean();
 	    }
 	    //
 	    // --- Check whether (sum PMQi - PMC)/PMC < percentageDiff
@@ -561,7 +561,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	    
 	    Bool_t iDetPM = kTRUE;
 	    // --- Checks
-	    if(irawHisto==22){ 
+	    if(irawHisto==18){ 
 	      Float_t resADC=0.;
 	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
 		 if((hdata->GetBinContent(ibin))>10.){
@@ -587,7 +587,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      else if(iDetPM==kTRUE) messages.Add(new TObjString("Minor problem with ADCs"));
 	      SetupHisto(messages, *hdata, rv);
 	    }
-	    else if(irawHisto==23){
+	    else if(irawHisto==19){
 	      Double_t refTDCs[6] = {-322.5,-319.1,-320.9,-319.2,-319.7,-319.2};
 	      Float_t resTDC=0.;
 	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
@@ -611,22 +611,6 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
                 messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
 	      }
 	      SetupHisto(messages, *hdata, rv);
-	    }
-	    else if(irawHisto==26){
-	      Double_t yZNC=hdata->GetBinContent(2);
-	      Double_t yZNA=hdata->GetBinContent(4);
-	      if(TMath::Abs(yZNC)<0.4 && TMath::Abs(yZNA)<0.4) res=1.;
-	      else res=0.5;
-	      test[specie] += res;
-              count++;
-	      //
-	      printf(" yZNC = %1.2f yZNA = %1.2f -> res %1.2f\n",yZNC, yZNA,res);
-	      if(res == 1.) messages.Add(new TObjString("ZN positions are OK!")); 
-	      else{
-	        messages.Add(new TObjString("Problem in ZN positions!")); 
-                messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
-	      }
-	      SetupHisto(messages, *hdata, res);
 	    }
 	    irawHisto++;
 	    
@@ -712,18 +696,18 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	    //
             // Check ESD HIGH GAIN CHAIN histos
             if(hdata->GetEntries()>0){
-	      if(esdInd==2)      sumADCZNC = hdata->GetMean();
-	      else if(esdInd==3) sumADCZNA = hdata->GetMean();
-	      else if(esdInd==4) sumADCZPC = hdata->GetMean();
-	      else if(esdInd==5) sumADCZPA = hdata->GetMean();
-	      else if(esdInd==8) pmQZNC = hdata->GetMean();
-	      else if(esdInd==9) pmQZNA = hdata->GetMean();
-	      else if(esdInd==10) pmQZPC = hdata->GetMean();
-	      else if(esdInd==11) pmQZPA = hdata->GetMean();
-	      else if(esdInd==12) pmCZNC = hdata->GetMean();
-	      else if(esdInd==13) pmCZNA = hdata->GetMean();
-	      else if(esdInd==14) pmCZPC = hdata->GetMean();
-	      else if(esdInd==15) pmCZPA = hdata->GetMean();
+	      if(esdInd==0)      sumADCZNC = hdata->GetMean();
+	      else if(esdInd==1) sumADCZNA = hdata->GetMean();
+	      else if(esdInd==2) sumADCZPC = hdata->GetMean();
+	      else if(esdInd==3) sumADCZPA = hdata->GetMean();
+	      else if(esdInd==6)  pmQZNC = hdata->GetMean();
+	      else if(esdInd==7)  pmQZNA = hdata->GetMean();
+	      else if(esdInd==8) pmQZPC = hdata->GetMean();
+	      else if(esdInd==9) pmQZPA = hdata->GetMean();
+	      else if(esdInd==10) pmCZNC = hdata->GetMean();
+	      else if(esdInd==11) pmCZNA = hdata->GetMean();
+	      else if(esdInd==12) pmCZPC = hdata->GetMean();
+	      else if(esdInd==13) pmCZPA = hdata->GetMean();
 	    }
 	    //
 	    // --- Check whether 2*|Mean ZNA - Mean ZNC|/(Mean ZNA + Mean ZNC) < percentageDiff
@@ -803,7 +787,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
     // 	Checks for cosmic events
     // ====================================================================
     else if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic) {
-      AliWarning(Form("\n\t No check implemented in ZDC QA for %s task\n",taskName)); 
+      AliWarning(Form("\n\t No check needed in ZDC QA for %s task\n",taskName)); 
       return ; 
     } // Cosmic
     if(TMath::Abs(count)>1.e-10) test[specie] = test[specie]/count;

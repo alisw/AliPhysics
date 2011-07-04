@@ -114,47 +114,52 @@ void AliITSQASPDDataMakerRec::StartOfDetectorCycle()
 }
 
 //____________________________________________________________________________ 
-void AliITSQASPDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray* list)
+void AliITSQASPDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray** list)
 {
   // launch the QA checking
+  //
   AliDebug(AliQAv1::GetQADebugLevel(),"AliITSDM instantiates checker with Run(AliQAv1::kITS, task, list)\n"); 
   if(!list){
-  AliError(" Histogram list is NULL");
-  return;
-  } 
-
+    AliError(" Histogram list is NULL");
+    return;
+  }
+  //
   Int_t shift = fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()];
-  
-  if(task == AliQAv1::kRAWS) {
-  if(!list->At(0+shift)) {
-  AliError(" no histogram 0 at the end of detector cycle in raws");
-  return;
-  }
-  ((TH2I*)list->At(5+shift))->Reset(); // clean up MEB histo (needed at the first cycle for small statistics)
-  
-   ((TH1F*)list->At(7+shift))->Divide(((TH1F*)list->At(1+shift)),((TH1F*)list->At(0+shift)));
-   ((TH1F*)list->At(8+shift))->Divide(((TH1F*)list->At(2+shift)),((TH1F*)list->At(0+shift)));// missing FO ratio (per event)
-   ((TH1F*)list->At(9+shift))->Divide(((TH1F*)list->At(3+shift)),((TH1F*)list->At(4+shift)));// noisy FO ratio   (per event)
- 
-  for(Int_t i=0; i<1200; i++){
-  // threshold for protection in case of technical runs (->few entries per chip)
-   Short_t thre=20; // 20 is ok in run 104792 (where the problem occured).
-   if((((TH1F*)list->At(0+shift)))->GetBinContent(i+1)<thre) continue; // expected FO yield
-   if((((TH1F*)list->At(4+shift)))->GetBinContent(i+1)<thre) continue; // the total FO yield.
-
-    
-  if(((TH1F*)list->At(8+shift))->GetBinContent(i+1)>0.5 && ((TH1F*)list->At(9+shift))->GetBinContent(i+1)>0.5){
-   Int_t eq=i/60;
-   Int_t hs=(i%60)/10;
-   Int_t chip = (i%60)%10;
-   Int_t sect = 999; 	Int_t chipbin = 999; 
-   if(eq<10) {sect = eq; chipbin = 19-chip;} 
-   else {sect = eq-10; chipbin = chip;}
-   ((TH2I*)list->At(5+shift))->Fill(sect*6+hs,chipbin);
-   }
-  }
-  
-  } // QA Task Index == RAWS
+  for (int trCl=-1;trCl<fAliITSQADataMakerRec->GetNTrigClasses();trCl++) { // RS Loop over all trigger classes (+ global counter, -1)
+    if(task == AliQAv1::kRAWS) {
+      TObjArray &harr = *fAliITSQADataMakerRec->GetRawsDataOfTrigClass(trCl);  // extract the clones for given trigger class
+      //
+      if (harr[5+shift]) ((TH1*)harr[5+shift])->Reset();  // clean up MEB histo (needed at the first cycle for small statistics)
+      if (harr[7+shift]&&harr[1+shift]&&harr[0+shift]) ((TH1*)harr[7+shift])->Divide((TH1*)harr[1+shift],(TH1*)harr[0+shift]);
+      if (harr[8+shift]&&harr[2+shift]&&harr[0+shift]) ((TH1*)harr[8+shift])->Divide((TH1*)harr[2+shift],(TH1*)harr[0+shift]); // missing FO ratio (per event) 
+      if (harr[9+shift]&&harr[3+shift]&&harr[4+shift]) ((TH1*)harr[9+shift])->Divide((TH1*)harr[3+shift],(TH1*)harr[4+shift]); // noisy FO ratio   (per event)
+      //
+      TH1 *h0 = (TH1*)harr[0+shift];
+      TH1 *h4 = (TH1*)harr[4+shift];
+      TH2 *h5 = (TH2*)harr[5+shift];
+      TH1 *h8 = (TH1*)harr[8+shift];
+      TH1 *h9 = (TH1*)harr[9+shift];
+      //
+      if (h0 && h4 && h5 && h8 && h9) {
+	for(Int_t i=0; i<1200; i++) {
+	  // threshold for protection in case of technical runs (->few entries per chip)
+	  Short_t thre=20; // 20 is ok in run 104792 (where the problem occured).
+	  if (h0->GetBinContent(i+1)<thre) continue; // expected FO yield
+	  if (h4->GetBinContent(i+1)<thre) continue; // the total FO yield.
+	  //
+	  if(h8->GetBinContent(i+1)>0.5 && h9->GetBinContent(i+1)>0.5) {
+	    Int_t eq=i/60;
+	    Int_t hs=(i%60)/10;
+	    Int_t chip = (i%60)%10;
+	    Int_t sect = 999; 	Int_t chipbin = 999; 
+	    if(eq<10) {sect = eq; chipbin = 19-chip;} 
+	    else {sect = eq-10; chipbin = chip;}
+	    h5->Fill(sect*6+hs,chipbin);
+	  }
+	}
+      }
+    } // QA Task Index == RAWS
+  } // RS: loop over trigger classes
 }
 
 //____________________________________________________________________________ 
@@ -456,12 +461,10 @@ Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   if(!rawReader) {
    AliError("rawReader is NULL"); 
    return -1;
-  }
-  
+  } 
   rawReader->Reset();
   AliITSRawStreamSPD rawStreamSPD(rawReader);
   rawStreamSPD.ActivateAdvancedErrorLog(kTRUE,fAdvLogger);
-  
   // shift for online histos
   Int_t shift = fGenRawsOffset[fAliITSQADataMakerRec->GetEventSpecie()];
   
@@ -499,47 +502,47 @@ Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
       if (iHalfStave>=0 && iHalfStave<2) iLayer=0;
       else iLayer=1;
       
-      fAliITSQADataMakerRec->GetRawsData(0+offset)->Fill(iLayer);
+      fAliITSQADataMakerRec->FillRawsData(0+offset,iLayer);
       if (iLayer==0) {
-        fAliITSQADataMakerRec->GetRawsData(1+offset)->Fill(module);
+        fAliITSQADataMakerRec->FillRawsData(1+offset,module);
         nDigitsL1++;
       } else {
-        fAliITSQADataMakerRec->GetRawsData(2+offset)->Fill(module);
+        fAliITSQADataMakerRec->FillRawsData(2+offset,module);
         nDigitsL2++;
       }
       
       if(iEq<10) {
-         fAliITSQADataMakerRec->GetRawsData(3+offset)->Fill(iHalfStave+iEq*6,iChip);
+         fAliITSQADataMakerRec->FillRawsData(3+offset,iHalfStave+iEq*6,iChip);
       } 
       else       {
-         fAliITSQADataMakerRec->GetRawsData(4+offset)->Fill(iHalfStave+(iEq-10)*6,iChip);
+         fAliITSQADataMakerRec->FillRawsData(4+offset,iHalfStave+(iEq-10)*6,iChip);
       }
 
       if(iLayer==0) {
          if(iEq<10)  { 
-            fAliITSQADataMakerRec->GetRawsData(30+offset)->Fill(19-iChip,iHalfStave+iEq*2);
-            fAliITSQADataMakerRec->GetRawsData(32+offset)->Fill(19-iChip);
-            fAliITSQADataMakerRec->GetRawsData(34+offset)->Fill(iHalfStave+iEq*2);
+            fAliITSQADataMakerRec->FillRawsData(30+offset,19-iChip,iHalfStave+iEq*2);
+            fAliITSQADataMakerRec->FillRawsData(32+offset,19-iChip);
+            fAliITSQADataMakerRec->FillRawsData(34+offset,iHalfStave+iEq*2);
          }
          else {
-            fAliITSQADataMakerRec->GetRawsData(30+offset)->Fill(iChip,iHalfStave+(iEq-10)*2);
-            fAliITSQADataMakerRec->GetRawsData(32+offset)->Fill(iChip);
-            fAliITSQADataMakerRec->GetRawsData(34+offset)->Fill(iHalfStave+(iEq-10)*2);
+            fAliITSQADataMakerRec->FillRawsData(30+offset,iChip,iHalfStave+(iEq-10)*2);
+            fAliITSQADataMakerRec->FillRawsData(32+offset,iChip);
+            fAliITSQADataMakerRec->FillRawsData(34+offset,iHalfStave+(iEq-10)*2);
          }
       }
       else         {   
          if(iEq<10)  { 
-            fAliITSQADataMakerRec->GetRawsData(31+offset)->Fill(19-iChip,iHalfStave-2+iEq*4);
-            fAliITSQADataMakerRec->GetRawsData(33+offset)->Fill(19-iChip);
-            fAliITSQADataMakerRec->GetRawsData(35+offset)->Fill(iHalfStave-2+iEq*4);
+            fAliITSQADataMakerRec->FillRawsData(31+offset,19-iChip,iHalfStave-2+iEq*4);
+            fAliITSQADataMakerRec->FillRawsData(33+offset,19-iChip);
+            fAliITSQADataMakerRec->FillRawsData(35+offset,iHalfStave-2+iEq*4);
          }
          else {
-            fAliITSQADataMakerRec->GetRawsData(31+offset)->Fill(iChip,iHalfStave-2+(iEq-10)*4);
-            fAliITSQADataMakerRec->GetRawsData(33+offset)->Fill(iChip);
-            fAliITSQADataMakerRec->GetRawsData(35+offset)->Fill(iHalfStave-2+(iEq-10)*4);
+            fAliITSQADataMakerRec->FillRawsData(31+offset,iChip,iHalfStave-2+(iEq-10)*4);
+            fAliITSQADataMakerRec->FillRawsData(33+offset,iChip);
+            fAliITSQADataMakerRec->FillRawsData(35+offset,iHalfStave-2+(iEq-10)*4);
          }
       }
-      fAliITSQADataMakerRec->GetRawsData(5+iEq+offset)->Fill(colM+(module%2)*160,rowM+iHalfStave*256); 
+      fAliITSQADataMakerRec->FillRawsData(5+iEq+offset,colM+(module%2)*160,rowM+iHalfStave*256); 
     }
   }
 
@@ -547,20 +550,20 @@ Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   for (Int_t ieq=0; ieq<20; ieq++) {
     nErrorsDDL[ieq] = 0;
     for (UInt_t ierr=0; ierr<fAdvLogger->GetNrErrorCodes(); ierr++) {
-      fAliITSQADataMakerRec->GetRawsData(ieq+(kAmoreFoOffset+1)+shift)->Fill(ierr,fAdvLogger->GetNrErrors(ierr,ieq));
+      fAliITSQADataMakerRec->FillRawsData(ieq+(kAmoreFoOffset+1)+shift,ierr,fAdvLogger->GetNrErrors(ierr,ieq));
       if(ierr>0) {
        nErrorsDDL[ieq] = nErrorsDDL[ieq] + fAdvLogger->GetNrErrors(ierr,ieq); 
      }
-      ((TH2F*)fAliITSQADataMakerRec->GetRawsData(kAmoreFoOffset+shift))->Fill(ieq,ierr,fAdvLogger->GetNrErrors(ierr,ieq));
+      fAliITSQADataMakerRec->FillRawsData(kAmoreFoOffset+shift,ieq,ierr,fAdvLogger->GetNrErrors(ierr,ieq));
     } 
     for (Int_t ihs=0; ihs<6; ihs++) {
       for (Int_t ichip=0; ichip<10; ichip++) {
-      if(isOnlineFiredChip[ieq*60+ihs*10+ichip]) fAliITSQADataMakerRec->GetRawsData(0+shift)->Fill(ieq*60+ihs*10+ichip); // online
-       if(rawStreamSPD.GetFastOrSignal(ieq,ihs,ichip)) fAliITSQADataMakerRec->GetRawsData(4+shift)->Fill(ieq*60+ihs*10+ichip); // online
+      if(isOnlineFiredChip[ieq*60+ihs*10+ichip]) fAliITSQADataMakerRec->FillRawsData(0+shift,ieq*60+ihs*10+ichip); // online
+       if(rawStreamSPD.GetFastOrSignal(ieq,ihs,ichip)) fAliITSQADataMakerRec->FillRawsData(4+shift,ieq*60+ihs*10+ichip); // online
        // now filling the 3 possibile combinations
-      if(rawStreamSPD.GetFastOrSignal(ieq,ihs,ichip) && isOnlineFiredChip[ieq*60+ihs*10+ichip]) fAliITSQADataMakerRec->GetRawsData(1+shift)->Fill(ieq*60+ihs*10+ichip); // online
-      if(!rawStreamSPD.GetFastOrSignal(ieq,ihs,ichip) && isOnlineFiredChip[ieq*60+ihs*10+ichip]) fAliITSQADataMakerRec->GetRawsData(2+shift)->Fill(ieq*60+ihs*10+ichip); // online
-      if(rawStreamSPD.GetFastOrSignal(ieq,ihs,ichip) && !isOnlineFiredChip[ieq*60+ihs*10+ichip]) fAliITSQADataMakerRec->GetRawsData(3+shift)->Fill(ieq*60+ihs*10+ichip); // online       
+      if(rawStreamSPD.GetFastOrSignal(ieq,ihs,ichip) && isOnlineFiredChip[ieq*60+ihs*10+ichip]) fAliITSQADataMakerRec->FillRawsData(1+shift,ieq*60+ihs*10+ichip); // online
+      if(!rawStreamSPD.GetFastOrSignal(ieq,ihs,ichip) && isOnlineFiredChip[ieq*60+ihs*10+ichip]) fAliITSQADataMakerRec->FillRawsData(2+shift,ieq*60+ihs*10+ichip); // online
+      if(rawStreamSPD.GetFastOrSignal(ieq,ihs,ichip) && !isOnlineFiredChip[ieq*60+ihs*10+ichip]) fAliITSQADataMakerRec->FillRawsData(3+shift,ieq*60+ihs*10+ichip); // online       
       
         chipKey = rawStreamSPD.GetOfflineChipKeyFromOnline(ieq,ihs,ichip);
         Int_t sect = 999;
@@ -572,23 +575,21 @@ Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  if(ieq<10) {sect = ieq; chipbin = 19-ichip;} 
 	  else {sect = ieq-10; chipbin = ichip;}
 	  
-	  fAliITSQADataMakerRec->GetRawsData(28+offset)->Fill(sect*6+ihs,chipbin);
-          fAliITSQADataMakerRec->GetRawsData(29+offset)->Fill(chipKey);
+	  fAliITSQADataMakerRec->FillRawsData(28+offset,sect*6+ihs,chipbin);
+          fAliITSQADataMakerRec->FillRawsData(29+offset,chipKey);
         }
       }
     } 
 
 
   }
-  if(fAliITSQADataMakerRec->GetRawsData(6+shift)) {
-  fAliITSQADataMakerRec->GetRawsData(6+shift)->Fill(nFastOr[0],nFastOr[1]); // online
-  }
+  fAliITSQADataMakerRec->FillRawsData(6+shift,nFastOr[0],nFastOr[1]); // online
  
   fAdvLogger->Reset();
-  fAliITSQADataMakerRec->GetRawsData(25+offset)->Fill(nDigitsL1);
-  fAliITSQADataMakerRec->GetRawsData(26+offset)->Fill(nDigitsL2);
-  fAliITSQADataMakerRec->GetRawsData(27+offset)->Fill(nDigitsL1,nDigitsL2);
-  
+  fAliITSQADataMakerRec->FillRawsData(25+offset,nDigitsL1);
+  fAliITSQADataMakerRec->FillRawsData(26+offset,nDigitsL2);
+  fAliITSQADataMakerRec->FillRawsData(27+offset,nDigitsL1,nDigitsL2);
+  //
   AliDebug(AliQAv1::GetQADebugLevel(),Form("Event completed, %d raw digits read",nDigitsL1+nDigitsL2));
   return rv ; 
 }
@@ -661,11 +662,11 @@ Int_t AliITSQASPDDataMakerRec::InitDigits()
 Int_t AliITSQASPDDataMakerRec::MakeDigits(TTree *digits)
 { 
   // Fill QA for DIGIT - SPD -
+  
   Int_t rv = 0 ; 
-
-//  AliITS *fITS  = (AliITS*)gAlice->GetModule("ITS");
-//  fITS->SetTreeAddress();
-//  TClonesArray *iITSdigits  = fITS->DigitsAddress(0);  // 0->SPD
+  //  AliITS *fITS  = (AliITS*)gAlice->GetModule("ITS");
+  //  fITS->SetTreeAddress();
+  //  TClonesArray *iITSdigits  = fITS->DigitsAddress(0);  // 0->SPD
   TBranch *branchD = digits->GetBranch("ITSDigitsSPD");
   if (!branchD) { 
     AliError("can't get the branch with the SPD ITS digits !");
@@ -681,26 +682,27 @@ Int_t AliITSQASPDDataMakerRec::MakeDigits(TTree *digits)
     digits->GetEvent(imod);
     Int_t ndigits = iITSdigits->GetEntries();
     if (imod<80) {
-      fAliITSQADataMakerRec->GetDigitsData(0+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(0.5,ndigits);
-      fAliITSQADataMakerRec->GetDigitsData(1+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(imod,ndigits);
+      fAliITSQADataMakerRec->FillDigitsData(0+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()],0.5,ndigits);
+      fAliITSQADataMakerRec->FillDigitsData(1+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()],imod,ndigits);
       nDigitsL1+=ndigits;
     }
     else {
-      fAliITSQADataMakerRec->GetDigitsData(0+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(1,ndigits);
-      fAliITSQADataMakerRec->GetDigitsData(2+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(imod,ndigits);
+      fAliITSQADataMakerRec->FillDigitsData(0+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()],1,ndigits);
+      fAliITSQADataMakerRec->FillDigitsData(2+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()],imod,ndigits);
       nDigitsL2+=ndigits;
     }
     for (Int_t idig=0; idig<ndigits; ++idig) {
       AliITSdigit *dig=(AliITSdigit*)iITSdigits->UncheckedAt(idig);
       Int_t col=dig->GetCoord1();  // cell number z
       Int_t row=dig->GetCoord2();  // cell number x
-      fAliITSQADataMakerRec->GetDigitsData(3+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(col);
-      fAliITSQADataMakerRec->GetDigitsData(4+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(row);
+      fAliITSQADataMakerRec->FillDigitsData(3+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()],col);
+      fAliITSQADataMakerRec->FillDigitsData(4+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()],row);
     }
   }
-  fAliITSQADataMakerRec->GetDigitsData(5+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(nDigitsL1);
-  fAliITSQADataMakerRec->GetDigitsData(6+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(nDigitsL2);
-  fAliITSQADataMakerRec->GetDigitsData(7+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(nDigitsL1,nDigitsL2);
+  fAliITSQADataMakerRec->FillDigitsData(5+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()],nDigitsL1);
+  fAliITSQADataMakerRec->FillDigitsData(6+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()],nDigitsL2);
+  fAliITSQADataMakerRec->FillDigitsData(7+fGenDigitsOffset[fAliITSQADataMakerRec->GetEventSpecie()],nDigitsL1,nDigitsL2);
+  //
   return rv ; 
 }
 
@@ -876,6 +878,7 @@ Int_t AliITSQASPDDataMakerRec::InitRecPoints()
 Int_t AliITSQASPDDataMakerRec::MakeRecPoints(TTree * clusterTree)
 {
   // Fill QA for RecPoints - SPD -
+
   Int_t rv = 0 ;
   AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
   TClonesArray *recpoints = NULL;
@@ -902,49 +905,49 @@ Int_t AliITSQASPDDataMakerRec::MakeRecPoints(TTree * clusterTree)
                       (AliITSRecPoint*)recpoints->UncheckedAt(nCluster);
       if (cluster->GetLayer()>1)continue;
       Int_t lay=cluster->GetLayer();
-      fAliITSQADataMakerRec->GetRecPointsData(0 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(lay);
+      fAliITSQADataMakerRec->FillRecPointsData(0 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],lay);
       cluster->GetGlobalXYZ(cluGlo);
       Float_t rad=TMath::Sqrt(cluGlo[0]*cluGlo[0]+cluGlo[1]*cluGlo[1]);
         Float_t phi= TMath::Pi() + TMath::ATan2(-cluGlo[1],-cluGlo[0]);
         if (lay==0) {
-          fAliITSQADataMakerRec->GetRecPointsData(1 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(iIts);
-          fAliITSQADataMakerRec->GetRecPointsData(2 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluster->GetDetLocalX());
-          fAliITSQADataMakerRec->GetRecPointsData(3 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluster->GetDetLocalZ());
-          fAliITSQADataMakerRec->GetRecPointsData(4 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluGlo[0]);
-          fAliITSQADataMakerRec->GetRecPointsData(5 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluGlo[1]);
-          fAliITSQADataMakerRec->GetRecPointsData(6 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluGlo[2]);
-          fAliITSQADataMakerRec->GetRecPointsData(7 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(rad);
-          fAliITSQADataMakerRec->GetRecPointsData(8 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(phi);
-          fAliITSQADataMakerRec->GetRecPointsData(9 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluster->GetNz(),cluster->GetNy());
-          fAliITSQADataMakerRec->GetRecPointsData(10 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluster->GetNpixels());
-          fAliITSQADataMakerRec->GetRecPointsData(11 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluster->GetSPDclusterType());
-          fAliITSQADataMakerRec->GetRecPointsData(12 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluGlo[2],phi);
+          fAliITSQADataMakerRec->FillRecPointsData(1 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],iIts);
+          fAliITSQADataMakerRec->FillRecPointsData(2 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluster->GetDetLocalX());
+          fAliITSQADataMakerRec->FillRecPointsData(3 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluster->GetDetLocalZ());
+          fAliITSQADataMakerRec->FillRecPointsData(4 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluGlo[0]);
+          fAliITSQADataMakerRec->FillRecPointsData(5 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluGlo[1]);
+          fAliITSQADataMakerRec->FillRecPointsData(6 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluGlo[2]);
+          fAliITSQADataMakerRec->FillRecPointsData(7 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],rad);
+          fAliITSQADataMakerRec->FillRecPointsData(8 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],phi);
+          fAliITSQADataMakerRec->FillRecPointsData(9 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluster->GetNz(),cluster->GetNy());
+          fAliITSQADataMakerRec->FillRecPointsData(10 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluster->GetNpixels());
+          fAliITSQADataMakerRec->FillRecPointsData(11 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluster->GetSPDclusterType());
+          fAliITSQADataMakerRec->FillRecPointsData(12 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluGlo[2],phi);
         } else  {
-          fAliITSQADataMakerRec->GetRecPointsData(13 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(iIts);
-          fAliITSQADataMakerRec->GetRecPointsData(14 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluster->GetDetLocalX());
-          fAliITSQADataMakerRec->GetRecPointsData(15 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluster->GetDetLocalZ());
-          fAliITSQADataMakerRec->GetRecPointsData(16 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluGlo[0]);
-          fAliITSQADataMakerRec->GetRecPointsData(17 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluGlo[1]);
-          fAliITSQADataMakerRec->GetRecPointsData(18 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluGlo[2]);
-          fAliITSQADataMakerRec->GetRecPointsData(19 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(rad);
-          fAliITSQADataMakerRec->GetRecPointsData(20 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(phi);
-          fAliITSQADataMakerRec->GetRecPointsData(21 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluster->GetNz(),cluster->GetNy());
-          fAliITSQADataMakerRec->GetRecPointsData(22 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluster->GetNpixels());
-          fAliITSQADataMakerRec->GetRecPointsData(23 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluster->GetSPDclusterType());
-          fAliITSQADataMakerRec->GetRecPointsData(24 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluGlo[2],phi);
+          fAliITSQADataMakerRec->FillRecPointsData(13 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],iIts);
+          fAliITSQADataMakerRec->FillRecPointsData(14 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluster->GetDetLocalX());
+          fAliITSQADataMakerRec->FillRecPointsData(15 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluster->GetDetLocalZ());
+          fAliITSQADataMakerRec->FillRecPointsData(16 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluGlo[0]);
+          fAliITSQADataMakerRec->FillRecPointsData(17 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluGlo[1]);
+          fAliITSQADataMakerRec->FillRecPointsData(18 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluGlo[2]);
+          fAliITSQADataMakerRec->FillRecPointsData(19 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],rad);
+          fAliITSQADataMakerRec->FillRecPointsData(20 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],phi);
+          fAliITSQADataMakerRec->FillRecPointsData(21 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluster->GetNz(),cluster->GetNy());
+          fAliITSQADataMakerRec->FillRecPointsData(22 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluster->GetNpixels());
+          fAliITSQADataMakerRec->FillRecPointsData(23 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluster->GetSPDclusterType());
+          fAliITSQADataMakerRec->FillRecPointsData(24 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluGlo[2],phi);
         }
-        fAliITSQADataMakerRec->GetRecPointsData(25 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(rad,phi);
-        fAliITSQADataMakerRec->GetRecPointsData(26 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(cluGlo[0],cluGlo[1]);
+        fAliITSQADataMakerRec->FillRecPointsData(25 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],rad,phi);
+        fAliITSQADataMakerRec->FillRecPointsData(26 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],cluGlo[0],cluGlo[1]);
 
         nClusters[lay]++;
     } // end of cluster loop
   } // end of its "subdetector" loop
 
   for (Int_t iLay=0; iLay<2; iLay++)
-    fAliITSQADataMakerRec->GetRecPointsData(27 +iLay +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(nClusters[iLay]);
+    fAliITSQADataMakerRec->FillRecPointsData(27 +iLay +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],nClusters[iLay]);
 
-  fAliITSQADataMakerRec->GetRecPointsData(29 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()])->Fill(nClusters[0],nClusters[1]);
-
+  fAliITSQADataMakerRec->FillRecPointsData(29 +fGenRecPointsOffset[fAliITSQADataMakerRec->GetEventSpecie()],nClusters[0],nClusters[1]);
+  //
   return rv ;
 }
 

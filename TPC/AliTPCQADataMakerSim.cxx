@@ -32,7 +32,6 @@
   list. This have been implemented but not tested.
 */
 
-#include <TTree.h>
 #include "AliTPCQADataMakerSim.h"
 
 // --- ROOT system ---
@@ -44,6 +43,7 @@
 #include "AliTPC.h"
 #include "AliTPCv2.h"
 #include "AliSimDigits.h"
+#include <TTree.h>
 
 ClassImp(AliTPCQADataMakerSim)
 
@@ -96,6 +96,8 @@ void AliTPCQADataMakerSim::InitDigits()
 	     1000, 0, 1000);
   histDigitsADC->Sumw2();
   Add2DigitsList(histDigitsADC, kDigitsADC, !expert, image);
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -132,6 +134,8 @@ void AliTPCQADataMakerSim::InitHits()
 	     300, 0., 300.);  
   histHitsElectronsPerCm->Sumw2();
   Add2HitsList(histHitsElectronsPerCm, kElectronsPerCm, !expert, image);  
+  //
+  ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line
 }
 
 //____________________________________________________________________________
@@ -152,9 +156,13 @@ void AliTPCQADataMakerSim::MakeDigits(TTree* digitTree)
       do {
         Float_t dig = digArray->CurrentDigit();
 	
-        GetDigitsData(kDigitsADC)->Fill(dig);
+        FillDigitsData(kDigitsADC,dig);
       } while (digArray->Next());    
   }
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();  
+  //
 }
 
 //____________________________________________________________________________
@@ -198,8 +206,8 @@ void AliTPCQADataMakerSim::MakeHits(TTree * hitTree)
 	  
           Int_t trackNo = tpcHit->GetTrack();
 	  
-	  GetHitsData(kElectrons)->Fill(tpcHit->fQ);
-	  GetHitsData(kRadius)->Fill(radius);
+	  FillHitsData(kElectrons,tpcHit->fQ);
+	  FillHitsData(kRadius,radius);
 	    
 	  if(trackNo==trackOld) { // if the same track
 
@@ -215,8 +223,8 @@ void AliTPCQADataMakerSim::MakeHits(TTree * hitTree)
 	      // if(nprim==1)
 	      // 	cout << radius << ", " << radiusOld << ", " << dist << endl; 
 	      
-	      GetHitsData(kPrimPerCm)->Fill((Float_t)nprim);
-	      GetHitsData(kElectronsPerCm)->Fill(q);
+	      FillHitsData(kPrimPerCm,(Float_t)nprim);
+	      FillHitsData(kElectronsPerCm,q);
 	      
 	      dist  = 0;
 	      q     = 0;
@@ -240,7 +248,11 @@ void AliTPCQADataMakerSim::MakeHits(TTree * hitTree)
       }
     }
 
-    GetHitsData(kNhits)->Fill(nHits);
+    FillHitsData(kNhits,nHits);
   }
+  //
+  IncEvCountCycleHits();
+  IncEvCountTotalHits();
+  //
 }
   

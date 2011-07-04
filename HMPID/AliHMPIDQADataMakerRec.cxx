@@ -52,7 +52,7 @@ ClassImp(AliHMPIDQADataMakerRec)
            
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   AliHMPIDQADataMakerRec::AliHMPIDQADataMakerRec() : 
-  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kHMPID), "HMPID Quality Assurance Data Maker"),fEvtRaw(0), fLineDdlDatSizeLow(0x0), fLineDdlDatSizeUp(0x0), fLineDdlPadOCcLow(0x0), fLineDdlPadOCcUp(0x0), fChannel(0) 
+  AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kHMPID), "HMPID Quality Assurance Data Maker"), fLineDdlDatSizeLow(0x0), fLineDdlDatSizeUp(0x0), fLineDdlPadOCcLow(0x0), fLineDdlPadOCcUp(0x0), fChannel(0) 
 {
   // ctor
   for(Int_t i=0; i<6; i++) fModline[i]=0x0;
@@ -60,7 +60,7 @@ ClassImp(AliHMPIDQADataMakerRec)
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDQADataMakerRec::AliHMPIDQADataMakerRec(const AliHMPIDQADataMakerRec& qadm) :
-  AliQADataMakerRec(),fEvtRaw(qadm.fEvtRaw), fLineDdlDatSizeLow(qadm.fLineDdlDatSizeLow), fLineDdlDatSizeUp(qadm.fLineDdlDatSizeUp), fLineDdlPadOCcLow(qadm.fLineDdlPadOCcLow), fLineDdlPadOCcUp(qadm.fLineDdlPadOCcUp), fChannel(qadm.fChannel)
+  AliQADataMakerRec(),fLineDdlDatSizeLow(qadm.fLineDdlDatSizeLow), fLineDdlDatSizeUp(qadm.fLineDdlDatSizeUp), fLineDdlPadOCcLow(qadm.fLineDdlPadOCcLow), fLineDdlPadOCcUp(qadm.fLineDdlPadOCcUp), fChannel(qadm.fChannel)
 {
   //copy ctor 
   for(Int_t i=0; i<6; i++) fModline[i]=qadm.fModline[i];
@@ -99,6 +99,8 @@ void AliHMPIDQADataMakerRec::InitDigits()
   Add2DigitsList(hDigPcEvt,1,expert, !image);
   for(Int_t iMap=0; iMap < 7; iMap++) Add2DigitsList(hDigMap[iMap],2+iMap,expert, !image);
   for(Int_t iH =0; iH < 42 ; iH++) Add2DigitsList(hDigQ[iH]    ,9+iH,expert,!image);
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -133,7 +135,10 @@ void AliHMPIDQADataMakerRec::InitRecPoints()
       Add2RecPointsList(hCluQSect[iCh*6+iSect],2+14+42+iCh*6+iSect, !expert, image);
     }  
   }
+  //
+  ClonePerTrigClass(AliQAv1::kRECPOINTS); // this should be the last line
 }
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::InitRaws()
 {
@@ -234,9 +239,9 @@ void AliHMPIDQADataMakerRec::InitRaws()
   for(Int_t iddl=0;iddl<14;iddl++)  fHmpPadOccPrf->GetXaxis()->SetBinLabel(iddl+1,Form("DDL_%d",1535+iddl+1));
   fHmpPadOccPrf->SetStats(0);fHmpPadOccPrf->SetMinimum(0);fHmpPadOccPrf->SetMarkerStyle(20);
   Add2RawsList(fHmpPadOccPrf,14+14+42+42+6,expert,!image,saveCorr);       //expert, no image
-
-  
   //___ for DQM shifter and eLogBook ___ stop
+  //
+  ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::InitESDs()
@@ -262,6 +267,8 @@ void AliHMPIDQADataMakerRec::InitESDs()
   Add2ESDsList(hDifXY,2, !expert, image);
   Add2ESDsList(hMvsP,3, expert, !image);
   for(Int_t i=0; i< 5; i++) Add2ESDsList(hPid[i],i+4, expert, !image);
+  //
+  ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
@@ -286,42 +293,47 @@ void AliHMPIDQADataMakerRec::MakeRaws(AliRawReader *rawReader)
        UInt_t ddl=stream.GetDDLNumber(); //returns 0,1,2 ... 13   
        if(ddl > 13) continue;
  
-     //  GetRawsData(14+14+42+42+1)->Fill(ddl+1,stream.GetDdlDataSize());
-       GetRawsData(14+14+42+42+5)->Fill(ddl+1,stream.GetDdlDataSize());
+     //  FillRawsData(14+14+42+42+1,ddl+1,stream.GetDdlDataSize());
+       FillRawsData(14+14+42+42+5,ddl+1,stream.GetDdlDataSize());
        if(stream.GetDdlDataSize() > 0) 
 	 {
 	   isHMPin++;
 	   //___ fill error histo
            for(Int_t iErr =1; iErr<(Int_t)AliHMPIDRawStream::kSumErr; iErr++){
 	     Int_t numOfErr = stream.GetErrors(ddl,iErr);
-	     GetRawsData(ddl)->Fill(iErr,numOfErr);
-	     ((TH2I*)GetRawsData(14+14+42+42))->Fill(iErr,ddl,iErr); //
+	     FillRawsData(ddl,iErr,numOfErr);
+	     FillRawsData(14+14+42+42,iErr,ddl,iErr); //
            }
 	   
 	   numPadsInDdl= stream.GetNPads();
            ddlOcc[ddl] = numPadsInDdl;
-           GetRawsData(14+14+42+42+6)->Fill(ddl+1,numPadsInDdl/11520.0*100.0);
+           FillRawsData(14+14+42+42+6,ddl+1,numPadsInDdl/11520.0*100.0);
             
 	   //___ loop on pads from raw data from a ddl
 	   for(Int_t iPad=0;iPad<numPadsInDdl;iPad++) {
 	     AliHMPIDDigit dig(stream.GetPadArray()[iPad],stream.GetChargeArray()[iPad]);dig.Raw(word,Nddl,r,d,a);    
 	     //for DQM shifter 
-	     ((TH2F*)GetRawsData(14+14+42+42+3))->Fill(dig.PadChX(), dig.Ch()*144+dig.PadChY(),dig.Q());
-	     ((TH2F*)GetRawsData(14+14+42+42+4))->Fill(dig.Q(),(ddl/2*6)+dig.PadChY()/24,dig.Q());
+	     FillRawsData(14+14+42+42+3,dig.PadChX(), dig.Ch()*144+dig.PadChY(),dig.Q());
+	     FillRawsData(14+14+42+42+4,dig.Q(),(ddl/2*6)+dig.PadChY()/24,dig.Q());
             
-	     GetRawsData(ddl+14)->Fill(r,d);
-	     GetRawsData(28+stream.Pc(Nddl,r,d,a)+6*AliHMPIDParam::DDL2C(ddl))->Fill(stream.PadPcX(Nddl,r,d,a),stream.PadPcY(Nddl,r,d,a));
-	     GetRawsData(70+stream.Pc(Nddl,r,d,a)+6*AliHMPIDParam::DDL2C(ddl))->Fill(stream.GetChargeArray()[iPad]);
-            // GetRawsData(14+14+42+42+6)->Fill(ddl+1,1);
+	     FillRawsData(ddl+14,r,d);
+	     FillRawsData(28+stream.Pc(Nddl,r,d,a)+6*AliHMPIDParam::DDL2C(ddl),stream.PadPcX(Nddl,r,d,a),stream.PadPcY(Nddl,r,d,a));
+	     FillRawsData(70+stream.Pc(Nddl,r,d,a)+6*AliHMPIDParam::DDL2C(ddl),stream.GetChargeArray()[iPad]);
+            // FillRawsData(14+14+42+42+6,ddl+1,1);
 	   }//pad loop
          }     
      }//next
     
     
-    if(isHMPin > 0) fEvtRaw++;
+    if(isHMPin > 0) { // RS: instead of former fEvtRaw
+      IncEvCountCycleRaws();
+      IncEvCountTotalRaws();
+    }
      
     
 }//MakeRaws
+
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::MakeDigits()
 {
@@ -330,13 +342,13 @@ void AliHMPIDQADataMakerRec::MakeDigits()
   //
 
   Int_t i = fChannel ; 
-  GetDigitsData(0)->Fill(i,fDigitsArray->GetEntriesFast()/(48.*80.*6.));
+  FillDigitsData(0,i,fDigitsArray->GetEntriesFast()/(48.*80.*6.));
   TIter next(fDigitsArray); 
   AliHMPIDDigit * digit; 
   while ( (digit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
-    GetDigitsData(1)->Fill(10.*i+digit->Pc(),1./(48.*80.));
-    GetDigitsData(2+i)->Fill(digit->PadChX(),digit->PadChY());
-    GetDigitsData(9+i*6+digit->Pc())->Fill(digit->Q());
+    FillDigitsData(1,10.*i+digit->Pc(),1./(48.*80.));
+    FillDigitsData(2+i,digit->PadChX(),digit->PadChY());
+    FillDigitsData(9+i*6+digit->Pc(),digit->Q());
   }  
 }  
   
@@ -360,6 +372,10 @@ void AliHMPIDQADataMakerRec::MakeDigits(TTree * digTree)
     branch->GetEntry(0); 
     MakeDigits();
   }
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+  //
 }
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -379,21 +395,25 @@ void AliHMPIDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
     TBranch *branch = clustersTree->GetBranch(Form("HMPID%d",iCh));
     branch->SetAddress(&fRecPointsArray);
     branch->GetEntry(0);
-    GetRecPointsData(0)->Fill(iCh,fRecPointsArray->GetEntries());
+    FillRecPointsData(0,iCh,fRecPointsArray->GetEntries());
     TIter next(fRecPointsArray);
     AliHMPIDCluster *clu;
     while ( (clu = dynamic_cast<AliHMPIDCluster *>(next())) ) {
-      GetRecPointsData(1)->Fill(clu->Status(),iCh);
+      FillRecPointsData(1,clu->Status(),iCh);
       Int_t sect =  pPar->InHVSector(clu->Y());
-      if(clu->Q()>100) GetRecPointsData(2+iCh)->Fill(clu->Size());
+      if(clu->Q()>100) FillRecPointsData(2+iCh,clu->Size());
       else {
-        GetRecPointsData(2+7+iCh)->Fill(clu->Size());
-        GetRecPointsData(2+14+iCh*6+sect)->Fill(clu->Q());
+        FillRecPointsData(2+7+iCh,clu->Size());
+        FillRecPointsData(2+14+iCh*6+sect,clu->Q());
       }    
-      GetRecPointsData(2+14+42+iCh*6+sect)->Fill(clu->Q());
+      FillRecPointsData(2+14+42+iCh*6+sect,clu->Q());
     }
   }
+  IncEvCountCycleRecPoints();
+  IncEvCountTotalRecPoints();
+  //
 }
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
@@ -403,26 +423,31 @@ void AliHMPIDQADataMakerRec::MakeESDs(AliESDEvent * esd)
  
   for(Int_t iTrk = 0 ; iTrk < esd->GetNumberOfTracks() ; iTrk++){
     AliESDtrack *pTrk = esd->GetTrack(iTrk) ;
-    GetESDsData(0)->Fill(pTrk->GetP(),pTrk->GetHMPIDsignal());
-    GetESDsData(1)->Fill( pTrk->GetP(),TMath::Sqrt(pTrk->GetHMPIDchi2()));
+    FillESDsData(0,pTrk->GetP(),pTrk->GetHMPIDsignal());
+    FillESDsData(1, pTrk->GetP(),TMath::Sqrt(pTrk->GetHMPIDchi2()));
     Float_t xm,ym; Int_t q,np;  
     pTrk->GetHMPIDmip(xm,ym,q,np);                       //mip info
     Float_t xRad,yRad,th,ph;        
     pTrk->GetHMPIDtrk(xRad,yRad,th,ph);              //track info at the middle of the radiator
     Float_t xPc = xRad+9.25*TMath::Tan(th)*TMath::Cos(ph); // temporar: linear extrapol (B=0!)
     Float_t yPc = yRad+9.25*TMath::Tan(th)*TMath::Sin(ph); // temporar:          "
-    GetESDsData(2)->Fill(xm-xPc,ym-yPc); //track info
+    FillESDsData(2,xm-xPc,ym-yPc); //track info
     if(pTrk->GetHMPIDsignal()>0) {
      Double_t a = 1.292*1.292*TMath::Cos(pTrk->GetHMPIDsignal())*TMath::Cos(pTrk->GetHMPIDsignal())-1.;
      if(a > 0) {
     Double_t mass = pTrk->P()*TMath::Sqrt(1.292*1.292*TMath::Cos(pTrk->GetHMPIDsignal())*TMath::Cos(pTrk->GetHMPIDsignal())-1.);
-    GetESDsData(3)->Fill( pTrk->GetP(),mass);
+    FillESDsData(3, pTrk->GetP(),mass);
      }
     }
    Double_t pid[5] ;      pTrk->GetHMPIDpid(pid) ;
-    for(Int_t i = 0 ; i < 5 ; i++) GetESDsData(4+i)->Fill(pid[i]) ;
+    for(Int_t i = 0 ; i < 5 ; i++) FillESDsData(4+i,pid[i]) ;
   }
+  //
+  IncEvCountCycleESDs();
+  IncEvCountTotalESDs();
+  //
 }
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDQADataMakerRec::StartOfDetectorCycle()
 {
@@ -435,48 +460,48 @@ void AliHMPIDQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  if(task==AliQAv1::kRAWS) {
-    for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-      if (! IsValidEventSpecie(specie, histos) )
-        continue ;
-      for(Int_t iddl=0;iddl<14;iddl++) {
-        TH1F *h = (TH1F*)histos[specie]->At(14+iddl); //ddl histos scaled by the number of events 
-        if(fEvtRaw>0) h->Scale(1.0/(Float_t)fEvtRaw);
-      }//ddl loop
-       
-      TH2F *h2 = (TH2F*)histos[specie]->At(14+14+42+42+3);
-      if(fEvtRaw>0) h2->Scale(1.0/(Float_t)fEvtRaw);     
-          
-      TH2F *h3 = (TH2F*)histos[specie]->At(14+14+42+42+4);
-      if(fEvtRaw>0) h3->Scale(1.0/(Float_t)fEvtRaw);
-      
-          
-      Double_t binval=0,binerr=0;
-      
-      TH1F *h4 = (TH1F*)histos[specie]->At(14+14+42+42+1);
-      TProfile *h4prf = (TProfile*)histos[specie]->At(14+14+42+42+5);
-      for(Int_t iddl=1;iddl<=14;iddl++) 
-        {
-          binval=h4prf->GetBinContent(iddl);  binerr=h4prf->GetBinError(iddl);
-          h4->SetBinContent(iddl,binval);     h4->SetBinError(iddl,binerr);
-         }
-      //if(fEvtRaw>0) h4->Scale(1./(Float_t)fEvtRaw);
-                  
-      TH1F *h5 = (TH1F*)histos[specie]->At(14+14+42+42+2);
-      TProfile *h5prf = (TProfile*)histos[specie]->At(14+14+42+42+6);
-      for(Int_t iddl=1;iddl<=14;iddl++) 
-       {
-         binval=h5prf->GetBinContent(iddl);  binerr=h5prf->GetBinError(iddl);
-         h5->SetBinContent(iddl,binval);     h5->SetBinError(iddl,binerr);
-       }
-
-      //if(fEvtRaw>0) h5->Scale(1./(Float_t)fEvtRaw/11520.0*100.0);
-           
-     }//specie loop     
-  }//RAWS
-   
+  ResetEventTrigClasses(); // reset triggers list to select all histos
+  TH1* htmp = 0;
+  //
+  for (int itc=-1;itc<GetNTrigClasses();itc++) { // RS: loop over eventual clones per trigger class
+    //
+    if(task==AliQAv1::kRAWS) {
+      for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
+	if (! IsValidEventSpecie(specie, histos) ) continue;
+	SetEventSpecie(AliRecoParam::ConvertIndex(specie));
+	Int_t nEvtRaw = GetEvCountCycleRaws(itc);
+	if (nEvtRaw>0) {
+	  //ddl histos scaled by the number of events 
+	  for(Int_t iddl=0;iddl<14;iddl++) if ( (htmp=GetData(histos, 14+iddl,itc)) ) htmp->Scale(1.0/(Float_t)nEvtRaw);
+	  if ( (htmp=GetData(histos, 14+14+42+42+3, itc)) ) htmp->Scale(1.0/(Float_t)nEvtRaw);
+	  if ( (htmp=GetData(histos, 14+14+42+42+4, itc)) ) htmp->Scale(1.0/(Float_t)nEvtRaw);
+	}      
+	Double_t binval=0,binerr=0;	
+	TH1F     *h4    = (TH1F*)    GetData(histos, 14+14+42+42+1, itc);
+	TProfile *h4prf = (TProfile*)GetData(histos, 14+14+42+42+5, itc);
+	if (h4 && h4prf) {
+	  for(Int_t iddl=1;iddl<=14;iddl++) {
+	    binval=h4prf->GetBinContent(iddl);  binerr=h4prf->GetBinError(iddl);
+	    h4->SetBinContent(iddl,binval);     h4->SetBinError(iddl,binerr);
+	  }
+	}
+	//if (nEvtRaw>0) h4->Scale(1./(Float_t)nEvtRaw);
+	//
+	TH1F     *h5    = (TH1F*)    GetData(histos, 14+14+42+42+2, itc);
+	TProfile *h5prf = (TProfile*)GetData(histos, 14+14+42+42+6, itc);
+	if (h4 && h4prf) {
+	  for(Int_t iddl=1;iddl<=14;iddl++) {
+	    binval=h5prf->GetBinContent(iddl);  binerr=h5prf->GetBinError(iddl);
+	    h5->SetBinContent(iddl,binval);     h5->SetBinError(iddl,binerr);
+	  }
+	}
+	//if(nEvtRaw>0) h5->Scale(1./(Float_t)nEvtRaw/11520.0*100.0);           
+      }//specie loop     
+    }//RAWS
+    //
+  } // RS: loop over eventual clones per trigger class
+  //
   AliQAChecker::Instance()->Run(AliQAv1::kHMPID, task, histos);
-   
-   
+  //
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

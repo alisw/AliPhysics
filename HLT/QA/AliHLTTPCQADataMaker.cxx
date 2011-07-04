@@ -59,20 +59,27 @@ void AliHLTTPCQADataMaker::StartOfDetectorCycle()
 void AliHLTTPCQADataMaker::EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray** /*list*/)
 {
   // see header file for class documentation
-  
-  if(GetESDsData(kPHLT)->GetEntries()){
-    GetESDsData(kPRatio)->Sumw2();
-    GetESDsData(kPRatio)->Add(GetESDsData(kPOffline));
-    GetESDsData(kPRatio)->Divide(GetESDsData(kPHLT));
-  }
-  
-  if(GetESDsData(kPHLTFired)->GetEntries()){ 
-    GetESDsData(kPRatioFired)->Sumw2(); 
-    GetESDsData(kPRatioFired)->Add(GetESDsData(kPOfflineFired)); 
-    GetESDsData(kPRatioFired)->Divide(GetESDsData(kPHLTFired));
+  for (int itc=-1;itc=GetNTrigClasses();itc++) {
+    TH1* hp = GetESDsData(kPHLT,itc);
+    TH1* hr = GetESDsData(kPRatio,itc);
+    TH1* ho = GetESDsData(kPOffline,itc);
+    //
+    if (hp && hr && ho && hp->GetEntries()) {
+      hp->Sumw2();
+      hr->Add(ho);
+      hr->Divide(hp);
+    }
+    //
+    hp = GetESDsData(kPHLTFired,itc);
+    hr = GetESDsData(kPRatioFired,itc);
+    ho = GetESDsData(kPOfflineFired,itc);
+    //
+    if (hp && hr && ho && hp->GetEntries()) {
+      hp->Sumw2();
+      hr->Add(ho);
+      hr->Divide(hp);
+    }
   } 
-  
-
 }
 
 void AliHLTTPCQADataMaker::MakeRaws(AliRawReader * rawReader)
@@ -275,28 +282,28 @@ void AliHLTTPCQADataMaker::MakeESDs(AliESDEvent * esd, AliESDEvent* hltesd)
 
   const Int_t nESDTracks = esd->GetNumberOfTracks();
   const Int_t nHLTesdTracks = hltesd->GetNumberOfTracks();
-  GetESDsData(kMultiplicity)->Fill(nESDTracks, nHLTesdTracks);
+  FillESDsData(kMultiplicity,nESDTracks, nHLTesdTracks);
 
   Int_t nClsHLT = 0;
   Int_t nClsOffline = 0;
   
   for(Int_t i = 0; i < nESDTracks; i++){
     AliESDtrack *  esdTrk = esd->GetTrack(i);
-    GetESDsData(kPOffline)->Fill(esdTrk->P());
-    GetESDsData(kPtOffline)->Fill(esdTrk->GetSignedPt());
-    GetESDsData(kNClsPerTrkOffline)->Fill(esdTrk->GetTPCNcls());
-    GetESDsData(kPhiOffline)->Fill(esdTrk->Phi()*TMath::RadToDeg());
-    GetESDsData(kEtaOffline)->Fill(esdTrk->Eta());
+    FillESDsData(kPOffline,esdTrk->P());
+    FillESDsData(kPtOffline,esdTrk->GetSignedPt());
+    FillESDsData(kNClsPerTrkOffline,esdTrk->GetTPCNcls());
+    FillESDsData(kPhiOffline,esdTrk->Phi()*TMath::RadToDeg());
+    FillESDsData(kEtaOffline,esdTrk->Eta());
     nClsOffline+=esdTrk->GetTPCNcls();
   }
 
   for(Int_t i = 0; i < nHLTesdTracks; i++){ 
     AliESDtrack *  hltEsdTrk = hltesd->GetTrack(i); 
-    GetESDsData(kPHLT)->Fill(hltEsdTrk->P()); 
-    GetESDsData(kPtHLT)->Fill(hltEsdTrk->GetSignedPt());
-    GetESDsData(kNClsPerTrkHLT)->Fill(hltEsdTrk->GetTPCNcls());
-    GetESDsData(kPhiHLT)->Fill(hltEsdTrk->Phi()*TMath::RadToDeg());
-    GetESDsData(kEtaHLT)->Fill(hltEsdTrk->Eta());
+    FillESDsData(kPHLT,hltEsdTrk->P()); 
+    FillESDsData(kPtHLT,hltEsdTrk->GetSignedPt());
+    FillESDsData(kNClsPerTrkHLT,hltEsdTrk->GetTPCNcls());
+    FillESDsData(kPhiHLT,hltEsdTrk->Phi()*TMath::RadToDeg());
+    FillESDsData(kEtaHLT,hltEsdTrk->Eta());
     nClsHLT += hltEsdTrk->GetTPCNcls();
   } 
   
@@ -305,29 +312,29 @@ void AliHLTTPCQADataMaker::MakeESDs(AliESDEvent * esd, AliESDEvent* hltesd)
   if(nHLTesdTracks)
     nClsHLT /= nHLTesdTracks;
 
-  GetESDsData(kNCls)->Fill(nClsOffline, nClsHLT);
+  FillESDsData(kNCls,nClsOffline, nClsHLT);
 
 
   if(hltesd->IsHLTTriggerFired()){
-    GetESDsData(kMultiplicityFired)->Fill(nESDTracks, nHLTesdTracks);
-    GetESDsData(kNClsFired)->Fill(nClsOffline, nClsHLT);
+    FillESDsData(kMultiplicityFired,nESDTracks, nHLTesdTracks);
+    FillESDsData(kNClsFired,nClsOffline, nClsHLT);
     
     for(Int_t i = 0; i < nESDTracks; i++){ 
       AliESDtrack *  esdTrk = esd->GetTrack(i); 
-      GetESDsData(kPOfflineFired)->Fill(esdTrk->P()); 
-      GetESDsData(kPtOfflineFired)->Fill(esdTrk->GetSignedPt());
-      GetESDsData(kNClsPerTrkOfflineFired)->Fill(esdTrk->GetTPCNcls());
-      GetESDsData(kPhiOfflineFired)->Fill(esdTrk->Phi()*TMath::RadToDeg());
-      GetESDsData(kEtaOfflineFired)->Fill(esdTrk->Eta());
+      FillESDsData(kPOfflineFired,esdTrk->P()); 
+      FillESDsData(kPtOfflineFired,esdTrk->GetSignedPt());
+      FillESDsData(kNClsPerTrkOfflineFired,esdTrk->GetTPCNcls());
+      FillESDsData(kPhiOfflineFired,esdTrk->Phi()*TMath::RadToDeg());
+      FillESDsData(kEtaOfflineFired,esdTrk->Eta());
     } 
    
     for(Int_t i = 0; i < nHLTesdTracks; i++){  
       AliESDtrack *  hltEsdTrk = hltesd->GetTrack(i);  
-      GetESDsData(kPHLTFired)->Fill(hltEsdTrk->P());  
-      GetESDsData(kPtHLTFired)->Fill(hltEsdTrk->GetSignedPt());
-      GetESDsData(kNClsPerTrkHLTFired)->Fill(hltEsdTrk->GetTPCNcls());
-      GetESDsData(kPhiHLTFired)->Fill(hltEsdTrk->Phi()*TMath::RadToDeg());
-      GetESDsData(kEtaHLTFired)->Fill(hltEsdTrk->Eta());
+      FillESDsData(kPHLTFired,hltEsdTrk->P());  
+      FillESDsData(kPtHLTFired,hltEsdTrk->GetSignedPt());
+      FillESDsData(kNClsPerTrkHLTFired,hltEsdTrk->GetTPCNcls());
+      FillESDsData(kPhiHLTFired,hltEsdTrk->Phi()*TMath::RadToDeg());
+      FillESDsData(kEtaHLTFired,hltEsdTrk->Eta());
     }  
 
     

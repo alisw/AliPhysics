@@ -57,7 +57,7 @@ private:
   
   void BookHistograms(AliQAv1::TASKINDEX_t task);
 
-  void FillReadoutStatus(AliMUONLogger& log, AliMUONVTrackerData* data);
+  void FillReadoutStatus(AliMUONLogger& log, AliMUONVTrackerData* data, Int_t trigCl);
   
   void FillEventSize(AliRawReader* rawReader);
   

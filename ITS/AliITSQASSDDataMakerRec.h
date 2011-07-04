@@ -18,7 +18,7 @@
 #include "AliQADataMakerRec.h"
 
 class TObjArray;
-class TH1D;
+class TH1F;
 
 class AliRawReader;
 class AliITSQADataMakerRec;
@@ -37,7 +37,7 @@ public:
   virtual Int_t MakeDigits(TTree *digitsTree);
   virtual Int_t MakeRecPoints(TTree *clustersTree);
   virtual void StartOfDetectorCycle();
-  virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray * /*list*/);
+  virtual void EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** /*list*/);
   virtual ~AliITSQASSDDataMakerRec(); // dtor
 
   Int_t GetOffset(AliQAv1::TASKINDEX_t task,Int_t specie=0);
@@ -54,8 +54,8 @@ public:
 			      Int_t stripside,
 			      Int_t mode,
 			      Double_t threshold); 
-  void MonitorOCDBObjects();
-  void MonitorCMValues();
+  void MonitorOCDBObjects(Int_t trCl=-1);
+  void MonitorCMValues(Int_t trCl=-1);
 
   static const Int_t fgkNumOfLDCs = 8;      //number of SSD LDCs
   static const Int_t fgkNumOfDDLs = 16;      //number of SSD DDLs
@@ -69,8 +69,6 @@ public:
   static const Int_t fgkNumberOfPSideStrips = 768; //number of P-side strips
   
   AliITSQADataMakerRec *fAliITSQADataMakerRec;  //pointer to the main ctor
-  Int_t   fSSDEvent;                            //event counter
-  Int_t   fSSDEventPerCycle;                    //event counter per cycle
   Bool_t  fkOnline;                             //online (1) or offline (0) use
   Int_t   fLDC;                                 //LDC number (0 for offline, 1 to 4 for online) 
   Int_t   fSSDRawsOffset;                       //SSD raw data plot offset
@@ -82,8 +80,8 @@ public:
   Int_t   *fGenRawsOffset;                       //qachecking raws       offset
   Int_t   *fGenDigitsOffset;                     //qachecking recpoints  offset
   Int_t   *fGenRecPointsOffset;                  //qachecking recpoints  offset
-  TH1D   *fHistSSDRawSignalModule[fgkSSDMODULES]; //raw signal vs strip number - SSD                   
-  TH1D   *fHistSSDCMModule[2*fgkSSDMODULES]; //SSD common mode noise
+  TH1F   *fHistSSDRawSignalModule[fgkSSDMODULES]; //raw signal vs strip number - SSD                   
+  TH1F   *fHistSSDCMModule[2*fgkSSDMODULES]; //SSD common mode noise
   Int_t   fOccupancyMatrix[fgkSSDMODULES][2*fgkNumberOfPSideStrips]; //occupancy values per strip
 
   AliCDBManager *fCDBManager; //CDB manager

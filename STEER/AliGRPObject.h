@@ -88,7 +88,10 @@ class AliGRPObject : public TObject {
 	Int_t    GetDimension() const {return fDimension;}
 
 	Double_t GetMaxTimeLHCValidity() const {return fMaxTimeLHCValidity;}
-
+	//
+	TObjArray* GetQATrigClasses()    const {return (TObjArray*)fQATrigClasses;}
+	TObjArray* GetQACloningRequest() const {return (TObjArray*)fQACloningRequest;}
+	//
 	// setters
  	void SetBeamEnergyIsSqrtSHalfGeV(Bool_t v=kTRUE) {SetBit(kConvSqrtSHalfGeV,v);}
  	void SetPolarityConventionLHC(Bool_t v=kTRUE) {return SetBit(kPolConvLHC,v);}
@@ -131,7 +134,10 @@ class AliGRPObject : public TObject {
 	void SetPoints(Int_t points) {fPoints = points;}
 	void SetDimension(Int_t dimension) {fDimension = dimension;}
 	void SetMaxTimeLHCValidity(Double_t maxTimeLHCValidity) {fMaxTimeLHCValidity = maxTimeLHCValidity;}
-
+	//
+	void SetQATrigClasses(TObjArray* arr)    {fQATrigClasses = arr;}
+	void SetQACloningRequest(TObjArray* arr) {fQACloningRequest = arr;}
+	//
 	// getters for "invalid" flags
 
 	static Float_t GetInvalidFloat() {return fgkInvalidFloat;}
@@ -194,14 +200,14 @@ class AliGRPObject : public TObject {
 	                            // array containg the values for the Hall Probes
 
 	TString  fMachineMode;      // Machine Mode from LHC
-
 	TObjArray* fLHCStateArray;     // Array of values for the LHC State
 	TObjArray* fMachineModeArray;  // Array of values for the LHC State
-
+	TObjArray* fQATrigClasses;     // RS: Array of trigger class to watch in QA
+	TObjArray* fQACloningRequest;  // RS: Array of cloning requests for QA histos
 	Double_t fMaxTimeLHCValidity;    // time until which the LHC Data Machine Mode and Beam Mode didn't change 
 	TString  fSeparateBeamType[2];   // separate beam Types from LHC
 
-	ClassDef(AliGRPObject,7)
+	ClassDef(AliGRPObject,8)
 
 };
 

@@ -98,7 +98,7 @@ ClassImp(AliTOFQADataMakerRec)
   fCalibData(0x0),
   fEnableNoiseFiltering(kFALSE),
   fEnableDqmShifterOpt(kFALSE),
-  fProcessedRawEventN(0),
+//  fProcessedRawEventN(0),
   fIsSOC(kFALSE),
   fLineExpTimeMin(new TLine(200., 0., 200., 0.)),
   fLineExpTimeMax(new TLine(250., 0., 250., 0.)),
@@ -128,7 +128,7 @@ AliTOFQADataMakerRec::AliTOFQADataMakerRec(const AliTOFQADataMakerRec& qadm) :
   fCalibData(qadm.fCalibData),
   fEnableNoiseFiltering(qadm.fEnableNoiseFiltering),
   fEnableDqmShifterOpt(qadm.fEnableDqmShifterOpt),
-  fProcessedRawEventN(qadm.fProcessedRawEventN),
+  //  fProcessedRawEventN(qadm.fProcessedRawEventN),
   fIsSOC(qadm.fIsSOC),
   fLineExpTimeMin(qadm.fLineExpTimeMin),
   fLineExpTimeMax(qadm.fLineExpTimeMax),
@@ -353,6 +353,8 @@ void AliTOFQADataMakerRec::InitRaws()
   Add2RawsList(h20, 20,  expert, !image, !saveCorr) ;
   Add2RawsList(h21, 21,  expert, !image, !saveCorr) ;
   Add2RawsList(h22, 22,  expert, !image, !saveCorr) ;
+  //
+  ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -422,7 +424,8 @@ void AliTOFQADataMakerRec::InitRecPoints()
   Add2RecPointsList(h14, 14,  expert, image) ;
   Add2RecPointsList(h15, 15,  expert, !image) ;
   Add2RecPointsList(h16, 16,  expert, !image) ;
-
+  //
+  ClonePerTrigClass(AliQAv1::kRECPOINTS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -467,7 +470,8 @@ void AliTOFQADataMakerRec::InitESDs()
   Add2ESDsList(h7, 7,  expert,  image) ; 
   Add2ESDsList(h8, 8,  expert,  !image) ; 
   Add2ESDsList(h9, 9, !expert,  !image) ;
- 
+  //
+  ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line 
 }
 
 
@@ -503,9 +507,9 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       fDecoderSummary = ( (AliTOFDecoderV2*) fTOFRawStream.GetDecoderV2() )->GetDecoderSummaryData();
       if ( (fDecoderSummary) && (fDecoderSummary ->GetErrorDetected()) ) {
 	Int_t errorSlotID=(Int_t) fDecoderSummary->GetErrorSlotID();
-	GetRawsData(18)->Fill(iDDL,errorSlotID);
+	FillRawsData(18,iDDL,errorSlotID);
 	if (fDecoderSummary -> GetRecoverError() ) 		
-	  GetRawsData(18)->Fill(iDDL,13);
+	  FillRawsData(18,iDDL,13);
       }     
       
       clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
@@ -529,10 +533,10 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	    //LTM data
 	    if (FilterLTMData(equipmentID)) { //counts LTM hits
 	      if (equipmentID[2]==1)  { //crate left, A-side or C-side
-		GetRawsData(15)->Fill(equipmentID[0]);
+		FillRawsData(15,equipmentID[0]);
 	      } else {
-		if (equipmentID[0]<36) { GetRawsData(15)->Fill(equipmentID[0]-1); }
-		else  { GetRawsData(15)->Fill(equipmentID[0]+1); }
+		if (equipmentID[0]<36) { FillRawsData(15,equipmentID[0]-1); }
+		else  { FillRawsData(15,equipmentID[0]+1); }
 	      }
 	      continue;
 	    }
@@ -552,8 +556,8 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		  ntof[0]++; //counter for tof hits
 		  
 		  //fill global spectra for DQM plots
-		  GetRawsData(5)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;//in ns
-		  GetRawsData(10)->Fill( tofRawDatum->GetTOT()*tot2ns) ;//in ns
+		  FillRawsData(5, tofRawDatum->GetTOF()*tdc2ns) ;//in ns
+		  FillRawsData(10, tofRawDatum->GetTOT()*tot2ns) ;//in ns
 		  
 		  //fill side-related spectra for experts plots
 		  Int_t ddlACside=iDDL/36; // 0 or 1
@@ -562,40 +566,40 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		  if (volumeID2[0]>4 && volumeID2[0]<14){       //O side
 		    if (ddlPerSm<2){ //A side
 		      ntof[1]++;
-		      GetRawsData(6)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;
-		      GetRawsData(11)->Fill( tofRawDatum->GetTOT()*tot2ns) ;
+		      FillRawsData(6, tofRawDatum->GetTOF()*tdc2ns) ;
+		      FillRawsData(11, tofRawDatum->GetTOT()*tot2ns) ;
 		    } else {  //C side
 		      ntof[3]++;
-		      GetRawsData(8)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;
-		      GetRawsData(13)->Fill( tofRawDatum->GetTOT()*tot2ns) ;
+		      FillRawsData(8, tofRawDatum->GetTOF()*tdc2ns) ;
+		      FillRawsData(13, tofRawDatum->GetTOT()*tot2ns) ;
 		    }
 		  } else {                                    
 		    if (volumeID2[0]<5 || volumeID2[0]>13){   //I side
 		      if (ddlPerSm<2){ //A side
 			ntof[2]++;
-			GetRawsData(7)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;
-			GetRawsData(12)->Fill( tofRawDatum->GetTOT()*tot2ns) ;
+			FillRawsData(7, tofRawDatum->GetTOF()*tdc2ns) ;
+			FillRawsData(12, tofRawDatum->GetTOT()*tot2ns) ;
 		      } else {//C side
 			ntof[4]++;
-			GetRawsData(9)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;
-			GetRawsData(14)->Fill( tofRawDatum->GetTOT()*tot2ns) ;
+			FillRawsData(9, tofRawDatum->GetTOF()*tdc2ns) ;
+			FillRawsData(14, tofRawDatum->GetTOT()*tot2ns) ;
 		      }
 		    }	
 		  }
 		  
 		  //compute TRM offset
 		  Int_t trm= iDDL*10+(equipmentID[1]-3);
-		  GetRawsData(20+ddlACside)->Fill(trm,tofRawDatum->GetTOF()*tdc2ns);
-		  GetRawsData(22)->Fill(GetStripIndex(volumeID),tofRawDatum->GetTOF()*tdc2ns) ;
+		  FillRawsData(20+ddlACside,trm,tofRawDatum->GetTOF()*tdc2ns);
+		  FillRawsData(22,GetStripIndex(volumeID),tofRawDatum->GetTOF()*tdc2ns) ;
 		  Short_t fea = volumeID2[4]/12;
 		  Float_t hitmapx = volumeID2[0] + ((Double_t)(3 - fea) + 0.5) *0.25;
-		  GetRawsData(17)->Fill(hitmapx,GetStripIndex(volumeID2));
+		  FillRawsData(17,hitmapx,GetStripIndex(volumeID2));
 		}//noise filter
 	      }//end hit selection
 	      else { //orphans
 		if (!(fCalibData->GetNoiseStatus(chIndex) == AliTOFChannelOnlineStatusArray::kTOFNoiseBad)
 		    && (fCalibData->GetHWStatus(chIndex) == AliTOFChannelOnlineStatusArray::kTOFHWOk))
-		  GetRawsData(19)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;//in ns
+		  FillRawsData(19, tofRawDatum->GetTOF()*tdc2ns) ;//in ns
 	      }//end orphans
 	    }//end volumeID check
 	  }//end equipID check
@@ -604,8 +608,8 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       clonesRawData->Clear();
     } // DDL Loop
     
-    for (Int_t j=0;j<5;j++) { GetRawsData(j)->Fill(ntof[j]); }
-    fProcessedRawEventN++;
+    for (Int_t j=0;j<5;j++) FillRawsData(j,ntof[j]);
+    //    fProcessedRawEventN++; // RS Now the framework conters are use
     fTOFRawStream.Clear();
   } else {
     AliDebug(1,Form("Event of type %d found. Skipping non-physics event for QA.\n", rawReader->GetType())); 
@@ -634,7 +638,7 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	//fill reference map with info from OCDB
 	Short_t fea = geoId[4]/12;
 	Float_t hitmapx = geoId[0] + ((Double_t)(3 - fea) + 0.5)*0.25;
-	GetRawsData(16)->Fill(hitmapx, GetStripIndex(geoId));
+	FillRawsData(16,hitmapx, GetStripIndex(geoId));
       }
     }
     //printf("Counters for noisy, enabled and good channels in TOF  TRMs read from OCDB.\n");
@@ -643,6 +647,10 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     
   //enable options for DQM shifter
   EnableDqmShifterOpt(kTRUE);
+  //
+  IncEvCountCycleRaws();
+  IncEvCountTotalRaws();
+  //
 }
 
 //____________________________________________________________________________
@@ -672,7 +680,7 @@ void AliTOFQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   // Import the tree
   clustersTree->GetEvent(0);  
  
-  GetRecPointsData(0)->Fill((Int_t)clusters->GetEntriesFast()) ; 
+  FillRecPointsData(0,(Int_t)clusters->GetEntriesFast()) ; 
   
   TIter next(clusters) ; 
   AliTOFcluster * c ; 
@@ -698,38 +706,42 @@ void AliTOFQADataMakerRec::MakeRecPoints(TTree * clustersTree)
       if ((c->GetTDCRAW()) && (c->GetTDC()) && (c->GetToT())){
 	if (volumeID2[0]>4 && volumeID2[0]<14){       //I side
 	  if (ddlPerSm<2){ //A side
-	    GetRecPointsData(1)->Fill( c->GetTDC()*tdc2ns) ;//in ns
-	    GetRecPointsData(5)->Fill( c->GetTDCRAW()*tdc2ns) ;//in ns
-	    GetRecPointsData(9)->Fill( c->GetToT()*tot2ns) ;//in ns
+	    FillRecPointsData(1, c->GetTDC()*tdc2ns) ;//in ns
+	    FillRecPointsData(5, c->GetTDCRAW()*tdc2ns) ;//in ns
+	    FillRecPointsData(9, c->GetToT()*tot2ns) ;//in ns
 	  } else {//C side
-	    GetRecPointsData(3)->Fill( c->GetTDC()*tdc2ns) ;//in ns
-	    GetRecPointsData(7)->Fill( c->GetTDCRAW()*tdc2ns) ;//in ns
-	    GetRecPointsData(11)->Fill( c->GetToT()*tot2ns) ;//in ns
+	    FillRecPointsData(3, c->GetTDC()*tdc2ns) ;//in ns
+	    FillRecPointsData(7, c->GetTDCRAW()*tdc2ns) ;//in ns
+	    FillRecPointsData(11, c->GetToT()*tot2ns) ;//in ns
 	  }
 	} else {
 	  if (volumeID2[0]<5 || volumeID2[0]>13){       //O side
 	    if (ddlPerSm<2){ //A side
-	      GetRecPointsData(2)->Fill( c->GetTDC()*tdc2ns) ;//in ns
-	      GetRecPointsData(6)->Fill( c->GetTDCRAW()*tdc2ns) ;//in ns
-	      GetRecPointsData(10)->Fill( c->GetToT()*tot2ns) ;//in ns
+	      FillRecPointsData(2, c->GetTDC()*tdc2ns) ;//in ns
+	      FillRecPointsData(6, c->GetTDCRAW()*tdc2ns) ;//in ns
+	      FillRecPointsData(10, c->GetToT()*tot2ns) ;//in ns
 	    } else { //C side
-	      GetRecPointsData(4)->Fill( c->GetTDC()*tdc2ns) ;//in ns
-	      GetRecPointsData(8)->Fill( c->GetTDCRAW()*tdc2ns) ;//in ns
-	      GetRecPointsData(12)->Fill( c->GetToT()*tot2ns) ;//in ns
+	      FillRecPointsData(4, c->GetTDC()*tdc2ns) ;//in ns
+	      FillRecPointsData(8, c->GetTDCRAW()*tdc2ns) ;//in ns
+	      FillRecPointsData(12, c->GetToT()*tot2ns) ;//in ns
 	    }
 	  }
 	}
-	GetRecPointsData(13)->Fill(hitmapx,GetStripIndex(volumeID2));
-	GetRecPointsData(14)->Fill(GetStripIndex(volumeID2), c->GetTDC()*tdc2ns) ;
+	FillRecPointsData(13,hitmapx,GetStripIndex(volumeID2));
+	FillRecPointsData(14,GetStripIndex(volumeID2), c->GetTDC()*tdc2ns) ;
 	Int_t trm= iDDL*10+(iTRM-3);
 	if (ddlACside==0) { //A side
-	  GetRecPointsData(15)->Fill(trm,c->GetTDC()*tdc2ns);
+	  FillRecPointsData(15,trm,c->GetTDC()*tdc2ns);
 	} else {//C side
-	  GetRecPointsData(16)->Fill(trm,c->GetTDC()*tdc2ns);
+	  FillRecPointsData(16,trm,c->GetTDC()*tdc2ns);
 	}
       }//hit selection
   }//end while   
   EnableDqmShifterOpt(kFALSE);
+  //
+  IncEvCountCycleRecPoints();
+  IncEvCountTotalRecPoints();
+  //
 }
 
 //____________________________________________________________________________
@@ -758,38 +770,42 @@ void AliTOFQADataMakerRec::MakeESDs(AliESDEvent * esd)
 	if (TMath::Abs(y)<0.9) { //select TOF acceptance
 	  if ((status&AliESDtrack::kTOFout)!=0)  { //define matching
 	    ntofout++;
-	    GetESDsData(1)->Fill(tofTime*1E-3);
-	    GetESDsData(2)->Fill(tofTimeRaw*1E-3); 
-	    GetESDsData(3)->Fill(tofToT*1E-3);
-	    GetESDsData(4)->Fill(track->Pt());
+	    FillESDsData(1,tofTime*1E-3);
+	    FillESDsData(2,tofTimeRaw*1E-3); 
+	    FillESDsData(3,tofToT*1E-3);
+	    FillESDsData(4,track->Pt());
 	    
 	    Double_t length =track->GetIntegratedLength();
 	    Double_t mom2=(track->Pt()*track->Pt())+(track->Pz()*track->Pz());
 	    Double_t piTexp = TMath::Sqrt(1+(pionMass*pionMass/mom2))*length/speedOfLight; //in ps
-	    GetESDsData(8)->Fill(tofTime-piTexp);
-	    GetESDsData(9)->Fill(length);
+	    FillESDsData(8,tofTime-piTexp);
+	    FillESDsData(9,length);
 	    
 	    if ((status&AliESDtrack::kTIME)!=0) 
-	      GetESDsData(5)->Fill(track->Pt());
+	      FillESDsData(5,track->Pt());
 	    
 	    if (tofTime>0)
-	      GetESDsData(6)->Fill(track->Pt());
+	      FillESDsData(6,track->Pt());
 	  } //end check on matched tracks
 	} 
       }//end check on TPCrefit
     }
     
-    GetESDsData(0)->Fill(ntofout) ;
+    FillESDsData(0,ntofout) ;
     if(ntpc>0){
       Float_t ratio = (Float_t)ntofout/(Float_t)ntpc*100.; //matching probability
-      GetESDsData(7)->Fill(ratio) ;
+      FillESDsData(7,ratio) ;
     }
     
     if(ntofout>0) {
 	Float_t ratio = (Float_t)ntofout/(Float_t)ntpc*100; //matched over propagated to TOF outer radius
-	GetESDsData(8)->Fill(ratio) ;
+	FillESDsData(8,ratio) ;
     }
     EnableDqmShifterOpt(kFALSE);
+    //
+    IncEvCountCycleESDs();
+    IncEvCountTotalESDs();
+    //
 }
 
 //____________________________________________________________________________ 
@@ -808,70 +824,85 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-
+  ResetEventTrigClasses();
+  //
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
-      continue ; 
-    
-    if (fEnableDqmShifterOpt){
-      // Help make the raw qa histogram easier to interpret for the DQM shifter
-      if (!GetRawsData(0) || !GetRawsData(5) || !GetRawsData(10) 
-	  || !GetRawsData(15) || !GetRawsData(16) || !GetRawsData(17)) {
-	printf("No histogram for DQM found - Possible memory corruption ???. Please check\n") ; 
-	continue;
-      }
-      printf("=========>Processed %i physics raw events. \n",fProcessedRawEventN);
-      
-      //Double_t monitorPeriodLength=fProcessedRawEventN*600*1E-9;//in s
-      
-      if (fCalibData){
-	//set minima and maxima to allow log scale
-	Double_t yTimeMax = GetRawsData(5)->GetMaximum()*1.05;
-	Double_t yTotMax = GetRawsData(10)->GetMaximum()*1.05;
-	fLineExpTimeMin->SetY2(yTimeMax);
-	fLineExpTimeMax->SetY2(yTimeMax);
-	fLineExpTotMin->SetY2(yTotMax);
-	fLineExpTotMax->SetY2(yTotMax);
+    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) continue ; 
+    //
+    SetEventSpecie(AliRecoParam::ConvertIndex(specie));  // RS: the specie is not set, why?    
+    //
+    for (int itc=-1;itc<GetNTrigClasses();itc++) { // RS: loop over eventual clones per trigger class
+      //
+      if (fEnableDqmShifterOpt) {
+	//
+	// RS: fetch the histograms for given trigger class
+	TObjArray& arrRW = *GetRawsDataOfTrigClass(itc);
 	
-	for (Int_t j=0;j<18;j++){
-	  if ((j==0)||(j==5)||(j==10)||(j==15)||(j==16)||(j==17)) {
-	    GetRawsData(j)->GetXaxis()->SetLabelOffset(0.005);
-	    GetRawsData(j)->GetXaxis()->SetLabelSize(0.05);
-	    GetRawsData(j)->GetXaxis()->SetTitleOffset(0.8);
-	    GetRawsData(j)->GetXaxis()->SetTitleSize(0.05);
-	    GetRawsData(j)->GetYaxis()->SetLabelOffset(0.005);
-	    GetRawsData(j)->GetYaxis()->SetLabelSize(0.06);
-	    GetRawsData(j)->GetYaxis()->SetTitleOffset(0.8);
-	    GetRawsData(j)->GetYaxis()->SetTitleSize(0.06);	  
+	// Help make the raw qa histogram easier to interpret for the DQM shifter
+	if (!arrRW[ 0] || !arrRW[ 5] || !arrRW[10] || !arrRW[15] || !arrRW[16] || !arrRW[17]) continue;
+	  //printf("No histogram for DQM found - Possible memory corruption ???. Please check\n") ; 
+	printf("=========>Processed %i physics raw of specie %s with TrigGlass %d\n",
+	       GetEvCountCycleRaws(itc),AliRecoParam::GetEventSpecieName(specie), itc);
+	
+	//Double_t monitorPeriodLength=fProcessedRawEventN*600*1E-9;//in s
+      
+	if (fCalibData){
+	  //set minima and maxima to allow log scale
+	  Double_t yTimeMax = ((TH1*)arrRW[5])->GetMaximum()*1.05;
+	  Double_t yTotMax = ((TH1*)arrRW[10])->GetMaximum()*1.05;
+	  fLineExpTimeMin->SetY2(yTimeMax);
+	  fLineExpTimeMax->SetY2(yTimeMax);
+	  fLineExpTotMin->SetY2(yTotMax);
+	  fLineExpTotMax->SetY2(yTotMax);
+	  //
+	  for (Int_t j=0;j<18;j++){
+	    if ((j==0)||(j==5)||(j==10)||(j==15)||(j==16)||(j==17)) {
+	      TH1* htmp = (TH1*)arrRW[j];
+	      htmp->GetXaxis()->SetLabelOffset(0.005);
+	      htmp->GetXaxis()->SetLabelSize(0.05);
+	      htmp->GetXaxis()->SetTitleOffset(0.8);
+	      htmp->GetXaxis()->SetTitleSize(0.05);
+	      htmp->GetYaxis()->SetLabelOffset(0.005);
+	      htmp->GetYaxis()->SetLabelSize(0.06);
+	      htmp->GetYaxis()->SetTitleOffset(0.8);
+	      htmp->GetYaxis()->SetTitleSize(0.06);	  
+	    }
 	  }
+	  //make up for all histos 
+	  for(Int_t j=0;j<5;j++) {
+	    TH1* htmp = (TH1*)arrRW[j];  
+	    if (!htmp) continue;
+	    htmp->SetMarkerColor(kBlue);
+	    htmp->SetMarkerStyle(8);
+	    htmp->SetMarkerSize(0.7);
+	  }
+	  for(Int_t j=5;j<15;j++) {
+	    TH1* htmp = (TH1*)arrRW[j];
+	    if (!htmp) continue;
+	    htmp->SetLineColor(kBlue);
+	    htmp->SetLineWidth(1);
+	    htmp->SetMarkerColor(kBlue);
+	    //htmp->SetFillColor(kWhite);
+	    //htmp->SetDrawOption("bar");
+	  }
+	  //
+	  TH1* htmp =  (TH1*)arrRW[15];  
+	  htmp->SetLineColor(kBlue);
+	  htmp->SetLineWidth(1);
+	  htmp->SetMarkerStyle(8);
+	  htmp->SetMarkerSize(0.7);
+	  htmp->SetMarkerColor(kBlue);//Option("bar");
+	  //
+	  if ( (htmp=(TH1*)arrRW[16]) ) htmp->SetOption("colz");
+	  if ( (htmp=(TH1*)arrRW[17]) ) htmp->SetOption("colz");
+	  if ( (htmp=(TH1*)arrRW[18]) ) htmp->SetOption("colz"); 
 	}
-	//make up for all histos 
-	for(Int_t j=0;j<5;j++){
-	  GetRawsData(j)->SetMarkerColor(kBlue);
-	  GetRawsData(j)->SetMarkerStyle(8);
-	  GetRawsData(j)->SetMarkerSize(0.7);
-	}
-	for(Int_t j=5;j<15;j++){
-	  GetRawsData(j)->SetLineColor(kBlue);
-	  GetRawsData(j)->SetLineWidth(1);
-	  GetRawsData(j)->SetMarkerColor(kBlue);
-	  //GetRawsData(j)->SetFillColor(kWhite);
-	  //GetRawsData(j)->SetDrawOption("bar");
-	}
-	
-	GetRawsData(15)->SetLineColor(kBlue);
-	GetRawsData(15)->SetLineWidth(1);
-	GetRawsData(15)->SetMarkerStyle(8);
-	GetRawsData(15)->SetMarkerSize(0.7);
-	GetRawsData(15)->SetMarkerColor(kBlue);//Option("bar");
-	      
-	GetRawsData(16)->SetOption("colz");
-	GetRawsData(17)->SetOption("colz");
-	GetRawsData(18)->SetOption("colz"); 
-      }
-    }//END ENABLE DQM SHIFTER OPT
+      }//END ENABLE DQM SHIFTER OPT
+    } // RS: loop over trigger classes
   } //end for
+  //
   AliQAChecker::Instance()->Run(AliQAv1::kTOF, task, list) ;  
+  //
 }
 //____________________________________________________________________________
 void AliTOFQADataMakerRec::GetMapIndeces(const Int_t* const in , Int_t* out)

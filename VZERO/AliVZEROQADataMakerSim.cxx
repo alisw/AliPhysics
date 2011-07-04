@@ -72,6 +72,7 @@ void AliVZEROQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
 {
   //Detector specific actions at end of cycle
   // do the QA checking
+  ResetEventTrigClasses();
   AliQAChecker::Instance()->Run(AliQAv1::kVZERO, task, list) ;
 }
 
@@ -91,7 +92,8 @@ void AliVZEROQADataMakerSim::InitHits()
   TH1I * h1 = new TH1I("hHitCellNumber", "Hit cell distribution in VZERO;# of Hits;Entries", 80, 0, 79) ; 
   h1->Sumw2() ;
   Add2HitsList(h1, 1, !expert, image) ;  
-    
+  //
+  ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line    
 }
 
 //____________________________________________________________________________ 
@@ -117,6 +119,8 @@ void AliVZEROQADataMakerSim::InitDigits()
        Add2DigitsList(fhDigTDC[i],i+1, !expert, image);
        Add2DigitsList(fhDigADC[i],i+1+64, !expert, image);  
      }  
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 
@@ -126,15 +130,15 @@ void AliVZEROQADataMakerSim::MakeHits()
 	//make QA data from Hits
 
   Int_t nhits = fHitsArray->GetEntriesFast();
-  GetHitsData(0)->Fill(nhits) ;    // fills Hit multiplicity
-    for (Int_t ihit=0;ihit<nhits;ihit++) 
-	{
+  FillHitsData(0,nhits) ;    // fills Hit multiplicity
+  for (Int_t ihit=0;ihit<nhits;ihit++) 
+    {
 	   AliVZEROhit  * VZEROHit   = (AliVZEROhit*) fHitsArray->UncheckedAt(ihit);
 	   if (!VZEROHit) {
  	      AliError("The unchecked hit doesn't exist");
 	      break;
 	   }
-	   GetHitsData(1)->Fill(VZEROHit->Cell());
+	   FillHitsData(1,VZEROHit->Cell());
 	}
 }
 
@@ -171,7 +175,7 @@ void AliVZEROQADataMakerSim::MakeHits(TTree *hitTree)
     for (Int_t track=0; track<ntracks;track++) {
       branch->GetEntry(track);
       Int_t nhits = fHitsArray->GetEntriesFast();
-      GetHitsData(0)->Fill(nhits) ;    // fills Hit multiplicity
+      FillHitsData(0,nhits) ;    // fills Hit multiplicity
       for (Int_t ihit=0;ihit<nhits;ihit++) 
 	{
 	  AliVZEROhit  * VZEROHit   = (AliVZEROhit*) fHitsArray->UncheckedAt(ihit);
@@ -179,10 +183,14 @@ void AliVZEROQADataMakerSim::MakeHits(TTree *hitTree)
  	    AliError("The unchecked hit doesn't exist");
 	    break;
 	  }
-	  GetHitsData(1)->Fill(VZEROHit->Cell());	 
+	  FillHitsData(1,VZEROHit->Cell());	 
 	}
     }
   }
+  //
+  IncEvCountCycleHits();
+  IncEvCountTotalHits();
+  //
 }
 
 
@@ -191,13 +199,13 @@ void AliVZEROQADataMakerSim::MakeDigits()
 {
   // makes data from Digits
 
-  GetDigitsData(0)->Fill(fDigitsArray->GetEntriesFast()) ; 
-    TIter next(fDigitsArray) ; 
+  FillDigitsData(0,fDigitsArray->GetEntriesFast()) ; 
+  TIter next(fDigitsArray) ; 
     AliVZEROdigit *VZERODigit ; 
     while ( (VZERODigit = dynamic_cast<AliVZEROdigit *>(next())) ) {
          Int_t   PMNumber  = VZERODigit->PMNumber();         
-         GetDigitsData(PMNumber +1)->Fill( VZERODigit->Time()) ;    // in 100 of picoseconds
-	 GetDigitsData(PMNumber +1+64)->Fill( VZERODigit->ADC()) ;
+         FillDigitsData(PMNumber +1, VZERODigit->Time()) ;    // in 100 of picoseconds
+	 FillDigitsData(PMNumber +1+64, VZERODigit->ADC()) ;
     }  
 }
 
@@ -220,6 +228,10 @@ void AliVZEROQADataMakerSim::MakeDigits(TTree *digitTree)
          branch->GetEntry(0) ; 
          MakeDigits() ; 
     }  
+    //
+    IncEvCountCycleDigits();
+    IncEvCountTotalDigits();
+    //    
 }
 
 

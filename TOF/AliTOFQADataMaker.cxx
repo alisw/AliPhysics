@@ -104,6 +104,8 @@ void AliTOFQADataMaker::InitHits()
   h3->GetYaxis()->SetTitle("48*sector+padx (phi)");
   h3->GetYaxis()->SetTitleOffset(1.15);
   Add2HitsList(h3, 3, expert) ;
+  //
+  ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -137,7 +139,8 @@ void AliTOFQADataMaker::InitDigits()
   h3->GetYaxis()->SetTitle("48*sector+padx (phi)");
   h3->GetYaxis()->SetTitleOffset(1.15);
   Add2DigitsList(h3, 3, expert) ;
-
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -165,7 +168,8 @@ void AliTOFQADataMaker::InitSDigits()
   h2->GetYaxis()->SetTitle("48*sector+padx (phi)");
   h2->GetYaxis()->SetTitleOffset(1.15);
   Add2SDigitsList(h2, 2, expert) ;
-
+  //
+  ClonePerTrigClass(AliQAv1::kSDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -199,7 +203,8 @@ void AliTOFQADataMaker::InitRaws()
   h3->GetYaxis()->SetTitle("48*sector+padx (phi)");
   h3->GetYaxis()->SetTitleOffset(1.15);
   Add2RawsList(h3, 3, expert) ;
-
+  //
+  ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -238,7 +243,8 @@ void AliTOFQADataMaker::InitRecPoints()
   h4->GetYaxis()->SetTitle("48*sector+padx (phi)");
   h4->GetYaxis()->SetTitleOffset(1.15);
   Add2RecPointsList(h4, 4, expert) ;
-
+  //
+  ClonePerTrigClass(AliQAv1::kRECPOINTS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -274,6 +280,8 @@ void AliTOFQADataMaker::InitESDs()
   h4->Sumw2() ;
   h4->GetXaxis()->SetTitle("Fraction of TOF matched ESD tracks with good flag [%]");
   Add2ESDsList(h4, 4, expert) ;
+  //
+  ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line
 }
 
 
@@ -289,16 +297,16 @@ void AliTOFQADataMaker::MakeHits(TClonesArray * hits)
 
   Int_t nentries=hits->GetEntriesFast();
   if(nentries<=0) {
-    GetHitsData(0)->Fill(-1.) ; 
+    FillHitsData(0,-1.) ; 
   } else{
-    GetHitsData(0)->Fill(TMath::Log10(nentries)) ; 
+    FillHitsData(0,TMath::Log10(nentries)) ; 
   }
   TIter next(hits) ; 
   AliTOFhitT0 * hit ; 
   while ( (hit = dynamic_cast<AliTOFhitT0 *>(next())) ) {
 
-    GetHitsData(1)->Fill( hit->GetTof()*1.E9) ;//in ns
-    GetHitsData(2)->Fill( hit->GetLen()) ;//in cm
+    FillHitsData(1, hit->GetTof()*1.E9) ;//in ns
+    FillHitsData(2, hit->GetLen()) ;//in cm
   
     in[0] = hit->GetSector();
     in[1] = hit->GetPlate();
@@ -306,7 +314,7 @@ void AliTOFQADataMaker::MakeHits(TClonesArray * hits)
     in[3]= hit->GetPadx();
     in[4]= hit->GetPadz();
     GetMapIndeces(in,out);
-    GetHitsData(3)->Fill( out[0],out[1]) ;//hit map
+    FillHitsData(3, out[0],out[1]) ;//hit map
   }
 
 }
@@ -346,7 +354,10 @@ void AliTOFQADataMaker::MakeHits(TTree * hitTree)
   dummy->Delete();
   delete dummy;
   MakeHits(hits) ; 
-
+  //
+  IncEvCountCycleHits();
+  IncEvCountTotalHits();
+  //
 }
 
 //____________________________________________________________________________
@@ -362,17 +373,17 @@ void AliTOFQADataMaker::MakeDigits(TClonesArray * digits)
 
   Int_t nentries=digits->GetEntriesFast();
   if(nentries<=0){
-    GetDigitsData(0)->Fill(-1.) ; 
+    FillDigitsData(0,-1.) ; 
   }else{
-    GetDigitsData(0)->Fill(TMath::Log10(nentries)) ; 
+    FillDigitsData(0, TMath::Log10(nentries)) ; 
   } 
 
   TIter next(digits) ; 
   AliTOFdigit * digit ; 
   while ( (digit = dynamic_cast<AliTOFdigit *>(next())) ) {
     
-    GetDigitsData(1)->Fill( digit->GetTdc()*tdc2ns) ;//in ns
-    GetDigitsData(2)->Fill( digit->GetToT()*tot2ns) ;//in ns
+    FillDigitsData(1, digit->GetTdc()*tdc2ns) ;//in ns
+    FillDigitsData(2, digit->GetToT()*tot2ns) ;//in ns
 
     in[0] = digit->GetSector();
     in[1] = digit->GetPlate();
@@ -380,7 +391,7 @@ void AliTOFQADataMaker::MakeDigits(TClonesArray * digits)
     in[3] = digit->GetPadx();
     in[4]= digit->GetPadz();
     GetMapIndeces(in,out);
-    GetDigitsData(3)->Fill( out[0],out[1]) ;//digit map
+    FillDigitsData(3, out[0],out[1]) ;//digit map
   }
 
 }
@@ -402,6 +413,10 @@ void AliTOFQADataMaker::MakeDigits(TTree * digitTree)
   branch->SetAddress(&digits) ;
   branch->GetEntry(0) ; 
   MakeDigits(digits) ; 
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+  //
 }
 
 //____________________________________________________________________________
@@ -417,9 +432,9 @@ void AliTOFQADataMaker::MakeSDigits(TClonesArray * sdigits)
 
   Int_t nentries=sdigits->GetEntriesFast();
   if(nentries<=0){
-    GetSDigitsData(0)->Fill(-1.) ; 
+    FillSDigitsData(0,-1.) ; 
   }else{
-    GetSDigitsData(0)->Fill(TMath::Log10(nentries)) ; 
+    FillSDigitsData(0,TMath::Log10(nentries)) ; 
   } 
 
   TIter next(sdigits) ; 
@@ -427,7 +442,7 @@ void AliTOFQADataMaker::MakeSDigits(TClonesArray * sdigits)
   while ( (sdigit = dynamic_cast<AliTOFSDigit *>(next())) ) {
     
     for(Int_t i=0;i<sdigit->GetNDigits();i++){
-      GetSDigitsData(1)->Fill( sdigit->GetTdc(i)*tdc2ns) ;//in ns
+      FillSDigitsData(1, sdigit->GetTdc(i)*tdc2ns) ;//in ns
     }
 
     in[0] = sdigit->GetSector();
@@ -436,7 +451,7 @@ void AliTOFQADataMaker::MakeSDigits(TClonesArray * sdigits)
     in[3] = sdigit->GetPadx();
     in[4]= sdigit->GetPadz();
     GetMapIndeces(in,out);
-    GetSDigitsData(2)->Fill( out[0],out[1]) ;//sdigit map
+    FillSDigitsData(2, out[0],out[1]) ;//sdigit map
   }
 }
 
@@ -456,6 +471,10 @@ void AliTOFQADataMaker::MakeSDigits(TTree * sdigitTree)
   branch->SetAddress(&sdigits) ;
   branch->GetEntry(0) ; 
   MakeSDigits(sdigits) ; 
+  //
+  IncEvCountCycleSDigits();
+  IncEvCountTotalSDigits();
+  //
 }
 
 //____________________________________________________________________________
@@ -485,8 +504,8 @@ void AliTOFQADataMaker::MakeRaws(AliRawReader* rawReader)
       //if (!tofRawDatum->GetTOT() || !tofRawDatum->GetTOF()) continue;
       if (!tofRawDatum->GetTOF()) continue;
       ntof++;
-      GetRawsData(1)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;//in ns
-      GetRawsData(2)->Fill( tofRawDatum->GetTOT()*tot2ns) ;//in ns
+      FillRawsData(1, tofRawDatum->GetTOF()*tdc2ns) ;//in ns
+      FillRawsData(2, tofRawDatum->GetTOT()*tot2ns) ;//in ns
 
       fTOFRawStream.EquipmentId2VolumeId(iDDL, 
 					 tofRawDatum->GetTRM(), 
@@ -496,7 +515,7 @@ void AliTOFQADataMaker::MakeRaws(AliRawReader* rawReader)
 					 in);
     
       GetMapIndeces(in,out);
-      GetRawsData(3)->Fill( out[0],out[1]) ;//raw map
+      FillRawsData(3, out[0],out[1]) ;//raw map
       
     } // while loop
     
@@ -508,10 +527,14 @@ void AliTOFQADataMaker::MakeRaws(AliRawReader* rawReader)
 
   Int_t nentries=ntof;
   if(nentries<=0){
-    GetRawsData(0)->Fill(-1.) ; 
+    FillRawsData(0,-1.) ; 
   }else{
-    GetRawsData(0)->Fill(TMath::Log10(nentries)) ; 
+    FillRawsData(0,TMath::Log10(nentries)) ; 
   }
+  //
+  IncEvCountCycleRaws();
+  IncEvCountTotalRaws();
+  //
 }
 
 //____________________________________________________________________________
@@ -541,17 +564,17 @@ void AliTOFQADataMaker::MakeRecPoints(TTree * clustersTree)
   
   Int_t nentries=clusters->GetEntriesFast();
   if(nentries<=0){
-    GetRecPointsData(0)->Fill(-1.) ; 
+    FillRecPointsData(0,-1.) ; 
   }else{
-    GetRecPointsData(0)->Fill(TMath::Log10(nentries)) ; 
+    FillRecPointsData(0,TMath::Log10(nentries)) ; 
   } 
  
   TIter next(clusters) ; 
   AliTOFcluster * c ; 
   while ( (c = dynamic_cast<AliTOFcluster *>(next())) ) {
-    GetRecPointsData(1)->Fill(c->GetTDC()*tdc2ns);
-    GetRecPointsData(2)->Fill(c->GetTDCRAW()*tdc2ns);
-    GetRecPointsData(3)->Fill(c->GetToT()*tot2ns);
+    FillRecPointsData(1,c->GetTDC()*tdc2ns);
+    FillRecPointsData(2,c->GetTDCRAW()*tdc2ns);
+    FillRecPointsData(3,c->GetToT()*tot2ns);
     
     in[0] = c->GetDetInd(0);
     in[1] = c->GetDetInd(1);
@@ -560,9 +583,12 @@ void AliTOFQADataMaker::MakeRecPoints(TTree * clustersTree)
     in[4] = c->GetDetInd(3); //X and Z indeces inverted in RecPoints
     
     GetMapIndeces(in,out);
-    GetRecPointsData(4)->Fill(out[0],out[1]);
-    
+    FillRecPointsData(4,out[0],out[1]);
   }
+  //
+  IncEvCountCycleRecPoints();
+  IncEvCountTotalRecPoints();
+  //
 }
 
 //____________________________________________________________________________
@@ -581,9 +607,9 @@ void AliTOFQADataMaker::MakeESDs(AliESDEvent * esd)
     Double_t tofToT=track->GetTOFsignalToT(); //in ns
     if(!(tofTime>0))continue;
     ntof++;
-    GetESDsData(1)->Fill(tofTime);
-    GetESDsData(2)->Fill(tofTimeRaw); 
-    GetESDsData(3)->Fill(tofToT);
+    FillESDsData(1,tofTime);
+    FillESDsData(2,tofTimeRaw); 
+    FillESDsData(3,tofToT);
     //check how many tracks where ESD PID is ok 
     UInt_t status=track->GetStatus();
     if (((status&AliESDtrack::kESDpid)==0) || 
@@ -593,15 +619,18 @@ void AliTOFQADataMaker::MakeESDs(AliESDEvent * esd)
   
   Int_t nentries=ntof;
   if(nentries<=0){
-    GetESDsData(0)->Fill(-1.) ;
+    FillESDsData(0,-1.) ;
   }else{
-    GetESDsData(0)->Fill(TMath::Log10(nentries)) ;
+    FillESDsData(0,TMath::Log10(nentries)) ;
   }
 
   Float_t ratio = 0.;
   if(ntof>0) ratio=(Float_t)ntofpid/(Float_t)ntof*100.;
-  GetESDsData(4)->Fill(ratio) ;
-
+  FillESDsData(4,ratio) ;
+  //
+  IncEvCountCycleESDs();
+  IncEvCountTotalESDs();
+  //
 }
 
 //____________________________________________________________________________ 

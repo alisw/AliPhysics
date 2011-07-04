@@ -72,6 +72,7 @@ void AliEMCALQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
 {
   //Detector specific actions at end of cycle
   // do the QA checking
+  ResetEventTrigClasses(); // reset triggers list to select all histos
   AliQAChecker::Instance()->Run(AliQAv1::kEMCAL, task, list) ;  
 }
 
@@ -88,6 +89,8 @@ void AliEMCALQADataMakerSim::InitHits()
   TH1I * h1  = new TH1I("hEmcalHitsMul", "Hits multiplicity distribution in EMCAL;# of Hits;Entries", 1000, 0, 10000) ; 
   h1->Sumw2() ;
   Add2HitsList(h1, 1, !expert, image) ;
+  //
+  ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -103,6 +106,8 @@ void AliEMCALQADataMakerSim::InitDigits()
   TH1I * h1 = new TH1I("hEmcalDigitsMul", "Digits multiplicity distribution in EMCAL;# of Digits;Entries", 200, 0, 2000) ; 
   h1->Sumw2() ;
   Add2DigitsList(h1, 1, !expert, image) ;
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -118,6 +123,8 @@ void AliEMCALQADataMakerSim::InitSDigits()
   TH1I * h1 = new TH1I("hEmcalSDigitsMul", "SDigits multiplicity distribution in EMCAL;# of SDigits;Entries", 500, 0,  5000) ; 
   h1->Sumw2() ;
   Add2SDigitsList(h1, 1, !expert, image) ;
+  //
+  ClonePerTrigClass(AliQAv1::kSDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________
@@ -125,70 +132,69 @@ void AliEMCALQADataMakerSim::MakeHits()
 {
   //make QA data from Hits
  
-  GetHitsData(1)->Fill(fHitsArray->GetEntriesFast()) ; 
+  FillHitsData(1,fHitsArray->GetEntriesFast()) ; 
   TIter next(fHitsArray) ; 
   AliEMCALHit * hit ; 
   while ( (hit = dynamic_cast<AliEMCALHit *>(next())) ) {
-    GetHitsData(0)->Fill( hit->GetEnergy()) ;
+    FillHitsData(0, hit->GetEnergy()) ;
   }
-
 }
 
 //____________________________________________________________________________
 void AliEMCALQADataMakerSim::MakeHits(TTree * hitTree)
 {
   // make QA data from Hit Tree
-  
   if (fHitsArray) 
     fHitsArray->Clear() ; 
   else
     fHitsArray = new TClonesArray("AliEMCALHit", 1000);
   
   TBranch * branch = hitTree->GetBranch("EMCAL") ;
-  if ( ! branch ) {
-    AliWarning("EMCAL branch in Hit Tree not found") ; 
-  } else {
-    branch->SetAddress(&fHitsArray) ;
-    for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
-      branch->GetEntry(ientry) ; 
-      MakeHits() ; 
-      fHitsArray->Clear() ; 
-    }
+  if ( ! branch ) { AliWarning("EMCAL branch in Hit Tree not found") ; return;}
+  //
+  branch->SetAddress(&fHitsArray) ;
+  for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
+    branch->GetEntry(ientry) ; 
+    MakeHits() ; 
+    fHitsArray->Clear() ; 
   }
+  IncEvCountCycleHits();
+  IncEvCountTotalHits();
+  //
 }
 
 //____________________________________________________________________________
 void AliEMCALQADataMakerSim::MakeDigits()
 {
   // makes data from Digits
- 
-  GetDigitsData(1)->Fill(fDigitsArray->GetEntriesFast()) ; 
+
+  FillDigitsData(1,fDigitsArray->GetEntriesFast()) ; 
   TIter next(fDigitsArray) ; 
   AliEMCALDigit * digit ; 
   while ( (digit = dynamic_cast<AliEMCALDigit *>(next())) ) {
-    GetDigitsData(0)->Fill( digit->GetAmp()) ;
+    FillDigitsData(0, digit->GetAmp()) ;
   }  
-
 }
 
 //____________________________________________________________________________
 void AliEMCALQADataMakerSim::MakeDigits(TTree * digitTree)
 {
   // makes data from Digit Tree
+
   if (fDigitsArray) 
     fDigitsArray->Clear("C") ; 
   else
     fDigitsArray = new TClonesArray("AliEMCALDigit", 1000) ; 
   
   TBranch * branch = digitTree->GetBranch("EMCAL") ;
-  if ( ! branch ) {
-    AliWarning("EMCAL branch in Digit Tree not found") ; 
-  } else {
-    branch->SetAddress(&fDigitsArray) ;
-    branch->GetEntry(0) ; 
-    MakeDigits() ; 
-  }
-
+  if ( ! branch ) { AliWarning("EMCAL branch in Digit Tree not found") ; return; }
+  //
+  branch->SetAddress(&fDigitsArray) ;
+  branch->GetEntry(0) ; 
+  MakeDigits() ; 
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
 }
 
 //____________________________________________________________________________
@@ -200,13 +206,12 @@ void AliEMCALQADataMakerSim::MakeSDigits()
 
   AliEMCALSDigitizer* sDigitizer = new AliEMCALSDigitizer();
 
-  GetSDigitsData(1)->Fill(fSDigitsArray->GetEntriesFast()) ; 
+  FillSDigitsData(1,fSDigitsArray->GetEntriesFast()) ; 
   TIter next(fSDigitsArray) ; 
   AliEMCALDigit * sdigit ; 
   while ( (sdigit = dynamic_cast<AliEMCALDigit *>(next())) ) {
-    GetSDigitsData(0)->Fill( sDigitizer->Calibrate(sdigit->GetAmp())) ;
+    FillSDigitsData(0, sDigitizer->Calibrate(sdigit->GetAmp())) ;
   } 
-
   delete sDigitizer;
 }
 
@@ -220,14 +225,15 @@ void AliEMCALQADataMakerSim::MakeSDigits(TTree * sdigitTree)
     fSDigitsArray = new TClonesArray("AliEMCALDigit", 1000) ; 
   
   TBranch * branch = sdigitTree->GetBranch("EMCAL") ;
-  if ( ! branch ) {
-    AliWarning("EMCAL branch in SDigit Tree not found") ; 
-  } else {
-    branch->SetAddress(&fSDigitsArray) ;
-    branch->GetEntry(0) ;
-    MakeSDigits() ; 
-  }
-
+  if ( ! branch ) { AliWarning("EMCAL branch in SDigit Tree not found"); return;}
+  //
+  branch->SetAddress(&fSDigitsArray);
+  branch->GetEntry(0);
+  MakeSDigits(); 
+  //
+  IncEvCountCycleSDigits();
+  IncEvCountTotalSDigits();
+  //
 }
 
 //____________________________________________________________________________ 

@@ -105,8 +105,10 @@ void AliACORDEQADataMaker::InitHits()
          Add2HitsList(hACORDExz,9);
          Add2HitsList(hACORDEyz,10);
          Add2HitsList(hACORDEAzimPol,11);
-
+	 //
+  ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line
 }
+
 //____________________________________________________________________________ 
 void AliACORDEQADataMaker::InitDigits()
 {
@@ -117,23 +119,24 @@ void AliACORDEQADataMaker::InitDigits()
    modulename = "hDigitsModule";
    fhDigitsModule = new TH1F(modulename.Data(),"hDigitsModuleSingle",60,0,60);
    Add2DigitsList( fhDigitsModule,0);
-
-
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
 void AliACORDEQADataMaker::InitRaws()
 {
   // create Raw histograms in Raw subdir
-TH1D *fhACORDEBitPattern[4];
-fhACORDEBitPattern[0] = new TH1D("ACORDERawDataSM","ACORDE-SingleMuon",60,1,60);//AcordeSingleMuon BitPattern
-fhACORDEBitPattern[1] = new TH1D("ACORDERawDataMM","ACORDE-MultiMuon",60,1,60);//AcordeMultiMuon BitPattern
-fhACORDEBitPattern[2] = new TH1D("ACORDERawDataSMM","ACORDE-SingleMuonMultiplicity",60,1,60);//AcordeSingleMuon Multiplicity
-fhACORDEBitPattern[3] = new TH1D("ACORDERawDataMMM","ACORDE-MultiMuonMultiplicity",60,1,60);//AcordeMultiMuon Multiplicity
-for(Int_t i=0;i<4;i++)
-{
-        Add2RawsList(fhACORDEBitPattern[i],i);
-}
+  TH1F *fhACORDEBitPattern[4];
+  fhACORDEBitPattern[0] = new TH1F("ACORDERawDataSM","ACORDE-SingleMuon",60,1,60);//AcordeSingleMuon BitPattern
+  fhACORDEBitPattern[1] = new TH1F("ACORDERawDataMM","ACORDE-MultiMuon",60,1,60);//AcordeMultiMuon BitPattern
+  fhACORDEBitPattern[2] = new TH1F("ACORDERawDataSMM","ACORDE-SingleMuonMultiplicity",60,1,60);//AcordeSingleMuon Multiplicity
+  fhACORDEBitPattern[3] = new TH1F("ACORDERawDataMMM","ACORDE-MultiMuonMultiplicity",60,1,60);//AcordeMultiMuon Multiplicity
+  for(Int_t i=0;i<4;i++) {
+    Add2RawsList(fhACORDEBitPattern[i],i);
+  }
+  //
+  ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -141,8 +144,11 @@ for(Int_t i=0;i<4;i++)
 void AliACORDEQADataMaker::InitRecPoints()
 {
   // create cluster histograms in RecPoint subdir
-  // Not needed for ACORDE by now !!!
+  // Not needed for ACORDE by now !!
+  //
+  ClonePerTrigClass(AliQAv1::kRECPOINTS); // this should be the last line
 }
+
 //____________________________________________________________________________
 void AliACORDEQADataMaker::InitESDs()
 {
@@ -160,8 +166,8 @@ void AliACORDEQADataMaker::InitESDs()
    name = "hESDsMulti";
    fhESDsMulti = new TH1F(name.Data(),"hESDsMulti",60,0,60);
    Add2ESDsList( fhESDsMulti,1);
-
-
+  //
+  ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line
 
 }
 //____________________________________________________________________________
@@ -170,7 +176,9 @@ void AliACORDEQADataMaker::MakeHits(TTree *hitTree)
 {
 
  // Here we fill the QA histos for Hits declared above
-
+  IncEvCountCycleHits();
+  IncEvCountTotalHits();
+  
         printf("Estamos en make Hits");
         TClonesArray * hits = new TClonesArray("AliACORDEhit",1000);
         TBranch * branch = hitTree->GetBranch("ACORDE");
@@ -201,20 +209,20 @@ void AliACORDEQADataMaker::MakeHits(TTree *hitTree)
                                         AliError("The unchecked hit doesn't exist");
                                         break;
                                 }
-                                GetHitsData(0)->Fill(AcoHit->Eloss());
-                                GetHitsData(1)->Fill(AcoHit->PolarAngle());
-                                GetHitsData(2)->Fill(AcoHit->AzimuthAngle());
-                                GetHitsData(3)->Fill(AcoHit->Px());
-                                GetHitsData(4)->Fill(AcoHit->Py());
-                                GetHitsData(5)->Fill(AcoHit->Pz());
-                                GetHitsData(6)->Fill(TMath::Sqrt( (AcoHit->Px())*(AcoHit->Px())+
+                                FillHitsData(0,AcoHit->Eloss());
+                                FillHitsData(1,AcoHit->PolarAngle());
+                                FillHitsData(2,AcoHit->AzimuthAngle());
+                                FillHitsData(3,AcoHit->Px());
+                                FillHitsData(4,AcoHit->Py());
+                                FillHitsData(5,AcoHit->Pz());
+                                FillHitsData(6,TMath::Sqrt( (AcoHit->Px())*(AcoHit->Px())+
                                              (AcoHit->Py())*(AcoHit->Py())));
-                                if((AcoHit->Py()) != 0.0 ) GetHitsData(7)->Fill(TMath::ATan(AcoHit->Px()/AcoHit->Py()));
-                                GetHitsData(8)->Fill( (Float_t)(AcoHit->X()),(Float_t)(AcoHit->Y()) );
-                                GetHitsData(9)->Fill( (Float_t)(AcoHit->X()),(Float_t)(AcoHit->Z()) );
-                                GetHitsData(10)->Fill( (Float_t)(AcoHit->Y()),(Float_t)(AcoHit->Z()) );
-                                GetHitsData(11)->Fill( (Float_t)(AcoHit->AzimuthAngle()),
-                                (Float_t)(AcoHit->PolarAngle()));
+                                if((AcoHit->Py()) != 0.0 ) FillHitsData(7,TMath::ATan(AcoHit->Px()/AcoHit->Py()));
+                                FillHitsData(8, (Float_t)(AcoHit->X()),(Float_t)(AcoHit->Y()) );
+                                FillHitsData(9, (Float_t)(AcoHit->X()),(Float_t)(AcoHit->Z()) );
+                                FillHitsData(10, (Float_t)(AcoHit->Y()),(Float_t)(AcoHit->Z()) );
+                                FillHitsData(11, (Float_t)(AcoHit->AzimuthAngle()),
+					     (Float_t)(AcoHit->PolarAngle()));
                         }
                 }
         }
@@ -227,6 +235,8 @@ void AliACORDEQADataMaker::MakeHits(TTree *hitTree)
 void AliACORDEQADataMaker::MakeDigits( TTree *digitsTree)
 {
   //fills QA histos for Digits
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
 
 
         TClonesArray * digits = new TClonesArray("AliACORDEdigit",1000);
@@ -259,7 +269,7 @@ void AliACORDEQADataMaker::MakeDigits( TTree *digitsTree)
                                         AliError("The unchecked digit doesn't exist");
                                         break;
                                 }
-                                GetDigitsData(0)->Fill(AcoDigit->GetModule()-1);
+                                FillDigitsData(0,AcoDigit->GetModule()-1);
                         }
                 }
 
@@ -275,6 +285,9 @@ void AliACORDEQADataMaker::MakeRaws( AliRawReader* rawReader)
 {
 
  //fills QA histos for RAW
+  IncEvCountCycleRaws();
+  IncEvCountTotalRaws();
+
   rawReader->Reset();
   AliACORDERawStream rawStream(rawReader);
   size_t contSingle=0;
@@ -324,16 +337,16 @@ if(rawStream.Next())
         {
                 if(kroSingle[r]==1)
                 {
-                        GetRawsData(0)->Fill(r+1);
-                        contSingle=contSingle+1;
+		  FillRawsData(0,r+1);
+		  contSingle=contSingle+1;
                 }
                 if(kroMulti[r]==1)
                 {
-                        GetRawsData(1)->Fill(r+1);
-                        contMulti++;
+		  FillRawsData(1,r+1);
+		  contMulti++;
                 }
 
-        }GetRawsData(2)->Fill(contSingle);GetRawsData(3)->Fill(contMulti);
+        } FillRawsData(2,contSingle); FillRawsData(3,contMulti);
 }
 
 
@@ -343,6 +356,9 @@ if(rawStream.Next())
 void AliACORDEQADataMaker::MakeRecPoints(TTree * clustersTree)
 {
   //fills QA histos for clusters
+  IncEvCountCycleRecPoints();
+  IncEvCountTotalRecPoints();
+
   // Not needed for ACORDE by now!!!
 }
 
@@ -350,19 +366,22 @@ void AliACORDEQADataMaker::MakeRecPoints(TTree * clustersTree)
 void AliACORDEQADataMaker::MakeESDs(AliESDEvent * esd)
 {
   //fills QA histos for ESD
+  IncEvCountCycleESDs();
+  IncEvCountTotalESDs();
+
 
         AliESDACORDE * fESDACORDE= esd->GetACORDEData();
         Int_t *fACORDEMultiMuon =fESDACORDE->GetACORDEMultiMuon();
         Int_t *fACORDESingleMuon=fESDACORDE->GetACORDESingleMuon();
 
-       for(int i=0;i<60;i++){
-            if(fACORDESingleMuon[i]==1)
-               GetESDsData(0) -> Fill(i);
-            if(fACORDEMultiMuon[i]==1)
-               GetESDsData(1) -> Fill(i);
+	for(int i=0;i<60;i++){
+	  if(fACORDESingleMuon[i]==1)
+	    FillESDsData(0,i);
+	  if(fACORDEMultiMuon[i]==1)
+	    FillESDsData(1,i);
         }
-
-
+	
+	
 
 }
 

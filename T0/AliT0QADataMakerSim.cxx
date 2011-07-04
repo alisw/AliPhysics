@@ -99,10 +99,12 @@ void AliT0QADataMakerSim::InitHits()
   
   TH2F *fhHitsTimeA = new TH2F("hHitsTimeA", "Hits Efficiency;#PMT; Time [ns];", 13, 12, 25, 100,12,15 );
   fhHitsTimeA->SetOption("COLZ");
- Add2HitsList(fhHitsTimeA,0, !expert, image);
+  Add2HitsList(fhHitsTimeA,0, !expert, image);
   TH2F *fhHitsTimeC = new TH2F("hHitsTimeC", "Hits Efficiency;#PMT; Time [ns];", 13, 0, 13, 100,2,5 );
   fhHitsTimeC->SetOption("COLZ");
   Add2HitsList(fhHitsTimeC,1, !expert, image);
+  //
+  ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -121,9 +123,8 @@ void AliT0QADataMakerSim::InitDigits()
   TH2F * fhDigQTC = new TH2F("fhDigQTC", " QTC digits; #PMT; amplitude QTC [#channel]",25,-0.5,24.5,200,500,10000);
   fhDigQTC->SetOption("COLZ");
   Add2DigitsList( fhDigQTC,2, !expert, image);
-  
-  
-   
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line 
 }
 
 //____________________________________________________________________________
@@ -164,11 +165,15 @@ void AliT0QADataMakerSim::MakeHits(TTree *hitTree)
 	  }
 	  Int_t pmt=startHit->Pmt();
 	  Float_t time = 0.001 * startHit->Time();
-	  if(pmt<13)GetHitsData(1)->Fill(pmt,time) ;
-	  if(pmt>12)GetHitsData(0)->Fill(pmt,time) ;
+	  if(pmt<13) FillHitsData(1,pmt,time) ;
+	  if(pmt>12) FillHitsData(0,pmt,time) ;
 	}
     }
   }
+  //
+  IncEvCountCycleHits();
+  IncEvCountTotalHits();
+  //
 }
 
 //____________________________________________________________________________
@@ -204,9 +209,9 @@ void AliT0QADataMakerSim::MakeDigits( TTree *digitsTree)
     {
       if (digCFD->At(i)>0) {
 	Int_t cfd=digCFD->At(i)- refpoint;
-	GetDigitsData(0) ->Fill(i,cfd);
-	GetDigitsData(1) -> Fill(i,(digLED->At(i) - digCFD->At(i)));
-	GetDigitsData(2) -> Fill(i, (digQT1->At(i) - digQT0->At(i)));
+	FillDigitsData(0, i,cfd);
+	FillDigitsData(1, i,(digLED->At(i) - digCFD->At(i)));
+	FillDigitsData(2, i, (digQT1->At(i) - digQT0->At(i)));
 
       }
     }  
@@ -215,5 +220,8 @@ void AliT0QADataMakerSim::MakeDigits( TTree *digitsTree)
   delete digLED;
   delete digQT0;
   delete digQT1;
-
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+  //
 }

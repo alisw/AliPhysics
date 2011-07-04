@@ -28,9 +28,9 @@
 // --- ROOT system ---
 #include <TClonesArray.h>
 #include <TFile.h> 
-#include <TH1D.h> 
-#include <TH2D.h>
-#include <TH3D.h>
+#include <TH1F.h> 
+#include <TH2F.h>
+#include <TH3F.h>
 #include <TProfile.h>
 #include <TF1.h>
 #include <TCanvas.h>
@@ -104,7 +104,7 @@ void AliTRDQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
   //
   // Detector specific actions at end of cycle
   //
-
+  ResetEventTrigClasses();
   //AliDebug(AliQAv1::GetQADebugLevel(), Form("EndOfCycle", "Fitting RecPoints %d", task));
 
   // call the checker
@@ -123,19 +123,20 @@ void AliTRDQADataMakerSim::InitHits()
   const Bool_t image    = kTRUE ; 
   
   const Int_t kNhist = 4;
-  TH1D *hist[kNhist];
+  TH1F *hist[kNhist];
 
-  hist[0] = new TH1D("qaTRD_hits_det", "TRD hits det;Detector Id of the hit;Counts", 540, -0.5, 539.5) ; 
+  hist[0] = new TH1F("qaTRD_hits_det", "TRD hits det;Detector Id of the hit;Counts", 540, -0.5, 539.5) ; 
 
-  hist[1] = new TH1D("qaTRD_hist_Qdrift", "TRD hits Qdrift;Charge from tracks;Counts", 100, 0, 100);
-  hist[2] = new TH1D("qaTRD_hist_Qamp", "TRD hits Qamp;Charge from TRD photon;Counts", 100, 0, 100);
-  hist[3] = new TH1D("qaTRD_hist_Qphoton", "TRD hits Qphoton;Charge from TRD photon;Counts", 100, 0, 100);
+  hist[1] = new TH1F("qaTRD_hist_Qdrift", "TRD hits Qdrift;Charge from tracks;Counts", 100, 0, 100);
+  hist[2] = new TH1F("qaTRD_hist_Qamp", "TRD hits Qamp;Charge from TRD photon;Counts", 100, 0, 100);
+  hist[3] = new TH1F("qaTRD_hist_Qphoton", "TRD hits Qphoton;Charge from TRD photon;Counts", 100, 0, 100);
 
   for(Int_t i=0; i<kNhist; i++) {
     //hist[i]->Sumw2();
     Add2HitsList(hist[i], i, !expert, image);
   }
-
+  //
+  ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -148,17 +149,18 @@ void AliTRDQADataMakerSim::InitDigits()
   const Bool_t image    = kTRUE ; 
   
   const Int_t kNhist = 3;
-  TH1D *hist[kNhist];
+  TH1F *hist[kNhist];
 
-  hist[0] = new TH1D("qaTRD_digits_det", "TRD digits det;Detector Id of the digit;Counts", 540, -0.5, 539.5);
-  hist[1] = new TH1D("qaTRD_digits_time", "TRDdigits time;Time bin;Counts", 40, -0.5, 39.5);
-  hist[2] = new TH1D("qaTRD_digits_amp", "TRD digits amp;Amplitude;Counts", 100, -5.5, 94.5);
+  hist[0] = new TH1F("qaTRD_digits_det", "TRD digits det;Detector Id of the digit;Counts", 540, -0.5, 539.5);
+  hist[1] = new TH1F("qaTRD_digits_time", "TRDdigits time;Time bin;Counts", 40, -0.5, 39.5);
+  hist[2] = new TH1F("qaTRD_digits_amp", "TRD digits amp;Amplitude;Counts", 100, -5.5, 94.5);
 
   for(Int_t i=0; i<kNhist; i++) {
     hist[i]->Sumw2();
     Add2DigitsList(hist[i], i, !expert, image);
   }
-
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -171,17 +173,18 @@ void AliTRDQADataMakerSim::InitSDigits()
   const Bool_t image    = kTRUE ; 
   
   const Int_t kNhist = 3;
-  TH1D *hist[kNhist];
+  TH1F *hist[kNhist];
 
-  hist[0] = new TH1D("qaTRD_sdigits_det", "TRD sdigits det;Detector Id of the digit;Counts", 540, -0.5, 539.5);
-  hist[1] = new TH1D("qaTRD_sdigits_time", "TRD sdigits time;Time bin;Counts", 40, -0.5, 39.5);
-  hist[2] = new TH1D("qaTRD_sdigits_amp", "TRD sdigits amp;Amplitude;Counts", 100, 0, 1e7);
+  hist[0] = new TH1F("qaTRD_sdigits_det", "TRD sdigits det;Detector Id of the digit;Counts", 540, -0.5, 539.5);
+  hist[1] = new TH1F("qaTRD_sdigits_time", "TRD sdigits time;Time bin;Counts", 40, -0.5, 39.5);
+  hist[2] = new TH1F("qaTRD_sdigits_amp", "TRD sdigits amp;Amplitude;Counts", 100, 0, 1e7);
 
   for(Int_t i=0; i<kNhist; i++) {
     hist[i]->Sumw2();
     Add2SDigitsList(hist[i], i, !expert, image);
   }
-
+  //
+  ClonePerTrigClass(AliQAv1::kSDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________
@@ -195,14 +198,13 @@ void AliTRDQADataMakerSim::MakeHits()
   AliTRDhit * hit; 
 
   while ( (hit = dynamic_cast<AliTRDhit *>(next())) ) {
-    GetHitsData(0)->Fill(hit->GetDetector());
+    FillHitsData(0,hit->GetDetector());
     Double_t q = TMath::Abs(hit->GetCharge());
 
-    if (hit->FromDrift()) GetHitsData(1)->Fill(q);
-    if (hit->FromAmplification()) GetHitsData(2)->Fill(q);
-    if (hit->FromTRphoton()) GetHitsData(3)->Fill(q);
+    if (hit->FromDrift()) FillHitsData(1,q);
+    if (hit->FromAmplification()) FillHitsData(2,q);
+    if (hit->FromTRphoton()) FillHitsData(3,q);
   }
-
 }
 
 //____________________________________________________________________________
@@ -230,6 +232,10 @@ void AliTRDQADataMakerSim::MakeHits(TTree * hitTree)
     MakeHits();
     fHitsArray->Clear() ; 
   }
+  //
+  IncEvCountCycleHits();
+  IncEvCountTotalHits();
+  //
 }
 
 //____________________________________________________________________________
@@ -249,9 +255,9 @@ void AliTRDQADataMakerSim::MakeDigits()
   
   while ( (digit = dynamic_cast<AliTRDdigit *>(next())) ) {
     if (digit->GetAmp() < 1) continue;
-    GetDigitsData(0)->Fill(digit->GetDetector());
-    GetDigitsData(1)->Fill(digit->GetTime());
-    GetDigitsData(2)->Fill(digit->GetAmp());
+    FillDigitsData(0,digit->GetDetector());
+    FillDigitsData(1,digit->GetTime());
+    FillDigitsData(2,digit->GetAmp());
   }
 
 }
@@ -267,10 +273,11 @@ void AliTRDQADataMakerSim::MakeDigits(TTree * digits)
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
   digitsManager->CreateArrays();
   digitsManager->ReadDigits(digits);
-
-  TH1D *histDet = (TH1D*)GetDigitsData(0);
-  TH1D *histTime = (TH1D*)GetDigitsData(1);
-  TH1D *histSignal = (TH1D*)GetDigitsData(2);
+  static TObjArray histDet,histTime,histSignal;
+  //
+  GetMatchingDigitsData(0,&histDet);
+  GetMatchingDigitsData(1,&histTime);
+  GetMatchingDigitsData(2,&histSignal);
 
   for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++) 
     {
@@ -294,14 +301,18 @@ void AliTRDQADataMakerSim::MakeDigits(TTree * digits)
             {   
               Float_t signal = digitsIn->GetData(row,col,time);
               if (signal < 1) continue;
-              histDet->Fill(i);
-              histTime->Fill(time);
-              histSignal->Fill(signal);
+              for (int ih=histDet.GetEntriesFast();ih--;) ((TH1*)histDet.UncheckedAt(ih))->Fill(i);
+              for (int ih=histTime.GetEntriesFast();ih--;) ((TH1*)histTime.UncheckedAt(ih))->Fill(time);
+              for (int ih=histSignal.GetEntriesFast();ih--;) ((TH1*)histSignal.UncheckedAt(ih))->Fill(signal);
             }
       
       //delete digitsIn;
     }
   delete digitsManager;
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+  //
 }
 
 //____________________________________________________________________________
@@ -317,9 +328,9 @@ void AliTRDQADataMakerSim::MakeSDigits()
   TIter next(fSDigitsArray) ; 
   AliTRDdigit * digit ; 
   while ( (digit = dynamic_cast<AliTRDdigit *>(next())) ) {
-    GetDigitsData(0)->Fill(digit->GetDetector());
-    GetDigitsData(1)->Fill(digit->GetTime());
-    GetDigitsData(2)->Fill(digit->GetAmp());
+    FillDigitsData(0,digit->GetDetector());
+    FillDigitsData(1,digit->GetTime());
+    FillDigitsData(2,digit->GetAmp());
   }
 
 }
@@ -339,9 +350,11 @@ void AliTRDQADataMakerSim::MakeSDigits(TTree * digits)
   digitsManager->CreateArrays();
   digitsManager->ReadDigits(digits);
 
-  TH1D *histDet = (TH1D*)GetSDigitsData(0);
-  TH1D *histTime = (TH1D*)GetSDigitsData(1);
-  TH1D *histSignal = (TH1D*)GetSDigitsData(2);
+  static TObjArray histDet,histTime,histSignal;
+  //
+  GetMatchingSDigitsData(0,&histDet);
+  GetMatchingSDigitsData(1,&histTime);
+  GetMatchingSDigitsData(2,&histSignal);
 
   for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++) 
     {
@@ -366,15 +379,19 @@ void AliTRDQADataMakerSim::MakeSDigits(TTree * digits)
 		{	    
 		  Float_t signal = digitsIn->GetData(row,col,time);
 		  if (signal < 1) continue;
-		  histDet->Fill(i);
-		  histTime->Fill(time);
-		  histSignal->Fill(signal);
+		  for (int ih=histDet.GetEntriesFast();ih--;) ((TH1*)histDet.UncheckedAt(ih))->Fill(i);
+		  for (int ih=histTime.GetEntriesFast();ih--;) ((TH1*)histTime.UncheckedAt(ih))->Fill(time);
+		  for (int ih=histSignal.GetEntriesFast();ih--;) ((TH1*)histSignal.UncheckedAt(ih))->Fill(signal);
 		}
 	    }
 	}
       // delete digitsIn;
     }
   delete digitsManager;
+  //
+  IncEvCountCycleSDigits();
+  IncEvCountTotalSDigits();  
+  //
 }
 
 //____________________________________________________________________________ 

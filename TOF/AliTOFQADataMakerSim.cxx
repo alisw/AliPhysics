@@ -98,7 +98,8 @@ void AliTOFQADataMakerSim::InitHits()
   h3->Sumw2() ;
   h3->GetYaxis()->SetTitleOffset(1.15);
   Add2HitsList(h3, 3, !expert, image) ;
-
+  //
+  ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -127,7 +128,8 @@ void AliTOFQADataMakerSim::InitDigits()
   h3->Sumw2() ;
   h3->GetYaxis()->SetTitleOffset(1.15);
   Add2DigitsList(h3, 3, !expert, image) ;
-
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -152,7 +154,8 @@ void AliTOFQADataMakerSim::InitSDigits()
   h2->Sumw2() ;
   h2->GetYaxis()->SetTitleOffset(1.15);
   Add2SDigitsList(h2, 2, !expert, image) ;
-
+  //
+  ClonePerTrigClass(AliQAv1::kSDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________
@@ -167,16 +170,16 @@ void AliTOFQADataMakerSim::MakeHits()
 
   Int_t nentries= fHitsArray->GetEntriesFast();
   if(nentries<=0) {
-    GetHitsData(0)->Fill(-1.) ; 
+    FillHitsData(0,-1.) ; 
   } else{
-    GetHitsData(0)->Fill(nentries) ; 
+    FillHitsData(0,nentries) ; 
   }
   TIter next(fHitsArray) ; 
   AliTOFhitT0 * hit ; 
   while ( (hit = dynamic_cast<AliTOFhitT0 *>(next())) ) {
 
-    GetHitsData(1)->Fill( hit->GetTof()*1.E9) ;//in ns
-    GetHitsData(2)->Fill( hit->GetLen()) ;//in cm
+    FillHitsData(1, hit->GetTof()*1.E9) ;//in ns
+    FillHitsData(2, hit->GetLen()) ;//in cm
   
     in[0] = hit->GetSector();
     in[1] = hit->GetPlate();
@@ -184,7 +187,7 @@ void AliTOFQADataMakerSim::MakeHits()
     in[3]= hit->GetPadx();
     in[4]= hit->GetPadz();
     GetMapIndeces(in,out);
-    GetHitsData(3)->Fill( out[0],out[1]) ;//hit map
+    FillHitsData(3, out[0],out[1]) ;//hit map
   }
 }
 
@@ -218,6 +221,10 @@ void AliTOFQADataMakerSim::MakeHits(TTree * hitTree)
     MakeHits() ; 
     fHitsArray->Clear() ; 
   } 	
+  //
+  IncEvCountCycleHits();
+  IncEvCountTotalHits();
+  //
 }
 
 //____________________________________________________________________________
@@ -234,17 +241,17 @@ void AliTOFQADataMakerSim::MakeDigits()
 
   Int_t nentries=fDigitsArray->GetEntriesFast();
   if(nentries<=0){
-    GetDigitsData(0)->Fill(-1.) ; 
+    FillDigitsData(0,-1.) ; 
   }else{
-    GetDigitsData(0)->Fill(nentries) ; 
+    FillDigitsData(0,nentries) ; 
   } 
 
   TIter next(fDigitsArray) ; 
   AliTOFdigit * digit ; 
   while ( (digit = dynamic_cast<AliTOFdigit *>(next())) ) {
     
-    GetDigitsData(1)->Fill( digit->GetTdc()*tdc2ns) ;//in ns
-    GetDigitsData(2)->Fill( digit->GetToT()*tot2ns) ;//in ns
+    FillDigitsData(1, digit->GetTdc()*tdc2ns) ;//in ns
+    FillDigitsData(2, digit->GetToT()*tot2ns) ;//in ns
 
     in[0] = digit->GetSector();
     in[1] = digit->GetPlate();
@@ -252,7 +259,7 @@ void AliTOFQADataMakerSim::MakeDigits()
     in[3] = digit->GetPadx();
     in[4]= digit->GetPadz();
     GetMapIndeces(in,out);
-    GetDigitsData(3)->Fill( out[0],out[1]) ;//digit map
+    FillDigitsData(3, out[0],out[1]) ;//digit map
   }
 
 }
@@ -274,9 +281,13 @@ void AliTOFQADataMakerSim::MakeDigits(TTree * digitTree)
     AliError("TOF branch in Digit Tree not found") ; 
     return;
   }
-  branch->SetAddress(&fDigitsArray) ;
-  branch->GetEntry(0) ; 
-  MakeDigits() ; 
+  branch->SetAddress(&fDigitsArray);
+  branch->GetEntry(0);
+  MakeDigits(); 
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+  //
 }
 
 //____________________________________________________________________________
@@ -292,9 +303,9 @@ void AliTOFQADataMakerSim::MakeSDigits()
 
   Int_t nentries=fSDigitsArray->GetEntriesFast();
   if(nentries<=0){
-    GetSDigitsData(0)->Fill(-1.) ; 
+    FillSDigitsData(0,-1.) ; 
   }else{
-    GetSDigitsData(0)->Fill(nentries) ; 
+    FillSDigitsData(0,nentries) ; 
   } 
 
   TIter next(fSDigitsArray) ; 
@@ -302,7 +313,7 @@ void AliTOFQADataMakerSim::MakeSDigits()
   while ( (sdigit = dynamic_cast<AliTOFSDigit *>(next())) ) {
     
     for(Int_t i=0;i<sdigit->GetNDigits();i++){
-      GetSDigitsData(1)->Fill( sdigit->GetTdc(i)*tdc2ns) ;//in ns
+      FillSDigitsData(1, sdigit->GetTdc(i)*tdc2ns) ;//in ns
     }
 
     in[0] = sdigit->GetSector();
@@ -311,7 +322,7 @@ void AliTOFQADataMakerSim::MakeSDigits()
     in[3] = sdigit->GetPadx();
     in[4]= sdigit->GetPadz();
     GetMapIndeces(in,out);
-    GetSDigitsData(2)->Fill( out[0],out[1]) ;//sdigit map
+    FillSDigitsData(2, out[0],out[1]) ;//sdigit map
   }
 }
 
@@ -331,9 +342,13 @@ void AliTOFQADataMakerSim::MakeSDigits(TTree * sdigitTree)
     AliError("TOF branch in SDigit Tree not found") ; 
     return;
   }
-  branch->SetAddress(&fSDigitsArray) ;
-  branch->GetEntry(0) ; 
-  MakeSDigits() ; 
+  branch->SetAddress(&fSDigitsArray);
+  branch->GetEntry(0); 
+  MakeSDigits(); 
+  //
+  IncEvCountCycleSDigits();
+  IncEvCountTotalSDigits();  
+  //
 }
 
 //____________________________________________________________________________ 
@@ -349,7 +364,7 @@ void AliTOFQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-
+  ResetEventTrigClasses();
   AliQAChecker::Instance()->Run(AliQAv1::kTOF, task, list) ;  
 }
 //____________________________________________________________________________

@@ -71,6 +71,11 @@ const TString  AliQAv1::fgkRefOCDBDirName      = "QA"  ;
 TString AliQAv1::fgRefDataDirName	             = ""  ; 
 const TString  AliQAv1::fgkQARefOCDBDefault    = "alien://folder=/alice/QA/20"  ; 
 const TString  AliQAv1::fgkExpert              = "Expert" ; 
+//
+const UInt_t   AliQAv1::fgkQAClonedBit         = BIT(14); // RS: bits set to the histos or arrays of cloned histos
+const UInt_t   AliQAv1::fgkForbidCloningBit    = BIT(15); // to flag the state (cloned or not) of the 
+const UInt_t   AliQAv1::fgkOrigHistoKeptBit    = BIT(16); // object at the given slot of fXXXQAList[]
+//
 const UInt_t   AliQAv1::fgkExpertBit           = BIT(19);  
 const UInt_t   AliQAv1::fgkQABit               = BIT(20) ; 
 const UInt_t   AliQAv1::fgkImageBit            = BIT(21) ; 

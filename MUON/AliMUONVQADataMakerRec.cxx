@@ -28,7 +28,6 @@
 ClassImp(AliMUONVQADataMakerRec)
 /// \endcond
 
-#include "AliQADataMakerRec.h"
 #include "AliMUONRecoParam.h"
 #include "AliCDBManager.h"
 #include "TH1.h"
@@ -79,6 +78,15 @@ AliMUONVQADataMakerRec::Add2RawsList(TH1 * hist, const Int_t index, const Bool_t
 }
 
 //_____________________________________________________________________________
+void AliMUONVQADataMakerRec::ClonePerTrigClass(AliQAv1::TASKINDEX_t task)
+{
+  // RS: alias to QADataMaker per-trigger-class histo clonning
+  if (!fMaster) return;
+  fMaster->ClonePerTrigClass(task);
+}
+
+
+//_____________________________________________________________________________
 AliRecoParam::EventSpecie_t 
 AliMUONVQADataMakerRec::CurrentEventSpecie() const
 {
@@ -92,38 +100,6 @@ AliMUONVQADataMakerRec::GetRecoParam() const
 {
   /// fwd
   return fMaster ? dynamic_cast<const AliMUONRecoParam*>(fMaster->GetRecoParam()) : 0x0;
-}
-
-//_____________________________________________________________________________
-TH1* 
-AliMUONVQADataMakerRec::GetDigitsData(Int_t index) const
-{
-  /// fwd
-  return fMaster ? fMaster->GetDigitsData(index) : 0x0;
-}
-
-//_____________________________________________________________________________
-TH1* 
-AliMUONVQADataMakerRec::GetESDsData(Int_t index) const
-{
-  /// fwd
-  return fMaster ? fMaster->GetESDsData(index) : 0x0;
-}
-
-//_____________________________________________________________________________
-TH1* 
-AliMUONVQADataMakerRec::GetRecPointsData(Int_t index) const
-{
-  /// fwd
-  return fMaster ? fMaster->GetRecPointsData(index) : 0x0;
-}
-
-//_____________________________________________________________________________
-TH1* 
-AliMUONVQADataMakerRec::GetRawsData(Int_t index) const
-{
-  /// fwd
-  return fMaster ? fMaster->GetRawsData(index) : 0x0;
 }
 
 //_____________________________________________________________________________
@@ -142,15 +118,30 @@ AliMUONVQADataMakerRec::ResetDetector(const TObjArray* list)
   TObject* o;
   while ( (o = next()) ) 
   {
+    // RS: Check if this is a histo or array of histos
+    TString hcn(o->GetName());
+    if ( !hcn.Contains(pattern) ) continue;
+    if ( !o->TestBit(AliQAv1::GetClonedBit()) ) { // not cloned, this is orig. histo
+      ((TH1*)o)->Reset();
+      continue;
+    }
+    // histo was cloned, so we are dealing with TObjArray
+    TIter nextCl( (TObjArray*)o );
+    TH1* hclone = 0;
+    while ( (hclone = (TH1*) next()) ) hclone->Reset();
+    /*    
+    // RS: I did not understand this code: the hcn will be "TH.." and not the histo name
+    //     Should not one use h->GetName() ? 
     TH1* h = dynamic_cast<TH1*>(o);
     if ( h ) 
     {
-      TString hcn(h->ClassName());
+      TString hcn(h->ClassName());  
       if ( hcn.Contains(pattern) ) 
       {
         h->Reset();
       }
     }
+    */
   }
 }
 

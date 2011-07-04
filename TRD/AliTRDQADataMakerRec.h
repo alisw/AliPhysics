@@ -54,9 +54,9 @@ class AliTRDQADataMakerRec: public AliQADataMakerRec {
   Int_t        GetSector(Double_t alpha) const;
   Int_t        GetStack(const AliExternalTrackParam *paramOut) const;
   Double_t     GetExtZ(const AliExternalTrackParam *paramIn) const;
-  Int_t        FillBits(TH1D *hist, Int_t code, Int_t offset);
+  Int_t        FillBits(TH1F *hist, Int_t code, Int_t offset);
 
-  void         BuildRatio(TH1D *ratio, TH1D * const histN, TH1D * const histD);
+  void         BuildRatio(TH1 *ratio, TH1 * const histN, TH1 * const histD);
 
   ClassDef(AliTRDQADataMakerRec,1)   // Creates the TRD QA data
 

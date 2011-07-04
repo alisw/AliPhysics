@@ -38,7 +38,7 @@
 #include "AliESDEvent.h"
 #include "AliLog.h"
 #include "AliPHOSQADataMakerRec.h"
-#include "AliPHOSDigit.h" 
+#include "AliPHOSDigit.h"
 #include "AliPHOSCpvRecPoint.h" 
 #include "AliPHOSEmcRecPoint.h" 
 #include "AliPHOSRawFitterv0.h"
@@ -81,20 +81,25 @@ AliPHOSQADataMakerRec& AliPHOSQADataMakerRec::operator = (const AliPHOSQADataMak
 void AliPHOSQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
+  ResetEventTrigClasses();
+
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if (! IsValidEventSpecie(specie, list)) 
-      continue ;
-    SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
-    if(GetRawsData(kHGqualMod0) && GetRawsData(kHGmod0))
-      GetRawsData(kHGqualMod0)->Divide( GetRawsData(kHGmod0) ) ;
-    if(GetRawsData(kHGqualMod1) && GetRawsData(kHGmod1))
-      GetRawsData(kHGqualMod1)->Divide( GetRawsData(kHGmod1) ) ;
-    if(GetRawsData(kHGqualMod2) && GetRawsData(kHGmod2))
-      GetRawsData(kHGqualMod2)->Divide( GetRawsData(kHGmod2) ) ;
-    if(GetRawsData(kHGqualMod3) && GetRawsData(kHGmod3))
-      GetRawsData(kHGqualMod3)->Divide( GetRawsData(kHGmod3) ) ;
-    if(GetRawsData(kHGqualMod4) && GetRawsData(kHGmod4))
-      GetRawsData(kHGqualMod4)->Divide( GetRawsData(kHGmod4) ) ;
+    if (! IsValidEventSpecie(specie, list)) continue;
+    SetEventSpecie(AliRecoParam::ConvertIndex(specie)); 
+    //
+    for (int itc=-1;itc<GetNTrigClasses();itc++) {  // RS: loop over all trigger clones
+      //
+      if(GetRawsData(kHGqualMod0,itc) && GetRawsData(kHGmod0,itc))
+	GetRawsData(kHGqualMod0,itc)->Divide( GetRawsData(kHGmod0,itc) );
+      if(GetRawsData(kHGqualMod1,itc) && GetRawsData(kHGmod1,itc))
+	GetRawsData(kHGqualMod1,itc)->Divide( GetRawsData(kHGmod1,itc) );
+      if(GetRawsData(kHGqualMod2,itc) && GetRawsData(kHGmod2,itc))
+	GetRawsData(kHGqualMod2,itc)->Divide( GetRawsData(kHGmod2,itc) );
+      if(GetRawsData(kHGqualMod3,itc) && GetRawsData(kHGmod3,itc))
+	GetRawsData(kHGqualMod3,itc)->Divide( GetRawsData(kHGmod3,itc) );
+      if(GetRawsData(kHGqualMod4,itc) && GetRawsData(kHGmod4,itc))
+	GetRawsData(kHGqualMod4,itc)->Divide( GetRawsData(kHGmod4,itc) );
+    } // RS: loop over all trigger clones
   }
   // do the QA checking
   AliQAChecker::Instance()->Run(AliQAv1::kPHOS, task, list) ;  
@@ -123,7 +128,8 @@ void AliPHOSQADataMakerRec::InitESDs()
   TH1F * h4 = new TH1F("hESDpid",           "ESDs PID distribution in PHOS;Particle Id;Counts"         , 100, 0.,    1.) ;
   h4->Sumw2() ;
   Add2ESDsList(h4, kESDpid, !expert, image) ; //Expert histo
-	
+  //
+  ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line	
 }
 
 //____________________________________________________________________________ 
@@ -138,6 +144,8 @@ void AliPHOSQADataMakerRec::InitDigits()
   TH1I * h1 = new TH1I("hPhosDigitsMul", "Digits multiplicity distribution in PHOS;# of Digits;Entries", 2000, 0, 10000) ; 
   h1->Sumw2() ;
   Add2DigitsList(h1, kDigitsMul, !expert, image) ;
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -173,6 +181,8 @@ void AliPHOSQADataMakerRec::InitRecPoints()
   TH1I * h8 = new TH1I("hCpvPhosRecPointsMul", "CPV RecPoints multiplicity distribution in PHOS;# of CPV clusters;Counts", 100, 0,  100) ; 
   h8->Sumw2() ;
   Add2RecPointsList(h8, kRPNcpv, !expert, image) ;
+  //
+  ClonePerTrigClass(AliQAv1::kRECPOINTS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -330,28 +340,32 @@ void AliPHOSQADataMakerRec::InitRaws()
   TH2F * h41 = new TH2F("hpedRMSLGxyMod4","Low Gain pedestal RMS in module 4", 64, 0, 64, 56, 0, 56) ;
   h41->SetXTitle("x, cells"); h41->SetYTitle("z, cells");
   Add2RawsList(h41,kLGpedRMSMod4, expert, !image, !saveCorr) ;
-
+  //
+  ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
 
 //____________________________________________________________________________
 void AliPHOSQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
-  // make QA data from ESDs
- 
+  // make QA data from ESDs 
   Int_t nTot = 0 ; 
   Double_t eTot = 0 ; 
   for ( Int_t index = 0; index < esd->GetNumberOfCaloClusters() ; index++ ) {
     AliESDCaloCluster * clu = esd->GetCaloCluster(index) ;
     if( clu->IsPHOS() ) {
-      GetESDsData(kESDSpec)->Fill(clu->E()) ;
+      FillESDsData(kESDSpec,clu->E()) ;
       const Double_t * pid = clu->GetPID() ;
-      GetESDsData(kESDpid)->Fill(pid[AliPID::kPhoton]) ;
+      FillESDsData(kESDpid,pid[AliPID::kPhoton]) ;
       eTot+=clu->E() ;
       nTot++ ;
     } 
   }
-  GetESDsData(kESDNtot)->Fill(nTot) ;
-  GetESDsData(kESDEtot)->Fill(eTot) ;
+  FillESDsData(kESDNtot,nTot) ;
+  FillESDsData(kESDEtot,eTot) ;
+  //
+  IncEvCountCycleESDs();
+  IncEvCountTotalESDs();
+  //
 }
 
 //____________________________________________________________________________
@@ -422,66 +436,66 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       Double_t time   = fitter->GetTime() ;
 
       if (caloFlag == 0) { // LG
-	GetRawsData(kLGpedRMS)->Fill(fitter->GetPedestalRMS()) ;
+	FillRawsData(kLGpedRMS,fitter->GetPedestalRMS()) ;
 	switch(module){
-        case 0: GetRawsData(kLGmod0)->Fill(cellX,cellZ) ; break ;
-        case 1: GetRawsData(kLGmod1)->Fill(cellX,cellZ) ; break ;
-        case 2: GetRawsData(kLGmod2)->Fill(cellX,cellZ) ; break ;
-        case 3: GetRawsData(kLGmod3)->Fill(cellX,cellZ) ; break ;
-        case 4: GetRawsData(kLGmod4)->Fill(cellX,cellZ) ; break ;
+        case 0: FillRawsData(kLGmod0,cellX,cellZ) ; break ;
+        case 1: FillRawsData(kLGmod1,cellX,cellZ) ; break ;
+        case 2: FillRawsData(kLGmod2,cellX,cellZ) ; break ;
+        case 3: FillRawsData(kLGmod3,cellX,cellZ) ; break ;
+        case 4: FillRawsData(kLGmod4,cellX,cellZ) ; break ;
 	}
 	switch (module){
-        case 0: ((TH2F*)GetRawsData(kLGpedRMSMod0))->Fill(cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
-        case 1: ((TH2F*)GetRawsData(kLGpedRMSMod1))->Fill(cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
-        case 2: ((TH2F*)GetRawsData(kLGpedRMSMod2))->Fill(cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
-        case 3: ((TH2F*)GetRawsData(kLGpedRMSMod3))->Fill(cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
-        case 4: ((TH2F*)GetRawsData(kLGpedRMSMod4))->Fill(cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
+        case 0: FillRawsData(kLGpedRMSMod0,cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
+        case 1: FillRawsData(kLGpedRMSMod1,cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
+        case 2: FillRawsData(kLGpedRMSMod2,cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
+        case 3: FillRawsData(kLGpedRMSMod3,cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
+        case 4: FillRawsData(kLGpedRMSMod4,cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
 	}
 	//if quality was evaluated, fill histo
 	if(strcmp(GetRecoParam()->EMCFitterVersion(),"v1")==0){
 	  switch (module){
-	  case 0: ((TH2F*)GetRawsData(kLGqualMod0))->Fill(cellX,cellZ,fitter->GetSignalQuality()) ; break ;
-	  case 1: ((TH2F*)GetRawsData(kLGqualMod1))->Fill(cellX,cellZ,fitter->GetSignalQuality()) ; break ;
-	  case 2: ((TH2F*)GetRawsData(kLGqualMod2))->Fill(cellX,cellZ,fitter->GetSignalQuality()) ; break ;
-	  case 3: ((TH2F*)GetRawsData(kLGqualMod3))->Fill(cellX,cellZ,fitter->GetSignalQuality()) ; break ;
-	  case 4: ((TH2F*)GetRawsData(kLGqualMod4))->Fill(cellX,cellZ,fitter->GetSignalQuality()) ; break ;
+	  case 0: FillRawsData(kLGqualMod0,cellX,cellZ,fitter->GetSignalQuality()) ; break ;
+	  case 1: FillRawsData(kLGqualMod1,cellX,cellZ,fitter->GetSignalQuality()) ; break ;
+	  case 2: FillRawsData(kLGqualMod2,cellX,cellZ,fitter->GetSignalQuality()) ; break ;
+	  case 3: FillRawsData(kLGqualMod3,cellX,cellZ,fitter->GetSignalQuality()) ; break ;
+	  case 4: FillRawsData(kLGqualMod4,cellX,cellZ,fitter->GetSignalQuality()) ; break ;
 	  }
 	}                                  
-	GetRawsData(kNmodLG)->Fill(module) ;
-	GetRawsData(kLGtime)->Fill(time) ; 
-	GetRawsData(kSpecLG)->Fill(energy) ;    
+	FillRawsData(kNmodLG,module) ;
+	FillRawsData(kLGtime,time) ; 
+	FillRawsData(kSpecLG,energy) ;    
 	lgEtot+=energy ;
 	lgNtot++ ;   
       }
       else if (caloFlag == 1) { // HG        
-	GetRawsData(kHGpedRMS)->Fill(fitter->GetPedestalRMS()) ;
+	FillRawsData(kHGpedRMS,fitter->GetPedestalRMS()) ;
 	switch (module){
-	case 0: GetRawsData(kHGmod0)->Fill(cellX,cellZ) ; break ;
-	case 1: GetRawsData(kHGmod1)->Fill(cellX,cellZ) ; break ;
-	case 2: GetRawsData(kHGmod2)->Fill(cellX,cellZ) ; break ;
-	case 3: GetRawsData(kHGmod3)->Fill(cellX,cellZ) ; break ;
-	case 4: GetRawsData(kHGmod4)->Fill(cellX,cellZ) ; break ;
+	case 0: FillRawsData(kHGmod0,cellX,cellZ) ; break ;
+	case 1: FillRawsData(kHGmod1,cellX,cellZ) ; break ;
+	case 2: FillRawsData(kHGmod2,cellX,cellZ) ; break ;
+	case 3: FillRawsData(kHGmod3,cellX,cellZ) ; break ;
+	case 4: FillRawsData(kHGmod4,cellX,cellZ) ; break ;
 	}
 	switch (module){
-	case 0: ((TH2F*)GetRawsData(kHGpedRMSMod0))->Fill(cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
-	case 1: ((TH2F*)GetRawsData(kHGpedRMSMod1))->Fill(cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
-	case 2: ((TH2F*)GetRawsData(kHGpedRMSMod2))->Fill(cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
-	case 3: ((TH2F*)GetRawsData(kHGpedRMSMod3))->Fill(cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
-	case 4: ((TH2F*)GetRawsData(kHGpedRMSMod4))->Fill(cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
+	case 0: FillRawsData(kHGpedRMSMod0,cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
+	case 1: FillRawsData(kHGpedRMSMod1,cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
+	case 2: FillRawsData(kHGpedRMSMod2,cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
+	case 3: FillRawsData(kHGpedRMSMod3,cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
+	case 4: FillRawsData(kHGpedRMSMod4,cellX,cellZ,fitter->GetPedestalRMS()) ; break ;
 	}               
 	//if quality was evaluated, fill histo
 	if(strcmp(GetRecoParam()->EMCFitterVersion(),"v1")==0){
 	  switch (module){
-	  case 0: ((TH2F*)GetRawsData(kHGqualMod0))->Fill(cellX,cellZ,fitter->GetSignalQuality()) ; break ;
-	  case 1: ((TH2F*)GetRawsData(kHGqualMod1))->Fill(cellX,cellZ,fitter->GetSignalQuality()) ; break ;
-	  case 2: ((TH2F*)GetRawsData(kHGqualMod2))->Fill(cellX,cellZ,fitter->GetSignalQuality()) ; break ;
-	  case 3: ((TH2F*)GetRawsData(kHGqualMod3))->Fill(cellX,cellZ,fitter->GetSignalQuality()) ; break ;
-	  case 4: ((TH2F*)GetRawsData(kHGqualMod4))->Fill(cellX,cellZ,fitter->GetSignalQuality()) ; break ;
+	  case 0: FillRawsData(kHGqualMod0,cellX,cellZ,fitter->GetSignalQuality()) ; break ;
+	  case 1: FillRawsData(kHGqualMod1,cellX,cellZ,fitter->GetSignalQuality()) ; break ;
+	  case 2: FillRawsData(kHGqualMod2,cellX,cellZ,fitter->GetSignalQuality()) ; break ;
+	  case 3: FillRawsData(kHGqualMod3,cellX,cellZ,fitter->GetSignalQuality()) ; break ;
+	  case 4: FillRawsData(kHGqualMod4,cellX,cellZ,fitter->GetSignalQuality()) ; break ;
 	  }	  
 	}
-	GetRawsData(kNmodHG)->Fill(module) ; 
-	GetRawsData(kHGtime)->Fill(time) ;  
-	GetRawsData(kSpecHG)->Fill(energy) ;
+	FillRawsData(kNmodHG,module) ; 
+	FillRawsData(kHGtime,time) ;  
+	FillRawsData(kSpecHG,energy) ;
 	hgEtot+=energy ; 
 	hgNtot++ ;  
       }
@@ -489,66 +503,70 @@ void AliPHOSQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   } // End of NextDDL
   delete fitter;
 
-  GetRawsData(kEtotLG)->Fill(lgEtot) ; 
+  FillRawsData(kEtotLG,lgEtot) ; 
   TParameter<double> * p;
   p = dynamic_cast<TParameter<double>*>(GetParameterList()->
 					FindObject(Form("%s_%s_%s", GetName(), 
 							AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), 
 							GetRawsData(kEtotLG)->GetName()))) ; 
   if (p) p->SetVal(lgEtot) ; 
-  GetRawsData(kEtotHG)->Fill(hgEtot) ;  
+  FillRawsData(kEtotHG,hgEtot) ;  
   p = dynamic_cast<TParameter<double>*>(GetParameterList()->
 					FindObject(Form("%s_%s_%s", GetName(), 
 							AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), 
 							GetRawsData(kEtotHG)->GetName()))) ; 
   if (p) p->SetVal(hgEtot) ; 
-  GetRawsData(kNtotLG)->Fill(lgNtot) ;
+  FillRawsData(kNtotLG,lgNtot) ;
   p = dynamic_cast<TParameter<double>*>(GetParameterList()->
 					FindObject(Form("%s_%s_%s", GetName(), 
 							AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), 
 							GetRawsData(kNtotLG)->GetName()))) ; 
   if (p) p->SetVal(lgNtot) ; 
-  GetRawsData(kNtotHG)->Fill(hgNtot) ;
+  FillRawsData(kNtotHG,hgNtot) ;
   p = dynamic_cast<TParameter<double>*>(GetParameterList()->
 					FindObject(Form("%s_%s_%s", 
 							GetName(), AliQAv1::GetTaskName(AliQAv1::kRAWS).Data(), 
 							GetRawsData(kNtotHG)->GetName()))) ; 
   if (p) p->SetVal(hgNtot) ; 
+  //
+  IncEvCountCycleRaws();
+  IncEvCountTotalRaws();
+  //
 }
 
 //____________________________________________________________________________
 void AliPHOSQADataMakerRec::MakeDigits()
 {
   // makes data from Digits
-
-  TH1 * hist = GetDigitsData(kDigitsMul) ; 
-  if ( ! hist )
-    InitDigits() ;
-  GetDigitsData(kDigitsMul)->Fill(fDigitsArray->GetEntriesFast()) ; 
+  
+  if ( ! GetDigitsData(kDigitsMul) ) InitDigits() ;
+  FillDigitsData(kDigitsMul,fDigitsArray->GetEntriesFast()) ; 
   TIter next(fDigitsArray) ; 
   AliPHOSDigit * digit ; 
   while ( (digit = dynamic_cast<AliPHOSDigit *>(next())) ) {
-    GetDigitsData(kDigits)->Fill( digit->GetEnergy()) ;
+    FillDigitsData(kDigits, digit->GetEnergy()) ;
   }  
+  //
 }
 
 //____________________________________________________________________________
 void AliPHOSQADataMakerRec::MakeDigits(TTree * digitTree)
 {
-	// makes data from Digit Tree
-	if (fDigitsArray) 
+  // makes data from Digit Tree
+  if (fDigitsArray) 
     fDigitsArray->Clear() ; 
   else 
     fDigitsArray = new TClonesArray("AliPHOSDigit", 1000) ; 
   
-	TBranch * branch = digitTree->GetBranch("PHOS") ;
-	if ( ! branch ) {
-		AliWarning("PHOS branch in Digit Tree not found") ; 
-	} else {
-		branch->SetAddress(&fDigitsArray) ;
-		branch->GetEntry(0) ; 
-		MakeDigits() ; 
-	}
+  TBranch * branch = digitTree->GetBranch("PHOS") ;
+  if ( ! branch ) {AliWarning("PHOS branch in Digit Tree not found"); return;} 
+  branch->SetAddress(&fDigitsArray) ;
+  branch->GetEntry(0) ; 
+  MakeDigits() ; 
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+  //
 }
 
 //____________________________________________________________________________
@@ -566,25 +584,25 @@ void AliPHOSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
     emcbranch->SetAddress(&emcrecpoints);
     emcbranch->GetEntry(0);
     
-    GetRecPointsData(kRPNtot)->Fill(emcrecpoints->GetEntriesFast()) ; 
+    FillRecPointsData(kRPNtot,emcrecpoints->GetEntriesFast()) ; 
     TIter next(emcrecpoints) ; 
     AliPHOSEmcRecPoint * rp ; 
     Double_t eTot = 0. ; 
     while ( (rp = static_cast<AliPHOSEmcRecPoint *>(next())) ) {
-      GetRecPointsData(kRPSpec)->Fill( rp->GetEnergy()) ;
+      FillRecPointsData(kRPSpec, rp->GetEnergy()) ;
       Int_t mod = rp->GetPHOSMod() ;
       TVector3 pos ;
       rp->GetLocalPosition(pos) ;
       switch(mod){
-        case 1: GetRecPointsData(kRPmod1)->Fill(pos.X(),pos.Z()) ; break ;
-        case 2: GetRecPointsData(kRPmod2)->Fill(pos.X(),pos.Z()) ; break ;
-        case 3: GetRecPointsData(kRPmod3)->Fill(pos.X(),pos.Z()) ; break ;
-        case 4: GetRecPointsData(kRPmod4)->Fill(pos.X(),pos.Z()) ; break ;
-        case 5: GetRecPointsData(kRPmod5)->Fill(pos.X(),pos.Z()) ; break ;
+        case 1: FillRecPointsData(kRPmod1,pos.X(),pos.Z()) ; break ;
+        case 2: FillRecPointsData(kRPmod2,pos.X(),pos.Z()) ; break ;
+        case 3: FillRecPointsData(kRPmod3,pos.X(),pos.Z()) ; break ;
+        case 4: FillRecPointsData(kRPmod4,pos.X(),pos.Z()) ; break ;
+        case 5: FillRecPointsData(kRPmod5,pos.X(),pos.Z()) ; break ;
       }
       eTot+= rp->GetEnergy() ;
     }
-    GetRecPointsData(kRPEtot)->Fill(eTot) ;
+    FillRecPointsData(kRPEtot,eTot) ;
     emcrecpoints->Delete();
     delete emcrecpoints;
   }
@@ -598,10 +616,14 @@ void AliPHOSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
     cpvbranch->SetAddress(&cpvrecpoints);
     cpvbranch->GetEntry(0);
     
-    GetRecPointsData(kRPNcpv)->Fill(cpvrecpoints->GetEntriesFast()) ; 
+    FillRecPointsData(kRPNcpv,cpvrecpoints->GetEntriesFast()) ; 
     cpvrecpoints->Delete();
     delete cpvrecpoints;
   }
+  //
+  IncEvCountCycleRecPoints();
+  IncEvCountTotalRecPoints();
+  //
 }
 
 //____________________________________________________________________________ 

@@ -42,7 +42,6 @@ private:
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
   virtual void   StartOfDetectorCycle() ;
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** obj) ;
-  Int_t   fEvtRaw;    //!internal event counter for raw 
   TLine  *fLineDdlDatSizeLow;  // line for minimum data size limit 
   TLine  *fLineDdlDatSizeUp;   // line for maximum data size limit
   TLine  *fLineDdlPadOCcLow;   // line for minimum occupancy limit
@@ -51,7 +50,7 @@ private:
   Int_t   fChannel ; //!
     
   
-  ClassDef(AliHMPIDQADataMakerRec,3)  // description 
+  ClassDef(AliHMPIDQADataMakerRec,4)  // description 
 
 };
 

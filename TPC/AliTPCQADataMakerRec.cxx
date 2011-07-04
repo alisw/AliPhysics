@@ -147,23 +147,26 @@ AliTPCQADataMakerRec::~AliTPCQADataMakerRec()
 void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
   //Detector specific actions at end of cycle
-  
+  ResetEventTrigClasses();
+  //
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
-      continue ; 
-    if(fTPCdataQA[specie] != NULL) { // do the final step of the QA for Raw data
+    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) continue ; 
+    if (fTPCdataQA[specie] == NULL) continue;  // do the final step of the QA for Raw data
 
-      fTPCdataQA[specie]->Analyse(); // 31/1-08 Analyse is now protected against
-                           //         RAW data files with no TPC data
-
-      SetEventSpecie(AliRecoParam::ConvertIndex(specie)) ; 
-      TH1F * histRawsOccupancy                 = (TH1F*)GetRawsData(kRawsOccupancy) ;
-      TH1F * histRawsOccupancyVsSector         = (TH1F*)GetRawsData(kRawsOccupancyVsSector) ;
-      TH1F * histRawsNClustersPerEventVsSector = (TH1F*)GetRawsData(kRawsNClustersPerEventVsSector) ;
-      TH1F * histRawsQVsSector                 = (TH1F*)GetRawsData(kRawsQVsSector) ;
-      TH1F * histRawsQmaxVsSector              = (TH1F*)GetRawsData(kRawsQmaxVsSector) ;
-      TH1F * histRawsOccupancyVsEvent          = (TH1F*)GetRawsData(kRawsOccupancyVsEvent) ;
-      TH1F * histRawsNclustersVsEvent          = (TH1F*)GetRawsData(kRawsNclustersVsEvent) ;
+    fTPCdataQA[specie]->Analyse(); // 31/1-08 Analyse is now protected against
+    //         RAW data files with no TPC data
+    
+    SetEventSpecie(AliRecoParam::ConvertIndex(specie));
+    //
+    for (int itc=-1;itc<GetNTrigClasses();itc++) { // RS: loop over all trigger class clones
+      
+      TH1F * histRawsOccupancy                 = (TH1F*)GetRawsData(kRawsOccupancy, itc);
+      TH1F * histRawsOccupancyVsSector         = (TH1F*)GetRawsData(kRawsOccupancyVsSector, itc);
+      TH1F * histRawsNClustersPerEventVsSector = (TH1F*)GetRawsData(kRawsNClustersPerEventVsSector, itc);
+      TH1F * histRawsQVsSector                 = (TH1F*)GetRawsData(kRawsQVsSector, itc);
+      TH1F * histRawsQmaxVsSector              = (TH1F*)GetRawsData(kRawsQmaxVsSector, itc) ;
+      TH1F * histRawsOccupancyVsEvent          = (TH1F*)GetRawsData(kRawsOccupancyVsEvent, itc);
+      TH1F * histRawsNclustersVsEvent          = (TH1F*)GetRawsData(kRawsNclustersVsEvent, itc);
       if ( !histRawsOccupancy ||
 	   !histRawsOccupancyVsSector ||
 	   !histRawsNClustersPerEventVsSector ||
@@ -171,84 +174,83 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	   !histRawsQmaxVsSector ||
 	   !histRawsOccupancyVsEvent ||
 	   !histRawsNclustersVsEvent ) {
-        AliError("Something very wrong here, corrupted memory ?????. Please check\n") ; 
-        continue ; 
+	AliError("Something very wrong here, corrupted memory ?????. Please check\n") ; 
+	continue ; 
       }
-        
+      
       //Add2RawsList(fTPCdataQA, 0);
       // get the histograms and add them to the output
       // 31/8-08 Histogram is only added if the Calibration class 
       //         receives TPC data 
-      const Int_t eventCounter = fTPCdataQA[specie]->GetEventCounter();
+      const Int_t eventCounter = fTPCdataQA[specie]->GetEventCounter(); // RS : to change
       if(eventCounter>0) { // some TPC data has been processed
-
-        // Reset histograms and refill them 
-        histRawsOccupancy->Reset();
-        histRawsOccupancyVsSector->Reset();
-        histRawsNClustersPerEventVsSector->Reset();
-        histRawsQVsSector->Reset();
-        histRawsQmaxVsSector->Reset();
-      
-        TH1F* hNormOcc = new TH1F("hNormOcc", 0, 72, 0, 72);
-        hNormOcc->Sumw2();
-        TH1F* hNormNclusters = new TH1F("hNormNclusters", 0, 72, 0, 72);
-        hNormNclusters->Sumw2();
-
-        for (Int_t iSec = 0; iSec < 72; iSec++) {
 	
-          AliTPCCalROC* occupancyROC = 
-          fTPCdataQA[specie]->GetNoThreshold()->GetCalROC(iSec); 
-          AliTPCCalROC* nclusterROC = 
-          fTPCdataQA[specie]->GetNLocalMaxima()->GetCalROC(iSec); 
-          AliTPCCalROC* qROC = 
-          fTPCdataQA[specie]->GetMeanCharge()->GetCalROC(iSec); 
-          AliTPCCalROC* qmaxROC = 
-          fTPCdataQA[specie]->GetMaxCharge()->GetCalROC(iSec); 
-
-          const Int_t nRows = occupancyROC->GetNrows(); 
-          for (Int_t iRow = 0; iRow < nRows; iRow++) {
-
-            const Int_t nPads = occupancyROC->GetNPads(iRow); 
-            for (Int_t iPad = 0; iPad < nPads; iPad++) {
+	// Reset histograms and refill them 
+	histRawsOccupancy->Reset();
+	histRawsOccupancyVsSector->Reset();
+	histRawsNClustersPerEventVsSector->Reset();
+	histRawsQVsSector->Reset();
+	histRawsQmaxVsSector->Reset();
+	
+	TH1F* hNormOcc = new TH1F("hNormOcc", 0, 72, 0, 72);
+	hNormOcc->Sumw2();
+	TH1F* hNormNclusters = new TH1F("hNormNclusters", 0, 72, 0, 72);
+	hNormNclusters->Sumw2();
+	
+	for (Int_t iSec = 0; iSec < 72; iSec++) {
+	  
+	  AliTPCCalROC* occupancyROC = 
+	    fTPCdataQA[specie]->GetNoThreshold()->GetCalROC(iSec); 
+	  AliTPCCalROC* nclusterROC = 
+	    fTPCdataQA[specie]->GetNLocalMaxima()->GetCalROC(iSec); 
+	  AliTPCCalROC* qROC = 
+	    fTPCdataQA[specie]->GetMeanCharge()->GetCalROC(iSec); 
+	  AliTPCCalROC* qmaxROC = 
+	    fTPCdataQA[specie]->GetMaxCharge()->GetCalROC(iSec); 
+	  
+	  const Int_t nRows = occupancyROC->GetNrows(); 
+	  for (Int_t iRow = 0; iRow < nRows; iRow++) {
+	    
+	    const Int_t nPads = occupancyROC->GetNPads(iRow); 
+	    for (Int_t iPad = 0; iPad < nPads; iPad++) {
 	      
-              histRawsOccupancy->Fill(occupancyROC->GetValue(iRow, iPad));
-              hNormOcc->Fill(iSec);
-              histRawsOccupancyVsSector
-		->Fill(iSec, occupancyROC->GetValue(iRow, iPad));
+	      histRawsOccupancy->Fill(occupancyROC->GetValue(iRow, iPad));
+	      hNormOcc->Fill(iSec);
+	      histRawsOccupancyVsSector->Fill(iSec, occupancyROC->GetValue(iRow, iPad));
 	      
-              const Int_t nClusters = TMath::Nint(nclusterROC->GetValue(iRow, iPad));
+	      const Int_t nClusters = TMath::Nint(nclusterROC->GetValue(iRow, iPad));
 	      
-              if(nClusters>0) {
+	      if(nClusters>0) {
 		
 		hNormNclusters->Fill(iSec,nClusters);
-                histRawsNClustersPerEventVsSector->Fill(iSec, nClusters);
-                histRawsQVsSector->Fill(iSec, 
+		histRawsNClustersPerEventVsSector->Fill(iSec, nClusters);
+		histRawsQVsSector->Fill(iSec, 
 					nClusters*qROC->GetValue(iRow, iPad));
-                histRawsQmaxVsSector->Fill(iSec, 
+		histRawsQmaxVsSector->Fill(iSec, 
 					   nClusters*qmaxROC->GetValue(iRow, iPad));
-              }
-            }
-          }
-        } // end loop over sectors
-      
-	// update event histograms - copy info from TPDdataQA histos
+	      }
+	    }
+	  }
+	} // end loop over sectors
+	
+	  // update event histograms - copy info from TPDdataQA histos
 	const TH1F* hQAOccVsEvent = fTPCdataQA[specie]->GetHistOccupancyVsEvent();
 	const TH1F* hQANclVsEvent = fTPCdataQA[specie]->GetHistNclustersVsEvent();
 	
 	// In case the histogram limits have changed we have to update
 	// them here
- 	if(histRawsOccupancy->GetXaxis()->GetXmax()!=
- 	   hQAOccVsEvent->GetXaxis()->GetXmax()) {
+	if(histRawsOccupancy->GetXaxis()->GetXmax()!=
+	   hQAOccVsEvent->GetXaxis()->GetXmax()) {
 	  
 	  histRawsOccupancyVsEvent->GetXaxis()->Set(histRawsOccupancyVsEvent->GetXaxis()->GetNbins(), hQAOccVsEvent->GetXaxis()->GetXmin(), hQAOccVsEvent->GetXaxis()->GetXmax()); 
 	  
 	  histRawsNclustersVsEvent->GetXaxis()->Set(histRawsOccupancyVsEvent->GetXaxis()->GetNbins(), hQANclVsEvent->GetXaxis()->GetXmin(), hQANclVsEvent->GetXaxis()->GetXmax()); 
- 	}
+	}
 	
 	// reset the number of entries
 	histRawsOccupancyVsEvent->SetEntries(0);
 	histRawsNclustersVsEvent->SetEntries(0);
-
+	
 	// the two event histograms should have the same number of bins
 	const Int_t nBins = hQAOccVsEvent->GetXaxis()->GetNbins();
 	for(Int_t bin = 1; bin <= nBins; bin++) {
@@ -257,17 +259,18 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	  histRawsNclustersVsEvent->SetBinContent(bin, hQANclVsEvent->GetBinContent(bin));
 	}
 	
-        // Normalize histograms
-        histRawsOccupancyVsSector->Divide(hNormOcc);
-        histRawsNClustersPerEventVsSector->Scale(1.0/Float_t(eventCounter));
-        histRawsQVsSector->Divide(hNormNclusters);
-        histRawsQmaxVsSector->Divide(hNormNclusters);
-        delete hNormOcc;
-        delete hNormNclusters;
+	// Normalize histograms
+	histRawsOccupancyVsSector->Divide(hNormOcc);
+	histRawsNClustersPerEventVsSector->Scale(1.0/Float_t(eventCounter));
+	histRawsQVsSector->Divide(hNormNclusters);
+	histRawsQmaxVsSector->Divide(hNormNclusters);
+	delete hNormOcc;
+	delete hNormNclusters;
 	
-      }
-    }
-  }
+      } // 
+    } // RS: loop over all trigger class clones
+  } // loop over species
+  //
   AliQAChecker::Instance()->Run(AliQAv1::kTPC, task, list) ;  
 }
 
@@ -296,6 +299,8 @@ void AliTPCQADataMakerRec::InitESDs()
 	     50, 0, 5);
   histESDpt->Sumw2();
   Add2ESDsList(histESDpt, kPt, !expert, image);
+  //
+  ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -377,6 +382,8 @@ void AliTPCQADataMakerRec::InitRaws()
   TH1F * histRawsNclustersVsEvent = 
     CreateEventsHistCopy(hNclHelp, "hRawsNclustersVsEvent");
   Add2RawsList(histRawsNclustersVsEvent, kRawsNclustersVsEvent, expert, !image, !saveCorr);
+  //
+  ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -389,6 +396,8 @@ void AliTPCQADataMakerRec::InitDigits()
              1000, 0, 1000);
   histDigitsADC->Sumw2();
   Add2DigitsList(histDigitsADC, kDigitsADC, !expert, image);
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -438,6 +447,8 @@ void AliTPCQADataMakerRec::InitRecPoints()
 	     159, 0, 159);
   histRecPointsRow->Sumw2();
   Add2RecPointsList(histRecPointsRow, kRow, !expert, image);
+  //
+  ClonePerTrigClass(AliQAv1::kRECPOINTS); // this should be the last line
 }
 
 //____________________________________________________________________________
@@ -459,10 +470,14 @@ void AliTPCQADataMakerRec::MakeESDs(AliESDEvent * esd)
     Int_t nTPCclusters         = track->GetTPCNcls();
     Int_t nTPCclustersFindable = track->GetTPCNclsF();
     if ( nTPCclustersFindable<=0) continue;
-    GetESDsData(KClusters)->Fill(nTPCclusters);
-    GetESDsData(kRatio)->Fill(Float_t(nTPCclusters)/Float_t(nTPCclustersFindable));
-    GetESDsData(kPt)->Fill(track->Pt()); 
+    FillESDsData(KClusters,nTPCclusters);
+    FillESDsData(kRatio,Float_t(nTPCclusters)/Float_t(nTPCclustersFindable));
+    FillESDsData(kPt,track->Pt()); 
   }
+  //
+  IncEvCountCycleESDs();
+  IncEvCountTotalESDs();
+  //
 }
 
 //____________________________________________________________________________
@@ -477,9 +492,14 @@ void AliTPCQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   rawReader->Reset() ; 
   if (! fTPCdataQA[AliRecoParam::AConvert(fEventSpecie)] ) {
     AliError("Something unexpected here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!") ; 
-  } else {  
-    fTPCdataQA[AliRecoParam::AConvert(fEventSpecie)]->ProcessEvent(rawReader);  
+    return;
   }
+  
+  fTPCdataQA[AliRecoParam::AConvert(fEventSpecie)]->ProcessEvent(rawReader);  
+  //
+  IncEvCountCycleRaws();
+  IncEvCountTotalRaws();
+  //
 }
 
 //____________________________________________________________________________
@@ -500,9 +520,13 @@ void AliTPCQADataMakerRec::MakeDigits(TTree* digitTree)
       do {
         Float_t dig = digArray->CurrentDigit();
         
-        GetDigitsData(kDigitsADC)->Fill(dig);
+        FillDigitsData(kDigitsADC,dig);
       } while (digArray->Next());    
   }
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+  //
 }
 
 //____________________________________________________________________________
@@ -535,24 +559,28 @@ void AliTPCQADataMakerRec::MakeRecPoints(TTree* recTree)
 
       if(cluster->GetDetector()<36) { // IROC (short pads)
 
-	GetRecPointsData(kQmaxShort)->Fill(Qmax);
-	GetRecPointsData(kQShort)->Fill(Q);
+	FillRecPointsData(kQmaxShort,Qmax);
+	FillRecPointsData(kQShort,Q);
       } else { // OROC (medium and long pads)
 	row += 63;
 	if(cluster->GetRow()<64) { // medium pads
 
-	  GetRecPointsData(kQmaxMedium)->Fill(Qmax);
-	  GetRecPointsData(kQMedium)->Fill(Q);
+	  FillRecPointsData(kQmaxMedium,Qmax);
+	  FillRecPointsData(kQMedium,Q);
 	} else { // long pads
 
-	  GetRecPointsData(kQmaxLong)->Fill(Qmax);
-	  GetRecPointsData(kQLong)->Fill(Q);
+	  FillRecPointsData(kQmaxLong,Qmax);
+	  FillRecPointsData(kQLong,Q);
 	}
       }
       
-      GetRecPointsData(kRow)->Fill(row);
+      FillRecPointsData(kRow,row);
     } // end loop over clusters
   } // end loop over tree
+  //
+  IncEvCountCycleRecPoints();
+  IncEvCountTotalRecPoints();
+  //
 }
 
 //____________________________________________________________________________

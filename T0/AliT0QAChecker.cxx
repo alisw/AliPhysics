@@ -105,20 +105,18 @@ void AliT0QAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArray
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     //  TString dataType = AliQAv1::GetAliTaskName(index);
-    if (list[specie]->GetEntries() == 0){
+    if (!(AliQAv1::Instance()->IsEventSpecieSet(specie) && list[specie]) || list[specie]->GetEntries() == 0) {
       test[specie] = 1. ; // nothing to check
+      continue;
     }
-    else {
-      if (index == AliQAv1::kRAW && AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib)
-       //      if (index == AliQAv1::kRAW )
-	{
-	  test[specie] = CheckRaw(list[specie]);
-	}
-      
-       if (index == AliQAv1::kESD && AliRecoParam::Convert(specie) != AliRecoParam::kCalib)
-	  test[specie] = CheckESD(list[specie]);
-    }
-  
+    if (index == AliQAv1::kRAW && AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib)
+      //      if (index == AliQAv1::kRAW )
+      {
+	test[specie] = CheckRaw(list[specie]);
+      }
+    if (index == AliQAv1::kESD && AliRecoParam::Convert(specie) != AliRecoParam::kCalib)
+      test[specie] = CheckESD(list[specie]);
+    //
   }
 }
 

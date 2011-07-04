@@ -340,3 +340,18 @@ void AliQADataMakerSim::StartOfCycle(AliQAv1::TASKINDEX_t task, Int_t run, const
 //   }   
 	StartOfDetectorCycle() ; 
 }
+
+
+//____________________________________________________________________________
+void AliQADataMakerSim::ClonePerTrigClass(AliQAv1::TASKINDEX_t task)
+{
+  // clone the histos of the array corresponding to task
+  switch (task) 
+    {
+    case AliQAv1::kHITS      : ClonePerTrigClassL(fHitsQAList, task);      break;
+    case AliQAv1::kSDIGITS   : ClonePerTrigClassL(fSDigitsQAList, task);   break;
+    case AliQAv1::kDIGITS    : ClonePerTrigClassL(fDigitsQAList, task);    break;
+    default : AliError(Form("Task %s is invalid in this context", AliQAv1::GetTaskName(task).Data() )); break;
+    }
+  //
+}

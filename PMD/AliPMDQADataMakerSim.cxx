@@ -88,6 +88,8 @@ void AliPMDQADataMakerSim::InitHits()
   TH1I *h3 = new TH1I("hCpvHitsMult","Hits multiplicity distribution in PRE(PMD);# of Hits;Entries", 500, 0, 3000) ; 
   h2->Sumw2() ;
   Add2HitsList(h3, 3, !expert, image) ;
+  //
+  ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -112,7 +114,8 @@ void AliPMDQADataMakerSim::InitSDigits()
   TH1I *h3 = new TH1I("hCpvSDigitsMult","SDigits multiplicity distribution in CPV(PMD);# of SDigits;Entries", 500, 0., 1000.);
   h3->Sumw2();
   Add2SDigitsList(h3, 3, !expert, image);
-  
+  //
+  ClonePerTrigClass(AliQAv1::kSDIGITS); // this should be the last line  
 }
 
 //____________________________________________________________________________
@@ -137,7 +140,8 @@ void AliPMDQADataMakerSim::InitDigits()
   TH1I *h3 = new TH1I("hCpvDigitsMult","Digits multiplicity distribution in CPV(PMD);# of Digits;Entries", 500, 0, 1000);
   h3->Sumw2();
   Add2DigitsList(h3, 3, !expert, image);
-  
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line  
 }
 
 //____________________________________________________________________________ 
@@ -155,33 +159,33 @@ void AliPMDQADataMakerSim::MakeHits()
       if (hit->Z() > 361.5)
 	{
 	  edepkev = (hit->GetEnergy())/1000.;
-	  GetHitsData(0)->Fill(edepkev);
+	  FillHitsData(0,edepkev);
 	  premul++;
 	}
       else if (hit->Z() < 361.5)
 	{
 	  edepkev = (hit->GetEnergy())/1000.;
-	  GetHitsData(1)->Fill(edepkev);
+	  FillHitsData(1,edepkev);
 	  cpvmul++;
 	}
     }
   
   if(premul <= 0)
     {
-      GetHitsData(2)->Fill(-1.); 
+      FillHitsData(2,-1.); 
     }
   else
     {
-      GetHitsData(2)->Fill(premul); 
+      FillHitsData(2,premul); 
     }
   
   if(cpvmul <= 0)
     {
-      GetHitsData(3)->Fill(-1.); 
+      FillHitsData(3,-1.); 
     }
   else
     {
-      GetHitsData(3)->Fill(cpvmul); 
+      FillHitsData(3,cpvmul); 
     }
   
 }
@@ -210,6 +214,10 @@ void AliPMDQADataMakerSim::MakeHits(TTree * hitTree)
     MakeHits();
     fHitsArray->Clear() ; 
   } 	
+  //
+  IncEvCountCycleHits();
+  IncEvCountTotalHits();
+  //
 }
 //____________________________________________________________________________
 void AliPMDQADataMakerSim::MakeSDigits()
@@ -226,19 +234,19 @@ void AliPMDQADataMakerSim::MakeSDigits()
       if(sdigit->GetDetector() == 0)
 	{
 	  edepkev = (sdigit->GetCellEdep())/1000.;
-	  GetSDigitsData(0)->Fill(edepkev);
+	  FillSDigitsData(0,edepkev);
 	  premul++;
 	}
       if(sdigit->GetDetector() == 1)
 	{
 	  edepkev = (sdigit->GetCellEdep())/1000.;
-	  GetSDigitsData(1)->Fill(edepkev);
+	  FillSDigitsData(1,edepkev);
 	  cpvmul++;
 	}
 	
     } 
-  if (premul > 0) GetSDigitsData(2)->Fill(premul);
-  if (cpvmul > 0) GetSDigitsData(3)->Fill(cpvmul);
+  if (premul > 0) FillSDigitsData(2,premul);
+  if (cpvmul > 0) FillSDigitsData(3,cpvmul);
   
 }
 
@@ -263,6 +271,10 @@ void AliPMDQADataMakerSim::MakeSDigits(TTree * sdigitTree)
       branch->GetEntry(0) ;
       MakeSDigits() ; 
     }
+  //
+  IncEvCountCycleSDigits();
+  IncEvCountTotalSDigits();
+  //
 }
 
 //____________________________________________________________________________
@@ -278,18 +290,18 @@ void AliPMDQADataMakerSim::MakeDigits()
     {
       if(digit->GetDetector() == 0)
 	{
-	  GetDigitsData(0)->Fill( digit->GetADC()) ;
+	  FillDigitsData(0, digit->GetADC()) ;
 	  premul++;
 	}
       if(digit->GetDetector() == 1)
 	{
-	  GetDigitsData(1)->Fill( digit->GetADC());
+	  FillDigitsData(1, digit->GetADC());
 	  cpvmul++;
 	}
     }  
   
-  if (premul > 0) GetDigitsData(2)->Fill(premul);
-  if (cpvmul > 0) GetDigitsData(3)->Fill(cpvmul);
+  if (premul > 0) FillDigitsData(2,premul);
+  if (cpvmul > 0) FillDigitsData(3,cpvmul);
   
   
 }
@@ -322,6 +334,10 @@ void AliPMDQADataMakerSim::MakeDigits(TTree * digitTree)
 	}
       
     }
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
+  //
 }
 
 

@@ -84,6 +84,8 @@ void AliHMPIDQADataMakerSim::InitHits()
     hHitMap[iCh]=new TH2F(Form("HMPID HitMap%i",iCh),Form("Ch%i;x_{Hit};y_{Hit};Entries",iCh),162,-1,161,146,-1,145);   
     Add2HitsList(hHitMap[iCh],iCh+1,expert,!image);
   }
+  //
+  ClonePerTrigClass(AliQAv1::kHITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -108,6 +110,8 @@ void AliHMPIDQADataMakerSim::InitDigits()
   Add2DigitsList(hDigPcEvt,1,expert, !image);
   for(Int_t iMap=0; iMap < 7; iMap++) Add2DigitsList(hDigMap[iMap],2+iMap,expert, !image);
   for(Int_t iH =0; iH < 42 ; iH++) Add2DigitsList(hDigQ[iH]    ,9+iH,expert,!image);
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -119,6 +123,8 @@ void AliHMPIDQADataMakerSim::InitSDigits()
 
   TH1F   *hSDigits     = new TH1F("hHmpidSDigits",    "SDigits Q  distribution in HMPID;QDC;Entries",  500, 0., 5000.) ; 
   Add2SDigitsList(hSDigits,0, !expert, image);
+  //
+  ClonePerTrigClass(AliQAv1::kSDIGITS); // this should be the last line}
 }
 
 //____________________________________________________________________________ 
@@ -132,8 +138,8 @@ void AliHMPIDQADataMakerSim::MakeHits()
   TIter next(fHitsArray); 
   AliHMPIDHit * hit ; 
   while ( (hit = dynamic_cast<AliHMPIDHit *>(next())) ) {
-    if(hit->Pid()<500000) GetHitsData(0)->Fill(hit->Q()) ;
-    if(hit->Pid()<500000) GetHitsData(hit->Ch()+1)->Fill(hit->LorsX(),hit->LorsY());
+    if(hit->Pid()<500000) FillHitsData(0,hit->Q()) ;
+    if(hit->Pid()<500000) FillHitsData(hit->Ch()+1,hit->LorsX(),hit->LorsY());
   }
 } 
 
@@ -161,13 +167,13 @@ void AliHMPIDQADataMakerSim::MakeDigits()
   //
    
   Int_t i = fChannel ; 
-  GetDigitsData(0)->Fill(i,fDigitsArray->GetEntriesFast()/(48.*80.*6.));
+  FillDigitsData(0,i,fDigitsArray->GetEntriesFast()/(48.*80.*6.));
   TIter next(fDigitsArray); 
   AliHMPIDDigit * digit; 
   while ( (digit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
-    GetDigitsData(1)->Fill(10.*i+digit->Pc(),1./(48.*80.));
-    GetDigitsData(2+i)->Fill(digit->PadChX(),digit->PadChY());
-    GetDigitsData(9+i*6+digit->Pc())->Fill(digit->Q());
+    FillDigitsData(1,10.*i+digit->Pc(),1./(48.*80.));
+    FillDigitsData(2+i,digit->PadChX(),digit->PadChY());
+    FillDigitsData(9+i*6+digit->Pc(),digit->Q());
   }  
 }  
 //___________________________________________________________________________
@@ -202,7 +208,7 @@ void AliHMPIDQADataMakerSim::MakeSDigits()
   TIter next(fSDigitsArray) ; 
   AliHMPIDDigit * sdigit ; 
   while ( (sdigit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
-    GetSDigitsData(0)->Fill(sdigit->Q());
+    FillSDigitsData(0,sdigit->Q());
   } 
 }
 //___________________________________________________________________________
@@ -236,6 +242,7 @@ void AliHMPIDQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
 {
   //Detector specific actions at end of cycle
   // do the QA checking
+  ResetEventTrigClasses(); // reset triggers list to select all histos
   AliQAChecker::Instance()->Run(AliQAv1::kHMPID, task, obj) ;  
 }
 

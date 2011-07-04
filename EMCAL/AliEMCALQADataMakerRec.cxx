@@ -186,6 +186,7 @@ void AliEMCALQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjA
 //	  GetRawsData(kNEventsPerTower)->Scale(1./fCycleCounter);
 
   // do the QA checking
+  ResetEventTrigClasses(); // reset triggers list to select all histos
   AliQAChecker::Instance()->Run(AliQAv1::kEMCAL, task, list) ;  
 }
 
@@ -264,7 +265,8 @@ void AliEMCALQADataMakerRec::InitESDs()
   TH1I * h4 = new TH1I("hESDCaloCellM", "ESDs CaloCell multiplicity in EMCAL;# of Clusters;Entries", 200, 0,  1000) ; 
   h4->Sumw2() ;
   Add2ESDsList(h4, kESDCaloCellM, !expert, image) ;
-	
+  //
+  ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line	
 }
 
 //____________________________________________________________________________ 
@@ -280,6 +282,8 @@ void AliEMCALQADataMakerRec::InitDigits()
   TH1I * h1 = new TH1I("hEmcalDigitsMul", "Digits multiplicity distribution in EMCAL;# of Digits;Entries", 200, 0, 2000) ; 
   h1->Sumw2() ;
   Add2DigitsList(h1, 1, !expert, image) ;
+  //
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -300,7 +304,8 @@ void AliEMCALQADataMakerRec::InitRecPoints()
   TH1I* h2 = new TH1I("hEMCALRpDigM","EMCAL RecPoint Digit Multiplicities;# of Digits;Entries",20,0,20);
   h2->Sumw2();
   Add2RecPointsList(h2,kRecPDigM, !expert, image);
-
+  //
+  ClonePerTrigClass(AliQAv1::kRECPOINTS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -379,7 +384,7 @@ void AliEMCALQADataMakerRec::InitRaws()
   h15->SetDirectory(0);
   Add2RawsList(h15, k2DRatioAmp, !expert, image, !saveCorr) ;
 
-	TH1F * h16 = new TH1F("hRatioDist", "Amplitude_{current run}/Amplitude_{reference run} ratio distribution", nTot, 0., 2.);
+  TH1F * h16 = new TH1F("hRatioDist", "Amplitude_{current run}/Amplitude_{reference run} ratio distribution", nTot, 0., 2.);
   h16->SetMinimum(0.1); 
   h16->SetMaximum(100.);
   gStyle->SetOptStat(0);
@@ -489,6 +494,8 @@ void AliEMCALQADataMakerRec::InitRaws()
   Add2RawsList(hL11, kLEDMonRatioDist, !expert, image, !saveCorr) ;
   
   GetCalibRefFromOCDB();   
+  //
+  ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
 
 //____________________________________________________________________________
@@ -500,26 +507,29 @@ void AliEMCALQADataMakerRec::MakeESDs(AliESDEvent * esd)
   for ( Int_t index = 0; index < esd->GetNumberOfCaloClusters() ; index++ ) {
     AliESDCaloCluster * clu = esd->GetCaloCluster(index) ;
     if( clu->IsEMCAL() ) {
-      GetESDsData(kESDCaloClusE)->Fill(clu->E()) ;
+      FillESDsData(kESDCaloClusE,clu->E()) ;
       nTot++ ;
     } 
   }
-  GetESDsData(kESDCaloClusM)->Fill(nTot) ;
+  FillESDsData(kESDCaloClusM,nTot) ;
 
   //fill calo cells
   AliESDCaloCells* cells = esd->GetEMCALCells();
-  GetESDsData(kESDCaloCellM)->Fill(cells->GetNumberOfCells()) ;
+  FillESDsData(kESDCaloCellM,cells->GetNumberOfCells()) ;
 
   for ( Int_t index = 0; index < cells->GetNumberOfCells() ; index++ ) {
-    GetESDsData(kESDCaloCellA)->Fill(cells->GetAmplitude(index)) ;
+    FillESDsData(kESDCaloCellA,cells->GetAmplitude(index)) ;
   }
-
+  //
+  IncEvCountCycleESDs();
+  IncEvCountTotalESDs();
 }
 
 //____________________________________________________________________________
 void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
- // Check that all the reference histograms exist before we try to use them - otherwise call InitRaws
+  // Check that all the reference histograms exist before we try to use them - otherwise call InitRaws
+  // RS: Attention: the counters are increments after custom modification of eventSpecie
   if (!fCalibRefHistoPro || !fCalibRefHistoH2F || !fLEDMonRefHistoPro || !fHighEmcHistoH2F) {
     InitRaws();
   }
@@ -540,7 +550,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   if (rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent) { 
     SetEventSpecie(AliRecoParam::kCalib) ;
   }
- 
+  
   const Int_t nTowersPerSM = AliEMCALGeoParams::fgkEMCALRows * AliEMCALGeoParams::fgkEMCALCols; // number of towers in a SuperModule; 24x48
   const Int_t nRows        = AliEMCALGeoParams::fgkEMCALRows; // number of rows per SuperModule
   const Int_t nStripsPerSM = AliEMCALGeoParams::fgkEMCALLEDRefs; // number of strips per SuperModule
@@ -641,8 +651,8 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		  if(iTRUIdInSM < n2x2PerTRU) {
 		    Int_t iTRUAbsId = iTRUIdInSM + n2x2PerTRU * iTRUId;
 		    // Fill the histograms
-		    GetRawsData(kNL0TRU)->Fill(iTRUAbsId);
-		    GetRawsData(kTimeL0TRU)->Fill(iTRUAbsId, startBin);
+		    FillRawsData(kNL0TRU,iTRUAbsId);
+		    FillRawsData(kTimeL0TRU,iTRUAbsId, startBin);
 		  }
 		}
 	      }
@@ -656,24 +666,24 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	    if ( in.IsLowGain() ) { 
 	      nTotalSMLG[iSM]++; 
 	      if ( (amp > fMinSignalLG) && (amp < fMaxSignalLG) ) { 
-		GetRawsData(kSigLG)->Fill(towerId, amp);
-		GetRawsData(kTimeLG)->Fill(towerId, time);
+		FillRawsData(kSigLG,towerId, amp);
+		FillRawsData(kTimeLG,towerId, time);
 	      }
 	      if (nPed > 0) {
 		for (Int_t i=0; i<nPed; i++) {
-		  GetRawsData(kPedLG)->Fill(towerId, pedSamples[i]);
+		  FillRawsData(kPedLG,towerId, pedSamples[i]);
 		}
 	      }
 	    } // gain==0
 	    else if ( in.IsHighGain() ) {       	
 	      nTotalSMHG[iSM]++; 
 	      if ( (amp > fMinSignalHG) && (amp < fMaxSignalHG) ) { 
-		GetRawsData(kSigHG)->Fill(towerId, amp);
-		GetRawsData(kTimeHG)->Fill(towerId, time);
+		FillRawsData(kSigHG,towerId, amp);
+		FillRawsData(kTimeHG,towerId, time);
 	      } 
 	      if (nPed > 0) {
 		for (Int_t i=0; i<nPed; i++) {
-		  GetRawsData(kPedHG)->Fill(towerId, pedSamples[i]);
+		  FillRawsData(kPedHG,towerId, pedSamples[i]);
 		}
 	      }
 	    } // gain==1
@@ -686,12 +696,12 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	      + in.GetColumn();
 	    nTotalSMTRU[iSM]++; 
 	    if ( (amp > fMinSignalTRU) && (amp < fMaxSignalTRU) ) { 
-	      GetRawsData(kSigTRU)->Fill(iTRU2x2Id, amp);
-	      GetRawsData(kTimeTRU)->Fill(iTRU2x2Id, time);
+	      FillRawsData(kSigTRU,iTRU2x2Id, amp);
+	      FillRawsData(kTimeTRU,iTRU2x2Id, time);
 	    }
 	    if (nPed > 0) {
 	      for (Int_t i=0; i<nPed; i++) {
-		GetRawsData(kPedTRU)->Fill(iTRU2x2Id, pedSamples[i]);
+		FillRawsData(kPedTRU,iTRU2x2Id, pedSamples[i]);
 	      }
 	    }
 	  }
@@ -705,24 +715,24 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	    if ( gain == 0 ) { 
 	      nTotalSMLGLEDMon[iSM]++; 
 	      if ( (amp > fMinSignalLGLEDMon) && (amp < fMaxSignalLGLEDMon) ) { 
-		GetRawsData(kSigLGLEDMon)->Fill(stripId, amp);
-		GetRawsData(kTimeLGLEDMon)->Fill(stripId, time);
+		FillRawsData(kSigLGLEDMon,stripId, amp);
+		FillRawsData(kTimeLGLEDMon,stripId, time);
 	      }
 	      if (nPed > 0) {
 		for (Int_t i=0; i<nPed; i++) {
-		  GetRawsData(kPedLGLEDMon)->Fill(stripId, pedSamples[i]);
+		  FillRawsData(kPedLGLEDMon,stripId, pedSamples[i]);
 		}
 	      }
 	    } // gain==0
 	    else if ( gain == 1 ) {       	
 	      nTotalSMHGLEDMon[iSM]++; 
 	      if ( (amp > fMinSignalHGLEDMon) && (amp < fMaxSignalHGLEDMon) ) { 
-		GetRawsData(kSigHGLEDMon)->Fill(stripId, amp);
-		GetRawsData(kTimeHGLEDMon)->Fill(stripId, time);
+		FillRawsData(kSigHGLEDMon,stripId, amp);
+		FillRawsData(kTimeHGLEDMon,stripId, time);
 	      }
 	      if (nPed > 0) {
 		for (Int_t i=0; i<nPed; i++) {
-		  GetRawsData(kPedHGLEDMon)->Fill(stripId, pedSamples[i]);
+		  FillRawsData(kPedHGLEDMon,stripId, pedSamples[i]);
 		}
 	      }
 	    } // low or high gain
@@ -735,58 +745,70 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
    
   }//end while over DDL's, of input stream 
 
- // TProfile * p = dynamic_cast<TProfile *>(GetRawsData(kSigHG)) ;
-  ConvertProfile2H(dynamic_cast<TProfile *>(GetRawsData(kSigHG)), fHighEmcHistoH2F) ;  
-  Double_t binContent = 0. ;
-  
   
   //calculate the ratio of the amplitude and fill the histograms, only if the events type is Calib
- if (rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent) {
-		//reset ratio histograms
-		GetRawsData(k2DRatioAmp)->Reset("ICE"); 
-		GetRawsData(kRatioDist)->Reset("ICE"); 
-		GetRawsData(kLEDMonRatio)->Reset("ICE");	
-		GetRawsData(kLEDMonRatioDist)->Reset("ICE");
-		GetRawsData(k2DRatioAmp)->ResetStats(); 
-		GetRawsData(kRatioDist)->ResetStats();
-		GetRawsData(kLEDMonRatio)->ResetStats();
-		GetRawsData(kLEDMonRatioDist)->ResetStats();
-
-    for(Int_t ix = 1; ix <= fHighEmcHistoH2F->GetNbinsX(); ix++) {
-     for(Int_t iy = 1; iy <= fHighEmcHistoH2F->GetNbinsY(); iy++) {
-       if(fCalibRefHistoH2F->GetBinContent(ix, iy))binContent = fHighEmcHistoH2F->GetBinContent(ix, iy)/fCalibRefHistoH2F->GetBinContent(ix, iy) ;
-        GetRawsData(k2DRatioAmp)->SetBinContent(ix, iy, binContent);
-        GetRawsData(kRatioDist)->Fill(GetRawsData(k2DRatioAmp)->GetBinContent(ix, iy));
+  // RS: operation on the group of histos kSigHG,k2DRatioAmp,kRatioDist,kLEDMonRatio,kLEDMonRatio,kSigLGLEDMon
+  const int hGrp[] = {kSigHG,k2DRatioAmp,kRatioDist,kLEDMonRatio,kLEDMonRatio,kSigLGLEDMon};
+  if ( rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent &&
+       CheckCloningConsistency(fRawsQAList, hGrp, sizeof(hGrp)/sizeof(int)) ) {  // RS converting original code to loop over all matching triggers
+    int nTrig =IsClonedPerTrigClass(kSigHG,fRawsQAList) ? GetNEventTrigClasses() : 0; // loop over triggers only if histos were cloned
+    //
+    for (int itr=-1;itr<nTrig;itr++) { // start from -1 to acknowledge original histos if they were kept
+      TObjArray* trArr = GetMatchingRawsHistosSet(hGrp, sizeof(hGrp)/sizeof(int) ,itr);
+      if (!trArr) continue;  // no histos for current trigger
+      //
+      Double_t binContent = 0.;
+      TProfile* prSigHG      = (TProfile *)trArr->At(0); //kSigHG
+      TH1* th2DRatioAmp      = (TH1*) trArr->At(1); //k2DRatioAmp
+      TH1* thRatioDist       = (TH1*) trArr->At(2); //kRatioDist
+      TH1* thLEDMonRatio     = (TH1*) trArr->At(3); //kLEDMonRatio
+      TH1* thLEDMonRatioDist = (TH1*) trArr->At(4); //kLEDMonRatio
+      TH1* hSigLGLEDMon      = (TH1*) trArr->At(5); //kSigLGLEDMon
+      th2DRatioAmp->Reset("ICE");
+      thRatioDist->Reset("ICE");
+      thLEDMonRatio->Reset("ICE");
+      thLEDMonRatioDist->Reset("ICE");
+      th2DRatioAmp->ResetStats();
+      thRatioDist->ResetStats();
+      thLEDMonRatio->ResetStats();
+      thLEDMonRatioDist->ResetStats();
+      ConvertProfile2H(prSigHG, fHighEmcHistoH2F);  
+      //
+      for(Int_t ix = 1; ix <= fHighEmcHistoH2F->GetNbinsX(); ix++) {
+	for(Int_t iy = 1; iy <= fHighEmcHistoH2F->GetNbinsY(); iy++) { 
+	  if(fCalibRefHistoH2F->GetBinContent(ix, iy)) 
+	    binContent = fHighEmcHistoH2F->GetBinContent(ix, iy)/fCalibRefHistoH2F->GetBinContent(ix, iy);
+	  th2DRatioAmp->SetBinContent(ix, iy, binContent);
+	  thRatioDist->Fill(binContent);
+	}
+      } 
+      //
+      //Now for LED monitor system, to calculate the ratio as well
+      Double_t binError = 0. ;
+      // for the binError, we add the relative errors, squared
+      Double_t relativeErrorSqr = 0. ;
+      //
+      for(int ib = 1; ib <= fLEDMonRefHistoPro->GetNbinsX(); ib++) {
+	//
+	if(fLEDMonRefHistoPro->GetBinContent(ib) != 0) {
+	  binContent = hSigLGLEDMon->GetBinContent(ib) / fLEDMonRefHistoPro->GetBinContent(ib);
+	  relativeErrorSqr = TMath::Power( (fLEDMonRefHistoPro->GetBinError(ib) / fLEDMonRefHistoPro->GetBinContent(ib)), 2);
+	  if( hSigLGLEDMon->GetBinContent(ib) != 0) {
+	    relativeErrorSqr += TMath::Power( (hSigLGLEDMon->GetBinError(ib)/hSigLGLEDMon->GetBinContent(ib)), 2);
+	  }
+	}
+	else {
+	  binContent = 0;
+	  relativeErrorSqr = 0;
+	}
+	hSigLGLEDMon->SetBinContent(ib, binContent);
+	
+	binError = sqrt(relativeErrorSqr) * binContent;
+	thLEDMonRatio->SetBinError(ib, binError);
+	thLEDMonRatioDist->Fill(thLEDMonRatio->GetBinContent(ib));
       }
-    } 
-   
-		//Now for LED monitor system, to calculate the ratio as well
-		Double_t binError = 0. ;
-		// for the binError, we add the relative errors, squared
-		Double_t relativeErrorSqr = 0. ;
-  
-		for(int ib = 1; ib <= fLEDMonRefHistoPro->GetNbinsX(); ib++) {
-    
-			if(fLEDMonRefHistoPro->GetBinContent(ib) != 0) {
-				binContent = GetRawsData(kSigLGLEDMon)->GetBinContent(ib) / fLEDMonRefHistoPro->GetBinContent(ib);
-
-				relativeErrorSqr = TMath::Power( (fLEDMonRefHistoPro->GetBinError(ib) / fLEDMonRefHistoPro->GetBinContent(ib)), 2);
-				if(GetRawsData(kSigLGLEDMon)->GetBinContent(ib) != 0) {
-			relativeErrorSqr += TMath::Power( (GetRawsData(kSigLGLEDMon)->GetBinError(ib)/GetRawsData(kSigLGLEDMon)->GetBinContent(ib)), 2);
-				}
-			}
-			else {
-				binContent = 0;
-				relativeErrorSqr = 0;
-			}
-			GetRawsData(kLEDMonRatio)->SetBinContent(ib, binContent);
-    
-			binError = sqrt(relativeErrorSqr) * binContent;
-			GetRawsData(kLEDMonRatio)->SetBinError(ib, binError);
-			GetRawsData(kLEDMonRatioDist)->Fill(GetRawsData(kLEDMonRatio)->GetBinContent(ib));
-		}
-  
-	} 
+    } // loop over eventual trigger clones
+  } 
   // let's also fill the SM and event counter histograms
   Int_t nTotalHG = 0;
   Int_t nTotalLG = 0;
@@ -799,24 +821,25 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     nTotalTRU += nTotalSMTRU[iSM]; 
     nTotalLGLEDMon += nTotalSMLGLEDMon[iSM]; 
     nTotalHGLEDMon += nTotalSMHGLEDMon[iSM]; 
-    GetRawsData(kNsmodLG)->Fill(iSM, nTotalSMLG[iSM]); 
-    GetRawsData(kNsmodHG)->Fill(iSM, nTotalSMHG[iSM]); 
-    GetRawsData(kNsmodTRU)->Fill(iSM, nTotalSMTRU[iSM]); 
-    GetRawsData(kNsmodLGLEDMon)->Fill(iSM, nTotalSMLGLEDMon[iSM]); 
-    GetRawsData(kNsmodHGLEDMon)->Fill(iSM, nTotalSMHGLEDMon[iSM]); 
+    FillRawsData(kNsmodLG,iSM, nTotalSMLG[iSM]); 
+    FillRawsData(kNsmodHG,iSM, nTotalSMHG[iSM]); 
+    FillRawsData(kNsmodTRU,iSM, nTotalSMTRU[iSM]); 
+    FillRawsData(kNsmodLGLEDMon,iSM, nTotalSMLGLEDMon[iSM]); 
+    FillRawsData(kNsmodHGLEDMon,iSM, nTotalSMHGLEDMon[iSM]); 
   }
-  
-  GetRawsData(kNtotLG)->Fill(nTotalLG);
-  GetRawsData(kNtotHG)->Fill(nTotalHG);
-  GetRawsData(kNtotTRU)->Fill(nTotalTRU);
-  GetRawsData(kNtotLGLEDMon)->Fill(nTotalLGLEDMon);
-  GetRawsData(kNtotHGLEDMon)->Fill(nTotalHGLEDMon);
  
-
+  FillRawsData(kNtotLG,nTotalLG);
+  FillRawsData(kNtotHG,nTotalHG);
+  FillRawsData(kNtotTRU,nTotalTRU);
+  FillRawsData(kNtotLGLEDMon,nTotalLGLEDMon);
+  FillRawsData(kNtotHGLEDMon,nTotalHGLEDMon);
+ 
+  IncEvCountCycleESDs();
+  IncEvCountTotalESDs();
   SetEventSpecie(saveSpecie) ; 
   // just in case the next rawreader consumer forgets to reset; let's do it here again..
   rawReader->Reset() ;
-
+  
   return;
 }
 
@@ -824,34 +847,35 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 void AliEMCALQADataMakerRec::MakeDigits()
 {
   // makes data from Digits
-
-  GetDigitsData(1)->Fill(fDigitsArray->GetEntriesFast()) ; 
+  FillDigitsData(1,fDigitsArray->GetEntriesFast()) ; 
   TIter next(fDigitsArray) ; 
   AliEMCALDigit * digit ; 
   while ( (digit = dynamic_cast<AliEMCALDigit *>(next())) ) {
-    GetDigitsData(0)->Fill( digit->GetAmplitude()) ;
+    FillDigitsData(0, digit->GetAmplitude()) ;
   }  
-  
+  //
 }
 
 //____________________________________________________________________________
 void AliEMCALQADataMakerRec::MakeDigits(TTree * digitTree)
 {
   // makes data from Digit Tree
+  // RS: Attention: the counters are increments in the MakeDigits()
   if (fDigitsArray) 
     fDigitsArray->Clear("C") ; 
   else
     fDigitsArray = new TClonesArray("AliEMCALDigit", 1000) ; 
   
   TBranch * branch = digitTree->GetBranch("EMCAL") ;
-  if ( ! branch ) {
-    AliWarning("EMCAL branch in Digit Tree not found") ; 
-  } else {
-    branch->SetAddress(&fDigitsArray) ;
-    branch->GetEntry(0) ; 
-    MakeDigits() ; 
-  }
-  
+  if ( ! branch ) { AliWarning("EMCAL branch in Digit Tree not found"); return; }
+  //
+  branch->SetAddress(&fDigitsArray) ;
+  branch->GetEntry(0) ; 
+  MakeDigits() ; 
+  //
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();  
+  //  
 }
 
 //____________________________________________________________________________
@@ -868,16 +892,17 @@ void AliEMCALQADataMakerRec::MakeRecPoints(TTree * clustersTree)
   emcbranch->SetAddress(&emcRecPoints);
   emcbranch->GetEntry(0);
   
-  GetRecPointsData(kRecPM)->Fill(emcRecPoints->GetEntriesFast()) ; 
+  FillRecPointsData(kRecPM,emcRecPoints->GetEntriesFast()) ; 
   TIter next(emcRecPoints) ; 
   AliEMCALRecPoint * rp ; 
   while ( (rp = dynamic_cast<AliEMCALRecPoint *>(next())) ) {
-    GetRecPointsData(kRecPE)->Fill(rp->GetEnergy()) ;
-    GetRecPointsData(kRecPDigM)->Fill(rp->GetMultiplicity());
+    FillRecPointsData(kRecPE,rp->GetEnergy()) ;
+    FillRecPointsData(kRecPDigM,rp->GetMultiplicity());
   }
   emcRecPoints->Delete();
   delete emcRecPoints;
-  
+  IncEvCountCycleRecPoints();
+  IncEvCountTotalRecPoints();
 }
 
 //____________________________________________________________________________ 

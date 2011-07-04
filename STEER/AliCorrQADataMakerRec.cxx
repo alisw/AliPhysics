@@ -114,6 +114,8 @@ void AliCorrQADataMakerRec::InitESDs()
   //Create histograms to controll ESD
 
   AliInfo("TO BE IMPLEMENTED") ; 
+  //
+  ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line
 }
 
 
@@ -159,6 +161,8 @@ void AliCorrQADataMakerRec::InitRaws()
     fCorrNt[AliRecoParam::AConvert(fEventSpecie)] = new TNtupleD(name, "Raws data correlation among detectors", varlist.Data()) ;  
     fVarvalue = new Double_t[fMaxRawVar] ;
   }  
+  //
+  ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -167,6 +171,7 @@ void AliCorrQADataMakerRec::InitRecPoints()
     // create Reconstructed Points histograms in RecPoints subdir
   
   AliInfo("TO BE IMPLEMENTED") ; 
+  ClonePerTrigClass(AliQAv1::kRECPOINTS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -183,7 +188,9 @@ void AliCorrQADataMakerRec::MakeESDs(AliESDEvent * /*esd*/)
   // make QA data from ESDs
 
   AliInfo("TO BE IMPLEMENTED") ; 
-
+  IncEvCountCycleESDs();
+  IncEvCountTotalESDs();
+  //
 }
 
 //____________________________________________________________________________
@@ -216,12 +223,19 @@ void AliCorrQADataMakerRec::MakeRaws(AliRawReader *)
     }
     static_cast<TNtupleD*>(fCorrNt[AliRecoParam::AConvert(fEventSpecie)])->Fill(fVarvalue);
   }
+  //
+  IncEvCountCycleRaws();
+  IncEvCountTotalRaws();
+  //
 }
 
 //____________________________________________________________________________
 void AliCorrQADataMakerRec::MakeRecPoints(TTree * /*clustersTree*/)
 {
   AliInfo("TO BE IMPLEMENTED") ; 
+  IncEvCountCycleRecPoints();
+  IncEvCountTotalRecPoints();
+  //
 }
 
 //____________________________________________________________________________ 

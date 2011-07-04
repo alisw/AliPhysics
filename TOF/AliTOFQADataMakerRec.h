@@ -58,7 +58,7 @@ private:
 					// interpretation of the TOF
 					// raw QA histograms
 	
-	  Int_t  fProcessedRawEventN;   // number of processed rawData events
+	  //	  Int_t  fProcessedRawEventN;   // number of processed rawData events
 	  Bool_t fIsSOC;  //flag for StartOfCycle operations
 	  //lines for the DQM GUI
 	  TLine* fLineExpTimeMin;
@@ -75,7 +75,7 @@ private:
 	  
 	  AliTOFDecoderSummaryData * fDecoderSummary;
 
-	  ClassDef(AliTOFQADataMakerRec,5)  // description 
+	  ClassDef(AliTOFQADataMakerRec,6)  // description 
 	    
 };
 
