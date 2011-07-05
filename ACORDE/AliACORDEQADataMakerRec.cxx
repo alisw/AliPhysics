@@ -119,11 +119,11 @@ void AliACORDEQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
       //
       TObjArray &harr = *GetRawsDataOfTrigClass(itc);
       //
-      if (!harr[0] || !harr[1]) continue;
-      TH1* h0 = GetRawsData(0,itc);
-      TH1* h1 = GetRawsData(1,itc);
+      TH1* h0 = (TH1*)harr[0];
+      TH1* h1 = (TH1*)harr[1];
+      if (!h0 || !h1) continue;
       double integral = 0;
-      if (itc==-1 && (h0&&h1 && !(integral=h0->Integral()))) { // default clone
+      if (itc==-1 && !(integral=h0->Integral())) { // default clone
 	printf("No entries in ACORDE Hits histograms for trigger class %d, fatal error, please check !!!\n",itc);
 	TPaveText *acoBoxFatal=new TPaveText(35,0.5,55,1,"b");
 	acoBoxFatal->SetFillColor(kRed);

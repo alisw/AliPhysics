@@ -368,6 +368,7 @@ void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetec
     for (int specie=0;specie<AliRecoParam::kNSpecies;specie++) if (listTrig[specie]) delete listTrig[specie]; // clean temporary container
   }
   delete [] rv ; 
+  delete [] listTrig;
   Finish() ; 
 }
 
