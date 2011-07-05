@@ -132,10 +132,8 @@ AliTOFDRMSummaryData::operator = (const AliTOFDRMSummaryData &source)
 AliTOFDRMSummaryData::~AliTOFDRMSummaryData()
 {
   /* default destructor */
-  if (fLTMSummaryData)
     delete fLTMSummaryData;
   for (Int_t iTRM = 0; iTRM < N_TRM; iTRM++){
-    if (fTRMSummaryData[iTRM])
       delete fTRMSummaryData[iTRM];
   }
 }

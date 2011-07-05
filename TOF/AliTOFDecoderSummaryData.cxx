@@ -108,7 +108,6 @@ AliTOFDecoderSummaryData::operator = (const AliTOFDecoderSummaryData &source)
 AliTOFDecoderSummaryData::~AliTOFDecoderSummaryData()
 {
   /* default destructor */
-  if (fDRMSummaryData)
     delete fDRMSummaryData;
 }
 

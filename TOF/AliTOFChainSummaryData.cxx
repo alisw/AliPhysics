@@ -100,11 +100,8 @@ AliTOFChainSummaryData::operator = (const AliTOFChainSummaryData &source)
 AliTOFChainSummaryData::~AliTOFChainSummaryData()
 {
   /* default destructor */
-  if (fTDCHitBuffer)
     delete fTDCHitBuffer;
-  if (fTDCPackedHitBuffer)
     delete fTDCPackedHitBuffer;
-  if (fTDCErrorBuffer)
     delete fTDCErrorBuffer;
 }
 

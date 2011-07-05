@@ -504,10 +504,8 @@ AliTOFRawStream::~AliTOFRawStream()
   // destructor
 
   fPackedDigits = 0;
-  if (fDecoder)
-    delete fDecoder;
-  if (fDecoderV2)
-    delete fDecoderV2;
+  delete fDecoder;
+  delete fDecoderV2;
   
   if (fTOFrawData) {
     fTOFrawData->Clear("C");
