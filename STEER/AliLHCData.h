@@ -49,7 +49,7 @@ class AliLHCData : public TObject
   enum Side_t   {kLeft,kRight};
   enum Collim_t {kTCTVB4L2, kTCTVB4R2, kTCLIA4R2, kNCollimators};
   enum ColJaw_t {kGapDn,kGapUp,kLeftDn,kLeftUp,kRightDn,kRightUp,kNJaws};
-  enum          {kMaxBSlots = 3564};
+  enum          {kMaxBSlots = 3564, kOffsBeam1=346, kOffsBeam2 = 3019};
   enum          {kMarginSOR = 60*60*24*30, // use margin of 30 days for SOR, when looking for the 1st record
 		 kMarginEOR = 60*15};      // use margin of 15 min for EOR, when looking for the last record
   //
@@ -157,7 +157,8 @@ class AliLHCData : public TObject
   const TObjArray&  GetData()                             const {return fData;}
   //
   // analysis methods
-  Int_t GetMeanIntensity(int beamID, Double_t &colliding, Double_t &noncolliding) const;
+  Int_t GetMeanIntensity(int beamID, Double_t &colliding, Double_t &noncolliding, const TObjArray* bcmasks=0) const;
+  static Int_t GetBCId(int bucket, int beamID)                  {return (TMath::Abs(bucket)/10 + (beamID==0 ? kOffsBeam1:kOffsBeam2))%kMaxBSlots;}
   //
  protected:
   //

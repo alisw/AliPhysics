@@ -1267,21 +1267,57 @@ Bool_t AliReconstruction::LoadCTPTimeParamsCDB()
 Bool_t AliReconstruction::ReadIntensityInfoCDB()
 {
   // Load LHC DIP data
-  AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/LHCData");
-
-  if (entry) { 
-    AliInfo("Found an AliLHCData in GRP/GRP/LHCData, reading it");
-    AliLHCData* dipData = dynamic_cast<AliLHCData*> (entry->GetObject());
-    for (int ib=2;ib--;) {
-      double intI,intNI;
-      if (dipData && (dipData->GetMeanIntensity(ib,intI,intNI)>=0)) {
-	fBeamInt[ib][0] = intI;
-	fBeamInt[ib][1] = intNI;	
-      }
+  AliCDBEntry* entry    = AliCDBManager::Instance()->Get("GRP/GRP/LHCData");
+  AliCDBEntry* entryCTP = AliCDBManager::Instance()->Get("GRP/CTP/Config");
+  //
+  // extract BC masks
+  enum {kA,kB,kC,kE,kNMasks};
+  AliTriggerConfiguration* conf = (AliTriggerConfiguration*)entryCTP->GetObject();
+  const TObjArray& clArr = conf->GetClasses();
+  TObjArray masks(kNMasks);
+  TIter next(&clArr);
+  AliTriggerClass* trClass = 0;
+  int nFound = 0;
+  masks.SetOwner(kFALSE);
+  //
+  while ( (trClass=(AliTriggerClass*)next()) ) {
+    TString trName = trClass->GetName();
+    int ind = trName.Index("-"); // prefix in front of A,B,C,E
+    if (ind<1) continue;   // anomaly
+    //
+    trName = trName.Data() + ind;
+    AliTriggerBCMask* bcMask = trClass->GetBCMask();
+    if (!bcMask) continue;
+    UInt_t which = 0;
+    if      (trName.BeginsWith("-A-"))  which |= 0x1<<kA;
+    else if (trName.BeginsWith("-B-"))  which |= 0x1<<kB;
+    else if (trName.BeginsWith("-C-"))  which |= 0x1<<kC;
+    else if (trName.BeginsWith("-E-"))  which |= 0x1<<kE;
+    else if (trName.BeginsWith("-AC-")) which |= (0x1<<kA) | (0x1<<kC);
+    else if (trName.BeginsWith("-CA-")) which |= (0x1<<kA) | (0x1<<kC);
+    else { AliWarning(Form("Unknown trigger type %s\n",trClass->GetName())); continue;}
+    //
+    for (int ip=kNMasks;ip--;) {
+      if ( !(which&(0x1<<ip)) || masks[ip] ) continue; // does not match or already done
+      masks[ip] = (TObject*)bcMask;
+      nFound++;
     }
-    return kTRUE;
+    if (nFound==kNMasks) break;
+  }  
+  //  
+  AliInfo("Reading mean bunch intensities from GRP/GRP/LHCData");
+  AliLHCData* dipData = dynamic_cast<AliLHCData*> (entry->GetObject());
+  //
+  for (int ib=2;ib--;) {
+    double intI,intNI;
+    if (dipData && (dipData->GetMeanIntensity(ib,intI,intNI,&masks)>=0)) {
+      fBeamInt[ib][0] = intI;
+      fBeamInt[ib][1] = intNI;	
+      AliInfo(Form("Mean intensity for beam %d: Interacting:%.2e Non-Interacting:%.2e",ib,intI,intNI));
+    }
   }
-  return kFALSE;
+  return kTRUE;
+  //
 }
 
 

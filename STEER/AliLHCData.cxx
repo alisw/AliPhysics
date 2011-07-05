@@ -43,6 +43,7 @@
 #include "TMap.h"
 #include "AliDCSArray.h"
 #include "AliLHCReader.h"
+#include "AliTriggerBCMask.h"
 #include <TString.h>
 #include <TObjArray.h>
 
@@ -908,9 +909,6 @@ Int_t AliLHCData::IsPilotPresent(int i) const
 void AliLHCData::FlagInteractingBunches(const Int_t beam1[2],const Int_t beam2[2])
 {
   // assign - sign to interacting bunches
-  const int kMaxSlots  = 3564;
-  const int kOffsBeam1 = 346;
-  const int kOffsBeam2 = 3019;
   //
   for (int ib1=0;ib1<beam1[kNStor];ib1++) {
     AliLHCDipValI *bm1 = (AliLHCDipValI*)fData[ beam1[kStart] + ib1];
@@ -923,10 +921,10 @@ void AliLHCData::FlagInteractingBunches(const Int_t beam1[2],const Int_t beam2[2
     int i1,i2;
     for (i1=0;i1<nb1;i1++) {
       int bunch2=-1, bunch1 = TMath::Abs((*bm1)[i1]);
-      int slot2 =-1, slot1  = (bunch1/10 + kOffsBeam1)%kMaxSlots;
+      int slot2 =-1, slot1  = GetBCId(bunch1,0);
       for (i2=0;i2<nb2;i2++) {
 	bunch2 = TMath::Abs((*bm2)[i2]);
-	slot2 = (bunch2/10 + kOffsBeam2)%kMaxSlots;
+	slot2 = GetBCId(bunch2,1);
 	if (slot1==slot2) break;
       }
       if (slot1!=slot2) continue;
@@ -939,14 +937,29 @@ void AliLHCData::FlagInteractingBunches(const Int_t beam1[2],const Int_t beam2[2
 }
 
 //___________________________________________________________________
-Int_t AliLHCData::GetMeanIntensity(int beamID, Double_t &colliding, Double_t &noncolliding) const
+Int_t AliLHCData::GetMeanIntensity(int beamID, Double_t &colliding, Double_t &noncolliding, const TObjArray* bcmasks) const
 {
   // get average intensity for all, colliding and non-colliding bunches
   // on success returns number of intensity records used (1 per ~10 min)
+  // If triggered BC masks are provided, calculation is done for Triggered BC only
   colliding = noncolliding = -1.;
   if (beamID<0||beamID>1) {
     AliError(Form("BeamID must be either 0 or 1, %d requested",beamID));
     return -10;
+  }
+  //
+  AliTriggerBCMask *bcMaskBoth=0,*bcMaskSingle=0;
+  int nbcm = 0;
+  if (bcmasks && (nbcm=bcmasks->GetEntries())) {
+    if (nbcm>1) bcMaskBoth = (AliTriggerBCMask*)bcmasks->At(1);
+    if      (nbcm>0 && beamID==kBeam1) bcMaskSingle = (AliTriggerBCMask*)bcmasks->At(0);
+    else if (nbcm>2 && beamID==kBeam2) bcMaskSingle = (AliTriggerBCMask*)bcmasks->At(2);
+    //
+    if (!bcMaskSingle) AliError(Form("Only triggered BSs are requested but %c mask is not provided",beamID ? 'C':'A'));
+    if (!bcMaskBoth)   AliError("Only triggered BSs are requested but B mask is not provided");
+  }
+  else {
+    AliWarning("No BC masks are provided");
   }
   //
   int nrec = GetNIntensityPerBunch(beamID);
@@ -957,13 +970,22 @@ Int_t AliLHCData::GetMeanIntensity(int beamID, Double_t &colliding, Double_t &no
   int nb = conf->GetSize();
   //
   for (int irec=0;irec<nrec;irec++) {
+    //
     AliLHCDipValF* rInt = GetIntensityPerBunch(beamID,irec);
     for (int ib=0;ib<nb;ib++) {
       double val = rInt->GetValue(ib);
       if (val<0) continue;
       int bID = conf->GetValue(ib);
-      if (bID<0) colliding += val;
-      else noncolliding += val;
+      // check if this is a triggered bunch
+      int bcID = GetBCId(bID, beamID);
+      if (bID<0) { // interacting
+	if (bcMaskBoth && bcMaskBoth->GetMask(bcID)) continue; // masked
+	colliding += val;
+      }
+      else {
+	if (bcMaskSingle && bcMaskSingle->GetMask(bcID)) continue; // masked	
+	noncolliding += val;
+      }
     }
   }
   colliding /= nrec;
