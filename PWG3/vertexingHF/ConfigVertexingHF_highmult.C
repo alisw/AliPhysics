@@ -104,7 +104,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
 
   AliRDHFCutsDStartoKpipi *cutsDStartoKpipi = new AliRDHFCutsDStartoKpipi("CutsDStartoKpipi");
   
-  const Int_t nvars=14;
+  const Int_t nvars=16;
   const Int_t nptbins=2;
   
   Float_t* ptbins;
@@ -135,6 +135,8 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   rdcutsvalmine[11][0]=0.2;
   rdcutsvalmine[12][0]=100.;
   rdcutsvalmine[13][0]=0.5;
+  rdcutsvalmine[14][0]=-1.;
+  rdcutsvalmine[15][0]=0.;
   //4-999
   rdcutsvalmine[0][1]=0.24;
   rdcutsvalmine[1][1]=0.07;
@@ -150,6 +152,8 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   rdcutsvalmine[11][1]=0.2;
   rdcutsvalmine[12][1]=100.;
   rdcutsvalmine[13][1]=0.5;
+  rdcutsvalmine[14][1]=-1.;
+  rdcutsvalmine[15][1]=0.;
 
   cutsDStartoKpipi->SetCuts(nvars,nptbins,rdcutsvalmine);
  
