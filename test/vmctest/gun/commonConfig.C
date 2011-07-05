@@ -261,7 +261,7 @@ void commonConfig(ConfigVersion_t configVersion = kConfigV0)
     if ( configVersion == kConfigV0 ) 
       AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETEV1");
     else if ( configVersion == kConfigV1 )  
-      AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_FIRSTYEAR");
+      AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_FIRSTYEARV1");
   }
 
    if (iACORDE)
