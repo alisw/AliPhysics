@@ -167,22 +167,27 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "./DStar
 	for(Int_t i=0; i<=nbin4_16_24; i++) binLim4[i+nbin4_0_6+nbin4_6_8+nbin4_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbin4_16_24*(Double_t)i ; 
 	
 	//OPTION 2: ...or from the cuts file
-
-	//const Int_t nbin0 = cutsD0toKpi->GetNPtBins(); // bins in pT
-	//iBin[0]=nbin0;
- 	//iBin[3]=nbin0;
- 	//iBin[4]=nbin0;
+/*
+	const Int_t nbin0 = cutsD0toKpi->GetNPtBins(); // bins in pT
+	iBin[0]=nbin0;
+ 	iBin[3]=nbin0;
+ 	iBin[4]=nbin0;
+	
+	Double_t *binLim0=new Double_t[iBin[0]+1]; //ONLY UNCOMMENT THESE LINES IF LINES 119-121 ARE COMMENTED
+	Double_t *binLim3=new Double_t[iBin[3]+1];
+	Double_t *binLim4=new Double_t[iBin[4]+1];
+	
 	// values for bin lower bounds
-	//Float_t* floatbinLim0 = cutsD0toKpi->GetPtBinLimits();
-	//for (Int_t ibin0 = 0 ; ibin0<iBin[0]+1; ibin0++){
-	//	binLim0[ibin0] = (Double_t)floatbinLim0[ibin0];
-	//	binLim3[ibin0] = (Double_t)floatbinLim0[ibin0];
-	//	binLim4[ibin0] = (Double_t)floatbinLim0[ibin0];
-	//}
-	//for(Int_t i=0; i<=nbin0; i++) printf("binLim0[%d]=%f\n",i,binLim0[i]);  
+	Float_t* floatbinLim0 = cutsD0toKpi->GetPtBinLimits();
+	for (Int_t ibin0 = 0 ; ibin0<iBin[0]+1; ibin0++){
+		binLim0[ibin0] = (Double_t)floatbinLim0[ibin0];
+		binLim3[ibin0] = (Double_t)floatbinLim0[ibin0];
+		binLim4[ibin0] = (Double_t)floatbinLim0[ibin0];
+	}
+	for(Int_t i=0; i<=nbin0; i++) printf("binLim0[%d]=%f\n",i,binLim0[i]);  
 
-	//printf("pT: nbin (from cuts file) = %d\n",nbin0);
-
+	printf("pT: nbin (from cuts file) = %d\n",nbin0);
+*/
 	// defining now the binning for the other variables:
 
 	const Int_t nbin1  = 42 ; //bins in y
