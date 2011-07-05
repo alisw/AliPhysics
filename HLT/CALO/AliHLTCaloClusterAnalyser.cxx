@@ -129,8 +129,11 @@ AliHLTCaloClusterAnalyser::CalculateCenterOfGravity()
 
 	  digit = fDigitDataArray[*digitIndexPtr];
 
-	  xi = digit->fX+0.5;
-	  zi = digit->fZ+0.5;
+	  xi = digit->fX;
+	  zi = digit->fZ;
+
+	  //xi = digit->fX+0.5;
+	  //zi = digit->fZ+0.5;
 
 	  if (recPoint->fAmp > 0 && digit->fEnergy > 0) 
 	    {
@@ -155,7 +158,10 @@ AliHLTCaloClusterAnalyser::CalculateCenterOfGravity()
 	}
       else
 	{
-	  recPoint->fAmp = 0;
+	  recPoint->fX = -9999;
+          recPoint->fZ =-9999;
+	  // no good crashes depth with FP exception
+	  //recPoint->fAmp = 0;
 	}
 //	printf("Max digit: E = %f, x = %d, z= %d, cluster: E = %f, x = %f, z = %f\n" , maxAmp, maxX, maxZ, recPoint->fAmp, recPoint->fX, recPoint->fZ);
     }
