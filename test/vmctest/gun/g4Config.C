@@ -13,7 +13,16 @@ void Config()
   // AliRoot setup
   //
   gROOT->LoadMacro("$ALICE_ROOT/test/vmctest/gun/commonConfig.C");
-  commonConfig(kTRUE);
+  commonConfig();
+
+  // TPC primary ionization 
+  AliTPC* TPC = (AliTPC*)gAlice->GetDetector("TPC");
+  if ( ! TPC )
+    cerr << "Cannot get TPC detector" << endl;
+  else  { 
+    cerr << "Setting TPC primary ionization" << endl;
+    TPC->SetPrimaryIonisation(); // not used with Geant3
+  }  
 
   // Load Geant4 + Geant4 VMC libraries
   //
@@ -50,19 +59,18 @@ void Config()
   // Customization of Geant4 VMC
   //
 
-  //geant4->ProcessGeantCommand("/mcPhysics/rangeCuts 0.01 mm"); 
     geant4->ProcessGeantCommand("/mcVerbose/all 1");  
-    geant4->ProcessGeantCommand("/mcVerbose/geometryManager 2");  
+    geant4->ProcessGeantCommand("/mcVerbose/geometryManager 1");  
     geant4->ProcessGeantCommand("/mcVerbose/opGeometryManager 1");  
     geant4->ProcessGeantCommand("/mcTracking/loopVerbose 0");     
     geant4->ProcessGeantCommand("/mcPhysics/rangeCuts 0.01 mm"); 
-    //geant4->ProcessGeantCommand("/mcPhysics/rangeCuts 1 mm"); 
     geant4->ProcessGeantCommand("/mcPhysics/selectOpProcess Scintillation");
     geant4->ProcessGeantCommand("/mcPhysics/setOpProcessActivation false");
     geant4->ProcessGeantCommand("/mcTracking/skipNeutrino true");
+    geant4->ProcessGeantCommand("/mcDet/setMaxStepInLowDensityMaterials 1 cm");
 
   // Uncomment this line to get a detail info from each step 
-  // geant4->ProcessGeantCommand("/tracking/verbose 1");  
+  //geant4->ProcessGeantCommand("/tracking/verbose 1");  
   
   // More info from the physics list
   // the verbosity level is passed to all contained physics lists and their
@@ -82,6 +90,7 @@ void Config()
   // More info about regions construction 
   // and conversion of VMC cuts in cuts in range per regions 
   // geant4->ProcessGeantCommand("/mcVerbose/regionsManager 2");
+  // geant4->ProcessGeantCommand("/mcRegions/print true");
   
   // Suppress verbose info from tracks which reached maximum number of steps
   // (default value is 30000)  
