@@ -32,7 +32,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fCorrections(0),
     fMaxParticles(5),
     fUsePoisson(false),
-    fUsePhiAcceptance(false),
+    fUsePhiAcceptance(1),
     fAccI(0),
     fAccO(0),
     fFMD1iMax(0),
@@ -62,7 +62,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fCorrections(0),
     fMaxParticles(5),
     fUsePoisson(false),
-    fUsePhiAcceptance(false),
+    fUsePhiAcceptance(1),
     fAccI(0),
     fAccO(0),
     fFMD1iMax(0),
@@ -326,6 +326,8 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	    rh->fEvsM->Fill(mult,0);
 	    continue;
 	  }
+	  if (fUsePhiAcceptance == 2) 
+	    mult *= AcceptanceCorrection(r,t);
 
 	  Double_t cut  = 1024;
 	  if (eta != AliESDFMD::kInvalidEta) cut = GetMultCut(d, r, eta,false);
@@ -631,7 +633,7 @@ AliFMDDensityCalculator::Correction(UShort_t d,
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
 
   Float_t correction = 1; 
-  if (fUsePhiAcceptance) correction = AcceptanceCorrection(r,t);
+  if (fUsePhiAcceptance == 1) correction = AcceptanceCorrection(r,t);
   if (lowFlux) { 
     TH1D* dblHitCor = 0;
     if (fcm.GetDoubleHit()) 
@@ -803,7 +805,9 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
   TNamed* method = new TNamed("method", 
 			      (fUsePoisson ? "Poisson" : "Energy loss"));
   TNamed* phiA   = new TNamed("phiAcceptance", 
-			      (fUsePhiAcceptance ? "enabled" : "disabled"));
+			      (fUsePhiAcceptance == 0 ? "disabled" : 
+			       fUsePhiAcceptance == 1 ? "particles" :
+			       "energy loss"));
   TNamed* etaL   = new TNamed("etaLumping", Form("%d", fEtaLumping));
   TNamed* phiL   = new TNamed("phiLumping", Form("%d", fPhiLumping));
   // TParameter<double>* nxi = new TParameter<double>("nXi", fNXi);
