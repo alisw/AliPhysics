@@ -136,9 +136,14 @@ public:
   /** 
    * Set whether to use the phi acceptance correction. 
    * 
-   * @param u If true, use the phi acceptance (default is false)
+   * How the phi acceptance is used depends on the value passed.  
+   * - 0:  No phi acceptance 
+   * - 1:  Phi acceptance correction done to estimate of particles 
+   * - 2:  Phi acceptance correction done to energy deposited 
+   *
+   * @param u If >0, use the phi acceptance (default is false)
    */
-  void SetUsePhiAcceptance(Bool_t u) { fUsePhiAcceptance = u; }
+  void SetUsePhiAcceptance(UShort_t u) { fUsePhiAcceptance = u; }
   /** 
    * Set the lower multiplicity cut.  This overrides the setting in
    * the energy loss fits.
@@ -400,7 +405,7 @@ protected:
   TH1D*    fCorrections;   //  Histogram
   UShort_t fMaxParticles;  //  Maximum particle weight to use 
   Bool_t   fUsePoisson;    //  If true, then use poisson statistics 
-  Bool_t   fUsePhiAcceptance; // Whether to correct for corners 
+  UShort_t fUsePhiAcceptance; // Whether to correct for corners 
   TH1D*    fAccI;          //  Acceptance correction for inner rings
   TH1D*    fAccO;          //  Acceptance correction for outer rings
   TArrayI  fFMD1iMax;      //  Array of max weights 

@@ -858,18 +858,21 @@ AliFMDSharingFilter::DefineOutput(TList* dir)
   // TNamed*             sigma  = new TNamed("sigma", fIncludeSigma ? 
   //  					  "included" : "excluded");
   // sigma->SetUniqueID(fIncludeSigma);
-  TNamed*             angle  = new TNamed("angle", fCorrectAngles ? 
-					  "corrected" : "uncorrected");
+  TNamed* angle  = new TNamed("angle", fCorrectAngles ? 
+			      "corrected" : "uncorrected");
   angle->SetUniqueID(fCorrectAngles);
-  TNamed*             low    = new TNamed("lowSignal", 
-					  fZeroSharedHitsBelowThreshold ? 
-					  "zeroed" : "kept");
+  TNamed* low = new TNamed("lowSignal", fZeroSharedHitsBelowThreshold ? 
+			   "zeroed" : "kept");
   low->SetUniqueID(fZeroSharedHitsBelowThreshold);
+  TNamed* simple = new TNamed("simple", fUseSimpleMerging ? "yes" : "no");
+  simple->SetUniqueID(fUseSimpleMerging);
+  
   // d->Add(lowCut);
   // d->Add(nXi);
   // d->Add(sigma);
   d->Add(angle);
   d->Add(low);
+  d->Add(simple);
   fLCuts.Output(d,"lCuts");
   fHCuts.Output(d,"hCuts");
 
