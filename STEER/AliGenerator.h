@@ -154,7 +154,8 @@ class AliGenerator : public TNamed, public AliRndm
 	  kPhiRange      = BIT(16),
 	  kPtRange       = BIT(17),
 	  kYRange        = BIT(18),
-	  kMomentumRange = BIT(19)     
+	  kMomentumRange = BIT(19),
+	  kEtaRange      = BIT(20)	  
     };
 
     Float_t     fEnergyCMS;    // Centre of mass energy

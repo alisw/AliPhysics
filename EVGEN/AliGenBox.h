@@ -22,7 +22,7 @@ class AliGenBox : public AliGenerator
   virtual void Generate();
   virtual void Init();
   virtual void SetEtaRange(Float_t etamin, Float_t etamax)
-      {fEtaMin = etamin; fEtaMax = etamax;}
+      {SetBit(kEtaRange);fEtaMin = etamin; fEtaMax = etamax;}
   virtual void SetPart(Int_t part) {fIpart=part;}
   virtual void SetParticleType(Int_t part) {SetPart(part);}
 protected:

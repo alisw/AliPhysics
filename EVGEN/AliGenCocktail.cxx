@@ -82,7 +82,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
 	Generator->SetYRange(fYMin,fYMax);
     if (!(Generator->TestBit(kPhiRange)))   
 	Generator->SetPhiRange(fPhiMin*180/TMath::Pi(),fPhiMax*180/TMath::Pi());
-    if (!(Generator->TestBit(kThetaRange))) 
+    if (!(Generator->TestBit(kThetaRange)) && !(Generator->TestBit(kEtaRange))) 
 	Generator->SetThetaRange(fThetaMin*180/TMath::Pi(),fThetaMax*180/TMath::Pi());
     if (!(Generator->TestBit(kVertexRange))) {
 	Generator->SetOrigin(fOrigin[0], fOrigin[1], fOrigin[2]);
