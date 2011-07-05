@@ -221,7 +221,7 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
     Bool_t bSMHasData = kFALSE;
     
     //iwbuffer[nheader++] = 0x0001a020;   // SM index words 
-    iwbuffer[nheader++] = 0x0044a020;   // SM index words | additional SM header:48 = 1 SM header + 47 dummy words(for future use)
+    iwbuffer[nheader++] = 0x0044b020;   // SM index words | additional SM header:48 = 1 SM header + 47 dummy words(for future use)
     iwbuffer[nheader++] = 0x10404071;   // SM header
     for ( Int_t i=0; i<66; i++ ) iwbuffer[nheader++] = 0x00000000;  // dummy words 
     iwbuffer[nheader++] = 0x10000000;   // end of dummy words
@@ -250,7 +250,7 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
     
     if ( fgDataSuppressionLevel==0 || bSMHasData ){
       iwbuffer[0] = iwbuffer[0] | bStackMask;  // add stack masks to SM index word
-      if (fgDataSuppressionLevel==0) iwbuffer[0] = 0x0044a03f;    // no suppression : all stacks are active
+      if (fgDataSuppressionLevel==0) iwbuffer[0] = 0x0044b03f;    // no suppression : all stacks are active
       of->WriteBuffer((char *) iwbuffer, nheader*4);
       AliDebug(11, Form("SM %d index word: %08x", sect, iwbuffer[0]));
       AliDebug(11, Form("SM %d header: %08x", sect, iwbuffer[1]));
@@ -348,7 +348,7 @@ void AliTRDrawData::ProduceSMIndexData(UInt_t *buf, Int_t& nw){
 	
     //buf[nw++] = 0x0001a03f;   // SM index words
     fSMindexPos = nw;       // memorize position of the SM index word for re-allocating stack mask
-    buf[nw++] = 0x0001a020; // SM index words
+    buf[nw++] = 0x0001b020; // SM index words
     buf[nw++] = 0x10404071; // SM header
 
     fStackindexPos = nw;    // memorize position of the stack index word for future adding
