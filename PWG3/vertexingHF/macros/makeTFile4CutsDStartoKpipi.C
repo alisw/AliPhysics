@@ -99,7 +99,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][0]=0.05;
     rdcutsvalmine[12][0]=100.;
     rdcutsvalmine[13][0]=0.5;
-    rdcutsvalmine[14][0]=0.;
+    rdcutsvalmine[14][0]=-1.;
     rdcutsvalmine[15][0]=0.;
     //0.5-1
     rdcutsvalmine[0][1]=0.7;
@@ -116,7 +116,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][1]=0.05;
     rdcutsvalmine[12][1]=100.;
     rdcutsvalmine[13][1]=0.5;
-    rdcutsvalmine[14][1]=0.;
+    rdcutsvalmine[14][1]=-1.;
     rdcutsvalmine[15][1]=0.;
     //1-2
     rdcutsvalmine[0][2]=0.7;
@@ -133,7 +133,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][2]=0.05;
     rdcutsvalmine[12][2]=100.;
     rdcutsvalmine[13][2]=0.5;
-    rdcutsvalmine[14][2]=0.;
+    rdcutsvalmine[14][2]=-1.;
     rdcutsvalmine[15][2]=0.;
     //2-3
     rdcutsvalmine[0][3]=0.7;
@@ -150,7 +150,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][3]=0.05;
     rdcutsvalmine[12][3]=100.;
     rdcutsvalmine[13][3]=0.5;
-    rdcutsvalmine[14][3]=0.;
+    rdcutsvalmine[14][3]=-1.;
     rdcutsvalmine[15][3]=0.;
     //3-4
     rdcutsvalmine[0][4]=0.7;
@@ -167,7 +167,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][4]=0.05;
     rdcutsvalmine[12][4]=100.;
     rdcutsvalmine[13][4]=0.5;
-    rdcutsvalmine[14][4]=0.;
+    rdcutsvalmine[14][4]=-1.;
     rdcutsvalmine[15][4]=0.;
     //4-5
     rdcutsvalmine[0][5]=0.7;
@@ -184,7 +184,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][5]=0.05;
     rdcutsvalmine[12][5]=100.;
     rdcutsvalmine[13][5]=0.5;
-    rdcutsvalmine[14][5]=0.;
+    rdcutsvalmine[14][5]=-1.;
     rdcutsvalmine[15][5]=0.;
     //5-6
     rdcutsvalmine[0][6]=0.7;
@@ -201,7 +201,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][6]=0.05;
     rdcutsvalmine[12][6]=100000.;
     rdcutsvalmine[13][6]=0.5;
-    rdcutsvalmine[14][6]=0.;
+    rdcutsvalmine[14][6]=-1.;
     rdcutsvalmine[15][6]=0.;
     //6-7
     rdcutsvalmine[0][7]=0.7;
@@ -218,7 +218,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][7]=0.05;
     rdcutsvalmine[12][7]=100.;
     rdcutsvalmine[13][7]=0.5;
-    rdcutsvalmine[14][7]=0.;
+    rdcutsvalmine[14][7]=-1.;
     rdcutsvalmine[15][7]=0.;
     //7-8
     rdcutsvalmine[0][8]=0.7;
@@ -235,7 +235,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][8]=0.05;
     rdcutsvalmine[12][8]=100.;
     rdcutsvalmine[13][8]=0.5;
-    rdcutsvalmine[14][8]=0.;
+    rdcutsvalmine[14][8]=-1.;
     rdcutsvalmine[15][8]=0.;
     //8-12
     rdcutsvalmine[0][9]=0.7;
@@ -252,7 +252,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][9]=0.05;
     rdcutsvalmine[12][9]=100.;
     rdcutsvalmine[13][9]=0.5;
-    rdcutsvalmine[14][9]=0.;
+    rdcutsvalmine[14][9]=-1.;
     rdcutsvalmine[15][9]=0.;
     //12-16
     rdcutsvalmine[0][10]=0.7;
@@ -269,7 +269,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][10]=0.05;
     rdcutsvalmine[12][10]=100.;
     rdcutsvalmine[13][10]=0.5;
-    rdcutsvalmine[14][10]=0.;
+    rdcutsvalmine[14][10]=-1.;
     rdcutsvalmine[15][10]=0.;
     //16-24
     rdcutsvalmine[0][11]=0.7;
@@ -286,7 +286,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][11]=0.05;
     rdcutsvalmine[12][11]=100.;
     rdcutsvalmine[13][11]=0.5;
-    rdcutsvalmine[14][11]=0.;
+    rdcutsvalmine[14][11]=-1.;
     rdcutsvalmine[15][11]=0.;
     //>24
     rdcutsvalmine[0][12]=0.7;
@@ -303,7 +303,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][12]=0.05;
     rdcutsvalmine[12][12]=100.;
     rdcutsvalmine[13][12]=0.5;
-    rdcutsvalmine[14][12]=0.;
+    rdcutsvalmine[14][12]=-1.;
     rdcutsvalmine[15][12]=0.;
   }
   if(set_cuts=="heidelberg"){
@@ -323,7 +323,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][0]=0.05;
     rdcutsvalmine[12][0]=100.;
     rdcutsvalmine[13][0]=0.5;
-    rdcutsvalmine[14][0]=0.;
+    rdcutsvalmine[14][0]=-1.;
     rdcutsvalmine[15][0]=0.;
     //0.5-1
     rdcutsvalmine[0][1]=0.7;
@@ -340,7 +340,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][1]=0.05;
     rdcutsvalmine[12][1]=100.;
     rdcutsvalmine[13][1]=0.5;
-    rdcutsvalmine[14][1]=0.;
+    rdcutsvalmine[14][1]=-1.;
     rdcutsvalmine[15][1]=0.;
 
     //1-2
@@ -358,7 +358,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][2]=0.05;
     rdcutsvalmine[12][2]=100.;
     rdcutsvalmine[13][2]=0.5;
-    rdcutsvalmine[14][2]=0.;
+    rdcutsvalmine[14][2]=-1.;
     rdcutsvalmine[15][2]=0.;
     //2-3
     rdcutsvalmine[0][3]=0.7;
@@ -375,7 +375,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][3]=0.05;
     rdcutsvalmine[12][3]=100.;
     rdcutsvalmine[13][3]=0.5;
-    rdcutsvalmine[14][3]=0.;
+    rdcutsvalmine[14][3]=-1.;
     rdcutsvalmine[15][3]=0.;
     //3-4
     rdcutsvalmine[0][4]=0.7;
@@ -392,7 +392,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][4]=0.05;
     rdcutsvalmine[12][4]=100.;
     rdcutsvalmine[13][4]=0.5;
-    rdcutsvalmine[14][4]=0.;
+    rdcutsvalmine[14][4]=-1.;
     rdcutsvalmine[15][4]=0.;
     //4-5
     rdcutsvalmine[0][5]=0.7;
@@ -409,7 +409,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][5]=0.05;
     rdcutsvalmine[12][5]=100.;
     rdcutsvalmine[13][5]=0.5;
-    rdcutsvalmine[14][5]=0.;
+    rdcutsvalmine[14][5]=-1.;
     rdcutsvalmine[15][5]=0.;
     //5-6
     rdcutsvalmine[0][6]=0.7;
@@ -426,7 +426,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][6]=0.05;
     rdcutsvalmine[12][6]=100.;
     rdcutsvalmine[13][6]=0.5;
-    rdcutsvalmine[14][6]=0.;
+    rdcutsvalmine[14][6]=-1.;
     rdcutsvalmine[15][6]=0.;
     //6-8
     rdcutsvalmine[0][7]=0.7;
@@ -443,7 +443,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][7]=0.05;
     rdcutsvalmine[12][7]=100.;
     rdcutsvalmine[13][7]=0.5;
-    rdcutsvalmine[14][7]=0.;
+    rdcutsvalmine[14][7]=-1.;
     rdcutsvalmine[15][7]=0.;
     //8-12
     rdcutsvalmine[0][8]=0.7;
@@ -460,7 +460,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][8]=0.05;
     rdcutsvalmine[12][8]=100.;
     rdcutsvalmine[13][8]=0.5;
-    rdcutsvalmine[14][8]=0.;
+    rdcutsvalmine[14][8]=-1.;
     rdcutsvalmine[15][8]=0.;
     //12-16
     rdcutsvalmine[0][9]=0.7;
@@ -477,7 +477,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][9]=0.05;
     rdcutsvalmine[12][9]=100.;
     rdcutsvalmine[13][9]=0.5;
-    rdcutsvalmine[14][9]=0.;
+    rdcutsvalmine[14][9]=-1.;
     rdcutsvalmine[15][9]=0.;
     //16-20
     rdcutsvalmine[0][10]=0.7;
@@ -494,7 +494,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][10]=0.05;
     rdcutsvalmine[12][10]=100.;
     rdcutsvalmine[13][10]=0.5;
-    rdcutsvalmine[14][10]=0.;
+    rdcutsvalmine[14][10]=-1.;
     rdcutsvalmine[15][10]=0.;
     //20-24
     rdcutsvalmine[0][11]=0.7;
@@ -511,7 +511,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][11]=0.05;
     rdcutsvalmine[12][11]=100.;
     rdcutsvalmine[13][11]=0.5;
-    rdcutsvalmine[14][11]=0.;
+    rdcutsvalmine[14][11]=-1.;
     rdcutsvalmine[15][11]=0.;
     //>24
     rdcutsvalmine[0][12]=0.7;
@@ -528,7 +528,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][12]=0.05;
     rdcutsvalmine[12][12]=100.;
     rdcutsvalmine[13][12]=0.5;
-    rdcutsvalmine[14][12]=0.;
+    rdcutsvalmine[14][12]=-1.;
     rdcutsvalmine[15][12]=0.;
   }
 
@@ -649,7 +649,7 @@ void makeInputAliAnalysisTaskSEDstarSignificanceMaximization(){
     rdcutsvalmine[11][0]=0.05;
     rdcutsvalmine[12][0]=100.;
     rdcutsvalmine[13][0]=0.5;
-    rdcutsvalmine[14][0]=0.;
+    rdcutsvalmine[14][0]=-1.;
     rdcutsvalmine[15][0]=0.;
     //0.5-1
     rdcutsvalmine[0][1]=0.7;
@@ -666,7 +666,7 @@ void makeInputAliAnalysisTaskSEDstarSignificanceMaximization(){
     rdcutsvalmine[11][1]=0.05;
     rdcutsvalmine[12][1]=100.;
     rdcutsvalmine[13][1]=0.5;
-    rdcutsvalmine[14][1]=0.;
+    rdcutsvalmine[14][1]=-1.;
     rdcutsvalmine[15][1]=0.;
     //1-2
     rdcutsvalmine[0][2]=0.7;
@@ -683,7 +683,7 @@ void makeInputAliAnalysisTaskSEDstarSignificanceMaximization(){
     rdcutsvalmine[11][2]=0.05;
     rdcutsvalmine[12][2]=100.;
     rdcutsvalmine[13][2]=0.5;
-    rdcutsvalmine[14][2]=0.;
+    rdcutsvalmine[14][2]=-1.;
     rdcutsvalmine[15][2]=0.;
     //2-3
     rdcutsvalmine[0][3]=0.7;
@@ -700,7 +700,7 @@ void makeInputAliAnalysisTaskSEDstarSignificanceMaximization(){
     rdcutsvalmine[11][3]=0.05;
     rdcutsvalmine[12][3]=100.;
     rdcutsvalmine[13][3]=0.5;
-    rdcutsvalmine[14][3]=0.;
+    rdcutsvalmine[14][3]=-1.;
     rdcutsvalmine[15][3]=0.;
     //3-4
     rdcutsvalmine[0][4]=0.7;
@@ -734,7 +734,7 @@ void makeInputAliAnalysisTaskSEDstarSignificanceMaximization(){
     rdcutsvalmine[11][5]=0.05;
     rdcutsvalmine[12][5]=100.;
     rdcutsvalmine[13][5]=0.5;
-    rdcutsvalmine[14][5]=0.;
+    rdcutsvalmine[14][5]=-1.;
     rdcutsvalmine[15][5]=0.;
     //5-6
     rdcutsvalmine[0][6]=0.7;
@@ -751,7 +751,7 @@ void makeInputAliAnalysisTaskSEDstarSignificanceMaximization(){
     rdcutsvalmine[11][6]=0.05;
     rdcutsvalmine[12][6]=100000.;
     rdcutsvalmine[13][6]=0.5;
-    rdcutsvalmine[14][6]=0.;
+    rdcutsvalmine[14][6]=-1.;
     rdcutsvalmine[15][6]=0.;
     //6-7
     rdcutsvalmine[0][7]=0.7;
@@ -768,7 +768,7 @@ void makeInputAliAnalysisTaskSEDstarSignificanceMaximization(){
     rdcutsvalmine[11][7]=0.05;
     rdcutsvalmine[12][7]=100.;
     rdcutsvalmine[13][7]=0.5;
-    rdcutsvalmine[14][7]=0.;
+    rdcutsvalmine[14][7]=-1.;
     rdcutsvalmine[15][7]=0.;
     //7-8
     rdcutsvalmine[0][8]=0.7;
@@ -785,7 +785,7 @@ void makeInputAliAnalysisTaskSEDstarSignificanceMaximization(){
     rdcutsvalmine[11][8]=0.05;
     rdcutsvalmine[12][8]=100.;
     rdcutsvalmine[13][8]=0.5;
-    rdcutsvalmine[14][8]=0.;
+    rdcutsvalmine[14][8]=-1.;
     rdcutsvalmine[15][8]=0.;
     //8-12
     rdcutsvalmine[0][9]=0.7;
@@ -802,7 +802,7 @@ void makeInputAliAnalysisTaskSEDstarSignificanceMaximization(){
     rdcutsvalmine[11][9]=0.05;
     rdcutsvalmine[12][9]=100.;
     rdcutsvalmine[13][9]=0.5;
-    rdcutsvalmine[14][9]=0.;
+    rdcutsvalmine[14][9]=-1.;
     rdcutsvalmine[15][9]=0.;
     //12-16
     rdcutsvalmine[0][10]=0.7;
@@ -819,7 +819,7 @@ void makeInputAliAnalysisTaskSEDstarSignificanceMaximization(){
     rdcutsvalmine[11][10]=0.05;
     rdcutsvalmine[12][10]=100.;
     rdcutsvalmine[13][10]=0.5;
-    rdcutsvalmine[14][10]=0.;
+    rdcutsvalmine[14][10]=-1.;
     rdcutsvalmine[15][10]=0.;
     //16-24
     rdcutsvalmine[0][11]=0.7;
@@ -836,7 +836,7 @@ void makeInputAliAnalysisTaskSEDstarSignificanceMaximization(){
     rdcutsvalmine[11][11]=0.05;
     rdcutsvalmine[12][11]=100.;
     rdcutsvalmine[13][11]=0.5;
-    rdcutsvalmine[14][11]=0.;
+    rdcutsvalmine[14][11]=-1.;
     rdcutsvalmine[15][11]=0.;
     //>24
     rdcutsvalmine[0][12]=0.7;
@@ -853,7 +853,7 @@ void makeInputAliAnalysisTaskSEDstarSignificanceMaximization(){
     rdcutsvalmine[11][12]=0.05;
     rdcutsvalmine[12][12]=100.;
     rdcutsvalmine[13][12]=0.5;
-    rdcutsvalmine[14][12]=0.;
+    rdcutsvalmine[14][12]=-1.;
     rdcutsvalmine[15][12]=0.;
 
   RDHFDStartoKpipi->SetCuts(nvars,nptbins,rdcutsvalmine);
