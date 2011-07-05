@@ -50,6 +50,7 @@
 #include "AliESDcascade.h"
 #include "AliESDPmdTrack.h"
 #include "AliESDTrdTrack.h"
+#include "AliESDTrdTracklet.h"
 #include "AliESDVertex.h"
 #include "AliVertexerTracks.h"
 #include "AliESDcascade.h"
@@ -93,6 +94,7 @@ ClassImp(AliESDEvent)
 							"MuonTracks",
 							"PmdTracks",
 							"TrdTracks",
+  						        "TrdTracklets",
 							"V0s",
 							"Cascades",
 							"Kinks",
@@ -126,6 +128,7 @@ AliESDEvent::AliESDEvent():
   fMuonTracks(0),
   fPmdTracks(0),
   fTrdTracks(0),
+  fTrdTracklets(0),
   fV0s(0),  
   fCascades(0),
   fKinks(0),
@@ -164,6 +167,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fMuonTracks(new TClonesArray(*esd.fMuonTracks)),
   fPmdTracks(new TClonesArray(*esd.fPmdTracks)),
   fTrdTracks(new TClonesArray(*esd.fTrdTracks)),
+  fTrdTracklets(new TClonesArray(*esd.fTrdTracklets)),
   fV0s(new TClonesArray(*esd.fV0s)),  
   fCascades(new TClonesArray(*esd.fCascades)),
   fKinks(new TClonesArray(*esd.fKinks)),
@@ -198,6 +202,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fMuonTracks);
   AddObject(fPmdTracks);
   AddObject(fTrdTracks);
+  AddObject(fTrdTracklets);
   AddObject(fV0s);
   AddObject(fCascades);
   AddObject(fKinks);
@@ -455,6 +460,7 @@ void AliESDEvent::ResetStdContent()
   if(fMuonTracks)fMuonTracks->Delete();
   if(fPmdTracks)fPmdTracks->Delete();
   if(fTrdTracks)fTrdTracks->Delete();
+  if(fTrdTracklets)fTrdTracklets->Delete();
   if(fV0s)fV0s->Delete();
   if(fCascades)fCascades->Delete();
   if(fKinks)fKinks->Delete();
@@ -512,6 +518,7 @@ void AliESDEvent::Print(Option_t *) const
   printf("                 muon      %d\n", GetNumberOfMuonTracks());
   printf("                 pmd       %d\n", GetNumberOfPmdTracks());
   printf("                 trd       %d\n", GetNumberOfTrdTracks());
+  printf("                 trd trkl  %d\n", GetNumberOfTrdTracklets());
   printf("                 v0        %d\n", GetNumberOfV0s());
   printf("                 cascades  %d\n", GetNumberOfCascades());
   printf("                 kinks     %d\n", GetNumberOfKinks());
@@ -941,8 +948,10 @@ void AliESDEvent::AddTrdTrack(const AliESDTrdTrack *t)
   new(ftrd[fTrdTracks->GetEntriesFast()]) AliESDTrdTrack(*t);
 }
 
-
-
+void AliESDEvent::AddTrdTracklet(const AliESDTrdTracklet *trkl)
+{
+  new ((*fTrdTracklets)[fTrdTracklets->GetEntriesFast()]) AliESDTrdTracklet(*trkl);
+}
 
 Int_t AliESDEvent::AddKink(const AliESDkink *c) 
 {
@@ -1141,6 +1150,7 @@ void AliESDEvent::GetStdContent()
   fMuonTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kMuonTracks]);
   fPmdTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kPmdTracks]);
   fTrdTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTrdTracks]);
+  fTrdTracklets = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTrdTracklets]);
   fV0s = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kV0s]);
   fCascades = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kCascades]);
   fKinks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kKinks]);
@@ -1200,6 +1210,7 @@ void AliESDEvent::CreateStdContent()
   AddObject(new TClonesArray("AliESDMuonTrack",0));
   AddObject(new TClonesArray("AliESDPmdTrack",0));
   AddObject(new TClonesArray("AliESDTrdTrack",0));
+  AddObject(new TClonesArray("AliESDTrdTracklet",0));
   AddObject(new TClonesArray("AliESDv0",0));
   AddObject(new TClonesArray("AliESDcascade",0));
   AddObject(new TClonesArray("AliESDkink",0));

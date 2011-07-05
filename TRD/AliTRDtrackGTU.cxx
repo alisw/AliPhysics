@@ -152,12 +152,10 @@ AliESDTrdTrack* AliTRDtrackGTU::CreateTrdTrack() const
 // creates an AliESDTrdTrack to be added to the ESD
 
     AliESDTrdTrack *trk = new AliESDTrdTrack();
-    trk->SetPt(1./128. * fPt);
     trk->SetPID(fPID);
-    trk->SetDetector((Char_t) (fSector * 5 + fStack));
     if (fLabel >= 0)
 	trk->SetLabel(fLabel);
-    AliInfo(Form("setting detector to: %i (sector: %i, stack: %i), readback: %i", fSector * 30 + fStack * 6, fSector, fStack, trk->GetDetector()));
+
     return trk;
 }
 

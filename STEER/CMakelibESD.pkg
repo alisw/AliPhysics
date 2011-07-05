@@ -11,6 +11,7 @@ set ( SRCS
     AliESDMuonTrack.cxx 
     AliESDPmdTrack.cxx 
     AliESDTrdTrack.cxx 
+    AliESDTrdTracklet.cxx 
     AliESDHLTtrack.cxx 
     AliESDv0.cxx 
     AliESDcascade.cxx 

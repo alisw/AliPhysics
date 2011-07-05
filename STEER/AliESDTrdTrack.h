@@ -1,67 +1,88 @@
 #ifndef ALIESDTRDTRACK_H
 #define ALIESDTRDTRACK_H
 
-//  Tracks from the TRD Global Tracking Unit (GTU, trigger)
-//  Stored in the ESD object
-//  Author: B.Vulpescu
+//
+// ESD format for the TRD tracks calculated in the
+// Global Tracking Unit, used for the TRD L1 trigger
+// Author: Jochen Klein <jochen.klein@cern.ch>
+
 
 #include "TObject.h"
+#include "TRef.h"
+
+#include "AliESDTrdTracklet.h"
 
 class AliESDTrdTrack : public TObject {
 
  public:
 
   AliESDTrdTrack();
-  virtual ~AliESDTrdTrack(){};
+  virtual ~AliESDTrdTrack() {};
   AliESDTrdTrack(const AliESDTrdTrack& track);
   AliESDTrdTrack& operator=(const AliESDTrdTrack& track);
   virtual void Copy(TObject &obj) const;
 
-  Double_t GetYproj()     const { return fYproj; };
-  Double_t GetZproj()     const { return fZproj; };
-  Double_t GetSlope()     const { return fSlope; };
-  Char_t   GetDetector()  const { return fDetector; };
-  Short_t   GetTracklets() const { return fNtracklets; };
-  Char_t   GetPlanes()    const { return fNplanes; };
-  Short_t   GetClusters()  const { return fNclusters; };
-  Double_t GetPt()        const { return fPt; };
-  Double_t GetPhi()       const { return fPhi; };
-  Double_t GetEta()       const { return fEta; };
-  Int_t   GetLabel()     const { return fLabel; };
-  Double_t GetPID()       const { return fPID; };
+  ULong64_t GetTrackWord(Int_t rev) const;
+  ULong64_t GetExtendedTrackWord(Int_t rev) const;
 
-  void SetYproj(Float_t val)     { fYproj = val; };
-  void SetZproj(Float_t val)     { fZproj = val; };
-  void SetSlope(Float_t val)     { fSlope = val; };
-  void SetDetector(Int_t det)    { fDetector = det; };
-  void SetTracklets(Int_t val)   { fNtracklets = val; };
-  void SetPlanes(Int_t val)      { fNplanes = val; };
-  void SetClusters(Int_t val)    { fNclusters = val; };
-  void SetPt(Float_t val)        { fPt = val; };
-  void SetPhi(Float_t val)       { fPhi = val; };
-  void SetEta(Float_t val)       { fEta = val; };
-  void SetLabel(Int_t val)       { fLabel = val; };
-  void SetPID(Float_t val)       { fPID = val; };
+  Int_t GetA()         const { return fA; }
+  Int_t GetB()         const { return fB; }
+  Int_t GetC()         const { return fC; }
+  Int_t GetY()         const { return fY; }
+  Int_t GetLayerMask() const { return fLayerMask; }
+  Int_t GetPID()       const { return fPID; }
+  Int_t GetPt()        const;
+  Int_t GetStack()     const { return fStack; }
+  Int_t GetSector()    const { return fSector; }
+  Int_t GetLabel()     const { return fLabel; }
+  Int_t GetTrackletIndex(const Int_t iLayer) const { return fTrackletIndex[iLayer]; }
+
+  Double_t Pt()        const { return GetPt() / 128.; }
+  Double_t Phi()       const { return 0.; };
+  Double_t Eta()       const { return 0.; };
+
+  AliESDTrdTracklet* GetTracklet(Int_t idx) const
+    { return (GetLayerMask() & (1<<idx)) ? (AliESDTrdTracklet*) ((fTrackletRefs[idx]).GetObject()) : 0x0; }
+
+  void SetA(Int_t a)            { fA = a; }
+  void SetB(Int_t b)            { fB = b; }
+  void SetC(Int_t c)            { fC = c; }
+  void SetY(Int_t y)            { fY = y; }
+  void SetLayerMask(Int_t mask) { fLayerMask = mask; }
+  void SetPID(Int_t pid)        { fPID = pid; }
+  void SetLabel(Int_t label)    { fLabel = label; }
+  void SetSector(Int_t sector)  { fSector = sector; }
+  void SetStack(Int_t stack)    { fStack = stack; }
+  void SetFlags(Int_t flags)    { fFlags = flags; }
+  void SetReserved(Int_t res)   { fReserved = res; }
+  void SetTrackletIndex(const Char_t idx, const Int_t layer) { fTrackletIndex[layer] = idx; }
+
+  void AddTrackletReference(AliESDTrdTracklet* trkl, Int_t layer) { fTrackletRefs[layer] = trkl; }
 
  protected:
 
-  Double32_t fYproj;                                   // Average values calculated
-  Double32_t fZproj;                                   // from the tracklets 
-  Double32_t fSlope;                                   // slope of the tracklet
-  Double32_t fPt;                                      // Transverse momentum
-  Double32_t fPhi;                                     //  Phi angle at the vertex
-  Double32_t fEta;                                     // Eta at the vertex
-  Double32_t fPID;                                     //[0.,1.,8] PID electron likelihood
+  void AppendBits(ULong64_t &word, Int_t nBits, Int_t val) const { word = (word << nBits) | (val & ~(~0 << nBits)); }
 
-  Int_t fLabel;                                        // Track label
-  Short_t   fNtracklets;                               // Number of tracklets
-  Short_t   fNclusters;                                // Total number of clusters
-  Char_t   fNplanes;                                  // Number of TRD planes
-  Char_t   fDetector;                                 // First detector in the module
+  static const Int_t fgkNlayers = 6;      // number of TRD layers
 
+  Int_t    fSector;			  // sector in which the track was found
+  Char_t   fStack;			  // stack in which the track was found
+					  // (unique because of stack-wise tracking)
+  Int_t    fA;				  // transverse offset from nominal primary vertex
+  Int_t    fB;				  // slope in transverse plane
+  Short_t  fC;				  // slope in r-z plane
+  Short_t  fY;				  // y position of the track
+  UChar_t  fPID;			  // electron PID for this track
+  Char_t   fLayerMask;			  // mask of contributing tracklets
+  Char_t   fTrackletIndex[fgkNlayers];	  //[fgkNlayers] index to tracklets
+  UShort_t fFlags;			  // flags (high-pt, electron, positron)
+  UChar_t  fReserved;			  // reserved for future use
 
-  ClassDef(AliESDTrdTrack,2)
+  TRef fTrackletRefs[fgkNlayers];         // references to contributing tracklets
 
+  Int_t fLabel;				  // Track label
+
+  ClassDef(AliESDTrdTrack,4)
 };
 
 #endif

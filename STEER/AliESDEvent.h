@@ -54,6 +54,7 @@ class AliMultiplicity;
 class AliRawDataErrorLog;
 class AliESDRun;
 class AliESDTrdTrack;
+class AliESDTrdTracklet;
 class AliESDMuonTrack;
 class AliESD;
 class AliESDcascade;
@@ -89,6 +90,7 @@ public:
 		       kMuonTracks,
 		       kPmdTracks,
 		       kTrdTracks,
+		       kTrdTracklets,
 		       kV0s,
 		       kCascades,
 		       kKinks,
@@ -342,6 +344,12 @@ public:
   
   void AddTrdTrack(const AliESDTrdTrack *t);
 
+  AliESDTrdTracklet* GetTrdTracklet(Int_t idx) const {
+    return (AliESDTrdTracklet*)(fTrdTracklets?fTrdTracklets->UncheckedAt(idx):0x0);
+  }
+
+  void AddTrdTracklet(const AliESDTrdTracklet *trkl);
+
   AliESDv0 *GetV0(Int_t i) const {
     return (AliESDv0*)(fV0s?fV0s->UncheckedAt(i):0x0);
   }
@@ -396,6 +404,7 @@ public:
   Int_t GetNumberOfMuonTracks() const {return fMuonTracks?fMuonTracks->GetEntriesFast():0;}
   Int_t GetNumberOfPmdTracks() const {return fPmdTracks?fPmdTracks->GetEntriesFast():0;}
   Int_t GetNumberOfTrdTracks() const {return fTrdTracks?fTrdTracks->GetEntriesFast():0;}
+  Int_t GetNumberOfTrdTracklets() const {return fTrdTracklets?fTrdTracklets->GetEntriesFast():0;}
   Int_t GetNumberOfV0s()      const {return fV0s?fV0s->GetEntriesFast():0;}
   Int_t GetNumberOfCascades() const {return fCascades?fCascades->GetEntriesFast():0;}
   Int_t GetNumberOfKinks() const {return fKinks?fKinks->GetEntriesFast():0;}
@@ -459,6 +468,7 @@ protected:
   TClonesArray *fMuonTracks;       //! MUON ESD tracks
   TClonesArray *fPmdTracks;        //! PMD ESD tracks
   TClonesArray *fTrdTracks;        //! TRD ESD tracks (triggered)
+  TClonesArray *fTrdTracklets;     //! TRD tracklets (for trigger)
   TClonesArray *fV0s;              //! V0 vertices
   TClonesArray *fCascades;         //! Cascade vertices
   TClonesArray *fKinks;            //! Kinks
