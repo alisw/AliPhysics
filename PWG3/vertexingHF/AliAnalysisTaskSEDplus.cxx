@@ -71,6 +71,7 @@ AliAnalysisTaskSE(),
   fReadMC(kFALSE),
   fUseStrangeness(kFALSE),
   fUseBit(kTRUE),
+  fCutsDistr(kFALSE),
   fDoImpPar(kFALSE),
   fNImpParBins(400),
   fLowerImpPar(-2000.),
@@ -104,6 +105,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fReadMC(kFALSE),
   fUseStrangeness(kFALSE),
   fUseBit(kTRUE),
+  fCutsDistr(kFALSE),
   fDoImpPar(kFALSE),
   fNImpParBins(400),
   fLowerImpPar(-2000.),
@@ -269,7 +271,7 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
   // Fill the Like Sign histograms
   //
   if(fDebug>1)printf("started LS\n");
-  Bool_t fPlotVariables=kTRUE;
+  
   //histograms for like sign
   Int_t nbins=GetNBinsHistos();;
   TH1F *histLSPlus = new TH1F("LSPlus","LSPlus",nbins,fLowmasslimit,fUpmasslimit);
@@ -314,7 +316,7 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
 	histLSMinus->Fill(invMass);
 	nDminusLS++;
       }
-      if(fPlotVariables){
+      if(fCutsDistr){
 	Double_t dlen=d->DecayLength();
 	Double_t cosp=d->CosPointingAngle();
 	Double_t sumD02=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
@@ -584,22 +586,25 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
 
   for(Int_t i=0; i<3*fNPtBins; i++){
     fOutput->Add(fMassHist[i]);
-    fOutput->Add(fCosPHist[i]);
-    fOutput->Add(fDLenHist[i]);
-    fOutput->Add(fSumd02Hist[i]);
-    fOutput->Add(fSigVertHist[i]);
-    fOutput->Add(fPtMaxHist[i]);
-    fOutput->Add(fPtKHist[i]);
-    fOutput->Add(fPtpi1Hist[i]);
-    fOutput->Add(fPtpi2Hist[i]);
-    fOutput->Add(fDCAHist[i]);
+    if(fCutsDistr){  
+      fOutput->Add(fCosPHist[i]);
+      fOutput->Add(fDLenHist[i]);
+      fOutput->Add(fSumd02Hist[i]);
+      fOutput->Add(fSigVertHist[i]);
+      fOutput->Add(fPtMaxHist[i]);
+      fOutput->Add(fPtKHist[i]);
+      fOutput->Add(fPtpi1Hist[i]);
+      fOutput->Add(fPtpi2Hist[i]);
+      fOutput->Add(fDCAHist[i]);
+      fOutput->Add(fDLxy[i]);
+      fOutput->Add(fDLxyTC[i]);
+      fOutput->Add(fCosxy[i]);
+      fOutput->Add(fCosxyTC[i]);
+    }  
     fOutput->Add(fMassHistTC[i]);
     fOutput->Add(fMassHistTCPlus[i]);
     fOutput->Add(fMassHistTCMinus[i]);
-    fOutput->Add(fDLxy[i]);
-    fOutput->Add(fDLxyTC[i]);
-    fOutput->Add(fCosxy[i]);
-    fOutput->Add(fCosxyTC[i]);
+
   }
   
   
@@ -878,22 +883,26 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  fHistNEvents->Fill(5);
 	  nSelectedloose++;
 	  fMassHist[index]->Fill(invMass);
-	  fCosPHist[index]->Fill(cosp);
-	  fDLenHist[index]->Fill(dlen);
-	  fSumd02Hist[index]->Fill(sumD02);
-	  fSigVertHist[index]->Fill(sigvert);
-	  fPtMaxHist[index]->Fill(ptmax);
-	  fPtKHist[index]->Fill(d->PtProng(1));
-	  fPtpi1Hist[index]->Fill(d->PtProng(0));
-	  fPtpi2Hist[index]->Fill(d->PtProng(2));
-	  fDCAHist[index]->Fill(dca);
-	  fDLxy[index]->Fill(dlxy);
-	  fCosxy[index]->Fill(cxy);
+	  if(fCutsDistr){	  
+	    fCosPHist[index]->Fill(cosp);
+	    fDLenHist[index]->Fill(dlen);
+	    fSumd02Hist[index]->Fill(sumD02);
+	    fSigVertHist[index]->Fill(sigvert);
+	    fPtMaxHist[index]->Fill(ptmax);
+	    fPtKHist[index]->Fill(d->PtProng(1));
+	    fPtpi1Hist[index]->Fill(d->PtProng(0));
+	    fPtpi2Hist[index]->Fill(d->PtProng(2));
+	    fDCAHist[index]->Fill(dca);
+	    fDLxy[index]->Fill(dlxy);
+	    fCosxy[index]->Fill(cxy);
+	  }
 	  if(passTightCuts){ fHistNEvents->Fill(6);
 	    nSelectedtight++;
 	    fMassHistTC[index]->Fill(invMass);
-	    fDLxyTC[index]->Fill(dlxy);
-	    fCosxyTC[index]->Fill(cxy);
+	    if(fCutsDistr){  
+	      fDLxyTC[index]->Fill(dlxy);
+	      fCosxyTC[index]->Fill(cxy);
+	    }
 	    if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
 	    else if(d->GetCharge()<0) fMassHistTCMinus[index]->Fill(invMass);
 	    if(fDoImpPar){
@@ -903,6 +912,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	}
       
 	if(fReadMC){
+	  //  if(fCutsDistr){
 	  if(labDp>=0) {
 	    index=GetSignalHistoIndex(iPtBin);
 	    if(isFidAcc){
@@ -935,24 +945,27 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	      }
 	      Float_t fact=1.;for(Int_t k=0;k<3;k++)fact=fact*factor[k];
 	      fMassHist[index]->Fill(invMass);
-	      fCosPHist[index]->Fill(cosp,fact);
-	      fDLenHist[index]->Fill(dlen,fact);
-	      fDLxy[index]->Fill(dlxy);
-	      fCosxy[index]->Fill(cxy);
+	      if(fCutsDistr){
+		fCosPHist[index]->Fill(cosp,fact);
+		fDLenHist[index]->Fill(dlen,fact);
+		fDLxy[index]->Fill(dlxy);
+		fCosxy[index]->Fill(cxy);
 	    
-	      Float_t sumd02s=d->Getd0Prong(0)*d->Getd0Prong(0)*factor[0]*factor[0]+d->Getd0Prong(1)*d->Getd0Prong(1)*factor[1]*factor[1]+d->Getd0Prong(2)*d->Getd0Prong(2)*factor[2]*factor[2];
-	      fSumd02Hist[index]->Fill(sumd02s);
-	      fSigVertHist[index]->Fill(sigvert,fact);
-	      fPtMaxHist[index]->Fill(ptmax,fact);
-	      fPtKHist[index]->Fill(d->PtProng(1),fact);
-	      fPtpi1Hist[index]->Fill(d->PtProng(0),fact);
-	      fPtpi2Hist[index]->Fill(d->PtProng(2),fact);
-	      fDCAHist[index]->Fill(dca,fact);
+		Float_t sumd02s=d->Getd0Prong(0)*d->Getd0Prong(0)*factor[0]*factor[0]+d->Getd0Prong(1)*d->Getd0Prong(1)*factor[1]*factor[1]+d->Getd0Prong(2)*d->Getd0Prong(2)*factor[2]*factor[2];
+		fSumd02Hist[index]->Fill(sumd02s);
+		fSigVertHist[index]->Fill(sigvert,fact);
+		fPtMaxHist[index]->Fill(ptmax,fact);
+		fPtKHist[index]->Fill(d->PtProng(1),fact);
+		fPtpi1Hist[index]->Fill(d->PtProng(0),fact);
+		fPtpi2Hist[index]->Fill(d->PtProng(2),fact);
+		fDCAHist[index]->Fill(dca,fact);
+	      }
 	      if(passTightCuts){
 		fMassHistTC[index]->Fill(invMass);	      
-		fDLxyTC[index]->Fill(dlxy);
-		fCosxyTC[index]->Fill(cxy);
-	
+		if(fCutsDistr){
+		  fDLxyTC[index]->Fill(dlxy);
+		  fCosxyTC[index]->Fill(cxy);
+		}	      
 		if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
 		else if(d->GetCharge()<0) fMassHistTCMinus[index]->Fill(invMass);
 		if(fDoImpPar){
@@ -996,26 +1009,30 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 		  }//if labd>=0
 		}//prong loop
 	      }
+	    
 	      Float_t fact=1.;for(Int_t k=0;k<3;k++)fact=fact*factor[k];
 	      fMassHist[index]->Fill(invMass);
-	      fCosPHist[index]->Fill(cosp,fact);
-	      fDLenHist[index]->Fill(dlen,fact);
-	      fDLxy[index]->Fill(dlxy);
-	      fCosxy[index]->Fill(cxy);
+	      if(fCutsDistr){
+		fCosPHist[index]->Fill(cosp,fact);
+		fDLenHist[index]->Fill(dlen,fact);
+		fDLxy[index]->Fill(dlxy);
+		fCosxy[index]->Fill(cxy);
 	    
-	      Float_t sumd02s=d->Getd0Prong(0)*d->Getd0Prong(0)*factor[0]*factor[0]+d->Getd0Prong(1)*d->Getd0Prong(1)*factor[1]*factor[1]+d->Getd0Prong(2)*d->Getd0Prong(2)*factor[2]*factor[2];
-	      fSumd02Hist[index]->Fill(sumd02s);
-	      fSigVertHist[index]->Fill(sigvert,fact);
-	      fPtMaxHist[index]->Fill(ptmax,fact);
-	      fPtKHist[index]->Fill(d->PtProng(1),fact);
-	      fPtpi1Hist[index]->Fill(d->PtProng(0),fact);
-	      fPtpi2Hist[index]->Fill(d->PtProng(2),fact);
-	      fDCAHist[index]->Fill(dca,fact);
+		Float_t sumd02s=d->Getd0Prong(0)*d->Getd0Prong(0)*factor[0]*factor[0]+d->Getd0Prong(1)*d->Getd0Prong(1)*factor[1]*factor[1]+d->Getd0Prong(2)*d->Getd0Prong(2)*factor[2]*factor[2];
+		fSumd02Hist[index]->Fill(sumd02s);
+		fSigVertHist[index]->Fill(sigvert,fact);
+		fPtMaxHist[index]->Fill(ptmax,fact);
+		fPtKHist[index]->Fill(d->PtProng(1),fact);
+		fPtpi1Hist[index]->Fill(d->PtProng(0),fact);
+		fPtpi2Hist[index]->Fill(d->PtProng(2),fact);
+		fDCAHist[index]->Fill(dca,fact);
+	      }
 	      if(passTightCuts){
 		fMassHistTC[index]->Fill(invMass);
-		fDLxyTC[index]->Fill(dlxy);
-		fCosxyTC[index]->Fill(cxy);
-	
+		if(fCutsDistr){
+		  fDLxyTC[index]->Fill(dlxy);
+		  fCosxyTC[index]->Fill(cxy);
+		}
 		if(d->GetCharge()>0) fMassHistTCPlus[index]->Fill(invMass);
 		else if(d->GetCharge()<0) fMassHistTCMinus[index]->Fill(invMass);
 		if(fDoImpPar){
@@ -1026,8 +1043,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  }
 	  
 	}
-	
       }
+    
       if(recVtx)fRDCutsProduction->CleanOwnPrimaryVtx(d,aod,origownvtx);
     }
     if(unsetvtx) d->UnsetOwnPrimaryVtx();

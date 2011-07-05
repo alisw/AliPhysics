@@ -41,6 +41,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
 
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetDoLikeSign(Int_t dols=0){fDoLS=dols;}
+  void SetCutsDistr(Bool_t cutsDistr=kTRUE){fCutsDistr=cutsDistr;}
   void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpPar=doImp;}
   void SetImpactParameterBinning(Int_t nbins, Float_t dmin, Float_t dmax){
     fNImpParBins=nbins;
@@ -137,13 +138,14 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Bool_t fReadMC;    //flag for access to MC
   Bool_t fUseStrangeness;//flag to enhance strangeness in MC to fit to data
   Bool_t fUseBit;      // flag to use bitmask
+  Bool_t fCutsDistr;    // flag to activate cuts distr histos
   Bool_t fDoImpPar;    // flag to activate impact paramter histos
   Int_t  fNImpParBins;   // nunber of bins in impact parameter histos
   Float_t fLowerImpPar;  // lower limit in impact parameter (um)
   Float_t fHigherImpPar; // higher limit in impact parameter (um)
   Int_t  fDoLS;        // flag to do LS analysis
   
-  ClassDef(AliAnalysisTaskSEDplus,14); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,15); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
