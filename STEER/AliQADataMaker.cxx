@@ -490,6 +490,7 @@ TObjArray* AliQADataMaker::GetMatchingHistos(TObjArray ** list, Int_t index, TOb
   if (!data->TestBit(AliQAv1::GetClonedBit())) dest->AddLast(data); // not cloned per trigger
   else {
     TObjArray* arr = dynamic_cast<TObjArray*>(data);
+    if (!arr) return 0;
     if (IsEventTriggerSet()) {
       int ncl = GetNEventTrigClasses();
       for (int icl=0;icl<ncl;icl++) {

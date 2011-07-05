@@ -357,7 +357,7 @@ void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleESDs(Int_t, TObjArray**)
 	  }
 	} 
 	else {
-	  if (hESDClusterChargePerDE && hESDClusterChargeInCh) {
+	  if (hESDClusterChargePerDE && hESDClusterChargeInCh && hESDSumClusterChargePerDE) {
 	    hESDClusterChargePerDE->SetBinContent(iDE+1, hESDSumClusterChargePerDE->GetBinContent(iDE+1));
 	    hESDClusterChargePerDE->SetBinError(iDE+1, hESDClusterChargeInCh->GetXaxis()->GetXmax());
 	  }
