@@ -7142,6 +7142,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
 	    break;
 	  }
 	  mcD0Parent=dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcD0Parent->GetMother()));
+	  if(mcD0Parent==0x0) break;
 	}
 	if(notfound)continue;
 	if(TMath::Abs(mcD0Parent->GetPdgCode())==4)continue;//D0 from c quarks already counted

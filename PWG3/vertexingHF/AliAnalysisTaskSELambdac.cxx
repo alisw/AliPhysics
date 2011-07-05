@@ -817,7 +817,6 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
   if(!vtx1) return;
-  if(vtx1==0x0) return;
 
   
   // load MC particles
