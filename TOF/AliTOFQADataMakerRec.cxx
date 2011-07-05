@@ -22,6 +22,11 @@
 ///////////////////////////////////////////////////////////////////////
 
 /*
+Modified by fbellini & rshanoian on 06/07/2011
+- changes for trigger classes implementation
+- fRunNumber added as private member
+- added time vs BCID plot
+
 Modified by fbellini on 18/01/2011
 - reduced histo binning to reduce size 
 - added decoding errors plot
@@ -105,7 +110,8 @@ ClassImp(AliTOFQADataMakerRec)
   fLineExpTotMin(new TLine(5., 0., 5., 0.)),
   fLineExpTotMax(new TLine(20., 0., 20., 0.)),
   fTOFRawStream(AliTOFRawStream()),
-  fDecoderSummary(new AliTOFDecoderSummaryData())
+  fDecoderSummary(0),
+  fRunNumber(-1)
 {
   //
   // ctor
@@ -135,7 +141,8 @@ AliTOFQADataMakerRec::AliTOFQADataMakerRec(const AliTOFQADataMakerRec& qadm) :
   fLineExpTotMin(qadm.fLineExpTotMin),
   fLineExpTotMax(qadm.fLineExpTotMax),
   fTOFRawStream(qadm.fTOFRawStream),
-  fDecoderSummary(qadm.fDecoderSummary)
+  fDecoderSummary(qadm.fDecoderSummary),
+  fRunNumber(qadm.fRunNumber)
 {
   //
   //copy ctor 
@@ -169,35 +176,55 @@ AliTOFQADataMakerRec& AliTOFQADataMakerRec::operator = (const AliTOFQADataMakerR
 //----------------------------------------------------------------------------
 AliTOFQADataMakerRec::~AliTOFQADataMakerRec()
 {
-
+  //destructor
   fTOFRawStream.Clear();
-  delete fLineExpTimeMin;
-  delete fLineExpTimeMax;
-  delete fLineExpTotMin;
-  delete fLineExpTotMax;
+  if (fLineExpTimeMin)
+    delete fLineExpTimeMin;
+  if (fLineExpTimeMax)
+    delete fLineExpTimeMax;
+  if (fLineExpTotMin)
+    delete fLineExpTotMin;
+  if (fLineExpTotMax)
+    delete fLineExpTotMax;
   for (Int_t sm=0;sm<10;sm++){
-    delete fLineSMid[sm];
+    if (fLineSMid[sm])
+      delete fLineSMid[sm];
   }
-  if (fDecoderSummary)
-    delete fDecoderSummary;
 }
 //----------------------------------------------------------------------------
-AliTOFChannelOnlineStatusArray* AliTOFQADataMakerRec::GetCalibData() const
+AliTOFChannelOnlineStatusArray* AliTOFQADataMakerRec::GetCalibData() 
 {
   //
   // Retrive TOF calib objects from OCDB
   //
   AliCDBManager *man = AliCDBManager::Instance();
   AliCDBEntry *cdbe=0;
+ 
+  if (fRun<=0) fRunNumber=145288; //reference run from LHC11a
+  else fRunNumber=fRun;
   
-  cdbe = man->Get("TOF/Calib/Status",fRun);
+  if (man->GetRun()!=fRunNumber){
+    fRunNumber=man->GetRun();
+    AliWarning(Form("Run number mismatch found: setting it to value from current AliCDBManager instance = %i", fRunNumber));
+  }
+  cdbe = man->Get("TOF/Calib/Status",fRunNumber);
+  
   if(!cdbe){
-    AliWarning("Load of calibration data from default storage failed!");
-    AliWarning("Calibration data will be loaded from local storage ($ALICE_ROOT)");
-    man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    // for DQM online
+    AliWarning("Load of calibration data from default (alien://) storage failed!");
+    printf("Calibration data will be loaded from local storage - ok if on DQM station!");
+    man->SetDefaultStorage("local:///local/cdb/");
     cdbe = man->Get("TOF/Calib/Status",fRun);
+    
+    if(!cdbe){
+      AliWarning("Load of calibration data from local DQM machine storage failed!");
+      AliWarning("Calibration data will be loaded from local ($ALICE_ROOT) storage ");
+      man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+      cdbe = man->Get("TOF/Calib/Status",fRunNumber);
+    }
   }
   // Retrieval of data in directory TOF/Calib/Data:
+  printf("======= OCDB object for TOF retrieved from run %i in %s\n",fRunNumber,cdbe->GetName());
   
   AliTOFChannelOnlineStatusArray * array = 0;
   if (cdbe) array = (AliTOFChannelOnlineStatusArray *)cdbe->GetObject();
@@ -259,6 +286,8 @@ void AliTOFQADataMakerRec::InitRaws()
   TH2F * h20 = new TH2F("hTOFRawTimeVsTRM035", "TOF raws - Hit time vs TRM - crates 0 to 35; TRM index = DDL*10+TRM(0-9);TOF raw time [ns]", 361, 0., 361., 250, 0., 610.0) ;
   TH2F * h21 = new TH2F("hTOFRawTimeVsTRM3671", "TOF raws - Hit time vs TRM - crates 36 to 72; TRM index = DDL**10+TRM(0-9);TOF raw time [ns]", 361, 360., 721., 250, 0., 610.0) ;
   TH2F * h22 = new TH2F("hTOFTimeVsStrip","TOF Raws - Hit time vs. strip (theta); Strip index;Raws TOF time (ns) ", 91,0.,91, 250, 0., 610.) ; 
+  TH2F * h23 = new TH2F("hTOFtimeVsBCID","TOF time vs BCID; BCID; time (ns) ", 3564, 0., 3564., 250,0.,610);
+  
   h0->Sumw2() ;
   h1->Sumw2() ;
   h2->Sumw2() ;
@@ -282,6 +311,7 @@ void AliTOFQADataMakerRec::InitRaws()
   h20->Sumw2() ;
   h21->Sumw2() ;
   h22->Sumw2() ;
+  h23->Sumw2() ;
   
   //add lines for DQM shifter
   //fLineExpTimeMin = new TLine(200., 0., 200., 0.);
@@ -353,6 +383,7 @@ void AliTOFQADataMakerRec::InitRaws()
   Add2RawsList(h20, 20,  expert, !image, !saveCorr) ;
   Add2RawsList(h21, 21,  expert, !image, !saveCorr) ;
   Add2RawsList(h22, 22,  expert, !image, !saveCorr) ;
+  Add2RawsList(h23, 23,  expert, !image, !saveCorr) ;
   //
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
@@ -494,11 +525,13 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     
     TClonesArray * clonesRawData;
     fTOFRawStream.SetRawReader(rawReader);
+    Int_t BCID=rawReader->GetBCID();
     
     //uncomment if needed to apply DeltaBC correction
     //fTOFRawStream.ApplyBCCorrections(kTRUE);
-    
-    fDecoderSummary->Reset();
+    if (fDecoderSummary){
+      fDecoderSummary->Reset();
+    }
     for (Int_t iDDL = 0; iDDL < AliTOFGeometry::NDDL()*AliTOFGeometry::NSectors(); iDDL++){
       rawReader->Reset();
       fTOFRawStream.LoadRawDataBuffersV2(iDDL);
@@ -532,12 +565,10 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 					       volumeID);
 	    //LTM data
 	    if (FilterLTMData(equipmentID)) { //counts LTM hits
-	      if (equipmentID[2]==1)  { //crate left, A-side or C-side
+	      if (equipmentID[2]==1)  //crate left, A-side or C-side
 		FillRawsData(15,equipmentID[0]);
-	      } else {
-		if (equipmentID[0]<36) { FillRawsData(15,equipmentID[0]-1); }
-		else  { FillRawsData(15,equipmentID[0]+1); }
-	      }
+	      else 
+		FillRawsData(15,equipmentID[0]-1);  
 	      continue;
 	    }
 	    
@@ -558,6 +589,7 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		  //fill global spectra for DQM plots
 		  FillRawsData(5, tofRawDatum->GetTOF()*tdc2ns) ;//in ns
 		  FillRawsData(10, tofRawDatum->GetTOT()*tot2ns) ;//in ns
+		  FillRawsData(23, BCID, tofRawDatum->GetTOF()*tdc2ns) ;//in ns
 		  
 		  //fill side-related spectra for experts plots
 		  Int_t ddlACside=iDDL/36; // 0 or 1
@@ -827,20 +859,18 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
   ResetEventTrigClasses();
   //
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) continue ; 
-    //
-    SetEventSpecie(AliRecoParam::ConvertIndex(specie));  // RS: the specie is not set, why?    
-    //
+    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) continue ;     
+    SetEventSpecie(AliRecoParam::ConvertIndex(specie));  
+
     for (int itc=-1;itc<GetNTrigClasses();itc++) { // RS: loop over eventual clones per trigger class
-      //
+
       if (fEnableDqmShifterOpt) {
-	//
 	// RS: fetch the histograms for given trigger class
 	TObjArray& arrRW = *GetRawsDataOfTrigClass(itc);
 	
 	// Help make the raw qa histogram easier to interpret for the DQM shifter
 	if (!arrRW[ 0] || !arrRW[ 5] || !arrRW[10] || !arrRW[15] || !arrRW[16] || !arrRW[17]) continue;
-	  //printf("No histogram for DQM found - Possible memory corruption ???. Please check\n") ; 
+	
 	printf("=========>Processed %i physics raw of specie %s with TrigGlass %d\n",
 	       GetEvCountCycleRaws(itc),AliRecoParam::GetEventSpecieName(specie), itc);
 	
@@ -882,10 +912,8 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	    htmp->SetLineColor(kBlue);
 	    htmp->SetLineWidth(1);
 	    htmp->SetMarkerColor(kBlue);
-	    //htmp->SetFillColor(kWhite);
-	    //htmp->SetDrawOption("bar");
 	  }
-	  //
+	  
 	  TH1* htmp =  (TH1*)arrRW[15];  
 	  htmp->SetLineColor(kBlue);
 	  htmp->SetLineWidth(1);

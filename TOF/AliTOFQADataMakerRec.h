@@ -28,7 +28,7 @@ public:
   AliTOFQADataMakerRec() ;          // ctor
   AliTOFQADataMakerRec(const AliTOFQADataMakerRec& qadm) ;   
   AliTOFQADataMakerRec& operator = (const AliTOFQADataMakerRec& qadm) ;
-  AliTOFChannelOnlineStatusArray *GetCalibData() const;
+  AliTOFChannelOnlineStatusArray *GetCalibData() ;
   virtual ~AliTOFQADataMakerRec(); // dtor
   
 protected: 
@@ -67,15 +67,10 @@ private:
 	  TLine* fLineExpTotMax;
 	  TLine* fLineSMid[17];
 	  
-	  AliTOFRawStream fTOFRawStream; // AliTOFRawStream variable
-	  //counters for TRM - usage disabled
-	  /* Short_t fTRMNoisyArray[720]; */
-	  /* Short_t fTRMHwOkArray[720]; */
-	  /* Short_t fTRMEnabledArray[720]; */
-	  
-	  AliTOFDecoderSummaryData * fDecoderSummary;
-
-	  ClassDef(AliTOFQADataMakerRec,6)  // description 
+	  AliTOFRawStream fTOFRawStream; // AliTOFRawStream variable 
+	  AliTOFDecoderSummaryData * fDecoderSummary; //pointer to decoder summary data object
+	  Int_t fRunNumber;
+	  ClassDef(AliTOFQADataMakerRec,7)  // description 
 	    
 };
 
