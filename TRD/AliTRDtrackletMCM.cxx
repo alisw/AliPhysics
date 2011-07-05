@@ -32,32 +32,7 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord) :
   AliTRDtrackletBase(),
   fGeo(0x0),
   fHCId(-1),
-  fTrackletWord(trackletWord), 
-  fMCM(-1), 
-  fROB(-1), 
-  fQ0(0),
-  fQ1(0),
-  fNHits(0),
-  fNHits0(0),
-  fNHits1(0),
-  fSlope(0.),
-  fOffset(0.),
-  fError(0.),
-  fNClusters(0),
-  fResiduals(0x0),
-  fClsCharges(0x0)
-{ 
-    fGeo = new AliTRDgeometry();
-    fLabel[0] = -1;
-    fLabel[1] = -1;
-    fLabel[2] = -1;
-}
-
-AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid) :
-  AliTRDtrackletBase(),
-  fGeo(0x0),
-  fHCId(hcid),
-  fTrackletWord(trackletWord), 
+  fTrackletWord(trackletWord),
   fMCM(-1),
   fROB(-1),
   fQ0(0),
@@ -71,7 +46,32 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid) :
   fNClusters(0),
   fResiduals(0x0),
   fClsCharges(0x0)
-{ 
+{
+    fGeo = new AliTRDgeometry();
+    fLabel[0] = -1;
+    fLabel[1] = -1;
+    fLabel[2] = -1;
+}
+
+AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid) :
+  AliTRDtrackletBase(),
+  fGeo(0x0),
+  fHCId(hcid),
+  fTrackletWord(trackletWord),
+  fMCM(-1),
+  fROB(-1),
+  fQ0(0),
+  fQ1(0),
+  fNHits(0),
+  fNHits0(0),
+  fNHits1(0),
+  fSlope(0.),
+  fOffset(0.),
+  fError(0.),
+  fNClusters(0),
+  fResiduals(0x0),
+  fClsCharges(0x0)
+{
     fGeo = new AliTRDgeometry();
     fLabel[0] = -1;
     fLabel[1] = -1;
@@ -82,7 +82,7 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid, Int_t rob,
   AliTRDtrackletBase(),
   fGeo(0x0),
   fHCId(hcid),
-  fTrackletWord(trackletWord), 
+  fTrackletWord(trackletWord),
   fMCM(mcm),
   fROB(rob),
   fQ0(0),
@@ -96,7 +96,7 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(UInt_t trackletWord, Int_t hcid, Int_t rob,
   fNClusters(0),
   fResiduals(0x0),
   fClsCharges(0x0)
-{ 
+{
     fGeo = new AliTRDgeometry();
     fLabel[0] = -1;
     fLabel[1] = -1;
@@ -134,7 +134,7 @@ AliTRDtrackletMCM::AliTRDtrackletMCM(const AliTRDtrackletMCM &rhs) :
     fLabel[2] = rhs.fLabel[2];
 }
 
-AliTRDtrackletMCM::~AliTRDtrackletMCM() 
+AliTRDtrackletMCM::~AliTRDtrackletMCM()
 {
   delete [] fResiduals;
   delete [] fClsCharges;
@@ -151,7 +151,7 @@ Int_t AliTRDtrackletMCM::GetYbin() const {
   }
 }
 
-Int_t AliTRDtrackletMCM::GetdY() const 
+Int_t AliTRDtrackletMCM::GetdY() const
 {
   // returns (signed) value of the deflection length
   if (fTrackletWord & (1 << 19)) {
@@ -163,7 +163,7 @@ Int_t AliTRDtrackletMCM::GetdY() const
 }
 
 void AliTRDtrackletMCM::SetLabel(Int_t label[])
-{ 
+{
   fLabel[0] = label[0];
   fLabel[1] = label[1];
   fLabel[2] = label[2];

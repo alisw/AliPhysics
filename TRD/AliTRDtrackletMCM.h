@@ -25,8 +25,8 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   ~AliTRDtrackletMCM();
 
   // ----- Getters for contents of tracklet word -----
-  Int_t GetYbin() const; 
-  Int_t GetdY() const; 
+  Int_t GetYbin() const;
+  Int_t GetdY() const;
   Int_t GetZbin() const { return ((fTrackletWord >> 20) & 0xf); }
   Int_t GetPID() const { return ((fTrackletWord >> 24) & 0xff); }
 
@@ -45,9 +45,9 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   Float_t GetdYdX() const { return (GetdY() * 140e-4 / 3.); }
   Float_t GetX() const { return fGeo->GetTime0((fHCId % 12) / 2); }
   Float_t GetY() const { return (GetYbin() * 160e-4); }
-  Float_t GetZ() const { return fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId / 12) % 5)->GetRowPos( 4 * (fROB / 2) + fMCM / 4) - 
+  Float_t GetZ() const { return fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId / 12) % 5)->GetRowPos( 4 * (fROB / 2) + fMCM / 4) -
       fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId /12) % 5)->GetRowSize(4 * (fROB / 2) + fMCM / 4) * .5; }
-  Float_t GetLocalZ() const { return GetZ() - 
+  Float_t GetLocalZ() const { return GetZ() -
       (fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId / 12) % 5)->GetRow0()+fGeo->GetPadPlane((fHCId % 12) / 2, (fHCId / 12) % 5)->GetRowEnd())/2.; }
 
   Int_t GetQ0() const { return fQ0; }
@@ -86,7 +86,7 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   AliTRDgeometry *fGeo; //! TRD geometry
 
   Int_t fHCId;                  // half-chamber ID (only transient)
-  UInt_t fTrackletWord;		// tracklet word: PID | Z | deflection length | Y 
+  UInt_t fTrackletWord;		// tracklet word: PID | Z | deflection length | Y
 				//          bits:  12   4            7          13
   Int_t fMCM; // MCM no. in which the tracklet was found
   Int_t fROB; // ROB no. on which the tracklet was found
@@ -99,7 +99,7 @@ class AliTRDtrackletMCM : public AliTRDtrackletBase {
   Int_t fNHits1; // no. of contributing clusters in window 1
 
   Int_t fLabel[3]; // up to 3 labels for MC track
-  
+
   Float_t  fSlope;	      // tracklet slope
   Float_t  fOffset;	      // tracklet offset
   Float_t  fError;            // tracklet error

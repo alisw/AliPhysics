@@ -37,7 +37,7 @@
 #include "AliESDTrdTrack.h"
 
 ClassImp(AliTRDtrackGTU)
-    
+
 AliTRDtrackGTU::AliTRDtrackGTU() :
   TObject(),
   fStack(-1),
@@ -71,7 +71,7 @@ AliTRDtrackGTU::~AliTRDtrackGTU()
   delete fTracklets;
 }
 
-void AliTRDtrackGTU::AddTracklet(const AliTRDtrackletGTU * const tracklet, Int_t layer) 
+void AliTRDtrackGTU::AddTracklet(const AliTRDtrackletGTU * const tracklet, Int_t layer)
 {
 // add a tracklet to this track
 
@@ -85,13 +85,13 @@ void AliTRDtrackGTU::AddTracklet(const AliTRDtrackletGTU * const tracklet, Int_t
   fTrackletMask |= (1 << layer);
 }
 
-AliTRDtrackletGTU* AliTRDtrackGTU::GetTracklet(Int_t layer) 
+AliTRDtrackletGTU* AliTRDtrackGTU::GetTracklet(Int_t layer)
 {
 // get a pointer to the tracklet in the layer specified
 
   if (IsTrackletInLayer(layer))
     return ((AliTRDtrackletGTU*) (*fTracklets)[layer]);
-  else 
+  else
     return 0x0;
 }
 
@@ -102,26 +102,26 @@ Int_t AliTRDtrackGTU::GetNTracklets() const
   return fNTracklets;
 }
 
-Bool_t AliTRDtrackGTU::IsTrackletInLayer(Int_t layer) const 
+Bool_t AliTRDtrackGTU::IsTrackletInLayer(Int_t layer) const
 {
 // checks for a tracklet in the given layer
 
   if ( (GetTrackletMask() & (1 << layer)) != 0)
     return kTRUE;
-  else 
+  else
     return kFALSE;
 }
 
-void AliTRDtrackGTU::SetFitParams(Float_t a, Float_t b, Float_t c) 
+void AliTRDtrackGTU::SetFitParams(Float_t a, Float_t b, Float_t c)
 {
 // set the fit parameters
 
-  fA = a; 
+  fA = a;
   fB = b;
   fC = c;
 }
 
-Int_t AliTRDtrackGTU::GetZSubChannel() 
+Int_t AliTRDtrackGTU::GetZSubChannel()
 {
 // returns the z-subchannel
 
@@ -135,11 +135,11 @@ Int_t AliTRDtrackGTU::GetZSubChannel()
   return fZSubChannel;
 }
 
-Int_t AliTRDtrackGTU::GetYapprox() 
+Int_t AliTRDtrackGTU::GetYapprox()
 {
 // returns an approximated y-position for the track
 
-  for (Int_t layer = 0; layer < AliTRDgtuParam::GetNLayers(); layer++) 
+  for (Int_t layer = 0; layer < AliTRDgtuParam::GetNLayers(); layer++)
   {
     if (IsTrackletInLayer(layer))
       return ((AliTRDtrackletGTU*) (*fTracklets)[layer])->GetYProj();
@@ -159,7 +159,7 @@ AliESDTrdTrack* AliTRDtrackGTU::CreateTrdTrack() const
     return trk;
 }
 
-Bool_t AliTRDtrackGTU::CookLabel() 
+Bool_t AliTRDtrackGTU::CookLabel()
 {
     TH1F *h = new TH1F("trkref", "trkref", 100000, 0, 100000);
     for (Int_t iTracklet = 0; iTracklet < 6; iTracklet++) {
@@ -169,7 +169,7 @@ Bool_t AliTRDtrackGTU::CookLabel()
     }
     if (h->GetEntries() > 0)
 	fLabel = h->GetMaximumBin() - 1;
-    else 
+    else
 	fLabel = -1;
     delete h;
     return (fLabel >= 0);

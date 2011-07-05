@@ -76,7 +76,7 @@ void AliTRDTriggerL0::Trigger()
   for (Int_t iResult = 1; iResult <= simulationResult[0]; iResult++) {
     AliDebug(5, Form("Result[%d]=0x%x\n",iResult,simulationResult[iResult]));
   }
-  if ((simulationResult[0] > 0) || (simulationResult[1] > 0)) { 
+  if ((simulationResult[0] > 0) || (simulationResult[1] > 0)) {
     AliInfo("Fired single gap trigger");
     SetInput("0HSG");
   }

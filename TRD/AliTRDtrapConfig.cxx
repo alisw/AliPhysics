@@ -38,7 +38,7 @@ AliTRDtrapConfig* AliTRDtrapConfig::fgInstance = 0x0;
 const Int_t AliTRDtrapConfig::fgkMaxMcm = AliTRDfeeParam::GetNmcmRob() + 2;
 const Int_t AliTRDtrapConfig::fgkDmemStartAddress = 0xc000;
 
-AliTRDtrapConfig::AliTRDtrapConfig() : 
+AliTRDtrapConfig::AliTRDtrapConfig() :
   TObject(), fScaleQ0(0), fScaleQ1(0)
 {
   // default constructor, initializing array of TRAP registers
@@ -481,7 +481,7 @@ AliTRDtrapConfig::AliTRDtrapConfig() :
 
 
   for(Int_t iAddr = 0; iAddr < fgkDmemWords; iAddr++) {
-     
+
      if(iAddr == fgkDmemAddrDeflCorr - fgkDmemStartAddress) {
 	fDmem[iAddr] = new UInt_t[fgkDmemSizeSmIndividual];
 	fDmemDepth[iAddr] = fgkDmemSizeSmIndividual;
@@ -493,7 +493,7 @@ AliTRDtrapConfig::AliTRDtrapConfig() :
      }
 
      else if(iAddr >= fgkDmemAddrDeflCutStart-fgkDmemStartAddress && iAddr <= fgkDmemAddrDeflCutEnd-fgkDmemStartAddress) {
-	fDmem[iAddr]  = new UInt_t[fgkDmemSizeSmIndividual];   
+	fDmem[iAddr]  = new UInt_t[fgkDmemSizeSmIndividual];
 	fDmemDepth[iAddr] = fgkDmemSizeSmIndividual;
      }
 
@@ -508,15 +508,15 @@ AliTRDtrapConfig::AliTRDtrapConfig() :
     }
 
      else if(iAddr == fgkDmemAddrLUTcor0-fgkDmemStartAddress) {
-	fDmem[iAddr]  = new UInt_t[fgkDmemSizeSmIndividual];   
+	fDmem[iAddr]  = new UInt_t[fgkDmemSizeSmIndividual];
 	fDmemDepth[iAddr]  = fgkDmemSizeSmIndividual;
      }
 
      else if(iAddr == fgkDmemAddrLUTcor1-fgkDmemStartAddress) {
-	fDmem[iAddr]  = new UInt_t[fgkDmemSizeSmIndividual];   
+	fDmem[iAddr]  = new UInt_t[fgkDmemSizeSmIndividual];
 	fDmemDepth[iAddr]  = fgkDmemSizeSmIndividual;
      }
-	
+
      else if(iAddr == fgkDmemAddrLUTnbins-fgkDmemStartAddress) {
 	fDmem[iAddr]  = new UInt_t;   // same value for all MCMs
 	fDmemDepth[iAddr] = fgkDmemSizeUniform;
@@ -531,7 +531,7 @@ AliTRDtrapConfig::AliTRDtrapConfig() :
 	fDmem[iAddr] = NULL;
 	fDmemDepth[iAddr] = fgkDmemSizeEmpty;
      }
-     
+
   }
 
   InitRegs();
@@ -576,7 +576,7 @@ AliTRDtrapConfig::~AliTRDtrapConfig()
 
      else if(iAddr == fgkDmemAddrLUTcor1-fgkDmemStartAddress)
 	delete [] fDmem[iAddr];
-	
+
      else if(iAddr == fgkDmemAddrLUTnbins-fgkDmemStartAddress)
 	delete fDmem[iAddr];
 
@@ -633,7 +633,7 @@ void AliTRDtrapConfig::ResetDmem()
 
 Int_t AliTRDtrapConfig::GetTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t mcm) const
 {
-  // get the value of an individual TRAP register 
+  // get the value of an individual TRAP register
   // if it is individual for TRAPs a valid TRAP has to be specified
 
   if ((reg < 0) || (reg >= kLastReg)) {
@@ -645,8 +645,8 @@ Int_t AliTRDtrapConfig::GetTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t mc
       return fRegisterValue[reg].globalValue;
     }
     else if (fRegisterValue[reg].state == RegValue_t::kIndividual) {
-       if((det >= 0 && det < AliTRDgeometry::Ndet()) && 
-          (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) && 
+       if((det >= 0 && det < AliTRDgeometry::Ndet()) &&
+          (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) &&
           (mcm >= 0 && mcm < fgkMaxMcm)) {
          return fRegisterValue[reg].individualValue[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm];
        }
@@ -689,7 +689,7 @@ Bool_t AliTRDtrapConfig::SetTrapReg(TrapReg_t reg, Int_t value, Int_t det)
       return kTRUE;
    }
    else if (fRegisterValue[reg].state == RegValue_t::kIndividual) {
-      // if the register is in idividual mode but a broadcast is requested, the selected register is 
+      // if the register is in idividual mode but a broadcast is requested, the selected register is
       // set to value for all MCMs on the chamber
 
       if( (det>=0 && det<AliTRDgeometry::Ndet())) {
@@ -707,24 +707,24 @@ Bool_t AliTRDtrapConfig::SetTrapReg(TrapReg_t reg, Int_t value, Int_t det)
       AliError("MCM register status neither kGlobal nor kIndividual");
       return kFALSE;
    }
-   
+
    return kFALSE;
 }
 
 
 Bool_t AliTRDtrapConfig::SetTrapReg(TrapReg_t reg, Int_t value, Int_t det, Int_t rob, Int_t mcm)
 {
-  // set the value for the given TRAP register of an individual MCM 
+  // set the value for the given TRAP register of an individual MCM
 
-  //std::cout << "-- reg: 0x" << std::hex << fRegs[reg].addr << 
+  //std::cout << "-- reg: 0x" << std::hex << fRegs[reg].addr <<
   //std::dec << ", data " << value << ", det " << det << ", rob " << rob << ", mcm " << mcm << std::endl;
 
-   if( (det >= 0 && det < AliTRDgeometry::Ndet()) && 
-       (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) && 
+   if( (det >= 0 && det < AliTRDgeometry::Ndet()) &&
+       (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) &&
        (mcm >= 0 && mcm < fgkMaxMcm) ) {
      if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
 	Int_t defaultValue = fRegisterValue[reg].globalValue;
-	
+
 	fRegisterValue[reg].state = RegValue_t::kIndividual;
 	fRegisterValue[reg].individualValue = new Int_t[AliTRDgeometry::Ndet()*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm];
 
@@ -754,7 +754,7 @@ UInt_t AliTRDtrapConfig::Peek(Int_t addr, Int_t det, Int_t rob, Int_t mcm) const
 {
   // reading from given address
 
-  if ( (addr >= fgkDmemStartAddress) && 
+  if ( (addr >= fgkDmemStartAddress) &&
        (addr < (fgkDmemStartAddress + fgkDmemWords)) ) {
     return GetDmemUnsigned(addr, det, rob, mcm);
   }
@@ -773,7 +773,7 @@ Bool_t AliTRDtrapConfig::Poke(Int_t addr, UInt_t value, Int_t det, Int_t rob, In
 {
   // writing to given address
 
-  if ( (addr >= fgkDmemStartAddress) && 
+  if ( (addr >= fgkDmemStartAddress) &&
        (addr < (fgkDmemStartAddress + fgkDmemWords)) ) {
     AliDebug(2, Form("DMEM 0x%08x : %i", addr, value));
     SetDmem(addr, value, det, rob, mcm);
@@ -787,14 +787,14 @@ Bool_t AliTRDtrapConfig::Poke(Int_t addr, UInt_t value, Int_t det, Int_t rob, In
       return kTRUE;
     }
   }
-  
+
   return kFALSE;
 }
 
 
 Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, UInt_t value)
 {
-  // Set the content of the given DMEM address 
+  // Set the content of the given DMEM address
 
    addr = addr - fgkDmemStartAddress;
 
@@ -849,12 +849,12 @@ Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, UInt_t value)
 
 Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, UInt_t value, Int_t det, Int_t rob, Int_t mcm)
 {
-  // Set the content of the given DMEM address 
+  // Set the content of the given DMEM address
 
    addr = addr - fgkDmemStartAddress;
    Int_t roc = det%30;
    Int_t loc;
-   
+
    if(addr < 0 || addr >=  fgkDmemWords) {
       AliError(Form("No DMEM address: 0x%08x", addr+fgkDmemStartAddress));
       return kFALSE;
@@ -892,7 +892,7 @@ Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, UInt_t value, Int_t det, Int_t rob,
       if(loc < fgkDmemSizeTotalIndividual) {
 	 if(fDmem[addr][loc]!=0)
 	    AliDebug(5, Form("Warning: Setting new value to DMEM 0x%08x", addr+fgkDmemStartAddress));
-	 
+
 	 fDmem[addr][loc]=value;
       }
       else {
@@ -911,14 +911,14 @@ Bool_t AliTRDtrapConfig::SetDmem(Int_t addr, UInt_t value, Int_t det, Int_t rob,
 	 AliError(Form("DMEM sub-address %i out of scope", det));
 	 return kFALSE;
       }
-      
+
       break;
    default:
       AliError(Form("Invalid selection type"));
       return kFALSE;
       break;
    }
-   
+
    return kTRUE;
 }
 
@@ -945,7 +945,7 @@ UInt_t AliTRDtrapConfig::GetDmemUnsigned(Int_t addr, Int_t det, Int_t rob, Int_t
    addr = addr - fgkDmemStartAddress;
    Int_t roc = det%30;
    Int_t loc;
-   
+
    if(addr < 0 || addr >=  fgkDmemWords) {
       AliError(Form("No DMEM address: 0x%08x", addr+fgkDmemStartAddress));
       return 0;
@@ -996,17 +996,17 @@ UInt_t AliTRDtrapConfig::GetDmemUnsigned(Int_t addr, Int_t det, Int_t rob, Int_t
       return 0;
       break;
    }
-   
+
    return 0;
 }
 
 
-Bool_t AliTRDtrapConfig::ReadPackedConfig(Int_t hc, UInt_t *data, Int_t size) 
+Bool_t AliTRDtrapConfig::ReadPackedConfig(Int_t hc, UInt_t *data, Int_t size)
 {
   // Read the packed configuration from the passed memory block
   //
-  // To be used to retrieve the TRAP configuration from the 
-  // configuration as sent in the raw data. 
+  // To be used to retrieve the TRAP configuration from the
+  // configuration as sent in the raw data.
 
   AliDebug(1, "Reading packed configuration");
 
@@ -1015,31 +1015,31 @@ Bool_t AliTRDtrapConfig::ReadPackedConfig(Int_t hc, UInt_t *data, Int_t size)
   Int_t idx = 0;
   Int_t err = 0;
   Int_t step, bwidth, nwords, exitFlag, bitcnt;
-  
+
   UShort_t caddr;
   UInt_t dat, msk, header, dataHi;
-  
+
   while (idx < size && *data != 0x00000000) {
-    
+
     Int_t rob = (*data >> 28) & 0x7;
     Int_t mcm = (*data >> 24) & 0xf;
 
     AliDebug(1, Form("Config of det. %3i MCM %i:%02i (0x%08x)", det, rob, mcm, *data));
     data++;
-    
+
     while (idx < size && *data != 0x00000000) {
-      
+
       header = *data;
       data++;
       idx++;
-      
+
       AliDebug(5, Form("read: 0x%08x", header));
-      
+
       if (header & 0x01) // single data
 	{
-	  dat   = (header >>  2) & 0xFFFF;       // 16 bit data 
-	  caddr = (header >> 18) & 0x3FFF;    // 14 bit address 
-	  
+	  dat   = (header >>  2) & 0xFFFF;       // 16 bit data
+	  caddr = (header >> 18) & 0x3FFF;    // 14 bit address
+
 	  if (caddr != 0x1FFF)  // temp!!! because the end marker was wrong
 	    {
 	      if (header & 0x02) // check if > 16 bits
@@ -1066,18 +1066,18 @@ Bool_t AliTRDtrapConfig::ReadPackedConfig(Int_t hc, UInt_t *data, Int_t size)
 	      return err;
 	    }
 	}
-      
-      else               // block of data  
+
+      else               // block of data
 	{
 	  step   =  (header >>  1) & 0x0003;
 	  bwidth = ((header >>  3) & 0x001F) + 1;
 	  nwords =  (header >>  8) & 0x00FF;
 	  caddr  =  (header >> 16) & 0xFFFF;
 	  exitFlag = (step == 0) || (step == 3) || (nwords == 0);
-	  
-	  if (exitFlag) 
+
+	  if (exitFlag)
 	    break;
-	  
+
 	  switch (bwidth)
 	    {
 	    case    15:
@@ -1105,7 +1105,7 @@ Bool_t AliTRDtrapConfig::ReadPackedConfig(Int_t hc, UInt_t *data, Int_t size)
 		    AliDebug(5, Form("addr=0x%04x (%s) data=0x%08x\n", caddr, GetRegName(GetRegByAddress(caddr)), header & msk));
 		    if ( ! Poke(caddr, header & msk, det, rob, mcm) )
 		      AliDebug(5, Form("(single-write): non-existing address 0x%04x containing 0x%08x\n", caddr, header));
-		    
+
 		    caddr += step;
 		    header = header >> bwidth;
 		    if (idx >= size)
@@ -1115,7 +1115,7 @@ Bool_t AliTRDtrapConfig::ReadPackedConfig(Int_t hc, UInt_t *data, Int_t size)
 		      }
 		  }
 		break;
-	      } // end case 5-15                                         
+	      } // end case 5-15
 	    case 31:
 	      {
 		while (nwords > 0)
@@ -1126,11 +1126,11 @@ Bool_t AliTRDtrapConfig::ReadPackedConfig(Int_t hc, UInt_t *data, Int_t size)
 		    idx++;
 		    nwords--;
 		    err += (header & 1);
-		    
+
 		    AliDebug(5, Form("addr=0x%04x (%s) data=0x%08x", caddr, GetRegName(GetRegByAddress(caddr)), header >> 1));
 		    if ( ! Poke(caddr, header >> 1, det, rob, mcm) )
 		      AliDebug(5, Form("(single-write): non-existing address 0x%04x containing 0x%08x\n", caddr, header));
-		    
+
 		    caddr += step;
 		    if (idx >= size)
 		      {
@@ -1141,12 +1141,12 @@ Bool_t AliTRDtrapConfig::ReadPackedConfig(Int_t hc, UInt_t *data, Int_t size)
 		break;
 	      }
 	    default: return err;
-	    } // end switch 
+	    } // end switch
 	} // end block case
     }
   } // end while
   AliDebug(5, Form("no end marker! %d words read", idx));
-  return -err; // only if the max length of the block reached!                       
+  return -err; // only if the max length of the block reached!
 }
 
 
@@ -1156,7 +1156,7 @@ Bool_t AliTRDtrapConfig::PrintTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t
   // if it is individual a valid MCM has to be specified
 
   if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
-    printf("%s (%i bits) at 0x%08x is 0x%08x and resets to: 0x%08x (currently global mode)\n", 
+    printf("%s (%i bits) at 0x%08x is 0x%08x and resets to: 0x%08x (currently global mode)\n",
            GetRegName((TrapReg_t) reg),
            GetRegNBits((TrapReg_t) reg),
            GetRegAddress((TrapReg_t) reg),
@@ -1164,10 +1164,10 @@ Bool_t AliTRDtrapConfig::PrintTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t
            GetRegResetValue((TrapReg_t) reg));
   }
   else if (fRegisterValue[reg].state == RegValue_t::kIndividual) {
-    if((det >= 0 && det < AliTRDgeometry::Ndet()) && 
-       (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) && 
+    if((det >= 0 && det < AliTRDgeometry::Ndet()) &&
+       (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) &&
        (mcm >= 0 && mcm < fgkMaxMcm)) {
-      printf("%s (%i bits) at 0x%08x is 0x%08x and resets to: 0x%08x (currently individual mode)\n", 
+      printf("%s (%i bits) at 0x%08x is 0x%08x and resets to: 0x%08x (currently individual mode)\n",
              GetRegName((TrapReg_t) reg),
              GetRegNBits((TrapReg_t) reg),
              GetRegAddress((TrapReg_t) reg),
@@ -1218,7 +1218,7 @@ Bool_t AliTRDtrapConfig::AddValues(UInt_t det, UInt_t cmd, UInt_t extali, Int_t 
 
   // configuration registers
   if(mcmReg >= 0 && mcmReg < kLastReg) {
-    
+
     for(Int_t linkPair=0; linkPair<fgkMaxLinkPairs; linkPair++) {
       if(AliTRDfeeParam::ExtAliToAli(extali, linkPair, rocType, mcmList, mcmListSize)!=0) {
 	Int_t i=0;
@@ -1234,7 +1234,7 @@ Bool_t AliTRDtrapConfig::AddValues(UInt_t det, UInt_t cmd, UInt_t extali, Int_t 
     return kTRUE;
   }
   // DMEM
-  else if ( (addr >= fgkDmemStartAddress) && 
+  else if ( (addr >= fgkDmemStartAddress) &&
 	    (addr < (fgkDmemStartAddress + fgkDmemWords))) {
     for(Int_t linkPair=0; linkPair<fgkMaxLinkPairs; linkPair++) {
       if(AliTRDfeeParam::ExtAliToAli(extali, linkPair, rocType, mcmList, mcmListSize)!=0) {
@@ -1250,7 +1250,7 @@ Bool_t AliTRDtrapConfig::AddValues(UInt_t det, UInt_t cmd, UInt_t extali, Int_t 
     }
     return kTRUE;
   }
-  else 
+  else
     return kFALSE;
 }
 
@@ -1305,13 +1305,13 @@ void AliTRDtrapConfig::PrintMemDatx(ostream &os, TrapReg_t reg, Int_t det, Int_t
 
 void AliTRDtrapConfig::PrintDatx(ostream &os, UInt_t addr, UInt_t data, Int_t rob, Int_t mcm) const
 {
-   os << std::setw(5) << 10 
+   os << std::setw(5) << 10
       << std::setw(8) << addr
       << std::setw(12) << data;
    if(mcm==127)
       os << std::setw(8) << 127;
    else
       os << std::setw(8) << AliTRDfeeParam::AliToExtAli(rob, mcm);
-   
+
    os << std::endl;
 }

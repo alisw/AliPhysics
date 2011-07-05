@@ -29,39 +29,39 @@ class AliTRDmcmSim : public TObject {
                     AliTRDmcmSim();
   virtual          ~AliTRDmcmSim();
 
-          void      Init(Int_t det, Int_t rob, Int_t mcm, Bool_t newEvent = kFALSE);   
+          void      Init(Int_t det, Int_t rob, Int_t mcm, Bool_t newEvent = kFALSE);
 	  // Initialize MCM by the position parameters
 
-	  void      Reset();                                                             
+	  void      Reset();
 	  // clears filter registers and internal data
 
 	  Bool_t    LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob, Int_t mcm);
 
 	  void      NoiseTest(Int_t nsamples, Int_t mean, Int_t sigma, Int_t inputGain = 1, Int_t inputTail = 2);
 
-	  Int_t     GetDataRaw(Int_t iadc, Int_t timebin)      const { return (fADCR[iadc][timebin] >> 2); } 
-	  // Get unfiltered ADC data 
-	  Int_t     GetDataFiltered(Int_t iadc, Int_t timebin) const { return (fADCF[iadc][timebin] >> 2); } 
+	  Int_t     GetDataRaw(Int_t iadc, Int_t timebin)      const { return (fADCR[iadc][timebin] >> 2); }
+	  // Get unfiltered ADC data
+	  Int_t     GetDataFiltered(Int_t iadc, Int_t timebin) const { return (fADCF[iadc][timebin] >> 2); }
 	  // Get filtered ADC data
 
-          void      SetData(Int_t iadc, Int_t *adc);           // Set ADC data with array 
+          void      SetData(Int_t iadc, Int_t *adc);           // Set ADC data with array
           void      SetData(Int_t iadc, Int_t it, Int_t adc); // Set ADC data
-	  void      SetData(AliTRDarrayADC * const adcArray, 
+	  void      SetData(AliTRDarrayADC * const adcArray,
 			    AliTRDdigitsManager * const digitsManager = 0x0);         // Set ADC data from adcArray
-	  void      SetDataByPad(AliTRDarrayADC *const adcArray, 
+	  void      SetDataByPad(AliTRDarrayADC *const adcArray,
 				 AliTRDdigitsManager * const digitsManager = 0x0);    // Set ADC data from adcArray
           void      SetDataPedestal(Int_t iadc);              // Fill ADC data with pedestal values
 
   static  Bool_t    GetApplyCut() { return fgApplyCut; }
   static  void      SetApplyCut(Bool_t applyCut) { fgApplyCut = applyCut; }
 
-  static  Int_t     GetAddBaseline() { return fgAddBaseline; }                   
-  static  void      SetAddBaseline(Int_t baseline) { fgAddBaseline = baseline; } 
-  // Additional baseline which is added for the processing 
-  // in the TRAP and removed when writing back the data. 
-  // This is needed to run with TRAP parameters set for a 
-  // different baseline but it will not change the baseline 
-  // of the output. 
+  static  Int_t     GetAddBaseline() { return fgAddBaseline; }
+  static  void      SetAddBaseline(Int_t baseline) { fgAddBaseline = baseline; }
+  // Additional baseline which is added for the processing
+  // in the TRAP and removed when writing back the data.
+  // This is needed to run with TRAP parameters set for a
+  // different baseline but it will not change the baseline
+  // of the output.
 
           Int_t     GetDetector() const  { return fDetector;  };     // Returns Chamber ID (0-539)
           Int_t     GetRobPos() const { return fRobPos; };           // Returns ROB position (0-7)
@@ -77,7 +77,7 @@ class AliTRDmcmSim : public TObject {
 
 	  Int_t     ProduceRawStream( UInt_t *buf, Int_t bufsize, UInt_t iEv = 0 ) const; // Produce raw data stream - Real data format
 	  Int_t     ProduceTrackletStream( UInt_t *buf, Int_t bufsize ); // produce the tracklet stream for this MCM
-		
+
 	  // different stages of processing in the TRAP
 	  void      Filter();                                  // Apply digital filters for existing data (according to configuration)
 	  void      ZSMapping();                               // Do ZS mapping for existing data
@@ -91,7 +91,7 @@ class AliTRDmcmSim : public TObject {
 	  // filter initialization (resets internal registers)
 	  void      FilterPedestalInit(Int_t baseline = 10);
 	  void      FilterGainInit();
-	  void      FilterTailInit(Int_t baseline = -1); 
+	  void      FilterTailInit(Int_t baseline = -1);
 
 	  // feed single sample to individual filter
 	  // this changes the internal registers
@@ -132,12 +132,12 @@ class AliTRDmcmSim : public TObject {
 
  protected:
 	  Bool_t    CheckInitialized() const;           // Check whether the class is initialized
-	  
+
 	  void      SetNTimebins(Int_t ntimebins);      // allocate data arrays corr. to the no. of timebins
 
  static const Int_t fgkFormatIndex;                     // index for format settings in stream
 
- static const Int_t fgkNADC;                            // Number of ADC 
+ static const Int_t fgkNADC;                            // Number of ADC
  static const Int_t fgkMaxTracklets = 4;                // maximum number of tracklet-words submitted per MCM (one per CPU)
  static const Int_t fgkAddDigits = 2;                   // additional digits used for internal representation of ADC data
 	                                                // all internal data as after data control block (i.e. 12 bit), s. TRAP manual
@@ -149,13 +149,13 @@ class AliTRDmcmSim : public TObject {
 
 	  Bool_t    fInitialized;                       // memory is allocated if initialized
 	  Int_t     fDetector;                          // Chamber ID
-	  Int_t     fRobPos;                            // ROB Position on chamber 
-	  Int_t     fMcmPos;                            // MCM Position on chamber 
+	  Int_t     fRobPos;                            // ROB Position on chamber
+	  Int_t     fMcmPos;                            // MCM Position on chamber
 	  Int_t     fRow;                               // Pad row number (0-11 or 0-15) of the MCM on chamber
 	  Int_t     fNTimeBin;                          // Number of timebins currently allocated
 	  Int_t   **fADCR;                              // Array with MCM ADC values (Raw, 12 bit)
 	  Int_t   **fADCF;                              // Array with MCM ADC values (Filtered, 12 bit)
-	  UInt_t   *fMCMT;                              // tracklet word for one mcm/trap-chip 
+	  UInt_t   *fMCMT;                              // tracklet word for one mcm/trap-chip
 	  TClonesArray *fTrackletArray;                 // Array of AliTRDtrackletMCM which contains MC information in addition to the tracklet word
 	  Int_t    *fZSMap;                             // Zero suppression map (1 dimensional projection)
 
@@ -191,33 +191,33 @@ class AliTRDmcmSim : public TObject {
 	  Int_t fNHits;                                 // Number of detected hits
 
 	  // tracklet calculation
-	  struct FitReg_t {                             // pointer to the 18 fit registers 
+	  struct FitReg_t {                             // pointer to the 18 fit registers
 	    Int_t  fNhits;                              // number of hits
 	    UInt_t fQ0;                                 // charge accumulated in first window
 	    UInt_t fQ1;                                 // charge accumulated in second window
 	    UInt_t fSumX;                               // sum x
-	    Int_t  fSumY;                               // sum y 
+	    Int_t  fSumY;                               // sum y
 	    UInt_t fSumX2;                              // sum x**2
 	    UInt_t fSumY2;                              // sum y**2
 	    Int_t  fSumXY;                              // sum x*y
 	  } *fFitReg;
 
 	  // Sort functions as in TRAP
-	  void Sort2(UShort_t  idx1i, UShort_t  idx2i, UShort_t  val1i, UShort_t  val2i, 
+	  void Sort2(UShort_t  idx1i, UShort_t  idx2i, UShort_t  val1i, UShort_t  val2i,
 		     UShort_t * const idx1o, UShort_t * const idx2o, UShort_t * const val1o, UShort_t * const val2o) const;
-	  void Sort3(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, 
-		     UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, 
-		     UShort_t * const idx1o, UShort_t * const idx2o, UShort_t * const idx3o, 
+	  void Sort3(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i,
+		     UShort_t  val1i, UShort_t  val2i, UShort_t  val3i,
+		     UShort_t * const idx1o, UShort_t * const idx2o, UShort_t * const idx3o,
 		     UShort_t * const val1o, UShort_t * const val2o, UShort_t * const val3o);
-	  void Sort6To4(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, UShort_t  idx4i, UShort_t  idx5i, UShort_t  idx6i, 
-			UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, UShort_t  val4i, UShort_t  val5i, UShort_t  val6i, 
-			UShort_t * const idx1o, UShort_t * const idx2o, UShort_t * const idx3o, UShort_t * const idx4o, 
+	  void Sort6To4(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, UShort_t  idx4i, UShort_t  idx5i, UShort_t  idx6i,
+			UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, UShort_t  val4i, UShort_t  val5i, UShort_t  val6i,
+			UShort_t * const idx1o, UShort_t * const idx2o, UShort_t * const idx3o, UShort_t * const idx4o,
 			UShort_t * const val1o, UShort_t * const val2o, UShort_t * const val3o, UShort_t * const val4o);
-	  void Sort6To2Worst(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, UShort_t  idx4i, UShort_t  idx5i, UShort_t  idx6i, 
-			     UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, UShort_t  val4i, UShort_t  val5i, UShort_t  val6i, 
+	  void Sort6To2Worst(UShort_t  idx1i, UShort_t  idx2i, UShort_t  idx3i, UShort_t  idx4i, UShort_t  idx5i, UShort_t  idx6i,
+			     UShort_t  val1i, UShort_t  val2i, UShort_t  val3i, UShort_t  val4i, UShort_t  val5i, UShort_t  val6i,
 			     UShort_t * const idx5o, UShort_t * const idx6o);
 
-	  UInt_t AddUintClipping(UInt_t a, UInt_t b, UInt_t nbits) const;  
+	  UInt_t AddUintClipping(UInt_t a, UInt_t b, UInt_t nbits) const;
 	  // Add a and b (unsigned) with clipping to the maximum value representable by nbits
 
  private:
@@ -226,7 +226,7 @@ class AliTRDmcmSim : public TObject {
 
   static Bool_t fgApplyCut;               // apply cut on deflection length
 
-  static Int_t fgAddBaseline;             // add baseline to the ADC values 
+  static Int_t fgAddBaseline;             // add baseline to the ADC values
 
   ClassDef(AliTRDmcmSim,6)
 };

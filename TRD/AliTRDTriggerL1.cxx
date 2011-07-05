@@ -68,11 +68,11 @@ void AliTRDTriggerL1::Trigger()
   AliLoader *trdLoader = runLoader->GetLoader("TRDLoader");
   if (!trdLoader)
     return;
-  
+
   // now running the GTU tracking;
   AliTRDgtuSim *gtusim = new AliTRDgtuSim();
   gtusim->RunGTU(trdLoader, 0x0);
-  
+
   TTree *trackTree = trdLoader->GetDataLoader("gtutracks")->Tree();
   if (!trackTree) {
     AliDebug(1,"Did not find track tree");
@@ -80,17 +80,17 @@ void AliTRDTriggerL1::Trigger()
   }
   TBranch *branch = trackTree->GetBranch("TRDtrackGTU");
   AliDebug(1,Form("TRD trigger: found %lld tracks", trackTree->GetEntriesFast()));
-  
+
   // trigger thresholds should go elsewhere
   Float_t ptThreshold1 = 2;
   Float_t ptThreshold2 = 9.9;
   Int_t trackThreshold1 = 6;
   Int_t trackThreshold2 = 2;
-  
+
   // trigger algorithms to come, e.g.
   Bool_t triggeredHighPt = kFALSE;
   Bool_t triggeredJet = kFALSE;
-  
+
   if (branch) {
     AliTRDtrackGTU *trk = 0x0;
     branch->SetAddress(&trk);
@@ -99,7 +99,7 @@ void AliTRDTriggerL1::Trigger()
     for (Int_t iTrack = 0; iTrack < trackTree->GetEntriesFast(); iTrack++) {
       trackTree->GetEntry(iTrack);
       if (TMath::Abs(trk->GetPt()) > 3.0) {
-        AliDebug(1, Form("Found track in sector %2i, stack %i with pt = %3.1f, triggered", 
+        AliDebug(1, Form("Found track in sector %2i, stack %i with pt = %3.1f, triggered",
                          trk->GetSector(), trk->GetStack(), trk->GetPt()));
         triggeredHighPt = kTRUE;
       }
@@ -126,7 +126,7 @@ void AliTRDTriggerL1::Trigger()
     AliWarning("GTU Branch not found");
   }
 
-  if (triggeredHighPt) { 
+  if (triggeredHighPt) {
     AliInfo("Fired high-pt trigger");
     SetInput("1HSH");
   }

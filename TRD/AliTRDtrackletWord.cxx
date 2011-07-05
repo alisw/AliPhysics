@@ -36,7 +36,7 @@ AliTRDtrackletWord::AliTRDtrackletWord(UInt_t trackletWord) :
   AliTRDtrackletBase(),
   fHCId(-1),
   fTrackletWord(trackletWord)
-{ 
+{
 
 }
 
@@ -44,7 +44,7 @@ AliTRDtrackletWord::AliTRDtrackletWord(UInt_t trackletWord, Int_t hcid) :
   AliTRDtrackletBase(),
   fHCId(hcid),
   fTrackletWord(trackletWord)
-{ 
+{
 
 }
 
@@ -56,7 +56,7 @@ AliTRDtrackletWord::AliTRDtrackletWord(const AliTRDtrackletWord &rhs) :
 
 }
 
-AliTRDtrackletWord::~AliTRDtrackletWord() 
+AliTRDtrackletWord::~AliTRDtrackletWord()
 {
 
 }
@@ -71,7 +71,7 @@ Int_t AliTRDtrackletWord::GetYbin() const {
   }
 }
 
-Int_t AliTRDtrackletWord::GetdY() const 
+Int_t AliTRDtrackletWord::GetdY() const
 {
   // returns (signed) value of the deflection length
   if (fTrackletWord & (1 << 19)) {

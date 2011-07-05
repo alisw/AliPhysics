@@ -49,11 +49,11 @@ const Float_t 	AliTRDgtuParam::fgkBinWidthdY = 140e-4;
 
 // ----- Bit widths (used for internal representation) -----
 const Int_t 	AliTRDgtuParam::fgkBitWidthY      = 13;
-const Int_t 	AliTRDgtuParam::fgkBitWidthdY     = 7; 
+const Int_t 	AliTRDgtuParam::fgkBitWidthdY     = 7;
 const Int_t 	AliTRDgtuParam::fgkBitWidthYProj  = 10;
-const Int_t 	AliTRDgtuParam::fgkBitExcessY 	  = 4; 
-const Int_t 	AliTRDgtuParam::fgkBitExcessAlpha = 10; 
-const Int_t 	AliTRDgtuParam::fgkBitExcessYProj = 2; 
+const Int_t 	AliTRDgtuParam::fgkBitExcessY 	  = 4;
+const Int_t 	AliTRDgtuParam::fgkBitExcessAlpha = 10;
+const Int_t 	AliTRDgtuParam::fgkBitExcessYProj = 2;
 
 // ----- Tracking parameters -----
 /*
@@ -84,10 +84,10 @@ AliTRDgtuParam::AliTRDgtuParam() :
     fCki[iLayer] = 0.;
   }
 
-  GenerateZChannelMap(); 
+  GenerateZChannelMap();
 }
 
-AliTRDgtuParam::~AliTRDgtuParam() 
+AliTRDgtuParam::~AliTRDgtuParam()
 {
   // dtor
 
@@ -95,17 +95,17 @@ AliTRDgtuParam::~AliTRDgtuParam()
   delete [] fRefLayers;
 }
 
-AliTRDgtuParam* AliTRDgtuParam::Instance() 
+AliTRDgtuParam* AliTRDgtuParam::Instance()
 {
   // get (or create) the single instance
 
-  if (fgInstance == 0) 
+  if (fgInstance == 0)
     fgInstance = new AliTRDgtuParam();
 
   return fgInstance;
 }
 
-void AliTRDgtuParam::Terminate() 
+void AliTRDgtuParam::Terminate()
 {
   // destruct the instance
 
@@ -115,7 +115,7 @@ void AliTRDgtuParam::Terminate()
   }
 }
 
-Bool_t AliTRDgtuParam::IsInZChannel(Int_t stack, Int_t layer, Int_t zchannel, Int_t zpos) const 
+Bool_t AliTRDgtuParam::IsInZChannel(Int_t stack, Int_t layer, Int_t zchannel, Int_t zpos) const
 {
   return (fZSubChannel[stack][zchannel][layer][zpos] != 0);
 }
@@ -125,20 +125,20 @@ Int_t AliTRDgtuParam::GetZSubchannel(Int_t stack, Int_t layer, Int_t zchannel, I
   return fZSubChannel[stack][zchannel][layer][zpos];
 }
 
-Int_t AliTRDgtuParam::GetRefLayer(Int_t refLayerIdx) const 
+Int_t AliTRDgtuParam::GetRefLayer(Int_t refLayerIdx) const
 {
   // returns the reference layer indexed by refLayerIdx
 
   if (refLayerIdx >= 0 && refLayerIdx < fgkNRefLayers)
     return fRefLayers[refLayerIdx];
-  else 
+  else
     return -1;
 }
 
-Int_t AliTRDgtuParam::GenerateZChannelMap() 
+Int_t AliTRDgtuParam::GenerateZChannelMap()
 {
   // generate the z-channel map
-  // assuming that the tracks come from the vertex 
+  // assuming that the tracks come from the vertex
   // +/- fVertexSize in z-direction
 
   Int_t iSec = 0; // sector is irrelevant
@@ -149,27 +149,27 @@ Int_t AliTRDgtuParam::GenerateZChannelMap()
     Float_t x[6] = { 0 };
     Float_t z[6][16] = {{ 0 }};
     Float_t dZ[6][16] = {{ 0 }};
-    
+
     for (Int_t iLayer = 0; iLayer < fGeo->Nlayer(); iLayer++) {
       AliTRDpadPlane *pp = fGeo->GetPadPlane(iLayer, iStack);
       x[iLayer]  = fGeo->GetTime0(iLayer) - fGeo->CdrHght(); // ???
       for (Int_t iRow = 0; iRow < fGeo->GetRowMax(iLayer, iStack, iSec); iRow++) {
 	z[iLayer][iRow]  = pp->GetRowPos(iRow); // this is the right (pos. z-direction) border of the pad
 	dZ[iLayer][iRow] = pp->GetRowSize(iRow); // length of the pad in z-direction
-	for (Int_t i = 0; i < fgkNZChannels; i++) 
+	for (Int_t i = 0; i < fgkNZChannels; i++)
 	    fZSubChannel[iStack][i][iLayer][iRow] = 0;
       }
     }
 
     for (Int_t fixRow = 0; fixRow < fGeo->GetRowMax(fgkFixLayer, iStack, iSec); fixRow++) {
-	
-      Double_t fixZmin = z[fgkFixLayer][fixRow] - dZ[fgkFixLayer][fixRow];  
+
+      Double_t fixZmin = z[fgkFixLayer][fixRow] - dZ[fgkFixLayer][fixRow];
       Double_t fixZmax = z[fgkFixLayer][fixRow];
-      Double_t fixX    = x[fgkFixLayer] + 1.5; // ??? 1.5 from where? 
+      Double_t fixX    = x[fgkFixLayer] + 1.5; // ??? 1.5 from where?
 
       for (Int_t iLayer = 0; iLayer < fGeo->Nlayer(); iLayer++) {
 	Double_t leftZ, rightZ;
-	
+
 	if (iLayer <= fgkFixLayer) {
 	  leftZ  = (fixZmin + fVertexSize) * (x[iLayer] + 1.5) / fixX - fVertexSize;
 	  rightZ = (fixZmax - fVertexSize) * (x[iLayer] + 1.5) / fixX + fVertexSize;
@@ -178,17 +178,17 @@ Int_t AliTRDgtuParam::GenerateZChannelMap()
 	  leftZ  = (fixZmin - fVertexSize) * (x[iLayer] + 1.5) / fixX + fVertexSize;
 	  rightZ = (fixZmax + fVertexSize) * (x[iLayer] + 1.5) / fixX - fVertexSize;
 	}
-	
+
 	Double_t epsilon = 0.001;
 	for (Int_t iRow = 0; iRow < fGeo->GetRowMax(iLayer, iStack, iSec); iRow++) {
-	  if ( (z[iLayer][iRow] )                    > (leftZ  + epsilon) && 
+	  if ( (z[iLayer][iRow] )                    > (leftZ  + epsilon) &&
 	       (z[iLayer][iRow] - dZ[iLayer][iRow] ) < (rightZ - epsilon) ) {
 	    fZChannelMap[iStack][fixRow][iLayer][iRow] = 1;
 	    if (fZSubChannel[iStack][fixRow % fgkNZChannels][iLayer][iRow] != 0) {
 	      AliError("Collision in Z-Channel assignment occured! No reliable tracking!!!");
 	      collision = kTRUE;
 	    }
-	    else 
+	    else
 	      fZSubChannel[iStack][fixRow % fgkNZChannels][iLayer][iRow] = fixRow / fgkNZChannels + 1;
 	  }
 
@@ -200,9 +200,9 @@ Int_t AliTRDgtuParam::GenerateZChannelMap()
   return ~collision;
 }
 
-Bool_t AliTRDgtuParam::DisplayZChannelMap(Int_t zchannel, Int_t subchannel) const 
+Bool_t AliTRDgtuParam::DisplayZChannelMap(Int_t zchannel, Int_t subchannel) const
 {
-  // display the z-channel map 
+  // display the z-channel map
 
   if (zchannel >= fgkNZChannels) {
     AliError("Invalid Z channel!");
@@ -216,7 +216,7 @@ Bool_t AliTRDgtuParam::DisplayZChannelMap(Int_t zchannel, Int_t subchannel) cons
   TCanvas *c = new TCanvas("zchmap", "Z-Chhannel Mapping");
   c->cd();
   TGraph **graphz = new TGraph*[fgkNZChannels];
-  for (Int_t zch = zchmin; zch < zchmax; zch++) 
+  for (Int_t zch = zchmin; zch < zchmax; zch++)
     graphz[zch] = new TGraph;
   TGraphAsymmErrors *graph = new TGraphAsymmErrors();
   graph->SetTitle("Z-Channel Map");
@@ -250,7 +250,7 @@ Bool_t AliTRDgtuParam::DisplayZChannelMap(Int_t zchannel, Int_t subchannel) cons
   return kTRUE;
 }
 
-Int_t AliTRDgtuParam::GetCiAlpha(Int_t layer) const 
+Int_t AliTRDgtuParam::GetCiAlpha(Int_t layer) const
 {
   // get the constant for the calculation of alpha
 
@@ -258,25 +258,25 @@ Int_t AliTRDgtuParam::GetCiAlpha(Int_t layer) const
   return ci;
 }
 
-Int_t AliTRDgtuParam::GetCiYProj(Int_t layer) const 
+Int_t AliTRDgtuParam::GetCiYProj(Int_t layer) const
 {
   // get the constant for the calculation of y_proj
 
-  Float_t xmid = (fGeo->GetTime0(0) + fGeo->GetTime0(fGeo->Nlayer()-1)) / 2.; 
+  Float_t xmid = (fGeo->GetTime0(0) + fGeo->GetTime0(fGeo->Nlayer()-1)) / 2.;
   Int_t ci = (Int_t) (- (fGeo->GetTime0(layer) - xmid) / GetChamberThickness() * GetBinWidthdY() / GetBinWidthY() * (1 << GetBitExcessYProj()) );
   return ci;
 }
 
 Int_t AliTRDgtuParam::GetYt(Int_t stack, Int_t layer, Int_t zrow) const
 {
-    return (Int_t) (- ( (layer % 2 ? 1 : -1) * 
-			(GetGeo()->GetPadPlane(layer, stack)->GetRowPos(zrow) - GetGeo()->GetPadPlane(layer, stack)->GetRowSize(zrow) / 2) * 
+    return (Int_t) (- ( (layer % 2 ? 1 : -1) *
+			(GetGeo()->GetPadPlane(layer, stack)->GetRowPos(zrow) - GetGeo()->GetPadPlane(layer, stack)->GetRowSize(zrow) / 2) *
 			TMath::Tan(- 2.0 / 180.0 * TMath::Pi()) ) / 0.016 );
 }
 
-Bool_t AliTRDgtuParam::GenerateRecoCoefficients(Int_t trackletMask) 
+Bool_t AliTRDgtuParam::GenerateRecoCoefficients(Int_t trackletMask)
 {
-  // calculate the coefficients for the straight line fit 
+  // calculate the coefficients for the straight line fit
   // depending on the mask of contributing tracklets
 
   fCurrTrackletMask = trackletMask;
@@ -290,7 +290,7 @@ Bool_t AliTRDgtuParam::GenerateRecoCoefficients(Int_t trackletMask)
 	  a(layer, 0) = 0;
 	  a(layer, 1) = 0;
 	  a(layer, 2) = 0;
-      } 
+      }
       else {
 	  a(layer, 0) = 1;
 	  a(layer, 1) = fGeo->GetTime0(layer);
@@ -311,7 +311,7 @@ Bool_t AliTRDgtuParam::GenerateRecoCoefficients(Int_t trackletMask)
   return kTRUE;
 }
 
-Float_t AliTRDgtuParam::GetAki(Int_t k, Int_t i) 
+Float_t AliTRDgtuParam::GetAki(Int_t k, Int_t i)
 {
   // get A_ki for the calculation of the tracking parameters
   if (fCurrTrackletMask != k)
@@ -320,7 +320,7 @@ Float_t AliTRDgtuParam::GetAki(Int_t k, Int_t i)
   return fAki[i];
 }
 
-Float_t AliTRDgtuParam::GetBki(Int_t k, Int_t i) 
+Float_t AliTRDgtuParam::GetBki(Int_t k, Int_t i)
 {
   // get B_ki for the calculation of the tracking parameters
 
@@ -330,7 +330,7 @@ Float_t AliTRDgtuParam::GetBki(Int_t k, Int_t i)
   return fBki[i];
 }
 
-Float_t AliTRDgtuParam::GetCki(Int_t k, Int_t i) 
+Float_t AliTRDgtuParam::GetCki(Int_t k, Int_t i)
 {
   // get B_ki for the calculation of the tracking parameters
 
@@ -341,7 +341,7 @@ Float_t AliTRDgtuParam::GetCki(Int_t k, Int_t i)
 }
 
 /*
-Float_t AliTRDgtuParam::GetD(Int_t k) const 
+Float_t AliTRDgtuParam::GetD(Int_t k) const
 {
   // get the determinant for the calculation of the tracking parameters
 
@@ -363,7 +363,7 @@ Float_t AliTRDgtuParam::GetD(Int_t k) const
   return t.Determinant();
 }
 
-Bool_t AliTRDgtuParam::GetFitParams(TVectorD& rhs, Int_t k) 
+Bool_t AliTRDgtuParam::GetFitParams(TVectorD& rhs, Int_t k)
 {
   // calculate the fitting parameters
   // will be changed!
@@ -389,7 +389,7 @@ Bool_t AliTRDgtuParam::GetFitParams(TVectorD& rhs, Int_t k)
 }
 */
 
-Bool_t AliTRDgtuParam::GetIntersectionPoints(Int_t k, Float_t &x1, Float_t &x2) 
+Bool_t AliTRDgtuParam::GetIntersectionPoints(Int_t k, Float_t &x1, Float_t &x2)
 {
   // get the x-coord. of the assumed circle/straight line intersection points
 
@@ -398,7 +398,7 @@ Bool_t AliTRDgtuParam::GetIntersectionPoints(Int_t k, Float_t &x1, Float_t &x2)
   Int_t nHits = 0;
   for (Int_t layer = 0; layer < GetNLayers(); layer++) {
     if ( (k >> layer) & 0x1 ) {
-      if (l1 < 0) 
+      if (l1 < 0)
 	l1 = layer;
       l2 = layer;
       nHits++;

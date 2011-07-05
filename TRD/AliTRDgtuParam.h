@@ -6,8 +6,8 @@
 /* $Id: AliTRDgtuParam.h 27496 2008-07-22 08:35:45Z cblume $ */
 
 // --------------------------------------------------------
-// 
-// Singleton class to hold the parameters steering the GTU 
+//
+// Singleton class to hold the parameters steering the GTU
 // tracking
 //
 // --------------------------------------------------------
@@ -21,7 +21,7 @@ class AliTRDgtuParam : public TObject {
   virtual ~AliTRDgtuParam();
 
   static AliTRDgtuParam *Instance(); // Singleton
-  static void Terminate(); 
+  static void Terminate();
 
   static Int_t GetNLinks() { return fgkNLinks; }
   static Int_t GetNLayers() { return fgkNLinks/2; }
@@ -94,7 +94,7 @@ class AliTRDgtuParam : public TObject {
   static const Int_t fgkBitExcessY; // excess bits for y-position
   static const Int_t fgkBitExcessAlpha; // excess bits for alpha
   static const Int_t fgkBitExcessYProj; // excess bits for projected y-position
- 
+
   Float_t fVertexSize;		// assumed vertex size (z-dir.) for the z-channel map
 
   Int_t fZChannelMap[5][16][6][16];		  // must be changed

@@ -40,10 +40,10 @@ class AliTRDgtuTMU : public TObject {
   Bool_t RunInputUnit(Int_t layer);
   Bool_t RunZChannelUnit(Int_t layer);
   Bool_t RunTrackFinder(Int_t zchannel, TList* ListOfTracks);
-  Bool_t RunTrackMerging(TList* ListOfTracks);	
+  Bool_t RunTrackMerging(TList* ListOfTracks);
   Bool_t RunTrackReconstruction(TList* ListOfTracks);
 
-  Bool_t CalculateTrackParams(AliTRDtrackGTU *track); 
+  Bool_t CalculateTrackParams(AliTRDtrackGTU *track);
   Bool_t Uniquifier(TList* inlist, TList *outlist);
   Bool_t CalculatePID(AliTRDtrackGTU *track);
 

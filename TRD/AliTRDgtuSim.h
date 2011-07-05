@@ -6,7 +6,7 @@
 /* $Id: AliTRDgtuSim.h 27496 2008-07-22 08:35:45Z cblume $ */
 
 // --------------------------------------------------------
-// 
+//
 // GTU simulation
 //
 // --------------------------------------------------------
@@ -33,7 +33,7 @@ class AliTRDgtuSim : public TObject {
   Bool_t RunGTUFromTrackletFile(TString filename, Int_t event, Int_t noev = 1);
 
   TTree* GetTreeOfTracks() { return fTrackTree; }
-  Bool_t WriteTracksToTree(TList *listOfTracks, Int_t event = 0); 
+  Bool_t WriteTracksToTree(TList *listOfTracks, Int_t event = 0);
   Bool_t WriteTracksToDataFile(TList *listOfTracks, Int_t event);
   Bool_t WriteTreesToFile() const;
   Bool_t WriteTracksToESD(const TList *const listOfTracks, AliESDEvent *esd);

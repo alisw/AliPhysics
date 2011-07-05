@@ -54,13 +54,13 @@ ClassImp(AliTRDmcmSim)
 Bool_t AliTRDmcmSim::fgApplyCut = kTRUE;
 Int_t  AliTRDmcmSim::fgAddBaseline = 0;
 
-const Int_t AliTRDmcmSim::fgkFormatIndex = std::ios_base::xalloc(); 
+const Int_t AliTRDmcmSim::fgkFormatIndex = std::ios_base::xalloc();
 
 const Int_t AliTRDmcmSim::fgkNADC = AliTRDfeeParam::GetNadcMcm();
-const UShort_t AliTRDmcmSim::fgkFPshifts[4] = {11, 14, 17, 21}; 
+const UShort_t AliTRDmcmSim::fgkFPshifts[4] = {11, 14, 17, 21};
 
 
-AliTRDmcmSim::AliTRDmcmSim() : 
+AliTRDmcmSim::AliTRDmcmSim() :
   TObject(),
   fInitialized(kFALSE),
   fDetector(-1),
@@ -99,7 +99,7 @@ AliTRDmcmSim::AliTRDmcmSim() :
   fFitPtr[3] = 0;
 }
 
-AliTRDmcmSim::~AliTRDmcmSim() 
+AliTRDmcmSim::~AliTRDmcmSim()
 {
   //
   // AliTRDmcmSim destructor
@@ -114,26 +114,26 @@ AliTRDmcmSim::~AliTRDmcmSim()
     delete [] fADCF;
     delete [] fZSMap;
     delete [] fMCMT;
- 
+
     delete [] fPedAcc;
     delete [] fGainCounterA;
     delete [] fGainCounterB;
     delete [] fTailAmplLong;
     delete [] fTailAmplShort;
     delete [] fFitReg;
-    
+
     fTrackletArray->Delete();
     delete fTrackletArray;
   }
 }
 
-void AliTRDmcmSim::Init( Int_t det, Int_t robPos, Int_t mcmPos, Bool_t /* newEvent */ ) 
+void AliTRDmcmSim::Init( Int_t det, Int_t robPos, Int_t mcmPos, Bool_t /* newEvent */ )
 {
   //
   // Initialize the class with new MCM position information
   // memory is allocated in the first initialization
   //
-   
+
   if (!fInitialized) {
     fFeeParam      = AliTRDfeeParam::Instance();
     fTrapConfig    = AliTRDtrapConfig::Instance();
@@ -144,7 +144,7 @@ void AliTRDmcmSim::Init( Int_t det, Int_t robPos, Int_t mcmPos, Bool_t /* newEve
   fMcmPos        = mcmPos;
   fNTimeBin      = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kC13CPUA);
   fRow           = fFeeParam->GetPadRowFromMCM( fRobPos, fMcmPos );
-  
+
   if (!fInitialized) {
     fADCR    = new Int_t *[fgkNADC];
     fADCF    = new Int_t *[fgkNADC];
@@ -155,16 +155,16 @@ void AliTRDmcmSim::Init( Int_t det, Int_t robPos, Int_t mcmPos, Bool_t /* newEve
       fADCR[iAdc] = new Int_t[fNTimeBin];
       fADCF[iAdc] = new Int_t[fNTimeBin];
     }
-    
+
     // filter registers
     fPedAcc = new UInt_t[fgkNADC]; // accumulator for pedestal filter
     fTailAmplLong = new UShort_t[fgkNADC];
     fTailAmplShort = new UShort_t[fgkNADC];
-    
+
     // tracklet calculation
-    fFitReg = new FitReg_t[fgkNADC]; 
+    fFitReg = new FitReg_t[fgkNADC];
     fTrackletArray = new TClonesArray("AliTRDtrackletMCM", fgkMaxTracklets);
-    
+
     fMCMT = new UInt_t[fgkMaxTracklets];
   }
 
@@ -178,7 +178,7 @@ void AliTRDmcmSim::Reset()
   // Resets the data values and internal filter registers
   // by re-initialising them
 
-  if( !CheckInitialized() ) 
+  if( !CheckInitialized() )
     return;
 
   for( Int_t iAdc = 0 ; iAdc < fgkNADC; iAdc++ ) {
@@ -190,25 +190,25 @@ void AliTRDmcmSim::Reset()
     fGainCounterA[iAdc] = 0;
     fGainCounterB[iAdc] = 0;
   }
-  
+
   for(Int_t i = 0; i < fgkMaxTracklets; i++) {
     fMCMT[i] = 0;
   }
 
   for (Int_t iDict = 0; iDict < 3; iDict++)
     fDict[iDict] = 0x0;
-  
+
   FilterPedestalInit();
   FilterGainInit();
   FilterTailInit();
 }
 
-void AliTRDmcmSim::SetNTimebins(Int_t ntimebins) 
+void AliTRDmcmSim::SetNTimebins(Int_t ntimebins)
 {
-  // Reallocate memory if a change in the number of timebins 
+  // Reallocate memory if a change in the number of timebins
   // is needed (should not be the case for real data)
 
-  if( !CheckInitialized() ) 
+  if( !CheckInitialized() )
     return;
 
   fNTimeBin = ntimebins;
@@ -220,11 +220,11 @@ void AliTRDmcmSim::SetNTimebins(Int_t ntimebins)
   }
 }
 
-Bool_t AliTRDmcmSim::LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob, Int_t mcm) 
+Bool_t AliTRDmcmSim::LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob, Int_t mcm)
 {
   // loads the ADC data as obtained from the digitsManager for the specified MCM.
-  // This method is meant for rare execution, e.g. in the visualization. When called 
-  // frequently use SetData(...) instead. 
+  // This method is meant for rare execution, e.g. in the visualization. When called
+  // frequently use SetData(...) instead.
 
   Init(det, rob, mcm);
 
@@ -257,35 +257,35 @@ Bool_t AliTRDmcmSim::LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob
 
     SetData(digits);
   }
-  else 
+  else
     retval = kFALSE;
-  
+
   delete digMgr;
-  
+
   return retval;
 }
 
 void AliTRDmcmSim::NoiseTest(Int_t nsamples, Int_t mean, Int_t sigma, Int_t inputGain, Int_t inputTail)
 {
-  // This function can be used to test the filters. 
+  // This function can be used to test the filters.
   // It feeds nsamples of ADC values with a gaussian distribution specified by mean and sigma.
   // The filter chain implemented here consists of:
   // Pedestal -> Gain -> Tail
-  // With inputGain and inputTail the input to the gain and tail filter, respectively, 
-  // can be chosen where 
+  // With inputGain and inputTail the input to the gain and tail filter, respectively,
+  // can be chosen where
   // 0: noise input
   // 1: pedestal output
   // 2: gain output
-  // The input has to be chosen from a stage before. 
-  // The filter behaviour is controlled by the TRAP parameters from AliTRDtrapConfig in the 
+  // The input has to be chosen from a stage before.
+  // The filter behaviour is controlled by the TRAP parameters from AliTRDtrapConfig in the
   // same way as in normal simulation.
   // The functions produces four histograms with the values at the different stages.
 
-  if( !CheckInitialized() ) 
+  if( !CheckInitialized() )
     return;
 
   TString nameInputGain;
-  TString nameInputTail; 
+  TString nameInputTail;
 
   switch (inputGain) {
       case 0:
@@ -322,46 +322,46 @@ void AliTRDmcmSim::NoiseTest(Int_t nsamples, Int_t mean, Int_t sigma, Int_t inpu
   TH1F *h   = new TH1F("noise", "Gaussian Noise;sample;ADC count",
                        nsamples, 0, nsamples);
   TH1F *hfp = new TH1F("ped", "Noise #rightarrow Pedestal filter;sample;ADC count", nsamples, 0, nsamples);
-  TH1F *hfg = new TH1F("gain", 
-                       (nameInputGain + "#rightarrow Gain;sample;ADC count").Data(), 
+  TH1F *hfg = new TH1F("gain",
+                       (nameInputGain + "#rightarrow Gain;sample;ADC count").Data(),
                        nsamples, 0, nsamples);
-  TH1F *hft = new TH1F("tail", 
-                       (nameInputTail + "#rightarrow Tail;sample;ADC count").Data(), 
+  TH1F *hft = new TH1F("tail",
+                       (nameInputTail + "#rightarrow Tail;sample;ADC count").Data(),
                        nsamples, 0, nsamples);
   h->SetStats(kFALSE);
   hfp->SetStats(kFALSE);
   hfg->SetStats(kFALSE);
   hft->SetStats(kFALSE);
-  
+
   Int_t value;  // ADC count with noise (10 bit)
   Int_t valuep; // pedestal filter output (12 bit)
   Int_t valueg; // gain filter output (12 bit)
   Int_t valuet; // tail filter value (12 bit)
-  
+
   for (Int_t i = 0; i < nsamples; i++) {
-    value = (Int_t) gRandom->Gaus(mean, sigma);  // generate noise with gaussian distribution 
+    value = (Int_t) gRandom->Gaus(mean, sigma);  // generate noise with gaussian distribution
     h->SetBinContent(i, value);
 
     valuep = FilterPedestalNextSample(1, 0, ((Int_t) value) << 2);
-    
+
     if (inputGain == 0)
       valueg = FilterGainNextSample(1, ((Int_t) value) << 2);
-    else 
-      valueg = FilterGainNextSample(1, valuep); 
-    
+    else
+      valueg = FilterGainNextSample(1, valuep);
+
     if (inputTail == 0)
       valuet = FilterTailNextSample(1, ((Int_t) value) << 2);
     else if (inputTail == 1)
-      valuet = FilterTailNextSample(1, valuep); 
+      valuet = FilterTailNextSample(1, valuep);
     else
-      valuet = FilterTailNextSample(1, valueg); 
+      valuet = FilterTailNextSample(1, valueg);
 
     hfp->SetBinContent(i, valuep >> 2);
     hfg->SetBinContent(i, valueg >> 2);
     hft->SetBinContent(i, valuet >> 2);
   }
 
-  TCanvas *c = new TCanvas; 
+  TCanvas *c = new TCanvas;
   c->Divide(2,2);
   c->cd(1);
   h->Draw();
@@ -379,7 +379,7 @@ Bool_t AliTRDmcmSim::CheckInitialized() const
   // Check whether object is initialized
   //
 
-  if( ! fInitialized ) 
+  if( ! fInitialized )
     AliError(Form ("AliTRDmcmSim is not initialized but function other than Init() is called."));
 
   return fInitialized;
@@ -388,16 +388,16 @@ Bool_t AliTRDmcmSim::CheckInitialized() const
 void AliTRDmcmSim::Print(Option_t* const option) const
 {
   // Prints the data stored and/or calculated for this MCM.
-  // The output is controlled by option which can be a sequence of any of 
+  // The output is controlled by option which can be a sequence of any of
   // the following characters:
   // R - prints raw ADC data
-  // F - prints filtered data 
+  // F - prints filtered data
   // H - prints detected hits
   // T - prints found tracklets
-  // The later stages are only meaningful after the corresponding calculations 
+  // The later stages are only meaningful after the corresponding calculations
   // have been performed.
 
-  if ( !CheckInitialized() ) 
+  if ( !CheckInitialized() )
     return;
 
   printf("MCM %i on ROB %i in detector %i\n", fMcmPos, fRobPos, fDetector);
@@ -423,18 +423,18 @@ void AliTRDmcmSim::Print(Option_t* const option) const
   }
 }
 
-void AliTRDmcmSim::Draw(Option_t* const option) 
+void AliTRDmcmSim::Draw(Option_t* const option)
 {
   // Plots the data stored in a 2-dim. timebin vs. ADC channel plot.
-  // The option selects what data is plotted and can be a sequence of 
+  // The option selects what data is plotted and can be a sequence of
   // the following characters:
   // R - plot raw data (default)
   // F - plot filtered data (meaningless if R is specified)
   // In addition to the ADC values:
-  // H - plot hits 
+  // H - plot hits
   // T - plot tracklets
 
-  if( !CheckInitialized() ) 
+  if( !CheckInitialized() )
     return;
 
   TString opt = option;
@@ -465,8 +465,8 @@ void AliTRDmcmSim::Draw(Option_t* const option)
   if (opt.Contains("H")) {
     TGraph *grHits = new TGraph();
     for (Int_t iHit = 0; iHit < fNHits; iHit++) {
-      grHits->SetPoint(iHit, 
-                       fHits[iHit].fChannel + 1 + fHits[iHit].fYpos/256., 
+      grHits->SetPoint(iHit,
+                       fHits[iHit].fChannel + 1 + fHits[iHit].fYpos/256.,
                        fHits[iHit].fTimebin);
     }
     grHits->Draw("*");
@@ -479,7 +479,7 @@ void AliTRDmcmSim::Draw(Option_t* const option)
       Float_t padWidth = 0.635 + 0.03 * (fDetector % 6);
       Float_t offset   = padWidth/256. * ((((((fRobPos & 0x1) << 2) + (fMcmPos & 0x3)) * 18) << 8) - ((18*4*2 - 18*2 - 3) << 7)); // revert adding offset in FitTracklet
       Int_t   ndrift   = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrNdrift, fDetector, fRobPos, fMcmPos) >> 5;
-      Float_t slope    = trkl->GetdY() * 140e-4 / ndrift; 
+      Float_t slope    = trkl->GetdY() * 140e-4 / ndrift;
 
       Int_t t0 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS);
       Int_t t1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFE);
@@ -536,7 +536,7 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *
 {
   // Set the ADC data from an AliTRDarrayADC
 
-  if( !CheckInitialized() ) 
+  if( !CheckInitialized() )
     return;
 
   fDigitsManager = digitsManager;
@@ -544,20 +544,20 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *
     for (Int_t iDict = 0; iDict < 3; iDict++) {
       AliTRDarrayDictionary *newDict = (AliTRDarrayDictionary*) fDigitsManager->GetDictionary(fDetector, iDict);
       if (fDict[iDict] != 0x0 && newDict != 0x0) {
-        
+
         if (fDict[iDict] == newDict)
           continue;
 
         fDict[iDict] = newDict;
-        fDict[iDict]->Expand(); 
+        fDict[iDict]->Expand();
       }
       else {
         fDict[iDict] = newDict;
         if (fDict[iDict])
           fDict[iDict]->Expand();
         }
-      
-      // If there is no data, set dictionary to zero to avoid crashes  
+
+      // If there is no data, set dictionary to zero to avoid crashes
       if (fDict[iDict]->GetDim() == 0)  {
         AliError(Form("Dictionary %i of det. %i has dim. 0", fDetector, iDict));
         fDict[iDict] = 0x0;
@@ -567,7 +567,7 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *
 
   if (fNTimeBin != adcArray->GetNtime())
     SetNTimebins(adcArray->GetNtime());
-  
+
   Int_t offset = (fMcmPos % 4 + 1) * 21 + (fRobPos % 2) * 84 - 1;
 
   for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
@@ -588,10 +588,10 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *
 
 void AliTRDmcmSim::SetDataByPad(AliTRDarrayADC* const adcArray, AliTRDdigitsManager * const digitsManager)
 {
-  // Set the ADC data from an AliTRDarrayADC 
+  // Set the ADC data from an AliTRDarrayADC
   // (by pad, to be used during initial reading in simulation)
 
-  if( !CheckInitialized() ) 
+  if( !CheckInitialized() )
     return;
 
   fDigitsManager = digitsManager;
@@ -599,20 +599,20 @@ void AliTRDmcmSim::SetDataByPad(AliTRDarrayADC* const adcArray, AliTRDdigitsMana
     for (Int_t iDict = 0; iDict < 3; iDict++) {
       AliTRDarrayDictionary *newDict = (AliTRDarrayDictionary*) fDigitsManager->GetDictionary(fDetector, iDict);
       if (fDict[iDict] != 0x0 && newDict != 0x0) {
-        
+
         if (fDict[iDict] == newDict)
           continue;
 
         fDict[iDict] = newDict;
-        fDict[iDict]->Expand(); 
+        fDict[iDict]->Expand();
       }
       else {
         fDict[iDict] = newDict;
         if (fDict[iDict])
           fDict[iDict]->Expand();
       }
-      
-      // If there is no data, set dictionary to zero to avoid crashes  
+
+      // If there is no data, set dictionary to zero to avoid crashes
       if (fDict[iDict]->GetDim() == 0)  {
         AliError(Form("Dictionary %i of det. %i has dim. 0", fDetector, iDict));
         fDict[iDict] = 0x0;
@@ -622,14 +622,14 @@ void AliTRDmcmSim::SetDataByPad(AliTRDarrayADC* const adcArray, AliTRDdigitsMana
 
   if (fNTimeBin != adcArray->GetNtime())
     SetNTimebins(adcArray->GetNtime());
-  
+
   Int_t offset = (fMcmPos % 4 + 1) * 18 + (fRobPos % 2) * 72 + 1;
 
   for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
     for (Int_t iAdc = 0; iAdc < fgkNADC; iAdc++) {
       Int_t value = -1;
       Int_t pad = offset - iAdc;
-      if (pad > -1 && pad < 144) 
+      if (pad > -1 && pad < 144)
 	value = adcArray->GetData(GetRow(), offset - iAdc, iTimeBin);
       //      Int_t value = adcArray->GetDataByAdcCol(GetRow(), offset - iAdc, iTimeBin);
       if (value < 0 || (offset - iAdc < 1) || (offset - iAdc > 165)) {
@@ -651,7 +651,7 @@ void AliTRDmcmSim::SetDataPedestal( Int_t adc )
   // Store ADC data into array of raw data
   //
 
-  if( !CheckInitialized() ) 
+  if( !CheckInitialized() )
     return;
 
   if( adc < 0 || adc >= fgkNADC ) {
@@ -670,13 +670,13 @@ Bool_t AliTRDmcmSim::GetHit(Int_t index, Int_t &channel, Int_t &timebin, Int_t &
 
   if (index < 0 || index >= fNHits)
     return kFALSE;
-  
+
   channel = fHits[index].fChannel;
   timebin = fHits[index].fTimebin;
   qtot    = fHits[index].fQtot;
   ypos    = fHits[index].fYpos;
   y       = (Float_t) ((((((fRobPos & 0x1) << 2) + (fMcmPos & 0x3)) * 18) << 8) - ((18*4*2 - 18*2 - 1) << 7) -
-                        (channel << 8) - ypos) 
+                        (channel << 8) - ypos)
     * (0.635 + 0.03 * (fDetector % 6))
     / 256.0;
   label   = fHits[index].fLabel[0];
@@ -690,13 +690,13 @@ Int_t AliTRDmcmSim::GetCol( Int_t adc )
   // Return column id of the pad for the given ADC channel
   //
 
-  if( !CheckInitialized() ) 
+  if( !CheckInitialized() )
     return -1;
 
   Int_t col = fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, adc);
-  if (col < 0 || col >= fFeeParam->GetNcol()) 
+  if (col < 0 || col >= fFeeParam->GetNcol())
     return -1;
-  else 
+  else
     return col;
 }
 
@@ -704,11 +704,11 @@ Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t bufSize, UInt_t iEv) co
 {
   //
   // Produce raw data stream from this MCM and put in buf
-  // Returns number of words filled, or negative value 
+  // Returns number of words filled, or negative value
   // with -1 * number of overflowed words
   //
 
-  if( !CheckInitialized() ) 
+  if( !CheckInitialized() )
     return 0;
 
   UInt_t  x;
@@ -720,14 +720,14 @@ Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t bufSize, UInt_t iEv) co
   Int_t **adc;
   Int_t   nActiveADC = 0;	// number of activated ADC bits in a word
 
-  if( !CheckInitialized() ) 
+  if( !CheckInitialized() )
     return 0;
 
   if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBSF) != 0) // store unfiltered data
     adc = fADCR;
-  else 
+  else
     adc = fADCF;
-  
+
   // Produce ADC mask : nncc cccm mmmm mmmm mmmm mmmm mmmm 1100
   // 				n : unused , c : ADC count, m : selected ADCs
   if( rawVer >= 3 &&
@@ -791,26 +791,26 @@ Int_t AliTRDmcmSim::ProduceTrackletStream( UInt_t *buf, Int_t bufSize )
 {
   //
   // Produce tracklet data stream from this MCM and put in buf
-  // Returns number of words filled, or negative value 
+  // Returns number of words filled, or negative value
   // with -1 * number of overflowed words
   //
 
-  if( !CheckInitialized() ) 
+  if( !CheckInitialized() )
     return 0;
 
   Int_t   nw  = 0;  // Number of written words
   Int_t   of  = 0;  // Number of overflowed words
-    
-  // Produce tracklet data. A maximum of four 32 Bit words will be written per MCM 
+
+  // Produce tracklet data. A maximum of four 32 Bit words will be written per MCM
   // fMCMT is filled continuously until no more tracklet words available
 
   for (Int_t iTracklet = 0; iTracklet < fTrackletArray->GetEntriesFast(); iTracklet++) {
-    if (nw < bufSize) 
+    if (nw < bufSize)
       buf[nw++] = ((AliTRDtrackletMCM*) (*fTrackletArray)[iTracklet])->GetTrackletWord();
-    else 
+    else
       of++;
   }
-  
+
   if( of != 0 ) return -of; else return nw;
 }
 
@@ -819,20 +819,20 @@ void AliTRDmcmSim::Filter()
   //
   // Filter the raw ADC values. The active filter stages and their
   // parameters are taken from AliTRDtrapConfig.
-  // The raw data is stored separate from the filtered data. Thus, 
-  // it is possible to run the filters on a set of raw values 
+  // The raw data is stored separate from the filtered data. Thus,
+  // it is possible to run the filters on a set of raw values
   // sequentially for parameter tuning.
   //
 
-  if( !CheckInitialized() ) 
+  if( !CheckInitialized() )
     return;
 
   // Apply filters sequentially. Bypass is handled by filters
-  // since counters and internal registers may be updated even 
+  // since counters and internal registers may be updated even
   // if the filter is bypassed.
-  // The first filter takes the data from fADCR and 
-  // outputs to fADCF. 
-  
+  // The first filter takes the data from fADCR and
+  // outputs to fADCF.
+
   // Non-linearity filter not implemented.
   FilterPedestal();
   FilterGain();
@@ -840,21 +840,21 @@ void AliTRDmcmSim::Filter()
   // Crosstalk filter not implemented.
 }
 
-void AliTRDmcmSim::FilterPedestalInit(Int_t baseline) 
+void AliTRDmcmSim::FilterPedestalInit(Int_t baseline)
 {
-  // Initializes the pedestal filter assuming that the input has 
+  // Initializes the pedestal filter assuming that the input has
   // been constant for a long time (compared to the time constant).
 
   UShort_t    fptc = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPTC); // 0..3, 0 - fastest, 3 - slowest
 
   for (Int_t iAdc = 0; iAdc < fgkNADC; iAdc++)
-    fPedAcc[iAdc] = (baseline << 2) * (1 << fgkFPshifts[fptc]); 
+    fPedAcc[iAdc] = (baseline << 2) * (1 << fgkFPshifts[fptc]);
 }
 
 UShort_t AliTRDmcmSim::FilterPedestalNextSample(Int_t adc, Int_t timebin, UShort_t value)
 {
   // Returns the output of the pedestal filter given the input value.
-  // The output depends on the internal registers and, thus, the 
+  // The output depends on the internal registers and, thus, the
   // history of the filter.
 
   UShort_t    fpnp = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP); // 0..511 -> 0..127.75, pedestal at the output
@@ -864,7 +864,7 @@ UShort_t AliTRDmcmSim::FilterPedestalNextSample(Int_t adc, Int_t timebin, UShort
   UShort_t accumulatorShifted;
   Int_t correction;
   UShort_t inpAdd;
-  
+
   inpAdd = value + fpnp;
 
   accumulatorShifted = (fPedAcc[adc] >> fgkFPshifts[fptc]) & 0x3FF;   // 10 bits
@@ -873,7 +873,7 @@ UShort_t AliTRDmcmSim::FilterPedestalNextSample(Int_t adc, Int_t timebin, UShort
     correction = (value & 0x3FF) - accumulatorShifted;
     fPedAcc[adc] = (fPedAcc[adc] + correction) & 0x7FFFFFFF;             // 31 bits
   }
-  
+
   if (fpby == 0)
     return value;
 
@@ -882,9 +882,9 @@ UShort_t AliTRDmcmSim::FilterPedestalNextSample(Int_t adc, Int_t timebin, UShort
   else
   {
     inpAdd = inpAdd - accumulatorShifted;
-    if (inpAdd > 0xFFF) 
+    if (inpAdd > 0xFFF)
       return 0xFFF;
-    else 
+    else
       return inpAdd;
   }
 }
@@ -894,10 +894,10 @@ void AliTRDmcmSim::FilterPedestal()
   //
   // Apply pedestal filter
   //
-  // As the first filter in the chain it reads data from fADCR 
-  // and outputs to fADCF. 
-  // It has only an effect if previous samples have been fed to 
-  // find the pedestal. Currently, the simulation assumes that 
+  // As the first filter in the chain it reads data from fADCR
+  // and outputs to fADCF.
+  // It has only an effect if previous samples have been fed to
+  // find the pedestal. Currently, the simulation assumes that
   // the input has been stable for a sufficiently long time.
 
   for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
@@ -909,11 +909,11 @@ void AliTRDmcmSim::FilterPedestal()
 
 void AliTRDmcmSim::FilterGainInit()
 {
-  // Initializes the gain filter. In this case, only threshold 
+  // Initializes the gain filter. In this case, only threshold
   // counters are reset.
 
   for (Int_t iAdc = 0; iAdc < fgkNADC; iAdc++) {
-    // these are counters which in hardware continue 
+    // these are counters which in hardware continue
     // until maximum or reset
     fGainCounterA[iAdc] = 0;
     fGainCounterB[iAdc] = 0;
@@ -924,7 +924,7 @@ UShort_t AliTRDmcmSim::FilterGainNextSample(Int_t adc, UShort_t value)
 {
   // Apply the gain filter to the given value.
   // BEGIN_LATEX O_{i}(t) = #gamma_{i} * I_{i}(t) + a_{i} END_LATEX
-  // The output depends on the internal registers and, thus, the 
+  // The output depends on the internal registers and, thus, the
   // history of the filter.
 
   UShort_t    fgby = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFGBY); // bypass, active low
@@ -940,19 +940,19 @@ UShort_t AliTRDmcmSim::FilterGainNextSample(Int_t adc, UShort_t value)
   corr = corr > 0xfff ? 0xfff : corr;
   corr = AddUintClipping(corr, fga, 12);
 
-  // Update threshold counters 
+  // Update threshold counters
   // not really useful as they are cleared with every new event
   if (!((fGainCounterA[adc] == 0x3FFFFFF) || (fGainCounterB[adc] == 0x3FFFFFF)))
   // stop when full
   {
-    if (corr >= fgtb) 
+    if (corr >= fgtb)
       fGainCounterB[adc]++;
-    else if (corr >= fgta) 
+    else if (corr >= fgta)
       fGainCounterA[adc]++;
   }
 
   if (fgby == 1)
-    return corr; 
+    return corr;
   else
     return value;
 }
@@ -970,8 +970,8 @@ void AliTRDmcmSim::FilterGain()
 
 void AliTRDmcmSim::FilterTailInit(Int_t baseline)
 {
-  // Initializes the tail filter assuming that the input has 
-  // been at the baseline value (configured by FTFP) for a 
+  // Initializes the tail filter assuming that the input has
+  // been at the baseline value (configured by FTFP) for a
   // sufficiently long time.
 
   // exponents and weight calculated from configuration
@@ -992,7 +992,7 @@ void AliTRDmcmSim::FilterTailInit(Int_t baseline)
 
   if (baseline < 0)
     baseline = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP);
-  
+
   ql = lambdaL * (1 - lambdaS) *      alphaL;
   qs = lambdaS * (1 - lambdaL) * (1 - alphaL);
 
@@ -1012,8 +1012,8 @@ void AliTRDmcmSim::FilterTailInit(Int_t baseline)
 
 UShort_t AliTRDmcmSim::FilterTailNextSample(Int_t adc, UShort_t value)
 {
-  // Returns the output of the tail filter for the given input value. 
-  // The output depends on the internal registers and, thus, the 
+  // Returns the output of the tail filter for the given input value.
+  // The output depends on the internal registers and, thus, the
   // history of the filter.
 
   // exponents and weight calculated from configuration
@@ -1026,21 +1026,21 @@ UShort_t AliTRDmcmSim::FilterTailNextSample(Int_t adc, UShort_t value)
   UInt_t   alInpv;
   UShort_t aQ;
   UInt_t   tmp;
-  
+
   UShort_t inpVolt = value & 0xFFF;    // 12 bits
-      
+
   // add the present generator outputs
   aQ = AddUintClipping(fTailAmplLong[adc], fTailAmplShort[adc], 12);
 
   // calculate the difference between the input and the generated signal
-  if (inpVolt > aQ) 
+  if (inpVolt > aQ)
     aDiff = inpVolt - aQ;
-  else                
+  else
     aDiff = 0;
-  
+
   // the inputs to the two generators, weighted
   alInpv = (aDiff * alphaLong) >> 11;
-  
+
   // the new values of the registers, used next time
   // long component
   tmp = AddUintClipping(fTailAmplLong[adc], alInpv, 12);
@@ -1050,7 +1050,7 @@ UShort_t AliTRDmcmSim::FilterTailNextSample(Int_t adc, UShort_t value)
   tmp = AddUintClipping(fTailAmplShort[adc], aDiff - alInpv, 12);
   tmp =  (tmp * lambdaShort) >> 11;
   fTailAmplShort[adc] = tmp & 0xFFF;
-  
+
   // the output of the filter
   if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTBY) == 0) // bypass mode, active low
     return value;
@@ -1060,7 +1060,7 @@ UShort_t AliTRDmcmSim::FilterTailNextSample(Int_t adc, UShort_t value)
 
 void AliTRDmcmSim::FilterTail()
 {
-  // Apply tail cancellation filter to all data. 
+  // Apply tail cancellation filter to all data.
 
   for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
     for (Int_t iAdc = 0; iAdc < fgkNADC; iAdc++) {
@@ -1079,17 +1079,17 @@ void AliTRDmcmSim::ZSMapping()
   // http://www.kip.uni-heidelberg.de/ti/TRD/doc/trap/TRAP-UserManual.pdf
   //
 
-  if( !CheckInitialized() ) 
+  if( !CheckInitialized() )
     return;
 
-  Int_t eBIS = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIS); 
-  Int_t eBIT = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIT); 
-  Int_t eBIL = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIL); 
-  Int_t eBIN = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIN); 
+  Int_t eBIS = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIS);
+  Int_t eBIT = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIT);
+  Int_t eBIL = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIL);
+  Int_t eBIN = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIN);
 
   Int_t **adc = fADCF;
 
-  for (Int_t iAdc = 0; iAdc < fgkNADC; iAdc++) 
+  for (Int_t iAdc = 0; iAdc < fgkNADC; iAdc++)
     fZSMap[iAdc] = -1;
 
   for( Int_t it = 0 ; it < fNTimeBin ; it++ ) {
@@ -1099,55 +1099,55 @@ void AliTRDmcmSim::ZSMapping()
     Int_t an;
     Int_t mask;
     Int_t supp; // suppression of the current channel (low active)
-    
+
     // ----- first channel -----
     iAdc = 0;
-    
+
     ap = 0;               // previous
     ac = adc[iAdc  ][it]; // current
     an = adc[iAdc+1][it]; // next
-    
+
     mask  = ( ac >=  ap && ac >=  an ) ? 0 : 0x1; // peak center detection
     mask += ( ap + ac + an > eBIT )    ? 0 : 0x2; // cluster
     mask += ( ac > eBIS )              ? 0 : 0x4; // absolute large peak
-    
+
     supp = (eBIL >> mask) & 1;
-    
+
     fZSMap[iAdc] &= ~((1-supp) << it);
     if( eBIN == 0 ) {  // neighbour sensitivity
       fZSMap[iAdc+1] &= ~((1-supp) << it);
     }
-    
+
     // ----- last channel -----
     iAdc = fgkNADC - 1;
-    
+
     ap = adc[iAdc-1][it]; // previous
     ac = adc[iAdc  ][it]; // current
     an = 0;               // next
-    
+
     mask  = ( ac >=  ap && ac >=  an ) ? 0 : 0x1; // peak center detection
     mask += ( ap + ac + an > eBIT )    ? 0 : 0x2; // cluster
     mask += ( ac > eBIS )              ? 0 : 0x4; // absolute large peak
-    
+
     supp = (eBIL >> mask) & 1;
-    
+
     fZSMap[iAdc] &= ~((1-supp) << it);
     if( eBIN == 0 ) {  // neighbour sensitivity
       fZSMap[iAdc-1] &= ~((1-supp) << it);
     }
-    
+
     // ----- middle channels -----
     for( iAdc = 1 ; iAdc < fgkNADC-1; iAdc++ ) {
       ap = adc[iAdc-1][it]; // previous
       ac = adc[iAdc  ][it]; // current
       an = adc[iAdc+1][it]; // next
-      
+
       mask  = ( ac >=  ap && ac >=  an ) ? 0 : 0x1; // peak center detection
       mask += ( ap + ac + an > eBIT )    ? 0 : 0x2; // cluster
       mask += ( ac > eBIS )              ? 0 : 0x4; // absolute large peak
-      
+
       supp = (eBIL >> mask) & 1;
-      
+
       fZSMap[iAdc] &= ~((1-supp) << it);
       if( eBIN == 0 ) {  // neighbour sensitivity
         fZSMap[iAdc-1] &= ~((1-supp) << it);
@@ -1160,20 +1160,20 @@ void AliTRDmcmSim::ZSMapping()
 
 void AliTRDmcmSim::AddHitToFitreg(Int_t adc, UShort_t timebin, UShort_t qtot, Short_t ypos, Int_t label[])
 {
-  // Add the given hit to the fit register which is lateron used for 
-  // the tracklet calculation. 
-  // In addition to the fit sums in the fit register MC information 
+  // Add the given hit to the fit register which is lateron used for
+  // the tracklet calculation.
+  // In addition to the fit sums in the fit register MC information
   // is stored.
 
-  if ((timebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0)) && 
+  if ((timebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0)) &&
       (timebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE0)))
     fFitReg[adc].fQ0 += qtot;
-  
-  if ((timebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS1)) && 
+
+  if ((timebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS1)) &&
       (timebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1)))
     fFitReg[adc].fQ1 += qtot;
-  
-  if ((timebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS) ) && 
+
+  if ((timebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS) ) &&
       (timebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFE)))
   {
     fFitReg[adc].fSumX  += timebin;
@@ -1195,32 +1195,32 @@ void AliTRDmcmSim::AddHitToFitreg(Int_t adc, UShort_t timebin, UShort_t qtot, Sh
   fNHits++;
 }
 
-void AliTRDmcmSim::CalcFitreg() 
+void AliTRDmcmSim::CalcFitreg()
 {
   // Preprocessing.
   // Detect the hits and fill the fit registers.
-  // Requires 12-bit data from fADCF which means Filter() 
+  // Requires 12-bit data from fADCF which means Filter()
   // has to be called before even if all filters are bypassed.
 
   //??? to be clarified:
   UInt_t adcMask = 0xffffffff;
-  
+
   UShort_t timebin, adcch, adcLeft, adcCentral, adcRight, hitQual, timebin1, timebin2, qtotTemp;
   Short_t ypos, fromLeft, fromRight, found;
   UShort_t qTotal[19+1]; // the last is dummy
   UShort_t marked[6], qMarked[6], worse1, worse2;
-  
-  timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS); 
-  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0) 
+
+  timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS);
+  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0)
       < timebin1)
     timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0);
-  timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFE); 
-  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1) 
+  timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFE);
+  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1)
       > timebin2)
     timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1);
 
   // reset the fit registers
-  fNHits = 0; 
+  fNHits = 0;
   for (adcch = 0; adcch < fgkNADC-2; adcch++) // due to border channels
   {
     fFitReg[adcch].fNhits = 0;
@@ -1232,7 +1232,7 @@ void AliTRDmcmSim::CalcFitreg()
     fFitReg[adcch].fSumY2 = 0;
     fFitReg[adcch].fSumXY = 0;
   }
-  
+
   for (timebin = timebin1; timebin < timebin2; timebin++)
   {
     // first find the hit candidates and store the total cluster charge in qTotal array
@@ -1243,10 +1243,10 @@ void AliTRDmcmSim::CalcFitreg()
         adcLeft  = fADCF[adcch  ][timebin];
         adcCentral  = fADCF[adcch+1][timebin];
         adcRight = fADCF[adcch+2][timebin];
-        if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVBY) == 1) 
-          hitQual = ( (adcLeft * adcRight) < 
+        if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVBY) == 1)
+          hitQual = ( (adcLeft * adcRight) <
                        (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVT) * adcCentral) );
-        else            
+        else
           hitQual = 1;
         // The accumulated charge is with the pedestal!!!
         qtotTemp = adcLeft + adcCentral + adcRight;
@@ -1260,7 +1260,7 @@ void AliTRDmcmSim::CalcFitreg()
       }
       else
         qTotal[adcch] = 0; //jkl
-      if (qTotal[adcch] != 0) 
+      if (qTotal[adcch] != 0)
         AliDebug(10,Form("ch %2d   qTotal %5d",adcch, qTotal[adcch]));
     }
 
@@ -1280,7 +1280,7 @@ void AliTRDmcmSim::CalcFitreg()
       }
       adcch++;
     }
-    
+
     fromRight = -1;
     adcch = 18;
     found = 0;
@@ -1300,7 +1300,7 @@ void AliTRDmcmSim::CalcFitreg()
     if ((fromLeft >= 0) && (fromRight >= 0) && (fromLeft < fromRight))
       for (adcch = fromLeft+1; adcch < fromRight; adcch++)
         qTotal[adcch] = 0;
-    
+
     found = 0;
     for (adcch = 0; adcch < 19; adcch++)
       if (qTotal[adcch] > 0) found++;
@@ -1314,7 +1314,7 @@ void AliTRDmcmSim::CalcFitreg()
         qMarked[found] = qTotal[marked[found]] >> 4;
         AliDebug(10,Form("ch_%d qTotal %d qTotals %d",marked[found],qTotal[marked[found]],qMarked[found]));
       }
-      
+
       Sort6To2Worst(marked[0], marked[3], marked[4], marked[1], marked[2], marked[5],
                     qMarked[0],
                     qMarked[3],
@@ -1335,7 +1335,7 @@ void AliTRDmcmSim::CalcFitreg()
         AliDebug(10,Form("Kill ch %d\n",worse2));
       }
     }
-    
+
     for (adcch = 0; adcch < 19; adcch++) {
       if (qTotal[adcch] > 0) // the channel is marked for processing
       {
@@ -1344,10 +1344,10 @@ void AliTRDmcmSim::CalcFitreg()
         adcRight = fADCF[adcch+2][timebin];
         // hit detected, in TRAP we have 4 units and a hit-selection, here we proceed all channels!
         // subtract the pedestal TPFP, clipping instead of wrapping
-        
+
         Int_t regTPFP = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP);
         AliDebug(10, Form("Hit found, time=%d, adcch=%d/%d/%d, adc values=%d/%d/%d, regTPFP=%d, TPHT=%d\n",
-               timebin, adcch, adcch+1, adcch+2, adcLeft, adcCentral, adcRight, regTPFP, 
+               timebin, adcch, adcch+1, adcch+2, adcLeft, adcCentral, adcRight, regTPFP,
                fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPHT)));
 
         if (adcLeft  < regTPFP) adcLeft  = 0; else adcLeft  -= regTPFP;
@@ -1372,7 +1372,7 @@ void AliTRDmcmSim::CalcFitreg()
           Int_t label[maxLabels] = { 0 }; // up to 9 different labels possible
           Int_t count[maxLabels] = { 0 };
           Int_t nLabels = 0;
-          Int_t padcol[3]; 
+          Int_t padcol[3];
           padcol[0] = fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, adcch);
           padcol[1] = fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, adcch+1);
           padcol[2] = fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, adcch+2);
@@ -1381,7 +1381,7 @@ void AliTRDmcmSim::CalcFitreg()
             if (!fDict[iDict])
               continue;
             for (Int_t iPad = 0; iPad < 3; iPad++) {
-              if (padcol[iPad] < 0) 
+              if (padcol[iPad] < 0)
                 continue;
               Int_t currLabel = fDict[iDict]->GetData(padrow, padcol[iPad], timebin);
 	      AliDebug(10, Form("Read label: %4i for det: %3i, row: %i, col: %i, tb: %i\n", currLabel, fDetector, padrow, padcol[iPad], timebin));
@@ -1391,7 +1391,7 @@ void AliTRDmcmSim::CalcFitreg()
                   currLabel = -1;
                   break;
                 }
-              } 
+              }
               if (currLabel >= 0) {
                 label[nLabels] = currLabel;
 		count[nLabels] = 1;
@@ -1428,9 +1428,9 @@ void AliTRDmcmSim::CalcFitreg()
   }
 }
 
-void AliTRDmcmSim::TrackletSelection() 
+void AliTRDmcmSim::TrackletSelection()
 {
-  // Select up to 4 tracklet candidates from the fit registers  
+  // Select up to 4 tracklet candidates from the fit registers
   // and assign them to the CPUs.
 
   UShort_t adcIdx, i, j, ntracks, tmp;
@@ -1438,7 +1438,7 @@ void AliTRDmcmSim::TrackletSelection()
 
   ntracks = 0;
   for (adcIdx = 0; adcIdx < 18; adcIdx++) // ADCs
-    if ( (fFitReg[adcIdx].fNhits 
+    if ( (fFitReg[adcIdx].fNhits
           >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPCL)) &&
          (fFitReg[adcIdx].fNhits+fFitReg[adcIdx+1].fNhits
           >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPCT)))
@@ -1449,7 +1449,7 @@ void AliTRDmcmSim::TrackletSelection()
       ntracks++;
     };
 
-  for (i=0; i<ntracks;i++) 
+  for (i=0; i<ntracks;i++)
     AliDebug(10,Form("%d %d %d\n",i,trackletCand[i][0], trackletCand[i][1]));
 
   if (ntracks > 4)
@@ -1475,7 +1475,7 @@ void AliTRDmcmSim::TrackletSelection()
     ntracks = 4; // cut the rest, 4 is the max
   }
   // else is not necessary to sort
-  
+
   // now sort, so that the first tracklet going to CPU0 corresponds to the highest adc channel - as in the TRAP
   for (j = 0; j < (ntracks-1); j++)
   {
@@ -1504,8 +1504,8 @@ void AliTRDmcmSim::TrackletSelection()
 
 void AliTRDmcmSim::FitTracklet()
 {
-  // Perform the actual tracklet fit based on the fit sums 
-  // which have been filled in the fit registers. 
+  // Perform the actual tracklet fit based on the fit sums
+  // which have been filled in the fit registers.
 
   // parameters in fitred.asm (fit program)
   Int_t rndAdd = 0;
@@ -1520,7 +1520,7 @@ void AliTRDmcmSim::FitTracklet()
 
   // calculated in fitred.asm
   Int_t padrow = ((fRobPos >> 1) << 2) | (fMcmPos >> 2);
-  Int_t yoffs = (((((fRobPos & 0x1) << 2) + (fMcmPos & 0x3)) * 18) << 8) - 
+  Int_t yoffs = (((((fRobPos & 0x1) << 2) + (fMcmPos & 0x3)) * 18) << 8) -
     ((18*4*2 - 18*2 - 1) << 7);
   yoffs = yoffs << decPlaces; // holds position of ADC channel 1
   Int_t layer = fDetector % 6;
@@ -1528,7 +1528,7 @@ void AliTRDmcmSim::FitTracklet()
   UInt_t scaleD = (UInt_t) ((0.635 + 0.03 * layer)/(256.0 * 140.0e-4) * shift);
 
   Int_t deflCorr = (Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCorr, fDetector, fRobPos, fMcmPos);
-  Int_t ndrift   = (Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrNdrift, fDetector, fRobPos, fMcmPos); 
+  Int_t ndrift   = (Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrNdrift, fDetector, fRobPos, fMcmPos);
 
   // local variables for calculation
   Long64_t mult, temp, denom; //???
@@ -1539,7 +1539,7 @@ void AliTRDmcmSim::FitTracklet()
   Int_t sumY2;                // not used in the current TRAP program, now used for error calculation (simulation only)
   Float_t fitError, fitSlope, fitOffset;
   FitReg_t *fit0, *fit1;          // pointers to relevant fit registers
-  
+
 //  const uint32_t OneDivN[32] = {  // 2**31/N : exactly like in the TRAP, the simple division here gives the same result!
 //      0x00000000, 0x80000000, 0x40000000, 0x2AAAAAA0, 0x20000000, 0x19999990, 0x15555550, 0x12492490,
 //      0x10000000, 0x0E38E380, 0x0CCCCCC0, 0x0BA2E8B0, 0x0AAAAAA0, 0x09D89D80, 0x09249240, 0x08888880,
@@ -1549,7 +1549,7 @@ void AliTRDmcmSim::FitTracklet()
   for (Int_t cpu = 0; cpu < 4; cpu++) {
     if (fFitPtr[cpu] == 31)
     {
-      fMCMT[cpu] = 0x10001000; //??? AliTRDfeeParam::GetTrackletEndmarker(); 
+      fMCMT[cpu] = 0x10001000; //??? AliTRDfeeParam::GetTrackletEndmarker();
     }
     else
     {
@@ -1582,28 +1582,28 @@ void AliTRDmcmSim::FitTracklet()
       offset  = temp >> 32; // take the upper 32 bits
 
       offset = offset + yoffs;
-      AliDebug(10, Form("slope = %i, slope * ndrift = %i, deflCorr: %i", 
+      AliDebug(10, Form("slope = %i, slope * ndrift = %i, deflCorr: %i",
                        slope, slope * ndrift, deflCorr));
       slope  = ((slope * ndrift) >> ndriftDp) + deflCorr;
       offset = offset - (fFitPtr[cpu] << (8 + decPlaces));
-      
+
       temp    = slope;
       temp    = temp * scaleD;
       slope   = (temp >> 32);
       temp    = offset;
       temp    = temp * scaleY;
       offset  = (temp >> 32);
-        
+
       // rounding, like in the TRAP
       slope   = (slope  + rndAdd) >> decPlaces;
       offset  = (offset + rndAdd) >> decPlaces;
 
-      AliDebug(5, Form("Det: %3i, ROB: %i, MCM: %2i: deflection: %i, min: %i, max: %i", 
-                       fDetector, fRobPos, fMcmPos, slope, 
-                       (Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCutStart     + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos), 
+      AliDebug(5, Form("Det: %3i, ROB: %i, MCM: %2i: deflection: %i, min: %i, max: %i",
+                       fDetector, fRobPos, fMcmPos, slope,
+                       (Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCutStart     + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos),
                        (Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCutStart + 1 + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos)));
 
-      AliDebug(5, Form("Fit sums: x = %i, X = %i, y = %i, Y = %i, Z = %i", 
+      AliDebug(5, Form("Fit sums: x = %i, X = %i, y = %i, Y = %i, Z = %i",
 		       sumX, sumX2, sumY, sumY2, sumXY));
 
       fitSlope  = (Float_t) (nHits * sumXY - sumX * sumY) / (nHits * sumX2 - sumX*sumX);
@@ -1620,7 +1620,7 @@ void AliTRDmcmSim::FitTracklet()
 
       Bool_t rejected = kFALSE;
       // deflection range table from DMEM
-      if ((slope < ((Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCutStart     + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos))) || 
+      if ((slope < ((Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCutStart     + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos))) ||
           (slope > ((Int_t) fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrDeflCutStart + 1 + 2*fFitPtr[cpu], fDetector, fRobPos, fMcmPos))))
         rejected = kTRUE;
 
@@ -1637,8 +1637,8 @@ void AliTRDmcmSim::FitTracklet()
         }
 
         slope   = slope  &   0x7F; // 7 bit
-        
-        if (offset > 0xfff || offset < -0xfff) 
+
+        if (offset > 0xfff || offset < -0xfff)
           AliWarning("Overflow in offset");
         offset  = offset & 0x1FFF; // 13 bit
 
@@ -1647,7 +1647,7 @@ void AliTRDmcmSim::FitTracklet()
         if (pid > 0xff)
           AliWarning("Overflow in PID");
         pid  = pid & 0xFF; // 8 bit, exactly like in the TRAP program
-        
+
         // assemble and store the tracklet word
         fMCMT[cpu] = (pid << 24) | (padrow << 20) | (slope << 13) | offset;
 
@@ -1700,7 +1700,7 @@ void AliTRDmcmSim::FitTracklet()
         new ((*fTrackletArray)[fTrackletArray->GetEntriesFast()]) AliTRDtrackletMCM((UInt_t) fMCMT[cpu], fDetector*2 + fRobPos%2, fRobPos, fMcmPos);
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetLabel(mcLabel);
 
-       
+
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetNHits(fit0->fNhits + fit1->fNhits);
 	((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetNHits0(nHits0);
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetNHits1(nHits1);
@@ -1734,7 +1734,7 @@ void AliTRDmcmSim::FitTracklet()
 	if (fitError < 0)
 	  AliError(Form("Strange fit error: %f from Sx: %i, Sy: %i, Sxy: %i, Sx2: %i, Sy2: %i, nHits: %i",
 			fitError, sumX, sumY, sumXY, sumX2, sumY2, nHits));
-	AliDebug(3, Form("fit slope: %f, offset: %f, error: %f", 
+	AliDebug(3, Form("fit slope: %f, offset: %f, error: %f",
 			 fitSlope, fitOffset, TMath::Sqrt(TMath::Abs(fitError)/nHits)));
       }
     }
@@ -1745,7 +1745,7 @@ void AliTRDmcmSim::Tracklet()
 {
   // Run the tracklet calculation by calling sequentially:
   // CalcFitreg(); TrackletSelection(); FitTracklet()
-  // and store the tracklets 
+  // and store the tracklets
 
   if (!fInitialized) {
     AliError("Called uninitialized! Nothing done!");
@@ -1761,11 +1761,11 @@ void AliTRDmcmSim::Tracklet()
   FitTracklet();
 }
 
-Bool_t AliTRDmcmSim::StoreTracklets() 
+Bool_t AliTRDmcmSim::StoreTracklets()
 {
   // store the found tracklets via the loader
 
-  if (fTrackletArray->GetEntriesFast() == 0) 
+  if (fTrackletArray->GetEntriesFast() == 0)
     return kTRUE;
 
   AliRunLoader *rl = AliRunLoader::Instance();
@@ -1782,12 +1782,12 @@ Bool_t AliTRDmcmSim::StoreTracklets()
     dl->MakeTree();
     trackletTree = dl->Tree();
   }
-  
+
   AliTRDtrackletMCM *trkl = 0x0;
   TBranch *trkbranch = trackletTree->GetBranch(fTrklBranchName.Data());
   if (!trkbranch)
     trkbranch = trackletTree->Branch(fTrklBranchName.Data(), "AliTRDtrackletMCM", &trkl, 32000);
-  
+
   for (Int_t iTracklet = 0; iTracklet < fTrackletArray->GetEntriesFast(); iTracklet++) {
     trkl = ((AliTRDtrackletMCM*) (*fTrackletArray)[iTracklet]);
     trkbranch->SetAddress(&trkl);
@@ -1803,7 +1803,7 @@ void AliTRDmcmSim::WriteData(AliTRDarrayADC *digits)
   // EBSF = 1: unfiltered data; EBSF = 0: filtered data
   // zero-suppressed valued are written as -1 to digits
 
-  if( !CheckInitialized() ) 
+  if( !CheckInitialized() )
     return;
 
   Int_t offset = (fMcmPos % 4 + 1) * 21 + (fRobPos % 2) * 84 - 1;
@@ -1895,7 +1895,7 @@ Int_t AliTRDmcmSim::GetPID(Int_t q0, Int_t q1)
    if(addrQ0 >= nBinsQ0) {  // check for overflow
       AliDebug(5,Form("Overflow in q0: %llu/4 is bigger then %u", addrQ0, nBinsQ0));
       addrQ0 = nBinsQ0 -1;
-   } 
+   }
 
    addr = corrQ1;
    addr = (((addr*q1)>>16)>>16);
@@ -1904,7 +1904,7 @@ Int_t AliTRDmcmSim::GetPID(Int_t q0, Int_t q1)
    if(addr >= pidTotalSize) {
       AliDebug(5,Form("Overflow in q1. Address %llu/4 is bigger then %u", addr, pidTotalSize));
       addr = pidTotalSize -1;
-   } 
+   }
 
    // For a LUT with 11 input and 8 output bits, the first memory address is set to  LUT[0] | (LUT[1] << 8) | (LUT[2] << 16) | (LUT[3] << 24)
    // and so on
@@ -1918,21 +1918,21 @@ Int_t AliTRDmcmSim::GetPID(Int_t q0, Int_t q1)
 
 UInt_t AliTRDmcmSim::AddUintClipping(UInt_t a, UInt_t b, UInt_t nbits) const
 {
-  // 
-  // This function adds a and b (unsigned) and clips to 
-  // the specified number of bits. 
-  //  
+  //
+  // This function adds a and b (unsigned) and clips to
+  // the specified number of bits.
+  //
 
   UInt_t sum = a + b;
   if (nbits < 32)
   {
     UInt_t maxv = (1 << nbits) - 1;;
-    if (sum > maxv) 
+    if (sum > maxv)
       sum = maxv;
   }
   else
   {
-    if ((sum < a) || (sum < b)) 
+    if ((sum < a) || (sum < b))
       sum = 0xFFFFFFFF;
   }
   return sum;
@@ -2104,10 +2104,10 @@ ostream& AliTRDmcmSim::Text(ostream& os)
 
 ostream& AliTRDmcmSim::Cfdat(ostream& os)
 {
-  // manipulator to activate output in CFDAT format 
+  // manipulator to activate output in CFDAT format
   // to send to the FEE via SCSN
 
-  os.iword(fgkFormatIndex) = 1; 
+  os.iword(fgkFormatIndex) = 1;
   return os;
 }
 
@@ -2122,20 +2122,20 @@ ostream& AliTRDmcmSim::Raw(ostream& os)
 ostream& operator<<(ostream& os, const AliTRDmcmSim& mcm)
 {
   // output implementation
-  
+
   // no output for non-initialized MCM
   if (!mcm.CheckInitialized())
     return os;
 
   // ----- human-readable output -----
   if (os.iword(AliTRDmcmSim::fgkFormatIndex) == 0) {
-    
-    os << "MCM " << mcm.fMcmPos << " on ROB " << mcm.fRobPos << 
+
+    os << "MCM " << mcm.fMcmPos << " on ROB " << mcm.fRobPos <<
       " in detector " << mcm.fDetector << std::endl;
-    
+
     os << "----- Unfiltered ADC data (10 bit) -----" << std::endl;
     os << "ch    ";
-    for (Int_t iChannel = 0; iChannel < mcm.fgkNADC; iChannel++) 
+    for (Int_t iChannel = 0; iChannel < mcm.fgkNADC; iChannel++)
       os << std::setw(5) << iChannel;
     os << std::endl;
     for (Int_t iTimeBin = 0; iTimeBin < mcm.fNTimeBin; iTimeBin++) {
@@ -2145,10 +2145,10 @@ ostream& operator<<(ostream& os, const AliTRDmcmSim& mcm)
       }
       os << std::endl;
     }
-    
+
     os << "----- Filtered ADC data (10+2 bit) -----" << std::endl;
     os << "ch    ";
-    for (Int_t iChannel = 0; iChannel < mcm.fgkNADC; iChannel++) 
+    for (Int_t iChannel = 0; iChannel < mcm.fgkNADC; iChannel++)
       os << std::setw(4) << iChannel
          << ((~mcm.fZSMap[iChannel] != 0) ? "!" : " ");
     os << std::endl;
@@ -2167,11 +2167,11 @@ ostream& operator<<(ostream& os, const AliTRDmcmSim& mcm)
     Int_t dest       = 127;
     Int_t addrOffset = 0x2000;
     Int_t addrStep   = 0x80;
-    
+
     for (Int_t iTimeBin = 0; iTimeBin < mcm.fNTimeBin; iTimeBin++) {
       for (Int_t iChannel = 0; iChannel < mcm.fgkNADC; iChannel++) {
-        os << std::setw(5) << 10 
-           << std::setw(5) << addrOffset + iChannel * addrStep + iTimeBin 
+        os << std::setw(5) << 10
+           << std::setw(5) << addrOffset + iChannel * addrStep + iTimeBin
            << std::setw(5) << (mcm.fADCF[iChannel][iTimeBin])
            << std::setw(5) << dest << std::endl;
       }
@@ -2183,12 +2183,12 @@ ostream& operator<<(ostream& os, const AliTRDmcmSim& mcm)
   else if (os.iword(AliTRDmcmSim::fgkFormatIndex) == 2) {
     Int_t   bufSize   = 300;
     UInt_t *buf       = new UInt_t[bufSize];
-    
+
     Int_t bufLength   = mcm.ProduceRawStream(&buf[0], bufSize);
-    
-    for (Int_t i = 0; i < bufLength; i++) 
+
+    for (Int_t i = 0; i < bufLength; i++)
       std::cout << "0x" << std::hex << buf[i] << std::dec << std::endl;
-    
+
     delete [] buf;
   }
 
@@ -2218,7 +2218,7 @@ void AliTRDmcmSim::PrintFitRegXml(ostream& os) const
      os << "<d det=\"" << fDetector << "\">" << std::endl;
      os << " <ro-board rob=\"" << fRobPos << "\">" << std::endl;
      os << "  <m mcm=\"" << fMcmPos << "\">" << std::endl;
-     
+
      for(int cpu=0; cpu<4; cpu++) {
 	os << "   <c cpu=\"" << cpu << "\">" << std::endl;
 	if(fFitPtr[cpu] != 31) {
@@ -2226,7 +2226,7 @@ void AliTRDmcmSim::PrintFitRegXml(ostream& os) const
 	      os << "    <ch chnr=\"" << adcch << "\">"<< std::endl;
 	      os << "     <hits>"   << fFitReg[adcch].fNhits << "</hits>"<< std::endl;
 	      os << "     <q0>"     << fFitReg[adcch].fQ0/4 << "</q0>"<< std::endl;    // divided by 4 because in simulation we have 2 additional decimal places
-	      os << "     <q1>"     << fFitReg[adcch].fQ1/4 << "</q1>"<< std::endl;    // in the output 
+	      os << "     <q1>"     << fFitReg[adcch].fQ1/4 << "</q1>"<< std::endl;    // in the output
 	      os << "     <sumx>"   << fFitReg[adcch].fSumX << "</sumx>"<< std::endl;
 	      os << "     <sumxsq>" << fFitReg[adcch].fSumX2 << "</sumxsq>"<< std::endl;
 	      os << "     <sumy>"   << fFitReg[adcch].fSumY << "</sumy>"<< std::endl;
@@ -2273,7 +2273,7 @@ void AliTRDmcmSim::PrintTrackletsXml(ostream& os) const
 	 offset = (fMCMT[cpu] & 0x1FFF    ) ;
 
       }
-      os << "      <trk> <pid>" << pid << "</pid>" << " <padrow>" << padrow << "</padrow>" 
+      os << "      <trk> <pid>" << pid << "</pid>" << " <padrow>" << padrow << "</padrow>"
 	 << " <slope>" << slope << "</slope>" << " <offset>" << offset << "</offset>" << "</trk>" << std::endl;
    }
 
@@ -2290,12 +2290,12 @@ void AliTRDmcmSim::PrintAdcDatHuman(ostream& os) const
 {
   // print ADC data in human-readable format
 
-   os << "MCM " << fMcmPos << " on ROB " << fRobPos << 
+   os << "MCM " << fMcmPos << " on ROB " << fRobPos <<
       " in detector " << fDetector << std::endl;
-    
+
    os << "----- Unfiltered ADC data (10 bit) -----" << std::endl;
    os << "ch    ";
-   for (Int_t iChannel = 0; iChannel < fgkNADC; iChannel++) 
+   for (Int_t iChannel = 0; iChannel < fgkNADC; iChannel++)
       os << std::setw(5) << iChannel;
    os << std::endl;
    for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
@@ -2305,10 +2305,10 @@ void AliTRDmcmSim::PrintAdcDatHuman(ostream& os) const
       }
       os << std::endl;
    }
-    
+
    os << "----- Filtered ADC data (10+2 bit) -----" << std::endl;
    os << "ch    ";
-   for (Int_t iChannel = 0; iChannel < fgkNADC; iChannel++) 
+   for (Int_t iChannel = 0; iChannel < fgkNADC; iChannel++)
       os << std::setw(4) << iChannel
          << ((~fZSMap[iChannel] != 0) ? "!" : " ");
    os << std::endl;
@@ -2325,7 +2325,7 @@ void AliTRDmcmSim::PrintAdcDatHuman(ostream& os) const
 
 void AliTRDmcmSim::PrintAdcDatXml(ostream& os) const
 {
-  // print ADC data in XML format 
+  // print ADC data in XML format
 
    os << "<nginject>" << std::endl;
    os << "<ack roc=\""<< fDetector <<  "\" cmndid=\"0\">" << std::endl;
@@ -2362,7 +2362,7 @@ void AliTRDmcmSim::PrintAdcDatDatx(ostream& os, Bool_t broadcast) const
    Int_t addrOffset = 0x2000;
    Int_t addrStep   = 0x80;
    Int_t addrOffsetEBSIA = 0x20;
-    
+
    for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
       for (Int_t iChannel = 0; iChannel < fgkNADC; iChannel++) {
 	 if(broadcast==kFALSE)
@@ -2386,7 +2386,7 @@ void AliTRDmcmSim::PrintPidLutHuman()
 
    std::cout << "nBinsQ0: " << nBinsQ0 << std::endl;
    std::cout << "LUT table length: " << fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrLUTLength) << std::endl;
- 
+
    for(UInt_t addr=AliTRDtrapConfig::fgkDmemAddrLUTStart; addr< addrEnd; addr++) {
       result = fTrapConfig->GetDmemUnsigned(addr);
       std::cout << addr << " # x: " << ((addr-AliTRDtrapConfig::fgkDmemAddrLUTStart)%((nBinsQ0)/4))*4 << ", y: " <<(addr-AliTRDtrapConfig::fgkDmemAddrLUTStart)/(nBinsQ0/4)

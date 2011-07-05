@@ -49,7 +49,7 @@ AliTRDTrigger::~AliTRDTrigger()
 {
   // destructor
   TIter trigger(&fTriggers);
-  while (AliTriggerDetector *trgDet = (AliTriggerDetector*) trigger()) 
+  while (AliTriggerDetector *trgDet = (AliTriggerDetector*) trigger())
     delete trgDet;
 
   fInputs.Clear(); // inputs are deleted either by CTP or submodule
@@ -75,7 +75,7 @@ void AliTRDTrigger::CreateInputs()
 void AliTRDTrigger::Trigger()
 {
   // TRD trigger steering
-  // all registered TRD trigger mechanism are 
+  // all registered TRD trigger mechanism are
   // run from here
 
   TIter trigger(&fTriggers);

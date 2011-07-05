@@ -6,9 +6,9 @@
 /* $Id: AliTRDtrackletGTU.h 27496 2008-07-22 08:35:45Z cblume $ */
 
 // --------------------------------------------------------
-// 
+//
 // GTU tracklet
-// 
+//
 //
 // --------------------------------------------------------
 
@@ -20,12 +20,12 @@ class AliTRDgtuParam;
 class AliTRDtrackletGTU : public AliTRDtrackletBase {
  public:
   AliTRDtrackletGTU();
-  AliTRDtrackletGTU(AliTRDtrackletBase *tracklet); 
+  AliTRDtrackletGTU(AliTRDtrackletBase *tracklet);
   AliTRDtrackletGTU(const AliTRDtrackletGTU& trk);
 
   ~AliTRDtrackletGTU();
 
-  AliTRDtrackletGTU& operator=(const AliTRDtrackletGTU &rhs); 
+  AliTRDtrackletGTU& operator=(const AliTRDtrackletGTU &rhs);
 
   Bool_t IsSortable() const { return kTRUE; }
   Int_t Compare(const TObject *o) const;
@@ -56,7 +56,7 @@ class AliTRDtrackletGTU : public AliTRDtrackletBase {
 //  AliTRDtrackletBase* GetTracklet() const { return fTracklet; }
   UInt_t GetTrackletWord() const { return fTracklet->GetTrackletWord(); }
 
-  Int_t GetSide() const { return GetYbin() < 0 ? 0 : 1; } 
+  Int_t GetSide() const { return GetYbin() < 0 ? 0 : 1; }
 
   Int_t GetLabel() const; // { return fLabel; }
 

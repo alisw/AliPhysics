@@ -256,7 +256,7 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename)
       if(!infile.eof())
 	 infile.clear();
    }
-      
+
    infile.close();
 
    AliDebug(5, Form("Ignored lines: %i, ignored cmds: %i", ignoredLines, ignoredCmds));

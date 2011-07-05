@@ -3,7 +3,7 @@
 
 //-----------------------------------
 //
-// decoding of TRD raw data stream 
+// decoding of TRD raw data stream
 // and translation into digits
 //
 //----------------------------------
@@ -53,7 +53,7 @@ class AliTRDrawStream : public TObject
   Bool_t ReadEvent(TTree *trackletTree = 0x0);
 
   Bool_t NextDDL();
-  Int_t NextChamber(AliTRDdigitsManager *digMgr); 
+  Int_t NextChamber(AliTRDdigitsManager *digMgr);
   Int_t NextChamber(AliTRDdigitsManager *digMgr,
 		      UInt_t ** /* trackletContainer */, UShort_t ** /* errorContainer */) { AliError("Deprecated, use NextChamber(AliTRDdigitsManger*) instead!"); return NextChamber(digMgr); }
 
@@ -65,10 +65,10 @@ class AliTRDrawStream : public TObject
   void DisableErrorStorage() { fStoreError = &AliTRDrawStream::ForgetError; }
 
   // error handling
-  enum ErrorCode_t { 
-    kUnknown = 0, 
-    kLinkMonitor, 
-    kPtrgCntMismatch, 
+  enum ErrorCode_t {
+    kUnknown = 0,
+    kLinkMonitor,
+    kPtrgCntMismatch,
     kNonTrdEq,
     kStackHeaderInvalid,
     kInvalidDetector,
@@ -85,11 +85,11 @@ class AliTRDrawStream : public TObject
     kAdcChannelsMiss,
     kMissMcmHeaders,
     kLastErrorCode
-  }; 
+  };
 
   enum ErrorBehav_t {
     kTolerate = 0,
-    kAbort = 1, 
+    kAbort = 1,
     kDiscardMCM = 2,
     kDiscardHC = 4
   };
@@ -106,7 +106,7 @@ class AliTRDrawStream : public TObject
 
   class AliTRDrawStreamError : public TObject {
   public:
-    AliTRDrawStreamError(Int_t error = 0, Int_t sector = -1, Int_t stack = -1, Int_t link = -1, Int_t rob = -1, Int_t mcm = -1); 
+    AliTRDrawStreamError(Int_t error = 0, Int_t sector = -1, Int_t stack = -1, Int_t link = -1, Int_t rob = -1, Int_t mcm = -1);
     virtual ~AliTRDrawStreamError() {}
     Int_t fError;                               // error code
     Int_t fSector;				// sector
@@ -169,7 +169,7 @@ class AliTRDrawStream : public TObject
   Bool_t IsDumping() const { return (fNDumpMCMs > 0); }
   Bool_t DumpingMCM(Int_t det, Int_t rob, Int_t mcm) const;
 
-  TString DumpRaw(TString title, UInt_t *start, Int_t length, UInt_t endmarker = 0xffffffff); 
+  TString DumpRaw(TString title, UInt_t *start, Int_t length, UInt_t endmarker = 0xffffffff);
   TString DumpMcmHeader(TString title, UInt_t word);
   TString DumpAdcMask(TString title, UInt_t word);
 
@@ -213,13 +213,13 @@ class AliTRDrawStream : public TObject
   inline Int_t GetNActiveChannelsFromMask(UInt_t adcmask) const; // { Int_t nch = 0; for (Int_t i = 0; i < 21; i++) if ((GetActiveChannels(adcmask) & 1 << i)) nch++; return nch; }
   Int_t GetNActiveChannels(UInt_t adcmask) const { return (0x1f & ~(adcmask >> 25)); }
   Int_t CouldBeADCmask(UInt_t adcmask) const { return ((0xf & adcmask) == 0xc && (0x3 & adcmask >> 30) == 0x1); }
-      
+
   // error message generation
-  void EquipmentError(ErrorCode_t err = kUnknown, const char *const msg = "", ...); 
-  void StackError    (ErrorCode_t err = kUnknown, const char *const msg = "", ...);     
-  void LinkError     (ErrorCode_t err = kUnknown, const char *const msg = "", ...); 
-  void ROBError      (ErrorCode_t err = kUnknown, const char *const msg = "", ...); 
-  void MCMError      (ErrorCode_t err = kUnknown, const char *const msg = "", ...); 
+  void EquipmentError(ErrorCode_t err = kUnknown, const char *const msg = "", ...);
+  void StackError    (ErrorCode_t err = kUnknown, const char *const msg = "", ...);
+  void LinkError     (ErrorCode_t err = kUnknown, const char *const msg = "", ...);
+  void ROBError      (ErrorCode_t err = kUnknown, const char *const msg = "", ...);
+  void MCMError      (ErrorCode_t err = kUnknown, const char *const msg = "", ...);
   void StoreErrorTree() { fErrors->Fill(); }
   void StoreErrorArray() { new ((*fMarkers)[fMarkers->GetEntriesFast()]) AliTRDrawStreamError(fLastError); }
   void ForgetError() { return; }
@@ -230,7 +230,7 @@ class AliTRDrawStream : public TObject
   static       ErrorBehav_t fgErrorBehav[kLastErrorCode]; // bevhaviour in case of error of given type
 
   // I/O
-  AliRawReader *fRawReader;                     // pointer to the raw reader to take the data from 
+  AliRawReader *fRawReader;                     // pointer to the raw reader to take the data from
   AliTRDdigitsManager *fDigitsManager;          // pointer to the digitsManager to fill the data
   AliTRDdigitsParam   *fDigitsParam;            // pointer to the parameters belonging to the digits
 
@@ -247,19 +247,19 @@ class AliTRDrawStream : public TObject
   static const Int_t fgkNsectors;               // number of sectors
   static const Int_t fgkNstacks;                // number of stacks to read
   static const Int_t fgkNtriggers;              // number of triggers in data stream
-  static const UInt_t fgkDataEndmarker;         // data endmarker 
+  static const UInt_t fgkDataEndmarker;         // data endmarker
   static const UInt_t fgkTrackletEndmarker;     // tracklet endmarker
   static       Int_t fgMcmOrder [];             // expected readout order of the MCMs
   static       Int_t fgRobOrder [];             // expected readout order of the ROBs
 
   // persistent information
   Int_t  fNtimebins;                            // number of timebins
-  Int_t  fLastEvId;                             // Event ID of last event 
+  Int_t  fLastEvId;                             // Event ID of last event
 
   // information valid at current reader position
   // all the variables fCurr... refer to the value at the current
   // reading position
-  Int_t fCurrSlot;                              // current slot 
+  Int_t fCurrSlot;                              // current slot
   Int_t fCurrLink;				// current link
   Int_t fCurrRobPos; 				// current ROB number
   Int_t fCurrMcmPos;				// current MCM number
