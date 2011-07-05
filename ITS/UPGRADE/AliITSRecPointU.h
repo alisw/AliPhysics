@@ -28,10 +28,12 @@ public :
   Int_t GetNTracksIdMC() const {return fNTracksIdMC;}
   Int_t GetTrackID(Int_t ipart) {if(ipart<0 || ipart >=kMaxLab) return -1; else return fTrackIdMC[ipart];}
 
+  enum {kMaxLab=24}; // maximum number of MC labels associated to the cluster
+  void CleanLabels() {SetNTracksIdMC(0); for(Int_t i=0; i<kMaxLab ; i++) fTrackIdMC[i]=-3; }
+
   virtual void Print(Option_t* option = "") const;
 
  protected:
-  enum {kMaxLab=24}; // maximum number of MC labels associated to the cluster
 
   Int_t fModule;
   Int_t fNTracksIdMC;     // total number of associated MC labels (could be more than 3!)

@@ -646,7 +646,7 @@ AliITStrackV2* AliITStrackerUpgrade::FitTrack(AliITStrackU* tr,Double_t *primary
 		      otrack2.ResetClusters();
 		  
 		      //fit from last layer to layer 1
-		      if(RefitAtBase(/*AliITSRecoParam::GetrInsideSPD1()*/fSegmentation->GetRadius(0)-0.3,&otrack2,inx)) {//check clind
+		      if(RefitAtBase(/*AliITSRecoParam::GetrInsideSPD1()*/fSegmentation->GetRadius(0)-0.1,&otrack2,inx)) {//check clind
 			new(arrSA[nFoundTracks]) AliITStrackU(otrack2);
 			++nFoundTracks;
 		      }

@@ -829,6 +829,7 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
 	recpnt.SetLayer(ilayer);
 	recpnt.SetModule(module);
 	recpnt.SetNTracksIdMC(0);
+        recpnt.CleanLabels();
 	Int_t *lab=GetLabels(module,nClu);
 	Int_t nLabels =0;
 	for (Int_t il=0; il<kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY*kMaxLab;il++) {

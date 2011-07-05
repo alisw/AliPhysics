@@ -1,10 +1,10 @@
 
 // You have to load the class before ... ;-)
-// .L Detector.cxx++
+// .L DetectorK.cxx++
 
 void standardPlots() {
 
-  Detector its("ALICE","ITS");
+  DetectorK its("ALICE","ITS");
 
   its.MakeAliceCurrent(0,0); 
 
