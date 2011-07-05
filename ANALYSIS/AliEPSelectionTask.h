@@ -17,7 +17,6 @@ class TH2F;
 class TList;
 class TString;
 class TVector2;
-class TObjArray;
 
 class AliESDEvent;
 class AliESDtrackCuts;
@@ -65,13 +64,12 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
   Bool_t   fUsePhiWeight;		// use of phi weights
   Bool_t   fUsePtWeight;		// use of pT weights
   Bool_t   fSaveTrackContribution;	// storage of contribution of each track to Q-Vector
-  Bool_t   fuserphidist;		// bool, if personal phi distribution should be used
-  Bool_t   fusercuts;			// bool, if personal cuts should be used
-  Int_t    frunNumber;			// runnumber
+  Bool_t   fUserphidist;		// bool, if personal phi distribution should be used
+  Bool_t   fUsercuts;			// bool, if personal cuts should be used
+  Int_t    fRunNumber;			// runnumber
   
-  AliESDtrackCuts* fESDtrackCuts;       //! track cuts
+  AliESDtrackCuts* fESDtrackCuts;       // track cuts
   
-  TObjArray* ftracklist;		//! list of accepted tracks for Q-Vector
   AliOADBContainer* fEPContainer;	//! OADB Container
   TH1F*	 fPhiDist;			// Phi distribution used to calculate phi weights
 
@@ -93,7 +91,7 @@ class AliEPSelectionTask : public AliAnalysisTaskSE {
   TH2F*	 fHOutDiff;			//! control histogram: Difference of MC RP and EP - only filled if fUseMCRP is true!
   TH2F*  fHOutleadPTPsi;		//! control histogram: emission angle of leading pT track vs EP angle
 
-  ClassDef(AliEPSelectionTask,3); 
+  ClassDef(AliEPSelectionTask,4); 
 };
 
 #endif

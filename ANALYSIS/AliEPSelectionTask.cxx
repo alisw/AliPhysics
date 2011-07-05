@@ -70,11 +70,10 @@ AliAnalysisTaskSE(),
   fUsePhiWeight(kFALSE),
   fUsePtWeight(kFALSE),
   fSaveTrackContribution(kFALSE),
-  fuserphidist(kFALSE),
-  fusercuts(kFALSE),
-  frunNumber(-15),
+  fUserphidist(kFALSE),
+  fUsercuts(kFALSE),
+  fRunNumber(-15),
   fESDtrackCuts(0),
-  ftracklist(0),
   fEPContainer(0),
   fPhiDist(0),
   fQVector(0),
@@ -107,11 +106,10 @@ AliEPSelectionTask::AliEPSelectionTask(const char *name):
   fUsePhiWeight(kFALSE),
   fUsePtWeight(kFALSE),  
   fSaveTrackContribution(kFALSE),
-  fuserphidist(kFALSE),
-  fusercuts(kFALSE),
-  frunNumber(-15),
+  fUserphidist(kFALSE),
+  fUsercuts(kFALSE),
+  fRunNumber(-15),
   fESDtrackCuts(0),
-  ftracklist(0),
   fEPContainer(0),
   fPhiDist(0),
   fQVector(0),
@@ -148,14 +146,11 @@ AliEPSelectionTask::~AliEPSelectionTask()
       delete fESDtrackCuts;
       fESDtrackCuts = 0;
   }
-
-  if (fPhiDist){
+  if (fUserphidist) {
+    if (fPhiDist) {
       delete fPhiDist;
       fPhiDist = 0;
-  }
-  if (ftracklist){
-      delete ftracklist;
-      ftracklist = 0;
+    }
   }
   if (fEPContainer){
       delete fEPContainer;
@@ -192,7 +187,7 @@ void AliEPSelectionTask::UserCreateOutputObjects()
   
   PostData(1, fOutputList); 
   
-    if(!fuserphidist) { // if it's already set and custom class is required, we use the one provided by the user
+    if(!fUserphidist) { // if it's already set and custom class is required, we use the one provided by the user
 
     TString oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist.root", AliAnalysisManager::GetOADBPath()));
 
@@ -212,7 +207,7 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
   // Execute analysis for current event:
   if (fDebug>1) printf(" **** AliEPSelectionTask::UserExec() \n");
   
-//   frunNumber = -15;
+//   fRunNumber = -15;
  
   AliEventplane* esdEP = 0;
   TVector2 qq1;
@@ -224,8 +219,8 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
     AliVEvent* event = InputEvent();
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
     if (esd){    
-      if (!(frunNumber == esd->GetRunNumber())) {
-	  frunNumber = esd->GetRunNumber();
+      if (!(fRunNumber == esd->GetRunNumber())) {
+	  fRunNumber = esd->GetRunNumber();
 	    SetPhiDist();      
       }
       
@@ -244,14 +239,15 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	esdEP->GetQContributionYArray()->Set(esd->GetNumberOfTracks());
       }
       
-      if (fTrackType.CompareTo("GLOBAL")==0) ftracklist = fESDtrackCuts->GetAcceptedTracks(esd,kFALSE);
-      if (fTrackType.CompareTo("TPC")==0) ftracklist = fESDtrackCuts->GetAcceptedTracks(esd,kTRUE);
-      const int nt = ftracklist->GetEntries();
+      TObjArray* tracklist = new TObjArray;
+      if (fTrackType.CompareTo("GLOBAL")==0) tracklist = fESDtrackCuts->GetAcceptedTracks(esd,kFALSE);
+      if (fTrackType.CompareTo("TPC")==0) tracklist = fESDtrackCuts->GetAcceptedTracks(esd,kTRUE);
+      const int nt = tracklist->GetEntries();
       
       if (nt>4){
-	fQVector = new TVector2(GetQ(esdEP,ftracklist));
+	fQVector = new TVector2(GetQ(esdEP,tracklist));
 	fEventplaneQ = fQVector->Phi()/2; 
-	GetQsub(qq1, qq2, ftracklist);
+	GetQsub(qq1, qq2, tracklist);
 	fQsub1 = new TVector2(qq1);
 	fQsub2 = new TVector2(qq2);
 	fQsubRes = (fQsub1->Phi()/2 - fQsub2->Phi()/2);
@@ -268,7 +264,7 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	if (fUseMCRP) fHOutDiff->Fill(fEventplaneQ, fRP);
 	
 	for (int iter = 0; iter<nt;iter++){
-	  AliESDtrack* track = dynamic_cast<AliESDtrack*> (ftracklist->At(iter));
+	  AliESDtrack* track = dynamic_cast<AliESDtrack*> (tracklist->At(iter));
 	  if (track) {
 	    float delta = track->Phi()-fEventplaneQ;
 	    while (delta < 0) delta += TMath::Pi();
@@ -281,12 +277,13 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	
 	AliESDtrack* trmax = esd->GetTrack(0);
 	for (int iter = 1; iter<nt;iter++){
-	  AliESDtrack* track = dynamic_cast<AliESDtrack*> (ftracklist->At(iter));
+	  AliESDtrack* track = dynamic_cast<AliESDtrack*> (tracklist->At(iter));
 	  if (track && (track->Pt() > trmax->Pt())) trmax = track;
 	}
 	fHOutleadPTPsi->Fill(trmax->Phi(),fEventplaneQ);      
       }
-      delete ftracklist;
+      delete tracklist;
+      tracklist = 0;
     }
   }
   
@@ -391,7 +388,12 @@ void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklis
 //________________________________________________________________________
 void AliEPSelectionTask::SetPersonalESDtrackCuts(AliESDtrackCuts* trackcuts){
   
-  fusercuts = kTRUE;
+  if(fESDtrackCuts){ 
+    delete fESDtrackCuts;
+    fESDtrackCuts = 0;
+  }
+    
+  fUsercuts = kTRUE;
   fESDtrackCuts = trackcuts;
 }
 
@@ -399,7 +401,7 @@ void AliEPSelectionTask::SetPersonalESDtrackCuts(AliESDtrackCuts* trackcuts){
 void AliEPSelectionTask::SetTrackType(TString tracktype){
 // Set the track type
   fTrackType = tracktype;
-  if (!fusercuts) {
+  if (!fUsercuts) {
   if (fTrackType.CompareTo("GLOBAL")==0) fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
   if (fTrackType.CompareTo("TPC")==0)    fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   fESDtrackCuts->SetPtRange(0.15,20);
@@ -446,10 +448,10 @@ Double_t AliEPSelectionTask::GetPhiWeight(AliESDtrack* track)
 void AliEPSelectionTask::SetPhiDist() 
 {
 // Set the phi distribution
-  if(!fuserphidist) { // if it's already set and custom class is required, we use the one provided by the user
+  if(!fUserphidist) { // if it's already set and custom class is required, we use the one provided by the user
 
-    fPhiDist = (TH1F*) fEPContainer->GetObject(frunNumber, "Default");
-    if (!fPhiDist) AliFatal(Form("Cannot find OADB phi distribution for run %d", frunNumber));
+    fPhiDist = (TH1F*) fEPContainer->GetObject(fRunNumber, "Default");
+    if (!fPhiDist) AliFatal(Form("Cannot find OADB phi distribution for run %d", fRunNumber));
 
   } 
   else {
@@ -484,7 +486,7 @@ void AliEPSelectionTask::SetPhiDist()
 void AliEPSelectionTask::SetPersonalPhiDistribution(const char* infilename, char* listname)
 {
     // Set a personal phi distribution
-  fuserphidist = kTRUE;
+  fUserphidist = kTRUE;
   
   TFile f(infilename);
   TObject* list = f.Get(listname);
