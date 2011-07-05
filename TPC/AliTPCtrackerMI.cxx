@@ -1131,7 +1131,7 @@ Bool_t   AliTPCtrackerMI::GetProlongation(Double_t x1, Double_t x2, Double_t x[5
 
 Int_t  AliTPCtrackerMI::LoadClusters (TTree *const tree)
 {
-  //
+  // load clusters
   //
   fInput = tree;
   return LoadClusters();
@@ -1360,7 +1360,7 @@ void AliTPCtrackerMI::FillClusterArray(TObjArray* array) const{
 
 void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
   //
-  //
+  // transformation
   //
   AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
   AliTPCTransform *transform = calibDB->GetTransform() ;
@@ -2040,7 +2040,7 @@ Int_t AliTPCtrackerMI::FollowBackProlongation(AliTPCseed& t, Int_t rf) {
    
 Float_t AliTPCtrackerMI::OverlapFactor(AliTPCseed * s1, AliTPCseed * s2, Int_t &sum1, Int_t & sum2)
 {
-  //
+  // overlapping factor
   //
   sum1=0;
   sum2=0;
@@ -2083,7 +2083,7 @@ Float_t AliTPCtrackerMI::OverlapFactor(AliTPCseed * s1, AliTPCseed * s2, Int_t &
 
 void  AliTPCtrackerMI::SignShared(AliTPCseed * s1, AliTPCseed * s2)
 {
-  //
+  // shared clusters
   //
   Float_t thetaCut = 0.2;//+10.*TMath::Sqrt(s1->GetSigmaTglZ()+ s2->GetSigmaTglZ());
   if (TMath::Abs(s1->GetTgl()-s2->GetTgl())>thetaCut) return;
@@ -2875,7 +2875,7 @@ void AliTPCtrackerMI::DeleteSeeds()
   fSeeds =0;
 }
 
-void AliTPCtrackerMI::ReadSeeds(AliESDEvent *const event, Int_t direction)
+void AliTPCtrackerMI::ReadSeeds(const AliESDEvent *const event, Int_t direction)
 {
   //
   //read seeds from the event
@@ -5863,6 +5863,7 @@ Int_t AliTPCtrackerMI::ReadSeeds(const TFile *inp) {
 Int_t AliTPCtrackerMI::Clusters2Tracks (AliESDEvent *const esd)
 {
   //
+  // clusters to tracks
   
   if (fSeeds) DeleteSeeds();
   fEvent = esd; 
@@ -6081,7 +6082,7 @@ TObjArray * AliTPCtrackerMI::Tracking(Int_t seedtype, Int_t i1, Int_t i2, Float_
 
 TObjArray * AliTPCtrackerMI::Tracking()
 {
-  //
+  // tracking
   //
   if (AliTPCReconstructor::GetRecoParam()->GetSpecialSeeding()) return TrackingSpecial();
   TStopwatch timer;
@@ -6390,7 +6391,7 @@ void  AliTPCtrackerMI::ParallelTracking(TObjArray *const arr, Int_t rfirst, Int_
   }    
 }
 
-void AliTPCtrackerMI::PrepareForBackProlongation(TObjArray *const arr,Float_t fac) const
+void AliTPCtrackerMI::PrepareForBackProlongation(const TObjArray *const arr,Float_t fac) const
 {
   //
   //
@@ -6445,7 +6446,7 @@ void AliTPCtrackerMI::PrepareForProlongation(TObjArray *const arr, Float_t fac) 
 
 }
 
-Int_t AliTPCtrackerMI::PropagateBack(TObjArray *const arr)
+Int_t AliTPCtrackerMI::PropagateBack(const TObjArray *const arr)
 {
   //
   // make back propagation
@@ -6476,7 +6477,7 @@ Int_t AliTPCtrackerMI::PropagateBack(TObjArray *const arr)
 }
 
 
-Int_t AliTPCtrackerMI::PropagateForward2(TObjArray *const arr)
+Int_t AliTPCtrackerMI::PropagateForward2(const TObjArray *const arr)
 {
   //
   // make forward propagation
@@ -6558,7 +6559,7 @@ Int_t AliTPCtrackerMI::PropagateBack(AliTPCseed *const pt, Int_t row0, Int_t row
 
 void  AliTPCtrackerMI::GetShape(AliTPCseed * seed, Int_t row)
 {
-  //
+  // gets cluster shape
   // 
   AliTPCClusterParam * clparam = AliTPCcalibDB::Instance()->GetClusterParam();
   Float_t zdrift = TMath::Abs((fkParam->GetZLength(0)-TMath::Abs(seed->GetZ())));
