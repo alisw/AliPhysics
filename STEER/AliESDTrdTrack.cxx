@@ -44,6 +44,7 @@ AliESDTrdTrack::AliESDTrdTrack():
 {
   //
   // Default constructor
+  for (int i=fgkNlayers;i--;) fTrackletIndex[i] = 0;
   //
 
 }
