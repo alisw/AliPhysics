@@ -24,6 +24,7 @@
 
 #include "Riostream.h"
 #include "TEnv.h"
+#include "TKey.h"
 #include "TBits.h"
 #include "TError.h"
 #include "TROOT.h"
@@ -2116,6 +2117,27 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
 }        
 
 //______________________________________________________________________________
+AliAnalysisManager *AliAnalysisAlien::LoadAnalysisManager(const char *fname)
+{
+// Loat the analysis manager from a file.
+   TFile *file = TFile::Open(fname);
+   if (!file) {
+      ::Error("LoadAnalysisManager", "Cannot open file %s", fname);
+      return 0;
+   }   
+   TIter nextkey(file->GetListOfKeys());
+   AliAnalysisManager *mgr = 0;
+   TKey *key;
+   while ((key=(TKey*)nextkey())) {
+      if (!strcmp(key->GetClassName(), "AliAnalysisManager"))
+         mgr = (AliAnalysisManager*)file->Get(key->GetName());
+   }
+   if (!mgr) 
+      ::Error("LoadAnalysisManager", "No analysis manager found in file %s", fname);
+   return mgr;
+}      
+
+//______________________________________________________________________________
 Int_t AliAnalysisAlien::SubmitSingleJob(const char *query)
 {
 // Submits a single job corresponding to the query and returns job id. If 0 submission failed.
@@ -3402,19 +3424,9 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       out << "// read the analysis manager from file" << endl;
       TString analysisFile = fExecutable;
       analysisFile.ReplaceAll(".sh", ".root");
-      out << "   TFile *file = TFile::Open(\"" << analysisFile << "\");" << endl;
-      out << "   if (!file) return;" << endl; 
-      out << "   TIter nextkey(file->GetListOfKeys());" << endl;
-      out << "   AliAnalysisManager *mgr = 0;" << endl;
-      out << "   TKey *key;" << endl;
-      out << "   while ((key=(TKey*)nextkey())) {" << endl;
-      out << "      if (!strcmp(key->GetClassName(), \"AliAnalysisManager\"))" << endl;
-      out << "         mgr = (AliAnalysisManager*)file->Get(key->GetName());" << endl;
-      out << "   };" << endl;
-      out << "   if (!mgr) {" << endl;
-      out << "      ::Error(\"" << func.Data() << "\", \"No analysis manager found in file " << analysisFile <<"\");" << endl;
-      out << "      return;" << endl;
-      out << "   }" << endl << endl;
+      out << "   AliAnalysisManager *mgr = AliAnalysisAlien::LoadAnalysisManager(\"" 
+          << analysisFile << "\");" << endl;
+      out << "   if (!mgr) return;" << endl;
       out << "   mgr->PrintStatus();" << endl;
       if (AliAnalysisManager::GetAnalysisManager()) {
          if (AliAnalysisManager::GetAnalysisManager()->GetDebugLevel()>3) {
@@ -3807,19 +3819,9 @@ void AliAnalysisAlien::WriteMergingMacro()
       TString analysisFile = fExecutable;
       analysisFile.ReplaceAll(".sh", ".root");
       out << "   if (!outputDir.Contains(\"Stage\")) return;" << endl;
-      out << "   TFile *file = TFile::Open(\"" << analysisFile << "\");" << endl;
-      out << "   if (!file) return;" << endl;
-      out << "   TIter nextkey(file->GetListOfKeys());" << endl;
-      out << "   AliAnalysisManager *mgr = 0;" << endl;
-      out << "   TKey *key;" << endl;
-      out << "   while ((key=(TKey*)nextkey())) {" << endl;
-      out << "      if (!strcmp(key->GetClassName(), \"AliAnalysisManager\"))" << endl;
-      out << "         mgr = (AliAnalysisManager*)file->Get(key->GetName());" << endl;
-      out << "   };" << endl;
-      out << "   if (!mgr) {" << endl;
-      out << "      ::Error(\"" << func.Data() << "\", \"No analysis manager found in file" << analysisFile <<"\");" << endl;
-      out << "      return;" << endl;
-      out << "   }" << endl << endl;
+      out << "   AliAnalysisManager *mgr = AliAnalysisAlien::LoadAnalysisManager(\"" 
+          << analysisFile << "\");" << endl;
+      out << "   if (!mgr) return;" << endl;
       out << "   mgr->SetRunFromPath(mgr->GetRunFromAlienPath(dir));" << endl;
       out << "   mgr->SetSkipTerminate(kFALSE);" << endl;
       out << "   mgr->PrintStatus();" << endl;

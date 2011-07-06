@@ -26,6 +26,7 @@
 #include <TMap.h>
 #endif
 
+class AliAnalysisManager;
 class TGridJDL;
 
 class AliAnalysisAlien : public AliAnalysisGrid {
@@ -105,6 +106,7 @@ public:
    static const char  *GetJobStatus(Int_t jobidstart, Int_t lastid, Int_t &nrunning, Int_t &nwaiting, Int_t &nerror, Int_t &ndone);
    const char         *GetListOfFiles(const char *type);
    Bool_t              CheckMergedFiles(const char *filename, const char *aliendir, Int_t nperchunk, const char *jdl="");
+   static AliAnalysisManager *LoadAnalysisManager(const char *fname);
    static Bool_t       MergeOutput(const char *output, const char *basedir, Int_t nmaxmerge, Int_t stage=0);
    virtual Bool_t      MergeOutputs();
    virtual void        Print(Option_t *option="") const;
