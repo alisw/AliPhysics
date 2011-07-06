@@ -83,10 +83,13 @@ class AliTRDclusterizer : public TNamed
   Bool_t   ReadDigits(AliRawReader *rawReader);
   Bool_t   ReadDigits(TTree *digitsTree);
 
+  Bool_t   ReadTracklets();
+  Bool_t   ReadTracks();
+
   Bool_t   WriteClusters(Int_t det);
   void     ResetRecPoints();
   virtual TClonesArray    *RecPoints();
-  virtual TClonesArray    *TrackletsArray();
+  virtual TClonesArray    *TrackletsArray(const TString &trkltype = "");
   virtual TClonesArray    *TracksArray();
 
   Bool_t   Raw2Clusters(AliRawReader *rawReader);

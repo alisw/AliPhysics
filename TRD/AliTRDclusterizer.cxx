@@ -44,6 +44,9 @@
 #include "AliTRDrawStream.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDtrackletWord.h"
+#include "AliTRDtrackletMCM.h"
+#include "AliTRDtrackGTU.h"
+#include "AliESDTrdTrack.h"
 
 #include "TTreeStream.h"
 
@@ -483,6 +486,83 @@ Bool_t AliTRDclusterizer::ReadDigits(AliRawReader *rawReader)
 
 }
 
+Bool_t AliTRDclusterizer::ReadTracklets()
+{
+  //
+  // Reads simulated tracklets from the input aliroot file
+  //
+
+  AliRunLoader *runLoader = AliRunLoader::Instance();
+  if (!runLoader) {
+    AliError("No run loader available");
+    return kFALSE;
+  }
+
+  AliLoader* loader = runLoader->GetLoader("TRDLoader");
+
+  AliDataLoader *trackletLoader = loader->GetDataLoader("tracklets");
+  if (!trackletLoader) {
+      return kFALSE;
+  }
+
+  // simulated tracklets
+  trackletLoader->Load();
+  TTree *trackletTree = trackletLoader->Tree();
+
+ if (trackletTree) {
+   TBranch *trklbranch = trackletTree->GetBranch("mcmtrklbranch");
+   TClonesArray *trklArray = TrackletsArray("AliTRDtrackletMCM");
+   if (trklbranch && trklArray) {
+     AliTRDtrackletMCM *trkl = 0x0;
+     trklbranch->SetAddress(&trkl);
+     for (Int_t iTracklet = 0; iTracklet < trklbranch->GetEntries(); iTracklet++) {
+	trklbranch->GetEntry(iTracklet);
+	new ((*trklArray)[trklArray->GetEntries()]) AliTRDtrackletMCM(*trkl);
+     }
+     return kTRUE;
+   }
+ }
+ return kFALSE;
+}
+
+Bool_t AliTRDclusterizer::ReadTracks()
+{
+  //
+  // Reads simulated GTU tracks from the input aliroot file
+  //
+
+  AliRunLoader *runLoader = AliRunLoader::Instance();
+
+  if (!runLoader) {
+    AliError("No run loader available");
+    return kFALSE;
+  }
+
+  AliLoader* loader = runLoader->GetLoader("TRDLoader");
+
+  AliDataLoader *trackLoader = loader->GetDataLoader("gtutracks");
+  if (!trackLoader) {
+      return kFALSE;
+  }
+
+  trackLoader->Load();
+
+  TTree *trackTree = trackLoader->Tree();
+  if (!trackTree) {
+    return kFALSE;
+  }
+
+  TClonesArray *trackArray = TracksArray();
+  AliTRDtrackGTU *trk = 0x0;
+  trackTree->SetBranchAddress("TRDtrackGTU", &trk);
+  for (Int_t iTrack = 0; iTrack < trackTree->GetEntries(); iTrack++) {
+    trackTree->GetEntry(iTrack);
+    new ((*trackArray)[trackArray->GetEntries()]) AliESDTrdTrack(*(trk->CreateTrdTrack()));
+  }
+
+  return kTRUE;
+}
+
 //_____________________________________________________________________________
 Bool_t AliTRDclusterizer::MakeClusters()
 {
@@ -592,8 +672,7 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   //}
 
   // register tracklet array for output
-  if (fReconstructor->IsProcessingTracklets())
-    fRawStream->SetTrackletArray(TrackletsArray());
+  fRawStream->SetTrackletArray(TrackletsArray("AliTRDtrackletMCM"));
   fRawStream->SetTrackArray(TracksArray());
 
   UInt_t det = 0;
@@ -1350,19 +1429,23 @@ TClonesArray *AliTRDclusterizer::RecPoints()
 }
 
 //_____________________________________________________________________________
-TClonesArray *AliTRDclusterizer::TrackletsArray() 
+TClonesArray *AliTRDclusterizer::TrackletsArray(const TString &trkltype)
 {
   //
   // Returns the array of on-line tracklets
   //
 
-  if (!fTracklets && fReconstructor->IsProcessingTracklets()) {
-    fTracklets = new TClonesArray("AliTRDtrackletWord", 200);
-    //SetClustersOwner(kTRUE);
-    //AliTRDReconstructor::SetTracklets(0x0);
+  if (trkltype.Length() != 0) {
+    if (!fTracklets) {
+      fTracklets = new TClonesArray(trkltype, 200);
+  }
+    else if (TClass::GetClass(trkltype.Data()) != fTracklets->GetClass()){
+      fTracklets->Delete();
+      delete fTracklets;
+      fTracklets = new TClonesArray(trkltype, 200);
+    }
   }
   return fTracklets;
-
 }
 
 //_____________________________________________________________________________

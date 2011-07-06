@@ -34,7 +34,7 @@ class AliTRDtrackletWord : public AliTRDtrackletBase {
 
   // ----- Getters for offline corresponding values -----
   Bool_t CookPID() { return kFALSE; }
-  Double_t GetPID(Int_t /* is */) const { return 0; }
+  Double_t GetPID(Int_t /* is */) const { return (Double_t) GetPID()/256.; }
   Int_t GetDetector() const { return fHCId / 2; }
   Int_t GetHCId() const { return fHCId; }
   Float_t GetdYdX() const { return (GetdY() * 140e-4 / 3.); }
@@ -53,7 +53,7 @@ class AliTRDtrackletWord : public AliTRDtrackletBase {
  protected:
   Int_t fHCId;                  // half-chamber ID
   UInt_t fTrackletWord;		// tracklet word: PID | Z | deflection length | Y
-				//          bits:  12   4            7          13
+				//          bits:   8   4            7          13
   static AliTRDgeometry *fgGeo;  // pointer to TRD geometry for coordinate calculations
 
  private:

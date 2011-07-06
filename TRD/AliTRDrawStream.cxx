@@ -556,122 +556,247 @@ Int_t AliTRDrawStream::DecodeGTUtracks()
   // decode GTU track words
   // this depends on the hardware revision of the SMU
 
-  AliDebug(1, DumpRaw(Form("GTU tracks (hw rev %i)", fCurrHwRev),
+  Int_t sector = fCurrEquipmentId-kDDLOffset;
+
+  if ((sector < 0) || (sector > 17)) {
+    AliError(Form("Invalid sector %i for GTU tracks", sector));
+    return -1;
+  }
+
+  AliDebug(1, DumpRaw(Form("GTU tracks in sector %2i (hw rev %i)", sector, fCurrHwRev),
 		      fPayloadCurr + 4, 10, 0xffe0ffff));
 
   if (fCurrHwRev < 1772) {
-    UInt_t trackWord[2] = { 0, 0 };
+    UInt_t    fastWord;		// fast trigger word
+    ULong64_t trackWord = 0;	// extended track word
     Int_t stack = 0;
     Int_t idx = 0;
     for (UInt_t iWord = 4; iWord < fCurrSmHeaderSize; iWord++) {
-      if (fPayloadCurr[iWord] == 0x10000000) {
+      if (fPayloadCurr[iWord] == 0x10000000) { // stack boundary marker
         stack++;
         idx = 0;
       }
       else {
         if ((idx == 0) &&
 	    ((fPayloadCurr[iWord] & 0xfffff0f0) == 0x13370000)) {
-	  AliDebug(1, Form("stack %i: fast trigger word: 0x%08x", stack, fPayloadCurr[iWord]));
+	  fastWord = fPayloadCurr[iWord];
+	  AliDebug(1, Form("stack %i: fast trigger word: 0x%08x", stack, fastWord));
 	  continue;
         }
         else if ((idx & 0x1) == 0x1) {
-	  trackWord[1] = fPayloadCurr[iWord];
-	  AliDebug(1,Form("track debug word: 0x%08x%08x", trackWord[1], trackWord[0]));
-	  // if (fTracks)
-	  //   new ((*fTracks)[fTracks->GetEntriesFast()]) AliESDTrdTrack(0, 0, trackWord[0], trackWord[1], fCurrEquipmentId-kDDLOffset);
-        }
+	  trackWord |= ((ULong64_t) fPayloadCurr[iWord]) << 32;
+	  AliDebug(1,Form("track debug word: 0x%016llx", trackWord));
+	  if (fTracks) {
+	    AliESDTrdTrack *trk = new ((*fTracks)[fTracks->GetEntriesFast()])
+	      AliESDTrdTrack();
+
+	    trk->SetSector(sector);
+	    trk->SetStack((trackWord >> 60) & 0x7);
+	    trk->SetA(0);
+	    trk->SetB(0);
+	    trk->SetPID(0);
+	    trk->SetLayerMask((trackWord >> 16) & 0x3f);
+	    trk->SetTrackletIndex((trackWord >> 22) & 0x3f, 0);
+	    trk->SetTrackletIndex((trackWord >> 28) & 0x3f, 1);
+	    trk->SetTrackletIndex((trackWord >> 34) & 0x3f, 2);
+	    trk->SetTrackletIndex((trackWord >> 40) & 0x3f, 3);
+	    trk->SetTrackletIndex((trackWord >> 46) & 0x3f, 4);
+	    trk->SetTrackletIndex((trackWord >> 52) & 0x3f, 5);
+
+	    trk->SetFlags(0);
+	    trk->SetReserved(0);
+
+	    Float_t pt = (((Int_t) (trackWord & 0xffff) ^ 0x8000) - 0x8000)/128.;
+	    if (TMath::Abs(pt) > 0.1) {
+	      trk->SetA((Int_t) (0.15*51625./100./pt / 160e-4 * 2));
+	    }
+	  }
+	}
         else {
-	  trackWord[0] = fPayloadCurr[iWord];
+	  trackWord = fPayloadCurr[iWord];
         }
         idx++;
       }
     }
   }
   else if (fCurrHwRev < 1804) {
-    UInt_t trackWord[2] = { 0, 0 };
+    UInt_t    fastWord;		// fast trigger word
+    ULong64_t trackWord = 0;	// extended track word
     Int_t stack = 0;
     Int_t idx = 0;
     for (UInt_t iWord = 4; iWord < fCurrSmHeaderSize; iWord++) {
-      if (fPayloadCurr[iWord] == 0xffe0ffff) {
+      if (fPayloadCurr[iWord] == 0xffe0ffff) { // stack boundary marker
         stack++;
         idx = 0;
       }
       else {
         if ((idx == 0) &&
 	    ((fPayloadCurr[iWord] & 0xfffff0f0) == 0x13370000)) {
-	  AliDebug(1, Form("stack %i: fast trigger word: 0x%08x", stack, fPayloadCurr[iWord]));
+	  fastWord = fPayloadCurr[iWord];
+	  AliDebug(1, Form("stack %i: fast trigger word: 0x%08x", stack, fastWord));
 	  continue;
         }
         else if ((idx & 0x1) == 0x1) {
-	  trackWord[1] = fPayloadCurr[iWord];
-	  AliDebug(1, Form("track debug word: 0x%08x%08x", trackWord[1], trackWord[0]));
-	  Float_t pt = (trackWord[0] & 0x8000) ? -1. * ((~(trackWord[0] & 0xffff)&0xffff) + 1)/128. : (trackWord[0] & 0xffff)/128.;
-	  AliDebug(1, Form("pt = %f", pt));
-	  // if (fTracks) {
-	  //   AliESDTrdTrack *trk = new ((*fTracks)[fTracks->GetEntriesFast()]) AliESDTrdTrack(0, 0, trackWord[0], trackWord[1], fCurrEquipmentId-kDDLOffset);
-	  //   if (TMath::Abs(pt) > 0.1) {
-	  //     trk->SetA((Int_t) (0.15*51625./100./pt / 160e-4 * 2));
-	  //   }
-	  //   trk->SetStack((trackWord[1] >> 28) & 0x7);
-	  // }
+	  trackWord |= ((ULong64_t) fPayloadCurr[iWord]) << 32;
+	  AliDebug(1, Form("track debug word: 0x%016llx", trackWord));
+	  if (fTracks) {
+	    AliESDTrdTrack *trk = new ((*fTracks)[fTracks->GetEntriesFast()])
+	      AliESDTrdTrack();
+
+	    trk->SetSector(fCurrEquipmentId-kDDLOffset);
+	    trk->SetStack((trackWord >> 60) & 0x7);
+	    trk->SetA(0);
+	    trk->SetB(0);
+	    trk->SetPID(0);
+	    trk->SetLayerMask((trackWord >> 16) & 0x3f);
+	    trk->SetTrackletIndex((trackWord >> 22) & 0x3f, 0);
+	    trk->SetTrackletIndex((trackWord >> 28) & 0x3f, 1);
+	    trk->SetTrackletIndex((trackWord >> 34) & 0x3f, 2);
+	    trk->SetTrackletIndex((trackWord >> 40) & 0x3f, 3);
+	    trk->SetTrackletIndex((trackWord >> 46) & 0x3f, 4);
+	    trk->SetTrackletIndex((trackWord >> 52) & 0x3f, 5);
+
+	    trk->SetFlags(0);
+	    trk->SetReserved(0);
+
+	    Float_t pt = (((Int_t) (trackWord & 0xffff) ^ 0x8000) - 0x8000)/128.;
+	    if (TMath::Abs(pt) > 0.1) {
+	      trk->SetA((Int_t) (0.15*51625./100./pt / 160e-4 * 2));
+	    }
+	  }
         }
         else {
-	  trackWord[0] = fPayloadCurr[iWord];
+	  trackWord = fPayloadCurr[iWord];
         }
         idx++;
       }
     }
   }
   else if (fCurrHwRev < 1819) {
-    UInt_t trackWord[2];
+    UInt_t    fastWord;		// fast trigger word
+    ULong64_t trackWord = 0;	// extended track word
     Int_t stack = 0;
     Int_t idx = 0;
     for (UInt_t iWord = 4; iWord < fCurrSmHeaderSize; iWord++) {
-      if (fPayloadCurr[iWord] == 0xffe0ffff) {
+      if (fPayloadCurr[iWord] == 0xffe0ffff) { // stack boundary marker
 	stack++;
 	idx = 0;
       }
       else {
 	if ((idx == 0) &&
 	    ((fPayloadCurr[iWord] & 0xfffff0f0) == 0x13370000)) {
-	  AliDebug(1, Form("stack %i: fast trigger word: 0x%08x", stack, fPayloadCurr[iWord]));
+	  fastWord = fPayloadCurr[iWord];
+	  AliDebug(1, Form("stack %i: fast trigger word: 0x%08x", stack, fastWord));
 	  continue;
 	}
 	else if ((idx & 0x1) == 0x1) {
-	  trackWord[idx&0x1] = fPayloadCurr[iWord];
-	  AliDebug(1, Form("track debug word: 0x%08x%08x", trackWord[1], trackWord[0]));
-	  printf("%4i %2i %i ",
-		 fRawReader->GetEventIndex(),
-		 fCurrEquipmentId-kDDLOffset, (trackWord[1] >> 28) & 0x7);
-	  Float_t pt = (trackWord[0] & 0x8000) ? -1. * ((~(trackWord[0] & 0xffff)&0xffff) + 1)/128. : (trackWord[0] & 0xffff)/128.;
-	  printf("%+7.2f ", pt);
-	  printf("%i%i%i%i%i%i ", ((trackWord[0] >> 21) & 0x1),
-		 ((trackWord[0] >> 20) & 0x1),
-		 ((trackWord[0] >> 19) & 0x1),
-		 ((trackWord[0] >> 18) & 0x1),
-		 ((trackWord[0] >> 17) & 0x1),
-		 ((trackWord[0] >> 16) & 0x1));
-	  printf("0x%08x%08x\n", trackWord[1], trackWord[0]);
-	  // if (fTracks) {
-	  //   AliESDTrdTrack *trk = new ((*fTracks)[fTracks->GetEntriesFast()]) AliESDTrdTrack(0, 0, trackWord[0], trackWord[1], fCurrEquipmentId-kDDLOffset);
-	  //   if (TMath::Abs(pt) > 0.1) {
-	  //     trk->SetA((Int_t) (0.15*51625./100./pt / 160e-4 * 2));
-	  //   }
-	  //   trk->SetStack((trackWord[1] >> 28) & 0x7);
-	  // }
+	  trackWord |= ((ULong64_t) fPayloadCurr[iWord]) << 32;
+	  AliDebug(1, Form("track debug word: 0x%016llx", trackWord));
+
+	  if (fTracks) {
+	    AliESDTrdTrack *trk = new ((*fTracks)[fTracks->GetEntriesFast()])
+	      AliESDTrdTrack();
+
+	    trk->SetSector(fCurrEquipmentId-kDDLOffset);
+	    trk->SetStack((trackWord >> 60) & 0x7);
+	    trk->SetA(0);
+	    trk->SetB(0);
+	    // trk->SetPt(((trackWord & 0xffff) ^ 0x8000) - 0x8000);
+	    trk->SetPID(0);
+	    trk->SetLayerMask((trackWord >> 16) & 0x3f);
+	    trk->SetTrackletIndex((trackWord >> 22) & 0x3f, 0);
+	    trk->SetTrackletIndex((trackWord >> 28) & 0x3f, 1);
+	    trk->SetTrackletIndex((trackWord >> 34) & 0x3f, 2);
+	    trk->SetTrackletIndex((trackWord >> 40) & 0x3f, 3);
+	    trk->SetTrackletIndex((trackWord >> 46) & 0x3f, 4);
+	    trk->SetTrackletIndex((trackWord >> 52) & 0x3f, 5);
+
+	    trk->SetFlags(0);
+	    trk->SetReserved(0);
+
+	    Float_t pt = (((Int_t) (trackWord & 0xffff) ^ 0x8000) - 0x8000)/128.;
+	    if (TMath::Abs(pt) > 0.1) {
+	      trk->SetA((Int_t) (0.15*51625./100./trk->Pt() / 160e-4 * 2));
+	    }
+	  }
 	}
 	else {
-	  trackWord[idx&0x1] = fPayloadCurr[iWord];
+	  trackWord = fPayloadCurr[iWord];
 	}
 	idx++;
       }
     }
   }
   else if (fCurrHwRev < 1860) {
-    AliError(Form("unsupported hardware rev %i", fCurrHwRev));
+    UInt_t    fastWord;		// fast trigger word
+    ULong64_t trackWord = 0;	// extended track word
+    Int_t stack = 0;
+    Int_t idx = 0;
+    Bool_t upperWord = kFALSE;
+    Int_t word = 0;
+    for (UInt_t iWord = 4; iWord < fCurrSmHeaderSize; iWord++) {
+      if (fPayloadCurr[iWord] == 0xffe0ffff) { // stack boundary marker
+        stack++;
+        idx = 0;
+	upperWord = kFALSE;
+      }
+      else {
+	// assemble the 32-bit words out of 16-bit blocks
+	if (upperWord) {
+	  word |= (fPayloadCurr[iWord] & 0xffff0000);
+	  upperWord = kFALSE;
+	}
+	else {
+	  // lower word is read first
+	  word = (fPayloadCurr[iWord] & 0xffff0000) >> 16;
+	  upperWord = kTRUE;
+	  continue;
+	}
+
+        if ((word & 0xffff0008) == 0x13370008) {
+	  fastWord = word;
+	  AliDebug(1, Form("stack %i: fast track word: 0x%08x", stack, fastWord));
+	  continue;
+        }
+        else if ((idx & 0x1) == 0x1) {
+	  trackWord |= ((ULong64_t) word) << 32;
+	  AliDebug(1, Form("track debug word: 0x%016llx", trackWord));
+	  if (fTracks) {
+	    AliESDTrdTrack *trk = new ((*fTracks)[fTracks->GetEntriesFast()])
+	      AliESDTrdTrack();
+
+	    trk->SetSector(fCurrEquipmentId-kDDLOffset);
+	    trk->SetStack((trackWord >> 60) & 0x7);
+	    trk->SetA(0);
+	    trk->SetB(0);
+	    trk->SetPID(0);
+	    trk->SetLayerMask((trackWord >> 16) & 0x3f);
+	    trk->SetTrackletIndex((trackWord >> 22) & 0x3f, 0);
+	    trk->SetTrackletIndex((trackWord >> 28) & 0x3f, 1);
+	    trk->SetTrackletIndex((trackWord >> 34) & 0x3f, 2);
+	    trk->SetTrackletIndex((trackWord >> 40) & 0x3f, 3);
+	    trk->SetTrackletIndex((trackWord >> 46) & 0x3f, 4);
+	    trk->SetTrackletIndex((trackWord >> 52) & 0x3f, 5);
+
+	    trk->SetFlags(0);
+	    trk->SetReserved(0);
+
+	    Float_t pt = (((Int_t) (trackWord & 0xffff) ^ 0x8000) - 0x8000)/128.;
+	    if (TMath::Abs(pt) > 0.1) {
+	      trk->SetA((Int_t) (0.15*51625./100./pt / 160e-4 * 2));
+	    }
+	  }
+        }
+        else {
+	  trackWord = word;
+        }
+        idx++;
+      }
+    }
+
   }
   else {
-    UInt_t trackWord[2] = { 0, 0 };
+    ULong64_t trackWord = 0; // this is the debug word
     Int_t stack = 0;
     Int_t idx = 0;
     Bool_t upperWord = kFALSE;
@@ -704,18 +829,35 @@ Int_t AliTRDrawStream::DecodeGTUtracks()
 	  continue;
 	}
         else if ((idx & 0x1) == 0x1) {
-	  trackWord[1] = word;
-	  AliDebug(1, Form("track debug word: 0x%08x%08x", trackWord[1], trackWord[0]));
-	  // if (fTracks) {
-	  //   AliESDTrdTrack *trk = new ((*fTracks)[fTracks->GetEntriesFast()]) AliESDTrdTrack(0, 0, trackWord[0], trackWord[1], fCurrEquipmentId-kDDLOffset);
-	  //   if (TMath::Abs(trk->GetPt()) > 0.1) {
-	  //     trk->SetA((Int_t) (0.15*51625./100./trk->GetPt() / 160e-4 * 2));
-	  //   }
-	  //   trk->SetStack((trackWord[1] >> 28) & 0x7);
-	  // }
+	  trackWord |= ((ULong64_t) word) << 32;
+	  AliDebug(1, Form("track debug word: 0x%16llx", trackWord));
+	  if (fTracks) {
+	    AliESDTrdTrack *trk = new ((*fTracks)[fTracks->GetEntriesFast()])
+	      AliESDTrdTrack();
+	    trk->SetSector(fCurrEquipmentId-kDDLOffset);
+	    trk->SetStack((trackWord >> 60) & 0x7);
+	    trk->SetA(0);
+	    trk->SetB(0);
+	    trk->SetPID(0);
+	    trk->SetLayerMask((trackWord >> 16) & 0x3f);
+	    trk->SetTrackletIndex((trackWord >> 22) & 0x3f, 0);
+	    trk->SetTrackletIndex((trackWord >> 28) & 0x3f, 1);
+	    trk->SetTrackletIndex((trackWord >> 34) & 0x3f, 2);
+	    trk->SetTrackletIndex((trackWord >> 40) & 0x3f, 3);
+	    trk->SetTrackletIndex((trackWord >> 46) & 0x3f, 4);
+	    trk->SetTrackletIndex((trackWord >> 52) & 0x3f, 5);
+
+	    trk->SetFlags(0);
+	    trk->SetReserved(0);
+
+	    Float_t pt = (((Int_t) (trackWord & 0xffff) ^ 0x8000) - 0x8000)/128.;
+	    if (TMath::Abs(pt) > 0.1) {
+	      trk->SetA(-(Int_t) (0.15*51625./100./pt / 160e-4 * 2));
+	    }
+	  }
         }
         else {
-	  trackWord[0] = word;
+	  trackWord = word;
         }
         idx++;
       }
@@ -732,50 +874,87 @@ Int_t AliTRDrawStream::ReadTrackingHeader(Int_t stack)
 
   fCurrTrkHeaderIndexWord[stack] = *fPayloadCurr;
   fCurrTrkHeaderSize[stack]      = ((*fPayloadCurr) >> 16) & 0x3ff;
+
+  AliDebug(1, Form("tracking header index word: 0x%08x, size: %i (hw rev: %i)",
+		   fCurrTrkHeaderIndexWord[stack], fCurrTrkHeaderSize[stack], fCurrHwRev));
+  Int_t trackingTime = *fPayloadCurr & 0x3ff;
+
   fPayloadCurr++;
 
-  AliDebug(1, Form("tracking header index word: 0x%08x, size: %i\n",
-		   fCurrTrkHeaderIndexWord[stack], fCurrTrkHeaderSize[stack]));
-
   // data words
-  UInt_t trackWord[2] = { 0, 0 };
+  ULong64_t trackWord = 0;
   Int_t idx = 0;
-  Bool_t upperWord = kFALSE;
-  Int_t word = 0;
-  for (UInt_t iWord = 0; iWord < fCurrTrkHeaderSize[stack]; iWord++) {
-    // assemble the 32-bit words out of 16-bit blocks
-    if (upperWord) {
-      word |= (fPayloadCurr[iWord] & 0xffff0000);
-      upperWord = kFALSE;
-    }
-    else {
-      // lower word is read first
-      word = (fPayloadCurr[iWord] & 0xffff0000) >> 16;
-      upperWord = kTRUE;
-      continue;
-    }
+  Int_t trackIndex = fTracks ? fTracks->GetEntriesFast() : -1;
 
-    if ((word & 0xffff0008) == 0x13370008) {
-      AliDebug(1, Form("stack %i: fast track word: 0x%08x", stack, word));
-      continue;
-    }
-    else if ((word & 0xffff0010) == 0x13370010) {
-      AliDebug(1, Form("stack %i: tracking done word: 0x%08x", stack, word));
-      continue;
-    }
-    else if ((idx & 0x1) == 0x1) {
-      trackWord[1] = word;
-      AliDebug(1, Form("track debug word: 0x%08x%08x", trackWord[1], trackWord[0]));
-      // if (fTracks) {
-      // 	AliESDTrdTrack *trk = new ((*fTracks)[fTracks->GetEntriesFast()]) AliESDTrdTrack(0, 0, trackWord[0], trackWord[1], fCurrEquipmentId-kDDLOffset);
-      // 	if (TMath::Abs(trk->GetPt()) > 0.1) {
-      // 	  trk->SetA((Int_t) (0.15*51625./100./trk->GetPt() / 160e-4 * 2));
-      // 	}
-      // 	trk->SetStack((trackWord[1] >> 28) & 0x7);
-      // }
+  for (UInt_t iWord = 0; iWord < fCurrTrkHeaderSize[stack]; iWord++) {
+
+    if (!(idx & 0x1)) {
+      // first part of 64-bit word
+      trackWord = fPayloadCurr[iWord];
     }
     else {
-      trackWord[0] = word;
+      trackWord |= ((ULong64_t) fPayloadCurr[iWord]) << 32;
+
+      if (trackWord & (1ul << 63)) {
+	if ((trackWord & (0x3ful << 56)) != 0) {
+	  // track word
+	  AliDebug(2, Form("track word: 0x%016llx", trackWord));
+
+	  if (fTracks) {
+	    AliESDTrdTrack *trk = new ((*fTracks)[fTracks->GetEntriesFast()])
+	      AliESDTrdTrack();
+
+	    trk->SetSector(fCurrEquipmentId-kDDLOffset);
+	    trk->SetLayerMask((trackWord >> 56) & 0x3f);
+	    trk->SetA( (((trackWord >> 38) & 0x3ffff) ^ 0x20000) - 0x20000);
+	    trk->SetB( (((trackWord >> 20) & 0x3ffff) ^ 0x20000) - 0x20000);
+	    trk->SetC( (((trackWord >> 8)  &  0xffff) ^  0x8000) -  0x8000);
+	    trk->SetPID((trackWord >>  0) & 0xff);
+	    trk->SetStack(stack);
+
+	    // now compare the track word with the one generated from the ESD information
+	    if (trackWord != trk->GetTrackWord(0)) {
+	      AliError(Form("track word 0x%016llx does not match the read one 0x%016llx",
+			    trk->GetTrackWord(0), trackWord));
+	    }
+	  }
+	}
+	else {
+	  // done marker (so far only used to set trigger flag)
+
+	  AliDebug(2, Form("seg / stack / first / last / done / index : %i %i %lli %lli %lli %i",
+			   fCurrEquipmentId - kDDLOffset, stack,
+			   (trackWord >> 20) & 0x3ff,
+			   (trackWord >> 10) & 0x3ff,
+			   (trackWord >>  0) & 0x3ff,
+			   trackingTime));
+	}
+      }
+      else {
+	// extended track word
+	AliDebug(2, Form("extended track word: 0x%016llx", trackWord));
+
+	if (fTracks) {
+	  AliESDTrdTrack *trk = (AliESDTrdTrack*) (*fTracks)[trackIndex];
+
+	  trk->SetFlags((trackWord >> 52) & 0x7ff);
+	  trk->SetReserved((trackWord >> 49) & 0x7);
+	  trk->SetY((trackWord >> 36) & 0x1fff);
+	  trk->SetTrackletIndex((trackWord >>  0) & 0x3f, 0);
+	  trk->SetTrackletIndex((trackWord >>  6) & 0x3f, 1);
+	  trk->SetTrackletIndex((trackWord >> 12) & 0x3f, 2);
+	  trk->SetTrackletIndex((trackWord >> 18) & 0x3f, 3);
+	  trk->SetTrackletIndex((trackWord >> 24) & 0x3f, 4);
+	  trk->SetTrackletIndex((trackWord >> 30) & 0x3f, 5);
+
+	  if (trackWord != trk->GetExtendedTrackWord(0)) {
+	    AliError(Form("extended track word 0x%016llx does not match the read one 0x%016llx",
+			  trk->GetExtendedTrackWord(0), trackWord));
+	    }
+
+	  trackIndex++;
+	}
+      }
     }
     idx++;
   }
@@ -1307,16 +1486,17 @@ Int_t AliTRDrawStream::ReadZSData()
       }
 
       adcwc = 0;
-      AliDebug(3, Form("Now reading %i words for channel %2i", timebins / 3, channelno));
+      Int_t nADCwords = (timebins + 2) / 3;
+      AliDebug(3, Form("Now reading %i words for channel %2i", nADCwords, channelno));
       Int_t adccol = adccoloff - channelno;
       Int_t padcol = padcoloff - channelno;
 //      if (adccol < 3 || adccol > 165)
 //	AliInfo(Form("writing channel %i of det %3i %i:%2i to adcrow/-col: %i/%i padcol: %i",
 //		     channelno, fCurrHC/2, fCurrRobPos, fCurrMcmPos, row, adccol, padcol));
 
-      while (adcwc < timebins / 3 &&
-	     *(fPayloadCurr) != fgkDataEndmarker &&
-	     fPayloadCurr - fPayloadStart < fPayloadSize) {
+      while ((adcwc < nADCwords) &&
+	     (*(fPayloadCurr) != fgkDataEndmarker) &&
+	     (fPayloadCurr - fPayloadStart < fPayloadSize)) {
 	int check = 0x3 & *fPayloadCurr;
 	if (channelno % 2 != 0)	{ // odd channel
 	  if (check != 0x2 && channelno < 21) {
@@ -1348,7 +1528,7 @@ Int_t AliTRDrawStream::ReadZSData()
 	fPayloadCurr++;
       }
 
-      if (adcwc != timebins / 3)
+      if (adcwc != nADCwords)
 	MCMError(kAdcDataAbort);
 
       // adding index
@@ -1467,12 +1647,13 @@ Int_t AliTRDrawStream::ReadNonZSData()
       currentTimebin = 0;
 
       adcwc = 0;
-      AliDebug(2, Form("Now looking %i words", timebins / 3));
+      Int_t nADCwords = (timebins + 2) / 3;
+      AliDebug(2, Form("Now looking %i words", nADCwords));
       Int_t adccol = adccoloff - channelno;
       Int_t padcol = padcoloff - channelno;
-      while (adcwc < timebins / 3 &&
-	     *(fPayloadCurr) != fgkDataEndmarker &&
-	     fPayloadCurr - fPayloadStart < fPayloadSize) {
+      while ((adcwc < nADCwords) &&
+	     (*(fPayloadCurr) != fgkDataEndmarker) &&
+	     (fPayloadCurr - fPayloadStart < fPayloadSize)) {
 	int check = 0x3 & *fPayloadCurr;
 	if (channelno % 2 != 0)	{ // odd channel
 	  if (check != 0x2 && channelno < 21) {
@@ -1504,7 +1685,7 @@ Int_t AliTRDrawStream::ReadNonZSData()
 	fPayloadCurr++;
       }
 
-      if (adcwc != timebins / 3)
+      if (adcwc != nADCwords)
 	MCMError(kAdcDataAbort);
 
       // adding index

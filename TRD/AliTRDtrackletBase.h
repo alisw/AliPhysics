@@ -32,6 +32,7 @@ class AliTRDtrackletBase : public TObject {
     virtual Bool_t   CookPID() = 0;
 
     virtual Int_t    GetDetector() const = 0 ;
+    virtual Int_t    GetHCId() const { return 2 * GetDetector() + (GetYbin() > 0 ? 1 : 0); }
 
     virtual Float_t  GetX() const  = 0;
     virtual Float_t  GetY() const  = 0;
