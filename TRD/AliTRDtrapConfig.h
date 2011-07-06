@@ -494,10 +494,6 @@ class AliTRDtrapConfig : public TObject
   void PrintMemDatx(ostream &os, TrapReg_t reg, Int_t det, Int_t rob, Int_t mcm) const;
   void PrintDatx(ostream &os, UInt_t addr, UInt_t data, Int_t rob, Int_t mcm) const;
 
-  // PID
-  void SetPIDscale(Double_t sq0, Double_t sq1) {fScaleQ0=sq0; fScaleQ1=sq1;}  // The two scaling factors are not available in the TRAP but needed by the DCS board
-  void GetPIDscale(Double_t scale[2]) {scale[0] = fScaleQ0; scale[1]=fScaleQ1;}  // The two scaling factors are not available in the TRAP but needed by the DCS board
-
   // configuration handling
   Bool_t ReadPackedConfig(Int_t det, UInt_t *data, Int_t size);
 

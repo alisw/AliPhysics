@@ -684,31 +684,41 @@ Bool_t AliTRDtrapConfig::SetTrapReg(TrapReg_t reg, Int_t value, Int_t det)
   // set a global value for the given TRAP register,
   // i.e. the same value for all TRAPs
 
-   if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
-      fRegisterValue[reg].globalValue = value;
-      return kTRUE;
-   }
-   else if (fRegisterValue[reg].state == RegValue_t::kIndividual) {
+  if( (det>=0 && det<AliTRDgeometry::Ndet())) {
+    if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
+      Int_t defaultValue = fRegisterValue[reg].globalValue;
+
+      fRegisterValue[reg].state = RegValue_t::kIndividual;
+      fRegisterValue[reg].individualValue = new Int_t[AliTRDgeometry::Ndet()*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm];
+
+      for(Int_t i = 0; i < AliTRDgeometry::Ndet()*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm; i++)
+	fRegisterValue[reg].individualValue[i] = defaultValue; // set the requested register of all MCMs to the value previously stored
+
+      for(Int_t rob=0; rob<AliTRDfeeParam::GetNrobC1(); rob++) {
+	for(Int_t mcm=0; mcm<fgkMaxMcm; mcm++)
+	  fRegisterValue[reg].individualValue[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm] = value;
+      }
+    }
+    else if (fRegisterValue[reg].state == RegValue_t::kIndividual) {
       // if the register is in idividual mode but a broadcast is requested, the selected register is
       // set to value for all MCMs on the chamber
 
-      if( (det>=0 && det<AliTRDgeometry::Ndet())) {
-	 for(Int_t rob=0; rob<AliTRDfeeParam::GetNrobC1(); rob++) {
-	    for(Int_t mcm=0; mcm<fgkMaxMcm; mcm++)
-	       fRegisterValue[reg].individualValue[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm] = value;
-	 }
+      for(Int_t rob=0; rob<AliTRDfeeParam::GetNrobC1(); rob++) {
+	for(Int_t mcm=0; mcm<fgkMaxMcm; mcm++)
+	  fRegisterValue[reg].individualValue[det*AliTRDfeeParam::GetNrobC1()*fgkMaxMcm + rob*fgkMaxMcm + mcm] = value;
       }
-      else {
-	 AliError(Form("Invalid detector number: %i\n", det));
-	 return kFALSE;
-      }
-   }
-   else {  // should never be reached
+    }
+    else {  // should never be reached
       AliError("MCM register status neither kGlobal nor kIndividual");
       return kFALSE;
-   }
+    }
+  }
+  else {
+    AliError(Form("Invalid detector number: %i\n", det));
+    return kFALSE;
+  }
 
-   return kFALSE;
+  return kFALSE;
 }
 
 
@@ -1156,7 +1166,7 @@ Bool_t AliTRDtrapConfig::PrintTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t
   // if it is individual a valid MCM has to be specified
 
   if (fRegisterValue[reg].state == RegValue_t::kGlobal) {
-    printf("%s (%i bits) at 0x%08x is 0x%08x and resets to: 0x%08x (currently global mode)\n",
+    printf("%10s (%2i bits) at 0x%04x is 0x%08x and resets to: 0x%08x (currently global mode)\n",
            GetRegName((TrapReg_t) reg),
            GetRegNBits((TrapReg_t) reg),
            GetRegAddress((TrapReg_t) reg),
@@ -1167,7 +1177,7 @@ Bool_t AliTRDtrapConfig::PrintTrapReg(TrapReg_t reg, Int_t det, Int_t rob, Int_t
     if((det >= 0 && det < AliTRDgeometry::Ndet()) &&
        (rob >= 0 && rob < AliTRDfeeParam::GetNrobC1()) &&
        (mcm >= 0 && mcm < fgkMaxMcm)) {
-      printf("%s (%i bits) at 0x%08x is 0x%08x and resets to: 0x%08x (currently individual mode)\n",
+      printf("%10s (%2i bits) at 0x%04x is 0x%08x and resets to: 0x%08x (currently individual mode)\n",
              GetRegName((TrapReg_t) reg),
              GetRegNBits((TrapReg_t) reg),
              GetRegAddress((TrapReg_t) reg),
@@ -1223,10 +1233,16 @@ Bool_t AliTRDtrapConfig::AddValues(UInt_t det, UInt_t cmd, UInt_t extali, Int_t 
       if(AliTRDfeeParam::ExtAliToAli(extali, linkPair, rocType, mcmList, mcmListSize)!=0) {
 	Int_t i=0;
         while(mcmList[i] != -1 && i<mcmListSize) {
-          if(mcmList[i]==127)
+          if(mcmList[i]==127) {
+	    AliDebug(1, Form("broadcast write to %s: 0x%08x",
+			     GetRegName((TrapReg_t) mcmReg), data));
             SetTrapReg( (TrapReg_t) mcmReg, data, det);
-          else
-            SetTrapReg( (TrapReg_t) mcmReg, data, det, (mcmList[i]>>7), (mcmList[i]&0x7F));
+	  }
+          else {
+	    AliDebug(1, Form("individual write to %s (%i, %i): 0x%08x",
+			     GetRegName((TrapReg_t) mcmReg), (mcmList[i]>>7), (mcmList[i]&0x7F), data));
+            SetTrapReg( (TrapReg_t) mcmReg, data, det, (mcmList[i]>>7)&0x7, (mcmList[i]&0x7F));
+	  }
           i++;
         }
       }

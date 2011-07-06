@@ -142,7 +142,6 @@ void AliTRDmcmSim::Init( Int_t det, Int_t robPos, Int_t mcmPos, Bool_t /* newEve
   fDetector      = det;
   fRobPos        = robPos;
   fMcmPos        = mcmPos;
-  fNTimeBin      = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kC13CPUA);
   fRow           = fFeeParam->GetPadRowFromMCM( fRobPos, fMcmPos );
 
   if (!fInitialized) {
@@ -151,6 +150,7 @@ void AliTRDmcmSim::Init( Int_t det, Int_t robPos, Int_t mcmPos, Bool_t /* newEve
     fZSMap   = new Int_t  [fgkNADC];
     fGainCounterA = new UInt_t[fgkNADC];
     fGainCounterB = new UInt_t[fgkNADC];
+    fNTimeBin     = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kC13CPUA, fDetector, fRobPos, fMcmPos);
     for( Int_t iAdc = 0 ; iAdc < fgkNADC; iAdc++ ) {
       fADCR[iAdc] = new Int_t[fNTimeBin];
       fADCF[iAdc] = new Int_t[fNTimeBin];
@@ -213,8 +213,8 @@ void AliTRDmcmSim::SetNTimebins(Int_t ntimebins)
 
   fNTimeBin = ntimebins;
   for( Int_t iAdc = 0 ; iAdc < fgkNADC; iAdc++ ) {
-    delete fADCR[iAdc];
-    delete fADCF[iAdc];
+    delete [] fADCR[iAdc];
+    delete [] fADCF[iAdc];
     fADCR[iAdc] = new Int_t[fNTimeBin];
     fADCF[iAdc] = new Int_t[fNTimeBin];
   }
@@ -481,8 +481,8 @@ void AliTRDmcmSim::Draw(Option_t* const option)
       Int_t   ndrift   = fTrapConfig->GetDmemUnsigned(AliTRDtrapConfig::fgkDmemAddrNdrift, fDetector, fRobPos, fMcmPos) >> 5;
       Float_t slope    = trkl->GetdY() * 140e-4 / ndrift;
 
-      Int_t t0 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS);
-      Int_t t1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFE);
+      Int_t t0 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS, fDetector, fRobPos, fMcmPos);
+      Int_t t1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFE, fDetector, fRobPos, fMcmPos);
 
       trklLines[iTrkl].SetX1((offset - (trkl->GetY() - slope * t0)) / padWidth); // ??? sign?
       trklLines[iTrkl].SetY1(t0);
@@ -574,8 +574,8 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *
     for (Int_t iAdc = 0; iAdc < fgkNADC; iAdc++) {
       Int_t value = adcArray->GetDataByAdcCol(GetRow(), offset - iAdc, iTimeBin);
       if (value < 0 || (offset - iAdc < 1) || (offset - iAdc > 165)) {
-        fADCR[iAdc][iTimeBin] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP) + (fgAddBaseline << fgkAddDigits);
-        fADCF[iAdc][iTimeBin] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP) + (fgAddBaseline << fgkAddDigits);
+        fADCR[iAdc][iTimeBin] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP, fDetector, fRobPos, fMcmPos) + (fgAddBaseline << fgkAddDigits);
+        fADCF[iAdc][iTimeBin] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP, fDetector, fRobPos, fMcmPos) + (fgAddBaseline << fgkAddDigits);
       }
       else {
         fZSMap[iAdc] = 0;
@@ -633,8 +633,8 @@ void AliTRDmcmSim::SetDataByPad(AliTRDarrayADC* const adcArray, AliTRDdigitsMana
 	value = adcArray->GetData(GetRow(), offset - iAdc, iTimeBin);
       //      Int_t value = adcArray->GetDataByAdcCol(GetRow(), offset - iAdc, iTimeBin);
       if (value < 0 || (offset - iAdc < 1) || (offset - iAdc > 165)) {
-        fADCR[iAdc][iTimeBin] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP) + (fgAddBaseline << fgkAddDigits);
-        fADCF[iAdc][iTimeBin] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP) + (fgAddBaseline << fgkAddDigits);
+        fADCR[iAdc][iTimeBin] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP, fDetector, fRobPos, fMcmPos) + (fgAddBaseline << fgkAddDigits);
+        fADCF[iAdc][iTimeBin] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP, fDetector, fRobPos, fMcmPos) + (fgAddBaseline << fgkAddDigits);
       }
       else {
         fZSMap[iAdc] = 0;
@@ -659,8 +659,8 @@ void AliTRDmcmSim::SetDataPedestal( Int_t adc )
   }
 
   for( Int_t it = 0 ; it < fNTimeBin ; it++ ) {
-    fADCR[adc][it] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP) + (fgAddBaseline << fgkAddDigits);
-    fADCF[adc][it] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP) + (fgAddBaseline << fgkAddDigits);
+    fADCR[adc][it] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP, fDetector, fRobPos, fMcmPos) + (fgAddBaseline << fgkAddDigits);
+    fADCF[adc][it] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP, fDetector, fRobPos, fMcmPos) + (fgAddBaseline << fgkAddDigits);
   }
 }
 
@@ -723,7 +723,7 @@ Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t bufSize, UInt_t iEv) co
   if( !CheckInitialized() )
     return 0;
 
-  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBSF) != 0) // store unfiltered data
+  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBSF, fDetector, fRobPos, fMcmPos) != 0) // store unfiltered data
     adc = fADCR;
   else
     adc = fADCF;
@@ -731,7 +731,7 @@ Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t bufSize, UInt_t iEv) co
   // Produce ADC mask : nncc cccm mmmm mmmm mmmm mmmm mmmm 1100
   // 				n : unused , c : ADC count, m : selected ADCs
   if( rawVer >= 3 &&
-      (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kC15CPUA) & (1 << 13))) { // check for zs flag in TRAP configuration
+      (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kC15CPUA, fDetector, fRobPos, fMcmPos) & (1 << 13))) { // check for zs flag in TRAP configuration
     for( Int_t iAdc = 0 ; iAdc < fgkNADC ; iAdc++ ) {
       if( ~fZSMap[iAdc] != 0 ) { //  0 means not suppressed
 	adcMask |= (1 << (iAdc+4) );	// last 4 digit reserved for 1100=0xc
@@ -740,7 +740,7 @@ Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t bufSize, UInt_t iEv) co
     }
 
     if ((nActiveADC == 0) &&
-	(fTrapConfig->GetTrapReg(AliTRDtrapConfig::kC15CPUA) & (1 << 8))) // check for DEH flag in TRAP configuration
+	(fTrapConfig->GetTrapReg(AliTRDtrapConfig::kC15CPUA, fDetector, fRobPos, fMcmPos) & (1 << 8))) // check for DEH flag in TRAP configuration
       return 0;
 
     // assemble adc mask word
@@ -845,7 +845,7 @@ void AliTRDmcmSim::FilterPedestalInit(Int_t baseline)
   // Initializes the pedestal filter assuming that the input has
   // been constant for a long time (compared to the time constant).
 
-  UShort_t    fptc = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPTC); // 0..3, 0 - fastest, 3 - slowest
+  UShort_t    fptc = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPTC, fDetector, fRobPos, fMcmPos); // 0..3, 0 - fastest, 3 - slowest
 
   for (Int_t iAdc = 0; iAdc < fgkNADC; iAdc++)
     fPedAcc[iAdc] = (baseline << 2) * (1 << fgkFPshifts[fptc]);
@@ -857,9 +857,9 @@ UShort_t AliTRDmcmSim::FilterPedestalNextSample(Int_t adc, Int_t timebin, UShort
   // The output depends on the internal registers and, thus, the
   // history of the filter.
 
-  UShort_t    fpnp = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP); // 0..511 -> 0..127.75, pedestal at the output
-  UShort_t    fptc = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPTC); // 0..3, 0 - fastest, 3 - slowest
-  UShort_t    fpby = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPBY); // 0..1 bypass, active low
+  UShort_t    fpnp = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP, fDetector, fRobPos, fMcmPos); // 0..511 -> 0..127.75, pedestal at the output
+  UShort_t    fptc = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPTC, fDetector, fRobPos, fMcmPos); // 0..3, 0 - fastest, 3 - slowest
+  UShort_t    fpby = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPBY, fDetector, fRobPos, fMcmPos); // 0..1 bypass, active low
 
   UShort_t accumulatorShifted;
   Int_t correction;
@@ -927,11 +927,11 @@ UShort_t AliTRDmcmSim::FilterGainNextSample(Int_t adc, UShort_t value)
   // The output depends on the internal registers and, thus, the
   // history of the filter.
 
-  UShort_t    fgby = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFGBY); // bypass, active low
-  UShort_t    fgf  = fTrapConfig->GetTrapReg(AliTRDtrapConfig::TrapReg_t(AliTRDtrapConfig::kFGF0 + adc)); // 0x700 + (0 & 0x1ff);
-  UShort_t    fga  = fTrapConfig->GetTrapReg(AliTRDtrapConfig::TrapReg_t(AliTRDtrapConfig::kFGA0 + adc)); // 40;
-  UShort_t    fgta = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFGTA); // 20;
-  UShort_t    fgtb = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFGTB); // 2060;
+  UShort_t    fgby = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFGBY, fDetector, fRobPos, fMcmPos); // bypass, active low
+  UShort_t    fgf  = fTrapConfig->GetTrapReg(AliTRDtrapConfig::TrapReg_t(AliTRDtrapConfig::kFGF0 + adc), fDetector, fRobPos, fMcmPos); // 0x700 + (0 & 0x1ff);
+  UShort_t    fga  = fTrapConfig->GetTrapReg(AliTRDtrapConfig::TrapReg_t(AliTRDtrapConfig::kFGA0 + adc), fDetector, fRobPos, fMcmPos); // 40;
+  UShort_t    fgta = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFGTA, fDetector, fRobPos, fMcmPos); // 20;
+  UShort_t    fgtb = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFGTB, fDetector, fRobPos, fMcmPos); // 2060;
 
   UInt_t corr; // corrected value
 
@@ -975,9 +975,9 @@ void AliTRDmcmSim::FilterTailInit(Int_t baseline)
   // sufficiently long time.
 
   // exponents and weight calculated from configuration
-  UShort_t    alphaLong = 0x3ff & fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTAL); // the weight of the long component
-  UShort_t    lambdaLong = (1 << 10) | (1 << 9) | (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTLL) & 0x1FF); // the multiplier
-  UShort_t    lambdaShort = (0 << 10) | (1 << 9) | (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTLS) & 0x1FF); // the multiplier
+  UShort_t    alphaLong = 0x3ff & fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTAL, fDetector, fRobPos, fMcmPos); // the weight of the long component
+  UShort_t    lambdaLong = (1 << 10) | (1 << 9) | (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTLL, fDetector, fRobPos, fMcmPos) & 0x1FF); // the multiplier
+  UShort_t    lambdaShort = (0 << 10) | (1 << 9) | (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTLS, fDetector, fRobPos, fMcmPos) & 0x1FF); // the multiplier
 
   Float_t lambdaL = lambdaLong  * 1.0 / (1 << 11);
   Float_t lambdaS = lambdaShort * 1.0 / (1 << 11);
@@ -991,16 +991,16 @@ void AliTRDmcmSim::FilterTailInit(Int_t baseline)
   UShort_t aout;
 
   if (baseline < 0)
-    baseline = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP);
+    baseline = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP, fDetector, fRobPos, fMcmPos);
 
   ql = lambdaL * (1 - lambdaS) *      alphaL;
   qs = lambdaS * (1 - lambdaL) * (1 - alphaL);
 
   for (Int_t iAdc = 0; iAdc < fgkNADC; iAdc++) {
     Int_t value = baseline & 0xFFF;
-    Int_t corr = (value * fTrapConfig->GetTrapReg(AliTRDtrapConfig::TrapReg_t(AliTRDtrapConfig::kFGF0 + iAdc))) >> 11;
+    Int_t corr = (value * fTrapConfig->GetTrapReg(AliTRDtrapConfig::TrapReg_t(AliTRDtrapConfig::kFGF0 + iAdc), fDetector, fRobPos, fMcmPos)) >> 11;
     corr = corr > 0xfff ? 0xfff : corr;
-    corr = AddUintClipping(corr, fTrapConfig->GetTrapReg(AliTRDtrapConfig::TrapReg_t(AliTRDtrapConfig::kFGA0 + iAdc)), 12);
+    corr = AddUintClipping(corr, fTrapConfig->GetTrapReg(AliTRDtrapConfig::TrapReg_t(AliTRDtrapConfig::kFGA0 + iAdc), fDetector, fRobPos, fMcmPos), 12);
 
     kt = kdc * baseline;
     aout = baseline - (UShort_t) kt;
@@ -1017,9 +1017,9 @@ UShort_t AliTRDmcmSim::FilterTailNextSample(Int_t adc, UShort_t value)
   // history of the filter.
 
   // exponents and weight calculated from configuration
-  UShort_t    alphaLong   = 0x3ff & fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTAL);                          // the weight of the long component
-  UShort_t    lambdaLong  = (1 << 10) | (1 << 9) | (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTLL) & 0x1FF); // the multiplier of the long component
-  UShort_t    lambdaShort = (0 << 10) | (1 << 9) | (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTLS) & 0x1FF); // the multiplier of the short component
+  UShort_t    alphaLong   = 0x3ff & fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTAL, fDetector, fRobPos, fMcmPos);                          // the weight of the long component
+  UShort_t    lambdaLong  = (1 << 10) | (1 << 9) | (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTLL, fDetector, fRobPos, fMcmPos) & 0x1FF); // the multiplier of the long component
+  UShort_t    lambdaShort = (0 << 10) | (1 << 9) | (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTLS, fDetector, fRobPos, fMcmPos) & 0x1FF); // the multiplier of the short component
 
   // intermediate signals
   UInt_t   aDiff;
@@ -1052,7 +1052,7 @@ UShort_t AliTRDmcmSim::FilterTailNextSample(Int_t adc, UShort_t value)
   fTailAmplShort[adc] = tmp & 0xFFF;
 
   // the output of the filter
-  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTBY) == 0) // bypass mode, active low
+  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFTBY, fDetector, fRobPos, fMcmPos) == 0) // bypass mode, active low
     return value;
   else
     return aDiff;
@@ -1082,10 +1082,10 @@ void AliTRDmcmSim::ZSMapping()
   if( !CheckInitialized() )
     return;
 
-  Int_t eBIS = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIS);
-  Int_t eBIT = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIT);
-  Int_t eBIL = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIL);
-  Int_t eBIN = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIN);
+  Int_t eBIS = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIS, fDetector, fRobPos, fMcmPos);
+  Int_t eBIT = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIT, fDetector, fRobPos, fMcmPos);
+  Int_t eBIL = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIL, fDetector, fRobPos, fMcmPos);
+  Int_t eBIN = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBIN, fDetector, fRobPos, fMcmPos);
 
   Int_t **adc = fADCF;
 
@@ -1165,16 +1165,16 @@ void AliTRDmcmSim::AddHitToFitreg(Int_t adc, UShort_t timebin, UShort_t qtot, Sh
   // In addition to the fit sums in the fit register MC information
   // is stored.
 
-  if ((timebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0)) &&
-      (timebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE0)))
+  if ((timebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0, fDetector, fRobPos, fMcmPos)) &&
+      (timebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE0, fDetector, fRobPos, fMcmPos)))
     fFitReg[adc].fQ0 += qtot;
 
-  if ((timebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS1)) &&
-      (timebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1)))
+  if ((timebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS1, fDetector, fRobPos, fMcmPos)) &&
+      (timebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1, fDetector, fRobPos, fMcmPos)))
     fFitReg[adc].fQ1 += qtot;
 
-  if ((timebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS) ) &&
-      (timebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFE)))
+  if ((timebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS, fDetector, fRobPos, fMcmPos) ) &&
+      (timebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFE, fDetector, fRobPos, fMcmPos)))
   {
     fFitReg[adc].fSumX  += timebin;
     fFitReg[adc].fSumX2 += timebin*timebin;
@@ -1210,14 +1210,14 @@ void AliTRDmcmSim::CalcFitreg()
   UShort_t qTotal[19+1]; // the last is dummy
   UShort_t marked[6], qMarked[6], worse1, worse2;
 
-  timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS);
-  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0)
+  timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFS, fDetector, fRobPos, fMcmPos);
+  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0, fDetector, fRobPos, fMcmPos)
       < timebin1)
-    timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0);
-  timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFE);
-  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1)
+    timebin1 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0, fDetector, fRobPos, fMcmPos);
+  timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFE, fDetector, fRobPos, fMcmPos);
+  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1, fDetector, fRobPos, fMcmPos)
       > timebin2)
-    timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1);
+    timebin2 = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1, fDetector, fRobPos, fMcmPos);
 
   // reset the fit registers
   fNHits = 0;
@@ -1243,15 +1243,15 @@ void AliTRDmcmSim::CalcFitreg()
         adcLeft  = fADCF[adcch  ][timebin];
         adcCentral  = fADCF[adcch+1][timebin];
         adcRight = fADCF[adcch+2][timebin];
-        if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVBY) == 1)
+        if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVBY, fDetector, fRobPos, fMcmPos) == 1)
           hitQual = ( (adcLeft * adcRight) <
-                       (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVT) * adcCentral) );
+                       (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPVT, fDetector, fRobPos, fMcmPos) * adcCentral) );
         else
           hitQual = 1;
         // The accumulated charge is with the pedestal!!!
         qtotTemp = adcLeft + adcCentral + adcRight;
         if ( (hitQual) &&
-             (qtotTemp >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPHT)) &&
+             (qtotTemp >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPHT, fDetector, fRobPos, fMcmPos)) &&
              (adcLeft <= adcCentral) &&
              (adcCentral > adcRight) )
           qTotal[adcch] = qtotTemp;
@@ -1345,10 +1345,10 @@ void AliTRDmcmSim::CalcFitreg()
         // hit detected, in TRAP we have 4 units and a hit-selection, here we proceed all channels!
         // subtract the pedestal TPFP, clipping instead of wrapping
 
-        Int_t regTPFP = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP);
+        Int_t regTPFP = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP, fDetector, fRobPos, fMcmPos);
         AliDebug(10, Form("Hit found, time=%d, adcch=%d/%d/%d, adc values=%d/%d/%d, regTPFP=%d, TPHT=%d\n",
                timebin, adcch, adcch+1, adcch+2, adcLeft, adcCentral, adcRight, regTPFP,
-               fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPHT)));
+               fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPHT, fDetector, fRobPos, fMcmPos)));
 
         if (adcLeft  < regTPFP) adcLeft  = 0; else adcLeft  -= regTPFP;
         if (adcCentral  < regTPFP) adcCentral  = 0; else adcCentral  -= regTPFP;
@@ -1439,9 +1439,9 @@ void AliTRDmcmSim::TrackletSelection()
   ntracks = 0;
   for (adcIdx = 0; adcIdx < 18; adcIdx++) // ADCs
     if ( (fFitReg[adcIdx].fNhits
-          >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPCL)) &&
+          >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPCL, fDetector, fRobPos, fMcmPos)) &&
          (fFitReg[adcIdx].fNhits+fFitReg[adcIdx+1].fNhits
-          >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPCT)))
+          >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPCT, fDetector, fRobPos, fMcmPos)))
     {
       trackletCand[ntracks][0] = adcIdx;
       trackletCand[ntracks][1] = fFitReg[adcIdx].fNhits+fFitReg[adcIdx+1].fNhits;
@@ -1666,11 +1666,11 @@ void AliTRDmcmSim::FitTracklet()
               continue;
 
 	    // counting contributing hits
-	    if (fHits[iHit].fTimebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0) &&
-		fHits[iHit].fTimebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE0))
+	    if (fHits[iHit].fTimebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS0, fDetector, fRobPos, fMcmPos) &&
+		fHits[iHit].fTimebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE0, fDetector, fRobPos, fMcmPos))
 	      nHits0++;
-	    if (fHits[iHit].fTimebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS1) &&
-		fHits[iHit].fTimebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1))
+	    if (fHits[iHit].fTimebin >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQS1, fDetector, fRobPos, fMcmPos) &&
+		fHits[iHit].fTimebin <  fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPQE1, fDetector, fRobPos, fMcmPos))
 	      nHits1++;
 
 	    for (Int_t i = 0; i < 3; i++) {
@@ -1808,7 +1808,7 @@ void AliTRDmcmSim::WriteData(AliTRDarrayADC *digits)
 
   Int_t offset = (fMcmPos % 4 + 1) * 21 + (fRobPos % 2) * 84 - 1;
 
-  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBSF) != 0) // store unfiltered data
+  if (fTrapConfig->GetTrapReg(AliTRDtrapConfig::kEBSF, fDetector, fRobPos, fMcmPos) != 0) // store unfiltered data
   {
     for (Int_t iAdc = 0; iAdc < fgkNADC; iAdc++) {
       if (~fZSMap[iAdc] == 0) {

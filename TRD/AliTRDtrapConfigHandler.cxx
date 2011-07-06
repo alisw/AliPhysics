@@ -228,8 +228,11 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename)
 	 if(cmd==fgkScsnCmdWrite) {
 	    for(Int_t det=0; det<AliTRDgeometry::Ndet(); det++) {
 	       UInt_t rocpos = (1 << (AliTRDgeometry::GetSector(det)+11)) | (1 << (AliTRDgeometry::GetStack(det)+6)) | (1 << AliTRDgeometry::GetLayer(det));
-	       if ((fRestrictiveMask & rocpos) == rocpos)
+	       AliDebug(1, Form("checking restriction: mask=0x%08x, rocpos=0x%08x", fRestrictiveMask, rocpos));
+	       if ((fRestrictiveMask & rocpos) == rocpos) {
+		 AliDebug(1, Form("match: %i %i %i %i", cmd, extali, addr, data));
 		  cfg->AddValues(det, cmd, extali, addr, data);
+	       }
 	    }
 	 }
 
@@ -239,10 +242,54 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename)
 
 	 else if(cmd == fgkScsnCmdRestr) {
 	    fRestrictiveMask = data;
+	   AliDebug(1, Form("updated restrictive mask to 0x%08x", fRestrictiveMask));
 	 }
 
-	 else
+	 else if((cmd == fgkScsnCmdReset) ||
+		 (cmd == fgkScsnCmdRobReset)) {
+	   cfg->ResetRegs();
+	 }
+
+	 else if (cmd == fgkScsnCmdSetHC) {
+	   Int_t fullVersion = ((data & 0x7F00) >> 1) | (data & 0x7f);
+
+	   for (Int_t iDet = 0; iDet < AliTRDgeometry::Ndet(); iDet++) {
+	     Int_t smls = (AliTRDgeometry::GetSector(iDet) << 6) | (AliTRDgeometry::GetLayer(iDet) << 3) | AliTRDgeometry::GetStack(iDet);
+
+	     for (Int_t iRob = 0; iRob < 8; iRob++) {
+	       // HC mergers
+	       cfg->SetTrapReg(AliTRDtrapConfig::kC14CPUA, 0xc << 16, iDet, iRob, 17);
+	       cfg->SetTrapReg(AliTRDtrapConfig::kC15CPUA, ((1<<29) | (fullVersion<<15) | (1<<12) | (smls<<1) | (iRob%2)), iDet, iRob, 17);
+
+	       // board mergers
+	       cfg->SetTrapReg(AliTRDtrapConfig::kC14CPUA, 0, iDet, iRob, 16);
+	       cfg->SetTrapReg(AliTRDtrapConfig::kC15CPUA, ((1<<29) | (fullVersion<<15) | (1<<12) | (smls<<1) | (iRob%2)), iDet, iRob, 16);
+
+	       // and now for the others
+	       for (Int_t iMcm = 0; iMcm < 16; iMcm++) {
+		 cfg->SetTrapReg(AliTRDtrapConfig::kC14CPUA, iMcm | (iRob << 4) | (3 << 16), iDet, iRob, iMcm);
+		 cfg->SetTrapReg(AliTRDtrapConfig::kC15CPUA, ((1<<29) | (fullVersion<<15) | (1<<12) | (smls<<1) | (iRob%2)), iDet, iRob, iMcm);
+	       }
+	     }
+	   }
+	 }
+
+	 else if((cmd == fgkScsnCmdRead) ||
+		 (cmd == fgkScsnCmdPause) ||
+		 (cmd == fgkScsnCmdPtrg) ||
+		 (cmd == fgkScsnCmdHwPtrg) ||
+		 (cmd == fgkScsnCmdRobPower) ||
+		 (cmd == fgkScsnCmdTtcRx) ||
+		 (cmd == fgkScsnCmdMcmTemp) ||
+		 (cmd == fgkScsnCmdOri) ||
+		 (cmd == fgkScsnCmdPM) ) {
+	   AliDebug(2, Form("ignored SCSN command: %i %i %i %i", cmd, addr, data, extali));
+	 }
+
+	 else {
+            AliWarning(Form("unknown SCSN command: %i %i %i %i", cmd, addr, data, extali));
 	    ignoredCmds++;
+	 }
 
 	 readLines++;
       }
