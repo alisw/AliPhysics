@@ -100,7 +100,9 @@ fFindVertexForCascades(kTRUE),
 fMassCutBeforeVertexing(kFALSE),
 fMassCalc2(0),
 fMassCalc3(0),
-fMassCalc4(0)
+fMassCalc4(0),
+fnTrksTotal(0),
+fnSeleTrksTotal(0)
 {
   // Default constructor
 
@@ -145,7 +147,9 @@ fFindVertexForCascades(source.fFindVertexForCascades),
 fMassCutBeforeVertexing(source.fMassCutBeforeVertexing),
 fMassCalc2(source.fMassCalc2),
 fMassCalc3(source.fMassCalc3),
-fMassCalc4(source.fMassCalc4)
+fMassCalc4(source.fMassCalc4),
+fnTrksTotal(0),
+fnSeleTrksTotal(0)
 {
   //
   // Copy constructor
@@ -403,6 +407,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
   trkEntries = (Int_t)event->GetNumberOfTracks();
   AliDebug(1,Form(" Number of tracks: %d",trkEntries));
+  fnTrksTotal += trkEntries;
 
   nv0 = (Int_t)event->GetNumberOfV0s();
   AliDebug(1,Form(" Number of V0s: %d",nv0));
@@ -425,6 +430,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   SelectTracksAndCopyVertex(event,trkEntries,seleTrksArray,nSeleTrks,seleFlags,evtNumber);
     
   AliDebug(1,Form(" Selected tracks: %d",nSeleTrks));
+  fnSeleTrksTotal += nSeleTrks;
     
   TObjArray *twoTrackArray1    = new TObjArray(2);
   TObjArray *twoTrackArray2    = new TObjArray(2);
@@ -1160,6 +1166,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
     if(fAODMap) { delete fAODMap; fAODMap=NULL; }
   }
 
+  //printf("Trks: total %d  sele %d\n",fnTrksTotal,fnSeleTrksTotal);
+
   return;
 }
 //----------------------------------------------------------------------------
@@ -1461,9 +1469,13 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
 
  
   if(postrack->Charge()!=0 && negtrack->Charge()!=0) { // don't apply these cuts if it's a Dstar 
+
+    // Add daughter references already here
+    if(fInputAOD) AddDaughterRefs(secVert,(AliAODEvent*)event,twoTrackArray);
+
     // select D0->Kpi
     if(fD0toKpi)   {
-      okD0 = (Bool_t)fCutsD0toKpi->IsSelected(the2Prong,AliRDHFCuts::kCandidate);
+      okD0 = (Bool_t)fCutsD0toKpi->IsSelected(the2Prong,AliRDHFCuts::kCandidate,(AliAODEvent*)event);
       if(okD0) the2Prong->SetSelectionBit(AliRDHFCuts::kD0toKpiCuts);
     }
     //if(fDebug && fD0toKpi) printf("   %d\n",(Int_t)okD0);
@@ -1572,19 +1584,22 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
 
   delete primVertexAOD; primVertexAOD=NULL;
 
+  // Add daughter references already here
+  if(fInputAOD) AddDaughterRefs(secVert,(AliAODEvent*)event,threeTrackArray);
+
   // select D+->Kpipi, Ds->KKpi, Lc->pKpi
   if(f3Prong) {
     ok3Prong = kFALSE;
     
-    if(fCutsDplustoKpipi->IsSelected(the3Prong,AliRDHFCuts::kCandidate)) {
+    if(fCutsDplustoKpipi->IsSelected(the3Prong,AliRDHFCuts::kCandidate,(AliAODEvent*)event)) {
       ok3Prong = kTRUE;
       the3Prong->SetSelectionBit(AliRDHFCuts::kDplusCuts);
     }
-    if(fCutsDstoKKpi->IsSelected(the3Prong,AliRDHFCuts::kCandidate)) {
+    if(fCutsDstoKKpi->IsSelected(the3Prong,AliRDHFCuts::kCandidate,(AliAODEvent*)event)) {
       ok3Prong = kTRUE;
       the3Prong->SetSelectionBit(AliRDHFCuts::kDsCuts);
     }
-    if(fCutsLctopKpi->IsSelected(the3Prong,AliRDHFCuts::kCandidate)) {
+    if(fCutsLctopKpi->IsSelected(the3Prong,AliRDHFCuts::kCandidate,(AliAODEvent*)event)) {
       ok3Prong = kTRUE;
       the3Prong->SetSelectionBit(AliRDHFCuts::kLcCuts);
     } 

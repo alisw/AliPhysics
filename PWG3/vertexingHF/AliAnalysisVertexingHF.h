@@ -172,6 +172,10 @@ class AliAnalysisVertexingHF : public TNamed {
   AliAODRecoDecay *fMassCalc2; // for 2 prong
   AliAODRecoDecay *fMassCalc3; // for 3 prong
   AliAODRecoDecay *fMassCalc4; // for 4 prong
+
+  Int_t fnTrksTotal;
+  Int_t fnSeleTrksTotal;
+
   //
   void AddRefs(AliAODVertex *v,AliAODRecoDecayHF *rd,const AliVEvent *event,
 	       const TObjArray *trkArray) const;
