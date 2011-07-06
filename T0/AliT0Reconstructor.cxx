@@ -31,6 +31,7 @@
 #include "AliT0Parameters.h"
 #include "AliT0Calibrator.h"
 #include "AliESDfriend.h"
+#include "AliESDTZERO.h"
 #include "AliESDTZEROfriend.h"
 #include "AliLog.h"
 #include "AliCDBEntry.h" 
@@ -63,7 +64,8 @@ ClassImp(AliT0Reconstructor)
 					     fGRPdelays(0),
 					     fTimeMeanShift(0x0),
 					     fTimeSigmaShift(0x0),
-                                             fESDTZEROfriend(NULL)
+                                             fESDTZEROfriend(NULL),
+                                             fESDTZERO(NULL)
 
 {
   for (Int_t i=0; i<24; i++)  fTime0vertex[i] =0;
@@ -105,7 +107,7 @@ ClassImp(AliT0Reconstructor)
 	  TGraph* gr2 = fParam ->GetQTC(i);
 	  if (gr2) fQTC.AddAtAndExpand(gr2,i) ; 	
 	  fTime0vertex[i] = fParam->GetCFD(i);
-	  printf("OCDB mean CFD time %i %f \n",i, fTime0vertex[i]);
+	  AliDebug(2,Form("OCDB mean CFD time %i %f \n",i, fTime0vertex[i]));
  }
   fLatencyL1 = fParam->GetLatencyL1();
   fLatencyL1A = fParam->GetLatencyL1A(); 
@@ -117,16 +119,15 @@ ClassImp(AliT0Reconstructor)
     if( fTime0vertex[i] < 500 || fTime0vertex[i] > 50000) fTime0vertex[i] =( 1000.*fLatencyHPTDC - 1000.*fLatencyL1 + 1000.*fGRPdelays)/24.4;
  
   }
-  
-  // fdZonC = TMath::Abs(fParam->GetZPositionShift("T0/C/PMT1"));
-  //fdZonA = TMath::Abs(fParam->GetZPositionShift("T0/A/PMT15"));
   //here real Z position
   fdZonC = TMath::Abs(fParam->GetZPosition("T0/C/PMT1"));
   fdZonA = TMath::Abs(fParam->GetZPosition("T0/A/PMT15"));
 
   fCalib = new AliT0Calibrator();
   fESDTZEROfriend = new AliESDTZEROfriend();
+  fESDTZERO  = new AliESDTZERO();
 
+ 
 }
 
 //_____________________________________________________________________________
@@ -278,11 +279,12 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 {
   // T0 raw ->
   //
-  // reference amplitude and time ref. point from reco param
+  
+  Float_t meanOrA = fTime0vertex[0] + 587;
+  Float_t meanOrC = fTime0vertex[0] + 678;
+  Float_t meanTVDC = fTime0vertex[0] + 2564;
+ 
 
-  // Float_t refAmp = GetRecoParam()->GetRefAmp();
-
-  //  Int_t refPoint = 0;
   Int_t badpmt[24];
   //Bad channel
   for (Int_t i=0; i<24; i++) {
@@ -298,7 +300,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t c = 29.9792458; // cm/ns
   Double32_t vertex = 9999999;
   Int_t onlineMean=0;
-  // Float_t meanVertex = fParam->GetMeanVertex();
   Float_t meanVertex = 0;
   for (Int_t i0=0; i0<24; i0++) {
     low[i0] = Int_t(fTime0vertex[i0]) - 200;
@@ -306,11 +307,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   }
   
   for (Int_t i0=0; i0<110; i0++)
-    {
-      for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0; 
-      //    low[i0] = Int_t (GetRecoParam()->GetLow(i0));	
-      // high[i0] = Int_t (GetRecoParam()->GetHigh(i0));
-      }
+    for (Int_t j0=0; j0<5; j0++)  allData[i0][j0]=0; 
   
   Float_t lowAmpThreshold =  GetRecoParam()->GetAmpLowThreshold();  
   Float_t highAmpThreshold =  GetRecoParam()->GetAmpHighThreshold(); 
@@ -319,7 +316,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Double32_t besttimeC=9999999;
   Int_t pmtBestA=99999;
   Int_t pmtBestC=99999;
-   
+  Float_t channelWidth = fParam->GetChannelWidth() ;  
+	
   AliT0RecPoint* frecpoints= new AliT0RecPoint ();
   
   recTree->Branch( "T0", "AliT0RecPoint" ,&frecpoints);
@@ -349,14 +347,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  }
 	}
 	Int_t ref=0;
-
-	//	if (refPoint>0) 
-	//  ref = allData[refPoint][0]-5000;
-
-	
-	Float_t channelWidth = fParam->GetChannelWidth() ;  
-	
-	//       Int_t meanT0 = fParam->GetMeanT0();
 	
 	for (Int_t in=0; in<12; in++)  
 	  {
@@ -444,7 +434,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        for (Int_t ipmt=0; ipmt<12; ipmt++){
 	 if(time[ipmt] !=0 /*&& badpmt[ipmt]==0 */&&  adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold )
 	   {
-	       //	       if(TMath::Abs(time[ipmt])<TMath::Abs(besttimeC)) {
+	       // if(TMath::Abs(time[ipmt])<TMath::Abs(besttimeC)) {
 	     if(time[ipmt]<besttimeC){
 	       besttimeC=time[ipmt]; //timeC
 		  pmtBestC=ipmt;
@@ -492,21 +482,55 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       Int_t trchan[5]= {50,51,52,55,56};
       for (Int_t i=0; i<5; i++) tr[i]=false; 
       for (Int_t itr=0; itr<5; itr++) {
- 	for (Int_t iHit=0; iHit<5; iHit++) 
+ 	for (Int_t iHit=0; iHit<1; iHit++) 
 	  {
 	    Int_t trr=trchan[itr];
-	    if( allData[trr][iHit] > 0) tr[itr]=true;
-	  }
+	    if( allData[trr][iHit] > 0)  tr[itr]=true;
+
+	    AliDebug(1,Form("Reconstruct :::  T0 triggers iHit %i tvdc %d orA %d orC %d centr %d semicentral %d",iHit, tr[0],tr[1],tr[2],tr[3],tr[4]));
+	  }	  
       }
       frecpoints->SetT0Trig(tr);
-   
+      
+      for (Int_t iHit=0; iHit<5; iHit++) 
+	{
+	  Float_t tvdc  = -9999; Float_t ora = -9999; Float_t orc = -9999;
+	  if(allData[50][iHit]>0) 
+	    tvdc = (Float_t(allData[50][iHit]) - meanTVDC) * channelWidth* 0.001; 
+	  if(allData[51][iHit]>0)
+	    ora = (Float_t(allData[51][iHit]) - meanOrA) * channelWidth* 0.001;
+	  
+	  if(allData[52][iHit]>0) 
+	    orc = (Float_t(allData[52][iHit]) - meanOrC) * channelWidth* 0.001;
+	  
+	  frecpoints->SetOrC( iHit, orc);
+	  frecpoints->SetOrA( iHit, ora);
+	  frecpoints->SetTVDC( iHit, tvdc);
+	  Float_t timefull;
+	  for (Int_t i0=0; i0<12; i0++) {
+	    timefull = -9999; 
+	    if(allData[i0+1][iHit]>1) 
+	      timefull = (Float_t(allData[i0+1][iHit])-fTime0vertex[i0])* channelWidth* 0.001;
+	    frecpoints->SetTimeFull(i0, iHit,timefull) ;
+	    
+	  }
+	  
+	  for (Int_t i0=12; i0<24; i0++) {
+	    timefull = -9999; 
+	    if(allData[i0+45][iHit]>1) 
+	      timefull = (Float_t(allData[i0+45][iHit])-fTime0vertex[i0])* channelWidth* 0.001;
+	    frecpoints->SetTimeFull(i0, iHit, timefull) ;
+	  }
+	}
+      
+      
       //Set MPD
       if(allData[53][0]>0 && allData[54][0]) 
 	frecpoints->SetMultA(allData[53][0]-allData[54][0]);
-	if(allData[105][0]>0 && allData[106][0]) 
-	  frecpoints->SetMultC(allData[105][0]-allData[106][0]);
-	
-	
+      if(allData[105][0]>0 && allData[106][0]) 
+	frecpoints->SetMultC(allData[105][0]-allData[106][0]);
+      
+      
     } // if (else )raw data
   recTree->Fill();
   if(frecpoints) delete frecpoints;
@@ -545,7 +569,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     currentVertex = vertex->GetZ();
     
     ncont = vertex->GetNContributors();
-    //  cout<<"@@ spdver "<<spdver<<" ncont "<<ncont<<endl;
     if(ncont>0 ) {
       shift = currentVertex/c;
     }
@@ -591,24 +614,48 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
    }
   }
   Int_t trig= frecpoints ->GetT0Trig();
-  pESD->SetT0Trig(trig);
-  
-  pESD->SetT0zVertex(zPosition); //vertex Z position 
+  frecpoints->PrintTriggerSignals( trig);
+  printf(" FillESD trigger %i \n",trig);
+  fESDTZERO->SetT0Trig(trig);
+  //pESD->SetT0Trig(trig);
+  //  pESD->SetT0zVertex(zPosition); //vertex Z position 
+  fESDTZERO->SetT0zVertex(zPosition); //vertex Z position 
 
   Double32_t multA=frecpoints ->GetMultA();
   Double32_t multC=frecpoints ->GetMultC();
-  //  pESD->SetT0MultC(multC);        // multiplicity Cside 
-  //  pESD->SetT0MultA(multA);        // multiplicity Aside 
-  pESD->SetT0(multA); // for backward compatubility
-  pESD->SetT0clock(multC); // for backward compatubility
+  //  pESD->SetT0(multC);        // multiplicity Cside 
+  //  pESD->SetT0clock(multA);        // multiplicity Aside 
+  fESDTZERO->SetMultA(multA); // for backward compatubility
+  fESDTZERO->SetMultC(multC); // for backward compatubility
 
+
+  for (Int_t iHit =0; iHit<5; iHit++ ) {
+       AliDebug(1,Form("FillESD ::: iHit %i tvdc %f orA %f orC %f\n", iHit,
+	   frecpoints->GetTVDC(iHit),
+	   frecpoints->GetOrA(iHit),
+		       frecpoints->GetOrC(iHit) ));
+    fESDTZERO->SetTVDC(iHit,frecpoints->GetTVDC(iHit));
+    fESDTZERO->SetOrA(iHit,frecpoints->GetOrA(iHit));
+    fESDTZERO->SetOrC(iHit,frecpoints->GetOrC(iHit));
+    
+    for (Int_t i0=0; i0<24; i0++) {
+      if(frecpoints->GetTimeFull(i0,iHit)>0){
+	//	printf("FillESD ::: iHit %i cfd %i time %f \n", iHit, i0, 
+	//	       frecpoints->GetTimeFull(i0,iHit));
+	fESDTZERO->SetTimeFull(i0, iHit,frecpoints->GetTimeFull(i0,iHit));
+      }
+	
+    }	     	     
+  }
   for(Int_t i=0; i<3; i++) 
-    pESD->SetT0TOF(i,timeClock[i]);   // interaction time (ns) 
-  pESD->SetT0time(time);         // best TOF on each PMT 
-  pESD->SetT0amplitude(ampQTC);     // number of particles(MIPs) on each PMT
+    fESDTZERO->SetT0TOF(i,timeClock[i]);   // interaction time (ns) 
+  fESDTZERO->SetT0time(time);         // best TOF on each PMT 
+  fESDTZERO->SetT0amplitude(ampQTC);     // number of particles(MIPs) on each PMT
   
   AliDebug(1,Form("T0: SPDshift %f Vertex %f (T0A+T0C)/2 %f #channels T0signal %f ns OrA %f ns OrC %f T0trig %i\n",shift, zPosition, timeStart, timeClock[0], timeClock[1], timeClock[2], trig));
+
   
+
   if (pESD) {
     
     AliESDfriend *fr = (AliESDfriend*)pESD->FindListObject("AliESDfriend");
@@ -628,8 +675,9 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
  	fr->SetTZEROfriend(fESDTZEROfriend);
 	//      }//
     }
+
+    pESD->SetTZEROData(fESDTZERO);
   }
-     
 
 
 } // vertex in 3 sigma

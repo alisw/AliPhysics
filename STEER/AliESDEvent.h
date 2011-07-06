@@ -212,7 +212,8 @@ public:
 
   // TZERO CKB: put this in the header?
   const AliESDTZERO*    GetESDTZERO() const {return fESDTZERO;}
-  // delegetated methods for fESDTZERO
+  void SetTZEROData(AliESDTZERO * obj);
+ // delegetated methods for fESDTZERO
 
   Double32_t GetT0zVertex() const {return fESDTZERO?fESDTZERO->GetT0zVertex():0;}
   void SetT0zVertex(Double32_t z) {if(fESDTZERO) fESDTZERO->SetT0zVertex(z);}

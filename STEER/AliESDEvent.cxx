@@ -1088,6 +1088,13 @@ void AliESDEvent::SetVZEROData(AliESDVZERO * obj)
     *fESDVZERO = *obj;
 }
 
+void AliESDEvent::SetTZEROData(AliESDTZERO * obj)
+{ 
+  // use already allocated space
+  if(fESDTZERO)
+    *fESDTZERO = *obj;
+}
+
 void AliESDEvent::SetACORDEData(AliESDACORDE * obj)
 {
   if(fESDACORDE)

@@ -15,6 +15,7 @@
 #include "AliT0Calibrator.h"
 #include "AliT0RecoParam.h"
 #include "AliESDTZEROfriend.h"
+#include "AliESDTZERO.h"
 
 class AliT0Reconstructor: public AliReconstructor {
  public:
@@ -52,12 +53,13 @@ class AliT0Reconstructor: public AliReconstructor {
   Float_t *fTimeSigmaShift;
 
   AliESDTZEROfriend*  fESDTZEROfriend; // ESD friend object 
-
+  AliESDTZERO*        fESDTZERO;       // ESD output object  
+ 
  private:
   AliT0Reconstructor( const AliT0Reconstructor&r ); //Not implemented
   AliT0Reconstructor& operator=(const AliT0Reconstructor&r); //Not implemented
 
-  ClassDef(AliT0Reconstructor, 7)   // class for the T0 reconstruction
+  ClassDef(AliT0Reconstructor, 8)   // class for the T0 reconstruction
 
 };
 

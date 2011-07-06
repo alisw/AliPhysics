@@ -43,10 +43,21 @@ class AliT0RecPoint: public TObject  {
     void    SetT0clock (Double32_t time) { fT0clock = time;}
     Double32_t GetT0clock () const{ return fT0clock;}
 
-    Bool_t GetT0Trig(Int_t i) {return fT0trig&(1<<i);}
+    Bool_t GetT0Trig(Int_t i) {return (fT0trig&(1<<i)) != 0;}
     Int_t GetT0Trig() {return fT0trig;}
     void   SetT0Trig(Bool_t *tr );
     void PrintTriggerSignals(Int_t trig);
+
+    Float_t GetTimeFull(Int_t ch, Int_t hit) {return fTimeFull[ch][hit];}
+    Float_t GetOrA(Int_t hit) {return fOrA[hit];}
+    Float_t GetOrC(Int_t hit) {return fOrC[hit];}
+    Float_t GetTVDC(Int_t hit) {return fTVDC[hit];}
+
+    void SetTimeFull(Int_t ch, Int_t hit, Float_t time) {fTimeFull[ch][hit] = time;}
+    void SetOrA (Int_t hit, Float_t time) { fOrA[hit] = time ;}
+    void SetOrC (Int_t hit, Float_t time) { fOrC[hit] = time;}
+    void SetTVDC(Int_t hit, Float_t time) { fTVDC[hit] = time;}
+
   private: 
     Double32_t fTimeAverage;     // Average time
     Int_t   fTimeOnlineMean; // online mean signal
@@ -62,8 +73,15 @@ class AliT0RecPoint: public TObject  {
     Double32_t fADC[24];    // array's amplitude
     Double32_t fADCLED[24];    // array's LED amplitude
 
+ 
+    Float_t fTimeFull[24][5];    // array's TDC no-correction; centred around 0
+    Float_t fOrA[5];  //hardware OrA centred around 0
+    Float_t fOrC[5];  //hardware OrC centred around 0
+    Float_t fTVDC[5]; //hardware TVDC centred around 0
+    Bool_t fPileup;
+    Bool_t fSattelite;
 
-    ClassDef(AliT0RecPoint,6)  //Digit (Header) object for set:T0
+    ClassDef(AliT0RecPoint,7)  // RecPoints (Header) object for set:T0
 };
 
 typedef AliT0RecPoint AliSTARTRecPoint; // for backward compatibility

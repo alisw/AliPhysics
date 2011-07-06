@@ -42,7 +42,10 @@ ClassImp(AliT0RecPoint)
 				   fTimeBestA(0),fTimeBestC(0),
                                    fMultC(0),fMultA(0),
                                    fT0clock(9999999),
-				   fT0trig(0)
+				   fT0trig(0),
+				   fPileup(kFALSE),
+				   fSattelite(kFALSE)
+
 
 {
   //ctor
@@ -52,7 +55,14 @@ ClassImp(AliT0RecPoint)
   //  fVertexPosition=99999;
   fMultA=0;
   fMultC=0;
-  for (Int_t i=0; i<24; i++) { fTime[i]=0; fADC[i]=0; fADCLED[i]=0;}
+  for (Int_t i=0; i<24; i++) { fTime[i]=0; fADC[i]=0; fADCLED[i]=0;
+    for(Int_t iHit=0; iHit<5; iHit++) {
+     fTimeFull[i][iHit] = 0;   
+     fOrA[iHit] = 0; 
+     fOrC[iHit] = 0;  
+     fTVDC[iHit] = 0; 
+    }
+ }
 }
 //_____________________________________________________________________________
 
@@ -63,7 +73,9 @@ AliT0RecPoint::AliT0RecPoint(const AliT0RecPoint &r):TObject(),
 						     fTimeBestA(0),fTimeBestC(0),
 						     fMultC(0),fMultA(0),
                                                      fT0clock(9999999),
-						     fT0trig(0)
+						     fT0trig(0),
+						     fPileup(kFALSE),
+						     fSattelite(kFALSE)
 {
   //
   // AliT0RecPoint copy constructor
@@ -77,14 +89,14 @@ AliT0RecPoint::AliT0RecPoint(const AliT0RecPoint &r):TObject(),
 void AliT0RecPoint::SetT0Trig(Bool_t *tr)
 {
   fT0trig=0;
-  for (Int_t i=0; i<5; i++) fT0trig=fT0trig<<1|tr[i];
+  for (Int_t i=0; i<5; i++) fT0trig = fT0trig | (tr[i]?(1<<i):0);
 }
 //_____________________________________________________________________________
 
 void AliT0RecPoint::PrintTriggerSignals(Int_t trig)
 {
   Bool_t tr[5];
-  for (Int_t i=0; i<5; i++) tr[i]=trig&(1<<i);
+  for (Int_t i=0; i<5; i++) tr[i] = (trig&(1<<i))!=0;
 
-  AliInfo(Form("T0 triggers %d %d %d %d %d",tr[0],tr[1],tr[2],tr[3],tr[4]));
+  AliInfo(Form("T0 triggers tvdc %d orA %d orC %d centr %d semicentral %d",tr[0],tr[1],tr[2],tr[3],tr[4]));
 }

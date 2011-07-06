@@ -33,18 +33,31 @@ AliESDTZERO::AliESDTZERO() :
   fT0clock(0),
   fT0zVertex(0),
   fT0timeStart(0),   
-  fT0trig(0)
+  fT0trig(0),
+  fPileup(kFALSE),
+  fSattelite(kFALSE)
+
 {
-  for(int i = 0;i<24;i++)fT0time[i] = fT0amplitude[i] = 0;
+  for(int i = 0;i<24;i++) {
+    fT0time[i] = fT0amplitude[i] = 0;
+    for(Int_t iHit=0; iHit<5; iHit++) {
+      fTimeFull[i][iHit] = 0;   
+      fOrA[iHit] = 0; 
+      fOrC[iHit] = 0;  
+      fTVDC[iHit] = 0; 
+    }
+  }
   for(int i = 0;i<3;i++) fT0TOF[i]=0;
 }
-
+//______________________________________________________________________________
 AliESDTZERO::AliESDTZERO(const AliESDTZERO &tzero ) :
   TObject(tzero),
   fT0clock(tzero.fT0clock),  
   fT0zVertex(tzero.fT0zVertex),
   fT0timeStart(tzero.fT0timeStart),
-  fT0trig(tzero.fT0trig)
+  fT0trig(tzero.fT0trig),
+  fMultA(tzero.fMultA),
+  fMultC(tzero.fMultC)
 {
   // copy constuctor
   for(int i = 0;i<3;i++) fT0TOF[i] = tzero.fT0TOF[i];
@@ -52,25 +65,40 @@ AliESDTZERO::AliESDTZERO(const AliESDTZERO &tzero ) :
   for(int i = 0;i<24;i++){
     fT0time[i] = tzero.fT0time[i]; 
     fT0amplitude[i] = tzero.fT0amplitude[i];
+    for(Int_t iHit=0; iHit<5; iHit++) {
+      fTimeFull[i][iHit] = tzero.fTimeFull[i][iHit];   
+      fOrA[iHit] = tzero.fOrA[iHit]; 
+      fOrC[iHit] = tzero.fOrC[iHit];  
+      fTVDC[iHit] = tzero.fTVDC[iHit]; 
+    }
   }
 }
-
+//______________________________________________________________________________
 AliESDTZERO& AliESDTZERO::operator=(const AliESDTZERO& tzero){
   // assigmnent operator
   if(this!=&tzero) {
     TObject::operator=(tzero);
     fT0clock = tzero.fT0clock;
     fT0zVertex = tzero.fT0zVertex;
-    fT0timeStart = tzero.fT0timeStart;   
+    fT0timeStart = tzero.fT0timeStart;
+    fMultA = tzero.fMultA;
+    fMultC = tzero.fMultC;
+    fT0trig = tzero.fT0trig;
     for(int i = 0;i<3;i++) fT0TOF[i] = tzero.fT0TOF[i];
     for(int i = 0;i<24;i++){
       fT0time[i] = tzero.fT0time[i]; 
       fT0amplitude[i] = tzero.fT0amplitude[i];
-    }
+      for(Int_t iHit=0; iHit<5; iHit++) {
+	fTimeFull[i][iHit] = tzero.fTimeFull[i][iHit];   
+	fOrA[iHit] = tzero.fOrA[iHit]; 
+	fOrC[iHit] = tzero.fOrC[iHit];  
+	fTVDC[iHit] = tzero.fTVDC[iHit]; 
+      }
+   }
   } 
   return *this;
 }
-
+//______________________________________________________________________________
 void AliESDTZERO::Copy(TObject &obj) const {
   
   // this overwrites the virtual TOBject::Copy()
@@ -92,7 +120,12 @@ void AliESDTZERO::Reset()
   fT0clock=0;
   fT0zVertex = 0;  
   fT0timeStart = 0;
-  for(int i = 0;i<24;i++)fT0time[i] = fT0amplitude[i] = 0;
+  for(int i = 0;i<24;i++) {
+    fT0time[i] = fT0amplitude[i] =  0;
+    for(Int_t iHit=0; iHit<5; iHit++)  fTimeFull[i][iHit] = -10000;
+  }
+  for(Int_t iHit=0; iHit<5; iHit++) fOrA[iHit] = fOrC[iHit] = fTVDC[iHit] = -10000; 
+
   for(int i = 0;i<3;i++) fT0TOF[i] = 0;
 }
 

@@ -1,3 +1,4 @@
+
 // -*- mode: C++ -*- 
 #ifndef ALIESDTZERO_H
 #define ALIESDTZERO_H
@@ -34,15 +35,30 @@ public:
   void SetT0TOF(Int_t icase, Float_t time) { fT0TOF[icase] = time;}
   Int_t GetT0Trig() const {return fT0trig;}
   void SetT0Trig(Int_t tvdc) {fT0trig = tvdc;}
+  Bool_t GetT0Trig(Int_t i) {return (fT0trig&(1<<i)) != 0;}
   const Double32_t * GetT0time() const {return fT0time;}
   void SetT0time(Double32_t time[24]) {
-  for (Int_t i=0; i<24; i++) fT0time[i] = time[i];
+    for (Int_t i=0; i<24; i++) fT0time[i] = time[i];
   }
   const Double32_t * GetT0amplitude() const {return fT0amplitude;}
   void SetT0amplitude(Double32_t amp[24]) {
     for (Int_t i=0; i<24; i++) fT0amplitude[i] = amp[i];
   }
-
+  Float_t GetTimeFull(Int_t ch, Int_t hit) {return fTimeFull[ch][hit];}
+  Float_t GetOrA(Int_t hit) {return fOrA[hit];}
+  Float_t GetOrC(Int_t hit) {return fOrC[hit];}
+  Float_t GetTVDC(Int_t hit) {return fTVDC[hit];}
+  
+  void SetTimeFull(Int_t ch, Int_t hit, Float_t time) {fTimeFull[ch][hit] = time;}
+  void SetOrA (Int_t hit, Float_t time) { fOrA[hit] = time ;}
+  void SetOrC (Int_t hit, Float_t time) { fOrC[hit] = time;}
+  void SetTVDC(Int_t hit, Float_t time) { fTVDC[hit] = time;}
+  
+  void SetMultC(Float_t mult) {fMultC = mult;}
+  void SetMultA(Float_t mult) {fMultA = mult;}
+  Float_t GetMultC()       const {return fMultC;}
+  Float_t GetMultA()       const {return fMultA;}
+  
   void    Reset();
   void    Print(const Option_t *opt=0) const;
 
@@ -55,8 +71,16 @@ private:
   Int_t        fT0trig;            // T0 trigger signals
   Double32_t   fT0time[24];      // best TOF on each T0 PMT
   Double32_t   fT0amplitude[24]; // number of particles(MIPs) on each T0 PMT
-
-  ClassDef(AliESDTZERO,4)
+  Float_t fTimeFull[24][5];    // array's TDC no-correction ;centred  around 0
+  Float_t fOrA[5];  //hardware OrA centred around 0
+  Float_t fOrC[5];  //hardware OrC centred around 0
+  Float_t fTVDC[5]; //hardware TVDC centred around 0
+  Bool_t fPileup;   // pile-up flag
+  Bool_t fSattelite; //sattelite flag
+  Float_t fMultC; // multiplicity on the C side
+  Float_t fMultA; // multiplicity on the A side
+ 
+  ClassDef(AliESDTZERO,5)
 };
 
 
