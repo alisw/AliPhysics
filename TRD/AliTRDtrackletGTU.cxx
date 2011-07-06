@@ -41,8 +41,8 @@ AliTRDtrackletBase* AliTRDtrackletGTU::fgkDummyTracklet = new AliTRDtrackletWord
 AliTRDtrackletGTU::AliTRDtrackletGTU() :
   AliTRDtrackletBase(),
   fGtuParam(AliTRDgtuParam::Instance()),
-  fTracklet(0x0), //fgkDummyTracklet),
-  fSubChannel(0x0),
+  fTracklet(fgkDummyTracklet),
+  fTrackletESD(0x0),
   fAssignedZ(kFALSE),
   fAlpha(0),
   fYProj(0),
@@ -51,7 +51,6 @@ AliTRDtrackletGTU::AliTRDtrackletGTU() :
 {
   // ctor for any tracklet deriving from AliTRDtrackletBase
 
-  fSubChannel = new Int_t[fGtuParam->GetNZChannels()];
   for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++)
     fSubChannel[zch] = 0;
 }
@@ -59,8 +58,8 @@ AliTRDtrackletGTU::AliTRDtrackletGTU() :
 AliTRDtrackletGTU::AliTRDtrackletGTU(AliTRDtrackletBase *tracklet) :
   AliTRDtrackletBase(*tracklet),
   fGtuParam(AliTRDgtuParam::Instance()),
-  fTracklet(0x0),
-  fSubChannel(0x0),
+  fTracklet(fgkDummyTracklet),
+  fTrackletESD(0x0),
   fAssignedZ(kFALSE),
   fAlpha(0),
   fYProj(0),
@@ -69,7 +68,6 @@ AliTRDtrackletGTU::AliTRDtrackletGTU(AliTRDtrackletBase *tracklet) :
 {
   // ctor for any tracklet deriving from AliTRDtrackletBase
 
-  fSubChannel = new Int_t[fGtuParam->GetNZChannels()];
   for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++)
     fSubChannel[zch] = 0;
   fTracklet = tracklet;
@@ -78,11 +76,28 @@ AliTRDtrackletGTU::AliTRDtrackletGTU(AliTRDtrackletBase *tracklet) :
   }
 }
 
+AliTRDtrackletGTU::AliTRDtrackletGTU(AliESDTrdTracklet *tracklet) :
+  AliTRDtrackletBase(),
+  fGtuParam(AliTRDgtuParam::Instance()),
+  fTracklet(fgkDummyTracklet),
+  fTrackletESD(tracklet),
+  fAssignedZ(kFALSE),
+  fAlpha(0),
+  fYProj(0),
+  fYPrime(0),
+  fIndex(0)
+{
+  // ctor for an AliESDTrdTracklet
+
+  for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++)
+    fSubChannel[zch] = 0;
+}
+
 AliTRDtrackletGTU::AliTRDtrackletGTU(const AliTRDtrackletGTU& tracklet) :
   AliTRDtrackletBase(tracklet),
   fGtuParam(AliTRDgtuParam::Instance()),
   fTracklet(tracklet.fTracklet),
-  fSubChannel(0x0),
+  fTrackletESD(tracklet.fTrackletESD),
   fAssignedZ(tracklet.fAssignedZ),
   fAlpha(tracklet.fAlpha),
   fYProj(tracklet.fYProj),
@@ -91,7 +106,6 @@ AliTRDtrackletGTU::AliTRDtrackletGTU(const AliTRDtrackletGTU& tracklet) :
 {
   // copy ctor
 
-  fSubChannel = new Int_t[fGtuParam->GetNZChannels()];
   for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++)
     fSubChannel[zch] = tracklet.fSubChannel[zch];
 }
@@ -102,6 +116,7 @@ AliTRDtrackletGTU& AliTRDtrackletGTU::operator=(const AliTRDtrackletGTU &rhs)
 
   if (&rhs != this) {
     fTracklet = rhs.fTracklet;
+    fTrackletESD = rhs.fTrackletESD;
     for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++)
       fSubChannel[zch] = rhs.fSubChannel[zch];
     fIndex = rhs.fIndex;
@@ -117,53 +132,6 @@ AliTRDtrackletGTU& AliTRDtrackletGTU::operator=(const AliTRDtrackletGTU &rhs)
 AliTRDtrackletGTU::~AliTRDtrackletGTU()
 {
   // dtor
-  if (fSubChannel)
-    delete [] fSubChannel;
-  fTracklet = 0x0;
-}
-
-Int_t AliTRDtrackletGTU::Compare(const TObject *o) const {
-  // sorting w. r. t. Z, Y if no z-channel assigned (as needed in input unit)
-  // otherwise w. r. t. Z, Y_proj
-  // must be changed to Z-channel, Y_proj
-  // will be changed
-
-  if (!o)
-    return 0;
-
-  if (!o->InheritsFrom("AliTRDtrackletGTU")) {
-      AliError("Cannot compare to object not deriving from AliTRDtrackletGTU");
-      return 0;
-  }
-
-  if (!fAssignedZ) {
-    if ( GetZbin() < ((AliTRDtrackletGTU*) o)->GetZbin())
-      return -1;
-    else if (GetZbin() > ((AliTRDtrackletGTU*) o)->GetZbin())
-      return 1;
-    else
-      if (GetYbin() < ((AliTRDtrackletGTU*) o)->GetYbin())
-	return -1;
-      else if (GetYbin() > ((AliTRDtrackletGTU*) o)->GetYbin())
-	return 1;
-      else
-	return 0;
-  }
-  else {
-    // sorting should be according to zsubindex, not to Z !!!
-    // therefore this depends on the zch
-    if (GetZbin() < ((AliTRDtrackletGTU*) o)->GetZbin())
-      return -1;
-    else if (GetZbin() > ((AliTRDtrackletGTU*) o)->GetZbin())
-      return 1;
-    else
-      if (GetYProj() < ((AliTRDtrackletGTU*) o)->GetYProj())
-	return -1;
-      else if (GetYProj() > ((AliTRDtrackletGTU*) o)->GetYProj())
-	return 1;
-      else
-	return 0;
-  }
 }
 
 void AliTRDtrackletGTU::SetSubChannel(Int_t zch, Int_t subch)
@@ -183,10 +151,12 @@ Int_t AliTRDtrackletGTU::GetLabel() const
 {
   // get the MC label for the tracklet, -1 if none
 
-    if ( fTracklet->IsA() == TClass::GetClass("AliTRDtrackletMCM"))
-	return ((AliTRDtrackletMCM*) fTracklet)->GetLabel();
-    else
-	return -1;
+  if (fTrackletESD)
+    return fTrackletESD->GetLabel();
+  else if ( fTracklet->IsA() == TClass::GetClass("AliTRDtrackletMCM"))
+    return ((AliTRDtrackletMCM*) fTracklet)->GetLabel();
+  else
+    return -1;
 }
 
 /*

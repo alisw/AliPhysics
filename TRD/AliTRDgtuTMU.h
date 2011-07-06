@@ -30,7 +30,7 @@ class AliTRDgtuTMU : public TObject {
   Bool_t SetSector(Int_t sector);
   Bool_t SetStack(Int_t stack);
 
-  Bool_t AddTracklet(AliTRDtrackletBase *tracklet, Int_t link);
+  Bool_t AddTracklet(AliTRDtrackletGTU *tracklet, Int_t link);
   Bool_t WriteTrackletsToTree(TTree *trklTree);
 
   Bool_t RunTMU(TList *ListOfTracks = 0x0, AliESDEvent *esd = 0x0);
@@ -48,7 +48,9 @@ class AliTRDgtuTMU : public TObject {
   Bool_t CalculatePID(AliTRDtrackGTU *track);
 
 protected:
-  TObjArray **fTracklets; // holding all tracklets from one detector (i. e. one chamber)
+  TObjArray **fTracklets; // holding all tracklets per link
+  TObjArray **fTrackletsPostInput; // holding all tracklets of a layer
+				   // after sorting/calculation in input units
   TList **fZChannelTracklets; // holding all tracklets for layer and z-channel
   TList **fTracks; // lists of tracks
   AliTRDgtuParam *fGtuParam; // pointer to the instance of the GtuParam class

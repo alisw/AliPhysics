@@ -85,7 +85,7 @@ void AliTRDtrackGTU::AddTracklet(const AliTRDtrackletGTU * const tracklet, Int_t
   fTrackletMask |= (1 << layer);
 }
 
-AliTRDtrackletGTU* AliTRDtrackGTU::GetTracklet(Int_t layer)
+AliTRDtrackletGTU* AliTRDtrackGTU::GetTracklet(Int_t layer) const
 {
 // get a pointer to the tracklet in the layer specified
 
@@ -149,14 +149,28 @@ Int_t AliTRDtrackGTU::GetYapprox()
 
 AliESDTrdTrack* AliTRDtrackGTU::CreateTrdTrack() const
 {
-// creates an AliESDTrdTrack to be added to the ESD
+  // creates an AliESDTrdTrack to be added to the ESD
 
-    AliESDTrdTrack *trk = new AliESDTrdTrack();
-    trk->SetPID(fPID);
-    if (fLabel >= 0)
-	trk->SetLabel(fLabel);
+  AliESDTrdTrack *trk = new AliESDTrdTrack();
+  trk->SetA((Int_t) fA);
+  trk->SetLayerMask(fTrackletMask);
+  trk->SetPID(fPID);
+  trk->SetB((Int_t) fB);
+  trk->SetStack(fStack);
+  trk->SetSector(fSector);
+  if (fLabel >= 0)
+    trk->SetLabel(fLabel);
 
-    return trk;
+  for (Int_t iLayer = 0; iLayer < AliTRDgtuParam::GetNLayers(); iLayer++) {
+    AliTRDtrackletGTU *trklGTU = GetTracklet(iLayer);
+    if (trklGTU) {
+      AliESDTrdTracklet *trkl = trklGTU->GetTrackletESD();
+      if (trkl)
+	trk->AddTrackletReference(trkl, iLayer);
+    }
+  }
+
+  return trk;
 }
 
 Bool_t AliTRDtrackGTU::CookLabel()

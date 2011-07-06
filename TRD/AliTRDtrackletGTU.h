@@ -13,29 +13,27 @@
 // --------------------------------------------------------
 
 #include "AliTRDtrackletBase.h"
+#include "AliESDTrdTracklet.h"
+#include "AliTRDgtuParam.h"
 #include "AliLog.h"
-
-class AliTRDgtuParam;
 
 class AliTRDtrackletGTU : public AliTRDtrackletBase {
  public:
   AliTRDtrackletGTU();
   AliTRDtrackletGTU(AliTRDtrackletBase *tracklet);
+  AliTRDtrackletGTU(AliESDTrdTracklet *tracklet);
   AliTRDtrackletGTU(const AliTRDtrackletGTU& trk);
 
   ~AliTRDtrackletGTU();
 
   AliTRDtrackletGTU& operator=(const AliTRDtrackletGTU &rhs);
 
-  Bool_t IsSortable() const { return kTRUE; }
-  Int_t Compare(const TObject *o) const;
-
   // ----- Getters for information from the tracklet word -----
-  Int_t GetYbin() const { return fTracklet->GetYbin(); }
-  Int_t GetdY() const { return fTracklet->GetdY(); }
-  Int_t GetZbin() const { return fTracklet->GetZbin(); }
-  Int_t GetPID() const { return ((Int_t) (255 * fTracklet->GetPID())); }
-  Double_t GetPID(Int_t is) const { return fTracklet->GetPID(is); }
+  Int_t GetYbin() const { return fTrackletESD ? fTrackletESD->GetBinY() : fTracklet->GetYbin(); }
+  Int_t GetdY() const { return fTrackletESD ? fTrackletESD->GetBinDy() : fTracklet->GetdY(); }
+  Int_t GetZbin() const { return fTrackletESD ? fTrackletESD->GetBinZ() : fTracklet->GetZbin(); }
+  Int_t GetPID() const { return fTrackletESD ? fTrackletESD->GetPID() : ((Int_t) (256 * fTracklet->GetPID())); }
+  Double_t GetPID(Int_t is) const { return fTracklet ? fTracklet->GetPID(is) : 0.; }
 
   // ----- Getters for calculated properties -----
   Int_t GetYProj() const { return fYProj; }
@@ -45,7 +43,7 @@ class AliTRDtrackletGTU : public AliTRDtrackletBase {
 
   // ----- Getters for offline corresponding values -----
   Bool_t CookPID() { return kFALSE; }
-  Int_t GetDetector() const { return fTracklet->GetDetector(); }
+  Int_t GetDetector() const { return fTrackletESD ? fTrackletESD->GetDetector() : fTracklet->GetDetector(); }
   Int_t GetIndex() const { return fIndex; }
 
   Float_t GetdYdX() const { return (GetdY() * 140e-4 / 3.); }
@@ -53,8 +51,9 @@ class AliTRDtrackletGTU : public AliTRDtrackletBase {
   Float_t GetY() const { return (GetYbin() * 160e-4); }
   Float_t GetZ() const { return 0; }
 
-//  AliTRDtrackletBase* GetTracklet() const { return fTracklet; }
-  UInt_t GetTrackletWord() const { return fTracklet->GetTrackletWord(); }
+  AliTRDtrackletBase* GetTracklet() const { return fTracklet; }
+  AliESDTrdTracklet* GetTrackletESD() const { return fTrackletESD; }
+  UInt_t GetTrackletWord() const { return fTrackletESD ? fTrackletESD->GetTrackletWord() : fTracklet->GetTrackletWord(); }
 
   Int_t GetSide() const { return GetYbin() < 0 ? 0 : 1; }
 
@@ -73,9 +72,10 @@ class AliTRDtrackletGTU : public AliTRDtrackletBase {
 
  protected:
   AliTRDgtuParam *fGtuParam;	 //!
-  AliTRDtrackletBase *fTracklet; // pointer to the underlying tracklet
+  AliTRDtrackletBase *fTracklet;    //! pointer to the underlying tracklet
+  AliESDTrdTracklet  *fTrackletESD; //! pointer to the underlying ESD tracklet
 
-  Int_t *fSubChannel;		//! [AliTRDgtuParam::GetNZChannels()]
+  Int_t  fSubChannel[AliTRDgtuParam::fgkNZChannels]; // z-channel assignments
   Bool_t fAssignedZ;		// tracklet assigned to a Z-channel
 
   Int_t fAlpha;			// calculated value for alpha
@@ -87,7 +87,7 @@ class AliTRDtrackletGTU : public AliTRDtrackletBase {
 
  private:
 
-  ClassDef(AliTRDtrackletGTU, 1);
+  ClassDef(AliTRDtrackletGTU, 0);
 };
 
 #endif

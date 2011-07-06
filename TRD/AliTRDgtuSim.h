@@ -28,6 +28,7 @@ class AliTRDgtuSim : public TObject {
   ~AliTRDgtuSim();
 
   Bool_t LoadTracklets(AliLoader * const loader);
+  Bool_t LoadTracklets(const AliESDEvent * const esd);
 
   Bool_t RunGTU(AliLoader *loader, AliESDEvent *esd = 0x0);
   Bool_t RunGTUFromTrackletFile(TString filename, Int_t event, Int_t noev = 1);
@@ -46,6 +47,8 @@ class AliTRDgtuSim : public TObject {
   TClonesArray 	*fTrackletArray;	// array of tracklets
   TTree 	*fTrackTree; 	// tree to hold the tracks of one event, used for writing in WriteTracksToFile()
   TTree         *fTrackletTree; // tree to hold the gtu tracklets
+
+  void AppendBits(ULong64_t &word, Int_t nBits, Int_t val) const { word = (word << nBits) | (val & ~(~0 << nBits)); }
 
  private:
   AliTRDgtuSim& operator=(const AliTRDgtuSim &rhs); // not implemented

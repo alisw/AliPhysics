@@ -53,7 +53,7 @@ class AliTRDgtuParam : public TObject {
   Int_t GetRefLayer(Int_t refLayerIdx) const;
 //  Bool_t GetFitParams(TVectorD &rhs, Int_t k); // const
   Bool_t GetIntersectionPoints(Int_t k, Float_t &x1, Float_t &x2); // const
-  Float_t GetPt(Int_t a, Float_t b, Float_t x1, Float_t x2) const;
+  Int_t GetPt(Int_t layerMask, Int_t a, Float_t b, Float_t x1, Float_t x2) const;
 
   Bool_t IsInZChannel(Int_t stack, Int_t layer, Int_t zchannel, Int_t zpos) const;
 
@@ -61,6 +61,9 @@ class AliTRDgtuParam : public TObject {
 
   static void SetDeltaY(Int_t dy) { fgDeltaY = dy; }
   static void SetDeltaAlpha(Int_t da) { fgDeltaAlpha = da; }
+
+  static void SetUseGTUconst(Bool_t b) { fgUseGTUconst = b; }
+  static Bool_t GetUseGTUconst() { return fgUseGTUconst; }
 
   // z-channel map
   Int_t GenerateZChannelMap(); // could have different modes (for beam-beam, cosmics, ...)
@@ -77,12 +80,9 @@ class AliTRDgtuParam : public TObject {
   void SetMagField(Float_t field) { fMagField = field; }
   Float_t GetMagField() const { return fMagField; }
 
- protected:
   static const Int_t fgkNZChannels = 3; // No. of z-channels
   static const Int_t fgkNLinks = 12;	// No. of links
   static const Int_t fgkFixLayer = 2;	// which layer is fixed for the generation of the z-channel map
-  static       Int_t fgDeltaY;    	// accepted deviation in y_proj, default: 9
-  static       Int_t fgDeltaAlpha;      // accepted deviation in alpha, default: 11
   static const Int_t fgkNRefLayers = 3;	 // no. of reference layers
 
   static const Float_t fgkBinWidthY; // bin width for y-position
@@ -94,6 +94,14 @@ class AliTRDgtuParam : public TObject {
   static const Int_t fgkBitExcessY; // excess bits for y-position
   static const Int_t fgkBitExcessAlpha; // excess bits for alpha
   static const Int_t fgkBitExcessYProj; // excess bits for projected y-position
+
+ protected:
+  static       Int_t fgDeltaY;    	// accepted deviation in y_proj, default: 9
+  static       Int_t fgDeltaAlpha;      // accepted deviation in alpha, default: 11
+
+  static       Bool_t fgUseGTUconst;    // use constants as in the GTU for the calculations
+					       // instead of geometry derived quantities
+  static const Bool_t fgZChannelMap[5][16][6][16]; // z-channel tables as in GTU
 
   Float_t fVertexSize;		// assumed vertex size (z-dir.) for the z-channel map
 

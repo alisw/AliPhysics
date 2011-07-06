@@ -29,6 +29,7 @@
 
 #include "TFile.h"
 #include "TROOT.h"
+#include "TObject.h"
 #include "TClonesArray.h"
 
 #include "AliRun.h"
@@ -37,6 +38,7 @@
 #include "AliTreeLoader.h"
 #include "AliLog.h"
 #include "AliESDTrdTrack.h"
+#include "AliESDTrdTracklet.h"
 
 #include "AliTRDgtuSim.h"
 #include "AliTRDfeeParam.h"
@@ -57,8 +59,8 @@ AliTRDgtuSim::AliTRDgtuSim(AliRunLoader *rl)
   fTrackTree(0x0),
   fTrackletTree(0x0)
 {
-  fTrackletTree = new TTree("gtutracklets", "Tree with GTU tracklets");
-  fTrackletTree->SetDirectory(0);
+//   fTrackletTree = new TTree("gtutracklets", "Tree with GTU tracklets");
+//   fTrackletTree->SetDirectory(0);
 }
 
 AliTRDgtuSim::~AliTRDgtuSim()
@@ -66,7 +68,7 @@ AliTRDgtuSim::~AliTRDgtuSim()
   // destructor
 
   if (fTrackletArray)
-    fTrackletArray->Delete();
+    fTrackletArray->Clear();
   delete fTrackletArray;
   delete fTrackletTree;
 }
@@ -76,99 +78,104 @@ Bool_t AliTRDgtuSim::RunGTUFromTrackletFile(TString filename, Int_t event, Int_t
   // run the GTU from a file of tracklets
   // used for comparison to VHDL simulation
 
-    AliInfo(Form("Running the GTU simulation on file: %s", filename.Data()));
-    ifstream input(filename.Data());
+  ifstream input(filename.Data());
 
-    std::string str;
-    TString string;
-    int lineno = 0;
+  std::string str;
+  TString string;
+  int lineno = 0;
 
-    Int_t iEventPrev = -1;
-    Int_t iStackPrev = -1;
-    Int_t iSecPrev = -1;
-    Int_t iSec = -1;
-    Int_t iStack = -1;
-    Int_t iLink = -1;
-    Int_t iEvent = -1;
-    Int_t evcnt = -1;
+  Int_t iEventPrev = -1;
+  Int_t iStackPrev = -1;
+  Int_t iSecPrev = -1;
+  Int_t iSec = -1;
+  Int_t iStack = -1;
+  Int_t iLink = -1;
+  Int_t iEvent = -1;
+  Int_t evcnt = -1;
 
-    fTMU = 0x0;
+  fTMU = 0x0;
 
-    AliDebug(5,"--------- Reading from file ----------");
-    while (getline(input, str)) {
-	lineno++;
-	string = str;
-	AliDebug(5,Form("Line %i : %s", lineno, string.Data()));
+  TClonesArray trklArray("AliTRDtrackletWord", 100);
+  TClonesArray trklArrayGTU("AliTRDtrackletGTU", 100);
 
-	TObjArray *tokens = string.Tokenize(" ");
-	if (tokens->GetEntriesFast() < 7) {
-	    AliWarning(Form("Invalid input in line %i, too few parameters", lineno));
-	    continue;
-	}
+  AliDebug(1, Form("--------- Reading from %s ----------", filename.Data()));
+  while (getline(input, str)) {
+    lineno++;
+    string = str;
 
-	if ( ((TObjString*) tokens->At(0))->GetString().Atoi() < event)
-	    continue;
-
-	iEvent = ((TObjString*) tokens->At(0))->GetString().Atoi();
-	iSec = ((TObjString*) tokens->At(1))->GetString().Atoi();
-	iStack = ((TObjString*) tokens->At(2))->GetString().Atoi();
-	iLink = 2 * ((TObjString*) tokens->At(3))->GetString().Atoi() + ((TObjString*) tokens->At(4))->GetString().Atoi();
-
-	if (iEvent != iEventPrev || iStack != iStackPrev || iSec != iSecPrev) {
-	    if(fTMU) {
-		TList *listOfTracks = new TList();
-		fTMU->SetStack(iStackPrev);
-		fTMU->SetSector(iSecPrev);
-		fTMU->RunTMU(listOfTracks);
-		AliDebug(1,Form("--- There are %i tracks. Writing ...", listOfTracks->GetEntries()));
-		WriteTracksToTree(listOfTracks);
-		fTMU->WriteTrackletsToTree(fTrackletTree);
-		WriteTracksToLoader(listOfTracks);
-		WriteTracksToDataFile(listOfTracks, iEventPrev);
-		if (listOfTracks->GetEntries() > 0)
-		    AliDebug(2,Form("   %4.1f GeV/c", ((AliTRDtrackGTU*) listOfTracks->At(0))->GetPt() ));
-		delete fTMU;
-		fTMU = new AliTRDgtuTMU();
-		delete listOfTracks;
-		listOfTracks = 0x0;
-	    } else {
-		fTMU = new AliTRDgtuTMU();
-	    }
-	    iStackPrev = iStack;
-	    iSecPrev = iSec;
-	    iEventPrev = iEvent;
-	    evcnt++;
-	    if (evcnt == noev)
-		break;
-	}
-	for (Int_t i = 5; i < tokens->GetEntriesFast(); i++) {
-	    UInt_t trackletWord = 0;
-	    sscanf(((TObjString*) tokens->At(i))->GetString().Data(), "%i", &trackletWord);
-	    if (trackletWord == 0x10001000)
-		break;
-	    AliDebug(2,Form("%i. tracklet: %s -> 0x%08x", i-4, ((TObjString*) tokens->At(i))->GetString().Data(), trackletWord));
-	    AliTRDtrackletWord *trkl = new AliTRDtrackletWord(trackletWord);
-	    if (fTMU)
-	      fTMU->AddTracklet(trkl, iLink);
-	}
+    TObjArray *tokens = string.Tokenize(" ");
+    if (tokens->GetEntriesFast() < 7) {
+      AliWarning(Form("Invalid input in line %i, too few parameters", lineno));
+      continue;
     }
 
-    if (fTMU && evcnt < noev) {
+    if ( ((TObjString*) tokens->At(0))->GetString().Atoi() < event)
+      continue;
+
+    iEvent = ((TObjString*) tokens->At(0))->GetString().Atoi();
+    iSec = ((TObjString*) tokens->At(1))->GetString().Atoi();
+    iStack = ((TObjString*) tokens->At(2))->GetString().Atoi();
+    iLink = 2 * ((TObjString*) tokens->At(3))->GetString().Atoi() + ((TObjString*) tokens->At(4))->GetString().Atoi();
+
+    if ((iEvent != iEventPrev) ||
+	(iStack != iStackPrev) ||
+	(iSec != iSecPrev)) {
+      if(fTMU) {
 	TList *listOfTracks = new TList();
 	fTMU->SetStack(iStackPrev);
 	fTMU->SetSector(iSecPrev);
 	fTMU->RunTMU(listOfTracks);
+	AliDebug(1,Form("--- There are %i tracks. Writing ...", listOfTracks->GetEntries()));
 	WriteTracksToTree(listOfTracks);
-	fTMU->WriteTrackletsToTree(fTrackletTree);
-	WriteTracksToLoader(listOfTracks);
+	// fTMU->WriteTrackletsToTree(fTrackletTree);
+	// WriteTracksToLoader(listOfTracks);
 	WriteTracksToDataFile(listOfTracks, iEventPrev);
+	if (listOfTracks->GetEntries() > 0)
+	  AliDebug(2,Form("   %4.1f GeV/c", ((AliTRDtrackGTU*) listOfTracks->At(0))->GetPt() ));
 	delete fTMU;
+	fTMU = new AliTRDgtuTMU();
 	delete listOfTracks;
-	fTMU = 0x0;
+	listOfTracks = 0x0;
+      } else {
+	fTMU = new AliTRDgtuTMU();
+      }
+      iStackPrev = iStack;
+      iSecPrev = iSec;
+      iEventPrev = iEvent;
+      evcnt++;
+      if (evcnt == noev)
+	break;
     }
+    for (Int_t i = 5; i < tokens->GetEntriesFast(); i++) {
+      UInt_t trackletWord = 0;
+      sscanf(((TObjString*) tokens->At(i))->GetString().Data(), "%i", &trackletWord);
+      if (trackletWord == 0x10001000)
+	break;
+      AliDebug(2, Form("link: %2i trkl: %2i - %s -> 0x%08x",
+		       iLink, i-4, ((TObjString*) tokens->At(i))->GetString().Data(), trackletWord));
+      AliTRDtrackletWord *tracklet = new (trklArray[trklArray.GetEntriesFast()])       AliTRDtrackletWord(trackletWord);
+      AliTRDtrackletGTU   *trkl    = new (trklArrayGTU[trklArrayGTU.GetEntriesFast()]) AliTRDtrackletGTU(tracklet);
+      if (fTMU)
+	fTMU->AddTracklet(trkl, iLink);
+    }
+  }
 
-    AliInfo(Form("Analyzed %i events", evcnt));
-    return kTRUE;
+  if (fTMU && evcnt < noev) {
+    TList *listOfTracks = new TList();
+    fTMU->SetStack(iStackPrev);
+    fTMU->SetSector(iSecPrev);
+    fTMU->RunTMU(listOfTracks);
+    WriteTracksToTree(listOfTracks);
+    // fTMU->WriteTrackletsToTree(fTrackletTree);
+    // WriteTracksToLoader(listOfTracks);
+    WriteTracksToDataFile(listOfTracks, iEventPrev);
+    delete fTMU;
+    delete listOfTracks;
+    fTMU = 0x0;
+  }
+
+  AliInfo(Form("Analyzed %i events", evcnt));
+  return kTRUE;
 }
 
 Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
@@ -179,10 +186,18 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
   if (!fFeeParam->GetTracklet())
     return kFALSE;
 
+  if (fTrackletArray)
+    fTrackletArray->Clear();
+
+  if (loader) {
     if (!LoadTracklets(loader)) {
 	AliError("Could not load the tracklets. Nothing done ...");
 	return kFALSE;
     }
+  }
+  else {
+    LoadTracklets(esd);
+  }
 
     AliDebug(1, Form("running on %i tracklets", fTrackletArray->GetEntriesFast()));
 
@@ -200,12 +215,11 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
     TList *listOfTracks = new TList();
 
     TIter next(fTrackletArray);
-    AliTRDtrackletBase *trkl;
 
-    while ((trkl = (AliTRDtrackletBase*) next())) {
+    while (AliTRDtrackletGTU *trkl = (AliTRDtrackletGTU*) next()) {
 	iSec = trkl->GetDetector() / 30;
 	iStack = (trkl->GetDetector() % 30) / 6;
-	iLink = 2 * (trkl->GetDetector() % 6) + (trkl->GetYbin() < 0 ? 0 : 1);
+	iLink = trkl->GetHCId() % 12;
 
 	if (iStack != iStackPrev || iSec != iSecPrev) {
 	    if(fTMU) {
@@ -213,7 +227,7 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
 		fTMU->SetSector(iSecPrev);
 		fTMU->RunTMU(listOfTracks);
 		WriteTracksToTree(listOfTracks);
-		fTMU->WriteTrackletsToTree(fTrackletTree);
+// 		fTMU->WriteTrackletsToTree(fTrackletTree);
 		WriteTracksToLoader(listOfTracks);
 		WriteTracksToESD(listOfTracks, esd);
 		fTMU->Reset();
@@ -225,8 +239,9 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
 	    iSecPrev = iSec;
 	}
 	AliDebug(1, Form("adding tracklet: 0x%08x", trkl->GetTrackletWord()));
-	if (fTMU)
+	if (fTMU) {
 	  fTMU->AddTracklet(trkl, iLink);
+	}
     }
 
     if (fTMU) {
@@ -234,7 +249,7 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
 	fTMU->SetSector(iSecPrev);
 	fTMU->RunTMU(listOfTracks);
 	WriteTracksToTree(listOfTracks);
-	fTMU->WriteTrackletsToTree(fTrackletTree);
+// 	fTMU->WriteTrackletsToTree(fTrackletTree);
 	WriteTracksToLoader(listOfTracks);
 	WriteTracksToESD(listOfTracks, esd);
 	delete fTMU;
@@ -245,6 +260,21 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
     delete listOfTracks;
 
     return kTRUE;
+}
+
+Bool_t AliTRDgtuSim::LoadTracklets(const AliESDEvent *const esd)
+{
+  AliDebug(1,"Loading tracklets from ESD event ...");
+
+  if (!fTrackletArray)
+    fTrackletArray = new TClonesArray("AliTRDtrackletGTU", 1000);
+
+  for (Int_t iTracklet = 0; iTracklet < esd->GetNumberOfTrdTracklets(); iTracklet++) {
+    AliESDTrdTracklet *trkl = esd->GetTrdTracklet(iTracklet);
+    new ((*fTrackletArray)[fTrackletArray->GetEntries()]) AliTRDtrackletGTU(trkl);
+  }
+
+  return kTRUE;
 }
 
 Bool_t AliTRDgtuSim::LoadTracklets(AliLoader *const loader)
@@ -276,20 +306,13 @@ Bool_t AliTRDgtuSim::LoadTracklets(AliLoader *const loader)
     TBranch *trklbranch = trackletTree->GetBranch("mcmtrklbranch");
     if (trklbranch) {
       if (!fTrackletArray)
-	fTrackletArray = new TClonesArray("AliTRDtrackletMCM", 1000);
-      else if ((TClass::GetClass("AliTRDtrackletMCM"))->InheritsFrom(fTrackletArray->Class()))
-	fTrackletArray->Delete();
-      else {
-	fTrackletArray->Delete();
-	delete fTrackletArray;
-	fTrackletArray = new TClonesArray("AliTRDtrackletMCM", 1000);
-      }
+	fTrackletArray = new TClonesArray("AliTRDtrackletGTU", 1000);
 
-      AliTRDtrackletMCM *trkl = new AliTRDtrackletMCM;
+      AliTRDtrackletMCM *trkl = 0x0;
       trklbranch->SetAddress(&trkl);
       for (Int_t iTracklet = 0; iTracklet < trklbranch->GetEntries(); iTracklet++) {
 	trklbranch->GetEntry(iTracklet);
-	new ((*fTrackletArray)[fTrackletArray->GetEntries()]) AliTRDtrackletMCM(*trkl);
+	new ((*fTrackletArray)[fTrackletArray->GetEntries()]) AliTRDtrackletGTU(new AliTRDtrackletMCM(*trkl));
       }
       return kTRUE;
     }
@@ -301,14 +324,7 @@ Bool_t AliTRDgtuSim::LoadTracklets(AliLoader *const loader)
 
   if (trackletTree) {
     if (!fTrackletArray)
-      fTrackletArray = new TClonesArray("AliTRDtrackletWord", 1000);
-    else if ((TClass::GetClass("AliTRDtrackletWord"))->InheritsFrom(fTrackletArray->Class()))
-      fTrackletArray->Delete();
-    else {
-      fTrackletArray->Delete();
-      delete fTrackletArray;
-      fTrackletArray = new TClonesArray("AliTRDtrackletWord", 1000);
-    }
+      fTrackletArray = new TClonesArray("AliTRDtrackletGTU", 1000);
 
     Int_t hc;
     TClonesArray *ar = 0x0;
@@ -320,7 +336,7 @@ Bool_t AliTRDgtuSim::LoadTracklets(AliLoader *const loader)
       AliDebug(2, Form("%i tracklets in HC %i", ar->GetEntriesFast(), hc));
       for (Int_t iTracklet = 0; iTracklet < ar->GetEntriesFast(); iTracklet++) {
 	AliTRDtrackletWord *trklWord = (AliTRDtrackletWord*) (*ar)[iTracklet];
-	new((*fTrackletArray)[fTrackletArray->GetEntriesFast()]) AliTRDtrackletWord(trklWord->GetTrackletWord(), hc);
+	new((*fTrackletArray)[fTrackletArray->GetEntriesFast()]) AliTRDtrackletGTU(new AliTRDtrackletWord(trklWord->GetTrackletWord(), hc));
       }
     }
     return kTRUE;
@@ -343,11 +359,34 @@ Bool_t AliTRDgtuSim::WriteTracksToDataFile(TList *listOfTracks, Int_t event)
     out = fopen("test.data", "a");
 
     AliDebug(1,Form("%i tracks found in event %i", listOfTracks->GetSize(), event));
-    fprintf(out, "0 %5i %2i %i  00000000\n", event, sm, stack);
+    // fprintf(out, "0 %5i %2i %i  00000000\n", event, sm, stack);
     for (Int_t i = 0; i < listOfTracks->GetSize(); i++) {
 	AliTRDtrackGTU *trk = (AliTRDtrackGTU*) listOfTracks->At(i);
 	sm = trk->GetSector();
 	stack = trk->GetStack();
+
+	ULong64_t trackWord = 1;
+	AppendBits(trackWord,   1, 0);
+	AppendBits(trackWord,   6, trk->GetTrackletMask());
+	AppendBits(trackWord,  18, (Int_t) trk->GetA());
+	AppendBits(trackWord,  18, (Int_t) trk->GetB());
+	AppendBits(trackWord,  12, (Int_t) trk->GetC());
+	AppendBits(trackWord,   8, trk->GetPID());
+	fprintf(out, "ev. %i sec. %i stack %i - track word: 0x%016llx, ",
+		event, sm, stack, trackWord);
+
+	trackWord = 0;
+	AppendBits(trackWord, 11, 0); // flags
+	AppendBits(trackWord,  3, 0);
+	AppendBits(trackWord, 13, trk->GetYapprox());
+	AppendBits(trackWord,  6, trk->GetTrackletIndex(5));
+	AppendBits(trackWord,  6, trk->GetTrackletIndex(4));
+	AppendBits(trackWord,  6, trk->GetTrackletIndex(3));
+	AppendBits(trackWord,  6, trk->GetTrackletIndex(2));
+	AppendBits(trackWord,  6, trk->GetTrackletIndex(1));
+	AppendBits(trackWord,  6, trk->GetTrackletIndex(0));
+	fprintf(out, "extended track word: 0x%016llx\n", trackWord);
+
 	fprintf(out, "1 %5i %2i %2i %3i %3i %3i %3i %3i %3i %3i %4i %f\n", event, sm, stack, trk->GetTrackletMask(),
 	       trk->GetTrackletIndex(5),
 	       trk->GetTrackletIndex(4),

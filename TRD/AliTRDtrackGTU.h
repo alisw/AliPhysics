@@ -36,7 +36,7 @@ class AliTRDtrackGTU : public TObject {
   Int_t    GetTrackletMask() const { return fTrackletMask; }
   Bool_t   IsTrackletInLayer(Int_t layer) const;
   Int_t    GetTrackletIndex(Int_t layer) { return IsTrackletInLayer(layer) ? ((AliTRDtrackletGTU*) (*fTracklets)[layer])->GetIndex() : -1; }
-  AliTRDtrackletGTU* GetTracklet(Int_t layer);
+  AliTRDtrackletGTU* GetTracklet(Int_t layer) const;
 
 // ----- Quantities used internally for the calculation
   Float_t GetA() const { return fA; }

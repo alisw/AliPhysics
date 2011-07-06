@@ -44,6 +44,7 @@ ClassImp(AliTRDgtuTMU)
 AliTRDgtuTMU::AliTRDgtuTMU(Int_t stack, Int_t sector) :
   TObject(),
   fTracklets(0x0),
+  fTrackletsPostInput(0x0),
   fZChannelTracklets(0x0),
   fTracks(0x0),
   fGtuParam(0x0),
@@ -53,16 +54,26 @@ AliTRDgtuTMU::AliTRDgtuTMU(Int_t stack, Int_t sector) :
   // constructor which initializes the position information of the TMU
 
   fGtuParam = AliTRDgtuParam::Instance();
-  fTracklets = new TObjArray*[fGtuParam->GetNLayers()];
+
+  // store tracklets per link
+  fTracklets = new TObjArray*[fGtuParam->GetNLinks()];
+  for (Int_t iLink = 0; iLink < fGtuParam->GetNLinks(); iLink++) {
+    fTracklets[iLink] = new TObjArray();
+  }
+
+  // tracklets after input units per layer
+  fTrackletsPostInput = new TObjArray*[fGtuParam->GetNLayers()];
   fZChannelTracklets = new TList*[fGtuParam->GetNLayers()];
   for (Int_t layer = 0;  layer <  fGtuParam->GetNLayers(); layer++) {
-    fTracklets[layer] = new TObjArray();
     fZChannelTracklets[layer] = new TList[fGtuParam->GetNZChannels()];
+    fTrackletsPostInput[layer] = new TObjArray();
   }
+
   fTracks = new TList*[fGtuParam->GetNZChannels()];
   for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++) {
       fTracks[zch] = new TList[fGtuParam->GetNRefLayers()];
   }
+
   if (stack > -1)
       SetStack(stack);
   if (sector > -1)
@@ -78,11 +89,15 @@ AliTRDgtuTMU::~AliTRDgtuTMU()
   }
   delete [] fTracks;
   for (Int_t layer = 0; layer < fGtuParam->GetNLayers(); layer++) {
-    fTracklets[layer]->Delete();
     delete [] fZChannelTracklets[layer];
-    delete fTracklets[layer];
+    //    delete [] fTrackletsPostInput[layer];
   }
   delete [] fZChannelTracklets;
+  //  delete [] fTrackletsPostInput;
+
+  for (Int_t iLink = 0; iLink < fGtuParam->GetNLinks(); iLink++) {
+    delete fTracklets[iLink];
+  }
   delete [] fTracklets;
 }
 
@@ -123,10 +138,13 @@ Bool_t AliTRDgtuTMU::Reset()
   }
 
   // delete all added tracklets
+  for (Int_t iLink = 0; iLink < fGtuParam->GetNLinks(); iLink++) {
+    fTracklets[iLink]->Clear();
+  }
   for (Int_t layer = 0; layer < fGtuParam->GetNLinks()/2; layer++) {
+    fTrackletsPostInput[layer]->Clear();
     for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++)
       fZChannelTracklets[layer][zch].Clear();
-    fTracklets[layer]->Delete();
   }
 
   fSector = -1;
@@ -135,12 +153,11 @@ Bool_t AliTRDgtuTMU::Reset()
   return kTRUE;
 }
 
-Bool_t AliTRDgtuTMU::AddTracklet(AliTRDtrackletBase *tracklet, Int_t link)
+Bool_t AliTRDgtuTMU::AddTracklet(AliTRDtrackletGTU *tracklet, Int_t link)
 {
   // add a tracklet on the given link
 
-  AliTRDtrackletGTU *trkl = new AliTRDtrackletGTU(tracklet);
-  fTracklets[(Int_t) link/2]->Add(trkl);
+  fTracklets[link]->Add(tracklet);
   return kTRUE;
 }
 
@@ -213,11 +230,38 @@ Bool_t AliTRDgtuTMU::RunInputUnit(Int_t layer)
 {
   // precalculations for the tracking and reconstruction
 
-  fTracklets[layer]->Sort();
-  TIter next(fTracklets[layer]);
+  Int_t iTrkl0 = 0; // A-side tracklet
+  Int_t iTrkl1 = 0; // B-side tracklet
+
+  while ((iTrkl0 < fTracklets[2*layer + 0]->GetEntriesFast()) || (iTrkl1 < fTracklets[2*layer + 1]->GetEntriesFast())) {
+    if (iTrkl1 >= fTracklets[2*layer + 1]->GetEntriesFast()) {
+      fTrackletsPostInput[layer]->AddLast(fTracklets[2*layer + 0]->At(iTrkl0));
+      iTrkl0++;
+    }
+    else {
+      if (iTrkl0 >= fTracklets[2*layer + 0]->GetEntriesFast()) {
+	fTrackletsPostInput[layer]->AddLast(fTracklets[2*layer + 1]->At(iTrkl1));
+	iTrkl1++;
+      }
+      else {
+	if (((AliTRDtrackletGTU*) fTracklets[2*layer + 1]->At(iTrkl1))->GetZbin() <
+	    ((AliTRDtrackletGTU*) fTracklets[2*layer + 0]->At(iTrkl0))->GetZbin()) {
+	  fTrackletsPostInput[layer]->AddLast(fTracklets[2*layer + 1]->At(iTrkl1));
+	  iTrkl1++;
+
+	}
+	else {
+	  fTrackletsPostInput[layer]->AddLast(fTracklets[2*layer + 0]->At(iTrkl0));
+	  iTrkl0++;
+	}
+      }
+    }
+  }
+
+  TIter next(fTrackletsPostInput[layer]);
 
   while ( AliTRDtrackletGTU *trk = (AliTRDtrackletGTU*) next() ) {
-    trk->SetIndex(fTracklets[layer]->IndexOf(trk));
+    trk->SetIndex(fTrackletsPostInput[layer]->IndexOf(trk));
 
     Int_t alpha = (trk->GetYbin() >> fGtuParam->GetBitExcessY()) * fGtuParam->GetCiAlpha(layer);
     alpha = ( 2 * trk->GetdY() - (alpha >> fGtuParam->GetBitExcessAlpha()) + 1 ) >> 1;
@@ -229,8 +273,9 @@ Bool_t AliTRDgtuTMU::RunInputUnit(Int_t layer)
 
     trk->SetYPrime(trk->GetYbin() + fGtuParam->GetYt(fStack, layer, trk->GetZbin()));
 
-    AliDebug(10, Form("InputUnit : GetIndex(): %3i, GetZbin(): %2i, GetY() : %5i, GetdY() : %3i, GetYPrime() : %5i, GetYProj() : %5i, GetAlpha() : %3i",
-		      trk->GetIndex(), trk->GetZbin(), trk->GetYbin(), trk->GetdY(), trk->GetYPrime(), trk->GetYProj(), trk->GetAlpha() ));
+    AliDebug(10, Form("0x%08x: idx: %3i, z: %2i, y: %5i, dy: %3i, y': %5i, y_proj: %5i, alpha: %3i, pid: %3i",
+		      trk->GetTrackletWord(), trk->GetIndex(), trk->GetZbin(), trk->GetYbin(), trk->GetdY(), trk->GetYPrime(),
+		      trk->GetYProj(), trk->GetAlpha(), trk->GetPID() ));
   }
   return kTRUE;
 }
@@ -239,28 +284,33 @@ Bool_t AliTRDgtuTMU::RunZChannelUnit(Int_t layer)
 {
   // run the z-channel unit
 
-  TIter next(fTracklets[layer]);
+  TIter next(fTrackletsPostInput[layer]);
 
   while (AliTRDtrackletGTU *trk = (AliTRDtrackletGTU*) next()) {
-    AliDebug(10,Form("*TMU* Tracklet in stack %d, layer %2d: 0x%08x ", fStack, layer, trk->GetTrackletWord()));
     for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++) {
       if (fGtuParam->IsInZChannel(fStack, layer, zch, trk->GetZbin()) ) {
 	trk->SetSubChannel(zch, fGtuParam->GetZSubchannel(fStack, layer, zch, trk->GetZbin()) );
-//	printf("Z%i(%i) ", zch, trk->GetSubChannel(zch));
 
 	TIter nexttrkl(&fZChannelTracklets[layer][zch], kIterBackward);
 	AliTRDtrackletGTU *t = 0x0;
 	while ((t = (AliTRDtrackletGTU*) nexttrkl.Next())) {
 	  if (t->GetSubChannel(zch) < trk->GetSubChannel(zch) ||
-	      (t->GetSubChannel(zch) == trk->GetSubChannel(zch) && t->GetYProj() < trk->GetYProj()) )
+	      ((t->GetSubChannel(zch) == trk->GetSubChannel(zch)) && (t->GetYProj() < trk->GetYProj())) ) {
 	    break;
+	  }
 	}
-	fZChannelTracklets[layer][zch].AddAfter(t, trk);
+	if (t)
+	  fZChannelTracklets[layer][zch].AddAfter(t, trk);
+	else
+	  fZChannelTracklets[layer][zch].AddFirst(trk);
       }
-//      else
-//	  printf("      ");
     }
-//    printf("\n");
+    AliDebug(10, Form("stack %d, layer %2d: 0x%08x Z(2..0)=%i/%i/%i",
+		      fStack, layer, trk->GetTrackletWord(),
+		      fGtuParam->IsInZChannel(fStack, layer, 2, trk->GetZbin()) ? trk->GetSubChannel(2) : -1,
+		      fGtuParam->IsInZChannel(fStack, layer, 1, trk->GetZbin()) ? trk->GetSubChannel(1) : -1,
+		      fGtuParam->IsInZChannel(fStack, layer, 0, trk->GetZbin()) ? trk->GetSubChannel(0) : -1
+		      ));
   }
   return kTRUE;
 }
@@ -312,6 +362,18 @@ Bool_t AliTRDgtuTMU::RunTrackFinder(Int_t zch, TList* /* ListOfTracks */)
      AliDebug(5,Form("~~~~~ Reflayer: %i", reflayer));
 
      ready = kFALSE; // ready if all channels done
+
+//      for (Int_t iLayer = 0; iLayer < fGtuParam->GetNLayers(); iLayer++) {
+//        for (Int_t iTrkl = 0; iTrkl < fZChannelTracklets[iLayer][zch].GetEntries(); iTrkl++) {
+// 	 printf("%4i/%4i(%i,%i) ",
+// 		((AliTRDtrackletGTU*) fZChannelTracklets[iLayer][zch].At(iTrkl))->GetYProj(),
+// 		((AliTRDtrackletGTU*) fZChannelTracklets[iLayer][zch].At(iTrkl))->GetAlpha(),
+// 		((AliTRDtrackletGTU*) fZChannelTracklets[iLayer][zch].At(iTrkl))->GetIndex(),
+// 		((AliTRDtrackletGTU*) fZChannelTracklets[iLayer][zch].At(iTrkl))->GetSubChannel(zch)
+// 		);
+//        }
+//        printf("\n");
+//      }
 
      for (Int_t layer = 0; layer < fGtuParam->GetNLayers(); layer++) {
        notr[layer] = fZChannelTracklets[layer][zch].GetEntries();
@@ -398,8 +460,8 @@ Bool_t AliTRDgtuTMU::RunTrackFinder(Int_t zch, TList* /* ListOfTracks */)
 	 if (trkB) {
 	   bHitB[layer] = ( !(trkB->GetSubChannel(zch) < trkRA->GetSubChannel(zch) || (trkB->GetSubChannel(zch) == trkRA->GetSubChannel(zch) && trkB->GetYProj() < yMinus) ) &&
 			    !(trkB->GetSubChannel(zch) > trkRA->GetSubChannel(zch) || (trkB->GetSubChannel(zch) == trkRA->GetSubChannel(zch) && trkB->GetYProj() > yPlus) ) &&
-			    !(alphaMinus > trkB->GetAlpha()) &&
-			    !(alphaPlus  > trkB->GetAlpha()) );
+			    !(trkB->GetAlpha() < alphaMinus) &&
+			    !(trkB->GetAlpha() > alphaPlus) );
 	   bAlignedB[layer] = (trkB->GetSubChannel(zch) > trkRA->GetSubChannel(zch) || (trkB->GetSubChannel(zch) == trkRA->GetSubChannel(zch) && trkB->GetYProj() > yPlus) );
 	 }
 	 else {
@@ -461,7 +523,7 @@ Bool_t AliTRDgtuTMU::RunTrackFinder(Int_t zch, TList* /* ListOfTracks */)
 	 }
 
 	 Bool_t registerTrack = kTRUE;
-	 for (Int_t layerIdx = refLayerIdx; layerIdx > 0; layerIdx--) {
+	 for (Int_t layerIdx = refLayerIdx-1; layerIdx >= 0; layerIdx--) {
            if (track->IsTrackletInLayer(fGtuParam->GetRefLayer(layerIdx))) {
              if ((track->GetTracklet(fGtuParam->GetRefLayer(layerIdx)))->GetSubChannel(zch) > 0) {
                AliDebug(1,"Not registered");
@@ -503,8 +565,9 @@ Bool_t AliTRDgtuTMU::RunTrackFinder(Int_t zch, TList* /* ListOfTracks */)
 	     trkB = (AliTRDtrackletGTU*) fZChannelTracklets[layer][zch].At(ptrB[layer]);
 
 	   if (trkA) {
-	       if ( !(trkA->GetSubChannel(zch) < trkRA->GetSubChannel(zch) || (trkA->GetSubChannel(zch) == trkRA->GetSubChannel(zch) && trkA->GetYProj() < yMinus) ) &&
-		    !(trkA->GetSubChannel(zch) > trkRA->GetSubChannel(zch) || (trkA->GetSubChannel(zch) == trkRA->GetSubChannel(zch) && trkA->GetYProj() > yPlus ) ) )  // trkA could hit trkRA
+	     if ( !(trkA->GetSubChannel(zch) < trkRA->GetSubChannel(zch) || (trkA->GetSubChannel(zch) == trkRA->GetSubChannel(zch) && trkA->GetYProj() < yMinus) ) &&
+		  !(trkA->GetSubChannel(zch) > trkRA->GetSubChannel(zch) || (trkA->GetSubChannel(zch) == trkRA->GetSubChannel(zch) && trkA->GetYProj() > yPlus ) ) )  // trkA could hit trkRA
+	     // if ( !(trkA->GetSubChannel(zch) < trkRA->GetSubChannel(zch) || (trkA->GetSubChannel(zch) == trkRA->GetSubChannel(zch) && trkA->GetYProj() < yMinus) ) )
 		   inc[layer] = 0;
 	       else if (trkB) {
 		   if ( trkB->GetSubChannel(zch) < trkRA->GetSubChannel(zch) || (trkB->GetSubChannel(zch) == trkRA->GetSubChannel(zch) && trkB->GetYProj() < yMinus) )
@@ -530,7 +593,15 @@ Bool_t AliTRDgtuTMU::RunTrackFinder(Int_t zch, TList* /* ListOfTracks */)
 	   AliError(Form("Invalid increment: %i at ptrA: %i, notr: %i", inc[layer], ptrA[layer], notr[layer]));
 
 //	 AliInfo(Form("Shifting layer: %i, notr: %i, ptrA: %i, ptrB: %i, inc: %i", layer, notr[layer], ptrA[layer], ptrB[layer], inc[layer]));
-	 AliDebug(10,Form(" -- Layer: %i   %i   %i   +%i   %s  (no: %i)", layer, ptrA[layer], ptrB[layer], inc[layer], bDone[layer] ? "done" : "    ", notr[layer]));
+	 AliDebug(10,Form(" -- Layer: %i   %2i(%2i)%s%s   %2i(%2i)%s%s   +%i   %s  (no: %i)",
+			  layer,
+			  ptrA[layer],
+			  (0 <= ptrA[layer] && ptrA[layer] < notr[layer]) ? ((AliTRDtrackletGTU*) fZChannelTracklets[layer][zch].At(ptrA[layer]))->GetIndex() : -1,
+			  bHitA[layer] ? "*" : " ", bAlignedA[layer] ? "+" : " ",
+			  ptrB[layer],
+			  (0 <= ptrB[layer] && ptrB[layer] < notr[layer]) ? ((AliTRDtrackletGTU*) fZChannelTracklets[layer][zch].At(ptrB[layer]))->GetIndex() : -1,
+			  bHitB[layer] ? "*" : " ", bAlignedB[layer] ? "+" : " ",
+			  inc[layer], bDone[layer] ? "done" : "    ", notr[layer]));
  	 ptrA[layer] += inc[layer];
 	 ptrB[layer] += inc[layer];
        }
@@ -579,7 +650,7 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
     AliTRDtrackGTU *trkStage0 = 0x0;
 
     for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++) {
-        // ----- Merging and Unification in Reflayers -----
+        // ----- Merging and Unification in Reflayers (seed_merger) -----
 	do {
 	    done = kTRUE;
 	    trkStage0 = 0x0;
@@ -607,6 +678,33 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
 	} while (trkStage0 != 0);
 
 	Uniquifier(tracksRefMerged[zch], tracksRefUnique[zch]);
+
+	AliDebug(2, Form("zchannel %i", zch));
+	TIter trackRefMerged(tracksRefMerged[zch]);
+	while (AliTRDtrackGTU *trk = (AliTRDtrackGTU*) trackRefMerged())
+	  AliDebug(2, Form("track ref layer %i : %i %i %i %i %i %i, y=%i, z_idx=%i",
+			   trk->GetRefLayerIdx(),
+			   trk->GetTrackletIndex(5),
+			   trk->GetTrackletIndex(4),
+			   trk->GetTrackletIndex(3),
+			   trk->GetTrackletIndex(2),
+			   trk->GetTrackletIndex(1),
+			   trk->GetTrackletIndex(0),
+			   trk->GetYapprox() >> 3,
+			   trk->GetZSubChannel()));
+	AliDebug(2, "uniquified:");
+	TIter trackRefUnique(tracksRefUnique[zch]);
+	while (AliTRDtrackGTU *trk = (AliTRDtrackGTU*) trackRefUnique())
+	  AliDebug(2, Form("track ref layer %i : %i %i %i %i %i %i, y=%i, z_idx=%i",
+			   trk->GetRefLayerIdx(),
+			   trk->GetTrackletIndex(5),
+			   trk->GetTrackletIndex(4),
+			   trk->GetTrackletIndex(3),
+			   trk->GetTrackletIndex(2),
+			   trk->GetTrackletIndex(1),
+			   trk->GetTrackletIndex(0),
+			   trk->GetYapprox() >> 3,
+			   trk->GetZSubChannel()));
     }
 
 // ----- Merging in zchannels - 1st stage -----
@@ -614,7 +712,7 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
     do {
 	done = kTRUE;
 	trkStage0 = 0x0;
-	for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++) {
+	for (Int_t zch = fGtuParam->GetNZChannels() - 1; zch > -1; zch--) {
 	    AliTRDtrackGTU *trk = (AliTRDtrackGTU*) tracksRefUnique[zch]->First();
 	    if (trk == 0) {
 		continue;
@@ -651,7 +749,7 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
     do {
 	done = kTRUE;
 	trkStage0 = 0x0;
-	for (Int_t i = 0; i < 2; i++) {
+	for (Int_t i = 1; i >= 0; i--) {
 	    AliTRDtrackGTU *trk = (AliTRDtrackGTU*) tracksZSplitted[i]->First();
 	    if (trk == 0) {
 		continue;
@@ -707,6 +805,7 @@ Bool_t AliTRDgtuTMU::RunTrackReconstruction(TList* ListOfTracks)
   while (AliTRDtrackGTU *track = (AliTRDtrackGTU*) next()) {
     CalculateTrackParams(track);
     CalculatePID(track);
+    AliDebug(1, Form("track with pid = %i", track->GetPID()));
   }
   return kTRUE;
 }
@@ -719,18 +818,65 @@ Bool_t AliTRDgtuTMU::CalculatePID(AliTRDtrackGTU *track)
     return kFALSE;
   }
 
-  Int_t nTracklets = 0;
-  Int_t pidSum = 0;
-  for (Int_t layer = 0; layer < fGtuParam->GetNLayers(); layer++) {
-    if (!track->IsTrackletInLayer(layer)) {
-      continue;
+  if (AliTRDgtuParam::GetUseGTUconst) {
+    // averaging as in GTU
+    ULong64_t coeff;
+
+    // selection of coefficient for averaging
+    switch(track->GetTrackletMask()){
+    case 0x3f:
+      // 6 tracklets
+      coeff=0x5558; // approx. 1/6
+      break;
+
+    case 0x3e:
+    case 0x3d:
+    case 0x3b:
+    case 0x37:
+    case 0x2f:
+    case 0x1f:
+      // 5 tracklets
+      coeff=0x6666; // approx. 1/5
+      break;
+
+    default:
+      // 4 tracklets
+      coeff=0x8000; // = 0.25
     }
-    AliTRDtrackletGTU *trk = track->GetTracklet(layer);
-    pidSum += trk->GetPID();
-    nTracklets++;
+    coeff &= 0x1ffff; // 17-bit constant
+
+    ULong64_t sum = 0;
+    for (Int_t iLayer = 0; iLayer < fGtuParam->GetNLayers(); iLayer++) {
+      if ((track->GetTrackletMask() >> iLayer) & 1) {
+	sum += track->GetTracklet(iLayer)->GetPID();
+      }
+    }
+
+    ULong64_t sumExt = (sum << 1) & 0xfff; // 11 bit -> 12 bit vector
+    ULong64_t prod   = (sumExt * coeff) & 0xfffffffff; // 18x18 signed -> 36
+    ULong64_t prodFinal = ((prod >> 18) + ((prod >> 17) & 1)) & 0xff; // rounding term is equivalent to adding 5 to sum_ext
+
+    track->SetPID(prodFinal & 0xff);
+
+    return kTRUE;
   }
-  track->SetPID(pidSum/nTracklets);
-  return kTRUE;
+  else {
+
+    // simple averaging
+    Int_t nTracklets = 0;
+    Int_t pidSum = 0;
+    for (Int_t layer = 0; layer < fGtuParam->GetNLayers(); layer++) {
+      if (!track->IsTrackletInLayer(layer)) {
+	continue;
+      }
+      AliTRDtrackletGTU *trk = track->GetTracklet(layer);
+      pidSum += trk->GetPID();
+      nTracklets++;
+    }
+    track->SetPID(pidSum/nTracklets);
+
+    return kTRUE;
+  }
 }
 
 Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
@@ -773,15 +919,9 @@ Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
   AliDebug(10,Form("Sum: a = %5i, b = %9.2f, c = %9.2f\n", a, b, c));
   track->SetFitParams(a, b, c);
 
-  Float_t r = fGtuParam->GetPt(a, b, x1, x2);
-  Int_t pt = (Int_t) (2 * r);
-  if (pt >= 0)
-      pt += 32;
-  else
-      pt -= 29;
-  pt /= 2;
+  Int_t pt = fGtuParam->GetPt(track->GetTrackletMask(), a, b, x1, x2);
   track->SetPtInt(pt);
-  AliDebug(5,Form("Track parameters: a = %i, b = %f, c = %f, x1 = %f, x2 = %f, r = %f, pt = %f (trkl mask: %i)", a, b, c, x1, x2, r, track->GetPt(), track->GetTrackletMask()));
+  AliDebug(5,Form("Track parameters: a = %i, b = %f, c = %f, x1 = %f, x2 = %f, pt = %f (trkl mask: %i)", a, b, c, x1, x2, track->GetPt(), track->GetTrackletMask()));
   return kTRUE;
 }
 
@@ -799,7 +939,7 @@ Bool_t AliTRDgtuTMU::WriteTrackletsToTree(TTree *trklTree)
 
   AliDebug(5,Form("---------- Writing tracklets to tree (not yet) ----------"));
   for (Int_t layer = 0; layer < fGtuParam->GetNLayers(); layer++) {
-    TIter next(fTracklets[layer]);
+    TIter next(fTrackletsPostInput[layer]);
     while ((trkl = (AliTRDtrackletGTU*) next())) {
 	AliDebug(10,Form("InputUnit : GetIndex(): %3i, GetZbin(): %2i, GetY() : %5i, GetdY() : %3i, GetYPrime() : %5i, GetYProj() : %5i, GetAlpha() : %3i, Zidx(2..0): %i  %i  %i", trkl->GetIndex(), trkl->GetZbin(), trkl->GetYbin(), trkl->GetdY(), trkl->GetYPrime(), trkl->GetYProj(), trkl->GetAlpha(), trkl->GetSubChannel(2), trkl->GetSubChannel(1), trkl->GetSubChannel(0) ));
 	branch->SetAddress(&trkl);
@@ -831,7 +971,7 @@ Bool_t AliTRDgtuTMU::Uniquifier(TList *inlist, TList *outlist)
 	}
 
 	if (tracksEqual) {
-	    if (trkStage0->GetNTracklets() > trkStage1->GetNTracklets())
+	    if (trkStage0->GetNTracklets() >= trkStage1->GetNTracklets())
 		trkStage1 = trkStage0;
 	}
 	else {
