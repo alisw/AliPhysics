@@ -373,6 +373,8 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
     return 0;
   }
  
+  if(fKeepSignalMC) if(IsSignalMC(d,aod,431)) return 3;
+
   Double_t ptD=d->Pt();
   if(ptD<fMinPtCand) return 0;
   if(ptD>fMaxPtCand) return 0;

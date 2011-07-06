@@ -165,12 +165,14 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t CountEventForNormalization() const 
   { if(fWhyRejection==0) {return kTRUE;} else {return kFALSE;} }
 
+  void SetKeepSignalMC() {fKeepSignalMC=kTRUE; return;}
 
  protected:
 
   void SetNPtBins(Int_t nptBins){fnPtBins=nptBins;}
   void SetNVars(Int_t nVars){fnVars=nVars;}
 
+  Bool_t IsSignalMC(AliAODRecoDecay *d,AliAODEvent *aod,Int_t pdg) const;
 
   // cuts on the event
   Int_t fMinVtxType; // 0: not cut; 1: SPDZ; 2: SPD3D; 3: Tracks
@@ -215,8 +217,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t  fIsSelectedPID;  // outcome of PID selection
   Double_t fMinPtCand; // minimum pt of the candidate
   Double_t fMaxPtCand; // minimum pt of the candidate
+  Bool_t  fKeepSignalMC; // IsSelected returns always kTRUE for MC signal
 
-  ClassDef(AliRDHFCuts,16);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,17);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif

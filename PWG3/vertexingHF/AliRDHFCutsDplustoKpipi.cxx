@@ -352,6 +352,8 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
     return 0;
   }
 
+  if(fKeepSignalMC) if(IsSignalMC(d,aod,411)) return 3;
+
   // PID selection
   Int_t returnvaluePID=3;
   Int_t returnvalueCuts=3;

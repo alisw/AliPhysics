@@ -83,7 +83,8 @@ fFixRefs(kFALSE),
 fIsSelectedCuts(0),
 fIsSelectedPID(0),
 fMinPtCand(-1.),
-fMaxPtCand(100000.)
+fMaxPtCand(100000.),
+fKeepSignalMC(kFALSE)
 {
   //
   // Default Constructor
@@ -127,7 +128,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fIsSelectedCuts(source.fIsSelectedCuts),
   fIsSelectedPID(source.fIsSelectedPID),
   fMinPtCand(source.fMinPtCand),
-  fMaxPtCand(source.fMaxPtCand)
+  fMaxPtCand(source.fMaxPtCand),
+  fKeepSignalMC(source.fKeepSignalMC)
 {
   //
   // Copy constructor
@@ -181,6 +183,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fIsSelectedPID=source.fIsSelectedPID;
   fMinPtCand=source.fMinPtCand;
   fMaxPtCand=source.fMaxPtCand;
+  fKeepSignalMC=source.fKeepSignalMC;
 
   if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
@@ -941,6 +944,29 @@ void AliRDHFCuts::CleanOwnPrimaryVtx(AliAODRecoDecayHF *d,
   }
   return;
 }
+//--------------------------------------------------------------------------
+Bool_t AliRDHFCuts::IsSignalMC(AliAODRecoDecay *d,AliAODEvent *aod,Int_t pdg) const 
+{
+  //
+  // Checks if this candidate is matched to MC signal
+  // 
 
+  if(!aod) return kFALSE;
+
+  // get the MC array
+  TClonesArray *mcArray = (TClonesArray*)((AliAODEvent*)aod)->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+
+  if(!mcArray) return kFALSE;
+
+  // try to match  
+  Int_t label = d->MatchToMC(pdg,mcArray);
+  
+  if(label>=0) {
+    //printf("MATCH!\n");
+    return kTRUE;
+  }
+
+  return kFALSE;
+}
 
 
