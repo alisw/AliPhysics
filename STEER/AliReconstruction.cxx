@@ -1270,6 +1270,10 @@ Bool_t AliReconstruction::ReadIntensityInfoCDB()
   AliCDBEntry* entry    = AliCDBManager::Instance()->Get("GRP/GRP/LHCData");
   AliCDBEntry* entryCTP = AliCDBManager::Instance()->Get("GRP/CTP/Config");
   //
+  if (!entry || !entryCTP) {
+    AliError(Form("Failed to extract CDB objects GRP/GRP/LHCData: %p or GRP/CTP/Config: %p",entry,entryCTP));
+    return kFALSE;
+  }
   // extract BC masks
   enum {kA,kB,kC,kE,kNMasks};
   AliTriggerConfiguration* conf = (AliTriggerConfiguration*)entryCTP->GetObject();
