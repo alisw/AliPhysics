@@ -853,7 +853,7 @@ Bool_t AliTRDgtuTMU::CalculatePID(AliTRDtrackGTU *track)
     }
 
     ULong64_t sumExt = (sum << 1) & 0xfff; // 11 bit -> 12 bit vector
-    ULong64_t prod   = (sumExt * coeff) & 0xfffffffff; // 18x18 signed -> 36
+    ULong64_t prod   = (sumExt * coeff) & 0xfffffffffull; // 18x18 signed -> 36
     ULong64_t prodFinal = ((prod >> 18) + ((prod >> 17) & 1)) & 0xff; // rounding term is equivalent to adding 5 to sum_ext
 
     track->SetPID(prodFinal & 0xff);
