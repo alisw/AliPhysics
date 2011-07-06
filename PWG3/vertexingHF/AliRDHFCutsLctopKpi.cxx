@@ -247,6 +247,7 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
   }
 
 
+  if(fKeepSignalMC) if(IsSignalMC(d,aod,4122)) return 3;
 
   Int_t returnvalue=3;
   Int_t returnvaluePID=3;
