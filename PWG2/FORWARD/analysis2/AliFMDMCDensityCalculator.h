@@ -180,10 +180,11 @@ protected:
    */
   TH2D* Make(UShort_t d, Char_t r) const;
   /** 
-   * MAke comparison profiles
+   * Make comparison profiles
    * 
    * @param d     Detector 
    * @param r     Ring 
+   * @param max   Maximum 
    * 
    * @return Newly allocated profile object
    */

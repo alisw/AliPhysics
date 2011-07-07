@@ -29,6 +29,7 @@
  *                   many number of workers. 
  * @param name       Name of train - free form.  This will be the name
  *                   of the output directory if the plug-in is used 
+ * @param mcfile     Final MC corrections from this, if present
  *
  * @ingroup pwg2_forward_dndeta
  */

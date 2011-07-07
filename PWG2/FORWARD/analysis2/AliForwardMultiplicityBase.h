@@ -308,15 +308,17 @@ protected:
    * 
    * @param input      List with summed signals 
    * @param output     Output list 
-   * @param stackName  Stack name 
+   * @param inName     Input name 
+   * @param outName    Output name
+   * @param style      Style 
    */
   virtual void MakeRingdNdeta(const TList* input, 
 			      const char*  inName,
 			      TList*       output,
 			      const char*  outName,
 			      Int_t        style=20) const;
-  Bool_t                 fEnableLowFlux;// Whether to use low-flux specific code
-  Bool_t                 fFirstEvent;   // Whether the event is the first seen 
+  Bool_t fEnableLowFlux;// Whether to use low-flux specific code
+  Bool_t fFirstEvent;   // Whether the event is the first seen 
 private:
   /**
    * A pointer to the corrections manager.  This is here to make the

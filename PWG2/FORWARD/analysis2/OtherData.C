@@ -1273,7 +1273,7 @@ AppendItem(TString& s, char delim, const char* what)
  *   - 0x4 NSD 
  * @param centLow   Low centrality cut (only for PbPB)
  * @param centHigh  High centrality cut (only for PbPB)
- * @param aliceOnly Only return other ALICE data
+ * @param which     What to get
  * 
  * @return A multi graph with the selected data. 
  * 
@@ -1381,7 +1381,7 @@ GetData(UShort_t sys,
  *   - 0x4 NSD 
  * @param centLow   Low centrality cut (only for PbPB)
  * @param centHigh  High centrality cut (only for PbPB)
- * @param alice Only return other ALICE data
+ * @param which     Which data to show 
  * 
  * @ingroup pwg2_forward_otherdata
  */

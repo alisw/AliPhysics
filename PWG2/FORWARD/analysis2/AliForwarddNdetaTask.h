@@ -133,6 +133,8 @@ protected:
      * @param triggerMask Trigger mask 
      * @param color       Marker colour 
      * @param marker      Marker style 
+     * @param mclist      List of MC results 
+     * @param truthlist   List of MC truth results 
      */
     virtual void End(TList*      sums, 
 		     TList*      results,

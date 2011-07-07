@@ -180,6 +180,7 @@ protected:
      * @param low       Lower @f$v_z@f$ bound
      * @param high      Upper @f$v_z@f$ bound
      * @param etaAxis   @f$\eta@f$ axis to use 
+     * @param nPhi      Number of phi bins 
      */
     VtxBin(Double_t low, Double_t high, const TAxis& etaAxis, UShort_t nPhi);
     /** 
@@ -214,7 +215,10 @@ protected:
     /** 
      * End of job process 
      * 
-     * @param o List to add output to 
+     * @param o   List to add output to 
+     * @param i   Input list
+     * @param iVz Vertex bin 
+     * @param map Correctons map 
      */
     void Finish(const TList* i, 
 		TList* o,

@@ -611,6 +611,9 @@ protected:
      * @param rebin      Whether to rebin
      * @param cutEdges   Whether to cut edges when rebinning 
      * @param marker     Marker style 
+     * @param color       Color of markers 
+     * @param mclist      List of MC data 
+     * @param truthlist   List of MC truth data 
      */
     virtual void MakeResult(const TH2D* sum,  
 			    const char* postfix, 
@@ -640,6 +643,9 @@ protected:
      * @param cutEdges    Whether to cut edges when rebinning
      * @param triggerMask Trigger mask 
      * @param marker      Marker style 
+     * @param color       Color of markers 
+     * @param mclist      List of MC data 
+     * @param truthlist   List of MC truth data 
      */
     virtual void End(TList*      sums, 
 		     TList*      results,

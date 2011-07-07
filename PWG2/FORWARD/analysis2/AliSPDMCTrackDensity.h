@@ -109,6 +109,8 @@ protected:
    * 
    * @param particle  Particle to store
    * @param mother    Ultimate mother 
+   * @param refNo     Reference number
+   * @param vz        Vertex z coordinate 
    * @param output    Output structure 
    */  
   void StoreParticle(AliMCParticle*       particle, 
@@ -120,7 +122,7 @@ protected:
    * Get ultimate mother of a track 
    * 
    * @param iTr   Track number 
-   * @param stack Stack 
+   * @param event Event
    * 
    * @return Pointer to mother or null 
    */
