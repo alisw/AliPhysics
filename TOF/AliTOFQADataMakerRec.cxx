@@ -224,10 +224,11 @@ AliTOFChannelOnlineStatusArray* AliTOFQADataMakerRec::GetCalibData()
     }
   }
   // Retrieval of data in directory TOF/Calib/Data:
-  printf("======= OCDB object for TOF retrieved from run %i in %s\n",fRunNumber,cdbe->GetName());
-  
   AliTOFChannelOnlineStatusArray * array = 0;
-  if (cdbe) array = (AliTOFChannelOnlineStatusArray *)cdbe->GetObject();
+  if (cdbe) {
+    printf("======= OCDB object for TOF retrieved from run %i in %s\n",fRunNumber,cdbe->GetName());
+    array = (AliTOFChannelOnlineStatusArray *)cdbe->GetObject();
+  }
   if (!array)  AliFatal("No calibration data from calibration database !");
   
   return array;
