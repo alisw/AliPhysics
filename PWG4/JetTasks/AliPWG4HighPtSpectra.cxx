@@ -280,6 +280,7 @@ Int_t AliPWG4HighPtSpectra::CalculateCentrality(AliESDEvent *esd){
     }
   }
 
+  if(cent<0)  return 5;
   if(cent>80)return 4;
   if(cent>50)return 3;
   if(cent>30)return 2;
