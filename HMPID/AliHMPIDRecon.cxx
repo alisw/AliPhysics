@@ -119,6 +119,7 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t inde
       continue;                                                             
     }
     chId=pClu->Ch();
+    if(pClu->Q()>2*fParam->QCut()) continue;
     Double_t thetaCer,phiCer;
     if(FindPhotCkov(pClu->X(),pClu->Y(),thetaCer,phiCer)){                                    //find ckov angle for this  photon candidate
       fPhotCkov[fPhotCnt]=thetaCer;                                                           //actual theta Cerenkov (in TRS)
