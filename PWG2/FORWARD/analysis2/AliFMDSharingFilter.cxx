@@ -297,6 +297,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 #endif	
 	//For simple merging
 	Bool_t used = kFALSE;
+	Double_t eTotal = -1;
 	for(UShort_t t = 0; t < nstr; t++) {
 	  output.SetMultiplicity(d,r,s,t,0.);
 	  Float_t mult = SignalInStrip(input,d,r,s,t);
@@ -328,18 +329,40 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	  
 	  if(fUseSimpleMerging) {
 	    Float_t etot = 0;
-	    if(mult > GetLowCut(d, r, eta)) etot = mult;
-	    if(used) {used = kFALSE; continue; }
 	    
-	    if(mult > GetLowCut(d, r, eta) && 
-	       multNext > GetLowCut(d, r, eta) && 
-	       (mult < GetHighCut(d, r, eta ,false) ||
-		multNext < GetHighCut(d, r, eta ,false))) {
-	      etot = mult + multNext;
-	      used=kTRUE;
+	    if(eTotal > 0) {
+	      if( multNext > GetLowCut(d, r, eta) && 
+		  multNext < GetHighCut(d, r, eta ,false)) {
+		eTotal = eTotal + multNext;
+		used = kTRUE;
+	      }
+	      else used = kFALSE;
+	      
+	      etot   = eTotal;
+	      eTotal = -1;
 	    }
-	    
+	    else {
+	      if(mult > GetLowCut(d, r, eta)) etot = mult;
+	      if(used) {used = kFALSE; continue; }
+	      
+	      if(mult > GetLowCut(d, r, eta) && 
+		 multNext > GetLowCut(d, r, eta) && 
+		 (mult < GetHighCut(d, r, eta ,false) ||
+		  multNext < GetHighCut(d, r, eta ,false))) {
+		if(mult>multNext) {
+		  etot = mult + multNext;
+		  used=kTRUE;
+		}
+		else {
+		  etot   = 0;
+		  eTotal = mult + multNext;
+		}
+	      }
+	    }
+	    	    
 	    mergedEnergy = etot;
+	    //if(mult>0 && multNext >0)
+	    //  std::cout<<mult<<"  "<<multNext<<"  "<<mergedEnergy<<std::endl;
 	  }
 	  else {
 	    // Get next and previous signal - if any 
