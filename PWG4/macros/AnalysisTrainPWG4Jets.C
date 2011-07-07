@@ -1203,7 +1203,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPWG4PtTrackQA){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtTrackQA.C");
-     AddTaskPWG4HighPtTrackQAAll(kGridDataSet.Data(),kIsPbPb,iAODanalysis);
+     if(iPWG4PtTrackQA&2)AddTaskPWG4HighPtTrackQAAll(kGridDataSet.Data(),kIsPbPb,iAODanalysis);
+     else AddTaskPWG4HighPtTrackQAAllReduced(kGridDataSet.Data(),kIsPbPb,iAODanalysis);
    }
 
    if(iPWG4PtQATPC){

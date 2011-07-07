@@ -39,7 +39,7 @@
   // bextra == 0 4 plus
   // bextra == 1 large pass1 split..
   // bextra == 2 3 plus
-  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "110704a";
+  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "110706a";
   iAODanalysis = 0; 
   // 1 == Read Jets and tracks form the input AOD
   // needs the jet branchnames set explicitly
@@ -507,7 +507,7 @@
       
       iPWG4PtQAMC     = 0;  // 
       iPWG4PtQATPC   = 0;  // 
-      iPWG4PtSpectra   = 1;  //  
+      iPWG4PtSpectra   = 0;  //  
       iPWG4PtTrackQA    = 1;
       iPWG4JetSpectrum = 1; 
       iPWG4JetServices  = 1; // !!!!!!!!!!! 

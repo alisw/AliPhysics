@@ -35,6 +35,21 @@ void AddTaskPWG4HighPtTrackQAAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
 
 }
 
+void AddTaskPWG4HighPtTrackQAAllReduced(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0) 
+{    
+
+  int cent = 10;
+  
+  if(isPbPb) {
+    for(cent=0; cent<4; cent++) {
+      AliPWG4HighPtTrackQA *taskTrackQA00 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0);
+      AliPWG4HighPtTrackQA *taskTrackQA01 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1);
+      AliPWG4HighPtTrackQA *taskTrackQA02 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,2);
+    }
+  }
+
+}
+
 void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 1, Int_t filterBit) 
 {   
   AliPWG4HighPtTrackQA *taskTrackQA = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,0,0,0);
