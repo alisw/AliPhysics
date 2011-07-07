@@ -8,14 +8,12 @@
 #include <TH2F.h>
 #include <THStack.h>
 /**
- * @defgroup pwg2_forward_analysis_scripts_tests Test scripts
+ * @defgroup pwg2_forward_scripts_tests Test scripts
  * 
  * 
  *
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
-
-
 /** 
  * 
  * 
@@ -24,7 +22,7 @@
  * @param oldm 
  * @param newm 
  *
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 //_____________________________________________________________________
 void AcceptanceCorrection(Char_t r, UShort_t t, Float_t& oldm, Float_t& newm)
@@ -122,7 +120,7 @@ void AcceptanceCorrection(Char_t r, UShort_t t, Float_t& oldm, Float_t& newm)
  * @param r 
  * @param dt 
  * @param offT 
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 void DrawSolution(Char_t r, UShort_t dt=16, UShort_t offT=128)
 {
@@ -197,7 +195,7 @@ void DrawSolution(Char_t r, UShort_t dt=16, UShort_t offT=128)
 /** 
  * 
  * 
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */  
 void TestAcc()
 {

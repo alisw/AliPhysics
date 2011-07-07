@@ -6,7 +6,7 @@
  * @brief  Utilities for comparing correction objects 
  * 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  * 
  */
 #ifndef __CINT__
@@ -24,7 +24,7 @@
  * 
  * 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 struct Canvas 
 {
@@ -116,7 +116,7 @@ struct Canvas
  * @param o1 
  * @param o2 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void
 GetObjects(UShort_t    what, 

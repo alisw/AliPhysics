@@ -6,7 +6,7 @@
  * @brief  A script to draw the Poisson vs Energy Loss correlation 
  * 
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  * 
  */
 
@@ -22,7 +22,7 @@
  * 
  * @return The regression coefficient 
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 Double_t
 DrawRingELossPoisson(TList* p, UShort_t d, Char_t r, 
@@ -158,7 +158,7 @@ DrawRingELossPoisson(TList* p, UShort_t d, Char_t r,
  * @param xmax     Minimum X
  * @param xmin     Maximum X 
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 void
 DrawELossPoisson(const char* filename="forward.root", 

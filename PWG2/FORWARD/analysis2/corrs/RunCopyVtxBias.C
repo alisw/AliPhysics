@@ -6,7 +6,7 @@
  * 
  * @return 
  * 
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 Color_t Color(UShort_t d, Char_t r ) const 
 { 
@@ -21,7 +21,7 @@ Color_t Color(UShort_t d, Char_t r ) const
  * @param field 
  * @param path 
  * 
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void
 RunCopyVtxBias(UShort_t sys, UShort_t cms, Short_t field, const char* path=0)
@@ -37,7 +37,7 @@ RunCopyVtxBias(UShort_t sys, UShort_t cms, Short_t field, const char* path=0)
  * @param path      File path
  * 
  * 
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void
 RunCopyVtxBias(const char* sys, UShort_t cms, Short_t field, const char* path=0)

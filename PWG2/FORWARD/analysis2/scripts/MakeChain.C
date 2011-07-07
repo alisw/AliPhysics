@@ -8,7 +8,7 @@
  * @param pattern    Pattern that the file name must contain
  * @param recursive  Whether to scan recursively 
  *
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 void
 ScanDirectory(TSystemDirectory* dir, TChain* chain, 
@@ -70,7 +70,7 @@ ScanDirectory(TSystemDirectory* dir, TChain* chain,
  * 
  * @return Pointer to newly create chain, or null
  *
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 TChain*
 MakeChain(const char* what, const char* datadir, bool recursive=false)

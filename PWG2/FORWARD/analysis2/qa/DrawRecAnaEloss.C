@@ -6,7 +6,7 @@
  * @brief  Draw energ-loss before/after merging and used in the
  * density calculations 
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 
 #ifndef __CINT__
@@ -33,7 +33,7 @@ class TLatex;
  * @param c1 
  * @param c2 
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 void 
 DrawText(TLatex* l, Double_t x, Double_t& y, const char* c1, const char* c2)
@@ -51,7 +51,7 @@ DrawText(TLatex* l, Double_t x, Double_t& y, const char* c1, const char* c2)
  * @param d      Detector
  * @param r      Ring 
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 void
 DrawRingRecAnaEloss(TList* p, TList* p2, Double_t lowCut, UShort_t d, Char_t r)
@@ -150,7 +150,7 @@ DrawRingRecAnaEloss(TList* p, TList* p2, Double_t lowCut, UShort_t d, Char_t r)
  * 
  * @param filename 
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 void
 DrawRecAnaEloss(const char* filename="forward.root")

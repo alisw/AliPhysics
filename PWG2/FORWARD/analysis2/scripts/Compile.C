@@ -11,7 +11,7 @@
  * @param script Script to compile
  * @param option Compile option 
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 Bool_t
 Compile(const char* script, Option_t* option="g")

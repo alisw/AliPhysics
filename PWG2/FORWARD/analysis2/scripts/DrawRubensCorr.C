@@ -4,7 +4,7 @@
  * @param fname 
  * @param hname 
  *
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 void
 DrawRubensCorr(const char* fname="rubensRatio.root",

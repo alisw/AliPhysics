@@ -9,8 +9,8 @@
 #include <TMath.h>
 #include <TLatex.h>
 /**
- * @defgroup pwg2_forward_analysis_scripts_flow Flow scripts
- * @ingroup pwg2_forward_analysis_scripts
+ * @defgroup pwg2_forward_scripts_flow Flow scripts
+ * @ingroup pwg2_forward_scripts
  * 
  */
 // Data members
@@ -24,7 +24,7 @@ const char* pdfName = "Flow.pdf";
  * 
  * @return 
  *
- * @ingroup pwg2_forward_analysis_scripts_flow
+ * @ingroup pwg2_forward_scripts_flow
  */
 TCanvas* SetupCanvas(TString name)
 {
@@ -140,7 +140,7 @@ TCanvas* SetupCanvas(TString name)
  * 
  * @param f 
  *
- * @ingroup pwg2_forward_analysis_scripts_flow
+ * @ingroup pwg2_forward_scripts_flow
  */
 void MakeFmdAndSpdPlots(TFile* f) 
 {
@@ -271,7 +271,7 @@ void MakeFmdAndSpdPlots(TFile* f)
  * 
  * @param f 
  *
- * @ingroup pwg2_forward_analysis_scripts_flow
+ * @ingroup pwg2_forward_scripts_flow
  */
 void Make2ParticlePlots(TFile* f) 
 {
@@ -433,7 +433,7 @@ void Make2ParticlePlots(TFile* f)
  * 
  * @param f 
  *
- * @ingroup pwg2_forward_analysis_scripts_flow
+ * @ingroup pwg2_forward_scripts_flow
  */
 void Make4ParticlePlots(TFile* f) 
 {
@@ -600,7 +600,7 @@ void Make4ParticlePlots(TFile* f)
  * 
  * @param f 
  *
- * @ingroup pwg2_forward_analysis_scripts_flow
+ * @ingroup pwg2_forward_scripts_flow
  */
 void MakeMonitoringPlots(TFile* f) 
 {
@@ -637,7 +637,7 @@ void MakeMonitoringPlots(TFile* f)
  * 
  * @param file 
  *
- * @ingroup pwg2_forward_analysis_scripts_flow
+ * @ingroup pwg2_forward_scripts_flow
  */
 void DrawFlowPDF(char* file = "AnalysisResults.root") 
 {

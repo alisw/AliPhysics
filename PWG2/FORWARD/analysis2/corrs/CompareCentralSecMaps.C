@@ -1,7 +1,7 @@
 /**
- * @defgroup pwg2_forward_analysis_scripts_corr Correction scripts 
+ * @defgroup pwg2_forward_scripts_corr Correction scripts 
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 
 //____________________________________________________________________
@@ -14,7 +14,7 @@
  * @param n2   Name 2
  * @param load 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void
 CompareCentralSecMaps(const char* fn1,   const char* fn2, 

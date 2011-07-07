@@ -7,7 +7,7 @@
  * @param mc        Whether this is for Monte-Carlo data
  * @param filename  Input file name 
  *
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  *
  * @depcrecated 
  * The class AliFMDELossFitter automatically generates the
