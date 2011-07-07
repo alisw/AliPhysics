@@ -138,8 +138,8 @@ Bool_t AliHLTTriggerCaloClusterEnergy::TriggerOnCluster(T* cluster) {
     SetDescription(description.Data());
     
     // Enable the detectors for readout.
-    GetReadoutList().Enable( AliHLTReadoutList::kPHOS | AliHLTReadoutList::kEMCAL);
-    
+    GetReadoutList().Enable(AliHLTReadoutList::kPHOS);
+
     // Add the available HLT information for readout too.
     GetTriggerDomain().Add(kAliHLTAnyDataTypeID, fDetector.Data());
     
