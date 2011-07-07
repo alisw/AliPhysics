@@ -262,10 +262,10 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
   }
   
 
-  fh1CentralityESD = new TH1F("fh1CentralityESD","cent",102,-0.5,101.5);
+  fh1CentralityESD = new TH1F("fh1CentralityESD","cent",103,-1,102);
   fHistList->Add(fh1CentralityESD);
   
-  fh1Centrality = new TH1F("fh1Centrality","cent",102,-0.5,101.5);
+  fh1Centrality = new TH1F("fh1Centrality","cent",103,-1,102);
   fHistList->Add(fh1Centrality);
 
   fh1RP = new TH1F("fh1RP","RP;#Psi",440, -1.*TMath::Pi(), 2.*TMath::Pi());

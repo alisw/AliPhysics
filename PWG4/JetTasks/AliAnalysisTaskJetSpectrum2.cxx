@@ -414,7 +414,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh1RP = new TH1F("fh1RP","RP;#Psi",440, -1.*TMath::Pi(), 2.*TMath::Pi());
   fHistList->Add(fh1RP);
 
-  fh1Centrality = new TH1F("fh1Centrality","cent;cent (%)",101,-0.5,100.5);
+  fh1Centrality = new TH1F("fh1Centrality","cent;cent (%)",103,-1,102);
   fHistList->Add(fh1Centrality);
 
   fh2MultRec = new TH2F("fh2MultRec","multiplicity rec;# tracks;# jetrefs",500,0,5000,500,0.,5000);
