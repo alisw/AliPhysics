@@ -20,6 +20,7 @@ class TAxis;
 /**
  * A simple script to draw results from MakedNdeta.C (or similar)
  * 
+ * @ingroup pwg2_forward_analysis_scripts
  */
 /** 
  * Get a stack from the passed list 
@@ -29,6 +30,8 @@ class TAxis;
  * @param rebin  Optional rebinning - must exists in list 
  * 
  * @return Stack or null
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
  */
 THStack*
 GetStack(const TList* list, const char* name, Int_t rebin)
@@ -48,6 +51,17 @@ GetStack(const TList* list, const char* name, Int_t rebin)
   return static_cast<THStack*>(o);
 }
 
+/** 
+ * Get a histogram from a list 
+ * 
+ * @param list   List 
+ * @param name   Name of histogram
+ * @param rebin  Rebinning factor
+ * 
+ * @return Histogram or null
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 TH1*
 GetHist(const TList* list, const char* name, Int_t rebin)
 {
@@ -80,6 +94,8 @@ GetHist(const TList* list, const char* name, Int_t rebin)
  * @param rebin  Optional rebinning - must exists in list 
  * 
  * @return Added stack or null
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
  */
 THStack*
 AddStack(THStack* p, const TList* list, const char* name, Int_t rebin)
@@ -98,6 +114,8 @@ AddStack(THStack* p, const TList* list, const char* name, Int_t rebin)
  * Build up a centrality legend 
  * 
  * @param c Centrality axis 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
  */
 void
 BuildCentLegend(const TAxis* c)
@@ -132,6 +150,8 @@ BuildCentLegend(const TAxis* c)
  * 
  * @param stack Stack of histograms 
  * @param c     Centrality axis.  If present, markers are black 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
  */
 void
 BuildLegend(const THStack* stack, const TAxis* c)
@@ -207,6 +227,12 @@ BuildLegend(const THStack* stack, const TAxis* c)
   l2->Draw();
 }
 
+/** 
+ * Add additional information
+ *  
+ * @param forward  List of info
+ * @param prelim   Preliminary mark 
+ */
 void
 AddInformation(TList* forward, bool prelim=true)
 {
@@ -261,6 +287,16 @@ AddInformation(TList* forward, bool prelim=true)
   ltx->DrawLatex(x, y, sch->GetTitle());
 }  
 
+/** 
+ * A function (double Gaussian)
+ * 
+ * @param xp Independent variables
+ * @param pp Parameters 
+ * 
+ * @return Value of function
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 Double_t myFunc(Double_t* xp, Double_t* pp)
 {
   Double_t x  = xp[0];
@@ -271,6 +307,17 @@ Double_t myFunc(Double_t* xp, Double_t* pp)
   return a1*(TMath::Gaus(x, 0, s1) - a2 * TMath::Gaus(x, 0, s2));
 }
 
+/** 
+ * Make systematic error band 
+ * 
+ * @param cen     Central result
+ * @param fwd     Forward result
+ * @param sysErr  Systematic error (fractional)
+ * 
+ * @return 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 TH1* 
 MakeSysError(const TH1* cen, const TH1* fwd, Double_t sysErr=0.7)
 {
@@ -328,6 +375,8 @@ MakeSysError(const TH1* cen, const TH1* fwd, Double_t sysErr=0.7)
  * 
  * @param rebin    Rebinnig.  Note, the data must be present in the file
  * @param filename File to open and draw stuff from >
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
  */
 void
 SimpledNdeta(Int_t what=0x5, 
