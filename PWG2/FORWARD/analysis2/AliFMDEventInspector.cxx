@@ -19,6 +19,7 @@
 #include "AliESDEvent.h"
 #include "AliMultiplicity.h"
 #include "AliAnalysisManager.h"
+#include "AliMCEventHandler.h"
 #include "AliInputEventHandler.h"
 #include "AliTriggerAnalysis.h"
 #include "AliPhysicsSelection.h"
@@ -519,16 +520,32 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
     AliWarning("No input handler");
     return kFALSE;
   }
-    
+  
   // Check if this is a collision candidate (MB)
   // Note, that we should use the value cached in the input 
   // handler rather than calling IsCollisionCandiate directly 
   // on the AliPhysicsSelection obejct.  If we called the latter
   // then the AliPhysicsSelection object would overcount by a 
   // factor of 2! :-(
-  Bool_t offline = ih->IsEventSelected();
+  Bool_t offline  = ih->IsEventSelected() ;
+  Bool_t fastonly = (ih->IsEventSelected() & AliVEvent::kFastOnly);
+  //If we have the MC input handler,  this must be MC
+  
+  AliMCEventHandler* mch =  static_cast<AliMCEventHandler*>(am->GetMCtruthEventHandler());
+  Bool_t isMC = false;
+  if(mch) isMC = true;
+  // For the 2.76 TeV p+p run, the FMD ran in the slow partition 
+  // so it received no triggers from the fast partition. Therefore
+  // the fast triggers are removed here but not for MC where all 
+  // triggers are fast.
+  
+  if(TMath::Abs(fEnergy - 2750.) < 20 && 
+     fCollisionSystem == AliForwardUtil::kPP &&
+     !isMC)
+    if (fastonly) offline = false;
   nClusters = 0;
-  if (offline) {
+ 
+  if (offline ) {
     triggers |= AliAODForwardMult::kOffline;
     triggers |= AliAODForwardMult::kInel;
     fHTriggers->Fill(kOffline+0.5);
@@ -559,13 +576,12 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
     }
     if (nClusters > 0) triggers |= AliAODForwardMult::kNClusterGt0;
   }
-
+  
   // Analyse some trigger stuff 
   AliTriggerAnalysis ta;
   if (ta.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kNSD1)) 
     triggers |= AliAODForwardMult::kNSD;
  
-    
   // Check for multiple vertices (pile-up) with at least 3
   // contributors and at least 0.8cm from the primary vertex
   Bool_t pileup =  esd->IsPileupFromSPD(3,0.8);
@@ -574,7 +590,6 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
     fHTriggers->Fill(kPileUp+.5);
   }
 
-    
   // Get trigger stuff 
   TString trigStr = esd->GetFiredTriggerClasses();
   // AliWarning(Form("Fired trigger classes: %s", trigStr.Data()));
