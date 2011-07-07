@@ -171,7 +171,6 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   DefineInput(0, TChain::Class());
   // Output slot #0, #1 write into a TList
   DefineOutput(0, TList::Class());
-  DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
