@@ -85,7 +85,9 @@ class AliHFSystErr : public TNamed
 
   void InitD0toKpi2010ppLowEn();
   void InitDplustoKpipi2010ppLowEn();
+ void InitDstartoD0pi2010ppLowEn();
 
+ void InitDstartoD0pi2010PbPb2040();
 
   TH1F* ReflectHisto(TH1F *hin) const;
 
