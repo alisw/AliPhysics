@@ -6,6 +6,14 @@
 void
 LoadLibs()
 {
+  gROOT->LoadClass("TVirtualMC",           "libVMC");
+  gROOT->LoadClass("AliVEvent",            "libSTEERBase");
+  gROOT->LoadClass("AliESDEvent",          "libESD");
+  gROOT->LoadClass("AliAnalysisManager",   "libANALYSIS");
+  gROOT->LoadClass("AliAnalysisTaskSE",    "libANALYSISalice");
+  gROOT->LoadClass("AliAODForwardMult",    "libPWG2forward2");
+
+#if 0
   const char* test = gSystem->GetLibraries("PWG2forward2","D",false);
   if (test && test[0] != '\0') { 
     // TInterpreter* inter = gROOT->GetInterpreter();
@@ -21,6 +29,7 @@ LoadLibs()
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libPWG0base");
   gSystem->Load("libPWG2forward2");
+#endif
 }
 //
 // EOF
