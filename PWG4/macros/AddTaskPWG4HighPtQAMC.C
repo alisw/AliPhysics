@@ -12,6 +12,12 @@ void AddTaskPWG4HighPtQAMCAll(char *prodType = "LHC10e14") {
 AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14", Int_t trackType = 0, Int_t cuts =0)
 {
   // Creates HighPtQAMC analysis task and adds it to the analysis manager.
+
+  //Track types:
+  //trackType
+  //           0: global tracks
+  //           1: TPConly tracks
+  //           2: TPConly constrained tracks
   
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================

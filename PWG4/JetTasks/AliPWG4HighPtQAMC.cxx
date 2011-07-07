@@ -101,6 +101,13 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC()
   fHistList(0)
 {
 
+  fPtBinEdges[0][0] = 10.;
+  fPtBinEdges[0][1] = 1.;
+  fPtBinEdges[1][0] = 20.;
+  fPtBinEdges[1][1] = 2.;
+  fPtBinEdges[2][0] = 50.;
+  fPtBinEdges[2][1] = 5.;
+
 }
 //________________________________________________________________________
 AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name): 
@@ -152,11 +159,33 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   // Constructor. Initialization of Inputs and Outputs
   //
   AliDebug(2,Form("AliPWG4HighPtQAMC Calling Constructor"));
+
+  fPtBinEdges[0][0] = 10.;
+  fPtBinEdges[0][1] = 1.;
+  fPtBinEdges[1][0] = 20.;
+  fPtBinEdges[1][1] = 2.;
+  fPtBinEdges[2][0] = 50.;
+  fPtBinEdges[2][1] = 5.;
+
   // Input slot #0 works with a TChain ESD
   DefineInput(0, TChain::Class());
   // Output slot #0, #1 write into a TList
   DefineOutput(0, TList::Class());
   DefineOutput(1, TList::Class());
+}
+
+//________________________________________________________________________
+void AliPWG4HighPtQAMC::SetPtBinEdges(Int_t region, Double_t ptmax, Double_t ptBinWidth) {
+
+  if(region<3) {
+    fPtBinEdges[region][0] = ptmax;
+    fPtBinEdges[region][1] = ptBinWidth;
+  }
+  else {
+    AliError("Only 3 regions alowed. Use region 0/1/2\n");
+    return;
+  }
+
 }
 
 //________________________________________________________________________
@@ -201,18 +230,107 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   fHistList = new TList();
   fHistList->SetOwner(kTRUE);
 
-  Int_t fgkNPhiBins=18;
-  Float_t kMinPhi = 0.;
-  Float_t kMaxPhi = 2.*TMath::Pi();
-  
-  Int_t fgkNPtBins=100;
-  Float_t fgkPtMin=0.;//2.;
-  Float_t fgkPtMax=fPtMax;
-  Int_t fgkResPtBins=80;
+  Float_t fgkPtMin = 0.;
 
-  Int_t fgkNMultBins = 50;
-  Float_t fgkMultMin = 0;
-  Float_t fgkMultMax = 500;
+  //fPtBinEdges[region][0] = ptmax of region ; fPtBinEdges[region][1] = binWidth of region
+  const Float_t ptmin1 =  fgkPtMin;
+  const Float_t ptmax1 =  fPtBinEdges[0][0];
+  const Float_t ptmin2 =  ptmax1 ;
+  const Float_t ptmax2 =  fPtBinEdges[1][0];
+  const Float_t ptmin3 =  ptmax2 ;
+  const Float_t ptmax3 =  fPtBinEdges[2][0];//fgkPtMax;
+  const Int_t nbin11 = (int)((ptmax1-ptmin1)/fPtBinEdges[0][1]);
+  const Int_t nbin12 = (int)((ptmax2-ptmin2)/fPtBinEdges[1][1])+nbin11;
+  const Int_t nbin13 = (int)((ptmax3-ptmin3)/fPtBinEdges[2][1])+nbin12;
+  Int_t fgkNPtBins=nbin13;
+  //Create array with low edges of each bin
+  Double_t *binsPt=new Double_t[fgkNPtBins+1];
+  for(Int_t i=0; i<=fgkNPtBins; i++) {
+    if(i<=nbin11) binsPt[i]=(Double_t)ptmin1 + (ptmax1-ptmin1)/nbin11*(Double_t)i ;
+    if(i<=nbin12 && i>nbin11) binsPt[i]=(Double_t)ptmin2 + (ptmax2-ptmin2)/(nbin12-nbin11)*((Double_t)i-(Double_t)nbin11) ;
+    if(i<=nbin13 && i>nbin12) binsPt[i]=(Double_t)ptmin3 + (ptmax3-ptmin3)/(nbin13-nbin12)*((Double_t)i-(Double_t)nbin12) ;
+  }
+
+  Int_t fgkNPhiBins = 18*6;
+  Float_t kMinPhi   = 0.;
+  Float_t kMaxPhi   = 2.*TMath::Pi();
+  Double_t *binsPhi = new Double_t[fgkNPhiBins+1];
+  for(Int_t i=0; i<=fgkNPhiBins; i++) binsPhi[i]=(Double_t)kMinPhi + (kMaxPhi-kMinPhi)/fgkNPhiBins*(Double_t)i ;
+
+  Int_t fgkResPtBins=80;
+  Float_t kMinResPt = -1.;
+  Float_t kMaxResPt = 1.;
+  Double_t *binsResPt = new Double_t[fgkResPtBins+1];
+  for(Int_t i=0; i<=fgkResPtBins; i++) binsResPt[i]=(Double_t)kMinResPt + (kMaxResPt-kMinResPt)/fgkResPtBins*(Double_t)i ;
+
+  Int_t fgkMultBins=50;
+  Float_t kMinMult = 0.;
+  Float_t kMaxMult = 3000.;
+  Double_t *binsMult = new Double_t[fgkMultBins+1];
+  for(Int_t i=0; i<=fgkMultBins; i++) binsMult[i]=(Double_t)kMinMult + (kMaxMult-kMinMult)/fgkMultBins*(Double_t)i ;
+
+  Int_t fgkNEtaBins=20;
+  Float_t fgkEtaMin = -1.;
+  Float_t fgkEtaMax = 1.;
+  Double_t *binsEta=new Double_t[fgkNEtaBins+1];
+  for(Int_t i=0; i<=fgkNEtaBins; i++) binsEta[i]=(Double_t)fgkEtaMin + (fgkEtaMax-fgkEtaMin)/fgkNEtaBins*(Double_t)i ;
+
+  Int_t fgkNNClustersTPCBins=80;
+  Float_t fgkNClustersTPCMin = 0.5;
+  Float_t fgkNClustersTPCMax = 160.5;
+  Double_t *binsNClustersTPC=new Double_t[fgkNNClustersTPCBins+1];
+  for(Int_t i=0; i<=fgkNNClustersTPCBins; i++) binsNClustersTPC[i]=(Double_t)fgkNClustersTPCMin + (fgkNClustersTPCMax-fgkNClustersTPCMin)/fgkNNClustersTPCBins*(Double_t)i ;
+
+  Int_t fgkNDCA2DBins=80;
+  Float_t fgkDCA2DMin = -0.2;
+  Float_t fgkDCA2DMax = 0.2;
+  if(fTrackType==1 || fTrackType==2 || fTrackType==4) {
+    fgkDCA2DMin = -2.;
+    fgkDCA2DMax = 2.;
+  }
+  Double_t *binsDCA2D=new Double_t[fgkNDCA2DBins+1];
+  for(Int_t i=0; i<=fgkNDCA2DBins; i++) binsDCA2D[i]=(Double_t)fgkDCA2DMin + (fgkDCA2DMax-fgkDCA2DMin)/fgkNDCA2DBins*(Double_t)i ;
+
+  Int_t fgkNDCAZBins=80;
+  Float_t fgkDCAZMin = -2.;
+  Float_t fgkDCAZMax = 2.;
+  if(fTrackType==1 || fTrackType==2 || fTrackType==4) {
+    fgkDCAZMin = -5.;
+    fgkDCAZMax = 5.;
+  }
+  Double_t *binsDCAZ=new Double_t[fgkNDCAZBins+1];
+  for(Int_t i=0; i<=fgkNDCAZBins; i++) binsDCAZ[i]=(Double_t)fgkDCAZMin + (fgkDCAZMax-fgkDCAZMin)/fgkNDCAZBins*(Double_t)i ;
+
+ Int_t fgkNNPointITSBins=9;
+  Float_t fgkNPointITSMin = -0.5;
+  Float_t fgkNPointITSMax = 8.5;
+  Double_t *binsNPointITS=new Double_t[fgkNNPointITSBins+1];
+  for(Int_t i=0; i<=fgkNNPointITSBins; i++) binsNPointITS[i]=(Double_t)fgkNPointITSMin + (fgkNPointITSMax-fgkNPointITSMin)/fgkNNPointITSBins*(Double_t)i ;
+
+  Int_t fgkNNSigmaToVertexBins=20;
+  Float_t fgkNSigmaToVertexMin = 0.;
+  Float_t fgkNSigmaToVertexMax = 8.;
+  Double_t *binsNSigmaToVertex=new Double_t[fgkNNSigmaToVertexBins+1];
+  for(Int_t i=0; i<=fgkNNSigmaToVertexBins; i++) binsNSigmaToVertex[i]=(Double_t)fgkNSigmaToVertexMin + (fgkNSigmaToVertexMax-fgkNSigmaToVertexMin)/fgkNNSigmaToVertexBins*(Double_t)i ;
+
+  Int_t fgkNChi2CBins=20;
+  Float_t fgkChi2CMin = 0.;
+  Float_t fgkChi2CMax = 100.;
+  Double_t *binsChi2C=new Double_t[fgkNChi2CBins+1];
+  for(Int_t i=0; i<=fgkNChi2CBins; i++) binsChi2C[i]=(Double_t)fgkChi2CMin + (fgkChi2CMax-fgkChi2CMin)/fgkNChi2CBins*(Double_t)i ;
+
+  Int_t fgkNRel1PtUncertaintyBins=50;
+  Float_t fgkRel1PtUncertaintyMin = 0.;
+  Float_t fgkRel1PtUncertaintyMax = 1.;
+  Double_t *binsRel1PtUncertainty=new Double_t[fgkNRel1PtUncertaintyBins+1];
+  for(Int_t i=0; i<=fgkNRel1PtUncertaintyBins; i++) binsRel1PtUncertainty[i]=(Double_t)fgkRel1PtUncertaintyMin + (fgkRel1PtUncertaintyMax-fgkRel1PtUncertaintyMin)/fgkNRel1PtUncertaintyBins*(Double_t)i ;
+
+  Float_t fgkChi2PerClusMin = 0.;
+  Float_t fgkChi2PerClusMax = 4.;
+  Int_t fgkNChi2PerClusBins = (int)(fgkChi2PerClusMax*10.);
+  Double_t *binsChi2PerClus=new Double_t[fgkNChi2PerClusBins+1];
+  for(Int_t i=0; i<=fgkNChi2PerClusBins; i++) binsChi2PerClus[i]=(Double_t)fgkChi2PerClusMin + (fgkChi2PerClusMax-fgkChi2PerClusMin)/fgkNChi2PerClusBins*(Double_t)i ;
+
 
   fNEventAll = new TH1F("fNEventAll","NEventAll",1,-0.5,0.5);
   fHistList->Add(fNEventAll);
@@ -244,121 +362,136 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   fh1PtHardTrials = new TH1F("fh1PtHardTrials","PYTHIA Pt hard weight with trials;p_{T,hard}",350,-.5,349.5);
   fHistList->Add(fh1PtHardTrials);
 
-  fPtAll = new TH1F("fPtAll","PtAll",fgkNPtBins, fgkPtMin, fgkPtMax);
+  fPtAll = new TH1F("fPtAll","PtAll",fgkNPtBins, binsPt);
   fHistList->Add(fPtAll);
-  fPtSel = new TH1F("fPtSel","PtSel",fgkNPtBins, fgkPtMin, fgkPtMax);
+  fPtSel = new TH1F("fPtSel","PtSel",fgkNPtBins, binsPt);
   fHistList->Add(fPtSel);
 
-  fPtSelFakes = new TH1F("fPtSelFakes","PtSelFakes",fgkNPtBins, fgkPtMin, fgkPtMax);
+  fPtSelFakes = new TH1F("fPtSelFakes","PtSelFakes",fgkNPtBins, binsPt);
   fHistList->Add(fPtSelFakes);
 
-  fNPointTPCFakes = new TH1F("fNPointTPCFakes","fNPointTPCFakes",160,0.5,160.5);
+  fNPointTPCFakes = new TH1F("fNPointTPCFakes","fNPointTPCFakes",fgkNNClustersTPCBins, binsNClustersTPC);
   fHistList->Add(fNPointTPCFakes);
 
-  fPtSelLargeLabel = new TH1F("fPtSelLargeLabel","PtSelLargeLabel",fgkNPtBins, fgkPtMin, fgkPtMax);
+  fPtSelLargeLabel = new TH1F("fPtSelLargeLabel","PtSelLargeLabel",fgkNPtBins, binsPt);
   fHistList->Add(fPtSelLargeLabel);
 
-  fMultRec = new TH1F("fMultRec","Multiple reconstruction of tracks",20,0,20);
+  fMultRec = new TH1F("fMultRec","Multiple reconstruction of tracks",fgkMultBins, binsMult);
   fHistList->Add(fMultRec);
 
-  fNPointTPCMultRec = new TH1F("fNPointTPCMultRec","Multiple reconstruction of tracks",160,0.5,160.5);
+  fNPointTPCMultRec = new TH1F("fNPointTPCMultRec","Multiple reconstruction of tracks",fgkNNClustersTPCBins, binsNClustersTPC);
   fHistList->Add(fNPointTPCMultRec);
 
-  fDeltaPtMultRec = new TH2F("fDeltaPtMultRec","Delta pT vs pT for multiple reconstructed tracks",100,0.,50.,100,-20.,20.);
+  fDeltaPtMultRec = new TH2F("fDeltaPtMultRec","Delta pT vs pT for multiple reconstructed tracks",50,0.,50.,40,-20.,20.);
   fHistList->Add(fDeltaPtMultRec);
 
-  fPtAllvsPtMC = new TH2F("fPtAllvsPtMC","fPtAllvsPtMC;p_{T,MC};p_{T,rec}",fgkNPtBins, fgkPtMin,fgkPtMax,fgkNPtBins, fgkPtMin,fgkPtMax);
+  fPtAllvsPtMC = new TH2F("fPtAllvsPtMC","fPtAllvsPtMC;p_{T,MC};p_{T,rec}",fgkNPtBins, binsPt,fgkNPtBins, binsPt);
   fHistList->Add(fPtAllvsPtMC);
 
-  fPtAllminPtMCvsPtAll = new TH2F("fPtAllminPtMCvsPtAll","PtAllminPtMCvsPtAll",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.);
+  fPtAllminPtMCvsPtAll = new TH2F("fPtAllminPtMCvsPtAll","PtAllminPtMCvsPtAll",fgkNPtBins, binsPt,fgkResPtBins,binsResPt);
   fPtAllminPtMCvsPtAll->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAll->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fHistList->Add(fPtAllminPtMCvsPtAll);
 
-  fPtAllvsPtMCvsMult = new TH3F("fPtAllvsPtMCvsMult","fPtAllvsPtMCvsMult;p_{T,MC};p_{T,rec};N_{tracks}",fgkNPtBins, fgkPtMin,fgkPtMax,fgkNPtBins, fgkPtMin,fgkPtMax,fgkNMultBins,fgkMultMin,fgkMultMax);
+  fPtAllvsPtMCvsMult = new TH3F("fPtAllvsPtMCvsMult","fPtAllvsPtMCvsMult;p_{T,MC};p_{T,rec};N_{tracks}",fgkNPtBins, binsPt,fgkNPtBins, binsPt,fgkMultBins,binsMult);
   fHistList->Add(fPtAllvsPtMCvsMult);
 
-  fPtAllminPtMCvsPtAllvsMult = new TH3F("fPtAllminPtMCvsPtAllvsMult","fPtAllminPtMCvsPtAllvsMult",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkNMultBins,fgkMultMin,fgkMultMax);
+  fPtAllminPtMCvsPtAllvsMult = new TH3F("fPtAllminPtMCvsPtAllvsMult","fPtAllminPtMCvsPtAllvsMult",fgkNPtBins, binsPt,fgkResPtBins,binsResPt,fgkMultBins,binsMult);
   fPtAllminPtMCvsPtAllvsMult->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAllvsMult->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtAllminPtMCvsPtAllvsMult->SetZTitle("N_{tracks}");
   fHistList->Add(fPtAllminPtMCvsPtAllvsMult);
   
-  fPtAllminPtMCvsPtAllNPointTPC = new TH3F("fPtAllminPtMCvsPtAllNPointTPC","PtAllminPtMCvsPtAllNPointTPC",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,160,0.5,160.5);
+  fPtAllminPtMCvsPtAllNPointTPC = new TH3F("fPtAllminPtMCvsPtAllNPointTPC","PtAllminPtMCvsPtAllNPointTPC",fgkNPtBins, binsPt,fgkResPtBins,binsResPt,fgkNNClustersTPCBins, binsNClustersTPC);
   fPtAllminPtMCvsPtAllNPointTPC->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAllNPointTPC->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtAllminPtMCvsPtAllNPointTPC->SetZTitle("N_{cls,TPC}");
   fHistList->Add(fPtAllminPtMCvsPtAllNPointTPC);
 
-  fPtAllminPtMCvsPtAllNPointTPCIter1 = new TH3F("fPtAllminPtMCvsPtAllNPointTPCIter1","PtAllminPtMCvsPtAllNPointTPCIter1",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,160,0.5,160.5);
+  fPtAllminPtMCvsPtAllNPointTPCIter1 = new TH3F("fPtAllminPtMCvsPtAllNPointTPCIter1","PtAllminPtMCvsPtAllNPointTPCIter1",fgkNPtBins, binsPt,fgkResPtBins,binsResPt,fgkNNClustersTPCBins, binsNClustersTPC);
   fPtAllminPtMCvsPtAllNPointTPCIter1->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAllNPointTPCIter1->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtAllminPtMCvsPtAllNPointTPCIter1->SetZTitle("N_{clsIter1,TPC}");
   fHistList->Add(fPtAllminPtMCvsPtAllNPointTPCIter1);
 
-  fPtAllminPtMCvsPtAllChi2TPC = new TH3F("fPtAllminPtMCvsPtAllChi2TPC","PtAllminPtMCvsPtAllChi2TPC",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,40,0.,0.4);
+  fPtAllminPtMCvsPtAllChi2TPC = new TH3F("fPtAllminPtMCvsPtAllChi2TPC","PtAllminPtMCvsPtAllChi2TPC",fgkNPtBins, binsPt,fgkResPtBins,binsResPt,fgkNChi2PerClusBins, binsChi2PerClus);
   fPtAllminPtMCvsPtAllChi2TPC->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAllChi2TPC->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtAllminPtMCvsPtAllChi2TPC->SetZTitle("#chi^{2} TPC");
   fHistList->Add(fPtAllminPtMCvsPtAllChi2TPC);
 
-  fPtAllminPtMCvsPtAllChi2TPCIter1 = new TH3F("fPtAllminPtMCvsPtAllChi2TPCIter1","PtAllminPtMCvsPtAllChi2TPCIter1",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,40,0.,0.4);
+  fPtAllminPtMCvsPtAllChi2TPCIter1 = new TH3F("fPtAllminPtMCvsPtAllChi2TPCIter1","PtAllminPtMCvsPtAllChi2TPCIter1",fgkNPtBins, binsPt,fgkResPtBins,binsResPt,fgkNChi2PerClusBins, binsChi2PerClus);
   fPtAllminPtMCvsPtAllChi2TPCIter1->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAllChi2TPCIter1->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtAllminPtMCvsPtAllChi2TPCIter1->SetZTitle("#chi^{2} TPC Iter1");
   fHistList->Add(fPtAllminPtMCvsPtAllChi2TPCIter1);
 
-  fPtAllminPtMCvsPtAllDCAR = new TH3F("fPtAllminPtMCvsPtAllDCAR","PtAllminPtMCvsPtAllDCAR",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,80,-0.2,0.2);
+  fPtAllminPtMCvsPtAllDCAR = new TH3F("fPtAllminPtMCvsPtAllDCAR","PtAllminPtMCvsPtAllDCAR",fgkNPtBins, binsPt,fgkResPtBins,binsResPt,fgkNDCA2DBins,binsDCA2D);
   fPtAllminPtMCvsPtAllDCAR->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAllDCAR->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtAllminPtMCvsPtAllDCAR->SetZTitle("DCA_{R}");
   fHistList->Add(fPtAllminPtMCvsPtAllDCAR);
 
-  fPtAllminPtMCvsPtAllDCAZ = new TH3F("fPtAllminPtMCvsPtAllDCAZ","PtAllminPtMCvsPtAllDCAZ",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,80,-2.,2.);
+  fPtAllminPtMCvsPtAllDCAZ = new TH3F("fPtAllminPtMCvsPtAllDCAZ","PtAllminPtMCvsPtAllDCAZ",fgkNPtBins, binsPt,fgkResPtBins,binsResPt,fgkNDCAZBins,binsDCAZ);
   fPtAllminPtMCvsPtAllDCAZ->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAllDCAZ->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtAllminPtMCvsPtAllDCAZ->SetZTitle("DCA_{Z}");
   fHistList->Add(fPtAllminPtMCvsPtAllDCAZ);
 
-  fPtAllminPtMCvsPtAllPhi = new TH3F("fPtAllminPtMCvsPtAllPhi","PtAllminPtMCvsPtAllPhi",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,fgkNPhiBins,kMinPhi,kMaxPhi);
+  fPtAllminPtMCvsPtAllPhi = new TH3F("fPtAllminPtMCvsPtAllPhi","PtAllminPtMCvsPtAllPhi",fgkNPtBins, binsPt,fgkResPtBins,binsResPt,fgkNPhiBins,binsPhi);
   fPtAllminPtMCvsPtAllPhi->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAllPhi->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtAllminPtMCvsPtAllPhi->SetZTitle("#phi");
   fHistList->Add(fPtAllminPtMCvsPtAllPhi);
 
-  fPtAllminPtMCvsPtAllNPointITS = new TH3F("fPtAllminPtMCvsPtAllNPointITS","PtAllminPtMCvsPtAllNPointITS",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,9,-0.5,8.5);
+  fPtAllminPtMCvsPtAllNPointITS = new TH3F("fPtAllminPtMCvsPtAllNPointITS","PtAllminPtMCvsPtAllNPointITS",fgkNPtBins, binsPt,fgkResPtBins,binsResPt,fgkNNPointITSBins,binsNPointITS);
   fPtAllminPtMCvsPtAllNPointITS->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAllNPointITS->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtAllminPtMCvsPtAllNPointITS->SetZTitle("N_{point,ITS}}");
   fHistList->Add(fPtAllminPtMCvsPtAllNPointITS);
   
-  fPtAllminPtMCvsPtAllNSigmaToVertex = new TH3F("fPtAllminPtMCvsPtAllNSigmaToVertex","PtAllminPtMCvsPtAllNSigmaToVertex",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,40,0.,8.);
+  fPtAllminPtMCvsPtAllNSigmaToVertex = new TH3F("fPtAllminPtMCvsPtAllNSigmaToVertex","PtAllminPtMCvsPtAllNSigmaToVertex",fgkNPtBins, binsPt,fgkResPtBins,binsResPt,fgkNNSigmaToVertexBins,binsNSigmaToVertex);
   fPtAllminPtMCvsPtAllNSigmaToVertex->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAllNSigmaToVertex->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtAllminPtMCvsPtAllNSigmaToVertex->SetZTitle("N#sigma to vertex");
   fHistList->Add(fPtAllminPtMCvsPtAllNSigmaToVertex);
 
-  fPtAllminPtMCvsPtAllChi2C = new TH3F("fPtAllminPtMCvsPtAllChi2C","PtAllminPtMCvsPtAllChi2C",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,20,0.,10.);
+  fPtAllminPtMCvsPtAllChi2C = new TH3F("fPtAllminPtMCvsPtAllChi2C","PtAllminPtMCvsPtAllChi2C",fgkNPtBins, binsPt,fgkResPtBins,binsResPt,fgkNChi2CBins,binsChi2C);
   fPtAllminPtMCvsPtAllChi2C->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAllChi2C->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtAllminPtMCvsPtAllChi2C->SetZTitle("Constrained #chi^{2}");
   fHistList->Add(fPtAllminPtMCvsPtAllChi2C);
 
-  fPtAllminPtMCvsPtAllRel1PtUncertainty = new TH3F("fPtAllminPtMCvsPtAllRel1PtUncertainty","PtAllminPtMCvsPtAllRel1PtUncertainty",fgkNPtBins, fgkPtMin,fgkPtMax,fgkResPtBins,-1.,1.,30,0.,0.3);
+  fPtAllminPtMCvsPtAllRel1PtUncertainty = new TH3F("fPtAllminPtMCvsPtAllRel1PtUncertainty","PtAllminPtMCvsPtAllRel1PtUncertainty",fgkNPtBins, binsPt,fgkResPtBins,binsResPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty);
   fPtAllminPtMCvsPtAllRel1PtUncertainty->SetXTitle("p_{t}^{MC}");
   fPtAllminPtMCvsPtAllRel1PtUncertainty->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fPtAllminPtMCvsPtAllRel1PtUncertainty->SetZTitle("Rel1PtUncertainty");
   fHistList->Add(fPtAllminPtMCvsPtAllRel1PtUncertainty);
 
 
-  fPtAllMC = new TH1F("fPtAllMC","PtAll",fgkNPtBins, fgkPtMin, fgkPtMax);
+  fPtAllMC = new TH1F("fPtAllMC","PtAll",fgkNPtBins, binsPt);
   fHistList->Add(fPtAllMC);
-  fPtSelMC = new TH1F("fPtSelMC","PtSel",fgkNPtBins, fgkPtMin, fgkPtMax);
+  fPtSelMC = new TH1F("fPtSelMC","PtSel",fgkNPtBins, binsPt);
   fHistList->Add(fPtSelMC);
-  
+
   TH1::AddDirectory(oldStatus); 
 
   PostData(0, fHistList);
+
+  if(binsPt)                delete [] binsPt;
+  if(binsResPt)             delete [] binsResPt;
+  if(binsPhi)               delete [] binsPhi;
+  if(binsNClustersTPC)      delete [] binsNClustersTPC;
+  if(binsDCA2D)             delete [] binsDCA2D;
+  if(binsDCAZ)              delete [] binsDCAZ;
+  if(binsNPointITS)         delete [] binsNPointITS;
+  if(binsNSigmaToVertex)    delete [] binsNSigmaToVertex;
+  if(binsChi2C)             delete [] binsChi2C;
+  if(binsEta)               delete [] binsEta;
+  if(binsRel1PtUncertainty) delete [] binsRel1PtUncertainty;
+  if(binsChi2PerClus)       delete [] binsChi2PerClus;
+  if(binsMult)              delete [] binsMult;
+  
 }
 
 //________________________________________________________________________
@@ -516,7 +649,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
     AliESDtrack *esdtrack = fESD->GetTrack(iTrack);
     if(!esdtrack) continue;
 
-    if(fTrackType==1 || fTrackType==3)
+    if(fTrackType==1)
       track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
     else if(fTrackType==2) {
       track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
@@ -554,7 +687,9 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
     }
     TParticle *particle = fStack->Particle(label) ;
     if(!particle) {
-      if(fTrackType==1 || fTrackType==2) delete track;
+      if(fTrackType==1 || fTrackType==2) {
+	if(track) delete track;
+      }
       continue;
     }
 
@@ -566,7 +701,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
       track->GetImpactParameters(dca2D,dcaZ);     //Global
     else if(fTrackType==1 || fTrackType==2) 
       track->GetImpactParametersTPC(dca2D,dcaZ);  //TPConly
-      else {continue;}
+    else {continue;}
 
     
     UChar_t itsMap = track->GetITSClusterMap();

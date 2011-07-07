@@ -132,7 +132,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtBinEdges[0][1] = 1.;
   fPtBinEdges[1][0] = 20.;
   fPtBinEdges[1][1] = 2.;
-  fPtBinEdges[2][0] = 50.;
+  fPtBinEdges[2][0] = 100.;
   fPtBinEdges[2][1] = 5.;
 
 }
@@ -216,7 +216,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtBinEdges[0][1] = 1.;
   fPtBinEdges[1][0] = 20.;
   fPtBinEdges[1][1] = 2.;
-  fPtBinEdges[2][0] = 50.;
+  fPtBinEdges[2][0] = 100.;
   fPtBinEdges[2][1] = 5.;
 
   // Input slot #0 works with a TChain ESD
@@ -254,27 +254,13 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   Float_t fgkPtMin = 0.;
   Float_t fgkPtMax = fPtMax;
 
-  //  Float_t ptBinEdges[2][2];
-  // ptBinEdges[0][0] = 10.;
-  // ptBinEdges[0][1] = 1.;
-  // ptBinEdges[1][0] = 20.;
-  // ptBinEdges[1][1] = 2.;
-  // Float_t binWidth3 = 5.;
-  // if(fPtMax>100.) {
-  //   ptBinEdges[0][0] = 100.;
-  //   ptBinEdges[0][1] = 5.;
-  //   ptBinEdges[1][0] = 300.;
-  //   ptBinEdges[1][1] = 10.;
-  //   binWidth3 = 20.;
-  // }
-
   //fPtBinEdges[region][0] = ptmax of region ; fPtBinEdges[region][1] = binWidth of region
   const Float_t ptmin1 =  fgkPtMin;
   const Float_t ptmax1 =  fPtBinEdges[0][0];
   const Float_t ptmin2 =  ptmax1 ;
   const Float_t ptmax2 =  fPtBinEdges[1][0];
   const Float_t ptmin3 =  ptmax2 ;
-  const Float_t ptmax3 =  fgkPtMax;
+  const Float_t ptmax3 =  fPtBinEdges[2][0];//fgkPtMax;
   const Int_t nbin11 = (int)((ptmax1-ptmin1)/fPtBinEdges[0][1]);
   const Int_t nbin12 = (int)((ptmax2-ptmin2)/fPtBinEdges[1][1])+nbin11;
   const Int_t nbin13 = (int)((ptmax3-ptmin3)/fPtBinEdges[2][1])+nbin12;
