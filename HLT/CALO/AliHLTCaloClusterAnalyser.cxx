@@ -252,7 +252,9 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       caloClusterPtr->fTrackDz = -999;
       
       AliHLTCaloGlobalCoordinate globalCoord;
-      fGeometry->GetGlobalCoordinates(*recPointPtr, globalCoord);
+
+      // 0 = assume photon
+      fGeometry->GetGlobalCoordinates(*recPointPtr, globalCoord, 0);
 
       caloClusterPtr->fModule = recPointPtr->fModule;
       caloClusterPtr->fGlobalPos[0] =  globalCoord.fX;

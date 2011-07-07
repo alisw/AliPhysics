@@ -23,8 +23,8 @@ class AliHLTCaloGeometry : public AliHLTCaloConstantsHandler, public AliHLTLoggi
  public:
   AliHLTCaloGeometry (TString det);
   virtual ~AliHLTCaloGeometry();
-
-  virtual void GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord ) = 0;
+  // Particle: 0=photon, 1=electron, 2=hadron
+  virtual void GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord, Int_t iParticle ) = 0;
 
   virtual void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId) = 0; //COMMENT
 

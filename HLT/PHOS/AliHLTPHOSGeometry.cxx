@@ -32,8 +32,8 @@ AliHLTPHOSGeometry::~AliHLTPHOSGeometry()
 {
 // See header file for class documentation
 }
-
-void AliHLTPHOSGeometry::GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& recPoint, AliHLTCaloGlobalCoordinate& globalCoord )
+// FR: PHOS doesn't use iParticle for now
+void AliHLTPHOSGeometry::GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& recPoint, AliHLTCaloGlobalCoordinate& globalCoord, Int_t /* iParticle */ )
 {
    // See header file for class documentation
    if(!fGeoUtils) 
@@ -44,12 +44,14 @@ void AliHLTPHOSGeometry::GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& re
 
    Float_t x = recPoint.fX;
    Float_t z = recPoint.fZ;
+   
 
    ConvertRecPointCoordinates(x, z);
    
    TVector3 coord;
    fGeoUtils->Local2Global(fCaloConstants->GetNMODULES() - recPoint.fModule, x, z, coord);
    
+
    globalCoord.fX = coord[0];
    globalCoord.fY = coord[1];
    globalCoord.fZ = coord[2];

@@ -44,16 +44,39 @@ AliHLTEMCALGeometry::~AliHLTEMCALGeometry()
 }
   
 void 
-AliHLTEMCALGeometry::GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord)
+AliHLTEMCALGeometry::GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord, Int_t iParticle)
 {
 
-  Float_t fDepth;
-  Float_t *fRot = fReco->GetMisalRotShiftArray();
-  Float_t *fTrans = fReco->GetMisalTransShiftArray();
+  Float_t fDepth = 0;
+  // remove misalignments for 2010
+  //Float_t *fRot = fReco->GetMisalRotShiftArray();
+  //Float_t *fTrans = fReco->GetMisalTransShiftArray();
+  
+  Float_t fRot[15];
+  Float_t fTrans[15];
+
   Float_t glob[] = {0.,0.,0.};
 
-  //assume photo for the moment
-  fDepth = fReco->GetDepth(recPoint.fAmp,AliEMCALRecoUtils::kPhoton,recPoint.fModule);
+  // Zeroing out misaligments 
+  for (Int_t i = 0; i<14; i++) { fRot[i] = 0; fTrans[i] = 0; }
+  
+  //assume only photon for the moment
+  
+  if (recPoint.fX>=-0.5 && recPoint.fZ>=-0.5) // -0.5 is the extreme border of 0,0 cell
+    
+    {
+      if (iParticle == 1)  // electron case
+	fDepth = fReco->GetDepth(recPoint.fAmp, AliEMCALRecoUtils::kElectron, recPoint.fModule);
+      else if (iParticle == 2) // hadron case 
+	fDepth = fReco->GetDepth(recPoint.fAmp, AliEMCALRecoUtils::kHadron, recPoint.fModule);
+      else // anything else is photon
+	fDepth = fReco->GetDepth(recPoint.fAmp, AliEMCALRecoUtils::kPhoton, recPoint.fModule);
+    }
+  
+  else {
+    HLTDebug("W-AliHLTEMCALGeometry: got cluster with negative flags in coordinates.");
+    return; // we don't want to give out strange coordinates to event display
+  }
   
   fGeo->RecalculateTowerPosition(recPoint.fX, recPoint.fZ,recPoint.fModule, fDepth, fTrans, fRot, glob);
   
@@ -63,7 +86,7 @@ AliHLTEMCALGeometry::GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint
   
 
 }
- 
+
 void 
 AliHLTEMCALGeometry::GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId)
 {
@@ -84,7 +107,7 @@ AliHLTEMCALGeometry::GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsI
 int
 AliHLTEMCALGeometry::GetGeometryFromCDB()
 {
-
+  // local path to OCDB
   // AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
   AliCDBPath path("GRP","Geometry","Data");
@@ -107,10 +130,10 @@ AliHLTEMCALGeometry::GetGeometryFromCDB()
 	      fGeo = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
 	      //fGeo = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
 	      fReco = new AliEMCALRecoUtils;
-	      // FIXME
-	      // need to be parametrized
-	      // misalignment corrections to be put into OCDB
-
+	      
+	      // Old misalignments for 2010
+	      // We don't use them now
+	      /*
 	      fReco->SetMisalTransShift(0,1.08); 
 	      fReco->SetMisalTransShift(1,8.35); 
 	      fReco->SetMisalTransShift(2,1.12); //sector 0
@@ -118,7 +141,7 @@ AliHLTEMCALGeometry::GetGeometryFromCDB()
 	      fReco->SetMisalRotShift(4,8.05); 
 	      fReco->SetMisalTransShift(3,-0.42); 
 	      fReco->SetMisalTransShift(5,1.55);//sector 1
-	      
+	      */
 	    }
 
 	}

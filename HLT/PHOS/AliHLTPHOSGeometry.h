@@ -33,7 +33,7 @@ class AliHLTPHOSGeometry : public AliHLTCaloGeometry
       virtual ~AliHLTPHOSGeometry ();       //COMMENT
       
       /** Get the ALICE global coordinates for a rec point */
-      virtual void GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& recPoint,  AliHLTCaloGlobalCoordinate& globalCoord ); //COMMENT
+      virtual void GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& recPoint,  AliHLTCaloGlobalCoordinate& globalCoord, Int_t iParticle ); //COMMENT
 
       /** See base class for class documentation */
       virtual void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId);

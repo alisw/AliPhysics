@@ -34,7 +34,7 @@ class  AliHLTEMCALGeometry : public AliHLTCaloGeometry
  public:
 	AliHLTEMCALGeometry();
 	virtual ~AliHLTEMCALGeometry();
-	void GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord );
+	void GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint, AliHLTCaloGlobalCoordinate &globalCoord, Int_t iParticle );
 	void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId);
 	virtual Int_t InitialiseGeometry();
 	
@@ -49,8 +49,9 @@ private:
 
 	// EMCal Geometry
 	//AliEMCALGeoUtils *fGeo;
-	AliEMCALRecoUtils *fReco;
+	
 	AliEMCALGeometry *fGeo;
+	AliEMCALRecoUtils *fReco;
 };
 
 #endif
