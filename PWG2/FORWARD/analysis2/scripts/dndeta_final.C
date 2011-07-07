@@ -1,3 +1,10 @@
+/** 
+ * Draw final plot for QM2011
+ * 
+ * @param max 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 void
 dndeta_final(Double_t max=6)
 {
@@ -115,3 +122,6 @@ dndeta_final(Double_t max=6)
 }
 
   
+//
+// EOF
+// 

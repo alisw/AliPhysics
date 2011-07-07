@@ -1,3 +1,24 @@
+/**
+ * @file   DrawMCResult.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Thu Jul  7 10:57:01 2011
+ * 
+ * @brief  Script to draw steps (deprecated version - use DrawSteps.C)
+ * 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
+/** 
+ * 
+ * 
+ * @param forward 
+ * @param sub 
+ * @param name 
+ * 
+ * @return 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 THStack*
 GetStack(const TList& forward,  const char* sub, const char* name)
 {
@@ -12,6 +33,16 @@ GetStack(const TList& forward,  const char* sub, const char* name)
   return ret;
 }
 
+/** 
+ * 
+ * 
+ * @param h 
+ * @param rebin 
+ * 
+ * @return 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 TH1* 
 Rebin(TH1* h, Int_t rebin)
 {
@@ -21,6 +52,16 @@ Rebin(TH1* h, Int_t rebin)
   return h;
 }
 
+/** 
+ * 
+ * 
+ * @param h1 
+ * @param h2 
+ * 
+ * @return 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 TH1*
 Ratio(const TH1* h1, const TH1* h2)
 {
@@ -35,7 +76,17 @@ Ratio(const TH1* h1, const TH1* h2)
 
   return copy;
 }
-
+/** 
+ * 
+ * 
+ * @param r 
+ * @param h1 
+ * @param h2 
+ * 
+ * @return 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 Int_t 
 Ratio(THStack* r, const THStack* h1, const THStack* h2)
 {
@@ -55,7 +106,15 @@ Ratio(THStack* r, const THStack* h1, const THStack* h2)
   }
   return nH;
 }
-
+/** 
+ * 
+ * 
+ * @param filename 
+ * @param rebin 
+ * @param ratios 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 void
 DrawMCResult(const char* filename="forward.root", Int_t rebin=1,
 	     Bool_t ratios=true)
@@ -256,3 +315,6 @@ DrawMCResult(const char* filename="forward.root", Int_t rebin=1,
   
   
  
+//
+// EOF
+//

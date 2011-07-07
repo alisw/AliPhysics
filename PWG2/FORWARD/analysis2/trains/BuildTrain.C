@@ -1,3 +1,14 @@
+/** 
+ * Build (compile) a train script 
+ * 
+ * @param script Script to compile 
+ * @param extra  Extra stuff for AcLic ("", "+", or "+g")
+ * @param useTmp Use a temporary file 
+ * 
+ * @return 
+ *
+ * @ingroup pwg2_forward_trains
+ */
 Bool_t
 BuildTrain(const char* script, const char* extra="", Bool_t useTmp=false)
 {

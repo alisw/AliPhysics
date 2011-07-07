@@ -1,3 +1,12 @@
+/** 
+ * 
+ * 
+ * @param nBins 
+ * @param min 
+ * @param max 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_tests
+ */
 void
 MakeIntegerAxis(Int_t& nBins, Double_t& min, Double_t& max)
 {
@@ -10,6 +19,14 @@ MakeIntegerAxis(Int_t& nBins, Double_t& min, Double_t& max)
   nBins = nBins + 1;
 }
 
+/** 
+ * 
+ * 
+ * @param o 
+ * @param useWeights 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_tests
+ */
 void
 TestPoisson(Double_t o=.3, bool useWeights=false)
 {

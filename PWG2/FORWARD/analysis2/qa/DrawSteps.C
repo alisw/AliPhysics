@@ -1,3 +1,23 @@
+/**
+ * 
+ * @defgroup pwg2_forward_analysis_scripts_qa Quality Assurance scripts
+ * 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ * 
+ */
+
+/** 
+ * Get a stack 
+ * 
+ * @param forward   Input list
+ * @param sub       Sub-list
+ * @param name      Name of stack
+ * 
+ * @return A stack or null
+ * 
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 THStack*
 GetStack(const TList& forward,  const char* sub, const char* name)
 {
@@ -16,6 +36,16 @@ GetStack(const TList& forward,  const char* sub, const char* name)
   return ret;
 }
 
+/** 
+ * Rebin a histogram
+ * 
+ * @param h      Histogram
+ * @param rebin  Rebinning factor
+ * 
+ * @return Histogram
+ * 
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 TH1* 
 Rebin(TH1* h, Int_t rebin)
 {
@@ -25,6 +55,16 @@ Rebin(TH1* h, Int_t rebin)
   return h;
 }
 
+/** 
+ * Ratio of two histograms 
+ * 
+ * @param h1 numerator
+ * @param h2 denominator
+ * 
+ * @return Ratio
+ * 
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 TH1*
 Ratio(const TH1* h1, const TH1* h2)
 {
@@ -40,6 +80,17 @@ Ratio(const TH1* h1, const TH1* h2)
   return copy;
 }
 
+/** 
+ * Ratio all histograms in stacks 
+ * 
+ * @param r  Result
+ * @param h1 Numerators
+ * @param h2 Denominators 
+ * 
+ * @return Number of histograms 
+  * 
+ * @ingroup pwg2_forward_analysis_scripts_qa
+*/
 Int_t 
 Ratio(THStack* r, const THStack* h1, const THStack* h2)
 {
@@ -60,6 +111,15 @@ Ratio(THStack* r, const THStack* h1, const THStack* h2)
   return nH;
 }
 
+/** 
+ * Add a histogram to the all stack
+ * 
+ * @param all         Stack
+ * @param h           Histogram
+ * @param singleStep  Showing individual steps?
+ * 
+ * @ingroup pwg2_forward_analysis_scripts_qa
+*/
 void
 AddToAll(THStack* all, const TH1* h, Bool_t singleStep)
 {
@@ -72,6 +132,15 @@ AddToAll(THStack* all, const TH1* h, Bool_t singleStep)
   all->Add(copy);
 }
 
+/** 
+ * Dim an entry
+ * 
+ * @param thisId  This step
+ * @param step    Current step
+ * @param e       Entry in legend 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 void
 DimEntry(Int_t thisId, Int_t step, TLegendEntry* e)
 {
@@ -82,6 +151,17 @@ DimEntry(Int_t thisId, Int_t step, TLegendEntry* e)
   e->SetTextColor(col);
 }
 
+/** 
+ * Draw a step
+ * 
+ * @param deltas   From energy loss
+ * @param nchs     After 2nd correction
+ * @param prims    Primaries
+ * @param dndeta   Result 
+ * @param step     Step number 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 void
 DrawStep(THStack* deltas, THStack* nchs, THStack* prims, 
 	 TH1*     dndeta, Int_t step)
@@ -208,7 +288,14 @@ DrawStep(THStack* deltas, THStack* nchs, THStack* prims,
   ltx->Draw();
 }
 
-
+/** 
+ * Draw steps
+ * 
+ * @param filename Input file 
+ * @param single   Whether to show individial steps 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 void DrawSteps(const char* filename="forward.root", Bool_t single=true)
 {
   gStyle->SetPalette(1);

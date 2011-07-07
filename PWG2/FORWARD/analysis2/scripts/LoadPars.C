@@ -1,6 +1,7 @@
 /** 
  * Set-up for a PROOF analysis job.   Make TProof object and load pars. 
  * 
+ * @ingroup pwg2_forward_analysis_scripts
  */
 Bool_t
 LoadPars(Int_t nWorkers=4)

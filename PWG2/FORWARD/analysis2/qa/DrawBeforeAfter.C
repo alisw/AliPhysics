@@ -1,3 +1,12 @@
+/** 
+ * Draw the before/after merging image for a single ring
+ * 
+ * @param p 
+ * @param d 
+ * @param r 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 void
 DrawRingBeforeAfter(TList* p, UShort_t d, Char_t r)
 {
@@ -26,6 +35,13 @@ DrawRingBeforeAfter(TList* p, UShort_t d, Char_t r)
 }
 
 
+/** 
+ * Draw the before/after sharing image for all rings 
+ * 
+ * @param filename 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 void
 DrawBeforeAfter(const char* filename="forward.root")
 {
@@ -85,3 +101,6 @@ DrawBeforeAfter(const char* filename="forward.root")
   
   
  
+//
+// EOF
+//

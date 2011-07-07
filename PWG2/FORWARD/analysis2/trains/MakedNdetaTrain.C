@@ -16,8 +16,8 @@
  * t.Run("LOCAL", "FULL", -1, false, false);
  * @endcode 
  *
- * @ingroup pwg2_forward_scripts_makers
  * @ingroup pwg2_forward_dndeta
+ * @ingroup pwg2_forward_trains
  */
 class MakedNdetaTrain : public TrainSetup
 {

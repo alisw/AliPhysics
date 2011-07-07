@@ -7,7 +7,25 @@
 #include <TCanvas.h>
 #include <TH2F.h>
 #include <THStack.h>
+/**
+ * @defgroup pwg2_forward_analysis_scripts_tests Test scripts
+ * 
+ * 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 
+
+/** 
+ * 
+ * 
+ * @param r 
+ * @param t 
+ * @param oldm 
+ * @param newm 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_tests
+ */
 //_____________________________________________________________________
 void AcceptanceCorrection(Char_t r, UShort_t t, Float_t& oldm, Float_t& newm)
 {
@@ -98,6 +116,14 @@ void AcceptanceCorrection(Char_t r, UShort_t t, Float_t& oldm, Float_t& newm)
   oldm = area/basearea;
 }
 
+/** 
+ * 
+ * 
+ * @param r 
+ * @param dt 
+ * @param offT 
+ * @ingroup pwg2_forward_analysis_scripts_tests
+ */
 void DrawSolution(Char_t r, UShort_t dt=16, UShort_t offT=128)
 {
   TCanvas* c = new TCanvas(Form("c%c", r), r == 'I' ? 
@@ -168,7 +194,11 @@ void DrawSolution(Char_t r, UShort_t dt=16, UShort_t offT=128)
   c->cd();
 }
     
-  
+/** 
+ * 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts_tests
+ */  
 void TestAcc()
 {
   TCanvas* c =  new TCanvas("c", "C");
@@ -242,3 +272,6 @@ void TestAcc()
 
   c2->cd();
 }
+//
+// EOF
+//

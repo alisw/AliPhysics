@@ -6,6 +6,8 @@
  * @param name Name of object to retrieve 
  * 
  * @return Object, or null 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
  */
 TObject*
 GetObject(const TObject* l, const char* name)
@@ -33,6 +35,8 @@ GetObject(const TObject* l, const char* name)
  * @param hname  Name of histogram 
  * 
  * @return Pointer to histogram or null
+ *
+ * @ingroup pwg2_forward_analysis_scripts
  */
 TH1D*
 GetHist(TDirectory* dir, 
@@ -68,6 +72,8 @@ GetHist(TDirectory* dir,
  * @param sub    Sub-list name
  * 
  * @return Histogram pointer or null
+ *
+ * @ingroup pwg2_forward_analysis_scripts
  */
 TH1D* 
 GetHist(TDirectory* dir, 
@@ -90,6 +96,8 @@ GetHist(TDirectory* dir,
  * @param xhigh  On return, upper eta bound
  * 
  * @return Newly allocated histogram or null
+ *
+ * @ingroup pwg2_forward_analysis_scripts
  */
 TH1* 
 Merge(const TH1* cen, const TH1* fwd, Double_t& xlow, Double_t& xhigh)
@@ -137,6 +145,8 @@ Merge(const TH1* cen, const TH1* fwd, Double_t& xlow, Double_t& xhigh)
  * @param pp Pointer to parameter array 
  * 
  * @return @f$g(x;A_1,A_2,\sigma_1,\sigma_2)@f$
+ *
+ * @ingroup pwg2_forward_analysis_scripts
  */
 Double_t myFunc(Double_t* xp, Double_t* pp)
 {
@@ -159,6 +169,8 @@ Double_t myFunc(Double_t* xp, Double_t* pp)
  * @param pp Pointer to parameter array (8 entries)
  * 
  * @return @f$r(x)@f$ 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
  */
 Double_t myRatio(Double_t* xp, Double_t* pp) 
 {
@@ -176,6 +188,8 @@ Double_t myRatio(Double_t* xp, Double_t* pp)
  * @param xhigh  Upper x bound 
  *
  * @return Fitted function 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
  */
 TF1* 
 FitMerged(TH1* tmp, Double_t xlow, Double_t xhigh)
@@ -202,6 +216,8 @@ FitMerged(TH1* tmp, Double_t xlow, Double_t xhigh)
  * 
  * @param tmp Histogram
  * @param fit Fit 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
  */
 void
 MakeSysError(TH1* tmp, TF1* fit)
@@ -224,7 +240,9 @@ MakeSysError(TH1* tmp, TF1* fit)
  * @param g 
  * 
  * @return 
-   */
+ *
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 TH1* 
 Graph2Hist(const TGraphAsymmErrors* g)
 {
@@ -283,6 +301,8 @@ Graph2Hist(const TGraphAsymmErrors* g)
  * @param title (Optional) title 
  * 
  * @return Ratio in a histogram 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
  */
 TH1*
 Ratio(TH1* h, TF1* f, const char* title)
@@ -324,6 +344,8 @@ Ratio(TH1* h, TF1* f, const char* title)
  * @param xhigh  On return, upper X bound
  * 
  * @return Merged histogram or null 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
  */
 TH1D* 
 GetUA5Data(UShort_t type, TH1*& p, TH1*& n,
@@ -362,8 +384,10 @@ GetUA5Data(UShort_t type, TH1*& p, TH1*& n,
 
 //____________________________________________________________________
 /** 
+ * Draw ratios to UA5 data 
  * 
- * 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
  */
 void
 DrawUA5Ratios(const char* fname="forward_dndeta.root", UShort_t rebin=5)

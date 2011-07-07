@@ -1,3 +1,8 @@
+/** 
+ * 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts_tests
+ */
 namespace {
   enum { 
     kSolid        = 0x000, 
@@ -10,6 +15,14 @@ namespace {
     kCross        = 0x00c,
     kStar         = 0x00e
   };
+  /** 
+   * 
+   * 
+   * @param bits 
+   * 
+   * @return 
+   * @ingroup pwg2_forward_analysis_scripts_tests
+   */
   Int_t MarkerStyle(UInt_t bits)
   {
     Int_t  base   = bits & (0xFE);
@@ -25,6 +38,14 @@ namespace {
     }
     return 1;
   }
+  /** 
+   * 
+   * 
+   * @param style 
+   * 
+   * @return 
+   * @ingroup pwg2_forward_analysis_scripts_tests
+   */
   UShort_t MarkerBits(Int_t style) 
   { 
     UShort_t bits = 0;
@@ -43,6 +64,14 @@ namespace {
     }
     return bits;
   }
+  /** 
+   * 
+   * 
+   * @param style 
+   * 
+   * @return 
+   * @ingroup pwg2_forward_analysis_scripts_tests
+   */
   Int_t FlipHollow(Int_t style) 
   {
     UShort_t bits = MarkerBits(style);
@@ -53,6 +82,14 @@ namespace {
   }
 }
 
+/** 
+ * 
+ * 
+ * @param what 
+ * @param base 
+ * @param y 
+ * @ingroup pwg2_forward_analysis_scripts_tests
+ */
 void DrawOne(const char* what, UShort_t base, Double_t y)
 {
   TLatex* l = new TLatex(.07, y, what);
@@ -80,3 +117,6 @@ void DrawOne(const char* what, UShort_t base, Double_t y)
     
 }
 
+//
+// EOF
+//
