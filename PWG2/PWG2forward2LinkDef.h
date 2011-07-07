@@ -85,6 +85,7 @@
 #pragma link C++ class AliForwardFlowTaskQC+;
 #pragma link C++ class AliSPDMCTrackDensity+;
 #pragma link C++ class AliFMDMultCuts+;
+#pragma link C++ class AliPoissonCalculator+;
 
 #else
 # error Not for compilation 
