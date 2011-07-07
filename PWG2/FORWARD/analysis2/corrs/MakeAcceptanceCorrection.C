@@ -1,4 +1,16 @@
 //_____________________________________________________________________
+/** 
+ * 
+ * 
+ * @param d 
+ * @param r 
+ * @param vz 
+ * @param nDead 
+ * 
+ * @return 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
 TH2D* MakeOneRing(UShort_t d, Char_t r, Double_t vz, Int_t& nDead)
 {
   AliFMDGeometry*   geom = AliFMDGeometry::Instance();
@@ -56,6 +68,19 @@ TH2D* MakeOneRing(UShort_t d, Char_t r, Double_t vz, Int_t& nDead)
 }
 
 //_____________________________________________________________________
+/** 
+ * 
+ * 
+ * @param runNo 
+ * @param system 
+ * @param energy 
+ * @param field 
+ * @param nVtxBins 
+ * @param vtxLow 
+ * @param vtxHigh 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
 void MakeAcceptanceCorrection(Int_t   runNo=121526, 
 			      Int_t   system = 1,
 			      Float_t energy = 900,

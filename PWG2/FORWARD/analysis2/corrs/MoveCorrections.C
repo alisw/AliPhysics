@@ -1,3 +1,12 @@
+/** 
+ * 
+ * 
+ * @param fname 
+ * @param n 
+ * 
+ * @return 
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
 Bool_t
 Backup(const TString& fname, Int_t n=10)
 {
@@ -24,6 +33,14 @@ Backup(const TString& fname, Int_t n=10)
 }
 
 
+/** 
+ * 
+ * 
+ * @param what 
+ * 
+ * @return 
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
 Bool_t
 MoveWhat(UInt_t what) 
 {
@@ -85,7 +102,16 @@ MoveWhat(UInt_t what)
   }
   return true;
 }
-
+/** 
+ * 
+ * 
+ * @param sec 
+ * @param dbl 
+ * @param vtx 
+ * @param merge 
+ * @param eloss 
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
 void
 MoveCorrections(bool sec=true, 
 		bool dbl=true, 

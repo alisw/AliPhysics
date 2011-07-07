@@ -1,8 +1,26 @@
-//This script takes the output list from a file and applies
-//the energy fitter directly. In principle this should be done
-//by the train via AliFMDEnergyFitterTask::Terminate but if this fails
-//or impatience takes over this script can help...
-
+/**
+ * @file   MakeELossFitsFromFile.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Thu Jul  7 11:23:50 2011
+ * 
+ * @brief This script takes the output list from a file and applies
+ * the energy fitter directly. In principle this should be done by the
+ * train via AliFMDEnergyFitterTask::Terminate but if this fails or
+ * impatience takes over this script can help...
+ *
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
+/** 
+ * 
+ * 
+ * @param filename 
+ * @param sys 
+ * @param sNN 
+ * @param field 
+ * @param mc 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
 void MakeELossFitsFromFile(const Char_t* filename="forward.root",
 			   UShort_t sys=1, UShort_t sNN=900, Short_t field=5, 
 			   Bool_t mc=false) 
