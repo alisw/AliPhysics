@@ -50,21 +50,6 @@ void AddTaskPWG4HighPtTrackQAAllReduced(char *prodType = "LHC10h",Bool_t isPbPb=
 
 }
 
-void AddTaskPWG4HighPtTrackQAAllReduced(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0) 
-{    
-
-  int cent = 10;
-  
-  if(isPbPb) {
-    for(cent=0; cent<4; cent++) {
-      AliPWG4HighPtTrackQA *taskTrackQA00 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0);
-      AliPWG4HighPtTrackQA *taskTrackQA01 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1);
-      AliPWG4HighPtTrackQA *taskTrackQA02 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,2);
-    }
-  }
-
-}
-
 void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 1, Int_t filterBit) 
 {   
   AliPWG4HighPtTrackQA *taskTrackQA = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,0,0,0);
@@ -123,7 +108,7 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
     // tight global tracks
     trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,1);
     trackCuts->SetMinNCrossedRowsTPC(120);
-    trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.1);// essentially swittches it off
+    trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);// essentially swittches it off
     trackCuts->SetMaxChi2PerClusterITS(36);
     trackCuts->SetMaxFractionSharedTPCClusters(0.4);
   }
