@@ -66,6 +66,7 @@ set ( SRCS
   FORWARD/analysis2/AliForwardFlowTaskQC.cxx
   FORWARD/analysis2/AliSPDMCTrackDensity.cxx
   FORWARD/analysis2/AliFMDMultCuts.cxx
+  FORWARD/analysis2/AliPoissonCalculator.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -112,6 +113,12 @@ add_custom_target( install-PWG2forward2.par
 #
 # Install scripts 
 install ( DIRECTORY FORWARD/analysis2/scripts 
+	  DESTINATION PWG2/FORWARD/analysis2 
+	  PATTERN ".d"  EXCLUDE 
+	  PATTERN ".so" EXCLUDE)
+
+# install trains 
+install ( DIRECTORY FORWARD/analysis2/trains 
 	  DESTINATION PWG2/FORWARD/analysis2 
 	  PATTERN ".d"  EXCLUDE 
 	  PATTERN ".so" EXCLUDE)
