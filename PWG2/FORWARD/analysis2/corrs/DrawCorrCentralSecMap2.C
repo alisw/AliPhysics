@@ -3,14 +3,14 @@
  * 
  * Scripts to draw energy loss fits from correction object file 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 /** 
  * Clear canvas 
  * 
  * @param c Canvas to clear 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void
 ClearCanvas(TCanvas* c)
@@ -46,7 +46,7 @@ LoadLibraries()
  * @param option    Drawing options 
  * @param tracklets Tracklets flag
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void
 DrawCorrCentralSecMap2(const char* fname, const char* option="colz", bool tracklets=true)

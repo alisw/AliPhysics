@@ -5,7 +5,7 @@
  * @param d 
  * @param r 
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 void
 DrawRingBeforeAfter(TList* p, UShort_t d, Char_t r)
@@ -40,7 +40,7 @@ DrawRingBeforeAfter(TList* p, UShort_t d, Char_t r)
  * 
  * @param filename 
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 void
 DrawBeforeAfter(const char* filename="forward.root")

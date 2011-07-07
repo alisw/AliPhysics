@@ -5,7 +5,7 @@
  * @param r 
  * 
  * @return 
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 Color_t Color(UShort_t d, Char_t r ) const 
 { 
@@ -20,7 +20,7 @@ Color_t Color(UShort_t d, Char_t r ) const
  * @param field     Magnetic field 
  * @param path      File path 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void
 RunCopyCentralSecMap(UShort_t sys, UShort_t cms, Short_t field, 

@@ -1,5 +1,5 @@
 /**
- * @ingroup pwg2_forward_trains Trains
+ * @defgroup pwg2_forward_trains Trains
  * 
  * @ingroup pwg2_forward
  */

@@ -1,9 +1,9 @@
 /**
  * 
- * @defgroup pwg2_forward_analysis_scripts_qa Quality Assurance scripts
+ * @defgroup pwg2_forward_scripts_qa Quality Assurance scripts
  * 
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  * 
  */
 
@@ -16,7 +16,7 @@
  * 
  * @return A stack or null
  * 
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 THStack*
 GetStack(const TList& forward,  const char* sub, const char* name)
@@ -44,7 +44,7 @@ GetStack(const TList& forward,  const char* sub, const char* name)
  * 
  * @return Histogram
  * 
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 TH1* 
 Rebin(TH1* h, Int_t rebin)
@@ -63,7 +63,7 @@ Rebin(TH1* h, Int_t rebin)
  * 
  * @return Ratio
  * 
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 TH1*
 Ratio(const TH1* h1, const TH1* h2)
@@ -89,7 +89,7 @@ Ratio(const TH1* h1, const TH1* h2)
  * 
  * @return Number of histograms 
   * 
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
 */
 Int_t 
 Ratio(THStack* r, const THStack* h1, const THStack* h2)
@@ -118,7 +118,7 @@ Ratio(THStack* r, const THStack* h1, const THStack* h2)
  * @param h           Histogram
  * @param singleStep  Showing individual steps?
  * 
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
 */
 void
 AddToAll(THStack* all, const TH1* h, Bool_t singleStep)
@@ -139,7 +139,7 @@ AddToAll(THStack* all, const TH1* h, Bool_t singleStep)
  * @param step    Current step
  * @param e       Entry in legend 
  * 
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 void
 DimEntry(Int_t thisId, Int_t step, TLegendEntry* e)
@@ -160,7 +160,7 @@ DimEntry(Int_t thisId, Int_t step, TLegendEntry* e)
  * @param dndeta   Result 
  * @param step     Step number 
  * 
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 void
 DrawStep(THStack* deltas, THStack* nchs, THStack* prims, 
@@ -294,7 +294,7 @@ DrawStep(THStack* deltas, THStack* nchs, THStack* prims,
  * @param filename Input file 
  * @param single   Whether to show individial steps 
  * 
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 void DrawSteps(const char* filename="forward.root", Bool_t single=true)
 {

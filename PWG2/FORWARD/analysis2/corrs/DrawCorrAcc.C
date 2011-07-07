@@ -3,14 +3,14 @@
  * 
  * Scripts to draw energy loss fits from correction object file 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 /** 
  * Clear canvas 
  * 
  * @param c Canvas to clear 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void
 ClearCanvas(TCanvas* c)
@@ -37,7 +37,7 @@ ClearCanvas(TCanvas* c)
  * @param fname   File name 
  * @param option  Drawing options 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void
 DrawCorrAcc(const char* fname, const char* option="colz")

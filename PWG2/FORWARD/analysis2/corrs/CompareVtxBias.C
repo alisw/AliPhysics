@@ -8,7 +8,7 @@
  * @param n2 
  * @param load 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void
 CompareVtxBias(const char* fn1,   const char* fn2, 

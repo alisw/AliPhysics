@@ -3,7 +3,7 @@
  * AliFMDELossFitter(Task). 
  * 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 #include <TFile.h>
 #include <THStack.h>
@@ -51,7 +51,7 @@ const char* pdfName = "FitResults.pdf";
  * 
  * @return Pointer to the list of objects 
  * 
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 TList* OpenFile(const char* fname)
 {
@@ -83,7 +83,7 @@ TList* OpenFile(const char* fname)
  * 
  * @return List of fits 
  * 
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 TList* CheckFitter(const char* fname="AnalysisResults.root")
 {
@@ -98,7 +98,7 @@ TList* CheckFitter(const char* fname="AnalysisResults.root")
  * 
  * @return Canvas 
  * 
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 TCanvas* CheckCanvas()
 {
@@ -136,7 +136,7 @@ TCanvas* CheckCanvas()
  * 
  * @param fname 
  * 
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void DrawSummary(const char* fname="forward_eloss.root")
 {
@@ -237,7 +237,7 @@ void DrawSummary(const char* fname="forward_eloss.root")
  * 
  * @param fname 
  * 
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void DrawRings(const char* fname="AnalysisResults.root")
 {
@@ -299,7 +299,7 @@ void DrawRings(const char* fname="AnalysisResults.root")
  * 
  * @param fname 
  * 
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void DrawEtaBins(const char* fname="AnalysisResults.root")
 {
@@ -394,7 +394,7 @@ void DrawEtaBins(const char* fname="AnalysisResults.root")
  *
  * @param fname 
  * 
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void
 DrawAnaELoss(const char* fname="forward_eloss.root")

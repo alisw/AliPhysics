@@ -61,7 +61,7 @@
  * @f$\eta@f$ range.  One can add (possibly overlapping) @f$\eta@f$
  * ranges by calling the member function AddBin 
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 class SPDComparisonTask : public AliAnalysisTaskSE
 {

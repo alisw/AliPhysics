@@ -35,7 +35,7 @@ static Double_t landauGausI(Double_t* xp, Double_t* pp);
 /**
  * 
  * 
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 struct Function
 {
@@ -730,7 +730,7 @@ const Double_t Function::fgkConvNSteps = 100;
  * 
  * 
  * 
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 struct Fitter
 {
@@ -818,7 +818,7 @@ struct Fitter
  * 
  * @return Function evaluated at xp[0]
  * 
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */  
 static Double_t landauGaus1(Double_t* xp, Double_t* pp)
 {
@@ -838,7 +838,7 @@ static Double_t landauGaus1(Double_t* xp, Double_t* pp)
  * 
  * @return Function evaluated at xp[0]
  * 
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 static Double_t landauGausN(Double_t* xp, Double_t* pp)
 {
@@ -860,7 +860,7 @@ static Double_t landauGausN(Double_t* xp, Double_t* pp)
  * 
  * @return Function evaluated at xp[0]
  * 
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 static Double_t landauGausI(Double_t* xp, Double_t* pp)
 {
@@ -879,7 +879,7 @@ static Double_t landauGausI(Double_t* xp, Double_t* pp)
  * 
  * 
  * 
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 struct Generator
 {
@@ -1431,7 +1431,7 @@ struct Generator
  * 
  * @param type Output graphics type 
  * 
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 void
 TestELossDist(const char* type="png")
