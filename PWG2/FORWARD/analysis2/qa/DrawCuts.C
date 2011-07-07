@@ -1,3 +1,10 @@
+/** 
+ * Draw cuts used in analysis
+ * 
+ * @param filename 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 void
 DrawCuts(const char* filename="forward.root")
 {

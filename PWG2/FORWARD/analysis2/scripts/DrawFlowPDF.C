@@ -8,10 +8,24 @@
 #include <TLegend.h>
 #include <TMath.h>
 #include <TLatex.h>
-
+/**
+ * @defgroup pwg2_forward_analysis_scripts_flow Flow scripts
+ * @ingroup pwg2_forward_analysis_scripts
+ * 
+ */
 // Data members
 const char* pdfName = "Flow.pdf";
 
+
+/** 
+ * @todo Document me  
+ * 
+ * @param name 
+ * 
+ * @return 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_flow
+ */
 TCanvas* SetupCanvas(TString name)
 {
   TCanvas* c = new TCanvas("c","c",640,960);
@@ -121,6 +135,13 @@ TCanvas* SetupCanvas(TString name)
   return c;
 }
 
+/** 
+ * @todo Document me 
+ * 
+ * @param f 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_flow
+ */
 void MakeFmdAndSpdPlots(TFile* f) 
 {
   TList* qList = static_cast<TList*>(f->Get("FlowResults/QCumulants"));
@@ -245,6 +266,13 @@ void MakeFmdAndSpdPlots(TFile* f)
    } // end of c
 }
 
+/** 
+ * @todo Document me  
+ * 
+ * @param f 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_flow
+ */
 void Make2ParticlePlots(TFile* f) 
 {
   TList* qList = static_cast<TList*>(f->Get("FlowResults/QCumulants"));
@@ -400,6 +428,13 @@ void Make2ParticlePlots(TFile* f)
    } // end of c
 }
 
+/** 
+ * @todo Document me  
+ * 
+ * @param f 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_flow
+ */
 void Make4ParticlePlots(TFile* f) 
 {
   TList* qList = static_cast<TList*>(f->Get("FlowResults/QCumulants"));
@@ -560,6 +595,13 @@ void Make4ParticlePlots(TFile* f)
   } // end of c
 }
 
+/** 
+ * @todo Document me  
+ * 
+ * @param f 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_flow
+ */
 void MakeMonitoringPlots(TFile* f) 
 {
   TList* qList = static_cast<TList*>(f->Get("FlowResults/QCumulants"));
@@ -590,6 +632,13 @@ void MakeMonitoringPlots(TFile* f)
 }
 
 
+/** 
+ * Document me  
+ * 
+ * @param file 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_flow
+ */
 void DrawFlowPDF(char* file = "AnalysisResults.root") 
 {
   gStyle->SetOptStat(0);
@@ -605,3 +654,6 @@ void DrawFlowPDF(char* file = "AnalysisResults.root")
   MakeMonitoringPlots(f);
   c0->Print(Form("%s]", pdfName));
 }
+//
+// EOF
+//

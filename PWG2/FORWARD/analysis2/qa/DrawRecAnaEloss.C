@@ -1,3 +1,14 @@
+/**
+ * @file   DrawRecAnaEloss.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Thu Jul  7 10:58:50 2011
+ * 
+ * @brief  Draw energ-loss before/after merging and used in the
+ * density calculations 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
+
 #ifndef __CINT__
 #include <TList.h>
 #include <TH1.h>
@@ -13,6 +24,17 @@
 class TLatex;
 #endif
 
+/** 
+ * Draw some text
+ * 
+ * @param l 
+ * @param x 
+ * @param y 
+ * @param c1 
+ * @param c2 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 void 
 DrawText(TLatex* l, Double_t x, Double_t& y, const char* c1, const char* c2)
 {
@@ -20,7 +42,17 @@ DrawText(TLatex* l, Double_t x, Double_t& y, const char* c1, const char* c2)
   l->DrawLatex(x,    y, c1);
   l->DrawLatex(x+.4, y, c2);
 }
-
+/** 
+ * Draw the energy loss before/after mergin for a single ring
+ * 
+ * @param p      List 1 
+ * @param p2     List 2
+ * @param lowCut Low cut
+ * @param d      Detector
+ * @param r      Ring 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 void
 DrawRingRecAnaEloss(TList* p, TList* p2, Double_t lowCut, UShort_t d, Char_t r)
 {
@@ -113,7 +145,13 @@ DrawRingRecAnaEloss(TList* p, TList* p2, Double_t lowCut, UShort_t d, Char_t r)
   gPad->cd();
 }
 
-
+/** 
+ * Draw energy loss before/after merging 
+ * 
+ * @param filename 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 void
 DrawRecAnaEloss(const char* filename="forward.root")
 {
@@ -184,3 +222,6 @@ DrawRecAnaEloss(const char* filename="forward.root")
   
   
  
+//
+// EOF
+//

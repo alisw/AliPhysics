@@ -1,3 +1,12 @@
+/** 
+ * Draw the correlation of neighboring strips before/after merging 
+ * 
+ * @param p  List
+ * @param d  Detector
+ * @param r  Ring
+ *
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 void
 DrawRingNeighbors(TList* p, UShort_t d, Char_t r)
 {
@@ -48,7 +57,13 @@ DrawRingNeighbors(TList* p, UShort_t d, Char_t r)
   gPad->cd();
 }
 
-
+/** 
+ * Draw the correlation of neighboring strips before/after merging 
+ * 
+ * @param filename 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_qa
+ */
 void
 DrawNeighbors(const char* filename="forward.root")
 {
@@ -100,3 +115,6 @@ DrawNeighbors(const char* filename="forward.root")
   
   
  
+//
+// EOF
+// 

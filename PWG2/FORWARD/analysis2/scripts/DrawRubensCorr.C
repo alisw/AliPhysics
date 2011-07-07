@@ -1,3 +1,11 @@
+/** 
+ * Draw Rubens corrections 
+ * 
+ * @param fname 
+ * @param hname 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 void
 DrawRubensCorr(const char* fname="rubensRatio.root",
 	       const char* hname = "dNdEtaCor1D_cls")
@@ -62,3 +70,6 @@ DrawRubensCorr(const char* fname="rubensRatio.root",
   c->SaveAs("rubens_corr.png");
 }
 
+//
+// EOF
+//

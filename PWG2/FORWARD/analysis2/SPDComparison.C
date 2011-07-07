@@ -1,61 +1,7 @@
 /**
- * @section Forward/Backward Correlations 
+ * A task to do a comparison between tracklets and clusers in the SPD
  * 
- * A script containing a class ForwardBackwardTask and a
- * function to run the analysis.
- *
- * The class ForwardBackwardTask is an AliAnalysisTaskSE.  That means
- * that it have facilities for analysing ESD, AOD, and MC input.  The
- * process of running the code is handled by an AliAnalysisManager
- * (created in the function).  It uses a TSelector to loop over a
- * TChain of data.  
- * 
- * The flow of the code is 
- * @verbatim 
- *    +-----------------------+
- *    | Create Analysis Train |-> ForwardBackwardTask constructor 
- *    +-----------------------+
- *                |
- *                V
- *    +-----------------------+
- *    | Intialise all tasks   |-> ForwardBackwardTask::Init (not implemented)
- *    +-----------------------+
- *                |
- *                V
- *    +-----------------------+
- *    | Split job on workers  |
- *    +-----------------------+
- *                |
- *                V
- *    +-----------------------+
- *    | Create output objects |-> ForwardBackwardTask::CreateOutputObjects
- *    | on each worker        |
- *    +-----------------------+
- *                |
- *                V 
- *    +-----------------------+
- *    | More events on this   |<-----+   
- *    | worker node?          |--+   |
- *    +-----------------------+  |   |
- *                | no           |   |
- *                |              V   |
- *                |   +-------------------+
- *                |   | Process one event |->ForwardBackwardTask::UserExec
- *                |   +-------------------+
- *                |
- *                V
- *    +-----------------------+
- *    | Merge output of each  |
- *    | worker node           |
- *    +-----------------------+
- *                |
- *                V
- *    +-----------------------+
- *    | End of job processing |-> ForwardBackwardTask::Terminate 
- *    +-----------------------+
- * @endverbatim 
- *
- * Since the class ForwardBackwardTask derives from a compiled class
+ * Since the class SPDComparisonTask derives from a compiled class
  * (AliAnalysisTaskSE) we need to compile that code.  The script will,
  * when executed in the AliROOT prompt load it self again and byte
  * compile it with the preprocessor flag BUILD defined.  \
@@ -64,10 +10,10 @@
  * script is loaded using 
  * 
  * @verbatim 
- *   Root> .x ForwardBackward.C 
+ *   Root> .x SPDComparison.C 
  * @endverbatim 
  * 
- * which means that CINT will only see the function ForwardBackward.
+ * which means that CINT will only see the function SPDComparison.
  * In that function, we define the BUILD preprocessor symbol 
  *
  * @code 
@@ -115,6 +61,7 @@
  * @f$\eta@f$ range.  One can add (possibly overlapping) @f$\eta@f$
  * ranges by calling the member function AddBin 
  * 
+ * @ingroup pwg2_forward_analysis_scripts
  */
 class SPDComparisonTask : public AliAnalysisTaskSE
 {

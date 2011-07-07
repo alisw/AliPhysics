@@ -2,7 +2,7 @@
 /**
  * Analysis train to do energy loss fits
  * 
- * @ingroup pwg2_forward_scripts_makers
+ * @ingroup pwg2_forward_trains
  */
 class MakeFMDELossTrain : public TrainSetup
 {

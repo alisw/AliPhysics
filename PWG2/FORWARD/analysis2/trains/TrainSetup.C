@@ -1,11 +1,16 @@
 /**
+ * @ingroup pwg2_forward_trains Trains
+ * 
+ * @ingroup pwg2_forward
+ */
+/**
  * @file   TrainSetup.C
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
  * @date   Wed Mar 23 12:12:00 2011
  * 
  * @brief  
  * 
- * @ingroup pwg2_forward_scripts_makers
+ * @ingroup pwg2_forward_trains
  * 
  */
 
@@ -122,7 +127,8 @@ class AliAnalysisManager;
  * Root> gROOT->LoadMacro("TrainSetup.C+");
  * @endverbatim 
  * 
- * @ingroup pwg2_forward_scripts_makers
+ * 
+ * @ingroup pwg2_forward_trains
  * 
  */
 struct TrainSetup
