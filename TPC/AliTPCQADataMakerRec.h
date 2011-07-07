@@ -16,6 +16,7 @@
 
 // --- ROOT system ---
 #include <TH1.h> 
+#include <TProfile.h> 
 
 // --- Standard library ---
 
@@ -29,9 +30,9 @@
 class AliTPCQADataMakerRec: public AliQADataMakerRec {
 
 public:
-  enum HRawsType_t         {kRawsOccupancy=0, kRawsOccupancyVsSector, kRawsNClustersPerEventVsSector, kRawsQVsSector, kRawsQmaxVsSector, kRawsOccupancyVsEvent, kRawsNclustersVsEvent} ; 
+  enum HRawsType_t         {kRawsOccupancyVsSector=0, kRawsQVsSector, kRawsQmaxVsSector} ; 
   enum HDigitType_t        {kDigitsADC=0} ; 
-  enum HRECPOINTsType_t    {KClusters=0, kRatio, kPt} ; 
+  enum HRECPOINTsType_t    {kClusters=0, kRatio, kPt} ; 
   enum HESDsType_t         {kQmaxShort=0, kQmaxMedium, kQmaxLong, kQShort, kQMedium, kQLong, kRow} ; 
 
   AliTPCQADataMakerRec() ;          // ctor
@@ -39,29 +40,23 @@ public:
   AliTPCQADataMakerRec& operator = (const AliTPCQADataMakerRec& qadm) ;
   virtual ~AliTPCQADataMakerRec(); 
   
-  virtual void ResetDetector(AliQAv1::TASKINDEX_t task);
-
-  Int_t  GetRawMaxEvents()      const { return fRawMaxEvents;     }
-  Int_t  GetRawEventsPerBin()   const { return fRawEventsPerBin;  }
   Int_t  GetRawFirstTimeBin() const { return fRawFirstTimeBin; }
   Int_t  GetRawLastTimeBin()  const { return fRawLastTimeBin;  }
-
-  void  SetRawMaxEvents   (Int_t value) { fRawMaxEvents = value; }
-  void  SetRawEventsPerBin(Int_t value) { fRawEventsPerBin = value; }
+  
   void  SetRawRangeTime(Int_t tMin, Int_t tMax){ fRawFirstTimeBin=tMin; fRawLastTimeBin=tMax;}
-
-private:
+  
+ private:
   virtual void   StartOfDetectorCycle() {}; // empty 
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray** list) ;
-
+  
   // ESD QA
   virtual void   InitESDs() ; 
   virtual void   MakeESDs(AliESDEvent *esd) ;
-
+  
   // Raw QA
   virtual void   InitRaws();
   virtual void   MakeRaws(AliRawReader* rawReader);
-
+  
   // Digits QA
   virtual void   InitDigits();
   virtual void   MakeDigits()  {return;}
@@ -72,18 +67,14 @@ private:
   virtual void   MakeRecPoints(TTree *recTree);
   
   virtual void LoadMaps();
-
-  TH1F* CreateEventsHistCopy(const TH1F* hist, const Char_t* copyName);
-
+  
   AliTPCAltroMapping *fMapping[6]; //! Pointers to ALTRO mapping
-  AliTPCdataQA** fTPCdataQA;//! TPC calibration object for making raw data QA
-
-  Int_t fRawMaxEvents;      //! Max events for RAW QA event histograms
-  Int_t fRawEventsPerBin;   //! Events per bin for RAW QA event histograms
+  AliTPCdataQA*  fTPCdataQA;//! TPC calibration object for making raw data QA
+  
   Int_t fRawFirstTimeBin;   //! First Time bin needed for RAW QA
   Int_t fRawLastTimeBin;    //! Last Time bin needed for RAW QA
-
+  
   ClassDef(AliTPCQADataMakerRec,1)  // TPC Rec Quality Assurance Data Maker 
-};
+    };
 
 #endif // ALITPCQADATAMAKERREC_H

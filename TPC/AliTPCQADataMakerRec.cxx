@@ -22,6 +22,29 @@
   All data must be mergeable objects.
   P. Christiansen, Lund, January 2008
 
+  Updated July 2011:
+  ==================
+
+  Major changes to accomodate updates of general DQM/QA changes to have per
+  trigger histograms (for a given event specie).
+
+  1) One instance of AliTPCdataQA only. (This also solves some old wishes by
+  offline team to use less memory because event the 2d arrays for this object
+  is not used). This now has a new flag for only keeping DQM info event by
+  event! For this reason there is no need for a special DQM reset any more
+  between runs!
+
+  2) Fill the histogram for each event. The histograms are no longer filled
+  from the AliTPCdataQA but per event.
+
+  3) Use profiles for the RAW info. By adding the profiles event by event we
+  get the correct event averages WITHOUT having to normalize in the end!
+  Results should therefore also be directly mergable when that feature will
+  come. (none of the other histograms are merged).
+
+  This means that from the DQM/QA point of view the TPC DQM is now fully
+  standard and should ease future developments.
+
   Updated June 2010:
   ==================
 
@@ -78,15 +101,10 @@ AliTPCQADataMakerRec::AliTPCQADataMakerRec() :
 AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kTPC), 
 		  "TPC Rec Quality Assurance Data Maker"),
 fTPCdataQA(NULL),
-fRawMaxEvents(100000),
-fRawEventsPerBin(1000),
 fRawFirstTimeBin(1),
 fRawLastTimeBin(1000)
 {
   // ctor
-  fTPCdataQA = new AliTPCdataQA*[AliRecoParam::kNSpecies] ;
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
-    fTPCdataQA[specie] = NULL ; 
   
   for(Int_t i = 0; i < 6; i++)
     fMapping[i] = 0;
@@ -96,8 +114,6 @@ fRawLastTimeBin(1000)
 AliTPCQADataMakerRec::AliTPCQADataMakerRec(const AliTPCQADataMakerRec& qadm) :
   AliQADataMakerRec(),
   fTPCdataQA(NULL),
-  fRawMaxEvents(qadm.GetRawMaxEvents()),
-  fRawEventsPerBin(qadm.GetRawEventsPerBin()),
   fRawFirstTimeBin(qadm.GetRawFirstTimeBin()),
   fRawLastTimeBin(qadm.GetRawLastTimeBin())
 {
@@ -107,18 +123,8 @@ AliTPCQADataMakerRec::AliTPCQADataMakerRec(const AliTPCQADataMakerRec& qadm) :
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
 
-  fTPCdataQA = new AliTPCdataQA*[AliRecoParam::kNSpecies] ;
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
-    fTPCdataQA[specie] = NULL ; 
-  
   for(Int_t i = 0; i < 6; i++)
     fMapping[i] = 0;
-
-  //
-  // Associate class histogram objects to the copies in the list
-  // Could also be done with the indexes
-  //
-
 }
 
 //__________________________________________________________________
@@ -134,10 +140,7 @@ AliTPCQADataMakerRec& AliTPCQADataMakerRec::operator = (const AliTPCQADataMakerR
 AliTPCQADataMakerRec::~AliTPCQADataMakerRec()
 {
   // Destructor
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) 
-    if ( fTPCdataQA[specie] != NULL )
-      delete fTPCdataQA[specie] ; 
-  delete[] fTPCdataQA; 
+  delete fTPCdataQA; 
 
   for(Int_t i = 0; i < 6; i++) 
     delete fMapping[i];
@@ -148,129 +151,7 @@ void AliTPCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 {
   //Detector specific actions at end of cycle
   ResetEventTrigClasses();
-  //
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) continue ; 
-    if (fTPCdataQA[specie] == NULL) continue;  // do the final step of the QA for Raw data
 
-    fTPCdataQA[specie]->Analyse(); // 31/1-08 Analyse is now protected against
-    //         RAW data files with no TPC data
-    
-    SetEventSpecie(AliRecoParam::ConvertIndex(specie));
-    //
-    for (int itc=-1;itc<GetNTrigClasses();itc++) { // RS: loop over all trigger class clones
-      
-      TH1F * histRawsOccupancy                 = (TH1F*)GetRawsData(kRawsOccupancy, itc);
-      TH1F * histRawsOccupancyVsSector         = (TH1F*)GetRawsData(kRawsOccupancyVsSector, itc);
-      TH1F * histRawsNClustersPerEventVsSector = (TH1F*)GetRawsData(kRawsNClustersPerEventVsSector, itc);
-      TH1F * histRawsQVsSector                 = (TH1F*)GetRawsData(kRawsQVsSector, itc);
-      TH1F * histRawsQmaxVsSector              = (TH1F*)GetRawsData(kRawsQmaxVsSector, itc) ;
-      TH1F * histRawsOccupancyVsEvent          = (TH1F*)GetRawsData(kRawsOccupancyVsEvent, itc);
-      TH1F * histRawsNclustersVsEvent          = (TH1F*)GetRawsData(kRawsNclustersVsEvent, itc);
-      if ( !histRawsOccupancy ||
-	   !histRawsOccupancyVsSector ||
-	   !histRawsNClustersPerEventVsSector ||
-	   !histRawsQVsSector ||
-	   !histRawsQmaxVsSector ||
-	   !histRawsOccupancyVsEvent ||
-	   !histRawsNclustersVsEvent ) {
-	AliError("Something very wrong here, corrupted memory ?????. Please check\n") ; 
-	continue ; 
-      }
-      
-      //Add2RawsList(fTPCdataQA, 0);
-      // get the histograms and add them to the output
-      // 31/8-08 Histogram is only added if the Calibration class 
-      //         receives TPC data 
-      const Int_t eventCounter = fTPCdataQA[specie]->GetEventCounter(); // RS : to change
-      if(eventCounter>0) { // some TPC data has been processed
-	
-	// Reset histograms and refill them 
-	histRawsOccupancy->Reset();
-	histRawsOccupancyVsSector->Reset();
-	histRawsNClustersPerEventVsSector->Reset();
-	histRawsQVsSector->Reset();
-	histRawsQmaxVsSector->Reset();
-	
-	TH1F* hNormOcc = new TH1F("hNormOcc", 0, 72, 0, 72);
-	hNormOcc->Sumw2();
-	TH1F* hNormNclusters = new TH1F("hNormNclusters", 0, 72, 0, 72);
-	hNormNclusters->Sumw2();
-	
-	for (Int_t iSec = 0; iSec < 72; iSec++) {
-	  
-	  AliTPCCalROC* occupancyROC = 
-	    fTPCdataQA[specie]->GetNoThreshold()->GetCalROC(iSec); 
-	  AliTPCCalROC* nclusterROC = 
-	    fTPCdataQA[specie]->GetNLocalMaxima()->GetCalROC(iSec); 
-	  AliTPCCalROC* qROC = 
-	    fTPCdataQA[specie]->GetMeanCharge()->GetCalROC(iSec); 
-	  AliTPCCalROC* qmaxROC = 
-	    fTPCdataQA[specie]->GetMaxCharge()->GetCalROC(iSec); 
-	  
-	  const Int_t nRows = occupancyROC->GetNrows(); 
-	  for (Int_t iRow = 0; iRow < nRows; iRow++) {
-	    
-	    const Int_t nPads = occupancyROC->GetNPads(iRow); 
-	    for (Int_t iPad = 0; iPad < nPads; iPad++) {
-	      
-	      histRawsOccupancy->Fill(occupancyROC->GetValue(iRow, iPad));
-	      hNormOcc->Fill(iSec);
-	      histRawsOccupancyVsSector->Fill(iSec, occupancyROC->GetValue(iRow, iPad));
-	      
-	      const Int_t nClusters = TMath::Nint(nclusterROC->GetValue(iRow, iPad));
-	      
-	      if(nClusters>0) {
-		
-		hNormNclusters->Fill(iSec,nClusters);
-		histRawsNClustersPerEventVsSector->Fill(iSec, nClusters);
-		histRawsQVsSector->Fill(iSec, 
-					nClusters*qROC->GetValue(iRow, iPad));
-		histRawsQmaxVsSector->Fill(iSec, 
-					   nClusters*qmaxROC->GetValue(iRow, iPad));
-	      }
-	    }
-	  }
-	} // end loop over sectors
-	
-	  // update event histograms - copy info from TPDdataQA histos
-	const TH1F* hQAOccVsEvent = fTPCdataQA[specie]->GetHistOccupancyVsEvent();
-	const TH1F* hQANclVsEvent = fTPCdataQA[specie]->GetHistNclustersVsEvent();
-	
-	// In case the histogram limits have changed we have to update
-	// them here
-	if(histRawsOccupancy->GetXaxis()->GetXmax()!=
-	   hQAOccVsEvent->GetXaxis()->GetXmax()) {
-	  
-	  histRawsOccupancyVsEvent->GetXaxis()->Set(histRawsOccupancyVsEvent->GetXaxis()->GetNbins(), hQAOccVsEvent->GetXaxis()->GetXmin(), hQAOccVsEvent->GetXaxis()->GetXmax()); 
-	  
-	  histRawsNclustersVsEvent->GetXaxis()->Set(histRawsOccupancyVsEvent->GetXaxis()->GetNbins(), hQANclVsEvent->GetXaxis()->GetXmin(), hQANclVsEvent->GetXaxis()->GetXmax()); 
-	}
-	
-	// reset the number of entries
-	histRawsOccupancyVsEvent->SetEntries(0);
-	histRawsNclustersVsEvent->SetEntries(0);
-	
-	// the two event histograms should have the same number of bins
-	const Int_t nBins = hQAOccVsEvent->GetXaxis()->GetNbins();
-	for(Int_t bin = 1; bin <= nBins; bin++) {
-	  
-	  histRawsOccupancyVsEvent->SetBinContent(bin, hQAOccVsEvent->GetBinContent(bin));
-	  histRawsNclustersVsEvent->SetBinContent(bin, hQANclVsEvent->GetBinContent(bin));
-	}
-	
-	// Normalize histograms
-	histRawsOccupancyVsSector->Divide(hNormOcc);
-	histRawsNClustersPerEventVsSector->Scale(1.0/Float_t(eventCounter));
-	histRawsQVsSector->Divide(hNormNclusters);
-	histRawsQmaxVsSector->Divide(hNormNclusters);
-	delete hNormOcc;
-	delete hNormNclusters;
-	
-      } // 
-    } // RS: loop over all trigger class clones
-  } // loop over species
-  //
   AliQAChecker::Instance()->Run(AliQAv1::kTPC, task, list) ;  
 }
 
@@ -286,7 +167,7 @@ void AliTPCQADataMakerRec::InitESDs()
     new TH1F("hESDclusters", "N TPC clusters per track; N clusters; Counts",
 	     160, 0, 160);
   histESDclusters->Sumw2();
-  Add2ESDsList(histESDclusters, KClusters, !expert, image);
+  Add2ESDsList(histESDclusters, kClusters, !expert, image);
 
   TH1F * histESDratio = 
     new TH1F("hESDratio", "Ratio: TPC clusters / findable; Ratio: cluster/findable; Counts",
@@ -318,70 +199,32 @@ void AliTPCQADataMakerRec::InitRaws()
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    
-    // It might happen that we will be in this method a few times because
-    // we create all dataQAs at the first call to this method
-    if(fTPCdataQA[specie]!=0) // data QA already created
-      continue;
-
-    fTPCdataQA[specie] = 
-      new AliTPCdataQA(AliRecoParam::ConvertIndex(specie));
-    LoadMaps(); // Load Altro maps
-    fTPCdataQA[specie]->SetAltroMapping(fMapping); // set Altro mapping
-    fTPCdataQA[specie]->SetRangeTime(fRawFirstTimeBin, fRawLastTimeBin); // set time bin interval 
-    fTPCdataQA[specie]->SetMaxEvents(fRawMaxEvents);
-    fTPCdataQA[specie]->SetEventsPerBin(fRawEventsPerBin);
-//    Add2RawsList(fTPCdataQA, kTPCdataQ, !expert, image, !saveCorrA); // This is used by the AMORE monitoring <------- THIS WILL FAIL (YS)
-  }
-
-  TH1F * histRawsOccupancy = 
-    new TH1F("hRawsOccupancy", "Occupancy (all pads); Occupancy; Counts",
-	     100, 0, 1);
-  histRawsOccupancy->Sumw2();
-  Add2RawsList(histRawsOccupancy, kRawsOccupancy, expert, !image, !saveCorr);
+  fTPCdataQA = new AliTPCdataQA();
+  LoadMaps(); // Load Altro maps
+  fTPCdataQA->SetAltroMapping(fMapping); // set Altro mapping
+  fTPCdataQA->SetRangeTime(fRawFirstTimeBin, fRawLastTimeBin); // set time bin interval 
+  fTPCdataQA->SetIsDQM(kTRUE);
   
-  TH1F * histRawsOccupancyVsSector = 
-    new TH1F("hRawsOccupancyVsSector", "Occupancy vs sector; Sector; Occupancy",
+  TProfile * histRawsOccupancyVsSector = 
+    new TProfile("hRawsOccupancyVsSector", "Occupancy vs sector; Sector; Occupancy",
 	     72, 0, 72);
-  histRawsOccupancyVsSector->Sumw2();
   histRawsOccupancyVsSector->SetMarkerStyle(20);
   histRawsOccupancyVsSector->SetOption("P");
   histRawsOccupancyVsSector->SetStats(kFALSE);
   Add2RawsList(histRawsOccupancyVsSector, kRawsOccupancyVsSector, !expert, image, !saveCorr);
-
-  TH1F * histRawsNClustersPerEventVsSector = 
-    new TH1F("hRawsNClustersPerEventVsSector", "Nclusters per event vs sector; Sector; Nclusters per event",
-	     72, 0, 72);
-  histRawsNClustersPerEventVsSector->Sumw2();
-  Add2RawsList(histRawsNClustersPerEventVsSector, kRawsNClustersPerEventVsSector, expert, !image, !saveCorr);
   
-  TH1F * histRawsQVsSector = 
-    new TH1F("hRawsQVsSector", "<Q> vs sector; Sector; <Q>",
+  TProfile * histRawsQVsSector = 
+    new TProfile("hRawsQVsSector", "<Q> vs sector; Sector; <Q>",
 	     72, 0, 72);
-  histRawsQVsSector->Sumw2();
   Add2RawsList(histRawsQVsSector, kRawsQVsSector, expert, !image, !saveCorr);
 
-  TH1F * histRawsQmaxVsSector = 
-    new TH1F("hRawsQmaxVsSector", "<Qmax> vs sector; Sector; <Qmax>",
+  TProfile * histRawsQmaxVsSector = 
+    new TProfile("hRawsQmaxVsSector", "<Qmax> vs sector; Sector; <Qmax>",
 	     72, 0, 72);
-  histRawsQmaxVsSector->Sumw2();
   histRawsQmaxVsSector->SetMarkerStyle(20);
   histRawsQmaxVsSector->SetOption("P");
   histRawsQmaxVsSector->SetStats(kFALSE);
   Add2RawsList(histRawsQmaxVsSector, kRawsQmaxVsSector, !expert, image, !saveCorr);
-
-  // Get histogram information from data QA to build copy
-  const TH1F* hOccHelp = fTPCdataQA[0]->GetHistOccupancyVsEvent();
-  TH1F * histRawsOccupancyVsEvent = 
-    CreateEventsHistCopy(hOccHelp, "hRawsOccupancyVsEvent");
-  Add2RawsList(histRawsOccupancyVsEvent, kRawsOccupancyVsEvent, expert, !image, !saveCorr);
-  
-  // Get histogram information from data QA to build copy
-  const TH1F* hNclHelp = fTPCdataQA[0]->GetHistNclustersVsEvent();
-  TH1F * histRawsNclustersVsEvent = 
-    CreateEventsHistCopy(hNclHelp, "hRawsNclustersVsEvent");
-  Add2RawsList(histRawsNclustersVsEvent, kRawsNclustersVsEvent, expert, !image, !saveCorr);
   //
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
@@ -470,7 +313,7 @@ void AliTPCQADataMakerRec::MakeESDs(AliESDEvent * esd)
     Int_t nTPCclusters         = track->GetTPCNcls();
     Int_t nTPCclustersFindable = track->GetTPCNclsF();
     if ( nTPCclustersFindable<=0) continue;
-    FillESDsData(KClusters,nTPCclusters);
+    FillESDsData(kClusters,nTPCclusters);
     FillESDsData(kRatio,Float_t(nTPCclusters)/Float_t(nTPCclustersFindable));
     FillESDsData(kPt,track->Pt()); 
   }
@@ -490,16 +333,43 @@ void AliTPCQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   
   GetRawsData(0); // dummy call to init raw data
   rawReader->Reset() ; 
-  if (! fTPCdataQA[AliRecoParam::AConvert(fEventSpecie)] ) {
-    AliError("Something unexpected here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!") ; 
-    return;
+  if (! fTPCdataQA ) {
+
+    AliError("No TPC data QA (no call to InitRaws?)!!!!") ; 
+  } else {  
+
+    if(fTPCdataQA->GetIsDQM() == kFALSE)
+      AliError("Data QA has to be initialized as DQM!!!!") ; 
+
+    // Fill profile data
+    fTPCdataQA->ResetProfiles();
+    
+    if(fTPCdataQA->ProcessEvent(rawReader)) { // means that TPC data was processed  
+
+      fTPCdataQA->FillOccupancyProfile();
+      
+      // Fill histograms    
+      TObjArray *arrRW = GetMatchingRawsData(kRawsOccupancyVsSector); // all kRawsOccupancyVsSector clones matching to triggers
+      for (int ih=arrRW->GetEntriesFast();ih--;) {
+	TProfile* hRawsOccupancyVsSector = dynamic_cast<TProfile*>(arrRW->At(ih));
+	if (hRawsOccupancyVsSector) hRawsOccupancyVsSector->Add(fTPCdataQA->GetHistOccVsSector());
+      }
+      arrRW = GetMatchingRawsData(kRawsQVsSector);
+      for (int ih=arrRW->GetEntriesFast();ih--;) {
+	TProfile* hRawsQVsSector = dynamic_cast<TProfile*>(arrRW->At(ih));
+	if (hRawsQVsSector) hRawsQVsSector->Add(fTPCdataQA->GetHistQVsSector());
+      }
+      arrRW = GetMatchingRawsData(kRawsQmaxVsSector);
+      for (int ih=arrRW->GetEntriesFast();ih--;) {
+	TProfile* hRawsQmaxVsSector = dynamic_cast<TProfile*>(arrRW->At(ih));
+	if (hRawsQmaxVsSector) hRawsQmaxVsSector->Add(fTPCdataQA->GetHistQmaxVsSector());
+      }
+      //
+      IncEvCountCycleRaws();
+      IncEvCountTotalRaws();
+      //
+    }
   }
-  
-  fTPCdataQA[AliRecoParam::AConvert(fEventSpecie)]->ProcessEvent(rawReader);  
-  //
-  IncEvCountCycleRaws();
-  IncEvCountTotalRaws();
-  //
 }
 
 //____________________________________________________________________________
@@ -600,62 +470,3 @@ void AliTPCQADataMakerRec::LoadMaps()
   }
 }
 
-//____________________________________________________________________________
-void AliTPCQADataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
-{
-  // Overwrites general method for RAW data.
-  // The AliTPCdataQA elements that does the internal processing are
-  // in the case they have processed data deleted and new are created
-
-  // Reset histograms for all tasks
-  AliQADataMakerRec::ResetDetector(task);
-  
-  for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    
-    if ( fTPCdataQA[specie] != NULL) { // exist
-      
-      if(fTPCdataQA[specie]->GetEventCounter()>0) { // has processed data
-	
-	// old configuration
-	Int_t  firstTime    = fTPCdataQA[specie]->GetFirstTimeBin();
-	Int_t  lastTime     = fTPCdataQA[specie]->GetLastTimeBin();
-	Int_t  minADC       = fTPCdataQA[specie]->GetAdcMin();
-	Int_t  maxADC       = fTPCdataQA[specie]->GetAdcMax();
-
-	//delete old
-	delete fTPCdataQA[specie]; 
-
-	// create new
-	fTPCdataQA[specie] = new AliTPCdataQA(AliRecoParam::ConvertIndex(specie));
-	// configure new
-	LoadMaps(); // Load Altro maps
-	fTPCdataQA[specie]->SetAltroMapping(fMapping);
-	fTPCdataQA[specie]->SetRangeTime(firstTime, lastTime);
-	fTPCdataQA[specie]->SetRangeAdc(minADC, maxADC);
-	// Here we want to restore the default configuration because
-	// the max events and events are adjusted for the last run
-	fTPCdataQA[specie]->SetMaxEvents(fRawMaxEvents);
-	fTPCdataQA[specie]->SetEventsPerBin(fRawEventsPerBin);
-      }
-    }
-  }
-}
-
-//____________________________________________________________________________
-TH1F* AliTPCQADataMakerRec::CreateEventsHistCopy(const TH1F* hist, 
-						 const Char_t* copyName)
-{
-  // This method is used to create a copy of the event histograms
-  
-  TH1F* histCopy = new TH1F(copyName, hist->GetTitle(),
-			    hist->GetXaxis()->GetNbins(),
-			    hist->GetXaxis()->GetXmin(), 
-			    hist->GetXaxis()->GetXmax());
-  histCopy->GetXaxis()->SetTitle(hist->GetXaxis()->GetTitle());
-  histCopy->GetYaxis()->SetTitle(hist->GetYaxis()->GetTitle());
-  histCopy->SetMarkerStyle(20);
-  histCopy->SetOption("P");
-  histCopy->SetStats(kFALSE);
-
-  return histCopy;
-}

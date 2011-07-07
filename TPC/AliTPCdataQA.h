@@ -9,7 +9,8 @@
 class TProfile;
 #include "AliRecoParam.h"
 
-class TArrayF;
+#include <TArray.h>
+
 class TH2F;
 class TTreeSRedirector;
 class AliTPCROC;
@@ -26,7 +27,6 @@ class AliTPCdataQA : public TH1F {
 
 public:
   AliTPCdataQA();
-  AliTPCdataQA(AliRecoParam::EventSpecie_t es);
   AliTPCdataQA(const AliTPCdataQA &ped);
   AliTPCdataQA(const TMap *config);
   virtual ~AliTPCdataQA();
@@ -48,6 +48,11 @@ public:
   void SetPedestal(AliTPCCalPad *const pedestalCal){ fPedestal = pedestalCal;}
   void SetNoise(AliTPCCalPad *const noiseCal){ fNoise = noiseCal;}
 
+  // DQM methods
+  void FillOccupancyProfile();
+  void ResetProfiles();
+
+
   AliTPCCalPad *GetNoThreshold() const { return fNoThreshold;}
   AliTPCCalPad *GetMaxCharge() const { return fMaxCharge;}
   AliTPCCalPad *GetMeanCharge() const { return fMeanCharge;}
@@ -67,6 +72,11 @@ public:
   TH1F*     GetHistOccupancyVsEvent();
   TH1F*     GetHistNclustersVsEvent();
 
+  // DQM output
+  TProfile* GetHistOccVsSector()  const { return fHistOccVsSector; }
+  TProfile* GetHistQVsSector()    const { return fHistQVsSector; }
+  TProfile* GetHistQmaxVsSector() const { return fHistQmaxVsSector; }
+
   //
   AliTPCAltroMapping **GetAltroMapping() const { return fMapping; };
   void  SetAltroMapping(AliTPCAltroMapping **mapp) { fMapping = mapp; };
@@ -83,10 +93,16 @@ public:
   Int_t  GetSignalCounter()  const { return fSignalCounter; }
   Int_t  GetClusterCounter() const { return fClusterCounter;}
 
+  // DQM getter
+  Bool_t    GetIsDQM() const { return fIsDQM; }
+
   void  SetRangeTime(Int_t tMin, Int_t tMax){ fFirstTimeBin=tMin; fLastTimeBin=tMax;}  // Set time bin range that is used for the pedestal calibration
   void  SetRangeAdc (Int_t aMin, Int_t aMax){ fAdcMin=aMin; fAdcMax=aMax; }  // Set adc range for the pedestal calibration
   void  SetMaxEvents   (Int_t value) { fMaxEvents = value; }
   void  SetEventsPerBin(Int_t value) { fEventsPerBin = value; }
+  
+  // DQM setter
+  void  SetIsDQM(Bool_t value) { fIsDQM = value; }
 
 private:
   Int_t Update(const Int_t iSector, const Int_t iRow, const Int_t iPad,
@@ -148,6 +164,15 @@ private:
   Int_t fRowsMax;                  //!  Maximum number of time bins
   Int_t fPadsMax;                  //!  Maximum number of time bins
   Int_t fTimeBinsMax;              //!  Maximum number of time bins
+
+  // DQM variables
+  Bool_t fIsDQM;                   //!  Is DQM -> Simple output (no 2D!)
+  TProfile* fHistOccVsSector;      //!  Occ vs sector (for DQM only)
+  TProfile* fHistQVsSector;        //!  Q vs sector (for DQM only)
+  TProfile* fHistQmaxVsSector;     //!  QMax vs sector (for DQM only)
+  TArrayD* fOccVec;                //!  Occupancy help counter for DQM
+  TArrayD* fOccMaxVec;             //!  Occupancy help normlization for DQM
+  
 
   ClassDef(AliTPCdataQA, 5)  // Implementation of the TPC Raw QA
 };
