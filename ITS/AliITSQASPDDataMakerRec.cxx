@@ -222,7 +222,8 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
    hSPDChipsMEB->GetXaxis()->SetNdivisions(60,kFALSE);
    hSPDChipsMEB->GetYaxis()->SetTitle("SIDE C   ->   SIDE A           Chip");
    hSPDChipsMEB->GetYaxis()->SetNdivisions(20,kFALSE);
-   hSPDChipsMEB->SetOption("COLZ");
+   //hSPDChipsMEB->SetOption("COLZ");
+   hSPDChipsMEB->SetOption("text");
    hSPDChipsMEB->UseCurrentStyle();
    for(Int_t ibinx =0; ibinx< hSPDChipsMEB->GetNbinsX(); ibinx++){
    if(ibinx%6==0) hSPDChipsMEB->GetXaxis()->SetBinLabel(ibinx+1,Form("Sector %i__%i",ibinx/6,ibinx%6));
@@ -272,7 +273,8 @@ Int_t AliITSQASPDDataMakerRec::InitRaws()
   TH2F *herrorsAll = new TH2F("SPDErrorsAll_OnlineSPD","Error codes - SPD",20,-0.5,19.5,22,-0.5,21.5);
   herrorsAll->GetXaxis()->SetTitle("DDL");
   herrorsAll->GetYaxis()->SetTitle("Error Type");
-  herrorsAll->SetOption("COLZ");
+//  herrorsAll->SetOption("COLZ");
+  herrorsAll->SetOption("text");
   herrorsAll->UseCurrentStyle();
   rv = fAliITSQADataMakerRec->Add2RawsList(herrorsAll, kAmoreFoOffset+shift, !expert, image, !saveCorr);
   fSPDhRawsTask++;

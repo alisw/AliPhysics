@@ -1401,5 +1401,5 @@ void AliITSQASDDDataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
 Int_t AliITSQASDDDataMakerRec::GetNumberOfEvents(AliQAv1::TASKINDEX_t task, Int_t trigCl)
 {
   //return the number of the processed events for a given task and trigger class (-1 for all)
-  return fAliITSQADataMakerRec->GetEvCountCycle(task, trigCl);
+  return fAliITSQADataMakerRec->GetEvCountTotal(task, trigCl);
 }

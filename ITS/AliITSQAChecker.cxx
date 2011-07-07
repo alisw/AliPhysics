@@ -1,4 +1,4 @@
-/**************************************************************************
+ /**************************************************************************
  * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -495,7 +495,12 @@ void  AliITSQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, 
       TString cln(hdata->ClassName()) ; 
       if ( ! cln.Contains("TH") )
         continue ; 
-      if(cln.Contains("TH2")) hdata->SetOption("colz");
+      if(cln.Contains("TH2")) 
+	{
+	  Float_t min=hdata->GetMinimum();
+	  Float_t max=hdata->GetMaximum();
+	  if(max>min) hdata->SetOption("colz");
+	}
     }
     break ; 
   }

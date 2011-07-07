@@ -359,14 +359,14 @@ Bool_t AliITSQASPDChecker::MakeSPDRawsImage(TObjArray ** list, AliQAv1::TASKINDE
 	    gPad->SetBorderMode(0) ;  
             gPad->SetRightMargin(0.25);
 	    hist->SetStats(0);
-	    hist->SetOption("colz") ;
+	    hist->SetOption("text") ;
             hist->DrawCopy();  
            }     
            if(name.Contains("MEB")) {
             fImage[esIndex]->cd(2) ; 
 	    gPad->SetBorderMode(0) ;  
             gPad->SetBottomMargin(0.25);
-	    hist->SetOption("colz") ;
+	    hist->SetOption("text") ;
             hist->DrawCopy();  
            }     
            if(name.Contains("SPDFastOrCorrelation")){
