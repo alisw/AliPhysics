@@ -85,6 +85,9 @@ struct AliHLTCaloRecPointDataStruct
 
   /** Index of the digits in the rec point */
   Int_t fDigits;                              //COMMENT
+  
+  /** Time of the maximum digit */
+  Int_t fTime;  			      //COMMENT
 
 };
 

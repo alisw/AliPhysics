@@ -143,7 +143,8 @@ AliHLTCaloClusterizer::ClusterizeEvent(Int_t nDigits)
 
         fRecPointDataPtr->fAmp = 0;
         fRecPointDataPtr->fModule = fDigitsPointerArray[i]->fModule;
-
+	fRecPointDataPtr->fTime = fDigitsPointerArray[i]->fTime;
+	
         // Assigning the digit to this rec point
         fRecPointDataPtr->fDigits = i;
         fUsedSize += sizeof(AliHLTCaloRecPointDataStruct);

@@ -315,7 +315,10 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
 	 caloClusterPtr->fEnergy = recPointPtr->fAmp;
       }
       
-      HLTDebug("Cluster global position: x = %f, y = %f, z = %f, energy: %f, number of cells: %d, cluster pointer: %x", globalCoord.fX, globalCoord.fY, globalCoord.fZ, caloClusterPtr->fEnergy, caloClusterPtr->fNCells,  caloClusterPtr);
+      // Set the time of the maximum digit as cluster time
+      caloClusterPtr->fTOF = recPointPtr->fTime;
+      
+      HLTDebug("Cluster global position: x = %f, y = %f, z = %f, energy: %f, time: %f, number of cells: %d, cluster pointer: %x", globalCoord.fX, globalCoord.fY, globalCoord.fZ, caloClusterPtr->fEnergy, caloClusterPtr->fTOF, caloClusterPtr->fNCells,  caloClusterPtr);
 
       if(fDoClusterFit)
 	{
