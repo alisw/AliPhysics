@@ -1,7 +1,7 @@
 /**
  * Script to draw the energy loss fits 
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_analysis_scripts_corr
  */
 #ifndef __CINT__
 #include <TFile.h>
@@ -22,7 +22,7 @@
  * @param field  L3 magnetic field (-5,0,5) in kGaus
  * @param mc     Whether this is from MC data or not 
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_analysis_scripts_corr
  */
 void
 ExtractELoss(const char* fname="forward_eloss.root", 
@@ -78,7 +78,7 @@ ExtractELoss(const char* fname="forward_eloss.root",
  * @param field  L3 magnetic field (-5,0,5) in kGaus
  * @param mc     Whether this is from MC data or not 
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_analysis_scripts_corr
  */
 void
 ExtractELoss(const char* fname="energyFits.root", 

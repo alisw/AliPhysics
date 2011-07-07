@@ -1,4 +1,16 @@
 //____________________________________________________________________
+/** 
+ * 
+ * 
+ * @param list 
+ * @param low 
+ * @param high 
+ * @param m 
+ * 
+ * @return 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
 Bool_t
 MakeSecMap(TList* list, Double_t low, Double_t high, 
 	   AliFMDCorrSecondaryMap* m)
@@ -60,6 +72,16 @@ MakeSecMap(TList* list, Double_t low, Double_t high,
 }
 
 //____________________________________________________________________
+/** 
+ * 
+ * 
+ * @param filename 
+ * @param sys 
+ * @param cms 
+ * @param field 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
 void
 MakeCorrSecMap(const char* filename, 
 	       const char* sys="pp", 

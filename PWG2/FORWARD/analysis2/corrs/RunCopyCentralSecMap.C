@@ -1,30 +1,30 @@
+/** 
+ * 
+ * 
+ * @param d 
+ * @param r 
+ * 
+ * @return 
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
 Color_t Color(UShort_t d, Char_t r ) const 
 { 
   return ((d == 1 ? kRed : (d == 2 ? kGreen : kBlue))
 	  + ((r == 'I' || r == 'i') ? 2 : -2));
 }
 
-/*void
-RunCopyCentralSecMap(UShort_t sys, UShort_t cms, Short_t field, const Char_t* path=0)
-{
-  RunCopyCentralSecMap(sys == 1 ? "pp" : "PbPb", 
-		cms, 
-		field, 
-		path);
-		}*/
 /** 
  * 
  * @param sys       Collision system 
  * @param cms       Center of mass energy per nucleon in GeV
  * @param field     Magnetic field 
- * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @param path      File path 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_corr
  */
-//void
-//RunCopyCentralSecMap(const char* sys, UShort_t cms, Short_t field,
-		     //	      const Char_t* path=0)
 void
-RunCopyCentralSecMap(UShort_t sys, UShort_t cms, Short_t field, const Char_t* path=0)
+RunCopyCentralSecMap(UShort_t sys, UShort_t cms, Short_t field, 
+		     const Char_t* path=0)
 {
   gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
   gSystem->Load("libPWG2forward.so");

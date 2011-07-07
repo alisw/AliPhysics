@@ -373,6 +373,7 @@ MakeSysError(const TH1* cen, const TH1* fwd, Double_t sysErr=0.7)
 /** 
  * Function to draw the results from forward_dndeta.root file 
  * 
+ * @param what     What to draw 
  * @param rebin    Rebinnig.  Note, the data must be present in the file
  * @param filename File to open and draw stuff from >
  * 
