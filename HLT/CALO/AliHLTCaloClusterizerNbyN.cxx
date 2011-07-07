@@ -113,26 +113,25 @@ Int_t AliHLTCaloClusterizerNbyN::ClusterizeEvent(Int_t nDigits)
                 if (TMath::Abs(fDigitsPointerArray[i]->fX - fDigitsPointerArray[j]->fX) == 1
                         || TMath::Abs(fDigitsPointerArray[i]->fZ - fDigitsPointerArray[j]->fZ) == 1) // The digit neighbour to the seed
                 {
-                    // This means the digit is not a local maxima
+                    // This means the digit is not a local maximum
                     fDigitsPointerArray[j]->fAssociatedCluster = fNRecPoints;
-                }
                 
-                // Check that the buffer is large enough for adding a digit (can be heavily improved wrt performance)
-                CheckBuffer();
+		    // Check that the buffer is large enough for adding a digit (can be heavily improved wrt performance)
+		    CheckBuffer();
 
-                // Assigning index to digit
-                *fDigitIndexPtr = j;
-                fUsedSize += sizeof(Int_t);
+		    // Assigning index to digit
+		    *fDigitIndexPtr = j;
+		    fUsedSize += sizeof(Int_t);
 
-                // Incrementing digit pointer to be ready for new entry
-                fDigitIndexPtr++;
+		    // Incrementing digit pointer to be ready for new entry
+		    fDigitIndexPtr++;
 
-                // Adding the digit energy to the rec point
-                fRecPointDataPtr->fAmp += fDigitsPointerArray[j]->fEnergy;
+		    // Adding the digit energy to the rec point
+		    fRecPointDataPtr->fAmp += fDigitsPointerArray[j]->fEnergy;
 		
-		// Count it
-		fDigitsInCluster++;
-
+		    // Count it
+		    fDigitsInCluster++;
+		}
             }
         }
   
