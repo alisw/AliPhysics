@@ -860,7 +860,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                      Warning("CreateDataset","Dataset %s produced by: <%s> is empty !", file.Data(), command.Data());
                      gSystem->Exec("rm -f __tmp*");
                      fRunNumbers.ReplaceAll(os->GetString().Data(), "");
-                     continue;
+                     break;
                   }   
                   TString line;
                   ifstream in;
@@ -998,7 +998,7 @@ Bool_t AliAnalysisAlien::CreateDataset(const char *pattern)
                   if (nullFile) {
                      Warning("CreateDataset","Dataset %s produced by: <%s> is empty !", file.Data(), command.Data());
                      gSystem->Exec("rm -f __tmp*");
-                     continue;
+                     break;
                   }   
                   TString line;
                   ifstream in;
