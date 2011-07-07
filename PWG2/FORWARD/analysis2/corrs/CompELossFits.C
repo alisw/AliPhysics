@@ -1,3 +1,11 @@
+/** 
+ * 
+ * 
+ * @param fname1 
+ * @param fname2 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
 void
 CompELossFits(const char* fname1, const char* fname2)
 {
@@ -84,3 +92,6 @@ CompELossFits(const char* fname1, const char* fname2)
   
 
   
+//
+// EOF
+//

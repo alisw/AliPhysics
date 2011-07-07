@@ -1,9 +1,28 @@
+/** 
+ * 
+ * 
+ * @param d 
+ * @param r 
+ * 
+ * @return 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
 Color_t Color(UShort_t d, Char_t r ) const 
 { 
   return ((d == 1 ? kRed : (d == 2 ? kGreen : kBlue))
 	  + ((r == 'I' || r == 'i') ? 2 : -2));
 }
-
+/** 
+ * 
+ * 
+ * @param sys 
+ * @param cms 
+ * @param field 
+ * @param path 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
 void
 RunCopyVtxBias(UShort_t sys, UShort_t cms, Short_t field, const char* path=0)
 {
@@ -15,8 +34,10 @@ RunCopyVtxBias(UShort_t sys, UShort_t cms, Short_t field, const char* path=0)
  * @param sys       Collision system 
  * @param cms       Center of mass energy per nucleon in GeV
  * @param field     Magnetic field 
+ * @param path      File path
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * 
+ * @ingroup pwg2_forward_analysis_scripts_corr
  */
 void
 RunCopyVtxBias(const char* sys, UShort_t cms, Short_t field, const char* path=0)

@@ -5,6 +5,8 @@
  * 
  * @brief  Utilities for comparing correction objects 
  * 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_corr
  * 
  */
 #ifndef __CINT__
@@ -18,6 +20,12 @@
 
 
 //======================================================================
+/**
+ * 
+ * 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
 struct Canvas 
 {
   //____________________________________________________________________
@@ -99,6 +107,17 @@ struct Canvas
 };
 
 //======================================================================
+/** 
+ * 
+ * 
+ * @param what 
+ * @param fn1 
+ * @param fn2 
+ * @param o1 
+ * @param o2 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
 void
 GetObjects(UShort_t    what, 
 	   const char* fn1, const char* fn2, 
@@ -141,3 +160,6 @@ GetObjects(UShort_t    what,
 
 
 
+//
+// EOF
+//

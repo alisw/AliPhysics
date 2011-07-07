@@ -1,16 +1,15 @@
-/** 
- * Make ratio of two specific maps 
- * 
- * @param d        Detector
- * @param r        Ring
- * @param v        Vertex bin (1 based)
- * @param first    First correction
- * @param second   Second correction
- * 
- * @return Ratio of the two, or null
- */
-
 //____________________________________________________________________
+/** 
+ * 
+ * 
+ * @param fn1 
+ * @param fn2 
+ * @param n1 
+ * @param n2 
+ * @param load 
+ *
+ * @ingroup pwg2_forward_analysis_scripts_corr
+ */
 void
 CompareVtxBias(const char* fn1,   const char* fn2, 
 	       const char* n1=0,  const char* n2=0,

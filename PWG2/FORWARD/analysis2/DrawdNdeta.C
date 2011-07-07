@@ -8,7 +8,7 @@
  * This script is independent of any AliROOT code - and should stay
  * that way.
  * 
- * The script is @i very long - sigh - the joy of drawing
+ * The script is <i>very</i> long - sigh - the joy of drawing
  * things nicely in ROOT
  * 
  * @ingroup pwg2_forward_dndeta
