@@ -93,6 +93,7 @@ AliFMDRawReader::AliFMDRawReader(AliRawReader* reader, TTree* tree)
     fSampleRate[i]   = 0;
     fZeroSuppress[i] = kFALSE;
     fNoiseFactor[i]  = 1;
+    fL1Phase[i]      = 0;
   }
 }
 

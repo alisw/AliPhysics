@@ -187,7 +187,7 @@ AliFMDInput::SetLoads(UInt_t mask)
       if (i != UInt_t(type)) continue;
       AddLoad(type);
       break;
-    } while (*ptype != kUser);
+    } while (*ptype++ != kUser);
   }
 }
      
@@ -217,7 +217,7 @@ AliFMDInput::ParseLoad(const char* what)
     ETrees  type = *ptype;
     if (opt.Contains(TreeName(type,true), TString::kIgnoreCase)) 
       return type;
-  } while (*ptype++);
+  } while (*ptype++ != kUser);
   return kUser;
 }
 //____________________________________________________________________
@@ -310,7 +310,7 @@ AliFMDInput::Init()
     ETrees type = *ptype;
     what.Append(Form("\n\t%-20s: %s", TreeName(type), 
 		     IsLoaded(type) ? "yes" : "no"));
-  } while (*ptype++);
+  } while (*ptype++ != kUser);
   
   Info("Init","Initialising w/mask 0x%04x%s", fTreeMask, what.Data());
   // Get the run 
