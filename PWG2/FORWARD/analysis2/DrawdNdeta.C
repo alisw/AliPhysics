@@ -8,7 +8,7 @@
  * This script is independent of any AliROOT code - and should stay
  * that way.
  * 
- * The script is <emph>very</emph> long - sigh - the joy of drawing
+ * The script is @i very long - sigh - the joy of drawing
  * things nicely in ROOT
  * 
  * @ingroup pwg2_forward_dndeta
@@ -822,7 +822,6 @@ struct dNdetaDrawer
   /** 
    * Build centrality legend 
    * 
-   * @param axis    Stack to include 
    * @param x1      Lower X coordinate in the range [0,1]
    * @param y1      Lower Y coordinate in the range [0,1]
    * @param x2      Upper X coordinate in the range [0,1]
@@ -1637,10 +1636,10 @@ struct dNdetaDrawer
    * Fix the apperance of the axis in a stack
    *
    * @param stack  stack of histogram
-   * @param s      Scaling factor
+   * @param yd     How the canvas is cut
    * @param ytitle Y axis title
-   * @param force  Whether to draw the stack first or not
    * @param ynDiv  Divisions on Y axis
+   * @param force  Whether to draw the stack first or not
    */
   void FixAxis(THStack* stack, Double_t yd, const char* ytitle,
                Int_t ynDiv=210, Bool_t force=true)
@@ -1773,6 +1772,8 @@ struct dNdetaDrawer
    * Make band of systematic errors 
    * 
    * @param tmp Histogram
+   * @param cen Central 
+   * @param fwd Forward 
    * @param fit Fit 
    */
   void
@@ -2051,10 +2052,10 @@ Usage()
  * Draw @f$ dN/d\eta@f$ 
  * 
  * @param filename  File name 
- * @param flags     Flags 
  * @param title     Title 
  * @param rebin     Rebinning factor 
- * @param cutEdges  Whether to cut edges when rebinning
+ * @param others    What other data to show 
+ * @param flags     Flags 
  * @param sNN       (optional) Collision energy [GeV]
  * @param sys       (optional) Collision system (1: pp, 2: PbPb)
  * @param trg       (optional) Trigger (1: INEL, 2: INEL>0, 4: NSD)   

@@ -1,5 +1,5 @@
 /**
- * @mainpage Forward/Backward Correlations 
+ * @section Forward/Backward Correlations 
  * 
  * A script containing a class ForwardBackwardTask and a
  * function to run the analysis.
@@ -498,7 +498,7 @@ protected:
 /** 
  * Run the analysis 
  * 
- * @param aoddir  Input directory 
+ * @param esddir  Input directory 
  * @param nEvents Number of events, negative means all 
  */
 void

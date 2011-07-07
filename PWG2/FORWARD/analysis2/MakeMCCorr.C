@@ -16,13 +16,10 @@
  * in a sub-directory named by @a name after escaping spaces and special 
  * characters 
  * 
- * @param aoddir     AOD input directory. Any file matching the pattern 
+ * @param esddir     AOD input directory. Any file matching the pattern 
  *                   *AliAODs*.root are added to the chain 
  * @param nEvents    Number of events to process.  If 0 or less, then 
  *                   all events are analysed
- * @param trig       Trigger to use 
- * @param useCent    Whether to use centrality or not 
- * @param scheme     Normalisation scheme 
  * @param vzMin      Least @f$ v_z@f$ (centimeter)
  * @param vzMax      Largest @f$ v_z@f$ (centimeter)
  * @param proof      If larger then 1, run in PROOF-Lite mode with this 

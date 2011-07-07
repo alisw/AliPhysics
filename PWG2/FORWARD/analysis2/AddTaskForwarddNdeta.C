@@ -18,6 +18,7 @@
  * @param useCent   Whether to use the centrality or not
  * @param scheme    Normalisation scheme
  * @param cutEdges  Whether to cut edges when rebinning 
+ * @param mcanalysisfilename Take final MC corrections from this - if present
  * 
  * @return Newly created and configured task
  *
