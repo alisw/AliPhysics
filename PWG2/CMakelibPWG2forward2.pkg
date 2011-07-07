@@ -96,7 +96,7 @@ add_custom_command( OUTPUT FORWARD/doc/doc.pdf
 
 add_custom_command( OUTPUT FORWARD/doc/html/index.html 
 		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc
-                    COMMAND sed -e 's,\\\(INPUT\\|EXAMPLE_PATH\\\) *= ../analysis2,\\1 = ${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/analysis2,' -e 's,OUTPUT_DIRECTORY *=.*,OUTPUT_DIRECTORY = FORWARD/doc/,' < ${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/doc/Doxyfile > ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
+                    COMMAND sed -e 's,../analysis2,${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/analysis2,' -e 's,OUTPUT_DIRECTORY *=.*,OUTPUT_DIRECTORY = FORWARD/doc/,' < ${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/doc/Doxyfile > ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
 		    COMMAND doxygen ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
 		    DEPENDS ${SRCS} ${HDRS} )
 
