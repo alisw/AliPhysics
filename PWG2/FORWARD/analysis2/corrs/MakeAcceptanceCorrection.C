@@ -9,7 +9,7 @@
  * 
  * @return 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 TH2D* MakeOneRing(UShort_t d, Char_t r, Double_t vz, Int_t& nDead)
 {
@@ -79,7 +79,7 @@ TH2D* MakeOneRing(UShort_t d, Char_t r, Double_t vz, Int_t& nDead)
  * @param vtxLow 
  * @param vtxHigh 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void MakeAcceptanceCorrection(Int_t   runNo=121526, 
 			      Int_t   system = 1,

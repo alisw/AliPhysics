@@ -5,7 +5,7 @@
  * @param d  Detector
  * @param r  Ring
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 void
 DrawRingNeighbors(TList* p, UShort_t d, Char_t r)
@@ -62,7 +62,7 @@ DrawRingNeighbors(TList* p, UShort_t d, Char_t r)
  * 
  * @param filename 
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 void
 DrawNeighbors(const char* filename="forward.root")

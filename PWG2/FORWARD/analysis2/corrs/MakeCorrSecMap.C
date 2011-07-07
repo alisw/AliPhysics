@@ -9,7 +9,7 @@
  * 
  * @return 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 Bool_t
 MakeSecMap(TList* list, Double_t low, Double_t high, 
@@ -80,7 +80,7 @@ MakeSecMap(TList* list, Double_t low, Double_t high,
  * @param cms 
  * @param field 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void
 MakeCorrSecMap(const char* filename, 

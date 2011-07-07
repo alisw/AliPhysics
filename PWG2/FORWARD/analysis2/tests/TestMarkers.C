@@ -1,7 +1,7 @@
 /** 
  * 
  * 
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 namespace {
   enum { 
@@ -21,7 +21,7 @@ namespace {
    * @param bits 
    * 
    * @return 
-   * @ingroup pwg2_forward_analysis_scripts_tests
+   * @ingroup pwg2_forward_scripts_tests
    */
   Int_t MarkerStyle(UInt_t bits)
   {
@@ -44,7 +44,7 @@ namespace {
    * @param style 
    * 
    * @return 
-   * @ingroup pwg2_forward_analysis_scripts_tests
+   * @ingroup pwg2_forward_scripts_tests
    */
   UShort_t MarkerBits(Int_t style) 
   { 
@@ -70,7 +70,7 @@ namespace {
    * @param style 
    * 
    * @return 
-   * @ingroup pwg2_forward_analysis_scripts_tests
+   * @ingroup pwg2_forward_scripts_tests
    */
   Int_t FlipHollow(Int_t style) 
   {
@@ -88,7 +88,7 @@ namespace {
  * @param what 
  * @param base 
  * @param y 
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 void DrawOne(const char* what, UShort_t base, Double_t y)
 {

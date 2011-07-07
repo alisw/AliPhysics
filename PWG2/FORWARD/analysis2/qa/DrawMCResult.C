@@ -6,7 +6,7 @@
  * @brief  Script to draw steps (deprecated version - use DrawSteps.C)
  * 
  * 
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 /** 
  * 
@@ -17,7 +17,7 @@
  * 
  * @return 
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 THStack*
 GetStack(const TList& forward,  const char* sub, const char* name)
@@ -41,7 +41,7 @@ GetStack(const TList& forward,  const char* sub, const char* name)
  * 
  * @return 
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 TH1* 
 Rebin(TH1* h, Int_t rebin)
@@ -60,7 +60,7 @@ Rebin(TH1* h, Int_t rebin)
  * 
  * @return 
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 TH1*
 Ratio(const TH1* h1, const TH1* h2)
@@ -85,7 +85,7 @@ Ratio(const TH1* h1, const TH1* h2)
  * 
  * @return 
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 Int_t 
 Ratio(THStack* r, const THStack* h1, const THStack* h2)
@@ -113,7 +113,7 @@ Ratio(THStack* r, const THStack* h1, const THStack* h2)
  * @param rebin 
  * @param ratios 
  *
- * @ingroup pwg2_forward_analysis_scripts_qa
+ * @ingroup pwg2_forward_scripts_qa
  */
 void
 DrawMCResult(const char* filename="forward.root", Int_t rebin=1,

@@ -20,7 +20,7 @@ class TAxis;
 /**
  * A simple script to draw results from MakedNdeta.C (or similar)
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 /** 
  * Get a stack from the passed list 
@@ -31,7 +31,7 @@ class TAxis;
  * 
  * @return Stack or null
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 THStack*
 GetStack(const TList* list, const char* name, Int_t rebin)
@@ -60,7 +60,7 @@ GetStack(const TList* list, const char* name, Int_t rebin)
  * 
  * @return Histogram or null
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 TH1*
 GetHist(const TList* list, const char* name, Int_t rebin)
@@ -95,7 +95,7 @@ GetHist(const TList* list, const char* name, Int_t rebin)
  * 
  * @return Added stack or null
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 THStack*
 AddStack(THStack* p, const TList* list, const char* name, Int_t rebin)
@@ -115,7 +115,7 @@ AddStack(THStack* p, const TList* list, const char* name, Int_t rebin)
  * 
  * @param c Centrality axis 
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 void
 BuildCentLegend(const TAxis* c)
@@ -151,7 +151,7 @@ BuildCentLegend(const TAxis* c)
  * @param stack Stack of histograms 
  * @param c     Centrality axis.  If present, markers are black 
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 void
 BuildLegend(const THStack* stack, const TAxis* c)
@@ -295,7 +295,7 @@ AddInformation(TList* forward, bool prelim=true)
  * 
  * @return Value of function
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 Double_t myFunc(Double_t* xp, Double_t* pp)
 {
@@ -316,7 +316,7 @@ Double_t myFunc(Double_t* xp, Double_t* pp)
  * 
  * @return 
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 TH1* 
 MakeSysError(const TH1* cen, const TH1* fwd, Double_t sysErr=0.7)
@@ -377,7 +377,7 @@ MakeSysError(const TH1* cen, const TH1* fwd, Double_t sysErr=0.7)
  * @param rebin    Rebinnig.  Note, the data must be present in the file
  * @param filename File to open and draw stuff from >
  * 
- * @ingroup pwg2_forward_analysis_scripts
+ * @ingroup pwg2_forward_scripts
  */
 void
 SimpledNdeta(Int_t what=0x5, 

@@ -49,7 +49,7 @@ class TH1;
  * The class AliFMDELossFitter automatically generates the
  * AliFMDCorrELossFit object.
  *
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 
 class MakeELossFit 

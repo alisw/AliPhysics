@@ -4,7 +4,7 @@
  * @deprecated
  * This is a simple test script 
  *
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 #ifndef __CINT__
 # include "AliForwardUtil.h"
@@ -39,7 +39,7 @@ class TF1;
  * @deprecated
  * This is a simple test script 
  *
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 TH1* GetEDist(TList* ef, UShort_t d, Char_t r, UShort_t etabin)
 {
@@ -88,7 +88,7 @@ TH1* GetEDist(TList* ef, UShort_t d, Char_t r, UShort_t etabin)
  * @deprecated
  * This is a simple test script 
  *
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
 */
 TH1* GetEDist(TList* ef, UShort_t d, Char_t r, Float_t eta)
 {
@@ -123,7 +123,7 @@ TH1* GetEDist(TList* ef, UShort_t d, Char_t r, Float_t eta)
  * @deprecated
  * This is a simple test script 
  *
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 TList* GetEF(TFile* file) 
 {
@@ -154,7 +154,7 @@ TList* ef = 0;
  * @deprecated
  * This is a simple test script 
  *
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 TList*  CheckEF()
 {
@@ -181,7 +181,7 @@ TCanvas* c = 0;
  * @deprecated
  * This is a simple test script 
  *
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 TCanvas* CheckC()
 {
@@ -221,7 +221,7 @@ TCanvas* CheckC()
  * @deprecated
  * This is a simple test script 
  *
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 void PrintFit(TF1* f)
 {
@@ -251,7 +251,7 @@ void PrintFit(TF1* f)
  * @deprecated
  * This is a simple test script 
  *
- * @ingroup pwg2_forward_analysis_scripts_tests
+ * @ingroup pwg2_forward_scripts_tests
  */
 void TestFitELoss(Int_t n, UShort_t d, Char_t r, Float_t eta)
 {

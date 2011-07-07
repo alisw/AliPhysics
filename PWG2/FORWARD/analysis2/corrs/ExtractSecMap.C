@@ -1,7 +1,7 @@
 /**
  * Script to draw the energy loss fits 
  * 
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 #ifndef __CINT__
 #include <TFile.h>
@@ -22,7 +22,7 @@
  * @param sNN    Center of mass energy (in GeV) per nucleon
  * @param field  L3 magnetic field (-5,0,5) in kGaus
  * 
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void
 ExtractSecMap(const char* fname,
@@ -51,7 +51,7 @@ ExtractSecMap(const char* fname,
  * @param sNN   Center of mass energy (GeV) per nucleon
  * @param field L3 magnetic field
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void     
 ExtractFMDSecMap(TFile* file, UShort_t sys, UShort_t sNN, Short_t field)
@@ -85,7 +85,7 @@ ExtractFMDSecMap(TFile* file, UShort_t sys, UShort_t sNN, Short_t field)
  * @param sNN   Center of mass energy (GeV) per nucleon
  * @param field L3 magnetic field
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void     
 ExtractSPDSecMap(TFile* file, UShort_t sys, UShort_t sNN, Short_t field)
@@ -124,7 +124,7 @@ ExtractSPDSecMap(TFile* file, UShort_t sys, UShort_t sNN, Short_t field)
  * @param sNN    Center of mass energy (in GeV) per nucleon
  * @param field  L3 magnetic field (-5,0,5) in kGaus
  * 
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void
 ExtractSecMap(const char* fname="forward_mccorr.root", 

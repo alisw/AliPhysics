@@ -8,7 +8,7 @@
  * train via AliFMDEnergyFitterTask::Terminate but if this fails or
  * impatience takes over this script can help...
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 /** 
  * 
@@ -19,7 +19,7 @@
  * @param field 
  * @param mc 
  *
- * @ingroup pwg2_forward_analysis_scripts_corr
+ * @ingroup pwg2_forward_scripts_corr
  */
 void MakeELossFitsFromFile(const Char_t* filename="forward.root",
 			   UShort_t sys=1, UShort_t sNN=900, Short_t field=5, 
