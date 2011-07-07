@@ -153,7 +153,7 @@ protected:
    * Get ultimate mother of a track 
    * 
    * @param iTr   Track number 
-   * @param stack Stack 
+   * @param event Event
    * 
    * @return Pointer to mother or null 
    */

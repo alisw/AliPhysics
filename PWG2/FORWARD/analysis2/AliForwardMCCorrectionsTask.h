@@ -218,7 +218,10 @@ protected:
     /** 
      * End of job process 
      * 
-     * @param o List to add output to 
+     * @param o   List to add output to 
+     * @param i   Input 
+     * @param iVz Vertex bin
+     * @param map Corrections map 
      */
     void Finish(const TList*            i, 
 		TList*                  o,

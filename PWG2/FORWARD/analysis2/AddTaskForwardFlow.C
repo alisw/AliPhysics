@@ -17,7 +17,6 @@
  * 
  * @param type 
  * @param etabins 
- * @param zVertex 
  * @param addFlow 
  * @param addFType 
  * @param addFOrder 

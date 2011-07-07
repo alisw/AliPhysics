@@ -165,9 +165,9 @@ public:
    * 
    * Set the fraction of MPV
    * 
-   * @param u if true cut at fraction of MPV 
+   * @param cut Fraction of MPV
    */
-  void SetFractionOfMPV(Double_t cut) { fHCuts.SetMPVFraction(cut); /* fFractionOfMPV = cut;*/ }
+  void SetFractionOfMPV(Double_t cut) { fHCuts.SetMPVFraction(cut); }
   /** 
    * Scale the histograms to the total number of events 
    * 
