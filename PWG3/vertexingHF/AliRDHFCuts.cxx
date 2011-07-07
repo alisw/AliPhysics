@@ -488,11 +488,11 @@ void AliRDHFCuts::SetCuts(Int_t nVars,Int_t nPtBins,Float_t **cutsRD) {
   //
   if(nVars!=fnVars) {
     printf("Wrong number of variables: it has to be %d\n",fnVars);
-    return;
+    AliFatal("exiting");
   } 
   if(nPtBins!=fnPtBins) {
     printf("Wrong number of pt bins: it has to be %d\n",fnPtBins);
-    return;
+    AliFatal("exiting");
   } 
 
   if(!fCutsRD)  fCutsRD = new Float_t[fGlobalIndex];
@@ -521,7 +521,7 @@ void AliRDHFCuts::SetCuts(Int_t glIndex,Float_t* cutsRDGlob){
   //
   if(glIndex != fGlobalIndex){
     cout<<"Wrong array size: it has to be "<<fGlobalIndex<<endl;
-    return;
+    AliFatal("exiting");
   }
   if(!fCutsRD)  fCutsRD = new Float_t[fGlobalIndex];
 
