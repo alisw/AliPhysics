@@ -100,6 +100,9 @@ protected :
   ///Get the clusters from the esd
   virtual Int_t GetClustersFromEsd( const AliESDEvent * esd, TRefArray * clustersRefs ) = 0;
 
+  // FR: Set the appropriate readout list for each calo
+  virtual void SetCaloReadoutList() = 0;
+  
   /// inherited from AliHLTTrigger: calculate the trigger
   Int_t DoTrigger();
 

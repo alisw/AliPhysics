@@ -68,3 +68,8 @@ AliHLTComponent* AliHLTTriggerPhosClusterEnergy::Spawn() {
 Int_t AliHLTTriggerPhosClusterEnergy::GetClustersFromEsd( const AliESDEvent * esd, TRefArray * clustersRefs ){
   return esd->GetPHOSClusters(clustersRefs);
 }
+
+// FR
+void AliHLTTriggerPhosClusterEnergy::SetCaloReadoutList() {
+  GetReadoutList().Enable(AliHLTReadoutList::kPHOS);
+}

@@ -137,9 +137,12 @@ Bool_t AliHLTTriggerCaloClusterEnergy::TriggerOnCluster(T* cluster) {
     description.Form("Event contains at least one %s cluster with energy > %.02f GeV.", fDetector.Data(), fEThreshold);
     SetDescription(description.Data());
     
-    // Enable the detectors for readout.
-    GetReadoutList().Enable(AliHLTReadoutList::kPHOS);
 
+    // Enable the detectors for readout.
+
+    //GetReadoutList().Enable(AliHLTReadoutList::kPHOS);
+    SetCaloReadoutList();  //FR
+        
     // Add the available HLT information for readout too.
     GetTriggerDomain().Add(kAliHLTAnyDataTypeID, fDetector.Data());
     

@@ -69,6 +69,10 @@ public:
   AliHLTComponent* Spawn();
 
 
+protected:
+  // FR
+  void SetCaloReadoutList();
+
 private:
 
   ///Inherited from AliHLTTriggerCaloClusterEnergy, get the correct set of ESD calo clusters

@@ -68,6 +68,9 @@ public:
   /// inherited from AliHLTComponent: create an instance
   AliHLTComponent* Spawn();
 
+protected:
+  // FR
+  void SetCaloReadoutList();
 
 private:
 

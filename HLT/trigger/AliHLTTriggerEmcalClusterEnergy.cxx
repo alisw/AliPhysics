@@ -68,3 +68,8 @@ AliHLTComponent* AliHLTTriggerEmcalClusterEnergy::Spawn() {
 Int_t AliHLTTriggerEmcalClusterEnergy::GetClustersFromEsd( const AliESDEvent * esd, TRefArray * clustersRefs ){
   return esd->GetEMCALClusters(clustersRefs);
 }
+
+// FR
+void AliHLTTriggerEmcalClusterEnergy::SetCaloReadoutList() {
+  GetReadoutList().Enable(AliHLTReadoutList::kEMCAL);
+}
