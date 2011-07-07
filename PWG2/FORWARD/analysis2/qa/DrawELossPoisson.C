@@ -1,4 +1,25 @@
+/**
+ * @file   DrawELossPoisson.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Thu Jul  7 10:24:58 2011
+ * 
+ * @brief  A script to draw the Poisson vs Energy Loss correlation 
+ * 
+ * 
+ */
 
+/** 
+ * Draw the poisson @f$N_{ch}@f$ estimate against the @f$\Delta@f$
+ * @f$N_{ch}@f$ estimate and do a regression line between the two 
+ * 
+ * @param p            List 
+ * @param d            Detector
+ * @param r            Ring
+ * @param xmin         Minimum
+ * @param xmax         Maximum
+ * 
+ * @return The regression coefficient 
+ */
 Double_t
 DrawRingELossPoisson(TList* p, UShort_t d, Char_t r, 
 		     Double_t xmin, Double_t xmax)
@@ -124,7 +145,15 @@ DrawRingELossPoisson(TList* p, UShort_t d, Char_t r,
   return corr->GetCorrelationFactor();
 }
 
-
+/** 
+ * Draw the correlation between the Poisson @f$N_{ch}@f$ estimate
+ * and the @f$\Delta@f$ @f$N_{ch}@f$ estimate and do a regression
+ * line between the two for each ring
+ * 
+ * @param filename File to read
+ * @param xmax     Minimum X
+ * @param xmin     Maximum X 
+ */
 void
 DrawELossPoisson(const char* filename="forward.root", 
 		 Double_t xmax=-1,
@@ -202,7 +231,6 @@ DrawELossPoisson(const char* filename="forward.root",
   c->cd();
   c->SaveAs("elossVsPoisson.png");
 }
-
-  
-  
- 
+//
+// EOF
+//
