@@ -57,6 +57,7 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   void SetSigmaConstrainedMax(Double_t sigma) {fSigmaConstrainedMax=sigma;}
   void SetPtMax(Float_t ptmax) {fPtMax = ptmax;}
   Float_t GetPtMax()           {return fPtMax;}
+  void SetPtBinEdges(Int_t region, Double_t ptmax, Double_t ptBinWidth);
 
   static AliGenPythiaEventHeader*  GetPythiaEventHeader(AliMCEvent *mcEvent);
   static Bool_t PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);// get the cross section and the trails either from pyxsec.root or from pysec_hists.root
@@ -79,6 +80,7 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
 
   Double_t fSigmaConstrainedMax;  // max sigma on constrained fit
   Float_t fPtMax;                 // Maximum pT for histograms
+  Float_t fPtBinEdges[3][2];      // 3 regions total with different binning for pT axis of histos
 
   Float_t fAvgTrials;             // Average number of trials
   
