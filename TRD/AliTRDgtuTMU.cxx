@@ -818,7 +818,7 @@ Bool_t AliTRDgtuTMU::CalculatePID(AliTRDtrackGTU *track)
     return kFALSE;
   }
 
-  if (AliTRDgtuParam::GetUseGTUconst) {
+  if (AliTRDgtuParam::GetUseGTUconst()) {
     // averaging as in GTU
     ULong64_t coeff;
 
