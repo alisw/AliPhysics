@@ -137,7 +137,8 @@ public:
   */
   void SetSortingFunction(Int_t (*compare)(const void*, const void*)) { fCompareFunction = compare; }
   
-  
+  /** Set the detector (PHOS or EMCAL) */
+  void SetDetector(TString det);
   
 protected:
 
@@ -171,6 +172,9 @@ protected:
   */
   //Int_t (AliHLTCaloClusterizer::*fCompareFunction)(const void*, const void*);
   Int_t (*fCompareFunction)(const void*, const void*);
+  
+  /** Check if two modules are connected */
+  Bool_t AreEdgeCells(AliHLTCaloDigitDataStruct *digit0, AliHLTCaloDigitDataStruct *digit1);
   
   /** Array of pointers to the rec point output */
   AliHLTCaloRecPointDataStruct **fRecPointArray; //COMMENT
@@ -228,6 +232,9 @@ protected:
 
    /** Are we sorting at all? */
    Bool_t fSortDigits; //COMMENT
+   
+   /** Is this running for EMCAL */
+   Bool_t fIsEMCAL; //COMMENT
 
 private:
 

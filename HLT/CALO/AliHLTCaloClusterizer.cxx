@@ -60,7 +60,9 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
         fSortedByPosition(false),
         fSortedByEnergy(false),
         fSortDigits(false),
+        fIsEMCAL(false),
 	fBuffer(0)
+	
 {
     //See header file for documentation
     //fEmcClusteringThreshold = 0.2;
@@ -238,14 +240,15 @@ AliHLTCaloClusterizer::AreNeighbours(AliHLTCaloDigitDataStruct* digit1,
                                      AliHLTCaloDigitDataStruct* digit2)
 {
     //see header file for documentation
-    if ( (digit1->fModule == digit2->fModule) /*&& (coord1[1]==coord2[1])*/ ) // inside the same PHOS module
+    if ( (digit1->fModule == digit2->fModule) || AreEdgeCells(digit1, digit2))
     {
         Int_t rowdiff = TMath::Abs( digit1->fZ - digit2->fZ );
         Int_t coldiff = TMath::Abs( digit1->fX - digit2->fX );
 
-        // As in the offline code we define neighbours as cells that share an edge, a corner is not  enough
-	//        if (( coldiff <= 1   &&  rowdiff == 0 ) || ( coldiff == 0 &&  rowdiff <= 1 ))
-        if (( coldiff <= 1) || ( rowdiff <= 1 ))
+	// Common edge defines neighbour
+        //if (( coldiff <= 1   &&  rowdiff == 0 ) || ( coldiff == 0 &&  rowdiff <= 1 ))
+	  // Common edge and corner defines neighbour
+	if (( coldiff <= 1   &&  rowdiff <= 1 ))
         {
             // Check also for time
             if (TMath::Abs(digit1->fTime - digit2->fTime ) < fEmcTimeGate)
@@ -340,4 +343,38 @@ AliHLTCaloClusterizer::CompareDigitsByEnergy(const void *dig0, const void *dig1)
     // See header file for documentation
   if ( ((*((AliHLTCaloDigitDataStruct**)(dig1)))->fEnergy - (*((AliHLTCaloDigitDataStruct**)(dig0)))->fEnergy) < 0) return -1;
   return 1;
+}
+
+void AliHLTCaloClusterizer::SetDetector(TString det)
+{
+  if(det.CompareTo("EMCAL"))
+  {
+    fIsEMCAL = true;
+  }
+  else
+  {
+    fIsEMCAL = false;
+  }
+}
+
+Bool_t AliHLTCaloClusterizer::AreEdgeCells(AliHLTCaloDigitDataStruct *digit0, AliHLTCaloDigitDataStruct *digit1)
+{
+  if(fIsEMCAL)
+  {
+    Int_t modDiff = digit0->fModule - digit1->fModule;
+    if(TMath::Abs(modDiff) > 1) return kFALSE;
+    if(digit0->fModule > digit1->fModule && digit1->fModule%2 == 0) 
+    {
+      if(digit0->fZ == 0 && digit1->fZ == (fCaloConstants->GetNZROWSMOD()-1))
+      return kTRUE;
+    }
+    if(digit1->fModule > digit0->fModule && digit0->fModule%2 == 0) 
+    {
+      if(digit1->fZ == 0 && digit0->fZ == (fCaloConstants->GetNZROWSMOD()-1))
+      return kTRUE;
+    }
+  }
+  
+  return false;
+
 }

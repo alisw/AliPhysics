@@ -208,7 +208,7 @@ AliHLTCaloClusterizerComponent::Reconfigure(const char* cdbEntry, const char* /*
 
     if (cdbEntry) path = cdbEntry;
 
-    return ConfigureFromCDBTObjString(cdbEntry);
+    return ConfigureFromCDBTObjString(path);
 }
 
 int
@@ -265,6 +265,8 @@ AliHLTCaloClusterizerComponent::DoInit(int argc, const char** argv )
 
     fClusterizerPtr->SetSortDigitsByEnergy();
 
+    fClusterizerPtr->SetDetector(TString(fCaloConstants->GetDETNAME()));
+    
     fAnalyserPtr = new AliHLTCaloClusterAnalyser();
 
     if (fCaloConstants->GetDETNAME() == "PHOS")
