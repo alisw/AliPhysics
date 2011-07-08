@@ -58,7 +58,8 @@ AliAODPidHF::AliAODPidHF():
   fTOFdecide(kFALSE),
   fOldPid(kTRUE),
   fPtThresholdTPC(999999.),
-  fPidResponse(0)
+  fPidResponse(0),
+  fPidCombined(new AliPIDCombined())
 {
  //
  // Default constructor
@@ -117,7 +118,8 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fTOFdecide(pid.fTOFdecide),
   fOldPid(pid.fOldPid),
   fPtThresholdTPC(pid.fPtThresholdTPC),
-  fPidResponse(pid.fPidResponse)
+  fPidResponse(pid.fPidResponse),
+  fPidCombined(pid.fPidCombined)  
   {
   
   for(Int_t i=0;i<5;i++){

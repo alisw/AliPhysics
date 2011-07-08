@@ -328,6 +328,7 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
   }
 
   if(fUsePID || selectionLevel==AliRDHFCuts::kPID) returnvaluePID = IsSelectedPID(d);
+  //  if(fUsePID || selectionLevel==AliRDHFCuts::kPID) returnvaluePID = IsSelectedCombinedPID(d);   // to test!!
   if(returnvaluePID==0) return 0;
 
   // selection on daughter tracks 
@@ -408,6 +409,67 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedPID(AliAODRecoDecayHF* obj) {
     if(okLcpKpi && okLcpiKp) returnvalue=3; //cuts passed as both pKpi and piKp
 
  return returnvalue;
+}
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsLctopKpi::IsSelectedCombinedPID(AliAODRecoDecayHF* obj) {
+
+  //  Printf(" -------- IsSelectedCombinedPID --------------");
+
+    if(!obj) {return 3;}
+    Int_t okLcpKpi=0,okLcpiKp=0;
+    Int_t returnvalue=0;
+    Bool_t isPeriodd=fPidHF->GetOnePad();
+    Bool_t isMC=fPidHF->GetMC();
+    Bool_t isKaon = kFALSE;
+    Bool_t isPion = kFALSE;
+    Bool_t isProton = kFALSE;
+
+    if(isPeriodd) {
+	    fPidObjprot->SetOnePad(kTRUE);
+	    fPidObjpion->SetOnePad(kTRUE);
+    }
+    if(isMC) {
+	    fPidObjprot->SetMC(kTRUE);
+	    fPidObjpion->SetMC(kTRUE);
+    }
+
+    Double_t probComb[AliPID::kSPECIES]={0.};  // array to store the info for the combined ITS|TPC|TOF probabilities
+    fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetITS|AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);  // the mask could become a member of the cut object
+
+    for(Int_t i=0;i<3;i++){
+	    AliAODTrack *track=(AliAODTrack*)obj->GetDaughter(i);
+	    if(!track) return 0;
+	    // identify kaon
+	    UInt_t detUsed = fPidHF->GetPidCombined()->ComputeProbabilities(track, fPidHF->GetPidResponse(), probComb); // for the moment we don't check detUsed...
+	    //	    Printf("[%d] %x %f %f %f %f %f",i,detUsed,probComb[0],probComb[1],probComb[2],probComb[3],probComb[4]);
+	    if(i==1) {
+		    if(TMath::MaxElement(AliPID::kSPECIES,probComb) == probComb[3]) {  // the probability to be a Kaon is the highest
+		      isKaon=kTRUE;
+		      //		      if ( probComb[3] > 0.8 ) isKaon=kTRUE;
+		      //		      else return 0;
+		    }
+		    else return 0; // prong at position 1 is not a Kaon, returning 0		    
+	    }
+	    else {
+		    //pion or proton
+		    
+		    if(TMath::MaxElement(AliPID::kSPECIES,probComb) == probComb[4]) {  // the probability to be a proton is the highest
+			    isProton=kTRUE;
+			    if (isPion) okLcpiKp = 1;  // the pion was already identified, so here we must be at i == 2 --> Lc --> pi K p (K already found)
+		    }
+		    if(TMath::MaxElement(AliPID::kSPECIES,probComb) == probComb[2]) {  // the probability to be a pion is the highest
+			    isPion=kTRUE;
+			    if (isProton) okLcpKpi = 1;  // the proton was already identified, so here we must be at i == 2 --> Lc --> p K pi (K already found)
+		    }
+		    
+	    }
+    }
+    
+    if(okLcpKpi) returnvalue=1; //cuts passed as Lc->pKpi
+    if(okLcpiKp) returnvalue=2; //cuts passed as Lc->piKp
+    if(okLcpKpi && okLcpiKp) returnvalue=3; //cuts passed as both pKpi and piKp
+    
+    return returnvalue;
 }
 //-----------------------
 Int_t AliRDHFCutsLctopKpi::CombinePIDCuts(Int_t returnvalue, Int_t returnvaluePID) const {
