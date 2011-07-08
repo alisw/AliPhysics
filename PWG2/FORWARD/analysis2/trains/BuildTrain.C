@@ -13,6 +13,7 @@ Bool_t
 BuildTrain(const char* script, const char* extra="", Bool_t useTmp=false)
 {
   // --- Load needed libraries ---------------------------------------
+  gROOT->LoadClass("TAlien",               "libRAliEn");
   gROOT->LoadClass("TVirtualMC",           "libVMC");
   gROOT->LoadClass("AliVEvent",            "libSTEERBase");
   gROOT->LoadClass("AliESDEvent",          "libESD");
@@ -25,7 +26,8 @@ BuildTrain(const char* script, const char* extra="", Bool_t useTmp=false)
   const char* fwd2Path  = 
     gSystem->ExpandPathName("$ALICE_ROOT/PWG2/FORWARD/analysis2");
   const char* macroPath = gROOT->GetMacroPath();
-  gROOT->SetMacroPath(".:%s:%s/trains:%s/scripts",macroPath,fwd2Path,fwd2Path);
+  gROOT->SetMacroPath(Form(".:%s:%s/trains:%s/scripts",
+			   macroPath,fwd2Path,fwd2Path));
   
   // --- Setup include path ------------------------------------------
   gSystem->AddIncludePath(Form("-I%s", fwd2Path));
@@ -43,6 +45,14 @@ BuildTrain(const char* script, const char* extra="", Bool_t useTmp=false)
     }
   }
   
+  // --- Compile TrainSetup.C ----------------------------------------
+  Int_t ret = gROOT->LoadMacro(Form("%s/trains/TrainSetup.C+%s", 
+				    fwd2Path, extra));
+  if (ret != 0) { 
+    Error("BuildTrain", "Failed to build TrainSetup");
+    return false;
+  }
+  
   // --- Possibly make a temporary copy ------------------------------
   if (useTmp) { 
     TString tmp("Train");
@@ -56,7 +66,7 @@ BuildTrain(const char* script, const char* extra="", Bool_t useTmp=false)
   }
 
   // --- Now compile the thing ---------------------------------------
-  Int_t ret = gROOT->LoadMacro(Form("%s+%s", path.Data(), extra));
+  ret = gROOT->LoadMacro(Form("%s+%s", path.Data(), extra));
 
   // --- If we did a temporary file, remove stuff --------------------
   if (useTmp) {
