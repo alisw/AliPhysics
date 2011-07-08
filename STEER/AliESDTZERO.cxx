@@ -35,7 +35,9 @@ AliESDTZERO::AliESDTZERO() :
   fT0timeStart(0),   
   fT0trig(0),
   fPileup(kFALSE),
-  fSattelite(kFALSE)
+  fSattelite(kFALSE),
+  fMultC(0),
+  fMultA(0)
 
 {
   for(int i = 0;i<24;i++) {
@@ -56,8 +58,10 @@ AliESDTZERO::AliESDTZERO(const AliESDTZERO &tzero ) :
   fT0zVertex(tzero.fT0zVertex),
   fT0timeStart(tzero.fT0timeStart),
   fT0trig(tzero.fT0trig),
-  fMultA(tzero.fMultA),
-  fMultC(tzero.fMultC)
+  fPileup(tzero.fPileup),
+  fSattelite(tzero.fSattelite),
+  fMultC(tzero.fMultC),
+  fMultA(tzero.fMultA)
 {
   // copy constuctor
   for(int i = 0;i<3;i++) fT0TOF[i] = tzero.fT0TOF[i];
@@ -81,8 +85,8 @@ AliESDTZERO& AliESDTZERO::operator=(const AliESDTZERO& tzero){
     fT0clock = tzero.fT0clock;
     fT0zVertex = tzero.fT0zVertex;
     fT0timeStart = tzero.fT0timeStart;
-    fMultA = tzero.fMultA;
     fMultC = tzero.fMultC;
+    fMultA = tzero.fMultA;
     fT0trig = tzero.fT0trig;
     for(int i = 0;i<3;i++) fT0TOF[i] = tzero.fT0TOF[i];
     for(int i = 0;i<24;i++){
