@@ -36,8 +36,8 @@ void recPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocdb
   rec.SetWriteAlignmentData();
   rec.SetInput(filename);
   rec.SetUseTrackingErrorsForAlignment("ITS");
-  rec.SetRunReconstruction("ITS TPC TRD TOF");
-  rec.SetFillESD("ITS TPC TRD TOF");
+  rec.SetRunReconstruction("ALL");
+  rec.SetFillESD("ALL");
 
   //rec.SetRunReconstruction("ALL");
   //rec.SetRunQA("Global:ESDs") ;
