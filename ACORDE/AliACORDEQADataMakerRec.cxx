@@ -673,7 +673,7 @@ if(rawStream.Next())
 			
         } 
 	FillRawsData(3,contSingle); 
-	FillRawsData(7,contMulti);
+	//	FillRawsData(7,contMulti);
 }
 }
 //____________________________________________________________________________
