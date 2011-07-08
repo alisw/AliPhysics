@@ -167,6 +167,11 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   void SetKeepSignalMC() {fKeepSignalMC=kTRUE; return;}
 
+  // method for AliPIDCombined object of AliAODPidHF
+  void SetSelectedSpecies(Int_t ispecies = AliPID::kSPECIES){fPidHF->GetPidCombined()->SetSelectedSpecies(ispecies);};
+  void SetPriorDistribution(AliPID::EParticleType type,TH1F *prior);
+  void DrawPrior(AliPID::EParticleType type);
+
  protected:
 
   void SetNPtBins(Int_t nptBins){fnPtBins=nptBins;}
@@ -219,7 +224,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t fMaxPtCand; // minimum pt of the candidate
   Bool_t  fKeepSignalMC; // IsSelected returns always kTRUE for MC signal
 
-  ClassDef(AliRDHFCuts,17);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,18);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif

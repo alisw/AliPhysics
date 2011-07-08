@@ -15,6 +15,7 @@
 #include "AliAODPid.h"
 #include "AliAODTrack.h"
 #include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
 
 class AliAODPidHF : public AliAODPid{
 
@@ -80,7 +81,8 @@ class AliAODPidHF : public AliAODPid{
  Double_t GetnSigmaCompatTOF() const{return fnSigmaCompat[1];}
  Bool_t GetOldPid(){return fOldPid;}
  Double_t GetPtThresholdTPC(){return fPtThresholdTPC;}
- AliPIDResponse *GetPidResponse() const{return fPidResponse;}
+ AliPIDResponse *GetPidResponse() const {return fPidResponse;}
+ AliPIDCombined *GetPidCombined() const {return fPidCombined;}
 
  Int_t RawSignalPID (AliAODTrack *track, TString detector) const;
  Bool_t IsKaonRaw (AliAODTrack *track, TString detector) const;
@@ -136,10 +138,10 @@ class AliAODPidHF : public AliAODPid{
  Bool_t fOldPid; //  old PID method implemented
  Double_t fPtThresholdTPC; //  pT threshold to use TPC PID
  AliPIDResponse *fPidResponse; //pid response
- 
+ AliPIDCombined* fPidCombined; //combined PID object 
 
 
- ClassDef(AliAODPidHF,13) // AliAODPid for heavy flavor PID
+ ClassDef(AliAODPidHF,14) // AliAODPid for heavy flavor PID
 
 };
 

@@ -54,6 +54,7 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent *aod);
   using AliRDHFCuts::IsSelectedPID;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
+  Int_t IsSelectedCombinedPID(AliAODRecoDecayHF* obj);
   Int_t CombinePIDCuts (Int_t returnvalue, Int_t returnvaluePID) const;
   
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
