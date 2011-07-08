@@ -602,5 +602,62 @@ Double_t AliTRDCalDet::CalcMean(Bool_t wghtPads)
   delete []meanSM;
   delete []meanSMWP;
 
-  return (sum/ndet);
+  
+  return (sum!=0.0 ? sum/ndet : -1);
+}
+//_____________________________________________________________________________
+Double_t AliTRDCalDet::CalcRMS(Bool_t wghtPads)
+{
+  // Calculate the RMS value after rejection of the chambers not calibrated
+  // wghPads = kTRUE weighted with the number of pads in case of a AliTRDCalPad created (t0)
+  //  
+  
+  Int_t iSM;
+  Double_t sum = 0.0;
+  Int_t ndet = 0;
+  Double_t meanALL = 0.0;
+  Double_t meanWP = 0.0;
+  Double_t pads=0.0;
+  Double_t padsALL=(144*16*24+144*12*6)*18;
+  Double_t *meanSM = new Double_t[18];
+  Double_t *meanSMWP = new Double_t[18];
+  
+  for (Int_t i = 0; i < 18; i++) {
+    meanSM[i]=0.0;
+    meanSMWP[i]=0.0;
+  }
+  
+  Int_t det = 0;
+  while(det < 540) {
+    Float_t val= fData[det];
+    iSM = (Int_t)(det / (6*5));
+    pads=(((Int_t) (det % (6 * 5)) / 6) == 2) ? 144*12 : 144*16;
+    meanALL+=val/540.;
+    meanSM[iSM]+=val/30.;
+    meanWP+=val*(pads/padsALL);
+    meanSMWP[iSM]+=val*(pads/(padsALL/18.));
+    det++;
+  }
+  
+  det=0;
+  while(det < 540) {
+    Float_t val= fData[det];
+    if (( (!wghtPads) &&
+		 (TMath::Abs(val - meanALL) > 0.0001) &&
+		 (TMath::Abs(val - meanSM[(Int_t)(det / (6*5))]) > 0.0001) ) ||
+        ( (wghtPads) &&
+		 (TMath::Abs(val - meanWP) > 0.0001) &&
+		 (TMath::Abs(val - meanSMWP[(Int_t)(det / (6*5) )]) > 0.0001) )
+        ) {
+      sum+=val*val;
+      ndet++;
+    }
+    det++;
+  }
+  
+  delete []meanSM;
+  delete []meanSMWP;
+  
+  
+  return (sum!=0.0 ? TMath::Sqrt(sum/ndet) : -1);
 }
