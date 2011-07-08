@@ -322,7 +322,7 @@ AliPoissonCalculator::Print(const Option_t*) const
 	    << std::boolalpha 
 	    << ind << " Eta lumping:            " << fEtaLumping << '\n'
 	    << ind << " Phi lumping:            " << fPhiLumping << '\n'
-	    << std::endl;
+	    << std::noboolalpha << std::endl;
 }
 //____________________________________________________________________
 void
