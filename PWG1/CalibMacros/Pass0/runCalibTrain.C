@@ -16,6 +16,7 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   //
   // macro to run TPC calibration train 
   //
+  AliLog::SetGlobalLogLevel(AliLog::kError); 
   gROOT->Macro("LoadLibraries.C");
   gROOT->LoadMacro("ConfigCalibTrain.C");
 
