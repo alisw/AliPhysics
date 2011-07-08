@@ -67,6 +67,7 @@ set ( SRCS
   FORWARD/analysis2/AliSPDMCTrackDensity.cxx
   FORWARD/analysis2/AliFMDMultCuts.cxx
   FORWARD/analysis2/AliPoissonCalculator.cxx
+  FORWARD/analysis2/AliForwardQATask.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -132,6 +133,7 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
 		FORWARD/analysis2/AddTaskFMDELoss.C
   		FORWARD/analysis2/AddTaskForwardMCCorr.C
                 FORWARD/analysis2/AddTaskForwardMult.C
+                FORWARD/analysis2/AddTaskForwardQA.C
 		FORWARD/analysis2/AddTaskForwarddNdeta.C
 		FORWARD/analysis2/AddTaskMCTruthdNdeta.C
 		FORWARD/analysis2/DrawdNdeta.C
