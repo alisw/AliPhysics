@@ -1169,16 +1169,30 @@ Int_t AliESDtrack::GetPID() const
 }
 
 //_______________________________________________________________________
-Int_t AliESDtrack::GetTOFBunchCrossing() const 
+Int_t AliESDtrack::GetTOFBunchCrossing(Double_t b) const 
 {
   // Returns the number of bunch crossings after trigger (assuming 25ns spacing)
-  const UInt_t kAskBits = kESDpid | kTOFout | kTIME;
   const double kSpacing = 25e3; // min interbanch spacing
   const double kShift = 0;
   Int_t bcid = -1; // defualt one
-  if ( (GetStatus()&kAskBits) != kAskBits) return bcid;
-  int pid = GetPID();
-  double tdif = fTOFsignal - fTrackTime[pid];
+  if (!IsOn(kTOFout) || !IsOn(kESDpid)) return bcid; // no info
+  //
+  double tdif = fTOFsignal;
+  if (IsOn(kTIME)) { // integrated time info is there
+    int pid = GetPID();
+    tdif -= fTrackTime[pid];
+  }
+  else { // assume integrated time info from TOF radius and momentum
+    const double kRTOF = 385.;
+    const double kCSpeed = 3.e-2; // cm/ps
+    double p = GetP();
+    if (p<0.01) return bcid;
+    double m = GetMass();
+    double curv = GetC(b);
+    double path = TMath::Abs(curv)>kAlmost0 ? // account for curvature
+      2./curv*TMath::ASin(kRTOF*curv/2.)*TMath::Sqrt(1.+GetTgl()*GetTgl()) : kRTOF;
+    tdif -= path/kCSpeed*TMath::Sqrt(1.+m*m/(p*p));
+  }
   bcid = TMath::Nint((tdif - kShift)/kSpacing);
   return bcid;
 }

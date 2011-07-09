@@ -181,6 +181,7 @@ void AliESDpid::MakeTOFPID(AliESDtrack *track, Float_t /*timeZeroTOF*/) const
 
   if ((track->GetStatus()&AliESDtrack::kTOFout)==0) return;
   if ((track->GetStatus()&AliESDtrack::kTIME)==0) return;
+  if ((track->GetStatus()&AliESDtrack::kITSin)==0) return;
 
   Int_t ibin = fTOFResponse.GetMomBin(track->GetP());
   Float_t timezero = fTOFResponse.GetT0bin(ibin);

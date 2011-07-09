@@ -712,47 +712,38 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
   for (Int_t i=0; i<nentr; i++) {
      AliESDtrack *esd=event->GetTrack(i);
 
-     if ((esd->GetStatus()&AliESDtrack::kITSin)==0) continue;
+     // Start time integral and add distance from current position to vertex 
      if (esd->GetStatus()&AliESDtrack::kITSout) continue;
-
      AliITStrackMI *t = new AliITStrackMI(*esd);
+     Double_t xyzTrk[3],xyzVtx[3]={GetX(),GetY(),GetZ()};
+     t->GetXYZ(xyzTrk); 
+     Double_t dst2 = 0.;
+     for (Int_t icoord=0; icoord<3; icoord++) {Double_t di = xyzTrk[icoord] - xyzVtx[icoord];dst2 += di*di; } 
+     t->StartTimeIntegral();
+     t->AddTimeStep(TMath::Sqrt(dst2));
+     //
+     // transfer the time integral to ESD track
+     esd->SetStatus(AliESDtrack::kTIME);
+     Double_t times[10];t->GetIntegratedTimes(times); esd->SetIntegratedTimes(times);
+     esd->SetIntegratedLength(t->GetIntegratedLength());
+     //
+     if ((esd->GetStatus()&AliESDtrack::kITSin)==0) continue; 
 
      t->SetExpQ(TMath::Max(0.8*t->GetESDtrack()->GetTPCsignal(),30.));
-
      ResetTrackToFollow(*t);
-
-     /*
-     // propagate to vertex [SR, GSI 17.02.2003]
-     // Start Time measurement [SR, GSI 17.02.2003], corrected by I.Belikov
-     if (CorrectForPipeMaterial(&fTrackToFollow,"inward")) {
-       if (fTrackToFollow.PropagateToVertex(event->GetVertex()))
-	 fTrackToFollow.StartTimeIntegral();
-       // from vertex to outside pipe
-       CorrectForPipeMaterial(&fTrackToFollow,"outward");
-       }*/
-     // Start time integral and add distance from current position to vertex 
-     Double_t xyzTrk[3],xyzVtx[3]={GetX(),GetY(),GetZ()};
-     fTrackToFollow.GetXYZ(xyzTrk);
-     Double_t dst2 = 0.;
-     for (Int_t icoord=0; icoord<3; icoord++) {  
-       Double_t di = xyzTrk[icoord] - xyzVtx[icoord];
-       dst2 += di*di; 
-     }
-     fTrackToFollow.StartTimeIntegral();
-     fTrackToFollow.AddTimeStep(TMath::Sqrt(dst2));
-
+     //
      fTrackToFollow.ResetCovariance(10.); fTrackToFollow.ResetClusters();
      if (RefitAt(AliITSRecoParam::GetrInsideITSscreen(),&fTrackToFollow,t)) {
-        if (!CorrectForTPCtoITSDeadZoneMaterial(&fTrackToFollow)) {
-          delete t;
-          continue;
-        }
-        fTrackToFollow.SetLabel(t->GetLabel());
-        //fTrackToFollow.CookdEdx();
-        CookLabel(&fTrackToFollow,0.); //For comparison only
-        fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSout);
-        //UseClusters(&fTrackToFollow);
-        ntrk++;
+       if (!CorrectForTPCtoITSDeadZoneMaterial(&fTrackToFollow)) {
+	 delete t;
+	 continue;
+       }
+       fTrackToFollow.SetLabel(t->GetLabel());
+       //fTrackToFollow.CookdEdx();
+       CookLabel(&fTrackToFollow,0.); //For comparison only
+       fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSout);
+       //UseClusters(&fTrackToFollow);
+       ntrk++;
      }
      delete t;
   }

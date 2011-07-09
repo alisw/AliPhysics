@@ -666,19 +666,37 @@ Double_t AliAODTrack::GetTRDmomentum(Int_t plane, Double_t */*sp*/) const
 }
 
 //_______________________________________________________________________
-Int_t AliAODTrack::GetTOFBunchCrossing() const 
+Int_t AliAODTrack::GetTOFBunchCrossing(Double_t b) const 
 {
   // Returns the number of bunch crossings after trigger (assuming 25ns spacing)
-  const UInt_t kAskBits = kESDpid | kTOFout | kTIME;
   const double kSpacing = 25e3; // min interbanch spacing
   const double kShift = 0;
   Int_t bcid = -1; // defualt one
-  if ( (GetStatus()&kAskBits) != kAskBits) return bcid;
-  int pid = (int)GetMostProbablePID();
-  if (pid<0) return bcid;
-  double ttimes[10]; 
-  GetIntegratedTimes(ttimes);
-  double tdif = GetTOFsignal()  - ttimes[pid];
+  if (!IsOn(kTOFout) || !IsOn(kESDpid)) return bcid; // no info
+  //
+  double tdif = GetTOFsignal();
+  if (IsOn(kTIME)) { // integrated time info is there
+    int pid = (int)GetMostProbablePID();
+    double ttimes[10]; 
+    GetIntegratedTimes(ttimes);
+    tdif -= ttimes[pid];
+  }
+  else { // assume integrated time info from TOF radius and momentum
+    const double kRTOF = 385.;
+    const double kCSpeed = 3.e-2; // cm/ps
+    double p = P();
+    if (p<0.001) p = 1.0;
+    double m = M();
+    double path =  kRTOF;     // mean TOF radius
+    if (TMath::Abs(b)>kAlmost0) {  // account for curvature
+      double curv = Pt()/(b*kB2C);
+      if (curv>kAlmost0) {
+	double tgl = Pz()/Pt();
+	path = 2./curv*TMath::ASin(kRTOF*curv/2.)*TMath::Sqrt(1.+tgl*tgl);
+      }
+    }
+    tdif -= path/kCSpeed*TMath::Sqrt(1.+m*m/(p*p));
+  }
   bcid = TMath::Nint((tdif - kShift)/kSpacing);
   return bcid;
 }
