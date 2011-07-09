@@ -1,6 +1,9 @@
 Executable="/alice/cern.ch/user/j/jotwinow/bin/runPass0.sh";
 
-Packages= { "VO_ALICE@AliRoot::v4-19-Rev-11", "VO_ALICE@ROOT::v5-27-06-1", "VO_ALICE@APISCONFIG::V1.1x" };
+Packages= { "VO_ALICE@AliRoot::v4-20-Rev-32",
+            "VO_ALICE@ROOT::v5-28-00d",
+            "VO_ALICE@APISCONFIG::V1.1x"
+ };
 
 Jobtag = { "Test Pass0 Calibration Train" };
 
@@ -24,6 +27,8 @@ InputFile={"LF:/alice/cern.ch/user/j/jotwinow/Pass0/CalibMacros/recPass0.C",
            "LF:/alice/cern.ch/user/j/jotwinow/Pass0/CalibMacros/runCalibTrain.C",
            "LF:/alice/cern.ch/user/j/jotwinow/Pass0/CalibMacros/AddTaskTPCCalib.C",
            "LF:/alice/cern.ch/user/j/jotwinow/Pass0/CalibMacros/AddTaskTRDCalib.C",
+           "LF:/alice/cern.ch/user/j/jotwinow/Pass0/CalibMacros/AddTaskT0Calib.C",
+           "LF:/alice/cern.ch/user/j/jotwinow/Pass0/CalibMacros/AddTOFAnalysisTaskCalibPass0.C",
            "LF:/alice/cern.ch/user/j/jotwinow/Pass0/CalibMacros/LoadLibraries.C"
 };
 
