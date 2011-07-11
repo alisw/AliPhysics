@@ -285,6 +285,160 @@ endif(RULECHECKER_FOUND)
 # AliMdc RPM
 # ------------------------------
 
+execute_process(
+COMMAND root-config --libdir 
+OUTPUT_VARIABLE ROOTALIBDIR)
+string(REPLACE "\n" "" ROOTALIBDIR ${ROOTALIBDIR}) 
+
+execute_process(
+COMMAND root-config --arch 
+OUTPUT_VARIABLE ARCHITECTURE)
+
+
+set(AEXT a)
+set(LIBPATH ${CMAKE_BINARY_DIR}/lib/tgt_${ALICE_TARGET})
+set(BINPATH ${CMAKE_BINARY_DIR}/bin/tgt_${ALICE_TARGET})
+set(EXPORTDIR ${ALICE_ROOT}/include)
+set(BINLIBDIRS -L${ALICE_ROOT}/${LIBPATH})
+set(RAWDIRO ${CMAKE_BINARY_DIR}/RAW)
+set(ALIMDCSPECFILE ${RAWDIRO}/alimdc.spec)
+set(RAWDatabaseALIB ${LIBPATH}/libRAWDatabase.${AEXT})
+set(ESDALIB ${LIBPATH}/libESD.${AEXT})
+set(STEERBaseALIB ${LIBPATH}/libSTEERBase.${AEXT})
+set(MDCALIB ${LIBPATH}/libMDC.${AEXT})
+set(MODDIRO RAW/tgt_${ALICE_TARGET})
+
+
+if( ${ARCHITECTURE} MATCHES "linuxx8664gcc" )
+set(ALIMDCARCHDIR x86_64)
+elseif( ${ARCHITECTURE} MATCHES "linux" )
+set(ALIMDCARCHDIR i386)
+elseif( ${ARCHITECTURE} MATCHES "linuxia64gcc" )
+set(ALIMDCARCHDIR ia64)
+elseif(NOT DEFINED ${ARCHITECTURE})
+message( "Unknown architecture" )
+exit(1)
+else( ${ARCHITECTURE} MATCHES "linuxx8664gcc" )
+message( "Unknown architecture" )
+exit(1)
+endif( ${ARCHITECTURE} MATCHES "linuxx8664gcc" )
+
+
+add_custom_target( alimdc-rpm
+DEPENDS alimdc-static alimdc-specfile
+)
+
+add_custom_command(
+TARGET alimdc-rpm
+POST_BUILD 
+COMMAND rm -rf ${ALICE_ROOT}/alimdc-root
+COMMAND mkdir -p ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
+COMMAND mkdir -p ${ALICE_ROOT}/alimdc-root/opt/alimdc/include
+COMMAND cp ${ALICE_ROOT}/RAW/mdc.h ${ALICE_ROOT}/alimdc-root/opt/alimdc/include
+COMMAND cp ${LIBPATH}/libAliMDC.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
+COMMAND cp ${ROOTALIBDIR}/libRoot.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
+COMMAND cp ${ROOTALIBDIR}/libfreetype.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
+COMMAND cp ${ROOTALIBDIR}/libpcre.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
+COMMAND rm -rf ${ALICE_ROOT}/RPMS
+COMMAND mkdir -p ${ALICE_ROOT}/RPMS/${ALIMDCARCHDIR}/
+COMMAND rpmbuild --verbose --define "_topdir ${ALICE_ROOT}" --define "_tmppath ${ALICE_ROOT}" -bb ${ALIMDCSPECFILE} 
+COMMAND cp -p ${ALICE_ROOT}/RPMS/${ALIMDCARCHDIR}/alimdc-*.rpm .
+COMMAND rm -rf ${ALICE_ROOT}/alimdc-root
+COMMAND rm -rf ${ALICE_ROOT}/RPMS
+COMMAND echo "***** alimdc RPM created and put in ${CMAKE_BINARY_DIR} folder *****"
+)
+
+add_custom_command(
+TARGET ${RAWDIRO}
+COMMAND mkdir-p ${RAWDIRO}
+)
+
+
+add_custom_target( alimdc-specfile
+DEPENDS ${RAWDIRO}
+)
+
+add_custom_command( 
+TARGET alimdc-specfile
+POST_BUILD
+COMMAND rm -rf ${ALIMDCSPECFILE}
+COMMAND @echo "***** Making alimdc RPM spec-file ${ALIMDCSPECFILE} *****"
+COMMAND @echo '\# RPM specfile for alimdc static libs' >> ${ALIMDCSPECFILE} 
+COMMAND @echo '\# Package contains both ROOT and AliRoot' >> ${ALIMDCSPECFILE}
+COMMAND @echo '\# static libs needed by mStreamRecorder' >> ${ALIMDCSPECFILE}
+COMMAND @echo '\# in order to ROOT-ify the incoming raw' >> ${ALIMDCSPECFILE}
+COMMAND @echo '\# data' >> ${ALIMDCSPECFILE}
+COMMAND @echo '\# Example how-to build alimdc RPM:' >> ${ALIMDCSPECFILE}
+COMMAND @echo '\# cd ${ALICE_ROOT}' >> ${ALIMDCSPECFILE}
+COMMAND @echo '\# make alimdc-rpm' >> ${ALIMDCSPECFILE}
+COMMAND @echo "" >> ${ALIMDCSPECFILE}
+COMMAND @echo "Summary: AliMDC static libraries" >> ${ALIMDCSPECFILE}
+COMMAND @echo "Name: alimdc" >> ${ALIMDCSPECFILE}
+COMMAND @echo "Version:  ${ALIROOT_SVN_BRANCH}" >> ${ALIMDCSPECFILE}
+COMMAND @echo "Release: ${ALIROOT_SVN_REVISION}" >> ${ALIMDCSPECFILE}
+COMMAND @echo '\# Copyright: CERN Alice Off-line' >> ${ALIMDCSPECFILE}
+COMMAND @echo "License: CERN Alice Off-line" >> ${ALIMDCSPECFILE}
+COMMAND @echo "Vendor: ALICE Core Off-line Group" >> ${ALIMDCSPECFILE}
+COMMAND @echo "URL: http://aliceinfo.cern.ch" >> ${ALIMDCSPECFILE}
+COMMAND @echo "Group: Applications/Alice" >> ${ALIMDCSPECFILE}
+COMMAND @echo "Prefix: /opt/%{name}" >> ${ALIMDCSPECFILE}
+COMMAND @echo "BuildRoot: %{_tmppath}/%{name}-root" >> ${ALIMDCSPECFILE}
+COMMAND @echo "" >> ${ALIMDCSPECFILE}
+COMMAND @echo '\# automatic dependencies' >> ${ALIMDCSPECFILE}
+COMMAND @echo "AutoReqProv: yes" >> ${ALIMDCSPECFILE}
+COMMAND @echo "" >> ${ALIMDCSPECFILE}
+COMMAND @echo '\# list here required RPM packages for runtime' >> ${ALIMDCSPECFILE}
+COMMAND @echo "Requires: glibc" >> ${ALIMDCSPECFILE}
+COMMAND @echo "" >> ${ALIMDCSPECFILE}
+COMMAND @echo "Provides: alimdc" >> ${ALIMDCSPECFILE}
+COMMAND @echo "" >> ${ALIMDCSPECFILE}
+COMMAND @echo '\# description of the package' >> ${ALIMDCSPECFILE}
+COMMAND @echo "%description" >> ${ALIMDCSPECFILE}
+COMMAND @echo "Package contains both ROOT and AliRoot" >> ${ALIMDCSPECFILE}
+COMMAND @echo "static libs needed by mStreamRecorder" >> ${ALIMDCSPECFILE}
+COMMAND @echo "in order to ROOT-ify the incoming raw" >> ${ALIMDCSPECFILE}
+COMMAND @echo "data. The package version correspond to" >> ${ALIMDCSPECFILE}
+COMMAND @echo "the AliRoot one." >> ${ALIMDCSPECFILE}
+COMMAND @echo "" >> ${ALIMDCSPECFILE}
+COMMAND @echo '\# list of files to be installed' >> ${ALIMDCSPECFILE}
+COMMAND @echo "%files" >> ${ALIMDCSPECFILE}
+COMMAND @echo '%defattr (-,root,root)' >> ${ALIMDCSPECFILE}
+COMMAND @echo "%{prefix}/lib/libAliMDC.a" >> ${ALIMDCSPECFILE}
+COMMAND @echo "%{prefix}/lib/libRoot.a" >> ${ALIMDCSPECFILE}
+COMMAND @echo "%{prefix}/lib/libpcre.a" >> ${ALIMDCSPECFILE}
+COMMAND @echo "%{prefix}/lib/libfreetype.a" >> ${ALIMDCSPECFILE}
+COMMAND @echo "%{prefix}/include/mdc.h" >> ${ALIMDCSPECFILE}
+)
+
+
+add_custom_target( alimdc-static
+DEPENDS ${LIBPATH} ${BINPATH} RAW-all-static STEER-all-static )
+
+add_custom_command( 
+TARGET alimdc-static
+POST_BUILD
+COMMAND ar r ${LIBPATH}/alimdccxxo.a ${CMAKE_BINARY_DIR}/RAW/CMakeFiles/alimdc.dir/alimdc_main.cxx.o
+COMMAND rm -rf ${LIBPATH}/libAliMDC.a
+COMMAND ar x ${RAWDatabaseALIB}
+COMMAND ar x ${MDCALIB}
+COMMAND ar x ${ESDALIB}
+COMMAND ar x ${STEERBaseALIB}
+COMMAND ar r ${LIBPATH}/libAliMDC.a *.o
+COMMAND ar t ${RAWDatabaseALIB} | xargs rm 
+COMMAND ar t ${MDCALIB} | xargs rm 
+COMMAND ar t ${ESDALIB} | xargs rm 
+COMMAND ar t ${STEERBaseALIB} | xargs rm 
+COMMAND ${CMAKE_CXX_COMPILER} ${LDFLAGS} -o ${BINPATH}/alimdca ${LIBPATH}/alimdccxxo.a ${LIBPATH}/libAliMDC.a ${ROOTALIBDIR}/libRoot.a ${ROOTALIBDIR}/libfreetype.a ${ROOTALIBDIR}/libpcre.a -pthread -ldl -lz
+COMMAND @echo "Target alimdc-static made"
+)
+
+add_custom_command(
+TARGET ${LIBPATH}
+COMMAND mkdir -p ${LIBPATH}
+)
+
+
+#include (MakefileDA) 
 include (InstallRequiredSystemLibraries)
 include (CPack)
 
