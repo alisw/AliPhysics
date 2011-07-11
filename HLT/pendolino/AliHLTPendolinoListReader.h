@@ -149,8 +149,8 @@ class AliHLTPendolinoListReader : public TObject {
 		/**
 		 * Retrieves and returns the value of a given property name.
 		 *
-		 * @param propertyName the name of the requested property (as char)
-		 * @param propertyValue [out] pointer to the string representing the
+		 * @param [in] propertyName the name of the requested property (as char)
+		 * @param [out] propertyValue pointer to the string representing the
 		 *			value of the requested property
 		 *
 		 * @return true, if requested property has been found in the class, else
@@ -163,9 +163,9 @@ class AliHLTPendolinoListReader : public TObject {
 		/**
 		 * Retrieves and returns the value of a given property name.
 		 *
-		 * @param propertyName pointer to the string containing the name of
+		 * @param [in] propertyName pointer to the string containing the name of
 		 *			the requested property
-		 * @param propertyValue [out] pointer to the string representing the
+		 * @param [out] propertyValue pointer to the string representing the
 		 *			value of the requested property
 		 *
 		 * @return true, if requested property has been found in the class, else
