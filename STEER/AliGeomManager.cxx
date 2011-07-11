@@ -134,7 +134,7 @@ void AliGeomManager::LoadGeometry(const char *geomFileName)
     if (!fgGeometry) AliFatalClass("Couldn't find TGeoManager in the specified CDB entry!");
     
     AliInfoClass(Form("From now on using geometry from CDB base folder \"%s\"",
-		      AliCDBManager::Instance()->GetURI("Geometry/Align/Data")));
+		      AliCDBManager::Instance()->GetURI("GRP/Geometry/Data")));
   }
   ResetPNEntriesLUT();
   InitPNEntriesLUT();
