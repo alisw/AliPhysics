@@ -181,5 +181,5 @@ void AliTaskCDBconnect::Exec(Option_t* /*option*/)
 void AliTaskCDBconnect::Terminate(Option_t *)
 {
 // Initialize CDB also in Terminate
-   CreateOutputObjects();
+//   CreateOutputObjects();
 }
