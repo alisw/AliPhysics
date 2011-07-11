@@ -316,11 +316,9 @@ set(ALIMDCARCHDIR i386)
 elseif( ${ARCHITECTURE} MATCHES "linuxia64gcc" )
 set(ALIMDCARCHDIR ia64)
 elseif(NOT DEFINED ${ARCHITECTURE})
-message( "Unknown architecture" )
-exit(1)
+message("alimdc-rpm: Unknown architecture" )
 else( ${ARCHITECTURE} MATCHES "linuxx8664gcc" )
-message( "Unknown architecture" )
-exit(1)
+message("alimdc-rpm: Unknown architecture" )
 endif( ${ARCHITECTURE} MATCHES "linuxx8664gcc" )
 
 
