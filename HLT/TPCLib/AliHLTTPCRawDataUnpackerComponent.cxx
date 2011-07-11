@@ -76,7 +76,7 @@ void AliHLTTPCRawDataUnpackerComponent::GetInputDataTypes( vector<AliHLTComponen
 {
   // see header file for class documentation
   list.clear();
-  list.push_back( AliHLTTPCDefinitions::fgkDDLPackedRawDataType );
+  list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
 }
 
 AliHLTComponentDataType AliHLTTPCRawDataUnpackerComponent::GetOutputDataType()
@@ -177,13 +177,7 @@ int AliHLTTPCRawDataUnpackerComponent::DoEvent( const AliHLTComponentEventData& 
   for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx;
-      char tmp1[14], tmp2[14];
-      DataType2Text( iter->fDataType, tmp1 );
-      DataType2Text( AliHLTTPCDefinitions::fgkDDLPackedRawDataType, tmp2 );
-      Logging( kHLTLogDebug, "HLT::TPCRawDataUnpackerSubscriber::DoEvent", "Event received", 
-	       "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
-	       evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
-      if ( iter->fDataType != AliHLTTPCDefinitions::fgkDDLPackedRawDataType )
+      if ( iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC) )
 	{
 	  continue;
 	}
