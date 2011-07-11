@@ -29,7 +29,6 @@
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCDefinitions)
 
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDDLPackedRawDataType = AliHLTComponentDataTypeInitializer("DDL_RWPK", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDDLEncodedEntropyRawDataType = AliHLTComponentDataTypeInitializer("DDLENCEN", kAliHLTDataOriginTPC);
 										      								  	      
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkPackedRawDataType = AliHLTComponentDataTypeInitializer("RAWPAKED", kAliHLTDataOriginTPC);
@@ -56,6 +55,33 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibAlignDataType
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibTracksDataType = AliHLTComponentDataTypeInitializer("CALTRACK", kAliHLTDataOriginTPC);
 
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibTracksGainDataType = AliHLTComponentDataTypeInitializer("CALGAIN ", kAliHLTDataOriginTPC);
+
+const AliHLTComponentDataType& AliHLTTPCDefinitions::CalibPedestalDataType() {
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CAL_PED ", kAliHLTDataOriginTPC);
+  return dt;
+}
+const AliHLTComponentDataType& AliHLTTPCDefinitions::CalibPulserDataType() {
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CAL_PULS", kAliHLTDataOriginTPC);
+  return dt;
+}
+const AliHLTComponentDataType& AliHLTTPCDefinitions::CalibCEDataType() {
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CAL_CE  ", kAliHLTDataOriginTPC);
+  return dt;
+}
+
+const AliHLTComponentDataType& AliHLTTPCDefinitions::OfflineCalibAlignDataType() {
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CALALIGN", kAliHLTDataOriginTPC);
+  return dt;
+}
+const AliHLTComponentDataType& AliHLTTPCDefinitions::OfflineCalibTracksDataType() {
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CALTRACK", kAliHLTDataOriginTPC);
+  return dt;
+}
+
+const AliHLTComponentDataType& AliHLTTPCDefinitions::OfflineCalibTracksGainDataType() {
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CALGAIN ", kAliHLTDataOriginTPC);
+  return dt;
+}
 
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo = AliHLTComponentDataTypeInitializer("CLMCINFO", kAliHLTDataOriginTPC);
 

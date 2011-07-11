@@ -85,8 +85,6 @@ public:
 	 */
 	static bool DDLIdToSlicePatch(AliHLTInt32_t ddlid, AliHLTUInt8_t& slice, AliHLTUInt8_t& patch);
 
-  /** DDL packed RAW data */
-  static const AliHLTComponentDataType fgkDDLPackedRawDataType;         // see above
   /** DDL entropy encoded data */
   static const AliHLTComponentDataType fgkDDLEncodedEntropyRawDataType; // see above
   /** packed RAW data */
@@ -121,19 +119,25 @@ public:
   // Calibration data
   /** pedestal calibration data */
   static const AliHLTComponentDataType fgkCalibPedestalDataType;   // see above
+  static const AliHLTComponentDataType& CalibPedestalDataType();
   /** signal calibration data */
   static const AliHLTComponentDataType fgkCalibPulserDataType;     // see above
+  static const AliHLTComponentDataType& CalibPulserDataType();
   /** central electrode calibration data */
   static const AliHLTComponentDataType fgkCalibCEDataType;         // see above
+  static const AliHLTComponentDataType& CalibCEDataType();
 
   // offline calbration components
 
   /** alignment calibration data */
   static const AliHLTComponentDataType fgkOfflineCalibAlignDataType;         // see above
+  static const AliHLTComponentDataType& OfflineCalibAlignDataType();
   /** track calibration data */
   static const AliHLTComponentDataType fgkOfflineCalibTracksDataType;        // see above
+  static const AliHLTComponentDataType& OfflineCalibTracksDataType();
   /** gain calibration data */
   static const AliHLTComponentDataType fgkOfflineCalibTracksGainDataType;    // see above
+  static const AliHLTComponentDataType& OfflineCalibTracksGainDataType();
   /** cluster monte carlo information */
   static const AliHLTComponentDataType fgkAliHLTDataTypeClusterMCInfo;    // see above
 
