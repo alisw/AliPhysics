@@ -440,7 +440,7 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedCombinedPID(AliAODRecoDecayHF* obj) {
 	    AliAODTrack *track=(AliAODTrack*)obj->GetDaughter(i);
 	    if(!track) return 0;
 	    // identify kaon
-	    UInt_t detUsed = fPidHF->GetPidCombined()->ComputeProbabilities(track, fPidHF->GetPidResponse(), probComb); // for the moment we don't check detUsed...
+	    /*UInt_t detUsed =*/ fPidHF->GetPidCombined()->ComputeProbabilities(track, fPidHF->GetPidResponse(), probComb); // for the moment we don't check detUsed...
 	    //	    Printf("[%d] %x %f %f %f %f %f",i,detUsed,probComb[0],probComb[1],probComb[2],probComb[3],probComb[4]);
 	    if(i==1) {
 		    if(TMath::MaxElement(AliPID::kSPECIES,probComb) == probComb[3]) {  // the probability to be a Kaon is the highest
