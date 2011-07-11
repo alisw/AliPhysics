@@ -431,7 +431,7 @@ void AliHFEpostAnalysis::DrawCutEfficiency(Bool_t MC, Int_t source){
 
   if(MC){
     if(source > -1 && source < 4){
-      AliInfo(Form("Setting source to %d", source))
+      AliInfo(Form("Setting source to %d", source));
       for(Int_t istep = 0; istep < tracks->GetNStep(); istep++) tracks->GetAxis(4, istep)->SetRange(source + 1, source + 1);
     }
   }

@@ -571,8 +571,8 @@ void AliAnalyseUE::FindMaxMinRegions(TVector3 *jetVect, Int_t conePosition, Int_
 			Float_t z;
 			trackESD->GetImpactParameters(d0,z);
 			fHistos->FillHistogram("hDCAxy", d0, jetVect[0].Pt());
-			}else AliInfo("NO TRACKS ************************************************") 
-		}
+		}else AliInfo("NO TRACKS ************************************************") ;
+	}
 	}
     
     if (!mctrue && eff){
