@@ -96,7 +96,7 @@ void AliHLTTPCCalibrationComponent::GetInputDataTypes( vector<AliHLTComponentDat
 AliHLTComponentDataType AliHLTTPCCalibrationComponent::GetOutputDataType() {
 // see header file for class documentation
 
-  return AliHLTTPCDefinitions::fgkCalibCEDataType;
+  return AliHLTTPCDefinitions::CalibCEDataType();
 }
 
 void AliHLTTPCCalibrationComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
@@ -218,7 +218,7 @@ Int_t AliHLTTPCCalibrationComponent::ProcessCalibration( const AliHLTComponentEv
   fCalibTask->Process(fESDEvent);
 
   fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification( fMinSlice, fMaxSlice, fMinPartition, fMaxPartition );
-  PushBack( (TObject*) fCalibTask, AliHLTTPCDefinitions::fgkCalibCEDataType | kAliHLTDataOriginOut, fSpecification);
+  PushBack( (TObject*) fCalibTask, AliHLTTPCDefinitions::CalibCEDataType() | kAliHLTDataOriginOut, fSpecification);
   
   return 0;
 }

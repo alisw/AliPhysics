@@ -87,9 +87,9 @@ int AliHLTTPCOfflineCalibrationComponent::GetOutputDataTypes(AliHLTComponentData
 {
   // create output data type
   tgtList.clear();
-  tgtList.push_back(AliHLTTPCDefinitions::fgkOfflineCalibAlignDataType);
-  tgtList.push_back(AliHLTTPCDefinitions::fgkOfflineCalibTracksDataType);
-  tgtList.push_back(AliHLTTPCDefinitions::fgkOfflineCalibTracksGainDataType);
+  tgtList.push_back(AliHLTTPCDefinitions::OfflineCalibAlignDataType());
+  tgtList.push_back(AliHLTTPCDefinitions::OfflineCalibTracksDataType());
+  tgtList.push_back(AliHLTTPCDefinitions::OfflineCalibTracksGainDataType());
 
   return tgtList.size(); 
 }
@@ -229,9 +229,9 @@ int AliHLTTPCOfflineCalibrationComponent::ProcessCalibration(const AliHLTCompone
         AliHLTUInt32_t iSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(minSlice, maxSlice, minPatch, maxPatch);
 
 	// send data
-  	PushBack((TObject*)fTPCcalibAlign,AliHLTTPCDefinitions::fgkOfflineCalibAlignDataType,iSpecification);
-  	PushBack((TObject*)fTPCcalibTracksGain,AliHLTTPCDefinitions::fgkOfflineCalibTracksGainDataType,iSpecification);
-  	PushBack((TObject*)fTPCcalibTracks,AliHLTTPCDefinitions::fgkOfflineCalibTracksDataType,iSpecification);
+  	PushBack((TObject*)fTPCcalibAlign,AliHLTTPCDefinitions::OfflineCalibAlignDataType(),iSpecification);
+  	PushBack((TObject*)fTPCcalibTracksGain,AliHLTTPCDefinitions::OfflineCalibTracksGainDataType(),iSpecification);
+  	PushBack((TObject*)fTPCcalibTracks,AliHLTTPCDefinitions::OfflineCalibTracksDataType(),iSpecification);
 
       // reset standard ESD content	
       pSeedsArray->Delete();

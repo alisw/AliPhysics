@@ -117,7 +117,7 @@ void AliHLTTPCCalibTimeComponent::GetInputDataTypes( vector<AliHLTComponentDataT
 AliHLTComponentDataType AliHLTTPCCalibTimeComponent::GetOutputDataType() {
 // see header file for class documentation
 
-  return AliHLTTPCDefinitions::fgkCalibCEDataType|kAliHLTDataOriginOut;
+  return AliHLTTPCDefinitions::CalibCEDataType()|kAliHLTDataOriginOut;
 }
 
 void AliHLTTPCCalibTimeComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ){
