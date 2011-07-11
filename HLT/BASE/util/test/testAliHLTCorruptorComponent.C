@@ -129,11 +129,11 @@ void RunChainToCheckFiltering(bool debug = false)
 
 /**
  * Reads a file into a buffer.
- * [in]  \param filename  The name of the file to read.
- * [out] \param buffer  The buffer which is created to store the contents.
+ * \param [in]  filename  The name of the file to read.
+ * \param [out] buffer  The buffer which is created to store the contents.
  *                      Must be deleted with 'delete [] buffer' by caller if not NULL.
- * [out] \param size  The size of the buffer created in bytes.
- * [in]  \param debug  Indicates if debug messages should be printed.
+ * \param [out] size  The size of the buffer created in bytes.
+ * \param [in]  debug  Indicates if debug messages should be printed.
  * \returns true if the file was read, the buffer created and filled; false otherwise.
  * \note The caller becomes the owner of the allocated buffer.
  */

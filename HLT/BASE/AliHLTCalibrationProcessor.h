@@ -96,13 +96,13 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    * The low-level data processing method for the component,
    * called for every data event. This is the custom processing 
    * method and can be overloaded by the component.
-   * @param evtData       event data structure
-   * @param blocks        input data block descriptors
-   * @param trigData	  trigger data structure
-   * @param outputPtr	  pointer to target buffer
-   * @param size	  <i>input</i>: size of target buffer
+   * @param [in] evtData       event data structure
+   * @param [in] blocks        input data block descriptors
+   * @param [in] trigData	  trigger data structure
+   * @param [in] outputPtr	  pointer to target buffer
+   * @param [in,out] size	  <i>input</i>: size of target buffer
    *            	  <i>output</i>:size of produced data
-   * @param outputBlocks  list to receive output block descriptors
+   * @param [in] outputBlocks  list to receive output block descriptors
    * @return neg. error code if failed
    */
   virtual Int_t ProcessCalibration(const AliHLTComponent_EventData& evtData,
@@ -131,13 +131,13 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    * The low-level data processing method for the component,
    * called for the END_OF_RUN event. This is the custom processing 
    * method and can be overloaded by the component.
-   * @param evtData       event data structure
-   * @param blocks        input data block descriptors
-   * @param trigData	  trigger data structure
-   * @param outputPtr	  pointer to target buffer
-   * @param size	  <i>input</i>: size of target buffer
+   * @param [in] evtData       event data structure
+   * @param [in] blocks        input data block descriptors
+   * @param [in] trigData	  trigger data structure
+   * @param [in] outputPtr	  pointer to target buffer
+   * @param [in,out] size	  <i>input</i>: size of target buffer
    *            	  <i>output</i>:size of produced data
-   * @param outputBlocks  list to receive output block descriptors
+   * @param [in] outputBlocks  list to receive output block descriptors
    * @return neg. error code if failed
    */
   virtual Int_t ShipDataToFXS(const AliHLTComponent_EventData& evtData,
@@ -218,13 +218,13 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    * according to the event type - END_OF_RUN / DATA / CALIBRATION
    * If commandline paramater  "-eventmodulo x"is given and x > 0, data will 
    * be also shipped to the FXS with this modulo.
-   * @param evtData       event data structure
-   * @param blocks        input data block descriptors
-   * @param trigData	  trigger data structure
-   * @param outputPtr	  pointer to target buffer
-   * @param size	  <i>input</i>: size of target buffer
+   * @param [in] evtData       event data structure
+   * @param [in] blocks        input data block descriptors
+   * @param [in] trigData	  trigger data structure
+   * @param [in] outputPtr	  pointer to target buffer
+   * @param [in,out] size	  <i>input</i>: size of target buffer
    *            	  <i>output</i>:size of produced data
-   * @param outputBlocks  list to receive output block descriptors
+   * @param [in] outputBlocks  list to receive output block descriptors
    * @return neg. error code if failed
    */
   Int_t DoEvent( const AliHLTComponentEventData& evtData,

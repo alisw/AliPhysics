@@ -155,7 +155,7 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * invocation. In the current stage of development, only one handler
    * can be activated per agent. This is sufficient for the current
    * operation, but can be extended.
-   * @param pHandler  [in] the component handler instance
+   * @param [in] pHandler  the component handler instance
    */
   int ActivateComponentHandler(AliHLTComponentHandler* pHandler);
 
@@ -171,9 +171,9 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * is always NULL and the raw gives access to data. The configurations
    * can adapt to the two cases.
    *
-   * @param handler   [in] the configuration handler
-   * @param rawReader [in] AliRoot RawReader instance 
-   * @param runloader [in] AliRoot runloader
+   * @param [in] handler   the configuration handler
+   * @param [in] rawReader AliRoot RawReader instance 
+   * @param [in] runloader AliRoot runloader
    * @return neg. error code if failed
    */
   virtual int CreateConfigurations(AliHLTConfigurationHandler* handler,
@@ -186,8 +186,8 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * described by the last configuration(s) in the chain. 
    * The agent can adapt the configurations to be registered to the current
    * AliRoot setup by checking the run loader and the raw reader.
-   * @param rawReader [in] AliRoot RawReader instance 
-   * @param runloader [in] AliRoot runloader
+   * @param [in] rawReader AliRoot RawReader instance 
+   * @param [in] runloader AliRoot runloader
    * @return string containing the top configurations separated by blanks
    */
   virtual const char* GetReconstructionChains(AliRawReader* rawReader=NULL,
@@ -211,7 +211,7 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * - @ref AliHLTComponentHandler::AddComponent                           <br>
    *        Same functionality but handler deletes the object at the end.
    *
-   * @param pHandler  [in] instance of the component handler          
+   * @param [in] pHandler  instance of the component handler          
    */
   virtual int RegisterComponents(AliHLTComponentHandler* pHandler) const;
 
@@ -315,9 +315,9 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * - details how it will handle it, mainly the type of the handler
    *   @ref AliHLTOUTHandlerType
    * 
-   * @param dt        [in] data type of the block
-   * @param spec      [in] specification of the block
-   * @param desc      [out] handler description
+   * @param [in] dt        data type of the block
+   * @param [in] spec      specification of the block
+   * @param [out] desc      handler description
    * @return 1 if the agent can provide a handler, 0 if not
    */
   virtual int GetHandlerDescription(AliHLTComponentDataType dt,
@@ -333,8 +333,8 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * The framework first collects the handlers for all data blocks, and
    * calls the @ref AliHLTOUTHandler::ProcessData method afterwords for
    * each handler.
-   * @param dt        [in] data type of the block
-   * @param spec      [in] specification of the block
+   * @param [in] dt        data type of the block
+   * @param [in] spec      specification of the block
    * @return pointer to handler
    */
   virtual AliHLTOUTHandler* GetOutputHandler(AliHLTComponentDataType dt,
@@ -352,9 +352,9 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
 
   /**
    * Get raw stream for a data block.
-   * @param dt        [in] data type of the block
-   * @param spec      [in] specification of the block
-   * @param pData     [in] data control object
+   * @param [in] dt        data type of the block
+   * @param [in] spec      specification of the block
+   * @param [in] pData     data control object
    * @return Rawstream object, NULL if no Rawstream available for data type/spec
    */
   // this method is likely to be moved to a specific implementation

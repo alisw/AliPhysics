@@ -207,8 +207,8 @@ class AliHLTOUT {
 
     /**
      * Get the data buffer
-     * @param pBuffer [out] buffer of the selected data block
-     * @param size    [out] size of the selected data block
+     * @param [out] pBuffer buffer of the selected data block
+     * @param [out] size    size of the selected data block
      */
     int GetDataBuffer(const AliHLTUInt8_t* &pBuffer, AliHLTUInt32_t& size) {
       if (fpCollection) return fpCollection->GetDataBuffer(GetIndex(), pBuffer, size);
@@ -390,10 +390,10 @@ class AliHLTOUT {
    * kAliHLTVoidDataSpec in order to be ignored and just match any data block.
    *
    * The search criteria can be combined with a handler type (e.g. kRawReader)
-   * @param dt    [in]  data type to match                                <br>
-   * @param spec  [in]  data specification to match                       <br>
-   * @param handlerType [in]  type of the handler
-   * @param skipProcessed [in] skip all block marked processed
+   * @param [in] dt     data type to match                                <br>
+   * @param [in] spec   data specification to match                       <br>
+   * @param [in] handlerType  type of the handler
+   * @param [in] skipProcessed skip all block marked processed
    * @return block index: >= 0 if success, -ENOENT if no block found      <br>
    *         neg. error code if failed                                    <br>
    *                        -EPERM if access denied (object locked)
@@ -414,8 +414,8 @@ class AliHLTOUT {
 
   /**
    * Get properties of the selected data block.
-   * @param dt    [out] data type of the selected block
-   * @param spec  [out] data specification of the selected block
+   * @param [out] dt    data type of the selected block
+   * @param [out] spec  data specification of the selected block
    */
   int GetDataBlockDescription(AliHLTComponentDataType& dt, AliHLTUInt32_t& spec);
 
@@ -438,14 +438,14 @@ class AliHLTOUT {
 
   /**
    * Get buffer of the selected data block.
-   * @param pBuffer [out] buffer of the selected data block
-   * @param size    [out] size of the selected data block
+   * @param [out] pBuffer buffer of the selected data block
+   * @param [out] size    size of the selected data block
    */
   int GetDataBuffer(const AliHLTUInt8_t* &pBuffer, AliHLTUInt32_t& size);
 
   /**
    * Release buffer after use.
-   * @param pBuffer [in]  buffer of the selected data block
+   * @param [in] pBuffer  buffer of the selected data block
    */
   int ReleaseDataBuffer(const AliHLTUInt8_t* pBuffer);
 
@@ -528,10 +528,10 @@ class AliHLTOUT {
    * The function needs AliRoot and might not be implemented by all AliHLTOUT
    * implementations.
    * a data block of this specification.
-   * @param pBuffer  [in] the data buffer
-   * @param size     [in] data buffer size
-   * @param dt       [in] data type of the block
-   * @param tgtesd   [out] optional target
+   * @param [in]  pBuffer  the data buffer
+   * @param [in]  size     data buffer size
+   * @param [in]  dt       data type of the block
+   * @param [out] tgtesd   optional target
    */
   virtual int WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size, AliHLTComponentDataType dt, AliESDEvent* tgtesd=NULL) const;
 
@@ -680,9 +680,9 @@ class AliHLTOUT {
 
   /**
    * Get the data buffer
-   * @param index   [in]  index of the block
-   * @param pBuffer [out] buffer of the selected data block
-   * @param size    [out] size of the selected data block
+   * @param [in]  index   index of the block
+   * @param [out] pBuffer buffer of the selected data block
+   * @param [out] size    size of the selected data block
    */
   virtual int GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_t* &pBuffer, 
 			    AliHLTUInt32_t& size)=0;

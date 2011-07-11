@@ -138,12 +138,12 @@ class AliHLTRawReaderPublisherComponent : public AliHLTOfflineDataSource {
 
   /**
    * Data source method.
-   * @param evtData       event data structure
-   * @param trigData	  trigger data structure
-   * @param outputPtr	  pointer to target buffer
-   * @param size	  <i>input</i>: size of target buffer
+   * @param [in] evtData       event data structure
+   * @param [in] trigData	  trigger data structure
+   * @param [in] outputPtr	  pointer to target buffer
+   * @param [in,out] size	  <i>input</i>: size of target buffer
    *            	  <i>output</i>:size of produced data
-   * @param outputBlocks  list to receive output block descriptors
+   * @param [in] outputBlocks  list to receive output block descriptors
    * @return neg. error code if failed
    */
   int GetEvent( const AliHLTComponentEventData& evtData,

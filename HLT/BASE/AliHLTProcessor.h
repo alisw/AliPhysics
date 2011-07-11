@@ -70,13 +70,13 @@ class AliHLTProcessor : public AliHLTComponent {
    * The low-level data processing method for the component.
    * This is the custom processing method and can be overloaded by 
    * the component.
-   * @param evtData       event data structure
-   * @param blocks        input data block descriptors
-   * @param trigData	  trigger data structure
-   * @param outputPtr	  pointer to target buffer
-   * @param size	  <i>input</i>: size of target buffer
+   * @param [in] evtData       event data structure
+   * @param [in] blocks        input data block descriptors
+   * @param [in] trigData	  trigger data structure
+   * @param [in] outputPtr	  pointer to target buffer
+   * @param [in,out] size	  <i>input</i>: size of target buffer
    *            	  <i>output</i>:size of produced data
-   * @param outputBlocks  list to receive output block descriptors
+   * @param [in] outputBlocks  list to receive output block descriptors
    * @return neg. error code if failed                                <br>
    *         -ENOSPC      output buffer too small
    */

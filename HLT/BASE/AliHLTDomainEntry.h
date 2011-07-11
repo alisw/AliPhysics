@@ -296,8 +296,8 @@ class AliHLTDomainEntry : public TObject
    * If we consider the possibility of wild card characters, then the domain entry
    * can be thought of as a set of possible data block entries. This operator
    * therefore effectively implements the set intersection.
-   * \param rhs <i>[in]</i> The domain entry to compare to.
-   * \param result <i>[out]</i>  The resulting intersect is written into this
+   * \param [in]  rhs     The domain entry to compare to.
+   * \param [out] result  The resulting intersect is written into this
    *    variable if this method returns true. The contents is not modified if
    *    there is no intersect and this method returns false.
    * \return true is returned if there is a intersect between the domain entries

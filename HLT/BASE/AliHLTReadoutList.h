@@ -383,10 +383,9 @@ class AliHLTReadoutList : public TNamed
   
   /**
    * Decodes the word index and bit index within that word for the readout list structure.
-   * \param ddlId <i>[in]</i>  The ID number of the DDL to decode.
-   * \param wordIndex <i>[out]</i>  the word index of the word to modify or check
-   *    within fReadoutList.fList
-   * \param bitIndex <i>[out]</i>   the bit index of the bit to modify or check
+   * \param [in] ddlId   The ID number of the DDL to decode.
+   * \param [out] wordIndex  the word index of the word to modify or check within fReadoutList.fList
+   * \param [out] bitIndex   the bit index of the bit to modify or check
    *    within the word pointed to by <i>wordIndex</i>.
    * \return  true if the ddlId was decoded and false if it was invalid.
    * \note We do not check extensively if the ddlId is invalid. Just simple checks

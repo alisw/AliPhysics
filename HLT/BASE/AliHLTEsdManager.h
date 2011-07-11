@@ -70,11 +70,11 @@ class AliHLTEsdManager : public AliHLTLogging {
    * where 'det' is derived from the data type origin. Each time the function is invoked
    * a new event is created. Dummy events are added if the previous events did not contain
    *
-   * @param pBuffer  [in] the data buffer
-   * @param size     [in] data buffer size
-   * @param dt       [in] data type of the block
-   * @param tgtesd   [out] optional target
-   * @param eventno  [in] optional event no
+   * @param [in]  pBuffer  the data buffer
+   * @param [in]  size     data buffer size
+   * @param [in]  dt       data type of the block
+   * @param [out] tgtesd   optional target
+   * @param [in]  eventno  optional event no
    */
   virtual int WriteESD(const AliHLTUInt8_t* pBuffer, AliHLTUInt32_t size, AliHLTComponentDataType dt,
 	       AliESDEvent* tgtesd=NULL, int eventno=-1)=0;

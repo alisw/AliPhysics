@@ -688,8 +688,8 @@ class AliHLTComponent : public AliHLTLogging {
   /**
    * Copy data type structure
    * Copies the value an AliHLTComponentDataType structure to another one
-   * @param[out] tgtdt   target structure
-   * @param[in] srcdt   source structure
+   * @param [out] tgtdt   target structure
+   * @param [in] srcdt   source structure
    */
   static void CopyDataType(AliHLTComponentDataType& tgtdt, const AliHLTComponentDataType& srcdt);
 
@@ -739,13 +739,13 @@ class AliHLTComponent : public AliHLTLogging {
 
   /**
    * Extracts the different data parts from the trigger data structure.
-   * [in] @param trigData  The trigger data as passed to the DoProcessing method.
-   * [out] @param attributes  The data block attributes given by the HLT framework.
-   * [out] @param status  The HLT status bits given by the HLT framework.
-   * [out] @param cdh  The common data header received from DDL links.
-   * [out] @param readoutlist  The readout list to fill with readout list bits
+   * @param [in] trigData  The trigger data as passed to the DoProcessing method.
+   * @param [out] attributes  The data block attributes given by the HLT framework.
+   * @param [out] status  The HLT status bits given by the HLT framework.
+   * @param [out] cdh  The common data header received from DDL links.
+   * @param [out] readoutlist  The readout list to fill with readout list bits
    *                           passed on by the HLT framework.
-   * [in] @param printErrors  If true then error messages are generated as necessary
+   * @param [in] printErrors  If true then error messages are generated as necessary
    *                          and suppressed otherwise.
    * @note If any of the output parameters are set to NULL then the field is not set.
    *   For example, the following line will only fill the CDH pointer.
@@ -774,9 +774,9 @@ class AliHLTComponent : public AliHLTLogging {
 
   /**
    * Extracts the readout list from a trigger data structure.
-   * [in] @param trigData  The trigger data as passed to the DoProcessing method.
-   * [out] @param list  The output readout list to fill.
-   * [in] @param printErrors  If true then error messages are generated as necessary
+   * @param [in] trigData  The trigger data as passed to the DoProcessing method.
+   * @param [out] list  The output readout list to fill.
+   * @param [in] printErrors  If true then error messages are generated as necessary
    *                          and suppressed otherwise.
    * @return zero on success or one of the error codes returned by ExtractTriggerData.
    */
@@ -790,7 +790,7 @@ class AliHLTComponent : public AliHLTLogging {
 
   /**
    * Extracts the event type from the given Common Data Header.
-   * [in] @param cdh  The Common Data Header to extract the event type from.
+   * @param [in] cdh  The Common Data Header to extract the event type from.
    * @return the event type code from the CDH.
    */
   static AliHLTUInt32_t ExtractEventTypeFromCDH(const AliRawDataHeader* cdh);

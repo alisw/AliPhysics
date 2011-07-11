@@ -262,38 +262,38 @@ private:
 	
 	/**
 	 * Converts the value to a positive 64 bit integer.
-	 * [in]  \param value  The command line parameter to convert.
-	 * [out] \param num  The result is stored in this variable.
-	 * [in]  \param printErrors Indicates if error messages should be generated.
+	 * \param [in]  value  The command line parameter to convert.
+	 * \param [out] num  The result is stored in this variable.
+	 * \param [in]  printErrors Indicates if error messages should be generated.
 	 * \returns true if the convertion was successful.
 	 */
 	bool ConvertToPositiveInt(const char* value, AliHLTUInt64_t& num, bool printErrors = true) const;
 	
 	/**
 	 * Converts the value to a bit position.
-	 * [in]  \param value  The command line parameter to convert.
-	 * [out] \param pos  The result is stored in this variable.
-	 * [out] \param relative  Flag filled to indicate if the resulting position
+	 * \param [in]  value  The command line parameter to convert.
+	 * \param [out] pos  The result is stored in this variable.
+	 * \param [out] relative  Flag filled to indicate if the resulting position
 	 *                        is relative to the end of the data block buffer.
-	 * [in]  \param printErrors Indicates if error messages should be generated.
+	 * \param [in]  printErrors Indicates if error messages should be generated.
 	 * \returns true if the convertion was successful.
 	 */
 	bool ConvertToBitPosition(const char* value, AliHLTUInt64_t& pos, bool& relative, bool printErrors = true) const;
 	
 	/**
 	 * Converts the value to a percentage fraction in the range [0..1].
-	 * [in]  \param value  The command line parameter to convert.
-	 * [out] \param num  The result is stored in this variable.
-	 * [in]  \param printErrors Indicates if error messages should be generated.
+	 * \param [in]  value  The command line parameter to convert.
+	 * \param [out] num  The result is stored in this variable.
+	 * \param [in]  printErrors Indicates if error messages should be generated.
 	 * \returns true if the convertion was successful.
 	 */
 	bool ConvertToPercentage(const char* value, double& num, bool printErrors = true) const;
 	
 	/**
 	 * Converts a string to a pattern for the -replace and -insert command line options.
-	 * [in]  \param value  The command line parameter to convert.
-	 * [out] \param pattern  The resulting pattern structure.
-	 * [in]  \param printErrors Indicates if error messages should be generated.
+	 * \param [in]  value  The command line parameter to convert.
+	 * \param [out] pattern  The resulting pattern structure.
+	 * \param [in]  printErrors Indicates if error messages should be generated.
 	 * \returns true if the convertion was successful.
 	 */
 	bool ConvertToPattern(const char* value, AliPattern& pattern, bool printErrors = true) const;

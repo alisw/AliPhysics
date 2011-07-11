@@ -294,11 +294,11 @@ protected:
 	/**
 	 * This is an internal Add method which can be faster to use than the public Add method
 	 * directly for classes derived from AliHLTScalars.
-	 * [out] \param scalar This gets filled with the pointer of the new scalar created or
+	 * \param [out] scalar This gets filled with the pointer of the new scalar created or
 	 *    the existing one found.
-	 * [in] \param name The name of the scalar.
-	 * [in] \param description  A short description of the scalar.
-	 * [in] \param value  The value of the new scalar.
+	 * \param [in] name The name of the scalar.
+	 * \param [in] description  A short description of the scalar.
+	 * \param [in] value  The value of the new scalar.
 	 * \returns true if the scalar already exists and false otherwise.
 	 */
 	bool Add(AliScalar*& scalar, const char* name, const char* description, Double_t value);
