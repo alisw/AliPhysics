@@ -97,9 +97,9 @@ class AliHLTOUTHomerCollection : public AliHLTOUTHomerBuffer {
 
   /**
    * Get the data buffer
-   * @param index   [in]  index of the block
-   * @param pBuffer [out] buffer of the selected data block
-   * @param size    [out] size of the selected data block
+   * @param [in]  index   index of the block
+   * @param [out] pBuffer buffer of the selected data block
+   * @param [out] size    size of the selected data block
    */
   int GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_t* &pBuffer, 
 		    AliHLTUInt32_t& size);
