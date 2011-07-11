@@ -34,8 +34,6 @@ set ( CLASS_HDRS
     PredictionProcessor/AliHLTPredictionProcessorDummy.h
     PredictionProcessor/AliHLTPendolinoLogger.h
     PredictionProcessor/AliHLTPendolinoLoggerDump.h
-    PredictionProcessor/HLT/AliHLTPredicProcTempMonitor.h
-    PredictionProcessor/HLT/AliHLTPredictionProcessorHLT.h
     PredictionProcessor/GRP/AliHLTPredictionProcessorGRP.h
     PredictionProcessor/MUON/AliHLTPredictionProcessorMCH.h
     PredictionProcessor/MUON/AliHLTPredictionProcessorMTR.h
