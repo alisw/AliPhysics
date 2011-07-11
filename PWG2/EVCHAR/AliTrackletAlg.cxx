@@ -414,7 +414,7 @@ void AliTrackletAlg::FindTracklets(const Float_t *vtx)
   if (TGeoGlobalMagField::Instance()) field = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
   if (!field)
   {
-    AliError("Could not retrieve magnetic field. Assuming no field. Delta Phi shift will be deactivated in AliTrackletAlg.")
+    AliError("Could not retrieve magnetic field. Assuming no field. Delta Phi shift will be deactivated in AliTrackletAlg.");
   }
   else
     bz = TMath::Abs(field->SolenoidField());

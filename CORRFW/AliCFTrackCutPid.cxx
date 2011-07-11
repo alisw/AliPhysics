@@ -356,7 +356,7 @@ void AliCFTrackCutPid::SetPPriors(AliESDtrack *pTrk)
   
   for(Int_t i=0; i< AliPID::kSPECIES; i++) {
     if(pTrk->P()>fPriorsFunc[i]->GetXmin() && pTrk->P() < fPriorsFunc[i]->GetXmax()) fPriors[i]=fPriorsFunc[i]->Eval(pTrk->P());
-    else {AliInfo("the track momentum is not in the function range. Priors are equal") fPriors[i] = 0.2;}   
+    else {AliInfo("the track momentum is not in the function range. Priors are equal"); fPriors[i] = 0.2;}   
   }
 }   
 //______________________________________

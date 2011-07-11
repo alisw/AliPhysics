@@ -724,7 +724,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
   AliDebug(3, "Processing ESD Event");
   AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
   if(!fESD){
-    AliError("ESD Event required for ESD Analysis")
+    AliError("ESD Event required for ESD Analysis");
     return;
   }
 
@@ -1074,8 +1074,8 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
   if(!fAOD){
-    AliError("AOD Event required for AOD Analysis")
-      return;
+    AliError("AOD Event required for AOD Analysis");
+    return;
   }
   
   //
@@ -1548,8 +1548,8 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
 
    AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
    if(!fAOD){
-     AliError("AOD Event required for AOD Analysis")
-       return kFALSE;
+     AliError("AOD Event required for AOD Analysis");
+     return kFALSE;
    }
 
    if(IsPbPb()) {
@@ -1614,8 +1614,8 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
    AliDebug(3, "Processing ESD Centrality");
    AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
    if(!fESD){
-     AliError("ESD Event required for ESD Analysis")
-       return kFALSE;
+     AliError("ESD Event required for ESD Analysis");
+     return kFALSE;
    }
    const char* type = fESD->GetBeamType();
 
@@ -1700,8 +1700,8 @@ void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
 
    AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
    if(!fAOD){
-     AliError("AOD Event required for AOD Analysis")
-       return;
+     AliError("AOD Event required for AOD Analysis");
+     return;
    }
    // PileUp
    if(fRemovePileUp && fAOD->IsPileupFromSPD()) fIdentifiedAsPileUp = kTRUE; 
@@ -1717,8 +1717,8 @@ void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
    AliDebug(3, "Processing ESD Centrality");
    AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
    if(!fESD){
-     AliError("ESD Event required for ESD Analysis")
-       return;
+     AliError("ESD Event required for ESD Analysis");
+     return;
    }
    // PileUp
    fIdentifiedAsPileUp = kFALSE;

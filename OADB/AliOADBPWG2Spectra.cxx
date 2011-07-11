@@ -100,7 +100,8 @@ void  AliOADBPWG2Spectra::AddHisto(TH1D * h, Int_t det, Int_t pidType, Int_t par
   static TH1D * htest = BookHisto(kDetDummy, kGaussFit,kPion, kPos);
   const char * name = GetHistoName(det,pidType,part,charge,centrTag,centrBin);
   if(!CompareBinning(h,htest)){
-    AliWarning("Histo have different binning! Rebinning to standard"){
+    AliWarning("Histo have different binning! Rebinning to standard");
+    {
       h = GetHistoStandardBinning(h,det,pidType,part,charge,centrTag,centrBin);
     }
   }
