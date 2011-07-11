@@ -252,7 +252,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fHistList->SetOwner(kTRUE);
   
   Float_t fgkPtMin = 0.;
-  Float_t fgkPtMax = fPtMax;
+  //  Float_t fgkPtMax = fPtMax;
 
   //fPtBinEdges[region][0] = ptmax of region ; fPtBinEdges[region][1] = binWidth of region
   const Float_t ptmin1 =  fgkPtMin;
