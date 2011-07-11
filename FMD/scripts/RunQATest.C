@@ -33,10 +33,16 @@ public:
    */
   QATest()
     : AliFMDInput("galice.root"),
-      fMaker(0)
+      fMaker(0), 
+      fArray(0)
   {
     for (Int_t i = 0; i < AliQAv1::kNTASKINDEX; i++)  
       fTasks[i] = AliQAv1::kNULLTASKINDEX;
+    Int_t nArray = AliQAv1::kNTASKINDEX * AliRecoParam::kNSpecies;
+    Info("QAtest", "Allocating %dx%d=%d TObjArrays",
+	 AliQAv1::kNTASKINDEX, AliRecoParam::kNSpecies, nArray);
+    fArray = new TObjArray*[nArray];
+    for (Int_t i = 0; i < nArray; i++) fArray[i] = 0;
   }
   /** 
    * Set the location of the QA reference storage 
@@ -47,6 +53,38 @@ public:
   {
     AliQAv1::SetQARefStorage(refloc);
   }
+  /** 
+   * Calculate index of TObjArray* in fArray
+   * 
+   * @param specie Event species
+   * @param task   Task index 
+   * 
+   * @return Index. 
+   */
+  Int_t CalcArrayIndex(AliQAv1::TASKINDEX_t task,
+		       AliRecoParam::EventSpecie_t specie) const
+  {
+    Int_t es = AliRecoParam::AConvert(specie);
+    if (es >= AliRecoParam::kNSpecies) return -1;
+    
+    Int_t base = CalcSpeciesIndex(task);
+    if (base < 0) return base;
+    return base + es;
+  }
+  /** 
+   * Get index to species array 
+   * 
+   * @param task Task 
+   * 
+   * @return 
+   */
+  Int_t CalcSpeciesIndex(AliQAv1::TASKINDEX_t task) const
+  {
+    if (task >= AliQAv1::kNTASKINDEX) return -1;
+    // Species are consequtive 
+    return task * AliRecoParam::kNSpecies;
+  }
+    
   /** 
    * Initialise the code
    * 
@@ -79,12 +117,13 @@ public:
 		    LoadedString(true)));
       return false;
     }
-      
-    // --- Data maker --------------------------------------------------
+    // Int_t nTasks = j;
+
+    // --- Data maker ------------------------------------------------
     Info("TestQA", "Creating data maker");
     fMaker = new AliFMDQADataMakerRec();
     
-    // --- Init all species histograms ---------------------------------
+    // --- Init all species histograms -------------------------------
     Info("TestQA", "Setup data species");
     AliQAv1* qa = AliQAv1::Instance();
     for (unsigned int es = 0; es < AliRecoParam::kNSpecies; es++) {
@@ -93,7 +132,13 @@ public:
       qa->SetEventSpecie(specie);
       for (Int_t i = 0; i < AliQAv1::kNTASKINDEX; i++) {
 	if (fTasks[i] == AliQAv1::kNULLTASKINDEX) continue;
-	fMaker->Init(fTasks[i], specie);
+	Int_t k = CalcArrayIndex(fTasks[i], specie);
+	Info("Init", "Array for task %d (%s), specie %d (%s) @ %d/%d", 
+	     fTasks[i], AliQAv1::GetTaskName(fTasks[i]).Data(), 
+	     specie, AliRecoParam::GetEventSpecieName(specie), k,
+	     AliQAv1::kNTASKINDEX * AliRecoParam::kNSpecies);
+	fArray[k] = fMaker->Init(fTasks[i], specie);
+	fArray[k]->ls();
       }
     }
 
@@ -189,10 +234,27 @@ public:
       fMaker->EndOfCycle(fTasks[i]);
     }
   
-    // --- Running checker -------------------------------------------
+    // --- Get the checker -------------------------------------------
     Info("TestQA", "Running checker");
     AliQACheckerBase * checker = AliQAChecker::Instance()->
       GetDetQAChecker(AliQAv1::GetDetIndex("FMD"));
+
+    // --- Test: Remake plots ----------------------------------------
+    for (unsigned int idx = 0; idx < AliQAv1::kNTASKINDEX; idx++) {
+      // AliRecoParam::EventSpecie_t specie = AliRecoParam::ConvertIndex(es);
+      // if (!qa->IsEventSpecieSet(specie)) continue;
+      if (fTasks[idx] == AliQAv1::kNTASKINDEX) continue;
+      AliQAv1::TASKINDEX_t task = AliQAv1::TASKINDEX_t(idx); // AliQAv1::kRAWS;
+      AliQAv1::MODE_t      mode = AliQAv1::kRECMODE;
+      Int_t k = CalcSpeciesIndex(task);
+      Info("Init", "Array for task %d (%s) @ %d: %p", 
+	   task, AliQAv1::GetTaskName(task).Data(), k, fArray[k]);
+      if (!fArray[k]) continue;
+      fArray[k]->ls();
+      checker->MakeImage(&(fArray[k]), task, mode);
+    }
+    
+    
   
     // --- Get images from checker -----------------------------------
     AliQAv1* qa = AliQAv1::Instance();
@@ -236,6 +298,9 @@ public:
 protected:
   AliQADataMaker*      fMaker; // Data maker 
   AliQAv1::TASKINDEX_t fTasks[AliQAv1::kNTASKINDEX]; // Tasks to do
+  TObjArray**          fArray;
+
+  ClassDef(QATest, 0); 
 };
 
 #else
@@ -244,9 +309,12 @@ RunQATest(const char* src, Int_t runno=0)
 {
   gROOT->LoadMacro("$ALICE_ROOT/FMD/scripts/Compile.C");
   gSystem->AddIncludePath("-DBUILD=1");
-  Compile("$ALICE_ROOT/FMD/scripts/RunQATest.C", "+g");
+  Compile("$ALICE_ROOT.trunk/FMD/scripts/RunQATest.C", "+g");
+
+  AliCDBManager* cdb = AliCDBManager::Instance();
+  cdb->SetRun(runno);
   
-  QATest* qaTest = new QATest();
+  QATest* qaTest = new QATest;
   TString what(src);
   Int_t   colon = what.Index(":");
   TString type = "";
@@ -258,6 +326,7 @@ RunQATest(const char* src, Int_t runno=0)
     if      (what.Contains("AliESD")) type = "esd";
     else if (what.Contains("galice")) type = "sim";
     else if (what.Contains(".raw"))   type = "raw";
+    else if (what.Contains(".root"))  type = "raw";
   }
   Info("RunQATest", "type=%s, what=%s", type.Data(), what.Data());
   type.ToLower();

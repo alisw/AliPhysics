@@ -27,6 +27,7 @@
 // --- ROOT system ---
 #include <TClass.h>
 #include <TH1F.h> 
+#include <TH2.h> 
 #include <TH1I.h> 
 #include <TIterator.h> 
 #include <TKey.h> 
@@ -35,6 +36,7 @@
 #include <TCanvas.h>
 #include <TPaveText.h>
 #include <TStyle.h>
+#include <TLatex.h>
 
 // --- AliRoot header files ---
 #include "AliLog.h"
@@ -146,6 +148,13 @@ namespace {
     axis->SetTitle(t);
     return ret;
   }
+  void RestoreLog(TAxis* axis, Bool_t log) 
+  {
+    if (!log) return;
+    TString t(axis->GetTitle());
+    t.Append("[log]");
+    axis->SetTitle(t);
+  }
 }
 
 //____________________________________________________________________________ 
@@ -165,15 +174,19 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
   Int_t    nImages = 0 ;
   Double_t max     = 0;
   Double_t min     = 10000;
+
+  // Loop over all species 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     AliRecoParam::EventSpecie_t spe = AliRecoParam::ConvertIndex(specie);
     if (!AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))
 	->IsEventSpecieSet(spe)) 
       continue;
-    // if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue ;
-    
+									
+    // If nothing is defined for this specie, go on. 
     if(!list[specie] || list[specie]->GetEntriesFast() == 0) continue;
 
+    // Loop over the histograms and figure out how many histograms we
+    // have and the min/max 
     TH1* hist  = 0;
     Int_t nHist = list[specie]->GetEntriesFast();
     for(Int_t i= 0; i< nHist; i++) {
@@ -188,8 +201,6 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
 	// hist->GetBinContent(hist->GetMinimumBin());
 	max = TMath::Max(max, hMax);
 	min = TMath::Min(min, hMin);
-	AliInfo(Form("Histogram %30s min=%f, max=%f (min=%f,max=%f)",
-		     name.Data(), hMin, hMax, min, max));
       }
     }
     break ; 
@@ -197,6 +208,7 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
   min = TMath::Max(0.1, min);
   max = TMath::Max(1.0, max);
 
+  // IF no images, go on. 
   if (nImages == 0) {
     AliDebug(AliQAv1::GetQADebugLevel(), 
 	     Form("No histogram will be plotted for %s %s\n", GetName(), 
@@ -208,54 +220,86 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
 	   Form("%d histograms will be plotted for %s %s\n", 
 		nImages, GetName(), AliQAv1::GetTaskName(task).Data()));  
   gStyle->SetOptStat(0);
+  
+  // Again loop over species and draw a canvas 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     if (!AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))
 	->IsEventSpecieSet(specie)) continue;
-    
-    if(!list[specie] || list[specie]->GetEntries() <= 0) continue;
 
+    // if Nothing here, go on
+    if(!list[specie] || list[specie]->GetEntries() <= 0 || 
+       nImages <= 0) continue;
+
+    // Form the title 
     const Char_t * title = Form("QA_%s_%s_%s", GetName(), 
 				AliQAv1::GetTaskName(task).Data(), 
 				AliRecoParam::GetEventSpecieName(specie)); 
-    if (!fImage[specie]) 
-      fImage[specie] = new TCanvas(title, title) ;
+    if (!fImage[specie]) fImage[specie] = new TCanvas(title, title) ;
     fImage[specie]->Clear() ; 
     fImage[specie]->SetTitle(title) ; 
     fImage[specie]->cd() ; 
 
+    // Put something in the canvas - even if empty 
     TPaveText someText(0.015, 0.015, 0.98, 0.98) ;
     someText.AddText(title) ;
+    someText.SetFillColor(0);
+    someText.SetFillStyle(0);
+    someText.SetBorderSize(0);
+    someText.SetTextColor(kRed+1);
     someText.Draw() ; 
     TString outName(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), 
 			 AliQAv1::GetModeName(mode), 
 			 AliQAChecker::Instance()->GetRunNumber(), 
 			 AliQAv1::GetImageFileFormat()));
     fImage[specie]->Print(outName, "ps") ; 
-    fImage[specie]->Clear(); 
 
+
+    // Now set some parameters on the canvas 
+    fImage[specie]->Clear(); 
+    fImage[specie]->SetTopMargin(0.10);
+    fImage[specie]->SetBottomMargin(0.15);
+    fImage[specie]->SetLeftMargin(0.15);
+    fImage[specie]->SetRightMargin(0.05);
+    
+    // Put title on top 
+    const char* topT = Form("Mode: %s, Task: %s, Specie: %s, Run: %d",
+			    AliQAv1::GetModeName(mode), 
+			    AliQAv1::GetTaskName(task).Data(), 
+			    AliRecoParam::GetEventSpecieName(specie),
+			    AliQAChecker::Instance()->GetRunNumber());
+    TLatex* topText = new TLatex(.5, .99, topT);
+    topText->SetTextAlign(23);
+    topText->SetTextSize(.038);
+    topText->SetTextFont(42);
+    topText->SetTextColor(kBlue+3);
+    topText->SetNDC();
+    topText->Draw();
+				 
+    // Divide canvas 
     Int_t nx = int(nImages + .5) / 2;
     Int_t ny = 2;
     fImage[specie]->Divide(nx, ny, 0, 0);
     
     
+    // Loop over histograms 
     TH1*  hist  = 0;
     Int_t nHist = list[specie]->GetEntriesFast();
-    // list[specie]->Print();
     Int_t j     = 0;
     for (Int_t i = 0; i < nHist; i++) { 
       hist = static_cast<TH1*>(list[specie]->At(i));
       if (!hist || !hist->TestBit(AliQAv1::GetImageBit())) continue;
-      
+
+      // Go to sub-pad 
       TVirtualPad* pad = fImage[specie]->cd(++j);
-      pad->SetRightMargin(0.001);
+      pad->SetRightMargin(0.01);
+
+      // Check for log scale 
       Int_t logOpts = 0;
       logOpts |= CheckForLog(hist->GetXaxis(), pad, 1);
       logOpts |= CheckForLog(hist->GetYaxis(), pad, 2);
       logOpts |= CheckForLog(hist->GetZaxis(), pad, 3);
-      if (hist->GetEntries() > 0)
-	AliInfo(Form("Drawing %30s (min=%f, max=%f) in pad %d",
-		     hist->GetName(), min, max, j));
 
+      // Figure out special cases 
       TString opt;
       TString name(hist->GetName());
       if (name.Contains("readouterrors", TString::kIgnoreCase)) {
@@ -265,33 +309,55 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
 	opt="COLZ";
       }
       else {
+	pad->SetGridx();
+	pad->SetGridy();
 	hist->SetMinimum(min);
 	hist->SetMaximum(max);
 
       }
+      // Draw (As a copy)
       hist->DrawCopy(opt);
 
-      if (name.Contains("readouterrors", TString::kIgnoreCase)) 
-	continue;
-
-      TPad* insert = new TPad("insert", "Zoom", 
-			      .4,.4, .99, .95, 0, 0, 0);
-      insert->SetTopMargin(0);
-      insert->SetRightMargin(0.001);
-      insert->SetFillColor(0);
-      insert->SetBorderSize(1);
-      insert->SetBorderMode(0);
-      insert->Draw();
-      insert->cd();
-      if (logOpts & 0x1) insert->SetLogx();
-      if (logOpts & 0x2) insert->SetLogy();
-      if (logOpts & 0x4) insert->SetLogz();
-      hist->GetXaxis()->SetRangeUser(hist->GetXaxis()->GetXmin(), 
-				     hist->GetXaxis()->GetXmax()/8);
-      hist->DrawCopy(opt);
+      // Special cases 
+      if (name.Contains("readouterrors", TString::kIgnoreCase)) {
+	for (Int_t kk = 1; kk <= 3; kk++) {
+	  TH1* proj = static_cast<TH2*>(hist)->ProjectionY("",kk,kk);
+	Double_t m = proj->GetMean(); 
+	TLatex* l = new TLatex(kk, 30, Form("Mean: %f", m));
+	l->SetTextAngle(90);
+	l->SetTextColor(m > 10 ? kRed+1 : m > 1 ? kOrange+2 :kGreen+2);
+	l->Draw();
+      }
+      }
+      else {
+	gStyle->SetOptTitle(0);
+	TPad* insert = new TPad("insert", "Zoom", 
+				.4,.4, .99, .95, 0, 0, 0);
+	insert->SetTopMargin(0.01);
+	insert->SetRightMargin(0.01);
+	insert->SetFillColor(0);
+	insert->SetBorderSize(1);
+	insert->SetBorderMode(0);
+	insert->Draw();
+	insert->cd();
+	if (logOpts & 0x1) insert->SetLogx();
+	if (logOpts & 0x2) insert->SetLogy();
+	if (logOpts & 0x4) insert->SetLogz();
+	hist->GetXaxis()->SetRangeUser(hist->GetXaxis()->GetXmin(), 
+				       hist->GetXaxis()->GetXmax()/8);
+	hist->DrawCopy(opt);
+	// Restore full range 
+	hist->GetXaxis()->SetRangeUser(hist->GetXaxis()->GetXmin(), 
+				       hist->GetXaxis()->GetXmax());
+	gStyle->SetOptTitle(1);
+      }
       pad->cd();
+      // Possibly restore the log options 
+      RestoreLog(hist->GetXaxis(), logOpts & 0x1);
+      RestoreLog(hist->GetYaxis(), logOpts & 0x2);
+      RestoreLog(hist->GetZaxis(), logOpts & 0x4);
     }
-
+  // Print to a post-script file 
     fImage[specie]->Print(outName, "ps");
   }
 }
