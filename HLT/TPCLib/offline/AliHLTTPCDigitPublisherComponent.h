@@ -67,9 +67,8 @@ class AliHLTTPCDigitPublisherComponent : public AliHLTOfflineDataSource {
   /**
    * Get a ratio by how much the data volume is shrinked or enhanced.
    * The function is pure virtual and must be implemented by the child class.
-   * @param constBase        <i>return</i>: additive part, independent of the
-   *                                   input data volume  
-   * @param inputMultiplier  <i>return</i>: multiplication ratio
+   * @param [out] constBase  Additive part, independent of the input data volume.
+   * @param [out] inputMultiplier  Multiplication ratio.
    * @return values in the reference variables
    */
   void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
