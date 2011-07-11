@@ -68,8 +68,8 @@ class AliHLTTPCCompModelConverter: public AliHLTLogging
       unsigned long GetOutputModelDataSize() const;
       
       /** function to output model data
-       * @param data       pointer to target buffer
-       * @param dataSize   [in] size of buffer, [out] size of data
+       * @param [in] data       pointer to target buffer
+       * @param [in,out] dataSize   [in] size of buffer, [out] size of data
        * @return zero upon success
        */
       int OutputModelData( AliHLTUInt8_t* data, unsigned long& dataSize ) const;
@@ -83,8 +83,8 @@ class AliHLTTPCCompModelConverter: public AliHLTLogging
       unsigned long GetRemainingClustersOutputDataSize() const;
 
       /** function to get remaining clusters
-       * @param data       pointer to target buffer
-       * @param dataSize   [in] size of buffer, [out] size of data
+       * @param [in] data       pointer to target buffer
+       * @param [in,out] dataSize   [in] size of buffer, [out] size of data
        */
       int GetRemainingClusters( AliHLTUInt8_t* const data, unsigned long& dataSize ) const;
       

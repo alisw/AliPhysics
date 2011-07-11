@@ -77,9 +77,9 @@ public:
 		
 	/**
 	 * Converts a DDL ID number for the TPC to a slice and patch number.
-	 * [in] \param ddlid  The DDL ID number to convert.
-	 * [out] \param slice  The resultant slice number in the range [0..35].
-	 * [out] \param patch  The resultant patch number in the range [0..5].
+	 * \param [in] ddlid  The DDL ID number to convert.
+	 * \param [out] slice  The resultant slice number in the range [0..35].
+	 * \param [out] patch  The resultant patch number in the range [0..5].
 	 * \returns true if the DDL ID number was valid and slice and patch were set,
 	 *     otherwise false for an invalid DDL ID.
 	 */

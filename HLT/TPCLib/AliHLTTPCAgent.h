@@ -69,15 +69,15 @@ class AliHLTTPCAgent : public AliHLTModuleAgent {
 
   /**
    * Register components for the AliHLTTPC library.
-   * @param pHandler  [in] instance of the component handler          
+   * @param [in] pHandler  instance of the component handler          
    */
   int RegisterComponents(AliHLTComponentHandler* pHandler) const;
 
   /**
    * Get handler decription for TPC data in the HLTOUT data stream.
-   * @param dt        [in] data type of the block
-   * @param spec      [in] specification of the block
-   * @param desc      [out] handler description
+   * @param [in]  dt        data type of the block
+   * @param [in]  spec      specification of the block
+   * @param [out] desc      handler description
    * @return 1 if the agent can provide a handler, 0 if not
    */
   int GetHandlerDescription(AliHLTComponentDataType dt,
@@ -86,8 +86,8 @@ class AliHLTTPCAgent : public AliHLTModuleAgent {
 
   /**
    * Get specific handler for TPC data in the HLTOUT data stream.
-   * @param dt        [in] data type of the block
-   * @param spec      [in] specification of the block
+   * @param [in] dt        data type of the block
+   * @param [in] spec      specification of the block
    * @return pointer to handler
    */
   AliHLTOUTHandler* GetOutputHandler(AliHLTComponentDataType dt,

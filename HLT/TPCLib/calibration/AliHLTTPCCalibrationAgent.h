@@ -54,9 +54,9 @@ class AliHLTTPCCalibrationAgent : public AliHLTModuleAgent {
    * AliHLTConfigurationHandler. The agent can adapt the configurations
    * to be registered to the current AliRoot setup by checking the
    * runloader.
-   * @param handler   [in] the configuration handler
-   * @param rawReader [in] AliRoot RawReader instance 
-   * @param runloader [in] AliRoot runloader
+   * @param [in] handler   the configuration handler
+   * @param [in] rawReader AliRoot RawReader instance 
+   * @param [in] runloader AliRoot runloader
    * @return neg. error code if failed
    */
   Int_t CreateConfigurations(AliHLTConfigurationHandler* handler,
@@ -69,8 +69,8 @@ class AliHLTTPCCalibrationAgent : public AliHLTModuleAgent {
    * described by the last configuration(s) in the chain. 
    * The agent can adapt the configurations to be registered to the current
    * AliRoot setup by checking the runloader.
-   * @param rawReader [in] AliRoot RawReader instance 
-   * @param runloader [in] AliRoot runloader
+   * @param [in] rawReader AliRoot RawReader instance 
+   * @param [in] runloader AliRoot runloader
    * @return string containing the top configurations separated by blanks
    */
   const Char_t* GetReconstructionChains(AliRawReader* rawReader=NULL,
@@ -84,7 +84,7 @@ class AliHLTTPCCalibrationAgent : public AliHLTModuleAgent {
 
   /**
    * Register components for the AliHLTSample library.
-   * @param pHandler  [in] instance of the component handler          
+   * @param [in] pHandler  instance of the component handler          
    */
   Int_t RegisterComponents(AliHLTComponentHandler* pHandler) const;
 
