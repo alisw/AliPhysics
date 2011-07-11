@@ -291,6 +291,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     badpmt[i] = GetRecoParam() -> GetBadChannels(i);
   }
   Int_t low[500], high[500];
+  Float_t timefull=-9999;;
+  Float_t tvdc  = -9999; Float_t ora = -9999; Float_t orc = -9999;
 
   Int_t allData[110][5];
   
@@ -390,7 +392,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	    chargeQT1[in]=allData[2*in+58][0];
 	    AliDebug(25, Form(" readed Raw %i %i %i",
 			      in, chargeQT0[in],chargeQT1[in]));
-	    
 	  }
 	
 	onlineMean = allData[49][0];
@@ -494,7 +495,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       
       for (Int_t iHit=0; iHit<5; iHit++) 
 	{
-	  Float_t tvdc  = -9999; Float_t ora = -9999; Float_t orc = -9999;
 	  if(allData[50][iHit]>0) 
 	    tvdc = (Float_t(allData[50][iHit]) - meanTVDC) * channelWidth* 0.001; 
 	  if(allData[51][iHit]>0)
@@ -506,19 +506,21 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  frecpoints->SetOrC( iHit, orc);
 	  frecpoints->SetOrA( iHit, ora);
 	  frecpoints->SetTVDC( iHit, tvdc);
-	  Float_t timefull;
 	  for (Int_t i0=0; i0<12; i0++) {
 	    timefull = -9999; 
 	    if(allData[i0+1][iHit]>1) 
 	      timefull = (Float_t(allData[i0+1][iHit])-fTime0vertex[i0])* channelWidth* 0.001;
 	    frecpoints->SetTimeFull(i0, iHit,timefull) ;
+	    //   printf("i0 %d iHit %d data %d fTime0vertex %f timefull %f \n",i0, iHit, allData[i0+1][iHit], fTime0vertex[i0], timefull);
 	    
 	  }
 	  
 	  for (Int_t i0=12; i0<24; i0++) {
 	    timefull = -9999; 
-	    if(allData[i0+45][iHit]>1) 
+	    if(allData[i0+45][iHit]>1) {
 	      timefull = (Float_t(allData[i0+45][iHit])-fTime0vertex[i0])* channelWidth* 0.001;
+	    }
+	    //	      printf("i0 %d iHit %d data %d fTime0vertex %f timefull %f \n",i0, iHit, allData[i0+45][iHit], fTime0vertex[i0], timefull);
 	    frecpoints->SetTimeFull(i0, iHit, timefull) ;
 	  }
 	}
@@ -639,11 +641,10 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     fESDTZERO->SetOrC(iHit,frecpoints->GetOrC(iHit));
     
     for (Int_t i0=0; i0<24; i0++) {
-      if(frecpoints->GetTimeFull(i0,iHit)>0){
-	//	printf("FillESD ::: iHit %i cfd %i time %f \n", iHit, i0, 
-	//	       frecpoints->GetTimeFull(i0,iHit));
+      //  if(frecpoints->GetTimeFull(i0,iHit)>0){
+      //      	printf("FillESD ::: iHit %i cfd %i time %f \n", iHit, i0, frecpoints->GetTimeFull(i0,iHit));
 	fESDTZERO->SetTimeFull(i0, iHit,frecpoints->GetTimeFull(i0,iHit));
-      }
+	// }
 	
     }	     	     
   }
