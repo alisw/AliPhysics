@@ -1,0 +1,9 @@
+Calibration entries to be modified in Pass0
+
+TPC        - TPC/Calib/TimeDrift, TPC/Calib/TimeGain
+TOF        - TOF/Calib/RunParams
+T0         - T0/Calib/TimeDelay , T0/Calib/TimeAdjust
+TRD        - ???
+MeanVertex - not active
+
+ 
