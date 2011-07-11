@@ -43,8 +43,8 @@ int spec[N] = {0, 0x11111111, 0x22222222, 0x33333333, 0x44444444, 0x55555555};
 
 /**
  * Randomly builds a trigger domain from the various data types, origins and specifications.
- * \param domain <i>[out]</i> The new constructed domain is filled into this output variable.
- * \param opcount <i>[in]</i> The number of Add / Remove operations to apply to the domain.
+ * \param [out] domain  The new constructed domain is filled into this output variable.
+ * \param [in]  opcount The number of Add / Remove operations to apply to the domain.
  */
 void BuildTriggerDomain(AliHLTTriggerDomain& domain, int opcount = 100)
 {
@@ -103,8 +103,8 @@ const char* OriginToString(const AliHLTComponentDataType& type)
 /**
  * Checks to see if the domain is correctly constructed compared to the list of entries
  * that were applied to the domain.
- * \param entryList <i>[out]</i> The list of entries that were used to construct the domain.
- * \param domain <i>[in]</i> The trigger domain to check.
+ * \param [out] entryList The list of entries that were used to construct the domain.
+ * \param [in]  domain    The trigger domain to check.
  */
 bool DomainOK(const TObjArray& entryList, const AliHLTTriggerDomain& domain)
 {
@@ -182,8 +182,7 @@ bool DomainOK(const TObjArray& entryList, const AliHLTTriggerDomain& domain)
 /**
  * Randomly builds a trigger domain and tests the Add / Remove operations of the
  * AliHLTTriggerDomain class.
- * \param opcount <i>[in]</i> The number of Add / Remove operations to use to
- *     build the domain.
+ * \param [in] opcount The number of Add / Remove operations to use to build the domain.
  */
 bool AddRemoveOK(int opcount = 100)
 {
@@ -265,8 +264,7 @@ DefOperation( OpDifference,      a - b, a & (!b) );
 /**
  * Randomly builds two trigger domains and tests a overloaded operator of the
  * AliHLTTriggerDomain class.
- * \param opcount <i>[in]</i> The number of Add / Remove operations to use to
- *     build the domains.
+ * \param [in] opcount The number of Add / Remove operations to use to build the domains.
  */
 template <class Op>
 bool OperatorOK(int opcount = 100)
@@ -346,8 +344,7 @@ DefEqualExprCheck( MinusExprCheck2, a - b, a & ~(a & b)                 );
 /**
  * Randomly builds two trigger domains and tests two expressions applied to the
  * domains that should be equivalent.
- * \param opcount <i>[in]</i> The number of Add / Remove operations to use to
- *     build the domains.
+ * \param [in] opcount The number of Add / Remove operations to use to build the domains.
  */
 template <class Expr>
 bool EquivalentExpressionsOK(int opcount = 100)

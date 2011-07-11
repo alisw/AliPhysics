@@ -112,7 +112,7 @@ public:
 	 * AliHLTMUONConstants::TracksBlockDataType()          = "TRACKS  :MUON"
 	 * AliHLTMUONConstants::SinglesDecisionBlockDataType() = "DECIDSIN:MUON"
 	 * AliHLTMUONConstants::PairsDecisionBlockDataType()   = "DECIDPAR:MUON"
-	 * @param list <i>[out]</i>: The list of data types to be filled.
+	 * @param [out] list The list of data types to be filled.
 	 */
 	virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list) const;
 	
@@ -122,16 +122,15 @@ public:
 	 * kAliHLTDataTypeTriggerDecision
 	 * kAliHLTDataTypeEventStatistics|kAliHLTDataOriginHLT
 	 * Including the type kAliHLTDataTypeReadoutList implicitly.
-	 * @param list <i>[out]</i>: The list of data types to be filled.
+	 * @param [out] list  The list of data types to be filled.
 	 */
 	virtual void GetOutputDataTypes(AliHLTComponentDataTypeList& list) const;
 	
 	/**
 	 * Inherited from AliHLTTrigger. Returns the estimated data volume required
 	 * in bytes: constBase + input_volume * inputMultiplier
-	 * @param constBase        <i>[out]</i>: additive part, independent of the
-	 *                                   input data volume.
-	 * @param inputMultiplier  <i>[out]</i>: multiplication ratio
+	 * @param [out] constBase  Additive part, independent of the input data volume.
+	 * @param [out] inputMultiplier  Multiplication ratio.
 	 */
 	virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 	

@@ -134,7 +134,7 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   /**
    * Inherited from AliHLTTrigger.
    * This returns kAliHLTDataTypeGlobalTrigger by default.
-   * @param list <i>[out]</i>: The list of data types to be filled.
+   * @param [out] list The list of data types to be filled.
    */
   virtual void GetOutputDataTypes(AliHLTComponentDataTypeList& list) const;
   
@@ -142,9 +142,8 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
    * Get a ratio by how much the data volume is shrunk or enhanced.
    * The method returns a size proportional to the trigger name string length
    * for constBase, and 1 for inputMultiplier.
-   * @param constBase        <i>[out]</i>: additive part, independent of the
-   *                                   input data volume  
-   * @param inputMultiplier  <i>[out]</i>: multiplication ratio
+   * @param [out] constBase        Additive part, independent of the input data volume.
+   * @param [out] inputMultiplier  Multiplication ratio.
    */
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   
@@ -209,8 +208,8 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   
   /**
    * Loads a trigger menu object from the CDB.
-   * \param cdbPath <i>in</i> The path in the CDB to load the trigger menu object from.
-   * \param menu  <i>out</i> A pointer that gets filled with the new trigger menu object.
+   * \param [in] cdbPath The path in the CDB to load the trigger menu object from.
+   * \param [out] menu   A pointer that gets filled with the new trigger menu object.
    * \returns  Zero if the trigger menu object was found and the pointer to it
    *   set in the <i>menu</i> variable. If a non-zero error code is returned then
    *   the <i>menu</i> variable is not changed at all.
@@ -219,8 +218,8 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   
   /**
    * Generates a file name for the generated on the fly code using a GUID.
-   * \param name <i>out</i> The name of the class to use.
-   * \param filename <i>out</i> The name of the file containing the code.
+   * \param [out] name The name of the class to use.
+   * \param [out] filename The name of the file containing the code.
    */
   void GenerateFileName(TString& name, TString& filename);
   
@@ -236,11 +235,11 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
    * The name of the generated code file is stored in the variable fCodeFileName
    * and the fDeleteCodeFile is set to true.
    *
-   * \param menu <i>in</i> The trigger menu to create the global trigger class from.
-   * \param name <i>out</i> The name of the generated class.
-   * \param filename <i>out</i> The name of the generated file containing the code.
-   * \param includePaths <i>in</i> The list of include path strings.
-   * \param includeFiles <i>in</i> The list of include file strings.
+   * \param [in] menu The trigger menu to create the global trigger class from.
+   * \param [out] name The name of the generated class.
+   * \param [out] filename The name of the generated file containing the code.
+   * \param [in] includePaths The list of include path strings.
+   * \param [in] includeFiles The list of include file strings.
    * \returns  The error code suitable to return in DoInit. Zero on success.
    */
   int GenerateTrigger(
@@ -252,8 +251,8 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
    * Loads the code for the generated HLT global trigger class. The code is compiled
    * on the fly if possible, otherwise the CINT interpreter is used to interpret
    * the class.
-   * \param filename  The name of the file containing the code for the global trigger class.
-   * \param includePaths <i>in</i> The list of include path strings.
+   * \param [in] filename  The name of the file containing the code for the global trigger class.
+   * \param [in] includePaths The list of include path strings.
    * \returns  The error code suitable to return in DoInit. Zero on success.
    */
   int LoadTriggerClass(const char* filename, const TClonesArray& includePaths);
@@ -285,9 +284,9 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   /**
    * Extracts the trailing operator in a C++ expression and returns the found
    * operator in a separate output string.
-   * [in/out] \param  expr  The C++ expression to check. The trailing operator
+   * \param [in,out]  expr  The C++ expression to check. The trailing operator
    *      is removed from the expression if found.
-   * [out] \param  op   The output variable which will be filled with the
+   * \param [out]  op   The output variable which will be filled with the
    *      operator found in the expression.
    * \return  true if the trailing operator was found in the expression and
    *      false otherwise.

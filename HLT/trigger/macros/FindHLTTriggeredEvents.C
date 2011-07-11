@@ -55,18 +55,18 @@
 /**
  * Finds all the events in raw data that contains a positive HLT decision.
  *
- * [in] \param dataSource  This is the path to the raw data or the ROOT/DATE file
+ * \param [in] dataSource  This is the path to the raw data or the ROOT/DATE file
  *     contining the raw data.
- * [out] \param events  The output list that will be filled with event numbers of
+ * \param [out] events  The output list that will be filled with event numbers of
  *     the events that were triggered by HLT for the given data source.
- * [in] \param triggerCode  The HLT trigger code to search for. These must be the same as
+ * \param [in] triggerCode  The HLT trigger code to search for. These must be the same as
  *     the codes defined in the HLT trigger menu used for producing the data source. If
  *     this parameter is set to NULL then all HLT triggered events are marked. (default NULL)
- * [in] \param firstEvent  The event number of the first event to process. (default = 0)
- * [in] \param lastEvent  The event number of the last event to process. If this is
+ * \param [in] firstEvent  The event number of the first event to process. (default = 0)
+ * \param [in] lastEvent  The event number of the last event to process. If this is
  *     less than firstEvent then the maximum events available in the data are
  *     processed automatically. (default = -1)
- * [in] \param print  Indicates if the found event information should be printed or not.
+ * \param [in] print  Indicates if the found event information should be printed or not.
  * \returns true if there were no problems accessing the data and false otherwise.
  */
 bool FindHLTTriggeredEvents(

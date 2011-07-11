@@ -91,14 +91,14 @@ class AliHLTTrigger : public AliHLTProcessor
   /**
    * Get the input data types of the component.
    * This method returns kAliHLTAnyDataType by default.
-   * @param list <i>[out]</i>: The list of data types to be filled.
+   * @param [out] list The list of data types to be filled.
    */
   virtual void GetInputDataTypes(AliHLTComponentDataTypeList& list) const;
 
   /**
    * Returns extra output data types this trigger generates.
    * This returns kAliHLTDataTypeTriggerDecision by default.
-   * @param list <i>[out]</i>: The list of data types to be filled.
+   * @param [out] list The list of data types to be filled.
    * \note The underlying non const version of GetOutputDataTypes adds the value
    *    kAliHLTDataTypeReadoutList to the list automatically.
    */
@@ -108,9 +108,8 @@ class AliHLTTrigger : public AliHLTProcessor
    * Get a ratio by how much the data volume is shrunk or enhanced.
    * The method returns a size proportional to the trigger name string length
    * for constBase, and 1 for inputMultiplier.
-   * @param constBase        <i>[out]</i>: additive part, independent of the
-   *                                   input data volume  
-   * @param inputMultiplier  <i>[out]</i>: multiplication ratio
+   * @param [out] constBase        Additive part, independent of the input data volume  
+   * @param [out] inputMultiplier  Multiplication ratio.
    */
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
