@@ -87,34 +87,48 @@ public:
 
   /** DDL entropy encoded data */
   static const AliHLTComponentDataType fgkDDLEncodedEntropyRawDataType; // see above
+  static const AliHLTComponentDataType& DDLEncodedEntropyRawDataType();
   /** packed RAW data */
   static const AliHLTComponentDataType fgkPackedRawDataType;            // see above
+  static const AliHLTComponentDataType& PackedRawDataType();
   /** unpacked RAW data */
   static const AliHLTComponentDataType fgkUnpackedRawDataType;          // see above
+  static const AliHLTComponentDataType& UnpackedRawDataType();
   /** cluster data */
   static const AliHLTComponentDataType fgkClustersDataType;             // see above
+  static const AliHLTComponentDataType& ClustersDataType();
   /** raw cluster data (not transformed) */
   static const AliHLTComponentDataType fgkRawClustersDataType;          // see above
+  static const AliHLTComponentDataType& RawClustersDataType();
   /** HW cluster data */
   static const AliHLTComponentDataType fgkHWClustersDataType;           // see above
+  static const AliHLTComponentDataType& HWClustersDataType();
   /** HW alternative output cluster data */
   static const AliHLTComponentDataType fgkAlterClustersDataType;        // see above
+  static const AliHLTComponentDataType& AlterClustersDataType();
   /** track segments in local coordinates */
   static const AliHLTComponentDataType fgkTrackSegmentsDataType;        // see above
+  static const AliHLTComponentDataType& TrackSegmentsDataType();
   /** tracks in global koordinates */
   static const AliHLTComponentDataType fgkTracksDataType;               // see above
+  static const AliHLTComponentDataType& TracksDataType();
   /** vertex data structure */
   static const AliHLTComponentDataType fgkVertexDataType;               // see above
+  static const AliHLTComponentDataType& VertexDataType();
 
   // Cluster & Tracks model data
   /** cluster tracks model data type */
   static const AliHLTComponentDataType fgkClusterTracksModelDataType;          // see above
+  static const AliHLTComponentDataType& ClusterTracksModelDataType();
   /** remaining clusters model data type */
   static const AliHLTComponentDataType fgkRemainingClustersModelDataType;      // see above
+  static const AliHLTComponentDataType& RemainingClustersModelDataType();
   /** cluster tracks compressed data type */
   static const AliHLTComponentDataType fgkClusterTracksCompressedDataType;     // see above
+  static const AliHLTComponentDataType& ClusterTracksCompressedDataType();
   /** remaining clusters compressed data type */
   static const AliHLTComponentDataType fgkRemainingClustersCompressedDataType; // see above
+  static const AliHLTComponentDataType& RemainingClustersCompressedDataType();
 
   // Calibration data
   /** pedestal calibration data */
@@ -140,6 +154,7 @@ public:
   static const AliHLTComponentDataType& OfflineCalibTracksGainDataType();
   /** cluster monte carlo information */
   static const AliHLTComponentDataType fgkAliHLTDataTypeClusterMCInfo;    // see above
+  static const AliHLTComponentDataType& AliHLTDataTypeClusterMCInfo();
 
 private:
 
