@@ -410,15 +410,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 		 DataType2Text( iter->fDataType).c_str(), 
 		 DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC).c_str());
 
-	if (iter->fDataType == AliHLTTPCDefinitions::fgkDDLPackedRawDataType &&
-	    GetEventCount()<2) {
-	  HLTWarning("data type %s is depricated, use %s (kAliHLTDataTypeDDLRaw)!",
-		     DataType2Text(AliHLTTPCDefinitions::fgkDDLPackedRawDataType).c_str(),
-		     DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC).c_str());
-	  }
-
-	if ( iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC) &&
-	     iter->fDataType != AliHLTTPCDefinitions::fgkDDLPackedRawDataType ) continue;
+	if ( iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC)) continue;
 
       }
       else if(fModeSwitch==1){
