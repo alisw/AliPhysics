@@ -54,6 +54,7 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   calibTask->SetFillZero(kFALSE);
   calibTask->AddSelectedTriggerClass("CINT1B-ABCE-NOPF-ALL");
   calibTask->AddSelectedTriggerClass("CINT1WU-B-NOPF-ALL");
+  calibTask->AddSelectedTriggerClass("CINT7WU-B-NOPF-ALL");
   calibTask->SetReject(kFALSE);
   //calibTask->SetDebug(2);
   calibTask->SetNbTimeBins(nbOfTimeBins);
