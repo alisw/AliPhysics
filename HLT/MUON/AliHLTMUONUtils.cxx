@@ -117,9 +117,9 @@ void AliHLTMUONUtils::UnpackRecHitFlags(
 {
 	/// This unpacks the AliHLTMUONRecHitStruct::fFlags bits into
 	/// its component fields.
-	/// [in]  @param flags  The flags from an AliHLTMUONRecHitStruct structure.
-	/// [out] @param chamber    Sets the chamber number in the range [0..13].
-	/// [out] @param detElemId  Sets the detector element ID number.
+	/// @param [in]  flags  The flags from an AliHLTMUONRecHitStruct structure.
+	/// @param [out] chamber    Sets the chamber number in the range [0..13].
+	/// @param [out] detElemId  Sets the detector element ID number.
 	
 	chamber = (flags >> 12) & 0xF;
 	detElemId = flags & 0xFFF;
@@ -760,12 +760,12 @@ bool AliHLTMUONUtils::HeaderOk(
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
-	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the header is not
 	///      valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -808,12 +808,12 @@ bool AliHLTMUONUtils::HeaderOk(
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
-	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the header is not
 	///      valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -856,12 +856,12 @@ bool AliHLTMUONUtils::HeaderOk(
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
-	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the header is not
 	///      valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -904,12 +904,12 @@ bool AliHLTMUONUtils::HeaderOk(
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
-	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the header is not
 	///      valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -952,12 +952,12 @@ bool AliHLTMUONUtils::HeaderOk(
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
-	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the header is not
 	///      valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -1000,12 +1000,12 @@ bool AliHLTMUONUtils::HeaderOk(
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
-	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the header is not
 	///      valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -1048,12 +1048,12 @@ bool AliHLTMUONUtils::HeaderOk(
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
-	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the header is not
 	///      valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -1096,12 +1096,12 @@ bool AliHLTMUONUtils::HeaderOk(
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
-	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the header is not
 	///      valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -1144,12 +1144,12 @@ bool AliHLTMUONUtils::HeaderOk(
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
-	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the header is not
 	///      valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -1192,12 +1192,12 @@ bool AliHLTMUONUtils::HeaderOk(
 {
 	/// Method used to check if the header information corresponds to the
 	/// supposed type of the raw dHLT data block.
-	/// [in]  \param block  The data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the header is not
 	///      valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -1241,12 +1241,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// trigger record structure is OK and returns true in that case.
-	/// [in] \param tr  The trigger record structure to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  tr  The trigger record structure to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the structure is
 	///      not valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -1332,12 +1332,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// dHLT raw internal data block is OK and returns true in that case.
-	/// [in] \param block  The trigger record data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The trigger record data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the data block is
 	///      not valid.
-	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	/// \param [out] recordNum  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the number of the trigger record that had a problem.
 	///      The value 'recordNum[i]' will only contain a valid value if
@@ -1350,7 +1350,7 @@ bool AliHLTMUONUtils::IntegrityOk(
 	///        - kInvalidChamberNumber
 	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
 	///      was set and is valid or not.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
 	///      with the number of items actually filled into the arrays upon exit
 	///      from this method.
@@ -1410,12 +1410,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// trigger record debug information structure is OK and returns true in that case.
-	/// [in] \param trigInfo  The trigger record debug information structure to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  trigInfo  The trigger record debug information structure to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the structure is not
 	///      valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -1468,13 +1468,13 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// dHLT raw internal data block is OK and returns true in that case.
-	/// [in] \param block  The trigger record debugging information data block
+	/// \param [in]  block  The trigger record debugging information data block
 	///      to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the data block is
 	///      not valid.
-	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	/// \param [out] recordNum  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the number of the trigger record debug information
 	///      structure that had a problem.
@@ -1484,7 +1484,7 @@ bool AliHLTMUONUtils::IntegrityOk(
 	///        - kInvalidDetElementNumber
 	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
 	///      was set and is valid or not.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
 	///      with the number of items actually filled into the arrays upon exit
 	///      from this method.
@@ -1544,12 +1544,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// reconstructed hit structure is OK and returns true in that case.
-	/// [in] \param hit  The reconstructed hit structure to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  hit  The reconstructed hit structure to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the structure is
 	///      not valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -1615,12 +1615,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// dHLT raw internal hits data block is OK and returns true in that case.
-	/// [in] \param block  The reconstructed hits data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The reconstructed hits data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the data block is
 	///      not valid.
-	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	/// \param [out] recordNum  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the number of the reconstructed hits that had a problem.
 	///      The value 'recordNum[i]' will only contain a valid value if
@@ -1630,7 +1630,7 @@ bool AliHLTMUONUtils::IntegrityOk(
 	///        - kInvalidChamberNumber
 	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
 	///      was set and is valid or not.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
 	///      with the number of items actually filled into the arrays upon exit
 	///      from this method.
@@ -1690,12 +1690,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// cluster structure is OK and returns true in that case.
-	/// [in] \param cluster  The cluster structure to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  cluster  The cluster structure to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the structure is
 	///      not valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -1795,12 +1795,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// dHLT internal clusters data block is OK and returns true in that case.
-	/// [in] \param block  The clusters data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The clusters data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the data block is
 	///      not valid.
-	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	/// \param [out] recordNum  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the number of the cluster structure that had a problem.
 	///      The value 'recordNum[i]' will only contain a valid value if
@@ -1814,7 +1814,7 @@ bool AliHLTMUONUtils::IntegrityOk(
 	///        - kInvalidChargeNB
 	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
 	///      was set and is valid or not.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
 	///      with the number of items actually filled into the arrays upon exit
 	///      from this method.
@@ -1892,12 +1892,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// channel structure is OK and returns true in that case.
-	/// [in] \param cluster  The channel structure to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  cluster  The channel structure to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the structure is
 	///      not valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -1993,12 +1993,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// dHLT internal channels data block is OK and returns true in that case.
-	/// [in] \param block  The channels data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The channels data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the data block is
 	///      not valid.
-	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	/// \param [out] recordNum  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the number of the channel structure that had a problem.
 	///      The value 'recordNum[i]' will only contain a valid value if
@@ -2011,7 +2011,7 @@ bool AliHLTMUONUtils::IntegrityOk(
 	///        - kDataWordDifferent
 	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
 	///      was set and is valid or not.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
 	///      with the number of items actually filled into the arrays upon exit
 	///      from this method.
@@ -2053,12 +2053,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// Manso track structure is OK and returns true in that case.
-	/// [in] \param track  The track structure to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  track  The track structure to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the structure is
 	///      not valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -2179,12 +2179,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// dHLT internal Manso track data block is OK and returns true in that case.
-	/// [in] \param block  The Manso track data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The Manso track data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the data block is
 	///      not valid.
-	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	/// \param [out] recordNum  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the number of the Manso track that had a problem.
 	///      The value 'recordNum[i]' will only contain a valid value if
@@ -2200,7 +2200,7 @@ bool AliHLTMUONUtils::IntegrityOk(
 	///        - kInvalidChamberNumber
 	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
 	///      was set and is valid or not.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
 	///      with the number of items actually filled into the arrays upon exit
 	///      from this method.
@@ -2260,12 +2260,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// Manso track candidate structure is OK and returns true in that case.
-	/// [in] \param track  The track candidate structure to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  track  The track candidate structure to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the structure is
 	///      not valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -2325,12 +2325,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 	/// This method is used to check more extensively if the integrity of the
 	/// dHLT internal Manso candidates data block is OK and returns true in
 	/// that case.
-	/// [in] \param block  The Manso track candidate data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The Manso track candidate data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the data block is
 	///      not valid.
-	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	/// \param [out] recordNum  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the number of the track candidate that had a problem.
 	///      The value 'recordNum[i]' will only contain a valid value if
@@ -2345,7 +2345,7 @@ bool AliHLTMUONUtils::IntegrityOk(
 	///        - kHitNotWithinRoi
 	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
 	///      was set and is valid or not.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
 	///      with the number of items actually filled into the arrays upon exit
 	///      from this method.
@@ -2405,12 +2405,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// full track structure is OK and returns true in that case.
-	/// [in] \param track  The track structure to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  track  The track structure to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the structure is
 	///      not valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -2556,12 +2556,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// dHLT internal track data block is OK and returns true in that case.
-	/// [in] \param block  The track data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The track data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the data block is
 	///      not valid.
-	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	/// \param [out] recordNum  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the number of the Manso track that had a problem.
 	///      The value 'recordNum[i]' will only contain a valid value if
@@ -2579,7 +2579,7 @@ bool AliHLTMUONUtils::IntegrityOk(
 	///        - kInvalidChamberNumber
 	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
 	///      was set and is valid or not.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
 	///      with the number of items actually filled into the arrays upon exit
 	///      from this method.
@@ -2639,12 +2639,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// single track trigger decision structure is OK and returns true in that case.
-	/// [in] \param decision  The trigger decision structure to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  decision  The trigger decision structure to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the structure is not
 	///      valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -2702,12 +2702,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 	/// This method is used to check more extensively if the integrity of the
 	/// dHLT internal single track trigger decision data block is OK and returns
 	/// true in that case.
-	/// [in] \param block  The single track trigger decision data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The single track trigger decision data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the data block is
 	///      not valid.
-	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	/// \param [out] recordNum  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the number of the trigger decision that had a problem.
 	///      The value 'recordNum[i]' will only contain a valid value if
@@ -2717,7 +2717,7 @@ bool AliHLTMUONUtils::IntegrityOk(
 	///        - kPtValueNotValid
 	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
 	///      was set and is valid or not.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
 	///      with the number of items actually filled into the arrays upon exit
 	///      from this method.
@@ -2777,12 +2777,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 {
 	/// This method is used to check more extensively if the integrity of the
 	/// track pair trigger decision structure is OK and returns true in that case.
-	/// [in] \param decision  The trigger decision structure to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  decision  The trigger decision structure to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the structure is not
 	///      valid.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason'. It will be filled with the number
 	///      of items actually filled into the reason array upon exit from this
 	///      method.
@@ -2877,12 +2877,12 @@ bool AliHLTMUONUtils::IntegrityOk(
 	/// This method is used to check more extensively if the integrity of the
 	/// dHLT internal track pair trigger decision data block is OK and returns
 	/// true in that case.
-	/// [in] \param block  The track pair trigger decision data block to check.
-	/// [out] \param reason  If this is not NULL, then it is assumed to point
+	/// \param [in]  block  The track pair trigger decision data block to check.
+	/// \param [out] reason  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the reason codes describing why the data block is
 	///      not valid.
-	/// [out] \param recordNum  If this is not NULL, then it is assumed to point
+	/// \param [out] recordNum  If this is not NULL, then it is assumed to point
 	///      to an array of at least 'reasonCount' number of elements. It will
 	///      be filled with the number of the trigger decision that had a problem.
 	///      The value 'recordNum[i]' will only contain a valid value if
@@ -2895,7 +2895,7 @@ bool AliHLTMUONUtils::IntegrityOk(
 	///        - kHighPtCountInvalid
 	/// \note You can use RecordNumberWasSet(reason[i]) to check if 'recordNum[i]'
 	///      was set and is valid or not.
-	/// [in/out] \param reasonCount  This should initially specify the size of
+	/// \param [in,out] reasonCount  This should initially specify the size of
 	///      the array pointed to by 'reason' and 'recordNum'. It will be filled
 	///      with the number of items actually filled into the arrays upon exit
 	///      from this method.

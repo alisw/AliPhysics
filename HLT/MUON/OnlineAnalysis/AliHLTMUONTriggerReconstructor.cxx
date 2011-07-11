@@ -84,13 +84,13 @@ bool AliHLTMUONTriggerReconstructor::Run(
 	)
 {
 	/// Runs the trigger reconstruction algorithm on the raw data.
-	/// [in]  \param rawData  Pointer to the raw data DDL payload.
-	/// [in]  \param rawDataSize  Size of the raw data DDL payload in bytes.
-	/// [in]  \param scalarEvent  Indicates if the raw data should contain
+	/// \param [in] rawData  Pointer to the raw data DDL payload.
+	/// \param [in] rawDataSize  Size of the raw data DDL payload in bytes.
+	/// \param [in] scalarEvent  Indicates if the raw data should contain
 	///      scalar data also.
-	/// [out] \param trigRecord  Pointer to output buffer for reconstructed
+	/// \param [out] trigRecord  Pointer to output buffer for reconstructed
 	///      trigger records.
-	/// [in/out] \param nofTrigRec  Initialy should indicate the number of
+	/// \param [in,out] nofTrigRec  Initialy should indicate the number of
 	///      elements that can be stored in the trigRecord array. It will
 	///      contain the number of elements filled after this method has returned.
 	/// \return true if raw data was decoded and false if there was a problem
@@ -203,8 +203,8 @@ bool AliHLTMUONTriggerReconstructor::AliDecoderHandler::FindStripsOnMT1(
 {
 	/// This method will find the X and Y strip positions on stations MT1 of the
 	/// trigger system which were fired for the current L0 local trigger decision.
-	/// [out] \param xPos  The X strip that was fired.
-	/// [out] \param yPos  The Y strip that was fired.
+	/// \param [out] xPos  The X strip that was fired.
+	/// \param [out] yPos  The Y strip that was fired.
 	/// \return  true is returned if a strip was fired, otherwise a warning is
 	///      generated and false is returned.
 	/// \note Values for xPos and yPos are in the range [0..15].
@@ -413,9 +413,9 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::FindXStrips(
 	)
 {
 	/// Finds the X strips that were fired in the local trigger structures.
-	/// [in] \param startPos  The first X strip location to start looking from.
-	/// [in] \param strips  The X strip patterns for chambers 11 to 14 to use.
-	/// [out] \param pos  Array of X strip positions on chambers 11 to 14. pos[0]
+	/// \param [in] startPos  The first X strip location to start looking from.
+	/// \param [in] strips  The X strip patterns for chambers 11 to 14 to use.
+	/// \param [out] pos  Array of X strip positions on chambers 11 to 14. pos[0]
 	///     is for chamber 11, pos[1] for chamber 12 and so on.
 	///     The elements of the array will contain -1 if no valid strip position
 	///     was found for that chamber.
@@ -545,9 +545,9 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::FindYStrips(
 	)
 {
 	/// Finds the Y strips that were fired in the local trigger structures.
-	/// [in] \param startPos  The first Y strip location to start looking from.
-	/// [in] \param strips  Array of Y strip patterns to look in for chamber 11 to 14.
-	/// [out] \param pos  Array of Y strip positions on chambers 11 to 14. pos[0]
+	/// \param [in] startPos  The first Y strip location to start looking from.
+	/// \param [in] strips  Array of Y strip patterns to look in for chamber 11 to 14.
+	/// \param [out] pos  Array of Y strip positions on chambers 11 to 14. pos[0]
 	///     is for chamber 11, pos[1] for chamber 12 and so on.
 	///     The elements of the array will contain -1 if no valid strip position
 	///     was found for that chamber.
@@ -673,13 +673,13 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::ReconstructHit(
 {
 	/// Reconstructs the hit coordinates for the given chamber from the
 	/// strip and fired strip information provided.
-	/// [in]  \param xStrips  The X strip pattern for the given chamber.
-	/// [in]  \param yStrips  The Y strip pattern for the given chamber.
-	/// [in]  \param xPos  The position of the X strip that was fired.
-	/// [in]  \param yPos  The position of the Y strip that was fired.
-	/// [in]  \param chamber  The chamber on which the strips were found.
+	/// \param [in] xStrips  The X strip pattern for the given chamber.
+	/// \param [in] yStrips  The Y strip pattern for the given chamber.
+	/// \param [in] xPos  The position of the X strip that was fired.
+	/// \param [in] yPos  The position of the Y strip that was fired.
+	/// \param [in] chamber  The chamber on which the strips were found.
 	///      Valid range [0..3].
-	/// [out] \param hit  This will be filled with the reconstructed hit.
+	/// \param [out] hit  This will be filled with the reconstructed hit.
 
 	assert( 0 <= xPos and xPos < 48 );
 	assert( 0 <= yPos and yPos < 16 );

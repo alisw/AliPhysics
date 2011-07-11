@@ -56,11 +56,11 @@ using std::endl;
 /**
  * Calculates the average magnetic field integral for the dipole magnet given the
  * L3 solenoid current and dipole magnet current.
- * [in] \param currentL3  The current in the L3 solenoid magnet.
- * [in] \param currentDip  The current in the dipole magnet.
- * [out] \param result  The magnetic field integral result.
- * [in] \param sqrts  The centre of mass energy for the beams.
- * [in] \param beamtype  The beam type as given the AliMagF, eg. p-p, A-A or none.
+ * \param [in] currentL3  The current in the L3 solenoid magnet.
+ * \param [in] currentDip  The current in the dipole magnet.
+ * \param [out] result  The magnetic field integral result.
+ * \param [in] sqrts  The centre of mass energy for the beams.
+ * \param [in] beamtype  The beam type as given the AliMagF, eg. p-p, A-A or none.
  * \note The sign of the current indicates the polarity setting for the magnet.
  * \returns  true if the magnetic field was calculated successfully and false otherwise.
  */

@@ -263,8 +263,8 @@ protected:
 	
 	/**
 	 * Fetches a TMap object from the CDB.
-	 * [in] \param pathToEntry  The relative path to the entry in the CDB to fetch.
-	 * [out] \param map  This will be filled with the TMap object found if
+	 * \param [in] pathToEntry  The relative path to the entry in the CDB to fetch.
+	 * \param [out] map  This will be filled with the TMap object found if
 	 *      a successful status code is returned. Otherwise it will be unchanged.
 	 * \return Zero if the object could be found. Otherwise an error code,
 	 *      which is compatible with the HLT framework, is returned.
@@ -273,10 +273,10 @@ protected:
 	
 	/**
 	 * Tries to find the string value associated with a certain parameter in a TMap.
-	 * [in] \param map  The TMap object to search in.
-	 * [in] \param paramName  The name of the parameter to search for.
-	 * [out] \param value  Will be filled with the object found.
-	 * [in] \param prettyName  Should be the name of the parameter which will
+	 * \param [in] map  The TMap object to search in.
+	 * \param [in] paramName  The name of the parameter to search for.
+	 * \param [out] value  Will be filled with the object found.
+	 * \param [in] prettyName  Should be the name of the parameter which will
 	 *      be used when printing error messages. If this is set to NULL then
 	 *      the paramName will be used instead (default is NULL).
 	 * \return Zero if the object could be found. Otherwise an error code,
@@ -290,11 +290,11 @@ protected:
 	/**
 	 * Tries to find a certain parameter in the TMap object and convert it to
 	 * an integer value.
-	 * [in] \param map  The TMap object to search in.
-	 * [in] \param paramName  The name of the parameter to search for.
-	 * [out] \param value  Will be filled with the integer value for the parameter,
+	 * \param [in] map  The TMap object to search in.
+	 * \param [in] paramName  The name of the parameter to search for.
+	 * \param [out] value  Will be filled with the integer value for the parameter,
 	 *       if it was found and it was an integer value.
-	 * [in] \param prettyName  Should be the name of the parameter which will
+	 * \param [in] prettyName  Should be the name of the parameter which will
 	 *      be used when printing error messages. If this is set to NULL then
 	 *      the paramName will be used instead (default is NULL).
 	 * \return Zero if the object could be found and is valid. Otherwise an
@@ -308,11 +308,11 @@ protected:
 	/**
 	 * Tries to find a certain parameter in the TMap object and convert it to
 	 * a positive integer value.
-	 * [in] \param map  The TMap object to search in.
-	 * [in] \param paramName  The name of the parameter to search for.
-	 * [out] \param value  Will be filled with the integer value for the parameter,
+	 * \param [in] map  The TMap object to search in.
+	 * \param [in] paramName  The name of the parameter to search for.
+	 * \param [out] value  Will be filled with the integer value for the parameter,
 	 *       if it was found and it was a positive integer value.
-	 * [in] \param prettyName  Should be the name of the parameter which will
+	 * \param [in] prettyName  Should be the name of the parameter which will
 	 *      be used when printing error messages. If this is set to NULL then
 	 *      the paramName will be used instead (default is NULL).
 	 * \return Zero if the object could be found and is valid. Otherwise an
@@ -326,11 +326,11 @@ protected:
 	/**
 	 * Tries to find a certain parameter in the TMap object and convert it to
 	 * an floating point value.
-	 * [in] \param map  The TMap object to search in.
-	 * [in] \param paramName  The name of the parameter to search for.
-	 * [out] \param value  Will be filled with the floating point value for the
+	 * \param [in] map  The TMap object to search in.
+	 * \param [in] paramName  The name of the parameter to search for.
+	 * \param [out] value  Will be filled with the floating point value for the
 	 *       parameter, if it was found and it was a floating point value.
-	 * [in] \param prettyName  Should be the name of the parameter which will
+	 * \param [in] prettyName  Should be the name of the parameter which will
 	 *      be used when printing error messages. If this is set to NULL then
 	 *      the paramName will be used instead (default is NULL).
 	 * \return Zero if the object could be found and is valid. Otherwise an
@@ -344,11 +344,11 @@ protected:
 	/**
 	 * Tries to find a certain parameter in the TMap object and convert it to
 	 * an positive floating point value.
-	 * [in] \param map  The TMap object to search in.
-	 * [in] \param paramName  The name of the parameter to search for.
-	 * [out] \param value  Will be filled with the floating point value for the
+	 * \param [in] map  The TMap object to search in.
+	 * \param [in] paramName  The name of the parameter to search for.
+	 * \param [out] value  Will be filled with the floating point value for the
 	 *       parameter, if it was found and it was a positive floating point value.
-	 * [in] \param prettyName  Should be the name of the parameter which will
+	 * \param [in] prettyName  Should be the name of the parameter which will
 	 *      be used when printing error messages. If this is set to NULL then
 	 *      the paramName will be used instead (default is NULL).
 	 * \return Zero if the object could be found and is valid. Otherwise an
@@ -363,7 +363,7 @@ protected:
 	 * Loads the appropriate field integral from the CDB based on the currently
 	 * loaded global magnetic field in TGeoGlobalMagField. If the global field is
 	 * not loaded then we try load the GRP entry to figure out the correct integral.
-	 * [out] \param bfieldintegral  Will be filled with the dipole magnetic field
+	 * \param [out] bfieldintegral  Will be filled with the dipole magnetic field
 	 *       integral value to use.
 	 * \return Zero if the field integral could be found and is valid. Otherwise an
 	 *       error code is returned, which is compatible with the HLT framework.
@@ -372,7 +372,7 @@ protected:
 	
 	/**
 	 * Fetches the reconstruction parameters object from the CDB for MUON.
-	 * [out] \param params  This will be filled with the reconstruction
+	 * \param [out]  params  This will be filled with the reconstruction
 	 *      parameters object found if a successful status code is returned.
 	 *      Otherwise it will be unchanged.
 	 * \return Zero if the object could be found. Otherwise an error code,

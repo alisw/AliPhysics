@@ -2387,13 +2387,13 @@ int CheckIfDDLStream(const char* buffer, unsigned long bufferSize)
 
 /**
  * Parses the buffer and prints the contents to screen.
- * [in] \param buffer  The pointer to the buffer to parse.
- * [in] \param bufferSize  The size of the buffer in bytes.
- * [in] \param continueParse  If specified then the we try to continue parsing the
+ * \param [in] buffer  The pointer to the buffer to parse.
+ * \param [in] bufferSize  The size of the buffer in bytes.
+ * \param [in] continueParse  If specified then the we try to continue parsing the
  *           buffer as much as possible.
- * [in] \param tryrecover Indicates if the DDL decoders should have special
+ * \param [in] tryrecover Indicates if the DDL decoders should have special
  *           recovery logic enabled.
- * [in/out] \param type  Initialy this should indicate the type of the data block
+ * \param [in,out] type  Initialy this should indicate the type of the data block
  *           or kUnknownDataBlock if not known. On exit it will be filled with
  *           the type of the data block as discovered by this routine if type
  *           initially contained kUnknownDataBlock.
@@ -2610,11 +2610,11 @@ namespace
 /**
  * Performs basic data integrity checks of the data block using the
  * AliHLTMUONDataCheckerComponent.
- * [in] \param sys  The HLT system framework.
- * [in] \param filename  The name of the file containing the data block to check.
- * [in] \param type  Must indicate the type of the data block.
- * [in] \param dataspec The data specification of the data block. NULL if none.
- * [in] \param maxLogging  If set to true then full logging is turned on for AliHLTSystem.
+ * \param [in] sys  The HLT system framework.
+ * \param [in] filename  The name of the file containing the data block to check.
+ * \param [in] type  Must indicate the type of the data block.
+ * \param [in] dataspec The data specification of the data block. NULL if none.
+ * \param [in] maxLogging  If set to true then full logging is turned on for AliHLTSystem.
  * \returns  The error code indicating the problem. EXIT_SUCCESS is returned
  *           on success.
  */

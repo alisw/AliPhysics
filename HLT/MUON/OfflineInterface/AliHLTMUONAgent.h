@@ -46,7 +46,7 @@ public:
 	/**
 	 * Returns the top processing chain configurations for local event
 	 * reconstruction.
-	 * @param runloader  [in] AliRoot runloader
+	 * @param [in] runloader  AliRoot runloader
 	 * @return string containing the top configurations separated by blanks.
 	 */
 	virtual const char* GetReconstructionChains(AliRawReader* rawReader=NULL,
@@ -60,15 +60,15 @@ public:
 	
 	/**
 	 * Registers all available components of this module.
-	 * @param pHandler  [in] instance of the component handler.
+	 * @param [in] pHandler  instance of the component handler.
 	 */
 	virtual int RegisterComponents(AliHLTComponentHandler* pHandler) const;
 	
 	/**
 	 * Get handler decription for dHLT data in the HLTOUT data stream.
-	 * @param dt        [in] data type of the block
-	 * @param spec      [in] specification of the block
-	 * @param desc      [out] handler description
+	 * @param [in]  dt        data type of the block
+	 * @param [in]  spec      specification of the block
+	 * @param [out] desc      handler description
 	 * @return 1 if the agent can provide a handler, 0 if not.
 	 */
 	virtual int GetHandlerDescription(
@@ -79,8 +79,8 @@ public:
 	
 	/**
 	 * Get specific handler for dHLT data in the HLTOUT data stream.
-	 * @param dt        [in] data type of the block
-	 * @param spec      [in] specification of the block
+	 * @param [in] dt        data type of the block
+	 * @param [in] spec      specification of the block
 	 * @return pointer to handler
 	 */
 	virtual AliHLTOUTHandler* GetOutputHandler(

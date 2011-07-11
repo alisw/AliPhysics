@@ -64,9 +64,9 @@ public:
 	/**
 	 * This unpacks the AliHLTMUONTriggerRecordStruct::fFlags bits into
 	 * its component fields.
-	 * @param flags  The flags from an AliHLTMUONTriggerRecordStruct structure.
-	 * @param sign    Sets this to the particle sign.
-	 * @param hitset  Sets the array elements to indicate if the corresponding
+	 * @param [in]  flags  The flags from an AliHLTMUONTriggerRecordStruct structure.
+	 * @param [out] sign    Sets this to the particle sign.
+	 * @param [out] hitset  Sets the array elements to indicate if the corresponding
 	 *                fHits[i] element was set/filled.
 	 */
 	static void UnpackTriggerRecordFlags(
@@ -89,9 +89,9 @@ public:
 	/**
 	 * This unpacks the AliHLTMUONRecHitStruct::fFlags bits into
 	 * its component fields.
-	 * [in]  @param flags  The flags from an AliHLTMUONRecHitStruct structure.
-	 * [out] @param chamber    Sets the chamber number in the range [0..13].
-	 * [out] @param detElemId  Sets the detector element ID number.
+	 * @param [in]  flags  The flags from an AliHLTMUONRecHitStruct structure.
+	 * @param [out] chamber    Sets the chamber number in the range [0..13].
+	 * @param [out] detElemId  Sets the detector element ID number.
 	 */
 	static void UnpackRecHitFlags(
 			AliHLTUInt32_t flags, // [in]
@@ -101,7 +101,7 @@ public:
 
 	/**
 	 * Returns the detector element ID from the flags bits.
-	 * [in]  @param flags  The flags from an AliHLTMUONRecHitStruct structure.
+	 * @param [in]  flags  The flags from an AliHLTMUONRecHitStruct structure.
 	 */
 	static AliHLTUInt16_t GetDetElemIdFromFlags(AliHLTUInt32_t flags)
 	{
@@ -126,9 +126,9 @@ public:
 	/**
 	 * This unpacks the AliHLTMUONMansoTrackStruct::fFlags bits into
 	 * its component fields.
-	 * @param flags  The flags from an AliHLTMUONMansoTrackStruct structure.
-	 * @param sign    Sets this to the particle sign.
-	 * @param hitset  Sets the array elements to indicate if the corresponding
+	 * @param [in]  flags  The flags from an AliHLTMUONMansoTrackStruct structure.
+	 * @param [out] sign    Sets this to the particle sign.
+	 * @param [out] hitset  Sets the array elements to indicate if the corresponding
 	 *                fHits[i] element was set/filled.
 	 */
 	static void UnpackMansoTrackFlags(
@@ -155,9 +155,9 @@ public:
 	/**
 	 * This unpacks the AliHLTMUONTrackStruct::fFlags bits into
 	 * its component fields.
-	 * @param flags  The flags from an AliHLTMUONTrackStruct structure.
-	 * @param sign    Sets this to the particle sign.
-	 * @param hitset  Sets the array elements to indicate if the corresponding
+	 * @param [in]  flags  The flags from an AliHLTMUONTrackStruct structure.
+	 * @param [out] sign    Sets this to the particle sign.
+	 * @param [out] hitset  Sets the array elements to indicate if the corresponding
 	 *                fHits[i] element was set/filled.
 	 */
 	static void UnpackTrackFlags(
@@ -178,10 +178,10 @@ public:
 	/**
 	 * This unpacks the AliHLTMUONTrackDecisionStruct::fTriggerBits bits into
 	 * its component fields.
-	 * @param bits  The trigger bits from an AliHLTMUONTrackDecisionStruct
+	 * @param [in] bits  The trigger bits from an AliHLTMUONTrackDecisionStruct
 	 *              structure.
-	 * @param highPt Sets this to the value of the high pt cut bit.
-	 * @param lowPt  Sets this to the value of the low pt cut bit.
+	 * @param [out] highPt Sets this to the value of the high pt cut bit.
+	 * @param [out] lowPt  Sets this to the value of the low pt cut bit.
 	 */
 	static void UnpackTrackDecisionBits(
 			AliHLTUInt32_t bits, // [in]
@@ -213,13 +213,13 @@ public:
 	/**
 	 * This unpacks the AliHLTMUONPairDecisionStruct::fTriggerBits bits into
 	 * its component fields.
-	 * @param bits  The trigger bits from an AliHLTMUONPairDecisionStruct
+	 * @param [in]  bits  The trigger bits from an AliHLTMUONPairDecisionStruct
 	 *              structure.
-	 * @param highMass Sets this to the value of the high invariant mass cut bit.
-	 * @param lowMass  Sets this to the value of the low invariant mass cut bit.
-	 * @param unlike   Sets this if the pair is unlike sign.
-	 * @param highPtCount Sets this to the high pt count bits.
-	 * @param lowPtCount  Sets this to the low pt count bits.
+	 * @param [out] highMass Sets this to the value of the high invariant mass cut bit.
+	 * @param [out] lowMass  Sets this to the value of the low invariant mass cut bit.
+	 * @param [out] unlike   Sets this if the pair is unlike sign.
+	 * @param [out] highPtCount Sets this to the high pt count bits.
+	 * @param [out] lowPtCount  Sets this to the low pt count bits.
 	 */
 	static void UnpackPairDecisionBits(
 			AliHLTUInt32_t bits, // [in]
@@ -247,8 +247,8 @@ public:
 	/**
 	 * This unpacks the AliHLTMUONPairDecisionStruct::fTriggerBits bits into
 	 * its component fields.
-	 * @param bits  The Pub/Sub specification word from a data block descriptor.
-	 * @param ddl  The output list of DDLs forming part of the readout. ddl[0]
+	 * @param [in]  bits  The Pub/Sub specification word from a data block descriptor.
+	 * @param [out] ddl  The output list of DDLs forming part of the readout. ddl[0]
 	 *             indicates DDL number 2560, ddl[1] is for DDL 2561 and so
 	 *             on up to ddl[19]. ddl[20] and ddl[21] will be for the
 	 *             trigger DDLs 2816 and 2817 respectively.
@@ -439,8 +439,8 @@ public:
 	 * supposed type of the trigger records data block.
 	 * This method will return either kHeaderContainsWrongType or
 	 * kHeaderContainsWrongRecordWidth as the reason code.
-	 * [in]  \param block  The data block to check.
-	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 * \param [in]  block  The data block to check.
+	 * \param [out] reason  If this is not NULL, then the variable pointed to
 	 *      by this pointer will be filled with the reason code describing why
 	 *      the header is not valid, if and only if a problem is found with
 	 *      the data.
@@ -457,8 +457,8 @@ public:
 	 * supposed type of the trigger debug information data block.
 	 * This method will return either kHeaderContainsWrongType or
 	 * kHeaderContainsWrongRecordWidth as the reason code.
-	 * [in]  \param block  The data block to check.
-	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 * \param [in]  block  The data block to check.
+	 * \param [out] reason  If this is not NULL, then the variable pointed to
 	 *      by this pointer will be filled with the reason code describing why
 	 *      the header is not valid, if and only if a problem is found with
 	 *      the data.
@@ -475,8 +475,8 @@ public:
 	 * supposed type of the reconstructed hits data block.
 	 * This method will return either kHeaderContainsWrongType or
 	 * kHeaderContainsWrongRecordWidth as the reason code.
-	 * [in]  \param block  The data block to check.
-	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 * \param [in]  block  The data block to check.
+	 * \param [out] reason  If this is not NULL, then the variable pointed to
 	 *      by this pointer will be filled with the reason code describing why
 	 *      the header is not valid, if and only if a problem is found with
 	 *      the data.
@@ -493,8 +493,8 @@ public:
 	 * supposed type of the clusters data block.
 	 * This method will return either kHeaderContainsWrongType or
 	 * kHeaderContainsWrongRecordWidth as the reason code.
-	 * [in]  \param block  The data block to check.
-	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 * \param [in]  block  The data block to check.
+	 * \param [out] reason  If this is not NULL, then the variable pointed to
 	 *      by this pointer will be filled with the reason code describing why
 	 *      the header is not valid, if and only if a problem is found with
 	 *      the data.
@@ -511,8 +511,8 @@ public:
 	 * supposed type of the channels data block.
 	 * This method will return either kHeaderContainsWrongType or
 	 * kHeaderContainsWrongRecordWidth as the reason code.
-	 * [in]  \param block  The data block to check.
-	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 * \param [in]  block  The data block to check.
+	 * \param [out] reason  If this is not NULL, then the variable pointed to
 	 *      by this pointer will be filled with the reason code describing why
 	 *      the header is not valid, if and only if a problem is found with
 	 *      the data.
@@ -529,8 +529,8 @@ public:
 	 * supposed type of the Manso tracks data block.
 	 * This method will return either kHeaderContainsWrongType or
 	 * kHeaderContainsWrongRecordWidth as the reason code.
-	 * [in]  \param block  The data block to check.
-	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 * \param [in]  block  The data block to check.
+	 * \param [out] reason  If this is not NULL, then the variable pointed to
 	 *      by this pointer will be filled with the reason code describing why
 	 *      the header is not valid, if and only if a problem is found with
 	 *      the data.
@@ -547,8 +547,8 @@ public:
 	 * supposed type of the Manso candidates data block.
 	 * This method will return either kHeaderContainsWrongType or
 	 * kHeaderContainsWrongRecordWidth as the reason code.
-	 * [in]  \param block  The data block to check.
-	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 * \param [in]  block  The data block to check.
+	 * \param [out] reason  If this is not NULL, then the variable pointed to
 	 *      by this pointer will be filled with the reason code describing why
 	 *      the header is not valid, if and only if a problem is found with
 	 *      the data.
@@ -565,8 +565,8 @@ public:
 	 * supposed type of the tracks data block given.
 	 * This method will return either kHeaderContainsWrongType or
 	 * kHeaderContainsWrongRecordWidth as the reason code.
-	 * [in]  \param block  The data block to check.
-	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 * \param [in]  block  The data block to check.
+	 * \param [out] reason  If this is not NULL, then the variable pointed to
 	 *      by this pointer will be filled with the reason code describing why
 	 *      the header is not valid, if and only if a problem is found with
 	 *      the data.
@@ -583,8 +583,8 @@ public:
 	 * supposed type of the single tracks dHLT trigger decision data block.
 	 * This method will return either kHeaderContainsWrongType or
 	 * kHeaderContainsWrongRecordWidth as the reason code.
-	 * [in]  \param block  The data block to check.
-	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 * \param [in]  block  The data block to check.
+	 * \param [out] reason  If this is not NULL, then the variable pointed to
 	 *      by this pointer will be filled with the reason code describing why
 	 *      the header is not valid, if and only if a problem is found with
 	 *      the data.
@@ -601,8 +601,8 @@ public:
 	 * supposed type of the track pairs dHLT trigger decision data block.
 	 * This method will return either kHeaderContainsWrongType or
 	 * kHeaderContainsWrongRecordWidth as the reason code.
-	 * [in]  \param block  The data block to check.
-	 * [out] \param reason  If this is not NULL, then the variable pointed to
+	 * \param [in]  block  The data block to check.
+	 * \param [out] reason  If this is not NULL, then the variable pointed to
 	 *      by this pointer will be filled with the reason code describing why
 	 *      the header is not valid, if and only if a problem is found with
 	 *      the data.
@@ -676,8 +676,8 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * trigger record structure is OK and returns true in that case.
-	 * [in] \param tr  The trigger record structure to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  tr  The trigger record structure to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the structure is not valid, if and
 	 *      only if a problem is found with the data.
 	 * \returns  true if there is no problem with the structure and false otherwise.
@@ -694,11 +694,11 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * dHLT raw internal data block is OK and returns true in that case.
-	 * [in] \param block  The trigger record data block to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  block  The trigger record data block to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the data block is not valid, if and
 	 *      only if a problem is found with the data.
-	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 * \param [out] recordNum  If this is not NULL, then it will be filled with
 	 *      the number of the trigger record that had a problem. This value will
 	 *      only contain a valid value if the method RecordNumberWasSet(*reason)
 	 *      returns true. Thus, 'reason' must be set.
@@ -716,8 +716,8 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * trigger record debug information structure is OK and returns true in that case.
-	 * [in] \param trigInfo  The trigger record debug information structure to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  trigInfo  The trigger record debug information structure to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the structure is not valid, if and
 	 *      only if a problem is found with the data.
 	 * \returns  true if there is no problem with the structure and false otherwise.
@@ -734,11 +734,11 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * dHLT raw internal data block is OK and returns true in that case.
-	 * [in] \param block  The trigger record debugging information data block to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  block  The trigger record debugging information data block to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the data block is not valid, if and
 	 *      only if a problem is found with the data.
-	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 * \param [out] recordNum  If this is not NULL, then it will be filled with
 	 *      the number of the trigger record debug information structure that had
 	 *      a problem. This value will only contain a valid value if the method
 	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
@@ -756,8 +756,8 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * reconstructed hit structure is OK and returns true in that case.
-	 * [in] \param hit  The reconstructed hit structure to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  hit  The reconstructed hit structure to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the structure is not valid, if and
 	 *      only if a problem is found with the data.
 	 * \returns  true if there is no problem with the data and false otherwise.
@@ -774,11 +774,11 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * dHLT raw internal data block is OK and returns true in that case.
-	 * [in] \param block  The reconstructed hits data block to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  block  The reconstructed hits data block to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the data block is not valid, if and
 	 *      only if a problem is found with the data.
-	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 * \param [out] recordNum  If this is not NULL, then it will be filled with
 	 *      the number of the cluster structure that had a problem. This value
 	 *      will only contain a valid value if the method
 	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
@@ -796,8 +796,8 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * cluster data structure is OK and returns true in that case.
-	 * [in] \param cluster  The cluster structure to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  cluster  The cluster structure to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the structure is not valid, if and
 	 *      only if a problem is found with the data.
 	 * \returns  true if there is no problem with the data and false otherwise.
@@ -814,11 +814,11 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * dHLT raw internal data block is OK and returns true in that case.
-	 * [in] \param block  The clusters data block to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  block  The clusters data block to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the data block is not valid, if and
 	 *      only if a problem is found with the data.
-	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 * \param [out] recordNum  If this is not NULL, then it will be filled with
 	 *      the number of the cluster structure that had a problem. This value
 	 *      will only contain a valid value if the method
 	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
@@ -836,8 +836,8 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * channel data structure is OK and returns true in that case.
-	 * [in] \param cluster  The channel structure to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  cluster  The channel structure to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the structure is not valid, if and
 	 *      only if a problem is found with the data.
 	 * \returns  true if there is no problem with the data and false otherwise.
@@ -854,11 +854,11 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * dHLT raw internal data block is OK and returns true in that case.
-	 * [in] \param block  The ADC channels data block to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  block  The ADC channels data block to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the data block is not valid, if and
 	 *      only if a problem is found with the data.
-	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 * \param [out] recordNum  If this is not NULL, then it will be filled with
 	 *      the number of the channel structure that had a problem. This value
 	 *      will only contain a valid value if the method
 	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
@@ -876,8 +876,8 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * Manso track structure is OK and returns true in that case.
-	 * [in] \param track  The Manso track structure to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  track  The Manso track structure to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the structure is not valid, if and
 	 *      only if a problem is found with the data.
 	 * \returns  true if there is no problem with the structure and false otherwise.
@@ -894,11 +894,11 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * dHLT raw internal data block is OK and returns true in that case.
-	 * [in] \param block  The Manso track data block to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  block  The Manso track data block to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the data block is not valid, if and
 	 *      only if a problem is found with the data.
-	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 * \param [out] recordNum  If this is not NULL, then it will be filled with
 	 *      the number of the Manso track structure that had a problem.
 	 *      This value will only contain a valid value if the method
 	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
@@ -916,8 +916,8 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * Manso track candidate structure is OK and returns true in that case.
-	 * [in] \param candidate  The Manso track candidate structure to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  candidate  The Manso track candidate structure to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the structure is not valid, if and
 	 *      only if a problem is found with the data.
 	 * \returns  true if there is no problem with the structure and false otherwise.
@@ -934,11 +934,11 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * dHLT raw internal data block is OK and returns true in that case.
-	 * [in] \param block  The Manso track candidate data block to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  block  The Manso track candidate data block to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the data block is not valid, if and
 	 *      only if a problem is found with the data.
-	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 * \param [out] recordNum  If this is not NULL, then it will be filled with
 	 *      the number of the Manso track candidate structure that had a problem.
 	 *      This value will only contain a valid value if the method
 	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
@@ -956,8 +956,8 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * full track structure is OK and returns true in that case.
-	 * [in] \param track  The track structure to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  track  The track structure to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the structure is not valid, if and
 	 *      only if a problem is found with the data.
 	 * \returns  true if there is no problem with the structure and false otherwise.
@@ -974,11 +974,11 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * dHLT raw internal data block is OK and returns true in that case.
-	 * [in] \param block  The track data block to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  block  The track data block to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the data block is not valid, if and
 	 *      only if a problem is found with the data.
-	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 * \param [out] recordNum  If this is not NULL, then it will be filled with
 	 *      the number of the Manso track structure that had a problem.
 	 *      This value will only contain a valid value if the method
 	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
@@ -996,8 +996,8 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * single track trigger decision structure is OK and returns true in that case.
-	 * [in] \param decision  The trigger decision structure to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  decision  The trigger decision structure to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the structure is not valid, if and
 	 *      only if a problem is found with the data.
 	 * \returns  true if there is no problem with the structure and false otherwise.
@@ -1014,11 +1014,11 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * dHLT raw internal data block is OK and returns true in that case.
-	 * [in] \param block  The single track trigger decision data block to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  block  The single track trigger decision data block to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the data block is not valid, if and
 	 *      only if a problem is found with the data.
-	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 * \param [out] recordNum  If this is not NULL, then it will be filled with
 	 *      the number of the single track trigger decision structure that had
 	 *      a problem. This value will only contain a valid value if the method
 	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.
@@ -1036,8 +1036,8 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * track pair trigger decision structure is OK and returns true in that case.
-	 * [in] \param decision  The trigger decision structure to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  decision  The trigger decision structure to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the structure is not valid, if and
 	 *      only if a problem is found with the data.
 	 * \returns  true if there is no problem with the structure and false otherwise.
@@ -1054,11 +1054,11 @@ public:
 	/**
 	 * This method is used to check more extensively if the integrity of the
 	 * dHLT raw internal data block is OK and returns true in that case.
-	 * [in] \param block  The track pair trigger decision data block to check.
-	 * [out] \param reason  If this is not NULL, then it will be filled with
+	 * \param [in]  block  The track pair trigger decision data block to check.
+	 * \param [out] reason  If this is not NULL, then it will be filled with
 	 *      the reason code describing why the data block is not valid, if and
 	 *      only if a problem is found with the data.
-	 * [out] \param recordNum  If this is not NULL, then it will be filled with
+	 * \param [out] recordNum  If this is not NULL, then it will be filled with
 	 *      the number of the track pairs trigger decision structure that had
 	 *      a problem. This value will only contain a valid value if the method
 	 *      RecordNumberWasSet(*reason) returns true. Thus, 'reason' must be set.

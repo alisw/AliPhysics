@@ -112,8 +112,8 @@ const char* AliHLTMUONAgent::GetReconstructionChains(AliRawReader* rawReader,
 	/// Inherited from AliHLTModuleAgent.
 	/// Returns the top processing chain configurations for local event
 	/// reconstruction.
-	/// @param rawReader  [in] AliRoot rawreader instance.
-	/// @param runloader  [in] AliRoot runloader
+	/// @param [in] rawReader  AliRoot rawreader instance.
+	/// @param [in] runloader  AliRoot runloader
 	/// @return string containing the top configurations separated by blanks.
 	///
 	/// If rawReader is not NULL then the standard dHLT chain is run taking
@@ -241,9 +241,9 @@ int AliHLTMUONAgent::CreateConfigurations(
 {
 	/// Register all processing configurations belonging to the dimuon HLT
 	/// library with the AliHLTConfigurationHandler.
-	/// @param handler      the configuration handler
-	/// @param rawReader  [in] AliRoot rawreader instance.
-	/// @param runloader    AliRoot runloader
+	/// @param [in] handler     the configuration handler
+	/// @param [in] rawReader   AliRoot rawreader instance.
+	/// @param [in] runloader   AliRoot runloader
 	/// @return Zero on success and error code if failed.
 	///
 	/// Chains available:
@@ -463,7 +463,7 @@ int AliHLTMUONAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 {
 	///
 	/// Registers all available components of this module.
-	/// @param pHandler  [in] instance of the component handler.
+	/// @param [in] pHandler  instance of the component handler.
 	///
 	
 	if (pHandler == NULL) return -EINVAL;

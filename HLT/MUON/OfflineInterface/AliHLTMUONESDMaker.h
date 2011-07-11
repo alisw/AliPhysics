@@ -94,12 +94,12 @@ private:
 	/**
 	 * Finds the trigger record with the specified ID in the list of trigger records
 	 * and then fills the ESD muon track structure with the information.
-	 * [in]     \param triggerRecords  The list of trigger records to search in.
-	 * [in]     \param trigRecId  The trigger record ID to seach for.
-	 * [in]     \param trackId  The track ID of the track structure where the trigger
+	 * \param [in] triggerRecords  The list of trigger records to search in.
+	 * \param [in] trigRecId  The trigger record ID to seach for.
+	 * \param [in] trackId  The track ID of the track structure where the trigger
 	 *                     record ID comes from.
-	 * [out]    \param muTrack  The track structure to fill.
-	 * [in/out] \param nHits  The number of hits added. Will increment this value
+	 * \param [out] muTrack  The track structure to fill.
+	 * \param [in,out] nHits  The number of hits added. Will increment this value
 	 *                        for every new hit added.
 	 */
 	void FillTriggerInfo(

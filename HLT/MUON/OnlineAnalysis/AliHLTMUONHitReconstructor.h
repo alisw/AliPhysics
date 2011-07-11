@@ -59,8 +59,8 @@ public:
 	 * Fills the output clusters array with the extra cluster information generated.
 	 * If the method GenerateClusterInfo(true) was not called, then no cluster information
 	 * is generated and this method will not do anything.
-	 * [out] \param clusters  This is the output array that will be filled.
-	 * [in/out] \param nofClusters Initially this contains the maximum number of elements
+	 * \param [out] clusters  This is the output array that will be filled.
+	 * \param [in,out] nofClusters Initially this contains the maximum number of elements
 	 *     that can be stored in the clusters array. The method will fill this with
 	 *     the actual number of elements stored.
 	 * \returns true if all elements were copied and false if there is not enough space in
@@ -72,8 +72,8 @@ public:
 	 * Fills the output channels array with the extra channel information generated.
 	 * If the method GenerateChannelInfo(true) was not called, then no extra channel
 	 * information is generated and this method will not do anything.
-	 * [out] \param channels  This is the output array that will be filled.
-	 * [in/out] \param nofChannels Initially this contains the maximum number of elements
+	 * \param [out] channels  This is the output array that will be filled.
+	 * \param [in,out] nofChannels Initially this contains the maximum number of elements
 	 *     that can be stored in the channels array. The method will fill this with
 	 *     the actual number of elements stored.
 	 * \returns true if all elements were copied and false if there is not enough space in
