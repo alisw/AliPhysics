@@ -475,7 +475,7 @@ void AliEMCALTrigger::MakeSlidingTowers(const TClonesArray * amptrus, const TClo
     Int_t mtru = itru - isupermod*nTRU ; // Number of TRU in Supermodule !!
     
     if(!amptru || !timeRtru){
-      AliError("Amplitude or Time TRU matrix not available")
+      AliError("Amplitude or Time TRU matrix not available");
       return;
     }
     

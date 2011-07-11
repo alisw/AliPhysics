@@ -333,7 +333,7 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     fPadGainFactor = (AliTPCCalPad*)entry->GetObject();
   }else{
-    AliFatal("TPC - Missing calibration entry TPC/Calib/PadGainFactor")
+    AliFatal("TPC - Missing calibration entry TPC/Calib/PadGainFactor");
   }
   //
   entry          = GetCDBEntry("TPC/Calib/TimeGain");
@@ -342,7 +342,7 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     fTimeGainSplines = (TObjArray*)entry->GetObject();
   }else{
-    AliFatal("TPC - Missing calibration entry TPC/Calib/Timegain")
+    AliFatal("TPC - Missing calibration entry TPC/Calib/Timegain");
   }
   //
   entry          = GetCDBEntry("TPC/Calib/GainFactorDedx");
@@ -350,7 +350,7 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     fDedxGainFactor = (AliTPCCalPad*)entry->GetObject();
   }else{
-    AliFatal("TPC - Missing calibration entry TPC/Calib/gainFactordEdx")
+    AliFatal("TPC - Missing calibration entry TPC/Calib/gainFactordEdx");
   }
   //
   entry          = GetCDBEntry("TPC/Calib/PadTime0");
@@ -359,7 +359,7 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     fPadTime0 = (AliTPCCalPad*)entry->GetObject();
   }else{
-    AliFatal("TPC - Missing calibration entry")
+    AliFatal("TPC - Missing calibration entry");
   }
 
   entry          = GetCDBEntry("TPC/Calib/Distortion");
@@ -380,7 +380,7 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     fPadNoise = (AliTPCCalPad*)entry->GetObject();
   }else{
-    AliFatal("TPC - Missing calibration entry")
+    AliFatal("TPC - Missing calibration entry");
   }
 
   entry          = GetCDBEntry("TPC/Calib/Pedestals");
@@ -403,7 +403,7 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     fParam = (AliTPCParam*)(entry->GetObject()->Clone());
   }else{
-    AliFatal("TPC - Missing calibration entry TPC/Calib/Parameters")
+    AliFatal("TPC - Missing calibration entry TPC/Calib/Parameters");
   }
 
   entry          = GetCDBEntry("TPC/Calib/ClusterParam");
@@ -411,7 +411,7 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     fClusterParam = (AliTPCClusterParam*)(entry->GetObject()->Clone());
   }else{
-    AliFatal("TPC - Missing calibration entry")
+    AliFatal("TPC - Missing calibration entry");
   }
 
   //ALTRO configuration data
@@ -420,7 +420,7 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     fALTROConfigData=(TObjArray*)(entry->GetObject());
   }else{
-    AliFatal("TPC - Missing calibration entry")
+    AliFatal("TPC - Missing calibration entry");
   }
   
   //Calibration Pulser data
@@ -458,7 +458,7 @@ void AliTPCcalibDB::Update(){
     //entry->SetOwner(kTRUE);
     fCTPTimeParams=dynamic_cast<AliCTPTimeParams*>(entry->GetObject());
   }else{
-    AliError("TPC - Missing calibration entry")
+    AliError("TPC - Missing calibration entry");
   }  
   //TPC space point correction data
   entry          = GetCDBEntry("TPC/Calib/Correction");
@@ -481,7 +481,7 @@ void AliTPCcalibDB::Update(){
       }
     }  
   }else{
-    AliError("TPC - Missing calibration entry-  TPC/Calib/Correction")
+    AliError("TPC - Missing calibration entry-  TPC/Calib/Correction");
   }    
   //
   if (!fTransform) {
@@ -979,7 +979,7 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
   if (entry)  {
     fTimeGainSplinesArray.AddAt(entry->GetObject(),run);
   }else{
-    AliFatal("TPC - Missing calibration entry TimeGain")
+    AliFatal("TPC - Missing calibration entry TimeGain");
   }
   //
   entry = AliCDBManager::Instance()->Get("TPC/Calib/TimeDrift",run);
@@ -993,7 +993,7 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
       fComposedCorrectionArray->AddAt(correctionTime,4); //add time dependent correction to the list of available corrections
     }
   }else{
-    AliFatal("TPC - Missing calibration entry TimeDrift")
+    AliFatal("TPC - Missing calibration entry TimeDrift");
   }
   //
   entry = AliCDBManager::Instance()->Get("TPC/Calib/Temperature",run);

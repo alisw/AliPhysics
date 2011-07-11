@@ -97,7 +97,7 @@ void AliITSdEdxSamples::SetdxSamples(Int_t nSamples, Double_t* samples){
   // Set the samples
 
   if(nSamples>kMaxSamples){
-    AliWarning(Form("Too many dx samples,only first %d will be used",kMaxSamples))
+    AliWarning(Form("Too many dx samples,only first %d will be used",kMaxSamples));
     fNSamples=kMaxSamples;
   }else{
     fNSamples=nSamples;

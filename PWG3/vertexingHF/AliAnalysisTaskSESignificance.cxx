@@ -125,7 +125,7 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance(const char *name, T
   fNPtBins=fRDCuts->GetNPtBins();
 
   fNVars=fRDCuts->GetNVarsForOpt();
-  if(fNVars>kMaxCutVar) AliFatal(Form("Too large number of cut variables, maximum is %d",kMaxCutVar))
+  if(fNVars>kMaxCutVar) AliFatal(Form("Too large number of cut variables, maximum is %d",kMaxCutVar));
   
   if(fDebug>1)fRDCuts->PrintAll();
    // Output slot #1 writes into a TList container

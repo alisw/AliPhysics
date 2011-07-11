@@ -86,7 +86,7 @@ AliMUONPreClusterFinderV3::AliMUONPreClusterFinderV3()
   fIterator(0x0)
 {
     /// ctor
-    AliInfo("")
+  AliInfo("");
   for ( Int_t i = 0; i < 2; ++i )
   {
     fPreClusters[i] = new TClonesArray("AliMUONCluster",10);

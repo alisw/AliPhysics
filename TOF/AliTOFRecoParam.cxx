@@ -176,6 +176,6 @@ void AliTOFRecoParam::PrintParameters() const
 	       " coming from two (or more) neighbouring pads"
 	       " to define if they are coming from the same ionization event"
 	       " or not: %2d bins -> %f ps",
-	       fMaxDeltaTime, fMaxDeltaTime*AliTOFGeometry::TdcBinWidth()))
+	       fMaxDeltaTime, fMaxDeltaTime*AliTOFGeometry::TdcBinWidth()));
 
 }

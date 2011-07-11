@@ -449,7 +449,7 @@ GenFuncIp AliGenHMPIDlib::GetIp(Int_t iPID, const char *sForm) const
     case kLambda0:                                               return IpLambda;
     case kLambda0Bar:                                            return IpLambdaBar; 
 
-    default  : AliFatal(Form("Unknown particle type: %i",iPID))  return 0;
+  default  : AliFatal(Form("Unknown particle type: %i",iPID));  return 0;
   }
 }
 

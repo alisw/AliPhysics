@@ -1126,9 +1126,9 @@ void AliCDBManager::UnloadFromCache(const char* path){
 			TObjString pathStr(path);
 			delete fEntryCache.Remove(&pathStr);
 		} else {
-			AliError(Form("Cache does not contain object \"%s\"!", path))
+		  AliErrorF("Cache does not contain object \"%s\"!", path);
 		}
-		AliDebug(2, Form("Cache entries: %d",fEntryCache.GetEntries()));
+		AliDebugF(2, "Cache entries: %d",fEntryCache.GetEntries());
 		return;
 	}
 

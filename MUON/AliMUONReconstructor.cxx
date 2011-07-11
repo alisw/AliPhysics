@@ -455,7 +455,7 @@ AliMUONReconstructor::CreateCalibrationData() const
   const AliRunInfo* runInfo = GetRunInfo();
   if (!runInfo)
   {
-    AliError("Could not get runinfo ?")
+    AliError("Could not get runinfo ?");
   }
   else
   {

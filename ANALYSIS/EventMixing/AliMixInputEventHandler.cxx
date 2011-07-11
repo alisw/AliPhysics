@@ -237,7 +237,7 @@ Bool_t AliMixInputEventHandler::MixStd()
       mihi = (AliMixInputHandlerInfo *) fMixTrees.At(0);
       TChainElement *te = fMixIntupHandlerInfoTmp->GetEntryInTree(entryMix);
       if (!te) {
-         AliError("te is null. this is error. tell to developer (#1)")
+	AliError("te is null. this is error. tell to developer (#1)");
       } else {
          mihi->PrepareEntry(te, entryMix, (AliInputEventHandler*)InputEventHandler(0), fAnalysisType);
          // runs UserExecMix for all tasks
@@ -329,7 +329,7 @@ Bool_t AliMixInputEventHandler::MixBuffer()
       mihi = (AliMixInputHandlerInfo *) fMixTrees.At(counter);
       TChainElement *te = fMixIntupHandlerInfoTmp->GetEntryInTree(entryMix);
       if (!te) {
-         AliError("te is null. this is error. tell to developer (#1)")
+	AliError("te is null. this is error. tell to developer (#1)");
       } else {
          AliDebug(AliLog::kDebug + 3, Form("Preparing InputEventHandler(%d)", counter));
          mihi->PrepareEntry(te, entryMix, (AliInputEventHandler*)InputEventHandler(counter), fAnalysisType);
@@ -438,7 +438,7 @@ Bool_t AliMixInputEventHandler::MixEventsMoreTimesWithOneEvent()
       entryMixReal = entryMix;
       TChainElement *te = fMixIntupHandlerInfoTmp->GetEntryInTree(entryMix);
       if (!te) {
-         AliError("te is null. this is error. tell to developer (#2)")
+	AliError("te is null. this is error. tell to developer (#2)");
       } else {
          mihi->PrepareEntry(te, entryMix, (AliInputEventHandler*)InputEventHandler(0), fAnalysisType);
          // runs UserExecMix for all tasks
@@ -515,8 +515,8 @@ void AliMixInputEventHandler::SetMixNumber(const Int_t mixNum)
    // Sets mix number
    //
    if (fMixNumber > 1 && fBufferSize > 1) {
-      AliWarning("Sleeping 10 sec to show Warning Message ...")
-      AliWarning("=========================================================================================");
+     AliWarning("Sleeping 10 sec to show Warning Message ...");
+     AliWarning("=========================================================================================");
       AliWarning(Form("BufferSize(%d) higher > 1 and fMixNumber(%d) > 1, which is not supported", fBufferSize, mixNum));
       AliWarning("");
       AliWarning("\tBufferSize will be set to 1");

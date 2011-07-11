@@ -270,7 +270,7 @@ void AliTOFT0::Exec(Option_t *option)
 
   if(strstr(option,"all")){
     AliInfo(Form("Selecting primary tracks with momentum between %f GeV/c and %f GeV/c",  fLowerMomBound, fUpperMomBound));
-    AliInfo("Memorandum: 0 means PION | 1 means KAON | 2 means PROTON")
+    AliInfo("Memorandum: 0 means PION | 1 means KAON | 2 means PROTON");
   }
 
   if (fNevents == 0) fNevents = (Int_t) AliRunLoader::Instance()->TreeE()->GetEntries();
@@ -495,7 +495,7 @@ void AliTOFT0::Exec(Option_t *option)
 
   // generating output filename only if not previously specified using SetTZeroFile
 
-  const Int_t kSize = 70;
+  /*const*/ Int_t kSize = 70+fHeadersFile.Length()+1;
   char outFileName[kSize];
   strncpy(outFileName,"ht010tr120ps",kSize); // global time resolution has to be converted from Int_t to char
                                       // in order to have in the output filename this parameter

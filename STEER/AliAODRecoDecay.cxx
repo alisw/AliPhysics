@@ -375,7 +375,7 @@ Bool_t AliAODRecoDecay::GetCovarianceXYZPxPyPz(Double_t cv[21]) const {
     for(j=0;j<21;j++) p[j] += dcov[j];
   }
   if(error) {
-    AliError("No covariance for at least one daughter")
+    AliError("No covariance for at least one daughter");
     return kFALSE;
   }
 

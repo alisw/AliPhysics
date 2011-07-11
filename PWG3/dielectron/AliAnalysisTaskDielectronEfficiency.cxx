@@ -226,13 +226,13 @@ void AliAnalysisTaskDielectronEfficiency::FillPlots(AliVEvent *event)
   // Fetch Stack 
   AliMCEventHandler *mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
   if(!mcH) {
-    AliError("No MC handler found\n")
+    AliError("No MC handler found\n");
     return;
   }
   
   AliMCEvent *mcev=mcH->MCEvent();
   if (!mcev){
-    AliError("No MC event found\n")
+    AliError("No MC event found\n");
     return;
   }
   AliStack*  pStack = mcev->Stack();

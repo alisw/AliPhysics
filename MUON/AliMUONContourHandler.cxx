@@ -238,7 +238,7 @@ AliMUONContourHandler::GenerateAllContours(const TObjArray& manuContours)
         }
         else
         {
-          AliError(Form("Did not find contour %s",k->String().Data()))
+          AliError(Form("Did not find contour %s",k->String().Data()));
           continue;
         }
       }

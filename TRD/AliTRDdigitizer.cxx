@@ -288,7 +288,7 @@ void AliTRDdigitizer::Exec(const Option_t * const option)
     inrl->LoadgAlice();
     gAlice = inrl->GetAliRun();
     if (!gAlice) {
-      AliError("Could not find AliRun object.")
+      AliError("Could not find AliRun object.");
       return;
     }
   }
