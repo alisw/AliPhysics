@@ -45,14 +45,11 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "TF1.h"
+#include <TF1.h>
+#include <TMath.h>
 
 #include "AliEMCALPIDResponse.h"       //class header
 
-#include "AliAnalysisManager.h"
-#include "AliESDCaloCluster.h"  
-#include "AliESDEvent.h"     
-#include "AliInputEventHandler.h"
 #include "AliLog.h"   
 
 ClassImp(AliEMCALPIDResponse)

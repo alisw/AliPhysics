@@ -14,7 +14,6 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-#include "AliESDtrack.h"      
 #include "AliPID.h"
 
 class AliEMCALPIDResponse 
