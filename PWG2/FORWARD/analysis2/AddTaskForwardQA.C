@@ -3,26 +3,29 @@
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
  * @date   Wed Mar 23 12:14:03 2011
  * 
- * @brief  
- * 
+ * @brief  Include the Forward QA task in a train.  
  * 
  * @ingroup pwg2_forward_scripts_tasks
  */
 /**
- * @defgroup pwg2_forward_eloss Energy Loss Fits
+ * @defgroup pwg2_forward_qa Quality Assurance
  * @ingroup pwg2_forward_topical
  */
-
 /**
- * This is the macro to include the FMD energy fitter in a train.  
+ * This is the macro to include the Forward QA task in a train.  
  * 
+ * @param mc       Monte-carlo input 
+ * @param useCent  Use centrality 
+ *
  * @ingroup pwg2_forward_eloss
  */
 AliAnalysisTask*
 AddTaskForwardQA(Bool_t mc, Bool_t useCent)
 {
-  gSystem->Load("libPWG2forward2");
+  // --- Load libraries ----------------------------------------------
+  gROOT->LoadClass("AliAODForwardMult", "libPWG2forward2");
 
+  // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTaskForwardQA", "No analysis manager to connect to.");

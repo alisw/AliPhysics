@@ -3,14 +3,32 @@
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
  * @date   Wed Mar 23 14:08:14 2011
  * 
- * @brief  
+ * @brief  Generate energy loss fits 
  * 
- * 
- * @ingroup pwg2_forward_eloss
+ * @ingroup pwg2_forward_scripts_makers
  */
 /** 
  * Run a pass on ESD data to produce the energ loss fits 
  * 
+ * If the ROOT AliEn interface library (libRAliEn) can be loaded, 
+ * and the parameter @a name is not empty, then use the plugin to do
+ * the analysis.  Note that in this case, the output is placed 
+ * in a sub-directory named by @a name after escaping spaces and special 
+ * characters 
+ *
+ * If PROOF mode is selected, then Terminate will be run on the master node 
+ * in any case. 
+ *
+ * @param esddir     ESD input directory. Any file matching the pattern 
+ *                   *AliESDs*.root are added to the chain 
+ * @param nEvents    Number of events to process.  If 0 or less, then 
+ *                   all events are analysed
+ * @param proof      If larger then 1, run in PROOF-Lite mode with this 
+ *                   many number of workers. 
+ * @param mc         Data is assumed to be from simulations  
+ * @param cent       Whether to use centrality or not 
+ * @param name       Name of train - free form.  This will be the name
+ *                   of the output directory if the plug-in is used 
  *
  * @ingroup pwg2_forward_eloss
  */
@@ -23,13 +41,11 @@ void MakeELossFits(const char* esddir,
 {
   // --- Possibly use plug-in for this -------------------------------
   if ((name && name[0] != '\0') && gSystem->Load("libRAliEn") >= 0) {
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
-			     "$ALICE_ROOT/ANALYSIS/macros",
-			     gROOT->GetMacroPath()));
-    gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
-    gSystem->Load("libANALYSIS");
-    gSystem->Load("libANALYSISalice");
-    gROOT->LoadMacro("TrainSetup.C+");
+    const char* builder = 
+      "$(ALICE_ROOT)/PWG2/FORWARD/analysis2/trains/BuildTrain.C" 
+    gROOT->LoadMacro(builder);
+    BuildTrain("FMDELossTrain");
+
     FMDELossTrain t(name, cent, false);
     t.SetDataDir(esddir);
     t.SetDataSet("");

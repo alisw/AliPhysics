@@ -20,6 +20,9 @@
 AliAnalysisTask*
 AddTaskCentralMCCorr()
 {
+  // --- Load libraries ----------------------------------------------
+  gROOT->LoadClass("AliAODForwardMult", "libPWG2forward2");
+
   // --- Creating the manager and handlers ---------------------------
   AliAnalysisManager *mgr  = AliAnalysisManager::GetAnalysisManager();
   if (!mgr->GetMCtruthEventHandler()) { 

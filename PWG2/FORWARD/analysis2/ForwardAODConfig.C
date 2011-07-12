@@ -98,8 +98,12 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Set whether or not to include sigma in cut
   task->GetDensityCalculator().SetCuts(cDensity);
   
-  // Set whether or not to use the phi acceptance 
-  task->GetDensityCalculator().SetUsePhiAcceptance(true);
+  // Set whether or not to use the phi acceptance
+  //   AliFMDDensityCalculator::kPhiNoCorrect
+  //   AliFMDDensityCalculator::kPhiCorrectNch
+  //   AliFMDDensityCalculator::kPhiCorrectELoss
+  task->GetDensityCalculator()
+    .SetUsePhiAcceptance(AliFMDDensityCalculator::kPhiCorrectNch);
 
   // --- Corrector ---------------------------------------------------
   // Whether to use the secondary map correction

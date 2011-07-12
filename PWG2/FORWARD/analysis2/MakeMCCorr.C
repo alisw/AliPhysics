@@ -1,14 +1,15 @@
 /**
- * @file   MakedNdeta.C
+ * @file   MakeMCCorr.C
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
- * @date   Wed Mar 23 09:41:56 2011
+ * @date   Tue Jul 12 10:06:07 2011
  * 
- * @brief  Run second pass analysis - make @f$ dN/d\eta@f$
+ * @brief  Generate MC corrections 
  * 
  * @ingroup pwg2_forward_scripts_makers
  */
+//====================================================================
 /** 
- * Run second pass analysis - make @f$ dN/d\eta@f$
+ * Generatew MC corrections 
  * 
  * If the ROOT AliEn interface library (libRAliEn) can be loaded, 
  * and the parameter @a name is not empty, then use the plugin to do
@@ -27,7 +28,8 @@
  * @param name       Name of train - free form.  This will be the name
  *                   of the output directory if the plug-in is used 
  *
- * @ingroup pwg2_forward_dndeta
+ * @ingroup pwg2_forward_corr
+ * @ingroup pwg2_forward_scripts_makers
  */
 void MakeMCCorr(const char* esddir   = ".", 
 	        Int_t       nEvents  = -1, 
@@ -40,13 +42,11 @@ void MakeMCCorr(const char* esddir   = ".",
     Error("MakeMCCorr", "Plug-in mode not implemented yet!");
     return;
 
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
-			     "$ALICE_ROOT/ANALYSIS/macros",
-			     gROOT->GetMacroPath()));
-    gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
-    gSystem->Load("libANALYSIS");
-    gSystem->Load("libANALYSISalice");
-    gROOT->LoadMacro("TrainSetup.C+");
+    const char* fwdPath = 
+      gSystem->ExpandPathName("$(ALICE_ROOT)/PWG2/FORWARD/analysis2");
+    gROOT->LoadMacro(Form("%s/trains/BuildTrain.C", fwdPath));
+    BuildTrain("MakeMCCorrTrain");
+
     MakeMCCorrTrain t(name, vzMin, vzMax);
     t.SetDataDir(esddir);
     t.SetDataSet("");

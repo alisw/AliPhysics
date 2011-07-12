@@ -129,6 +129,38 @@ TCanvas* CheckCanvas()
   canvas->SetBottomMargin(0.15);
   return canvas;
 }
+
+//____________________________________________________________________
+void CleanStack(THStack* stack)
+{
+  TIter next(stack->GetHists());
+  TObject* o = 0;
+  while ((o = next())) { 
+    TString name(o->GetName());
+    if (name.Contains("_t_")) 
+      stack->RecursiveRemove(o);
+  }
+}
+  
+
+//____________________________________________________________________
+THStack*
+AddToStack(TList* stacks, TList* fitter, const char* name)
+{
+  TObject* o = fitter->FindObject(name);
+  if (!o) { 
+    Warning("AddToStack", "Object %s not found in %s", name, 
+	    fitter->GetName());
+    // fitter->ls();
+    return 0;
+  }
+  THStack* toAdd = static_cast<THStack*>(o);
+  CleanStack(toAdd);
+  Info("AddToStack", "Adding %s to stacks", name);
+  stacks->Add(toAdd);
+  return toAdd;
+}
+
   
 //____________________________________________________________________
 /** 
@@ -150,28 +182,19 @@ void DrawSummary(const char* fname="forward_eloss.root")
   }
   canvas->Clear();
 
-  THStack* chi2nu;
-  THStack* c;
-  THStack* delta;
-  THStack* xi;
-  THStack* sigma;
-  THStack* sigman;
-  THStack* n;
-  TList stacks;
-  stacks.Add(chi2nu = static_cast<THStack*>(fitter->FindObject("chi2")));
-  stacks.Add(c      = static_cast<THStack*>(fitter->FindObject("c")));
-  stacks.Add(delta  = static_cast<THStack*>(fitter->FindObject("delta")));
-  stacks.Add(xi     = static_cast<THStack*>(fitter->FindObject("xi")));
-  stacks.Add(sigma  = static_cast<THStack*>(fitter->FindObject("sigma")));
-  stacks.Add(sigman = static_cast<THStack*>(fitter->FindObject("sigman")));
-  stacks.Add(n      = static_cast<THStack*>(fitter->FindObject("n")));
-  Int_t baseA = stacks.GetEntries()+1;
-  Int_t i=2;
+  TList    stacks;
+  THStack* chi2nu  = AddToStack(&stacks, fitter, "chi2");
+  THStack* c       = AddToStack(&stacks, fitter, "c");
+  THStack* delta   = AddToStack(&stacks, fitter, "delta");
+  THStack* xi      = AddToStack(&stacks, fitter, "xi");
+  THStack* sigma   = AddToStack(&stacks, fitter, "sigma");
+  THStack* sigman  = AddToStack(&stacks, fitter, "sigman");
+  THStack* n       = AddToStack(&stacks, fitter, "n");
+  Int_t    baseA   = stacks.GetEntries()+1;
+  Int_t    i       = 2;
   while (true) { 
-    TObject* o = fitter->FindObject(Form("a%d",i++));
-    if (!o) break;
-    Info("DrawFits", "Adding %s", o->GetName());
-    stacks.Add(o);
+    if (!AddToStack(&stacks, fitter, Form("a%d",i++)))
+      break;
   }
   // stacks.ls();
   Int_t nMax = stacks.GetEntries();
@@ -185,9 +208,11 @@ void DrawSummary(const char* fname="forward_eloss.root")
     if (!hasData) nMax--;
   }
 
-  canvas->SetRightMargin(0.05);
-  canvas->SetTopMargin(0.05);
-  canvas->Divide(2, (nMax+1)/2, 0.1, 0, 0);
+  canvas->SetRightMargin(0.01);
+  canvas->SetTopMargin(0.01);
+  Int_t nX = 2;
+  Int_t nY = (nMax+1) / 2;
+  canvas->Divide(nX, nY, 0.1, 0, 0);
 
   TIter next(&stacks);
   THStack* stack = 0;
@@ -195,8 +220,13 @@ void DrawSummary(const char* fname="forward_eloss.root")
   Int_t b = 1;
   while ((stack = static_cast<THStack*>(next()))) {
     if (i > nMax) break;
-    TVirtualPad* p = canvas->cd(1+i/5 + 2*(i%5));
-    p->SetLeftMargin(.15);
+    Int_t ipad = 1+i/nY + 2 * (i % nY);
+    Info("DrawSummary", "cd'ing to canvas %d for %s", ipad, 
+	 stack->GetName());
+    TVirtualPad* p = canvas->cd(ipad);
+    p->SetLeftMargin(.6/nY);
+    p->SetTopMargin(.01);
+    p->SetRightMargin(.01);
     p->SetFillColor(0);
     p->SetFillStyle(0);
     p->SetGridx();
@@ -211,16 +241,23 @@ void DrawSummary(const char* fname="forward_eloss.root")
     if (i == 3)                     stack->SetMaximum(0.1);   // xi
     if (i == 4 || i == 5)           stack->SetMaximum(0.5);    // sigma{,n}
     if (i == 7)                     stack->SetMaximum(0.5);    // a
-    yaxis->SetTitleSize(0.15);
+    if (i == 0) p->SetLogy();
+    yaxis->SetTitleSize(0.3/nY);
     yaxis->SetLabelSize(0.08);
-    yaxis->SetTitleOffset(0.35);
+    yaxis->SetTitleOffset(2.5/nY);
     yaxis->SetNdivisions(5);
-
+    yaxis->SetTitleFont(42);
+    yaxis->SetLabelFont(42);
+    yaxis->SetDecimals();
+    
     TAxis* xaxis = stack->GetHistogram()->GetXaxis();
-    xaxis->SetTitleSize(0.15);
+    xaxis->SetTitleSize(0.3/nY);
     xaxis->SetLabelSize(0.08);
-    xaxis->SetTitleOffset(0.35);
+    xaxis->SetTitleOffset(2./nY);
     xaxis->SetNdivisions(10);
+    xaxis->SetTitleFont(42);
+    xaxis->SetLabelFont(42);
+    xaxis->SetDecimals();
 
     // Redraw 
     stack->Draw("nostack");
@@ -228,6 +265,7 @@ void DrawSummary(const char* fname="forward_eloss.root")
     if (i >= 5) b = 2;
     p->cd();
   }
+  canvas->SaveAs("fit_results.png");
   canvas->Print(pdfName, "Title:Fit summary");
 }
 
@@ -330,11 +368,14 @@ void DrawEtaBins(const char* fname="AnalysisResults.root")
 	Error("PrintFits", "Couldn't get EDists list for FMD%d%c", d,r);
 	continue; 
       }
+      
+      Info("DrawEtaBins", "Drawing for FMD%d%c", d, r);
       TIter next(edists);
       TH1*  dist = 0;
       Int_t i    = 0;
       Int_t j    = 1;
       while ((dist = static_cast<TH1*>(next()))) { 
+	Info("DrawEtaBins", "FMD%d%c: %s", d, r, dist->GetName());
 	if (i == 4) { 
 	  i = 0;
 	  j++;
@@ -397,14 +438,15 @@ void DrawEtaBins(const char* fname="AnalysisResults.root")
  * @ingroup pwg2_forward_scripts_corr
  */
 void
-DrawAnaELoss(const char* fname="forward_eloss.root")
+DrawAnaELoss(const char* fname="forward_eloss.root", bool onlySummary=true)
 {
   if (!CheckCanvas()) {
     Error("DrawFits", "No canvas");
     return;
   }
-  canvas->Print(Form("%s[", pdfName));
+  if (!onlySummary) canvas->Print(Form("%s[", pdfName));
   DrawSummary(fname);
+  if (onlySummary) return;
   DrawRings(fname);
   DrawEtaBins(fname);
   canvas->Print(Form("%s]", pdfName));
