@@ -43,6 +43,7 @@ AliAODDimuon &AliAODDimuon::operator=(const AliAODDimuon& dimu)
 {
   // assignment operator
   if(&dimu != this){
+    delete fP;
     fP=0;
     fMProton=0.93827231;
     fMu[0]=dimu.Mu(0);
@@ -65,23 +66,13 @@ AliAODDimuon::AliAODDimuon(TObject *mu0, TObject *mu1):
 AliAODDimuon::~AliAODDimuon()
 {
   // destructor
-  if(fP)delete fP;
-  fP=0;
-}
-
-//______________________________________________________________________________
-void AliAODDimuon::BookP(){
-  //
-  // build the TLorentz vector
-  //
-    fP=new TLorentzVector(Px(),Py(),Pz(),E());
-    fP->SetPxPyPzE(Px(),Py(),Pz(),E());
+  delete fP;
 }
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::Px() const {
   // Px of the dimuon
-  if(this->CheckPointers())return -999999999;
+  if(CheckPointers())return -999999999;
   return ((AliAODTrack*)fMu[0].GetObject())->Px()+
          ((AliAODTrack*)fMu[1].GetObject())->Px();
 }
@@ -89,7 +80,7 @@ Double_t AliAODDimuon::Px() const {
 //______________________________________________________________________________
 Double_t AliAODDimuon::Py() const {
   // Py of the dimuon
-  if(this->CheckPointers())return -999999999;
+  if(CheckPointers())return -999999999;
   return ((AliAODTrack*)fMu[0].GetObject())->Py()+
          ((AliAODTrack*)fMu[1].GetObject())->Py();
 }
@@ -97,7 +88,7 @@ Double_t AliAODDimuon::Py() const {
 //______________________________________________________________________________
 Double_t AliAODDimuon::Pz() const {
   // Pz of the dimuon
-  if(this->CheckPointers())return -999999999;
+  if(CheckPointers())return -999999999;
   return ((AliAODTrack*)fMu[0].GetObject())->Pz()+
          ((AliAODTrack*)fMu[1].GetObject())->Pz();
 }
@@ -105,122 +96,69 @@ Double_t AliAODDimuon::Pz() const {
 //______________________________________________________________________________
 Double_t AliAODDimuon::Pt() const {
   // Pt of the dimuon
-  if(this->CheckPointers())return -999999999;
+  if(CheckPointers())return -999999999;
   Double_t px=Px();
   Double_t py=Py();
   return TMath::Sqrt(px*px+py*py);
-  return -999999999;
 }
 
 //______________________________________________________________________________
-Double_t AliAODDimuon::E() const {
-  // Dimuon energy
-  if(this->CheckPointers())return -999999999;
-  return ((AliAODTrack*)fMu[0].GetObject())->E()+
-         ((AliAODTrack*)fMu[1].GetObject())->E();
+Double_t AliAODDimuon::E() const 
+{
+    // Dimuon energy
+  
+  if(CheckPointers())return -999999999;
+
+  return ((AliAODTrack*)fMu[0].GetObject())->E()+ ((AliAODTrack*)fMu[1].GetObject())->E();
 }
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::P() const {
-  // This is just to override the virtual function
-  printf("You should never call: Double_t AliAODDimuon::P() const\n");
-  return -999999999;
-}
-
-//______________________________________________________________________________
-Double_t AliAODDimuon::P() {
   // Dimuon momentum
-  if(this->CheckPointers())return -999999999;
-  BookP();
-  return fP->P();
+  if(CheckPointers())return -999999999;
+  return TLV()->P();
 }
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::M() const {
-  // This is just to override the virtual function
-  printf("You should never call: Double_t AliAODDimuon::M() const\n");
-  return -999999999;
-}
-
-//______________________________________________________________________________
-Double_t AliAODDimuon::M() {
   // Dimuon invariant mass
-  if(this->CheckPointers())return -999999999;
-  BookP();
-  return fP->M();
-}
-
-//______________________________________________________________________________
-Double_t AliAODDimuon::Mass() {
-  // Dimuon invariant mass
-  if(this->CheckPointers())return -999999999;
-  BookP();
-  return fP->M();
+  if(CheckPointers())return -999999999;
+  return TLV()->M();
 }
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::Eta() const {
-  // This is just to override the virtual function
-  printf("You should never call: Double_t AliAODDimuon::Eta() const\n");
-  return -999999999;
-}
-
-//______________________________________________________________________________
-Double_t AliAODDimuon::Eta() {
   // Dimuon pseudorapidity
-  if(this->CheckPointers())return -999999999;
-  BookP();
-  return fP->Eta();
+  if(CheckPointers())return -999999999;
+  return TLV()->Eta();
 }
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::Phi() const {
-  // This is just to override the virtual function
-  printf("You should never call: Double_t AliAODDimuon::Phi() const\n");
-  return -999999999;
+  // Dimuon asimuthal angle
+  if(CheckPointers())return -999999999;
+  return TLV()->Phi();
 }
 
-//______________________________________________________________________________
-Double_t AliAODDimuon::Phi() {
-  // Dimuon asimuthal angle
-  if(this->CheckPointers())return -999999999;
-  BookP();
-  return fP->Phi();
-}
+
 //______________________________________________________________________________
 Double_t AliAODDimuon::Theta() const {
-  // This is just to override the virtual function
-  printf("You should never call: Double_t AliAODDimuon::Theta() const\n");
-  return -999999999;
-}
-
-//______________________________________________________________________________
-Double_t AliAODDimuon::Theta() {
   // Dimuon polar angle
-  if(this->CheckPointers())return -999999999;
-  BookP();
-  return fP->Theta();
+  if(CheckPointers())return -999999999;
+  return TLV()->Theta();
 }
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::Y() const {
-  // This is just to override the virtual function
-  printf("You should never call: Double_t AliAODDimuon::Y() const\n");
-  return -999999999;
-}
-
-//______________________________________________________________________________
-Double_t AliAODDimuon::Y() {
   // Dimuon rapidity
-  if(this->CheckPointers())return -999999999;
-  BookP();
-  return fP->Rapidity();
+  if(CheckPointers())return -999999999;
+  return TLV()->Rapidity();
 }
 
 //______________________________________________________________________________
 Short_t AliAODDimuon::Charge() const {
   // Dimuon charge
-  if(this->CheckPointers())return -999;
+  if(CheckPointers())return -999;
   return ((AliAODTrack*)fMu[0].GetObject())->Charge()+
          ((AliAODTrack*)fMu[1].GetObject())->Charge();
 }
@@ -243,6 +181,8 @@ Int_t AliAODDimuon::CheckPointers() const{
 void AliAODDimuon::SetMu(Int_t imu, AliAODTrack *mu){
   // Assign a track pointer
   if (imu==0||imu==1){
+    delete fP;
+    fP=0;
     fMu[imu]=mu;
   }
 }
@@ -252,19 +192,22 @@ void AliAODDimuon::SetMuons(AliAODTrack *mu0, AliAODTrack *mu1){
   // Assign the track pointers
   fMu[0]=mu0;
   fMu[1]=mu1;
+  delete fP;
+  fP=0;
 }
 
 //______________________________________________________________________________
 Double_t AliAODDimuon::XF() {
   // Dimuon Feynman x
+
+  if(CheckPointers())return -999999999;
+
   //Double_t ebeam=((AliAODEventInfo*)fEi.GetObject())->EBeam();
   Double_t ebeam = 3500.; // temporary
   if(ebeam<=0){
     printf("AliAODDimuon::xf: can not compute xf with EBeam=%f\n",ebeam);
     return -999999999;
   }
-  if(this->CheckPointers())return -999999999;
-  BookP();
   Double_t mDimu=M();
   Double_t pMax=TMath::Sqrt(ebeam*ebeam-mDimu*mDimu);
   return Pz()/pMax;
@@ -528,7 +471,7 @@ Double_t AliAODDimuon::PhiHe(){
 //______________________________________________________________________________
 Int_t AliAODDimuon::AnyPt(){
   // Test if the two muons match two trigger tracks
-  if(this->CheckPointers())return 0;
+  if(CheckPointers())return 0;
   return (((AliAODTrack*)fMu[0].GetObject())->MatchTrigger())&&
          (((AliAODTrack*)fMu[1].GetObject())->MatchTrigger());
 }
@@ -536,7 +479,7 @@ Int_t AliAODDimuon::AnyPt(){
 //______________________________________________________________________________
 Int_t AliAODDimuon::LowPt(){
   // Test if the two muons match two trigger tracks with a "Low Pt" cut
-  if(this->CheckPointers())return 0;
+  if(CheckPointers())return 0;
   return (((AliAODTrack*)fMu[0].GetObject())->MatchTriggerLowPt())&&
          (((AliAODTrack*)fMu[1].GetObject())->MatchTriggerLowPt());
 }
@@ -544,7 +487,7 @@ Int_t AliAODDimuon::LowPt(){
 //______________________________________________________________________________
 Int_t AliAODDimuon::HighPt(){
   // Test if the two muons match two trigger tracks with a "High Pt" cut
-  if(this->CheckPointers())return 0;
+  if(CheckPointers())return 0;
   return (((AliAODTrack*)fMu[0].GetObject())->MatchTriggerHighPt())&&
          (((AliAODTrack*)fMu[1].GetObject())->MatchTriggerHighPt());
 }
@@ -552,7 +495,15 @@ Int_t AliAODDimuon::HighPt(){
 //______________________________________________________________________________
 Double_t AliAODDimuon::MaxChi2Match(){
   // Maximum matching Chi2 between track and trigger track
-  if(this->CheckPointers())return -999999999;
+  if(CheckPointers())return -999999999;
   return TMath::Max((((AliAODTrack*)fMu[0].GetObject())->GetChi2MatchTrigger()),
                     (((AliAODTrack*)fMu[1].GetObject())->GetChi2MatchTrigger()));
+}
+
+//______________________________________________________________________________
+TLorentzVector* AliAODDimuon::TLV() const
+{
+  delete fP;
+  fP = new TLorentzVector(Px(),Py(),Pz(),E());
+  return fP;  
 }

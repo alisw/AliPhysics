@@ -50,7 +50,9 @@ public:
 
   virtual Double_t E() const;
   virtual Double_t M() const;
-  
+
+  virtual Double_t Mass() const { return M(); }
+
   virtual Double_t Eta() const;
   virtual Double_t Y() const;
   
@@ -63,14 +65,6 @@ public:
   virtual Double_t Yv() const {return -999999999;}
   virtual Double_t Zv() const {return -999999999;}
   virtual Bool_t XvYvZv(Double_t* v) const { v[0]=-999999999; v[1]=-999999999; v[2]=-999999999; return 0;}
-
-  Double_t P();
-  Double_t Phi();
-  Double_t Theta();
-  Double_t M();
-  Double_t Mass();
-  Double_t Eta();
-  Double_t Y();
 
   // Added functions
   Double_t XF();     // Feynman x
@@ -88,7 +82,7 @@ public:
   //
   Int_t GetLabel() const {return -1;}
   // Additional getters and setters
-  AliAODTrack* GetMu(Int_t imu=0) const {return (imu==0||imu==1)&&(fMu[imu]!=0) ? (AliAODTrack*)fMu[imu].GetObject() : 0; } // Get a pointer to a muon
+  AliAODTrack* GetMu(Int_t imu=0) const {return Mu(imu); } // Get a pointer to a muon
   AliAODTrack* Mu(Int_t imu=0) const {return (imu==0||imu==1)&&(fMu[imu]!=0) ? (AliAODTrack*)fMu[imu].GetObject() : 0; } // Get a pointer to a muon
 
   void SetMu(Int_t imu=0, AliAODTrack *mu=0);
@@ -97,17 +91,19 @@ public:
   virtual Int_t PdgCode() const {return 0;}
 
 private:
+
   Int_t CheckPointers() const;
-  void BookP();
+
+  TLorentzVector* TLV() const; 
 
   // Data members
   TRef fMu[2];	// Pointers to the reconstructed muons
-  TLorentzVector *fP; //! TLorentzVector of dimuon momentum (not stored into file)
+  mutable TLorentzVector *fP; //! TLorentzVector of dimuon momentum (not stored into file)
 
   // Useful constants
   Double_t fMProton; //! Proton mass (not stored into file)
 
-  ClassDef(AliAODDimuon,1)  // AliAODDimuon track
+  ClassDef(AliAODDimuon,2)  // AliAODDimuon track
 };
 
 #endif
