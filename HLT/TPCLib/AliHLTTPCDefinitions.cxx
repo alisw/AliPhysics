@@ -46,16 +46,6 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRemainingClustersModelDat
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkClusterTracksCompressedDataType = AliHLTComponentDataTypeInitializer("CLSTRKCM", kAliHLTDataOriginTPC);
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkRemainingClustersCompressedDataType = AliHLTComponentDataTypeInitializer("REMCLSCM", kAliHLTDataOriginTPC);
 										      								  	      
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibPedestalDataType = AliHLTComponentDataTypeInitializer("CAL_PED ", kAliHLTDataOriginTPC);
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibPulserDataType = AliHLTComponentDataTypeInitializer("CAL_PULS", kAliHLTDataOriginTPC);
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkCalibCEDataType = AliHLTComponentDataTypeInitializer("CAL_CE  ", kAliHLTDataOriginTPC);
-
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibAlignDataType = AliHLTComponentDataTypeInitializer("CALALIGN", kAliHLTDataOriginTPC);
-
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibTracksDataType = AliHLTComponentDataTypeInitializer("CALTRACK", kAliHLTDataOriginTPC);
-
-const AliHLTComponentDataType AliHLTTPCDefinitions::fgkOfflineCalibTracksGainDataType = AliHLTComponentDataTypeInitializer("CALGAIN ", kAliHLTDataOriginTPC);
-
 const AliHLTComponentDataType& AliHLTTPCDefinitions::DDLEncodedEntropyRawDataType() {
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("DDLENCEN", kAliHLTDataOriginTPC);
   return dt;

@@ -132,25 +132,19 @@ public:
 
   // Calibration data
   /** pedestal calibration data */
-  static const AliHLTComponentDataType fgkCalibPedestalDataType;   // see above
   static const AliHLTComponentDataType& CalibPedestalDataType();
   /** signal calibration data */
-  static const AliHLTComponentDataType fgkCalibPulserDataType;     // see above
   static const AliHLTComponentDataType& CalibPulserDataType();
   /** central electrode calibration data */
-  static const AliHLTComponentDataType fgkCalibCEDataType;         // see above
   static const AliHLTComponentDataType& CalibCEDataType();
 
   // offline calbration components
 
   /** alignment calibration data */
-  static const AliHLTComponentDataType fgkOfflineCalibAlignDataType;         // see above
   static const AliHLTComponentDataType& OfflineCalibAlignDataType();
   /** track calibration data */
-  static const AliHLTComponentDataType fgkOfflineCalibTracksDataType;        // see above
   static const AliHLTComponentDataType& OfflineCalibTracksDataType();
   /** gain calibration data */
-  static const AliHLTComponentDataType fgkOfflineCalibTracksGainDataType;    // see above
   static const AliHLTComponentDataType& OfflineCalibTracksGainDataType();
   /** cluster monte carlo information */
   static const AliHLTComponentDataType fgkAliHLTDataTypeClusterMCInfo;    // see above
