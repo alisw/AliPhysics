@@ -818,7 +818,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  zDecay=dg0->Zv();
 	  pdgCode=TMath::Abs(partDp->GetPdgCode());
 	  if(!isPrimary){
-	    trueImpParXY=GetTrueImpactParameter(mcHeader,arrayMC,partDp)*1000.;
+	    trueImpParXY=GetTrueImpactParameter(mcHeader,arrayMC,partDp)*10000.;
 	  }
 	}else{
 	  pdgCode=-1;
@@ -1292,7 +1292,7 @@ Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(AliAODMCHeader *mcHeader,
   Double_t vtxTrue[3];
   mcHeader->GetVertex(vtxTrue);
   Double_t origD[3];
-  partDp->XvYvZv(origD);	  
+  partDp->XvYvZv(origD);
   Short_t charge=partDp->Charge();
   Double_t pXdauTrue[3],pYdauTrue[3],pZdauTrue[3];
   for(Int_t iDau=0; iDau<3; iDau++){
