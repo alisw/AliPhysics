@@ -30,17 +30,17 @@ AliAnalysisTaskJetResponseV2::AliAnalysisTaskJetResponseV2() :
   AliAnalysisTaskSE(),
   fESD(0x0),
   fAOD(0x0),
+  fIsPbPb(kTRUE),
   fOfflineTrgMask(AliVEvent::kAny),
   fMinContribVtx(1),
   fVtxZMin(-8.),
   fVtxZMax(8.),
-  fEvtClassMin(1),
+  fEvtClassMin(0),
   fEvtClassMax(4),
   fCentMin(0.),
   fCentMax(100.),
   fNInputTracksMin(0),
   fNInputTracksMax(-1),
-  fReactionPlaneBin(-1),
   fJetEtaMin(-.5),
   fJetEtaMax(.5),
   fJetPtMin(20.),
@@ -72,17 +72,17 @@ AliAnalysisTaskJetResponseV2::AliAnalysisTaskJetResponseV2(const char *name) :
   AliAnalysisTaskSE(name),
   fESD(0x0),
   fAOD(0x0),
+  fIsPbPb(kTRUE),
   fOfflineTrgMask(AliVEvent::kAny),
   fMinContribVtx(1),
   fVtxZMin(-8.),
   fVtxZMax(8.),
-  fEvtClassMin(1),
+  fEvtClassMin(0),
   fEvtClassMax(4),
   fCentMin(0.),
   fCentMax(100.),
   fNInputTracksMin(0),
   fNInputTracksMax(-1),
-  fReactionPlaneBin(-1),
   fJetEtaMin(-.5),
   fJetEtaMax(.5),
   fJetPtMin(20.),
@@ -271,9 +271,10 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
   fESD=dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
     AliError("ESD not available");
-    return;
+    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+  } else {
+    fAOD = dynamic_cast<AliAODEvent*>(AODEvent());
   }
-  fAOD = dynamic_cast<AliAODEvent*>(AODEvent());
   if (!fAOD) {
     AliError("AOD not available");
     return;
@@ -314,8 +315,10 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
   }
 
   // centrality selection
-  AliCentrality *cent = fESD->GetCentrality();
-  Float_t centValue = cent->GetCentralityPercentile("V0M");
+  AliCentrality *cent = 0x0;
+  Float_t centValue = 0.; 
+  if(fESD) cent = fESD->GetCentrality();
+  if(cent) centValue = cent->GetCentralityPercentile("V0M");
   if(fDebug) printf("centrality: %f\n", centValue);
   if (centValue < fCentMin || centValue > fCentMax){
     fHistEvtSelection->Fill(4);
@@ -368,7 +371,7 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
   // stores matched jets in 'aMatchIndex' and fraction of pT in 'aPtFraction'
   AliAnalysisHelperJetTasks::GetJetMatching(fListJets[0], TMath::Min((Int_t)fNMatchJets,(Int_t)fListJets[0]->GetEntries()),
                                             fListJets[1], TMath::Min((Int_t)fNMatchJets,(Int_t)fListJets[1]->GetEntries()),
-                                            aMatchIndex, aPtFraction, fDebug, fMatchMaxDist);
+                                            aMatchIndex, aPtFraction, fDebug, fMatchMaxDist, fIsPbPb?1:2);
 											
   // loop over matched jets
   Int_t ir = -1; // index of matched reconstruced jet
@@ -404,11 +407,11 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
 	 
 	 // get parameters
 	 for(Int_t i=0; i<fkNbranches; ++i){
-	    jetEta[i]  = jet[i]->Eta();
-		jetPhi[i]  = jet[i]->Phi();
-		jetPt[i]   = jet[i]->Pt();
-		jetArea[i] = jet[i]->EffectiveAreaCharged();
-		rpJet[i]   = TVector2::Phi_mpi_pi(rp-jetPhi[i]);
+      jetEta[i]  = jet[i]->Eta();
+      jetPhi[i]  = jet[i]->Phi();
+      jetPt[i]   = jet[i]->Pt();
+      jetArea[i] = jet[i]->EffectiveAreaCharged();
+      rpJet[i]   = TVector2::Phi_mpi_pi(rp-jetPhi[i]);
 	 }
 	 Int_t rpBin = AliAnalysisHelperJetTasks::GetPhiBin(TVector2::Phi_mpi_pi(rp-jetPhi[1]), 3);
 

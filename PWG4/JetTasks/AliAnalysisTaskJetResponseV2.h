@@ -26,6 +26,7 @@ class AliAnalysisTaskJetResponseV2 : public AliAnalysisTaskSE {
 
   virtual AliVEvent::EOfflineTriggerTypes GetOfflineTrgMask() const { return fOfflineTrgMask; }
   virtual void     GetBranchNames(TString &branch1, TString &branch2) const { branch1 = fJetBranchName[0]; branch2 = fJetBranchName[1]; }
+  virtual Bool_t   GetIsPbPb() const { return fIsPbPb; }
   virtual Int_t    GetMinContribVtx() const { return fMinContribVtx; };
   virtual Float_t  GetVtxZMin() const { return fVtxZMin; }
   virtual Float_t  GetVtxZMax() const { return fVtxZMax; }
@@ -35,7 +36,6 @@ class AliAnalysisTaskJetResponseV2 : public AliAnalysisTaskSE {
   virtual Float_t  GetCentMax() const { return fCentMax; }
   virtual Int_t    GetNInputTracksMin() const { return fNInputTracksMin; }
   virtual Int_t    GetNInputTracksMax() const { return fNInputTracksMax; } 
-  virtual Float_t  GetReactionPlaneBin() const { return fReactionPlaneBin; }
   virtual Float_t  GetJetEtaMin() const { return fJetEtaMin; }
   virtual Float_t  GetJetEtaMax() const { return fJetEtaMax; }
   virtual Float_t  GetJetPtMin() const { return fJetPtMin; }
@@ -43,6 +43,7 @@ class AliAnalysisTaskJetResponseV2 : public AliAnalysisTaskSE {
   virtual Int_t    GetNMatchJets() const { return fNMatchJets; }
 
   virtual void     SetBranchNames(const TString &branch1, const TString &branch2);
+  virtual void     SetIsPbPb(Bool_t b=kTRUE) { fIsPbPb = b; }
   virtual void     SetOfflineTrgMask(AliVEvent::EOfflineTriggerTypes mask) { fOfflineTrgMask = mask; }
   virtual void     SetMinContribVtx(Int_t n) { fMinContribVtx = n; }
   virtual void     SetVtxZMin(Float_t z) { fVtxZMin = z; }
@@ -53,23 +54,24 @@ class AliAnalysisTaskJetResponseV2 : public AliAnalysisTaskSE {
   virtual void     SetCentMax(Float_t cent) { fCentMax = cent; }
   virtual void     SetNInputTracksMin(Int_t nTr) { fNInputTracksMin = nTr; }
   virtual void     SetNInputTracksMax(Int_t nTr) { fNInputTracksMax = nTr; }
-  virtual void     SetReactionPlaneBin(Int_t rpBin) { fReactionPlaneBin = rpBin; }
   virtual void     SetJetEtaMin(Float_t eta) { fJetEtaMin = eta; }
   virtual void     SetJetEtaMax(Float_t eta) { fJetEtaMax = eta; }
   virtual void     SetJetPtMin(Float_t pt) { fJetPtMin = pt; }
-  virtual void     SetJetPtFractionMin(Float_t pt) { fJetPtFractionMin = pt; }
+  virtual void     SetJetPtFractionMin(Float_t frac) { fJetPtFractionMin = frac; }
   virtual void     SetNMatchJets(Int_t n) { fNMatchJets = n; }
 
  private:
   // ESD/AOD events
   AliESDEvent *fESD;    //! ESD object
   AliAODEvent *fAOD;    //! AOD event
-
+  
+  
   // jets to compare
   TString fJetBranchName[2]; //  name of jet branches to compare
   TList *fListJets[2];       //! jet lists
-
+  
   // event selection
+  Bool_t fIsPbPb;      // is Pb-Pb (fast embedding) or p-p (detector response)
   AliVEvent::EOfflineTriggerTypes fOfflineTrgMask; // mask of offline triggers to accept
   Int_t   fMinContribVtx; // minimum number of track contributors for primary vertex
   Float_t fVtxZMin;	  // lower bound on vertex z
@@ -80,7 +82,6 @@ class AliAnalysisTaskJetResponseV2 : public AliAnalysisTaskSE {
   Float_t fCentMax;	  // upper bound on centrality
   Int_t   fNInputTracksMin;  // lower bound of nb. of input tracks
   Int_t   fNInputTracksMax;  // upper bound of nb. of input tracks
-  Float_t fReactionPlaneBin; // reaction plane bin
   Float_t fJetEtaMin;     // lower bound on eta for found jets
   Float_t fJetEtaMax;     // upper bound on eta for found jets
   Float_t fJetPtMin;      // minimum jet pT
@@ -105,7 +106,7 @@ class AliAnalysisTaskJetResponseV2 : public AliAnalysisTaskSE {
   AliAnalysisTaskJetResponseV2(const AliAnalysisTaskJetResponseV2&); // not implemented
   AliAnalysisTaskJetResponseV2& operator=(const AliAnalysisTaskJetResponseV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetResponseV2, 1);
+  ClassDef(AliAnalysisTaskJetResponseV2, 2);
 };
 
 #endif
