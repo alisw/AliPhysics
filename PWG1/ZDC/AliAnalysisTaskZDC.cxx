@@ -324,9 +324,9 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
     
   Float_t tdcC=999., tdcA=999;
   Float_t tdcSum=999., tdcDiff=999;
-  if(esdZDC->GetZDCTDCCorrected(10,0)>1e-5){
+  if(esdZDC->GetZDCTDCData(10,0)>1e-4){
     tdcC = esdZDC->GetZDCTDCCorrected(10,0)-esdZDC->GetZDCTDCCorrected(15,0);
-    if(esdZDC->GetZDCTDCCorrected(12,0)>1e-5){
+    if(esdZDC->GetZDCTDCData(12,0)>1e-4){
       tdcA = esdZDC->GetZDCTDCCorrected(12,0)-esdZDC->GetZDCTDCCorrected(15,0);
       tdcSum = tdcC+tdcA;
       tdcDiff = tdcC-tdcA;
