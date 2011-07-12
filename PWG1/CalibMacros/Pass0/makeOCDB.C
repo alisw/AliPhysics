@@ -18,7 +18,7 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
   //
   gROOT->Macro("LoadLibraries.C");
   gROOT->LoadMacro("ConfigCalibTrain.C");
- 
+
   // switch off log info
   AliLog::SetClassDebugLevel("AliESDEvent",0);
 
@@ -26,12 +26,13 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
   Int_t runNumber = runNumberString.Atoi();
   printf("runNumber from runCalibTrain = %d\n",runNumber);
   ConfigCalibTrain(runNumber, "raw://");
-  
+
   // Steering Tasks - set output storage
   // DefaultStorage set already before - in ConfigCalibTrain.C
-ocdbStorage+="?se=ALICE::CERN::SE";
+//ocdbStorage+="?se=ALICE::CERN::SE";
+
   AliCDBManager::Instance()->SetSpecificStorage("*/*/*",ocdbStorage.Data());
-  
+
   // set OCDB storage
   if (ocdbStorage.Length()==0) ocdbStorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
 
@@ -65,14 +66,14 @@ ocdbStorage+="?se=ALICE::CERN::SE";
   Int_t subversionVdriftUsed = procestrd.GetSubVersionVdriftUsed();
   if(versionVdriftUsed != 0) {
 
-    procestrd.SetCalDetVdrift(GetCalDetVdrift(runNumber,versionVdriftUsed,subversionVdriftUsed));
+    const AliTRDCalDet* caldet=procestrd.SetCalDetVdrift(GetCalDetVdrift(runNumber,versionVdriftUsed,subversionVdriftUsed));
 
     if(caldet) {
-      
+
       procestrd.SetMinStatsVdriftT0PH(600*10);
       procestrd.SetMinStatsVdriftLinear(60);
       procestrd.SetMinStatsGain(600);
-      
+
       procestrd.CalibVdriftT0("CalibObjects.root",runNumber,runNumber,ocdbStorage);
       procestrd.CalibGain("CalibObjects.root",runNumber,runNumber,ocdbStorage);
       procestrd.CalibChamberStatus(runNumber,runNumber,ocdbStorage);
@@ -82,10 +83,11 @@ ocdbStorage+="?se=ALICE::CERN::SE";
 }
 
 const AliTRDCalDet *GetCalDetVdrift(Int_t runNumber, Int_t version, Int_t subversion){
-  // 
+  //
   // Get Cal Det used during reconstruction for vdrift
   //
-  
+
+
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("TRD/Calib/ChamberVdrift",runNumber, version, subversion);
   if(!entry) {
     printf("Found no entry\n");
