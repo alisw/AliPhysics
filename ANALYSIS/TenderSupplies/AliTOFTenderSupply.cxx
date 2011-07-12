@@ -104,6 +104,8 @@ void AliTOFTenderSupply::Init()
 
   
   // Initialise TOF tender (this is called at each detected run change)
+  AliLog::SetClassDebugLevel("AliTOFTenderSupply",10); 
+
   // Setup PID object, check for MC, set AliTOFcalib and TOFT0 maker conf
   Int_t run = fTender->GetRun();
   if (run == 0) return;                // to skip first init, when we don't have yet a run number
