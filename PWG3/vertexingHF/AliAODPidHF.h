@@ -102,6 +102,11 @@ class AliAODPidHF : public AliAODPid{
 
  void SetBetheBloch(AliTPCPIDResponse &tpcResp) const;
 
+  // method for AliPIDCombined object
+  void SetSelectedSpecies(Int_t ispecies = AliPID::kSPECIES){GetPidCombined()->SetSelectedSpecies(ispecies);};
+  void SetPriorDistribution(AliPID::EParticleType type,TH1F *prior);
+  void DrawPrior(AliPID::EParticleType type);
+
  protected:
 
  Int_t ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const;

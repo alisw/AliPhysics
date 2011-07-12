@@ -22,7 +22,6 @@
 // Author: A.Dainese, andrea.dainese@pd.infn.it
 /////////////////////////////////////////////////////////////
 #include <Riostream.h>
-#include <TCanvas.h>
 
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
@@ -968,25 +967,6 @@ Bool_t AliRDHFCuts::IsSignalMC(AliAODRecoDecay *d,AliAODEvent *aod,Int_t pdg) co
   }
 
   return kFALSE;
-}
-//--------------------------------------------------------------------------
-void AliRDHFCuts::SetPriorDistribution(AliPID::EParticleType type,TH1F *prior){
-
-	//
-	// method setting the prior distributions to the AliPIDCombined object of the AliAODPidHF data member
-	// all the checks are done directly in the AliPIDCombined object
-	//
-
-	fPidHF->GetPidCombined()->SetPriorDistribution(type,prior);
-}
-//--------------------------------------------------------------------------
-void AliRDHFCuts::DrawPrior(AliPID::EParticleType type){
-
-	//
-	// Drawing prior distribution for type "type"
-
-	new TCanvas();
-	fPidHF->GetPidCombined()->GetPriorDistribution(type)->Draw();
 }
 
 
