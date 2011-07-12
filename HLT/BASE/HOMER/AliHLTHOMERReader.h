@@ -235,6 +235,16 @@ class AliHLTHOMERReader: public AliHLTMonitoringReader, public TObject
 	   block with the given block index (starting at 0). */
 	homer_uint32 GetBlockDataSpec( unsigned long ndx ) const;
 
+	/** Return the time stamp of when the data block was created.
+	   This is a UNIX time stamp in seconds.
+	   \param ndx  The index of the block (starting at 0). */
+	homer_uint64 GetBlockBirthSeconds( unsigned long ndx ) const;
+
+	/** Return the micro seconds part of the time stamp of when the data
+	   block was created.
+	   \param ndx  The index of the block (starting at 0). */
+	homer_uint64 GetBlockBirthMicroSeconds( unsigned long ndx ) const;
+
 	/** Find the next data block in the current event with the given
 	   data type, origin, and specification. Returns the block's 
 	   index. */

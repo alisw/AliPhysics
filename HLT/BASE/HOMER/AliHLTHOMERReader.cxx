@@ -500,6 +500,22 @@ homer_uint32 AliHLTHOMERReader::GetBlockDataSpec( unsigned long ndx ) const
     return (homer_uint32)*(((homer_uint64*)fBlocks[ndx].fMetaData)+kSubType2_64b_Offset);
     }
 
+homer_uint64 AliHLTHOMERReader::GetBlockBirthSeconds( unsigned long ndx ) const
+    {
+// see header file for class documentation
+    if ( ndx >= fBlockCnt )
+	return 0;
+    return *(((homer_uint64*)fBlocks[ndx].fMetaData)+kBirth_s_64b_Offset);
+    }
+
+homer_uint64 AliHLTHOMERReader::GetBlockBirthMicroSeconds( unsigned long ndx ) const
+    {
+// see header file for class documentation
+    if ( ndx >= fBlockCnt )
+	return 0;
+    return *(((homer_uint64*)fBlocks[ndx].fMetaData)+kBirth_us_64b_Offset);
+    }
+
 /* Find the next data block in the current event with the given
    data type, origin, and specification. Returns the block's 
    index. */
