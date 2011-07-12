@@ -556,20 +556,13 @@ macro(ALICE_GenerateLinkDef)
   set(PCLASSES)
   foreach (class ${PCINTCLASSES})
     get_filename_component(classname ${class} NAME)
-    set(PCLASSES ${PCLASSES} "\\n#pragma link C++ class ${classname}+;")
+    # set(PCLASSES ${PCLASSES} "\\n#pragma link C++ class ${classname}+;")
+    set(PCLASSES ${PCLASSES} "${classname}")
   endforeach(class)
 
   add_custom_command(OUTPUT ${PDAL}
-    COMMAND echo "// Auto generated file - do not edit" > ${PDAL}
-    COMMAND echo "#ifdef __CINT__" >> ${PDAL} 
-    COMMAND echo "#pragma link off all globals;" >> ${PDAL}
-    COMMAND echo "#pragma link off all classes;" >> ${PDAL}
-    COMMAND echo "#pragma link off all functions;" >> ${PDAL}
-    COMMAND echo "${PCLASSES}" >> ${PDAL}
-    COMMAND echo "#endif // __CINT__" >> ${PDAL} 
-    DEPENDS ${PCINTHDRS}
-    VERBATIM)
-
+    COMMAND sh ${CMAKE_SOURCE_DIR}/cmake/GenerateLinkDef.sh ${PCLASSES} > ${PDAL} 
+    DEPENDS ${PCINTHDRS} ${CMAKE_SOURCE_DIR}/cmake/GenerateLinkDef.sh)
 endmacro(ALICE_GenerateLinkDef)
 
 macro(ALICE_BuildPAR)
