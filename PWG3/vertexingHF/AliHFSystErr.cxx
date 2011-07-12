@@ -145,42 +145,42 @@ void AliHFSystErr::InitD0toKpi2010pp() {
   //
 
   // Normalization
-  fNorm = new TH1F("fNorm","fNorm",20,0,20);
-  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
+  fNorm = new TH1F("fNorm","fNorm",24,0,24);
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
 
   // Branching ratio 
-  fBR = new TH1F("fBR","fBR",20,0,20);
-  for(Int_t i=1;i<=20;i++) fBR->SetBinContent(i,0.012); // 1.2% PDG2010
+  fBR = new TH1F("fBR","fBR",24,0,24);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.012); // 1.2% PDG2010
 
   // Tracking efficiency
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.02); // 2% (1% per track)
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.02); // 2% (1% per track)
 
   // Raw yield extraction
-  fRawYield = new TH1F("fRawYield","fRawYield",20,0,20);
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
   fRawYield->SetBinContent(1,1);
-  fRawYield->SetBinContent(2,1);
-  fRawYield->SetBinContent(3,0.15);
-  for(Int_t i=4;i<=20;i++) fRawYield->SetBinContent(i,0.065);
+  fRawYield->SetBinContent(2,0.2); 
+  for(Int_t i=3;i<=16;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.10);
+  for(Int_t i=17;i<=24;i++) fRawYield->SetBinContent(i,1);
 
   // Cuts efficiency (from cuts variation)
-  fCutsEff = new TH1F("fCutsEff","fCutsEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fCutsEff->SetBinContent(i,0.10); // 10%
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
+  for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.10); // 10%
 
   // PID efficiency (from PID/noPID)
-  fPIDEff = new TH1F("fPIDEff","fPIDEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fPIDEff->SetBinContent(i,0.03); // 3%
-  fPIDEff->SetBinContent(4,0.10); // 10%
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.03); // 3%
+  fPIDEff->SetBinContent(2,0.10); // 10%
 
   // MC dN/dpt
-  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,0,20);
-  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
+  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
 
   // particle-antiparticle
-  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
-  fPartAntipart->SetBinContent(1,1);
-  fPartAntipart->SetBinContent(2,1);
-  for(Int_t i=3;i<=6;i++) fPartAntipart->SetBinContent(i,0.08);
+  //  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",24,0,24);
+  //  fPartAntipart->SetBinContent(1,1); 
+  //  for(Int_t i=2;i<=24;i++) fPartAntipart->SetBinContent(i,0.05);
   
   return;
 }
@@ -937,7 +937,7 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   cSystErr->SetFillColor(0);
 
   TH2F *hFrame = new TH2F("hFrame","Systematic errors; p_{t} [GeV/c]; Relative Error",20,0,20,100,-1,+1);
-  hFrame->SetAxisRange(2.,11.9,"X");
+  hFrame->SetAxisRange(1.,15.9,"X");
   hFrame->SetAxisRange(-0.5,0.5,"Y");
   hFrame->Draw();
 
@@ -946,10 +946,10 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
   
-  TH1F *hTotErr=new TH1F("hTotErr","",20,0,20);
+  TH1F *hTotErr=new TH1F("hTotErr","",24,0,24);
   Int_t nbins = fNorm->GetNbinsX();
   TGraphAsymmErrors *gTotErr = new TGraphAsymmErrors(nbins);
-  for(Int_t i=1;i<=20;i++) {
+  for(Int_t i=1;i<=24;i++) {
     Double_t pt = hTotErr->GetBinCenter(i);
     Double_t ptwidth = hTotErr->GetBinWidth(i);
 
