@@ -32,7 +32,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fCorrections(0),
     fMaxParticles(5),
     fUsePoisson(false),
-    fUsePhiAcceptance(1),
+    fUsePhiAcceptance(kPhiCorrectNch),
     fAccI(0),
     fAccO(0),
     fFMD1iMax(0),
@@ -62,7 +62,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fCorrections(0),
     fMaxParticles(5),
     fUsePoisson(false),
-    fUsePhiAcceptance(1),
+    fUsePhiAcceptance(kPhiCorrectNch),
     fAccI(0),
     fAccO(0),
     fFMD1iMax(0),
@@ -328,7 +328,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	    rh->fEvsM->Fill(mult,0);
 	    continue;
 	  }
-	  if (fUsePhiAcceptance == 2) 
+	  if (fUsePhiAcceptance == kPhiCorrectELoss) 
 	    mult *= AcceptanceCorrection(r,t);
 
 	  Double_t cut  = 1024;
@@ -652,7 +652,8 @@ AliFMDDensityCalculator::Correction(UShort_t d,
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
 
   Float_t correction = 1; 
-  if (fUsePhiAcceptance == 1) correction = AcceptanceCorrection(r,t);
+  if (fUsePhiAcceptance == kPhiCorrectNch) 
+    correction = AcceptanceCorrection(r,t);
   if (lowFlux) { 
     TH1D* dblHitCor = 0;
     if (fcm.GetDoubleHit()) 
