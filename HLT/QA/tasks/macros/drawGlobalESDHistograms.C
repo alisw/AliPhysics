@@ -89,16 +89,18 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  
  for(int i=0;i<sizeTrack;i++){
      c1->cd(i+1);
-     h1 = (TH1F*)list->FindObject(trackHLT[i]); if(!h1) { return; }
-     h2 = (TH1F*)list->FindObject(trackOFF[i]); if(!h2) { return; }
-     plot(h1,h2);
-     if(i==0){
-        TLegend *leg1 = new TLegend(0.6,0.2,0.8,0.5);
-        leg1->SetFillColor(10);
-        leg1->SetLineColor(10);
-        leg1->AddEntry(h1,"HLT", "l");
-        leg1->AddEntry(h2,"OFF", "l");
-        leg1->Draw("same");
+     h1 = (TH1F*)list->FindObject(trackHLT[i]); 
+     h2 = (TH1F*)list->FindObject(trackOFF[i]); 
+     if(h1 && h2){
+        plot(h1,h2);
+        if(i==0){
+           TLegend *leg1 = new TLegend(0.6,0.2,0.8,0.5);
+           leg1->SetFillColor(10);
+           leg1->SetLineColor(10);
+           leg1->AddEntry(h1,"HLT", "l");
+           leg1->AddEntry(h2,"OFF", "l");
+           leg1->Draw("same");
+        }
      }
  }
 
@@ -107,21 +109,23 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  
  for(int i=0;i<sizeTrack;i++){
      c4->cd(i+1);
-     h1 = (TH1F*)list->FindObject(trackHLT[i]);    if(!h1) { return; }
-     h2 = (TH1F*)list->FindObject(trackHLTcut[i]); if(!h2) { return; }
-     plot(h1,h2);
-     if(i==0){
-  	TPaveText *pave = new TPaveText(2.1,24000,8.3,31600);
-  	pave->SetFillColor(kWhite);
-  	pave->SetLineColor(kWhite);
-  	pave->SetShadowColor(kWhite);
-  	TString tmp=cuts->GetTitle();
-  	pave->SetTextColor(2);
-  	pave->AddText(tmp);
-  	pave->SetTextFont(42);
-  	pave->SetTextSize(0.04);
-  	pave->Draw();
-  	c4->Update();
+     h1 = (TH1F*)list->FindObject(trackHLT[i]);    
+     h2 = (TH1F*)list->FindObject(trackHLTcut[i]); 
+     if(h1 && h2){
+        plot(h1,h2);
+        if(i==0){
+  	   TPaveText *pave = new TPaveText(2.1,24000,8.3,31600);
+  	   pave->SetFillColor(kWhite);
+  	   pave->SetLineColor(kWhite);
+  	   pave->SetShadowColor(kWhite);
+  	   TString tmp=cuts->GetTitle();
+  	   pave->SetTextColor(2);
+  	   pave->AddText(tmp);
+  	   pave->SetTextFont(42);
+  	   pave->SetTextSize(0.04);
+  	   pave->Draw();
+  	   c4->Update();
+        }
      }
  }
 
@@ -130,16 +134,18 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  
  for(int i=0;i<6;i++){
      c2->cd(i+1);
-     h1 = (TH1F*)list->FindObject(eventHLT[i]); if(!h1) { return; }
-     h2 = (TH1F*)list->FindObject(eventOFF[i]); if(!h2) { return; }
-     plot(h1,h2);
-     if(i==0){
-        TLegend *leg1 = new TLegend(0.6,0.2,0.8,0.5);
-        leg1->SetFillColor(10);
-        leg1->SetLineColor(10);
-        leg1->AddEntry(h1,"HLT", "l");
-        leg1->AddEntry(h2,"OFF", "l");
-        leg1->Draw("same");
+     h1 = (TH1F*)list->FindObject(eventHLT[i]); 
+     h2 = (TH1F*)list->FindObject(eventOFF[i]); 
+     if(h1 && h2){
+        plot(h1,h2);
+        if(i==0){
+           TLegend *leg1 = new TLegend(0.6,0.2,0.8,0.5);
+           leg1->SetFillColor(10);
+           leg1->SetLineColor(10);
+           leg1->AddEntry(h1,"HLT", "l");
+           leg1->AddEntry(h2,"OFF", "l");
+           leg1->Draw("same");
+        }
      }
  }
 
@@ -148,16 +154,18 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 
  for(int i=6;i<9;i++){
      c3->cd(i-5);
-     h2 = (TH1F*)list->FindObject(eventOFF[i]); if(!h2) { return; }
-     h1 = (TH1F*)list->FindObject(eventHLT[i]); if(!h1) { return; }
-     plot(h1,h2);
-     if(i==6){
-        TLegend *leg1 = new TLegend(0.6,0.2,0.8,0.5);
-        leg1->SetFillColor(10);
-        leg1->SetLineColor(10);
-        leg1->AddEntry(h1,"HLT", "l");
-        leg1->AddEntry(h2,"OFF", "l");
-        leg1->Draw("same");
+     h2 = (TH1F*)list->FindObject(eventOFF[i]); 
+     h1 = (TH1F*)list->FindObject(eventHLT[i]); 
+     if(h1 && h2){
+        plot(h1,h2);
+        if(i==6){
+           TLegend *leg1 = new TLegend(0.6,0.2,0.8,0.5);
+           leg1->SetFillColor(10);
+           leg1->SetLineColor(10);
+           leg1->AddEntry(h1,"HLT", "l");
+           leg1->AddEntry(h2,"OFF", "l");
+           leg1->Draw("same");
+        }
      }
  }
  
