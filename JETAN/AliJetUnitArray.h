@@ -159,7 +159,7 @@ class AliJetUnitArray : public TObject
   TRefArray*                         fUnitCellRef;      //! pointer to array of references to esd cells
   TRefArray*                         fUnitClusterRef;   //! pointer to array of references to esd clusters
 
-  ClassDef(AliJetUnitArray,1)
+  ClassDef(AliJetUnitArray,2)
 
 };
 
