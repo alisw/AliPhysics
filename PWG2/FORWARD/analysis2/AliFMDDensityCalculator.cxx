@@ -847,6 +847,9 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
     o->fPoisson.SetEtaLumping(fEtaLumping);
     o->fPoisson.SetPhiLumping(fPhiLumping);
     o->fPoisson.Init();
+    o->fPoisson.GetOccupancy()->SetFillColor(o->Color());
+    o->fPoisson.GetMean()->SetFillColor(o->Color());
+    // o->fPoisson.GetOccupancy()->SetFillColor(o->Color());
     o->Output(d);
   }
 }

@@ -46,9 +46,9 @@ TestFile(const TString& name, const char* pattern=0)
   if (name.Contains("friends")) return false;
     
   Bool_t ret  = true;
-  TFile* test = TFile::Open(data.Data(), "READ");
+  TFile* test = TFile::Open(name.Data(), "READ");
   if (!test || test->IsZombie()) { 
-    Warning("TestFile", "Failed to open file %s", data.Data());
+    Warning("TestFile", "Failed to open file %s", name.Data());
     ret = false;
   }
   else 
@@ -112,7 +112,7 @@ ScanDirectory(TSystemDirectory* dir, TChain* chain,
  * @return true on success 
  */
 Bool_t 
-ScanInputList(TChain* chain, const TString& path, const char* treeName)
+ScanInputList(TChain* chain, const TString& path, const char* treeName=0)
 {
   std::ifstream in(path.Data()); 
   if (!in) { 

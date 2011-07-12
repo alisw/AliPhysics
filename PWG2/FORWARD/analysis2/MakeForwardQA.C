@@ -1,5 +1,5 @@
 /**
- * @file   MakeELossFits.C
+ * @file   MakeForwardQA.C
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
  * @date   Wed Mar 23 14:08:14 2011
  * 
@@ -32,7 +32,7 @@
  *
  * @ingroup pwg2_forward_eloss
  */
-void MakeELossFits(const char* esddir, 
+void MakeForwardQA(const char* esddir, 
 		   Int_t       nEvents = 1000, 
 		   Int_t       proof   = 0,
 		   Bool_t      mc      = false,
@@ -42,11 +42,12 @@ void MakeELossFits(const char* esddir,
   // --- Possibly use plug-in for this -------------------------------
   if ((name && name[0] != '\0') && gSystem->Load("libRAliEn") >= 0) {
     const char* builder = 
-      "$(ALICE_ROOT)/PWG2/FORWARD/analysis2/trains/BuildTrain.C" 
+      "$(ALICE_ROOT)/PWG2/FORWARD/analysis2/trains/BuildTrain.C";
     gROOT->LoadMacro(builder);
-    BuildTrain("MakeFMDELossTrain");
 
-    MakeFMDELossTrain t(name, cent, false);
+    BuildTrain("MakeQATrain");
+
+    MakeQATrain t(name, cent, false);
     t.SetDataDir(esddir);
     t.SetDataSet("");
     t.SetProofServer(Form("workers=%d",proof));
@@ -66,10 +67,9 @@ void MakeELossFits(const char* esddir,
   // --- Our data chain ----------------------------------------------
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/MakeChain.C");
   TChain* chain = MakeChain("ESD",esddir, true);
-  chain->GetListOfFiles()->ls();
   // If 0 or less events is select, choose all 
   if (nEvents <= 0) nEvents = chain->GetEntries();
-  Info("MakeELossFits", "Will analyse %d events", nEvents);
+  Info("MakeForwardQA", "Will analyse %d events", nEvents);
 
   // --- Set the macro path ------------------------------------------
   gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
@@ -77,9 +77,9 @@ void MakeELossFits(const char* esddir,
 			   gROOT->GetMacroPath()));
 
   // --- Creating the manager and handlers ---------------------------
-  AliAnalysisManager *mgr  = new AliAnalysisManager("Forward ELoss Train", 
-						    "Forward energy loss");
-  AliAnalysisManager::SetCommonFileName("forward_eloss.root");
+  AliAnalysisManager *mgr  = new AliAnalysisManager("Forward QA Train", 
+						    "Forward QA");
+  AliAnalysisManager::SetCommonFileName("forward_qa.root");
 
   // --- ESD input handler -------------------------------------------
   AliESDInputHandler *esdHandler = new AliESDInputHandler();
@@ -103,8 +103,8 @@ void MakeELossFits(const char* esddir,
   }
   
   // FMD ELoss fitter 
-  gROOT->LoadMacro("AddTaskFMDELoss.C");
-  AddTaskFMDELoss(mc, cent);
+  gROOT->LoadMacro("AddTaskForwardQA.C");
+  AddTaskForwardQA(mc, cent);
 
   // --- Run the analysis --------------------------------------------
   TStopwatch t;
