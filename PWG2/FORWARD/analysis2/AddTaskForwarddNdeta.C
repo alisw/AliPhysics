@@ -33,6 +33,9 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
 		     Bool_t      cutEdges = false,
 		     const char* mcanalysisfilename = "none")
 {
+  // --- Load libraries ----------------------------------------------
+  gROOT->LoadClass("AliAODForwardMult", "libPWG2forward2");
+
   // --- Analysis manager --------------------------------------------
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
 

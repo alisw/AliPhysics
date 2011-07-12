@@ -47,6 +47,19 @@ class AliFMDCorrELossFit;
 class AliFMDDensityCalculator : public TNamed
 {
 public:
+  /**
+   * How to correct for the missing phi coverage at the corners of the
+   * sensors 
+   * 
+   */
+  enum { 
+    /** No correction */
+    kPhiNoCorrect,
+    /** Correct the calculated number charged particles */
+    kPhiCorrectNch,
+    /** Correct the energy loss */
+    kPhiCorrectELoss
+  };
   /** 
    * Constructor 
    */
@@ -144,7 +157,7 @@ public:
    *
    * @param u If >0, use the phi acceptance (default is false)
    */
-  void SetUsePhiAcceptance(UShort_t u) { fUsePhiAcceptance = u; }
+  void SetUsePhiAcceptance(UShort_t u=kPhiCorrectNch) { fUsePhiAcceptance = u; }
   /** 
    * Set the lower multiplicity cut.  This overrides the setting in
    * the energy loss fits.

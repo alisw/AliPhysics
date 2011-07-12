@@ -21,8 +21,10 @@
 AliAnalysisTask*
 AddTaskFMDELoss(Bool_t mc, Bool_t useCent)
 {
-  gSystem->Load("libPWG2forward2");
+  // --- Load libraries ----------------------------------------------
+  gROOT->LoadClass("AliAODForwardMult", "libPWG2forward2");
 
+  // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTaskFMDELoss", "No analysis manager to connect to.");

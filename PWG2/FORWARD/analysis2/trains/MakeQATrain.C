@@ -75,7 +75,7 @@ protected:
   void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)
   {
     // --- Output file name ------------------------------------------
-    AliAnalysisManager::SetCommonFileName("forward_eloss.root");
+    AliAnalysisManager::SetCommonFileName("forward_qa.root");
 
     // --- Load libraries/pars ---------------------------------------
     LoadLibrary("PWG2forward2", mode, par, true);

@@ -15,11 +15,11 @@
 /** 
  * Add Flow task to train 
  * 
- * @param type 
- * @param etabins 
- * @param addFlow 
- * @param addFType 
- * @param addFOrder 
+ * @param type         Type of analysis (v<n> n="1","2","3",or "4")
+ * @param etabins      How may eta bins to make 
+ * @param addFlow      If true, add flow to MC particles
+ * @param addFType     Which type of flow to add to MC particles
+ * @param addFOrder    Order of flow to add to MC particles
  *
  * @ingroup pwg2_forward_flow
  */
@@ -29,23 +29,27 @@ void AddTaskForwardFlow(TString type = "",
                         Int_t addFType = 0,
                         Int_t addFOrder = 0)
 {
+  // --- Load libraries ----------------------------------------------
+  gROOT->LoadClass("AliAODForwardMult", "libPWG2forward2");
+
+  // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddFMDFlowTask", "No analysis manager to connect to.");
     return NULL;
   }   
 
-  AliAODInputHandler* aodInput = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  // --- Check that we're processing AODs ----------------------------
+  AliAODInputHandler* aodInput = 
+    dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()
+				       ->GetInputEventHandler());
    
-  Bool_t aod = kFALSE;
-  if (aodInput) aod = kTRUE;
-  if (!aod) {
+  if (!aodInput) {
     Error("AddTaskForwardFlow", "No analysis manager to connect to.");
     return NULL;
   }
 
-  // --- Check which harmonics to calculate --- //
-
+  // --- Check which harmonics to calculate --------------------------
   Bool_t v1 = kTRUE;
   Bool_t v2 = kTRUE;
   Bool_t v3 = kTRUE;
@@ -58,15 +62,16 @@ void AddTaskForwardFlow(TString type = "",
     if (!type.Contains("4")) v4 = kFALSE;
   }
 
-  // --- Create output containers and find input from fmd task --- //
+  // --- Create output containers and find input from fmd task -------
 
   TString outputFile = AliAnalysisManager::GetCommonFileName();
   outputFile += ":FlowResults";
 
-  AliAnalysisDataContainer* qcout = mgr->CreateContainer("QCumulants", TList::Class(), AliAnalysisManager::kOutputContainer, outputFile);
+  AliAnalysisDataContainer* qcout = 
+    mgr->CreateContainer("QCumulants", TList::Class(), 
+			 AliAnalysisManager::kOutputContainer, outputFile);
 
-  // --- For the selected flow tasks the input and output is set --- //
-  
+  // --- For the selected flow tasks the input and output is set -----
   AliForwardFlowTaskQC* qc = new AliForwardFlowTaskQC("QCumulants");
 
   qc->SetDoHarmonics(v1, v2, v3, v4);
@@ -80,3 +85,6 @@ void AddTaskForwardFlow(TString type = "",
 
   return;
 }
+//
+// EOF
+//

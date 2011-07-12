@@ -31,7 +31,10 @@ AddTaskMCTruthdNdeta(const char* trig     = "INEL",
 		     const char* scheme   = 0,
 		     Bool_t      cutEdges = false)
 {
-  // --- Analysis manager --------------------------------------------
+  // --- Load libraries ----------------------------------------------
+  gROOT->LoadClass("AliAODForwardMult", "libPWG2forward2");
+
+  // --- Get analysis manager ----------------------------------------
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
 
   // --- Make our object ---------------------------------------------

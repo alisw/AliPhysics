@@ -1,3 +1,12 @@
+/**
+ * @file   MakeAODTrain.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Tue Jul 12 10:05:30 2011
+ * 
+ * @brief  Run first pass analysis - make AOD tree
+ * 
+ * @ingroup pwg2_forward_trains
+ */
 //====================================================================
 /**
  * Analysis train to make Forward and Central multiplicity
