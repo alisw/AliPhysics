@@ -147,6 +147,7 @@ AliPoissonCalculator::Init(Int_t etaLumping, Int_t phiLumping)
   fMean->SetYTitle("Events");
   fMean->SetFillColor(kRed+1);
   fMean->SetFillStyle(3001);
+  fMean->SetLineColor(kBlack);
   fMean->SetDirectory(0);
 
   fOcc = new TH1D("occupancy", "Occupancy = #int_{1}^{#infty}dN P(N)",
@@ -155,6 +156,7 @@ AliPoissonCalculator::Init(Int_t etaLumping, Int_t phiLumping)
   fOcc->SetYTitle("Events");
   fOcc->SetFillColor(kBlue+1);
   fOcc->SetFillStyle(3001);
+  fOcc->SetLineColor(kBlack);
   fOcc->SetDirectory(0);
 
   fCorr = new TH2D("correction", "Correction as function of mean N_{ch}", 
