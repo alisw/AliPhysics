@@ -87,6 +87,7 @@
 #pragma link C++ class AliFMDMultCuts+;
 #pragma link C++ class AliPoissonCalculator+;
 #pragma link C++ class AliForwardQATask+;
+#pragma link C++ class AliCopyHeaderTask+;
 
 #else
 # error Not for compilation 

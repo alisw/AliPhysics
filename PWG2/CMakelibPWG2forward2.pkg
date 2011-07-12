@@ -68,6 +68,7 @@ set ( SRCS
   FORWARD/analysis2/AliFMDMultCuts.cxx
   FORWARD/analysis2/AliPoissonCalculator.cxx
   FORWARD/analysis2/AliForwardQATask.cxx
+  FORWARD/analysis2/AliCopyHeaderTask.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -114,6 +115,18 @@ add_custom_target( install-PWG2forward2.par
 #
 # Install scripts 
 install ( DIRECTORY FORWARD/analysis2/scripts 
+	  DESTINATION PWG2/FORWARD/analysis2 
+	  PATTERN ".d"  EXCLUDE 
+	  PATTERN ".so" EXCLUDE)
+
+# install QA scripts 
+install ( DIRECTORY FORWARD/analysis2/qa
+	  DESTINATION PWG2/FORWARD/analysis2 
+	  PATTERN ".d"  EXCLUDE 
+	  PATTERN ".so" EXCLUDE)
+
+# install correction scripts 
+install ( DIRECTORY FORWARD/analysis2/corrs
 	  DESTINATION PWG2/FORWARD/analysis2 
 	  PATTERN ".d"  EXCLUDE 
 	  PATTERN ".so" EXCLUDE)
