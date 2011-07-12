@@ -21,6 +21,8 @@
 // class for PID with AliAODRecoDecayHF
 // Authors: D. Caffarri caffarri@pd.infn.it, A.Dainese andrea.dainese@pd.infn.it, S. Dash dash@to.infn.it, F. Prino prino@to.infn.it, R. Romita r.romita@gsi.de, Y. Wang yifei@pi0.physi.uni-heidelberg.de P. Antonioli pietro.antonioli@bo.infn.it
 //***********************************************************
+#include <TCanvas.h>
+
 #include "AliAODPidHF.h"
 #include "AliAODPid.h"
 #include "AliPID.h"
@@ -860,5 +862,24 @@ Bool_t AliAODPidHF::IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK){
   
   return kFALSE;
 
+}
+//--------------------------------------------------------------------------
+void AliAODPidHF::SetPriorDistribution(AliPID::EParticleType type,TH1F *prior){
+
+	//
+	// method setting the prior distributions to the AliPIDCombined object of the AliAODPidHF data member
+	// all the checks are done directly in the AliPIDCombined object
+	//
+
+	GetPidCombined()->SetPriorDistribution(type,prior);
+}
+//--------------------------------------------------------------------------
+void AliAODPidHF::DrawPrior(AliPID::EParticleType type){
+
+	//
+	// Drawing prior distribution for type "type"
+
+	new TCanvas();
+	GetPidCombined()->GetPriorDistribution(type)->Draw();
 }
 

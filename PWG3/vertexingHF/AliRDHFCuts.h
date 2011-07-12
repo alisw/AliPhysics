@@ -167,10 +167,6 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   void SetKeepSignalMC() {fKeepSignalMC=kTRUE; return;}
 
-  // method for AliPIDCombined object of AliAODPidHF
-  void SetSelectedSpecies(Int_t ispecies = AliPID::kSPECIES){fPidHF->GetPidCombined()->SetSelectedSpecies(ispecies);};
-  void SetPriorDistribution(AliPID::EParticleType type,TH1F *prior);
-  void DrawPrior(AliPID::EParticleType type);
 
  protected:
 
