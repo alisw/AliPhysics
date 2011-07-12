@@ -61,6 +61,8 @@ class AliAODJet : public AliVParticle {
     virtual void     SetPxPyPzE(Double_t px, Double_t py, Double_t pz, Double_t e);
     virtual void     SetTrigger(UChar_t f){fTrigger |= f;}
     virtual void     ResetTrigger(UChar_t f){fTrigger &= ~f;}
+    virtual void     SetNEF(Double_t nef) {fNeutralFraction=nef;}
+    virtual Double_t GetNEF() const {return fNeutralFraction;}
 
     virtual TRefArray* GetRefTracks()           const { return  fRefTracks;}
     virtual Double_t   ChargedBgEnergy()        const { return  fBackgEnergy[0];}
@@ -110,7 +112,7 @@ class AliAODJet : public AliVParticle {
     TLorentzVector* fVectorAreaCharged;      // jet area four momentum 
     TRefArray*      fRefTracks;              // array of references to the tracks belonging to the jet
 
-    ClassDef(AliAODJet,7);
+    ClassDef(AliAODJet,8);
 
 };
 
