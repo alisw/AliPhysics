@@ -642,6 +642,8 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
   Float_t nSigmaToVertex    = 0.;
   Float_t relUncertainty1Pt = 0.;
 
+  int mult = fTrackCuts->CountAcceptedTracks(fESD);
+
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
     
     AliESDtrack *track = 0;
@@ -739,7 +741,6 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
       fPtAllminPtMCvsPtAllChi2C->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),chi2C);
       fPtAllminPtMCvsPtAllRel1PtUncertainty->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),relUncertainty1Pt);
 
-      int mult = fTrackCuts->CountAcceptedTracks(fESD);
       fPtAllvsPtMCvsMult->Fill(ptMC,pt,mult);
       fPtAllminPtMCvsPtAllvsMult->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC), mult);
 
