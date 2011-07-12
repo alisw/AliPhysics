@@ -841,6 +841,7 @@ AliFMDEnergyFitter::RingHistos::Init(const TAxis& eAxis,
     Make(i, min, max, maxDE, nDEbins, useIncrBin);
   }
   fList->Add(&fEtaEDists);
+  // fEtaEDists.ls();
 }
 //____________________________________________________________________
 TObjArray*
@@ -1090,7 +1091,9 @@ AliFMDEnergyFitter::RingHistos::FitHist(TH1*     dist,
   if (nParticles == 1) {
     TF1* r = f.Fit1Particle(dist, 0);
     if (!r) return 0;
-    return new TF1(*r);
+    TF1* ret = new TF1(*r);
+    dist->GetListOfFunctions()->Add(ret);
+    return ret;
   }
 
   // Fit from 2 upto n particles  

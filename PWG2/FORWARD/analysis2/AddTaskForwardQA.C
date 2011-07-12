@@ -20,7 +20,7 @@
  * @ingroup pwg2_forward_eloss
  */
 AliAnalysisTask*
-AddTaskForwardQA(Bool_t mc, Bool_t useCent)
+AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWG2forward2");

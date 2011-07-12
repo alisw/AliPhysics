@@ -27,7 +27,7 @@
 #include <TDirectory.h>
 #include <TTree.h>
 #include <TROOT.h>
-
+#include <TStopwatch.h>
 
 //====================================================================
 AliForwardQATask::AliForwardQATask()
@@ -366,6 +366,8 @@ AliForwardQATask::Terminate(Option_t*)
   // Parameters:
   //    option Not used 
   //
+  TStopwatch swt;
+  swt.Start();
 
   TList* list = dynamic_cast<TList*>(GetOutputData(1));
   if (!list) {
@@ -386,7 +388,12 @@ AliForwardQATask::Terminate(Option_t*)
     return;
   }
 
+  TStopwatch swf;
+  swf.Start();
   fEnergyFitter.Fit(list);
+  swf.Stop();
+  AliInfoF("Fitting took %d real-time seconds, and %f CPU seconds", 
+	   Int_t(swf.RealTime()), swf.CpuTime());
 
   fSharingFilter.ScaleHistograms(list,Int_t(hEventsTr->Integral()));
   fDensityCalculator.ScaleHistograms(list,Int_t(hEventsTrVtx->Integral()));
@@ -396,6 +403,10 @@ AliForwardQATask::Terminate(Option_t*)
 						      list->GetName())));
   list2->SetOwner();
   PostData(2, list2);
+
+  swt.Stop();
+  AliInfoF("Terminate took %d real-time seconds, and %f CPU seconds", 
+	   Int_t(swt.RealTime()), swt.CpuTime());
 
 }
 
