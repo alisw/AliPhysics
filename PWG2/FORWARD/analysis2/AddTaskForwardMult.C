@@ -25,8 +25,10 @@
 AliAnalysisTask*
 AddTaskForwardMult(Bool_t mc, UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
 {
-  gSystem->Load("libPWG2forward2");
+  // --- Load libraries ----------------------------------------------
+  gROOT->LoadClass("AliAODForwardMult", "libPWG2forward2");
 
+  // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTaskForwardMult", "No analysis manager to connect to.");

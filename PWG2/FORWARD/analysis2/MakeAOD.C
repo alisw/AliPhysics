@@ -2,6 +2,7 @@
  * @defgroup pwg2_forward_scripts_makers Maker scripts 
  * @ingroup pwg2_forward_scripts
  */
+//====================================================================
 /**
  * @file   MakeAOD.C
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
@@ -11,6 +12,7 @@
  * 
  * @ingroup pwg2_forward_scripts_makers
  */
+//====================================================================
 /** 
  * Run first pass of the analysis - that is read in ESD and produce AOD
  * 
@@ -45,13 +47,12 @@ void MakeAOD(const char* esddir,
 {
   // --- Possibly use plug-in for this -------------------------------
   if ((name && name[0] != '\0') && gSystem->Load("libRAliEn") >= 0) {
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
-			     "$ALICE_ROOT/ANALYSIS/macros",
-			     gROOT->GetMacroPath()));
-    gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
-    gSystem->Load("libANALYSIS");
-    gSystem->Load("libANALYSISalice");
-    gROOT->LoadMacro("TrainSetup.C+g");
+    const char* builder = 
+      "$(ALICE_ROOT)/PWG2/FORWARD/analysis2/trains/BuildTrain.C" 
+    gROOT->LoadMacro(builder);
+
+    BuildTrain("MakeAODTrain");
+
     MakeAODTrain t(name, 0, 0, 0, centrality, false);
     t.SetDataDir(esddir);
     t.SetDataSet("");
