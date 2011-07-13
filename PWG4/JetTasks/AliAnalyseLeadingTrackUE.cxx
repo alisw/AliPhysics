@@ -209,7 +209,7 @@ TObjArray* AliAnalyseLeadingTrackUE::GetAcceptedParticles(TObject* obj, TObject*
   
   // for TPC only tracks
   Bool_t hasOwnership = kFALSE;
-  if ((fFilterBit == 128 || fFilterBit == 256 || fFilterBit == 512) && obj->InheritsFrom("AliESDEvent"))
+  if ((fFilterBit == 128 || fFilterBit == 256 || fFilterBit == 512 || fFilterBit == 1024) && obj->InheritsFrom("AliESDEvent"))
     hasOwnership = kTRUE;
   
   if (!arrayMC)
@@ -479,7 +479,7 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	if (!( ApplyCuts(part)) )
 	 return 0; 
 	
-	if (fFilterBit == 128 || fFilterBit == 256 || fFilterBit == 512)
+	if (fFilterBit == 128 || fFilterBit == 256 || fFilterBit == 512 || fFilterBit == 1024)
 	{
 	  // create TPC only tracks constrained to the SPD vertex
 

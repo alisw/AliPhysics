@@ -304,9 +304,9 @@ Long64_t AliTHn::GetGlobalBinIndex(const Int_t* binIdx)
   return bin;
 }
 
-void AliTHn::FillParent()
+void AliTHn::FillContainer(AliCFContainer* cont)
 {
-  // fills the information stored in the buffer in this class into the baseclass containers
+  // fills the information stored in the buffer in this class into the container <cont>
   
   for (Int_t i=0; i<fNSteps; i++)
   {
@@ -319,7 +319,7 @@ void AliTHn::FillParent()
     if (fSumw2[i])
       sourceSumw2 = fSumw2[i]->GetArray();
     
-    THnSparse* target = GetGrid(i)->GetGrid();
+    THnSparse* target = cont->GetGrid(i)->GetGrid();
     
     Int_t* binIdx = new Int_t[fNVars];
     Int_t* nBins  = new Int_t[fNVars];
@@ -366,7 +366,14 @@ void AliTHn::FillParent()
 
     delete[] binIdx;
     delete[] nBins;
-  }
+  }  
+}
+
+void AliTHn::FillParent()
+{
+  // fills the information stored in the buffer in this class into the baseclass containers
+  
+  FillContainer(this);
 }
 
 void AliTHn::ReduceAxis()

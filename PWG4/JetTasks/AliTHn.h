@@ -23,6 +23,7 @@ class AliTHn : public AliCFContainer
   
   virtual void  Fill(const Double_t *var, Int_t istep, Double_t weight=1.) ;
   virtual void  FillParent();
+  virtual void  FillContainer(AliCFContainer* cont);
   
   TArrayF* GetValues(Int_t step) { return fValues[step]; }
   TArrayF* GetSumw2(Int_t step)  { return fSumw2[step]; }

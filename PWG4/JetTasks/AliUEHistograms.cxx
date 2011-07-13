@@ -65,6 +65,9 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   //    3 = NumberDensityPhi
   //    4 = NumberDensityPhiCentrality (other multiplicity for Pb)
   
+  fTwoTrackDistance[0] = 0;
+  fTwoTrackDistance[1] = 0;
+  
   TString histogramsStr(histograms);
   
   if (histogramsStr.Contains("1"))
@@ -148,6 +151,9 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   //
   // AliUEHistograms copy constructor
   //
+
+  fTwoTrackDistance[0] = 0;
+  fTwoTrackDistance[1] = 0;
 
   ((AliUEHistograms &) c).Copy(*this);
 }
@@ -240,6 +246,13 @@ AliUEHistograms::~AliUEHistograms()
     delete fITSClusterMap;
     fITSClusterMap = 0;
   }
+
+  for (Int_t i=0; i<2; i++)
+    if (fTwoTrackDistance[i])
+    {
+      delete fTwoTrackDistance[i];
+      fTwoTrackDistance[i] = 0;
+    }
 }
 
 AliUEHist* AliUEHistograms::GetUEHist(Int_t id)
@@ -656,6 +669,10 @@ void AliUEHistograms::Copy(TObject& c) const
   if (fITSClusterMap)
     target.fITSClusterMap = dynamic_cast<TH3F*> (fITSClusterMap->Clone());
     
+  for (Int_t i=0; i<2; i++)
+    if (fTwoTrackDistance[i])
+      target.fTwoTrackDistance[i] = dynamic_cast<TH2F*> (fTwoTrackDistance[i]->Clone());
+
   target.fSelectCharge = fSelectCharge;
   target.fRunNumber = fRunNumber;
 }
@@ -677,7 +694,7 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
   TObject* obj;
 
   // collections of objects
-  const Int_t kMaxLists = 14;
+  const Int_t kMaxLists = 16;
   TList* lists[kMaxLists];
   
   for (Int_t i=0; i<kMaxLists; i++)
@@ -707,6 +724,10 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
     lists[11]->Add(entry->fVertexContributors);
     lists[12]->Add(entry->fCentralityDistribution);
     lists[13]->Add(entry->fITSClusterMap);
+    if (fTwoTrackDistance[0])
+      lists[14]->Add(entry->fTwoTrackDistance[0]);
+    if (fTwoTrackDistance[1])
+      lists[15]->Add(entry->fTwoTrackDistance[1]);
 
     count++;
   }
@@ -728,6 +749,10 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
   fVertexContributors->Merge(lists[11]);
   fCentralityDistribution->Merge(lists[12]);
   fITSClusterMap->Merge(lists[13]);
+  if (fTwoTrackDistance[0])
+    fTwoTrackDistance[0]->Merge(lists[14]);
+  if (fTwoTrackDistance[1])
+    fTwoTrackDistance[1]->Merge(lists[15]);
   
   for (Int_t i=0; i<kMaxLists; i++)
     delete lists[i];
@@ -773,6 +798,8 @@ void AliUEHistograms::Scale(Double_t factor)
   list.Add(fVertexContributors);
   list.Add(fCentralityDistribution);
   list.Add(fITSClusterMap);
+  list.Add(fTwoTrackDistance[0]);
+  list.Add(fTwoTrackDistance[1]);
   
   for (Int_t i=0; i<list.GetEntries(); i++)
     ((TH1*) list.At(i))->Scale(factor);
@@ -785,4 +812,86 @@ void AliUEHistograms::Reset()
   for (Int_t i=0; i<fgkUEHists; i++)
     if (GetUEHist(i))
       GetUEHist(i)->Reset();
+}
+
+TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
+{
+  // takes the input list <tracks> and applies two-track efficiency cuts
+  // returns the tracks which pass the cuts (if a pair fails the cut, both are removed)
+  // while the cut is applied, control histograms are filled: fTwoTrackDistance[i] (i = 0 before, i = 1 after)
+  // the cut has been developed by the HBT group and removes tracks which are spatially close inside the TPC volume
+  // see https://indico.cern.ch/materialDisplay.py?contribId=36&sessionId=6&materialId=slides&confId=142700
+  
+  if (!fTwoTrackDistance[0])
+  {
+    fTwoTrackDistance[0] = new TH2F("fTwoTrackDistance[0]", ";#Delta#eta;#Delta#phi^{*}_{min}", 100, -0.1, 0.1, 100, -0.1, 0.1);
+    fTwoTrackDistance[1] = (TH2F*) fTwoTrackDistance[0]->Clone("fTwoTrackDistance[1]");
+  }
+  
+  TObjArray* accepted = new TObjArray(*tracks);
+
+  // Eta() is extremely time consuming, therefore cache it for the inner loop here:
+  TArrayF eta(tracks->GetEntriesFast());
+  for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
+    eta[i] = ((AliVParticle*) tracks->At(i))->Eta();
+
+  for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
+  {
+    AliVParticle* particle1 = (AliVParticle*) tracks->At(i);
+    Double_t phi1 = particle1->Phi();
+    Double_t pt1 = particle1->Pt();
+    for (Int_t j=i+1; j<tracks->GetEntriesFast(); j++)
+    {
+      AliVParticle* particle2 = (AliVParticle*) tracks->At(j);
+      Double_t phi2 = particle2->Phi();
+      Double_t pt2 = particle2->Pt();
+      
+      Double_t deta = eta[i] - eta[j];
+      Double_t detaabs = TMath::Abs(deta);
+      
+      // optimization
+      if (detaabs > 0.1)
+	continue;
+      
+      Bool_t cutPassed = kTRUE;
+      
+      Double_t dphistarmin = 1e5;
+      Double_t dphistarminabs = 1e5;
+
+      for (Double_t rad=0.8; rad<2.51; rad+=0.01) 
+      {
+	Double_t dphistar = phi1 - phi2 + TMath::ASin(0.075 * rad / pt1) - TMath::ASin(0.075 * rad / pt2);
+	Double_t dphistarabs = TMath::Abs(dphistar);
+	
+	if (dphistarabs < dphistarminabs)
+	{
+	  dphistarmin = dphistar;
+	  dphistarminabs = dphistarabs;
+	}
+	
+	// hardcoded cut values for the moment
+	if (detaabs < 0.011 && dphistarabs < 0.01)
+	{
+	  cutPassed = kFALSE;
+	  //break;
+	}
+      }
+      
+      fTwoTrackDistance[0]->Fill(deta, dphistarmin);
+      if (cutPassed)
+	fTwoTrackDistance[1]->Fill(deta, dphistarmin);
+      else
+      {
+	// remove tracks from list
+	accepted->Remove(particle1);
+	accepted->Remove(particle2);
+      }
+    }
+  }
+  
+  accepted->Compress();
+  
+  //Printf("AliUEHistograms::ApplyTwoTrackCut: Accepted %d out of %d tracks", accepted->GetEntriesFast(), tracks->GetEntriesFast());
+  
+  return accepted;
 }

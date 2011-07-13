@@ -33,6 +33,8 @@ class AliUEHistograms : public TNamed
   void FillEvent(Double_t centrality, Int_t step);
   void FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType, Double_t centrality = 0);
   
+  TObjArray* ApplyTwoTrackCut(TObjArray* tracks);
+  
   void CopyReconstructedData(AliUEHistograms* from);
   
   AliUEHist* GetUEHist(Int_t id);
@@ -59,6 +61,7 @@ class AliUEHistograms : public TNamed
   TH1F* GetVertexContributors() { return fVertexContributors; }
   TH1F* GetCentralityDistribution() { return fCentralityDistribution; }
   Long64_t GetRunNumber() { return fRunNumber; }
+  TH2F* GetTwoTrackDistance(Int_t i) { return fTwoTrackDistance[i]; }
   
   void Correct(AliUEHistograms* corrections);
   
@@ -104,11 +107,13 @@ protected:
   
   TH3F* fITSClusterMap;          // its cluster map vs centrality vs pT
   
+  TH2F* fTwoTrackDistance[2];    // control histograms for two-track efficiency study: dphi*_min vs deta (0 = before cut, 1 = after cut)
+  
   Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
   
   Long64_t fRunNumber;           // run number that has been processed
   
-  ClassDef(AliUEHistograms, 7)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 8)  // underlying event histogram container
 };
 
 #endif
