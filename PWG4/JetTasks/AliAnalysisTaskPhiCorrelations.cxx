@@ -83,6 +83,7 @@ fMode(0),
 fReduceMemoryFootprint(kFALSE),
 fFillMixed(kTRUE),
 fCompareCentralities(kFALSE),
+fTwoTrackEfficiencyStudy(kFALSE),
 // pointers to UE classes
 fAnalyseUE(0x0),
 fHistos(0x0),
@@ -529,6 +530,15 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (centrality >= 0)
     fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks);
 
+  // Two-track effect study
+  if (fTwoTrackEfficiencyStudy)
+  {
+    TObjArray* reduced = fHistos->ApplyTwoTrackCut(tracks);
+    if (centrality >= 0)
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, reduced);
+    delete reduced;
+  }
+  
   // fill second time with SPD centrality
   if (fCompareCentralities && centralityObj)
   {

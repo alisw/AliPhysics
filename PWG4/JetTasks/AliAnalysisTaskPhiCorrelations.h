@@ -64,6 +64,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     virtual     void    SetReduceMemoryFootprint(Bool_t flag) { fReduceMemoryFootprint = flag; }
     virtual	void	SetEventMixing(Bool_t flag) { fFillMixed = flag; }
     virtual	void	SetCompareCentralities(Bool_t flag) { fCompareCentralities = flag; }
+    virtual	void	SetTwoTrackEfficiencyStudy(Bool_t flag) { fTwoTrackEfficiencyStudy = flag; }
     
     // histogram settings
     void SetTrackingEfficiency( const TH1D* hist) { fkTrackingEfficiency = hist; }
@@ -101,6 +102,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t              fReduceMemoryFootprint; // reduce memory consumption by writing less debug histograms
     Bool_t		fFillMixed;		// enable event mixing (default: ON)
     Bool_t		fCompareCentralities;	// use the z vtx axis for a centrality comparison
+    Bool_t		fTwoTrackEfficiencyStudy; // two-track efficiency study on
     
     // Pointers to external UE classes
     AliAnalyseLeadingTrackUE*     fAnalyseUE;      //! points to class containing common analysis algorithms

@@ -14,6 +14,10 @@ AliPhiCorrelationsQATask *AddTaskPhiCorrelationsQA()
   
   ana->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kUserDefined);
   
+  Bool_t isMC = (mgr->GetMCtruthEventHandler() != NULL);
+  if (isMC)
+    ana->SetUseUncheckedCentrality();
+  
   mgr->AddTask(ana);
   
   // Create ONLY the output containers for the data produced by the task.
