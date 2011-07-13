@@ -8,7 +8,7 @@
 // (2) cuts at all levels: single daughters, tracks, events
 // (3) output objects: histograms or trees
 //
-Bool_t ConfigPhiPbPb
+Bool_t ConfigPhiPbPbTPC
 (  
    AliRsnMiniAnalysisTask *task,
    Bool_t                  isMC,
@@ -44,7 +44,7 @@ Bool_t ConfigPhiPbPb
    AliRsnCutKaonForPhi2010 *cut = new AliRsnCutKaonForPhi2010(Form("cut%s", suffix), 3.0, 3.0, 0.8);
    
    // setup (set manually the TPC PID)
-   cut->SetMode(AliRsnCutKaonForPhi2010::kDefaultPID);
+   cut->SetMode(AliRsnCutKaonForPhi2010::kOnlyTPC);
    cut->InitMyPID(isMC, isESD);
    cut->MyPID()->GetTPCResponse().SetBetheBlochParameters(bbPar[0], bbPar[1], bbPar[2], bbPar[3], bbPar[4]);
    
