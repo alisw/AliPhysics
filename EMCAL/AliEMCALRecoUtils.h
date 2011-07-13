@@ -16,16 +16,16 @@
 //Root includes
 #include "TNamed.h"
 #include "TMath.h"
-#include "TObjArray.h"
-#include "TArrayI.h"
-#include "TArrayF.h"
-#include "TH2F.h"
+class TObjArray;
+class TArrayI;
+class TArrayF;
+#include "TH2I.h"
+class TH2F;
 
 //AliRoot includes
 class AliVCluster;
 class AliVCaloCells;
 class AliVEvent;
-#include "AliLog.h"
 
 // EMCAL includes
 class AliEMCALGeometry;
@@ -160,7 +160,7 @@ public:
     
   void   SwitchOnNoFiducialBorderInEMCALEta0()    { fNoEMCALBorderAtEta0 = kTRUE  ;}
   void   SwitchOffNoFiducialBorderInEMCALEta0()   { fNoEMCALBorderAtEta0 = kFALSE ;}
-  Bool_t IsEMCALNoBorderAtEta0()                  { return fNoEMCALBorderAtEta0   ;}
+  Bool_t IsEMCALNoBorderAtEta0()           const  { return fNoEMCALBorderAtEta0   ;}
   
   //-----------------------------------------------------
   // Bad channels
@@ -188,7 +188,7 @@ public:
   void   SetEMCALChannelStatusMap(TObjArray *map)  {fEMCALBadChannelMap = map;}
   void   SetEMCALChannelStatusMap(Int_t iSM , TH2I* h) {fEMCALBadChannelMap->AddAt(h,iSM);}
 
-  Bool_t ClusterContainsBadChannel(AliEMCALGeometry* geom, UShort_t* cellList, Int_t nCells);
+  Bool_t ClusterContainsBadChannel(AliEMCALGeometry* geom, UShort_t* cellList, const Int_t nCells);
  
   //-----------------------------------------------------
   // Recalculate other cluster parameters
@@ -212,10 +212,10 @@ public:
   void    GetMatchedClusterResiduals(Int_t trkIndex, Float_t &dEta, Float_t &dPhi);
   Int_t   GetMatchedTrackIndex(Int_t clsIndex);
   Int_t   GetMatchedClusterIndex(Int_t trkIndex);
-  Bool_t  IsClusterMatched(Int_t clsIndex);
-  Bool_t  IsTrackMatched(Int_t trkIndex);
+  Bool_t  IsClusterMatched(Int_t clsIndex) const;
+  Bool_t  IsTrackMatched(Int_t trkIndex)   const;
   UInt_t  FindMatchedPosForCluster(Int_t clsIndex) const;
-  UInt_t  FindMatchedPosForTrack(Int_t trkIndex) const;
+  UInt_t  FindMatchedPosForTrack(Int_t trkIndex)   const;
 
   void     SwitchOnCutEtaPhiSum()      {fCutEtaPhiSum=kTRUE;fCutEtaPhiSeparate=kFALSE;}
   void     SwitchOnCutEtaPhiSeparate() {fCutEtaPhiSeparate=kTRUE;fCutEtaPhiSum=kFALSE;}
@@ -235,11 +235,11 @@ public:
  
   //Cluster cut
   Bool_t IsGoodCluster(AliVCluster *cluster, AliEMCALGeometry *geom, AliVCaloCells* cells);
-  Bool_t IsExoticCluster(AliVCluster *cluster);
+  Bool_t IsExoticCluster(AliVCluster *cluster) const ;
 
-  void SwitchOnRejectExoticCluster()  { fRejectExoticCluster=kTRUE  ;}
-  void SwitchOffRejectExoticCluster() { fRejectExoticCluster=kFALSE ;}
-  Bool_t IsRejectExoticCluster()      { return fRejectExoticCluster ;}
+  void SwitchOnRejectExoticCluster()   { fRejectExoticCluster=kTRUE  ;}
+  void SwitchOffRejectExoticCluster()  { fRejectExoticCluster=kFALSE ;}
+  Bool_t IsRejectExoticCluster() const { return fRejectExoticCluster ;}
 
 
   //Track Cuts 

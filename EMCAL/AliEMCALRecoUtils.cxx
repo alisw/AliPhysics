@@ -34,6 +34,10 @@
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
 #include <TGeoBBox.h>
+#include <TH2F.h>
+#include <TArrayI.h>
+#include <TArrayF.h>
+#include "TObjArray.h"
 
 // STEER includes
 #include "AliVCluster.h"
@@ -104,14 +108,14 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   //fNonLinearityParams[2] = 1.046;
 
   //Track matching
-  fMatchedTrackIndex   = new TArrayI();
-  fMatchedClusterIndex = new TArrayI();
+  fMatchedTrackIndex     = new TArrayI();
+  fMatchedClusterIndex   = new TArrayI();
   fResidualPhi           = new TArrayF();
   fResidualEta           = new TArrayF();
   
   InitTrackCuts();
   
-  fPIDUtils            = new AliEMCALPIDUtils();
+  fPIDUtils              = new AliEMCALPIDUtils();
 
 
 }
@@ -273,10 +277,10 @@ AliEMCALRecoUtils::~AliEMCALRecoUtils()
 		delete  fEMCALBadChannelMap;
 	}
  
-  if(fMatchedTrackIndex)   {delete fMatchedTrackIndex;   fMatchedTrackIndex=0;}
-  if(fMatchedClusterIndex) {delete fMatchedClusterIndex; fMatchedClusterIndex=0;}
-  if(fResidualEta)           {delete fResidualEta;           fResidualEta=0;}
-  if(fResidualPhi)           {delete fResidualPhi;           fResidualPhi=0;}
+  delete fMatchedTrackIndex   ; 
+  delete fMatchedClusterIndex ; 
+  delete fResidualEta         ; 
+  delete fResidualPhi         ; 
 
 }
 
@@ -345,7 +349,7 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(AliEMCALGeometry* geom, AliVCl
 
 
 //_________________________________________________________________________________________________________
-Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(AliEMCALGeometry* geom, UShort_t* cellList, Int_t nCells){
+Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(AliEMCALGeometry* geom, UShort_t* cellList, const Int_t nCells){
 	// Check that in the cluster cells, there is no bad channel of those stored 
 	// in fEMCALBadChannelMap or fPHOSBadChannelMap
 	
@@ -374,7 +378,7 @@ Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(AliEMCALGeometry* geom, USho
 }
 
 //_________________________________________________
-Bool_t AliEMCALRecoUtils::IsExoticCluster(AliVCluster *cluster){
+Bool_t AliEMCALRecoUtils::IsExoticCluster(AliVCluster *cluster) const {
   // Check if the cluster has high energy  but small number of cells
   // The criteria comes from Gustavo's study
   //
@@ -1404,7 +1408,7 @@ Int_t AliEMCALRecoUtils::GetMatchedClusterIndex(Int_t trkIndex)
 }
 
 //__________________________________________________
-Bool_t AliEMCALRecoUtils::IsClusterMatched(Int_t clsIndex)
+Bool_t AliEMCALRecoUtils::IsClusterMatched(Int_t clsIndex) const
 {
   //Given a cluster index as in AliESDEvent::GetCaloCluster(clsIndex)
   //Returns if the cluster has a match
@@ -1415,7 +1419,7 @@ Bool_t AliEMCALRecoUtils::IsClusterMatched(Int_t clsIndex)
 }
 
 //__________________________________________________
-Bool_t AliEMCALRecoUtils::IsTrackMatched(Int_t trkIndex)
+Bool_t AliEMCALRecoUtils::IsTrackMatched(Int_t trkIndex) const 
 {
   //Given a track index as in AliESDEvent::GetTrack(trkIndex)
   //Returns if the track has a match
@@ -1511,9 +1515,9 @@ Bool_t AliEMCALRecoUtils::IsAccepted(AliESDtrack *esdTrack)
 
 
   //DCA cuts
-  Float_t MaxDCAToVertexXYPtDep = 0.0182 + 0.0350/TMath::Power(esdTrack->Pt(),1.01); //This expression comes from AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()
+  Float_t maxDCAToVertexXYPtDep = 0.0182 + 0.0350/TMath::Power(esdTrack->Pt(),1.01); //This expression comes from AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()
   //AliDebug(3,Form("Track pT = %f, DCAtoVertexXY = %f",esdTrack->Pt(),MaxDCAToVertexXYPtDep));
-  SetMaxDCAToVertexXY(MaxDCAToVertexXYPtDep); //Set pT dependent DCA cut to vertex in x-y plane
+  SetMaxDCAToVertexXY(maxDCAToVertexXYPtDep); //Set pT dependent DCA cut to vertex in x-y plane
 
 
   Float_t b[2];
