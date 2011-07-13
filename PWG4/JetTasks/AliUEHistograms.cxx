@@ -88,17 +88,17 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   {
     fCorrelationpT  = new TH2F("fCorrelationpT", ";p_{T,lead} (MC);p_{T,lead} (RECO)", 200, 0, 50, 200, 0, 50);
     fCorrelationEta = new TH2F("fCorrelationEta", ";#eta_{lead} (MC);#eta_{T,lead} (RECO)", 200, -1, 1, 200, -1, 1);
-    fCorrelationPhi = new TH2F("fCorrelationPhi", ";#phi_{lead} (MC);#phi_{T,lead} (RECO)", 200, 0, TMath::TwoPi(), 200, 0, TMath::TwoPi());
+    fCorrelationPhi = new TH2F("fCorrelationPhi", ";#varphi_{lead} (MC);#varphi_{T,lead} (RECO)", 200, 0, TMath::TwoPi(), 200, 0, TMath::TwoPi());
   }
   else
   {
     fCorrelationpT  = new TH2F("fCorrelationpT", ";Centrality;p_{T} (RECO)", 100, 0, 100.001, 200, 0, 50);
     fCorrelationEta = new TH2F("fCorrelationEta", ";Centrality;#eta (RECO)", 100, 0, 100.001, 200, -1, 1);
-    fCorrelationPhi = new TH2F("fCorrelationPhi", ";Centrality;#phi (RECO)", 100, 0, 100.001, 200, 0, TMath::TwoPi());
+    fCorrelationPhi = new TH2F("fCorrelationPhi", ";Centrality;#varphi (RECO)", 100, 0, 100.001, 200, 0, TMath::TwoPi());
   }
   
   fCorrelationR =   new TH2F("fCorrelationR", ";R;p_{T,lead} (MC)", 200, 0, 2, 200, 0, 50);
-  fCorrelationLeading2Phi = new TH2F("fCorrelationLeading2Phi", ";#Delta #phi;p_{T,lead} (MC)", 200, -TMath::Pi(), TMath::Pi(), 200, 0, 50);
+  fCorrelationLeading2Phi = new TH2F("fCorrelationLeading2Phi", ";#Delta #varphi;p_{T,lead} (MC)", 200, -TMath::Pi(), TMath::Pi(), 200, 0, 50);
   fCorrelationMultiplicity = new TH2F("fCorrelationMultiplicity", ";MC tracks;Reco tracks", 100, -0.5, 99.5, 100, -0.5, 99.5);
   
   if (!histogramsStr.Contains("4"))
@@ -824,7 +824,7 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
   
   if (!fTwoTrackDistance[0])
   {
-    fTwoTrackDistance[0] = new TH2F("fTwoTrackDistance[0]", ";#Delta#eta;#Delta#phi^{*}_{min}", 100, -0.1, 0.1, 100, -0.1, 0.1);
+    fTwoTrackDistance[0] = new TH2F("fTwoTrackDistance[0]", ";#Delta#eta;#Delta#varphi^{*}_{min}", 100, -0.05, 0.05, 100, -0.05, 0.05);
     fTwoTrackDistance[1] = (TH2F*) fTwoTrackDistance[0]->Clone("fTwoTrackDistance[1]");
   }
   
@@ -868,15 +868,15 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
 	  dphistarmin = dphistar;
 	  dphistarminabs = dphistarabs;
 	}
-	
-	// hardcoded cut values for the moment
-	if (detaabs < 0.011 && dphistarabs < 0.01)
-	{
-	  cutPassed = kFALSE;
-	  //break;
-	}
       }
       
+      // hardcoded cut values for the moment
+      if (detaabs < 0.011 && dphistarminabs < 0.01)
+      {
+	cutPassed = kFALSE;
+	//Printf("%d %d failed: %.3f %.3f; %.3f %.3f %.4f; %.2f %.2f (%p %p)", i, j, eta[i], eta[j], phi1, phi2, dphistarminabs, pt1, pt2, particle1, particle2);
+      }
+
       fTwoTrackDistance[0]->Fill(deta, dphistarmin);
       if (cutPassed)
 	fTwoTrackDistance[1]->Fill(deta, dphistarmin);
