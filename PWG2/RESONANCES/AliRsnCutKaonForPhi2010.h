@@ -16,30 +16,40 @@ class AliRsnCutKaonForPhi2010 : public AliRsnCut {
 
 public:
 
+   enum ECutMode {
+      kQuality = 0,
+      kOnlyTPC,
+      kOnlyTOF,
+      kDefaultPID,
+      kModes
+   };
+
    AliRsnCutKaonForPhi2010(const char *name = "", Double_t nSigmaTPC = 3.0, Double_t nSigmaTOF = 3.0, Double_t tofLimit = 0.8);
+   AliRsnCutKaonForPhi2010(const AliRsnCutKaonForPhi2010 &copy);
+   AliRsnCutKaonForPhi2010& operator=(const AliRsnCutKaonForPhi2010 &copy);
    virtual ~AliRsnCutKaonForPhi2010() { }
    
    virtual Bool_t IsSelected(TObject *obj);
    
    AliRsnCutTrackQuality *CutQuality()            {return &fCutQuality;}
    Double_t               GetTOFthreshold() const {return fTOFthreshold;}
+   AliPIDResponse        *MyPID()                 {return fMyPID;}
    
-   void   SetTOFthreshold(Double_t value)   {fTOFthreshold = value;}
-   void   SetOnlyQuality(Bool_t yn = kTRUE) {fOnlyQuality = yn;}
-   void   SetOnlyTPC(Bool_t yn = kTRUE)     {fOnlyTPC = yn;}
-   void   SetOnlyTOF(Bool_t yn = kTRUE)     {fOnlyTOF = yn;}
+   void   SetMode(ECutMode mode)            {fMode = mode;}
    void   SetCutTPC(Double_t cut)           {fCutTPC = cut;}
    void   SetCutTOF(Double_t cut)           {fCutTOF = cut;}
+   void   SetTOFthreshold(Double_t value)   {fTOFthreshold = value;}
+   
+   void   InitMyPID(Bool_t isMC, Bool_t isESD);
    Bool_t MatchTOF(const AliVTrack *vtrack);
 
 private:
 
-   Bool_t                fOnlyQuality;   // switch off PID
-   Bool_t                fOnlyTPC;       // use only TPC PID
-   Bool_t                fOnlyTOF;       // use only TOF PID
+   ECutMode              fMode;          // how the cut is applied
    Double_t              fCutTPC;        // nsigma cut for TPC
    Double_t              fCutTOF;        // nsigma cut fof TOF
    Double_t              fTOFthreshold;  // for Pt above this threshold, TOF is mandatory
+   AliPIDResponse       *fMyPID;         // PID response object to be configured manyally
    AliRsnCutTrackQuality fCutQuality;    // track quality cut
 
    ClassDef(AliRsnCutKaonForPhi2010,1)

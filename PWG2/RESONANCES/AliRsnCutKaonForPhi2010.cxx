@@ -7,8 +7,11 @@
 
 #include <Riostream.h>
 
+#include "AliLog.h"
 #include "AliPID.h"
 #include "AliPIDResponse.h"
+#include "AliESDpid.h"
+#include "AliAODpidUtil.h"
 #include "AliRsnCutKaonForPhi2010.h"
 
 ClassImp(AliRsnCutKaonForPhi2010)
@@ -17,12 +20,11 @@ ClassImp(AliRsnCutKaonForPhi2010)
 AliRsnCutKaonForPhi2010::AliRsnCutKaonForPhi2010
 (const char *name, Double_t nSigmaTPC, Double_t nSigmaTOF, Double_t tofLimit) :
    AliRsnCut(name, AliRsnTarget::kDaughter),
-   fOnlyQuality(kFALSE),
-   fOnlyTPC(kFALSE),
-   fOnlyTOF(kFALSE),
+   fMode(kDefaultPID),
    fCutTPC(nSigmaTPC),
    fCutTOF(nSigmaTOF),
    fTOFthreshold(tofLimit),
+   fMyPID(0x0),
    fCutQuality(Form("%s_quality", name))
 {
 //
@@ -48,6 +50,52 @@ AliRsnCutKaonForPhi2010::AliRsnCutKaonForPhi2010
 }
 
 //__________________________________________________________________________________________________
+AliRsnCutKaonForPhi2010::AliRsnCutKaonForPhi2010(const AliRsnCutKaonForPhi2010 &copy) :
+   AliRsnCut(copy),
+   fMode(copy.fMode),
+   fCutTPC(copy.fCutTPC),
+   fCutTOF(copy.fCutTOF),
+   fTOFthreshold(copy.fTOFthreshold),
+   fMyPID(copy.fMyPID),
+   fCutQuality(copy.fCutQuality)
+{
+//
+// Copy constructor
+//
+}
+
+//__________________________________________________________________________________________________
+AliRsnCutKaonForPhi2010& AliRsnCutKaonForPhi2010::operator=(const AliRsnCutKaonForPhi2010 &copy)
+{
+//
+// Assignment operator
+//
+
+   AliRsnCut::operator=(copy);
+   fMode = copy.fMode;
+   fCutTPC = copy.fCutTPC;
+   fCutTOF = copy.fCutTOF;
+   fTOFthreshold = copy.fTOFthreshold;
+   fMyPID = copy.fMyPID;
+   fCutQuality = copy.fCutQuality;
+   
+   return *this;
+}
+
+//__________________________________________________________________________________________________
+void AliRsnCutKaonForPhi2010::InitMyPID(Bool_t isMC, Bool_t isESD)
+{
+//
+// Initialize manual PID object
+//
+
+   if (isESD) 
+      fMyPID = new AliESDpid(isMC);
+   else
+      fMyPID = new AliAODpidUtil(isMC);
+}
+
+//__________________________________________________________________________________________________
 Bool_t AliRsnCutKaonForPhi2010::IsSelected(TObject *obj)
 {
 //
@@ -69,64 +117,89 @@ Bool_t AliRsnCutKaonForPhi2010::IsSelected(TObject *obj)
    if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) return kFALSE;
    if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) return kFALSE;
    
-   // quality
-   if (!fCutQuality.IsSelected(obj)) return kFALSE;
-   
-   // if not PID is done, exit here
-   if (fOnlyQuality) return kTRUE;
-   
-   // check initialization of PID object
-   AliPIDResponse *pid = fEvent->GetPIDResponse();
-   if (!pid) {
-      AliFatal("NULL PID response");
+   // check quality and reject always bad quality tracks
+   if (!fCutQuality.IsSelected(obj)) {
+      AliDebugClass(1, Form("[%s] Track quality is bad", GetName()));
       return kFALSE;
    }
    
-   // check if TOF is matched
-   // and computes all values used in the PID cut
+   // initialize check variables
    Bool_t   accept = kFALSE;
    Bool_t   isTOF  = MatchTOF(track);
-   Double_t nsTPC  = TMath::Abs(pid->NumberOfSigmasTPC(track, AliPID::kKaon));
-   Double_t nsTOF  = TMath::Abs(pid->NumberOfSigmasTOF(track, AliPID::kKaon));
+   Double_t nsTPC  = 1E20;
+   Double_t nsTOF  = 1E20;
    
-   // if only one detector is chosen, do this here
-   if (fOnlyTPC) {
-      AliDebugClass(1, Form("Checking only TPC: nsigma = %f - cut = %f", nsTPC, fCutTPC));
-      accept = (nsTPC <= fCutTPC);
-   } else if (fOnlyTOF) {
-      if (!isTOF) {
-         AliDebugClass(1, "Checking only TOF: rejecting non-TOF track");
-         accept = kFALSE;
-      } else {
-         AliDebugClass(1, Form("Checking only TOF: nsigma = %f - cut = %f", nsTOF, fCutTOF));
-         accept = (nsTOF <= fCutTOF);
+   // if PID is required, compute it check initialization of PID object
+   if (fMode >= kOnlyTPC && fMode <= kDefaultPID) {
+      AliPIDResponse *pid = fEvent->GetPIDResponse();
+      if (!pid) {
+         AliFatal("NULL PID response");
+         return kFALSE;
       }
-   } else {
-      // combined PID:
-      // below momentum threshold, start with TPC
-      if (track->P() < fTOFthreshold) {
-         AliDebugClass(1, Form("Checking both PID: p = %f below threshold (TOF not required)", track->P())); 
-         if (isTOF) {
-            AliDebugClass(1, Form("TOF present: nsigmaTPC: = %f - cut = %f", nsTPC, fCutTPC));
-            AliDebugClass(1, Form("TOF present: nsigmaTOF: = %f - cut = %f", nsTOF, fCutTOF));
-            accept = ((nsTPC <= fCutTPC) && (nsTOF <= fCutTOF));
-         } else {
-            AliDebugClass(1, Form("TOF absent : nsigmaTPC: = %f - cut = %f", nsTPC, fCutTPC));
-            accept = (nsTPC <= fCutTPC);
-         }
-      } else {
-         AliDebugClass(1, Form("Checking both PID: p = %f above threshold (TOF required)", track->P())); 
-         if (isTOF) {
-            AliDebugClass(1, Form("TOF present: nsigmaTPC: = %f - cut = %f", nsTPC, fCutTPC));
-            AliDebugClass(1, Form("TOF present: nsigmaTOF: = %f - cut = %f", nsTOF, fCutTOF));
-            accept = ((nsTPC <= fCutTPC) && (nsTOF <= fCutTOF));
-         } else {
-            AliDebugClass(1, "TOF absent : track rejected");
-            accept = kFALSE;
-         }
-      }
+      // TPC PID
+      if (fMyPID) 
+         nsTPC = TMath::Abs(fMyPID->NumberOfSigmasTPC(track, AliPID::kKaon));
+      else
+         nsTPC = TMath::Abs(pid->NumberOfSigmasTPC(track, AliPID::kKaon));
+      // TOF PID
+      nsTOF = TMath::Abs(pid->NumberOfSigmasTOF(track, AliPID::kKaon));
    }
    
-   AliDebugClass(1, Form("Track %s", (accept ? "accepted" : "rejected")));
+   // decide cut result depending on mode
+   switch (fMode) {
+      case kQuality:
+         // in this case, since bad quality tracks are rejected above,
+         // all tracks arrived here can be accepted
+         AliDebugClass(1, Form("[%s] Required only track quality", GetName()));
+         accept = kTRUE;
+         break;
+      case kOnlyTPC:
+         // in this case, only TPC PID is checked
+         // all tracks have one, so nothing additional is checked
+         AliDebugClass(1, Form("[%s] Checking only TPC: nsigma = %f - cut = %f", GetName(), nsTPC, fCutTPC));
+         accept = (nsTPC <= fCutTPC);
+         break;
+      case kOnlyTOF:
+         // in this case, only TOF PID is checked
+         // additional check: we want that TOF is matched
+         AliDebugClass(1, Form("[%s] Checking only TOF: nsigma = %f - cut = %f", GetName(), nsTOF, fCutTOF));
+         if (isTOF) {
+            accept = (nsTOF <= fCutTOF);
+         } else {
+            AliDebugClass(1, Form("[%s] TOF not matched", GetName()));
+            accept = kFALSE;
+         }
+         break;
+      case kDefaultPID:
+         // in this case, default PID check is done
+         // TPC PID is checked and tracks are rejected if it is not passed
+         // if their momentum is below the TOF threshold, they are required
+         // to be matched in TOF, otherwise TPC only is OK
+         AliDebugClass(1, Form("[%s] Default PID TPC: nsigma = %f - cut = %f", GetName(), nsTPC, fCutTPC));
+         AliDebugClass(1, Form("[%s] Default PID TOF: nsigma = %f - cut = %f", GetName(), nsTOF, fCutTOF));
+         // step 0: check TPC
+         if (nsTPC > fCutTPC) {
+            AliDebugClass(1, Form("[%s] TPC PID cut not passed", GetName()));
+            accept = kFALSE;
+         } else {
+            if (isTOF) {
+               accept = (nsTOF <= fCutTOF);
+            } else {
+               if (track->P() >= fTOFthreshold) {
+                  AliDebugClass(1, Form("[%s] p = %f above threshold: TOF is required but missing", GetName(), track->P()));
+                  accept = kFALSE;
+               } else {
+                  AliDebugClass(1, Form("[%s] p = %f below threshold: TOF is not required", GetName(), track->P()));
+                  accept = kTRUE;
+               }
+            }
+         }
+         break;
+      default:
+         AliDebugClass(1, Form("[%s] Wrong mode", GetName()));
+         accept = kFALSE;
+   }
+   
+   AliDebugClass(1, Form("[%s] Track %s", GetName(), (accept ? "accepted" : "rejected")));
    return accept;
 }
