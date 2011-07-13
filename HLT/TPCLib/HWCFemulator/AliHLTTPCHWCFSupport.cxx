@@ -420,7 +420,7 @@ int AliHLTTPCHWCFSupport::CreateRawEvent
 	  if( nWords32+( 2+nSignals)/3+1 >= totalSize32 ){ err = 1; break; }
 	  if( mcIndex + nSignals   >= totalNMC ){ err = 1; break; }
 
-	  if( nWords10 + 2 + nSignals > 0x2FF ){
+	  if( nWords10 + 2 + nSignals > 0x3FF ){
 	    HLTWarning("Too much data in row %d, pad %d", row, pad);	    
 	    break;
 	  }
@@ -453,7 +453,7 @@ int AliHLTTPCHWCFSupport::CreateRawEvent
 
 	} // bunches
 	
-      *header = (1<<30) | ((nWords10&0x2FF)<<16) | (mapping.GetHwAddress(row, pad) & 0xFFF);
+      *header = (1<<30) | ((nWords10&0x3FF)<<16) | (mapping.GetHwAddress(row, pad) & 0xFFF);
 
       }// channels (pads)
 
