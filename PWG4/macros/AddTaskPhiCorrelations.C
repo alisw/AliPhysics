@@ -23,6 +23,9 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   
 //   Int_t bit = 1;
   Int_t bit = 128;
+//   Int_t bit = 256;
+//   Int_t bit = 512;
+//   Int_t bit = 1024;
   ana->SetFilterBit(bit);  
   
   Printf("AddTaskPhiCorrelations:\n\n\n++++++++++ Using bit %d ++++++++++++\n\n\n", bit);
@@ -38,6 +41,7 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   ana->SetEventMixing(kFALSE);
   
 //   ana->SetCompareCentralities(kTRUE);
+  ana->SetTwoTrackEfficiencyStudy(kTRUE);
   
   if (0)
   {
@@ -45,6 +49,13 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
     ana->SetCentralityMethod("CL1");
   }    
   
+  if (0)
+  {
+    Printf("AddTaskPhiCorrelations:\n\n\n++++++++++ Using ZDC centrality selection ++++++++++++\n\n\n");
+    ana->SetCentralityMethod("ZEMvsZDC");
+  }    
+  
+
   if (ppRun)
   {
     Printf("AddTaskPhiCorrelations:\n\n\n+++++++++++++++ Configuring for p+p! +++++++++++++++++\n\n\n");
