@@ -266,6 +266,10 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCClusterData(AliHLTOUT* pHLTOUT, T
     const AliHLTTPCSpacePointData *clusters = clusterData->fSpacePoints;
     int offset=pClusters->GetEntries();
     pClusters->ExpandCreate(offset+nSpacepoints);
+    AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(specification);
+    AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(specification);
+    // FIXME: get first row number of outer sectors from a common definition instead using number
+    unsigned rowOffset=partition<2?rowOffset=0:rowOffset=63;
     for (int i=0; i<nSpacepoints; i++) {
       if (!pClusters->At(offset+i)) continue;
       AliTPCclusterMI* pCluster=dynamic_cast<AliTPCclusterMI*>(pClusters->At(offset+i));
@@ -273,7 +277,11 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCClusterData(AliHLTOUT* pHLTOUT, T
 	AliError("invalid object type, expecting AliTPCclusterMI");
 	break; // this is a problem of all objects
       }
-      pCluster->SetRow(clusters[i].fPadRow);
+      if (clusters[i].fPadRow<rowOffset) {
+	AliError(Form("invalid row number %d, expecting minimum row number %d for slice %d partition %d", clusters[i].fPadRow, rowOffset, slice, partition));
+      } else {
+      pCluster->SetRow(clusters[i].fPadRow-rowOffset);
+      }
       pCluster->SetPad(clusters[i].fY);
       pCluster->SetTimeBin(clusters[i].fZ);
       pCluster->SetSigmaY2(clusters[i].fSigmaY2);
@@ -331,6 +339,10 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCRawClusterData(AliHLTOUT* pHLTOUT
     const AliHLTTPCRawCluster *clusters = clusterData->fClusters;
     int offset=pClusters->GetEntries();
     pClusters->ExpandCreate(offset+nCount);
+    AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(specification);
+    AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(specification);
+    // FIXME: get first row number of outer sectors from a common definition instead using number
+    int rowOffset=partition<2?rowOffset=0:rowOffset=63;
     for (int i=0; i<nCount; i++) {
       if (!pClusters->At(offset+i)) continue;
       AliTPCclusterMI* pCluster=dynamic_cast<AliTPCclusterMI*>(pClusters->At(offset+i));
@@ -338,7 +350,11 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCRawClusterData(AliHLTOUT* pHLTOUT
 	AliError("invalid object type, expecting AliTPCclusterMI");
 	break; // this is a problem of all objects
       }
-      pCluster->SetRow(clusters[i].GetPadRow());
+      if (clusters[i].GetPadRow()<rowOffset) {
+	AliError(Form("invalid row number %d, expecting minimum row number %d for slice %d partition %d", clusters[i].GetPadRow(), rowOffset, slice, partition));
+      } else {
+      pCluster->SetRow(clusters[i].GetPadRow()-rowOffset);
+      }
       pCluster->SetPad(clusters[i].GetPad());
       pCluster->SetTimeBin(clusters[i].GetTime());
       pCluster->SetSigmaY2(clusters[i].GetSigmaY2());
@@ -346,8 +362,6 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCRawClusterData(AliHLTOUT* pHLTOUT
       pCluster->SetQ(clusters[i].GetCharge());
       pCluster->SetMax(clusters[i].GetQMax());
       if (tpcClusterLabels) {
-	AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(specification);
-	AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(specification);
 	UInt_t clusterID=AliHLTTPCSpacePointData::GetID(slice, partition, i);
 	if (tpcClusterLabels->find(clusterID)!=tpcClusterLabels->end()) {
 	  const AliHLTTPCClusterMCWeight* mcWeights=tpcClusterLabels->find(clusterID)->second.fClusterID;
