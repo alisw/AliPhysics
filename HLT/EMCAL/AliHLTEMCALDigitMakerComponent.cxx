@@ -164,7 +164,8 @@ AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 	  
 	    for(Int_t x = 0; x < NXCOLUMNSMOD ; x++) // PTH  
 	      for(Int_t z = 0; z <  NZROWSMOD ; z++) // PTH
-		fDigitMakerPtr->SetBadChannel(x, z, fPedestalData->IsBadChannel(module, z+1, x+1));
+        // FR 
+		fDigitMakerPtr->SetBadChannel(x, z, fPedestalData->IsBadChannel(module, z, x));
 	    //delete fBadChannelMap;  
 	    fBCMInitialised = true;
 	  }
