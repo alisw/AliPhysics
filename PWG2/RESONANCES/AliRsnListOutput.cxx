@@ -239,8 +239,8 @@ TH1* AliRsnListOutput::CreateHistogram(const char *name)
          hist = new TH3F(name, "", nbins[0], array[0].GetArray(), nbins[1], array[1].GetArray(), nbins[2], array[2].GetArray());
          break;
       default:
-	AliError(Form("Wrong number of dimensions: %d", fNValues));
-	return 0x0;
+         //AliError(Form("Wrong number of dimensions: %d", fNValues))
+         return 0x0;
    }
 
    if (hist) hist->Sumw2();
