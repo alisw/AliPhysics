@@ -385,6 +385,8 @@ int AliHLTTPCHWCFSupport::CreateRawEvent
 	Int_t row=digitReader.GetRow();
 	Int_t pad=digitReader.GetPad();
 
+	AliHLTUInt32_t hwAddr = mapping.GetHwAddress(row, pad);
+
 	// create header
 
 	if( nWords32 >= totalSize32){ err = 1; break; }	
@@ -396,7 +398,9 @@ int AliHLTTPCHWCFSupport::CreateRawEvent
 	int prevTime = 10000000;
 	int nWords10 = 0;
 	while(digitReader.NextBunch()){
-	  
+
+	  if( hwAddr > 0xFFF ) continue;
+
 	  Int_t nSignals = digitReader.GetBunchSize();
 	  if( nSignals <=0 ){
 	    HLTWarning("Empty bunch received");
@@ -453,7 +457,7 @@ int AliHLTTPCHWCFSupport::CreateRawEvent
 
 	} // bunches
 	
-      *header = (1<<30) | ((nWords10&0x3FF)<<16) | (mapping.GetHwAddress(row, pad) & 0xFFF);
+      *header = (1<<30) | ((nWords10&0x3FF)<<16) | (hwAddr & 0xFFF);
 
       }// channels (pads)
 
