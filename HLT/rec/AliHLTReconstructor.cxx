@@ -220,7 +220,12 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
   AliHLTSystem* pSystem=fpPluginBase->GetInstance();
 
   if (pSystem) {
-    pSystem->InvalidateHLTOUT();
+    AliHLTOUT* pHLTOUT=NULL;
+    pSystem->InvalidateHLTOUT(&pHLTOUT);
+    if (pHLTOUT) {
+      delete pHLTOUT;
+      pHLTOUT=NULL;
+    }
     if (pSystem->CheckStatus(AliHLTSystem::kError)) {
       AliError("HLT system in error state");
       return;
@@ -242,7 +247,7 @@ void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clusters
       if ((fFlags&kAliHLTReconstructorIgnoreHLTOUT) == 0 ) {
 	input=rawReader;
       }
-      AliHLTOUT* pHLTOUT=new AliHLTOUTRawReader(input, eventNo, fpEsdManager);
+      pHLTOUT=new AliHLTOUTRawReader(input, eventNo, fpEsdManager);
       if (pHLTOUT) {
 	if (pHLTOUT->Init()>=0) {
 	  pSystem->InitHLTOUT(pHLTOUT);
@@ -317,7 +322,13 @@ void AliHLTReconstructor::Reconstruct(TTree* /*digitsTree*/, TTree* /*clustersTr
 
   if (pSystem) {
     // create the HLTOUT instance in order to be available for other detector reconstruction
-    pSystem->InvalidateHLTOUT();
+    // first cleanup any existing instance
+    AliHLTOUT* pHLTOUT=NULL;
+    pSystem->InvalidateHLTOUT(&pHLTOUT);
+    if (pHLTOUT) {
+      delete pHLTOUT;
+      pHLTOUT=NULL;
+    }
 
     // not nice. Have to query the global run loader to get the current event no.
     // This is related to the missing AliLoader for HLT.
@@ -334,7 +345,7 @@ void AliHLTReconstructor::Reconstruct(TTree* /*digitsTree*/, TTree* /*clustersTr
 	digitfile="HLT.Digits.root";
       }
 
-      AliHLTOUT* pHLTOUT=new AliHLTOUTDigitReader(eventNo, fpEsdManager, digitfile);
+      pHLTOUT=new AliHLTOUTDigitReader(eventNo, fpEsdManager, digitfile);
       if (pHLTOUT) {
 	if (pHLTOUT->Init()>=0) {
 	  pSystem->InitHLTOUT(pHLTOUT);
