@@ -257,7 +257,7 @@ void AliHLTHOMERManager::SetSourceState( AliHLTHOMERSourceDesc * source, Bool_t 
 Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
   // see header file for class documentation
 
-  if (fReaderList == NULL)
+  if (fReaderList == NULL or fSourceList == NULL)
   {
     HLTError("Must first create a source list with a call to CreateSourcesList().");
     return -1;
