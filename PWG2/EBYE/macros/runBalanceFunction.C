@@ -1,244 +1,440 @@
-enum anaModes {kLocal,kLocalPAR,kPROOF,kInteractive,kGRID};
-//kLocal: Analyze locally files in your computer using aliroot
-//kLocalPAR: Analyze locally files in your computer using root + PAR files
-//kPROOF: Analyze CAF files with PROOF
+// run.C
+//
+// Template run macro for AliBasicTask.cxx/.h with example layout of
+// physics selections and options, in macro and task.
+//
+// Author: Arvinder Palaha
+//
+class AliAnalysisGrid;
+class AliAnalysisTaskBF;
+class AliBalance;
 
-void runBalanceFunction(Int_t analysisMode = kInteractive,
-			Bool_t kMCAnalysis = kFALSE,
-			const char* dataMode = "ESD") {
-  TStopwatch timer;
-  timer.Start();
+//Centrality stuff
+Int_t binfirst = 0;  //where do we start numbering bins
+Int_t binlast = 8;  //where do we stop numbering bins
+const Int_t numberOfCentralityBins = 9;
+Float_t centralityArray[numberOfCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.}; // in centrality percentile
 
-  //Load the libraries
-  LoadLibraries(analysisMode);
-
-  //Select the running mode and create the chain
-  if (analysisMode == kGRID) {
-    // Create and configure the alien handler plugin
-    gROOT->LoadMacro("CreateAlienHandler.C");
-    AliAnalysisGrid *alienHandler = CreateAlienHandler();  
-    if (!alienHandler) return;
-  }
-  if (analysisMode==kLocal || analysisMode == kLocalPAR) {
-    TChain *chain = new TChain("esdTree");
-    chain->Add("../Set1/AliESDs.root");
-    chain->Add("../Set2/AliESDs.root");
-  }
-  if(analysisMode == kInteractive) {
-    TGrid::Connect("alien://");
-    TChain *chain = new TChain("esdTree");
-    TString alienUrl;
-
-    TAlienCollection *collection = TAlienCollection::Open("wn.xml");
-    TGridResult *gResult = collection->GetGridResult("",0,0);
-    Int_t nEntries = gResult->GetEntries();
-    for(Int_t i = 0; i < nEntries; i++) {
-      alienUrl = gResult->GetKey(i,"turl");
-      chain->Add(alienUrl.Data());
+//______________________________________________________________________________
+void runBalanceFunction(
+         const char* runtype = "local", // local, proof or grid
+         const char *gridmode = "test", // Set the run mode (can be "full", "test", "offline", "submit" or "terminate"). Full & Test work for proof
+	 const Int_t bunchN = 0,
+         const bool bAOD = 1, // 1 = AOD ANALYSIS, 0 = ESD ANALYSIS
+         const bool bMCtruth = 0, // 1 = MCEvent handler is on (MC truth), 0 = MCEvent handler is off (MC reconstructed/real data)
+         const bool bMCphyssel = 0, // 1 = looking at MC truth or reconstructed, 0 = looking at real data
+         const Long64_t nentries = 5000, // for local and proof mode, ignored in grid mode. Set to 1234567890 for all events.
+         const Long64_t firstentry = 0, // for local and proof mode, ignored in grid mode
+         const char *proofdataset = "/alice/data/LHC10c_000120821_p1", // path to dataset on proof cluster, for proof analysis
+         const char *proofcluster = "alice-caf.cern.ch", // which proof cluster to use in proof mode
+         const char *taskname = "BF_AOD_49_bunch" // sets name of grid generated macros
+         )
+{
+    // check run type
+    if(runtype != "local" && runtype != "proof" && runtype != "grid"){
+        Printf("\n\tIncorrect run option, check first argument of run macro");
+        Printf("\tint runtype = local, proof or grid\n");
+        return;
     }
-  }
-  //___________________________________________________//
-  // Create the analysis manager
-  AliAnalysisManager *mgr = new AliAnalysisManager("testAnalysis");
-  if (analysisMode == kGRID) { 
-    // Connect plug-in to the analysis manager
-    mgr->SetGridHandler(alienHandler);
-  }
-
-  AliVEventHandler* esdH = new AliESDInputHandler();
-  mgr->SetInputEventHandler(esdH);
-
-  //Configure the BF object
-  gROOT->LoadMacro("AddTaskBalanceFunction.C");
-  AliAnalysisTaskBF *taskBF = AddTaskBalanceFunction();
-
-  // Task to check the offline trigger
-  if (analysisMode == kLocal || analysisMode == kGRID || analysisMode == kInteractive) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); }
-  else if (analysisMode == kPROOF || analysisMode == kLocalPAR) {
-    gROOT->LoadMacro("AddTaskPhysicsSelection.C"); }
-  AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection();
-  if (kMCAnalysis) {physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
-
-  // Enable debug printouts
-  mgr->SetDebugLevel(2);
-  if (!mgr->InitAnalysis())
-    return;
-  mgr->PrintStatus();
+    Printf("%s analysis chosen",runtype);
   
-  if (analysisMode == kLocal || analysisMode == kLocalPAR || analysisMode == kInteractive) {
-    mgr->StartAnalysis("local",chain);
-  }
-  else if (analysisMode == kPROOF) {
-    mgr->StartAnalysis("proof",dataDir,nRuns,offset);
-  }
-  else if (analysisMode == kGRID) { 
-    mgr->StartAnalysis("grid");
-  }
-
-  timer.Stop();
-  timer.Print();
-}
-
-void SetupPar(char* pararchivename) {
-  //Load par files, create analysis libraries
-  //For testing, if par file already decompressed and modified
-  //classes then do not decompress.
-  
-  TString cdir(Form("%s", gSystem->WorkingDirectory() )) ; 
-  TString parpar(Form("%s.par", pararchivename)) ; 
-  if ( gSystem->AccessPathName(parpar.Data()) ) {
-    gSystem->ChangeDirectory(gSystem->Getenv("ALICE_ROOT")) ;
-    TString processline(Form(".! make %s", parpar.Data())) ; 
-    gROOT->ProcessLine(processline.Data()) ;
-    gSystem->ChangeDirectory(cdir) ; 
-    processline = Form(".! mv /tmp/%s .", parpar.Data()) ;
-    gROOT->ProcessLine(processline.Data()) ;
-  } 
-  if ( gSystem->AccessPathName(pararchivename) ) {  
-    TString processline = Form(".! tar xvzf %s",parpar.Data()) ;
-    gROOT->ProcessLine(processline.Data());
-  }
-  
-  TString ocwd = gSystem->WorkingDirectory();
-  gSystem->ChangeDirectory(pararchivename);
-  
-  // check for BUILD.sh and execute
-  if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
-    printf("*******************************\n");
-    printf("*** Building PAR archive    ***\n");
-    cout<<pararchivename<<endl;
-    printf("*******************************\n");
-    if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
-      Error("runProcess","Cannot Build the PAR Archive! - Abort!");
-      return -1;
-    }
-  }
-  // check for SETUP.C and execute
-  if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
-    printf("*******************************\n");
-    printf("*** Setup PAR archive       ***\n");
-    cout<<pararchivename<<endl;
-    printf("*******************************\n");
-    gROOT->Macro("PROOF-INF/SETUP.C");
-  }
-  
-  gSystem->ChangeDirectory(ocwd.Data());
-  printf("Current dir: %s\n", ocwd.Data());
-}
-
-//__________________________________________________________//
-Int_t setupPar(const char* pararchivename) {
-  ///////////////////
-  // Setup PAR File//
-  ///////////////////
-  if (pararchivename) {
-    char processline[1024];
-    sprintf(processline,".! tar xvzf %s.par",pararchivename);
-    gROOT->ProcessLine(processline);
-    const char* ocwd = gSystem->WorkingDirectory();
-    gSystem->ChangeDirectory(pararchivename);
-    
-    // check for BUILD.sh and execute
-    if (!gSystem->AccessPathName("PROOF-INF/BUILD.sh")) {
-      printf("*******************************\n");
-      printf("*** Building PAR archive    ***\n");
-      printf("*******************************\n");
-      
-      if (gSystem->Exec("PROOF-INF/BUILD.sh")) {
-        Error("runAnalysis","Cannot Build the PAR Archive! - Abort!");
-        return -1;
-      }
-    }
-    // check for SETUP.C and execute
-    if (!gSystem->AccessPathName("PROOF-INF/SETUP.C")) {
-      printf("*******************************\n");
-      printf("*** Setup PAR archive       ***\n");
-      printf("*******************************\n");
-      gROOT->Macro("PROOF-INF/SETUP.C");
-    }
-    
-    gSystem->ChangeDirectory("../");
-  } 
-  return 1;
-}
-
-//__________________________________________________________//
-void LoadLibraries(const anaModes mode) {  
-  //--------------------------------------
-  // Load the needed libraries most of them already loaded by aliroot
-  //--------------------------------------
-  //----------------------------------------------------------
-  // >>>>>>>>>>> Local mode <<<<<<<<<<<<<< 
-  //----------------------------------------------------------
-  if (mode==kLocal || mode==kGRID || mode==kInteractive) {
-    //--------------------------------------------------------
-    // If you want to use already compiled libraries 
-    // in the aliroot distribution
-    //--------------------------------------------------------
-    gSystem->Load("libSTEERBase.so");
+    // load libraries
+    gSystem->Load("libCore.so");        
+    gSystem->Load("libGeom.so");
     gSystem->Load("libVMC.so");
+    gSystem->Load("libPhysics.so");
+    gSystem->Load("libTree.so");
+    gSystem->Load("libSTEERBase.so");
     gSystem->Load("libESD.so");
     gSystem->Load("libAOD.so");
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libANALYSISalice.so");
-    if (mode==kLocal) {
-      Printf("Local: loading the libPWG2ebye.so");
-      gSystem->Load("libPWG2ebye.so");
-    }
-    if (mode==kGRID || mode==kInteractive) {
-      //setupPar("PWG2ebye");
-      //Printf("GRID: loading the libPWG2ebye.so");
-      gSystem->Load("libPWG2ebye.so");
-    }
-  }//local or GRID
-  else if (mode == kLocalPAR) {
-    //--------------------------------------------------------
-    //If you want to use root and par files from aliroot
-    //--------------------------------------------------------  
-    gSystem->Load("libSTEERBase.so");
-    //setupPar("ESD");
-    gSystem->Load("libVMC.so");
-    gSystem->Load("libESD.so");
-    //setupPar("AOD");
-    gSystem->Load("libAOD.so");
-    //setupPar("ANALYSIS");
-    gSystem->Load("libANALYSIS.so");
-    //setupPar("ANALYSISalice");
-    gSystem->Load("libANALYSISalice.so");
-    Int_t setuparflag = setupPar("PWG2ebye");
-    Printf("localPar: loading the libPWG2ebye.so (%d)",setuparflag);
     gSystem->Load("libPWG2ebye.so");
-  }//local with par files
-  
-  //---------------------------------------------------------
-  // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
-  //---------------------------------------------------------
-  else if (mode==kPROOF) {
-    // Connect to proof
-    printf("*** Connect to PROOF ***\n");
-    gEnv->SetValue("XSec.GSI.DelegProxy","2");
-    TProof::Open("alice-caf.cern.ch");
- 
-    // Upload the Packages
-    gProof->UploadPackage("STEERBase.par");
-    gProof->UploadPackage("ESD.par");    
-    gProof->UploadPackage("AOD.par");       
-    gProof->UploadPackage("ANALYSIS.par"); 
-    gProof->UploadPackage("ANALYSISalice.par");
-    gProof->UploadPackage("CORRFW.par");
-    gProof->UploadPackage("PWG2ebye.par");
 
-    // Enable the Packages     
-    gProof->EnablePackage("STEERBase");
-    gProof->EnablePackage("ESD");
-    gProof->EnablePackage("AOD");
-    gProof->EnablePackage("ANALYSIS");
-    gProof->EnablePackage("ANALYSISalice");
-    gProof->EnablePackage("PWG2ebye");
+    // additional
 
-    // Show enables Packages
-    gProof->ShowEnabledPackages();
-  }  
+    // add aliroot indlude path
+    gROOT->ProcessLine(".include $PWD/.");
+    gROOT->ProcessLine(Form(".include %s/include",gSystem->ExpandPathName("$ALICE_ROOT")));
+    gROOT->SetStyle("Plain");
+
+    // analysis manager
+    AliAnalysisManager* mgr = new AliAnalysisManager(Form("%s%i",taskname,bunchN));
+    
+    // create the alien handler and attach it to the manager
+    AliAnalysisGrid *plugin = CreateAlienHandler(bAOD,bunchN,Form("%s%i",taskname,bunchN), gridmode, proofcluster, proofdataset); 
+    mgr->SetGridHandler(plugin);
+    
+
+    // input handler (ESD or AOD)
+    AliVEventHandler* inputH = NULL;
+    if(!bAOD){
+      inputH = new AliESDInputHandler();
+    }
+    else{
+      inputH = new AliAODInputHandler();
+    }
+    mgr->SetInputEventHandler(inputH);
+    
+    // mc event handler
+    if(bMCtruth) {
+        AliMCEventHandler* mchandler = new AliMCEventHandler();
+        // Not reading track references
+        mchandler->SetReadTR(kFALSE);
+        mgr->SetMCtruthEventHandler(mchandler);
+    }   
+
+    // AOD output handler
+    //AliAODHandler* aodoutHandler = new AliAODHandler();
+    //aodoutHandler->SetOutputFileName("aod.root");
+    //mgr->SetOutputEventHandler(aodoutHandler); 
+    
+    // === Physics Selection Task ===
+    //
+    // In SelectCollisionCandidate(), default is kMB, so the task UserExec() 
+    // function is only called for these events.
+    // Options are:
+    //    kMB             Minimum Bias trigger
+    //    kMBNoTRD        Minimum bias trigger where the TRD is not read out
+    //    kMUON           Muon trigger
+    //    kHighMult       High-Multiplicity Trigger
+    //    kUserDefined    For manually defined trigger selection
+    //
+    // Multiple options possible with the standard AND/OR operators && and ||
+    // These all have the usual offline SPD or V0 selections performed.
+    //
+    // With a pointer to the physics selection object using physSelTask->GetPhysicsSelection(),
+    // one can manually set the selected and background classes using:
+    //    AddCollisionTriggerClass("+CINT1B-ABCE-NOPF-ALL")
+    //    AddBGTriggerClass("+CINT1A-ABCE-NOPF-ALL");
+    //
+    // One can also specify multiple classes at once, or require a class to NOT
+    // trigger, for e.g.
+    //    AddBGTriggerClass("+CSMBA-ABCE-NOPF-ALL -CSMBB-ABCE-NOPF-ALL");
+    //
+    // NOTE that manually setting the physics selection overrides the standard
+    // selection, so it must be done in completeness.
+    //
+    // ALTERNATIVELY, one can make the physics selection inside the task
+    // UserExec().
+    // For this case, comment out the task->SelectCol.... line, 
+    // and see AliBasicTask.cxx UserExec() function for details on this.
+
+    //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    //AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(bMCphyssel);
+    //if(!physSelTask) { Printf("no physSelTask"); return; }
+    //AliPhysicsSelection *physSel = physSelTask->GetPhysicsSelection();
+    //physSel->AddCollisionTriggerClass("+CINT1B-ABCE-NOPF-ALL");// #3119 #769");
+                
+    // create task
+    // copile standalone stuff
+    //gROOT->LoadMacro("AliBalance.cxx++g");
+    //gROOT->LoadMacro("AliAnalysisTaskB.cxx++g");
+
+    //Add the centrality determination task (only on ESD level)
+    if(!bAOD){
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+      AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
+    }
+
+    // Add the trigger selection task
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+
+    //Add the BF task (all centralities)
+    gROOT->LoadMacro("AddTaskBalanceCentralityTrain.C"); 
+    AliAnalysisTaskBF *task = AddTaskBalanceCentralityTrain(0,100);
+    
+    //Add the BFG task (different centralities)
+    for (Int_t i=binfirst; i<binlast+1; i++) {
+      Float_t lowCentralityBinEdge = centralityArray[i];
+      Float_t highCentralityBinEdge = centralityArray[i+1];
+      Printf("\nWagon for centrality bin %i: %.0f-%.0f",i,lowCentralityBinEdge,highCentralityBinEdge);
+      AddTaskBalanceCentralityTrain(lowCentralityBinEdge,highCentralityBinEdge);
+    } 
+   
+        
+    // enable debug printouts
+    //mgr->SetDebugLevel(2);
+    //mgr->SetUseProgressBar(1,100);
+    if (!mgr->InitAnalysis()) return;
+    mgr->PrintStatus();
   
+    // start analysis
+    Printf("Starting Analysis....");
+    mgr->StartAnalysis(runtype,nentries,firstentry);
 }
+
+//______________________________________________________________________________
+AliAnalysisGrid* CreateAlienHandler(Bool_t bAOD, Int_t bunchN, const char *taskname, const char *gridmode, const char *proofcluster, const char *proofdataset)
+{
+    AliAnalysisAlien *plugin = new AliAnalysisAlien();
+    // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
+    plugin->SetRunMode(gridmode);
+
+    // Set versions of used packages
+    plugin->SetAPIVersion("V1.1x");
+    plugin->SetROOTVersion("v5-28-00d");
+    plugin->SetAliROOTVersion("v4-21-27-AN");
+
+    // Declare input data to be processed.
+
+    // Method 1: Create automatically XML collections using alien 'find' command.
+    // Define production directory LFN
+    plugin->SetGridDataDir("/alice/data/2010/LHC10h/");
+    // On real reconstructed data:
+    // plugin->SetGridDataDir("/alice/data/2009/LHC09d");
+
+    // Set data search pattern
+    //plugin->SetDataPattern("*ESDs.root"); // THIS CHOOSES ALL PASSES
+    // Data pattern for reconstructed data
+    if(!bAOD){
+      plugin->SetDataPattern("*ESDs/pass2/*ESDs.root"); // CHECK LATEST PASS OF DATA SET IN ALIENSH
+    } 
+    else{
+      plugin->SetDataPattern("*ESDs/pass2/AOD049/*/AliAOD.root");
+    }
+
+    plugin->SetRunPrefix("000");   // real data
+    // ...then add run numbers to be considered
+    //plugin->SetRunRange(114917,115322);
+
+    if(bunchN==0){
+      plugin->AddRunNumber(137366);
+    }
+    
+    //bunch1
+    else if(bunchN == 1){
+      plugin->AddRunNumber(139510);
+      plugin->AddRunNumber(139507);
+      plugin->AddRunNumber(139505);
+      plugin->AddRunNumber(139503); 
+      plugin->AddRunNumber(139465); 
+      plugin->AddRunNumber(139438);
+      plugin->AddRunNumber(139437);
+      plugin->AddRunNumber(139360); 
+      plugin->AddRunNumber(139329);
+      plugin->AddRunNumber(139328); 
+    }
+
+    //bunch2
+    else if(bunchN == 2){
+      plugin->AddRunNumber(139314); 
+      plugin->AddRunNumber(139310);
+      plugin->AddRunNumber(139309); 
+      plugin->AddRunNumber(139173); 
+      plugin->AddRunNumber(139107); 
+      plugin->AddRunNumber(139105); 
+      plugin->AddRunNumber(139038); 
+      plugin->AddRunNumber(139037); 
+      plugin->AddRunNumber(139036); 
+      plugin->AddRunNumber(139029); 
+      plugin->AddRunNumber(139028); 
+      plugin->AddRunNumber(138872); 
+      plugin->AddRunNumber(138871); 
+      plugin->AddRunNumber(138870); 
+      plugin->AddRunNumber(138837); 
+      plugin->AddRunNumber(138732); 
+      plugin->AddRunNumber(138730);
+      plugin->AddRunNumber(138666);
+      plugin->AddRunNumber(138662); 
+      plugin->AddRunNumber(138653); 
+    }
+
+    else if(bunchN == 3){
+      plugin->AddRunNumber(138652);
+      plugin->AddRunNumber(138638);
+      plugin->AddRunNumber(138624); 
+      plugin->AddRunNumber(138621); 
+      plugin->AddRunNumber(138583); 
+      plugin->AddRunNumber(138582); 
+      plugin->AddRunNumber(138579); 
+      plugin->AddRunNumber(138578);
+      plugin->AddRunNumber(138534);
+      plugin->AddRunNumber(138469); 
+    }
+
+    else if(bunchN == 4){
+      
+      plugin->AddRunNumber(138442);
+      plugin->AddRunNumber(138439);
+      plugin->AddRunNumber(138438);
+      plugin->AddRunNumber(138396); 
+      plugin->AddRunNumber(138364); 
+      plugin->AddRunNumber(138275); 
+      plugin->AddRunNumber(138225); 
+      plugin->AddRunNumber(138201);
+      plugin->AddRunNumber(138197); 
+      plugin->AddRunNumber(138192); 
+    }
+
+    else if(bunchN == 5){
+
+      plugin->AddRunNumber(138190);
+      plugin->AddRunNumber(137848); 
+      plugin->AddRunNumber(137844); 
+      plugin->AddRunNumber(137752); 
+      plugin->AddRunNumber(137751); 
+      plugin->AddRunNumber(137724); 
+      plugin->AddRunNumber(137722); 
+      plugin->AddRunNumber(137718); 
+      plugin->AddRunNumber(137704); 
+      plugin->AddRunNumber(137693);
+    }
+
+    else if(bunchN == 6){
+
+      plugin->AddRunNumber(137692); 
+      plugin->AddRunNumber(137691); 
+      plugin->AddRunNumber(137686); 
+      plugin->AddRunNumber(137685); 
+      plugin->AddRunNumber(137639); 
+      plugin->AddRunNumber(137638);
+      plugin->AddRunNumber(137608); 
+      plugin->AddRunNumber(137595);
+      plugin->AddRunNumber(137549);
+      plugin->AddRunNumber(137546); 
+
+    }
+
+    else if(bunchN == 7){
+
+      plugin->AddRunNumber(137544); 
+      plugin->AddRunNumber(137541); 
+      plugin->AddRunNumber(137539); 
+      plugin->AddRunNumber(137531); 
+      plugin->AddRunNumber(137530); 
+      plugin->AddRunNumber(137443); 
+      plugin->AddRunNumber(137441); 
+      plugin->AddRunNumber(137440); 
+      plugin->AddRunNumber(137439); 
+      plugin->AddRunNumber(137434); 
+
+    }
+
+    else if(bunchN == 8){
+
+      plugin->AddRunNumber(137432); 
+      plugin->AddRunNumber(137431); 
+      plugin->AddRunNumber(137430); 
+      plugin->AddRunNumber(137366); 
+      plugin->AddRunNumber(137243); 
+      plugin->AddRunNumber(137236);
+      plugin->AddRunNumber(137235);
+      plugin->AddRunNumber(137232); 
+      plugin->AddRunNumber(137231); 
+      plugin->AddRunNumber(137162); 
+      plugin->AddRunNumber(137161);
+    }
+
+    else{
+
+      stderr<<"BUNCH NOT THERE"<<endl;
+      return NULL;
+
+    }
+
+
+    //plugin->AddRunList("139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310, 139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870, 138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582, 138579, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201, 138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137366, 137243, 137236, 137235, 137232, 137231, 137162, 137161");
+
+
+
+
+
+    plugin->SetNrunsPerMaster(1);
+    plugin->SetOutputToRunNo();
+    // comment out the next line when using the "terminate" option, unless
+    // you want separate merged files for each run
+    plugin->SetMergeViaJDL();
+
+    // Method 2: Declare existing data files (raw collections, xml collections, root file)
+    // If no path mentioned data is supposed to be in the work directory (see SetGridWorkingDir())
+    // XML collections added via this method can be combined with the first method if
+    // the content is compatible (using or not tags)
+    //   plugin->AddDataFile("tag.xml");
+    //   plugin->AddDataFile("/alice/data/2008/LHC08c/000057657/raw/Run57657.Merged.RAW.tag.root");
+
+    // Define alien work directory where all files will be copied. Relative to alien $HOME.
+    plugin->SetGridWorkingDir(taskname);
+
+    // Declare alien output directory. Relative to working directory.
+    plugin->SetGridOutputDir("out"); // In this case will be $HOME/taskname/out
+
+    // Declare the analysis source files names separated by blancs. To be compiled runtime
+    // using ACLiC on the worker nodes.
+    // plugin->SetAnalysisSource("AliBalance.cxx AliAnalysisTaskBF.cxx");
+
+    // Declare all libraries (other than the default ones for the framework. These will be
+    // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
+    //plugin->AddIncludePath("-I.");
+    //plugin->SetAdditionalLibs("AliBalance.cxx AliBalance.h AliAnalysisTaskBF.cxx AliAnalysisTaskBF.h");
+
+    // Declare the output file names separated by blancs.
+    // (can be like: file.root or file.root@ALICE::Niham::File)
+    // To only save certain files, use SetDefaultOutputs(kFALSE), and then
+    // SetOutputFiles("list.root other.filename") to choose which files to save
+    plugin->SetDefaultOutputs();
+    //plugin->SetOutputFiles("list.root");
+
+    // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
+    plugin->SetAnalysisMacro(Form("%s.C",taskname));
+
+    // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
+    plugin->SetSplitMaxInputFileNumber(100);
+
+    // Optionally modify the executable name (default analysis.sh)
+    plugin->SetExecutable(Form("%s.sh",taskname));
+
+    // set number of test files to use in "test" mode
+    plugin->SetNtestFiles(1);
+
+    // Optionally resubmit threshold.
+    plugin->SetMasterResubmitThreshold(90);
+
+    // Optionally set time to live (default 30000 sec)
+    plugin->SetTTL(90000);
+
+    // Optionally set input format (default xml-single)
+    plugin->SetInputFormat("xml-single");
+
+    // Optionally modify the name of the generated JDL (default analysis.jdl)
+    plugin->SetJDLName(Form("%s.jdl",taskname));
+
+    // Optionally modify job price (default 1)
+    plugin->SetPrice(1);      
+
+    // Optionally modify split mode (default 'se')    
+    plugin->SetSplitMode("se");
+
+    //plugin->SetUseSubmitPolicy();
+    //plugin->SetKeepLogs();
+    
+    //----------------------------------------------------------
+    //---      PROOF MODE SPECIFIC SETTINGS         ------------
+    //---------------------------------------------------------- 
+    // Proof cluster
+    plugin->SetProofCluster(proofcluster);
+    // Dataset to be used   
+    plugin->SetProofDataSet(proofdataset);
+    // May need to reset proof. Supported modes: 0-no reset, 1-soft, 2-hard
+    plugin->SetProofReset(0);
+    // May limit number of workers
+    plugin->SetNproofWorkers(0);
+    // May limit the number of workers per slave
+    plugin->SetNproofWorkersPerSlave(1);   
+    // May use a specific version of root installed in proof
+    plugin->SetRootVersionForProof("current");
+    // May set the aliroot mode. Check http://aaf.cern.ch/node/83 
+    plugin->SetAliRootMode("default"); // Loads AF libs by default
+    // May request ClearPackages (individual ClearPackage not supported)
+    plugin->SetClearPackages(kFALSE);
+    // Plugin test mode works only providing a file containing test file locations, used in "local" mode also
+    plugin->SetFileForTestMode("files.txt"); // file should contain path name to a local directory containg *ESDs.root etc
+    // Request connection to alien upon connection to grid
+    plugin->SetProofConnectGrid(kFALSE);
+
+    plugin->Print();
+
+    return plugin;
+}
+
