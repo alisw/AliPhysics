@@ -44,17 +44,19 @@
 #include "TBrowser.h"
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"
+#include "AliAODEvent.h"
 #include "AliVParticle.h"
 #include "AliMCParticle.h"
 #include "AliESDtrack.h"
 #include "AliMultiplicity.h"
 #include "AliAODTrack.h"
+#include "AliFlowTrackSimple.h"
 #include "AliFlowTrack.h"
 #include "AliFlowTrackCuts.h"
 #include "AliLog.h"
 #include "AliESDpid.h"
 #include "AliESDPmdTrack.h"
-#include "AliESDVZERO.h"
+#include "AliVVZERO.h"
 
 ClassImp(AliFlowTrackCuts)
 
@@ -113,6 +115,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fMCparticle(NULL),
   fEvent(NULL),
   fTPCtrack(),
+  fFlowTagType(AliFlowTrackSimple::kInvalid),
   fESDpid(),
   fPIDsource(kTOFpid),
   fTPCpidCuts(NULL),
@@ -183,6 +186,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fMCparticle(NULL),
   fEvent(NULL),
   fTPCtrack(),
+  fFlowTagType(AliFlowTrackSimple::kInvalid),
   fESDpid(),
   fPIDsource(kTOFpid),
   fTPCpidCuts(NULL),
@@ -261,6 +265,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fMCparticle(NULL),
   fEvent(NULL),
   fTPCtrack(),
+  fFlowTagType(that.fFlowTagType),
   fESDpid(that.fESDpid),
   fPIDsource(that.fPIDsource),
   fTPCpidCuts(NULL),
@@ -333,6 +338,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fPmdAdc=that.fPmdAdc;
   fCutPmdNcell=that.fCutPmdNcell;
   fPmdNcell=that.fPmdNcell;
+  fFlowTagType=that.fFlowTagType;
   
   fParamType=that.fParamType;
   fParamMix=that.fParamMix;
@@ -425,8 +431,8 @@ Bool_t AliFlowTrackCuts::IsSelected(TObject* obj, Int_t id)
   if (tracklets) return PassesCuts(tracklets,id);
   AliESDPmdTrack* pmdtrack = dynamic_cast<AliESDPmdTrack*>(obj);
   if (pmdtrack) return PassesPMDcuts(pmdtrack);
-  AliESDVZERO* esdvzero = dynamic_cast<AliESDVZERO*>(obj);
-  if (esdvzero) return PassesV0cuts(esdvzero,id);
+  AliVVZERO* vvzero = dynamic_cast<AliVVZERO*>(obj);
+  if (vvzero) return PassesV0cuts(vvzero,id);
   return kFALSE;  //default when passed wrong type of object
 }
 
@@ -608,6 +614,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
     {
       TParticle* tparticle=fMCparticle->Particle();
       Int_t processID = tparticle->GetUniqueID();
+      Int_t firstMotherLabel = tparticle->GetFirstMother();
       //TLorentzVector v;
       //mcparticle->Particle()->ProductionVertex(v);
       //Double_t prodvtxX = v.X();
@@ -615,6 +622,9 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
 
       Float_t pdg = 0;
       Int_t pdgcode = fMCparticle->PdgCode();
+      Float_t pdgFirstMother = 0;
+      Int_t pdgcodeFirstMother = fMCevent->GetTrack(firstMotherLabel)->PdgCode();
+      
       switch (TMath::Abs(pdgcode))
       {
         case 11:
@@ -631,12 +641,30 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
           pdg = AliPID::kUnknown + 0.5; break;
       }
       pdg = TMath::Sign(pdg,static_cast<Float_t>(pdgcode));
+
+      switch (TMath::Abs(pdgcodeFirstMother))
+      {
+        case 3122: //lambda
+          pdgFirstMother = 0.5; break;
+        case 3222: case 3212: case 3112: //sigma+ sigma0 sigma-
+          pdgFirstMother = 1.5; break;
+        case 3322: case 3312: //xi0 xi+
+          pdgFirstMother = 2.5;
+        case 3332: //omega-
+          pdgFirstMother = 3.5;
+        default:
+          pdgFirstMother = 1e10; break;
+      }
+      pdgFirstMother = TMath::Sign(pdgFirstMother,static_cast<Float_t>(pdgcodeFirstMother));
+      
       QAbefore(2)->Fill(p,pdg);
       QAbefore(3)->Fill(p,IsPhysicalPrimary()?0.5:-0.5);
       QAbefore(4)->Fill(p,static_cast<Float_t>(processID));
+      QAbefore(7)->Fill(p,pdgFirstMother);
       if (pass) QAafter(2)->Fill(p,pdg);
       if (pass) QAafter(3)->Fill(p,IsPhysicalPrimary()?0.5:-0.5);
       if (pass) QAafter(4)->Fill(p,static_cast<Float_t>(processID));
+      if (pass) QAafter(7)->Fill(p,pdgFirstMother);
     }
   }
 
@@ -674,6 +702,10 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track)
   if (fUseAODFilterBit && !track->TestFilterBit(fAODFilterBit)) pass=kFALSE;
   
   if (fCutDCAToVertexXY && track->DCA()>GetMaxDCAToVertexXY()) pass=kFALSE;
+
+  if (fCutDCAToVertexZ && track->ZAtDCA()>GetMaxDCAToVertexZ()) pass=kFALSE;
+
+  if (track->GetTPCsignal() < fMinimalTPCdedx) pass=kFALSE;
 
   return pass;
 }
@@ -763,11 +795,18 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
       case kTPCbayesian:
         if (!PassesTPCbayesianCut(track)) pass=kFALSE;
         break;
-	    // part added by F. Noferini
+        // part added by F. Noferini
       case kTOFbayesian:
-	      if (!PassesTOFbayesianCut(track)) pass=kFALSE;
-	      break;
-	    // end part added by F. Noferini
+        if (!PassesTOFbayesianCut(track)) pass=kFALSE;
+        break;
+        // end part added by F. Noferini
+
+        //part added by Natasha
+      case kTPCNuclei:
+        if (!PassesNucleiSelection(track)) pass=kFALSE;
+        break;
+        //end part added by Natasha
+
       default:
         printf("AliFlowTrackCuts::PassesCuts() this should never be called!\n");
         pass=kFALSE;
@@ -1402,6 +1441,19 @@ void AliFlowTrackCuts::DefineHistograms()
   after->Add(new TH2F("DCAxy",";p_{t}[GeV/c];DCAxy[cm]", 100, 0., 10., nBinsDCA, binsDCA));//5
   before->Add(new TH2F("DCAz",";p_{t}[GeV/c];DCAz[cm]", 100, 0., 10., nBinsDCA, binsDCA));//6
   after->Add(new TH2F("DCAz",";p_{t}[GeV/c];DCAz[cm]", 100, 0., 10., nBinsDCA, binsDCA));//6
+  //first mother
+  hb = new TH2F("MC first mother",";p[GeV/c];",kNbinsP,binsP,4,0.,4.);
+  ha = new TH2F("MC first mother",";p[GeV/c];",kNbinsP,binsP,4,0.,4.);
+  hb->GetYaxis()->SetBinLabel(1,"#Lambda");
+  ha->GetYaxis()->SetBinLabel(1,"#Lambda");
+  hb->GetYaxis()->SetBinLabel(2,"#Sigma");
+  ha->GetYaxis()->SetBinLabel(2,"#Sigma");
+  hb->GetYaxis()->SetBinLabel(3,"#Xi");
+  ha->GetYaxis()->SetBinLabel(3,"#Xi");
+  hb->GetYaxis()->SetBinLabel(4,"#Omega");
+  ha->GetYaxis()->SetBinLabel(4,"#Omega");
+  before->Add(hb);//7
+  after->Add(ha);//7
   
   TH1::AddDirectory(adddirstatus);
 }
@@ -1455,7 +1507,12 @@ TObject* AliFlowTrackCuts::GetInputObject(Int_t i)
       return esd->GetPmdTrack(i);
     case kV0:
       esd = dynamic_cast<AliESDEvent*>(fEvent);
-      if (!esd) return NULL;
+      if (!esd) //contributed by G.Ortona
+      {
+        AliAODEvent* aod = dynamic_cast<AliAODEvent*>(fEvent);
+        if(!aod)return NULL;
+        return aod->GetVZEROData();
+      }
       return esd->GetVZEROData();
     default:
       if (!fEvent) return NULL;
@@ -2039,6 +2096,66 @@ Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(const AliESDtrack* track)
   }
   return kFALSE;
 }
+
+
+//-----------------------------------------------------------------------
+ // part added by Natasha
+Bool_t AliFlowTrackCuts::PassesNucleiSelection(const AliESDtrack* track)
+{
+  Bool_t select=kFALSE;
+
+  //if (!track) continue; 
+  
+  if (!track->GetInnerParam()) 
+    return kFALSE;    //break;
+  
+  const AliExternalTrackParam* tpcTrack = track->GetInnerParam();
+   
+  Double_t ptotTPC = tpcTrack->GetP();
+  Double_t sigTPC = track->GetTPCsignal();
+  Double_t dEdxBBA = 0.;
+  Double_t dSigma = 0.; 
+
+  switch (fParticleID)
+    {
+    case AliPID::kDeuteron:
+      //pid=10;
+      dEdxBBA = AliExternalTrackParam::BetheBlochAleph(ptotTPC/1.8756,
+						       4.60e+00,
+						       8.9684e+00,
+						       1.640e-05,
+						       2.35e+00,
+						       2.35e+00);
+      dSigma = (sigTPC -  dEdxBBA)/dEdxBBA;
+      
+      if( ptotTPC<=1.1 && (dSigma < (0.5 - (0.1818*ptotTPC)) ) && (dSigma > ( (0.218*ptotTPC - 0.4) ) )  )
+	{select=kTRUE;}
+      break;
+      
+    case AliPID::kTriton:
+      //pid=11;
+      select=kFALSE;
+      break;
+      
+    case AliPID::kHe3:
+      //pid=12;
+      select=kFALSE;
+      break;
+      
+    case AliPID::kAlpha:
+      //pid=13;
+      select=kFALSE;
+      break;
+      
+    default:
+      return kFALSE;
+    }       
+  
+  return select;
+}
+// end part added by Natasha
+
+
 
 //-----------------------------------------------------------------------
 Int_t AliFlowTrackCuts::GetESDPdg(const AliESDtrack *track,Option_t *option,Int_t ipart,Float_t cPi,Float_t cKa,Float_t cPr)
@@ -3361,6 +3478,8 @@ const char* AliFlowTrackCuts::PIDsourceName(PIDsource s)
       return "TOFbayesianPID";
     case kTOFbetaSimple:
       return "TOFbetaSimple";
+    case kTPCNuclei:
+      return "TPCnuclei";
     default:
       return "NOPID";
   }
@@ -3421,7 +3540,7 @@ Bool_t AliFlowTrackCuts::PassesPMDcuts(AliESDPmdTrack* track )
 }
   
 //-----------------------------------------------------------------------
-Bool_t AliFlowTrackCuts::PassesV0cuts(AliESDVZERO* vzero, Int_t id)
+Bool_t AliFlowTrackCuts::PassesV0cuts(AliVVZERO* vzero, Int_t id)
 {
   //check V0 cuts
 
@@ -3490,19 +3609,16 @@ void AliFlowTrackCuts::Browse(TBrowser* b)
 Long64_t AliFlowTrackCuts::Merge(TCollection* list)
 {
   //merge
-  Int_t number=0;
-  AliFlowTrackCuts* obj;
-  if (!list) return 0;
-  if (list->GetEntries()<1) return 0;
+  if (!fQA || !list) return 0;
+  if (list->IsEmpty()) return 0;
+  AliFlowTrackCuts* obj=NULL;
+  TList tmplist;
   TIter next(list);
   while ( (obj = dynamic_cast<AliFlowTrackCuts*>(next())) )
   {
     if (obj==this) continue;
-    TList listwrapper;
-    listwrapper.Add(obj->GetQA());
-    fQA->Merge(&listwrapper);
-    number++;
+    tmplist.Add(obj->GetQA());
   }
-  return number;
+  return fQA->Merge(&tmplist);
 }
 

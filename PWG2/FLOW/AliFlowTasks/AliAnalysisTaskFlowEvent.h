@@ -11,6 +11,8 @@
 #ifndef AliAnalysisTaskFlowEvent_H
 #define AliAnalysisTaskFlowEvent_H
 
+#include "AliFlowTrackSimple.h"
+
 class AliCFManager;
 class AliFlowEventCuts;
 class AliFlowTrackCuts;
@@ -57,10 +59,10 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
 
   void          SetCutsEvent(AliFlowEventCuts* cutsEvent) {fCutsEvent=cutsEvent;}
   AliFlowEventCuts* GetCutsEvent() const {return fCutsEvent;}
-  void          SetCutsRP(AliFlowTrackCuts* cutsRP) {fCutsRP=cutsRP;}
-  AliFlowTrackCuts* GetCutsRP() const {return fCutsRP;}
-  void          SetCutsPOI(AliFlowTrackCuts* cutsPOI) {fCutsPOI=cutsPOI;}
-  AliFlowTrackCuts* GetCutsPOI() const {return fCutsPOI;}
+  void          SetCutsRP(AliFlowTrackCuts* cutsRP) {fCutContainer->Add(cutsRP); fCutsRP=cutsRP; cutsRP->SetFlowTagType(AliFlowTrackSimple::kRP);}
+  AliFlowTrackCuts* GetCutsRP() const {return fCutsRP;} //to be reimplemented
+  void          SetCutsPOI(AliFlowTrackCuts* cutsPOI) {fCutContainer->Add(cutsPOI); fCutsPOI=cutsPOI; cutsPOI->SetFlowTagType(AliFlowTrackSimple::kPOI);}
+  AliFlowTrackCuts* GetCutsPOI() const {return fCutsPOI;} //to be reimplemented
 
   void          SetCFManager1(AliCFManager* cfmgr) {this->fCFManager1 = cfmgr; } 
   AliCFManager* GetCFManager1()           {return this->fCFManager1; }
@@ -113,6 +115,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   AliFlowEventCuts* fCutsEvent;     //event cuts
   AliFlowTrackCuts* fCutsRP;        //cuts for RPs
   AliFlowTrackCuts* fCutsPOI;       //cuts for POIs
+  TList*            fCutContainer;  //contains the cut objects
   TList*        fQAList;             // QA histogram list
   Int_t         fMinMult;           // Minimum multiplicity from tracks selected using CORRFW
   Int_t         fMaxMult;           // Maximum multiplicity from tracks selected using CORRFW 
