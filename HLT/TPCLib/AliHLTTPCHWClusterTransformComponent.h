@@ -152,6 +152,8 @@ private:
   Bool_t fDataId;
   UInt_t fChargeThreshold;  //!transient 
   AliHLTTPCClusterTransformation fTransform;
+  Bool_t fPublishRawClusters; // publish raw clusters in addition
+
   AliHLTComponentBenchmark fBenchmark; // benchmarks
 
   ClassDef(AliHLTTPCHWClusterTransformComponent, 0)

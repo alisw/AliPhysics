@@ -31,6 +31,8 @@ using namespace std;
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliRawDataHeader.h"
+#include "AliHLTTPCRawCluster.h"
+#include "AliHLTTPCHWCFEmulator.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -51,6 +53,7 @@ AliHLTTPCHWClusterTransformComponent::AliHLTTPCHWClusterTransformComponent()
 fDataId(kFALSE),
 fChargeThreshold(10),
 fTransform(),
+fPublishRawClusters(kFALSE),
 fBenchmark("HWClusterTransform")
 {
   // see header file for class documentation
@@ -92,6 +95,7 @@ int AliHLTTPCHWClusterTransformComponent::GetOutputDataTypes(AliHLTComponentData
   tgtList.clear();
   tgtList.push_back(AliHLTTPCDefinitions::fgkClustersDataType| kAliHLTDataOriginTPC);
   tgtList.push_back(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC );
+  tgtList.push_back(AliHLTTPCDefinitions::fgkRawClustersDataType  | kAliHLTDataOriginTPC );
   return tgtList.size();
 }
 
@@ -245,10 +249,11 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
      long nAddedClusters = 0;
      
      for(UInt_t nWords=0; nWords<bufferSize32; nWords+=5){
-       //     for(UInt_t nWords=0; nWords<5; nWords+=5){
+
+       AliHLTUInt32_t  word0 = AliHLTTPCHWCFEmulator::ReadBigEndian( buffer[nWords] );
 
        // check if bit 31 and 30 of the 32-bit word is 11 -> cluster (10 is RCU trailer)
-       AliHLTUInt32_t bit3130 = (buffer[nWords]>>30); // shift 30 to the right
+       AliHLTUInt32_t bit3130 = (word0>>30); // shift 30 to the right
        
        if(bit3130 == 0x3){ //beginning of a cluster
 	 
@@ -262,14 +267,8 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	   
 	 AliHLTTPCSpacePointData cluster;
               
-	 //get the first word
-	 AliHLTUInt32_t  rowCharge = buffer[nWords];
-	 AliHLTUInt8_t  *rowPtr    = reinterpret_cast<AliHLTUInt8_t*>(&rowCharge);	  
-	 rowPtr+=3; // this is to run for little endian architecture, the word is read from right to left
-	
-	 cluster.fPadRow  = (UChar_t)((*rowPtr)&0x3f);
-	 cluster.fCharge  = ((UInt_t)rowCharge&0xFFFFFF)>>6; //24-bit mask to get out the charge and division with 64(>>6) for the gain correction
-	 
+	 cluster.fPadRow  = ( word0 >> 24 ) & 0x3f ;
+	 cluster.fCharge  = ( word0 & 0xFFFFFF )>>6; //24-bit mask to get out the charge and division with 64(>>6) for the gain correction	 
 	 Float_t tmpPad   = *((Float_t*)&buffer[nWords+1]);
 	 Float_t tmpTime  = *((Float_t*)&buffer[nWords+2]);
 	 cluster.fSigmaY2 = *((Float_t*)&buffer[nWords+3]);
@@ -328,11 +327,74 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
      size   += mysize;
      outputPtr += mysize;
   
-   } // end of loop over data blocks  
+     if (fPublishRawClusters) {
+
+       long maxRawClusters = ((long)maxOutSize-size-sizeof(AliHLTTPCRawClusterData))/sizeof(AliHLTTPCRawCluster);
+       
+       if( maxRawClusters<=0 ) {
+	 HLTWarning("No more space to add raw clusters, exiting!");
+	 iResult  = -ENOSPC;
+       } else {       
+
+	 // copy raw cluster data from input
+	 
+	 AliHLTTPCRawClusterData* outputRaw= (AliHLTTPCRawClusterData*)(outputPtr);
+       
+	 outputRaw->fVersion = 0;
+	 outputRaw->fCount = 0;
+
+	 for(UInt_t nWords=0; nWords<bufferSize32; nWords+=5){
+
+	   AliHLTUInt32_t  word0 = AliHLTTPCHWCFEmulator::ReadBigEndian( buffer[nWords] );
+
+	   // check if bit 31 and 30 of the 32-bit word is 11 -> cluster (10 is RCU trailer)
+	   AliHLTUInt32_t bit3130 = (word0>>30); // shift 30 to the right
+         
+	   if(bit3130 == 0x3){ //beginning of a cluster
+
+	     if(outputRaw->fCount>=maxRawClusters){
+	       HLTWarning("No more space to add clusters, exiting!");
+	       iResult  = -ENOSPC;
+	       break;
+	     }
+
+	     AliHLTTPCRawCluster &c = outputRaw->fClusters[outputRaw->fCount];
+	     c.SetPadRow( (word0>>24)&0x3f + AliHLTTPCTransform::GetFirstRow(minPartition));
+	     c.SetPad(    *((Float_t*)&buffer[nWords+1]));  
+	     c.SetTime(   *((Float_t*)&buffer[nWords+2]));
+	     c.SetSigmaY2(*((Float_t*)&buffer[nWords+3]));
+	     c.SetSigmaZ2(*((Float_t*)&buffer[nWords+4]));
+	     c.SetCharge( (word0 & 0xFFFFFF) >> 6 );
+	     c.SetQMax(0); // TODO        	 
+
+	     // skip clusters below threshold  
+	     if( c.GetCharge()<fChargeThreshold ) continue;  
+	     // store cluster and continue
+	     outputRaw->fCount++;
+
+	   } else if(bit3130 == 0x2){ // we have reached the beginning of the RCU trailer - 10=0x2
+	     break;
+	   }
+	 }       
+	 
+	 // fill into HLT output data
+	 AliHLTComponentBlockData bdRawClusters;
+	 FillBlockData( bdRawClusters );
+	 bdRawClusters.fOffset = size;
+	 bdRawClusters.fSize = sizeof(AliHLTTPCRawClusterData)+outputRaw->fCount*sizeof(AliHLTTPCRawCluster);
+	 bdRawClusters.fSpecification = iter->fSpecification;
+	 bdRawClusters.fDataType = AliHLTTPCDefinitions::fgkRawClustersDataType | kAliHLTDataOriginTPC;
+	 outputBlocks.push_back( bdRawClusters );
+	 fBenchmark.AddOutput(bdRawClusters.fSize);
+	 size   += bdRawClusters.fSize;
+	 outputPtr += bdRawClusters.fSize;
+       }
+     }
+  } // end of loop over data blocks  
   
   fBenchmark.Stop(0);
   HLTInfo(fBenchmark.GetStatistics());
-
+  
   return iResult;
 } // end DoEvent()
 
@@ -372,6 +434,11 @@ int AliHLTTPCHWClusterTransformComponent::ScanConfigurationArgument(int argc, co
     return 2;
   }    
 
+  if (argument.CompareTo("-publish-raw")==0) {
+    fPublishRawClusters=kTRUE;
+    return 1;
+  }  
+  
   // unknown argument
   return -EINVAL;
 }
