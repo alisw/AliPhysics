@@ -86,6 +86,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fCutsEvent(NULL),
   fCutsRP(NULL),
   fCutsPOI(NULL),
+  fCutContainer(NULL),
   fQAList(NULL),
   fMinMult(0),
   fMaxMult(10000000),
@@ -141,6 +142,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fCutsEvent(NULL),
   fCutsRP(NULL),
   fCutsPOI(NULL),
+  fCutContainer(new TList()),
   fQAList(NULL),
   fMinMult(0),
   fMaxMult(10000000),
@@ -214,9 +216,10 @@ AliAnalysisTaskFlowEvent::~AliAnalysisTaskFlowEvent()
   delete fMyTRandom3;
   delete fFlowEvent;
   delete fCutsEvent;
-  delete fCutsRP;
-  delete fCutsPOI;
   delete fQAList;
+  delete fCutsRP; fCutsRP=NULL;
+  delete fCutsPOI; fCutsPOI=NULL; //set to null because another delete will be attempted via the container
+  if (fCutContainer) fCutContainer->Delete(); delete fCutContainer;
   // objects in the output list are deleted
   // by the TSelector dtor (I hope)
 

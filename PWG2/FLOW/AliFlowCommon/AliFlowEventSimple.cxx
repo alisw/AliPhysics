@@ -201,7 +201,7 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
   vQ.Set(0.,0.);
 
   Int_t iOrder = n;
-  Double_t iUsedTracks = 0;
+  Double_t sumOfWeights = 0.;
   Double_t dPhi = 0.;
   Double_t dPt = 0.;
   Double_t dEta = 0.;
@@ -284,7 +284,7 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
         dQY += dWeight*wPhi*wPt*wEta*TMath::Sin(iOrder*dPhi);
 
         // weighted multiplicity:
-        iUsedTracks += dWeight*wPhi*wPt*wEta;
+        sumOfWeights += dWeight*wPhi*wPt*wEta;
 
       } // end of if (pTrack->InRPSelection())
     } // end of if (pTrack)
@@ -295,7 +295,7 @@ AliFlowVector AliFlowEventSimple::GetQ(Int_t n, TList *weightsList, Bool_t usePh
   } // loop over particles
 
   vQ.Set(dQX,dQY);
-  vQ.SetMult(iUsedTracks);
+  vQ.SetMult(sumOfWeights);
 
   return vQ;
 
@@ -310,7 +310,7 @@ void AliFlowEventSimple::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weights
   Double_t dQY = 0.;
 
   Int_t iOrder = n;
-  Double_t iUsedTracks = 0;
+  Double_t sumOfWeights = 0.;
   Double_t dPhi = 0.;
   Double_t dPt  = 0.;
   Double_t dEta = 0.;
@@ -422,7 +422,7 @@ void AliFlowEventSimple::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weights
             dQY += dWeight*dWphi*dWpt*dWeta*TMath::Sin(iOrder*dPhi);
 
             // weighted multiplicity:
-            iUsedTracks+=dWeight*dWphi*dWpt*dWeta;
+            sumOfWeights+=dWeight*dWphi*dWpt*dWeta;
 
           } // end of subevent
         } // end of if (pTrack->InRPSelection())
@@ -433,9 +433,9 @@ void AliFlowEventSimple::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weights
       }
     } // loop over particles
     Qarray[s].Set(dQX,dQY);
-    Qarray[s].SetMult(iUsedTracks);
+    Qarray[s].SetMult(sumOfWeights);
     //reset
-    iUsedTracks = 0;
+    sumOfWeights = 0.;
     dQX = 0.;
     dQY = 0.;
   }

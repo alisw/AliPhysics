@@ -17,6 +17,13 @@ class TParticle;
 class AliFlowTrackSimple: public TObject {
 
 public:
+  enum tagType { kInvalid=-1,
+                 kRP=0,
+                 kPOI=1,
+                 kPOI1=2,
+                 kPOI2=3,
+               };
+
   AliFlowTrackSimple();
   AliFlowTrackSimple(TParticle* p);
   AliFlowTrackSimple(const AliFlowTrackSimple& aTrack);
@@ -37,7 +44,6 @@ public:
   Int_t Charge() const;
   Int_t PID() const {return 0;}
   
-
   Bool_t InRPSelection() const; 
   Bool_t InPOISelection() const; 
   Bool_t InSubevent(Int_t i) const;
@@ -52,6 +58,8 @@ public:
   void SetForPOISelection(Bool_t b=kTRUE); 
   void TagRP(Bool_t b=kTRUE) {SetForRPSelection(b);} 
   void TagPOI(Bool_t b=kTRUE) {SetForPOISelection(b);} 
+  void Tag(Int_t n, Bool_t b=kTRUE) {fFlowBits.SetBitNumber(n,b);}
+  void CheckTag(Int_t n) {fFlowBits.TestBitNumber(n);}
   void SetForSubevent(Int_t i); 
   void ResetFlowTags() {fFlowBits.ResetAllBits();}
   void ResetSubEventTags() {fSubEventBits.ResetAllBits();}
@@ -140,9 +148,9 @@ inline Int_t AliFlowTrackSimple::Charge() const {
   return this->fCharge; }
 //TBits
 inline Bool_t AliFlowTrackSimple::InRPSelection() const { 
-  return this->fFlowBits.TestBitNumber(0); }
+  return this->fFlowBits.TestBitNumber(kRP); }
 inline Bool_t AliFlowTrackSimple::InPOISelection() const { 
-  return this->fFlowBits.TestBitNumber(1); }
+  return this->fFlowBits.TestBitNumber(kPOI); }
 inline Bool_t AliFlowTrackSimple::InSubevent(Int_t i) const { 
   return this->fSubEventBits.TestBitNumber(i); }
 
@@ -159,9 +167,9 @@ inline void AliFlowTrackSimple::SetCharge(Int_t val) {
   fCharge = val; }
 //TBits
 inline void AliFlowTrackSimple::SetForRPSelection(Bool_t val) {
-  fFlowBits.SetBitNumber(0,val); }
+  fFlowBits.SetBitNumber(kRP,val); }
 inline void AliFlowTrackSimple::SetForPOISelection(Bool_t val) {
-  fFlowBits.SetBitNumber(1,val); }
+  fFlowBits.SetBitNumber(kPOI,val); }
 inline void AliFlowTrackSimple::SetForSubevent(Int_t i) {
   fSubEventBits.SetBitNumber(i,kTRUE); }
 
