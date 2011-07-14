@@ -117,6 +117,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     int iMaxPart=5;
     TString mergerInput;
     TString sinkClusterInput;
+    TString sinkHWClusterInput;
     TString dEdXInput;
     for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
       TString trackerInput;
@@ -147,12 +148,24 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	} else {
 	  handler->CreateConfiguration(cf.Data(), "TPCClusterFinder32Bit", publisher.Data(),arg.Data());
 	}
+
+	// Hardware CF emulator
+	// soon going to replace the software clusterfinder
+	TString hwcfemu;
+	hwcfemu.Form("TPC-HWCFEmu_%02d_%d", slice, part);
+	handler->CreateConfiguration(hwcfemu.Data(), "TPCHWClusterFinderEmulator", publisher.Data(), "-do-mc 1  -single-sequence-limit 100 -cluster-lower-limit 10");
+	TString hwcf;
+	hwcf.Form("TPC-HWCF_%02d_%d", slice, part);
+	handler->CreateConfiguration(hwcf.Data(), "TPCHWClusterTransform",hwcfemu.Data(), "");
+
 	if (trackerInput.Length()>0) trackerInput+=" ";
 	trackerInput+=cf;
 	if (dEdXInput.Length()>0) dEdXInput+=" ";
 	dEdXInput+=cf;
 	if (sinkClusterInput.Length()>0) sinkClusterInput+=" ";
 	sinkClusterInput+=cf;
+	if (sinkHWClusterInput.Length()>0) sinkHWClusterInput+=" ";
+	sinkHWClusterInput+=hwcf;
       }
       TString tracker;
       // tracker finder components
@@ -186,6 +199,8 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     // cluster dump collection
     handler->CreateConfiguration("TPC-clusters", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLUSTERS' 'TPC ' -datatype 'CLMCINFO' 'TPC '");
     handler->CreateConfiguration("TPC-raw-clusters", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLUSTRAW' 'TPC ' -datatype 'CLMCINFO' 'TPC '");
+    handler->CreateConfiguration("TPC-hwclusters", "BlockFilter"   , sinkHWClusterInput.Data(), "-datatype 'CLUSTERS' 'TPC ' -datatype 'CLMCINFO' 'TPC '");
+    handler->CreateConfiguration("TPC-raw-hwclusters", "BlockFilter"   , sinkHWClusterInput.Data(), "-datatype 'CLUSTRAW' 'TPC ' -datatype 'CLMCINFO' 'TPC '");
 
     /////////////////////////////////////////////////////////////////////////////////////
     //
