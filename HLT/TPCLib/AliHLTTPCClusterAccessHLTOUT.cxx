@@ -169,14 +169,16 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
       if (fVerbosity>0) AliInfo(Form("processing HLT clusters for slice %d partitions %d", slice, part));
       AliHLTUInt32_t spec=slice<<24 | slice<<16 | part<<8 | part;
       AliHLTTPCClusterMCDataList tpcClusterLabels;
+      bool bHaveLabels=false;
       if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo, spec)>=0) {
 	iResult=ReadAliHLTTPCClusterMCData(pHLTOUT, tpcClusterLabels);
+	bHaveLabels=true;
       }
 
       if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::fgkRawClustersDataType, spec)>=0) {
-	iResult=ReadAliHLTTPCRawClusterData(pHLTOUT, fClusters, &tpcClusterLabels);
+	iResult=ReadAliHLTTPCRawClusterData(pHLTOUT, fClusters, bHaveLabels?&tpcClusterLabels:NULL);
       } else if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::fgkClustersDataType, spec)>=0) {
-	iResult=ReadAliHLTTPCClusterData(pHLTOUT, fClusters, &tpcClusterLabels);
+	iResult=ReadAliHLTTPCClusterData(pHLTOUT, fClusters, bHaveLabels?&tpcClusterLabels:NULL);
       }
     }
   }
@@ -301,7 +303,7 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCClusterData(AliHLTOUT* pHLTOUT, T
 	}
       }
     }
-    if (fVerbosity>0) AliInfo(Form("converted %d cluster(s) from block 0x%08x", nSpacepoints, specification));
+    if (fVerbosity>0) AliInfo(Form("converted %d cluster(s) from block %s 0x%08x", nSpacepoints, AliHLTComponent::DataType2Text(dt).c_str(), specification));
   } while (pHLTOUT->SelectNextDataBlock()>=0);
   return iResult;
 }
@@ -350,6 +352,7 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCRawClusterData(AliHLTOUT* pHLTOUT
 	AliError("invalid object type, expecting AliTPCclusterMI");
 	break; // this is a problem of all objects
       }
+      if (fVerbosity>1) AliInfo(Form("cluster padrow %d (slice %d partition %d)", clusters[i].GetPadRow(), slice, partition));
       if (clusters[i].GetPadRow()<rowOffset) {
 	AliError(Form("invalid row number %d, expecting minimum row number %d for slice %d partition %d", clusters[i].GetPadRow(), rowOffset, slice, partition));
       } else {
