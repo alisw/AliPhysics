@@ -175,7 +175,9 @@ void AliHFSystErr::InitD0toKpi2010pp() {
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,0);
+  fMCPtShape->SetBinContent(1,0.03);
+  fMCPtShape->SetBinContent(2,0.03);
 
   // particle-antiparticle
   //  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",24,0,24);
@@ -239,7 +241,10 @@ fCutsEff->SetBinContent(9,0.15);
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,0,20);
-  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0);
+  fMCPtShape->SetBinContent(1,0.03);
+  fMCPtShape->SetBinContent(2,0.03);
+
 
   // particle-antiparticle
   fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
@@ -300,7 +305,9 @@ void AliHFSystErr::InitD0toKpi2010PbPb4080() {
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,0,20);
-  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0);
+  fMCPtShape->SetBinContent(1,0.03);
+  fMCPtShape->SetBinContent(2,0.03);
 
   // particle-antiparticle
   fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
@@ -355,7 +362,9 @@ void AliHFSystErr::InitD0toKpi2010ppLowEn() {
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,0,20);
-  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0);
+  fMCPtShape->SetBinContent(1,0.03);
+  fMCPtShape->SetBinContent(2,0.03);
 
   // particle-antiparticle
   fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
@@ -405,7 +414,9 @@ void AliHFSystErr::InitDplustoKpipi2010pp() {
 
   // MC dN/dpt  (copied from D0 : will update later)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,0,20);
-  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0);
+  fMCPtShape->SetBinContent(1,0.03);
+  fMCPtShape->SetBinContent(2,0.03);
 
 
   // particle-antiparticle
@@ -464,7 +475,9 @@ void AliHFSystErr::InitDplustoKpipi2010PbPb020() {
 
   // MC dN/dpt  (copied from D0 : will update later)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,0,20);
-  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0.);
+  fMCPtShape->SetBinContent(1,0.03);
+  fMCPtShape->SetBinContent(2,0.03);
 
 
   // particle-antiparticle
@@ -524,7 +537,9 @@ void AliHFSystErr::InitDplustoKpipi2010PbPb4080() {
 
   // MC dN/dpt  (copied from D0 : will update later)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,0,20);
-  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0);
+  fMCPtShape->SetBinContent(1,0.03);
+  fMCPtShape->SetBinContent(2,0.03);
 
 
   // particle-antiparticle
@@ -579,7 +594,9 @@ void AliHFSystErr::InitDplustoKpipi2010ppLowEn() {
  
   // MC dN/dpt  (copied from D0 : will update later)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,0,20);
-  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0.);
+  fMCPtShape->SetBinContent(1,0.03);
+  fMCPtShape->SetBinContent(2,0.03);
 
   return;
 }
@@ -644,7 +661,9 @@ void AliHFSystErr::InitDstartoD0pi2010pp() {
 
   // MC dN/dpt  (copied from D0 : will update later)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,0);
+  fMCPtShape->SetBinContent(1,0.03);
+  fMCPtShape->SetBinContent(2,0.03);
 
   return;
 
@@ -703,7 +722,9 @@ void AliHFSystErr::InitDstartoD0pi2010ppLowEn() {
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,0,20);
-  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0.);
+  fMCPtShape->SetBinContent(1,0.03);
+  fMCPtShape->SetBinContent(2,0.03);
 
 
   return;
@@ -745,7 +766,9 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb020() {
 
   // MC dN/dpt  (copied from D0 : will update later)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,0.);
+  fMCPtShape->SetBinContent(1,0.03);
+  fMCPtShape->SetBinContent(2,0.03);
 
   return;
 
@@ -787,7 +810,9 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb2040() {
 
   // MC dN/dpt  (copied from D0 : will update later)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,0.);
+  fMCPtShape->SetBinContent(1,0.03);
+  fMCPtShape->SetBinContent(2,0.03);
 
   return;
 
@@ -829,7 +854,9 @@ void AliHFSystErr::InitDstartoD0pi2010PbPb4080() {
 
   // MC dN/dpt  (copied from D0 : will update later)
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
-  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,0.);
+  fMCPtShape->SetBinContent(1,0.03);
+  fMCPtShape->SetBinContent(2,0.03);
 
   return;
 
