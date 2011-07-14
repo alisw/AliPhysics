@@ -43,6 +43,8 @@ Bool_t AliTRDgtuParam::fgUseGTUconst = kTRUE;
 // ----- matching windows -----
       Int_t     AliTRDgtuParam::fgDeltaY     = 19;
       Int_t     AliTRDgtuParam::fgDeltaAlpha = 21;
+// ----- reference layers -----
+      Int_t     AliTRDgtuParam::fgRefLayers[] = { 3, 2, 1 };
 
 // ----- Bin widths (granularity) -----
 const Float_t 	AliTRDgtuParam::fgkBinWidthY  = 160e-4;
@@ -1194,16 +1196,11 @@ const Bool_t    AliTRDgtuParam::fgZChannelMap[5][16][6][16] = {
 AliTRDgtuParam::AliTRDgtuParam() :
   fVertexSize(20.0),
   fCurrTrackletMask(0),
-  fRefLayers(0x0),
   fMagField(0.5),
   fGeo(0x0)
 {
   // default ctor
   fGeo = new AliTRDgeometry();
-  fRefLayers = new Int_t[fgkNRefLayers];
-  fRefLayers[0] = 3;
-  fRefLayers[1] = 2;
-  fRefLayers[2] = 1;
   for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
     fAki[iLayer] = 0.;
     fBki[iLayer] = 0.;
@@ -1218,7 +1215,6 @@ AliTRDgtuParam::~AliTRDgtuParam()
   // dtor
 
   delete fGeo;
-  delete [] fRefLayers;
 }
 
 AliTRDgtuParam* AliTRDgtuParam::Instance()
@@ -1251,12 +1247,12 @@ Int_t AliTRDgtuParam::GetZSubchannel(Int_t stack, Int_t layer, Int_t zchannel, I
   return fZSubChannel[stack][zchannel][layer][zpos];
 }
 
-Int_t AliTRDgtuParam::GetRefLayer(Int_t refLayerIdx) const
+Int_t AliTRDgtuParam::GetRefLayer(Int_t refLayerIdx)
 {
   // returns the reference layer indexed by refLayerIdx
 
   if (refLayerIdx >= 0 && refLayerIdx < fgkNRefLayers)
-    return fRefLayers[refLayerIdx];
+    return fgRefLayers[refLayerIdx];
   else
     return -1;
 }
@@ -1461,7 +1457,7 @@ Float_t AliTRDgtuParam::GetAki(Int_t k, Int_t i)
   if (fCurrTrackletMask != k)
     GenerateRecoCoefficients(k);
 
-  return fAki[i];
+  return -fAki[i];
 }
 
 Float_t AliTRDgtuParam::GetBki(Int_t k, Int_t i)
@@ -1558,7 +1554,7 @@ Bool_t AliTRDgtuParam::GetIntersectionPoints(Int_t k, Float_t &x1, Float_t &x2)
     return kFALSE;
 }
 
-Int_t AliTRDgtuParam::GetPt(Int_t layerMask, Int_t a, Float_t /* b */, Float_t x1, Float_t x2) const
+Int_t AliTRDgtuParam::GetPt(Int_t layerMask, Int_t a, Float_t /* b */, Float_t x1, Float_t x2, Float_t magField)
 {
   // returns 0.3 * B * 1/a (1/128 GeV/c)
   // a : offset, b : slope (not used)
@@ -1582,7 +1578,7 @@ Int_t AliTRDgtuParam::GetPt(Int_t layerMask, Int_t a, Float_t /* b */, Float_t x
     Int_t layerMaskId = maskIdLut[layerMask];
     Int_t c1 = c1Lut[layerMaskId];
     Int_t c1Ext = c1 << 8;
-    Int_t ptRawStage4 = c1Ext / a;
+    Int_t ptRawStage4 = c1Ext / (a >> 2);
     Int_t ptRawComb4 = ptRawStage4;
     Int_t ptExtComb4 = (ptRawComb4 > 0) ? ptRawComb4 + 33 : ptRawComb4 - 30;
 
@@ -1593,7 +1589,7 @@ Int_t AliTRDgtuParam::GetPt(Int_t layerMask, Int_t a, Float_t /* b */, Float_t x
     Float_t c1 = x1 * x2 / 2. / 10000.; // conversion cm to m
     Float_t r = 0;
     if ( (a >> 1) != 0)
-      r = (0.3 * fMagField / 2. / (fgkBinWidthY/100.)) * (((Int_t) c1) << 8) / (a >> 1); //??? why shift of a?
+      r = (0.3 * magField / 2. / (fgkBinWidthY/100.)) * (((Int_t) c1) << 8) / (a >> 1); //??? why shift of a?
 
     Int_t pt = (Int_t) (2 * r);
     if (pt >= 0)

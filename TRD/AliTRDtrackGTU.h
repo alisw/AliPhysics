@@ -22,8 +22,8 @@ class AliTRDtrackGTU : public TObject {
   ~AliTRDtrackGTU();
 
 // ----- Track properties
-  Int_t    GetPtInt() const { return fPt; }
-  Float_t  GetPt() const { return (Float_t) fPt / 128.; }
+  Int_t    GetPtInt() const { return AliTRDgtuParam::GetPt(fTrackletMask, (Int_t) this->GetA(), 0, 0, 0, 0); }
+  Float_t  GetPt() const { return (Float_t) this->GetPtInt() / 128.; }
   Int_t    GetPID() const { return fPID; }
   Int_t    GetSector() const { return fSector; }
   Int_t    GetStack() const { return fStack; }
@@ -44,6 +44,7 @@ class AliTRDtrackGTU : public TObject {
   Float_t GetC() const { return fC; }
   Int_t GetZChannel() const { return fZChannel; }
   Int_t GetZSubChannel();
+  Int_t GetRefLayer() const { return AliTRDgtuParam::GetRefLayer(fRefLayerIdx); }
   Int_t GetRefLayerIdx() const { return fRefLayerIdx; }
   Int_t GetYapprox();
 
@@ -52,7 +53,6 @@ class AliTRDtrackGTU : public TObject {
 
   void SetStack(Int_t stack) { fStack = stack; }
   void SetSector(Int_t sector) { fSector = sector; }
-  void SetPtInt(Int_t pt) { fPt = pt; }
   void SetPID(Int_t pid) { fPID = pid; }
 
   void SetZChannel(Int_t zch) { fZChannel = zch; }
@@ -68,7 +68,6 @@ class AliTRDtrackGTU : public TObject {
   Int_t fStack; // TRD stack to which this track belongs
   Int_t fSector; // sector in which the track was found
 
-  Int_t fPt; // pt in integer representation
   Int_t fPID; // PID calculated from tracklet PID
 
   TClonesArray *fTracklets; // array holding the tracklets composing this track

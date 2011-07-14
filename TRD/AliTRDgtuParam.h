@@ -50,10 +50,10 @@ class AliTRDgtuParam : public TObject {
   Int_t GetDeltaY() const { return fgDeltaY; }
   Int_t GetDeltaAlpha() const { return fgDeltaAlpha; }
   Int_t GetZSubchannel(Int_t stack, Int_t layer, Int_t zchannel, Int_t zpos) const;
-  Int_t GetRefLayer(Int_t refLayerIdx) const;
+  static Int_t GetRefLayer(Int_t refLayerIdx);
 //  Bool_t GetFitParams(TVectorD &rhs, Int_t k); // const
   Bool_t GetIntersectionPoints(Int_t k, Float_t &x1, Float_t &x2); // const
-  Int_t GetPt(Int_t layerMask, Int_t a, Float_t b, Float_t x1, Float_t x2) const;
+  static Int_t GetPt(Int_t layerMask, Int_t a, Float_t b, Float_t x1, Float_t x2, Float_t magField);
 
   Bool_t IsInZChannel(Int_t stack, Int_t layer, Int_t zchannel, Int_t zpos) const;
 
@@ -99,6 +99,8 @@ class AliTRDgtuParam : public TObject {
   static       Int_t fgDeltaY;    	// accepted deviation in y_proj, default: 9
   static       Int_t fgDeltaAlpha;      // accepted deviation in alpha, default: 11
 
+  static       Int_t fgRefLayers[3];    // reference layers for track finding
+
   static       Bool_t fgUseGTUconst;    // use constants as in the GTU for the calculations
 					       // instead of geometry derived quantities
   static const Bool_t fgZChannelMap[5][16][6][16]; // z-channel tables as in GTU
@@ -112,8 +114,6 @@ class AliTRDgtuParam : public TObject {
   Float_t fAki[6]; // coefficients used for the fit, calculated for the current tracklet mask
   Float_t fBki[6]; // coefficients used for the fit, calculated for the current tracklet mask
   Float_t fCki[6]; // coefficients used for the fit, calculated for the current tracklet mask
-
-  Int_t *fRefLayers;		//[fgkNRefLayers] reference layers for track finding
 
   Float_t fMagField;            // magnetic field in T
 

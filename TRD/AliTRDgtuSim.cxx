@@ -237,8 +237,10 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd)
 	    }
 	    iStackPrev = iStack;
 	    iSecPrev = iSec;
+	    AliDebug(1, Form("now in sec %i, stack %i", iSec, iStack));
 	}
-	AliDebug(1, Form("adding tracklet: 0x%08x", trkl->GetTrackletWord()));
+	AliDebug(1, Form("adding tracklet: 0x%08x in sec %i stack %i link %i",
+			 trkl->GetTrackletWord(), trkl->GetDetector() / 30, (trkl->GetDetector() % 30) / 6, trkl->GetHCId() % 12));
 	if (fTMU) {
 	  fTMU->AddTracklet(trkl, iLink);
 	}

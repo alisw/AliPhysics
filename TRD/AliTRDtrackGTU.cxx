@@ -42,7 +42,6 @@ AliTRDtrackGTU::AliTRDtrackGTU() :
   TObject(),
   fStack(-1),
   fSector(-1),
-  fPt(0),
   fPID(0),
   fTracklets(0x0),
   fTrackletMask(0),
@@ -137,14 +136,14 @@ Int_t AliTRDtrackGTU::GetZSubChannel()
 
 Int_t AliTRDtrackGTU::GetYapprox()
 {
-// returns an approximated y-position for the track
+  // returns an approximated y-position for the track
+  // taken from the projected y-position of the tracklet in the reference layer
+  // in which the track was found
 
-  for (Int_t layer = 0; layer < AliTRDgtuParam::GetNLayers(); layer++)
-  {
-    if (IsTrackletInLayer(layer))
-      return ((AliTRDtrackletGTU*) (*fTracklets)[layer])->GetYProj();
-  }
-  return 0;
+  if ((fRefLayerIdx > -1) && (fRefLayerIdx < AliTRDgtuParam::GetNRefLayers()))
+    return ((AliTRDtrackletGTU*) (*fTracklets)[AliTRDgtuParam::GetRefLayer(fRefLayerIdx)])->GetYProj();
+  else
+    return 0;
 }
 
 AliESDTrdTrack* AliTRDtrackGTU::CreateTrdTrack() const
