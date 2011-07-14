@@ -269,7 +269,7 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCClusterData(AliHLTOUT* pHLTOUT, T
     AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(specification);
     AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(specification);
     // FIXME: get first row number of outer sectors from a common definition instead using number
-    unsigned rowOffset=partition<2?rowOffset=0:rowOffset=63;
+    unsigned rowOffset=partition<2?0:63;
     for (int i=0; i<nSpacepoints; i++) {
       if (!pClusters->At(offset+i)) continue;
       AliTPCclusterMI* pCluster=dynamic_cast<AliTPCclusterMI*>(pClusters->At(offset+i));
@@ -342,7 +342,7 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCRawClusterData(AliHLTOUT* pHLTOUT
     AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(specification);
     AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(specification);
     // FIXME: get first row number of outer sectors from a common definition instead using number
-    int rowOffset=partition<2?rowOffset=0:rowOffset=63;
+    int rowOffset=partition<2?0:63;
     for (int i=0; i<nCount; i++) {
       if (!pClusters->At(offset+i)) continue;
       AliTPCclusterMI* pCluster=dynamic_cast<AliTPCclusterMI*>(pClusters->At(offset+i));
