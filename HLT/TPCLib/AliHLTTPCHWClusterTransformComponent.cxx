@@ -359,7 +359,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	     }
 
 	     AliHLTTPCRawCluster &c = outputRaw->fClusters[outputRaw->fCount];
-	     c.SetPadRow( (word0>>24)&0x3f + AliHLTTPCTransform::GetFirstRow(minPartition));
+	     c.SetPadRow( ((word0>>24)&0x3f) + AliHLTTPCTransform::GetFirstRow(minPartition));
 	     c.SetPad(    *((Float_t*)&buffer[nWords+1]));  
 	     c.SetTime(   *((Float_t*)&buffer[nWords+2]));
 	     c.SetSigmaY2(*((Float_t*)&buffer[nWords+3]));
@@ -368,7 +368,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	     c.SetQMax(0); // TODO        	 
 
 	     // skip clusters below threshold  
-	     if( c.GetCharge()<fChargeThreshold ) continue;  
+	     if( c.GetCharge()<(int)fChargeThreshold ) continue;  
 	     // store cluster and continue
 	     outputRaw->fCount++;
 
