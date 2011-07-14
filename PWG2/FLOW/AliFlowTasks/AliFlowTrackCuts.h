@@ -28,7 +28,7 @@ class AliMultiplicity;
 class AliAODTrack;
 class AliESDtrack;
 class AliESDPmdTrack;
-class AliESDVZERO;
+class AliVVZERO;
 
 class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
@@ -68,8 +68,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                    kTOFbeta,     // asymmetric cuts of TOF beta signal
                    kTPCdedx,      // asymmetric cuts of TPC dedx signal
                    kTOFbetaSimple, //simple TOF only cut
-                   kTPCbayesian //bayesian cutTPC
-                 };
+                   kTPCbayesian, //bayesian cutTPC
+		               kTPCNuclei    // added by Natasha for Nuclei
+                   };
 
   //setters (interface to AliESDtrackCuts)
   void SetMinNClustersTPC( Int_t a ) {fCutNClustersTPC=kTRUE; fNClustersTPCMin=a;}
@@ -105,6 +106,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetPmdAdc(Float_t pmdAdc){fCutPmdAdc=kTRUE; fPmdAdc = pmdAdc; }
   void SetPmdNcell(Float_t pmdNcell) {fCutPmdNcell=kTRUE; fPmdNcell = pmdNcell; }						 
   void SetPriors(Float_t centr = 0); // set my favourite priors for Bayesian PID
+  void SetFlowTagType(AliFlowTrackSimple::tagType t) {fFlowTagType=t;}
 
   Int_t GetMinNClustersTPC() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClusterTPC();}
   Int_t GetMinNClustersITS() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClustersITS();}
@@ -198,7 +200,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesESDcuts(AliESDtrack* track);
   Bool_t PassesAODcuts(const AliAODTrack* track);
   Bool_t PassesPMDcuts(AliESDPmdTrack* track);
-  Bool_t PassesV0cuts(AliESDVZERO* track, Int_t id);
+  Bool_t PassesV0cuts(AliVVZERO* track, Int_t id);
   Bool_t PassesCuts(const AliFlowTrackSimple* track);
   Bool_t PassesCuts(const AliMultiplicity* track, Int_t id);
   Bool_t PassesMCcuts();
@@ -227,6 +229,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void InitESDcuts() {if (!fAliESDtrackCuts) {fAliESDtrackCuts=new AliESDtrackCuts();}}
   // part added by F. Noferini
   Bool_t PassesTOFbayesianCut(const AliESDtrack* track); 
+  Bool_t PassesNucleiSelection(const AliESDtrack* track);   // added by Natasha
   Int_t GetESDPdg(const AliESDtrack *track,Option_t *option="bayesianTOF",Int_t ipart=2,Float_t cPi=-1.0,Float_t cKa=0.0,Float_t cPr=0.0); // 3sigma cut ipart=0(el),1(mu),2(pi),3(K),4(p)
   Bool_t TPCTOFagree(const AliESDtrack *track);
   // end part added by F. Noferini
@@ -286,6 +289,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliMCParticle* fMCparticle;        //!mc particle
   AliVEvent* fEvent;                 //!placeholder for current event
   AliESDtrack fTPCtrack;             //!placeholder for TPC only track to avoid new/delete on every track
+  AliFlowTrackSimple::tagType fFlowTagType; //what kind of tag, RP, POI, POIx, ...
 
   //PID
   AliESDpid fESDpid; //pid obj
