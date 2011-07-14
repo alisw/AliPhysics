@@ -28,6 +28,7 @@ AliAnalysisTaskMuonResolution *AddTaskMuonResolution(Bool_t selectPhysics = kFAL
   }
   task->SelectPhysics(selectPhysics);
   task->SelectTrigger(selectTrigger);
+//  task->SelectTrigger(selectTrigger, AliVEvent::kMB);
   task->MatchTrigger(matchTrig);
   task->ApplyAccCut(applyAccCut);
   task->SetMinMomentum(minMomentum);
@@ -51,14 +52,16 @@ AliAnalysisTaskMuonResolution *AddTaskMuonResolution(Bool_t selectPhysics = kFAL
   // Create and connect output containers
   AliAnalysisDataContainer *cout_histo1 = mgr->CreateContainer("Residuals", TObjArray::Class(), AliAnalysisManager::kOutputContainer, outputfile);
   AliAnalysisDataContainer *cout_histo2 = mgr->CreateContainer("ResidualsVsP", TObjArray::Class(), AliAnalysisManager::kOutputContainer, outputfile);
-  AliAnalysisDataContainer *cout_histo3 = mgr->CreateContainer("LocalChi2", TObjArray::Class(), AliAnalysisManager::kParamContainer, outputfile);
-  AliAnalysisDataContainer *cout_histo4 = mgr->CreateContainer("ChamberRes", TObjArray::Class(), AliAnalysisManager::kParamContainer, outputfile);
-  AliAnalysisDataContainer *cout_histo5 = mgr->CreateContainer("TrackRes", TObjArray::Class(), AliAnalysisManager::kOutputContainer, outputfile);
+  AliAnalysisDataContainer *cout_histo3 = mgr->CreateContainer("ResidualsVsCent", TObjArray::Class(), AliAnalysisManager::kOutputContainer, outputfile);
+  AliAnalysisDataContainer *cout_histo4 = mgr->CreateContainer("LocalChi2", TObjArray::Class(), AliAnalysisManager::kParamContainer, outputfile);
+  AliAnalysisDataContainer *cout_histo5 = mgr->CreateContainer("ChamberRes", TObjArray::Class(), AliAnalysisManager::kParamContainer, outputfile);
+  AliAnalysisDataContainer *cout_histo6 = mgr->CreateContainer("TrackRes", TObjArray::Class(), AliAnalysisManager::kOutputContainer, outputfile);
   mgr->ConnectOutput(task, 1, cout_histo1);
   mgr->ConnectOutput(task, 2, cout_histo2);
   mgr->ConnectOutput(task, 3, cout_histo3);
   mgr->ConnectOutput(task, 4, cout_histo4);
   mgr->ConnectOutput(task, 5, cout_histo5);
+  mgr->ConnectOutput(task, 6, cout_histo6);
   
   return task;
 }   
