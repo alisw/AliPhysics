@@ -11,6 +11,7 @@
 #pragma link C++ class AliAnalysisTaskPileup+;
 #pragma link C++ class AliAnalysisTaskMuonFakes+;
 #pragma link C++ class AliAnalysisTaskMuonRefit+;
+#pragma link C++ class AliAnalysisTaskMuonPerformance+;
 #endif
 
 
