@@ -24,6 +24,7 @@ class TList;
 class AliMUONTrack;
 class AliMUONTrackParam;
 class AliMUONGeometryTransformer;
+class AliMUONVCluster;
 
 class AliAnalysisTaskMuonResolution : public AliAnalysisTaskSE {
 public:
@@ -76,6 +77,9 @@ public:
   
   void FitResiduals(Bool_t flag = kTRUE);
   
+  /// set the flag to remove mono-cathod clusters (either considering all the pads or only the ones directly below)
+  void RemoveMonoCathodClusters(Bool_t flag = kTRUE, Bool_t checkAllPads = kTRUE) {fRemoveMonoCathCl = flag; fCheckAllPads = checkAllPads;}
+  
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *);
   virtual void   NotifyRun();
@@ -95,8 +99,11 @@ private:
   void GetMean(TH1* h, Double_t& mean, Double_t& meanErr, TGraphErrors* g = 0x0, Int_t i = 0, Double_t x = 0, Bool_t zoom = kTRUE, Bool_t enableFit = kTRUE);
   void GetRMS(TH1* h, Double_t& rms, Double_t& rmsErr, TGraphErrors* g = 0x0, Int_t i = 0, Double_t x = 0, Bool_t zoom = kTRUE);
   void FillSigmaClusterVsP(const TH2* hIn, const TH2* hOut, TGraphErrors* g, Bool_t zoom = kTRUE);
+  void FillSigmaClusterVsCent(const TH2* hIn, const TH2* hOut, TGraphErrors* g, Bool_t zoom = kTRUE);
   void Cov2CovP(const AliMUONTrackParam &param, TMatrixD &covP);
   UInt_t BuildTriggerWord(const TString& FiredTriggerClasses);
+  void CheckPads(AliMUONVCluster *cl, Bool_t &hasBending, Bool_t &hasNonBending) const;
+  void CheckPadsBelow(AliMUONVCluster *cl, Bool_t &hasBending, Bool_t &hasNonBending) const;
   
 private:
   
@@ -120,7 +127,16 @@ private:
   
   enum eResidualsVsP {
     kResidualInChVsPClusterIn           = 0,  ///< cluster-track residual-X/Y distribution in chamber i versus momentum (cluster attached to the track)
-    kResidualInChVsPClusterOut          = 20  ///< cluster-track residual-X/Y distribution in chamber i versus momentum (cluster not attached to the track)
+    kResidualInChVsPClusterOut          = 20, ///< cluster-track residual-X/Y distribution in chamber i versus momentum (cluster not attached to the track)
+    kResidualVsPClusterIn               = 40, ///< cluster-track residual-X/Y distribution integrated over chambers versus momentum (cluster attached to the track)
+    kResidualVsPClusterOut              = 42  ///< cluster-track residual-X/Y distribution integrated over chambers versus momentum (cluster not attached to the track)
+  };
+  
+  enum eResidualsVsCent {
+    kResidualInChVsCentClusterIn        = 0,  ///< cluster-track residual-X/Y distribution in chamber i versus centrality (cluster attached to the track)
+    kResidualInChVsCentClusterOut       = 20, ///< cluster-track residual-X/Y distribution in chamber i versus centrality (cluster not attached to the track)
+    kResidualVsCentClusterIn            = 40, ///< cluster-track residual-X/Y distribution integrated over chambers versus centrality (cluster attached to the track)
+    kResidualVsCentClusterOut           = 42  ///< cluster-track residual-X/Y distribution integrated over chambers versus centrality (cluster not attached to the track)
   };
   
   enum eLocalChi2 {
@@ -147,7 +163,10 @@ private:
     kResidualPerHalfChMeanClusterIn     = 30, ///< cluster-track residual-X/Y per half chamber: mean (cluster in)
     kResidualPerHalfChMeanClusterOut    = 32, ///< cluster-track residual-X/Y per half chamber: mean (cluster out)
     kCombinedResidualPerHalfChSigma     = 34, ///< combined cluster-track residual-X/Y per half chamber
-    kClusterResPerHalfCh                = 36  ///< cluster X/Y-resolution per half chamber
+    kClusterResPerHalfCh                = 36, ///< cluster X/Y-resolution per half chamber
+    kCombinedResidualSigmaVsCent        = 38, ///< cluster X/Y-resolution per chamber versus centrality
+    kCombinedResidualAllChSigmaVsP      = 40, ///< cluster X/Y-resolution integrated over chambers versus momentum
+    kCombinedResidualAllChSigmaVsCent   = 42  ///< cluster X/Y-resolution integrated over chambers versus centrality
   };
   
   enum eTrackRes {
@@ -163,17 +182,19 @@ private:
     kResPerCh                           = 0,  ///< summary canvas
     kResPerChVsP                        = 1,  ///< summary canvas
     kResPerDE                           = 2,  ///< summary canvas
-    kResPerHalfCh                       = 3   ///< summary canvas
+    kResPerHalfCh                       = 3,  ///< summary canvas
+    kResPerChVsCent                     = 4   ///< summary canvas
   };
   
   static const Int_t fgkMinEntries; ///< minimum number of entries needed to compute resolution
   
-  TObjArray*  fResiduals;    //!< List of residual histos
-  TObjArray*  fResidualsVsP; //!< List of residual vs. p histos
-  TObjArray*  fLocalChi2;    //!< List of plots related to local chi2 per chamber/DE
-  TObjArray*  fChamberRes;   //!< List of plots related to chamber/DE resolution
-  TObjArray*  fTrackRes;     //!< List of plots related to track resolution (p, pT, ...)
-  TObjArray*  fCanvases;     //!< List of canvases summarizing the results
+  TObjArray*  fResiduals;       //!< List of residual histos
+  TObjArray*  fResidualsVsP;    //!< List of residual vs. p histos
+  TObjArray*  fResidualsVsCent; //!< List of residual vs. centrality histos
+  TObjArray*  fLocalChi2;       //!< List of plots related to local chi2 per chamber/DE
+  TObjArray*  fChamberRes;      //!< List of plots related to chamber/DE resolution
+  TObjArray*  fTrackRes;        //!< List of plots related to track resolution (p, pT, ...)
+  TObjArray*  fCanvases;        //!< List of canvases summarizing the results
   
   Double_t fClusterResNB[10]; ///< cluster resolution in non-bending direction
   Double_t fClusterResB[10];  ///< cluster resolution in bending direction
@@ -192,6 +213,8 @@ private:
   UInt_t   fTriggerMask;           ///< trigger mask to be used when selecting tracks
   Int_t    fExtrapMode;            ///< extrapolation mode to get the track parameters and covariances at a given cluster
   Bool_t   fCorrectForSystematics; ///< add or not the systematic shifts of the residuals to the resolution
+  Bool_t   fRemoveMonoCathCl;      ///< remove or not the mono-cathod clusters
+  Bool_t   fCheckAllPads;          ///< use all pads or only the ones directly below the cluster to look for mono-cathods
   Bool_t   fOCDBLoaded;            //!< flag telling if the OCDB has been properly loaded or not
   Int_t    fNDE;                   //!< total number of DE
   Int_t    fDEIndices[1100];       //!< index of DE in histograms refered by ID
@@ -204,7 +227,7 @@ private:
   
   TList* fSelectTriggerClass; //!< list of trigger class that can be selected to fill histograms
   
-  ClassDef(AliAnalysisTaskMuonResolution, 2); // chamber resolution analysis
+  ClassDef(AliAnalysisTaskMuonResolution, 3); // chamber resolution analysis
 };
 
 //________________________________________________________________________
