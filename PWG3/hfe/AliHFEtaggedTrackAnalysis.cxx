@@ -51,10 +51,11 @@ AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis():
   , fCuts(NULL)
   , fCFM(NULL)
   , fQAhistos(NULL)
-  , fCentralityF(0.)
+  , fCentralityF(0)
   , fClean(kFALSE)
   , fMagneticField(0.0)
   , fVariablesTRD(kFALSE)
+  , fIsPbPb(kFALSE)
 {
   //
   // Dummy constructor
@@ -71,10 +72,11 @@ AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis(const char *name):
   , fCuts(NULL)
   , fCFM(NULL)
   , fQAhistos(NULL)
-  , fCentralityF(0.)
+  , fCentralityF(0)
   , fClean(kFALSE)
   , fMagneticField(0.0)
   , fVariablesTRD(kFALSE)
+  , fIsPbPb(kFALSE)
 {
   //
   // Default constructor
@@ -104,6 +106,7 @@ AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis(const AliHFEtaggedTrackAnal
   , fClean(ref.fClean)
   , fMagneticField(ref.fMagneticField)
   , fVariablesTRD(ref.fVariablesTRD)
+  , fIsPbPb(ref.fIsPbPb)
 {
   //
   // Copy constructor
@@ -131,6 +134,7 @@ AliHFEtaggedTrackAnalysis &AliHFEtaggedTrackAnalysis::operator=(const AliHFEtagg
     fClean = ref.fClean;
     fMagneticField = ref.fMagneticField;
     fVariablesTRD = ref.fVariablesTRD;
+    fIsPbPb = ref.fIsPbPb;
 
     if(ref.fContainer) InitContainer();
    
@@ -272,6 +276,8 @@ void AliHFEtaggedTrackAnalysis::ProcessTrack(AliVParticle *track, Int_t abinitio
      hfetrack.SetRecTrack(track);
      hfetrack.SetAbInitioPID(abinitioPID);
      hfetrack.SetCentrality(fCentralityF);
+     if(fIsPbPb) hfetrack.SetPbPb();
+     else hfetrack.SetPP();
      fPID->SetVarManager(fVarManager);
      fPID->IsSelected(&hfetrack, fContainer, "taggedTrackContainer", fPIDqa);
    }

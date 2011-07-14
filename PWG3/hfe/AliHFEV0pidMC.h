@@ -29,7 +29,6 @@ class TList;
 
 class AliMCEvent;
 
-class AliHFEV0cuts;
 class AliHFEcollection;
 
 class AliHFEV0pidMC : public TObject {
@@ -54,7 +53,8 @@ class AliHFEV0pidMC : public TObject {
 
   AliMCEvent*         fMC;      // MC event
   AliHFEcollection*   fColl;    // Histogram collection
-  AliHFEV0cuts*       fV0cuts;  // V0 cut class
+
+  UInt_t              fDestBits;    // status bits for the destructor
 
    ClassDef(AliHFEV0pidMC, 1)   // QA class for V0 PID
 };

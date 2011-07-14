@@ -12,6 +12,7 @@ class AliHFEpidESD : public AliHFEpidBase{
     AliHFEpidESD();
     AliHFEpidESD(const AliHFEpidESD &ref);
     AliHFEpidESD &operator=(const AliHFEpidESD &ref);
+    virtual ~AliHFEpidESD();  
 
     virtual void InitializePID();
     virtual Int_t IsSelected(const AliVParticle *track);

@@ -20,8 +20,8 @@
 #ifndef ALIHFEV0PID_H
 #define ALIHFEV0PID_H
 
-#ifndef ROOT_TObject
-#include <TObject.h>
+#ifndef ROOT_TNamed
+#include <TNamed.h>
 #endif
 
 class TObjArray;
@@ -39,9 +39,10 @@ class AliMCEvent;
 class AliHFEV0cuts;
 class AliHFEcollection;
 
-class AliHFEV0pid : public TObject{
+class AliHFEV0pid : public TNamed{
   public:
     AliHFEV0pid();
+    AliHFEV0pid(const char *name);
     ~AliHFEV0pid();
 
     void  Process(AliVEvent * const inputEvent);
@@ -96,7 +97,7 @@ class AliHFEV0pid : public TObject{
       Int_t GetNumberOfPionsL() const { return fNPionsL; };
       Int_t GetNumberOfKaons() const { return fNKaons; };
       Int_t GetNumberOfProtons() const { return fNProtons; };
-      void Flush();
+      const void Flush();
       
     private:
       AliHFEV0pidTrackIndex(const AliHFEV0pidTrackIndex &ref);
@@ -135,6 +136,8 @@ class AliHFEV0pid : public TObject{
     AliHFEcollection *fQA;           // Collection of QA histograms
     AliHFEV0cuts     *fV0cuts;       // separate class for studying and applying the V0 cuts
     TList       *fOutput;            // collection list
+
+    UInt_t       fDestBits;              // logical bits for destructor
 
     ClassDef(AliHFEV0pid, 1)          // V0 PID Class
 

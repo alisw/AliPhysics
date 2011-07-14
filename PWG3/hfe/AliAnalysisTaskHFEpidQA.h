@@ -48,6 +48,7 @@ class AliAnalysisTaskHFEpidQA : public AliAnalysisTaskSE{
     Bool_t HasRecalculateTRDpid() const { return TestBit(kRecalculateTRDpid); };
     void SetV0pidQA(Bool_t v0pidQA = kTRUE) { SetBit(kV0pidQA, v0pidQA); };
     void SetRecalculateTRDpid(Bool_t recal = kTRUE) { SetBit(kRecalculateTRDpid, recal); };
+    void SetTRDTotalChargeInSlice0() { fTRDTotalChargeInSlice0 = kTRUE; }
 
     void SetNNref(TFile *f) { fNNref = f; };
 
@@ -62,6 +63,7 @@ class AliAnalysisTaskHFEpidQA : public AliAnalysisTaskSE{
     TList *fOutput;         //! Container for output histos
     TH1 *fEvents;           //! Number of Events
     TFile  *fNNref;         //  reference file for NN
+    Bool_t fTRDTotalChargeInSlice0;   // Fix for Foreware/Backward compatibility
 
     ClassDef(AliAnalysisTaskHFEpidQA, 1)
 };

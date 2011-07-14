@@ -224,7 +224,7 @@ Bool_t AliHFEpid::InitializePID(){
 }
 
 //____________________________________________________________
-Bool_t AliHFEpid::IsSelected(AliHFEpidObject *track, AliHFEcontainer *cont, const Char_t *contname, AliHFEpidQAmanager *pidqa){
+Bool_t AliHFEpid::IsSelected(const AliHFEpidObject * const track, AliHFEcontainer *cont, const Char_t *contname, AliHFEpidQAmanager *pidqa){
   //
   // Select Tracks
   //
@@ -307,75 +307,74 @@ void AliHFEpid::ConfigureTPCrejectionSimple(){
 }
 
 //____________________________________________________________
-void AliHFEpid::ConfigureTPCrejection(const char *lowerCutParam, Double_t * const params, Float_t upperTPCCut, Float_t TOFCut){
+void AliHFEpid::ConfigureTOF(Float_t TOFCut){
   //
-  // Combined TPC-TOF PID
-  // if no function parameterizaion is given, then the default one (exponential) is chosen
+  // Set Number of sigmas for TOF PID
   //
-  if(HasMCData()) AliInfo("Configuring TPC for MC\n");
-  AliHFEpidTPC *tpcpid = dynamic_cast<AliHFEpidTPC *>(fDetectorPID[kTPCpid]);
   AliHFEpidTOF *tofpid = dynamic_cast<AliHFEpidTOF *>(fDetectorPID[kTOFpid]);
   if(tofpid) tofpid->SetTOFnSigma(TOFCut);
+}
 
+//____________________________________________________________
+void AliHFEpid::ConfigureTPCcentralityCut(Int_t centralityBin, const char *lowerCutParam, const Double_t * const params, Float_t upperTPCCut){
+  //
+  // Cofigure centrality dependent cut function for TPC PID 
+  //
+  ConfigureTPCcut(centralityBin, lowerCutParam, params, upperTPCCut);
+}
+
+//____________________________________________________________
+void AliHFEpid::ConfigureTPCdefaultCut(const char *lowerCutParam, const Double_t * const params, Float_t upperTPCCut){
+  //
+  // Cofigure default cut function for TPC PID 
+  //
+  ConfigureTPCcut(-1, lowerCutParam, params, upperTPCCut);
+}
+
+//____________________________________________________________
+void AliHFEpid::ConfigureTPCcut(Int_t centralityBin, const char *lowerCutParam, const Double_t * const params, Float_t upperTPCCut){
+  //
+  // Cofigure cut function for TPC PID 
+  // if no function parameterizaion is given, then the default one (exponential) is chosen
+  //
+  
+  if(HasMCData()) AliInfo("Configuring TPC for MC\n");
+  AliHFEpidTPC *tpcpid = dynamic_cast<AliHFEpidTPC *>(fDetectorPID[kTPCpid]);
   //TF1 *upperCut = new TF1("upperCut", "[0] * TMath::Exp([1]*x)", 0, 20);
-  TF1 *upperCut = new TF1("upperCut", "[0]", 0, 20); // Use constant upper cut
-  TF1 *lowerCut = new TF1("lowerCut", lowerCutParam == NULL ? "[0] * TMath::Exp([1]*x) + [2]": lowerCutParam, 0, 20);
+  TF1 *upperCut = new TF1(Form("upperCut%s", centralityBin <  0 ? "Default" : Form("Bin%d", centralityBin)), "[0]", 0, 20); // Use constant upper cut
+  TF1 *lowerCut = new TF1(Form("lowerCut%s", centralityBin <  0 ? "Default" : Form("Bin%d", centralityBin)), lowerCutParam == NULL ? "[0] * TMath::Exp([1]*x) + [2]": lowerCutParam, 0, 20);
 
   upperCut->SetParameter(0, upperTPCCut); // pp
 
-//  upperCut->SetParameter(0, 3.5); //PbPb
-//  printf("upper %f \n",upperCut->GetParameter(0));
-  //upperCut->SetParameter(0, 2.7);
-  //upperCut->SetParameter(1, -0.4357);
   if(params){
-    for(Int_t ipar = 0; ipar < lowerCut->GetNpar(); ipar++) lowerCut->SetParameter(ipar, params[ipar]);
+      for(Int_t ipar = 0; ipar < lowerCut->GetNpar(); ipar++)
+      {
+	  lowerCut->SetParameter(ipar, params[ipar]);
+        //  printf("printout %i %s %f \n", centralityBin, lowerCutParam, params[ipar]);
+      }
   } else {
     // Set default parameterization
-      if(HasMCData()) lowerCut->SetParameter(0, -2.5);
-      else lowerCut->SetParameter(0, -4.03);  //pp
-//      else lowerCut->SetParameter(0, -3.83);  //PbPb
-  
-     
-    //else lowerCut->SetParameter(0, -3.71769);
-    //else lowerCut->SetParameter(0, -3.7);
-
+    if(HasMCData()) lowerCut->SetParameter(0, -2.5);
+    else lowerCut->SetParameter(0, -4.03);  //pp
     lowerCut->SetParameter(1, -0.22); // pp
-//     lowerCut->SetParameter(1,-0.36 ); // PbPb
-    //lowerCut->SetParameter(1, -0.40263);
-    //lowerCut->SetParameter(1, -0.8);
     
     if(HasMCData()) lowerCut->SetParameter(2, -2.2);
     else lowerCut->SetParameter(2, 0.92); //pp
-//     else lowerCut->SetParameter(2, 0.27); //PbPb
-   // else lowerCut->SetParameter(2, 0.92); //pp
-//     printf("lower0 %f \n",lowerCut->GetParameter(0));
-//     printf("lower1 %f \n",lowerCut->GetParameter(1));
-//     printf("lower2 %f \n",lowerCut->GetParameter(2));
-    //else lowerCut->SetParameter(2, 0.267857);
-    //else lowerCut->SetParameter(2, -0.35);
   }
 
 
   if(tpcpid){
     tpcpid->SetTPCnSigma(2);
-    tpcpid->SetUpperSigmaCut(upperCut);
-    tpcpid->SetLowerSigmaCut(lowerCut);
+    if(centralityBin < 0){
+      tpcpid->SetUpperSigmaCutDefault(upperCut);
+      tpcpid->SetLowerSigmaCutDefault(lowerCut);
+    } else {
+      tpcpid->SetUpperSigmaCutCentrality(upperCut, centralityBin);
+      tpcpid->SetLowerSigmaCutCentrality(lowerCut, centralityBin);
+    }
   }
   AddCommonObject(upperCut);
   AddCommonObject(lowerCut);
-}
-
-//____________________________________________________________
-void AliHFEpid::ConfigureTPCstrategyParis(){
-  //
-  // TPC alone, symmetric 3 sigma cut and 2 - -100 sigma pion rejection
-  //   
-  AliHFEpidTPC *pid = dynamic_cast<AliHFEpidTPC *>(fDetectorPID[kTPCpid]);
-  if(pid){
-    pid->SetTPCnSigma(2);
-    pid->SetRejectParticle(AliPID::kProton, 0., -3., 10., 3.);
-    pid->SetRejectParticle(AliPID::kKaon, 0., -3., 10., 3.);
-  }
 }
 
 //____________________________________________________________

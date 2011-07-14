@@ -51,6 +51,7 @@ ClassImp(AliHFEtpcPIDqa)
 AliHFEtpcPIDqa::AliHFEtpcPIDqa():
     AliHFEdetPIDqa()
   , fHistos(NULL)
+  , fBrowseCentrality(-1)
 {
   //
   // Dummy constructor
@@ -61,6 +62,7 @@ AliHFEtpcPIDqa::AliHFEtpcPIDqa():
 AliHFEtpcPIDqa::AliHFEtpcPIDqa(const char* name):
     AliHFEdetPIDqa(name, "QA for TPC")
   , fHistos(NULL)
+  , fBrowseCentrality(-1)
 {
   //
   // Default constructor
@@ -71,6 +73,7 @@ AliHFEtpcPIDqa::AliHFEtpcPIDqa(const char* name):
 AliHFEtpcPIDqa::AliHFEtpcPIDqa(const AliHFEtpcPIDqa &o):
     AliHFEdetPIDqa(o)
   , fHistos(NULL)
+  , fBrowseCentrality(o.fBrowseCentrality)
 {
   //
   // Copy constructor
@@ -107,6 +110,7 @@ void AliHFEtpcPIDqa::Copy(TObject &o) const {
     target.fHistos = NULL;
   }
   if(fHistos) target.fHistos = new AliHFEcollection(*fHistos);
+  target.fBrowseCentrality = fBrowseCentrality;
 }
 
 //_________________________________________________________
@@ -153,11 +157,11 @@ void AliHFEtpcPIDqa::Browse(TBrowser *b){
       TH2 *hptr = NULL; 
       for(Int_t ispec = 0; ispec < AliPID::kSPECIES+1; ispec++){
         for(Int_t istep = 0; istep < 2; istep++){
-          hptr = MakeSpectrumdEdx(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec]);
-          hptr->SetName(Form("hTPCdEdx%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
+          hptr = MakeSpectrumdEdx(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec], fBrowseCentrality);
+          hptr->SetName(Form("hTPCdEdx%s%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After" , fBrowseCentrality == -1 ? "MinBias" : Form("Cent%d", fBrowseCentrality)));
           listdEdx->Add(hptr);
-          hptr = MakeSpectrumNSigma(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec]);
-          hptr->SetName(Form("hTPCnsigma%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
+          hptr = MakeSpectrumNSigma(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec], fBrowseCentrality);
+          hptr->SetName(Form("hTPCnsigma%s%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After", fBrowseCentrality == -1 ? "MinBias" : Form("Cent%d", fBrowseCentrality)));
           listNsigma->Add(hptr);
         }
       }
@@ -245,7 +249,7 @@ Double_t AliHFEtpcPIDqa::GetTPCsignal(const AliVParticle *track, AliHFEpidObject
 }
 
 //_________________________________________________________
-TH2 *AliHFEtpcPIDqa::MakeSpectrumdEdx(AliHFEdetPIDqa::EStep_t istep, Int_t species){
+TH2 *AliHFEtpcPIDqa::MakeSpectrumdEdx(AliHFEdetPIDqa::EStep_t istep, Int_t species, Int_t centralityClass){
   //
   // Plot the Spectrum
   //
@@ -254,13 +258,34 @@ TH2 *AliHFEtpcPIDqa::MakeSpectrumdEdx(AliHFEdetPIDqa::EStep_t istep, Int_t speci
   hSignal->GetAxis(3)->SetRange(istep + 1, istep + 1);
   if(species >= 0 && species < AliPID::kSPECIES)
     hSignal->GetAxis(0)->SetRange(2 + species, 2 + species);
-  TH2 *hTmp = hSignal->Projection(2,1);
   TString hname = Form("hTPCsignal%s", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after"), 
           htitle = Form("TPC dE/dx Spectrum %s selection", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after");
   if(species > -1){
     hname += AliPID::ParticleName(species);
     htitle += Form(" for %ss", AliPID::ParticleName(species));
   }
+  TString centname, centtitle;
+  Bool_t hasCentralityInfo = kTRUE;
+  if(centralityClass > -1){
+    if(hSignal->GetNdimensions() < 5){
+      AliError("Centrality Information not available");
+      centname = centtitle = "MinBias";
+      hasCentralityInfo= kFALSE;
+    } else {
+      // Project centrality classes
+      // -1 is Min. Bias
+      hSignal->GetAxis(4)->SetRange(centralityClass+1, centralityClass+1);
+      centname = Form("Cent%d", centralityClass);
+      centtitle = Form(" Centrality %d", centralityClass);
+    }
+  } else {
+    centname = centtitle = "MinBias";
+    hasCentralityInfo= kFALSE;
+  }
+  hname += centtitle;
+  htitle += centtitle;
+
+  TH2 *hTmp = hSignal->Projection(2,1);
   hTmp->SetName(hname.Data());
   hTmp->SetTitle(htitle.Data());
   hTmp->SetStats(kFALSE);
@@ -268,11 +293,12 @@ TH2 *AliHFEtpcPIDqa::MakeSpectrumdEdx(AliHFEdetPIDqa::EStep_t istep, Int_t speci
   hTmp->GetYaxis()->SetTitle("TPC signal [a.u.]");
   hSignal->GetAxis(3)->SetRange(0, hSignal->GetAxis(3)->GetNbins());
   hSignal->GetAxis(0)->SetRange(0, hSignal->GetAxis(0)->GetNbins());
+  if(hasCentralityInfo) hSignal->GetAxis(4)->SetRange(0, hSignal->GetAxis(4)->GetNbins());
   return hTmp;
 }
 
 //_________________________________________________________
-TH2 *AliHFEtpcPIDqa::MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t istep, Int_t species){
+TH2 *AliHFEtpcPIDqa::MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t istep, Int_t species, Int_t centralityClass){
   //
   // Plot the Spectrum
   //
@@ -281,13 +307,34 @@ TH2 *AliHFEtpcPIDqa::MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t istep, Int_t spe
   hSignal->GetAxis(3)->SetRange(istep + 1, istep + 1);
   if(species >= 0 && species < AliPID::kSPECIES)
     hSignal->GetAxis(0)->SetRange(2 + species, 2 + species);
-  TH2 *hTmp = hSignal->Projection(2,1);
   TString hname = Form("hTPCsigma%s", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after"), 
           htitle = Form("TPC dE/dx Spectrum[#sigma] %s selection", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after");
   if(species > -1){
     hname += AliPID::ParticleName(species);
     htitle += Form(" for %ss", AliPID::ParticleName(species));
   }
+  TString centname, centtitle;
+  Bool_t hasCentralityInfo = kTRUE;
+  if(centralityClass > -1){
+    if(hSignal->GetNdimensions() < 5){
+      AliError("Centrality Information not available");
+      centname = centtitle = "MinBias";
+      hasCentralityInfo= kFALSE;
+    } else {
+      // Project centrality classes
+      // -1 is Min. Bias
+      hSignal->GetAxis(4)->SetRange(centralityClass+1, centralityClass+1);
+      centname = Form("Cent%d", centralityClass);
+      centtitle = Form(" Centrality %d", centralityClass);
+    }
+  } else {
+    centname = centtitle = "MinBias";
+    hasCentralityInfo= kFALSE;
+  }
+  hname += centtitle;
+  htitle += centtitle;
+
+  TH2 *hTmp = hSignal->Projection(2,1);
   hTmp->SetName(hname.Data());
   hTmp->SetTitle(htitle.Data());
   hTmp->SetStats(kFALSE);
@@ -295,6 +342,7 @@ TH2 *AliHFEtpcPIDqa::MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t istep, Int_t spe
   hTmp->GetYaxis()->SetTitle("TPC dE/dx - <dE/dx>|_{el} [#sigma]");
   hSignal->GetAxis(3)->SetRange(0, hSignal->GetAxis(3)->GetNbins());
   hSignal->GetAxis(0)->SetRange(0, hSignal->GetAxis(0)->GetNbins());
+  if(hasCentralityInfo) hSignal->GetAxis(4)->SetRange(0, hSignal->GetAxis(4)->GetNbins());
   return hTmp;
 }
 

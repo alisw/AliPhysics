@@ -40,14 +40,16 @@ class AliHFEpidObject{
       fkRecTrack(NULL), 
       fAnalysisType(kESDanalysis),
       fAbInitioPID(-1),
-      fCentrality(99.)
+      fCentrality(99),
+      fIsPbPb(kFALSE)         // Default: pp
       {
       }
     AliHFEpidObject(const AliHFEpidObject &ref):
       fkRecTrack(ref.fkRecTrack), 
       fAnalysisType(ref.fAnalysisType),
       fAbInitioPID(ref.fAbInitioPID),
-      fCentrality(ref.fCentrality)
+      fCentrality(ref.fCentrality),
+      fIsPbPb(ref.fIsPbPb)
       {
       }
     AliHFEpidObject &operator=(const AliHFEpidObject &ref);
@@ -57,19 +59,23 @@ class AliHFEpidObject{
     void SetMCTrack(const AliVParticle * mcTrack);
     void SetAnalysisType(AnalysisType_t type) { fAnalysisType = type; }
     void SetAbInitioPID(Int_t abInitioPID) { fAbInitioPID = abInitioPID; }
-    void SetCentrality(Float_t centrality) { fCentrality = centrality; }
+    void SetCentrality(Int_t centrality) { fCentrality = centrality; }
+    void SetPbPb() { fIsPbPb = kTRUE; }
+    void SetPP() { fIsPbPb = kFALSE; }
 
     const AliVParticle *GetRecTrack() const { return fkRecTrack; }
     Int_t GetAbInitioPID() const { return fAbInitioPID; }
-    Float_t GetCentrality() const { return fCentrality; }
+    Int_t GetCentrality() const { return fCentrality; }
     Bool_t IsAODanalysis() const { return fAnalysisType == static_cast<UChar_t>(kAODanalysis); }
     Bool_t IsESDanalysis() const { return fAnalysisType == static_cast<UChar_t>(kESDanalysis); }
+    Bool_t IsPbPb() const { return fIsPbPb; }
 
   private:
-    const AliVParticle *fkRecTrack;    // Reconstructed track
-    UChar_t fAnalysisType;      // Analysis Mode (ESD or AOD)
-    Int_t fAbInitioPID;         // AbInitio PID
-    Float_t fCentrality;        // Centrality Information
+    const AliVParticle *fkRecTrack;     // Reconstructed track
+    UChar_t fAnalysisType;              // Analysis Mode (ESD or AOD)
+    Int_t fAbInitioPID;                 // AbInitio PID
+    Int_t fCentrality;                  // Centrality Information
+    Bool_t fIsPbPb;                     // Collision type
 };
 
 class AliHFEpidBase : public TNamed{

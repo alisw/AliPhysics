@@ -34,6 +34,10 @@ class AliVTrack;
 
 class AliHFEV0cuts : public TObject {
  public:
+  enum{
+    kBitQA = 1,
+      kBitQAmc = 2
+      };
   enum{ // Reconstructed V0
     kUndef = 0,
       kRecoGamma = 1,
@@ -62,8 +66,14 @@ class AliHFEV0cuts : public TObject {
   void SetInputEvent(AliVEvent* const e)      { fInputEvent = e; };
   void SetPrimaryVertex(AliKFVertex* const v) { fPrimaryVertex = v; };
   
-  TList* GetList()    { return fQA->GetList(); };
-  TList* GetListMC()  { return fQAmc->GetList(); };
+  TList* GetList()    { 
+    CLRBIT(fDestBits, kBitQA);
+    return fQA->GetList(); 
+  };
+  TList* GetListMC()  { 
+    CLRBIT(fDestBits, kBitQAmc);
+    return fQAmc->GetList(); 
+  };
   
   Bool_t   TrackCutsCommon(AliESDtrack* track);
   Bool_t   V0CutsCommon(AliESDv0 *v0);
@@ -71,16 +81,12 @@ class AliHFEV0cuts : public TObject {
   Bool_t   K0Cuts(AliESDv0 *v0);
   Bool_t   LambdaCuts(AliESDv0 *v0, Bool_t &isLambda);
  
-  Bool_t LooseRejectK0(AliESDv0 * const v0) const;
-  Bool_t LooseRejectLambda(AliESDv0 * const v0) const;
-  Bool_t LooseRejectGamma(AliESDv0 * const v0) const;
+  void     Armenteros(const AliESDv0 *v0, Float_t val[2]);
 
-  void     Armenteros(AliESDv0 *v0, Float_t val[2]);
-
-  Double_t OpenAngle(AliESDv0 *v0) const;//opening angle between V0 daughters; close to zero for conversions
-  Double_t PsiPair(AliESDv0 *v0);
+  Double_t OpenAngle(AliESDv0 const *v0);//opening angle between V0 daughters; close to zero for conversions
+  Double_t PsiPair(const AliESDv0 *v0);
   
-  Bool_t   CheckSigns(AliESDv0* const v0);
+  Bool_t   CheckSigns(AliESDv0 const *v0);
   Bool_t   GetConvPosXY(AliESDtrack * const ptrack, AliESDtrack * const ntrack, Double_t convpos[2]);
   Bool_t   GetHelixCenter(AliESDtrack * const track, Double_t b,Int_t charge, Double_t center[2]);
 
@@ -89,7 +95,7 @@ class AliHFEV0cuts : public TObject {
   void     SetCurrentV0id(Int_t id) { fCurrentV0id = id; };
   void     SetDaughtersID(Int_t d[2]) {fPdaughterPDG = d[0]; fNdaughterPDG = d[1]; };
   
-  AliKFParticle *CreateMotherParticle(AliVTrack* const pdaughter, AliVTrack* const ndaughter, Int_t pspec, Int_t nspec);
+  AliKFParticle *CreateMotherParticle(AliVTrack const *pdaughter, AliVTrack const *ndaughter, Int_t pspec, Int_t nspec);
 
  private:
   void Copy(TObject &ref) const;
@@ -106,7 +112,8 @@ class AliHFEV0cuts : public TObject {
   Int_t                fPdaughterPDG;   // MC id of the positive daugeter
   Int_t                fNdaughterPDG;   // MC id of the negative daugeter
 
-
+  UInt_t               fDestBits;           // status bits for destructor
+ 
   ClassDef(AliHFEV0cuts, 1)
 };
     

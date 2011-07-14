@@ -37,7 +37,7 @@ ClassImp(AliHFEV0pidMC)
   AliHFEV0pidMC::AliHFEV0pidMC():
     fMC(0x0)
     , fColl(NULL)
-    , fV0cuts(NULL)
+    , fDestBits(0)
 {
   //
   // default constructor
@@ -50,13 +50,15 @@ AliHFEV0pidMC::~AliHFEV0pidMC(){
   // destructor
   //
   if (fColl) delete fColl;
-  //if (fV0cuts) delete fV0cuts;
 }
 //____________________________________________________________
 void AliHFEV0pidMC::Init(){
   //
   // initialize objects
   //
+  
+  memset(&fDestBits, 0, sizeof(UInt_t));
+  SETBIT(fDestBits, 1);
 
   fColl = new AliHFEcollection("V0pidMC", "MC based V0 benchmarking");
   // QA
@@ -218,6 +220,8 @@ TList *AliHFEV0pidMC::GetListOfQAhistograms(){
   //
   // Get QA histograms
   //
+  
+  CLRBIT(fDestBits, 1);
   if(fColl)
     return fColl->GetList();
   return NULL;

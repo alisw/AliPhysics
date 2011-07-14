@@ -82,6 +82,7 @@ class AliHFEcuts : public TNamed{
     void Initialize();
 
     Bool_t CheckParticleCuts(UInt_t step, TObject *o);
+    Bool_t CheckEventCuts(const char*namestep, TObject *o);
   
     TList *GetQAhistograms() const { return fHistQA; }
     

@@ -51,13 +51,15 @@ class AliHFEpidTPC : public AliHFEpidBase{
     void AddTPCdEdxLineCrossing(Int_t species, Double_t sigma);
     Bool_t HasAsymmetricSigmaCut() const { return TestBit(kAsymmetricSigmaCut);}
     Bool_t HasParticleRejection() const { return TestBit(kRejection); }
-    void SetElectronMeanCorrection(TF1 *electronLineCorrection) { fElectronMeanCorrection = electronLineCorrection; }
+    void SetElectronMeanCorrection(const TF1 * const electronLineCorrection) { fkElectronMeanCorrection = electronLineCorrection; }
     void SetTPCnSigma(Short_t nSigma) { fNsigmaTPC = nSigma; };
     inline void SetAsymmetricTPCsigmaCut(Float_t pmin, Float_t pmax, Float_t sigmaMin, Float_t sigmaMax);
     inline void SetRejectParticle(Int_t species, Float_t pmin, Float_t sigmaMin, Float_t pmax, Float_t sigmaMax);
 
-    void SetUpperSigmaCut(TF1 * const model) { fUpperSigmaCut = model; }
-    void SetLowerSigmaCut(TF1 * const model) { fLowerSigmaCut = model; }
+    void SetUpperSigmaCutDefault(const TF1 * const model) { fkUpperSigmaCut[0] = model; fHasCutModel = kTRUE; }
+    void SetUpperSigmaCutCentrality(const TF1 * const model, Int_t centralityBin) { if(centralityBin < 11) fkUpperSigmaCut[centralityBin+1] = model; fHasCutModel = kTRUE; }
+    void SetLowerSigmaCutDefault(const TF1 * const model) { fkLowerSigmaCut[0] = model; fHasCutModel = kTRUE; }
+    void SetLowerSigmaCutCentrality(const TF1 * const model, Int_t centralityBin) { if(centralityBin < 11) fkLowerSigmaCut[centralityBin+1] = model; fHasCutModel = kTRUE; }
 
     Double_t NumberOfSigmas(const AliVParticle *track, AliPID::EParticleType species, AliHFEpidObject::AnalysisType_t anatype) const;
     Double_t GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
@@ -66,7 +68,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
     void Copy(TObject &o) const;
     Int_t Reject(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
 
-    Bool_t CutSigmaModel(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
+    Bool_t CutSigmaModel(const AliHFEpidObject *anaType) const;
 
   private:
     enum{
@@ -75,15 +77,15 @@ class AliHFEpidTPC : public AliHFEpidBase{
     };
     Double_t fLineCrossingSigma[AliPID::kSPECIES];          // with of the exclusion point
     UChar_t fLineCrossingsEnabled;                          // Bitmap showing which line crossing is set
-    TF1 *fUpperSigmaCut;                                    // Upper Sigma Cut
-    TF1 *fLowerSigmaCut;                                    // Lower Sigma Cut
-    TF1 *fElectronMeanCorrection;                           // Correct the mean of the electron line position as function  of the momentum
+    const TF1 *fkUpperSigmaCut[12];                         // Upper Sigma Cut
+    const TF1 *fkLowerSigmaCut[12];                         // Lower Sigma Cut
+    const TF1 *fkElectronMeanCorrection;                    // Correct the mean of the electron line position as function  of the momentum
+    Bool_t fHasCutModel;                                    // Has cut model functions
     Float_t fPAsigCut[2];                                   // Momentum region where to perform asymmetric sigma cut
     Float_t fNAsigmaTPC[2];                                 // Asymmetric TPC Sigma band        
     Short_t fNsigmaTPC;                                     // TPC sigma band
     Float_t fRejection[4*AliPID::kSPECIES];                 // All informations for Particle Rejection, order pmin, sigmin, pmax, sigmax
     UChar_t fRejectionEnabled;                              // Bitmap for enabled particle rejection
-    AliPID *fPID;                                           //! PID Object
 
   ClassDef(AliHFEpidTPC, 1)   // TPC Electron ID class
 };

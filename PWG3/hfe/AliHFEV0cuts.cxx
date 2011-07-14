@@ -30,8 +30,6 @@
 #include "AliLog.h"
 #include "AliExternalTrackParam.h"
 
-#include "AliHFEcollection.h"
-
 #include "AliHFEV0cuts.h"
 
 ClassImp(AliHFEV0cuts)
@@ -46,6 +44,7 @@ AliHFEV0cuts::AliHFEV0cuts():
   , fCurrentV0id(0)
   , fPdaughterPDG(0)
   , fNdaughterPDG(0)
+  , fDestBits(0)
 {
  
   //
@@ -60,8 +59,9 @@ AliHFEV0cuts::~AliHFEV0cuts()
   //
   // destructor
   //
-  if (fQA) delete fQA;
-  if (fQAmc) delete fQAmc;
+  
+  if (fQA && TESTBIT(fDestBits, kBitQA)) delete fQA;
+  if (fQAmc && TESTBIT(fDestBits, kBitQAmc)) delete fQAmc;
 }
 
 //________________________________________________________________
@@ -75,6 +75,7 @@ AliHFEV0cuts::AliHFEV0cuts(const AliHFEV0cuts &ref):
   , fCurrentV0id(0)
   , fPdaughterPDG(0)
   , fNdaughterPDG(0)
+  , fDestBits(0)
 {
   //
   // Copy constructor
@@ -121,6 +122,12 @@ void AliHFEV0cuts::Init(const char* name){
   // [0] for all candidates
   // [1] jus before the cut on given variable was applied, but after all the previous cuts
   //
+
+  memset(&fDestBits, 0, sizeof(UInt_t));
+  // now set the first two bits to 1
+  SETBIT(fDestBits, kBitQA);
+  SETBIT(fDestBits, kBitQAmc);
+  
 
   fQA = new AliHFEcollection("fQA", name);
 
@@ -409,9 +416,6 @@ Bool_t AliHFEV0cuts::GammaCuts(AliESDv0 *v0){
     }
   }
 
-  // loose cuts first
-  //if(LooseRejectK0(v0) || LooseRejectLambda(v0)) return kFALSE;
-
   AliVTrack* daughter[2];
   Int_t pIndex = 0, nIndex = 0;
   if(CheckSigns(v0)){
@@ -453,7 +457,7 @@ Bool_t AliHFEV0cuts::GammaCuts(AliESDv0 *v0){
   // possible new cuts
   //
   // separation cut at the entrance to the TPC
-  const Double_t cutSeparation = 0.;          // ORG 3.0 cm
+  const Double_t cutSeparation = 1.;          // ORG 3.0 cm
 
 
 
@@ -1024,9 +1028,7 @@ Bool_t AliHFEV0cuts::LambdaCuts(AliESDv0 *v0, Bool_t &isLambda ){
       fQAmc->Fill("h_Mass_L_as_K0",  v0->GetEffMass(2, 0));
     }
   }
-  // loose cuts first
-  //if(LooseRejectK0(v0) || LooseRejectGamma(v0)) return kFALSE;
-  
+
   const Double_t cL0mass=TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();  // PDG lambda mass
 
   AliVTrack* daughter[2];
@@ -1345,19 +1347,20 @@ Bool_t AliHFEV0cuts::LambdaCuts(AliESDv0 *v0, Bool_t &isLambda ){
     fQAmc->Fill("h_alambda_p_B", iP);
   }
   //
-  if(4 == TMath::Abs(fCurrentV0id)){
-    fQAmc->Fill("h_ProtonL_P_S", 5, p[ixMC[0]]);
-    fQAmc->Fill("h_PionL_P_S", 5, p[ixMC[1]]);
+  if(fMCEvent){
+    if(4 == TMath::Abs(fCurrentV0id)){
+      fQAmc->Fill("h_ProtonL_P_S", 5, p[ixMC[0]]);
+      fQAmc->Fill("h_PionL_P_S", 5, p[ixMC[1]]);
+    }
+    else if(-2 != fCurrentV0id){
+      fQAmc->Fill("h_ProtonL_P_B", 5, p[ixMC[0]]);
+      fQAmc->Fill("h_PionL_P_B", 5, p[ixMC[1]]);
+    }
   }
-  else if(-2 != fCurrentV0id){
-    fQAmc->Fill("h_ProtonL_P_B", 5, p[ixMC[0]]);
-    fQAmc->Fill("h_PionL_P_B", 5, p[ixMC[1]]);
-  }
-  
   return kTRUE;
 }
 //________________________________________________________________
-Double_t AliHFEV0cuts::OpenAngle(AliESDv0 *v0) const {
+Double_t AliHFEV0cuts::OpenAngle(AliESDv0 const *v0){
   //
   // Opening angle between two daughter tracks
   //
@@ -1374,7 +1377,7 @@ Double_t AliHFEV0cuts::OpenAngle(AliESDv0 *v0) const {
   return TMath::Abs(openAngle);
 }
 //________________________________________________________________
-Double_t AliHFEV0cuts::PsiPair(AliESDv0 *v0) {
+Double_t AliHFEV0cuts::PsiPair(const AliESDv0 *v0) {
   //
   // Angle between daughter momentum plane and plane 
   // 
@@ -1445,7 +1448,7 @@ Double_t AliHFEV0cuts::PsiPair(AliESDv0 *v0) {
   return psiPair; 
 }
 //________________________________________________________________
-AliKFParticle *AliHFEV0cuts::CreateMotherParticle(AliVTrack* const pdaughter, AliVTrack* const ndaughter, Int_t pspec, Int_t nspec){
+AliKFParticle *AliHFEV0cuts::CreateMotherParticle(AliVTrack const *pdaughter, AliVTrack const *ndaughter, Int_t pspec, Int_t nspec){
   //
   // Creates a mother particle
   //
@@ -1483,42 +1486,8 @@ AliKFParticle *AliHFEV0cuts::CreateMotherParticle(AliVTrack* const pdaughter, Al
 
   return m;
 }
-//_________________________________________________
-Bool_t AliHFEV0cuts::LooseRejectK0(AliESDv0 * const v0) const {
-  //
-  // Reject K0 based on loose cuts
-  //
-  Double_t mass = v0->GetEffMass(AliPID::kPion, AliPID::kPion);
-  if(mass > 0.494 && mass < 0.501) return kTRUE;
-  return kFALSE;
-}
-
-//_________________________________________________
-Bool_t AliHFEV0cuts::LooseRejectLambda(AliESDv0 * const v0) const {
-  //
-  // Reject Lambda based on loose cuts
-  //
-  Double_t mass1 = v0->GetEffMass(AliPID::kPion, AliPID::kProton);
-  Double_t mass2 = v0->GetEffMass(AliPID::kProton, AliPID::kPion);
-  
-  if(mass1 > 1.1 && mass1 < 1.12) return kTRUE;
-  if(mass2 > 1.1 && mass2 < 1.12) return kTRUE;
-  return kFALSE;
-}
-
-//_________________________________________________
-Bool_t AliHFEV0cuts::LooseRejectGamma(AliESDv0 * const v0) const {
-  //
-  // Reject Lambda based on loose cuts
-  //
- 
-  Double_t mass = v0->GetEffMass(AliPID::kElectron, AliPID::kElectron);
-  
-  if(mass < 0.02) return kTRUE;
-  return kFALSE;
-}
 //___________________________________________________________________
-void  AliHFEV0cuts::Armenteros(AliESDv0 *v0, Float_t val[2]){
+void  AliHFEV0cuts::Armenteros(const AliESDv0 *v0, Float_t val[2]){
   //
   // computes the Armenteros variables for given V0
   // fills the histogram
@@ -1555,7 +1524,7 @@ void  AliHFEV0cuts::Armenteros(AliESDv0 *v0, Float_t val[2]){
 
 }
 //___________________________________________________________________
-Bool_t AliHFEV0cuts::CheckSigns(AliESDv0* const v0){
+Bool_t AliHFEV0cuts::CheckSigns(AliESDv0 const *v0){
   //
   // check wheter the sign was correctly applied to 
   // V0 daughter tracks

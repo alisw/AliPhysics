@@ -1401,7 +1401,7 @@ Int_t AliHFEsecVtx::GetElectronSource(Int_t iTrack)
 }
 
 //_______________________________________________________________________________________________
-Int_t AliHFEsecVtx::GetPDG(AliVTrack *track)
+Int_t AliHFEsecVtx::GetPDG(const AliVTrack *track)
 {
   //
   // get KF particle input pdg for mass hypothesis
@@ -1659,9 +1659,9 @@ void AliHFEsecVtx::MakeContainer(){
   fSecVtxList->AddAt(fSecvtxQA,1);
 
   for(Int_t ivar = 0; ivar < nDimPair; ivar++)
-    delete binEdgesPair[ivar];
+    delete[] binEdgesPair[ivar];
   for(Int_t ivar = 0; ivar < nDimSecvtx; ivar++)
-    delete binEdgesSecvtx[ivar];
+    delete[] binEdgesSecvtx[ivar];
 }
 
 //____________________________________________________________
@@ -1687,6 +1687,7 @@ void AliHFEsecVtx::MakeHistos(Int_t step){
   fSecVtxList->AddAt(new TH1F(hname+"ebgElec", "pT of e", iBin[0],binEdges[0]), step+4);
   fSecVtxList->AddAt(new TH1F(hname+"hcontaminElec", "pT of e", iBin[0],binEdges[0]), step+5);
   fSecVtxList->AddAt(new TH1F(hname+"elseElec", "pT of e", iBin[0],binEdges[0]), step+6);
+  delete[] binEdges[0];
 }
 
 //____________________________________________________________

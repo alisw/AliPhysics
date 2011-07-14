@@ -43,6 +43,7 @@ AliAnalysisTaskHFEpidQA::AliAnalysisTaskHFEpidQA():
   , fOutput(NULL)
   , fEvents(NULL)
   , fNNref(NULL)
+  , fTRDTotalChargeInSlice0(kFALSE)
 {
   //
   // Default Constructor
@@ -55,6 +56,7 @@ AliAnalysisTaskHFEpidQA::AliAnalysisTaskHFEpidQA(const Char_t *name):
   , fOutput(NULL)
   , fEvents(NULL)
   , fNNref(NULL)
+  , fTRDTotalChargeInSlice0(kFALSE)
 {
   //
   // Default Constructor
@@ -77,11 +79,13 @@ void AliAnalysisTaskHFEpidQA::UserCreateOutputObjects(){
   // Initialize PID QA
   //
   fOutput = new TList;
+  fOutput->SetOwner();
 
   // Counter for number of events
   fOutput->Add((fEvents = new TH1I("nEvents", "NumberOfEvents", 1, 1, 2)));
 
   fPIDqa = new AliHFEpidQA;
+  if(fTRDTotalChargeInSlice0) fPIDqa->SetTRDTotalChargeInSlice0();
   if(HasV0pidQA()) fPIDqa->SetV0pidQA();
   if(HasRecalculateTRDpid()) fPIDqa->SetRecalculateTRDpid();
   if(fNNref) fPIDqa->SetNNref(fNNref);

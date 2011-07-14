@@ -124,6 +124,9 @@ void AliHFEmcQA::PostAnalyze() const
 //_______________________________________________________________________________________________
 void AliHFEmcQA::SetBackgroundWeightFactor(Double_t *elecBackgroundFactor, Double_t *binLimit)
 {
+   //
+   // copy background weighting factors into data member
+   //
    memcpy(fElecBackgroundFactor,elecBackgroundFactor,sizeof(Double_t) * kElecBgSpecies * kBgPtBins);
    memcpy(fBinLimit,binLimit,sizeof(Double_t) * (kBgPtBins+1));
 /*

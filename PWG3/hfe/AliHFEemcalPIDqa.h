@@ -31,6 +31,9 @@ class AliHFEpidObject;
 class AliESDtrack;
 class AliAODTrack;
 
+class TVector3;
+
+
 class AliHFEemcalPIDqa : public AliHFEdetPIDqa{
   public:
     AliHFEemcalPIDqa();
@@ -48,6 +51,10 @@ class AliHFEemcalPIDqa : public AliHFEdetPIDqa{
     void HistEnergyMomMatch(const AliHFEpidObject *track, double eop);
     TH1 *GetHistogram(const char *name); 
     AliHFEcollection *GetHistoCollection() const { return fHistos; }
+
+    TVector3 MomentumEnergyMatchV2(const AliESDtrack *esdtrack) const;
+    //TVector3 MomentumEnergyMatchV1(const AliESDtrack *esdtrack) const;
+
 
   protected:
     void ProcessESDtrack(const AliESDtrack *track, AliHFEdetPIDqa::EStep_t step, Int_t species);

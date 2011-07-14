@@ -37,7 +37,8 @@ class AliHFEextraCuts : public AliCFCutBase{
       kSecond = 1,
       kBoth = 2,
       kNone = 3,
-      kAny = 4
+      kAny = 4,
+      kExclusiveSecond = 5
     } ITSPixel_t;
     typedef enum{
       kFound = 0,

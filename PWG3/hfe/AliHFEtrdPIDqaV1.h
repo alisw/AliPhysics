@@ -45,10 +45,12 @@ class AliHFEtrdPIDqaV1 : public AliHFEdetPIDqa{
     virtual void Initialize();
     virtual void ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step);
 
-    TH2 *MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
-    TH2 *MakeTRDspectrumTM(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
-    TH2 *MakeTRDlikelihoodDistribution(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
-    TH2 *MakeTRDchargeDistribution(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
+    AliHFEcollection *GetListOfHistograms() const { return fHistos; }
+
+    TH2 *MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t species = -1, Int_t centralityClass = -1);
+    TH2 *MakeTRDspectrumTM(AliHFEdetPIDqa::EStep_t step, Int_t species = -1, Int_t centralityClass = -1);
+    TH2 *MakeTRDlikelihoodDistribution(AliHFEdetPIDqa::EStep_t step, Int_t species = -1, Int_t centralityClass = -1);
+    TH2 *MakeTRDchargeDistribution(AliHFEdetPIDqa::EStep_t step, Int_t species = -1, Int_t centralityClass = -1);
   protected:
     void ProcessESDtrack(const AliESDtrack *esdtrack, AliHFEdetPIDqa::EStep_t step, Int_t species);
     void ProcessAODtrack(const AliAODTrack *aodtrack, AliHFEdetPIDqa::EStep_t step, Int_t species);
