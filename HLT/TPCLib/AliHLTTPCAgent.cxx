@@ -156,7 +156,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	handler->CreateConfiguration(hwcfemu.Data(), "TPCHWClusterFinderEmulator", publisher.Data(), "-do-mc 1  -single-sequence-limit 100 -cluster-lower-limit 10");
 	TString hwcf;
 	hwcf.Form("TPC-HWCF_%02d_%d", slice, part);
-	handler->CreateConfiguration(hwcf.Data(), "TPCHWClusterTransform",hwcfemu.Data(), "");
+	handler->CreateConfiguration(hwcf.Data(), "TPCHWClusterTransform",hwcfemu.Data(), "-publish-raw");
 
 	if (trackerInput.Length()>0) trackerInput+=" ";
 	trackerInput+=cf;
