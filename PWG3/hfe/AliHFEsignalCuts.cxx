@@ -25,7 +25,9 @@
 #include <TParticle.h>
 #include <TString.h>
 
+#include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
+#include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
@@ -315,17 +317,16 @@ Int_t AliHFEsignalCuts::GetElecSource(const AliVParticle * const track) const {
     return 0;
   }
 
-  TString sourcetype = track->IsA()->GetName();
+  TClass *tracktype;
   const AliVParticle *mctrack = NULL;
   TParticle *mcpart = NULL;
-  if(!sourcetype.CompareTo("AliESDtrack") || !sourcetype.CompareTo("AliAODTrack")){
+  if((tracktype = track->IsA()) == AliESDtrack::Class() || tracktype == AliAODTrack::Class()){
     mctrack = fMC->GetTrack(TMath::Abs(track->GetLabel()));
   } else  mctrack = track;
   if(!mctrack) return 0;
 
-  TString mctype = mctrack->IsA()->GetName();
   Int_t eSource = 0;
-  if(!mctype.CompareTo("AliMCParticle")){
+  if(mctrack->IsA() == AliMCParticle::Class()){
     const AliMCParticle *esdmc = dynamic_cast<const AliMCParticle *>(mctrack);
     if(esdmc){
       mcpart = esdmc->Particle();

@@ -57,6 +57,7 @@
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliMCParticle.h"
+#include "AliMultiplicity.h"
 #include "AliPID.h"
 #include "AliStack.h"
 #include "AliTriggerAnalysis.h"
@@ -87,6 +88,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   , fQAlevel(0)
   , fPlugins(0)
   , fFillSignalOnly(kTRUE)
+  , fFillNoCuts(kFALSE)
   , fBackGroundFactorApply(kFALSE)
   , fRemovePileUp(kFALSE)
   , fIdentifiedAsPileUp(kFALSE)
@@ -95,7 +97,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   , fHasSpecialTriggerSelection(kFALSE)
   , fRejectKinkMother(kTRUE)
   , fSpecialTrigger("NONE")
-  , fCentralityF(99.0)
+  , fCentralityF(-1)
   , fContributors(0.5)
   , fWeightBackGround(0.)
   , fVz(0.0)
@@ -134,6 +136,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fQAlevel(0)
   , fPlugins(0)
   , fFillSignalOnly(kTRUE)
+  , fFillNoCuts(kFALSE)
   , fBackGroundFactorApply(kFALSE)
   , fRemovePileUp(kFALSE)
   , fIdentifiedAsPileUp(kFALSE)
@@ -142,7 +145,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fHasSpecialTriggerSelection(kFALSE)
   , fRejectKinkMother(kTRUE)
   , fSpecialTrigger("NONE")
-  , fCentralityF(99.0)
+  , fCentralityF(-1)
   , fContributors(0.5)
   , fWeightBackGround(0.)
   , fVz(0.0)
@@ -190,6 +193,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fQAlevel(0)
   , fPlugins(0)
   , fFillSignalOnly(ref.fFillSignalOnly)
+  , fFillNoCuts(ref.fFillNoCuts)
   , fBackGroundFactorApply(ref.fBackGroundFactorApply)
   , fRemovePileUp(ref.fRemovePileUp)
   , fIdentifiedAsPileUp(ref.fIdentifiedAsPileUp)
@@ -251,6 +255,7 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fQAlevel = fQAlevel;
   target.fPlugins = fPlugins;
   target.fFillSignalOnly = fFillSignalOnly;
+  target.fFillNoCuts = fFillNoCuts;
   target.fBackGroundFactorApply = fBackGroundFactorApply;
   target.fRemovePileUp = fRemovePileUp;
   target.fIdentifiedAsPileUp = fIdentifiedAsPileUp;
@@ -347,28 +352,8 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   // First Part: Make QA histograms
   fQACollection = new AliHFEcollection("TaskQA", "QA histos from the Electron Task");
   fQACollection->CreateTH1F("nElectronTracksEvent", "Number of Electron Candidates", 100, 0, 100);
-  fQACollection->CreateProfile("conr", "Electron PID contamination", 20, 0, 20);
-  fQACollection->CreateTH1F("alpha_rec", "Alpha from reconstructed tracks with TRD hits", 36, -TMath::Pi(), TMath::Pi());
-  fQACollection->CreateTH1F("alpha_sim", "Alpha from simulated electron tracks", 36, -TMath::Pi(), TMath::Pi());
   fQACollection->CreateTH1F("nElectron", "Number of electrons", 100, 0, 100);
-  fQACollection->CreateProfile("pidquality", "TRD PID quality as function of momentum", 20, 0, 20);
-  fQACollection->CreateProfile("ntrdclusters", "Number of TRD clusters as function of momentum", 20, 0, 20);
-  fQACollection->CreateTH1F("chi2TRD","#chi2 per TRD cluster", 20, 0, 20);
-  fQACollection->CreateTH1F("mccharge", "MC Charge", 200, -100, 100);
   fQACollection->CreateTH2F("radius", "Production Vertex", 100, 0.0, 5.0, 100, 0.0, 5.0);
-  // Temporary histograms for TPC number of clusters for all signal tracks (MC true electrons) and for selected tracks (Markus Fasel)
-  fQACollection->CreateTH2F("TPCclusters2_1_Signal", "TPCclusterInfo for findable clusters for 2 neighbors for signal tracks", 30, 0.1, 10., 162, 0., 161.);
-  fQACollection->CreateTH2F("TPCclusters2_0_Signal", "TPCclusterInfo for the ratio for 2 neighbors for signal tracks", 30, 0.1, 10., 100, 0., 1.);
-  fQACollection->CreateTH2F("TPCclusters2_1_Selected", "TPCclusterInfo for findable clusters for 2 neighbors for selected tracks", 30, 0.1, 10., 162, 0., 161.);
-  fQACollection->CreateTH2F("TPCclusters2_0_Selected", "TPCclusterInfo for the ratio for 2 neighbors for selected tracks", 30, 0.1, 10., 110, 0., 1.1);
-  fQACollection->CreateTH2F("TPCncls_Signal", "TPC Number of clusters for signal tracks", 30, 0.1, 10., 162, 0., 161.);
-  fQACollection->CreateTH2F("TPCclr_Signal", "TPC cluster ratio for signal tracks", 30, 0.1, 10., 110, 0., 1.1);
-  fQACollection->BinLogAxis("TPCclusters2_1_Signal", 0); 
-  fQACollection->BinLogAxis("TPCclusters2_0_Signal", 0);
-  fQACollection->BinLogAxis("TPCclusters2_1_Selected", 0); 
-  fQACollection->BinLogAxis("TPCclusters2_0_Selected", 0);
-  fQACollection->BinLogAxis("TPCncls_Signal", 0); 
-  fQACollection->BinLogAxis("TPCclr_Signal", 0);
   // Temporary histograms for TRD efficiency maps (Markus Fasel)
   fQACollection->CreateTH2F("TRDmapPosBefore", "Pos. charged tracks before TRD; #eta; #phi", 100, -1., 1., 180, 0., 2*TMath::Pi());
   fQACollection->CreateTH2F("TRDmapNegBefore", "Neg. charged tracks before TRD; #eta; #phi", 100, -1., 1., 180, 0., 2*TMath::Pi());
@@ -520,8 +505,8 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
   }
 
   // need the centrality for everything (MC also)
-  fCentralityF = -100.0;
-  if(!ReadCentrality()) fCentralityF = -100.0;
+  fCentralityF = -1;
+  if(!ReadCentrality()) fCentralityF = -1;
   //printf("pass centrality\n");
   //printf("Reading fCentralityF %f\n",fCentralityF);
   
@@ -657,7 +642,7 @@ void AliAnalysisTaskHFE::ProcessMC(){
   fCFM->GetEventContainer()->Fill(eventContainer,AliHFEcuts::kEventStepGenerated);
   Int_t nElectrons = 0;
   if(IsESDanalysis()){
-   if(!((fIdentifiedAsPileUp) || (TMath::Abs(fVz) > fCuts->GetVertexRange()) || (TMath::Abs(fCentralityF+100.0) < 0.01))){ //kStepMCGeneratedZOutNoPileUpCentralityFine
+   if(!((fIdentifiedAsPileUp) || (TMath::Abs(fVz) > fCuts->GetVertexRange()) || (fCentralityF < 0))){ //kStepMCGeneratedZOutNoPileUpCentralityFine
     if (HasMCData() && IsQAOn(kMCqa)) {
       AliDebug(2, "Running MC QA");
 
@@ -732,6 +717,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
   if(fTaggedTrackAnalysis) {
     fTaggedTrackAnalysis->SetMagneticField(fESD->GetMagneticField());
     fTaggedTrackAnalysis->SetCentrality(fCentralityF);
+    if(IsPbPb()) fTaggedTrackAnalysis->SetPbPb();
+    else fTaggedTrackAnalysis->SetPP();
   }
 
   // Do event Normalization
@@ -762,7 +749,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
   fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepRecNoPileUp);
 
   //
-  if(TMath::Abs(fCentralityF+100.0) < 0.01) return; 
+  if(TMath::Abs(fCentralityF) < 0) return; 
   fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepRecCentralityOk);
   //printf("In ProcessESD %f\n",fCentralityF);
 
@@ -803,6 +790,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
   Int_t nElectronCandidates = 0;
   AliESDtrack *track = NULL, *htrack = NULL;
   AliMCParticle *mctrack = NULL;
+  TParticle* mctrack4QA = NULL;
   Int_t pid = 0;
 
   Bool_t signal = kTRUE;
@@ -852,6 +840,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
     if(HasMCData()){
       // Check if it is electrons near the vertex
       if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(track->GetLabel()))))) continue;
+      mctrack4QA = mctrack->Particle();
 
       if(fFillSignalOnly && !fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, mctrack)) signal = kFALSE; 
       else AliDebug(3, "Signal Electron");
@@ -859,30 +848,16 @@ void AliAnalysisTaskHFE::ProcessESD(){
     // Cache new Track information inside the var manager
     fVarManager->NewTrack(track, mctrack, fCentralityF, -1, signal);
 
-    if(signal) {
-      fVarManager->FillContainer(fContainer, "recTrackContReco", AliHFEcuts::kStepRecNoCut, kFALSE);
-      fVarManager->FillContainer(fContainer, "recTrackContMC", AliHFEcuts::kStepRecNoCut, kTRUE);
-      if((track->GetStatus() & AliESDtrack::kTPCout) 
-          && (TMath::Abs(track->Eta()) < 0.8) 
-          && (track->GetKinkIndex(0) == 0)){
-        fQACollection->Fill("TPCclusters2_1_Signal", track->Pt(), track->GetTPCClusterInfo(2,1));
-        fQACollection->Fill("TPCclusters2_0_Signal", track->Pt(), track->GetTPCNclsF() > 0 ?  track->GetTPCClusterInfo(2,1)/track->GetTPCNclsF() : 0.);
-        fQACollection->Fill("TPCncls_Signal", track->Pt(), track->GetTPCNcls());
-        fQACollection->Fill("TPCclr_Signal", track->Pt(), track->GetTPCNclsF() > 0 ? static_cast<Double_t>(track->GetTPCNcls())/static_cast<Double_t>(track->GetTPCNclsF()) : 0.);
+    if(fFillNoCuts) {
+      if(signal || !fFillSignalOnly){
+        fVarManager->FillContainer(fContainer, "recTrackContReco", AliHFEcuts::kStepRecNoCut, kFALSE);
+        fVarManager->FillContainer(fContainer, "recTrackContMC", AliHFEcuts::kStepRecNoCut, kTRUE);
       }
     }
 
     // RecKine: ITSTPC cuts  
     if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
     
-    // Check TRD criterions (outside the correction framework)
-    if(track->GetTRDncls()){
-      fQACollection->Fill("chi2TRD", track->GetTRDchi2()/track->GetTRDncls());
-      fQACollection->Fill("alpha_rec", track->GetAlpha());
-      fQACollection->Fill("pidquality", container[0], track->GetTRDpidQuality());
-      fQACollection->Fill("ntrdclusters", container[0], track->GetTRDncls());
-    }
-
     
     // RecPrim
     if(fRejectKinkMother) { 
@@ -928,11 +903,11 @@ void AliAnalysisTaskHFE::ProcessESD(){
     hfetrack.SetRecTrack(track);
     if(HasMCData()) hfetrack.SetMCTrack(mctrack);
     hfetrack.SetCentrality(fCentralityF);
+    if(IsPbPb()) hfetrack.SetPbPb();
+    else hfetrack.SetPP();
     fPID->SetVarManager(fVarManager);
     if(!fPID->IsSelected(&hfetrack, fContainer, "recTrackCont", fPIDqa)) continue;
     nElectronCandidates++;
-    fQACollection->Fill("TPCclusters2_1_Selected", track->Pt(), track->GetTPCClusterInfo(2,1));
-    fQACollection->Fill("TPCclusters2_0_Selected", track->Pt(), track->GetTPCClusterInfo(2,0));
 
     // Fill Histogram for Hadronic Background
     if(HasMCData()){
@@ -944,7 +919,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
     if(signal) {
       // Apply weight for background contamination
 	    if(fBackGroundFactorApply==kTRUE) {
-	      if(IsPbPb()) fWeightBackGround =  fBackGroundFactorArray[(Int_t)fCentralityF]->Eval(TMath::Abs(track->P()));
+	      if(IsPbPb() && fCentralityF >= 0) fWeightBackGround =  fBackGroundFactorArray[fCentralityF]->Eval(TMath::Abs(track->P()));
 	      else    fWeightBackGround =  fBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
 
 	      if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
@@ -961,7 +936,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
       if(fSecVtx->Process(track) && signal) {
         fVarManager->FillContainer(fContainer, "recTrackContSecvtxReco", AliHFEcuts::kStepHFEcutsSecvtx, kFALSE);
         fVarManager->FillContainer(fContainer, "recTrackContSecvtxMC", AliHFEcuts::kStepHFEcutsSecvtx, kTRUE);
-	bTagged=kTRUE;
+        bTagged=kTRUE;
       }
     }
 
@@ -1075,7 +1050,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
   if(!fAOD){
     AliError("AOD Event required for AOD Analysis");
-    return;
+      return;
   }
   
   //
@@ -1208,7 +1183,6 @@ Bool_t AliAnalysisTaskHFE::ProcessMCtrack(AliVParticle *track){
   }
 
   if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, track)) return kFALSE;
-  fQACollection->Fill("mccharge", signalContainer[3]);
   fVarManager->FillContainer(fContainer, "MCTrackCont", AliHFEcuts::kStepMCGenerated, kFALSE);
   signalContainer[4] = 0;
   if(fSignalCuts->IsSelected(track)){
@@ -1233,10 +1207,9 @@ Bool_t AliAnalysisTaskHFE::ProcessMCtrack(AliVParticle *track){
     signalContainer[5] = 2;
   }
   fQACollection->Fill("SignalToBackgroundMC", signalContainer);
-  fQACollection->Fill("alpha_sim", track->Phi() - TMath::Pi());
 
   // Step GeneratedZOutNoPileUp
-  if((fIdentifiedAsPileUp) || (TMath::Abs(fVz) > fCuts->GetVertexRange()) || (TMath::Abs(fCentralityF+100.0) < 0.01)) return kFALSE;
+  if((fIdentifiedAsPileUp) || (TMath::Abs(fVz) > fCuts->GetVertexRange()) || (fCentralityF < 0)) return kFALSE;
   fVarManager->FillContainer(fContainer, "MCTrackCont", AliHFEcuts::kStepMCGeneratedZOutNoPileUpCentralityFine, kFALSE);
   //printf("In ProcessMCtrack %f\n",fCentralityF);
 
@@ -1544,153 +1517,91 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
   //
   // Recover the centrality of the event from ESD or AOD
   //
- if(IsAODanalysis()){
-
-   AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
-   if(!fAOD){
-     AliError("AOD Event required for AOD Analysis");
-     return kFALSE;
-   }
-
-   if(IsPbPb()) {
-     // Centrality
-     AliCentrality *aodCentrality = fAOD->GetCentrality();
-     Float_t fCentralityFtemp = aodCentrality->GetCentralityPercentile("V0M");
-     
-     if( fCentralityFtemp >=  0. && fCentralityFtemp <  10.) fCentralityF =  0;
-     else if ( fCentralityFtemp >=  10. && fCentralityFtemp <  20.) fCentralityF =  1;
-     else if ( fCentralityFtemp >= 20. && fCentralityFtemp <  30.) fCentralityF = 2;
-     else if ( fCentralityFtemp >= 30. && fCentralityFtemp <  40.) fCentralityF = 3;
-     else if ( fCentralityFtemp >= 40. && fCentralityFtemp <  50.) fCentralityF = 4;
-     else if ( fCentralityFtemp >= 50. && fCentralityFtemp <  60.) fCentralityF = 5;
-     else if ( fCentralityFtemp >= 60. && fCentralityFtemp <  90.) fCentralityF = 6;
-     else if ( fCentralityFtemp >= 90. && fCentralityFtemp <=  100.) fCentralityF = 7;
-     //else if ( fCentralityF_temp >= 90. && fCentralityF_temp <  95.) fCentralityF = 8;
-     //else if ( fCentralityF_temp >= 95. && fCentralityF_temp <  90.) fCentralityF = 9;
-     //else if ( fCentralityF_temp >= 90. && fCentralityF_temp <=100.) fCentralityF = 10;
-     else return kFALSE;
+  Int_t bin = -1;
+  if(IsPbPb()) {
+    // Centrality
+    AliCentrality *centrality = fInputEvent->GetCentrality();
+    Float_t fCentralityFtemp = centrality->GetCentralityPercentile("V0M");
+    Float_t centralityLimits[12] = {0.,5.,10., 20., 30., 40., 50., 60.,70.,80., 90., 100.};
+    for(Int_t ibin = 0; ibin < 11; ibin++){
+      if(fCentralityFtemp >= centralityLimits[ibin] && fCentralityFtemp < centralityLimits[ibin+1]){
+        bin = ibin;
+        break;
+      }
+    } 
+    if(bin == -1) bin = 11; // Overflow
+  } else {
+    // PP: Tracklet multiplicity, use common definition
+    Int_t itsMultiplicity = GetITSMultiplicity(fInputEvent);
+    Int_t multiplicityLimits[8] = {0, 1, 9, 17, 25, 36, 60, 500};
+    for(Int_t ibin = 0; ibin < 7; ibin++){  
+      if(itsMultiplicity >= multiplicityLimits[ibin] && itsMultiplicity < multiplicityLimits[ibin + 1]){
+        bin = ibin;
+        break;
+      }
+    }
+    if(bin == -1) bin = 7;  // Overflow
+  }
+  fCentralityF = bin;
+  AliDebug(2, Form("Centrality class %d\n", fCentralityF));
  
-     // contributors
-     fContributors = 0.5;
-     Int_t contributorstemp = 0;
-     const AliAODVertex *vtxAOD = fAOD->GetPrimaryVertex();
-     if(vtxAOD) contributorstemp = vtxAOD->GetNContributors();
-     
-     //printf("PbPb contributors_temp %d\n",contributors_temp);
-     
-     if( contributorstemp <=  0) fContributors =  0.5;
-     else fContributors = 1.5;   
-   
-
-
-   }
-   else {
-     fCentralityF = 0;
-     Int_t centralityFtemp = 0;
-     const AliAODVertex *vtxAOD = fAOD->GetPrimaryVertex();
-     if(vtxAOD) centralityFtemp = vtxAOD->GetNContributors();
-     
-     //printf("pp centralityF_temp %d\n",centralityF_temp);
-     
-     if( centralityFtemp <=  0) fCentralityF =  0;
-     else if ( centralityFtemp >  0 && centralityFtemp <  2) fCentralityF = 1;
-     else if ( centralityFtemp >=  2 && centralityFtemp <  3) fCentralityF = 2;
-     else if ( centralityFtemp >= 3 && centralityFtemp <  4) fCentralityF = 3;
-     else if ( centralityFtemp >= 4 && centralityFtemp <  5) fCentralityF = 4;
-     else if ( centralityFtemp >= 5 && centralityFtemp <  10) fCentralityF = 5;
-     else if ( centralityFtemp >= 10 && centralityFtemp <  20) fCentralityF = 6;
-     else if ( centralityFtemp >= 20 && centralityFtemp <  30) fCentralityF = 7;
-     else if ( centralityFtemp >= 30 && centralityFtemp <  40) fCentralityF = 8;
-     else if ( centralityFtemp >= 40 && centralityFtemp <  50) fCentralityF = 9;
-     else if ( centralityFtemp >= 50) fCentralityF = 10;
-     
-   }
-
-   return kTRUE;
-
-   
- } else {
-   
-   AliDebug(3, "Processing ESD Centrality");
-   AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
-   if(!fESD){
-     AliError("ESD Event required for ESD Analysis");
-     return kFALSE;
-   }
-   const char* type = fESD->GetBeamType();
-
-   if (strstr(type,"Pb-Pb")) {
-   
-   // Centrality
-   AliCentrality *esdCentrality = fESD->GetCentrality();
-   Float_t fCentralityFtemp = esdCentrality->GetCentralityPercentile("V0M");
-   //printf("PbPb fCentralityF_temp %f\n",fCentralityF_temp);
-
-   if( fCentralityFtemp >=  0. && fCentralityFtemp <   10.) fCentralityF =  0;
-   else if ( fCentralityFtemp >= 10. && fCentralityFtemp <  20.) fCentralityF =  1;
-   else if ( fCentralityFtemp >= 20. && fCentralityFtemp <  30.) fCentralityF = 2;
-   else if ( fCentralityFtemp >= 30. && fCentralityFtemp <  40.) fCentralityF = 3;
-   else if ( fCentralityFtemp >= 40. && fCentralityFtemp <  50.) fCentralityF = 4;
-   else if ( fCentralityFtemp >= 50. && fCentralityFtemp <  60.) fCentralityF = 5;
-   else if ( fCentralityFtemp >= 60. && fCentralityFtemp <  80.) fCentralityF = 6;
-   else if ( fCentralityFtemp >= 80. && fCentralityFtemp <  90.) fCentralityF = 7;
-   else if ( fCentralityFtemp >= 90. && fCentralityFtemp <=  100.) fCentralityF = 8;
-   //else if ( fCentralityF_temp >= 80. && fCentralityF_temp <  90.) fCentralityF = 9;
-   //else if ( fCentralityF_temp >= 90. && fCentralityF_temp <=100.) fCentralityF = 10;
-   else return kFALSE;
-
-   //   Float_t fCentralityF_temp10 = esdCentrality->GetCentralityClass10("V0M");
-   //   printf("PbPb fCentralityF_temp %f %f %f \n",fCentralityF_temp, fCentralityF_temp10, fCentralityF);
-
-   // contributors
-   fContributors = 0.5;
-   Int_t contributorstemp = 0;
-   const AliESDVertex *vtxESD = fESD->GetPrimaryVertexSPD();
-   if(vtxESD) contributorstemp = vtxESD->GetNContributors();
-   
-   //printf("PbPb contributors_temp %d\n",contributors_temp);
-   
-   if( contributorstemp <=  0) fContributors =  0.5;
-   else fContributors = 1.5;   
-   
-   return kTRUE;
-
-   }
-
-   
-   if (strstr(type,"p-p")) {
-     fCentralityF = 0;
-     Int_t centralityFtemp = 0;
-     const AliESDVertex *vtxESD = fESD->GetPrimaryVertexTracks();
-     if(vtxESD && vtxESD->GetStatus()) centralityFtemp = vtxESD->GetNContributors();
-     
-     //printf("pp centralityF_temp %d\n",centralityF_temp);
-     
-     if( centralityFtemp <=  0) fCentralityF =  0;
-     else if ( centralityFtemp >  0 && centralityFtemp <  2) fCentralityF = 1;
-     else if ( centralityFtemp >=  2 && centralityFtemp <  3) fCentralityF = 2;
-     else if ( centralityFtemp >= 3 && centralityFtemp <  4) fCentralityF = 3;
-     else if ( centralityFtemp >= 4 && centralityFtemp <  5) fCentralityF = 4;
-     else if ( centralityFtemp >= 5 && centralityFtemp <  10) fCentralityF = 5;
-     else if ( centralityFtemp >= 10 && centralityFtemp <  20) fCentralityF = 6;
-     else if ( centralityFtemp >= 20 && centralityFtemp <  30) fCentralityF = 7;
-     else if ( centralityFtemp >= 30 && centralityFtemp <  40) fCentralityF = 8;
-     else if ( centralityFtemp >= 40 && centralityFtemp <  50) fCentralityF = 9;
-     else if ( centralityFtemp >= 50) fCentralityF = 10;
-    
-     return kTRUE; 
-     
-   }
-
-   return kFALSE;
-
-  //printf("centrality %f\n",fCentralityF);
-   
- }
-
- //printf("centrality %f\n",fCentralityF);
-
+  // contributors, to be outsourced
+  const AliVVertex *vtx;
+  if(IsAODanalysis()){
+    AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
+    if(!fAOD){
+      AliError("AOD Event required for AOD Analysis");
+      return kFALSE;
+    }
+    vtx = fAOD->GetPrimaryVertex();
+  } else {
+    AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
+    if(!fESD){
+      AliError("ESD Event required for ESD Analysis");
+      return kFALSE;
+    }
+    vtx = fESD->GetPrimaryVertexSPD();
+  }
+  if(!vtx){ 
+    fContributors = 0.5;
+    return kFALSE;
+  }
+  else {
+    Int_t contributorstemp = vtx->GetNContributors();
+    if( contributorstemp <=  0) fContributors =  0.5;
+    else fContributors = 1.5;
+  }
+  return kTRUE;
 }
+
+//___________________________________________________
+Int_t AliAnalysisTaskHFE::GetITSMultiplicity(AliVEvent *ev){
+  //
+  // Definition of the Multiplicity according to the JPSI group (F. Kramer)
+  //
+  Int_t nTracklets = 0;
+  Int_t nAcc = 0;
+  Double_t etaRange = 1.6;
+
+  if (ev->IsA() == AliAODEvent::Class()) {
+    AliAODTracklets *tracklets = ((AliAODEvent*)ev)->GetTracklets();
+    nTracklets = tracklets->GetNumberOfTracklets();
+    for (Int_t nn = 0; nn < nTracklets; nn++) {
+      Double_t theta = tracklets->GetTheta(nn);
+      Double_t eta = -TMath::Log(TMath::Tan(theta/2.0));
+      if (TMath::Abs(eta) < etaRange) nAcc++;
+    }
+  } else if (ev->IsA() == AliESDEvent::Class()) {
+    nTracklets = ((AliESDEvent*)ev)->GetMultiplicity()->GetNumberOfTracklets();
+    for (Int_t nn = 0; nn < nTracklets; nn++) {
+       Double_t eta = ((AliESDEvent*)ev)->GetMultiplicity()->GetEta(nn);
+      if (TMath::Abs(eta) < etaRange) nAcc++;
+    }
+  } else return -1;
+
+  return nAcc;
+}
+
 //___________________________________________________
 void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
   //
@@ -1701,7 +1612,7 @@ void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
    AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
    if(!fAOD){
      AliError("AOD Event required for AOD Analysis");
-     return;
+       return;
    }
    // PileUp
    if(fRemovePileUp && fAOD->IsPileupFromSPD()) fIdentifiedAsPileUp = kTRUE; 
@@ -1718,7 +1629,7 @@ void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
    AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
    if(!fESD){
      AliError("ESD Event required for ESD Analysis");
-     return;
+       return;
    }
    // PileUp
    fIdentifiedAsPileUp = kFALSE;

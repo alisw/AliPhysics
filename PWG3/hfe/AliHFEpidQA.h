@@ -69,9 +69,10 @@ class AliHFEpidQA : public TObject{
     void     SetMCEvent(AliMCEvent * const mc) { fMC = mc; };
     void     SetV0pidQA(Bool_t v0pidQA = kTRUE) { SetBit(kV0pidQA, v0pidQA); };
     void     SetRecalculateTRDpid(Bool_t recal = kTRUE) { SetBit(kRecalculateTRDpid, recal); };
+    void     SetTRDTotalChargeInSlice0() { fTRDTotalChargeInSlice0 = kTRUE; }
 
     void     SetESDpid(AliESDpid* const pid) { fESDpid = pid; }
-    Float_t  TOFbeta(AliESDtrack* const track) const;
+    Float_t  TOFbeta(const AliESDtrack* const track) const;
 
     void     CheckEvent();
     void     SetNNref(TFile *f) { fNNref = f; };
@@ -122,6 +123,7 @@ class AliHFEpidQA : public TObject{
  private:
     TFile             *fNNref;        // reference file for NN pid 
     TMultiLayerPerceptron *fNet[11];  //  reference networks
+    Bool_t fTRDTotalChargeInSlice0;     // Fix for Foreward/Backward compatibility
   
   ClassDef(AliHFEpidQA, 1)            // PID QA tool
 };

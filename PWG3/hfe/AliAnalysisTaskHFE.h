@@ -107,6 +107,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void SwitchOnPlugin(Int_t plug);
     void SetHasMCData(Bool_t hasMC = kTRUE) { SetBit(kHasMCdata, hasMC); };
     void SetFillSignalOnly(Bool_t signalOnly) { fFillSignalOnly = signalOnly; }
+    void SetFillNoCuts(Bool_t fillNoCuts) { fFillNoCuts = fillNoCuts; }
     void SetRemovePileUp(Bool_t removePileUp) { fRemovePileUp = removePileUp; }
     void SetPIDPreselect(AliHFEpid * const cuts) { fPIDpreselect = cuts; };
     void SetAODAnalysis() { SetBit(kAODanalysis, kTRUE); };
@@ -138,12 +139,14 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void ProcessMC();
     void ProcessESD();
     void ProcessAOD();
+    Int_t GetITSMultiplicity(AliVEvent *ev);
     Bool_t PreSelectTrack(AliESDtrack *track) const;
     Bool_t ProcessMCtrack(AliVParticle *track);
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
     ULong_t fQAlevel;                     // QA level
     UShort_t fPlugins;                    // Enabled Plugins
     Bool_t fFillSignalOnly;               // Fill container only with MC Signal Tracks
+    Bool_t fFillNoCuts;                   // Fill container before any cut
     Bool_t fBackGroundFactorApply;        // Apply Background Function Subtraction
     Bool_t fRemovePileUp;                 // Remove Pile Up
     Bool_t fIdentifiedAsPileUp;           // Identified as pile-up
@@ -152,7 +155,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t fHasSpecialTriggerSelection;   // Select special triggered events
     Bool_t fRejectKinkMother;             // Reject Kink Mother
     TString fSpecialTrigger;              // Special trigger selection
-    Float_t fCentralityF;                 // Centrality
+    Int_t   fCentralityF;                 // Centrality
     Float_t fContributors;                // Contributors
     Double_t fWeightBackGround;            // weight background function
     Double_t fVz;                         // z position of the primary vertex

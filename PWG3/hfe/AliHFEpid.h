@@ -62,7 +62,7 @@ class AliHFEpid : public TNamed{
     ~AliHFEpid();
     
     Bool_t InitializePID();
-    Bool_t IsSelected(AliHFEpidObject *track, AliHFEcontainer *cont = NULL, const Char_t *contname = "trackContainer", AliHFEpidQAmanager *qa = NULL);
+    Bool_t IsSelected(const AliHFEpidObject * const track, AliHFEcontainer *cont = NULL, const Char_t *contname = "trackContainer", AliHFEpidQAmanager *qa = NULL);
 
     Bool_t HasMCData() const { return TestBit(kHasMCData); };
 
@@ -82,15 +82,15 @@ class AliHFEpid : public TNamed{
       else return fgkDetectorName[kNdetectorPID];
     }    
     //-----Configure PID detectors with predefined stettings------
+    void ConfigureTOF(Float_t TOFcut = 3.);
     void ConfigureTPCasymmetric(Double_t pmin = 0.1, Double_t pmax = 20., Double_t sigmamin = -0.2, Double_t sigmamax = 5.);
     void ConfigureTPCrejectionSimple();
-    void ConfigureTPCrejection(const char *lowerCutParam = NULL, Double_t * const params = NULL, Float_t upperTPCCut=3.0, Float_t TOFCut=3.0);
-    void ConfigureTPCstrategyParis();
+    void ConfigureTPCcentralityCut(Int_t centralityBin, const char *lowerCutParam = NULL, const Double_t * const params = NULL, Float_t upperTPCCut=3.0);
+    void ConfigureTPCdefaultCut(const char *lowerCutParam = NULL, const Double_t * const params = NULL, Float_t upperTPCCut=3.0);
     //------------------------------------------------------------
 
   protected:
     Bool_t MakePidTpcTof(AliHFEpidObject *track);
-
   private:
     enum{
       kHasMCData = BIT(14)
@@ -116,6 +116,7 @@ class AliHFEpid : public TNamed{
       return det < kNdetectorPID ? TESTBIT(fEnabledDetectors, det): kFALSE;
     }
     //--------------------------------------------------
+    void ConfigureTPCcut(Int_t centralityBin, const char *lowerCutParam, const Double_t * const params, Float_t upperTPCCut);
 
     static const Char_t *fgkDetectorName[kNdetectorPID + 1]; // PID Detector Names
     AliHFEpidBase *fDetectorPID[kNdetectorPID];     //   Detector PID classes

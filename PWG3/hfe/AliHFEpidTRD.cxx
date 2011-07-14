@@ -48,6 +48,7 @@ AliHFEpidTRD::AliHFEpidTRD() :
   , fMinP(1.)
   , fElectronEfficiency(0.91)
   , fPIDMethod(kNN)
+  , fTotalChargeInSlice0(kFALSE)
 {
   //
   // default  constructor
@@ -62,6 +63,7 @@ AliHFEpidTRD::AliHFEpidTRD(const char* name) :
   , fMinP(1.)
   , fElectronEfficiency(0.91)
   , fPIDMethod(kNN)
+  , fTotalChargeInSlice0(kFALSE)
 {
   //
   // default  constructor
@@ -76,6 +78,7 @@ AliHFEpidTRD::AliHFEpidTRD(const AliHFEpidTRD &ref):
   , fMinP(ref.fMinP)
   , fElectronEfficiency(ref.fElectronEfficiency)
   , fPIDMethod(ref.fPIDMethod)
+  , fTotalChargeInSlice0(ref.fTotalChargeInSlice0)
 {
   //
   // Copy constructor
@@ -106,6 +109,7 @@ void AliHFEpidTRD::Copy(TObject &ref) const {
   target.SetUseDefaultParameters(defaultParameters);
   target.fMinP = fMinP;
   target.fPIDMethod = fPIDMethod;
+  target.fTotalChargeInSlice0 = fTotalChargeInSlice0;
   target.fElectronEfficiency = fElectronEfficiency;
   memcpy(target.fThreshParams, fThreshParams, sizeof(Double_t) * kThreshParams);
   AliHFEpidBase::Copy(ref);
@@ -322,13 +326,23 @@ Double_t AliHFEpidTRD::GetChargeLayer(const AliVParticle *track, UInt_t layer, A
   Double_t charge = 0.;
   if(anaType == AliHFEpidObject::kESDanalysis){
     const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
-    if(esdtrack)
-      for(Int_t islice = 0; islice < esdtrack->GetNumberOfTRDslices(); islice++) charge += esdtrack->GetTRDslice(static_cast<UInt_t>(layer), islice);
+    if(esdtrack){
+      // Distinction between old and new reconstruction: in the new reconstruction, the total charge is stored in slice 0, slices 1 to 8 are used for the slices for 
+      // the neural network. 
+      if(fTotalChargeInSlice0)
+        charge = esdtrack->GetTRDslice(static_cast<UInt_t>(layer), 0);
+      else
+       for(Int_t islice = 0; islice < esdtrack->GetNumberOfTRDslices(); islice++) charge += esdtrack->GetTRDslice(static_cast<UInt_t>(layer), islice);
+    }
   } else {
     const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
     AliAODPid *aoddetpid = aodtrack ? aodtrack->GetDetPid() : NULL;
-    if(aoddetpid)
-      for(Int_t islice = 0; islice < aoddetpid->GetTRDnSlices(); islice++) charge += aoddetpid->GetTRDsignal()[layer * aoddetpid->GetTRDnSlices() + islice];
+    if(aoddetpid){
+      if(fTotalChargeInSlice0)
+        charge = aoddetpid->GetTRDsignal()[layer * aoddetpid->GetTRDnSlices()];
+      else
+       for(Int_t islice = 0; islice < aoddetpid->GetTRDnSlices(); islice++) charge += aoddetpid->GetTRDsignal()[layer * aoddetpid->GetTRDnSlices() + islice];
+    }
   }
   return charge;
 }
@@ -375,7 +389,7 @@ Double_t AliHFEpidTRD::GetTRDSignalV1(const AliESDtrack *track, Float_t truncati
   Int_t indices[48];
   Int_t icnt = 0;
   for(Int_t idet = 0; idet < 6; idet++)
-    for(Int_t islice = 0; islice < kSlicePerLayer; islice++){
+    for(Int_t islice = fTotalChargeInSlice0 ? 1 : 0 ; islice < kSlicePerLayer; islice++){
       AliDebug(2, Form("Chamber[%d], Slice[%d]: TRDSlice = %f", idet, islice, track->GetTRDslice(idet, islice)));
       if(TMath::Abs(track->GetTRDslice(idet, islice)) < fgkVerySmall) continue;;
       trdSlices[icnt++] = track->GetTRDslice(idet, islice) * kWeightSlice[islice];
@@ -409,7 +423,7 @@ Double_t AliHFEpidTRD::GetTRDSignalV2(const AliESDtrack *track, Float_t truncati
   Int_t indices[kLayers*kSlicesLow];
   Int_t cntLowTime=0, cntRemaining = 0;
   for(Int_t idet = 0; idet < 6; idet++)
-    for(Int_t islice = 0; islice < kSlicesLow+kSlicesHigh; islice++){
+    for(Int_t islice = fTotalChargeInSlice0 ? 1 : 0; islice < kSlicesLow+kSlicesHigh; islice++){
       if(TMath::Abs(track->GetTRDslice(idet, islice)) < fgkVerySmall) continue;;
       if(islice < kSlicesLow){
         AliDebug(3, Form("Part 1, Det[%d], Slice[%d], TRDSlice: %f", idet, islice, track->GetTRDslice(idet, islice)));

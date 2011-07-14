@@ -78,7 +78,7 @@ class AliHFEsecVtx : public TObject {
     Int_t GetPairOriginAOD(AliAODTrack* track1, AliAODTrack* track2); // return pair origin as a pdg code
     Int_t GetPairCode(const AliVTrack* const track1, const AliVTrack* const track2); // return corresponding pair code to pdg code
     Int_t GetElectronSource(Int_t mclabel); // return origin of the electron
-    Int_t GetPDG(AliVTrack *track);     // return pdg 
+    Int_t GetPDG(const AliVTrack *track);     // return pdg 
     void GetESDPID(const AliESDtrack *track, Int_t &recpid, Double_t &recprob); //return esd pid likelihood
     void GetPrimaryCondition();
     void RecalcPrimvtx(Int_t nkftrk, const Int_t * const, const AliKFParticle * const); //recalculate primary vertex

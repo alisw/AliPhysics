@@ -79,7 +79,8 @@ AliHFEtrdPIDqa::AliHFEtrdPIDqa():
   fProtonEfficiencies(NULL),
   fKaonEfficiencies(NULL),
   fThresholds(NULL),
-  fShowMessage(kFALSE)
+  fShowMessage(kFALSE),
+  fTotalChargeInSlice0(kFALSE)
 {
   //
   // Default Constructor
@@ -95,7 +96,8 @@ AliHFEtrdPIDqa::AliHFEtrdPIDqa(const Char_t *name):
   fProtonEfficiencies(NULL),
   fKaonEfficiencies(NULL),
   fThresholds(NULL),
-  fShowMessage(kFALSE)
+  fShowMessage(kFALSE),
+  fTotalChargeInSlice0(kFALSE)
 {
   //
   // Main Constructor
@@ -111,7 +113,8 @@ AliHFEtrdPIDqa::AliHFEtrdPIDqa(const AliHFEtrdPIDqa &ref):
   fProtonEfficiencies(NULL),
   fKaonEfficiencies(NULL),
   fThresholds(NULL),
-  fShowMessage(kFALSE)
+  fShowMessage(kFALSE),
+  fTotalChargeInSlice0(ref.fTotalChargeInSlice0)
 {
   //
   // Copy constructor
@@ -150,7 +153,8 @@ void AliHFEtrdPIDqa::Copy(TObject &ref) const{
 
   AliHFEtrdPIDqa &target = dynamic_cast<AliHFEtrdPIDqa &>(ref);
   target.fTRDpid = fTRDpid;
-  target.fHistos = dynamic_cast<AliHFEcollection *>(fHistos->Clone());
+  target.fHistos = dynamic_cast<AliHFEcollection *>(fHistos->Clone());  
+  target.fTotalChargeInSlice0 = fTotalChargeInSlice0;
 }
 
 //__________________________________________________________________
@@ -289,8 +293,8 @@ void AliHFEtrdPIDqa::CreateHistoTruncatedMean(){
 
   fHistos->CreateTHnSparse("fTRDtruncMean","TRD TruncatedMean studies", kQuantitiesTruncMean, nbins, binMin, binMax);
   fHistos->BinLogAxis("fTRDtruncMean", kP);
-  fHistos->CreateTH2F("fTRDslicesPions","TRD dEdx per slice for Pions", 8, 0, 8, 500, 0, 2000);
-  fHistos->CreateTH2F("fTRDslicesElectrons","TRD dEdx per slice for Electrons", 8, 0, 8, 500, 0, 2000);
+  fHistos->CreateTH2F("fTRDslicesPions","TRD dEdx per slice for Pions", 8, 0, 8, 2000, 0, 8000);
+  fHistos->CreateTH2F("fTRDslicesElectrons","TRD dEdx per slice for Electrons", 8, 0, 8, 2000, 0, 8000);
 }
 
 
@@ -420,7 +424,8 @@ void AliHFEtrdPIDqa::FillTRDQAplots(const AliESDtrack * const track, Int_t speci
     quantitiesdEdx[kP] = track->GetTRDmomentum(iplane);
     dEdxSum = 0.;
     for(Int_t islice = 0; islice < nSlices; islice++){
-      qSlice = track->GetTRDslice(iplane, islice);
+      if(fTotalChargeInSlice0 && islice >= 7) break;
+      qSlice = track->GetTRDslice(iplane, fTotalChargeInSlice0 ? islice + 1 : islice);  // hack by mfasel: For data with the new reconstruction, slice 0 is used to store the total charge, the total number of slices is 7 instead of 8
       if(qSlice > 1e-1){
         // cut out 0 slices
         nSlicesNonZero++;
@@ -434,7 +439,7 @@ void AliHFEtrdPIDqa::FillTRDQAplots(const AliESDtrack * const track, Int_t speci
       }
     }
     quantitiesdEdx[kNonZeroSlices] = nSlicesNonZero;
-    quantitiesdEdx[kdEdx] = dEdxSum;
+    quantitiesdEdx[kdEdx] = fTotalChargeInSlice0 ? track->GetTRDslice(iplane, 0) : dEdxSum; // hack by mfasel: In the new reconstruction, the total charge is stored in the first slice, in the old reconstruction it has to be calculated from the slice charges.     
     if(dEdxSum) ntrackletsNonZero++;
     // Fill dEdx histogram
     if(dEdxSum > 1e-1) fHistos->Fill("fQAdEdx", quantitiesdEdx); // Cut out 0 entries
@@ -465,14 +470,17 @@ void AliHFEtrdPIDqa::FinishAnalysis(){
   if(!fPionEfficiencies){
     fPionEfficiencies = new TList;
     fPionEfficiencies->SetName("pionEfficiencies");
+    fPionEfficiencies->SetOwner();
   }
   if(!fProtonEfficiencies){
     fProtonEfficiencies = new TList;
     fProtonEfficiencies->SetName("protonEfficiencies");
+    fProtonEfficiencies->SetOwner();
   }
   if(!fThresholds){
     fThresholds = new TList;
     fThresholds->SetName("thresholds");
+    fThresholds->SetOwner();
   }
 
   for(Int_t itr = 4; itr <= 6; itr++){
@@ -500,7 +508,7 @@ void AliHFEtrdPIDqa::StoreResults(const Char_t *filename){
 }
 
 //__________________________________________________________________
-void AliHFEtrdPIDqa::SaveThresholdParameters(const Char_t *name){
+void AliHFEtrdPIDqa::SaveThresholdParameters(const Char_t *name, Double_t lowerLimit, Double_t upperLimit){
   //
   // Fit the threshold histograms with the given parametrisation
   // and store the TF1 in the file
@@ -550,7 +558,7 @@ void AliHFEtrdPIDqa::SaveThresholdParameters(const Char_t *name){
 
       threshhist = dynamic_cast<TGraph *>(lHistos->FindObject(Form("eff%d", static_cast<Int_t>(fgkElectronEff[ieff] * 100))));
       if(!threshhist) continue;
-      threshparam = MakeThresholds(threshhist);
+      threshparam = MakeThresholds(threshhist, lowerLimit, upperLimit);
       threshparam->SetName(Form("thresh_%d_%d", itracklet, static_cast<Int_t>(fgkElectronEff[ieff] * 100)));
       lFormulas->Add(threshparam);
     }
@@ -600,9 +608,9 @@ void AliHFEtrdPIDqa::AnalyseNTracklets(Int_t nTracklets){
   hLikeTRD->GetAxis(kNTracklets)->SetRange(0, hLikeTRD->GetAxis(kNTracklets)->GetNbins());
 
   // Prepare List for output
-  TList *listPions = new TList; listPions->SetName(Form("%dTracklets", nTracklets));
-  TList *listProtons = new TList; listProtons->SetName(Form("%dTracklets", nTracklets));
-  TList *listThresholds = new TList; listThresholds->SetName(Form("%dTracklets", nTracklets));
+  TList *listPions = new TList; listPions->SetName(Form("%dTracklets", nTracklets)); listPions->SetOwner();
+  TList *listProtons = new TList; listProtons->SetName(Form("%dTracklets", nTracklets)); listProtons->SetOwner();
+  TList *listThresholds = new TList; listThresholds->SetName(Form("%dTracklets", nTracklets)); listThresholds->SetOwner();
   fPionEfficiencies->Add(listPions);
   fProtonEfficiencies->Add(listProtons);
   fThresholds->Add(listThresholds);
@@ -776,7 +784,7 @@ void AliHFEtrdPIDqa::DrawTracklet(Int_t itracklet, Double_t pmin, Double_t pmax,
 
     // Optionally do Fit
     if(doFit){
-      threshfit = MakeThresholds(tr);
+      threshfit = MakeThresholds(tr, pmin, pmax);
       threshfit->SetLineColor(kBlack);
       threshfit->Draw("same");
     }
@@ -791,13 +799,13 @@ void AliHFEtrdPIDqa::DrawTracklet(Int_t itracklet, Double_t pmin, Double_t pmax,
 }
 
 //__________________________________________________________________
-TF1 *AliHFEtrdPIDqa::MakeThresholds(TGraph *threshist){
+TF1 *AliHFEtrdPIDqa::MakeThresholds(TGraph *threshist, Double_t lowerLimit, Double_t upperLimit){
   //
   // Create TF1 containing the threshold parametrisation
   //
 
   TF1 *threshparam = new TF1("thresh", "1-[0]-[1]*x-[2]*TMath::Exp(-[3]*x)", 0.1, 10);
-  threshist->Fit(threshparam, "NE", "", 0.1, 3.5);
+  threshist->Fit(threshparam, "NE", "", lowerLimit, upperLimit);
   return threshparam;
 }
 

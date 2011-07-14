@@ -69,8 +69,9 @@ class AliHFEtrdPIDqa : public TNamed{
     void Init();
     void FinishAnalysis();
     void ShowMessages() { fShowMessage = kTRUE; }
+    void SetTotalChargeInSlice0() { fTotalChargeInSlice0 = kTRUE; }
     void StoreResults(const Char_t *filename = "HFEtrdPIDqa.root");
-    void SaveThresholdParameters(const Char_t * filename = "TRD.Thresholds.root");
+    void SaveThresholdParameters(const Char_t * filename = "TRD.Thresholds.root", Double_t lowerLimit = 0.5, Double_t upperLimit = 3.5);
 
     void DrawTracklet(Int_t tracklet, Double_t pmin = 0., Double_t pmax = 0., Bool_t doFit = kFALSE);
     void ClearLists();
@@ -134,7 +135,7 @@ class AliHFEtrdPIDqa : public TNamed{
     void AnalyseNTracklets(Int_t nTracklets);
     Int_t GetThresholdBin(const TH1 * const input, Double_t efficiency);
     Bool_t CalculateEfficiency(const TH1 * const input, Int_t threshbin, Double_t *params);
-    TF1 *MakeThresholds(TGraph *input);
+    TF1 *MakeThresholds(TGraph *input, Double_t lowerLimit, Double_t upperLimit);
 
     void CreateLikelihoodHistogram();
     void CreateQAHistogram();
@@ -160,6 +161,7 @@ class AliHFEtrdPIDqa : public TNamed{
     TList *fThresholds;           //! List for Threshold Graphs
 
     Bool_t fShowMessage;         // Display debug messages
+    Bool_t fTotalChargeInSlice0;  // Flag for Foreward/Backward compatibility in TRD total charge calculation
   
   ClassDef(AliHFEtrdPIDqa, 3)     // QA class for TRD PID 
 };

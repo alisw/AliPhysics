@@ -48,15 +48,18 @@ class AliHFEtpcPIDqa : public AliHFEdetPIDqa{
     virtual void Initialize();
     virtual void ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step);
 
+    void SetBrowseCentrality(Int_t browseCentrality) { browseCentrality < 11  && browseCentrality >= -1 ? fBrowseCentrality = browseCentrality : -1;} // *MENU*
+
     AliHFEcollection *GetHistograms() const { return fHistos; }
-    TH2 *MakeSpectrumdEdx(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
-    TH2 *MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
+    TH2 *MakeSpectrumdEdx(AliHFEdetPIDqa::EStep_t step, Int_t species = -1, Int_t centralityClass = -1);
+    TH2 *MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t step, Int_t species = -1, Int_t centralityClass = -1);
 
   protected:
     Double_t GetTPCsignal(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anatype);
 
   private:
     AliHFEcollection *fHistos;        // Container for Histograms
+    Int_t fBrowseCentrality;          // Centrality Class for Browser
 
     ClassDef(AliHFEtpcPIDqa, 1);
 };

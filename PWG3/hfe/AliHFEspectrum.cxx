@@ -70,6 +70,7 @@ AliHFEspectrum::AliHFEspectrum(const char *name):
   fInclusiveSpectrum(kTRUE),
   fDumpToFile(kFALSE),
   fUnSetCorrelatedErrors(kTRUE),
+  fSetSmoothing(kFALSE),
   fIPanaHadronBgSubtract(kFALSE),
   fIPanaCharmBgSubtract(kFALSE),
   fIPanaConversionBgSubtract(kFALSE),
@@ -243,6 +244,8 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
     else if((fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD))) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepbeforePID");
     else if((fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD - 1))) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepbeforePID");
     else mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
+    
+    if(!mccorrelation) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
   }
   else mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID"); // we confirmed that we get same result by using it instead of correlationstepafterDE
   //else mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterDE");
@@ -456,8 +459,8 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
 
     if(fBeamType==1) {
 
-      TCanvas * ccorrected_allspectra = new TCanvas("correctedallspectra","correctedallspectra",1000,700);
-      ccorrected_allspectra->Divide(2,1);
+      TCanvas * ccorrectedallspectra = new TCanvas("correctedallspectra","correctedallspectra",1000,700);
+      ccorrectedallspectra->Divide(2,1);
       TLegend *legtotal = new TLegend(0.4,0.6,0.89,0.89);
       TLegend *legtotalg = new TLegend(0.4,0.6,0.89,0.89);
       
@@ -507,15 +510,15 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
 	titleenamednormalized += "[";
 	Int_t nbEvents = 0;
 	for(Int_t k = fLowBoundaryCentralityBinAtTheEnd[binc]; k < fHighBoundaryCentralityBinAtTheEnd[binc]; k++) {
-	  //printf("Number of events %d in the bin %d added!!!\n",fNEvents[k],k);
+	  printf("Number of events %d in the bin %d added!!!\n",fNEvents[k],k);
 	  nbEvents += fNEvents[k];
 	}
-	//Double_t lowedgega = cenaxisa->GetBinLowEdge(fLowBoundaryCentralityBinAtTheEnd[binc]+1);
-	//Double_t upedgega = cenaxisa->GetBinUpEdge(fHighBoundaryCentralityBinAtTheEnd[binc]);
-	//printf("Bin Low edge %f, up edge %f for a\n",lowedgega,upedgega);
-	//Double_t lowedgegb = cenaxisb->GetBinLowEdge(fLowBoundaryCentralityBinAtTheEnd[binc]+1);
-	//Double_t upedgegb = cenaxisb->GetBinUpEdge(fHighBoundaryCentralityBinAtTheEnd[binc]);
-	//printf("Bin Low edge %f, up edge %f for b\n",lowedgegb,upedgegb);
+	Double_t lowedgega = cenaxisa->GetBinLowEdge(fLowBoundaryCentralityBinAtTheEnd[binc]+1);
+	Double_t upedgega = cenaxisa->GetBinUpEdge(fHighBoundaryCentralityBinAtTheEnd[binc]);
+	printf("Bin Low edge %f, up edge %f for a\n",lowedgega,upedgega);
+	Double_t lowedgegb = cenaxisb->GetBinLowEdge(fLowBoundaryCentralityBinAtTheEnd[binc]+1);
+	Double_t upedgegb = cenaxisb->GetBinUpEdge(fHighBoundaryCentralityBinAtTheEnd[binc]);
+	printf("Bin Low edge %f, up edge %f for b\n",lowedgegb,upedgegb);
 	cenaxisa->SetRange(fLowBoundaryCentralityBinAtTheEnd[binc]+1,fHighBoundaryCentralityBinAtTheEnd[binc]);
 	cenaxisb->SetRange(fLowBoundaryCentralityBinAtTheEnd[binc]+1,fHighBoundaryCentralityBinAtTheEnd[binc]);
 	TCanvas * ccorrectedcheck = new TCanvas((const char*) titleec,(const char*) titleec,1000,700);
@@ -563,7 +566,7 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
 	legcorrectedud->AddEntry(aftersun,"Corrected","p");
 	legcorrectedud->AddEntry(aftersdn,"Alltogether","p");
 	legcorrectedud->Draw("same");
-	ccorrected_allspectra->cd(1);
+	ccorrectedallspectra->cd(1);
 	gPad->SetLogy();
 	TH1D *aftersunn = (TH1D *) aftersun->Clone();
 	aftersunn->SetMarkerStyle(stylee[binc]);
@@ -571,7 +574,7 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
 	if(binc==0) aftersunn->Draw("AP");
 	else aftersunn->Draw("P");
 	legtotal->AddEntry(aftersunn,(const char*) titlee,"p");
-	ccorrected_allspectra->cd(2);
+	ccorrectedallspectra->cd(2);
 	gPad->SetLogy();
 	TH1D *aftersdnn = (TH1D *) aftersdn->Clone();
 	aftersdnn->SetMarkerStyle(stylee[binc]);
@@ -592,9 +595,9 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
 	ratiocorrectedbinc->Draw();
       }
 
-      ccorrected_allspectra->cd(1);
+      ccorrectedallspectra->cd(1);
       legtotal->Draw("same");
-      ccorrected_allspectra->cd(2);
+      ccorrectedallspectra->cd(2);
       legtotalg->Draw("same");
       
       cenaxisa->SetRange(0,nbbin);
@@ -1516,7 +1519,7 @@ TList *AliHFEspectrum::Unfold(AliCFDataGrid* const bgsubpectrum){
   //unfolding.SetUseCorrelatedErrors();
   if(fUnSetCorrelatedErrors) unfolding.UnsetCorrelatedErrors();
   unfolding.SetMaxNumberOfIterations(fNumberOfIterations);
-  unfolding.UseSmoothing();
+  if(fSetSmoothing) unfolding.UseSmoothing();
   unfolding.Unfold();
 
   // Results
@@ -1802,10 +1805,10 @@ TGraphErrors *AliHFEspectrum::NormalizeTH1(TH1 *input,Int_t i) const {
       dN = input->GetBinError(ibin);
 
       // New point
-      nCorr = 0.5 * 1/1.6 * 1./(Double_t)(fNEvents[i]) * 1/(2. * TMath::Pi() * p) * n;
+      nCorr = 0.5 * 1./1.6 * 1./(Double_t)(fNEvents[i]) * 1./(2. * TMath::Pi() * p) * n;
       errdN = 1./(2. * TMath::Pi() * p);
       errdp = 1./(2. * TMath::Pi() * p*p) * n;
-      dNcorr = 0.5 * 1/1.6 * 1./(Double_t)(fNEvents[i]) * TMath::Sqrt(errdN * errdN * dN *dN + errdp *errdp * dp *dp);
+      dNcorr = 0.5 * 1./1.6 * 1./(Double_t)(fNEvents[i]) * TMath::Sqrt(errdN * errdN * dN *dN + errdp *errdp * dp *dp);
       
       spectrumNormalized->SetPoint(point, p, nCorr);
       spectrumNormalized->SetPointError(point, dp, dNcorr);
@@ -1845,10 +1848,10 @@ TGraphErrors *AliHFEspectrum::NormalizeTH1N(TH1 *input,Int_t normalization) cons
       dN = input->GetBinError(ibin);
 
       // New point
-      nCorr = 0.5 * 1/1.6 * 1./(Double_t)(normalization) * 1/(2. * TMath::Pi() * p) * n;
+      nCorr = 0.5 * 1./1.6 * 1./(Double_t)(normalization) * 1./(2. * TMath::Pi() * p) * n;
       errdN = 1./(2. * TMath::Pi() * p);
       errdp = 1./(2. * TMath::Pi() * p*p) * n;
-      dNcorr = 0.5 * 1/1.6 * 1./(Double_t)(normalization) * TMath::Sqrt(errdN * errdN * dN *dN + errdp *errdp * dp *dp);
+      dNcorr = 0.5 * 1./1.6 * 1./(Double_t)(normalization) * TMath::Sqrt(errdN * errdN * dN *dN + errdp *errdp * dp *dp);
       
       spectrumNormalized->SetPoint(point, p, nCorr);
       spectrumNormalized->SetPointError(point, dp, dNcorr);

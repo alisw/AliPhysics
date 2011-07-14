@@ -366,6 +366,11 @@ void AliHFEcuts::Initialize(){
   SetHFElectronTRDCuts();
   SetHFElectronDcaCuts();
 
+  // Connect the event cuts
+  SetEventCutList(kEventStepGenerated);
+  SetEventCutList(kEventStepReconstructed);
+
+
 }
 
 //__________________________________________________________________
@@ -418,9 +423,9 @@ void AliHFEcuts::SetEventCutList(Int_t istep){
 void AliHFEcuts::SetParticleGenCutList(){
   //
   // Initialize Particle Cuts for Monte Carlo Tracks
-  // Production Vertex: < 1cm (Beampipe)
+  // Production Vertex Radius: < 3cm
   // Particle Species: Electrons
-  // Eta: < 0.9 (TRD-TOF acceptance)
+  // Eta: < 0.8
   //
   
   TObjArray *mcCuts = new TObjArray;
@@ -649,9 +654,27 @@ Bool_t AliHFEcuts::CheckParticleCuts(UInt_t step, TObject *o){
   // Checks the cuts without using the correction framework manager
   // 
   AliDebug(2, "Called\n");
-  TString stepnames[kNcutStepsMCTrack + kNcutStepsRecTrack + kNcutStepsDETrack + kNcutStepsSecvtxTrack + 1] = {"fPartGenCuts","fPartEvCutPileupZ","fPartEvCut","fPartAccCuts","fPartRecNoCuts","fPartRecKineITSTPCCuts", "fPartPrimCuts", "fPartHFECutsITS","fPartHFECutsTRD","fPartHFECutsDca", "fPartHFECutsSecvtx"};
+  TString stepnames[kNcutStepsMCTrack + kNcutStepsRecTrack + kNcutStepsDETrack + kNcutStepsSecvtxTrack + 1] = {"fPartGenCuts","fPartEvCutPileupZ","fPartEvCut","fPartAccCuts","fPartRecNoCuts","fPartRecKineITSTPCCuts", "fPartPrimCuts", "fPartHFECutsITS","fPartHFECutsTOF","fPartHFECutsTRD","fPartHFECutsDca", "fPartHFECutsSecvtx"};
   AliDebug(2, Form("Doing cut %s", stepnames[step].Data()));
  TObjArray *cuts = dynamic_cast<TObjArray *>(fCutList->FindObject(stepnames[step].Data()));
+  if(!cuts) return kTRUE;
+  TIter it(cuts);
+  AliCFCutBase *mycut;
+  Bool_t status = kTRUE;
+  while((mycut = dynamic_cast<AliCFCutBase *>(it()))){
+    status &= mycut->IsSelected(o);
+  }
+  return status;
+}
+
+
+//__________________________________________________________________
+Bool_t AliHFEcuts::CheckEventCuts(const char*namestep, TObject *o){
+  //
+  // Checks the cuts without using the correction framework manager
+  // 
+  AliDebug(2, "Called\n");
+  TObjArray *cuts = dynamic_cast<TObjArray *>(fCutList->FindObject(namestep));
   if(!cuts) return kTRUE;
   TIter it(cuts);
   AliCFCutBase *mycut;

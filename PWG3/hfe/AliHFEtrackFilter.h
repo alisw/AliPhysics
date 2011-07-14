@@ -46,7 +46,7 @@ class AliHFEtrackFilter : public TNamed{
     // Base Functionality
     void AddCutStep(AliHFEcutStep *cuts);
     void GenerateCutSteps();
-    void SetRecEvent(AliVEvent *rec);
+    void SetRecEvent(const AliVEvent *rec);
     AliHFEcutStep *GetCutStep(Int_t istep);
     AliHFEcutStep *GetCutStep(const Char_t *name);
     void FilterTracks(const AliESDEvent *const esd);

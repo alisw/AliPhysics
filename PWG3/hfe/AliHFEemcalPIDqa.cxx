@@ -31,11 +31,18 @@
 #include <THnSparse.h>
 #include <TString.h>
 
+#include <TMath.h>
+#include "AliESDInputHandler.h"
+//#include "AliVCluster.h"
+//#include "AliVCaloCells.h"
+//#include "AliVEvent.h"
+#include "AliMagF.h"
+
 #include "AliLog.h"
 #include "AliPID.h"
 #include "AliVParticle.h"
-#include "AliVTrack.h"
-#include "AliESDtrack.h"
+//#include "AliVTrack.h"
+//#include "AliESDtrack.h"
 #include "AliHFEcollection.h"
 #include "AliHFEpid.h"
 #include "AliHFEpidBase.h"
@@ -45,7 +52,7 @@
 #include "AliHFEtools.h"
 #include "AliHFEemcalPIDqa.h"
 
-ClassImp(AliHFEpidEMCAL)
+ClassImp(AliHFEemcalPIDqa)
 
 //_________________________________________________________
 AliHFEemcalPIDqa::AliHFEemcalPIDqa():
@@ -149,30 +156,59 @@ void AliHFEemcalPIDqa::Initialize(){
   const Double_t kTPCSigMax = 140.;
 
   // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, Centrality)
-  Int_t nBins[4] = {20, 20, 400, kCentralityBins};
-  Double_t min[4] = {kMinP, kMinP, kTPCSigMim,  0};
-  Double_t max[4] = {kMaxP, kMaxP, kTPCSigMax,  11.};
-  fHistos->CreateTHnSparse("EMCAL_TPCdedx", "EMCAL signal; species; p [GeV/c]; pT [GeV/c] ; TPC signal [a.u.]; Centrality", 4, nBins, min, max);
-  
+  Int_t nBins[6] = {AliPID::kSPECIES + 1, 20, 20, 400, kCentralityBins, 2};
+  Double_t min[6] = {-1, kMinP, kMinP, kTPCSigMim,  0, 0.};
+  Double_t max[6] = {AliPID::kSPECIES, kMaxP, kMaxP, kTPCSigMax,  11., 2.};
+  fHistos->CreateTHnSparse("EMCAL_TPCdedx", "EMCAL signal; species; p [GeV/c]; pT [GeV/c] ; TPC signal [a.u.]; Centrality; PID Step", 6, nBins, min, max);
+
+  //2nd histogram: EMCAL signal - E/p and Rmatch
+  Int_t nBins2[6] = {AliPID::kSPECIES + 1, 40, 40, 1000, 250, 2};
+  Double_t min2[6] = {-1, kMinP, kMinP, 0,  0, 0.};
+  Double_t max2[6] = {AliPID::kSPECIES, kMaxP, kMaxP, 10,  1., 2.};
+  fHistos->CreateTHnSparse("EMCAL_Signal", "EMCAL true signal; species; p [GeV/c]; pT [GeV/c] ; E/p; Rmatch; PID Step", 6, nBins2, min2, max2);
+    
 }
 
+
+
+
 //_________________________________________________________
-void AliHFEemcalPIDqa::ProcessTrack(const AliHFEpidObject *track,AliHFEdetPIDqa::EStep_t /*step*/){
+void AliHFEemcalPIDqa::ProcessTrack(const AliHFEpidObject *track,AliHFEdetPIDqa::EStep_t step){
   //
   // Fill TPC histograms
   //
   //AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
   Float_t centrality = track->GetCentrality();
 
+  //const AliVTrack *vtrack = dynamic_cast<const AliVTrack *>(track->GetRecTrack());
+  //const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(vtrack);
   const AliESDtrack *esdtrack = static_cast<const AliESDtrack *>(track->GetRecTrack());
 
-  Double_t contentSignal[4];
-  contentSignal[0] = track->GetRecTrack()->P();
-  contentSignal[1] = track->GetRecTrack()->Pt();
-  contentSignal[2] = esdtrack->GetTPCsignal(); //?
-  contentSignal[3] = centrality;
+  Int_t species = track->GetAbInitioPID();
+  if(species >= AliPID::kSPECIES) species = -1;
+
+  Double_t contentSignal[6];
+  contentSignal[0] = species;
+  contentSignal[1] = track->GetRecTrack()->P();
+  contentSignal[2] = track->GetRecTrack()->Pt();
+  contentSignal[3] = esdtrack->GetTPCsignal(); //?
+  contentSignal[4] = centrality;
+  contentSignal[5] = step == AliHFEdetPIDqa::kBeforePID ? 0. : 1.;
+
+  TVector3 emcsignal = MomentumEnergyMatchV2(esdtrack);
+
+
+  Double_t contentSignal2[6];
+  contentSignal2[0] = species;
+  contentSignal2[1] = track->GetRecTrack()->P();
+  contentSignal2[2] = track->GetRecTrack()->Pt();
+  contentSignal2[3] = emcsignal(0);
+  contentSignal2[4] = emcsignal(1);
+  contentSignal2[5] = contentSignal[5];
+
   //printf("ProcessTrack ; Print Content %g; %g; %g; %g \n",contentSignal[0],contentSignal[1],contentSignal[2],contentSignal[3]); 
   fHistos->Fill("EMCAL_TPCdedx", contentSignal);
+  fHistos->Fill("EMCAL_Signal", contentSignal2);
 }
 
 //_________________________________________________________
@@ -185,4 +221,117 @@ TH1 *AliHFEemcalPIDqa::GetHistogram(const char *name){
   if(!histo->InheritsFrom("TH1")) return NULL;
   return dynamic_cast<TH1 *>(histo);
 }
+
+
+//___________________________________________________________________________
+TVector3 AliHFEemcalPIDqa::MomentumEnergyMatchV2(const AliESDtrack *esdtrack) const
+{ // Returns e/p & Rmatch
+
+  Float_t  clsPos[3];
+  Double_t trkPos[3];
+  Double_t matchclsE = 9999.9;
+  TVector3 refVec(-9999,-9999,-9999);
+
+  AliESDEvent *evt = esdtrack->GetESDEvent();
+
+   //Int_t icl = esdtrack->GetEMCALcluster();
+   Int_t icl = (const_cast<AliESDtrack *>(esdtrack))->GetEMCALcluster();
+
+   AliVCluster *cluster = (AliVCluster*) evt->GetCaloCluster(icl);
+   if(!cluster->IsEMCAL()) return refVec;
+
+   cluster->GetPosition(clsPos);
+   esdtrack->GetXYZ(trkPos);
+
+   TVector3 clsPosVec(clsPos[0],clsPos[1],clsPos[2]);
+   TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
+
+
+   Double_t delEmcphi = clsPosVec.Phi()-trkPosVec.Phi();  // track cluster matching
+   Double_t delEmceta = clsPosVec.Eta()-trkPosVec.Eta();  // track cluster matching
+
+   double rmatch = sqrt(pow(delEmcphi,2)+pow(delEmceta,2));
+
+   matchclsE = cluster->E();
+
+   //double feop = -9999.9;
+   //if(matchclsE<9999) 
+   double feop = matchclsE/esdtrack->P();
+
+   //   if(feop!=-9999.9)printf("%f\n",feop) ; 
+   TVector3 emcsignal(feop,rmatch,0);
+
+   return emcsignal;
+
+}
+
+
+
+
+/*
+//___________________________________________________________________________
+TVector3 AliHFEemcalPIDqa::MomentumEnergyMatchV1(const AliESDtrack *esdtrack) const
+{ // Returns e/p & Rmatch
+
+  Float_t  clsPos[3];
+  Double_t trkPos[3];
+  Double_t Rmatch;
+  Double_t matchclsE = 9999.9;
+  TVector3 refVec(-9999,-9999,-9999);
+
+  AliESDEvent *evt = esdtrack->GetESDEvent();
+  Double_t  magF = evt->GetMagneticField();
+  Double_t magSign = 1.0;
+  if(magF<0)magSign = -1.0;
+  //printf("magF ; %g ; %g \n", magF,magSign);
+
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+          printf("Loading field map...\n");
+          //AliMagF* field = new AliMagF("Maps","Maps", 1., 1., AliMagF::k5kG);
+          AliMagF* field = new AliMagF("Maps","Maps", magSign, magSign, AliMagF::k5kG); // for 10d
+          TGeoGlobalMagField::Instance()->SetField(field);
+                    }
+
+  AliEMCALTrack *emctrack = new AliEMCALTrack(*esdtrack);
+  Double_t fieldB[3];
+  emctrack->GetBxByBz(fieldB);
+  //printf("%g %g %g \n", fieldB[0], fieldB[1], fieldB[2]);
+
+  for(Int_t icl=0; icl<evt->GetNumberOfCaloClusters(); icl++)
+   {
+
+   AliVCluster *cluster = (AliVCluster*) evt->GetCaloCluster(icl);
+   if(!cluster->IsEMCAL()) return refVec;
+
+   cluster->GetPosition(clsPos);
+   if(!emctrack->PropagateToGlobal(clsPos[0],clsPos[1],clsPos[2],0.,0.) )  return refVec;
+   emctrack->GetXYZ(trkPos);
+
+   TVector3 clsPosVec(clsPos[0],clsPos[1],clsPos[2]);
+   TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
+
+   Double_t delEmcphi = clsPosVec.Phi()-trkPosVec.Phi();  // track cluster matching
+   Double_t delEmceta = clsPosVec.Eta()-trkPosVec.Eta();  // track cluster matching
+
+   double rmatch = sqrt(pow(delEmcphi,2)+pow(delEmceta,2));
+
+   if(rmatch<0.02)
+      {
+       matchclsE = cluster->E();
+       Rmatch = rmatch;
+      }
+  }
+   delete emctrack;
+
+   //double feop = -9999.9;
+   //if(matchclsE<9999) 
+   double feop = matchclsE/esdtrack->P();
+
+   //   if(feop!=-9999.9)printf("%f\n",feop) ; 
+   TVector3 emcsignal(feop, Rmatch, 0);
+ 
+   return emcsignal;
+
+}
+*/
 

@@ -64,7 +64,8 @@ ClassImp(AliHFEpidQA)
     fTRDpidQA(NULL), 
     fOutput(NULL), 
     fESDpid(NULL),
-    fNNref(NULL)
+    fNNref(NULL),
+    fTRDTotalChargeInSlice0(kFALSE)
 {
   //
   // Default constructor
@@ -84,7 +85,8 @@ AliHFEpidQA::AliHFEpidQA(const AliHFEpidQA &ref):
   fTRDpidQA(NULL),
   fOutput(NULL), 
   fESDpid(NULL),
-  fNNref(NULL)
+  fNNref(NULL),
+  fTRDTotalChargeInSlice0(ref.fTRDTotalChargeInSlice0)
 {
   //
   // Copy constructor
@@ -131,6 +133,7 @@ void AliHFEpidQA::Copy(TObject &o) const {
 
   AliHFEpidQA &target = dynamic_cast<AliHFEpidQA &>(o);
   target.fMC = fMC;
+  target.fTRDTotalChargeInSlice0 = fTRDTotalChargeInSlice0;
 
   if(target.fESDpid) delete target.fESDpid;
   target.fESDpid = new AliESDpid;
@@ -176,6 +179,7 @@ void AliHFEpidQA::Init(){
   fV0pidMC->Init();
 
   fTRDpidQA = new AliHFEtrdPIDqa;
+  if(fTRDTotalChargeInSlice0) fTRDpidQA->SetTotalChargeInSlice0();
   fTRDpidQA->Init();
 
   fOutput = new AliHFEcollection("pidQA", "PID QA output");
@@ -937,7 +941,7 @@ void AliHFEpidQA::RecalculateTRDpid(AliAODTrack * /*track*/, Double_t * /*pidPro
   //  fTRDpidResponse->MakePID(track, pidProbs);
 }
 //___________________________________________________________________
-Float_t AliHFEpidQA::TOFbeta(AliESDtrack * const track) const {
+Float_t AliHFEpidQA::TOFbeta(const AliESDtrack * const track) const {
   // computes the TOF beta
   Double_t l = track->GetIntegratedLength();  // cm
   Double_t t = track->GetTOFsignal();
