@@ -30,6 +30,7 @@
 #include "Riostream.h"
 #include "TError.h"
 #include "TH1.h"
+#include "TH2.h"
 #include "THashList.h"
 #include "TKey.h"
 #include "TMap.h"
@@ -38,12 +39,13 @@
 #include "TRegexp.h"
 #include "TROOT.h"
 #include "TSystem.h"
+#include "TProfile.h"
 
 ClassImp(AliHistogramCollection)
 
 //_____________________________________________________________________________
 AliHistogramCollection::AliHistogramCollection(const char* name, const char* title) 
-: TNamed(name,title), fMap(0x0), fMustShowEmptyHistogram(kFALSE)
+: TNamed(name,title), fMap(0x0), fMustShowEmptyHistogram(kFALSE), fMapVersion(0), fMessages()
 {
   /// Ctor
 }
@@ -54,6 +56,15 @@ AliHistogramCollection::~AliHistogramCollection()
   /// dtor. Note that the map is owner
   if ( fMap ) fMap->DeleteAll();
   delete fMap;
+//  PrintMessages("AliHistogramCollection::~AliHistogramCollection");
+}
+
+//_____________________________________________________________________________
+Bool_t 
+AliHistogramCollection::Adopt(TH1* histo)
+{
+  /// Adopt a given histogram at top level (i.e. no key)
+  return InternalAdopt("",histo);
 }
 
 //_____________________________________________________________________________
@@ -61,7 +72,7 @@ Bool_t
 AliHistogramCollection::Adopt(const char* key, TH1* histo)
 {
   /// Adopt a given histogram, and associate it with pair (keyA)
-  return InternalAdopt(Form("/%s/./././",key),histo);
+  return InternalAdopt(Form("/%s/",key),histo);
 }
 
 //_____________________________________________________________________________
@@ -69,7 +80,7 @@ Bool_t
 AliHistogramCollection::Adopt(const char* keyA, const char* keyB, TH1* histo)
 {
   /// Adopt a given histogram, and associate it with pair (keyA,keyB)
-  return InternalAdopt(Form("/%s/%s/././",keyA,keyB),histo);
+  return InternalAdopt(Form("/%s/%s/",keyA,keyB),histo);
 }
 
 //_____________________________________________________________________________
@@ -77,7 +88,7 @@ Bool_t
 AliHistogramCollection::Adopt(const char* keyA, const char* keyB, const char* keyC, TH1* histo)
 {
   /// Adopt a given histogram, and associate it with pair (keyA,keyB,keyC)
-  return InternalAdopt(Form("/%s/%s/%s/./",keyA,keyB,keyC),histo);
+  return InternalAdopt(Form("/%s/%s/%s/",keyA,keyB,keyC),histo);
 }
 
 //_____________________________________________________________________________
@@ -89,11 +100,34 @@ AliHistogramCollection::Adopt(const char* keyA, const char* keyB, const char* ke
 }
 
 //_____________________________________________________________________________
+void AliHistogramCollection::ClearMessages()
+{
+  /// clear pending messages
+  fMessages.clear();
+}
+
+//_____________________________________________________________________________
 TIterator*
 AliHistogramCollection::CreateIterator(Bool_t direction) const
 {
   /// Create an iterator (must be deleted by the client)
   return fMap ? new AliHistogramCollectionIterator(this,direction) : 0x0;
+}
+
+//_____________________________________________________________________________
+AliHistogramCollection*
+AliHistogramCollection::Clone(const char* name) const
+{
+  /// Clone this collection.
+  /// We loose the messages.
+  
+  AliHistogramCollection* newone = new AliHistogramCollection(name,GetTitle());
+  
+  newone->fMap = static_cast<TMap*>(fMap->Clone());
+  newone->fMustShowEmptyHistogram = fMustShowEmptyHistogram;
+  newone->fMapVersion = fMapVersion;  
+  
+  return newone;
 }
 
 //_____________________________________________________________________________
@@ -141,7 +175,7 @@ AliHistogramCollection::Histo(const char* keyA,
 {
   /// Get histo for (keyA,histoname) triplet
   
-  return InternalHisto(Form("/%s/./././",keyA),histoname);
+  return InternalHisto(Form("/%s/",keyA),histoname);
 }
 
 //_____________________________________________________________________________
@@ -151,7 +185,7 @@ AliHistogramCollection::Histo(const char* keyA, const char* keyB,
 {
   /// Get histo for (keyA,keyB,histoname) triplet
 
-  return InternalHisto(Form("/%s/%s/././",keyA,keyB),histoname);
+  return InternalHisto(Form("/%s/%s/",keyA,keyB),histoname);
 }
 
 //_____________________________________________________________________________
@@ -161,7 +195,7 @@ AliHistogramCollection::Histo(const char* keyA, const char* keyB, const char* ke
 {
   /// Get histo for (keyA,keyB,keyC,histoname) quad
   
-  return InternalHisto(Form("/%s/%s/%s/./",keyA,keyB,keyC),histoname);
+  return InternalHisto(Form("/%s/%s/%s/",keyA,keyB,keyC),histoname);
 }
 
 //_____________________________________________________________________________
@@ -181,7 +215,7 @@ AliHistogramCollection::HistoName(const char* identifier) const
 {
   /// Extract the histogram name from an identifier
   
-  return InternalDecode(identifier,4);  
+  return InternalDecode(identifier,-1);  
 }
 
 //_____________________________________________________________________________
@@ -197,19 +231,13 @@ Bool_t AliHistogramCollection::InternalAdopt(const char* identifier, TH1* histo)
   
   THashList* hlist = 0x0;
   
-  if ( !fMap ) 
-  {
-    fMap = new TMap;
-    fMap->SetOwner(kTRUE);
-  }
-  
-  hlist = static_cast<THashList*>(fMap->GetValue(identifier));
+  hlist = static_cast<THashList*>(Map()->GetValue(identifier));
   
   if (!hlist)
   {
     hlist = new THashList;
     hlist->SetOwner(kTRUE);
-    fMap->Add(new TObjString(identifier),hlist);
+    Map()->Add(new TObjString(identifier),hlist);
     hlist->SetName(identifier);
   }
   
@@ -232,14 +260,86 @@ Bool_t AliHistogramCollection::InternalAdopt(const char* identifier, TH1* histo)
 
 //_____________________________________________________________________________
 TH1* 
-AliHistogramCollection::Histo(const char* identifier) const
+AliHistogramCollection::Histo(const char* sidentifier) const
 {
-  /// Get histogram keyA/keyB/keyC/keyD/histoname
-  return Histo(InternalDecode(identifier,0),
-               InternalDecode(identifier,1),
-               InternalDecode(identifier,2),
-               InternalDecode(identifier,3),
-               InternalDecode(identifier,4));
+  /// Get histogram keyA/keyB/keyC/keyD/histoname:action
+  
+  TObjArray* a = TString(sidentifier).Tokenize(":");
+  
+  TString identifier(static_cast<TObjString*>(a->At(0))->String());
+  TString action;
+  
+  if ( a->GetLast() > 0 ) 
+  {
+    action = static_cast<TObjString*>(a->At(1))->String();
+    action.ToUpper();
+  }
+  
+  Int_t nslashes = identifier.CountChar('/');
+
+  TH1* h(0x0);
+  
+  switch (nslashes)
+  {
+    case 0:
+    case 1:
+      // no slash : the identifier is just the histogram name
+      h = InternalHisto("",identifier);
+      break;      
+    case 2:
+      h = Histo(InternalDecode(identifier,0),
+                InternalDecode(identifier,-1));
+      break;
+    case 3:
+      h = Histo(InternalDecode(identifier,0),
+                InternalDecode(identifier,1),
+                InternalDecode(identifier,-1));
+      break;
+    case 4:
+      h = Histo(InternalDecode(identifier,0),
+                InternalDecode(identifier,1),
+                InternalDecode(identifier,2),
+                InternalDecode(identifier,-1));
+      break;
+    case 5:
+      h = Histo(InternalDecode(identifier,0),
+                InternalDecode(identifier,1),
+                InternalDecode(identifier,2),
+                InternalDecode(identifier,3),
+                InternalDecode(identifier,-1));
+      break;
+    default:
+      AliError(Form("Invalid identifier %s",identifier.Data()));
+      break;
+  }
+  
+  if (h)
+  {
+    TH2* h2(0x0);
+    
+    if ( action == "PX" && ( (h2 = dynamic_cast<TH2*>(h)) ) ) 
+    {
+      return h2->ProjectionX(NormalizeName(identifier.Data(),action.Data()).Data());
+    }
+    else if ( action == "PY" && ( (h2 = dynamic_cast<TH2*>(h)) ) ) 
+    {
+      return h2->ProjectionY(NormalizeName(identifier.Data(),action.Data()).Data());
+    }
+    else if ( action == "PFX" && ( (h2 = dynamic_cast<TH2*>(h)) ) ) 
+    {
+      return h2->ProfileX(NormalizeName(identifier.Data(),action.Data()).Data());
+    }
+    else if ( action == "PFY" && ( (h2 = dynamic_cast<TH2*>(h)) ) ) 
+    {
+      return h2->ProfileY(NormalizeName(identifier.Data(),action.Data()).Data());
+    }
+    
+  }
+  else
+  {
+    AliDebug(1,Form("histogram %s not found",sidentifier));
+  }
+  return h;
 }
 
 //_____________________________________________________________________________
@@ -251,11 +351,11 @@ AliHistogramCollection::InternalDecode(const char* identifier, Int_t index) cons
   /// keyB is index=1
   /// keyC is index=2
   /// keyD is index=3
-  /// histo is index=4
+  /// histo is index=-1 (i.e. last)
   
-  if ( identifier[0] != '/' ) 
+  if ( strlen(identifier) > 0 && identifier[0] != '/' ) 
   {    
-    AliError(Form("identifier %s is malformed.",identifier));
+    AliError(Form("identifier %s is malformed (should start with /)",identifier));
     return "";
   }
   
@@ -263,14 +363,18 @@ AliHistogramCollection::InternalDecode(const char* identifier, Int_t index) cons
 
   if ( array->GetLast()>5 ) 
   {
-    AliError(Form("identifier %s is malformed.",identifier));
+    AliError(Form("identifier %s is malformed (more than 5 /)",identifier));
     delete array;
     return "";    
   }
 
   TString value("");
   
-  if ( index <= array->GetLast() ) 
+  if ( index < 0 ) 
+  {
+    value = static_cast<TObjString*>(array->Last())->String();    
+  }
+  else if ( index <= array->GetLast() ) 
   {
     value = static_cast<TObjString*>(array->At(index))->String();
   }
@@ -278,35 +382,6 @@ AliHistogramCollection::InternalDecode(const char* identifier, Int_t index) cons
   delete array;
   
   return value;
-  
-// "Custom" implementation below is even slower that Tokenize... ??
-// or at least did not change the timing result enough to be worthwhile (indicating
-// the cpu time is wasted elsewhere ?)
-//
-//  Int_t slashPos[6] = {0};
-//  Int_t nslashes(0);
-//  
-//  for ( Int_t i = 0; i < identifier.Length(); ++i ) 
-//  {
-//    if ( identifier[i] == '/' ) 
-//    {
-//      slashPos[nslashes++]=i;      
-//    }
-//    if ( nslashes > 5 ) 
-//    {
-//      AliError(Form("identifier %s is malformed.",identifier.Data()));
-//      return "";
-//    }
-//  }
-//  
-//  slashPos[nslashes++]=identifier.Length();
-//  --nslashes;
-//
-//  if ( index < nslashes )
-//  {
-//    return TString(identifier(slashPos[index]+1,slashPos[index+1]-slashPos[index]-1));
-//  }
-//  return "";
 }
 
 //_____________________________________________________________________________
@@ -321,13 +396,21 @@ AliHistogramCollection::InternalHisto(const char* identifier,
     return 0x0;
   }
   
-  THashList* hlist = static_cast<THashList*>(fMap->GetValue(identifier));
+  THashList* hlist = static_cast<THashList*>(Map()->GetValue(identifier));
   if (!hlist) 
   {
+    TString msg(Form("Did not find hashlist for identifier=%s dir=%s",identifier,gDirectory ? gDirectory->GetName() : "" ));
+    fMessages[msg.Data()]++;
     return 0x0;
   }
   
-  return static_cast<TH1*>(hlist->FindObject(histoname));  
+  TH1* h = static_cast<TH1*>(hlist->FindObject(histoname));  
+  if (!h)
+  {
+    TString msg(Form("Did not find histoname=%s in %s",histoname,identifier));
+    fMessages[msg.Data()]++;
+  }
+  return h;
 }
 
 
@@ -365,6 +448,55 @@ AliHistogramCollection::KeyD(const char* identifier) const
 }
 
 //_____________________________________________________________________________
+TMap* AliHistogramCollection::Map() const
+{
+  /// Wrapper to insure proper key formats (i.e. new vs old)
+  
+  if (!fMap)
+  {
+    fMap = new TMap;
+    fMap->SetOwnerKeyValue(kTRUE,kTRUE);
+    fMapVersion = 1;
+  }
+  else
+  {
+    if ( fMapVersion < 1 ) 
+    {
+      // change the keys
+      TIter next(fMap);
+      TObjString* str;
+      
+      while ( ( str = static_cast<TObjString*>(next()) ) )
+      {
+        if ( str->String().Contains("./") )
+        {
+          TString newkey(str->String());
+          
+          newkey.ReplaceAll("./","");
+          
+          TObject* o = fMap->GetValue(str);
+          
+          TPair* p = fMap->RemoveEntry(str);
+          if (!p)
+          {
+            AliError("oups oups oups");
+            return 0x0;
+          }
+          
+          fMap->Add(new TObjString(newkey.Data()),o);
+          
+          delete p;
+        }
+      }
+      
+      fMapVersion = 1;
+    }
+  }
+  
+  return fMap;
+}
+
+//_____________________________________________________________________________
 Long64_t
 AliHistogramCollection::Merge(TCollection* list)
 {
@@ -390,6 +522,8 @@ AliHistogramCollection::Merge(TCollection* list)
     
     ++count;
     
+    if ( hcol->fMap ) hcol->Map(); // to insure keys in the new format
+    
     TIter nextIdentifier(hcol->fMap);
     TObjString* identifier;
 
@@ -402,35 +536,74 @@ AliHistogramCollection::Merge(TCollection* list)
       
       while ( ( h = static_cast<TH1*>(nextHisto()) ) )
       {
-        TH1* thisHisto = Histo(KeyA(identifier->String()).Data(),
-                               KeyB(identifier->String()).Data(),
-                               KeyC(identifier->String()).Data(),
-                               KeyD(identifier->String()).Data(),
-                               h->GetName());
+        TString newid(Form("%s%s",identifier->String().Data(),h->GetName()));
+        
+        TH1* thisHisto = Histo(newid.Data());
         
         if (!thisHisto)
         {
-          AliDebug(1,Form("Adopting a new histo = %s/%s",identifier->String().Data(),h->GetName()));
+          AliDebug(1,Form("Adopting a new histo = %s%s",identifier->String().Data(),h->GetName()));
           
           // this is an histogram we don't have yet. Let's add it
-          Adopt(KeyA(identifier->String()),
-                KeyB(identifier->String()),
-                KeyC(identifier->String()),
-                KeyD(identifier->String()),
-                static_cast<TH1*>(h->Clone()));
+          
+          Int_t nslashes = TString(newid).CountChar('/');
+          
+          Bool_t ok(kFALSE);
+          
+          switch (nslashes)
+          {
+            case 2:
+              ok = Adopt(KeyA(identifier->String()),
+                        static_cast<TH1*>(h->Clone()));
+              break;
+            case 3:
+              ok = Adopt(KeyA(identifier->String()),
+                        KeyB(identifier->String()),
+                        static_cast<TH1*>(h->Clone()));
+              break;
+            case 4:
+              ok = Adopt(KeyA(identifier->String()),
+                        KeyB(identifier->String()),
+                        KeyC(identifier->String()),
+                        static_cast<TH1*>(h->Clone()));
+              break;
+            case 5:
+              ok = Adopt(KeyA(identifier->String()),
+                        KeyB(identifier->String()),
+                        KeyC(identifier->String()),
+                        KeyD(identifier->String()),
+                        static_cast<TH1*>(h->Clone()));
+              break;
+            default:
+              AliError(Form("Invalid identifier %s",identifier->String().Data()));
+              break;
+          }
+          
+          if (!ok)
+          {
+            AliError(Form("Adoption of histogram %s failed",h->GetName()));
+          }
         }
         else
         {
           // add it...
-          AliDebug(1,Form("Merging histo = %s/%s (%g vs %g)",
+          AliDebug(1,Form("Merging histo = %s%s (%g vs %g)",
                           identifier->String().Data(),
                           h->GetName(),
                           h->GetSumOfWeights(),
                           thisHisto->GetSumOfWeights()));
-          TList l;
-          l.Add(h);
           
-          thisHisto->Merge(&l);
+          if ( HistoSameAxis(h,thisHisto) )
+          {
+            thisHisto->Add(h);
+          }
+          else
+          {
+            TList l;
+            l.Add(h);
+          
+            thisHisto->Merge(&l);
+          }
         }
       }
     }
@@ -439,6 +612,17 @@ AliHistogramCollection::Merge(TCollection* list)
   AliDebug(1,Form("count=%d",count));
   
   return count+1;
+}
+
+//_____________________________________________________________________________
+TString AliHistogramCollection::NormalizeName(const char* identifier,const char* action) const
+{
+  // Replace / by _ to build a root-compliant histo name
+  TString name(identifier);
+  name += "_";
+  name += action;
+  name.ReplaceAll("/","_");
+  return name;
 }
 
 //_____________________________________________________________________________
@@ -521,7 +705,7 @@ AliHistogramCollection::Print(Option_t* option) const
   delete select;
   
   TObjArray* identifiers = SortAllIdentifiers();
-  
+    
   TIter nextIdentifier(identifiers);
   
   TObjString* sid(0x0);
@@ -532,10 +716,10 @@ AliHistogramCollection::Print(Option_t* option) const
 
     TString identifier(sid->String());
     
-    if ( InternalDecode(identifier,0).Contains(reKeyA) &&
-        InternalDecode(identifier,1).Contains(reKeyB) &&
-        InternalDecode(identifier,2).Contains(reKeyC) &&
-        InternalDecode(identifier,3).Contains(reKeyD)
+    if ( ( InternalDecode(identifier,0).Contains(reKeyA) &&
+          InternalDecode(identifier,1).Contains(reKeyB) &&
+          InternalDecode(identifier,2).Contains(reKeyC) &&
+          InternalDecode(identifier,3).Contains(reKeyD) )
         )
     {
       if ( sreHistoname == "*" ) 
@@ -544,7 +728,7 @@ AliHistogramCollection::Print(Option_t* option) const
         cout << identifier.Data() << endl;
       }
       
-      THashList * list = static_cast<THashList*>(fMap->GetValue(sid->String().Data()));
+      THashList * list = static_cast<THashList*>(Map()->GetValue(sid->String().Data()));      
       TObjArray names;
       names.SetOwner(kTRUE);
       TIter nextUnsortedHisto(list);
@@ -582,6 +766,21 @@ AliHistogramCollection::Print(Option_t* option) const
   
   delete identifiers;
 }
+
+//_____________________________________________________________________________
+void 
+AliHistogramCollection::PrintMessages(const char* prefix) const
+{
+  /// Print pending messages
+  
+  std::map<std::string,int>::const_iterator it;
+  
+  for ( it = fMessages.begin(); it != fMessages.end(); ++it ) 
+  {
+    cout << Form("%s : message %s appeared %5d times",prefix,it->first.c_str(),it->second) << endl;
+  }
+}
+
 
 //_____________________________________________________________________________
 UInt_t 
@@ -649,7 +848,7 @@ AliHistogramCollection::EstimateSize(Bool_t show) const
 void AliHistogramCollection::PruneEmptyHistograms()
 {
   /// Delete the empty histograms
-  TIter next(fMap);
+  TIter next(Map());
   TObjString* key;
   
   TList toBeRemoved;
@@ -658,7 +857,7 @@ void AliHistogramCollection::PruneEmptyHistograms()
   while ( ( key = static_cast<TObjString*>(next()) ) )
   {
     TString identifier(key->String());
-    THashList* hlist = static_cast<THashList*>(fMap->GetValue(identifier.Data()));
+    THashList* hlist = static_cast<THashList*>(Map()->GetValue(identifier.Data()));
     TIter nextHisto(hlist);
     TH1* h;
     while ( ( h = static_cast<TH1*>(nextHisto())))
@@ -679,11 +878,52 @@ void AliHistogramCollection::PruneEmptyHistograms()
 
 //_____________________________________________________________________________
 AliHistogramCollection* 
-AliHistogramCollection::Project(const char* /*keyA*/, const char* /*keyB*/) const
+AliHistogramCollection::Project(const char* keyA, const char* keyB, const char* keyC, const char* keyD) const
 {
-  /// To be implemented : would create a new collection starting at keyA/keyB
-  AliError("Implement me !");
-  return 0x0;
+  /// To be implemented : would create a new collection starting at keyA/keyB/keyC/keyD
+  
+  if (!fMap) return 0x0;
+  
+  AliHistogramCollection* hc = new AliHistogramCollection(Form("%s %s/%s/%s/%s",GetName(),keyA,keyB,keyC,keyD),
+                                                          GetTitle());
+  
+  TIter next(Map());
+  TObjString* str;
+  
+  while ( ( str = static_cast<TObjString*>(next()) ) )
+  {
+    TString identifier = str->String();
+    
+    Bool_t copy= ( KeyA(identifier) == keyA &&
+                  ( strlen(keyB)==0 || KeyB(identifier)==keyB ) && 
+                  ( strlen(keyC)==0 || KeyC(identifier)==keyC ) && 
+                  ( strlen(keyD)==0 || KeyD(identifier)==keyD ));
+
+    if ( !copy ) continue;
+    
+    THashList* list = static_cast<THashList*>(Map()->GetValue(identifier.Data()));
+    
+    TIter nextHisto(list);
+    TH1* h;
+    
+    while ( ( h = static_cast<TH1*>(nextHisto()) ) )
+    {
+      TH1* hclone = static_cast<TH1*>(h->Clone());
+
+      TString newkey(identifier.Data());
+      
+      if ( strlen(keyD) > 0 ) newkey.ReplaceAll(Form("/%s",keyD),"");
+      if ( strlen(keyC) > 0 ) newkey.ReplaceAll(Form("/%s",keyC),"");
+      if ( strlen(keyB) > 0 ) newkey.ReplaceAll(Form("/%s",keyB),"");
+      if ( strlen(keyA) > 0 ) newkey.ReplaceAll(Form("/%s",keyA),"");
+
+      if (newkey=="/") newkey="";
+      
+      hc->InternalAdopt(newkey.Data(),hclone);
+    }    
+  }
+
+  return hc;
 }
 
 //_____________________________________________________________________________
@@ -709,13 +949,41 @@ AliHistogramCollection::Remove(TObject* key)
   
   TString identifier(str->String());
     
-  TString skey = Form("/%s/%s/%s/%s/",
-                      KeyA(identifier).Data(),
-                      KeyB(identifier).Data(),
-                      KeyC(identifier).Data(),
-                      KeyD(identifier).Data());
+  Int_t nslashes = TString(identifier).CountChar('/');
+
+  TString skey;
   
-  THashList* hlist = dynamic_cast<THashList*>(fMap->GetValue(skey.Data()));
+  switch (nslashes )
+  {
+    case 2:
+      skey = Form("/%s/",
+                  KeyA(identifier).Data());
+      break;
+    case 3:
+      skey = Form("/%s/%s/",
+                  KeyA(identifier).Data(),
+                  KeyB(identifier).Data());
+      break;
+    case 4:
+      skey = Form("/%s/%s/%s/",
+                  KeyA(identifier).Data(),
+                  KeyB(identifier).Data(),
+                  KeyC(identifier).Data());
+      break;
+    case 5:
+      skey = Form("/%s/%s/%s/%s/",
+                  KeyA(identifier).Data(),
+                  KeyB(identifier).Data(),
+                  KeyC(identifier).Data(),
+                  KeyD(identifier).Data()
+                  );
+      break;
+    default:
+      AliError("Oups");
+      break;
+  };
+  
+  THashList* hlist = dynamic_cast<THashList*>(Map()->GetValue(skey.Data()));
   
   if (!hlist)
   {
@@ -750,6 +1018,50 @@ AliHistogramCollection::Remove(TObject* key)
   return o;
 }
 
+//______________________________________________________________________________
+Bool_t AliHistogramCollection::HistoSameAxis(TH1 *h0, TH1 *h1) const
+{
+  // shameless copy from TProofPlayerRemote::HistoSameAxis
+  //
+  // Return kTRUE is the histograms 'h0' and 'h1' have the same binning and ranges
+  // on the axis (i.e. if they can be just Add-ed for merging).
+  
+  Bool_t rc = kFALSE;
+  if (!h0 || !h1) return rc;
+  
+  TAxis *a0 = 0, *a1 = 0;
+  
+  // Check X
+  a0 = h0->GetXaxis();
+  a1 = h1->GetXaxis();
+  if (a0->GetNbins() == a1->GetNbins())
+    if (TMath::Abs(a0->GetXmax() - a1->GetXmax()) < 1.e-9)
+      if (TMath::Abs(a0->GetXmin() - a1->GetXmin()) < 1.e-9) rc = kTRUE;
+  
+  // Check Y, if needed
+  if (h0->GetDimension() > 1) {
+    rc = kFALSE;
+    a0 = h0->GetYaxis();
+    a1 = h1->GetYaxis();
+    if (a0->GetNbins() == a1->GetNbins())
+      if (TMath::Abs(a0->GetXmax() - a1->GetXmax()) < 1.e-9)
+        if (TMath::Abs(a0->GetXmin() - a1->GetXmin()) < 1.e-9) rc = kTRUE;
+  }
+  
+  // Check Z, if needed
+  if (h0->GetDimension() > 2) {
+    rc = kFALSE;
+    a0 = h0->GetZaxis();
+    a1 = h1->GetZaxis();
+    if (a0->GetNbins() == a1->GetNbins())
+      if (TMath::Abs(a0->GetXmax() - a1->GetXmax()) < 1.e-9)
+        if (TMath::Abs(a0->GetXmin() - a1->GetXmin()) < 1.e-9) rc = kTRUE;
+  }
+  
+  // Done
+  return rc;
+}
+
 //_____________________________________________________________________________
 TObjArray*
 AliHistogramCollection::SortAllIdentifiers() const
@@ -757,7 +1069,7 @@ AliHistogramCollection::SortAllIdentifiers() const
   /// Sort our internal identifiers. Returned array must be deleted.
   TObjArray* identifiers = new TObjArray;
   identifiers->SetOwner(kFALSE); 
-  TIter next(fMap);
+  TIter next(Map());
   TObjString* sid;
   
   while ( ( sid = static_cast<TObjString*>(next()) ) )
@@ -820,7 +1132,7 @@ TObject* AliHistogramCollectionIterator::Next()
       // we are done
       return 0x0;
     }      
-    THashList* list = static_cast<THashList*>(fkHistogramCollection->fMap->GetValue(key->String().Data()));
+    THashList* list = static_cast<THashList*>(fkHistogramCollection->Map()->GetValue(key->String().Data()));
     if (!list) return 0x0;
     fHashListIterator = list->MakeIterator(fDirection);
   }

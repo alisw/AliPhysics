@@ -27,6 +27,8 @@
 #ifndef ROOT_TCollection
 #  include "TCollection.h"
 #endif
+#include <map>
+#include <string>
 
 class TH1;
 class TMap;
@@ -40,7 +42,10 @@ public:
 
   AliHistogramCollection(const char* name="", const char* title="");
   virtual ~AliHistogramCollection();
+
+  virtual AliHistogramCollection* Clone(const char* name="") const;
   
+  Bool_t Adopt(TH1* histo);
   Bool_t Adopt(const char* keyA, TH1* histo);
   Bool_t Adopt(const char* keyA, const char* keyB, TH1* histo);
   Bool_t Adopt(const char* keyA, const char* keyB, const char* keyC, TH1* histo);
@@ -75,10 +80,13 @@ public:
   TString HistoName(const char* identifier) const;
   
   void Print(Option_t *option="") const;
-
+  
+  void ClearMessages();
+  void PrintMessages(const char* prefix="") const;
+  
   Long64_t Merge(TCollection* list);
   
-  AliHistogramCollection* Project(const char* keyA, const char* keyB) const;
+  AliHistogramCollection* Project(const char* keyA, const char* keyB="", const char* keyC="", const char* keyD="") const;
   
   UInt_t EstimateSize(Bool_t show=kFALSE) const;
   
@@ -96,36 +104,29 @@ private:
 
   Bool_t InternalAdopt(const char* identifier, TH1* histo);
   
-public://should be private
+  Bool_t HistoSameAxis(TH1 *h0, TH1 *h1) const;
+
   TString InternalDecode(const char* identifier, Int_t index) const;
   
-//private:
   TH1* InternalHisto(const char* identifier, const char* histoname) const;  
   TObjArray* SortAllIdentifiers() const;
   
-private:
-  TMap* fMap; /// map of TMap of THashList* of TH1*...
-  Bool_t fMustShowEmptyHistogram; /// Whether or not to show empty histograms with the Print method
+  TString NormalizeName(const char* identifier, const char* action) const;
   
+  TMap* Map() const;
 
-  ClassDef(AliHistogramCollection,1) /// A collection of histograms
+private:
+  
+  mutable TMap* fMap; /// map of TMap of THashList* of TH1*...
+  Bool_t fMustShowEmptyHistogram; /// Whether or not to show empty histograms with the Print method
+  mutable Int_t fMapVersion; /// internal version of map (to avoid custom streamer...)
+  mutable std::map<std::string,int> fMessages; //! log messages
+  
+  ClassDef(AliHistogramCollection,7) /// A collection of histograms
 };
 
 class AliHistogramCollectionIterator : public TIterator
 {  
-private:
-  const AliHistogramCollection* fkHistogramCollection; // histogram collection being iterated
-  TIterator* fMapIterator; // Iterator for the internal map
-  TIterator* fHashListIterator; // Iterator for the current hash list
-  Bool_t fDirection; // forward or reverse
-
-  AliHistogramCollectionIterator() : fkHistogramCollection(0x0), fMapIterator(0x0), fHashListIterator(0x0), fDirection(kIterForward) {}
-
-  /// not implemented
-  AliHistogramCollectionIterator& operator=(const AliHistogramCollectionIterator &rhs);
-  /// not implemented
-  AliHistogramCollectionIterator(const AliHistogramCollectionIterator &iter);
-  
 public:
   virtual ~AliHistogramCollectionIterator();
   
@@ -138,6 +139,19 @@ public:
   
   void Reset();
   
+private:
+  const AliHistogramCollection* fkHistogramCollection; // histogram collection being iterated
+  TIterator* fMapIterator; // Iterator for the internal map
+  TIterator* fHashListIterator; // Iterator for the current hash list
+  Bool_t fDirection; // forward or reverse
+  
+  AliHistogramCollectionIterator() : fkHistogramCollection(0x0), fMapIterator(0x0), fHashListIterator(0x0), fDirection(kIterForward) {}
+  
+  /// not implemented
+  AliHistogramCollectionIterator& operator=(const AliHistogramCollectionIterator &rhs);
+  /// not implemented
+  AliHistogramCollectionIterator(const AliHistogramCollectionIterator &iter);
+    
   ClassDef(AliHistogramCollectionIterator,0)  // Histogram collection iterator
 };
 
