@@ -134,25 +134,44 @@ void AliHFEtrdPIDqaV1::Browse(TBrowser *b){
       listTPCnsigma->SetOwner();
 
       TH2 *hptr = NULL; 
-      for(Int_t ispec = 0; ispec < 4; ispec++){
-        for(Int_t istep = 0; istep < 2; istep++){
-          hptr = MakeTRDspectrumTM(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec]);
-          if(hptr){
-            hptr->SetName(Form("hTRDtm%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
-            listTM->Add(hptr);
+      TList *lctm, *lclike, *lccharge, *lcTPCsig;
+      for(Int_t icent = -1; icent < 11; icent++){
+        lctm = new TList;
+        lctm->SetName(icent < 0 ? "MinBias" : Form("Centrality%d", icent));
+        lctm->SetOwner();
+        listTM->Add(lctm);
+        lclike = new TList;
+        lclike->SetName(icent < 0 ? "MinBias" : Form("Centrality%d", icent));
+        lclike->SetOwner();
+        listLike->Add(lclike);
+        lccharge = new TList;
+        lccharge->SetName(icent < 0 ? "MinBias" : Form("Centrality%d", icent));
+        lccharge->SetOwner();
+        listCharge->Add(lccharge);
+        lcTPCsig = new TList;
+        lcTPCsig->SetName(icent < 0 ? "MinBias" : Form("Centrality%d", icent));
+        lcTPCsig->SetOwner();
+        listTPCnsigma->Add(lcTPCsig);
+        for(Int_t ispec = 0; ispec < 4; ispec++){
+          for(Int_t istep = 0; istep < 2; istep++){
+            hptr = MakeTRDspectrumTM(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec], icent);
+            if(hptr){
+              hptr->SetName(Form("hTRDtm%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
+              lctm->Add(hptr);
+            }
+            hptr = MakeTRDlikelihoodDistribution(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec], icent);
+            hptr->SetName(Form("hTRDlike%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
+            lclike->Add(hptr);
+            hptr = MakeTRDchargeDistribution(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec], icent);
+            hptr->SetName(Form("hTRDcharge%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
+            lccharge->Add(hptr);
+            hptr = MakeTPCspectrumNsigma(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec], icent);
+            hptr->SetName(Form("hTPCspectrum%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
+            lcTPCsig->Add(hptr);
           }
-          hptr = MakeTRDlikelihoodDistribution(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec]);
-          hptr->SetName(Form("hTRDlike%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
-          listLike->Add(hptr);
-          hptr = MakeTRDchargeDistribution(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec]);
-          hptr->SetName(Form("hTRDcharge%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
-          listCharge->Add(hptr);
-          hptr = MakeTPCspectrumNsigma(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec]);
-          hptr->SetName(Form("hTPCspectrum%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
-          listTPCnsigma->Add(hptr);
         }
       }
-      
+        
       b->Add(listTM, "Projections Truncated Mean");
       b->Add(listLike, "Projections Likelihood distribution");
       b->Add(listCharge, "Projections Tracklet Charge");
@@ -188,27 +207,27 @@ void AliHFEtrdPIDqaV1::Initialize(){
   Int_t nBinsTPCSigma[5] = {kPIDbins, kPbins, tpcSigmaBins, kSteps, kCentralityBins};
   Double_t minTPCSigma[5] = {kMinPID, kMinP, -12., 0., 0.};
   Double_t maxTPCSigma[5] = {kMaxPID, kMaxP, 12., 2., 11.};
-  fHistos->CreateTHnSparse("hTPCsigma", "TPC sigma; species p [GeV/c]; TPC dEdx - <dE/dx>|_{el} [#sigma]; selection step", 4, nBinsTPCSigma, minTPCSigma, maxTPCSigma);
+  fHistos->CreateTHnSparse("hTPCsigma", "TPC sigma; species p [GeV/c]; TPC dEdx - <dE/dx>|_{el} [#sigma]; selection step", 5, nBinsTPCSigma, minTPCSigma, maxTPCSigma);
   fHistos->Sumw2("hTPCsigma");
   // Create Monitoring histogram for the Likelihood distribution
   Int_t nBinsTRDlike[5] = {kPIDbins, kPbins, trdLikelihoodBins, kSteps, kCentralityBins};
   Double_t minTRDlike[5] = {kMinPID, kMinP, 0., 0., 0.};
   Double_t maxTRDlike[5] = {kMaxPID, kMaxP, 1., 2., 11.};
-  fHistos->CreateTHnSparse("hTRDlikelihood", "TRD Likelihood Distribution; species; p [GeV/c]; TRD electron Likelihood; selection step", 4, nBinsTRDlike, minTRDlike, maxTRDlike);
+  fHistos->CreateTHnSparse("hTRDlikelihood", "TRD Likelihood Distribution; species; p [GeV/c]; TRD electron Likelihood; selection step", 5, nBinsTRDlike, minTRDlike, maxTRDlike);
   fHistos->Sumw2("hTRDlikelihood");
   // Create Monitoring histogram for the TRD total charge
   const Int_t kTRDchargeBins = 1000;
   Int_t nBinsTRDcharge[5] = {kPIDbins, kPbins, kTRDchargeBins, kSteps, kCentralityBins};
   Double_t minTRDcharge[5] = {kMinPID, kMinP, 0., 0., 0.};
   Double_t maxTRDcharge[5] = {kMaxPID, kMaxP, 100000., 2., 11.};
-  fHistos->CreateTHnSparse("hTRDcharge", "Total TRD charge; species; p [GeV/c]; TRD charge [a.u.]; selection step", 4, nBinsTRDcharge, minTRDcharge, maxTRDcharge);
+  fHistos->CreateTHnSparse("hTRDcharge", "Total TRD charge; species; p [GeV/c]; TRD charge [a.u.]; selection step", 5, nBinsTRDcharge, minTRDcharge, maxTRDcharge);
   fHistos->Sumw2("hTRDcharge");
   // Monitoring of the TRD truncated mean according to version 1
   const Int_t kTRDtmBins = 1000;
   Int_t nBinsTRDtm[5] = {kPIDbins, kPbins, kTRDtmBins, kSteps, kCentralityBins};
   Double_t minTRDtm[5] = {kMinPID, kMinP, 0., 0., 0.};
   Double_t maxTRDtm[5] = {kMaxPID, kMaxP, 20000., 2., 11.};
-  fHistos->CreateTHnSparse("hTRDtruncatedMean", "TRD truncated Mean; species; p [GeV/c]; TRD signal [a.u.]; selection step", 4, nBinsTRDtm, minTRDtm, maxTRDtm);
+  fHistos->CreateTHnSparse("hTRDtruncatedMean", "TRD truncated Mean; species; p [GeV/c]; TRD signal [a.u.]; selection step", 5, nBinsTRDtm, minTRDtm, maxTRDtm);
   fHistos->Sumw2("hTRDtruncatedMean");
 }
 
@@ -242,12 +261,13 @@ void AliHFEtrdPIDqaV1::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa
   }
   for(UInt_t ily = 0; ily < 6; ily++){
     container[2] = trdpid ? trdpid->GetChargeLayer(track->GetRecTrack(), ily, anatype) : 0;
+    if(container[2] < 1e-3) continue; // Filter out 0 entries
     fHistos->Fill("hTRDcharge", container);
   }
 }
 
 //_________________________________________________________
-TH2 *AliHFEtrdPIDqaV1::MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t species){
+TH2 *AliHFEtrdPIDqaV1::MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t species, Int_t centralityClass){
   //
   // Get the TPC control histogram for the TRD selection step (either before or after PID)
   //
@@ -260,6 +280,25 @@ TH2 *AliHFEtrdPIDqaV1::MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t
     // cut on species (if available)
     histo->GetAxis(0)->SetRange(species + 2, species + 2); // undef + underflow
   }
+  TString centname, centtitle;
+  Bool_t hasCentralityInfo = kTRUE;
+  if(centralityClass > -1){
+    if(histo->GetNdimensions() < 5){
+      AliError("Centrality Information not available");
+      centname = centtitle = "MinBias";
+      hasCentralityInfo = kFALSE;
+    } else {
+      // Project centrality classes
+      // -1 is Min. Bias
+      histo->GetAxis(4)->SetRange(centralityClass+1, centralityClass+1);
+      centname = Form("Cent%d", centralityClass);
+      centtitle = Form("Centrality %d", centralityClass);
+    }
+  } else {
+    histo->GetAxis(4)->SetRange(1, histo->GetAxis(4)->GetNbins()-1);
+    centname = centtitle = "MinBias";
+    hasCentralityInfo = kTRUE;
+  }
   histo->GetAxis(3)->SetRange(step + 1, step + 1); 
 
   TH2 *hSpec = histo->Projection(2, 1);
@@ -267,19 +306,20 @@ TH2 *AliHFEtrdPIDqaV1::MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t
   TString stepname = step == AliHFEdetPIDqa::kBeforePID ? "before" : "after";
   TString speciesname = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "all Particles";
   TString specID = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "unid";
-  TString histname = Form("hSigmaTPC%s%s", specID.Data(), stepname.Data());
-  TString histtitle = Form("TPC Sigma for %s %s PID", speciesname.Data(), stepname.Data());
+  TString histname = Form("hSigmaTPC%s%s%s", specID.Data(), stepname.Data(), centname.Data());
+  TString histtitle = Form("TPC Sigma for %s %s PID %s", speciesname.Data(), stepname.Data(), centtitle.Data());
   hSpec->SetName(histname.Data());
   hSpec->SetTitle(histtitle.Data());
 
   // Unset range on the original histogram
   histo->GetAxis(0)->SetRange(0, histo->GetAxis(0)->GetNbins());
-  histo->GetAxis(2)->SetRange(0, histo->GetAxis(2)->GetNbins());
+  histo->GetAxis(3)->SetRange(0, histo->GetAxis(3)->GetNbins());
+  if(hasCentralityInfo)histo->GetAxis(4)->SetRange(0, histo->GetAxis(4)->GetNbins());
   return hSpec; 
 }
 
 //_________________________________________________________
-TH2 *AliHFEtrdPIDqaV1::MakeTRDspectrumTM(AliHFEdetPIDqa::EStep_t step, Int_t species){
+TH2 *AliHFEtrdPIDqaV1::MakeTRDspectrumTM(AliHFEdetPIDqa::EStep_t step, Int_t species, Int_t centralityClass){
   //
   // Get the TPC control histogram for the TRD selection step (either before or after PID)
   //
@@ -292,6 +332,25 @@ TH2 *AliHFEtrdPIDqaV1::MakeTRDspectrumTM(AliHFEdetPIDqa::EStep_t step, Int_t spe
     // cut on species (if available)
     histo->GetAxis(0)->SetRange(species + 2, species + 2); // undef + underflow
   }
+  TString centname, centtitle;
+  Bool_t hasCentralityInfo = kTRUE;
+  if(centralityClass > -1){
+     if(histo->GetNdimensions() < 5){
+      AliError("Centrality Information not available");
+      centname = centtitle = "MinBias";
+      hasCentralityInfo= kFALSE;
+    } else {
+      // Project centrality classes
+      // -1 is Min. Bias
+      histo->GetAxis(4)->SetRange(centralityClass+1, centralityClass+1);
+      centname = Form("Cent%d", centralityClass);
+      centtitle = Form("Centrality %d", centralityClass);
+    }
+  } else {
+    histo->GetAxis(4)->SetRange(1, histo->GetAxis(4)->GetNbins()-1);
+    centname = centtitle = "MinBias";
+    hasCentralityInfo= kFALSE;
+  }
   histo->GetAxis(3)->SetRange(step + 1, step + 1); 
 
   TH2 *hSpec = histo->Projection(2, 1);
@@ -299,19 +358,20 @@ TH2 *AliHFEtrdPIDqaV1::MakeTRDspectrumTM(AliHFEdetPIDqa::EStep_t step, Int_t spe
   TString stepname = step == AliHFEdetPIDqa::kBeforePID ? "before" : "after";
   TString speciesname = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "all Particles";
   TString specID = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "unid";
-  TString histname = Form("hTMTRD%s%s", specID.Data(), stepname.Data());
-  TString histtitle = Form("TRD Truncated Mean for %s %s PID", speciesname.Data(), stepname.Data());
+  TString histname = Form("hTMTRD%s%s%s", specID.Data(), stepname.Data(), centname.Data());
+  TString histtitle = Form("TRD Truncated Mean for %s %s PID %s", speciesname.Data(), stepname.Data(), centtitle.Data());
   hSpec->SetName(histname.Data());
   hSpec->SetTitle(histtitle.Data());
 
   // Unset range on the original histogram
   histo->GetAxis(0)->SetRange(0, histo->GetAxis(0)->GetNbins());
   histo->GetAxis(2)->SetRange(0, histo->GetAxis(2)->GetNbins());
+  if(hasCentralityInfo)histo->GetAxis(4)->SetRange(0, histo->GetAxis(4)->GetNbins());
   return hSpec; 
 }
 
 //_________________________________________________________
-TH2 *AliHFEtrdPIDqaV1::MakeTRDlikelihoodDistribution(AliHFEdetPIDqa::EStep_t step, Int_t species){
+TH2 *AliHFEtrdPIDqaV1::MakeTRDlikelihoodDistribution(AliHFEdetPIDqa::EStep_t step, Int_t species, Int_t centralityClass){
   //
   // Make Histogram for TRD Likelihood distribution
   //
@@ -324,6 +384,25 @@ TH2 *AliHFEtrdPIDqaV1::MakeTRDlikelihoodDistribution(AliHFEdetPIDqa::EStep_t ste
     // cut on species (if available)
     histo->GetAxis(0)->SetRange(species + 2, species + 2); // undef + underflow
   }
+  TString centname, centtitle;
+  Bool_t hasCentralityInfo = kTRUE;
+  if(centralityClass > -1){
+    if(histo->GetNdimensions() < 5){
+      AliError("Centrality Information not available");
+      centname = centtitle = "MinBias";
+      hasCentralityInfo= kFALSE;
+    } else {
+      // Project centrality classes
+      // -1 is Min. Bias
+      histo->GetAxis(4)->SetRange(centralityClass+1, centralityClass+1);
+      centname = Form("Cent%d", centralityClass);
+      centtitle = Form("Centrality %d", centralityClass);
+    }
+  } else {
+    histo->GetAxis(4)->SetRange(1, histo->GetAxis(4)->GetNbins()-1);
+    centname = centtitle = "MinBias";
+    hasCentralityInfo= kTRUE;
+  }
   histo->GetAxis(3)->SetRange(step + 1, step + 1);
 
   TH2 *hSpec = histo->Projection(2, 1);
@@ -331,19 +410,20 @@ TH2 *AliHFEtrdPIDqaV1::MakeTRDlikelihoodDistribution(AliHFEdetPIDqa::EStep_t ste
   TString stepname = step == AliHFEdetPIDqa::kBeforePID ? "before" : "after";
   TString speciesname = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "all Particles";
   TString specID = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "unid";
-  TString histname = Form("hLikeElTRD%s%s", specID.Data(), stepname.Data());
-  TString histtitle = Form("TRD electron Likelihood for %s %s PID", speciesname.Data(), stepname.Data());
+  TString histname = Form("hLikeElTRD%s%s%s", specID.Data(), stepname.Data(),centname.Data());
+  TString histtitle = Form("TRD electron Likelihood for %s %s PID %s", speciesname.Data(), stepname.Data(),centtitle.Data());
   hSpec->SetName(histname.Data());
   hSpec->SetTitle(histtitle.Data());
 
   // Unset range on the original histogram
   histo->GetAxis(0)->SetRange(0, histo->GetAxis(0)->GetNbins());
   histo->GetAxis(2)->SetRange(0, histo->GetAxis(2)->GetNbins());
+  if(hasCentralityInfo)histo->GetAxis(4)->SetRange(0, histo->GetAxis(4)->GetNbins());
   return hSpec; 
 }
 
 //_________________________________________________________
-TH2 *AliHFEtrdPIDqaV1::MakeTRDchargeDistribution(AliHFEdetPIDqa::EStep_t step, Int_t species){
+TH2 *AliHFEtrdPIDqaV1::MakeTRDchargeDistribution(AliHFEdetPIDqa::EStep_t step, Int_t species, Int_t centralityClass){
   //
   // Make Histogram for TRD Likelihood distribution
   //
@@ -356,6 +436,25 @@ TH2 *AliHFEtrdPIDqaV1::MakeTRDchargeDistribution(AliHFEdetPIDqa::EStep_t step, I
     // cut on species (if available)
     histo->GetAxis(0)->SetRange(species + 2, species + 2); // undef + underflow
   }
+  TString centname, centtitle;
+  Bool_t hasCentralityInfo = kTRUE;
+  if(centralityClass > -1){
+    if(histo->GetNdimensions() < 5){
+      AliError("Centrality Information not available");
+      centname = centtitle = "MinBias";
+      hasCentralityInfo= kFALSE;
+    } else {
+      // Project centrality classes
+      // -1 is Min. Bias
+      histo->GetAxis(4)->SetRange(centralityClass+1, centralityClass+1);
+      centname = Form("Cent%d", centralityClass);
+      centtitle = Form("Centrality %d", centralityClass);
+    }
+  } else {
+    histo->GetAxis(4)->SetRange(1, histo->GetAxis(4)->GetNbins()-1);
+    centname = centtitle = "MinBias";
+    hasCentralityInfo= kTRUE;
+  }
   histo->GetAxis(3)->SetRange(step + 1, step + 1);
 
   TH2 *hSpec = histo->Projection(2, 1);
@@ -363,14 +462,15 @@ TH2 *AliHFEtrdPIDqaV1::MakeTRDchargeDistribution(AliHFEdetPIDqa::EStep_t step, I
   TString stepname = step == AliHFEdetPIDqa::kBeforePID ? "before" : "after";
   TString speciesname = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "all Particles";
   TString specID = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "unid";
-  TString histname = Form("hChargeTRD%s%s", specID.Data(), stepname.Data());
-  TString histtitle = Form("TRD total charge for %s %s PID", speciesname.Data(), stepname.Data());
+  TString histname = Form("hChargeTRD%s%s%s", specID.Data(), stepname.Data(), centname.Data());
+  TString histtitle = Form("TRD total charge for %s %s PID %s", speciesname.Data(), stepname.Data(), centtitle.Data());
   hSpec->SetName(histname.Data());
   hSpec->SetTitle(histtitle.Data());
 
   // Unset range on the original histogram
   histo->GetAxis(0)->SetRange(0, histo->GetAxis(0)->GetNbins());
   histo->GetAxis(2)->SetRange(0, histo->GetAxis(2)->GetNbins());
+  if(hasCentralityInfo)histo->GetAxis(4)->SetRange(0, histo->GetAxis(4)->GetNbins());
   return hSpec; 
 }
 

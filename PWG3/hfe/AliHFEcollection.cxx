@@ -20,8 +20,6 @@
 // Matus Kalisky  <matus.kalisky@cern.ch>
 //
 
-//#include <iostream>
-
 #include <TH1F.h>
 #include <TH2F.h>
 #include <THnSparse.h>
@@ -31,6 +29,7 @@
 #include <TMath.h>
 
 #include "AliLog.h"
+
 #include "AliHFEcollection.h"
 
 using namespace std;
@@ -99,6 +98,7 @@ void AliHFEcollection::Copy(TObject &ref) const {
 
   // Clone List Content
   target.fList = new THashList();          
+  target.fList->SetOwner();
   for(Int_t ien = 0; ien < fList->GetEntries(); ien++)
     target.fList->Add(fList->At(ien)->Clone());
 }
@@ -563,3 +563,21 @@ void AliHFEcollection::Browse(TBrowser *b)
       }
    }
 }
+//____________________________________________________________________
+void AliHFEcollection::Print(Option_t *) const{
+  //
+  // Print content of the collection
+  //
+  TIter histIter(fList);
+  TObject *o = NULL;
+  Int_t nHistos = 0;
+  printf("Collection %s\n", GetName());
+  printf("Content of the collection:\n=========================================\n");
+  while((o = histIter())){
+    printf("Histo %s, Type %s\n", o->GetName(), o->IsA()->GetName());
+    nHistos++;
+  }
+  printf("Number of histos in the collection: %d\n", nHistos);
+  printf("\n");
+}
+

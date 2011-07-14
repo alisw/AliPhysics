@@ -67,6 +67,7 @@ class AliHFEcollection : public TNamed{
     
 
   Long64_t Merge(TCollection *list);
+  virtual void Print(Option_t *) const;
 
   // Get functions
   TList* GetList() const { return fList; }

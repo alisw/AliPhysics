@@ -17,17 +17,6 @@ class AliVParticle;
 class AliPID;
 
 class AliHFEpidQAmanager;
-//class AliEMCALGeoUtils;
-//class AliEMCALGeometry;
-//class AliEMCALRecoUtils;
-/*
-class AliEMCALGeoUtils;
-class AliEMCALGeometry;
-#include "AliEMCALGeoParams.h"
-class AliEMCALRecoUtils;
-class AliEMCALPIDUtils;
-*/
-
 
 class AliHFEpidEMCAL : public AliHFEpidBase{
   public:
@@ -40,7 +29,8 @@ class AliHFEpidEMCAL : public AliHFEpidBase{
     virtual Bool_t    InitializePID();
     virtual Int_t     IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *piqa) const;
       
-    //Double_t MomentumEnergyMatch(const AliVParticle *track) const;
+    //Double_t MomentumEnergyMatchV1(const AliVParticle *track) const;
+    Double_t MomentumEnergyMatchV2(const AliVParticle *track) const;
 
   protected:
     void Copy(TObject &ref) const;

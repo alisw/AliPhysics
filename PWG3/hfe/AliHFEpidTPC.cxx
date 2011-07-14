@@ -49,16 +49,18 @@ AliHFEpidTPC::AliHFEpidTPC() :
   // add a list here
   AliHFEpidBase()
   , fLineCrossingsEnabled(0)
-  , fUpperSigmaCut(NULL)
-  , fLowerSigmaCut(NULL)
-  , fElectronMeanCorrection(NULL)
+  , fkElectronMeanCorrection(NULL)
+  , fHasCutModel(kFALSE)
   , fNsigmaTPC(3)
   , fRejectionEnabled(0)
-  , fPID(NULL)
 {
   //
   // default  constructor
   // 
+
+  memset(fkUpperSigmaCut, 0, sizeof(const TF1 *) * 12);
+  memset(fkLowerSigmaCut, 0, sizeof(const TF1 *) * 12);
+
   memset(fRejection, 0, sizeof(Float_t) * 4 * AliPID::kSPECIES);
   memset(fLineCrossingSigma, 0, sizeof(Double_t) * AliPID::kSPECIES);
   memset(fPAsigCut, 0, sizeof(Float_t) * 2);
@@ -71,34 +73,32 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   // add a list here
   AliHFEpidBase(name)
   , fLineCrossingsEnabled(0)
-  , fUpperSigmaCut(NULL)
-  , fLowerSigmaCut(NULL)
-  , fElectronMeanCorrection(NULL)
+  , fkElectronMeanCorrection(NULL)
+  , fHasCutModel(kFALSE)
   , fNsigmaTPC(3)
   , fRejectionEnabled(0)
-  , fPID(NULL)
 {
   //
   // default  constructor
   // 
   //
+  memset(fkUpperSigmaCut, 0, sizeof(const TF1 *) * 12);
+  memset(fkLowerSigmaCut, 0, sizeof(const TF1 *) * 12);
+
   memset(fRejection, 0, sizeof(Float_t) * 4 * AliPID::kSPECIES);
   memset(fLineCrossingSigma, 0, sizeof(Double_t) * AliPID::kSPECIES);
   memset(fPAsigCut, 0, sizeof(Float_t) * 2);
   memset(fNAsigmaTPC, 0, sizeof(Float_t) * 2);
-  fPID = new AliPID;
 }
 
 //___________________________________________________________________
 AliHFEpidTPC::AliHFEpidTPC(const AliHFEpidTPC &ref) :
   AliHFEpidBase("")
   , fLineCrossingsEnabled(0)
-  , fUpperSigmaCut(NULL)
-  , fLowerSigmaCut(NULL)
-  , fElectronMeanCorrection(NULL)
+  , fkElectronMeanCorrection(NULL)
+  , fHasCutModel(ref.fHasCutModel)
   , fNsigmaTPC(2)
   , fRejectionEnabled(0)
-  , fPID(NULL)
 {
   //
   // Copy constructor
@@ -125,12 +125,14 @@ void AliHFEpidTPC::Copy(TObject &o) const{
   AliHFEpidTPC &target = dynamic_cast<AliHFEpidTPC &>(o);
 
   target.fLineCrossingsEnabled = fLineCrossingsEnabled;
-  target.fUpperSigmaCut = fUpperSigmaCut;
-  target.fLowerSigmaCut = fLowerSigmaCut;
-  target.fElectronMeanCorrection = fElectronMeanCorrection;
+  target.fkElectronMeanCorrection = fkElectronMeanCorrection;
+  target.fHasCutModel = fHasCutModel;
   target.fNsigmaTPC = fNsigmaTPC;
   target.fRejectionEnabled = fRejectionEnabled;
-  target.fPID = new AliPID(*fPID);
+
+  memcpy(target.fkUpperSigmaCut, fkUpperSigmaCut, sizeof(const TF1 *) * 12);
+  memcpy(target.fkLowerSigmaCut, fkLowerSigmaCut, sizeof(const TF1 *) * 12);
+
   memcpy(target.fLineCrossingSigma, fLineCrossingSigma, sizeof(Double_t) * AliPID::kSPECIES);
   memcpy(target.fPAsigCut, fPAsigCut, sizeof(Float_t) * 2);
   memcpy(target.fNAsigmaTPC, fNAsigmaTPC, sizeof(Float_t) * 2);
@@ -143,7 +145,6 @@ AliHFEpidTPC::~AliHFEpidTPC(){
   //
   // Destructor
   //
-  if(fPID) delete fPID;
 }
 
 //___________________________________________________________________
@@ -195,8 +196,8 @@ Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
 
   // Check if we have an asymmetric sigma model set
   Int_t pdg = 0;
-  if(fUpperSigmaCut || fLowerSigmaCut){
-    pdg = CutSigmaModel(track->GetRecTrack(), anatype) ? 11 : 0;
+  if(fHasCutModel){
+    pdg = CutSigmaModel(track) ? 11 : 0;
   } else { 
     // Perform Asymmetric n-sigma cut if required, else perform symmetric TPC sigma cut
     Float_t p = 0.;
@@ -212,15 +213,19 @@ Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
 }
 
 //___________________________________________________________________
-Bool_t AliHFEpidTPC::CutSigmaModel(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const {
+Bool_t AliHFEpidTPC::CutSigmaModel(const AliHFEpidObject * const track) const {
   //
   // N SigmaCut using parametrization of the cuts
   //
   Bool_t isSelected = kTRUE;
-  Float_t nsigma = NumberOfSigmas(track, AliPID::kElectron, anaType);
-  Double_t p = GetP(track, anaType);
-  if(fUpperSigmaCut && nsigma > fUpperSigmaCut->Eval(p)) isSelected = kFALSE;
-  if(fLowerSigmaCut && nsigma < fLowerSigmaCut->Eval(p)) isSelected = kFALSE;
+  AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
+  Float_t nsigma = NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype);
+  Double_t p = GetP(track->GetRecTrack(), anatype);
+  Int_t centrality = track->IsPbPb() ? track->GetCentrality() + 1 : 0;
+  AliDebug(2, Form("Centrality: %d\n", centrality));
+  const TF1 *cutfunction;
+  if((cutfunction = fkUpperSigmaCut[centrality]) && nsigma > cutfunction->Eval(p)) isSelected = kFALSE;
+  if((cutfunction = fkLowerSigmaCut[centrality]) && nsigma < cutfunction->Eval(p)) isSelected = kFALSE;
   return isSelected;
 }
 
@@ -270,8 +275,8 @@ Double_t AliHFEpidTPC::NumberOfSigmas(const AliVParticle *track, AliPID::EPartic
     if(aodtrack && fAODpid) nSigmas = fAODpid->NumberOfSigmasTPC(aodtrack, species);
   }
   // Correct for the mean o
-  if(fElectronMeanCorrection)
-    nSigmas -= fElectronMeanCorrection->Eval(GetP(track, anaType));   
+  if(fkElectronMeanCorrection)
+    nSigmas -= fkElectronMeanCorrection->Eval(GetP(track, anaType));   
   return nSigmas;
 }
 

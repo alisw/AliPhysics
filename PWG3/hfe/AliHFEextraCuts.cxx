@@ -300,6 +300,16 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
 	        if(fCheck && !(statusL0 || statusL1))
 	            SETBIT(survivedCut, kPixelITS);
 		    break;
+      case kExclusiveSecond:
+        AliDebug(2, "Exlusive second");
+        if(fCheck){ // Cut out tracks which pass a dead ITS Layer 0
+          if(TESTBIT(itsPixel,1) && !TESTBIT(itsPixel,0) && statusL0)
+            SETBIT(survivedCut, kPixelITS);
+        } else {
+          if(TESTBIT(itsPixel,1) && !TESTBIT(itsPixel,0))
+            SETBIT(survivedCut, kPixelITS);
+        }
+        break;
       default: 
         AliDebug(2, "None");
         break;

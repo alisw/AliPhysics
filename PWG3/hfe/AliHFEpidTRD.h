@@ -65,6 +65,7 @@ class AliHFEpidTRD : public AliHFEpidBase{
     Bool_t IsCalculateTRDSignals() const { return TestBit(kTRDsignals); }
     Bool_t IsRenormalizeElPi() const { return TestBit(kTRDrenormalize); }
     void SetPIDMethod(PIDMethodTRD_t method) { fPIDMethod = method; };
+    void SetTotalChargeInSlice0() { fTotalChargeInSlice0 = kTRUE; }
     void SetRenormalizeElPi(Bool_t doRenorm = kTRUE) { if(doRenorm) SetBit(kTRDrenormalize, kTRUE); else SetBit(kTRDrenormalize, kFALSE);}
     void SetElectronEfficiency(Double_t electronEfficiency) { fElectronEfficiency = electronEfficiency; }
     void SetThresholdParameters(Double_t electronEff, Double_t *params);
@@ -96,6 +97,7 @@ class AliHFEpidTRD : public AliHFEpidBase{
     Double_t fElectronEfficiency;                           // Cut on electron efficiency
     PIDMethodTRD_t fPIDMethod;                              // PID Method: 2D Likelihood or Neural Network
     Double_t fThreshParams[kThreshParams];                  // Threshold parametrisation
+    Bool_t fTotalChargeInSlice0;                            // Flag for foreward/backward compatibility for the TRD total charge
   ClassDef(AliHFEpidTRD, 1)     // TRD electron ID class
 };
 #endif

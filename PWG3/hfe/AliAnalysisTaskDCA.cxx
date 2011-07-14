@@ -336,7 +336,8 @@ void AliAnalysisTaskDCA::UserCreateOutputObjects(){
     fHFEpid->AddDetector("TOF", 0);
     fHFEpid->AddDetector("TPC", 1);
     cout<<endl<<" ---> TPC and TOF added to the PID"<<endl;
-    fHFEpid->ConfigureTPCrejection();
+		fHFEpid->ConfigureTOF();
+    fHFEpid->ConfigureTPCdefaultCut();
     fHFEpid->InitializePID();
   }
 

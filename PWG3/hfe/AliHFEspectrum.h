@@ -86,6 +86,7 @@ class AliHFEspectrum : public TNamed{
     void SetNbDimensions(Int_t nbDimensions) { fNbDimensions = nbDimensions; };
     void SetChargeChoosen(Int_t chargechoosen) {fChargeChoosen = chargechoosen; };
     void SetUnSetCorrelatedErrors(Bool_t unsetcorrelatederrors) {fUnSetCorrelatedErrors = unsetcorrelatederrors;};
+    void SetSmoothing(Bool_t setSmoothing) {fSetSmoothing = setSmoothing;};
 
     void SetNCentralityBinAtTheEnd(Int_t nCentralityBinAtTheEnd) {fNCentralityBinAtTheEnd = nCentralityBinAtTheEnd; };
     void SetLowHighBoundaryCentralityBinAtTheEnd(Int_t low, Int_t high, Int_t i) { fLowBoundaryCentralityBinAtTheEnd[i] = low; fHighBoundaryCentralityBinAtTheEnd[i] = high;};
@@ -141,6 +142,7 @@ class AliHFEspectrum : public TNamed{
     Bool_t fDumpToFile;           // Write Result in a file
 
     Bool_t fUnSetCorrelatedErrors;    // Unset correlated errors
+    Bool_t fSetSmoothing;             // Set smoothing
 
     Bool_t fIPanaHadronBgSubtract;     // Hadron background subtraction
     Bool_t fIPanaCharmBgSubtract;      // Charm background subtraction 

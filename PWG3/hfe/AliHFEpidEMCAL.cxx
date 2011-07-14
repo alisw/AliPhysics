@@ -30,21 +30,17 @@
 #include "AliESDpid.h"
 
 #include "AliHFEdetPIDqa.h"
-//#include "AliHFEpidEMCAL.h"
+#include "AliHFEpidEMCAL.h"
 #include "AliHFEpidQAmanager.h"
 
-//#include "AliEMCALRecoUtils.h"
-//#include "AliEMCALGeometry.h"
-#include "AliVCluster.h"
-#include "AliVCaloCells.h"
-#include "AliVEvent.h"
+#include "AliHFEemcalPIDqa.h"
+//#include "AliVCluster.h"
+//#include "AliVCaloCells.h"
+//#include "AliVEvent.h"
 #include "AliLog.h"
-#include "AliEMCALPIDUtils.h"
 #include "AliPID.h"
-#include "AliESDEvent.h"
-#include "AliESDtrack.h"
-//#include "AliEMCALTrack.h"
-//#include "AliEMCALTracker.h"
+//#include "AliESDEvent.h"
+//#include "AliESDtrack.h"
 #include "AliHFEpidEMCAL.h"
 
 ClassImp(AliHFEpidEMCAL)
@@ -127,7 +123,7 @@ Bool_t AliHFEpidEMCAL::InitializePID(){
 }
 
 //___________________________________________________________________
-Int_t AliHFEpidEMCAL::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager */*pidqa*/) const
+Int_t AliHFEpidEMCAL::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const
 { //Function to a return a code indicating whether or not an electron candidate is selected
   //
   //
@@ -135,32 +131,62 @@ Int_t AliHFEpidEMCAL::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanage
   AliDebug(2, "PID object available");
   // EMCal not fESDpid  (s.s Feb. 11)
 
-  /*
-  AliHFEpidObject::AnalysisType_t anaType = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
-  if(!((dynamic_cast<const AliVTrack *>(track->GetRecTrack()))->GetStatus() & AliESDtrack::kEMCALpid)) return 0;
+  
+  //AliHFEpidObject::AnalysisType_t anaType = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
+  if(!((dynamic_cast<const AliVTrack *>(track->GetRecTrack()))->GetStatus() & AliESDtrack::kEMCALmatch)) return 0;
   AliDebug(2, "Track Has EMCAL PID");
-  */
-  //if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kEMCALpid, AliHFEdetPIDqa::kBeforePID);
+  
+  //if(pidqa) 
+  pidqa->ProcessTrack(track, AliHFEpid::kEMCALpid, AliHFEdetPIDqa::kBeforePID);
   // not QA for EMCal, will be added (s.s Feb. 11)
 
-  Double_t eop = 0.;//MomentumEnergyMatch(track->GetRecTrack()); // get eop (What is GetRecTrack ?)
+  Double_t eop = MomentumEnergyMatchV2(track->GetRecTrack()); // get eop (What is GetRecTrack ?)
   AliDebug(2, Form("Energy - Momentum Matching e/p : %f", eop));
   Int_t pdg = 0;
   if(eop>feopMim && eop<feopMax){
     pdg = 11;
-    //if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kEMCALpid, AliHFEdetPIDqa::kAfterPID);
+    //if(pidqa) 
+    pidqa->ProcessTrack(track, AliHFEpid::kEMCALpid, AliHFEdetPIDqa::kAfterPID);
   }
   else
   {
    pdg = 211; // EMCal doesn't separate pi,k.p by e/p. return pion code as same as TRD
   } 
 
-    printf("eID %g ; %d \n",eop,pdg);  
+    AliDebug(1, Form("eID %g ; %d \n",eop,pdg));  
 
   return pdg;
 }
+
+
+//___________________________________________________________________________
+Double_t AliHFEpidEMCAL::MomentumEnergyMatchV2(const AliVParticle *const track) const
+{ // Returns e/p & Rmatch
+
+  Double_t matchclsE = 9999.9;
+  double feop = -9999.9;
+
+  const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
+  AliESDEvent *evt = esdtrack->GetESDEvent();
+
+   Int_t icl = (const_cast<AliESDtrack *>(esdtrack))->GetEMCALcluster();
+
+   AliVCluster *cluster = (AliVCluster*) evt->GetCaloCluster(icl);
+   if(!cluster->IsEMCAL()) {return feop;}
+
+       matchclsE = cluster->E();
+  
+
+   if(matchclsE<9999.0) feop = matchclsE/esdtrack->P();
+
+   return feop;
+
+}
+
+
 /*
-Double_t AliHFEpidEMCAL::MomentumEnergyMatch(const AliVParticle *track) const
+//____________________________________________________________________________________
+Double_t AliHFEpidEMCAL::MomentumEnergyMatchV1(const AliVParticle *track) const
 { // Returns e/p if an electron is matched
 
   Float_t  clsPos[3];

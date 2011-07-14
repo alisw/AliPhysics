@@ -255,7 +255,8 @@ void AliAnalysisTaskDisplacedElectrons::UserCreateOutputObjects(){
   fDePID->SetHasMCData(HasMCData());
   fDePID->AddDetector("TPC", 0);
   fDePID->AddDetector("TOF", 1);
-  fDePID->ConfigureTPCrejection();
+	fDePID->ConfigureTOF();
+  fDePID->ConfigureTPCdefaultCut();
   fDePID->InitializePID();     // Only restrictions to TPC allowed   
 
 

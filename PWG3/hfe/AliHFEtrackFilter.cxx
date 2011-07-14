@@ -511,7 +511,7 @@ void AliHFEtrackFilter::SetMC(AliMCEvent * const mc){
 }
 
 //__________________________________________________________________
-void AliHFEtrackFilter::SetRecEvent(AliVEvent *rec){
+void AliHFEtrackFilter::SetRecEvent(const AliVEvent *rec){
   //
   // Publish MC event to the single cut steps
   //

@@ -49,12 +49,16 @@ class AliHFEtaggedTrackAnalysis : public TNamed{
     TList * GetCutQA() const;
     AliHFEcollection * GetQAcollection() const { return fQAhistos; }
     Bool_t  GetClean() const { return fClean; }; 
+    Bool_t IsPbPb() const { return fIsPbPb; }
+    Bool_t IsPP() const { return !fIsPbPb; }
     Double_t GetMagneticField() const { return fMagneticField; };
     AliHFEvarManager *GetVarManager() const { return fVarManager; }
 
     void SetCuts(AliHFEcuts *cuts);
     void SetPID(AliHFEpid *pid);
-    void SetCentrality(Float_t centrality) { fCentralityF = centrality; };
+    void SetCentrality(Int_t centrality) { fCentralityF = centrality; };
+    void SetPbPb(){ fIsPbPb = kTRUE; }
+    void SetPP() { fIsPbPb = kFALSE; }
     void SetClean(Bool_t clean) { fClean = clean; };
     void SetMagneticField(Double_t magneticField) { fMagneticField = magneticField; };
     void SetVariablesTRD(Bool_t variablesTRD) { fVariablesTRD = variablesTRD; };
@@ -71,10 +75,11 @@ class AliHFEtaggedTrackAnalysis : public TNamed{
     AliHFEcuts          *fCuts;         // Single track cuts
     AliCFManager        *fCFM;          // CF Manager used for the track filtering
     AliHFEcollection    *fQAhistos;     // QA histos
-    Float_t              fCentralityF;  // Centrality
+    Int_t              fCentralityF;  // Centrality
     Bool_t               fClean;        // Clean
     Double_t             fMagneticField; // Magnetic field
-    Bool_t               fVariablesTRD;  //  Use phi angle at the first plane of the TRD 
+    Bool_t               fVariablesTRD;  //  Use phi angle at the first plane of the TRD
+    Bool_t               fIsPbPb;        // Analysis Type: pp or PbPb 
     
   ClassDef(AliHFEtaggedTrackAnalysis, 0)
 };

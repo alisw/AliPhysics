@@ -45,9 +45,8 @@
 #include "AliHFEV0pid.h"
 ClassImp(AliHFEV0pid)
 
-//____________________________________________________________
 AliHFEV0pid::AliHFEV0pid():
-  TObject()
+  TNamed()
   , fInputEvent(NULL)
   , fNtracks(0)
   , fMCEvent(NULL)
@@ -66,9 +65,38 @@ AliHFEV0pid::AliHFEV0pid():
   , fQA(NULL)
   , fV0cuts(NULL)
   , fOutput(NULL)
+  , fDestBits(0)
+
 {
   //
   // Default constructor
+  //
+}
+//____________________________________________________________
+AliHFEV0pid::AliHFEV0pid(const char *name):
+  TNamed(name, "")
+  , fInputEvent(NULL)
+  , fNtracks(0)
+  , fMCEvent(NULL)
+  , fMCon(kFALSE)
+  , fPrimaryVertex(NULL)
+  , fElectrons(NULL)
+  , fPionsK0(NULL)
+  , fPionsL(NULL)
+  , fKaons(NULL)
+  , fProtons(NULL)
+  , fGammas(NULL)
+  , fK0s(NULL)
+  , fLambdas(NULL)
+  , fAntiLambdas(NULL)
+  , fIndices(NULL)
+  , fQA(NULL)
+  , fV0cuts(NULL)
+  , fOutput(NULL)
+  , fDestBits(0)
+{
+  //
+  // Standard constructor
   //
   fElectrons = new TObjArray();
   fPionsK0 = new TObjArray();
@@ -90,8 +118,8 @@ AliHFEV0pid::AliHFEV0pid():
   fIndices = new AliHFEV0pidTrackIndex();
   
 }
-
 //____________________________________________________________
+
 AliHFEV0pid::~AliHFEV0pid(){
   //
   // Destructor
@@ -109,9 +137,12 @@ AliHFEV0pid::~AliHFEV0pid(){
   if(fAntiLambdas) delete fAntiLambdas;
 
   if(fIndices) delete fIndices;
-  if(fQA) delete fQA;
   if(fV0cuts) delete fV0cuts;
-  if(fOutput) delete fOutput;
+
+  if(TESTBIT(fDestBits, 1)){
+    if(fQA) delete fQA;
+    if(fOutput) delete fOutput;
+  }
 }
 
 //____________________________________________________________
@@ -120,7 +151,11 @@ void AliHFEV0pid::InitQA(){
   // Initialize QA histograms
   //
   
+  memset(&fDestBits, 0, sizeof(fDestBits));
+  SETBIT(fDestBits, 1);
+
   fOutput = new TList();
+  fOutput->SetOwner();
 
   fV0cuts = new AliHFEV0cuts();
   fV0cuts->Init("V0cuts");
@@ -798,7 +833,7 @@ AliHFEV0pid::AliHFEV0pidTrackIndex::~AliHFEV0pidTrackIndex(){
 }
 
 //____________________________________________________________
-void AliHFEV0pid::AliHFEV0pidTrackIndex::Flush(){
+const void AliHFEV0pid::AliHFEV0pidTrackIndex::Flush(){
   //
   // Reset containers
   //
@@ -906,6 +941,8 @@ TList *AliHFEV0pid::GetListOfQAhistograms(){
   //
   // Getter for V0 PID QA histograms
   //
+
+  CLRBIT(fDestBits, 1);
 
   TList *tmp = fV0cuts->GetList();
   tmp->SetName("V0cuts");
