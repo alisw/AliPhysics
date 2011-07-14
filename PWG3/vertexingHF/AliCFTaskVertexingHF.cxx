@@ -656,9 +656,13 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 			continue;
 		}
 
+
 		Bool_t recoContFilled = cfVtxHF->FillRecoContainer(containerInput);
 		if (recoContFilled){
-			
+
+		        // weight according to pt
+		        if (fUseWeight)fWeight = GetWeight(containerInput[0]);
+
 			if (!fCuts->IsInFiducialAcceptance(containerInput[0],containerInput[1])) continue;	   
 			
 			//Reco Step
