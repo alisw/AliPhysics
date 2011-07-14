@@ -40,6 +40,7 @@
 #include "AliPhysicsSelectionTask.h"
 #include "AliPhysicsSelection.h"
 #include "AliBackgroundSelection.h"
+#include "AliCentralitySelectionTask.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisTaskMuonResolution.h"
 
@@ -54,13 +55,14 @@
 #include "AliMUONTrackerDataWrapper.h"
 
 #include "AddTaskPhysicsSelection.C"
+#include "AddTaskCentrality.C"
 #include "AddTaskMuonResolution.C"
 
 #endif
 
 enum {kLocal, kInteractif_xml, kInteractif_ESDList, kProof};
 
-void    LoadAlirootOnProof(TString alirootVersion, TString& extraLibs, Int_t iStep);
+void    LoadAlirootOnProof(TString& aaf, TString alirootVersion, TString& extraLibs, Int_t iStep);
 AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool_t selectPhysics, Bool_t selectTrigger, Bool_t matchTrig,
 						   Bool_t applyAccCut, Double_t minMomentum, Bool_t correctForSystematics, Int_t extrapMode,
 						   Double_t clusterResNB[10], Double_t clusterResB[10]);
@@ -145,7 +147,7 @@ void MuonResolution(TString smode, TString inputFileName, TString alirootVersion
     cout<<"step "<<iStep+1<<"/"<<nSteps<<endl;
     
     // Connect to proof if needed and prepare environment
-    if (mode == kProof) LoadAlirootOnProof(alirootVersion, extraLibs, iStep);
+    if (mode == kProof) LoadAlirootOnProof(smode, alirootVersion, extraLibs, iStep);
     
     // create the analysis train
     AliAnalysisTaskMuonResolution *muonResolution = CreateAnalysisTrain(mode, iStep, selectPhysics, selectTrigger, matchTrig,
@@ -226,7 +228,7 @@ void MuonResolution(TString smode, TString inputFileName, TString alirootVersion
 }
 
 //______________________________________________________________________________
-void LoadAlirootOnProof(TString alirootVersion, TString& extraLibs, Int_t iStep)
+void LoadAlirootOnProof(TString& aaf, TString alirootVersion, TString& extraLibs, Int_t iStep)
 {
   /// Load aliroot packages and set environment on Proof
   
@@ -235,8 +237,9 @@ void LoadAlirootOnProof(TString alirootVersion, TString& extraLibs, Int_t iStep)
   else gProof->Close("s");
   
   // connect
-  TString location = "alice-caf.cern.ch";
-  TString nWorkers = "";
+  TString location = (aaf == "caf") ? "alice-caf.cern.ch" : "nansafmaster.in2p3.fr";
+  //TString location = (aaf == "caf") ? "alice-caf.cern.ch" : "localhost:1093";
+  TString nWorkers = (aaf == "caf") ? "workers=80" : "";
   if (gSystem->Getenv("alien_API_USER") == NULL) TProof::Open(location.Data(), nWorkers.Data());
   else TProof::Open(Form("%s@%s",gSystem->Getenv("alien_API_USER"), location.Data()), nWorkers.Data());
   if (!gProof) return;
@@ -268,32 +271,44 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
   // ESD input handler
   AliESDInputHandler* esdH = new AliESDInputHandler();
   esdH->SetReadFriends(kFALSE);
-  esdH->SetInactiveBranches(" FMD PHOS  EMCAL  Pmd Trd V0s TPC "
-			    "Cascades Kinks CaloClusters ACORDE RawData HLT TZERO ZDC"
-			    " Cells ACORDE Pileup");
+  esdH->SetInactiveBranches("*");
+  esdH->SetActiveBranches("MuonTracks AliESDRun. AliESDHeader. AliMultiplicity. AliESDFMD. AliESDVZERO. SPDVertex. PrimaryVertex. AliESDZDC.");
   mgr->SetInputEventHandler(esdH);
   
   // event selection
   if (selectPhysics) {
     AliPhysicsSelectionTask* physicsSelection = AddTaskPhysicsSelection();
     if (!physicsSelection) {
-      Error("run","AliPhysicsSelectionTask not created!");
+      Error("CreateAnalysisTrain","AliPhysicsSelectionTask not created!");
       return 0x0;
     }
   }
+  
+  // centrality selection
+  AliCentralitySelectionTask* centralityTask = AddTaskCentrality();
+  if (!centralityTask) {
+    Error("CreateAnalysisTrain","AliCentralitySelectionTask not created!");
+    return 0x0;
+  }
+  centralityTask->SetPass(1);
   
   // Muon Resolution analysis
   TString outputFileName = Form("chamberResolution_step%d.root", iStep);
   AliAnalysisManager::SetCommonFileName(outputFileName.Data());
   AliAnalysisTaskMuonResolution *muonResolution = AddTaskMuonResolution(selectPhysics, selectTrigger, matchTrig, applyAccCut, minMomentum, correctForSystematics, extrapMode);
   if (!muonResolution) {
-    Error("run","AliAnalysisTaskMuonResolution not created!");
+    Error("CreateAnalysisTrain","AliAnalysisTaskMuonResolution not created!");
     return 0x0;
   }
-  if (mode == kLocal) muonResolution->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  //if (mode == kLocal) muonResolution->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  muonResolution->SetDefaultStorage("alien://folder=/alice/data/2011/OCDB");
   if (mode != kProof) muonResolution->ShowProgressBar();
   muonResolution->PrintClusterRes(kTRUE, kTRUE);
   muonResolution->SetStartingResolution(clusterResNB, clusterResB);
+  //muonResolution->RemoveMonoCathodClusters(kTRUE, kFALSE);
+//  muonResolution->FitResiduals(kFALSE);
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011","");
+//  muonResolution->ReAlign("alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011", "alien://folder=/alice/cern.ch/user/p/ppillot/OCDB2011_Align2");
   
   return muonResolution;
   
@@ -423,7 +438,7 @@ Int_t GetMode(TString smode, TString input)
     if ( input.EndsWith(".xml") ) return kInteractif_xml;
     else if ( input.EndsWith(".txt") ) return kInteractif_ESDList;
     else if ( input.EndsWith(".root") ) return kLocal;    
-  } else if (smode == "proof") return kProof;
+  } else if (smode == "caf" || smode == "saf") return kProof;
   return -1;
 }
 
