@@ -155,7 +155,7 @@ protected:
   TPRegexp* fRegexp; //! regular expression for trigger tokens
   TList* fCashedTokens; //! trigger token lookup list
 
-  ClassDef(AliPhysicsSelection, 14)
+  ClassDef(AliPhysicsSelection, 15)
     
     private:
   AliPhysicsSelection(const AliPhysicsSelection&);
