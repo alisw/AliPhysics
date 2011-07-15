@@ -107,7 +107,7 @@ void AliMUONResponseFactory::BuildStation1()
   responseSt1.SetSigmaIntegration(10.);
   // ChargeSlope larger to compensate for the smaller anode-cathode distance
   // and keep the same most probable ADC channel for mip's
-  responseSt1.SetChargeSlope(62.5); 
+  responseSt1.SetChargeSlope(25); // SP & JC ajusted to match 2010 real data was 62.5
   // assumed proportionality to anode-cathode distance for ChargeSpread
   responseSt1.SetChargeSpread(0.144, 0.144);
   responseSt1.SetMaxAdc(4096);
