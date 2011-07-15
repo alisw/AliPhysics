@@ -645,15 +645,20 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
       switch (TMath::Abs(pdgcodeFirstMother))
       {
         case 3122: //lambda
-          pdgFirstMother = 0.5; break;
+          pdgFirstMother = 0.5;
+          break;
         case 3222: case 3212: case 3112: //sigma+ sigma0 sigma-
-          pdgFirstMother = 1.5; break;
+          pdgFirstMother = 1.5;
+          break;
         case 3322: case 3312: //xi0 xi+
           pdgFirstMother = 2.5;
+          break;
         case 3332: //omega-
           pdgFirstMother = 3.5;
+          break;
         default:
-          pdgFirstMother = 1e10; break;
+          pdgFirstMother = 1e10;
+          break;
       }
       pdgFirstMother = TMath::Sign(pdgFirstMother,static_cast<Float_t>(pdgcodeFirstMother));
       
