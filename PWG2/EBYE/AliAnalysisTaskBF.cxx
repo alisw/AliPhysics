@@ -288,16 +288,16 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	// vertex->Print();
 	// vertex1->Print();
 
-	Double32_t fCov[6];
-	Double32_t fPosition[3];
-	Double32_t fChi2 = vertex->GetChi2();
-	Int_t      nCont = vertex->GetNContributors();
-	vertex->GetXYZ(fPosition);
-	vertex->GetCovarianceMatrix(fCov);
-
-	const AliESDVertex *esdVertex = new AliESDVertex(fPosition, fCov, fChi2, nCont);
-
 	if(vertex) {
+	  Double32_t fCov[6];
+	  Double32_t fPosition[3];
+	  Double32_t fChi2 = vertex->GetChi2();
+	  Int_t      nCont = vertex->GetNContributors();
+	  vertex->GetXYZ(fPosition);
+	  vertex->GetCovarianceMatrix(fCov);
+	  
+	  const AliESDVertex *esdVertex = new AliESDVertex(fPosition, fCov, fChi2, nCont);
+	  
 	  if(vertex->GetNContributors() > 0) {
 	    //if(vertex->GetZRes() != 0) {
 	      fHistEventStats->Fill(3); //events with a proper vertex
