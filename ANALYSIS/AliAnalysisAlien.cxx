@@ -2637,7 +2637,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          // Check the additional libs to be loaded
          TString extraLibs;
          Bool_t parMode = kFALSE;
-         if (!alirootMode.IsNull()) extraLibs = "ANALYSIS:ANALYSISalice";
+         if (!alirootMode.IsNull()) extraLibs = "ANALYSIS:OADB:ANALYSISalice";
          // Parse the extra libs for .so
          if (fAdditionalLibs.Length()) {
             TObjArray *list = fAdditionalLibs.Tokenize(" ");
