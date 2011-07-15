@@ -20,6 +20,7 @@
 #include <TList.h>
 #include "TObjString.h"
 #include "AliVEvent.h"
+#include "AliLog.h"
 #include "AliAnalysisManager.h"
 
 //#define VERBOSE_STAT
@@ -68,8 +69,7 @@ public:
     
   void SetAnalyzeMC(Bool_t flag = kTRUE) { fMC = flag; }
   void SetSkipTriggerClassSelection(Bool_t flag = kTRUE) { fSkipTriggerClassSelection = flag; }
-  void SetSkipV0(Bool_t flag=kTRUE) { fSkipV0 = flag;}
-  void SetSkipZDCTime(Bool_t flag=kTRUE) { fSkipZDCTime = flag;}
+  void SetSkipV0(Bool_t flag=kTRUE) { AliError ("This method is deprecated! Please change the OADB configuration instead") ; fSkipV0 = flag;}
    
   void AddBackgroundIdentification(AliAnalysisCuts* background) { fBackgroundIdentification = background; }
     
@@ -130,7 +130,6 @@ protected:
   Bool_t fSkipTriggerClassSelection;  // flag that determines if the trigger classs selection is skipped
   Bool_t fUsingCustomClasses;         // flag that is set if costum trigger classes are defined
   Bool_t fSkipV0;                     // ignore information from v0
-  Bool_t fSkipZDCTime;                     // ignore ZDC timing cut (used in HI)
 
   Float_t fBIFactorA;                 // ratio of interacting over non interacting bunch intensities for beam 1
   Float_t fBIFactorC;                 // ratio of interacting over non interacting bunch intensities for beam 2

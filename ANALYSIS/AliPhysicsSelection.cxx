@@ -141,7 +141,6 @@ AliPhysicsSelection::AliPhysicsSelection() :
   fSkipTriggerClassSelection(0),
   fUsingCustomClasses(0),
   fSkipV0(0),
-  fSkipZDCTime(0),
   fBIFactorA(-1),
   fBIFactorC(-1),
   fBIFactorAC(-1), 
@@ -1175,55 +1174,61 @@ void AliPhysicsSelection::Print(const Option_t *option) const
     Printf("\nTotal available events:");
     
     triggerAnalysis->PrintTriggerClasses();
-    // Check if all triggers with counts are known to the physics selection. If not, print a WARNING
-    TMap * triggers = triggerAnalysis->GetTriggerClasses();
-    TIterator* iter = triggers->MakeIterator();
-    TObjString* obj = 0;
-    while ((obj = dynamic_cast<TObjString*> (iter->Next())))
-      {
-	TString strTrigger = obj->GetString();    
-	TParameter<Long64_t>* param = static_cast<TParameter<Long64_t>*> (triggers->GetValue(obj));
-	Long_t counts =  (Long_t)param->GetVal();
-	TObjArray* tokens = obj->String().Tokenize(" ");
-	for (Int_t i=0; i<tokens->GetEntries(); i++)
-	  {
-	    TString singleTrigStr = ((TObjString*) tokens->At(i))->String();
-	    singleTrigStr.Strip(TString::kBoth, ' ' );
-	    const char * singleTrig = singleTrigStr.Data();
-	    //	    Printf("%s", singleTrig);
-	    TString singleTrigStrFull;
-	    Bool_t found = kFALSE;
-	    Int_t nCollTriggers = fCollTrigClasses.GetEntries();
-	    for(Int_t iCollTriggers = 0; iCollTriggers < nCollTriggers; iCollTriggers++){
-	      singleTrigStrFull = ((TObjString*)fCollTrigClasses.At(iCollTriggers))->String();
-	      if(singleTrigStrFull.Contains(singleTrigStr)) {
-		found = kTRUE;
-		break;
+    // Check if all triggers with counts are known to the physics selection. If not, print a WARNING (only for MC) 
+    if(!fMC) {
+      TMap * triggers = triggerAnalysis->GetTriggerClasses();
+      TIterator* iter = triggers->MakeIterator();
+      TObjString* obj = 0;
+      static TString alreadyFoundTriggers;
+      while ((obj = dynamic_cast<TObjString*> (iter->Next())))
+	{
+	  TString strTrigger = obj->GetString();    
+	  TParameter<Long64_t>* param = static_cast<TParameter<Long64_t>*> (triggers->GetValue(obj));
+	  Long_t counts =  (Long_t)param->GetVal();
+	  TObjArray* tokens = obj->String().Tokenize(" ");
+	  for (Int_t i=0; i<tokens->GetEntries(); i++)
+	    {
+	      TString singleTrigStr = ((TObjString*) tokens->At(i))->String();
+	      singleTrigStr.Strip(TString::kBoth, ' ' );
+	      const char * singleTrig = singleTrigStr.Data();
+	      //	    Printf("%s", singleTrig);
+	      TString singleTrigStrFull;
+	      Bool_t found = kFALSE;
+	      Int_t nCollTriggers = fCollTrigClasses.GetEntries();
+	      for(Int_t iCollTriggers = 0; iCollTriggers < nCollTriggers; iCollTriggers++){
+		singleTrigStrFull = ((TObjString*)fCollTrigClasses.At(iCollTriggers))->String();
+		if(singleTrigStrFull.Contains(singleTrigStr)) {
+		  found = kTRUE;
+		  break;
+		}
+		singleTrigStrFull = singleTrigStr;
 	      }
-	      singleTrigStrFull = singleTrigStr;
-	    }
-	    Int_t nBGTriggers = fBGTrigClasses.GetEntries();
-	    for(Int_t iBGTriggers = 0; iBGTriggers < nBGTriggers; iBGTriggers++){
-	      singleTrigStrFull = ((TObjString*)fBGTrigClasses.At(iBGTriggers))->String();
-	      if(singleTrigStrFull.Contains(singleTrigStr)) {
-		found = kTRUE;
-		break;
+	      Int_t nBGTriggers = fBGTrigClasses.GetEntries();
+	      for(Int_t iBGTriggers = 0; iBGTriggers < nBGTriggers; iBGTriggers++){
+		singleTrigStrFull = ((TObjString*)fBGTrigClasses.At(iBGTriggers))->String();
+		if(singleTrigStrFull.Contains(singleTrigStr)) {
+		  found = kTRUE;
+		  break;
+		}
+		singleTrigStrFull = singleTrigStr;
 	      }
-	      singleTrigStrFull = singleTrigStr;
-	    }
-	    
-	    TString blacklist = "CEMC7WU-B-NOPF-ALL, CEMC7WU-AC-NOPF-ALL CEMC7WU-E-NOPF-ALL"; // We know we dont support those, so we print no warning
-	    if(counts>0 && !found && !blacklist.Contains(singleTrig) && !singleTrigStr.Contains("WU")) {
-	      Printf("WARNING: Found unknown trigger [%s] with %ld counts in the ESD!", singleTrig, counts);
-	    }	      
-	  }    
-	delete tokens;	
-      }
-    delete iter;
+	      
+	      TString blacklist = "CEMC7WU-B-NOPF-ALL, CEMC7WU-AC-NOPF-ALL CEMC7WU-E-NOPF-ALL"; // We know we dont support those, so we print no warning	      
+	      if(counts>0 && !found && !blacklist.Contains(singleTrig) && !singleTrigStr.Contains("WU") && !alreadyFoundTriggers.Contains(singleTrig)) {
+		Printf("WARNING: Found unknown trigger [%s] with %ld counts in the ESD!", singleTrig, counts);
+		alreadyFoundTriggers += singleTrig; // Avoid printing warning twice for the same trigger
+	      }	      
+	    }    
+	  delete tokens;	
+	}
+      delete iter;
+    }
   }
   
   if (fHistStatistics[kStatIdxAll])
   {
+    static TString alreadyFoundTriggers; // avoids printing twice the same warning
+	
     for (Int_t i=0; i<fCollTrigClasses.GetEntries(); i++)
     {
       Printf("\nSelection statistics for collision trigger %s:", ((TObjString*) fCollTrigClasses.At(i))->String().Data());
@@ -1239,8 +1244,11 @@ void AliPhysicsSelection::Print(const Option_t *option) const
       
       // If the fraction of accepted events is too low, print a warning.
       Float_t eff = allEvents > 0 ? triggeredEvents/allEvents : 0;
-      if(allEvents > 0 && (eff < 0.5)) { // FIXME: make threshold programmable in OADB
+      if(allEvents > 0 && (eff < 0.5) &&  // FIXME: make threshold programmable in OADB
+	 !alreadyFoundTriggers.Contains(((TObjString*) fCollTrigClasses.At(i))->String().Data())) {
 	Printf("WARNING: Trigger class %s has a very low efficiency (%d/%d=%.2f)",((TObjString*) fCollTrigClasses.At(i))->String().Data(), (Int_t) triggeredEvents, (Int_t) allEvents, eff);
+	alreadyFoundTriggers += ((TObjString*) fCollTrigClasses.At(i))->String().Data();
+	Printf(alreadyFoundTriggers.Data());
       }
 
     }
