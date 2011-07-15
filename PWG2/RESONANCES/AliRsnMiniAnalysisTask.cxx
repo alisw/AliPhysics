@@ -669,7 +669,15 @@ Double_t AliRsnMiniAnalysisTask::ComputeAngle()
 // Get the plane angle
 //
 
-   AliEventplane *plane = fInputEvent->GetEventplane();
+   AliEventplane *plane = 0x0;
+   
+   if (fInputEvent->InheritsFrom(AliESDEvent::Class()))
+      plane = fInputEvent->GetEventplane();
+   else if (fInputEvent->InheritsFrom(AliAODEvent::Class())) {
+      AliAODEvent *aodEvent = (AliAODEvent*)fInputEvent;
+      plane = aodEvent->GetHeader()->GetEventplaneP();
+   }
+
    if (plane) 
       return plane->GetEventplane("Q");
    else {
