@@ -15,11 +15,11 @@
 
 #define myRunType "proof" // local, proof or grid
 #define myGridMode "full" // full, test, offline, submit or terminate
-#define mybMCtruth 0 // 0 or 1; MCEvent handler is on or off
-#define mybMCphyssel 0 // 0 = real data, 1 = MC
-#define myNEntries 5000 //num //2000 // local and proof mode only; 1234567890 = all
-#define myFirstEntry 0//8100000 // local and proof mode only - first event
-#define myProofDataset "/alice/data/LHC10h_000139172_p2" //set path
+#define mybMCtruth 1 // 0 or 1; MCEvent handler is on or off
+#define mybMCphyssel 1 // 0 = real data, 1 = MC
+#define myNEntries 1234567890 //num //2000 // local and proof mode only; 1234567890 = all
+#define myFirstEntry 000//8100000 // local and proof mode only - first event
+#define myProofDataset "/alice/sim/LHC11a10a_000139510" //set path: /alice/data/LHC10h_000139172_p2 = PbPbp2, /alice/sim/LHC11a10a_000139507 = MCPbPb
 #define myProofCluster "hanratty@alice-caf.cern.ch" // set proof cluster
 #define myTaskName "luke_task" // set name of this task
 #define myAPIVersion "V1.1x"   // set version of API
