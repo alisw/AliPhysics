@@ -173,7 +173,7 @@ void AliHFEpidQA::Init(){
     }
   }
   
-  fV0pid = new AliHFEV0pid();
+  fV0pid = new AliHFEV0pid("fV0pid");
   if(HasV0pidQA()) fV0pid->InitQA();
   fV0pidMC = new AliHFEV0pidMC();
   fV0pidMC->Init();
