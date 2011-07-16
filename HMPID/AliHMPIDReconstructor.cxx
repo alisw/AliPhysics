@@ -35,14 +35,13 @@ ClassImp(AliHMPIDReconstructor)
 Int_t AliHMPIDReconstructor::fgStreamLevel = 0;        // stream (debug) level
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fDaqSig(0),fDig(0),fClu(0)
+AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fDaqSig(0),fDig(0),fClu(0)
 {
 //
 //ctor
 //
   AliHMPIDParam::Instance();                                                        //geometry loaded for reconstruction
 
-  fUserCut = new Int_t[7];
   fClu=new TObjArray(AliHMPIDParam::kMaxCh+1); fClu->SetOwner(kTRUE);
   fDig=new TObjArray(AliHMPIDParam::kMaxCh+1); fDig->SetOwner(kTRUE);
   
@@ -53,23 +52,6 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
     fClu->AddAt(pClus,i);
   }
  
-   
-   if(AliHMPIDReconstructor::GetRecoParam()) {
-    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
-      fUserCut[iCh] = AliHMPIDReconstructor::GetRecoParam()->GetHmpUserCut(iCh);
-      AliDebug(1,Form("UserCut successfully loaded (from AliHMPIDRecoParamV1) for chamber %i -> %i ",iCh,fUserCut[iCh]));
-    }
-  }
-  else {
-    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
-      fUserCut[iCh] = 3;                                                                             // minimal requirement for sigma cut
-      AliDebug(1,Form("UserCut loaded from defaults for chamber %i -> %i ",iCh,fUserCut[iCh]));
-      AliDebug(1,Form("Cannot get AliHMPIDRecoParamV1!"));
-      }
-    }
-
-  
-
   AliCDBEntry *pDaqSigEnt =AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");  //contains TObjArray of TObjArray 14 TMatrixF sigmas values for pads 
   if(!pDaqSigEnt) AliFatal("No pedestals from DAQ!");
   fDaqSig = (TObjArray*)pDaqSigEnt->GetObject();
@@ -141,8 +123,25 @@ void AliHMPIDReconstructor::Reconstruct(TTree *pDigTree,TTree *pCluTree)const
     pCluTree->Branch(Form("HMPID%d",iCh),&((*fClu)[iCh]),7);
     pDigTree->SetBranchAddress(Form("HMPID%d",iCh),&((*fDig)[iCh]));
   }   
+  
+  Int_t *pUserCut = new Int_t[7];
+  
+   if(AliHMPIDReconstructor::GetRecoParam()) {
+    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
+      pUserCut[iCh] = AliHMPIDReconstructor::GetRecoParam()->GetHmpUserCut(iCh);
+      AliDebug(1,Form("UserCut successfully loaded (from AliHMPIDRecoParamV1) for chamber %i -> %i ",iCh,pUserCut[iCh]));
+    }
+  }
+  else {
+    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
+      pUserCut[iCh] = 4;                                                                             // minimal requirement for sigma cut
+      AliDebug(1,Form("UserCut loaded from defaults for chamber %i -> %i ",iCh,pUserCut[iCh]));
+      AliDebug(1,Form("Cannot get AliHMPIDRecoParamV1!"));
+      }
+    }  
+  
   pDigTree->GetEntry(0);
-  Dig2Clu(fDig,fClu,fUserCut);     //cluster finder 
+  Dig2Clu(fDig,fClu,pUserCut);     //cluster finder 
   pCluTree->Fill();                //fill tree for current event
   
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
@@ -168,6 +167,22 @@ void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)cons
     pDigTree->Branch(Form("HMPID%d",iCh),&((*fDig)[iCh]));
   }
     
+  Int_t *pUserCut = new Int_t[7];
+  
+   if(AliHMPIDReconstructor::GetRecoParam()) {
+    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
+      pUserCut[iCh] = AliHMPIDReconstructor::GetRecoParam()->GetHmpUserCut(iCh);
+      AliDebug(1,Form("UserCut successfully loaded (from AliHMPIDRecoParamV1) for chamber %i -> %i ",iCh,pUserCut[iCh]));
+    }
+  }
+  else {
+    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
+      pUserCut[iCh] = 4;                                                                             // minimal requirement for sigma cut
+      AliDebug(1,Form("UserCut loaded from defaults for chamber %i -> %i ",iCh,pUserCut[iCh]));
+      AliDebug(1,Form("Cannot get AliHMPIDRecoParamV1!"));
+      }
+    }  
+      
   AliHMPIDRawStream stream(pRR);    
   
   while(stream.Next())
@@ -175,7 +190,7 @@ void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)cons
     Int_t ch = AliHMPIDParam::DDL2C(stream.GetDDLNumber());
     for(Int_t iPad=0;iPad<stream.GetNPads();iPad++) {
       AliHMPIDDigit dig(stream.GetPadArray()[iPad],stream.GetChargeArray()[iPad]);
-      if(!IsDigSurvive(&dig)) continue; 
+      if(!IsDigSurvive(pUserCut,&dig)) continue; 
       new((*((TClonesArray*)fDig->At(ch)))[iDigCnt[ch]++]) AliHMPIDDigit(dig); //add this digit to the tmp list 
     }
   }

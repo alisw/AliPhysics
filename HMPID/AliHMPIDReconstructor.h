@@ -20,7 +20,7 @@ class AliHMPIDReconstructor: public AliReconstructor
 {
 public:
            AliHMPIDReconstructor();              
-  virtual ~AliHMPIDReconstructor()                                  {delete fDig;delete fClu;delete [] fUserCut;}//dtor  
+  virtual ~AliHMPIDReconstructor()                                  {delete fDig;delete fClu;}//dtor  
 //framework part  
   AliTracker*  CreateTracker         () const {return new AliHMPIDTracker;}            //from AliReconstructor for clusters->PID
   void         ConvertDigits         (AliRawReader *pRR, TTree *pDigTree) const;                                        //from AliReconstruction for raw->digit
@@ -38,11 +38,10 @@ public:
   static        void           Dig2Clu (TObjArray *pDigLst,TObjArray *pCluLst,Int_t *pUserCut,Bool_t isUnfold=kTRUE     );//digits->clusters
   static        void           FormClu (AliHMPIDCluster *pClu,AliHMPIDDigit *pDig,TClonesArray *pDigLst,TMatrixF *pPadMap);//cluster formation recursive algorithm
   static inline AliHMPIDDigit* UseDig  (Int_t padX,Int_t padY,                    TClonesArray *pDigLst,TMatrixF *pDigMap);//use this pad's digit to form a cluster
-  inline Bool_t                IsDigSurvive(AliHMPIDDigit *pDig                                                     )const;//check for sigma cut
+  inline Bool_t                IsDigSurvive(Int_t *pUserCut, AliHMPIDDigit *pDig                                         )const;//check for sigma cut
   static const AliHMPIDRecoParamV1* GetRecoParam() { return dynamic_cast<const AliHMPIDRecoParamV1*>(AliReconstructor::GetRecoParam(5)); }  //5 is the HMPID detector code
  
   protected:
-  Int_t     *fUserCut;                 // n sigmas for pedestals decided by the User for each chamber(if in OCDB)
   TObjArray *fDaqSig;                  // container for the pad pedestal sigmas
   TObjArray *fDig;                     // tmp list of digits
   TObjArray *fClu;                     // tmp list of clusters
@@ -69,17 +68,17 @@ AliHMPIDDigit* AliHMPIDReconstructor::UseDig(Int_t padX,Int_t padY,TClonesArray 
   else            return 0;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Bool_t AliHMPIDReconstructor::IsDigSurvive(AliHMPIDDigit *pDig)const
+Bool_t AliHMPIDReconstructor::IsDigSurvive(Int_t *pUserCut, AliHMPIDDigit *pDig)const
 {
 //Check if the current digit survive to a riapllied sigma cut
 //Arguments: pDig pointer to the current digit
 //  Returns: kTRUE if charge > mean+n*sigma
   Int_t iCh = pDig->Ch();
   Int_t iDaqSigCut =(Int_t)fDaqSig->At(iCh)->GetUniqueID(); 
-  if(fUserCut[iCh]<=iDaqSigCut) return kTRUE;
+  if(pUserCut[iCh]<=iDaqSigCut) return kTRUE;
   TMatrixF *pM = (TMatrixF*)fDaqSig->At(pDig->Ch());
   Float_t sig = (*pM)(pDig->PadChX(),pDig->PadChY());
-  if(pDig->Q()>fUserCut[iCh]*sig) return kTRUE;
+  if(pDig->Q()>pUserCut[iCh]*sig) return kTRUE;
   else return kFALSE;
 }
 
