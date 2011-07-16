@@ -108,7 +108,7 @@ Bool_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtim
 {
   // compute online equalized time
   Float_t mean, sigma;
-  Bool_t ok=false;
+  Bool_t ok=true;
   TH1F *cfd = NULL;
   TObjArray * TzeroObj = NULL;
 
@@ -132,12 +132,18 @@ Bool_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtim
 
 	if(!cfd) {
 	  AliWarning(Form("no histograms collected for %s", histname[i].Data()));
-	  ok=false;
-	  return ok;
+	  //	  ok=false;
+	  fMeanPar[i] = cdbtime[i];
+	  fSigmaPar[i] = 0;
+	  //	  return ok;
 	}
 	if(cfd) {
 	    GetMeanAndSigma(cfd, mean, sigma);
-	    if (sigma == 0 || sigma > 500 || cfd->GetEntries()<500 ) ok = false;
+	    if (sigma == 0 || sigma > 500 || cfd->GetEntries()<500 ){
+	      //ok = false;
+	      fMeanPar[i] = cdbtime[i];
+	      fSigmaPar[i] = 0;
+	    }
 	    if ( sigma > 0 && sigma < 500 && cfd->GetEntries()>500)
 	      { 
 		fMeanPar[i] = cdbtime[i] +  mean;
@@ -156,7 +162,7 @@ Bool_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtim
 //________________________________________________________________________
 void AliT0CalibSeasonTimeShift::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Float_t &sigma) {
 
-  const double window = 3.;  //fit window 
+  const double window =2.;  //fit window 
  
   double meanEstimate, sigmaEstimate; 
   int maxBin;

@@ -111,17 +111,13 @@ void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t u
       AliT0CalibTimeEq *clb = (AliT0CalibTimeEq*)entryCalib->GetObject();
        timecdb = clb->GetTimeEq();
        cfdvalue = clb->GetCFDvalue();
-       for (Int_t i=0; i<24; i++) {
-	 if( cfdvalue[i] < 500 || cfdvalue[i] > 30000) cfdvalue[i] =( 1000.*fLatencyHPTDC - 1000.*fLatencyL1 + 1000.*fGRPdelays)/24.4;
-	 printf("Calc  mean CFD time %i %f \n",i,cfdvalue[i]);
-       }
     }
   //AliCDBEntry *entryCalibreco = AliCDBManager::Instance()->Get("T0/Calib/RecoParam");
   //  if(entryCalibreco) {
   //  AliT0RecoParam *rpr = (AliT0RecoParam*) entryCalibreco->GetObject();
     //    badpmt = rpr->GetRefPoint();
-    badpmt = -1;
-    // }
+  badpmt = -1;
+  // }
   AliT0CalibTimeEq *offline = new AliT0CalibTimeEq();
   Bool_t writeok = offline->ComputeOfflineParams(filePhysName.Data(), timecdb, cfdvalue, badpmt);
   AliCDBMetaData metaData;
