@@ -256,8 +256,11 @@ void AliHFEtrdPIDqaV1::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa
   fHistos->Fill("hTRDlikelihood", container);
 
   if(track->IsESDanalysis()){
-    container[2] = trdpid ? trdpid->GetTRDSignalV1(dynamic_cast<const AliESDtrack *>(track->GetRecTrack())) : 0;
-    fHistos->Fill("hTRDtruncatedMean", container);
+    const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track->GetRecTrack());
+    if(esdtrack){
+      container[2] = trdpid ? trdpid->GetTRDSignalV1(esdtrack) : 0;
+      fHistos->Fill("hTRDtruncatedMean", container);
+    }
   }
   for(UInt_t ily = 0; ily < 6; ily++){
     container[2] = trdpid ? trdpid->GetChargeLayer(track->GetRecTrack(), ily, anatype) : 0;

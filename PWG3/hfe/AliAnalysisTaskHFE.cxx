@@ -790,7 +790,6 @@ void AliAnalysisTaskHFE::ProcessESD(){
   Int_t nElectronCandidates = 0;
   AliESDtrack *track = NULL, *htrack = NULL;
   AliMCParticle *mctrack = NULL;
-  TParticle* mctrack4QA = NULL;
   Int_t pid = 0;
 
   Bool_t signal = kTRUE;
@@ -840,7 +839,6 @@ void AliAnalysisTaskHFE::ProcessESD(){
     if(HasMCData()){
       // Check if it is electrons near the vertex
       if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(track->GetLabel()))))) continue;
-      mctrack4QA = mctrack->Particle();
 
       if(fFillSignalOnly && !fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, mctrack)) signal = kFALSE; 
       else AliDebug(3, "Signal Electron");
@@ -919,7 +917,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
     if(signal) {
       // Apply weight for background contamination
 	    if(fBackGroundFactorApply==kTRUE) {
-	      if(IsPbPb() && fCentralityF >= 0) fWeightBackGround =  fBackGroundFactorArray[fCentralityF]->Eval(TMath::Abs(track->P()));
+	      if(IsPbPb() && fCentralityF >= 0) fWeightBackGround =  fBackGroundFactorArray[fCentralityF >= 0 ? fCentralityF : 0]->Eval(TMath::Abs(track->P()));
 	      else    fWeightBackGround =  fBackGroundFactorArray[0]->Eval(TMath::Abs(track->P())); // pp case
 
 	      if(fWeightBackGround < 0.0) fWeightBackGround = 0.0;
@@ -1103,7 +1101,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
 
     // not correct treatment for pp
     if(fBackGroundFactorApply==kTRUE) {
-	    if(IsPbPb()) weightBackGround =  fBackGroundFactorArray[(Int_t)fCentralityF]->Eval(TMath::Abs(track->P()));
+	    if(IsPbPb()) weightBackGround =  fBackGroundFactorArray[fCentralityF >= 0 ? fCentralityF : 0]->Eval(TMath::Abs(track->P()));
       else weightBackGround =  fBackGroundFactorArray[0]->Eval(TMath::Abs(track->P()));
 
       if(weightBackGround < 0.0) weightBackGround = 0.0;

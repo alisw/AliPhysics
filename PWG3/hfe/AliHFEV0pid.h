@@ -97,7 +97,7 @@ class AliHFEV0pid : public TNamed{
       Int_t GetNumberOfPionsL() const { return fNPionsL; };
       Int_t GetNumberOfKaons() const { return fNKaons; };
       Int_t GetNumberOfProtons() const { return fNProtons; };
-      const void Flush();
+      void Flush();
       
     private:
       AliHFEV0pidTrackIndex(const AliHFEV0pidTrackIndex &ref);
