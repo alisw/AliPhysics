@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for JETAN                                                         #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,51 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  	AliJetHeader.cxx AliJetFinder.cxx AliJetReaderHeader.cxx AliJetESDReaderHeader.cxx AliJetReader.cxx AliJetESDReader.cxx AliUA1JetHeader.cxx AliJetProductionData.cxx AliJetProductionDataPDC2004.cxx AliUA1JetFinderV1.cxx AliUA1JetFinderV2.cxx AliUA1JetHeaderV1.cxx AliCdfJetFinder.cxx AliCdfJetHeader.cxx AliJetGrid.cxx AliJetUnitArray.cxx AliJetHadronCorrection.cxx AliJetHadronCorrectionv0.cxx AliJetHadronCorrectionv1.cxx AliJetFillUnitArray.cxx	AliJetESDFillUnitArrayTracks.cxx AliJetESDFillUnitArrayEMCalDigits.cxx AliJetAODFillUnitArrayTracks.cxx AliJetAODFillUnitArrayEMCalDigits.cxx AliJetDummyGeo.cxx AliJetDummyShishKebabTrd1Module.cxx AliJetFinderTypes.cxx AliAnalysisTaskJets.cxx AliAnalysisTaskJetsCDF.cxx AliDAJetFinder.cxx AliDAJetHeader.cxx AliJetAODReader.cxx AliJetAODReaderHeader.cxx AliJetKineReader.cxx AliJetKineReaderHeader.cxx AliJetMCReader.cxx AliJetMCReaderHeader.cxx AliJetHistos.cxx AliAnalysisTaskDiJets.cxx AliEventShape.cxx AliKMeansClustering.cxx AliAnalysisTaskKMeans.cxx AliAnalysisTaskFastEmbedding.cxx)
+set ( SRCS 
+    AliJetHeader.cxx 
+    AliJetFinder.cxx 
+    AliJetReaderHeader.cxx 
+    AliJetESDReaderHeader.cxx 
+    AliJetReader.cxx 
+    AliJetESDReader.cxx 
+    AliUA1JetHeader.cxx 
+    AliJetProductionData.cxx 
+    AliJetProductionDataPDC2004.cxx 
+    AliUA1JetFinderV1.cxx 
+    AliUA1JetFinderV2.cxx 
+    AliUA1JetHeaderV1.cxx 
+    AliCdfJetFinder.cxx 
+    AliCdfJetHeader.cxx 
+    AliJetGrid.cxx 
+    AliJetUnitArray.cxx 
+    AliJetHadronCorrection.cxx 
+    AliJetHadronCorrectionv0.cxx 
+    AliJetHadronCorrectionv1.cxx 
+    AliJetFillUnitArray.cxx 
+    AliJetESDFillUnitArrayTracks.cxx 
+    AliJetESDFillUnitArrayEMCalDigits.cxx 
+    AliJetAODFillUnitArrayTracks.cxx 
+    AliJetAODFillUnitArrayEMCalDigits.cxx 
+    AliJetDummyGeo.cxx 
+    AliJetDummyShishKebabTrd1Module.cxx 
+    AliJetFinderTypes.cxx 
+    AliAnalysisTaskJets.cxx 
+    AliAnalysisTaskJetsCDF.cxx 
+    AliDAJetFinder.cxx 
+    AliDAJetHeader.cxx 
+    AliJetAODReader.cxx 
+    AliJetAODReaderHeader.cxx 
+    AliJetKineReader.cxx 
+    AliJetKineReaderHeader.cxx 
+    AliJetMCReader.cxx 
+    AliJetMCReaderHeader.cxx 
+    AliJetHistos.cxx 
+    AliAnalysisTaskDiJets.cxx 
+    AliEventShape.cxx 
+    AliKMeansClustering.cxx 
+    AliAnalysisTaskKMeans.cxx 
+    AliAnalysisTaskFastEmbedding.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -39,11 +84,4 @@ else()
   set ( EDEFINE -isystem${ALICE_ROOT}/JETAN/fastjet)
 endif(FASTJET_ROOT)
 
-set ( EINCLUDE  ANALYSIS  OADB)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -L${ROOTLIBDIR} -lEG -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
-
+set ( EINCLUDE  ANALYSIS  OADB STEER/AOD STEER/ESD STEER/STEERBase)

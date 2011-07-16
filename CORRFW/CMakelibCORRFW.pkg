@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for CORRFW                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,31 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliCFFrame.cxx AliCFGridSparse.cxx AliCFEffGrid.cxx AliCFDataGrid.cxx AliCFContainer.cxx AliCFManager.cxx AliCFCutBase.cxx AliCFEventClassCuts.cxx AliCFEventGenCuts.cxx AliCFEventRecCuts.cxx AliCFParticleGenCuts.cxx AliCFAcceptanceCuts.cxx AliCFTrackKineCuts.cxx AliCFTrackQualityCuts.cxx AliCFTrackIsPrimaryCuts.cxx AliCFTrackCutPid.cxx AliCFPair.cxx AliCFPairAcceptanceCuts.cxx AliCFPairQualityCuts.cxx AliCFPairIsPrimaryCuts.cxx AliCFPairPidCut.cxx AliCFV0TopoCuts.cxx AliCFUnfolding.cxx)
+set ( SRCS  
+    AliCFFrame.cxx 
+    AliCFGridSparse.cxx 
+    AliCFEffGrid.cxx 
+    AliCFDataGrid.cxx 
+    AliCFContainer.cxx 
+    AliCFManager.cxx 
+    AliCFCutBase.cxx 
+    AliCFEventClassCuts.cxx 
+    AliCFEventGenCuts.cxx 
+    AliCFEventRecCuts.cxx 
+    AliCFParticleGenCuts.cxx 
+    AliCFAcceptanceCuts.cxx 
+    AliCFTrackKineCuts.cxx 
+    AliCFTrackQualityCuts.cxx 
+    AliCFTrackIsPrimaryCuts.cxx 
+    AliCFTrackCutPid.cxx 
+    AliCFPair.cxx 
+    AliCFPairAcceptanceCuts.cxx 
+    AliCFPairQualityCuts.cxx 
+    AliCFPairIsPrimaryCuts.cxx 
+    AliCFPairPidCut.cxx 
+    AliCFV0TopoCuts.cxx 
+    AliCFUnfolding.cxx 
+    )
 
 if( ROOTHASALIEN STREQUAL "yes")
 	
@@ -46,10 +71,4 @@ set ( DHDR  CORRFWLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  ANALYSIS)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lANALYSIS -lESD -lAOD -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  ANALYSIS STEER/AOD STEER/ESD STEER/STEERBase )

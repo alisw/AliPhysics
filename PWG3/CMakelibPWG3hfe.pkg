@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG3hfe                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +26,57 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set (SRCS hfe/AliHFEtools.cxx hfe/AliHFEcollection.cxx hfe/AliHFEvarManager.cxx hfe/AliHFEcontainer.cxx hfe/AliHFEmcQA.cxx hfe/AliHFEpairs.cxx hfe/AliHFEsecVtxs.cxx hfe/AliHFEsecVtx.cxx hfe/AliHFEpriVtx.cxx hfe/AliHFEspectrum.cxx hfe/AliHFEV0info.cxx hfe/AliHFEV0pid.cxx hfe/AliHFEpidQA.cxx hfe/AliHFEtrdPIDqa.cxx hfe/AliHFEdetPIDqa.cxx hfe/AliHFEtpcPIDqa.cxx hfe/AliHFEtofPIDqa.cxx hfe/AliHFEemcalPIDqa.cxx hfe/AliHFEtrdPIDqaV1.cxx hfe/AliHFEpidQAmanager.cxx hfe/AliHFEpid.cxx hfe/AliHFEpidBase.cxx hfe/AliHFEpidITS.cxx hfe/AliHFEpidTPC.cxx hfe/AliHFEpidTRD.cxx hfe/AliHFEpidTOF.cxx hfe/AliHFEpidEMCAL.cxx hfe/AliHFEpidMC.cxx hfe/AliHFEextraCuts.cxx hfe/AliHFEextraEventCuts.cxx hfe/AliHFEcutStep.cxx hfe/AliHFEtrackFilter.cxx hfe/AliHFEcuts.cxx hfe/AliHFEsignalCuts.cxx hfe/AliHFEelecbackground.cxx hfe/AliHFEtaggedTrackAnalysis.cxx hfe/AliHFEdca.cxx hfe/AliAnalysisTaskDCA.cxx hfe/AliHFEdisplacedElectrons.cxx hfe/AliHFEpostAnalysis.cxx hfe/AliAnalysisTaskDisplacedElectrons.cxx hfe/AliAnalysisTaskHFEpidQA.cxx hfe/AliHFEefficiency.cxx hfe/AliAnalysisTaskHFE.cxx hfe/AliHFEV0pidMC.cxx hfe/AliHFEV0cuts.cxx)
+set (SRCS 
+    hfe/AliHFEtools.cxx 
+    hfe/AliHFEcollection.cxx 
+    hfe/AliHFEvarManager.cxx 
+    hfe/AliHFEcontainer.cxx 
+    hfe/AliHFEmcQA.cxx 
+    hfe/AliHFEpairs.cxx 
+    hfe/AliHFEsecVtxs.cxx 
+    hfe/AliHFEsecVtx.cxx 
+    hfe/AliHFEpriVtx.cxx 
+    hfe/AliHFEspectrum.cxx 
+    hfe/AliHFEV0info.cxx 
+    hfe/AliHFEV0pid.cxx 
+    hfe/AliHFEpidQA.cxx 
+    hfe/AliHFEtrdPIDqa.cxx 
+    hfe/AliHFEdetPIDqa.cxx 
+    hfe/AliHFEtpcPIDqa.cxx 
+    hfe/AliHFEtofPIDqa.cxx 
+    hfe/AliHFEemcalPIDqa.cxx 
+    hfe/AliHFEtrdPIDqaV1.cxx 
+    hfe/AliHFEpidQAmanager.cxx 
+    hfe/AliHFEpid.cxx 
+    hfe/AliHFEpidBase.cxx 
+    hfe/AliHFEpidITS.cxx 
+    hfe/AliHFEpidTPC.cxx 
+    hfe/AliHFEpidTRD.cxx 
+    hfe/AliHFEpidTOF.cxx 
+    hfe/AliHFEpidEMCAL.cxx 
+    hfe/AliHFEpidMC.cxx 
+    hfe/AliHFEextraCuts.cxx 
+    hfe/AliHFEextraEventCuts.cxx 
+    hfe/AliHFEcutStep.cxx 
+    hfe/AliHFEtrackFilter.cxx 
+    hfe/AliHFEcuts.cxx 
+    hfe/AliHFEsignalCuts.cxx 
+    hfe/AliHFEelecbackground.cxx 
+    hfe/AliHFEtaggedTrackAnalysis.cxx 
+    hfe/AliHFEdca.cxx 
+    hfe/AliAnalysisTaskDCA.cxx 
+    hfe/AliHFEdisplacedElectrons.cxx 
+    hfe/AliHFEpostAnalysis.cxx 
+    hfe/AliAnalysisTaskDisplacedElectrons.cxx 
+    hfe/AliAnalysisTaskHFEpidQA.cxx 
+    hfe/AliHFEefficiency.cxx 
+    hfe/AliAnalysisTaskHFE.cxx 
+    hfe/AliHFEV0pidMC.cxx 
+    hfe/AliHFEV0cuts.cxx
+    )
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set ( DHDR  PWG3hfeLinkDef.h)
 
-set ( EINCLUDE  PWG3/base PWG3/hfe STEER TPC CORRFW)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lSTEER -lTPCbase -lANALYSISalice -lANALYSIS -lCORRFW)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  PWG3/base PWG3/hfe TPC CORRFW STEER/STEERBase)

@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG2spectra                                                   #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,36 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  SPECTRA/AliProtonAnalysisBase.cxx SPECTRA/AliProtonAnalysis.cxx SPECTRA/AliProtonQAAnalysis.cxx SPECTRA/AliAnalysisTaskProtons.cxx SPECTRA/AliAnalysisTaskProtonsQA.cxx SPECTRA/AliAnalysisTaskChargedHadronSpectra.cxx SPECTRA/AliAnalysisTaskCheckV0.cxx SPECTRA/AliAnalysisTaskCheckCascade.cxx SPECTRA/AliAnalysisTaskCheckPerformanceCascade.cxx SPECTRA/AliAnalysisTaskStrange.cxx SPECTRA/AliAnalysisTaskPerformanceStrange.cxx SPECTRA/AliProtonFeedDownAnalysisTask.cxx SPECTRA/AliProtonFeedDownAnalysis.cxx SPECTRA/AliProtonAbsorptionCorrection.cxx SPECTRA/AliProtonSpectraCorrection.cxx SPECTRA/AliProtonCorrectionAnalysisTask.cxx SPECTRA/AliAnalysisCentralCutMC.cxx SPECTRA/AliAnalysisCentralCutESD.cxx SPECTRA/AliAnalysisCentralCutEvtMC.cxx SPECTRA/AliAnalysisCentralCutEvtESD.cxx SPECTRA/AliAnalysisCentralExtrapolate.cxx SPECTRA/AliAnalysisTaskCentral.cxx SPECTRA/AliAnalysisTaskSEITSsaSpectra.cxx SPECTRA/AliITSsadEdxFitter.cxx  SPECTRA/Fit/AliBWTools.cxx SPECTRA/Fit/AliBWFunc.cxx SPECTRA/Fit/AliLatexTable.cxx SPECTRA/AliAnalysisChargedHadronSpectraITSTruncatedMeanTask.cxx)
+set ( SRCS  
+    SPECTRA/AliProtonAnalysisBase.cxx 
+    SPECTRA/AliProtonAnalysis.cxx 
+    SPECTRA/AliProtonQAAnalysis.cxx 
+    SPECTRA/AliAnalysisTaskProtons.cxx 
+    SPECTRA/AliAnalysisTaskProtonsQA.cxx 
+    SPECTRA/AliAnalysisTaskChargedHadronSpectra.cxx 
+    SPECTRA/AliAnalysisTaskCheckV0.cxx 
+    SPECTRA/AliAnalysisTaskCheckCascade.cxx 
+    SPECTRA/AliAnalysisTaskCheckPerformanceCascade.cxx 
+    SPECTRA/AliAnalysisTaskStrange.cxx 
+    SPECTRA/AliAnalysisTaskPerformanceStrange.cxx 
+    SPECTRA/AliProtonFeedDownAnalysisTask.cxx 
+    SPECTRA/AliProtonFeedDownAnalysis.cxx 
+    SPECTRA/AliProtonAbsorptionCorrection.cxx 
+    SPECTRA/AliProtonSpectraCorrection.cxx 
+    SPECTRA/AliProtonCorrectionAnalysisTask.cxx 
+    SPECTRA/AliAnalysisCentralCutMC.cxx 
+    SPECTRA/AliAnalysisCentralCutESD.cxx 
+    SPECTRA/AliAnalysisCentralCutEvtMC.cxx 
+    SPECTRA/AliAnalysisCentralCutEvtESD.cxx 
+    SPECTRA/AliAnalysisCentralExtrapolate.cxx 
+    SPECTRA/AliAnalysisTaskCentral.cxx 
+    SPECTRA/AliAnalysisTaskSEITSsaSpectra.cxx 
+    SPECTRA/AliITSsadEdxFitter.cxx 
+    SPECTRA/Fit/AliBWTools.cxx 
+    SPECTRA/Fit/AliBWFunc.cxx 
+    SPECTRA/Fit/AliLatexTable.cxx 
+    SPECTRA/AliAnalysisChargedHadronSpectraITSTruncatedMeanTask.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -33,10 +63,4 @@ set ( DHDR PWG2spectraLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWG2/SPECTRA PWG2/SPECTRA/Fit)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lESD -lAOD -lSTEERBase -lCORRFW)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  PWG2/SPECTRA PWG2/SPECTRA/Fit STEER/ESD STEER/STEERBase)

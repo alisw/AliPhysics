@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG4omega3pi                                                  #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -33,10 +34,4 @@ set ( DHDR  PWG4omega3piLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  ANALYSIS PWG4/omega3pi PHOS)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -lPHOSUtils -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  ANALYSIS PWG4/omega3pi PHOS STEER/STEERBase)

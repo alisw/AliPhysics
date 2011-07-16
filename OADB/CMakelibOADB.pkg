@@ -1,5 +1,11 @@
 #-*- Mode: CMake -*-
-set ( SRCS  AliOADBCentrality.cxx  AliOADBPWG2Spectra.cxx AliOADBPhysicsSelection.cxx AliOADBFillingScheme.cxx AliOADBTriggerAnalysis.cxx )
+set ( SRCS  
+  AliOADBCentrality.cxx 
+  AliOADBPWG2Spectra.cxx 
+  AliOADBPhysicsSelection.cxx 
+  AliOADBFillingScheme.cxx 
+  AliOADBTriggerAnalysis.cxx 
+  )
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")
 
@@ -7,7 +13,7 @@ set ( DHDR  OADBLinkDef.h)
 
 set ( EXPORT ${HDRS})
 
-set ( EINCLUDE ANALYSIS)
+set ( EINCLUDE ANALYSIS  STEER/STEERBase)
 
 # Install data to destination 
 install (DIRECTORY COMMON PWG1 PWG2 PWG3 PWG4 

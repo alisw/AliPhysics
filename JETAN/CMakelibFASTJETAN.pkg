@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for FASTJETAN                                                     #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,16 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliFastJetFinder.cxx AliFastJetHeaderV1.cxx AliFastJetInput.cxx AliJetBkg.cxx AliSISConeJetFinder.cxx AliSISConeJetHeader.cxx AliAnalysisTaskJetCluster.cxx AliAnalysisTaskJetBackgroundSubtract.cxx)
+set ( SRCS 
+    AliFastJetFinder.cxx 
+    AliFastJetHeaderV1.cxx 
+    AliFastJetInput.cxx 
+    AliJetBkg.cxx 
+    AliSISConeJetFinder.cxx 
+    AliSISConeJetHeader.cxx 
+    AliAnalysisTaskJetCluster.cxx 
+    AliAnalysisTaskJetBackgroundSubtract.cxx 
+    )
 
 set(FASTJET_ROOT $ENV{FASTJET_ROOT})
 
@@ -39,10 +49,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  FASTJETANLinkDef.h)
 
-set ( EINCLUDE  JETAN/fastjet ANALYSIS )
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -lJETAN -L${ROOTLIBDIR} -lEG -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  JETAN/fastjet ANALYSIS STEER/AOD STEER/STEERBase)
