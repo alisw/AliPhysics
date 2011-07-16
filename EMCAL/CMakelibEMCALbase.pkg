@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for EMCALbase                                                     #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +26,45 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliEMCALHit.cxx AliEMCALLoader.cxx AliEMCALWsuCosmicRaySetUp.cxx AliEMCALRecPoint.cxx AliEMCALSDigitizer.cxx AliEMCALDigitizer.cxx AliEMCALDigit.cxx AliEMCALCalibData.cxx AliEMCALCalibTimeDep.cxx  AliEMCALPreprocessor.cxx AliEMCALSensorTemp.cxx AliEMCALSensorTempArray.cxx AliCaloCalibPedestal.cxx AliCaloCalibSignal.cxx AliEMCALSurvey.cxx AliEMCALRecParam.cxx AliEMCALSimParam.cxx AliEMCALQAChecker.cxx AliEMCALSpaceFrame.cxx AliEMCALBiasAPD.cxx AliEMCALCalibAbs.cxx AliEMCALCalibReference.cxx AliEMCALCalibMapAPD.cxx AliEMCALCalibTempCoeff.cxx  AliEMCALRawDigit.cxx AliEMCALTrigger.cxx AliEMCALTriggerSTURawStream.cxx AliEMCAL.cxx AliEMCALRawUtils.cxx AliEMCALTriggerDCSConfig.cxx AliEMCALTriggerTRUDCSConfig.cxx AliEMCALTriggerSTUDCSConfig.cxx AliEMCALTriggerDCSConfigDB.cxx AliEMCALTriggerRawDigitMaker.cxx AliEMCALTriggerRawDigit.cxx)
+set ( SRCS  
+    AliEMCALHit.cxx 
+    AliEMCALLoader.cxx 
+    AliEMCALWsuCosmicRaySetUp.cxx 
+    AliEMCALRecPoint.cxx 
+    AliEMCALSDigitizer.cxx 
+    AliEMCALDigitizer.cxx 
+    AliEMCALDigit.cxx 
+    AliEMCALCalibData.cxx 
+    AliEMCALCalibTimeDep.cxx 
+    AliEMCALPreprocessor.cxx 
+    AliEMCALSensorTemp.cxx 
+    AliEMCALSensorTempArray.cxx 
+    AliCaloCalibPedestal.cxx 
+    AliCaloCalibSignal.cxx 
+    AliEMCALSurvey.cxx 
+    AliEMCALRecParam.cxx 
+    AliEMCALSimParam.cxx 
+    AliEMCALQAChecker.cxx 
+    AliEMCALSpaceFrame.cxx 
+    AliEMCALBiasAPD.cxx 
+    AliEMCALCalibAbs.cxx 
+    AliEMCALCalibReference.cxx 
+    AliEMCALCalibMapAPD.cxx 
+    AliEMCALCalibTempCoeff.cxx 
+    AliEMCALRawDigit.cxx 
+    AliEMCALTrigger.cxx 
+    AliEMCALTriggerSTURawStream.cxx 
+    AliEMCAL.cxx AliEMCALRawUtils.cxx 
+    AliEMCALTriggerDCSConfig.cxx 
+    AliEMCALTriggerTRUDCSConfig.cxx 
+    AliEMCALTriggerSTUDCSConfig.cxx 
+    AliEMCALTriggerDCSConfigDB.cxx 
+    AliEMCALTriggerRawDigitMaker.cxx 
+    AliEMCALTriggerRawDigit.cxx 
+    )
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set ( DHDR EMCALbaseLinkDef.h)
 
-set ( EINCLUDE PYTHIA6 RAW EVGEN THijing EMCAL/SMcalib)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-					set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lEMCALUtils -lEMCALraw -lSTEERBase -lCDB -lSTEER -lRAWDatarec -lRAWDatabase -L${ROOTLIBDIR} -lVMC -lGeom -lMinuit)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)

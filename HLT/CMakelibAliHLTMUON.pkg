@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 # $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTMUON                                                    #
@@ -85,7 +86,7 @@ set ( MODULE_HDRS  ${MODULE_HDRS}
 
 set ( MODULE_DHDR  	AliHLTMUONLinkDef.h)
 
-set ( EINCLUDE  	HLT/BASE HLT/MUON HLT/MUON/utils HLT/MUON/OnlineAnalysis HLT/MUON/OfflineInterface MUON MUON/mapping STEER RAW)
+set ( EINCLUDE  	HLT/BASE HLT/MUON HLT/MUON/utils HLT/MUON/OnlineAnalysis HLT/MUON/OfflineInterface MUON MUON/mapping STEER RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
 
 set ( ELIBS  "HLTbase MUONmapping MUONbase MUONevaluation MUONsim MUONcore MUONcalib MUONgeometry MUONraw MUONtrigger MUONrec CDB ESD STEER STEERBase RAWDatarec RAWDatasim -lMinuit")
 

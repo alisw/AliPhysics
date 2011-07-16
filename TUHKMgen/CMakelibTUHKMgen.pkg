@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for TUHKMgen                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,24 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliGenUHKM.cxx TUHKMgen.cxx UHKM/DatabasePDG.cxx UHKM/DecayChannel.cxx UHKM/EquationSolver.cxx UHKM/GrandCanonical.cxx UHKM/HadronDecayer.cxx UHKM/HankelFunction.cxx UHKM/InitialState.cxx UHKM/InitialStateHydjet.cxx UHKM/Particle.cxx UHKM/ParticlePDG.cxx UHKM/RandArrayFunction.cxx UHKM/StrangeDensity.cxx UHKM/StrangePotential.cxx UHKM/UKUtility.cxx)
+set ( SRCS  
+    AliGenUHKM.cxx 
+    TUHKMgen.cxx 
+    UHKM/DatabasePDG.cxx 
+    UHKM/DecayChannel.cxx 
+    UHKM/EquationSolver.cxx 
+    UHKM/GrandCanonical.cxx 
+    UHKM/HadronDecayer.cxx 
+    UHKM/HankelFunction.cxx 
+    UHKM/InitialState.cxx 
+    UHKM/InitialStateHydjet.cxx 
+    UHKM/Particle.cxx 
+    UHKM/ParticlePDG.cxx 
+    UHKM/RandArrayFunction.cxx 
+    UHKM/StrangeDensity.cxx 
+    UHKM/StrangePotential.cxx 
+    UHKM/UKUtility.cxx 
+    )
 
 set ( FSRCS  PYQUEN/progs_fortran.f PYQUEN/pythia-6.4.11.f PYQUEN/pyquen1_5.f)
 
@@ -35,4 +53,4 @@ set ( DHDR  TUHKMgenLinkDef.h)
 
 set ( EXPORT  AliGenUHKM.h TUHKMgen.h)
 
-set ( EINCLUDE TUHKMgen/UHKM EVGEN)
+set ( EINCLUDE TUHKMgen/UHKM EVGEN STEER/STEER STEER/STEERBase)

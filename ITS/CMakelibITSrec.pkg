@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for ITSrec                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,18 +26,98 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  	AliITSDetTypeRec.cxx AliITSClusterFinder.cxx AliITSClusterFinderV2SDD.cxx AliITSClusterFinderV2SPD.cxx AliITSClusterFinderV2SSD.cxx AliITSClusterParam.cxx AliITSCorrectSDDPoints.cxx AliITSclustererV2.cxx AliITSIOTrack.cxx AliITSRad.cxx AliITStrackV2.cxx AliITStrackerV2.cxx AliITStrackMI.cxx AliITStrackerMI.cxx AliITSV0Finder.cxx AliITSVertexer.cxx AliITSVertexerCosmics.cxx AliITSVertexer3D.cxx AliITSTracklPairs.cxx AliITSSortTrkl.cxx AliITSVertexerZ.cxx AliITSVertexerFast.cxx AliITSVertexerFixed.cxx AliITSVertexer3DTapan.cxx AliITSMeanVertexer.cxx AliITSZPoint.cxx AliITSreconstruction.cxx AliITSclusterTable.cxx AliITStrackSA.cxx AliITStrackerSA.cxx AliITSdEdxAnalyzer.cxx AliITSReconstructor.cxx AliITSRecoParam.cxx AliITSMultReconstructor.cxx AliITSPreprocessorSPD.cxx AliITSOnlineCalibrationSPD.cxx AliITSOnlineCalibrationSPDhandler.cxx AliITSOnlineSPDHitArray.cxx AliITSOnlineSPDHitEvent.cxx AliITSOnlineSPDscanAnalyzer.cxx AliITSOnlineSPDscan.cxx AliITSOnlineSPDscanInfo.cxx AliITSOnlineSPDscanInfoMeanTh.cxx AliITSOnlineSPDscanInfoMultiple.cxx AliITSOnlineSPDscanMeanTh.cxx AliITSOnlineSPDscanMultiple.cxx AliITSOnlineSPDscanSingle.cxx AliITSOnlineSPDphys.cxx AliITSOnlineSPDphysAnalyzer.cxx AliITSOnlineSPDphysInfo.cxx AliITSOnlineSPDfoChipConfig.cxx AliITSOnlineSPDfoChip.cxx AliITSOnlineSPDfo.cxx AliITSOnlineSPDfoInfo.cxx AliITSOnlineSPDfoAnalyzer.cxx AliITSBadChannelsAuxSPD.cxx AliITSBadChannelsSPD.cxx AliITSChannelSPD.cxx AliITSPreprocessorSDD.cxx AliITSOnlineSDD.cxx AliITSOnlineSDDBase.cxx AliITSOnlineSDDTP.cxx AliITSOnlineSDDInjectors.cxx AliITSOnlineSDDCMN.cxx AliITSPreprocessorSSD.cxx AliITSAlignMille.cxx AliITSAlignMille2.cxx AliITSAlignMilleModule.cxx AliITSAlignMilleData.cxx AliITSAlignMille2Module.cxx AliITSAlignMille2Constraint.cxx AliITSAlignMille2ConstrArray.cxx AliITSTPArrayFit.cxx AliITSRealignTracks.cxx AliITSQAChecker.cxx AliITSQADataMakerRec.cxx AliITSQASPDDataMakerRec.cxx AliITSQASDDDataMakerRec.cxx AliITSQASSDDataMakerRec.cxx AliITSQASPDChecker.cxx AliITSQASDDChecker.cxx AliITSQASSDChecker.cxx AliITSQASSDRefData.cxx AliITSTrackleterSPDEff.cxx AliITSRecPointContainer.cxx)
+set ( SRCS 
+    AliITSDetTypeRec.cxx 
+    AliITSClusterFinder.cxx 
+    AliITSClusterFinderV2SDD.cxx 
+    AliITSClusterFinderV2SPD.cxx 
+    AliITSClusterFinderV2SSD.cxx 
+    AliITSClusterParam.cxx 
+    AliITSCorrectSDDPoints.cxx 
+    AliITSclustererV2.cxx 
+    AliITSIOTrack.cxx 
+    AliITSRad.cxx 
+    AliITStrackV2.cxx 
+    AliITStrackerV2.cxx 
+    AliITStrackMI.cxx 
+    AliITStrackerMI.cxx 
+    AliITSV0Finder.cxx 
+    AliITSVertexer.cxx 
+    AliITSVertexerCosmics.cxx 
+    AliITSVertexer3D.cxx 
+    AliITSTracklPairs.cxx 
+    AliITSSortTrkl.cxx 
+    AliITSVertexerZ.cxx 
+    AliITSVertexerFast.cxx 
+    AliITSVertexerFixed.cxx 
+    AliITSVertexer3DTapan.cxx 
+    AliITSMeanVertexer.cxx 
+    AliITSZPoint.cxx 
+    AliITSreconstruction.cxx 
+    AliITSclusterTable.cxx 
+    AliITStrackSA.cxx 
+    AliITStrackerSA.cxx 
+    AliITSdEdxAnalyzer.cxx 
+    AliITSReconstructor.cxx 
+    AliITSRecoParam.cxx 
+    AliITSMultReconstructor.cxx 
+    AliITSPreprocessorSPD.cxx 
+    AliITSOnlineCalibrationSPD.cxx 
+    AliITSOnlineCalibrationSPDhandler.cxx 
+    AliITSOnlineSPDHitArray.cxx 
+    AliITSOnlineSPDHitEvent.cxx 
+    AliITSOnlineSPDscanAnalyzer.cxx 
+    AliITSOnlineSPDscan.cxx 
+    AliITSOnlineSPDscanInfo.cxx 
+    AliITSOnlineSPDscanInfoMeanTh.cxx 
+    AliITSOnlineSPDscanInfoMultiple.cxx 
+    AliITSOnlineSPDscanMeanTh.cxx 
+    AliITSOnlineSPDscanMultiple.cxx 
+    AliITSOnlineSPDscanSingle.cxx 
+    AliITSOnlineSPDphys.cxx 
+    AliITSOnlineSPDphysAnalyzer.cxx 
+    AliITSOnlineSPDphysInfo.cxx 
+    AliITSOnlineSPDfoChipConfig.cxx 
+    AliITSOnlineSPDfoChip.cxx 
+    AliITSOnlineSPDfo.cxx 
+    AliITSOnlineSPDfoInfo.cxx 
+    AliITSOnlineSPDfoAnalyzer.cxx 
+    AliITSBadChannelsAuxSPD.cxx 
+    AliITSBadChannelsSPD.cxx 
+    AliITSChannelSPD.cxx 
+    AliITSPreprocessorSDD.cxx 
+    AliITSOnlineSDD.cxx 
+    AliITSOnlineSDDBase.cxx 
+    AliITSOnlineSDDTP.cxx 
+    AliITSOnlineSDDInjectors.cxx 
+    AliITSOnlineSDDCMN.cxx 
+    AliITSPreprocessorSSD.cxx 
+    AliITSAlignMille.cxx 
+    AliITSAlignMille2.cxx 
+    AliITSAlignMilleModule.cxx 
+    AliITSAlignMilleData.cxx 
+    AliITSAlignMille2Module.cxx 
+    AliITSAlignMille2Constraint.cxx 
+    AliITSAlignMille2ConstrArray.cxx 
+    AliITSTPArrayFit.cxx 
+    AliITSRealignTracks.cxx 
+    AliITSQAChecker.cxx 
+    AliITSQADataMakerRec.cxx 
+    AliITSQASPDDataMakerRec.cxx 
+    AliITSQASDDDataMakerRec.cxx 
+    AliITSQASSDDataMakerRec.cxx 
+    AliITSQASPDChecker.cxx 
+    AliITSQASDDChecker.cxx 
+    AliITSQASSDChecker.cxx 
+    AliITSQASSDRefData.cxx 
+    AliITSTrackleterSPDEff.cxx 
+    AliITSRecPointContainer.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR ITSrecLinkDef.h)
 
-set ( EINCLUDE TPC RAW)
+set ( EINCLUDE TPC RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
 
 set ( EXPORT AliITStrackV2.h AliITSVertexer.h AliITSRecoParam.h)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lITSbase -lSTEER -lESD -lCDB -lSTEERBase -lRAWDatarec -L${ROOTLIBDIR} -lEG -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

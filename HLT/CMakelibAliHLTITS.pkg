@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 # $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTITS                                                     #
@@ -54,7 +55,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS} AliHLTITSSpacePointData.h AliHLTITSClusterData
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/ITS HLT/TPCLib HLT/ITS/tracking HLT/ITS/clusterfinders ITS STEER RAW)
+set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/ITS HLT/TPCLib HLT/ITS/tracking HLT/ITS/clusterfinders ITS RAW STEER/STEER STEER/ESD STEER/STEERBase)
 
 set ( ELIBS  "HLTbase AliHLTUtil RAWDatarec RAWDatabase ITSrec ITSbase ESD STEER STEERBase -lEG")
 

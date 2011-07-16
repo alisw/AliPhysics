@@ -1,3 +1,5 @@
+# -*- mode: CMake -*-
+
 #--------------------------------------------------------------------------------#
 # Package File for TPCsim                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +27,23 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliTPC.cxx AliTPCv0.cxx AliTPCv1.cxx AliTPCv2.cxx AliTPCv3.cxx AliTPCv4.cxx AliTPCLaser.cxx AliTPCTrackHitsV2.cxx AliTPCDigitizer.cxx AliTPCBuffer.cxx AliTPCDDLRawData.cxx AliTPCQADataMakerSim.cxx)
+set ( SRCS   
+    AliTPC.cxx 
+    AliTPCv0.cxx 
+    AliTPCv1.cxx 
+    AliTPCv2.cxx 
+    AliTPCv3.cxx 
+    AliTPCv4.cxx 
+    AliTPCLaser.cxx 
+    AliTPCTrackHitsV2.cxx 
+    AliTPCDigitizer.cxx 
+    AliTPCBuffer.cxx 
+    AliTPCDDLRawData.cxx 
+    AliTPCQADataMakerSim.cxx
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  TPCsimLinkDef.h)
 
-set ( EINCLUDE  RAW)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lTPCbase -lSTEER -lCDB -lSTEERBase -lRAWDatasim -lRAWDatarec -lRAWDatabase -L${ROOTLIBDIR} -lVMC -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  RAW STEER/STEER STEER/ESD STEER/STEERBase)

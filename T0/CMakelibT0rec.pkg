@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for T0rec                                                         #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +26,17 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliT0Reconstructor.cxx AliT0Calibrator.cxx AliT0CalibLaserData.cxx AliT0QADataMakerRec.cxx AliT0RecoParam.cxx AliT0CalibSeasonTimeShift.cxx)
+set ( SRCS  
+    AliT0Reconstructor.cxx 
+    AliT0Calibrator.cxx 
+    AliT0CalibLaserData.cxx 
+    AliT0QADataMakerRec.cxx 
+    AliT0RecoParam.cxx 
+    AliT0CalibSeasonTimeShift.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  T0recLinkDef.h)
 
-set ( EINCLUDE  RAW)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lT0base -lSTEER -lCDB -lSTEERBase -lRAWDatarec -L${ROOTLIBDIR} -lGui)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  RAW STEER/STEER STEER/ESD STEER/STEERBase)

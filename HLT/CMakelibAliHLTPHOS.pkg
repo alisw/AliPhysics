@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 # $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTPHOS                                                    #
@@ -52,7 +53,7 @@ set ( MODULE_HDRS 	  ${CLASS_HDRS} AliHLTPHOSCommonDefs.h AliHLTPHOSCoordinate.h
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/CALO HLT/PHOS  STEER RAW PHOS EMCAL)
+set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/CALO HLT/PHOS RAW PHOS EMCAL STEER/CDB)
 
 set ( ELIBS  "HLTbase AliHLTCalo PHOSbase PHOSUtils PHOSshuttle ESD AOD STEER RAWDatarec EMCALbase EMCALraw EMCALUtils EMCALrec")
 

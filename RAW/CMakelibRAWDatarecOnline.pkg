@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for RAWDatarecOnline                                              #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -30,7 +31,7 @@ set ( SRCS   AliRawReaderDateOnline.cxx)
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  RAWDatarecOnlineLinkDef.h)
-
+set ( EINCLUDE STEER/ESD ) 
 set ( DATE_ROOT $ENV{DATE_ROOT})
 if (DATE_ROOT)
 
@@ -40,9 +41,3 @@ if (DATE_ROOT)
 endif (DATE_ROOT)
 
 set ( EXPORT AliRawReaderDateOnline.h)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lRAWDatarec)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

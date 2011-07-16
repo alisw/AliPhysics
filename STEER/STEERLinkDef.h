@@ -99,7 +99,6 @@
 #pragma link C++ class AliTriggerClass+;
 #pragma link C++ class AliCentralTrigger+;
 #pragma link C++ class AliCTPRawStream+;
-#pragma link C++ class AliMathBase+;
 #pragma link C++ class AliSignalProcesor+;
 #pragma link C++ class  AliHelix+;
 #pragma link C++ class  AliCluster+;

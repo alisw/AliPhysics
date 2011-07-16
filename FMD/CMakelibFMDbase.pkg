@@ -53,13 +53,7 @@ string (REPLACE ".cxx" ".h" HDRS  "${SRCS}")
 set ( HDRS ${HDRS} AliFMDCalibFwd.h )
 set ( DHDR  FMDbaseLinkDef.h)
 
-set ( EINCLUDE   RAW)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-  set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lCDB -lESD -lSTEERBase -lRAWDatabase -L${ROOTLIBDIR} -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE   RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
 
 # --------------------------------------------------------------------
 # Extra stuff 

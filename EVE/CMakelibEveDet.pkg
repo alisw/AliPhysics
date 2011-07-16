@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for EveDet                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -31,14 +32,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  EveDet/EveDetLinkDef.h)
 
-set ( EINCLUDE  RAW EMCAL ITS TPC TRD TOF T0 MUON MUON/mapping PMD HLT/BASE HLT/BASE/HOMER VZERO EVE/EveDet ANALYSIS)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-	set ( PACKCXXFLAGS  ${CXXFLAGS} -I/usr/X11R6/include)
-									set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lEveBase  -lCDB -lESD -lSTEERBase -lSTEER -lITSbase -lMUONgeometry -lMUONmapping -lMUONrec -lMUONsim -lMUONbase -lMUONcore -lPMDbase -lT0base -lTOFbase -lTOFsim -lTPCbase -lTRDbase -lTRDrec -lFMDbase -lFMDrec -lEMCALbase -lEMCALUtils -lVZERObase -lVZEROrec -lRAWDatarec -lRAWDatabase -L${ROOTLIBDIR} -lEve -lRGL -lGed -lGui -lGeom -lEG)
-	
-	set ( ELIBSDIR  /usr/X11R6/lib)
-	set ( ELIBS  GL GLU)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  RAW EMCAL ITS TPC TRD TOF T0 MUON MUON/mapping PMD HLT/BASE HLT/BASE/HOMER VZERO EVE/EveDet ANALYSIS STEER/STEER STEER/ESD STEER/STEERBase)

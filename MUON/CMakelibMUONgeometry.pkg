@@ -1,3 +1,5 @@
+# -*- mode: CMake -*-
+
 #--------------------------------------------------------------------------------#
 # Package File for MUONgeometry                                                  #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +27,26 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliMUONGeometryConstituent.cxx AliMUONGeometryEnvelope.cxx AliMUONGeometryEnvelopeStore.cxx AliMUONGeometryDetElement.cxx AliMUONGeometryModuleTransformer.cxx AliMUONGeometryModule.cxx AliMUONGeometryTransformer.cxx AliMUONGeometryMisAligner.cxx AliMUONGeometry.cxx AliMUONVGeometryBuilder.cxx AliMUONGeometryBuilder.cxx AliMUONSurveyObj.cxx AliMUONSurveyUtil.cxx AliMUONSurveyDetElem.cxx AliMUONSurveyChamber.cxx)
+set ( SRCS   
+    AliMUONGeometryConstituent.cxx 
+    AliMUONGeometryEnvelope.cxx 
+    AliMUONGeometryEnvelopeStore.cxx 
+    AliMUONGeometryDetElement.cxx 
+    AliMUONGeometryModuleTransformer.cxx 
+    AliMUONGeometryModule.cxx 
+    AliMUONGeometryTransformer.cxx 
+    AliMUONGeometryMisAligner.cxx 
+    AliMUONGeometry.cxx 
+    AliMUONVGeometryBuilder.cxx 
+    AliMUONGeometryBuilder.cxx 
+    AliMUONSurveyObj.cxx 
+    AliMUONSurveyUtil.cxx 
+    AliMUONSurveyDetElem.cxx 
+    AliMUONSurveyChamber.cxx
+    )
 
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set ( EINCLUDE  RAW MUON/mapping)
 
 set ( DHDR  MUONgeometryLinkDef.h)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lMUONmapping  -lMUONcore -lSTEERBase -L${ROOTLIBDIR} -lVMC -lGeom -lMinuit)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

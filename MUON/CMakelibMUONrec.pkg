@@ -1,3 +1,5 @@
+# -*- mode: CMake -*-
+
 #--------------------------------------------------------------------------------#
 # Package File for MUONrec                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +27,56 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliMUONReconstructor.cxx AliMUONVTrackReconstructor.cxx AliMUONTrackReconstructor.cxx AliMUONTrackReconstructorK.cxx AliMUONTracker.cxx AliMUONTrack.cxx AliMUONTrackParam.cxx AliMUONTrackExtrap.cxx AliMUONTriggerTrack.cxx AliMUONVTriggerTrackStore.cxx AliMUONTriggerTrackStoreV1.cxx AliMUONVClusterFinder.cxx AliMUONPreClusterFinder.cxx AliMUONPreClusterFinderV2.cxx AliMUONPreClusterFinderV3.cxx AliMUONClusterFinderMLEM.cxx AliMUONClusterSplitterMLEM.cxx AliMUONClusterFinderSimpleFit.cxx AliMUONClusterFinderCOG.cxx AliMUONPad.cxx AliMUONCluster.cxx AliMUONTrackHitPattern.cxx AliMUONVClusterStore.cxx AliMUONClusterStoreV1.cxx AliMUONClusterStoreV2.cxx AliMUONClusterStoreV2Iterator.cxx AliMUONVTrackStore.cxx AliMUONTrackStoreV1.cxx AliMUONVClusterServer.cxx AliMUONSimpleClusterServer.cxx AliMUONVQADataMakerRec.cxx AliMUONQADataMakerRec.cxx AliMUONTrackerQADataMakerRec.cxx AliMUONTriggerQADataMakerRec.cxx AliMUONClusterFinderPeakCOG.cxx AliMUONClusterFinderPeakFit.cxx AliMUONRefitter.cxx AliMUONESDInterface.cxx AliMUONLegacyClusterServer.cxx AliMUONTriggerTrackToTrackerClusters.cxx AliMUONVTrackerDataMaker.cxx AliMUONTrackerDataMaker.cxx AliMUONQAMappingCheck.cxx AliMUONCDB.cxx AliMUONTrackerConditionDataMaker.cxx)
+set ( SRCS  
+    AliMUONReconstructor.cxx 
+    AliMUONVTrackReconstructor.cxx 
+    AliMUONTrackReconstructor.cxx 
+    AliMUONTrackReconstructorK.cxx 
+    AliMUONTracker.cxx 
+    AliMUONTrack.cxx 
+    AliMUONTrackParam.cxx 
+    AliMUONTrackExtrap.cxx 
+    AliMUONTriggerTrack.cxx 
+    AliMUONVTriggerTrackStore.cxx 
+    AliMUONTriggerTrackStoreV1.cxx 
+    AliMUONVClusterFinder.cxx 
+    AliMUONPreClusterFinder.cxx 
+    AliMUONPreClusterFinderV2.cxx 
+    AliMUONPreClusterFinderV3.cxx 
+    AliMUONClusterFinderMLEM.cxx 
+    AliMUONClusterSplitterMLEM.cxx 
+    AliMUONClusterFinderSimpleFit.cxx 
+    AliMUONClusterFinderCOG.cxx 
+    AliMUONPad.cxx 
+    AliMUONCluster.cxx 
+    AliMUONTrackHitPattern.cxx 
+    AliMUONVClusterStore.cxx 
+    AliMUONClusterStoreV1.cxx 
+    AliMUONClusterStoreV2.cxx 
+    AliMUONClusterStoreV2Iterator.cxx 
+    AliMUONVTrackStore.cxx 
+    AliMUONTrackStoreV1.cxx 
+    AliMUONVClusterServer.cxx 
+    AliMUONSimpleClusterServer.cxx 
+    AliMUONVQADataMakerRec.cxx 
+    AliMUONQADataMakerRec.cxx 
+    AliMUONTrackerQADataMakerRec.cxx 
+    AliMUONTriggerQADataMakerRec.cxx 
+    AliMUONClusterFinderPeakCOG.cxx 
+    AliMUONClusterFinderPeakFit.cxx 
+    AliMUONRefitter.cxx 
+    AliMUONESDInterface.cxx 
+    AliMUONLegacyClusterServer.cxx 
+    AliMUONTriggerTrackToTrackerClusters.cxx 
+    AliMUONVTrackerDataMaker.cxx 
+    AliMUONTrackerDataMaker.cxx 
+    AliMUONQAMappingCheck.cxx 
+    AliMUONCDB.cxx 
+    AliMUONTrackerConditionDataMaker.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  MUONrecLinkDef.h)
 
-set ( EINCLUDE  RAW MUON/mapping)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-						set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lMUONbase -lMUONmapping -lMUONcalib -lMUONtrigger -lMUONgeometry -lMUONraw -lMUONcore -lSTEER -lCDB -lESD -lSTEERBase -lRAWDatasim -lRAWDatabase -L${ROOTLIBDIR} -lMinuit -lVMC -lEG -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  RAW MUON/mapping STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)

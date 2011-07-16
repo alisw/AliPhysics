@@ -1,3 +1,5 @@
+# -*- mode: CMake -*-
+
 #--------------------------------------------------------------------------------#
 # Package File for MUONbase                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +27,41 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliMUONConstants.cxx AliMUONMathieson.cxx AliMUONDigit.cxx AliMUONRealDigit.cxx AliMUONVCluster.cxx AliMUONRawCluster.cxx AliMUONRawClusterV2.cxx AliMUONDigitMaker.cxx AliMUONRawWriter.cxx AliMUONVDigitStore.cxx AliMUONDigitStoreV1.cxx AliMUONDigitStoreV1Iterator.cxx AliMUONDigitStoreVImpl.cxx AliMUONDigitStoreVImplIterator.cxx AliMUONDigitStoreV2R.cxx AliMUONDigitStoreV2S.cxx AliMUONTOTCAStoreIterator.cxx AliMUONVDigit.cxx AliMUONTriggerCircuit.cxx AliMUONVTriggerStore.cxx AliMUONTriggerStoreV1.cxx AliMUONTriggerElectronics.cxx AliMUONQAChecker.cxx AliMUONVQAChecker.cxx AliMUONTrackerQAChecker.cxx AliMUONTriggerQAChecker.cxx AliMUONRecoParam.cxx AliMUONPadStatusMaker.cxx AliMUONDigitCalibrator.cxx AliMUONPadStatusMapMaker.cxx )
+set ( SRCS   
+    AliMUONConstants.cxx 
+    AliMUONMathieson.cxx 
+    AliMUONDigit.cxx 
+    AliMUONRealDigit.cxx 
+    AliMUONVCluster.cxx 
+    AliMUONRawCluster.cxx 
+    AliMUONRawClusterV2.cxx 
+    AliMUONDigitMaker.cxx 
+    AliMUONRawWriter.cxx 
+    AliMUONVDigitStore.cxx 
+    AliMUONDigitStoreV1.cxx 
+    AliMUONDigitStoreV1Iterator.cxx 
+    AliMUONDigitStoreVImpl.cxx 
+    AliMUONDigitStoreVImplIterator.cxx 
+    AliMUONDigitStoreV2R.cxx 
+    AliMUONDigitStoreV2S.cxx 
+    AliMUONTOTCAStoreIterator.cxx 
+    AliMUONVDigit.cxx 
+    AliMUONTriggerCircuit.cxx 
+    AliMUONVTriggerStore.cxx 
+    AliMUONTriggerStoreV1.cxx 
+    AliMUONTriggerElectronics.cxx 
+    AliMUONQAChecker.cxx 
+    AliMUONVQAChecker.cxx 
+    AliMUONTrackerQAChecker.cxx 
+    AliMUONTriggerQAChecker.cxx 
+    AliMUONRecoParam.cxx 
+    AliMUONPadStatusMaker.cxx 
+    AliMUONDigitCalibrator.cxx 
+    AliMUONPadStatusMapMaker.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  MUONbaseLinkDef.h)
 
-set ( EINCLUDE  RAW MUON/mapping)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-					set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lMUONmapping -lMUONcalib -lMUONtrigger -lMUONgeometry -lMUONraw -lMUONcore -lSTEER -lCDB -lESD -lSTEERBase -lRAWDatasim -lRAWDatabase)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  RAW MUON/mapping STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)

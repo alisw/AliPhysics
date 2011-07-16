@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 # $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTComp                                                    #
@@ -44,7 +45,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/BASE HLT/shuttle HLT/TPCLib HLT/comp STEER)
+set ( EINCLUDE  HLT/BASE HLT/shuttle HLT/TPCLib HLT/comp STEER/CDB STEER/STEERBase)
 
 set ( ELIBS  "HLTbase CDB")
 

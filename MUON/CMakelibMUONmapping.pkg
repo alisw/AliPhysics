@@ -1,3 +1,5 @@
+# -*- mode: CMake -*-
+
 #--------------------------------------------------------------------------------#
 # Package File for MUONmapping                                                   #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -27,36 +29,111 @@
 
 # Category : basic
 
-set ( SRCS ${SRCS}  mapping/AliMpPlaneType.cxx mapping/AliMpCathodType.cxx mapping/AliMpStationType.cxx mapping/AliMpStation12Type.cxx mapping/AliMpArea.cxx mapping/AliMpConstants.cxx mapping/AliMpFiles.cxx mapping/AliMpPad.cxx mapping/AliMpEncodePair.cxx mapping/AliMpVIndexed.cxx mapping/AliMpVPadIterator.cxx mapping/AliMpVSegmentation.cxx mapping/AliMpDataProcessor.cxx mapping/AliMpDataStreams.cxx mapping/AliMpDataMap.cxx)
+set ( SRCS ${SRCS}  
+    mapping/AliMpPlaneType.cxx 
+    mapping/AliMpCathodType.cxx 
+    mapping/AliMpStationType.cxx 
+    mapping/AliMpStation12Type.cxx 
+    mapping/AliMpArea.cxx 
+    mapping/AliMpConstants.cxx 
+    mapping/AliMpFiles.cxx 
+    mapping/AliMpPad.cxx 
+    mapping/AliMpEncodePair.cxx 
+    mapping/AliMpVIndexed.cxx 
+    mapping/AliMpVPadIterator.cxx 
+    mapping/AliMpVSegmentation.cxx 
+    mapping/AliMpDataProcessor.cxx 
+    mapping/AliMpDataStreams.cxx 
+    mapping/AliMpDataMap.cxx
+    )
 
 # Category : motif
 
-set ( SRCS ${SRCS}  mapping/AliMpConnection.cxx mapping/AliMpMotif.cxx mapping/AliMpMotifMap.cxx mapping/AliMpMotifPosition.cxx mapping/AliMpMotifPositionPadIterator.cxx mapping/AliMpMotifReader.cxx mapping/AliMpMotifSpecial.cxx mapping/AliMpMotifType.cxx mapping/AliMpMotifTypePadIterator.cxx mapping/AliMpVMotif.cxx)
+set ( SRCS ${SRCS}  
+    mapping/AliMpConnection.cxx 
+    mapping/AliMpMotif.cxx 
+    mapping/AliMpMotifMap.cxx 
+    mapping/AliMpMotifPosition.cxx 
+    mapping/AliMpMotifPositionPadIterator.cxx 
+    mapping/AliMpMotifReader.cxx 
+    mapping/AliMpMotifSpecial.cxx 
+    mapping/AliMpMotifType.cxx 
+    mapping/AliMpMotifTypePadIterator.cxx 
+    mapping/AliMpVMotif.cxx
+    )
 
 # Category : sector
 
-set ( SRCS ${SRCS}  mapping/AliMpPadRow.cxx mapping/AliMpPadRowLSegment.cxx mapping/AliMpPadRowRSegment.cxx mapping/AliMpRow.cxx mapping/AliMpRowSegment.cxx mapping/AliMpRowSegmentLSpecial.cxx mapping/AliMpRowSegmentRSpecial.cxx mapping/AliMpSectorAreaHPadIterator.cxx mapping/AliMpSectorAreaVPadIterator.cxx mapping/AliMpSector.cxx mapping/AliMpSectorPadIterator.cxx mapping/AliMpSectorReader.cxx mapping/AliMpSectorSegmentation.cxx mapping/AliMpSubZone.cxx mapping/AliMpVPadRowSegment.cxx mapping/AliMpVRowSegment.cxx mapping/AliMpVRowSegmentSpecial.cxx mapping/AliMpZone.cxx)
+set ( SRCS ${SRCS}  
+    mapping/AliMpPadRow.cxx 
+    mapping/AliMpPadRowLSegment.cxx 
+    mapping/AliMpPadRowRSegment.cxx 
+    mapping/AliMpRow.cxx 
+    mapping/AliMpRowSegment.cxx 
+    mapping/AliMpRowSegmentLSpecial.cxx 
+    mapping/AliMpRowSegmentRSpecial.cxx 
+    mapping/AliMpSectorAreaHPadIterator.cxx 
+    mapping/AliMpSectorAreaVPadIterator.cxx 
+    mapping/AliMpSector.cxx 
+    mapping/AliMpSectorPadIterator.cxx 
+    mapping/AliMpSectorReader.cxx 
+    mapping/AliMpSectorSegmentation.cxx 
+    mapping/AliMpSubZone.cxx 
+    mapping/AliMpVPadRowSegment.cxx 
+    mapping/AliMpVRowSegment.cxx 
+    mapping/AliMpVRowSegmentSpecial.cxx 
+    mapping/AliMpZone.cxx
+    )
 
 # Category : slat
 
-set ( SRCS ${SRCS}  mapping/AliMpHelper.cxx mapping/AliMpPCB.cxx mapping/AliMpSlat.cxx mapping/AliMpSlatPadIterator.cxx mapping/AliMpSlatSegmentation.cxx mapping/AliMpPCBPadIterator.cxx mapping/AliMpSt345Reader.cxx mapping/AliMpSlatMotifMap.cxx)
+set ( SRCS ${SRCS}  
+    mapping/AliMpHelper.cxx 
+    mapping/AliMpPCB.cxx 
+    mapping/AliMpSlat.cxx 
+    mapping/AliMpSlatPadIterator.cxx 
+    mapping/AliMpSlatSegmentation.cxx 
+    mapping/AliMpPCBPadIterator.cxx 
+    mapping/AliMpSt345Reader.cxx 
+    mapping/AliMpSlatMotifMap.cxx
+    )
 
 # Category : trigger
 
-set ( SRCS ${SRCS}  mapping/AliMpTrigger.cxx mapping/AliMpTriggerReader.cxx mapping/AliMpTriggerSegmentation.cxx mapping/AliMpRegionalTrigger.cxx mapping/AliMpTriggerCrate.cxx mapping/AliMpLocalBoard.cxx)
+set ( SRCS ${SRCS}  
+    mapping/AliMpTrigger.cxx 
+    mapping/AliMpTriggerReader.cxx 
+    mapping/AliMpTriggerSegmentation.cxx 
+    mapping/AliMpRegionalTrigger.cxx 
+    mapping/AliMpTriggerCrate.cxx 
+    mapping/AliMpLocalBoard.cxx
+    )
 
 # Category : management
 
-set ( SRCS ${SRCS}  mapping/AliMpManuIterator.cxx mapping/AliMpManuUID.cxx mapping/AliMpPadUID.cxx mapping/AliMpHVUID.cxx mapping/AliMpDCSNamer.cxx mapping/AliMpSegmentation.cxx mapping/AliMpDetElement.cxx mapping/AliMpDEStore.cxx mapping/AliMpDEIterator.cxx mapping/AliMpDEManager.cxx mapping/AliMpBusPatch.cxx mapping/AliMpDDL.cxx mapping/AliMpDDLStore.cxx mapping/AliMpCDB.cxx mapping/AliMpFrtCrocusConstants.cxx mapping/AliMpManuStore.cxx mapping/AliMpFastSegmentation.cxx mapping/AliMpUID.cxx)
+set ( SRCS ${SRCS}  
+    mapping/AliMpManuIterator.cxx 
+    mapping/AliMpManuUID.cxx 
+    mapping/AliMpPadUID.cxx 
+    mapping/AliMpHVUID.cxx 
+    mapping/AliMpDCSNamer.cxx 
+    mapping/AliMpSegmentation.cxx 
+    mapping/AliMpDetElement.cxx 
+    mapping/AliMpDEStore.cxx 
+    mapping/AliMpDEIterator.cxx 
+    mapping/AliMpDEManager.cxx 
+    mapping/AliMpBusPatch.cxx 
+    mapping/AliMpDDL.cxx 
+    mapping/AliMpDDLStore.cxx 
+    mapping/AliMpCDB.cxx 
+    mapping/AliMpFrtCrocusConstants.cxx 
+    mapping/AliMpManuStore.cxx 
+    mapping/AliMpFastSegmentation.cxx 
+    mapping/AliMpUID.cxx
+    )
 
 string (REPLACE ".cxx" ".h" HDRS  "${SRCS}")
 
 set ( DHDR  MUONmappingLinkDef.h)
 
 set ( EINCLUDE  RAW MUON/mapping)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lCDB -lSTEERBase -lMUONcore -lRAWDatabase -L${ROOTLIBDIR} -lGui)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

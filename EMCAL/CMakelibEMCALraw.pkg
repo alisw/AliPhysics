@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for EMCALbase                                                     #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +26,28 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliCaloRawAnalyzerFastFit.cxx AliCaloRawAnalyzerPeakFinder.cxx  AliCaloRawAnalyzerFakeALTRO.cxx AliCaloRawAnalyzerKStandard.cxx AliCaloRawAnalyzerNN.cxx AliCaloRawAnalyzerFitter.cxx AliCaloRawAnalyzerCrude.cxx AliCaloRawAnalyzerFactory.cxx AliEMCALRawResponse.cxx AliCaloNeuralFit.cxx AliCaloPeakFinderVectors.cxx AliCaloFitSubarray.cxx AliCaloRawAnalyzer.cxx AliCaloBunchInfo.cxx AliCaloFitResults.cxx  AliCaloFastAltroFitv0.cxx SMcalib/AliEMCALCCUSBRawStream.cxx )
+set ( SRCS   
+    AliCaloRawAnalyzerFastFit.cxx 
+    AliCaloRawAnalyzerPeakFinder.cxx 
+    AliCaloRawAnalyzerFakeALTRO.cxx 
+    AliCaloRawAnalyzerKStandard.cxx 
+    AliCaloRawAnalyzerNN.cxx 
+    AliCaloRawAnalyzerFitter.cxx 
+    AliCaloRawAnalyzerCrude.cxx 
+    AliCaloRawAnalyzerFactory.cxx 
+    AliEMCALRawResponse.cxx 
+    AliCaloNeuralFit.cxx 
+    AliCaloPeakFinderVectors.cxx 
+    AliCaloFitSubarray.cxx 
+    AliCaloRawAnalyzer.cxx 
+    AliCaloBunchInfo.cxx 
+    AliCaloFitResults.cxx 
+    AliCaloFastAltroFitv0.cxx 
+    SMcalib/AliEMCALCCUSBRawStream.cxx 
+    )
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set ( DHDR EMCALrawLinkDef.h)
 
-set ( EINCLUDE PYTHIA6 RAW EVGEN THijing EMCAL/SMcalib)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-					set ( PACKSOFLAGS  ${SOFLAGS} -lRAWDatabase -L${ROOTLIBDIR} -lVMC -lGeom -lMinuit)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE RAW EMCAL/SMcalib)

@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for FASTSIM                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,12 +26,21 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliFastDetector.cxx AliFastResponse.cxx AliFastParticle.cxx AliFastEvent.cxx AliFastMuonTrackingAcc.cxx AliFastMuonTrackingEff.cxx AliFastMuonTrackingRes.cxx AliFastMuonTriggerEff.cxx AliMUONFastTracking.cxx AliMUONFastTrackingEntry.cxx AliFastGlauber.cxx AliQuenchingWeights.cxx)
+set ( SRCS  
+    AliFastDetector.cxx 
+    AliFastResponse.cxx 
+    AliFastParticle.cxx 
+    AliFastEvent.cxx 
+    AliFastMuonTrackingAcc.cxx 
+    AliFastMuonTrackingEff.cxx 
+    AliFastMuonTrackingRes.cxx 
+    AliFastMuonTriggerEff.cxx 
+    AliMUONFastTracking.cxx 
+    AliMUONFastTrackingEntry.cxx 
+    AliFastGlauber.cxx 
+    AliQuenchingWeights.cxx 
+    )
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  FASTSIMLinkDef.h)
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-	set ( PACKSOFLAGS  ${SOFLAGS} -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE STEER/STEER )

@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for T0 calib                                                         #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -31,10 +32,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  T0calibLinkDef.h)
 
-set ( EINCLUDE  RAW)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lT0base -lSTEER -lCDB -lSTEERBase -lRAWDatarec -L${ROOTLIBDIR} -lGui)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  RAW STEER/STEERBase)

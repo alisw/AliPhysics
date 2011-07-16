@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG3muondep                                                   #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +26,19 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS 	 muondep/AliAnalysisTaskMuonTrackingEff.cxx muondep/AliAnalysisTaskRecoCheck.cxx muondep/AliAnalysisTaskESDMCLabelAddition.cxx muondep/AliAnalysisTaskMuonResolution.cxx muondep/AliAnalysisTaskPileup.cxx muondep/AliAnalysisTaskMuonFakes.cxx muondep/AliAnalysisTaskMuonRefit.cxx muondep/AliAnalysisTaskMuonPerformance.cxx)
+set ( SRCS 
+    muondep/AliAnalysisTaskMuonTrackingEff.cxx 
+    muondep/AliAnalysisTaskRecoCheck.cxx 
+    muondep/AliAnalysisTaskESDMCLabelAddition.cxx 
+    muondep/AliAnalysisTaskMuonResolution.cxx 
+    muondep/AliAnalysisTaskPileup.cxx 
+    muondep/AliAnalysisTaskMuonFakes.cxx 
+    muondep/AliAnalysisTaskMuonRefit.cxx 
+    muondep/AliAnalysisTaskMuonPerformance.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWG3muondepLinkDef.h )
 
-set ( EINCLUDE  MUON MUON/mapping PWG3/base PWG3/muondep)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  MUON MUON/mapping PWG3/base PWG3/muondep STEER/STEER STEER/STEERBase)

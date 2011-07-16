@@ -1,6 +1,9 @@
 #ifndef ALISIGNALPROCESOR_H
 #define ALISIGNALPROCESOR_H
 
+#include <TObject.h>
+class TF1;
+
 class AliSignalProcesor : public TObject{
  public: 
   TF1 * GetAsymGauss();

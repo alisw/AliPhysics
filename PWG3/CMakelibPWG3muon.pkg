@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG3muon                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,40 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS muon/AliAnalysisMuMu.cxx muon/AliAnalysisMuMuFromESD.cxx muon/AliAnalysisMuMuFromAOD.cxx muon/AliHistogramCollection.cxx muon/AliAnalysisTaskESDMuonFilter.cxx muon/AliAnalysisTaskMuonAODfromGeneral.cxx muon/AliAnalysisTaskFromStandardToMuonAOD.cxx muon/AliAnalysisTaskSingleMu.cxx muon/AliAnalysisTaskLUT.cxx muon/AliAnalysisTaskTrigChEff.cxx muon/AliAnalysisTaskLinkToMC.cxx muon/AliAODEventInfo.cxx muon/AliESDMuonTrackCuts.cxx muon/AliAnalysisTaskSingleMuESD.cxx muon/AliCFMuonResTask1.cxx muon/AliCFMuonSingleTask1.cxx muon/AliEventPoolMuon.cxx muon/AliAnalysisTaskCreateMixedDimuons.cxx muon/AliAnalysisTaskMuonAODCreation.cxx muon/AliAnalysisTaskMuonDistributions.cxx muon/AliMuonInfoStoreRD.cxx muon/AliDimuInfoStoreRD.cxx muon/AliMuonInfoStoreMC.cxx muon/AliDimuInfoStoreMC.cxx muon/AliMuonsHFHeader.cxx muon/AliAnalysisTaskSEMuonsHF.cxx muon/AliAnalysisTaskDimuonCFContainerBuilder.cxx muon/AliAnalysisTaskMuonTreeBuilder.cxx muon/AliAnalysisTaskMuonQA.cxx muon/AliAODMuonReplicator.cxx muon/AliAnalysisTaskMuonCollisionMultiplicity.cxx muon/AliCFMuonResUpsilon.cxx)
+set ( SRCS 
+    muon/AliAnalysisMuMu.cxx 
+    muon/AliAnalysisMuMuFromESD.cxx 
+    muon/AliAnalysisMuMuFromAOD.cxx 
+    muon/AliHistogramCollection.cxx 
+    muon/AliAnalysisTaskESDMuonFilter.cxx 
+    muon/AliAnalysisTaskMuonAODfromGeneral.cxx 
+    muon/AliAnalysisTaskFromStandardToMuonAOD.cxx 
+    muon/AliAnalysisTaskSingleMu.cxx 
+    muon/AliAnalysisTaskLUT.cxx 
+    muon/AliAnalysisTaskTrigChEff.cxx 
+    muon/AliAnalysisTaskLinkToMC.cxx 
+    muon/AliAODEventInfo.cxx 
+    muon/AliESDMuonTrackCuts.cxx 
+    muon/AliAnalysisTaskSingleMuESD.cxx 
+    muon/AliCFMuonResTask1.cxx 
+    muon/AliCFMuonSingleTask1.cxx 
+    muon/AliEventPoolMuon.cxx 
+    muon/AliAnalysisTaskCreateMixedDimuons.cxx 
+    muon/AliAnalysisTaskMuonAODCreation.cxx 
+    muon/AliAnalysisTaskMuonDistributions.cxx 
+    muon/AliMuonInfoStoreRD.cxx 
+    muon/AliDimuInfoStoreRD.cxx 
+    muon/AliMuonInfoStoreMC.cxx 
+    muon/AliDimuInfoStoreMC.cxx 
+    muon/AliMuonsHFHeader.cxx 
+    muon/AliAnalysisTaskSEMuonsHF.cxx 
+    muon/AliAnalysisTaskDimuonCFContainerBuilder.cxx 
+    muon/AliAnalysisTaskMuonTreeBuilder.cxx 
+    muon/AliAnalysisTaskMuonQA.cxx 
+    muon/AliAODMuonReplicator.cxx 
+    muon/AliAnalysisTaskMuonCollisionMultiplicity.cxx 
+    muon/AliCFMuonResUpsilon.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -33,10 +67,4 @@ string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 set ( DHDR  PWG3muonLinkDef.h)
 
-set ( EINCLUDE  PWG3/base PWG3/muon ANALYSIS)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  PWG3/base PWG3/muon ANALYSIS STEER/AOD STEER/ESD STEER/STEERBase)

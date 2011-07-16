@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 # $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTZDC                                                     #
@@ -37,7 +38,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/BASE HLT/ZDC ZDC STEER RAW)
+set ( EINCLUDE  HLT/BASE HLT/ZDC ZDC RAW STEER/ESD STEER/STEERBase)
 
 set ( ELIBS  "HLTbase CDB ESD STEER STEERBase RAWDatarec RAWDatabase ZDCbase ZDCrec -lEG")
 

@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 # $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTCalo                                                    #
@@ -54,7 +55,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS} AliHLTCaloDigitContainerDataStruct.h AliHLTCal
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/BASE HLT/BASE/util STEER RAW  EMCAL )
+set ( EINCLUDE  HLT/BASE HLT/BASE/util RAW  EMCAL STEER/CDB )
 
 set ( ELIBS  "HLTbase  EMCALrec  EMCALbase EMCALUtils ESD STEER RAWDatarec")
 

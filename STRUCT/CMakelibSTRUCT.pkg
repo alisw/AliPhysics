@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for STRUCT                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,14 +26,29 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   	AliMAG.cxx      AliABSO.cxx       AliABSOv0.cxx AliDIPO.cxx     AliDIPOv2.cxx     AliDIPOv3.cxx AliFRAME.cxx    AliFRAMEv2.cxx AliHALL.cxx     AliHALLv3.cxx AliSHIL.cxx 	AliSHILv0.cxx AliABSOv3.cxx AliPIPE.cxx     AliPIPEv0.cxx AliPIPEv3.cxx AliBODY.cxx     AliSHILv2.cxx AliSHILv3.cxx)
+set ( SRCS 
+    AliMAG.cxx 
+    AliABSO.cxx 
+    AliABSOv0.cxx 
+    AliDIPO.cxx 
+    AliDIPOv2.cxx 
+    AliDIPOv3.cxx 
+    AliFRAME.cxx 
+    AliFRAMEv2.cxx 
+    AliHALL.cxx 
+    AliHALLv3.cxx 
+    AliSHIL.cxx	
+    AliSHILv0.cxx 
+    AliABSOv3.cxx 
+    AliPIPE.cxx 
+    AliPIPEv0.cxx 
+    AliPIPEv3.cxx 
+    AliBODY.cxx 
+    AliSHILv2.cxx 
+    AliSHILv3.cxx
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR STRUCTLinkDef.h)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lSTEERBase -L${ROOTLIBDIR} -lVMC -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE STEER/STEER STEER/STEERBase)

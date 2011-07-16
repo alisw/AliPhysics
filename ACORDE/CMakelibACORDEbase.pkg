@@ -1,16 +1,21 @@
-set(SRCS AliACORDEConstants.cxx AliACORDECalibData.cxx AliACORDERawReader.cxx 
-    AliGenACORDE.cxx AliACORDEQAChecker.cxx  AliACORDELoader.cxx AliACORDEPreprocessor.cxx AliACORDEdigit.cxx AliACORDEDataDCS.cxx AliACORDERawStream.cxx AliACORDEAlign.cxx)
+# -*- mode: CMake -*-
+
+set(SRCS
+    AliACORDEConstants.cxx 
+    AliACORDECalibData.cxx 
+    AliACORDERawReader.cxx 
+    AliGenACORDE.cxx 
+    AliACORDEQAChecker.cxx 
+    AliACORDELoader.cxx 
+    AliACORDEPreprocessor.cxx 
+    AliACORDEdigit.cxx 
+    AliACORDEDataDCS.cxx 
+    AliACORDERawStream.cxx 
+    AliACORDEAlign.cxx
+    )
 
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set(DHDR ACORDEbaseLinkDef.h)
 
-set(EINCLUDE RAW)
-
-if(ALICE_TARGET STREQUAL win32gcc)
-  set(PACKSOFLAGS -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}
-                  -lSTEER -lCDB -lSTEERBase  -lRAWDatarec  -lRAWDatabase
-                  -L${ROOTLIBDIR} -lGeom )
-endif(ALICE_TARGET STREQUAL win32gcc)
-  
-
+set(EINCLUDE STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase RAW)

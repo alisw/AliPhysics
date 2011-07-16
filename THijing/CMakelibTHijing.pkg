@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for THijing                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -33,10 +34,4 @@ set ( DHDR THijingLinkDef.h)
 
 set ( EXPORT THijing.h)
 
-set ( EINCLUDE HIJING EVGEN)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lEVGEN -lSTEER -lSTEERBase -lhijing -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE HIJING EVGEN STEER/STEER STEER/STEERBase )

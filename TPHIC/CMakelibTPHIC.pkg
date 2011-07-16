@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for TPHIC                                                         #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -37,10 +38,4 @@ if(ALICE_TARGET STREQUAL "linux")
   set ( FFLAGS "${FFLAGS}  -fno-automatic")
 endif(ALICE_TARGET STREQUAL "linux")
 
-set ( EINCLUDE  PYTHIA6 EVGEN LHAPDF)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lEVGEN -lpythia6 -lAliPythia6 -L${ROOTLIBDIR} -lEG -lEGPythia6)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  PYTHIA6 EVGEN LHAPDF STEER/STEER)

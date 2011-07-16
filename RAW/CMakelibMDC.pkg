@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for MDC                                                           #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,13 +26,23 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliMDC.cxx AliRawDB.cxx AliRawRFIODB.cxx AliRawCastorDB.cxx AliRawRootdDB.cxx AliRawNullDB.cxx AliTagDB.cxx AliTagNullDB.cxx mdc.cxx)
+set ( SRCS 
+    AliMDC.cxx 
+    AliRawDB.cxx 
+    AliRawRFIODB.cxx 
+    AliRawCastorDB.cxx 
+    AliRawRootdDB.cxx 
+    AliRawNullDB.cxx 
+    AliTagDB.cxx 
+    AliTagNullDB.cxx 
+    mdc.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( EHDRS ${ROOTINCDIR}/TH1F.h)
 
-set ( EINCLUDE ${EINCLUDE}  TPC ITS RAW)
+set ( EINCLUDE ${EINCLUDE}  TPC ITS RAW STEER/ESD STEER/STEERBase)
 
 set ( DHDR  MDCLinkDef.h)
 
@@ -41,9 +52,3 @@ if (DATE_ROOT)
   set ( EINCLUDE ${EINCLUDE}  ${DATE_COMMON_DEFS})
 
 endif (DATE_ROOT)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lESD -lSTEERBase -lRAWDatabase)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

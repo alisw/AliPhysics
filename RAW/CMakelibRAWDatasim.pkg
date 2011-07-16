@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for RAWDatasim                                                    #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,11 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliBitPacking.cxx AliAltroBuffer.cxx AliAltroBufferV3.cxx)
+set ( SRCS   
+    AliBitPacking.cxx 
+    AliAltroBuffer.cxx 
+    AliAltroBufferV3.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -33,7 +38,7 @@ set ( HDRS ${HDRS} )
 
 set ( EHDRS ${ROOTINCDIR}/TH1F.h)
 
-set ( EINCLUDE ${EINCLUDE} )
+set ( EINCLUDE ${EINCLUDE} STEER/STEER )
 
 set ( DHDR  RAWDatasimLinkDef.h)
 
@@ -46,9 +51,3 @@ if (DATE_ROOT)
 endif (DATE_ROOT)
 
 set ( EXPORT  AliAltroBuffer.h AliAltroBufferV3.h AliBitPacking.h)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lSTEERBase)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

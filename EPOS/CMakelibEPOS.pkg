@@ -1,5 +1,11 @@
+# -*- mode: CMake -*- 
 
-set ( SRCS  epos167/epostimer.cxx TEpos.cxx AliGenEpos.cxx AliGenEposIsajetToPdgConverter.cxx)
+set ( SRCS  
+    epos167/epostimer.cxx 
+    TEpos.cxx 
+    AliGenEpos.cxx 
+    AliGenEposIsajetToPdgConverter.cxx 
+    )
 
 set ( HDRS TEpos.h AliGenEpos.h AliGenEposIsajetToPdgConverter.h)
 
@@ -7,20 +13,65 @@ set ( DHDR EPOSLinkDef.h)
 
 set ( EXPORT TEpos.h AliGenEpos.h AliGenEposIsajetToPdgConverter.h)
 
-set ( EINCLUDE EVGEN)
+set ( EINCLUDE EVGEN STEER/STEER STEER/STEERBase)
 
-set ( FSRCS  epos167/epos-app-158.f epos167/epos-bas-168.f epos167/epos-con-161.f epos167/epos-dky-165.f epos167/epos-dro-168.f epos167/epos-ems-165.f epos167/epos-fra-163.f epos167/epos-ico-158.f epos167/epos-yyy-168.f epos167/epos-ids-165.f epos167/epos-int-168.f epos167/epos-jps-164.f epos167/epos-omg-160.f epos167/epos-par-129.f epos167/epos-sem-165.f epos167/epos-rsh-165.f epos167/epos-qsh-165.f epos167/epos-tim-155.f epos167/epos-uti-165.f epos167/epos-xan-154.f epos167/epos-xpr-165.f epos167/eposm.f epos167/eposu.f)
+set ( FSRCS  
+    epos167/epos-app-158.f 
+    epos167/epos-bas-168.f 
+    epos167/epos-con-161.f 
+    epos167/epos-dky-165.f 
+    epos167/epos-dro-168.f 
+    epos167/epos-ems-165.f 
+    epos167/epos-fra-163.f 
+    epos167/epos-ico-158.f 
+    epos167/epos-yyy-168.f 
+    epos167/epos-ids-165.f 
+    epos167/epos-int-168.f 
+    epos167/epos-jps-164.f 
+    epos167/epos-omg-160.f 
+    epos167/epos-par-129.f 
+    epos167/epos-sem-165.f 
+    epos167/epos-rsh-165.f 
+    epos167/epos-qsh-165.f 
+    epos167/epos-tim-155.f 
+    epos167/epos-uti-165.f 
+    epos167/epos-xan-154.f 
+    epos167/epos-xpr-165.f 
+    epos167/eposm.f 
+    epos167/eposu.f 
+    )
 
 
-set ( EXTFILES  epos167/epos.inc epos167/epos.incems epos167/epos.inchy epos167/epos.incico epos167/epos.incpar epos167/epos.incsem epos167/epos.ini1ec epos167/epos.ini1fc epos167/epos.inics epos167/epos.inidi epos167/epos.iniev epos167/epos.inirj epos167/epos.initl epos167/epos.param epos167/3flav/epos.inics epos167/3flav/epos.iniev epos167/3flav/epos.inirj epos167/3flav/epos.initl epos167/3flav/epos.param epos167/4flav/epos.inics epos167/4flav/epos.iniev epos167/4flav/epos.inirj epos167/4flav/epos.initl epos167/4flav/epos.param EPOScommon.h eposproc.h epos167/epostimer.h)
+set ( EXTFILES  
+    epos167/epos.inc 
+    epos167/epos.incems 
+    epos167/epos.inchy 
+    epos167/epos.incico 
+    epos167/epos.incpar 
+    epos167/epos.incsem 
+    epos167/epos.ini1ec 
+    epos167/epos.ini1fc 
+    epos167/epos.inics 
+    epos167/epos.inidi 
+    epos167/epos.iniev 
+    epos167/epos.inirj 
+    epos167/epos.initl 
+    epos167/epos.param 
+    epos167/3flav/epos.inics 
+    epos167/3flav/epos.iniev 
+    epos167/3flav/epos.inirj 
+    epos167/3flav/epos.initl 
+    epos167/3flav/epos.param 
+    epos167/4flav/epos.inics 
+    epos167/4flav/epos.iniev 
+    epos167/4flav/epos.inirj 
+    epos167/4flav/epos.initl 
+    epos167/4flav/epos.param 
+    EPOScommon.h 
+    eposproc.h 
+    epos167/epostimer.h 
+    )
 
 if ( ALICE_TARGET STREQUAL "macosxicc")
   string(REGEX MATCHALL "-O[^ ]*" PACKFFLAGS ${FFLAGS}) 
 endif ( ALICE_TARGET STREQUAL "macosxicc")
-
-
-if (ALICE_TARGET STREQUAL "win32gcc")
-  set(PACKSOFLAGS ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} 
-                         -lEVGEN -lSTEER -lSTEERBase 
-                         -L${ROOTLIBDIR} -lEG )
-endif(ALICE_TARGET STREQUAL "win32gcc")

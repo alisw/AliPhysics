@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG2ebye                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,20 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   EBYE/AliAnalysisTaskBF.cxx EBYE/AliBalance.cxx EBYE/LRC/AliAnalysisTaskLRC.cxx EBYE/LRC/AliLRCAnalysis.cxx EBYE/LRC/AliLRCFit.cxx EBYE/LRC/AliLRCNN.cxx EBYE/LRC/AliLRCPtN.cxx EBYE/LRC/AliLRCPtPt.cxx EBYE/LRC/AliLRCProcess.cxx EBYE/Fluctuations/AliEbyEFluctuationAnalysisTask.cxx EBYE/MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx EBYE/MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx)
+set ( SRCS   
+    EBYE/AliAnalysisTaskBF.cxx 
+    EBYE/AliBalance.cxx 
+    EBYE/LRC/AliAnalysisTaskLRC.cxx 
+    EBYE/LRC/AliLRCAnalysis.cxx 
+    EBYE/LRC/AliLRCFit.cxx 
+    EBYE/LRC/AliLRCNN.cxx 
+    EBYE/LRC/AliLRCPtN.cxx 
+    EBYE/LRC/AliLRCPtPt.cxx 
+    EBYE/LRC/AliLRCProcess.cxx 
+    EBYE/Fluctuations/AliEbyEFluctuationAnalysisTask.cxx 
+    EBYE/MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx 
+    EBYE/MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -33,4 +47,4 @@ set ( DHDR PWG2ebyeLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWG2/EBYE PWG2/EBYE/LRC PWG2/EBYE/Fluctuations)
+set ( EINCLUDE  PWG2/EBYE PWG2/EBYE/LRC PWG2/EBYE/Fluctuations STEER/STEERBase)

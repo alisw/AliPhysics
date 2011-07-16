@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 # $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTEMCAL                                                   #
@@ -49,7 +50,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/EMCAL HLT/CALO EMCAL STEER RAW)
+set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/EMCAL HLT/CALO EMCAL RAW STEER/CDB STEER/STEERBase)
 
 set ( ELIBS  "HLTbase AliHLTUtil AliHLTCalo ESD CDB EMCALbase EMCALraw EMCALrec EMCALsim EMCALUtils STEER STEERBase RAWDatarec")
 

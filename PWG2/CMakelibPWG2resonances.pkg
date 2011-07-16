@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG2resonances                                                #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -82,9 +83,4 @@ set ( DHDR PWG2resonancesLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PYTHIA6 PWG2/RESONANCES CORRFW ANALYSIS/EventMixing )
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lANALYSIS -lANALYSISalice -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  PYTHIA6 PWG2/RESONANCES CORRFW ANALYSIS/EventMixing STEER/AOD STEER/ESD STEER/STEERBase)

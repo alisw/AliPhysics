@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for TRDcalib                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -32,12 +33,6 @@ set ( SRCS
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( EINCLUDE STEER ANALYSIS TRD TRD/Cal)
+set ( EINCLUDE STEER ANALYSIS TRD TRD/Cal STEER/STEERBase)
 
 set ( DHDR  TRDcalibLinkDef.h)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lCDB -lESD -lTRDbase -lTRDrec -lSTEER -lANALYSIS -lSTAT -L${ROOTLIBDIR} -lMinuit -lProof -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

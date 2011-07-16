@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for ITSbase                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +26,83 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  	AliITSgeom.cxx AliITSgeomMatrix.cxx AliITSInitGeometry.cxx AliITSLoader.cxx AliITSRecPoint.cxx AliITSclusterV2.cxx AliITSdigit.cxx AliITSdigitSPD.cxx AliITSdigitSDD.cxx AliITSTransientDigit.cxx AliITSdigitSSD.cxx AliITSMap.cxx AliITSMapA1.cxx AliITSMapA2.cxx AliITSMisAligner.cxx AliITSpList.cxx AliITSpListItem.cxx AliITSsegmentation.cxx AliITSsegmentationSPD.cxx AliITSsegmentationSDD.cxx AliITSsegmentationSSD.cxx AliITSCalibration.cxx AliITSresponse.cxx AliITSresponseSPD.cxx AliITSresponseSDD.cxx AliITSCalibrationSPD.cxx AliITSCalibrationSDD.cxx AliITSCalibrationSSD.cxx AliITSChannelStatus.cxx AliITSMapSDD.cxx AliITSCorrMapSDD.cxx AliITSCorrMap1DSDD.cxx AliITSCorrMap2DSDD.cxx AliITSHLTforSDD.cxx AliITSDriftSpeedSDD.cxx AliITSDDLModuleMapSDD.cxx AliITSDriftSpeedArraySDD.cxx AliITSBadChannelsSSD.cxx AliITSBadChannelsSSDv2.cxx AliITSGainSSD.cxx AliITSGainSSDv2.cxx AliITSNoiseSSD.cxx AliITSNoiseSSDv2.cxx AliITSChannelDaSSD.cxx AliITSModuleDaSSD.cxx AliITSHandleDaSSD.cxx AliITSDDLRawData.cxx AliITSRawStream.cxx AliITSRawStreamSDDCompressed.cxx AliITSRawStreamSSD.cxx AliITSRawStreamSDD.cxx AliITSCompressRawDataSDD.cxx AliITSRawStreamSPD.cxx AliITSEventHeader.cxx AliITSRawStreamSSDv1.cxx AliITSRawData.cxx AliITSgeomTGeo.cxx AliITSPlaneEff.cxx AliITSPlaneEffSPD.cxx AliITSPlaneEffSDD.cxx AliITSPlaneEffSSD.cxx AliITSRawStreamSPDErrorLog.cxx AliITSDCSAnalyzerSDD.cxx AliITSDCSDataSDD.cxx AliITSIntMap.cxx AliITSIntMapNode.cxx AliITSPedestalSSD.cxx AliITSPedestalSSDv2.cxx AliITSSurveyToAlign.cxx AliITSTriggerConditions.cxx AliITSTriggerAlgorithmConditions.cxx AliITSdEdxSamples.cxx)
+set ( SRCS 
+    AliITSgeom.cxx 
+    AliITSgeomMatrix.cxx 
+    AliITSInitGeometry.cxx 
+    AliITSLoader.cxx 
+    AliITSRecPoint.cxx 
+    AliITSclusterV2.cxx 
+    AliITSdigit.cxx 
+    AliITSdigitSPD.cxx 
+    AliITSdigitSDD.cxx 
+    AliITSTransientDigit.cxx 
+    AliITSdigitSSD.cxx 
+    AliITSMap.cxx 
+    AliITSMapA1.cxx 
+    AliITSMapA2.cxx 
+    AliITSMisAligner.cxx 
+    AliITSpList.cxx 
+    AliITSpListItem.cxx 
+    AliITSsegmentation.cxx 
+    AliITSsegmentationSPD.cxx 
+    AliITSsegmentationSDD.cxx 
+    AliITSsegmentationSSD.cxx 
+    AliITSCalibration.cxx 
+    AliITSresponse.cxx 
+    AliITSresponseSPD.cxx 
+    AliITSresponseSDD.cxx 
+    AliITSCalibrationSPD.cxx 
+    AliITSCalibrationSDD.cxx 
+    AliITSCalibrationSSD.cxx 
+    AliITSChannelStatus.cxx 
+    AliITSMapSDD.cxx 
+    AliITSCorrMapSDD.cxx 
+    AliITSCorrMap1DSDD.cxx 
+    AliITSCorrMap2DSDD.cxx 
+    AliITSHLTforSDD.cxx 
+    AliITSDriftSpeedSDD.cxx 
+    AliITSDDLModuleMapSDD.cxx 
+    AliITSDriftSpeedArraySDD.cxx 
+    AliITSBadChannelsSSD.cxx 
+    AliITSBadChannelsSSDv2.cxx 
+    AliITSGainSSD.cxx 
+    AliITSGainSSDv2.cxx 
+    AliITSNoiseSSD.cxx 
+    AliITSNoiseSSDv2.cxx 
+    AliITSChannelDaSSD.cxx 
+    AliITSModuleDaSSD.cxx 
+    AliITSHandleDaSSD.cxx 
+    AliITSDDLRawData.cxx 
+    AliITSRawStream.cxx 
+    AliITSRawStreamSDDCompressed.cxx 
+    AliITSRawStreamSSD.cxx 
+    AliITSRawStreamSDD.cxx 
+    AliITSCompressRawDataSDD.cxx 
+    AliITSRawStreamSPD.cxx 
+    AliITSEventHeader.cxx 
+    AliITSRawStreamSSDv1.cxx 
+    AliITSRawData.cxx 
+    AliITSgeomTGeo.cxx 
+    AliITSPlaneEff.cxx 
+    AliITSPlaneEffSPD.cxx 
+    AliITSPlaneEffSDD.cxx 
+    AliITSPlaneEffSSD.cxx 
+    AliITSRawStreamSPDErrorLog.cxx 
+    AliITSDCSAnalyzerSDD.cxx 
+    AliITSDCSDataSDD.cxx 
+    AliITSIntMap.cxx 
+    AliITSIntMapNode.cxx 
+    AliITSPedestalSSD.cxx 
+    AliITSPedestalSSDv2.cxx 
+    AliITSSurveyToAlign.cxx 
+    AliITSTriggerConditions.cxx 
+    AliITSTriggerAlgorithmConditions.cxx 
+    AliITSdEdxSamples.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR ITSbaseLinkDef.h)
 
-set ( EINCLUDE ${GEANT3_ROOT}/TGeant3 TPC RAW)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lCDB -lSTEERBase -lRAWDatasim -lRAWDatarec -lRAWDatabase -L${ROOTLIBDIR} -lGui -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE TPC RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)

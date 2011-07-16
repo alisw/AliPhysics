@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for PHOSpi0Calib                                                  #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -31,7 +32,7 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PHOSpi0CalibLinkDef.h)
 
-set ( EINCLUDE  PHOS/macros/pi0Calib ANALYSIS)
+set ( EINCLUDE  PHOS/macros/pi0Calib ANALYSIS STEER/ESD STEER/STEERBase)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
 	

@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG4CaloCalib                                                 #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -40,8 +41,4 @@ set ( DHDR  PWG4CaloCalibLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  PWG4/CaloCalib EMCAL PHOS)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -lPHOSbase -lEMCALbase -L${ROOTLIBDIR} -lEG)
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  PWG4/CaloCalib EMCAL PHOS STEER/STEER STEER/AOD STEER/CDB STEER/STEERBase)

@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for PWG0dep                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +26,25 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  dNdPt/AlidNdPtHelper.cxx dNdPt/AlidNdPtAnalysis.cxx dNdPt/AlidNdPtAnalysisPbPb.cxx dNdPt/AlidNdPtCorrection.cxx dNdPt/AlidNdPtAcceptanceCuts.cxx dNdPt/AlidNdPtEventCuts.cxx dNdPt/AlidNdPt.cxx dNdPt/AlidNdPtCutAnalysis.cxx dNdPt/AlidNdPtTask.cxx dNdPt/AlidNdPtBackgroundCuts.cxx dNdPt/AlidNdPtCutAnalysisPbPb.cxx dNdPt/AlidNdPtEfficiency.cxx dNdPt/AliPtResolAnalysis.cxx dNdPt/AliPtResolAnalysisPbPb.cxx ) 
+set ( SRCS  
+    dNdPt/AlidNdPtHelper.cxx 
+    dNdPt/AlidNdPtAnalysis.cxx 
+    dNdPt/AlidNdPtAnalysisPbPb.cxx 
+    dNdPt/AlidNdPtCorrection.cxx 
+    dNdPt/AlidNdPtAcceptanceCuts.cxx 
+    dNdPt/AlidNdPtEventCuts.cxx 
+    dNdPt/AlidNdPt.cxx 
+    dNdPt/AlidNdPtCutAnalysis.cxx 
+    dNdPt/AlidNdPtTask.cxx 
+    dNdPt/AlidNdPtBackgroundCuts.cxx 
+    dNdPt/AlidNdPtCutAnalysisPbPb.cxx 
+    dNdPt/AlidNdPtEfficiency.cxx 
+    dNdPt/AliPtResolAnalysis.cxx 
+    dNdPt/AliPtResolAnalysisPbPb.cxx 
+    ) 
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWG0depLinkDef.h)
 
-set ( EINCLUDE  TPC)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-	set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  TPC STEER/STEER STEER/ESD STEER/STEERBase)

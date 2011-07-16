@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for                                                               #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -30,12 +31,6 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  TAmptLinkDef.h)
 
-set ( EINCLUDE  TAmpt/AMPT EVGEN)
+set ( EINCLUDE  TAmpt/AMPT EVGEN STEER/STEER STEER/STEERBase)
 
 set ( EXPORT  AliGenAmpt.h TAmpt.h)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lEVGEN -lSTEER -lSTEERBase -lampt -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

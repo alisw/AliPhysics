@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for VZEROrec                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +26,17 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliVZEROReconstructor.cxx AliVZERORawStream.cxx AliVZEROQADataMakerRec.cxx AliVZEROTrigger.cxx AliVZEROTriggerMask.cxx AliVZERORecoParam.cxx)
+set ( SRCS  
+    AliVZEROReconstructor.cxx 
+    AliVZERORawStream.cxx 
+    AliVZEROQADataMakerRec.cxx 
+    AliVZEROTrigger.cxx 
+    AliVZEROTriggerMask.cxx 
+    AliVZERORecoParam.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR VZEROrecLinkDef.h)
 
-set ( EINCLUDE  STRUCT STEER RAW)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lVZERObase -lSTEER -lCDB -lESD -lSTEERBase -lRAWDatarec -lRAWDatabase -L${ROOTLIBDIR} -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  STRUCT RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)

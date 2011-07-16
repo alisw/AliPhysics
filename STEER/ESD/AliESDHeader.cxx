@@ -24,7 +24,7 @@
 #include "AliTriggerScalersESD.h"
 #include "AliTriggerScalersRecordESD.h"
 #include "AliTriggerIR.h"
-#include "AliTriggerConfiguration.h"
+//#include "AliTriggerConfiguration.h"
 #include "AliLog.h" 
 
 ClassImp(AliESDHeader)

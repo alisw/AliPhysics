@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for EMCALUtils                                                    #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,17 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliEMCALGeoParams.cxx AliEMCALGeometry.cxx AliEMCALEMCGeometry.cxx AliEMCALShishKebabTrd1Module.cxx AliEMCALPIDUtils.cxx AliEMCALHistoUtilities.cxx AliEMCALRecoUtils.cxx AliEMCALTrack.cxx AliEMCALCalibTimeDepCorrection.cxx) 
+set ( SRCS  
+    AliEMCALGeoParams.cxx 
+    AliEMCALGeometry.cxx 
+    AliEMCALEMCGeometry.cxx 
+    AliEMCALShishKebabTrd1Module.cxx 
+    AliEMCALPIDUtils.cxx 
+    AliEMCALHistoUtilities.cxx 
+    AliEMCALRecoUtils.cxx 
+    AliEMCALTrack.cxx 
+    AliEMCALCalibTimeDepCorrection.cxx 
+    ) 
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
@@ -33,12 +44,7 @@ set(HDRS ${HDRS} AliCaloConstants.h)
 
 set ( DHDR  EMCALUtilsLinkDef.h)
 
-set ( EXPORT AliEMCALGeoParams.h AliEMCALEMCGeometry.h AliEMCALShishKebabTrd1Module.h AliEMCALPIDUtils.h  AliEMCALGeometry.h AliEMCALRecoUtils.h AliEMCALTrack.h)
+set ( EXPORT ${HDRS} )
 
 set ( PACKCXXFLAGS "${CXXFLAGS} -D__EMCALUTIL__")
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -L${ROOTLIBDIR} -lGeom -lSTEERBase -lESD -lAOD)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE STEER/STEERBase)

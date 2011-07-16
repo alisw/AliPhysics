@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG4JCORRAN                                                   #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,24 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS    JCORRAN/AliPhJBaseTrack.cxx JCORRAN/AliPhJPhoton.cxx JCORRAN/AliJPhoton.cxx JCORRAN/AliPhJPhotonList.cxx JCORRAN/AliJTrack.cxx JCORRAN/AliJMCTrack.cxx JCORRAN/AliPhJTrackList.cxx JCORRAN/AliPhJMCTrackList.cxx JCORRAN/AliPhJPiZero.cxx JCORRAN/AliPhJBaseHeader.cxx JCORRAN/AliJHeader.cxx JCORRAN/AliPhJHeaderList.cxx JCORRAN/AliJRunHeader.cxx JCORRAN/AliJCORRANSetup.cxx JCORRAN/AliJCORRANTask.cxx JCORRAN/AliAnalysisTaskDiHadron.cxx)
+set ( SRCS 
+    JCORRAN/AliPhJBaseTrack.cxx 
+    JCORRAN/AliPhJPhoton.cxx 
+    JCORRAN/AliJPhoton.cxx 
+    JCORRAN/AliPhJPhotonList.cxx 
+    JCORRAN/AliJTrack.cxx 
+    JCORRAN/AliJMCTrack.cxx 
+    JCORRAN/AliPhJTrackList.cxx 
+    JCORRAN/AliPhJMCTrackList.cxx 
+    JCORRAN/AliPhJPiZero.cxx 
+    JCORRAN/AliPhJBaseHeader.cxx 
+    JCORRAN/AliJHeader.cxx 
+    JCORRAN/AliPhJHeaderList.cxx 
+    JCORRAN/AliJRunHeader.cxx 
+    JCORRAN/AliJCORRANSetup.cxx 
+    JCORRAN/AliJCORRANTask.cxx 
+    JCORRAN/AliAnalysisTaskDiHadron.cxx 
+    )
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS ${HDRS} JCORRAN/JConst.h)
@@ -34,10 +52,4 @@ set ( DHDR  PWG4JCORRANLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE PWG4/JCORRAN)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE PWG4/JCORRAN STEER/STEERBase)

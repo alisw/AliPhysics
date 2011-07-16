@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 # $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTJET                                                     #
@@ -56,7 +57,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE 	HLT/BASE HLT/BASE/util HLT/JET HLT/JET/cone HLT/JET/fastjet HLT/JET/analysis ANALYSIS JETAN STEER)
+set ( EINCLUDE 	HLT/BASE HLT/BASE/util HLT/JET HLT/JET/cone HLT/JET/fastjet HLT/JET/analysis ANALYSIS JETAN STEER/AOD STEER/ESD STEER/STEERBase)
 
 set ( ELIBS 	"HLTbase AliHLTUtil ESD STEER STEERBase AOD ESD ANALYSIS ANALYSISalice JETAN -lEG")
 

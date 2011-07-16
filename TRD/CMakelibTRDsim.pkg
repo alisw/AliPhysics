@@ -1,3 +1,5 @@
+# -*- mode: CMake -*-
+
 #--------------------------------------------------------------------------------#
 # Package File for TRDsim                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -43,10 +45,5 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  TRDsimLinkDef.h)
 
-set ( EINCLUDE  RAW VZERO T0 TOF)
+set ( EINCLUDE  RAW VZERO T0 TOF STEER/STEER STEER/STEERBase)
 
-if( ALICE_TARGET STREQUAL "win32gcc")
-
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lTRDbase -lSTEER -lSTEERBase -L${ROOTLIBDIR} -lGeom -lVMC)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

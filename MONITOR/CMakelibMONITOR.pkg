@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for MONITOR                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,15 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliQAHistNavigator.cxx AliQAHistViewer.cxx AliOnlineRecoTrigger.cxx AliDimIntNotifier.cxx AliChildProcTerminator.cxx AliOnlineReco.cxx AliTestChildProc.cxx)
+set ( SRCS   
+    AliQAHistNavigator.cxx 
+    AliQAHistViewer.cxx 
+    AliOnlineRecoTrigger.cxx 
+    AliDimIntNotifier.cxx 
+    AliChildProcTerminator.cxx 
+    AliOnlineReco.cxx 
+    AliTestChildProc.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" CINTHDRS "${SRCS}" )
 
@@ -33,7 +42,7 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  MONITORLinkDef.h)
 
-set ( EINCLUDE  TPC ITS RAW)
+set ( EINCLUDE  TPC ITS RAW STEER/STEER STEER/CDB STEER/STEERBase)
 
 set(DIMDIR $ENV{DIMDIR})
 set(ODIR $ENV{ODIR})
@@ -48,9 +57,3 @@ if(DIMDIR)
   set ( PACKDCXXFLAGS  "${CXXFLAGSNO} -DALI_DIM")
 
 endif(DIMDIR)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-	set ( PACKSOFLAGS  ${SOFLAGS} -L${ROOTLIBDIR} -lGui)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 # $Id$
 #--------------------------------------------------------------------------------#
 # Package File for HLTshuttle                                                    #
@@ -38,7 +39,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/shuttle HLT/BASE STEER)
+set ( EINCLUDE  HLT/shuttle HLT/BASE STEER/CDB)
 
 set ( ELIBS  "HLTbase CDB")
 

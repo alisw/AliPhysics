@@ -1,66 +1,66 @@
 # -*- mode: CMake -*-
 
 set ( SRCS  
-    AliESDEvent.cxx 
-    AliESDInputHandler.cxx 
-    AliESDInputHandlerRP.cxx 
-    AliESDfriend.cxx 
-    AliESD.cxx 
-    AliESDtrack.cxx 
-    AliESDfriendTrack.cxx 
-    AliESDMuonTrack.cxx 
-    AliESDPmdTrack.cxx 
-    AliESDTrdTrack.cxx 
-    AliESDTrdTracklet.cxx 
-    AliESDHLTtrack.cxx 
-    AliESDv0.cxx 
-    AliESDcascade.cxx 
-    AliVertex.cxx 
-    AliESDVertex.cxx 
-    AliESDpid.cxx 
-    AliESDkink.cxx 
-    AliESDCaloCluster.cxx 
-    AliESDMuonCluster.cxx 
-    AliESDMuonPad.cxx 
-    AliKFParticleBase.cxx 
-    AliKFParticle.cxx 
-    AliKFVertex.cxx 
-    AliKalmanTrack.cxx 
-    AliVertexerTracks.cxx 
-    AliStrLine.cxx 
-    AliESDV0Params.cxx 
-    AliTrackPointArray.cxx 
-    AliESDFMD.cxx 
-    AliFMDMap.cxx 
-    AliFMDFloatMap.cxx 
-    AliESDMultITS.cxx 
-    AliESDVZERO.cxx 
-    AliMultiplicity.cxx 
-    AliSelector.cxx 
-    AliESDRun.cxx 
-    AliESDHeader.cxx 
-    AliESDHLTDecision.cxx 
-    AliESDZDC.cxx 
-    AliESDTZERO.cxx 
-    AliESDTZEROfriend.cxx 
-    AliESDCaloTrigger.cxx 
-    AliRawDataErrorLog.cxx 
-    AliMeanVertex.cxx 
-    AliESDCaloCells.cxx 
-    AliESDACORDE.cxx 
-    AliTriggerIR.cxx 
-    AliESDVZEROfriend.cxx 
-    AliTriggerScalersESD.cxx 
-    AliTriggerScalersRecordESD.cxx 
-    AliESDHandler.cxx 
-    AliTrackerBase.cxx  
-    AliTOFHeader.cxx 
-    AliESDUtils.cxx
+    ESD/AliESDEvent.cxx 
+    ESD/AliESDInputHandler.cxx 
+    ESD/AliESDInputHandlerRP.cxx 
+    ESD/AliESDfriend.cxx 
+    ESD/AliESD.cxx 
+    ESD/AliESDtrack.cxx 
+    ESD/AliESDfriendTrack.cxx 
+    ESD/AliESDMuonTrack.cxx 
+    ESD/AliESDPmdTrack.cxx 
+    ESD/AliESDTrdTrack.cxx 
+    ESD/AliESDTrdTracklet.cxx 
+    ESD/AliESDHLTtrack.cxx 
+    ESD/AliESDv0.cxx 
+    ESD/AliESDcascade.cxx 
+    ESD/AliVertex.cxx 
+    ESD/AliESDVertex.cxx 
+    ESD/AliESDpid.cxx 
+    ESD/AliESDkink.cxx 
+    ESD/AliESDCaloCluster.cxx 
+    ESD/AliESDMuonCluster.cxx 
+    ESD/AliESDMuonPad.cxx 
+    ESD/AliKFParticleBase.cxx 
+    ESD/AliKFParticle.cxx 
+    ESD/AliKFVertex.cxx 
+    ESD/AliKalmanTrack.cxx 
+    ESD/AliVertexerTracks.cxx 
+    ESD/AliStrLine.cxx 
+    ESD/AliESDV0Params.cxx 
+    ESD/AliTrackPointArray.cxx 
+    ESD/AliESDFMD.cxx 
+    ESD/AliFMDMap.cxx 
+    ESD/AliFMDFloatMap.cxx 
+    ESD/AliESDMultITS.cxx 
+    ESD/AliESDVZERO.cxx 
+    ESD/AliMultiplicity.cxx 
+    ESD/AliSelector.cxx 
+    ESD/AliESDRun.cxx 
+    ESD/AliESDHeader.cxx 
+    ESD/AliESDHLTDecision.cxx 
+    ESD/AliESDZDC.cxx 
+    ESD/AliESDTZERO.cxx 
+    ESD/AliESDTZEROfriend.cxx 
+    ESD/AliESDCaloTrigger.cxx 
+    ESD/AliRawDataErrorLog.cxx 
+    ESD/AliMeanVertex.cxx 
+    ESD/AliESDCaloCells.cxx 
+    ESD/AliESDACORDE.cxx 
+    ESD/AliTriggerIR.cxx 
+    ESD/AliESDVZEROfriend.cxx 
+    ESD/AliTriggerScalersESD.cxx 
+    ESD/AliTriggerScalersRecordESD.cxx 
+    ESD/AliESDHandler.cxx 
+    ESD/AliTrackerBase.cxx  
+    ESD/AliTOFHeader.cxx 
+    ESD/AliESDUtils.cxx
     )
 
 string( REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
-set ( EINCLUDE  RAW)
+set ( EINCLUDE  RAW STEER/STEERBase)
 
 set ( DHDR  ESDLinkDef.h)
 

@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for STAT                                                          #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,13 +26,17 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  TKDInterpolatorBase.cxx TKDNodeInfo.cxx TKDPDF.cxx TKDInterpolator.cxx TKDSpline.cxx AliTMinuitToolkit.cxx TStatToolkit.cxx)
+set ( SRCS  
+    TKDInterpolatorBase.cxx 
+    TKDNodeInfo.cxx 
+    TKDPDF.cxx 
+    TKDInterpolator.cxx 
+    TKDSpline.cxx 
+    AliTMinuitToolkit.cxx 
+    TStatToolkit.cxx 
+    )
 
 string( REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set ( DHDR STATLinkDef.h)
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lCDB -L$(ROOTLIBDIR) -lMinuit)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE STEER/CDB )

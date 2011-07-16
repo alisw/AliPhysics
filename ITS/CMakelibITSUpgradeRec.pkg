@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for ITSrec                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,18 +26,22 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  	UPGRADE/AliITSlayerUpgrade.cxx UPGRADE/AliITStrackerUpgrade.cxx UPGRADE/AliITStrackU.cxx UPGRADE/AliITStrackerU.cxx UPGRADE/AliITSUpgradeReconstructor.cxx UPGRADE/AliITSUpgradeClusterList.cxx UPGRADE/AliITSUpgradeClusterListNode.cxx UPGRADE/AliITSUPixelModule.cxx UPGRADE/AliITSUpgradeClusterFinder.cxx)
+set ( SRCS  
+    UPGRADE/AliITSlayerUpgrade.cxx 
+    UPGRADE/AliITStrackerUpgrade.cxx 
+    UPGRADE/AliITStrackU.cxx 
+    UPGRADE/AliITStrackerU.cxx 
+    UPGRADE/AliITSUpgradeReconstructor.cxx 
+    UPGRADE/AliITSUpgradeClusterList.cxx 
+    UPGRADE/AliITSUpgradeClusterListNode.cxx 
+    UPGRADE/AliITSUPixelModule.cxx 
+    UPGRADE/AliITSUpgradeClusterFinder.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR ITSUpgradeRecLinkDef.h)
 
-set ( EINCLUDE TPC RAW ITS ITS/UPGRADE)
+set ( EINCLUDE TPC RAW ITS ITS/UPGRADE STEER/STEER STEER/ESD STEER/STEERBase)
 
 # set ( EXPORT AliITStrackV2.h AliITSVertexer.h AliITSRecoParam.h)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lITSUpgradeBase -lSTEER -lESD -lCDB -lSTEERBase -lRAWDatarec -L${ROOTLIBDIR} -lEG -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

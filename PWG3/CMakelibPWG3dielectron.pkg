@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG3dielectron                                                #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -63,10 +64,4 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set ( DHDR  PWG3dielectronLinkDef.h)
 
-set ( EINCLUDE  PWG3/dielectron STEER CORRFW)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-  set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lSTEER -lANALYSISalice -lANALYSIS -lCORRFW)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  PWG3/dielectron STEER CORRFW STEER/AOD STEER/CDB STEER/ESD STEER/STEERBase)

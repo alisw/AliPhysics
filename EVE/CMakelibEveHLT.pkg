@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for EveHLT                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -31,13 +32,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  EveHLT/EveHLTLinkDef.h)
 
-set ( EINCLUDE  HLT/BASE HLT/EVE HLT/BASE/util HLT/BASE/HOMER EVE/EveHLT)
-
-  if( ALICE_TARGET STREQUAL "win32gcc")
-	
-	set ( PACKCXXFLAGS  ${CXXFLAGS} -I/usr/X11R6/include)
-	set ( ELIBSDIR  /usr/X11R6/lib)
-	set ( ELIBS  GL)
-	set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lTPCbase -lHLTbase -lAliHLTEve -L${ROOTLIBDIR} -lEve -lXMLParser -lGed -lGui)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  HLT/BASE HLT/EVE HLT/BASE/util HLT/BASE/HOMER EVE/EveHLT STEER/ESD STEER/STEERBase)

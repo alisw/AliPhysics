@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for TOFbase                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -31,13 +32,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR TOFcalibLinkDef.h)
 
-set ( EINCLUDE  RAW)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS}
-				-L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}
-				-lTOFbase -lSTEER -lCDB -lSTEERBase
-				-lRAWDatarec -lRAWDatabase -L${ROOTLIBDIR} )
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  RAW STEER/STEERBase)

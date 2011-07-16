@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for EMCALrec                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,18 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliEMCALReconstructor.cxx AliEMCALClusterizer.cxx AliEMCALClusterizerv1.cxx AliEMCALClusterizerv2.cxx AliEMCALClusterizerNxN.cxx AliEMCALUnfolding.cxx AliEMCALTracker.cxx AliEMCALPID.cxx AliEMCALQADataMakerRec.cxx AliEMCALAfterBurnerUF.cxx )
+set ( SRCS  
+    AliEMCALReconstructor.cxx 
+    AliEMCALClusterizer.cxx 
+    AliEMCALClusterizerv1.cxx 
+    AliEMCALClusterizerv2.cxx 
+    AliEMCALClusterizerNxN.cxx 
+    AliEMCALUnfolding.cxx 
+    AliEMCALTracker.cxx 
+    AliEMCALPID.cxx 
+    AliEMCALQADataMakerRec.cxx 
+    AliEMCALAfterBurnerUF.cxx 
+    )
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")
 
@@ -33,10 +45,4 @@ set ( CINTHDRS  ${HDRS} AliEMCALGeometry.h )
 
 set ( DHDR EMCALrecLinkDef.h)
 
-set ( EINCLUDE PYTHIA6 RAW EVGEN THijing VZERO)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lEMCALUtils -lEMCALbase -lEMCALraw -lEMCALsim -lSTEER -lESD -lCDB -lSTEERBase -L${ROOTLIBDIR} -lMinuit)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE RAW STEER/STEER STEER/AOD STEER/ESD STEER/STEERBase)

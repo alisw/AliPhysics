@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for RAWDatarec                                                    #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,13 +26,27 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliFilter.cxx AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx AliRawReaderChain.cxx AliRawReaderDate.cxx AliRawReaderMemory.cxx AliRawHLTManager.cxx AliAltroRawStream.cxx AliCaloRawStream.cxx AliCaloRawStreamV3.cxx AliVMERawStream.cxx AliAltroRawStreamV3.cxx )
+set ( SRCS   
+    AliFilter.cxx 
+    AliRawReader.cxx 
+    AliRawReaderFile.cxx 
+    AliRawReaderRoot.cxx 
+    AliRawReaderChain.cxx 
+    AliRawReaderDate.cxx 
+    AliRawReaderMemory.cxx 
+    AliRawHLTManager.cxx 
+    AliAltroRawStream.cxx 
+    AliCaloRawStream.cxx 
+    AliCaloRawStreamV3.cxx 
+    AliVMERawStream.cxx 
+    AliAltroRawStreamV3.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( EHDRS ${ROOTINCDIR}/TH1F.h)
 
-set ( EINCLUDE ${EINCLUDE}  HLT/rec)
+set ( EINCLUDE ${EINCLUDE}  HLT/rec STEER/ESD )
 
 set ( DHDR  RAWDatarecLinkDef.h)
 
@@ -44,9 +59,3 @@ if (DATE_ROOT)
 endif (DATE_ROOT)
 
 set ( EXPORT AliRawReader.h AliAltroRawStream.h AliFilter.h AliRawReaderRoot.h)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lRAWDatabase -lESD)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

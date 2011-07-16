@@ -1,3 +1,5 @@
+# -*- mode: CMake -*-
+
 #--------------------------------------------------------------------------------#
 # Package File for MUONcalib                                                     #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +27,33 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliMUONTriggerLut.cxx AliMUONVCalibParam.cxx AliMUONCalibParamND.cxx AliMUONCalibParamNF.cxx AliMUONCalibParamNI.cxx AliMUONCalibrationData.cxx AliMUONTriggerEfficiencyCells.cxx AliMUONTriggerChamberEfficiency.cxx AliMUON2DStoreValidator.cxx AliMUONTriggerIO.cxx AliMUONTrackerIO.cxx AliMUONRegionalTriggerConfig.cxx AliMUONTriggerCrateConfig.cxx AliMUONGlobalCrateConfig.cxx AliMUONTriggerDisplay.cxx AliMUONVTrackerData.cxx AliMUONSparseHisto.cxx AliMUONTrackerData.cxx AliMUONPedestal.cxx AliMUONGain.cxx AliMUONErrorCounter.cxx AliMUONRejectList.cxx)
+set ( SRCS   
+    AliMUONTriggerLut.cxx 
+    AliMUONVCalibParam.cxx 
+    AliMUONCalibParamND.cxx 
+    AliMUONCalibParamNF.cxx 
+    AliMUONCalibParamNI.cxx 
+    AliMUONCalibrationData.cxx 
+    AliMUONTriggerEfficiencyCells.cxx 
+    AliMUONTriggerChamberEfficiency.cxx 
+    AliMUON2DStoreValidator.cxx 
+    AliMUONTriggerIO.cxx 
+    AliMUONTrackerIO.cxx 
+    AliMUONRegionalTriggerConfig.cxx 
+    AliMUONTriggerCrateConfig.cxx 
+    AliMUONGlobalCrateConfig.cxx 
+    AliMUONTriggerDisplay.cxx 
+    AliMUONVTrackerData.cxx 
+    AliMUONSparseHisto.cxx 
+    AliMUONTrackerData.cxx 
+    AliMUONPedestal.cxx 
+    AliMUONGain.cxx 
+    AliMUONErrorCounter.cxx 
+    AliMUONRejectList.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  MUONcalibLinkDef.h)
 
 set ( EINCLUDE  MUON/mapping)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lMUONmapping -lMUONgeometry -lMUONcore -lCDB -lSTEERBase -lRAWDatabase)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

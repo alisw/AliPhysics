@@ -1,3 +1,5 @@
+# -*- mode: CMake -*-
+
 #--------------------------------------------------------------------------------#
 # Package File for MUONcore                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +27,27 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   mapping/AliMpIntPair.cxx mapping/AliMpExMap.cxx mapping/AliMpExMapIterator.cxx mapping/AliMpArrayI.cxx mapping/AliMpStringObjMap.cxx AliMUONObjectPair.cxx AliMUONStringIntMap.cxx AliMUON2DMap.cxx AliMUON2DMapIterator.cxx AliMUON2DMapIteratorByI.cxx AliMUON1DArray.cxx AliMUON1DMap.cxx AliMUONCheckItem.cxx AliMUONVStore.cxx AliMUONTreeManager.cxx AliMUONLogger.cxx)
+set ( SRCS   
+    mapping/AliMpIntPair.cxx 
+    mapping/AliMpExMap.cxx 
+    mapping/AliMpExMapIterator.cxx 
+    mapping/AliMpArrayI.cxx 
+    mapping/AliMpStringObjMap.cxx 
+    AliMUONObjectPair.cxx 
+    AliMUONStringIntMap.cxx 
+    AliMUON2DMap.cxx 
+    AliMUON2DMapIterator.cxx 
+    AliMUON2DMapIteratorByI.cxx 
+    AliMUON1DArray.cxx 
+    AliMUON1DMap.cxx 
+    AliMUONCheckItem.cxx 
+    AliMUONVStore.cxx 
+    AliMUONTreeManager.cxx 
+    AliMUONLogger.cxx
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  MUONcoreLinkDef.h)
 
 set ( EINCLUDE  RAW MUON/mapping)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 # $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTGlobal                                                  #
@@ -59,7 +60,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/global HLT/global/physics HLT/BASE HLT/BASE/util TPC RAW TRD STEER PHOS)
+set ( EINCLUDE  HLT/global HLT/global/physics HLT/BASE HLT/BASE/util TPC RAW TRD PHOS STEER/ESD STEER/STEERBase)
 
 set ( ELIBS  "HLTbase AliHLTUtil CDB ESD STEER STEERBase TPCrec TPCcalib TPCbase RAWDatarec RAWDatabase TRDbase -lEG")
 

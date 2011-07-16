@@ -41,7 +41,7 @@ set ( SRCS
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set ( DHDR  FMDutilLinkDef.h)
-set ( EINCLUDE  RAW)
+set ( EINCLUDE  RAW STEER/ESD)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
   set ( PACKSOFLAGS  

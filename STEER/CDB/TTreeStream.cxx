@@ -35,7 +35,7 @@
 #include <TDirectory.h>
 #include <TObjArray.h>
 #include <TTree.h>
-#include <TTreeStream.h>
+#include "TTreeStream.h"
 
 ClassImp(TTreeDataElement)
 ClassImp(TTreeStream)

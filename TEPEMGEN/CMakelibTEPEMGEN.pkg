@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for TEPEMGEN                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -37,10 +38,4 @@ string(REGEX REPLACE "-O[^ ]*" "" PACKFFLAGS ${FFLAGS})
 
 set ( EXPORT TEpEmGen.h)
 
-set ( EINCLUDE  EVGEN)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lSTEERBase -lEVGEN -lmicrocern -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  EVGEN STEER/STEER STEER/STEERBase)

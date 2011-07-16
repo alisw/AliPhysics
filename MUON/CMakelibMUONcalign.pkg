@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for MUONcalign                                                    #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +26,17 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliMUONClusterInfo.cxx AliMUONPadInfo.cxx AliMUONAlignment.cxx AliMUONAlignmentTask.cxx AliMUONReAlignTask.cxx AliMUONChamberCalibrationTask.cxx)
+set ( SRCS 
+    AliMUONClusterInfo.cxx 
+    AliMUONPadInfo.cxx 
+    AliMUONAlignment.cxx 
+    AliMUONAlignmentTask.cxx 
+    AliMUONReAlignTask.cxx 
+    AliMUONChamberCalibrationTask.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  MUONcalignLinkDef.h)
 
-set ( EINCLUDE  MUON/mapping ANALYSIS)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lMUONmapping -lMUONgeometry -lMUONcore -lCDB -lSTEERBase -lRAWDatabase -lANALYSIS  -lANALYSISalice)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  MUON/mapping ANALYSIS STEER/STEERBase)

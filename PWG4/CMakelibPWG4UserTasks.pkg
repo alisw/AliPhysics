@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG4UserTask                                                  #
 # Author : Yuri Kharlov					                         #
@@ -38,8 +39,4 @@ set ( DHDR  PWG4UserTasksLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  PWG4/UserTasks/PHOS_pp_pi0 PWG4/UserTasks/CaloCellQA EMCAL PHOS)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -lPHOSbase -lEMCALbase -L${ROOTLIBDIR} -lEG)
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  PWG4/UserTasks/PHOS_pp_pi0 PWG4/UserTasks/CaloCellQA EMCAL PHOS STEER/ESD STEER/STEERBase)

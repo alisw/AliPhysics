@@ -1,58 +1,35 @@
 # -*- mode: CMake -*-
 
 set ( SRCS  
-    AliCDBEntry.cxx 
-    AliCDBId.cxx 
-    AliCDBMetaData.cxx 
-    AliCDBPath.cxx 
-    AliCDBRunRange.cxx 
-    AliCDBManager.cxx 
-    AliCDBStorage.cxx 
-    AliCDBLocal.cxx 
-    AliCDBDump.cxx 
-    AliCDBGrid.cxx 
-    AliDCSValue.cxx 
-    AliDCSSensor.cxx 
-    AliDCSSensorArray.cxx 
-    AliDCSGenDB.cxx 
-    AliSplineFit.cxx 
-    TTreeStream.cxx 
-    AliPreprocessor.cxx 
-    AliShuttleInterface.cxx 
-    AliGRPDCS.cxx 
-    AliCDBHandler.cxx 
-    AliBaseCalibViewer.cxx 
-    AliBaseCalibViewerGUI.cxx 
-    AliCalibViewerGUItime.cxx
+    CDB/AliCDBEntry.cxx 
+    CDB/AliCDBId.cxx 
+    CDB/AliCDBMetaData.cxx 
+    CDB/AliCDBPath.cxx 
+    CDB/AliCDBRunRange.cxx 
+    CDB/AliCDBManager.cxx 
+    CDB/AliCDBStorage.cxx 
+    CDB/AliCDBLocal.cxx 
+    CDB/AliCDBDump.cxx 
+    CDB/AliCDBGrid.cxx 
+    CDB/AliDCSValue.cxx 
+    CDB/AliDCSSensor.cxx 
+    CDB/AliDCSSensorArray.cxx 
+    CDB/AliDCSGenDB.cxx 
+    CDB/AliSplineFit.cxx 
+    CDB/TTreeStream.cxx 
+    CDB/AliPreprocessor.cxx 
+    CDB/AliShuttleInterface.cxx 
+    CDB/AliGRPDCS.cxx 
+    CDB/AliCDBHandler.cxx 
+    CDB/AliBaseCalibViewer.cxx 
+    CDB/AliBaseCalibViewerGUI.cxx 
+    CDB/AliCalibViewerGUItime.cxx
     )
 
 string( REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set ( DHDR  CDBLinkDef.h)
 
-set ( EXPORT  
-    AliCDBEntry.h 
-    AliCDBId.h 
-    AliCDBMetaData.h 
-    AliCDBPath.h 
-    AliCDBRunRange.h 
-    AliCDBManager.h 
-    AliCDBStorage.h 
-    AliCDBLocal.h 
-    AliCDBDump.h 
-    AliCDBGrid.h 
-    AliDCSValue.h 
-    AliDCSSensor.h 
-    AliDCSSensorArray.h 
-    AliDCSGenDB.h 
-    AliSplineFit.h 
-    TTreeStream.h 
-    AliPreprocessor.h  
-    AliShuttleInterface.h 
-    AliGRPDCS.h 
-    AliCDBHandler.h 
-    AliBaseCalibViewer.h 
-    AliBaseCalibViewerGUI.h 
-    AliCalibViewerGUItime.h 
-    )
+set ( EXPORT ${HDRS})
 
+set ( EINCLUDE  STEER/STEERBase)

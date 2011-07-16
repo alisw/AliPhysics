@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG2diffractive                                               #
 # Author : Felix Reidt (felix.reidt@cern.ch)                                     # 
@@ -29,6 +30,6 @@ set ( SRCS DIFFRACTIVE/AliAnalysisTaskDDMeson.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( EINCLUDE  PWG2/DIFFRACTIVE ITS PWG1/ITS )
+set ( EINCLUDE  PWG2/DIFFRACTIVE ITS PWG1/ITS STEER/STEER STEER/CDB STEER/STEERBase)
 
 set ( DHDR PWG2diffractiveLinkDef.h )

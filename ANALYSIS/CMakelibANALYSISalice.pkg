@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for ANALYSISalice                                                 #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,39 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  	AliAnalysisTaskSE.cxx AliAnalysisTaskME.cxx AliAnalysisTaskESDfilter.cxx AliAnalysisTaskMCParticleFilter.cxx AliKineTrackCuts.cxx AliESDtrackCuts.cxx  AliESDpidCuts.cxx AliESDv0Cuts.cxx AliEventPoolOTF.cxx AliEventPoolLoop.cxx AliEventPoolSparse.cxx AliAnalysisTaskTagCreator.cxx AliMultiEventInputHandler.cxx AliTriggerAnalysis.cxx AliPhysicsSelection.cxx AliBackgroundSelection.cxx AliPhysicsSelectionTask.cxx AliAnalysisFilter.cxx AliAnalysisCuts.cxx AliCollisionNormalization.cxx AliCollisionNormalizationTask.cxx AliCentralitySelectionTask.cxx AliAnalysisTaskAODCentralityMaker.cxx AliEPSelectionTask.cxx AliAnalysisTaskStat.cxx AliMultiInputEventHandler.cxx AliESDv0KineCuts.cxx AliAnalysisTaskPIDResponse.cxx AliPIDResponseInputHandler.cxx AliHEPDataParser.cxx AliAnalysisTaskPIDqa.cxx)
+set ( SRCS  	
+    AliAnalysisTaskSE.cxx 
+    AliAnalysisTaskME.cxx 
+    AliAnalysisTaskESDfilter.cxx 
+    AliAnalysisTaskMCParticleFilter.cxx 
+    AliKineTrackCuts.cxx 
+    AliESDtrackCuts.cxx 
+    AliESDpidCuts.cxx 
+    AliESDv0Cuts.cxx 
+    AliEventPoolOTF.cxx 
+    AliEventPoolLoop.cxx 
+    AliEventPoolSparse.cxx 
+    AliAnalysisTaskTagCreator.cxx 
+    AliMultiEventInputHandler.cxx 
+    AliTriggerAnalysis.cxx 
+    AliPhysicsSelection.cxx 
+    AliBackgroundSelection.cxx 
+    AliPhysicsSelectionTask.cxx 
+    AliAnalysisFilter.cxx 
+    AliAnalysisCuts.cxx 
+    AliCollisionNormalization.cxx 
+    AliCollisionNormalizationTask.cxx 
+    AliCentralitySelectionTask.cxx 
+    AliAnalysisTaskAODCentralityMaker.cxx 
+    AliEPSelectionTask.cxx 
+    AliAnalysisTaskStat.cxx 
+    AliMultiInputEventHandler.cxx 
+    AliESDv0KineCuts.cxx 
+    AliAnalysisTaskPIDResponse.cxx 
+    AliPIDResponseInputHandler.cxx 
+    AliHEPDataParser.cxx 
+    AliAnalysisTaskPIDqa.cxx 
+    )
 
 if( ROOTHASALIEN STREQUAL "yes")
 	
@@ -47,12 +80,6 @@ set ( DHDR  ANALYSISaliceLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS/Aliengui)
+set ( EINCLUDE ANALYSIS/Aliengui STEER/AOD STEER/ESD STEER/STEERBase)
 
 set ( ELIBS "OADB" )
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lANALYSIS -lSTEERBase -lAOD -lESD -L${ROOTLIBDIR} -lTreePlayer -lXMLIO -lOADB)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

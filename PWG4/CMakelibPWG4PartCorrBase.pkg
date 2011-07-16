@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG4PartCorrBase                                              #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,18 +26,29 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  PartCorrBase/AliNeutralMesonSelection.cxx PartCorrBase/AliFiducialCut.cxx PartCorrBase/AliCaloPID.cxx PartCorrBase/AliMCAnalysisUtils.cxx PartCorrBase/AliIsolationCut.cxx PartCorrBase/AliAnaScale.cxx PartCorrBase/AliAnaPartCorrMaker.cxx PartCorrBase/AliAnaPartCorrBaseClass.cxx PartCorrBase/AliAnalysisTaskParticleCorrelation.cxx PartCorrBase/AliAnalysisTaskParticleCorrelationM.cxx PartCorrBase/AliCaloTrackReader.cxx PartCorrBase/AliCaloTrackESDReader.cxx PartCorrBase/AliCaloTrackAODReader.cxx PartCorrBase/AliCaloTrackMCReader.cxx PartCorrBase/AliCalorimeterUtils.cxx PartCorrBase/AliAnalysisTaskCounter.cxx)
+set ( SRCS  
+    PartCorrBase/AliNeutralMesonSelection.cxx 
+    PartCorrBase/AliFiducialCut.cxx 
+    PartCorrBase/AliCaloPID.cxx 
+    PartCorrBase/AliMCAnalysisUtils.cxx 
+    PartCorrBase/AliIsolationCut.cxx 
+    PartCorrBase/AliAnaScale.cxx 
+    PartCorrBase/AliAnaPartCorrMaker.cxx 
+    PartCorrBase/AliAnaPartCorrBaseClass.cxx 
+    PartCorrBase/AliAnalysisTaskParticleCorrelation.cxx 
+    PartCorrBase/AliAnalysisTaskParticleCorrelationM.cxx 
+    PartCorrBase/AliCaloTrackReader.cxx 
+    PartCorrBase/AliCaloTrackESDReader.cxx 
+    PartCorrBase/AliCaloTrackAODReader.cxx 
+    PartCorrBase/AliCaloTrackMCReader.cxx 
+    PartCorrBase/AliCalorimeterUtils.cxx 
+    PartCorrBase/AliAnalysisTaskCounter.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWG4PartCorrBaseLinkDef.h)
 
-set ( EINCLUDE PWG4/PartCorrBase EMCAL)
+set ( EINCLUDE PWG4/PartCorrBase EMCAL STEER/AOD STEER/ESD STEER/STEERBase)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

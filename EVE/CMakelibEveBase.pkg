@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for EveBase                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -31,14 +32,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  EveBase/EveBaseLinkDef.h)
 
-set ( EINCLUDE  RAW ITS TPC EVE/EveBase)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-set ( PACKCXXFLAGS  ${CXXFLAGS} -I/usr/X11R6/include)
-
-  set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lCDB -lESD -lAOD -lSTEER -lTPCbase -lTPCsim -lTPCrec -lITSbase -lRAWDatarec -lRAWDatabase -L${ROOTLIBDIR} -lEve -lGeom -lGui -lGed -lRGL -lEG -lMinuit)
-	set ( ELIBSDIR  /usr/X11R6/lib)
-	set ( ELIBS  GL)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  RAW ITS TPC EVE/EveBase STEER/STEER STEER/AOD STEER/CDB STEER/ESD STEER/STEERBase)

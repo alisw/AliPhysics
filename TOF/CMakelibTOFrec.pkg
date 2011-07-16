@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for TOFrec                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,14 +26,22 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliTOFcluster.cxx  AliTOFClusterFinder.cxx AliTOFClusterFinderV1.cxx AliTOFtrack.cxx AliTOFtracker.cxx AliTOFtrackerMI.cxx AliTOFtrackerV1.cxx AliTOFReconstructor.cxx AliTOFRecoParam.cxx AliTOFT0maker.cxx AliTOFT0v1.cxx AliTOFQADataMakerRec.cxx)
+set ( SRCS  
+    AliTOFcluster.cxx 
+    AliTOFClusterFinder.cxx 
+    AliTOFClusterFinderV1.cxx 
+    AliTOFtrack.cxx 
+    AliTOFtracker.cxx 
+    AliTOFtrackerMI.cxx 
+    AliTOFtrackerV1.cxx 
+    AliTOFReconstructor.cxx 
+    AliTOFRecoParam.cxx 
+    AliTOFT0maker.cxx 
+    AliTOFT0v1.cxx 
+    AliTOFQADataMakerRec.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR TOFrecLinkDef.h)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lTOFbase -lSTEER -lCDB -lESD -lSTEERBase -lRAWDatabase -L${ROOTLIBDIR} -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  STEER/STEER STEER/ESD STEER/STEERBase)

@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for THerwig                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -33,10 +34,4 @@ set ( DHDR THerwigLinkDef.h)
 
 set ( EXPORT THerwig6.h)
 
-set ( EINCLUDE HERWIG EVGEN LHAPDF)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lEVGEN -lSTEER -lherwig -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE HERWIG EVGEN LHAPDF STEER/STEER STEER/STEERBase)

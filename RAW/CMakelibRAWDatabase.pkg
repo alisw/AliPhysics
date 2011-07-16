@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for RAWDatabase                                                   #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,23 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliRawEventHeaderBase.cxx AliRawEquipmentHeader.cxx AliRawEquipment.cxx AliRawEvent.cxx AliRawData.cxx AliRawVEquipment.cxx AliRawEquipmentV2.cxx AliRawVEvent.cxx AliRawEventV2.cxx AliRawDataArrayV2.cxx AliRawDataArray.cxx AliStats.cxx AliRawEventTag.cxx AliAltroMapping.cxx AliCaloAltroMapping.cxx)
+set ( SRCS   
+    AliRawEventHeaderBase.cxx 
+    AliRawEquipmentHeader.cxx 
+    AliRawEquipment.cxx 
+    AliRawEvent.cxx 
+    AliRawData.cxx 
+    AliRawVEquipment.cxx 
+    AliRawEquipmentV2.cxx 
+    AliRawVEvent.cxx 
+    AliRawEventV2.cxx 
+    AliRawDataArrayV2.cxx 
+    AliRawDataArray.cxx 
+    AliStats.cxx 
+    AliRawEventTag.cxx 
+    AliAltroMapping.cxx 
+    AliCaloAltroMapping.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -43,9 +60,4 @@ if(DATE_ROOT)
 endif(DATE_ROOT)
 
 set ( EXPORT AliRawDataHeader.h AliAltroMapping.h)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-	set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE STEER/ESD STEER/STEERBase )

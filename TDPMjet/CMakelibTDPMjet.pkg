@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for TDPMjet                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -33,10 +34,4 @@ set ( DHDR TDPMjetLinkDef.h)
 
 set ( EXPORT TDPMjet.h AliIonPDGCodes.h)
 
-set ( EINCLUDE DPMJET EVGEN)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lEVGEN -lSTEER -ldpmjet -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE DPMJET EVGEN STEER/STEER STEER/STEERBase)

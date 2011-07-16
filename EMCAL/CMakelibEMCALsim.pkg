@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for EMCALsim                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +26,22 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliEMCALv0.cxx AliEMCALv1.cxx AliEMCALv2.cxx AliEMCALTick.cxx AliEMCALQADataMakerSim.cxx AliEMCALTriggerBoard.cxx AliEMCALTriggerPatch.cxx AliEMCALTriggerSTU.cxx AliEMCALTriggerTRU.cxx AliEMCALTriggerData.cxx AliEMCALTriggerElectronics.cxx)
+set ( SRCS  
+    AliEMCALv0.cxx 
+    AliEMCALv1.cxx 
+    AliEMCALv2.cxx 
+    AliEMCALTick.cxx 
+    AliEMCALQADataMakerSim.cxx 
+    AliEMCALTriggerBoard.cxx 
+    AliEMCALTriggerPatch.cxx 
+    AliEMCALTriggerSTU.cxx 
+    AliEMCALTriggerTRU.cxx 
+    AliEMCALTriggerData.cxx 
+    AliEMCALTriggerElectronics.cxx 
+    )
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")
 
 set ( DHDR EMCALsimLinkDef.h)
 
-set ( EINCLUDE PYTHIA6 RAW EVGEN THijing VZERO)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lEMCALUtils -lEMCALbase -lSTEER -lSTEERBase -lRAWDatarec -lRAWDatasim  -lRAWDatabase -L${ROOTLIBDIR} -lVMC -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE RAW VZERO STEER/STEER STEER/STEERBase)

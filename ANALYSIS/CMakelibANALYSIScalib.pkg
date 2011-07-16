@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for ANALYSIScalib                                                 #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,14 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliAnalysisTaskFilter.cxx AliAnalysisTaskFilterFriend.cxx AliAnalysisTaskFilterFriendSecond.cxx AliAnalysisTaskAddObject.cxx AliAnalysisTaskFilterSteer.cxx AliFileMerger.cxx)
+set ( SRCS  
+    AliAnalysisTaskFilter.cxx 
+    AliAnalysisTaskFilterFriend.cxx 
+    AliAnalysisTaskFilterFriendSecond.cxx 
+    AliAnalysisTaskAddObject.cxx 
+    AliAnalysisTaskFilterSteer.cxx 
+    AliFileMerger.cxx 
+    )
 
 if( ROOTHASALIEN STREQUAL "yes")
 	
@@ -40,9 +48,3 @@ set ( DHDR  ANALYSIScalibLinkDef.h)
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 set ( EINCLUDE ANALYSIS/Aliengui)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lANALYSIS -lSTEERBase -lAOD -lESD -L${ROOTLIBDIR} -lTreePlayer -lXMLIO)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

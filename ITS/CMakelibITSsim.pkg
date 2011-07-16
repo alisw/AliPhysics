@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for ITSsim                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +26,47 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  	AliITS.cxx AliITShit.cxx AliITSSimuParam.cxx AliITSDetTypeSim.cxx AliITSmodule.cxx AliITSsimulationFastPoints.cxx AliITSsimulation.cxx AliITSsimulationSPD.cxx AliITSsimulationSDD.cxx AliITSsimulationSSD.cxx AliITSTableSSD.cxx AliITSetfSDD.cxx AliITSHuffman.cxx AliITSsDigitize.cxx AliITSDigitizer.cxx AliITSFOEfficiencySPD.cxx AliITSFOEfficiencySPDColumn.cxx AliITSFONoiseSPD.cxx AliITSFOGeneratorSPD.cxx AliITSFOSignalsSPD.cxx AliITSTrigger.cxx AliITSTriggerFOProcessor.cxx AliITSv11.cxx AliITSv11Geometry.cxx AliITSv11GeomCable.cxx AliITSv11GeomCableFlat.cxx AliITSv11GeomCableRound.cxx AliITSv11GeometrySDD.cxx AliITSv11GeometrySSD.cxx AliITSv11GeometrySPD.cxx AliITSv11Hybrid.cxx AliITSv11GeometrySupport.cxx AliITSQADataMakerSim.cxx AliITSQASPDDataMakerSim.cxx AliITSQASDDDataMakerSim.cxx AliITSQASSDDataMakerSim.cxx)
+set ( SRCS 
+    AliITS.cxx 
+    AliITShit.cxx 
+    AliITSSimuParam.cxx 
+    AliITSDetTypeSim.cxx 
+    AliITSmodule.cxx 
+    AliITSsimulationFastPoints.cxx 
+    AliITSsimulation.cxx 
+    AliITSsimulationSPD.cxx 
+    AliITSsimulationSDD.cxx 
+    AliITSsimulationSSD.cxx 
+    AliITSTableSSD.cxx 
+    AliITSetfSDD.cxx 
+    AliITSHuffman.cxx 
+    AliITSsDigitize.cxx 
+    AliITSDigitizer.cxx 
+    AliITSFOEfficiencySPD.cxx 
+    AliITSFOEfficiencySPDColumn.cxx 
+    AliITSFONoiseSPD.cxx 
+    AliITSFOGeneratorSPD.cxx 
+    AliITSFOSignalsSPD.cxx 
+    AliITSTrigger.cxx 
+    AliITSTriggerFOProcessor.cxx 
+    AliITSv11.cxx 
+    AliITSv11Geometry.cxx 
+    AliITSv11GeomCable.cxx 
+    AliITSv11GeomCableFlat.cxx 
+    AliITSv11GeomCableRound.cxx 
+    AliITSv11GeometrySDD.cxx 
+    AliITSv11GeometrySSD.cxx 
+    AliITSv11GeometrySPD.cxx 
+    AliITSv11Hybrid.cxx 
+    AliITSv11GeometrySupport.cxx 
+    AliITSQADataMakerSim.cxx 
+    AliITSQASPDDataMakerSim.cxx 
+    AliITSQASDDDataMakerSim.cxx 
+    AliITSQASSDDataMakerSim.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR ITSsimLinkDef.h)
 
-set ( EINCLUDE TPC RAW)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lITSbase -lSTEER -lCDB -lSTEERBase -L${ROOTLIBDIR} -lVMC -lEG -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE TPC RAW STEER/STEER STEER/ESD STEER/STEERBase)

@@ -1,17 +1,18 @@
-list(APPEND SRCS AliACORDE.cxx AliACORDEv1.cxx AliACORDEhit.cxx 
-         AliACORDEDigitizer.cxx AliACORDETrigger.cxx 
-         AliACORDERawData.cxx AliACORDEQADataMakerSim.cxx
-         AliACORDEv0.cxx)
+# -*- mode: CMake -*-
+
+set(SRCS 
+    AliACORDE.cxx 
+    AliACORDEv1.cxx 
+    AliACORDEhit.cxx 
+    AliACORDEDigitizer.cxx 
+    AliACORDETrigger.cxx 
+    AliACORDERawData.cxx 
+    AliACORDEQADataMakerSim.cxx 
+    AliACORDEv0.cxx
+    )
 
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set(DHDR ACORDEsimLinkDef.h)
 
-if(ALICE_TARGET STREQUAL "win32gcc")
-
-set(PACKSOFLAGS ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} 
-                           -lACORDEbase -lSTEER -lCDB -lSTEERBase 
-                           -lRAWDatabase 
-                           -L${ROOTLIBDIR} -lVMC -lGeom )
-
-endif(ALICE_TARGET STREQUAL "win32gcc")
+set(EINCLUDE STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)

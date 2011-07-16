@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG2kink                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,12 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  KINK/AliAnalysisKinkESDMC.cxx KINK/AliResonanceKinkLikeSign.cxx KINK/AliResonanceKink.cxx KINK/AliAnalysisTaskKinkResonance.cxx)
+set ( SRCS  
+    KINK/AliAnalysisKinkESDMC.cxx 
+    KINK/AliResonanceKinkLikeSign.cxx 
+    KINK/AliResonanceKink.cxx 
+    KINK/AliAnalysisTaskKinkResonance.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -33,10 +39,4 @@ set ( DHDR PWG2kinkLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWG2/KINK)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lESD -lAOD -lSTEERBase -lCORRFW)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  PWG2/KINK STEER/STEERBase)

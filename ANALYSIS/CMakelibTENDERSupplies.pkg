@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for TENDERSupplies                                                #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -41,10 +42,4 @@ string ( REPLACE ".cxx" ".h"  HDRS "${SRCS}")
 
 set ( DHDR  TenderSuppliesLinkDef.h)
 
-set ( EINCLUDE  ANALYSIS ANALYSIS/Tender STEER TOF TRD/Cal VZERO ANALYSIS/TenderSupplies TPC T0 OADB EMCAL)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lSTEER -lANALYSIS -lCDB -lT0base -lT0rec -lTPCbase -lTRDbase)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  ANALYSIS ANALYSIS/Tender TOF TRD/Cal VZERO ANALYSIS/TenderSupplies TPC T0 OADB EMCAL STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)

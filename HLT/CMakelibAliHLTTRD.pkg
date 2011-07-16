@@ -1,3 +1,4 @@
+# -*- mode: cmake -*-
 # $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTTRD                                                     #
@@ -53,7 +54,7 @@ set ( MODULE_HDRS  AliHLTTRDTrackletWordArray.h ${CLASS_HDRS})
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/TRD TRD TRD/Cal STEER RAW STAT)
+set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/TRD TRD TRD/Cal RAW STAT STEER/STEER STEER/ESD STEER/STEERBase)
 
 set ( ELIBS  "HLTbase AliHLTUtil -lMLP -lXMLParser ESD CDB TRDrec TRDbase STEER STEERBase RAWDatarec STAT")
 

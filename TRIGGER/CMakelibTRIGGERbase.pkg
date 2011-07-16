@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for TRIGGERbase                                                   #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,16 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliTRIPreprocessor.cxx  AliTrigConnector.cxx AliTrigDevice.cxx AliTrigDigitalCircuit.cxx AliTrigEvent.cxx AliTrigScheduledEntry.cxx AliTrigScheduler.cxx AliTrigModule.cxx)
+set ( SRCS   
+    AliTRIPreprocessor.cxx 
+    AliTrigConnector.cxx 
+    AliTrigDevice.cxx 
+    AliTrigDigitalCircuit.cxx 
+    AliTrigEvent.cxx 
+    AliTrigScheduledEntry.cxx 
+    AliTrigScheduler.cxx 
+    AliTrigModule.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" CINTHDRS "${SRCS}" )
 
@@ -33,10 +43,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  TRIGGERbaseLinkDef.h)
 
-set ( EINCLUDE  TRIGGER ITS STEER TOF)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lCDB -lITSsim)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  TRIGGER ITS STEER TOF STEER/CDB STEER/STEERBase )

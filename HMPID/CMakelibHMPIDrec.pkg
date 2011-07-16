@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for HMPIDrec                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +26,20 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliHMPIDReconstructor.cxx AliHMPIDtrack.cxx AliHMPIDTracker.cxx AliHMPIDRecon.cxx AliHMPIDRecoParam.cxx   AliHMPIDRecoParamV1.cxx AliHMPIDReconHTA.cxx AliHMPIDPid.cxx AliHMPIDQADataMakerRec.cxx)
+set ( SRCS 
+    AliHMPIDReconstructor.cxx 
+    AliHMPIDtrack.cxx 
+    AliHMPIDTracker.cxx 
+    AliHMPIDRecon.cxx 
+    AliHMPIDRecoParam.cxx 
+    AliHMPIDRecoParamV1.cxx 
+    AliHMPIDReconHTA.cxx 
+    AliHMPIDPid.cxx 
+    AliHMPIDQADataMakerRec.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( EINCLUDE RAW )
+set ( EINCLUDE RAW STEER/STEER STEER/ESD STEER/STEERBase)
 
 set ( DHDR  HMPIDrecLinkDef.h)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lHMPIDbase -lSTEER -lCDB -lESD -lSTEERBase -lRAWDatarec -lRAWDatasim -L${ROOTLIBDIR} -lMinuit)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

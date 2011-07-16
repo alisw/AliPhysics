@@ -1,3 +1,5 @@
+# -*- mode: CMake -*-
+
 #--------------------------------------------------------------------------------#
 # Package File for TRDbase                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -106,10 +108,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  TRDbaseLinkDef.h)
 
-set ( EINCLUDE  RAW TRD/Cal)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lCDB -lESD -lSTEERBase -lRAWDatasim -lRAWDatarec -lRAWDatabase -L${ROOTLIBDIR} -lMinuit -lGeom -lVMC -lMLP -lXMLParser)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  RAW TRD/Cal STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)

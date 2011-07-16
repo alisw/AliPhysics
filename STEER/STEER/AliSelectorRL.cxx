@@ -18,7 +18,7 @@
 #include "AliSelectorRL.h"
 
 #include <AliLog.h>
-#include <AliRunLoader.h>
+#include "AliRunLoader.h"
 
 #include <TTree.h>
 #include <TFile.h>

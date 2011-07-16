@@ -98,5 +98,6 @@
 #pragma link C++ class AliRefArray+;
 
 #pragma link C++ class AliOADBContainer+;
+#pragma link C++ class AliMathBase+;
 
 #endif

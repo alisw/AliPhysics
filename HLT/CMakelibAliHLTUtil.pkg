@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 # $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTUtil                                                    #
@@ -61,7 +62,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/BASE HLT/BASE/util STEER RAW ANALYSIS)
+set ( EINCLUDE  HLT/BASE HLT/BASE/util RAW ANALYSIS STEER/ESD STEER/AOD STEER/STEERBase)
 
 set ( ELIBS  "HLTbase STEER STEERBase RAWDatabase AOD ANALYSIS ANALYSISalice")
 

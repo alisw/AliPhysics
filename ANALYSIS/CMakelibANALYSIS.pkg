@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for ANALYSIS                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,15 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliAnalysisDataContainer.cxx AliAnalysisDataSlot.cxx AliAnalysisManager.cxx AliAnalysisTask.cxx AliAnalysisSelector.cxx AliAnalysisGrid.cxx AliAnalysisStatistics.cxx)
+set ( SRCS  
+    AliAnalysisDataContainer.cxx 
+    AliAnalysisDataSlot.cxx 
+    AliAnalysisManager.cxx 
+    AliAnalysisTask.cxx 
+    AliAnalysisSelector.cxx 
+    AliAnalysisGrid.cxx 
+    AliAnalysisStatistics.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -34,9 +43,3 @@ set ( DHDR  ANALYSISLinkDef.h)
 set (EXPORT ${HDRS})
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

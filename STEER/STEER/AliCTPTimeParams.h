@@ -5,9 +5,9 @@
 * See cxx source for full Copyright notice */
 /* $Id$ */
 
-#include<TNamed.h>
-#include<TObjArray.h>
-#include<AliCTPInputTimeParams.h>
+#include <TNamed.h>
+#include <TObjArray.h>
+#include "AliCTPInputTimeParams.h"
 
 class TNamed;
 

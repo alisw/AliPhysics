@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for TENDER                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,8 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS EventMixing/AliMixEventCutObj.cxx
+set ( SRCS 
+  EventMixing/AliMixEventCutObj.cxx
   EventMixing/AliMixEventPool.cxx
   EventMixing/AliMixInfo.cxx
   EventMixing/AliMixInputHandlerInfo.cxx
@@ -39,10 +41,4 @@ set ( DHDR  EventMixingLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  ANALYSIS ANALYSIS/EventMixing)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lANALYSIS -lANALYSISalice )
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  ANALYSIS ANALYSIS/EventMixing STEER/STEERBase)

@@ -1,39 +1,39 @@
 # -*- mode: CMake -*-
 
 set ( SRCS  
-    AliAODEvent.cxx 
-    AliAODHeader.cxx 
-    AliAODTrack.cxx 
-    AliAODPid.cxx 
-    AliAODVertex.cxx 
-    AliAODCluster.cxx 
-    AliAODCaloCluster.cxx 
-    AliAODPmdCluster.cxx 
-    AliAODFmdCluster.cxx 
-    AliAODJet.cxx 
-    AliAODJetEventBackground.cxx 
-    AliAODPhoton.cxx 
-    AliAODRedCov.cxx 
-    AliAODRecoDecay.cxx 
-    AliAODExtension.cxx 
-    AliAODHandler.cxx 
-    AliAODTracklets.cxx 
-    AliAODTagCreator.cxx 
-    AliAODv0.cxx 
-    AliAODcascade.cxx 
-    AliAODCaloCells.cxx 
-    AliAODInputHandler.cxx 
-    AliAODDiJet.cxx 
-    AliAODMCParticle.cxx 
-    AliAODMCHeader.cxx 
-    AliAODPWG4Particle.cxx 
-    AliAODPWG4ParticleCorrelation.cxx 
-    AliAODDimuon.cxx 
-    AliAODpidUtil.cxx 
-    AliAODCentrality.cxx 
-    AliAODBranchReplicator.cxx 
-    AliAODVZERO.cxx
-    AliAODZDC.cxx	
+    AOD/AliAODEvent.cxx 
+    AOD/AliAODHeader.cxx 
+    AOD/AliAODTrack.cxx 
+    AOD/AliAODPid.cxx 
+    AOD/AliAODVertex.cxx 
+    AOD/AliAODCluster.cxx 
+    AOD/AliAODCaloCluster.cxx 
+    AOD/AliAODPmdCluster.cxx 
+    AOD/AliAODFmdCluster.cxx 
+    AOD/AliAODJet.cxx 
+    AOD/AliAODJetEventBackground.cxx 
+    AOD/AliAODPhoton.cxx 
+    AOD/AliAODRedCov.cxx 
+    AOD/AliAODRecoDecay.cxx 
+    AOD/AliAODExtension.cxx 
+    AOD/AliAODHandler.cxx 
+    AOD/AliAODTracklets.cxx 
+    AOD/AliAODTagCreator.cxx 
+    AOD/AliAODv0.cxx 
+    AOD/AliAODcascade.cxx 
+    AOD/AliAODCaloCells.cxx 
+    AOD/AliAODInputHandler.cxx 
+    AOD/AliAODDiJet.cxx 
+    AOD/AliAODMCParticle.cxx 
+    AOD/AliAODMCHeader.cxx 
+    AOD/AliAODPWG4Particle.cxx 
+    AOD/AliAODPWG4ParticleCorrelation.cxx 
+    AOD/AliAODDimuon.cxx 
+    AOD/AliAODpidUtil.cxx 
+    AOD/AliAODCentrality.cxx 
+    AOD/AliAODBranchReplicator.cxx 
+    AOD/AliAODVZERO.cxx
+    AOD/AliAODZDC.cxx	
     )
 
 string( REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -41,3 +41,5 @@ string( REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set ( DHDR AODLinkDef.h)
 
 set ( EXPORT ${HDRS} )
+
+set ( EINCLUDE  STEER/ESD STEER/STEERBase)

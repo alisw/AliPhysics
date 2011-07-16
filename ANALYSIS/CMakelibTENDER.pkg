@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for TENDER                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,10 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  Tender/AliTender.cxx Tender/AliTenderSupply.cxx)
+set ( SRCS  
+    Tender/AliTender.cxx 
+    Tender/AliTenderSupply.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -33,10 +37,4 @@ set ( DHDR  TenderLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  ANALYSIS ANALYSIS/Tender)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lANALYSIS -lCDB)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  ANALYSIS ANALYSIS/Tender STEER/STEERBase)

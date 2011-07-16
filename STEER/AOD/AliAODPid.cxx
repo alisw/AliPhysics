@@ -23,6 +23,7 @@
 #include "AliAODPid.h"
 #include "AliESDtrack.h"
 #include "AliLog.h"
+#include "AliPID.h"
 
 ClassImp(AliAODPid)
 

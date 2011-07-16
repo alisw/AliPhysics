@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for THbtp                                                         #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -35,10 +36,4 @@ set ( DHDR  THbtpLinkDef.h)
 
 set ( EXPORT HBTprocCOMMON.h THBTprocessor.h)
 
-set ( EINCLUDE  EVGEN)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lEVGEN -lSTEERBase -lmicrocern -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  EVGEN STEER/STEER STEER/STEERBase)

@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 # $Id$
 #--------------------------------------------------------------------------------#
 # Package File for HLTqadm                                                       #
@@ -26,7 +27,14 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( CLASS_HDRS   	AliHLTQADataMakerSim.h AliHLTQADataMakerBase.h AliHLTQADataMakerRec.h AliHLTQAAgent.h AliHLTTPCQADataMaker.h AliHLTQAChecker.h)
+set ( CLASS_HDRS 
+    AliHLTQADataMakerSim.h 
+    AliHLTQADataMakerBase.h 
+    AliHLTQADataMakerRec.h 
+    AliHLTQAAgent.h 
+    AliHLTTPCQADataMaker.h 
+    AliHLTQAChecker.h 
+    )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
 
@@ -34,7 +42,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/QA HLT/BASE STEER)
+set ( EINCLUDE  HLT/QA HLT/BASE STEER/STEER STEER/STEERBase)
 
 set ( ELIBS  "HLTbase CDB ESD STEERBase STEER RAWDatarec RAWDatabase")
 

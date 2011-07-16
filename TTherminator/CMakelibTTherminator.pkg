@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for TTherminator                                                  #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,21 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliGenTherminator.cxx TTherminator.cxx Therminator/DecayChannel.cxx Therminator/DecayTable.cxx Therminator/Event.cxx Therminator/Hypersurface.cxx Therminator/Integrator.cxx Therminator/Parser.cxx Therminator/Particle.cxx Therminator/ParticleDB.cxx Therminator/ParticleDecayer.cxx Therminator/ParticleType.cxx Therminator/ReadPar.cxx)
+set ( SRCS  
+    AliGenTherminator.cxx 
+    TTherminator.cxx 
+    Therminator/DecayChannel.cxx 
+    Therminator/DecayTable.cxx 
+    Therminator/Event.cxx 
+    Therminator/Hypersurface.cxx 
+    Therminator/Integrator.cxx 
+    Therminator/Parser.cxx 
+    Therminator/Particle.cxx 
+    Therminator/ParticleDB.cxx 
+    Therminator/ParticleDecayer.cxx 
+    Therminator/ParticleType.cxx 
+    Therminator/ReadPar.cxx 
+    )
 
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
@@ -35,14 +50,8 @@ set ( DHDR TTherminatorLinkDef.h)
 
 set ( EXPORT AliGenTherminator.h TTherminator.h)
 
-set ( EINCLUDE  TTherminator/Therminator TTherminator EVGEN)
+set ( EINCLUDE  TTherminator/Therminator TTherminator EVGEN STEER/STEER STEER/STEERBase)
 
 string(REPLACE "-Weffc++" "" PACKCXXFLAGS ${CXXFLAGS})
 
 string(REPLACE "-Weffc++" "" PACKDCXXFLAGS ${CXXFLAGSNO})
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lSTEERBase -lEVGEN -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")

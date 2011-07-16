@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for VZEROsim                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +26,17 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliVZERO.cxx AliVZEROv7.cxx AliVZEROhit.cxx AliVZERODigitizer.cxx AliVZEROBuffer.cxx AliVZEROQADataMakerSim.cxx)
+set ( SRCS  
+    AliVZERO.cxx 
+    AliVZEROv7.cxx 
+    AliVZEROhit.cxx 
+    AliVZERODigitizer.cxx 
+    AliVZEROBuffer.cxx 
+    AliVZEROQADataMakerSim.cxx
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR VZEROsimLinkDef.h)
 
-set ( EINCLUDE  STRUCT STEER RAW)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lVZERObase -lVZEROrec -lSTEER -lCDB -lSTEERBase -lRAWDatabase -L${ROOTLIBDIR} -lVMC -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  STRUCT RAW STEER/STEER STEER/STEERBase)

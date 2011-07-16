@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for HMPIDbase                                                     #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +26,20 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliHMPIDHit.cxx AliHMPIDDigit.cxx  AliHMPIDCluster.cxx AliHMPIDParam.cxx AliHMPIDPreprocessor.cxx AliHMPIDQAChecker.cxx AliHMPIDCalib.cxx AliHMPIDRawStream.cxx AliHMPIDMisAligner.cxx)
+set ( SRCS 
+    AliHMPIDHit.cxx 
+    AliHMPIDDigit.cxx 
+    AliHMPIDCluster.cxx 
+    AliHMPIDParam.cxx 
+    AliHMPIDPreprocessor.cxx 
+    AliHMPIDQAChecker.cxx 
+    AliHMPIDCalib.cxx 
+    AliHMPIDRawStream.cxx 
+    AliHMPIDMisAligner.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  HMPIDbaseLinkDef.h)
 
-set ( EINCLUDE RAW )
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lCDB -lSTEERBase -lRAWDatasim -lRAWDatarec -lRAWDatabase -L${ROOTLIBDIR} -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)

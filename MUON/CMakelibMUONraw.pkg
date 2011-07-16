@@ -1,3 +1,5 @@
+# -*- mode: CMake -*-
+
 #--------------------------------------------------------------------------------#
 # Package File for MUONraw                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,16 +27,28 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliMUONDDLTrigger.cxx AliMUONDarcHeader.cxx AliMUONRegHeader.cxx AliMUONLocalStruct.cxx AliMUONPayloadTrigger.cxx AliMUONDDLTracker.cxx AliMUONBlockHeader.cxx AliMUONDspHeader.cxx AliMUONBusStruct.cxx AliMUONPayloadTracker.cxx AliMUONVRawStreamTracker.cxx AliMUONVRawStreamTrigger.cxx AliMUONRawStreamTracker.cxx AliMUONRawStreamTrackerHP.cxx AliMUONRawStreamTrigger.cxx AliMUONRawStreamTriggerHP.cxx AliMUONRawStream.cxx)
+set ( SRCS  
+    AliMUONDDLTrigger.cxx 
+    AliMUONDarcHeader.cxx 
+    AliMUONRegHeader.cxx 
+    AliMUONLocalStruct.cxx 
+    AliMUONPayloadTrigger.cxx 
+    AliMUONDDLTracker.cxx 
+    AliMUONBlockHeader.cxx 
+    AliMUONDspHeader.cxx 
+    AliMUONBusStruct.cxx 
+    AliMUONPayloadTracker.cxx 
+    AliMUONVRawStreamTracker.cxx 
+    AliMUONVRawStreamTrigger.cxx 
+    AliMUONRawStreamTracker.cxx 
+    AliMUONRawStreamTrackerHP.cxx 
+    AliMUONRawStreamTrigger.cxx 
+    AliMUONRawStreamTriggerHP.cxx 
+    AliMUONRawStream.cxx
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  MUONrawLinkDef.h)
 
 set ( EINCLUDE  RAW MUON/mapping)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lMUONcore -lSTEERBase -lRAWDatarec)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
