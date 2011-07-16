@@ -55,7 +55,7 @@ AliVParticle(),
 
     
 AliAODMCParticle::AliAODMCParticle(const AliMCParticle* mcpart, Int_t label,Int_t flag):
-    AliVParticle(),
+    AliVParticle(*mcpart),
     fPdgCode(mcpart->Particle()->GetPdgCode()),
     fFlag(flag),
     fLabel(label),
