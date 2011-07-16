@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG4PartCorrDep                                               #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,26 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  PartCorrDep/AliAnaCaloTrigger.cxx PartCorrDep/AliAnalysisTaskPHOSExample.cxx PartCorrDep/AliAnaExample.cxx  PartCorrDep/AliAnaParticleIsolation.cxx PartCorrDep/AliAnaParticlePartonCorrelation.cxx PartCorrDep/AliAnaParticleHadronCorrelation.cxx PartCorrDep/AliAnaParticleJetFinderCorrelation.cxx PartCorrDep/AliAnaParticleJetLeadingConeCorrelation.cxx PartCorrDep/AliAnaPhoton.cxx PartCorrDep/AliAnaPi0.cxx PartCorrDep/AliAnaPi0EbE.cxx PartCorrDep/AliAnaChargedParticles.cxx PartCorrDep/AliAnaCalorimeterQA.cxx PartCorrDep/AliAnaElectron.cxx PartCorrDep/AliAnaBtag.cxx PartCorrDep/AliAnaShowerParameter.cxx PartCorrDep/AliAnalysisTaskTaggedPhotons.cxx PartCorrDep/AliAnaOmegaToPi0Gamma.cxx)
+set ( SRCS  
+    PartCorrDep/AliAnaCaloTrigger.cxx 
+    PartCorrDep/AliAnalysisTaskPHOSExample.cxx 
+    PartCorrDep/AliAnaExample.cxx 
+    PartCorrDep/AliAnaParticleIsolation.cxx 
+    PartCorrDep/AliAnaParticlePartonCorrelation.cxx 
+    PartCorrDep/AliAnaParticleHadronCorrelation.cxx 
+    PartCorrDep/AliAnaParticleJetFinderCorrelation.cxx 
+    PartCorrDep/AliAnaParticleJetLeadingConeCorrelation.cxx 
+    PartCorrDep/AliAnaPhoton.cxx 
+    PartCorrDep/AliAnaPi0.cxx 
+    PartCorrDep/AliAnaPi0EbE.cxx 
+    PartCorrDep/AliAnaChargedParticles.cxx 
+    PartCorrDep/AliAnaCalorimeterQA.cxx 
+    PartCorrDep/AliAnaElectron.cxx 
+    PartCorrDep/AliAnaBtag.cxx 
+    PartCorrDep/AliAnaShowerParameter.cxx 
+    PartCorrDep/AliAnalysisTaskTaggedPhotons.cxx 
+    PartCorrDep/AliAnaOmegaToPi0Gamma.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -33,10 +53,4 @@ set ( DHDR  PWG4PartCorrDepLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  ANALYSIS EMCAL PHOS PWG4/PartCorrBase PWG4/PartCorrDep)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -lPWG4PartCorrBase -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  ANALYSIS EMCAL PHOS PWG4/PartCorrBase PWG4/PartCorrDep STEER/AOD STEER/STEERBase)

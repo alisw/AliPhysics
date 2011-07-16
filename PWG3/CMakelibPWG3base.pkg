@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG3base                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,13 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   base/AliQuarkoniaAcceptance.cxx base/AliQuarkoniaEfficiency.cxx base/AliAnalysisTaskPtMothFromPtDaugh.cxx base/AliPtMothFromPtDaugh.cxx base/AliCounterCollection.cxx)
+set ( SRCS   
+    base/AliQuarkoniaAcceptance.cxx 
+    base/AliQuarkoniaEfficiency.cxx 
+    base/AliAnalysisTaskPtMothFromPtDaugh.cxx 
+    base/AliPtMothFromPtDaugh.cxx 
+    base/AliCounterCollection.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -33,10 +40,4 @@ string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 set ( DHDR  PWG3baseLinkDef.h)
 
-set ( EINCLUDE  PWG3/base)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-	set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  PWG3/base STEER/STEERBase)

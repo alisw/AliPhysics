@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG2AOD                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,11 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AOD/AliPWG2AODTrack.cxx AOD/AliAnalysisTaskPWG2ESDfilter.cxx AOD/AliAnalysisTaskPWG2AODUpdate.cxx)
+set ( SRCS  
+    AOD/AliPWG2AODTrack.cxx 
+    AOD/AliAnalysisTaskPWG2ESDfilter.cxx 
+    AOD/AliAnalysisTaskPWG2AODUpdate.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -33,10 +38,4 @@ set ( DHDR PWG2AODLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PYTHIA6 PWG2/AOD)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  PYTHIA6 PWG2/AOD STEER/AOD STEER/STEERBase)

@@ -1,3 +1,4 @@
+# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for PWG0base                                                      #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,17 +26,21 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  dNdEta/dNdEtaAnalysis.cxx dNdEta/AlidNdEtaCorrection.cxx AliCorrectionMatrix.cxx AliCorrectionMatrix2D.cxx AliCorrectionMatrix3D.cxx AliCorrection.cxx AliPWG0Helper.cxx AliUnfolding.cxx multiplicity/AliMultiplicityCorrection.cxx genLevelSimulation/AliAnalysisTaskdNdetaMC.cxx)
+set ( SRCS 
+    dNdEta/dNdEtaAnalysis.cxx 
+    dNdEta/AlidNdEtaCorrection.cxx 
+    AliCorrectionMatrix.cxx 
+    AliCorrectionMatrix2D.cxx 
+    AliCorrectionMatrix3D.cxx 
+    AliCorrection.cxx 
+    AliPWG0Helper.cxx 
+    AliUnfolding.cxx 
+    multiplicity/AliMultiplicityCorrection.cxx 
+    genLevelSimulation/AliAnalysisTaskdNdetaMC.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWG0baseLinkDef.h)
 
-set ( EINCLUDE  PWG0/dNdEta PWG0/multiplicity PWG0/genLevelSimulation)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lANALYSIS -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
-
+set ( EINCLUDE  PWG0/dNdEta PWG0/multiplicity PWG0/genLevelSimulation STEER/AOD STEER/STEERBase)

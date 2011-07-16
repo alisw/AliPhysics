@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG4GammaConv                                                 #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -48,10 +49,4 @@ set ( DHDR  PWG4GammaConvLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  PWG4/GammaConv CORRFW)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  PWG4/GammaConv CORRFW STEER/AOD STEER/ESD STEER/STEERBase)

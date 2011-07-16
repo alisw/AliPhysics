@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG2evchar                                                    #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,13 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  EVCHAR/AliAnalysisTaskSPDdNdEta.cxx EVCHAR/AliTrackletAlg.cxx EVCHAR/AliAnalysisTaskCentrality.cxx EVCHAR/AliCentralityByFunction.cxx EVCHAR/AliCentralityGlauberFit.cxx)
+set ( SRCS  
+    EVCHAR/AliAnalysisTaskSPDdNdEta.cxx 
+    EVCHAR/AliTrackletAlg.cxx 
+    EVCHAR/AliAnalysisTaskCentrality.cxx 
+    EVCHAR/AliCentralityByFunction.cxx 
+    EVCHAR/AliCentralityGlauberFit.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -33,10 +40,4 @@ set ( DHDR PWG2evcharLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE  PWG2/EVCHAR)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lESD -lAOD -lSTEERBase -lCORRFW)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE  PWG2/EVCHAR STEER/STEER STEER/STEERBase)

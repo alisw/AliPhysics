@@ -64,7 +64,6 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( DHDR  PWG1LinkDef.h)
 
 set ( EINCLUDE  
-  STEER 
   TPC 
   ITS 
   TRD 
@@ -87,4 +86,9 @@ set ( EINCLUDE
   PWG1/ZDC 
   PWG1/T0 
   PWG4/PartCorrBase
+  STEER/STEER 
+  STEER/AOD 
+  STEER/CDB 
+  STEER/ESD
+  STEER/STEERBase
   )

@@ -1,3 +1,4 @@
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG4totEt                                                     #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,26 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  totEt/AliAnalysisEtCuts.cxx totEt/AliAnalysisEtCommon.cxx totEt/AliAnalysisEt.cxx totEt/AliAnalysisEtMonteCarlo.cxx totEt/AliAnalysisEtMonteCarloEmcal.cxx totEt/AliAnalysisEtMonteCarloPhos.cxx totEt/AliAnalysisEtReconstructed.cxx totEt/AliAnalysisEtReconstructedEmcal.cxx totEt/AliAnalysisEtReconstructedPhos.cxx totEt/AliAnalysisTaskTotEt.cxx totEt/AliAnalysisHadEt.cxx totEt/AliAnalysisHadEtMonteCarlo.cxx totEt/AliAnalysisHadEtReconstructed.cxx totEt/AliAnalysisTaskHadEt.cxx totEt/AliAnalysisHadEtCorrections.cxx totEt/AliAnalysisTaskTransverseEnergy.cxx totEt/AliAnalysisEtSelectionContainer.cxx totEt/AliAnalysisEtSelectionHandler.cxx)
+set ( SRCS  
+    totEt/AliAnalysisEtCuts.cxx 
+    totEt/AliAnalysisEtCommon.cxx 
+    totEt/AliAnalysisEt.cxx 
+    totEt/AliAnalysisEtMonteCarlo.cxx 
+    totEt/AliAnalysisEtMonteCarloEmcal.cxx 
+    totEt/AliAnalysisEtMonteCarloPhos.cxx 
+    totEt/AliAnalysisEtReconstructed.cxx 
+    totEt/AliAnalysisEtReconstructedEmcal.cxx 
+    totEt/AliAnalysisEtReconstructedPhos.cxx 
+    totEt/AliAnalysisTaskTotEt.cxx 
+    totEt/AliAnalysisHadEt.cxx 
+    totEt/AliAnalysisHadEtMonteCarlo.cxx 
+    totEt/AliAnalysisHadEtReconstructed.cxx 
+    totEt/AliAnalysisTaskHadEt.cxx 
+    totEt/AliAnalysisHadEtCorrections.cxx 
+    totEt/AliAnalysisTaskTransverseEnergy.cxx 
+    totEt/AliAnalysisEtSelectionContainer.cxx 
+    totEt/AliAnalysisEtSelectionHandler.cxx 
+    )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -33,10 +53,4 @@ set ( DHDR  PWG4totEtLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS PWG4/totEt)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -lPHOSUtils -L${ROOTLIBDIR} -lEG)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE ANALYSIS PWG4/totEt STEER/STEERBase)
