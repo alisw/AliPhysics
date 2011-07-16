@@ -833,7 +833,7 @@ AliHFEV0pid::AliHFEV0pidTrackIndex::~AliHFEV0pidTrackIndex(){
 }
 
 //____________________________________________________________
-const void AliHFEV0pid::AliHFEV0pidTrackIndex::Flush(){
+void AliHFEV0pid::AliHFEV0pidTrackIndex::Flush(){
   //
   // Reset containers
   //

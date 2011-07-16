@@ -127,13 +127,16 @@ Int_t AliHFEpidEMCAL::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanage
 { //Function to a return a code indicating whether or not an electron candidate is selected
   //
   //
+  if(track==NULL)return 0;
+
   if((!fESDpid && track->IsESDanalysis()) || (!fAODpid && track->IsAODanalysis())) return 0;
   AliDebug(2, "PID object available");
   // EMCal not fESDpid  (s.s Feb. 11)
-
-  
+	
+  const AliVTrack *trk = dynamic_cast<const AliVTrack *>(track->GetRecTrack());
+  if (trk == NULL) return 0;
   //AliHFEpidObject::AnalysisType_t anaType = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
-  if(!((dynamic_cast<const AliVTrack *>(track->GetRecTrack()))->GetStatus() & AliESDtrack::kEMCALmatch)) return 0;
+  if(!(trk->GetStatus() & AliESDtrack::kEMCALmatch)) return 0;
   AliDebug(2, "Track Has EMCAL PID");
   
   //if(pidqa) 
@@ -167,6 +170,7 @@ Double_t AliHFEpidEMCAL::MomentumEnergyMatchV2(const AliVParticle *const track) 
   double feop = -9999.9;
 
   const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
+  if(esdtrack==NULL)return feop;
   AliESDEvent *evt = esdtrack->GetESDEvent();
 
    Int_t icl = (const_cast<AliESDtrack *>(esdtrack))->GetEMCALcluster();
