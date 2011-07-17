@@ -16,7 +16,6 @@ set ( SRCS
     CDB/AliDCSSensorArray.cxx 
     CDB/AliDCSGenDB.cxx 
     CDB/AliSplineFit.cxx 
-    CDB/TTreeStream.cxx 
     CDB/AliPreprocessor.cxx 
     CDB/AliShuttleInterface.cxx 
     CDB/AliGRPDCS.cxx 

@@ -72,6 +72,7 @@ set ( SRCS
     STEERBase/AliRefArray.cxx
     STEERBase/AliOADBContainer.cxx	
     STEERBase/AliMathBase.cxx 
+    STEERBase/TTreeStream.cxx 
     )
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")
