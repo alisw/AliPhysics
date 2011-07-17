@@ -329,13 +329,13 @@ void AliQADataMakerRec::InitRecoParams()
       AliDebug(AliQAv1::GetQADebugLevel(), Form("Couldn't find RecoParam entry in OCDB for detector %s",GetName()));
     }
     else {
-      entry->SetOwner(kTRUE);
+      //      entry->SetOwner(kTRUE);
       TObject * recoParamObj = entry->GetObject() ; 
       if ( strcmp(recoParamObj->ClassName(), "TObjArray") == 0 ) {
         // The detector has only one set of reco parameters
         AliDebug(AliQAv1::GetQADebugLevel(), Form("Array of reconstruction parameters found for detector %s",GetName()));
         TObjArray *recoParamArray = static_cast<TObjArray*>(recoParamObj) ;
-        recoParamArray->SetOwner(kTRUE);
+	//        recoParamArray->SetOwner(kTRUE);
         for (Int_t iRP=0; iRP<recoParamArray->GetEntriesFast(); iRP++) {
           fRecoParam = static_cast<AliDetectorRecoParam*>(recoParamArray->At(iRP)) ;
           if (!fRecoParam) 

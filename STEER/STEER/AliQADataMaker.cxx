@@ -152,7 +152,7 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray ** list,
       if ( fParameterList[AliRecoParam::AConvert(fEventSpecie)] == NULL )
       {
         fParameterList[AliRecoParam::AConvert(fEventSpecie)] = new TList() ; 
-        fParameterList[AliRecoParam::AConvert(fEventSpecie)]->SetOwner(kTRUE);
+	//        fParameterList[AliRecoParam::AConvert(fEventSpecie)]->SetOwner(kTRUE);
       }
       fParameterList[AliRecoParam::AConvert(fEventSpecie)]->Add(p) ;
     }
@@ -519,8 +519,11 @@ Int_t AliQADataMaker::FillData(TObjArray ** list, Int_t index, double x)
 {
   // fills single histo or its trigger-dependent clones, return number of histos filled
   TObjArray* arr = GetMatchingHistos(list,index);
-  int count = arr->GetEntriesFast();
-  for (int ih=count;ih--;) ((TH1*)arr->At(ih))->Fill(x);
+  int count = 0;
+  if (arr) {
+    count = arr->GetEntriesFast();
+    for (int ih=count;ih--;) ((TH1*)arr->At(ih))->Fill(x);
+  }
   return count;
 }
 
@@ -529,8 +532,11 @@ Int_t AliQADataMaker::FillData(TObjArray ** list, Int_t index, double x, double 
 {
   // fills single histo or its trigger-dependent clones, return number of histos filled
   TObjArray* arr = GetMatchingHistos(list,index);
-  int count = arr->GetEntriesFast();
-  for (int ih=count;ih--;) ((TH1*)arr->At(ih))->Fill(x,y);
+  int count = 0;
+  if (arr) {
+    count = arr->GetEntriesFast();
+    for (int ih=count;ih--;) ((TH1*)arr->At(ih))->Fill(x,y);
+  }
   return count;
 }
 
@@ -539,8 +545,11 @@ Int_t AliQADataMaker::FillData(TObjArray ** list, Int_t index, double x, double 
 {
   // fills single histo or its trigger-dependent clones, return number of histos filled
   TObjArray* arr = GetMatchingHistos(list,index);
-  int count = arr->GetEntriesFast();
-  for (int ih=count;ih--;) ((TH2*)arr->At(ih))->Fill(x,y,z);
+  int count = 0;
+  if (arr) {
+    count = arr->GetEntriesFast();
+    for (int ih=count;ih--;) ((TH2*)arr->At(ih))->Fill(x,y,z);
+  }
   return count;
 }
 
@@ -549,8 +558,11 @@ Int_t AliQADataMaker::SetDataBinContent(TObjArray ** list, Int_t index, int bin,
 {
   // set bin content of single histo or its trigger-dependent clones, return number of histos filled
   TObjArray* arr = GetMatchingHistos(list,index);
-  int count = arr->GetEntriesFast();
-  for (int ih=count;ih--;) ((TH2*)arr->At(ih))->SetBinContent(bin,w);
+  int count = 0;
+  if (arr) {
+    count = arr->GetEntriesFast();
+    for (int ih=count;ih--;) ((TH2*)arr->At(ih))->SetBinContent(bin,w);
+  }
   return count;
 }
 
@@ -559,8 +571,11 @@ Int_t AliQADataMaker::SetDataBinContent(TObjArray ** list, Int_t index, int binX
 {
   // set bin content of single histo or its trigger-dependent clones, return number of histos filled
   TObjArray* arr = GetMatchingHistos(list,index);
-  int count = arr->GetEntriesFast();
-  for (int ih=count;ih--;) ((TH2*)arr->At(ih))->SetBinContent(binX,binY,w);
+  int count = 0;
+  if (arr) {
+    count = arr->GetEntriesFast();
+    for (int ih=count;ih--;) ((TH2*)arr->At(ih))->SetBinContent(binX,binY,w);
+  }
   return count;
 }
 
@@ -569,8 +584,11 @@ Int_t AliQADataMaker::SetDataBinError(TObjArray ** list, Int_t index, int bin, d
 {
   // set bin content of single histo or its trigger-dependent clones, return number of histos filled
   TObjArray* arr = GetMatchingHistos(list,index);
-  int count = arr->GetEntriesFast();
-  for (int ih=count;ih--;) ((TH2*)arr->At(ih))->SetBinError(bin,err);
+  int count = 0;
+  if (arr) {
+    count = arr->GetEntriesFast();
+    for (int ih=count;ih--;) ((TH2*)arr->At(ih))->SetBinError(bin,err);
+  }
   return count;
 }
 
@@ -579,8 +597,11 @@ Int_t AliQADataMaker::SetDataBinError(TObjArray ** list, Int_t index, int binX, 
 {
   // set bin content of single histo or its trigger-dependent clones, return number of histos filled
   TObjArray* arr = GetMatchingHistos(list,index);
-  int count = arr->GetEntriesFast();
-  for (int ih=count;ih--;) ((TH2*)arr->At(ih))->SetBinError(binX,binY,err);
+  int count = 0;
+  if (arr) {
+    count = arr->GetEntriesFast();
+    for (int ih=count;ih--;) ((TH2*)arr->At(ih))->SetBinError(binX,binY,err);
+  }
   return count;
 }
 
@@ -589,8 +610,11 @@ Int_t AliQADataMaker::ResetData(TObjArray ** list, Int_t index, Option_t* option
 {
   // reset content of single histo or its trigger-dependent clones, return number of histos processed
   TObjArray* arr = GetMatchingHistos(list,index);
-  int count = arr->GetEntriesFast();
-  for (int ih=count;ih--;) ((TH2*)arr->At(ih))->Reset(option);
+  int count = 0;
+  if (arr) {
+    count = arr->GetEntriesFast();
+    for (int ih=count;ih--;) ((TH2*)arr->At(ih))->Reset(option);
+  }
   return count;
 }
 
@@ -599,8 +623,11 @@ Int_t AliQADataMaker::ResetStatsData(TObjArray ** list, Int_t index)
 {
   // reset stats of single histo or its trigger-dependent clones, return number of histos processed
   TObjArray* arr = GetMatchingHistos(list,index);
-  int count = arr->GetEntriesFast();
-  for (int ih=count;ih--;) ((TH2*)arr->At(ih))->ResetStats();
+  int count = 0;
+  if (arr) {
+    count = arr->GetEntriesFast();
+    for (int ih=count;ih--;) ((TH2*)arr->At(ih))->ResetStats();
+  }
   return count;
 }
 
@@ -663,6 +690,7 @@ TObjArray* AliQADataMaker::GetDataOfTrigClass(TObjArray ** list, Int_t specieInd
   // get all histos for cloneID-th trigger class (-1 is for original "all-triggers" histos) in 
   // a single array (if dest is not provided, use its own static array). 
   // Existing histos are attached at their original positions
+  if (!list) return 0x0;
   TObjArray* arr = list[specieIndex] ;
   return GetDataOfTrigClass(arr, cloneID, dest);
 }

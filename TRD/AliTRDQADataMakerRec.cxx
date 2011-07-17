@@ -905,7 +905,12 @@ void AliTRDQADataMakerRec::MakeRecPoints(TTree * clustersTree)
       FillRecPointsData(7,c->GetPadRow(), c->GetPadCol());
       FillRecPointsData(8,c->GetPadTime());
       //
-      for (int ih=hists3D->GetEntriesFast();ih--;) ((TH3F*)hists3D->UncheckedAt(ih))->Fill(iDet, c->GetPadTime(), c->GetQ());
+      if (hists3D) {
+	for (int ih=hists3D->GetEntriesFast();ih--;) {
+	  TH3F * ahist = dynamic_cast<TH3F*>(hists3D->At(ih));
+	  if (ahist) ahist->Fill(iDet, c->GetPadTime(), c->GetQ());
+	}
+      }
       
       Int_t iSM = iDet / 30;
       FillRecPointsData(50+iSM,c->GetPadTime());

@@ -48,6 +48,7 @@ void AliTRDQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArray
 
   // Super-basic check on the QA histograms on the input list: 
 
+  if (!list) return;
   for(Int_t i=0; i<AliRecoParam::kNSpecies; i++) test[i] = 0.5; 
 
   //Int_t count[AliRecoParam::kNSpecies] = { 0 }; 
@@ -58,8 +59,10 @@ void AliTRDQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t index, TObjArray
   const Double_t highAmp = 50;
 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    
-    TH1D *hist = (TH1D*) list[specie]->At(12);
+
+    TObjArray * arr = list[specie];
+    if (!arr) continue;
+    TH1D *hist = (TH1D*) arr->At(12);
     if (!hist) continue;
     
     Double_t value = hist->Integral(hist->FindBin(lowAmp), hist->FindBin(highAmp));
