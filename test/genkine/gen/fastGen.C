@@ -11,6 +11,7 @@
 #include <TDatabasePDG.h>
 #include <TParticle.h>
 #include <TArrayI.h>
+#include <TTree.h>
 
 #include "AliGenerator.h"
 #include "AliPDG.h"
