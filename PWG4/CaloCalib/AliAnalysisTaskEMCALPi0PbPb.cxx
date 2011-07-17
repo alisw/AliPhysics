@@ -732,7 +732,7 @@ void AliAnalysisTaskEMCALPi0PbPb::Terminate(Option_t *)
       fNtuple->Write();
   }
 
-  AliInfo(Form("%s: Accepted %lld events", GetName(), fNEvs));
+  AliInfo(Form("%s: Accepted %lld events          ", GetName(), fNEvs));
 }
 
 //________________________________________________________________________
@@ -2042,6 +2042,8 @@ void AliAnalysisTaskEMCALPi0PbPb::PrintTrackRefs(AliMCParticle *p) const
   Int_t n = p->GetNumberOfTrackReferences();
   for (Int_t i=0; i<n; ++i) {
     AliTrackReference *ref = p->GetTrackReference(i);
+    if (!ref)
+      continue;
     ref->SetUserId(ref->DetectorId());
     ref->Print();
   }
@@ -2110,7 +2112,7 @@ void AliAnalysisTaskEMCALPi0PbPb::ProcessDaughters(AliMCParticle *p, Int_t index
   if (0) {
     printf("%d pid=%d: %.3f %.3f %.3f (%.2f %.2f %.2f); nd=%d,%d, mo=%d\n",
            index,p->PdgCode(),p->Px(),p->Py(),p->Pz(),p->Xv(),p->Yv(),p->Zv(),d1,d2, p->GetMother());
-    //PrintTrackRefs(p);
+    PrintTrackRefs(p);
   }  
   Int_t nents  = fMcParts->GetEntries();
 
