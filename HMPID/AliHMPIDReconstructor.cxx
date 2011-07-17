@@ -149,6 +149,8 @@ void AliHMPIDReconstructor::Reconstruct(TTree *pDigTree,TTree *pCluTree)const
     fClu->At(iCh)->Clear();
   }
   
+  delete [] pUserCut;
+  
   AliDebug(1,"Stop.");      
 }//Reconstruct(for simulated digits)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -198,6 +200,8 @@ void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)cons
   pDigTree->Fill();
   
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++)fDig->At(iCh)->Clear();
+  
+  delete [] pUserCut;
   
   AliDebug(1,"Stop.");
 }//Reconstruct digits from raw digits
