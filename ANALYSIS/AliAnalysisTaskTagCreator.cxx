@@ -75,6 +75,7 @@ void AliAnalysisTaskTagCreator::UserCreateOutputObjects()
     TBranch * btag = fTreeT->Branch("AliTAG", "AliRunTag", &fRunTag);
     btag->SetCompressionLevel(9);
     fTagCreator = new AliAODTagCreator();
+    PostData(1, fTreeT);
 }
 
 void AliAnalysisTaskTagCreator::Init()

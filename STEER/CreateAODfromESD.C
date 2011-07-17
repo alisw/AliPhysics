@@ -24,6 +24,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libCORRFW");
+    gSystem->Load("libPWG3base");
     gSystem->Load("libPWG3muon");
 
     TChain *chain = new TChain("esdTree");
