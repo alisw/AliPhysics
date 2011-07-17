@@ -124,7 +124,7 @@ void AliHMPIDReconstructor::Reconstruct(TTree *pDigTree,TTree *pCluTree)const
     pDigTree->SetBranchAddress(Form("HMPID%d",iCh),&((*fDig)[iCh]));
   }   
   
-  Int_t *pUserCut = new Int_t[7];
+  Int_t pUserCut[7];
   
    if(AliHMPIDReconstructor::GetRecoParam()) {
     for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
@@ -149,7 +149,6 @@ void AliHMPIDReconstructor::Reconstruct(TTree *pDigTree,TTree *pCluTree)const
     fClu->At(iCh)->Clear();
   }
   
-  delete [] pUserCut;
   
   AliDebug(1,"Stop.");      
 }//Reconstruct(for simulated digits)
@@ -169,7 +168,7 @@ void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)cons
     pDigTree->Branch(Form("HMPID%d",iCh),&((*fDig)[iCh]));
   }
     
-  Int_t *pUserCut = new Int_t[7];
+  Int_t pUserCut[7];
   
    if(AliHMPIDReconstructor::GetRecoParam()) {
     for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
@@ -201,7 +200,6 @@ void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)cons
   
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++)fDig->At(iCh)->Clear();
   
-  delete [] pUserCut;
   
   AliDebug(1,"Stop.");
 }//Reconstruct digits from raw digits
