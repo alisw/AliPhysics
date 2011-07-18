@@ -2017,7 +2017,7 @@ C                ********booking for x distribution of valence quarks
 100        FORMAT(
      &        10X,'**************************************************'/
      &        10X,'*',48X,'*'/
-     &        10X,'*         HIJING has been initialized at         *'/
+     &        10X,'*         HIJING for AMPT initialized at         *'/
      &        10X,'*',13X,A4,'= ',F10.2,' GeV/n',13X,'*'/
      &        10X,'*',48X,'*'/
      &        10X,'*',8X,'for ',
@@ -6794,7 +6794,7 @@ c     &        '*     |   / /  \     /  / \_|    /   -------     *'/10X,
      &        '*     |   / /  |     /  /  _|    /   -------     *'/10X,
      &        '*                                                *'/10X,
      &        '**************************************************'/10X,
-     &        '                      HIJING                      '/10X,
+     &        '               HIJING (for AMPT)                  '/10X,
      &        '       Heavy Ion Jet INteraction Generator        '/10X,
      &        '                        by                        '/10X,
      &  '            X. N. Wang  and  M. Gyulassy           '/10X,
