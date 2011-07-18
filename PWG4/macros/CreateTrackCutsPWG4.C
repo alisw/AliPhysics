@@ -98,6 +98,25 @@ AliESDtrackCuts *CreateTrackCutsPWG4(Int_t cutMode) {
 
   }
 
+  if(stdCutMode == 1003) {
+
+    bStdCutsDefined = kTRUE;
+
+    // tight global tracks
+    trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,1);
+    trackCuts->SetMinNClustersTPC(0);
+    trackCuts->SetMinNCrossedRowsTPC(120);
+    trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.1);// essentially switches it off
+    trackCuts->SetMaxDCAToVertexXY(2.4);
+    trackCuts->SetMaxDCAToVertexZ(3.2);
+    trackCuts->SetDCAToVertex2D(kTRUE);
+    trackCuts->SetMaxChi2PerClusterITS(36);
+    trackCuts->SetMaxFractionSharedTPCClusters(0.4);
+
+    tag = "Global tracks ITSTPC2010 + NCrossedRows + loose ITS";
+
+  }
+
   if(stdCutMode == 2000) {
 
     bStdCutsDefined = kTRUE;
@@ -130,6 +149,23 @@ AliESDtrackCuts *CreateTrackCutsPWG4(Int_t cutMode) {
 
     trackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); 
     trackCuts->SetMinNClustersTPC(70);
+
+    trackCuts->SetEtaRange(-0.9,0.9);
+    trackCuts->SetPtRange(0.15, 100.);
+
+ 
+    tag = "TPConly track cuts, loose cuts, NCls=70, no ITS requirements";
+
+  }
+
+  if(stdCutMode == 2002) {
+
+    bStdCutsDefined = kTRUE;
+
+    trackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); 
+    trackCuts->SetMinNClustersTPC(0);
+    trackCuts->SetMinNCrossedRowsTPC(120);
+    trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.1);// essentially switches it off  
 
     trackCuts->SetEtaRange(-0.9,0.9);
     trackCuts->SetPtRange(0.15, 100.);
@@ -183,6 +219,14 @@ AliESDtrackCuts *CreateTrackCutsPWG4(Int_t cutMode) {
     trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.);
 
     tag += " + additional: minClusters=0 minCrossedRows=0 minCrossedRowsOverFindable=0";
+
+  }
+
+  if(addCutMode == 1004) {
+
+    trackCuts->SetRequireITSRefit(kFALSE);
+
+    tag += " + additional: ITSrefit=kFALSE";
 
   }
 

@@ -812,8 +812,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   nT = GetListOfTracks(&genParticles,fTrackTypeGen);
   if(fDebug>2)Printf("%s:%d Selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nT,genParticles.GetEntries());
 
-  CalculateReactionPlaneAngle(&recParticles);
-
+  //  CalculateReactionPlaneAngle(&recParticles);
+  fRPAngle = aod->GetHeader()->GetEventplane();
   // Event control and counting ...  
   // MC
   fh1PtHard->Fill(ptHard,eventW);
