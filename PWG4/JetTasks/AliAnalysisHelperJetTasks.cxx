@@ -161,8 +161,8 @@ void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &k
   // all other are -1
   // use kMaxJets for a test not to fragemnt the memory...
 
-  for(int i = 0;i < kGenJets;++i)iGenIndex[i] = -1;
-  for(int j = 0;j < kRecJets;++j)iRecIndex[j] = -1;
+  for(int i = 0;i < kRecJets;++i)iGenIndex[i] = -1;
+  for(int j = 0;j < kGenJets;++j)iRecIndex[j] = -1;
 
 
   
