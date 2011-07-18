@@ -379,7 +379,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       else if(fTrackType==7) {
 	//use global constrained track
 	track = esdtrack;
-	track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
+	//	track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
 
       }
       else
@@ -399,12 +399,21 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       }
 
 
-      //fill the container
-      containerInputRec[0] = track->Pt();
-      containerInputRec[1] = track->Phi();
-      containerInputRec[2] = track->Eta();
-    
+   
       if (fTrackCuts->AcceptTrack(track)) {
+
+	if(fTrackType==7) {
+	  if(esdtrack->GetConstrainedParam()) 
+	    track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
+	  else
+	    continue;
+	}
+
+	//fill the container
+	containerInputRec[0] = track->Pt();
+	containerInputRec[1] = track->Phi();
+	containerInputRec[2] = track->Eta();
+
 	if(track->GetSign()>0.) fCFManagerPos->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
 	if(track->GetSign()<0.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
 

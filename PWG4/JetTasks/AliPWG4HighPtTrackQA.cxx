@@ -954,7 +954,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     else if(fTrackType==7) {
       //use global constrained track
       track = esdtrack;
-      track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
+      //     track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
     }
     else
       track = esdtrack;
@@ -985,6 +985,13 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
       continue;
     }
 
+    if(fTrackType==7) {
+      if(esdtrack->GetConstrainedParam()) 
+	track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
+      else
+	continue;
+    }
+
     fh1NTracksSel->Fill(0.);
 
     fVariables->Reset(0.);
@@ -995,12 +1002,13 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
 
     Float_t dca2D = 0.;
     Float_t dcaz  = 0.;
-    if(fTrackType==0) {       //Global
-      track->GetImpactParameters(dca2D,dcaz);
+
+    if(fTrackType==1 || fTrackType==2 || fTrackType==4) {  
+      track->GetImpactParametersTPC(dca2D,dcaz); //TPConly
     }
-    else if(fTrackType==1 || fTrackType==2 || fTrackType==4) {  //TPConly
-      track->GetImpactParametersTPC(dca2D,dcaz);
-    }
+    else
+      track->GetImpactParameters(dca2D,dcaz);    //Global
+
     fVariables->SetAt(dca2D,3);
     fVariables->SetAt(dcaz,5);
 
