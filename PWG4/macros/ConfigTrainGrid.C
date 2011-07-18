@@ -39,7 +39,7 @@
   // bextra == 0 4 plus
   // bextra == 1 large pass1 split..
   // bextra == 2 3 plus
-  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "110706a";
+  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "110717a";
   iAODanalysis = 0; 
   // 1 == Read Jets and tracks form the input AOD
   // needs the jet branchnames set explicitly
@@ -48,8 +48,8 @@
   // 1 =  write the Full AOD for all events 
   // 2 =  write the Full AOD for triggered events
   // 3 =  write the deltaAOD for all events
-  iFilterAnalysis = 2; 
-
+  iFilterAnalysis = 2;kJetTriggerPtCut = 40; 
+  
   if (kPluginMode.Contains("merge")){
     // currently merging this one...
     //    cDate = "110421a";
@@ -512,7 +512,7 @@
       iPWG4JetSpectrum = 1; 
       iPWG4JetServices  = 1; // !!!!!!!!!!! 
       iPWG4Cluster      = 1;// not 5....
-      kHighPtFilterMask = 1<<4; // Global tracks no SPD requirment
+      kHighPtFilterMask = 1<<4|1<<8; // Global tracks with SPD requirment global constraitn for the rest
       iPWG4Fragmentation = 1;
     //
     }// version1
@@ -1099,6 +1099,7 @@
   }
 
   if (kPluginMode.Contains("test")){
+    kJetTriggerPtCut = 0.01; 
     if(kAnalysisMode.Contains("grid")){
       //      kPluginExecutableCommand = "source ~/setup_root.txt; alienroot -b -q";      
       kPluginExecutableCommand = "root -b -q";      

@@ -1,3 +1,4 @@
+
 // **************************************
 // Task used for the correction of determiantion of reconstructed jet spectra
 // Compares input (gen) and output (rec) jets   
@@ -549,6 +550,9 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
   if(aod){
     const AliAODVertex *vtxAOD = aod->GetPrimaryVertex();
+    if(!vtxAOD){
+      aod->Print();
+    }
     aodVtxValid = IsVertexValid(vtxAOD);
     aodVtxIn = IsVertexIn(vtxAOD);
     Float_t zvtx = vtxAOD->GetZ();
@@ -597,7 +601,11 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
       TList recTracks;
       GetListOfTracks(&recTracks);
-      CalculateReactionPlaneAngle(&recTracks);
+      //      CalculateReactionPlaneAngle(&recTracks);
+      fRPAngle = aod->GetHeader()->GetEventplane();
+      fh1RP->Fill(fRPAngle);
+      fh2RPCentrality->Fill(fCentrality,fRPAngle);
+
       AliAnalysisHelperJetTasks::ReactionPlane(kTRUE,fRPAngle); // set slection to false
       if(fUseAODInput&&fCentrality<=80){
 	if(fFilterAODCollisions&&aod){
@@ -726,6 +734,10 @@ Bool_t  AliAnalysisTaskJetServices::IsVertexValid ( const AliESDVertex* vtx) {
   // SPD       SPDVertex             vertexer: 3D
   // SPD       SPDVertex             vertexer: Z
   
+  if(!vtx){
+    Printf("%s:%d No ESD vertex found",(char*)__FILE__,__LINE__);
+    return kFALSE;
+  }
   Int_t nCont = vtx->GetNContributors();
   if(nCont>=1){
     fEventCutInfoESD |= kContributorsCut1;    
@@ -767,6 +779,12 @@ Bool_t  AliAnalysisTaskJetServices::IsVertexValid ( const AliAODVertex* vtx) con
   // TPC       TPCVertex             VertexerTracksNoConstraint
   // SPD       SPDVertex             vertexer: 3D
   // SPD       SPDVertex             vertexer: Z
+
+  if(!vtx){
+    Printf("%s:%d No AOD vertex found",(char*)__FILE__,__LINE__);
+    return kFALSE;
+  }
+
 
   if(fDebug){
     Printf(" n contrib %d",vtx->GetNContributors());
