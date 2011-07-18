@@ -197,6 +197,8 @@
 #include "AliESDHLTDecision.h"
 #include "AliTriggerInput.h"
 #include "AliLHCData.h"
+#include "ARVersion.h"
+#include <RVersion.h>
 ClassImp(AliReconstruction)
 
 //_____________________________________________________________________________
@@ -2260,6 +2262,21 @@ void AliReconstruction::SlaveTerminate()
    ftree->GetUserInfo()->Add(cdbMapCopy);	 
    ftree->GetUserInfo()->Add(cdbListCopy);
 
+   // Add the AliRoot version that created this file
+   TString sVersion("aliroot ");
+   sVersion += ALIROOT_SVN_BRANCH;
+   sVersion += ":";
+   sVersion += ALIROOT_SVN_REVISION;
+   sVersion += "; root ";
+   sVersion += ROOT_SVN_BRANCH;
+   sVersion += ":";
+   sVersion += ROOT_SVN_REVISION;
+   sVersion += "; metadata ";
+   sVersion += gSystem->Getenv("PRODUCTION_METADATA");
+		    
+
+   TNamed * alirootVersion = new TNamed("alirootVersion",sVersion.Data());
+   ftree->GetUserInfo()->Add(alirootVersion); // The list becomes owner of alirootVersion
 
   ffile->cd();
 
