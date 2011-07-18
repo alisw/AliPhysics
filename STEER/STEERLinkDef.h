@@ -56,18 +56,8 @@
 #pragma link C++ class  AliV0vertexer+;
 #pragma link C++ class  AliCascadeVertexer+;
 
-#pragma link C++ class AliExpression+;
-#pragma link C++ class AliVariableExpression+;
-#pragma link C++ class AliTriggerInput+;
 #pragma link C++ class AliTriggerDetector+;
-#pragma link C++ class AliTriggerConfiguration+;
-#pragma link C++ class AliTriggerBCMask+;
-#pragma link C++ class AliTriggerInteraction+;
-#pragma link C++ class AliTriggerDescriptor+;
-#pragma link C++ class AliTriggerClass+;
 #pragma link C++ class AliCentralTrigger+;
-#pragma link C++ class AliTriggerCluster+;
-#pragma link C++ class AliTriggerPFProtection+;
 #pragma link C++ class AliTriggerUtils+;
 
 #pragma link C++ class AliGeomManager+;
@@ -88,15 +78,7 @@
 
 #pragma link C++ class  AliRieman;
 
-#pragma link C++ class AliExpression+;
-#pragma link C++ class AliVariableExpression+;
-#pragma link C++ class AliTriggerInput+;
 #pragma link C++ class AliTriggerDetector+;
-#pragma link C++ class AliTriggerConfiguration+;
-#pragma link C++ class AliTriggerBCMask+;
-#pragma link C++ class AliTriggerInteraction+;
-#pragma link C++ class AliTriggerDescriptor+;
-#pragma link C++ class AliTriggerClass+;
 #pragma link C++ class AliCentralTrigger+;
 #pragma link C++ class AliCTPRawStream+;
 #pragma link C++ class AliSignalProcesor+;

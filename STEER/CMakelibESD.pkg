@@ -48,14 +48,23 @@ set ( SRCS
     ESD/AliMeanVertex.cxx 
     ESD/AliESDCaloCells.cxx 
     ESD/AliESDACORDE.cxx 
-    ESD/AliTriggerIR.cxx 
     ESD/AliESDVZEROfriend.cxx 
-    ESD/AliTriggerScalersESD.cxx 
-    ESD/AliTriggerScalersRecordESD.cxx 
     ESD/AliESDHandler.cxx 
     ESD/AliTrackerBase.cxx  
     ESD/AliTOFHeader.cxx 
     ESD/AliESDUtils.cxx
+    ESD/AliTriggerIR.cxx 
+    ESD/AliTriggerScalersESD.cxx 
+    ESD/AliTriggerScalersRecordESD.cxx 
+    ESD/AliTriggerCluster.cxx 
+    ESD/AliTriggerDescriptor.cxx 
+    ESD/AliTriggerInput.cxx 
+    ESD/AliTriggerInteraction.cxx 
+    ESD/AliTriggerPFProtection.cxx 
+    ESD/AliTriggerBCMask.cxx 
+    ESD/AliTriggerClass.cxx 
+    ESD/AliTriggerConfiguration.cxx 
+    ESD/AliExpression.cxx 
     )
 
 string( REPLACE ".cxx" ".h" HDRS "${SRCS}")

@@ -47,15 +47,7 @@ set ( SRCS
     STEER/AliAlignObjParams.cxx 
     STEER/AliAlignObjMatrix.cxx 
     STEER/AliMisAligner.cxx 
-    STEER/AliTriggerInput.cxx 
     STEER/AliTriggerDetector.cxx 
-    STEER/AliTriggerConfiguration.cxx 
-    STEER/AliTriggerBCMask.cxx 
-    STEER/AliTriggerInteraction.cxx 
-    STEER/AliTriggerDescriptor.cxx 
-    STEER/AliTriggerClass.cxx 
-    STEER/AliTriggerCluster.cxx 
-    STEER/AliTriggerPFProtection.cxx 
     STEER/AliCentralTrigger.cxx 
     STEER/AliRieman.cxx 
     STEER/AliTrackFitter.cxx 
@@ -67,7 +59,6 @@ set ( SRCS
     STEER/AliTrackResidualsFast.cxx 
     STEER/AliTrackResidualsLinear.cxx 
     STEER/AliAlignmentTracks.cxx 
-    STEER/AliExpression.cxx 
     STEER/AliCTPRawStream.cxx 
     STEER/AliSignalProcesor.cxx 
     STEER/AliTracker.cxx 

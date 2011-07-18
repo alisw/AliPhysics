@@ -84,18 +84,28 @@
 #pragma link C++ class  AliMeanVertex+;
 #pragma link C++ class  AliESDCaloCells+;
 
-#pragma link C++ class  AliTriggerIR+;
-
 #pragma link C++ class  AliESDVZEROfriend+;
 #pragma link C++ class  AliESDTZEROfriend+;
 
-#pragma link C++ class  AliTriggerScalersESD+;
-#pragma link C++ class  AliTriggerScalersRecordESD+;
 #pragma link C++ class  AliESDHandler+;
 #pragma link C++ class  AliTrackerBase+;
 #pragma link C++ class  AliTOFHeader+;
 
 #pragma link C++ namespace AliESDUtils;
+
+#pragma link C++ class  AliTriggerIR+;
+#pragma link C++ class  AliTriggerScalersESD+;
+#pragma link C++ class  AliTriggerScalersRecordESD+;
+#pragma link C++ class AliTriggerCluster+;
+#pragma link C++ class AliTriggerDescriptor+;
+#pragma link C++ class AliTriggerInput+;
+#pragma link C++ class AliTriggerInteraction+;
+#pragma link C++ class AliTriggerPFProtection+;
+#pragma link C++ class AliTriggerBCMask+;
+#pragma link C++ class AliTriggerClass+;
+#pragma link C++ class AliTriggerConfiguration+;
+#pragma link C++ class AliExpression+;
+#pragma link C++ class AliVariableExpression+;
 
 #pragma link C++ function AliESDUtils::GetCorrV0(const AliESDEvent*,Float_t &);
 #pragma link C++ function AliESDUtils::GetCorrSPD2(Float_t,Float_t);

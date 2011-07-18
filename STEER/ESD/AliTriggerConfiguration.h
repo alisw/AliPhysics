@@ -29,7 +29,6 @@ class AliTriggerInput;
 class AliTriggerInteraction;
 class AliTriggerPFProtection;
 class AliTriggerBCMask;
-class AliTriggerDescriptor;
 class AliTriggerClass;
 
 class AliTriggerConfiguration : public TNamed {
