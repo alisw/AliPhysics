@@ -47,7 +47,7 @@ public:
       kFastOnly     = BIT(30), // The fast cluster fired. This bit is set in to addition another trigger bit, e.g. kMB
       kUserDefined  = BIT(31), // Set when custom trigger classes are set in AliPhysicsSelection, offline SPD or V0 selection
       kAny          = 0xffffffff, // to accept any trigger
-      kAnyINT       = kMB | kINT7 | kCINT5, // to accept any interaction (aka minimum bias) trigger
+      kAnyINT       = kMB | kINT7 | kCINT5 // to accept any interaction (aka minimum bias) trigger
   };
 
   AliVEvent() { }
