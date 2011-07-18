@@ -134,8 +134,8 @@ void AliTPCPreprocessorOffline::GetRunRange(AliTPCcalibTime * const  timeDrift){
   TObjArray *hisArray =timeDrift->GetHistoDrift();
   {for (Int_t i=0; i<hisArray->GetEntriesFast(); i++){
     THnSparse* addHist=(THnSparse*)hisArray->UncheckedAt(i);
-    if (addHist->GetEntries()<fMinEntries) continue;
     if (!addHist) continue;
+    if (addHist->GetEntries()<fMinEntries) continue;
     TH1D* histo    =addHist->Projection(3);
     TH1D* histoTime=addHist->Projection(0);
     printf("%s\t%f\t%d\t%d\n",histo->GetName(), histo->GetEntries(),histo->FindFirstBinAbove(0),histo->FindLastBinAbove(0));
