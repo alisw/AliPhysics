@@ -73,7 +73,7 @@ public:
   virtual Int_t       GetN10()  const;
   virtual Int_t       GetN11()  const;
   virtual Float_t     GetBB()   const;
-  virtual Float_t     GetPhi()  const { return fPhi; }
+  virtual Float_t     GetPhi()  const { return GetHINT1(20); }
 
   // common HIMAIN2 access routines - read-only common:
   virtual Int_t       GetKATT(Int_t key1, Int_t key2) const;
@@ -150,8 +150,7 @@ protected:
   Int_t        fIzt;      // Charge number of target
   Double_t     fBmin;     // Minimum impact parameter
   Double_t     fBmax;     // Maximum impact parameter
-  Double_t     fPhi;      //reaction plane angle (rotated from zero in C++ code)
  
-  ClassDef(TAmpt,1)  //Interface to Ampt Event Generator
+  ClassDef(TAmpt,2)  //Interface to Ampt Event Generator
 };
 #endif

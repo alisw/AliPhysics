@@ -77,8 +77,7 @@ TAmpt::TAmpt()
     fIat(208),
     fIzt(82),
     fBmin(0.),
-    fBmax(5.),
-    fPhi(0.)
+    fBmax(5.)
 {
   // Default constructor 
   amptsetdef();
@@ -99,12 +98,12 @@ TAmpt::TAmpt(Double_t efrm, const char *frame="CMS",
     fIat(iat),
     fIzt(izt),
     fBmin(bmin),
-    fBmax(bmax),
-    fPhi(0.)
+    fBmax(bmax)
 {
   // TAmpt constructor: 
   // Note that there may be only one functional TAmpt object
-  // at a time, so it's not use to create more than one instance of it.
+  // at a time, so it's not useful to create more than one 
+  // instance of it.
   amptsetdef();
 }
 
@@ -123,24 +122,17 @@ TObjArray* TAmpt::ImportParticles(Option_t */*option*/)
   Int_t numpart = HBT.nlast;
   printf("TAmpt: AMPT stack contains %d particles.\n", numpart);
 
-  Double_t sinphi = TMath::Sin(fPhi);
-  Double_t cosphi = TMath::Cos(fPhi);
-
   for (Int_t i=0; i < numpart; ++i) {
     Int_t status = 1;
-    Double_t px0 = HBT.plast[i][0];//GeV/c
-    Double_t py0 = HBT.plast[i][1];//GeV/c
-    Double_t px = px0*cosphi-py0*sinphi;
-    Double_t py = py0*cosphi+px0*sinphi;
-    Double_t pz  = HBT.plast[i][2];//GeV/c
-    Double_t ma  = HBT.plast[i][3];//GeV/c/c
-    Double_t vx0 = 0;//HBT.xlast[i][0]*1e-12;//mm
-    Double_t vy0 = 0;//HBT.xlast[i][1]*1e-12;//mm
-    Double_t vx  = vx0*cosphi-vy0*sinphi;
-    Double_t vy  = vy0*cosphi+vx0*sinphi;
-    Double_t vz  = 0;//HBT.xlast[i][2]*1e-12;//mm
-    Double_t vt  = 0;//HBT.xlast[i][3]*1e-12;//mm/c
-    Int_t pdg  = invflv(HBT.lblast[i]);
+    Double_t px = HBT.plast[i][0];//GeV/c
+    Double_t py = HBT.plast[i][1];//GeV/c
+    Double_t pz = HBT.plast[i][2];//GeV/c
+    Double_t ma = HBT.plast[i][3];//GeV/c/c
+    Double_t vx = 0;//HBT.xlast[i][0]*1e-12;//mm
+    Double_t vy = 0;//HBT.xlast[i][1]*1e-12;//mm
+    Double_t vz = 0;//HBT.xlast[i][2]*1e-12;//mm
+    Double_t vt = 0;//HBT.xlast[i][3]*1e-12;//mm/c
+    Int_t pdg   = invflv(HBT.lblast[i]);
     TParticle *p = new TParticle(pdg,
                                  status,
                                  -1,
@@ -154,9 +146,8 @@ TObjArray* TAmpt::ImportParticles(Option_t */*option*/)
                                  vx,
                                  vy,
                                  vz,
-                                 vt
-      );
-    if((px0==0)&&(py0==0)) {
+                                 vt);
+    if((px==0)&&(py==0)) {
       if(pz<0)
         p->SetUniqueID(0);
       else 
@@ -182,24 +173,17 @@ Int_t TAmpt::ImportParticles(TClonesArray *particles, Option_t */*option*/)
   Int_t numpart = HBT.nlast;
   printf("TAmpt: AMPT stack contains %d particles.\n", numpart);
 
-  Double_t sinphi = TMath::Sin(fPhi);
-  Double_t cosphi = TMath::Cos(fPhi);
-
   //at this point not clear how to read particle history, just take primaries.
   for (Int_t i=0; i < numpart; ++i) {
     Int_t status = 1;
-    Double_t px0 = HBT.plast[i][0];//GeV/c
-    Double_t py0 = HBT.plast[i][1];//GeV/c
-    Double_t px = px0*cosphi-py0*sinphi;
-    Double_t py = py0*cosphi+px0*sinphi;
-    Double_t pz  = HBT.plast[i][2];//GeV/c
-    Double_t ma  = HBT.plast[i][3];//GeV/c/c
-    Double_t vx0 = 0;//HBT.xlast[i][0]*1e-12;//mm
-    Double_t vy0 = 0;//HBT.xlast[i][1]*1e-12;//mm
-    Double_t vx  = vx0*cosphi-vy0*sinphi;
-    Double_t vy  = vy0*cosphi+vx0*sinphi;
-    Double_t vz  = 0;//HBT.xlast[i][2]*1e-12;//mm
-    Double_t vt  = 0;//HBT.xlast[i][3]*1e-12;//mm/c
+    Double_t px = HBT.plast[i][0];//GeV/c
+    Double_t py = HBT.plast[i][1];//GeV/c
+    Double_t pz = HBT.plast[i][2];//GeV/c
+    Double_t ma = HBT.plast[i][3];//GeV/c/c
+    Double_t vx = 0;//HBT.xlast[i][0]*1e-12;//mm
+    Double_t vy = 0;//HBT.xlast[i][1]*1e-12;//mm
+    Double_t vz = 0;//HBT.xlast[i][2]*1e-12;//mm
+    Double_t vt = 0;//HBT.xlast[i][3]*1e-12;//mm/c
     Int_t pdg  = invflv(HBT.lblast[i]);
     //printf("i %d pdg %d px %f py %f pz %f vx %f vy %f vz %f vt %f\n", i, pdg, px, py, pz, vx, vy, vz, vt);
     new(particlesR[i]) TParticle(pdg,
@@ -215,9 +199,8 @@ Int_t TAmpt::ImportParticles(TClonesArray *particles, Option_t */*option*/)
                                  vx,
                                  vy,
                                  vz,
-                                 vt
-      );
-    if((px0==0)&&(py0==0)){
+                                 vt);
+    if((px==0)&&(py==0)){
       if(pz<0)
         particlesR[i]->SetUniqueID(0);
       else 
@@ -239,18 +222,13 @@ Int_t TAmpt::ImportNucleons(TClonesArray *nucleons, Option_t */*option*/)
   TClonesArray &nucleonsR = *nucleons;
   nucleonsR.Clear();
 
-  Double_t sinphi = TMath::Sin(fPhi);
-  Double_t cosphi = TMath::Cos(fPhi);
-
   Int_t nA = HPARNT.ihnt2[0];
   for (Int_t i=0; i < nA; ++i) {
-    Double_t x0 = HJCRDN.yp[i][0] + 0.5*GetBB();
-    Double_t y0 = HJCRDN.yp[i][1];
-    Double_t x  = x0*cosphi-y0*sinphi;
-    Double_t y  = y0*cosphi+x0*sinphi;
-    Double_t z  = HJCRDN.yp[i][2];
-    Int_t    p  = HSTRNG.nfp[3][i];
-    Int_t    s  = HSTRNG.nfp[4][i];
+    Double_t x = HJCRDN.yp[i][0] + 0.5*GetBB();
+    Double_t y = HJCRDN.yp[i][1];
+    Double_t z = HJCRDN.yp[i][2];
+    Int_t    p = HSTRNG.nfp[3][i];
+    Int_t    s = HSTRNG.nfp[4][i];
     new(nucleonsR[i]) TParticle(p,
                                 s,
                                 -1,
@@ -264,19 +242,16 @@ Int_t TAmpt::ImportNucleons(TClonesArray *nucleons, Option_t */*option*/)
                                  x,
                                  y,
                                  z,
-                                 0
-      );
+                                 0);
     nucleonsR[i]->SetUniqueID(1);
   }
   Int_t nB = HPARNT.ihnt2[2];
   for (Int_t i=0; i < nB; ++i) {
-    Double_t x0 = HJCRDN.yt[i][0] - 0.5*HPARNT.hint1[18];
-    Double_t y0 = HJCRDN.yt[i][1];
-    Double_t x  = x0*cosphi-y0*sinphi;
-    Double_t y  = y0*cosphi+x0*sinphi;
-    Double_t z  = HJCRDN.yt[i][2];
-    Int_t    p  = HSTRNG.nft[3][i];
-    Int_t    s  = HSTRNG.nft[4][i];
+    Double_t x = HJCRDN.yt[i][0] - 0.5*HPARNT.hint1[18];
+    Double_t y = HJCRDN.yt[i][1];
+    Double_t z = HJCRDN.yt[i][2];
+    Int_t    p = HSTRNG.nft[3][i];
+    Int_t    s = HSTRNG.nft[4][i];
     new(nucleonsR[nA+i]) TParticle(p,
                                    s,
                                    -1,
@@ -290,8 +265,7 @@ Int_t TAmpt::ImportNucleons(TClonesArray *nucleons, Option_t */*option*/)
                                    x,
                                    y,
                                    z,
-                                   0
-      );
+                                   0);
     nucleonsR[nA+i]->SetUniqueID(-1);
   }
   return nA+nB;
@@ -1161,7 +1135,6 @@ void TAmpt::GenerateEvent()
   // Generates one event;
 
   //printf("Next event ------------------------\n");
-  fPhi =  TMath::TwoPi()*AliAmptRndm::GetAmptRandom()->Rndm()-TMath::Pi();
   Ampt(fFrame.Data(),fBmin,fBmax);
 }
 
