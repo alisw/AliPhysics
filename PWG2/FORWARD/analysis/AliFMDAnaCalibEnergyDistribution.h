@@ -1,11 +1,9 @@
 #ifndef ALIFMDANACALIBENERGYDISTRIBUTION_H
 #define ALIFMDANACALIBENERGYDISTRIBUTION_H
-
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TH1F.h>
 class TBrowser;
-
 /**
  * @ingroup FMD_ana
  * @brief Find most-probable value of MIP peak for one or more
@@ -19,7 +17,7 @@ class AliFMDAnaCalibEnergyDistribution : public TObject
   
   AliFMDAnaCalibEnergyDistribution();
   void  SetNetaBins(Int_t nbins) {fNetaBins = nbins;}
-  Int_t GetNetaBins() { return fNetaBins;}
+  Int_t GetNetaBins() const { return fNetaBins;}
   void  SetEtaLimits(Float_t eta_min, Float_t eta_max) {fEtaMin = eta_min; fEtaMax = eta_max;}
   void  SetEnergyDistributionUser(Int_t det, Char_t ring, Float_t eta, TH1F* edist);
   void  SetEnergyDistribution(Int_t det, Char_t ring, Int_t etabin, TH1F* edist);
@@ -33,13 +31,13 @@ class AliFMDAnaCalibEnergyDistribution : public TObject
   void Browse(TBrowser* b);
  protected:
   void      Init();
-  TObjArray fArray;
-  TObjArray fEmptyArray;
-  TObjArray fRingArray;
-  Bool_t    fIsInit;
-  Int_t     fNetaBins;
-  Float_t   fEtaMax;
-  Float_t   fEtaMin;
+  TObjArray fArray;       // Overall array
+  TObjArray fEmptyArray;  // Array of empty events energy dep
+  TObjArray fRingArray;   // Array of rings
+  Bool_t    fIsInit;      // Are we init?
+  Int_t     fNetaBins;    // Number of eta bins (intervals)
+  Float_t   fEtaMax;      // Max Eta
+  Float_t   fEtaMin;      // Min Eta
   
   ClassDef(AliFMDAnaCalibEnergyDistribution,3);
 };
