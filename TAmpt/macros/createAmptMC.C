@@ -8,6 +8,7 @@
 #include <TDatabasePDG.h>
 #include <TRandom3.h>
 #include <TChain.h>
+#include <TFolder.h>
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliHeader.h"
@@ -113,14 +114,14 @@ void createAmptMC(Int_t nEvents,
   genHi->SetProjectile("A", 208, 82);
   genHi->SetTarget    ("A", 208, 82);
   genHi->SetPtHardMin (2);
-  genHi->SetImpactParameterRange(0.,30);
+  genHi->SetImpactParameterRange(0,30);
   genHi->SetJetQuenching(0); // enable jet quenching
   genHi->SetShadowing(1);    // enable shadowing
   genHi->SetDecaysOff(1);    // neutral pion and heavy particle decays switched off
-  genHi->SetSpectators(1);   // track spectators 
-  genHi->SetIsoft(1);        // standard AMPT
+  genHi->SetSpectators(0);   // track spectators 
+  genHi->SetIsoft(4);        // 4=string melting, 1=standard AMPT
   genHi->SetXmu(3.2264);     // parton xsection
-  genHi->SetNtMax(3);        // time bins
+  genHi->SetNtMax(150);      // time bins
   if (0) { //RHIC settings
     genHi->SetAlpha(0.47140452);
     genHi->SetStringFrag(2.2,0.5);
