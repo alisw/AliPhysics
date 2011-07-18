@@ -298,6 +298,8 @@ AliExternalTrackParam * AliMCTrackingTestTask::MakeTrack(const AliTrackReference
   // Make track out of the track ref
   // part - TParticle used to determine chargr
   // the covariance matrix - equal 0 - starting from ideal MC position
+  if (!ref) return 0x0;
+  if (!part) return 0x0;
   Double_t xyz[3]={ref->X(),ref->Y(),ref->Z()};
   Double_t pxyz[3]={ref->Px(),ref->Py(),ref->Pz()};
   Double_t cv[21];
@@ -596,7 +598,7 @@ void  AliMCTrackingTestTask::ProcessMCInfo(){
 
   }
 
-  trefs->Clear("C");
+  if (trefs) trefs->Clear("C");
   //delete particle;
   //delete tpcIn;
 
@@ -699,6 +701,7 @@ void  AliMCTrackingTestTask::FitTrackRefs(TParticle * part, TClonesArray * trefs
   printf("FitTrackRefs\n");
 #endif
 
+  if (!trefs) return;
   const Int_t kMinRefs=6;
   Int_t nrefs = trefs->GetEntries();
   if (nrefs<kMinRefs) return; // we should have enough references
