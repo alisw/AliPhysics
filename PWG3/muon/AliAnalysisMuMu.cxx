@@ -531,7 +531,7 @@ void AliAnalysisMuMu::FillHistogramCollection(const char* physics, const char* t
 
   xmin = 0;
   xmax = 3564;
-  nbins = xmax - xmin;
+  nbins = GetNbins(xmin,xmax,1.0);
   
   CreateEventHisto(physics,triggerClassName,"BCX","bunch-crossing ids",nbins,xmin-0.5,xmax-0.5);
   
