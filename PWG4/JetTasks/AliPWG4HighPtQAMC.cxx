@@ -668,7 +668,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
     else if(fTrackType==7) {
       //use global constrained track
       track = esdtrack;
-      track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
+      //      track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
     }
     else
       track = esdtrack;
@@ -691,6 +691,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
       if(fTrackType==1 || fTrackType==2) delete track;
       continue;
     }
+
     TParticle *particle = fStack->Particle(label) ;
     if(!particle) {
       if(fTrackType==1 || fTrackType==2) {
@@ -701,14 +702,10 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 
     ptMC = particle->Pt();
 
-    pt  = track->Pt();
-    phi = track->Phi();
-    if(fTrackType==0) 
-      track->GetImpactParameters(dca2D,dcaZ);     //Global
-    else if(fTrackType==1 || fTrackType==2) 
+    if(fTrackType==1 || fTrackType==2) 
       track->GetImpactParametersTPC(dca2D,dcaZ);  //TPConly
-    else {continue;}
-
+    else
+      track->GetImpactParameters(dca2D,dcaZ);     //Global
     
     UChar_t itsMap = track->GetITSClusterMap();
     for (Int_t i=0; i < 6; i++) {
@@ -723,6 +720,16 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
     fPtAllMC->Fill(ptMC);
 
     if (fTrackCuts->AcceptTrack(track)) {
+
+      if(fTrackType==7) {
+	if(esdtrack->GetConstrainedParam()) 
+	  track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
+	else
+	  continue;
+      }
+
+      pt  = track->Pt();
+      phi = track->Phi();
 
       fPtSel->Fill(pt);
       if(track->GetLabel()<0) {
