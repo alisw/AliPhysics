@@ -320,7 +320,7 @@ void AliT0QADataMakerRec::InitRaws()
    fhBeamTVDCoff->GetYaxis()->SetTitle("(T0C+T0A/2, ns");
    fhBeamTVDCoff->SetOption("COLZ");
    Add2RawsList( fhBeamTVDCoff,222, expert, image, !saveCorr);
-   TH1F* fhMean = new TH1F("fhMean", " (T0A+T0C)/2, ns ", 200, -2000, 2000);
+   TH1F* fhMean = new TH1F("fhMean", " (T0A+T0C)/2, ps ", 200, -2000, 2000);
    Add2RawsList( fhMean,223, !expert, image, !saveCorr);
    //
    TH2F* fhBCID = new TH2F("fhBCID", "header BCID vs TRM BC ID ", 500, 0, 5000, 500, 0, 5000);
@@ -744,6 +744,14 @@ void AliT0QADataMakerRec::MakeESDs(AliESDEvent * esd)
   //
 }
 //____________________________________________________________________________
+//____________________________________________________________________________
+void AliT0QADataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
+{
+
+ //reset the detector histograms for a given task
+  AliQADataMakerRec::ResetDetector(task);
+}
+
 
 /*
 void AliT0QADataMakerRec::GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma) 

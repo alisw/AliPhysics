@@ -41,6 +41,7 @@ private:
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
   virtual void   StartOfDetectorCycle() ;
+  virtual void   ResetDetector(AliQAv1::TASKINDEX_t task) ;
 
   const AliT0RecoParam* GetRecoParam() { return dynamic_cast<const AliT0RecoParam*>(fRecoParam);}
 
