@@ -665,6 +665,11 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
       }
       track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
     }
+    else if(fTrackType==7) {
+      //use global constrained track
+      track = esdtrack;
+      track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
+    }
     else
       track = esdtrack;
     
