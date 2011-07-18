@@ -11,6 +11,7 @@
 */
 
 const AliTRDCalDet *GetCalDetVdrift(Int_t runNumber, Int_t version, Int_t subversion);
+
 void makeOCDB(TString runNumberString, TString  ocdbStorage="")
 {
   //
@@ -58,7 +59,7 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
   calibTask.ProcessOutput("CalibObjects.root", ocdbStorage);
 
 
-  // TRD part
+  //TRD part
   AliTRDPreprocessorOffline procestrd;
   procestrd.SetLinearFitForVdrift(kTRUE);
   procestrd.Init("CalibObjects.root");
@@ -66,7 +67,8 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
   Int_t subversionVdriftUsed = procestrd.GetSubVersionVdriftUsed();
   if(versionVdriftUsed != 0) {
 
-    const AliTRDCalDet* caldet=procestrd.SetCalDetVdrift(GetCalDetVdrift(runNumber,versionVdriftUsed,subversionVdriftUsed));
+    AliTRDCalDet *caldet =GetCalDetVdrift(runNumber,versionVdriftUsed,subversionVdriftUsed);
+    procestrd.SetCalDetVdrift(caldet);
 
     if(caldet) {
 
