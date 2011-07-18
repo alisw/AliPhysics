@@ -621,7 +621,8 @@ void AliT0v1::DefineOpticalProperties()
     {
       aPckov[i]=aPckov[i]*1e-9;//Photons energy bins 4 eV - 8.5 eV step 0.1 eV
       dPckov[i]=dPckov[i]*1e-9;//Photons energy bins 4 eV - 8.5 eV step 0.1 eV 
-      rindexAir[i]=0.0001;
+      //      rindexAir[i]=0.0001;
+      rindexAir[i] = 1.;
       rindexSiO2[i]=1.458; //refractive index for qwarts
       rindexCathodeNext[i]=0;
       efficAll[i]=1.;
