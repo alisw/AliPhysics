@@ -1566,14 +1566,16 @@ void AliAnalysisTaskMuonPerformance::FillContainerInfo(Double_t* containerInput,
   AliVParticle* track = esdTrack;
   if (!track) track = mcPart;
 
-  containerInput[kVarPt] = track->Pt();
-  containerInput[kVarEta] = track->Eta();
-  containerInput[kVarPhi] = track->Phi();
-  containerInput[kVarThetaZones] = (esdTrack) ? GetBinThetaAbsEnd(esdTrack->GetRAtAbsorberEnd()) : GetBinThetaAbsEnd(TMath::Pi()-track->Theta(),kTRUE);
-  containerInput[kVarCharge] = (esdTrack) ? static_cast<Double_t>(track->Charge()) : static_cast<Double_t>(track->Charge())/3.;
-  containerInput[kVarHasTracker] = (esdTrack) ? static_cast<Double_t>(esdTrack->ContainTrackerData()) : 0.;
-  containerInput[kVarTrigger] = (esdTrack) ? static_cast<Double_t>(esdTrack->GetMatchTrigger()) : 0.;
-  containerInput[kVarMotherType] = static_cast<Double_t>(RecoTrackMother(mcPart));
+  if (track) {
+    containerInput[kVarPt] = track->Pt();
+    containerInput[kVarEta] = track->Eta();
+    containerInput[kVarPhi] = track->Phi();
+    containerInput[kVarThetaZones] = (esdTrack) ? GetBinThetaAbsEnd(esdTrack->GetRAtAbsorberEnd()) : GetBinThetaAbsEnd(TMath::Pi()-track->Theta(),kTRUE);
+    containerInput[kVarCharge] = (esdTrack) ? static_cast<Double_t>(track->Charge()) : static_cast<Double_t>(track->Charge())/3.;
+    containerInput[kVarHasTracker] = (esdTrack) ? static_cast<Double_t>(esdTrack->ContainTrackerData()) : 0.;
+    containerInput[kVarTrigger] = (esdTrack) ? static_cast<Double_t>(esdTrack->GetMatchTrigger()) : 0.;
+    containerInput[kVarMotherType] = static_cast<Double_t>(RecoTrackMother(mcPart));
+  }
 
   if (esdTrack) esdTrack->SetLabel(mcID);
 }
