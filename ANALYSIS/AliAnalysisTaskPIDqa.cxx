@@ -100,7 +100,7 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
 
   //pid response object
   fPIDResponse=inputHandler->GetPIDResponse();
-  if (!fPIDResponse) AliFatal("PIDResponse object was not created");
+  if (!fPIDResponse) AliError("PIDResponse object was not created");
   
   //
   fListQA=new TList;
