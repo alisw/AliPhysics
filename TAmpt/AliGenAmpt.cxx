@@ -74,7 +74,7 @@ AliGenAmpt::AliGenAmpt()
     fRandomPz(kFALSE),
     fNoHeavyQuarks(kFALSE),
     fEventTime(0.),
-    fIsoft(1),
+    fIsoft(4),
     fNtMax(150),
     fIpop(1),
     fXmu(3.2264),
