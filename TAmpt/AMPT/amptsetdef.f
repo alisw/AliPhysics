@@ -40,7 +40,7 @@ c      common/phidcy/iphidcy
 c****************
 
 c     flag to select default AMPT or string melting:
-      isoft    = 1		! ISOFT (D=1): select Default AMPT or String Melting(see below)
+      isoft    = 4		! ISOFT (D=1): select Default AMPT or String Melting(see below)
 c     read initialization value for hadron cascade:
       NTMAX    = 150		! NTMAX: number of timesteps (D=150), see below
       DT       = 0.2		! DT: timestep in fm (hadron cascade time= DT*NTMAX) (D=0.2)
@@ -73,7 +73,7 @@ c     2 seeds for random number generators in HIJING/hadron cascade and ZPC:
       nseed    = 53153511	! random seed for HIJING
       iseedp   = 8		! random seed for parton cascade
       iksdcy   = 0		! flag for Ks0 weak decays (D=0,no; 1,yes)
-      iphidcy  = 1		! flag for phi decays at end of hadron cascade (D=1,yes; 0,no)
+      iphidcy  = 0		! flag for phi decays at end of hadron cascade (D=1,yes; 0,no)
 c     flag for OSCAR output for final partons and hadrons:
       ioscar   = 0		! optional OSCAR output (D=0,no; 1,yes; 2&3,more parton info)
 clin-5/2008     flag for perturbative treatment of deuterons:
