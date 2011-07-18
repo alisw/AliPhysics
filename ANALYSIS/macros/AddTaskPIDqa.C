@@ -20,9 +20,10 @@ AliAnalysisTask *AddTaskPIDqa(){
   //              data containers
   //================================================
 
+  TString outputfile = Form("%s:PIDqa", AliAnalysisManager::GetCommonFileName());
   AliAnalysisDataContainer *coutput1 =
     mgr->CreateContainer("PIDqa", TList::Class(),
-                         AliAnalysisManager::kOutputContainer,"PIDqa.root");
+                         AliAnalysisManager::kOutputContainer,outputfile);
   
   //           connect containers
   mgr->ConnectInput  (task,  0, mgr->GetCommonInputContainer() );
