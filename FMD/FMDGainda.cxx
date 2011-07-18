@@ -11,6 +11,7 @@
   Output Files:            gains.csv
   Trigger types used:      GAIN
 */
+#include <Riostream.h>
 #include <TSystem.h>
 #include <TString.h>
 #include <AliFMDParameters.h>
@@ -76,15 +77,15 @@ int main(int argc, char **argv)
     TString arg(argv[i]);
     if      (arg.Contains("--diagnostics=true")) diagnostics = kTRUE;
     else if (arg.Contains("--help")) { 
-      std::cout << "Usage: " << argv[0] << " FILENAME [OPTIONS]\n\n"
+      cout << "Usage: " << argv[0] << " FILENAME [OPTIONS]\n\n"
 		<< "Options:\n" 
 		<< "    --diagnostics=BOOL Make diagnostics ROOT file\n"
-		<< std::endl;
+		<< endl;
       return 0;
     }
     else { 
-      std::cerr << "Unknown option: " << arg << "\n"
-		<< "Try '" << argv[0] << " --help" << std::endl;
+      cerr << "Unknown option: " << arg << "\n"
+		<< "Try '" << argv[0] << " --help" << endl;
       return 1;
     }
   }
@@ -103,8 +104,8 @@ int main(int argc, char **argv)
     reader = new AliRawReaderRoot(fileName);
   else reader = new AliRawReaderDate(fileName);
   if (!reader) { 
-    std::cerr << "Don't know how to make reader for " << fileNam 
-	      << std::endl;
+    cerr << "Don't know how to make reader for " << fileNam 
+	      << endl;
     return -2;
   }
 
@@ -129,7 +130,7 @@ int main(int argc, char **argv)
 			AliFMDParameters::Instance()->GetGainShuttleID());
 
   if(retvalConditions!=0 || retvalGain!=0)
-    std::cerr << "Pedestal DA failed" << std::endl;
+    cerr << "Pedestal DA failed" << endl;
   
 #ifdef ALI_AMORE
   try { 
@@ -150,8 +151,8 @@ int main(int argc, char **argv)
       myAmore.Send(obj->GetName(), obj);
     
   }
-  catch (std::exception& e) {
-    std::cerr << "Failed to make AMORE instance: " << e.what() << std::endl;
+  catch (exception& e) {
+    cerr << "Failed to make AMORE instance: " << e.what() << endl;
   }
 			       
 #endif

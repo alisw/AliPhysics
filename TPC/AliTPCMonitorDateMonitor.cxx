@@ -86,7 +86,7 @@ Int_t AliTPCMonitorDateMonitor::OpenMonitoring(string name){
 }
 
 //_____________________________________________________________________________
-char* AliTPCMonitorDateMonitor::DecodeError(Int_t error  ){
+const char* AliTPCMonitorDateMonitor::DecodeError(Int_t error  ){
   // Return decoded error string 
   return monitorDecodeError(error);
 }

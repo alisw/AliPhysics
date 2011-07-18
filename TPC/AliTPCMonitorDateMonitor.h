@@ -33,7 +33,7 @@ class AliTPCMonitorDateMonitor : public TNamed {
     
     void    Free();
     Int_t   OpenMonitoring(string name);
-    Char_t* DecodeError(int error);
+    const Char_t* DecodeError(int error);
     Int_t   DeclareMonitor(string name); 
     Int_t   FlushEvents();
     Int_t   GetEvent();

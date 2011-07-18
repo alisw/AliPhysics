@@ -11,6 +11,7 @@
   Output Files:            conditions.csv
   Trigger types used:      PHYSICS_EVENT
 */
+#include <Riostream.h>
 #include "monitor.h"
 #include "event.h"
 #include <AliLog.h>
@@ -52,7 +53,7 @@ int main(int argc, char **argv)
   int status;
   /* define data source : this is argument 1 */  
   if (argc < 2) { 
-    std::cout << "No monitor source set" << std::endl;
+    cout << "No monitor source set" << endl;
     return -1;
   }
   status=monitorSetDataSource( argv[1] );
@@ -110,7 +111,7 @@ int main(int argc, char **argv)
       retval = 
 	daqDA_FES_storeFile("conditions.csv", 
 			    AliFMDParameters::Instance()->GetConditionsShuttleID());
-      if (retval != 0) std::cerr << "Base DA failed" << std::endl;
+      if (retval != 0) cerr << "Base DA failed" << endl;
       
       break;
     
