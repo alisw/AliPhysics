@@ -540,10 +540,11 @@ macro(ALICE_CopyHeaders)
     set(HEADERS ${EXPORT})
     set(_headersdep)
     foreach(header ${HEADERS})
-      add_custom_command(OUTPUT ${PEXPORTDEST}/${header}
-                         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/${MODULE}/${header} ${PEXPORTDEST}/${header}
+      get_filename_component( header_name ${header} NAME )
+      add_custom_command(OUTPUT ${PEXPORTDEST}/${header_name}
+                         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/${MODULE}/${header} ${PEXPORTDEST}/${header_name}
 			 DEPENDS ${CMAKE_SOURCE_DIR}/${MODULE}/${header})
-      list(APPEND _headersdep ${PEXPORTDEST}/${header})
+      list(APPEND _headersdep ${PEXPORTDEST}/${header_name})
       install(FILES ${header} DESTINATION include)
     endforeach(header)
     add_custom_target(${PACKAGE}-headers DEPENDS ${_headersdep})
