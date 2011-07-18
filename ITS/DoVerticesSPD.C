@@ -33,7 +33,7 @@
 Bool_t DoVerticesSPD(Bool_t isMC=kFALSE, Int_t pileupalgo=1, Int_t optdebug=0){
 
   TFile *fint = new TFile("VertexSPD.root","recreate");
-  TNtuple *nt = new TNtuple("ntvert","vertices","xtrue:ytrue:ztrue:zZ:zdiffZ:zerrZ:ntrksZ:x3D:xdiff3D:xerr3D:y3D:ydiff3D:yerr3D:z3D:zdiff3D:zerr3D:ntrks3D:dndy:ntrklets:nrp1:ptyp:is3D:isTriggered");
+  TNtuple *nt = new TNtuple("ntvert","vertices","xtrue:ytrue:ztrue:zZ:zdiffZ:zerrZ:ntrksZ:x3D:xdiff3D:xerr3D:y3D:ydiff3D:yerr3D:z3D:zdiff3D:zerr3D:ntrks3D:nchgen:ntrklets:nrp1:ptyp:is3D:isTriggered");
 
   if (gClassTable->GetID("AliRun") < 0) {
     gInterpreter->ExecuteMacro("loadlibs.C");
@@ -129,7 +129,7 @@ Bool_t DoVerticesSPD(Bool_t isMC=kFALSE, Int_t pileupalgo=1, Int_t optdebug=0){
   for (Int_t iEvent = 0; iEvent < totev; iEvent++) {
     TArrayF mcVertex(3); 
     runLoader->GetEvent(iEvent);
-    Double_t dNchdy = 0.;
+    Double_t nChGen = 0.;
     Int_t ptype = 0;
     if(optdebug){
       printf("==============================================================\n");
@@ -152,9 +152,9 @@ Bool_t DoVerticesSPD(Bool_t isMC=kFALSE, Int_t pileupalgo=1, Int_t optdebug=0){
 	if(part->GetPDG()->Charge() == 0) continue;
 	Double_t eta=part->Eta();
 	
-	if(TMath::Abs(eta)<1.5) dNchdy+=1.; 
+	if(TMath::Abs(eta)<1.5) nChGen+=1.; 
       }
-      if(optdebug) printf(" dNch/dy = %f\n",dNchdy);
+      if(optdebug) printf(" N. of generated charged primaries in |eta|<1.5 = %f\n",nChGen);
     }
     tree->GetEvent(iEvent);
 
@@ -244,7 +244,7 @@ Bool_t DoVerticesSPD(Bool_t isMC=kFALSE, Int_t pileupalgo=1, Int_t optdebug=0){
     xnt[15]=zerr3d;
     xnt[16]=ntrk3d;
 
-    xnt[17]=dNchdy;
+    xnt[17]=nChGen;
     xnt[18]=float(ntrklets);
     xnt[19]=float(nrecp1);
     xnt[20]=float(ptype);
@@ -256,7 +256,7 @@ Bool_t DoVerticesSPD(Bool_t isMC=kFALSE, Int_t pileupalgo=1, Int_t optdebug=0){
     if(optdebug){
       printf("Vertexer3D: \tx=%.5f \ty=%.5f \tz(cm)=%.5f \tContributors=%d \n",x3d,y3d,z3d,ntrk3d);
       printf("VertexerZ:  \tx=%.5f \ty=%.5f \tz(cm)=%.5f \tContributors=%d \n",0.,0.,zz,ntrkz);
-      if(isMC) printf("True Pos.: \tx=%.5f \ty=%.5f \tz(cm)=%.5f \tdN/dy=%.1f\n",mcVertex[0],mcVertex[1],mcVertex[2],dNchdy);
+      if(isMC) printf("True Pos.: \tx=%.5f \ty=%.5f \tz(cm)=%.5f \tdN/dy=%.1f\n",mcVertex[0],mcVertex[1],mcVertex[2],nChGen);
       printf("Multiplicity: Tracklets=%d  ClustersLay1=%d\n",ntrklets,nrecp1);
     }
     
