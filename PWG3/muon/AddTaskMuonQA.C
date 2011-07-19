@@ -1,5 +1,7 @@
-AliAnalysisTaskMuonQA *AddTaskMuonQA(Bool_t selectPhysics = kFALSE, Bool_t selectTrigger = kFALSE,
-				     Bool_t selectMatched = kFALSE, Bool_t applyAccCut = kFALSE, Short_t selectCharge = 0)
+AliAnalysisTaskMuonQA *AddTaskMuonQA(Bool_t selectPhysics = kTRUE, Bool_t selectTrigger = kFALSE,
+				     UInt_t triggerMask = AliVEvent::kMUS7,
+				     Bool_t selectMatched = kFALSE, 
+				     Bool_t applyAccCut = kFALSE, Short_t selectCharge = 0)
 {
   /// Add AliAnalysisTaskMuonQA to the train (Philippe Pillot)
   
@@ -25,7 +27,7 @@ AliAnalysisTaskMuonQA *AddTaskMuonQA(Bool_t selectPhysics = kFALSE, Bool_t selec
     return NULL;
   }
   task->SelectPhysics(selectPhysics);
-  task->SelectTrigger(selectTrigger);
+  task->SelectTrigger(selectTrigger, triggerMask);
   task->SelectMatched(selectMatched);
   task->ApplyAccCut(applyAccCut);
   task->SelectCharge(selectCharge);
