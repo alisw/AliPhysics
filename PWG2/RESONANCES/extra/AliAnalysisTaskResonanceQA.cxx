@@ -178,7 +178,7 @@ void AliAnalysisTaskResonanceQA::UserCreateOutputObjects()
    for (i = 0; i < kResonances; i++) {
       fRsnYPt[0][i] = new TH2F(Form("%s_all", RsnName(i)), Form("%s -- ALL;p_{t} (GeV/c);Rapidity", RsnName(i)), vPtBin, vPtMin, vPtMax, vYBin, vYMin, vYMax);
       fRsnYPt[1][i] = new TH2F(Form("%s_prim", RsnName(i)), Form("%s -- PRIMARY;p_{t} (GeV/c);Rapidity", RsnName(i)), vPtBin, vPtMin, vPtMax, vYBin, vYMin, vYMax);
-      fRsnYPtCINT1B[0][i] = new TH2F(Form("%s_CINT1B_all", RsnName(i)), Form("%s -- ALL;p_{t} (GeV/c);Rapidity", RsnName(i)), vPtBin, vPtMin, vtMax, vYBin, vYMin, vYMax);
+      fRsnYPtCINT1B[0][i] = new TH2F(Form("%s_CINT1B_all", RsnName(i)), Form("%s -- ALL;p_{t} (GeV/c);Rapidity", RsnName(i)), vPtBin, vPtMin, vPtMax, vYBin, vYMin, vYMax);
       fRsnYPtCINT1B[1][i] = new TH2F(Form("%s_CINT1B_prim", RsnName(i)), Form("%s -- PRIMARY;p_{t} (GeV/c);Rapidity", RsnName(i)), vPtBin, vPtMin, vPtMax, vYBin, vYMin, vYMax);
       fProducedParticles->GetXaxis()->SetBinLabel(i + 1, RsnSymbol(i));
    }
@@ -197,6 +197,8 @@ void AliAnalysisTaskResonanceQA::UserCreateOutputObjects()
    for (i = 0; i < kResonances; i++) {
       fOutputList->Add(fRsnYPt[0][i]);
       fOutputList->Add(fRsnYPt[1][i]);
+      fOutputList->Add(fRsnYPtCINT1B[0][i]);
+      fOutputList->Add(fRsnYPtCINT1B[1][i]);
    }
    
    PostData(1, fOutputList);
