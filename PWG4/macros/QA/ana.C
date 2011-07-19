@@ -68,7 +68,7 @@ void ana(Int_t mode=mLocal)
       AliMCEventHandler* mcHandler = new AliMCEventHandler();
       mcHandler->SetReadTR(kFALSE);//Do not search TrackRef file
       mgr->SetMCtruthEventHandler(mcHandler);
-	  if( kInputData == "MC") mgr->SetInputEventHandler(NULL);
+      if( kInputData == "MC") mgr->SetInputEventHandler(NULL);
     }
     
     //input
@@ -88,18 +88,60 @@ void ana(Int_t mode=mLocal)
     
      //mgr->SetDebugLevel(-1); // For debugging, do not uncomment if you want no messages.
 
+    // AOD output handler, needed for physics selection
+    cout<<"Init output handler"<<endl;
+    AliAODHandler* aodoutHandler   = new AliAODHandler();
+    aodoutHandler->SetOutputFileName("aod.root");
+    ////aodoutHandler->SetCreateNonStandardAOD();
+    mgr->SetOutputEventHandler(aodoutHandler);
+    
     //-------------------------------------------------------------------------
     //Define task, put here any other task that you want to use.
     //-------------------------------------------------------------------------
+    
+    TString outputFile = AliAnalysisManager::GetCommonFileName(); 
     AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
-
+    
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+    
     //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
     //AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kTRUE);
-
-   
+    
+    //Counting events tasks
+    AliAnalysisTaskCounter * counterMB = new AliAnalysisTaskCounter("CounterMB");
+    counterMB->SelectCollisionCandidates(AliVEvent::kMB);
+    
+    AliAnalysisDataContainer *coutputMB = 
+      mgr->CreateContainer("counterMB", TList::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
+    mgr->AddTask(counterMB);
+    mgr->ConnectInput  (counterMB,  0, cinput1);
+    mgr->ConnectOutput (counterMB, 1, coutputMB);
+    
+    AliAnalysisTaskCounter * counterEMC = new AliAnalysisTaskCounter("CounterEMC");
+    counterEMC->SelectCollisionCandidates(AliVEvent::kEMC7);
+    
+    AliAnalysisDataContainer *coutputEMC = 
+      mgr->CreateContainer("counterEMC", TList::Class(), AliAnalysisManager::kOutputContainer,  outputFile.Data());
+    mgr->AddTask(counterEMC);
+    mgr->ConnectInput  (counterEMC,  0, cinput1);
+    mgr->ConnectOutput (counterEMC, 1, coutputEMC);
+    
+    AliAnalysisTaskCounter * counterINT = new AliAnalysisTaskCounter("CounterINT");
+    counterINT->SelectCollisionCandidates(AliVEvent::kINT7);
+    
+    AliAnalysisDataContainer *coutputINT = 
+      mgr->CreateContainer("counterINT7", TList::Class(), AliAnalysisManager::kOutputContainer,  outputFile.Data());
+    mgr->AddTask(counterINT);
+    mgr->ConnectInput  (counterINT,  0, cinput1);
+    mgr->ConnectOutput (counterINT, 1, coutputINT);
+    
+    
     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
-    AliAnalysisTaskParticleCorrelation *taskQA = AddTaskCalorimeterQA(kInputData,kFALSE,kMC);
+    AliAnalysisTaskParticleCorrelation *taskQAEMC = AddTaskCalorimeterQA(kInputData,2011,kFALSE,kMC,"","kEMC7");
+    taskQAEMC->SelectCollisionCandidates(AliVEvent::kEMC7);
+    AliAnalysisTaskParticleCorrelation *taskQAINT = AddTaskCalorimeterQA(kInputData,2011,kFALSE,kMC,"","kINT7");
+    taskQAINT->SelectCollisionCandidates(AliVEvent::kINT7);
 
     //-----------------------
     // Run the analysis
