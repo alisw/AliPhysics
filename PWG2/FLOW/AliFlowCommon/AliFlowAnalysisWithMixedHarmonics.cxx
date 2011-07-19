@@ -78,6 +78,7 @@ fnBinsEta(0),
 fEtaMin(0),
 fEtaMax(0),
 fEtaBinWidth(0),
+fCommonConstants(NULL),
 fWeightsList(NULL),
 fUsePhiWeights(kFALSE),
 fUsePtWeights(kFALSE),
@@ -96,6 +97,7 @@ fNonIsotropicTermsPro(NULL),
 f3pCorrelatorVsMPro(NULL),
 f3pPOICorrelatorVsM(NULL),
 fNonIsotropicTermsVsMPro(NULL),
+fNonIsotropicTermsList(NULL),
 f2pCorrelatorCosPsiDiffPtDiff(NULL),
 f2pCorrelatorCosPsiSumPtDiff(NULL),
 f2pCorrelatorSinPsiDiffPtDiff(NULL),
@@ -132,6 +134,9 @@ fDetectorBiasVsMHist(NULL)
  // List to hold all all-event profiles:      
  fProfileList = new TList();
  
+ // List to hold profiles with all non-isotropic terms for diff. correlators:      
+ fNonIsotropicTermsList = new TList();
+
  // List to hold objects with final results:      
  fResultsList = new TList();
 
@@ -174,7 +179,7 @@ void AliFlowAnalysisWithMixedHarmonics::Init()
  TH1::SetDefaultSumw2();
  
  this->CrossCheckSettings();
- this->AccessConstants();
+ this->AccessConstants("Init");
  this->BookAndNestAllLists();
  this->BookProfileHoldingSettings();
  this->BookCommonHistograms();
@@ -329,12 +334,40 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
        f2pCorrelatorSinPsiSumEtaSum->Fill((dEta1+dEta2)/2.,TMath::Sin(n*(dPsi1+dPsi2)));
        //=========================================================//
        
+       // non-isotropic terms, 1st POI:
+       fReNITEBE[0][0][0]->Fill((dPt1+dPt2)/2.,TMath::Cos(n*(dPsi1)),1.);
+       fReNITEBE[0][0][1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1)),1.);
+       fReNITEBE[0][0][2]->Fill((dEta1+dEta2)/2.,TMath::Cos(n*(dPsi1)),1.);
+       fReNITEBE[0][0][3]->Fill(TMath::Abs(dEta1-dEta2),TMath::Cos(n*(dPsi1)),1.);
+       fImNITEBE[0][0][0]->Fill((dPt1+dPt2)/2.,TMath::Sin(n*(dPsi1)),1.);
+       fImNITEBE[0][0][1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Sin(n*(dPsi1)),1.);
+       fImNITEBE[0][0][2]->Fill((dEta1+dEta2)/2.,TMath::Sin(n*(dPsi1)),1.);
+       fImNITEBE[0][0][3]->Fill(TMath::Abs(dEta1-dEta2),TMath::Sin(n*(dPsi1)),1.);
+       // non-isotropic terms, 2nd POI:
+       fReNITEBE[1][0][0]->Fill((dPt1+dPt2)/2.,TMath::Cos(n*(dPsi2)),1.);
+       fReNITEBE[1][0][1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi2)),1.);
+       fReNITEBE[1][0][2]->Fill((dEta1+dEta2)/2.,TMath::Cos(n*(dPsi2)),1.);
+       fReNITEBE[1][0][3]->Fill(TMath::Abs(dEta1-dEta2),TMath::Cos(n*(dPsi2)),1.);
+       fImNITEBE[1][0][0]->Fill((dPt1+dPt2)/2.,TMath::Sin(n*(dPsi2)),1.);
+       fImNITEBE[1][0][1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Sin(n*(dPsi2)),1.);
+       fImNITEBE[1][0][2]->Fill((dEta1+dEta2)/2.,TMath::Sin(n*(dPsi2)),1.);
+       fImNITEBE[1][0][3]->Fill(TMath::Abs(dEta1-dEta2),TMath::Sin(n*(dPsi2)),1.);
+
        if(b1stPOIisAlsoRP)
        {
         fOverlapEBE[0][0]->Fill((dPt1+dPt2)/2.,TMath::Cos(n*(dPsi1-dPsi2)),1.);
         fOverlapEBE[0][1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1-dPsi2)),1.);
         fOverlapEBE2[0][0]->Fill((dEta1+dEta2)/2.,TMath::Cos(n*(dPsi1-dPsi2)),1.);
         fOverlapEBE2[0][1]->Fill(TMath::Abs(dEta1-dEta2),TMath::Cos(n*(dPsi1-dPsi2)),1.);
+        // non-isotropic terms, 1st POI:
+        fReNITEBE[0][1][0]->Fill((dPt1+dPt2)/2.,TMath::Cos(n*(dPsi1)),1.);
+        fReNITEBE[0][1][1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1)),1.);
+        fReNITEBE[0][1][2]->Fill((dEta1+dEta2)/2.,TMath::Cos(n*(dPsi1)),1.);
+        fReNITEBE[0][1][3]->Fill(TMath::Abs(dEta1-dEta2),TMath::Cos(n*(dPsi1)),1.);
+        fImNITEBE[0][1][0]->Fill((dPt1+dPt2)/2.,TMath::Sin(n*(dPsi1)),1.);
+        fImNITEBE[0][1][1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Sin(n*(dPsi1)),1.);
+        fImNITEBE[0][1][2]->Fill((dEta1+dEta2)/2.,TMath::Sin(n*(dPsi1)),1.);
+        fImNITEBE[0][1][3]->Fill(TMath::Abs(dEta1-dEta2),TMath::Sin(n*(dPsi1)),1.);       
        }
        if(b2ndPOIisAlsoRP)
        {
@@ -342,6 +375,15 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
         fOverlapEBE[1][1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1-dPsi2)),1.);
         fOverlapEBE2[1][0]->Fill((dEta1+dEta2)/2.,TMath::Cos(n*(dPsi1-dPsi2)),1.);
         fOverlapEBE2[1][1]->Fill(TMath::Abs(dEta1-dEta2),TMath::Cos(n*(dPsi1-dPsi2)),1.);
+        // non-isotropic terms, 2nd POI:
+        fReNITEBE[1][1][0]->Fill((dPt1+dPt2)/2.,TMath::Cos(n*(dPsi2)),1.);
+        fReNITEBE[1][1][1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi2)),1.);
+        fReNITEBE[1][1][2]->Fill((dEta1+dEta2)/2.,TMath::Cos(n*(dPsi2)),1.);
+        fReNITEBE[1][1][3]->Fill(TMath::Abs(dEta1-dEta2),TMath::Cos(n*(dPsi2)),1.);
+        fImNITEBE[1][1][0]->Fill((dPt1+dPt2)/2.,TMath::Sin(n*(dPsi2)),1.);
+        fImNITEBE[1][1][1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Sin(n*(dPsi2)),1.);
+        fImNITEBE[1][1][2]->Fill((dEta1+dEta2)/2.,TMath::Sin(n*(dPsi2)),1.);
+        fImNITEBE[1][1][3]->Fill(TMath::Abs(dEta1-dEta2),TMath::Sin(n*(dPsi2)),1.);       
        }
       } // end of if(aftsTrack->InPOISelection()) // 2nd POI
      } // end of for(Int_t j=i+1;j<nPrim;j++)
@@ -398,16 +440,18 @@ void AliFlowAnalysisWithMixedHarmonics::Finish()
  // Calculate the final results.
  
  // a) Check all pointers used in this method;
- // b) Access settings for analysis with mixed harmonics;
- // c) Correct for detector effects;
- // d) Print on the screen the final results.
+ // b) Access common constants;
+ // c) Access settings for analysis with mixed harmonics;
+ // d) Correct for detector effects;
+ // e) Print on the screen the final results.
  
  this->CheckPointersUsedInFinish();
+ this->AccessConstants("Finish");          
  this->AccessSettings();
  this->CorrectForDetectorEffects();
  if(fCalculateVsM){this->CorrectForDetectorEffectsVsM();}
  if(fPrintOnTheScreen){this->PrintOnTheScreen();}
-                                                                                                                                                                                                                                                                                                               
+                                                                                                                                                                                                                                                                                                                                                                       
 } // end of AliFlowAnalysisWithMixedHarmonics::Finish()
 
 //================================================================================================================
@@ -459,6 +503,14 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForBaseHistograms()
     cout<<endl;
     exit(0);  
    }
+   
+ TString sCommonConstantsName = "fCommonConstants";
+ fCommonConstants = dynamic_cast<TProfile*>(fHistList->FindObject(sCommonConstantsName.Data()));
+ if(!fCommonConstants)
+ {
+  printf("\n WARNING (MH): fCommonConstants is NULL in GetPointersForBaseHistograms() !!!!\n\n");
+  exit(0);
+ }
  
 } // end of void AliFlowAnalysisWithMixedHarmonics::GetPointersForBaseHistograms()
 
@@ -498,7 +550,16 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
   cout<<endl;
   exit(0); 
  }  
- 
+ TList *nonIsotropicTermsList = NULL;
+ nonIsotropicTermsList = dynamic_cast<TList*>(profileList->FindObject("Nonisotropic Terms"));
+ if(!nonIsotropicTermsList && fEvaluateDifferential3pCorrelator) 
+ {
+  cout<<endl;
+  cout<<" WARNING (MH): nonIsotropicTerms is NULL in GetPointersForAllEventProfiles() !!!!"<<endl;
+  cout<<endl;
+  exit(0); 
+ }  
+  
  TString s3pCorrelatorProName = "f3pCorrelatorPro";
  TProfile *p3pCorrelatorPro = dynamic_cast<TProfile*>(profileList->FindObject(s3pCorrelatorProName.Data()));
  if(p3pCorrelatorPro)
@@ -530,6 +591,12 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
   this->SetNonIsotropicTermsVsMPro(nonIsotropicTermsVsMPro);  
  } 
  TString psdFlag[2] = {"PtSum","PtDiff"}; 
+ TString psdFlag2[2] = {"EtaSum","EtaDiff"};
+ TString nonIsotropicTerm[10] = {"#LT#LTcos(#psi_{POI_1})#GT#GT","#LT#LTsin(#psi_{POI_1})#GT#GT",
+                                 "#LT#LTcos(#psi_{POI_2})#GT#GT","#LT#LTsin(#psi_{POI_2})#GT#GT",
+                                 "#LT#LTcos(#psi_{POI_1}-2#phi_{RP})#GT#GT","#LT#LTsin(#psi_{POI_1}-2#phi_{RP})#GT#GT",
+                                 "#LT#LTcos(#psi_{POI_2}-2#phi_{RP})#GT#GT","#LT#LTsin(#psi_{POI_2}-2#phi_{RP})#GT#GT",
+                                 "#LT#LTcos(#psi_{POI_1}+#psi_{POI_2})#GT#GT","#LT#LTsin(#psi_{POI_1}+#psi_{POI_2})#GT#GT"}; 
  for(Int_t sd=0;sd<2;sd++)
  {
   TProfile *p3pCorrelatorVsPtSumDiffPro = dynamic_cast<TProfile*>(profileList->FindObject(Form("f3pCorrelatorVs%sPro",psdFlag[sd].Data())));
@@ -537,7 +604,32 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
   {
    this->Set3pCorrelatorVsPtSumDiffPro(p3pCorrelatorVsPtSumDiffPro,sd);  
   }
- }
+  TProfile *p3pCorrelatorVsEtaSumDiffPro = dynamic_cast<TProfile*>(profileList->FindObject(Form("f3pCorrelatorVs%sPro",psdFlag2[sd].Data())));
+  if(p3pCorrelatorVsEtaSumDiffPro)
+  {
+   this->Set3pCorrelatorVsEtaSumDiffPro(p3pCorrelatorVsEtaSumDiffPro,sd);  
+  }
+  if(nonIsotropicTermsList) 
+  {
+   for(Int_t t=0;t<10;t++)
+   {   
+    // Pt:
+    TProfile *pNonIsotropicTermsVsPtSumDiffPro = dynamic_cast<TProfile*>
+                      (nonIsotropicTermsList->FindObject(Form("fNonIsotropicTermsVs%sPro %s",psdFlag[sd].Data(),nonIsotropicTerm[t].Data())));
+    if(pNonIsotropicTermsVsPtSumDiffPro)
+    {
+     this->SetNonIsotropicTermsVsPtSumDiffPro(pNonIsotropicTermsVsPtSumDiffPro,sd,t);  
+    } 
+    // Eta:
+    TProfile *pNonIsotropicTermsVsEtaSumDiffPro = dynamic_cast<TProfile*>
+                      (nonIsotropicTermsList->FindObject(Form("fNonIsotropicTermsVs%sPro %s",psdFlag2[sd].Data(),nonIsotropicTerm[t].Data())));
+    if(pNonIsotropicTermsVsEtaSumDiffPro)
+    {
+     this->SetNonIsotropicTermsVsEtaSumDiffPro(pNonIsotropicTermsVsEtaSumDiffPro,sd,t);  
+    }                        
+   } // end of for(Int_t t=0;t<10;t++)
+  } // end of if(nonIsotropicTermsList)
+ } // end of for(Int_t sd=0;sd<2;sd++)
 
  //2p correlator vs |Pt1-Pt2|
  TProfile *g2pCorrelatorCosPsiDiffPtDiff = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiDiffPtDiff"));
@@ -643,6 +735,22 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
  {
   this->SetDetectorBiasVsMHist(detectorBiasVsMHist);  
  }
+ 
+ TString psdFlag[2] = {"PtSum","PtDiff"}; 
+ TString psdFlag2[2] = {"EtaSum","EtaDiff"};
+ for(Int_t sd=0;sd<2;sd++)
+ {
+  TH1D *h3pCorrelatorVsPtSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorVs%sHist",psdFlag[sd].Data())));
+  if(h3pCorrelatorVsPtSumDiffHist)
+  {
+   this->Set3pCorrelatorVsPtSumDiffHist(h3pCorrelatorVsPtSumDiffHist,sd);  
+  }
+  TH1D *h3pCorrelatorVsEtaSumDiffHist = dynamic_cast<TH1D*>(resultsList->FindObject(Form("f3pCorrelatorVs%sHist",psdFlag2[sd].Data())));
+  if(h3pCorrelatorVsEtaSumDiffHist)
+  {
+   this->Set3pCorrelatorVsEtaSumDiffHist(h3pCorrelatorVsEtaSumDiffHist,sd);  
+  } 
+ } // end of for(Int_t sd=0;sd<2;sd++)
 
 } // end of void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
 
@@ -691,7 +799,14 @@ void AliFlowAnalysisWithMixedHarmonics::InitializeArrays()
   fImEtaEBE[sd] = NULL;
   f3pCorrelatorVsPtSumDiffPro[sd] = NULL;
   f3pCorrelatorVsEtaSumDiffPro[sd] = NULL;
- }
+  f3pCorrelatorVsPtSumDiffHist[sd] = NULL;
+  f3pCorrelatorVsEtaSumDiffHist[sd] = NULL;
+  for(Int_t t=0;t<10;t++) // non-isotropic terms for diff. correlators
+  {
+   fNonIsotropicTermsVsPtSumDiffPro[sd][t] = NULL;
+   fNonIsotropicTermsVsEtaSumDiffPro[sd][t] = NULL;
+  } 
+ } // end of for(Int_t sd=0;sd<2;sd++)
  for(Int_t fs=0;fs<2;fs++) // 1st/2nd POI which is also RP
  {
   for(Int_t sd=0;sd<2;sd++)
@@ -699,7 +814,18 @@ void AliFlowAnalysisWithMixedHarmonics::InitializeArrays()
    fOverlapEBE[fs][sd] = NULL;
    fOverlapEBE2[fs][sd] = NULL;
   }  
- } 
+ } // end of for(Int_t fs=0;fs<2;fs++) // 1st/2nd POI which is also RP
+ for(Int_t p12=0;p12<2;p12++) // 1st/2nd POI 
+ {
+  for(Int_t ao=0;ao<2;ao++) // all/overlap
+  {
+   for(Int_t pe=0;pe<4;pe++) // [(p1+p2)/2,|p1-p2|,(eta1+eta2)/2,|eta1-eta2|]
+   {
+    fReNITEBE[p12][ao][pe] = NULL;
+    fImNITEBE[p12][ao][pe] = NULL;
+   } // end of for(Int_t pe=0;pe<4;pe++) // [(p1+p2)/2,|p1-p2|,(eta1+eta2)/2,|eta1-eta2|]
+  } // end of for(Int_t ao=0;ao<2;ao++) // all/overlap
+ } // end of for(Int_t p12=0;p12<2;p12++) // 1st/2nd POI 
   
 } // end of AliFlowAnalysisWithMixedHarmonics::InitializeArrays()
 
@@ -721,6 +847,10 @@ void AliFlowAnalysisWithMixedHarmonics::BookAndNestAllLists()
  fResultsList->SetName("Results");
  fResultsList->SetOwner(kTRUE);   
  fHistList->Add(fResultsList); 
+ // Profiles with non-isotropic terms for diff. correlators:
+ fNonIsotropicTermsList->SetName("Nonisotropic Terms");
+ fNonIsotropicTermsList->SetOwner(kTRUE);   
+ if(fEvaluateDifferential3pCorrelator){fProfileList->Add(fNonIsotropicTermsList);} 
 
 } // end of void AliFlowAnalysisWithMixedHarmonics::BookAndNestAllLists()
 
@@ -749,7 +879,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookProfileHoldingSettings()
  fAnalysisSettings->GetXaxis()->SetBinLabel(7,"fOppositeChargesPOI");
  fAnalysisSettings->Fill(6.5,(Int_t)fOppositeChargesPOI); 
  fAnalysisSettings->GetXaxis()->SetBinLabel(8,"fEvaluateDifferential3pCorrelator");
- fAnalysisSettings->Fill(7.5,(Int_t)fOppositeChargesPOI); 
+ fAnalysisSettings->Fill(7.5,(Int_t)fEvaluateDifferential3pCorrelator); 
  fAnalysisSettings->GetXaxis()->SetBinLabel(9,"fCalculateVsM");
  fAnalysisSettings->Fill(8.5,(Int_t)fCalculateVsM);  
  fAnalysisSettings->GetXaxis()->SetBinLabel(10,"fShowBinLabelsVsM");
@@ -801,6 +931,20 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllEventByEventQuantities()
    fOverlapEBE2[fs][sd] = new TProfile(Form("%s POI 2, %s",fsFlag[sd].Data(),p2sdFlag[sd].Data()),"",fnBinsEta,fEtaMin,fEtaMax);
   }
  }  
+ Int_t nBinsPtEta[4] = {fnBinsPt,fnBinsPt,fnBinsEta,fnBinsEta};
+ Double_t dPtEtaMin[4] = {0.,0.,fEtaMin,fEtaMin}; 
+ Double_t dPtEtaMax[4] = {fPtMax,fPtMax,fEtaMax,fEtaMax}; 
+ for(Int_t p12=0;p12<2;p12++) // 1st/2nd POI 
+ {
+  for(Int_t ao=0;ao<2;ao++) // all/overlap
+  {
+   for(Int_t pe=0;pe<4;pe++) // [(p1+p2)/2,|p1-p2|,(eta1+eta2)/2,|eta1-eta2|]
+   {
+    fReNITEBE[p12][ao][pe] = new TProfile(Form("fReNITEBE%d%d%d",p12,ao,pe),"",nBinsPtEta[pe],dPtEtaMin[pe],dPtEtaMax[pe]);
+    fImNITEBE[p12][ao][pe] = new TProfile(Form("fImNITEBE%d%d%d",p12,ao,pe),"",nBinsPtEta[pe],dPtEtaMin[pe],dPtEtaMax[pe]);
+   } // end of for(Int_t pe=0;pe<4;pe++) // [(p1+p2)/2,|p1-p2|,(eta1+eta2)/2,|eta1-eta2|]
+  } // end of for(Int_t ao=0;ao<2;ao++) // all/overlap
+ } // end of for(Int_t p12=0;p12<2;p12++) // 1st/2nd POI 
 
 } // end fo void AliFlowAnalysisWithMixedHarmonics::BookAllEventByEventQuantities()
 
@@ -1115,6 +1259,58 @@ void AliFlowAnalysisWithMixedHarmonics::BookDifferential()
   f3pCorrelatorVsEtaSumDiffPro[sd]->GetXaxis()->SetTitle(psdTitleFlag2[sd].Data());
   fProfileList->Add(f3pCorrelatorVsEtaSumDiffPro[sd]);
  }
+ 
+ // Corrected for detector effects:
+ for(Int_t sd=0;sd<2;sd++)
+ {
+  f3pCorrelatorVsPtSumDiffHist[sd] = new TH1D(Form("f3pCorrelatorVs%sHist",psdFlag[sd].Data()),"",fnBinsPt,0.,fPtMax);
+  f3pCorrelatorVsPtSumDiffHist[sd]->SetStats(kFALSE);
+  f3pCorrelatorVsEtaSumDiffHist[sd] = new TH1D(Form("f3pCorrelatorVs%sHist",psdFlag2[sd].Data()),"",fnBinsEta,fEtaMin,fEtaMax);
+  f3pCorrelatorVsEtaSumDiffHist[sd]->SetStats(kFALSE);
+  //f3pCorrelatorVsPtSumDiffHist[sd]->SetLabelSize(0.05);
+  //f3pCorrelatorVsPtSumDiffHist[sd]->SetMarkerStyle(25);
+  if(fHarmonic == 1)
+  {
+   f3pCorrelatorVsPtSumDiffHist[sd]->SetTitle(Form("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} %s",psdTitleFlag[sd].Data())); 
+   f3pCorrelatorVsEtaSumDiffHist[sd]->SetTitle(Form("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} %s",psdTitleFlag2[sd].Data())); 
+  } else
+    {
+     f3pCorrelatorVsPtSumDiffHist[sd]->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag[sd].Data())); 
+     f3pCorrelatorVsEtaSumDiffHist[sd]->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[sd].Data())); 
+    }   
+  f3pCorrelatorVsPtSumDiffHist[sd]->GetXaxis()->SetTitle(psdTitleFlag[sd].Data());
+  fResultsList->Add(f3pCorrelatorVsPtSumDiffHist[sd]);
+  f3pCorrelatorVsEtaSumDiffHist[sd]->GetXaxis()->SetTitle(psdTitleFlag2[sd].Data());
+  fResultsList->Add(f3pCorrelatorVsEtaSumDiffHist[sd]);
+ }
+ 
+ //TString psdFlag[2] = {"PtSum","PtDiff"};
+ //TString psdTitleFlag[2] = {"(p_{T,1}+ p_{T,2})/2","#left|p_{T,1}- p_{T,2}#right|"};
+ //TString psdFlag2[2] = {"EtaSum","EtaDiff"};
+ //TString psdTitleFlag2[2] = {"(#eta_{1}+ #eta_{2})/2","#left|#eta_{1}- #eta_{2}#right|"};
+ TString nonIsotropicTerm[10] = {"#LT#LTcos(#psi_{POI_1})#GT#GT","#LT#LTsin(#psi_{POI_1})#GT#GT",
+                                 "#LT#LTcos(#psi_{POI_2})#GT#GT","#LT#LTsin(#psi_{POI_2})#GT#GT",
+                                 "#LT#LTcos(#psi_{POI_1}-2#phi_{RP})#GT#GT","#LT#LTsin(#psi_{POI_1}-2#phi_{RP})#GT#GT",
+                                 "#LT#LTcos(#psi_{POI_2}-2#phi_{RP})#GT#GT","#LT#LTsin(#psi_{POI_2}-2#phi_{RP})#GT#GT",
+                                 "#LT#LTcos(#psi_{POI_1}+#psi_{POI_2})#GT#GT","#LT#LTsin(#psi_{POI_1}+#psi_{POI_2})#GT#GT"};
+ for(Int_t sd=0;sd<2;sd++)
+ {
+  for(Int_t t=0;t<10;t++)
+  { 
+   // Pt:
+   fNonIsotropicTermsVsPtSumDiffPro[sd][t] = new TProfile(Form("fNonIsotropicTermsVs%sPro %s",psdFlag[sd].Data(),nonIsotropicTerm[t].Data()),"",fnBinsPt,0.,fPtMax);
+   fNonIsotropicTermsVsPtSumDiffPro[sd][t]->SetTitle(Form("%s vs %s",nonIsotropicTerm[t].Data(),psdTitleFlag[sd].Data()));
+   fNonIsotropicTermsVsPtSumDiffPro[sd][t]->SetStats(kFALSE);
+   fNonIsotropicTermsVsPtSumDiffPro[sd][t]->GetXaxis()->SetTitle(psdTitleFlag[sd].Data());
+   fNonIsotropicTermsList->Add(fNonIsotropicTermsVsPtSumDiffPro[sd][t]);
+   // Eta:
+   fNonIsotropicTermsVsEtaSumDiffPro[sd][t] = new TProfile(Form("fNonIsotropicTermsVs%sPro %s",psdFlag2[sd].Data(),nonIsotropicTerm[t].Data()),"",fnBinsEta,fEtaMin,fEtaMax);
+   fNonIsotropicTermsVsEtaSumDiffPro[sd][t]->SetTitle(Form("%s vs %s",nonIsotropicTerm[t].Data(),psdTitleFlag2[sd].Data()));
+   fNonIsotropicTermsVsEtaSumDiffPro[sd][t]->SetStats(kFALSE);
+   fNonIsotropicTermsVsEtaSumDiffPro[sd][t]->GetXaxis()->SetTitle(psdTitleFlag2[sd].Data());
+   fNonIsotropicTermsList->Add(fNonIsotropicTermsVsEtaSumDiffPro[sd][t]);
+  } // end of for(Int_t t=0;t<10;t++)
+ } // end of for(Int_t sd=0;sd<2;sd++)
 
  //2p correlator vs |Pt1-Pt2|
  f2pCorrelatorCosPsiDiffPtDiff = new TProfile("f2pCorrelatorCosPsiDiffPtDiff",";|p_{T,1}-p_{T,2}| (GeV/c);#LT #LT cos(#psi_{1} - #psi_{2}) #GT #GT",fnBinsPt,0.,fPtMax);
@@ -1221,27 +1417,80 @@ void AliFlowAnalysisWithMixedHarmonics::BookDifferential()
  fProfileList->Add(f2pCorrelatorSinPsiSumEtaSum);
 
 } // end of void AliFlowAnalysisWithMixedHarmonics::BookDifferential()     
-   
+  
 //================================================================================================================
 
-void AliFlowAnalysisWithMixedHarmonics::AccessConstants()
+void AliFlowAnalysisWithMixedHarmonics::AccessConstants(TString method)
 {
- // Access needed common constants from AliFlowCommonConstants.
+ // Access and store common constants.
  
- fnBinsPhi = AliFlowCommonConstants::GetMaster()->GetNbinsPhi();
- fPhiMin = AliFlowCommonConstants::GetMaster()->GetPhiMin();	     
- fPhiMax = AliFlowCommonConstants::GetMaster()->GetPhiMax();
- if(fnBinsPhi) fPhiBinWidth = (fPhiMax-fPhiMin)/fnBinsPhi;  
- fnBinsPt = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
- fPtMin = AliFlowCommonConstants::GetMaster()->GetPtMin();	     
- fPtMax = AliFlowCommonConstants::GetMaster()->GetPtMax();
- if(fnBinsPt) fPtBinWidth = (fPtMax-fPtMin)/fnBinsPt;  
- fnBinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
- fEtaMin = AliFlowCommonConstants::GetMaster()->GetEtaMin();	     
- fEtaMax = AliFlowCommonConstants::GetMaster()->GetEtaMax();
- if(fnBinsEta) fEtaBinWidth = (fEtaMax-fEtaMin)/fnBinsEta;  
- 
-} // end of void AliFlowAnalysisWithMixedHarmonics::AccessConstants()
+ // a) If this method was called in Init() access common constants from AliFlowCommonConstants;
+ // b) If this method was called in Init() book and fill TProfile to hold constants accessed in a);
+ // c) If this method was called in Finish() access common constants from TProfile booked and filled in b).
+
+ if(method == "Init")
+ {
+  // a) If this method was called in Init() access common constants from AliFlowCommonConstants:
+  fnBinsPhi = AliFlowCommonConstants::GetMaster()->GetNbinsPhi();
+  fPhiMin = AliFlowCommonConstants::GetMaster()->GetPhiMin();	     
+  fPhiMax = AliFlowCommonConstants::GetMaster()->GetPhiMax();
+  if(fnBinsPhi){fPhiBinWidth = (fPhiMax-fPhiMin)/fnBinsPhi;}  
+  fnBinsPt = AliFlowCommonConstants::GetMaster()->GetNbinsPt();
+  fPtMin = AliFlowCommonConstants::GetMaster()->GetPtMin();	     
+  fPtMax = AliFlowCommonConstants::GetMaster()->GetPtMax();
+  if(fnBinsPt){fPtBinWidth = (fPtMax-fPtMin)/fnBinsPt;}  
+  fnBinsEta = AliFlowCommonConstants::GetMaster()->GetNbinsEta();
+  fEtaMin = AliFlowCommonConstants::GetMaster()->GetEtaMin();	     
+  fEtaMax = AliFlowCommonConstants::GetMaster()->GetEtaMax();
+  if(fnBinsEta){fEtaBinWidth = (fEtaMax-fEtaMin)/fnBinsEta;}  
+  
+  // b) If this method was called in Init() book and fill TProfile to hold constants accessed in a):
+  TString fCommonConstantsName = "fCommonConstants";
+  fCommonConstants = new TProfile(fCommonConstantsName.Data(),"Common constants",9,0.,9.);
+  fCommonConstants->SetLabelSize(0.05);
+  fCommonConstants->GetXaxis()->SetBinLabel(1,"nBins (#phi)");
+  fCommonConstants->Fill(0.5,fnBinsPhi);
+  fCommonConstants->GetXaxis()->SetBinLabel(2,"#phi_{min}");
+  fCommonConstants->Fill(1.5,fPhiMin);
+  fCommonConstants->GetXaxis()->SetBinLabel(3,"#phi_{max}");
+  fCommonConstants->Fill(2.5,fPhiMax);
+  fCommonConstants->GetXaxis()->SetBinLabel(4,"nBins (p_{t})");
+  fCommonConstants->Fill(3.5,fnBinsPt);
+  fCommonConstants->GetXaxis()->SetBinLabel(5,"(p_{t})_{min}");
+  fCommonConstants->Fill(4.5,fPtMin);
+  fCommonConstants->GetXaxis()->SetBinLabel(6,"(p_{t})_{max}");
+  fCommonConstants->Fill(5.5,fPtMax);
+  fCommonConstants->GetXaxis()->SetBinLabel(7,"nBins (#eta)");
+  fCommonConstants->Fill(6.5,fnBinsEta);
+  fCommonConstants->GetXaxis()->SetBinLabel(8,"#eta_{min}");
+  fCommonConstants->Fill(7.5,fEtaMin);
+  fCommonConstants->GetXaxis()->SetBinLabel(9,"#eta_{max}");
+  fCommonConstants->Fill(8.5,fEtaMax);
+  fHistList->Add(fCommonConstants); 
+ } // end of if(method == "Init")
+ else if(method == "Finish")
+ {
+  // c) If this method was called in Finish() access common constants from TProfile booked and filled in b):
+  if(!fCommonConstants)
+  {
+   printf("\n WARNING (MH): fCommonConstants is NULL in AFAWMH::AC(\"%s\") !!!!\n\n",method.Data());
+   exit(0);
+  } 
+  fnBinsPhi = (Int_t)fCommonConstants->GetBinContent(1);
+  fPhiMin = fCommonConstants->GetBinContent(2);	     
+  fPhiMax = fCommonConstants->GetBinContent(3);
+  if(fnBinsPhi){fPhiBinWidth = (fPhiMax-fPhiMin)/fnBinsPhi;}  
+  fnBinsPt = (Int_t)fCommonConstants->GetBinContent(4);
+  fPtMin = fCommonConstants->GetBinContent(5);	     
+  fPtMax = fCommonConstants->GetBinContent(6);
+  if(fnBinsPt){fPtBinWidth = (fPtMax-fPtMin)/fnBinsPt;}  
+  fnBinsEta = (Int_t)fCommonConstants->GetBinContent(7);
+  fEtaMin = fCommonConstants->GetBinContent(8);	     
+  fEtaMax = fCommonConstants->GetBinContent(9);
+  if(fnBinsEta){fEtaBinWidth = (fEtaMax-fEtaMin)/fnBinsEta;}  
+ } // end of else if(method == "Finish")
+
+} // end of void AliFlowAnalysisWithMixedHarmonics::AccessConstants(TString method)
 
 //================================================================================================================
 
@@ -1433,7 +1682,24 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
    cout<<endl;
    exit(0);   
   } 
- }
+  for(Int_t t=0;t<10;t++)
+  { 
+   if(!(fNonIsotropicTermsVsPtSumDiffPro[sd][t]))
+   {
+    cout<<endl;
+    cout<<" WARNING (MH): "<<Form("fNonIsotropicTermsVsPtSumDiffPro[%d][%d]",sd,t)<<" is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+    cout<<endl;
+    exit(0);   
+   } 
+   if(!(fNonIsotropicTermsVsEtaSumDiffPro[sd][t]))
+   {
+    cout<<endl;
+    cout<<" WARNING (MH): "<<Form("fNonIsotropicTermsVsEtaSumDiffPro[%d][%d]",sd,t)<<" is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+    cout<<endl;
+    exit(0);   
+   } 
+  } // end of for(Int_t t=0;t<10;t++) 
+ } // end of for(Int_t sd=0;sd<2;sd++)
  for(Int_t sd=0;sd<2;sd++)
  {
   if(!fRePEBE[sd]||!fImPEBE[sd])
@@ -1450,7 +1716,7 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
    cout<<endl;
    exit(0);   
   }
-for(Int_t fs=0;fs<2;fs++)
+  for(Int_t fs=0;fs<2;fs++)
   {
    if(!fOverlapEBE[fs][sd]||!fOverlapEBE[fs][sd])
    {
@@ -1468,7 +1734,23 @@ for(Int_t fs=0;fs<2;fs++)
    }
   } // end of for(Int_t fs=0;fs<2;fs++)
  } // end of for(Int_t sd=0;sd<2;sd++)
- 
+ for(Int_t p12=0;p12<2;p12++) // 1st/2nd POI 
+ {
+  for(Int_t ao=0;ao<2;ao++) // all/overlap
+  {
+   for(Int_t pe=0;pe<4;pe++) // [(p1+p2)/2,|p1-p2|,(eta1+eta2)/2,|eta1-eta2|]
+   {
+    if(!fReNITEBE[p12][ao][pe]||!fImNITEBE[p12][ao][pe])
+    {
+     cout<<endl;
+     cout<<" WARNING (MH): "<<Form("!fReNITEBE[%d][%d][%d]||!fImNITEBE[%d][%d][%d]",p12,ao,pe,p12,ao,pe)<<" is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+     cout<<endl;
+     exit(0);   
+    }
+   } // end of for(Int_t pe=0;pe<4;pe++) // [(p1+p2)/2,|p1-p2|,(eta1+eta2)/2,|eta1-eta2|]
+  } // end of for(Int_t ao=0;ao<2;ao++) // all/overlap
+ } // end of for(Int_t p12=0;p12<2;p12++) // 1st/2nd POI 
+  
  //2p correlator vs |Pt1-Pt2|
  if(!f2pCorrelatorCosPsiDiffPtDiff) {
   cout<<endl;
@@ -1672,9 +1954,39 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
    cout<<" WARNING (MH): "<<Form("f3pCorrelatorVsEtaSumDiffPro[%d]",sd)<<" is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
    cout<<endl;
    exit(0);   
+  }
+  if(!(f3pCorrelatorVsPtSumDiffHist[sd]))
+  {
+   cout<<endl;
+   cout<<" WARNING (MH): "<<Form("f3pCorrelatorVsPtSumDiffHist[%d]",sd)<<" is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+   cout<<endl;
+   exit(0);   
   } 
- }
-
+  if(!(f3pCorrelatorVsEtaSumDiffHist[sd]))
+  {
+   cout<<endl;
+   cout<<" WARNING (MH): "<<Form("f3pCorrelatorVsEtaSumDiffHist[%d]",sd)<<" is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+   cout<<endl;
+   exit(0);   
+  }
+  for(Int_t t=0;t<10;t++)
+  { 
+   if(!(fNonIsotropicTermsVsPtSumDiffPro[sd][t]))
+   {
+    cout<<endl;
+    cout<<" WARNING (MH): "<<Form("fNonIsotropicTermsVsPtSumDiffPro[%d][%d]",sd,t)<<" is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+    cout<<endl;
+    exit(0);   
+   } 
+   if(!(fNonIsotropicTermsVsEtaSumDiffPro[sd][t]))
+   {
+    cout<<endl;
+    cout<<" WARNING (MH): "<<Form("fNonIsotropicTermsVsEtaSumDiffPro[%d][%d]",sd,t)<<" is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+    cout<<endl;
+    exit(0);   
+   } 
+  } // end of for(Int_t t=0;t<10;t++) 
+ } // end of for(Int_t sd=0;sd<2;sd++)
  //2p correlator vs |Pt1-Pt2|
  if(!f2pCorrelatorCosPsiDiffPtDiff) {
   cout<<endl;
@@ -1803,6 +2115,7 @@ void AliFlowAnalysisWithMixedHarmonics::PrintOnTheScreen()
  // <<cos[n*(psi1+psi2-2phi3)]>>:
  Double_t d3pCorrelatorPoi = 0.;
  Double_t d3pCorrelatorPoiError = 0.;
+
  if(fEvaluateDifferential3pCorrelator)
  {
   GetCorrelatorAndError(f3pCorrelatorVsPtSumDiffPro[0],
@@ -1821,7 +2134,7 @@ void AliFlowAnalysisWithMixedHarmonics::PrintOnTheScreen()
  } else
    {
     cout<<"  cos(phi1+phi2-2phi3) = "<<d3pCorrelator<<" +/- "<<d3pCorrelatorError<<endl;
-    cout<<"  cos(psi1+psi2-2phi3) = "<<d3pCorrelatorPoi<<" +/- "<<d3pCorrelatorPoiError<<endl;
+    cout<<"  cos(psi1+psi2-2phi3) = "<<d3pCorrelatorPoi<<" +/- "<<d3pCorrelatorPoiError<<endl;    
    }
  if(!fCorrectForDetectorEffects)
  {
@@ -1860,8 +2173,10 @@ void AliFlowAnalysisWithMixedHarmonics::AccessSettings()
 
 void AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
 {
- // Correct measured 3-p correlator cos[n(phi1+phi2-2phi3)] for detector effects.
-  
+ // a.) Correct integrated 3-p correlator cos[n(phi1+phi2-2phi3)] for detector effects;
+ // b.) Correct differential 3-p correlator cos[n(psi1+psi2-2phi3)] for detector effects.
+
+ // a.) Correct integrated 3-p correlator cos[n(phi1+phi2-2phi3)] for detector effects:  
  Double_t measured3pCorrelator = f3pCorrelatorPro->GetBinContent(1); // biased by detector effects
  Double_t corrected3pCorrelator = 0.; // corrected for detector effects
  Double_t nonIsotropicTerms[10] = {0.}; // there are 10 distinct non-isotropic terms
@@ -1893,7 +2208,82 @@ void AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
   bias = corrected3pCorrelator/measured3pCorrelator;
   fDetectorBiasHist->SetBinContent(1,bias);                                                          
  }   
-                                                                                                                                                                                                                                                                                                                                   
+ 
+ if(!fEvaluateDifferential3pCorrelator){return;}
+ // b.) Correct differential 3-p correlator cos[n(psi1+psi2-2phi3)] for detector effects:
+ for(Int_t sd=0;sd<2;sd++) 
+ {
+  // [(p1+p2)/2,|p1-p2|]
+  // looping over all bins and calculating reduced correlations: 
+  for(Int_t b=1;b<=fnBinsPt;b++)
+  {
+   Double_t measured = f3pCorrelatorVsPtSumDiffPro[sd]->GetBinContent(b);
+   Double_t measuredErr = f3pCorrelatorVsPtSumDiffPro[sd]->GetBinError(b);   
+   Double_t corrected = 0.; // 3-p correlator corrected for detector effects
+   Double_t correctedErr = measuredErr; // to be improved - propagate error also for non-isotropic terms
+   // non-isotropic terms:
+   Double_t cosPsiPOI1 = fNonIsotropicTermsVsPtSumDiffPro[sd][0]->GetBinContent(b); // <<cos(#psi_{POI_1})>>
+   Double_t sinPsiPOI1 = fNonIsotropicTermsVsPtSumDiffPro[sd][1]->GetBinContent(b); // <<sin(#psi_{POI_1})>>
+   Double_t cosPsiPOI2 = fNonIsotropicTermsVsPtSumDiffPro[sd][2]->GetBinContent(b); // <<cos(#psi_{POI_2})>>
+   Double_t sinPsiPOI2 = fNonIsotropicTermsVsPtSumDiffPro[sd][3]->GetBinContent(b); // <<sin(#psi_{POI_2})>>
+   Double_t cosPsiPOI1m2PhiRP = fNonIsotropicTermsVsPtSumDiffPro[sd][4]->GetBinContent(b); // <<cos(#psi_{POI_1}-2*phi_{RP})>>
+   Double_t sinPsiPOI1m2PhiRP = fNonIsotropicTermsVsPtSumDiffPro[sd][5]->GetBinContent(b); // <<sin(#psi_{POI_1}-2*phi_{RP})>>
+   Double_t cosPsiPOI2m2PhiRP = fNonIsotropicTermsVsPtSumDiffPro[sd][6]->GetBinContent(b); // <<cos(#psi_{POI_2}-2*phi_{RP})>>
+   Double_t sinPsiPOI2m2PhiRP = fNonIsotropicTermsVsPtSumDiffPro[sd][7]->GetBinContent(b); // <<sin(#psi_{POI_2}-2*phi_{RP})>>
+   Double_t cosPsiPOI1pPsiPOI2 = fNonIsotropicTermsVsPtSumDiffPro[sd][8]->GetBinContent(b); // <<cos(#psi_{POI_1}+#psi_{POI_2})>>
+   Double_t sinPsiPOI1pPsiPOI2 = fNonIsotropicTermsVsPtSumDiffPro[sd][9]->GetBinContent(b); // <<sin(#psi_{POI_1}+#psi_{POI_2})>>
+   Double_t cos2PhiRP = fNonIsotropicTermsPro->GetBinContent(3); // <<cos(2n*(phi_{RP}))>>
+   Double_t sin2PhiRP = fNonIsotropicTermsPro->GetBinContent(4); // <<sin(2n*(phi_{RP}))>>
+   // apply correction:
+   corrected = measured 
+             - (cosPsiPOI1*cosPsiPOI2m2PhiRP-sinPsiPOI1*sinPsiPOI2m2PhiRP 
+             + cosPsiPOI2*cosPsiPOI1m2PhiRP-sinPsiPOI2*sinPsiPOI1m2PhiRP    
+             + cos2PhiRP*cosPsiPOI1pPsiPOI2+sin2PhiRP*sinPsiPOI1pPsiPOI2)
+             + 2.*cos2PhiRP*(cosPsiPOI1*cosPsiPOI2-sinPsiPOI1*sinPsiPOI2)
+             + 2.*sin2PhiRP*(cosPsiPOI1*sinPsiPOI2+sinPsiPOI1*cosPsiPOI2);             
+   if(fCorrectForDetectorEffects)
+   {
+    f3pCorrelatorVsPtSumDiffHist[sd]->SetBinContent(b,corrected);
+    f3pCorrelatorVsPtSumDiffHist[sd]->SetBinError(b,correctedErr);
+   }
+  } // end of for(Int_t b=1;b<=fnBinsPt;b++)
+  
+  // [(eta1+eta2)/2,|eta1-eta2|]
+  // looping over all bins and calculating reduced correlations: 
+  for(Int_t b=1;b<=fnBinsEta;b++)
+  {
+   Double_t measured = f3pCorrelatorVsEtaSumDiffPro[sd]->GetBinContent(b);
+   Double_t measuredErr = f3pCorrelatorVsEtaSumDiffPro[sd]->GetBinError(b);   
+   Double_t corrected = 0.; // 3-p correlator corrected for detector effects
+   Double_t correctedErr = measuredErr; // to be improved - propagate error also for non-isotropic terms
+   // non-isotropic terms:
+   Double_t cosPsiPOI1 = fNonIsotropicTermsVsEtaSumDiffPro[sd][0]->GetBinContent(b); // <<cos(#psi_{POI_1})>>
+   Double_t sinPsiPOI1 = fNonIsotropicTermsVsEtaSumDiffPro[sd][1]->GetBinContent(b); // <<sin(#psi_{POI_1})>>
+   Double_t cosPsiPOI2 = fNonIsotropicTermsVsEtaSumDiffPro[sd][2]->GetBinContent(b); // <<cos(#psi_{POI_2})>>
+   Double_t sinPsiPOI2 = fNonIsotropicTermsVsEtaSumDiffPro[sd][3]->GetBinContent(b); // <<sin(#psi_{POI_2})>>
+   Double_t cosPsiPOI1m2PhiRP = fNonIsotropicTermsVsEtaSumDiffPro[sd][4]->GetBinContent(b); // <<cos(#psi_{POI_1}-2*phi_{RP})>>
+   Double_t sinPsiPOI1m2PhiRP = fNonIsotropicTermsVsEtaSumDiffPro[sd][5]->GetBinContent(b); // <<sin(#psi_{POI_1}-2*phi_{RP})>>
+   Double_t cosPsiPOI2m2PhiRP = fNonIsotropicTermsVsEtaSumDiffPro[sd][6]->GetBinContent(b); // <<cos(#psi_{POI_2}-2*phi_{RP})>>
+   Double_t sinPsiPOI2m2PhiRP = fNonIsotropicTermsVsEtaSumDiffPro[sd][7]->GetBinContent(b); // <<sin(#psi_{POI_2}-2*phi_{RP})>>
+   Double_t cosPsiPOI1pPsiPOI2 = fNonIsotropicTermsVsEtaSumDiffPro[sd][8]->GetBinContent(b); // <<cos(#psi_{POI_1}+#psi_{POI_2})>>
+   Double_t sinPsiPOI1pPsiPOI2 = fNonIsotropicTermsVsEtaSumDiffPro[sd][9]->GetBinContent(b); // <<sin(#psi_{POI_1}+#psi_{POI_2})>>
+   Double_t cos2PhiRP = fNonIsotropicTermsPro->GetBinContent(3); // <<cos(2n*(phi_{RP}))>>
+   Double_t sin2PhiRP = fNonIsotropicTermsPro->GetBinContent(4); // <<sin(2n*(phi_{RP}))>>
+   // apply correction:
+   corrected = measured 
+             - (cosPsiPOI1*cosPsiPOI2m2PhiRP-sinPsiPOI1*sinPsiPOI2m2PhiRP 
+             + cosPsiPOI2*cosPsiPOI1m2PhiRP-sinPsiPOI2*sinPsiPOI1m2PhiRP    
+             + cos2PhiRP*cosPsiPOI1pPsiPOI2+sin2PhiRP*sinPsiPOI1pPsiPOI2)
+             + 2.*cos2PhiRP*(cosPsiPOI1*cosPsiPOI2-sinPsiPOI1*sinPsiPOI2)
+             + 2.*sin2PhiRP*(cosPsiPOI1*sinPsiPOI2+sinPsiPOI1*cosPsiPOI2);
+   if(fCorrectForDetectorEffects)
+   {
+    f3pCorrelatorVsEtaSumDiffHist[sd]->SetBinContent(b,corrected);
+    f3pCorrelatorVsEtaSumDiffHist[sd]->SetBinError(b,correctedErr);
+   }
+  } // end of for(Int_t b=1;b<=fnBinsEta;b++)
+ } // end of for(Int_t sd=0;sd<2;sd++) 
+  
 } // end of AliFlowAnalysisWithMixedHarmonics::CorrectForDetectorEffects()
 
 //================================================================================================================
@@ -1964,7 +2354,18 @@ void AliFlowAnalysisWithMixedHarmonics::ResetEventByEventQuantities()
    fOverlapEBE[fs][sd]->Reset();
    fOverlapEBE2[fs][sd]->Reset();
   } 
- }
+ } 
+ for(Int_t p12=0;p12<2;p12++) // 1st/2nd POI 
+ {
+  for(Int_t ao=0;ao<2;ao++) // all/overlap 
+  {
+   for(Int_t pe=0;pe<4;pe++) // [(p1+p2)/2,|p1-p2|,(eta1+eta2)/2,|eta1-eta2|]
+   {
+    fReNITEBE[p12][ao][pe]->Reset();
+    fImNITEBE[p12][ao][pe]->Reset();   
+   } // end of for(Int_t pe=0;pe<4;pe++) // [(p1+p2)/2,|p1-p2|,(eta1+eta2)/2,|eta1-eta2|]
+  } 
+ } // end of for(Int_t p12=0;p12<2;p12++) // 1st/2nd POI 
  
 } // end of void AliFlowAnalysisWithMixedHarmonics::ResetEventByEventQuantities()
 
@@ -2101,7 +2502,7 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateNonIsotropicTerms()
  // Calculate non-isotropic terms which appear in the decomposition of 3-p correlator <cos[n(phi1+phi2-2phi3)]>.
  
  // a) Calculate without using particle weights;
- // b) Calculate using particle weights.
+ // b) Calculate using particle weights;
  
  // For detector with uniform acceptance all these terms vanish. These non-isotropic terms are stored in fNonIsotropicTermsPro.
  // Binning of fNonIsotropicTermsPro is organized as follows:
@@ -2247,7 +2648,7 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateNonIsotropicTerms()
  {
   // ...
  } // end of if(fUsePhiWeights || fUsePtWeights || fUseEtaWeights)
- 
+  
 } // end of void AliFlowAnalysisWithMixedHarmonics::CalculateNonIsotropicTerms()
 
 //================================================================================================================
@@ -2257,7 +2658,8 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateDifferential3pCorrelator(Double
  // Calculate differential 3-p azimuthal correlator cos[n(psi1+psi2-2phi3)] in terms of Q_{2n}, p_{n}, q1_{n} and q2_{n}.
  
  // a) Calculate differential 3-p correlator without using particle weights;
- // b) Calculate differential 3-p correlator with using particle weights.
+ // b) Calculate differential 3-p correlator with using particle weights;
+ // c) Calculate non-isotropic terms for 3-p correlator.
 
  // a) Calculate differential 3-p correlator without using particle weights: 
  if(!(fUsePhiWeights || fUsePtWeights || fUseEtaWeights))
@@ -2273,7 +2675,7 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateDifferential3pCorrelator(Double
   Double_t dImQ2n = (*fImQnk)(1,0);
   for(Int_t sd=0;sd<2;sd++) 
   {
-    // [(p1+p2)/2,|p1-p2|]
+   // [(p1+p2)/2,|p1-p2|]
    // looping over all bins and calculating reduced correlations: 
    for(Int_t b=1;b<=fnBinsPt;b++)
    {
@@ -2306,9 +2708,54 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateDifferential3pCorrelator(Double
       gSumWeight += f3pCorrelatorVsPtSumDiffPro[sd]->GetBinEntries(b);
       gSumBinContentTimesWeightSquared += TMath::Power(gSumBinContentTimesWeight,2);
     }
+   
+    // non-isotropic terms, 1st POI:
+    Double_t p1nRePOI1 = fReNITEBE[0][0][sd]->GetBinContent(b)*fReNITEBE[0][0][sd]->GetBinEntries(b);
+    Double_t p1nImPOI1 = fImNITEBE[0][0][sd]->GetBinContent(b)*fImNITEBE[0][0][sd]->GetBinEntries(b);
+    Double_t mpPOI1 = fReNITEBE[0][0][sd]->GetBinEntries(b);
+    Double_t q1nRePOI1 = fReNITEBE[0][1][sd]->GetBinContent(b)*fReNITEBE[0][1][sd]->GetBinEntries(b);
+    Double_t q1nImPOI1 = fImNITEBE[0][1][sd]->GetBinContent(b)*fImNITEBE[0][1][sd]->GetBinEntries(b);
+    Double_t mqPOI1 = fReNITEBE[0][1][sd]->GetBinEntries(b);   
+    // non-isotropic terms, 2nd POI:
+    Double_t p1nRePOI2 = fReNITEBE[1][0][sd]->GetBinContent(b)*fReNITEBE[1][0][sd]->GetBinEntries(b);
+    Double_t p1nImPOI2 = fImNITEBE[1][0][sd]->GetBinContent(b)*fImNITEBE[1][0][sd]->GetBinEntries(b);
+    Double_t mpPOI2 = fReNITEBE[1][0][sd]->GetBinEntries(b);
+    Double_t q1nRePOI2 = fReNITEBE[1][1][sd]->GetBinContent(b)*fReNITEBE[1][1][sd]->GetBinEntries(b);
+    Double_t q1nImPOI2 = fImNITEBE[1][1][sd]->GetBinContent(b)*fImNITEBE[1][1][sd]->GetBinEntries(b);
+    Double_t mqPOI2 = fReNITEBE[1][1][sd]->GetBinEntries(b);
+    // Fill all-event profiles:   
+    if(weight>0. && mpPOI1>0.)
+    { 
+     fNonIsotropicTermsVsPtSumDiffPro[sd][0]->Fill(fPtMin+(b-1)*fPtBinWidth,p1nRePOI1/mpPOI1,mpPOI1); // <<cos(#psi_{POI_1})>>
+     fNonIsotropicTermsVsPtSumDiffPro[sd][1]->Fill(fPtMin+(b-1)*fPtBinWidth,p1nImPOI1/mpPOI1,mpPOI1); // <<sin(#psi_{POI_1})>>
+    }
+    if(weight>0. && mpPOI2>0.)    
+    {
+     fNonIsotropicTermsVsPtSumDiffPro[sd][2]->Fill(fPtMin+(b-1)*fPtBinWidth,p1nRePOI2/mpPOI2,mpPOI2); // <<cos(#psi_{POI_2})>>
+     fNonIsotropicTermsVsPtSumDiffPro[sd][3]->Fill(fPtMin+(b-1)*fPtBinWidth,p1nImPOI2/mpPOI2,mpPOI2); // <<sin(#psi_{POI_2})>>
+    }
+    if(weight>0. && mpPOI1*dMult-mqPOI1>0.)
+    { 
+     fNonIsotropicTermsVsPtSumDiffPro[sd][4]->Fill(fPtMin+(b-1)*fPtBinWidth,
+      (p1nRePOI1*dReQ2n+p1nImPOI1*dImQ2n-q1nRePOI1)/(mpPOI1*dMult-mqPOI1),mpPOI1*dMult-mqPOI1); // <<cos(#psi_{POI_1}-2*phi)>>
+     fNonIsotropicTermsVsPtSumDiffPro[sd][5]->Fill(fPtMin+(b-1)*fPtBinWidth,
+      (p1nImPOI1*dReQ2n-p1nRePOI1*dImQ2n+q1nImPOI1)/(mpPOI1*dMult-mqPOI1),mpPOI1*dMult-mqPOI1); // <<sin(#psi_{POI_1}-2*phi)>>
+    }
+    if(weight>0. && mpPOI2*dMult-mqPOI2>0.)
+    { 
+     fNonIsotropicTermsVsPtSumDiffPro[sd][6]->Fill(fPtMin+(b-1)*fPtBinWidth,
+      (p1nRePOI2*dReQ2n+p1nImPOI2*dImQ2n-q1nRePOI2)/(mpPOI2*dMult-mqPOI2),mpPOI2*dMult-mqPOI2); // <<cos(#psi_{POI_2}-2*phi)>>
+     fNonIsotropicTermsVsPtSumDiffPro[sd][7]->Fill(fPtMin+(b-1)*fPtBinWidth,
+      (p1nImPOI2*dReQ2n-p1nRePOI2*dImQ2n+q1nImPOI2)/(mpPOI2*dMult-mqPOI2),mpPOI2*dMult-mqPOI2); // <<sin(#psi_{POI_2}-2*phi)>>
+    }
+    if(weight>0. && mp>0.)
+    {
+     fNonIsotropicTermsVsPtSumDiffPro[sd][8]->Fill(fPtMin+(b-1)*fPtBinWidth,p1nRe/mp,mp); // <<cos(#psi_{POI_1}+#psi_{POI_2})>>
+     fNonIsotropicTermsVsPtSumDiffPro[sd][9]->Fill(fPtMin+(b-1)*fPtBinWidth,p1nIm/mp,mp); // <<sin(#psi_{POI_1}+#psi_{POI_2})>>   
+    }
    } // end of for(Int_t b=1;b<=fnBinsPt;b++)
 
-    // [(eta1+eta2)/2,|eta1-eta2|]
+   // [(eta1+eta2)/2,|eta1-eta2|]
    // looping over all bins and calculating reduced correlations: 
    for(Int_t k=1;k<=fnBinsEta;k++)
    {
@@ -2334,7 +2781,52 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateDifferential3pCorrelator(Double
      cosP2nphi1M1npsi2M1npsi2 = (p1nRe*dReQ2n+p1nIm*dImQ2n-overlap1-overlap2)/(weight);
     }
     f3pCorrelatorVsEtaSumDiffPro[sd]->Fill(fEtaMin+(k-1)*fEtaBinWidth,cosP2nphi1M1npsi2M1npsi2,weight);
-   } // end of for(Int_t k=1;k<=fnBinsEta;k++)
+   
+    // non-isotropic terms, 1st POI:
+    Double_t p1nRePOI1 = fReNITEBE[0][0][sd+2]->GetBinContent(k)*fReNITEBE[0][0][sd+2]->GetBinEntries(k);
+    Double_t p1nImPOI1 = fImNITEBE[0][0][sd+2]->GetBinContent(k)*fImNITEBE[0][0][sd+2]->GetBinEntries(k);
+    Double_t mpPOI1 = fReNITEBE[0][0][sd+2]->GetBinEntries(k);
+    Double_t q1nRePOI1 = fReNITEBE[0][1][sd+2]->GetBinContent(k)*fReNITEBE[0][1][sd+2]->GetBinEntries(k);
+    Double_t q1nImPOI1 = fImNITEBE[0][1][sd+2]->GetBinContent(k)*fImNITEBE[0][1][sd+2]->GetBinEntries(k);
+    Double_t mqPOI1 = fReNITEBE[0][1][sd+2]->GetBinEntries(k);   
+    // non-isotropic terms, 2nd POI:
+    Double_t p1nRePOI2 = fReNITEBE[1][0][sd+2]->GetBinContent(k)*fReNITEBE[1][0][sd+2]->GetBinEntries(k);
+    Double_t p1nImPOI2 = fImNITEBE[1][0][sd+2]->GetBinContent(k)*fImNITEBE[1][0][sd+2]->GetBinEntries(k);
+    Double_t mpPOI2 = fReNITEBE[1][0][sd+2]->GetBinEntries(k);
+    Double_t q1nRePOI2 = fReNITEBE[1][1][sd+2]->GetBinContent(k)*fReNITEBE[1][1][sd+2]->GetBinEntries(k);
+    Double_t q1nImPOI2 = fImNITEBE[1][1][sd+2]->GetBinContent(k)*fImNITEBE[1][1][sd+2]->GetBinEntries(k);
+    Double_t mqPOI2 = fReNITEBE[1][1][sd+2]->GetBinEntries(k);
+    // Fill all-event profiles:    
+    if(weight>0. && mpPOI1>0.)
+    {
+     fNonIsotropicTermsVsEtaSumDiffPro[sd][0]->Fill(fEtaMin+(k-1)*fEtaBinWidth,p1nRePOI1/mpPOI1,mpPOI1); // <<cos(#psi_{POI_1})>>
+     fNonIsotropicTermsVsEtaSumDiffPro[sd][1]->Fill(fEtaMin+(k-1)*fEtaBinWidth,p1nImPOI1/mpPOI1,mpPOI1); // <<sin(#psi_{POI_1})>>
+    }
+    if(weight>0. && mpPOI2>0.)
+    {     
+     fNonIsotropicTermsVsEtaSumDiffPro[sd][2]->Fill(fEtaMin+(k-1)*fEtaBinWidth,p1nRePOI2/mpPOI2,mpPOI2); // <<cos(#psi_{POI_2})>>
+     fNonIsotropicTermsVsEtaSumDiffPro[sd][3]->Fill(fEtaMin+(k-1)*fEtaBinWidth,p1nImPOI2/mpPOI2,mpPOI2); // <<sin(#psi_{POI_2})>>
+    }
+    if(weight>0. && mpPOI1*dMult-mqPOI1>0.)
+    {
+     fNonIsotropicTermsVsEtaSumDiffPro[sd][4]->Fill(fEtaMin+(k-1)*fEtaBinWidth,
+      (p1nRePOI1*dReQ2n+p1nImPOI1*dImQ2n-q1nRePOI1)/(mpPOI1*dMult-mqPOI1),mpPOI1*dMult-mqPOI1); // <<cos(#psi_{POI_1}-2*phi)>>
+     fNonIsotropicTermsVsEtaSumDiffPro[sd][5]->Fill(fEtaMin+(k-1)*fEtaBinWidth,
+      (p1nImPOI1*dReQ2n-p1nRePOI1*dImQ2n+q1nImPOI1)/(mpPOI1*dMult-mqPOI1),mpPOI1*dMult-mqPOI1); // <<sin(#psi_{POI_1}-2*phi)>>
+    }
+    if(weight>0. && mpPOI2*dMult-mqPOI2>0.)
+    {
+     fNonIsotropicTermsVsEtaSumDiffPro[sd][6]->Fill(fEtaMin+(k-1)*fEtaBinWidth,
+      (p1nRePOI2*dReQ2n+p1nImPOI2*dImQ2n-q1nRePOI2)/(mpPOI2*dMult-mqPOI2),mpPOI2*dMult-mqPOI2); // <<cos(#psi_{POI_2}-2*phi)>>
+     fNonIsotropicTermsVsEtaSumDiffPro[sd][7]->Fill(fEtaMin+(k-1)*fEtaBinWidth,
+      (p1nImPOI2*dReQ2n-p1nRePOI2*dImQ2n+q1nImPOI2)/(mpPOI2*dMult-mqPOI2),mpPOI2*dMult-mqPOI2); // <<sin(#psi_{POI_2}-2*phi)>>
+    }
+    if(weight>0. && mp>0.)
+    {
+     fNonIsotropicTermsVsEtaSumDiffPro[sd][8]->Fill(fEtaMin+(k-1)*fEtaBinWidth,p1nRe/mp,mp); // <<cos(#psi_{POI_1}+#psi_{POI_2})>>
+     fNonIsotropicTermsVsEtaSumDiffPro[sd][9]->Fill(fEtaMin+(k-1)*fEtaBinWidth,p1nIm/mp,mp); // <<sin(#psi_{POI_1}+#psi_{POI_2})>>    
+    }
+   } // end of for(Int_t k=1;k<=fnBinsEta;k++)  
   } // end of for(Int_t sd=0;sd<2;sd++)      
 
   gIntegratedValue = -1000.;
