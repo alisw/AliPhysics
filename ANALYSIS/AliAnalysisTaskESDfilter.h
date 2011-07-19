@@ -38,10 +38,17 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     virtual void ConvertESDtoAOD();
     // Setters
     virtual void SetTrackFilter   (AliAnalysisFilter*   trackF) {fTrackFilter    =   trackF;}
-    virtual void SetTPCOnlyFilterMask (UInt_t filterMask)       {fTPCOnlyFilterMask    =  filterMask;}
-    virtual void SetHybridFilterMaskITSTPC(UInt_t filterMask)         {fHybridFilterMaskITSTPC    =  filterMask;}
-    virtual void SetHybridFilterMasksTPC(UInt_t filterMask0,UInt_t filterMask1)         {fHybridFilterMaskTPC0    =  filterMask0;
-fHybridFilterMaskTPC1   =  filterMask1;}
+    virtual void SetTPCOnlyFilterMask (UInt_t filterMask)       {SetTPCConstrainedFilterMask(filterMask);}
+
+    virtual void SetTPCConstrainedFilterMask (UInt_t filterMask)       {fTPCConstrainedFilterMask    =  filterMask;}
+    virtual void SetHybridFilterMaskTPCConstrainedGlobal(UInt_t filterMask)  {fHybridFilterMaskTPCCG    =  filterMask;}
+    virtual void SetWriteHybridTPCConstrainedOnly(bool b){fWriteHybridTPCCOnly = b;}
+
+    virtual void SetGlobalConstrainedFilterMask (UInt_t filterMask)    {fGlobalConstrainedFilterMask    =  filterMask;}
+    virtual void SetHybridFilterMaskGlobalConstrainedGlobal(UInt_t filterMask)  {fHybridFilterMaskGCG    =  filterMask;}
+    virtual void SetWriteHybridGlobalConstrainedOnly(bool b){fWriteHybridGCOnly = b;}
+
+
     virtual void SetKinkFilter    (AliAnalysisFilter*    KinkF) {fKinkFilter     =    KinkF;}
     virtual void SetV0Filter      (AliAnalysisFilter*      V0F) {fV0Filter       =      V0F;}
     virtual void SetCascadeFilter (AliAnalysisFilter* CascadeF) {fCascadeFilter  = CascadeF;}
@@ -85,6 +92,7 @@ private:
   void ConvertPHOSCells(const AliESDEvent& esd);
   void ConvertTracklets(const AliESDEvent& esd);
   void ConvertTPCOnlyTracks(const AliESDEvent& esd);
+  void ConvertGlobalConstrainedTracks(const AliESDEvent& esd);
   void ConvertVZERO(const AliESDEvent& esd);
   void ConvertZDC(const AliESDEvent& esd);
   
@@ -117,10 +125,13 @@ private:
   Int_t fNumberOfKinks; // current number of kinks
   Bool_t fOldESDformat; // is the ESD in old format ?
   AliAODVertex* fPrimaryVertex; // pointer to primary vertex of the event
-  UInt_t fTPCOnlyFilterMask; //  Filter Mask used to select and store refitted TPC only tracks
-  UInt_t fHybridFilterMaskITSTPC; //  Filter Mask used to select and store refitted TPC only tracks which have not passed ITS cuts
-  UInt_t fHybridFilterMaskTPC0; //  Filter Mask flag refitted TPC only tracks with tight ITScuts
-  UInt_t fHybridFilterMaskTPC1; //  Filter Mask flag refitted TPC only tracks with lose ITScuts
+  UInt_t fTPCConstrainedFilterMask;      //  Filter Mask used to select and store refitted TPC only tracks
+  UInt_t fHybridFilterMaskTPCCG; //  Filter Mask used to mark global tracks as hybrid
+  Bool_t fWriteHybridTPCCOnly;// write only the complent tracks not all global constrained
+
+  UInt_t fGlobalConstrainedFilterMask; //  Filter Mask used to select and store refitted TPC only tracks
+  UInt_t fHybridFilterMaskGCG;  //  Filter Mask used to mark global tracks as hybrid
+  Bool_t fWriteHybridGCOnly;// write only the complent tracks not all global constrained
 
   Bool_t fIsVZEROEnabled; // whether or not to fill the vzero branch (true by default)
   Bool_t fIsZDCEnabled; // whether or not to fill the zdc branch (true by default)
