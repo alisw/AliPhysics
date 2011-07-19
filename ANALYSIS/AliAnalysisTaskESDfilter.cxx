@@ -978,7 +978,7 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
     if(map&fHybridFilterMaskTPCCG){
       // this is one part of the hybrid tracks
       // the others not passing the selection will be TPC only selected below
-      tr->SetIsHybridTPCConstrainedGlobal(kTRUE);
+      //      tr->SetIsHybridTPCConstrainedGlobal(kTRUE);
     }
   }
   // Loop over the ESD trcks and pick out the tracks passing TPC only cuts
@@ -1067,7 +1067,7 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
                                                             vtx->UsesTrack(track->GetID()),
                                                             AliAODTrack::kPrimary, 
                                                             selectInfo);
-    aodTrack->SetIsHybridTPCConstrainedGlobal(isHybridITSTPC);    
+    //    aodTrack->SetIsHybridTPCConstrainedGlobal(isHybridITSTPC);    
     aodTrack->SetTPCClusterMap(track->GetTPCClusterMap());
     aodTrack->SetTPCSharedMap (track->GetTPCSharedMap());
     aodTrack->SetIsTPCConstrained(kTRUE);    
@@ -1118,7 +1118,7 @@ void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent&
     if(map&fHybridFilterMaskGCG){
       // this is one part of the hybrid tracks
       // the others not passing the selection will be the ones selected below
-      tr->SetIsHybridGlobalConstrainedGlobal(kTRUE);
+      //      tr->SetIsHybridGlobalConstrainedGlobal(kTRUE);
     }
   }
   // Loop over the ESD trcks and pick out the tracks passing the GlobalConstraint cuts
@@ -1184,7 +1184,7 @@ void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent&
                                                             vtx->UsesTrack(esdTrack->GetID()),
                                                             AliAODTrack::kPrimary, 
                                                             selectInfo);
-    aodTrack->SetIsHybridGlobalConstrainedGlobal(isHybridGC);    
+    //    aodTrack->SetIsHybridGlobalConstrainedGlobal(isHybridGC);    
     aodTrack->SetIsGlobalConstrained(kTRUE);    
     aodTrack->SetTPCClusterMap(esdTrack->GetTPCClusterMap());
     aodTrack->SetTPCSharedMap (esdTrack->GetTPCSharedMap());
