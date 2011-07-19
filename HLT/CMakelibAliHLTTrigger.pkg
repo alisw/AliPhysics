@@ -55,7 +55,9 @@ set ( CLASS_HDRS
     AliHLTTriggerCounterComponent.h
     AliHLTTriggerCounters.h
     AliHLTTriggerEmcalElectron.h
+    AliHLTTriggerFastJet.h
     )
+
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
 
@@ -63,7 +65,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR  	AliHLTTriggerLinkDef.h)
 
-set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/trigger HLT/TPCLib HLT/TRD TRD HLT/ITS HLT/MUON MUON)
+set ( EINCLUDE HLT/BASE HLT/BASE/util HLT/trigger HLT/TPCLib HLT/TRD TRD HLT/ITS HLT/MUON MUON HLT/EMCAL JETAN JETAN/fastjet)
 
 set ( ELIBS  "HLTbase AliHLTTRD AliHLTMUON AliHLTUtil")
 

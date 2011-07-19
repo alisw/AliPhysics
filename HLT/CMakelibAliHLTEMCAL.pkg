@@ -42,15 +42,25 @@ set ( CLASS_HDRS
     AliHLTEMCALGeometry.h
     AliHLTEMCALRecoParamHandler.h
     AliHLTEMCALClusterizerComponentNbyN.h
+    AliFJWrapper.h
     )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
+
+set(FASTJET_ROOT $ENV{FASTJET_ROOT})
+
+if(FASTJET_ROOT)
+  set ( EDEFINE -isystem${FASTJET_ROOT}/include )
+else()
+  set ( EDEFINE -isystem${ALICE_ROOT}/JETAN/fastjet)
+endif(FASTJET_ROOT)
+
 
 set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/EMCAL HLT/CALO EMCAL RAW STEER/CDB STEER/STEERBase)
+set ( EINCLUDE HLT/BASE HLT/BASE/util HLT/EMCAL HLT/CALO EMCAL RAW STEER/CDB STEER/STEERBase JETAN JETAN/fastjet)
 
 set ( ELIBS  "HLTbase AliHLTUtil AliHLTCalo ESD CDB EMCALbase EMCALraw EMCALrec EMCALsim EMCALUtils STEER STEERBase RAWDatarec")
 
