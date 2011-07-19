@@ -216,14 +216,12 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
     outputContainer->Add(fhEta);
   }
   
-  if(fFillAllTH3){
-    fhEtaPhiE  = new TH3F ("hEtaPhiE","#eta vs #phi vs energy, reconstructed clusters",
+  fhEtaPhiE  = new TH3F ("hEtaPhiE","#eta vs #phi vs energy, reconstructed clusters",
                            netabins,etamin,etamax,nphibins,phimin,phimax,nptbins,ptmin,ptmax); 
-    fhEtaPhiE->SetXTitle("#eta ");
-    fhEtaPhiE->SetYTitle("#phi (rad)");
-    fhEtaPhiE->SetZTitle("E (GeV) ");
-    outputContainer->Add(fhEtaPhiE);
-  }
+  fhEtaPhiE->SetXTitle("#eta ");
+  fhEtaPhiE->SetYTitle("#phi (rad)");
+  fhEtaPhiE->SetZTitle("E (GeV) ");
+  outputContainer->Add(fhEtaPhiE);
   
   fhClusterTimeEnergy  = new TH2F ("hClusterTimeEnergy","energy vs TOF, reconstructed clusters",
                                    nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
@@ -291,13 +289,14 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhEtaCharged->SetXTitle("#eta ");
       outputContainer->Add(fhEtaCharged);
     }
-    
-    fhEtaPhiECharged  = new TH3F ("hEtaPhiECharged","#eta vs #phi, reconstructed clusters, matched with track",
+    if(fFillAllTH3){
+      fhEtaPhiECharged  = new TH3F ("hEtaPhiECharged","#eta vs #phi, reconstructed clusters, matched with track",
                                   netabins,etamin,etamax,nphibins,phimin,phimax,nptbins,ptmin,ptmax); 
-    fhEtaPhiECharged->SetXTitle("#eta ");
-    fhEtaPhiECharged->SetYTitle("#phi ");
-    fhEtaPhiECharged->SetZTitle("E (GeV) ");
-    outputContainer->Add(fhEtaPhiECharged);	
+      fhEtaPhiECharged->SetXTitle("#eta ");
+      fhEtaPhiECharged->SetYTitle("#phi ");
+      fhEtaPhiECharged->SetZTitle("E (GeV) ");
+      outputContainer->Add(fhEtaPhiECharged);	
+    }
     
     fh1pOverE = new TH2F("h1pOverE","TRACK matches p/E",nptbins,ptmin,ptmax, nPoverEbins,pOverEmin,pOverEmax);
     fh1pOverE->SetYTitle("p/E");
@@ -1903,7 +1902,8 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
     fhPhi    ->Fill(phi);
     fhEta    ->Fill(eta);
   }
-  if(fFillAllTH3)fhEtaPhiE->Fill(eta,phi,e);
+  
+  fhEtaPhiE->Fill(eta,phi,e);
   
   //Cells per cluster
   if(fFillAllTH3){
@@ -2221,9 +2221,9 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
       fhEtaCharged    ->Fill(eta);
     }
     
-    if(fFillAllTMHisto){
+    if(fFillAllTMHisto && fFillAllTH3){
       fhEtaPhiECharged->Fill(eta,phi,e);		
-      if(fFillAllTH3)fhNCellsPerClusterMIPCharged->Fill(e, nCaloCellsPerCluster,eta);
+      fhNCellsPerClusterMIPCharged->Fill(e, nCaloCellsPerCluster,eta);
     }
     //printf("track index %d ntracks %d\n", esd->GetNumberOfTracks());	
     //Study the track and matched cluster if track exists.
@@ -2520,6 +2520,7 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
     fhPhi     = (TH1F *) outputList->At(index++); 
     fhEta     = (TH1F *) outputList->At(index++);
   }
+  
   fhEtaPhiE = (TH3F *) outputList->At(index++);
   
   fhClusterTimeEnergy = (TH2F*) outputList->At(index++);
@@ -2532,6 +2533,7 @@ void AliAnaCalorimeterQA::ReadHistograms(TList* outputList)
     fhPhiCharged     = (TH1F *) outputList->At(index++); 
     fhEtaCharged     = (TH1F *) outputList->At(index++);
   }
+  
   fhEtaPhiECharged = (TH3F *) outputList->At(index++);
   
   fh1pOverE =    (TH2F *) outputList->At(index++);
