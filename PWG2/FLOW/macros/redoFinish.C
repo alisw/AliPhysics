@@ -9,7 +9,7 @@
 // effects in QC code because by default this correction is switched off).
 
 // Name of the merged, large statistics file obtained with the merging macros:
-TString mergedFileName = "output.root";
+TString mergedFileName = "mergedAnalysisResults.root";
 // Final output file name holding correct final results for large statistics sample:
 TString outputFileName = "AnalysisResults.root";
 
@@ -168,6 +168,7 @@ void redoFinish()
       {
         AliFlowAnalysisWithMixedHarmonics* mh = new AliFlowAnalysisWithMixedHarmonics();
         mh->GetOutputHistograms(list);
+        mh->GetAnalysisSettings()->SetBinContent(1,(Int_t)bApplyCorrectionForNUA);
         mh->Finish();
         directory->Add(list,kTRUE);
         directory->Write(directory->GetName(),TObject::kSingleKey+TObject::kWriteDelete);
