@@ -248,15 +248,12 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
       AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(i));
       Double_t energy = digit->GetAmplitude() - avgE;
       if (energy<=0.001) {
-        //fDigitsArr->RemoveAt(i);
         digit->SetAmplitude(0);
       } else {
         digit->SetAmplitude(energy);
       }
     }
   }
-  fDigitsArr->Compress();
-  fDigitsArr->Sort();
 }
 
 //________________________________________________________________________________________
@@ -284,8 +281,6 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
       AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(dlist[c]));
       absIds[ncells_true] = digit->GetId();
       ratios[ncells_true] = elist[c]/digit->GetAmplitude();
-      if (ratios[ncells_true] < 0.001) 
-        continue;
       ++ncells_true;
     }
     

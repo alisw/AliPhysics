@@ -135,7 +135,8 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   TObjArray             *fTrClassNamesArr;        //!array of trig class names  
   AliESDEvent           *fEsdEv;                  //!pointer to input esd event
   AliAODEvent           *fAodEv;                  //!pointer to input aod event
-  TObjArray             *fRecPoints;              //!pointer to rec points (AliAnalysisTaskEMCALClusterizeFast)
+  const TObjArray             *fRecPoints;              //!pointer to rec points (AliAnalysisTaskEMCALClusterizeFast)
+  const TClonesArray          *fDigits;                 //!pointer to digits     (AliAnalysisTaskEMCALClusterizeFast)
   TObjArray             *fEsdClusters;            //!pointer to esd clusters
   AliESDCaloCells       *fEsdCells;               //!pointer to esd cells
   TObjArray             *fAodClusters;            //!pointer to aod clusters
@@ -204,7 +205,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskEMCALPi0PbPb(const AliAnalysisTaskEMCALPi0PbPb&);            // not implemented
   AliAnalysisTaskEMCALPi0PbPb &operator=(const AliAnalysisTaskEMCALPi0PbPb&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 10) // Analysis task for neutral pions in Pb+Pb
+  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 11) // Analysis task for neutral pions in Pb+Pb
 };
 #endif
 
@@ -292,10 +293,10 @@ class AliStaVertex
 class AliStaCluster : public TObject
 {
  public:
-  AliStaCluster() : TObject(), fE(0), fR(0), fEta(0), fPhi(0), fN(0), fN1(0), fN3(0), fIdMax(0), fEmax(0),  
-                    fDbc(-1), fDisp(-1), fM20(0), fM02(0), fEcc(0), fSig(0), fIsTrackM(0), fTrDz(0), fTrDr(-1), 
-                    fTrEp(0), fTrIso(0), fTrIso1(0), fTrIso2(0), fCeIso(0), fCeCore(0), fIsTrigM(0), fTrigE(-1), 
-                    fTrigMaskE(-1), fIsShared(0), fMcLabel(-1) {;}
+    AliStaCluster() : TObject(), fE(0), fR(0), fEta(0), fPhi(0), fN(0), fN1(0), fN3(0), fIdMax(0), fEmax(0), fTmax(0), 
+                      fDbc(-1), fDisp(-1), fM20(0), fM02(0), fEcc(0), fSig(0), fIsTrackM(0), fTrDz(0), fTrDr(-1), 
+                      fTrEp(0), fTrIso(0), fTrIso1(0), fTrIso2(0), fCeIso(0), fCeCore(0), fIsTrigM(0), fTrigE(-1), 
+                      fTrigMaskE(-1), fIsShared(0), fMcLabel(-1), fEmbE(0) {;}
 
  public:
   Double32_t    fE;                //[0,0,16] energy
@@ -307,6 +308,7 @@ class AliStaCluster : public TObject
   UChar_t       fN3;               //         number of cells > 300 MeV
   UShort_t      fIdMax;            //         id maximum cell
   Double32_t    fEmax;             //[0,0,16] energy of maximum cell
+  Double32_t    fTmax;             //[0,0,16] time of maximum cell
   Double32_t    fDbc;              //[0,0,16] distance to nearest bad channel
   Double32_t    fDisp;             //[0,0,16] cluster dispersion, for shape analysis
   Double32_t    fM20;              //[0,0,16] 2-nd moment along the main eigen axis
@@ -327,8 +329,9 @@ class AliStaCluster : public TObject
   Double32_t    fTrigMaskE;        //[0,0,16] masked trigger tower energy
   Bool_t        fIsShared;         //         =true then extends across more than one super module
   Short_t       fMcLabel;          //         index of closest MC particle
+  Double32_t    fEmbE;             //[0,0,16] sum of energy of embedded (MC) cells in cluster
 
-  ClassDef(AliStaCluster,5) // Cluster class
+  ClassDef(AliStaCluster,6) // Cluster class
 };
 
 class AliStaTrigger : public TObject

@@ -21,6 +21,7 @@
 #include "AliAnalysisTaskEMCALClusterizeFast.h"
 #include "AliCDBManager.h"
 #include "AliCentrality.h"
+#include "AliEMCALDigit.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALRecoUtils.h"
@@ -83,6 +84,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fEsdEv(0),
     fAodEv(0),
     fRecPoints(0),
+    fDigits(0),
     fEsdClusters(0),
     fEsdCells(0),
     fAodClusters(0),
@@ -621,6 +623,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   }
 
   fRecPoints   = 0; // will be set if fClusName is given and AliAnalysisTaskEMCALClusterizeFast is used
+  fDigits      = 0; // will be set if fClusName is given and AliAnalysisTaskEMCALClusterizeFast is used
   fEsdClusters = 0; // will be set if ESD input used and if fRecPoints are not set or if clusters are attached
   fEsdCells    = 0; // will be set if ESD input used
   fAodClusters = 0; // will be set if AOD input used and if fRecPoints are not set or if clusters are attached
@@ -635,7 +638,8 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     TObjArray *ts = am->GetTasks();
     cltask = dynamic_cast<AliAnalysisTaskEMCALClusterizeFast*>(ts->FindObject(fClusName));
     if (cltask && cltask->GetClusters()) {
-      fRecPoints = const_cast<TObjArray*>(cltask->GetClusters());
+      fRecPoints = cltask->GetClusters();
+      fDigits = cltask->GetDigits();
       clusattached = cltask->GetAttachClusters();
       if (cltask->GetCalibData()!=0)
         recalibrated = kTRUE;
@@ -686,6 +690,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
 
   if (1) {
     AliDebug(2,Form("fRecPoints   set: %p", fRecPoints));
+    AliDebug(2,Form("fDigits      set: %p", fDigits));
     AliDebug(2,Form("fEsdClusters set: %p", fEsdClusters));
     AliDebug(2,Form("fEsdCells    set: %p", fEsdCells));
     AliDebug(2,Form("fAodClusters set: %p", fAodClusters));
@@ -884,7 +889,6 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
 
   for(Int_t i=0, ncl=0; i<nclus; ++i) {
     AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
-
     if (!clus)
       continue;
     if (!clus->IsEMCAL())
@@ -913,6 +917,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     Double_t emax = GetMaxCellEnergy(clus, id);
     cl->fIdMax    = id;
     cl->fEmax     = emax;
+    cl->fTmax    =  cells->GetCellTime(id);
     if (clus->GetDistanceToBadChannel()<10000)
       cl->fDbc    = clus->GetDistanceToBadChannel();
     if (!TMath::IsNaN(clus->GetDispersion()))
@@ -1045,9 +1050,32 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
           msta   = pa;
         }
       }
-      if (diffR2>10 || msta==0)
-        continue;
-      cl->fMcLabel = msta->fLab;
+      if (diffR2<10 && msta!=0) {
+        cl->fMcLabel = msta->fLab;
+      }
+    }
+
+    cl->fEmbE = 0;
+    if (fDigits && fEmbedMode) {
+      for(Int_t j=0; j<cl->fN; ++j) {
+        Short_t cid = TMath::Abs(clus->GetCellAbsId(j));
+        Short_t pos = -1;
+        std::map<Short_t,Short_t>::iterator it = map.find(cid);
+        if (it!=map.end())
+          pos = it->second;
+        if (pos<0)
+          continue;
+        AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigits->At(pos));
+        if (!digit)
+          continue;
+        if (digit->GetId() != cid) {
+          AliError(Form("Ids should be equal: %d %d", cid, digit->GetId()));
+          continue;
+        }
+        if (digit->GetType()<-1) {
+          cl->fEmbE += digit->GetChi2();
+        }
+      }
     }
   }
 }
