@@ -21,7 +21,7 @@
 //     Author: Andreas Morsch, CERN
 //-------------------------------------------------------------------------
 
-#include <TRefArray.h>
+#include <TObjArray.h>
 
 #include "AliMCParticle.h"
 #include "AliExternalTrackParam.h" 
@@ -43,7 +43,7 @@ AliMCParticle::AliMCParticle():
 }
 
     
-AliMCParticle::AliMCParticle(TParticle* part, TRefArray* rarray, Int_t index):
+AliMCParticle::AliMCParticle(TParticle* part, TObjArray* rarray, Int_t index):
     AliVParticle(),
     fParticle(part),
     fTrackReferences(rarray),
@@ -89,7 +89,7 @@ AliMCParticle::~AliMCParticle()
   // fParticle should be handled by the user
   // AliStack in case of AliMCEventHandler
   if(fTrackReferences){
-      fTrackReferences->Delete();
+    fTrackReferences->Clear();
       delete fTrackReferences;
       fTrackReferences = 0;
   }

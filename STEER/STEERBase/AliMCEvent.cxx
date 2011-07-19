@@ -496,7 +496,7 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
     TParticle     *particle   = 0;
     TClonesArray  *trefs      = 0;
     Int_t          ntref      = 0;
-    TRefArray     *rarray     = 0;
+    TObjArray     *rarray     = 0;
 
 
 
@@ -524,7 +524,7 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
 	    fTreeTR->GetEntry(fStack->TreeKEntry(i));
 	    trefs     = fTRBuffer;
 	    ntref     = trefs->GetEntriesFast();
-	    rarray    = new TRefArray(ntref);
+	    rarray    = new TObjArray(ntref);
 	    Int_t nen = fTrackReferences->GetEntriesFast();
 	    for (Int_t j = 0; j < ntref; j++) {
 		// Save the track references in a TClonesArray
@@ -636,7 +636,7 @@ Int_t AliMCEvent::BgLabelToIndex(Int_t label)
 }
 
 
-Bool_t AliMCEvent::IsPhysicalPrimary(Int_t i) 
+Bool_t AliMCEvent::IsPhysicalPrimary(Int_t i) const
 {
 //
 // Delegate to subevent if necesarry 

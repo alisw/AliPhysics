@@ -13,7 +13,7 @@
 #include <Rtypes.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
-#include <TRefArray.h>
+#include <TObjArray.h>
 
 #include "AliTrackReference.h"
 #include "AliVParticle.h"
@@ -21,7 +21,7 @@
 class AliMCParticle: public AliVParticle {
 public:
     AliMCParticle();
-    AliMCParticle(TParticle* part, TRefArray* rarray = 0, Int_t label=-1);
+    AliMCParticle(TParticle* part, TObjArray* rarray = 0, Int_t label=-1);
     virtual ~AliMCParticle();
     AliMCParticle(const AliMCParticle& mcPart); 
     AliMCParticle& operator=(const AliMCParticle& mcPart);
@@ -78,7 +78,7 @@ public:
 	    
  private:
     TParticle *fParticle;             // The wrapped TParticle
-    TRefArray *fTrackReferences;      // Reference array to track references
+    TObjArray *fTrackReferences;      // Array to track references
     Int_t      fNTrackRef;            // Number of track references
     Int_t      fLabel;                // fParticle Label in the Stack
     Int_t      fMother;               // Mother particles

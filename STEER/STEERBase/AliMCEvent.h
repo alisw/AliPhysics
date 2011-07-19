@@ -122,7 +122,7 @@ public:
     virtual Int_t     GetSecondaryOffset()  const {return fSecondaryOffset;}    
     virtual void      SetPrimaryOffset(Int_t ioff)    {fPrimaryOffset = ioff;}
     virtual void      SetSecondaryOffset(Int_t ioff)  {fSecondaryOffset = ioff;}    
-    virtual Bool_t    IsPhysicalPrimary(Int_t i);
+    virtual Bool_t    IsPhysicalPrimary(Int_t i) const;
     virtual Int_t     BgLabelToIndex(Int_t label);
     static  Int_t     BgLabelOffset() {return fgkBgLabelOffset;}
     virtual Bool_t    IsFromBGEvent(Int_t index);
