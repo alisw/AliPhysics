@@ -148,6 +148,7 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
   for(Int_t i=0;i<3;i++){
     if(fHistCentrality[i]){delete fHistCentrality[i]; fHistCentrality[i]=0;}
   }
+
   for(Int_t i=0;i<3*fNPtBins;i++){
     if(fMassHist[i]){ delete fMassHist[i]; fMassHist[i]=0;}
     if(fCosPHist[i]){ delete fCosPHist[i]; fCosPHist[i]=0;}
@@ -176,6 +177,11 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
     if(fDCAHistLS[i]){ delete fDCAHistLS[i]; fDCAHistLS[i]=0;}
     if(fMassHistLSTC[i]){ delete fMassHistLSTC[i]; fMassHistLSTC[i]=0;}
   }
+
+  for(Int_t i=0;i<3;i++){
+    if(fCorreld0Kd0pi[i]){ delete fCorreld0Kd0pi[i]; fCorreld0Kd0pi[i]=0;}
+  }
+
   if(fPtVsMass){
     delete fPtVsMass;
     fPtVsMass=0;
@@ -607,6 +613,15 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
 
   }
   
+  if(fCutsDistr){  
+    fCorreld0Kd0pi[0]=new TH2F("hCorreld0Kd0piAll","",100,-0.02,0.02,100,-0.02,0.02);
+    fCorreld0Kd0pi[1]=new TH2F("hCorreld0Kd0piSig","",100,-0.02,0.02,100,-0.02,0.02);
+    fCorreld0Kd0pi[2]=new TH2F("hCorreld0Kd0piBkg","",100,-0.02,0.02,100,-0.02,0.02);
+    for(Int_t i=0; i<3; i++){
+      fCorreld0Kd0pi[i]->Sumw2();
+      fOutput->Add(fCorreld0Kd0pi[i]);
+    }
+  }
   
   fHistNEvents = new TH1F("fHistNEvents", "number of events ",9,-0.5,8.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
@@ -895,6 +910,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	    fDCAHist[index]->Fill(dca);
 	    fDLxy[index]->Fill(dlxy);
 	    fCosxy[index]->Fill(cxy);
+	    fCorreld0Kd0pi[0]->Fill(d->Getd0Prong(0)*d->Getd0Prong(1),
+				    d->Getd0Prong(2)*d->Getd0Prong(1));
 	  }
 	  if(passTightCuts){ fHistNEvents->Fill(6);
 	    nSelectedtight++;
@@ -959,6 +976,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 		fPtpi1Hist[index]->Fill(d->PtProng(0),fact);
 		fPtpi2Hist[index]->Fill(d->PtProng(2),fact);
 		fDCAHist[index]->Fill(dca,fact);
+		fCorreld0Kd0pi[1]->Fill(d->Getd0Prong(0)*d->Getd0Prong(1),
+					d->Getd0Prong(2)*d->Getd0Prong(1));
 	      }
 	      if(passTightCuts){
 		fMassHistTC[index]->Fill(invMass);	      
@@ -1026,6 +1045,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 		fPtpi1Hist[index]->Fill(d->PtProng(0),fact);
 		fPtpi2Hist[index]->Fill(d->PtProng(2),fact);
 		fDCAHist[index]->Fill(dca,fact);
+		fCorreld0Kd0pi[2]->Fill(d->Getd0Prong(0)*d->Getd0Prong(1),
+					d->Getd0Prong(2)*d->Getd0Prong(1));
 	      }
 	      if(passTightCuts){
 		fMassHistTC[index]->Fill(invMass);
