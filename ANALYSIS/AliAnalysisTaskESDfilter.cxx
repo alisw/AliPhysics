@@ -1070,7 +1070,7 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
     //    aodTrack->SetIsHybridTPCConstrainedGlobal(isHybridITSTPC);    
     aodTrack->SetTPCClusterMap(track->GetTPCClusterMap());
     aodTrack->SetTPCSharedMap (track->GetTPCSharedMap());
-    aodTrack->SetIsTPCConstrained(kTRUE);    
+    //    aodTrack->SetIsTPCConstrained(kTRUE);    
     Float_t ndf = track->GetTPCNcls()+1 - 5 ;
     if(ndf>0){
       aodTrack->SetChi2perNDF(track->GetConstrainedChi2TPC());
@@ -1185,7 +1185,7 @@ void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent&
                                                             AliAODTrack::kPrimary, 
                                                             selectInfo);
     //    aodTrack->SetIsHybridGlobalConstrainedGlobal(isHybridGC);    
-    aodTrack->SetIsGlobalConstrained(kTRUE);    
+    //    aodTrack->SetIsGlobalConstrained(kTRUE);    
     aodTrack->SetTPCClusterMap(esdTrack->GetTPCClusterMap());
     aodTrack->SetTPCSharedMap (esdTrack->GetTPCSharedMap());
     Float_t ndf = esdTrack->GetTPCNcls()+1 - 5 ;
