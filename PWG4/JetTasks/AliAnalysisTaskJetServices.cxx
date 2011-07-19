@@ -550,9 +550,6 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
   if(aod){
     const AliAODVertex *vtxAOD = aod->GetPrimaryVertex();
-    if(!vtxAOD){
-      aod->Print();
-    }
     aodVtxValid = IsVertexValid(vtxAOD);
     aodVtxIn = IsVertexIn(vtxAOD);
     Float_t zvtx = vtxAOD->GetZ();
