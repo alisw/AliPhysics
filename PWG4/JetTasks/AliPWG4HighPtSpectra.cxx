@@ -386,7 +386,6 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	track = esdtrack;
     
       if(!track) {
-	if(fTrackType==1 || fTrackType==2) delete track;
 	continue;
       }
  
