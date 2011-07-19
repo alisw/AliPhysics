@@ -116,6 +116,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH1F *fPtMaxHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 5 (LC)
   TH1F *fDCAHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 6 (LC)
   TH1F *fMassHistLSTC[5*kMaxPtBins];//!hist. for LS inv mass (TC)
+  TH2F *fCorreld0Kd0pi[3]; //!hist. for d0k*d0pi vs. d0k*d0pi (LC)
   TH1F *fHistCentrality[3];//!hist. for cent distr (all,sel ev, )
   THnSparseF *fHistMassPtImpParTC[5];//! histograms for impact paramter studies
   TH2F *fPtVsMass;    //! hist. of pt vs. mass (prod. cuts)
@@ -145,7 +146,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Float_t fHigherImpPar; // higher limit in impact parameter (um)
   Int_t  fDoLS;        // flag to do LS analysis
   
-  ClassDef(AliAnalysisTaskSEDplus,15); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,16); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
