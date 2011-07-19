@@ -3,7 +3,8 @@
 AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE, 
                                            Bool_t writeMuonAOD=kFALSE,
                                            Bool_t writeDimuonAOD=kFALSE,
-					   Bool_t usePhysicsSelection=kFALSE)
+					   Bool_t usePhysicsSelection=kFALSE,
+					   Bool_t useCentralityTask=kFALSE)
 {
 // Creates a filter task and adds it to the analysis manager.
 
@@ -51,6 +52,14 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    //   esdfilter->DisableCaloClusters();
    //   esdfilter->DisableCells(); 
    esdfilter->DisableTracklets();
+   esdfilter->SetWriteHybridGlobalConstrainedOnly(kTRUE);
+
+   AliAnalysisTaskAODCentralityMaker* ctask = 0;
+   if (useCentralityTask) {
+       ctask = new AliAnalysisTaskAODCentralityMaker("AODCentralityMaker");
+       ctask->SetDeltaAODFileName("AliAODCentrality.root");
+       mgr->AddTask(ctask);
+   }
 
 
    mgr->AddTask(esdfilter);
@@ -95,25 +104,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    // ITSrefit and use only primaries...
 
    // ITS cuts for new jet analysis 
-   AliESDtrackCuts* esdTrackCutsH0 = new AliESDtrackCuts("ITS+TPC cuts tight");
-
-   // ITS                                                                     
-   esdTrackCutsH0->SetRequireITSRefit(kTRUE);
-
-   // TPC 
-   esdTrackCutsH0->SetMinNClustersTPC(80);
-   esdTrackCutsH0->SetMaxChi2PerClusterTPC(4);
-   esdTrackCutsH0->SetAcceptKinkDaughters(kFALSE);
-   esdTrackCutsH0->SetRequireTPCRefit(kTRUE);
-   esdTrackCutsH0->SetMaxFractionSharedTPCClusters(0.4);
-
-   // 
-   esdTrackCutsH0->SetMaxDCAToVertexXY(2.4);
-   esdTrackCutsH0->SetMaxDCAToVertexZ(3.2);
-   esdTrackCutsH0->SetDCAToVertex2D(kTRUE);
-   esdTrackCutsH0->SetMaxChi2PerClusterITS(36);
-   esdTrackCutsH0->SetPtRange(0.15,1E10);
-
+   gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/CreateTrackCutsPWG4.C");
+   AliESDtrackCuts* esdTrackCutsHG0 = CreateTrackCutsPWG4(10001001);
 
    // throw out tracks with too low number of clusters in
    // the first pass (be consistent with TPC only tracks)
@@ -124,10 +116,14 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    //   esdTrackCutsH0->SetMinNClustersTPC(80); // <--- first pass
 
 
-   // 
-   AliESDtrackCuts* esdTrackCutsH1 = new AliESDtrackCuts(*esdTrackCutsH0);
-   esdTrackCutsH1->SetName("loose ITS fake cuts");
-   esdTrackCutsH1->SetMaxChi2PerClusterITS(1E10);
+   // the complement to the one with SPD requirement
+   AliESDtrackCuts* esdTrackCutsHG1 = CreateTrackCutsPWG4(10011001);
+
+   // the tracks that must not be taken pass this cut and
+   // non HGC1 and HG
+   AliESDtrackCuts* esdTrackCutsHG2 = CreateTrackCutsPWG4(10021001);
+
+   
 
 
    // standard cuts also used in R_AA analysis
@@ -137,16 +133,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    esdTrackCutsH2->SetPtRange(0.15,1E10);
 
    // TPC only tracks
-   AliESDtrackCuts* esdTrackCutsTPCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-   esdTrackCutsTPCOnly->SetPtRange(0.15,1E10);
-   esdTrackCutsTPCOnly->SetMaxFractionSharedTPCClusters(0.4);
-   // throw out tracks with too low number of clusters in
-   // the first pass 
-   // N.B. the number off crossed rows still acts on the tracks after
-   // all iterations if we require tpc standalone, number of clusters
-   // and chi2 TPC cuts act on track after the first iteration
-   esdTrackCutsTPCOnly->SetRequireTPCStandAlone(kTRUE);
-   esdTrackCutsTPCOnly->SetMinNClustersTPC(80); // <--- first pass
+   AliESDtrackCuts* esdTrackCutsGCOnly = CreateTrackCutsPWG4(10041001);
 
    // Compose the filter
    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
@@ -161,21 +148,20 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    trackFilter->AddCuts(electronID);
    electronID->SetFilterMask(4);       // AND with Pixel Cuts
    // 16 1<<4
-   trackFilter->AddCuts(esdTrackCutsH0);
+   trackFilter->AddCuts(esdTrackCutsHG0);
    // 32 1<<5
-   trackFilter->AddCuts(esdTrackCutsH1);
+   trackFilter->AddCuts(esdTrackCutsHG1);
    // 64 1<<6
-   trackFilter->AddCuts(esdTrackCutsH2);
+   trackFilter->AddCuts(esdTrackCutsHG2);
    // 128 1<<7
-   trackFilter->AddCuts(esdTrackCutsH0); // add once more for tpc only tracks
+   trackFilter->AddCuts(esdTrackCutsHG0); // add once more for tpc only tracks
    // 256 1<<8
-   trackFilter->AddCuts(esdTrackCutsTPCOnly);
+   trackFilter->AddCuts(esdTrackCutsGCOnly);
    // 512 1<<9                         
-   trackFilter->AddCuts(esdTrackCutsH1); // add once more for tpc only tracks
+   trackFilter->AddCuts(esdTrackCutsHG1); // add once more for tpc only tracks
 
-   esdfilter->SetTPCOnlyFilterMask((1<<7)|(1<<8)); // these tracks are written out as TPC only 
-   esdfilter->SetHybridFilterMaskITSTPC((1<<4)|(1<<5)); // these global tracks will be marked has hybrid
-   esdfilter->SetHybridFilterMasksTPC(1<<7,1<<9);   // arg0, these tpc tracks will be marked as TPC  hybrid, in addtion to thos that fail arg1
+   esdfilter->SetGlobalConstrainedFilterMask(1<<8|1<<9); // these tracks are written out as global constrained tracks
+   esdfilter->SetHybridFilterMaskGlobalConstrainedGlobal((1<<4)); // these normal global tracks will be marked as hybrid
 
 
    // Filter with cuts on V0s
@@ -214,6 +200,11 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
 								   AliAnalysisManager::kOutputContainer,"pyxsec_hists.root");
       mgr->ConnectOutput (kinefilter,  1,coutputEx);
    }   
+  if (useCentralityTask) {
+       mgr->ConnectInput (ctask, 0, mgr->GetCommonInputContainer());
+       mgr->ConnectOutput(ctask, 0, mgr->GetCommonOutputContainer());
+   }
+
    return esdfilter;
  }
  

@@ -33,6 +33,7 @@ Bool_t      kUsePAR             = kFALSE;  // use par files for extra libs
 Bool_t      kUseCPAR            = kFALSE;  // use par files for common libs
 Bool_t      kFillAOD = kTRUE;  // switch of AOD filling for on the fly analysis
 Bool_t      kFilterAOD = kTRUE;
+Float_t     kJetTriggerPtCut = 20; // pT for jet trigger in case of iFilter==2
 Int_t       kSaveAOD = 8;        // Bit switch 1 = Full AOD 2 = Jet AOD , 4 = PartCorr, 8 = JCORRAN 
 //== general input and output variables
 
@@ -419,7 +420,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if(iPhysicsSelection && !iAODanalysis){
      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-     Int_t iTriggerC = 0;
+     Int_t iTriggerHIC = 0;
      Bool_t rejectBkg = true;
      if(kIsPbPb){
        iTriggerHIC = 2;
@@ -433,21 +434,25 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    else{
      iPhysicsSelectionFlag = AliVEvent::kMB;
    }
-
-   if(iCentralitySelection){
+   
+   if(kIsPbPb&&!iAODanalysis){
 
      // has to run before AOD filter
      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
-     //     const char* file1="$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_137161.root";
-     //     const char* file2="$ALICE_ROOT/ANALYSIS/macros/AliCentralityByFunction_137161.root";
      AliCentralitySelectionTask *taskC = AddTaskCentrality();
       if (!taskC) ::Warning("AnalysisTrainPWG4Jets", "AliCentralitySelectionTask cannot run for this train conditions - EXCLUDED");
-   }
 
+
+     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskEventplane.C");
+     AliEPSelectionTask *taskEP = AddTaskEventplane();
+     if (!taskEP) ::Warning("AnalysisTrainPWG4Jets", "AliEventplan cannot run for this train conditions - EXCLUDED");
+   }
+   
    if (iESDfilter && !iAODanalysis) {
       //  ESD filter task configuration.
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskESDFilterPWG4Train.C");
-      AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kUseKinefilter,kUseMuonfilter);
+      // switch on centrality make for PbPb
+      AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kUseKinefilter); // carefull, if physics selection is enabled you may get not primary vertex pointer later on...
       taskesdfilter->SetEnableFillAOD(!kFilterAOD);
       taskesdfilter->DisableV0s();
       taskesdfilter->DisableCascades();
@@ -675,8 +680,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
 
        if(iFilterAnalysis==2){
-	 if(kIsPbPb)taskCl->SetJetTriggerPtCut(40);
-	 else taskCl->SetJetTriggerPtCut(20.);
+	 taskCl->SetJetTriggerPtCut(kJetTriggerPtCut);
        }
 
 
