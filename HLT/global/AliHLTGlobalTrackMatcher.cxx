@@ -22,8 +22,6 @@
 */
 
 #include "AliHLTGlobalTrackMatcher.h"
-//#include "AliESDCaloCluster.h"
-
 
 
 #if __GNUC__>= 3
@@ -39,6 +37,7 @@ AliHLTGlobalTrackMatcher::AliHLTGlobalTrackMatcher() :
   fEmcalMaxZ(0),
   fEmcalMaxX(0),
   fMatchDistance(0),
+  fMatchDistanceEMCal(0),
   fPhosRadius(460),
   fEmcalRadius(448)
 {
@@ -59,6 +58,7 @@ void AliHLTGlobalTrackMatcher::DoInit( ) {
 
 
   fMatchDistance = 40*40;
+  fMatchDistanceEMCal = 0.1; // EMCal EtaxPhi cut 
 
   fPhosMaxX = 355 + TMath::Sqrt(fMatchDistance) + 30;
   fPhosMaxZ = 64.+ TMath::Sqrt(fMatchDistance) + 30;
@@ -92,14 +92,15 @@ Int_t AliHLTGlobalTrackMatcher::AddTrackToCluster(Int_t tId, Int_t* matchArray, 
     HLTDebug("The number of matching tracks (%d) exceeds the array size of %d", nMatches, 9);
     return 0;
   }
-
+ 
+   
   if(bestMatch) {
     matchArray[nMatches] = matchArray[0];
     matchArray[0] = tId;
   } else  {
     matchArray[nMatches] = tId;
   }
-  
+
   return nMatches;
 
 };

@@ -21,6 +21,7 @@
 #include "TObjArray.h"
 #include "TArrayI.h"
 #include "TVector3.h"
+#include "AliTrackerBase.h" // Marcel: for EMCal track-matching
 
 class AliHLTGlobalTrackMatcher : public AliHLTLogging{
 
@@ -33,14 +34,18 @@ public:
   //Main function, loops over tracks and calls appropriate functions to establish matches
   template <class T>
   Int_t Match( TObjArray * trackArray, vector<T*>  &phosClustersVector, vector<T*>  &emcalClustersVector,  Double_t bz ); 
-  
+
 private:
   
   void DoInit();
 
+ 
   //Loops over clusters and decides if track is a good match to any of these
   template <class T>
   Int_t MatchTrackToClusters( AliExternalTrackParam * track, vector<T*>  &clustersVector, Int_t nClusters, Float_t * bestMatch, Double_t bz); 
+
+  template <class T>
+  Int_t MatchTrackToEMCalClusters( AliExternalTrackParam * track, vector<T*>  &clustersVector, Int_t nClusters, Float_t * bestMatch, Double_t bz); // EMCal Track-Matching from recoUtils::ExtrapolateTracktoCluster
 
   //Add track Id to cluster's list of matching tracks
   Int_t AddTrackToCluster(Int_t tId, Int_t* clustersArray, Bool_t bestMatch, Int_t nMatches);
@@ -56,6 +61,7 @@ private:
   Float_t fEmcalMaxX;             // max X track    (cm)
 
   Float_t fMatchDistance;        // Square of maximum distance where track is considered a match to cluster (cm^2)
+  Float_t fMatchDistanceEMCal; // Square of maximum distance where track is considered a match to cluster (EtaxPhi space) 
 
   const Double_t fPhosRadius;          // Radial position of PHOS 
   const Double_t fEmcalRadius;         // Radial position of EMCAL
@@ -70,7 +76,6 @@ private:
 template <class T>
 Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &phosClustersVector, vector<T*> &emcalClustersVector,  Double_t bz ) {
   //See above for documentation
-
 
   Int_t nTracks = trackArray->GetEntriesFast();
   Int_t nPhosClusters = phosClustersVector.size();
@@ -105,7 +110,7 @@ Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &phos
       MatchTrackToClusters( track, phosClustersVector, nPhosClusters, bestMatchPhos, bz);
 
     } else if ( IsTrackCloseToDetector(track, bz, fEmcalMaxX, kTRUE, fEmcalMaxZ, fEmcalRadius ) ) {
-      MatchTrackToClusters( track, emcalClustersVector, nEmcalClusters, bestMatchEmcal, bz);
+       MatchTrackToEMCalClusters( track, emcalClustersVector, nEmcalClusters, bestMatchEmcal, bz);
     } 
 
   }   
@@ -113,6 +118,67 @@ Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &phos
   return 0;
 } 
 
+//MARCEL 
+template <class T>
+Int_t AliHLTGlobalTrackMatcher::MatchTrackToEMCalClusters( AliExternalTrackParam * track,  vector<T*> &clustersVector, Int_t nClusters, Float_t * bestMatch, Double_t /* bz */) {
+  
+  //See header file for documentation
+  Int_t iResult = 0;
+ 
+  Float_t clusterPosition[3];
+  //Double_t trackPosition[3];
+  
+  for(int ic = 0; ic < nClusters; ic++) {
+    
+     T * cluster = clustersVector.at(ic);
+
+/* The lines below correspond to the method for Track-matching from RecoUtils:ExtrapolatetoCluster
+   In principle, the method ExtrapolateToCluster should be called directly from RecoUtils. The problems is that This method requires AliVCluster
+   which would have to be created inside the GlobalMatcher, since the information this class obtains from the Cluster comes from the
+   data struct with the cluster information. In order to avoid the whole creation of a AliVCluster object, the code from RecoUtils
+   was brought here in the same way it is written there.
+*/ 
+    cluster->GetPosition(clusterPosition);
+    TVector3 VClsPos(clusterPosition[0], clusterPosition[1], clusterPosition[2]); //MARCEL  
+    //Double_t rCluster = TMath::Sqrt(clusterPosition[0]*clusterPosition[0] + clusterPosition[1]*clusterPosition[1]);      
+    AliExternalTrackParam *trkParam = new AliExternalTrackParam(*track);//Retrieve the starting point every time before the extrapolation
+    Double_t trkPos[3];
+    TVector3 vec(clusterPosition[0],clusterPosition[1],clusterPosition[2]);
+    Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
+    vec.RotateZ(-alpha); //Rotate the cluster to the local extrapolation coordinate system
+    trkParam->Rotate(alpha); //Rotate the track to the same local extrapolation system
+    Float_t fMass=0.139;
+    Float_t fStep=50.;
+    if(!AliTrackerBase::PropagateTrackToBxByBz(trkParam, vec.X(), fMass, fStep,kFALSE, 0.8, -1)) return kFALSE; 
+    trkParam->GetXYZ(trkPos); //Get the extrapolated global position
+    TVector3 clsPosVec(clusterPosition[0],clusterPosition[1],clusterPosition[2]);
+    TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
+    Float_t clsPhi = (Float_t)clsPosVec.Phi();
+    if(clsPhi<0) clsPhi+=2*TMath::Pi();
+    Float_t trkPhi = (Float_t)trkPosVec.Phi();
+    if(trkPhi<0) trkPhi+=2*TMath::Pi();
+    Double_t tmpPhi = clsPhi-trkPhi;  // track cluster matching
+    Double_t tmpEta = clsPosVec.Eta()-trkPosVec.Eta();  // track cluster matching
+    Double_t tmpR=TMath::Sqrt(tmpEta*tmpEta + tmpPhi*tmpPhi);//MARCEL
+    Double_t match = tmpR;
+
+    if( match > fMatchDistanceEMCal )continue;
+    
+    if (match < bestMatch[ic]) {
+      bestMatch[ic] = match;
+      cluster->SetEmcCpvDistance(TMath::Sqrt(match));
+      Double_t dx=tmpPhi;
+      Double_t dz=tmpEta;  
+      cluster->SetTrackDistance(dx,dz);
+    }
+    //Add track to cluster's array of matching tracks
+    Int_t nTracksMatched = cluster->GetNTracksMatched();
+    iResult = AddTrackToCluster(track->GetID(), cluster->GetTracksMatched(), match < bestMatch[ic], nTracksMatched);
+  }
+  
+  return iResult;
+}
+//end of MARCEL TEST
 
 
 template <class T>
@@ -123,7 +189,6 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
  
   Float_t clusterPosition[3];
   Double_t trackPosition[3];
- 
   
   for(int ic = 0; ic < nClusters; ic++) {
     
@@ -150,6 +215,7 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * tr
       Double_t dd = trackPosition[i] - clusterPosition[i];
       match += dd*dd;
     }
+ 
 
     if( match > fMatchDistance  )  {     
       continue;

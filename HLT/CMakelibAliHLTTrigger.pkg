@@ -54,6 +54,7 @@ set ( CLASS_HDRS
     AliHLTTriggerCosmics.h
     AliHLTTriggerCounterComponent.h
     AliHLTTriggerCounters.h
+    AliHLTTriggerEmcalElectron.h
     )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
