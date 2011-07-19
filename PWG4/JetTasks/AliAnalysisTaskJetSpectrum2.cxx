@@ -503,7 +503,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 
       // Bins:  Jet number: pTJet, cent, eta, phi, Area.   total bins = 9.72 M
       const Int_t nBinsSparse2 = 6;
-      const Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 25,  10, 18,             90, 10};
+      const Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 25,   5,  18,             360, 10};
       const Double_t xmin2[nBinsSparse2]  = {        -0.5,  0,   0,-0.9,              0,  0.};
       const Double_t xmax2[nBinsSparse2]  = {kMaxJets+0.5,250, 100, 0.9, 2.*TMath::Pi(),1.0};
       fhnJetPtQA[ij] = new THnSparseF(Form("fhnJetPtQA%s",cAdd.Data()),";jet number;p_{T,jet};cent;#eta;#phi;area",nBinsSparse2,nBins2,xmin2,xmax2);
@@ -533,9 +533,9 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 
       // Track QA bins track nr, pTrack, cent, eta, phi bins 5.4 M
       const Int_t nBinsSparse4 = 5;
-      const Int_t nBins4[nBinsSparse4] =    {    2,75,  10,  20, 180};
-      const Double_t xmin4[nBinsSparse4]  = { -0.5, 0,   0, -1.0,   0.};
-      const Double_t xmax4[nBinsSparse4]  = {  1.5,200, 100,  1.0,2.*TMath::Pi()};  
+      const Int_t nBins4[nBinsSparse4] =    {    2, 50,  10,  20, 360};
+      const Double_t xmin4[nBinsSparse4]  = { -0.5,  0,   0, -1.0,   0.};
+      const Double_t xmax4[nBinsSparse4]  = {  1.5,150, 100,  1.0,2.*TMath::Pi()};  
 
       // change the binning ot the pT axis:
       Double_t *xPt4 = new Double_t[nBins4[1]+1];
