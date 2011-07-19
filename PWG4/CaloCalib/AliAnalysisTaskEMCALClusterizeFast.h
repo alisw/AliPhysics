@@ -30,6 +30,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Bool_t                 GetRecalibrateOnly()                 const  { return fRecalibOnly          ; }
   Bool_t                 GetSubBackground()                   const  { return fSubBackground        ; }
   const TObjArray       *GetClusters()                        const  { return fClusterArr           ; }
+  const TClonesArray    *GetDigits()                          const  { return fDigitsArr            ; }
   const TString         &GeometryName()                       const  { return fGeomName             ; }  
   AliEMCALRecParam      *GetRecParam()                        const  { return fRecParam             ; }
   AliEMCALRecoUtils     *GetRecoUtils()                       const  { return fRecoUtils            ; }
