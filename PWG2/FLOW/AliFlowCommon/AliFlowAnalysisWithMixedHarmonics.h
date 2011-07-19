@@ -49,7 +49,7 @@ class AliFlowAnalysisWithMixedHarmonics
   // 1.) Method Init() and methods called within Init():
   virtual void Init();
   virtual void CrossCheckSettings();
-  virtual void AccessConstants();
+  virtual void AccessConstants(TString method);
   virtual void BookAndNestAllLists();
   virtual void BookProfileHoldingSettings();
   virtual void BookCommonHistograms();
@@ -124,6 +124,8 @@ class AliFlowAnalysisWithMixedHarmonics
   Bool_t GetShowBinLabelsVsM() const {return this->fShowBinLabelsVsM;};  
   void SetCommonHists(AliFlowCommonHist* const ch) {this->fCommonHists = ch;};
   AliFlowCommonHist* GetCommonHists() const {return this->fCommonHists;};
+  void SetCommonConstants(TProfile* const cc) {this->fCommonConstants = cc;};
+  TProfile* GetCommonConstants() const {return this->fCommonConstants;};    
   void SetWeightsList(TList* const wl) {this->fWeightsList = (TList*)wl->Clone();}
   TList* GetWeightsList() const {return this->fWeightsList;}  
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
@@ -208,10 +210,19 @@ class AliFlowAnalysisWithMixedHarmonics
   void Set3pCorrelatorVsPtSumDiffPro(TProfile* const s3pcvpsd, Int_t const sd) {this->f3pCorrelatorVsPtSumDiffPro[sd] = s3pcvpsd;};
   TProfile* Get3pCorrelatorVsPtSumDiffPro(Int_t sd) const {return this->f3pCorrelatorVsPtSumDiffPro[sd];};
   void Set3pCorrelatorVsEtaSumDiffPro(TProfile* const s3pcvpsd, Int_t const sd) {this->f3pCorrelatorVsEtaSumDiffPro[sd] = s3pcvpsd;};
-  TProfile* Get3pCorrelatorVsEtaSumDiffPro(Int_t sd) const {return this->f3pCorrelatorVsEtaSumDiffPro[sd];};
-
+  TProfile* Get3pCorrelatorVsEtaSumDiffPro(Int_t sd) const {return this->f3pCorrelatorVsEtaSumDiffPro[sd];};  
+  void SetNonIsotropicTermsList(TList* const nitlist) {this->fNonIsotropicTermsList = nitlist;}
+  TList* GetNonIsotropicTermsList() const {return this->fNonIsotropicTermsList;}  
+  void SetNonIsotropicTermsVsPtSumDiffPro(TProfile* const nt, Int_t const sd, Int_t const t) {this->fNonIsotropicTermsVsPtSumDiffPro[sd][t] = nt;};
+  TProfile* GetNonIsotropicTermsVsPtSumDiffPro(Int_t sd, Int_t t) const {return this->fNonIsotropicTermsVsPtSumDiffPro[sd][t];};
+  void SetNonIsotropicTermsVsEtaSumDiffPro(TProfile* const nt,Int_t const sd,Int_t const t){this->fNonIsotropicTermsVsEtaSumDiffPro[sd][t] = nt;};
+  TProfile* GetNonIsotropicTermsVsEtaSumDiffPro(Int_t sd, Int_t t) const {return this->fNonIsotropicTermsVsEtaSumDiffPro[sd][t];};
   //void Set2pCorrelatorHist(TH1D* const s2pHist) {this->f2pCorrelatorHist = s2pHist;};
   //TH1D* Get2pCorrelatorHist() const {return this->f2pCorrelatorHist;};    
+  void Set3pCorrelatorVsPtSumDiffHist(TH1D* const hist, Int_t const sd) {this->f3pCorrelatorVsPtSumDiffHist[sd] = hist;};
+  TH1D* Get3pCorrelatorVsPtSumDiffHist(Int_t sd) const {return this->f3pCorrelatorVsPtSumDiffHist[sd];};
+  void Set3pCorrelatorVsEtaSumDiffHist(TH1D* const hist, Int_t const sd) {this->f3pCorrelatorVsEtaSumDiffHist[sd] = hist;};
+  TH1D* Get3pCorrelatorVsEtaSumDiffHist(Int_t sd) const {return this->f3pCorrelatorVsEtaSumDiffHist[sd];};  
 
  private:
   AliFlowAnalysisWithMixedHarmonics(const AliFlowAnalysisWithMixedHarmonics& afawQc);
@@ -247,7 +258,8 @@ class AliFlowAnalysisWithMixedHarmonics
   Double_t fEtaMin; // minimum eta   
   Double_t fEtaMax; // maximum eta
   Double_t fEtaBinWidth; // bin width for eta histograms 
-  
+  TProfile *fCommonConstants; // profile to hold common constants
+
   // 2a.) Particle weights:
   TList *fWeightsList; // list to hold all histograms with particle weights: fUseParticleWeights, fPhiWeights, fPtWeights and fEtaWeights
   Bool_t fUsePhiWeights; // use phi weights
@@ -279,6 +291,12 @@ class AliFlowAnalysisWithMixedHarmonics
   TProfile2D *fNonIsotropicTermsVsMPro; // non-isotropic terms in the decomposition of <cos[n(phi1+phi2-2phi3))]> vs multiplicity
   TProfile *f3pCorrelatorVsPtSumDiffPro[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(p1+p2)/2,|p1-p2|]
   TProfile *f3pCorrelatorVsEtaSumDiffPro[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(eta1+eta2)/2,|eta1-eta2|]
+  // 5.) Acceptance terms:
+  TList *fNonIsotropicTermsList; // list holding all non-isotropic terms for diff. profiles   
+  TProfile *fReNITEBE[2][2][4]; // [POI_1,POI_2] [all,overlap] [(p1+p2)/2,|p1-p2|,(eta1+eta2)/2,|eta1-eta2|]
+  TProfile *fImNITEBE[2][2][4]; // [POI_1,POI_2] [all,overlap] [(p1+p2)/2,|p1-p2|,(eta1+eta2)/2,|eta1-eta2|]
+  TProfile *fNonIsotropicTermsVsPtSumDiffPro[2][10]; // non-isotropic terms for <<cos[n(psi1+psi2-2phi3)]>> vs [(p1+p2)/2,|p1-p2|]
+  TProfile *fNonIsotropicTermsVsEtaSumDiffPro[2][10]; // non-isotropic terms for <<cos[n(psi1+psi2-2phi3)]>> vs [(eta1+eta2)/2,|eta1-eta2|]
 
   //2p correlators vs |Pt1 - Pt2|
   TProfile *f2pCorrelatorCosPsiDiffPtDiff; // <<cos[n(psi1-psi2)] vs pt diff 
@@ -311,6 +329,8 @@ class AliFlowAnalysisWithMixedHarmonics
   TH1D *f3pCorrelatorVsMHist; // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> vs multiplicity corrected for detector effects
   TH1D *fDetectorBiasVsMHist; // bias coming from detector inefficiencies to 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> (in %) versus multiplicity
   //TH1D *f2pCorrelatorHist;//<<cos[(psi1-psi2)]>>
+  TH1D *f3pCorrelatorVsPtSumDiffHist[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(p1+p2)/2,|p1-p2|] corrected for detector effect
+  TH1D *f3pCorrelatorVsEtaSumDiffHist[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(eta1+eta2)/2,|eta1-eta2|] corrected for detector effect
 
   ClassDef(AliFlowAnalysisWithMixedHarmonics, 0);
 
