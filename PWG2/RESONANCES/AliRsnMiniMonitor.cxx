@@ -44,6 +44,8 @@
 #include "TH3.h"
 
 #include "AliLog.h"
+#include "AliPID.h"
+#include "AliPIDResponse.h"
 
 #include "AliRsnDaughter.h"
 #include "AliRsnEvent.h"
@@ -136,7 +138,7 @@ Bool_t AliRsnMiniMonitor::Init(const char *name, TList *list)
          break;
       case ktimeTOFvsP:
          sname += "_TOFsignal";
-         histogram = new TH2F(sname.Data(), "", 500, 0.0, 5.0, 1000, -5.0, 5.0);
+         histogram = new TH2F(sname.Data(), "", 500, 0.0, 5.0, 1000, 0.0, 200000.0);
          break;
       default:
          AliError("Wrong enum type");
@@ -156,7 +158,7 @@ Bool_t AliRsnMiniMonitor::Init(const char *name, TList *list)
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnMiniMonitor::Fill(AliRsnDaughter *track, AliRsnEvent *)
+Bool_t AliRsnMiniMonitor::Fill(AliRsnDaughter *track, AliRsnEvent *event)
 {
 //
 // Fill the histogram
@@ -175,6 +177,8 @@ Bool_t AliRsnMiniMonitor::Fill(AliRsnDaughter *track, AliRsnEvent *)
 
    Double_t valueX, valueY;
    AliVTrack *vtrack = track->Ref2Vtrack();
+   
+   AliPIDResponse *pid = event->GetPIDResponse();
 
    switch (fType) {
       case kdEdxTPCvsP: 
@@ -192,7 +196,9 @@ Bool_t AliRsnMiniMonitor::Fill(AliRsnDaughter *track, AliRsnEvent *)
             return kFALSE;
          }
          valueX = vtrack->P();
-         valueY = vtrack->GetTOFsignal();
+         //valueY = vtrack->GetTOFsignal();
+         valueY = 1E20;
+         if (pid) valueY = pid->NumberOfSigmasTOF(vtrack, AliPID::kKaon);
          ((TH2F*)obj)->Fill(valueX, valueY);
          return kTRUE;
       default:
