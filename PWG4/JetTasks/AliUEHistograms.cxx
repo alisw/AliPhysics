@@ -65,8 +65,8 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   //    3 = NumberDensityPhi
   //    4 = NumberDensityPhiCentrality (other multiplicity for Pb)
   
-  fTwoTrackDistance[0] = 0;
-  fTwoTrackDistance[1] = 0;
+  fTwoTrackDistancePt[0] = 0;
+  fTwoTrackDistancePt[1] = 0;
   
   TString histogramsStr(histograms);
   
@@ -152,8 +152,8 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   // AliUEHistograms copy constructor
   //
 
-  fTwoTrackDistance[0] = 0;
-  fTwoTrackDistance[1] = 0;
+  fTwoTrackDistancePt[0] = 0;
+  fTwoTrackDistancePt[1] = 0;
 
   ((AliUEHistograms &) c).Copy(*this);
 }
@@ -248,10 +248,10 @@ AliUEHistograms::~AliUEHistograms()
   }
 
   for (Int_t i=0; i<2; i++)
-    if (fTwoTrackDistance[i])
+    if (fTwoTrackDistancePt[i])
     {
-      delete fTwoTrackDistance[i];
-      fTwoTrackDistance[i] = 0;
+      delete fTwoTrackDistancePt[i];
+      fTwoTrackDistancePt[i] = 0;
     }
 }
 
@@ -670,8 +670,8 @@ void AliUEHistograms::Copy(TObject& c) const
     target.fITSClusterMap = dynamic_cast<TH3F*> (fITSClusterMap->Clone());
     
   for (Int_t i=0; i<2; i++)
-    if (fTwoTrackDistance[i])
-      target.fTwoTrackDistance[i] = dynamic_cast<TH2F*> (fTwoTrackDistance[i]->Clone());
+    if (fTwoTrackDistancePt[i])
+      target.fTwoTrackDistancePt[i] = dynamic_cast<TH3F*> (fTwoTrackDistancePt[i]->Clone());
 
   target.fSelectCharge = fSelectCharge;
   target.fRunNumber = fRunNumber;
@@ -724,10 +724,10 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
     lists[11]->Add(entry->fVertexContributors);
     lists[12]->Add(entry->fCentralityDistribution);
     lists[13]->Add(entry->fITSClusterMap);
-    if (fTwoTrackDistance[0])
-      lists[14]->Add(entry->fTwoTrackDistance[0]);
-    if (fTwoTrackDistance[1])
-      lists[15]->Add(entry->fTwoTrackDistance[1]);
+    if (fTwoTrackDistancePt[0])
+      lists[14]->Add(entry->fTwoTrackDistancePt[0]);
+    if (fTwoTrackDistancePt[1])
+      lists[15]->Add(entry->fTwoTrackDistancePt[1]);
 
     count++;
   }
@@ -749,10 +749,10 @@ Long64_t AliUEHistograms::Merge(TCollection* list)
   fVertexContributors->Merge(lists[11]);
   fCentralityDistribution->Merge(lists[12]);
   fITSClusterMap->Merge(lists[13]);
-  if (fTwoTrackDistance[0])
-    fTwoTrackDistance[0]->Merge(lists[14]);
-  if (fTwoTrackDistance[1])
-    fTwoTrackDistance[1]->Merge(lists[15]);
+  if (fTwoTrackDistancePt[0])
+    fTwoTrackDistancePt[0]->Merge(lists[14]);
+  if (fTwoTrackDistancePt[1])
+    fTwoTrackDistancePt[1]->Merge(lists[15]);
   
   for (Int_t i=0; i<kMaxLists; i++)
     delete lists[i];
@@ -798,8 +798,8 @@ void AliUEHistograms::Scale(Double_t factor)
   list.Add(fVertexContributors);
   list.Add(fCentralityDistribution);
   list.Add(fITSClusterMap);
-  list.Add(fTwoTrackDistance[0]);
-  list.Add(fTwoTrackDistance[1]);
+  list.Add(fTwoTrackDistancePt[0]);
+  list.Add(fTwoTrackDistancePt[1]);
   
   for (Int_t i=0; i<list.GetEntries(); i++)
     ((TH1*) list.At(i))->Scale(factor);
@@ -818,14 +818,14 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
 {
   // takes the input list <tracks> and applies two-track efficiency cuts
   // returns the tracks which pass the cuts (if a pair fails the cut, both are removed)
-  // while the cut is applied, control histograms are filled: fTwoTrackDistance[i] (i = 0 before, i = 1 after)
+  // while the cut is applied, control histograms are filled: fTwoTrackDistancePt[i] (i = 0 before, i = 1 after)
   // the cut has been developed by the HBT group and removes tracks which are spatially close inside the TPC volume
   // see https://indico.cern.ch/materialDisplay.py?contribId=36&sessionId=6&materialId=slides&confId=142700
   
-  if (!fTwoTrackDistance[0])
+  if (!fTwoTrackDistancePt[0])
   {
-    fTwoTrackDistance[0] = new TH2F("fTwoTrackDistance[0]", ";#Delta#eta;#Delta#varphi^{*}_{min}", 100, -0.05, 0.05, 100, -0.05, 0.05);
-    fTwoTrackDistance[1] = (TH2F*) fTwoTrackDistance[0]->Clone("fTwoTrackDistance[1]");
+    fTwoTrackDistancePt[0] = new TH3F("fTwoTrackDistancePt[0]", ";#Delta#eta;#Delta#varphi^{*}_{min};#Delta p_{T}", 100, -0.05, 0.05, 100, -0.05, 0.05, 20, 0, 5);
+    fTwoTrackDistancePt[1] = (TH3F*) fTwoTrackDistancePt[0]->Clone("fTwoTrackDistancePt[1]");
   }
   
   TObjArray* accepted = new TObjArray(*tracks);
@@ -845,12 +845,13 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
       AliVParticle* particle2 = (AliVParticle*) tracks->At(j);
       Double_t phi2 = particle2->Phi();
       Double_t pt2 = particle2->Pt();
+      Double_t dpt = pt1 - pt2;
       
       Double_t deta = eta[i] - eta[j];
       Double_t detaabs = TMath::Abs(deta);
       
       // optimization
-      if (detaabs > 0.1)
+      if (detaabs > 0.05)
 	continue;
       
       Bool_t cutPassed = kTRUE;
@@ -877,9 +878,9 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
 	//Printf("%d %d failed: %.3f %.3f; %.3f %.3f %.4f; %.2f %.2f (%p %p)", i, j, eta[i], eta[j], phi1, phi2, dphistarminabs, pt1, pt2, particle1, particle2);
       }
 
-      fTwoTrackDistance[0]->Fill(deta, dphistarmin);
+      fTwoTrackDistancePt[0]->Fill(deta, dphistarmin, dpt);
       if (cutPassed)
-	fTwoTrackDistance[1]->Fill(deta, dphistarmin);
+	fTwoTrackDistancePt[1]->Fill(deta, dphistarmin, dpt);
       else
       {
 	// remove tracks from list
