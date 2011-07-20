@@ -37,6 +37,7 @@
 #include "fastjet/internal/LimitedWarning.hh"
 #include<iostream>
 #include<vector>
+#include <stdio.h>
 
 namespace fastjet {      // defined in fastjet/internal/base.hh
 
