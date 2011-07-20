@@ -1435,7 +1435,10 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
       while ((os=next())) {
          fGridJDL->AddToInputDataCollection(Form("LF:%s,nodownload", os->GetName()), "Input xml collections");
       }
-      fGridJDL->SetOutputDirectory(Form("%s/#alien_counter_04i#", fGridOutputDir.Data()));
+      if (!fOutputToRunNo)
+         fGridJDL->SetOutputDirectory(Form("%s/#alien_counter_04i#", fGridOutputDir.Data()));
+      else  
+         fGridJDL->SetOutputDirectory(fGridOutputDir);
    } else {            
       if (!fRunNumbers.Length() && !fRunRange[0]) {
          // One jdl with no parameters in case input data is specified by name.
