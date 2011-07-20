@@ -61,7 +61,7 @@ class AliUEHistograms : public TNamed
   TH1F* GetVertexContributors() { return fVertexContributors; }
   TH1F* GetCentralityDistribution() { return fCentralityDistribution; }
   Long64_t GetRunNumber() { return fRunNumber; }
-  TH2F* GetTwoTrackDistance(Int_t i) { return fTwoTrackDistance[i]; }
+  TH3F* GetTwoTrackDistance(Int_t i) { return fTwoTrackDistancePt[i]; }
   
   void Correct(AliUEHistograms* corrections);
   
@@ -107,13 +107,13 @@ protected:
   
   TH3F* fITSClusterMap;          // its cluster map vs centrality vs pT
   
-  TH2F* fTwoTrackDistance[2];    // control histograms for two-track efficiency study: dphi*_min vs deta (0 = before cut, 1 = after cut)
+  TH3F* fTwoTrackDistancePt[2];    // control histograms for two-track efficiency study: dphi*_min vs deta (0 = before cut, 1 = after cut)
   
   Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
   
   Long64_t fRunNumber;           // run number that has been processed
   
-  ClassDef(AliUEHistograms, 8)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 9)  // underlying event histogram container
 };
 
 #endif
