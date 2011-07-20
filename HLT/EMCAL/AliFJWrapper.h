@@ -37,6 +37,11 @@ class AliFJWrapper : public TNamed
   void SetRecombScheme (const fastjet::RecombinationScheme _scheme) { fScheme_   = _scheme; }
   void SetAreaType     (const fastjet::AreaType _atype)             { fAreaType_ = _atype;  }
 
+  void SetupAlgorithmfromOpt (const char *option);
+  void SetupStrategyfromOpt  (const char *option);
+  void SetupSchemefromOpt    (const char *option);
+  void SetupAreaTypefromOpt  (const char *option);
+
   void SetNRepeats      (const int    _nrepeat) { fNGhostRepeats_ = _nrepeat; }
   void SetGhostArea     (const double _gharea)  { fGhostArea_     = _gharea;  }
   void SetMaxRap        (const double _maxrap)  { fMaxRap_        = _maxrap;  }

@@ -42,6 +42,7 @@ set ( CLASS_HDRS
     AliHLTEMCALGeometry.h
     AliHLTEMCALRecoParamHandler.h
     AliHLTEMCALClusterizerComponentNbyN.h
+    AliFJWrapper.h
     )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )

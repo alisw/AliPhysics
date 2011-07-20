@@ -422,3 +422,64 @@ AliFJWrapper::GetJetConstituents(const unsigned int _idx)
   
   return retval;
 }
+
+void AliFJWrapper::SetupAlgorithmfromOpt(const char *option)
+{
+  string opt(option);
+  
+  if (!opt.compare("kt"))                fAlgor_    = fj::kt_algorithm;
+  if (!opt.compare("antikt"))            fAlgor_    = fj::antikt_algorithm;
+  if (!opt.compare("cambridge"))         fAlgor_    = fj::cambridge_algorithm;
+  if (!opt.compare("genkt"))             fAlgor_    = fj::genkt_algorithm;
+  if (!opt.compare("cambridge_passive")) fAlgor_    = fj::cambridge_for_passive_algorithm;
+  if (!opt.compare("genkt_passive"))     fAlgor_    = fj::genkt_for_passive_algorithm;
+  if (!opt.compare("ee_kt"))             fAlgor_    = fj::ee_kt_algorithm;
+  if (!opt.compare("ee_genkt"))          fAlgor_    = fj::ee_genkt_algorithm;
+  if (!opt.compare("plugin"))            fAlgor_    = fj::plugin_algorithm;
+
+
+}
+void AliFJWrapper::SetupStrategyfromOpt(const char *option)
+{
+  string opt(option);
+
+  if (!opt.compare("Best"))            fStrategy_ = fj::Best;
+  if (!opt.compare("N2MinHeapTiled"))  fStrategy_ = fj::N2MinHeapTiled;
+  if (!opt.compare("N2Tiled"))         fStrategy_ = fj::N2Tiled;
+  if (!opt.compare("N2PoorTiled"))     fStrategy_ = fj::N2PoorTiled;
+  if (!opt.compare("N2Plain"))         fStrategy_ = fj::N2Plain;
+  if (!opt.compare("N3Dumb"))          fStrategy_ = fj::N3Dumb;
+  if (!opt.compare("NlnN"))            fStrategy_ = fj::NlnN;
+  if (!opt.compare("NlnN3pi"))         fStrategy_ = fj::NlnN3pi;
+  if (!opt.compare("NlnN4pi"))         fStrategy_ = fj::NlnN4pi;
+  if (!opt.compare("NlnNCam4pi"))      fStrategy_ = fj::NlnNCam4pi;
+  if (!opt.compare("NlnNCam2pi2R"))    fStrategy_ = fj::NlnNCam2pi2R;
+  if (!opt.compare("NlnNCam"))         fStrategy_ = fj::NlnNCam;
+  if (!opt.compare("plugin"))          fStrategy_ = fj::plugin_strategy;
+
+}
+void AliFJWrapper::SetupSchemefromOpt(const char *option)
+{
+  string opt(option);
+
+  if (!opt.compare("BIpt"))   fScheme_   = fj::BIpt_scheme;
+  if (!opt.compare("BIpt2"))  fScheme_   = fj::BIpt2_scheme;
+  if (!opt.compare("E"))      fScheme_   = fj::E_scheme;
+  if (!opt.compare("pt"))     fScheme_   = fj::pt_scheme;
+  if (!opt.compare("pt2"))    fScheme_   = fj::pt2_scheme;
+  if (!opt.compare("Et"))     fScheme_   = fj::Et_scheme;
+  if (!opt.compare("Et2"))    fScheme_   = fj::Et2_scheme;
+
+}
+void AliFJWrapper::SetupAreaTypefromOpt(const char *option)
+{
+  string opt(option);
+
+  if (!opt.compare("active"))                      fAreaType_ = fj::active_area;
+  if (!opt.compare("invalid"))                     fAreaType_ = fj::invalid_area;
+  if (!opt.compare("active_area_explicit_ghosts")) fAreaType_ = fj::active_area_explicit_ghosts;
+  if (!opt.compare("one_ghost_passive"))           fAreaType_ = fj::one_ghost_passive_area;
+  if (!opt.compare("passive"))                     fAreaType_ = fj::passive_area;
+  if (!opt.compare("voronoi"))                     fAreaType_ = fj::voronoi_area;
+
+}

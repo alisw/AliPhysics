@@ -1,19 +1,3 @@
-//**************************************************************************                        
-//* This file is property of and copyright by the ALICE HLT Project        *                        
-//* ALICE Experiment at CERN, All rights reserved.                         *                        
-//*                                                                        *                        
-//* Primary Authors: leonidas.xaplanteris@gmail.com                        *                        
-//*                  for The ALICE HLT Project.                            *                        
-//*                                                                        *                        
-//* Permission to use, copy, modify and distribute this software and its   *                        
-//* documentation strictly for non-commercial purposes is hereby granted   *                        
-//* without fee, provided that the above copyright notice appears in all   *                        
-//* copies and that both the copyright notice and this permission notice   *                        
-//* appear in the supporting documentation. The authors make no claims     *                        
-//* about the suitability of this software for any purpose. It is          *                        
-//* provided "as is" without express or implied warranty.                  *                        
-//**************************************************************************   
-
 #include "AliHLTTriggerFastJet.h"
 #include "AliESDEvent.h"
 #include "AliESDtrackCuts.h"
@@ -25,10 +9,6 @@
 #include "TRefArray.h"
 #include "TString.h"
 #include "TMap.h"
-
-#include <fastjet/PseudoJet.hh>
-#include <fastjet/JetDefinition.hh>
-#include <fastjet/AreaDefinition.hh>
 
 #include "AliFJWrapper.h"
 
@@ -134,10 +114,10 @@ Int_t AliHLTTriggerFastJet::DoTrigger() {
     
   }
   
-  fFastJetWrapper->SetStrategy(fastjet::Best);
-  fFastJetWrapper->SetAlgorithm(fastjet::antikt_algorithm);
-  fFastJetWrapper->SetRecombScheme(fastjet::BIpt_scheme);
-  fFastJetWrapper->SetAreaType(fastjet::active_area);
+  fFastJetWrapper->SetupStrategyfromOpt("Best");
+  fFastJetWrapper->SetupAlgorithmfromOpt("antikt");
+  fFastJetWrapper->SetupSchemefromOpt("BIpt");
+  fFastJetWrapper->SetupAreaTypefromOpt("active");
   fFastJetWrapper->SetNRepeats(1);
   fFastJetWrapper->SetGhostArea(0.01);
   fFastJetWrapper->SetMaxRap(0.9);
