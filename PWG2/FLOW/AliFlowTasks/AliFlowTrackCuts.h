@@ -310,7 +310,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   static const Int_t fgkNumberOfV0tracks=64; //number of V0 channels
 
-  ClassDef(AliFlowTrackCuts,8)
+  ClassDef(AliFlowTrackCuts,9)
 };
 
 #endif
