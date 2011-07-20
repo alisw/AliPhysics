@@ -1675,11 +1675,11 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
     for (Int_t jTracks=0;jTracks<fESD->GetNumberOfTracks();jTracks++){
 		
-      AliESDtrack* TPCtrack=fESD->GetTrack(jTracks);
+      AliESDtrack* tPCtrack=fESD->GetTrack(jTracks);
       Float_t xy=0;
       Float_t z=0;
-      TPCtrack->GetImpactParameters(xy,z);
-      if ((fTracksCuts->IsSelected(TPCtrack))&&(xy<1.0)&&(z<1.0)) {i=i+1;}
+      tPCtrack->GetImpactParameters(xy,z);
+      if ((fTracksCuts->IsSelected(tPCtrack))&&(xy<1.0)&&(z<1.0)) {i=i+1;}
 			
     }
 
@@ -1767,7 +1767,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	continue;
       }
       // Remove like-sign
-      if ( myTrackPosTest->GetSign() == myTrackNegTest->GetSign()){
+      if ((Int_t)myTrackPosTest->GetSign() == (Int_t)myTrackNegTest->GetSign()){
 	continue;
       } 
      
@@ -2145,7 +2145,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     //*****************************
     // filling histograms
     //*****************************
-
+    /*
     ///////////////values for cuts/////////////////////////////////////////////////////////////////////////////////////////
     if ((lDcaPosToPrimVertex<=0.1) || (lDcaNegToPrimVertex<=0.1) || (lDcaV0Daughters>=1.00) || 
 	(lV0cosPointAngle<=0.998) || (lV0Radius<=0.9) || (lV0Radius>=100) ) 
@@ -2158,7 +2158,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
 	continue;}
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+    */
     if (TMath::Abs(lRapK0s) < lCutRap) {
 
       //////2D histos: cut vs on fly status/////////////////////
