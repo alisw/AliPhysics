@@ -620,11 +620,12 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
       //Double_t prodvtxX = v.X();
       //Double_t prodvtxY = v.Y();
 
-      Float_t pdg = 0;
       Int_t pdgcode = fMCparticle->PdgCode();
-      Float_t pdgFirstMother = 0;
-      Int_t pdgcodeFirstMother = fMCevent->GetTrack(firstMotherLabel)->PdgCode();
+      AliVParticle* firstMotherParticle = fMCevent->GetTrack(firstMotherLabel);
+      Int_t pdgcodeFirstMother = 0;
+      if (firstMotherParticle) {pdgcodeFirstMother = firstMotherParticle->PdgCode();}
       
+      Float_t pdg = 0;
       switch (TMath::Abs(pdgcode))
       {
         case 11:
@@ -642,6 +643,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
       }
       pdg = TMath::Sign(pdg,static_cast<Float_t>(pdgcode));
 
+      Float_t pdgFirstMother = 0;
       switch (TMath::Abs(pdgcodeFirstMother))
       {
         case 3122: //lambda
@@ -1422,14 +1424,24 @@ void AliFlowTrackCuts::DefineHistograms()
   after->Add(new TH2F("TPCdedx",";p [GeV/c];dEdx",kNbinsP,binsP,500,0,500)); //1
   before->Add(new TH2F("MC pid",";p[GeV/c];species",kNbinsP,binsP,10,-5, 5)); //2
   after->Add(new TH2F("MC pid",";p[GeV/c];species",kNbinsP,binsP,10,-5, 5)); //2
-  before->Add(new TH2F("MC primary",";p[GeV/c];primary",kNbinsP,binsP,2,-1,1)); //3
-  after->Add(new TH2F("MC primary",";p[GeV/c];primary",kNbinsP,binsP,2,-1,1)); //3
+  //primary
+  TH2F* hb = new TH2F("MC primary",";p[GeV/c];primary",kNbinsP,binsP,2,-1,1);
+  TH2F* ha = new TH2F("MC primary",";p[GeV/c];primary",kNbinsP,binsP,2,-1,1);
+  TAxis* axis = NULL;
+  axis = hb->GetYaxis(); 
+  axis->SetBinLabel(1,"secondary");
+  axis->SetBinLabel(2,"primary");
+  axis = ha->GetYaxis(); 
+  axis->SetBinLabel(1,"secondary");
+  axis->SetBinLabel(2,"primary");
+  before->Add(hb); //3
+  after->Add(ha); //3
   //production process
-  TH2F* hb = new TH2F("MC production process",";p[GeV/c];",kNbinsP,binsP,kMaxMCProcess,
+  hb = new TH2F("MC production process",";p[GeV/c];",kNbinsP,binsP,kMaxMCProcess,
                       -0.5, kMaxMCProcess-0.5);
-  TH2F* ha = new TH2F("MC production process",";p[GeV/c];",kNbinsP,binsP,kMaxMCProcess,
+  ha = new TH2F("MC production process",";p[GeV/c];",kNbinsP,binsP,kMaxMCProcess,
                       -0.5, kMaxMCProcess-0.5);
-  TAxis* axis = hb->GetYaxis();
+  axis = hb->GetYaxis();
   for (Int_t i=0; i<kMaxMCProcess; i++)
   {
     axis->SetBinLabel(i+1,TMCProcessName[i]);
@@ -3554,12 +3566,13 @@ Bool_t AliFlowTrackCuts::PassesV0cuts(AliVVZERO* vzero, Int_t id)
   fMCparticle=NULL;
   fTrackLabel=-1;
 
+  // Additions by Carlos Perez cperez@cern.ch
   fTrackPhi = TMath::PiOver4()*(0.5+id%8);
   if(id<32)
-    fTrackEta = -3.45+0.5*(id/8); // taken from PPR
+    fTrackEta = -3.45+0.5*(id/8);
   else
-    fTrackEta = +4.8-0.5*((id/8)-4); // taken from PPR
-  fTrackWeight = vzero->GetMultiplicity(id); // not corrected yet: we should use AliESDUtils
+    fTrackEta = +4.8-0.6*((id/8)-4);
+  fTrackWeight = vzero->GetMultiplicity(id);
 
   Bool_t pass=kTRUE;
   if (fCutEta) {if (  fTrackEta < fEtaMin || fTrackEta >= fEtaMax ) pass = kFALSE;}
