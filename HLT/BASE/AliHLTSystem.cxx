@@ -653,6 +653,9 @@ int AliHLTSystem::StopTasks()
     lnk = lnk->Next();
   }
   PrintBenchmarking(fStopwatches, 1 /*clean*/);
+  if (fEventCount!=fGoodEvents) {
+    HLTError("%d out of %d event(s) failed", fEventCount-fGoodEvents, fEventCount);
+  }
   ClearStatusFlags(kStarted);
   return iResult;
 }
