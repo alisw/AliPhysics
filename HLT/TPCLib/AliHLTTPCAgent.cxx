@@ -153,7 +153,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	// soon going to replace the software clusterfinder
 	TString hwcfemu;
 	hwcfemu.Form("TPC-HWCFEmu_%02d_%d", slice, part);
-	handler->CreateConfiguration(hwcfemu.Data(), "TPCHWClusterFinderEmulator", publisher.Data(), "-do-mc 1  -single-sequence-limit 100 -cluster-lower-limit 10");
+	handler->CreateConfiguration(hwcfemu.Data(), "TPCHWClusterFinderEmulator", publisher.Data(), "-do-mc 1");
 	TString hwcf;
 	hwcf.Form("TPC-HWCF_%02d_%d", slice, part);
 	handler->CreateConfiguration(hwcf.Data(), "TPCHWClusterTransform",hwcfemu.Data(), "-publish-raw");
