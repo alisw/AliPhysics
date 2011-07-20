@@ -2,10 +2,16 @@
 #define ALIRSNCUTPIDNSIGMA_H
 
 //
-// Class for generalized n-sigma PID cuts with detectors.
-// Allows to choose the detector to check and define a momentum range
-// in order to permit different cuts in different ranges.
+// Class for n-sigma PID cuts.
+// ---
+// Requires:
 //
+// 1) the used detector, chosen from an enumeration
+// 2) the reference charged particle species, chosen from AliPID enumeration
+// 3) a momentum range: outside it, the cut is never passed
+//
+
+#include <TMath.h>
 
 #include "AliPID.h"
 
@@ -24,15 +30,17 @@ public:
       kDetectors
    };
 
-   AliRsnCutPIDNSigma(const char *name = "cutPIDNsigma", AliPID::EParticleType species = AliPID::kUnknown, EDetector det = kDetectors, Double_t nsigma = 3.0);
+   AliRsnCutPIDNSigma();
+   AliRsnCutPIDNSigma(const char *name, AliPID::EParticleType species, EDetector det, Double_t nsigma);
    AliRsnCutPIDNSigma(const AliRsnCutPIDNSigma& copy);
    AliRsnCutPIDNSigma& operator=(const AliRsnCutPIDNSigma& copy);
    virtual ~AliRsnCutPIDNSigma() { }
 
-   void             SetRejectUnmatched(Bool_t yn = kTRUE)         {fRejectUnmatched = yn;}
-   void             SetMomentumRange(Double_t min, Double_t max)  {fMomMin = min; fMomMax = max;}
-   void             SetNSigmaRange(Double_t min, Double_t max)    {AliRsnCut::SetRangeD(min, max);}
    void             SetSpecies(AliPID::EParticleType type)        {fSpecies = type;}
+   void             SetDetector(EDetector det)                    {fDetector = det;}
+   void             SetRejectUnmatched(Bool_t yn = kTRUE)         {fRejectUnmatched = yn;}
+   void             SetNSigma(Double_t nsigma)                    {fNSigma = nsigma;}
+   void             SetMomentumRange(Double_t min, Double_t max);
    
    Bool_t           IsITS(const AliVTrack *vtrack) const;
    Bool_t           IsTPC(const AliVTrack *vtrack) const;
@@ -45,12 +53,25 @@ private:
 
    AliPID::EParticleType   fSpecies;         //  particle species
    EDetector               fDetector;        //  detector used for PID
-   Double_t                fMomMin;          //  momentum range (for ITS and TOF it is vertex momentum, for TPC it is inner wall)
-   Double_t                fMomMax;          //  momentum range (for ITS and TOF it is vertex momentum, for TPC it is inner wall)
    Bool_t                  fRejectUnmatched; //  tracks not matched to this detector do pass the cut?
+   Double_t                fMomMin;          //  momentum range (ITS/TOF: vertex momentum, TPC: mom at inner wall)
+   Double_t                fMomMax;          //  momentum range (ITS/TOF: vertex momentum, TPC: mom at inner wall)
+   Double_t                fNSigma;          //  nsigma range
 
    ClassDef(AliRsnCutPIDNSigma, 1)
 };
+
+inline void AliRsnCutPIDNSigma::SetMomentumRange(Double_t min, Double_t max)
+{
+//
+// Assigns the range in total momentum used for check
+// For ITS and TOF, it is used to check momentum at vertex,
+// for TPC it is used to check momentum at TPC inner barrel
+//
+
+   fMomMin = TMath::Min(min, max);
+   fMomMax = TMath::Max(min, max);
+}
 
 inline Bool_t AliRsnCutPIDNSigma::IsITS(const AliVTrack *vtrack) const
 {

@@ -75,7 +75,8 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnMiniOutput.cxx
            RESONANCES/AliRsnMiniValue.cxx
            RESONANCES/AliRsnMiniMonitor.cxx
-           RESONANCES/AliRsnMiniAnalysisTask.cxx )
+           RESONANCES/AliRsnMiniAnalysisTask.cxx
+           RESONANCES/AliRsnMiniMonitorTask.cxx )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
