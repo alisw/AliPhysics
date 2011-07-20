@@ -14,7 +14,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 #include "AliHLTEMCALDigitMakerComponent.h"
 #include "AliHLTCaloDigitMaker.h"
 #include "AliHLTCaloDigitDataStruct.h"
@@ -27,6 +26,7 @@
 #include "AliCDBEntry.h"
 #include "AliCDBPath.h"
 #include "AliCDBManager.h"
+#include "AliRawDataHeader.h"
 #include "TFile.h"
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -125,9 +125,17 @@ AliHLTEMCALDigitMakerComponent::GetOutputDataSize(unsigned long& constBase, doub
 
 int 
 AliHLTEMCALDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
-					AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
+					AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
 					std::vector<AliHLTComponentBlockData>& outputBlocks)
 {
+
+	//patch in order to skip calib events
+  const AliRawDataHeader* cdh = NULL;
+  ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL, true);
+	AliHLTUInt64_t triggerMask = cdh->GetTriggerClasses();
+	if(triggerMask == 0) return 0;
+
+
   //see header file for documentation
   UInt_t offset           = 0; 
   UInt_t mysize           = 0;
