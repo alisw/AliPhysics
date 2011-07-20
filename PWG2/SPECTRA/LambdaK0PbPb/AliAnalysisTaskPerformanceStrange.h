@@ -46,7 +46,7 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TString      fUsePID;                         //  "withPID" or "noPID"
   TString      fUseCut;                         //  "yes" or "no"
   Int_t		fDown;				//centrality range 
-  Int_t		fUp;
+  Int_t		fUp;                            //centrality range
   AliESDEvent *fESD;                            //! ESD object
   TList       *fListHist;		//! Output List
 
@@ -116,7 +116,7 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH1F        *fHistNumberEvents;        //! Histo
   TH1F        *fHistTrackPerEvent;       //! Histo
 
-  TH1F        *fHistTPCMult;
+  TH1F        *fHistTPCMult;             //! Histo
 
   TH1F        *fHistTrackletPerEvent;   //! Histo
   TH1F        *fHistMCDaughterTrack;       //! Histo
@@ -152,36 +152,36 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
 //  TH2F        *fHistProdRadiusK0;       //! Histo
 
 ///////////////////////////K0s 2D histos: cut vs mass//////////////
-  TH2F        *fHistDcaPosToPrimVertexK0vsMassK0;
-  TH2F        *fHistDcaNegToPrimVertexK0vsMassK0;
-  TH2F        *fHistRadiusV0K0vsMassK0;
-  TH2F        *fHistDecayLengthV0K0vsMassK0;
-  TH2F        *fHistDcaV0DaughtersK0vsMassK0;
-  TH2F        *fHistCosPointAngleK0vsMassK0;
+  TH2F        *fHistDcaPosToPrimVertexK0vsMassK0;  //! Histo
+  TH2F        *fHistDcaNegToPrimVertexK0vsMassK0;  //! Histo
+  TH2F        *fHistRadiusV0K0vsMassK0;            //! Histo
+  TH2F        *fHistDecayLengthV0K0vsMassK0;       //! Histo
+  TH2F        *fHistDcaV0DaughtersK0vsMassK0;      //! Histo
+  TH2F        *fHistCosPointAngleK0vsMassK0;       //! Histo
   
   // pt1
-  TH2F        *fHistDcaPosToPrimVertexK0vsMassK0pt1;
-  TH2F        *fHistDcaNegToPrimVertexK0vsMassK0pt1;
-  TH2F        *fHistRadiusV0K0vsMassK0pt1;
-  TH2F        *fHistDecayLengthV0K0vsMassK0pt1;
-  TH2F        *fHistDcaV0DaughtersK0vsMassK0pt1;
-  TH2F        *fHistCosPointAngleK0vsMassK0pt1;
+  TH2F        *fHistDcaPosToPrimVertexK0vsMassK0pt1;  //! Histo
+  TH2F        *fHistDcaNegToPrimVertexK0vsMassK0pt1;  //! Histo
+  TH2F        *fHistRadiusV0K0vsMassK0pt1;            //! Histo
+  TH2F        *fHistDecayLengthV0K0vsMassK0pt1;       //! Histo
+  TH2F        *fHistDcaV0DaughtersK0vsMassK0pt1;      //! Histo
+  TH2F        *fHistCosPointAngleK0vsMassK0pt1;       //! Histo
   
   // pt2
-  TH2F        *fHistDcaPosToPrimVertexK0vsMassK0pt2;
-  TH2F        *fHistDcaNegToPrimVertexK0vsMassK0pt2;
-  TH2F        *fHistRadiusV0K0vsMassK0pt2;
-  TH2F        *fHistDecayLengthV0K0vsMassK0pt2;
-  TH2F        *fHistDcaV0DaughtersK0vsMassK0pt2;
-  TH2F        *fHistCosPointAngleK0vsMassK0pt2;
+  TH2F        *fHistDcaPosToPrimVertexK0vsMassK0pt2;  //! Histo
+  TH2F        *fHistDcaNegToPrimVertexK0vsMassK0pt2;  //! Histo
+  TH2F        *fHistRadiusV0K0vsMassK0pt2;             //! Histo
+  TH2F        *fHistDecayLengthV0K0vsMassK0pt2;     //! Histo
+  TH2F        *fHistDcaV0DaughtersK0vsMassK0pt2;    //! Histo
+  TH2F        *fHistCosPointAngleK0vsMassK0pt2;     //! Histo
 
   // pt3
-  TH2F        *fHistDcaPosToPrimVertexK0vsMassK0pt3;
-  TH2F        *fHistDcaNegToPrimVertexK0vsMassK0pt3;
-  TH2F        *fHistRadiusV0K0vsMassK0pt3;
-  TH2F        *fHistDecayLengthV0K0vsMassK0pt3;
-  TH2F        *fHistDcaV0DaughtersK0vsMassK0pt3;
-  TH2F        *fHistCosPointAngleK0vsMassK0pt3;
+  TH2F        *fHistDcaPosToPrimVertexK0vsMassK0pt3;    //! Histo
+  TH2F        *fHistDcaNegToPrimVertexK0vsMassK0pt3;    //! Histo
+  TH2F        *fHistRadiusV0K0vsMassK0pt3;             //! Histo
+  TH2F        *fHistDecayLengthV0K0vsMassK0pt3;       //! Histo
+  TH2F        *fHistDcaV0DaughtersK0vsMassK0pt3;      //! Histo
+  TH2F        *fHistCosPointAngleK0vsMassK0pt3;      //! Histo
 
 //////////////////////////Lambda 2D histos: cut vs on fly status////////////////////
 
@@ -198,12 +198,12 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
 //  TH2F        *fHistProdRadiusL;       //! Histo    
 
 //////////////////////////Lambda 2D histos: cut vs mass////////////////
-  TH2F        *fHistDcaPosToPrimVertexLvsMassL;
-  TH2F        *fHistDcaNegToPrimVertexLvsMassL;
-  TH2F        *fHistRadiusV0LvsMassL;
-  TH2F        *fHistDecayLengthV0LvsMassL;
-  TH2F        *fHistDcaV0DaughtersLvsMassL;
-  TH2F        *fHistCosPointAngleLvsMassL;
+  TH2F        *fHistDcaPosToPrimVertexLvsMassL;      //! Histo
+  TH2F        *fHistDcaNegToPrimVertexLvsMassL;      //! Histo
+  TH2F        *fHistRadiusV0LvsMassL;                 //! Histo
+  TH2F        *fHistDecayLengthV0LvsMassL;            //! Histo
+  TH2F        *fHistDcaV0DaughtersLvsMassL;         //! Histo
+  TH2F        *fHistCosPointAngleLvsMassL;            //! Histo
 
 //////////////////////////////////////////////////////////////////////
 
