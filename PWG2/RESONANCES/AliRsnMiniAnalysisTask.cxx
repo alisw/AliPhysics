@@ -758,7 +758,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
       if (!def->IsMother()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliMCParticle *part = (AliMCParticle*)fMCEvent->GetTrack(ip);
-         if (TMath::Abs(part->Particle()->GetPdgCode()) != def->GetMotherPDG()) continue;
+         if (part->Particle()->GetPdgCode() != def->GetMotherPDG()) continue;
          // check that daughters match expected species
          if (part->Particle()->GetNDaughters() < 2) continue;
          label1 = part->Particle()->GetDaughter(0);
@@ -807,7 +807,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
       if (!def->IsMother()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliAODMCParticle *part = (AliAODMCParticle*)list->At(ip);
-         if (TMath::Abs(part->GetPdgCode()) != def->GetMotherPDG()) continue;
+         if (part->GetPdgCode() != def->GetMotherPDG()) continue;
          // check that daughters match expected species
          if (part->GetNDaughters() < 2) continue;
          label1 = part->GetDaughter(0);

@@ -26,14 +26,30 @@
 ClassImp(AliRsnCutPIDNSigma)
 
 //_________________________________________________________________________________________________
-AliRsnCutPIDNSigma::AliRsnCutPIDNSigma
-(const char *name, AliPID::EParticleType species, EDetector det, Double_t nsigma) :
-   AliRsnCut(name, AliRsnCut::kDaughter, -nsigma, nsigma),
-   fSpecies(species),
-   fDetector(det),
+AliRsnCutPIDNSigma::AliRsnCutPIDNSigma() : 
+   AliRsnCut("cut", AliRsnTarget::kDaughter),
+   fSpecies(AliPID::kUnknown),
+   fDetector(kDetectors),
+   fRejectUnmatched(kFALSE),
    fMomMin(0.0),
    fMomMax(1E20),
-   fRejectUnmatched(kFALSE)
+   fNSigma(1E20)
+{
+//
+// Main constructor.
+//
+}
+
+//_________________________________________________________________________________________________
+AliRsnCutPIDNSigma::AliRsnCutPIDNSigma
+(const char *name, AliPID::EParticleType species, EDetector det, Double_t nsigma) :
+   AliRsnCut(name, AliRsnTarget::kDaughter),
+   fSpecies(species),
+   fDetector(det),
+   fRejectUnmatched(kFALSE),
+   fMomMin(0.0),
+   fMomMax(1E20),
+   fNSigma(nsigma)
 {
 //
 // Main constructor.
@@ -46,9 +62,10 @@ AliRsnCutPIDNSigma::AliRsnCutPIDNSigma
    AliRsnCut(copy),
    fSpecies(copy.fSpecies),
    fDetector(copy.fDetector),
+   fRejectUnmatched(copy.fRejectUnmatched),
    fMomMin(copy.fMomMin),
    fMomMax(copy.fMomMax),
-   fRejectUnmatched(copy.fRejectUnmatched)
+   fNSigma(copy.fNSigma)
 {
 //
 // Copy constructor.
@@ -66,9 +83,10 @@ AliRsnCutPIDNSigma& AliRsnCutPIDNSigma::operator=(const AliRsnCutPIDNSigma& copy
 
    fSpecies = copy.fSpecies;
    fDetector = copy.fDetector;
+   fRejectUnmatched = copy.fRejectUnmatched;
    fMomMin = copy.fMomMin;
    fMomMax = copy.fMomMax;
-   fRejectUnmatched = copy.fRejectUnmatched;
+   fNSigma = copy.fNSigma;
 
    return (*this);
 }
@@ -92,66 +110,57 @@ Bool_t AliRsnCutPIDNSigma::IsSelected(TObject *object)
 
    // get reference momentum, for range cut
    Double_t momentum = -1.0;
-   if (!fDaughter->Ref2Vtrack()) {
+   AliVTrack *vtrack = fDaughter->Ref2Vtrack();
+   if (!vtrack) {
       AliDebugClass(2, "Referenced daughter is not a track");
       return kFALSE;
    }
    if (fDetector == kTPC)
-      momentum = fDaughter->Ref2Vtrack()->GetTPCmomentum();
+      momentum = vtrack->GetTPCmomentum();
    else
-      momentum = fDaughter->GetRef()->P();
+      momentum = vtrack->P();
       
-   // check momentum range, if required
+   // check momentum range
    if (momentum < fMomMin || momentum > fMomMax) {
       AliDebugClass(2, Form("Track momentum = %.5f, outside allowed range [%.2f - %.2f]", momentum, fMomMin, fMomMax));
       return kFALSE;
    }
    
-   // matching check, if required
-   if (fRejectUnmatched) {
-      switch (fDetector) {
-         case kITS:
-            if (!IsITS(fDaughter->Ref2Vtrack())) {
-               AliDebug(3, "Rejecting track not matched in ITS");
-               return kFALSE;
-            }
-            break;
-         case kTPC:
-            if (!IsTPC(fDaughter->Ref2Vtrack())) {
-               AliDebug(3, "Rejecting track not matched in TPC");
-               return kFALSE;
-            }
-            break;
-         case kTOF:
-            if (!IsTOF(fDaughter->Ref2Vtrack())) {
-               AliDebug(3, "Rejecting track not matched in TOF");
-               return kFALSE;
-            }
-            break;
-         default:
-            AliWarning("Required to reject unmatched tracks, but no detector defined. Track rejected");
-            return kFALSE;
-      }
-   }
-   
    // check PID
-   // the number of sigmas is set as cut value, which is then checked
-   // using the basic functions available in AliRsnCut
+   Bool_t matched;
+   Double_t nsigma;
    switch (fDetector) {
       case kITS:
-         fCutValueD = pid->NumberOfSigmasITS(fDaughter->GetRef(), fSpecies);
+         matched = IsITS(vtrack);
+         nsigma  = pid->NumberOfSigmasITS(vtrack, fSpecies);
          break;
       case kTPC:
-         fCutValueD = pid->NumberOfSigmasTPC(fDaughter->GetRef(), fSpecies);
+         matched = IsTPC(vtrack);
+         nsigma  = pid->NumberOfSigmasTPC(vtrack, fSpecies);
          break;
       case kTOF:
-         fCutValueD = pid->NumberOfSigmasTOF(fDaughter->GetRef(), fSpecies);
+         matched = IsTOF(vtrack);
+         nsigma  = pid->NumberOfSigmasTOF(vtrack, fSpecies);
          break;
       default:
+         AliError("Bad detector chosen. Rejecting track");
          return kFALSE;
    }
    
-   return OkRangeD();
+   // determine cut result
+   if (fRejectUnmatched && (matched == kFALSE)) {
+      AliDebugClass(2, "Required to reject unmatched traks, and this track is not matched in the detector");
+      return kFALSE;
+   } else {
+      AliDebugClass(2, Form("Nsigma = %.5f, maximum allowed = %.2f", nsigma, fNSigma));
+      if (TMath::Abs(nsigma) <= fNSigma) {
+         AliDebugClass(2, "Track accepted");
+         return kTRUE;
+      } else {
+         AliDebugClass(2, "Track rejected");
+         return kFALSE;
+      }
+   }
 }
 
 //_________________________________________________________________________________________________
