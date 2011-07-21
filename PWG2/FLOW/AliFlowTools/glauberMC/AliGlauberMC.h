@@ -121,7 +121,9 @@ private:
    TObjArray*   fNucleonsA;      //Array of nucleons in nucleus A
    TObjArray*   fNucleonsB;      //Array of nucleons in nucleus B
    Int_t        fAN;             //Number of nucleons in nucleus A
+   Int_t        fQAN;             //Number of nucleons in nucleus A
    Int_t        fBN;             //Number of nucleons in nucleus B
+   Int_t        fQBN;             //Number of nucleons in nucleus B
    TNtuple*     fnt;             //Ntuple for results (created, but not deleted)
    Double_t     fMeanX2;         //<x^2> of wounded nucleons
    Double_t     fMeanY2;         //<y^2> of wounded nucleons
