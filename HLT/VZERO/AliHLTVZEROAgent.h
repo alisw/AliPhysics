@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTVZEROAgent.h $
+// $Id$
 
 #ifndef ALIHLTVZEROAGENT_H
 #define ALIHLTVZEROAGENT_H

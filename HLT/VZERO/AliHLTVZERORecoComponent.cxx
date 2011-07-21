@@ -1,5 +1,4 @@
-//-*- Mode: C++ -*-
-// $Id: AliHLTVZERORecoComponent.cxx $
+// $Id$
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -312,7 +311,7 @@ Int_t AliHLTVZERORecoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
   // -- Get VZERO raw dat a input block and set up the rawreader
   const AliHLTComponentBlockData* pBlock = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginVZERO);
   if (!pBlock) {
-    HLTInfo("No VZERO input block !!!");
+    ALIHLTERRORGUARD(1, "No VZERO input block at event %d", GetEventCount());
     return 0;
   }
   
@@ -382,6 +381,5 @@ Int_t AliHLTVZERORecoComponent::Reconfigure(const Char_t* cdbEntry, const Char_t
 // #################################################################################
 Int_t AliHLTVZERORecoComponent::ReadPreprocessorValues(const Char_t* /*modules*/) {
   // see header file for class documentation
-  ALIHLTERRORGUARD(5, "ReadPreProcessorValues not implemented for this component");
   return 0;
 }
