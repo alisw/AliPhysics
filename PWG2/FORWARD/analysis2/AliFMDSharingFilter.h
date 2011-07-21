@@ -261,6 +261,10 @@ protected:
     void ScaleHistograms(const TList* dir, Int_t nEvents);
     TH1D*     fBefore;       // Distribution of signals before filter
     TH1D*     fAfter;        // Distribution of signals after filter
+    TH1D*     fSingle;       // Distribution of 1 signal after filter
+    TH1D*     fDouble;       // Distribution of 2 signals after filter
+    TH1D*     fTriple;       // Distribution of 3 signals after filter
+    TH2D*     fSinglePerStrip;       // Distribution of 1 signal per strip
     TH2D*     fBeforeAfter;  // Correlation of before and after 
     TH2D*     fNeighborsBefore; // Correlation of neighbors 
     TH2D*     fNeighborsAfter; // Correlation of neighbors 
