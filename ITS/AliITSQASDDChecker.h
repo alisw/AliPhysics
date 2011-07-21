@@ -36,17 +36,8 @@ class AliQAv1;
 class AliITSQASDDChecker: public TObject{
 
 public:
-  AliITSQASDDChecker():
- 	fSubDetOffset(0),
-	fStepBitSDD(NULL),
-	fLowSDDValue(NULL),
-	fHighSDDValue(NULL),
-	fCalibration(NULL),
-	fThresholdForRelativeOccupancy(0.01),
-        fThresholdForRecToRawRatio(0.04),
-	fImage(NULL),
-	fESforCheck(0)
-	{;}          // ctor
+
+  AliITSQASDDChecker();  // ctor
   AliITSQASDDChecker& operator = (const AliITSQASDDChecker& qac) ; //operator =
   virtual ~AliITSQASDDChecker(); // dtor
   virtual Double_t Check(AliQAv1::ALITASK_t index, const TObjArray * list, const AliDetectorRecoParam * recoParam);
