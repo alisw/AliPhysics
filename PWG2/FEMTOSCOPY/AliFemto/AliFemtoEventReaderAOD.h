@@ -38,6 +38,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   void SetInputFile(const char* inputFile);
   void SetFilterBit(UInt_t ibit);
   void SetReadMC(unsigned char a);
+  void SetCentralityPreSelection(double min, double max);
 
  protected:
   virtual void CopyAODtoFemtoEvent(AliFemtoEvent *tEvent);
@@ -54,6 +55,8 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   TClonesArray*  fPWG2AODTracks;    // Link to PWG2 specific AOD information (if it exists)
   
   unsigned char  fReadMC;           // Attempt to read the MC information from the AOD
+  unsigned char  fUsePreCent;       // Use centrality pre-selection to speed up analysis
+  double         fCentRange[2];     // Centrality pre-selection range
 
  private:
 
