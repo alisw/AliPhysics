@@ -24,13 +24,14 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt():
   fMass(0.13957)
 {
   // Default constructor
-  fYPt = new TH2D("YPt", "Rapidity vs Pt",              100, -1.0, 1.0, 100, 0.0, 2.0);
-  fYPhi = new TH2D("YPhi", "Rapidity vs Phi",           100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi());
+  fYPt = new TH2D("YPt", "Rapidity vs Pt",              140, -1.4, 1.4, 100, 0.0, 2.0);
+  fYPhi = new TH2D("YPhi", "Rapidity vs Phi",           140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
   fPtPhi = new TH2D("PtPhi", "Pt vs Phi",               100,  0.0, 2.0, 100, -TMath::Pi(), TMath::Pi());
-  fEtaPhi = new TH2D("EtaPhi", "Pseudorapidity vs Phi", 100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi());
-  fEtaPt = new TH2D("EtaPt", "Pseudorapidity vs Pt",    100, -1.0, 1.0, 100, 0.0, 2.0);
-  fEtaPhiW = new TH2D("EtaPhiW", "Pseudorapidity vs Phi chi2/N weighted", 100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi());
-  fEtaPtW = new TH2D("EtaPtW", "Pseudorapidity vs Pt chi2/N weighted",    100, -1.0, 1.0, 100, 0.0, 2.0);
+  fEtaPhi = new TH2D("EtaPhi", "Pseudorapidity vs Phi", 140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
+  fEtaPt = new TH2D("EtaPt", "Pseudorapidity vs Pt",    140, -1.4, 1.4, 100, 0.0, 2.0);
+  // fEtaPhiW = new TH2D("EtaPhiW", "Pseudorapidity vs Phi chi2/N weighted", 140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
+  // fEtaPtW = new TH2D("EtaPtW", "Pseudorapidity vs Pt chi2/N weighted",    140, -1.4, 1.4, 100, 0.0, 2.0)
+    ;
   fDCARPt = new TH2D("DCARPt", "DCA in XY vs. Pt", 400, -2.0, 2.0, 100,0.0,2.0);
   fDCAZPt = new TH2D("DCAZPt", "DCA in Z vs. Pt", 400, -2.0, 2.0, 100,0.0,2.0);
 }
@@ -51,19 +52,19 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const char *aName, 
   // Normal constructor
   char name[200];
   snprintf(name, 200, "YPt%s", aName);
-  fYPt = new TH2D(name, "Rapdity vs Pt", 100, -1.0, 1.0, 100, 0.0, 2.0);
+  fYPt = new TH2D(name, "Rapdity vs Pt", 140, -1.4, 1.4, 100, 0.0, 2.0);
   snprintf(name, 200, "YPhi%s", aName);
-  fYPhi = new TH2D(name, "Rapidity vs Phi",           100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi());
+  fYPhi = new TH2D(name, "Rapidity vs Phi",           140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
   snprintf(name, 200, "PtPhi%s", aName);
   fPtPhi = new TH2D(name, "Pt vs Phi",               100,  0.0, 2.0, 100, -TMath::Pi(), TMath::Pi());
   snprintf(name, 200, "EtaPhi%s", aName);
-  fEtaPhi = new TH2D(name, "Pseudorapidity vs Phi", 100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi());
+  fEtaPhi = new TH2D(name, "Pseudorapidity vs Phi", 140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
   snprintf(name, 200, "EtaPt%s", aName);
-  fEtaPt = new TH2D(name, "Pseudorapidity vs Pt",    100, -1.0, 1.0, 100, 0.0, 2.0);
-  snprintf(name, 200, "EtaPhiW%s", aName);
-  fEtaPhiW = new TH2D(name, "Pseudorapidity vs Phi chi2/N weighted", 100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi());
-  snprintf(name, 200, "EtaPtW%s", aName);
-  fEtaPtW = new TH2D(name, "Pseudorapidity vs Pt chi2/N weighted",    100, -1.0, 1.0, 100, 0.0, 2.0);
+  fEtaPt = new TH2D(name, "Pseudorapidity vs Pt",    140, -1.4, 1.4, 100, 0.0, 2.0);
+  // snprintf(name, 200, "EtaPhiW%s", aName);
+  // fEtaPhiW = new TH2D(name, "Pseudorapidity vs Phi chi2/N weighted", 140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
+  // snprintf(name, 200, "EtaPtW%s", aName);
+  // fEtaPtW = new TH2D(name, "Pseudorapidity vs Pt chi2/N weighted",    140, -1.4, 1.4, 100, 0.0, 2.0);
   snprintf(name, 200, "DCARPt%s", aName);
   fDCARPt = new TH2D(name, "DCA in XY vs. Pt", 400, -2.0, 2.0, 100,0.0,2.0);
   snprintf(name, 200, "DCAZPt%s", aName);
@@ -84,14 +85,13 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const AliFemtoCutMo
   fMass(0.13957)
 {
   // copy constructor
-  if (fYPt) delete fYPt;
   fYPt = new TH2D(*aCut.fYPt);
   fYPhi = new TH2D(*aCut.fYPhi);
   fPtPhi = new TH2D(*aCut.fPtPhi);
   fEtaPhi = new TH2D(*aCut.fEtaPhi);
   fEtaPt = new TH2D(*aCut.fEtaPt);
-  fEtaPhiW = new TH2D(*aCut.fEtaPhiW);
-  fEtaPtW = new TH2D(*aCut.fEtaPtW);
+  // fEtaPhiW = new TH2D(*aCut.fEtaPhiW);
+  // fEtaPtW = new TH2D(*aCut.fEtaPtW);
   fDCARPt = new TH2D(*aCut.fDCARPt);
   fDCAZPt = new TH2D(*aCut.fDCAZPt);
   fMass = aCut.fMass; 
@@ -105,8 +105,8 @@ AliFemtoCutMonitorParticleYPt::~AliFemtoCutMonitorParticleYPt()
   delete fPtPhi;
   delete fEtaPhi;
   delete fEtaPt;
-  delete fEtaPhiW;
-  delete fEtaPtW;
+  // delete fEtaPhiW;
+  // delete fEtaPtW;
   delete fDCARPt;
   delete fDCAZPt;
 }
@@ -127,10 +127,10 @@ AliFemtoCutMonitorParticleYPt& AliFemtoCutMonitorParticleYPt::operator=(const Al
   fEtaPhi = new TH2D(*aCut.fEtaPhi);
   if (fEtaPt) delete fEtaPt;
   fEtaPt = new TH2D(*aCut.fEtaPt);
-  if (fEtaPhiW) delete fEtaPhiW;
-  fEtaPhiW = new TH2D(*aCut.fEtaPhiW);
-  if (fEtaPtW) delete fEtaPtW;
-  fEtaPtW = new TH2D(*aCut.fEtaPtW);
+  // if (fEtaPhiW) delete fEtaPhiW;
+  // fEtaPhiW = new TH2D(*aCut.fEtaPhiW);
+  // if (fEtaPtW) delete fEtaPtW;
+  // fEtaPtW = new TH2D(*aCut.fEtaPtW);
   if (fDCARPt) delete fDCARPt;
   fDCARPt = new TH2D(*aCut.fDCARPt);
   if (fDCAZPt) delete fDCAZPt;
@@ -154,21 +154,23 @@ void AliFemtoCutMonitorParticleYPt::Fill(const AliFemtoTrack* aTrack)
   float tPt = ::sqrt((aTrack->P().x())*(aTrack->P().x())+(aTrack->P().y())*(aTrack->P().y()));
   float tEta = -TMath::Log(TMath::Tan(aTrack->P().Theta()/2.0));
   float tPhi = aTrack->P().Phi();
-  float chi2w;
+  // float chi2w;
   float dcar = aTrack->ImpactD();
   float dcaz = aTrack->ImpactZ();
-  if (aTrack->TPCncls() > 0)
-    chi2w = aTrack->TPCchi2()/aTrack->TPCncls();
-  else
-    chi2w = 6.0;
+  // if (aTrack->TPCncls() > 0)
+  //   chi2w = aTrack->TPCchi2()/aTrack->TPCncls();
+  // else
+  //   chi2w = 6.0;
+
+  //  cout << " CMYPt: " << fYPt << " " << fYPt->GetEntries() << " " << tRapidity << " " << tPt << endl;
 
   fYPt->Fill(tRapidity, tPt);
   fYPhi->Fill(tRapidity, tPhi);
   fPtPhi->Fill(tPt, tPhi);
   fEtaPhi->Fill(tEta, tPhi);
   fEtaPt->Fill(tEta, tPt);
-  fEtaPhiW->Fill(tEta, tPhi, chi2w);
-  fEtaPtW->Fill(tEta, tPt, chi2w);
+  // fEtaPhiW->Fill(tEta, tPhi, chi2w);
+  // fEtaPtW->Fill(tEta, tPt, chi2w);
   fDCARPt->Fill(dcar, tPt);
   fDCAZPt->Fill(dcaz, tPt);
 }
@@ -181,8 +183,8 @@ void AliFemtoCutMonitorParticleYPt::Write()
   fPtPhi->Write();
   fEtaPhi->Write();
   fEtaPt->Write();
-  fEtaPhiW->Write();
-  fEtaPtW->Write();
+  // fEtaPhiW->Write();
+  // fEtaPtW->Write();
   fDCARPt->Write();
   fDCAZPt->Write();
 }
@@ -195,8 +197,8 @@ TList *AliFemtoCutMonitorParticleYPt::GetOutputList()
   tOutputList->Add(fPtPhi);
   tOutputList->Add(fEtaPhi);
   tOutputList->Add(fEtaPt);
-  tOutputList->Add(fEtaPhiW);
-  tOutputList->Add(fEtaPtW);
+  // tOutputList->Add(fEtaPhiW);
+  // tOutputList->Add(fEtaPtW);
   tOutputList->Add(fDCARPt);
   tOutputList->Add(fDCAZPt);
 
