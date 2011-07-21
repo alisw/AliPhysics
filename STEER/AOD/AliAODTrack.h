@@ -39,6 +39,19 @@ class AliAODTrack : public AliVTrack {
     kIsHybridTPC=BIT(19) //  for TPC tracks that have been selected with a combination of cuts involving the ITS, tracks without ITS information are taken from TPC only
   };
 
+
+  enum AODTrkFilterBits_t {
+    kTrkTPCOnly = BIT(1), // Standard TPC only tracks
+    kTrkITSsa   = BIT(2), // ITS standalone
+    kTrkITSConstrained = BIT(3), // Pixel OR necessary for the electrons
+    kTrkElectronsPID = BIT(4),    // PID for the electrons
+    kTrkGlobalNoDCA = BIT(5), // standard cuts with very loose DCA
+    kTrkGlobal = BIT(6),  // standard cuts with tight DCA cut
+    kTrkGlobalSDD = BIT(7), // standard cuts with tight DCA but with requiring the first SDD cluster instead of an SPD cluster tracks selected by this cut are exclusive to those selected by the previous cut
+    kTrkTPCOnlyConstrained = BIT(8) // TPC only tracks: TPConly information constrained to SPD vertex in the filter below
+  };
+  
+
   enum AODTrkPID_t {
     kElectron     =  0,
     kMuon         =  1,
