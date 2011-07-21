@@ -58,7 +58,7 @@ public:
     kOwner            = BIT(14) // owner of clusters
    ,kRemoveContainers = BIT(15) // delete containers after usage
   };
-  enum{
+  enum ETRDtrackerV1const {
     kMaxLayersPerSector   = 1000
     , kMaxTimeBinIndex    = 216
     , kTrackingSectors    = 18
@@ -68,6 +68,11 @@ public:
     , kMaxTracksStack     = 100
     , kNConfigs           = 15
   };
+  enum ETRDtrackerV1BetheBloch {
+     kGeant = 0
+    ,kSolid
+    ,kGas
+  };
   AliTRDtrackerV1(AliTRDReconstructor *rec = NULL);
   virtual ~AliTRDtrackerV1();
   
@@ -75,6 +80,8 @@ public:
   AliTRDtrackingSector* GetTrackingSector(Int_t sec) {return &fTrSec[sec];}
   
   Int_t           Clusters2Tracks(AliESDEvent *esd);
+  static ETRDtrackerV1BetheBloch
+                  GetBetheBloch()            { return fgBB;}
   AliCluster*     GetCluster(Int_t index) const;
   AliTRDseedV1*   GetTracklet(Int_t index) const;
   AliKalmanTrack* GetTrack(Int_t index) const;
@@ -100,6 +107,8 @@ public:
 
   Bool_t          IsClustersOwner() const    { return TestBit(kOwner);}
   Bool_t          HasRemoveContainers() const    { return TestBit(kRemoveContainers);}
+
+  static void     SetBetheBloch(ETRDtrackerV1BetheBloch bb) {fgBB = bb;}
   void            SetClustersOwner(Bool_t own=kTRUE) {SetBit(kOwner, own); if(!own) fClusters = NULL;}
   void            SetRemoveContainers(Bool_t rm=kTRUE) {SetBit(kRemoveContainers, rm);}
 
@@ -218,7 +227,8 @@ private:
   AliTRDchamberTimeBin *fSeedTB[kNSeedPlanes]; // seeding time bin planes
   Int_t                fSieveSeeding;                   //! Seeding iterator
   Int_t                fEventInFile;                    //! event in file being tracked (debug purposes)
-  
+
+  static ETRDtrackerV1BetheBloch fgBB;                  // Bethe Bloch method
   static const Double_t fgkX0[kNPlanes];                // default values for the position of anode wire
   static Int_t         fgNTimeBins;                     // Timebins per plane in track prolongation 
   static TLinearFitter *fgTiltedRieman;                 //  Fitter for the tilted Rieman fit without vertex constriant

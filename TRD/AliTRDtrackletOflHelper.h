@@ -51,8 +51,9 @@ public:
   Int_t         GetColSpread() const {return fCol[1]-fCol[0]+1;}
   Int_t         GetColStart() const {return fCol[0];}
   Int_t         GetColStop() const {return fCol[1];}
+  Double_t      GetQ() const;
   Int_t         GetRow() const {return fRow;}
-  Int_t         GetRMS(Double_t &r, Double_t &m, Double_t &s, Double_t &xm) const;
+  Int_t         GetRMS(Double_t &r, Double_t &m, Double_t &s, Double_t xm) const;
   Double_t      GetSyMean() const;
   Int_t         GetTbStart() const {return fTBrange[0];}
   Int_t         GetTbStop() const {return fTBrange[1];}

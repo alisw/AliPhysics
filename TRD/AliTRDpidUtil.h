@@ -47,6 +47,7 @@ public:
 
   static Int_t GetMomentumBin(Double_t p);
   static Int_t Pdg2Pid(Int_t pdg);
+  static Int_t Mass2Pid(Float_t m);
   static void  SetElectronEfficiency(Float_t eleeffi) {fgEleEffi = eleeffi;};
 
 private:

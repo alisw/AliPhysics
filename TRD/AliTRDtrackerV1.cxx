@@ -61,6 +61,7 @@ ClassImp(AliTRDtrackerV1)
 ClassImp(AliTRDtrackerV1::AliTRDLeastSquare)
 ClassImp(AliTRDtrackerV1::AliTRDtrackFitterRieman)
 
+AliTRDtrackerV1::ETRDtrackerV1BetheBloch AliTRDtrackerV1::fgBB = AliTRDtrackerV1::kGeant;
 Double_t AliTRDtrackerV1::fgTopologicQA[kNConfigs] = {
   0.5112, 0.5112, 0.5112, 0.0786, 0.0786,
   0.0786, 0.0786, 0.0579, 0.0579, 0.0474,
@@ -745,7 +746,6 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     stk = fGeom->GetStack(z, ily);
     det = stk>=0 ? AliTRDgeometry::GetDetector(ily, stk, sm) : -1;
     matrix = det>=0 ? fGeom->GetClusterMatrix(det) : NULL;
-    AliDebug(3, Form("Propagate to det[%3d]", det));
 
     // check if supermodule/chamber is installed
     if( !fGeom->GetSMstatus(sm) ||
@@ -780,6 +780,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     Double_t loc[] = {AliTRDgeometry::AnodePos()- driftLength, 0., 0.};
     Double_t glb[] = {0., 0., 0.};
     matrix->LocalToMaster(loc, glb);
+    AliDebug(3, Form("Propagate to det[%3d] x_anode[%7.2f] (%f %f)", det, glb[0]+driftLength, glb[1], glb[2]));
 
     // Propagate to the radial distance of the current layer
     x = glb[0] - AliTRDReconstructor::GetMaxStep();
@@ -1803,13 +1804,14 @@ Int_t AliTRDtrackerV1::PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t m
   //
 
   // Current track X-position
-  Double_t xpos = t.GetX();
+  Double_t xpos = t.GetX(),
+           mass = t.GetMass();
 
   // Direction: inward or outward
   Double_t dir  = (xpos < xToGo) ? 1.0 : -1.0;
 
   while (((xToGo - xpos) * dir) > AliTRDReconstructor::GetEpsilon()) {
-
+//    printf("to go %f\n", (xToGo - xpos) * dir);
     Double_t xyz0[3];
     Double_t xyz1[3];
     Double_t param[7];
@@ -1837,9 +1839,44 @@ Int_t AliTRDtrackerV1::PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t m
     // Calculate the mean material budget between start and
     // end point of this prolongation step
     if(AliTracker::MeanMaterialBudget(xyz0, xyz1, param)<=0.) return 0;
-
+    
     // Propagate the track to the X-position after the next step
     if (!t.PropagateTo(x, param[1], param[0]*param[4])) return 0;
+
+    // Correct for mean material budget
+    Double_t dEdx(0.),
+             bg(t.GetP()/mass);
+    if(AliLog::GetDebugLevel("TRD", "AliTRDtrackerV1")>=3){
+      const char *pn[] = {"rho", "x/X0", "<A>", "<Z>", "L", "<Z/A>", "Nb"};
+      printf("D-AliTRDtrackerV1::PropagateTo(): x[%6.2f] bg[%6.2f]\n", xpos, bg);
+      printf("     param :: %s[%e] %s[%e] %s[%e] %s[%e] %s[%e] %s[%e] %s[%e]\n"
+          , pn[0], param[0]
+          , pn[1], param[1]
+          , pn[2], param[2]
+          , pn[3], param[3]
+          , pn[4], param[4]
+          , pn[5], param[5]
+          , pn[6], param[6]);
+    }  
+    switch(fgBB){
+    case kSolid:
+      dEdx = AliExternalTrackParam::BetheBlochSolid(bg);
+      break;
+    case kGas:
+      dEdx = AliExternalTrackParam::BetheBlochGas(bg);
+      break;
+    case kGeant:
+      { // mean exitation energy (GeV)
+        Double_t mee = ((param[3] < 13.) ? (12. * param[3] + 7.) : (9.76 * param[3] + 58.8 * TMath::Power(param[3],-0.19))) * 1.e-9;
+        Double_t mZA = param[5]>1.e-5?param[5]:(param[3]/param[2]);
+        if(AliLog::GetDebugLevel("TRD", "AliTRDtrackerV1")>=3) printf("D-AliTRDtrackerV1::PropagateTo(): Mee[%e] <Z/A>[%e]\n", mee, mZA);
+        // protect against failed calculation of rho in MeanMaterialBudget()
+        dEdx = AliExternalTrackParam::BetheBlochGeant(bg, param[0]>1.e-6?param[0]:2.33, 0.2, 3., mee, mZA);
+      }
+      break;
+    }
+    if(AliLog::GetDebugLevel("TRD", "AliTRDtrackerV1")>=2) printf("D-AliTRDtrackerV1::PropagateTo(): dEdx(bg=%e, m=%e)= %e[GeV/cm]\n", bg, mass, dEdx);
+    if (!t.CorrectForMeanMaterialdEdx(param[1], dir*param[0]*param[4], mass, dEdx)) return 0;
 
     // Rotate the track if necessary
     if(!AdjustSector(&t)) return 0;
@@ -1852,7 +1889,6 @@ Int_t AliTRDtrackerV1::PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t m
   return 1;
 
 }
-
 
 //_____________________________________________________________________________
 Bool_t AliTRDtrackerV1::ReadClusters(TTree *clusterTree)

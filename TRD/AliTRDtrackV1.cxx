@@ -583,7 +583,7 @@ Int_t AliTRDtrackV1::GetProlongation(Double_t xk, Double_t &y, Double_t &z) cons
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
+Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t /*xx0*/, Double_t xrho)
 {
   //
   // Propagates this track to a reference plane defined by "xk" [cm] 
@@ -602,8 +602,9 @@ Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
  
   // local track position AFTER propagation 
   Double_t xyz1[3] = {GetX(), GetY(), GetZ()};
+//  printf("x0[%6.2f] -> x1[%6.2f] dx[%6.2f] rho[%f]\n", xyz0[0], xyz1[0], xyz0[0]-xk, xrho/TMath::Abs(xyz0[0]-xk));
   if(xyz0[0] < xk) {
-    xrho = -xrho;
+    //xrho = -xrho;
     if (IsStartedTimeIntegral()) {
       Double_t l2  = TMath::Sqrt((xyz1[0]-xyz0[0])*(xyz1[0]-xyz0[0]) 
                                + (xyz1[1]-xyz0[1])*(xyz1[1]-xyz0[1]) 
@@ -620,7 +621,7 @@ Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
     }
   }
 
-  if (!AliExternalTrackParam::CorrectForMeanMaterial(xx0, xrho, GetMass())) return kFALSE;
+//   if (!AliExternalTrackParam::CorrectForMeanMaterial(xx0, xrho, GetMass())) return kFALSE;
 
 
   {

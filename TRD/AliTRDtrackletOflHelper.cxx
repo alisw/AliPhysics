@@ -326,10 +326,8 @@ Bool_t AliTRDtrackletOflHelper::Fit(Int_t n, Double_t *x, Double_t *y, Double_t 
 {
 // Iterative robust tracklet fit 
   if(n<3) return kFALSE;
-  //compute <x>
-  if(Int_t(par[2])==21122012){ 
-    par[2] = 0.; 
-  } else {
+  //select reference radial position
+  if(par[2]<0.){ //compute reference radial position as <x>
     par[2] = 0.; for(Int_t ic(n); ic--;) par[2] += x[ic]; par[2] /= n;
   }
   AliTRDtrackerV1::AliTRDLeastSquare &f=Fitter();
@@ -397,21 +395,20 @@ void AliTRDtrackletOflHelper::GetColSignals(Int_t col, Int_t adc[32], Bool_t mai
 }
 
 //___________________________________________________________________
-Int_t AliTRDtrackletOflHelper::GetRMS(Double_t &r, Double_t &m, Double_t &s, Double_t &xm) const
+Int_t AliTRDtrackletOflHelper::GetRMS(Double_t &r, Double_t &m, Double_t &s, Double_t xm) const
 {
-// Calculate Rotation[r], Mean y[m] (at mean radial position [xm]) and Sigma[s] (of a gaussian distribution in the tracklet [SR])
+// Calculate Rotation[r], Mean y[m] (at radial position [xm]) and Sigma[s] (of a gaussian distribution in the tracklet [SR])
 // for clusters attach to this helper. The Rotation and Mean are calculated without tilt correction option.
 // It returns the number of clusters in 1 sigma cut.
   
   Int_t n(fClusters->GetEntriesFast());
-  if(n==2){
-    return n;
-  }
-  
-  Double_t par[3] = {0., 0., 0.};
+  if(n<=2) return n;
+  Double_t par[3] = {0., 0., -1.};
+  if(xm>0.) par[2] = xm; // select reference radial position from outside 
   Fit(par);
-  xm= par[2];
+  m = par[0];
   r = par[1];
+  xm= par[2];
 
   Double_t corr = TMath::Tan(TMath::DegToRad()*fPadPlane->GetTiltingAngle())*
                   fPadPlane->GetLengthIPad();
@@ -425,7 +422,6 @@ Int_t AliTRDtrackletOflHelper::GetRMS(Double_t &r, Double_t &m, Double_t &s, Dou
   }
   Double_t m1(0.);
   AliMathBase::EvaluateUni(n, y, m1, s, 0);
-  m = par[0] + m1;
   Int_t n0(0);
   for(Int_t ic(n); ic--;){
     c = (AliTRDcluster*)fClusters->At(ic);
@@ -433,6 +429,21 @@ Int_t AliTRDtrackletOflHelper::GetRMS(Double_t &r, Double_t &m, Double_t &s, Dou
     if(TMath::Abs(y[ic]-m1) <= sy) n0++;
   }
   return n0;
+}
+
+//___________________________________________________________________
+Double_t AliTRDtrackletOflHelper::GetQ() const
+{
+// Calculate total charge NOT normalized to inclination
+
+  Double_t q(0.);
+  Int_t n(fClusters->GetEntriesFast());
+  AliTRDcluster *c(NULL);
+  for(Int_t ic(n); ic--;){
+    c = (AliTRDcluster*)fClusters->At(ic);
+    q += TMath::Abs(c->GetQ());
+  }
+  return q;
 }
 
 //___________________________________________________________________

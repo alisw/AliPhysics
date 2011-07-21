@@ -216,7 +216,7 @@ Double_t AliTRDpidUtil::GetSystematicError(const AliESDtrack *track, ETRDPIDMeth
 //________________________________________________________________________
 Int_t AliTRDpidUtil::Pdg2Pid(Int_t pdg){
   //
-  // Private Helper function to get the paticle species (ALICE notation) 
+  // Private Helper function to get the paticle species (ALICE notation)
   // from the Pdg code
   //
   Int_t species;
@@ -240,5 +240,16 @@ Int_t AliTRDpidUtil::Pdg2Pid(Int_t pdg){
     species = -1;
   }
   return species;
+}
+
+//________________________________________________________________________
+Int_t AliTRDpidUtil::Mass2Pid(Float_t m){
+  //
+  // Private Helper function to get the paticle species (ALICE notation)
+  // from the Pdg mass
+  //
+
+  for(Int_t is(0); is<AliPID::kSPECIES; is++) if(TMath::Abs(m-AliPID::ParticleMass(is))<1.e-4) return is;
+  return -1;
 }
 
