@@ -32,8 +32,9 @@
 
 #include "AliFemtoPairCut.h"
 #include "AliFemtoShareQualityPairCut.h"
+#include "AliFemtoPairCutAntiGamma.h"
 
-class AliFemtoPairCutRadialDistance : public AliFemtoShareQualityPairCut{
+class AliFemtoPairCutRadialDistance : public AliFemtoPairCutAntiGamma {
 public:
   AliFemtoPairCutRadialDistance();
   AliFemtoPairCutRadialDistance(const AliFemtoPairCutRadialDistance& c);
