@@ -212,7 +212,7 @@ Bool_t AliTRDinfoGen::GetRefFigure(Int_t)
     AliWarning("Please provide a canvas to draw results.");
     return kFALSE;
   }
-  fContainer->At(0)->Draw("bar");
+  fContainer->At(kStatTrk)->Draw("bar");
   return kTRUE;
 }
 
@@ -232,7 +232,7 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   fV0List = new TObjArray(10); fV0List->SetOwner(kTRUE);
 
   // define general monitor
-  fContainer = new TObjArray(2); fContainer->SetOwner(kTRUE);
+  fContainer = new TObjArray(kNclasses); fContainer->SetOwner(kTRUE);
   TH1 *h=new TH1I("hStat", "Run statistics;Observable;Entries", Int_t(kNObjects), -0.5, Float_t(kNObjects)-0.5);
   TAxis *ax(h->GetXaxis());
   ax->SetBinLabel(Int_t(kTracksESD) + 1, "ESD");
@@ -249,14 +249,16 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   ax->SetBinLabel(Int_t(kKinkMC) + 1, "KinkMC");
   ax->SetBinLabel(Int_t(kBarrelFriend) + 1, "BFriend");
   ax->SetBinLabel(Int_t(kSAFriend) + 1, "SFriend");
-  fContainer->AddAt(h, 0);
+  fContainer->AddAt(h, kStatTrk);
   h=new TH1I("hEv", "Run statistics;Event Class;Entries", 4, -0.5, 3.5);
   ax = h->GetXaxis();
   ax->SetBinLabel(1, "Low");
   ax->SetBinLabel(2, "High");
   ax->SetBinLabel(3, "Cosmic");
   ax->SetBinLabel(4, "Calib");
-  fContainer->AddAt(h, 1);
+  fContainer->AddAt(h, kEvType);
+  h=new TH1I("hBC", "TOF Bunch Cross statistics;bc index;Entries", 21, -0.5, 20.5);
+  fContainer->AddAt(h, kBunchCross);
   PostData(AliTRDpwg1Helper::kMonitor, fContainer);
 }
 
@@ -347,8 +349,12 @@ void AliTRDinfoGen::UserExec(Option_t *){
     }
     SetInitOCDB();
   }
+
+  AliDebug(2, "+++++++++++++++++++++++++++++++++++++++");
+  AliDebug(2, Form("Analyse Ev[%d]", fESDev->GetEventNumberInFile()));
+
   // set reco param valid for this event
-  TH1 *h = (TH1I*)fContainer->At(1);
+  TH1 *h = (TH1I*)fContainer->At(kEvType);
   if(!fRecos){
     fgReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
     h->Fill(0);
@@ -358,14 +364,14 @@ void AliTRDinfoGen::UserExec(Option_t *){
       Int_t es(reco->GetEventSpecie());
       if(!(es&fESDev->GetEventSpecie())) continue;
       fgReconstructor->SetRecoParam(reco);
-      if(AliLog::GetDebugLevel("PWG1/TRD", "AliTRDinfoGen")>2) reco->Dump();
+      if(AliLog::GetDebugLevel("PWG1/TRD", "AliTRDinfoGen")>5) reco->Dump();
       TString s;
       if(es&AliRecoParam::kLowMult){ s="LowMult"; h->Fill(0);}
       else if(es&AliRecoParam::kHighMult){ s="HighMult"; h->Fill(1);}
       else if(es&AliRecoParam::kCosmic){ s="Cosmic"; h->Fill(2);}
       else if(es&AliRecoParam::kCalib){ s="Calib"; h->Fill(3);}
       else s="Unknown";
-      AliDebug(1, Form("Using reco param \"%s\" for event %d.", s.Data(), fESDev->GetEventNumberInFile()));
+      AliDebug(2, Form("  Using reco param \"%s\" for event %d.", s.Data(), fESDev->GetEventNumberInFile()));
       break;
     }
   }
@@ -422,7 +428,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
   // Determine centrality
   // Author: Ionut Arsene <I.C.Arsene@gsi.de>
   Int_t centralityBin = -1;
-  AliDebug(2, Form("Beam Type: %s", fESDev->GetESDRun()->GetBeamType()));
+  AliDebug(2, Form("  Beam Type: %s", fESDev->GetESDRun()->GetBeamType()));
   if(TString(fESDev->GetESDRun()->GetBeamType()).Contains("Pb-Pb")){
     centralityBin = 4;
     const AliMultiplicity *mult = fESDev->GetMultiplicity();
@@ -434,9 +440,10 @@ void AliTRDinfoGen::UserExec(Option_t *){
       if(zdcNeutronEnergy>centralitySlopes[iCent-1]*itsNTracklets && zdcNeutronEnergy<centralitySlopes[iCent]*itsNTracklets)
         centralityBin=iCent - 1;
     }
-    AliDebug(1, Form("Centrality Class: %d", centralityBin));
+    AliDebug(2, Form("  Centrality Class: %d", centralityBin));
   }
   fEventInfo->SetCentrality(centralityBin);
+  AliDebug(2, Form("  Bunch Crosses: %d", fESDev->GetBunchCrossNumber()));
 
   Bool_t *trackMap(NULL);
   AliStack * mStack(NULL);
@@ -486,7 +493,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
   for(Int_t itrk = 0; itrk < nTracksESD; itrk++){
     new(fTrackInfo) AliTRDtrackInfo();
     esdTrack = fESDev->GetTrack(itrk);
-    AliDebug(3, Form("\n%3d ITS[%d] TPC[%d] TRD[%d]\n", itrk, esdTrack->GetNcls(0), esdTrack->GetNcls(1), esdTrack->GetNcls(2)));
+    AliDebug(3, Form("\n%3d ITS[%d] TPC[%d] TRD[%d] TOF-BC[%d]\n", itrk, esdTrack->GetNcls(0), esdTrack->GetNcls(1), esdTrack->GetNcls(2), esdTrack->GetTOFBunchCrossing()));
 
     if(esdTrack->GetStatus()&AliESDtrack::kTPCout) nTPC++;
     if(esdTrack->GetStatus()&AliESDtrack::kTRDout) nTRDout++;
@@ -561,6 +568,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     // some other Informations which we may wish to store in order to find problematic cases
     fTrackInfo->SetKinkIndex(esdTrack->GetKinkIndex(0));
     fTrackInfo->SetTPCncls(static_cast<UShort_t>(esdTrack->GetNcls(1)));
+    fTrackInfo->SetTOFbc(static_cast<UShort_t>(esdTrack->GetTOFBunchCrossing()));
     nclsTrklt = 0;
   
     // set V0pid info
@@ -593,6 +601,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
           while((cl = tracklet->NextCluster())) cl->Use(0);
         }
         fTrackInfo->SetTrack(track);
+        h = (TH1I*)fContainer->At(kBunchCross); h->Fill(esdTrack->GetTOFBunchCrossing());
         break;
       }
       AliDebug(3, Form("Ntracklets[%d]\n", fTrackInfo->GetNTracklets()));
@@ -613,30 +622,30 @@ void AliTRDinfoGen::UserExec(Option_t *){
         Bool_t selected(kTRUE);
         if(UseLocalTrkSelection()){
           if(esdTrack->Pt() < fgkPt){ 
-            AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] Pt[%5.2f]", fESDev->GetEventNumberInFile(), itrk, esdTrack->Pt()));
+            AliDebug(3, Form("Reject Trk[%3d] Ev[%4d] Pt[%5.2f]", itrk, fESDev->GetEventNumberInFile(), esdTrack->Pt()));
             selected = kFALSE;
           }
           if(selected && TMath::Abs(esdTrack->Eta()) > fgkEta){
-            AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] Eta[%5.2f]", fESDev->GetEventNumberInFile(), itrk, TMath::Abs(esdTrack->Eta())));
+            AliDebug(3, Form("Reject Trk[%3d] Ev[%4d] Eta[%5.2f]", itrk, fESDev->GetEventNumberInFile(), TMath::Abs(esdTrack->Eta())));
             selected = kFALSE;
           }
           if(selected && esdTrack->GetTPCNcls() < fgkNclTPC){ 
-            AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] NclTPC[%d]", fESDev->GetEventNumberInFile(), itrk, esdTrack->GetTPCNcls()));
+            AliDebug(3, Form("Reject Trk[%3d] Ev[%4d] NclTPC[%d]", itrk, fESDev->GetEventNumberInFile(), esdTrack->GetTPCNcls()));
             selected = kFALSE;
           }
           Float_t par[2], cov[3];
           esdTrack->GetImpactParameters(par, cov);
           if(IsCollision()){ // cuts on DCA
             if(selected && TMath::Abs(par[0]) > fgkTrkDCAxy){ 
-              AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] DCAxy[%f]", fESDev->GetEventNumberInFile(), itrk, TMath::Abs(par[0])));
+              AliDebug(3, Form("Reject Trk[%3d] Ev[%4d] DCAxy[%f]", itrk, fESDev->GetEventNumberInFile(), TMath::Abs(par[0])));
               selected = kFALSE;
             }
             if(selected && TMath::Abs(par[1]) > fgkTrkDCAz){ 
-              AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] DCAz[%f]", fESDev->GetEventNumberInFile(), itrk, TMath::Abs(par[1])));
+              AliDebug(3, Form("Reject Trk[%3d] Ev[%4d] DCAz[%f]", itrk, fESDev->GetEventNumberInFile(), TMath::Abs(par[1])));
               selected = kFALSE;
             }
           } else if(selected && fMCev && !fMCev->IsPhysicalPrimary(alab)){;
-            AliDebug(2, Form("Reject Ev[%4d] Trk[%3d] Primary", fESDev->GetEventNumberInFile(), itrk));
+            AliDebug(3, Form("Reject Trk[%3d] Ev[%4d] Primary", itrk, fESDev->GetEventNumberInFile()));
             selected = kFALSE;
           }
         }
@@ -728,7 +737,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     ,nKink, nKinkMC, fTracksKink->GetEntries()
   ));
   // save track statistics
-  h = (TH1I*)fContainer->At(0);
+  h = (TH1I*)fContainer->At(kStatTrk);
   h->Fill(Float_t(kTracksESD), nTracksESD);
   h->Fill(Float_t(kTracksMC), nTracksMC);
   h->Fill(Float_t(kV0), fV0List->GetEntries());

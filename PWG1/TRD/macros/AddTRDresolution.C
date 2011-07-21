@@ -24,11 +24,11 @@ void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
     mgr->AddTask(res = new AliTRDresolution(Form("TRDresolution%s", suffix[itq])));
     res->SetMCdata(mgr->GetMCtruthEventHandler());
     res->SetPostProcess(kFALSE);
-    res->SetDebugLevel(0);
-    if(itq==0) res->SetSegmentationLevel(AliTRDresolution::kDetector);
+    //res->SetDebugLevel(3);
+    //if(itq==0) res->SetSegmentationLevel(AliTRDresolution::kDetector);
     // use these settings if you know what you are doing !
     //res->SetTrackRefit(); 
-    //res->SetPtThreshold(0.);
+    res->SetPtThreshold(0.2);
     res->SetNameId(suffix[itq]);
     mgr->ConnectInput(res, 0, mgr->GetCommonInputContainer()); // connect main (ESD) container 
     mgr->ConnectInput(res, 1, ci[itq]);                        // conect track info container

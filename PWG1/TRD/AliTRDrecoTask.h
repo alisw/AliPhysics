@@ -83,9 +83,13 @@ protected:
   TObjArray *fContainer;   //! container to store results
   AliTRDeventInfo *fEvent; //! Event Info
   TObjArray *fTracks;      //! Array of tracks
-  const AliTRDtrackV1    *fkTrack;         //! current track
+  const AliTRDtrackV1   *fkTrack;          //! current track
   const AliTRDtrackInfo::AliMCinfo  *fkMC; //! MC info
   const AliTRDtrackInfo::AliESDinfo *fkESD;//! ESD info
+  Char_t                 fSpecies;         //! species index +1 with charge sign
+  Float_t                fPt;              //! p_t of the track being analyzed
+  Float_t                fPhi;             //! phi of the track being analyzed
+  Float_t                fEta;             //! eta of the track being analyzed
 
 private:
   AliTRDrecoTask(const AliTRDrecoTask&);
@@ -96,7 +100,7 @@ private:
   static TList      *fgTrendPoint;          //! trend point
   static TTreeSRedirector *fgDebugStream;  //! Debug stream 
 
-  ClassDef(AliTRDrecoTask, 3) // base TRD reconstruction task
+  ClassDef(AliTRDrecoTask, 4) // base TRD reconstruction task
 };
 
 #endif
