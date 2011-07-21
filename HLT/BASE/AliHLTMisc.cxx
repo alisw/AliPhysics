@@ -156,6 +156,31 @@ int AliHLTMisc::InitStreamerInfos(TObjArray* /*pSchemas*/) const
   return -EFAULT;
 }
 
+void AliHLTMisc::SetAliESDtrackOnlineModeFlag(bool /*mode*/) const
+{
+  // default method, functionality is implemented in the child class
+}
+
+bool AliHLTMisc::GetAliESDtrackOnlineModeFlag() const
+{
+  // default method, functionality is implemented in the child class
+  return false;
+}
+
+AliHLTMisc::AliOnlineGuard::AliOnlineGuard(bool mode)
+  : fMode(false)
+{
+  // store the current value and set the flag
+  fMode=AliHLTMisc::Instance().GetAliESDtrackOnlineModeFlag();
+  AliHLTMisc::Instance().SetAliESDtrackOnlineModeFlag(mode);
+}
+
+AliHLTMisc::AliOnlineGuard::~AliOnlineGuard()
+{
+  // restore old value of the flag
+  AliHLTMisc::Instance().SetAliESDtrackOnlineModeFlag(fMode);
+}
+
 ostream  &operator<<(ostream &out, const AliHLTComponentDataType &dt)
 {
   // printout of AliHLTComponentDataType struct

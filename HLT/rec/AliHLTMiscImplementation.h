@@ -49,6 +49,9 @@ class AliHLTMiscImplementation : public AliHLTMisc
   int InitStreamerInfos(const char* ocdbEntry) const;
   int InitStreamerInfos(TObjArray* pSchemas) const;
 
+  void SetAliESDtrackOnlineModeFlag(bool mode) const;
+  bool GetAliESDtrackOnlineModeFlag() const;
+
  private:
 
   ClassDef(AliHLTMiscImplementation, 0)

@@ -32,9 +32,8 @@
 #include "AliRawReader.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliTracker.h"
-#ifndef HAVE_NOT_ALIESDHLTDECISION
+#include "AliESDtrack.h"
 #include "AliESDHLTDecision.h"
-#endif //HAVE_NOT_ALIESDHLTDECISION
 #include "TGeoGlobalMagField.h"
 #include "AliHLTGlobalTriggerDecision.h"
 #include "TClass.h"
@@ -327,18 +326,13 @@ void AliHLTMiscImplementation::GetBxByBz(const Double_t r[3], Double_t b[3])
 const TClass* AliHLTMiscImplementation::IsAliESDHLTDecision() const
 {
   // Return the IsA of the AliESDHLTDecision class
-#ifndef HAVE_NOT_ALIESDHLTDECISION
   return AliESDHLTDecision::Class();
-#else // HAVE_NOT_ALIESDHLTDECISION
-  return NULL;
-#endif // HAVE_NOT_ALIESDHLTDECISION
 }
 
 int AliHLTMiscImplementation::Copy(const AliHLTGlobalTriggerDecision* pDecision, TObject* object) const
 {
   // Copy HLT global trigger decision to AliESDHLTDecision container
   if (!pDecision || !object) return -EINVAL;
-#ifndef HAVE_NOT_ALIESDHLTDECISION
   AliESDHLTDecision* pESDHLTDecision=NULL;
   if (object->IsA()==NULL ||
       object->IsA() != AliESDHLTDecision::Class() ||
@@ -351,7 +345,6 @@ int AliHLTMiscImplementation::Copy(const AliHLTGlobalTriggerDecision* pDecision,
   pESDHLTDecision->~AliESDHLTDecision();
   new (pESDHLTDecision) AliESDHLTDecision(pDecision->Result(), pDecision->GetTitle());
 
-#endif // HAVE_NOT_ALIESDHLTDECISION
   return 0;
 }
 
@@ -427,4 +420,16 @@ int AliHLTMiscImplementation::InitStreamerInfos(TObjArray* pSchemas) const
   }
 
   return 0;
+}
+
+void AliHLTMiscImplementation::SetAliESDtrackOnlineModeFlag(bool mode) const
+{
+  /// set the online mode flag of AliESDtrack
+  AliESDtrack::OnlineMode(mode);
+}
+
+bool AliHLTMiscImplementation::GetAliESDtrackOnlineModeFlag() const
+{
+  /// get status of the online mode flag of AliESDtrack
+  return AliESDtrack::OnlineMode();
 }
