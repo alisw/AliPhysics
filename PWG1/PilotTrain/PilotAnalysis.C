@@ -6,7 +6,17 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode);
 
 // Collision type: 0 = p-p   1 = Pb-Pb
 Int_t  iCollisionType = 0;
-Int_t runNumbers[5] = {145384};
+// Trigger mask.
+// Still need to change:
+UInt_t kTriggerInt = AliVEvent::kAnyINT;
+UInt_t kTriggerMuonAll = AliVEvent::kMUL7 | AliVEvent::kMUSH7 | AliVEvent::kMUU7 | AliVEvent::kMUS7;
+UInt_t kTriggerMuonBarell = AliVEvent::kMUU7;
+UInt_t kTriggerEMC   = AliVEvent::kEMC7;
+UInt_t kTriggerHM   = AliVEvent::kHighMult;
+// Main trigger mask used:
+UInt_t kTriggerMask = kTriggerInt;
+
+Int_t runNumbers[5] = {154780};
 
 Bool_t doCDBconnect   = 1;
 Bool_t doEventStat    = 1;
@@ -19,18 +29,21 @@ Bool_t doTPC          = 1;
 Bool_t doSDD          = 1;   // needs RP
 Bool_t doSSDdEdx      = 1;
 
-Bool_t doTRD          = 0;
+Bool_t doTRD          = 1;
 Bool_t doITS          = 1;
-Bool_t doITSsaTracks  = 1;   // new
-Bool_t doITSalign     = 0;   // new (try to load geom)
+Bool_t doITSsaTracks  = 1; 
+Bool_t doITSalign     = 1;  
 Bool_t doCALO         = 1;
 Bool_t doMUONTrig     = 1;
 Bool_t doImpParRes    = 1;
 Bool_t doMUON         = 1;
 Bool_t doTOF          = 1;
 Bool_t doHMPID        = 1;
-Bool_t doT0           = 1; // new
-Bool_t doZDC          = 0;
+Bool_t doT0           = 1;
+Bool_t doZDC          = 1;
+Bool_t doPIDResponse  = 1;
+Bool_t doPIDqa        = 1; //new
+Bool_t doFMD          = 1; // new
 
 Bool_t doMUONEff      = 0;   // NEEDS geometry
 Bool_t doV0           = 0;   // NEEDS MCtruth 
@@ -40,14 +53,14 @@ TString     train_tag          = (iCollisionType)?"_Pb-Pb":"_p-p";        // Tra
                                             // visible name. ("sim", "pp", ...)
                // Name in train page (DON'T CHANGE)
 TString     visible_name       = Form("QA$2_$3%s", train_tag.Data()); //# FIXED #
-TString     job_comment        = "PWG1 QA train(no TRD, no ZDC)"; // Can add observations here
+TString     job_comment        = "PWG1 QA kAnyInt, QAsym(add kMUU7 and kEMC7) CALO (add kEMC7)  triggers"; // Can add observations here
                // Job tag (DON'T CHANGE)
 TString     job_tag            = Form("%s: %s", visible_name.Data(), job_comment.Data());
                // Package versions - Modify as needed
-TString     root_version       = "v5-28-00a";
-TString     aliroot_version    = "v4-21-17b-AN";
+TString     root_version       = "v5-28-00e-1";
+TString     aliroot_version    = "v4-21-29-AN";
                // Production directory - change as needed for test mode
-TString     grid_datadir       = "/alice/data/2011/LHC11a";
+TString     grid_datadir       = "/alice/data/2011/LHC11c";
                // Work directory in GRID (DON'T CHANGE)
 TString     grid_workdir       = "/alice/cern.ch/user/a/alidaq/QA/QA$2";
                // Job splitting
@@ -57,7 +70,7 @@ Int_t       debug_level        = 1;        // Debugging
                // File merging
 Int_t       maxMergeFiles      = 10;       // Max files to merge in a chunk
                // Data pattern - change as needed for test mode
-TString     data_pattern       = "*ESDs/Pass1/*ESDs.root";
+TString     data_pattern       = "*ESDs/pass1/*ESDs.root";
                // Output directory (DON'T CHANGE)
 TString     alien_outdir       = "$1/QA$2";
                // Input collection (production mode)
@@ -115,6 +128,9 @@ void PilotAnalysis(const char *plugin_mode = "full")
   out << "   doHMPID         = " << doHMPID << ";" << endl;
   out << "   doZDC           = " << doZDC << ";" << endl;
   out << "   doT0            = " << doT0 << ";" << endl;
+  out << "   doPIDResponse   = " << doPIDResponse << ";" << endl;
+  out << "   doPIDqa         = " << doPIDqa << ";" << endl;
+  out << "   doFMD           = " << doFMD << ";" << endl;
   out << "   doEventStat     = " << doEventStat << ";" << endl;
   if (iCollisionType) out << "   doCentrality    = " << doCentrality << ";" << endl;
   out << "}" << endl;
@@ -125,7 +141,7 @@ void PilotAnalysis(const char *plugin_mode = "full")
   LoadLibraries();
   // Create manager
   AliAnalysisManager *mgr  = new AliAnalysisManager("PilotAnalysis", "Production train");
-  mgr->SetNSysInfo(100);
+  if (!strcmp(plugin_mode,"test")) mgr->SetNSysInfo(100);
   // Input handler
   AliESDInputHandlerRP *esdHandler = new AliESDInputHandlerRP();
   esdHandler->SetReadFriends(kTRUE);
@@ -162,11 +178,14 @@ void LoadLibraries()
      gSystem->Load("libPWG4PartCorrBase");
      gSystem->Load("libPWG4PartCorrDep");
   }  
-  if(doMUONTrig) {
+  if(doMUON || doMUONTrig) {
      gSystem->Load("libPWG3base");
      gSystem->Load("libPWG3muon");
      gSystem->Load("libPWG3muondep");
-  }   
+  }
+  if (doFMD) {
+     gSystem->Load("libPWG2forward2");
+  }      
 }
 
 void AddAnalysisTasks()
@@ -174,7 +193,7 @@ void AddAnalysisTasks()
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   mgr->SetCommonFileName("QAresults.root");
   // Statistics task
-  mgr->AddStatisticsTask(AliVEvent::kMB);
+  mgr->AddStatisticsTask(kTriggerMask);
   //
   // CDB connection
   //
@@ -213,16 +232,17 @@ void AddAnalysisTasks()
   // 
   if (doVertex) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskVertexESD.C");
-    AliAnalysisTaskVertexESD* taskvertexesd =  AddTaskVertexESD();
-    taskvertexesd->SelectCollisionCandidates();
+    AliAnalysisTaskVertexESD* taskvertexesd =  AddTaskVertexESD(kFALSE, kTriggerMask);
+    taskvertexesd->SelectCollisionCandidates(kTriggerMask);
   }  
 
   // TPC QA (E. Sicking)
   //
   if (doQAsym) {
+  // offline trigger in AddTask
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskQAsym.C");
-    AliAnalysisTaskSE * taskqasim = AddTaskQAsym(0);
-    taskqasim->SelectCollisionCandidates();
+    AliAnalysisTaskSE * taskqasim = AddTaskQAsym(0, kTriggerMask, kTriggerHM, kTriggerEMC, kTriggerMuonBarell);
+    // taskqasim->SelectCollisionCandidates(); // Set by AddTask
   }  
   //
   // VZERO QA  (C. Cheshkov)
@@ -243,7 +263,7 @@ void AddAnalysisTasks()
   if (doTPC) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/AddTaskPerformanceTPCdEdxQA.C");
     AliPerformanceTask *tpcQA = AddTaskPerformanceTPCdEdxQA(kFALSE, kTRUE, kFALSE);
-    tpcQA->SelectCollisionCandidates();
+    tpcQA->SelectCollisionCandidates(kTriggerMask);
   }  
   //
   // SPD (A. Mastroserio)
@@ -251,7 +271,7 @@ void AddAnalysisTasks()
   if (doSPD) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskSPDQA.C");
     AliAnalysisTaskSE* taskspdqa = AddTaskSPDQA();
-    taskspdqa->SelectCollisionCandidates();
+    taskspdqa->SelectCollisionCandidates(kTriggerMask);
   }  
   //
   // SDD (F. Prino)
@@ -259,7 +279,7 @@ void AddAnalysisTasks()
   if (doSDD) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddSDDPoints.C");
     AliAnalysisTaskSE* tasksdd = AddSDDPoints();
-    tasksdd->SelectCollisionCandidates();
+    tasksdd->SelectCollisionCandidates(kTriggerMask);
   }
   //
   // SSD dEdx (Marek Chojnacki)
@@ -267,13 +287,14 @@ void AddAnalysisTasks()
   if (doSSDdEdx) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskdEdxSSDQA.C");
     AliAnalysisTaskSE* taskssddedx = AddTaskdEdxSSDQA();
-    taskssddedx->SelectCollisionCandidates();
+    taskssddedx->SelectCollisionCandidates(kTriggerMask);
   }
 
   //
   // ITS
   //
   if (doITS) {
+  // hardcoded non-zero trigger mask
       gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskPerformanceITS.C");
       AliAnalysisTaskITSTrackingCheck *itsQA = 0;
       AliAnalysisTaskITSTrackingCheck *itsQACent0010 = 0;
@@ -292,10 +313,13 @@ void AddAnalysisTasks()
   // ITS saTracks, align (F.Prino)
   //
   if (doITSsaTracks) {
+  // offline trigger in AddTask
      gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskITSsaTracks.C");
      AliAnalysisTaskITSsaTracks *itssaTracks = AddTaskITSsaTracks(kFALSE,kFALSE);
+     itssaTracks->SelectCollisionCandidates(kTriggerMask);
   }   
   if (doITSalign) {
+  // no offline trigger selection
      gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskITSAlign.C");
      AliAnalysisTaskITSAlignQA *itsAlign = AddTaskITSAlign(0,2011);
   }   
@@ -303,6 +327,7 @@ void AddAnalysisTasks()
   // TRD (Alex Bercuci, M. Fasel) 
   //
   if(doTRD) {
+  // no offline trigger selection
       gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTrainPerformanceTRD.C");
       // steer individual TRD tasks
       Bool_t 
@@ -319,8 +344,10 @@ void AddAnalysisTasks()
   // ZDC (Chiara Oppedisano) 
   //
   if(doZDC) {
+  // hardcoded kMB trigger mask
      gROOT->LoadMacro("$ALICE_ROOT/PWG1/ZDC/AddTaskZDCQA.C");
      AliAnalysisTaskSE *taskZDC = AddTaskZDCQA();
+     taskZDC->SelectCollisionCandidates(kTriggerMask);
   }   
   //
   // Calorimetry (Gustavo Conesa)
@@ -330,6 +357,12 @@ void AddAnalysisTasks()
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
       AliAnalysisTaskParticleCorrelation *taskCaloQA = AddTaskCalorimeterQA("ESD", 2011, kFALSE, kFALSE);
       taskCaloQA->SetDebugLevel(0);
+      // offline mask set in AddTask to kMB
+      taskCaloQA->SelectCollisionCandidates(kTriggerMask);
+      // Add a new calo task with EMC1 trigger only
+      taskCaloQA = AddTaskCalorimeterQA("ESD", 2011, kFALSE, kFALSE, "", "EMC7");
+      taskCaloQA->SetDebugLevel(0);
+      taskCaloQA->SelectCollisionCandidates(kTriggerEMC);
   }
 
   //
@@ -337,12 +370,13 @@ void AddAnalysisTasks()
   //
   
   if(doMUONTrig) {
+  // no offline trigger selection
       gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskMTRchamberEfficiency.C");
       AliAnalysisTaskTrigChEff *taskMuonTrig = AddTaskMTRchamberEfficiency();
   }
 
   //
-  // Muon Efficiency
+  // Muon Efficiency (not used)
   //
 
   if(doMUONEff) {
@@ -351,7 +385,7 @@ void AddAnalysisTasks()
   }
   
   //
-  // V0-Decay Reconstruction (Ana Marin)
+  // V0-Decay Reconstruction (Ana Marin) (not used)
   // 
 
   if (doV0) {
@@ -369,12 +403,13 @@ void AddAnalysisTasks()
     } else {
        taskimpparres= AddTaskImpParRes(kFALSE,-1,kFALSE,kFALSE);
     }
-    taskimpparres->SelectCollisionCandidates();
+    taskimpparres->SelectCollisionCandidates(kTriggerMask);
   }  
   //
   // MUON QA (Philippe Pillot)
   //
   if (doMUON) {
+  // trigger analysis internal
     gROOT->LoadMacro("$ALICE_ROOT/PWG3/muon/AddTaskMuonQA.C");
     AliAnalysisTaskSE* taskmuonqa= AddTaskMuonQA();
   }  
@@ -384,20 +419,49 @@ void AddAnalysisTasks()
   if (doTOF) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/TOF/AddTaskTOFQA.C");
     AliAnalysisTaskTOFqa *tofQA = AddTaskTOFQA();
-    tofQA->SelectCollisionCandidates();
+    tofQA->SelectCollisionCandidates(kTriggerMask);
+  } 
+   //
+  // PIDResponse(JENS)
+  //
+  if (doPIDqa) {
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"); 
+    AliAnalysisTaskPIDResponse *PIDResponse = AddTaskPIDResponse();
+    PIDResponse->SelectCollisionCandidates(kTriggerMask);
   }  
+
+  //
+  // PIDqa(JENS)
+  //
+  if (doPIDqa) {
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
+    AliAnalysisTaskPIDqa *PIDQA = AddTaskPIDqa();
+    PIDQA->SelectCollisionCandidates(kTriggerMask);
+  }  
+ 
   //
   // HMPID QA (Giacomo Volpe)
   //
   if (doHMPID) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/HMPID/AddTaskHmpidQA.C");
     AliAnalysisTaskSE* taskhmpidqa= AddTaskHmpidQA(kFALSE);
+      // offline mask set in AddTask to kMB
+    taskhmpidqa->SelectCollisionCandidates(kTriggerMask);
   }      
-  // T0 QA (Alla Mayevskaya
+  // T0 QA (Alla Mayevskaya)
   if (doT0) {
+  // no offline trigger selection
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/T0/AddTaskT0QA.C");
-    AliT0AnalysisTaskQA* tast0qa= AddTaskT0QA();
+    AliT0AnalysisTaskQA* taskt0qa= AddTaskT0QA();
+    taskt0qa->SelectCollisionCandidates(kTriggerMask);
   }      
+  // FMD QA (Christian Holm Christiansen)
+  if (doFMD) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskForwardQA.C");
+    // Parameters: usemc, usecentrality
+    AliAnalysisTaskSE *forwardQA = (AliAnalysisTaskSE *)AddTaskForwardQA(kFALSE, kFALSE);
+    // No offline trigger config. needed (see #84077)
+  }
 }
 
 //______________________________________________________________________________
@@ -406,7 +470,6 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Check if user has a valid token, otherwise make one. This has limitations.
 // One can always follow the standard procedure of calling alien-token-init then
 //   source /tmp/gclient_env_$UID in the current shell.
-   if (!AliAnalysisGrid::CreateToken()) return NULL;
    AliAnalysisAlien *plugin = new AliAnalysisAlien();
 // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
    plugin->SetRunMode(plugin_mode);
@@ -415,7 +478,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
       plugin->AddDataFile(data_collection);
    }   
    plugin->SetJobTag(job_tag);
-   plugin->SetNtestFiles(1);
+   plugin->SetNtestFiles(2);
    plugin->SetCheckCopy(kFALSE);
    plugin->SetMergeDirName(mergeDirName);
 // Set versions of used packages
@@ -461,7 +524,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    
    plugin->SetAdditionalLibs("libCORRFW.so libTENDER.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWG1.so \
                               libEMCALUtils.so libPHOSUtils.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so \
-                              libPWG3base.so libPWG3muon.so libPWG3muondep.so");
+                              libPWG3base.so libPWG3muon.so libPWG3muondep.so libPWG2forward2.so");
      
 // Declare the output file names separated by blancs.
    plugin->SetDefaultOutputs();
