@@ -293,6 +293,7 @@ void AliITSQAChecker::Check(Double_t * rv, AliQAv1::ALITASK_t index, TObjArray *
 	    //drift
 	    if(fDet == 0 || fDet == 2) {
 	      fSDDChecker->SetTaskOffset(fSDDOffset);
+	      fSDDChecker->SetEventSpecieForCheck(specie);
 	      Double_t histoSDD=double(GetSDDHisto());
 	      if(AliITSQADataMakerRec::AreEqual(histoSDD,0)==kFALSE){
 		Double_t *stepSDD=new Double_t[AliQAv1::kNBIT];

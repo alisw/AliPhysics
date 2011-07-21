@@ -406,7 +406,8 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  AliWarning(Form(" Layer 3: %i good module(s) and %i good single drift regions didn't take data! \n",emptyactivemoduleperlayer[0] ,emptyactivedrperlayer[0] ));
 	  AliWarning(Form(" Layer 4: %i good module(s) and %i good single drift regions didn't take data! \n",emptyactivemoduleperlayer[1] ,emptyactivedrperlayer[1] ));
 	  //printf("========================= %d",AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::kCosmic));
-	  if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kFALSE){     
+	  //	  if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kFALSE){     
+	  if(AliRecoParam::Convert(GetEventSpecieForCheck())!=AliRecoParam::kCosmic){     
 	    
 	    results1.Form("%i good module(s) and %i good drift regions didn't take data!",emptydiff,emptydrdiff);
 	    if(neventsraw<numlimit)
@@ -423,21 +424,22 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	      }
 	  }
 	  else
-	    if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kTRUE)
-	      {
+	    //	    if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kTRUE)
+	    if(AliRecoParam::Convert(GetEventSpecieForCheck())==AliRecoParam::kCosmic)
+	      {     
 		numlimit=10000;
 		if(neventsraw<numlimit)
 		  {
 		    AliWarning(Form("This is a cosmic run. Some module and drift region are empty but all is OK. "));
-		    results1.Form("OK. Thi is a cosmic run. you need a lot of events");
+		    results1.Form("OK. This is a cosmic run. you need a lot of events. Events %i",neventsraw);
 		    results2.Form("%i good module(s) and %i good drift are empty! DO NOT CALL THE EXPERT",emptydiff,emptydrdiff);
 		    color=5;
 		    sddQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
 		  }
 		else
 		  {
-		    results1.Form("%i good module(s) and %i good drift region(s) have not recpoints!",emptydiff,emptydrdiff);
-		    results2.Form(" Events %d .Follow the TWiki instruction and call the Expert ",neventsraw);
+		    results1.Form("%i good module(s) and %i good drift region(s) have no data!",emptydiff,emptydrdiff);
+		    results2.Form(" Cosmic Events %d .Follow the TWiki instruction and call the Expert ",neventsraw);
 		    color=2;
 		    sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
 		  }
@@ -878,8 +880,9 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 	  Int_t numlimits=1000;	  
 
 	  results1.Form("%i good module(s) and %i good drift region(s) have not recpoints!",emptydiff,emptydrdiff);
-	  if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kFALSE)
-	    {
+	  //	  if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kFALSE)
+	  if(AliRecoParam::Convert(GetEventSpecieForCheck())!=AliRecoParam::kCosmic){     
+	    
 	      if(neventsrecpoints<numlimits)
 		{
 		  results2.Form(" Events %d .Too few events.DO NOT CALL the Expert ",neventsrecpoints);
@@ -894,13 +897,13 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		}
 	    }
 	  else
-	    if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kTRUE)
-	      {
+	    //if((AliQAv1::Instance(AliQAv1::GetDetIndex("ITS")))->IsEventSpecieSet(AliRecoParam::kCosmic)==kTRUE)
+	    if(AliRecoParam::Convert(GetEventSpecieForCheck())==AliRecoParam::kCosmic){     
 		numlimit=10000;
-		if(neventsrecpoints<numlimit)
+		if( neventsrecpoints<numlimit)
 		  {
 		    AliWarning(Form("This is a cosmic run. Some module and drift region are empty but all is OK. "));
-		    results1.Form("OK. Thi is a cosmic run. You need a lot of events");
+		    results1.Form("OK. Thi is a cosmic run. You need a lot of events. Events %i",neventsrecpoints);
 		    results2.Form("%i good module(s) and %i good drift are empty! DO NOT CALL THE EXPERT",emptydiff,emptydrdiff);
 		    color=5;
 		    sddQACheckerValue=fHighSDDValue[AliQAv1::kWARNING];
@@ -908,7 +911,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 		else
 		  {
 		    results1.Form("%i good module(s) and %i good drift region(s) have not recpoints!",emptydiff,emptydrdiff);
-		    results2.Form(" Events %d .Follow the TWiki instruction and call the Expert ",neventsrecpoints);
+		    results2.Form("Cosmic Events %d .Follow the TWiki instruction and call the Expert ",neventsrecpoints);
 		    color=2;
 		    sddQACheckerValue=fHighSDDValue[AliQAv1::kERROR];
 		  }

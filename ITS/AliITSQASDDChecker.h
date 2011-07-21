@@ -44,7 +44,8 @@ public:
 	fCalibration(NULL),
 	fThresholdForRelativeOccupancy(0.01),
         fThresholdForRecToRawRatio(0.04),
-        fImage(NULL)
+	fImage(NULL),
+	fESforCheck(0)
 	{;}          // ctor
   AliITSQASDDChecker& operator = (const AliITSQASDDChecker& qac) ; //operator =
   virtual ~AliITSQASDDChecker(); // dtor
@@ -53,6 +54,8 @@ public:
   virtual void SetStepBit(const Double_t *steprange);
   virtual Double_t *GetStepBit(){return fStepBitSDD;};
   virtual void SetSDDLimits(const Float_t *lowvalue, const Float_t * highvalue);
+  void SetEventSpecieForCheck(Int_t esforcheck=0){ fESforCheck=esforcheck;}
+  Int_t GetEventSpecieForCheck(){return  fESforCheck;}
 
   virtual Bool_t   MakeSDDImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) ; 
   Bool_t MakeSDDRawsImage(TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode );//{AliInfo("The method for raw image has been called\n");}
@@ -69,7 +72,8 @@ public:
     fCalibration(qac.fCalibration),
     fThresholdForRelativeOccupancy(qac.fThresholdForRelativeOccupancy),
     fThresholdForRecToRawRatio(qac.fThresholdForRecToRawRatio),
-    fImage(qac.fImage) 
+    fImage(qac.fImage),
+    fESforCheck(qac.fESforCheck) 
       {;} // cpy ctor   
 
     Int_t fSubDetOffset;            // checking operation starting point
@@ -84,10 +88,12 @@ public:
     
     TCanvas **    fImage          ; //[AliRecoParam::kNSpecies] 
 
+    Int_t fESforCheck; //eventspecie of the list to check
+
     static const Int_t fgknSDDmodules = 260; // number of SDD modules
     static const Int_t fgkmodoffset = 240;   // number of SPD modules
 
-    ClassDef(AliITSQASDDChecker,5)  // description 
+    ClassDef(AliITSQASDDChecker,6)  // description 
       
 };
 
