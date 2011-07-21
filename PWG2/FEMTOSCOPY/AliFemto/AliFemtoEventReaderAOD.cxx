@@ -43,6 +43,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fFilterBit(0),
   fPWG2AODTracks(0x0),
   fReadMC(0),
+  fUsePreCent(0),
   fInputFile(" "),
   fFileName(" "),
   fTree(0x0),
@@ -51,6 +52,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
   fAllFalse.ResetAllBits(kFALSE);
+  fCentRange[0] = 0;
+  fCentRange[1] = 1000;
 }
 
 AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aReader) :
@@ -63,6 +66,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fFilterBit(0),
   fPWG2AODTracks(0x0),
   fReadMC(0),
+  fUsePreCent(0),
   fInputFile(" "),
   fFileName(" "),
   fTree(0x0),
@@ -79,6 +83,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fAllFalse.ResetAllBits(kFALSE);
   fFilterBit = aReader.fFilterBit;
   fPWG2AODTracks = aReader.fPWG2AODTracks;
+  fCentRange[0] = aReader.fCentRange[0];
+  fCentRange[1] = aReader.fCentRange[1];
 }
 //__________________
 //Destructor
@@ -114,6 +120,8 @@ AliFemtoEventReaderAOD& AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fAllFalse.ResetAllBits(kFALSE);
   fFilterBit = aReader.fFilterBit;
   fPWG2AODTracks = aReader.fPWG2AODTracks;
+  fCentRange[0] = aReader.fCentRange[0];
+  fCentRange[1] = aReader.fCentRange[1];
 
   return *this;
 }
@@ -273,6 +281,18 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   else
     nofTracks=fEvent->GetNumberOfTracks();
 
+  AliCentrality *cent = fEvent->GetCentrality();
+
+  if (cent && fUsePreCent) {
+    if ((cent->GetCentralityPercentile("V0M")*10 < fCentRange[0]) ||
+	(cent->GetCentralityPercentile("V0M")*10 > fCentRange[1]))
+      {
+	cout << "Centrality " << cent->GetCentralityPercentile("V0M") << " outside of preselection range " << fCentRange[0] << " - " << fCentRange[1] << endl;
+
+	return;
+      }
+  }
+
   int realnofTracks=0;   // number of track which we use in a analysis
   int tracksPrim=0;     
 
@@ -401,8 +421,10 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
 	if (aodtrack->IsPrimaryCandidate()) tracksPrim++;
 	
-// 	if (!aodtrack->TestFilterBit(fFilterBit))
-// 	  continue;
+	if (!aodtrack->TestFilterBit(fFilterBit)) {
+	  delete trackCopy;
+ 	  continue;
+	}
 	
 	CopyAODtoFemtoTrack(aodtrack, trackCopy, 0);
 	
@@ -526,8 +548,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   tEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
   tEvent->SetNormalizedMult(tracksPrim);
 
-  AliCentrality *cent = fEvent->GetCentrality();
-  if (cent) tEvent->SetNormalizedMult((int) cent->GetCentralityPercentile("V0M"));
+  if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("V0M")));
 
   if (cent) {
     tEvent->SetCentralityV0(cent->GetCentralityPercentile("V0M"));
@@ -608,6 +629,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(const AliAODTrack *tAodTrack,
   tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());       
   tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());       
   tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNcls());      
+  tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
   tFemtoTrack->SetTPCsignalN(1); 
   tFemtoTrack->SetTPCsignalS(1); 
 
@@ -683,6 +705,11 @@ AliAODMCParticle* AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP
   return 0;
 }
 
+void AliFemtoEventReaderAOD::SetCentralityPreSelection(double min, double max)
+{
+  fCentRange[0] = min; fCentRange[1] = max;
+  fUsePreCent = 1;
+}
 
 
 
