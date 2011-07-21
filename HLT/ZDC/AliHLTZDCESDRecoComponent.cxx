@@ -195,7 +195,9 @@ int AliHLTZDCESDRecoComponent::ScanConfigurationArgument(int /*argc*/, const cha
 int AliHLTZDCESDRecoComponent::DoDeinit()
 {
     if(fRawReader) delete fRawReader;
+    fRawReader=NULL;
     if(fReconstructor) delete fReconstructor;
+    fReconstructor=NULL;
     return 0;
 }
 
@@ -213,7 +215,7 @@ int AliHLTZDCESDRecoComponent::DoEvent(const AliHLTComponentEventData& /*evtData
   // get ZDC raw input data block and set up the rawreader
   const AliHLTComponentBlockData* pBlock = GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginZDC);
   if (!pBlock) {
-    HLTInfo("No ZDC input block !!!");
+    ALIHLTERRORGUARD(1, "No ZDC input block at event %d", GetEventCount());
     return 0;
   }
 
@@ -278,6 +280,5 @@ int AliHLTZDCESDRecoComponent::Reconfigure(const char* cdbEntry, const char* cha
 int AliHLTZDCESDRecoComponent::ReadPreprocessorValues(const char* /*modules*/)
 {
   // see header file for class documentation
-  ALIHLTERRORGUARD(5, "ReadPreProcessorValues not implemented for this component");
   return 0;
 }
