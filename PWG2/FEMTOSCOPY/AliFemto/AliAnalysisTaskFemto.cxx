@@ -203,7 +203,7 @@ void AliAnalysisTaskFemto::CreateOutputObjects() {
 //   gROOT->LoadMacro(fcm);
   gROOT->LoadMacro(fConfigMacro);
   //  fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
-  if (fConfigParams)
+  if (!fConfigParams)
     SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine("ConfigFemtoAnalysis()"));
   else
     SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine(Form("ConfigFemtoAnalysis(%s)", fConfigParams)));
