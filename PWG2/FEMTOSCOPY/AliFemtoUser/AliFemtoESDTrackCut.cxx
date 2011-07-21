@@ -331,16 +331,100 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
     for (int ip=0; ip<5; ip++)
       if (tMost[ip] > ipidmax) { ipidmax = tMost[ip]; imost = ip; };
     //     }
+    
+    // Looking for pions
     if (fMostProbable == 2) {
-      if (imost == 2)
+      if (imost == 2) {
+	// Using the TPC to reject non-pions
 	if (!(IsPionTPCdEdx(track->P().Mag(), track->TPCsignal())))
 	  imost = 0;
+	if (0) {
+	// Using the TOF to reject non-pions
+	if (track->P().Mag() < 0.6) {
+	  if (tTOFPidIn)
+	    if (!IsPionTOFTime(track->P().Mag(), track->TOFpionTime()))
+	      imost = 0;
+	}
+	else {
+	  if (tTOFPidIn) {
+	    if (!IsPionTOFTime(track->P().Mag(), track->TOFpionTime()))
+	      imost = 0;
+	  }
+	  else {
+	    imost = 0;
+	  }
+	}
+	}
+      }
     }
-    //     else if (fMostProbable == 3) {
-    //       if (IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal()))
-    // 	imost = 3;
-    //     }
-    //     else {
+
+    // Looking for kaons
+    else if (fMostProbable == 3) {
+//       if (imost == 3) {
+	// Using the TPC to reject non-kaons
+      if (track->P().Mag() < 0.6) {
+	if (!(IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal())))
+	  imost = 0;
+	else imost = 3;
+	if (1) {
+	  // Using the TOF to reject non-kaons
+	  if (tTOFPidIn)
+	    if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
+	      imost = 0;
+	}
+      }
+      else {
+	if (1) {
+	  if (tTOFPidIn) {
+	    if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
+	      imost = 0;
+	    else
+	      imost = 3;
+	  }
+	  else {
+	    if (!(IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal())))
+	      imost = 0;
+	    else 
+	      imost = 3;
+	  }
+	}
+      }
+      //       }
+    }
+    
+    // Looking for protons
+    else if (fMostProbable == 4) {
+//       if (imost == 3) {
+	// Using the TPC to reject non-kaons
+      if (track->P().Mag() < 0.8) {
+	if (!(IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal())))
+	  imost = 0;
+	else imost = 4;
+	if (0) {
+	  // Using the TOF to reject non-kaons
+	  if (tTOFPidIn)
+	    if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
+	      imost = 0;
+	}
+      }
+      else {
+	if (0) {
+	  if (tTOFPidIn) {
+	    if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
+	      imost = 0;
+	    else
+	      imost = 3;
+	  }
+	  else {
+	    if (!(IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal())))
+	      imost = 0;
+	    else 
+	      imost = 3;
+	  }
+	}
+      }
+      //       }
+    }
     if (imost != fMostProbable) return false;
   }
   
@@ -580,8 +664,8 @@ void AliFemtoESDTrackCut::SetMomRangeITSpidIs(const float& minp, const float& ma
 
 bool AliFemtoESDTrackCut::IsPionTPCdEdx(float mom, float dEdx)
 {
-//   double a1 = -95.4545, b1 = 86.5455;
-//   double a2 = 0.0,      b2 = 56.0;
+  // double a1 = -95.4545, b1 = 86.5455;
+  // double a2 = 0.0,      b2 = 56.0;
   double a1 = -343.75,  b1 = 168.125;
   double a2 = 0.0,      b2 = 65.0;
 
@@ -595,24 +679,135 @@ bool AliFemtoESDTrackCut::IsPionTPCdEdx(float mom, float dEdx)
 
 bool AliFemtoESDTrackCut::IsKaonTPCdEdx(float mom, float dEdx)
 {
-  double a1 = -159.1, b1 = 145.9;
-  double a2 = 0.0,    b2 = 60.0;
-  double a3 = -138.235, b3 = 166.44;
-  double a4 = -2015.79, b4 = 973.789;
-  
-  if (mom < 0.24) {
-    if (dEdx > a1*mom+b1) return true;
-  }    
-  else if (mom < 0.43) {
-    if ((dEdx > a1*mom+b1) && (dEdx < a4*mom+b4)) return true;
-  }
-  else if (mom < 0.54) {
-    if ((dEdx > a1*mom+b1) && (dEdx < a3*mom+b3)) return true;
-  }
-  else if (mom < 0.77) {
-    if ((dEdx > a2*mom+b2) && (dEdx < a3*mom+b3)) return true;
-  }
-  
-  return false;
+   // double a1 = -159.1, b1 = 145.9;
+   // double a2 = 0.0,    b2 = 60.0;
+   // double a3 = -138.235, b3 = 166.44;
+   // double a4 = -2015.79, b4 = 973.789;
+
+   // if (mom < 0.24) {
+   //   if (dEdx > a1*mom+b1) return true;
+   // }    
+   // else if (mom < 0.43) {
+   //   if ((dEdx > a1*mom+b1) && (dEdx < a4*mom+b4)) return true;
+   // }
+   // else if (mom < 0.54) {
+   //   if ((dEdx > a1*mom+b1) && (dEdx < a3*mom+b3)) return true;
+   // }
+   // else if (mom < 0.77) {
+   //   if ((dEdx > a2*mom+b2) && (dEdx < a3*mom+b3)) return true;
+   // }
+   
+   // return false;
+
+   double a1 = -547.0; double b1 =  297.0;
+   double a2 = -125.0; double b2 =  145.0;
+   double a3 = -420.0; double b3 =  357.0;
+   double a4 = -110.0; double b4 =  171.0;
+                       double b5 =   72.0;
+
+   if (mom<0.2) return false;
+
+   if (mom<0.36) {
+     if (dEdx < a1*mom+b1) return false;
+     if (dEdx > a3*mom+b3) return false;
+   }
+   else if (mom<0.6) {
+     if (dEdx < a2*mom+b2) return false;
+     if (dEdx > a3*mom+b3) return false;
+   }
+   else if (mom<0.9) {
+     if (dEdx > a4*mom+b4) return false;
+     if (dEdx <        b5) return false;
+   }
+   else 
+     return false;
+ //   else {
+ //     if (dEdx > b5) return false;
+ //   }
+   
+   return true;
 }
 
+bool AliFemtoESDTrackCut::IsProtonTPCdEdx(float mom, float dEdx)
+{
+  double a1 = -3000.0; double b1 =  1280.0;
+  double a2 = -312.5;  double b2 =  312.5;
+  double a3 = -160.0;  double b3 =  221.0;
+  double a4 = -110.0;  double b4 =  171.0;
+                        double b5 =   72.0;
+
+   if (mom<0.2) return false;
+
+   if (mom<0.36) {
+     if (dEdx < a1*mom+b1) return false;
+   }
+   else if (mom<0.6) {
+     if (dEdx < a2*mom+b2) return false;
+   }
+   else if (mom<0.9) {
+     if (dEdx < a3*mom+b3) return false;
+   }
+   else 
+     return false;
+ //   else {
+ //     if (dEdx > b5) return false;
+ //   }
+   
+   return true;
+  
+}
+
+bool AliFemtoESDTrackCut::IsPionTOFTime(float mom, float ttof)
+{
+  double a1 = -427.0; double b1 =  916.0;
+  double a2 =  327.0; double b2 = -888.0;
+  if (mom<0.3) return kFALSE;
+  if (mom>2.0) return kFALSE;
+  if (ttof > a1*mom+b1) return kFALSE;
+  if (ttof < a2*mom+b2) return kFALSE;
+
+  return kTRUE;
+}
+
+bool AliFemtoESDTrackCut::IsKaonTOFTime(float mom, float ttof)
+{
+  double a1 =   000.0; double b1 =  -500.0;
+  double a2 =   000.0; double b2 =   500.0;
+  double a3 =   850.0; double b3 = -1503.0;
+  double a4 = -1637.0; double b4 =  3621.0;
+
+  if (mom<0.3) return kFALSE;
+  if (mom>2.06) return kFALSE;
+  if (mom<1.2) {
+    if (ttof > a2*mom+b2) return kFALSE;
+    if (ttof < a1*mom+b1) return kFALSE;
+  }
+  if (mom<1.9) {
+    if (ttof > a2*mom+b2) return kFALSE;
+    if (ttof < a3*mom+b3) return kFALSE;
+  }
+  if (mom<2.06) {
+    if (ttof > a4*mom+b4) return kFALSE;
+    if (ttof < a3*mom+b3) return kFALSE;
+  }
+  return kTRUE;
+}
+
+bool AliFemtoESDTrackCut::IsProtonTOFTime(float mom, float ttof)
+{
+  double a1 =   000.0; double b1 =  -915.0;
+  double a2 =   000.0; double b2 =   600.0;
+  double a3 =   572.0; double b3 = -1715.0;
+
+  if (mom<0.3) return kFALSE;
+  if (mom>3.0) return kFALSE;
+  if (mom<1.4) {
+    if (ttof > a2*mom+b2) return kFALSE;
+    if (ttof < a1*mom+b1) return kFALSE;
+  }
+  if (mom<3.0) {
+    if (ttof > a2*mom+b2) return kFALSE;
+    if (ttof < a3*mom+b3) return kFALSE;
+  }
+  return kTRUE;
+}
