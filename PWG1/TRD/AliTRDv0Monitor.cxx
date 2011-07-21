@@ -99,7 +99,7 @@ TObjArray* AliTRDv0Monitor::Histos()
   // Called once
   if(fContainer) return fContainer;
 
-  fContainer = new TObjArray(kNPlots);
+  fContainer = new TObjArray(kNPlots); fContainer->SetOwner();
   fContainer->SetName("V0Monitoring");
   
   const char *samplename[AliPID::kSPECIES] = {"electrons","muons","pions","kaons","protons"};
