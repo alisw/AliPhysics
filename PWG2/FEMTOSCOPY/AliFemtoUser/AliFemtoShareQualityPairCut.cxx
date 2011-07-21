@@ -51,60 +51,64 @@ bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair){
   Int_t an = 0;
   Int_t ns = 0;
   
-  for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
-    // If both have clusters in the same row
-    if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) && 
-	pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
-      // Do they share it ?
-      if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap) &&
-	  pair->Track2()->Track()->TPCsharing().TestBitNumber(imap))
-	{
-	  //	  cout << "A shared cluster !!!" << endl;
-	  //	cout << "imap idx1 idx2 " 
-	  //	     << imap << " "
-	  //	     << tP1idx[imap] << " " << tP2idx[imap] << endl;
-	  an++;
+  if ((fShareFractionMax < 1.0) && ( fShareQualityMax < 1.0)) {
+    for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
+      // If both have clusters in the same row
+      if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) && 
+	  pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
+	// Do they share it ?
+	if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap) &&
+	    pair->Track2()->Track()->TPCsharing().TestBitNumber(imap))
+	  {
+	    //	  cout << "A shared cluster !!!" << endl;
+	    //	cout << "imap idx1 idx2 " 
+	    //	     << imap << " "
+	    //	     << tP1idx[imap] << " " << tP2idx[imap] << endl;
+	    an++;
+	    nh+=2;
+	    ns+=2;
+	  }
+	
+	// Different hits on the same padrow
+	else {
+	  an--;
 	  nh+=2;
-	  ns+=2;
 	}
-      
-      // Different hits on the same padrow
-      else {
-	an--;
-	nh+=2;
+      }
+      else if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) ||
+	       pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
+	// One track has a hit, the other does not
+	an++;
+	nh++;
       }
     }
-    else if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) ||
-	     pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
-      // One track has a hit, the other does not
-      an++;
-      nh++;
+    
+    Float_t hsmval = 0.0;
+    Float_t hsfval = 0.0;
+    
+    if (nh >0) {
+      hsmval = an*1.0/nh;
+      hsfval = ns*1.0/nh;
     }
-  }
-  
-  Float_t hsmval = 0.0;
-  Float_t hsfval = 0.0;
-
-  if (nh >0) {
-    hsmval = an*1.0/nh;
-    hsfval = ns*1.0/nh;
-  }
-  //  if (hsmval > -0.4) {
-//   cout << "Pair quality: " << hsmval << " " << an << " " << nh << " " 
-//        << (pair->Track1()->Track()) << " " 
-//        << (pair->Track2()->Track()) << endl;
-//   cout << "Bits: " << pair->Track1()->Track()->TPCclusters().GetNbits() << endl;
+    //  if (hsmval > -0.4) {
+    //   cout << "Pair quality: " << hsmval << " " << an << " " << nh << " " 
+    //        << (pair->Track1()->Track()) << " " 
+    //        << (pair->Track2()->Track()) << endl;
+    //   cout << "Bits: " << pair->Track1()->Track()->TPCclusters().GetNbits() << endl;
     //  }
-//   if (hsfval > 0.0) {
-//     cout << "Pair sharity: " << hsfval << " " << ns << " " << nh << "    " << hsmval << " " << an << " " << nh << endl;
-//   }
-
-  temp = (hsmval < fShareQualityMax) && (hsfval < fShareFractionMax);
+    //   if (hsfval > 0.0) {
+    //     cout << "Pair sharity: " << hsfval << " " << ns << " " << nh << "    " << hsmval << " " << an << " " << nh << endl;
+    //   }
+    
+    temp = (hsmval < fShareQualityMax) && (hsfval < fShareFractionMax);
+  }
+  else
+    temp = true;
 
   if (fRemoveSameLabel) {
     if (abs(pair->Track1()->Track()->Label()) == abs(pair->Track2()->Track()->Label())) {
-      cout << "Found a pair with same label " << pair->Track1()->Track()->Label() << endl;
-      cout << "Quality Sharity Passed " << hsmval << " " << hsfval << " " << pair->QInv() << " " << temp << endl;
+//       cout << "Found a pair with same label " << pair->Track1()->Track()->Label() << endl;
+//       cout << "Quality Sharity Passed " << hsmval << " " << hsfval << " " << pair->QInv() << " " << temp << endl;
       temp = kFALSE;
     }
   }
