@@ -23,7 +23,7 @@ class AliFemtoCutMonitorParticlePID : public AliFemtoCutMonitor{
   
 public:
   AliFemtoCutMonitorParticlePID();
-  AliFemtoCutMonitorParticlePID(const char *aName);
+  AliFemtoCutMonitorParticlePID(const char *aName, Int_t aTOFParticle);
   AliFemtoCutMonitorParticlePID(const AliFemtoCutMonitorParticlePID &aCut);
   virtual ~AliFemtoCutMonitorParticlePID();
 
@@ -39,13 +39,16 @@ public:
   virtual void Fill(const AliFemtoEvent* aEvent,const AliFemtoParticleCollection* aCollection)
   {AliFemtoCutMonitor::Fill(aEvent, aCollection);}
 
+  void SetTOFParticle(Int_t ipart);
 
   void Write();
 
   virtual TList *GetOutputList();
 
 private:
-  TH2D *fTPCdEdx;   // TPC dEdx information
+  TH2D *fTPCdEdx;     // TPC dEdx information
+  Int_t fTOFParticle; // Select TOF time hypothesis, 0-pion, 1-kaon, 2-proton
+  TH2D *fTOFTime;     // TOF time
 
 };
 
