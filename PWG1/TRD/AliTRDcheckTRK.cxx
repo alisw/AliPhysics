@@ -375,14 +375,14 @@ Bool_t AliTRDcheckTRK::MakeProjectionEtaPhi()
   }
 
   Int_t  coord[kNdim]; memset(coord, 0, sizeof(Int_t) * kNdim); Double_t v = 0.;
-  TAxis *abc(H->GetAxis(kBC)),
+  TAxis //*abc(H->GetAxis(kBC)),
         *aphi(H->GetAxis(kPhi)),
         *aeta(H->GetAxis(kEta)),
-        *as(H->GetAxis(kSpeciesChgRC)),
-        *apt(H->GetAxis(kPt)),
+        //*as(H->GetAxis(kSpeciesChgRC)),
+        //*apt(H->GetAxis(kPt)),
         *ay(H->GetAxis(kYrez)),
-        *az(H->GetAxis(kZrez)),
-        *ap(H->GetAxis(kPrez));
+        *az(H->GetAxis(kZrez));
+        //*ap(H->GetAxis(kPrez));
   Int_t neta(aeta->GetNbins()), nphi(aphi->GetNbins());
   TH3I *h3[3];
   h3[0] = new TH3I("h30", Form("r-#phi residuals for neg tracks;%s;%s;%s", aeta->GetTitle(), aphi->GetTitle(), ay->GetTitle()),
