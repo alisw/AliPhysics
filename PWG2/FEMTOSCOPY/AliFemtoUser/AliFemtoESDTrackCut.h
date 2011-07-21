@@ -108,6 +108,11 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
 
   bool IsPionTPCdEdx(float mom, float dEdx);
   bool IsKaonTPCdEdx(float mom, float dEdx);
+  bool IsProtonTPCdEdx(float mom, float dEdx);
+
+  bool IsPionTOFTime(float mom, float ttof);
+  bool IsKaonTOFTime(float mom, float ttof);
+  bool IsProtonTOFTime(float mom, float ttof);
 
 #ifdef __ROOT__ 
   ClassDef(AliFemtoESDTrackCut, 1)
