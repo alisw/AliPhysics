@@ -29,6 +29,8 @@
 #include "AliGenBox.h"
 #include "AliRun.h"
 #include "AliGenEventHeader.h"
+#include "TDatabasePDG.h"
+#include "AliPDG.h"
 
 ClassImp(AliGenBox)
 
@@ -72,6 +74,7 @@ void AliGenBox::Generate()
     Float_t p[3];
     Int_t i, j, nt;
     Double_t pmom, theta, phi, pt;
+    Double_t y, mt;
     //
     Float_t random[6];
   //
@@ -81,30 +84,49 @@ void AliGenBox::Generate()
 	for (j=0;j<3;j++) origin[j]=fVertex[j];
     }
 
+    Double_t m = TDatabasePDG::Instance()->GetParticle(fIpart)->Mass();
+
     for(i=0;i<fNpart;i++) {
 	Rndm(random,3);
 	
-	if (TestBit(kThetaRange)) {
-	    theta = fThetaMin+random[0]*(fThetaMax-fThetaMin);
-	} else {
-	    Float_t eta = fEtaMin+random[0]*(fEtaMax-fEtaMin);
-	    theta = 2. * TMath::ATan(TMath::Exp(-eta));
-	}
-	    
-	    
-	if(TestBit(kMomentumRange)) {
-	    pmom=fPMin+random[1]*(fPMax-fPMin);
-	    pt=pmom*TMath::Sin(theta);
-	} else {
+	if (TestBit(kYRange)) {
+	    y = fYMin+random[0]*(fYMax-fYMin);
+	
+	    if(TestBit(kMomentumRange)) {
+	        pmom=fPMin+random[1]*(fPMax-fPMin);
+	        mt = TMath::Sqrt(pmom*pmom+m*m)/TMath::CosH(y);
+	        pt = TMath::Sqrt(mt*mt - m*m);
+	    } else {
+	        pt=fPtMin+random[1]*(fPtMax-fPtMin);
+	        mt=TMath::Sqrt(pt*pt+m*m);
+	    }
 
-	    pt=fPtMin+random[1]*(fPtMax-fPtMin);
-	    pmom=pt/TMath::Sin(theta);
-	}
+	    phi=fPhiMin+random[2]*(fPhiMax-fPhiMin);
+	    p[0] = pt*TMath::Cos(phi);
+	    p[1] = pt*TMath::Sin(phi);
+	    p[2] = mt*TMath::SinH(y);
+	} else {
+	    if (TestBit(kThetaRange)) {
+	        theta = fThetaMin+random[0]*(fThetaMax-fThetaMin);
+	    } else {
+	        Float_t eta = fEtaMin+random[0]*(fEtaMax-fEtaMin);
+	        theta = 2. * TMath::ATan(TMath::Exp(-eta));
+	    }
+	
+	    if(TestBit(kMomentumRange)) {
+	        pmom=fPMin+random[1]*(fPMax-fPMin);
+	        pt=pmom*TMath::Sin(theta);
+	    } else {
 
-	phi=fPhiMin+random[2]*(fPhiMax-fPhiMin);
-	p[0] = pt*TMath::Cos(phi);
-	p[1] = pt*TMath::Sin(phi);
-	p[2] = pmom*TMath::Cos(theta);
+	        pt=fPtMin+random[1]*(fPtMax-fPtMin);
+	        pmom=pt/TMath::Sin(theta);
+	    }
+
+	    phi=fPhiMin+random[2]*(fPhiMax-fPhiMin);
+	    p[0] = pt*TMath::Cos(phi);
+	    p[1] = pt*TMath::Sin(phi);
+	    p[2] = pmom*TMath::Cos(theta);
+	}
 
 	if(fVertexSmear==kPerTrack) {
 	    Rndm(random,6);
@@ -137,5 +159,11 @@ void AliGenBox::Init()
     Fatal("Init","You should not set the momentum range and the pt range!\n");
   if((!TestBit(kPtRange))&&(!TestBit(kMomentumRange))) 
     Fatal("Init","You should set either the momentum or the pt range!\n");
+  if((TestBit(kYRange)&&TestBit(kThetaRange)) || (TestBit(kYRange)&&TestBit(kEtaRange)) || (TestBit(kEtaRange)&&TestBit(kThetaRange)) )
+    Fatal("Init","You should only set the range of one of these variables: y, eta or theta\n");
+  if((!TestBit(kYRange)) && (!TestBit(kEtaRange)) && (!TestBit(kThetaRange)) )
+    Fatal("Init","You should set the range of one of these variables: y, eta or theta\n");
+
+  AliPDG::AddParticlesToPdgDataBase();
 }
 

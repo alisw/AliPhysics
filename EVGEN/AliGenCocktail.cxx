@@ -78,13 +78,13 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
     if(TestBit(kMomentumRange) && !(Generator->TestBit(kPtRange)) && !(Generator->TestBit(kMomentumRange)))
 	Generator->SetMomentumRange(fPMin,fPMax);
     
-    if (!(Generator->TestBit(kYRange)))    
+    if (TestBit(kYRange) && !(Generator->TestBit(kYRange)))
 	Generator->SetYRange(fYMin,fYMax);
-    if (!(Generator->TestBit(kPhiRange)))   
+    if (TestBit(kPhiRange) && !(Generator->TestBit(kPhiRange)))
 	Generator->SetPhiRange(fPhiMin*180/TMath::Pi(),fPhiMax*180/TMath::Pi());
-    if (!(Generator->TestBit(kThetaRange)) && !(Generator->TestBit(kEtaRange))) 
+    if (TestBit(kThetaRange) && !(Generator->TestBit(kThetaRange)) && !(Generator->TestBit(kEtaRange)))
 	Generator->SetThetaRange(fThetaMin*180/TMath::Pi(),fThetaMax*180/TMath::Pi());
-    if (!(Generator->TestBit(kVertexRange))) {
+    if (TestBit(kVertexRange) && !(Generator->TestBit(kVertexRange))) {
 	Generator->SetOrigin(fOrigin[0], fOrigin[1], fOrigin[2]);
 	Generator->SetSigma(fOsigma[0], fOsigma[1], fOsigma[2]);
 	Generator->SetVertexSmear(fVertexSmear);
