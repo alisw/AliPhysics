@@ -31,7 +31,7 @@ ClassImp(AliFemtoPairCutRadialDistance)
 
 //__________________
 AliFemtoPairCutRadialDistance::AliFemtoPairCutRadialDistance():
-  AliFemtoShareQualityPairCut(),
+  AliFemtoPairCutAntiGamma(),
   fDRadMin(0), 
   fRadius(100),
   fEtaMin(0)
@@ -39,7 +39,7 @@ AliFemtoPairCutRadialDistance::AliFemtoPairCutRadialDistance():
 }
 //__________________
 AliFemtoPairCutRadialDistance::AliFemtoPairCutRadialDistance(const AliFemtoPairCutRadialDistance& c) : 
-  AliFemtoShareQualityPairCut(c),
+  AliFemtoPairCutAntiGamma(c),
   fDRadMin(0), 
   fRadius(100),
   fEtaMin(0)
@@ -59,13 +59,16 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   // quality and sharity
   bool temp = true;
   
+  double pih = 3.14159265358979312;
+  double pit = 6.28318530717958623;
+
 //   double distx = pair->Track1()->Track()->NominalTpcEntrancePoint().x() - pair->Track2()->Track()->NominalTpcEntrancePoint().x();
 //   double disty = pair->Track1()->Track()->NominalTpcEntrancePoint().y() - pair->Track2()->Track()->NominalTpcEntrancePoint().y();
 //   double distz = pair->Track1()->Track()->NominalTpcEntrancePoint().z() - pair->Track2()->Track()->NominalTpcEntrancePoint().z();
 //   double dist = sqrt(distx*distx + disty*disty + distz*distz);
 
 //   temp = dist > fDRadMin;
-
+  
   double phi1 = pair->Track1()->Track()->P().Phi();
   double phi2 = pair->Track2()->Track()->P().Phi();
   double chg1 = pair->Track1()->Track()->Charge();
@@ -74,14 +77,27 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   double ptv2 = pair->Track2()->Track()->Pt();
   double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
   double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
+  double arg1 = -0.3 * 0.5 * chg1 * fRadius/(2*ptv1);
+  double arg2 = -0.3 * 0.5 * chg2 * fRadius/(2*ptv2);
 
-  double dist = phi2 - phi1 + TMath::ASin(-0.3 * 0.5 * chg2 * fRadius/(2*ptv2)) - TMath::ASin(-0.3 * 0.5 * chg1 * fRadius/(2*ptv1));
-  double etad = eta2 - eta1;
-
-  temp = ((TMath::Abs(dist) > fDRadMin) || (TMath::Abs(etad) > fEtaMin));
+  if ((arg1 < 1.0) && (arg1 > -1.0) && (arg2 > -1.0) && (arg2 < 1.0)) {
+    double phid = phi2 - phi1 + TMath::ASin(arg2) - TMath::ASin(arg1);
   
+    while (phid>pih) phid -= pit;
+    while (phid<-pih) phid += pit;
+    //    dist = phi2 - phi1 + TMath::ASin(-0.3 * 0.5 * chg2 * fRadius/(2*ptv2)) - TMath::ASin(-0.3 * 0.5 * chg1 * fRadius/(2*ptv1));
+    double etad = eta2 - eta1;
+    
+    //double dist = phi2 - phi1 + TMath::ASin(-0.3 * 0.5 * chg2 * fRadius/(2*ptv2)) - TMath::ASin(-0.3 * 0.5 * chg1 * fRadius/(2*ptv1));
+    //    double etad = eta2 - eta1;
+    
+    //  temp = ((TMath::Abs(dist) > fDRadMin) || (TMath::Abs(etad) > fEtaMin));
+  
+    temp = ((TMath::Hypot(phid, etad) > fDRadMin) || (TMath::Abs(etad) > fEtaMin));
+  }
+
   if (temp) {
-    temp = AliFemtoShareQualityPairCut::Pass(pair);
+    temp = AliFemtoPairCutAntiGamma::Pass(pair);
   }
   else
     fNPairsFailed++;
@@ -103,7 +119,7 @@ AliFemtoString AliFemtoPairCutRadialDistance::Report(){
 TList *AliFemtoPairCutRadialDistance::ListSettings()
 {
   // return a list of settings in a writable form
-  TList *tListSetttings =  AliFemtoShareQualityPairCut::ListSettings();
+  TList *tListSetttings =  AliFemtoPairCutAntiGamma::ListSettings();
   char buf[200];
   snprintf(buf, 200, "AliFemtoPairCutRadialDistance.radialsepmin=%f", fDRadMin);
   snprintf(buf, 200, "AliFemtoPairCutRadialDistance.radius=%f", fRadius);
