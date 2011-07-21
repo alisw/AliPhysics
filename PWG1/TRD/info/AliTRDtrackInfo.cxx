@@ -43,6 +43,7 @@ ClassImp(AliTRDtrackInfo)
 ClassImp(AliTRDtrackInfo::AliMCinfo)
 ClassImp(AliTRDtrackInfo::AliESDinfo)
 Double_t AliTRDtrackInfo::AliMCinfo::fgKalmanStep = 2.;
+Bool_t AliTRDtrackInfo::AliMCinfo::fgKalmanUpdate = kTRUE;
 
 //___________________________________________________
 AliTRDtrackInfo::AliTRDtrackInfo():
@@ -132,6 +133,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo()
   ,fStatus(0)
   ,fKinkIndex(0)
   ,fTPCncls(0)
+  ,fTOFbc(0)
   ,fTRDpidQuality(0)
   ,fTRDnSlices(0)
   ,fTRDslices(NULL)
@@ -152,6 +154,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
   ,fStatus(esd.fStatus)
   ,fKinkIndex(esd.fKinkIndex)
   ,fTPCncls(esd.fTPCncls)
+  ,fTOFbc(esd.fTOFbc)
   ,fTRDpidQuality(esd.fTRDpidQuality)
   ,fTRDnSlices(esd.fTRDnSlices)
   ,fTRDslices(NULL)
@@ -446,7 +449,7 @@ void AliTRDtrackInfo::SetSlices(Int_t n, Double32_t *s)
 }
  
 //___________________________________________________
-Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, UChar_t &status) const
+Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, Float_t &eta, UChar_t &status) const
 {
 // Check for 2 track ref for the tracklet defined bythe radial position x0
 // The "status" is a bit map and gives a more informative output in case of failure:
@@ -492,26 +495,31 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
   y0   =  tr[1]->LocalY()/* - dydx*dx0*/;
   z0   =  tr[1]->Z()/* - dzdx*dx0*/;
   x0   =  tr[1]->LocalX();
+  eta  =  -TMath::Log(TMath::Tan(0.5 * tr[1]->Theta()));
   return kTRUE;
 }
 
 //___________________________________________________
-void AliTRDtrackInfo::AliMCinfo::PropagateKalman(TVectorD *dx, TVectorD *dy, TVectorD *dz, TVectorD *pt, TVectorD *dpt, TVectorD *c) const
+Bool_t AliTRDtrackInfo::AliMCinfo::PropagateKalman(
+      TVectorD *x, TVectorD *y, TVectorD *z,
+      TVectorD *dx, TVectorD *dy, TVectorD *dz,
+      TVectorD *pt, TVectorD *dpt, TVectorD *budget, TVectorD *c, Double_t mass) const
 {
 // Propagate Kalman from the first TRD track reference to 
 // last one and save residuals in the y, z and pt.
 // 
 // This is to calibrate the dEdx and MS corrections
 
-  if(!fNTrackRefs) return;
+  if(!fNTrackRefs) return kFALSE;
   for(Int_t itr=kNTrackRefs; itr--;){
+    (*x)[itr] = 0.;(*y)[itr] = 0.;(*z)[itr] = 0.;
     (*dx)[itr] = -1.; (*dy)[itr] = 100.; (*dz)[itr] = 100.; (*dpt)[itr] = 100.;
   }
 
   // Initialize TRD track to the first track reference
   AliTrackReference *tr(NULL);
   Int_t itr(0); while(!(tr = fTrackRefs[itr])) itr++;
-  if(tr->Pt()<1.e-3) return;
+  if(tr->Pt()<1.e-3) return kFALSE;
 
   AliTRDtrackV1 tt;
   Double_t xyz[3]={tr->X(),tr->Y(),tr->Z()};
@@ -529,25 +537,40 @@ void AliTRDtrackInfo::AliMCinfo::PropagateKalman(TVectorD *dx, TVectorD *dy, TVe
   const TParticlePDG *pdg=db.GetParticle(fPDG);
   if(!pdg){
     AliWarningGeneral("AliTRDtrackInfo::AliMCinfo::PropagateKalman()", Form("PDG entry missing for code %d. References for track %d", fPDG, fNTrackRefs));
-    return;
+    return kFALSE;
   }
   tt.Set(xyz, pxyz, cov, Short_t(pdg->Charge()));
-  tt.SetMass(pdg->Mass());
-  
+  if(mass<0){ // mass 0 use PDG
+    tt.SetMass(pdg->Mass());
+  } else { // use rec value
+    tt.SetMass(mass);
+  }
+
+//  Double_t bg(tr->P()/pdg->Mass());
+//  printf("\n\nNEW track PDG[%d] bg[%f] x[%f]\n", fPDG, bg, TMath::Log(bg));
   Double_t x0(tr->LocalX());
   const Double_t *cc(NULL);
   for(Int_t ip=0; itr<fNTrackRefs; itr++){
     if(!(tr = fTrackRefs[itr])) continue;
+//    printf("ip[%d] det[%d]\n", ip, tr->DetectorId());
     if(!AliTRDtrackerV1::PropagateToX(tt, tr->LocalX(), fgKalmanStep)) continue;
 
     //if(update) ...
+    tt.GetXYZ(xyz);
+    (*x)[ip]   = xyz[0];
+    (*y)[ip]   = xyz[1];
+    (*z)[ip]   = xyz[2];
     (*dx)[ip]  = tt.GetX() - x0;
     (*dy)[ip]  = tt.GetY() - tr->LocalY();
     (*dz)[ip]  = tt.GetZ() - tr->Z();
     (*pt)[ip]  = tr->Pt();
     (*dpt)[ip] = tt.Pt()- tr->Pt();
+//    printf("pt : kalman[%e] MC[%e]\n", tt.Pt(), tr->Pt());
+    (*budget)[ip] = tt.GetBudget(0);
     cc = tt.GetCovariance();
-    c->Use(ip*15, (ip+1)*15, cc);
+//    printf("dx[%5.2f] sy[%f]\n", (*dx)[ip], TMath::Sqrt(cc[0]));
+    for(Int_t ic(0), jp(ip*15); ic<15; ic++, jp++) (*c)[jp]=cc[ic];
     ip++;
   }
+  return kTRUE;
 }
