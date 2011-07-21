@@ -889,6 +889,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
 
   for(Int_t i=0, ncl=0; i<nclus; ++i) {
     AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
+
     if (!clus)
       continue;
     if (!clus->IsEMCAL())
@@ -1459,13 +1460,16 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcMcInfo()
       AliAODMCParticle *part = static_cast<AliAODMCParticle*>(tca->At(it));
       part->Print();
 
-      // pion or eta meson
+      // pion or eta meson or direct photon
       if(part->GetPdgCode() == 111) {
       } else if(part->GetPdgCode() == 221) {
-      } else
+      } else if(part->GetPdgCode() == 22 ) {
+      }	else
         continue;
 
       // primary particle
+      if(part->GetMother()>=0 && part->GetMother()<nents)
+	continue;
       Double_t dR = TMath::Sqrt((part->Xv()*part->Xv())+(part->Yv()*part->Yv()));
       if(dR > 1.0)
         continue;
@@ -1502,13 +1506,16 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcMcInfo()
     if (!mcP)
       continue;
 
-    // pion or eta meson
+    // pion or eta meson or direct photon
     if(mcP->PdgCode() == 111) {
     } else if(mcP->PdgCode() == 221) {
+    } else if(mcP->PdgCode() == 22 ) {
     } else
       continue;
 
     // primary particle
+    if(mcP->GetMother()>=0 && mcP->GetMother()<nTracks)
+	continue;
     Double_t dR = TMath::Sqrt((mcP->Xv()-evtVtx->GetX())*(mcP->Xv()-evtVtx->GetX()) + 
                               (mcP->Yv()-evtVtx->GetY())*(mcP->Yv()-evtVtx->GetY()));
     if(dR > 1.0)
@@ -1763,6 +1770,15 @@ void AliAnalysisTaskEMCALPi0PbPb::FillMcHists()
 void AliAnalysisTaskEMCALPi0PbPb::FillOtherHists()
 {
   // Fill other histograms.
+
+  for(int iTracks=0; iTracks < fSelPrimTracks->GetEntries(); ++iTracks){
+    AliESDtrack *track = static_cast<AliESDtrack*>(fSelPrimTracks->At(iTracks));
+    if(!track)
+      continue;
+    fHPrimTrackPt->Fill(track->Pt());
+    fHPrimTrackEta->Fill(track->Eta());
+    fHPrimTrackPhi->Fill(track->Phi());
+  }
 }
 
 //________________________________________________________________________
