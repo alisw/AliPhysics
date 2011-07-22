@@ -15,6 +15,7 @@
 #include <time.h>
 #include <TString.h>
 #include <TTimeStamp.h>
+#include <TArrayD.h>
 
 class TMap;
 
@@ -160,6 +161,15 @@ class AliGRPObject : public TObject {
 	void SetSingleBeamType(Int_t ibeamType, TString beamType)  {fSeparateBeamType[ibeamType] = beamType;}
 	TString   GetSingleBeamType(Int_t ibeamType) const {return fBeamType[ibeamType];}
 
+	void SetNFalseDataQualityFlag(Int_t nFalses) {fNFalseDataQualityFlag = nFalses;}
+	Int_t GetNFalseDataQualityFlag() const {return fNFalseDataQualityFlag;}
+
+	void SetFalseDataQualityFlagPeriods(Double_t* falses);
+	TArrayD* GetFalseDataQualityFlagPeriods() const {return fFalseDataQualityFlag;}
+
+	Double_t GetStartFalseDataQualityFlag(Int_t iperiod) const;
+	Double_t GetEndFalseDataQualityFlag(Int_t iperiod) const;
+
  private:
 
 	static const Float_t fgkInvalidFloat;   // value to identify invalid data - float
@@ -206,8 +216,11 @@ class AliGRPObject : public TObject {
 	TObjArray* fQACloningRequest;  // RS: Array of cloning requests for QA histos
 	Double_t fMaxTimeLHCValidity;    // time until which the LHC Data Machine Mode and Beam Mode didn't change 
 	TString  fSeparateBeamType[2];   // separate beam Types from LHC
-
-	ClassDef(AliGRPObject,8)
+	Int_t fNFalseDataQualityFlag;    // number of times the data quality flag turned to FALSE
+	TArrayD* fFalseDataQualityFlag;  // array of starts (even positions) and ends (odd poistions) of the periods
+	                                 // when the data quality flag was FALSE
+	
+	ClassDef(AliGRPObject,9)
 
 };
 

@@ -111,7 +111,9 @@ AliGRPObject::AliGRPObject():
 	fMachineModeArray(0x0),
 	fQATrigClasses(0x0),
 	fQACloningRequest(0x0),
-	fMaxTimeLHCValidity(0)
+	fMaxTimeLHCValidity(0),
+	fNFalseDataQualityFlag(0),
+	fFalseDataQualityFlag(0x0)
 {
 
 	//
@@ -178,7 +180,10 @@ AliGRPObject::AliGRPObject(const AliGRPObject &obj):
 	fMachineModeArray(obj.fMachineModeArray),
 	fQATrigClasses(obj.fQATrigClasses),
 	fQACloningRequest(obj.fQACloningRequest),
-	fMaxTimeLHCValidity(obj.fMaxTimeLHCValidity)
+	fMaxTimeLHCValidity(obj.fMaxTimeLHCValidity),
+	fNFalseDataQualityFlag(obj.fNFalseDataQualityFlag),
+	fFalseDataQualityFlag(obj.fFalseDataQualityFlag)
+
 
 {
 
@@ -261,6 +266,9 @@ AliGRPObject& AliGRPObject:: operator=(const AliGRPObject & obj)
 		this->fSeparateBeamType[ibeamType] = obj.fSeparateBeamType[ibeamType];
 	}
 
+	this->fNFalseDataQualityFlag = obj.fNFalseDataQualityFlag;
+	this->fFalseDataQualityFlag = obj.fFalseDataQualityFlag;
+
 	return *this;
 }
 
@@ -305,6 +313,10 @@ AliGRPObject::~AliGRPObject() {
 	if (fQACloningRequest) {
 	  delete fQACloningRequest;
 	  fQACloningRequest = 0x0;
+	}
+	if (fFalseDataQualityFlag){
+		delete fFalseDataQualityFlag;
+		fFalseDataQualityFlag = 0x0;
 	}
 }
 
@@ -584,3 +596,45 @@ AliDCSSensor*   AliGRPObject::GetBestCavernAtmosPressure() const {
    return GetBestCavernAtmosPressure(TTimeStamp(fTimeStart));
 }
 
+//-------------------------------------------------------------------------------
+void AliGRPObject::SetFalseDataQualityFlagPeriods(Double_t* falses){
+	
+	//
+	// setting the starts (even positions in the array) and ends (odd positions in the array)
+	// of the periods when the Data Quality Flag was set to FALSE
+	//
+	
+	fFalseDataQualityFlag = new TArrayD(fNFalseDataQualityFlag*2,falses);
+}
+
+//-------------------------------------------------------------------------------
+Double_t AliGRPObject::GetStartFalseDataQualityFlag(Int_t iperiod) const {
+	
+	// 
+	// returning the start timestamp of the FALSE period "iperiod"
+	//
+	
+	if (iperiod < fNFalseDataQualityFlag){
+		return fFalseDataQualityFlag->At(iperiod*2);
+	}
+	else{
+		AliError(Form("You are looking for FALSE period %d, but the number of FALSE periods was %d - returning -1!", iperiod, fNFalseDataQualityFlag));
+	}
+	return -1.;
+}
+
+//-------------------------------------------------------------------------------
+Double_t AliGRPObject::GetEndFalseDataQualityFlag(Int_t iperiod) const {
+	
+	// 
+	// returning the end timestamp of the FALSE period "iperiod"
+	//
+	
+	if (iperiod < fNFalseDataQualityFlag){
+		return fFalseDataQualityFlag->At(iperiod*2+1);
+	}
+	else{
+		AliError(Form("You are looking for FALSE period %d, but the number of FALSE periods was %d - returning -1!", iperiod, fNFalseDataQualityFlag));
+	}
+	return -1.;
+}

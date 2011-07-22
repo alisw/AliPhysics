@@ -65,8 +65,9 @@ class AliShuttleInterface;
 #include <AliCDBManager.h>
 #include <AliCDBMetaData.h>
 #include <AliCDBId.h>
-#include "AliCTPTimeParams.h"
-#include "AliLHCClockPhase.h"
+#include <AliTriggerConfiguration.h>
+#include <AliCTPTimeParams.h>
+#include <AliLHCClockPhase.h>
 
 const Double_t kFitFraction = -1.;                 // Fraction of DCS sensor fits required
 
@@ -77,7 +78,7 @@ ClassImp(AliGRPPreprocessor)
   const Int_t AliGRPPreprocessor::fgknDAQLbPar = 6; // num parameters in the logbook used to fill the GRP object
   const Int_t AliGRPPreprocessor::fgknDCSDP = 48;   // number of dcs dps
   const Int_t AliGRPPreprocessor::fgknDCSDPHallProbes = 40;   // number of dcs dps
-  const Int_t AliGRPPreprocessor::fgknLHCDP = 8;   // number of dcs dps from LHC data
+  const Int_t AliGRPPreprocessor::fgknLHCDP = 9;   // number of dcs dps from LHC data
   const Int_t AliGRPPreprocessor::fgkDCSDPHallTopShift = 4;   // shift from the top to get tp the Hall Probes names in the list of DCS DPs
   const Int_t AliGRPPreprocessor::fgkDCSDPNonWorking = 5; // number of non working DCS DPs
   const char* AliGRPPreprocessor::fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
@@ -186,7 +187,8 @@ ClassImp(AliGRPPreprocessor)
 	  "BPTX_Phase_Shift_B1",
 	  "BPTX_Phase_Shift_B2",
 	  "LHC_Particle_Type_B1",
-	  "LHC_Particle_Type_B2"
+	  "LHC_Particle_Type_B2",
+	  "LHC_Data_Quality_Flag"
   };
 
   const char* kppError[] = {
@@ -1048,7 +1050,8 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 			AliWarning(Form("Setting MaxTimeLHCValidity to %f",minTimeLHCValidity));
 			grpobj->SetMaxTimeLHCValidity(minTimeLHCValidity);
 		}
-		/*
+		/* 
+		   // Old way to determine the Maximum Time during which the LHC info is valid
 		if (timeBeamModeEnd!=0 || timeMachineModeEnd!=0 || timeBeamEnd !=0){
 			Double_t minTimeLHCValidity;
 			if (flagBeamMode == kFALSE && flagMachineMode == kFALSE && flagBeam == kTRUE){ // flagBeam only true --> it is the only one that changed
@@ -1078,6 +1081,122 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 		}
 		*/
 		
+		// Data Quality Flag --> storing start and end values of periods within the run during which the value was found to be FALSE
+		Log("*************Data Quality Flag ");
+		TObjArray* dataQualityArray = lhcReader.ReadSingleLHCDP(fileName.Data(),fgkLHCDataPoints[8]);
+		Int_t nDataQuality = -1;
+		Double_t timeDataQualityStart = -1; // min validity for Data Quality Flag
+	        Int_t indexDataQuality = -1;               // index of first measurement used to set Data Quality Flag
+		Bool_t foundDataQualityStart = kFALSE;     // flag to be set in case an entry for the Data Quality Flag is found before (or at) SOR
+
+		if (dataQualityArray){
+			nDataQuality = dataQualityArray->GetEntries();
+			if (nDataQuality==0){
+				AliInfo("No Data Quality Flag found, leaving it empty");
+			}
+			else{
+				for (Int_t iDataQuality = 0; iDataQuality<nDataQuality; iDataQuality++){
+					AliDCSArray* dataQuality = (AliDCSArray*)dataQualityArray->At(iDataQuality);
+					if (dataQuality){
+						if (dataQuality->GetTimeStamp()<=timeStart && dataQuality->GetTimeStamp()>=timeDataQualityStart){// taking always the very last entry: if two measurements have the same timestamp, the last one is taken
+							timeDataQualityStart = dataQuality->GetTimeStamp();
+							indexDataQuality = iDataQuality;
+							foundDataQualityStart = kTRUE;
+						}
+						else{
+							// we suppose here that if the first measurement is not before SOR, then none will be (they MUST be in chronological order!!!) 
+							break;
+						}
+					}
+				}
+				if (!foundDataQualityStart){
+					// The Data Quality Flag should be found and TRUE at the start of the run. For the time being, if it is not found, don't do anything, but it means there is a problem..
+					AliInfo("No value for the Data Quality Flag found before start of run, the Data Quality Flag will remain empty");
+				}
+				else {
+					// counting how many FALSE values there are
+					Bool_t foundEndOfFalse = kFALSE;
+					Int_t nFalse = 0;
+					for (Int_t iDataQuality = indexDataQuality; iDataQuality < nDataQuality; iDataQuality ++){
+						AliDCSArray* dataQuality = (AliDCSArray*)dataQualityArray->At(iDataQuality);
+						AliDebug(4,Form("dataQuality->GetTimeStamp() = %f, timeDataQualityStart = %f, timeEnd = %f", dataQuality->GetTimeStamp(), timeDataQualityStart, timeEnd ));
+						if (dataQuality->GetTimeStamp()>=timeDataQualityStart && dataQuality->GetTimeStamp()<=timeEnd){ // considering only values between the first valid and the end of the run
+							Bool_t dataQualityFlag = dataQuality->GetBool(0);
+							AliDebug(3,Form("DataQuality = %d (set at %f)",(Int_t)dataQualityFlag,dataQuality->GetTimeStamp()));
+							if (dataQualityFlag != kTRUE){
+								if (iDataQuality == indexDataQuality) {  // the first Data Quality value should be TRUE, but ignoring the problem now...
+									AliError("The first value for the Data Quality MUST be TRUE! Ignoring for now...");
+								}
+								nFalse++;
+							}
+						}
+					}
+
+					AliInfo(Form("Found %d FALSE values for the Data Quality Flag",nFalse));
+					Double_t falses[nFalse*2];  // dimensioning this to the maximum possible, as if each false value was followed by a true one --> the false periods correspond to the number of falses
+
+					Int_t iDataQuality = indexDataQuality;
+					if (nFalse > 0){
+						Int_t iFalse = 0;
+						// filling the info about the periods when the flag was set to FALSE
+						// starting, like for the other DPS, from the measurement closest to SOR (the index of which is iDataQuality)
+						while (iDataQuality < nDataQuality){
+							AliDebug(3,Form("iDataQuality = %d",iDataQuality));
+							AliDCSArray* dataQuality = (AliDCSArray*)dataQualityArray->At(iDataQuality);
+							if (dataQuality->GetTimeStamp()>=timeDataQualityStart && dataQuality->GetTimeStamp()<=timeEnd){ // considering only values between the first valid and the end of the run
+								Bool_t dataQualityFlag = dataQuality->GetBool(0);
+								AliDebug(3,Form("DataQuality = %d (set at %f)",(Int_t)dataQualityFlag,dataQuality->GetTimeStamp()));
+								if (dataQualityFlag == kTRUE){
+									// found TRUE value, continuing
+									iDataQuality++;
+									continue;
+								}
+								else{
+									/*
+									// the check was already done before
+									if (iDataQuality == indexDataQuality) {  // the first Data Quality value should be TRUE, but ignoring the problem now...
+									AliError("The first value for the Data Quality MUST be TRUE! Ignoring for now...");
+									}
+									*/
+									falses[iFalse*2] = dataQuality->GetTimeStamp();
+									foundEndOfFalse = kFALSE;
+									Int_t iDataQualityNext = iDataQuality+1;
+									while (iDataQualityNext < nDataQuality){
+										AliDCSArray* dataQualityNext = (AliDCSArray*)dataQualityArray->At(iDataQualityNext);
+										if (dataQualityNext->GetTimeStamp()>timeDataQualityStart && dataQualityNext->GetTimeStamp()<=timeEnd && dataQualityNext->GetTimeStamp() > dataQuality->GetTimeStamp()){ // considering only values between the first valid and the end of the run, and subsequent to the current value
+											Bool_t dataQualityFlagNext = dataQualityNext->GetBool(0);
+											AliDebug(3,Form("DataQualityNext = %d (set at %f)",(Int_t)dataQualityFlagNext,dataQualityNext->GetTimeStamp()));
+											if (dataQualityFlagNext == kTRUE){
+												// found TRUE value, first FALSE period completed
+												foundEndOfFalse = kTRUE;
+												falses[iFalse*2+1] = dataQualityNext->GetTimeStamp();
+												iFalse++;
+												break;
+											}
+											iDataQualityNext++;
+										}
+									}
+									if (!foundEndOfFalse) {
+										AliInfo("Please, note that the last FALSE value lasted until the end of the run");
+										falses[iFalse*2+1] = timeEnd;
+										iFalse++;
+										break;
+									}
+									iDataQuality = iDataQualityNext+1;
+								}
+							}
+						}
+						grpobj->SetNFalseDataQualityFlag(iFalse);
+						grpobj->SetFalseDataQualityFlagPeriods(falses);
+					}
+				}
+			}
+			delete dataQualityArray;
+		}
+		else{
+			AliError("Data Quality Flag array not found in LHC Data file!!!");
+		}
+
 		// Processing data to go to AliLHCData object
 		AliLHCData* dt = new AliLHCData(fileName.Data(),timeStart,timeEnd);
 		// storing AliLHCData in OCDB
