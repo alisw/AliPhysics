@@ -71,6 +71,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fMCprocessType(kPNoProcess),
   fCutMCPID(kFALSE),
   fMCPID(0),
+  fCutMCfirstMotherPID(kFALSE),
+  fMCfirstMotherPID(0),
   fIgnoreSignInMCPID(kFALSE),
   fCutMCisPrimary(kFALSE),
   fRequireTransportBitForPrimaries(kTRUE),
@@ -142,6 +144,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fMCprocessType(kPNoProcess),
   fCutMCPID(kFALSE),
   fMCPID(0),
+  fCutMCfirstMotherPID(kFALSE),
+  fMCfirstMotherPID(0),
   fIgnoreSignInMCPID(kFALSE),
   fCutMCisPrimary(kFALSE),
   fRequireTransportBitForPrimaries(kTRUE),
@@ -221,6 +225,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fMCprocessType(that.fMCprocessType),
   fCutMCPID(that.fCutMCPID),
   fMCPID(that.fMCPID),
+  fCutMCfirstMotherPID(that.fCutMCfirstMotherPID),
+  fMCfirstMotherPID(that.fMCfirstMotherPID),
   fIgnoreSignInMCPID(that.fIgnoreSignInMCPID),
   fCutMCisPrimary(that.fCutMCisPrimary),
   fRequireTransportBitForPrimaries(that.fRequireTransportBitForPrimaries),
@@ -305,6 +311,8 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fMCprocessType=that.fMCprocessType;
   fCutMCPID=that.fCutMCPID;
   fMCPID=that.fMCPID;
+  fCutMCfirstMotherPID=that.fCutMCfirstMotherPID;
+  fMCfirstMotherPID=that.fMCfirstMotherPID;
   fIgnoreSignInMCPID=that.fIgnoreSignInMCPID,
   fCutMCisPrimary=that.fCutMCisPrimary;
   fRequireTransportBitForPrimaries=that.fRequireTransportBitForPrimaries;
@@ -520,6 +528,17 @@ Bool_t AliFlowTrackCuts::PassesMCcuts(AliMCEvent* mcEvent, Int_t label)
     {
       if (fMCPID != pdgCode) return kFALSE;
     }
+  }
+  if (fCutMCfirstMotherPID)
+  {
+
+    TParticle* tparticle=mcparticle->Particle();
+    Int_t firstMotherLabel = 0;
+    if (tparticle) { firstMotherLabel = tparticle->GetFirstMother(); }
+    AliVParticle* firstMotherParticle = mcEvent->GetTrack(firstMotherLabel);
+    Int_t pdgcodeFirstMother = 0;
+    if (firstMotherParticle) { pdgcodeFirstMother = firstMotherParticle->PdgCode(); }
+    if (pdgcodeFirstMother != fMCfirstMotherPID) return kFALSE;
   }
   if ( fCutMCprocessType )
   {
