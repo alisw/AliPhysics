@@ -63,10 +63,10 @@ public:
     ,kPhi
     ,kEta
     ,kSpeciesChgRC
-    ,kPt
     ,kYrez
     ,kZrez
     ,kPrez
+//    ,kPt
     ,kNdim  // no of dimensions in the THnSparse
   };
   enum ETRDresolutionSegmentation {
