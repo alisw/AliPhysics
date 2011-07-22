@@ -156,7 +156,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   outputSlotName+="-";
   outputSlotName+=Form("%.0f",centrMax);
   outputSlotName+=" ";
-  outputSlotName+=cutsRP->GetName()
+  outputSlotName+=cutsRP->GetName();
 
   Bool_t useWeights  = WEIGHTS[0] || WEIGHTS[1] || WEIGHTS[2];
   if (useWeights) cout<<"Weights are used"<<endl;

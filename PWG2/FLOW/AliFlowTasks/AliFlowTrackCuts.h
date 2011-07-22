@@ -151,6 +151,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetMCprocessType( TMCProcess t ) { fMCprocessType = t; fCutMCprocessType=kTRUE; SetCutMC();}
   void SetMCisPrimary( Bool_t b=kTRUE ) { fMCisPrimary=b; fCutMCisPrimary=kTRUE; SetCutMC();}
   void SetMCPID( Int_t pid ) { fMCPID=pid; fCutMCPID=kTRUE; SetCutMC(); }
+  void SetMCfirstMotherPID( Int_t pid ) { fMCfirstMotherPID=pid; fCutMCfirstMotherPID=kTRUE; SetCutMC(); }
   TMCProcess GetMCprocessType() const { return fMCprocessType; }
   Bool_t GetMCisPrimary() const {return fMCisPrimary;}
   Int_t GetMCPID() const {return fMCPID;}
@@ -243,6 +244,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   TMCProcess fMCprocessType;         //mc process type
   Bool_t fCutMCPID;                  //cut on MC pid?
   Int_t fMCPID;                      //MC PID
+  Bool_t fCutMCfirstMotherPID;       //cut on PID of first mother?
+  Int_t fMCfirstMotherPID;           //PID of the first mother of track
   Bool_t fIgnoreSignInMCPID;           //when MC PID cut is set, pass also the antiparticle
   Bool_t fCutMCisPrimary;            //do we cut on primaryness?
   Bool_t fRequireTransportBitForPrimaries; //require the transport bit to be set for primaries
@@ -310,7 +313,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   static const Int_t fgkNumberOfV0tracks=64; //number of V0 channels
 
-  ClassDef(AliFlowTrackCuts,9)
+  ClassDef(AliFlowTrackCuts,10)
 };
 
 #endif
