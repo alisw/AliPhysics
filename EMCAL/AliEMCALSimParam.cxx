@@ -36,6 +36,7 @@ TNamed(),
 fDigitThreshold(0),
 fMeanPhotonElectron(0),
 fPinNoise(0),
+fTimeNoise(0),
 fTimeDelay(0),
 fTimeResolutionPar0(0),
 fTimeResolutionPar1(0),
@@ -47,9 +48,10 @@ fECPrimThreshold(0.) //SDigitizer
 	//Constructor 
 	
 	//Parameters in Digitizer
-	fMeanPhotonElectron = 4400;  // electrons per GeV 
-	fPinNoise           = 0.012; // pin noise in GeV from analysis test beam data 
-	fDigitThreshold     = 3; // 3 ADC counts not anymore cut in energy: //fPinNoise * 3; // 3 * sigma
+	fMeanPhotonElectron = 4400;    // electrons per GeV 
+	fPinNoise           = 0.012;   // APD noise in GeV from analysis test beam data 
+	fDigitThreshold     = 3;       // 3 ADC counts not anymore cut in energy: //fPinNoise * 3; // 3 * sigma
+  fTimeNoise          = 1.28e-5; // time noise in s
 	fTimeResolutionPar0 = 0.26666; // From F. Blanco: 0.51639^2
 	fTimeResolutionPar1 = 1.45861; // From F. Blanco: 1.20773^2
 	fTimeDelay          = 600e-9 ; // 600 ns
@@ -70,6 +72,7 @@ TNamed(),
 fDigitThreshold(0),
 fMeanPhotonElectron(0),
 fPinNoise(0),
+fTimeNoise(0),
 fTimeDelay(0),
 fTimeResolutionPar0(0),
 fTimeResolutionPar1(0),
@@ -115,7 +118,7 @@ void AliEMCALSimParam::Print(Option_t *) const
 	// Print simulation parameters to stdout
 	
 	printf("=== Parameters in Digitizer === \n");
-	printf("\t Electronics noise in EMC (fPinNoise)       = %f\n", fPinNoise) ;
+	printf("\t Electronics noise in EMC (fPinNoise)       = %f, (fTimeNoise) = %f\n", fPinNoise, fTimeNoise) ;
 	printf("\t Threshold  in EMC  (fDigitThreshold)       = %d\n", fDigitThreshold)  ;
 	printf("\t Time Resolution (fTimeResolutionPar0)          = %g\n", fTimeResolutionPar0) ;
 	printf("\t Time Resolution (fTimeResolutionPar1)          = %g\n", fTimeResolutionPar1) ;
