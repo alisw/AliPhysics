@@ -45,23 +45,23 @@ fA(0.),
 fB(0.),
 fECPrimThreshold(0.) //SDigitizer   
 {
-	//Constructor 
-	
-	//Parameters in Digitizer
-	fMeanPhotonElectron = 4400;    // electrons per GeV 
-	fPinNoise           = 0.012;   // APD noise in GeV from analysis test beam data 
-	fDigitThreshold     = 3;       // 3 ADC counts not anymore cut in energy: //fPinNoise * 3; // 3 * sigma
-  fTimeNoise          = 1.28e-5; // time noise in s
-	fTimeResolutionPar0 = 0.26666; // From F. Blanco: 0.51639^2
-	fTimeResolutionPar1 = 1.45861; // From F. Blanco: 1.20773^2
-	fTimeDelay          = 600e-9 ; // 600 ns
+  //Constructor 
 
-	fNADCEC             = (Int_t) TMath::Power(2,16) ; // number of channels in Tower ADC - 65536
+  //Parameters in Digitizer
+  fMeanPhotonElectron = 4400;    // electrons per GeV 
+  fPinNoise           = 0.012;   // APD noise in GeV from analysis test beam data 
+  fDigitThreshold     = 3;       // 3 ADC counts not anymore cut in energy: //fPinNoise * 3; // 3 * sigma
+  fTimeNoise          = 1.28e-5; // time noise in s
+  fTimeResolutionPar0 = 0.26666; // From F. Blanco: 0.51639^2
+  fTimeResolutionPar1 = 1.45861; // From F. Blanco: 1.20773^2
+  fTimeDelay          = 600e-9 ; // 600 ns
+
+  fNADCEC             = (Int_t) TMath::Power(2,16) ; // number of channels in Tower ADC - 65536
 	
-	//SDigitizer
-	fA                  = 0;
-	fB                  = 1.e+6; // Dynamic range now 2 TeV
-	fECPrimThreshold    = 0.05;  // GeV	// threshold for deposit energy of hit
+  //SDigitizer
+  fA                  = 0;
+  fB                  = 1.e+6; // Dynamic range now 2 TeV
+  fECPrimThreshold    = 0.05;  // GeV	// threshold for deposit energy of hit
 	
 }
 
@@ -92,11 +92,11 @@ fECPrimThreshold(0.)//SDigitizer
 AliEMCALSimParam * AliEMCALSimParam::GetInstance(){
 // Get Instance
 
-	if(!fgSimParam){
-		fgSimParam = new AliEMCALSimParam() ;
-	}
-	
-	return fgSimParam ;
+  if(!fgSimParam){
+  	fgSimParam = new AliEMCALSimParam() ;
+  }
+  
+  return fgSimParam ;
 	
 }
 
@@ -115,23 +115,23 @@ AliEMCALSimParam& AliEMCALSimParam::operator = (const AliEMCALSimParam& simParam
 //-----------------------------------------------------------------------------
 void AliEMCALSimParam::Print(Option_t *) const
 {
-	// Print simulation parameters to stdout
-	
-	printf("=== Parameters in Digitizer === \n");
-	printf("\t Electronics noise in EMC (fPinNoise)       = %f, (fTimeNoise) = %f\n", fPinNoise, fTimeNoise) ;
-	printf("\t Threshold  in EMC  (fDigitThreshold)       = %d\n", fDigitThreshold)  ;
-	printf("\t Time Resolution (fTimeResolutionPar0)          = %g\n", fTimeResolutionPar0) ;
-	printf("\t Time Resolution (fTimeResolutionPar1)          = %g\n", fTimeResolutionPar1) ;
-	printf("\t Time Delay (fTimeDelay)                    = %g\n", fTimeDelay) ;
-	printf("\t Mean Photon-Electron (fMeanPhotonElectron) = %d\n", fMeanPhotonElectron)  ;
-	printf("\t N channels in EC section ADC (fNADCEC)     = %d\n", fNADCEC) ;
+  // Print simulation parameters to stdout
+ 
+  printf("=== Parameters in Digitizer === \n");
+  printf("\t Electronics noise in EMC (fPinNoise)       = %f, (fTimeNoise) = %e\n", fPinNoise, fTimeNoise) ;
+  printf("\t Threshold  in EMC  (fDigitThreshold)       = %d\n", fDigitThreshold)  ;
+  printf("\t Time Resolution (fTimeResolutionPar0)      = %g\n", fTimeResolutionPar0) ;
+  printf("\t Time Resolution (fTimeResolutionPar1)      = %g\n", fTimeResolutionPar1) ;
+  printf("\t Time Delay (fTimeDelay)                    = %g\n", fTimeDelay) ;
+  printf("\t Mean Photon-Electron (fMeanPhotonElectron) = %d\n", fMeanPhotonElectron)  ;
+  printf("\t N channels in EC section ADC (fNADCEC)     = %d\n", fNADCEC) ;
 
-	printf("\n");
-	
-	printf("=== Parameters in SDigitizer === \n");
-	printf("\t sdigitization parameters       A = %f\n",     fA);
-	printf("\t                                B = %f\n",     fB);
-	printf("\t Threshold for EC Primary assignment  = %f\n", fECPrimThreshold);
+  printf("\n");
+
+  printf("=== Parameters in SDigitizer === \n");
+  printf("\t sdigitization parameters       A = %f\n",     fA);
+  printf("\t                                B = %f\n",     fB);
+  printf("\t Threshold for EC Primary assignment  = %f\n", fECPrimThreshold);
 	
 }
 
