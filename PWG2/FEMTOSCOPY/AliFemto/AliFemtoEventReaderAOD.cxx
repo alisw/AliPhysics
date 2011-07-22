@@ -15,6 +15,7 @@
 #include "AliAODTrack.h"
 #include "AliAODVertex.h"
 #include "AliAODMCHeader.h"
+#include "AliESDtrack.h"
 
 #include "AliFmPhysicalHelixD.h"
 #include "AliFmThreeVectorF.h"
@@ -296,6 +297,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   int realnofTracks=0;   // number of track which we use in a analysis
   int tracksPrim=0;     
 
+  int tNormMult = 0;
   for (int i=0;i<nofTracks;i++)
     {
       AliFemtoTrack* trackCopy = new AliFemtoTrack();	
@@ -313,6 +315,11 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	  delete trackCopy;
 	  continue;
 	}
+
+	if (aodtrack->IsOn(AliESDtrack::kTPCrefit))
+	  if (aodtrack->Chi2perNDF() < 6.0) 
+	    if (aodtrack->Eta() < 0.9)
+	      tNormMult++;
 
 	CopyAODtoFemtoTrack(aodtrack, trackCopy, pwg2aodtrack);
 	
