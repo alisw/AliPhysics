@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-/// AliFemtoAnalysis - the pure virtual base class for femto analysis    ///
+/// AliFemtoAnalysis - the pure virtual base class for femto analysis        ///
 /// All analysis classes must inherit from this one                          ///
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef AliFemtoAnalysis_hh
