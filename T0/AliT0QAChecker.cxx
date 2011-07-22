@@ -132,7 +132,8 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const
    Int_t nh=0;
  
 
-   Int_t nnn[4] = { 420, 458, 459, 460};
+   //   Int_t nnn[4] = { 420, 458, 459, 460};
+   Int_t nnn[4] = { 170, 208, 209, 210};
    for (Int_t ir=0; ir<4; ir++)
      {
 	 hdata = (TH1*) listrec->UncheckedAt(nnn[ir]);
@@ -225,7 +226,7 @@ Double_t AliT0QAChecker::CheckESD(TObjArray *listrec ) const
     
     text->AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
     
-    AliDebug(AliQAv1::GetQADebugLevel(), Form("numentries %d mean %f  #sigma %f", (int)fhESD->GetEntries(),par[1], par[2]));
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("numentries %f mean %f  #sigma %f", (int)fhESD->GetEntries(),par[1], par[2]));
     
     
     if (par[2] > 0.07 && par[2] < 1.) {
