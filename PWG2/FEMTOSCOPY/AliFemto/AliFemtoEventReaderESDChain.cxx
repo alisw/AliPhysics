@@ -243,7 +243,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   string tFriendFileName;
 
   // Get the friend information
-  cout<<"starting to read event "<<fCurEvent<<endl;
+  if (Debug()>1) cout<<"starting to read event "<<fCurEvent<<endl;
   //  fEvent->SetESDfriend(fEventFriend);
   if(fEvent->GetAliESDOld())fEvent->CopyFromOldESD();
   
@@ -419,7 +419,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	Int_t incls = 0;
 	for (int iter=0; iter<6; iter++) if (iclm&(1<<iter)) incls++;
 	if (incls<=3) {
-	  cout << "Rejecting track with " << incls << " clusters" << endl;
+	  if (Debug()>1) cout << "Rejecting track with " << incls << " clusters" << endl;
 	  continue;
 	}
       }
@@ -646,7 +646,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
     hbtEvent->SetCentralitySPD1(cent->GetCentralityPercentile("CL1"));
     //    hbtEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
 
-    printf("  FemtoReader Got Event with %f %f %f %f\n", cent->GetCentralityPercentile("V0M"), 0.0, cent->GetCentralityPercentile("CL1"), 0.0);
+    if (Debug()>1) printf("  FemtoReader Got Event with %f %f %f %f\n", cent->GetCentralityPercentile("V0M"), 0.0, cent->GetCentralityPercentile("CL1"), 0.0);
   }
 
   if (fEstEventMult == kGlobalCount) 
@@ -667,7 +667,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	hbtEvent->SetNormalizedMult(-1);
       else
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("V0M")));
-      printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
 	      10.0*cent->GetCentralityPercentile("V0M"), lrint(10.0*cent->GetCentralityPercentile("V0M")));
     }
   }
@@ -684,7 +684,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   }
 
   fCurEvent++;	
-  cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
+  if (Debug()>1) cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
 
   return hbtEvent; 
 }
