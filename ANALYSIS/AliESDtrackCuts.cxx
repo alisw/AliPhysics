@@ -649,7 +649,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()
 {
   // creates an AliESDtrackCuts object and fills it with standard (pre data-taking) values for TPC-only cuts
   
-  Printf("AliESDtrackCuts::GetStandardTPCOnlyTrackCuts: Creating track cuts for TPC-only.");
+  AliInfoClass("Creating track cuts for TPC-only.");
   
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
   
@@ -669,7 +669,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrima
 {
   // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2009 data
   
-  Printf("AliESDtrackCuts::GetStandardITSTPCTrackCuts: Creating track cuts for ITS+TPC.");
+  AliInfoClass("Creating track cuts for ITS+TPC (2009 definition).");
   
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
 
@@ -703,7 +703,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrima
   // a cut on the number of crossed rows and on the ration crossed
   // rows/findable clusters
 
-  Printf("AliESDtrackCuts::GetStandardITSTPCTrackCuts: Creating track cuts for ITS+TPC.");
+  AliInfoClass("Creating track cuts for ITS+TPC (2010 definition).");
   
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
 
@@ -714,7 +714,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrima
     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
   }
   else {
-    Printf("Wrong value of the clusterCut parameter (%d), using cut on Nclusters",clusterCut);
+    AliWarningClass(Form("Wrong value of the clusterCut parameter (%d), using cut on Nclusters",clusterCut));
     esdTrackCuts->SetMinNClustersTPC(70);
   }
   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
@@ -843,6 +843,17 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCutsPbPb2010(Bool_t selPr
 
   return esdTrackCuts;
 }
+//____________________________________________________________________
+
+AliESDtrackCuts* AliESDtrackCuts::GetStandardV0DaughterCuts()
+{
+  // creates a AliESDtrackCuts object and fills it with standard cuts for V0 daughters
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetMinNClustersTPC(70);
+  esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  return esdTrackCuts;
+}
 
 //____________________________________________________________________
 Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, Bool_t tpcOnly)
@@ -853,7 +864,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, Bool_t t
   
   if (!tpcOnly)
   {
-    Printf("AliESDtrackCuts::GetReferenceMultiplicity: Not implemented for global tracks!");
+    AliErrorClass("Not implemented for global tracks!");
     return -1;
   }
   
@@ -1043,7 +1054,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
     
   if (extCov[14] < 0) 
   {
-    Printf("AliESDtrackCuts::AcceptTrack: WARNING: GetSigma1Pt2() returns negative value for external covariance matrix element fC[14]: %f. Corrupted track information, track will not be accepted!", extCov[14]);
+    AliWarning(Form("GetSigma1Pt2() returns negative value for external covariance matrix element fC[14]: %f. Corrupted track information, track will not be accepted!", extCov[14]));
     return kFALSE;
   }
   Float_t relUncertainty1Pt = TMath::Sqrt(extCov[14])*pt;
@@ -1797,7 +1808,7 @@ Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
   Bool_t retval=kTRUE;
 
   if(!dist.Contains("pt")) {
-    if(print) printf("AliESDtrackCuts::CheckPtDepDCA(): string must contain \"pt\"\n");
+    if(print) AliError("string must contain \"pt\"");
     retval= kFALSE;
   } 
   return retval;

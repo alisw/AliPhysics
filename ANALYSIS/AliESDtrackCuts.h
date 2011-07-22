@@ -66,6 +66,8 @@ public:
   static AliESDtrackCuts* GetStandardITSSATrackCutsPbPb2010(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
   static AliESDtrackCuts* GetStandardITSPureSATrackCuts2009(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
   static AliESDtrackCuts* GetStandardITSPureSATrackCuts2010(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
+  // Standard cuts for daughter tracks
+  static AliESDtrackCuts* GetStandardV0DaughterCuts();
 
   virtual Long64_t Merge(TCollection* list);
   virtual void Copy(TObject &c) const;
