@@ -733,8 +733,8 @@ bool AliFemtoESDTrackCut::IsProtonTPCdEdx(float mom, float dEdx)
   double a1 = -3000.0; double b1 =  1280.0;
   double a2 = -312.5;  double b2 =  312.5;
   double a3 = -160.0;  double b3 =  221.0;
-  double a4 = -110.0;  double b4 =  171.0;
-                        double b5 =   72.0;
+//   double a4 = -110.0;  double b4 =  171.0;
+//                         double b5 =   72.0;
 
    if (mom<0.2) return false;
 
