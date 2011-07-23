@@ -113,15 +113,15 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-A-NOPF-ALLNOTRD","A",0);
   oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-C-NOPF-ALLNOTRD","C",0);
   oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kHighMult,"+C0SMH-E-NOPF-ALLNOTRD","E",0);  
-  oadbDefaultPbPb->SetHardwareTrigger         ( 0,"SPDGFO >= 100 && !V0ABG && !V0CBG  && !TPCLaserWarmUp && ZDCTime");
-  oadbDefaultPbPb->SetOfflineTrigger          ( 0,"SPDGFO >= 100");
+  oadbDefaultPbPb->SetHardwareTrigger         ( 0,"SPDGFO >= 100");
+  oadbDefaultPbPb->SetOfflineTrigger          ( 0,"SPDGFO >= 100 && !V0ABG && !V0CBG  && !TPCLaserWarmUp && ZDCTime");
   
   oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CMBACS2-B-NOPF-ALLNOTRD","B",1);
   oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-A-NOPF-ALLNOTRD","A",1);
   oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-C-NOPF-ALLNOTRD","C",1);
   oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CMBACS2-E-NOPF-ALLNOTRD","E",1);
-  oadbDefaultPbPb->SetHardwareTrigger         ( 1,"(V0A && V0C && SPDGFO > 1) && !V0ABG && !V0CBG  && !TPCLaserWarmUp && ZDCTime");
-  oadbDefaultPbPb->SetOfflineTrigger          ( 1,"(V0A && V0C && SPDGFO > 1)");
+  oadbDefaultPbPb->SetHardwareTrigger         ( 1,"(V0A && V0C && SPDGFO > 1)");
+  oadbDefaultPbPb->SetOfflineTrigger          ( 1,"(V0A && V0C && SPDGFO > 1) && !V0ABG && !V0CBG  && !TPCLaserWarmUp && ZDCTime");
 
   oadbContPS->AddDefaultObject(oadbDefaultPbPb);
 
