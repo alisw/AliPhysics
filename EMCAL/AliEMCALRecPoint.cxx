@@ -207,7 +207,7 @@ AliEMCALRecPoint& AliEMCALRecPoint::operator= (const AliEMCALRecPoint &rp)
 }
 
 //____________________________________________________________________________
-void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t energy, Bool_t shared)
+void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, const Float_t energy, const Bool_t shared)
 {
   // Adds a digit to the RecPoint
   // and accumulates the total amplitude and the multiplicity 
@@ -215,24 +215,24 @@ void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t energy, Bool_t sh
   if(fEnergyList == 0)
     fEnergyList =  new Float_t[fMaxDigit]; 
   if(fTimeList == 0)
-    fTimeList =  new Float_t[fMaxDigit]; 
+    fTimeList   =  new Float_t[fMaxDigit]; 
   if(fAbsIdList == 0) {
-    fAbsIdList =  new Int_t[fMaxDigit];
+    fAbsIdList  =  new Int_t  [fMaxDigit];
   }
 
   if ( fMulDigit >= fMaxDigit ) { // increase the size of the lists 
     fMaxDigit*=2 ; 
-    Int_t   * tempo   = new Int_t[fMaxDigit]; 
+    Int_t   * tempo   = new Int_t  [fMaxDigit]; 
     Float_t * tempoE  = new Float_t[fMaxDigit];
     Float_t * tempoT  = new Float_t[fMaxDigit];
-    Int_t   * tempoId = new Int_t[fMaxDigit]; 
+    Int_t   * tempoId = new Int_t  [fMaxDigit]; 
 
     Int_t index ;     
     for ( index = 0 ; index < fMulDigit ; index++ ){
-      tempo[index]   = fDigitsList[index] ;
-      tempoE[index]  = fEnergyList[index] ; 
-      tempoT[index]  = fTimeList[index] ; 
-      tempoId[index] = fAbsIdList[index] ; 
+      tempo  [index] = fDigitsList[index] ;
+      tempoE [index] = fEnergyList[index] ; 
+      tempoT [index] = fTimeList  [index] ; 
+      tempoId[index] = fAbsIdList [index] ; 
     }
     
     delete [] fDigitsList ;
@@ -248,8 +248,8 @@ void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t energy, Bool_t sh
   
   fDigitsList[fMulDigit]   = digit.GetIndexInList()  ; 
   fEnergyList[fMulDigit]   = energy ;
-  fTimeList[fMulDigit]     = digit.GetTimeR() ;
-  fAbsIdList[fMulDigit]    = digit.GetId();
+  fTimeList  [fMulDigit]   = digit.GetTime();
+  fAbsIdList [fMulDigit]   = digit.GetId();
   fMulDigit++ ; 
   fAmp += energy ; 
 	

@@ -44,6 +44,7 @@
 #include "AliEMCALRawUtils.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALClusterizerv1.h"
+#include "AliEMCALClusterizerv2.h"
 #include "AliEMCALClusterizerNxN.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALPID.h"
@@ -204,9 +205,11 @@ void AliEMCALReconstructor::InitClusterizer() const
       //printf("ReCreate clusterizer? Clusterizer set <%d>, Clusterizer in use <%s>\n",
       //     clusterizerType, fgClusterizer->Version());
       
-      if     (clusterizerType == AliEMCALRecParam::kClusterizerv1 && !strcmp(fgClusterizer->Version(),"clu-v1")) return;
+      if     (clusterizerType == AliEMCALRecParam::kClusterizerv1  && !strcmp(fgClusterizer->Version(),"clu-v1"))  return;
       
       else if(clusterizerType == AliEMCALRecParam::kClusterizerNxN && !strcmp(fgClusterizer->Version(),"clu-NxN")) return;
+      
+      else if(clusterizerType == AliEMCALRecParam::kClusterizerv2  && !strcmp(fgClusterizer->Version(),"clu-v2"))  return;
       
       //Need to create new clusterizer, the one set previously is not the correct one     
       delete fgClusterizer;
@@ -214,14 +217,22 @@ void AliEMCALReconstructor::InitClusterizer() const
     else return;
   }
   
-  if (clusterizerType  == AliEMCALRecParam::kClusterizerv1)
+  if      (clusterizerType  == AliEMCALRecParam::kClusterizerv1)
     {
-      fgClusterizer = new AliEMCALClusterizerv1(fGeom, fCalibData,fPedestalData);
+      fgClusterizer = new AliEMCALClusterizerv1 (fGeom, fCalibData,fPedestalData);
     }
-  else
+  else if (clusterizerType  == AliEMCALRecParam::kClusterizerNxN)
     {
       fgClusterizer = new AliEMCALClusterizerNxN(fGeom, fCalibData,fPedestalData);
     }
+  else if (clusterizerType  == AliEMCALRecParam::kClusterizerv2)
+  {
+    fgClusterizer = new AliEMCALClusterizerv2   (fGeom, fCalibData,fPedestalData);
+  }
+  else 
+  {
+    AliFatal(Form("Unknown clusterizer %d ", clusterizerType));
+  }
 }
 
 //____________________________________________________________________________
@@ -426,17 +437,19 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   
   Int_t nDigits = fgDigitsArr->GetEntries(), idignew = 0 ;
   AliDebug(1,Form("%d digits",nDigits));
-  
   AliESDCaloCells &emcCells = *(esd->GetEMCALCells());
   emcCells.CreateContainer(nDigits);
   emcCells.SetType(AliVCaloCells::kEMCALCell);
   Float_t energy = 0;
+  Float_t time   = 0;
   for (Int_t idig = 0 ; idig < nDigits ; idig++) {
     const AliEMCALDigit * dig = (const AliEMCALDigit*)fgDigitsArr->At(idig);
-    if(dig->GetAmplitude() > 0 ){
-      energy = fgClusterizer->Calibrate(dig->GetAmplitude(),dig->GetTime(),dig->GetId()); //TimeR or Time?
-      if(energy > 0){ //Digits tagged as bad (dead, hot, not alive) are set to 0 in calibrate, remove them	
-        emcCells.SetCell(idignew,dig->GetId(),energy, dig->GetTime());   
+    time   = dig->GetTime();      // Time already calibrated in clusterizer
+    energy = dig->GetAmplitude(); // energy calibrated in clusterizer
+    if(energy > 0 ){
+      fgClusterizer->Calibrate(energy,time,dig->GetId()); //Digits already calibrated in clusterizers
+      if(energy > 0){ //Digits tagged as bad (dead, hot, not alive) are set to 0 in calibrate, remove them
+        emcCells.SetCell(idignew,dig->GetId(),energy, time);   
         idignew++;
       }
     }

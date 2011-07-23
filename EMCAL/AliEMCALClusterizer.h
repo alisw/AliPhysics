@@ -36,7 +36,7 @@ public:
 
   virtual void    Digits2Clusters(Option_t *option) = 0;
 
-  virtual Float_t Calibrate(const Float_t amp, const Float_t time, const Int_t cellId);
+  virtual void    Calibrate(Float_t & amp, Float_t & time, const Int_t cellId);
   virtual void    Init();
   virtual void    InitParameters();
   virtual void    InitParameters(const AliEMCALRecParam* recParam);
@@ -106,7 +106,8 @@ protected:
   
   Float_t fADCchannelECA;           // width of one ADC channel for EC section (GeV)
   Float_t fADCpedestalECA;          // pedestal of ADC for EC section (GeV) 
-
+  Float_t fTimeECA;                 // calibration parameter for channels time
+  
   Float_t fTimeMin;                 // minimum time of physical signal in a cell/digit
   Float_t fTimeMax;                 // maximum time of physical signal in a cell/digit
   Float_t fTimeCut;                 // maximum time difference between the digits inside EMC cluster
@@ -129,6 +130,6 @@ protected:
   AliEMCALClusterizer(const AliEMCALClusterizer &);
   AliEMCALClusterizer & operator = (const AliEMCALClusterizer &);
   
-  ClassDef(AliEMCALClusterizer,6)  // Clusterization algorithm class 
+  ClassDef(AliEMCALClusterizer,7)  // Clusterization algorithm class 
 };
 #endif // AliEMCALCLUSTERIZER_H

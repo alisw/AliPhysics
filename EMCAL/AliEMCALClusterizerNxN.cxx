@@ -233,13 +233,16 @@ void AliEMCALClusterizerNxN::MakeClusters()
   fNumberOfECAClusters = 0;
   fRecPoints->Delete();
   
-  // Set up TObjArray with pointers to digits to work on 
+  // Set up TObjArray with pointers to digits to work on, calibrate digits 
   TObjArray digitsC;
   TIter nextdigit(fDigitsArr);
   AliEMCALDigit *digit = 0;
   while ( (digit = static_cast<AliEMCALDigit*>(nextdigit())) ) {
-    Float_t dEnergyCalibrated = Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId());
+    Float_t dEnergyCalibrated = digit->GetAmplitude();
+    Float_t time              = digit->GetTime();
+    Calibrate(dEnergyCalibrated,time ,digit->GetId());
     digit->SetCalibAmp(dEnergyCalibrated);
+    digit->SetTime(time);    
     digitsC.AddLast(digit);
   }
   
@@ -326,10 +329,9 @@ void AliEMCALClusterizerNxN::MakeClusters()
         for (Int_t idig = 0; idig < clusterDigitList.GetEntries(); idig++)
         {
           digit = (AliEMCALDigit*)clusterDigitList.At(idig);
-          Float_t dEnergyCalibrated = digit->GetCalibAmp();
           AliDebug(5, Form(" Adding digit %d", digit->GetId()));
           // note: this way the sharing info is lost!
-          recPoint->AddDigit(*digit, dEnergyCalibrated, kFALSE); //Time or TimeR?
+          recPoint->AddDigit(*digit, digit->GetCalibAmp(), kFALSE); //Time or TimeR?
           digitsC.Remove(digit); 		  
         }
       }// recpoint

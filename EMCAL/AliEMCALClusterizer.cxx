@@ -69,7 +69,7 @@ AliEMCALClusterizer::AliEMCALClusterizer():
   fGeom(NULL),
   fCalibData(NULL), 
   fCaloPed(NULL),
-  fADCchannelECA(0.),fADCpedestalECA(0.),
+  fADCchannelECA(0.),fADCpedestalECA(0.), fTimeECA(1.),
   fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.),
   fDefaultInit(kFALSE),fToUnfold(kFALSE),
   fNumberOfECAClusters(0), fECAClusteringThreshold(0.),
@@ -91,7 +91,7 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry* geometry):
   fGeom(geometry),
   fCalibData(NULL), 
   fCaloPed(NULL),
-  fADCchannelECA(0.),fADCpedestalECA(0.),
+  fADCchannelECA(0.),fADCpedestalECA(0.), fTimeECA(1.),
   fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.),
   fDefaultInit(kFALSE),fToUnfold(kFALSE),
   fNumberOfECAClusters(0), fECAClusteringThreshold(0.),
@@ -130,7 +130,7 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry *geometry,
   fGeom(geometry),
   fCalibData(calib),
   fCaloPed(caloped),
-  fADCchannelECA(0.),fADCpedestalECA(0.),
+  fADCchannelECA(0.),fADCpedestalECA(0.), fTimeECA(1.),
   fTimeMin(-1.),fTimeMax(1.),fTimeCut(1.),
   fDefaultInit(kFALSE),fToUnfold(kFALSE),
   fNumberOfECAClusters(0), fECAClusteringThreshold(0.),
@@ -177,21 +177,24 @@ void AliEMCALClusterizer::DeleteRecPoints()
 }
 
 //____________________________________________________________________________
-Float_t AliEMCALClusterizer::Calibrate(const Float_t amp, const Float_t time, const Int_t absId) 
+void AliEMCALClusterizer::Calibrate(Float_t & amp, Float_t & time, const Int_t absId) 
 {
-  // Convert digitized amplitude into energy.
-  // Calibration parameters are taken from calibration data base for raw data,
-  // or from digitizer parameters for simulated data.
+  // Convert digitized amplitude into energy, calibrate time
+  // Calibration parameters are taken from OCDB : OCDB/EMCAL/Calib/Data
 
   //Return energy with default parameters if calibration is not available
   if (!fCalibData&&!fCaloPed) {
     if (fIsInputCalibrated == kTRUE)
     {
       AliDebug(10, Form("Input already calibrated!"));
-      return amp;
+      return ;
     }    
     
-    return -fADCpedestalECA + amp * fADCchannelECA ; 
+    time *= fTimeECA ;
+    amp   = amp * fADCchannelECA - fADCpedestalECA ; 
+    
+    return;
+    
   }
   
   if (fGeom==0)
@@ -211,7 +214,9 @@ Float_t AliEMCALClusterizer::Calibrate(const Float_t amp, const Float_t time, co
     //assert(0); // GCB: This aborts reconstruction of raw simulations 
     //where simulation had more SM than default geometry, 
     //change to return 0, to avoid aborting good generations.
-    return 0;
+    amp  = 0;
+    time = 0;
+    return ;
   }
     
   fGeom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
@@ -224,22 +229,31 @@ Float_t AliEMCALClusterizer::Calibrate(const Float_t amp, const Float_t time, co
     Int_t channelStatus = (Int_t)(fCaloPed->GetDeadMap(iSupMod))->GetBinContent(ieta,iphi);
     if(channelStatus == AliCaloCalibPedestal::kHot || channelStatus == AliCaloCalibPedestal::kDead) {
       AliDebug(2,Form("Tower from SM %d, ieta %d, iphi %d is BAD : status %d !!!",iSupMod,ieta,iphi, channelStatus));
-      return 0;
+      amp  = 0 ;
+      time = 0 ;
+      return ;
     }
   }
   //Check if time is too large or too small, indication of a noisy channel, remove in this case
-  if(time > fTimeMax || time < fTimeMin) return 0;
+  if(time > fTimeMax || time < fTimeMin) {
+    amp  = 0 ;
+    time = 0 ;
+    return ;
+  }
     
   if (fIsInputCalibrated||!fCalibData)
   {
     AliDebug(10, Form("Input already calibrated!"));
-    return amp;
+    return ;
   }
 	  
   fADCchannelECA  = fCalibData->GetADCchannel (iSupMod,ieta,iphi);
   fADCpedestalECA = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
-      
-  return -fADCpedestalECA + amp * fADCchannelECA ;        
+  fTimeECA        = fCalibData->GetTimeChannel(iSupMod,ieta,iphi);
+  
+  time -= fTimeECA ;
+  amp   = amp * fADCchannelECA - fADCpedestalECA ;  
+  
 }
 
 //____________________________________________________________________________

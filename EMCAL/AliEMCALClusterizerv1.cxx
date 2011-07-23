@@ -216,32 +216,37 @@ void AliEMCALClusterizerv1::MakeClusters()
   
   fRecPoints->Delete();
   
-  // Set up TObjArray with pointers to digits to work on 
+  // Set up TObjArray with pointers to digits to work on calibrated digits 
   TObjArray *digitsC = new TObjArray();
-  TIter nextdigit(fDigitsArr);
   AliEMCALDigit *digit;
-  while ( (digit = dynamic_cast<AliEMCALDigit*>(nextdigit())) ) {
-    digitsC->AddLast(digit);
-  }
-  
-  double e = 0.0, ehs = 0.0;
-  TIter nextdigitC(digitsC);
-  while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) { // clean up digits
-    e = Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId());//Time or TimeR?
-    if ( e < fMinECut) //|| digit->GetTimeR() > fTimeCut ) // time window of cell checked in calibrate
-      digitsC->Remove(digit);
-    else    
-      ehs += e;
+  Float_t dEnergyCalibrated = 0.0, ehs = 0.0, time = 0.0;
+  TIter nextdigit(fDigitsArr);
+  while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigit())) ) { // calibrate and clean up digits
+    dEnergyCalibrated =  digit->GetAmplitude();
+    time              =  digit->GetTime();
+    Calibrate(dEnergyCalibrated,time,digit->GetId());
+    digit->SetCalibAmp(dEnergyCalibrated);
+    digit->SetTime(time);
+    if ( dEnergyCalibrated < fMinECut){
+      continue;
+    }
+    else if (!fGeom->CheckAbsCellId(digit->GetId()))
+      continue;
+    else{
+      ehs += dEnergyCalibrated;
+      digitsC->AddLast(digit);
+    }
   } 
+  
   AliDebug(1,Form("MakeClusters: Number of digits %d  -> (e %f), ehs %f\n",
                   fDigitsArr->GetEntries(),fMinECut,ehs));
   
-  nextdigitC.Reset();
-  
+  TIter nextdigitC(digitsC);
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) { // scan over the list of digitsC
     TArrayI clusterECAdigitslist(fDigitsArr->GetEntries());
-    
-    if(fGeom->CheckAbsCellId(digit->GetId()) && (Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId()) > fECAClusteringThreshold  ) ){
+    dEnergyCalibrated = digit->GetCalibAmp();
+    time              = digit->GetTime();
+    if(fGeom->CheckAbsCellId(digit->GetId()) && ( dEnergyCalibrated > fECAClusteringThreshold  ) ){
       // start a new Tower RecPoint
       if(fNumberOfECAClusters >= fRecPoints->GetSize()) fRecPoints->Expand(2*fNumberOfECAClusters+1);
       
@@ -252,27 +257,25 @@ void AliEMCALClusterizerv1::MakeClusters()
         fNumberOfECAClusters++; 
         
         recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
-        
-        recPoint->AddDigit(*digit, Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId()),kFALSE); //Time or TimeR?
+        recPoint->AddDigit(*digit, digit->GetCalibAmp(), kFALSE); //Time or TimeR?
         TObjArray clusterDigits;
         clusterDigits.AddLast(digit);	
         digitsC->Remove(digit); 
         
-        AliDebug(1,Form("MakeClusters: OK id = %d, ene = %f , cell.th. = %f \n", digit->GetId(),
-                        Calibrate(digit->GetAmplitude(),digit->GetTime(),digit->GetId()), fECAClusteringThreshold));  //Time or TimeR?
-        Float_t time = digit->GetTime();//Time or TimeR?
+        AliDebug(1,Form("MakeClusters: OK id = %d, ene = %f , cell.th. = %f \n", digit->GetId(), dEnergyCalibrated, fECAClusteringThreshold));  //Time or TimeR?
+      
         // Grow cluster by finding neighbours
         TIter nextClusterDigit(&clusterDigits);
+        
         while ( (digit = dynamic_cast<AliEMCALDigit*>(nextClusterDigit())) ) { // scan over digits in cluster 
           TIter nextdigitN(digitsC); 
           AliEMCALDigit *digitN = 0; // digi neighbor
           while ( (digitN = (AliEMCALDigit *)nextdigitN()) ) { // scan over all digits to look for neighbours
-            
             //Do not add digits with too different time 
             Bool_t shared = kFALSE;//cluster shared by 2 SuperModules?
             if(TMath::Abs(time - digitN->GetTime()) > fTimeCut ) continue; //Time or TimeR?
             if (AreNeighbours(digit, digitN, shared)==1) {      // call (digit,digitN) in THAT order !!!!! 
-              recPoint->AddDigit(*digitN, Calibrate(digitN->GetAmplitude(), digitN->GetTime(), digitN->GetId()),shared); //Time or TimeR?
+              recPoint->AddDigit(*digitN, digitN->GetCalibAmp(), shared); 
               clusterDigits.AddLast(digitN); 
               digitsC->Remove(digitN); 
             } // if(ineb==1)

@@ -110,14 +110,17 @@ void AliEMCALClusterizerv2::MakeClusters()
   
   fRecPoints->Delete();
 
-  // set up TObjArray with pointers to digits to work on 
+  // set up TObjArray with pointers to digits to work on, calibrate digits 
   TObjArray digitsC;
   Double_t ehs = 0.0;
   AliEMCALDigit *digit = 0;
   TIter nextdigit(fDigitsArr);
   while ( (digit = static_cast<AliEMCALDigit*>(nextdigit())) ) {
-    Float_t dEnergyCalibrated = Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId());
+    Float_t dEnergyCalibrated = digit->GetAmplitude();
+    Float_t time              = digit->GetTime();
+    Calibrate(dEnergyCalibrated, time ,digit->GetId());
     digit->SetCalibAmp(dEnergyCalibrated);
+    digit->SetTime(time);
     if (dEnergyCalibrated < fMinECut) 
       continue;
     if (!fGeom->CheckAbsCellId(digit->GetId()))
@@ -137,7 +140,7 @@ void AliEMCALClusterizerv2::MakeClusters()
     nextdigitC.Reset();
     while ( (digit = static_cast<AliEMCALDigit *>(nextdigitC())) ) { 
       Float_t dEnergyCalibrated = digit->GetCalibAmp();
-      if (dEnergyCalibrated>fECAClusteringThreshold &&  dEnergyCalibrated>dMaxEnergyDigit) {
+      if (dEnergyCalibrated>fECAClusteringThreshold && dEnergyCalibrated>dMaxEnergyDigit) {
         dMaxEnergyDigit = dEnergyCalibrated;
         iMaxEnergyDigit = digit->GetId();
         pMaxEnergyDigit = digit;
@@ -152,7 +155,7 @@ void AliEMCALClusterizerv2::MakeClusters()
 
     AliEMCALRecPoint *recPoint = new  AliEMCALRecPoint(""); 
     recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
-    recPoint->AddDigit(*pMaxEnergyDigit, dMaxEnergyDigit, kFALSE);
+    recPoint->AddDigit(*pMaxEnergyDigit, pMaxEnergyDigit->GetCalibAmp(), kFALSE);
     fRecPoints->AddAt(recPoint, fNumberOfECAClusters++);
     digitsC.Remove(pMaxEnergyDigit); 
     TObjArray clusterDigits;
