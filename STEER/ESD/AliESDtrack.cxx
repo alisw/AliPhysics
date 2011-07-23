@@ -1304,6 +1304,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     else 
       fIp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
     }
+    // Intentionally no break statement; need to set general TPC variables as well
   case kTPCout:
     {
     if (flags & kTPCout){
@@ -1314,62 +1315,13 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     fTPCncls=t->GetNumberOfClusters();    
     fTPCchi2=t->GetChi2();
     
-    if (fFriendTrack)
-     {//prevrow must be declared in separate namespace, otherwise compiler cries:
-      //"jump to case label crosses initialization of `Int_t prevrow'"
-       Int_t* indexTPC = new Int_t[AliESDfriendTrack::kMaxTPCcluster];
-       Int_t prevrow = -1;
-       //       for (Int_t i=0;i<fTPCncls;i++) 
-       for (Int_t i=0;i<AliESDfriendTrack::kMaxTPCcluster;i++) 
-        {
-	  indexTPC[i]=t->GetClusterIndex(i);
-	  Int_t idx = indexTPC[i];
-
-	  if (idx<0) continue; 
-
-          // Piotr's Cluster Map for HBT  
-          // ### please change accordingly if cluster array is changing 
-          // to "New TPC Tracking" style (with gaps in array) 
-          Int_t sect = (idx&0xff000000)>>24;
-          Int_t row = (idx&0x00ff0000)>>16;
-          if (sect > 18) row +=63; //if it is outer sector, add number of inner sectors
-
-          fTPCClusterMap.SetBitNumber(row,kTRUE);
-
-          //Fill the gap between previous row and this row with 0 bits
-          //In case  ###  pleas change it as well - just set bit 0 in case there 
-          //is no associated clusters for current "i"
-          if (prevrow < 0) 
-           {
-             prevrow = row;//if previous bit was not assigned yet == this is the first one
-           }
-          else
-           { //we don't know the order (inner to outer or reverse)
-             //just to be save in case it is going to change
-             Int_t n = 0, m = 0;
-             if (prevrow < row)
-              {
-                n = prevrow;
-                m = row;
-              }
-             else
-              {
-                n = row;
-                m = prevrow;
-              }
-
-             for (Int_t j = n+1; j < m; j++)
-              {
-                fTPCClusterMap.SetBitNumber(j,kFALSE);
-              }
-             prevrow = row; 
-           }
-          // End Of Piotr's Cluster Map for HBT
-        }
-	fFriendTrack->SetTPCIndices(indexTPC,AliESDfriendTrack::kMaxTPCcluster);
-	delete [] indexTPC;
-
-     }
+    if (fFriendTrack) {  // Copy cluster indices
+      Int_t* indexTPC = new Int_t[AliESDfriendTrack::kMaxTPCcluster];
+      for (Int_t i=0;i<AliESDfriendTrack::kMaxTPCcluster;i++)         
+	indexTPC[i]=t->GetClusterIndex(i);
+      fFriendTrack->SetTPCIndices(indexTPC,AliESDfriendTrack::kMaxTPCcluster);
+      delete [] indexTPC;
+    }
     fTPCsignal=t->GetPIDsignal();
     }
     break;
