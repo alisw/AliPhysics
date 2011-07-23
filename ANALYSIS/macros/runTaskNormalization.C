@@ -6,7 +6,7 @@ void runTaskNormalization(const char * incollection,const char * filename = "LHC
   gSystem->Load("libANALYSIS") ;
   gSystem->Load("libANALYSISalice") ;
   gSystem->Load("libCORRFW") ;
-  gSystem->Load("libITSbase") ;
+  //  gSystem->Load("libITSbase") ;
   gSystem->Load("libPWG0base") ;
 
 
@@ -56,21 +56,24 @@ void runTaskNormalization(const char * incollection,const char * filename = "LHC
   physSelTask->GetPhysicsSelection()->SetBin0Callback("TaskNormalization");
 
   // assign simple task
-  AliCollisionNormalizationTask * task = new AliCollisionNormalizationTask("TaskNormalization");
-  //  task->SetMC();
-  task->SetMC(isMC);
-  mgr->AddTask(task);
+  // AliCollisionNormalizationTask * task = new AliCollisionNormalizationTask("TaskNormalization");
+  // //  task->SetMC();
+  // task->SetMC(isMC);
+  // mgr->AddTask(task);
 
 
 
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();	
-  mgr->ConnectInput(task,0,cinput1);
+  // AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();	
+  // mgr->ConnectInput(task,0,cinput1);
 
 
   
-  // Attach output
-  cOutput = mgr->CreateContainer("Norm", TList::Class(), AliAnalysisManager::kOutputContainer,filename);
-  mgr->ConnectOutput(task, 1, cOutput);      
+  // // Attach output
+  // cOutput = mgr->CreateContainer("Norm", TList::Class(), AliAnalysisManager::kOutputContainer,filename);
+  // mgr->ConnectOutput(task, 1, cOutput);      
+
+  gROOT->LoadMacro("$(ALICE_ROOT)/ANALYSIS/macros/AddTaskNormalization.C");
+  AliCollisionNormalizationTask * task = AddTaskNormalization(isMC);
 	
   if (!mgr->InitAnalysis()) return;
 	
