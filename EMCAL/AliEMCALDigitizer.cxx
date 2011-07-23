@@ -22,12 +22,11 @@
 //  
 // In addition it performs mixing/embedding of summable digits from different events.
 //
-// For each event two branches are created in TreeD:
+// For each event 3 branches are created in TreeD:
 //   "EMCAL" - list of digits
+//   "EMCALTRG" - list of trigger digits
 //   "AliEMCALDigitizer" - AliEMCALDigitizer with all parameters used in digitization
 //
-// Note, that one cset title for new digits branch, and repeat digitization with
-// another set of parameters.
 //
 ////////////////////////////////////////////////////////////////////////////////////
 //
@@ -37,6 +36,8 @@
 //  August 2002 Yves Schutz: clone PHOS as closely as possible and intoduction
 //                           of new IO (a la PHOS)
 //  November 2003 Aleksei Pavlinov : adopted for Shish-Kebab geometry 
+//  July 2011 GCB: Digitizer modified to accomodate embedding. 
+//                 Time calibration added. Decalibration possibility of energy and time added
 //_________________________________________________________________________________
 
 // --- ROOT system ---
@@ -63,51 +64,50 @@
 #include "AliEMCALDigitizer.h"
 #include "AliEMCALSDigitizer.h"
 #include "AliEMCALGeometry.h"
-//#include "AliEMCALTick.h"
 #include "AliEMCALCalibData.h"
 #include "AliEMCALSimParam.h"
 #include "AliEMCALRawDigit.h"
 
-namespace
-{
-	Double_t HeavisideTheta(Double_t x)
-	{
-		Double_t signal = 0.;
-		
-		if (x > 0.) signal = 1.;  
-		
-		return signal;  
-	}
-	
-	Double_t AnalogFastORFunction(Double_t *x, Double_t *par)
-	{
-		Double_t v0 = par[0];
-		Double_t t0 = par[1];
-		Double_t tr = par[2];
-		
-		Double_t R1 = 1000.;
-		Double_t C1 = 33e-12;
-		Double_t R2 = 1800;
-		Double_t C2 = 22e-12;
-		
-		Double_t t  =   x[0];
-		
-		return (((0.8*(-((TMath::Power(C1,2)*C2*TMath::Power(TMath::E(),(-t + t0)/(C1*R1))*
-						  TMath::Power(R1,2)*R2)/(C1*R1 - C2*R2)) + 
-					   C1*C2*R1*R2*(1 - (C2*TMath::Power(TMath::E(),(-t + t0)/(C2*R2))*R2)/(-(C1*R1) + C2*R2)))*v0*
-				  HeavisideTheta(t - t0))/tr 
-				 - (0.8*(C1*C2*R1*R2 - 
-						 (TMath::Power(C1,2)*C2*TMath::Power(TMath::E(),(-1.*t + t0 + 1.25*tr)/(C1*R1))*
-						  TMath::Power(R1,2)*R2)/(C1*R1 - C2*R2) + 
-						 (C1*TMath::Power(C2,2)*TMath::Power(TMath::E(),(-1.*t + t0 + 1.25*tr)/(C2*R2))*
-						  R1*TMath::Power(R2,2))/(C1*R1 - C2*R2))*v0*
-					HeavisideTheta(t - t0 - 1.25*tr))/tr)/(C2*R1));
-	}
-}
+  namespace
+  {
+    Double_t HeavisideTheta(Double_t x)
+    {
+      Double_t signal = 0.;
+      
+      if (x > 0.) signal = 1.;  
+      
+      return signal;  
+    }
+    
+    Double_t AnalogFastORFunction(Double_t *x, Double_t *par)
+    {
+      Double_t v0 = par[0];
+      Double_t t0 = par[1];
+      Double_t tr = par[2];
+      
+      Double_t R1 = 1000.;
+      Double_t C1 = 33e-12;
+      Double_t R2 = 1800;
+      Double_t C2 = 22e-12;
+      
+      Double_t t  =   x[0];
+      
+      return (((0.8*(-((TMath::Power(C1,2)*C2*TMath::Power(TMath::E(),(-t + t0)/(C1*R1))*
+			TMath::Power(R1,2)*R2)/(C1*R1 - C2*R2)) + 
+		     C1*C2*R1*R2*(1 - (C2*TMath::Power(TMath::E(),(-t + t0)/(C2*R2))*R2)/(-(C1*R1) + C2*R2)))*v0*
+		HeavisideTheta(t - t0))/tr 
+	       - (0.8*(C1*C2*R1*R2 - 
+		       (TMath::Power(C1,2)*C2*TMath::Power(TMath::E(),(-1.*t + t0 + 1.25*tr)/(C1*R1))*
+			TMath::Power(R1,2)*R2)/(C1*R1 - C2*R2) + 
+		       (C1*TMath::Power(C2,2)*TMath::Power(TMath::E(),(-1.*t + t0 + 1.25*tr)/(C2*R2))*
+			R1*TMath::Power(R2,2))/(C1*R1 - C2*R2))*v0*
+		  HeavisideTheta(t - t0 - 1.25*tr))/tr)/(C2*R1));
+    }
+  }
 
 ClassImp(AliEMCALDigitizer)
-
-
+  
+  
 //____________________________________________________________________________ 
 AliEMCALDigitizer::AliEMCALDigitizer()
   : AliDigitizer("",""),
@@ -399,8 +399,6 @@ void AliEMCALDigitizer::Digitize(Int_t event)
       AliEMCALDigit * digit ;
       AliEMCALDigit * curSDigit ;
       
-      //  TClonesArray * ticks = new TClonesArray("AliEMCALTick",1000) ;
-      
       //Put Noise contribution, smear time and energy     
       Float_t timeResolution = 0;
       for(absID = 0; absID < nEMC; absID++){ // Nov 30, 2006 by PAI; was from 1 to nEMC
@@ -469,8 +467,6 @@ void AliEMCALDigitizer::Digitize(Int_t event)
             energy *= static_cast<Float_t>(gRandom->Poisson(fMeanPhotonElectron)) / static_cast<Float_t>(fMeanPhotonElectron) ;
             
             //calculate and set time
-            //New timing model needed - JLK 28-April-2008
-            //Float_t time = FrontEdgeTime(ticks) ;
             digit->SetTime(time) ;
             
             //Find next signal module
@@ -934,42 +930,18 @@ void AliEMCALDigitizer::DigitalFastOR( Double_t time, Double_t dE, Int_t timeSam
 	}
 }
 
-
-//____________________________________________________________________________ 
-//Float_t AliEMCALDigitizer::FrontEdgeTime(TClonesArray * ticks) 
-//{ 
-//  //  Returns the shortest time among all time ticks
-//
-//  ticks->Sort() ; //Sort in accordance with times of ticks
-//  TIter it(ticks) ;
-//  AliEMCALTick * ctick = (AliEMCALTick *) it.Next() ;
-//  Float_t time = ctick->CrossingTime(fTimeThreshold) ;    
-//  
-//  AliEMCALTick * t ;  
-//  while((t=(AliEMCALTick*) it.Next())){
-//    if(t->GetTime() < time)  //This tick starts before crossing
-//      *ctick+=*t ;
-//    else
-//      return time ;
-//    
-//    time = ctick->CrossingTime(fTimeThreshold) ;    
-//  }
-//  return time ;
-//}
-//
-
 //____________________________________________________________________________ 
 Bool_t AliEMCALDigitizer::Init()
 {
   // Makes all memory allocations
   fInit = kTRUE ; 
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
-
+  
   if ( emcalLoader == 0 ) {
     Fatal("Init", "Could not obtain the AliEMCALLoader");  
     return kFALSE;
   } 
-
+  
   fFirstEvent = 0 ; 
   fLastEvent = fFirstEvent ; 
   
@@ -991,7 +963,7 @@ Bool_t AliEMCALDigitizer::Init()
   
   //to prevent cleaning of this object while GetEvent is called
   emcalLoader->GetDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
-
+  
   //Calibration instance
   fCalibData = emcalLoader->CalibData();
   return fInit ;    
@@ -1009,10 +981,10 @@ void AliEMCALDigitizer::InitParameters()
   if(emcalLoader) simParam = emcalLoader->SimulationParameters();
 	
   if(!simParam){
-	  simParam = AliEMCALSimParam::GetInstance();
-	  AliWarning("Simulation Parameters not available in OCDB?");
+    simParam = AliEMCALSimParam::GetInstance();
+    AliWarning("Simulation Parameters not available in OCDB?");
   }
-	
+  
   fMeanPhotonElectron = simParam->GetMeanPhotonElectron();//4400;  // electrons per GeV 
   fPinNoise           = simParam->GetPinNoise();//0.012; // pin noise in GeV from analysis test beam data 
   if (fPinNoise < 0.0001 ) 
@@ -1022,7 +994,7 @@ void AliEMCALDigitizer::InitParameters()
   fTimeResolutionPar0 = simParam->GetTimeResolutionPar0(); 
   fTimeResolutionPar1 = simParam->GetTimeResolutionPar1(); 
   fTimeDelay          = simParam->GetTimeDelay(); //600e-9 ; // 600 ns
-
+  
   // These defaults are normally not used. 
   // Values are read from calibration database instead
   fADCchannelEC       = 0.0153; // Update 24 Apr 2007: 250./16/1024 - width of one ADC channel in GeV
@@ -1032,11 +1004,10 @@ void AliEMCALDigitizer::InitParameters()
   fTimeChannelDecal   = 0.0;    // No time decalibration by default
 
   fNADCEC             = simParam->GetNADCEC();//(Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC - 65536
-
+  
   AliDebug(2,Form("Mean Photon Electron %d, Noise: APD %f, Time %f; Digit Threshold %d,Time Resolution Par0 %g Par1 %g,NADCEC %d",
-		fMeanPhotonElectron,fPinNoise,fTimeNoise, fDigitThreshold,fTimeResolutionPar0,fTimeResolutionPar1,fNADCEC));
-
-
+		  fMeanPhotonElectron,fPinNoise,fTimeNoise, fDigitThreshold,fTimeResolutionPar0,fTimeResolutionPar1,fNADCEC));
+   
 }
 
 //__________________________________________________________________
@@ -1059,7 +1030,7 @@ void AliEMCALDigitizer::Print (Option_t * ) const
       nStreams =  GetNInputStreams() ;
     else 
       nStreams = fInput ; 
-  
+    
     AliRunLoader *rl=0;
     
     Int_t index = 0 ;  
@@ -1076,12 +1047,12 @@ void AliEMCALDigitizer::Print (Option_t * ) const
         printf ("Adding SDigits from %s %s\n", fInputFileNames[index].Data(), fileName.Data()) ; 
       }//loader
     }
-
+    
     AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
-
+    
     if(emcalLoader) printf("\nWriting digits to %s", emcalLoader->GetDigitsFileName().Data()) ;
     else printf("\nNULL LOADER");
-
+    
     printf("\nWith following parameters:\n") ;
     printf("    Electronics noise in EMC, APD (fPinNoise) = %f, Time = %f \n", fPinNoise, fTimeNoise) ;
     printf("    Threshold  in Tower  (fDigitThreshold) = %d\n", fDigitThreshold)  ;
@@ -1095,7 +1066,7 @@ void AliEMCALDigitizer::Print (Option_t * ) const
 void AliEMCALDigitizer::PrintDigits(Option_t * option)
 {
   //utility method for printing digit information
-
+  
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
   if(emcalLoader){
     TClonesArray * digits  = emcalLoader->Digits() ;
@@ -1199,27 +1170,27 @@ void AliEMCALDigitizer::WriteDigits()
 //__________________________________________________________________
 void AliEMCALDigitizer::WriteDigits(TClonesArray* digits, const char* branchName)
 { // overloaded method
-	AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
-	if(emcalLoader){
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::Instance()->GetDetectorLoader("EMCAL"));
+  if(emcalLoader){
     
     TTree* treeD = emcalLoader->TreeD(); 
     if (!treeD) 
-    {
-      emcalLoader->MakeDigitsContainer();
-      treeD = emcalLoader->TreeD(); 
-    }
+      {
+	emcalLoader->MakeDigitsContainer();
+	treeD = emcalLoader->TreeD(); 
+      }
     
     // -- create Digits branch
     Int_t bufferSize = 32000;
     
     if (TBranch* triggerBranch = treeD->GetBranch(branchName)) 
-    {
-      triggerBranch->SetAddress(&digits);
-    }
+      {
+	triggerBranch->SetAddress(&digits);
+      }
     else
-    {
-      treeD->Branch(branchName,"TClonesArray",&digits,bufferSize);
-    }
+      {
+	treeD->Branch(branchName,"TClonesArray",&digits,bufferSize);
+      }
     
     //	treeD->Fill();
   }// loader exists
