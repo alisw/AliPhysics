@@ -1783,7 +1783,7 @@ Double_t  AliTPCcalibDButil::GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Dou
   }
   if (nused<kMinPoints) {
     delete [] tdelta;
-    printf("AliFatal: No time offset calibration available\n");
+    //AliWarning("AliFatal: No time offset calibration available\n");
     return 0;
   }
   Double_t median = TMath::Median(nused,tdelta);
