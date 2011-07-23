@@ -254,15 +254,6 @@ void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, const Float_t energy, con
   fAmp += energy ; 
 	
   if(shared) fSharedCluster = kTRUE;
-	
-  //GCB, May-2010, setting moved to EvalAll method, set the super module number for the largest energy digit position. 
-  //JLK 10-Oct-2007 this hasn't been filled before because it was in
-  //the wrong place in previous versions.
-  //Now we evaluate it only if the supermodulenumber for this recpoint
-  //has not yet been set (or is the 0th one)
-  //if(fSuperModuleNumber == 0)
-    //fSuperModuleNumber = fGeomPtr->GetSuperModuleNumber(digit.GetId());
-
 }
 //____________________________________________________________________________
 Bool_t AliEMCALRecPoint::AreNeighbours(AliEMCALDigit * digit1, AliEMCALDigit * digit2 ) const
@@ -330,28 +321,6 @@ Int_t AliEMCALRecPoint::Compare(const TObject * obj) const
   return rv ; 
 }
 
-// GCB, May-2010, Method not used, just comment it but remove?
-//____________________________________________________________________________
-//Int_t AliEMCALRecPoint::DistancetoPrimitive(Int_t px, Int_t py)
-//{
-//  // Compute distance from point px,py to  a AliEMCALRecPoint considered as a Tmarker
-//  // Compute the closest distance of approach from point px,py to this marker.
-//  // The distance is computed in pixels units.
-//  // HG Still need to update -> Not sure what this should achieve
-//
-//  TVector3 pos(0.,0.,0.) ;
-//  GetLocalPosition(pos) ;
-//  Float_t x =  pos.X() ;
-//  Float_t y =  pos.Y() ;
-//  const Int_t kMaxDiff = 10;
-//  Int_t pxm  = gPad->XtoAbsPixel(x);
-//  Int_t pym  = gPad->YtoAbsPixel(y);
-//  Int_t dist = (px-pxm)*(px-pxm) + (py-pym)*(py-pym);
-//  
-//  if (dist > kMaxDiff) return 9999;
-//  return dist;
-//}
-
 //___________________________________________________________________________
  void AliEMCALRecPoint::Draw(Option_t *option)
  {
@@ -359,86 +328,6 @@ Int_t AliEMCALRecPoint::Compare(const TObject * obj) const
    
    AppendPad(option);
  }
-
-// GCB, May-2010, Method not used, just comment it but remove?
-//______________________________________________________________________________
-//void AliEMCALRecPoint::ExecuteEvent(Int_t /*event*/, Int_t, Int_t)
-//{
-//  // Execute action corresponding to one event
-//  // This member function is called when a AliEMCALRecPoint is clicked with the locator
-//  //
-//  // If Left button is clicked on AliEMCALRecPoint, the digits are switched on    
-//  // and switched off when the mouse button is released.
-//
-//  //  static Int_t pxold, pyold;
-//
-//  /*  static TGraph *  digitgraph = 0 ;
-//  static TPaveText* clustertext = 0 ;
-//  
-//  if (!gPad->IsEditable()) return;
-//  
-//  switch (event) {
-//    
-//    
-//  case kButton1Down:{
-//    AliEMCALDigit * digit ;
-//
-//    Int_t iDigit;
-//    Int_t relid[2] ;
-//  
-//    const Int_t kMulDigit=AliEMCALRecPoint::GetDigitsMultiplicity() ;
-//    Float_t * xi = new Float_t [kMulDigit] ; 
-//    Float_t * zi = new Float_t [kMulDigit] ;
-//    
-//    for(iDigit = 0; iDigit < kMulDigit; iDigit++) {
-//      Fatal("AliEMCALRecPoint::ExecuteEvent", " -> Something wrong with the code"); 
-//      digit = 0 ; //dynamic_cast<AliEMCALDigit *>((fDigitsList)[iDigit]);
-//      fGeomPtr->AbsToRelNumbering(digit->GetId(), relid) ;
-//      fGeomPtr->PosInAlice(relid, xi[iDigit], zi[iDigit]) ;
-//    }
-//    
-//    if (!digitgraph) {
-//      digitgraph = new TGraph(fMulDigit,xi,zi);
-//      digitgraph-> SetMarkerStyle(5) ; 
-//      digitgraph-> SetMarkerSize(1.) ;
-//      digitgraph-> SetMarkerColor(1) ;
-//      digitgraph-> Draw("P") ;
-//    }
-//    if (!clustertext) {
-//      
-//      TVector3 pos(0.,0.,0.) ;
-//      GetLocalPosition(pos) ;
-//      clustertext = new TPaveText(pos.X()-10,pos.Z()+10,pos.X()+50,pos.Z()+35,"") ;
-//      Text_t  line1[40] ;
-//      Text_t  line2[40] ;
-//      sprintf(line1,"Energy=%1.2f GeV",GetEnergy()) ;
-//      sprintf(line2,"%d Digits",GetDigitsMultiplicity()) ;
-//      clustertext ->AddText(line1) ;
-//      clustertext ->AddText(line2) ;
-//      clustertext ->Draw("");
-//    }
-//    gPad->Update() ; 
-//    Print("") ;
-//    delete[] xi ; 
-//    delete[] zi ; 
-//   }
-//  
-//break;
-//  
-//  case kButton1Up:
-//    if (digitgraph) {
-//      delete digitgraph  ;
-//      digitgraph = 0 ;
-//    }
-//    if (clustertext) {
-//      delete clustertext ;
-//      clustertext = 0 ;
-//    }
-//    
-//    break;
-//    
-//    }*/
-//}
 
 //____________________________________________________________________________
 void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits, const Bool_t justClusters) 
@@ -565,12 +454,6 @@ void AliEMCALRecPoint::EvalDistanceToBadChannels(AliCaloCalibPedestal* caloped)
   fDigitIndMax  = GetMaximalEnergyIndex();
   fGeomPtr->GetCellIndex(fAbsIdList[fDigitIndMax], nSupMod,nModule,nIphi,nIeta);
   fGeomPtr->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi,ieta);
-
-  //	TVector3 dR;	
-  //	TVector3 cellpos;
-  //	Float_t  minDist = 100000;
-  //	Float_t  dist    = 0;
-  //	Int_t    absId   = -1;  
   
   //Loop on tower status map 
   for(Int_t irow = 0; irow < AliEMCALGeoParams::fgkEMCALRows; irow++){
@@ -583,24 +466,6 @@ void AliEMCALRecPoint::EvalDistanceToBadChannels(AliCaloCalibPedestal* caloped)
       dReta=TMath::Abs(icol-ieta);
       dist=TMath::Sqrt(dRrow*dRrow+dReta*dReta);
       if(dist < minDist) minDist = dist;
-      
-      //			//Tower is bad, get the absId of the index.
-      //			absId = fGeomPtr->GetAbsCellIdFromCellIndexes(fSuperModuleNumber, irow, icol); 
-      //			
-      //			//Get the position of this tower.
-      //			
-      //			//Calculate the distance in local coordinates
-      //			//fGeomPtr->RelPosCellInSModule(absId,cellpos);
-      //			//Calculate distance between this tower and cluster, set if is smaller than previous.
-      //			//dR = cellpos-fLocPos;
-      //			
-      //			//Calculate the distance in global coordinates
-      //			fGeomPtr->GetGlobal(absId,cellpos);
-      //			//Calculate distance between this tower and cluster, set if it is smaller than previous.
-      //			dR = cellpos-fGlobPos;
-      //			
-      //			dist = dR.Mag();
-      //			if(dist < minDist) minDist = dist;
       
     }
   }
@@ -632,20 +497,7 @@ void AliEMCALRecPoint::EvalDistanceToBadChannels(AliCaloCalibPedestal* caloped)
         
        dist=TMath::Sqrt(dRrow*dRrow+dReta*dReta);
         if(dist < minDist) minDist = dist;        
-        
-//				
-//				//Tower is bad, get the absId of the index.
-//				absId = fGeomPtr->GetAbsCellIdFromCellIndexes(nSupMod2, irow, icol); 
-//				
-//				//Get the position of this tower.
-//				
-//				//Calculate the distance in global coordinates
-//				fGeomPtr->GetGlobal(absId,cellpos);
-//				//Calculate distance between this tower and cluster, set if it is smaller than previous.
-//				dR = cellpos-fGlobPos;
-//				
-//				dist = dR.Mag();
-//				if(dist < minDist) minDist = dist;
+
       }
     }
     
@@ -679,7 +531,6 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
       continue;
     }
     
-    //fGeomPtr->RelPosCellInSModule(digit->GetId(), idMax, dist, xyzi[0], xyzi[1], xyzi[2]);
     fGeomPtr->RelPosCellInSModule(digit->GetId(), dist, xyzi[0], xyzi[1], xyzi[2]);
     
     //Temporal patch, due to mapping problem, need to swap "y" in one of the 2 SM, although no effect in position calculation. GCB 05/2010
@@ -718,7 +569,6 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
       clXYZ[i] = clRmsXYZ[i] = -1.;
     }
   }
-  // clRmsXYZ[i] ??
   
   //	// Cluster of one single digit, smear the position to avoid discrete position
   //	// smear x and z with +- 3 cm to uniform (avoid discrete effects). Tower size is approx 6 cm.
@@ -763,7 +613,6 @@ void AliEMCALRecPoint::EvalGlobalPosition(Float_t logWeight, TClonesArray * digi
     }    
     
     //Get the local coordinates of the cell
-    //fGeomPtr->RelPosCellInSModule(digit->GetId(), idMax, dist, lxyzi[0], lxyzi[1], lxyzi[2]);
     fGeomPtr->RelPosCellInSModule(digit->GetId(), dist, lxyzi[0], lxyzi[1], lxyzi[2]);
     
     //Now get the global coordinate
@@ -802,7 +651,6 @@ void AliEMCALRecPoint::EvalGlobalPosition(Float_t logWeight, TClonesArray * digi
       clXYZ[i] = clRmsXYZ[i] = -1.;
     }
   }
-  // clRmsXYZ[i] ??
 
 //  // Cluster of one single digit, smear the position to avoid discrete position
 //  // smear x and z with +- 3 cm to uniform (avoid discrete effects). Tower size is approx 6 cm.
