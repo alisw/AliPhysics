@@ -223,6 +223,7 @@ void AliESDpid::MakeTOFPID(AliESDtrack *track, Float_t /*timeZeroTOF*/) const
       p[j] = TMath::Exp(-0.5*(tof-time[j])*(tof-time[j])/(sig*sig))/sig;
 
     // Check the mismatching
+    
     Double_t mass = AliPID::ParticleMass(j);
     Double_t pm = fTOFResponse.GetMismatchProbability(track->GetP(),mass);
     if (p[j]>pm) mismatch = kFALSE;
@@ -232,14 +233,17 @@ void AliESDpid::MakeTOFPID(AliESDtrack *track, Float_t /*timeZeroTOF*/) const
 
   }
 
-  if (mismatch)
+  /*
+    if (mismatch)
     for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]=1./AliPID::kSPECIES;
+  */
 
   track->SetTOFpid(p);
 
-  if (heavy) track->ResetStatus(AliESDtrack::kTOFpid);    
-  if (!CheckTOFMatching(track)) track->SetStatus(AliESDtrack::kTOFmismatch);
+  if (heavy) track->ResetStatus(AliESDtrack::kTOFpid);
   
+  if (!CheckTOFMatching(track)) track->SetStatus(AliESDtrack::kTOFmismatch);
+  else track->ResetStatus(AliESDtrack::kTOFmismatch);
 }
 //_________________________________________________________________________
 void AliESDpid::MakeTRDPID(AliESDtrack *track) const
