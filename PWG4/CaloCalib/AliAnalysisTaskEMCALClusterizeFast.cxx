@@ -232,7 +232,9 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
     digit->SetIndexInList(idigit);
     digit->SetType(AliEMCALDigit::kHG);
     if (fRecalibOnly||fSubBackground) {
-      Double_t energy = fClusterizer->Calibrate(cellAmplitude,cellTime,cellNumber);
+      Float_t energy = cellAmplitude;
+      Float_t time    = cellTime;
+      fClusterizer->Calibrate(energy,time,cellNumber);
       digit->SetAmplitude(energy);
       avgE += energy;
     } else {
