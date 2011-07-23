@@ -417,9 +417,22 @@ void AliESDv0::GetXYZ(Double_t &x, Double_t &y, Double_t &z) const {
   z=fPos[2]; 
 }
 
+Float_t AliESDv0::GetD(Double_t x0, Double_t y0) const {
+  //--------------------------------------------------------------------
+  // This function returns V0's impact parameter calculated in 2D in XY plane
+  //--------------------------------------------------------------------
+  Double_t x=fPos[0],y=fPos[1];
+  Double_t px=fNmom[0]+fPmom[0];
+  Double_t py=fNmom[1]+fPmom[1];
+
+  Double_t dz=(x0-x)*py - (y0-y)*px;
+  Double_t d=TMath::Sqrt(dz*dz/(px*px+py*py));
+  return d;
+}
+
 Float_t AliESDv0::GetD(Double_t x0, Double_t y0, Double_t z0) const {
   //--------------------------------------------------------------------
-  // This function returns V0's impact parameter
+  // This function returns V0's impact parameter calculated in 3D
   //--------------------------------------------------------------------
   Double_t x=fPos[0],y=fPos[1],z=fPos[2];
   Double_t px=fNmom[0]+fPmom[0];
