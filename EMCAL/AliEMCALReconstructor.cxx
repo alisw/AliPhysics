@@ -48,7 +48,6 @@
 #include "AliEMCALClusterizerNxN.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALPID.h"
-#include "AliEMCALTrigger.h"
 #include "AliRawReader.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
