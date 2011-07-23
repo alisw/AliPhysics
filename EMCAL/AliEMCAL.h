@@ -42,6 +42,9 @@ class AliRawReader;
 #include "AliDetector.h"
 #include "AliEMCALGeometry.h" 
 #include "AliEMCALTrigger.h" 
+class AliEMCALRawUtils;
+#include "AliReconstructor.h"
+class AliEMCALTriggerData;
 
 class AliEMCAL : public AliDetector {
 
@@ -74,6 +77,7 @@ class AliEMCAL : public AliDetector {
 
   virtual void  SetCheckRunNumberAndGeoVersion(Bool_t check) { fCheckRunNumberAndGeoVersion = check ; }
 
+  Bool_t Raw2SDigits(AliRawReader* rawReader);
   
 protected:
   void InitConstants();  //initializes some params
@@ -85,11 +89,15 @@ protected:
   AliEMCALGeometry* fGeometry;              //!
   Bool_t   fCheckRunNumberAndGeoVersion;    // Check if run number corresponds to the requested geometry and V1 is used
   
+  //For embedding
+  static AliEMCALRawUtils    * fgRawUtils;        // raw utilities class, for embedding 
+  AliEMCALTriggerData        * fTriggerData;      // Trigger parameters data container
+
 private:
   AliEMCAL(const AliEMCAL& emcal);
   AliEMCAL & operator = (const AliEMCAL & /*rvalue*/);
 
-  ClassDef(AliEMCAL,11) // Electromagnetic calorimeter (base class)
+  ClassDef(AliEMCAL,12) // Electromagnetic calorimeter (base class)
     
 } ;
 

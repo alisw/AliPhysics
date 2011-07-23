@@ -46,6 +46,7 @@
 #pragma link C++ class AliEMCALTriggerDCSConfigDB+;
 #pragma link C++ class AliEMCALTriggerRawDigitMaker+;
 #pragma link C++ class AliEMCALTriggerRawDigit+;
+#pragma link C++ class AliEMCALTriggerData+;
 
 #endif
 

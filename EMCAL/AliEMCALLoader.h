@@ -28,8 +28,9 @@ class TTask ;
 // --- AliRoot header files ---
 #include "AliLoader.h"
 #include "AliEMCALCalibData.h"
-//#include "AliCaloCalibPedestal.h"
+#include "AliCaloCalibPedestal.h"
 #include "AliEMCALSimParam.h"
+#include "AliEMCALRecParam.h"
 
 class AliLoader ;
 class AliEMCAL ; 
@@ -85,15 +86,17 @@ class AliEMCALLoader : public AliLoader {
   //OCDB access methods
   
   void  SetCalibData(AliEMCALCalibData* calibda)  { fgCalibData = calibda; }
-  AliEMCALCalibData * CalibData(); // to get the calibration CDB object
+  AliEMCALCalibData * CalibData();              // to get the calibration CDB object
   
-  //  void  SetPedestalData(AliCaloCalibPedestal* caloped)  { fgCaloPed = caloped; }
-  //  AliCaloCalibPedestal* PedestalData(); // to get the pedestal CDB object
+  void  SetPedestalData(AliCaloCalibPedestal* caloped)  { fgCaloPed = caloped; }
+  AliCaloCalibPedestal* PedestalData();         // to get the pedestal CDB object
   
   void  SetSimParam(AliEMCALSimParam* simparam)  { fgSimParam = simparam; }
-  AliEMCALSimParam* SimulationParameters(); // to get the simulation parameter CDB object
+  AliEMCALSimParam* SimulationParameters();     // to get the simulation parameter CDB object
   
-  
+  void  SetRecParam(AliEMCALRecParam* recparam)  { fgRecParam = recparam; }
+  AliEMCALRecParam* ReconstructionParameters(Int_t eventType); // to get the reconstruction parameter CDB object
+
  private:
   
   // assignement operator requested by coding convention, but not needed
@@ -107,9 +110,10 @@ class AliEMCALLoader : public AliLoader {
   Int_t  fDebug ;             // Debug level
 	
   static AliEMCALCalibData    * fgCalibData;  //  calibration data 
-  //  static AliCaloCalibPedestal * fgCaloPed;    //  dead map
+  static AliCaloCalibPedestal * fgCaloPed;    //  dead map
   static AliEMCALSimParam     * fgSimParam;   //  sim param 
-  
+  static AliEMCALRecParam     * fgRecParam;   //  rec param 
+
   ClassDef(AliEMCALLoader,7)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
     
 };

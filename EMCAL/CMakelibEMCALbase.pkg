@@ -61,6 +61,7 @@ set ( SRCS
     AliEMCALTriggerDCSConfigDB.cxx 
     AliEMCALTriggerRawDigitMaker.cxx 
     AliEMCALTriggerRawDigit.cxx 
+    AliEMCALTriggerData.cxx
     )
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")

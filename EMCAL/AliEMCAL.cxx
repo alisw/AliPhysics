@@ -51,8 +51,16 @@ class TFile;
 #include "AliEMCALRawUtils.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
+#include "AliEMCALRawUtils.h"
+#include "AliRawReader.h"
+#include "AliEMCALTriggerData.h"
+#include "AliEMCALRecParam.h"
+#include "AliRawEventHeaderBase.h"
 
 ClassImp(AliEMCAL)
+
+//for embedding
+AliEMCALRawUtils*        AliEMCAL::fgRawUtils   = 0;   // EMCAL raw utilities class
 
 //____________________________________________________________________________
 AliEMCAL::AliEMCAL()
@@ -61,12 +69,13 @@ AliEMCAL::AliEMCAL()
     fBirkC1(0.),
     fBirkC2(0.),
     fGeometry(0), 
-    fCheckRunNumberAndGeoVersion(kTRUE)
+    fCheckRunNumberAndGeoVersion(kTRUE),
+    fTriggerData(0x0)
 {
   // Default ctor 
   fName = "EMCAL" ;
   InitConstants();
-
+  
   // Should call  AliEMCALGeometry::GetInstance(EMCAL->GetTitle(),"") for getting EMCAL geometry
 }
 
@@ -77,16 +86,26 @@ AliEMCAL::AliEMCAL(const char* name, const char* title)
     fBirkC1(0.),
     fBirkC2(0.),
     fGeometry(0), 
-    fCheckRunNumberAndGeoVersion(kTRUE)
+    fCheckRunNumberAndGeoVersion(kTRUE),
+    fTriggerData(0x0)
 {
   //   ctor : title is used to identify the layout
   InitConstants();
+  
 }
 
 //____________________________________________________________________________
 AliEMCAL::~AliEMCAL()
 {
   //dtor
+  delete fgRawUtils;
+  delete fTriggerData;
+    
+  AliLoader *emcalLoader=0;
+  if ((emcalLoader = AliRunLoader::Instance()->GetDetectorLoader("EMCAL")))
+    emcalLoader->CleanSDigitizer();
+  
+
 }
 
 //____________________________________________________________________________
@@ -296,6 +315,107 @@ void AliEMCAL::Hits2SDigits()
   AliEMCALSDigitizer emcalDigitizer(fLoader->GetRunLoader()->GetFileName().Data()) ;
   emcalDigitizer.SetEventRange(0, -1) ; // do all the events
   emcalDigitizer.ExecuteTask() ;
+}
+
+//______________________________________________________________________
+Bool_t AliEMCAL::Raw2SDigits(AliRawReader* rawReader){
+  
+  // Conversion from raw data to EMCAL sdigits. 
+  // Does the same as AliEMCALReconstructor::ConvertDigits()
+  // Needed to embed real data and simulation
+  // Works on a single-event basis
+  
+  rawReader->Reset() ; 
+  
+  //Get/create the sdigits tree and array
+	AliRunLoader *rl = AliRunLoader::Instance();
+	AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));    
+  emcalLoader->GetEvent();
+  emcalLoader->LoadSDigits("UPDATE");
+
+  TTree * treeS = emcalLoader->TreeS();
+  if ( !treeS ) { 
+    emcalLoader->MakeSDigitsContainer();
+    treeS = emcalLoader->TreeS();
+  }
+  
+  if(!emcalLoader->SDigits()) {
+    AliFatal("No sdigits array available\n");
+    return kFALSE;
+  }
+  
+  TClonesArray * sdigits = emcalLoader->SDigits();
+  sdigits->Clear("C");  
+  
+  //Trigger sdigits
+  if(!fTriggerData)fTriggerData = new AliEMCALTriggerData();
+  fTriggerData->SetMode(1);	
+  TClonesArray *digitsTrg = new TClonesArray("AliEMCALTriggerRawDigit", 32 * 96);    
+  Int_t bufsize = 32000;
+  treeS->Branch("EMTRG", &digitsTrg, bufsize);
+  
+  
+  //Only physics events
+  if (rawReader->GetType()== AliRawEventHeaderBase::kPhysicsEvent) {
+
+    if(!fgRawUtils)  fgRawUtils   = new AliEMCALRawUtils;
+    //must be done here because, in constructor, option is not yet known
+    fgRawUtils->SetOption(GetOption());
+    
+    // Set parameters from OCDB to raw utils
+    AliEMCALRecParam* recpar = emcalLoader->ReconstructionParameters(0);
+    // fgRawUtils->SetRawFormatHighLowGainFactor(recpar->GetHighLowGainFactor());
+    // fgRawUtils->SetRawFormatOrder(recpar->GetOrderParameter());
+    // fgRawUtils->SetRawFormatTau(recpar->GetTau());
+    fgRawUtils->SetNoiseThreshold(recpar->GetNoiseThreshold());
+    fgRawUtils->SetNPedSamples(recpar->GetNPedSamples());
+    fgRawUtils->SetRemoveBadChannels(recpar->GetRemoveBadChannels());
+    fgRawUtils->SetFittingAlgorithm(recpar->GetFittingAlgorithm());
+    fgRawUtils->SetFALTROUsage(recpar->UseFALTRO());
+    // fgRawUtils->SetTimeMin(recpar->GetTimeMin());
+    // fgRawUtils->SetTimeMax(recpar->GetTimeMax());
+
+    //Fit
+    fgRawUtils->Raw2Digits(rawReader,sdigits,emcalLoader->PedestalData(),digitsTrg,fTriggerData);
+    
+  }//skip calibration event
+  else{
+    AliDebug(1," Calibration Event, skip!");
+  }
+  
+  //Final arrangements of the array, set all sdigits as embedded
+  sdigits->Sort() ;
+  for (Int_t iSDigit = 0 ; iSDigit < sdigits->GetEntriesFast() ; iSDigit++) { 
+    AliEMCALDigit * sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(iSDigit)) ;
+    if(sdigit){
+      sdigit->SetIndexInList(iSDigit) ;
+      sdigit->SetType(AliEMCALDigit::kEmbedded);
+    }
+    else {
+      AliFatal("sdigit is NULL!");
+    }
+  }	
+  
+  AliDebug(1,Form("Embedded sdigits entries %d \n",sdigits->GetEntriesFast()));
+  
+  //Write array, clean arrays, unload ..
+  
+  Int_t bufferSize = 32000 ;    
+  TBranch * sdigitsBranch = treeS->GetBranch("EMCAL");
+  if (sdigitsBranch)
+    sdigitsBranch->SetAddress(&sdigits);
+  else
+    treeS->Branch("EMCAL",&sdigits,bufferSize);
+  
+  treeS->Fill();
+  emcalLoader->WriteSDigits("OVERWRITE");
+  emcalLoader->UnloadSDigits();
+
+  digitsTrg->Delete();
+  delete digitsTrg;
+    
+  return kTRUE;
+  
 }
 
 //____________________________________________________________________________

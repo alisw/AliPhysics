@@ -54,8 +54,9 @@ const TString         AliEMCALLoader::fgkECADigitsBranchName("DIGITS");//Name fo
 const TString         AliEMCALLoader::fgkECASDigitsBranchName("SDIGITS");//Name for branch with ECA SDigits
 
 AliEMCALCalibData*    AliEMCALLoader::fgCalibData = 0; //calibration data
-//AliCaloCalibPedestal* AliEMCALLoader::fgCaloPed   = 0; //dead map data
+AliCaloCalibPedestal* AliEMCALLoader::fgCaloPed   = 0; //dead map data
 AliEMCALSimParam*     AliEMCALLoader::fgSimParam  = 0; //simulation parameters
+AliEMCALRecParam*     AliEMCALLoader::fgRecParam  = 0; //reconstruction parameters
 
 //____________________________________________________________________________ 
 AliEMCALLoader::AliEMCALLoader()
@@ -123,24 +124,24 @@ AliEMCALCalibData* AliEMCALLoader::CalibData()
 }
 
 //____________________________________________________________________________ 
-//AliCaloCalibPedestal* AliEMCALLoader::PedestalData()
-//{ 
-//	// Check if the instance of AliCaloCalibPedestal exists, if not, create it if 
-//	// the OCDB is available, and finally return it.
-//	
-//	if(!fgCaloPed && (AliCDBManager::Instance()->IsDefaultStorageSet()))
-//    {
-//		AliCDBEntry *entry = (AliCDBEntry*) 
-//		AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
-//		if (entry) fgCaloPed =  (AliCaloCalibPedestal*) entry->GetObject();
-//    }
-//	
-//	if(!fgCaloPed)
-//		AliFatal("Pedestal info not found in CDB!");
-//	
-//	return fgCaloPed;
-//	
-//}
+AliCaloCalibPedestal* AliEMCALLoader::PedestalData()
+{ 
+	// Check if the instance of AliCaloCalibPedestal exists, if not, create it if 
+	// the OCDB is available, and finally return it.
+	
+	if(!fgCaloPed && (AliCDBManager::Instance()->IsDefaultStorageSet()))
+    {
+		AliCDBEntry *entry = (AliCDBEntry*) 
+		AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
+		if (entry) fgCaloPed =  (AliCaloCalibPedestal*) entry->GetObject();
+    }
+	
+	if(!fgCaloPed)
+		AliFatal("Pedestal info not found in CDB!");
+	
+	return fgCaloPed;
+	
+}
 
 //____________________________________________________________________________ 
 AliEMCALSimParam* AliEMCALLoader::SimulationParameters()
@@ -151,7 +152,7 @@ AliEMCALSimParam* AliEMCALLoader::SimulationParameters()
   if(!fgSimParam && (AliCDBManager::Instance()->IsDefaultStorageSet()))
     {
       AliCDBEntry *entry = (AliCDBEntry*) 
-	AliCDBManager::Instance()->Get("EMCAL/Calib/SimParam");
+      AliCDBManager::Instance()->Get("EMCAL/Calib/SimParam");
       if (entry) fgSimParam =  (AliEMCALSimParam*) entry->GetObject();
       
     }
@@ -163,13 +164,37 @@ AliEMCALSimParam* AliEMCALLoader::SimulationParameters()
   
 }
 
+
+//____________________________________________________________________________ 
+AliEMCALRecParam* AliEMCALLoader::ReconstructionParameters(Int_t eventType = 0)
+{ 
+  // Check if the instance of AliEMCALRecParam exists, if not, create it if 
+  // the OCDB is available, and finally return it. 
+  // The event type must be provided.
+  
+  if(!fgRecParam && (AliCDBManager::Instance()->IsDefaultStorageSet()))
+  {
+    AliCDBEntry *entry = (AliCDBEntry*) 
+    AliCDBManager::Instance()->Get("EMCAL/Calib/RecoParam");
+    if (entry) fgRecParam =  (AliEMCALRecParam*)((TObjArray *) entry->GetObject())->At(eventType);
+    
+  }
+  
+  if(!fgRecParam)
+    AliFatal("Reconstruction parameters not found in CDB!");
+  
+  return fgRecParam;
+  
+}
+
+
 //____________________________________________________________________________ 
 Int_t AliEMCALLoader::GetEvent() 
 {
   //Method to load all of the data
   //members of the EMCAL for a given
   //event from the Trees
-  
+
   AliLoader::GetEvent();  // First call AliLoader to do all the groundwork
   
   // *** Hits ***

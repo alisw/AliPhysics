@@ -35,8 +35,7 @@ set ( SRCS
     AliEMCALTriggerBoard.cxx 
     AliEMCALTriggerPatch.cxx 
     AliEMCALTriggerSTU.cxx 
-    AliEMCALTriggerTRU.cxx 
-    AliEMCALTriggerData.cxx 
+    AliEMCALTriggerTRU.cxx  
     AliEMCALTriggerElectronics.cxx 
     )
 
