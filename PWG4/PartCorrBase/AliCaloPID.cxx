@@ -42,14 +42,12 @@
 // --- ROOT system ---
 #include <TMath.h>
 #include <TString.h>
-//#include <TFormula.h>
 
 //---- ANALYSIS system ----
 #include "AliCaloPID.h"
 #include "AliVCluster.h"
 #include "AliVTrack.h"
 #include "AliAODPWG4Particle.h"
-#include "AliEMCALPIDUtils.h"
 #include "AliCalorimeterUtils.h"
 
 ClassImp(AliCaloPID)
@@ -57,21 +55,20 @@ ClassImp(AliCaloPID)
 
 //________________________________________________
 AliCaloPID::AliCaloPID() : 
-TObject(), fEMCALPhotonWeight(0.), fEMCALPi0Weight(0.),  
-fEMCALElectronWeight(0.),  fEMCALChargeWeight(0.),
-fEMCALNeutralWeight(0.),
-fPHOSPhotonWeight(0.), fPHOSPi0Weight(0.),  
-fPHOSElectronWeight(0.), fPHOSChargeWeight(0.) , 
-fPHOSNeutralWeight(0.), //fPHOSWeightFormula(0), 
-//fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
-fDispCut(0.),fTOFCut(0.), fDebug(-1), 
-fRecalculateBayesian(kFALSE), fParticleFlux(kLow), 
-fEMCALPIDUtils(new AliEMCALPIDUtils),
-fHistoNEBins(100),   fHistoEMax(100.),   fHistoEMin(0.),
-fHistoNDEtaBins(100),fHistoDEtaMax(0.15),fHistoDEtaMin(-0.15),
-fHistoNDPhiBins(100),fHistoDPhiMax(0.15),fHistoDPhiMin(-0.15),
-fhTrackMatchedDEta(0x0),fhTrackMatchedDPhi(0x0),fhTrackMatchedDEtaDPhi(0x0)
-
+TObject(), 
+fEMCALPhotonWeight(0.),   fEMCALPi0Weight(0.),  
+fEMCALElectronWeight(0.), fEMCALChargeWeight(0.),      fEMCALNeutralWeight(0.),
+fPHOSPhotonWeight(0.),    fPHOSPi0Weight(0.),  
+fPHOSElectronWeight(0.),  fPHOSChargeWeight(0.) ,      fPHOSNeutralWeight(0.), 
+fPHOSWeightFormula(0),    fPHOSPhotonWeightFormula(0), fPHOSPi0WeightFormula(0),
+fPHOSPhotonWeightFormulaExpression(""), fPHOSPi0WeightFormulaExpression(""),
+fDispCut(0.),             fTOFCut(0.), 
+fDebug(-1), 
+fRecalculateBayesian(kFALSE), fParticleFlux(kLow),     fEMCALPIDUtils(),
+fHistoNEBins(100),        fHistoEMax(100.),            fHistoEMin(0.),
+fHistoNDEtaBins(100),     fHistoDEtaMax(0.15),         fHistoDEtaMin(-0.15),
+fHistoNDPhiBins(100),     fHistoDPhiMax(0.15),         fHistoDPhiMin(-0.15),
+fhTrackMatchedDEta(0x0),  fhTrackMatchedDPhi(0x0),     fhTrackMatchedDEtaDPhi(0x0)
 {
   //Ctor
   
@@ -81,21 +78,20 @@ fhTrackMatchedDEta(0x0),fhTrackMatchedDPhi(0x0),fhTrackMatchedDEtaDPhi(0x0)
 
 //________________________________________________
 AliCaloPID::AliCaloPID(const Int_t flux) : 
-TObject(), fEMCALPhotonWeight(0.), fEMCALPi0Weight(0.),  
-fEMCALElectronWeight(0.),  fEMCALChargeWeight(0.),
-fEMCALNeutralWeight(0.),
-fPHOSPhotonWeight(0.), fPHOSPi0Weight(0.),  
-fPHOSElectronWeight(0.), fPHOSChargeWeight(0.) , 
-fPHOSNeutralWeight(0.), //fPHOSWeightFormula(0), 
-//fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
-fDispCut(0.),fTOFCut(0.), fDebug(-1), 
-fRecalculateBayesian(kTRUE), fParticleFlux(flux), 
-fEMCALPIDUtils(new AliEMCALPIDUtils),
-fHistoNEBins(100),   fHistoEMax(100.),   fHistoEMin(0.),
-fHistoNDEtaBins(100),fHistoDEtaMax(0.15),fHistoDEtaMin(-0.15),
-fHistoNDPhiBins(100),fHistoDPhiMax(0.15),fHistoDPhiMin(-0.15),
-fhTrackMatchedDEta(),fhTrackMatchedDPhi(),fhTrackMatchedDEtaDPhi()
-
+TObject(), 
+fEMCALPhotonWeight(0.),   fEMCALPi0Weight(0.),  
+fEMCALElectronWeight(0.), fEMCALChargeWeight(0.),      fEMCALNeutralWeight(0.),
+fPHOSPhotonWeight(0.),    fPHOSPi0Weight(0.),  
+fPHOSElectronWeight(0.),  fPHOSChargeWeight(0.) ,      fPHOSNeutralWeight(0.), 
+fPHOSWeightFormula(0),    fPHOSPhotonWeightFormula(0), fPHOSPi0WeightFormula(0),
+fPHOSPhotonWeightFormulaExpression(""), fPHOSPi0WeightFormulaExpression(""),
+fDispCut(0.),             fTOFCut(0.), 
+fDebug(-1), 
+fRecalculateBayesian(kFALSE), fParticleFlux(flux),     fEMCALPIDUtils(),
+fHistoNEBins(100),        fHistoEMax(100.),            fHistoEMin(0.),
+fHistoNDEtaBins(100),     fHistoDEtaMax(0.15),         fHistoDEtaMin(-0.15),
+fHistoNDPhiBins(100),     fHistoDPhiMax(0.15),         fHistoDPhiMin(-0.15),
+fhTrackMatchedDEta(0x0),  fhTrackMatchedDPhi(0x0),     fhTrackMatchedDEtaDPhi(0x0)
 {
 	//Ctor
 	
@@ -105,21 +101,20 @@ fhTrackMatchedDEta(),fhTrackMatchedDPhi(),fhTrackMatchedDEtaDPhi()
 
 //________________________________________________
 AliCaloPID::AliCaloPID(const TTask * emcalpid) : 
-TObject(), fEMCALPhotonWeight(0.), fEMCALPi0Weight(0.),  
-fEMCALElectronWeight(0.),  fEMCALChargeWeight(0.),
-fEMCALNeutralWeight(0.),
-fPHOSPhotonWeight(0.), fPHOSPi0Weight(0.),  
-fPHOSElectronWeight(0.), fPHOSChargeWeight(0.) , 
-fPHOSNeutralWeight(0.), //fPHOSWeightFormula(0), 
-//fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0),
-fDispCut(0.),fTOFCut(0.), fDebug(-1), 
-fRecalculateBayesian(kTRUE), fParticleFlux(-1), 
-fEMCALPIDUtils( (AliEMCALPIDUtils*) emcalpid),
-fHistoNEBins(100),   fHistoEMax(100.),   fHistoEMin(0.),
-fHistoNDEtaBins(100),fHistoDEtaMax(0.15),fHistoDEtaMin(-0.15),
-fHistoNDPhiBins(100),fHistoDPhiMax(0.15),fHistoDPhiMin(-0.15),
-fhTrackMatchedDEta(),fhTrackMatchedDPhi(),fhTrackMatchedDEtaDPhi()
-
+TObject(), 
+fEMCALPhotonWeight(0.),   fEMCALPi0Weight(0.),  
+fEMCALElectronWeight(0.), fEMCALChargeWeight(0.),      fEMCALNeutralWeight(0.),
+fPHOSPhotonWeight(0.),    fPHOSPi0Weight(0.),  
+fPHOSElectronWeight(0.),  fPHOSChargeWeight(0.) ,      fPHOSNeutralWeight(0.), 
+fPHOSWeightFormula(0),    fPHOSPhotonWeightFormula(0), fPHOSPi0WeightFormula(0),
+fPHOSPhotonWeightFormulaExpression(""), fPHOSPi0WeightFormulaExpression(""),
+fDispCut(0.),             fTOFCut(0.), 
+fDebug(-1), 
+fRecalculateBayesian(kFALSE), fParticleFlux(kLow),     fEMCALPIDUtils((AliEMCALPIDUtils*) emcalpid),
+fHistoNEBins(100),        fHistoEMax(100.),            fHistoEMin(0.),
+fHistoNDEtaBins(100),     fHistoDEtaMax(0.15),         fHistoDEtaMin(-0.15),
+fHistoNDPhiBins(100),     fHistoDPhiMax(0.15),         fHistoDPhiMin(-0.15),
+fhTrackMatchedDEta(0x0),  fhTrackMatchedDPhi(0x0),     fhTrackMatchedDEtaDPhi(0x0)
 {
 	//Ctor
 	
@@ -131,9 +126,9 @@ fhTrackMatchedDEta(),fhTrackMatchedDPhi(),fhTrackMatchedDEtaDPhi()
 AliCaloPID::~AliCaloPID() {
   //Dtor
   
-//  if(fPHOSPhotonWeightFormula) delete fPHOSPhotonWeightFormula ;
-//  if(fPHOSPi0WeightFormula)    delete fPHOSPi0WeightFormula ;
-  if(fEMCALPIDUtils)           delete fEMCALPIDUtils ;
+  delete fPHOSPhotonWeightFormula ;
+  delete fPHOSPi0WeightFormula ;
+  delete fEMCALPIDUtils ;
 }
 
 
@@ -150,7 +145,8 @@ TList *  AliCaloPID::GetCreateOutputObjects()
   
   fhTrackMatchedDEta  = new TH2F
   ("TrackMatchedDEta",
-   "d#eta of cluster-track vs cluster energy",fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNDEtaBins,fHistoDEtaMin,fHistoDEtaMax); 
+   "d#eta of cluster-track vs cluster energy",
+   fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNDEtaBins,fHistoDEtaMin,fHistoDEtaMax); 
   fhTrackMatchedDEta->SetYTitle("d#eta");
   fhTrackMatchedDEta->SetXTitle("E_{cluster} (GeV)");
   
@@ -195,17 +191,13 @@ void AliCaloPID::InitParameters()
   fPHOSNeutralWeight   = 0.6 ;
   
   //Formula to set the PID weight threshold for photon or pi0
-  //fPHOSWeightFormula = kTRUE;
-  //if(fPHOSPhotonWeightFormula) delete fPHOSPhotonWeightFormula;
-  //if(fPHOSPi0WeightFormula)    delete fPHOSPi0WeightFormula;
-  //fPHOSPhotonWeightFormula = 
-    //new TFormula("photonWeight","0.98*(x<40)+ 0.68*(x>=100)+(x>=40 && x<100)*(0.98+x*(6e-3)-x*x*(2e-04)+x*x*x*(1.1e-06))");
-  //fPHOSPi0WeightFormula = 
-    //new TFormula("pi0Weight","0.98*(x<65)+ 0.915*(x>=100)+(x>=65 && x-x*(1.95e-3)-x*x*(4.31e-05)+x*x*x*(3.61e-07))");
+  fPHOSWeightFormula       = kFALSE;
+  fPHOSPhotonWeightFormulaExpression = "0.98*(x<40)+ 0.68*(x>=100)+(x>=40 && x<100)*(0.98+x*(6e-3)-x*x*(2e-04)+x*x*x*(1.1e-06))";
+  fPHOSPi0WeightFormulaExpression    = "0.98*(x<65)+ 0.915*(x>=100)+(x>=65 && x-x*(1.95e-3)-x*x*(4.31e-05)+x*x*x*(3.61e-07))"   ;
   
-  fDispCut  = 0.25;
-  fTOFCut   = 5.e-9;
-  fDebug = -1;
+  fDispCut = 0.3;
+  fTOFCut  = 5.e-9;
+  fDebug   =-1;
 	
   if(fRecalculateBayesian){
 	if(fParticleFlux == kLow){
@@ -220,7 +212,7 @@ void AliCaloPID::InitParameters()
 }
 
 //_______________________________________________________________
-Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t energy) const {
+Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t energy) {
   //Return most probable identity of the particle.
   
   if(!pid){ 
@@ -233,12 +225,11 @@ Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t
   Float_t wE   =  fPHOSElectronWeight ;
   Float_t wCh  =  fPHOSChargeWeight ;
   Float_t wNe  =  fPHOSNeutralWeight ;
-  
-  
-//  if(calo == "PHOS" && fPHOSWeightFormula){
-//    wPh  = fPHOSPhotonWeightFormula->Eval(energy) ;
-//    wPi0 = fPHOSPi0WeightFormula->Eval(energy);
-//  }
+    
+  if(calo == "PHOS" && fPHOSWeightFormula){
+    wPh  = GetPHOSPhotonWeightFormula()->Eval(energy) ;
+    wPi0 = GetPHOSPi0WeightFormula()   ->Eval(energy);
+  }
   
   if(calo == "EMCAL"){
     
@@ -265,12 +256,12 @@ Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t
   
   //Select most probable ID
   if(calo=="PHOS"){
-    if(pid[AliVCluster::kPhoton] > wPh) pdg = kPhoton ;
-    else if(pid[AliVCluster::kPi0] > wPi0) pdg = kPi0 ; 
+    if(pid[AliVCluster::kPhoton] > wPh)        pdg = kPhoton ;
+    else if(pid[AliVCluster::kPi0] > wPi0)     pdg = kPi0 ; 
     else if(pid[AliVCluster::kElectron] > wE)  pdg = kElectron ;
-    else if(pid[AliVCluster::kEleCon] >  wE) pdg = kEleCon ;
-    else if(chargedHadronWeight > wCh) pdg = kChargedHadron ;  
-    else if(neutralHadronWeight > wNe) pdg = kNeutralHadron ; 
+    else if(pid[AliVCluster::kEleCon] >  wE)   pdg = kEleCon ;
+    else if(chargedHadronWeight > wCh)         pdg = kChargedHadron ;  
+    else if(neutralHadronWeight > wNe)         pdg = kNeutralHadron ; 
     else if(allChargedWeight >  allNeutralWeight)
       pdg = kChargedUnknown ; 
     else 
@@ -288,51 +279,46 @@ Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t
   }
   
   if(fDebug > 0)printf("AliCaloPID::GetPdg:Final Pdg: %d, cluster energy %2.2f \n", pdg,energy);
-   
+   //printf("PDG1\n");
   return pdg ;
   
 }
 
 //_______________________________________________________________
-Int_t AliCaloPID::GetPdg(const TString calo,const TLorentzVector mom, const AliVCluster * cluster) const {
+Int_t AliCaloPID::GetPdg(const TString calo,const TLorentzVector mom, const AliVCluster * cluster) {
   //Recalculated PID with all parameters
+  
   Float_t lambda0 = cluster->GetM02();
-  Float_t energy = mom.E();	
-
+  Float_t energy  = mom.E();	
+  
   if(fDebug > 0) printf("AliCaloPID::GetPdg: Calorimeter %s, E %3.2f, l0 %3.2f, l1 %3.2f, disp %3.2f, tof %1.11f, distCPV %3.2f, distToBC %1.1f, NMax %d\n",
-						calo.Data(),energy,lambda0,cluster->GetM20(),cluster->GetDispersion(),cluster->GetTOF(), 
-						cluster->GetEmcCpvDistance(), cluster->GetDistanceToBadChannel(),cluster->GetNExMax());
-
+                        calo.Data(),energy,lambda0,cluster->GetM20(),cluster->GetDispersion(),cluster->GetTOF(), 
+                        cluster->GetEmcCpvDistance(), cluster->GetDistanceToBadChannel(),cluster->GetNExMax());
+  
   if(calo == "EMCAL") {
 	  //Recalculate Bayesian
 	  if(fRecalculateBayesian){	  
 		  if(fDebug > 0)  {
 			  const Double_t  *pid0 = cluster->GetPID();
 			  printf("AliCaloPID::GetPdg: BEFORE calo %s, ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f, hadrons: pion %0.2f, kaon %0.2f, proton %0.2f , neutron %0.2f, kaon %0.2f \n",
-								 calo.Data(),pid0[AliVCluster::kPhoton], pid0[AliVCluster::kPi0],
-								 pid0[AliVCluster::kElectron], pid0[AliVCluster::kEleCon],
-								 pid0[AliVCluster::kPion], pid0[AliVCluster::kKaon], pid0[AliVCluster::kProton],
-								 pid0[AliVCluster::kNeutron], pid0[AliVCluster::kKaon0]);
+               calo.Data(),pid0[AliVCluster::kPhoton], pid0[AliVCluster::kPi0],
+               pid0[AliVCluster::kElectron], pid0[AliVCluster::kEleCon],
+               pid0[AliVCluster::kPion], pid0[AliVCluster::kKaon], pid0[AliVCluster::kProton],
+               pid0[AliVCluster::kNeutron], pid0[AliVCluster::kKaon0]);
 		  }
 		  
-		 fEMCALPIDUtils->ComputePID(energy, lambda0);
-		 Double_t pid[AliPID::kSPECIESN];
-		 for(Int_t i = 0; i < AliPID::kSPECIESN; i++) pid[i] = fEMCALPIDUtils->GetPIDFinal(i);
-		 return GetPdg(calo, pid, energy);
+      fEMCALPIDUtils->ComputePID(energy, lambda0);
+      Double_t pid[AliPID::kSPECIESN];
+      for(Int_t i = 0; i < AliPID::kSPECIESN; i++) pid[i] = fEMCALPIDUtils->GetPIDFinal(i);
+      return GetPdg(calo, pid, energy);
 		  
-	  
-	}
-	  
-	  // If no use of bayesian, simple PID  
-	  if(lambda0 < 0.25) return kPhoton ;
-	  //else return  kNeutralHadron ; 
-	  else return  kPi0 ;
+    }
   }
   
-  //   if(calo == "PHOS") {
-  //    if(cluster->GetM02()< 0.25) return kPhoton ;
-  //    else return  kNeutralHadron ; 
-  //  }
+  // If no use of bayesian, simplest PID  
+  if(lambda0 < fDispCut) return kPhoton ;
+  //else return  kNeutralHadron ; 
+  else return  kPi0 ;
   
   return  kNeutralHadron ; 
   
@@ -372,12 +358,12 @@ TString  AliCaloPID::GetPIDParametersList()  {
   snprintf(onePar,buffersize,"fPHOSNeutralWeight =%2.2f (PHOS bayesian weight for neutral hadrons)\n",fPHOSNeutralWeight) ;
   parList+=onePar ;
   
-//  if(fPHOSWeightFormula){
-//	sprintf(onePar,buffersize,"PHOS Photon Weight Formula: %s\n",(fPHOSPhotonWeightFormula->GetExpFormula("p")).Data()) ;
-//    parList+=onePar;
-//	sprintf(onePar,buffersize,"PHOS Pi0    Weight Formula: %s\n",(fPHOSPi0WeightFormula->GetExpFormula("p")).Data()) ;
-//	parList+=onePar;	  
-//  }
+  if(fPHOSWeightFormula){
+    snprintf(onePar,buffersize,"PHOS Photon Weight Formula: %s\n",fPHOSPhotonWeightFormulaExpression.Data() ) ;
+    parList+=onePar;
+    snprintf(onePar,buffersize,"PHOS Pi0    Weight Formula: %s\n",fPHOSPi0WeightFormulaExpression.Data()    ) ;
+    parList+=onePar;	  
+  }
   
   return parList; 
   
@@ -400,11 +386,11 @@ void AliCaloPID::Print(const Option_t * opt) const
 	 fEMCALPhotonWeight,  fEMCALPi0Weight, 
 	 fEMCALElectronWeight,  fEMCALChargeWeight,  fEMCALNeutralWeight) ; 
   
-//  printf("PHOS Parametrized weight on?  =     %d\n",  fPHOSWeightFormula) ; 
-//  if(fPHOSWeightFormula){
-//    printf("Photon weight formula = %s\n", (fPHOSPhotonWeightFormula->GetExpFormula("p")).Data());
-//    printf("Pi0    weight formula = %s\n", (fPHOSPhotonWeightFormula->GetExpFormula("p")).Data());
-//  }
+  printf("PHOS Parametrized weight on?  =     %d\n",  fPHOSWeightFormula) ; 
+  if(fPHOSWeightFormula){
+    printf("Photon weight formula = %s\n", fPHOSPhotonWeightFormulaExpression.Data());
+    printf("Pi0    weight formula = %s\n", fPHOSPi0WeightFormulaExpression   .Data());
+  }
   
   printf("TOF cut        = %e\n",fTOFCut);
   printf("Dispersion cut = %2.2f\n",fDispCut);
@@ -427,15 +413,15 @@ void AliCaloPID::SetPIDBits(const TString calo, const AliVCluster * cluster, Ali
   if(cluster->IsPHOS()){
     
     if(l1>= 0   && l0>= 0   && l1 < 0.1 && l0 < 0.1) isDispOK=kFALSE ;
-    if(l1>= 0   && l0 > 0.5 && l1 < 0.1 && l0 < 1.5) isDispOK=kTRUE ;
+    if(l1>= 0   && l0 > 0.5 && l1 < 0.1 && l0 < 1.5) isDispOK=kTRUE  ;
     if(l1>= 0   && l0 > 2.0 && l1 < 0.1 && l0 < 2.7) isDispOK=kFALSE ;
     if(l1>= 0   && l0 > 2.7 && l1 < 0.1 && l0 < 4.0) isDispOK=kFALSE ;
-    if(l1 > 0.1 && l1 < 0.7 && l0 > 0.7 && l0 < 2.1) isDispOK=kTRUE ;
-    if(l1 > 0.1 && l1 < 0.3 && l0 > 3.0 && l0 < 5.0) isDispOK=kFALSE  ;
+    if(l1 > 0.1 && l1 < 0.7 && l0 > 0.7 && l0 < 2.1) isDispOK=kTRUE  ;
+    if(l1 > 0.1 && l1 < 0.3 && l0 > 3.0 && l0 < 5.0) isDispOK=kFALSE ;
     if(l1 > 0.3 && l1 < 0.7 && l0 > 2.5 && l0 < 4.0) isDispOK=kFALSE ;
-    if(l1 > 0.7 && l1 < 1.3 && l0 > 1.0 && l0 < 1.6) isDispOK=kTRUE ;
-    if(l1 > 0.7 && l1 < 1.3 && l0 > 1.6 && l0 < 3.5) isDispOK=kTRUE ;
-    if(l1 > 1.3 && l1 < 3.5 && l0 > 1.3 && l0 < 3.5) isDispOK=kTRUE ;    
+    if(l1 > 0.7 && l1 < 1.3 && l0 > 1.0 && l0 < 1.6) isDispOK=kTRUE  ;
+    if(l1 > 0.7 && l1 < 1.3 && l0 > 1.6 && l0 < 3.5) isDispOK=kTRUE  ;
+    if(l1 > 1.3 && l1 < 3.5 && l0 > 1.3 && l0 < 3.5) isDispOK=kTRUE  ;    
     
   }
   else{//EMCAL
@@ -521,19 +507,7 @@ Bool_t AliCaloPID::IsTrackMatched(const AliVCluster* cluster, const AliCalorimet
     
   }//ESDs
   else
-  {
-//    //Patched AODs
-//    if(cu && cu->IsRecalculationOfClusterTrackMatchingOn()){
-//      Float_t dR = TMath::Abs(cluster->GetEmcCpvDistance()) ; //FIXME
-//      if(dR > cu->GetCutR()) return kFALSE;
-//      else                   return kTRUE;
-//    }
-//    else {
-//      if(nMatches > 0) return kTRUE; //There is at least one match.
-//      else             return kFALSE;
-    
-//    }
-    
+  {    
     if(nMatches > 0) return kTRUE; //There is at least one match.
     else             return kFALSE;
     

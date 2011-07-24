@@ -47,8 +47,9 @@ ClassImp(AliCalorimeterUtils)
     fEMCALGeoMatrixSet(kFALSE), fPHOSGeoMatrixSet(kFALSE), 
     fLoadEMCALMatrices(kFALSE), fLoadPHOSMatrices(kFALSE),
     fRemoveBadChannels(kFALSE),fPHOSBadChannelMap(0x0), 
-    fNCellsFromPHOSBorder(0), fRecalibration(kFALSE),
-    fPHOSRecalibrationFactors(),
+    fNCellsFromPHOSBorder(0),
+    fNMaskCellColumns(0), fMaskCellColumns(0x0),
+    fRecalibration(kFALSE), fPHOSRecalibrationFactors(),
     fEMCALRecoUtils(new AliEMCALRecoUtils),
     fRecalculatePosition(kFALSE),fCorrectELinearity(kFALSE),
     fRecalculateMatching(kFALSE),fCutR(20), fCutZ(20)
@@ -79,7 +80,8 @@ AliCalorimeterUtils::~AliCalorimeterUtils() {
     delete  fPHOSRecalibrationFactors;
   }
 	
-  if(fEMCALRecoUtils) delete fEMCALRecoUtils ;
+  if(fEMCALRecoUtils)   delete fEMCALRecoUtils ;
+  if(fNMaskCellColumns) delete [] fMaskCellColumns;
   
 }
 
@@ -431,6 +433,14 @@ void AliCalorimeterUtils::InitParameters()
   fRemoveBadChannels   = kFALSE;
 	
   fNCellsFromPHOSBorder    = 0;
+  
+//  fMaskCellColumns = new Int_t[fNMaskCellColumns];
+//  fMaskCellColumns[0] = 6 ;  fMaskCellColumns[1] = 7 ;  fMaskCellColumns[2] = 8 ; 
+//  fMaskCellColumns[3] = 35;  fMaskCellColumns[4] = 36;  fMaskCellColumns[5] = 37; 
+//  fMaskCellColumns[6] = 12+AliEMCALGeoParams::fgkEMCALCols; fMaskCellColumns[7] = 13+AliEMCALGeoParams::fgkEMCALCols;
+//  fMaskCellColumns[8] = 40+AliEMCALGeoParams::fgkEMCALCols; fMaskCellColumns[9] = 41+AliEMCALGeoParams::fgkEMCALCols; 
+//  fMaskCellColumns[10]= 42+AliEMCALGeoParams::fgkEMCALCols; 
+  
 }
 
 
@@ -526,6 +536,25 @@ void AliCalorimeterUtils::Print(const Option_t * opt) const
 
   printf("    \n") ;
 } 
+
+//__________________________________________________
+Bool_t AliCalorimeterUtils::MaskFrameCluster(const Int_t iSM,  const Int_t ieta) const {
+  //Check if cell is in one of the regions where we have significant amount 
+  //of material in front. Only EMCAL
+  
+  Int_t icol = ieta;
+  if(iSM%2) icol+=48; // Impair SM, shift index [0-47] to [48-96]
+  
+  if (fNMaskCellColumns && fMaskCellColumns) {
+    for (Int_t imask = 0; imask < fNMaskCellColumns; imask++) {
+      if(icol==fMaskCellColumns[imask]) return kTRUE;
+    }
+  }
+  
+  return kFALSE;
+  
+}
+
 
 //________________________________________________________________
 Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster, AliVCaloCells * cells){

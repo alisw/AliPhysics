@@ -66,11 +66,7 @@ ClassImp(AliCaloTrackReader)
     fFillCTS(0),fFillEMCAL(0),fFillPHOS(0),
     fFillEMCALCells(0),fFillPHOSCells(0),  fSelectEmbeddedClusters(kFALSE),
     fSmearClusterEnergy(kFALSE), fRandom(),
-//    fSecondInputAODTree(0x0), fSecondInputAODEvent(0x0),
-//    fSecondInputFileName(""),fSecondInputFirstEvent(0), 
-//    fCTSTracksNormalInputEntries(0), fEMCALClustersNormalInputEntries(0), 
-//    fPHOSClustersNormalInputEntries(0), 
-    fTrackStatus(0),   fESDtrackCuts(0), fTrackMult(0), fTrackMultEtaCut(0.8),
+    fTrackStatus(0), fTrackFilterMask(0), fESDtrackCuts(0), fTrackMult(0), fTrackMultEtaCut(0.8),
     fReadStack(kFALSE), fReadAODMCParticles(kFALSE), 
     fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName(""),
     fAnaLED(kFALSE),fTaskName(""),fCaloUtils(0x0), 
@@ -117,14 +113,6 @@ AliCaloTrackReader::~AliCaloTrackReader() {
     delete fPHOSClusters ;
   }
   
-//  if(fEMCALCells){
-//    delete fEMCALCells ;
-//  }
-//  
-//  if(fPHOSCells){
-//    delete fPHOSCells ;
-//  }
-
   if(fVertex){
     for (Int_t i = 0; i < fNMixedEvent; i++) {
       delete [] fVertex[i] ;
@@ -335,8 +323,9 @@ void AliCaloTrackReader::InitParameters()
   //We want tracks fitted in the detectors:
   //fTrackStatus=AliESDtrack::kTPCrefit;
   //fTrackStatus|=AliESDtrack::kITSrefit;  
+  fTrackFilterMask = 128; //For AODs, but what is the difference between fTrackStatus and fTrackFilterMask?
   
-  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+  fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //initialize with TPC only tracks 
 
   fV0ADC[0] = 0;   fV0ADC[1] = 0; 
   fV0Mul[0] = 0;   fV0Mul[1] = 0; 
@@ -377,6 +366,7 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Use EMCAL Cells =     %d\n", fFillEMCALCells) ;
   printf("Use PHOS  Cells =     %d\n", fFillPHOSCells) ;
   printf("Track status    =     %d\n", (Int_t) fTrackStatus) ;
+  printf("Track filter mask (AODs) =  %d\n", (Int_t) fTrackFilterMask) ;
   printf("Track Mult Eta Cut =  %d\n", (Int_t) fTrackMultEtaCut) ;
   printf("Write delta AOD =     %d\n", fWriteOutputDeltaAOD) ;
 
@@ -713,13 +703,18 @@ void AliCaloTrackReader::FillInputCTS() {
     
     nstatus++;
     
-    if(fDataType==kESD && !fESDtrackCuts->AcceptTrack((AliESDtrack*)track)) continue;
-    
-    // Track filter selection
-    //if (fTrackFilter) {
-	  //  selectInfo = fTrackFilter->IsSelected(esdTrack);
-	  //  if (!selectInfo && !(esd->GetPrimaryVertex())->UsesTrack(esdTrack->GetID())) continue;
-   // }
+    if     (fDataType==kESD && !fESDtrackCuts->AcceptTrack((AliESDtrack*)track))
+    {
+      continue;
+    }
+    else if(fDataType==kAOD)
+    {
+      if(fDebug > 2 ) 
+        printf("AliCaloTrackReader::FillInputCTS():AOD track type: %c \n", 
+               dynamic_cast <AliAODTrack*>(track)->GetType());
+      if (!kMC && (dynamic_cast <AliAODTrack*>(track))->TestFilterMask(fTrackFilterMask)==kFALSE) continue;
+      if((dynamic_cast <AliAODTrack*>(track))->GetType()!=AliAODTrack::kPrimary) continue;
+    }
     
     //Count the tracks in eta < 0.9
     //printf("Eta %f cut  %f\n",TMath::Abs(track->Eta()),fTrackMultEtaCut);
@@ -798,6 +793,17 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
 //    return;
 //  
   
+  //Mask all cells in collumns facing ALICE thick material if requested
+  if(GetCaloUtils()->GetNMaskCellColumns()){
+    Int_t absId   = -1;
+    Int_t iSupMod = -1;
+    Int_t iphi    = -1;
+    Int_t ieta    = -1;
+    Bool_t shared = kFALSE;
+    GetCaloUtils()->GetEMCALRecoUtils()->GetMaxEnergyCell(GetCaloUtils()->GetEMCALGeometry(), GetEMCALCells(),clus,absId,iSupMod,ieta,iphi,shared);
+    if(GetCaloUtils()->MaskFrameCluster(iSupMod, ieta)) return;
+  }
+  
   if(fSelectEmbeddedClusters){
     if(clus->GetNLabels()==0 || clus->GetLabel() < 0) return;
     //else printf("Embedded cluster,  %d, n label %d label %d  \n",iclus,clus->GetNLabels(),clus->GetLabel());
@@ -827,7 +833,6 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
       //printf("Recalibrated Energy %f\n",clus->E());  
       GetCaloUtils()->RecalculateClusterShowerShapeParameters(GetEMCALCells(),clus);
       GetCaloUtils()->RecalculateClusterPID(clus);
-      
     }
     
     //Recalculate distance to bad channels, if new list of bad channels provided
