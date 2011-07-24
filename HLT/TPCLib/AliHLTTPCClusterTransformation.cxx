@@ -31,27 +31,44 @@
 #include "AliTPCParam.h"
 #include "AliTPCRecoParam.h"
 #include "AliGeomManager.h"
+//#include "Riostream.h"
 
 ClassImp(AliHLTTPCClusterTransformation) //ROOT macro for the implementation of ROOT specific class methods
 
 AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
 :
   fOfflineTransform(NULL),
-  fOfflineTPCParam( NULL )
+  fOfflineTPCParam( NULL ),
+  fLastSector(-1)
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt  
+  fAliT[0] = 0.;
+  fAliT[1] = 0.;
+  fAliT[2] = 0.;
+  for( int i=0; i<9; i++ ) fAliR[i] = 0;
+  fAliR[0] = 1.;
+  fAliR[4] = 1.;
+  fAliR[8] = 1.;
 }
 
 AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation(const AliHLTTPCClusterTransformation&)
 :
   fOfflineTransform(NULL),
-  fOfflineTPCParam( NULL )
+  fOfflineTPCParam( NULL ),
+  fLastSector(-1)
 {
   // copy constructor prohibited
+  fAliT[0] = 0.;
+  fAliT[1] = 0.;
+  fAliT[2] = 0.;
+  for( int i=0; i<9; i++ ) fAliR[i] = 0;
+  fAliR[0] = 1.;
+  fAliR[4] = 1.;
+  fAliR[8] = 1.;
 }
 
 AliHLTTPCClusterTransformation& AliHLTTPCClusterTransformation::operator=(const AliHLTTPCClusterTransformation&)
@@ -95,7 +112,17 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t TimeStamp )
   if( !fOfflineTPCParam ) return -3;
 
   fOfflineTPCParam->Update();
-  fOfflineTPCParam->ReadGeoMatrices();
+  fOfflineTPCParam->ReadGeoMatrices();  
+
+  fLastSector = -1;
+
+  fAliT[0] = 0.;
+  fAliT[1] = 0.;
+  fAliT[2] = 0.;
+  for( int i=0; i<9; i++ ) fAliR[i] = 0;
+  fAliR[0] = 1.;
+  fAliR[4] = 1.;
+  fAliR[8] = 1.;
 
   return 0;
 }
@@ -124,17 +151,34 @@ int  AliHLTTPCClusterTransformation::Transform( int Slice, int Row, float Pad, f
   Int_t iSector[1]= {sector};   
   Double_t x[3] = { thisrow, Pad, Time }; 
   fOfflineTransform->Transform(x,iSector,0,1);
-  Double_t y[3]= {x[0],x[1],x[2]};
-
 	  
-  if( fOfflineTPCParam && sector<fOfflineTPCParam->GetNSector() ){
-    TGeoHMatrix  *alignment = fOfflineTPCParam->GetClusterMatrix( sector );
-    if ( alignment ) alignment->LocalToMaster( x, y);
-  }	 
+  if( sector!= fLastSector ){
+    if( fOfflineTPCParam && sector<fOfflineTPCParam->GetNSector() ){
+      TGeoHMatrix  *alignment = fOfflineTPCParam->GetClusterMatrix( sector );
+      if ( alignment ){
+	const Double_t *tr = alignment->GetTranslation();
+	const Double_t *rot = alignment->GetRotationMatrix();
+	if( tr && rot ){
+	  for( int i=0; i<3; i++ ) fAliT[i] = tr[i];
+	  for( int i=0; i<9; i++ ) fAliR[i] = rot[i];
+	}
+      }
+    } else {
+      fAliT[0] = 0.;
+      fAliT[1] = 0.;
+      fAliT[2] = 0.;
+      for( int i=0; i<9; i++ ) fAliR[i] = 0;
+      fAliR[0] = 1.;
+      fAliR[4] = 1.;
+      fAliR[8] = 1.;
+    }
+    fLastSector = sector;
+  }
+  // alignment->LocalToMaster( x, y);
 
-  XYZ[0] = y[0];
-  XYZ[1] = y[1];
-  XYZ[2] = y[2];
+  XYZ[0] = fAliT[0] + x[0]*fAliR[0] + x[1]*fAliR[1] + x[2]*fAliR[2];
+  XYZ[1] = fAliT[1] + x[0]*fAliR[3] + x[1]*fAliR[4] + x[2]*fAliR[5];
+  XYZ[2] = fAliT[2] + x[0]*fAliR[6] + x[1]*fAliR[7] + x[2]*fAliR[8];
 
   return 0; 
 }

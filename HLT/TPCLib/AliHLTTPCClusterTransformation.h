@@ -51,6 +51,9 @@ class AliHLTTPCClusterTransformation{
 
   AliTPCTransform * fOfflineTransform;                             //! transient
   AliTPCParam     * fOfflineTPCParam;                                 //! transient
+  Int_t fLastSector; // last sector
+  Double_t fAliT[3]; // alignment - translation
+  Double_t fAliR[9]; // alignment - rotation
 
  private:
 
