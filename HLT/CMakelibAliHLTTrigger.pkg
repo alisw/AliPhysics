@@ -54,7 +54,6 @@ set ( CLASS_HDRS
     AliHLTTriggerCosmics.h
     AliHLTTriggerCounterComponent.h
     AliHLTTriggerCounters.h
-    AliHLTTriggerEmcalElectron.h
 
     )
 
