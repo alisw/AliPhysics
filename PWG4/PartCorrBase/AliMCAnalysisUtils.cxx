@@ -30,6 +30,7 @@
 #include <TList.h>
 #include "TParticle.h"
 #include "TDatabasePDG.h"
+#include "TVector3.h"
 
 //---- ANALYSIS system ----
 #include "AliMCAnalysisUtils.h"
@@ -47,30 +48,6 @@ fJetsList(new TList), fMCGenerator("PYTHIA")
 {
   //Ctor
 }
-/*
- //____________________________________________________________________________
- AliMCAnalysisUtils::AliMCAnalysisUtils(const AliMCAnalysisUtils & mcutils) :   
- TObject(mcutils), fCurrentEvent(mcutils.fCurrentEvent), fDebug(mcutils.fDebug),
- fJetsList(new TList), fMCGenerator(mcutils.fMCGenerator)
- {
- // cpy ctor
- 
- }
- */
-
-//_________________________________________________________________________
-//AliMCAnalysisUtils & AliMCAnalysisUtils::operator = (const AliMCAnalysisUtils & mcutils)
-//{
-//  // assignment operator
-//  
-//  if(&mcutils == this) return *this;
-//  fCurrentEvent = mcutils.fCurrentEvent ;
-//  fDebug        = mcutils.fDebug;
-//  fJetsList     = mcutils.fJetsList;
-//  fMCGenerator  = mcutils.fMCGenerator;
-//  
-//  return *this; 
-//}
 
 //____________________________________________________________________________
 AliMCAnalysisUtils::~AliMCAnalysisUtils() 
@@ -107,7 +84,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, const Int_t nlabels, 
 
 //_________________________________________________________________________
 Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t index2, AliCaloTrackReader* reader, 
-                                              Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum) {
+                                              Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & prodVertex) {
   //Check the first common ancestor of 2 clusters, given the most likely labels of the primaries generating such clusters.
   Int_t label1[100];
   Int_t label2[100];
@@ -189,6 +166,7 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t in
             ancPDG    = mom->GetPdgCode();
             ancStatus = mom->GetStatus();
             momentum.SetPxPyPzE(mom->Px(),mom->Py(),mom->Pz(),mom->E());
+            prodVertex.SetXYZ(mom->Xv(),mom->Yv(),mom->Zv());
           }
         }
         else {
@@ -197,6 +175,7 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t in
             ancPDG    = mom->GetPdgCode();
             ancStatus = mom->GetStatusCode();
             mom->Momentum(momentum);
+            prodVertex.SetXYZ(mom->Vx(),mom->Vy(),mom->Vz());
           }
         }
         //First ancestor found, end the loops

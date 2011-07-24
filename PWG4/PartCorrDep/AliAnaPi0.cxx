@@ -1346,8 +1346,9 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
   Int_t ancPDG    = 0;
   Int_t ancStatus = 0;
   TLorentzVector ancMomentum;
+  TVector3 prodVertex;
   Int_t ancLabel  = GetMCAnalysisUtils()->CheckCommonAncestor(index1, index2, 
-                                                              GetReader(), ancPDG, ancStatus,ancMomentum);
+                                                              GetReader(), ancPDG, ancStatus,ancMomentum, prodVertex);
   
   Int_t momindex  = -1;
   Int_t mompdg    = -1;
@@ -1702,6 +1703,11 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   Int_t curRPBin        = 0 ; 
   Int_t curZvertBin     = 0 ;
   
+  //Get shower shape information of clusters
+  TObjArray *clusters = 0;
+  if     (fCalorimeter="EMCAL") clusters = GetEMCALClusters();
+  else if(fCalorimeter="PHOS" ) clusters = GetPHOSClusters() ;
+  
   //---------------------------------
   //First loop on photons/clusters
   //---------------------------------
@@ -1822,12 +1828,30 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     //Get (Super)Module number of this cluster
     module1 = GetModuleNumber(p1);
     
+    
+    //Get original cluster time,
+    AliVCluster *cluster1 = 0; 
+    Bool_t bFound1        = kFALSE;
+    Int_t caloLabel1      = p1->GetCaloLabel(0);
+    Bool_t iclus1         = -1;
+    for(Int_t iclus = 0; iclus < clusters->GetEntriesFast(); iclus++){
+      AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
+      if(cluster){
+        if     (cluster->GetID()==caloLabel1) {
+          bFound1  = kTRUE  ;
+          cluster1 = cluster;
+          iclus1   = iclus;
+        }
+      }      
+      if(bFound1) break;
+    }// calorimeter clusters loop
+    
     //---------------------------------
     //Second loop on photons/clusters
     //---------------------------------
     for(Int_t i2=i1+1; i2<nPhot; i2++){
       AliAODPWG4Particle * p2 = (AliAODPWG4Particle*) (GetInputAODBranch()->At(i2)) ;
-      
+    
       //In case of mixing frame, check we are not in the same event as the first cluster
       Int_t evtIndex2 = GetEventIndex(p2, vert) ; 
       if ( evtIndex2 == -1 )
@@ -1836,7 +1860,41 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         continue ;    
       if (GetMixedEvent() && (evtIndex1 == evtIndex2))
         continue ;
+    
       
+      //Check if time of clusters is similar
+      AliVCluster *cluster2 = 0; 
+      Bool_t bFound2        = kFALSE;
+      Int_t caloLabel2      = p2->GetCaloLabel(0);
+      for(Int_t iclus = iclus1+1; iclus < clusters->GetEntriesFast(); iclus++){
+        AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
+        if(cluster){
+          if(cluster->GetID()==caloLabel2) {
+            bFound2  = kTRUE  ;
+            cluster2 = cluster;
+          }          
+        }      
+        if(bFound2) break;
+      }// calorimeter clusters loop
+      
+      Float_t tof1  = -1;
+      if(cluster1 && bFound1){
+        tof1  = cluster1->GetTOF()*1e9;
+      }
+      else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
+                   p1->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
+      
+      
+      Float_t tof2  = -1;
+      if(cluster2 && bFound2){
+        tof2  = cluster2->GetTOF()*1e9;
+      }
+      else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
+                  p2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());
+      
+      
+      Double_t t12diff = tof1-tof2;
+      if(TMath::Abs(t12diff) > GetPairTimeCut()) continue;
       //printf("AliAnaPi0::MakeAnalysisFillHistograms(): Photon 2 Evt %d  Vertex : %f,%f,%f\n",evtIndex2, GetVertex(evtIndex2)[0] ,GetVertex(evtIndex2)[1],GetVertex(evtIndex2)[2]);
  
       //Get the momentum of this cluster

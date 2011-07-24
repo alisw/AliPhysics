@@ -256,7 +256,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2D *  fhRePtAsym    ;           //! REAL two-photon pt vs asymmetry
   TH2D *  fhRePtAsymPi0 ;           //! REAL two-photon pt vs asymmetry, close to pi0 mass
   TH2D *  fhRePtAsymEta ;           //! REAL two-photon pt vs asymmetry, close to eta mass
-
+  
   //Centrality, Event plane bins
   TH3D * fhEvents;                  //! Number of events per centrality, RP, zbin
   TH1D * fhCentrality;              //! Histogram with centrality bins with at least one pare
