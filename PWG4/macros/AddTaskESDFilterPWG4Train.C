@@ -159,6 +159,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    trackFilter->AddCuts(esdTrackCutsGCOnly);
    // 512 1<<9                         
    trackFilter->AddCuts(esdTrackCutsHG1); // add once more for tpc only tracks
+   // 512 1<<10                        
+   trackFilter->AddCuts(esdTrackCutsH2); // add r_aa cuts
 
    esdfilter->SetGlobalConstrainedFilterMask(1<<8|1<<9); // these tracks are written out as global constrained tracks
    esdfilter->SetHybridFilterMaskGlobalConstrainedGlobal((1<<4)); // these normal global tracks will be marked as hybrid
