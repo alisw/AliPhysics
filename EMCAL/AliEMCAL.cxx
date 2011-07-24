@@ -329,7 +329,13 @@ Bool_t AliEMCAL::Raw2SDigits(AliRawReader* rawReader){
   
   //Get/create the sdigits tree and array
 	AliRunLoader *rl = AliRunLoader::Instance();
-	AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));    
+	AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL")); 
+  
+  if(!emcalLoader){
+    AliFatal("NULL loader");
+    return kFALSE;
+  }
+  
   emcalLoader->GetEvent();
   emcalLoader->LoadSDigits("UPDATE");
 

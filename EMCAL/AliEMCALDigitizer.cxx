@@ -342,11 +342,12 @@ void AliEMCALDigitizer::Digitize(Int_t event)
             if(emcalLoader2->SDigits()){
               TClonesArray* sdigits2 = emcalLoader2->SDigits();
               sdigArray->AddAt(sdigits2, i) ;
-              //Check if first sdigit is of embedded type, if so, handle the sdigits differently:
+              // Check if first sdigit is of embedded type, if so, handle the sdigits differently:
               // do not smear energy of embedded, do not add noise to any sdigits
               if(sdigits2->GetEntriesFast()>0){
                  //printf("Merged digit type: %d\n",dynamic_cast<AliEMCALDigit*> (sdigits2->At(0))->GetType());
-                 if(dynamic_cast<AliEMCALDigit*> (sdigits2->At(0))->GetType()==AliEMCALDigit::kEmbedded){
+                 AliEMCALDigit * digit2 = dynamic_cast<AliEMCALDigit*> (sdigits2->At(0));
+                 if(digit2 && digit2->GetType()==AliEMCALDigit::kEmbedded){
                    embed = kTRUE;
                  }
               }
