@@ -42,7 +42,6 @@ set ( CLASS_HDRS
     AliHLTEMCALGeometry.h
     AliHLTEMCALRecoParamHandler.h
     AliHLTEMCALClusterizerComponentNbyN.h
-    AliFJWrapper.h
     AliHLTEMCALClusterMonitorComponent.h
     AliHLTEMCALClusterMonitor.h
     )

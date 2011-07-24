@@ -55,7 +55,7 @@ set ( CLASS_HDRS
     AliHLTTriggerCounterComponent.h
     AliHLTTriggerCounters.h
     AliHLTTriggerEmcalElectron.h
-    AliHLTTriggerFastJet.h	 
+
     )
 
 
