@@ -47,7 +47,7 @@ ClassImp(AliAnaPartCorrBaseClass)
   AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass() : 
     TObject(), fDataMC(0), fDebug(0), fCheckFidCut(0),
     fCheckCaloPID(0), fRecalculateCaloPID(0), 
-    fMinPt(0),fMaxPt(0), fPairTimeCut(50), 
+    fMinPt(0),fMaxPt(0), fPairTimeCut(200), 
     fMultiBin(0),fNZvertBin(0),fNrpBin(0), fNCentrBin(0),
     fNmaxMixEv(0),fMaxMulti(0),fMinMulti(0),
     fUseSelectEvent(kFALSE), fMakePlots(kFALSE),
