@@ -31,31 +31,38 @@ class AliNeutralMesonSelection : public TObject {
   AliNeutralMesonSelection & operator = (const AliNeutralMesonSelection & g) ;//cpy assignment
   
  public:
+  // General
+  TList *  GetCreateOutputObjects();
+  void     InitParameters();	
+  void     Print(const Option_t * opt) const;
 
-  TList * GetCreateOutputObjects();
+  //Opening angle selection 
+  Double_t GetAngleMaxParam(Int_t i)              const { return fAngleMaxParam.At(i)    ; }
+  void     SetAngleMaxParam(Int_t i, Double_t par)      { fAngleMaxParam.AddAt(par,i)    ; }
   
-  Double_t GetAngleMaxParam(Int_t i) const {return fAngleMaxParam.At(i) ; }
-  void     SetAngleMaxParam(Int_t i, Double_t par){fAngleMaxParam.AddAt(par,i) ; }
+  Float_t  GetShiftMinAngleCut()                   const{ return fShiftMinAngle          ; }
+  void     SetShiftMinAngleCut(Float_t shift)           { fShiftMinAngle = shift         ; }
   
-  Double_t GetInvMassMaxCut() const {return fInvMassMaxCut ; }
-  Double_t GetInvMassMinCut() const {return fInvMassMinCut ; }
+  void     SwitchOnAngleSelection()                     { fUseAngleCut = kTRUE           ; }
+  void     SwitchOffAngleSelection()                    { fUseAngleCut = kFALSE          ; }
+  
+  //Invariant mass selection
+  Double_t GetInvMassMaxCut()                     const { return fInvMassMaxCut          ; }
+  Double_t GetInvMassMinCut()                     const { return fInvMassMinCut          ; }
+  
   void     SetInvMassCutRange(Double_t invmassmin, Double_t invmassmax)
-  {fInvMassMaxCut =invmassmax;  fInvMassMinCut =invmassmin;}	
+            {fInvMassMaxCut =invmassmax;  fInvMassMinCut =invmassmin                     ; }	
   
-  Double_t GetMass() const {return fM ; }
-  void SetMass(Double_t m) { fM =m ; }
+  Double_t GetMass()                              const { return fM                      ; }
+  void     SetMass(Double_t m)                          { fM = m                         ; }
   
-  Bool_t AreNeutralMesonSelectionHistosKept() const { return fKeepNeutralMesonHistos ; }
-  void  KeepNeutralMesonSelectionHistos(Bool_t keep) { fKeepNeutralMesonHistos = keep ; }
+  Bool_t   AreNeutralMesonSelectionHistosKept()   const { return fKeepNeutralMesonHistos ; }
+  void     KeepNeutralMesonSelectionHistos(Bool_t keep) { fKeepNeutralMesonHistos = keep ; }
   
-  void InitParameters();	
-  Bool_t IsAngleInWindow(const Float_t angle, const Float_t e) const ;
-  void Print(const Option_t * opt) const;
+  Bool_t   IsAngleInWindow(const Float_t angle, const Float_t e) const ;
   
-  Bool_t  SelectPair(TLorentzVector particlei,  TLorentzVector particlej)  ;
+  Bool_t   SelectPair(TLorentzVector particlei,  TLorentzVector particlej)  ;
 	
-  void SwitchOnAngleSelection()    {fUseAngleCut = kTRUE ; }
-  void SwitchOffAngleSelection()   {fUseAngleCut = kFALSE ; }
 	
   //Histogrammes setters and getters
   
@@ -65,9 +72,9 @@ class AliNeutralMesonSelection : public TObject {
     fHistoEMin = min ;
   }
   
-  Int_t   GetHistoNEBins() const { return fHistoNEBins ; }
-  Float_t GetHistoEMin()   const { return fHistoEMin ; }
-  Float_t GetHistoEMax()   const { return fHistoEMax ; }
+  Int_t   GetHistoNEBins()     const { return fHistoNEBins    ; }
+  Float_t GetHistoEMin()       const { return fHistoEMin      ; }
+  Float_t GetHistoEMax()       const { return fHistoEMax      ; }
   
   virtual void SetHistoPtRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoNPtBins = n ;
@@ -75,9 +82,9 @@ class AliNeutralMesonSelection : public TObject {
     fHistoPtMin = min ;
   }
   
-  Int_t   GetHistoNPtBins() const { return fHistoNPtBins ; }
-  Float_t GetHistoPtMin()   const { return fHistoPtMin ; }
-  Float_t GetHistoPtMax()   const { return fHistoPtMax ; }
+  Int_t   GetHistoNPtBins()    const { return fHistoNPtBins    ; }
+  Float_t GetHistoPtMin()      const { return fHistoPtMin      ; }
+  Float_t GetHistoPtMax()      const { return fHistoPtMax      ; }
   
   virtual void SetHistoAngleRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoNAngleBins = n ;
@@ -86,8 +93,8 @@ class AliNeutralMesonSelection : public TObject {
   }
   
   Int_t   GetHistoNAngleBins() const { return fHistoNAngleBins ; }
-  Float_t GetHistoAngleMin()   const { return fHistoAngleMin ; }
-  Float_t GetHistoAngleMax()   const { return fHistoAngleMax ; }
+  Float_t GetHistoAngleMin()   const { return fHistoAngleMin   ; }
+  Float_t GetHistoAngleMax()   const { return fHistoAngleMax   ; }
   
   virtual void SetHistoIMRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoNIMBins = n ;
@@ -95,17 +102,18 @@ class AliNeutralMesonSelection : public TObject {
     fHistoIMMin = min ;
   }
   
-  Int_t   GetHistoNIMBins() const { return fHistoNIMBins ; }
-  Float_t GetHistoIMMin()   const { return fHistoIMMin ; }
-  Float_t GetHistoIMMax()   const { return fHistoIMMax ; }
+  Int_t   GetHistoNIMBins()    const { return fHistoNIMBins    ; }
+  Float_t GetHistoIMMin()      const { return fHistoIMMin      ; }
+  Float_t GetHistoIMMax()      const { return fHistoIMMax      ; }
   
   
  private:
-  Double_t fM ;              // Mass of the neutral meson
-  Double_t fInvMassMaxCut ;  // Invariant Mass cut maximum
-  Double_t fInvMassMinCut ;  // Invariant Masscut minimun
-  TArrayD  fAngleMaxParam ;  // Max opening angle selection parameters
-  Bool_t   fUseAngleCut ;    // Select pairs depending on their opening angle
+  Double_t fM ;                      // Mass of the neutral meson
+  Double_t fInvMassMaxCut ;          // Invariant Mass cut maximum
+  Double_t fInvMassMinCut ;          // Invariant Masscut minimun
+  TArrayD  fAngleMaxParam ;          // Max opening angle selection parameters
+  Bool_t   fUseAngleCut   ;          // Select pairs depending on their opening angle
+  Float_t  fShiftMinAngle ;          // Correction shift for min angle from true kinematic limit, resolution effects
   Bool_t   fKeepNeutralMesonHistos ; // Keep neutral meson selection histograms
   
   //Histograms
@@ -130,7 +138,7 @@ class AliNeutralMesonSelection : public TObject {
   Float_t fHistoIMMax ;      // Maximum value of Invariant Mass histogram range
   Float_t fHistoIMMin ;      // Minimum value of Invariant Mass histogram range
   
-  ClassDef(AliNeutralMesonSelection,3)
+  ClassDef(AliNeutralMesonSelection,4)
     
     } ;
 

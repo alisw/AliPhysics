@@ -33,9 +33,10 @@ ClassImp(AliNeutralMesonSelection)
   
 //____________________________________________________________________________
   AliNeutralMesonSelection::AliNeutralMesonSelection() : 
-    TObject(), fM(0),
-    fInvMassMaxCut(0.), fInvMassMinCut(0.),
-    fAngleMaxParam(),  fUseAngleCut(0), fKeepNeutralMesonHistos(0), 
+    TObject(), 
+    fM(0), fInvMassMaxCut(0.), fInvMassMinCut(0.),
+    fAngleMaxParam(),  fUseAngleCut(0), fShiftMinAngle(0),
+    fKeepNeutralMesonHistos(0), 
     fhAnglePairNoCut(0), fhAnglePairOpeningAngleCut(0), 
     fhAnglePairAllCut(0), 
     fhInvMassPairNoCut(0), fhInvMassPairOpeningAngleCut(0), 
@@ -146,40 +147,43 @@ void AliNeutralMesonSelection::InitParameters()
   
   //Initialize the parameters of the analysis.
   fKeepNeutralMesonHistos = kFALSE ;
-  fUseAngleCut = kFALSE;
+  fUseAngleCut            = kFALSE ;
   fAngleMaxParam.Set(4) ;
-  fAngleMaxParam.AddAt(0.4,0);//={0.4,-0.25,0.025,-2e-4};
+  fAngleMaxParam.AddAt(0.4,0);
   fAngleMaxParam.AddAt(-0.25,1) ;
   fAngleMaxParam.AddAt(0.025,2) ;
   fAngleMaxParam.AddAt(-2e-4,3) ;
+  fShiftMinAngle   = 0.02 ;
+  fInvMassMaxCut   = 0.16 ;
+  fInvMassMinCut   = 0.11 ;
 
-  fInvMassMaxCut  = 0.16 ;
-  fInvMassMinCut  = 0.11 ;
-
-  fM = 0.1349766;//neutralMeson mass, pi0
+  fM               = 0.1349766 ;//neutralMeson mass, pi0
   
  //Histogrammes settings
-  fHistoNEBins = 100 ;
-  fHistoEMax   = 20 ;
-  fHistoEMin   = 0.  ;  
+  fHistoNEBins     = 100 ;
+  fHistoEMax       = 20 ;
+  fHistoEMin       = 0.  ;  
   
-  fHistoNPtBins = 100 ;
-  fHistoPtMax   = 20 ;
-  fHistoPtMin   = 0.  ;
+  fHistoNPtBins    = 100 ;
+  fHistoPtMax      = 20 ;
+  fHistoPtMin      = 0.  ;
 
   fHistoNAngleBins = 100 ;
   fHistoAngleMax   = 0.2;
   fHistoAngleMin   = 0.  ;
 
-  fHistoNIMBins = 100 ;
-  fHistoIMMax   = 0.3   ;
-  fHistoIMMin   = 0.  ;  
+  fHistoNIMBins    = 100 ;
+  fHistoIMMax      = 0.3   ;
+  fHistoIMMin      = 0.  ;  
 }
 
 //__________________________________________________________________________-
-Bool_t AliNeutralMesonSelection::IsAngleInWindow(const Float_t angle,const Float_t e) const {
-  //Check if the opening angle of the candidate pairs is inside 
-  //our selection windowd
+Bool_t AliNeutralMesonSelection::IsAngleInWindow(const Float_t angle,const Float_t e) const 
+{
+ 
+  // Check if the opening angle of the candidate pairs is inside 
+  // our selection window
+  // Attention, only valid for Pi0, if needed for Eta need to revise
   
   if (!fUseAngleCut) return kTRUE; //Accept any angle
 	
@@ -189,7 +193,7 @@ Bool_t AliNeutralMesonSelection::IsAngleInWindow(const Float_t angle,const Float
   Double_t arg = (e*e-2*fM*fM)/(e*e);
   Double_t min = 100. ;
   if(arg>0.)
-    min = TMath::ACos(arg);
+    min = TMath::ACos(arg)-fShiftMinAngle;
 
   if((angle<max)&&(angle>=min))
     result = kTRUE;
@@ -258,13 +262,15 @@ void AliNeutralMesonSelection::Print(const Option_t * opt) const
   printf("p2 :     %f\n", fAngleMaxParam.At(2));
   printf("p3 :     %f\n", fAngleMaxParam.At(3));
 
+  printf("Min angle shift : %1.2f\n", fShiftMinAngle);
+
   printf("Keep Neutral Meson Histos = %d\n",fKeepNeutralMesonHistos);
   
   if(fKeepNeutralMesonHistos){
-    printf("Histograms: %3.1f < E  < %3.1f,  Nbin = %d\n", fHistoEMin,  fHistoEMax,  fHistoNEBins);
-    printf("Histograms: %3.1f < pT < %3.1f,  Nbin = %d\n", fHistoPtMin,  fHistoPtMax,  fHistoNPtBins);
+    printf("Histograms: %3.1f < E  < %3.1f,  Nbin = %d\n",   fHistoEMin,     fHistoEMax,     fHistoNEBins);
+    printf("Histograms: %3.1f < pT < %3.1f,  Nbin = %d\n",   fHistoPtMin,    fHistoPtMax,    fHistoNPtBins);
     printf("Histograms: %3.1f < angle < %3.1f, Nbin = %d\n", fHistoAngleMin, fHistoAngleMax, fHistoNAngleBins);
-    printf("Histograms: %3.1f < IM < %3.1f, Nbin = %d\n", fHistoIMMin, fHistoIMMax, fHistoNIMBins);
+    printf("Histograms: %3.1f < IM < %3.1f, Nbin = %d\n",    fHistoIMMin,    fHistoIMMax,    fHistoNIMBins);
     
   }
   

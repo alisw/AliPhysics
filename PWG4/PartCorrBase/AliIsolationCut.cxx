@@ -104,6 +104,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
 {  
   //Search in cone around a candidate particle if it is isolated 
   Float_t phiC  = pCandidate->Phi() ;
+  if(phiC<0) phiC+=TMath::TwoPi();
   Float_t etaC  = pCandidate->Eta() ;
   Float_t ptC   = pCandidate->Pt() ;
   Float_t pt    = -100. ;
@@ -115,7 +116,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
   nfrac     = 0 ;
   coneptsum = 0.; 
   isolated  = kFALSE;
-  leading = kTRUE;
+  leading   = kTRUE;
 
   //Initialize the array with refrences
   TObjArray * refclusters = 0x0;
@@ -129,7 +130,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
       AliAODTrack* track = (AliAODTrack *)(plCTS->At(ipr)) ; 
       //Do not count the candidate (pion, conversion photon) or the daughters of the candidate
       if(track->GetID() == pCandidate->GetTrackLabel(0) || track->GetID() == pCandidate->GetTrackLabel(1) 
-	 || track->GetID() == pCandidate->GetTrackLabel(2) || track->GetID() == pCandidate->GetTrackLabel(3) 
+      || track->GetID() == pCandidate->GetTrackLabel(2) || track->GetID() == pCandidate->GetTrackLabel(3) 
 	 ) continue ;
       p3.SetXYZ(track->Px(),track->Py(),track->Pz());
       pt   = p3.Pt();
@@ -145,7 +146,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
         nfrac     = -1;
         coneptsum = -1;
         isolated  = kFALSE;
-	leading = kFALSE;
+      	leading   = kFALSE;
         if(bFillAOD && reftracks) {
           reftracks->Clear(); 
           delete reftracks;
