@@ -43,11 +43,11 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   //---------------------------------------
   // General analysis frame methods
   //---------------------------------------
-
+  
   TObjString * GetAnalysisCuts();
   
   TList      * GetCreateOutputObjects();
-
+  
   void         Init();
 
   void         InitParameters();
@@ -61,56 +61,62 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   //---------------------------------------
   // Analysis parameters setters getters
   //---------------------------------------
-
-  TString GetCalorimeter()                  const {return fCalorimeter ; }
-  void    SetCalorimeter(TString  & det)          {fCalorimeter = det  ; }
+  
+  Bool_t       ClusterSelected(AliVCluster* cl, TLorentzVector mom) ;
+  
+  TString      GetCalorimeter()                 const { return fCalorimeter ; }
+  void         SetCalorimeter(TString  & det)         { fCalorimeter = det  ; }
+  
+  void         SwitchOnSSHistogramsFill()             { fFillSSHistograms = kTRUE  ; }
+  void         SwitchOffSSHistogramsFill()            { fFillSSHistograms = kFALSE ; }  
   
   // ** Cluster selection methods **
   
-  void    SetMinDistanceToBadChannel(Float_t m1, Float_t m2, Float_t m3) {
-    fMinDist = m1;
-    fMinDist2 = m2;
-    fMinDist3 = m3;
+  void         SetMinDistanceToBadChannel(Float_t m1, Float_t m2, Float_t m3) {
+                fMinDist = m1; fMinDist2 = m2; fMinDist3 = m3;
   }
 
-  void     SetTimeCut(Double_t min, Double_t max) {fTimeCutMin = min; fTimeCutMax = max ; }
-  Double_t GetTimeCutMin()                  const {return fTimeCutMin ; }
-  Double_t GetTimeCutMax()                  const {return fTimeCutMax ; }	
+  void         SetTimeCut(Double_t min, Double_t max) { fTimeCutMin = min; 
+                                                        fTimeCutMax = max  ; }
+  Double_t     GetTimeCutMin()                  const { return fTimeCutMin ; }
+  Double_t     GetTimeCutMax()                  const { return fTimeCutMax ; }	
 	
-  void     SetNCellCut(Int_t n)                   {fNCellsCut = n    ; }
-  Double_t GetNCellCut()                    const {return fNCellsCut ; }
+  void         SetNCellCut(Int_t n)                   { fNCellsCut = n    ; }
+  Double_t     GetNCellCut()                    const { return fNCellsCut ; }
   
-  Bool_t   IsTrackMatchRejectionOn()        const {return fRejectTrackMatch   ; }
-  void     SwitchOnTrackMatchRejection()          {fRejectTrackMatch = kTRUE  ; }
-  void     SwitchOffTrackMatchRejection()         {fRejectTrackMatch = kFALSE ; }  
-
+  Bool_t       IsTrackMatchRejectionOn()        const { return fRejectTrackMatch   ; }
+  void         SwitchOnTrackMatchRejection()          { fRejectTrackMatch = kTRUE  ; }
+  void         SwitchOffTrackMatchRejection()         { fRejectTrackMatch = kFALSE ; }  
+  
   // ** Conversion pair analysis **
   
-  Float_t  GetMassCut()                     const { return fMassCut           ; }
-  void     SetMassCut(Float_t m)                  { fMassCut    = m           ; }
+  Float_t      GetMassCut()                     const { return fMassCut           ; }
+  void         SetMassCut(Float_t m)                  { fMassCut    = m           ; }
   
-  Bool_t   IsCheckConversionOn()            const { return fCheckConversion   ; }
-  void     SwitchOnConversionChecker()            { fCheckConversion = kTRUE  ; }
-  void     SwitchOffConversionChecker()           { fCheckConversion = kFALSE ; }  
+  Bool_t       IsCheckConversionOn()            const { return fCheckConversion   ; }
+  void         SwitchOnConversionChecker()            { fCheckConversion = kTRUE  ; }
+  void         SwitchOffConversionChecker()           { fCheckConversion = kFALSE ; }  
 	
-  Bool_t   AreConvertedPairsInAOD()         const { return fAddConvertedPairsToAOD   ; }
-  void     SwitchOnAdditionConvertedPairsToAOD()  { fAddConvertedPairsToAOD = kTRUE  ; fCheckConversion = kTRUE ; }
-  void     SwitchOffAdditionConvertedPairsToAOD() { fAddConvertedPairsToAOD = kFALSE ; }  
+  Bool_t       AreConvertedPairsInAOD()         const { return fAddConvertedPairsToAOD   ; }
+  void         SwitchOnAdditionConvertedPairsToAOD()  { fAddConvertedPairsToAOD = kTRUE  ; 
+                                                        fCheckConversion        = kTRUE  ; }
+  void         SwitchOffAdditionConvertedPairsToAOD() { fAddConvertedPairsToAOD = kFALSE ; }  
 	
-  Bool_t   AreConvertedPairsRemoved()       const { return fRemoveConvertedPair      ; }
-  void     SwitchOnConvertedPairsRemoval()        { fRemoveConvertedPair  = kTRUE    ; fCheckConversion = kTRUE ; }
-  void     SwitchOffConvertedPairsRemoval()       { fRemoveConvertedPair  = kFALSE   ; }    
+  Bool_t       AreConvertedPairsRemoved()       const { return fRemoveConvertedPair      ; }
+  void         SwitchOnConvertedPairsRemoval()        { fRemoveConvertedPair  = kTRUE    ; 
+                                                        fCheckConversion      = kTRUE    ; }
+  void         SwitchOffConvertedPairsRemoval()       { fRemoveConvertedPair  = kFALSE   ; }    
   
-  void     SetConvAsymCut(Float_t c)              { fConvAsymCut = c    ; }
-  Float_t  GetConvAsymCut()                 const { return fConvAsymCut ; }
+  void         SetConvAsymCut(Float_t c)              { fConvAsymCut = c    ; }
+  Float_t      GetConvAsymCut()                 const { return fConvAsymCut ; }
   
-  void     SetConvDEtaCut(Float_t c)              { fConvDEtaCut = c    ; }
-  Float_t  GetConvDEtaCut()                 const { return fConvDEtaCut ; }
+  void         SetConvDEtaCut(Float_t c)              { fConvDEtaCut = c    ; }
+  Float_t      GetConvDEtaCut()                 const { return fConvDEtaCut ; }
   
-  void     SetConvDPhiCut(Float_t min, Float_t max)  { fConvDPhiMinCut = min ;  
-                                                       fConvDPhiMaxCut = max ; }
-  Float_t  GetConvDPhiMinCut()              const { return fConvDPhiMinCut ; }
-  Float_t  GetConvDPhiMaxCut()              const { return fConvDPhiMaxCut ; }
+  void         SetConvDPhiCut(Float_t min, Float_t max)  { fConvDPhiMinCut = min ;  
+                                                           fConvDPhiMaxCut = max ; }
+  Float_t      GetConvDPhiMinCut()              const { return fConvDPhiMinCut ; }
+  Float_t      GetConvDPhiMaxCut()              const { return fConvDPhiMaxCut ; }
 
   private:
  
@@ -122,10 +128,11 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   Double_t fTimeCutMin  ;                // Remove clusters/cells with time smaller than this value, in ns
   Double_t fTimeCutMax  ;                // Remove clusters/cells with time larger than this value, in ns
   Int_t    fNCellsCut ;                  // Accept for the analysis clusters with more than fNCellsCut cells
+  Bool_t   fFillSSHistograms ;           // Fill shower shape histograms
   
   //Conversion pairs selection cuts
   Bool_t   fCheckConversion;             // Combine pairs of clusters with mass close to 0
-  Bool_t   fRemoveConvertedPair;         // Combine pairs of clusters with mass close to 0
+  Bool_t   fRemoveConvertedPair;         // Remove conversion pairs
   Bool_t   fAddConvertedPairsToAOD;      // Put Converted pairs in AOD
   Float_t  fMassCut;                     // Mass cut for the conversion pairs selection  
   Float_t  fConvAsymCut;                 // Select conversion pairs when asymmetry is smaller than cut
@@ -135,7 +142,22 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
 
   //Histograms 
   TH2F * fhNtraNclu;                     //! track multiplicity distribution vs cluster multiplicity
-  TH2F * fhNCellsPt;                     //! number of cells in cluster vs pt 
+  TH2F * fhNCellsE;                      //! number of cells in cluster vs E 
+  //Shower shape
+  TH2F * fhNCellsLam0LowE;               //! number of cells in cluster vs lambda0
+  TH2F * fhNCellsLam1LowE;               //! number of cells in cluster vs lambda1
+  TH2F * fhNCellsDispLowE;               //! number of cells in cluster vs dispersion
+  TH2F * fhNCellsLam0HighE;              //! number of cells in cluster vs lambda0, E>2
+  TH2F * fhNCellsLam1HighE;              //! number of cells in cluster vs lambda1, E>2
+  TH2F * fhNCellsDispHighE;              //! number of cells in cluster vs dispersion, E>2
+  TH2F * fhEtaLam0;                      //! cluster eta vs lambda0, E<2
+  TH2F * fhPhiLam0;                      //! cluster phi vs lambda0, E<2
+  TH2F * fhLam1Lam0LowE;                 //! cluster lambda1 vs lambda0, E<2
+  TH2F * fhLam1Lam0HighE;                //! cluster lambda1 vs lambda0, E>2
+  TH2F * fhLam0E;                        //! cluster lambda0 vs  E
+  TH2F * fhLam1E;                        //! cluster lambda1 vs  E
+
+  
   TH1F * fhEPhoton    ;                  //! Number of identified photon vs energy
   TH1F * fhPtPhoton   ;                  //! Number of identified photon vs transerse momentum 
   TH2F * fhPhiPhoton  ;                  //! Azimuthal angle of identified  photon vs transerse momentum 
@@ -152,6 +174,18 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TH2F * fhConvDeltaEtaPhi;              //! Small mass photons, correlation in phi and eta
   TH2F * fhConvAsym;                     //! Small mass photons, correlation in energy asymmetry
   TH2F * fhConvPt;                       //! Small mass photons, pT of pair
+  
+  //Vertex distance
+  TH2F * fhConvDistEta;                   //! Approx distance to vertex vs cluster Eta 
+  TH2F * fhConvDistEn;                    //! Approx distance to vertex vs Energy
+  TH2F * fhConvDistMass;                  //! Approx distance to vertex vs Mass
+  TH2F * fhConvDistEtaCutEta;             //! Approx distance to vertex vs cluster Eta, dEta < 0.05 
+  TH2F * fhConvDistEnCutEta;              //! Approx distance to vertex vs Energy, dEta < 0.05
+  TH2F * fhConvDistMassCutEta;            //! Approx distance to vertex vs Mass, dEta < 0.05
+  TH2F * fhConvDistEtaCutMass;            //! Approx distance to vertex vs cluster Eta, dEta < 0.05, m < 10 MeV 
+  TH2F * fhConvDistEnCutMass;             //! Approx distance to vertex vs Energy, dEta < 0.05, m < 10 MeV
+  TH2F * fhConvDistEtaCutAsy;             //! Approx distance to vertex vs cluster Eta, dEta < 0.05, m < 10 MeV, A < 0.1
+  TH2F * fhConvDistEnCutAsy;              //! Approx distance to vertex vs energy, dEta < 0.05, m < 10 MeV, A < 0.1
 
   //Fill MC dependent histograms
   TH1F * fhDeltaE  ;                     //! MC-Reco E distribution      
@@ -242,8 +276,10 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TH2F * fhConvPtMCString;               //! Small mass cluster pairs, pt of pairs, origin of both clusters is string
   TH2F * fhConvDispersionMCString;       //! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is string
   TH2F * fhConvM02MCString;              //! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is string
+  TH2F * fhConvDistMCConversion;         //! Calculated conversion distance vs real distance to vertex       
+  TH2F * fhConvDistMCConversionCuts;     //! Calculated conversion distance vs real distance to vertex       
 
-   ClassDef(AliAnaPhoton,11)
+   ClassDef(AliAnaPhoton,13)
 
 } ;
  
