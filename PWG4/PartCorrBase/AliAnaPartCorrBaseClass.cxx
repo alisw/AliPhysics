@@ -46,7 +46,8 @@ ClassImp(AliAnaPartCorrBaseClass)
 //_______________________________________________
   AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass() : 
     TObject(), fDataMC(0), fDebug(0), fCheckFidCut(0),
-    fCheckCaloPID(0), fRecalculateCaloPID(0), fMinPt(0), fMaxPt(0),
+    fCheckCaloPID(0), fRecalculateCaloPID(0), 
+    fMinPt(0),fMaxPt(0), fPairTimeCut(50), 
     fMultiBin(0),fNZvertBin(0),fNrpBin(0), fNCentrBin(0),
     fNmaxMixEv(0),fMaxMulti(0),fMinMulti(0),
     fUseSelectEvent(kFALSE), fMakePlots(kFALSE),
@@ -160,7 +161,7 @@ TClonesArray * AliAnaPartCorrBaseClass::GetAODBranch(TString aodName) const {
     }
   }
   else{ //If no Delta AODs, kept in standard branch, to revise. 
-    if(outAOD) return (TClonesArray *) fReader->GetOutputEvent()->FindListObject(aodName);
+    if(outAOD) return (TClonesArray *)  fReader->GetOutputEvent()->FindListObject(aodName);
     else       return  (TClonesArray *) fReader->GetInputEvent() ->FindListObject(aodName);
   }
   
@@ -317,6 +318,8 @@ TString  AliAnaPartCorrBaseClass::GetBaseParametersList()  {
   snprintf(onePar,buffersize,"Minimal P_t: %2.2f ; Max\n", fMinPt) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"Minimal P_t: %2.2f ; Max\n", fMaxPt) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"|t_{1}-t_{2}| < %2.2f ; Max\n", fPairTimeCut) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"fDataMC =%d (Check MC information, on/off) \n",fDataMC) ;
   parList+=onePar ;

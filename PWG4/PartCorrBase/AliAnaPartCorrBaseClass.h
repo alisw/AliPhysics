@@ -166,13 +166,25 @@ public:
   virtual void   SwitchOnCaloPIDRecalculation()     { fRecalculateCaloPID  = kTRUE  ; }
   virtual void   SwitchOffCaloPIDRecalculation()    { fRecalculateCaloPID  = kFALSE ; }
   
-  virtual Float_t GetMaxPt()     const { return fMaxPt ; }
-  virtual Float_t GetMinPt()     const { return fMinPt ; }
-  virtual void    SetMaxPt(Float_t pt) { fMaxPt = pt   ; }
-  virtual void    SetMinPt(Float_t pt) { fMinPt = pt   ; }
+  //Cluster energy/momentum cut
+  virtual Float_t GetMaxPt()          const { return fMaxPt ; }
+  virtual Float_t GetMinPt()          const { return fMinPt ; }
+  virtual void    SetMaxPt(Float_t pt)      { fMaxPt = pt   ; }
+  virtual void    SetMinPt(Float_t pt)      { fMinPt = pt   ; }
   virtual void    SetPtCutRange(Double_t ptmin, Double_t ptmax)
-  {  fMaxPt=ptmax;   fMinPt=ptmin;}
+  {  fMaxPt=ptmax;   fMinPt=ptmin; }
   
+  virtual Float_t GetMaxEnergy()      const { return fMaxPt ; }
+  virtual Float_t GetMinEnergy()      const { return fMinPt ; }
+  virtual void    SetMaxEnergy(Float_t e)   { fMaxPt = e    ; }
+  virtual void    SetMinEnergy(Float_t e)   { fMinPt = e    ; }
+  virtual void    SetEnergyCutRange(Double_t emin, Double_t emax)
+  {  fMaxPt=emax;   fMinPt=emin; }
+  
+  //Cluster Pairs Time cut  
+  virtual void    SetPairTimeCut(Float_t t) { fPairTimeCut  = t   ; } //ns
+  virtual Float_t GetPairTimeCut()    const { return fPairTimeCut ; } //ns
+
   //Setters for parameters of event buffers
   virtual void SetMultiBin(Int_t n=1)    { fMultiBin  = n ;} //number of bins in Multiplicity  
   virtual void SetNZvertBin(Int_t n=1)   { fNZvertBin = n ;} //number of bins for vertex position
@@ -225,6 +237,13 @@ public:
   virtual Int_t   GetHistoPtBins() const { return fHistoPtBins ; }
   virtual Float_t GetHistoPtMin()  const { return fHistoPtMin  ; }
   virtual Float_t GetHistoPtMax()  const { return fHistoPtMax  ; }
+  virtual void SetHistoEnergyRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    SetHistoPtRangeAndNBins(min, max, n);
+  }
+  
+  virtual Int_t   GetHistoEnergyBins() const { return fHistoPtBins ; }
+  virtual Float_t GetHistoEnergyMin()  const { return fHistoPtMin  ; }
+  virtual Float_t GetHistoEnergyMax()  const { return fHistoPtMax  ; }
   
     //Azimuthal angle
   virtual void SetHistoPhiRangeAndNBins(Float_t min, Float_t max, Int_t n) {
@@ -315,6 +334,7 @@ private:
   Bool_t   fRecalculateCaloPID ; // Recalculate PID or use PID weights in calorimeters
   Float_t  fMinPt ;              // Maximum pt of (trigger) particles in the analysis
   Float_t  fMaxPt ;              // Minimum pt of (trigger) particles in the analysis
+  Float_t  fPairTimeCut;         // Maximum difference between time of cluster pairs (ns)
   Int_t    fMultiBin ;	         // Number of bins in event container for multiplicity
   Int_t    fNZvertBin ;	         // Number of bins in event container for vertex position
   Int_t    fNrpBin ;	           // Number of bins in event container for reaction plain
@@ -343,7 +363,7 @@ private:
   AliIsolationCut          * fIC;      // Isolation cut 
   AliMCAnalysisUtils       * fMCUtils; // MonteCarlo Analysis utils 
   AliNeutralMesonSelection * fNMS;     // Neutral Meson Selection
-  AliCalorimeterUtils      * fCaloUtils ; //  Pointer to CalorimeterUtils
+  AliCalorimeterUtils      * fCaloUtils ; // Pointer to CalorimeterUtils
 
   //Histograms binning and range    
   Int_t   fHistoPtBins   ;  // Number of bins in pt axis
@@ -371,7 +391,7 @@ private:
   Int_t   fHistoTrMMax   ;  // Maximum value of track multiplicity histogram range
   Int_t   fHistoTrMMin   ;  // Minimum value of track multiplicity histogram range
   
-  ClassDef(AliAnaPartCorrBaseClass,16)
+  ClassDef(AliAnaPartCorrBaseClass,17)
 } ;
 
 
