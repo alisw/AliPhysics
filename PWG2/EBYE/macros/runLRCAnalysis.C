@@ -1,4 +1,4 @@
-void runLRCAnalysis(const char* mode = "GRID", const char* inputName= "wn.xml",Bool_t LoadTaskLocal=kFALSE) {
+runLRCAnalysis(const char* mode = "GRID", const char* inputName= "wn.xml",Bool_t LoadTaskLocal=kTRUE) {
 // This macro runs AliAnalysisTaskLRC in three modes : "Local" , "Interactive", "PROOF", "GRID" 
 // ESD-only
 // inputName refers to :
@@ -16,8 +16,8 @@ void runLRCAnalysis(const char* mode = "GRID", const char* inputName= "wn.xml",B
 // Author : Andrey Ivanov , St.Peterburg State University
 // Email: Andrey.Ivanov@cern.ch
 
-// Version line : 3.5
-// Version 3.5.5
+// Version line : 3.6
+// Version 3.6.6
 
 
 if(mode!="Local" && mode!="Interactive" && mode!="PROOF" && mode!="GRID")
@@ -35,57 +35,92 @@ if(mode=="GRID")runLRCInteractive(inputName,LoadTaskLocal);
 
 }
 
-void runLRCLocal(const char* inputName= "ESDs.lst",Bool_t LoadTaskLocal=kFALSE) {
-  printf("  ------------------------------------------\n");
-  printf("  # LRC local run manager \n");
-  cout<<"  # Task from :"<<gSystem->pwd()<<"\n";
-  cout<<"  # Input list :"<<inputName<<"\n";
+void LoadAnalysisLibs(Bool_t LoadTaskLocal=kFALSE)
+{
   cout<<"  # Loadnig libs...\n";
-  
-  TStopwatch timer;
-  timer.Start();
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libSTEERBase.so");
+ 
+
+ gSystem->Load("libSTEERBase.so");
   gSystem->Load("libESD.so");
   gSystem->Load("libAOD.so");
   gSystem->Load("libANALYSIS.so");
   gSystem->Load("libANALYSISalice.so");
   if(!LoadTaskLocal)gSystem->Load("libPWG2ebye.so");
-  
+
   
   //___________Compile analysis task using AClic____________//
  
   if(LoadTaskLocal){
   	gROOT->ProcessLine(".include $ALICE_ROOT/include");
+	cout<<"  # Compiling AliLRCBase\n";
+	gROOT->LoadMacro("AliLRCBase.cxx+g");	
 	cout<<"  # Compiling AliLRCProcess\n";
 	gROOT->LoadMacro("AliLRCProcess.cxx+g");
+	gROOT->LoadMacro("AliRidgeAnalyser.cxx+g");
 	cout<<"  # Compiling LRC analysis task\n";
   	gROOT->LoadMacro("AliAnalysisTaskLRC.cxx+g");
 	}
-  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
-  gROOT->LoadMacro("AddTaskLRC.C");
-  TChain* chain = CreateESDChain(inputName);
-  
+
+}
+
+Bool_t CreateLRCManager(char* name="LRCmanager",Bool_t runKine=kFALSE,Bool_t runAOD=kFALSE)
+{
   //____________________________________________//
   // Make the analysis manager
-  AliAnalysisManager *mgr = new AliAnalysisManager("TestLRCManagerLocal");
+  AliAnalysisManager *mgr = new AliAnalysisManager(name);
   AliESDInputHandler* esdH = new AliESDInputHandler();
   mgr->SetInputEventHandler(esdH);  
+  if(runKine){
+  	AliMCEventHandler* handler = new AliMCEventHandler;
+  	mgr->SetMCtruthEventHandler(handler);
+  }
   
-  AddTaskLRC();
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1",TChain::Class(),AliAnalysisManager::kInputContainer);
+  
+  mgr->SetCommonFileName("Test.LRC.root");
+  
+  
+
+ return kTRUE;
+
+}
+
+void runLRCLocal(const char* inputName= "ESDs.lst",Bool_t LoadTaskLocal=kFALSE,Bool_t runKine=kFALSE,Bool_t runAOD=kFALSE) {
+  printf("  ------------------------------------------\n");
+  printf("  # LRC local run manager \n");
+  cout<<"  # Task from :"<<gSystem->pwd()<<"\n";
+  cout<<"  # Input list :"<<inputName<<"\n";
+  
+  
+  TStopwatch timer;
+  timer.Start();
+  
+  LoadAnalysisLibs(LoadTaskLocal);
+ 
+  if (!CreateLRCManager("LocalLRCTest",runKine,runAOD)) return;
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+
+  gROOT->LoadMacro("AddTaskLRC.C");
+  AddTaskLRC(runKine);
+  
+ 
+  
+  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+  TChain* chain = CreateESDChain(inputName);
+  
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
+  
   mgr->StartAnalysis("local",chain);
 
   timer.Stop();
   timer.Print();
 }
 
-void runLRCProof(const char* inputName= "/COMMON/COMMON/tutorial_small",Bool_t LoadTaskLocal=kFALSE,const char* proofLink="alicecaf")
+void runLRCProof(const char* inputName= "/COMMON/COMMON/tutorial_small",Bool_t LoadTaskLocal=kFALSE,const char* proofLink="anivanov@alice-caf.cern.ch",Bool_t runKine=kFALSE,Bool_t runAOD=kFALSE)
 {
   printf("  ------------------------------------------\n");
   printf(" # LRC PROOF run manager \n");
@@ -94,94 +129,64 @@ void runLRCProof(const char* inputName= "/COMMON/COMMON/tutorial_small",Bool_t L
 
 
 	TProof::Open(proofLink);
-	//TProof::Open("anivanov@localhost");
+	//TProof::Open("anivanov@localhost");.
 
 	
   cout<<"  # Loadnig libs...\n";
-		
-
-gProof->UploadPackage("STEERBase");
-gProof->UploadPackage("ESD");
-gProof->UploadPackage("AOD");
-gProof->UploadPackage("ANALYSIS");
-gProof->UploadPackage("ANALYSISalice");
-if(!LoadTaskLocal)gProof->UploadPackage("PWG2ebye");
 
 
-gProof->EnablePackage("STEERBase");
-gProof->EnablePackage("ESD");
-gProof->EnablePackage("AOD");
-gProof->EnablePackage("ANALYSIS");
-gProof->EnablePackage("ANALYSISalice");
-if(!LoadTaskLocal)gProof->EnablePackage("PWG2ebye");
 
-   
-  
+gProof->EnablePackage("VO_ALICE@AliRoot::v4-20-13-AN");
+
   // Use AliRoot includes to compile our task
   if(LoadTaskLocal){
- 	gROOT->ProcessLine(".include $ALICE_ROOT/include");
+ //	gROOT->ProcessLine(".include $ALICE_ROOT/include");
+	cout<<"  # Compiling AliLRCBase\n";
+	gProof->Load("AliLRCBase.cxx+g");	
 	cout<<"  # Compiling AliLRCProcess\n";
 	gProof->Load("AliLRCProcess.cxx+g");
+	gProof->Load("AliLRCAnalyser.cxx+g");
   	cout<<"  # Compiling analysis task\n";
-  	gProof->Load("AliAnalysisTaskLRC.cxx++g");   
+  	gProof->Load("AliAnalysisTaskLRC.cxx+g");   
   }
-  
-  // Create the analysis manager
-  mgr = new AliAnalysisManager("TestLRCManagerProof");
-   
-  AliESDInputHandler* esdH = new AliESDInputHandler();
-  mgr->SetInputEventHandler(esdH);
 
-  gROOT->LoadMacro("AddTaskLRC.C");
-  AddTaskLRC();
+  if (!CreateLRCManager("ProofLRCTest",runKine,runAOD)) return;
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
    
+  gROOT->LoadMacro("AddTaskLRC.C");
+  AddTaskLRC(runKine);
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
-
   mgr->StartAnalysis("proof", inputName);
-
-  
-
 };
 
-void runLRCInteractive(const char* inputName= "wn.xml",Bool_t LoadTaskLocal=kFALSE) {
+void runLRCInteractive(const char* inputName= "wn.xml",Bool_t LoadTaskLocal=kFALSE,Bool_t runKine=kFALSE,Bool_t runAOD=kFALSE) {
   
   printf("  ------------------------------------------\n");
   printf(" # LRC local-interactive/GRID run manager \n");
   cout<<"  # Task from :"<<gSystem->pwd()<<"\n";
   cout<<"  # Collection :"<<inputName<<"\n";
 
+  TStopwatch timer;
+  timer.Start();
+  
   cout<<"*** Connect to AliEn ***\n";
   TGrid::Connect("alien://","anivanov");
 
-  cout<<"  # Loadnig libs...\n";
+  LoadAnalysisLibs(LoadTaskLocal);
   
-  TStopwatch timer;
-  timer.Start();
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  
-  if(!LoadTaskLocal)gSystem->Load("libPWG2ebye.so");
-  
+  if (!CreateLRCManager("IntLRCTest",runKine,runAOD)) return;
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
  
   
- if(LoadTaskLocal){
- gROOT->ProcessLine(".include $ALICE_ROOT/include");
- 	cout<<"  # Compiling AliLRCProcess\n";
-	gROOT->LoadMacro("AliLRCProcess.cxx+g");
-	cout<<"  # Compiling analysis task\n";
- 	gROOT->LoadMacro("AliAnalysisTaskLRC.cxx+g");
-  
-  }
-   
-    TAlienCollection * myCollection = 
+  gROOT->LoadMacro("AddTaskLRC.C");
+  AddTaskLRC(runKine);
+
+     TAlienCollection * myCollection = 
 	new TAlienCollection("wn.xml",100000) ; 
     if (!myCollection) { 
 	cout << "XML collection file: " << xmlFileName << " not found" << endl;
@@ -197,17 +202,7 @@ void runLRCInteractive(const char* inputName= "wn.xml",Bool_t LoadTaskLocal=kFAL
 	chain->Add(myCollection->GetTURL("")) ; 
     }
     
-
-  
-  AliAnalysisManager *mgr = new AliAnalysisManager("Local-Interactive_LRC_Manager");
-  AliESDInputHandler* esdH = new AliESDInputHandler();
-  mgr->SetInputEventHandler(esdH);  
-  //____________________________________________//
- 
-  gROOT->LoadMacro("AddTaskLRC.C");
-   
-  AddTaskLRC();
-  
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
   mgr->StartAnalysis("local",chain);
