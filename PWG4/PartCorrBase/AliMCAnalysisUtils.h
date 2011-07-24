@@ -17,6 +17,7 @@
 #include <TObject.h>
 #include <TString.h> 
 class TList ;
+class TVector3;
 
 //--- AliRoot system ---
 class AliCaloTrackReader ;
@@ -45,7 +46,7 @@ class AliMCAnalysisUtils : public TObject {
 	
 	//Check only the label of the most significant particle
   Int_t   CheckCommonAncestor(const Int_t index1, const Int_t index2, AliCaloTrackReader* reader, 
-                              Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum) ;
+                              Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & v) ;
 	Int_t   CheckOrigin(const Int_t label, AliCaloTrackReader * reader, const Int_t input) ;
 	//Check the label of the most significant particle but do checks on the rest of the contributing labels
 	Int_t   CheckOrigin(const Int_t *label, const Int_t nlabels, AliCaloTrackReader * reader, const Int_t input) ;
