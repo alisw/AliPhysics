@@ -38,7 +38,7 @@ class TH2F ;
 //--- AliRoot system ---
 class AliVCluster;
 class AliAODPWG4Particle;
-#include "AliEMCALPIDUtils.h";
+#include "AliEMCALPIDUtils.h"
 class AliCalorimeterUtils;
 
 class AliCaloPID : public TObject {
