@@ -18,24 +18,25 @@
 #ifndef ALIHLTTRIGGEREMCALELECTRON_H
 #define ALIHLTTRIGGEREMCALELECTRON_H
 
-#include "AliHLTTriggerCaloClusterEnergy.h"
+#include "AliHLTTriggerEmcalClusterEnergy.h"
 #include "AliHLTTrigger.h"
+
 class AliHLTCaloClusterReader;
 class TRefArray;
 class AliESDEvent;
 class TMap;
 
-class AliHLTTriggerEmcalElectron : public AliHLTTrigger
+class AliHLTTriggerEmcalElectron : public AliHLTTrigger 
 {
 
 public:
-  AliHLTTriggerEmcalElectron(TString detector);
+  AliHLTTriggerEmcalElectron();
   ~AliHLTTriggerEmcalElectron();
 
   /// inherited from AliHLTTrigger: name of this trigger
-  virtual const char* GetTriggerName() const = 0;
+  const char* GetTriggerName() const;
   /// inherited from AliHLTComponent: create an instance
-  virtual AliHLTComponent* Spawn() = 0;
+  AliHLTComponent* Spawn();
 
   ///Inherited from AliHLTComponent: Get list of OCDB objects
   void GetOCDBObjectDescription( TMap* const targetMap);
@@ -61,23 +62,15 @@ public:
 protected :
 
   ///Get the clusters from the esd
-  virtual Int_t GetClustersFromEsd( const AliESDEvent * esd, TRefArray * clustersRefs ) = 0;
+  Int_t GetClustersFromEsd( const AliESDEvent * esd, TRefArray * clustersRefs );
 
   // FR: Set the appropriate readout list for each calo
-  virtual void SetCaloReadoutList() = 0;
+  void SetCaloReadoutList();
   
   /// inherited from AliHLTTrigger: calculate the trigger
   Int_t DoTrigger();
 
-  ///Default constructor prohibited
-  AliHLTTriggerEmcalElectron();
-
-  /// Copy constructor prohibited
-  AliHLTTriggerEmcalElectron(const AliHLTTriggerEmcalElectron & );
-
-  /// Assignment operator prohibited
-  AliHLTTriggerEmcalElectron& operator=(const AliHLTTriggerEmcalElectron &);
- 
+  
   /// Check if cluster fullfills criteria and if so trigger
   template <class T> 
   Bool_t TriggerOnEoverP(T* cluster,AliESDEvent *esd);
@@ -86,28 +79,33 @@ protected :
   Float_t fEThreshold;
   Float_t fEoverPThreshold;
   Float_t fEoverPLimit;
+
   
   ///array to hold esd clusters
   TRefArray * fClustersRefs;  //!transient
 
-  //The detector string (PHOS or EMCAL)
-  const TString fDetector;
-
-  ///Cluster data struct reader
+    ///Cluster data struct reader
   AliHLTCaloClusterReader * fClusterReader; //!transient
 
   /// the default configuration entry for this component
   const char* fOCDBEntry; //!transient
-
+  const TString fDetector;
   
   AliHLTComponentDataType fInputDataType;   ///Input data type for calo struct input, must be set in child class
   
+  
+  
+ private:
+  
+  /// Copy constructor prohibited
+  AliHLTTriggerEmcalElectron(const AliHLTTriggerEmcalElectron & );
+  
+  /// Assignment operator prohibited
+  AliHLTTriggerEmcalElectron& operator=(const AliHLTTriggerEmcalElectron &);
+  
+  ClassDef(AliHLTTriggerEmcalElectron, 0);
 
-  ClassDef(AliHLTTriggerEmcalElectron, 0)
 };
-
-
-
 
 
 #endif //ALIHLTTRIGGERCALOCLUSTERENERGY_H

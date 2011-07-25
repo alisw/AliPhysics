@@ -70,6 +70,10 @@ const char* AliHLTTriggerEmcalElectron::GetTriggerName() const {
   return "EmcalElectronTrigger";
 }
 
+AliHLTComponent* AliHLTTriggerEmcalElectron::Spawn() {
+  // see header file for class documentation
+  return new AliHLTTriggerEmcalElectron;
+}
 
 Int_t AliHLTTriggerEmcalElectron::DoTrigger() {
   // see header file for class documentation
@@ -246,3 +250,5 @@ void AliHLTTriggerEmcalElectron::GetOCDBObjectDescription( TMap* const targetMap
 		 new TObjString(Form("%s threshold trigger OCDB object", fDetector.Data()) ) 
 		 );
 }
+
+

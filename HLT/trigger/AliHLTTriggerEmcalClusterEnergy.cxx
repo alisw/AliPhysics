@@ -16,8 +16,8 @@
 //**************************************************************************
 
 /// @file   AliHLTTriggerEmcalClusterEnergy.cxx
-/// @author Svein Lindal <slindal@fys.uio.no>
-/// @date   2009-08-17
+/// @author Marcel Figueredo
+/// @date   2011-07-23
 /// @brief  HLT energy threshold trigger for EMCAL
 ///      
 

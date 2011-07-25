@@ -18,6 +18,7 @@
 #pragma link C++ class AliHLTTriggerCaloClusterEnergy+;
 #pragma link C++ class AliHLTTriggerPhosClusterEnergy+;
 #pragma link C++ class AliHLTTriggerEmcalClusterEnergy+;
+#pragma link C++ class AliHLTTriggerEmcalElectron+;
 #pragma link C++ class AliHLTTriggerPhosMip+;
 #pragma link C++ class AliHLTTriggerTrdClusterMultiplicity+;
 #pragma link C++ class AliHLTTriggerDetectorGeom+;
