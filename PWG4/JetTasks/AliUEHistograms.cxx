@@ -824,7 +824,7 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
   
   if (!fTwoTrackDistancePt[0])
   {
-    fTwoTrackDistancePt[0] = new TH3F("fTwoTrackDistancePt[0]", ";#Delta#eta;#Delta#varphi^{*}_{min};#Delta p_{T}", 100, -0.05, 0.05, 100, -0.05, 0.05, 20, 0, 5);
+    fTwoTrackDistancePt[0] = new TH3F("fTwoTrackDistancePt[0]", ";#Delta#eta;#Delta#varphi^{*}_{min};#Delta p_{T}", 100, -0.05, 0.05, 100, -0.05, 0.05, 20, 0, 10);
     fTwoTrackDistancePt[1] = (TH3F*) fTwoTrackDistancePt[0]->Clone("fTwoTrackDistancePt[1]");
   }
   
@@ -840,13 +840,24 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
     AliVParticle* particle1 = (AliVParticle*) tracks->At(i);
     Double_t phi1 = particle1->Phi();
     Double_t pt1 = particle1->Pt();
-    for (Int_t j=i+1; j<tracks->GetEntriesFast(); j++)
+    
+    // analyze region for IAA paper
+    if (pt1 < 8 || pt1 > 15)
+      continue;
+    
+    for (Int_t j=0; j<tracks->GetEntriesFast(); j++)
     {
+      if (i == j)
+	continue;
+      
       AliVParticle* particle2 = (AliVParticle*) tracks->At(j);
       Double_t phi2 = particle2->Phi();
       Double_t pt2 = particle2->Pt();
-      Double_t dpt = pt1 - pt2;
       
+      if (pt2 > pt1)
+	continue;
+      
+//       Double_t dpt = TMath::Abs(pt1 - pt2);
       Double_t deta = eta[i] - eta[j];
       Double_t detaabs = TMath::Abs(deta);
       
@@ -878,9 +889,9 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
 	//Printf("%d %d failed: %.3f %.3f; %.3f %.3f %.4f; %.2f %.2f (%p %p)", i, j, eta[i], eta[j], phi1, phi2, dphistarminabs, pt1, pt2, particle1, particle2);
       }
 
-      fTwoTrackDistancePt[0]->Fill(deta, dphistarmin, dpt);
+      fTwoTrackDistancePt[0]->Fill(deta, dphistarmin, pt2);
       if (cutPassed)
-	fTwoTrackDistancePt[1]->Fill(deta, dphistarmin, dpt);
+	fTwoTrackDistancePt[1]->Fill(deta, dphistarmin, pt2);
       else
       {
 	// remove tracks from list
