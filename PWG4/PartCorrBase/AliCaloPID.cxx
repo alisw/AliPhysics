@@ -16,11 +16,11 @@
 
 //_________________________________________________________________________
 // Class for PID selection with calorimeters
-// The Output of the 2 main methods GetPdg is a PDG number identifying the cluster, 
+// The Output of the 2 main methods GetIdentifiedParticleType is a PDG number identifying the cluster, 
 // being kPhoton, kElectron, kPi0 ... as defined in the header file
-//   - GetPdg(const TString calo, const Double_t * pid, const Float_t energy)
+//   - GetIdentifiedParticleType(const TString calo, const Double_t * pid, const Float_t energy)
 //      Reads the PID weights array of the ESDs and depending on its magnitude identifies the particle
-//   - GetPdg(const TString calo,const TLorentzVector mom, const AliVCluster * cluster)
+//   - GetIdentifiedParticleType(const TString calo,const TLorentzVector mom, const AliVCluster * cluster)
 //      Recalcultes PID, the bayesian or any new one to be implemented in the future
 //      Right now only the possibility to recalculate EMCAL with bayesian and simple PID.
 //      In order to recalculate Bayesian, it is necessary to load the EMCALUtils library
@@ -212,11 +212,11 @@ void AliCaloPID::InitParameters()
 }
 
 //_______________________________________________________________
-Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t energy) {
+Int_t AliCaloPID::GetIdentifiedParticleType(const TString calo, const Double_t * pid, const Float_t energy) {
   //Return most probable identity of the particle.
   
   if(!pid){ 
-    printf("AliCaloPID::GetPdg() - pid pointer not initialized!!!\n");
+    printf("AliCaloPID::GetIdentifiedParticleType() - pid pointer not initialized!!!\n");
     abort();
   }
   
@@ -241,7 +241,7 @@ Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t
     
   }
   
-  if(fDebug > 0)  printf("AliCaloPID::GetPdg: calo %s, ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f, hadrons: pion %0.2f, kaon %0.2f, proton %0.2f , neutron %0.2f, kaon %0.2f \n",
+  if(fDebug > 0)  printf("AliCaloPID::GetIdentifiedParticleType: calo %s, ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f, hadrons: pion %0.2f, kaon %0.2f, proton %0.2f , neutron %0.2f, kaon %0.2f \n",
 			 calo.Data(),pid[AliVCluster::kPhoton], pid[AliVCluster::kPi0],
 			 pid[AliVCluster::kElectron], pid[AliVCluster::kEleCon],
 			 pid[AliVCluster::kPion], pid[AliVCluster::kKaon], pid[AliVCluster::kProton],
@@ -278,20 +278,20 @@ Int_t AliCaloPID::GetPdg(const TString calo, const Double_t * pid, const Float_t
     else                                                     pdg = kNeutralUnknown ;
   }
   
-  if(fDebug > 0)printf("AliCaloPID::GetPdg:Final Pdg: %d, cluster energy %2.2f \n", pdg,energy);
+  if(fDebug > 0)printf("AliCaloPID::GetIdentifiedParticleType:Final Pdg: %d, cluster energy %2.2f \n", pdg,energy);
    //printf("PDG1\n");
   return pdg ;
   
 }
 
 //_______________________________________________________________
-Int_t AliCaloPID::GetPdg(const TString calo,const TLorentzVector mom, const AliVCluster * cluster) {
+Int_t AliCaloPID::GetIdentifiedParticleType(const TString calo,const TLorentzVector mom, const AliVCluster * cluster) {
   //Recalculated PID with all parameters
   
   Float_t lambda0 = cluster->GetM02();
   Float_t energy  = mom.E();	
   
-  if(fDebug > 0) printf("AliCaloPID::GetPdg: Calorimeter %s, E %3.2f, l0 %3.2f, l1 %3.2f, disp %3.2f, tof %1.11f, distCPV %3.2f, distToBC %1.1f, NMax %d\n",
+  if(fDebug > 0) printf("AliCaloPID::GetIdentifiedParticleType: Calorimeter %s, E %3.2f, l0 %3.2f, l1 %3.2f, disp %3.2f, tof %1.11f, distCPV %3.2f, distToBC %1.1f, NMax %d\n",
                         calo.Data(),energy,lambda0,cluster->GetM20(),cluster->GetDispersion(),cluster->GetTOF(), 
                         cluster->GetEmcCpvDistance(), cluster->GetDistanceToBadChannel(),cluster->GetNExMax());
   
@@ -300,7 +300,7 @@ Int_t AliCaloPID::GetPdg(const TString calo,const TLorentzVector mom, const AliV
 	  if(fRecalculateBayesian){	  
 		  if(fDebug > 0)  {
 			  const Double_t  *pid0 = cluster->GetPID();
-			  printf("AliCaloPID::GetPdg: BEFORE calo %s, ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f, hadrons: pion %0.2f, kaon %0.2f, proton %0.2f , neutron %0.2f, kaon %0.2f \n",
+			  printf("AliCaloPID::GetIdentifiedParticleType: BEFORE calo %s, ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f, hadrons: pion %0.2f, kaon %0.2f, proton %0.2f , neutron %0.2f, kaon %0.2f \n",
                calo.Data(),pid0[AliVCluster::kPhoton], pid0[AliVCluster::kPi0],
                pid0[AliVCluster::kElectron], pid0[AliVCluster::kEleCon],
                pid0[AliVCluster::kPion], pid0[AliVCluster::kKaon], pid0[AliVCluster::kProton],
@@ -310,18 +310,15 @@ Int_t AliCaloPID::GetPdg(const TString calo,const TLorentzVector mom, const AliV
       fEMCALPIDUtils->ComputePID(energy, lambda0);
       Double_t pid[AliPID::kSPECIESN];
       for(Int_t i = 0; i < AliPID::kSPECIESN; i++) pid[i] = fEMCALPIDUtils->GetPIDFinal(i);
-      return GetPdg(calo, pid, energy);
+      return GetIdentifiedParticleType(calo, pid, energy);
 		  
     }
   }
   
   // If no use of bayesian, simplest PID  
   if(lambda0 < fDispCut) return kPhoton ;
-  //else return  kNeutralHadron ; 
-  else return  kPi0 ;
-  
-  return  kNeutralHadron ; 
-  
+  else return  kPi0 ; // Wild guess, it can be hadron but not photon
+    
 }
 
 //__________________________________________________
@@ -445,12 +442,12 @@ void AliCaloPID::SetPIDBits(const TString calo, const AliVCluster * cluster, Ali
   ph->SetChargedBit(isNeutral);
   
   //Set PID pdg
-  ph->SetPdg(GetPdg(calo,cluster->GetPID(),ph->E()));
+  ph->SetIdentifiedParticleType(GetIdentifiedParticleType(calo,cluster->GetPID(),ph->E()));
   
   if(fDebug > 0){ 
     printf("AliCaloPID::SetPIDBits: TOF %e, Lambda0 %2.2f, Lambda1 %2.2f\n",tof , l0, l1); 	
     printf("AliCaloPID::SetPIDBits: pdg %d, bits: TOF %d, Dispersion %d, Charge %d\n",
-	     ph->GetPdg(), ph->GetTOFBit() , ph->GetDispBit() , ph->GetChargedBit()); 
+	     ph->GetIdentifiedParticleType(), ph->GetTOFBit() , ph->GetDispBit() , ph->GetChargedBit()); 
   }
 }
 
