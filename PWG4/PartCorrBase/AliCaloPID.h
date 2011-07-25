@@ -74,9 +74,9 @@ public:
 
   void      InitParameters();
 
-  Int_t     GetPdg(const TString calo, const Double_t * pid,     const Float_t energy) ;
+  Int_t     GetIdentifiedParticleType(const TString calo, const Double_t * pid,     const Float_t energy) ;
   
-  Int_t     GetPdg(const TString calo, const TLorentzVector mom, const AliVCluster * cluster) ;
+  Int_t     GetIdentifiedParticleType(const TString calo, const TLorentzVector mom, const AliVCluster * cluster) ;
   
   TString	  GetPIDParametersList();
   
@@ -214,7 +214,7 @@ private:
   TH2F    * fhTrackMatchedDEtaDPhi ; //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
   
   
-  ClassDef(AliCaloPID,6)
+  ClassDef(AliCaloPID,7)
 } ;
 
 
