@@ -16,7 +16,7 @@
 /* $Id$ */ 
 
 // AliFlowTrackCuts:
-// ESD track cuts for flow framework 
+// Data selection for flow framework
 //
 // origin: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
 //
@@ -634,6 +634,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
       TParticle* tparticle=fMCparticle->Particle();
       Int_t processID = tparticle->GetUniqueID();
       Int_t firstMotherLabel = tparticle->GetFirstMother();
+      Bool_t primary = IsPhysicalPrimary();
       //TLorentzVector v;
       //mcparticle->Particle()->ProductionVertex(v);
       //Double_t prodvtxX = v.X();
@@ -684,11 +685,11 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
       pdgFirstMother = TMath::Sign(pdgFirstMother,static_cast<Float_t>(pdgcodeFirstMother));
       
       QAbefore(2)->Fill(p,pdg);
-      QAbefore(3)->Fill(p,IsPhysicalPrimary()?0.5:-0.5);
+      QAbefore(3)->Fill(p,primary?0.5:-0.5);
       QAbefore(4)->Fill(p,static_cast<Float_t>(processID));
       QAbefore(7)->Fill(p,pdgFirstMother);
       if (pass) QAafter(2)->Fill(p,pdg);
-      if (pass) QAafter(3)->Fill(p,IsPhysicalPrimary()?0.5:-0.5);
+      if (pass) QAafter(3)->Fill(p,primary?0.5:-0.5);
       if (pass) QAafter(4)->Fill(p,static_cast<Float_t>(processID));
       if (pass) QAafter(7)->Fill(p,pdgFirstMother);
     }
@@ -801,47 +802,12 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
   }
   if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID
   {
-    switch (fPIDsource)    
-    {
-      case kTPCpid:
-        if (!PassesTPCpidCut(track)) pass=kFALSE;
-        break;
-      case kTPCdedx:
-        if (!PassesTPCdedxCut(track)) pass=kFALSE;
-        break;
-      case kTOFpid:
-        if (!PassesTOFpidCut(track)) pass=kFALSE;
-        break;
-      case kTOFbeta:
-        if (!PassesTOFbetaCut(track)) pass=kFALSE;
-        break;
-      case kTOFbetaSimple:
-        if (!PassesTOFbetaSimpleCut(track)) pass=kFALSE;
-        break;
-      case kTPCbayesian:
-        if (!PassesTPCbayesianCut(track)) pass=kFALSE;
-        break;
-        // part added by F. Noferini
-      case kTOFbayesian:
-        if (!PassesTOFbayesianCut(track)) pass=kFALSE;
-        break;
-        // end part added by F. Noferini
-
-        //part added by Natasha
-      case kTPCNuclei:
-        if (!PassesNucleiSelection(track)) pass=kFALSE;
-        break;
-        //end part added by Natasha
-
-      default:
-        printf("AliFlowTrackCuts::PassesCuts() this should never be called!\n");
-        pass=kFALSE;
-        break;
-    }
-  }    
+    if (!PassesESDpidCut(track)) pass=kFALSE;
+  }
   if (fCutRejectElectronsWithTPCpid)
   {
     //reject electrons using standard TPC pid
+    //TODO this should be rethought....
     Double_t pidTPC[AliPID::kSPECIES];
     track->GetTPCpid(pidTPC);
     if (pidTPC[AliPID::kElectron]<fParticleProbability) pass=kFALSE;
@@ -852,6 +818,7 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
     if (pass) QAafter(1)->Fill(pin->GetP(),dedx);
   }
   //end pid part with qa
+  
   if (fQA)
   {
     Double_t pt = track->Pt();
@@ -932,6 +899,7 @@ Int_t AliFlowTrackCuts::Count(AliVEvent* event)
 //-----------------------------------------------------------------------
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts()
 {
+  //get standard V0 cuts
   AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts");
   cuts->SetParamType(kV0);
   cuts->SetEtaRange( -10, +10 );
@@ -1570,6 +1538,51 @@ void AliFlowTrackCuts::Clear(Option_t*)
 }
 
 //-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesESDpidCut(const AliESDtrack* track )
+{
+  //check if passes the selected pid cut for ESDs
+  Bool_t pass = kTRUE; 
+  switch (fPIDsource)    
+  {
+    case kTPCpid:
+      if (!PassesTPCpidCut(track)) pass=kFALSE;
+      break;
+    case kTPCdedx:
+      if (!PassesTPCdedxCut(track)) pass=kFALSE;
+      break;
+    case kTOFpid:
+      if (!PassesTOFpidCut(track)) pass=kFALSE;
+      break;
+    case kTOFbeta:
+      if (!PassesTOFbetaCut(track)) pass=kFALSE;
+      break;
+    case kTOFbetaSimple:
+      if (!PassesTOFbetaSimpleCut(track)) pass=kFALSE;
+      break;
+    case kTPCbayesian:
+      if (!PassesTPCbayesianCut(track)) pass=kFALSE;
+      break;
+      // part added by F. Noferini
+    case kTOFbayesian:
+      if (!PassesTOFbayesianCut(track)) pass=kFALSE;
+      break;
+      // end part added by F. Noferini
+
+      //part added by Natasha
+    case kTPCNuclei:
+      if (!PassesNucleiSelection(track)) pass=kFALSE;
+      break;
+      //end part added by Natasha
+
+    default:
+      printf("AliFlowTrackCuts::PassesCuts() this should never be called!\n");
+      pass=kFALSE;
+      break;
+  }
+  return pass;
+}
+
+//-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::PassesTOFbetaSimpleCut(const AliESDtrack* track )
 {
   //check if passes PID cut using timing in TOF
@@ -1637,6 +1650,7 @@ Float_t AliFlowTrackCuts::GetBeta(const AliESDtrack* track)
 //-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::PassesTOFbetaCut(const AliESDtrack* track )
 {
+  //check if track passes pid selection with an asymmetric TOF beta cut
   if (!fTOFpidCuts)
   {
     //printf("no TOFpidCuts\n");
@@ -1727,7 +1741,7 @@ Bool_t AliFlowTrackCuts::PassesTPCpidCut(const AliESDtrack* track) const
 }
 
 //-----------------------------------------------------------------------
-Float_t AliFlowTrackCuts::Getdedx(const AliESDtrack* track)
+Float_t AliFlowTrackCuts::Getdedx(const AliESDtrack* track) const
 {
   //get TPC dedx
   return track->GetTPCsignal();
@@ -2081,7 +2095,7 @@ Bool_t AliFlowTrackCuts::PassesTPCbayesianCut(const AliESDtrack* track)
 // part added by F. Noferini (some methods)
 Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(const AliESDtrack* track)
 {
-
+  //check is track passes bayesian combined TOF+TPC pid cut
   Bool_t goodtrack = (track->GetStatus() & AliESDtrack::kTOFpid) && 
                      (track->GetTOFsignal() > 12000) && 
                      (track->GetTOFsignal() < 100000) && 
@@ -2138,6 +2152,7 @@ Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(const AliESDtrack* track)
  // part added by Natasha
 Bool_t AliFlowTrackCuts::PassesNucleiSelection(const AliESDtrack* track)
 {
+  //pid selection for heavy nuclei
   Bool_t select=kFALSE;
 
   //if (!track) continue; 
@@ -2386,6 +2401,7 @@ Int_t AliFlowTrackCuts::GetESDPdg(const AliESDtrack *track,Option_t *option,Int_
 
 //-----------------------------------------------------------------------
 void AliFlowTrackCuts::SetPriors(Float_t centrCur){
+  //set priors for the bayesian pid selection
   fBinLimitPID[0] = 0.300000;
   fBinLimitPID[1] = 0.400000;
   fBinLimitPID[2] = 0.500000;
@@ -3409,6 +3425,7 @@ void AliFlowTrackCuts::SetPriors(Float_t centrCur){
 //---------------------------------------------------------------//
 Bool_t AliFlowTrackCuts::TPCTOFagree(const AliESDtrack *track)
 {
+  //check pid agreement between TPC and TOF
   Bool_t status = kFALSE;
   
   Float_t mass[5] = {5.10998909999999971e-04,1.05658000000000002e-01,1.39570000000000000e-01,4.93676999999999977e-01,9.38271999999999995e-01};
@@ -3545,7 +3562,7 @@ const char* AliFlowTrackCuts::GetParamTypeName(trackParameterType type)
 }
 
 //-----------------------------------------------------------------------
-Bool_t AliFlowTrackCuts::PassesPMDcuts(AliESDPmdTrack* track )
+Bool_t AliFlowTrackCuts::PassesPMDcuts(const AliESDPmdTrack* track )
 {
   //check PMD specific cuts
   //clean up from last iteration, and init label
@@ -3576,7 +3593,7 @@ Bool_t AliFlowTrackCuts::PassesPMDcuts(AliESDPmdTrack* track )
 }
   
 //-----------------------------------------------------------------------
-Bool_t AliFlowTrackCuts::PassesV0cuts(AliVVZERO* vzero, Int_t id)
+Bool_t AliFlowTrackCuts::PassesV0cuts(const AliVVZERO* vzero, Int_t id)
 {
   //check V0 cuts
 
@@ -3603,6 +3620,7 @@ Bool_t AliFlowTrackCuts::PassesV0cuts(AliVVZERO* vzero, Int_t id)
 //----------------------------------------------------------------------------//
 Double_t AliFlowTrackCuts::GetPmdEta(Float_t xPos, Float_t yPos, Float_t zPos)
 {
+  //get PMD "track" eta coordinate
   Float_t rpxpy, theta, eta;
   rpxpy  = TMath::Sqrt(xPos*xPos + yPos*yPos);
   theta  = TMath::ATan2(rpxpy,zPos);
@@ -3613,6 +3631,7 @@ Double_t AliFlowTrackCuts::GetPmdEta(Float_t xPos, Float_t yPos, Float_t zPos)
 //--------------------------------------------------------------------------//
 Double_t AliFlowTrackCuts::GetPmdPhi(Float_t xPos, Float_t yPos)
 {
+  //Get PMD "track" phi coordinate
   Float_t pybypx, phi = 0., phi1;
   if(xPos==0)
     {
