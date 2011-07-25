@@ -5317,6 +5317,30 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
   Printf("AFTER DATA HISTOS CREATION \n");
 
   delete ptbinlimitsCxyLxy;
+
+
+  PostData(1,fNentries);
+  PostData(2,fSignalType);
+  PostData(3,fSignalTypeLsCuts);
+  PostData(4,fSignalTypeTghCuts);
+  PostData(5,fCounter);
+  PostData(6,flistMCproperties);
+  PostData(7,flistNoCutsSignal);
+  PostData(8,flistNoCutsBack);
+  PostData(9,flistNoCutsFromB);
+  PostData(10,flistNoCutsFromDstar);
+  PostData(11,flistNoCutsOther);
+  PostData(12,flistLsCutsSignal);
+  PostData(13,flistLsCutsBack);
+  PostData(14,flistLsCutsFromB);
+  PostData(15,flistLsCutsFromDstar);
+  PostData(16,flistLsCutsOther);
+  PostData(17,flistTghCutsSignal);
+  PostData(18,flistTghCutsBack);
+  PostData(19,flistTghCutsFromB);
+  PostData(20,flistTghCutsFromDstar);
+  PostData(21,flistTghCutsOther);
+
   return;
 
 }
@@ -5853,16 +5877,18 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 	  isSideBandD0bar=kFALSE;	   
 	}
       }
-      if(fFastAnalysis<3){
+      if(fFastAnalysis<2){
 	if(!aziListIsFilled){
 	  FillAziList(aod,azilist,trkIDlist,nprim);
 	  aziListIsFilled=kTRUE;
 	}
 	
-	if(signallevel==1||signallevel==0){	  
-	  FillAziHistos(d,flistNoCutsSignal,ptbin,azilist,trkIDlist,nprim,okd0tightnopid,okd0bartightnopid,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar); 
-	  FillAziHistos(d,flistTghCutsSignal,ptbin,azilist,trkIDlist,nprim,okd0tight,okd0bartight,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar); 
-	  FillAziHistos(d,flistLsCutsSignal,ptbin,azilist,trkIDlist,nprim,okd0loose,okd0barloose,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar); 	  
+	if(signallevel==1||signallevel==0){
+	  if(nprim!=0){
+	    FillAziHistos(d,flistNoCutsSignal,ptbin,azilist,trkIDlist,nprim,okd0tightnopid,okd0bartightnopid,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar); 
+	    FillAziHistos(d,flistTghCutsSignal,ptbin,azilist,trkIDlist,nprim,okd0tight,okd0bartight,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar); 
+	    FillAziHistos(d,flistLsCutsSignal,ptbin,azilist,trkIDlist,nprim,okd0loose,okd0barloose,isPeakD0,isPeakD0bar,isSideBandD0,isSideBandD0bar); 	  
+	  }
 	}
 	
       }
