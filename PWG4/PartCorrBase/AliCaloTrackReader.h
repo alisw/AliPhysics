@@ -9,13 +9,10 @@
 // Central Barrel Tracking detectors.
 // Not all MC particles/tracks/clusters are kept, some kinematical restrictions are done.
 // Mother class of : AliCaloTrackESDReader: Fills ESD data in 3 TObjArrays (PHOS, EMCAL, CTS)
-//                 : AliCaloTrackMCReader: Fills Kinematics data in 3 TObjArrays (PHOS, EMCAL, CTS)
-//                 : AliCaloTrackAODReader: Fills AOD data in 3 TObjArrays (PHOS, EMCAL, CTS) 
-//  
-// This part is commented: Mixing analysis can be done, input AOD with events
-// is opened in the AliCaloTrackReader::Init()
-
+//                 : AliCaloTrackMCReader : Fills Kinematics data in 3 TObjArrays (PHOS, EMCAL, CTS)
+//                 : AliCaloTrackAODReader: Fills AOD data in 3 TObjArrays (PHOS, EMCAL, CTS)   
 // -- Author: Gustavo Conesa (INFN-LNF)
+//////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
 #include "TObject.h" 
@@ -79,8 +76,8 @@ public:
   //Input/output event setters and getters
   //---------------------------------------
   virtual void    SetInputEvent(AliVEvent* const input) ;
-  virtual void    SetOutputEvent(AliAODEvent* const aod)   { fOutputEvent = aod ; }
-  virtual void    SetMC(AliMCEvent* const mc)              { fMC          = mc  ; }
+  virtual void    SetOutputEvent(AliAODEvent* const aod)   { fOutputEvent = aod     ; }
+  virtual void    SetMC(AliMCEvent* const mc)              { fMC          = mc      ; }
   virtual void    SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) { ; }
   
   // Delta AODs
@@ -128,7 +125,8 @@ public:
                     return  fFiducialCut                                           ; }
   virtual void     SetFiducialCut(AliFiducialCut * const fc) { fFiducialCut = fc   ; }
   virtual Bool_t   IsFiducialCutOn()                 const { return fCheckFidCut   ; }
-  virtual void     SwitchOnFiducialCut()                   { fCheckFidCut = kTRUE  ; fFiducialCut = new AliFiducialCut();}
+  virtual void     SwitchOnFiducialCut()                   { fCheckFidCut = kTRUE  ; 
+                                                             fFiducialCut = new AliFiducialCut();}
   virtual void     SwitchOffFiducialCut()                  { fCheckFidCut = kFALSE ; }
   
   // Cluster origin
@@ -207,27 +205,28 @@ public:
   
   
   // Track selection
-  ULong_t          GetTrackStatus()                  const { return fTrackStatus     ; }
-  void             SetTrackStatus(ULong_t bit)             { fTrackStatus = bit      ; }		
+  ULong_t          GetTrackStatus()                  const { return fTrackStatus       ; }
+  void             SetTrackStatus(ULong_t bit)             { fTrackStatus = bit        ; }		
 
-  ULong_t          GetTrackFilterMask()              const {return fTrackFilterMask  ; }
-  void             SetTrackFilterMask(ULong_t bit)         { fTrackFilterMask = bit  ; }		
+  ULong_t          GetTrackFilterMask()              const {return fTrackFilterMask    ; }
+  void             SetTrackFilterMask(ULong_t bit)         { fTrackFilterMask = bit    ; }		
   
-  AliESDtrackCuts* GetTrackCuts()                    const { return fESDtrackCuts    ; }
-  void             SetTrackCuts(AliESDtrackCuts * cuts)    { fESDtrackCuts = cuts    ; }		  
-  Int_t            GetTrackMultiplicity()            const { return fTrackMult       ; }
-  Float_t          GetTrackMultiplicityEtaCut()      const { return fTrackMultEtaCut ; }
-  void             SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta  ; }		
+  AliESDtrackCuts* GetTrackCuts()                    const { return fESDtrackCuts      ; }
+  void             SetTrackCuts(AliESDtrackCuts * cuts)    { fESDtrackCuts = cuts      ; }		  
+  Int_t            GetTrackMultiplicity()            const { return fTrackMult         ; }
+  Float_t          GetTrackMultiplicityEtaCut()      const { return fTrackMultEtaCut   ; }
+  void             SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta    ; }		
   
   // Calorimeter specific and patches
-  void             AnalyzeOnlyLED()                        { fAnaLED = kTRUE         ; }
-  void             AnalyzeOnlyPhysics()                    { fAnaLED = kFALSE        ; }
+  void             AnalyzeOnlyLED()                        { fAnaLED = kTRUE           ; }
+  void             AnalyzeOnlyPhysics()                    { fAnaLED = kFALSE          ; }
   
-  void             SwitchOnCaloFilterPatch()               { fCaloFilterPatch = kTRUE ; fFillCTS = kFALSE    ; }
-  void             SwitchOffCaloFilterPatch()              { fCaloFilterPatch = kFALSE                       ; }
+  void             SwitchOnCaloFilterPatch()               { fCaloFilterPatch = kTRUE  ; 
+                                                             fFillCTS = kFALSE         ; }
+  void             SwitchOffCaloFilterPatch()              { fCaloFilterPatch = kFALSE ; }
   Bool_t           IsCaloFilterPatchOn()             const { 
                     if(fDataType == kAOD) { return fCaloFilterPatch ; } 
-                    else                  { return kFALSE           ; } }
+                    else                  { return kFALSE           ; }                  }
   	
   //-------------------------------
   //Vertex methods
