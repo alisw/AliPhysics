@@ -186,8 +186,8 @@ void  AliAnaExample::MakeAnalysisFillAOD()
       
       if(IsCaloPIDOn()){
         const Double_t *pid = calo->GetPID();
-        pdg = GetCaloPID()->GetPdg(fDetector,pid,mom.E());
-        //pdg = GetCaloPID()->GetPdg(fDetector,mom,
+        pdg = GetCaloPID()->GetIdentifiedParticleType(fDetector,pid,mom.E());
+        //pdg = GetCaloPID()->GetIdentifiedParticleType(fDetector,mom,
         //		  calo->GetM02(), calo->GetM02(),
         //		  calo->GetDispersion(), 0, 0); 
       }
@@ -204,7 +204,7 @@ void  AliAnaExample::MakeAnalysisFillAOD()
         AliAODPWG4Particle ph = AliAODPWG4Particle(mom);
         //AddAODParticleCorrelation(AliAODPWG4ParticleCorrelation(mom));
         ph.SetLabel(calo->GetLabel());
-        ph.SetPdg(pdg);
+        ph.SetIdentifiedParticleType(pdg);
         ph.SetDetector(fDetector);
         AddAODParticle(ph);
       }//selection

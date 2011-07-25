@@ -1029,10 +1029,10 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // MC
     if(GetReader()->GetDataType() == AliCaloTrackReader::kMC){
       //Get most probable PID, check PID weights (in MC this option is mandatory)
-      aodph.SetPdg(GetCaloPID()->GetPdg(fCalorimeter,calo->GetPID(),mom.E()));//PID with weights
-      if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PDG of identified particle %d\n",aodph.GetPdg());	 
+      aodph.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,calo->GetPID(),mom.E()));//PID with weights
+      if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PDG of identified particle %d\n",aodph.GetIdentifiedParticleType());	 
       //If primary is not photon, skip it.
-      if(aodph.GetPdg() != AliCaloPID::kPhoton) continue ;
+      if(aodph.GetIdentifiedParticleType() != AliCaloPID::kPhoton) continue ;
     }	
     //...............................................
     // Data, PID check on
@@ -1040,14 +1040,14 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       //Get most probable PID, 2 options check PID weights 
       //or redo PID, recommended option for EMCal.		
       if(!IsCaloPIDRecalculationOn())
-        aodph.SetPdg(GetCaloPID()->GetPdg(fCalorimeter,calo->GetPID(),mom.E()));//PID with weights
+        aodph.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,calo->GetPID(),mom.E()));//PID with weights
       else
-        aodph.SetPdg(GetCaloPID()->GetPdg(fCalorimeter,mom,calo));//PID recalculated
+        aodph.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,mom,calo));//PID recalculated
       
-      if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PDG of identified particle %d\n",aodph.GetPdg());
+      if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PDG of identified particle %d\n",aodph.GetIdentifiedParticleType());
       
       //If cluster does not pass pid, not photon, skip it.
-      if(aodph.GetPdg() != AliCaloPID::kPhoton) continue ;			
+      if(aodph.GetIdentifiedParticleType() != AliCaloPID::kPhoton) continue ;			
       
     }
     //...............................................
@@ -1059,7 +1059,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PID Bits set \n");		
     }
     
-    if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",aodph.Pt(), aodph.GetPdg());
+    if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",aodph.Pt(), aodph.GetIdentifiedParticleType());
     
     //--------------------------------------------------------------------------------------
     //Play with the MC stack if available
@@ -1300,7 +1300,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
           //Set the indeces of the original caloclusters  
           aodpair.SetCaloLabel(calo->GetID(),id2);
           aodpair.SetDetector(fCalorimeter);
-          aodpair.SetPdg(aodph.GetPdg());
+          aodpair.SetIdentifiedParticleType(aodph.GetIdentifiedParticleType());
           aodpair.SetTag(aodph.GetTag());
           aodpair.SetTagged(kTRUE);
           //Add AOD with pair object to aod branch
@@ -1406,10 +1406,10 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
 	
 	for(Int_t iaod = 0; iaod < naod ; iaod++){
 	  AliAODPWG4Particle* ph =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
-	  Int_t pdg = ph->GetPdg();
+	  Int_t pdg = ph->GetIdentifiedParticleType();
 	  
 	  if(GetDebug() > 3) 
-	    printf("AliAnaPhoton::MakeAnalysisFillHistograms() - PDG %d, MC TAG %d, Calorimeter %s\n", ph->GetPdg(),ph->GetTag(), (ph->GetDetector()).Data()) ;
+	    printf("AliAnaPhoton::MakeAnalysisFillHistograms() - PDG %d, MC TAG %d, Calorimeter %s\n", ph->GetIdentifiedParticleType(),ph->GetTag(), (ph->GetDetector()).Data()) ;
 	  
 	  //If PID used, fill histos with photons in Calorimeter fCalorimeter
 	  if(IsCaloPIDOn() && pdg != AliCaloPID::kPhoton) continue; 

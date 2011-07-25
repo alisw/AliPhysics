@@ -517,7 +517,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
     //    Double_t eta2=dph2.Eta();
     //    Double_t pi0dist=TMath::Sqrt((phi1-phi2)*(phi1-phi2)+(eta1-eta2)*(eta1-eta2));
     
-    if(pi0->GetPdg()==111  && nphotons>2 && npi0s
+    if(pi0->GetIdentifiedParticleType()==111  && nphotons>2 && npi0s
        && TMath::Abs(vpi0.M()-fPi0Mass)<fPi0MassWindow) { //pi0 candidates
       
       //avoid the double counting
