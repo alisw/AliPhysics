@@ -165,7 +165,8 @@ void AliAnalysisTaskPIDqa::FillITSqa()
     ULong_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
     // ITS refit + ITS pid
-    if (!( ( (status&0x0004)==0x0004 ) && ( (status&0x0008)==0x0008 ) )) return;
+    if (!( ( (status & AliVTrack::kITSrefit)==AliVTrack::kITSrefit ) &&
+           ( (status & AliVTrack::kITSpid  )==AliVTrack::kITSpid   ) )) continue;
     Double_t mom=track->P();
     
     for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
@@ -199,7 +200,9 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
     ULong_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
     // TPC refit + ITS refit + TPC pid
-    if (!( (status&0x0040)==0x0040) || !( (status&0x0004)==0x0004) ||  !((status&0x0080)==0x0080) ) return;
+    if (!( (status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
+        !( (status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ||
+        !( (status & AliVTrack::kTPCpid  ) == AliVTrack::kTPCpid  ) ) continue;
     
     Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
     Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
@@ -243,9 +246,11 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
     // TPC refit + ITS refit +
     // TOF out + TOFpid +
     // kTIME
-    if (!((status&0x0040)==0x0040) || !((status&0x0004)==0x0004)
-        || !((status&0x2000)==0x2000) || !((status&0x8000)==0x8000)
-        || !((status&0x80000000)==0x80000000) ) return;
+    if (!((status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
+        !((status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ||
+        !((status & AliVTrack::kTOFout  ) == AliVTrack::kTOFout  ) ||
+        !((status & AliVTrack::kTOFpid  ) == AliVTrack::kTOFpid  ) ||
+        !((status & AliVTrack::kTIME    ) == AliVTrack::kTIME    ) ) continue;
     
     Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
     Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
