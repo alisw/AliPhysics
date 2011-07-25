@@ -986,11 +986,16 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     }
 
     if(fTrackType==7) {
+      if(fTrackCutsITSLoose ) {
+	if(fTrackCutsITSLoose->AcceptTrack(track) )
+	  continue;
+      }
+      
       if(esdtrack->GetConstrainedParam()) 
 	track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
-      else
-	continue;
     }
+
+    if(!track) continue;
 
     fh1NTracksSel->Fill(0.);
 

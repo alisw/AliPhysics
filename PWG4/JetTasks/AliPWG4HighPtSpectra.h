@@ -82,6 +82,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   void SetTrackType(Int_t trackType) {fTrackType = trackType;}
   //AliESDtrackCuts setters
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
+  void SetCutsReject(AliESDtrackCuts* trackCuts) {fTrackCutsReject = trackCuts;}
 
   void SetSigmaConstrainedMax(Double_t sigma) {fSigmaConstrainedMax=sigma;}
 
@@ -109,6 +110,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   Int_t   fTrackType;     // Type of track to be used in analysis
   //AliESDtrackCuts options. Must be setted in AddTaskPWG4HighPTSpectra.C. They correspond with different steps in container.
   AliESDtrackCuts *fTrackCuts;           // trackCuts applied to global tracks
+  AliESDtrackCuts *fTrackCutsReject;     // trackCuts to reject tracks (hybrid case)
 
   Double_t fSigmaConstrainedMax;  // max sigma on constrained fit
 
