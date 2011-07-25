@@ -55,6 +55,7 @@
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsLctopKpi.h"
+#include "AliInputEventHandler.h"
 
 #include "AliAnalysisTaskSEHFQA.h"
 
@@ -464,7 +465,10 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputEvSelection->Add(evselection);
     fOutputEvSelection->Add(hzvtx);
   }
-
+//  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+//  AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+//  AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+//  fCuts->GetPidHF()->SetPidResponse(pidResp);
   // Post the data
   PostData(1,fNEntries);
   if(fOnOff[1]) PostData(2,fOutputPID);
@@ -748,7 +752,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   if(fOnOff[3]){
     const AliVVertex *vertex = aod->GetPrimaryVertex();
     Double_t zvtx=vertex->GetZ();
-    if(evSelected || (!evSelected && zvtx > 10.))
+    if(evSelected || (!evSelected && TMath::Abs(zvtx) > 10.))
     ((TH1F*)fOutputEvSelection->FindObject("hzvtx"))->Fill(zvtx);
   }
 
@@ -759,8 +763,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 
   AliAODPidHF* pidHF=fCuts->GetPidHF();
+  AliPIDResponse* respF=pidHF->GetPidResponse();
   AliTPCPIDResponse* tpcres=new AliTPCPIDResponse();
-  if(pidHF) pidHF->SetBetheBloch(*tpcres);
+  if(pidHF->GetOldPid()) pidHF->SetBetheBloch(*tpcres);
+  Bool_t oldPID=pidHF->GetOldPid();
 
 
   Int_t ntracks=0;
@@ -823,11 +829,14 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  ((TH1F*)fOutputPID->FindObject("hTPCsig"))->Fill(TPCsignal);
 	  ((TH1F*)fOutputPID->FindObject("hTPCsigvsp"))->Fill(TPCp,TPCsignal);
 	  //if (pidHF->IsKaonRaw(track, "TOF"))
-	  ((TH2F*)fOutputPID->FindObject("hTPCsigmaK"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kKaon));
+	  if(!oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaK"))->Fill(TPCp,respF->NumberOfSigmasTPC(track,AliPID::kKaon));
+	  if (oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaK"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kKaon));
 	  //if (pidHF->IsPionRaw(track, "TOF"))
-	  ((TH2F*)fOutputPID->FindObject("hTPCsigmaPion"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kPion));
+	  if(oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaPion"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kPion));
+	  if(!oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaPion"))->Fill(TPCp,respF->NumberOfSigmasTPC(track,AliPID::kPion));
 	  //if (pidHF->IsProtonRaw(track,"TOF"))
-	  ((TH2F*)fOutputPID->FindObject("hTPCsigmaProton"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kProton));
+	  if(oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaProton"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kProton));
+	  if(!oldPID) ((TH2F*)fOutputPID->FindObject("hTPCsigmaProton"))->Fill(TPCp,respF->NumberOfSigmasTPC(track,AliPID::kProton));
 	}//if TPC status
       } //end PID histograms
 
