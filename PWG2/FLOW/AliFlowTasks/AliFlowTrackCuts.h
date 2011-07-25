@@ -137,7 +137,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t GetPmdAdc()const {return fPmdAdc;}
   Float_t GetPmdNcell() const {return fPmdNcell; }
   Float_t GetBeta(const AliESDtrack* t);
-  Float_t Getdedx(const AliESDtrack* t);
+  Float_t Getdedx(const AliESDtrack* t) const;
  
   void SetQA(Bool_t b=kTRUE) {if (b) DefineHistograms();}
   TList* GetQA() const {return fQA;}
@@ -186,8 +186,10 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   //PID
   void SetPID(AliPID::EParticleType pid, PIDsource s=kTOFpid, Double_t prob=0.9)
              {fParticleID=pid; fPIDsource=s; fParticleProbability=prob; fCutPID=kTRUE; InitPIDcuts();}
-  void SetTPCpidCuts(TMatrixF* mat) {fTPCpidCuts=new TMatrixF(*mat);}
-  void SetTOFpidCuts(TMatrixF* mat) {fTOFpidCuts=new TMatrixF(*mat);}
+  AliPID::EParticleType GetParticleID() const {return fParticleID;}
+  Bool_t GetCutPID() const {return fCutPID;}
+  void SetTPCpidCuts(const TMatrixF* mat) {fTPCpidCuts=new TMatrixF(*mat);}
+  void SetTOFpidCuts(const TMatrixF* mat) {fTOFpidCuts=new TMatrixF(*mat);}
   static const char* PIDsourceName(PIDsource s);
   AliESDpid& GetESDpid() {return fESDpid;}
   void SetAllowTOFmismatchFlag(Bool_t b=kTRUE) {fAllowTOFmismatchFlag=b;}
@@ -200,8 +202,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesCuts(AliVParticle* track);
   Bool_t PassesESDcuts(AliESDtrack* track);
   Bool_t PassesAODcuts(const AliAODTrack* track);
-  Bool_t PassesPMDcuts(AliESDPmdTrack* track);
-  Bool_t PassesV0cuts(AliVVZERO* track, Int_t id);
+  Bool_t PassesPMDcuts(const AliESDPmdTrack* track);
+  Bool_t PassesV0cuts(const AliVVZERO* track, Int_t id);
   Bool_t PassesCuts(const AliFlowTrackSimple* track);
   Bool_t PassesCuts(const AliMultiplicity* track, Int_t id);
   Bool_t PassesMCcuts();
@@ -209,9 +211,10 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesTPCdedxCut(const AliESDtrack* track);
   Bool_t PassesTPCbayesianCut(const AliESDtrack* track);
   Bool_t PassesTPCpidCut(const AliESDtrack* track) const;
-  Bool_t PassesTOFbetaCut(const AliESDtrack* track);  
-  Bool_t PassesTOFbetaSimpleCut(const AliESDtrack* track);  
-  Bool_t PassesTOFpidCut(const AliESDtrack* track) const;  
+  Bool_t PassesTOFbetaCut(const AliESDtrack* track);
+  Bool_t PassesTOFbetaSimpleCut(const AliESDtrack* track);
+  Bool_t PassesTOFpidCut(const AliESDtrack* track) const;
+  Bool_t PassesESDpidCut(const AliESDtrack* track);
 
   void Browse(TBrowser* b);
   Long64_t Merge(TCollection* list);
