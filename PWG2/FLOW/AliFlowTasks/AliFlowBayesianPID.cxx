@@ -13,7 +13,7 @@ ClassImp(AliFlowBayesianPID)
 
 //________________________________________________________________________
 AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid) 
-  :      AliPIDResponse(), fPIDesd(0), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fTOFres(80.0), fMism(0), fZ(0) ,fMassTOF(0), fBBdata(NULL)
+  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fIsMC(0), fTOFres(80.0), fMism(NULL), fTofGeo(new AliTOFGeometry()), fTOFResponse(NULL), fTPCResponse(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL)
 {
   // Constructor
   if(! esdpid)
@@ -59,7 +59,12 @@ AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid)
 
   fMism = GetMismatch();
 
-  fTofGeo = new AliTOFGeometry();
+  // initialize the mask
+  for(Int_t i=0;i < fNdetectors;i++){
+    fMaskAND[i] = 0; // no dets required
+    fMaskOR[i] = 1; // all dets if available
+    fMaskCurrent[i] = 0; // current mask
+  }
 }
 //________________________________________________________________________
 void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,EStartTimeType_t flagStart,Bool_t recomputeT0TOF){
@@ -180,7 +185,7 @@ void AliFlowBayesianPID::ComputeWeights(AliESDtrack *t,Float_t centr){
      
   // TPC
   Float_t dedx = t->GetTPCsignal();
-  if(t->GetStatus() & AliESDtrack::kTPCpid && dedx > 40){ // if TPC PID available    
+  if(t->GetStatus() & AliESDtrack::kTPCpid && dedx > 40 && fMaskOR[0]){ // if TPC PID available    
     for(Int_t iS=0;iS<5;iS++){
       Float_t dedxExp=0;
       if(iS==0) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kElectron);
@@ -206,9 +211,10 @@ void AliFlowBayesianPID::ComputeWeights(AliESDtrack *t,Float_t centr){
 
   // TOF
   fWTofMism = 0;
-  if(t->GetStatus() & AliESDtrack::kTOFpid && t->GetIntegratedLength() > 365.){ // if TOF PID available
-    Float_t mismfrac = 0.06*(1 - centr/100);
-    if(centr < 0) mismfrac = 0.006;
+  if(t->GetStatus() & AliESDtrack::kTOFpid && t->GetIntegratedLength() > 365. && fMaskOR[1]){ // if TOF PID available
+    Float_t invCentr = 0;
+    if(centr >= 0) invCentr = 1 - centr/100;
+    Float_t mismfrac = 0.005 + 0.05*invCentr*invCentr*invCentr;
 
     Float_t timeTOF = t->GetTOFsignal() - fPIDesd->GetTOFResponse().GetStartTime(p);
 
@@ -259,22 +265,28 @@ void AliFlowBayesianPID::ComputeProb(AliESDtrack *t,Float_t centr){
 
   for(Int_t iS=0;iS<5;iS++) priors[iS] = hPriors[iS]->GetBinContent(hPriors[iS]->GetXaxis()->FindBin(centr),hPriors[iS]->GetYaxis()->FindBin(t->Pt()));
 
-  Float_t rcc = 0;
-  for(Int_t iS=0;iS<5;iS++){
-    rcc += fWeights[0][iS]*fWeights[1][iS]*priors[iS];
-    fProbTofMism += fWeights[0][iS]*fWTofMism*priors[iS]; 
-  }
-  if(rcc > 0){
+  if((!fMaskAND[0] || fMaskCurrent[0]) && (!fMaskAND[1] || fMaskCurrent[1])){
+    Float_t rcc = 0;
     for(Int_t iS=0;iS<5;iS++){
-      fProb[iS] = fWeights[0][iS]*fWeights[1][iS]*priors[iS]/rcc;
+      rcc += fWeights[0][iS]*fWeights[1][iS]*priors[iS];
+      fProbTofMism += fWeights[0][iS]*fWTofMism*priors[iS]; 
     }
-    fProbTofMism /=rcc;
+    if(rcc > 0){
+      for(Int_t iS=0;iS<5;iS++){
+	fProb[iS] = fWeights[0][iS]*fWeights[1][iS]*priors[iS]/rcc;
+      }
+      fProbTofMism /=rcc;
+    }
+    else{
+      for(Int_t iS=0;iS<5;iS++) fProb[iS] = 0;
+      fProbTofMism = 0;
+    }
   }
   else{
     for(Int_t iS=0;iS<5;iS++) fProb[iS] = 0;
-    fProbTofMism = 0;
+    fProbTofMism = 0;   
   }
-
+  
   if(t->P() > 0.2 && t->GetTPCsignal() > 40 && (t->GetStatus() & AliESDtrack::kTOFout) && (t->GetStatus() & AliESDtrack::kTIME) && (t->GetIntegratedLength() > 365.)&& t->GetTOFsignal()> 12000){
     Double_t ptpc[3];
     t->GetInnerPxPyPz(ptpc);
