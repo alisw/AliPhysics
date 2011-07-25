@@ -5,7 +5,7 @@
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes iGetEntriesFast(s hereby granted   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
@@ -19,7 +19,7 @@
 // Pi0 identified by one of the following:
 //  -Invariant mass of 2 cluster in calorimeter
 //  -Shower shape analysis in calorimeter
-//  -Invariant mass of one cluster in calorimeter and one photon reconstructed in TPC (in near future)
+//  -Invariant mass of one cluster in calorimeter and one photon reconstructed in CTS
 //
 // -- Author: Gustavo Conesa (LNF-INFN) &  Raphaelle Ichou (SUBATECH)
 //////////////////////////////////////////////////////////////////////////////
@@ -588,7 +588,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         mom = mom1+mom2;
         AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
         //pi0.SetLabel(calo->GetLabel());
-        pi0.SetPdg(AliCaloPID::kPi0);
+        pi0.SetIdentifiedParticleType(AliCaloPID::kPi0);
         pi0.SetDetector(photon1->GetDetector());
         pi0.SetTag(tag);  
         //Set the indeces of the original caloclusters  
@@ -722,7 +722,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         mom = mom1+mom2;
         AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
         //pi0.SetLabel(calo->GetLabel());
-        pi0.SetPdg(AliCaloPID::kPi0);
+        pi0.SetIdentifiedParticleType(AliCaloPID::kPi0);
         pi0.SetDetector(photon1->GetDetector());
         pi0.SetTag(tag);
         //Set the indeces of the original tracks or caloclusters  
@@ -825,11 +825,11 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     //PID selection or bit setting
     if(GetReader()->GetDataType() == AliCaloTrackReader::kMC){
       //Get most probable PID, check PID weights (in MC this option is mandatory)
-      aodpi0.SetPdg(GetCaloPID()->GetPdg(fCalorimeter,calo->GetPID(),mom.E()));//PID with weights
+      aodpi0.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,calo->GetPID(),mom.E()));//PID with weights
       if(GetDebug() > 1) 
-        printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: PDG of identified particle %d\n",aodpi0.GetPdg());
+        printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: PDG of identified particle %d\n",aodpi0.GetIdentifiedParticleType());
       //If primary is not pi0, skip it.
-      if(aodpi0.GetPdg() != AliCaloPID::kPi0) continue ;
+      if(aodpi0.GetIdentifiedParticleType() != AliCaloPID::kPi0) continue ;
     }					
     else if(IsCaloPIDOn()){
       //Skip matched clusters with tracks
@@ -838,14 +838,14 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       //Get most probable PID, 2 options check PID weights 
       //or redo PID, recommended option for EMCal.		
       if(!IsCaloPIDRecalculationOn())
-        aodpi0.SetPdg(GetCaloPID()->GetPdg(fCalorimeter,calo->GetPID(),mom.E()));//PID with weights
+        aodpi0.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,calo->GetPID(),mom.E()));//PID with weights
       else
-        aodpi0.SetPdg(GetCaloPID()->GetPdg(fCalorimeter,mom,calo));//PID recalculated
+        aodpi0.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,mom,calo));//PID recalculated
       
-      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PDG of identified particle %d\n",aodpi0.GetPdg());
+      if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PDG of identified particle %d\n",aodpi0.GetIdentifiedParticleType());
       
       //If cluster does not pass pid, not pi0, skip it.
-      if(aodpi0.GetPdg() != AliCaloPID::kPi0) continue ;			
+      if(aodpi0.GetIdentifiedParticleType() != AliCaloPID::kPi0) continue ;			
       
     }
     else{
@@ -855,7 +855,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PID Bits set \n");		
     }
     
-    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Pi0 selection cuts passed: pT %3.2f, pdg %d\n",aodpi0.Pt(), aodpi0.GetPdg());
+    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - Pi0 selection cuts passed: pT %3.2f, pdg %d\n",aodpi0.Pt(), aodpi0.GetIdentifiedParticleType());
     
     //Play with the MC stack if available
     //Check origin of the candidates
@@ -895,7 +895,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     
     AliAODPWG4Particle* pi0 =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
-    Int_t pdg = pi0->GetPdg();
+    Int_t pdg = pi0->GetIdentifiedParticleType();
 	  
     if(IsCaloPIDOn() && pdg != AliCaloPID::kPi0) continue;              
     

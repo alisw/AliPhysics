@@ -71,7 +71,7 @@ class AliAODPWG4Particle : public AliVParticle {
   virtual const Double_t* PID() const { return NULL;}
   //
   
-  virtual Int_t   GetPdg()               const {return fPdg ; }
+  virtual Int_t   GetIdentifiedParticleType() const {return fPdg ; }
   virtual Int_t   GetTag()               const {return fTag ; }
   virtual Int_t   GetBtag()              const {return fBtag ; }
   virtual Int_t   GetLabel()             const {return fLabel ; }
@@ -93,7 +93,7 @@ class AliAODPWG4Particle : public AliVParticle {
   virtual void SetTrackLabel(Int_t a, Int_t b, Int_t c, Int_t d) 
   { fTrackLabel[0] = a; fTrackLabel[1] = b  ; fTrackLabel[2] = c; fTrackLabel[3] = d; }
   
-  virtual void SetPdg(Int_t pdg)         { fPdg = pdg ; }
+  virtual void SetIdentifiedParticleType(Int_t pdg) { fPdg = pdg ; }
   virtual void SetTag(Int_t tag)         { fTag = tag ; }
   virtual void SetTagged(Bool_t tag)     { fTagged = tag ; }
   virtual void SetBtag(Int_t tag)        { fBtag = tag ; }
@@ -115,7 +115,7 @@ class AliAODPWG4Particle : public AliVParticle {
   
  private:
   TLorentzVector* fMomentum;  // Photon 4-momentum vector
-  Int_t      fPdg ;          // id of particle
+  Int_t      fPdg ;          // type of identified particle, same code as PDG, but this is not a MonteCarlo particle 
   Int_t      fTag ;          // tag of particle (decay, fragment, prompt photon), MC
   Int_t      fBtag;          // tag particle from B.
   Int_t      fLabel ;        // MC label
@@ -129,7 +129,7 @@ class AliAODPWG4Particle : public AliVParticle {
   Int_t      fBadDist ;      // Distance to bad module in module units
   Int_t      fFidArea ;      // Type of fiducial area hit by this photon
   Int_t      fInputFileIndex;// 0, standard input, 1 first input added. 
-	                         // Only possible one for now, more in future?
+	                           // Only possible one for now, more in future?
 	
   ClassDef(AliAODPWG4Particle, 4);
 };
