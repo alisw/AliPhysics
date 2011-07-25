@@ -170,7 +170,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
       TString tracker;
       // tracker finder components
       tracker.Form("TPC-TR_%02d", slice);
-      handler->CreateConfiguration(tracker.Data(), "TPCCATracker", trackerInput.Data(), "-minTrackPt 0.0");
+      handler->CreateConfiguration(tracker.Data(), "TPCCATracker", trackerInput.Data(), "");
 
       if (mergerInput.Length()>0) mergerInput+=" ";
       mergerInput+=tracker;
