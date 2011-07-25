@@ -283,6 +283,7 @@ void AliGRPPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 	
 	fPressure = new AliDCSSensorArray(GetStartTimeDCSQuery(), GetEndTimeDCSQuery(), array);
 
+	ffailedDPs->Clear(); // cleaning ffailedDPs for current run
 	for (Int_t iDP=0; iDP < fgknDCSDP; iDP++){
 		TObjString* dp = new TObjString(fgkDCSDataPoints[iDP]);
 		ffailedDPs->AddAt(dp,iDP);
