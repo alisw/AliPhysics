@@ -226,7 +226,7 @@ Double_t AliT0QAChecker::CheckESD(TObjArray *listrec ) const
     
     text->AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
     
-    AliDebug(AliQAv1::GetQADebugLevel(), Form("numentries %f mean %f  #sigma %f", (int)fhESD->GetEntries(),par[1], par[2]));
+    AliDebug(AliQAv1::GetQADebugLevel(), Form("numentries %d mean %f  #sigma %f", (int)fhESD->GetEntries(),par[1], par[2]));
     
     
     if (par[2] > 0.07 && par[2] < 1.) {
