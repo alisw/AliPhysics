@@ -72,6 +72,7 @@
 #pragma link C++ class AliSPDUtils+;
 #pragma link C++ class AliAnalysisTaskdEdxSSDQA+;
 #pragma link C++ class AliMeanVertexCalibTask+;
+#pragma link C++ class AliMeanVertexPreprocessorOffline+;
 
 #pragma link C++ class AliRelAlignerKalmanArray+;
 #pragma link C++ class AliAnalysisTaskITSTPCalignment+;
