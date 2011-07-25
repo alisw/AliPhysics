@@ -69,6 +69,10 @@ class AliFlowBayesianPID : public AliPIDResponse {
   void SetMC(Bool_t flag = kTRUE){fIsMC=flag;} // actually do nothing
   void SetDetResponse(AliESDEvent *esd,Float_t centrality=-1.0,EStartTimeType_t flagStart=AliESDpid::kTOF_T0,Bool_t recomputeT0TOF=kFALSE);
   void SetNewTrackParam(Bool_t flag=kTRUE){fNewTrackParam=flag;};
+  void SetDetAND(Int_t idet){if(idet < fNdetectors && idet >= 0) fMaskAND[idet] = kTRUE;};
+  void SetDetOR(Int_t idet){if(idet < fNdetectors && idet >= 0) fMaskOR[idet] = kTRUE;};
+  void ResetDetAND(Int_t idet){if(idet < fNdetectors && idet >= 0) fMaskAND[idet] = kFALSE;};
+  void ResetDetOR(Int_t idet){if(idet < fNdetectors && idet >= 0) fMaskOR[idet] = kFALSE;};
 
   // getter
   AliESDpid* GetESDpid(){return fPIDesd;};
@@ -82,6 +86,9 @@ class AliFlowBayesianPID : public AliPIDResponse {
   Float_t GetTOFMismProb(){return fProbTofMism;};
   Float_t GetMassOverZ(){return fMassTOF;};
   Float_t GetZ(){return fZ;};
+  Bool_t GetDetANDstatus(Int_t idet){if(idet < fNdetectors && idet >= 0){return fMaskAND[idet];} else{return kFALSE;} };
+  Bool_t GetDetORstatus(Int_t idet){if(idet < fNdetectors && idet >= 0){return fMaskOR[idet];} else{return kFALSE;} };
+  Bool_t GetCurrentMask(Int_t idet){if(idet < fNdetectors && idet >= 0){return fMaskCurrent[idet];} else{return kFALSE;} };
 
   // methods for Bayesina Combined PID
   void ComputeWeights(AliESDtrack *t,Float_t centr=-1.0);
@@ -120,7 +127,9 @@ class AliFlowBayesianPID : public AliPIDResponse {
   Float_t fZ,fMassTOF; //measured charge(Z) and mass/Z
   TF1 *fBBdata; // Bethe Bloch function (needed to compute the charge of the particle)
 
-  ClassDef(AliFlowBayesianPID, 2); // example of analysis
+  Bool_t fMaskAND[fNdetectors],fMaskOR[fNdetectors],fMaskCurrent[fNdetectors]; // mask detector should be used
+
+  ClassDef(AliFlowBayesianPID, 3); // example of analysis
 };
 
 #endif
