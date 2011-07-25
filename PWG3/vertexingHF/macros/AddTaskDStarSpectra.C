@@ -2,6 +2,7 @@
 //by default the task is anyway computing 1, 2 and 3 sigmas
 const Bool_t theRareOn = kFALSE;
 const Bool_t anaType   = 1;//0 HD; 1 UU;
+const Bool_t doImp   = kFALSE;// imp par studies
 //----------------------------------------------------
 
 AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Bool_t theMCon=kFALSE)
@@ -40,6 +41,7 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Bool_t theMCon=kFALSE)
   task->SetAnalysisType(anaType);
   task->SetMC(theMCon);
   task->SetRareSearch(theRareOn);
+  task->SetDoImpactParameterHistos(doImp);
   task->SetDebugLevel(0);
 
   mgr->AddTask(task);
