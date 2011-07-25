@@ -10,8 +10,7 @@ cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
 # -----------Utilities--------------------
 
 #list of detectors 
-#set(ONLINEDETECTORS SPD SDD SSD TRD TPC FMD TOF HMP PHS CPV PMD MCH MTR T00 V00 ZDC ACO TRI EMC HLT TST GRP)
-set(ONLINEDETECTORS SPD SDD SSD TRD ACO)
+set(ONLINEDETECTORS ACO GRP TST HLT EMC TRI T00 PMD CPV PHS FMD TPC TRD ZDC V00 MTR MCH HMP TOF SSD SDD SPD)
 function(expand output input)
     string(REGEX MATCH "\\\${[^}]*}" m "${input}")
     while(m)
@@ -55,6 +54,10 @@ function (getinfo _info pattern file)
   string(REGEX MATCH "${pattern}:[^\n]*" _match ${file})
   if(_match)
     string(REGEX REPLACE "${pattern}:[ ]*" "" _data ${_match})
+    string(REPLACE "(" "\\(" _data "${_data}")
+    string(REPLACE ")" "\\)" _data "${_data}")
+    string(REPLACE "<" "\\<" _data "${_data}")
+    string(REPLACE ">" "\\>" _data "${_data}")
   endif(_match)
   set(${_info} ${_data} PARENT_SCOPE)
 endfunction()
@@ -64,7 +67,7 @@ foreach(oldetect ${ONLINEDETECTORS})
 detector_module(h_module ${oldetect})
 list(APPEND mod "-I${ALICE_ROOT}/${h_module}")
 endforeach(oldetect ${ONLINEDETECTORS})
-list(APPEND mod "-I$ALICE_ROOT}/include" "-I${ALICE_ROOT}/STEER" "-I${ALICE_ROOT}/MUON/mapping" "-I$ENV{AMORE}/include/amore")
+list(APPEND mod "-I${ALICE_ROOT}/include" "-I${ALICE_ROOT}/STEER" "-I${ALICE_ROOT}/MUON/mapping" "-I$ENV{AMORE}/include/amore")
 
 # ----------Common stuff-------------------
 
@@ -109,7 +112,7 @@ else()
 endif(DAQDALIB_PATH)
 set(DAQDALIB "${DAQDADIR}/libdaqDA.a")
 
-include_directories(${DAQDADIR} RAW include STEER)
+include_directories(${DAQDADIR} ${ALICE_ROOT}/RAW ${ALICE_ROOT}/include ${ALICE_ROOT}/STEER)
 include_directories(SYSTEM ${ROOTINCDIR})
 
 # ----------Create All Valid targets---------
@@ -266,13 +269,13 @@ COMMAND @echo 'AMOREDALIBS=-static $$(shell $$(AMORE)/amore-config --ldflags-da-
 COMMAND @echo 'MONITORLIBS=$$(shell date-config --monitorlibs=noshift)' >> ${DAMAKEFILE}
 COMMAND @echo "" >> ${DAMAKEFILE}
 COMMAND @echo "${DAMODULE}${SUBDAMODULE}${DANAME}da.exe: ${DAMODULE}${SUBDAMODULE}${DANAME}da.o" >> ${DAMAKEFILE}
-COMMAND @echo -e '\t$$(LD) $$(LDFLAGS) -o ''$$''@ ''$$''< \\ \n' >> ${DAMAKEFILE}
-COMMAND @echo -e '\tlib${DALIB}.a \\ \n' >> ${DAMAKEFILE}
-COMMAND @echo -e '\t${EXTRAROOTLIB} \\ \n' >> ${DAMAKEFILE}
-COMMAND @echo -e '\t$$(ROOTSYS)/lib/libRoot.a \\ \n' >> ${DAMAKEFILE}
-COMMAND @echo -e '\t$$(ROOTSYS)/lib/libfreetype.a $$(ROOTSYS)/lib/libpcre.a \\ \n' >> ${DAMAKEFILE}
-COMMAND @echo -e '\t${SYSLIBS} \\ \n' >> ${DAMAKEFILE}
-COMMAND @echo -e '\t$$(DAQDALIB) $$(MONITORLIBS) $$(AMOREDALIBS) \n' >> ${DAMAKEFILE}
+COMMAND @echo -e '\t$$(LD) $$(LDFLAGS) ''$$''< -o ''$$''@ \\' >> ${DAMAKEFILE}
+COMMAND @echo -e '\tlib${DALIB}.a \\' >> ${DAMAKEFILE}
+COMMAND @echo -e '\t${EXTRAROOTLIB} \\' >> ${DAMAKEFILE}
+COMMAND @echo -e '\t$$(ROOTSYS)/lib/libRoot.a \\' >> ${DAMAKEFILE}
+COMMAND @echo -e '\t$$(ROOTSYS)/lib/libfreetype.a $$(ROOTSYS)/lib/libpcre.a \\' >> ${DAMAKEFILE}
+COMMAND @echo -e '\t${SYSLIBS} \\' >> ${DAMAKEFILE}
+COMMAND @echo -e '\t$$(DAQDALIB) $$(MONITORLIBS) $$(AMOREDALIBS) \\' >> ${DAMAKEFILE}
 COMMAND @echo "" >> ${DAMAKEFILE}
 COMMAND @echo "${DAMODULE}${SUBDAMODULE}${DANAME}da.o: ${DAMODULE}${SUBDAMODULE}${DANAME}da.cxx" >> ${DAMAKEFILE}
 COMMAND @echo '         $$(CXX) -c $$(CXXFLAGS) -I$$(DAQDADIR) ''$$''< -o ''$$''@' >> ${DAMAKEFILE}
@@ -337,15 +340,15 @@ COMMAND @echo "This is the ${ONLINEDETECTORNAME} ${DANAME} DA for online calibra
 COMMAND @echo "It uses data from ${DAMODULE} detectors at run time." >> ${DASPECFILE}
 COMMAND @echo "Build requires: daqDAlib, date, AliRoot ${DAALIROOTRELEASE},ROOT ${DAROOTRELEASE}." >> ${DASPECFILE}
 COMMAND @echo "Runtime requires: date." >> ${DASPECFILE}
-COMMAND @echo "\"Contact: ${DACONTACT}\"" >> ${DASPECFILE}
-COMMAND @echo "\"Link: ${DALINKPAGE}\"" >> ${DASPECFILE}
-COMMAND @echo "\"Reference Run: ${DAREFRUN}\"" >> ${DASPECFILE}
-COMMAND @echo "\"Run type: ${DARUNTYPE}\"" >> ${DASPECFILE}
-COMMAND @echo "\"DA type: ${DATYPE}\"" >> ${DASPECFILE}
-COMMAND @echo "\"Number of events needed: ${DANUMBEROFEVENTS}\"" >> ${DASPECFILE}
-COMMAND @echo "\"Input files: ${DAINPUTFILES}\"" >> ${DASPECFILE}
-COMMAND @echo "\"Output files: ${DAOUTPUTFILES}\"" >> ${DASPECFILE}
-COMMAND @echo "\"Trigger types used: ${DATRIGGERTYPE}\"" >> ${DASPECFILE}
+COMMAND @echo "Contact: ${DACONTACT}" >> ${DASPECFILE}
+COMMAND @echo "Link: ${DALINKPAGE}" >> ${DASPECFILE}
+COMMAND @echo "Reference Run: ${DAREFRUN}" >> ${DASPECFILE}
+COMMAND @echo "Run type: ${DARUNTYPE}" >> ${DASPECFILE}
+COMMAND @echo "DA type: ${DATYPE}" >> ${DASPECFILE}
+COMMAND @echo "Number of events needed: ${DANUMBEROFEVENTS}" >> ${DASPECFILE}
+COMMAND @echo "Input files: ${DAINPUTFILES}" >> ${DASPECFILE}
+COMMAND @echo "Output files: ${DAOUTPUTFILES}" >> ${DASPECFILE}
+COMMAND @echo "Trigger types used: ${DATRIGGERTYPE}" >> ${DASPECFILE}
 COMMAND @echo "" >> ${DASPECFILE}
 COMMAND @echo '\#*****************************************************************' >> ${DASPECFILE}
 COMMAND @echo '\# Do not modify following scripts' >> ${DASPECFILE}
@@ -412,11 +415,11 @@ COMMAND echo "***** Making RPMS for ${DAMODULE}${SUBDAMODULE}${DANAME} detector-
 COMMAND rm -rf junk
 COMMAND mkdir -p junk/SOURCES junk/SPECS junk/BUILD junk/RPMS junk/SRPMS
 COMMAND cp ${DATAR} junk/SOURCES
-COMMAND rpmbuild --quiet --define "_topdir ${ALICE_ROOT}/junk/" --nodeps -bb ${DASPECFILE}
-COMMAND find junk/ -name "${DAARC}-*.rpm" -exec cp -p {} . \;
+COMMAND rpmbuild --quiet --define "_topdir ${ALICE_ROOT}/junk" --nodeps -bb ${DASPECFILE}
+COMMAND find junk/ -name "${DAARC}-*.rpm" -exec cp -p {} . ;
 COMMAND rm -rf junk
 COMMAND echo "***** RPMS created and put ${ALICE_ROOT} folder *****"
-#WORKING_DIRECTORY ${ALICE_ROOT}
+
 )
 
 
@@ -426,17 +429,14 @@ WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 )
 target_link_libraries(${DAEXE} "-L" "lib${DALIB}.a" ${DAOBJ} ${EXTRAROOTLIB} "${ROOTALIBDIR}/libRoot.a" "${ROOTALIBDIR}/libfreetype.a" "${ROOTALIBDIR}/libpcre.a" ${SYSLIBS} ${DAQDALIB} ${MONITORLIBS} ${AMOREDALIBS})
 
-add_dependencies(${DAEXE} ${DASRC} DAOBJ_${DAEXE}_ ${BINPATH} ${LIBPATH} ${DALIB}.a ${DAQDALIB} ${EXTRAROOTLIB} )
-
-
-
+add_dependencies(${DAEXE} ${DASRC} DAOBJ_${DAEXE}_ ${BINPATH} ${LIBPATH} ${DALIB}.a ${DAQDALIB} ${EXTRAROOTLIB})
 
 add_custom_target(DAOBJ_${DAEXE}_
 )
 add_custom_command(
 TARGET DAOBJ_${DAEXE}_
 COMMAND echo "***** Compiling ${DASRC} *****"
-COMMAND g++ -c  -DLinux -DDATE_SYS=Linux -Dlong32="int" -Dlong64="long long" -DdatePointer="long" -I/date/rorc -I/date/runControl -I/date/readList -I/date/eventBuilder -I/date/banksManager -I/date/bufferManager -I/date/db -I/date/commonDefs -I/date/monitoring -I/date/infoLogger -I/date/logbook -I${DAQDADIR} -I${ALICE_ROOT}/RAW -I${CMAKE_BINARY_DIR}/include -I$ENV{ROOTSYS}/include ${mod} ${date_head} ${ALICE_ROOT}/${DASRC} -o ${DAOBJ}
+COMMAND g++ -c -DLinux -DDATE_SYS=Linux -Dlong32="int" -Dlong64="long long" -DdatePointer="long" -I/date/rorc -I/date/runControl -I/date/readList -I/date/eventBuilder -I/date/banksManager -I/date/bufferManager -I/date/db -I/date/commonDefs -I/date/monitoring -I/date/infoLogger -I/date/logbook -I${DAQDADIR} -I${ALICE_ROOT}/RAW -I${CMAKE_BINARY_DIR}/include -I$ENV{ROOTSYS}/include ${mod} ${date_head} ${ALICE_ROOT}/${DASRC} -o ${DAOBJ}
 WORKING_DIRECTORY ${ALICE_ROOT} 
 )
 add_dependencies(DAOBJ_${DAEXE}_ DADEP_${DAEXE}_ )
@@ -452,23 +452,10 @@ WORKING_DIRECTORY ${ALICE_ROOT}
 )
 
 
-
-
-
-
-
 add_custom_command(TARGET clean
 COMMAND rm -rf junk*.exe
 WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-
-
-
-
-
-
-
-
-	  
+  
 
 	endif(match)
   endforeach(dafile)
