@@ -62,6 +62,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC()
   fStack(0),
   fVtx(0x0),
   fTrackCuts(0), 
+  fTrackCutsReject(),
   fTrackType(0),
   fSigmaConstrainedMax(1e6),
   fPtMax(100.),
@@ -117,6 +118,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   fStack(0),
   fVtx(0x0),
   fTrackCuts(),
+  fTrackCutsReject(),
   fTrackType(0),
   fSigmaConstrainedMax(1e6),
   fPtMax(100.),
@@ -722,11 +724,16 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
     if (fTrackCuts->AcceptTrack(track)) {
 
       if(fTrackType==7) {
+	if(fTrackCutsReject ) {
+	  if(fTrackCutsReject->AcceptTrack(track) )
+	    continue;
+	}
+	
 	if(esdtrack->GetConstrainedParam()) 
 	  track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
-	else
-	  continue;
       }
+
+      if(!track) continue;
 
       pt  = track->Pt();
       phi = track->Phi();

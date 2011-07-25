@@ -3,9 +3,10 @@ void AddTaskPWG4HighPtQAMCAll(char *prodType = "LHC10e14") {
   AliPWG4HighPtQAMC *taskQAMC00 = AddTaskPWG4HighPtQAMC(prodType,0,0);
   AliPWG4HighPtQAMC *taskQAMC00 = AddTaskPWG4HighPtQAMC(prodType,0,1);
   AliPWG4HighPtQAMC *taskQAMC00 = AddTaskPWG4HighPtQAMC(prodType,0,2);
-  AliPWG4HighPtQAMC *taskQAMC10 = AddTaskPWG4HighPtQAMC(prodType,1,0);
-  AliPWG4HighPtQAMC *taskQAMC20 = AddTaskPWG4HighPtQAMC(prodType,2,0);
+  //  AliPWG4HighPtQAMC *taskQAMC10 = AddTaskPWG4HighPtQAMC(prodType,1,0);
+  //  AliPWG4HighPtQAMC *taskQAMC20 = AddTaskPWG4HighPtQAMC(prodType,2,0);
   AliPWG4HighPtQAMC *taskQAMC70 = AddTaskPWG4HighPtQAMC(prodType,7,0);
+  AliPWG4HighPtQAMC *taskQAMC70 = AddTaskPWG4HighPtQAMC(prodType,7,1);
 }
 
 AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14", Int_t trackType = 0, Int_t cuts =0)
@@ -45,6 +46,7 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14", Int_t trac
   //CREATE THE  CUTS -----------------------------------------------
   //Use AliESDtrackCuts
   AliESDtrackCuts *trackCuts = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts");
+  AliESDtrackCuts *trackCutsReject = 0x0;
   //Standard Cuts
   //Set track cuts for global tracks
   if(trackType==0 && cuts==0) {
@@ -62,6 +64,7 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14", Int_t trac
   if(trackType==7 && cuts==0) {
     // tight global tracks
     trackCuts = CreateTrackCutsPWG4(10041001);
+    trackCutsReject = CreateTrackCutsPWG4(1001);
   }
   if(trackType==7 && cuts==1) {
     // tight global tracks
@@ -76,8 +79,9 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14", Int_t trac
   trackCuts->SetPtRange(0.15, 1e10);
   
   //Create the task
-  AliPWG4HighPtQAMC *taskPWG4QAMC = new AliPWG4HighPtQAMC(Form("AliPWG4HighPtQAMC%d",trackType));
+  AliPWG4HighPtQAMC *taskPWG4QAMC = new AliPWG4HighPtQAMC(Form("AliPWG4HighPtQAMC%d%d",trackType,cuts));
   taskPWG4QAMC->SetCuts(trackCuts);
+  taskPWG4QAMC->SetCutsReject(trackCutsReject);
   taskPWG4QAMC->SetTrackType(trackType);
   
   if(!strcmp(prodType, "LHC10e14")) taskPWG4QAMC->SetPtMax(500.);
