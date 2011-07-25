@@ -1608,6 +1608,15 @@ void AliTPCv2::StepManager()
   id = gMC->CurrentVolID(copy); // vol ID and copy number (starts from 1!)
   if(id != fIDrift && id != fIdSens) return; // not in the sensitive folume 
 
+  if ( fPrimaryIonisation && id == fIDrift ) {
+    Double_t rnd = gMC->GetRandom()->Rndm();
+    gMC->SetMaxStep(0.2+(2.*rnd-1.)*0.05);  // 2 mm +- rndm*0.5mm step
+  }   
+
+  //if ( fPrimaryIonisation && id == fIDrift && gMC->IsTrackEntering()) {
+  //  gMC->SetMaxStep(0.2);  // 2 mm 
+  //}   
+  
   gMC->TrackPosition(p);
   Double_t r = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
   //
