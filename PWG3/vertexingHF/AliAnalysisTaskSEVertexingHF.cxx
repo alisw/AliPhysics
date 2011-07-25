@@ -31,6 +31,7 @@
 
 #include "AliVEvent.h"
 #include "AliAODEvent.h"
+#include "AliAODHandler.h"
 #include "AliESDEvent.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliAnalysisTaskSE.h"
@@ -220,6 +221,11 @@ void AliAnalysisTaskSEVertexingHF::UserExec(Option_t */*option*/)
   // In case there is an AOD handler writing a standard AOD, use the AOD 
   // event in memory rather than the input (ESD) event. (A.G. 27/04/09)
   if (AODEvent() && IsStandardAOD()) event = dynamic_cast<AliVEvent*> (AODEvent());
+
+  if (dynamic_cast<AliAODEvent*>(event)) {
+     AliAODHandler *aodhandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+     if (aodhandler) aodhandler->SetFillExtension(kTRUE);
+  }   
 
   // heavy flavor vertexing
   fVHF->FindCandidates(event,
