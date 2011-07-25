@@ -156,7 +156,8 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
   
   //CREATE THE  CUTS -----------------------------------------------
   //Use AliESDtrackCuts
- AliESDtrackCuts *trackCuts = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts");
+  AliESDtrackCuts *trackCuts = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts");
+  AliESDtrackCuts *trackCutsReject = 0x0;
   //Standard Cuts
   //Set track cuts for global tracks
   if(trackType==0 && cuts==0) {
@@ -174,6 +175,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
   if(trackType==7 && cuts==0) {
     // tight global tracks
     trackCuts = CreateTrackCutsPWG4(10041001);
+    trackCutsReject = CreateTrackCutsPWG4(1001);
   }
   if(trackType==7 && cuts==1) {
     // tight global tracks
@@ -228,10 +230,10 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
   manNeg->SetParticleCutsList(kStepMCAcceptance,mcList);
 
 
-  printf("Create task AliPWG4HighPtSpectra\n");
   AliPWG4HighPtSpectra *taskPWG4HighPtSpectra = new AliPWG4HighPtSpectra(Form("AliPWG4HighPtSpectraCent%dTrackType%dCuts%d",centClass,trackType,cuts));
   taskPWG4HighPtSpectra->SetTrackType(trackType);
   taskPWG4HighPtSpectra->SetCuts(trackCuts);
+  taskPWG4HighPtSpectra->SetCutsReject(trackCutsReject);
   taskPWG4HighPtSpectra->SetCFManagerPos(manPos); //here is set the CF manager +
   taskPWG4HighPtSpectra->SetCFManagerNeg(manNeg); //here is set the CF manager -
 

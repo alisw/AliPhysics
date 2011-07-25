@@ -52,6 +52,7 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   Bool_t SelectEvent();    //decides if event is used for analysis
 
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
+  void SetCutsReject(AliESDtrackCuts* trackCuts) {fTrackCutsReject = trackCuts;}
 
   void SetTrackType(Int_t trackType) {fTrackType = trackType;}
   void SetSigmaConstrainedMax(Double_t sigma) {fSigmaConstrainedMax=sigma;}
@@ -75,6 +76,7 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   const AliESDVertex   *fVtx;     //! vertex object
 
   AliESDtrackCuts *fTrackCuts;    // TrackCuts for global reconstructed vs MC comparison
+  AliESDtrackCuts *fTrackCutsReject;     // trackCuts to reject tracks (hybrid case)
 
   Int_t   fTrackType;             // 0: global track; 1:TPConly track 2: TPConly constrained track 3: global ITSrefit
 

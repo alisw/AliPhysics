@@ -75,6 +75,7 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra() : AliAnalysisTask("AliPWG4HighPtSpe
   fCentClass(10),
   fTrackType(0),
   fTrackCuts(0x0),
+  fTrackCutsReject(0x0),
   fSigmaConstrainedMax(5.),
   fAvgTrials(1),
   fHistList(0),
@@ -105,6 +106,7 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   fCentClass(10),
   fTrackType(0),
   fTrackCuts(0x0),
+  fTrackCutsReject(0x0),
   fSigmaConstrainedMax(5.),
   fAvgTrials(1),
   fHistList(0),
@@ -397,16 +399,19 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	}
       }
 
-
-   
       if (fTrackCuts->AcceptTrack(track)) {
 
 	if(fTrackType==7) {
+	  if(fTrackCutsReject ) {
+	    if(fTrackCutsReject->AcceptTrack(track) )
+	      continue;
+	  }
+	  
 	  if(esdtrack->GetConstrainedParam()) 
 	    track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
-	  else
-	    continue;
 	}
+
+	if(!track) continue;
 
 	//fill the container
 	containerInputRec[0] = track->Pt();
