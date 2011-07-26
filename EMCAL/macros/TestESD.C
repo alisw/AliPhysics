@@ -16,6 +16,7 @@
 #include "AliESDVertex.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDCaloCells.h"
+#include "AliESDCaloTrigger.h"
 #include "AliPID.h"
 #include "AliEMCALGeometry.h"
 
@@ -25,6 +26,7 @@
 // when all FALSE, prints minimum cluster information.
 Bool_t kPrintKine         = kFALSE; //Do not use for raw data.
 Bool_t kPrintCaloCells    = kFALSE;
+Bool_t kPrintCaloTrigger  = kFALSE;
 Bool_t kPrintTrackMatches = kFALSE;
 Bool_t kPrintClusterCells = kFALSE;
 Bool_t kPrintClusterPID   = kFALSE;
@@ -113,6 +115,30 @@ void TestESD() {
       }// cell loop
     }
     
+    //------------------------------------------------------
+    // Calo Trigger 
+    //------------------------------------------------------
+	
+	  if(kPrintCaloTrigger)
+	  {  
+		  AliESDCaloTrigger& trg = *(esd->GetCaloTrigger("EMCAL"));
+		  
+		  trg.Reset();
+		  while (trg.Next())
+		  {
+			  int posX, posY;
+			  trg.GetPosition(posX, posY);
+			  
+			  if (posX > -1 && posY > -1) 
+			  {
+				  Int_t ts = 0;
+				  trg.GetL1TimeSum(ts);
+				  
+				  cout << "Position: " << posX << " " << posY << " L1 amplitude: " << ts << endl;
+			  }
+		  }
+	  }
+
     //------------------------------------------------------
     // Calo Clusters 
     //------------------------------------------------------
