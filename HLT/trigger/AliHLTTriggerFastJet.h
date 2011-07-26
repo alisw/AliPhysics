@@ -30,12 +30,13 @@ class AliHLTTriggerFastJet : public AliHLTTrigger
  public:
   AliHLTTriggerFastJet(TString detector);
   ~AliHLTTriggerFastJet();
-
+  
+  ///
+  AliHLTComponent* Spawn();
+  
   // inherited from AliHLTTrigger : name of this trigger
-  virtual const char* GetTriggerName() const = 0;
-  // inherited from AliHLTComponent: create an instant
-  virtual AliHLTComponent* Spawn() = 0;
-
+  const char* GetTriggerName() const;
+  
   // inherited from AliHLTComponent : get list of OCDB objects
   void GetOCDBObjectDescription( TMap* const targetMap);
 
@@ -53,11 +54,11 @@ class AliHLTTriggerFastJet : public AliHLTTrigger
   int ScanConfigurationArgument(int argc, const char** argv);
 
   // inherited from AliHLTComponent: Get a ratio by how much the data volume is shrunken or enhanced.
-  virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
+  void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
 protected :
   // get the clusters from the esd
-  virtual Int_t GetClustersFromEsd( const AliESDEvent * esd, TRefArray * clustersRefs ) = 0;
+  Int_t GetClustersFromEsd( const AliESDEvent * esd, TRefArray * clustersRefs );
 
   // inherited from AliHLTTrigger: calculate the trigger
   Int_t DoTrigger();
@@ -65,11 +66,7 @@ protected :
   // default constructor prohibited
   AliHLTTriggerFastJet();
 
-  // copy constructor prohibited
-  AliHLTTriggerFastJet(const AliHLTTriggerFastJet & );
 
-  // assignment operator prohibited
-  AliHLTTriggerFastJet& operator=(const AliHLTTriggerFastJet &);
  
   // check if cluster fullfills criteria and if so trigger
   template <class T> 
@@ -78,8 +75,8 @@ protected :
   // threshold jet energy to trigger on
   Float_t fEThreshold;
 
-  // offset for calo tracks
-  Int_t fOffset;
+  // the detector string (PHOS or EMCAL)
+  const TString fDetector;
 
   // fast jet wrapper
   AliFJWrapper *fFastJetWrapper;
@@ -87,15 +84,24 @@ protected :
   // array to hold esd clusters
   TRefArray * fClustersRefs;  //!transient
 
-  // the detector string (PHOS or EMCAL)
-  const TString fDetector;
-
   // the default configuration entry for this component
   const char* fOCDBEntry; //!transient
+
   
+  // offset for calo tracks
+  Int_t fOffset;
+
   // input data type for calo struct input, must be set in child class
   AliHLTComponentDataType fInputDataType;   
 
+ private:
+
+  // copy constructor prohibited
+  AliHLTTriggerFastJet(const AliHLTTriggerFastJet & );
+  
+  // assignment operator prohibited
+  AliHLTTriggerFastJet& operator=(const AliHLTTriggerFastJet &);
+  
   ClassDef(AliHLTTriggerFastJet, 0)
 };
 

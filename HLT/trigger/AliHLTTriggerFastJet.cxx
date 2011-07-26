@@ -66,6 +66,19 @@ int AliHLTTriggerFastJet::DoDeInit() {
 }
 //______________________________________________________________
 
+
+
+AliHLTComponent* AliHLTTriggerFastJet::Spawn() {
+  // see header file for class documentation
+  return new AliHLTTriggerFastJet;
+}
+
+
+const char* AliHLTTriggerFastJet::GetTriggerName() const {
+  // see header file for class documentation
+  return "EmcalJetTrigger";
+}
+
 Int_t AliHLTTriggerFastJet::DoTrigger() {
 
   Int_t iResult = 0;
@@ -87,9 +100,14 @@ Int_t AliHLTTriggerFastJet::DoTrigger() {
     TLorentzVector gamma;
     
     // -- add VZERO
+    // uncomment for usage (to avoid warning)    
+    
+    /*
     AliESDVZERO *v0  = esd->GetVZEROData();
+    
     Float_t MtotVOA = v0->GetMTotV0A();
     Float_t MtotVOC = v0->GetMTotV0A();
+    */
 
     // add the tracks to FastJet Wrapper
     for ( Int_t i = 0; i<esd->GetNumberOfTracks(); i++ ) {
