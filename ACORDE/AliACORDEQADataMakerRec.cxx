@@ -90,6 +90,10 @@ AliACORDEQADataMakerRec::~AliACORDEQADataMakerRec()
   delete fhACOMin;
   delete fhACOMax;
   delete fhACOMulti;
+  delete fhACOMeanAMU;
+  delete fhACOMinAMU;
+  delete fhACOMaxAMU;
+  delete fhACOMultiAMU;
   delete fhACOTriggerCheck;
 }
 
@@ -561,7 +565,7 @@ void AliACORDEQADataMakerRec::InitDigits()
   Add2DigitsList(fhDigitsModule,0,!expert,image);
   for (Int_t i=0;i<60;i++) fhDigitsModule->GetXaxis()->SetBinLabel(i+1,acoModule[i]); 
   //
-  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
+ // ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -674,7 +678,8 @@ if(rawStream.Next())
 			}
 			
         } 
-	FillRawsData(3,contSingle); 
+	FillRawsData(1,contSingle); 
+	FillRawsData(3,contMulti); 
 	//	FillRawsData(7,contMulti);
 }
 }
@@ -682,8 +687,8 @@ if(rawStream.Next())
 void AliACORDEQADataMakerRec::MakeDigits( TTree *digitsTree)
 {
   //fills QA histos for Digits
-  IncEvCountCycleDigits();
-  IncEvCountTotalDigits();
+ // IncEvCountCycleDigits();
+ // IncEvCountTotalDigits();
 
   if (fDigitsArray) 
     fDigitsArray->Clear() ; 
