@@ -60,7 +60,7 @@ for data starting from the PbPb pass2 reconstruction
 class AliFlowBayesianPID : public AliPIDResponse {
  public:
   AliFlowBayesianPID(AliESDpid *esdpid=NULL); 
-  virtual ~AliFlowBayesianPID() {};
+  virtual ~AliFlowBayesianPID();
   
   // virtual method of AliPIDResponse
   virtual Float_t NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const {if(vtrack || type) printf("Don't call AliFlowBayesianPID::NumberOfSigmasTOF method\n"); return 0.0;} // do not use it
@@ -91,8 +91,8 @@ class AliFlowBayesianPID : public AliPIDResponse {
   Bool_t GetCurrentMask(Int_t idet){if(idet < fNdetectors && idet >= 0){return fMaskCurrent[idet];} else{return kFALSE;} };
 
   // methods for Bayesina Combined PID
-  void ComputeWeights(AliESDtrack *t,Float_t centr=-1.0);
-  void ComputeProb(AliESDtrack *t,Float_t centr=-1.0);
+  void ComputeWeights(const AliESDtrack *t,Float_t centr=-1.0);
+  void ComputeProb(const AliESDtrack *t,Float_t centr=-1.0);
 
   void SetTOFres(Float_t res){fTOFres=res;};
 
@@ -133,3 +133,4 @@ class AliFlowBayesianPID : public AliPIDResponse {
 };
 
 #endif
+
