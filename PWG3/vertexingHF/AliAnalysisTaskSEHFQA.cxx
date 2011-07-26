@@ -763,6 +763,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 
   AliAODPidHF* pidHF=fCuts->GetPidHF();
+  if(!pidHF) {
+    delete [] pdgdaughters;
+    return;
+  }
   AliPIDResponse* respF=pidHF->GetPidResponse();
   AliTPCPIDResponse* tpcres=new AliTPCPIDResponse();
   if(pidHF->GetOldPid()) pidHF->SetBetheBloch(*tpcres);
