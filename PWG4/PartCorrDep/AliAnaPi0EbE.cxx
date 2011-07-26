@@ -370,23 +370,25 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
     TObjArray *clusters = 0;
     if     (fCalorimeter="EMCAL") clusters = GetEMCALClusters();
     else if(fCalorimeter="PHOS" ) clusters = GetPHOSClusters() ;
-    
-    //Get original cluster, to recover some information
-    AliVCluster *cluster1 = 0; //(GetReader()->GetInputEvent())->GetCaloCluster(photon1->GetCaloLabel(0));
+
     Bool_t bFound1        = kFALSE;
-    Int_t caloLabel1      = photon1->GetCaloLabel(0);
-    Bool_t iclus1         = -1;
-    for(Int_t iclus = 0; iclus < clusters->GetEntriesFast(); iclus++){
-      AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
-      if(cluster){
-        if     (cluster->GetID()==caloLabel1) {
-          bFound1  = kTRUE  ;
-          cluster1 = cluster;
-          iclus1   = iclus;
-        }
-      }      
-      if(bFound1) break;
-    }// calorimeter clusters loop
+    Int_t  caloLabel1     = photon1->GetCaloLabel(0);
+    Bool_t iclus1         = -1;    
+    AliVCluster *cluster1 = 0; 
+    if(clusters) {
+      //Get original cluster, to recover some information
+      for(Int_t iclus = 0; iclus < clusters->GetEntriesFast(); iclus++){
+        AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
+        if(cluster){
+          if     (cluster->GetID()==caloLabel1) {
+            bFound1  = kTRUE  ;
+            cluster1 = cluster;
+            iclus1   = iclus;
+          }
+        }      
+        if(bFound1) break;
+      }// calorimeter clusters loop
+    }
     
     for(Int_t jphoton = iphoton+1; jphoton < GetInputAODBranch()->GetEntriesFast(); jphoton++){
       
@@ -399,61 +401,64 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       if(TMath::Abs(GetVertex(evtIndex2)[2]) > GetZvertexCut()) continue ;  //vertex cut
       mom2 = *(photon2->Momentum());
       
-      //Int_t input = -1;	//if -1 photons come from different files, not a pi0
-      //if(photon1->GetInputFileIndex() == photon2->GetInputFileIndex()) 
-        //input = photon1->GetInputFileIndex();
-      
-      AliVCluster *cluster2 = 0; //(GetReader()->GetInputEvent())->GetCaloCluster(photon2->GetCaloLabel(0));
-      Bool_t bFound2        = kFALSE;
-      Int_t caloLabel2      = photon2->GetCaloLabel(0);
-      for(Int_t iclus = iclus1+1; iclus < clusters->GetEntriesFast(); iclus++){
-        AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
-        if(cluster){
-          if(cluster->GetID()==caloLabel2) {
-            bFound2  = kTRUE  ;
-            cluster2 = cluster;
-          }          
-        }      
-        if(bFound2) break;
-      }// calorimeter clusters loop
-      
-      //Photon/Cluster 1
+      //Photon1
       Float_t e1    = photon1->E();
       Float_t eta1  = photon1->Eta();
-
       Float_t tof1  = -1;
       Float_t disp1 = -1;
       Float_t l01   = -1;
       Float_t l11   = -1; 
-      if(cluster1 && bFound1){
-        disp1 = cluster1->GetDispersion();
-        l11   = cluster1->GetM20();
-        l01   = cluster1->GetM02();
-        tof1  = cluster1->GetTOF()*1e9;
-      }else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
-                    photon2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
       
-      //Photon/Cluster 2
+      //Photon2
       Float_t e2    = photon2->E();
       Float_t eta2  = photon2->Eta();
       Float_t disp2 = -1;
       Float_t tof2  = -1;
       Float_t l02   = -1;
       Float_t l12   = -1; 
-      if(cluster2 && bFound2){
-        disp2 = cluster2->GetDispersion();
-        l12   = cluster2->GetM20();
-        l02   = cluster2->GetM02();
-        tof2  = cluster2->GetTOF()*1e9;
-      }else printf("cluster2 not available: calo label %d / %d, cluster ID %d\n",
-                   photon2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());    
       
-      //Select clusters with good time window difference
-      Double_t t12diff = tof1-tof2;
-      Float_t asymmetry = TMath::Abs(e1-e2)/(e1+e2);
-      fhClusterPairDiffTimeE  ->Fill(e1+e2,    t12diff);
-      fhClusterPairDiffTimeAsy->Fill(asymmetry,t12diff);
-      if(TMath::Abs(t12diff) > GetPairTimeCut()) continue;
+      Bool_t bFound2        = kFALSE;
+      Int_t  caloLabel2     = photon2->GetCaloLabel(0);
+      AliVCluster *cluster2 = 0; 
+      if(clusters){      
+        for(Int_t iclus = iclus1+1; iclus < clusters->GetEntriesFast(); iclus++){
+          AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
+          if(cluster){
+            if(cluster->GetID()==caloLabel2) {
+              bFound2  = kTRUE  ;
+              cluster2 = cluster;
+            }          
+          }      
+          if(bFound2) break;
+        }// calorimeter clusters loop
+        
+        //Photon/Cluster 1
+        if(cluster1 && bFound1){
+          disp1 = cluster1->GetDispersion();
+          l11   = cluster1->GetM20();
+          l01   = cluster1->GetM02();
+          tof1  = cluster1->GetTOF()*1e9;
+        }
+//        else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
+//                     photon2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
+        
+        //Photon/Cluster 2
+        if(cluster2 && bFound2){
+          disp2 = cluster2->GetDispersion();
+          l12   = cluster2->GetM20();
+          l02   = cluster2->GetM02();
+          tof2  = cluster2->GetTOF()*1e9;
+        }
+//        else printf("cluster2 not available: calo label %d / %d, cluster ID %d\n",
+//                     photon2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());    
+        
+        //Select clusters with good time window difference
+        Double_t t12diff = tof1-tof2;
+        Float_t asymmetry = TMath::Abs(e1-e2)/(e1+e2);
+        fhClusterPairDiffTimeE  ->Fill(e1+e2,    t12diff);
+        fhClusterPairDiffTimeAsy->Fill(asymmetry,t12diff);
+        if(TMath::Abs(t12diff) > GetPairTimeCut()) continue;
+      }
       
       //Select good pair (good phi, pt cuts, aperture and invariant mass)
       if(GetNeutralMesonSelection()->SelectPair(mom1, mom2))
@@ -506,7 +511,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         }//Work with stack also   
         
         //Fill some histograms about shower shape
-        if(GetReader()->GetDataType()!=AliCaloTrackReader::kMC){
+        if(clusters && GetReader()->GetDataType()!=AliCaloTrackReader::kMC){
           //Photon1 
           
           //printf("Signal Cl1: e %f, pt %f, disp %f, l1 %f, l0 %f, eta %f, phi %f \n",

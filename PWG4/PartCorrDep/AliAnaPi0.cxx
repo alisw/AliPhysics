@@ -1832,18 +1832,20 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     //Get original cluster time,
     AliVCluster *cluster1 = 0; 
     Bool_t bFound1        = kFALSE;
-    Int_t caloLabel1      = p1->GetCaloLabel(0);
-    Bool_t iclus1         = -1;
-    for(Int_t iclus = 0; iclus < clusters->GetEntriesFast(); iclus++){
-      AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
-      if(cluster){
-        if     (cluster->GetID()==caloLabel1) {
-          bFound1  = kTRUE  ;
-          cluster1 = cluster;
-          iclus1   = iclus;
-        }
-      }      
-      if(bFound1) break;
+    Int_t  caloLabel1     = p1->GetCaloLabel(0);
+    Bool_t iclus1         =-1;
+    if(clusters){
+      for(Int_t iclus = 0; iclus < clusters->GetEntriesFast(); iclus++){
+        AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
+        if(cluster){
+          if     (cluster->GetID()==caloLabel1) {
+            bFound1  = kTRUE  ;
+            cluster1 = cluster;
+            iclus1   = iclus;
+          }
+        }      
+        if(bFound1) break;
+      }
     }// calorimeter clusters loop
     
     //---------------------------------
@@ -1861,42 +1863,46 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       if (GetMixedEvent() && (evtIndex1 == evtIndex2))
         continue ;
     
-      
+      //------------------------------------------
       //Check if time of clusters is similar
       AliVCluster *cluster2 = 0; 
       Bool_t bFound2        = kFALSE;
       Int_t caloLabel2      = p2->GetCaloLabel(0);
-      for(Int_t iclus = iclus1+1; iclus < clusters->GetEntriesFast(); iclus++){
-        AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
-        if(cluster){
-          if(cluster->GetID()==caloLabel2) {
-            bFound2  = kTRUE  ;
-            cluster2 = cluster;
-          }          
-        }      
-        if(bFound2) break;
-      }// calorimeter clusters loop
+      if(clusters){
+        for(Int_t iclus = iclus1+1; iclus < clusters->GetEntriesFast(); iclus++){
+          AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
+          if(cluster){
+            if(cluster->GetID()==caloLabel2) {
+              bFound2  = kTRUE  ;
+              cluster2 = cluster;
+            }          
+          }      
+          if(bFound2) break;
+        }// calorimeter clusters loop
+      }
       
       Float_t tof1  = -1;
       if(cluster1 && bFound1){
         tof1  = cluster1->GetTOF()*1e9;
       }
-      else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
-                   p1->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
-      
+//      else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
+//                   p1->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
       
       Float_t tof2  = -1;
       if(cluster2 && bFound2){
         tof2  = cluster2->GetTOF()*1e9;
       }
-      else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
-                  p2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());
+//      else printf("cluster2 not available: calo label %d / %d, cluster ID %d\n",
+//                  p2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());
       
-      
-      Double_t t12diff = tof1-tof2;
-      if(TMath::Abs(t12diff) > GetPairTimeCut()) continue;
+      if(clusters){
+        Double_t t12diff = tof1-tof2;
+        if(TMath::Abs(t12diff) > GetPairTimeCut()) continue;
+      }
+      //------------------------------------------
+
       //printf("AliAnaPi0::MakeAnalysisFillHistograms(): Photon 2 Evt %d  Vertex : %f,%f,%f\n",evtIndex2, GetVertex(evtIndex2)[0] ,GetVertex(evtIndex2)[1],GetVertex(evtIndex2)[2]);
- 
+
       //Get the momentum of this cluster
       TLorentzVector photon2(p2->Px(),p2->Py(),p2->Pz(),p2->E());
       //Get module number
