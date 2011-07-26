@@ -565,7 +565,7 @@ void AliACORDEQADataMakerRec::InitDigits()
   Add2DigitsList(fhDigitsModule,0,!expert,image);
   for (Int_t i=0;i<60;i++) fhDigitsModule->GetXaxis()->SetBinLabel(i+1,acoModule[i]); 
   //
- // ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
+  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
 }
 
 //____________________________________________________________________________ 
@@ -687,8 +687,8 @@ if(rawStream.Next())
 void AliACORDEQADataMakerRec::MakeDigits( TTree *digitsTree)
 {
   //fills QA histos for Digits
- // IncEvCountCycleDigits();
- // IncEvCountTotalDigits();
+  IncEvCountCycleDigits();
+  IncEvCountTotalDigits();
 
   if (fDigitsArray) 
     fDigitsArray->Clear() ; 
