@@ -102,6 +102,7 @@ void AliHLTTrackGeometry::Draw(Option_t *option)
   float center[2]={0.5,0.5};
   int markerColor=1;
   int markerSize=1;
+  int verbosity=0;
 
   TString strOption(option);
   std::auto_ptr<TObjArray> tokens(strOption.Tokenize(" "));
@@ -143,6 +144,13 @@ void AliHLTTrackGeometry::Draw(Option_t *option)
       markerSize=arg.Atoi();
       continue;
     }
+
+    key="verbosity=";
+    if (arg.BeginsWith(key)) {
+      arg.ReplaceAll(key, "");
+      verbosity=arg.Atoi();
+      continue;
+    }
   }
 
   bool bFirstPoint=true;
@@ -156,6 +164,9 @@ void AliHLTTrackGeometry::Draw(Option_t *option)
     float sina=TMath::Sin(alpha);
     float x = r*sina + point->GetU()*cosa;
     float y =-r*cosa + point->GetU()*sina;
+    if (verbosity>0) {
+      HLTInfo("ID 0x%08x: x=% .4f y=% .4f alpha=% .4f", point->GetId(), r, point->GetU(), alpha);
+    }
     int color=markerColor;
     if (bFirstPoint) {
       bFirstPoint=false;
@@ -207,6 +218,13 @@ AliHLTTrackGeometry::AliHLTTrackPoint* AliHLTTrackGeometry::GetTrackPoint(AliHLT
   vector<AliHLTTrackPoint>::iterator element = find(fTrackPoints.begin(), fTrackPoints.end(), id);
   if (element==fTrackPoints.end()) return NULL;
   return &(*element);
+}
+
+AliHLTSpacePointContainer* AliHLTTrackGeometry::ConvertToSpacePoints() const
+{
+  /// create a collection of all points
+  HLTError("implementation of child method missing");
+  return NULL;
 }
 
 int AliHLTTrackGeometry::AssociateSpacePoints(AliHLTSpacePointContainer& points)

@@ -210,6 +210,9 @@ class AliHLTTrackGeometry : public TObject, public AliHLTLogging
   /// get track point of id
   AliHLTTrackPoint* GetTrackPoint(AliHLTUInt32_t id);
 
+  /// create a collection of all points
+  virtual AliHLTSpacePointContainer* ConvertToSpacePoints() const;
+
   /// set the spacepoint associated with a track point
   /// @param  planeId       track point
   /// @param  spacepointId  space point id to be associated with track point
@@ -238,6 +241,8 @@ class AliHLTTrackGeometry : public TObject, public AliHLTLogging
 
  protected:
   int AddTrackPoint(const AliHLTTrackPoint& point);
+
+  const vector<AliHLTTrackPoint>& TrackPoints() const {return fTrackPoints;}
 
  private:
   vector<AliHLTTrackPoint> fTrackPoints; // list of points

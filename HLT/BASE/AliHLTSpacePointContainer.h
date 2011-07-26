@@ -90,6 +90,9 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
   /// add input block from list of blank separated files to collection
   int AddInputBlocks(const char* filenames, AliHLTComponentDataType dt);
 
+  /// alloc memory for a space point data block
+  AliHLTUInt8_t* Alloc(int size);
+
   /// inherited from TObject: clear the object and reset pointer references
   virtual void Clear(Option_t * /*option*/ ="");
 

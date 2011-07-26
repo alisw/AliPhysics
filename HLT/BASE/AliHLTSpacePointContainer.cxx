@@ -161,6 +161,17 @@ int AliHLTSpacePointContainer::AddInputBlocks(const char* listfile, AliHLTCompon
   return count;
 }
 
+AliHLTUInt8_t* AliHLTSpacePointContainer::Alloc(int size)
+{
+  /// alloc memory for a space point data block
+  TArrayC* buffer=new TArrayC;
+  if (!buffer) return NULL;
+
+  buffer->Set(size);
+  fBuffers.push_back(buffer);
+  return reinterpret_cast<AliHLTUInt8_t*>(buffer->GetArray());
+}
+
 AliHLTSpacePointContainer* AliHLTSpacePointContainer::SelectByTrack(int /*trackId*/, bool /*bAlloc*/) const
 {
   /// create a collection of clusters for a specific track
@@ -348,6 +359,7 @@ void AliHLTSpacePointContainer::Draw(Option_t *option)
     float sinphi=TMath::Sin(clusterphi);
     float clusterx=GetX(*clusterID);
     float clustery=GetY(*clusterID);
+    cout << " " << *clusterID << " " << clusterx << " " << clustery << " " << clusterphi << endl;
     // rotate
     float pointx= clusterx*sinphi + clustery*cosphi;
     float pointy=-clusterx*cosphi + clustery*sinphi;
