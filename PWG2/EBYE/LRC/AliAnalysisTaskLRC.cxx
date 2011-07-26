@@ -92,7 +92,10 @@ void AliAnalysisTaskLRC::UserCreateOutputObjects()
   
   for(Int_t i=0; i < lLrcNum; i++)
   {
-  (dynamic_cast<AliLRCBase*> (fLRCproc.At(i)))->InitDataMembers();
+    AliLRCBase *lrcBase = dynamic_cast<AliLRCBase*> (fLRCproc.At(i));
+    if(lrcBase)
+      lrcBase->InitDataMembers();
+    else continue;
   }
   
 
@@ -147,12 +150,12 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)
    AliVEvent *event = InputEvent();
    AliESDEvent *fESD = 0x0;
    fESD=dynamic_cast<AliESDEvent*> (event) ;
-   AliStack *stack = 0x0;
+   //AliStack *stack = 0x0;
    AliMCEvent *eventMC = 0x0;
    if( fRunKine ) 
    {
 	eventMC=MCEvent(); 
-	stack=eventMC->Stack();
+	//stack=eventMC->Stack();
    }
 
 
@@ -189,34 +192,34 @@ Bool_t lVertexAceptable=kTRUE;
 
 // Vertex present
 const AliESDVertex *vertex = fESD->GetPrimaryVertex();
+ if(vertex) {
+   lVertexPresent=((vertex)&&(vertex->GetNContributors() > 0)&&(vertex->GetZRes() != 0));
+   if((!lVertexPresent)&&fCheckForkVtx)
+     {if(fShowEventStats)Printf("No vertex");
+       fHistEventCutStats->Fill(2);
+       PostData(1, fOutList);
+       return;
+     }
 
-lVertexPresent=((vertex)&&(vertex->GetNContributors() > 0)&&(vertex->GetZRes() != 0));
-if((!lVertexPresent)&&fCheckForkVtx)
-	{if(fShowEventStats)Printf("No vertex");
-	fHistEventCutStats->Fill(2);
-	 PostData(1, fOutList);
-	return;
-	}
-
-// Vertex in range 
-lVertexAceptable=(TMath::Abs(vertex->GetXv()) < fVxMax) && (TMath::Abs(vertex->GetYv()) < fVyMax); 
-if(lVertexAceptable)
-	if(fVzMax>0)   //   fVzMax < 0 -> select Zv outside selected range
-		{ lVertexAceptable = (TMath::Abs(vertex->GetZv()) < fVzMax);}
-	else
-		{ lVertexAceptable = (TMath::Abs(vertex->GetZv()) > -fVzMax);}
-
-if((!lVertexAceptable) && fCheckForVtxPosition) 
-	{if(fShowEventStats)Printf("Vertex out of range");
-	fHistEventCutStats->Fill(3);
-	 PostData(1, fOutList);
-	return;
-	}
-
-fHistVx->Fill(vertex->GetXv());
-fHistVy->Fill(vertex->GetYv());
-fHistVz->Fill(vertex->GetZv());
-
+   // Vertex in range 
+   lVertexAceptable=(TMath::Abs(vertex->GetXv()) < fVxMax) && (TMath::Abs(vertex->GetYv()) < fVyMax); 
+   if(lVertexAceptable)
+     if(fVzMax>0)   //   fVzMax < 0 -> select Zv outside selected range
+       { lVertexAceptable = (TMath::Abs(vertex->GetZv()) < fVzMax);}
+     else
+       { lVertexAceptable = (TMath::Abs(vertex->GetZv()) > -fVzMax);}
+   
+   if((!lVertexAceptable) && fCheckForVtxPosition) 
+     {if(fShowEventStats)Printf("Vertex out of range");
+       fHistEventCutStats->Fill(3);
+       PostData(1, fOutList);
+       return;
+     }
+   
+   fHistVx->Fill(vertex->GetXv());
+   fHistVy->Fill(vertex->GetYv());
+   fHistVz->Fill(vertex->GetZv());
+ 
 
 int lNchTrigger=0;
 // Pre event loop 
@@ -261,7 +264,10 @@ fHistEventCutStats->Fill(6);
 
  for(Int_t i=0; i < lLrcNum; i++)
   {
-  (dynamic_cast<AliLRCBase*> (fLRCproc.At(i)))->StartEvent();
+    AliLRCBase *lrcBase = dynamic_cast<AliLRCBase*> (fLRCproc.At(i));
+    if(lrcBase)
+      lrcBase->StartEvent();
+    else continue;
   }
 
     // Track loop -----------------------------------------------------------------
@@ -316,7 +322,10 @@ fHistEventCutStats->Fill(6);
  
       for(Int_t i=0; i < lLrcNum; i++)
   {
-  (dynamic_cast<AliLRCBase*> (fLRCproc.At(i)))->AddTrackPtEta(lPt,lEta,lPhi);
+    AliLRCBase *lrcBase = dynamic_cast<AliLRCBase*> (fLRCproc.At(i));
+    if(lrcBase)
+      lrcBase->AddTrackPtEta(lPt,lEta,lPhi);
+    else continue;
   }
 
     lNaccept++;
@@ -328,7 +337,10 @@ fHistEventCutStats->Fill(6);
   
    for(Int_t i=0; i < lLrcNum; i++)
   {
-  (dynamic_cast<AliLRCBase*> (fLRCproc.At(i)))->FinishEvent();
+      AliLRCBase *lrcBase = dynamic_cast<AliLRCBase*> (fLRCproc.At(i));
+    if(lrcBase)
+      lrcBase->FinishEvent();
+    else continue;
   }
 
   //Debuging output of track filter
@@ -343,7 +355,7 @@ fHistEventCutStats->Fill(6);
   PostData(Proc(i)->GetOutputSlotNumber(),Proc(i)->CreateOutput());
   }
  
-  
+ }//vertex
   
 }      
 

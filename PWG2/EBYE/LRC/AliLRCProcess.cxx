@@ -199,7 +199,7 @@ AliLRCProcess::~AliLRCProcess()
   {
   // Creating task and output container name 
    char str[80];
-   sprintf(str,"TaskLRCw%3.1fto%3.1fvs%3.1fto%3.1f",fStartForwardETA,fEndForwardETA,fStartBakwardETA,fEndBakwardETA);
+   snprintf(str,80, "TaskLRCw%3.1fto%3.1fvs%3.1fto%3.1f",fStartForwardETA,fEndForwardETA,fStartBakwardETA,fEndBakwardETA);
 
    fShortDef= str;
 
