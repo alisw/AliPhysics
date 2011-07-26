@@ -329,9 +329,9 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   Double_t *binsChi2C=new Double_t[fgkNChi2CBins+1];
   for(Int_t i=0; i<=fgkNChi2CBins; i++) binsChi2C[i]=(Double_t)fgkChi2CMin + (fgkChi2CMax-fgkChi2CMin)/fgkNChi2CBins*(Double_t)i ;
 
-  Int_t fgkNRel1PtUncertaintyBins=30;
+  Int_t fgkNRel1PtUncertaintyBins=50;
   Float_t fgkRel1PtUncertaintyMin = 0.;
-  Float_t fgkRel1PtUncertaintyMax = 0.3;
+  Float_t fgkRel1PtUncertaintyMax = 1.;
   if(fTrackType!=0 && fTrackType!=3) {
     fgkNRel1PtUncertaintyBins = 50;
     fgkRel1PtUncertaintyMax = 1.; 
