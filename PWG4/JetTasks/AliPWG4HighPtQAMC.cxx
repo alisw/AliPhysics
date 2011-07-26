@@ -675,10 +675,6 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
     else
       track = esdtrack;
     
-    if(!track) {
-      continue;
-    }
-
     if(fTrackType==2) {
       //Cut on chi2 of constrained fit
       if(track->GetConstrainedChi2TPC() > fSigmaConstrainedMax*fSigmaConstrainedMax) {
@@ -732,8 +728,6 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 	if(esdtrack->GetConstrainedParam()) 
 	  track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
       }
-
-      if(!track) continue;
 
       pt  = track->Pt();
       phi = track->Phi();
