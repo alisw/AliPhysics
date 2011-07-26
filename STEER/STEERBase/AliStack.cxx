@@ -1073,3 +1073,35 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index)
 	} 
     } // produced by generator ?
 } 
+
+Bool_t AliStack::IsSecondaryFromWeakDecay(Int_t index) {
+
+  // If a particle is not a physical primary, check if it comes from weak decay
+
+  TParticle* particle = Particle(index);
+  Int_t uniqueID = particle->GetUniqueID();
+
+  if(IsPhysicalPrimary(index)) return kFALSE;
+
+  Int_t mfl = 0;
+  Int_t indexMoth = particle->GetFirstMother();
+  if(indexMoth < 0) AliError("No first mother?");
+  TParticle* moth = Particle(indexMoth);
+  Float_t codemoth = TMath::Abs(moth->GetPdgCode());
+  // mass of the flavour
+  mfl = Int_t (codemoth / TMath::Power(10, Int_t(TMath::Log10(codemoth))));
+  
+  if(mfl == 3 && uniqueID == kPDecay) return kTRUE;// The first mother is strange and it's a decay
+
+  return kFALSE;
+  
+}
+Bool_t AliStack::IsSecondaryFromMaterial(Int_t index) {
+
+  // If a particle is not a physical primary, check if it comes from material
+
+  if(IsPhysicalPrimary(index)) return kFALSE;
+  if(IsSecondaryFromWeakDecay(index)) return kFALSE;
+  return kTRUE;
+
+}
