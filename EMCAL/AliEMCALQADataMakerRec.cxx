@@ -546,7 +546,6 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   rawReader->Select("EMCAL", 0, AliEMCALGeoParams::fgkLastAltroDDL) ; //select EMCAL DDL's 
 
   AliRecoParam::EventSpecie_t saveSpecie = fEventSpecie ;
-
   if (rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent) { 
     SetEventSpecie(AliRecoParam::kCalib) ;
   }
@@ -714,7 +713,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  
 	    if ( gain == 0 ) { 
 	      nTotalSMLGLEDMon[iSM]++; 
-	      if ( (amp > fMinSignalLGLEDMon) && (amp < fMaxSignalLGLEDMon) ) { 
+	      if ( (amp > fMinSignalLGLEDMon) && (amp < fMaxSignalLGLEDMon) ) {
 		FillRawsData(kSigLGLEDMon,stripId, amp);
 		FillRawsData(kTimeLGLEDMon,stripId, time);
 	      }
@@ -748,7 +747,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   
   //calculate the ratio of the amplitude and fill the histograms, only if the events type is Calib
   // RS: operation on the group of histos kSigHG,k2DRatioAmp,kRatioDist,kLEDMonRatio,kLEDMonRatio,kSigLGLEDMon
-  const int hGrp[] = {kSigHG,k2DRatioAmp,kRatioDist,kLEDMonRatio,kLEDMonRatio,kSigLGLEDMon};
+  const int hGrp[] = {kSigHG,k2DRatioAmp,kRatioDist,kLEDMonRatio,kLEDMonRatioDist,kSigLGLEDMon};
   if ( rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent &&
        CheckCloningConsistency(fRawsQAList, hGrp, sizeof(hGrp)/sizeof(int)) ) {  // RS converting original code to loop over all matching triggers
     int nTrig =IsClonedPerTrigClass(kSigHG,fRawsQAList) ? GetNEventTrigClasses() : 0; // loop over triggers only if histos were cloned
@@ -792,6 +791,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	//
 	if(fLEDMonRefHistoPro->GetBinContent(ib) != 0) {
 	  binContent = hSigLGLEDMon->GetBinContent(ib) / fLEDMonRefHistoPro->GetBinContent(ib);
+
 	  relativeErrorSqr = TMath::Power( (fLEDMonRefHistoPro->GetBinError(ib) / fLEDMonRefHistoPro->GetBinContent(ib)), 2);
 	  if( hSigLGLEDMon->GetBinContent(ib) != 0) {
 	    relativeErrorSqr += TMath::Power( (hSigLGLEDMon->GetBinError(ib)/hSigLGLEDMon->GetBinContent(ib)), 2);
@@ -801,7 +801,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  binContent = 0;
 	  relativeErrorSqr = 0;
 	}
-	hSigLGLEDMon->SetBinContent(ib, binContent);
+	thLEDMonRatio->SetBinContent(ib, binContent);
 	
 	binError = sqrt(relativeErrorSqr) * binContent;
 	thLEDMonRatio->SetBinError(ib, binError);
