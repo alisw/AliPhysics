@@ -61,6 +61,9 @@ class AliHLTTPCTrackGeometry : public AliHLTTrackGeometry
   /// find the track point which can be associated to a spacepoint with coordinates and id
   virtual int FindMatchingTrackPoint(AliHLTUInt32_t spacepointId, float spacepoint[3], AliHLTUInt32_t& planeId);
 
+  /// create a collection of all points
+  virtual AliHLTSpacePointContainer* ConvertToSpacePoints() const;
+
  private:
   /// calculate the track points, expects the global magnetic field to be initialized
   int CalculateTrackPoints(AliHLTGlobalBarrelTrack& track, int firstpadrow, int step);

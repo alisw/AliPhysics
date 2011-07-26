@@ -25,8 +25,13 @@
 #include "AliHLTTPCTrackGeometry.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCSpacePointData.h"
+#include "AliHLTTPCClusterDataFormat.h"
+#include "AliHLTTPCSpacePointContainer.h"
+#include "AliHLTTPCDefinitions.h"
+#include "AliHLTComponent.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "TMath.h"
+#include <memory>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCTrackGeometry)
@@ -101,7 +106,11 @@ int AliHLTTPCTrackGeometry::CalculateTrackPoints(AliHLTGlobalBarrelTrack& track)
   /// calculate the track points, expects the global magnetic field to be initialized
   int iResult=0;
   int firstpadrow=0;
-  for (; firstpadrow<AliHLTTPCTransform::GetNRows() && AliHLTTPCTransform::Row2X(firstpadrow)<track.GetX(); firstpadrow++);
+  for (;
+       firstpadrow<AliHLTTPCTransform::GetNRows() && 
+	 AliHLTTPCTransform::Row2X(firstpadrow)+AliHLTTPCTransform::GetPadLength(firstpadrow)<track.GetX();
+       firstpadrow++);
+  if (firstpadrow>=AliHLTTPCTransform::GetNRows()) return 0;
   iResult=CalculateTrackPoints(track, firstpadrow, 1);
   if (iResult>=0 && firstpadrow>0)
     iResult=CalculateTrackPoints(track, firstpadrow-1, -1);
@@ -177,4 +186,64 @@ int AliHLTTPCTrackGeometry::FindMatchingTrackPoint(AliHLTUInt32_t spacepointId, 
     return 1;
   }
   return -ENOENT;
+}
+
+AliHLTSpacePointContainer* AliHLTTPCTrackGeometry::ConvertToSpacePoints() const
+{
+  /// create a collection of all points
+  std::auto_ptr<AliHLTTPCSpacePointContainer> spacepoints(new AliHLTTPCSpacePointContainer);
+  if (!spacepoints.get()) return NULL;
+
+  const vector<AliHLTTrackPoint>& trackPoints=GetTrackPoints();
+  unsigned i=0;
+  while (i<trackPoints.size()) {
+    // allocate buffer for all points, even though the buffer might not be filled
+    // completely because of a partition change
+    int nofPoints=trackPoints.size()-i;
+    int blocksize=sizeof(AliHLTTPCClusterData)+nofPoints*sizeof(AliHLTTPCSpacePointData);
+    AliHLTUInt8_t* pBuffer=spacepoints->Alloc(blocksize);
+    if (!pBuffer) return NULL;
+    AliHLTTPCClusterData* pClusterData=reinterpret_cast<AliHLTTPCClusterData*>(pBuffer);
+    pClusterData->fSpacePointCnt=0;
+    AliHLTTPCSpacePointData* pClusters=pClusterData->fSpacePoints;
+    int currentSlice=-1;
+    int currentPartition=-1;
+    for (; i<trackPoints.size(); i++) {
+      AliHLTUInt32_t planeId=trackPoints[i].GetId();
+      int slice=AliHLTTPCSpacePointData::GetSlice(planeId);
+      int partition=AliHLTTPCSpacePointData::GetPatch(planeId);
+      int number=AliHLTTPCSpacePointData::GetNumber(planeId);
+      if ((currentSlice>=0 && currentSlice!=slice) || (currentPartition>=0 && currentPartition!=partition)) {
+	// change of partition or slice, need to go to next block
+	// 2011-07-26 currently all spacepoints go into one block, if separated
+	// blocks per partition are needed one has to leave the inner loop here
+	// and set the data block specification below
+	// Caution: not tested, only the last block seems to make it through
+	//break;
+      }
+      currentSlice=slice;
+      currentPartition=partition;
+      pClusters[pClusterData->fSpacePointCnt].fX=GetPlaneR(planeId);
+      pClusters[pClusterData->fSpacePointCnt].fY=trackPoints[i].GetU();
+      pClusters[pClusterData->fSpacePointCnt].fZ=trackPoints[i].GetV();
+      pClusters[pClusterData->fSpacePointCnt].fID=planeId;
+      pClusters[pClusterData->fSpacePointCnt].fPadRow=AliHLTTPCTransform::GetFirstRow(partition)+number;
+      pClusters[pClusterData->fSpacePointCnt].fSigmaY2=0.;
+      pClusters[pClusterData->fSpacePointCnt].fSigmaZ2=0.;
+      pClusters[pClusterData->fSpacePointCnt].fCharge=0;
+      pClusters[pClusterData->fSpacePointCnt].fQMax=0;
+      pClusters[pClusterData->fSpacePointCnt].fUsed=0;
+      pClusters[pClusterData->fSpacePointCnt].fTrackN=0;
+      pClusterData->fSpacePointCnt++;
+    }
+    AliHLTComponentBlockData bd;
+    AliHLTComponent::FillBlockData(bd);
+    bd.fPtr=pBuffer;
+    bd.fSize=blocksize;
+    AliHLTComponent::SetDataType(bd.fDataType, "CLUSTERS", "TPC ");
+    bd.fSpecification=//AliHLTTPCDefinitions::EncodeDataSpecification(currentSlice, currentSlice, currentPartition, currentPartition);
+    spacepoints->AddInputBlock(&bd);
+  }
+
+  return spacepoints.release();
 }
