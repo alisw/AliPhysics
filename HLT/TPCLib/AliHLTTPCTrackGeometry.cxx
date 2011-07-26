@@ -194,7 +194,7 @@ AliHLTSpacePointContainer* AliHLTTPCTrackGeometry::ConvertToSpacePoints() const
   std::auto_ptr<AliHLTTPCSpacePointContainer> spacepoints(new AliHLTTPCSpacePointContainer);
   if (!spacepoints.get()) return NULL;
 
-  const vector<AliHLTTrackPoint>& trackPoints=GetTrackPoints();
+  const vector<AliHLTTrackPoint>& trackPoints=TrackPoints();
   unsigned i=0;
   while (i<trackPoints.size()) {
     // allocate buffer for all points, even though the buffer might not be filled
