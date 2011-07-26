@@ -263,18 +263,31 @@ int AliHLTGlobalBarrelTrack::CalculateCrossingPoint(float xPlane, float alphaPla
     y = y1;
     if(TMath::Abs(y2) < TMath::Abs(y1)) y = y2;
   
+    // calculate the arc length between (x,y) and (x0,y0) with radius (cx,cy)
+    // reference point is (x0,y0) rotated by the diffence of the plane angle and
+    // the track reference frame angle alpha
+    // 1) angle of (x,y)
     Double_t angle1 = atan2((y - cy),(xPlane - cx));
-    if(angle1 < 0) angle1 += 2.*TMath::Pi();
-    Double_t angle2 = atan2((GetY() - fHelixCenterY),(GetX() - fHelixCenterX));
+    if(angle1 < 0) angle1 += TMath::TwoPi();
+
+    // 2) angle of (x0,y0)
+    float x0= GetX() * cosa + GetY() * sina;
+    float y0=-GetX() * sina + GetY() * cosa;
+    Double_t angle2 = atan2((y0 - cy),(x0 - cx));
     if(angle2 < 0) angle2 += TMath::TwoPi();
-  
+
+    // 3) angle between (x,y) and (x0,y0)
     Double_t diffangle = angle1 - angle2;
     diffangle = fmod(diffangle,TMath::TwoPi());
-    if((GetSign()*diffangle) > 0) diffangle = diffangle - GetSign()*TMath::TwoPi();
-  
-    Double_t stot = TMath::Abs(diffangle)*fHelixRadius;
 
-    z = GetZ() + stot*GetTgl();
+    // 4) arc length
+    Double_t arclength = TMath::Abs(diffangle*fHelixRadius);
+
+    // 5) direction depending on whether going outwards or inwards
+    int direction=GetX()>xPlane?-1:1;
+    z = GetZ() + direction*arclength*GetTgl();
+
+    //cout << "x=" << xPlane << " y=" << y << " cx=" << cx << " cy=" << cy << " a1=" << angle1 << " a2=" << angle2 << " diffa=" << diffangle << " s=" << arclength << " z=" << z << endl;
   }
   return 1;
 }
