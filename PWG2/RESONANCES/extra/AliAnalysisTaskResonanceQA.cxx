@@ -229,18 +229,19 @@ void AliAnalysisTaskResonanceQA::UserExec(Option_t *)
    if (fESD) {
       // check primary vertex:
       // we accept only tracks/SPD with at least 1 contributor
+      Double_t vz = 1E20;
       const AliESDVertex *v0 = fESD->GetPrimaryVertexTracks();
-      if (!v0) eventAccepted = kFALSE;
-      if (v0->GetNContributors() < 1) {
-         v0 = fESD->GetPrimaryVertexSPD();
-         if (!v0) eventAccepted = kFALSE;
-         if (v0->GetNContributors() < 1) eventAccepted = kFALSE;
+      if (v0) {
+         if (v0->GetNContributors() > 0)
+            vz = TMath::Abs(v0->GetZv());
+         else {
+            v0 = fESD->GetPrimaryVertexSPD();
+            if (v0) {
+               if (v0->GetNContributors() > 0) vz = TMath::Abs(v0->GetZv());
+            }
+         }
       }
-      if (!v0) eventAccepted = kFALSE;
-      if (TMath::Abs(v0->GetZv()) > fVz) eventAccepted = kFALSE;
-      
-      // if we reach this point, all exits due to bad vertex were skipped
-      eventAccepted = kTRUE;
+      eventAccepted = (vz <= fVz);
    }
    
    // if event is OK, loop on tracks to fill QA
