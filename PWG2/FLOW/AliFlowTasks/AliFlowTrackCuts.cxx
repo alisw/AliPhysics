@@ -60,6 +60,8 @@
 
 ClassImp(AliFlowTrackCuts)
 
+AliFlowBayesianPID *gBayesianPID;
+
 //-----------------------------------------------------------------------
 AliFlowTrackCuts::AliFlowTrackCuts():
   AliFlowTrackSimpleCuts(),
@@ -119,6 +121,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fTPCtrack(),
   fFlowTagType(AliFlowTrackSimple::kInvalid),
   fESDpid(),
+  fBayesianResponse(NULL),
   fPIDsource(kTOFpid),
   fTPCpidCuts(NULL),
   fTOFpidCuts(NULL),
@@ -126,11 +129,19 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fParticleProbability(.9),
   fAllowTOFmismatchFlag(kFALSE),
   fRequireStrictTOFTPCagreement(kFALSE),
-  fCutRejectElectronsWithTPCpid(kFALSE)
+  fCutRejectElectronsWithTPCpid(kFALSE),
+  fCurrCentr(0.0)
 {
   //io constructor 
   for ( Int_t i=0; i<5; i++ ) { fProbBayes[i]=0.0; }
   SetPriors(); //init arrays
+
+  // New PID procedure (Bayesian Combined PID)
+  if(! gBayesianPID){
+    gBayesianPID = new AliFlowBayesianPID();
+    gBayesianPID->SetNewTrackParam();
+  }
+  fBayesianResponse = gBayesianPID;
 }
 
 //-----------------------------------------------------------------------
@@ -192,6 +203,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fTPCtrack(),
   fFlowTagType(AliFlowTrackSimple::kInvalid),
   fESDpid(),
+  fBayesianResponse(NULL),
   fPIDsource(kTOFpid),
   fTPCpidCuts(NULL),
   fTOFpidCuts(NULL),
@@ -199,7 +211,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fParticleProbability(.9),
   fAllowTOFmismatchFlag(kFALSE),
   fRequireStrictTOFTPCagreement(kFALSE),
-  fCutRejectElectronsWithTPCpid(kFALSE)
+  fCutRejectElectronsWithTPCpid(kFALSE),
+  fCurrCentr(0.0)
 {
   //constructor 
   SetName(name);
@@ -212,6 +225,12 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   for ( Int_t i=0; i<5; i++ ) { fProbBayes[i]=0.0; }
   SetPriors(); //init arrays
 
+  // New PID procedure (Bayesian Combined PID)
+  if(! gBayesianPID){
+    gBayesianPID = new AliFlowBayesianPID();
+    gBayesianPID->SetNewTrackParam();
+  }
+  fBayesianResponse = gBayesianPID;
 }
 
 //-----------------------------------------------------------------------
@@ -273,6 +292,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fTPCtrack(),
   fFlowTagType(that.fFlowTagType),
   fESDpid(that.fESDpid),
+  fBayesianResponse(NULL),
   fPIDsource(that.fPIDsource),
   fTPCpidCuts(NULL),
   fTOFpidCuts(NULL),
@@ -280,7 +300,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fParticleProbability(that.fParticleProbability),
   fAllowTOFmismatchFlag(that.fAllowTOFmismatchFlag),
   fRequireStrictTOFTPCagreement(that.fRequireStrictTOFTPCagreement),
-  fCutRejectElectronsWithTPCpid(that.fCutRejectElectronsWithTPCpid)
+  fCutRejectElectronsWithTPCpid(that.fCutRejectElectronsWithTPCpid),
+  fCurrCentr(0.0)
 {
   //copy constructor
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
@@ -289,6 +310,13 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   memcpy(fProbBayes,that.fProbBayes,sizeof(fProbBayes));
   SetPriors(); //init arrays
   if (that.fQA) DefineHistograms();
+
+  // New PID procedure (Bayesian Combined PID)
+  if(! gBayesianPID){
+    gBayesianPID = new AliFlowBayesianPID();
+    gBayesianPID->SetNewTrackParam();
+  }
+  fBayesianResponse = gBayesianPID;
 }
 
 //-----------------------------------------------------------------------
@@ -375,6 +403,15 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCutRejectElectronsWithTPCpid=that.fCutRejectElectronsWithTPCpid;
   memcpy(fProbBayes,that.fProbBayes,sizeof(fProbBayes));
 
+  fCurrCentr = that.fCurrCentr;
+
+  // New PID procedure (Bayesian Combined PID)
+  if(! gBayesianPID){
+    gBayesianPID = new AliFlowBayesianPID();
+    gBayesianPID->SetNewTrackParam();
+  }
+  fBayesianResponse = gBayesianPID;
+
   return *this;
 }
 
@@ -402,8 +439,11 @@ void AliFlowTrackCuts::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
   {
     //TODO: maybe call it only for the TOF options?
     // Added by F. Noferini for TOF PID
+    // old procedure now implemented inside fBayesianResponse
+    //    fESDpid.MakePID(myESD,kFALSE);
+    // new procedure
+    fBayesianResponse->SetDetResponse(myESD, fCurrCentr,AliESDpid::kTOF_T0,kTRUE); // centrality = PbPb centrality class (0-100%) or -1 for pp collisions
     fESDpid.SetTOFResponse(myESD,AliESDpid::kTOF_T0);
-    fESDpid.MakePID(myESD,kFALSE);
     // End F. Noferini added part
   }
 
@@ -2053,41 +2093,55 @@ Bool_t AliFlowTrackCuts::PassesTPCbayesianCut(const AliESDtrack* track)
   //Bool_t statusMatchingHard = TPCTOFagree(track);
   //if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))
   //     return kFALSE;
+  Int_t kTPC = fBayesianResponse->GetCurrentMask(0); // is TPC on
+  Int_t kTOF = fBayesianResponse->GetCurrentMask(1); // is TOF on
 
-  Int_t pdg = GetESDPdg(track,"bayesianTPC");
-  //  printf("pdg set to %i\n",pdg);
+  if(! kTPC) return kFALSE;
 
-  Int_t pid = 0;
+  Bool_t statusMatchingHard = 1;
+  Float_t mismProb = 0;
+  if(kTOF){
+    statusMatchingHard = TPCTOFagree(track);
+    mismProb = fBayesianResponse->GetTOFMismProb();
+  }
+  if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))
+       return kFALSE;
+
+  fBayesianResponse->ComputeProb(track,fCurrCentr); // fCurrCentr is needed for mismatch fraction
+  Float_t *probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mismatch parameterization
+
+  fProbBayes[0] = probabilities[0];
+  fProbBayes[1] = probabilities[1];
+  fProbBayes[2] = probabilities[2];
+  fProbBayes[3] = probabilities[3];
+  fProbBayes[4] = probabilities[4];
+
   Float_t prob = 0;
   switch (fParticleID)
   {
     case AliPID::kPion:
-      pid=211;
       prob = fProbBayes[2];
       break;
     case AliPID::kKaon:
-      pid=321;
       prob = fProbBayes[3];
      break;
     case AliPID::kProton:
-      pid=2212;
       prob = fProbBayes[4];
       break;
     case AliPID::kElectron:
-      pid=-11;
        prob = fProbBayes[0];
      break;
     default:
       return kFALSE;
   }
 
-  if(TMath::Abs(pdg) == TMath::Abs(pid) && prob > fParticleProbability)
-  {
-    if(!fCutCharge)
-      return kTRUE;
-    else if (fCutCharge && fCharge * track->GetSign() > 0)
-      return kTRUE;
-  }
+  if(prob > fParticleProbability && mismProb < 0.5)
+    {
+      if(!fCutCharge)
+	return kTRUE;
+      else if (fCutCharge && fCharge * track->GetSign() > 0)
+	return kTRUE;
+    }
   return kFALSE;
 }
 
@@ -2110,27 +2164,29 @@ Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(const AliESDtrack* track)
   if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))
        return kFALSE;
 
-  Int_t pdg = GetESDPdg(track,"bayesianALL");
-  //  printf("pdg set to %i\n",pdg);
+  fBayesianResponse->ComputeProb(track,fCurrCentr); // fCurrCentr is needed for mismatch fraction
+  Float_t *probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mismatch parameterization
 
-  Int_t pid = 0;
+  fProbBayes[0] = probabilities[0];
+  fProbBayes[1] = probabilities[1];
+  fProbBayes[2] = probabilities[2];
+  fProbBayes[3] = probabilities[3];
+  fProbBayes[4] = probabilities[4];
+  Float_t mismProb = fBayesianResponse->GetTOFMismProb(); // mismatch Bayesian probabilities
+
   Float_t prob = 0;
   switch (fParticleID)
   {
     case AliPID::kPion:
-      pid=211;
       prob = fProbBayes[2];
       break;
     case AliPID::kKaon:
-      pid=321;
       prob = fProbBayes[3];
      break;
     case AliPID::kProton:
-      pid=2212;
       prob = fProbBayes[4];
       break;
     case AliPID::kElectron:
-      pid=-11;
        prob = fProbBayes[0];
      break;
     default:
@@ -2138,7 +2194,7 @@ Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(const AliESDtrack* track)
   }
 
   //  printf("pt = %f -- all prob = [%4.2f,%4.2f,%4.2f,%4.2f,%4.2f] -- prob = %f\n",track->Pt(),fProbBayes[0],fProbBayes[1],fProbBayes[2],fProbBayes[3],fProbBayes[4],prob);
-  if(TMath::Abs(pdg) == TMath::Abs(pid) && prob > fParticleProbability){
+  if(prob > fParticleProbability && mismProb < 0.5){
     if(!fCutCharge)
       return kTRUE;
     else if (fCutCharge && fCharge * track->GetSign() > 0)
@@ -2401,7 +2457,9 @@ Int_t AliFlowTrackCuts::GetESDPdg(const AliESDtrack *track,Option_t *option,Int_
 
 //-----------------------------------------------------------------------
 void AliFlowTrackCuts::SetPriors(Float_t centrCur){
-  //set priors for the bayesian pid selection
+  fCurrCentr = centrCur;
+
+ //set priors for the bayesian pid selection
   fBinLimitPID[0] = 0.300000;
   fBinLimitPID[1] = 0.400000;
   fBinLimitPID[2] = 0.500000;
@@ -3677,4 +3735,5 @@ Long64_t AliFlowTrackCuts::Merge(TCollection* list)
   }
   return fQA->Merge(&tmplist);
 }
+
 

@@ -67,6 +67,16 @@ AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid)
   }
 }
 //________________________________________________________________________
+AliFlowBayesianPID::~AliFlowBayesianPID(){
+  if(fMism) delete fMism;
+  if(fTofGeo) delete fTofGeo;
+  if(fTOFResponse) delete fTOFResponse;
+  if(fTPCResponse) delete fTPCResponse;
+  if(fTOFmaker) delete fTOFmaker;
+  if(fBBdata) delete fBBdata;
+  for(Int_t i=0;i < 5;i++) if(hPriors[i]) delete (hPriors[i]);
+}
+//________________________________________________________________________
 void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,EStartTimeType_t flagStart,Bool_t recomputeT0TOF){
   if(!esd){
     printf("AliFlowBayesianPID::SetDetResponse -> Error -> No valid esd event");
@@ -176,7 +186,7 @@ void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,ESta
   fPIDesd->MakePID(esd,kFALSE);
 }
 //________________________________________________________________________
-void AliFlowBayesianPID::ComputeWeights(AliESDtrack *t,Float_t centr){
+void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t,Float_t centr){
   Float_t pt = t->Pt();
   Float_t p = t->P();
   Double_t ptpc[3];
@@ -203,10 +213,11 @@ void AliFlowBayesianPID::ComputeWeights(AliESDtrack *t,Float_t centr){
 
       fWeights[0][iS] = fTPCResponse->Eval((dedx - dedxExp)/resolutionTPC)/resolutionTPC;
     }
-
+    fMaskCurrent[0] = kTRUE;
   }
   else{
     for(Int_t iS=0;iS<5;iS++) fWeights[0][iS] = 1;
+    fMaskCurrent[0] = kFALSE;
   }
 
   // TOF
@@ -243,9 +254,11 @@ void AliFlowBayesianPID::ComputeWeights(AliESDtrack *t,Float_t centr){
       } else
 	fWeights[1][iS] = fTOFResponse->Eval(delta/expsigma)/expsigma + mismfrac*mismweight;
     }
+    fMaskCurrent[1] = kTRUE;
   }
   else{
     for(Int_t iS=0;iS<5;iS++) fWeights[1][iS] = 1;    
+    fMaskCurrent[1] = kFALSE;
   }
 
   for(Int_t j=0;j < 2;j++){
@@ -258,7 +271,7 @@ void AliFlowBayesianPID::ComputeWeights(AliESDtrack *t,Float_t centr){
   }  
 }
 //________________________________________________________________________
-void AliFlowBayesianPID::ComputeProb(AliESDtrack *t,Float_t centr){
+void AliFlowBayesianPID::ComputeProb(const AliESDtrack *t,Float_t centr){
   ComputeWeights(t,centr);
   Float_t priors[5];
   fProbTofMism = 0;
@@ -6382,3 +6395,4 @@ x[4999]=110229.399237; y[4999]=6.896278e-07;
 
   return sp;
 }
+
