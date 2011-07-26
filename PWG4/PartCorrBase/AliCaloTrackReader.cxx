@@ -642,7 +642,7 @@ void AliCaloTrackReader::FillInputCTS() {
       if(aodtrack){
         if(fDebug > 2 ) 
           printf("AliCaloTrackReader::FillInputCTS():AOD track type: %c \n", aodtrack->GetType());
-        if (!kMC && aodtrack->TestFilterMask(fTrackFilterMask)==kFALSE) continue;
+        if (fDataType!=kMC && aodtrack->TestFilterMask(fTrackFilterMask)==kFALSE) continue;
         if(aodtrack->GetType()!=AliAODTrack::kPrimary) continue;
       }
     }
