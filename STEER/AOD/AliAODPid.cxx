@@ -46,6 +46,7 @@ AliAODPid::AliAODPid():
     for(Int_t i=0; i<5; i++) fTOFpidResolution[i] = 0.;
     for(Int_t i=0; i<6; i++) fTRDmomentum[i]      = 0.;
     for(Int_t i=0; i<3; i++) fEMCALMomentum[i]    = 0.;
+    for(Int_t i=0; i<4; i++) fITSdEdxSamples[i]   = 0.;
   
 }
 
@@ -82,6 +83,8 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
     for(Int_t i=0; i<6; i++) fTRDmomentum[i]=pid.fTRDmomentum[i];
 
     for(Int_t i=0; i<5; i++) fTOFpidResolution[i]=pid.fTOFpidResolution[i];
+
+    for(Int_t i=0; i<4; i++) fITSdEdxSamples[i]=pid.fITSdEdxSamples[i];
 }
 
 //______________________________________________________________________________
@@ -112,6 +115,7 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
       fEMCALMomentum[i]=pid.fEMCALMomentum[i];
     }
     for (Int_t i=0; i<5; i++) fTOFpidResolution[i]=pid.fTOFpidResolution[i];
+    for (Int_t i=0; i<4; i++) fITSdEdxSamples[i]=pid.fITSdEdxSamples[i];
   }
 
   return *this;
@@ -179,4 +183,20 @@ void AliAODPid::GetHMPIDprobs(Double_t *p) const
   // Set the HMPID PID probablities that are read from ESD
   //  
   for(Int_t i = 0; i < AliPID::kSPECIES; i++ ) p[i] =  fHMPIDprobs[i];
+}
+//______________________________________________________________________________
+void AliAODPid::SetITSdEdxSamples(const Double_t s[4])
+{
+  //
+  // Set the 4 values of dE/dx from individual ITS layers that are read from ESD
+  //  
+  for (Int_t i=0; i<4; i++) fITSdEdxSamples[i]=s[i];
+}
+//______________________________________________________________________________
+void AliAODPid::GetITSdEdxSamples(Double_t s[4]) const
+{
+  //
+  // Get the 4 values of dE/dx from individual ITS layers that are read from ESD
+  //  
+  for (Int_t i=0; i<4; i++) s[i]=fITSdEdxSamples[i];
 }

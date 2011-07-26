@@ -1922,6 +1922,10 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
 
 
  aodpid->SetITSsignal(track->GetITSsignal());
+ Double_t itsdedx[4]; // dE/dx samples for individual ITS layers
+ track->GetITSdEdxSamples(itsdedx);
+ aodpid->SetITSdEdxSamples(itsdedx);
+
  aodpid->SetTPCsignal(track->GetTPCsignal());
  aodpid->SetTPCsignalN(track->GetTPCsignalN());
 

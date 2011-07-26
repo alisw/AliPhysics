@@ -24,6 +24,7 @@ class AliAODPid : public TObject {
 
  //setters
   void      SetITSsignal(Double_t its)                         {fITSsignal=its;}
+  void      SetITSdEdxSamples(const Double_t s[4]);
   void      SetTPCsignal(Double_t tpc)                         {fTPCsignal=tpc;}
   void      SetTPCsignalN(UShort_t tpcN)                       {fTPCsignalN=tpcN;}
   void      SetTPCmomentum(Double_t tpcMom)                    {fTPCmomentum=tpcMom;}
@@ -38,6 +39,11 @@ class AliAODPid : public TObject {
   void      SetEMCALMomentum(Double_t emcalmom[3]);
 
   Double_t  GetITSsignal()       const {return  fITSsignal;}
+  void      GetITSdEdxSamples(Double_t *s) const;
+  Double_t  GetITSdEdxSample(Int_t i) const {
+    if(i>=0 && i<4) return fITSdEdxSamples[i];
+    else return 0.;
+  }
   Double_t  GetTPCsignal()       const {return  fTPCsignal;}
   UShort_t  GetTPCsignalN()      const {return  fTPCsignalN;}
   Double_t  GetTPCmomentum()     const {return  fTPCmomentum;}
@@ -55,6 +61,7 @@ class AliAODPid : public TObject {
 
  private :
   Double32_t  fITSsignal;        //[0.,0.,10] detector raw signal
+  Double32_t  fITSdEdxSamples[4];//[0.,0.,10] ITS dE/dx samples
   Double32_t  fTPCsignal;        //[0.,0.,10] detector raw signal
   UShort_t    fTPCsignalN;       // number of points used for TPC dE/dx
   Double_t    fTPCmomentum;      // momentum at the inner wall of TPC;
@@ -71,7 +78,7 @@ class AliAODPid : public TObject {
   Double32_t  fEMCALMomentum[3]; // momentum of track
 				 // extrapolated to EMCAL surface
 
-  ClassDef(AliAODPid, 6);
+  ClassDef(AliAODPid, 7);
 };
 
 #endif
