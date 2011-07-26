@@ -1819,7 +1819,7 @@ void AliExternalTrackParam::FillPolymarker(TPolyMarker3D *pol, Float_t magF, Flo
     Double_t point[3];
     GetXYZAt(r,magF,point);
     pol->SetPoint(counter,point[0],point[1], point[2]);
-    printf("xyz\t%f\t%f\t%f\n",point[0], point[1],point[2]);
+    //    printf("xyz\t%f\t%f\t%f\n",point[0], point[1],point[2]);
     counter++;
   }
 }

@@ -2338,7 +2338,7 @@ void AliESDtrack::FillPolymarker(TPolyMarker3D *pol, Float_t magF, Float_t minR,
       mlpos[1]/=sweight;
       mlpos[2]/=sweight;      
       pol->SetPoint(counter,mlpos[0],mlpos[1], mlpos[2]);
-      printf("xyz\t%f\t%f\t%f\n",mlpos[0], mlpos[1],mlpos[2]);
+      //      printf("xyz\t%f\t%f\t%f\n",mlpos[0], mlpos[1],mlpos[2]);
       counter++;
     }
   }
