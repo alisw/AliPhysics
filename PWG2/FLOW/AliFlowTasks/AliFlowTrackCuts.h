@@ -17,6 +17,7 @@
 #include "AliESDtrack.h"
 #include "AliPID.h"
 #include "AliESDpid.h"
+#include "AliFlowBayesianPID.h"
 
 class TBrowser;
 class AliVParticle;
@@ -105,7 +106,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetPmdDetPlane(Int_t pmdDet){fCutPmdDet=kTRUE; fPmdDet = pmdDet; }
   void SetPmdAdc(Float_t pmdAdc){fCutPmdAdc=kTRUE; fPmdAdc = pmdAdc; }
   void SetPmdNcell(Float_t pmdNcell) {fCutPmdNcell=kTRUE; fPmdNcell = pmdNcell; }						 
-  void SetPriors(Float_t centr = 0); // set my favourite priors for Bayesian PID
+  void SetPriors(Float_t centr = 0); // set my favourite priors for Bayesian PID (requested if Bayesian PID is used)
   void SetFlowTagType(AliFlowTrackSimple::tagType t) {fFlowTagType=t;}
 
   Int_t GetMinNClustersTPC() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClusterTPC();}
@@ -299,6 +300,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   //PID
   AliESDpid fESDpid; //pid obj
+  AliFlowBayesianPID *fBayesianResponse; // Baysian response with all the TOF tuning (using fESDpid)
   PIDsource fPIDsource; //pid source
   TMatrixF* fTPCpidCuts; //tpc pid cuts
   TMatrixF* fTOFpidCuts; //tof pid cuts
@@ -312,7 +314,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   static const Int_t fgkPIDptBin = 20; // pT bins for priors
   Float_t fC[fgkPIDptBin][5],fBinLimitPID[fgkPIDptBin]; // pt bin limit and priors
   Float_t fProbBayes[5]; // bayesian probability
-  // end part added by F. Noferini
+  Float_t fCurrCentr; // current centrality used for set the priors
+ // end part added by F. Noferini
 
   static const Int_t fgkNumberOfV0tracks=64; //number of V0 channels
 
@@ -320,4 +323,5 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 };
 
 #endif
+
 
