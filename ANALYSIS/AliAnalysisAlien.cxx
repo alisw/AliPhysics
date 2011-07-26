@@ -47,7 +47,23 @@
 #include "AliMultiInputEventHandler.h"
 
 ClassImp(AliAnalysisAlien)
+#if 0
+;
+#endif  
 
+namespace {
+  Bool_t copyLocal2Alien(const char* where, const char* loc, const char* rem)
+  {
+    TString sl(Form("file:%s", loc));
+    TString sr(Form("alien://%s", rem));
+    Bool_t ret = TFile::Cp(sl, sr);
+    if (!ret) { 
+      Warning(where, "Failed to copy %s to %s", sl.Data(), sr.Data());
+    }
+    return ret;
+  }
+}
+    
 //______________________________________________________________________________
 AliAnalysisAlien::AliAnalysisAlien()
                  :AliAnalysisGrid(),
@@ -1379,10 +1395,14 @@ Bool_t AliAnalysisAlien::CreateJDL()
          if (FileExists(locjdl)) gGrid->Rm(locjdl);
          if (FileExists(locjdl1)) gGrid->Rm(locjdl1);
          Info("CreateJDL", "\n#####   Copying JDL file <%s> to your AliEn output directory", fJDLName.Data());
-         TFile::Cp(Form("file:%s",fJDLName.Data()), Form("alien://%s", locjdl.Data()));
+         if (!copyLocal2Alien("CreateJDL", fJDLName, locjdl)) 
+            Fatal("","Terminating");
+//         TFile::Cp(Form("file:%s",fJDLName.Data()), Form("alien://%s", locjdl.Data()));
          if (fMergeViaJDL) {
             Info("CreateJDL", "\n#####   Copying merging JDL file <%s> to your AliEn output directory", mergeJDLName.Data());
-            TFile::Cp(Form("file:%s",mergeJDLName.Data()), Form("alien://%s", locjdl1.Data()));
+//            TFile::Cp(Form("file:%s",mergeJDLName.Data()), Form("alien://%s", locjdl1.Data()));
+            if (!copyLocal2Alien("CreateJDL", mergeJDLName.Data(), locjdl1)) 
+               Fatal("","Terminating");
          }   
       }
       if (fAdditionalLibs.Length()) {
@@ -1393,7 +1413,10 @@ Bool_t AliAnalysisAlien::CreateJDL()
             if (os->GetString().Contains(".so")) continue;
             Info("CreateJDL", "\n#####   Copying dependency: <%s> to your alien workspace", os->GetString().Data());
             if (FileExists(os->GetString())) gGrid->Rm(os->GetString());
-            TFile::Cp(Form("file:%s",os->GetString().Data()), Form("alien://%s/%s", workdir.Data(), os->GetString().Data()));
+//            TFile::Cp(Form("file:%s",os->GetString().Data()), Form("alien://%s/%s", workdir.Data(), os->GetString().Data()));
+            if (!copyLocal2Alien("CreateJDL", os->GetString().Data(), 
+                Form("%s/%s", workdir.Data(), os->GetString().Data())))
+              Fatal("","Terminating");
          }   
          delete arr;   
       }
@@ -1403,7 +1426,10 @@ Bool_t AliAnalysisAlien::CreateJDL()
          while ((obj=next())) {
             if (FileExists(obj->GetName())) gGrid->Rm(obj->GetName());
             Info("CreateJDL", "\n#####   Copying dependency: <%s> to your alien workspace", obj->GetName());
-            TFile::Cp(Form("file:%s",obj->GetName()), Form("alien://%s/%s", workdir.Data(), obj->GetName()));
+//            TFile::Cp(Form("file:%s",obj->GetName()), Form("alien://%s/%s", workdir.Data(), obj->GetName()));
+            if (!copyLocal2Alien("CreateJDL",obj->GetName(), 
+                Form("%s/%s", workdir.Data(), obj->GetName()))) 
+              Fatal("","Terminating"); 
          }   
       }      
    } 
@@ -1619,11 +1645,17 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
       if (FileExists(locjdl1)) gGrid->Rm(locjdl1);
       if (FileExists(locjdl2)) gGrid->Rm(locjdl2);
       Info("WriteJDL", "\n#####   Copying JDL file <%s> to your AliEn output directory", fJDLName.Data());
-      TFile::Cp(Form("file:%s",fJDLName.Data()), Form("alien://%s", locjdl.Data()));
+//      TFile::Cp(Form("file:%s",fJDLName.Data()), Form("alien://%s", locjdl.Data()));
+      if (!copyLocal2Alien("WriteJDL",fJDLName.Data(),locjdl.Data())) 
+         Fatal("","Terminating");
       if (fMergeViaJDL) {
          Info("WriteJDL", "\n#####   Copying merging JDL files <%s> to your AliEn output directory", mergeJDLName.Data());
-         TFile::Cp(Form("file:%s",mergeJDLName.Data()), Form("alien://%s", locjdl1.Data()));
-         TFile::Cp(Form("file:%s",finalJDL.Data()), Form("alien://%s", locjdl2.Data()));
+//         TFile::Cp(Form("file:%s",mergeJDLName.Data()), Form("alien://%s", locjdl1.Data()));
+//         TFile::Cp(Form("file:%s",finalJDL.Data()), Form("alien://%s", locjdl2.Data()));
+         if (!copyLocal2Alien("WriteJDL",mergeJDLName.Data(),locjdl1.Data()))
+            Fatal("","Terminating");
+         if (!copyLocal2Alien("WriteJDL",finalJDL.Data(),locjdl2.Data()))
+           Fatal("","Terminating");
       }   
    } 
    return kTRUE;
@@ -2100,6 +2132,8 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
    // Copy the file in the output directory
    printf("===> Copying collection %s in the output directory %s\n", Form("Stage_%d.xml",stage), aliendir);
    TFile::Cp(Form("Stage_%d.xml",stage), Form("alien://%s/Stage_%d.xml",aliendir,stage));
+   if (!copyLocal2Alien("CheckMergedFiles", Form("Stage_%d.xml",stage), 
+        Form("%s/Stage_%d.xml",aliendir,stage))) Fatal("","Terminating");
    // Check if this is the last stage to be done.
    Bool_t laststage = (nfiles<nperchunk);
    if (fMaxMergeStages && stage>=fMaxMergeStages) laststage = kTRUE;
@@ -3224,6 +3258,8 @@ void AliAnalysisAlien::WriteAnalysisFile()
       Info("WriteAnalysisFile", "\n#####   Copying file <%s> containing your initialized analysis manager to your alien workspace", analysisFile.Data());
       if (FileExists(analysisFile)) gGrid->Rm(analysisFile);
       TFile::Cp(Form("file:%s",analysisFile.Data()), Form("alien://%s/%s", workdir.Data(),analysisFile.Data()));
+      if (!copyLocal2Alien("WriteAnalysisFile",analysisFile.Data(), 
+          Form("%s/%s", workdir.Data(),analysisFile.Data()))) Fatal("","Terminating");
    }   
 }
 
@@ -3599,10 +3635,15 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       if (IsUsingTags() && !gSystem->AccessPathName("ConfigureCuts.C")) {
          if (FileExists("ConfigureCuts.C")) gGrid->Rm("ConfigureCuts.C");
          Info("WriteAnalysisMacro", "\n#####   Copying cuts configuration macro: <ConfigureCuts.C> to your alien workspace");
-         TFile::Cp("file:ConfigureCuts.C", Form("alien://%s/ConfigureCuts.C", workdir.Data()));
+         if (!copyLocal2Alien("WriteAnalysisMacro","ConfigureCuts.C", 
+             Form("%s/ConfigureCuts.C", workdir.Data()))) Fatal("","Terminating");
+//         TFile::Cp("file:ConfigureCuts.C", Form("alien://%s/ConfigureCuts.C", workdir.Data()));
       }   
       Info("WriteAnalysisMacro", "\n#####   Copying analysis macro: <%s> to your alien workspace", fAnalysisMacro.Data());
-      TFile::Cp(Form("file:%s",fAnalysisMacro.Data()), Form("alien://%s/%s", workdir.Data(), fAnalysisMacro.Data()));
+//      TFile::Cp(Form("file:%s",fAnalysisMacro.Data()), Form("alien://%s/%s", workdir.Data(), fAnalysisMacro.Data()));
+      if (!copyLocal2Alien("WriteAnalysisMacro",fAnalysisMacro.Data(), 
+           Form("alien://%s/%s", workdir.Data(), 
+           fAnalysisMacro.Data()))) Fatal("","Terminating");
    }
 }
 
@@ -3890,7 +3931,9 @@ void AliAnalysisAlien::WriteMergingMacro()
       workdir += fGridWorkingDir;
       if (FileExists(mergingMacro)) gGrid->Rm(mergingMacro);
       Info("WriteMergingMacro", "\n#####   Copying merging macro: <%s> to your alien workspace", mergingMacro.Data());
-      TFile::Cp(Form("file:%s",mergingMacro.Data()), Form("alien://%s/%s", workdir.Data(), mergingMacro.Data()));
+//      TFile::Cp(Form("file:%s",mergingMacro.Data()), Form("alien://%s/%s", workdir.Data(), mergingMacro.Data()));
+      if (!copyLocal2Alien("WriteMergeMacro",mergingMacro.Data(), 
+           Form("%s/%s", workdir.Data(), mergingMacro.Data()))) Fatal("","Terminating");
    }
 }
 
@@ -3986,7 +4029,9 @@ void AliAnalysisAlien::WriteExecutable()
       TString executable = Form("%s/bin/%s", gGrid->GetHomeDirectory(), fExecutable.Data());
       if (FileExists(executable)) gGrid->Rm(executable);
       Info("WriteExecutable", "\n#####   Copying executable file <%s> to your AliEn bin directory", fExecutable.Data());
-      TFile::Cp(Form("file:%s",fExecutable.Data()), Form("alien://%s", executable.Data()));
+//      TFile::Cp(Form("file:%s",fExecutable.Data()), Form("alien://%s", executable.Data()));
+      if (!copyLocal2Alien("WriteExecutable",fExecutable.Data(), 
+          executable.Data())) Fatal("","Terminating");
    } 
 }
 
@@ -4047,7 +4092,9 @@ void AliAnalysisAlien::WriteMergeExecutable()
       TString executable = Form("%s/bin/%s", gGrid->GetHomeDirectory(), mergeExec.Data());
       if (FileExists(executable)) gGrid->Rm(executable);
       Info("WriteMergeExecutable", "\n#####   Copying executable file <%s> to your AliEn bin directory", mergeExec.Data());
-      TFile::Cp(Form("file:%s",mergeExec.Data()), Form("alien://%s", executable.Data()));
+//      TFile::Cp(Form("file:%s",mergeExec.Data()), Form("alien://%s", executable.Data()));
+      if (!copyLocal2Alien("WriteMergeExecutable",
+          mergeExec.Data(), executable.Data())) Fatal("","Terminating");
    } 
 }
 
@@ -4083,7 +4130,9 @@ void AliAnalysisAlien::WriteProductionFile(const char *filename) const
    if (gGrid) {
       Info("WriteProductionFile", "\n#####   Copying production file <%s> to your work directory", filename);
       if (FileExists(filename)) gGrid->Rm(filename);
-      TFile::Cp(Form("file:%s",filename), Form("alien://%s/%s", workdir.Data(),filename));
+//      TFile::Cp(Form("file:%s",filename), Form("alien://%s/%s", workdir.Data(),filename));
+      if (!copyLocal2Alien("WriteProductionFile", filename, 
+          Form("%s/%s", workdir.Data(),filename))) Fatal("","Terminating");
    }   
 }
 
@@ -4228,6 +4277,8 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
       workdir += fGridWorkingDir;
       Info("WriteValidationScript", "\n#####   Copying validation script <%s> to your AliEn working space", validationScript.Data());
       if (FileExists(validationScript)) gGrid->Rm(validationScript);
-      TFile::Cp(Form("file:%s",validationScript.Data()), Form("alien://%s/%s", workdir.Data(),validationScript.Data()));
+//      TFile::Cp(Form("file:%s",validationScript.Data()), Form("alien://%s/%s", workdir.Data(),validationScript.Data()));
+      if (!copyLocal2Alien("WriteValidationScript", validationScript.Data(), 
+          Form("%s/%s",workdir.Data(), validationScript.Data()))) Fatal("","Terminating");
    } 
 }
