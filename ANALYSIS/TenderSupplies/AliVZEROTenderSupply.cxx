@@ -126,8 +126,15 @@ void AliVZEROTenderSupply::ProcessEvent()
       fRecoParam = NULL;
       return;
     } else {
-      fRecoParam = (AliVZERORecoParam*)entryRecoParam->GetObject();
+      TObjArray *recoParamArr = (TObjArray*)entryRecoParam->GetObject();
       if (fDebug) printf("AliVZEROTenderSupply::Used VZERO reco-param entry: %s\n",entryRecoParam->GetId().ToString().Data());
+      fRecoParam = NULL;
+      for(Int_t i = 0; i < recoParamArr->GetEntriesFast(); i++) {
+	AliVZERORecoParam *par = (AliVZERORecoParam*)recoParamArr->At(i);
+	if (!par) continue;
+	if (par->IsDefault()) fRecoParam = par;
+      }
+      if (!fRecoParam) AliError("No default VZERO reco-param object is found in OCDB !");
     }
   }
 
