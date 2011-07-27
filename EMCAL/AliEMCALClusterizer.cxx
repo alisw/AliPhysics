@@ -161,6 +161,10 @@ AliEMCALClusterizer::~AliEMCALClusterizer()
 
   // make sure we delete the rec points array
   DeleteRecPoints();
+
+  //Delete digits array
+  DeleteDigits();
+
 }
 
 //____________________________________________________________________________
@@ -172,7 +176,18 @@ void AliEMCALClusterizer::DeleteRecPoints()
       AliDebug(2, "Deleting fRecPoints.");
       fRecPoints->Delete();
       delete fRecPoints;
-      fRecPoints = 0;
+    }
+}
+
+//____________________________________________________________________________
+void AliEMCALClusterizer::DeleteDigits()
+{
+  // free the digits array
+  if (fDigitsArr) 
+    {
+      AliDebug(2, "Deleting fDigitsArr.");
+      fDigitsArr->Clear("C");
+      delete fDigitsArr;
     }
 }
 
