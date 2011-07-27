@@ -820,7 +820,7 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
 {
   // Restore clusters from recPoints
   // Cluster energy, global position, cells and their amplitude fractions are restored
-  
+
   for(Int_t i = 0; i < recPoints->GetEntriesFast(); i++)
   {
     AliEMCALRecPoint *recPoint = (AliEMCALRecPoint*) recPoints->At(i);
@@ -855,7 +855,10 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     gpos.GetXYZ(g);
     
     // create a new cluster
-    AliAODCaloCluster *clus = new AliAODCaloCluster();
+    //AliAODCaloCluster *clus = new AliAODCaloCluster();
+   
+    (*clusArray)[i] = new AliAODCaloCluster() ;
+    AliAODCaloCluster *clus = dynamic_cast<AliAODCaloCluster *>( clusArray->At(i) ) ;
     clus->SetType(AliVCluster::kEMCALClusterv1);
     clus->SetE(recPoint->GetEnergy());
     clus->SetPosition(g);
@@ -895,7 +898,8 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
         }
         if (iNewLabel == 1) 
         {
-          Int_t * newLabelArray = (Int_t*)malloc((clus->GetNLabels()+1)*sizeof(Int_t)) ;
+          //Int_t * newLabelArray = (Int_t*)malloc((clus->GetNLabels()+1)*sizeof(Int_t)) ;
+          Int_t * newLabelArray = new Int_t[clus->GetNLabels()+1] ;
           for ( UInt_t iLoopNewLabels = 0 ; iLoopNewLabels < clus->GetNLabels() ; iLoopNewLabels++ ){
             newLabelArray[iLoopNewLabels] = clus->GetLabelAt(iLoopNewLabels) ;
           }
@@ -908,6 +912,7 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
       }//positive cell number
     }
     
-    clusArray->Add(clus);
+    //clusArray->Add(clus);
+
   } // recPoints loop
 }
