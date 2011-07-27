@@ -150,12 +150,13 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)
    AliVEvent *event = InputEvent();
    AliESDEvent *fESD = 0x0;
    fESD=dynamic_cast<AliESDEvent*> (event) ;
-   //AliStack *stack = 0x0;
+   AliStack *stack = 0x0;
    AliMCEvent *eventMC = 0x0;
    if( fRunKine ) 
    {
 	eventMC=MCEvent(); 
-	//stack=eventMC->Stack();
+	stack=eventMC->Stack();
+	Printf("Number of primaries: %d",stack->GetNprimary());
    }
 
 
