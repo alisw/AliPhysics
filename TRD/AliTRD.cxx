@@ -553,14 +553,6 @@ void AliTRD::Init()
     AliError("Not a valid geometry");
   }
 
-  // Special tracking options for charged particles for XeCO2
-  gMC->Gstpar((* fIdtmed)[9],"DRAY"    , 1.0);
-  gMC->Gstpar((* fIdtmed)[9],"STRA"    , 1.0); 
-  gMC->Gstpar((* fIdtmed)[9],"LOSS"    ,13.0);      // Specific energy loss
-  // Parameters specific to Fluka
-  //gMC->Gstpar((* fIdtmed)[9],"PRIMIO_E",23.53);     // 1st ionisation potential
-  //gMC->Gstpar((* fIdtmed)[9],"PRIMIO_N",19.344431); // Number of primaries
-
 }
 
 //_____________________________________________________________________________
