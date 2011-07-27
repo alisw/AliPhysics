@@ -23,6 +23,12 @@ AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid)
 
   fTOFmaker = new AliTOFT0maker(fPIDesd);
  
+  fProb[0]=0.0;
+  fProb[1]=0.0;
+  fProb[2]=0.0;
+  fProb[3]=0.0;
+  fProb[4]=0.0;
+
   fMass[0] = fDB->GetParticle(11)->Mass(); // e mass
   fMass[1] = fDB->GetParticle(13)->Mass(); // mu mass
   fMass[2] = fDB->GetParticle(211)->Mass(); // pi mass
