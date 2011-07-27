@@ -652,13 +652,14 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
     AliESDtrack *esdtrack = fESD->GetTrack(iTrack);
     if(!esdtrack) continue;
 
-    if(fTrackType==1)
+    if(fTrackType==1) {
       track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
+      if(!track) continue;
+    }
     else if(fTrackType==2) {
       track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
-      if(!track) {
-	continue;
-      }
+      if(!track) continue;
+      
       AliExternalTrackParam exParam;
       Bool_t relate = track->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
       if( !relate ) {
