@@ -168,6 +168,12 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TH1F *fHistMCSecMatDCANegK[kNbins]; //! histo with DCA distibution, MC truth 
   TH1F *fHistMCSecMatDCANegP[kNbins]; //! histo with DCA distibution, MC truth
   
+  TH1F *fHistMCPosOtherHypPion[kNbins]; //! histo with dedx using the MC truth 
+  TH1F *fHistMCPosOtherHypKaon[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCPosOtherHypProton[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCPosElHypPion[kNbins]; //! histo with dedx using the MC truth 
+  TH1F *fHistMCPosElHypKaon[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCPosElHypProton[kNbins]; //! histo with dedx using the MC truth
   TH1F *fHistMCPosPiHypPion[kNbins]; //! histo with dedx using the MC truth 
   TH1F *fHistMCPosPiHypKaon[kNbins]; //! histo with dedx using the MC truth
   TH1F *fHistMCPosPiHypProton[kNbins]; //! histo with dedx using the MC truth
@@ -178,6 +184,12 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TH1F *fHistMCPosPHypKaon[kNbins]; //! histo with dedx using the MC truth
   TH1F *fHistMCPosPHypProton[kNbins]; //! histo with dedx using the MC truth
   
+  TH1F *fHistMCNegOtherHypPion[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCNegOtherHypKaon[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCNegOtherHypProton[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCNegElHypPion[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCNegElHypKaon[kNbins]; //! histo with dedx using the MC truth
+  TH1F *fHistMCNegElHypProton[kNbins]; //! histo with dedx using the MC truth
   TH1F *fHistMCNegPiHypPion[kNbins]; //! histo with dedx using the MC truth
   TH1F *fHistMCNegPiHypKaon[kNbins]; //! histo with dedx using the MC truth
   TH1F *fHistMCNegPiHypProton[kNbins]; //! histo with dedx using the MC truth
