@@ -838,8 +838,9 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
   for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
   {
     AliVParticle* particle1 = (AliVParticle*) tracks->At(i);
-    Double_t phi1 = particle1->Phi();
-    Double_t pt1 = particle1->Pt();
+    Float_t phi1 = particle1->Phi();
+    Float_t pt1 = particle1->Pt();
+    Float_t charge1 = particle1->Charge();
     
     // analyze region for IAA paper
     if (pt1 < 8 || pt1 > 15)
@@ -851,15 +852,16 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
 	continue;
       
       AliVParticle* particle2 = (AliVParticle*) tracks->At(j);
-      Double_t phi2 = particle2->Phi();
-      Double_t pt2 = particle2->Pt();
+      Float_t phi2 = particle2->Phi();
+      Float_t pt2 = particle2->Pt();
+      Float_t charge2 = particle2->Charge();
       
       if (pt2 > pt1)
 	continue;
       
 //       Double_t dpt = TMath::Abs(pt1 - pt2);
-      Double_t deta = eta[i] - eta[j];
-      Double_t detaabs = TMath::Abs(deta);
+      Float_t deta = eta[i] - eta[j];
+      Float_t detaabs = TMath::Abs(deta);
       
       // optimization
       if (detaabs > 0.05)
@@ -867,13 +869,13 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
       
       Bool_t cutPassed = kTRUE;
       
-      Double_t dphistarmin = 1e5;
-      Double_t dphistarminabs = 1e5;
+      Float_t dphistarmin = 1e5;
+      Float_t dphistarminabs = 1e5;
 
       for (Double_t rad=0.8; rad<2.51; rad+=0.01) 
       {
-	Double_t dphistar = phi1 - phi2 + TMath::ASin(0.075 * rad / pt1) - TMath::ASin(0.075 * rad / pt2);
-	Double_t dphistarabs = TMath::Abs(dphistar);
+	Float_t dphistar = phi1 - phi2 + TMath::ASin(charge1 * 0.075 * rad / pt1) - TMath::ASin(charge2 * 0.075 * rad / pt2);
+	Float_t dphistarabs = TMath::Abs(dphistar);
 	
 	if (dphistarabs < dphistarminabs)
 	{
