@@ -1262,8 +1262,14 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
   
   switch (flags) {
     
-  case kITSin: case kITSout: case kITSrefit:
+  case kITSin: 
+    fITSchi2Std[0] = t->GetChi2();
+    //
+  case kITSout: 
+    fITSchi2Std[1] = t->GetChi2();
+  case kITSrefit:
     {
+    fITSchi2Std[2] = t->GetChi2();
     fITSClusterMap=0;
     fITSncls=t->GetNumberOfClusters();
     if (fFriendTrack) {
