@@ -287,7 +287,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	 cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);	     	     
 	 
 	 Float_t xyz[3];
-	 fTransform.Transform( minSlice, cluster.fPadRow, tmpPad, tmpTime, xyz );
+	 fTransform.Transform( minSlice, cluster.fPadRow + 0.5, tmpPad, tmpTime, xyz );
 	 cluster.fX = xyz[0];
 	 cluster.fY = xyz[1];
 	 cluster.fZ = xyz[2];		     		   
