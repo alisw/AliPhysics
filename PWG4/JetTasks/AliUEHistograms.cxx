@@ -824,7 +824,7 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
   
   if (!fTwoTrackDistancePt[0])
   {
-    fTwoTrackDistancePt[0] = new TH3F("fTwoTrackDistancePt[0]", ";#Delta#eta;#Delta#varphi^{*}_{min};#Delta p_{T}", 100, -0.05, 0.05, 100, -0.05, 0.05, 20, 0, 10);
+    fTwoTrackDistancePt[0] = new TH3F("fTwoTrackDistancePt[0]", ";#Delta#eta;#Delta#varphi^{*}_{min};#Delta p_{T}", 100, -0.05, 0.05, 400, -0.2, 0.2, 20, 0, 10);
     fTwoTrackDistancePt[1] = (TH3F*) fTwoTrackDistancePt[0]->Clone("fTwoTrackDistancePt[1]");
   }
   
