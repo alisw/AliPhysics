@@ -235,6 +235,7 @@ AliESDtrack::AliESDtrack() :
   if (!OnlineMode()) fFriendTrack=new AliESDfriendTrack();
 
   Int_t i;
+  for (i=kNITSchi2Std;i--;) fITSchi2Std[i] = 0;
   for (i=0; i<AliPID::kSPECIES; i++) {
     fTrackTime[i]=0.;
     fR[i]=0.;
@@ -336,6 +337,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   //
   //copy constructor
   //
+  for (Int_t i=kNITSchi2Std;i--;) fITSchi2Std[i] = track.fTrackTime[i];
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i]=track.fTrackTime[i];
   for (Int_t i=0;i<AliPID::kSPECIES;i++)  fR[i]=track.fR[i];
   //
@@ -460,6 +462,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
 
   // Reset all the arrays
   Int_t i;
+  for (i=kNITSchi2Std;i--;) fITSchi2Std[i] = 0;
   for (i=0; i<AliPID::kSPECIES; i++) {
     fTrackTime[i]=0.;
     fR[i]=0.;
@@ -588,6 +591,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
 
   // Reset all the arrays
   Int_t i;
+  for (i=kNITSchi2Std;i--;) fITSchi2Std[i] = 0;
   for (i=0; i<AliPID::kSPECIES; i++) {
     fTrackTime[i]=0.;
     fR[i]=0.;
@@ -812,7 +816,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fHMPIDqn       = source.fHMPIDqn;
   fHMPIDcluIdx   = source.fHMPIDcluIdx; 
   fCaloIndex    = source.fCaloIndex;
-
+  for (int i=kNITSchi2Std;i--;) fITSchi2Std[i] = source.fITSchi2Std[i];
   for(int i = 0; i< 3;++i){
     fKinkIndexes[i] = source.fKinkIndexes[i]; 
     fV0Indexes[i]   = source.fV0Indexes[i]; 
