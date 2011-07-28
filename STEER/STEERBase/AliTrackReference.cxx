@@ -118,16 +118,16 @@ AliTrackReference::AliTrackReference(Int_t label, Int_t id) :
   // Set Up status code 
   // Copy Bits from virtual MC
 
-  for(Int_t i=0; i<16; i++) ResetBit(BIT(i));
+  for(Int_t i=14; i<22; i++) ResetBit(BIT(i));
 
-  SetBit(BIT(0), gMC->IsNewTrack());
-  SetBit(BIT(1), gMC->IsTrackAlive());
-  SetBit(BIT(2), gMC->IsTrackDisappeared());
-  SetBit(BIT(3), gMC->IsTrackEntering());
-  SetBit(BIT(4), gMC->IsTrackExiting());
-  SetBit(BIT(5), gMC->IsTrackInside());
-  SetBit(BIT(6), gMC->IsTrackOut());
-  SetBit(BIT(7), gMC->IsTrackStop()); 
+  SetBit(BIT(14), gMC->IsNewTrack());
+  SetBit(BIT(15), gMC->IsTrackAlive());
+  SetBit(BIT(16), gMC->IsTrackDisappeared());
+  SetBit(BIT(17), gMC->IsTrackEntering());
+  SetBit(BIT(18), gMC->IsTrackExiting());
+  SetBit(BIT(19), gMC->IsTrackInside());
+  SetBit(BIT(20), gMC->IsTrackOut());
+  SetBit(BIT(21), gMC->IsTrackStop()); 
   //
   // This particle has to be kept
 
