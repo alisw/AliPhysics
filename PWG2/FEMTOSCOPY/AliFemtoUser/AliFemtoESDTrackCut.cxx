@@ -1,4 +1,5 @@
-/***************************************************************************
+/*
+***************************************************************************
  *
  * $Id$ 
  *
@@ -107,7 +108,8 @@ AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
     fMinPforTPCpid(0.0),
     fMaxPforTPCpid(10000.0),
     fMinPforITSpid(0.0),
-    fMaxPforITSpid(10000.0)
+    fMaxPforITSpid(10000.0),
+    fPIDMethod(knSigma)
 {
   // Default constructor
   fNTracksPassed = fNTracksFailed = 0;
@@ -124,6 +126,7 @@ AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
   fStatus=0;
   fminTPCclsF=0;
   fminITScls=0;
+  fPIDMethod=knSigma;
 }
 //------------------------------
 AliFemtoESDTrackCut::~AliFemtoESDTrackCut(){
@@ -328,11 +331,37 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
     tMost[3] = track->PidProbKaon()*PidFractionKaon(track->P().Mag());
     tMost[4] = track->PidProbProton()*PidFractionProton(track->P().Mag());
     float ipidmax = 0.0;
+
+    
+
+
+    //****N Sigma Method****
+    if(fPIDMethod==0){
+    // Looking for pions
+    if (fMostProbable == 2) {
+      if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
+	imost = 2;
+
+    }
+    else if (fMostProbable == 3) {
+      if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK())){
+	imost = 3;
+      }
+  
+    }
+    else if (fMostProbable == 4) {
+      if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()))
+	imost = 4;
+    }
+
+    }
+
+    //****Contour Method****
+    if(fPIDMethod==1){
     for (int ip=0; ip<5; ip++)
       if (tMost[ip] > ipidmax) { ipidmax = tMost[ip]; imost = ip; };
-    //     }
-    
-    // Looking for pions
+
+   // Looking for pions
     if (fMostProbable == 2) {
       if (imost == 2) {
 	// Using the TPC to reject non-pions
@@ -425,10 +454,12 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       }
       //       }
     }
+    }
     if (imost != fMostProbable) return false;
   }
   
-  // cout<<"Go Through the cut"<<endl;
+//fan
+  //cout<<"****** Go Through the cut ******"<<endl;
   // cout<<fLabel<<" Label="<<track->Label()<<endl;
   // cout<<fCharge<<" Charge="<<track->Charge()<<endl;
   // cout<<fPt[0]<<" < Pt ="<<Pt<<" <"<<fPt[1]<<endl;
@@ -664,8 +695,8 @@ void AliFemtoESDTrackCut::SetMomRangeITSpidIs(const float& minp, const float& ma
 
 bool AliFemtoESDTrackCut::IsPionTPCdEdx(float mom, float dEdx)
 {
-  // double a1 = -95.4545, b1 = 86.5455;
-  // double a2 = 0.0,      b2 = 56.0;
+//   double a1 = -95.4545, b1 = 86.5455;
+//   double a2 = 0.0,      b2 = 56.0;
   double a1 = -343.75,  b1 = 168.125;
   double a2 = 0.0,      b2 = 65.0;
 
@@ -810,4 +841,96 @@ bool AliFemtoESDTrackCut::IsProtonTOFTime(float mom, float ttof)
     if (ttof < a3*mom+b3) return kFALSE;
   }
   return kTRUE;
+}
+
+
+
+
+bool AliFemtoESDTrackCut::IsKaonTPCdEdxNSigma(float mom, float nsigmaK)
+{
+  cout<<" AliFemtoESDTrackCut::IsKaonTPCdEdxNSigma "<<mom<<" "<<nsigmaK<<endl;
+
+
+  if(mom<0.35 && TMath::Abs(nsigmaK)<5.0)return true;
+  if(mom>=0.35 && mom<0.5 && TMath::Abs(nsigmaK)<3.0)return true; 
+  if(mom>=0.5 && mom<0.7 && TMath::Abs(nsigmaK)<2.0)return true;
+
+  return false;
+}
+
+
+bool AliFemtoESDTrackCut::IsKaonTOFNSigma(float mom, float nsigmaK)
+{
+  cout<<" AliFemtoESDTrackCut::IsKaonTPCdEdxNSigma "<<mom<<" "<<nsigmaK<<endl;
+//fan
+//  if(mom<1.5 && TMath::Abs(nsigmaK)<3.0)return true;
+  if(mom>=1.5 && TMath::Abs(nsigmaK)<2.0)return true; 
+  return false;
+}
+
+//ML according with Roberto Preghenella talk
+
+bool AliFemtoESDTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK)
+{
+  //cout<<"//////// AliFemtoESDTrackCut::IsKaonNSigma "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
+
+
+  if(TMath::Abs(nsigmaTOFK)<3.0 && mom<1.5 && TMath::Abs(nsigmaTPCK)<5.0)return true;
+  if(TMath::Abs(nsigmaTOFK)<2.0 && mom>1.5 && TMath::Abs(nsigmaTPCK)<5.0)return true;
+
+//no TOF signal
+ 
+
+  if(nsigmaTOFK<=-1000.){
+   //cout<<"//////// AliFemtoESDTrackCut::IsKaonNSigma P= "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
+   //cout <<"/////////////// AliFemtoESDTrackCut::IsKaonNSigma  NO TOF SIGNAL ////////////" <<endl;
+     if(mom<0.4 && TMath::Abs(nsigmaTPCK)<1.0)return true;
+     if(mom>=0.4 && mom<0.5 && TMath::Abs(nsigmaTPCK)<2.0)return true;
+     if(mom>=0.5 && mom<0.6 && TMath::Abs(nsigmaTPCK)<2.0)return true;
+    }
+
+  return false;
+}
+
+
+
+bool AliFemtoESDTrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
+{
+ // cout<<" AliFemtoESDTrackCut::IsKaonNSigma "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
+ //TOF signal
+  if(TMath::Abs(nsigmaTOFPi)<3.0 && mom<1.5 && TMath::Abs(nsigmaTPCPi)<5.0)return true;
+  if(TMath::Abs(nsigmaTOFPi)<2.0 && mom>1.5 && TMath::Abs(nsigmaTPCPi)<5.0)return true;
+
+
+//no TOF signal
+  if(nsigmaTOFPi<-999.){
+     if(mom<0.35 && TMath::Abs(nsigmaTPCPi)<5.0)return true;
+     if(mom>=0.35 && mom<0.5 && TMath::Abs(nsigmaTPCPi)<3.0)return true;
+     if(mom>=0.5 && TMath::Abs(nsigmaTPCPi)<2.0)return true;
+    }
+  return false;
+}
+
+
+bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP)
+{
+ // cout<<" AliFemtoESDTrackCut::IsKaonNSigma "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
+ //TOF signal
+  if(TMath::Abs(nsigmaTOFP)<3.0 && mom<1.5 && TMath::Abs(nsigmaTPCP)<5.0)return true;
+  if(TMath::Abs(nsigmaTOFP)<2.0 && mom>1.5 && TMath::Abs(nsigmaTPCP)<5.0)return true;
+
+
+//no TOF signal
+  if(nsigmaTOFP<-999.){
+     if(mom<0.35 && TMath::Abs(nsigmaTPCP)<5.0)return true;
+     if(mom>=0.35 && mom<0.5 && TMath::Abs(nsigmaTPCP)<3.0)return true;
+     if(mom>=0.5 && mom<1.0 && TMath::Abs(nsigmaTPCP)<2.0)return true; //? 1.0 ?
+    }
+  return false;
+}
+
+
+void AliFemtoESDTrackCut::SetPIDMethod(ReadPIDMethodType newMethod)
+{
+   fPIDMethod = newMethod;
 }
