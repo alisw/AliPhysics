@@ -156,7 +156,7 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 					 eqId, eqSize, iword));
 	}
 	
-	int offset = 0;
+	int offset = 0, jetSize = 2;
 	
 	switch (iword) 
 	{
@@ -186,6 +186,8 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 			fFrameReceived = word32[8];
 			fFwVersion     = word32[9];
 			
+			jetSize += (fFwVersion >> 16);
+			
 			fL1JetThreshold   = fJA * sV0 * sV0 + fJB * sV0 + fJC;
 			fL1GammaThreshold = fGA * sV0 * sV0 + fGB * sV0 + fGC;		
 			
@@ -198,8 +200,8 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 	///////////
 	// START DECODING
 	//////////
-	
-	for (Int_t jet_row = 0; jet_row < 11; jet_row++)
+
+	for (Int_t jet_row = 0; jet_row < 12 - (jetSize - 1); jet_row++)
 	{
 		UInt_t currentrow = word32[offset + 1 + jet_row];
 		
