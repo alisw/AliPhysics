@@ -19,8 +19,11 @@
 
 class AliFemtoESDTrackCut : public AliFemtoTrackCut 
 {
+  public:
 
- public:
+  enum PIDMethodType {knSigma=0, kContour=1};
+  typedef enum PIDMethodType ReadPIDMethodType; 
+
   AliFemtoESDTrackCut();
   virtual ~AliFemtoESDTrackCut();
 
@@ -56,6 +59,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   void SetMostProbableKaon();
   void SetMostProbableProton();
   void SetNoMostProbable(); 
+  void SetPIDMethod(ReadPIDMethodType newMethod);
 
   void SetMomRangeTOFpidIs(const float& minp, const float& maxp);
   void SetMomRangeTPCpidIs(const float& minp, const float& maxp);
@@ -74,6 +78,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   float             fPidProbMuon[2];     // bounds for muon probability 
   bool              fLabel;              // if true label<0 will not pass throught 
   long              fStatus;             // staus flag
+  ReadPIDMethodType fPIDMethod;          // which PID mehod to use. 0 - nsgima, 1 - contour 
 
   short             fminTPCclsF;         // min number of findable clusters in the TPC
   short             fminTPCncls;         // min number of clusters in the TPC
@@ -113,6 +118,12 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   bool IsPionTOFTime(float mom, float ttof);
   bool IsKaonTOFTime(float mom, float ttof);
   bool IsProtonTOFTime(float mom, float ttof);
+
+  bool IsKaonTPCdEdxNSigma(float mom, float nsigma);
+  bool IsKaonTOFNSigma(float mom, float nsigma);
+  bool IsKaonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
+  bool IsPionNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
+  bool IsProtonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
 
 #ifdef __ROOT__ 
   ClassDef(AliFemtoESDTrackCut, 1)
