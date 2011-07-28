@@ -601,7 +601,7 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
     {
       Int_t uidrec=list->GetUniqueID();
       AliInfo(Form("Check on %s\n",AliQAv1::GetAliTaskName(index))); 
-      if(uidrec==20){
+      //if(uidrec==20){
 	//recpoints
 	if (list->GetEntries() == 0){ //check if the list is empty
 	  //printf("sddQACheckerValue = %f \t value %f\n",sddQACheckerValue,fHighSDDValue[AliQAv1::kFATAL]);
@@ -1063,8 +1063,8 @@ Double_t AliITSQASDDChecker::Check(AliQAv1::ALITASK_t index, const TObjArray * l
 
 
       //sddQACheckerValue=1.;
-      }//end recpoint list uid = 20
-      else if(uidrec==40)
+      //}//end recpoint list uid = 20
+      if(uidrec==40)
 	{
 	  //digitsr
 	  if (list->GetEntries() == 0){ 
