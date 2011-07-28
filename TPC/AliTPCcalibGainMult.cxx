@@ -126,9 +126,9 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   //
   //
   //
-  Int_t binsPadEqual[6]    = { 200, 200,    4,   20,   50, 100};
-  Double_t xminPadEqual[6] = { 0.5, 0.5, -0.5,    0, -250,   0}; 
-  Double_t xmaxPadEqual[6] = { 1.5, 1.5,  3.5, 13000,  250,   3};
+  Int_t binsPadEqual[6]    = { 400, 400,    4,   20,   50, 100};
+  Double_t xminPadEqual[6] = { 0.0, 0.0, -0.5,    0, -250,   0}; 
+  Double_t xmaxPadEqual[6] = { 2.0, 2.0,  3.5, 13000,  250,   3};
   TString axisNamePadEqual[6]   = {"dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength", "1_pt"};
   TString axisTitlePadEqual[6]  = {"dEdx_padRegion/mean_dEdx Qmax", "dEdx_padRegion/mean_dEdx Qtot","padType","mult","driftlength", "1/pt"};
   //
