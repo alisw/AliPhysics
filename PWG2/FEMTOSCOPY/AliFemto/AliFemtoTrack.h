@@ -68,6 +68,16 @@ public:
   float TPCsignal() const;
   short TPCsignalN() const;    
   float TPCsignalS() const;   
+ 
+  //new PID
+  float NSigmaTPCPi() const;   
+  float NSigmaTPCK() const;   
+  float NSigmaTPCP() const;   
+  float VTOF() const;   
+  float NSigmaTOFPi() const;   
+  float NSigmaTOFK() const;   
+  float NSigmaTOFP() const;   
+
 
   float TOFpionTime() const;
   float TOFkaonTime() const;
@@ -104,6 +114,15 @@ public:
   void SetTPCsignal(const float& s);
   void SetTPCsignalN(const short& s);    
   void SetTPCsignalS(const float& x);   
+
+  //new PID
+  void SetNSigmaTPCPi(const float& x);   
+  void SetNSigmaTPCK(const float& x);   
+  void SetNSigmaTPCP(const float& x);   
+  void SetVTOF(const float& x);   
+  void SetNSigmaTOFPi(const float& x);   
+  void SetNSigmaTOFK(const float& x);   
+  void SetNSigmaTOFP(const float& x);  
 
   void SetTPCcluster(const short& aNBit, const Bool_t& aValue);
   void SetTPCshared(const short& aNBit, const Bool_t& aValue);
@@ -176,6 +195,15 @@ public:
   float fTPCsignal;      // dEdx TPC value
   short fTPCsignalN;     // number of points used for dEdx
   float fTPCsignalS;     // RMS of dEdx measurement
+
+  float fVTOF;     // v=length/TOF
+  float fNSigmaTPCPi;     // nsigma TPC for pion
+  float fNSigmaTPCK;     // nsigma TPC for K
+  float fNSigmaTPCP;     // nsigma TPC for P
+  float fNSigmaTOFPi;     // nsigma TPC for pion
+  float fNSigmaTOFK;     // nsigma TPC for K
+  float fNSigmaTOFP;     // nsigma TPC for P
+
   float fSigmaToVertex;  // Distance from track to vertex in sigmas
   TBits fClusters;       // Cluster per padrow map
   TBits fShared;         // Sharing per padrow map

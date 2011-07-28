@@ -41,7 +41,9 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfig
     fManager(0x0),
     fAnalysisType(0),
     fConfigMacro(0),
-    fConfigParams(0)
+    fConfigParams(0),
+    fESDpid(0),
+    fAODpidUtil(0)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -64,7 +66,9 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfig
     fManager(0x0),
     fAnalysisType(0),
     fConfigMacro(0),
-    fConfigParams(0)
+    fConfigParams(0),
+    fESDpid(0),
+    fAODpidUtil(0)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -87,11 +91,15 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTas
     fManager(0x0),
     fAnalysisType(0),
     fConfigMacro(0),
-    fConfigParams(0)
+    fConfigParams(0),
+    fESDpid(0),
+    fAODpidUtil(0)
 {
   // copy constructor
   fESD = aFemtoTask.fESD; 
+  fESDpid = aFemtoTask.fESDpid; 
   fAOD = aFemtoTask.fAOD; 
+  fAODpidUtil = aFemtoTask.fAODpidUtil;
   fStack = aFemtoTask.fStack;
   fOutputList = aFemtoTask.fOutputList;   
   fReader = aFemtoTask.fReader;       
@@ -110,7 +118,9 @@ AliAnalysisTaskFemto& AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto
     return *this;
 
   fESD = aFemtoTask.fESD; 
+  fESDpid = aFemtoTask.fESDpid;
   fAOD = aFemtoTask.fAOD; 
+  fAODpidUtil = aFemtoTask.fAODpidUtil;
   fStack = aFemtoTask.fStack;
   fOutputList = aFemtoTask.fOutputList;   
   fReader = aFemtoTask.fReader;       
@@ -138,7 +148,9 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
   AliInfo(Form("   ConnectInputData %s\n", GetName()));
 
   fESD = 0;
+  fESDpid = 0;
   fAOD = 0;
+  fAODpidUtil = 0;
   fAnalysisType = 0;
 
   TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
@@ -147,6 +159,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
     return;
   } 
 
+  AliFemtoEventReaderESDChain *femtoReader = dynamic_cast<AliFemtoEventReaderESDChain *> (fReader);
   if ((dynamic_cast<AliFemtoEventReaderESDChain *> (fReader)) ||
       (dynamic_cast<AliFemtoEventReaderESDChainKine *> (fReader))) {
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -160,10 +173,13 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
 //       } 
 //       else {
 	fESD = esdH->GetEvent();
+        fESDpid = esdH->GetESDpid();
+        femtoReader->SetESDPid(fESDpid);
 //       }
     }
   }
   
+    AliFemtoEventReaderAODChain *femtoReaderAOD = dynamic_cast<AliFemtoEventReaderAODChain *> (fReader);
   if (dynamic_cast<AliFemtoEventReaderAODChain *> (fReader)) {
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 	
@@ -185,6 +201,10 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
       fAnalysisType = 2;
       
       fAOD = aodH->GetEvent();
+
+      fAODpidUtil = aodH->GetAODpidUtil();
+      printf("aodH->GetAODpidUtil(): %x",aodH->GetAODpidUtil());
+      femtoReaderAOD->SetAODpidUtil(fAODpidUtil);
     }
   }
 
@@ -268,6 +288,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *) {
     } 
     else {
       fESD = esdH->GetEvent();
+      fESDpid = esdH->GetESDpid();   
     }
 
     AliInfo(Form("Tracks in ESD: %d \n",fESD->GetNumberOfTracks()));

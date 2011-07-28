@@ -21,6 +21,8 @@
 #include "AliPWG2AODTrack.h"
 #include "AliAODMCParticle.h"
 
+#include "AliAODpidUtil.h"
+
 class AliFemtoEvent;
 class AliFemtoTrack;
 
@@ -39,6 +41,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   void SetFilterBit(UInt_t ibit);
   void SetReadMC(unsigned char a);
   void SetCentralityPreSelection(double min, double max);
+  void SetAODpidUtil(AliAODpidUtil *aAODpidUtil);
 
  protected:
   virtual void CopyAODtoFemtoEvent(AliFemtoEvent *tEvent);
@@ -57,6 +60,7 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   unsigned char  fReadMC;           // Attempt to read the MC information from the AOD
   unsigned char  fUsePreCent;       // Use centrality pre-selection to speed up analysis
   double         fCentRange[2];     // Centrality pre-selection range
+  AliAODpidUtil* fAODpidUtil;
 
  private:
 
