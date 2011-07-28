@@ -51,6 +51,13 @@ AliFemtoTrack::AliFemtoTrack():
   fTPCsignal(0),
   fTPCsignalN(0),    
   fTPCsignalS(0),
+  fVTOF(0),
+  fNSigmaTPCPi(0),
+  fNSigmaTPCK(0),
+  fNSigmaTPCP(0),
+  fNSigmaTOFPi(0),
+  fNSigmaTOFK(0),
+  fNSigmaTOFP(0),
   fSigmaToVertex(0),
   fClusters(159),
   fShared(159),
@@ -96,6 +103,13 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fTPCsignal(0),
   fTPCsignalN(0),    
   fTPCsignalS(0),
+  fVTOF(0),
+  fNSigmaTPCPi(0),
+  fNSigmaTPCK(0),
+  fNSigmaTPCP(0),
+  fNSigmaTOFPi(0),
+  fNSigmaTOFK(0),
+  fNSigmaTOFP(0),
   fSigmaToVertex(0),
   fClusters(159),
   fShared(159),
@@ -132,6 +146,13 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fTPCsignal=t.fTPCsignal;
   fTPCsignalN=t.fTPCsignalN;    
   fTPCsignalS=t.fTPCsignalS;  
+  fVTOF=t.fVTOF;
+  fNSigmaTPCPi=t.fNSigmaTPCPi;
+  fNSigmaTPCK=t.fNSigmaTPCK;
+  fNSigmaTPCP=t.fNSigmaTPCP;
+  fNSigmaTOFPi=t.fNSigmaTOFPi;
+  fNSigmaTOFK=t.fNSigmaTOFK;
+  fNSigmaTOFP=t.fNSigmaTOFP;
   fSigmaToVertex=t.fSigmaToVertex;
   fClusters=t.fClusters;
   fShared=t.fShared;
@@ -180,6 +201,13 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fTPCsignal=aTrack.fTPCsignal;
   fTPCsignalN=aTrack.fTPCsignalN;    
   fTPCsignalS=aTrack.fTPCsignalS;  
+  fVTOF=aTrack.fVTOF;    
+  fNSigmaTPCPi=aTrack.fNSigmaTPCPi;    
+  fNSigmaTPCK=aTrack.fNSigmaTPCK;    
+  fNSigmaTPCP=aTrack.fNSigmaTPCP;    
+  fNSigmaTOFPi=aTrack.fNSigmaTOFPi;    
+  fNSigmaTOFK=aTrack.fNSigmaTOFK;    
+  fNSigmaTOFP=aTrack.fNSigmaTOFP;    
   fClusters=aTrack.fClusters;
   fShared=aTrack.fShared;
   fNominalTpcEntrancePoint=aTrack.fNominalTpcEntrancePoint;
@@ -225,6 +253,13 @@ void AliFemtoTrack::SetTPCnclsF(const short& aTPCnclsF){fTPCnclsF=aTPCnclsF;}
 void AliFemtoTrack::SetTPCsignal(const float& aTPCsig){fTPCsignal=aTPCsig;}
 void AliFemtoTrack::SetTPCsignalN(const short& aTPCsignalN){fTPCsignalN=aTPCsignalN;}    
 void AliFemtoTrack::SetTPCsignalS(const float& aTPCsignalS){fTPCsignalS=aTPCsignalS;} 
+void AliFemtoTrack::SetVTOF(const float& aVTOF){fVTOF=aVTOF;}
+void AliFemtoTrack::SetNSigmaTPCPi(const float& aNSigmaTPCPi){fNSigmaTPCPi=aNSigmaTPCPi;}
+void AliFemtoTrack::SetNSigmaTPCK(const float& aNSigmaTPCK){fNSigmaTPCK=aNSigmaTPCK;}
+void AliFemtoTrack::SetNSigmaTPCP(const float& aNSigmaTPCP){fNSigmaTPCP=aNSigmaTPCP;}
+void AliFemtoTrack::SetNSigmaTOFPi(const float& aNSigmaTOFPi){fNSigmaTOFPi=aNSigmaTOFPi;}
+void AliFemtoTrack::SetNSigmaTOFK(const float& aNSigmaTOFK){fNSigmaTOFK=aNSigmaTOFK;}
+void AliFemtoTrack::SetNSigmaTOFP(const float& aNSigmaTOFP){fNSigmaTOFP=aNSigmaTOFP;}
 void AliFemtoTrack::SetSigmaToVertex(const float& aSigma){fSigmaToVertex=aSigma;} 
 
 
@@ -248,6 +283,13 @@ short AliFemtoTrack::TPCnclsF() const{return fTPCnclsF;}
 float AliFemtoTrack::TPCsignal() const{return fTPCsignal;}
 short AliFemtoTrack::TPCsignalN() const{return fTPCsignalN;}    
 float AliFemtoTrack::TPCsignalS() const{return fTPCsignalS;} 
+float AliFemtoTrack::VTOF() const{return fVTOF;}
+float AliFemtoTrack::NSigmaTPCPi() const{return fNSigmaTPCPi;}
+float AliFemtoTrack::NSigmaTPCK() const{return fNSigmaTPCK;}
+float AliFemtoTrack::NSigmaTPCP() const{return fNSigmaTPCP;}
+float AliFemtoTrack::NSigmaTOFPi() const{return fNSigmaTOFPi;}
+float AliFemtoTrack::NSigmaTOFK() const{return fNSigmaTOFK;}
+float AliFemtoTrack::NSigmaTOFP() const{return fNSigmaTOFP;}
 float AliFemtoTrack::SigmaToVertex() const{return fSigmaToVertex;} 
 float AliFemtoTrack::TOFpionTime() const{return fTofPionTime;}
 float AliFemtoTrack::TOFkaonTime() const{return fTofKaonTime;}
