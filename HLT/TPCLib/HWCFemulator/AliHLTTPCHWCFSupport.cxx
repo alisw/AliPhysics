@@ -32,6 +32,10 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliRawDataHeader.h"
 #include "AliHLTTPCHWCFEmulator.h"
+#include "AliTPCcalibDB.h"
+#include "AliTPCCalPad.h"
+#include "AliTPCCalROC.h"
+#include "TMath.h"
 
 #if __GNUC__>= 3
 using namespace std;
@@ -50,14 +54,16 @@ AliHLTTPCHWCFSupport::AliHLTTPCHWCFSupport()
   fEventMCMemory(0)
 {
   // see header file for class documentation
-  for( int i=0; i<fgkNPatches; i++ ) fMapping[i] = 0;
+  for( int i=0; i<fgkNSlices; i++ )
+    for( int j=0; j<fgkNPatches; j++ ) fMapping[i][j] = 0;
 }
 
 
 AliHLTTPCHWCFSupport::~AliHLTTPCHWCFSupport()
 {
   // see header file for class documentation
-  for( int i=0; i<fgkNPatches; i++ ) delete[] fMapping[i];
+  for( int i=0; i<fgkNSlices; i++ )
+    for( int j=0; j<fgkNPatches; j++ ) delete[] fMapping[i][j];
   delete[] fEventMemory;
   delete[] fEventMCMemory;
 }
@@ -77,19 +83,23 @@ AliHLTTPCHWCFSupport& AliHLTTPCHWCFSupport::operator=(const AliHLTTPCHWCFSupport
 }
 
 
-const AliHLTUInt32_t *AliHLTTPCHWCFSupport::GetMapping( int patch )
+const AliHLTUInt32_t *AliHLTTPCHWCFSupport::GetMapping( int slice, int patch )
 { 
   // see header file for class documentation
+  if( slice<0 || slice>=fgkNSlices ){
+    HLTFatal("Wrong slice number %d, no mapping is provided.", slice);
+    return 0;
+  }
   if( patch<0 || patch>= fgkNPatches ){
     HLTFatal("Wrong patch number %d, no mapping is provided.", patch);
     return 0;
   }
-  if( !fMapping[patch] ) fMapping[patch] = ReadMapping(patch);
-  return fMapping[patch];
+  if( !fMapping[slice][patch] ) fMapping[slice][patch] = ReadMapping(slice,patch);
+return fMapping[slice][patch];
 }
 
 
-AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int patch, const char *mappingFileName ) const
+AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int slice, int patch, const char *mappingFileName ) const
 {
   // Create mapping array for one patch 
   // If no mapping file provided, reads from default file
@@ -110,10 +120,38 @@ AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int patch, const char *mappin
   const AliHLTUInt32_t  kBorderFlag = (1 << 14); 
   const AliHLTUInt32_t  kActiveFlag = (1 << 15); 
   
+  if( slice<0 || slice>=fgkNSlices ){
+     HLTFatal("Wrong slice number %d, no mapping is provided.", slice);
+     return 0;
+  }
+
   if( patch<0 || patch>5 ){
      HLTFatal("Wrong patch number %d, no mapping is provided.", patch);
      return 0;
   }
+
+  // AliHLTTPCTransform::GetFirstRow returns first row in scheme A.
+  // We have to transform to scheme B by AliHLTTPCTransform::Slice2Sector.
+
+  UInt_t offsetSchemeB=0;
+  Int_t sector = 0;
+  {
+    Int_t tmp=0;
+    AliHLTTPCTransform::Slice2Sector(slice, AliHLTTPCTransform::GetFirstRow(patch),
+				     sector, tmp);
+    offsetSchemeB = (UInt_t) tmp;
+  }
+  
+
+  AliTPCcalibDB *calib = AliTPCcalibDB::Instance();  
+  AliTPCCalPad * gainTPC = 0;
+  AliTPCCalROC * gainROC = 0;
+  if( calib ) gainTPC = calib->GetPadGainFactor();
+  if( gainTPC ) gainROC = gainTPC->GetCalROC(sector);  // pad gains per given sector
+  else{      
+    HLTWarning("No TPC gain calibration found");  
+  }
+
   TString filename;
   
   if( mappingFileName ){
@@ -130,16 +168,6 @@ AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int patch, const char *mappin
     return 0;
   }
 
-  // AliHLTTPCTransform::GetFirstRow returns first row in scheme A.
-  // We have to transform to scheme B by AliHLTTPCTransform::Slice2Sector.
-
-  UInt_t offsetSchemeB=0;
-  {
-    Int_t tmp1=0, tmp2 = 0;
-    AliHLTTPCTransform::Slice2Sector(0, AliHLTTPCTransform::GetFirstRow(patch),
-				     tmp1, tmp2);
-    offsetSchemeB = (UInt_t) tmp2;
-  }
 
   AliHLTUInt32_t *mapping = 0; 
   AliHLTUInt32_t *rowBranchPadHw = 0;
@@ -211,8 +239,18 @@ AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int patch, const char *mappin
       }
 
       bool active = true; // Currently all channels are always active	
-      AliHLTUInt32_t  gainCalib = (1 << 12); // Gain calib identical for all pads currently
-	
+      //
+
+      AliHLTFloat64_t gain = 1.;
+      if( gainROC ){
+	gain = gainROC->GetValue(offsetSchemeB+row,pad);
+	if( gain>1.e-4 ) gain = 1./gain;
+	else gain = 0;
+      }
+      gain*= (1<<12);
+      AliHLTUInt32_t  gainCalib = TMath::Nint(gain); 
+      if( gainCalib > 0x1FFF ) gainCalib = 0x1FFF;
+
       AliHLTUInt32_t configWord = ( (row & 0x3F) << 8 ) | (pad & 0xFF);
       if ( active ) configWord |= kActiveFlag;
       configWord |= (gainCalib & 0x1FFF) << 16;	

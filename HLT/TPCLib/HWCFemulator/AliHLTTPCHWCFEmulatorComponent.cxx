@@ -470,7 +470,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
      
       fBenchmark.Start(1);
       fCFEmulator.Init
-	( fCFSupport.GetMapping(patch), configWord );
+	( fCFSupport.GetMapping(slice,patch), configWord );
       
       int err = fCFEmulator.FindClusters( rawEvent, rawEventSize32, 
 					  outClusters, clustersSize32, 

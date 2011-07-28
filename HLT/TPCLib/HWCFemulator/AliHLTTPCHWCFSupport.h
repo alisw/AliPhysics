@@ -32,9 +32,9 @@ class AliHLTTPCHWCFSupport : public AliHLTLogging
   virtual ~AliHLTTPCHWCFSupport();
   
   /** method to read mapping file **/
-  AliHLTUInt32_t *ReadMapping( int patch, const char *mappingFileName=0 ) const;
+  AliHLTUInt32_t *ReadMapping( int slice, int patch, const char *mappingFileName=0 ) const;
   /** method returns default mapping for given patch **/
-  const AliHLTUInt32_t *GetMapping( int patch );
+  const AliHLTUInt32_t *GetMapping( int slice, int patch );
  
   /** method creates raw event from the HLT data block, error flag returned **/
   int CreateRawEvent( const AliHLTComponentBlockData* block, 
@@ -47,6 +47,7 @@ class AliHLTTPCHWCFSupport : public AliHLTLogging
  
  private:
 
+  static const int fgkNSlices = 36; // n patches in TPC
   static const int fgkNPatches = 6; // n patches in TPC
 
   /** copy constructor prohibited */
@@ -57,7 +58,7 @@ class AliHLTTPCHWCFSupport : public AliHLTLogging
   /** add 10-bit data to the 32-bit word */
   void Add10Word( AliHLTUInt32_t &nWords32, int &seek10, UInt_t data );
 
-  AliHLTUInt32_t *fMapping[fgkNPatches]; // mapping arrays
+  AliHLTUInt32_t *fMapping[fgkNSlices][fgkNPatches]; // mapping arrays
   AliHLTUInt32_t *fEventMemory;          // memory for created event
   AliHLTTPCClusterMCLabel *fEventMCMemory; // memory for MC labels
 };
