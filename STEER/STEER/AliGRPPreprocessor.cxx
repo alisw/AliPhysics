@@ -1223,8 +1223,8 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 			return 4;
 		}			
 		AliLHCClockPhase *phaseObj = ProcessLHCClockPhase(beam1phase,beam2phase,timeEnd);
-		delete beamphase1;
-		delete beamphase2;
+		delete beam1phase;
+		delete beam2phase;
 		if (phaseObj){
 			AliInfo(Form("LHC Phase found"));
 			AliCDBMetaData mdPhase;
