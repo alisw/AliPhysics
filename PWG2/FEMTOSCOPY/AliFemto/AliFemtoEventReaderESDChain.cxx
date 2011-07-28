@@ -22,6 +22,7 @@
 #include "SystemOfUnits.h"
 #include "AliFemtoEvent.h"
 #include "AliFemtoModelHiddenInfo.h"
+#include "AliPID.h"
 
 ClassImp(AliFemtoEventReaderESDChain)
 
@@ -43,7 +44,10 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   fUsePhysicsSel(kFALSE),
   fSelect(0x0),
   fTrackType(kGlobal),
-  fEstEventMult(kITSTPC)
+  fEstEventMult(kITSTPC),
+  fESDpid(0),
+  fIsPidOwner(0),
+  fEventTrig(AliVEvent::kMB) //trigger
 {
   //constructor with 0 parameters , look at default settings 
 //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
@@ -70,7 +74,10 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   fUsePhysicsSel(kFALSE),
   fSelect(0x0),
   fTrackType(kGlobal),
-  fEstEventMult(kITSTPC)
+  fEstEventMult(kITSTPC),
+  fESDpid(0),
+  fIsPidOwner(0),
+  fEventTrig(AliVEvent::kMB) //trigger
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -86,6 +93,8 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
     fSelect = new AliPhysicsSelection();
   fTrackType = aReader.fTrackType;
   fEstEventMult = aReader.fEstEventMult;
+fEventTrig = aReader.fEventTrig; //trigger
+
 //   fEventFriend = aReader.fEventFriend;
 //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
 //   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
@@ -438,7 +447,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       trackCopy->SetPidProbPion(esdpid[2]);
       trackCopy->SetPidProbKaon(esdpid[3]);
       trackCopy->SetPidProbProton(esdpid[4]);
-
+      
       esdpid[0] = -100000.0;
       esdpid[1] = -100000.0;
       esdpid[2] = -100000.0;
@@ -453,7 +462,66 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       }
 
       trackCopy->SetTofExpectedTimes(tTOF-esdpid[2], tTOF-esdpid[3], tTOF-esdpid[4]);
-					
+
+//////  TPC ////////////////////////////////////////////
+
+      float nsigmaTPCK=-1000.;                                                        
+      float nsigmaTPCPi=-1000.;                                                        
+      float nsigmaTPCP=-1000.;                                                        
+          
+  
+      if (esdtrack->IsOn(AliESDtrack::kTPCpid)){
+        nsigmaTPCK = fESDpid->NumberOfSigmasTPC(esdtrack,AliPID::kKaon);
+        nsigmaTPCPi = fESDpid->NumberOfSigmasTPC(esdtrack,AliPID::kPion);
+        nsigmaTPCP = fESDpid->NumberOfSigmasTPC(esdtrack,AliPID::kProton);
+
+      }
+      trackCopy->SetNSigmaTPCPi(nsigmaTPCPi);
+      trackCopy->SetNSigmaTPCK(nsigmaTPCK);
+      trackCopy->SetNSigmaTPCP(nsigmaTPCP);
+
+///// TOF ///////////////////////////////////////////////
+
+      float vp=-1000.;
+      float nsigmaTOFPi=-1000.;
+      float nsigmaTOFK=-1000.;
+      float nsigmaTOFP=-1000.;
+
+       if ((esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
+	   (esdtrack->GetStatus()&AliESDtrack::kTOFout) &&
+	   (esdtrack->GetStatus()&AliESDtrack::kTIME) &&
+	   !(esdtrack->GetStatus()&AliESDtrack::kTOFmismatch))
+	{
+
+	  //if ((esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
+	  //(esdtrack->GetStatus()&AliESDtrack::kTOFout) &&
+	  //(esdtrack->GetStatus()&AliESDtrack::kTIME)){
+ // collect info from ESDpid class
+
+      if (esdtrack->IsOn(AliESDtrack::kTOFpid)){
+
+      double tZero = fESDpid->GetTOFResponse().GetStartTime(esdtrack->P());
+
+      nsigmaTOFPi = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kPion,tZero);
+      nsigmaTOFK = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kKaon,tZero);
+      nsigmaTOFP = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kProton,tZero);
+
+      Double_t len=esdtrack->GetIntegratedLength();
+      Double_t tof=esdtrack->GetTOFsignal();
+      if(tof > 0.) vp=len/tof/0.03;
+       
+
+  }
+
+      
+}
+      trackCopy->SetVTOF(vp);
+      trackCopy->SetNSigmaTOFPi(nsigmaTOFPi);
+      trackCopy->SetNSigmaTOFK(nsigmaTOFK);
+      trackCopy->SetNSigmaTOFP(nsigmaTOFP);
+
+
+			
       double pxyz[3];
       double rxyz[3];
       double impact[2];
@@ -751,6 +819,11 @@ void AliFemtoEventReaderESDChain::SetReadTrackType(ReadTrackType aType)
   fTrackType = aType;
 }
 
+//trigger
+void AliFemtoEventReaderESDChain::SetEventTrigger(UInt_t eventtrig)
+{
+  fEventTrig = eventtrig;
+}
 
 
 

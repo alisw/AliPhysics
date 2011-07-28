@@ -28,9 +28,13 @@
 #include "AliFemtoEventReaderStandard.h"
 #include "AliFemtoManager.h"
 
+#include "AliESDpid.h"
+#include "AliAODpidUtil.h"
+
+
 class AliAnalysisTaskFemto : public AliAnalysisTask {
  public:
-  AliAnalysisTaskFemto() : AliAnalysisTask(), fESD(0), fAOD(0), fStack(0), fOutputList(0), fReader(0x0), fManager(0x0), fAnalysisType(0), fConfigMacro(0), fConfigParams(0) {}
+  AliAnalysisTaskFemto() : AliAnalysisTask(), fESD(0), fESDpid(0), fAOD(0), fAODpidUtil(0), fStack(0), fOutputList(0), fReader(0x0), fManager(0x0), fAnalysisType(0), fConfigMacro(0), fConfigParams(0) {}
   AliAnalysisTaskFemto(const char *name, const char *aConfigMacro, const char *aConfigParams);
   AliAnalysisTaskFemto(const char *name, const char *aConfigMacro);
   AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask);
@@ -52,7 +56,10 @@ class AliAnalysisTaskFemto : public AliAnalysisTask {
 
  private:
   AliESDEvent                 *fESD;          //! ESD object
+  AliESDpid                   *fESDpid;       //! ESDpid object
   AliAODEvent                 *fAOD;          //! AOD object
+  AliAODpidUtil               *fAODpidUtil;   // AliAODpidUtil object
+
   AliStack                    *fStack;        //! Stack from Kinematics
   TList                       *fOutputList;   //  AliFemto results list
   AliFemtoEventReader         *fReader;       //! Reference to the reader
@@ -60,6 +67,7 @@ class AliAnalysisTaskFemto : public AliAnalysisTask {
   int                          fAnalysisType; //  Mark ESD of AOD analysis
   char                        *fConfigMacro;  //  Config macro location
   char                        *fConfigParams; //  Config macro parameters
+
 
   ClassDef(AliAnalysisTaskFemto, 3); // example of analysis
 };

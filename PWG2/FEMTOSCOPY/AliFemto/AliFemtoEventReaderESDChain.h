@@ -21,6 +21,8 @@
 #include "AliPhysicsSelection.h"
 #include <list>
 
+#include "AliESDpid.h"
+
 class AliFemtoEvent;
 
 class AliFemtoEventReaderESDChain : public AliFemtoEventReader 
@@ -46,6 +48,7 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
 
   void SetUsePhysicsSelection(const bool usephysics);
   void SetUseMultiplicity(EstEventMult aType);
+  void SetEventTrigger(UInt_t eventtrig); //trigger
 
   bool GetConstrained() const;
   bool GetReadTPCInner() const;
@@ -55,7 +58,7 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
 
   void SetESDSource(AliESDEvent *aESD);
   //  void SetESDfriendSource(AliESDfriend *aFriend);
-
+  void SetESDPid(AliESDpid *esdPid) { fESDpid = esdPid; }
  protected:
 
  private:
@@ -74,11 +77,16 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   AliPhysicsSelection *fSelect;  //Class to select only physics events
   ReadTrackType  fTrackType;     // Type of track read
   EstEventMult   fEstEventMult;  // Type of the event multiplicity estimator
+  UInt_t         fEventTrig;     //event trigger
 
 /*   list<Int_t>  **fSharedList;       //! Table (one list per padrow) of clusters which are shared */
 /*   list<Int_t>  **fClusterPerPadrow; //! Table (one list per padrow) of clusters in each padrow */
 		
   Float_t GetSigmaToVertex(double *impact, double *covar);
+
+
+  AliESDpid *fESDpid;
+  Bool_t fIsPidOwner;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDChain, 1)
