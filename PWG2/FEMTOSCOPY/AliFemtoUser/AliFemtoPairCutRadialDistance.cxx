@@ -1,25 +1,18 @@
-/////////////////////////////////////////////////////////////////////////////
-//                                                                         //
-// AliFemtoPairCutRadialDistance - a pair cut which checks     //
-// for some pair qualities that attempt to identify slit/doubly            //
-// reconstructed tracks and also selects pairs based on their separation   //
-// at the entrance to the TPC                                              //
-//                                                                         //
-/////////////////////////////////////////////////////////////////////////////
-/***************************************************************************
+/////////////////////////////////////////////////////////////////////////////////
+//                                                                             //
+// AliFemtoPairCutRadialDistance - a pair cut which checks                     //
+// for some pair qualities that attempt to identify slit/doubly                //
+// reconstructed tracks and also selects pairs based on their separation       //
+// at the entrance to the TPC                                                  //
+//                                                                             //
+/////////////////////////////////////////////////////////////////////////////////
+/********************************************************************************
  *
- * $Id: AliFemtoPairCutRadialDistance.cxx,v 1.1.2.1 2007/10/19 13:35:33 akisiel Exp $
+ * Author: Johanna Gramling, University of Heidelberg, jgramlin@cern.ch
+ *         Malgorzata Janik, Warsaw University of Technology, majanik@cern.ch
+ *         Lukasz Graczykowski, Warsaw University of Technology, lgraczyk@cern.ch
  *
- * Author: Adam Kisiel, Ohio State, kisiel@mps.ohio-state.edu
- ***************************************************************************
- *
- * Description: part of STAR HBT Framework: AliFemtoMaker package
- *   a cut to remove "shared" and "split" pairs
- *
- ***************************************************************************
- *
- *
- **************************************************************************/
+ ********************************************************************************/
 
 #include "AliFemtoPairCutRadialDistance.h"
 #include <string>
@@ -32,21 +25,24 @@ ClassImp(AliFemtoPairCutRadialDistance)
 //__________________
 AliFemtoPairCutRadialDistance::AliFemtoPairCutRadialDistance():
   AliFemtoPairCutAntiGamma(),
-  fDRadMin(0), 
-  fRadius(100),
-  fEtaMin(0)
+  fDPhiStarMin(0),
+  fEtaMin(0),
+  fMinRad(0.8),
+  fMagSign(1)
 {
 }
 //__________________
 AliFemtoPairCutRadialDistance::AliFemtoPairCutRadialDistance(const AliFemtoPairCutRadialDistance& c) : 
   AliFemtoPairCutAntiGamma(c),
-  fDRadMin(0), 
-  fRadius(100),
-  fEtaMin(0)
+  fDPhiStarMin(0), 
+  fEtaMin(0),
+  fMinRad(0.8),
+  fMagSign(1)
 { 
-  fDRadMin = c.fDRadMin;
-  fRadius = c.fRadius;
+  fDPhiStarMin = c.fDPhiStarMin;
   fEtaMin = c.fEtaMin;
+  fMinRad = c.fMinRad;
+  fMagSign = c.fMagSign;
 }
 
 //__________________
@@ -59,15 +55,9 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   // quality and sharity
   bool temp = true;
   
-  double pih = 3.14159265358979312;
-  double pit = 6.28318530717958623;
+   double pih = 3.14159265358979312;
+   double pit = 6.28318530717958623;
 
-//   double distx = pair->Track1()->Track()->NominalTpcEntrancePoint().x() - pair->Track2()->Track()->NominalTpcEntrancePoint().x();
-//   double disty = pair->Track1()->Track()->NominalTpcEntrancePoint().y() - pair->Track2()->Track()->NominalTpcEntrancePoint().y();
-//   double distz = pair->Track1()->Track()->NominalTpcEntrancePoint().z() - pair->Track2()->Track()->NominalTpcEntrancePoint().z();
-//   double dist = sqrt(distx*distx + disty*disty + distz*distz);
-
-//   temp = dist > fDRadMin;
   
   double phi1 = pair->Track1()->Track()->P().Phi();
   double phi2 = pair->Track2()->Track()->P().Phi();
@@ -77,24 +67,23 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   double ptv2 = pair->Track2()->Track()->Pt();
   double eta1 = pair->Track1()->Track()->P().PseudoRapidity();
   double eta2 = pair->Track2()->Track()->P().PseudoRapidity();
-  double arg1 = -0.3 * 0.5 * chg1 * fRadius/(2*ptv1);
-  double arg2 = -0.3 * 0.5 * chg2 * fRadius/(2*ptv2);
 
-  if ((arg1 < 1.0) && (arg1 > -1.0) && (arg2 > -1.0) && (arg2 < 1.0)) {
-    double phid = phi2 - phi1 + TMath::ASin(arg2) - TMath::ASin(arg1);
+
+  Double_t rad;
+  Bool_t pass5 = kTRUE;
+
+    rad = fMinRad;
+    for (int iter=fMinRad*10; iter<251; iter++) {
+      Double_t dps = (phi1-phi2+(TMath::ASin(-0.075*chg1*fMagSign*rad/ptv1))-(TMath::ASin(-0.075*chg2*fMagSign*rad/ptv2)));
+      double etad = eta2 - eta1;
+      if (fabs(etad)<fEtaMin && fabs(dps)<fDPhiStarMin) {
+	//       cout << "5% cut is not passed - returning" << endl;
+	pass5 = kFALSE;
+	break;
+      }
+      rad+=0.01;
+    }
   
-    while (phid>pih) phid -= pit;
-    while (phid<-pih) phid += pit;
-    //    dist = phi2 - phi1 + TMath::ASin(-0.3 * 0.5 * chg2 * fRadius/(2*ptv2)) - TMath::ASin(-0.3 * 0.5 * chg1 * fRadius/(2*ptv1));
-    double etad = eta2 - eta1;
-    
-    //double dist = phi2 - phi1 + TMath::ASin(-0.3 * 0.5 * chg2 * fRadius/(2*ptv2)) - TMath::ASin(-0.3 * 0.5 * chg1 * fRadius/(2*ptv1));
-    //    double etad = eta2 - eta1;
-    
-    //  temp = ((TMath::Abs(dist) > fDRadMin) || (TMath::Abs(etad) > fEtaMin));
-  
-    temp = ((TMath::Hypot(phid, etad) > fDRadMin) || (TMath::Abs(etad) > fEtaMin));
-  }
 
   if (temp) {
     temp = AliFemtoPairCutAntiGamma::Pass(pair);
@@ -108,7 +97,7 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
 AliFemtoString AliFemtoPairCutRadialDistance::Report(){
   // Prepare a report from the execution
   string stemp = "AliFemtoRadialDistance Pair Cut - remove shared and split pairs and pairs with small separation at the specified radius\n";  char ctemp[100];
-  snprintf(ctemp , 100, "Accept pair with separation more that %f",fDRadMin);
+  snprintf(ctemp , 100, "Accept pair with separation more that %f",fDPhiStarMin);
   stemp += ctemp;
   snprintf(ctemp , 100, "Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
   stemp += ctemp;
@@ -121,20 +110,31 @@ TList *AliFemtoPairCutRadialDistance::ListSettings()
   // return a list of settings in a writable form
   TList *tListSetttings =  AliFemtoPairCutAntiGamma::ListSettings();
   char buf[200];
-  snprintf(buf, 200, "AliFemtoPairCutRadialDistance.radialsepmin=%f", fDRadMin);
-  snprintf(buf, 200, "AliFemtoPairCutRadialDistance.radius=%f", fRadius);
+  snprintf(buf, 200, "AliFemtoPairCutRadialDistance.phistarsepmin=%f", fDPhiStarMin);
   tListSetttings->AddLast(new TObjString(buf));
 
   return tListSetttings;
 }
 
-void AliFemtoPairCutRadialDistance::SetRadialDistanceMinimum(double radius, double dtpc)
+void AliFemtoPairCutRadialDistance::SetPhiStarDifferenceMinimum(double dtpc)
 {
-  fDRadMin = dtpc;
-  fRadius = radius;
+  fDPhiStarMin = dtpc;
 }
 
 void AliFemtoPairCutRadialDistance::SetEtaDifferenceMinimum(double etpc) 
 {
   fEtaMin = etpc;
+}
+
+
+void AliFemtoPairCutRadialDistance::SetMinimumRadius(double minrad) 
+{
+  fMinRad = minrad;
+}
+
+void AliFemtoPairCutRadialDistance::SetMagneticFieldSign(int magsign)
+{
+  if(magsign>1) fMagSign = 1;
+  else if(magsign<1) fMagSign = -1;
+  else fMagSign = magsign;
 }
