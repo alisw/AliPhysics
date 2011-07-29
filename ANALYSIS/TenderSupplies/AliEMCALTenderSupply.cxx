@@ -100,6 +100,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
 	for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
 	for(Int_t i = 0; i < 10; i++) fGeomMatrix[i] = 0;
 	fRecParam        = new AliEMCALRecParam;
+	fEMCALRecoUtils = new AliEMCALRecoUtils();
 	fDigitsArr       = new TClonesArray("AliEMCALDigit",1000);
 
 }
@@ -144,6 +145,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *te
 	for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
 	for(Int_t i = 0; i < 10; i++) fGeomMatrix[i] = 0;
 	fRecParam        = new AliEMCALRecParam;
+	fEMCALRecoUtils = new AliEMCALRecoUtils();
 	fDigitsArr       = new TClonesArray("AliEMCALDigit",200);
 }
 
@@ -206,7 +208,6 @@ void AliEMCALTenderSupply::Init()
 	// Init goemetry	
 	fEMCALGeo =  AliEMCALGeometry::GetInstance(fEMCALGeoName) ;
 
-	fEMCALRecoUtils = new AliEMCALRecoUtils();
 
 	//Initialising Non linearity parameters
 	fEMCALRecoUtils->SetNonLinearityThreshold(fNonLinearThreshold);
@@ -217,6 +218,8 @@ void AliEMCALTenderSupply::Init()
 	fEMCALRecoUtils->SetCutR(fRcut);
 	fEMCALRecoUtils->SetMass(fMass);
 	fEMCALRecoUtils->SetStep(fStep);
+
+	//AliLog::SetGlobalDebugLevel(1);
 	
 	if(fDebugLevel>1) fEMCALRecoUtils->Print("");
 		
@@ -259,7 +262,8 @@ void AliEMCALTenderSupply::ProcessEvent()
 	if(!clusArr) clusArr = dynamic_cast<TClonesArray*>(event->FindListObject("CaloClusters"));
 	if(!clusArr) return;
 
-	for (Int_t icluster=0; icluster < clusArr->GetEntries(); icluster++ ){
+	Int_t nclusters = clusArr->GetEntriesFast(); //bug fix by Rongrong
+	for (Int_t icluster=0; icluster < nclusters; icluster++ ){ 
 		AliVCluster *clust = static_cast<AliVCluster*>(clusArr->At(icluster));
 		if(!clust) continue;
 		if (!clust->IsEMCAL()) continue;
@@ -462,6 +466,20 @@ Bool_t AliEMCALTenderSupply::InitBadChannels()
 
 	if (fDebugLevel>0) AliInfo("Initialising Bad channel map \n");	
 
+	if(fInputTree){ 
+		fInputFile = fInputTree->GetCurrentFile();
+		if(fInputFile){
+			const char *fileName = fInputFile->GetName();
+			TString FileName = TString(fileName);
+			if     (FileName.Contains("pass1")) fFilepass = TString("pass1");
+			else if(FileName.Contains("pass2")) fFilepass = TString("pass2");
+			else if(FileName.Contains("pass3")) fFilepass = TString("pass3");
+			else AliError("pass number not found");
+		}
+		else AliError("File not found");
+	}
+	else AliError("Tree not found");
+
 	if(fFiducial){
 		fEMCALRecoUtils->SetNumberOfCellsFromEMCALBorder(fNCellsFromEMCALBorder);
 		fEMCALRecoUtils->SwitchOnNoFiducialBorderInEMCALEta0();
@@ -494,21 +512,50 @@ Bool_t AliEMCALTenderSupply::InitBadChannels()
 	}
 
 	//2011
-	if(fRunBC>140000){
+	Int_t nSupMod=-1, nModule=-1, nIphi=-1, nIeta=-1, iphi=-1, ieta=-1;
 
-		const Int_t nTowers=89;
-		Int_t hotChannels[nTowers]={74, 103, 152, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 368, 369, 370, 371, 372, 373, 374,375, 376, 377, 378, 379, 380, 381, 382, 383, 917, 1275, 1288, 1519, 1595, 1860, 1967, 2022, 2026, 2047, 2117, 2298, 2540, 2776, 3135, 3764, 6095, 6111, 6481, 6592, 6800, 6801, 6802, 6803, 6804, 6805, 6806, 6807, 6808, 6809, 6810, 6811, 6812, 6813, 6814, 6815, 7371, 7425, 7430, 7457, 7491, 7709, 8352, 8353, 8356, 8357, 8808, 8810, 8812, 8814, 9056, 9769, 9815, 9837};
+	if(fRunBC>=144871 && fRunBC<=146860){ //LHC11a 2.76 TeV pp
 
-		Int_t nSupMod=-1, nModule=-1, nIphi=-1, nIeta=-1, iphi=-1, ieta=-1;
-		for(Int_t i=0; i<nTowers; i++)
-		{
-			fEMCALGeo->GetCellIndex(hotChannels[i],nSupMod,nModule,nIphi,nIeta);
+		if(fFilepass = "pass1"){ // pass1
 
-			fEMCALGeo->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta,iphi,ieta);
-			fEMCALRecoUtils->SetEMCALChannelStatus(nSupMod, ieta, iphi);
+			const Int_t nTowers=89;
+			Int_t hotChannels[nTowers]={74, 103, 152, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 368, 369, 370, 371, 372, 373, 374,375, 376, 377, 378, 379, 380, 381, 382, 383, 917, 1275, 1288, 1519, 1595, 1860, 1967, 2022, 2026, 2047, 2117, 2298, 2540, 2776, 3135, 3764, 6095, 6111, 6481, 6592, 6800, 6801, 6802, 6803, 6804, 6805, 6806, 6807, 6808, 6809, 6810, 6811, 6812, 6813, 6814, 6815, 7371, 7425, 7430, 7457, 7491, 7709, 8352, 8353, 8356, 8357, 8808, 8810, 8812, 8814, 9056, 9769, 9815, 9837};
+			for(Int_t i=0; i<nTowers; i++)
+			{
+				fEMCALGeo->GetCellIndex(hotChannels[i],nSupMod,nModule,nIphi,nIeta);
+
+				fEMCALGeo->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta,iphi,ieta);
+				fEMCALRecoUtils->SetEMCALChannelStatus(nSupMod, ieta, iphi);
+			}
+		}
+
+		if(fFilepass = "pass2"){ // pass2
+			const Int_t nTowers=24;
+			Int_t hotChannels[nTowers]= {74, 103, 152, 917, 1059, 1175, 1276, 1288, 1376, 1382, 1595, 2022, 2026, 2210, 2540, 2778, 2793, 3135, 3764, 5767, 6481, 7371, 7878, 9769};
+			for(Int_t i=0; i<nTowers; i++)
+			{
+				fEMCALGeo->GetCellIndex(hotChannels[i],nSupMod,nModule,nIphi,nIeta);
+
+				fEMCALGeo->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta,iphi,ieta);
+				fEMCALRecoUtils->SetEMCALChannelStatus(nSupMod, ieta, iphi);
+			}
 		}
 
 	}
+
+	if(fRunBC>=151636 && fRunBC<=155384) //LHC11c : 7TeV by Rongrong
+	{
+		const Int_t nTowers=8;
+		Int_t hotChannels[nTowers]={917, 2115, 2123, 2540, 6481, 9815, 10113, 10115};
+
+		for(Int_t i=0; i<nTowers; i++)
+		{
+			fEMCALGeo->GetCellIndex(hotChannels[i],nSupMod,nModule,nIphi,nIeta);
+			fEMCALGeo->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta,iphi,ieta);
+			fEMCALRecoUtils->SetEMCALChannelStatus(nSupMod, ieta, iphi);
+		}		
+	}
+
 
 	return kTRUE;
 }
@@ -522,7 +569,7 @@ Bool_t AliEMCALTenderSupply::InitRecalib()
 	if (!event) return kFALSE;
 
 	if (fDebugLevel>0) AliInfo("Initialising Recalibration factors \n");
-	
+
 	if(fInputTree){ 
 		fInputFile = fInputTree->GetCurrentFile();
 		if(fInputFile){
@@ -537,11 +584,11 @@ Bool_t AliEMCALTenderSupply::InitRecalib()
 	}
 	else AliError("Tree not found");
 	//        else {cout << "Tree not found " <<endl; return kFALSE;}
-  
+
 	Int_t runRC = event->GetRunNumber();
 
-  //if (event->GetRunNumber()==runRC)
-  //     return kFALSE;
+	//if (event->GetRunNumber()==runRC)
+	//     return kFALSE;
 
 	fEMCALRecoUtils->SwitchOnRecalibration();
 
@@ -781,7 +828,7 @@ void AliEMCALTenderSupply::UpdateClusters()
 	if(!clus) clus = dynamic_cast<TClonesArray*>(event->FindListObject("CaloClusters"));
 	if(!clus) return;
 
-	Int_t nents = clus->GetEntries();
+	Int_t nents = clus->GetEntriesFast();
 	for (Int_t i=0;i<nents;++i) {
 		AliESDCaloCluster *c = static_cast<AliESDCaloCluster*>(clus->At(i));
 		if (!c)
@@ -808,8 +855,8 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
 		return;
 	}
 	
-	Int_t Ncls = fClusterArr->GetEntriesFast();
-	for(Int_t i=0, nout=clus->GetEntries(); i < Ncls; ++i) {
+	Int_t ncls = fClusterArr->GetEntriesFast();
+	for(Int_t i=0, nout=clus->GetEntriesFast(); i < ncls; ++i) {
 		AliEMCALRecPoint *recpoint = static_cast<AliEMCALRecPoint*>(fClusterArr->At(i));
 
 		Int_t ncells_true = 0;

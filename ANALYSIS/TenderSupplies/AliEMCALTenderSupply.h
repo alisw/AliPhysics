@@ -91,6 +91,8 @@ public:
   void           SwitchOffLoadOwnGeometryMatrices()             { fLoadGeomMatrices = kFALSE   ; }
    void          SetGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fGeomMatrix[i]    = m        ; } 
   AliEMCALRecParam  *GetRecParam()  const  { return fRecParam; }
+  
+  AliEMCALRecoUtils  *GetRecoUtils()  const  { return fEMCALRecoUtils; }
 
   void           SetOCDBPath(const char *path)                  { fOCDBpath = path ; }
  
