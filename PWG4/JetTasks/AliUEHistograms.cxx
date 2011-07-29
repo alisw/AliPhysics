@@ -403,6 +403,11 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
   // this function need a list of AliVParticles which contain the particles/tracks to be filled
   //
   // if mixed is non-0, mixed events are filled, the trigger particle is from particles, the associated from mixed
+  // if weight < 0, then the pt of the associated particle is filled as weight
+  
+  Bool_t fillpT = kFALSE;
+  if (weight < 0)
+    fillpT = kTRUE;
   
   // Eta() is extremely time consuming, therefore cache it for the inner loop here:
   TObjArray* input = (mixed) ? mixed : particles;
@@ -474,6 +479,9 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
         if (vars[4] < -0.5 * TMath::Pi())
           vars[4] += TMath::TwoPi();
 	vars[5] = zVtx;
+	
+	if (fillpT)
+	  weight = particle->Pt();
     
         // fill all in toward region and do not use the other regions
         fNumberDensityPhi->GetTrackHist(AliUEHist::kToward)->Fill(vars, step, weight);

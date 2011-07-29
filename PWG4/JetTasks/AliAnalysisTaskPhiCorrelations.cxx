@@ -109,7 +109,8 @@ fPtMin(0.5),
 fFilterBit(0xFF),
 fSelectBit(0),
 fUseChargeHadrons(kFALSE),
-fSelectCharge(0)
+fSelectCharge(0),
+fFillpT(kFALSE)
 {
   // Default constructor
   // Define input and output slots here
@@ -268,11 +269,16 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
 {
   //Write settings to output list
   TTree *settingsTree   = new TTree("UEAnalysisSettings","Analysis Settings in UE estimation");
-  settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
-  settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
+  settingsTree->Branch("fnTracksVertex", &fnTracksVertex,"nTracksVertex/I");
+  settingsTree->Branch("fZVertex", &fZVertex,"ZVertex/D");
+  //settingsTree->Branch("fCentralityMethod", fCentralityMethod.Data(),"CentralityMethod/C");
   settingsTree->Branch("fTrackEtaCut", &fTrackEtaCut, "TrackEtaCut/D");
   settingsTree->Branch("fPtMin", &fPtMin, "PtMin/D");
+  settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
+  settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
   settingsTree->Branch("fUseChargeHadrons", &fUseChargeHadrons,"UseChHadrons/O");
+  settingsTree->Branch("fSelectCharge", &fSelectCharge,"SelectCharge/I");
+  settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");
   settingsTree->Branch("fkTrackingEfficiency", "TH1D", &fkTrackingEfficiency);
   settingsTree->Fill();
   fListOfHistos->Add(settingsTree);
@@ -325,13 +331,16 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     return;
   
   Float_t zVtx = fMcEvent->GetPrimaryVertex()->GetZ();
+  Float_t weight = 1;
+  if (fFillpT)
+    weight = -1;
     
   // Get MC primaries
   TObjArray* tracksMC = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kTRUE);
   
   // (MC-true all particles)
   // STEP 0
-  fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC);
+  fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC, 0, weight);
   
   // Trigger selection ************************************************
   if (fAnalyseUE->TriggerSelection(fInputHandler))
@@ -339,7 +348,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     // (MC-true all particles)
     // STEP 1
     if (!fReduceMemoryFootprint)
-      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepTriggered, tracksMC);
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepTriggered, tracksMC, 0, weight);
     else
       fHistos->FillEvent(centrality, AliUEHist::kCFStepTriggered);
       
@@ -372,7 +381,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       // (MC-true all particles)
       // STEP 2
       if (!fReduceMemoryFootprint)
-	fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepVertex, tracksMC);
+	fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepVertex, tracksMC, 0, weight);
       else
 	fHistos->FillEvent(centrality, AliUEHist::kCFStepVertex);
       
@@ -381,21 +390,21 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       // (RECO-matched (quantities from MC particle) primary particles)
       // STEP 4
-      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepTrackedOnlyPrim, tracksRecoMatchedPrim);
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepTrackedOnlyPrim, tracksRecoMatchedPrim, 0, weight);
       
       // Get MC primaries + secondaries that match reconstructed track
       TObjArray* tracksRecoMatchedAll = fAnalyseUE->GetAcceptedParticles(inputEvent, mc, kFALSE, -1, kTRUE);
       
       // (RECO-matched (quantities from MC particle) all particles)
       // STEP 5
-      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepTracked, tracksRecoMatchedAll);
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepTracked, tracksRecoMatchedAll, 0, weight);
       
       // Get RECO tracks
       TObjArray* tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, -1, kTRUE);
       
       // (RECO all tracks)
       // STEP 6
-      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks);
+      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, 0, weight);
       
       if (0 && !fReduceMemoryFootprint)
       {
@@ -406,10 +415,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
             tracksRecoMatchedSecondaries->Add(tracksRecoMatchedAll->At(i));
       
         // Study: Use only secondaries as trigger particles and plot the correlation vs. all particles; store in step 9
-        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracksRecoMatchedSecondaries, tracksRecoMatchedAll);
+        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy2, tracksRecoMatchedSecondaries, tracksRecoMatchedAll, weight);
         
         // Study: Use only primaries as trigger particles and plot the correlation vs. secondaries; store in step 8
-        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksRecoMatchedPrim, tracksRecoMatchedSecondaries);
+        fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, tracksRecoMatchedPrim, tracksRecoMatchedSecondaries, weight);
       
         // plot delta phi vs process id of secondaries
         // trigger particles: primaries in 4 < pT < 10
@@ -521,6 +530,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   const AliVVertex* vertex = inputEvent->GetPrimaryVertex();
   Double_t zVtx = vertex->GetZ();
   
+  Float_t weight = 1;
+  if (fFillpT)
+    weight = -1;
+
   // fill two different centralities (syst study)
   // the zvtx axis is used to distinguish the results of both centralities: configured centrality in zvtx = 0, SPD in zvtx = 2
   if (fCompareCentralities)
@@ -528,14 +541,14 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   
   // Fill containers at STEP 6 (reconstructed)
   if (centrality >= 0)
-    fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks);
+    fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, 0, weight);
 
   // Two-track effect study
   if (fTwoTrackEfficiencyStudy)
   {
     TObjArray* reduced = fHistos->ApplyTwoTrackCut(tracks);
-    if (centrality >= 0)
-      fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, reduced);
+    //if (centrality >= 0)
+    //  fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, reduced, 0, weight);
     delete reduced;
   }
   
@@ -544,7 +557,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   {
     centrality = centralityObj->GetCentralityPercentile("CL1");
     if (centrality >= 0)
-      fHistos->FillCorrelations(centrality, 2, AliUEHist::kCFStepReconstructed, tracks);
+      fHistos->FillCorrelations(centrality, 2, AliUEHist::kCFStepReconstructed, tracks, 0, weight);
   }
     
   if (fFillMixed)
@@ -581,7 +594,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       //cout << "nMix = " << nMix << endl;
     
       // Fill mixed-event histos here  
-      for (Int_t jMix=0; jMix<nMix; jMix++) {
+      for (Int_t jMix=0; jMix<nMix; jMix++) 
+      {
 	TObjArray* bgTracks = pool->GetEvent(jMix);
 	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, bgTracks, 1.0 / nMix, (jMix == 0));
       }
