@@ -1,4 +1,6 @@
 //DEFINITION OF A FEW CONSTANTS
+#define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
+
 const Float_t phimin = 0.;
 const Float_t phimax = 2.*TMath::Pi();
 const Float_t etamin = -0.9;
@@ -82,42 +84,34 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
   UInt_t ieta  = 2;
 
   //Setting up the container grid... 
-  UInt_t nstep = 7; //Steps/Modes for containers
+  UInt_t nstep = 4; //Steps/Modes for containers
   Int_t kStepReconstructed          = 0;
   Int_t kStepSecondaries            = 1;
   Int_t kStepReconstructedMC        = 2;
   Int_t kStepMCAcceptance           = 3;
 
   //redefine pt ranges in case of Jet-Jet production
-  Float_t ptBinEdges[2][2];
-  Float_t ptmin =  2.0 ;
-  Float_t ptmax =  50.0 ;
-  Float_t binWidth3 = 5.;
-  if(!strcmp(prodType, "LHC10e14")) { 
-    ptmin =  0.0 ;
-    ptmax =  500.0 ;
+  Float_t ptBinEdges[4][4];
+  Float_t ptmin =  0.0 ;
+  Float_t ptmax =  100.0 ;
 
-    ptBinEdges[0][0] = 100.;
-    ptBinEdges[0][1] = 5.;
-    ptBinEdges[1][0] = 300.;
-    ptBinEdges[1][1] = 10.;
-    binWidth3 = 20.;
-  } else { 
-    ptmin =  2.0 ;
-    ptmax =  50.0 ;
-    
-    ptBinEdges[0][0] = 10.;
-    ptBinEdges[0][1] = 0.5;
-    ptBinEdges[1][0] = 60.;
-    ptBinEdges[1][1] = 2.;
-    binWidth3 = 5.;
-  }
-    
+  ptBinEdges[0][0] = 2.;
+  ptBinEdges[0][1] = 0.2;
+  ptBinEdges[1][0] = 6.;
+  ptBinEdges[1][1] = 0.5;
+  ptBinEdges[2][0] = 20.;
+  ptBinEdges[2][1] = 2.;
+  ptBinEdges[3][0] = 100.;
+  ptBinEdges[3][1] = 5.;
+  
   const Int_t nvar   = 3; //number of variables on the grid: pt:phi:eta
-  const Int_t nbin11 = (int)((ptBinEdges[0][0]-ptmin)/ptBinEdges[0][1]);
-  const Int_t nbin12 = (int)((ptBinEdges[1][0]-ptBinEdges[0][0])/ptBinEdges[1][1])+nbin11;
-  const Int_t nbin13 = (int)((ptmax-ptBinEdges[1][0])/binWidth3)+nbin12;
-  const Int_t nbin1  = nbin13; //bins in pt 
+
+  const Int_t nbin11 = round((ptBinEdges[0][0]-ptmin)/ptBinEdges[0][1]);
+  const Int_t nbin12 = round((ptBinEdges[1][0]-ptBinEdges[0][0])/ptBinEdges[1][1])+nbin11;
+  const Int_t nbin13 = round((ptBinEdges[2][0]-ptBinEdges[1][0])/ptBinEdges[2][1])+nbin12;
+  const Int_t nbin14 = round((ptBinEdges[3][0]-ptBinEdges[2][0])/ptBinEdges[3][1])+nbin13;
+
+  const Int_t nbin1  = nbin14; //bins in pt 
   const Int_t nbin2  =  18;    //bins in phi
   const Int_t nbin3  =  2;     //bins in eta
 
@@ -135,8 +129,9 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
   //values for bin lower bounds 
   for(Int_t i=0; i<=nbin1; i++) {
     if(i<=nbin11) binLim1[i]=(Double_t)ptmin + (ptBinEdges[0][0]-ptmin)/nbin11*(Double_t)i ;  
-    if(i<=nbin12 && i>nbin11) binLim1[i]=(Double_t)ptBinEdges[0][0] + (ptBinEdges[1][0]-ptBinEdges[0][0])/(nbin12-nbin11)*((Double_t)i-(Double_t)nbin11) ;  
-    if(i<=nbin13 && i>nbin12) binLim1[i]=(Double_t)ptBinEdges[1][0] + (ptmax-ptBinEdges[1][0])/(nbin13-nbin12)*((Double_t)i-(Double_t)nbin12) ;  
+    if(i<=nbin12 && i>nbin11) binLim1[i]=(Double_t)ptBinEdges[0][0] + (ptBinEdges[1][0]-ptBinEdges[0][0])/(nbin12-nbin11)*((Double_t)i-(Double_t)nbin11) ; 
+    if(i<=nbin13 && i>nbin12) binLim1[i]=(Double_t)ptBinEdges[1][0] + (ptBinEdges[2][0]-ptBinEdges[1][0])/(nbin13-nbin12)*((Double_t)i-(Double_t)nbin12) ; 
+    if(i<=nbin14 && i>nbin13) binLim1[i]=(Double_t)ptBinEdges[2][0] + (ptBinEdges[3][0]-ptBinEdges[2][0])/(nbin14-nbin13)*((Double_t)i-(Double_t)nbin13) ; 
   }
   for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Double_t)phimin + (phimax-phimin)/nbin2*(Double_t)i ;
   for(Int_t i=0; i<=nbin3; i++) binLim3[i]=(Double_t)etamin + (etamax-etamin)/nbin3*(Double_t)i ;  
