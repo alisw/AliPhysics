@@ -28,7 +28,7 @@
 #include "AliITSgeomMatrix.h"
 #include "AliLog.h"
 
-typedef enum {kND=-1,kSPD=0, kSDD=1, kSSD=2, kSSDp=3,kSDDp=4} AliITSDetector;
+typedef enum {kND=-1,kSPD=0, kSDD=1, kSSD=2, kSSDp=3,kSDDp=4, kUPG=5} AliITSDetector;
 
 //_______________________________________________________________________
 

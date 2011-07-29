@@ -1,4 +1,3 @@
-# -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
 # Package File for ITSsim                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -26,10 +25,16 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  	UPGRADE/AliITSupgrade.cxx UPGRADE/AliITSupgradeDigitizer.cxx)
+set ( SRCS  	UPGRADE/AliITSupgrade.cxx UPGRADE/AliITSupgradeDigitizer.cxx UPGRADE/AliITSUpg.cxx UPGRADE/AliITSvUpgrade.cxx UPGRADE/AliITSv11GeometryUpgrade.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR ITSUpgradeSimLinkDef.h)
 
-set ( EINCLUDE TPC RAW ITS ITS/UPGRADE STEER/STEER STEER/ESD STEER/STEERBase)
+set ( EINCLUDE TPC RAW ITS ITS/UPGRADE)
+
+if( ALICE_TARGET STREQUAL "win32gcc")
+	
+			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lITSUpgradeBase -lSTEER -lCDB -lSTEERBase -L${ROOTLIBDIR} -lVMC -lEG -lGeom)
+
+endif( ALICE_TARGET STREQUAL "win32gcc")

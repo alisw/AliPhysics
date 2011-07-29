@@ -12,4 +12,7 @@
 #pragma link C++ class  AliITSDigitUpgrade+;
 #pragma link C++ class  AliITSsegmentationUpgrade+;
 #pragma link C++ class  AliITSRecPointU+;
+#pragma link C++ class  AliITSInitGeometryUpg+;
+#pragma link C++ class  AliITSLoaderUpg+;
+
 #endif
