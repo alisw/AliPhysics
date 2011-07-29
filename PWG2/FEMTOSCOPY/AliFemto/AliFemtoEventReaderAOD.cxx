@@ -15,6 +15,7 @@
 #include "AliAODTrack.h"
 #include "AliAODVertex.h"
 #include "AliAODMCHeader.h"
+#include "AliESDtrack.h"
 
 #include "AliFmPhysicalHelixD.h"
 #include "AliFmThreeVectorF.h"
@@ -47,11 +48,11 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fPWG2AODTracks(0x0),
   fReadMC(0),
   fUsePreCent(0),
+  fAODpidUtil(0),
   fInputFile(" "),
   fFileName(" "),
   fTree(0x0),
-  fAodFile(0x0),
-  fAODpidUtil(0)
+  fAodFile(0x0)
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -71,11 +72,11 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fPWG2AODTracks(0x0),
   fReadMC(0),
   fUsePreCent(0),
+  fAODpidUtil(0),
   fInputFile(" "),
   fFileName(" "),
   fTree(0x0),
-  fAodFile(0x0),
-  fAODpidUtil(0)
+  fAodFile(0x0)
 {
   // copy constructor
   fInputFile = aReader.fInputFile;
@@ -567,7 +568,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   tEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
   tEvent->SetNormalizedMult(tracksPrim);
 
-  AliCentrality *cent = fEvent->GetCentrality();
+  //  AliCentrality *cent = fEvent->GetCentrality();
   if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("V0M")));
 //  if (cent) tEvent->SetNormalizedMult((int) cent->GetCentralityPercentile("V0M"));
 
@@ -652,7 +653,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(const AliAODTrack *tAodTrack,
 	{
 	  if(tAodTrack->IsOn(0x8000)) //AliESDtrack::kTOFpid=0x8000
 	    {
-	      double tZero = fAODpidUtil->GetTOFResponse().GetStartTime(tAodTrack->P());
+	      //	      double tZero = fAODpidUtil->GetTOFResponse().GetStartTime(tAodTrack->P());
 
 	      //nsigmaTOFPi = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kPion,tZero);
 	      //nsigmaTOFK = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kKaon,tZero);
@@ -799,7 +800,7 @@ void AliFemtoEventReaderAOD::SetCentralityPreSelection(double min, double max)
 void AliFemtoEventReaderAOD::SetAODpidUtil(AliAODpidUtil *aAODpidUtil)
 {
   fAODpidUtil = aAODpidUtil;
-  printf("fAODpidUtil: %x\n",fAODpidUtil);
+  //  printf("fAODpidUtil: %x\n",fAODpidUtil);
 }
 
 
