@@ -1503,7 +1503,7 @@ TH1* AliUnfolding::GetResidualsPlot(TH1* corrected)
 
   Double_t* params = new Double_t[fgMaxParams];
   for (Int_t i=0; i<TMath::Min(fgMaxParams, corrected->GetNbinsX()); i++)
-    params[i] = TMath::Sqrt(fabs(corrected->GetBinContent(i+1)*(*fgEfficiency)(i)));
+    params[i] = TMath::Sqrt(TMath::Abs(corrected->GetBinContent(i+1)*(*fgEfficiency)(i)));
 
 
   return GetResidualsPlot(params);
