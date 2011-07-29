@@ -28,6 +28,7 @@
 #include "AliHLTTPCRawCluster.h"
 #include "AliHLTOUT.h"
 #include "AliHLTComponent.h"
+#include "AliHLTErrorGuard.h"
 #include "AliLog.h"
 #include "AliHLTSystem.h"
 #include "AliHLTPluginBase.h"
@@ -178,7 +179,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
       if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::fgkRawClustersDataType, spec)>=0) {
 	iResult=ReadAliHLTTPCRawClusterData(pHLTOUT, fClusters, bHaveLabels?&tpcClusterLabels:NULL);
       } else if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::fgkClustersDataType, spec)>=0) {
-	iResult=ReadAliHLTTPCClusterData(pHLTOUT, fClusters, bHaveLabels?&tpcClusterLabels:NULL);
+	ALIHLTERRORGUARD(1, "HLTOUT data contains tarnsformed TPC clusters instead of raw TPC clusters, can not create clusters for reconstruction");
       }
     }
   }
@@ -358,7 +359,8 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCRawClusterData(AliHLTOUT* pHLTOUT
       } else {
       pCluster->SetRow(clusters[i].GetPadRow()-rowOffset);
       }
-      pCluster->SetPad(clusters[i].GetPad());
+      // using a 0.5 shift, pad coordinate with respect to middle of the pad
+      pCluster->SetPad(clusters[i].GetPad()+0.5);
       pCluster->SetTimeBin(clusters[i].GetTime());
       pCluster->SetSigmaY2(clusters[i].GetSigmaY2());
       pCluster->SetSigmaZ2(clusters[i].GetSigmaZ2());
