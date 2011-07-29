@@ -14,9 +14,10 @@
 #include <TObject.h>
 #include <TString.h>
 
+#include "AliMUONAlignmentRecord.h"
+
 class TGeoCombiTrans;
 class TClonesArray;
-class TObjArray;
 class AliMillepede;
 class AliMUONGeometryTransformer;
 class AliMUONTrack;
@@ -26,99 +27,172 @@ class AliMUONVCluster;
 class AliMUONAlignment:public TObject
 {
 
-public:
+  public:
+
+
+  /// constructor
   AliMUONAlignment();
+
+  /// destructor
   virtual ~AliMUONAlignment();
 
-  void ProcessTrack(AliMUONTrack *track);
+  /// process track for alignment minimization
+  /**
+  returns the alignment records for this track.
+  They can be stored in some output for later reprocessing.
+  */
+  AliMUONAlignmentTrackRecord* ProcessTrack(AliMUONTrack *track, Bool_t doAlignment );
+
+  /// process track record
+  void ProcessTrack( AliMUONAlignmentTrackRecord*, Bool_t doAlignment = kTRUE );
+
+  /// returns current track record
+  AliMUONAlignmentTrackRecord* GetTrackRecord( void )
+  { return &fTrackRecord; }
+
   /// Set geometry transformer
-  void SetGeometryTransformer(AliMUONGeometryTransformer * transformer) {
-    fTransform = transformer;
-  }
+  void SetGeometryTransformer(AliMUONGeometryTransformer * transformer)
+  { fTransform = transformer; }
 
   /// Set flag for Magnetic field On/Off
-  void SetBFieldOn(Bool_t bBFieldOn) {
-    fBFieldOn =  bBFieldOn;
-  }
+  void SetBFieldOn(Bool_t bBFieldOn)
+  { fBFieldOn =  bBFieldOn; }
+
   /// Define chambers to align
-  void SetChOnOff(Bool_t *bChOnOff) {
+  void SetChOnOff(Bool_t *bChOnOff)
+  {
     for(int iCh=0; iCh<10; iCh++)
-      fChOnOff[iCh] =  bChOnOff[iCh];
+    { fChOnOff[iCh] =  bChOnOff[iCh]; }
   }
+
   /// Possibility to align only one side of the detector
-  void SetSpecLROnOff(Bool_t *bSpecLROnOff) {
-    fSpecLROnOff[0] =  bSpecLROnOff[0];    
-    fSpecLROnOff[1] =  bSpecLROnOff[1];    
+  void SetSpecLROnOff(Bool_t *bSpecLROnOff)
+  {
+    fSpecLROnOff[0] =  bSpecLROnOff[0];
+    fSpecLROnOff[1] =  bSpecLROnOff[1];
   }
+
   void FixStation(Int_t iSt);
+
   void FixChamber(Int_t iCh);
+
   void FixDetElem(Int_t iDetElemId, TString sVarXYT = "XYTZ");
-  void FixHalfSpectrometer(const Bool_t *bChOnOff, const Bool_t *bSpecLROnOff);
-  void AllowVariations(const Bool_t *bChOnOff);
+
+  void FixHalfSpectrometer(const Bool_t* bChOnOff, const Bool_t* bSpecLROnOff);
+
+  void AllowVariations( const Bool_t* );
+
   void SetNonLinear(const Bool_t *bChOnOff, const Bool_t *bVarXYT);
+
   void AddConstraints(const Bool_t *bChOnOff, const Bool_t *bVarXYT);
+
   void AddConstraints(const Bool_t *bChOnOff, const Bool_t *bVarXYT, const Bool_t *bDetTLBR, const Bool_t *bSpecLROnOff);
+
   void ResetConstraints();
 
   void FixParameter(Int_t param, Double_t value);
+
   void SetNonLinear(Int_t param);
+
   void AddConstraint(Double_t *factor, Double_t value );
-  void InitGlobalParameters(Double_t *par);   
+
+  void InitGlobalParameters(Double_t *par);
+
   void SetSigmaXY(Double_t sigmaX, Double_t sigmaY);
+
   /// Set array of local derivatives
-  void SetLocalDerivative(Int_t index, Double_t value) {      
-    fLocalDerivatives[index] = value;
-  }
+  void SetLocalDerivative(Int_t index, Double_t value)
+  { fLocalDerivatives[index] = value; }
+
   /// Set array of global derivatives
-  void SetGlobalDerivative(Int_t index, Double_t value) {
-    fGlobalDerivatives[index] = value;
-  }  
+  void SetGlobalDerivative(Int_t index, Double_t value)
+  { fGlobalDerivatives[index] = value; }
+
   void LocalFit(Int_t iTrack, Double_t *lTrackParam, Int_t lSingleFit);
+
   void GlobalFit(Double_t *parameters,Double_t *errors,Double_t *pulls);
+
   void PrintGlobalParameters();
+
   Double_t GetParError(Int_t iPar);
-  
-  AliMUONGeometryTransformer* 
-    ReAlign(const AliMUONGeometryTransformer * transformer, const double *misAlignments, Bool_t verbose);
+
+  AliMUONGeometryTransformer* ReAlign(const AliMUONGeometryTransformer * transformer, const double *misAlignments, Bool_t verbose);
 
   void SetAlignmentResolution(const TClonesArray* misAlignArray, Int_t chId, Double_t chResX, Double_t chResY, Double_t deResX, Double_t deResY);
 
- private:
+  private:
+
   /// Not implemented
   AliMUONAlignment(const AliMUONAlignment& right);
+
   /// Not implemented
   AliMUONAlignment&  operator = (const AliMUONAlignment& right);
 
   void Init(Int_t nGlobal, Int_t nLocal, Int_t nStdDev);
+
   void ConstrainT(Int_t lDetElem, Int_t lCh, Double_t *lConstraintT, Int_t iVar, Double_t lWeight=1.0) const;
+
   void ConstrainL(Int_t lDetElem, Int_t lCh, Double_t *lConstraintL, Int_t iVar, Double_t lWeight=1.0) const;
+
   void ConstrainB(Int_t lDetElem, Int_t lCh, Double_t *lConstraintB, Int_t iVar, Double_t lWeight=1.0) const;
+
   void ConstrainR(Int_t lDetElem, Int_t lCh, Double_t *lConstraintR, Int_t iVar, Double_t lWeight=1.0) const;
+
   void FillDetElemData();
+
   void FillRecPointData();
+
   void FillTrackParamData();
+
   void ResetLocalEquation();
-  void LocalEquationX();
-  void LocalEquationY();
+
+  /// local equation along X
+  void LocalEquationX( Bool_t doAlignment = kTRUE );
+
+  /// local equation along Y
+  void LocalEquationY( Bool_t doAlignment = kTRUE );
+
+  /// local equation using cluster alignment record
+  void LocalEquation( const AliMUONAlignmentClusterRecord& );
 
   TGeoCombiTrans ReAlign(const TGeoCombiTrans& transform, const double *detElemMisAlignment) const;
 
-  Bool_t fBFieldOn;        ///< Flag for Magnetic filed On/Off
-  Bool_t fChOnOff[10];     ///< Flags for chamber On/Off
-  Bool_t fSpecLROnOff[2];  ///< Flags for left right On/Off		       	 		       	       		       
-  Bool_t fDoF[4];          ///< Flags degrees of freedom to align (x,y,phi)
-  Double_t fAllowVar[4];   ///< "Encouraged" variation for degrees of freedom 
-  Double_t fStartFac;      ///< Initial value for chi2 cut 
-                           ///< if > 1 Iterations in AliMillepede are turned on
-  Double_t fResCutInitial; ///< Cut on residual for first iteration
-  Double_t fResCut;        ///< Cut on residual for other iterations 
+  /// Flag for Magnetic filed On/Off
+  Bool_t fBFieldOn;
 
-  AliMillepede *fMillepede; ///< Detector independent alignment class
-  
-  TObjArray *fTrackParamAtCluster; ///< Array of track parameters 
-  AliMUONTrack *fTrack;            ///< AliMUONTrack 
-  AliMUONVCluster *fCluster;       ///< AliMUONVCluster
-  AliMUONTrackParam *fTrackParam;  ///< Track parameters 
+  /// Flags for chamber On/Off
+  Bool_t fChOnOff[10];
+
+  /// Flags for left right On/Off
+  Bool_t fSpecLROnOff[2];
+
+  /// Flags degrees of freedom to align (x,y,phi)
+  Bool_t fDoF[4];
+
+  /// "Encouraged" variation for degrees of freedom
+  Double_t fAllowVar[4];
+
+  /// Initial value for chi2 cut
+  /** if > 1 Iterations in AliMillepede are turned on */
+  Double_t fStartFac;
+
+  /// Cut on residual for first iteration
+  Double_t fResCutInitial;
+
+  /// Cut on residual for other iterations
+  Double_t fResCut;
+
+  /// Detector independent alignment class
+  AliMillepede *fMillepede;
+
+  /// AliMUONTrack
+  AliMUONTrack *fTrack;
+
+  /// AliMUONVCluster
+  AliMUONVCluster *fCluster;
+
+  ///< Track parameters
+  AliMUONTrackParam *fTrackParam;
 
   Int_t fNGlobal;  ///< Number of global parameters
   Int_t fNLocal;   ///< Number of local parameters
@@ -129,8 +203,8 @@ public:
   Double_t fTrackSlope[2];  ///< Track slope at current point
   Double_t fTrackPos0[3];   ///< Track intersection at reference point
   Double_t fTrackPos[3];    ///< Track intersection at current point
-  Double_t fTrackPosLoc[3]; ///< Track intersection at current point in local coordinates 
-  Double_t fMeas[2];        ///< Current measurement (depend on B field On/Off)  
+  Double_t fTrackPosLoc[3]; ///< Track intersection at current point in local coordinates
+  Double_t fMeas[2];        ///< Current measurement (depend on B field On/Off)
   Double_t fSigma[2];       ///< Estimated resolution on measurement
 
   Double_t fGlobalDerivatives[624]; ///< Array of global derivatives
@@ -185,12 +259,16 @@ public:
 
   Int_t fDetElemId;        ///< Detection element id
   Int_t fDetElemNumber;    ///< Detection element number
-  Double_t fPhi;           ///< Azimuthal tilt of detection element 
+  Double_t fPhi;           ///< Azimuthal tilt of detection element
   Double_t fCosPhi;        ///< Cosine of fPhi
   Double_t fSinPhi;        ///< Sine of fPhi
   Double_t fDetElemPos[3]; ///< Position of detection element
 
-  AliMUONGeometryTransformer *fTransform; ///< Geometry transformation
+  /// running Track record
+  AliMUONAlignmentTrackRecord fTrackRecord;
+
+  /// Geometry transformation
+  AliMUONGeometryTransformer *fTransform;
 
   static Int_t fgNSt;            ///< Number tracking stations
   static Int_t fgNCh;            ///< Number tracking chambers
@@ -200,7 +278,8 @@ public:
   static Int_t fgNDetElemCh[10]; ///< Number of detection elements per chamber
   static Int_t fgSNDetElemCh[10];///< Sum of detection elements up to this chamber (inc)
 
-ClassDef(AliMUONAlignment, 2) //Class for alignment of muon spectrometer
+  ClassDef(AliMUONAlignment, 2)
+
 };
 
 #endif

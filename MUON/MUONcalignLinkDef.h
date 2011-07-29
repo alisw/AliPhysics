@@ -15,6 +15,8 @@
 #pragma link C++ class AliMUONClusterInfo+;
 #pragma link C++ class AliMUONPadInfo+;
 #pragma link C++ class AliMUONAlignment+;
+#pragma link C++ class AliMUONAlignmentClusterRecord+;
+#pragma link C++ class AliMUONAlignmentTrackRecord+;
 #pragma link C++ class AliMUONAlignmentTask+;
 #pragma link C++ class AliMUONReAlignTask+;
 #pragma link C++ class AliMUONChamberCalibrationTask+;

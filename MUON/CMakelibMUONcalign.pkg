@@ -30,6 +30,7 @@ set ( SRCS
     AliMUONClusterInfo.cxx 
     AliMUONPadInfo.cxx 
     AliMUONAlignment.cxx 
+		AliMUONAlignmentRecord.cxx
     AliMUONAlignmentTask.cxx 
     AliMUONReAlignTask.cxx 
     AliMUONChamberCalibrationTask.cxx 
