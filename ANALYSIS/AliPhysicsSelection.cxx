@@ -642,6 +642,10 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 		    AliDebug(AliLog::kDebug, Form("Accepted event for histograms with trigger logic %d", triggerLogic));
             
 		    fHistStatistics[iHistStat]->Fill(kStatAccepted, i);
+
+		    if (aEsd->IsPileupFromSPD())
+		      fHistStatistics[iHistStat]->Fill(kStatAcceptedPileUp, i);
+
 		    // if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
 		    if((i < fCollTrigClasses.GetEntries() || fSkipTriggerClassSelection) && (iHistStat==kStatIdxAll))
 		      accept |= singleTriggerResult; // only set for "all" (should not really matter)
@@ -1092,7 +1096,7 @@ TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
 #else
   Int_t extrarows = fComputeBG != 0 ? 6 : 0;
 #endif
-  TH2F * h = new TH2F(Form("fHistStatistics%s",tag), Form("fHistStatistics - %s ;;",tag), kStatAccepted, 0.5, kStatAccepted+0.5, count+extrarows, -0.5, -0.5 + count+extrarows);
+  TH2F * h = new TH2F(Form("fHistStatistics%s",tag), Form("fHistStatistics - %s ;;",tag), kStatAcceptedPileUp, 0.5, kStatAcceptedPileUp+0.5, count+extrarows, -0.5, -0.5 + count+extrarows);
 
   h->GetXaxis()->SetBinLabel(kStatTriggerClass,  "Trigger class");
   h->GetXaxis()->SetBinLabel(kStatHWTrig,	 "Hardware trigger");
@@ -1116,6 +1120,8 @@ TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
   //h->GetXaxis()->SetBinLabel(kStatAny2Hits,	 "2 Hits & !V0 BG");
   h->GetXaxis()->SetBinLabel(kStatBG,	         "Background identification");
   h->GetXaxis()->SetBinLabel(kStatAccepted,      "Accepted");
+  h->GetXaxis()->SetBinLabel(kStatAcceptedPileUp, "Pile up (in accepted)");
+
 
   Int_t n = 1;
   for (Int_t i=0; i < fCollTrigClasses.GetEntries(); i++)
@@ -1248,7 +1254,7 @@ void AliPhysicsSelection::Print(const Option_t *option) const
 	 !alreadyFoundTriggers.Contains(((TObjString*) fCollTrigClasses.At(i))->String().Data())) {
 	Printf("WARNING: Trigger class %s has a very low efficiency (%d/%d=%.2f)",((TObjString*) fCollTrigClasses.At(i))->String().Data(), (Int_t) triggeredEvents, (Int_t) allEvents, eff);
 	alreadyFoundTriggers += ((TObjString*) fCollTrigClasses.At(i))->String().Data();
-	Printf(alreadyFoundTriggers.Data());
+	Printf("%s", alreadyFoundTriggers.Data());
       }
 
     }
