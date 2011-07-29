@@ -76,6 +76,8 @@ Int_t AliEventPool::UpdatePool(TObjArray *trk)
 {
   // A rolling buffer (a double-ended queue) is updated by removing
   // the oldest event, and appending the newest.
+  //
+  // the ownership of <trk> is delegated to this class
 
   static Int_t iEvent = -1; 
   iEvent++;

@@ -82,6 +82,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetUseChargeHadrons( Bool_t val ) { fUseChargeHadrons = val; }
     void   SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
     void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
+    void   SetFillpT(Bool_t flag) { fFillpT = flag; }
 
     
   private:
@@ -124,7 +125,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     TList*              fListOfHistos;    //  Output list of containers 
     
     // Event QA cuts
-    Int_t          	fnTracksVertex;        // QA tracks pointing to principal vertex (= 3 default) 
+    Int_t          	fnTracksVertex;        // QA tracks pointing to principal vertex
     Double_t       	fZVertex;              // Position of Vertex in Z direction
     TString             fCentralityMethod;     // Method to determine centrality
     
@@ -136,6 +137,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t         	fUseChargeHadrons;     // Only use charge hadrons
     
     Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
+    Bool_t fFillpT;                // fill sum pT instead of number density
     
     ClassDef( AliAnalysisTaskPhiCorrelations, 1); // Analysis task for Underlying Event analysis w.r.t. leading track
   };
