@@ -16,5 +16,5 @@ void SETUP()
    gROOT->ProcessLine(".include STEERBase");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("STEERBase_INCLUDE", "STEERBase");
+   gSystem->Setenv("STEERBase_INCLUDE", "STEERBase/STEERBase");
 }

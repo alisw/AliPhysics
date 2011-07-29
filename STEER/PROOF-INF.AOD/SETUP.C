@@ -16,5 +16,5 @@ void SETUP()
    gROOT->ProcessLine(".include AOD");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("AOD_INCLUDE", "AOD");
+   gSystem->Setenv("AOD_INCLUDE", "AOD/AOD");
 }

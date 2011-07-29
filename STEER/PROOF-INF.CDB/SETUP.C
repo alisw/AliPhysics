@@ -16,5 +16,5 @@ void SETUP()
    gROOT->ProcessLine(".include CDB");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("CDB_INCLUDE", "CDB");
+   gSystem->Setenv("CDB_INCLUDE", "CDB/CDB");
 }

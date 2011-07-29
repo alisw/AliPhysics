@@ -16,5 +16,5 @@ void SETUP()
    gROOT->ProcessLine(".include ESD");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("ESD_INCLUDE", "ESD");
+   gSystem->Setenv("ESD_INCLUDE", "ESD/ESD");
 }
