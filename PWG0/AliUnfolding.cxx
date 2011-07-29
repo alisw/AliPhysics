@@ -27,6 +27,11 @@
 #include <TMath.h>
 #include <TCanvas.h>
 #include <TF1.h>
+#include <TExec.h>
+#include "Riostream.h"
+#include "TROOT.h"
+
+using namespace std; //required for resolving the 'cout' symbol
 
 TMatrixD* AliUnfolding::fgCorrelationMatrix = 0;
 TMatrixD* AliUnfolding::fgCorrelationMatrixSquared = 0;
@@ -34,7 +39,9 @@ TMatrixD* AliUnfolding::fgCorrelationCovarianceMatrix = 0;
 TVectorD* AliUnfolding::fgCurrentESDVector = 0;
 TVectorD* AliUnfolding::fgEntropyAPriori = 0;
 TVectorD* AliUnfolding::fgEfficiency = 0;
-TVectorD* AliUnfolding::fgBinWidths = 0;
+
+TAxis* AliUnfolding::fgUnfoldedAxis = 0;
+TAxis* AliUnfolding::fgMeasuredAxis = 0;
 
 TF1* AliUnfolding::fgFitFunction = 0;
 
@@ -47,9 +54,10 @@ AliUnfolding::RegularizationType AliUnfolding::fgRegularizationType = AliUnfoldi
 Float_t AliUnfolding::fgRegularizationWeight = 10000;
 Int_t AliUnfolding::fgSkipBinsBegin = 0;
 Float_t AliUnfolding::fgMinuitStepSize = 0.1;                 // (usually not needed to be changed) step size in minimization
+Float_t AliUnfolding::fgMinuitPrecision = 1e-6;               // minuit precision
 Bool_t AliUnfolding::fgMinimumInitialValue = kFALSE;          // set all initial values at least to the smallest value among the initial values
 Float_t AliUnfolding::fgMinimumInitialValueFix = -1;
-Bool_t AliUnfolding::fgNormalizeInput = kFALSE;                  // normalize input spectrum
+Bool_t AliUnfolding::fgNormalizeInput = kFALSE;               // normalize input spectrum
 Float_t AliUnfolding::fgNotFoundEvents = 0;
 Bool_t AliUnfolding::fgSkipBin0InChi2 = kFALSE;
 
@@ -59,6 +67,20 @@ Int_t   AliUnfolding::fgBayesianIterations = 10;          // number of iteration
 Bool_t AliUnfolding::fgDebug = kFALSE;
 
 Int_t AliUnfolding::fgCallCount = 0;
+
+Int_t AliUnfolding::fgPowern = 5;
+
+Double_t AliUnfolding::fChi2FromFit = 0.;
+Double_t AliUnfolding::fPenaltyVal  = 0.;
+Double_t AliUnfolding::fAvgResidual = 0.;
+
+Int_t AliUnfolding::fgPrintChi2Details = 0;
+
+TCanvas *AliUnfolding::fgCanvas = 0;
+TH1 *AliUnfolding::fghUnfolded = 0;     
+TH2 *AliUnfolding::fghCorrelation = 0;  
+TH1 *AliUnfolding::fghEfficiency = 0;   
+TH1 *AliUnfolding::fghMeasured = 0;     
 
 ClassImp(AliUnfolding)
 
@@ -136,10 +158,15 @@ void AliUnfolding::SetNbins(Int_t nMeasured, Int_t nUnfolded)
     delete fgEfficiency;
     fgEfficiency = 0;
   }
-  if (fgBinWidths)
+  if (fgUnfoldedAxis)
   {
-    delete fgBinWidths;
-    fgBinWidths = 0;
+    delete fgUnfoldedAxis;
+    fgUnfoldedAxis = 0;
+  }
+  if (fgMeasuredAxis)
+  {
+    delete fgMeasuredAxis;
+    fgMeasuredAxis = 0;
   }
   
   Printf("AliUnfolding::SetNbins: Set %d measured bins and %d unfolded bins", nMeasured, nUnfolded);
@@ -224,6 +251,9 @@ Int_t AliUnfolding::Unfold(TH2* correlation, TH1* efficiency, TH1* measured, TH1
     case kFunction:
       return UnfoldWithFunction(correlation, efficiency, measured, initialConditions, result);
   }
+
+
+
   return -1;
 }
 
@@ -244,9 +274,13 @@ void AliUnfolding::SetStaticVariables(TH2* correlation, TH1* measured, TH1* effi
     fgEntropyAPriori = new TVectorD(fgMaxParams);
   if (!fgEfficiency)
     fgEfficiency = new TVectorD(fgMaxParams);
-  if (!fgBinWidths)
-    fgBinWidths = new TVectorD(fgMaxParams);
-    
+  if (!fgUnfoldedAxis)
+    delete fgUnfoldedAxis;
+  fgUnfoldedAxis = new TAxis(*(correlation->GetXaxis()));
+  if (!fgMeasuredAxis)
+    delete fgMeasuredAxis;
+  fgMeasuredAxis = new TAxis(*(correlation->GetYaxis()));    
+
   fgCorrelationMatrix->Zero();
   fgCorrelationCovarianceMatrix->Zero();
   fgCurrentESDVector->Zero();
@@ -311,8 +345,11 @@ void AliUnfolding::SetStaticVariables(TH2* correlation, TH1* measured, TH1* effi
   for (Int_t i=0; i<fgMaxParams; ++i)
   {
     (*fgEfficiency)(i) = efficiency->GetBinContent(i+1);
-    (*fgBinWidths)(i) = efficiency->GetXaxis()->GetBinWidth(i+1);
   }
+
+  if (correlation->GetNbinsX() != fgMaxParams || correlation->GetNbinsY() != fgMaxInput)
+    cout << "Response histo has incorrect dimensions; expect (" << fgMaxParams << ", " << fgMaxInput << "), got (" << correlation->GetNbinsX() << ", " << correlation->GetNbinsY() << ")" << endl;
+
 }
 
 //____________________________________________________________________
@@ -339,6 +376,7 @@ Int_t AliUnfolding::UnfoldWithMinuit(TH2* correlation, TH1* efficiency, TH1* mea
     
   TVirtualFitter *minuit = TVirtualFitter::Fitter(0, params);
   Double_t arglist[100];
+  //  minuit->SetDefaultFitter("Minuit2");
 
   // disable any output (-1), unfortuantly we do not see warnings anymore then. Have to find another way...
   arglist[0] = 0;
@@ -349,6 +387,9 @@ Int_t AliUnfolding::UnfoldWithMinuit(TH2* correlation, TH1* efficiency, TH1* mea
 
   // set minimization function
   minuit->SetFCN(Chi2Function);
+
+  // set precision
+  minuit->SetPrecision(fgMinuitPrecision);
 
   for (Int_t i=0; i<fgMaxParams; i++)
     (*fgEntropyAPriori)[i] = 1;
@@ -425,7 +466,8 @@ Int_t AliUnfolding::UnfoldWithMinuit(TH2* correlation, TH1* efficiency, TH1* mea
   // first param is number of iterations, second is precision....
   arglist[0] = 1e6;
   //arglist[1] = 1e-5;
-  //minuit->ExecuteCommand("SCAN", arglist, 0);
+  //  minuit->ExecuteCommand("SET PRINT", arglist, 3);
+  //  minuit->ExecuteCommand("SCAN", arglist, 0);
   Int_t status = minuit->ExecuteCommand("MIGRAD", arglist, 1);
   Printf("AliUnfolding::UnfoldWithMinuit: MINUIT status is %d", status);
   //printf("!!!!!!!!!!!!!! MIGRAD finished: Starting MINOS !!!!!!!!!!!!!!");
@@ -451,6 +493,7 @@ Int_t AliUnfolding::UnfoldWithMinuit(TH2* correlation, TH1* efficiency, TH1* mea
     
     if (efficiency)
     {	
+      //printf("value before efficiency correction: %f\n",value);
       if (efficiency->GetBinContent(i+1) > 0)
       {
 	value /= efficiency->GetBinContent(i+1);
@@ -462,7 +505,7 @@ Int_t AliUnfolding::UnfoldWithMinuit(TH2* correlation, TH1* efficiency, TH1* mea
 	error = 0;
       }
     }
-    
+    //printf("value after efficiency correction: %f +/- %f\n",value,error);
     result->SetBinContent(i+1, value);
     result->SetBinError(i+1, error);
   }
@@ -471,9 +514,6 @@ Int_t AliUnfolding::UnfoldWithMinuit(TH2* correlation, TH1* efficiency, TH1* mea
   Chi2Function(dummy, 0, chi2, results, 0);
   Printf("AliUnfolding::UnfoldWithMinuit: Chi2 of final parameters is = %f", chi2);
   
-  if (fgDebug)
-    DrawGuess(results);
-
   delete[] results;
 
   return status;
@@ -811,18 +851,19 @@ Double_t AliUnfolding::RegularizationPol0(TVectorD& params)
   // homogenity term for minuit fitting
   // pure function of the parameters
   // prefers constant function (pol0)
-
+  //
+  // Does not take into account efficiency
   Double_t chi2 = 0;
 
   for (Int_t i=1+fgSkipBinsBegin; i<fgMaxParams; ++i)
   {
-    Double_t right  = params[i] / (*fgBinWidths)(i);
-    Double_t left   = params[i-1] / (*fgBinWidths)(i-1);
+    Double_t right  = params[i] / fgUnfoldedAxis->GetBinWidth(i+1);
+    Double_t left   = params[i-1] / fgUnfoldedAxis->GetBinWidth(i);
 
     if (left != 0)
     {
       Double_t diff = (right - left);
-      chi2 += diff * diff / left / (((*fgBinWidths)(i) + (*fgBinWidths)(i-1)) / 2);
+      chi2 += diff * diff / left / ((fgUnfoldedAxis->GetBinWidth(i+1) + fgUnfoldedAxis->GetBinWidth(i)) / 2);
     }
   }
 
@@ -835,7 +876,8 @@ Double_t AliUnfolding::RegularizationPol1(TVectorD& params)
   // homogenity term for minuit fitting
   // pure function of the parameters
   // prefers linear function (pol1)
-
+  //
+  // Does not take into account efficiency
   Double_t chi2 = 0;
 
   for (Int_t i=2+fgSkipBinsBegin; i<fgMaxParams; ++i)
@@ -843,16 +885,16 @@ Double_t AliUnfolding::RegularizationPol1(TVectorD& params)
     if (params[i-1] == 0)
       continue;
 
-    Double_t right  = params[i] / (*fgBinWidths)(i);
-    Double_t middle = params[i-1] / (*fgBinWidths)(i-1);
-    Double_t left   = params[i-2] / (*fgBinWidths)(i-2);
+    Double_t right  = params[i] / fgUnfoldedAxis->GetBinWidth(i+1);
+    Double_t middle = params[i-1] / fgUnfoldedAxis->GetBinWidth(i);
+    Double_t left   = params[i-2] / fgUnfoldedAxis->GetBinWidth(i-1);
 
-    Double_t der1 = (right - middle) / (((*fgBinWidths)(i) + (*fgBinWidths)(i-1)) / 2);
-    Double_t der2 = (middle - left) / (((*fgBinWidths)(i-1) + (*fgBinWidths)(i-2)) / 2);
+    Double_t der1 = (right - middle) / ((fgUnfoldedAxis->GetBinWidth(i+1) + fgUnfoldedAxis->GetBinWidth(i)) / 2);
+    Double_t der2 = (middle - left) / ((fgUnfoldedAxis->GetBinWidth(i) + fgUnfoldedAxis->GetBinWidth(i-1)) / 2);
 
     //Double_t diff = (der1 - der2) / middle;
     //chi2 += diff * diff;
-    chi2 += (der1 - der2) * (der1 - der2) / middle * (*fgBinWidths)(i-1);
+    chi2 += (der1 - der2) * (der1 - der2) / middle * fgUnfoldedAxis->GetBinWidth(i);
   }
 
   return chi2;
@@ -863,7 +905,9 @@ Double_t AliUnfolding::RegularizationLog(TVectorD& params)
 {
   // homogenity term for minuit fitting
   // pure function of the parameters
-  // prefers linear function (pol1)
+  // prefers logarithmic function (log)
+  //
+  // Does not take into account efficiency
 
   Double_t chi2 = 0;
 
@@ -872,12 +916,12 @@ Double_t AliUnfolding::RegularizationLog(TVectorD& params)
     if (params[i-1] == 0 || params[i] == 0 || params[i-2] == 0)
      continue;
 
-    Double_t right  = log(params[i] / (*fgBinWidths)(i));
-    Double_t middle = log(params[i-1] / (*fgBinWidths)(i-1));
-    Double_t left   = log(params[i-2] / (*fgBinWidths)(i-2));
+    Double_t right  = log(params[i] / fgUnfoldedAxis->GetBinWidth(i+1));
+    Double_t middle = log(params[i-1] / fgUnfoldedAxis->GetBinWidth(i));
+    Double_t left   = log(params[i-2] / fgUnfoldedAxis->GetBinWidth(i-1));
     
-    Double_t der1 = (right - middle) / (((*fgBinWidths)(i) + (*fgBinWidths)(i-1)) / 2);
-    Double_t der2 = (middle - left) / (((*fgBinWidths)(i-1) + (*fgBinWidths)(i-2)) / 2);
+    Double_t der1 = (right - middle) / ((fgUnfoldedAxis->GetBinWidth(i+1) + fgUnfoldedAxis->GetBinWidth(i)) / 2);
+    Double_t der2 = (middle - left) / ((fgUnfoldedAxis->GetBinWidth(i) + fgUnfoldedAxis->GetBinWidth(i-1)) / 2);
     
     //Double_t error = 1. / params[i] + 4. / params[i-1] + 1. / params[i-2];
 
@@ -896,6 +940,8 @@ Double_t AliUnfolding::RegularizationTotalCurvature(TVectorD& params)
   // pure function of the parameters
   // minimizes the total curvature (from Unfolding Methods In High-Energy Physics Experiments,
   // V. Blobel (Hamburg U.) . DESY 84/118, Dec 1984. 40pp.
+  //
+  // Does not take into account efficiency
 
   Double_t chi2 = 0;
 
@@ -923,6 +969,8 @@ Double_t AliUnfolding::RegularizationEntropy(TVectorD& params)
   // pure function of the parameters
   // calculates entropy, from
   // The method of reduced cross-entropy (M. Schmelling 1993)
+  //
+  // Does not take into account efficiency
 
   Double_t paramSum = 0;
   
@@ -950,6 +998,8 @@ Double_t AliUnfolding::RegularizationRatio(TVectorD& params)
 {
   // homogenity term for minuit fitting
   // pure function of the parameters
+  //
+  // Does not take into account efficiency
 
   Double_t chi2 = 0;
 
@@ -958,12 +1008,12 @@ Double_t AliUnfolding::RegularizationRatio(TVectorD& params)
     if (params[i-1] == 0 || params[i] == 0)
       continue;
 
-    Double_t right  = params[i] / (*fgBinWidths)(i);
-    Double_t middle = params[i-1] / (*fgBinWidths)(i-1);
-    Double_t left   = params[i-2] / (*fgBinWidths)(i-2);
-    Double_t left2   = params[i-3] / (*fgBinWidths)(i-3);
-    Double_t left3   = params[i-4] / (*fgBinWidths)(i-4);
-    Double_t left4   = params[i-5] / (*fgBinWidths)(i-5);
+    Double_t right  = params[i] / fgUnfoldedAxis->GetBinWidth(i+1);
+    Double_t middle = params[i-1] / fgUnfoldedAxis->GetBinWidth(i);
+    Double_t left   = params[i-2] / fgUnfoldedAxis->GetBinWidth(i-1);
+    Double_t left2   = params[i-3] / fgUnfoldedAxis->GetBinWidth(i-2);
+    Double_t left3   = params[i-4] / fgUnfoldedAxis->GetBinWidth(i-3);
+    Double_t left4   = params[i-5] / fgUnfoldedAxis->GetBinWidth(i-4);
 
     //Double_t diff = left / middle - middle / right;
     //Double_t diff = 2 * left / middle - middle / right - left2 / left;
@@ -976,6 +1026,87 @@ Double_t AliUnfolding::RegularizationRatio(TVectorD& params)
 }
 
 //____________________________________________________________________
+Double_t AliUnfolding::RegularizationPowerLaw(TVectorD& params)
+{
+  // homogenity term for minuit fitting
+  // pure function of the parameters
+  // prefers power law with n = -5
+  //
+  // Does not take into account efficiency
+
+  Double_t chi2 = 0;
+
+  Double_t right = 0.;
+  Double_t middle = 0.;
+  Double_t left = 0.;
+
+  for (Int_t i=2+fgSkipBinsBegin; i<fgMaxParams; ++i)
+  {
+    if (params[i] < 1e-8 || params[i-1] < 1e-8 || params[i-2] < 1e-8)
+      continue;
+
+    if (fgUnfoldedAxis->GetBinWidth(i+1) < 1e-8 || fgUnfoldedAxis->GetBinWidth(i) < 1e-8 || fgUnfoldedAxis->GetBinWidth(i-1) < 1e-8)
+      continue;
+    
+    middle = TMath::Power(params[i-1] / fgUnfoldedAxis->GetBinWidth(i),fgPowern);
+
+    if(middle>0) {
+      right  = TMath::Power(params[i] / fgUnfoldedAxis->GetBinWidth(i),fgPowern)/middle;
+
+      left   = TMath::Power(params[i-2] / fgUnfoldedAxis->GetBinWidth(i-1),fgPowern)/middle;
+      
+      middle = 1.;
+      
+      Double_t der1 = (right - middle) / ((fgUnfoldedAxis->GetBinWidth(i+1) + fgUnfoldedAxis->GetBinWidth(i)) / 2);
+      Double_t der2 = (middle - left) / ((fgUnfoldedAxis->GetBinWidth(i-1) + fgUnfoldedAxis->GetBinWidth(i-2)) / 2);
+    
+      chi2 += (der1 - der2) * (der1 - der2)/ ( fgUnfoldedAxis->GetBinWidth(i)/2. + fgUnfoldedAxis->GetBinWidth(i-1) + fgUnfoldedAxis->GetBinWidth(i-2)/2.)/( fgUnfoldedAxis->GetBinWidth(i)/2. + fgUnfoldedAxis->GetBinWidth(i-1) + fgUnfoldedAxis->GetBinWidth(i-2)/2.);// / error;
+      //   printf("i: %d chi2 = %f\n",i,chi2);
+    }
+
+  }
+
+  return chi2;
+}
+
+//____________________________________________________________________
+Double_t AliUnfolding::RegularizationLogLog(TVectorD& params)
+{
+  // homogenity term for minuit fitting
+  // pure function of the parameters
+  // prefers a powerlaw (linear on a log-log scale)
+  //
+  // The calculation takes into account the efficiencies
+
+  Double_t chi2 = 0;
+
+  for (Int_t i=2+fgSkipBinsBegin; i<fgMaxParams; ++i)
+  {
+    if (params[i-1] == 0 || params[i] == 0 || params[i-2] == 0)
+     continue;
+    if ((*fgEfficiency)(i-1) == 0 || (*fgEfficiency)(i) == 0 || (*fgEfficiency)(i-2) == 0)
+     continue;
+
+
+    Double_t right  = log(params[i] / (*fgEfficiency)(i) / fgUnfoldedAxis->GetBinWidth(i));
+    Double_t middle = log(params[i-1] / (*fgEfficiency)(i-1) / fgUnfoldedAxis->GetBinWidth(i-1));
+    Double_t left   = log(params[i-2] / (*fgEfficiency)(i-2) / fgUnfoldedAxis->GetBinWidth(i-2));
+    
+    Double_t der1 = (right - middle) / ( log(fgUnfoldedAxis->GetBinCenter(i+1)) - log(fgUnfoldedAxis->GetBinCenter(i)) );
+    Double_t der2 = (middle - left) /( log(fgUnfoldedAxis->GetBinCenter(i)) - log(fgUnfoldedAxis->GetBinCenter(i-1)) );
+
+    double tmp = (log(fgUnfoldedAxis->GetBinCenter(i+1)) - log(fgUnfoldedAxis->GetBinCenter(i-1)))/2.;
+    Double_t dder = (der1-der2) / tmp;
+
+    chi2 += dder * dder;
+  }
+
+  return chi2;
+}
+
+
+
+//____________________________________________________________________
 void AliUnfolding::Chi2Function(Int_t&, Double_t*, Double_t& chi2, Double_t *params, Int_t)
 {
   //
@@ -985,13 +1116,14 @@ void AliUnfolding::Chi2Function(Int_t&, Double_t*, Double_t& chi2, Double_t *par
   
   // TODO use static members for the variables here to speed up processing (no construction/deconstruction)
 
-  // d
+  // d = guess
   TVectorD paramsVector(fgMaxParams);
   for (Int_t i=0; i<fgMaxParams; ++i)
     paramsVector[i] = params[i] * params[i];
 
   // calculate penalty factor
   Double_t penaltyVal = 0;
+
   switch (fgRegularizationType)
   {
     case kNone:       break;
@@ -1001,12 +1133,11 @@ void AliUnfolding::Chi2Function(Int_t&, Double_t*, Double_t& chi2, Double_t *par
     case kEntropy:    penaltyVal = RegularizationEntropy(paramsVector); break;
     case kLog:        penaltyVal = RegularizationLog(paramsVector); break;
     case kRatio:      penaltyVal = RegularizationRatio(paramsVector); break;
+    case kPowerLaw:   penaltyVal = RegularizationPowerLaw(paramsVector); break;
+    case kLogLog:     penaltyVal = RegularizationLogLog(paramsVector); break;
   }
 
-  //if (penaltyVal > 1e10)
-  //  paramsVector2.Print();
-
-  penaltyVal *= fgRegularizationWeight;
+  penaltyVal *= fgRegularizationWeight; //beta*PU
 
   // Ad
   TVectorD measGuessVector(fgMaxInput);
@@ -1031,7 +1162,6 @@ void AliUnfolding::Chi2Function(Int_t&, Double_t*, Double_t& chi2, Double_t *par
       error = errorGuessVector(i);
     chi2FromFit += measGuessVector(i) * measGuessVector(i) / error;
   }
-  //measGuessVector.Print();
 
 #else
   // old error calcuation using the error on the measured
@@ -1045,7 +1175,6 @@ void AliUnfolding::Chi2Function(Int_t&, Double_t*, Double_t& chi2, Double_t *par
   for (Int_t i=0; i<fgMaxInput; ++i)
     measGuessVector[i] *= (*fgCorrelationCovarianceMatrix)(i, i);
 
-  //measGuessVector.Print();
 
   if (fgSkipBin0InChi2)
     measGuessVector[0] = 0;
@@ -1071,8 +1200,8 @@ void AliUnfolding::Chi2Function(Int_t&, Double_t*, Double_t& chi2, Double_t *par
       errorNotFoundEvents += eff * eff * paramsVector(i); // error due to guess (paramsVector)
       if (i <= 3)
 	errorNotFoundEvents += (eff * 0.03) * (eff * 0.03) * paramsVector(i) * paramsVector(i); // error on eff
-      //if ((fgCallCount % 10000) == 0)
-      //  Printf("%d %f %f %f", i, (*fgEfficiency)(i), paramsVector(i), currentNotFoundEvents);
+      //      if ((fgCallCount % 10000) == 0)
+	//Printf("%d %f %f %f", i, (*fgEfficiency)(i), paramsVector(i), currentNotFoundEvents);
     }
     errorNotFoundEvents += fgNotFoundEvents;
     // TODO add error on background, background estimate
@@ -1088,28 +1217,196 @@ void AliUnfolding::Chi2Function(Int_t&, Double_t*, Double_t& chi2, Double_t *par
   {
     avg += paramsVector(i) * currentMult;
     sum += paramsVector(i);
-    currentMult += (*fgBinWidths)(i);
+    currentMult += fgUnfoldedAxis->GetBinWidth(i);
   }
   avg /= sum;
   Float_t chi2Avg = 0; //(avg - 3.73) * (avg - 3.73) * 100;
 
   chi2 = chi2FromFit + penaltyVal + notFoundEventsConstraint + chi2Avg;
-  
+
   if ((fgCallCount++ % 1000) == 0)
   {
-    Printf("AliUnfolding::Chi2Function: Iteration %d (ev %d %d +- %f) (%f) (%f): %f %f %f %f --> %f", fgCallCount-1, (Int_t) fgNotFoundEvents, (Int_t) currentNotFoundEvents, TMath::Sqrt(errorNotFoundEvents), params[fgMaxParams], avg, chi2FromFit, penaltyVal, notFoundEventsConstraint, chi2Avg, chi2);
+
+    Printf("AliUnfolding::Chi2Function: Iteration %d (ev %d %d +- %f) (%f) (%f): %f %f %f %f --> %f", fgCallCount-1, (Int_t) fgNotFoundEvents, (Int_t) currentNotFoundEvents, TMath::Sqrt(errorNotFoundEvents), params[fgMaxParams-1], avg, chi2FromFit, penaltyVal, notFoundEventsConstraint, chi2Avg, chi2);
+
     //for (Int_t i=0; i<fgMaxInput; ++i)
     //  Printf("%d: %f", i, measGuessVector(i) * copy(i) * 1e6);
   }
+
+  fChi2FromFit = chi2FromFit;
+  fPenaltyVal = penaltyVal;
 }
 
 //____________________________________________________________________
-void AliUnfolding::DrawGuess(Double_t *params)
+void AliUnfolding::MakePads() {
+    TPad *presult = new TPad("presult","result",0,0.4,1,1);
+    presult->SetNumber(1);
+    presult->Draw();
+    presult->SetLogy();
+    TPad *pres = new TPad("pres","residuals",0,0.2,1,0.4);
+    pres->SetNumber(2);
+    pres->Draw();
+    TPad *ppen = new TPad("ppen","penalty",0,0.0,1,0.2);
+    ppen->SetNumber(3);
+    ppen->Draw();
+ 
+}
+//____________________________________________________________________
+void AliUnfolding::DrawResults(TH2* correlation, TH1* efficiency, TH1* measured, TH1* initialConditions, TCanvas *canv, Int_t reuseHists,TH1 *unfolded)
+{
+  // Draw histograms of
+  //   - Result folded with response
+  //   - Penalty factors
+  //   - Chisquare contributions
+  // (Useful for debugging/sanity checks and the interactive unfolder)
+  //
+  // If a canvas pointer is given (canv != 0), it will be used for all
+  // plots; 3 pads are made if needed.
+
+
+  Int_t blankCanvas = 0;
+  TVirtualPad *presult = 0;
+  TVirtualPad *pres = 0; 
+  TVirtualPad *ppen = 0;
+  
+  if (canv) {
+    canv->cd();
+    presult = canv->GetPad(1);
+    pres = canv->GetPad(2);
+    ppen = canv->GetPad(3); 
+    if (presult == 0 || pres == 0 || ppen == 0) {
+      canv->Clear();
+      MakePads();
+      blankCanvas = 1;
+      presult = canv->GetPad(1);
+      pres = canv->GetPad(2);
+      ppen = canv->GetPad(3); 
+    } 
+  }
+  else {
+    presult = new TCanvas;
+    pres = new TCanvas;
+    ppen = new TCanvas;
+  }
+
+
+  if (fgMaxInput == -1)
+  {
+    Printf("AliUnfolding::Unfold: WARNING. Number of measured bins not set with SetNbins. Using number of bins in measured distribution");
+    fgMaxInput = measured->GetNbinsX();
+  }
+  if (fgMaxParams == -1)
+  {
+    Printf("AliUnfolding::Unfold: WARNING. Number of unfolded bins not set with SetNbins. Using number of bins in measured distribution");
+    fgMaxParams = initialConditions->GetNbinsX();
+  }
+
+  if (fgOverflowBinLimit > 0)
+    CreateOverflowBin(correlation, measured);
+
+  // Uses Minuit methods
+
+  SetStaticVariables(correlation, measured, efficiency);
+
+  Double_t* params = new Double_t[fgMaxParams+1];
+  for (Int_t i=0; i<fgMaxParams; ++i)
+  {
+    params[i] = initialConditions->GetBinContent(i+1) * efficiency->GetBinContent(i+1);
+
+    Bool_t fix = kFALSE;
+    if (params[i] < 0)
+    {
+      fix = kTRUE;
+      params[i] = -params[i];
+    }
+    params[i]=TMath::Sqrt(params[i]);
+
+    //cout << "params[" << i << "] " << params[i] << endl;
+
+  } 
+
+  Double_t chi2;
+  Int_t dummy;
+
+  //fgPrintChi2Details = kTRUE;
+  fgCallCount = 0; // To make sure that Chi2Function prints the components
+  Chi2Function(dummy, 0, chi2, params, 0);
+
+  presult->cd();
+  TH1 *meas2 = (TH1*)measured->Clone();
+  meas2->SetLineColor(1);
+  meas2->SetLineWidth(2);
+  meas2->SetMarkerColor(meas2->GetLineColor());
+  meas2->SetMarkerStyle(20);
+  Float_t scale = unfolded->GetXaxis()->GetBinWidth(1)/meas2->GetXaxis()->GetBinWidth(1);
+  meas2->Scale(scale);
+  if (blankCanvas)
+    meas2->DrawCopy();
+  else
+    meas2->DrawCopy("same");
+  //meas2->GetXaxis()->SetLimits(0,fgMaxInput);
+  meas2->SetBit(kCannotPick);
+  DrawGuess(params, presult, pres, ppen, reuseHists,unfolded);
+}
+//____________________________________________________________________
+void AliUnfolding::RedrawInteractive() {
+  // 
+  // Helper function for interactive unfolding
+  //
+  DrawResults(fghCorrelation,fghEfficiency,fghMeasured,fghUnfolded,fgCanvas,1,fghUnfolded);
+}
+//____________________________________________________________________
+void AliUnfolding::InteractiveUnfold(TH2* correlation, TH1* efficiency, TH1* measured, TH1* initialConditions) 
+{
+  //
+  // Function to do interactive unfolding
+  // A canvas is drawn with the unfolding result
+  // Change the histogram with your mouse and all histograms 
+  // will be updated automatically
+
+  fgCanvas = new TCanvas("UnfoldingCanvas","Interactive unfolding",500,800);
+  fgCanvas->cd();
+
+  MakePads();
+
+  if (fghUnfolded) {
+    delete fghUnfolded; fghUnfolded = 0;
+  }
+  
+  gROOT->SetEditHistograms(kTRUE);
+
+  fghUnfolded = new TH1F("AluUnfoldingfghUnfolded","Unfolded result (Interactive unfolder",efficiency->GetNbinsX(),efficiency->GetXaxis()->GetXmin(),efficiency->GetXaxis()->GetXmax());
+  fghUnfolded->SetLineColor(2);
+  fghUnfolded->SetMarkerColor(2);
+  fghUnfolded->SetLineWidth(2);
+
+  fghCorrelation = correlation;
+  fghEfficiency = efficiency;
+  fghMeasured = measured;
+
+  UnfoldWithMinuit(correlation,efficiency,measured,initialConditions,fghUnfolded,kFALSE);
+
+  fgCanvas->cd(1);
+  fghUnfolded->Draw();
+  DrawResults(correlation,efficiency,measured,fghUnfolded,fgCanvas,kFALSE,fghUnfolded);
+
+  TExec *execRedraw = new TExec("redraw","AliUnfolding::RedrawInteractive()");
+  fghUnfolded->GetListOfFunctions()->Add(execRedraw);
+}
+//____________________________________________________________________
+void AliUnfolding::DrawGuess(Double_t *params, TVirtualPad *pfolded, TVirtualPad *pres, TVirtualPad *ppen, Int_t reuseHists,TH1* unfolded)
 {
   //
   // draws residuals of solution suggested by params and effect of regularization
   //
 
+  if (pfolded == 0)
+    pfolded = new TCanvas;
+  if (ppen == 0)
+    ppen = new TCanvas;
+  if (pres == 0)
+    pres = new TCanvas;
+  
   // d
   TVectorD paramsVector(fgMaxParams);
   for (Int_t i=0; i<fgMaxParams; ++i)
@@ -1119,11 +1416,34 @@ void AliUnfolding::DrawGuess(Double_t *params)
   TVectorD measGuessVector(fgMaxInput);
   measGuessVector = (*fgCorrelationMatrix) * paramsVector;
 
+  TH1* folded = 0;
+  if (reuseHists) 
+    folded = dynamic_cast<TH1*>(gROOT->FindObject("__hfolded"));
+  if (!reuseHists || folded == 0) {
+    if (fgMeasuredAxis->GetXbins()->GetArray()) // variable bins
+      folded = new TH1F("__hfolded","Folded histo from AliUnfolding",fgMeasuredAxis->GetNbins(),fgMeasuredAxis->GetXbins()->GetArray());
+    else
+      folded = new TH1F("__hfolded","Folded histo from AliUnfolding",fgMeasuredAxis->GetNbins(),fgMeasuredAxis->GetXmin(),fgMeasuredAxis->GetXmax());
+  }
+
+  folded->SetBit(kCannotPick);
+  folded->SetLineColor(4);
+  folded->SetLineWidth(2);
+
+  for (Int_t ibin =0; ibin < fgMaxInput; ibin++) 
+    folded->SetBinContent(ibin+1, measGuessVector[ibin]);
+
+  Float_t scale = unfolded->GetXaxis()->GetBinWidth(1)/folded->GetXaxis()->GetBinWidth(1);
+  folded->Scale(scale);
+
+  pfolded->cd();
+
+  folded->Draw("same");
+
   // Ad - m
   measGuessVector -= (*fgCurrentESDVector);
 
   TVectorD copy(measGuessVector);
-  //copy.Print();
 
   // (Ad - m) W
   // this step can be optimized because currently only the diagonal elements of fgCorrelationCovarianceMatrix are used
@@ -1139,15 +1459,106 @@ void AliUnfolding::DrawGuess(Double_t *params)
   //Double_t chi2FromFit = measGuessVector * copy * 1e6;
 
   // draw residuals
-  TH1* residuals = new TH1F("residuals", "residuals", fgMaxInput, -0.5, fgMaxInput - 0.5);
-  for (Int_t i=0; i<fgMaxInput; ++i)
-    residuals->SetBinContent(i+1, measGuessVector(i) * copy(i) * 1e6);
-  new TCanvas; residuals->DrawCopy(); gPad->SetLogy();
+  // Double_t pTarray[fgMaxParams+1];
+  // for(int i=0; i<fgMaxParams; i++) {
+  //   pTarray[i] = fgUnfoldedAxis->GetBinCenter(i)-0.5*fgUnfoldedAxis->GetBinWidth(i);
+  // }
+  //  pTarray[fgMaxParams] = fgUnfoldedAxis->GetBinCenter(fgMaxParams-1)+0.5*fgUnfoldedAxis->GetBinWidth(fgMaxParams-1);
+  //  TH1* residuals = new TH1F("residuals", "residuals", fgMaxParams,pTarray);
+  //  TH1* residuals = new TH1F("residuals", "residuals", fgMaxInput, -0.5, fgMaxInput - 0.5);
+  // for (Int_t i=0; i<fgMaxInput; ++i)
+  //   residuals->SetBinContent(i+1, measGuessVector(i) * copy(i) * 1e6);7
+  TH1* residuals = GetResidualsPlot(params);
+  residuals->GetXaxis()->SetTitleSize(0.06);
+  residuals->GetXaxis()->SetTitleOffset(0.7);
+  residuals->GetXaxis()->SetLabelSize(0.07);
+  residuals->GetYaxis()->SetTitleSize(0.08);
+  residuals->GetYaxis()->SetTitleOffset(0.5);
+  residuals->GetYaxis()->SetLabelSize(0.06);
+  pres->cd(); residuals->DrawCopy(); gPad->SetLogy();
+    
 
   // draw penalty
   TH1* penalty = GetPenaltyPlot(params);
-  
-  new TCanvas; penalty->DrawCopy(); gPad->SetLogy();
+  penalty->GetXaxis()->SetTitleSize(0.06);
+  penalty->GetXaxis()->SetTitleOffset(0.7);
+  penalty->GetXaxis()->SetLabelSize(0.07);
+  penalty->GetYaxis()->SetTitleSize(0.08);
+  penalty->GetYaxis()->SetTitleOffset(0.5);
+  penalty->GetYaxis()->SetLabelSize(0.06);
+  ppen->cd(); penalty->DrawCopy(); gPad->SetLogy();
+}
+
+//____________________________________________________________________
+TH1* AliUnfolding::GetResidualsPlot(TH1* corrected)
+{
+  //
+  // MvL: THIS MUST BE INCORRECT. 
+  // Need heff to calculate params from TH1 'corrected'
+  //
+
+  //
+  // fill residuals histogram of solution suggested by params and effect of regularization
+  //
+
+  Double_t* params = new Double_t[fgMaxParams];
+  for (Int_t i=0; i<TMath::Min(fgMaxParams, corrected->GetNbinsX()); i++)
+    params[i] = TMath::Sqrt(fabs(corrected->GetBinContent(i+1)*(*fgEfficiency)(i)));
+
+
+  return GetResidualsPlot(params);
+}
+
+//____________________________________________________________________
+TH1* AliUnfolding::GetResidualsPlot(Double_t* params)
+{
+  //
+  // fill residuals histogram of solution suggested by params and effect of regularization
+  //
+
+  // d
+  TVectorD paramsVector(fgMaxParams);
+  for (Int_t i=0; i<fgMaxParams; ++i)
+    paramsVector[i] = params[i] * params[i];
+
+  // Ad
+  TVectorD measGuessVector(fgMaxInput);
+  measGuessVector = (*fgCorrelationMatrix) * paramsVector;
+
+  // Ad - m
+  measGuessVector -= (*fgCurrentESDVector);
+
+  TVectorD copy(measGuessVector);
+
+  // (Ad - m) W
+  // this step can be optimized because currently only the diagonal elements of fgCorrelationCovarianceMatrix are used
+  // normal way is like this:
+  // measGuessVector *= (*fgCorrelationCovarianceMatrix);
+  // optimized way like this:
+  for (Int_t i=0; i<fgMaxInput; ++i)
+    measGuessVector[i] *= (*fgCorrelationCovarianceMatrix)(i, i);
+
+  // (Ad - m) W (Ad - m)
+  // the factor 1e6 prevents that a very small number (measGuessVector[i]) is multiplied with a very
+  // big number ((*fgCorrelationCovarianceMatrix)(i, i)) (see ApplyMinuitFit)
+  //Double_t chi2FromFit = measGuessVector * copy * 1e6;
+
+  // draw residuals
+  TH1* residuals = 0;
+  if (fgMeasuredAxis->GetXbins()->GetArray()) // variable bins
+    residuals = new TH1F("residuals", "residuals;unfolded pos;residual",fgMeasuredAxis->GetNbins(),fgMeasuredAxis->GetXbins()->GetArray());
+  else
+    residuals = new TH1F("residuals", "residuals;unfolded pos;residual",fgMeasuredAxis->GetNbins(),fgMeasuredAxis->GetXmin(), fgMeasuredAxis->GetXmax());
+  //  TH1* residuals = new TH1F("residuals", "residuals", fgMaxInput, -0.5, fgMaxInput - 0.5);
+
+  Double_t sumResiduals = 0.; 
+  for (Int_t i=0; i<fgMaxInput; ++i) {
+    residuals->SetBinContent(i+1, measGuessVector(i) * copy(i) * 1e6);
+    sumResiduals += measGuessVector(i) * copy(i) * 1e6;
+  }
+  fAvgResidual = sumResiduals/(double)fgMaxInput;
+ 
+  return residuals;
 }
 
 //____________________________________________________________________
@@ -1157,7 +1568,7 @@ TH1* AliUnfolding::GetPenaltyPlot(TH1* corrected)
 
   Double_t* params = new Double_t[fgMaxParams];
   for (Int_t i=0; i<TMath::Min(fgMaxParams, corrected->GetNbinsX()); i++)
-    params[i] = corrected->GetBinContent(i+1);
+    params[i] = (*fgEfficiency)(i)*corrected->GetBinContent(i+1);
   
   TH1* penalty = GetPenaltyPlot(params);
   
@@ -1171,20 +1582,27 @@ TH1* AliUnfolding::GetPenaltyPlot(Double_t* params)
 {
   // draws the penalty factors as function of multiplicity of the current selected regularization
   
-  TH1* penalty = new TH1F("penalty", ";unfolded multiplicity;penalty factor", fgMaxParams, -0.5, fgMaxParams - 0.5);
+  //TH1* penalty = new TH1F("penalty", ";unfolded multiplicity;penalty factor", fgMaxParams, -0.5, fgMaxParams - 0.5);
+  //  TH1* penalty = new TH1F("penalty", ";unfolded pos;penalty factor", fgMaxParams, fgUnfoldedAxis->GetBinCenter(0)-0.5*fgUnfoldedAxis->GetBinWidth(0),fgUnfoldedAxis->GetBinCenter(fgMaxParams)+0.5*fgUnfoldedAxis->GetBinWidth(fgMaxParams) );
+
+  TH1* penalty = 0;
+  if (fgUnfoldedAxis->GetXbins()->GetArray())
+    penalty = new TH1F("penalty", ";unfolded pos;penalty factor", fgUnfoldedAxis->GetNbins(),fgUnfoldedAxis->GetXbins()->GetArray());
+  else
+    penalty = new TH1F("penalty", ";unfolded pos;penalty factor", fgUnfoldedAxis->GetNbins(),fgUnfoldedAxis->GetXmin(),fgUnfoldedAxis->GetXmax());
 
   for (Int_t i=1+fgSkipBinsBegin; i<fgMaxParams; ++i)
   {
     Double_t diff = 0;
     if (fgRegularizationType == kPol0)
     {
-      Double_t right  = params[i] / (*fgBinWidths)(i);
-      Double_t left   = params[i-1] / (*fgBinWidths)(i-1);
+      Double_t right  = params[i] / fgUnfoldedAxis->GetBinWidth(i+1);
+      Double_t left   = params[i-1] / fgUnfoldedAxis->GetBinWidth(i);
 
       if (left != 0)
       {
         Double_t diffTmp = (right - left);
-        diff = diffTmp * diffTmp / left / (((*fgBinWidths)(i) + (*fgBinWidths)(i-1)) / 2) / 100;
+        diff = diffTmp * diffTmp / left / ((fgUnfoldedAxis->GetBinWidth(i+1) + fgUnfoldedAxis->GetBinWidth(i)) / 2) / 100;
       }
     } 
     if (fgRegularizationType == kPol1 && i > 1+fgSkipBinsBegin) 
@@ -1192,15 +1610,16 @@ TH1* AliUnfolding::GetPenaltyPlot(Double_t* params)
       if (params[i-1] == 0)
         continue;
 
-      Double_t right  = params[i] / (*fgBinWidths)(i);
-      Double_t middle = params[i-1] / (*fgBinWidths)(i-1);
-      Double_t left   = params[i-2] / (*fgBinWidths)(i-2);
+      Double_t right  = params[i] / fgUnfoldedAxis->GetBinWidth(i+1);
+      Double_t middle = params[i-1] / fgUnfoldedAxis->GetBinWidth(i);
+      Double_t left   = params[i-2] / fgUnfoldedAxis->GetBinWidth(i-1);
 
-      Double_t der1 = (right - middle) / (((*fgBinWidths)(i) + (*fgBinWidths)(i-1)) / 2);
-      Double_t der2 = (middle - left) / (((*fgBinWidths)(i-1) + (*fgBinWidths)(i-2)) / 2);
+      Double_t der1 = (right - middle) / ((fgUnfoldedAxis->GetBinWidth(i+1) + fgUnfoldedAxis->GetBinWidth(i)) / 2);
+      Double_t der2 = (middle - left) / ((fgUnfoldedAxis->GetBinWidth(i) + fgUnfoldedAxis->GetBinWidth(i-1)) / 2);
 
       diff = (der1 - der2) * (der1 - der2) / middle;
     }
+
     if (fgRegularizationType == kLog && i > 1+fgSkipBinsBegin) 
     {
       if (params[i-1] == 0)
@@ -1218,8 +1637,63 @@ TH1* AliUnfolding::GetPenaltyPlot(Double_t* params)
        
       diff = (der1 - der2) * (der1 - der2);// / error;
     }
+    if (fgRegularizationType == kCurvature && i > 1+fgSkipBinsBegin)
+    {
+      Double_t right  = params[i];    // params are sqrt
+      Double_t middle = params[i-1];
+      Double_t left   = params[i-2];
+      
+      Double_t der1 = (right - middle)/0.5/(fgUnfoldedAxis->GetBinWidth(i-1) + fgUnfoldedAxis->GetBinWidth(i));
+      Double_t der2 = (middle - left)/0.5/(fgUnfoldedAxis->GetBinWidth(i) + fgUnfoldedAxis->GetBinWidth(i+1));
+      
+      diff = (der1 - der2)/(fgUnfoldedAxis->GetBinWidth(i-1) + fgUnfoldedAxis->GetBinWidth(i) + fgUnfoldedAxis->GetBinWidth(i-1))*3.0;
+      diff = 1e4*diff*diff;
+    }
+    if (fgRegularizationType == kPowerLaw && i > 1+fgSkipBinsBegin) 
+    {
 
-    penalty->SetBinContent(i, diff);
+      if (params[i] < 1e-8 || params[i-1] < 1e-8 || params[i-2] < 1e-8)
+	continue;
+      
+      if (fgUnfoldedAxis->GetBinWidth(i+1) < 1e-8 || fgUnfoldedAxis->GetBinWidth(i) < 1e-8 || fgUnfoldedAxis->GetBinWidth(i) < 1e-8)
+	continue;
+      
+      double middle = TMath::Power(params[i-1] / fgUnfoldedAxis->GetBinWidth(i),fgPowern);
+
+      if(middle>0) {
+	double right  = TMath::Power(params[i] / fgUnfoldedAxis->GetBinWidth(i+1),fgPowern)/middle;
+	
+	double left   = TMath::Power(params[i-2] / fgUnfoldedAxis->GetBinWidth(i-1),fgPowern)/middle;
+	
+	middle = 1.;
+	
+	Double_t der1 = (right - middle) / ((fgUnfoldedAxis->GetBinWidth(i+1) + fgUnfoldedAxis->GetBinWidth(i)) / 2);
+	Double_t der2 = (middle - left) / ((fgUnfoldedAxis->GetBinWidth(i) + fgUnfoldedAxis->GetBinWidth(i-1)) / 2);
+	
+	diff = (der1 - der2) * (der1 - der2);// / error;
+      }
+    }
+
+    if (fgRegularizationType == kLogLog && i > 1+fgSkipBinsBegin) 
+    {
+
+      if (params[i] < 1e-8 || params[i-1] < 1e-8 || params[i-2] < 1e-8)
+	continue;
+
+      Double_t right  = log(params[i] / (*fgEfficiency)(i) / fgUnfoldedAxis->GetBinWidth(i+1));
+      Double_t middle = log(params[i-1] / (*fgEfficiency)(i-1) / fgUnfoldedAxis->GetBinWidth(i));
+      Double_t left   = log(params[i-2] / (*fgEfficiency)(i-2) / fgUnfoldedAxis->GetBinWidth(i-1));
+      
+      Double_t der1 = (right - middle) / ( log(fgUnfoldedAxis->GetBinCenter(i+1)) - log(fgUnfoldedAxis->GetBinCenter(i)) );
+      Double_t der2 = (middle - left) /( log(fgUnfoldedAxis->GetBinCenter(i)) - log(fgUnfoldedAxis->GetBinCenter(i-1)) );
+      
+      double tmp = (log(fgUnfoldedAxis->GetBinCenter(i+1)) - log(fgUnfoldedAxis->GetBinCenter(i-1)))/2.;
+      Double_t dder = (der1-der2) / tmp;
+      
+      diff = dder * dder;
+    }
+    
+    penalty->SetBinContent(i, diff*fgRegularizationWeight);
     
     //Printf("%d %f %f %f %f", i-1, left, middle, right, diff);
   }
@@ -1282,6 +1756,7 @@ Int_t AliUnfolding::UnfoldWithFunction(TH2* correlation, TH1* efficiency, TH1* m
   Double_t arglist[100];
   arglist[0] = 0;
   minuit->ExecuteCommand("SET PRINT", arglist, 1);
+  minuit->ExecuteCommand("SCAN", arglist, 0);
   minuit->ExecuteCommand("MIGRAD", arglist, 0);
   //minuit->ExecuteCommand("MINOS", arglist, 0);
 
@@ -1463,9 +1938,6 @@ Int_t AliUnfolding::UnfoldGetBias(TH2* correlation, TH1* efficiency, TH1* measur
   
   for (Int_t loop=0; loop<4; loop++)
     delete newResult[loop];
-  
-  //matrix.Print();
-  //TH2* matrixHist = new TH2D(matrix); new TCanvas; matrixHist->Draw("BOX");
   
   // ...calculate folded guess  
   TH1* convoluted = (TH1*) measured->Clone("convoluted");
