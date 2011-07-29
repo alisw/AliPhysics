@@ -19,6 +19,10 @@
     
   cout << "Setting include path ..." << endl;
   TString includePath = "-I${ALICE_ROOT}/STEER ";
+  includePath        += "-I${ALICE_ROOT}/STEER/STEER ";
+  includePath        += "-I${ALICE_ROOT}/STEER/STEERBase ";
+  includePath        += "-I${ALICE_ROOT}/STEER/CDB ";
+  includePath        += "-I${ALICE_ROOT}/STEER/ESD ";
   includePath        += "-I${ALICE_ROOT}/RAW ";
   includePath        += "-I${ALICE_ROOT}/FASTSIM ";
   includePath        += "-I${ALICE_ROOT}/EVGEN ";
