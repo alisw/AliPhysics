@@ -1098,7 +1098,7 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,TObjArray * clusterArr,  Al
   //Before call this function, please recalculate the cluster positions
   //Given the input event, loop over all the tracks, select the closest cluster as matched with fCutR
   //Store matched cluster indexes and residuals
-
+  
   fMatchedTrackIndex->Reset();
   fMatchedClusterIndex->Reset();
   fResidualPhi->Reset();
@@ -1111,135 +1111,140 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,TObjArray * clusterArr,  Al
   
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (event);
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (event);
-
+  
   Int_t    matched=0;
   Double_t cv[21];
   for (Int_t i=0; i<21;i++) cv[i]=0;
   for(Int_t itr=0; itr<event->GetNumberOfTracks(); itr++)
   {
     AliExternalTrackParam *trackParam = 0;
-
+    
     //If the input event is ESD, the starting point for extrapolation is TPCOut, if available, or TPCInner 
     if(esdevent)
+    {
+      AliESDtrack *esdTrack = esdevent->GetTrack(itr);
+      if(!esdTrack || !IsAccepted(esdTrack)) continue;
+      if(esdTrack->Pt()<fCutMinTrackPt) continue;
+      const AliESDfriendTrack*  friendTrack = esdTrack->GetFriendTrack();
+      if(friendTrack && friendTrack->GetTPCOut())
       {
-	AliESDtrack *esdTrack = esdevent->GetTrack(itr);
-	if(!esdTrack || !IsAccepted(esdTrack)) continue;
-	if(esdTrack->Pt()<fCutMinTrackPt) continue;
-	const AliESDfriendTrack*  friendTrack = esdTrack->GetFriendTrack();
-	if(friendTrack && friendTrack->GetTPCOut())
-	  {
-	    //Use TPC Out as starting point if it is available
-	    trackParam=  const_cast<AliExternalTrackParam*>(friendTrack->GetTPCOut());
-	  }
-	else
-	  {
-	    //Otherwise use TPC inner
-	    trackParam =  const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());
-	  }
+        //Use TPC Out as starting point if it is available
+        trackParam=  const_cast<AliExternalTrackParam*>(friendTrack->GetTPCOut());
       }
+      else
+      {
+        //Otherwise use TPC inner
+        trackParam =  const_cast<AliExternalTrackParam*>(esdTrack->GetInnerParam());
+      }
+    }
     
     //If the input event is AOD, the starting point for extrapolation is at vertex
     //AOD tracks are selected according to its bit.
     else if(aodevent)
-      {
-	AliAODTrack *aodTrack = aodevent->GetTrack(itr);
-	if(!aodTrack) continue;
-	if(!aodTrack->TestFilterMask(fAODFilterMask)) continue; //Select AOD tracks that fulfill GetStandardITSTPCTrackCuts2010()
-	if(aodTrack->Pt()<fCutMinTrackPt) continue;
-	Double_t pos[3],mom[3];
-	aodTrack->GetXYZ(pos);
-	aodTrack->GetPxPyPz(mom);
-	AliDebug(5,Form("aod track: i=%d | pos=(%5.4f,%5.4f,%5.4f) | mom=(%5.4f,%5.4f,%5.4f) | charge=%d\n",itr,pos[0],pos[1],pos[2],mom[0],mom[1],mom[2],aodTrack->Charge()));
-	trackParam= new AliExternalTrackParam(pos,mom,cv,aodTrack->Charge());
-      }
+    {
+      AliAODTrack *aodTrack = aodevent->GetTrack(itr);
+      if(!aodTrack) continue;
+      if(!aodTrack->TestFilterMask(fAODFilterMask)) continue; //Select AOD tracks that fulfill GetStandardITSTPCTrackCuts2010()
+      if(aodTrack->Pt()<fCutMinTrackPt) continue;
+      Double_t pos[3],mom[3];
+      aodTrack->GetXYZ(pos);
+      aodTrack->GetPxPyPz(mom);
+      AliDebug(5,Form("aod track: i=%d | pos=(%5.4f,%5.4f,%5.4f) | mom=(%5.4f,%5.4f,%5.4f) | charge=%d\n",itr,pos[0],pos[1],pos[2],mom[0],mom[1],mom[2],aodTrack->Charge()));
+      trackParam= new AliExternalTrackParam(pos,mom,cv,aodTrack->Charge());
+    }
     
     //Return if the input data is not "AOD" or "ESD"
     else
-      {
-	printf("Wrong input data type! Should be \"AOD\" or \"ESD\"\n");
-	return;
-      }
-  
+    {
+      printf("Wrong input data type! Should be \"AOD\" or \"ESD\"\n");
+      return;
+    }
+    
     if(!trackParam) continue;
-
+    
     Float_t dRMax = fCutR, dEtaMax=fCutEta, dPhiMax=fCutPhi;
     Int_t index = -1;
     if(!clusterArr){// get clusters from event
       for(Int_t icl=0; icl<event->GetNumberOfCaloClusters(); icl++)
-	{
-	  AliVCluster *cluster = (AliVCluster*) event->GetCaloCluster(icl);
-	  if(geom && !IsGoodCluster(cluster,geom,(AliVCaloCells*)event->GetEMCALCells())) continue;
-	  AliExternalTrackParam trkPamTmp(*trackParam);//Retrieve the starting point every time before the extrapolation	
-	  Float_t tmpEta=-999, tmpPhi=-999;
-	  if(!ExtrapolateTrackToCluster(&trkPamTmp, cluster, tmpEta, tmpPhi)) continue;
-	  if(fCutEtaPhiSum)
-	    {
-	      Float_t tmpR=TMath::Sqrt(tmpEta*tmpEta + tmpPhi*tmpPhi);
-	      if(tmpR<dRMax)
-		{
-		  dRMax=tmpR;
-		  dEtaMax=tmpEta;
-		  dPhiMax=tmpPhi;
-		  index=icl;
-		}
-	    }
-	  else if(fCutEtaPhiSeparate)
-	    {
-	      if(TMath::Abs(tmpEta)<TMath::Abs(dEtaMax) && TMath::Abs(tmpPhi)<TMath::Abs(dPhiMax))
-		{
-		  dEtaMax = tmpEta;
-		  dPhiMax = tmpPhi;
-		  index=icl;
-		}
-	    }
-	  else
-	    {
-	      printf("Error: please specify your cut criteria\n");
-	      printf("To cut on sqrt(dEta^2+dPhi^2), use: SwitchOnCutEtaPhiSum()\n");
-	      printf("To cut on dEta and dPhi separately, use: SwitchOnCutEtaPhiSeparate()\n");
-	      if(aodevent && trackParam) delete trackParam;
-	      return;
-	    }
-	}//cluster loop
-    } else { // external cluster array, not from ESD event
+      {
+        AliVCluster *cluster = (AliVCluster*) event->GetCaloCluster(icl);
+        if(geom && !IsGoodCluster(cluster,geom,(AliVCaloCells*)event->GetEMCALCells())) continue;
+        AliExternalTrackParam trkPamTmp(*trackParam);//Retrieve the starting point every time before the extrapolation	
+        Float_t tmpEta=-999, tmpPhi=-999;
+        if(!ExtrapolateTrackToCluster(&trkPamTmp, cluster, tmpEta, tmpPhi)) continue;
+        if(fCutEtaPhiSum)
+        {
+          Float_t tmpR=TMath::Sqrt(tmpEta*tmpEta + tmpPhi*tmpPhi);
+          if(tmpR<dRMax)
+          {
+            dRMax=tmpR;
+            dEtaMax=tmpEta;
+            dPhiMax=tmpPhi;
+            index=icl;
+          }
+        }
+        else if(fCutEtaPhiSeparate)
+        {
+          if(TMath::Abs(tmpEta)<TMath::Abs(dEtaMax) && TMath::Abs(tmpPhi)<TMath::Abs(dPhiMax))
+          {
+            dEtaMax = tmpEta;
+            dPhiMax = tmpPhi;
+            index=icl;
+          }
+        }
+        else
+        {
+          printf("Error: please specify your cut criteria\n");
+          printf("To cut on sqrt(dEta^2+dPhi^2), use: SwitchOnCutEtaPhiSum()\n");
+          printf("To cut on dEta and dPhi separately, use: SwitchOnCutEtaPhiSeparate()\n");
+          if(aodevent && trackParam) delete trackParam;
+          return;
+        }
+      }//cluster loop
+    } 
+    else { // external cluster array, not from ESD event
       for(Int_t icl=0; icl<clusterArr->GetEntriesFast(); icl++)
-	{
-	  AliVCluster *cluster = (AliVCluster*) clusterArr->At(icl);
-	  if(!cluster->IsEMCAL()) continue;
-	  AliExternalTrackParam trkPamTmp (*trackParam);//Retrieve the starting point every time before the extrapolation
-	  Float_t tmpEta=-999, tmpPhi=-999;
-	  if(!ExtrapolateTrackToCluster(&trkPamTmp, cluster, tmpEta, tmpPhi)) continue;
-	  if(fCutEtaPhiSum)
-	    {
-	      Float_t tmpR=TMath::Sqrt(tmpEta*tmpEta + tmpPhi*tmpPhi);
-	      if(tmpR<dRMax)
-		{
-		  dRMax=tmpR;
-		  dEtaMax=tmpEta;
-		  dPhiMax=tmpPhi;
-		  index=icl;
-		}
-	    }
-	  else if(fCutEtaPhiSeparate)
-	    {
-	      if(TMath::Abs(tmpEta)<TMath::Abs(dEtaMax) && TMath::Abs(tmpPhi)<TMath::Abs(dPhiMax))
-		{
-		  dEtaMax = tmpEta;
-		  dPhiMax = tmpPhi;
-		  index=icl;
-		}
-	    }
-	  else
-	    {
-	      printf("Error: please specify your cut criteria\n");
-	      printf("To cut on sqrt(dEta^2+dPhi^2), use: SwitchOnCutEtaPhiSum()\n");
-	      printf("To cut on dEta and dPhi separately, use: SwitchOnCutEtaPhiSeparate()\n");
-	      if(aodevent && trackParam) delete trackParam;
-	      return;
-	    }
+      {
+        AliVCluster *cluster = dynamic_cast<AliVCluster*> (clusterArr->At(icl)) ;
+        if(!cluster){ 
+          AliInfo("Cluster not found!!!");
+          continue;
+        }
+        if(!cluster->IsEMCAL()) continue;
+        AliExternalTrackParam trkPamTmp (*trackParam);//Retrieve the starting point every time before the extrapolation
+        Float_t tmpEta=-999, tmpPhi=-999;
+        if(!ExtrapolateTrackToCluster(&trkPamTmp, cluster, tmpEta, tmpPhi)) continue;
+        if(fCutEtaPhiSum)
+        {
+          Float_t tmpR=TMath::Sqrt(tmpEta*tmpEta + tmpPhi*tmpPhi);
+          if(tmpR<dRMax)
+          {
+            dRMax=tmpR;
+            dEtaMax=tmpEta;
+            dPhiMax=tmpPhi;
+            index=icl;
+          }
+        }
+        else if(fCutEtaPhiSeparate)
+        {
+          if(TMath::Abs(tmpEta)<TMath::Abs(dEtaMax) && TMath::Abs(tmpPhi)<TMath::Abs(dPhiMax))
+          {
+            dEtaMax = tmpEta;
+            dPhiMax = tmpPhi;
+            index=icl;
+          }
+        }
+        else
+        {
+          printf("Error: please specify your cut criteria\n");
+          printf("To cut on sqrt(dEta^2+dPhi^2), use: SwitchOnCutEtaPhiSum()\n");
+          printf("To cut on dEta and dPhi separately, use: SwitchOnCutEtaPhiSeparate()\n");
+          if(aodevent && trackParam) delete trackParam;
+          return;
+        }
       }//cluster loop
     }// external list of clusters
-
+    
     if(index>-1)
     {
       fMatchedTrackIndex  ->AddAt(itr,matched);
@@ -1265,54 +1270,54 @@ Int_t AliEMCALRecoUtils::FindMatchedCluster(AliESDtrack *track, AliVEvent *event
   //
   // This function returns the index of matched cluster to input track
   // Returns -1 if no match is found
-
-
+  
+  
   Float_t dRMax = fCutR, dEtaMax = fCutEta, dPhiMax = fCutPhi;
   Int_t index = -1;
-
+  
   AliExternalTrackParam *trackParam=0;
   const AliESDfriendTrack*  friendTrack = track->GetFriendTrack();
   if(friendTrack && friendTrack->GetTPCOut())
     trackParam= const_cast<AliExternalTrackParam*>(friendTrack->GetTPCOut());
   else
     trackParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());
-
+  
   if(!trackParam) return index;	  
   for(Int_t icl=0; icl<event->GetNumberOfCaloClusters(); icl++)
+  {
+    AliVCluster *cluster = (AliVCluster*) event->GetCaloCluster(icl);
+    if(geom && !IsGoodCluster(cluster,geom,(AliVCaloCells*)event->GetEMCALCells())) continue;	
+    AliExternalTrackParam trkPamTmp (*trackParam);//Retrieve the starting point every time before the extrapolation
+    Float_t tmpEta=-999, tmpPhi=-999;
+    if(!ExtrapolateTrackToCluster(&trkPamTmp, cluster, tmpEta, tmpPhi)) continue;
+    if(fCutEtaPhiSum)
     {
-      AliVCluster *cluster = (AliVCluster*) event->GetCaloCluster(icl);
-      if(geom && !IsGoodCluster(cluster,geom,(AliVCaloCells*)event->GetEMCALCells())) continue;	
-      AliExternalTrackParam trkPamTmp (*trackParam);//Retrieve the starting point every time before the extrapolation
-      Float_t tmpEta=-999, tmpPhi=-999;
-      if(!ExtrapolateTrackToCluster(&trkPamTmp, cluster, tmpEta, tmpPhi)) continue;
-      if(fCutEtaPhiSum)
-	{
-	  Float_t tmpR=TMath::Sqrt(tmpEta*tmpEta + tmpPhi*tmpPhi);
-	  if(tmpR<dRMax)
+      Float_t tmpR=TMath::Sqrt(tmpEta*tmpEta + tmpPhi*tmpPhi);
+      if(tmpR<dRMax)
 	    {
 	      dRMax=tmpR;
 	      dEtaMax=tmpEta;
 	      dPhiMax=tmpPhi;
 	      index=icl;
 	    }
-	}
-      else if(fCutEtaPhiSeparate)
-	{
-	  if(TMath::Abs(tmpEta)<TMath::Abs(dEtaMax) && TMath::Abs(tmpPhi)<TMath::Abs(dPhiMax))
+    }
+    else if(fCutEtaPhiSeparate)
+    {
+      if(TMath::Abs(tmpEta)<TMath::Abs(dEtaMax) && TMath::Abs(tmpPhi)<TMath::Abs(dPhiMax))
 	    {
 	      dEtaMax = tmpEta;
 	      dPhiMax = tmpPhi;
 	      index=icl;
 	    }
-	}
-      else
-	{
-	  printf("Error: please specify your cut criteria\n");
-	  printf("To cut on sqrt(dEta^2+dPhi^2), use: SwitchOnCutEtaPhiSum()\n");
-	  printf("To cut on dEta and dPhi separately, use: SwitchOnCutEtaPhiSeparate()\n");
-	  return -1;
-	}
-    }//cluster loop
+    }
+    else
+    {
+      printf("Error: please specify your cut criteria\n");
+      printf("To cut on sqrt(dEta^2+dPhi^2), use: SwitchOnCutEtaPhiSum()\n");
+      printf("To cut on dEta and dPhi separately, use: SwitchOnCutEtaPhiSeparate()\n");
+      return -1;
+    }
+  }//cluster loop
   return index;
 }
 
