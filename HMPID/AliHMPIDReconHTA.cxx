@@ -703,6 +703,10 @@ Int_t AliHMPIDReconHTA::r2(Double_t *coef, Double_t &x1, Double_t &x2)
     x1=x2=-b/(2*a);
     return 1;
   }
+  if(a==0) {
+    x1 = -c/b;
+    return 1;
+  }
   // delta>0
   x1 = (-b+TMath::Sqrt(delta))/(2*a);
   x2 = (-b-TMath::Sqrt(delta))/(2*a);
@@ -855,6 +859,7 @@ Bool_t AliHMPIDReconHTA::UniformDistrib()
    Double_t chi2 = 0;
    for(Int_t i=0;i<nPhiBins;i++) {
      Double_t theo = (Double_t)npeff/(Double_t)nPhiBins;
+     if(theo==0) continue;
      chi2+= (iPhiBin[i] - theo)*(iPhiBin[i] - theo)/theo;
    }
    
