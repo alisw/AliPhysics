@@ -22,16 +22,21 @@
 #include "AliRunDigitizer.h"
 #include <AliLoader.h>
 #include <AliLog.h>
+#include <AliCDBEntry.h> 
+#include <AliCDBManager.h>
 #include "AliHMPIDDigitizer.h"
+#include "AliHMPIDReconstructor.h"
 #include "AliHMPIDDigit.h"
 #include "AliHMPID.h"
 #include "AliHMPIDParam.h"
 #include <TRandom.h>
+#include <TMath.h>
 #include <TTree.h>
+#include <TObjArray.h>
 
 ClassImp(AliHMPIDDigitizer)
 
-Bool_t AliHMPIDDigitizer::fgDoNoise=kFALSE;
+Bool_t AliHMPIDDigitizer::fgDoNoise=kTRUE;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDDigitizer::Exec(Option_t*)
 {
@@ -89,28 +94,42 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
     iCnt[i]=0; if(pLst[i]->GetEntries()!=0) AliErrorClass("Some of digits lists is not empty");         //in principle those lists should be empty                                                                       
   }
 
+  TMatrixF *pM[7];
+      
+  AliCDBEntry *pDaqSigEnt = AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");  //contains TObjArray of TObjArray 14 TMatrixF sigmas values for pads 
+  if(!pDaqSigEnt) Printf("prova"); 
+  TObjArray *pDaqSig = (TObjArray*)pDaqSigEnt->GetObject();
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop    
+    pM[iCh] = (TMatrixF*)pDaqSig->At(iCh);     
+  }
+
   // make noise array
   Float_t arrNoise[7][6][80][48];
   if(fgDoNoise) {
-    for (Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++)
+    for (Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
       for (Int_t iPc=AliHMPIDParam::kMinPc;iPc<=AliHMPIDParam::kMaxPc;iPc++)
         for(Int_t iPx=AliHMPIDParam::kMinPx;iPx<=AliHMPIDParam::kMaxPx;iPx++)
-          for(Int_t iPy=AliHMPIDParam::kMinPy;iPy<=AliHMPIDParam::kMaxPy;iPy++) arrNoise[iCh][iPc][iPx][iPy] = gRandom->Gaus(0,1.1);
+          for(Int_t iPy=AliHMPIDParam::kMinPy;iPy<=AliHMPIDParam::kMaxPy;iPy++){
+            Int_t padX = (iPc%2)*AliHMPIDParam::kPadPcX+iPx; 
+            Int_t padY = (iPc/2)*AliHMPIDParam::kPadPcY+iPy;
+            arrNoise[iCh][iPc][iPx][iPy] = gRandom->Gaus(0,(*pM[iCh])(padX,padY));
+          } 
+    }    
   }  
   
   pSdiLst->Sort();  
                      
   Int_t iPad=-1,iCh=-1,iNdigPad=-1,aTids[3]={-1,-1,-1}; Float_t q=-1;
   for(Int_t i=0;i<pSdiLst->GetEntries();i++){                                                                  //sdigits loop (sorted)
-    AliHMPIDDigit *pSdig=(AliHMPIDDigit*)pSdiLst->At(i);                                                         //take current sdigit
+    AliHMPIDDigit *pSdig=(AliHMPIDDigit*)pSdiLst->At(i);                                                       //take current sdigit
     if(pSdig->Pad()==iPad){                                                                                    //if the same pad 
       q+=pSdig->Q();                                                                                           //sum up charge
       iNdigPad++; if(iNdigPad<=3) aTids[iNdigPad-1]=pSdig->GetTrack(0);                                        //collect TID 
       continue;
     }
-    if(i!=0 && AliHMPIDParam::IsOverTh(q) 
-            && iCh>=AliHMPIDParam::kMinCh
-            && iCh<=AliHMPIDParam::kMaxCh)  new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(iPad,(Int_t)q,aTids);  //do not create digit for the very first sdigit 
+    if(i!=0 && iCh>=AliHMPIDParam::kMinCh && iCh<=AliHMPIDParam::kMaxCh){
+      AliHMPIDParam::Instance()->SetThreshold(TMath::Nint(((*pM[iCh])(pSdig->PadChX(),pSdig->PadChY()))*AliHMPIDParam::Nsig()));         
+      if(AliHMPIDParam::IsOverTh(q)) new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(iPad,(Int_t)q,aTids);}  //do not create digit for the very first sdigit 
     
     iPad=pSdig->Pad(); iCh=AliHMPIDParam::A2C(iPad);                                                            //new sdigit comes, reset collectors
     iNdigPad=1;
@@ -120,20 +139,27 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
     arrNoise[iCh][pSdig->Pc()][pSdig->PadPcX()][pSdig->PadPcY()]=0;
   }//sdigits loop (sorted)
   
-  if(AliHMPIDParam::IsOverTh(q)
-      && iCh>=AliHMPIDParam::kMinCh
-      && iCh<=AliHMPIDParam::kMaxCh)  new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(iPad,(Int_t)q,aTids);        //add the last one, in case of empty sdigits list q=-1
+  if(iCh>=AliHMPIDParam::kMinCh && iCh<=AliHMPIDParam::kMaxCh){
+    Int_t pc = AliHMPIDParam::A2P(iPad);
+    Int_t padX = (pc%2)*AliHMPIDParam::kPadPcX+AliHMPIDParam::A2X(iPad); 
+    Int_t padY = (pc/2)*AliHMPIDParam::kPadPcY+AliHMPIDParam::A2Y(iPad);
+    AliHMPIDParam::Instance()->SetThreshold(TMath::Nint(((*pM[iCh])(padX,padY))*AliHMPIDParam::Nsig()));
+    if(AliHMPIDParam::IsOverTh(q)) new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(iPad,(Int_t)q,aTids);}  //add the last one, in case of empty sdigits list q=-1 
   
 // add noise pad above threshold with no signal merged...if any
   if(!fgDoNoise) return;
+  
   aTids[0]=aTids[1]=aTids[2]=-1;
-  for (Int_t iChCurr=AliHMPIDParam::kMinCh;iChCurr<=AliHMPIDParam::kMaxCh;iChCurr++)
+  for (Int_t iChCurr=AliHMPIDParam::kMinCh;iChCurr<=AliHMPIDParam::kMaxCh;iChCurr++){
     for (Int_t iPc=AliHMPIDParam::kMinPc;iPc<=AliHMPIDParam::kMaxPc;iPc++)
       for(Int_t iPx=AliHMPIDParam::kMinPx;iPx<=AliHMPIDParam::kMaxPx;iPx++)
         for(Int_t iPy=AliHMPIDParam::kMinPy;iPy<=AliHMPIDParam::kMaxPy;iPy++) {
           Float_t qNoise = arrNoise[iChCurr][iPc][iPx][iPy];
+          Int_t padX = (iPc%2)*AliHMPIDParam::kPadPcX+iPx; 
+          Int_t padY = (iPc/2)*AliHMPIDParam::kPadPcY+iPy;
+          AliHMPIDParam::Instance()->SetThreshold(TMath::Nint(((*pM[iChCurr])(padX,padY))*AliHMPIDParam::Nsig()));
           if(AliHMPIDParam::IsOverTh(qNoise)) new((*pLst[iChCurr])[iCnt[iChCurr]++]) AliHMPIDDigit(AliHMPIDParam::Abs(iChCurr,iPc,iPx,iPy),(Int_t)qNoise,aTids);
         }
-        
+  }        
 }//Sdi2Dig()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

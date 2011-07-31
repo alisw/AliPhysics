@@ -66,7 +66,8 @@ Bool_t AliHMPIDParam::fgInstanceType=kTRUE;
 
 AliHMPIDParam* AliHMPIDParam::fgInstance=0x0;        //singleton pointer               
 
-Int_t AliHMPIDParam::fgSigmas=4;
+Int_t AliHMPIDParam::fgNSigmas  = 4;
+Int_t AliHMPIDParam::fgThreshold= 4;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDParam::AliHMPIDParam(Bool_t noGeo=kFALSE):

@@ -44,7 +44,7 @@ public:
   static Float_t MaxPcY      (Int_t iPc                      )     {return fgkMaxPcY[iPc];                           }  // PC limits
   static Float_t MinPcX      (Int_t iPc                      )     {return fgkMinPcX[iPc];                           }  // PC limits
   static Float_t MinPcY      (Int_t iPc                      )     {return fgkMinPcY[iPc];                           }  // PC limits
-  static Int_t   Nsig        (                               )     {return fgSigmas;                                 }  //Getter n. sigmas for noise
+  static Int_t   Nsig        (                               )     {return fgNSigmas;                                 }  //Getter n. sigmas for noise
   static Float_t SizeAllX    (                               )     {return fgAllX;                                   }  //all PCs size x, [cm]        
   static Float_t SizeAllY    (                               )     {return fgAllY;                                   }  //all PCs size y, [cm]    
 
@@ -65,7 +65,7 @@ public:
   static Int_t   A2X         (Int_t pad                      )     {return pad%1000000/1000;                         }  //abs pad -> pad X 
   static Int_t   A2Y         (Int_t pad                      )     {return pad%1000;                                 }  //abs pad -> pad Y 
 
-  static Bool_t  IsOverTh    (Float_t q                      )     {return q >= fgSigmas;                            }  //is digit over threshold?
+  static Bool_t  IsOverTh    (Float_t q                      )     {return q >= fgThreshold;                         }  //is digit over threshold?
   
   Bool_t  GetInstType        (                               )const{return fgInstanceType;                            }  //return if the instance is from geom or ideal                        
   
@@ -135,7 +135,8 @@ public:
   
   void     SetRefIdx      (Double_t refRadIdx                                  ) {fRefIdx = refRadIdx;}               //set running refractive index
   
-  void     SetSigmas      (Int_t sigmas                                        ) {fgSigmas = sigmas;}                 //set sigma cut    
+  void     SetNSigmas     (Int_t sigmas                                        ) {fgNSigmas   = sigmas;}                 //set sigma cut  
+  void     SetThreshold   (Int_t thres                                         ) {fgThreshold = thres;}                 //set sigma cut        
   void     SetInstanceType(Bool_t inst                                         ) {fgInstanceType = inst;}             //kTRUE if from geomatry kFALSE if from ideal geometry
   //For PID
   Double_t SigLoc      (Double_t trkTheta,Double_t trkPhi,Double_t ckovTh,Double_t ckovPh,Double_t beta);//error due to cathode segmetation
@@ -177,7 +178,8 @@ protected:
   static const Double_t fgkSqrtK3y,fgkK2y,fgkK1y,fgkK4y;
 //
     
-  static Int_t    fgSigmas;                                                                        //sigma Cut
+  static Int_t    fgNSigmas;                                                                        //sigma Cut
+  static Int_t    fgThreshold;                                                                        //sigma Cut
   static Bool_t   fgInstanceType;                                                                  //kTRUE if from geomatry kFALSE if from ideal geometry
 
   static Float_t fgCellX, fgCellY, fgPcX, fgPcY, fgAllX, fgAllY;                                   //definition of HMPID geometric parameters 
