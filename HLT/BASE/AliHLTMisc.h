@@ -72,6 +72,9 @@ class AliHLTMisc : public TObject {
   virtual void GetBxByBz(const Double_t r[3], Double_t b[3]);
 
   virtual const TClass* IsAliESDHLTDecision() const;
+  
+  using TObject::Copy;  // Needed since the declaration of AliHLTMisc::Copy below is ambiguous to the compiler.
+  
   virtual int Copy(const AliHLTGlobalTriggerDecision* pDecision, TObject* pESDHLTDecision) const;
 
   /// Init streamer info from ocdb entry
