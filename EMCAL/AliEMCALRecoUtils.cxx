@@ -290,6 +290,11 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(AliEMCALGeometry* geom, AliVCl
 	// Given the list of AbsId of the cluster, get the maximum cell and 
 	// check if there are fNCellsFromBorder from the calorimeter border
 	
+  if(!cluster){
+    AliInfo("Cluster pointer null!");
+    return kFALSE;
+  }
+  
   //If the distance to the border is 0 or negative just exit accept all clusters
 	if(cells->GetType()==AliVCaloCells::kEMCALCell && fNCellsFromEMCALBorder <= 0 ) return kTRUE;
   
@@ -382,6 +387,11 @@ Bool_t AliEMCALRecoUtils::IsExoticCluster(AliVCluster *cluster) const {
   // Check if the cluster has high energy  but small number of cells
   // The criteria comes from Gustavo's study
   //
+  
+  if(!cluster){
+    AliInfo("Cluster pointer null!");
+    return kFALSE;
+  }
 
   if(cluster->GetNCells()<(1+cluster->E()/3.))
     return kTRUE;
@@ -392,6 +402,13 @@ Bool_t AliEMCALRecoUtils::IsExoticCluster(AliVCluster *cluster) const {
 //__________________________________________________
 Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster){
 // Correct cluster energy from non linearity functions
+  
+  if(!cluster){
+    AliInfo("Cluster pointer null!");
+    return 0;
+  }
+  
+  
   Float_t energy = cluster->E();
   
   switch (fNonLinearityFunction) {
@@ -596,7 +613,13 @@ void AliEMCALRecoUtils::GetMaxEnergyCell(AliEMCALGeometry *geom, AliVCaloCells* 
   Int_t iIphi   = -1;
   Int_t iIeta   = -1;
   Int_t iSupMod0= -1;
-	//printf("---Max?\n");
+
+  if(!clu){
+    AliInfo("Cluster pointer null!");
+    absId=-1; iSupMod0=-1, ieta = -1; iphi = -1; shared = -1;
+    return;
+  }
+  
   for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++) {
     cellAbsId = clu->GetCellAbsId(iDig);
     fraction  = clu->GetCellAmplitudeFraction(iDig);
@@ -684,6 +707,11 @@ void AliEMCALRecoUtils::InitEMCALBadChannelStatusMap(){
 void AliEMCALRecoUtils::RecalibrateClusterEnergy(AliEMCALGeometry* geom, AliVCluster * cluster, AliVCaloCells * cells){
 	// Recalibrate the cluster energy, considering the recalibration map and the energy of the cells that compose the cluster.
 	
+  if(!cluster){
+    AliInfo("Cluster pointer null!");
+    return;
+  }  
+  
 	//Get the cluster number of cells and list of absId, check what kind of cluster do we have.
 	UShort_t * index    = cluster->GetCellsAbsId() ;
 	Double_t * fraction = cluster->GetCellsAmplitudeFraction() ;
@@ -724,6 +752,11 @@ void AliEMCALRecoUtils::RecalculateClusterPosition(AliEMCALGeometry *geom, AliVC
 {
   //For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
   
+  if(!clu){
+    AliInfo("Cluster pointer null!");
+    return;
+  }
+    
   if     (fPosAlgo==kPosTowerGlobal) RecalculateClusterPositionFromTowerGlobal( geom, cells, clu);
   else if(fPosAlgo==kPosTowerIndex)  RecalculateClusterPositionFromTowerIndex ( geom, cells, clu);
   else   AliDebug(2,"Algorithm to recalculate position not selected, do nothing.");
@@ -882,6 +915,11 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(AliEMCALGeometry 
   
   if(!fRecalDistToBadChannels) return;
   
+  if(!cluster){
+    AliInfo("Cluster pointer null!");
+    return;
+  }  
+  
 	//Get channels map of the supermodule where the cluster is.
   Int_t absIdMax	= -1, iSupMod =-1, icolM = -1, irowM = -1;
   Bool_t shared = kFALSE;
@@ -955,7 +993,12 @@ void AliEMCALRecoUtils::RecalculateClusterDistanceToBadChannel(AliEMCALGeometry 
 void AliEMCALRecoUtils::RecalculateClusterPID(AliVCluster * cluster){           
 	
   //re-evaluate identification parameters with bayesian
-
+  
+  if(!cluster){
+    AliInfo("Cluster pointer null!");
+    return;
+  }
+  
 	if ( cluster->GetM02() != 0)
     fPIDUtils->ComputePID(cluster->E(),cluster->GetM02());
   
@@ -973,6 +1016,11 @@ void AliEMCALRecoUtils::RecalculateClusterShowerShapeParameters(AliEMCALGeometry
   // and tranfers into global ALICE coordinates
   // Calculates Dispersion and main axis
   
+  if(!cluster){
+    AliInfo("Cluster pointer null!");
+    return;
+  }
+    
   Int_t nstat  = 0;
   Float_t wtot = 0. ;
   Double_t eCell       = 0.;
