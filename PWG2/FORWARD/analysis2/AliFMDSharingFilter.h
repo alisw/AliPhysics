@@ -265,6 +265,8 @@ protected:
     TH1D*     fDouble;       // Distribution of 2 signals after filter
     TH1D*     fTriple;       // Distribution of 3 signals after filter
     TH2D*     fSinglePerStrip;       // Distribution of 1 signal per strip
+    TH1D*     fDistanceBefore; //Distance between signals before sharing
+    TH1D*     fDistanceAfter; //Distance between signals after sharing    
     TH2D*     fBeforeAfter;  // Correlation of before and after 
     TH2D*     fNeighborsBefore; // Correlation of neighbors 
     TH2D*     fNeighborsAfter; // Correlation of neighbors 
