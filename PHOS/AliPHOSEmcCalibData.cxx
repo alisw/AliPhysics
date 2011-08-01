@@ -62,6 +62,7 @@ AliPHOSEmcCalibData::AliPHOSEmcCalibData(const AliPHOSEmcCalibData& calibda) :
 	fHighLowRatioEmc[module][column][row] = calibda.fHighLowRatioEmc[module][column][row];
 	fTimeShiftEmc[module][column][row] = calibda.fTimeShiftEmc[module][column][row];
         fAltroOffsets[module][column][row] = calibda.fAltroOffsets[module][column][row];
+	fDecal[module][column][row]        = calibda.fDecal[module][column][row];
       }
     }
   }
@@ -84,7 +85,8 @@ AliPHOSEmcCalibData &AliPHOSEmcCalibData::operator =(const AliPHOSEmcCalibData& 
 	  fADCpedestalEmc[module][column][row] = calibda.fADCpedestalEmc[module][column][row];
 	  fHighLowRatioEmc[module][column][row] = calibda.fHighLowRatioEmc[module][column][row];
 	  fTimeShiftEmc[module][column][row] = calibda.fTimeShiftEmc[module][column][row];
-          fAltroOffsets[module][column][row] = calibda.fAltroOffsets[module][column][row]; 
+          fAltroOffsets[module][column][row] = calibda.fAltroOffsets[module][column][row];
+	  fDecal[module][column][row]        = calibda.fDecal[module][column][row];
 	}
       }
     }
@@ -112,6 +114,7 @@ void AliPHOSEmcCalibData::Reset()
 	fHighLowRatioEmc[module][column][row] = 16. ;
 	fTimeShiftEmc[module][column][row] = 0. ;
         fAltroOffsets[module][column][row] = 0 ;
+	fDecal[module][column][row] = 1.;
       }
     }
   }
@@ -295,3 +298,21 @@ void AliPHOSEmcCalibData::SetSampleTimeStep(Float_t step)
    fSampleTimeStep = step ;
 }
 
+//________________________________________________________________
+Float_t AliPHOSEmcCalibData::GetADCchannelEmcDecalib(Int_t module, Int_t column, Int_t row) const
+{
+  //Return EMC random (de)calibration coefficient O(1). Used in simulation.
+  //module, column,raw should follow the internal PHOS convention:
+  //module 1:5, column 1:56, row 1:64
+
+  return fDecal[module-1][column-1][row-1];
+}
+
+void AliPHOSEmcCalibData::SetADCchannelEmcDecalib(Int_t module, Int_t column, Int_t row, Float_t value)
+{
+  //Set EMC (de)calibration coefficient O(1). Used in simulation.
+  //module, column,raw should follow the internal PHOS convention:
+  //module 1:5, column 1:56, row 1:64
+
+  fDecal[module-1][column-1][row-1] = value;
+}

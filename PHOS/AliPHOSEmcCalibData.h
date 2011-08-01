@@ -34,16 +34,20 @@ class AliPHOSEmcCalibData: public TNamed {
   void SetTimeShiftEmc(Int_t module, Int_t column, Int_t row, Float_t value);
   void SetAltroOffsetEmc(Int_t module, Int_t column, Int_t row, Int_t value);
   void SetSampleTimeStep(Float_t step) ;
-
- protected:
+  //
+  Float_t GetADCchannelEmcDecalib(Int_t module, Int_t column, Int_t row) const;
+  void    SetADCchannelEmcDecalib(Int_t module, Int_t column, Int_t row, Float_t value);
+  
+protected:
   Float_t  fSampleTimeStep ;            // Conversion between ALTRO sample time step and seconds
   Float_t  fADCchannelEmc[5][56][64] ;  // width of one EMC ADC channel in GeV ([mod][col][row])
   Float_t  fADCpedestalEmc[5][56][64] ; // value of the EMC ADC pedestal ([mod][col][row])
   Float_t  fHighLowRatioEmc[5][56][64]; // ratio of High/Low gain ([mod][col][row])
   Float_t  fTimeShiftEmc[5][56][64] ;   // channel-by-channel t0 shift ([mod][col][row])
   UInt_t   fAltroOffsets[5][56][64] ;   // channel-by-channel offsets udes in ZS
+  Float_t  fDecal[5][56][64] ;          // Random decalibrations O(1). Used in simulation.
   //
-  ClassDef(AliPHOSEmcCalibData,4)    // PHOS EMC calibration data
+  ClassDef(AliPHOSEmcCalibData,5)    // PHOS EMC calibration data
 };
 
 #endif

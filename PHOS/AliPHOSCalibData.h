@@ -76,6 +76,10 @@ class AliPHOSCalibData: public TNamed {
   Bool_t WriteCpv(Int_t firstRun, Int_t lastRun, AliCDBMetaData *md);
   Bool_t WriteEmcBadChannelsMap(Int_t firstRun, Int_t lastRun, AliCDBMetaData *md);
 
+  //----Decalibration factors for simulation-------------
+  Float_t GetADCchannelEmcDecalib(Int_t module, Int_t column, Int_t row) const;
+  void    SetADCchannelEmcDecalib(Int_t module, Int_t column, Int_t row, Float_t value);  
+  
  private:
 
   AliPHOSEmcCalibData* fCalibDataEmc; // EMC calibration data
@@ -86,7 +90,7 @@ class AliPHOSCalibData: public TNamed {
   TString fCpvDataPath; // path to CPV calibration data
   TString fEmcBadChannelsMapPath; // path to bad channels map
 
-  ClassDef(AliPHOSCalibData,5)    // PHOS Calibration data
+  ClassDef(AliPHOSCalibData,6)    // PHOS Calibration data
 };
 
 #endif

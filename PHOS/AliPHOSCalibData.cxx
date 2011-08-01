@@ -529,3 +529,32 @@ void AliPHOSCalibData::EmcBadChannelIds(Int_t *badIds)
   if(fEmcBadChannelsMap)              
     fEmcBadChannelsMap->BadChannelIds(badIds);
 }
+
+//________________________________________________________________
+Float_t AliPHOSCalibData::GetADCchannelEmcDecalib(Int_t module, Int_t column, Int_t row) const
+{
+  // Return random EMC (de)calibration factor O(1) for channel defined by (module,column,row). 
+  // Used in simulation.
+  
+  // module, column,raw should follow the internal PHOS convention:
+  // module 1:5, column 1:56, row 1:64
+  // if CBD instance exists, the value is taken from CDB.
+  // Otherwise it is an ideal one (no decalibration).
+  
+  if(fCalibDataEmc) 
+    return fCalibDataEmc->GetADCchannelEmcDecalib(module,column,row);
+  else
+    return 1.0; // no decalibration by default
+}
+
+//________________________________________________________________
+void AliPHOSCalibData::SetADCchannelEmcDecalib(Int_t module, Int_t column, Int_t row, Float_t value)
+{
+  // Set EMC (de)calibration factor for (module,column,row).
+  // Used in simulation.
+  
+  if(!fCalibDataEmc)
+    fCalibDataEmc = new AliPHOSEmcCalibData("PHOS-EMC");
+  
+  fCalibDataEmc->SetADCchannelEmcDecalib(module,column,row,value);
+}
