@@ -365,7 +365,7 @@ Bool_t AliITSInitGeometryUpg::InitAliITSgeomVUpgrade(AliITSgeom *geom){
   TArrayD shapePar;
   TString path, shapeName;
   TGeoHMatrix matrix;
-  Bool_t initSeg=kFALSE ;
+//  Bool_t initSeg[3]={kFALSE, kFALSE, kFALSE};
   TStopwatch *time = 0x0;
   if(fTiming) time = new TStopwatch();
 
@@ -387,7 +387,6 @@ Bool_t AliITSInitGeometryUpg::InitAliITSgeomVUpgrade(AliITSgeom *geom){
     TransposeTGeoHMatrix(&matrix); //Transpose TGeo's rotation matrixes
     geom->SetRotMatrix(mod,matrix.GetRotationMatrix());
 //    if(initSeg[kIdet[lay-1]]) continue;
-    if(initSeg) continue;
     GetShape(path,shapeName,shapePar);
     if(shapeName.CompareTo("BOX")){
       Error("InitITSgeom","Geometry changed without proper code update"
@@ -858,7 +857,7 @@ void AliITSInitGeometryUpg::DecodeDetectorv11(Int_t &mod,Int_t layer,
 
 //______________________________________________________________________
 void AliITSInitGeometryUpg::DecodeDetectorvUpgrade(Int_t &mod,Int_t layer,
-                                 Int_t cpn0,Int_t cpn1,Int_t cpn2) const {
+                                 Int_t cpn0,Int_t cpn1,Int_t /*cpn2*/) const {
     // decode geometry into detector module number
     // Inputs:
     //    Int_t layer    The ITS layer
