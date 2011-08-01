@@ -23,6 +23,7 @@ class AliITSdigit;
 class AliITSRecPoint;
 class AliITSDetTypeRec;
 class AliRawReader;
+class TArrayI;
 
 //----------------------------------------------------------------------
 class AliITSClusterFinder :public TObject{
@@ -78,7 +79,11 @@ class AliITSClusterFinder :public TObject{
     AliITSDetTypeRec* GetDetTypeRec() const {return fDetTypeRec;}
 
     void InitGeometry(); 
- 
+    //
+    Int_t    GetNClusters()                               const {return fNClusters;}
+    void     SetRawID2ClusID(TArrayI *arr)                      {fRawID2ClusID = arr;} 
+    TArrayI* GetRawID2ClusID()                            const {return fRawID2ClusID;} 
+    // 
   protected:
   class Ali1Dcluster {
   public:
@@ -98,11 +103,12 @@ class AliITSClusterFinder :public TObject{
   };
   class AliBin {
   public:
-    AliBin():fIndex(0),fMask(0xFFFFFFFE),fQ(0){}
+  AliBin():fIndex(0),fMask(0xFFFFFFFE),fRawID(-1),fQ(0){}
     void SetIndex(UInt_t idx) {fIndex=idx;}
     void SetQ(UShort_t q)  {fQ=q;}
     void SetMask(UInt_t m) {fMask=m;}
-    void Reset() {fIndex=0; fMask=0xFFFFFFFE; fQ=0;}
+    void SetRawID(Int_t id) {fRawID=id;}
+    void Reset() {fIndex=0; fMask=0xFFFFFFFE; fQ=0; fRawID=-1;}
 
     void Use() {fMask&=0xFFFFFFFE;}
     Bool_t IsNotUsed() const {return (fMask&1);}
@@ -111,9 +117,11 @@ class AliITSClusterFinder :public TObject{
     UInt_t   GetIndex() const {return fIndex;}
     UShort_t GetQ()     const {return fQ;}
     UInt_t   GetMask()  const {return fMask;}
+    Int_t    GetRawID() const {return fRawID;}
   protected:
     UInt_t fIndex; //digit index
     UInt_t fMask; //peak mask
+    Int_t  fRawID; // ID of raw word (used for embedding)
     UShort_t fQ;  //signal
   };
   void MakeCluster(Int_t k,Int_t max,AliBin *bins,UInt_t m,AliITSRecPoint &c);
@@ -145,13 +153,17 @@ class AliITSClusterFinder :public TObject{
   Int_t fZmax;   // maximum channel in Zloc
   Int_t fXmin;   // minimum channel in Xloc
   Int_t fXmax;   // maximum channel in Xloc 
+  //
+  UInt_t fNClusters; // total number of clusters found
+  //
+  TArrayI* fRawID2ClusID;        //! optional array to store raw word ID -> ClusID for embedding (not owned)
   
   AliITSClusterFinder(const AliITSClusterFinder &source); // copy constructor
   // assignment operator
   AliITSClusterFinder& operator=(const AliITSClusterFinder &source);
   
 
-  ClassDef(AliITSClusterFinder,10) //Class for clustering and reconstruction of space points
+  ClassDef(AliITSClusterFinder,11) //Class for clustering and reconstruction of space points
 };
 // Input and output functions for standard C++ input/output.
 ostream &operator<<(ostream &os,AliITSClusterFinder &source);

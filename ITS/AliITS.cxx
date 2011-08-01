@@ -72,6 +72,7 @@ the AliITS class.
 #include <TString.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
+#include <TArrayI.h>
 #include "AliDetector.h"
 #include "AliITS.h"
 #include "AliITSDetTypeSim.h"
@@ -125,6 +126,7 @@ fpSDigits(0)
   
 //    SetDetectors(); // default to fOpt="All". This variable not written out.
 //PH    SetMarkerColor(kRed);
+  for (int i=fgkNTYPES;i--;) fRawID2ClusID[i] = 0;
 }
 //______________________________________________________________________
 AliITS::AliITS(const Char_t *title):
@@ -165,6 +167,7 @@ AliITS::AliITS(const Char_t *title):
     //PH  SetMarkerColor(kRed);
     if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
     fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
+    for (int i=fgkNTYPES;i--;) fRawID2ClusID[i] = 0;
 }
 //______________________________________________________________________
 AliITS::AliITS(const char *name, const char *title):
@@ -201,7 +204,7 @@ AliITS::AliITS(const char *name, const char *title):
   //PH  SetMarkerColor(kRed);
   if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
   fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
-
+  for (int i=fgkNTYPES;i--;) fRawID2ClusID[i] = 0;
 }
 //______________________________________________________________________
 AliITS::~AliITS(){
@@ -1246,12 +1249,15 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
   }
   npx = segSPD->Npx();
   Double_t thr, sigma; 
-    
+
+  Int_t countRW = -1; // RS counter for raw -> cluster ID's (used in embedding)
+  const TArrayI* rawID2clusID = fRawID2ClusID[kSPD];
   AliITSRawStreamSPD inputSPD(rawReader);
   while(1){
     Bool_t next  = inputSPD.Next();
     if (!next) break;
 
+    countRW++; // RS
     Int_t module = inputSPD.GetModuleID();
     Int_t column = inputSPD.GetColumn();
     Int_t row    = inputSPD.GetRow();
@@ -1263,7 +1269,12 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
     TClonesArray& dum = *fModA[module];
     fDetTypeSim->GetSimuParam()->SPDThresholds(module,thr,sigma);
     thr += 1.;
-    new (dum[last]) AliITSpListItem(-1, -1, module, index, thr);
+    int label = -1;
+    if (rawID2clusID) { // RS If the raw->cluster ID is set (filled by cluster finder) store cluster ID's in SDigits
+      if (rawID2clusID->GetSize()<=countRW) {AliError(Form("The buffer of rawSPD to clusSPD ID's is shorter than current rawSPD ID=%d",countRW));}
+      else label = (*rawID2clusID)[countRW];
+    }
+    new (dum[last]) AliITSpListItem(label, -1, module, index, thr);
   }
   rawReader->Reset();
 
@@ -1275,7 +1286,9 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
   Int_t scalef=AliITSsimulationSDD::ScaleFourier(segSDD);
   Int_t firstSDD=AliITSgeomTGeo::GetModuleIndex(3,1,1);
   Int_t firstSSD=AliITSgeomTGeo::GetModuleIndex(5,1,1);
-
+  //
+  countRW = -1; // RS
+  rawID2clusID = fRawID2ClusID[kSDD];
   AliITSRawStream* inputSDD=AliITSRawStreamSDD::CreateRawStreamSDD(rawReader);
   for(Int_t iMod=firstSDD; iMod<firstSSD; iMod++){
     AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)fDetTypeSim->GetCalibrationModel(iMod);
@@ -1290,6 +1303,7 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
   AliITSDDLModuleMapSDD* ddlmap=fDetTypeSim->GetDDLModuleMapSDD();
   inputSDD->SetDDLModuleMap(ddlmap);
   while(inputSDD->Next()){
+    countRW++; // RS
     if(inputSDD->IsCompletedModule()==kFALSE && 
        inputSDD->IsCompletedDDL()==kFALSE){
 
@@ -1302,7 +1316,12 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
       if (module >= size) continue;
       last = fModA[module]->GetEntries();
       TClonesArray& dum = *fModA[module];
-      new (dum[last]) AliITSpListItem(-1, -1, module, index, Double_t(signal10));
+      int label = -1;
+      if (rawID2clusID) { // RS If the raw->cluster ID is set (filled by cluster finder) store cluster ID's in SDigits
+	if (rawID2clusID->GetSize()<=countRW) {AliError(Form("The buffer of rawSDD to clusSDD ID's is shorter than current rawSDD ID=%d",countRW));}
+	else label = (*rawID2clusID)[countRW];
+      }
+      new (dum[last]) AliITSpListItem(label, -1, module, index, Double_t(signal10));
       ((AliITSpListItem*) dum.At(last))->AddSignalAfterElect(module, index, Double_t(signal10));
     }
   }
@@ -1315,10 +1334,12 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
   AliITSsegmentationSSD* segSSD = (AliITSsegmentationSSD*) fDetTypeSim->GetSegmentationModel(2);
   npx = segSSD->Npx();
   AliITSRawStreamSSD inputSSD(rawReader);
+  countRW = -1;
+  rawID2clusID = fRawID2ClusID[kSSD];
   while(1){
     Bool_t next  = inputSSD.Next();
     if (!next) break;
-
+    countRW++; // RS
     Int_t module  = inputSSD.GetModuleID();
     if(module<0)AliError(Form("Invalid SSD  module %d \n",module));
     if(module<0)continue;
@@ -1331,7 +1352,12 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
 	
     last = fModA[module]->GetEntries();
     TClonesArray& dum = *fModA[module];
-    new (dum[last]) AliITSpListItem(-1, -1, module, index, Double_t(signal));
+    int label = -1;
+    if (rawID2clusID) { // RS If the raw->cluster ID is set (filled by cluster finder) store cluster ID's in SDigits
+      if (rawID2clusID->GetSize()<=countRW) {AliError(Form("The buffer of rawSSD to clusSSD ID's is shorter than current rawSSD ID=%d",countRW));}
+      else label = (*rawID2clusID)[countRW];
+    }    
+    new (dum[last]) AliITSpListItem(label, -1, module, index, Double_t(signal));
   }
   rawReader->Reset();
   AliITSpListItem* sdig = 0;
@@ -1349,7 +1375,7 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
 	sdig = (AliITSpListItem*) (fModA[mod]->At(ie));
       	Double_t digsig = sdig->GetSignal();
 	if(mod>=firstssd) digsig*=adcToEv; // for SSD: convert back charge from ADC to electron
-	new (aSDigits[ie]) AliITSpListItem(-1, -1, mod, sdig->GetIndex(), digsig);
+	new (aSDigits[ie]) AliITSpListItem(sdig->GetTrack(0), -1, mod, sdig->GetIndex(), digsig);
 	Float_t sig = sdig->GetSignalAfterElect();
 	if(mod>=firstssd) sig*=adcToEv;
 	if (sig > 0.) {

@@ -28,11 +28,12 @@ class AliITSgeom;
 class AliITSdigit;
 class AliITSmodule;
 class AliRunDigitizer;
-
+class TArrayI;
 
 class AliITS : public AliDetector {
 
  public:
+  enum {kSPD,kSDD,kSSD};
     //================= Standard Classes ===============================
     AliITS();  // Default creator.
     AliITS(const Char_t *title); // standard Creator
@@ -149,6 +150,8 @@ class AliITS : public AliDetector {
     //===================== FO signals ================================
     // Write FO signals in UserInfo of SDigits/Digits tree
     void WriteFOSignals();
+    void     SetRawID2ClusID(const TArrayI* arr, Int_t iDet) { if (iDet>-1&&iDet<fgkNTYPES) fRawID2ClusID[iDet] = arr;}
+    const TArrayI* GetRawID2ClusID(Int_t iDet) const {return (iDet>-1&&iDet<fgkNTYPES) ? fRawID2ClusID[iDet]:0;}
 
  protected:
     static const Int_t fgkNTYPES=3; //number of detector types
@@ -164,7 +167,7 @@ class AliITS : public AliDetector {
     AliITSSimuParam* fSimuParam; //simulation parameters
     TClonesArray** fModA;      //! Used by Raw2SDigits (one TC per module)
     TClonesArray* fpSDigits;   //! Branch address to build SD from raw data 
-
+    const TArrayI* fRawID2ClusID[fgkNTYPES]; //! optional array for SDigit->Cluster assingment in Raw2SDigit (for embedding)
  private:
     AliITS(const AliITS &source); // copy constructor. Not to be used!
     AliITS& operator=(const AliITS &source); // = operator. Not to be used!

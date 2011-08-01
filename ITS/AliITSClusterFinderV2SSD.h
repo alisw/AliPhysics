@@ -16,6 +16,7 @@
 //--------------------------------------------------------------
 #include "AliITSClusterFinder.h"
 #include "AliITSDetTypeRec.h"
+#include "AliRefArray.h"
 
 class TClonesArray;
 class AliRawReader;
@@ -44,6 +45,7 @@ public:
   Int_t fLastSSD1;        //index of the last SSD1 detector   
   Float_t  fLorentzShiftP; // Shift due to ExB on drift N-side @ actual B field, layer 5, units: strip width 
   Float_t  fLorentzShiftN; // Shift due to ExB on drift P-side @ actual B field, layer 5, units: strip width
+  AliRefArray fRawIDRef[2];   // storage for rawID -> ClusterID (used in embedding)
   static Short_t* fgPairs;       //array used to build positive-negative pairs
   static Int_t    fgPairsSize;    //actual size of pairs array
   static const Float_t fgkCosmic2008StripShifts[16][9]; // Shifts for 2007/2008 Cosmic data (timing problem)

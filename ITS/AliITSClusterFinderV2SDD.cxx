@@ -250,6 +250,9 @@ FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
 		}
 	      }
 	    }
+	  } 
+	  else { // raw data
+	    if (fRawID2ClusID) milab[0] = fNClusters+1; // RS: store clID+1 as a reference to the cluster
 	  }
 	  
 
@@ -309,6 +312,7 @@ FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
 	  else {
 	    fDetTypeRec->AddRecPoint(cc);
 	  }
+	  fNClusters++; // RS
 	  ncl++;
 	}
       }
@@ -322,7 +326,7 @@ void AliITSClusterFinderV2SDD::RawdataToClusters(AliRawReader* rawReader){
     //------------------------------------------------------------
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
-
+  fNClusters = 0; //RS
   AliITSRawStream* inputSDD=AliITSRawStreamSDD::CreateRawStreamSDD(rawReader);
   AliDebug(1,Form("%s is used",inputSDD->ClassName()));
 
@@ -367,6 +371,9 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input)
   for(Int_t iMod=0; iMod<kModulesPerDDL; iMod++) vectModId[iMod]=-1;
 
   // read raw data input stream
+  int countRW = 0; //RS
+  if (fRawID2ClusID) fRawID2ClusID->Reset(); //RS if array was provided, we shall store the rawID -> ClusterID
+  //
   while (input->Next()) {
     Int_t iModule = input->GetModuleID();
     if(iModule<0){
@@ -438,6 +445,7 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input)
 	    fDDLBins[iHybrid][index].SetQ(q);
 	    fDDLBins[iHybrid][index].SetMask(1);
 	    fDDLBins[iHybrid][index].SetIndex(index);
+	    fDDLBins[iHybrid][index].SetRawID(countRW); //RS register raw id
 	    ddlAnodeFired[iHybrid]->SetBitNumber(iz);
 	  }else{
 	    AliWarning(Form("Invalid SDD cell: Anode=%d   TimeBin=%d",iz,itb));	  
@@ -445,6 +453,7 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input)
 	}
       }
     }
+    countRW++; //RS
   }
   for(Int_t iHyb=0;iHyb<kHybridsPerDDL;iHyb++){ 
    delete ddlAnodeFired[iHyb];

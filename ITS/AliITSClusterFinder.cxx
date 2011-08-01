@@ -28,6 +28,7 @@
 #include "AliITSMap.h"
 #include "AliITSgeomTGeo.h"
 #include <TParticle.h>
+#include <TArrayI.h>
 #include "AliMC.h"
 #include "AliLog.h"
 
@@ -50,7 +51,10 @@ fEvent(0),
 fZmin(0),
 fZmax(0),
 fXmin(0),
-fXmax(0){
+fXmax(0),
+fNClusters(0),
+fRawID2ClusID(0)
+{
     // default cluster finder
     // Input:
     //   none.
@@ -78,7 +82,10 @@ fEvent(0),
 fZmin(0),
 fZmax(0),
 fXmin(0),
-fXmax(0){
+fXmax(0),
+fNClusters(0),
+fRawID2ClusID(0)
+{
     // default cluster finder
     // Standard constructor for cluster finder
     // Input:
@@ -109,7 +116,10 @@ fEvent(0),
 fZmin(0),
 fZmax(0),
 fXmin(0),
-fXmax(0){
+fXmax(0),
+fNClusters(0),
+fRawID2ClusID(0)
+{
     // default cluster finder
     // Standard + cluster finder constructor
     // Input:
@@ -143,7 +153,9 @@ AliITSClusterFinder::AliITSClusterFinder(const AliITSClusterFinder &source) :
   fZmin(source.fZmin),
   fZmax(source.fZmax),
   fXmin(source.fXmin),
-  fXmax(source.fXmax) 
+  fXmax(source.fXmax),
+  fNClusters(source.fNClusters),
+  fRawID2ClusID(source.fRawID2ClusID) 
 {
   // Copy constructor
   // Copies are not allowed. The method is protected to avoid misuse.
@@ -473,7 +485,11 @@ MakeCluster(Int_t k,Int_t max,AliBin *bins,UInt_t m,AliITSRecPoint &c) {
   c.SetSigmaZ2(c.GetSigmaZ2()+j*j*q);
 
   bins[k].SetMask(0xFFFFFFFE);
-  
+  if (fRawID2ClusID) { // RS: Register cluster id in raw words list
+    int rwid = bins[k].GetRawID();
+    if (fRawID2ClusID->GetSize()<=rwid) fRawID2ClusID->Set( (rwid+10)<<1 );
+    (*fRawID2ClusID)[rwid] = fNClusters+1; // RS: store clID+1 as a reference to the cluster
+  }
   if (bins[k-max].GetMask() == m) MakeCluster(k-max,max,bins,m,c);
   if (bins[k-1  ].GetMask() == m) MakeCluster(k-1  ,max,bins,m,c);
   if (bins[k+max].GetMask() == m) MakeCluster(k+max,max,bins,m,c);

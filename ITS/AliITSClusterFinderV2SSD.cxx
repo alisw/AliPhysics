@@ -412,6 +412,7 @@ void AliITSClusterFinderV2SSD::RawdataToClusters(AliRawReader* rawReader){
   //------------------------------------------------------------
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
+  fNClusters = 0;
   rawReader->Reset();
   AliITSRawStreamSSD inputSSD(rawReader);
   FindClustersSSD(&inputSSD);
@@ -434,11 +435,15 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input)
       AliWarning("Using default AliITSRecoParam class");
     }
   }
+  if (fRawID2ClusID) { // RS: reset references from 1D clusters to rawID's
+    fRawIDRef[0].Reset();
+    fRawIDRef[1].Reset();
+  }
   Int_t nClustersSSD = 0;
   const Int_t kNADC = 12;
   const Int_t kMaxADCClusters = 1000;
 
-  Int_t strips[kNADC][2][kMaxADCClusters][2]; // [ADC],[side],[istrip], [0]=istrip [1]=signal
+  Int_t strips[kNADC][2][kMaxADCClusters][3]; // [ADC],[side],[istrip], [0]=istrip [1]=signal [2]=rawID (for embedding, RS)
   Int_t nStrips[kNADC][2];
 
   for( int i=0; i<kNADC; i++ ){
@@ -452,7 +457,9 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input)
   //*
   //* Loop over modules DDL+AD
   //*
-  
+  int countRW = 0; //RS
+  if (fRawID2ClusID) fRawID2ClusID->Reset(); //RS if array was provided, we shall store the rawID -> ClusterID
+
   while (kTRUE) {
 
     bool next = input->Next();
@@ -545,13 +552,13 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input)
 	  for( int istr = 0; istr<n+1; istr++ ){
 	    
 	    bool stripOK = 1;
-	    Int_t strip=0;
+	    Int_t strip=0, rwID = 0;
 	    Float_t signal=0.0, noise=0.0, gain=0.0;
 	    
 	    if( istr<n ){
 	      strip = strips[adc][side][istr][0];
 	      signal = strips[adc][side][istr][1];
-	      
+	      rwID   = strips[adc][side][istr][2]; // RS
 	      //cout<<"strip "<<adc<<" / "<<side<<": "<<strip<<endl;
 
 	      if( cal ){
@@ -613,6 +620,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input)
 	      nDigits++;
 	      //nstat[side]++;
 	      ostrip = strip;
+	      if (fRawID2ClusID) fRawIDRef[side].AddReference(nClusters1D[side],rwID);
 
 	    }
 	  } //* end loop over strips
@@ -693,11 +701,13 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input)
     }
     strips[adc][side][n][0] = strip;
     strips[adc][side][n][1] = signal;    
+    strips[adc][side][n][2] = countRW;    
     n++;
 
     //cout<<"SSD: "<<input->GetDDL()<<" "<<input->GetAD()<<" "
     //<<input->GetADC()<<" "<<input->GetSideFlag()<<" "<<((int)input->GetStrip())<<" "<<strip<<" : "<<input->GetSignal()<<endl;
-
+    //
+    countRW++; //RS
   } //* End main loop over the input
   
   AliDebug(1,Form("found clusters in ITS SSD: %d", nClustersSSD));
@@ -1507,6 +1517,26 @@ FindClustersSSD(const Ali1Dcluster* neg, Int_t nn,
 	    lp[5]=-4.32e-05;
 	  }
 	}
+	// 
+	if (fRawID2ClusID) { // set rawID <-> clusterID correspondence for embedding
+	  const int kMaxRefRW = 200;
+	  UInt_t nrefsRW,refsRW[kMaxRefRW];
+	  nrefsRW = fRawIDRef[0].GetReferences(j,refsRW,kMaxRefRW); // n-side
+	  for (int ir=nrefsRW;ir--;) {
+	    int rwid = (int)refsRW[ir];
+	    if (fRawID2ClusID->GetSize()<=rwid) fRawID2ClusID->Set( (rwid+10)<<1 );
+	    (*fRawID2ClusID)[rwid] = fNClusters+1; // RS: store clID+1 as a reference to the cluster
+	  }
+	  //
+	  nrefsRW = fRawIDRef[1].GetReferences(ip,refsRW,kMaxRefRW); // p-side
+	  for (int ir=nrefsRW;ir--;) {
+	    int rwid = (int)refsRW[ir];
+	    if (fRawID2ClusID->GetSize()<=rwid) fRawID2ClusID->Set( (rwid+10)<<1 );
+	    (*fRawID2ClusID)[rwid] = fNClusters+1; // RS: store clID+1 as a reference to the cluster
+	  }
+	  //
+	  milab[0] = fNClusters+1;  // RS: assign id as cluster label
+	}
 
 	AliITSRecPoint * cl2;
 	  cl2 = new ((*clusters)[ncl]) AliITSRecPoint(milab,lp,info);
@@ -1520,7 +1550,8 @@ FindClustersSSD(const Ali1Dcluster* neg, Int_t nn,
 	  }
 	  cused1[ip]++;
 	  cused2[j]++;      
-	ncl++;
+	  ncl++;
+	  fNClusters++;
 	
       } // manyXmany
     } // loop over Pside 1Dclusters

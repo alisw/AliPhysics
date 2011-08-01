@@ -82,6 +82,7 @@ void AliITSClusterFinderV2SPD::RawdataToClusters(AliRawReader* rawReader){
   // This function creates ITS clusters from raw data
   //------------------------------------------------------------
   rawReader->Reset();
+  fNClusters = 0; //RS
   AliITSRawStreamSPD inputSPD(rawReader);
   FindClustersSPD(&inputSPD);
 
@@ -232,7 +233,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
       idy=ymax-ymin+1;
       idz=zmax-zmin+1;
     }
-    
+    //
     for(Int_t iiz=zmin; iiz<=zmax;iiz+=idz){
       for(Int_t iiy=ymin;iiy<=ymax;iiy+=idy){
 
@@ -256,7 +257,14 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
 	  }
 	  ndigits++;
 	  Float_t qBin=0.;
-	  if(rawdata) qBin = bins[idxBins[idx]].GetQ();
+	  if(rawdata) {
+	    qBin = bins[idxBins[idx]].GetQ();
+	    if (fRawID2ClusID) { // RS: Register cluster id in raw words list
+	      int rwid = bins[idxBins[idx]].GetRawID();
+	      if (fRawID2ClusID->GetSize()<=rwid) fRawID2ClusID->Set( (rwid+10)<<1 );	      
+	      (*fRawID2ClusID)[rwid] = milab[0] = fNClusters+1; // RS: store clID+1 as a reference to the cluster
+	    }
+	  }
 	  if(!rawdata){
 	    AliITSdigitSPD* dig = (AliITSdigitSPD*)digits->UncheckedAt(idxBins[idx]);
 	    qBin = (Float_t)dig->GetSignal();
@@ -303,6 +311,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
 	  AliITSRecPoint(cl);
 	} 
 	nclu++;
+	fNClusters++;
       }// for iiy
     }// for iiz
   }//end for iBin
@@ -327,6 +336,9 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStreamSPD* input)
   AliBin* bins = NULL;
 
   // read raw data input stream
+  int countRW = 0; //RS
+  if (fRawID2ClusID) fRawID2ClusID->Reset(); //RS if array was provided, we shall store the rawID -> ClusterID
+  //
   while (kTRUE) {
     Bool_t next = input->Next();
     if (!next || input->IsNewModule()) {
@@ -345,13 +357,15 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(AliITSRawStreamSPD* input)
       memcpy(binsSPD,binsSPDInit,sizeof(AliBin)*kMaxBin);
     }
 
-    if (next && bins) {
+    if (next && bins) {      
       // fill the current digit into the bins array
       Int_t index = (input->GetCoord2()+1) * kNzBins + (input->GetCoord1()+1);
       bins[index].SetIndex(index);
       bins[index].SetQ(1);
       bins[index].SetMask(1);
+      bins[index].SetRawID(countRW); //RS register raw id
     }
+    countRW++; //RS
   }
 
   delete [] binsSPDInit;
