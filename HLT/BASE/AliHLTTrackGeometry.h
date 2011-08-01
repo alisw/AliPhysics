@@ -21,6 +21,7 @@
 
 class AliHLTGlobalBarrelTrack;
 class AliHLTSpacePointContainer;
+class TH2;
 
 /**
  * @class AliHLTTrackGeometry
@@ -127,13 +128,13 @@ class AliHLTTrackGeometry : public TObject, public AliHLTLogging
   public:
     // constructor
     AliHLTTrackPoint(AliHLTUInt32_t id, float u, float v)
-      : fId(id), fU(u), fV(v), fSpacePoint(0), fSpacePointStatus(-1) {}
+      : fId(id), fU(u), fV(v), fSpacePoint(0), fdU(0.), fdV(0.), fSpacePointStatus(-1) {}
     // copy constructor
     AliHLTTrackPoint(const AliHLTTrackPoint& src)
-      : fId(src.fId), fU(src.fU), fV(src.fV), fSpacePoint(src.fSpacePoint), fSpacePointStatus(src.fSpacePointStatus) {}
+      : fId(src.fId), fU(src.fU), fV(src.fV), fSpacePoint(src.fSpacePoint), fdU(src.fdU), fdV(src.fdV), fSpacePointStatus(src.fSpacePointStatus) {}
     // assignment operator
     AliHLTTrackPoint& operator=(const AliHLTTrackPoint& src) {
-      if (this!=&src) {fId=src.fId; fU=src.fU; fV=src.fV; fSpacePoint=src.fSpacePoint; fSpacePointStatus=src.fSpacePointStatus;}
+      if (this!=&src) {fId=src.fId; fU=src.fU; fV=src.fV; fSpacePoint=src.fSpacePoint; fdU=src.fdU; fdV=src.fdV; fSpacePointStatus=src.fSpacePointStatus;}
       return *this;
     }
     ~AliHLTTrackPoint() {}
@@ -166,6 +167,18 @@ class AliHLTTrackGeometry : public TObject, public AliHLTLogging
       spacepointId=fSpacePoint; return fSpacePointStatus<0?-ENOENT:fSpacePointStatus;
     }
 
+    int SetResidual(int coordinate, float value) {
+      if (coordinate==0) fdU=value;
+      else if (coordinate==1) fdV=value;
+      return 0;
+    }
+
+    float GetResidual(int coordinate) const {
+      if (coordinate==0) return fdU;
+      else if (coordinate==1) return fdV;
+      return 0.;
+    }
+
   private:
     // standard constructor prohibited
     AliHLTTrackPoint();
@@ -174,6 +187,8 @@ class AliHLTTrackGeometry : public TObject, public AliHLTLogging
     float fU;           // u coordinate
     float fV;           // v coordinate
     AliHLTUInt32_t fSpacePoint; // associated space point id
+    float fdU;          //  of the spacepoint
+    float fdV;          // residual of the spacepoint
     int fSpacePointStatus; // space point status
   };
 
@@ -211,14 +226,15 @@ class AliHLTTrackGeometry : public TObject, public AliHLTLogging
   AliHLTTrackPoint* GetTrackPoint(AliHLTUInt32_t id);
 
   /// create a collection of all points
-  virtual AliHLTSpacePointContainer* ConvertToSpacePoints() const;
+  virtual AliHLTSpacePointContainer* ConvertToSpacePoints() const {return ConvertToSpacePoints(false);}
+  virtual AliHLTSpacePointContainer* ConvertToSpacePoints(bool bAssociated) const;
 
   /// set the spacepoint associated with a track point
   /// @param  planeId       track point
   /// @param  spacepointId  space point id to be associated with track point
   /// @param  status        status flag
   /// @return 0 on success, -ENOENT planeId not found
-  int SetAssociatedSpacePoint(AliHLTUInt32_t planeId, AliHLTUInt32_t spacepointId, int status);
+  int SetAssociatedSpacePoint(AliHLTUInt32_t planeId, AliHLTUInt32_t spacepointId, int status, float fdU=0.0, float fdV=0.0);
 
   /// get the spacepoint associated with a track point
   /// @param  planeId       id of the track point
@@ -227,6 +243,11 @@ class AliHLTTrackGeometry : public TObject, public AliHLTLogging
   int GetAssociatedSpacePoint(AliHLTUInt32_t planeId, AliHLTUInt32_t& spacepointId) const;
 
   // services
+
+  int FillResidual(int coordinate, TH2* histo) const;
+
+  void SetVerbosity(int verbosity) {fVerbosity=verbosity;}
+  int GetVerbosity() const {return fVerbosity;}
 
   /// inherited from TObject: clear the object and reset pointer references
   virtual void Clear(Option_t * /*option*/ ="");
@@ -240,14 +261,16 @@ class AliHLTTrackGeometry : public TObject, public AliHLTLogging
   virtual void Draw(Option_t *option="");
 
  protected:
-  int AddTrackPoint(const AliHLTTrackPoint& point);
+  int AddTrackPoint(const AliHLTTrackPoint& point, AliHLTUInt32_t selectionMask);
 
   const vector<AliHLTTrackPoint>& TrackPoints() const {return fTrackPoints;}
 
  private:
   vector<AliHLTTrackPoint> fTrackPoints; // list of points
+  vector<AliHLTUInt32_t> fSelectionMasks; // selection masks
 
   int fTrackId; // track id
+  int fVerbosity; // verbosity
 
   ClassDef(AliHLTTrackGeometry, 0)
 };

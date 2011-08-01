@@ -172,6 +172,13 @@ AliHLTUInt8_t* AliHLTSpacePointContainer::Alloc(int size)
   return reinterpret_cast<AliHLTUInt8_t*>(buffer->GetArray());
 }
 
+AliHLTSpacePointContainer* AliHLTSpacePointContainer::SelectByMask(AliHLTUInt32_t /*mask*/, bool /*bAlloc*/) const
+{
+  /// create a collection of clusters for a space point mask
+  /// default implementation, nothing to do
+  return NULL;
+}
+
 AliHLTSpacePointContainer* AliHLTSpacePointContainer::SelectByTrack(int /*trackId*/, bool /*bAlloc*/) const
 {
   /// create a collection of clusters for a specific track
@@ -323,6 +330,8 @@ void AliHLTSpacePointContainer::Draw(Option_t *option)
   /// Inherited from TObject, draw clusters
   float scale=250;
   float center[2]={0.5,0.5};
+  int markersize=1;
+  int markercolor=5;
 
   TString strOption(option);
   std::auto_ptr<TObjArray> tokens(strOption.Tokenize(" "));
@@ -347,6 +356,16 @@ void AliHLTSpacePointContainer::Draw(Option_t *option)
       arg.ReplaceAll(key, "");
       center[1]=arg.Atof();
     }
+    key="markersize=";
+    if (arg.BeginsWith(key)) {
+      arg.ReplaceAll(key, "");
+      markersize=arg.Atoi();
+    }
+    key="markercolor=";
+    if (arg.BeginsWith(key)) {
+      arg.ReplaceAll(key, "");
+      markercolor=arg.Atoi();
+    }
   }
 
   vector<AliHLTUInt32_t> clusterIDs;
@@ -359,13 +378,14 @@ void AliHLTSpacePointContainer::Draw(Option_t *option)
     float sinphi=TMath::Sin(clusterphi);
     float clusterx=GetX(*clusterID);
     float clustery=GetY(*clusterID);
-    cout << " " << *clusterID << " " << clusterx << " " << clustery << " " << clusterphi << endl;
+    //cout << " " << *clusterID << " " << clusterx << " " << clustery << " " << clusterphi << endl;
     // rotate
     float pointx= clusterx*sinphi + clustery*cosphi;
     float pointy=-clusterx*cosphi + clustery*sinphi;
 
     TMarker* m=new TMarker(pointx/(2*scale)+center[0], pointy/(2*scale)+center[1], 3);
-    m->SetMarkerColor(5);
+    m->SetMarkerSize(markersize);
+    m->SetMarkerColor(markercolor);
     m->Draw("same");    
   }  
 }

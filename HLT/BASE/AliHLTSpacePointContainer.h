@@ -48,6 +48,7 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
   virtual int GetNumberOfSpacePoints() const;
   virtual bool Check(AliHLTUInt32_t clusterID) const;
   virtual int GetClusterIDs(vector<AliHLTUInt32_t>& tgt) const = 0;
+  virtual const vector<AliHLTUInt32_t>* GetClusterIDs(AliHLTUInt32_t /*mask*/) {return NULL;}
   virtual float GetX(AliHLTUInt32_t clusterID) const = 0;
   virtual float GetXWidth(AliHLTUInt32_t clusterID) const = 0;
   virtual float GetY(AliHLTUInt32_t clusterID) const = 0;
@@ -56,6 +57,9 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
   virtual float GetZWidth(AliHLTUInt32_t clusterID) const = 0;
   virtual float GetCharge(AliHLTUInt32_t clusterID) const = 0;
   virtual float GetPhi(AliHLTUInt32_t /*clusterID*/) const {return 0.0;}
+
+  /// create a collection of clusters for a space point mask
+  virtual AliHLTSpacePointContainer* SelectByMask(AliHLTUInt32_t mask, bool bAlloc=false) const;
 
   /// create a collection of clusters for a specific track
   virtual AliHLTSpacePointContainer* SelectByTrack(int trackId, bool bAlloc=false) const;
