@@ -71,11 +71,11 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fNCellsFromEMCALBorder(0), fNoEMCALBorderAtEta0(kTRUE),
   fAODFilterMask(32),
   fMatchedTrackIndex(0x0), fMatchedClusterIndex(0x0), 
-  fResidualEta(0x0), fResidualPhi(0x0), fCutEtaPhiSum(kTRUE), fCutEtaPhiSeparate(kFALSE), fCutR(0.1), fCutEta(0.02), fCutPhi(0.04), fMass(0.139), fStep(1),
+  fResidualEta(0x0), fResidualPhi(0x0), fCutEtaPhiSum(kTRUE), fCutEtaPhiSeparate(kFALSE), fCutR(0.1), fCutEta(0.02), fCutPhi(0.04), fMass(0.139), fStep(50),
   fRejectExoticCluster(kFALSE),
-  fCutMinTrackPt(0), fCutMinNClusterTPC(0), fCutMinNClusterITS(0), fCutMaxChi2PerClusterTPC(0), fCutMaxChi2PerClusterITS(0),
-  fCutRequireTPCRefit(0), fCutRequireITSRefit(0), fCutAcceptKinkDaughters(0),
-  fCutMaxDCAToVertexXY(0), fCutMaxDCAToVertexZ(0),fCutDCAToVertex2D(0),fPIDUtils(),
+  fTrackCutsType(kTPCOnlyCut), fCutMinTrackPt(0), fCutMinNClusterTPC(-1), fCutMinNClusterITS(-1), fCutMaxChi2PerClusterTPC(1e10), fCutMaxChi2PerClusterITS(1e10),
+  fCutRequireTPCRefit(kFALSE), fCutRequireITSRefit(kFALSE), fCutAcceptKinkDaughters(kFALSE),
+  fCutMaxDCAToVertexXY(1e10), fCutMaxDCAToVertexZ(1e10),fCutDCAToVertex2D(kFALSE),fPIDUtils(),
   fUseTimeCorrectionFactors(kFALSE),  fTimeCorrectionFactorsSet(kFALSE)
 {
 //
@@ -114,10 +114,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fResidualEta           = new TArrayF();
   
   InitTrackCuts();
-  
   fPIDUtils              = new AliEMCALPIDUtils();
-
-
 }
 
 //______________________________________________________________________
@@ -136,7 +133,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fCutEtaPhiSum(reco.fCutEtaPhiSum), fCutEtaPhiSeparate(reco.fCutEtaPhiSeparate), fCutR(reco.fCutR), fCutEta(reco.fCutEta), fCutPhi(reco.fCutPhi),
   fMass(reco.fMass), fStep(reco.fStep),
   fRejectExoticCluster(reco.fRejectExoticCluster),
-  fCutMinTrackPt(reco.fCutMinTrackPt), fCutMinNClusterTPC(reco.fCutMinNClusterTPC), fCutMinNClusterITS(reco.fCutMinNClusterITS), 
+  fTrackCutsType(reco.fTrackCutsType), fCutMinTrackPt(reco.fCutMinTrackPt), fCutMinNClusterTPC(reco.fCutMinNClusterTPC), fCutMinNClusterITS(reco.fCutMinNClusterITS), 
   fCutMaxChi2PerClusterTPC(reco.fCutMaxChi2PerClusterTPC), fCutMaxChi2PerClusterITS(reco.fCutMaxChi2PerClusterITS),
   fCutRequireTPCRefit(reco.fCutRequireTPCRefit), fCutRequireITSRefit(reco.fCutRequireITSRefit),
   fCutAcceptKinkDaughters(reco.fCutAcceptKinkDaughters),
@@ -191,6 +188,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fStep                      = reco.fStep;
   fRejectExoticCluster       = reco.fRejectExoticCluster;
 
+  fTrackCutsType             = reco.fTrackCutsType;
   fCutMinTrackPt             = reco.fCutMinTrackPt;
   fCutMinNClusterTPC         = reco.fCutMinNClusterTPC;
   fCutMinNClusterITS         = reco.fCutMinNClusterITS; 
@@ -256,8 +254,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
     if(fMatchedClusterIndex)delete fMatchedClusterIndex;
     fMatchedClusterIndex = 0;
   }
-  
-  
+   
   return *this;
 }
 
@@ -1635,21 +1632,47 @@ Bool_t AliEMCALRecoUtils::IsAccepted(AliESDtrack *esdTrack)
 void AliEMCALRecoUtils::InitTrackCuts()
 {
   //Intilize the track cut criteria
-  //By default these cuts are set according to AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()
+  //By default these cuts are set according to AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()
   //Also you can customize the cuts using the setters
   
-  //TPC
-  SetMinNClustersTPC(70);
-  SetMaxChi2PerClusterTPC(4);
-  SetAcceptKinkDaughters(kFALSE);
-  SetRequireTPCRefit(kTRUE);
-  
-  //ITS
-  SetRequireITSRefit(kTRUE);
-  SetMaxDCAToVertexZ(2);
-  SetDCAToVertex2D(kFALSE);
-  SetMaxChi2PerClusterITS(); //which by default sets the value to 1e10.
-  SetMinNClustersITS();
+  switch (fTrackCutsType)
+    {
+    case kTPCOnlyCut:
+      {
+	AliInfo(Form("Track cuts for matching: GetStandardTPCOnlyTrackCuts()\n"));
+	//TPC
+	SetMinNClustersTPC(70);
+	SetMaxChi2PerClusterTPC(4);
+	SetAcceptKinkDaughters(kFALSE);
+	SetRequireTPCRefit(kFALSE);
+
+	//ITS
+	SetRequireITSRefit(kFALSE);
+	SetMaxDCAToVertexZ(3.2);
+	SetMaxDCAToVertexXY(2.4);
+	SetDCAToVertex2D(kTRUE);
+
+	break;
+      }
+    
+    case kGlobalCut:
+      {
+	AliInfo(Form("Track cuts for matching: GetStandardITSTPCTrackCuts2010(kTURE)\n"));
+	//TPC
+	SetMinNClustersTPC(70);
+	SetMaxChi2PerClusterTPC(4);
+	SetAcceptKinkDaughters(kFALSE);
+	SetRequireTPCRefit(kTRUE);
+
+	//ITS
+	SetRequireITSRefit(kTRUE);
+	SetMaxDCAToVertexZ(2);
+	SetMaxDCAToVertexXY();
+	SetDCAToVertex2D(kFALSE);
+
+	break;
+      }
+    }
 }
 
 //___________________________________________________
@@ -1684,7 +1707,7 @@ void AliEMCALRecoUtils::Print(const Option_t *) const
       printf("To cut on dEta and dPhi separately, use: SwitchOnCutEtaPhiSeparate()\n");
     }
 
-  printf("Mass hypothesis = %2.3f[GeV/c^2], extrapolation step = %2.2f[cm]\n",fMass,fStep);
+  printf("Mass hypothesis = %2.3f [GeV/c^2], extrapolation step = %2.2f[cm]\n",fMass,fStep);
 
   printf("Track cuts: \n");
   printf("Minimum track pT: %1.2f\n",fCutMinTrackPt);

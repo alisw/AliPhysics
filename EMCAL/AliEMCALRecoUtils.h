@@ -48,6 +48,7 @@ public:
   enum PositionAlgorithms{kUnchanged=-1,kPosTowerIndex=0, kPosTowerGlobal=1};
   enum ParticleType{kPhoton=0, kElectron=1,kHadron =2, kUnknown=-1};
   enum { kNCuts = 11 }; //track matching
+  enum TrackCutsType{kTPCOnlyCut=0, kGlobalCut=1};
 
   //-----------------------------------------------------
   //Position recalculation
@@ -245,6 +246,8 @@ public:
   //Track Cuts 
   Bool_t  IsAccepted(AliESDtrack *track);
   void    InitTrackCuts();
+  void    SetTrackCutsType(Int_t type) { fTrackCutsType = type; InitTrackCuts(); }
+  Int_t   GetTrackCutsType() const     { return fTrackCutsType; }
 
   // track quality cut setters  
   void    SetMinTrackPt(Double_t pt=0)              { fCutMinTrackPt           = pt   ;}
@@ -316,6 +319,7 @@ private:
   Bool_t     fRejectExoticCluster;      // Switch on or off exotic cluster rejection
 
   // Track cuts  
+  Int_t      fTrackCutsType;             // Esd track cuts type for matching
   Double_t   fCutMinTrackPt;             // Cut on track pT
   Int_t      fCutMinNClusterTPC;         // Min number of tpc clusters
   Int_t      fCutMinNClusterITS;         // Min number of its clusters  
