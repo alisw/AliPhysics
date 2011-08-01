@@ -195,7 +195,8 @@ void AliTOFTenderSupply::Init()
   
 
   // Configure TOFT0 maker class
-  if (!fTOFT0maker) fTOFT0maker = new AliTOFT0maker(fESDpid,fTOFCalib); // create if needed
+  //  if (!fTOFT0maker) fTOFT0maker = new AliTOFT0maker(fESDpid,fTOFCalib); // create if needed
+  if (!fTOFT0maker) fTOFT0maker = new AliTOFT0maker(fESDpid); // without passing AliTOFCalib it uses the diamond
   fTOFT0maker->SetTimeResolution(fTOFres);     // set TOF resolution for the PID
   
 
