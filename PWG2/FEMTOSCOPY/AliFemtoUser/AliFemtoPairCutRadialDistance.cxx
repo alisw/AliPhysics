@@ -55,8 +55,8 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   // quality and sharity
   bool temp = true;
   
-   double pih = 3.14159265358979312;
-   double pit = 6.28318530717958623;
+//    double pih = 3.14159265358979312;
+//    double pit = 6.28318530717958623;
 
   
   double phi1 = pair->Track1()->Track()->P().Phi();
@@ -73,7 +73,7 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   Bool_t pass5 = kTRUE;
 
     rad = fMinRad;
-    for (int iter=fMinRad*10; iter<251; iter++) {
+    for (Double_t iter=fMinRad*10; iter<251; iter+=1.0) {
       Double_t dps = (phi1-phi2+(TMath::ASin(-0.075*chg1*fMagSign*rad/ptv1))-(TMath::ASin(-0.075*chg2*fMagSign*rad/ptv2)));
       double etad = eta2 - eta1;
       if (fabs(etad)<fEtaMin && fabs(dps)<fDPhiStarMin) {
