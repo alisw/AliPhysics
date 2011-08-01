@@ -46,8 +46,8 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const AliFemtoCutMo
   AliFemtoCutMonitor(),
   fTPCdEdx(0),
   fTOFParticle(0),
-  ftofHist(0),
-  fTOFTime(0x0)
+  fTOFTime(0x0),
+  ftofHist(0)
 {
   // copy constructor
   if (fTPCdEdx) delete fTPCdEdx;
@@ -98,7 +98,7 @@ void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
   float tMom = aTrack->P().Mag();
   float tdEdx = aTrack->TPCsignal();
   float tTOF = 0.0;
-  short tchg = aTrack->Charge();
+  //  short tchg = aTrack->Charge();
   if (fTOFParticle == 0) tTOF = aTrack->TOFpionTime();
   if (fTOFParticle == 1) tTOF = aTrack->TOFkaonTime();
   if (fTOFParticle == 2) tTOF = aTrack->TOFprotonTime();
