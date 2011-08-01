@@ -44,10 +44,10 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   fUsePhysicsSel(kFALSE),
   fSelect(0x0),
   fTrackType(kGlobal),
-  fEstEventMult(kITSTPC),
+  fEstEventMult(kITSTPC), 
+  fEventTrig(AliVEvent::kMB), //trigger
   fESDpid(0),
-  fIsPidOwner(0),
-  fEventTrig(AliVEvent::kMB) //trigger
+  fIsPidOwner(0)
 {
   //constructor with 0 parameters , look at default settings 
 //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
@@ -75,9 +75,9 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   fSelect(0x0),
   fTrackType(kGlobal),
   fEstEventMult(kITSTPC),
+  fEventTrig(AliVEvent::kMB), //trigger
   fESDpid(0),
-  fIsPidOwner(0),
-  fEventTrig(AliVEvent::kMB) //trigger
+  fIsPidOwner(0)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;

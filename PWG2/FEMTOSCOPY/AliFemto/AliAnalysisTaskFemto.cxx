@@ -34,16 +34,16 @@ ClassImp(AliAnalysisTaskFemto)
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfigMacro, const char *aConfigParams):
     AliAnalysisTask(name,""), 
     fESD(0), 
+    fESDpid(0),
     fAOD(0),
+    fAODpidUtil(0),
     fStack(0),
     fOutputList(0), 
     fReader(0x0),
     fManager(0x0),
     fAnalysisType(0),
     fConfigMacro(0),
-    fConfigParams(0),
-    fESDpid(0),
-    fAODpidUtil(0)
+    fConfigParams(0)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -59,16 +59,16 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfig
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfigMacro="ConfigFemtoAnalysis.C"): 
     AliAnalysisTask(name,""), 
     fESD(0), 
+    fESDpid(0),
     fAOD(0),
+    fAODpidUtil(0),
     fStack(0),
     fOutputList(0), 
     fReader(0x0),
     fManager(0x0),
     fAnalysisType(0),
     fConfigMacro(0),
-    fConfigParams(0),
-    fESDpid(0),
-    fAODpidUtil(0)
+    fConfigParams(0)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -84,16 +84,16 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfig
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask):
     AliAnalysisTask(aFemtoTask), 
     fESD(0), 
+    fESDpid(0),
     fAOD(0),
+    fAODpidUtil(0),
     fStack(0),
     fOutputList(0), 
     fReader(0x0),
     fManager(0x0),
     fAnalysisType(0),
     fConfigMacro(0),
-    fConfigParams(0),
-    fESDpid(0),
-    fAODpidUtil(0)
+    fConfigParams(0)
 {
   // copy constructor
   fESD = aFemtoTask.fESD; 
@@ -203,7 +203,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
       fAOD = aodH->GetEvent();
 
       fAODpidUtil = aodH->GetAODpidUtil();
-      printf("aodH->GetAODpidUtil(): %x",aodH->GetAODpidUtil());
+      //      printf("aodH->GetAODpidUtil(): %x",aodH->GetAODpidUtil());
       femtoReaderAOD->SetAODpidUtil(fAODpidUtil);
     }
   }
