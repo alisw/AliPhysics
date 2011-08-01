@@ -241,7 +241,7 @@ AliSPDMCTrackDensity::Calculate(const AliMCEvent& event,
       nRef++;
       // Only fill first reference 
       if (nRef == 1) { 
-	const AliMCParticle* mother = GetMother(iTrRef, event);
+	const AliMCParticle* mother = GetMother(iTr, event);
 	StoreParticle(particle, mother, iTrRef, vz, output);
       }
     }
