@@ -66,7 +66,7 @@ public:
          void           SetSize  (Int_t size                               ){fSi=size;}                                            // Setter
          void           SetCh    (Int_t chamber                            ){fCh=chamber;}                                         // Setter
          void           SetChi2  (Double_t chi2                            ){fChi2=chi2;}                                          // Setter
-         void           SetStatus(Int_t status                             ){fSt=st;}                                              // Setter
+         void           SetStatus(Int_t status                             ){fSt=status;}                                              // Setter
          void           FindClusterSize(Int_t i,Int_t *pSigmaCut);                                                                 //Find the clusterSize of deconvoluted clusters 
  virtual void	        Clear(const Option_t*) { delete [] fDigs; fDigs=0; delete [] fParam; fParam=0; }
          
