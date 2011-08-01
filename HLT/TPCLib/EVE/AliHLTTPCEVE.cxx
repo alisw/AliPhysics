@@ -152,7 +152,7 @@ int AliHLTTPCEVE::AddClusters(TEvePointSet* clusters, const AliHLTTPCClusterData
   return iResult;
 }
 
-int AliHLTTPCEVE::AddClusters(TEvePointSet* clusters, const AliHLTTPCSpacePointContainer* points, Float_t maxR) const
+int AliHLTTPCEVE::AddClusters(TEvePointSet* clusters, const AliHLTSpacePointContainer* points, Float_t maxR) const
 {
   // add clusters from a space point collection
   int iResult=0;
@@ -181,7 +181,7 @@ int AliHLTTPCEVE::AddClusters(TEvePointSet* clusters, const AliHLTTPCSpacePointC
   return iResult;
 }
 
-int AliHLTTPCEVE::AddPointSet(TEveManager* pEve, const AliHLTTPCSpacePointContainer* points, Float_t maxR, const char* title) const
+int AliHLTTPCEVE::AddPointSet(TEveManager* pEve, const AliHLTSpacePointContainer* points, Float_t maxR, const char* title) const
 {
   // create new point set and add to eve
   if (!pEve) return -EINVAL;
