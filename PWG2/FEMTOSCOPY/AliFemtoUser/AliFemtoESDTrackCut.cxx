@@ -87,6 +87,7 @@ AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
     fCharge(0),
     fLabel(0),
     fStatus(0),
+    fPIDMethod(knSigma),
     fminTPCclsF(0),
     fminTPCncls(0),
     fminITScls(0),
@@ -108,8 +109,7 @@ AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
     fMinPforTPCpid(0.0),
     fMaxPforTPCpid(10000.0),
     fMinPforITSpid(0.0),
-    fMaxPforITSpid(10000.0),
-    fPIDMethod(knSigma)
+    fMaxPforITSpid(10000.0)
 {
   // Default constructor
   fNTracksPassed = fNTracksFailed = 0;
