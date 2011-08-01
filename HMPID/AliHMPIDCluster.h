@@ -64,9 +64,9 @@ public:
          void           SetQ     (Double_t q                               ){fQ=q;if(fQ>4095)fQ=4095;}                             // Setter         
          void           SetQRaw  (Double_t qRaw                            ){fQRaw=qRaw;if(fQRaw>4095)fQRaw=4095;}                 // Setter         
          void           SetSize  (Int_t size                               ){fSi=size;}                                            // Setter
-         void           SetCh    (Int_t chamber                              ){fCh=chamber;}                                         // Setter
+         void           SetCh    (Int_t chamber                            ){fCh=chamber;}                                         // Setter
          void           SetChi2  (Double_t chi2                            ){fChi2=chi2;}                                          // Setter
-         void           SetSt    (Double_t st                                ){fSt=st;}                                              // Setter
+         void           SetStatus(Int_t status                             ){fSt=st;}                                              // Setter
          void           FindClusterSize(Int_t i,Int_t *pSigmaCut);                                                                 //Find the clusterSize of deconvoluted clusters 
  virtual void	        Clear(const Option_t*) { delete [] fDigs; fDigs=0; delete [] fParam; fParam=0; }
          
