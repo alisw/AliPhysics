@@ -151,7 +151,7 @@ int AliHLTTPCTrackGeometry::CalculateTrackPoints(AliHLTGlobalBarrelTrack& track,
     if (TMath::Abs(planealpha-GetPlaneAlpha(id))>0.0001) {
       HLTError("alpha missmatch for plane %08x (slice %d): alpha from id %f (%.0f), expected %f (%.0f)", id, slice, GetPlaneAlpha(id), 180*GetPlaneAlpha(id)/TMath::Pi(), planealpha, 180*planealpha/TMath::Pi());
     }
-    AddTrackPoint(AliHLTTrackPoint(id, y, z));
+    AddTrackPoint(AliHLTTrackPoint(id, y, z), AliHLTTPCSpacePointData::GetID(slice, partition, 0));
   }
   return 0;
 }
@@ -162,33 +162,70 @@ int AliHLTTPCTrackGeometry::FindMatchingTrackPoint(AliHLTUInt32_t spacepointId, 
   UInt_t slice=AliHLTTPCSpacePointData::GetSlice(spacepointId);
   UInt_t partition=AliHLTTPCSpacePointData::GetPatch(spacepointId);
   int row=AliHLTTPCTransform::GetPadRow(spacepoint[0]);
+  bool bSpecialRow=row==30 || row==90 || row==139;
   if (row<AliHLTTPCTransform::GetFirstRow(partition) || row>AliHLTTPCTransform::GetLastRow(partition)) {
     HLTError("row number %d calculated from x value %f is outside slice %d partition %d", row, spacepoint[0], slice, partition);
     return -EINVAL;
   }
+
+  // find the crossing point of the track with the padrow plane where
+  // the spacepoint is
+  // 1) calculate plane id from slice, partition and row (within partition)
   row-=AliHLTTPCTransform::GetFirstRow(partition);
   UInt_t id=AliHLTTPCSpacePointData::GetID(slice, partition, row);
   const AliHLTTrackPoint* point=GetTrackPoint(id);
+  // track might be outside the partition and cross the central membrane
+  // search in the other half of the TPC
   if (!point && slice<18) {
+    // search in the neighboring partition on the C side
     id=AliHLTTPCSpacePointData::GetID(slice+18, partition, row);
     point=GetTrackPoint(id);
   } else if (!point && slice>=18) {
+    // search in the neighboring partition on the A side
     id=AliHLTTPCSpacePointData::GetID(slice-18, partition, row);
     point=GetTrackPoint(id);
   }
+  
+  // search in the neighboring partition, this takes account for rows
+  // 30, 90, and 139 which are partly in one and the other partition
+  if (!point && bSpecialRow) {
+    row+=AliHLTTPCTransform::GetFirstRow(partition);
+    row-=AliHLTTPCTransform::GetFirstRow(partition-1);
+    id=AliHLTTPCSpacePointData::GetID(slice, partition-1, row);
+    point=GetTrackPoint(id);
+    if (!point && slice<18) {
+      // search in the neighboring partition on the C side
+      id=AliHLTTPCSpacePointData::GetID(slice+18, partition-1, row);
+      point=GetTrackPoint(id);
+    } else if (!point && slice>=18) {
+      // search in the neighboring partition on the A side
+      id=AliHLTTPCSpacePointData::GetID(slice-18, partition-1, row);
+      point=GetTrackPoint(id);
+    }
+  }
+
   if (point) {
     planeId=id;
-    if (point->HaveAssociatedSpacePoint()) return 0; // already occupied
-    float maxdy=5;
-    //float maxdz=5;
-    if (TMath::Abs(point->GetU()-spacepoint[1])>maxdy) return -ENOENT;
-    //if (TMath::Abs(point->GetV()-spacepoint[2])>maxdz) return -ENOENT;
+    if (point->HaveAssociatedSpacePoint()) {
+      if (GetVerbosity()>2) HLTInfo("descarding spacepoint 0x%08x z=%f y=%f z=%f: track point 0x%08x already occupied", spacepoint[0], spacepoint[1], spacepoint[2], planeId);
+      return 0; // already occupied
+    }
+    float maxdy=2.;
+    float maxdz=2.;
+    if (TMath::Abs(point->GetU()-spacepoint[1])>maxdy) {
+      if (GetVerbosity()>0) HLTInfo("descarding spacepoint 0x%08x y=%f z=%f: track point 0x%08x y %f outside tolerance %f", spacepoint[1], spacepoint[2], planeId, point->GetU(), maxdy);
+      return -ENOENT;
+    }
+    if (TMath::Abs(point->GetV()-spacepoint[2])>maxdz) {
+      if (GetVerbosity()>0) HLTInfo("descarding spacepoint 0x%08x y=%f z=%f: track point 0x%08x z %f outside tolerance %f", spacepoint[1], spacepoint[2], planeId, point->GetV(), maxdz);
+      return -ENOENT;
+    }
     return 1;
   }
   return -ENOENT;
 }
 
-AliHLTSpacePointContainer* AliHLTTPCTrackGeometry::ConvertToSpacePoints() const
+AliHLTSpacePointContainer* AliHLTTPCTrackGeometry::ConvertToSpacePoints(bool bAssociated) const
 {
   /// create a collection of all points
   std::auto_ptr<AliHLTTPCSpacePointContainer> spacepoints(new AliHLTTPCSpacePointContainer);
@@ -209,6 +246,7 @@ AliHLTSpacePointContainer* AliHLTTPCTrackGeometry::ConvertToSpacePoints() const
     int currentSlice=-1;
     int currentPartition=-1;
     for (; i<trackPoints.size(); i++) {
+      if (bAssociated && !trackPoints[i].HaveAssociatedSpacePoint()) continue;
       AliHLTUInt32_t planeId=trackPoints[i].GetId();
       int slice=AliHLTTPCSpacePointData::GetSlice(planeId);
       int partition=AliHLTTPCSpacePointData::GetPatch(planeId);
@@ -239,7 +277,7 @@ AliHLTSpacePointContainer* AliHLTTPCTrackGeometry::ConvertToSpacePoints() const
     AliHLTComponentBlockData bd;
     AliHLTComponent::FillBlockData(bd);
     bd.fPtr=pBuffer;
-    bd.fSize=blocksize;
+    bd.fSize=sizeof(AliHLTTPCClusterData)+pClusterData->fSpacePointCnt*sizeof(AliHLTTPCSpacePointData);
     AliHLTComponent::SetDataType(bd.fDataType, "CLUSTERS", "TPC ");
     bd.fSpecification=//AliHLTTPCDefinitions::EncodeDataSpecification(currentSlice, currentSlice, currentPartition, currentPartition);
     spacepoints->AddInputBlock(&bd);

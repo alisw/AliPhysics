@@ -36,7 +36,9 @@ class AliHLTTPCSpacePointContainer : public AliHLTSpacePointContainer
   /// destructor
   ~AliHLTTPCSpacePointContainer();
 
+  virtual bool Check(AliHLTUInt32_t clusterID) const;
   virtual int GetClusterIDs(vector<AliHLTUInt32_t>& tgt) const;
+  virtual const vector<AliHLTUInt32_t>* GetClusterIDs(AliHLTUInt32_t mask);
   virtual float GetX(AliHLTUInt32_t clusterID) const;
   virtual float GetXWidth(AliHLTUInt32_t clusterID) const;
   virtual float GetY(AliHLTUInt32_t clusterID) const;
@@ -54,6 +56,9 @@ class AliHLTTPCSpacePointContainer : public AliHLTSpacePointContainer
 
   /// print information
   virtual void Print(ostream& out, Option_t *option="") const;
+
+  /// create a collection of clusters for a space point mask
+  virtual AliHLTSpacePointContainer* SelectByMask(AliHLTUInt32_t mask, bool bAlloc=false) const;
 
   /// create a collection of clusters for a specific track
   virtual AliHLTSpacePointContainer* SelectByTrack(int trackId, bool bAlloc=false) const;
@@ -103,6 +108,9 @@ class AliHLTTPCSpacePointContainer : public AliHLTSpacePointContainer
  private:
   /// map of clusters
   std::map<AliHLTUInt32_t, AliHLTTPCSpacePointProperties> fClusters; //!
+
+  /// map of cluster id collection for different masks
+  std::map<AliHLTUInt32_t, vector<AliHLTUInt32_t>*> fSelections; //!
 
   ClassDef(AliHLTTPCSpacePointContainer, 0)
 };

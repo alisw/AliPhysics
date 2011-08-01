@@ -38,6 +38,7 @@ ClassImp(AliHLTTPCSpacePointContainer)
 AliHLTTPCSpacePointContainer::AliHLTTPCSpacePointContainer()
   : AliHLTSpacePointContainer()
   , fClusters()
+  , fSelections()
 {
   // see header file for class documentation
   // or
@@ -49,6 +50,7 @@ AliHLTTPCSpacePointContainer::AliHLTTPCSpacePointContainer()
 AliHLTTPCSpacePointContainer::AliHLTTPCSpacePointContainer(const AliHLTTPCSpacePointContainer& c)
   : AliHLTSpacePointContainer(c)
   , fClusters(c.fClusters.begin(), c.fClusters.end())
+  , fSelections()
 {
   /// copy constructor
 }
@@ -66,6 +68,11 @@ AliHLTTPCSpacePointContainer& AliHLTTPCSpacePointContainer::operator=(const AliH
 AliHLTTPCSpacePointContainer::~AliHLTTPCSpacePointContainer()
 {
   // destructor
+
+  for (std::map<AliHLTUInt32_t, vector<AliHLTUInt32_t>*>::iterator selection=fSelections.begin();
+       selection!=fSelections.end(); selection++) {
+    if (selection->second) delete selection->second;
+  }
 }
 
 int AliHLTTPCSpacePointContainer::AddInputBlock(const AliHLTComponentBlockData* pDesc)
@@ -118,13 +125,14 @@ int AliHLTTPCSpacePointContainer::AddInputBlock(const AliHLTComponentBlockData* 
       }
     }
     {
-      UInt_t clusterSlice =AliHLTTPCSpacePointData::GetSlice(clusterID);
-      UInt_t clusterPart  =AliHLTTPCSpacePointData::GetPatch(clusterID);
-      int row=AliHLTTPCTransform::GetPadRow(pClusterData->fSpacePoints[i].fX);
-      if (row<AliHLTTPCTransform::GetFirstRow(clusterPart) || row>AliHLTTPCTransform::GetLastRow(clusterPart)) {
-	HLTError("row number %d calculated from x value %f is outside slice %d partition %d, expected row %d"
-		 , row, pClusterData->fSpacePoints[i].fX, clusterSlice, clusterPart, pClusterData->fSpacePoints[i].fPadRow);
-      }
+      // consistency check for x and row number
+      // UInt_t clusterSlice =AliHLTTPCSpacePointData::GetSlice(clusterID);
+      // UInt_t clusterPart  =AliHLTTPCSpacePointData::GetPatch(clusterID);
+      // int row=AliHLTTPCTransform::GetPadRow(pClusterData->fSpacePoints[i].fX);
+      // if (row<AliHLTTPCTransform::GetFirstRow(clusterPart) || row>AliHLTTPCTransform::GetLastRow(clusterPart)) {
+      // 	HLTError("row number %d calculated from x value %f is outside slice %d partition %d, expected row %d"
+      // 		 , row, pClusterData->fSpacePoints[i].fX, clusterSlice, clusterPart, pClusterData->fSpacePoints[i].fPadRow);
+      // }
     }
 
     if (fClusters.find(clusterID)==fClusters.end()) {
@@ -146,6 +154,39 @@ int AliHLTTPCSpacePointContainer::GetClusterIDs(vector<AliHLTUInt32_t>& tgt) con
   tgt.clear();
   transform(fClusters.begin(), fClusters.end(), back_inserter(tgt), HLT::AliGetKey());
   return tgt.size();
+}
+
+bool AliHLTTPCSpacePointContainer::Check(AliHLTUInt32_t clusterID) const
+{
+  // check if the cluster is available
+  return fClusters.find(clusterID)!=fClusters.end();
+}
+
+const vector<AliHLTUInt32_t>* AliHLTTPCSpacePointContainer::GetClusterIDs(AliHLTUInt32_t mask)
+{
+  // get array of cluster IDs filtered by mask
+  if (fSelections.find(mask)!=fSelections.end()) {
+    // return existing selection
+    return fSelections.find(mask)->second;
+  }
+  // create new collection
+  vector<AliHLTUInt32_t>* selected=new vector<AliHLTUInt32_t>;
+  if (!selected) return NULL;
+  UInt_t slice=AliHLTTPCSpacePointData::GetSlice(mask);
+  UInt_t partition=AliHLTTPCSpacePointData::GetPatch(mask);
+  HLTInfo("creating collection 0x%08x", mask);
+  for (std::map<AliHLTUInt32_t, AliHLTTPCSpacePointProperties>::const_iterator cl=fClusters.begin();
+       cl!=fClusters.end(); cl++) {
+    UInt_t s=AliHLTTPCSpacePointData::GetSlice(cl->first);
+    UInt_t p=AliHLTTPCSpacePointData::GetPatch(cl->first);
+    if ((slice>=(unsigned)AliHLTTPCTransform::GetNSlice() || s==slice) && 
+	(partition>=(unsigned)AliHLTTPCTransform::GetNumberOfPatches() || p==partition)) {
+      selected->push_back(cl->first);
+    }
+  }
+  HLTInfo("collection 0x%08x with %d spacepoints", mask, selected->size());
+  fSelections[mask]=selected;
+  return selected;
 }
 
 float AliHLTTPCSpacePointContainer::GetX(AliHLTUInt32_t clusterID) const
@@ -233,6 +274,26 @@ void AliHLTTPCSpacePointContainer::Print(ostream& out, Option_t */*option*/) con
        cl!=fClusters.end(); cl++) {
     out << " " << cl->first << cl->second << endl;
   }
+}
+
+AliHLTSpacePointContainer* AliHLTTPCSpacePointContainer::SelectByMask(AliHLTUInt32_t mask, bool /*bAlloc*/) const
+{
+  /// create a collection of clusters for a space point mask
+  std::auto_ptr<AliHLTTPCSpacePointContainer> c(new AliHLTTPCSpacePointContainer);
+  if (!c.get()) return NULL;
+
+  UInt_t slice=AliHLTTPCSpacePointData::GetSlice(mask);
+  UInt_t partition=AliHLTTPCSpacePointData::GetPatch(mask);
+  for (std::map<AliHLTUInt32_t, AliHLTTPCSpacePointProperties>::const_iterator cl=fClusters.begin();
+       cl!=fClusters.end(); cl++) {
+    UInt_t s=AliHLTTPCSpacePointData::GetSlice(cl->first);
+    UInt_t p=AliHLTTPCSpacePointData::GetPatch(cl->first);
+    if ((slice>=(unsigned)AliHLTTPCTransform::GetNSlice() || s==slice) && 
+	(partition>=(unsigned)AliHLTTPCTransform::GetNumberOfPatches() || p==partition)) {
+      c->fClusters[cl->first]=cl->second;
+    }
+  }
+  return c.release();
 }
 
 AliHLTSpacePointContainer* AliHLTTPCSpacePointContainer::SelectByTrack(int trackId, bool /*bAlloc*/) const
