@@ -174,6 +174,7 @@ AliCTPTimeParams* AliCTPTimeParams::LoadCTPTimeParamsFromString(const char* time
 
      if (ctptime->ProcessCTPTimeParamsLine(string->String()) == kFALSE)
      {
+     	delete ctptime;
         ctptime  = 0x0;
         break;
      }
@@ -208,6 +209,7 @@ Bool_t AliCTPTimeParams::ProcessCTPTimeParamsLine(const char* line)
     if (ntokens == 5)  AddInput(((TObjString*)tokens->At(0))->String(), level, ((TObjString*)tokens->At(2))->String().Atoi(), ((TObjString*)tokens->At(1))->String(),  ((TObjString*)tokens->At(3))->String().Atoi(), ((TObjString*)tokens->At(4))->String().Atoi());
     else if (ntokens == 3) AddInput(((TObjString*)tokens->At(0))->String(), level, ((TObjString*)tokens->At(2))->String().Atoi(), ((TObjString*)tokens->At(1))->String(),  0, 0); //the old format is used - no DeltaMin & DeltaMax!
          else return kFALSE; // file not in the right format!
+    delete tokens;
   }
 return kTRUE;
 }
