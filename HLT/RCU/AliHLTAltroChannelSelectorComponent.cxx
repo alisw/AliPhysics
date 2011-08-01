@@ -181,7 +181,7 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
   int blockno=0;
   const AliHLTComponentBlockData* pDesc=NULL;
   std::auto_ptr<AliRawReaderMemory> pRawReader(new AliRawReaderMemory);
-  if (pRawReader.get()) return -ENOMEM;
+  if (!pRawReader.get()) return -ENOMEM;
 
   for (pDesc=GetFirstInputBlock(kAliHLTDataTypeDDLRaw); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
     iResult=0;

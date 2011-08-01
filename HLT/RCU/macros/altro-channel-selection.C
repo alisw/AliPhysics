@@ -11,7 +11,7 @@
  *
  * The simple test writes a fake file with the list of the selected channels.
  *
- * There are two switches in the code:
+ * The function has two switch arguments:
  * - directDump=true/false <br>
  *   determines whether the input data should be forwarded directly. Selection
  *   of channels is disabled if \em true
@@ -25,6 +25,7 @@
  * @author Matthias.Richter@ift.uib.no
  * @ingroup alihlt_rcu
  */
+void altro_channel_selection(bool directDump=false, bool textDump=false)
 {
   // this is just a tool to switch the logging systems
   AliHLTLogging log;
@@ -34,6 +35,7 @@
   //gHLT.SetGlobalLoggingLevel(0x7c);
 
   // load the component library
+  gHLT.LoadComponentLibraries("libAliHLTUtil.so");
   gHLT.LoadComponentLibraries("libAliHLTTPC.so");
   gHLT.LoadComponentLibraries("libAliHLTRCU.so");
 
@@ -61,12 +63,6 @@
     cout << "can not open file " << dummySelectionList << " for writing" << endl;
     return;
   }
-
-  // direct dump switch allows to bypass the selector component
-  bool directDump=false;
-
-  // choose if you want to dump to file or translate digits to text file
-  bool textDump=false;
 
   // the configuration
   int iMinSlice=0; 
@@ -115,7 +111,7 @@
   if (textDump)
     AliHLTConfiguration digitdump("digitdump", "TPCDigitDump"   , writerInput.Data(), "-datafile digit.dump -specfmt=_0x%08x -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
   else
-    AliHLTConfiguration digitdump("digitdump", "FileWriter"   , writerInput.Data(), "-datafile RAW.ddl -specfmt=_0x%08x -subdir=out_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
+    AliHLTConfiguration digitdump("digitdump", "FileWriter"   , writerInput.Data(), "-datafile RAW.ddl -specfmt=_0x%08x -subdir=out_%d -blcknofmt= -idfmt= -skip-datatype");
 
   // build the ask list and execute
   gHLT.BuildTaskList("digitdump");
