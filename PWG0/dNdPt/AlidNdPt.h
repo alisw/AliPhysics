@@ -70,6 +70,12 @@ public:
   AlidNdPtBackgroundCuts* GetBackgroundCuts() const             { return fdNdPtBackgroundCuts; }
   Double_t* CreateLogAxis(Int_t nbins, Double_t xmin, Double_t xmax);
 
+  void SetAnalyseOutput(Bool_t analyseoutput)  { fAnalyseOutput = analyseoutput; }
+  Bool_t GetAnalyseOutput() const { return fAnalyseOutput; }
+
+  void SetMergeTHnSparse(Bool_t mergethnsparse)  { fMergeTHnSparse = mergethnsparse; }
+  Bool_t GetMergeTHnSparse() const { return fMergeTHnSparse; }
+
 protected:
    static Double_t* CloneArray(Int_t n, Double_t* source);
 
@@ -91,8 +97,11 @@ private:
 
   AliPhysicsSelection* fPhysicsSelection; // physics trigger selection class
   AlidNdPtBackgroundCuts *fdNdPtBackgroundCuts; // background cuts (cosmics and splitted tracks)
+  
+  Bool_t fAnalyseOutput; // call Analyse() function in the FinishTaskOutput
+  Bool_t fMergeTHnSparse; // merge THnSparse histograms in Merge() function
 
-  ClassDef(AlidNdPt,3);
+  ClassDef(AlidNdPt,4);
 };
 
 #endif

@@ -27,6 +27,10 @@
 //------------------------------------------------------------------------------
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
+#include "TMatrixD.h"
+
+#include <TPDGCode.h>
 
 #include "AliHeader.h"  
 #include "AliGenEventHeader.h"  
@@ -61,7 +65,8 @@ ClassImp(AlidNdPtCutAnalysisPbPb)
   fMCEventHist(0),
   fRecMCEventHist(0),
   fRecMCTrackHist(0),
-  fCentralityEstimator(0)
+  fCentralityEstimator(0),
+  fFolderObj(0)
 {
   // default constructor
   Init();
@@ -75,7 +80,8 @@ AlidNdPtCutAnalysisPbPb::AlidNdPtCutAnalysisPbPb(Char_t* name, Char_t* title): A
   fMCEventHist(0),
   fRecMCEventHist(0),
   fRecMCTrackHist(0),
-  fCentralityEstimator(0)
+  fCentralityEstimator(0),
+  fFolderObj(0)
 {
   // constructor
   Init();
@@ -91,6 +97,7 @@ AlidNdPtCutAnalysisPbPb::~AlidNdPtCutAnalysisPbPb() {
   if(fRecMCTrackHist) delete fRecMCTrackHist; fRecMCTrackHist=0;
 
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
+  if(fFolderObj) delete fFolderObj; fFolderObj=0;
 }
 
 //_____________________________________________________________________________
@@ -107,13 +114,13 @@ void AlidNdPtCutAnalysisPbPb::Init(){
 
   // set pt bins
   const Int_t ptNbins = 50;
-  const Double_t ptMin = 1.e-2, ptMax = 50.;
+  const Double_t ptMin = 1.e-2, ptMax = 100.;
   Double_t *binsPt = CreateLogAxis(ptNbins,ptMin,ptMax);
 
   // centrality bins
   const Int_t centrNbins = 3;
   const Double_t centrMin = 0, centrMax = 1;
-  Double_t binsCentr[centrNbins+1] = {0.0, 0.2, 0.5, 1.0};
+  Double_t binsCentr[centrNbins+1] = {0.0, 20., 50., 100.};
 
   // 
   Int_t binsEventCount[2]={2,2};
@@ -129,7 +136,7 @@ void AlidNdPtCutAnalysisPbPb::Init(){
 
   Int_t binsRecEventHist[5]={80,80,100,80,150};
   Double_t minRecEventHist[5]={-1.*kFact,-1.*kFact,-35.,0.,0.}; 
-  Double_t maxRecEventHist[5]={1.*kFact,1.*kFact,35.,10.,150.}; 
+  Double_t maxRecEventHist[5]={1.*kFact,1.*kFact,35.,10.,3000.}; 
   fRecEventHist = new THnSparseF("fRecEventHist","Xv:Yv:Zv:ResZv:Mult",5,binsRecEventHist,minRecEventHist,maxRecEventHist);
   fRecEventHist->GetAxis(0)->SetTitle("Xv (cm)");
   fRecEventHist->GetAxis(1)->SetTitle("Yv (cm)");
@@ -151,7 +158,7 @@ void AlidNdPtCutAnalysisPbPb::Init(){
   //Xv-mcXv:Yv-mcYv:Zv-mcZv:Mult
   Int_t binsRecMCEventHist[4]={100,100,100,150};
   Double_t minRecMCEventHist[4]={-1.0*kFact,-1.0*kFact,-1.0*kFact,0.}; 
-  Double_t maxRecMCEventHist[4]={1.0*kFact,1.0*kFact,1.0*kFact,150.}; 
+  Double_t maxRecMCEventHist[4]={1.0*kFact,1.0*kFact,1.0*kFact,3000.}; 
   fRecMCEventHist = new THnSparseF("fRecMCEventHist","Xv-mcXv:Yv-mcYv:Zv-mcZv:Mult",4,binsRecMCEventHist,minRecMCEventHist,maxRecMCEventHist);
   fRecMCEventHist->GetAxis(0)->SetTitle("Xv-mcXv (cm)");
   fRecMCEventHist->GetAxis(1)->SetTitle("Yv-mcYv (cm)");
@@ -164,57 +171,33 @@ void AlidNdPtCutAnalysisPbPb::Init(){
   //
   //
   //
-  //nCrossRows:chi2PerClust:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge:centr
-  Int_t binsRecMCTrackHist[14]=  {160, 10, 20, 20, 50,  50,  20,  90,             ptNbins, 2,  2,  2,  3,  centrNbins};
-  Double_t minRecMCTrackHist[14]={0.,  0., 0., 0.,-0.5,-0.5,-1.0, 0.,             ptMin,   0., 0., 0.,-1., centrMin};
-  Double_t maxRecMCTrackHist[14]={160.,10.,1.,  1., 0.5, 0.5, 1.0, 2.*TMath::Pi(), ptMax,   2., 2., 2., 2., centrMax};
+  //nCrossRows:chi2PerClust:chi2PerClustITS:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromConversion:isFromMaterial:isPrim:charge:centr:chi2ToTPCc
+  Int_t binsRecMCTrackHist[17]=  {160, 10, 70, 30, 20, 50,  50,  20,  90, ptNbins, 2, 2,  2,  2,  3,               centrNbins,100};
+  Double_t minRecMCTrackHist[17]={0.,  0., 0., 0., 0.,-0.5,-2.5,-1.0, 0., ptMin,   0., 0., 0., 0.,-1.,             centrMin,  0.};
+  Double_t maxRecMCTrackHist[17]={160.,10.,70.,1.5, 1., 0.5, 2.5, 1.0, 2.*TMath::Pi(), ptMax,  2., 2., 2., 2., 2., centrMax,  100.};
 
-  fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nCrossRows:chi2PerClust:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge:centr",14,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
-  fRecMCTrackHist->SetBinEdges(8,binsPt);
-  fRecMCTrackHist->SetBinEdges(13,binsCentr);
+  fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nCrossRows:chi2PerClust:chi2PerClustITS:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromConversion:isFromMaterial:isPrim:charge:centr:chi2ToTPCc",17,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
+  fRecMCTrackHist->SetBinEdges(9,binsPt);
+  fRecMCTrackHist->SetBinEdges(15,binsCentr);
 
   fRecMCTrackHist->GetAxis(0)->SetTitle("nCrossRows");
   fRecMCTrackHist->GetAxis(1)->SetTitle("chi2PerClust");
-  fRecMCTrackHist->GetAxis(2)->SetTitle("nCrossRows/nFindableClust");
-  fRecMCTrackHist->GetAxis(3)->SetTitle("fracSharedClust");
-  fRecMCTrackHist->GetAxis(4)->SetTitle("DCAy (cm)");
-  fRecMCTrackHist->GetAxis(5)->SetTitle("DCAz (cm)");
-  fRecMCTrackHist->GetAxis(6)->SetTitle("#eta");
-  fRecMCTrackHist->GetAxis(7)->SetTitle("#phi (rad)");
-  fRecMCTrackHist->GetAxis(8)->SetTitle("p_{T} (GeV/c)");
-  fRecMCTrackHist->GetAxis(9)->SetTitle("hasStrangeMother");
-  fRecMCTrackHist->GetAxis(10)->SetTitle("isFromMaterial");
-  fRecMCTrackHist->GetAxis(11)->SetTitle("isPrim");
-  fRecMCTrackHist->GetAxis(12)->SetTitle("charge");
-  fRecMCTrackHist->GetAxis(13)->SetTitle("centrality");
+  fRecMCTrackHist->GetAxis(2)->SetTitle("chi2PerClustITS");
+  fRecMCTrackHist->GetAxis(3)->SetTitle("nCrossRows/nFindableClust");
+  fRecMCTrackHist->GetAxis(4)->SetTitle("fracSharedClust");
+  fRecMCTrackHist->GetAxis(5)->SetTitle("DCAy (cm)");
+  fRecMCTrackHist->GetAxis(6)->SetTitle("DCAz (cm)");
+  fRecMCTrackHist->GetAxis(7)->SetTitle("#eta");
+  fRecMCTrackHist->GetAxis(8)->SetTitle("#phi (rad)");
+  fRecMCTrackHist->GetAxis(9)->SetTitle("p_{T} (GeV/c)");
+  fRecMCTrackHist->GetAxis(10)->SetTitle("hasStrangeMother");
+  fRecMCTrackHist->GetAxis(11)->SetTitle("isFromConversion");
+  fRecMCTrackHist->GetAxis(12)->SetTitle("isFromMaterial");
+  fRecMCTrackHist->GetAxis(13)->SetTitle("isPrim");
+  fRecMCTrackHist->GetAxis(14)->SetTitle("charge");
+  fRecMCTrackHist->GetAxis(15)->SetTitle("centrality");
+  fRecMCTrackHist->GetAxis(16)->SetTitle("chi2ToTPCc");
   fRecMCTrackHist->Sumw2();
-
-
-  //nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge:centr
-  /*
-  Int_t binsRecMCTrackHist[13]={160,20,40,50,50,20,90,ptNbins,2,2,2,3,centrNbins};
-  Double_t minRecMCTrackHist[13]={0., 0., 0., -0.5,-0.5,-1.0, 0., ptMin, 0., 0., 0., -1., centrMin};
-  Double_t maxRecMCTrackHist[13]={160.,10.,1.2, 0.5,0.5,1.0, 2.*TMath::Pi(), ptMax, 2., 2., 2., 2.,centrMax};
-
-  fRecMCTrackHist = new THnSparseF("fRecMCTrackHist","nClust:chi2PerClust:nClust/nFindableClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromMaterial:isPrim:charge",12,binsRecMCTrackHist,minRecMCTrackHist,maxRecMCTrackHist);
-  fRecMCTrackHist->SetBinEdges(7,binsPt);
-  fRecMCTrackHist->SetBinEdges(12,binsCentr);
-
-  fRecMCTrackHist->GetAxis(0)->SetTitle("nClust");
-  fRecMCTrackHist->GetAxis(1)->SetTitle("chi2PerClust");
-  fRecMCTrackHist->GetAxis(2)->SetTitle("nClust/nFindableClust");
-  fRecMCTrackHist->GetAxis(3)->SetTitle("DCAy (cm)");
-  fRecMCTrackHist->GetAxis(4)->SetTitle("DCAz (cm)");
-  fRecMCTrackHist->GetAxis(5)->SetTitle("#eta");
-  fRecMCTrackHist->GetAxis(6)->SetTitle("#phi (rad)");
-  fRecMCTrackHist->GetAxis(7)->SetTitle("p_{T} (GeV/c)");
-  fRecMCTrackHist->GetAxis(8)->SetTitle("hasStrangeMother");
-  fRecMCTrackHist->GetAxis(9)->SetTitle("isFromMaterial");
-  fRecMCTrackHist->GetAxis(10)->SetTitle("isPrim");
-  fRecMCTrackHist->GetAxis(11)->SetTitle("charge");
-  fRecMCTrackHist->GetAxis(12)->SetTitle("centrality");
-  fRecMCTrackHist->Sumw2();
-  */
 
   // init output folder
   fAnalysisFolder = CreateFolder("folderdNdPt","Analysis dNdPt Folder");
@@ -352,7 +335,6 @@ void AlidNdPtCutAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent * 
   Double_t vEventCount[2] = { isEventTriggered, isTrigAndVertex};
   fEventCount->Fill(vEventCount);
 
-
   // check event cuts
   if(isEventOK && isEventTriggered)
   {
@@ -367,8 +349,11 @@ void AlidNdPtCutAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent * 
       if(!track) continue;
 
       if(!esdTrackCuts->AcceptTrack(track)) continue;
-      FillHistograms(track, stack, centralityF);
+      if(!accCuts->AcceptTrack(track)) continue;
+
+      FillHistograms(esdEvent, track, stack, centralityF);
       multAll++;
+
     }
 
     Double_t vRecEventHist[5] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),vtxESD->GetZRes(),multAll};
@@ -385,7 +370,7 @@ void AlidNdPtCutAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent * 
 }
 
 //_____________________________________________________________________________
-void AlidNdPtCutAnalysisPbPb::FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, Float_t centralityF) const
+void AlidNdPtCutAnalysisPbPb::FillHistograms(AliESDEvent *const esdEvent, AliESDtrack *const esdTrack, AliStack *const stack, Float_t centralityF) const
 {
   //
   // Fill ESD track and MC histograms 
@@ -409,6 +394,12 @@ void AlidNdPtCutAnalysisPbPb::FillHistograms(AliESDtrack *const esdTrack, AliSta
     if(nClust>0.) chi2PerCluster = esdTrack->GetTPCchi2Iter1()/Float_t(nClust);
   } else {
     chi2PerCluster = esdTrack->GetTPCchi2()/Float_t(nClust);
+  }
+
+  Int_t nClustersITS = esdTrack->GetITSclusters(0);
+  Float_t chi2PerClusterITS = -1;
+  if (nClustersITS!=0) {
+      chi2PerClusterITS = esdTrack->GetITSchi2()/Float_t(nClustersITS);
   }
 
   Float_t clustPerFindClust = 0.;
@@ -444,14 +435,70 @@ void AlidNdPtCutAnalysisPbPb::FillHistograms(AliESDtrack *const esdTrack, AliSta
   //printf("esdTrack->GetKinkIndex(2) %d \n", esdTrack->GetKinkIndex(2));
   //printf("kinkIdx %d \n", kinkIdx);
 
+  Bool_t isOK = kTRUE;
+  AliExternalTrackParam * tpcInner = (AliExternalTrackParam *)(esdTrack->GetTPCInnerParam());
+  if (!tpcInner) return;
+  tpcInner->Rotate(esdTrack->GetAlpha());
+  tpcInner->PropagateTo(esdTrack->GetX(),esdEvent->GetMagneticField());
+	
+  // tpc constrained
+  AliExternalTrackParam * tpcInnerC = (AliExternalTrackParam *)(esdTrack->GetTPCInnerParam()->Clone());
+  if (!tpcInnerC) return;
+  tpcInnerC->Rotate(esdTrack->GetAlpha());
+  tpcInnerC->PropagateTo(esdTrack->GetX(),esdEvent->GetMagneticField());
+  Double_t dz[2],cov[3];
+  AliESDVertex *vtx= (AliESDVertex *)esdEvent->GetPrimaryVertex();
+
+  if (!tpcInnerC->PropagateToDCA(vtx, esdEvent->GetMagneticField(), 3, dz, cov)) 
+  { 
+    if(tpcInnerC) delete tpcInnerC; 
+    return;
+  }
+  Double_t covar[6]; vtx->GetCovMatrix(covar);
+  Double_t p[2]={tpcInnerC->GetParameter()[0]-dz[0],tpcInnerC->GetParameter()[1]-dz[1]};
+  Double_t c[3]={covar[2],0.,covar[5]};
+  Double_t chi2C=tpcInnerC->GetPredictedChi2(p,c);
+  isOK = tpcInnerC->Update(p,c);
+  isOK = tpcInnerC->Rotate(esdTrack->GetAlpha());
+  isOK = tpcInnerC->Propagate(esdTrack->GetAlpha(),esdTrack->GetX(),esdEvent->GetMagneticField());
+
+  if(!isOK || chi2C>kVeryBig) { 
+     if(tpcInnerC) delete tpcInnerC; 
+     return;
+  }
+
+  //
+  // calculate chi2 between vi and vj vectors
+  // with covi and covj covariance matrices
+  // chi2ij = (vi-vj)^(T)*(covi+covj)^(-1)*(vi-vj)
+  //
+  TMatrixD deltaT(5,1);
+  TMatrixD delta(1,5);
+  TMatrixD covarM(5,5);
+
+  for (Int_t ipar=0; ipar<5; ipar++) deltaT(ipar,0)=tpcInnerC->GetParameter()[ipar]-esdTrack->GetParameter()[ipar];
+  for (Int_t ipar=0; ipar<5; ipar++) delta(0,ipar)=tpcInnerC->GetParameter()[ipar]-esdTrack->GetParameter()[ipar];
+
+  for (Int_t ipar=0; ipar<5; ipar++) {
+  for (Int_t jpar=0; jpar<5; jpar++) {
+  Int_t index=esdTrack->GetIndex(ipar,jpar);
+    covarM(ipar,jpar)=esdTrack->GetCovariance()[index]+tpcInnerC->GetCovariance()[index];
+  }
+  }
+  TMatrixD covarMInv = covarM.Invert();
+  TMatrixD mat2 = covarMInv*deltaT;
+  TMatrixD chi2 = delta*mat2; 
+
   //
   // Fill rec vs MC information
   //
   Bool_t isPrim = kTRUE;
   Bool_t hasStrangeMother = kFALSE;
   Bool_t isFromMaterial = kFALSE;
+  Bool_t isFromConversion = kFALSE;
 
-  if(IsUseMCInfo()) {
+  if(IsUseMCInfo()) 
+  {
     if(!stack) return;
     Int_t label = TMath::Abs(esdTrack->GetLabel()); 
     TParticle* particle = stack->Particle(label);
@@ -469,22 +516,28 @@ void AlidNdPtCutAnalysisPbPb::FillHistograms(AliESDtrack *const esdTrack, AliSta
     if(mother) motherPdg = TMath::Abs(mother->GetPdgCode()); // take abs for visualisation only 
     Int_t mech = particle->GetUniqueID(); // production mechanism 
 
-    if( (motherPdg == 3122) || (motherPdg == -3122) || (motherPdg == 310)) // lambda, antilambda, k0s
-    {
-      if( (mech == 4) || (mech == 5) ) hasStrangeMother = kTRUE;
-    } 
-    else {
-      //if(isPrim==0 && mech == 13)   
-      //printf("mech %d \n", mech);
-      if(!isPrim) isFromMaterial = kTRUE; 
-    }
+     // K+-, lambda, antilambda, K0s decays
+     if(!isPrim && mech==4 && 
+       (TMath::Abs(motherPdg)==kKPlus || TMath::Abs(motherPdg)==kLambda0 || motherPdg==kK0Short))
+     {
+       hasStrangeMother = kTRUE;
+     } 
+
+     if(!isPrim && mech==5 && motherPdg==kGamma) { 
+       isFromConversion=kTRUE; 
+     }
+
+     if(!isPrim && mech==13) { 
+       isFromMaterial=kTRUE; 
+     }
   }
   
   // fill histo
   Int_t charge = esdTrack->Charge();
-  //Double_t vRecMCTrackHist[13] = { nClust,chi2PerCluster,clustPerFindClust,b[0],b[1],eta,phi,pt,hasStrangeMother,isFromMaterial,isPrim,charge, centralityF }; 
-  Double_t vRecMCTrackHist[14] = { nCrossedRowsTPC, chi2PerCluster, ratioCrossedRowsOverFindableClustersTPC, fracClustersTPCShared , b[0], b[1], eta, phi, pt, hasStrangeMother, isFromMaterial, isPrim, charge, centralityF }; 
+  Double_t vRecMCTrackHist[17] = { nCrossedRowsTPC, chi2PerCluster, chi2PerClusterITS,ratioCrossedRowsOverFindableClustersTPC, fracClustersTPCShared, b[0], b[1], eta, phi, pt, hasStrangeMother, isFromConversion, isFromMaterial, isPrim, charge, centralityF, chi2(0,0) }; 
   fRecMCTrackHist->Fill(vRecMCTrackHist);
+
+  if(tpcInnerC) delete tpcInnerC;
 }
 
 //_____________________________________________________________________________
@@ -500,6 +553,8 @@ Long64_t AlidNdPtCutAnalysisPbPb::Merge(TCollection* const list)
 
   TIterator* iter = list->MakeIterator();
   TObject* obj = 0;
+  TObjArray* objArrayList = 0;
+  objArrayList = new TObjArray();
 
   //TList *collPhysSelection = new TList;
 
@@ -510,24 +565,39 @@ Long64_t AlidNdPtCutAnalysisPbPb::Merge(TCollection* const list)
     if (entry == 0) continue; 
   
     // event histo
-    fEventCount->Add(entry->fEventCount);
-    fRecEventHist->Add(entry->fRecEventHist);
-    fRecMCEventHist->Add(entry->fRecMCEventHist);
-    fMCEventHist->Add(entry->fMCEventHist);
+    if(GetMergeTHnSparse()) 
+    {
+      fEventCount->Add(entry->fEventCount);
+      fRecEventHist->Add(entry->fRecEventHist);
+      fRecMCEventHist->Add(entry->fRecMCEventHist);
+      fMCEventHist->Add(entry->fMCEventHist);
 
-    // track histo
-    fRecMCTrackHist->Add(entry->fRecMCTrackHist);
+      // track histo
+      fRecMCTrackHist->Add(entry->fRecMCTrackHist);
+    }
 
-    // physics selection
-    //collPhysSelection->Add(entry->GetPhysicsTriggerSelection());
+    if (entry->fFolderObj) { objArrayList->Add(entry->fFolderObj); }
     
   count++;
   }
+  if (fFolderObj) { fFolderObj->Merge(objArrayList); } 
 
-  //AliPhysicsSelection *trigSelection = GetPhysicsTriggerSelection();
-  //trigSelection->Merge(collPhysSelection);
+  // to signal that track histos were not merged: reset
+  if (!GetMergeTHnSparse()) 
+  { 
+    // reset content 
+    // save memory
+    fEventCount->Reset();
+    fRecEventHist->Reset();
+    fRecMCEventHist->Reset();
+    fMCEventHist->Reset();
 
-  //if(collPhysSelection) delete collPhysSelection;
+    // track histo
+    fRecMCTrackHist->Reset();
+  }
+
+  // delete
+  if (objArrayList) delete objArrayList;  objArrayList=0;
 
 return count;
 }
@@ -544,41 +614,29 @@ void AlidNdPtCutAnalysisPbPb::Analyse()
 
   TH1D *h1D = 0; 
   TH2D *h2D = 0; 
-
-
+  TH3D *h3D = 0; 
+  
   //
-  // get cuts
+  // make event level projection
   //
-  AlidNdPtEventCuts *evtCuts = GetEventCuts(); 
-  AlidNdPtAcceptanceCuts *accCuts = GetAcceptanceCuts(); 
-  AliESDtrackCuts *esdTrackCuts = GetTrackCuts(); 
-
-  if(!evtCuts || !accCuts || !esdTrackCuts) {
-    Error("AlidNdPtCutAnalysisPbPb::Analyse()", "cuts not available");
-    return;
-  }
-
-  //
-  // set min and max values
-  //
-  Double_t minPt = accCuts->GetMinPt();
-  Double_t maxPt = accCuts->GetMaxPt();
-  Double_t minEta = accCuts->GetMinEta();
-  Double_t maxEta = accCuts->GetMaxEta()-0.00001;
-
-  Double_t maxDCAr = accCuts->GetMaxDCAr();
+  //THnSparseF *fEventCount; //-> trig, trig + vertex
+  //THnSparseF *fRecEventHist;   //-> Xv:Yv:Zv:ResZv:Mult
+  //THnSparseF *fMCEventHist;    //-> mcXv:mcYv:mcZv
+  //THnSparseF *fRecMCEventHist; //-> Xv-mcXv:Yv-mcYv:Zv-mcZv:Mult
 
   //
   // Event counters
   //
   h2D = (TH2D*)fEventCount->Projection(0,1);
   h2D->SetName("trig_vs_trigANDvertex");
+  h2D->SetTitle("trig_vs_trigANDvertex");
   aFolderObj->Add(h2D);
 
   fEventCount->GetAxis(0)->SetRange(2,2); // triggered
   h1D = (TH1D*)fEventCount->Projection(1);
   h1D->SetTitle("rec. vertex for triggered events");
   h1D->SetName("trigANDvertex");
+  h1D->SetTitle("trigANDvertex");
   aFolderObj->Add(h1D);
 
   //
@@ -586,30 +644,37 @@ void AlidNdPtCutAnalysisPbPb::Analyse()
   //
   h1D = (TH1D *)fRecEventHist->Projection(0);
   h1D->SetName("rec_xv");
+  h1D->SetTitle("rec_xv");
   aFolderObj->Add(h1D);
 
   h1D = (TH1D *)fRecEventHist->Projection(1);
   h1D->SetName("rec_yv");
+  h1D->SetTitle("rec_yv");
   aFolderObj->Add(h1D);
 
   h1D = (TH1D *)fRecEventHist->Projection(2);
   h1D->SetName("rec_zv");
+  h1D->SetTitle("rec_zv");
   aFolderObj->Add(h1D);
-
-  h2D = (TH2D *)fRecEventHist->Projection(3,4);
-  h2D->SetName("rec_resZv_vs_Mult");
-  aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecEventHist->Projection(0,1);
   h2D->SetName("rec_xv_vs_yv");
+  h2D->SetTitle("rec_xv_vs_yv");
+  aFolderObj->Add(h2D);
+
+  h2D = (TH2D *)fRecEventHist->Projection(1,2);
+  h2D->SetName("rec_yv_vs_zv");
+  h2D->SetTitle("rec_yv_vs_zv");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecEventHist->Projection(0,2);
   h2D->SetName("rec_xv_vs_zv");
+  h2D->SetTitle("rec_xv_vs_zv");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecEventHist->Projection(3,4);
   h2D->SetName("rec_resZv_vs_Mult");
+  h2D->SetTitle("rec_resZv_vs_Mult");
   aFolderObj->Add(h2D);
 
   //
@@ -620,12 +685,36 @@ void AlidNdPtCutAnalysisPbPb::Analyse()
   //
   // Create mc event histograms
   //
+
+  h1D = (TH1D *)fMCEventHist->Projection(0);
+  h1D->SetName("mc_xv");
+  h1D->SetTitle("mc_xv");
+  aFolderObj->Add(h1D);
+
+  h1D = (TH1D *)fMCEventHist->Projection(1);
+  h1D->SetName("mc_yv");
+  h1D->SetTitle("mc_yv");
+  aFolderObj->Add(h1D);
+
+  h1D = (TH1D *)fMCEventHist->Projection(2);
+  h1D->SetName("mc_zv");
+  h1D->SetTitle("mc_zv");
+  aFolderObj->Add(h1D);
+
+
   h2D = (TH2D *)fMCEventHist->Projection(0,1);
   h2D->SetName("mc_xv_vs_yv");
+  h2D->SetTitle("mc_xv_vs_yv");
+  aFolderObj->Add(h2D);
+
+  h2D = (TH2D *)fMCEventHist->Projection(1,2);
+  h2D->SetName("mc_yv_vs_zv");
+  h2D->SetTitle("mc_yv_vs_zv");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fMCEventHist->Projection(0,2);
   h2D->SetName("mc_xv_vs_zv");
+  h2D->SetTitle("mc_xv_vs_zv");
   aFolderObj->Add(h2D);
 
   //
@@ -633,138 +722,616 @@ void AlidNdPtCutAnalysisPbPb::Analyse()
   //
   h2D = (TH2D *)fRecMCEventHist->Projection(0,3);
   h2D->SetName("rec_mc_deltaXv_vs_mult");
+  h2D->SetTitle("rec_mc_deltaXv_vs_mult");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecMCEventHist->Projection(1,3);
   h2D->SetName("rec_mc_deltaYv_vs_mult");
+  h2D->SetTitle("rec_mc_deltaYv_vs_mult");
   aFolderObj->Add(h2D);
 
   h2D = (TH2D *)fRecMCEventHist->Projection(2,3);
   h2D->SetName("rec_mc_deltaZv_vs_mult");
+  h2D->SetTitle("rec_mc_deltaZv_vs_mult");
   aFolderObj->Add(h2D);
 
   } // end use MC info 
 
+  //
+  // make track level projection
+  //
+  // THnSparse track histograms
+  // nCrossRows:chi2PerClust:chi2PerClustITS:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromConversion:isFromMaterial:isPrim:charge:centr:chi2ToTPCc
+  //
+
+  // only TH3 histograms
+  // x : pT : centr
+  Double_t minNCrossRows = 120.;
+  Double_t maxChi2PerClust = 4.;
+  Double_t maxChi2PerClustITS = 36.;
+  Double_t minNCrossRowsOverFindable = 0.8;
+  Double_t maxFracSharedClust = 0.4;
+  Double_t minDCAr = -0.2, maxDCAr = 0.2;
+  Double_t minDCAz = -2., maxDCAz = 2.;
+  Double_t minEta = -0.8, maxEta = 0.8;
+  Double_t maxChi2ToTPCc = 50;
+
+  // only TH3 histograms
+  // x : pT : centr
+
+  // set all cuts
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(minNCrossRows,160);
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,maxChi2PerClust-0.0001);
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,maxChi2PerClustITS-0.0001);
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(minNCrossRowsOverFindable,1.4999);
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,maxFracSharedClust-0.0001);
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(minDCAr,maxDCAr-0.0001);
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(minDCAz,maxDCAz-0.0001);
+  fRecMCTrackHist->GetAxis(7)->SetRangeUser(minEta,maxEta-0.0001);
+  fRecMCTrackHist->GetAxis(16)->SetRangeUser(0.,maxChi2ToTPCc-0.0001);
+
+  // nCrossRows 
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(0,160);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(0,9,15);
+  h3D->SetName("rec_nCrossRows_pT_centr");
+  h3D->SetTitle("rec_nCrossRows_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // Chi2PerClust 
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(minNCrossRows,160);
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,10);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(1,9,15);
+  h3D->SetName("rec_Chi2PerClust_pT_centr");
+  h3D->SetTitle("rec_Chi2PerClust_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // Chi2PerClustITS 
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,maxChi2PerClust-0.0001);
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,100);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(2,9,15);
+  h3D->SetName("rec_Chi2PerClustITS_pT_centr");
+  h3D->SetTitle("rec_Chi2PerClustITS_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // NCrossRowsOverFindable 
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,maxChi2PerClustITS-0.0001);
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(0,1.4999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(3,9,15);
+  h3D->SetName("rec_NCrossRowsOverFindable_pT_centr");
+  h3D->SetTitle("rec_NCrossRowsOverFindable_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // FracSharedClust
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(minNCrossRowsOverFindable,1.4999);
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,0.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(4,9,15);
+  h3D->SetName("rec_FracSharedClust_pT_centr");
+  h3D->SetTitle("rec_FracSharedClust_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // DCAr
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,maxFracSharedClust-0.0001);
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(-10.,9.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(5,9,15);
+  h3D->SetName("rec_DCAr_pT_centr");
+  h3D->SetTitle("rec_DCAr_pT_centr");
+  aFolderObj->Add(h3D);
+
+  // DCAz
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(minDCAr,maxDCAr-0.0001);
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(-10.,9.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(6,9,15);
+  h3D->SetName("rec_DCAz_pT_centr");
+  h3D->SetTitle("rec_DCAz_pT_centr");
+  aFolderObj->Add(h3D);
+
+  // chi2ToTPCc
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(minDCAz,maxDCAz-0.0001);
+  fRecMCTrackHist->GetAxis(16)->SetRangeUser(0,100);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(16,9,15);
+  h3D->SetName("rec_chi2ToTPCc_pT_centr");
+  h3D->SetTitle("rec_chi2ToTPCc_pT_centr");
+  aFolderObj->Add(h3D);
 
 
   //
-  // Create rec-mc track track histograms 
+  // MC available
+  //
+  // nCrossRows:chi2PerClust:chi2PerClustITS:nCrossRows/nFindableClust:fracSharedClust:DCAy:DCAz:eta:phi:pt:hasStrangeMother:isFromConversion:isFromMaterial:isPrim:charge:centr:chi2ToTPCc
   //
 
-  // DCA cuts
-  fRecMCTrackHist->GetAxis(3)->SetRangeUser(-maxDCAr,maxDCAr);
-  fRecMCTrackHist->GetAxis(4)->SetRangeUser(-maxDCAr,maxDCAr);
+  if(IsUseMCInfo()) {
+  //
+  // only TH3 histograms 
+  // x : pT : centr
+  //
+  // comes from week decays
+  //
+  fRecMCTrackHist->GetAxis(10)->SetRange(2,2);
 
-  h2D = (TH2D *)fRecMCTrackHist->Projection(7,5);
-  h2D->SetName("pt_vs_eta");
-  aFolderObj->Add(h2D);
+  // set all cuts
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(minNCrossRows,160);
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,maxChi2PerClust-0.0001);
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,maxChi2PerClustITS-0.0001);
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(minNCrossRowsOverFindable,1.4999);
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,maxFracSharedClust-0.0001);
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(minDCAr,maxDCAr-0.0001);
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(minDCAz,maxDCAz-0.0001);
+  fRecMCTrackHist->GetAxis(7)->SetRangeUser(minEta,maxEta-0.0001);
+  fRecMCTrackHist->GetAxis(16)->SetRangeUser(0.,maxChi2ToTPCc-0.0001);
 
-  fRecMCTrackHist->GetAxis(7)->SetRangeUser(minPt,maxPt);  
+  // nCrossRows 
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(0,160);
 
-  h2D = (TH2D *)fRecMCTrackHist->Projection(0,5);
-  h2D->SetName("nClust_vs_eta");
-  aFolderObj->Add(h2D);
+  h3D = (TH3D *)fRecMCTrackHist->Projection(0,9,15);
+  h3D->SetName("rec_sec_strange_nCrossRows_pT_centr");
+  h3D->SetTitle("rec_sec_strange_nCrossRows_pT_centr");
+  aFolderObj->Add(h3D);
 
-  h2D = (TH2D *)fRecMCTrackHist->Projection(1,5);
-  h2D->SetName("chi2PerClust_vs_eta");
-  aFolderObj->Add(h2D);
+  // Chi2PerClust 
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(minNCrossRows,160);
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,10);
 
-  h2D = (TH2D *)fRecMCTrackHist->Projection(2,5);
-  h2D->SetName("ratio_nClust_nFindableClust_vs_eta");
-  aFolderObj->Add(h2D);
+  h3D = (TH3D *)fRecMCTrackHist->Projection(1,9,15);
+  h3D->SetName("rec_sec_strange_Chi2PerClust_pT_centr");
+  h3D->SetTitle("rec_sec_strange_Chi2PerClust_pT_centr");
+  aFolderObj->Add(h3D);
 
-  h2D = (TH2D *)fRecMCTrackHist->Projection(5,6);
-  h2D->SetName("eta_vs_phi");
-  aFolderObj->Add(h2D);
+  // Chi2PerClustITS 
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,maxChi2PerClust-0.0001);
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,100);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(2,9,15);
+  h3D->SetName("rec_sec_strange_Chi2PerClustITS_pT_centr");
+  h3D->SetTitle("rec_sec_strange_Chi2PerClustITS_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // NCrossRowsOverFindable 
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,maxChi2PerClustITS-0.0001);
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(0,1.4999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(3,9,15);
+  h3D->SetName("rec_sec_strange_NCrossRowsOverFindable_pT_centr");
+  h3D->SetTitle("rec_sec_strange_NCrossRowsOverFindable_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // FracSharedClust
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(minNCrossRowsOverFindable,1.4999);
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,0.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(4,9,15);
+  h3D->SetName("rec_sec_strange_FracSharedClust_pT_centr");
+  h3D->SetTitle("rec_sec_strange_FracSharedClust_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // DCAr
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,maxFracSharedClust-0.0001);
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(-10.,9.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(5,9,15);
+  h3D->SetName("rec_sec_strange_DCAr_pT_centr");
+  h3D->SetTitle("rec_sec_strange_DCAr_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // DCAz
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(minDCAr,maxDCAr-0.0001);
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(-10.,9.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(6,9,15);
+  h3D->SetName("rec_sec_strange_DCAz_pT_centr");
+  h3D->SetTitle("rec_sec_strange_DCAz_pT_centr");
+  aFolderObj->Add(h3D);
+
+  // chi2ToTPCc
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(minDCAz,maxDCAz-0.0001);
+  fRecMCTrackHist->GetAxis(16)->SetRangeUser(0,100);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(16,9,15);
+  h3D->SetName("rec_sec_strange_chi2ToTPCc_pT_centr");
+  h3D->SetTitle("rec_sec_strange_chi2ToTPCc_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // only TH3 histograms 
+  // x : pT : centr
+  //
+
+  // comes from conversion
+  //
+  fRecMCTrackHist->GetAxis(10)->SetRange(1,2);
+  fRecMCTrackHist->GetAxis(11)->SetRange(2,2);
+
+  // set all cuts
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(minNCrossRows,160);
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,maxChi2PerClust-0.0001);
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,maxChi2PerClustITS-0.0001);
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(minNCrossRowsOverFindable,1.4999);
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,maxFracSharedClust-0.0001);
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(minDCAr,maxDCAr-0.0001);
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(minDCAz,maxDCAz-0.0001);
+  fRecMCTrackHist->GetAxis(7)->SetRangeUser(minEta,maxEta-0.0001);
+  fRecMCTrackHist->GetAxis(16)->SetRangeUser(0.,maxChi2ToTPCc-0.0001);
+
+  // nCrossRows 
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(0,160);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(0,9,15);
+  h3D->SetName("rec_sec_conversion_nCrossRows_pT_centr");
+  h3D->SetTitle("rec_sec_conversion_nCrossRows_pT_centr");
+  aFolderObj->Add(h3D);
+
+  // Chi2PerClust 
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(minNCrossRows,160);
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,10);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(1,9,15);
+  h3D->SetName("rec_sec_conversion_Chi2PerClust_pT_centr");
+  h3D->SetTitle("rec_sec_conversion_Chi2PerClust_pT_centr");
+  aFolderObj->Add(h3D);
+
+  // Chi2PerClustITS 
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,maxChi2PerClust-0.0001);
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,100);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(2,9,15);
+  h3D->SetName("rec_sec_conversion_Chi2PerClustITS_pT_centr");
+  h3D->SetTitle("rec_sec_conversion_Chi2PerClustITS_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // NCrossRowsOverFindable 
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,maxChi2PerClustITS-0.0001);
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(0,1.4999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(3,9,15);
+  h3D->SetName("rec_sec_conversion_NCrossRowsOverFindable_pT_centr");
+  h3D->SetTitle("rec_sec_conversion_NCrossRowsOverFindable_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // FracSharedClust
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(minNCrossRowsOverFindable,1.4999);
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,0.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(4,9,15);
+  h3D->SetName("rec_sec_conversion_FracSharedClust_pT_centr");
+  h3D->SetTitle("rec_sec_conversion_FracSharedClust_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // DCAr
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,maxFracSharedClust-0.0001);
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(-10.,9.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(5,9,15);
+  h3D->SetName("rec_sec_conversion_DCAr_pT_centr");
+  h3D->SetTitle("rec_sec_conversion_DCAr_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // DCAz
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(minDCAr,maxDCAr-0.0001);
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(-10.,9.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(6,9,15);
+  h3D->SetName("rec_sec_conversion_DCAz_pT_centr");
+  h3D->SetTitle("rec_sec_conversion_DCAz_pT_centr");
+  aFolderObj->Add(h3D);
+
+  // chi2ToTPCc
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(minDCAz,maxDCAz-0.0001);
+  fRecMCTrackHist->GetAxis(16)->SetRangeUser(0,100);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(16,9,15);
+  h3D->SetName("rec_sec_conversion_chi2ToTPCc_pT_centr");
+  h3D->SetTitle("rec_sec_conversion_chi2ToTPCc_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+
+
+
+  // comes from interaction with material
+  //
+  fRecMCTrackHist->GetAxis(11)->SetRange(1,2);
+  fRecMCTrackHist->GetAxis(12)->SetRange(2,2);
+
+  // set all cuts
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(minNCrossRows,160);
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,maxChi2PerClust-0.0001);
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,maxChi2PerClustITS-0.0001);
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(minNCrossRowsOverFindable,1.4999);
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,maxFracSharedClust-0.0001);
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(minDCAr,maxDCAr-0.0001);
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(minDCAz,maxDCAz-0.0001);
+  fRecMCTrackHist->GetAxis(7)->SetRangeUser(minEta,maxEta-0.0001);
+  fRecMCTrackHist->GetAxis(16)->SetRangeUser(0.,maxChi2ToTPCc-0.0001);
+
+  // nCrossRows 
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(0,160);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(0,9,15);
+  h3D->SetName("rec_sec_material_nCrossRows_pT_centr");
+  h3D->SetTitle("rec_sec_material_nCrossRows_pT_centr");
+  aFolderObj->Add(h3D);
+
+  // Chi2PerClust 
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(minNCrossRows,160);
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,10);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(1,9,15);
+  h3D->SetName("rec_sec_material_Chi2PerClust_pT_centr");
+  h3D->SetTitle("rec_sec_material_Chi2PerClust_pT_centr");
+  aFolderObj->Add(h3D);
+
+  // Chi2PerClustITS 
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,maxChi2PerClust-0.0001);
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,100);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(2,9,15);
+  h3D->SetName("rec_sec_material_Chi2PerClustITS_pT_centr");
+  h3D->SetTitle("rec_sec_material_Chi2PerClustITS_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // NCrossRowsOverFindable 
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,maxChi2PerClustITS-0.0001);
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(0,1.4999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(3,9,15);
+  h3D->SetName("rec_sec_material_NCrossRowsOverFindable_pT_centr");
+  h3D->SetTitle("rec_sec_material_NCrossRowsOverFindable_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // FracSharedClust
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(minNCrossRowsOverFindable,1.4999);
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,0.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(4,9,15);
+  h3D->SetName("rec_sec_material_FracSharedClust_pT_centr");
+  h3D->SetTitle("rec_sec_material_FracSharedClust_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // DCAr
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,maxFracSharedClust-0.0001);
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(-10.,9.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(5,9,15);
+  h3D->SetName("rec_sec_material_DCAr_pT_centr");
+  h3D->SetTitle("rec_sec_material_DCAr_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // DCAz
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(minDCAr,maxDCAr-0.0001);
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(-10.,9.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(6,9,15);
+  h3D->SetName("rec_sec_material_DCAz_pT_centr");
+  h3D->SetTitle("rec_sec_material_DCAz_pT_centr");
+  aFolderObj->Add(h3D);
+
+  // chi2ToTPCc
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(minDCAz,maxDCAz-0.0001);
+  fRecMCTrackHist->GetAxis(16)->SetRangeUser(0,100);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(16,9,15);
+  h3D->SetName("rec_sec_material_chi2ToTPCc_pT_centr");
+  h3D->SetTitle("rec_sec_material_chi2ToTPCc_pT_centr");
+  aFolderObj->Add(h3D);
+
+
 
   //
-  fRecMCTrackHist->GetAxis(5)->SetRangeUser(minEta,maxEta);  
+  // only TH3 histograms 
+  // x : pT : centr
+  //
+  // secondaries defined as AliStack::IsPhysicalPrimary()
+  //
+  fRecMCTrackHist->GetAxis(12)->SetRange(1,2);
+  fRecMCTrackHist->GetAxis(13)->SetRange(1,1);
 
-  h2D = (TH2D *)fRecMCTrackHist->Projection(0,6);
-  h2D->SetName("nClust_vs_phi");
-  aFolderObj->Add(h2D);
+  // set all cuts
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(minNCrossRows,160);
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,maxChi2PerClust-0.0001);
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,maxChi2PerClustITS-0.0001);
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(minNCrossRowsOverFindable,1.4999);
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,maxFracSharedClust-0.0001);
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(minDCAr,maxDCAr-0.0001);
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(minDCAz,maxDCAz-0.0001);
+  fRecMCTrackHist->GetAxis(7)->SetRangeUser(minEta,maxEta-0.0001);
+  fRecMCTrackHist->GetAxis(16)->SetRangeUser(0.,maxChi2ToTPCc-0.0001);
 
-  h2D = (TH2D *)fRecMCTrackHist->Projection(1,6);
-  h2D->SetName("chi2PerClust_vs_phi");
-  aFolderObj->Add(h2D);
+  // nCrossRows 
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(0,160);
 
-  h2D = (TH2D *)fRecMCTrackHist->Projection(2,6);
-  h2D->SetName("ratio_nClust_nFindableClust_vs_phi");
-  aFolderObj->Add(h2D);
+  h3D = (TH3D *)fRecMCTrackHist->Projection(0,9,15);
+  h3D->SetName("rec_sec_nCrossRows_pT_centr");
+  h3D->SetTitle("rec_sec_nCrossRows_pT_centr");
+  aFolderObj->Add(h3D);
+
+  // Chi2PerClust 
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(minNCrossRows,160);
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,10);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(1,9,15);
+  h3D->SetName("rec_sec_Chi2PerClust_pT_centr");
+  h3D->SetTitle("rec_sec_Chi2PerClust_pT_centr");
+  aFolderObj->Add(h3D);
+
+  // Chi2PerClustITS 
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,maxChi2PerClust-0.0001);
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,100);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(2,9,15);
+  h3D->SetName("rec_sec_Chi2PerClustITS_pT_centr");
+  h3D->SetTitle("rec_sec_Chi2PerClustITS_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // NCrossRowsOverFindable 
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,maxChi2PerClustITS-0.0001);
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(0,1.4999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(3,9,15);
+  h3D->SetName("rec_sec_NCrossRowsOverFindable_pT_centr");
+  h3D->SetTitle("rec_sec_NCrossRowsOverFindable_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // FracSharedClust
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(minNCrossRowsOverFindable,1.4999);
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,0.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(4,9,15);
+  h3D->SetName("rec_sec_FracSharedClust_pT_centr");
+  h3D->SetTitle("rec_sec_FracSharedClust_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // DCAr
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,maxFracSharedClust-0.0001);
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(-10.,9.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(5,9,15);
+  h3D->SetName("rec_sec_DCAr_pT_centr");
+  h3D->SetTitle("rec_sec_DCAr_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // DCAz
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(minDCAr,maxDCAr-0.0001);
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(-10.,9.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(6,9,15);
+  h3D->SetName("rec_sec_DCAz_pT_centr");
+  h3D->SetTitle("rec_sec_DCAz_pT_centr");
+  aFolderObj->Add(h3D);
+
+  // chi2ToTPCc
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(minDCAz,maxDCAz-0.0001);
+  fRecMCTrackHist->GetAxis(16)->SetRangeUser(0,100);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(16,9,15);
+  h3D->SetName("rec_sec_chi2ToTPCc_pT_centr");
+  h3D->SetTitle("rec_sec_chi2ToTPCc_pT_centr");
+  aFolderObj->Add(h3D);
 
   //
-  fRecMCTrackHist->GetAxis(7)->SetRangeUser(0.0,maxPt);  
-
-  h2D = (TH2D *)fRecMCTrackHist->Projection(0,7);
-  h2D->SetName("nClust_vs_pt");
-  aFolderObj->Add(h2D);
-
-  h2D = (TH2D *)fRecMCTrackHist->Projection(1,7);
-  h2D->SetName("chi2PerClust_vs_pt");
-  aFolderObj->Add(h2D);
-
-  h2D = (TH2D *)fRecMCTrackHist->Projection(2,7);
-  h2D->SetName("ratio_nClust_nFindableClust_vs_pt");
-  aFolderObj->Add(h2D);
-
-  h2D = (TH2D *)fRecMCTrackHist->Projection(6,7);
-  h2D->SetName("phi_vs_pt");
-  aFolderObj->Add(h2D);
-
-
-  // fiducial volume
-  fRecMCTrackHist->GetAxis(5)->SetRangeUser(minEta,maxEta);  
-  fRecMCTrackHist->GetAxis(7)->SetRangeUser(minPt,maxPt);  
-
-  // DCA cuts
-  fRecMCTrackHist->GetAxis(3)->SetRangeUser(-maxDCAr,maxDCAr);
-  fRecMCTrackHist->GetAxis(4)->SetRangeUser(-maxDCAr,maxDCAr);
-
-  h2D = (TH2D *)fRecMCTrackHist->Projection(0,1);
-  h2D->SetName("nClust_vs_chi2PerClust");
-  aFolderObj->Add(h2D);
-
-  h2D = (TH2D *)fRecMCTrackHist->Projection(0,2);
-  h2D->SetName("nClust_vs_ratio_nClust_nFindableClust");
-  aFolderObj->Add(h2D);
-
+  // only TH3 histograms 
+  // x : pT : centr
   //
-  // DCAy cuts
+  // primaries defined as AliStack::IsPhysicalPrimary()
   //
-  fRecMCTrackHist->GetAxis(0)->SetRange(50,160); // nClust/track > 50
-  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,3.9999); // chi2/cluster < 4.0
-  fRecMCTrackHist->GetAxis(3)->SetRange(1,fRecMCTrackHist->GetAxis(3)->GetNbins());
-  //fRecMCTrackHist->GetAxis(4)->SetRangeUser(-1.0,1.0);
-  fRecMCTrackHist->GetAxis(4)->SetRange(1,fRecMCTrackHist->GetAxis(4)->GetNbins());
+  fRecMCTrackHist->GetAxis(12)->SetRange(1,2);
+  fRecMCTrackHist->GetAxis(13)->SetRange(2,2);
 
-  // sec
-  fRecMCTrackHist->GetAxis(9)->SetRange(1,1);
-  h1D = (TH1D *)fRecMCTrackHist->Projection(3);
-  h1D->SetName("dcay_sec");
-  aFolderObj->Add(h1D);
+  // set all cuts
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(minNCrossRows,160);
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,maxChi2PerClust-0.0001);
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,maxChi2PerClustITS-0.0001);
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(minNCrossRowsOverFindable,1.4999);
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,maxFracSharedClust-0.0001);
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(minDCAr,maxDCAr-0.0001);
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(minDCAz,maxDCAz-0.0001);
+  fRecMCTrackHist->GetAxis(7)->SetRangeUser(minEta,maxEta-0.0001);
+  fRecMCTrackHist->GetAxis(16)->SetRangeUser(0.,maxChi2ToTPCc-0.0001);
 
-  // prim
-  fRecMCTrackHist->GetAxis(9)->SetRange(2,2);
-  h1D = (TH1D *)fRecMCTrackHist->Projection(3);
-  h1D->SetName("dcay_prim");
-  aFolderObj->Add(h1D);
+  // nCrossRows 
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(0,160);
 
-  // DCAz cuts
-  //fRecMCTrackHist->GetAxis(3)->SetRangeUser(-1.0,1.0);
-  fRecMCTrackHist->GetAxis(4)->SetRange(1,fRecMCTrackHist->GetAxis(4)->GetNbins());
+  h3D = (TH3D *)fRecMCTrackHist->Projection(0,9,15);
+  h3D->SetName("rec_prim_nCrossRows_pT_centr");
+  h3D->SetTitle("rec_prim_nCrossRows_pT_centr");
+  aFolderObj->Add(h3D);
 
-  // sec
-  fRecMCTrackHist->GetAxis(9)->SetRange(1,1);
-  h1D = (TH1D *)fRecMCTrackHist->Projection(4);
-  h1D->SetName("dcaz_sec");
-  aFolderObj->Add(h1D);
+  // Chi2PerClust 
+  fRecMCTrackHist->GetAxis(0)->SetRangeUser(minNCrossRows,160);
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,10);
 
-  // prim
-  fRecMCTrackHist->GetAxis(9)->SetRange(2,2);
-  h1D = (TH1D *)fRecMCTrackHist->Projection(4);
-  h1D->SetName("dcaz_prim");
-  aFolderObj->Add(h1D);
+  h3D = (TH3D *)fRecMCTrackHist->Projection(1,9,15);
+  h3D->SetName("rec_prim_Chi2PerClust_pT_centr");
+  h3D->SetTitle("rec_prim_Chi2PerClust_pT_centr");
+  aFolderObj->Add(h3D);
 
+  // Chi2PerClustITS 
+  fRecMCTrackHist->GetAxis(1)->SetRangeUser(0.,maxChi2PerClust-0.0001);
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,100);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(2,9,15);
+  h3D->SetName("rec_prim_Chi2PerClustITS_pT_centr");
+  h3D->SetTitle("rec_prim_Chi2PerClustITS_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // NCrossRowsOverFindable 
+  fRecMCTrackHist->GetAxis(2)->SetRangeUser(0.,maxChi2PerClustITS-0.0001);
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(0,1.4999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(3,9,15);
+  h3D->SetName("rec_prim_NCrossRowsOverFindable_pT_centr");
+  h3D->SetTitle("rec_prim_NCrossRowsOverFindable_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // FracSharedClust
+  fRecMCTrackHist->GetAxis(3)->SetRangeUser(minNCrossRowsOverFindable,1.4999);
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,0.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(4,9,15);
+  h3D->SetName("rec_prim_FracSharedClust_pT_centr");
+  h3D->SetTitle("rec_prim_FracSharedClust_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // DCAr
+  fRecMCTrackHist->GetAxis(4)->SetRangeUser(0.,maxFracSharedClust-0.0001);
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(-10.,9.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(5,9,15);
+  h3D->SetName("rec_prim_DCAr_pT_centr");
+  h3D->SetTitle("rec_prim_DCAr_pT_centr");
+  aFolderObj->Add(h3D);
+
+
+  // DCAz
+  fRecMCTrackHist->GetAxis(5)->SetRangeUser(minDCAr,maxDCAr-0.0001);
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(-10.,9.9999);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(6,9,15);
+  h3D->SetName("rec_prim_DCAz_pT_centr");
+  h3D->SetTitle("rec_prim_DCAz_pT_centr");
+  aFolderObj->Add(h3D);
+
+  // chi2ToTPCc
+  fRecMCTrackHist->GetAxis(6)->SetRangeUser(minDCAz,maxDCAz-0.0001);
+  fRecMCTrackHist->GetAxis(16)->SetRangeUser(0,100);
+
+  h3D = (TH3D *)fRecMCTrackHist->Projection(16,9,15);
+  h3D->SetName("rec_prim_chi2ToTPCc_pT_centr");
+  h3D->SetTitle("rec_prim_chi2ToTPCc_pT_centr");
+  aFolderObj->Add(h3D);
+
+  }
 
   // export objects to analysis folder
   fAnalysisFolder = ExportToFolder(aFolderObj);
@@ -773,8 +1340,31 @@ void AlidNdPtCutAnalysisPbPb::Analyse()
     return;
   }
 
+  // Reset setings
+  
+  for(Int_t ndim = 0; ndim < fEventCount->GetNdimensions(); ndim++) {
+    fEventCount->GetAxis(ndim)->SetRange(1,fEventCount->GetAxis(ndim)->GetNbins());
+  }
+
+  for(Int_t ndim = 0; ndim < fMCEventHist->GetNdimensions(); ndim++) {
+    fMCEventHist->GetAxis(ndim)->SetRange(1,fMCEventHist->GetAxis(ndim)->GetNbins());
+  }
+
+  for(Int_t ndim = 0; ndim < fRecMCEventHist->GetNdimensions(); ndim++) {
+    fRecMCEventHist->GetAxis(ndim)->SetRange(1,fRecMCEventHist->GetAxis(ndim)->GetNbins());
+  }
+
+  for(Int_t ndim = 0; ndim < fRecMCTrackHist->GetNdimensions(); ndim++) 
+  {
+    fRecMCTrackHist->GetAxis(ndim)->SetRange(1,fRecMCTrackHist->GetAxis(ndim)->GetNbins());
+  }
+
   // delete only TObjArray
-  if(aFolderObj) delete aFolderObj;
+  //if(aFolderObj) delete aFolderObj;
+
+  if (fFolderObj) delete fFolderObj;
+  fFolderObj = aFolderObj;
+  aFolderObj=0;
 }
 
 //_____________________________________________________________________________
