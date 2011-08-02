@@ -26,6 +26,7 @@ public:
       kPz,            // pair longitudinal momentum
       kInvMass,       // pair invariant mass (with reconstructed momenta)
       kInvMassRes,    // pair invariant mass resolution
+      kInvMassDiff,   // pair invariant mass difference (MC - reconstructed)
       kEta,           // pair pseudo-rapidity
       kMt,            // pair transverse mass (need a reference mass)
       kY,             // pair rapidity (need a reference mass)
