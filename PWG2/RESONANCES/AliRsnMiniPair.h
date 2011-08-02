@@ -35,6 +35,7 @@ public:
    Double_t        Eta(Bool_t mc)            const  {return fSum[ID(mc)].Eta();}
    Double_t        InvMass(Bool_t mc)        const  {return fSum[ID(mc)].M();}
    Double_t        InvMassRes()              const;            
+   Double_t        InvMassDiff()             const;            
    Double_t        Mt(Bool_t mc)             const  {return fRef[ID(mc)].Mt();}
    Double_t        Y(Bool_t mc)              const  {return fRef[ID(mc)].Rapidity();}
    Double_t        PtRatio(Bool_t mc)        const;
@@ -75,6 +76,17 @@ inline Double_t AliRsnMiniPair::InvMassRes() const
    if (fSum[1].M() <= 0.0) return 1E20;
    
    return (fSum[0].M() - fSum[1].M()) / fSum[1].M();
+}
+
+inline Double_t AliRsnMiniPair::InvMassDiff() const
+{
+//
+// Return invariant mass resolution
+//
+
+   if (fSum[1].M() <= 0.0) return 1E20;
+   
+   return (fSum[0].M() - fSum[1].M());
 }
 
 inline Double_t AliRsnMiniPair::PtRatio(Bool_t mc) const
