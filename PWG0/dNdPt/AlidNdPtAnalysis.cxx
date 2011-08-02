@@ -1055,7 +1055,8 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
   if(evtCuts->IsTriggerRequired())  
   {
     // always MB
-    isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
+    //isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
+    isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask();
 
     physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
     if(!physicsSelection) return;
