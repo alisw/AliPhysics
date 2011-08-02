@@ -76,6 +76,10 @@ public:
   void SetMergeTHnSparse(Bool_t mergethnsparse)  { fMergeTHnSparse = mergethnsparse; }
   Bool_t GetMergeTHnSparse() const { return fMergeTHnSparse; }
 
+  void SetTriggerMask(UInt_t triggermask)  { fTriggerMask = triggermask; }
+  UInt_t GetTriggerMask()  { return fTriggerMask; }
+
+
 protected:
    static Double_t* CloneArray(Int_t n, Double_t* source);
 
@@ -98,10 +102,12 @@ private:
   AliPhysicsSelection* fPhysicsSelection; // physics trigger selection class
   AlidNdPtBackgroundCuts *fdNdPtBackgroundCuts; // background cuts (cosmics and splitted tracks)
   
-  Bool_t fAnalyseOutput; // call Analyse() function in the FinishTaskOutput
+  Bool_t fAnalyseOutput;  // call Analyse() function in the FinishTaskOutput
   Bool_t fMergeTHnSparse; // merge THnSparse histograms in Merge() function
 
-  ClassDef(AlidNdPt,4);
+  UInt_t fTriggerMask;    // trigger mask
+
+  ClassDef(AlidNdPt,5);
 };
 
 #endif
