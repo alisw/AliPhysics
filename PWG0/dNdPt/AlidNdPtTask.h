@@ -30,7 +30,7 @@ class AlidNdPtTask : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   virtual Bool_t Notify();
-
+  virtual void   FinishTaskOutput();
   Bool_t AddAnalysisObject(AlidNdPt *pObj);
   void SetUseMCInfo(Bool_t info)           { fUseMCInfo = info; }
   
@@ -47,7 +47,7 @@ class AlidNdPtTask : public AliAnalysisTaskSE {
   AlidNdPtTask(const AlidNdPtTask&); // not implemented
   AlidNdPtTask& operator=(const AlidNdPtTask&); // not implemented
   
-  ClassDef(AlidNdPtTask, 3); // example of analysis
+  ClassDef(AlidNdPtTask, 4); // example of analysis
 };
 
 #endif

@@ -38,6 +38,8 @@ AlidNdPt::AlidNdPt(): TNamed()
 , fParticleMode(AlidNdPtHelper::kAllPart) 
 , fPhysicsSelection(0)
 , fdNdPtBackgroundCuts(0)
+, fAnalyseOutput(kFALSE)
+, fMergeTHnSparse(kTRUE)
 {
   // default constructor
 }
@@ -55,6 +57,8 @@ AlidNdPt::AlidNdPt(Char_t* name, Char_t* title): TNamed(name,title)
 , fParticleMode(AlidNdPtHelper::kAllPart) 
 , fPhysicsSelection(0)
 , fdNdPtBackgroundCuts(0)
+, fAnalyseOutput(kFALSE)
+, fMergeTHnSparse(kTRUE)
 {
   // constructor
 }
@@ -71,6 +75,8 @@ AlidNdPt::AlidNdPt(const AlidNdPt&): TNamed()
 , fParticleMode(AlidNdPtHelper::kAllPart) 
 , fPhysicsSelection(0)
 , fdNdPtBackgroundCuts(0)
+, fAnalyseOutput(kFALSE)
+, fMergeTHnSparse(kTRUE)
 {
   // not implemented
 }
