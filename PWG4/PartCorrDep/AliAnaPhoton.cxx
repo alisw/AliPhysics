@@ -1358,29 +1358,29 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
   //Fill histograms
   
   //-------------------------------------------------------------------
-	// Access MC information in stack if requested, check that it exists.	
-	AliStack * stack = 0x0;
-	TParticle * primary = 0x0;   
-	TClonesArray * mcparticles0 = 0x0;
-	//TClonesArray * mcparticles1 = 0x0;
-	AliAODMCParticle * aodprimary = 0x0; 
-	if(IsDataMC()){
+  // Access MC information in stack if requested, check that it exists.	
+  AliStack * stack = 0x0;
+  TParticle * primary = 0x0;   
+  TClonesArray * mcparticles0 = 0x0;
+  //TClonesArray * mcparticles1 = 0x0;
+  AliAODMCParticle * aodprimary = 0x0; 
+  if(IsDataMC()){
 		
-		if(GetReader()->ReadStack()){
-			stack =  GetMCStack() ;
-			if(!stack) {
-				printf("AliAnaPhoton::MakeAnalysisFillHistograms() - Stack not available, is the MC handler called? STOP\n");
-				abort();
-			}
+    if(GetReader()->ReadStack()){
+      stack =  GetMCStack() ;
+      if(!stack) {
+	printf("AliAnaPhoton::MakeAnalysisFillHistograms() - Stack not available, is the MC handler called? STOP\n");
+	abort();
+      }
       
-		}
-		else if(GetReader()->ReadAODMCParticles()){
+    }
+    else if(GetReader()->ReadAODMCParticles()){
       
-			//Get the list of MC particles
-			mcparticles0 = GetReader()->GetAODMCParticles(0);
-			if(!mcparticles0 && GetDebug() > 0) 	{
-				printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
-			}	
+      //Get the list of MC particles
+      mcparticles0 = GetReader()->GetAODMCParticles(0);
+      if(!mcparticles0 && GetDebug() > 0) 	{
+	printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
+      }	
       //			if(GetReader()->GetSecondInputAODTree()){
       //				mcparticles1 = GetReader()->GetAODMCParticles(1);
       //				if(!mcparticles1 && GetDebug() > 0) 	{
@@ -1388,8 +1388,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       //				}
       //			}		
 			
-		}
-	}// is data and MC
+    }
+  }// is data and MC
 	
   
   // Get vertex
@@ -1399,36 +1399,36 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
   if(TMath::Abs(v[2]) > GetZvertexCut()) return ; // done elsewhere for Single Event analysis, but there for mixed event
   
   //----------------------------------
-	//Loop on stored AOD photons
-	Int_t naod = GetOutputAODBranch()->GetEntriesFast();
+  //Loop on stored AOD photons
+  Int_t naod = GetOutputAODBranch()->GetEntriesFast();
   fhNtraNclu->Fill(GetReader()->GetTrackMultiplicity(), naod);
-	if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
+  if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillHistograms() - aod branch entries %d\n", naod);
 	
-	for(Int_t iaod = 0; iaod < naod ; iaod++){
-	  AliAODPWG4Particle* ph =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
-	  Int_t pdg = ph->GetIdentifiedParticleType();
+  for(Int_t iaod = 0; iaod < naod ; iaod++){
+    AliAODPWG4Particle* ph =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
+    Int_t pdg = ph->GetIdentifiedParticleType();
 	  
-	  if(GetDebug() > 3) 
-	    printf("AliAnaPhoton::MakeAnalysisFillHistograms() - PDG %d, MC TAG %d, Calorimeter %s\n", ph->GetIdentifiedParticleType(),ph->GetTag(), (ph->GetDetector()).Data()) ;
+    if(GetDebug() > 3) 
+      printf("AliAnaPhoton::MakeAnalysisFillHistograms() - PDG %d, MC TAG %d, Calorimeter %s\n", ph->GetIdentifiedParticleType(),ph->GetTag(), (ph->GetDetector()).Data()) ;
 	  
-	  //If PID used, fill histos with photons in Calorimeter fCalorimeter
-	  if(IsCaloPIDOn() && pdg != AliCaloPID::kPhoton) continue; 
-	  if(ph->GetDetector() != fCalorimeter) continue;
+    //If PID used, fill histos with photons in Calorimeter fCalorimeter
+    if(IsCaloPIDOn() && pdg != AliCaloPID::kPhoton) continue; 
+    if(ph->GetDetector() != fCalorimeter) continue;
 	  
-	  if(GetDebug() > 2) 
-	    printf("AliAnaPhoton::MakeAnalysisFillHistograms() - ID Photon: pt %f, phi %f, eta %f\n", ph->Pt(),ph->Phi(),ph->Eta()) ;
+    if(GetDebug() > 2) 
+      printf("AliAnaPhoton::MakeAnalysisFillHistograms() - ID Photon: pt %f, phi %f, eta %f\n", ph->Pt(),ph->Phi(),ph->Eta()) ;
 	  
     //................................
-	  //Fill photon histograms 
-	  Float_t ptcluster  = ph->Pt();
-	  Float_t phicluster = ph->Phi();
-	  Float_t etacluster = ph->Eta();
-	  Float_t ecluster   = ph->E();
+    //Fill photon histograms 
+    Float_t ptcluster  = ph->Pt();
+    Float_t phicluster = ph->Phi();
+    Float_t etacluster = ph->Eta();
+    Float_t ecluster   = ph->E();
 	  
     fhEPhoton   ->Fill(ecluster);
-	  fhPtPhoton  ->Fill(ptcluster);
-	  fhPhiPhoton ->Fill(ptcluster,phicluster);
-	  fhEtaPhoton ->Fill(ptcluster,etacluster);    
+    fhPtPhoton  ->Fill(ptcluster);
+    fhPhiPhoton ->Fill(ptcluster,phicluster);
+    fhEtaPhoton ->Fill(ptcluster,etacluster);    
     if(ecluster > 0.5)         fhEtaPhiPhoton ->Fill(etacluster, phicluster);
     else if(GetMinPt() < 0.5) fhEtaPhi05Photon->Fill(etacluster, phicluster);
     
@@ -1439,77 +1439,77 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     }
     
     //.......................................
-	  //Play with the MC data if available
-	  if(IsDataMC()){
+    //Play with the MC data if available
+    if(IsDataMC()){
 	    
-	    Int_t tag =ph->GetTag();
+      Int_t tag =ph->GetTag();
 
-	    if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
-      {
-        fhPtMCPhoton  ->Fill(ptcluster);
-        fhPhiMCPhoton ->Fill(ptcluster,phicluster);
-        fhEtaMCPhoton ->Fill(ptcluster,etacluster);
+      if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
+	{
+	  fhPtMCPhoton  ->Fill(ptcluster);
+	  fhPhiMCPhoton ->Fill(ptcluster,phicluster);
+	  fhEtaMCPhoton ->Fill(ptcluster,etacluster);
         
-        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))
-        {
-          fhPtConversion  ->Fill(ptcluster);
-          fhPhiConversion ->Fill(ptcluster,phicluster);
-          fhEtaConversion ->Fill(ptcluster,etacluster);
-          if(ph->IsTagged()) fhPtConversionTagged ->Fill(ptcluster);
-          if(ptcluster > 0.5)fhEtaPhiConversion   ->Fill(etacluster,phicluster);
-          else               fhEtaPhi05Conversion ->Fill(etacluster,phicluster);
-        }			
+	  if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))
+	    {
+	      fhPtConversion  ->Fill(ptcluster);
+	      fhPhiConversion ->Fill(ptcluster,phicluster);
+	      fhEtaConversion ->Fill(ptcluster,etacluster);
+	      if(ph->IsTagged()) fhPtConversionTagged ->Fill(ptcluster);
+	      if(ptcluster > 0.5)fhEtaPhiConversion   ->Fill(etacluster,phicluster);
+	      else               fhEtaPhi05Conversion ->Fill(etacluster,phicluster);
+	    }			
         
-        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)){
-          fhPtPrompt  ->Fill(ptcluster);
-          fhPhiPrompt ->Fill(ptcluster,phicluster);
-          fhEtaPrompt ->Fill(ptcluster,etacluster);
-        }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation))
-        {
-          fhPtFragmentation  ->Fill(ptcluster);
-          fhPhiFragmentation ->Fill(ptcluster,phicluster);
-          fhEtaFragmentation ->Fill(ptcluster,etacluster);
-        }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR))
-        {
-          fhPtISR  ->Fill(ptcluster);
-          fhPhiISR ->Fill(ptcluster,phicluster);
-          fhEtaISR ->Fill(ptcluster,etacluster);
-        }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
-        {
-          fhPtPi0Decay  ->Fill(ptcluster);
-          fhPhiPi0Decay ->Fill(ptcluster,phicluster);
-          fhEtaPi0Decay ->Fill(ptcluster,etacluster);
-        }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
-        {
-          fhPtOtherDecay  ->Fill(ptcluster);
-          fhPhiOtherDecay ->Fill(ptcluster,phicluster);
-          fhEtaOtherDecay ->Fill(ptcluster,etacluster);
-        }
-      }
+	  if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)){
+	    fhPtPrompt  ->Fill(ptcluster);
+	    fhPhiPrompt ->Fill(ptcluster,phicluster);
+	    fhEtaPrompt ->Fill(ptcluster,etacluster);
+	  }
+	  else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation))
+	    {
+	      fhPtFragmentation  ->Fill(ptcluster);
+	      fhPhiFragmentation ->Fill(ptcluster,phicluster);
+	      fhEtaFragmentation ->Fill(ptcluster,etacluster);
+	    }
+	  else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR))
+	    {
+	      fhPtISR  ->Fill(ptcluster);
+	      fhPhiISR ->Fill(ptcluster,phicluster);
+	      fhEtaISR ->Fill(ptcluster,etacluster);
+	    }
+	  else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
+	    {
+	      fhPtPi0Decay  ->Fill(ptcluster);
+	      fhPhiPi0Decay ->Fill(ptcluster,phicluster);
+	      fhEtaPi0Decay ->Fill(ptcluster,etacluster);
+	    }
+	  else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
+	    {
+	      fhPtOtherDecay  ->Fill(ptcluster);
+	      fhPhiOtherDecay ->Fill(ptcluster,phicluster);
+	      fhEtaOtherDecay ->Fill(ptcluster,etacluster);
+	    }
+	}
       else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron))
-      {
-        fhPtAntiNeutron  ->Fill(ptcluster);
-        fhPhiAntiNeutron ->Fill(ptcluster,phicluster);
-        fhEtaAntiNeutron ->Fill(ptcluster,etacluster);
-        if(ph->IsTagged() && fCheckConversion) fhPtAntiNeutronTagged ->Fill(ptcluster);
+	{
+	  fhPtAntiNeutron  ->Fill(ptcluster);
+	  fhPhiAntiNeutron ->Fill(ptcluster,phicluster);
+	  fhEtaAntiNeutron ->Fill(ptcluster,etacluster);
+	  if(ph->IsTagged() && fCheckConversion) fhPtAntiNeutronTagged ->Fill(ptcluster);
 
-      }
+	}
       else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton))
-      {
-        fhPtAntiProton  ->Fill(ptcluster);
-        fhPhiAntiProton ->Fill(ptcluster,phicluster);
-        fhEtaAntiProton ->Fill(ptcluster,etacluster);
-        if(ph->IsTagged() && fCheckConversion) fhPtAntiProtonTagged ->Fill(ptcluster);
+	{
+	  fhPtAntiProton  ->Fill(ptcluster);
+	  fhPhiAntiProton ->Fill(ptcluster,phicluster);
+	  fhEtaAntiProton ->Fill(ptcluster,etacluster);
+	  if(ph->IsTagged() && fCheckConversion) fhPtAntiProtonTagged ->Fill(ptcluster);
 
-      }      
-	    else{
-	      fhPtUnknown  ->Fill(ptcluster);
-	      fhPhiUnknown ->Fill(ptcluster,phicluster);
-	      fhEtaUnknown ->Fill(ptcluster,etacluster);
+	}      
+      else{
+	fhPtUnknown  ->Fill(ptcluster);
+	fhPhiUnknown ->Fill(ptcluster,phicluster);
+	fhEtaUnknown ->Fill(ptcluster,etacluster);
         if(ph->IsTagged() && fCheckConversion) fhPtUnknownTagged ->Fill(ptcluster);
 
 	      
@@ -1520,37 +1520,37 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         //		  }
         //		  printf("\n");
         
-	    }
+      }
 	    
-	    //....................................................................
-	    // Access MC information in stack if requested, check that it exists.
-	    Int_t label =ph->GetLabel();
-	    if(label < 0) {
-	      printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** bad label ***:  label %d \n", label);
-	      continue;
-	    }
+      //....................................................................
+      // Access MC information in stack if requested, check that it exists.
+      Int_t label =ph->GetLabel();
+      if(label < 0) {
+	printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** bad label ***:  label %d \n", label);
+	continue;
+      }
 	    
-	    Float_t eprim   = 0;
-	    Float_t ptprim  = 0;
-	    if(GetReader()->ReadStack()){
+      Float_t eprim   = 0;
+      Float_t ptprim  = 0;
+      if(GetReader()->ReadStack()){
 	      
-	      if(label >=  stack->GetNtrack()) {
+	if(label >=  stack->GetNtrack()) {
           if(GetDebug() > 2)  printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
           continue ;
-	      }
+	}
 	      
-	      primary = stack->Particle(label);
-	      if(!primary){
+	primary = stack->Particle(label);
+	if(!primary){
           printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", label);
           continue;
-	      }
-	      eprim   = primary->Energy();
-	      ptprim  = primary->Pt();		
+	}
+	eprim   = primary->Energy();
+	ptprim  = primary->Pt();		
 	      
-	    }
-	    else if(GetReader()->ReadAODMCParticles()){
-	      //Check which is the input
-	      if(ph->GetInputFileIndex() == 0){
+      }
+      else if(GetReader()->ReadAODMCParticles()){
+	//Check which is the input
+	if(ph->GetInputFileIndex() == 0){
           if(!mcparticles0) continue;
           if(label >=  mcparticles0->GetEntriesFast()) {
             if(GetDebug() > 2)  printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", 
@@ -1560,39 +1560,39 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           //Get the particle
           aodprimary = (AliAODMCParticle*) mcparticles0->At(label);
           
-	      }
-//	      else {//Second input
-//          if(!mcparticles1) continue;
-//          if(label >=  mcparticles1->GetEntriesFast()) {
-//            if(GetDebug() > 2)  printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", 
-//                                       label, mcparticles1->GetEntriesFast());
-//            continue ;
-//          }
-//          //Get the particle
-//          aodprimary = (AliAODMCParticle*) mcparticles1->At(label);
-//          
-//	      }//second input
+	}
+	//	      else {//Second input
+	//          if(!mcparticles1) continue;
+	//          if(label >=  mcparticles1->GetEntriesFast()) {
+	//            if(GetDebug() > 2)  printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", 
+	//                                       label, mcparticles1->GetEntriesFast());
+	//            continue ;
+	//          }
+	//          //Get the particle
+	//          aodprimary = (AliAODMCParticle*) mcparticles1->At(label);
+	//          
+	//	      }//second input
 	      
-	      if(!aodprimary){
+	if(!aodprimary){
           printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", label);
           continue;
-	      }
+	}
 	      
-	      eprim   = aodprimary->E();
-	      ptprim  = aodprimary->Pt();
+	eprim   = aodprimary->E();
+	ptprim  = aodprimary->Pt();
 	      
-	    }
+      }
 	    
-	    fh2E     ->Fill(ecluster, eprim);
-	    fh2Pt    ->Fill(ptcluster, ptprim);     
-	    fhDeltaE ->Fill(eprim-ecluster);
-	    fhDeltaPt->Fill(ptprim-ptcluster);     
-	    if(eprim > 0)  fhRatioE  ->Fill(ecluster/eprim);
-	    if(ptprim > 0) fhRatioPt ->Fill(ptcluster/ptprim); 		
+      fh2E     ->Fill(ecluster, eprim);
+      fh2Pt    ->Fill(ptcluster, ptprim);     
+      fhDeltaE ->Fill(eprim-ecluster);
+      fhDeltaPt->Fill(ptprim-ptcluster);     
+      if(eprim > 0)  fhRatioE  ->Fill(ecluster/eprim);
+      if(ptprim > 0) fhRatioPt ->Fill(ptcluster/ptprim); 		
 	    
-	  }//Histograms with MC
+    }//Histograms with MC
 	  
-	}// aod loop
+  }// aod loop
 	
 }
 
