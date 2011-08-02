@@ -177,6 +177,33 @@ void AlidNdPtTask::UserExec(Option_t *)
 }
 
 //_____________________________________________________________________________
+void AlidNdPtTask::FinishTaskOutput() 
+{
+  //
+  // Called one at the end 
+  // locally on working node
+  //
+   // check output data
+  fOutput = dynamic_cast<TList*> (GetOutputData(1));
+  if (!fOutput) {
+    Printf("ERROR: AlidNdPtTask::FinishTaskOutput(): Output data not avaiable GetOutputData(1)==0x0 ..." );
+    return;
+  }
+
+  AlidNdPt* pObj=0;
+  TIterator* itOut = fOutput->MakeIterator();
+  itOut->Reset();
+  while(( pObj = dynamic_cast<AlidNdPt*>(itOut->Next())) != NULL) {
+    if(pObj->GetAnalyseOutput()) { 
+      pObj->Analyse();
+    }
+  }
+
+  // Post output data.
+  PostData(1, fOutput);
+}
+
+//_____________________________________________________________________________
 void AlidNdPtTask::Terminate(Option_t *) 
 {
   // Called one at the end 

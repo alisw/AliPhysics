@@ -41,6 +41,7 @@ set ( SRCS
     dNdPt/AlidNdPtEfficiency.cxx 
     dNdPt/AliPtResolAnalysis.cxx 
     dNdPt/AliPtResolAnalysisPbPb.cxx 
+    dNdPt/AlidNdPtTrackDumpTask.cxx
     ) 
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
