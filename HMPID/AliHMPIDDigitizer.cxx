@@ -21,7 +21,7 @@
 #include <AliRunLoader.h>
 #include "AliRunDigitizer.h"
 #include <AliLoader.h>
-#include <AliLog.h>
+#include "AliLog.h"
 #include <AliCDBEntry.h> 
 #include <AliCDBManager.h>
 #include "AliHMPIDDigitizer.h"
@@ -95,26 +95,32 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
   }
 
   TMatrixF *pM[7];
-      
+  
   AliCDBEntry *pDaqSigEnt = AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");  //contains TObjArray of TObjArray 14 TMatrixF sigmas values for pads 
-  if(!pDaqSigEnt) Printf("prova"); 
-  TObjArray *pDaqSig = (TObjArray*)pDaqSigEnt->GetObject();
-  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop    
-    pM[iCh] = (TMatrixF*)pDaqSig->At(iCh);     
+  if(pDaqSigEnt){
+    TObjArray *pDaqSig = (TObjArray*)pDaqSigEnt->GetObject();
+    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop    
+      pM[iCh] = (TMatrixF*)pDaqSig->At(iCh);     
+    }
   }
-
+  else{
+      for (Int_t iCh=0; iCh<7; iCh++)
+        for (Int_t i=0; i<160; i++)
+          for (Int_t j=0; j<144; j++)
+            (*pM[iCh])(i,j) = 1.0;  
+     }
+  
   // make noise array
   Float_t arrNoise[7][6][80][48];
   if(fgDoNoise) {
-    for (Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
+    for (Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++)
       for (Int_t iPc=AliHMPIDParam::kMinPc;iPc<=AliHMPIDParam::kMaxPc;iPc++)
         for(Int_t iPx=AliHMPIDParam::kMinPx;iPx<=AliHMPIDParam::kMaxPx;iPx++)
           for(Int_t iPy=AliHMPIDParam::kMinPy;iPy<=AliHMPIDParam::kMaxPy;iPy++){
             Int_t padX = (iPc%2)*AliHMPIDParam::kPadPcX+iPx; 
             Int_t padY = (iPc/2)*AliHMPIDParam::kPadPcY+iPy;
             arrNoise[iCh][iPc][iPx][iPy] = gRandom->Gaus(0,(*pM[iCh])(padX,padY));
-          } 
-    }    
+          }         
   }  
   
   pSdiLst->Sort();  
