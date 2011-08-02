@@ -53,7 +53,7 @@ AliFemtoPairCutRadialDistance::~AliFemtoPairCutRadialDistance(){
 bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   // Accept pairs based on their TPC entrance separation and
   // quality and sharity
-  bool temp = true;
+  //  bool temp = true;
   
 //    double pih = 3.14159265358979312;
 //    double pit = 6.28318530717958623;
@@ -85,13 +85,13 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
     }
   
 
-  if (temp) {
-    temp = AliFemtoPairCutAntiGamma::Pass(pair);
+  if (pass5) {
+    pass5 = AliFemtoPairCutAntiGamma::Pass(pair);
   }
   else
     fNPairsFailed++;
 
-  return temp;
+  return pass5;
 }
 //__________________
 AliFemtoString AliFemtoPairCutRadialDistance::Report(){
