@@ -28,6 +28,7 @@ class AliITSRecPointContainer : public TObject {
   Int_t GetNumberOfModules() const {return fActualSize; }
 
   static AliITSRecPointContainer* Instance(const AliITSRecoParam *ptr=NULL);
+  static void Destroy();
   void PrepareToRead(){if(fNextEvent<0){fNextEvent=0;} else {++fNextEvent;}}
   TClonesArray* FetchClusters(Int_t mod, TTree* tR);
   TClonesArray* FetchClusters(Int_t mod, TTree* tR,Int_t cureve);

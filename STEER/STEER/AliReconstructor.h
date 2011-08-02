@@ -70,6 +70,7 @@ public:
 
   virtual void FillEventTimeWithTOF(AliESDEvent *, AliESDpid *)
     {return;}
+  virtual void Terminate() const {return; }
 
 private:
 

@@ -245,6 +245,15 @@ AliITSRecPointContainer* AliITSRecPointContainer::Instance(const AliITSRecoParam
 }
 
 //______________________________________________________________________
+void AliITSRecPointContainer::Destroy(){
+  // deletes the singleton
+  if(fgInstance){
+    delete fgInstance;
+    fgInstance = NULL;
+  }
+}
+
+//______________________________________________________________________
 void AliITSRecPointContainer::Reset(){
   // Resets the status of the object
   ClearClus(0,fgkNModules);
