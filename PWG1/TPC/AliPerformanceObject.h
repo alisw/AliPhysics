@@ -96,7 +96,11 @@ public :
   // Centrality bin to be used
   void  SetUseCentralityBin(Int_t bin) { fUseCentralityBin = bin; }
   Int_t GetUseCentralityBin()          { return fUseCentralityBin; }
-  
+
+  // use tof bunch crossing
+  void SetUseTOFBunchCrossing(Bool_t tofBunching = kTRUE) { fUseTOFBunchCrossing = tofBunching; }
+  Bool_t IsUseTOFBunchCrossing() { return fUseTOFBunchCrossing; }
+
 protected: 
 
   void AddProjection(TObjArray* aFolderObj, TString nameSparse, THnSparse *hSparse, Int_t xDim, TString* selString = 0);
@@ -123,6 +127,8 @@ protected:
   Bool_t fUseKinkDaughters; // use kink daughthers, default is yes
 
   Int_t  fUseCentralityBin;  // centrality bin to be used 
+
+  Bool_t fUseTOFBunchCrossing; // use TOFBunchCrossing, default is yes
 
   AliPerformanceObject(const AliPerformanceObject&); // not implemented
   AliPerformanceObject& operator=(const AliPerformanceObject&); // not implemented

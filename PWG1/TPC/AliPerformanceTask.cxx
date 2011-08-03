@@ -253,7 +253,7 @@ void AliPerformanceTask::Terminate(Option_t *)
 
   if ( !fUseTerminate )
     return;
-
+  
   // check output data
     fOutputSummary = dynamic_cast<TTree*> (GetOutputData(0));
     fOutput = dynamic_cast<TList*> (GetOutputData(1));
@@ -266,13 +266,21 @@ void AliPerformanceTask::Terminate(Option_t *)
     AliPerformanceTPC*  pTPC = 0;
     AliPerformanceDEdx* pDEdx = 0;
     AliPerformanceMatch* pMatch = 0;
+    AliPerformanceMatch* pPull = 0;
     TIterator* itOut = fOutput->MakeIterator();
     itOut->Reset();
     while(( pObj = dynamic_cast<AliPerformanceObject*>(itOut->Next())) != NULL) { 
-        pObj->AnalyseFinal();
-        if (!  pTPC)  {    pTPC = dynamic_cast<AliPerformanceTPC*>(pObj); }
+      pObj->AnalyseFinal();
+      /*      if (!  pTPC)  {    pTPC = dynamic_cast<AliPerformanceTPC*>(pObj); }
         if (! pDEdx)  {   pDEdx = dynamic_cast<AliPerformanceDEdx*>(pObj); }
         if (! pMatch) {  pMatch = dynamic_cast<AliPerformanceMatch*>(pObj); }
+        if ((! pPull) && pMatch ) {  pPull = dynamic_cast<AliPerformanceMatch*>(pObj);*/
+
+	if (!strcmp(pObj->GetName(),"AliPerformanceTPC"))  {    pTPC = dynamic_cast<AliPerformanceTPC*>(pObj); }
+        if (!strcmp(pObj->GetName(),"AliPerformanceDEdxTPCInner"))  {   pDEdx = dynamic_cast<AliPerformanceDEdx*>(pObj); }
+        if (!strcmp(pObj->GetName(),"AliPerformanceMatchTPCITS")) {  pMatch = dynamic_cast<AliPerformanceMatch*>(pObj); }
+        if (!strcmp(pObj->GetName(),"AliPerformanceMatchITSTPC")) {  pPull = dynamic_cast<AliPerformanceMatch*>(pObj);
+	}
     }
    
     if(!fUseOCDB)  { 
@@ -283,7 +291,7 @@ void AliPerformanceTask::Terminate(Option_t *)
     if (! AliCDBManager::Instance()->GetDefaultStorage()) { AliCDBManager::Instance()->SetDefaultStorage("raw://"); }
     TUUID uuid;
     TString tmpFile = gSystem->TempDirectory() + TString("/TPCQASummary.") + uuid.AsString() + TString(".root");
-    AliTPCPerformanceSummary::WriteToFile(pTPC, pDEdx, pMatch, tmpFile.Data());
+    AliTPCPerformanceSummary::WriteToFile(pTPC, pDEdx, pMatch, pPull, tmpFile.Data());
     TChain* chain = new TChain("tpcQA");
     if(!chain) return;
     chain->Add(tmpFile.Data());

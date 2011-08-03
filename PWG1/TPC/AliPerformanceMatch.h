@@ -42,7 +42,7 @@ public :
   virtual void  Init();
 
   // Execute analysis
-  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
+  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent,AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
 
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* const list);
@@ -51,18 +51,18 @@ public :
   virtual void Analyse();
   
   // Analyse Projected Histograms to create Efficiency and AddToFolder
-  virtual void AnalyseFinal();
+  //  virtual void AnalyseFinal();
 
   // Get analysis folder
   virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
 
   // Process matching
-  void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack);
+  void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack);
   void ProcessTPCTRD(AliStack* const stack, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack);
-  void ProcessITSTPC(Int_t trackIdx, AliESDEvent* const esdEvent, AliStack* const stack, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack);
+  void ProcessITSTPC(Int_t trackIdx, AliESDEvent* const esdEvent, AliStack* const stack, AliESDtrack *const esdTrack);
 
   // Fill histogrrams
-  void FillHistograms(AliExternalTrackParam *const refParam, AliExternalTrackParam *const param, Bool_t isRec);
+  void FillHistograms(AliESDtrack *const refParam, AliESDtrack *const param, Bool_t isRec);
 
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderRes",TString title = "Analysed Resolution histograms");

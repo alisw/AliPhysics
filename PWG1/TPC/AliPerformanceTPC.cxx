@@ -279,13 +279,20 @@ void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   if(!esdEvent) return;
   if(!esdTrack) return;
 
+  if(IsUseTOFBunchCrossing())
+    if(esdTrack->GetTOFBunchCrossing(esdEvent->GetMagneticField())!=0)
+      return;
+
   if( IsUseTrackVertex() ) 
   { 
     // Relate TPC inner params to prim. vertex
     const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
     Double_t x[3]; esdTrack->GetXYZ(x);
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
-    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    //    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    Bool_t isOK=kFALSE;
+    if(fabs(b[2])>0.000001)
+     isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
     if(!isOK) return;
 
     /*
