@@ -632,9 +632,9 @@ void AliHFSystErr::InitDstartoD0pi2010pp() {
   fRawYield->SetBinContent(3,0.04);
   fRawYield->SetBinContent(4,0.02);
   fRawYield->SetBinContent(5,0.03);
-  fRawYield->SetBinContent(5,0.06);
-  fRawYield->SetBinContent(5,0.04);
-  fRawYield->SetBinContent(5,0.11);
+  fRawYield->SetBinContent(6,0.06);
+  fRawYield->SetBinContent(7,0.04);
+  fRawYield->SetBinContent(8,0.11);
   for(Int_t i=5;i<=24;i++) fRawYield->SetBinContent(i,0.03);  //4%
   fRawYield->SetBinContent(13,0.09);
   fRawYield->SetBinContent(14,0.09);
@@ -688,7 +688,7 @@ void AliHFSystErr::InitDstartoD0pi2010ppLowEn() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.10); //10% (to be checked!!)
+  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.15); //10% (to be checked!!)
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",20,0,20);
@@ -696,10 +696,10 @@ void AliHFSystErr::InitDstartoD0pi2010ppLowEn() {
   fRawYield->SetBinContent(2,1);
   fRawYield->SetBinContent(3,0.2);
   fRawYield->SetBinContent(4,0.2);
-  fRawYield->SetBinContent(5,0.05);
-  fRawYield->SetBinContent(6,0.05);
-  fRawYield->SetBinContent(7,0.06);
-  fRawYield->SetBinContent(8,0.06);
+  fRawYield->SetBinContent(5,0.08);
+  fRawYield->SetBinContent(6,0.08);
+  fRawYield->SetBinContent(7,0.1);
+  fRawYield->SetBinContent(8,0.1);
   fRawYield->SetBinContent(9,0.2);
   fRawYield->SetBinContent(10,0.2);
   for(Int_t i=9;i<=20;i++) fRawYield->SetBinContent(i,0.065);
