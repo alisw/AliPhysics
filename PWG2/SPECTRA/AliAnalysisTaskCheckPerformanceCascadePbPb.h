@@ -15,10 +15,11 @@
 class TList;
 class TH1F;
 class TH2F;
+class TH3F; 
 class AliESDEvent;
-class AliESDpid;
 class AliESDtrackCuts;
 class AliCFContainer;
+class AliPIDResponse;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -29,7 +30,6 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckPerformanceCascadePbPb(const char *name );
   virtual ~AliAnalysisTaskCheckPerformanceCascadePbPb();
   
-  //virtual void   ConnectInputData(Option_t *);
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual Int_t  DoESDTrackWithTPCrefitMultiplicity(const AliESDEvent *lESDevent);
@@ -64,9 +64,9 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
         TString         fAnalysisType;          // "ESD" or "AOD" analysis type	
         TString         fTriggerMaskType;       // type of trigger to use in UserExec : AliVEvent::kMB or kHighMult ?
         Short_t         fCollidingSystems;      // 0 = pp collisions or 1 = AA collisions
-        AliESDpid       *fESDpid;               // Tool data member to manage the TPC Bethe-Bloch info
         AliESDtrackCuts *fESDtrackCuts;         // ESD track cuts used for primary track definition
       //TPaveText       *fPaveTextBookKeeping;  // TString to store all the relevant info necessary for book keeping (v0 cuts, cascade cuts, quality cuts, ...)
+        AliPIDResponse *fPIDResponse;           //! PID response object        
 
         Bool_t          fkRerunV0CascVertexers;         // Boolean : kTRUE = relaunch both V0 + Cascade vertexers
         Bool_t          fkQualityCutZprimVtxPos;        // Boolean : kTRUE = cut on the prim.vtx  z-position
@@ -90,6 +90,12 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
  	TList	*fListHistCascade;		//! List of Cascade histograms
 
                 // - Histos
+        TH2F    *fHistEvtsInCentralityBinsvsNtracks;    //! Events in centrality bins vs N ESDtracks 
+        TH1F    *fHistnXiPlusPerEvTot;         //! Cascade multiplicity histogram
+        TH1F    *fHistnXiMinusPerEvTot;        //! Cascade multiplicity histogram
+        TH1F    *fHistnOmegaPlusPerEvTot;      //! Cascade multiplicity histogram
+        TH1F    *fHistnOmegaMinusPerEvTot;     //! Cascade multiplicity histogram
+
         TH1F    *fHistnXiPlusPerEv;             //! Cascade multiplicity histograms          
         TH1F    *fHistnXiMinusPerEv;            //! Cascade multiplicity histograms
         TH1F    *fHistnOmegaPlusPerEv;          //! Cascade multiplicity histograms
@@ -114,7 +120,8 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
 	//--------------
 	// Xi-
 	TH1F	*fHistEtaGenCascXiMinus;   		//! MC Pseudo-rapidity of any generated Xi- (no cuts in acceptance)
-	TH2D	*f2dHistGenPtVsGenYGenXiMinus;		//! MC Pt Vs MC Y of generated Xi- 
+        TH3D    *f3dHistGenPtVsGenYGenvsCentXiMinus;
+        TH3D    *f3dHistGenPtVsGenYGenvsNtracksXiMinus;
 		
 	// - Histos planned for Xi- emitted within the acceptance (cuts in theta + pt of daughters)
 	// 	= findable cascades
@@ -136,7 +143,9 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
 	//--------------
 	// Xi+
 	TH1F	*fHistEtaGenCascXiPlus;   		//! MC Pseudo-rapidity of any generated Xi+ (no cuts in acceptance)
-	TH2D	*f2dHistGenPtVsGenYGenXiPlus;		//! MC Pt Vs MC Y of generated Xi+ 
+        TH3D    *f3dHistGenPtVsGenYGenvsCentXiPlus;
+        TH3D    *f3dHistGenPtVsGenYGenvsNtracksXiPlus;
+
 			
 	// - Histos planned for Xi+ emitted within the acceptance (cuts in theta + pt of daughters)
 	TH1F	*fHistThetaGenCascXiPlus;		//! MC Theta angle of the generated Xi+
@@ -157,7 +166,9 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
 	//--------------
 	// Omega-
 	TH1F	*fHistEtaGenCascOmegaMinus;   		//! MC Pseudo-rapidity of any generated Omega- (no cuts in acceptance)
-	TH2D	*f2dHistGenPtVsGenYGenOmegaMinus; 	//! MC Pt Vs MC Y of generated Omega- 	
+        TH3D    *f3dHistGenPtVsGenYGenvsCentOmegaMinus;
+        TH3D    *f3dHistGenPtVsGenYGenvsNtracksOmegaMinus;
+
 	
 	// - Histos planned for Omega- emitted within the acceptance (cuts in theta + pt of daughters)
 	TH1F	*fHistThetaGenCascOmegaMinus;		//! MC Theta angle of the generated Omega-
@@ -178,7 +189,9 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
 	//--------------
 	// Omega+
 	TH1F	*fHistEtaGenCascOmegaPlus;   		//! MC Pseudo-rapidity of any generated Omega+ (no cuts in acceptance)
-	TH2D	*f2dHistGenPtVsGenYGenOmegaPlus; 	//! MC Pt Vs MC Y of generated Omega+	
+        TH3D    *f3dHistGenPtVsGenYGenvsCentOmegaPlus;
+        TH3D    *f3dHistGenPtVsGenYGenvsNtracksOmegaPlus;
+
 		
 	// - Histos planned for Omega+ emitted within the acceptance (cuts in theta + pt of daughters)
 	TH1F	*fHistThetaGenCascOmegaPlus;		//! MC Theta angle of the generated Omega+
@@ -280,7 +293,7 @@ class AliAnalysisTaskCheckPerformanceCascadePbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckPerformanceCascadePbPb(const AliAnalysisTaskCheckPerformanceCascadePbPb&);            // not implemented
   AliAnalysisTaskCheckPerformanceCascadePbPb& operator=(const AliAnalysisTaskCheckPerformanceCascadePbPb&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckPerformanceCascadePbPb, 1);
+  ClassDef(AliAnalysisTaskCheckPerformanceCascadePbPb, 2);
 };
 
 #endif
