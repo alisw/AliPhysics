@@ -25,12 +25,14 @@
 //
 //              Adapted to PbPb analysis: M. Nicassio Feb2011, maria.nicassio@ba.infn.it
 //              - Physics selection moved to the run.C macro
-//              - Centrality selection added (+ setters)
+//              - Centrality selection added (+ setters) 
 //              - flag and setters added (CF container usage, vertex range)
 //              - histo added and histo/container binning changed 
 //              - protection in the destructor for CAF usage          
 //              - AliWarning disabled
-//              - number of tracklets from AOD also           
+//              - number of tracklets from AOD also          
+//              - automatic settings for PID (July 2011) 
+//              - centrality and nTracks variables added to CF containers
 //-----------------------------------------------------------------
 
 class TTree;
@@ -60,14 +62,15 @@ class AliAODv0;
 #include "AliAODEvent.h"
 //      #include "AliV0vertexer.h"
 //      #include "AliCascadeVertexer.h"
-#include "AliESDpid.h"
+#include "AliESDtrackCuts.h"
+#include "AliPIDResponse.h"
 
 #include "AliESDVZERO.h"
 
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliMCEventHandler.h"
-
+#include "AliESDInputHandler.h"
 #include "AliCFContainer.h"
 #include "AliMultiplicity.h"
 
@@ -82,7 +85,8 @@ ClassImp(AliAnalysisTaskCheckCascadePbPb)
 
 //________________________________________________________________________
 AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb() 
-  : AliAnalysisTaskSE(), fAnalysisType("ESD"), fCollidingSystems(0), fESDpid(0), /*fPaveTextBookKeeping(0),*/
+  : AliAnalysisTaskSE(), fAnalysisType("ESD"), fCollidingSystems(0), /*fPaveTextBookKeeping(0),*/
+    fPIDResponse                (0),
     fkRerunV0CascVertexers      (0),
     fkQualityCutZprimVtxPos     (kTRUE),
     fkQualityCutNoTPConlyPrimVtx(kTRUE),
@@ -98,6 +102,7 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb()
 
     	// - Cascade part initialisation
     fListHistCascade(0),
+    fHistEvtsInCentralityBinsvsNtracks(0),
     fHistCascadeMultiplicityBeforeEvSel(0),
     fHistCascadeMultiplicityForCentrEvt(0), fHistTrackMultiplicityForCentrEvt(0), fHistTPCrefitTrackMultiplicityForCentrEvt(0),
     fHistCascadeMultiplicityForTrigEvtAndZprimVtx(0),
@@ -164,7 +169,6 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb()
 
 {
   // Dummy Constructor
-        for(Int_t iAlephIdx   = 0; iAlephIdx   < 5; iAlephIdx++   ) { fAlephParameters [iAlephIdx]    = -1.; }
         for(Int_t iV0selIdx   = 0; iV0selIdx   < 7; iV0selIdx++   ) { fV0Sels          [iV0selIdx   ] = -1.; }
         for(Int_t iCascSelIdx = 0; iCascSelIdx < 8; iCascSelIdx++ ) { fCascSels        [iCascSelIdx ] = -1.; }
 }
@@ -172,7 +176,8 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb()
 
 //________________________________________________________________________
 AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb(const char *name) 
-  : AliAnalysisTaskSE(name), fAnalysisType("ESD"), fCollidingSystems(0), fESDpid(0), /*fPaveTextBookKeeping(0),*/
+  : AliAnalysisTaskSE(name), fAnalysisType("ESD"), fCollidingSystems(0), /*fPaveTextBookKeeping(0),*/
+    fPIDResponse                (0),
     fkRerunV0CascVertexers      (0),
     fkQualityCutZprimVtxPos     (kTRUE),
     fkQualityCutNoTPConlyPrimVtx(kTRUE),
@@ -187,6 +192,7 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb(const char *nam
      
     	// - Cascade part initialisation
     fListHistCascade(0),
+    fHistEvtsInCentralityBinsvsNtracks(0),
     fHistCascadeMultiplicityBeforeEvSel(0),
     fHistCascadeMultiplicityForCentrEvt(0), fHistTrackMultiplicityForCentrEvt(0), fHistTPCrefitTrackMultiplicityForCentrEvt(0),
     fHistCascadeMultiplicityForTrigEvtAndZprimVtx(0),
@@ -258,8 +264,6 @@ AliAnalysisTaskCheckCascadePbPb::AliAnalysisTaskCheckCascadePbPb(const char *nam
   // DefineInput(0, TChain::Class());
   // Output slot #1 writes into a TList container (cascade)
         
-        for(Int_t iAlephIdx   = 0; iAlephIdx   < 5; iAlephIdx++   ) { fAlephParameters [iAlephIdx]    = -1.; }
-        
         fV0Sels[0] =  33.  ;  // max allowed chi2
         fV0Sels[1] =   0.001; // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
         fV0Sels[2] =   0.001; // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
@@ -295,7 +299,6 @@ AliAnalysisTaskCheckCascadePbPb::~AliAnalysisTaskCheckCascadePbPb()
   // Because of TList::SetOwner() ...
         
   if (fListHistCascade && !AliAnalysisManager::GetAnalysisManager()->IsProofMode())         { delete fListHistCascade;     fListHistCascade = 0x0;    }
-  if (fESDpid)                  { delete fESDpid;              fESDpid = 0x0;} // fESDpid is not stored into the TList
   //if (fPaveTextBookKeeping)     { delete fPaveTextBookKeeping; fPaveTextBookKeeping = 0x0;} // fPaveTextBookKeeping is not strored in the TList
 }
 
@@ -311,47 +314,11 @@ void AliAnalysisTaskCheckCascadePbPb::UserCreateOutputObjects()
 
  fListHistCascade = new TList();
  fListHistCascade->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
- 
- 
-if(! fESDpid){
+ // New PID object
+   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+   fPIDResponse = inputHandler->GetPIDResponse();
 
-  AliMCEventHandler *lmcEvtHandler  = dynamic_cast<AliMCEventHandler*>( (AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler() );
-  
-  if( !lmcEvtHandler ) { // !0x0 = real data or !1 = there is an MC handler available (useMC = kTRUE in AnalysisTrainNew), so = data from MC
-        
-        // Reasonable parameters extracted for real p-p event (Dec 2009 - GSI Pass5) - A.Kalweit
-        fAlephParameters[0] = 0.0283086;        // No extra-division to apply in SetBlochParam
-        fAlephParameters[1] = 2.63394e+01;
-        fAlephParameters[2] = 5.04114e-11;
-        fAlephParameters[3] = 2.12543e+00;
-        fAlephParameters[4] = 4.88663e+00; 
-        Printf("CheckCascade - Check Aleph Param in case of REAL Data (fAlephParameters[1] = %f)\n",  fAlephParameters[1]);
-  } else {
-        // Reasonable parameters extracted for p-p simulation (LHC09a4) - A.Kalweit
-         // fAlephParameters[0] = 4.23232575531564326e+00;//50*0.76176e-1; // do not forget to divide this value by 50 in SetBlochParam !
-         // fAlephParameters[1] = 8.68482806165147636e+00;//10.632; 
-         // fAlephParameters[2] = 1.34000000000000005e-05;//0.13279e-4;
-         // fAlephParameters[3] = 2.30445734159456084e+00;//1.8631;
-         // fAlephParameters[4] = 2.25624744086878559e+00;//1.9479;  
-          
-        // Reasonable parameters extracted for MC LHC09d10 event (Jan 2010) - A.Kalweit
-        fAlephParameters[0] = 2.15898e+00/50.;
-        fAlephParameters[1] = 1.75295e+01;
-        fAlephParameters[2] = 3.40030e-09;
-        fAlephParameters[3] = 1.96178e+00;
-        fAlephParameters[4] = 3.91720e+00;
-        Printf("CheckCascade - Check Aleph Param win case MC data (fAlephParameters[1] = %f)\n",  fAlephParameters[1]);
-  }
-
-  fESDpid = new AliESDpid();
-  fESDpid->GetTPCResponse().SetBetheBlochParameters( fAlephParameters[0],
-                                                     fAlephParameters[1],
-                                                     fAlephParameters[2],
-                                                     fAlephParameters[3],
-                                                     fAlephParameters[4] );
-}
- 
- 
 /* 
 if( !fPaveTextBookKeeping){
         // FIXME : prepare a field with the AliRoot+root distrib ...
@@ -411,17 +378,15 @@ if( !fPaveTextBookKeeping){
 
         fPaveTextBookKeeping->AddText("- - - - - - - - - - - ");
 
-        fPaveTextBookKeeping->AddText("G. TPC Aleph Param : ");
-        fPaveTextBookKeeping->AddText( Form("   - fAlephParam [0] =  %.5g", fAlephParameters[0] ));
-        fPaveTextBookKeeping->AddText( Form("   - fAlephParam [1] =  %.5g", fAlephParameters[1] ));
-        fPaveTextBookKeeping->AddText( Form("   - fAlephParam [2] =  %.5g", fAlephParameters[2] ));
-        fPaveTextBookKeeping->AddText( Form("   - fAlephParam [3] =  %.5g", fAlephParameters[3] ));
-        fPaveTextBookKeeping->AddText( Form("   - fAlephParam [4] =  %.5g", fAlephParameters[4] ));
 }       
 */ 
  
 	// - General histos
 	//--------------
+        // Events in centraity bins
+        Double_t centBinLimits[12] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,90.,100.};
+        fHistEvtsInCentralityBinsvsNtracks = new TH2F("fHistEvtsInCentralityBinsvsNtracks","",11,centBinLimits,100,0.,6000.);
+        fListHistCascade->Add(fHistEvtsInCentralityBinsvsNtracks);
  
 if(! fHistCascadeMultiplicityBeforeEvSel) {
 	if(fCollidingSystems)// AA collisions
@@ -895,20 +860,26 @@ if(!fCFContCascadePIDXiMinus)  {
   //array for the number of bins in each dimension :
   Int_t lNbBinsPerVar[4] = {0};
   lNbBinsPerVar[0] = 100;
-  lNbBinsPerVar[1] = 400;
-  lNbBinsPerVar[2] = 22;//44;
-  lNbBinsPerVar[3] = 100; //250;
-   
+  lNbBinsPerVar[1] = 800;
+  lNbBinsPerVar[2] = 22;
+  if(fCollidingSystems) lNbBinsPerVar[3] = 11;
+  else lNbBinsPerVar[3] = 100;
+ 
   
   fCFContCascadePIDXiMinus = new AliCFContainer("fCFContCascadePIDXiMinus","Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
   
-  //setting the bin limits (valid  for v4-18-10-AN)
+  //setting the bin limits 
   fCFContCascadePIDXiMinus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
   fCFContCascadePIDXiMinus->SetBinLimits(1,   1.2  ,   2.0 );	// Xi Effective mass
   fCFContCascadePIDXiMinus->SetBinLimits(2,  -1.1  ,   1.1 );	// Rapidity
-  if(fCollidingSystems) 
-        fCFContCascadePIDXiMinus->SetBinLimits(3, 0.0, 20000.0  );    // SPD tracklets Multiplicity
-  else
+  if (fCollidingSystems){ 
+    Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
+    for(Int_t i=3; i< lNbBinsPerVar[3]+1;i++)   lBinLim3[i]  = (Double_t)(i-1)*10.;
+    lBinLim3[0] = 0.0;
+    lBinLim3[1] = 5.0;
+    lBinLim3[2] = 10.0;
+    fCFContCascadePIDXiMinus->SetBinLimits(3,  lBinLim3 );       // Centrality
+  } else
         fCFContCascadePIDXiMinus->SetBinLimits(3, 0.0, 250.0  );     // SPD tracklets Multiplicity
   
   // Setting the step title : one per PID case
@@ -924,7 +895,8 @@ if(!fCFContCascadePIDXiMinus)  {
   fCFContCascadePIDXiMinus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
   fCFContCascadePIDXiMinus->SetVarTitle(1, "M( #Lambda , #pi^{-} ) (GeV/c^{2})");
   fCFContCascadePIDXiMinus->SetVarTitle(2, "Y_{#Xi}");
-  fCFContCascadePIDXiMinus->SetVarTitle(3, "SPD tracklets Multiplicity");
+  if (fCollidingSystems) fCFContCascadePIDXiMinus->SetVarTitle(3, "Centrality");
+  else fCFContCascadePIDXiMinus->SetVarTitle(3, "SPD tracklets Multiplicity");
   
   fListHistCascade->Add(fCFContCascadePIDXiMinus);
   
@@ -937,21 +909,26 @@ if (!fCFContCascadePIDXiPlus) {
   //array for the number of bins in each dimension :
   Int_t lNbBinsPerVar[4] = {0};
   lNbBinsPerVar[0] = 100;
-  lNbBinsPerVar[1] = 400;
-  lNbBinsPerVar[2] = 22; //44;
-  lNbBinsPerVar[3] = 100; //250;
-   
+  lNbBinsPerVar[1] = 800;
+  lNbBinsPerVar[2] = 22;
+  if(fCollidingSystems) lNbBinsPerVar[3] = 11;
+  else lNbBinsPerVar[3] = 100;
   
   fCFContCascadePIDXiPlus = new AliCFContainer("fCFContCascadePIDXiPlus","Pt_{cascade} Vs M_{#Xi^{+} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
   
   
-  //setting the bin limits (valid  for v4-18-10-AN)
+  //setting the bin limits 
   fCFContCascadePIDXiPlus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
   fCFContCascadePIDXiPlus->SetBinLimits(1,   1.2  ,   2.0 );	// Xi Effective mass
   fCFContCascadePIDXiPlus->SetBinLimits(2,  -1.1  ,   1.1 );	// Rapidity
-  if(fCollidingSystems) 
-        fCFContCascadePIDXiPlus->SetBinLimits(3, 0.0, 20000.0  );    // SPD tracklets Multiplicity
-  else
+  if(fCollidingSystems) { 
+    Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
+    for(Int_t i=3; i< lNbBinsPerVar[3]+1;i++)   lBinLim3[i]  = (Double_t)(i-1)*10.;
+    lBinLim3[0] = 0.0;
+    lBinLim3[1] = 5.0;
+    lBinLim3[2] = 10.0;
+        fCFContCascadePIDXiPlus->SetBinLimits(3,lBinLim3);     // Centrality 
+  } else
         fCFContCascadePIDXiPlus->SetBinLimits(3, 0.0, 250.0  );     // SPD tracklets Multiplicity
   
   // Setting the step title : one per PID case
@@ -967,7 +944,8 @@ if (!fCFContCascadePIDXiPlus) {
   fCFContCascadePIDXiPlus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
   fCFContCascadePIDXiPlus->SetVarTitle(1, "M( #Lambda , #pi^{+} ) (GeV/c^{2})");
   fCFContCascadePIDXiPlus->SetVarTitle(2, "Y_{#Xi}");
-  fCFContCascadePIDXiPlus->SetVarTitle(3, "SPD tracklets Multiplicity");
+  if(fCollidingSystems) fCFContCascadePIDXiPlus->SetVarTitle(3, "Centrality");
+  else fCFContCascadePIDXiPlus->SetVarTitle(3, "SPD tracklets Multiplicity");
   
   fListHistCascade->Add(fCFContCascadePIDXiPlus);
   
@@ -981,21 +959,27 @@ if(!fCFContCascadePIDOmegaMinus)  {
   //array for the number of bins in each dimension :
   Int_t lNbBinsPerVar[4] = {0};
   lNbBinsPerVar[0] = 100;
-  lNbBinsPerVar[1] = 500;
-  lNbBinsPerVar[2] = 22; //44;
-  lNbBinsPerVar[3] = 100; //250;
-   
+  lNbBinsPerVar[1] = 1000;
+  lNbBinsPerVar[2] = 22;
+  if(fCollidingSystems) lNbBinsPerVar[3] = 11;
+  else lNbBinsPerVar[3] = 100;
+ 
   
   fCFContCascadePIDOmegaMinus = new AliCFContainer("fCFContCascadePIDOmegaMinus","Pt_{cascade} Vs M_{#Omega^{-} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
   
   
-  //setting the bin limits (valid  for v4-18-10-AN)
+  //setting the bin limits 
   fCFContCascadePIDOmegaMinus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
   fCFContCascadePIDOmegaMinus->SetBinLimits(1,   1.5  ,   2.5 );	// Omega Effective mass
   fCFContCascadePIDOmegaMinus->SetBinLimits(2,  -1.1  ,   1.1 );	// Rapidity
-  if(fCollidingSystems) 
-        fCFContCascadePIDOmegaMinus->SetBinLimits(3, 0.0, 20000.0  );    //SPD tracklets Multiplicity
-  else
+  if(fCollidingSystems) {
+    Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
+    for(Int_t i=3; i< lNbBinsPerVar[3]+1;i++)   lBinLim3[i]  = (Double_t)(i-1)*10.;
+    lBinLim3[0] = 0.0;
+    lBinLim3[1] = 5.0;
+    lBinLim3[2] = 10.0;
+        fCFContCascadePIDOmegaMinus->SetBinLimits(3,lBinLim3);     // Centrality
+  } else
         fCFContCascadePIDOmegaMinus->SetBinLimits(3, 0.0, 250.0  );     // SPD tracklets Multiplicity
   
   // Setting the step title : one per PID case
@@ -1011,7 +995,8 @@ if(!fCFContCascadePIDOmegaMinus)  {
   fCFContCascadePIDOmegaMinus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
   fCFContCascadePIDOmegaMinus->SetVarTitle(1, "M( #Lambda , K^{-} ) (GeV/c^{2})");
   fCFContCascadePIDOmegaMinus->SetVarTitle(2, "Y_{#Omega}");
-  fCFContCascadePIDOmegaMinus->SetVarTitle(3, "SPD tracklets Multiplicity");
+  if(fCollidingSystems) fCFContCascadePIDOmegaMinus->SetVarTitle(3, "Centrality"); 
+  else fCFContCascadePIDOmegaMinus->SetVarTitle(3, "SPD tracklets Multiplicity");
   
   fListHistCascade->Add(fCFContCascadePIDOmegaMinus);
   
@@ -1024,22 +1009,27 @@ if(!fCFContCascadePIDOmegaPlus)  {
   //array for the number of bins in each dimension :
   Int_t lNbBinsPerVar[4] = {0};
   lNbBinsPerVar[0] = 100;
-  lNbBinsPerVar[1] = 500;
-  lNbBinsPerVar[2] = 22; //44;
-  lNbBinsPerVar[3] = 100; // 250
+  lNbBinsPerVar[1] = 1000;
+  lNbBinsPerVar[2] = 22; 
+  lNbBinsPerVar[3] = 100;
    
   
   fCFContCascadePIDOmegaPlus = new AliCFContainer("fCFContCascadePIDOmegaPlus","Pt_{cascade} Vs M_{#Omega^{+} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
   
   
-  //setting the bin limits (valid  for v4-18-10-AN)
+  //setting the bin limits 
   fCFContCascadePIDOmegaPlus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
   fCFContCascadePIDOmegaPlus->SetBinLimits(1,   1.5  ,   2.5 );	// Omega Effective mass
   fCFContCascadePIDOmegaPlus->SetBinLimits(2,  -1.1  ,   1.1 );	// Rapidity
-  if(fCollidingSystems) 
-        fCFContCascadePIDOmegaPlus->SetBinLimits(3, 0.0, 20000.0  );    // SPD tracklets Multiplicity
-  else
-        fCFContCascadePIDOmegaPlus->SetBinLimits(3, 0.0, 250.0  );     // SPD tracklets Multiplicity
+  if(fCollidingSystems) {
+    Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
+    for(Int_t i=3; i< lNbBinsPerVar[3]+1;i++)   lBinLim3[i]  = (Double_t)(i-1)*10.;
+    lBinLim3[0] = 0.0;
+    lBinLim3[1] = 5.0;
+    lBinLim3[2] = 10.0;      
+        fCFContCascadePIDOmegaPlus->SetBinLimits(3,lBinLim3);    // Centrality
+  } else
+        fCFContCascadePIDOmegaPlus->SetBinLimits(3, 0.0, 250.0  );    // SPD tracklets Multiplicity
   
   // Setting the step title : one per PID case
   fCFContCascadePIDOmegaPlus->SetStepTitle(0, "No PID");
@@ -1054,7 +1044,8 @@ if(!fCFContCascadePIDOmegaPlus)  {
   fCFContCascadePIDOmegaPlus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
   fCFContCascadePIDOmegaPlus->SetVarTitle(1, "M( #Lambda , K^{+} ) (GeV/c^{2})");
   fCFContCascadePIDOmegaPlus->SetVarTitle(2, "Y_{#Omega}");
-  fCFContCascadePIDOmegaPlus->SetVarTitle(3, "SPD tracklets Multiplicity"); 
+  if(fCollidingSystems) fCFContCascadePIDOmegaPlus->SetVarTitle(3, "Centrality");
+  else fCFContCascadePIDOmegaPlus->SetVarTitle(3, "SPD tracklets Multiplicity"); 
   
   fListHistCascade->Add(fCFContCascadePIDOmegaPlus);
   
@@ -1065,29 +1056,27 @@ if(!fCFContCascadePIDOmegaPlus)  {
 if(! fCFContCascadeCuts&&fUseCFContCascadeCuts) {
    
 	// Container meant to store all the relevant distributions corresponding to the cut variables.
-	// So far, 20 variables have been identified.
-	// The following will be done in quite a brut force way ... 
-        //          - Define a user binning to have less bins in each dimension? 
+        //          - FIXME optimize number of bins
+        //          - NB overflow/underflow of variables on which we want to cut later should be 0!!! 
   const	Int_t  lNbSteps      =  4 ;
-  const Int_t  lNbVariables  =  20 ;
-  
+  const Int_t  lNbVariables  =  19 ;
   //array for the number of bins in each dimension :
-  Int_t lNbBinsPerVar[20] = {0};
+  Int_t lNbBinsPerVar[lNbVariables] = {0};
   lNbBinsPerVar[0]  = 100;
-  lNbBinsPerVar[1]  = 125;
+  lNbBinsPerVar[1]  = 126;
   lNbBinsPerVar[2]  = 100;
-  lNbBinsPerVar[3]  = 440;
+  lNbBinsPerVar[3]  = 221;
   lNbBinsPerVar[4]  = 30;
   lNbBinsPerVar[5]  = 50;
   
   lNbBinsPerVar[6]  = 100;
-  lNbBinsPerVar[7]  = 40;
-  lNbBinsPerVar[8]  = 100;
-  lNbBinsPerVar[9]  = 25;
-  lNbBinsPerVar[10] = 25;
+  lNbBinsPerVar[7]  = 43;
+  lNbBinsPerVar[8]  = 101;
+  lNbBinsPerVar[9]  = 26;
+  lNbBinsPerVar[10] = 26;
   
-  lNbBinsPerVar[11] = 75;  // 2-MeV/c2 bins
-  lNbBinsPerVar[12] = 60;  // 2-MeV/c2 bins
+  lNbBinsPerVar[11] = 150;  // 75 2-MeV/c2 bins
+  lNbBinsPerVar[12] = 120;  // 60 2-MeV/c2 bins
   
   lNbBinsPerVar[13] = 100;
   
@@ -1096,11 +1085,11 @@ if(! fCFContCascadeCuts&&fUseCFContCascadeCuts) {
   
   lNbBinsPerVar[16] = 20;
  
-  lNbBinsPerVar[17] = 50;
-  lNbBinsPerVar[18] = 100;
-  lNbBinsPerVar[19] = 24;
+  if(fCollidingSystems) lNbBinsPerVar[17] = 11;
+  else lNbBinsPerVar[17] = 100;
+  lNbBinsPerVar[18] = 100; 
     
- fCFContCascadeCuts = new AliCFContainer("fCFContCascadeCuts","Container for Cascade cuts", lNbSteps, lNbVariables, lNbBinsPerVar );
+  fCFContCascadeCuts = new AliCFContainer("fCFContCascadeCuts","Container for Cascade cuts", lNbSteps, lNbVariables, lNbBinsPerVar );
   
   
   //setting the bin limits 
@@ -1108,11 +1097,19 @@ if(! fCFContCascadeCuts&&fUseCFContCascadeCuts) {
   //0
   fCFContCascadeCuts->SetBinLimits(0, 0., 2.);                 // DcaXiDaughters : 0.0 to 2.0
   //1
-  fCFContCascadeCuts->SetBinLimits(1, 0., .5);                 // DcaBachToPrimVertexXi : 0.0 to 0.5
+  Double_t *lBinLim1  = new Double_t[ lNbBinsPerVar[1]+1 ];
+  for(Int_t i=0; i< lNbBinsPerVar[1];i++)   lBinLim1[i]  = (Double_t)0.0   + (5.  - 0.0 )/(lNbBinsPerVar[1]-1)  * (Double_t)i ;
+  lBinLim1[ lNbBinsPerVar[1]  ] = 100.0;
+  fCFContCascadeCuts -> SetBinLimits(1,  lBinLim1 );            
+  delete [] lBinLim1;                                          // DcaBachToPrimVertexXi : 0.0 to 0.5    
   //2 
   fCFContCascadeCuts->SetBinLimits(2, .99, 1.);                // XiCosineOfPointingAngle : 0.99 to 1.0	
   //3
-  fCFContCascadeCuts->SetBinLimits(3, 0., 5.);                 // XiRadius : 0.0 to 5.0	
+  Double_t *lBinLim3  = new Double_t[ lNbBinsPerVar[3]+1 ];
+  for(Int_t i=0; i< lNbBinsPerVar[3];i++)   lBinLim3[i] = (Double_t)0.0 + (5.  - 0.0 )/(lNbBinsPerVar[3]-1) * (Double_t)i ;
+  lBinLim3[ lNbBinsPerVar[3]  ] = 110.0;
+  fCFContCascadeCuts -> SetBinLimits(3,  lBinLim3 );           // XiRadius : 0.0 to 4.0
+  delete [] lBinLim3;                                          // XiRadius : 0.0 to 5.0	 
   //4
   fCFContCascadeCuts->SetBinLimits(4, 1.1, 1.13 );             // InvMassLambdaAsCascDghter
   //5
@@ -1120,13 +1117,31 @@ if(! fCFContCascadeCuts&&fUseCFContCascadeCuts) {
   //6 
   fCFContCascadeCuts->SetBinLimits(6, .99, 1.);                // V0CosineOfPointingAngleXi : 0.99 to 1.0	
   //7
-  fCFContCascadeCuts->SetBinLimits(7, 0., 20.);                // V0RadiusXi : 0.0 to 20.0	
+  Double_t *lBinLim7  = new Double_t[ lNbBinsPerVar[7]+1 ];
+  for(Int_t i=0; i< lNbBinsPerVar[7]-2;i++)   lBinLim7[i]  = (Double_t)0.0   + (20.  - 0.0 )/(lNbBinsPerVar[7]-3)  * (Double_t)i ;
+  lBinLim7[ lNbBinsPerVar[7]-2] = 100.0;
+  lBinLim7[ lNbBinsPerVar[7]-1] = 200.0;
+  lBinLim7[ lNbBinsPerVar[7]] = 1000.0; 
+  fCFContCascadeCuts -> SetBinLimits(7,  lBinLim7 );           
+  delete [] lBinLim7;                                          // V0RadiusXi : 0.0 to 20.0 	
   //8
-  fCFContCascadeCuts->SetBinLimits(8, 0., .4);                 // DcaV0ToPrimVertexXi : 0.0 to 0.4	
+  Double_t *lBinLim8  = new Double_t[ lNbBinsPerVar[8]+1 ];
+        for(Int_t i=0; i< lNbBinsPerVar[8];i++)   lBinLim8[i]  = (Double_t)0.0   + (0.4  - 0.0 )/(lNbBinsPerVar[8]-1)  * (Double_t)i ;
+        lBinLim8[ lNbBinsPerVar[8]  ] = 100.0;
+  fCFContCascadeCuts -> SetBinLimits(8,  lBinLim8 );        
+  delete [] lBinLim8;                                          // DcaV0ToPrimVertexXi : 0.0 to 0.4	
   //9
-  fCFContCascadeCuts->SetBinLimits(9, 0., 0.25);               // DcaPosToPrimVertexXi : 0.0 to 0.25	
+  Double_t *lBinLim9  = new Double_t[ lNbBinsPerVar[9]+1 ];
+  for(Int_t i=0; i< lNbBinsPerVar[9];i++)   lBinLim9[i]  = (Double_t)0.0   + (0.25  - 0.0 )/(lNbBinsPerVar[9]-1)  * (Double_t)i ;
+  lBinLim9[ lNbBinsPerVar[9]  ] = 100.0;
+  fCFContCascadeCuts -> SetBinLimits(9,  lBinLim9 );           
+  delete [] lBinLim9;                                          // DcaPosToPrimVertexXi : 0.0 to 0.25	
   //10
-  fCFContCascadeCuts->SetBinLimits(10, 0., 0.25);              // DcaPosToPrimVertexXi : 0.0 to 0.25	
+  Double_t *lBinLim10  = new Double_t[ lNbBinsPerVar[10]+1 ];
+  for(Int_t i=0; i< lNbBinsPerVar[10];i++)   lBinLim10[i]  = (Double_t)0.0   + (0.25  - 0.0 )/(lNbBinsPerVar[10]-1)  * (Double_t)i ;
+  lBinLim10[ lNbBinsPerVar[10]  ] = 100.0;
+  fCFContCascadeCuts -> SetBinLimits(10,  lBinLim10 );            
+  delete [] lBinLim10;                                         // DcaPosToPrimVertexXi : 0.0 to 0.25	
   //11
   fCFContCascadeCuts->SetBinLimits(11, 1.25, 1.40);            // InvMassXi
   fCFContCascadeCuts->SetBinLimits(12, 1.62, 1.74);            // InvMassOmega
@@ -1134,14 +1149,19 @@ if(! fCFContCascadeCuts&&fUseCFContCascadeCuts) {
   fCFContCascadeCuts->SetBinLimits(14, -1.1, 1.1);             // Y(Xi)
   fCFContCascadeCuts->SetBinLimits(15, -1.1, 1.1);             // Y(Omega)
   fCFContCascadeCuts->SetBinLimits(16, -10.0, 10.0);           // BestPrimaryVtxPosZ
-  if (fCollidingSystems) {
-    fCFContCascadeCuts->SetBinLimits(17, 0.0, 10000.0);        // TPCrefitTrackMultiplicity
-    fCFContCascadeCuts->SetBinLimits(18, 0.0, 10000.0);        // SPDTrackletsMultiplicity
-  } else {  
-    fCFContCascadeCuts->SetBinLimits(17, 0.0, 250.0);          // TPCrefitTrackMultiplicity
-    fCFContCascadeCuts->SetBinLimits(18, 0.0, 200.0);          // SPDTrackletsMultiplicity
+  if (fCollidingSystems) { 
+    Double_t *lBinLim17  = new Double_t[ lNbBinsPerVar[17]+1 ];
+    for(Int_t i=3; i< lNbBinsPerVar[17]+1;i++)   lBinLim17[i]  = (Double_t)(i-1)*10.;
+    lBinLim17[0] = 0.0;
+    lBinLim17[1] = 5.0; 
+    lBinLim17[2] = 10.0;
+    fCFContCascadeCuts -> SetBinLimits(17,  lBinLim17 );       // Centrality
+    delete [] lBinLim17;
+    fCFContCascadeCuts->SetBinLimits(18, 0.0, 6000.0);        // ESD track multiplicity 
+  } else {
+    fCFContCascadeCuts->SetBinLimits(17, 0.0, 250.0);          // SPDTrackletsMultiplicity
+    fCFContCascadeCuts->SetBinLimits(18, 0.0, 200.0);          // ESD track multiplicity
   }
-  fCFContCascadeCuts->SetBinLimits(19, 25.0, 165.0);           // BachTPCClusters
   
   // Setting the number of steps : one for each cascade species (Xi-, Xi+ and Omega-, Omega+)
   fCFContCascadeCuts->SetStepTitle(0, "#Xi^{-} candidates");
@@ -1174,9 +1194,10 @@ if(! fCFContCascadeCuts&&fUseCFContCascadeCuts) {
   
   fCFContCascadeCuts->SetVarTitle(16, "Z-position(BestPrimVtx) (cm)");
   
-  fCFContCascadeCuts->SetVarTitle(17, "TPCrefit track Multiplicity");
-  fCFContCascadeCuts->SetVarTitle(18, "SPD tracklets Multiplicity");
-  fCFContCascadeCuts->SetVarTitle(19, "Bach.TPC Clusters");
+  if (fCollidingSystems) fCFContCascadeCuts->SetVarTitle(17, "Centrality");
+  else fCFContCascadeCuts->SetVarTitle(17, "SPD tracklets Multiplicity");
+
+  fCFContCascadeCuts->SetVarTitle(18, "ESD track multiplicity");
   
   fListHistCascade->Add(fCFContCascadeCuts);
 }
@@ -1286,10 +1307,6 @@ PostData(1, fListHistCascade);
 }// end UserCreateOutputObjects
 
 
-
-
-
-
 //________________________________________________________________________
 void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
   // Main loop
@@ -1353,12 +1370,17 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
   AliESDVZERO* esdV0 = lESDevent->GetVZEROData();
   Float_t multV0A=esdV0->GetMTotV0A();
   Float_t multV0C=esdV0->GetMTotV0C();
-//  fV0Ampl->Fill(multV0A+multV0C);
 
   AliCentrality *centrality = lESDevent->GetCentrality();
-  if (!(centrality->IsEventInCentralityClass(fCentrLowLim,fCentrUpLim,fCentrEstimator.Data()))) {
+  //  Printf("Centrality percentile V0M for this event %f)\n",  centrality->GetCentralityPercentile("V0M"));
+/*  if (!(centrality->IsEventInCentralityClass(fCentrLowLim,fCentrUpLim,fCentrEstimator.Data()))) {
     PostData(1, fListHistCascade);
     return; 
+  }*/
+  Float_t lcentrality = centrality->GetCentralityPercentile(fCentrEstimator.Data());
+  if (lcentrality==-1||lcentrality>=90.) {
+    PostData(1, fListHistCascade);
+    return;
   }
 
   fV0Ampl->Fill(multV0A+multV0C);
@@ -1462,7 +1484,17 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
   fHistPosBestPrimaryVtxZForSelEvt  ->Fill( lBestPrimaryVtxPos[2] );
   
   // ---------------------------------------------------------------
-  // II - Calcultaion Part dedicated to Xi vertices
+
+  
+  AliESDtrackCuts *trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE); // Std definition of primary (see kTRUE argument) tracks for 2010
+  //trackCuts->SetEtaRange(-0.8,+0.8);
+  //trackCuts->SetPtRange(0.15, 1e10);
+
+  Float_t lESDtrackMultiplicity = trackCuts->CountAcceptedTracks(lESDevent);
+
+  fHistEvtsInCentralityBinsvsNtracks->Fill(lcentrality,lESDtrackMultiplicity);
+
+  // II - Calculation Part dedicated to Xi vertices
   
   for (Int_t iXi = 0; iXi < ncascades; iXi++) {// This is the begining of the Cascade loop (ESD or AOD)
 	   
@@ -1691,13 +1723,11 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
 					    			lMagneticField  )     ); 
 		
 		// - II.Step 3' : extra-selection for cascade candidates
-		// Towards optimisation of AA selection
-        // FIXME
       if (fkExtraSelections) {
        // if(lChi2Xi > 2000) continue; // in AliCascadeVertexer   
        // if(lV0Chi2Xi > 2000) continue; // in AliV0vertexer
 		
-        if (lDcaXiDaughters > 0.4) continue; // in AliCascadeVertexer 
+        if (lDcaXiDaughters > 0.3) continue; // in AliCascadeVertexer 
         if (lXiCosineOfPointingAngle < 0.999 ) continue; // in AliCascadeVertexer
         if (lDcaV0ToPrimVertexXi < 0.05) continue; // in AliCascadeVertexer
         if (lDcaBachToPrimVertexXi < 0.03) continue; // in AliCascadeVertexer
@@ -1709,9 +1739,9 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
         if (lDcaNegToPrimVertexXi < 0.1) continue; // in AliV0vertexer
 
 
-//	  if(lXiRadius < 1.0) continue; // in AliCascadeVertexer
+	  if(lXiRadius < .9) continue; // in AliCascadeVertexer
 //	  if(lXiRadius > 100) continue; // in AliCascadeVertexer
-//	  if(lV0RadiusXi < 1.0) continue; // in AliV0vertexer  
+	  if(lV0RadiusXi < 0.9) continue; // in AliV0vertexer  
 //	  if(lV0RadiusXi > 100) continue; // in AliV0vertexer
 
       }
@@ -1878,16 +1908,16 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
 	// B - TPC PID : 3-sigma bands on Bethe-Bloch curve
 	
         // Bachelor
-      if (TMath::Abs(fESDpid->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < 4) lIsBachelorKaonForTPC = kTRUE;
-      if (TMath::Abs(fESDpid->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < 4) lIsBachelorPionForTPC = kTRUE;
+      if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kKaon)) < 4) lIsBachelorKaonForTPC = kTRUE;
+      if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( bachTrackXi,AliPID::kPion)) < 4) lIsBachelorPionForTPC = kTRUE;
       
         // Negative V0 daughter
-      if (TMath::Abs(fESDpid->NumberOfSigmasTPC( nTrackXi,AliPID::kPion   )) < 4) lIsNegPionForTPC   = kTRUE;
-      if (TMath::Abs(fESDpid->NumberOfSigmasTPC( nTrackXi,AliPID::kProton )) < 4) lIsNegProtonForTPC = kTRUE;
+      if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kPion   )) < 4) lIsNegPionForTPC   = kTRUE;
+      if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrackXi,AliPID::kProton )) < 4) lIsNegProtonForTPC = kTRUE;
        
         // Positive V0 daughter
-      if (TMath::Abs(fESDpid->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < 4) lIsPosPionForTPC   = kTRUE;
-      if (TMath::Abs(fESDpid->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < 4) lIsPosProtonForTPC = kTRUE;
+      if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kPion   )) < 4) lIsPosPionForTPC   = kTRUE;
+      if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrackXi,AliPID::kProton )) < 4) lIsPosProtonForTPC = kTRUE;
         
       /*
       const AliExternalTrackParam *pInnerWallTrackXi    = pTrackXi    ->GetInnerParam();
@@ -1976,9 +2006,8 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
 		// II.Step 7 - Complementary info for monitoring the cascade cut variables
 	
       const AliMultiplicity *lAliMult = lESDevent->GetMultiplicity();
-      if(fAnalysisType == "ESD") lSPDTrackletsMultiplicity       = lAliMult->GetNumberOfTracklets();
+      if(fAnalysisType == "ESD") lSPDTrackletsMultiplicity      = lAliMult->GetNumberOfTracklets();
       else if(fAnalysisType == "AOD") lSPDTrackletsMultiplicity = lAODevent->GetTracklets()->GetNumberOfTracklets();
-	
         	// II.Step 8 - Azimuthal correlation study
 		//-------------
 	
@@ -2134,7 +2163,7 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
       lPtArmXi  = xi->PtArmXi();
 
 		// II.Step 7 - Complementary info for monitoring the cascade cut variables
-	//FIXME : missing for AOD : Tacklet Multiplicity + TPCCluster
+	//FIXME : missing for AOD : TPCCluster
 	
 		// II.Step 8 - Azimuthal correlation study
 		//-------------
@@ -2263,9 +2292,7 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
 	// II.Fill.Step 5 : inv mass plots 1D
     if ( lChargeXi < 0 ) {
       fHistMassXiMinus	       ->Fill( lInvMassXiMinus    );
-          // MN Extra cut from Iouri, not sure that this is the right way to implement it
-  //    if (TMath::Abs(lInvMassXiMinus-1.3217)>0.008)
-	fHistMassOmegaMinus	       ->Fill( lInvMassOmegaMinus );
+      fHistMassOmegaMinus      ->Fill( lInvMassOmegaMinus );
       if(lIsBachelorPion)	fHistMassWithCombPIDXiMinus    ->Fill( lInvMassXiMinus    );
       if(lIsBachelorKaon)	fHistMassWithCombPIDOmegaMinus ->Fill( lInvMassOmegaMinus );
 
@@ -2279,9 +2306,7 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
 	
     if ( lChargeXi > 0 ) {
       fHistMassXiPlus		       ->Fill( lInvMassXiPlus     );
-                 // MN Extra cut from Iouri, not sure that this is the right way to implement it 
-    //  if (TMath::Abs(lInvMassXiPlus-1.3217)>0.008)
-	fHistMassOmegaPlus	       ->Fill( lInvMassOmegaPlus  );
+      fHistMassOmegaPlus	       ->Fill( lInvMassOmegaPlus  );
       if(lIsBachelorPion)	fHistMassWithCombPIDXiPlus     ->Fill( lInvMassXiPlus     );
       if(lIsBachelorKaon)	fHistMassWithCombPIDOmegaPlus  ->Fill( lInvMassOmegaPlus  );
     }
@@ -2313,7 +2338,8 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
       lContainerPIDVars[0] = lXiTransvMom       ;
       lContainerPIDVars[1] = lInvMassXiMinus    ;
       lContainerPIDVars[2] = lRapXi             ;
-      lContainerPIDVars[3] = lSPDTrackletsMultiplicity;       
+      if (fCollidingSystems) lContainerPIDVars[3] = lcentrality;
+      else lContainerPIDVars[3] = lSPDTrackletsMultiplicity;
 			
 		// No PID
       fCFContCascadePIDXiMinus->Fill(lContainerPIDVars, 0); // No PID
@@ -2351,7 +2377,8 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
       lContainerPIDVars[0] = lXiTransvMom       ;
       lContainerPIDVars[1] = lInvMassXiPlus     ;
       lContainerPIDVars[2] = lRapXi             ;
-      lContainerPIDVars[3] = lSPDTrackletsMultiplicity;       
+      if (fCollidingSystems) lContainerPIDVars[3] = lcentrality;
+      else lContainerPIDVars[3] = lSPDTrackletsMultiplicity;
 			
 		// No PID
       fCFContCascadePIDXiPlus->Fill(lContainerPIDVars, 0); // No PID
@@ -2389,8 +2416,9 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
       lContainerPIDVars[0] = lXiTransvMom       ;
       lContainerPIDVars[1] = lInvMassOmegaMinus ;
       lContainerPIDVars[2] = lRapOmega          ;
-      lContainerPIDVars[3] = lSPDTrackletsMultiplicity;      
-			
+      if (fCollidingSystems) lContainerPIDVars[3] = lcentrality;
+      else lContainerPIDVars[3] = lSPDTrackletsMultiplicity;
+ 		
 		// No PID
       fCFContCascadePIDOmegaMinus->Fill(lContainerPIDVars, 0); // No PID
         	// TPC PID
@@ -2427,7 +2455,8 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
       lContainerPIDVars[0] = lXiTransvMom       ;
       lContainerPIDVars[1] = lInvMassOmegaPlus ;
       lContainerPIDVars[2] = lRapOmega          ;
-      lContainerPIDVars[3] = lSPDTrackletsMultiplicity; 
+      if (fCollidingSystems) lContainerPIDVars[3] = lcentrality;
+      else lContainerPIDVars[3] = lSPDTrackletsMultiplicity;
 			
 		// No PID
       fCFContCascadePIDOmegaPlus->Fill(lContainerPIDVars, 0); // No PID
@@ -2461,7 +2490,7 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
         	
         // II.Fill.Step 7 : filling the AliCFContainer (optimisation of topological selections)
      if (fUseCFContCascadeCuts) { 
-       Double_t lContainerCutVars[20] = {0.0};
+       Double_t lContainerCutVars[19] = {0.0};
                         
        lContainerCutVars[0]  = lDcaXiDaughters;
        lContainerCutVars[1]  = lDcaBachToPrimVertexXi;
@@ -2478,38 +2507,39 @@ void AliAnalysisTaskCheckCascadePbPb::UserExec(Option_t *) {
        lContainerCutVars[13] = lXiTransvMom;
         
        lContainerCutVars[16] = lBestPrimaryVtxPos[2];
-       lContainerCutVars[17] = nTrackWithTPCrefitMultiplicity;  // FIXME : nTrackWithTPCrefitMultiplicity not checked for AOD ... = 0
-       lContainerCutVars[18] = lSPDTrackletsMultiplicity;       
-       lContainerCutVars[19] = lBachTPCClusters;                // FIXME : BachTPCClusters          is not available for AOD ... = -1
+       if (fCollidingSystems) lContainerCutVars[17] = lcentrality;  
+       else lContainerCutVars[17] = lSPDTrackletsMultiplicity;
+       lContainerCutVars[18] = lESDtrackMultiplicity;       
+//       lContainerCutVars[19] = lBachTPCClusters;                // FIXME : BachTPCClusters          is not available for AOD ... = -1
         
        if ( lChargeXi < 0 ) {
          lContainerCutVars[11] = lInvMassXiMinus;
-         lContainerCutVars[12] = 1.63;
+         lContainerCutVars[12] = lInvMassOmegaMinus;//1.63;
          lContainerCutVars[14] = lRapXi;
          lContainerCutVars[15] = -1.;
-//         if ( lIsBachelorPionForTPC   && lIsPosProtonForTPC    && lIsNegPionForTPC )
-       fCFContCascadeCuts->Fill(lContainerCutVars,0); // for Xi-
+         if ( lIsBachelorPionForTPC   && lIsPosProtonForTPC    && lIsNegPionForTPC )
+           fCFContCascadeCuts->Fill(lContainerCutVars,0); // for Xi-
 
-         lContainerCutVars[11] = 1.26;
+         lContainerCutVars[11] = lInvMassXiMinus;
          lContainerCutVars[12] = lInvMassOmegaMinus;
          lContainerCutVars[14] = -1.;
          lContainerCutVars[15] = lRapOmega;
-//         if( lIsBachelorKaonForTPC   && lIsPosProtonForTPC    && lIsNegPionForTPC )
-       fCFContCascadeCuts->Fill(lContainerCutVars,2); // for Omega-
+         if ( lIsBachelorKaonForTPC   && lIsPosProtonForTPC    && lIsNegPionForTPC )
+           fCFContCascadeCuts->Fill(lContainerCutVars,2); // for Omega-
        } else {
          lContainerCutVars[11] = lInvMassXiPlus;
-         lContainerCutVars[12] = 1.63;
+         lContainerCutVars[12] = lInvMassOmegaPlus;//1.63;
          lContainerCutVars[14] = lRapXi;
          lContainerCutVars[15] = -1.; 
-//         if ( lIsBachelorPionForTPC   && lIsNegProtonForTPC    && lIsPosPionForTPC )
-       fCFContCascadeCuts->Fill(lContainerCutVars,1); // for Xi+
+         if ( lIsBachelorPionForTPC   && lIsNegProtonForTPC    && lIsPosPionForTPC )
+           fCFContCascadeCuts->Fill(lContainerCutVars,1); // for Xi+
 
-         lContainerCutVars[11] = 1.26;
+         lContainerCutVars[11] = lInvMassXiPlus;//1.26;
          lContainerCutVars[12] = lInvMassOmegaPlus;
          lContainerCutVars[14] = -1.;
          lContainerCutVars[15] = lRapOmega;
-//         if( lIsBachelorKaonForTPC   && lIsNegProtonForTPC    && lIsPosPionForTPC )
-       fCFContCascadeCuts->Fill(lContainerCutVars,3); // for Omega+
+         if ( lIsBachelorKaonForTPC   && lIsNegProtonForTPC    && lIsPosPionForTPC )
+           fCFContCascadeCuts->Fill(lContainerCutVars,3); // for Omega+
        }
      } 
                         
