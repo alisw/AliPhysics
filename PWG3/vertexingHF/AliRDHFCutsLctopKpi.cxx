@@ -327,7 +327,12 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
    
   }
 
-  if(fUsePID || selectionLevel==AliRDHFCuts::kPID) returnvaluePID = IsSelectedPID(d);
+  if(selectionLevel==AliRDHFCuts::kAll ||
+     selectionLevel==AliRDHFCuts::kCandidate|| 
+     selectionLevel==AliRDHFCuts::kPID) {
+     returnvaluePID = IsSelectedPID(d);
+     fIsSelectedPID=returnvaluePID;
+     }
   //  if(fUsePID || selectionLevel==AliRDHFCuts::kPID) returnvaluePID = IsSelectedCombinedPID(d);   // to test!!
   if(returnvaluePID==0) return 0;
 
@@ -345,7 +350,7 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
 Int_t AliRDHFCutsLctopKpi::IsSelectedPID(AliAODRecoDecayHF* obj) {
 
 
-    if(!obj) {return 3;}
+    if(!fUsePID || !obj) return 3;
     Int_t okLcpKpi=0,okLcpiKp=0;
     Int_t returnvalue=0;
     Bool_t isPeriodd=fPidHF->GetOnePad();
