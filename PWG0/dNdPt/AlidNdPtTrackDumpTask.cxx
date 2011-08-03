@@ -320,7 +320,7 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
       if(!isOK) continue;
 
       // clone TPCinner has to be deleted
-      AliExternalTrackParam * tpcInnerC = (AliExternalTrackParam *)(track->GetTPCInnerParam()->Clone());
+      AliExternalTrackParam * tpcInnerC = new AliExternalTrackParam(*(track->GetTPCInnerParam()));
       if (!tpcInnerC) continue;
  
       // constrain TPCinner 
@@ -342,7 +342,7 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
       // to vertex
       //
       // clone track InnerParams has to be deleted
-      AliExternalTrackParam * trackInnerC = (AliExternalTrackParam *)(track->GetInnerParam()->Clone());
+      AliExternalTrackParam * trackInnerC =  new AliExternalTrackParam(*(track->GetInnerParam()));
       if (!trackInnerC) continue;
  
       // constrain track InnerParams 
@@ -400,7 +400,7 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
       const Double_t kStep=3; 
 
       // clone track InnerParams has to be deleted
-      AliExternalTrackParam *trackInnerC2 = (AliExternalTrackParam *)(track->GetInnerParam()->Clone());
+      AliExternalTrackParam *trackInnerC2 = new AliExternalTrackParam(*(track->GetInnerParam()));
       if (!trackInnerC2) continue;
       if(!AliTracker::PropagateTrackToBxByBz(trackInnerC2,kTPCRadius,track->GetMass(),kStep,kFALSE))
       {
@@ -421,7 +421,7 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
 
         if(friendTrack) 
 	{
-          if( (outerITSc = (AliExternalTrackParam *)(friendTrack->GetITSOut()->Clone())) ) 
+          if( (outerITSc = new AliExternalTrackParam(*friendTrack->GetITSOut())) ) 
 	  {
 	    if(AliTracker::PropagateTrackToBxByBz(outerITSc,kTPCRadius,track->GetMass(),kStep,kFALSE))
 	    {
@@ -486,7 +486,7 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
 
       AliTrackReference *refTPCIn = NULL;
       AliTrackReference *refITS = NULL;
-      AliExternalTrackParam *trackInnerC3 = (AliExternalTrackParam *)(track->GetInnerParam()->Clone());
+      AliExternalTrackParam *trackInnerC3 = new AliExternalTrackParam(*(track->GetInnerParam()));
       if(!trackInnerC3) continue;
 
       if(IsUseMCInfo()) 
