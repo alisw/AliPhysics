@@ -200,6 +200,13 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis,
       obg->SetDirectory(0);
       obg->Reset();
       vtxList->Add(obg);
+      
+      TH2D* hitmap = static_cast<TH2D*>(bg->Clone(Form("hitMapFMD%d%c", d, r)));
+      if(r == 'O') hitmap->RebinY(2);
+      hitmap->SetDirectory(0);
+      hitmap->GetZaxis()->SetTitle("");
+      hitmap->Reset();
+      vtxList->Add(hitmap);
 
       // Fill diagnostics histograms 
       for (Int_t ie = first+fNCutBins; ie <= last-fNCutBins; ie++) {
@@ -540,6 +547,18 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
   // Return:
   //    true on successs 
   //
+  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
+  const TAxis* vtxAxis = fcm.GetVertexAxis();
+  Double_t vMin    = vtxAxis->GetBinLowEdge(vtxbin);
+  Double_t vMax    = vtxAxis->GetBinUpEdge(vtxbin);
+  TList* vtxList 
+    = static_cast<TList*>(fList->FindObject(Form("%c%02d_%c%02d", 
+						vMin < 0 ? 'm' : 'p', 
+						int(TMath::Abs(vMin)), 
+						vMax < 0 ? 'm' : 'p', 
+						int(TMath::Abs(vMax)))));
+  
+  
   for (UShort_t d=1; d<=3; d++) { 
     UShort_t nr = (d == 1 ? 1 : 2);
     for (UShort_t q=0; q<nr; q++) { 
@@ -615,6 +634,9 @@ AliFMDHistCollector::Collect(const AliForwardUtil::Histos& hists,
 	}
       }
       // Remove temporary histogram 
+      TH2D* hRingSumVtx 
+	= static_cast<TH2D*>(vtxList->FindObject(Form("hitMapFMD%d%c", d, r)));
+      hRingSumVtx->Add(t);
       delete t;
     } // for r
   } // for d 
