@@ -149,59 +149,52 @@ void AliPerformanceMatch::Init(){
   }
 
   // res_y:res_z:res_phi,res_lambda:res_pt:y:z:eta:phi:pt:isRec
-  Int_t binsResolHisto[11]={100,100,100,100,100,25,50,90,30,nPtBins,2};
-  Double_t minResolHisto[11]={-1.,-1.,-0.03,-0.03,-0.2, yMin, zMin, 0., -1.5, ptMin,0};
-  Double_t maxResolHisto[11]={ 1., 1., 0.03, 0.03, 0.2, yMax, zMax, 2.*TMath::Pi(), 1.5, ptMax,2};
+  Int_t binsResolHisto[9]={100,100,100,100,100,90,30,nPtBins,2};
+  Double_t minResolHisto[9]={-1.,-1.,-0.03,-0.03,-0.2, 0., -1.5, ptMin,0};
+  Double_t maxResolHisto[9]={ 1., 1., 0.03, 0.03, 0.2, 2.*TMath::Pi(), 1.5, ptMax,2};
 
-  fResolHisto = new THnSparseF("fResolHisto","res_y:res_z:res_phi:res_lambda:res_pt:y:z:phi:eta:pt:isRec",11,binsResolHisto,minResolHisto,maxResolHisto);
-  fResolHisto->SetBinEdges(9,binsPt);
+  fResolHisto = new THnSparseF("fResolHisto","res_y:res_z:res_phi:res_lambda:res_pt:phi:eta:pt:isRec",9,binsResolHisto,minResolHisto,maxResolHisto);
+  fResolHisto->SetBinEdges(7,binsPt);
 
   fResolHisto->GetAxis(0)->SetTitle("y-y_{ref} (cm)");
   fResolHisto->GetAxis(1)->SetTitle("z-z_{ref} (cm)");
   fResolHisto->GetAxis(2)->SetTitle("#phi-#phi_{ref} (rad)");
   fResolHisto->GetAxis(3)->SetTitle("#lambda-#lambda_{ref} (rad)");
   fResolHisto->GetAxis(4)->SetTitle("(p_{T}/p_{Tref}-1)");
-  fResolHisto->GetAxis(5)->SetTitle("y_{ref} (cm)");
-  fResolHisto->GetAxis(6)->SetTitle("z_{ref} (cm)");
-  fResolHisto->GetAxis(7)->SetTitle("#phi_{ref} (rad)");
-  fResolHisto->GetAxis(8)->SetTitle("#eta_{ref}");
-  fResolHisto->GetAxis(9)->SetTitle("p_{Tref} (GeV/c)");
-  fResolHisto->GetAxis(10)->SetTitle("isReconstructed");
+  fResolHisto->GetAxis(5)->SetTitle("#phi_{ref} (rad)");
+  fResolHisto->GetAxis(6)->SetTitle("#eta_{ref}");
+  fResolHisto->GetAxis(7)->SetTitle("p_{Tref} (GeV/c)");
+  fResolHisto->GetAxis(8)->SetTitle("isReconstructed");
   fResolHisto->Sumw2();
 
   //pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:y:z:snp:tgl:1pt:isRec
-  Int_t binsPullHisto[11]={100,100,100,100,100,50,50,50,50,nPtBins,2};
-  Double_t minPullHisto[11]={-5.,-5.,-5.,-5.,-5., yMin, zMin,-1.,-2.0, ptMin,0};
-  Double_t maxPullHisto[11]={ 5., 5., 5., 5., 5., yMax, zMax, 1., 2.0, ptMax,2};
-  fPullHisto = new THnSparseF("fPullHisto","pull_y:pull_z:pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:y:z:snp:tgl:1pt:isRec",11,binsPullHisto,minPullHisto,maxPullHisto);
+  Int_t binsPullHisto[9]={100,100,100,100,100,90,30,nPtBins,2};
+  Double_t minPullHisto[9]={-5.,-5.,-5.,-5.,-5., 0.,-1.5, ptMin,0};
+  Double_t maxPullHisto[9]={ 5., 5., 5., 5., 5., 2.*TMath::Pi(), 1.5, ptMax,2};
+  fPullHisto = new THnSparseF("fPullHisto","pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:phi:eta:1pt:isRec",9,binsPullHisto,minPullHisto,maxPullHisto);
 
   fPullHisto->GetAxis(0)->SetTitle("(y-y_{ref})/#sigma");
   fPullHisto->GetAxis(1)->SetTitle("(z-z_{ref})/#sigma");
   fPullHisto->GetAxis(2)->SetTitle("(sin#phi-sin#phi_{ref})/#sigma");
   fPullHisto->GetAxis(3)->SetTitle("(tan#lambda-tan#lambda_{ref})/#sigma");
   fPullHisto->GetAxis(4)->SetTitle("(p_{Tref}/p_{T}-1)/#sigma");
-  fPullHisto->GetAxis(5)->SetTitle("y_{ref} (cm)");
-  fPullHisto->GetAxis(6)->SetTitle("z_{ref} (cm)");
-  fPullHisto->GetAxis(7)->SetTitle("sin#phi_{ref}");
-  fPullHisto->GetAxis(8)->SetTitle("tan#lambda_{ref}");
-  fPullHisto->GetAxis(9)->SetTitle("1/p_{Tref} (GeV/c)^{-1}");
-  fPullHisto->GetAxis(10)->SetTitle("isReconstructed");
+  fPullHisto->GetAxis(5)->SetTitle("#phi_{ref} (rad)");
+  fPullHisto->GetAxis(6)->SetTitle("#eta_{ref}");
+  fPullHisto->GetAxis(7)->SetTitle("1/p_{Tref} (GeV/c)^{-1}");
+  fPullHisto->GetAxis(8)->SetTitle("isReconstructed");
   fPullHisto->Sumw2();
 
   // -> has match:y:z:snp:tgl:phi:pt:ITSclusters
-  Int_t binsTrackingEffHisto[8]    = { 2,    50, 100, 50, 50, 90,           100,  7   };
-  Double_t minTrackingEffHisto[8]  = {-0.5, -25, -50, -1, -2, 0.,            0,   -0.5 };
-  Double_t maxTrackingEffHisto[8]  = { 1.5,  25,  50,  1,  2, 2*TMath::Pi(), 20,   6.5 };
+  Int_t binsTrackingEffHisto[5]    = { 2,   90,           100, 30,    7   };
+  Double_t minTrackingEffHisto[5]  = {-0.5, 0.,            0, -1.5, -0.5 };
+  Double_t maxTrackingEffHisto[5]  = { 1.5, 2*TMath::Pi(), 20, 1.5,  6.5 };
   
-  fTrackingEffHisto = new THnSparseF("fTrackingEffHisto","has match:y:z:snp:tgl:phi:pt:ITSclusters",8,binsTrackingEffHisto,minTrackingEffHisto,maxTrackingEffHisto);
+  fTrackingEffHisto = new THnSparseF("fTrackingEffHisto","has match:phi:pt:eta:ITSclusters",5,binsTrackingEffHisto,minTrackingEffHisto,maxTrackingEffHisto);
   fTrackingEffHisto->GetAxis(0)->SetTitle("IsMatching");
-  fTrackingEffHisto->GetAxis(1)->SetTitle("local y (cm)");
-  fTrackingEffHisto->GetAxis(2)->SetTitle("z (cm)");
-  fTrackingEffHisto->GetAxis(3)->SetTitle("sin(#phi)");
-  fTrackingEffHisto->GetAxis(4)->SetTitle("tan(#lambda)");
-  fTrackingEffHisto->GetAxis(5)->SetTitle("phi (rad)");
-  fTrackingEffHisto->GetAxis(6)->SetTitle("p_{T}");
-  fTrackingEffHisto->GetAxis(7)->SetTitle("number of ITS clusters");
+  fTrackingEffHisto->GetAxis(1)->SetTitle("phi (rad)");
+  fTrackingEffHisto->GetAxis(2)->SetTitle("p_{T}");
+  fTrackingEffHisto->GetAxis(3)->SetTitle("eta");
+  fTrackingEffHisto->GetAxis(4)->SetTitle("number of ITS clusters");
   fTrackingEffHisto->Sumw2();
 
   // Init cuts 
@@ -215,7 +208,7 @@ void AliPerformanceMatch::Init(){
 }
 
 //_____________________________________________________________________________
-void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliESDEvent *const esdEvent, AliStack* /*const stack*/, AliESDtrack *const esdTrack, AliESDfriendTrack *const esdFriendTrack)
+void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliESDEvent *const esdEvent, AliStack* /*const stack*/, AliESDtrack *const esdTrack)
 {
   //
   // addition to standard analysis - check if ITS stand-alone tracks have a match in the TPC
@@ -223,245 +216,98 @@ void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliESDEvent *const esdEven
   // Modified: J. Otwinowski
   if(!esdEvent) return;
   if(!esdTrack) return;
-  if(!esdFriendTrack) return;
+  //  if(!esdFriendTrack) return;
 
   // ITS stand alone tracks with SPD layers 
   if(!(esdTrack->GetStatus() & AliESDtrack::kITSpureSA)) return;
   if(!(esdTrack->GetStatus() & AliESDtrack::kITSrefit)) return;
-  if(esdTrack->GetNcls(0)<fCutsRC->GetMinNClustersITS()) return;
-  if(!esdTrack->HasPointOnITSLayer(0) && !esdTrack->HasPointOnITSLayer(1)) return;
-
+  if(esdTrack->GetNcls(0)<4) return;
+   if(!esdTrack->HasPointOnITSLayer(0) && !esdTrack->HasPointOnITSLayer(1)) return;
+  
+  const AliESDVertex* vtxESD = esdEvent->GetPrimaryVertexTracks();
+  //   const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTPC();
+ AliESDtrack* tpcTrack2 = NULL;
   Bool_t hasMatch = kFALSE;
-    for (Int_t jTrack = 0; jTrack < esdEvent->GetNumberOfTracks(); jTrack++) {
-      // loop for all those tracks and check if the corresponding TPC track is found
-      if (jTrack==iTrack) continue;
-      AliESDtrack *trackTPC = esdEvent->GetTrack(jTrack);
-      if (!trackTPC) continue;
-      if (!trackTPC->GetTPCInnerParam()) continue;
-
-      // TPC nClust/track after first tracking pass
-      if(trackTPC->GetTPCNclsIter1()<fCutsRC->GetMinNClustersTPC()) continue; 
-
-      AliExternalTrackParam *innerTPC = new AliExternalTrackParam(*(trackTPC->GetTPCInnerParam()));
-      if(!innerTPC) continue;
-
-      Double_t x[3]; trackTPC->GetXYZ(x);
-      Double_t b[3]; AliTracker::GetBxByBz(x,b);
-      Double_t dca[2],cov[3];
-      Bool_t isTPCOK = innerTPC->PropagateToDCABxByBz(esdEvent->GetPrimaryVertexSPD(),b,kVeryBig,dca,cov);
-      if(!isTPCOK) { 
-        if(innerTPC) delete innerTPC;  
-        continue;
-      }
-
-      //
-      // select primaries
-      //
-      Double_t dcaToVertex = -1;
-      if( fCutsRC->GetDCAToVertex2D() ) 
-      {
-        dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC->GetMaxDCAToVertexXY()/fCutsRC->GetMaxDCAToVertexXY()+dca[1]*dca[1]/fCutsRC->GetMaxDCAToVertexZ()/fCutsRC->GetMaxDCAToVertexZ()); 
-      }
-      if(fCutsRC->GetDCAToVertex2D() && dcaToVertex > 1) { 
-        delete innerTPC; continue; }
-      if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) { 
-        delete innerTPC; continue; }
-      if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) { 
-        delete innerTPC; continue; }
-
-      // rough checking if they match
-      /*
-      printf("+++++++++++++++++++++++++++++++++++++++++++++++ ");
-      printf("esdTrack->GetY() %e, esdTrack->GetSnp() %e, esdTrack->GetTgl() %e \n", 
-              esdTrack->GetY(), esdTrack->GetSnp(), esdTrack->GetTgl());
-      printf("innerTPC->GetY() %e, innerTPC->GetSnp() %e, innerTPC->GetTgl() %e \n", 
-              innerTPC->GetY() , innerTPC->GetSnp() , innerTPC->GetTgl());
-      */
-      if (TMath::Abs(esdTrack->GetY() - innerTPC->GetY()) > 3) { 
-        delete innerTPC; continue; 
-      }
-      if (TMath::Abs(esdTrack->GetSnp() - innerTPC->GetSnp()) > 0.2) { 
-        delete innerTPC; continue; 
-      }
-      if (TMath::Abs(esdTrack->GetTgl() - innerTPC->GetTgl()) > 0.2) { 
-        delete innerTPC; continue; 
-      }
-
-      hasMatch = kTRUE;
-      if(innerTPC) delete innerTPC;
-    }
-    //has match:y:z:snp:tgl:phi:pt:ITSclusters
-    Double_t vecTrackingEff[8] = { hasMatch,esdTrack->GetY(),esdTrack->GetZ(),esdTrack->GetSnp(),esdTrack->GetTgl(),esdTrack->Phi(), esdTrack->Pt(),esdTrack->GetITSclusters(0) };
-    fTrackingEffHisto->Fill(vecTrackingEff);
+  for (Int_t jTrack = 0; jTrack < esdEvent->GetNumberOfTracks(); jTrack++) {
+    // loop for all those tracks and check if the corresponding TPC track is found
+    if (jTrack==iTrack) continue;
+    AliESDtrack *trackTPC = esdEvent->GetTrack(jTrack);
+    if (!trackTPC) continue;
+    if (!trackTPC->GetTPCInnerParam()) continue;
+    if(!(trackTPC->GetStatus() & AliESDtrack::kTPCrefit)) continue;
     
+    // TPC nClust/track after first tracking pass
+    // if(trackTPC->GetTPCNclsIter1()<fCutsRC->GetMinNClustersTPC()) continue;
+    tpcTrack2 = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent, jTrack);
+    if(!tpcTrack2) continue;
+    if(!tpcTrack2->RelateToVertex(vtxESD,esdEvent->GetMagneticField(),100.)) { delete tpcTrack2; continue; } 
+    
+     if(!fCutsRC->AcceptTrack(tpcTrack2)) { delete tpcTrack2; continue; }
+    // check matching
+    if (TMath::Abs(esdTrack->GetY() - tpcTrack2->GetY()) > 3) { delete tpcTrack2; continue; }
+    if (TMath::Abs(esdTrack->GetSnp() - tpcTrack2->GetSnp()) > 0.2) { delete tpcTrack2; continue; }
+    if (TMath::Abs(esdTrack->GetTgl() - tpcTrack2->GetTgl()) > 0.2) { delete tpcTrack2; continue; }
+    
+    hasMatch=kTRUE;
+    break;
+  }
+  
+  FillHistograms(tpcTrack2,esdTrack,hasMatch);     
+  /*  if(tpcTrack2) { 
+    delete tpcTrack2;
+   
+    }*/
 }
 
 //_____________________________________________________________________________
-void AliPerformanceMatch::ProcessTPCITS(AliStack* /*const stack*/, AliESDtrack *const esdTrack, AliESDfriendTrack *const esdFriendTrack)
+void AliPerformanceMatch::ProcessTPCITS(AliStack* /*const stack*/, AliESDtrack *const esdTrack)
 {
   //
   // Match TPC and ITS min-bias tracks
   // at radius between detectors
   //
   if(!esdTrack) return;
-  if(!esdFriendTrack) return;
+  //   if(!esdFriendTrack) return;
    
-  //
-  // Propagate tracks to the radius between TPC-ITS
-  // using B-field and material budget
-  //
-  Double_t radius = fCutsRC->GetTPCITSMatchingRadius();
-  Double_t mass = esdTrack->GetMass();
-  Double_t step=1.0; // cm
+  Bool_t isTPC = kFALSE;
+  Bool_t isMatch = kFALSE;
 
-  //
-  // Propagate TPCinner (reference detector)
-  //
-  Bool_t isTPCOK=kFALSE;
-  AliExternalTrackParam *innerTPC=NULL;
 
-  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  esdTrack->GetImpactParametersTPC(dca,cov);
+  if(esdTrack->Charge()==0) return;
+  if(!esdTrack->GetTPCInnerParam()) return;
+  if(!(esdTrack->GetStatus()&AliESDtrack::kTPCrefit)) return;
 
-  //
-  // select primaries
-  //
-  Double_t dcaToVertex = -1;
-  if( fCutsRC->GetDCAToVertex2D() ) 
-  {
-      dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC->GetMaxDCAToVertexXY()/fCutsRC->GetMaxDCAToVertexXY() + dca[1]*dca[1]/fCutsRC->GetMaxDCAToVertexZ()/fCutsRC->GetMaxDCAToVertexZ()); 
-  }
-  if(fCutsRC->GetDCAToVertex2D() && dcaToVertex > 1) return;
-  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
-  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
+  if(!fCutsRC->AcceptTrack(esdTrack)) return;
 
-  if( (esdTrack->GetTPCNclsIter1()>fCutsRC->GetMinNClustersTPC()) && 
-      (esdTrack->GetTPCInnerParam()) &&
-      (innerTPC=new AliExternalTrackParam(*(esdTrack->GetTPCInnerParam())))) 
-  {
-     isTPCOK = AliTracker::PropagateTrackToBxByBz(innerTPC,radius,mass,step,kTRUE);
-  }
-  if(!isTPCOK) { 
-   if(innerTPC) delete innerTPC;  
-   return;
-  }
-
-  //
-  // Propagate ITSouter
-  //
-  Bool_t isITSOK=kFALSE;
-  AliExternalTrackParam *outerITS=NULL;
-
-  if( (esdTrack->GetNcls(0)>fCutsRC->GetMinNClustersITS()) &&
-      (esdFriendTrack->GetITSOut()) &&
-      (outerITS=new AliExternalTrackParam(*(esdFriendTrack->GetITSOut())))) 
-  {
-    isITSOK = AliTracker::PropagateTrackToBxByBz(outerITS,radius,mass,step,kTRUE);
-  }
-
-  //
-  // Fill histograms (TPC reference detector)
-  //
-  if(isTPCOK)
-    FillHistograms(innerTPC,outerITS,isITSOK);
-
-  if(outerITS) delete outerITS;  
-  if(innerTPC) delete innerTPC;  
-}
-
-//_____________________________________________________________________________
-void AliPerformanceMatch::ProcessTPCTRD(AliStack* /*const stack*/, AliESDtrack *const esdTrack, AliESDfriendTrack *const esdFriendTrack)
-{
-  //
-  // Match TPC and TRD min-bias tracks
-  // at radius between detectors. TPC is the reference detector.
-  //
-  if(!esdTrack) return;
-  if(!esdFriendTrack) return;
+  isTPC = kTRUE;
   
-  //
-  // Propagate tracks to the radius between TPC-TRD
-  // using B-field and material budget
-  //
-  Double_t radius = fCutsRC->GetTPCTRDMatchingRadius();
-  Double_t mass = esdTrack->GetMass();
-  Double_t step=1.0; // cm
-
-  //
-  // Propagate TPCouter (reference detector)
-  //
-  Bool_t isTPCOK=kFALSE;
-  AliExternalTrackParam *outerTPC=NULL;
-
-  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  esdTrack->GetImpactParametersTPC(dca,cov);
-
-  //
-  // select primaries
-  //
-  Double_t dcaToVertex = -1;
-  if( fCutsRC->GetDCAToVertex2D() ) 
-  {
-      dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC->GetMaxDCAToVertexXY()/fCutsRC->GetMaxDCAToVertexXY()                    + dca[1]*dca[1]/fCutsRC->GetMaxDCAToVertexZ()/fCutsRC->GetMaxDCAToVertexZ()); 
+  if( (esdTrack->GetStatus()&AliESDtrack::kITSrefit))
+    isMatch = kTRUE;
+  
+  if(isTPC){
+    Double_t vecTrackingEff[5] = { isMatch,esdTrack->Phi(), esdTrack->Pt(),esdTrack->Eta(),esdTrack->GetITSclusters(0) };
+    fTrackingEffHisto->Fill(vecTrackingEff);
   }
-  if(fCutsRC->GetDCAToVertex2D() && dcaToVertex > 1) return;
-  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
-  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
-
-  if( (esdTrack->GetTPCNclsIter1()>fCutsRC->GetMinNClustersTPC()) && 
-      (esdFriendTrack->GetTPCOut()) &&
-      (outerTPC=new AliExternalTrackParam(*(esdFriendTrack->GetTPCOut())))) 
-  {
-     isTPCOK = AliTracker::PropagateTrackToBxByBz(outerTPC,radius,mass,step,kTRUE);
-  }
-  if(!isTPCOK)  { 
-    if(outerTPC) delete outerTPC;  
-    return;
-  }
-
-  //
-  // Propagate TRDinner
-  //
-  Bool_t isTRDOK = kFALSE;
-  AliExternalTrackParam *innerTRD=NULL;
-
-  // get TRD track
-  AliTRDtrackV1 *trdTrack=NULL; //esdFriendTrack = fESDfriend->GetTrack(itrk);
-  TObject *calObject=NULL;
-  Int_t icalib = 0;
-  while((calObject = esdFriendTrack->GetCalibObject(icalib++))) {
-    if(strcmp(calObject->IsA()->GetName(),"AliTRDtrackV1") != 0) continue; // Look for the TRDtrack
-    if(!(trdTrack = dynamic_cast<AliTRDtrackV1*>(calObject))) break;
-  }
-
-  if( (trdTrack) &&
-      (trdTrack->GetNumberOfTracklets()>fCutsRC->GetMinNTrackletsTRD()) &&
-      (trdTrack->GetTracklet(0)) &&
-      (esdFriendTrack->GetTRDIn()) &&
-      (innerTRD = new AliExternalTrackParam(*(esdFriendTrack->GetTRDIn())))) 
-  {
-    isTRDOK = AliTracker::PropagateTrackToBxByBz(innerTRD,radius,mass,step,kTRUE);
-  }
-
-  //
-  // Fill histograms (TPC reference detector)
-  //
-  if(isTPCOK)
-    FillHistograms(outerTPC,innerTRD,isTRDOK);
-
-  if(outerTPC) delete outerTPC;  
-  if(innerTRD) delete innerTRD;  
 }
 
 //_____________________________________________________________________________
-void AliPerformanceMatch::FillHistograms(AliExternalTrackParam *const refParam, AliExternalTrackParam *const param, Bool_t isRec) 
+/*void AliPerformanceMatch::ProcessTPCTRD(AliStack* , AliESDtrack *const esdTrack, AliESDfriendTrack *const esdFriendTrack)
+{
+  return;
+}*/
+
+//_____________________________________________________________________________
+void AliPerformanceMatch::FillHistograms(AliESDtrack *const refParam, AliESDtrack *const param, Bool_t isRec) 
 {
   //
   // fill performance histograms 
   // (TPC always as reference)
   //
-  if(!refParam) return;
 
+  if(!refParam) return;
+  if(!param) return;
+  if(!isRec) return;
+  
   //
   // Deltas (dy,dz,dphi,dtheta,dpt)
   //
@@ -492,15 +338,17 @@ void AliPerformanceMatch::FillHistograms(AliExternalTrackParam *const refParam, 
   }
 
   // Fill histograms
-  Double_t vResolHisto[11] = {delta[0],delta[1],delta[2],delta[3],delta[4],refParam->GetY(),refParam->GetZ(),refParam->Phi(),refParam->Eta(),refParam->Pt(),isRec};
-  fResolHisto->Fill(vResolHisto);
+  Double_t vResolHisto[9] = {delta[0],delta[1],delta[2],delta[3],delta[4],refParam->Phi(),refParam->Eta(),refParam->Pt(),isRec};
+  if(fabs(pull[4])<5)
+    fResolHisto->Fill(vResolHisto);
 
-  Double_t vPullHisto[11] = {pull[0],pull[1],pull[2],pull[3],pull[4],refParam->GetY(),refParam->GetZ(),refParam->GetSnp(),refParam->GetTgl(),refParam->OneOverPt(),isRec};
-  fPullHisto->Fill(vPullHisto);
+  Double_t vPullHisto[9] = {pull[0],pull[1],pull[2],pull[3],pull[4],refParam->Phi(),refParam->Eta(),refParam->OneOverPt(),isRec};
+  if(fabs(pull[4])<5)
+    fPullHisto->Fill(vPullHisto);
 }
 
 //_____________________________________________________________________________
-void AliPerformanceMatch::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend)
+void AliPerformanceMatch::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend */*const esdFriend*/, const Bool_t bUseMC, const Bool_t /*bUseESDfriend*/)
 {
   // Process comparison information 
   //
@@ -542,12 +390,12 @@ void AliPerformanceMatch::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esd
   } 
   
   // use ESD friends
-  if(bUseESDfriend) {
+  /*  if(bUseESDfriend) {
     if(!esdFriend) {
       Error("Exec","esdFriend not available");
       return;
     }
-  }
+    }*/
 
   // trigger
   if(!bUseMC && GetTriggerClass()) {
@@ -565,20 +413,28 @@ void AliPerformanceMatch::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esd
     AliESDtrack *track = esdEvent->GetTrack(iTrack);
     if(!track) continue;
 
-    AliESDfriendTrack *friendTrack=0;
+    /*AliESDfriendTrack *friendTrack=0;
     if(bUseESDfriend) {
       friendTrack=esdFriend->GetTrack(iTrack);
       if(!friendTrack) continue;
-    }
+      }*/
 
-    if(GetAnalysisMode() == 0) ProcessTPCITS(stack,track,friendTrack);
-    else if(GetAnalysisMode() == 1) ProcessTPCTRD(stack,track,friendTrack);
-    else if(GetAnalysisMode() == 2) ProcessITSTPC(iTrack,esdEvent,stack,track,friendTrack);
+    if(GetAnalysisMode() == 0){
+      if(!IsUseTOFBunchCrossing())
+	ProcessTPCITS(stack,track);
+      else
+	if( track->GetTOFBunchCrossing(esdEvent->GetMagneticField())==0) 
+	  ProcessTPCITS(stack,track);
+    }
+    /* else if(GetAnalysisMode() == 2) ProcessTPCTRD(stack,track,friendTrack);*/
+    else if(GetAnalysisMode() == 1) {ProcessITSTPC(iTrack,esdEvent,stack,track);
+    }
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
       return;
     }
   }
+
 }
 
 //_____________________________________________________________________________
@@ -614,355 +470,62 @@ void AliPerformanceMatch::Analyse() {
   // char name[256];
   // char title[256];
 
-  if(GetAnalysisMode()==0 || GetAnalysisMode()==1) { 
+  if(GetAnalysisMode()==1 || GetAnalysisMode()==2) { 
 
-  fResolHisto->GetAxis(10)->SetRangeUser(1.0,2.0); // only reconstructed
-  fPullHisto->GetAxis(10)->SetRangeUser(1.0,2.0);  // only reconstructed
+  fResolHisto->GetAxis(8)->SetRangeUser(1.0,2.0); // only reconstructed
+  fPullHisto->GetAxis(8)->SetRangeUser(1.0,2.0);  // only reconstructed
   for(Int_t i=0; i<5; i++) 
-  {
-    for(Int_t j=5; j<10; j++) 
     {
-      //if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
-      if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(0.0,0.89); // eta window
-      else fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);
-      fResolHisto->GetAxis(9)->SetRangeUser(0.1,100.); // pt threshold
-      
-      selString = "resol";
-      AddProjection(aFolderObj, "match", fResolHisto, i, j, &selString);
-
-      /*
-      h2D = (TH2F*)fResolHisto->Projection(i,j);
-      h = AliPerformanceMatch::MakeResol(h2D,1,0,100);
-      snprintf(name,256,"h_res_%d_vs_%d",i,j);
-      h->SetName(name);
-
-      h->GetXaxis()->SetTitle(fResolHisto->GetAxis(j)->GetTitle());
-      snprintf(title,256,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(resolution)");
-      h->GetYaxis()->SetTitle(title);
-      snprintf(title,256,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
-      h->SetTitle(title);
-
-      //if(j==9) h->SetBit(TH1::kLogX);    
-      aFolderObj->Add(h);
-      */
-      /*
-      h = AliPerformanceMatch::MakeResol(h2D,1,1,100);
-      //h = (TH1F*)arr->At(1);
-      snprintf(name,256,"h_mean_res_%d_vs_%d",i,j);
-      h->SetName(name);
-
-      h->GetXaxis()->SetTitle(fResolHisto->GetAxis(j)->GetTitle());
-      snprintf(title,256,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(mean)");
-      h->GetYaxis()->SetTitle(title);
-
-      snprintf(title,256,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
-      h->SetTitle(title);
-
-      if(j==9) h->SetBit(TH1::kLogX);    
-      aFolderObj->Add(h);
-      */
-      //
-      if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(0.0,0.89); // eta window
-      else  fPullHisto->GetAxis(8)->SetRangeUser(-1.5,1.49); // eta window
-      fPullHisto->GetAxis(9)->SetRangeUser(0.1,100.);  // pt threshold
-      selString = "pull";
-      AddProjection(aFolderObj, "match", fPullHisto, i, j, &selString);
-
-      /*
-      h2D = (TH2F*)fPullHisto->Projection(i,j);
-      
-      h = AliPerformanceMatch::MakeResol(h2D,1,0,100);
-      snprintf(name,256,"h_pull_%d_vs_%d",i,j);
-      h->SetName(name);
-
-      h->GetXaxis()->SetTitle(fPullHisto->GetAxis(j)->GetTitle());
-      snprintf(title,256,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(resolution)");
-      h->GetYaxis()->SetTitle(title);
-      snprintf(title,256,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
-      h->SetTitle(title);
-
-      if(j==9) h->SetBit(TH1::kLogX);    
-      aFolderObj->Add(h);
-
-      h = AliPerformanceMatch::MakeResol(h2D,1,1,100);
-      snprintf(name,256,"h_mean_pull_%d_vs_%d",i,j);
-      h->SetName(name);
-
-      h->GetXaxis()->SetTitle(fPullHisto->GetAxis(j)->GetTitle());
-      snprintf(title,256,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(mean)");
-      h->GetYaxis()->SetTitle(title);
-      snprintf(title,256,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
-      h->SetTitle(title);
-
-      //if(j==9) h->SetBit(TH1::kLogX);    
-      aFolderObj->Add(h);
-      */
+      for(Int_t j=5; j<8; j++) 
+	{
+	  //if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
+	  if(j!=6) fResolHisto->GetAxis(6)->SetRangeUser(0.0,1.49); // eta window
+	  else fResolHisto->GetAxis(6)->SetRangeUser(-1.5,1.49);
+	  fResolHisto->GetAxis(7)->SetRangeUser(0.01,10.); // pt threshold
+	  
+	  selString = "resol";
+	  AddProjection(aFolderObj, "match", fResolHisto, i, j, &selString);
+	  
+	  
+	  if(j!=6) fPullHisto->GetAxis(6)->SetRangeUser(0.0,1.49); // eta window
+	  else  fPullHisto->GetAxis(6)->SetRangeUser(-1.5,1.49); // eta window
+	  fPullHisto->GetAxis(7)->SetRangeUser(0.01,10.);  // pt threshold
+	  selString = "pull";
+	  AddProjection(aFolderObj, "match", fPullHisto, i, j, &selString);
+	  
+	}
     }
   }
-
-  //
-  // Efficiency plots
-  //
-  for(Int_t i=5; i<10; i++) 
-  {
-    if(i!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
-    else fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);
-    fResolHisto->GetAxis(9)->SetRangeUser(0.1,100.); // pt threshold
-
-    fResolHisto->GetAxis(10)->SetRange(1,fResolHisto->GetAxis(10)->GetNbins()); // all 
-    selString = "eff_all";
-    AddProjection(aFolderObj, "match", fResolHisto, i, &selString);
-    // h = (TH1F*)fResolHisto->Projection(i);
-
-    fResolHisto->GetAxis(10)->SetRange(2,2); // only reconstructed
-    selString = "eff_rec";
-    AddProjection(aFolderObj, "match", fResolHisto, i, &selString);
-    //h2 = (TH1F*)fResolHisto->Projection(i);
-
-    /*
-    TH1F* h2c = (TH1F*)h2->Clone();
-    h2c->Divide(h2,h,1,1,"B");
- 
-    snprintf(name,256,"h_eff_%d",i);
-    h2c->SetName(name);
-
-    h2c->GetXaxis()->SetTitle(h2c->GetXaxis()->GetTitle());
-    h2c->GetYaxis()->SetTitle("efficiency");
-    h2c->SetTitle("matching effciency");
-
-    aFolderObj->Add(h2c);
-    */
-  }
-
-  }
-  
   // 
   // TPC efficiency wrt ITS
   //
-  if(GetAnalysisMode()==2) { 
+  if(GetAnalysisMode()==0) { 
     selString = "trackingeff";
     AddProjection(aFolderObj, "match", fTrackingEffHisto, 0, &selString);
-
-    // h = (TH1F*)fTrackingEffHisto->Projection(0);
-    // aFolderObj->Add(h);
-
-    for(Int_t i=1; i<7; i++) 
-    {
-      //
-      // 
-      // calculate efficiency 
-      //
-
-      // all ITS standalone tracks
-      fTrackingEffHisto->GetAxis(0)->SetRange(1,fTrackingEffHisto->GetAxis(0)->GetNbins());
-      //h = (TH1F*)fTrackingEffHisto->Projection(i);
-      selString = "trackingeff_all";
-      AddProjection(aFolderObj, "match", fTrackingEffHisto, i, &selString);
-
-      // TPC tracks which has matching with TPC
-      fTrackingEffHisto->GetAxis(0)->SetRange(2,2);
-      //h2 = (TH1F*)fTrackingEffHisto->Projection(i);
-      selString = "trackingeff_tpc";
-      AddProjection(aFolderObj, "match", fTrackingEffHisto, i, &selString);
-
-      /*
-      TH1F* h2c = (TH1F*)h2->Clone();
-      h2c->Divide(h2,h,1,1,"B");
- 
-      snprintf(name,256,"h_TPC_eff_%d",i);
-      h2c->SetName(name);
-
-      h2c->GetXaxis()->SetTitle(h2c->GetXaxis()->GetTitle());
-      h2c->GetYaxis()->SetTitle("efficiency");
-      h2c->SetTitle("TPC effciency wrt ITS");
-      
-      aFolderObj->Add(h2c);
-      */
-    }
-
-  }
-  printf("exportToFolder\n");
-  // export objects to analysis folder
-  fAnalysisFolder = ExportToFolder(aFolderObj);
-
-  // delete only TObjArray
-  if(fFolderObj) delete fFolderObj;
-  fFolderObj = aFolderObj;  
-    aFolderObj=0;  
-  
-}
-
-//_____________________________________________________________________________
-void AliPerformanceMatch::AnalyseFinal() {
-  if (!fFolderObj) {   
-      printf("AliPerformanceMatch: no projections available to analyse\n");
-      return;
-  }
-  TH1::AddDirectory(kFALSE);
-  TH1F *h=0;
-  TH1F *h2=0;
-  TH2F *h2D=0;
-  TObjArray *aFolderObj = fFolderObj;
-
-  // write results in the folder 
-  TCanvas * c = new TCanvas("Phi resol Tan","Phi resol Tan");
-  c->cd();
-
-  char name[256];
-  char title[256];
-
-  if(GetAnalysisMode()==0 || GetAnalysisMode()==1) { 
-
-  for(Int_t i=0; i<5; i++) 
-  {
-    for(Int_t j=5; j<10; j++) 
-    {
-      snprintf(name,256,"h_tpc_match_resol_%d_%d",i,j);
-      h2D = dynamic_cast<TH2F*>(aFolderObj->FindObject(name));
-      if (h2D) {
-          h = AliPerformanceMatch::MakeResol(h2D,1,0,100);
-          snprintf(name,256,"h_res_%d_vs_%d",i,j);
-          h->SetName(name);          
-          h->GetXaxis()->SetTitle(fResolHisto->GetAxis(j)->GetTitle());
-          snprintf(title,256,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(resolution)");
-          h->GetYaxis()->SetTitle(title);
-          snprintf(title,256,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
-          h->SetTitle(title);
-
-          //if(j==9) h->SetBit(TH1::kLogX);    
-          aFolderObj->Add(h);
-
-          h = AliPerformanceMatch::MakeResol(h2D,1,1,100);
-          //h = (TH1F*)arr->At(1);
-          snprintf(name,256,"h_mean_res_%d_vs_%d",i,j);
-          h->SetName(name);
-
-          h->GetXaxis()->SetTitle(fResolHisto->GetAxis(j)->GetTitle());
-          snprintf(title,256,"%s %s",fResolHisto->GetAxis(i)->GetTitle(),"(mean)");
-          h->GetYaxis()->SetTitle(title);
-
-          snprintf(title,256,"%s vs %s",title,fResolHisto->GetAxis(j)->GetTitle());
-          h->SetTitle(title);
-
-          if(j==9) h->SetBit(TH1::kLogX);    
-          aFolderObj->Add(h);
-          h=0;
-      } 
-      //
-      snprintf(name,256,"h_tpc_match_pull_%d_%d",i,j);
-      h2D = dynamic_cast<TH2F*>(aFolderObj->FindObject(name));      
-      if (h2D) {
-          h = AliPerformanceMatch::MakeResol(h2D,1,0,100);
-          snprintf(name,256,"h_pull_%d_vs_%d",i,j);
-          h->SetName(name);
-
-          h->GetXaxis()->SetTitle(fPullHisto->GetAxis(j)->GetTitle());
-          snprintf(title,256,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(resolution)");
-          h->GetYaxis()->SetTitle(title);
-          snprintf(title,256,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
-          h->SetTitle(title);
-
-          if(j==9) h->SetBit(TH1::kLogX);    
-          aFolderObj->Add(h);
-
-          h = AliPerformanceMatch::MakeResol(h2D,1,1,100);
-          snprintf(name,256,"h_mean_pull_%d_vs_%d",i,j);
-          h->SetName(name);
-
-          h->GetXaxis()->SetTitle(fPullHisto->GetAxis(j)->GetTitle());
-          snprintf(title,256,"%s %s",fPullHisto->GetAxis(i)->GetTitle(),"(mean)");
-          h->GetYaxis()->SetTitle(title);
-          snprintf(title,256,"%s vs %s",title,fPullHisto->GetAxis(j)->GetTitle());
-          h->SetTitle(title);
-
-           //if(j==9) h->SetBit(TH1::kLogX);    
-           aFolderObj->Add(h);
-           h2D=0;
-      }
-    }
-  }
-
-  //
-  // Efficiency plots
-  //
-  for(Int_t i=5; i<10; i++) 
-  {
-    snprintf(name,256,"h_tpc_match_eff_all_%d",i);
-    h = dynamic_cast<TH1F*>(aFolderObj->FindObject(name));    
-
     
-    snprintf(name,256,"h_tpc_match_eff_rec_%d",i);
-    h2 = dynamic_cast<TH1F*>(aFolderObj->FindObject(name));    
-
-    if (h && h2) {
-        TH1F* h2c = (TH1F*)h2->Clone();
-        h2c->Divide(h2,h,1,1,"B");
- 
-        snprintf(name,256,"h_eff_%d",i);
-        h2c->SetName(name);
-
-        h2c->GetXaxis()->SetTitle(h2c->GetXaxis()->GetTitle());
-        h2c->GetYaxis()->SetTitle("efficiency");
-        h2c->SetTitle("matching effciency");
-
-        aFolderObj->Add(h2c);
-        h=0;
-        h2=0;
-    }
-  }
-
-  }
-  
-  // 
-  // TPC efficiency wrt ITS
-  //
-  if(GetAnalysisMode()==2) { 
-
-    for(Int_t i=1; i<7; i++) 
-    {
-      //
-      // 
-      // calculate efficiency 
-      //
-
-      // all ITS standalone tracks                  
-      snprintf(name,256,"h_tpc_match_trackingeff_all_%d",i);
-      h = dynamic_cast<TH1F*>(aFolderObj->FindObject(name));
-  
-
+    for(Int_t i=1; i<5; i++) 
+      {
+	// all ITS standalone tracks
+	fTrackingEffHisto->GetAxis(0)->SetRange(1,fTrackingEffHisto->GetAxis(0)->GetNbins());
+	selString = "trackingeff_all";
+	AddProjection(aFolderObj, "match", fTrackingEffHisto, i, 3,&selString);
+	
       // TPC tracks which has matching with TPC
-      snprintf(name,256,"h_tpc_match_trackingeff_tpc_%d",i);
-      h2 = dynamic_cast<TH1F*>(aFolderObj->FindObject(name));
-
-      if (h && h2) {
-          TH1F* h2c = (TH1F*)h2->Clone();
-          h2c->Divide(h2,h,1,1,"B");
- 
-          snprintf(name,256,"h_TPC_eff_%d",i);
-          h2c->SetName(name);
-
-          h2c->GetXaxis()->SetTitle(h2c->GetXaxis()->GetTitle());
-          h2c->GetYaxis()->SetTitle("efficiency");
-          h2c->SetTitle("TPC effciency wrt ITS");
-
-          aFolderObj->Add(h2c);
-          h=0;
-          h2=0;
-          h2c=0;
-    }
-
+	fTrackingEffHisto->GetAxis(0)->SetRange(2,2);
+	selString = "trackingeff_tpc";
+	AddProjection(aFolderObj, "match", fTrackingEffHisto, i, 3,&selString);
+      }
   }
-  printf("exportToFolder\n");
-  // export objects to analysis folder
-  fAnalysisFolder = ExportToFolder(aFolderObj);
 
+  printf("exportToFolder\n");
+  fAnalysisFolder = ExportToFolder(aFolderObj);
+  
   // delete only TObjArray
   if(fFolderObj) delete fFolderObj;
   fFolderObj = aFolderObj;  
-    aFolderObj=0;  
-  }
+  aFolderObj=0;  
   
-}
+  }
 
 
 //_____________________________________________________________________________
@@ -992,14 +555,14 @@ TFolder* AliPerformanceMatch::ExportToFolder(TObjArray * array)
 
 	 // add objects to folder
      while(i < size) {
-	   newFolder->Add(array->At(i));
-	   i++;
-	 }
+       newFolder->Add(array->At(i));
+       i++;
+     }
   }
-
-return newFolder;
+  
+  return newFolder;
 }
-
+ 
 //_____________________________________________________________________________
 TFolder* AliPerformanceMatch::CreateFolder(TString name,TString title) { 
 // create folder for analysed histograms

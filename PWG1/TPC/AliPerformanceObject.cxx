@@ -50,7 +50,8 @@ AliPerformanceObject::AliPerformanceObject():
   fUseTrackVertex(kFALSE),
   fHighMultiplicity(kFALSE),
   fUseKinkDaughters(kTRUE),
-  fUseCentralityBin(0)
+  fUseCentralityBin(0),
+  fUseTOFBunchCrossing(kTRUE)
 {
   // constructor
 }
@@ -65,7 +66,8 @@ AliPerformanceObject::AliPerformanceObject(const char* name, const char* title, 
   fUseTrackVertex(kFALSE),
   fHighMultiplicity(highMult),
   fUseKinkDaughters(kTRUE),
-  fUseCentralityBin(0)
+  fUseCentralityBin(0),
+  fUseTOFBunchCrossing(kTRUE)
 {
   // constructor
 }

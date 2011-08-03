@@ -203,7 +203,10 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *con
     const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
     Double_t x[3]; esdTrack->GetXYZ(x);
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
-    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    Bool_t isOK = kFALSE;
+    if(fabs(b[2])>0.000001)
+      isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    //    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
     if(!isOK) return;
 
     /*
