@@ -537,7 +537,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
 
   }
   
-  fNtupleNSigma = new TNtuple("fNtupleNSigma","fNtupleNSigma","p:pt:dedx:dedx3:dedx4:dedx5:dedx6:ncls:nclspid:sign:run:eta:impactXY:impactZ:isph:pdgcode:mfl:chi2ncls");
+  fNtupleNSigma = new TNtuple("fNtupleNSigma","fNtupleNSigma","p:pt:dedx:dedx3:dedx4:dedx5:dedx6:ncls:nclspid:sign:run:eta:impactXY:impactZ:isph:pdgcode:mfl:uniqueID:chi2ncls");
   fOutput->Add(fNtupleNSigma);
   fNtupleMC = new TNtuple("fNtupleMC","fNtupleMC","ptMC:pdgcode:signMC:etaMC:yMC:isph:evSel:run");
   fOutput->Add(fNtupleMC);
@@ -559,7 +559,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
   Int_t listcode[3]={211,321,2212};//code for pi, K, P (Gev/c^2)
   Double_t dedxLay[4];
   Float_t ptMC=-999;
-  Int_t code=-999, signMC=-999,isph=-999,mfl=-999;
+  Int_t code=-999, signMC=-999,isph=-999,mfl=-999,uniqueID=-999;
   Float_t impactXY=-999, impactZ=-999;
   Int_t evSel=1;
   AliESDtrack* track;
@@ -708,8 +708,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
   }
 
 
-/////first loop on stack, before event selection, filling MC ntuple
-	
+  /////first loop on stack, before event selection, filling MC ntuple
+  
   for(Int_t imc=0; imc<nTrackMC; imc++){
     part = stack->Particle(imc);
     isph=1;    
@@ -737,6 +737,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
       Float_t codemoth = TMath::Abs(moth->GetPdgCode());
       mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
     }
+    uniqueID = part->GetUniqueID();
     
     //filling MC ntuple
     if(TMath::Abs(code)==211 || TMath::Abs(code)==321 || TMath::Abs(code)==2212){
@@ -763,7 +764,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	  else  fHistPrimMCneg[jpart]->Fill(TMath::Abs(ptMC));
 	}
       }else{
-	if(mfl==3){ // strangeness
+	if(mfl==3 && uniqueID == kPDecay){ // If a particle is not a physical primary, check if it comes from weak decay
 	  if(signMC>0) fHistSecStrMCposBefEvSel[jpart]->Fill(TMath::Abs(ptMC));
 	  else  fHistSecStrMCnegBefEvSel[jpart]->Fill(TMath::Abs(ptMC));	    
 	  if(evSel==1){
@@ -791,6 +792,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     isph=-999;
     code=-999;
     mfl=-999;
+    uniqueID=-999;
     
     track = (AliESDtrack*)fESD->GetTrack(iTrack);      
     if (!track) continue;
@@ -936,6 +938,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	    Float_t codemoth = TMath::Abs(moth->GetPdgCode());
 	    mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
 	  }
+	  uniqueID = part->GetUniqueID();
 	}
 	
 	//Filling DCA distribution with MC truth
@@ -954,7 +957,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	  }
 	  
 	  if(isph==0){//primaries in MC
-	    if(mfl==3){
+	    if(mfl==3 && uniqueID == kPDecay){
 	      if(track->GetSign()>0){
 		if(TMath::Abs(code)==listcode[0]) fHistMCSecStDCAPosPi[theBin]->Fill(impactXY);
 		if(TMath::Abs(code)==listcode[1]) fHistMCSecStDCAPosK[theBin]->Fill(impactXY);
@@ -979,7 +982,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	}
       }
     }
-    Float_t xnt[18];
+    Float_t xnt[19];
     Int_t index=0;
     xnt[index++]=(Float_t)track->GetP();
     xnt[index++]=(Float_t)track->Pt();
@@ -998,6 +1001,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     xnt[index++]=(Float_t)isph;
     xnt[index++]=(Float_t)code;
     xnt[index++]=(Float_t)mfl;
+    xnt[index++]=(Float_t)uniqueID;
     xnt[index]=(Float_t)track->GetITSchi2()/nclu;
 	  
     if(fFillNtuple) fNtupleNSigma->Fill(xnt);
@@ -1123,7 +1127,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
 	      Float_t codemoth = TMath::Abs(moth->GetPdgCode());
 	      mfl = Int_t (codemoth/ TMath::Power(10, Int_t(TMath::Log10(codemoth))));
 	    }
-	    if(mfl==3){ // strangeness
+	    uniqueID = part->GetUniqueID();
+	    if(mfl==3 && uniqueID == kPDecay){ // strangeness
 	      if(signMC>0) fHistSecStrMCposReco[jpart]->Fill(TMath::Abs(ptMC));
 	      else  fHistSecStrMCnegReco[jpart]->Fill(TMath::Abs(ptMC));	    
 	    }else{
