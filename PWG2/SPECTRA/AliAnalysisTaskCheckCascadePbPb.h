@@ -24,11 +24,10 @@ class TH3F;
 class TVector3;
 class THnSparse;
  
-class AliESDpid;
 class AliESDEvent;
 class AliPhysicsSelection;
 class AliCFContainer;
-
+class AliPIDResponse;
 
 #include "TString.h"
 
@@ -74,8 +73,8 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
         TString         fAnalysisType;                  // "ESD" or "AOD" analysis type	
         Short_t         fCollidingSystems;              // 0 = pp collisions or 1 = AA collisions
 
-        AliESDpid       *fESDpid;                       // Tool data member to manage the TPC Bethe-Bloch info
         //TPaveText       *fPaveTextBookKeeping;          // TString to store all the relevant info necessary for book keeping (v0 cuts, cascade cuts, quality cuts, ...)
+        AliPIDResponse *fPIDResponse;                   //! PID response object
 
         Bool_t          fkRerunV0CascVertexers;         // Boolean : kTRUE = relaunch both V0 + Cascade vertexers
         Bool_t          fkQualityCutZprimVtxPos;        // Boolean : kTRUE = cut on the prim.vtx  z-position
@@ -98,6 +97,7 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
         TList      *fListHistCascade;              //! List of Cascade histograms
         
         // - General histos (filled before the trigger selection)
+        TH2F    *fHistEvtsInCentralityBinsvsNtracks;  //! Events in centrality bins vs N ESDtracks
         TH1F    *fHistCascadeMultiplicityBeforeEvSel; //! Cascade multiplicity distribution
          
         // - General histos (filled for any triggered event)
@@ -244,7 +244,7 @@ class AliAnalysisTaskCheckCascadePbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascadePbPb(const AliAnalysisTaskCheckCascadePbPb&);            // not implemented
   AliAnalysisTaskCheckCascadePbPb& operator=(const AliAnalysisTaskCheckCascadePbPb&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascadePbPb, 1);
+  ClassDef(AliAnalysisTaskCheckCascadePbPb, 2);
 };
 
 #endif
