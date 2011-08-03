@@ -62,10 +62,10 @@ public:
 protected :
 
   ///Get the clusters from the esd
-  Int_t GetClustersFromEsd( const AliESDEvent * esd, TRefArray * clustersRefs );
+//  Int_t GetClustersFromEsd( const AliESDEvent * esd, TRefArray * clustersRefs );
 
   // FR: Set the appropriate readout list for each calo
-  void SetCaloReadoutList();
+//  void SetCaloReadoutList();
   
   /// inherited from AliHLTTrigger: calculate the trigger
   Int_t DoTrigger();

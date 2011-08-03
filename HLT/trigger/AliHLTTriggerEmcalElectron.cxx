@@ -106,7 +106,7 @@ Int_t AliHLTTriggerEmcalElectron::DoTrigger() {
   if (esd != NULL) {
     esd->GetStdContent();
 
-    Int_t ncc = GetClustersFromEsd(esd, fClustersRefs); 
+    Int_t ncc = 0; //GetClustersFromEsd(esd, fClustersRefs); 
     
     for (Int_t i = 0; i < ncc ; i++) {
       
@@ -154,7 +154,7 @@ Bool_t AliHLTTriggerEmcalElectron::TriggerOnEoverP(T* cluster,AliESDEvent *esd) 
 
     //GetReadoutList().Enable(AliHLTReadoutList::kPHOS);
 //     SetCaloReadoutList("EMCAL");  //FR
-    SetCaloReadoutList();  //FR
+//    SetCaloReadoutList();  //FR
     
     
     
