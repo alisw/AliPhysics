@@ -140,7 +140,8 @@ void AliCentralMultiplicityTask::UserCreateOutputObjects()
   
   TObject* obj = &fAODCentral;
   ah->AddBranch("AliAODCentralMult", &obj);
-
+  
+  
     
   fList = new TList();
   fList->SetOwner();
@@ -240,15 +241,31 @@ AliCentralMultiplicityTask::MarkEventForStore() const
 void AliCentralMultiplicityTask::FindEtaLimits()
 {
   AliCentralCorrSecondaryMap* secMap = GetManager().GetSecMap();
+  
   const TAxis& vaxis = secMap->GetVertexAxis();
-
+  
   fEtaMin.Set(vaxis.GetNbins());
   fEtaMax.Set(vaxis.GetNbins());
-
+  
+  TList* hits = new TList;
+  hits->SetOwner();
+  hits->SetName("hitMaps");
+  fList->Add(hits);
+  
   TList* secs = new TList;
   secs->SetOwner();
   secs->SetName("secondaryMaps");
   fList->Add(secs);
+  TH2D* hCoverage = new TH2D("coverage", "#eta coverage per v_{z}", 
+			     secMap->GetCorrection(UShort_t(1))->GetXaxis()->GetNbins(),
+			     secMap->GetCorrection(UShort_t(1))->GetXaxis()->GetXmin(),
+			     secMap->GetCorrection(UShort_t(1))->GetXaxis()->GetXmax(),
+			     vaxis.GetNbins(),vaxis.GetXmin(),vaxis.GetXmax());
+  hCoverage->SetDirectory(0);
+  hCoverage->SetXTitle("#eta");
+  hCoverage->SetYTitle("v_{z} [cm]");
+  hCoverage->SetZTitle("n_{bins}");
+  fList->Add(hCoverage);
   
   for (Int_t v = 1; v <= vaxis.GetNbins(); v++) { 
     TH2D* corr = secMap->GetCorrection(UShort_t(v));
@@ -262,16 +279,34 @@ void AliCentralMultiplicityTask::FindEtaLimits()
     proj->SetMarkerStyle(20);
     proj->SetMarkerColor(kBlue+1);
     secs->Add(proj);
-
+    
+    TH2D* obg = static_cast<TH2D*>(corr->Clone(Form("secCor2DFiducial%02d",v)));
+    obg->SetDirectory(0);
+    secs->Add(obg);
+    
     TH1D* after = static_cast<TH1D*>(proj->Clone(Form("secCorFiducial%02d",v)));
     after->SetDirectory(0);
     after->SetMarkerColor(kRed+1);
     secs->Add(after);
-
+    
+    TH2D* data = static_cast<TH2D*>(corr->Clone(Form("hitMap%02d",v)));
+    //d->SetTitle(Form("hitMap%02d",v));
+    data->SetTitle(Form("d^{2}N/d#eta d#phi "
+			"for %+5.1f<v_{z}<%+5.1f",
+			vaxis.GetBinLowEdge(v), vaxis.GetBinUpEdge(v)));
+    data->GetZaxis()->SetTitle("");
+    data->SetMarkerColor(kBlack);
+    data->SetMarkerStyle(1);
+    hits->Add(data);
+    
+    TH1D* hAcceptance = fManager.GetAcceptanceCorrection(v);
+    TH1D* accClone   = static_cast<TH1D*>(hAcceptance->Clone(Form("acceptance%02d",v)));
+    secs->Add(accClone);
+    
     Double_t prev = 0;
     for (Int_t e = 1; e <= proj->GetNbinsX(); e++) { 
       Double_t c = proj->GetBinContent(e);
-      if (c > .5 && TMath::Abs(c - prev) < .1) {
+      if (c > .5 /*&& TMath::Abs(c - prev) < .1*c*/) {
 	fEtaMin[v-1] = e;
 	break;
       }
@@ -281,7 +316,7 @@ void AliCentralMultiplicityTask::FindEtaLimits()
     }
     for (Int_t e = proj->GetNbinsX(); e >= 1; e--) { 
       Double_t c = proj->GetBinContent(e);
-      if (c > .5 && TMath::Abs(c - prev) < .1) {
+      if (c > .5 /*&& TMath::Abs(c - prev) < .1*c*/) {
 	fEtaMax[v-1] = e;
 	break;
       }
@@ -289,6 +324,11 @@ void AliCentralMultiplicityTask::FindEtaLimits()
       after->SetBinContent(e, 0);
       after->SetBinError(e, 0);
     }
+    
+    for (Int_t nn = fEtaMin[v-1]; nn<=fEtaMax[v-1]; nn++) { 
+      hCoverage->SetBinContent(nn,v,1);
+    }
+    
   }
 }
 
@@ -335,7 +375,14 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
 
   ProcessESD(aodHist, spdmult);
   CorrectData(aodHist, ivz);
-
+  //Producing hit maps
+  TList* hitList = static_cast<TList*>(fList->FindObject("hitMaps"));
+  TH2D* data  = 0;
+  if(hitList)
+    data = static_cast<TH2D*>(hitList->At(ivz-1));
+  if(data)
+    data->Add(&aodHist);
+  
   PostData(1,fList);
 }
 //____________________________________________________________________
