@@ -127,7 +127,7 @@ AliPoissonCalculator::Init(Int_t etaLumping, Int_t phiLumping)
   // Initialize 
   // 
   if (etaLumping > 0) SetEtaLumping(etaLumping);
-  if (phiLumping > 0) SetEtaLumping(phiLumping);
+  if (phiLumping > 0) SetPhiLumping(phiLumping);
   if (fEmptyVsTotal) return;
   
   Int_t n = fEtaLumping * fPhiLumping + 1;
