@@ -48,7 +48,7 @@ Bool_t AliTPCPerformanceSummary::fgForceTHnSparse = kFALSE;
 
 
 //_____________________________________________________________________________
-void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch, TTreeSRedirector* const pcstream, Int_t run)
+void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch,const AliPerformanceMatch* pTPCPull, TTreeSRedirector* const pcstream, Int_t run)
 {
    // 
     // Extracts performance parameters from pTPC and pTPCgain.
@@ -131,11 +131,12 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
     }
     AnalyzeGain(pTPCgain, pcstream);
     AnalyzeMatch(pTPCMatch, pcstream);
+    AnalyzePull(pTPCPull, pcstream);
     (*pcstream)<<"tpcQA"<<"\n";
 }
 
 //_____________________________________________________________________________
-void AliTPCPerformanceSummary::WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pMatch, const Char_t* outfile, Int_t run)
+void AliTPCPerformanceSummary::WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pMatch,  const AliPerformanceMatch* pPull, const Char_t* outfile, Int_t run)
 {
     //
     // Extracts performance parameters from pTPC and pTPCgain.
@@ -151,7 +152,7 @@ void AliTPCPerformanceSummary::WriteToFile(const AliPerformanceTPC* pTPC, const 
     TTreeSRedirector* pcstream = 0;
     pcstream = new TTreeSRedirector(outfile);
     if (!pcstream) return;
-    WriteToTTreeSRedirector(pTPC, pTPCgain, pMatch, pcstream, run);
+    WriteToTTreeSRedirector(pTPC, pTPCgain, pMatch, pPull, pcstream, run);
     if (pcstream) { delete pcstream; pcstream = 0; }    
     
 }
@@ -185,6 +186,7 @@ Int_t AliTPCPerformanceSummary::MakeReport(const Char_t* infile, const Char_t* o
     if (!list) { list = dynamic_cast<TList*>(f->Get("TPCQA")); }
     if (!list) { list = dynamic_cast<TList*>(f->Get("TPC_PerformanceQA/TPCQA")); }
     if (!list) { list = dynamic_cast<TList*>(f->Get("TPC_PerformanceQA")); }
+    if (!list) { list = dynamic_cast<TList*>(f->Get("ITSTPCMatch")); }
     if (!list) {
             printf("QA %s not available\n", infile);
             return -1;
@@ -192,12 +194,14 @@ Int_t AliTPCPerformanceSummary::MakeReport(const Char_t* infile, const Char_t* o
     AliPerformanceTPC* pTPC = 0;
     AliPerformanceDEdx* pTPCgain = 0; 
     AliPerformanceMatch* pTPCmatch = 0; 
+    AliPerformanceMatch* pTPCPull = 0; 
     if (list) {  pTPC = dynamic_cast<AliPerformanceTPC*>(list->FindObject("AliPerformanceTPC")); }
     if (list) {  pTPCgain = dynamic_cast<AliPerformanceDEdx*>(list->FindObject("AliPerformanceDEdxTPCInner")); }
     if (list) {  pTPCmatch = dynamic_cast<AliPerformanceMatch*>(list->FindObject("AliPerformanceMatchTPCITS")); }
+    if (list) {  pTPCPull = dynamic_cast<AliPerformanceMatch*>(list->FindObject("AliPerformanceMatchITSTPC")); }
     
     Int_t returncode = 0;
-    WriteToFile(pTPC, pTPCgain, pTPCmatch ,outfile, run);
+    WriteToFile(pTPC, pTPCgain, pTPCmatch , pTPCPull, outfile, run);
     if (f) { delete f; f=0; }
     return returncode;
 }
@@ -372,13 +376,31 @@ Int_t AliTPCPerformanceSummary::ProduceTrends(const Char_t* infilelist, const Ch
     SaveGraph(tree,"qOverPt","run",condition);
     SaveGraph(tree,"qOverPtA","run",condition);
     SaveGraph(tree,"qOverPtC","run",condition);
+
+    condition = "";
+    SaveGraph(tree,"tpcItsMatchA","run",condition);
+    SaveGraph(tree,"tpcItsMatchHighPtA","run",condition);
+    SaveGraph(tree,"tpcItsMatchC","run",condition);
+    SaveGraph(tree,"tpcItsMatchHighPtC","run",condition);
+    
+    SaveGraph(tree,"phiPull","run",condition);
+    SaveGraph(tree,"phiPullHighPt","run",condition);
+    SaveGraph(tree,"ptPull","run",condition);
+    SaveGraph(tree,"ptPullHighPt","run",condition);
+    SaveGraph(tree,"yPull","run",condition);
+    SaveGraph(tree,"yPullHighPt","run",condition);
+    SaveGraph(tree,"zPull","run",condition);
+    SaveGraph(tree,"zPullHighPt","run",condition);
+    SaveGraph(tree,"lambdaPull","run",condition);
+    SaveGraph(tree,"lambdaPullHighPt","run",condition);
+    
     
     tree->Write();
     
     out->Close();   
     if (tree) { delete tree; tree=0; }
     if (out) { delete out; out=0; }
-return 0;
+    return 0;
 }
 
 //_____________________________________________________________________________
@@ -1585,8 +1607,159 @@ Int_t AliTPCPerformanceSummary::AnalyzeChargeOverPt(const AliPerformanceTPC* pTP
     return 0;
 }
 
-void AliTPCPerformanceSummary::AnalyzeMatch(const AliPerformanceMatch* pMatch, TTreeSRedirector* const pcstream)
+Int_t AliTPCPerformanceSummary::AnalyzeMatch(const AliPerformanceMatch* pMatch, TTreeSRedirector* const pcstream)
 {
- if ((pMatch == 0) or (0 == pcstream)) { printf("this will not work anyway..."); }
- printf("funtion not implemented");
+  /* if ((pMatch == 0) or (0 == pcstream)) { printf("this will not work anyway..."); }
+     printf("funtion not implemented");*/
+
+  if (!pcstream) return 1024;
+  if (!pMatch) return 1024;
+  static Double_t tpcItsMatchA = 0;
+  static Double_t tpcItsMatchHighPtA = 0; 
+  static Double_t tpcItsMatchC = 0;
+  static Double_t tpcItsMatchHighPtC = 0; 
+
+  TH2 *h2D = 0;
+  TH2 *h2D1 = 0;
+  if(pMatch->GetHistos()->FindObject("h_tpc_match_trackingeff_all_2_3") &&
+     pMatch->GetHistos()->FindObject("h_tpc_match_trackingeff_tpc_2_3")){
+    h2D = dynamic_cast<TH2*>(pMatch->GetHistos()->FindObject("h_tpc_match_trackingeff_all_2_3"));
+    h2D1 = dynamic_cast<TH2*>(pMatch->GetHistos()->FindObject("h_tpc_match_trackingeff_tpc_2_3"));
+
+    h2D->GetXaxis()->SetRangeUser(0,1.5);
+    h2D1->GetXaxis()->SetRangeUser(0,1.5);
+
+    Double_t entries,entries1;
+    entries = h2D->GetEffectiveEntries();
+    entries1 = h2D1->GetEffectiveEntries();
+    if(entries > 0)
+      tpcItsMatchA = entries1/entries;
+
+    h2D->GetYaxis()->SetRangeUser(4.0,20.);
+    h2D1->GetYaxis()->SetRangeUser(4.0,20.);
+    entries = h2D->GetEffectiveEntries();
+    entries1 = h2D1->GetEffectiveEntries();
+    if(entries > 0)
+      tpcItsMatchHighPtA = entries1/entries;
+
+
+    h2D->GetXaxis()->SetRangeUser(-1.5,0);
+    h2D1->GetXaxis()->SetRangeUser(-1.5,0);
+    h2D->GetYaxis()->SetRangeUser(0.0,20.);
+    h2D1->GetYaxis()->SetRangeUser(0.0,20.);
+
+    entries = h2D->GetEffectiveEntries();
+    entries1 = h2D1->GetEffectiveEntries();
+    if(entries > 0)
+      tpcItsMatchC = entries1/entries;
+
+    h2D->GetXaxis()->SetRangeUser(4.0,20.);
+    h2D1->GetXaxis()->SetRangeUser(4.0,20.);
+    entries = h2D->GetEffectiveEntries();
+    entries1 = h2D1->GetEffectiveEntries();
+    if(entries > 0)
+      tpcItsMatchHighPtC = entries1/entries;
+
+    h2D->GetXaxis()->SetRangeUser(-1.5,1.5);
+    h2D1->GetXaxis()->SetRangeUser(-1.5,1.5);
+    h2D->GetYaxis()->SetRangeUser(0.0,20.);
+    h2D1->GetYaxis()->SetRangeUser(0.0,20.);
+    //    delete h2D;
+    //    delete h2D1;
+  }
+
+  (*pcstream)<<"tpcQA"<<
+    "tpcItsMatchA="<< tpcItsMatchA<<
+    "tpcItsMatchHighPtA="<< tpcItsMatchHighPtA<<
+    "tpcItsMatchC="<< tpcItsMatchC<<
+    "tpcItsMatchHighPtC="<< tpcItsMatchHighPtC;
+
+  return 0;
+}
+
+Int_t AliTPCPerformanceSummary::AnalyzePull(const AliPerformanceMatch* pPull, TTreeSRedirector* const pcstream)
+{
+  /* if ((pPull == 0) or (0 == pcstream)) { printf("this will not work anyway..."); }
+     printf("funtion not implemented");*/
+
+  if (!pcstream) return 2048;
+  if (!pPull) return 2048;
+  static Double_t phiPull = 0;
+  static Double_t phiPullHighPt = 0; 
+  static Double_t ptPull = 0;
+  static Double_t ptPullHighPt = 0; 
+  static Double_t yPull = 0;
+  static Double_t yPullHighPt = 0; 
+  static Double_t zPull = 0;
+  static Double_t zPullHighPt = 0; 
+  static Double_t lambdaPull = 0;
+  static Double_t lambdaPullHighPt = 0; 
+
+  TH2 *h2D1 = 0;
+  if(pPull->GetHistos()->FindObject("h_tpc_match_pull_2_7")){
+    h2D1 = dynamic_cast<TH2*>(pPull->GetHistos()->FindObject("h_tpc_match_pull_2_7"));
+    phiPull = h2D1->GetMean(2);
+    h2D1->SetAxisRange(0.0,1.0/5.0,"X");
+    phiPullHighPt = h2D1->GetMean(2);
+    h2D1->SetAxisRange(0.0,10.0,"X");
+    //    delete h2D1;
+  }
+
+  TH2 *h2D2 = 0;
+  if(pPull->GetHistos()->FindObject("h_tpc_match_pull_4_7")){
+    h2D2 = dynamic_cast<TH2*>(pPull->GetHistos()->FindObject("h_tpc_match_pull_4_7"));
+    ptPull = h2D2->GetMean(2);
+
+    h2D2->SetAxisRange(0.0,1.0/5.0,"X");
+    ptPullHighPt = h2D2->GetMean(2);
+    h2D2->SetAxisRange(0.0,10.0,"X");
+    //    delete h2D2;
+  }
+
+  TH2 *h2D3 = 0;
+  if(pPull->GetHistos()->FindObject("h_tpc_match_pull_0_7")){
+    h2D3 = dynamic_cast<TH2*>(pPull->GetHistos()->FindObject("h_tpc_match_pull_0_7"));
+    yPull = h2D3->GetMean(2);
+
+    h2D3->SetAxisRange(0.0,1.0/5.0,"X");
+    yPullHighPt = h2D3->GetMean(2);
+    h2D3->SetAxisRange(0.0,10.0,"X");
+    //    delete h2D3;
+  }
+
+  TH2 *h2D4 = 0;
+  if(pPull->GetHistos()->FindObject("h_tpc_match_pull_1_7")){
+    h2D4 = dynamic_cast<TH2*>(pPull->GetHistos()->FindObject("h_tpc_match_pull_1_7"));
+    zPull = h2D4->GetMean(2);
+
+    h2D4->SetAxisRange(0.0,1.0/5.0,"X");
+    zPullHighPt = h2D4->GetMean(2);
+    h2D4->SetAxisRange(0.0,10.0,"X");
+    //    delete h2D4;
+ }
+
+  TH2 *h2D5 = 0;
+  if(pPull->GetHistos()->FindObject("h_tpc_match_pull_3_7")){
+    h2D5 = dynamic_cast<TH2*>(pPull->GetHistos()->FindObject("h_tpc_match_pull_3_7"));
+    lambdaPull = h2D5->GetMean(2);
+
+    h2D5->SetAxisRange(0.0,1.0/5.0,"X");
+    lambdaPullHighPt = h2D5->GetMean(2);
+    h2D5->SetAxisRange(0.0,10.0,"X");
+    //    delete h2D5;
+}
+
+  (*pcstream)<<"tpcQA"<<
+    "phiPull="<< phiPull<<
+    "phiPullHighPt="<< phiPullHighPt<<
+    "ptPull="<< ptPull<<
+    "ptPullHighPt="<< ptPullHighPt<<
+    "yPull="<< yPull<<
+    "yPullHighPt="<< yPullHighPt<<
+    "zPull="<< zPull<<
+    "zPullHighPt="<< zPullHighPt<<
+    "lambdaPull="<< lambdaPull<<
+    "lambdaPullHighPt="<< lambdaPullHighPt;
+    
+  return 0;
 }

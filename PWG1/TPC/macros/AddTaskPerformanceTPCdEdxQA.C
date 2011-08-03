@@ -65,6 +65,7 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   }
   task->SetUseMCInfo(bUseMCInfo);
   task->SetUseESDfriend(bUseESDfriend);
+  //  task->SetUseTerminate(kFALSE);
 
   //
   // Add task to analysis manager
@@ -81,10 +82,10 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
     pRecInfoCutsTPC->SetMaxDCAToVertexZ(3.0);
     pRecInfoCutsTPC->SetRequireSigmaToVertex(kFALSE);
     pRecInfoCutsTPC->SetRequireTPCRefit(kFALSE);
-    pRecInfoCutsTPC->SetAcceptKinkDaughters(kTRUE);
+    pRecInfoCutsTPC->SetAcceptKinkDaughters(kFALSE);
     pRecInfoCutsTPC->SetMinNClustersTPC(70);
-    pRecInfoCutsTPC->SetMaxChi2PerClusterTPC(1000000.);
-    pRecInfoCutsTPC->SetDCAToVertex2D(kFALSE);
+    pRecInfoCutsTPC->SetMaxChi2PerClusterTPC(4.);
+    pRecInfoCutsTPC->SetDCAToVertex2D(kTRUE);
 
     pRecInfoCutsTPC->SetHistogramsOn(kFALSE); 
   } 
@@ -119,8 +120,33 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   }
   pCompTPC0->SetAliRecInfoCuts(pRecInfoCutsTPC);
   pCompTPC0->SetAliMCInfoCuts(pMCInfoCuts);
-  pCompTPC0->SetUseTrackVertex(kFALSE);
+  //  pCompTPC0->SetUseTrackVertex(kFALSE);
+  pCompTPC0->SetUseTrackVertex(kTRUE);
   pCompTPC0->SetUseHLT(kFALSE);
+  pCompTPC0->SetUseTOFBunchCrossing(kTRUE);
+  
+  //
+  // TPC ITS match
+  //
+  AliPerformanceMatch *pCompMatch1 = new AliPerformanceMatch("AliPerformanceMatchTPCITS","AliPerformanceMatchTPCITS",0,kFALSE); 
+  if(!pCompMatch1) {
+    Error("AddTaskPerformanceMatch", "Cannot create AliPerformanceMatchTPCITS");
+  }
+  pCompMatch1->SetAliRecInfoCuts(pRecInfoCutsTPC);
+  pCompMatch1->SetAliMCInfoCuts(pMCInfoCuts);
+  pCompMatch1->SetUseTOFBunchCrossing(kTRUE);
+
+
+  //
+  // ITS TPC match
+  //
+  AliPerformanceMatch *pCompMatch2 = new AliPerformanceMatch("AliPerformanceMatchITSTPC","AliPerformanceMatchITSTPC",1,kFALSE); 
+  if(!pCompMatch2) {
+    Error("AddTaskPerformanceMatch", "Cannot create AliPerformanceMatchITSTPC");  }
+  pCompMatch2->SetAliRecInfoCuts(pRecInfoCutsTPC);
+  pCompMatch2->SetAliMCInfoCuts(pMCInfoCuts);
+  pCompMatch2->SetUseTOFBunchCrossing(kTRUE);
+
   //
   // dEdx
   //
@@ -130,7 +156,8 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   }
   pCompDEdx3->SetAliRecInfoCuts(pRecInfoCutsTPC);
   pCompDEdx3->SetAliMCInfoCuts(pMCInfoCuts);
-  pCompDEdx3->SetUseTrackVertex(kFALSE);
+  //pCompDEdx3->SetUseTrackVertex(kFALSE);
+  pCompDEdx3->SetUseTrackVertex(kTRUE);
 
 
   //
@@ -138,9 +165,13 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   //
   if(!bUseMCInfo) { 
     pCompTPC0->SetTriggerClass(triggerClass);
+    pCompMatch1->SetTriggerClass(triggerClass);
+    pCompMatch2->SetTriggerClass(triggerClass);
     pCompDEdx3->SetTriggerClass(triggerClass);
   }
   task->AddPerformanceObject( pCompTPC0 );
+  task->AddPerformanceObject( pCompMatch1 );
+  task->AddPerformanceObject( pCompMatch2 );
   task->AddPerformanceObject( pCompDEdx3 );
 
   //

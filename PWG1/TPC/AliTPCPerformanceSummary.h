@@ -22,9 +22,9 @@ class AliTPCPerformanceSummary
     AliTPCPerformanceSummary() {} // default contructor 
     virtual ~AliTPCPerformanceSummary() {} // destructor
     
-    static void WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch, TTreeSRedirector* const pcstream, Int_t run = -1); // called by WriteToFile
+    static void WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch, const AliPerformanceMatch* pTPCPull, TTreeSRedirector* const pcstream, Int_t run = -1); // called by WriteToFile
     
-    static void WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pMatch, const Char_t* outfile, Int_t run = -1); // calles by MakeReport
+    static void WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pMatch,const AliPerformanceMatch* pPull, const Char_t* outfile, Int_t run = -1); // calles by MakeReport
     
     // the two key functions
     static Int_t MakeReport(const Char_t* infile, const Char_t* outfile, Int_t run);
@@ -50,7 +50,9 @@ class AliTPCPerformanceSummary
     static Int_t AnalyzeDriftNeg(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
     static Int_t AnalyzeGain(const AliPerformanceDEdx* pTPCgain, TTreeSRedirector* const pcstream);
     static Int_t AnalyzeEvent(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
-    static void AnalyzeMatch(const AliPerformanceMatch* pMatch, TTreeSRedirector* const pcstream);
+    static Int_t AnalyzeMatch(const AliPerformanceMatch* pMatch, TTreeSRedirector* const pcstream);
+    
+    static Int_t AnalyzePull(const AliPerformanceMatch* pPull, TTreeSRedirector* const pcstream);
     
     static Int_t AnalyzePt(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
 
