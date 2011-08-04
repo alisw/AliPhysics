@@ -33,6 +33,7 @@ ClassImp(AliAnalysisTaskBF)
 AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name) 
 : AliAnalysisTaskSE(name), 
   fBalance(0),
+  fShuffledBalance(0),
   fList(0),
   fListBF(0),
   fHistEventStats(0),
@@ -59,11 +60,14 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fPtMin(0.3),
   fPtMax(1.5),
   fEtaMin(-0.8),
-  fEtaMax(-0.8){
+  fEtaMax(-0.8),
+  fDCAxyCut(2.4),
+  fDCAzCut(3.2){
   // Constructor
   for(Int_t i = 0; i < NUMBER_OF_ANALYSES; i++){
     for (Int_t j = 0; j < 3; j++){
       fHistBF[i][j] = NULL;
+      fHistShuffledBF[i][j] = NULL;
     }
   }
 
@@ -72,8 +76,9 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(1, AliBalance::Class());
-  DefineOutput(2, TList::Class());
+  DefineOutput(2, AliBalance::Class());
   DefineOutput(3, TList::Class());
+  DefineOutput(4, TList::Class());
 }
 
 
@@ -86,6 +91,12 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
     fBalance->SetAnalysisLevel("ESD");
     fBalance->SetNumberOfBins(-1,9);
     fBalance->SetInterval(-1,0.,0.9);
+  }
+  if(!fShuffledBalance) {
+    fShuffledBalance = new AliBalance();
+    fShuffledBalance->SetAnalysisLevel("ESD");
+    fShuffledBalance->SetNumberOfBins(-1,9);
+    fShuffledBalance->SetInterval(-1,0.,0.9);
   }
 
   //QA list
@@ -148,6 +159,11 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
       hname+=j;
       fHistBF[i][j] = new TH1F(hname,hname,fBalance->GetNumberOfBins(i),fBalance->GetP2Start(i),fBalance->GetP2Stop(i));
       fListBF->Add(fHistBF[i][j]);
+      hname = "ShuffledBF";
+      hname+=i;
+      hname+=j;
+      fHistShuffledBF[i][j] = new TH1F(hname,hname,fShuffledBalance->GetNumberOfBins(i),fShuffledBalance->GetP2Start(i),fShuffledBalance->GetP2Stop(i));
+      fListBF->Add(fHistShuffledBF[i][j]);
     }
   }
   fHistN = new TH1F("fN","fN",2,0,1);
@@ -155,8 +171,8 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
 
   // Post output data.
   //PostData(1, fBalance);
-  PostData(2, fList);
-  PostData(3, fListBF);
+  PostData(3, fList);
+  PostData(4, fListBF);
   
 }
 
@@ -166,7 +182,11 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
   // Called for each event
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
-  TObjArray *array = new TObjArray();
+  TObjArray *array         = new TObjArray();
+
+  // vector holding the charges of all tracks
+  vector<Int_t> chargeVectorShuffle;   // this will be shuffled
+  vector<Int_t> chargeVector;          // to remember the original charge ( set back after shuffling )
   
   //ESD analysis
   if(gAnalysisLevel == "ESD") {
@@ -242,8 +262,13 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		      
 		      // fill BF array
 		      array->Add(track);
+
+		      // fill charge vector
+		      chargeVector.push_back(track->Charge());
+		      chargeVectorShuffle.push_back(track->Charge());
+      
 		      
-		  } //track loop
+		    } //track loop
 		  }//Vz cut
 		}//Vy cut
 	      }//Vx cut
@@ -274,32 +299,21 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       //Centrality stuff (centrality in AOD header)
       AliAODHeader *aodHeader = gAOD->GetHeader();
       Float_t fCentrality     = aodHeader->GetCentralityP()->GetCentralityPercentile("V0M");
-   
+      //cout<< aodHeader->GetCentralityP()->GetCentralityPercentile("V0M")<<" "<<aodHeader->GetCentralityP()->GetCentralityPercentile("CL1")<<" "<<aodHeader->GetCentralityP()->GetCentralityPercentile("TRK")<<endl;
       // take only events inside centrality class
       if(fCentrality > fCentralityPercentileMin && fCentrality < fCentralityPercentileMax){
 
 	// centrality QA (V0M)
 	fHistV0M->Fill(gAOD->GetVZEROData()->GetMTotV0A(), gAOD->GetVZEROData()->GetMTotV0C());
       
-
-	//cout<<gAOD->GetNumberOfVertices()<<endl;
 	const AliAODVertex *vertex = gAOD->GetPrimaryVertex();
-	//const AliAODVertex *vertex1 = gAOD->GetPrimaryVertexSPD();
-	// vertex->Print();
-	// vertex1->Print();
 
 	if(vertex) {
 	  Double32_t fCov[6];
-	  Double32_t fPosition[3];
-	  Double32_t fChi2 = vertex->GetChi2();
-	  Int_t      nCont = vertex->GetNContributors();
-	  vertex->GetXYZ(fPosition);
 	  vertex->GetCovarianceMatrix(fCov);
-	  
-	  const AliESDVertex *esdVertex = new AliESDVertex(fPosition, fCov, fChi2, nCont);
-	  
+	  	  
 	  if(vertex->GetNContributors() > 0) {
-	    //if(vertex->GetZRes() != 0) {
+	    if(fCov[5] != 0) {
 	      fHistEventStats->Fill(3); //events with a proper vertex
 	      if(TMath::Abs(vertex->GetX()) < fVxMax) {
 		if(TMath::Abs(vertex->GetY()) < fVyMax) {
@@ -324,38 +338,27 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		      fHistTrackStats->Fill(aodTrack->GetFilterMap());
 		      if(!aodTrack->TestFilterBit(128)) continue;
 
-		      Float_t p[3];
-		      Float_t b[2];
-		      Float_t bCov[3];
-		      aodTrack->GetPosition(p);
-		      //AliExternalTrackParam exParam;
-		      AliESDtrack esdTrack( aodTrack );
-		      esdTrack.RelateToVertex(esdVertex,gAOD->GetMagneticField(),100);
-		      //esdTrack.RelateToVertexTPC(esdVertex,gAOD->GetMagneticField(),100,&exParam);
-		      //AliExternalTrackParam* outer = (AliExternalTrackParam*)aodTrack->GetOuterParam();
-		      //if(outer) outer->PropagateToDCA(vertex,gAOD->GetMagneticField(),1000,b,bCov);
-		      //else continue;
-      		      //cout<<"   ___  "<<b[0]<<" "<<b[1]<<endl;
-
-
-		      //only for QA --> Remove?
-		      esdTrack.GetImpactParameters(b,bCov);
-		      if (bCov[0]<=0 || bCov[2]<=0) {
-		      AliDebug(1, "Estimated b resolution lower or equal zero!");
-		      	bCov[0]=0; bCov[2]=0;
-		      }
-
 		      Float_t pt  = aodTrack->Pt();
 		      Float_t eta = aodTrack->Eta();
+
+		      Float_t DCAxy = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
+		      Float_t DCAz  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+		      
 		      
 		      // Kinematics cuts from ESD track cuts
 		      if( pt < fPtMin || pt > fPtMax)      continue;
 		      if( eta < fEtaMin || eta > fEtaMax)  continue;
-		      		      
+
+		      // Extra DCA cuts (for systematic studies [!= -1])
+		      if( fDCAxyCut != -1 && fDCAxyCut != -1){
+			if(TMath::Sqrt((DCAxy*DCAxy)/(fDCAxyCut*fDCAxyCut)+(DCAz*DCAz)/(fDCAzCut*fDCAzCut)) > 1 ){
+			  continue;  // 2D cut
+			}
+		      }
+
 		      // fill QA histograms
 		      fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
-		      fHistDCA->Fill(b[1],b[0]);
-		      //fHistDCA->Fill(p[1],p[0]);
+		      fHistDCA->Fill(DCAz,DCAxy);
 		      fHistChi2->Fill(aodTrack->Chi2perNDF());
 		      fHistPt->Fill(pt);
 		      fHistEta->Fill(eta);
@@ -364,11 +367,16 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		      // fill BF array
 		      array->Add(aodTrack);
 
+		      // fill charge vector
+		      chargeVector.push_back(aodTrack->Charge());
+		      chargeVectorShuffle.push_back(aodTrack->Charge());
+      
+
 		    } //track loop
 		  }//Vz cut
 		}//Vy cut
 	      }//Vx cut
-	      //}//proper vertex resolution
+	    }//proper vertex resolution
 	  }//proper number of contributors
 	}//vertex object valid
       }//centrality
@@ -392,10 +400,48 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	continue;
       }
       array->Add(track);
+
+
+      // fill charge vector
+      chargeVector.push_back(track->Charge());
+      chargeVectorShuffle.push_back(track->Charge());
+
     } //track loop
   }//MC analysis
   
+
+  // calculate balance function
   fBalance->CalculateBalance(array);
+
+
+
+  // shuffle charges
+  random_shuffle( chargeVectorShuffle.begin(), chargeVectorShuffle.end() );
+ 
+  for(Int_t iArray = 0; iArray < array->GetEntries(); iArray++){
+
+    // setting the charge in this way only possible for AOD tracks 
+    // --> shuffling only for AODs up to now
+    if(gAnalysisLevel == "AOD") {
+      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(array->At(iArray));
+      aodTrack->SetCharge(chargeVectorShuffle.at(iArray));
+    }
+  }
+	
+  //calculate shuffled balance function
+  fShuffledBalance->CalculateBalance(array);
+
+  // set back the charges!
+  for(Int_t iArray = 0; iArray < array->GetEntries(); iArray++){
+
+    // setting the charge in this way only possible for AOD tracks 
+    // --> shuffling only for AODs up to now
+    if(gAnalysisLevel == "AOD") {
+      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(array->At(iArray));
+      aodTrack->SetCharge(chargeVector.at(iArray));
+    }
+  }
+
   
   delete array;
   
@@ -409,16 +455,27 @@ void  AliAnalysisTaskBF::FinishTaskOutput(){
   if (!fBalance) {
     Printf("ERROR: fBalance not available");
     return;
+  }  
+  if (!fShuffledBalance) {
+    Printf("ERROR: fShuffledBalance not available");
+    return;
   }
   
   for(Int_t a = 0; a < NUMBER_OF_ANALYSES; a++){
     for(Int_t iBin = 1; iBin <= fBalance->GetNumberOfBins(a); iBin++){
 
-      //Printf("%d %d  ->   %f",a,iBin,fBalance->GetNnn(a,iBin-1));
+      //Printf("%d %d  ->   %f",a,iBin,fShuffledBalance->GetNpn(a,iBin-1));
+      //Printf("%d %d  ->   %f",a,iBin,fBalance->GetNpn(a,iBin-1));
 
-	fHistBF[a][0]->SetBinContent(iBin,fBalance->GetNnn(a,iBin-1));
-	fHistBF[a][1]->SetBinContent(iBin,fBalance->GetNpn(a,iBin-1));
-	fHistBF[a][2]->SetBinContent(iBin,fBalance->GetNpp(a,iBin-1));
+      fHistBF[a][0]->SetBinContent(iBin,fBalance->GetNnn(a,iBin-1));
+      fHistBF[a][1]->SetBinContent(iBin,fBalance->GetNpn(a,iBin-1));
+      fHistBF[a][2]->SetBinContent(iBin,fBalance->GetNpp(a,iBin-1));	
+      
+      fHistShuffledBF[a][0]->SetBinContent(iBin,fShuffledBalance->GetNnn(a,iBin-1));
+      fHistShuffledBF[a][1]->SetBinContent(iBin,fShuffledBalance->GetNpn(a,iBin-1));
+      fHistShuffledBF[a][2]->SetBinContent(iBin,fShuffledBalance->GetNpp(a,iBin-1));
+      
+      
     }
   }
   fHistN->SetBinContent(1,fBalance->GetNn());

@@ -26,8 +26,10 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   virtual void   FinishTaskOutput();
   virtual void   Terminate(Option_t *);
 
-  void SetAnalysisObject(AliBalance *const analysis) {
-    fBalance = analysis;}
+  void SetAnalysisObject(AliBalance *const analysis, AliBalance *const analysisShuffled = NULL) {
+    fBalance         = analysis;
+    fShuffledBalance = analysisShuffled;
+  }
   void SetAnalysisCutObject(AliESDtrackCuts *const trackCuts) {
     fESDtrackCuts = trackCuts;}
   void SetVertexDiamond(Double_t vx, Double_t vy, Double_t vz) {
@@ -42,6 +44,10 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
     fEtaMax = etamax;
 
   }
+  void SetExtraDCACutsAOD(Double_t DCAxy, Double_t DCAz){
+    fDCAxyCut  = DCAxy;
+    fDCAzCut = DCAz;
+  }
  
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
@@ -55,6 +61,7 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
 
  private:
   AliBalance *fBalance; //BF object
+  AliBalance *fShuffledBalance; //BF object (shuffled)
   TList *fList; //fList object
   TList *fListBF; //fList object
 
@@ -73,6 +80,7 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   TH2F *fHistV0M;
 
   TH1F *fHistBF[NUMBER_OF_ANALYSES][3];
+  TH1F *fHistShuffledBF[NUMBER_OF_ANALYSES][3];
   TH1F *fHistN;
 
   AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
@@ -91,6 +99,9 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   Double_t fPtMax;//only used for AODs
   Double_t fEtaMin;//only used for AODs
   Double_t fEtaMax;//only used for AODs
+
+  Double_t fDCAxyCut;//only used for AODs
+  Double_t fDCAzCut;//only used for AODs
 
   AliAnalysisTaskBF(const AliAnalysisTaskBF&); // not implemented
   AliAnalysisTaskBF& operator=(const AliAnalysisTaskBF&); // not implemented
