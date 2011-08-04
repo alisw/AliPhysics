@@ -266,6 +266,8 @@ void AliVZERO::Hits2Digits(){
   // Creates the digits
   dig->Exec("");
 
+  // deletes the digitizer
+  delete dig;
 }
 
 //_____________________________________________________________________________
@@ -279,6 +281,8 @@ void AliVZERO::Hits2SDigits(){
   // Creates the sdigits
   dig->Exec("");
 
+  // deletes the digitizer
+  delete dig;
 }
 
 //_____________________________________________________________________________
