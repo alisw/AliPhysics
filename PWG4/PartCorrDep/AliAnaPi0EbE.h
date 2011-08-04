@@ -75,6 +75,14 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
 	Float_t      GetHistoShowerShapeMax()              const { return fHistoSSMax ; }	
   
   
+  void         SetHistoDiffTimeRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoDiffTimeBins  = n ; fHistoDiffTimeMax   = max ; fHistoDiffTimeMin   = min              ; }
+	
+	Int_t        GetHistoDiffTimeBins()             const { return fHistoDiffTimeBins ; }
+	Float_t      GetHistoDiffTimeMin()              const { return fHistoDiffTimeMin ; }
+	Float_t      GetHistoDiffTimeMax()              const { return fHistoDiffTimeMax ; }	
+  
+  
  private:
   
   anaTypes fAnaType; //Select analysis type
@@ -94,6 +102,10 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   Float_t        fHistoSSMax;        // Shower Shape parameter position maximum value
   Float_t        fHistoSSMin;        // Shower Shape parameter position minimum value
 	  
+  Int_t          fHistoDiffTimeBins; // Difference cluster pair time parameter histogram number of bins
+  Float_t        fHistoDiffTimeMax;  // Difference cluster pair time parameter position maximum value
+  Float_t        fHistoDiffTimeMin;  // Difference cluster pair time parameter position minimum value  
+  
   TH1F         * fhPtPi0  ;          //! Number of identified  pi0 vs pT
   TH1F         * fhEPi0   ;          //! Number of identified  pi0 vs E
   TH3F         * fhEEtaPhiPi0  ;     //! E vs eta phi of identified  pi0 
@@ -127,7 +139,7 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   TH2F         * fhEtaMCPi0;         //! eta of identified pi0, coming from pi0
   
   
-  ClassDef(AliAnaPi0EbE,4)
+  ClassDef(AliAnaPi0EbE,5)
 } ;
 
 
