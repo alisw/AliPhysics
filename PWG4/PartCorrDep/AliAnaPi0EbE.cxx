@@ -54,6 +54,7 @@ AliAnaPartCorrBaseClass(),  fAnaType(kIMCalo),fCalorimeter(""),
 fMinDist(0.),fMinDist2(0.),fMinDist3(0.),	
 fInputAODGammaConv(0x0),fInputAODGammaConvName(""),
 fHistoSSBins(100), fHistoSSMax(5), fHistoSSMin(0),
+fHistoDiffTimeBins(800), fHistoDiffTimeMax(400), fHistoDiffTimeMin(-400),
 fhPtPi0(0), fhEPi0(0), fhEEtaPhiPi0(0),
 fhEDispPi0(0), fhEDispBkg(0), 
 fhELambda0Pi0(0), fhELambda0Bkg(0),
@@ -204,12 +205,12 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhELambdaPi0EtaBor->SetXTitle("E (GeV)");
     outputContainer->Add(fhELambdaPi0EtaBor) ; 
     
-    fhClusterPairDiffTimeE = new TH2F("hClusterPairDiffTimeE","cluster pair time difference vs E",nptbins,ptmin,ptmax, 200,-100,100);
+    fhClusterPairDiffTimeE = new TH2F("hClusterPairDiffTimeE","cluster pair time difference vs E",nptbins,ptmin,ptmax, fHistoDiffTimeBins,fHistoDiffTimeMin,fHistoDiffTimeMax);
     fhClusterPairDiffTimeE->SetXTitle("E_{pair} (GeV)");
     fhClusterPairDiffTimeE->SetYTitle("#Delta t (ns)");
     outputContainer->Add(fhClusterPairDiffTimeE);
     
-    fhClusterPairDiffTimeAsy = new TH2F("hClusterPairDiffTime","cluster pair time difference vs pair asymmetry",100,0,1, 200,-100,100);
+    fhClusterPairDiffTimeAsy = new TH2F("hClusterPairDiffTime","cluster pair time difference vs pair asymmetry",100,0,1, fHistoDiffTimeBins,fHistoDiffTimeMin,fHistoDiffTimeMax);
     fhClusterPairDiffTimeAsy->SetXTitle("Asymmetry");
     fhClusterPairDiffTimeAsy->SetYTitle("#Delta t (ns)");
     outputContainer->Add(fhClusterPairDiffTimeAsy);    
