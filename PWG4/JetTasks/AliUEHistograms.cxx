@@ -872,8 +872,8 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
       Float_t detaabs = TMath::Abs(deta);
       
       // optimization
-      if (detaabs > 0.05)
-	continue;
+/*      if (detaabs > 0.05)
+	continue;*/
       
       Bool_t cutPassed = kTRUE;
       
@@ -882,7 +882,7 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
 
       for (Double_t rad=0.8; rad<2.51; rad+=0.01) 
       {
-	Float_t dphistar = phi1 - phi2 + TMath::ASin(charge1 * 0.075 * rad / pt1) - TMath::ASin(charge2 * 0.075 * rad / pt2);
+	Float_t dphistar = phi1 - phi2 - TMath::ASin(charge1 * 0.075 * rad / pt1) + TMath::ASin(charge2 * 0.075 * rad / pt2);
 	Float_t dphistarabs = TMath::Abs(dphistar);
 	
 	if (dphistarabs < dphistarminabs)
