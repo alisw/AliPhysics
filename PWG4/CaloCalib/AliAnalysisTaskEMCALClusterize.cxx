@@ -68,7 +68,7 @@ ClassImp(AliAnalysisTaskEMCALClusterize)
 //________________________________________________________________________
 AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name) 
   : AliAnalysisTaskSE(name)
-  , fGeom(0), fGeomName("EMCAL_FIRSTYEARV1"),  fGeomMatrixSet(kFALSE), fLoadGeomMatrices(kFALSE)
+  , fGeom(0), fGeomName("EMCAL_COMPLETEV1"),   fGeomMatrixSet(kFALSE), fLoadGeomMatrices(kFALSE)
   , fCalibData(0),       fPedestalData(0),     fOCDBpath("raw://"),    fAccessOCDB(kFALSE)
   , fDigitsArr(0),       fClusterArr(0),       fCaloClusterArr(0)
   , fRecParam(0),        fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE) 
@@ -95,7 +95,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 //________________________________________________________________________
 AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskEMCALClusterize")
-  , fGeom(0), fGeomName("EMCAL_FIRSTYEARV1"),   fGeomMatrixSet(kFALSE), fLoadGeomMatrices(kFALSE)
+  , fGeom(0), fGeomName("EMCAL_COMPLETEV1"),    fGeomMatrixSet(kFALSE), fLoadGeomMatrices(kFALSE)
   , fCalibData(0),        fPedestalData(0),     fOCDBpath("raw://"),    fAccessOCDB(kFALSE)  
   , fDigitsArr(0),        fClusterArr(0),       fCaloClusterArr(0)
   , fRecParam(0),         fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE)
@@ -619,7 +619,9 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     TBranch *branch = clustersTree->GetBranch("EMCALECARP");
     branch->SetAddress(&fClusterArr);
     branch->GetEntry(0);
-
+    if(fCaloClusterArr->GetEntriesFast() > 0) {
+      printf("AliAnalysisTaskEMCALClusterize::UserExec() Non empty cluster array before filling!!!");
+    }
     RecPoints2Clusters(fDigitsArr, fClusterArr, fCaloClusterArr);
     
     //Reset the array with second labels for this event
@@ -642,7 +644,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   //Put the new clusters in the AOD list
   //-------------------------------------------------------------------------------------
   
-  Int_t kNumberOfCaloClusters   = fCaloClusterArr->GetEntries();
+  Int_t kNumberOfCaloClusters   = fCaloClusterArr->GetEntriesFast();
   //printf("New clusters %d, Org clusters %d\n",kNumberOfCaloClusters, nClustersOrg);
   for(Int_t i = 0; i < kNumberOfCaloClusters; i++){
     AliAODCaloCluster *newCluster = (AliAODCaloCluster *) fCaloClusterArr->At(i);
