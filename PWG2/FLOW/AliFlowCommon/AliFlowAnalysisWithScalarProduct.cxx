@@ -240,8 +240,19 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   fHistList->Add(fHistProQaQbReImNorm); 
   
   fHistProNonIsotropicTermsQ = new TProfile("FlowPro_NonIsotropicTermsQ_SP","FlowPro_NonIsotropicTermsQ_SP", 2, 0.5, 2.5,"s");
-  fHistProNonIsotropicTermsQ->GetXaxis()->SetBinLabel(1,"#LT#LTsin(#phi_{a+b})#GT#GT");
-  fHistProNonIsotropicTermsQ->GetXaxis()->SetBinLabel(2,"#LT#LTcos(#phi_{a+b})#GT#GT");
+  if(!strcmp(fTotalQvector->Data(),"QaQb"))
+  {
+   fHistProNonIsotropicTermsQ->GetXaxis()->SetBinLabel(1,"#LT#LTsin(#phi_{a+b})#GT#GT");
+   fHistProNonIsotropicTermsQ->GetXaxis()->SetBinLabel(2,"#LT#LTcos(#phi_{a+b})#GT#GT");
+  } else if(!strcmp(fTotalQvector->Data(),"Qa"))
+    {
+     fHistProNonIsotropicTermsQ->GetXaxis()->SetBinLabel(1,"#LT#LTsin(#phi_{a})#GT#GT");
+     fHistProNonIsotropicTermsQ->GetXaxis()->SetBinLabel(2,"#LT#LTcos(#phi_{a})#GT#GT");
+    } else if(!strcmp(fTotalQvector->Data(),"Qb"))
+      {
+       fHistProNonIsotropicTermsQ->GetXaxis()->SetBinLabel(1,"#LT#LTsin(#phi_{b})#GT#GT");
+       fHistProNonIsotropicTermsQ->GetXaxis()->SetBinLabel(2,"#LT#LTcos(#phi_{b})#GT#GT");    
+      }
   fHistList->Add(fHistProNonIsotropicTermsQ); 
   
   TString rpPoi[2] = {"RP","POI"};
@@ -482,20 +493,24 @@ void AliFlowAnalysisWithScalarProduct::FillSP(AliFlowEventSimple* anEvent) {
 
 	//get total Q vector = the sum of subevent a and subevent b
 	AliFlowVector vQ;
+	Double_t dMQ = 0.; // multiplicity in Q-vector 
 	if(!strcmp(fTotalQvector->Data(),"QaQb"))
 	{
 	 vQ = vQa + vQb;
+	 dMQ = dMa + dMb;
 	} else if(!strcmp(fTotalQvector->Data(),"Qa"))
 	  {
 	   vQ = vQa; 
+   	   dMQ = dMa;
 	  } else if(!strcmp(fTotalQvector->Data(),"Qb"))
 	    {
 	     vQ = vQb; 
+     	     dMQ = dMb;
 	    }
 
 	//needed to correct for non-uniform acceptance:
-	fHistProNonIsotropicTermsQ->Fill(1.,vQ.Y()/(dMa+dMb),dMa+dMb);
-	fHistProNonIsotropicTermsQ->Fill(2.,vQ.X()/(dMa+dMb),dMa+dMb);
+	fHistProNonIsotropicTermsQ->Fill(1.,vQ.Y()/dMQ,dMQ);
+	fHistProNonIsotropicTermsQ->Fill(2.,vQ.X()/dMQ,dMQ);
 
 	//weight the Q vectors for the subevents by the multiplicity
 	//Note: Weight Q only in the particle loop when it is clear 
