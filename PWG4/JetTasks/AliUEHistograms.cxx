@@ -822,7 +822,7 @@ void AliUEHistograms::Reset()
       GetUEHist(i)->Reset();
 }
 
-TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
+TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks, Float_t bSign)
 {
   // takes the input list <tracks> and applies two-track efficiency cuts
   // returns the tracks which pass the cuts (if a pair fails the cut, both are removed)
@@ -835,7 +835,7 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
     fTwoTrackDistancePt[0] = new TH3F("fTwoTrackDistancePt[0]", ";#Delta#eta;#Delta#varphi^{*}_{min};#Delta p_{T}", 100, -0.05, 0.05, 400, -0.2, 0.2, 20, 0, 10);
     fTwoTrackDistancePt[1] = (TH3F*) fTwoTrackDistancePt[0]->Clone("fTwoTrackDistancePt[1]");
   }
-  
+
   TObjArray* accepted = new TObjArray(*tracks);
 
   // Eta() is extremely time consuming, therefore cache it for the inner loop here:
@@ -849,10 +849,6 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
     Float_t phi1 = particle1->Phi();
     Float_t pt1 = particle1->Pt();
     Float_t charge1 = particle1->Charge();
-    
-    // analyze region for IAA paper
-    if (pt1 < 8 || pt1 > 15)
-      continue;
     
     for (Int_t j=0; j<tracks->GetEntriesFast(); j++)
     {
@@ -872,8 +868,8 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
       Float_t detaabs = TMath::Abs(deta);
       
       // optimization
-/*      if (detaabs > 0.05)
-	continue;*/
+      if (detaabs > 0.05 && (pt1 < 8 || pt1 > 15))
+	continue;
       
       Bool_t cutPassed = kTRUE;
       
@@ -882,7 +878,7 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
 
       for (Double_t rad=0.8; rad<2.51; rad+=0.01) 
       {
-	Float_t dphistar = phi1 - phi2 - TMath::ASin(charge1 * 0.075 * rad / pt1) + TMath::ASin(charge2 * 0.075 * rad / pt2);
+	Float_t dphistar = phi1 - phi2 - TMath::ASin(charge1 * 0.075 * bSign * rad / pt1) + TMath::ASin(charge2 * 0.075 * bSign * rad / pt2);
 	Float_t dphistarabs = TMath::Abs(dphistar);
 	
 	if (dphistarabs < dphistarminabs)
@@ -899,9 +895,15 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks)
 	//Printf("%d %d failed: %.3f %.3f; %.3f %.3f %.4f; %.2f %.2f (%p %p)", i, j, eta[i], eta[j], phi1, phi2, dphistarminabs, pt1, pt2, particle1, particle2);
       }
 
-      fTwoTrackDistancePt[0]->Fill(deta, dphistarmin, pt2);
+      Float_t fillPt = pt2;
+      
+      // analyze region for IAA paper
+      if (pt1 < 8 || pt1 > 15)
+	fillPt = 0.25;
+    
+      fTwoTrackDistancePt[0]->Fill(deta, dphistarmin, fillPt);
       if (cutPassed)
-	fTwoTrackDistancePt[1]->Fill(deta, dphistarmin, pt2);
+	fTwoTrackDistancePt[1]->Fill(deta, dphistarmin, fillPt);
       else
       {
 	// remove tracks from list
