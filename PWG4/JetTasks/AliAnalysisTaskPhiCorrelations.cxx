@@ -546,7 +546,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   // Two-track effect study
   if (fTwoTrackEfficiencyStudy)
   {
-    TObjArray* reduced = fHistos->ApplyTwoTrackCut(tracks);
+    Float_t bSign = (fESD->GetMagneticField() > 0) ? 1 : -1;
+    TObjArray* reduced = fHistos->ApplyTwoTrackCut(tracks, bSign);
     //if (centrality >= 0)
     //  fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, reduced, 0, weight);
     delete reduced;
