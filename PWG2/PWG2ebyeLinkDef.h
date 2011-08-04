@@ -14,6 +14,7 @@
 #pragma link C++ class AliLRCPtN+;
 #pragma link C++ class AliLRCPtPt+;
 #pragma link C++ class AliLRCProcess+;
+#pragma link C++ class AliLRCBase+;
 
 #pragma link C++ class AliEbyEFluctuationAnalysisTask+;
 

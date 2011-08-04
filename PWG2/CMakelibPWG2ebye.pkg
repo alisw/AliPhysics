@@ -29,6 +29,7 @@
 set ( SRCS   
     EBYE/AliAnalysisTaskBF.cxx 
     EBYE/AliBalance.cxx 
+    EBYE/LRC/AliLRCBase.cxx
     EBYE/LRC/AliAnalysisTaskLRC.cxx 
     EBYE/LRC/AliLRCAnalysis.cxx 
     EBYE/LRC/AliLRCFit.cxx 

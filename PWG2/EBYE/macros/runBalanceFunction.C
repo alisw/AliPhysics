@@ -15,6 +15,16 @@ Int_t binlast = 8;  //where do we stop numbering bins
 const Int_t numberOfCentralityBins = 9;
 Float_t centralityArray[numberOfCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.}; // in centrality percentile
 
+//Systematic studies
+const Int_t numberOfSyst = 13;
+Float_t vZ[numberOfSyst]     = {10.,12.,6.,8.,10.,10.,10.,10.,10.,10.,10.,10.,10.};     // global Vertex Z cut
+Float_t DCAxy[numberOfSyst]  = {-1.,2.4,2.4,2.4,2.2,2.0,1.8,2.4,2.4,2.4,2.4,2.4,2.4};   // DCA xy cut (afterburner, -1 = w/o additional cut)
+Float_t DCAz[numberOfSyst]   = {-1.,3.2,3.2,3.2,3.0,2.8,2.6,3.2,3.2,3.2,3.2,3.2,3.2};   // DCA z cut (afterburner, -1 = w/o additional cut)
+Float_t ptMin[numberOfSyst]  = {0.3,0.3,0.3,0.3,0.3,0.3,0.3,1.5,5.0,0.3,0.3,0.3,0.3};   // pt cuts
+Float_t ptMax[numberOfSyst]  = {1.5,1.5,1.5,1.5,1.5,1.5,1.5,5.0,10.0,10.0,1.5,1.5,1.5}; // pt cuts
+Float_t etaMin[numberOfSyst] = {-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-0.8,-1.0,-0.6,-0.4}; // eta cuts
+Float_t etaMax[numberOfSyst] = {0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,1.0,0.6,0.4};   // eta cuts
+
 //______________________________________________________________________________
 void runBalanceFunction(
          const char* runtype = "local", // local, proof or grid
@@ -27,7 +37,7 @@ void runBalanceFunction(
          const Long64_t firstentry = 0, // for local and proof mode, ignored in grid mode
          const char *proofdataset = "/alice/data/LHC10c_000120821_p1", // path to dataset on proof cluster, for proof analysis
          const char *proofcluster = "alice-caf.cern.ch", // which proof cluster to use in proof mode
-         const char *taskname = "BF_AOD_49_bunch" // sets name of grid generated macros
+         const char *taskname = "BF_Syst_Test" // sets name of grid generated macros
          )
 {
     // check run type
@@ -56,6 +66,7 @@ void runBalanceFunction(
     // add aliroot indlude path
     gROOT->ProcessLine(".include $PWD/.");
     gROOT->ProcessLine(Form(".include %s/include",gSystem->ExpandPathName("$ALICE_ROOT")));
+    gROOT->ProcessLine(Form(".include %s/PWG2/EBYE",gSystem->ExpandPathName("$ALICE_ROOT")));
     gROOT->SetStyle("Plain");
 
     // analysis manager
@@ -127,9 +138,9 @@ void runBalanceFunction(
     //physSel->AddCollisionTriggerClass("+CINT1B-ABCE-NOPF-ALL");// #3119 #769");
                 
     // create task
-    // copile standalone stuff
+    // compile standalone stuff
     //gROOT->LoadMacro("AliBalance.cxx++g");
-    //gROOT->LoadMacro("AliAnalysisTaskB.cxx++g");
+    //gROOT->LoadMacro("AliAnalysisTaskBF.cxx++g");
 
     //Add the centrality determination task (only on ESD level)
     if(!bAOD){
@@ -143,14 +154,18 @@ void runBalanceFunction(
 
     //Add the BF task (all centralities)
     gROOT->LoadMacro("AddTaskBalanceCentralityTrain.C"); 
-    AliAnalysisTaskBF *task = AddTaskBalanceCentralityTrain(0,100);
+    AliAnalysisTaskBF *task = AddTaskBalanceCentralityTrain(0,100,vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0]);
     
     //Add the BFG task (different centralities)
     for (Int_t i=binfirst; i<binlast+1; i++) {
       Float_t lowCentralityBinEdge = centralityArray[i];
       Float_t highCentralityBinEdge = centralityArray[i+1];
-      Printf("\nWagon for centrality bin %i: %.0f-%.0f",i,lowCentralityBinEdge,highCentralityBinEdge);
-      AddTaskBalanceCentralityTrain(lowCentralityBinEdge,highCentralityBinEdge);
+
+      // For systematic studies ( A train of centrality trains )
+      for(Int_t j = 0; j < 1/*numberOfSyst*/; j++){
+	Printf("\nWagon for centrality bin %i: %.0f-%.0f (systematics %d)",i,lowCentralityBinEdge,highCentralityBinEdge,j);
+	AddTaskBalanceCentralityTrain(lowCentralityBinEdge,highCentralityBinEdge,vZ[j],DCAxy[j],DCAz[j],ptMin[j],ptMax[j],etaMin[j],etaMax[j]);
+      }
     } 
    
         
@@ -175,7 +190,7 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bAOD, Int_t bunchN, const char *taskn
     // Set versions of used packages
     plugin->SetAPIVersion("V1.1x");
     plugin->SetROOTVersion("v5-28-00d");
-    plugin->SetAliROOTVersion("v4-21-27-AN");
+    plugin->SetAliROOTVersion("v4-21-30-AN");
 
     // Declare input data to be processed.
 
@@ -360,16 +375,16 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bAOD, Int_t bunchN, const char *taskn
     // Declare alien output directory. Relative to working directory.
     plugin->SetGridOutputDir("out"); // In this case will be $HOME/taskname/out
 
-    // Declare the analysis source files names separated by blancs. To be compiled runtime
+   // Declare the analysis source files names separated by blancs. To be compiled runtime
     // using ACLiC on the worker nodes.
-    // plugin->SetAnalysisSource("AliBalance.cxx AliAnalysisTaskBF.cxx");
+    //plugin->SetAnalysisSource("AliBalance.cxx AliAnalysisTaskBF.cxx");
 
     // Declare all libraries (other than the default ones for the framework. These will be
     // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
     //plugin->AddIncludePath("-I.");
-    //plugin->SetAdditionalLibs("AliBalance.cxx AliBalance.h AliAnalysisTaskBF.cxx AliAnalysisTaskBF.h");
+    plugin->SetAdditionalLibs("libPWG2ebye.so");
 
-    // Declare the output file names separated by blancs.
+     // Declare the output file names separated by blancs.
     // (can be like: file.root or file.root@ALICE::Niham::File)
     // To only save certain files, use SetDefaultOutputs(kFALSE), and then
     // SetOutputFiles("list.root other.filename") to choose which files to save
