@@ -50,14 +50,14 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   fIsPidOwner(0)
 {
   //constructor with 0 parameters , look at default settings 
-//   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
-//   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
-//     fClusterPerPadrow[tPad] = new list<Int_t>();
-//   }
-//   fSharedList = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
-//   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
-//     fSharedList[tPad] = new list<Int_t>();
-//   }
+  //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
+  //   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+  //     fClusterPerPadrow[tPad] = new list<Int_t>();
+  //   }
+  //   fSharedList = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
+  //   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+  //     fSharedList[tPad] = new list<Int_t>();
+  //   }
 }
 
 //__________________
@@ -93,25 +93,25 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
     fSelect = new AliPhysicsSelection();
   fTrackType = aReader.fTrackType;
   fEstEventMult = aReader.fEstEventMult;
-fEventTrig = aReader.fEventTrig; //trigger
+  fEventTrig = aReader.fEventTrig; //trigger
 
-//   fEventFriend = aReader.fEventFriend;
-//   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
-//   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
-//     fClusterPerPadrow[tPad] = new list<Int_t>();
-//     list<Int_t>::iterator iter;
-//     for (iter=aReader.fClusterPerPadrow[tPad]->begin(); iter!=aReader.fClusterPerPadrow[tPad]->end(); iter++) {
-//       fClusterPerPadrow[tPad]->push_back(*iter);
-//     }
-//   }
-//   fSharedList = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
-//   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
-//     fSharedList[tPad] = new list<Int_t>();
-//     list<Int_t>::iterator iter;
-//     for (iter=aReader.fSharedList[tPad]->begin(); iter!=aReader.fSharedList[tPad]->end(); iter++) {
-//       fSharedList[tPad]->push_back(*iter);
-//     }
-//   }
+  //   fEventFriend = aReader.fEventFriend;
+  //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
+  //   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+  //     fClusterPerPadrow[tPad] = new list<Int_t>();
+  //     list<Int_t>::iterator iter;
+  //     for (iter=aReader.fClusterPerPadrow[tPad]->begin(); iter!=aReader.fClusterPerPadrow[tPad]->end(); iter++) {
+  //       fClusterPerPadrow[tPad]->push_back(*iter);
+  //     }
+  //   }
+  //   fSharedList = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
+  //   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+  //     fSharedList[tPad] = new list<Int_t>();
+  //     list<Int_t>::iterator iter;
+  //     for (iter=aReader.fSharedList[tPad]->begin(); iter!=aReader.fSharedList[tPad]->end(); iter++) {
+  //       fSharedList[tPad]->push_back(*iter);
+  //     }
+  //   }
 }
 //__________________
 AliFemtoEventReaderESDChain::~AliFemtoEventReaderESDChain()
@@ -119,16 +119,16 @@ AliFemtoEventReaderESDChain::~AliFemtoEventReaderESDChain()
   //Destructor
   delete fEvent;
 
-//   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
-//     fClusterPerPadrow[tPad]->clear();
-//     delete fClusterPerPadrow[tPad];
-//   }
-//   delete [] fClusterPerPadrow;
-//   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
-//     fSharedList[tPad]->clear();
-//     delete fSharedList[tPad];
-//   }
-//   delete [] fSharedList;
+  //   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+  //     fClusterPerPadrow[tPad]->clear();
+  //     delete fClusterPerPadrow[tPad];
+  //   }
+  //   delete [] fClusterPerPadrow;
+  //   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+  //     fSharedList[tPad]->clear();
+  //     delete fSharedList[tPad];
+  //   }
+  //   delete [] fSharedList;
   if (fSelect) delete fSelect;
 }
 
@@ -155,38 +155,38 @@ AliFemtoEventReaderESDChain& AliFemtoEventReaderESDChain::operator=(const AliFem
     fSelect = new AliPhysicsSelection();
   //  fEventFriend = aReader.fEventFriend;
   
-//   if (fClusterPerPadrow) {
-//     for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
-//       fClusterPerPadrow[tPad]->clear();
-//       delete fClusterPerPadrow[tPad];
-//     }
-//     delete [] fClusterPerPadrow;
-//   }
+  //   if (fClusterPerPadrow) {
+  //     for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+  //       fClusterPerPadrow[tPad]->clear();
+  //       delete fClusterPerPadrow[tPad];
+  //     }
+  //     delete [] fClusterPerPadrow;
+  //   }
   
-//   if (fSharedList) {
-//     for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
-//       fSharedList[tPad]->clear();
-//       delete fSharedList[tPad];
-//     }
-//     delete [] fSharedList;
-//   }
+  //   if (fSharedList) {
+  //     for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+  //       fSharedList[tPad]->clear();
+  //       delete fSharedList[tPad];
+  //     }
+  //     delete [] fSharedList;
+  //   }
 
-//   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
-//   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
-//     fClusterPerPadrow[tPad] = new list<Int_t>();
-//     list<Int_t>::iterator iter;
-//     for (iter=aReader.fClusterPerPadrow[tPad]->begin(); iter!=aReader.fClusterPerPadrow[tPad]->end(); iter++) {
-//       fClusterPerPadrow[tPad]->push_back(*iter);
-//     }
-//   }
-//   fSharedList = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
-//   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
-//     fSharedList[tPad] = new list<Int_t>();
-//     list<Int_t>::iterator iter;
-//     for (iter=aReader.fSharedList[tPad]->begin(); iter!=aReader.fSharedList[tPad]->end(); iter++) {
-//       fSharedList[tPad]->push_back(*iter);
-//     }
-//   }
+  //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
+  //   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+  //     fClusterPerPadrow[tPad] = new list<Int_t>();
+  //     list<Int_t>::iterator iter;
+  //     for (iter=aReader.fClusterPerPadrow[tPad]->begin(); iter!=aReader.fClusterPerPadrow[tPad]->end(); iter++) {
+  //       fClusterPerPadrow[tPad]->push_back(*iter);
+  //     }
+  //   }
+  //   fSharedList = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
+  //   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+  //     fSharedList[tPad] = new list<Int_t>();
+  //     list<Int_t>::iterator iter;
+  //     for (iter=aReader.fSharedList[tPad]->begin(); iter!=aReader.fSharedList[tPad]->end(); iter++) {
+  //       fSharedList[tPad]->push_back(*iter);
+  //     }
+  //   }
   
   return *this;
 }
@@ -325,35 +325,35 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   nofTracks=fEvent->GetNumberOfTracks();
   int realnofTracks=0;//number of track which we use ina analysis
 
-//   // Clear the shared cluster list
-//   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
-//     fClusterPerPadrow[tPad]->clear();
-//   }
-//   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
-//     fSharedList[tPad]->clear();
-//   }
+  //   // Clear the shared cluster list
+  //   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+  //     fClusterPerPadrow[tPad]->clear();
+  //   }
+  //   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
+  //     fSharedList[tPad]->clear();
+  //   }
 
 
-//   for (int i=0;i<nofTracks;i++) {
-//     const AliESDtrack *esdtrack=fEvent->GetTrack(i);//getting next track
+  //   for (int i=0;i<nofTracks;i++) {
+  //     const AliESDtrack *esdtrack=fEvent->GetTrack(i);//getting next track
 
-//     list<Int_t>::iterator tClustIter;
+  //     list<Int_t>::iterator tClustIter;
 
-//     Int_t tTrackIndices[AliESDfriendTrack::kMaxTPCcluster];
-//     Int_t tNClusters = esdtrack->GetTPCclusters(tTrackIndices);
-//     for (int tNcl=0; tNcl<AliESDfriendTrack::kMaxTPCcluster; tNcl++) {
-//       if (tTrackIndices[tNcl] >= 0) {
-// 	tClustIter = find(fClusterPerPadrow[tNcl]->begin(), fClusterPerPadrow[tNcl]->end(), tTrackIndices[tNcl]);
-// 	if (tClustIter == fClusterPerPadrow[tNcl]->end()) {
-// 	  fClusterPerPadrow[tNcl]->push_back(tTrackIndices[tNcl]);
-// 	}
-// 	else {
-// 	  fSharedList[tNcl]->push_back(tTrackIndices[tNcl]);
-// 	}
-//       }
-//     }
+  //     Int_t tTrackIndices[AliESDfriendTrack::kMaxTPCcluster];
+  //     Int_t tNClusters = esdtrack->GetTPCclusters(tTrackIndices);
+  //     for (int tNcl=0; tNcl<AliESDfriendTrack::kMaxTPCcluster; tNcl++) {
+  //       if (tTrackIndices[tNcl] >= 0) {
+  // 	tClustIter = find(fClusterPerPadrow[tNcl]->begin(), fClusterPerPadrow[tNcl]->end(), tTrackIndices[tNcl]);
+  // 	if (tClustIter == fClusterPerPadrow[tNcl]->end()) {
+  // 	  fClusterPerPadrow[tNcl]->push_back(tTrackIndices[tNcl]);
+  // 	}
+  // 	else {
+  // 	  fSharedList[tNcl]->push_back(tTrackIndices[tNcl]);
+  // 	}
+  //       }
+  //     }
       
-//   }
+  //   }
 
   int tNormMult = 0;
   int tNormMultPos = 0;
@@ -407,17 +407,17 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       }
       
       hbtEvent->SetZDCEMEnergy(tTotalPt);
-//       if (esdtrack->GetStatus() & AliESDtrack::kTPCrefit)
-// 	if (esdtrack->GetTPCNcls() > 80) 
-// 	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 6.0) 
-// 	    if (esdtrack->GetConstrainedParam())
-// 	      if (fabs(esdtrack->GetConstrainedParam()->Eta()) < 0.5)
-// 		if (esdtrack->GetConstrainedParam()->Pt() < 1.0) {
-// 		  if (esdtrack->GetSign() > 0)
-// 		    tNormMultPos++;
-// 		  else if (esdtrack->GetSign() < 0)
-// 		    tNormMultNeg--;
-// 		}
+      //       if (esdtrack->GetStatus() & AliESDtrack::kTPCrefit)
+      // 	if (esdtrack->GetTPCNcls() > 80) 
+      // 	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 6.0) 
+      // 	    if (esdtrack->GetConstrainedParam())
+      // 	      if (fabs(esdtrack->GetConstrainedParam()->Eta()) < 0.5)
+      // 		if (esdtrack->GetConstrainedParam()->Pt() < 1.0) {
+      // 		  if (esdtrack->GetSign() > 0)
+      // 		    tNormMultPos++;
+      // 		  else if (esdtrack->GetSign() < 0)
+      // 		    tNormMultNeg--;
+      // 		}
 
       // If reading ITS-only tracks, reject all with TPC
       if (fTrackType == kITSOnly) {
@@ -440,7 +440,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       //0-electron 1-muon 2-pion 3-kaon 4-proton 5-photon 6-pi0 7-neutron 8-kaon0 9-eleCon   
       //we use only 5 first
       double esdpid[5];
-//       esdtrack->GetESDpid(esdpid);
+      //       esdtrack->GetESDpid(esdpid);
       esdtrack->GetTPCpid(esdpid);
       trackCopy->SetPidProbElectron(esdpid[0]);
       trackCopy->SetPidProbMuon(esdpid[1]);
@@ -463,14 +463,14 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 
       trackCopy->SetTofExpectedTimes(tTOF-esdpid[2], tTOF-esdpid[3], tTOF-esdpid[4]);
 
-//////  TPC ////////////////////////////////////////////
+      //////  TPC ////////////////////////////////////////////
 
       float nsigmaTPCK=-1000.;                                                        
       float nsigmaTPCPi=-1000.;                                                        
       float nsigmaTPCP=-1000.;                                                        
           
   
-      if (esdtrack->IsOn(AliESDtrack::kTPCpid)){
+      if ((fESDpid) && (esdtrack->IsOn(AliESDtrack::kTPCpid))){
         nsigmaTPCK = fESDpid->NumberOfSigmasTPC(esdtrack,AliPID::kKaon);
         nsigmaTPCPi = fESDpid->NumberOfSigmasTPC(esdtrack,AliPID::kPion);
         nsigmaTPCP = fESDpid->NumberOfSigmasTPC(esdtrack,AliPID::kProton);
@@ -480,228 +480,224 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       trackCopy->SetNSigmaTPCK(nsigmaTPCK);
       trackCopy->SetNSigmaTPCP(nsigmaTPCP);
 
-///// TOF ///////////////////////////////////////////////
+      ///// TOF ///////////////////////////////////////////////
 
-      float vp=-1000.;
-      float nsigmaTOFPi=-1000.;
-      float nsigmaTOFK=-1000.;
-      float nsigmaTOFP=-1000.;
+	float vp=-1000.;
+	float nsigmaTOFPi=-1000.;
+	float nsigmaTOFK=-1000.;
+	float nsigmaTOFP=-1000.;
 
-       if ((esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
-	   (esdtrack->GetStatus()&AliESDtrack::kTOFout) &&
-	   (esdtrack->GetStatus()&AliESDtrack::kTIME) &&
-	   !(esdtrack->GetStatus()&AliESDtrack::kTOFmismatch))
-	{
+	if ((esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
+	    (esdtrack->GetStatus()&AliESDtrack::kTOFout) &&
+	    (esdtrack->GetStatus()&AliESDtrack::kTIME) &&
+	    !(esdtrack->GetStatus()&AliESDtrack::kTOFmismatch))
+	  {
 
-	  //if ((esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
-	  //(esdtrack->GetStatus()&AliESDtrack::kTOFout) &&
-	  //(esdtrack->GetStatus()&AliESDtrack::kTIME)){
- // collect info from ESDpid class
-
-      if (esdtrack->IsOn(AliESDtrack::kTOFpid)){
-
-      double tZero = fESDpid->GetTOFResponse().GetStartTime(esdtrack->P());
-
-      nsigmaTOFPi = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kPion,tZero);
-      nsigmaTOFK = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kKaon,tZero);
-      nsigmaTOFP = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kProton,tZero);
-
-      Double_t len=esdtrack->GetIntegratedLength();
-      Double_t tof=esdtrack->GetTOFsignal();
-      if(tof > 0.) vp=len/tof/0.03;
-       
-
-  }
-
-      
-}
-      trackCopy->SetVTOF(vp);
-      trackCopy->SetNSigmaTOFPi(nsigmaTOFPi);
-      trackCopy->SetNSigmaTOFK(nsigmaTOFK);
-      trackCopy->SetNSigmaTOFP(nsigmaTOFP);
-
-
-			
-      double pxyz[3];
-      double rxyz[3];
-      double impact[2];
-      double covimpact[3];
-      
-      if (fUseTPCOnly) {
-	if (!esdtrack->GetTPCInnerParam()) {
-	  delete trackCopy;
-	  continue;
-	}
-
-
-	AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetTPCInnerParam());
-	param->GetXYZ(rxyz);
-	param->PropagateToDCA(fEvent->GetPrimaryVertexTPC(), (fEvent->GetMagneticField()), 10000, impact, covimpact);
-	param->GetPxPyPz(pxyz);//reading noconstarined momentum
-
-	if (fReadInner == true) {
-	  AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
-	  tInfo->SetPDGPid(211);
-	  tInfo->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
-	  tInfo->SetMass(0.13957);
-	  //	  tInfo->SetEmissionPoint(rxyz[0], rxyz[1], rxyz[2], 0.0);
-	  //	  tInfo->SetEmissionPoint(fV1[0], fV1[1], fV1[2], 0.0);
-	  tInfo->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
-	  trackCopy->SetHiddenInfo(tInfo);
-	}
-	
-	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
-	if (v.Mag() < 0.0001) {
-	  //	cout << "Found 0 momentum ???? " <<endl;
-	  delete trackCopy;
-	  continue;
-	}
-	trackCopy->SetP(v);//setting momentum
-	trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
-
-	const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
-	const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
-	//setting helix I do not if it is ok
-	AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
-	trackCopy->SetHelix(helix);
-
-	//some stuff which could be useful 
-	trackCopy->SetImpactD(impact[0]);
-	trackCopy->SetImpactZ(impact[1]);
-	trackCopy->SetCdd(covimpact[0]);
-	trackCopy->SetCdz(covimpact[1]);
-	trackCopy->SetCzz(covimpact[2]);
-	trackCopy->SetSigmaToVertex(GetSigmaToVertex(impact, covimpact));	
-
-	delete param;
-      }
-      else {
-	if (fReadInner == true) {
+	    //if ((esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
+	    //(esdtrack->GetStatus()&AliESDtrack::kTOFout) &&
+	    //(esdtrack->GetStatus()&AliESDtrack::kTIME)){
+	    // collect info from ESDpid class
 	  
-	  if (esdtrack->GetTPCInnerParam()) {
-	    AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetTPCInnerParam());
-	    param->GetXYZ(rxyz);
-	    //	    param->PropagateToDCA(fEvent->GetPrimaryVertex(), (fEvent->GetMagneticField()), 10000);
-	    param->GetPxPyPz(pxyz);//reading noconstarined momentum
-	    delete param;
-	    
+	    if ((fESDpid) && (esdtrack->IsOn(AliESDtrack::kTOFpid))) {
+	      
+	      
+	      double tZero = fESDpid->GetTOFResponse().GetStartTime(esdtrack->P());
+	      
+	      nsigmaTOFPi = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kPion,tZero);
+	      nsigmaTOFK = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kKaon,tZero);
+	      nsigmaTOFP = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kProton,tZero);
+	      
+	      Double_t len=esdtrack->GetIntegratedLength();
+	      Double_t tof=esdtrack->GetTOFsignal();
+	      if(tof > 0.) vp=len/tof/0.03;
+	    }
+	  }
+	
+	trackCopy->SetVTOF(vp);
+	trackCopy->SetNSigmaTOFPi(nsigmaTOFPi);
+	trackCopy->SetNSigmaTOFK(nsigmaTOFK);
+	trackCopy->SetNSigmaTOFP(nsigmaTOFP);
+	
+	double pxyz[3];
+	double rxyz[3];
+	double impact[2];
+	double covimpact[3];
+      
+	if (fUseTPCOnly) {
+	  if (!esdtrack->GetTPCInnerParam()) {
+	    delete trackCopy;
+	    continue;
+	  }
+
+
+	  AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetTPCInnerParam());
+	  param->GetXYZ(rxyz);
+	  param->PropagateToDCA(fEvent->GetPrimaryVertexTPC(), (fEvent->GetMagneticField()), 10000, impact, covimpact);
+	  param->GetPxPyPz(pxyz);//reading noconstarined momentum
+
+	  if (fReadInner == true) {
 	    AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
 	    tInfo->SetPDGPid(211);
 	    tInfo->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
 	    tInfo->SetMass(0.13957);
-	    //	    tInfo->SetEmissionPoint(rxyz[0], rxyz[1], rxyz[2], 0.0);
-	    //tInfo->SetEmissionPoint(fV1[0], fV1[1], fV1[2], 0.0);
+	    //	  tInfo->SetEmissionPoint(rxyz[0], rxyz[1], rxyz[2], 0.0);
+	    //	  tInfo->SetEmissionPoint(fV1[0], fV1[1], fV1[2], 0.0);
 	    tInfo->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
 	    trackCopy->SetHiddenInfo(tInfo);
 	  }
-	}
-
-	if (fTrackType == kGlobal) {
-	  if (fConstrained==true)		    
-	    tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
-	  else
-	    tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
-	}
-	else if (fTrackType == kTPCOnly) {
-	  if (esdtrack->GetTPCInnerParam())
-	    esdtrack->GetTPCInnerParam()->GetPxPyPz(pxyz);
-	  else {
+	
+	  AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
+	  if (v.Mag() < 0.0001) {
+	    //	cout << "Found 0 momentum ???? " <<endl;
 	    delete trackCopy;
 	    continue;
 	  }
+	  trackCopy->SetP(v);//setting momentum
+	  trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
+
+	  const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
+	  const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
+	  //setting helix I do not if it is ok
+	  AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
+	  trackCopy->SetHelix(helix);
+
+	  //some stuff which could be useful 
+	  trackCopy->SetImpactD(impact[0]);
+	  trackCopy->SetImpactZ(impact[1]);
+	  trackCopy->SetCdd(covimpact[0]);
+	  trackCopy->SetCdz(covimpact[1]);
+	  trackCopy->SetCzz(covimpact[2]);
+	  trackCopy->SetSigmaToVertex(GetSigmaToVertex(impact, covimpact));	
+
+	  delete param;
 	}
-	else if (fTrackType == kITSOnly) {
-	  if (fConstrained==true)		    
-	    tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
-	  else
-	    tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
-	}
+	else {
+	  if (fReadInner == true) {
+	  
+	    if (esdtrack->GetTPCInnerParam()) {
+	      AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetTPCInnerParam());
+	      param->GetXYZ(rxyz);
+	      //	    param->PropagateToDCA(fEvent->GetPrimaryVertex(), (fEvent->GetMagneticField()), 10000);
+	      param->GetPxPyPz(pxyz);//reading noconstarined momentum
+	      delete param;
+	    
+	      AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
+	      tInfo->SetPDGPid(211);
+	      tInfo->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
+	      tInfo->SetMass(0.13957);
+	      //	    tInfo->SetEmissionPoint(rxyz[0], rxyz[1], rxyz[2], 0.0);
+	      //tInfo->SetEmissionPoint(fV1[0], fV1[1], fV1[2], 0.0);
+	      tInfo->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
+	      trackCopy->SetHiddenInfo(tInfo);
+	    }
+	  }
+
+	  if (fTrackType == kGlobal) {
+	    if (fConstrained==true)		    
+	      tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
+	    else
+	      tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
+	  }
+	  else if (fTrackType == kTPCOnly) {
+	    if (esdtrack->GetTPCInnerParam())
+	      esdtrack->GetTPCInnerParam()->GetPxPyPz(pxyz);
+	    else {
+	      delete trackCopy;
+	      continue;
+	    }
+	  }
+	  else if (fTrackType == kITSOnly) {
+	    if (fConstrained==true)		    
+	      tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
+	    else
+	      tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
+	  }
 
 
-	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
-	if (v.Mag() < 0.0001) {
-	  //	cout << "Found 0 momentum ???? " <<endl;
-	  delete trackCopy;
-	  continue;
-	}
-	trackCopy->SetP(v);//setting momentum
-	trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
-	const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
-	const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
-	//setting helix I do not if it is ok
-	AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
-	trackCopy->SetHelix(helix);
+	  AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
+	  if (v.Mag() < 0.0001) {
+	    //	cout << "Found 0 momentum ???? " <<endl;
+	    delete trackCopy;
+	    continue;
+	  }
+	  trackCopy->SetP(v);//setting momentum
+	  trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
+	  const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
+	  const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
+	  //setting helix I do not if it is ok
+	  AliFmPhysicalHelixD helix(kP,kOrigin,(double)(fEvent->GetMagneticField())*kilogauss,(double)(trackCopy->Charge())); 
+	  trackCopy->SetHelix(helix);
 
-	//some stuff which could be useful 
-	float imp[2];
-	float cim[3];
-	// if (fTrackType == kTPCOnly) {
-	//   esdtrack->GetTPCInnerParam()->GetImpactParameters(imp,cim);
-	// }
-	// else {
+	  //some stuff which could be useful 
+	  float imp[2];
+	  float cim[3];
+	  // if (fTrackType == kTPCOnly) {
+	  //   esdtrack->GetTPCInnerParam()->GetImpactParameters(imp,cim);
+	  // }
+	  // else {
 	  esdtrack->GetImpactParameters(imp,cim);
-	// }
+	  // }
 
-	impact[0] = imp[0];
-	impact[1] = imp[1];
-	covimpact[0] = cim[0];
-	covimpact[1] = cim[1];
-	covimpact[2] = cim[2];
+	  impact[0] = imp[0];
+	  impact[1] = imp[1];
+	  covimpact[0] = cim[0];
+	  covimpact[1] = cim[1];
+	  covimpact[2] = cim[2];
 
-	trackCopy->SetImpactD(impact[0]);
-	trackCopy->SetImpactZ(impact[1]);
-	trackCopy->SetCdd(covimpact[0]);
-	trackCopy->SetCdz(covimpact[1]);
-	trackCopy->SetCzz(covimpact[2]);
-	trackCopy->SetSigmaToVertex(GetSigmaToVertex(impact,covimpact));
-      }
+	  trackCopy->SetImpactD(impact[0]);
+	  trackCopy->SetImpactZ(impact[1]);
+	  trackCopy->SetCdd(covimpact[0]);
+	  trackCopy->SetCdz(covimpact[1]);
+	  trackCopy->SetCzz(covimpact[2]);
+	  trackCopy->SetSigmaToVertex(GetSigmaToVertex(impact,covimpact));
+	}
 
-      trackCopy->SetTrackId(esdtrack->GetID());
-      trackCopy->SetFlags(esdtrack->GetStatus());
-      trackCopy->SetLabel(esdtrack->GetLabel());
+	trackCopy->SetTrackId(esdtrack->GetID());
+	trackCopy->SetFlags(esdtrack->GetStatus());
+	trackCopy->SetLabel(esdtrack->GetLabel());
 		
-      trackCopy->SetITSchi2(esdtrack->GetITSchi2());    
-      if (esdtrack->GetITSFakeFlag())
-	trackCopy->SetITSncls(-esdtrack->GetNcls(0));     
-      else
-	trackCopy->SetITSncls(esdtrack->GetNcls(0));     
-      trackCopy->SetTPCchi2(esdtrack->GetTPCchi2());       
-      trackCopy->SetTPCncls(esdtrack->GetTPCNcls());       
-      trackCopy->SetTPCnclsF(esdtrack->GetTPCNclsF());      
-      trackCopy->SetTPCsignal(esdtrack->GetTPCsignal());
-      trackCopy->SetTPCsignalN((short)esdtrack->GetTPCsignalN()); //due to bug in aliesdtrack class   
-      trackCopy->SetTPCsignalS(esdtrack->GetTPCsignalSigma()); 
+	trackCopy->SetITSchi2(esdtrack->GetITSchi2());    
+	if (esdtrack->GetITSFakeFlag())
+	  trackCopy->SetITSncls(-esdtrack->GetNcls(0));     
+	else
+	  trackCopy->SetITSncls(esdtrack->GetNcls(0));     
+	trackCopy->SetTPCchi2(esdtrack->GetTPCchi2());       
+	trackCopy->SetTPCncls(esdtrack->GetTPCNcls());       
+	trackCopy->SetTPCnclsF(esdtrack->GetTPCNclsF());      
+	trackCopy->SetTPCsignal(esdtrack->GetTPCsignal());
+	trackCopy->SetTPCsignalN((short)esdtrack->GetTPCsignalN()); //due to bug in aliesdtrack class   
+	trackCopy->SetTPCsignalS(esdtrack->GetTPCsignalSigma()); 
 
-      trackCopy->SetTPCClusterMap(esdtrack->GetTPCClusterMap());
-      trackCopy->SetTPCSharedMap(esdtrack->GetTPCSharedMap());
+	trackCopy->SetTPCClusterMap(esdtrack->GetTPCClusterMap());
+	trackCopy->SetTPCSharedMap(esdtrack->GetTPCSharedMap());
 
-      double xtpc[3];
-      esdtrack->GetInnerXYZ(xtpc);
-      xtpc[2] -= fV1[2];
-      trackCopy->SetNominalTPCEntrancePoint(xtpc);
+	double xtpc[3];
+	esdtrack->GetInnerXYZ(xtpc);
+	xtpc[2] -= fV1[2];
+	trackCopy->SetNominalTPCEntrancePoint(xtpc);
 
-      esdtrack->GetOuterXYZ(xtpc);
-      xtpc[2] -= fV1[2];
-      trackCopy->SetNominalTPCExitPoint(xtpc);
+	esdtrack->GetOuterXYZ(xtpc);
+	xtpc[2] -= fV1[2];
+	trackCopy->SetNominalTPCExitPoint(xtpc);
 
-      int indexes[3];
-      for (int ik=0; ik<3; ik++) {
-	indexes[ik] = esdtrack->GetKinkIndex(ik);
-      }
-      trackCopy->SetKinkIndexes(indexes);
-      //decision if we want this track
-      //if we using diffrent labels we want that this label was use for first time 
-      //if we use hidden info we want to have match between sim data and ESD
-      if (tGoodMomentum==true)
-	{
-	  hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
-	  realnofTracks++;//real number of tracks
-	  //	  delete trackCopy;
+	int indexes[3];
+	for (int ik=0; ik<3; ik++) {
+	  indexes[ik] = esdtrack->GetKinkIndex(ik);
 	}
-      else
-	{
-	  delete  trackCopy;
-	}
+	trackCopy->SetKinkIndexes(indexes);
+	//decision if we want this track
+	//if we using diffrent labels we want that this label was use for first time 
+	//if we use hidden info we want to have match between sim data and ESD
+	if (tGoodMomentum==true)
+	  {
+	    hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
+	    realnofTracks++;//real number of tracks
+	    //	  delete trackCopy;
+	  }
+	else
+	  {
+	    delete  trackCopy;
+	  }
 		
     }
 
@@ -736,7 +732,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       else
 	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("V0M")));
       if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
-	      10.0*cent->GetCentralityPercentile("V0M"), lrint(10.0*cent->GetCentralityPercentile("V0M")));
+			     10.0*cent->GetCentralityPercentile("V0M"), lrint(10.0*cent->GetCentralityPercentile("V0M")));
     }
   }
 
