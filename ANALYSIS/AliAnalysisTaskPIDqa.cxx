@@ -51,7 +51,9 @@ fListQA(0x0),
 fListQAits(0x0),
 fListQAtpc(0x0),
 fListQAtrd(0x0),
-fListQAtof(0x0)
+fListQAtof(0x0),
+fListQAemcal(0x0),
+fListQAtpctof(0x0)
 {
   //
   // Dummy constructor
@@ -66,7 +68,9 @@ fListQA(0x0),
 fListQAits(0x0),
 fListQAtpc(0x0),
 fListQAtrd(0x0),
-fListQAtof(0x0)
+fListQAtof(0x0),
+fListQAemcal(0x0),
+fListQAtpctof(0x0)
 {
   //
   // Default constructor
@@ -122,15 +126,27 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
   fListQAtof->SetOwner();
   fListQAtof->SetName("TOF");
   
+  fListQAemcal=new TList;
+  fListQAemcal->SetOwner();
+  fListQAemcal->SetName("EMCAL");
+
+  fListQAtpctof=new TList;
+  fListQAtpctof->SetOwner();
+  fListQAtpctof->SetName("TPC_TOF");
+
   fListQA->Add(fListQAits);
   fListQA->Add(fListQAtpc);
   fListQA->Add(fListQAtrd);
   fListQA->Add(fListQAtof);
+  fListQA->Add(fListQAemcal);
+  fListQA->Add(fListQAtpctof);
 
   SetupITSqa();
   SetupTPCqa();
   SetupTRDqa();
   SetupTOFqa();
+  SetupEMCALqa();
+  SetupTPCTOFqa();
 
   PostData(1,fListQA);
 }
@@ -149,7 +165,10 @@ void AliAnalysisTaskPIDqa::UserExec(Option_t */*option*/)
   
   FillITSqa();
   FillTPCqa();
+  FillTRDqa();
   FillTOFqa();
+  FillEMCALqa();
+  FillTPCTOFqa();
 
   PostData(1,fListQA);
 }
@@ -157,6 +176,10 @@ void AliAnalysisTaskPIDqa::UserExec(Option_t */*option*/)
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillITSqa()
 {
+  //
+  // Fill PID qa histograms for the ITS
+  //
+
   AliVEvent *event=InputEvent();
   
   Int_t ntracks=event->GetNumberOfTracks();
@@ -188,6 +211,10 @@ void AliAnalysisTaskPIDqa::FillITSqa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillTPCqa()
 {
+  //
+  // Fill PID qa histograms for the TPC
+  //
+  
   AliVEvent *event=InputEvent();
   
   Int_t ntracks=event->GetNumberOfTracks();
@@ -230,8 +257,21 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
 }
 
 //______________________________________________________________________________
+void AliAnalysisTaskPIDqa::FillTRDqa()
+{
+  //
+  // Fill PID qa histograms for the TRD
+  //
+
+}
+
+//______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillTOFqa()
 {
+  //
+  // Fill PID qa histograms for the TOF
+  //
+
   AliVEvent *event=InputEvent();
   
   Int_t ntracks=event->GetNumberOfTracks();
@@ -264,6 +304,7 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
     Double_t mom=track->P();
     
     for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+      //TOF nSigma
       TH2 *h=(TH2*)fListQAtof->At(ispecie);
       if (!h) continue;
       Double_t nSigma=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
@@ -276,6 +317,73 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
       h->Fill(mom,sig);
     }
     
+  }
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskPIDqa::FillEMCALqa()
+{
+  //
+  // Fill PID qa histograms for the EMCAL
+  //
+
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskPIDqa::FillTPCTOFqa()
+{
+  //
+  // Fill PID qa histograms for the TOF
+  //   Here also the TPC histograms after TOF selection are filled
+  //
+
+  AliVEvent *event=InputEvent();
+
+  Int_t ntracks=event->GetNumberOfTracks();
+  for(Int_t itrack = 0; itrack < ntracks; itrack++){
+    AliVTrack *track=(AliVTrack*)event->GetTrack(itrack);
+
+    //
+    //basic track cuts
+    //
+    ULong_t status=track->GetStatus();
+    // not that nice. status bits not in virtual interface
+    // TPC refit + ITS refit +
+    // TOF out + TOFpid +
+    // kTIME
+    if (!((status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
+        !((status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ||
+        !( (status & AliVTrack::kTPCpid  ) == AliVTrack::kTPCpid ) ||
+        !((status & AliVTrack::kTOFout  ) == AliVTrack::kTOFout  ) ||
+        !((status & AliVTrack::kTOFpid  ) == AliVTrack::kTOFpid  ) ||
+        !((status & AliVTrack::kTIME    ) == AliVTrack::kTIME    ) ) continue;
+
+    Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
+    Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
+    if (track->GetTPCNclsF()>0) {
+      ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC/track->GetTPCNclsF();
+    }
+
+    if ( nCrossedRowsTPC<70 || ratioCrossedRowsOverFindableClustersTPC<.8 ) continue;
+
+
+    Double_t mom=track->P();
+    Double_t momTPC=track->GetTPCmomentum();
+
+    for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+      //TOF nSigma
+      Double_t nSigmaTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
+      Double_t nSigmaTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)ispecie);
+
+      //TPC after TOF cut
+      TH2 *h=(TH2*)fListQAtpctof->At(ispecie);
+      if (h && TMath::Abs(nSigmaTOF)<3.) h->Fill(momTPC,nSigmaTPC);
+
+      //TOF after TPC cut
+      h=(TH2*)fListQAtpctof->At(ispecie+AliPID::kSPECIES);
+      if (h && TMath::Abs(nSigmaTPC)<3.) h->Fill(mom,nSigmaTOF);
+
+    }
   }
 }
 
@@ -301,9 +409,9 @@ void AliAnalysisTaskPIDqa::SetupITSqa()
                         "ITS signal vs. p;p [GeV]; ITS signal [arb. units]",
                         vX->GetNrows()-1,vX->GetMatrixArray(),
                         300,0,300);
-  
   fListQAits->Add(hSig);
-  
+
+  delete vX;  
 }
 
 //______________________________________________________________________________
@@ -328,9 +436,9 @@ void AliAnalysisTaskPIDqa::SetupTPCqa()
                         "TPC signal vs. p;p [GeV]; TPC signal [arb. units]",
                         vX->GetNrows()-1,vX->GetMatrixArray(),
                         300,0,300);
-  
   fListQAtpc->Add(hSig);
-  
+
+  delete vX;  
 }
 
 //______________________________________________________________________________
@@ -364,9 +472,48 @@ void AliAnalysisTaskPIDqa::SetupTOFqa()
                         "TOF signal vs. p;p [GeV]; TOF signal [arb. units]",
                         vX->GetNrows()-1,vX->GetMatrixArray(),
                         300,0,300);
-  
   fListQAtof->Add(hSig);
+
+  delete vX;  
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskPIDqa::SetupEMCALqa()
+{
+  //
+  // Create the EMCAL qa objects
+  //
+
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskPIDqa::SetupTPCTOFqa()
+{
+  //
+  // Create the qa objects for TPC + TOF combination
+  //
   
+  TVectorD *vX=MakeLogBinning(200,.1,30);
+
+  //TPC signals after TOF cut
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+    TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_TPC_TOF_%s",AliPID::ParticleName(ispecie)),
+                              Form("TPC n#sigma %s vs. p (after TOF 3#sigma cut);p_{TPC} [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
+                              vX->GetNrows()-1,vX->GetMatrixArray(),
+                              200,-10,10);
+    fListQAtpctof->Add(hNsigmaP);
+  }
+
+  //TOF signals after TPC cut
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+    TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_TOF_TPC_%s",AliPID::ParticleName(ispecie)),
+                              Form("TOF n#sigma %s vs. p (after TPC n#sigma cut);p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
+                              vX->GetNrows()-1,vX->GetMatrixArray(),
+                              200,-10,10);
+    fListQAtpctof->Add(hNsigmaP);
+  }
+
+  delete vX;
 }
 
 //______________________________________________________________________________

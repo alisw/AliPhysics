@@ -39,11 +39,13 @@ public:
   
 private: 
   AliPIDResponse *fPIDResponse;        //! PID response Handler
-  TList                 *fListQA;      //! list with all QA objects
-  TList                 *fListQAits;   //! List with ITS QA objects
-  TList                 *fListQAtpc;   //! List with TPC QA objects
-  TList                 *fListQAtrd;   //! List with TRD QA objects
-  TList                 *fListQAtof;   //! List with TOF QA objects
+  TList                 *fListQA;      //! list with all QA histograms
+  TList                 *fListQAits;   //! List with ITS QA histograms
+  TList                 *fListQAtpc;   //! List with TPC QA histograms
+  TList                 *fListQAtrd;   //! List with TRD QA histograms
+  TList                 *fListQAtof;   //! List with TOF QA histograms
+  TList                 *fListQAemcal; //! List with EMCAL QA histograms
+  TList                 *fListQAtpctof;//! List with combined PID from TPC + TOF
 
   
   void ExecNewRun();
@@ -53,11 +55,16 @@ private:
   void SetupTPCqa();
   void SetupTRDqa();
   void SetupTOFqa();
+  void SetupEMCALqa();
+  void SetupTPCTOFqa();
 
   //
   void FillITSqa();
   void FillTPCqa();
+  void FillTRDqa();
   void FillTOFqa();
+  void FillEMCALqa();
+  void FillTPCTOFqa();
   
   //
   void SetRecoInfo();
