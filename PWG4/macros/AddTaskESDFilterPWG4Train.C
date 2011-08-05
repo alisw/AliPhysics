@@ -105,7 +105,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
 
    // ITS cuts for new jet analysis 
    gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/CreateTrackCutsPWG4.C");
-   AliESDtrackCuts* esdTrackCutsHG0 = CreateTrackCutsPWG4(10001001);
+   AliESDtrackCuts* esdTrackCutsHG0 = CreateTrackCutsPWG4(10001004);
 
    // throw out tracks with too low number of clusters in
    // the first pass (be consistent with TPC only tracks)
@@ -117,11 +117,11 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
 
 
    // the complement to the one with SPD requirement
-   AliESDtrackCuts* esdTrackCutsHG1 = CreateTrackCutsPWG4(10011001);
+   AliESDtrackCuts* esdTrackCutsHG1 = CreateTrackCutsPWG4(10011004);
 
    // the tracks that must not be taken pass this cut and
    // non HGC1 and HG
-   AliESDtrackCuts* esdTrackCutsHG2 = CreateTrackCutsPWG4(10021001);
+   AliESDtrackCuts* esdTrackCutsHG2 = CreateTrackCutsPWG4(10021004);
 
    
 
@@ -132,8 +132,13 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    esdTrackCutsH2->SetMaxChi2PerClusterITS(36.);
    esdTrackCutsH2->SetPtRange(0.15,1E10);
 
+   AliESDtrackCuts* esdTrackCutsGCOnly = CreateTrackCutsPWG4(10041004);
+
    // TPC only tracks
-   AliESDtrackCuts* esdTrackCutsGCOnly = CreateTrackCutsPWG4(10041001);
+   AliESDtrackCuts* esdTrackCutsTPCCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+   esdTrackCutsTPCCOnly->SetMinNClustersTPC(70);
+
+
 
    // Compose the filter
    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
@@ -159,12 +164,16 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    trackFilter->AddCuts(esdTrackCutsGCOnly);
    // 512 1<<9                         
    trackFilter->AddCuts(esdTrackCutsHG1); // add once more for tpc only tracks
-   // 512 1<<10                        
+   // 1024 1<<10                        
    trackFilter->AddCuts(esdTrackCutsH2); // add r_aa cuts
+   // 2048 1<<11                        
+   trackFilter->AddCuts(esdTrackCutsTPCCOnly); // add QM TPC only track cuts
+   
 
    esdfilter->SetGlobalConstrainedFilterMask(1<<8|1<<9); // these tracks are written out as global constrained tracks
    esdfilter->SetHybridFilterMaskGlobalConstrainedGlobal((1<<4)); // these normal global tracks will be marked as hybrid
 
+   esdfilter->SetTPCConstrainedFilterMask(1<<11); // these tracks are written out as global constrained tracks
 
    // Filter with cuts on V0s
    AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("Standard V0 Cuts pp", "ESD V0 Cuts");
