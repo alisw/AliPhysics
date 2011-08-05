@@ -1359,8 +1359,8 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	AliAODTrack *tr = aod->GetTrack(it);
 	Bool_t bGood = false;
 	if(fFilterType == 0)bGood = true;
-	else if(fFilterType == 1)bGood = tr->IsHybridITSTPC();
-	else if(fFilterType == 2)bGood = tr->IsHybridTPC();
+	else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();
+	else if(fFilterType == 2)bGood = tr->IsHybridGlobalConstrainedGlobal();
 	if((fFilterMask>0)&&((!tr->TestFilterBit(fFilterMask)||(!bGood)))){
 	  if(fDebug>10)Printf("%s:%d Not matching filter %d/%d %d/%d",(char*)__FILE__,__LINE__,it,aod->GetNumberOfTracks(),fFilterMask,tr->GetFilterMap());	
 	  continue;
@@ -1396,8 +1396,8 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	if(!trackAOD)continue;
 	Bool_t bGood = false;
 	if(fFilterType == 0)bGood = true;
-	else if(fFilterType == 1)bGood = trackAOD->IsHybridITSTPC();
-	else if(fFilterType == 2)bGood = trackAOD->IsHybridTPC();
+	else if(fFilterType == 1)bGood = trackAOD->IsHybridTPCConstrainedGlobal();
+	else if(fFilterType == 2)bGood = trackAOD->IsHybridGlobalConstrainedGlobal();
 	if((fFilterMask>0)&&((!trackAOD->TestFilterBit(fFilterMask)||(!bGood))))continue;
         if(TMath::Abs(trackAOD->Eta())>fTrackEtaWindow) continue;
 	if(trackAOD->Pt()<fTrackPtCut) continue;
