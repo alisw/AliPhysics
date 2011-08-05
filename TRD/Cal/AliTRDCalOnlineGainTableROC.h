@@ -62,7 +62,7 @@ protected:
   
   AliTRDCalOnlineGainTableMCM* fMCMGainTables[128]; // Array of gain tables for MCMs
   
-  ClassDef(AliTRDCalOnlineGainTableROC,1);          // TRD online gain table of a ROC
+  ClassDef(AliTRDCalOnlineGainTableROC,2);          // TRD online gain table of a ROC
 
 };
 

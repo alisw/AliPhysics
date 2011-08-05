@@ -23,6 +23,8 @@
 #include "AliTRDPIDResponse.h"
 #endif
 
+class TString;
+
 class AliCDBEntry;
 
 class AliTRDrecoParam;
@@ -32,7 +34,8 @@ class AliTRDCalMonitoring;
 class AliTRDCalROC;
 class AliTRDCalDet;
 class AliTRDCalSingleChamberStatus;
-class TString;
+class AliTRDCalOnlineGainTableROC;
+
 class AliTRDcalibDB : public TObject {
 
  public:
@@ -67,6 +70,9 @@ class AliTRDcalibDB : public TObject {
   AliTRDCalROC                       *GetGainFactorROC(Int_t det);
   const AliTRDCalDet                 *GetGainFactorDet();
 
+  Float_t                             GetOnlineGainFactor(Int_t det, Int_t col, Int_t row);
+  AliTRDCalOnlineGainTableROC        *GetOnlineGainTableROC(Int_t det);
+
   AliTRDCalROC                       *GetPRFROC(Int_t det);
   Float_t                             GetPRFWidth(Int_t det, Int_t col, Int_t row);
 
@@ -78,6 +84,9 @@ class AliTRDcalibDB : public TObject {
   Int_t                               GetNumberOfTimeBinsDCS();
   void                                GetFilterType(TString &filterType);
   void                                GetGlobalConfiguration(TString &config);
+
+  Int_t                               GetOnlineGainTableID();
+
   Bool_t                              HasOnlineFilterPedestal();
   Bool_t                              HasOnlineFilterGain();
   Bool_t                              HasOnlineTailCancellation();
@@ -103,7 +112,7 @@ class AliTRDcalibDB : public TObject {
   const AliTRDCalTrkAttach           *GetAttachObject();
 
   // Related functions, these depend on calibration data
-         Int_t                        PadResponse(Double_t signal, Double_t dist
+  Int_t                               PadResponse(Double_t signal, Double_t dist
                                                 , Int_t layer, Double_t *pad) const;
 
  protected:
@@ -115,6 +124,7 @@ class AliTRDcalibDB : public TObject {
        , kIDT0Chamber
        , kIDGainFactorPad
        , kIDGainFactorChamber
+       , kIDOnlineGainFactor
        , kIDNoiseChamber
        , kIDNoisePad
        , kIDPRFWidth
@@ -148,14 +158,17 @@ class AliTRDcalibDB : public TObject {
   TObject              *fCDBCache[kCDBCacheSize];   //  Cache for calibration objects.
 
   Long64_t              fRun;                       //  Run Number
-  
+
   Float_t              *fPRFsmp;                    //! Sampled pad response
   Int_t                 fPRFbin;                    //  Number of bins for the PRF
   Float_t               fPRFlo;                     //  Lower boundary of the PRF
   Float_t               fPRFhi;                     //  Higher boundary of the PRF
   Float_t               fPRFwid;                    //  Bin width of the sampled PRF
   Int_t                 fPRFpad;                    //  Distance to next pad in PRF
+
   AliTRDPIDResponse    *fPIDResponse;               //  TRD PID Response function
+
+  Int_t                 fOnlineGainTableID;         //  ID for online gain table 
   
  private:
 
@@ -164,7 +177,7 @@ class AliTRDcalibDB : public TObject {
   AliTRDcalibDB &operator=(const AliTRDcalibDB &c); 
   virtual ~AliTRDcalibDB();
 
-  ClassDef(AliTRDcalibDB, 5)                         //  Provides central access to the CDB
+  ClassDef(AliTRDcalibDB, 7)                        //  Provides central access to the CDB
 
 };
 

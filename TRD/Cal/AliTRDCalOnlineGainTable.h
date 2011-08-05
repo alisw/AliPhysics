@@ -35,8 +35,8 @@ public:
   AliTRDCalOnlineGainTable& operator=(const AliTRDCalOnlineGainTable& other);
   ~AliTRDCalOnlineGainTable();
 
-  Float_t GetGainCorrectionFactor(Int_t det, Int_t row, Int_t col);
-  Float_t GetGainCorrectionFactor(Int_t sector, Int_t stack, Int_t layer, Int_t row, Int_t col);
+  Float_t GetGainCorrectionFactor(Int_t det, Int_t row, Int_t col) const;
+  Float_t GetGainCorrectionFactor(Int_t sector, Int_t stack, Int_t layer, Int_t row, Int_t col) const;
 
   Short_t GetAdcdac(Int_t det, Int_t row, Int_t col);
   Short_t GetAdcdac(Int_t sector, Int_t stack, Int_t layer, Int_t row, Int_t col);
@@ -70,7 +70,7 @@ protected:
 
   AliTRDCalOnlineGainTableROC* fROCGainTables[540]; // Array of gain tables for all ROCs
   
-  ClassDef(AliTRDCalOnlineGainTable,1);             // TRD online gain tables
+  ClassDef(AliTRDCalOnlineGainTable,2);             // TRD online gain tables
 
 };
 

@@ -61,11 +61,11 @@ class AliTRDCalDCSv2 : public TNamed {
   UInt_t  GetEndTime() const                   { return fEndTime;              }
   TObjArray*       GetFEEArr() const           { return fFEEArr;               }
   TObjArray*       GetPTRArr() const           { return fPTRArr;               }
-  AliTRDCalDCSFEEv2* GetCalDCSFEEObj(Int_t det) 
+  AliTRDCalDCSFEEv2* GetCalDCSFEEObj(Int_t det) const
   		  	          { return (AliTRDCalDCSFEEv2*)fFEEArr->At(det); }
-  AliTRDCalDCSPTR* GetCalDCSPTRObj(Int_t det) 
+  AliTRDCalDCSPTR* GetCalDCSPTRObj(Int_t det) const
   			          { return (AliTRDCalDCSPTR*)fPTRArr->At(det); }
-  AliTRDCalDCSGTU* GetGTUObj() 
+  AliTRDCalDCSGTU* GetGTUObj() const
            		          { return (AliTRDCalDCSGTU*)fGTUObj;          }
 
  protected:

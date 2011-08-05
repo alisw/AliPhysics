@@ -70,6 +70,7 @@
 
 #include "Cal/AliTRDCalROC.h"
 #include "Cal/AliTRDCalDet.h"
+#include "Cal/AliTRDCalOnlineGainTableROC.h"
 
 ClassImp(AliTRDdigitizer)
 
@@ -668,6 +669,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
         signals = 0x0;
         return kFALSE;
       }
+
       // Convert the detector signals to digits or s-digits
       if (!ConvertSignals(det,signals)) {
 	AliError(Form("Conversion of signals failed for detector=%d",det));
@@ -689,7 +691,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
   } // for: detector
 
   if (!fSDigits) {
-    if (AliDataLoader *trklLoader = AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets")) {
+    if (AliDataLoader *trklLoader 
+          = AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets")) {
       if (trklLoader->Tree())
         trklLoader->WriteData("OVERWRITE");
     }
@@ -1242,9 +1245,9 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
     return kFALSE;
   }
 
-  // The gainfactor calibration objects
+  // The gain factor calibration objects
   const AliTRDCalDet *calGainFactorDet      = calibration->GetGainFactorDet();  
-  AliTRDCalROC       *calGainFactorROC      = 0;
+  AliTRDCalROC       *calGainFactorROC      = 0x0;
   Float_t             calGainFactorDetValue = 0.0;
 
   AliTRDarrayADC     *digits = 0x0;
@@ -1278,13 +1281,18 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
   calGainFactorROC      = calibration->GetGainFactorROC(det);
   calGainFactorDetValue = calGainFactorDet->GetValue(det);
 
+  // Get the online gain factors
+  AliTRDCalOnlineGainTableROC *onlineGainFactorROC 
+    = calibration->GetOnlineGainTableROC(det);
+
   // Create the digits for this chamber
   for (row  = 0; row  <  nRowMax; row++ ) {
     for (col  = 0; col  <  nColMax; col++ ) {
 
       // Check whether pad is masked
       // Bridged pads are not considered yet!!!
-      if (calibration->IsPadMasked(det,col,row) || calibration->IsPadNotConnected(det,col,row)) {
+      if (calibration->IsPadMasked(det,col,row) || 
+          calibration->IsPadNotConnected(det,col,row)) {
         continue;
       }
 

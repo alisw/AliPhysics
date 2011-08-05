@@ -111,7 +111,9 @@ AliTRDCalOnlineGainTable::~AliTRDCalOnlineGainTable()
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDCalOnlineGainTable::GetGainCorrectionFactor(Int_t det, Int_t row, Int_t col)
+Float_t AliTRDCalOnlineGainTable::GetGainCorrectionFactor(Int_t det
+                                                        , Int_t row
+                                                        , Int_t col) const
 {
   //
   // returns the Gain Correction Factor of the channel
@@ -129,8 +131,11 @@ Float_t AliTRDCalOnlineGainTable::GetGainCorrectionFactor(Int_t det, Int_t row, 
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDCalOnlineGainTable::GetGainCorrectionFactor(Int_t sector, Int_t stack, Int_t layer, 
-						Int_t row, Int_t col)
+Float_t AliTRDCalOnlineGainTable::GetGainCorrectionFactor(Int_t sector
+                                                        , Int_t stack
+                                                        , Int_t layer
+							, Int_t row
+                                                        , Int_t col) const
 { 
   //
   // returns the Gain Correction Factor of the channel

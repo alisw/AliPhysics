@@ -57,7 +57,7 @@ protected:
   Float_t fMCMGain;  // Gain Factor which would lead to a Correction Factor of 1.0 within the MCM
 
 
-  ClassDef(AliTRDCalOnlineGainTableMCM,1); // TRD online gain table of a MCM
+  ClassDef(AliTRDCalOnlineGainTableMCM,2); // TRD online gain table of a MCM
 
 };
 

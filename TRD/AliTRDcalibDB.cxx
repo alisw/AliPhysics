@@ -43,12 +43,14 @@
 #include "Cal/AliTRDCalDet.h"
 #include "Cal/AliTRDCalDCS.h"
 #include "Cal/AliTRDCalDCSv2.h"
+#include "Cal/AliTRDCalDCSFEEv2.h"
 #include "Cal/AliTRDCalPID.h"
 #include "Cal/AliTRDCalMonitoring.h"
 #include "Cal/AliTRDCalChamberStatus.h"
 #include "Cal/AliTRDCalPadStatus.h"
 #include "Cal/AliTRDCalSingleChamberStatus.h"
 #include "Cal/AliTRDCalTrkAttach.h"
+#include "Cal/AliTRDCalOnlineGainTable.h"
 
 ClassImp(AliTRDcalibDB)
 
@@ -105,6 +107,7 @@ AliTRDcalibDB::AliTRDcalibDB()
   ,fPRFwid(0)
   ,fPRFpad(0)
   ,fPIDResponse(NULL)
+  ,fOnlineGainTableID(0)
 {
   //
   // Default constructor
@@ -135,6 +138,7 @@ AliTRDcalibDB::AliTRDcalibDB(const AliTRDcalibDB &c)
   ,fPRFwid(0)
   ,fPRFpad(0)
   ,fPIDResponse(NULL)
+  ,fOnlineGainTableID(0)
 {
   //
   // Copy constructor (not that it make any sense for a singleton...)
@@ -176,7 +180,11 @@ AliTRDcalibDB::~AliTRDcalibDB()
     delete [] fPRFsmp;
     fPRFsmp = 0;
   }
-  if(fPIDResponse) delete fPIDResponse;
+
+  if (fPIDResponse) {
+    delete fPIDResponse;
+    fPIDResponse = 0x0;
+  }
 
   Invalidate();
 
@@ -225,13 +233,27 @@ const TObject *AliTRDcalibDB::GetCachedCDBObject(Int_t id)
     case kIDGainFactorChamber : 
       return CacheCDBEntry(kIDGainFactorChamber ,"TRD/Calib/ChamberGainFactor"); 
       break;
-    case kIDNoiseChamber : 
-      return CacheCDBEntry(kIDNoiseChamber ,"TRD/Calib/DetNoise"); 
-      break;
-    case kIDNoisePad : 
-      return CacheCDBEntry(kIDNoisePad ,"TRD/Calib/PadNoise"); 
+
+    case kIDOnlineGainFactor : 
+      switch(GetOnlineGainTableID()) {
+        case 0:
+          // For testing purposes only !!!
+          AliInfo("No gain table name from OCDB. Use default table!");
+          return CacheCDBEntry(kIDOnlineGainFactor  ,"TRD/Calib/Krypton_2011-01"); 
+          break;
+        case 1:
+	  // Online gain table ID 1
+          return CacheCDBEntry(kIDOnlineGainFactor  ,"TRD/Calib/Krypton_2011-01"); 
+          break;
+      }
       break;
 
+    case kIDNoiseChamber : 
+      return CacheCDBEntry(kIDNoiseChamber      ,"TRD/Calib/DetNoise"); 
+      break;
+    case kIDNoisePad : 
+      return CacheCDBEntry(kIDNoisePad          ,"TRD/Calib/PadNoise"); 
+      break;
 
     // Parameters defined per pad
     case kIDPRFWidth : 
@@ -258,6 +280,7 @@ const TObject *AliTRDcalibDB::GetCachedCDBObject(Int_t id)
       break;
     case kIDPIDNN : 
       return CacheCDBEntry(kIDPIDNN             ,"TRD/Calib/PIDNN");
+      break;
     case kIDPIDLQ : 
       return CacheCDBEntry(kIDPIDLQ             ,"TRD/Calib/PIDLQ"); 
       break;
@@ -308,6 +331,7 @@ const TObject *AliTRDcalibDB::CacheCDBEntry(Int_t id, const char *cdbPath)
   } 
   
   return fCDBCache[id];
+
 }
 
 //_____________________________________________________________________________
@@ -349,7 +373,10 @@ void AliTRDcalibDB::Invalidate()
     }
   }
 
+  fOnlineGainTableID = 0;
+
 }
+
 //_____________________________________________________________________________
 Float_t AliTRDcalibDB::GetNoise(Int_t det, Int_t col, Int_t row)
 {
@@ -643,6 +670,42 @@ Float_t AliTRDcalibDB::GetGainFactor(Int_t det, Int_t col, Int_t row)
 }
 
 //_____________________________________________________________________________
+AliTRDCalOnlineGainTableROC* AliTRDcalibDB::GetOnlineGainTableROC(Int_t det)
+{
+  //
+  // Returns the online gain factor table for a given ROC.
+  //
+  
+  const AliTRDCalOnlineGainTable *calOnline 
+     = dynamic_cast<const AliTRDCalOnlineGainTable *> 
+                                   (GetCachedCDBObject(kIDOnlineGainFactor));
+  if (!calOnline) {
+    return 0x0;
+  }
+
+  return calOnline->GetGainTableROC(det);
+
+}
+
+//_____________________________________________________________________________
+Float_t AliTRDcalibDB::GetOnlineGainFactor(Int_t det, Int_t col, Int_t row)
+{
+  //
+  // Returns the online gain factor for the given pad.
+  //
+  
+  const AliTRDCalOnlineGainTable *calOnline 
+     = dynamic_cast<const AliTRDCalOnlineGainTable *> 
+                                   (GetCachedCDBObject(kIDOnlineGainFactor));
+  if (!calOnline) {
+    return -1;
+  }
+
+  return calOnline->GetGainCorrectionFactor(det,row,col);
+
+}
+
+//_____________________________________________________________________________
 AliTRDCalROC *AliTRDcalibDB::GetGainFactorROC(Int_t det)
 {
   //
@@ -823,6 +886,7 @@ Int_t AliTRDcalibDB::GetNumberOfTimeBinsDCS()
 
   // only remains: two different numbers >= 0
   return nMixed;
+
 }
 
 //_____________________________________________________________________________
@@ -843,7 +907,8 @@ void AliTRDcalibDB::GetFilterType(TString &filterType)
   if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCS"))   calver = 1;
   if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCSv2")) calver = 2;
 
-  if (calver == 1) {
+  if      (calver == 1) {
+
     // DCS object
     const AliTRDCalDCS *calDCS = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(esor));
     if(!calDCS){
@@ -851,7 +916,10 @@ void AliTRDcalibDB::GetFilterType(TString &filterType)
       return;
     } 
     filterType = calDCS->GetGlobalFilterType();
-  } else if (calver == 2) {
+
+  } 
+  else if (calver == 2) {
+
     // DCSv2 object
     const AliTRDCalDCSv2 *calDCSv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(esor));
     if(!calDCSv2){
@@ -859,12 +927,77 @@ void AliTRDcalibDB::GetFilterType(TString &filterType)
       return;
     } 
     filterType = calDCSv2->GetGlobalFilterType();
-  } else AliError("NO DCS/DCSv2 OCDB entry found!"); 
+
+  } 
+  else {
+
+    AliError("NO DCS/DCSv2 OCDB entry found!");
+
+  }
 
 }
 
 //_____________________________________________________________________________
-void AliTRDcalibDB::GetGlobalConfiguration(TString &config){
+Int_t AliTRDcalibDB::GetOnlineGainTableID()
+{
+  //
+  // Get the gain table ID from the DCS
+  //
+
+  if (fOnlineGainTableID > 0) {
+    return fOnlineGainTableID;
+  }
+
+  const TObjArray *dcsArr = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDDCS));
+  if (!dcsArr){
+    return -1;
+  }
+
+  Int_t esor   = 0; // Take SOR
+  Int_t calver = 0; // Check CalDCS version
+  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCS"))   calver = 1;
+  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCSv2")) calver = 2;
+
+  if      (calver == 1) {
+
+    // No data for old DCS object available, anyway
+    return -1;
+
+  } 
+  else if (calver == 2) {
+
+    // DCSv2 object
+    const AliTRDCalDCSv2 *calDCSv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(esor));
+    if(!calDCSv2){
+      return -1;
+    }
+
+    TString tableName = "";
+    for (Int_t i = 0; i < 540; i++) {
+      const AliTRDCalDCSFEEv2 *calDCSFEEv2 = calDCSv2->GetCalDCSFEEObj(0);
+      tableName = calDCSFEEv2->GetGainTableName();
+      if (tableName.Length() > 0) {
+        break;
+      }
+    }
+    if (tableName.CompareTo("Krypton_2011-01") == 0) {
+      fOnlineGainTableID = 1;
+      return fOnlineGainTableID;
+    }
+
+  } 
+  else {
+
+    AliError("NO DCS/DCSv2 OCDB entry found!");
+    return -1;
+
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDcalibDB::GetGlobalConfiguration(TString &config)
+{
   //
   // Get Configuration from the DCS
   //
@@ -880,15 +1013,19 @@ void AliTRDcalibDB::GetGlobalConfiguration(TString &config){
   if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCS"))   calver = 1;
   if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCSv2")) calver = 2;
 
-  if (calver == 1) {
+  if      (calver == 1) {
+
     // DCS object
-    const AliTRDCalDCS *calDCS = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(esor));
+    const AliTRDCalDCS   *calDCS   = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(esor));
     if(!calDCS){
       config = "";
       return;
     } 
     config = calDCS->GetGlobalConfigName();
-  } else if (calver == 2) {
+
+  } 
+  else if (calver == 2) {
+
     // DCSv2 object
     const AliTRDCalDCSv2 *calDCSv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(esor));
     if(!calDCSv2){
@@ -896,7 +1033,13 @@ void AliTRDcalibDB::GetGlobalConfiguration(TString &config){
       return;
     } 
     config = calDCSv2->GetGlobalConfigName();
-  } else AliError("NO DCS/DCSv2 OCDB entry found!");
+
+  } 
+  else {
+
+    AliError("NO DCS/DCSv2 OCDB entry found!");
+
+  }
 
 }
 
@@ -906,41 +1049,58 @@ Bool_t AliTRDcalibDB::HasOnlineFilterPedestal()
   //
   // Checks whether pedestal filter was applied online
   //
+
   TString cname;
+
   // Temporary: Get the filter config from the configuration name
   GetGlobalConfiguration(cname);
   TString filterconfig = cname(cname.First("_") + 1, cname.First("-") - cname.First("_") - 1);
+
   // TString filterconfig;
   //GetFilterType(filterconfig);
+
   return filterconfig.Contains("p");
+
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDcalibDB::HasOnlineFilterGain(){
+Bool_t AliTRDcalibDB::HasOnlineFilterGain()
+{
   //
   // Checks whether online gain filter was applied
   //
+
   TString cname;
+
   // Temporary: Get the filter config from the configuration name
   GetGlobalConfiguration(cname);
   TString filterconfig = cname(cname.First("_") + 1, cname.First("-") - cname.First("_") - 1);
+
   //TString filterconfig;
   //GetFilterType(filterconfig);
+
   return filterconfig.Contains("g");
+
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDcalibDB::HasOnlineTailCancellation(){
+Bool_t AliTRDcalibDB::HasOnlineTailCancellation()
+{
   //
   // Checks whether online tail cancellation was applied
   //
+
   TString cname;
+
   // Temporary: Get the filter config from the configuration name
   GetGlobalConfiguration(cname);
   TString filterconfig = cname(cname.First("_") + 1, cname.First("-") - cname.First("_") - 1);
+
   //TString filterconfig;
   //GetFilterType(filterconfig);
+
   return filterconfig.Contains("t");
+
 }
 
 //_____________________________________________________________________________
@@ -1018,7 +1178,7 @@ AliTRDrecoParam* AliTRDcalibDB::GetRecoParam(Int_t */*eventtype*/)
   // calculate entry based on event type info
   Int_t n = 0; //f(eventtype[0], eventtype[1], ....)
 
-  return (AliTRDrecoParam*)recos->UncheckedAt(n);
+  return (AliTRDrecoParam *) recos->UncheckedAt(n);
 
 }
 
@@ -1123,8 +1283,10 @@ Bool_t AliTRDcalibDB::IsChamberMasked(Int_t det)
   return cal->IsMasked(det);
 
 }
+
 //_____________________________________________________________________________
-Bool_t AliTRDcalibDB::IsHalfChamberMasked(Int_t det, Int_t side){
+Bool_t AliTRDcalibDB::IsHalfChamberMasked(Int_t det, Int_t side)
+{
   //
   // Returns status, see name of functions for details ;-)
   //
@@ -1138,6 +1300,7 @@ Bool_t AliTRDcalibDB::IsHalfChamberMasked(Int_t det, Int_t side){
   return side > 0 ? cal->IsHalfChamberSideBMasked(det) : cal->IsHalfChamberSideAMasked(det);
 
 }
+
 //_____________________________________________________________________________
 const AliTRDCalPID *AliTRDcalibDB::GetPIDObject(AliTRDpidUtil::ETRDPIDMethod method)
 {
@@ -1159,26 +1322,40 @@ const AliTRDCalPID *AliTRDcalibDB::GetPIDObject(AliTRDpidUtil::ETRDPIDMethod met
 }
 
 //_____________________________________________________________________________
-AliTRDPIDResponse *AliTRDcalibDB::GetPIDResponse(AliTRDPIDResponse::ETRDPIDMethod method){
-  if(!fPIDResponse){
+AliTRDPIDResponse *AliTRDcalibDB::GetPIDResponse(AliTRDPIDResponse::ETRDPIDMethod method)
+{
+  //
+  // Returns the PID response object for 1D-LQ
+  //
+
+  if (!fPIDResponse) {
+
     fPIDResponse = new AliTRDPIDResponse;
+
     // Load Reference Histos from OCDB
     fPIDResponse->SetPIDmethod(method);
     const TObjArray *references = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDPIDLQ1D));
+
     TIter refs(references);
     TObject *obj = NULL;
     AliTRDPIDReference *ref = NULL;
     Bool_t hasReference = kFALSE;
-    while((obj = refs())){
-    	if((ref = dynamic_cast<AliTRDPIDReference *>(obj))){
-        	fPIDResponse->Load(ref);
-        	hasReference = kTRUE;
-        	break;
-    	}
+    while ((obj = refs())){
+      if ((ref = dynamic_cast<AliTRDPIDReference *>(obj))){
+        fPIDResponse->Load(ref);
+        hasReference = kTRUE;
+        break;
+      }
     }
-    if(!hasReference) AliError("Reference histograms not found in the OCDB");
+
+    if (!hasReference) {
+      AliError("Reference histograms not found in the OCDB");
+    }
+
   }
+
   return fPIDResponse;
+
 }
 
 //_____________________________________________________________________________
@@ -1187,9 +1364,10 @@ const AliTRDCalTrkAttach* AliTRDcalibDB::GetAttachObject()
   //
   // Returns the object storing likelihood distributions for cluster to track attachment
   //
-  return dynamic_cast<const AliTRDCalTrkAttach*>(GetCachedCDBObject(kIDAttach));
-}
 
+  return dynamic_cast<const AliTRDCalTrkAttach*>(GetCachedCDBObject(kIDAttach));
+
+}
 
 //_____________________________________________________________________________
 const AliTRDCalMonitoring *AliTRDcalibDB::GetMonitoringObject()
