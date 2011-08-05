@@ -2464,7 +2464,9 @@ Bool_t AliReconstruction::RunSPDTrackleting(AliESDEvent*& esd)
   Double_t vtxPos[3] = {0, 0, 0};
   Double_t vtxErr[3] = {0.0, 0.0, 0.0};
 /*
-  TArrayF mcVertex(3);
+  TArrayF m
+/
+cVertex(3);
   // if(MC)
   if (fRunLoader->GetHeader() && fRunLoader->GetHeader()->GenEventHeader()) {
     fRunLoader->GetHeader()->GenEventHeader()->PrimaryVertex(mcVertex);
@@ -3011,6 +3013,10 @@ Bool_t AliReconstruction::FillTriggerScalers(AliESDEvent*& esd)
           if(scalesd)esdheader->SetTriggerScalersRecord(scalesd);
         }
      }
+     const AliTriggerScalersRecordESD* scalrecEvent = fRunScalers->GetScalersDeltaForEvent( timestamp);
+     const AliTriggerScalersRecordESD* scalrecRun = fRunScalers->GetScalersDeltaForRun();
+     if (scalrecEvent) esdheader->SetTriggerScalersDeltaEvent(scalrecEvent);
+     if (scalrecRun) esdheader->SetTriggerScalersDeltaRun(scalrecRun);
   }
   return kTRUE;
 }
