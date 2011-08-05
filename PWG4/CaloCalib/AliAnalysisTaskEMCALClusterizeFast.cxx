@@ -48,7 +48,7 @@ ClassImp(AliAnalysisTaskEMCALClusterizeFast)
 //________________________________________________________________________
 AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast() 
   : AliAnalysisTaskSE(), 
-    fRun(0),
+    fRun(-1),
     fDigitsArr(0),       
     fClusterArr(0),       
     fRecParam(0),
@@ -76,7 +76,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast()
 //________________________________________________________________________
 AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const char *name) 
   : AliAnalysisTaskSE(name), 
-    fRun(0),
+    fRun(-1),
     fDigitsArr(0),       
     fClusterArr(0),       
     fRecParam(new AliEMCALRecParam),
@@ -516,14 +516,14 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
     if (fRun!=cdb->GetRun())
       cdb->SetRun(fRun);
   }
-  if (!fCalibData&&fLoadCalib) {
+  if (!fCalibData&&fLoadCalib&&fRun>0) {
     AliCDBEntry *entry = static_cast<AliCDBEntry*>(AliCDBManager::Instance()->Get("EMCAL/Calib/Data"));
     if (entry) 
       fCalibData =  static_cast<AliEMCALCalibData*>(entry->GetObject());
     if (!fCalibData)
       AliFatal("Calibration parameters not found in CDB!");
   }
-  if (!fPedestalData&&fLoadPed) {
+  if (!fPedestalData&&fLoadPed&&fRun>0) {
     AliCDBEntry *entry = static_cast<AliCDBEntry*>(AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals"));
     if (entry) 
       fPedestalData =  static_cast<AliCaloCalibPedestal*>(entry->GetObject());
