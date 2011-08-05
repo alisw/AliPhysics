@@ -571,15 +571,15 @@ Bool_t AliTriggerRunScalers::CalculateMu(Double_t &mu, Double_t &errmu, ULong64_
       Double_t pB = (Double_t)countsB/(nB*orbits); // probability for B trigger
       if (!bkgCorr || nAC==0 ) {
          mu = -log(1-pB)/triggerEff;
-         errmu = pB/((1-pB)*nB*orbits) + mu*mu*errorEff*errorEff/(triggerEff*triggerEff); //
+         errmu = TMath::Sqrt(pB/((1-pB)*nB*orbits) + mu*mu*errorEff*errorEff/(triggerEff*triggerEff)); //
          return kTRUE;
       }
       else 
       {
          Double_t pAC = (Double_t)countsAC/(nAC*orbits); // probability for AC trigger (background)
-         mu = ( log(1-pAC) - log(1-pB) )/triggerEff;
+         mu = ( log(1.-pAC) - log(1.-pB) )/triggerEff;
          // error
-         errmu =  pB/((1-pB)*nB*orbits) + pAC/((1-pAC)*nAC*orbits) + mu*mu*errorEff*errorEff/(triggerEff*triggerEff);
+         errmu =  TMath::Sqrt(pB/((1.-pB)*nB*orbits) + pAC/((1.-pAC)*nAC*orbits) /*- 2*TMath::Sqrt(pB*pAC/(nB*nAC*(1.-pB)*(1.-pAC)))/orbits*/ + mu*mu*errorEff*errorEff/(triggerEff*triggerEff)); // assume no correlation between B and AC rates, hence no cov term in error
          return kTRUE;
       }
    }
@@ -593,7 +593,7 @@ Bool_t AliTriggerRunScalers::CalculateMu(Double_t &mu, Double_t &errmu, ULong64_
       Double_t pB = (Double_t)countsB/beamB; // probability for B trigger
       if (!bkgCorr || nAC==0 || nB==0) {
          mu = -log(1-pB)/triggerEff;
-         errmu = pB/((1-pB)*beamB) + mu*mu*errorEff*errorEff/(triggerEff*triggerEff); //
+         errmu = TMath::Sqrt(pB/((1-pB)*beamB) + mu*mu*errorEff*errorEff/(triggerEff*triggerEff)); //
          return kTRUE;
       }
       else
@@ -601,7 +601,7 @@ Bool_t AliTriggerRunScalers::CalculateMu(Double_t &mu, Double_t &errmu, ULong64_
          Double_t pAC = (Double_t)countsAC/(nAC*beamB/nB); // probability for AC trigger (background)
          mu = ( log(1-pAC) - log(1-pB) )/triggerEff;
          // error
-         errmu =  pB/((1-pB)*beamB) + pAC/((1-pAC)*nAC*beamB/nB) + mu*mu*errorEff*errorEff/(triggerEff*triggerEff);
+         errmu =  TMath::Sqrt(pB/((1-pB)*beamB) + pAC/((1-pAC)*nAC*beamB/nB) + mu*mu*errorEff*errorEff/(triggerEff*triggerEff));
          return kTRUE;
       }
    }
