@@ -629,7 +629,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     }
     
     if(fCaloClusterArr->GetEntriesFast() != fClusterArr->GetEntriesFast()){
-      printf("AliAnalisysTaskEMCALClusterize::UserExec() - Some RecRoints not transformed into CaloClusters: Input entries %d - Output entries %d - %d (not fast)",
+      printf("AliAnalisysTaskEMCALClusterize::UserExec() - Some RecRoints not transformed into CaloClusters: Input entries %d - Output entries %d - %d (not fast)\n",
              fClusterArr->GetEntriesFast(), fCaloClusterArr->GetEntriesFast(), fCaloClusterArr->GetEntries());
     }
     
@@ -887,7 +887,6 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     clus->SetM02(elipAxis[0]*elipAxis[0]) ;
     clus->SetM20(elipAxis[1]*elipAxis[1]) ;
     clus->SetDistanceToBadChannel(recPoint->GetDistanceToBadTower()); 
-    printf("RP to CL: i %d, j %d, rp %p, cl %p\n",i,j,recPoint,clus);
     
     //MC
     Int_t  parentMult  = 0;
