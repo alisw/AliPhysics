@@ -10,12 +10,43 @@
 #include "AliTOFT0maker.h"
 
 ClassImp(AliFlowBayesianPID)
+  
+TH2D* AliFlowBayesianPID::hPriors[5] = {NULL, NULL, NULL, NULL, NULL}; // histo with priors (hardcoded)
+TSpline3* AliFlowBayesianPID::fMism = NULL; // function for mismatch
+AliTOFGeometry* AliFlowBayesianPID::fTofGeo = NULL; // TOF geometry needed to reproduce mismatch shape
 
 //________________________________________________________________________
 AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid) 
-  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fIsMC(0), fTOFres(80.0), fMism(NULL), fTofGeo(new AliTOFGeometry()), fTOFResponse(NULL), fTPCResponse(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL)
+  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fIsMC(0), fTOFres(80.0), fTOFResponse(NULL), fTPCResponse(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL)
 {
   // Constructor
+  Bool_t redopriors = kFALSE;
+  if(! hPriors[0]){
+    hPriors[0] = new TH2D("hPriorsEl","Priors as a function of Centrality [e];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
+    redopriors = kTRUE;
+  }
+  if(! hPriors[1]){
+    hPriors[1] = new TH2D("hPriorsMu","Priors as a function of Centrality [#mu];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
+    redopriors = kTRUE;
+  }
+  if(! hPriors[2]){
+    hPriors[2] = new TH2D("hPriorsPi","Priors as a function of Centrality [#pi];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
+    redopriors = kTRUE;
+  }
+  if(! hPriors[3]){
+	hPriors[3] = new TH2D("hPriorsKa","Priors as a function of Centrality [K];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
+	redopriors = kTRUE;
+  }
+  if(! hPriors[4]){
+    hPriors[4] = new TH2D("hPriorsPr","Priors as a function of Centrality [p];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
+    redopriors = kTRUE;
+  }
+  
+  if(redopriors) SetPriors();
+
+  if(!fMism) fMism = GetMismatch();
+  if(! fTofGeo) fTofGeo = new AliTOFGeometry();
+
   if(! esdpid)
     fPIDesd = new AliESDpid();
   else
@@ -35,12 +66,6 @@ AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid)
   fMass[3] = fDB->GetParticle(321)->Mass(); // K mass
   fMass[4] = fDB->GetParticle(2212)->Mass(); // p mass
   
-  hPriors[0] = new TH2D("hPriorsEl","Priors as a function of Centrality [e];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
-  hPriors[1] = new TH2D("hPriorsMu","Priors as a function of Centrality [#mu];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
-  hPriors[2] = new TH2D("hPriorsPi","Priors as a function of Centrality [#pi];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
-  hPriors[3] = new TH2D("hPriorsKa","Priors as a function of Centrality [K];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
-  hPriors[4] = new TH2D("hPriorsPr","Priors as a function of Centrality [p];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
-
   // TOF response
   fTOFResponse = new TF1("fTOFprob","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2])",-7,7);
   fTOFResponse->SetParameter(0,1);
@@ -60,10 +85,6 @@ AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid)
   fTPCResponse->SetLineColor(4);
 
   fBBdata = new TF1("fBBdata", "[0] * AliExternalTrackParam::BetheBlochAleph(x, [1], [2], [3], [4], [5])",0.1, 4000.);
-
-  SetPriors();
-
-  fMism = GetMismatch();
 
   // initialize the mask
   for(Int_t i=0;i < fNdetectors;i++){

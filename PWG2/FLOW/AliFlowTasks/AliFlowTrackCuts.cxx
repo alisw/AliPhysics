@@ -60,8 +60,6 @@
 
 ClassImp(AliFlowTrackCuts)
 
-AliFlowBayesianPID *gBayesianPID;
-
 //-----------------------------------------------------------------------
 AliFlowTrackCuts::AliFlowTrackCuts():
   AliFlowTrackSimpleCuts(),
@@ -137,11 +135,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   SetPriors(); //init arrays
 
   // New PID procedure (Bayesian Combined PID)
-  if(! gBayesianPID){
-    gBayesianPID = new AliFlowBayesianPID();
-    gBayesianPID->SetNewTrackParam();
-  }
-  fBayesianResponse = gBayesianPID;
+  fBayesianResponse = new AliFlowBayesianPID();
+  fBayesianResponse->SetNewTrackParam();
 }
 
 //-----------------------------------------------------------------------
@@ -226,11 +221,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   SetPriors(); //init arrays
 
   // New PID procedure (Bayesian Combined PID)
-  if(! gBayesianPID){
-    gBayesianPID = new AliFlowBayesianPID();
-    gBayesianPID->SetNewTrackParam();
-  }
-  fBayesianResponse = gBayesianPID;
+  fBayesianResponse = new AliFlowBayesianPID();
+  fBayesianResponse->SetNewTrackParam();
 }
 
 //-----------------------------------------------------------------------
@@ -312,11 +304,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   if (that.fQA) DefineHistograms();
 
   // New PID procedure (Bayesian Combined PID)
-  if(! gBayesianPID){
-    gBayesianPID = new AliFlowBayesianPID();
-    gBayesianPID->SetNewTrackParam();
-  }
-  fBayesianResponse = gBayesianPID;
+  fBayesianResponse = new AliFlowBayesianPID();
+  fBayesianResponse->SetNewTrackParam();
 }
 
 //-----------------------------------------------------------------------
@@ -406,11 +395,8 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCurrCentr = that.fCurrCentr;
 
   // New PID procedure (Bayesian Combined PID)
-  if(! gBayesianPID){
-    gBayesianPID = new AliFlowBayesianPID();
-    gBayesianPID->SetNewTrackParam();
-  }
-  fBayesianResponse = gBayesianPID;
+  fBayesianResponse = new AliFlowBayesianPID();
+  fBayesianResponse->SetNewTrackParam();
 
   return *this;
 }

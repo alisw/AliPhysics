@@ -139,7 +139,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t GetPmdNcell() const {return fPmdNcell; }
   Float_t GetBeta(const AliESDtrack* t);
   Float_t Getdedx(const AliESDtrack* t) const;
- 
+  Float_t GetBayesianProb() const {return TMath::MaxElement(5,fProbBayes);};
+
   void SetQA(Bool_t b=kTRUE) {if (b) DefineHistograms();}
   TList* GetQA() const {return fQA;}
   TH1* QAbefore(Int_t i) {return static_cast<TH1*>(static_cast<TList*>(fQA->At(0))->At(i));}

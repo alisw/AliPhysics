@@ -100,18 +100,17 @@ class AliFlowBayesianPID : public AliPIDResponse {
   void SetPriors();
 
   static const Int_t fNdetectors = 2;
+  static TH2D* hPriors[5]; // histo with priors (hardcoded)
+  static TSpline3 *fMism; // function for mismatch
+  static AliTOFGeometry *fTofGeo; // TOF geometry needed to reproduce mismatch shape
 
   AliESDpid *fPIDesd;//ESDpid object
   TDatabasePDG *fDB; // Database pdg
   Double_t fMass[5]; // mass for el(0),mu(1),pi(2),K(3),p(4)
-  TH2D* hPriors[5]; // histo with priors (hardcoded)
 
   Bool_t fNewTrackParam; // switch for new tracking resolution TOF parameterization
   Bool_t fIsMC; // switch if MC data
   Float_t fTOFres; // TOF res needed only if T0-TOF should be recomputed
-
-  TSpline3 *fMism; // function for mismatch
-  AliTOFGeometry *fTofGeo; // TOF geometry needed to reproduce mismatch shape
 
   AliFlowBayesianPID(const AliFlowBayesianPID&); // not implemented
   AliFlowBayesianPID& operator=(const AliFlowBayesianPID&); // not implemented 
