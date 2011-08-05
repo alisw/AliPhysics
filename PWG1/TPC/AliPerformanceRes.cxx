@@ -910,10 +910,7 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     if(!track) continue;
 
     AliESDfriendTrack *friendTrack=0;
-    if(bUseESDfriend) {
-      friendTrack=esdFriend->GetTrack(iTrack);
-      if(!friendTrack) continue;
-    }
+
 
     Int_t label = TMath::Abs(track->GetLabel()); 
     if ( label > stack->GetNtrack() ) 
@@ -941,7 +938,15 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,track,esdEvent);
     else if(GetAnalysisMode() == 2) ProcessConstrained(stack,track,esdEvent);
     else if(GetAnalysisMode() == 3) ProcessInnerTPC(mcEvent,track,esdEvent);
-    else if(GetAnalysisMode() == 4) ProcessOuterTPC(mcEvent,track,friendTrack,esdEvent);
+    else if(GetAnalysisMode() == 4) {
+
+    if(bUseESDfriend) {
+      friendTrack=esdFriend->GetTrack(iTrack);
+      if(!friendTrack) continue;
+    }
+
+	ProcessOuterTPC(mcEvent,track,friendTrack,esdEvent);
+	}
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
       return;
