@@ -136,6 +136,7 @@ AliTRDCalibraFit::AliTRDCalibraFit()
   ,fAccCDB(kFALSE)
   ,fMinEntries(800)
   ,fRebin(1)
+  ,fScaleGain(0.02431)
   ,fNumberFit(0)
   ,fNumberFitSuccess(0)
   ,fNumberEnt(0)
@@ -195,6 +196,7 @@ AliTRDCalibraFit::AliTRDCalibraFit(const AliTRDCalibraFit &c)
 ,fAccCDB(c.fAccCDB)
 ,fMinEntries(c.fMinEntries)
 ,fRebin(c.fRebin)
+,fScaleGain(c.fScaleGain)
 ,fNumberFit(c.fNumberFit)
 ,fNumberFitSuccess(c.fNumberFitSuccess)
 ,fNumberEnt(c.fNumberEnt)
@@ -543,6 +545,54 @@ Bool_t AliTRDCalibraFit::AnalyseCH(AliTRDCalibraVector *calvect)
   delete fDebugStreamer;
   fDebugStreamer = 0x0;
   return kTRUE;
+}
+//____________Functions fit Online CH2d________________________________________
+Double_t AliTRDCalibraFit::AnalyseCHAllTogether(const TH2I *ch)
+{
+  //
+  // Fit the 1D histos, projections of the 2D ch on the Xaxis, for each
+  // calibration group normalized the resulted coefficients (to 1 normally)
+  //
+  Int_t    nbins   = ch->GetNbinsX();// charge
+  Int_t    nybins  = ch->GetNbinsY();// groups number
+  // Take the histo
+  TH1I *projch = (TH1I *) ch->ProjectionX("projch",1,nybins+1,(Option_t *)"e");
+  projch->SetDirectory(0);
+  // Number of entries for this calibration group
+  Double_t nentries = 0.0;
+  Double_t mean = 0.0;
+  for (Int_t k = 0; k < nbins; k++) {
+    nentries += projch->GetBinContent(k+1);
+    mean += projch->GetBinCenter(k+1)*projch->GetBinContent(k+1);
+    projch->SetBinError(k+1,TMath::Sqrt(projch->GetBinContent(k+1)));
+  }
+  projch->SetEntries(nentries);
+  //printf("The number of entries for the group %d is %f\n",idect,nentries);
+  if (nentries > 0) {
+    fNumberEnt++;
+    mean /= nentries;
+  }
+  // This detector has not enough statistics or was off
+  if (nentries <= fMinEntries) {
+    delete projch;
+    AliInfo(Form("There are %d entries for all together, it is not enough (%d)",(Int_t) nentries, fMinEntries));
+    return -100.0;
+  }
+  //Method choosen
+  switch(fMethod)
+    {
+    case 0: FitMeanW((TH1 *) projch, nentries); break;
+    case 1: FitMean((TH1 *) projch, nentries, mean); break;
+    case 2: FitCH((TH1 *) projch, mean); break;
+    case 3: FitBisCH((TH1 *) projch, mean); break;
+    default: return kFALSE;
+    }
+  delete fDebugStreamer;
+  fDebugStreamer = 0x0;
+  
+  if(fCurrentCoef[0] > 0.0) return fCurrentCoef[0];
+  else return -100.0;
+  
 }
 //________________functions fit Online PH2d____________________________________
 Bool_t AliTRDCalibraFit::AnalysePH(const TProfile2D *ph)
@@ -1171,6 +1221,91 @@ Bool_t AliTRDCalibraFit::AnalyseLinearFitters(AliTRDCalibraVdriftLinearFit *cali
   delete fDebugStreamer;
   fDebugStreamer = 0x0;
   return kTRUE;
+  
+}
+//____________Functions fit Online CH2d________________________________________
+Double_t AliTRDCalibraFit::AnalyseLinearFittersAllTogether(AliTRDCalibraVdriftLinearFit *calivdli)
+{
+  //
+  // The linear method
+  //
+
+  // Add histos
+
+  TH2S *linearfitterhisto = 0x0;
+  
+  for(Int_t idet = 0; idet < 540; idet++){
+    
+    TH2S * u = calivdli->GetLinearFitterHistoForce(idet);
+    if(idet == 0) linearfitterhisto = u;
+    else linearfitterhisto->Add(u);
+
+  }
+
+  // Fit
+
+  Int_t entries = 0;
+  TAxis *xaxis = linearfitterhisto->GetXaxis();
+  TAxis *yaxis = linearfitterhisto->GetYaxis();
+  TLinearFitter linearfitter = TLinearFitter(2,"pol1");
+  //printf("test\n");
+  Double_t integral = linearfitterhisto->Integral();
+  //printf("Integral is %f\n",integral);
+  Bool_t securitybreaking = kFALSE;
+  if(TMath::Abs(integral-1199) < 0.00001) securitybreaking = kTRUE;
+  for(Int_t ibinx = 0; ibinx < linearfitterhisto->GetNbinsX(); ibinx++){
+    for(Int_t ibiny = 0; ibiny < linearfitterhisto->GetNbinsY(); ibiny++){
+      if(linearfitterhisto->GetBinContent(ibinx+1,ibiny+1)>0){
+	Double_t x = xaxis->GetBinCenter(ibinx+1);
+	Double_t y = yaxis->GetBinCenter(ibiny+1);
+	
+	for(Int_t k = 0; k < (Int_t)linearfitterhisto->GetBinContent(ibinx+1,ibiny+1); k++){
+	  if(!securitybreaking){
+	    linearfitter.AddPoint(&x,y);
+	    entries++;
+	  }
+	  else {
+	    if(entries< 1198){
+	      linearfitter.AddPoint(&x,y);
+	      entries++; 
+	    }
+	  }
+	}
+	
+      }
+    }
+  }
+      
+      //printf("Find %d entries for the detector %d\n",arrayI[cb],cb);
+
+      // Eval the linear fitter
+  if(entries > fMinEntries){
+    TVectorD  par  = TVectorD(2);
+    //printf("Fit\n");
+    if((linearfitter.EvalRobust(0.8)==0)) {
+      //printf("Take the param\n");
+      linearfitter.GetParameters(par);
+      //printf("Done\n");
+      //par.Print();
+      //printf("Finish\n");
+      // Put the fCurrentCoef
+      fCurrentCoef[0]  = -par[1];
+      // here the database must be the one of the reconstruction for the lorentz angle....
+      fCurrentCoef2[0] = (par[0]+fCurrentCoef[1]*fCurrentCoef2[1])/fCurrentCoef[0];
+      
+      return fCurrentCoef[0];
+    }
+    else return -100.0;
+    
+    
+  }
+  else {
+    return -100.0;
+  }
+  
+  delete linearfitterhisto;
+  delete fDebugStreamer;
+  fDebugStreamer = 0x0;
   
 }
 //____________Functions for seeing if the pad is really okey___________________
@@ -1910,6 +2045,7 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectGain(const TObjArray *vectorFit, 
   // Create the DetObject
   AliTRDCalDet *object = new AliTRDCalDet("ChamberGainFactor","GainFactor (detector value)");
   
+  fScaleGain = scaleFitFactor;
  
   Int_t loop = (Int_t) vectorFit->GetEntriesFast();
   if(loop != 540) AliInfo("The Vector Fit is not complete!");

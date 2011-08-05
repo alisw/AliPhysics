@@ -60,6 +60,7 @@ class AliTRDCalibraFit : public TObject {
   // Functions fit for CH
   Bool_t   AnalyseCH(const TH2I *ch);
   Bool_t   AnalyseCH(AliTRDCalibraVector *calvect);
+  Double_t AnalyseCHAllTogether(const TH2I *ch);
   
   // Functions fit for PH       
   Bool_t   AnalysePH(const TProfile2D *ph);
@@ -74,6 +75,7 @@ class AliTRDCalibraFit : public TObject {
   
   // Functions fit for vdrift/lorentzangle
   Bool_t   AnalyseLinearFitters(AliTRDCalibraVdriftLinearFit *calivdli);
+  Double_t AnalyseLinearFittersAllTogether(AliTRDCalibraVdriftLinearFit *calivdli);
   
   // Pad Calibration
   Bool_t   SetModeCalibration(TString name, Int_t i);
@@ -129,6 +131,7 @@ class AliTRDCalibraFit : public TObject {
   Bool_t   GetAccCDB() const                                         { return fAccCDB;                 }
   Int_t    GetMinEntries() const                                     { return fMinEntries;             }
   Short_t  GetRebin() const                                          { return fRebin;                  }
+  Float_t  GetScaleFactorGain() const                                { return fScaleGain;              }
   
   // Statistics
   Int_t    GetNumberFit() const                                      { return fNumberFit;              }
@@ -206,6 +209,7 @@ class AliTRDCalibraFit : public TObject {
        Bool_t       fAccCDB;                // If there is a calibration database to be compared with....
        Int_t        fMinEntries;            // Min Entries to fit the histo
        Short_t      fRebin;                 // If you want to rebin the histo for the gain calibration 
+       Float_t      fScaleGain;            // Scale Factor used to scale the gain
        
        // Statistics      
        Int_t        fNumberFit;             // To know how many pad groups have been fitted
@@ -350,7 +354,7 @@ class AliTRDCalibraFit : public TObject {
        virtual ~AliTRDCalibraFit();
        
        
-  ClassDef(AliTRDCalibraFit,2)                 // TRD Calibration class
+  ClassDef(AliTRDCalibraFit,3)                 // TRD Calibration class
 	 
 };
   

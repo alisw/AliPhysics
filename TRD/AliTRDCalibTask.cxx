@@ -35,6 +35,7 @@ using namespace std;
 #include "TH2I.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TH2S.h"
 #include "TList.h"
 #include "TMath.h"
 #include "TObject.h"
@@ -45,6 +46,8 @@ using namespace std;
 #include "TStyle.h"
 #include "TLine.h"
 #include "TIterator.h"
+#include "TLinearFitter.h"
+#include "TVectorD.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -111,6 +114,10 @@ ClassImp(AliTRDCalibTask)
       fPH2dSum(0),
       fCH2dSM(0),
       fPH2dSM(0),
+      fCH2dTest(0),
+      fPH2dTest(0),
+      fLinearVdriftTest(0),
+      fOnInstance(kTRUE),
       fHisto2d(kTRUE),
       fVector2d(kFALSE),
       fVdriftLinear(kTRUE),
@@ -198,6 +205,9 @@ AliTRDCalibTask::~AliTRDCalibTask()
   if(fPH2dSum) delete fPH2dSum;
   if(fCH2dSM) delete fCH2dSM;
   if(fPH2dSM) delete fPH2dSM;
+  if(fCH2dTest) delete fCH2dTest;
+  if(fPH2dTest) delete fPH2dTest;
+  if(fLinearVdriftTest) delete fLinearVdriftTest;
   if(fCalDetGain) delete fCalDetGain;
   
   if(fSelectedTrigger) {
@@ -228,59 +238,63 @@ void AliTRDCalibTask::UserCreateOutputObjects()
     }
   }
 
-  // instance calibration 
-  fTRDCalibraFillHisto = AliTRDCalibraFillHisto::Instance();
-  fTRDCalibraFillHisto->SetHisto2d(fHisto2d); // choose to use histograms
-  fTRDCalibraFillHisto->SetVector2d(fVector2d); // choose to use vectors
-  fTRDCalibraFillHisto->SetCH2dOn();  // choose to calibrate the gain
-  fTRDCalibraFillHisto->SetPH2dOn();  // choose to calibrate the drift velocity
-  fTRDCalibraFillHisto->SetPRF2dOn(); // choose to look at the PRF
-  fTRDCalibraFillHisto->SetLinearFitterOn(fVdriftLinear); // Other possibility vdrift VDRIFT
-  fTRDCalibraFillHisto->SetLinearFitterDebugOn(fVdriftLinear); // Other possibility vdrift
-  for(Int_t k = 0; k < 3; k++){
-    if(((fNz[k] != 10) && (fNrphi[k] != 10)) && ((fNz[k] != 100) && (fNrphi[k] != 100))) {
-      fTRDCalibraFillHisto->SetNz(k,fNz[k]);                                    // Mode calibration
-      fTRDCalibraFillHisto->SetNrphi(k,fNrphi[k]);                             // Mode calibration
-    }
-    else {
-      if((fNz[k] == 100) && (fNrphi[k] == 100))  {
-	if(fVector2d) AliInfo("The mode all together is not supported by the vector method");
-	fTRDCalibraFillHisto->SetAllTogether(k);
-      }
-      if((fNz[k] == 10) && (fNrphi[k] == 10))  {
-	if(fVector2d) AliInfo("The mode per supermodule is not supported by the vector method");
-	fTRDCalibraFillHisto->SetPerSuperModule(k);
-      }
-    }
-  }
-  // Variables for how to fill
-  fTRDCalibraFillHisto->SetFillWithZero(fFillZero);
-  fTRDCalibraFillHisto->SetNormalizeNbOfCluster(fNormalizeNbOfCluster); 
-  fTRDCalibraFillHisto->SetMaxCluster(fMaxCluster);
-  fTRDCalibraFillHisto->SetNbMaxCluster(fNbMaxCluster);
-  
-  // Init with 30 timebins
-  fTRDCalibraFillHisto->Init2Dhistos(fNbTimeBins); // initialise the histos
-  fTRDCalibraFillHisto->SetNumberClusters(fLow); // At least 11 clusters
-  fTRDCalibraFillHisto->SetNumberClustersf(fHigh); // At least 11 clusters
-  fRelativeScale = fTRDCalibraFillHisto->GetRelativeScale(); // Get the relative scale for the gain
-  
-  // For testing only
-  if(fDebug > 2) fTRDCalibraFillHisto->SetDebugLevel(1); //debug stuff
-  
   // output list
   fListHist = new TList();
   fListHist->SetOwner();
-  if(fHisto2d) {  
-    fListHist->Add(fTRDCalibraFillHisto->GetCH2d());
-    fListHist->Add(fTRDCalibraFillHisto->GetPH2d()); 
-    fListHist->Add(fTRDCalibraFillHisto->GetPRF2d());
-  } 
-  if(fVdriftLinear) fListHist->Add((TObject *) fTRDCalibraFillHisto->GetVdriftLinearFit());
-  if(fVector2d) fListHist->Add((TObject *) fTRDCalibraFillHisto->GetCalibraVector()); //calibra vector  
-  fNEvents = new TH1I("NEvents","NEvents", 2, 0, 2);
+
+  // instance calibration 
+  fTRDCalibraFillHisto = AliTRDCalibraFillHisto::Instance();
+  if(fOnInstance) {
+    fTRDCalibraFillHisto->SetHisto2d(fHisto2d); // choose to use histograms
+    fTRDCalibraFillHisto->SetVector2d(fVector2d); // choose to use vectors
+    fTRDCalibraFillHisto->SetCH2dOn();  // choose to calibrate the gain
+    fTRDCalibraFillHisto->SetPH2dOn();  // choose to calibrate the drift velocity
+    fTRDCalibraFillHisto->SetPRF2dOn(); // choose to look at the PRF
+    fTRDCalibraFillHisto->SetLinearFitterOn(fVdriftLinear); // Other possibility vdrift VDRIFT
+    fTRDCalibraFillHisto->SetLinearFitterDebugOn(fVdriftLinear); // Other possibility vdrift
+    for(Int_t k = 0; k < 3; k++){
+      if(((fNz[k] != 10) && (fNrphi[k] != 10)) && ((fNz[k] != 100) && (fNrphi[k] != 100))) {
+	fTRDCalibraFillHisto->SetNz(k,fNz[k]);                                    // Mode calibration
+	fTRDCalibraFillHisto->SetNrphi(k,fNrphi[k]);                             // Mode calibration
+      }
+      else {
+	if((fNz[k] == 100) && (fNrphi[k] == 100))  {
+	  if(fVector2d) AliInfo("The mode all together is not supported by the vector method");
+	  fTRDCalibraFillHisto->SetAllTogether(k);
+	}
+	if((fNz[k] == 10) && (fNrphi[k] == 10))  {
+	  if(fVector2d) AliInfo("The mode per supermodule is not supported by the vector method");
+	  fTRDCalibraFillHisto->SetPerSuperModule(k);
+	}
+      }
+    }
+    // Variables for how to fill
+    fTRDCalibraFillHisto->SetFillWithZero(fFillZero);
+    fTRDCalibraFillHisto->SetNormalizeNbOfCluster(fNormalizeNbOfCluster); 
+    fTRDCalibraFillHisto->SetMaxCluster(fMaxCluster);
+    fTRDCalibraFillHisto->SetNbMaxCluster(fNbMaxCluster);
+  
+    // Init with 30 timebins
+    fTRDCalibraFillHisto->Init2Dhistos(fNbTimeBins); // initialise the histos
+    fTRDCalibraFillHisto->SetNumberClusters(fLow); // At least 11 clusters
+    fTRDCalibraFillHisto->SetNumberClustersf(fHigh); // At least 11 clusters
+    
+    // For testing only
+    if(fDebug > 2) fTRDCalibraFillHisto->SetDebugLevel(1); //debug stuff
+    
+    if(fHisto2d) {  
+      fListHist->Add(fTRDCalibraFillHisto->GetCH2d());
+      fListHist->Add(fTRDCalibraFillHisto->GetPH2d()); 
+      fListHist->Add(fTRDCalibraFillHisto->GetPRF2d());
+    } 
+    if(fVdriftLinear) fListHist->Add((TObject *)fTRDCalibraFillHisto->GetVdriftLinearFit());
+    if(fVector2d) fListHist->Add((TObject *) fTRDCalibraFillHisto->GetCalibraVector()); //calibra vector  
+  }
+  fRelativeScale = fTRDCalibraFillHisto->GetRelativeScale(); // Get the relative scale for the gain
+  
+  fNEvents = new TH1I(Form("NEvents_%s",(const char*)fName),"NEvents", 2, 0, 2);
   fListHist->Add(fNEvents);
-  fNEventsInput = new TH1I("NEventsInput","NEventsInput", 2, 0, 2);
+  fNEventsInput = new TH1I(Form("NEventsInput_%s",(const char*)fName),"NEventsInput", 2, 0, 2);
   fListHist->Add(fNEventsInput);
   
   // absolute gain calibration even without AliESDfriend
@@ -293,7 +307,7 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   for(Int_t i=0; i<=nBinsPt; i++) binLimLogPt[i]=(Double_t)TMath::Log10(minPt) + (TMath::Log10(maxPt)-TMath::Log10(minPt))/nBinsPt*(Double_t)i ;
   for(Int_t i=0; i<=nBinsPt; i++) binLimPt[i]=(Double_t)TMath::Power(10,binLimLogPt[i]);
   
-  fAbsoluteGain = new TH2F("AbsoluteGain","AbsoluteGain", 200, 0.0, 700.0, nBinsPt, binLimPt);
+  fAbsoluteGain = new TH2F(Form("AbsoluteGain_%s",(const char*)fName),"AbsoluteGain", 200, 0.0, 700.0, nBinsPt, binLimPt);
   fAbsoluteGain->SetYTitle("Momentum at TRD");
   fAbsoluteGain->SetXTitle("charge deposit [a.u]");
   fAbsoluteGain->SetZTitle("counts");
@@ -301,15 +315,36 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   fAbsoluteGain->Sumw2();
   fListHist->Add(fAbsoluteGain);
   
-
-  
   /////////////////////////////////////////
   // First debug level
   ///////////////////////////////////////
   if(fDebug > 0) {
+
+    fLinearVdriftTest = new TH2S(Form("LFDV0testversion_%s",(const char*)fName),"LFDV0testversion",36,-0.9,0.9,48,-1.2,1.2);
+    fLinearVdriftTest->SetXTitle("tan(phi_{track})");
+    fLinearVdriftTest->SetYTitle("dy/dt");
+    fLinearVdriftTest->SetZTitle("Number of tracklets");
+    fLinearVdriftTest->SetStats(0);
+    fLinearVdriftTest->SetDirectory(0);
     
     // Standart with AliESDfriend
-    fPH2dSM = new TProfile2D("PH2dSM","Nz10Nrphi10"
+    fPH2dTest = new TProfile2D(Form("PH2dTest_%s",(const char*)fName),"Nz0Nrphi0"
+			    ,fNbTimeBins,-0.05,(Double_t)((fNbTimeBins-0.5)/10.0)
+			   ,540,0,540);
+    fPH2dTest->SetYTitle("Det/pad groups");
+    fPH2dTest->SetXTitle("time [#mus]");
+    fPH2dTest->SetZTitle("<PH> [a.u.]");
+    fPH2dTest->SetStats(0);
+    //
+    fCH2dTest = new TH2I(Form("CH2dTest_%s",(const char*)fName),"Nz0Nrphi0",50,0,300,540,0,540);
+    fCH2dTest->SetYTitle("Det/pad groups");
+    fCH2dTest->SetXTitle("charge deposit [a.u]");
+    fCH2dTest->SetZTitle("counts");
+    fCH2dTest->SetStats(0);
+    fCH2dTest->Sumw2();
+
+    //
+    fPH2dSM = new TProfile2D(Form("PH2dSM_%s",(const char*)fName),"Nz10Nrphi10"
 			    ,fNbTimeBins,-0.05,(Double_t)((fNbTimeBins-0.5)/10.0)
 			   ,18,0,18);
     fPH2dSM->SetYTitle("Det/pad groups");
@@ -317,14 +352,14 @@ void AliTRDCalibTask::UserCreateOutputObjects()
     fPH2dSM->SetZTitle("<PH> [a.u.]");
     fPH2dSM->SetStats(0);
     //
-    fCH2dSM = new TH2I("CH2dSM","Nz10Nrphi10",50,0,300,18,0,18);
+    fCH2dSM = new TH2I(Form("CH2dSM_%s",(const char*)fName),"Nz10Nrphi10",50,0,300,18,0,18);
     fCH2dSM->SetYTitle("Det/pad groups");
     fCH2dSM->SetXTitle("charge deposit [a.u]");
     fCH2dSM->SetZTitle("counts");
     fCH2dSM->SetStats(0);
     fCH2dSM->Sumw2();
     //
-    fPH2dSum = new TProfile2D("PH2dSum","Nz100Nrphi100"
+    fPH2dSum = new TProfile2D(Form("PH2dSum_%s",(const char*)fName),"Nz100Nrphi100"
 			    ,fNbTimeBins,-0.05,(Double_t)((fNbTimeBins-0.5)/10.0)
 			    ,1,0,1);
     fPH2dSum->SetYTitle("Det/pad groups");
@@ -332,25 +367,23 @@ void AliTRDCalibTask::UserCreateOutputObjects()
     fPH2dSum->SetZTitle("<PH> [a.u.]");
     fPH2dSum->SetStats(0);
     //
-    fCH2dSum = new TH2I("CH2dSum","Nz100Nrphi100",50,0,300,1,0,1);
+    fCH2dSum = new TH2I(Form("CH2dSum_%s",(const char*)fName),"Nz100Nrphi100",50,0,300,1,0,1);
     fCH2dSum->SetYTitle("Det/pad groups");
     fCH2dSum->SetXTitle("charge deposit [a.u]");
     fCH2dSum->SetZTitle("counts");
     fCH2dSum->SetStats(0);
     fCH2dSum->Sumw2();
-    //
-    fNbGoodTracks = new TH2F("NbGoodTracks","NbGoodTracks",500,0.0,2500.0,200,0.0,100.0);
-    fNbGoodTracks->SetXTitle("Nb of good tracks");
-    fNbGoodTracks->SetYTitle("Centrality");
-    fNbGoodTracks->SetStats(0);
-
+    
     
     // Add them
+    fListHist->Add(fLinearVdriftTest);
+    fListHist->Add(fPH2dTest);
+    fListHist->Add(fCH2dTest);
     fListHist->Add(fPH2dSM);
     fListHist->Add(fCH2dSM);
     fListHist->Add(fPH2dSum);
     fListHist->Add(fCH2dSum);
-    fListHist->Add(fNbGoodTracks);
+
   }
 
   /////////////////////////////////////////
@@ -358,35 +391,42 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   ///////////////////////////////////////
   if(fDebug > 1) {
 
-    fNbTRDTrack = new TH1F("TRDTrack","TRDTrack",50,0,50);
+    fNbGoodTracks = new TH2F(Form("NbGoodTracks_%s",(const char*)fName),"NbGoodTracks",500,0.0,2500.0,200,0.0,100.0);
+    fNbGoodTracks->SetXTitle("Nb of good tracks");
+    fNbGoodTracks->SetYTitle("Centrality");
+    fNbGoodTracks->SetStats(0);
+
+    fNbTRDTrack = new TH1F(Form("TRDTrack_%s",(const char*)fName),"TRDTrack",50,0,50);
     fNbTRDTrack->Sumw2();
-    fNbTRDTrackOffline = new TH1F("TRDTrackOffline","TRDTrackOffline",50,0,50);
+    fNbTRDTrackOffline = new TH1F(Form("TRDTrackOffline_%s",(const char*)fName),"TRDTrackOffline",50,0,50);
     fNbTRDTrackOffline->Sumw2();
-    fNbTRDTrackStandalone = new TH1F("TRDTrackStandalone","TRDTrackStandalone",50,0,50);
+    fNbTRDTrackStandalone = new TH1F(Form("TRDTrackStandalone_%s",(const char*)fName),"TRDTrackStandalone",50,0,50);
     fNbTRDTrackStandalone->Sumw2();
-    fNbTPCTRDtrack = new TH2F("NbTPCTRDtrack","NbTPCTRDtrack",100,0,100,100,0,100);
+    fNbTPCTRDtrack = new TH2F(Form("NbTPCTRDtrack_%s",(const char*)fName),"NbTPCTRDtrack",100,0,100,100,0,100);
     fNbTPCTRDtrack->Sumw2();
     //
-    fNbTimeBin = new TH1F("NbTimeBin","NbTimeBin",35,0,35);
+    fNbTimeBin = new TH1F(Form("NbTimeBin_%s",(const char*)fName),"NbTimeBin",35,0,35);
     fNbTimeBin->Sumw2();
-    fNbTimeBinOffline = new TH1F("NbTimeBinOffline","NbTimeBinOffline",35,0,35);
+    fNbTimeBinOffline = new TH1F(Form("NbTimeBinOffline_%s",(const char*)fName),"NbTimeBinOffline",35,0,35);
     fNbTimeBinOffline->Sumw2();
-    fNbTimeBinStandalone = new TH1F("NbTimeBinStandalone","NbTimeBinStandalone",35,0,35);
+    fNbTimeBinStandalone = new TH1F(Form("NbTimeBinStandalone_%s",(const char*)fName),"NbTimeBinStandalone",35,0,35);
     fNbTimeBinStandalone->Sumw2();
     //
-    fNbClusters = new TH1F("NbClusters","",35,0,35);
+    fNbClusters = new TH1F(Form("NbClusters_%s",(const char*)fName),"",35,0,35);
     fNbClusters->Sumw2();
-    fNbClustersOffline = new TH1F("NbClustersOffline","",35,0,35);
+    fNbClustersOffline = new TH1F(Form("NbClustersOffline_%s",(const char*)fName),"",35,0,35);
     fNbClustersOffline->Sumw2();
-    fNbClustersStandalone = new TH1F("NbClustersStandalone","",35,0,35);
+    fNbClustersStandalone = new TH1F(Form("NbClustersStandalone_%s",(const char*)fName),"",35,0,35);
     fNbClustersStandalone->Sumw2();
     //
-    fNbTracklets = new TH1F("NbTracklets","NbTracklets",540,0.,540.);
+    fNbTracklets = new TH1F(Form("NbTracklets_%s",(const char*)fName),"NbTracklets",540,0.,540.);
     fNbTracklets->Sumw2();
-    fNbTrackletsOffline = new TH1F("NbTrackletsOffline","NbTrackletsOffline",540,0.,540.);
+    fNbTrackletsOffline = new TH1F(Form("NbTrackletsOffline_%s",(const char*)fName),"NbTrackletsOffline",540,0.,540.);
     fNbTrackletsOffline->Sumw2();
-    fNbTrackletsStandalone = new TH1F("NbTrackletsStandalone","NbTrackletsStandalone",540,0.,540.);
+    fNbTrackletsStandalone = new TH1F(Form("NbTrackletsStandalone_%s",(const char*)fName),"NbTrackletsStandalone",540,0.,540.);
     fNbTrackletsStandalone->Sumw2();
+   
+    fListHist->Add(fNbGoodTracks);
    
     fListHist->Add(fNbTRDTrack);
     fListHist->Add(fNbTRDTrackOffline);
@@ -430,16 +470,38 @@ void AliTRDCalibTask::UserExec(Option_t *)
     }
   }
   if(fCounter==0) {
-    fTRDCalibraFillHisto->SetFirstRunGain(fFirstRunGain); // Gain Used
-    fTRDCalibraFillHisto->SetVersionGainUsed(fVersionGainUsed); // Gain Used
-    fTRDCalibraFillHisto->SetSubVersionGainUsed(fSubVersionGainUsed); // Gain Used
-    fTRDCalibraFillHisto->SetFirstRunGainLocal(fFirstRunGainLocal); // Gain Used
-    fTRDCalibraFillHisto->SetVersionGainLocalUsed(fVersionGainLocalUsed); // Gain Used
-    fTRDCalibraFillHisto->SetSubVersionGainLocalUsed(fSubVersionGainLocalUsed); // Gain Used
-    fTRDCalibraFillHisto->SetFirstRunVdrift(fFirstRunVdrift); // Vdrift Used
-    fTRDCalibraFillHisto->SetVersionVdriftUsed(fVersionVdriftUsed); // Vdrift Used
-    fTRDCalibraFillHisto->SetSubVersionVdriftUsed(fSubVersionVdriftUsed); // Vdrift Used
-    fTRDCalibraFillHisto->InitCalDet();
+    if(fOnInstance) {
+      fTRDCalibraFillHisto->SetFirstRunGain(fFirstRunGain); // Gain Used
+      fTRDCalibraFillHisto->SetVersionGainUsed(fVersionGainUsed); // Gain Used
+      fTRDCalibraFillHisto->SetSubVersionGainUsed(fSubVersionGainUsed); // Gain Used
+      fTRDCalibraFillHisto->SetFirstRunGainLocal(fFirstRunGainLocal); // Gain Used
+      fTRDCalibraFillHisto->SetVersionGainLocalUsed(fVersionGainLocalUsed); // Gain Used
+      fTRDCalibraFillHisto->SetSubVersionGainLocalUsed(fSubVersionGainLocalUsed); // Gain Used
+      fTRDCalibraFillHisto->SetFirstRunVdrift(fFirstRunVdrift); // Vdrift Used
+      fTRDCalibraFillHisto->SetVersionVdriftUsed(fVersionVdriftUsed); // Vdrift Used
+      fTRDCalibraFillHisto->SetSubVersionVdriftUsed(fSubVersionVdriftUsed); // Vdrift Used
+      fTRDCalibraFillHisto->InitCalDet();
+    }
+    if(fDebug > 1){
+      // title CH2dTest
+      TString name("Ver");
+      name += fVersionGainUsed;
+      name += "Subver";
+      name += fSubVersionGainUsed;
+      name += "FirstRun";
+      name += fFirstRunGain;
+      name += "Nz0Nrphi0";
+      fCH2dTest->SetTitle(name);  
+      // title PH2dTest
+      TString namee("Ver");
+      namee += fVersionVdriftUsed;
+      namee += "Subver";
+      namee += fSubVersionVdriftUsed;
+      namee += "FirstRun";
+      namee += fFirstRunVdrift;
+      namee += "Nz0Nrphi0";
+      fPH2dTest->SetTitle(namee); 
+    }
   }
   
   //  AliLog::SetGlobalLogLevel(AliLog::kError);
@@ -546,7 +608,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
   for(Int_t itrack = 0; itrack < nbTracks; itrack++) {
     if(ParticleGood(itrack)) nGoodParticles++;  
   }
-  if(fDebug > 0)  {
+  if(fDebug > 1)  {
     // Centrality
     AliCentrality *esdCentrality = fESD->GetCentrality();
     Float_t centrality = esdCentrality->GetCentralityPercentile("V0M");
@@ -602,43 +664,6 @@ void AliTRDCalibTask::UserExec(Option_t *)
   
   //printf("has friends\n");
 
-  /*
-  ////////////////////////////////////
-   // Check the number of TPC tracks
-   ///////////////////////////////////
-   //printf("Nb of tracks %f\n",nbTracks);
-   for(Int_t itrk = 0; itrk < nbTracks; itrk++){
-     // Get ESD track
-     fkEsdTrack = fESD->GetTrack(itrk);
-     ULong_t status = fkEsdTrack->GetStatus(); 
-     if(status&(AliESDtrack::kTPCout)) nbtrackTPC++;
-     if((status&(AliESDtrack::kTRDout)) && (!(status&(AliESDtrack::kTRDin)))) {
-       nbTrdTracks++;    
-       nbTrdTracksStandalone++;
-     }
-     if((status&(AliESDtrack::kTRDin))) {
-       nbTrdTracks++;    
-       nbTrdTracksOffline++;
-     }
-   }
-   
-   if((nbtrackTPC>0) && (nbTrdTracks > (3.0*nbtrackTPC))) pass = kFALSE;
-   
-   if(fDebug > 1) {
-     
-     fNbTRDTrack->Fill(nbTrdTracks);
-     fNbTRDTrackStandalone->Fill(nbTrdTracksStandalone);
-     fNbTRDTrackOffline->Fill(nbTrdTracksOffline);
-     fNbTPCTRDtrack->Fill(nbTrdTracks,nbtrackTPC);
-   
-   }
-
-   if(!pass) {
-     PostData(1, fListHist);
-     return;
-   }
-  */
-  
   /////////////////////////////////////
   // Loop on AliESDtrack
   ////////////////////////////////////
@@ -660,6 +685,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
     // First Absolute gain calibration
     Int_t trdNTracklets = (Int_t) fkEsdTrack->GetTRDntracklets();
     Int_t trdNTrackletsPID = (Int_t) fkEsdTrack->GetTRDntrackletsPID(); 
+    //printf("Number of trd tracklets %d and PID trd tracklets %d\n",trdNTracklets,trdNTrackletsPID);
     if((trdNTracklets > 0) && (trdNTrackletsPID > 0)) {
       for(Int_t iPlane = 0; iPlane < 6; ++iPlane){
 	//Double_t slide = fkEsdTrack->GetTRDslice(iPlane);
@@ -712,7 +738,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
       }
       
       fTrdTrack = (AliTRDtrackV1 *)fCalibObject;
-      if(good) {
+      if(good && fOnInstance) {
 	//cout << "good" << endl;
 	fTRDCalibraFillHisto->UpdateHistogramsV1(fTrdTrack);
 	//printf("Fill fTRDCalibraFillHisto\n");
@@ -802,37 +828,41 @@ void AliTRDCalibTask::UserExec(Option_t *)
 	    else  fNbClustersOffline->Fill(nbclusters);
 	  }	   
 	  
-	  if(fDebug > 0) {
-	    if((nbclusters > fLow) && (nbclusters < fHigh)){
-	      if(fRelativeScale > 0.0) sum = sum/fRelativeScale;	       
-	      fCH2dSM->Fill(sum,sector+0.5);
-	      fCH2dSum->Fill(sum,0.5);
-	      Bool_t checknoise = kTRUE;
-	      if(fMaxCluster > 0) {
-		if(phtb[0] > fMaxCluster) checknoise = kFALSE;
-		if(fNbTimeBins > fNbMaxCluster) {
-		  for(Int_t k = (fNbTimeBins-fNbMaxCluster); k < fNbTimeBins; k++){
-		    if(phtb[k] > fMaxCluster) checknoise = kFALSE;
-		  }
+	  if((nbclusters > fLow) && (nbclusters < fHigh)){
+	    if(fRelativeScale > 0.0) sum = sum/fRelativeScale;
+	    fCH2dTest->Fill(sum,detector+0.5);	       
+	    fCH2dSM->Fill(sum,sector+0.5);
+	    fCH2dSum->Fill(sum,0.5);
+	    Bool_t checknoise = kTRUE;
+	    if(fMaxCluster > 0) {
+	      if(phtb[0] > fMaxCluster) checknoise = kFALSE;
+	      if(fNbTimeBins > fNbMaxCluster) {
+		for(Int_t k = (fNbTimeBins-fNbMaxCluster); k < fNbTimeBins; k++){
+		  if(phtb[k] > fMaxCluster) checknoise = kFALSE;
 		}
 	      }
-	      if(checknoise) {	       
-		for(int ic=0; ic<fNbTimeBins; ic++){
-		  if(fFillZero) {
-		    fPH2dSum->Fill((Double_t)(ic/10.0),0.5,(Double_t)phtb[ic]);
+	    }
+	    if(checknoise) {	       
+	      for(int ic=0; ic<fNbTimeBins; ic++){
+		if(fFillZero) {
+		  fPH2dTest->Fill((Double_t)(ic/10.0),detector+0.5,(Double_t)phtb[ic]);
+		  fPH2dSum->Fill((Double_t)(ic/10.0),0.5,(Double_t)phtb[ic]);
+		  fPH2dSM->Fill((Double_t)(ic/10.0),sector+0.5,(Double_t)phtb[ic]);
+		}
+		else {
+		  if(phtb[ic] > 0.0) {
+		    fPH2dTest->Fill((Double_t)(ic/10.0),detector+0.5,(Double_t)phtb[ic]);
+		    fPH2dSum->Fill((Double_t)(ic/10.0),0.0,(Double_t)phtb[ic]);
 		    fPH2dSM->Fill((Double_t)(ic/10.0),sector+0.5,(Double_t)phtb[ic]);
-		  }
-		  else {
-		    if(phtb[ic] > 0.0) {
-		      fPH2dSum->Fill((Double_t)(ic/10.0),0.0,(Double_t)phtb[ic]);
-		      fPH2dSM->Fill((Double_t)(ic/10.0),sector+0.5,(Double_t)phtb[ic]);
-		    }
 		  }
 		}
 	      }
 	    }
 	  }
+	  if(detector == 0) FindP1TrackPHtrackletV1Test(tracklet,nbclusters);
+
 	} // loop on tracklets
+
 	
       } // debug
       
@@ -1506,6 +1536,127 @@ Bool_t AliTRDCalibTask::ParticleGood(int i) const {
 
 
 }
+//______________________________________________________________________________________________________________________
+Bool_t AliTRDCalibTask::FindP1TrackPHtrackletV1Test(const AliTRDseedV1 *tracklet, Int_t nbclusters)
+{
+  //
+  // Drift velocity calibration:
+  // Fit the clusters with a straight line
+  // From the slope find the drift velocity
+  //
+
+  ////////////////////////////////////////////////
+  //Number of points: if less than 3 return kFALSE
+  /////////////////////////////////////////////////
+  if(nbclusters <= 2) return kFALSE;
+
+  ////////////
+  //Variables
+  ////////////
+  // results of the linear fit
+  Double_t dydt                       = 0.0;                                // dydt tracklet after straight line fit
+  Double_t errorpar                   = 0.0;                                // error after straight line fit on dy/dt
+  Double_t pointError                 = 0.0;                                // error after straight line fit 
+  // pad row problemes: avoid tracklet that cross pad rows, tilting angle in the constant
+  Int_t    crossrow                   = 0;                                  // if it crosses a pad row
+  Int_t    rowp                       = -1;                                 // if it crosses a pad row
+  Float_t  tnt                        = tracklet->GetTilt();                // tan tiltingangle
+  TLinearFitter linearFitterTracklet(2,"pol1");
+  linearFitterTracklet.StoreData(kTRUE);  
+ 
+  
+  ///////////////////////////////////////////
+  // Take the parameters of the track
+  //////////////////////////////////////////
+  // take now the snp, tnp and tgl from the track
+  Double_t snp = tracklet->GetSnp();             // sin dy/dx at the end of the chamber
+  Double_t tnp = 0.0;                            // dy/dx at the end of the chamber 
+  if( TMath::Abs(snp) <  1.){
+    tnp = snp / TMath::Sqrt((1.-snp)*(1.+snp));
+  } 
+  Double_t tgl  = tracklet->GetTgl();           // dz/dl
+  Double_t dzdx = tgl*TMath::Sqrt(1+tnp*tnp);   // dz/dx calculated from dz/dl
+  // at the entrance
+  //Double_t tnp = tracklet->GetYref(1);      // dy/dx at the entrance of the chamber
+  //Double_t tgl = tracklet->GetZref(1);      // dz/dl at the entrance of the chamber
+  //Double_t dzdx = tgl;                      //*TMath::Sqrt(1+tnp*tnp); // dz/dx from dz/dl
+  // at the end with correction due to linear fit
+  //Double_t tnp = tracklet->GetYfit(1);      // dy/dx at the end of the chamber after fit correction
+  //Double_t tgl = tracklet->GetZfit(1);      // dz/dl at the end of the chamber after fit correction 
 
 
+  ////////////////////////////
+  // loop over the clusters
+  ////////////////////////////
+  Int_t  nbli = 0;
+  AliTRDcluster *cl                   = 0x0;
+  //////////////////////////////
+  // Check no shared clusters
+  //////////////////////////////
+  for(int icc=AliTRDseedV1::kNtb; icc<AliTRDseedV1::kNclusters; icc++){
+    cl = tracklet->GetClusters(icc);
+    if(cl)  crossrow = 1;
+  }
+  //////////////////////////////////
+  // Loop clusters
+  //////////////////////////////////
+  for(int ic=0; ic<AliTRDseedV1::kNtb; ic++){
+    if(!(cl = tracklet->GetClusters(ic))) continue;
+    //if((fLimitChargeIntegration) && (!cl->IsInChamber())) continue;
+    
+    Double_t ycluster                 = cl->GetY();
+    Int_t time                        = cl->GetPadTime();
+    Double_t timeis                   = time/10.0;
+    //See if cross two pad rows
+    Int_t    row                      = cl->GetPadRow();
+    if(rowp==-1) rowp                 = row;
+    if(row != rowp) crossrow          = 1;
+
+    linearFitterTracklet.AddPoint(&timeis,ycluster,1);
+    nbli++;  
+
+    
+  }
+  
+  ////////////////////////////////////
+  // Do the straight line fit now
+  ///////////////////////////////////
+  if(nbli <= 2){ 
+    linearFitterTracklet.ClearPoints();  
+    return kFALSE; 
+  }
+  TVectorD pars;
+  linearFitterTracklet.Eval();
+  linearFitterTracklet.GetParameters(pars);
+  pointError  =  TMath::Sqrt(linearFitterTracklet.GetChisquare()/(nbli-2));
+  errorpar    =  linearFitterTracklet.GetParError(1)*pointError;
+  dydt        = pars[1]; 
+  //printf("chis %f, nbli %d, pointError %f, parError %f, errorpar %f\n",linearFitterTracklet->GetChisquare(),nbli,pointError,linearFitterTracklet->GetParError(1),errorpar);
+  linearFitterTracklet.ClearPoints();  
+ 
+  /////////////////////////
+  // Cuts quality
+  ////////////////////////
+  
+  if(nbclusters < fLow) return kFALSE;
+  if(nbclusters > fHigh) return kFALSE;
+  if(pointError >= 0.3) return kFALSE;
+  if(crossrow == 1) return kTRUE;
+  
+  ///////////////////////
+  // Fill
+  //////////////////////
+
+  if(fDebug > 0){
+    //Add to the linear fitter of the detector
+    if( TMath::Abs(snp) <  1.){
+      Double_t x = tnp-dzdx*tnt; 
+      //if(!fLinearVdriftTest) printf("Not there\n");
+      Double_t nbentries = fLinearVdriftTest->GetEntries();
+      if(nbentries < (5.0*32767)) fLinearVdriftTest->Fill(x,dydt);
+    }
+  }
+  
+  return kTRUE;
+}
 

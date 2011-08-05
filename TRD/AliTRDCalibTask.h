@@ -14,6 +14,7 @@ class TObjArray;
 class TH2F;
 class TH1F;
 class TH1I;
+class TH2S;
 class TProfile2D;
 class TH2I;
 class TTree;
@@ -22,6 +23,7 @@ class AliESDfriend;
 class AliESDtrack;
 class AliESDfriendTrack;
 class AliTRDtrackV1;
+class AliTRDseedV1;
 class AliTRDCalibraFillHisto;
 class AliTRDcluster;
 class AliESDtrackCuts;
@@ -45,8 +47,10 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   void           Plot();
   virtual Long64_t  Merge(TCollection *li);
   void           AddTask(const AliTRDCalibTask * calibTask);
+  Bool_t         FindP1TrackPHtrackletV1Test(const AliTRDseedV1 *tracklet, Int_t nbclusters);
   TList          *GetList() const {return fListHist;};
 
+  void SetOnInstance(Bool_t onInstance)                             {fOnInstance=onInstance;};
   void SetHisto2d(Bool_t histo2d)                                   {fHisto2d=histo2d;};
   void SetVector2d(Bool_t vector2d)                                 {fVector2d=vector2d;};
   void SetVdriftLinear(Bool_t vdriftLinear)                         {fVdriftLinear = vdriftLinear;};
@@ -128,7 +132,11 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   TProfile2D  *fPH2dSum;                         //! PH2d PH all
   TH2I        *fCH2dSM;                          //! CH2d per SM
   TProfile2D  *fPH2dSM;                          //! PH2d per SM
+  TH2I        *fCH2dTest;                        //! CH2d for test
+  TProfile2D  *fPH2dTest;                        //! PH2d for test
+  TH2S *fLinearVdriftTest;                       //! VdriftLinear for test
 
+  Bool_t      fOnInstance;                       // On Instance
   Bool_t      fHisto2d;                          // histo
   Bool_t      fVector2d;                         // vector
   Bool_t      fVdriftLinear;                     // vdrift Linear

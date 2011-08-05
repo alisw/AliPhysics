@@ -76,12 +76,13 @@ public:
   void UpdateOCDBPRF(Int_t  startRunNumber, Int_t endRunNumber, const char* storagePath);
   void UpdateOCDBChamberStatus(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath);
 
-  Bool_t ValidateGain() const;
+  Bool_t ValidateGain();
   Bool_t ValidateVdrift();
   Bool_t ValidateT0();
   Bool_t ValidatePRF() const;
   Bool_t ValidateChamberStatus() const;
 
+  Int_t    GetStatus() const                                         { return fStatus;                 }
   Int_t    GetVersionGainUsed() const                                { return fVersionGainUsed;        }
   Int_t    GetSubVersionGainUsed() const                             { return fSubVersionGainUsed;     }
   Int_t    GetFirstRunVdriftUsed() const                             { return fFirstRunVdriftUsed;     }
@@ -92,6 +93,8 @@ public:
   void     SetMinStatsVdriftLinear(Int_t minStatsVdriftLinear)       { fMinStatsVdriftLinear = minStatsVdriftLinear; }  
   void     SetMinStatsGain(Int_t minStatsGain)                       { fMinStatsGain = minStatsGain; }  
   void     SetMinStatsPRF(Int_t minStatsPRF)                         { fMinStatsPRF = minStatsPRF; }  
+  void     SetBackCorrectGain(Bool_t backCorrectGain)                { fBackCorrectGain = backCorrectGain; }
+  void     SetBackCorrectVdrift(Bool_t backCorrectVdrift)            { fBackCorrectVdrift = backCorrectVdrift; }
 
  
   
@@ -120,6 +123,11 @@ public:
   Int_t    fMinStatsVdriftLinear;         // MinStats Vdrift Linear
   Int_t    fMinStatsGain;                 // MinStats Gain
   Int_t    fMinStatsPRF;                  // MinStats PRF
+  Bool_t   fBackCorrectGain;              // Back correction afterwards gain  
+  Bool_t   fBackCorrectVdrift;            // Back correction afterwards vdrift
+  Bool_t   fNotEnoughStatisticsForTheGain;// Take the chamber per chamber distribution from the default distribution
+  Bool_t   fNotEnoughStatisticsForTheVdriftLinear;// Take the chamber per chamber distribution from the default distribution
+  Int_t    fStatus;                       // Status of the TRD offline preprocessor: -1 nothing but do not worry; 0 everything ok; 1 not enough stat vdrift, 2 not enough stat to, 3 not enough stat gain and chammber status, 4 not enough stat vdrift but could put a mean, 5 not enough stat gain but could put a mean
 
 
   Int_t GetSubVersion(TString name) const;
@@ -131,7 +139,7 @@ public:
 private:
   AliTRDPreprocessorOffline& operator=(const AliTRDPreprocessorOffline&); // not implemented
   AliTRDPreprocessorOffline(const AliTRDPreprocessorOffline&); // not implemented
-  ClassDef(AliTRDPreprocessorOffline,1)
+  ClassDef(AliTRDPreprocessorOffline,2)
 };
 
 #endif
