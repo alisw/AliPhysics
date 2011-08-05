@@ -39,7 +39,8 @@
   // bextra == 0 4 plus
   // bextra == 1 large pass1 split..
   // bextra == 2 3 plus
-  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "110717a";
+  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "110728a";
+  //  Int_t bRun = 8102; Int_t bExtra = 1;  char* cDate = "110725a";
   iAODanalysis = 0; 
   // 1 == Read Jets and tracks form the input AOD
   // needs the jet branchnames set explicitly
@@ -48,11 +49,14 @@
   // 1 =  write the Full AOD for all events 
   // 2 =  write the Full AOD for triggered events
   // 3 =  write the deltaAOD for all events
-  iFilterAnalysis = 2;kJetTriggerPtCut = 40; 
+  //  iFilterAnalysis = 2;kJetTriggerPtCut = 40; 
+  iFilterAnalysis = 3;
+  // iFilterAnalysis = 2;
   
   if (kPluginMode.Contains("merge")){
     // currently merging this one...
-    //    cDate = "110421a";
+    //       cDate = "110717a";
+    bRun = 802; Int_t bExtra = 0; cDate = "110719a";
   }
   kUseDebug = kFALSE;
   // this is for testing just one run...
@@ -1037,6 +1041,8 @@
     iPWG4GammaConv    = 0; 
 
     // running as light a possible 
+    iJETSUBTRACT = 0; // no subtraction
+
 
     iPWG4PtQAMC     = 1;
     iPWG4PtSpectra   = 1;
@@ -1044,8 +1050,45 @@
     iPWG4JetSpectrum = 1;
     iPWG4JetServices  = 1; // !!!!!!!!!!! 
     iPWG4Cluster      = 1;// not 5....
-    kHighPtFilterMask = 256;     
+    kHighPtFilterMask = 1<<4|1<<8;     
 
+
+
+    if(iFilterAnalysis==1){
+      kSaveAOD            = 1;
+      kDeltaAODJetName   = "";
+      kFilterAOD = false;
+    }
+    else if(iFilterAnalysis==2){
+      kJetTriggerPtCut = 20; //pt 
+      kSaveAOD            = 1;
+      kDeltaAODJetName   = "";
+      kFilterAOD = true;
+    }
+    else if(iFilterAnalysis == 3){
+      kSaveAOD            = 2;
+      kDeltaAODJetName   = "AliAOD.Jets.root";
+      kFilterAOD = true;
+    }
+    kGridFilesPerJob       = 100;
+    /*
+############# Possible jet branches ###################
+  1: jetsAOD_UA104_B0_Filter00272_Cut01000
+      2: jetsAOD_UA104_B0_Filter00272_Cut02000
+      3: jetsAODMC_UA104_B0_Filter00272_Cut01000
+      4: jetsAODMC2_UA104_B0_Filter00272_Cut01000
+      5: clustersAOD_KT06_B0_Filter00272_Cut00150_Skip00
+      6: clustersAOD_KT04_B0_Filter00272_Cut00150_Skip00
+      7: clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip02
+      8: clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip02RandomConeSkip02
+      9: clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip02RandomCone_random
+      10: clustersAOD_ANTIKT04_B0_Filter00272_Cut02000_Skip02
+      11: clustersAOD_ANTIKT02_B0_Filter00272_Cut00150_Skip00
+      12: clustersAODMC_KT06_B0_Filter00272_Cut00150_Skip00
+      13: clustersAODMC2_KT06_B0_Filter00272_Cut00150_Skip00
+      14: clustersAODMC_ANTIKT04_B0_Filter00272_Cut00150_Skip00
+      15: clustersAODMC2_ANTIKT04_B0_Filter00272_Cut00150_Skip00
+*/
     // CLEAN XML FILES LOCALLY AND ON ALIEN WHEN STARTING A NEW PASS!
     kGridPassPattern       = "";    kGridLocalRunList      = "fp_runlist_lhc11a2.txt";    kTrainName  = Form("pwg4train_LHC11a2%c_%s",a,cDate);
     kGridRunsPerMaster = 1; // Physcicsselection does not support more than on run per job

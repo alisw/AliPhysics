@@ -1199,7 +1199,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliPWG4HighPtQAMC *taskQAMC = 0;
      if(kUseMC){
        if(iPWG4PtQAMC&1){
-	 taskQAMC = AddTaskPWG4HighPtQAMCAll(kGridDataSet.Data(),isPbPb,iAODanalysis);
+	 taskQAMC = AddTaskPWG4HighPtQAMCAll(kGridDataSet.Data());
        }
      }
      if (!taskQAMC) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQAMC cannot run for this train conditions - EXCLUDED");
