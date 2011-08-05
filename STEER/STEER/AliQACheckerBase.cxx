@@ -131,13 +131,7 @@ AliQACheckerBase::~AliQACheckerBase()
 {
   delete [] fLowTestValue ; 
   delete [] fUpTestValue ; 
-  for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
-    if ( fImage[esIndex] ) 
-      delete fImage[esIndex] ;
-    if ( fRefOCDBSubDir[esIndex] ) 
-      delete fRefOCDBSubDir[esIndex] ; 
-  }
-  delete[] fImage ; 
+  DeleteImages();  
   delete[] fRefOCDBSubDir ; 
   AliQAv1::GetQAResultFile()->Close() ; 
   if (fExternParamList) {
@@ -247,6 +241,18 @@ void AliQACheckerBase::Check(Double_t * test, AliQAv1::ALITASK_t task, TObjArray
   }
 }  
 
+
+//____________________________________________________________________________ 
+void AliQACheckerBase::DeleteImages()
+{
+    for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
+        if ( fImage[esIndex] ) 
+            delete fImage[esIndex] ;
+        if ( fRefOCDBSubDir[esIndex] ) 
+            delete fRefOCDBSubDir[esIndex] ; 
+    }
+    delete[] fImage ; 
+}
 
 //____________________________________________________________________________ 
 Double_t AliQACheckerBase::DiffC(const TH1 * href, const TH1 * hin) const

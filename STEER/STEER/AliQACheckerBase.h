@@ -37,6 +37,7 @@ public:
   AliQACheckerBase& operator = (const AliQACheckerBase& qac) ;
   virtual ~AliQACheckerBase() ; // dtor
  
+  void           DeleteImages() ;  
   TList *        GetExternParamlist() { return fExternParamList ;}
   TCanvas **     GetImage() { return fImage ; }
   TCanvas *      GetImage(AliRecoParam::EventSpecie_t es) { return fImage[AliRecoParam::AConvert(es)] ; }
