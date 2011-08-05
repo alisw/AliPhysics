@@ -1625,6 +1625,9 @@ Int_t AliTPCPerformanceSummary::AnalyzeMatch(const AliPerformanceMatch* pMatch, 
      pMatch->GetHistos()->FindObject("h_tpc_match_trackingeff_tpc_2_3")){
     h2D = dynamic_cast<TH2*>(pMatch->GetHistos()->FindObject("h_tpc_match_trackingeff_all_2_3"));
     h2D1 = dynamic_cast<TH2*>(pMatch->GetHistos()->FindObject("h_tpc_match_trackingeff_tpc_2_3"));
+   
+    if(!h2D) return 4;
+    if(!h2D1) return 4;
 
     h2D->GetXaxis()->SetRangeUser(0,1.5);
     h2D1->GetXaxis()->SetRangeUser(0,1.5);
@@ -1698,6 +1701,7 @@ Int_t AliTPCPerformanceSummary::AnalyzePull(const AliPerformanceMatch* pPull, TT
   TH2 *h2D1 = 0;
   if(pPull->GetHistos()->FindObject("h_tpc_match_pull_2_7")){
     h2D1 = dynamic_cast<TH2*>(pPull->GetHistos()->FindObject("h_tpc_match_pull_2_7"));
+    if(!h2D1) return 4;
     phiPull = h2D1->GetMean(2);
     h2D1->SetAxisRange(0.0,1.0/5.0,"X");
     phiPullHighPt = h2D1->GetMean(2);
@@ -1708,6 +1712,7 @@ Int_t AliTPCPerformanceSummary::AnalyzePull(const AliPerformanceMatch* pPull, TT
   TH2 *h2D2 = 0;
   if(pPull->GetHistos()->FindObject("h_tpc_match_pull_4_7")){
     h2D2 = dynamic_cast<TH2*>(pPull->GetHistos()->FindObject("h_tpc_match_pull_4_7"));
+    if(!h2D2) return 4;
     ptPull = h2D2->GetMean(2);
 
     h2D2->SetAxisRange(0.0,1.0/5.0,"X");
@@ -1719,6 +1724,7 @@ Int_t AliTPCPerformanceSummary::AnalyzePull(const AliPerformanceMatch* pPull, TT
   TH2 *h2D3 = 0;
   if(pPull->GetHistos()->FindObject("h_tpc_match_pull_0_7")){
     h2D3 = dynamic_cast<TH2*>(pPull->GetHistos()->FindObject("h_tpc_match_pull_0_7"));
+    if(!h2D3) return 4;
     yPull = h2D3->GetMean(2);
 
     h2D3->SetAxisRange(0.0,1.0/5.0,"X");
@@ -1730,6 +1736,7 @@ Int_t AliTPCPerformanceSummary::AnalyzePull(const AliPerformanceMatch* pPull, TT
   TH2 *h2D4 = 0;
   if(pPull->GetHistos()->FindObject("h_tpc_match_pull_1_7")){
     h2D4 = dynamic_cast<TH2*>(pPull->GetHistos()->FindObject("h_tpc_match_pull_1_7"));
+    if(!h2D4) return 4;
     zPull = h2D4->GetMean(2);
 
     h2D4->SetAxisRange(0.0,1.0/5.0,"X");
@@ -1741,6 +1748,7 @@ Int_t AliTPCPerformanceSummary::AnalyzePull(const AliPerformanceMatch* pPull, TT
   TH2 *h2D5 = 0;
   if(pPull->GetHistos()->FindObject("h_tpc_match_pull_3_7")){
     h2D5 = dynamic_cast<TH2*>(pPull->GetHistos()->FindObject("h_tpc_match_pull_3_7"));
+    if(!h2D5) return 4;
     lambdaPull = h2D5->GetMean(2);
 
     h2D5->SetAxisRange(0.0,1.0/5.0,"X");
