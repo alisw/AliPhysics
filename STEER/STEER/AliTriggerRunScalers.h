@@ -56,25 +56,21 @@ public:
      AliTriggerRunScalers&    operator=(const AliTriggerRunScalers& run);
                                         
 static AliTriggerRunScalers* ReadScalers( TString & filename );
-	  static Double_t    CalculateMu(ULong64_t countsB, ULong64_t countsAC, ULong64_t countsE, UShort_t nB, UShort_t nAC, UShort_t nE, UInt_t orbits, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1.);
-	  static Double_t    CalculateMu(ULong64_t countsB, ULong64_t countsAC, ULong64_t countsE, ULong64_t beamB, UShort_t nB, UShort_t nAC, UShort_t nE, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1.);
-          static Double_t    CalculateMuError(/*ULong64_t countsB, ULong64_t countsAC, ULong64_t countsE, UShort_t nB, UShort_t nAC, UShort_t nE, UInt_t orbits, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1., Double_t errorEff=0.*/);
-	  /*static Double_t    CalculateMuError(ULong64_t countsB, ULong64_t countsAC, ULong64_t countsE, ULong64_t beamB, UShort_t nB, UShort_t nAC, UShort_t nE, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1., Double_t errorEff=0.);*/
-	  static ULong64_t    GetDeltaScaler(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex, Int_t level);
+	  static Bool_t    CalculateMu(Double_t &mu, Double_t &errmu, ULong64_t countsB, ULong64_t countsAC, UShort_t nB, UShort_t nAC, UInt_t orbits, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1., Double_t errorEff=0.);
+	  static Bool_t    CalculateMu(Double_t &mu, Double_t &errmu, ULong64_t countsB, ULong64_t countsAC, ULong64_t beamB, UShort_t nB, UShort_t nAC, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1., Double_t errorEff=0.);
+	  static ULong64_t    GetDeltaScaler(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex, TString level);
 	  static Double_t    GetDeltaTime(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2);
 	  static UInt_t    GetDeltaOrbits(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2);
-	  static Double_t    GetScalerRate(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex, Int_t level);
-	  static Double_t    GetScalerRateError(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex, Int_t level);
-	  static Double_t    GetClassL2L0(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex);
-	  static Double_t    GetClassL2L0Error(const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex);
-          static Bool_t    GetMuFromMinBiasTrg(Double_t &mu, Double_t &muerr, const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, AliTriggerConfiguration* cfg, Bool_t colBCsFromFillScheme=kTRUE, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1./*, Double_t errorEff=0.*/);
-	        ULong64_t    GetDeltaScalerForRun(Int_t classIndex, Int_t level);
-	         Double_t    GetScalerRateForRun(Int_t classIndex, Int_t level);
-	         Double_t    GetClassL2L0ForRun(Int_t classIndex);
-             TGraphErrors*   GetGraphScalerRate(const char* className, Int_t level, AliTriggerConfiguration* cfg);
+	  static Bool_t    GetScalerRate(Double_t &rate, Double_t &error, const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex, TString level);
+	  static Bool_t    GetScalerRatePerBC(Double_t &rate, Double_t &error, const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, AliTriggerConfiguration* cfg, Int_t classIndex, TString level);
+	  static Bool_t    GetClassL2L0(Double_t &l2l0, Double_t &error, const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, Int_t classIndex);
+          static Bool_t    GetMuFromClassScaler(Double_t &mu, Double_t &errmu, const char* className, const AliTriggerScalersRecordESD* scalRec1, const AliTriggerScalersRecordESD* scalRec2, AliTriggerConfiguration* cfg, Bool_t colBCsFromFillScheme=kTRUE, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1., Double_t errorEff=0.);
+	        ULong64_t    GetDeltaScalerForRun(Int_t classIndex, TString level);
+	         Bool_t    GetScalerRateForRun(Double_t &rate, Double_t &error, Int_t classIndex, TString level);
+	         Bool_t    GetClassL2L0ForRun(Double_t &l2l0, Double_t &error, Int_t classIndex);
+             TGraphErrors*   GetGraphScalerRate(const char* className, TString level, AliTriggerConfiguration* cfg);
              TGraphErrors*   GetGraphScalerL2L0Ratio(const char* className, AliTriggerConfiguration* cfg);
-             TGraphErrors*   GetGraphMu(AliTriggerConfiguration* cfg, Bool_t colBCsFromFillScheme=kTRUE, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1./*, Double_t errorEff=0.*/);
-
+             TGraphErrors*   GetGraphMu(AliTriggerConfiguration* cfg, const char* className, Bool_t colBCsFromFillScheme=kTRUE, Bool_t bkgCorr=kTRUE, Double_t triggerEff=1., Double_t errorEff=0.);
 
 private:
                   Short_t    fVersion;            // Version
