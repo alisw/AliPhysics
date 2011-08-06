@@ -889,13 +889,16 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     Bool_t okneutral = kTRUE;
     if(GetReader()->IsCTSSwitchedOn() ){
       okcharged = MakeChargedCorrelation(particle, GetCTSTracks(),kTRUE);
-      if(IsDataMC() && particle){      
+      if(IsDataMC()){      
         MakeMCChargedCorrelation(particle);
       }
-    }    
+    }  
+    
     TObjArray * pi0list = (TObjArray*) GetAODBranch(fPi0AODBranchName); //For the future, foresee more possible pi0 lists
-    if(fNeutralCorr && pi0list && pi0list->GetEntriesFast() > 0)
-      okneutral = MakeNeutralCorrelation(particle, pi0list,kTRUE);
+    if(fNeutralCorr && pi0list){
+      if(pi0list->GetEntriesFast() > 0)
+        okneutral = MakeNeutralCorrelation(particle, pi0list,kTRUE);
+    }
     
     // Fill leading particle histogram if correlation went well and 
     // no problem was found, like not absolute leading, or bad vertex in mixing.
