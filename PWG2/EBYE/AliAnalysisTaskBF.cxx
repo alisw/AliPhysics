@@ -424,6 +424,8 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     // --> shuffling only for AODs up to now
     if(gAnalysisLevel == "AOD") {
       AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(array->At(iArray));
+      if(!aodTrack) continue;
+
       aodTrack->SetCharge(chargeVectorShuffle.at(iArray));
     }
   }
