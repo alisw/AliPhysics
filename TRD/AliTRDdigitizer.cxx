@@ -1282,8 +1282,8 @@ Bool_t AliTRDdigitizer::Signal2ADC(Int_t det, AliTRDarraySignal *signals)
   calGainFactorDetValue = calGainFactorDet->GetValue(det);
 
   // Get the online gain factors
-  AliTRDCalOnlineGainTableROC *onlineGainFactorROC 
-    = calibration->GetOnlineGainTableROC(det);
+  //AliTRDCalOnlineGainTableROC *onlineGainFactorROC 
+  //  = calibration->GetOnlineGainTableROC(det);
 
   // Create the digits for this chamber
   for (row  = 0; row  <  nRowMax; row++ ) {
