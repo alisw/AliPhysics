@@ -86,7 +86,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   }  
   fDigitsArr       = new TClonesArray("AliEMCALDigit",200);
   fClusterArr      = new TObjArray(100);
-  fCaloClusterArr  = new TObjArray(100);
+  fCaloClusterArr  = new TObjArray(1000);
   fRecParam        = new AliEMCALRecParam;
   fBranchNames     = "ESD:AliESDHeader.,EMCALCells.";
   fRecoUtils       = new AliEMCALRecoUtils();
