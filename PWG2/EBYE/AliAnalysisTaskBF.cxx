@@ -424,7 +424,10 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     // --> shuffling only for AODs up to now
     if(gAnalysisLevel == "AOD") {
       AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(array->At(iArray));
-      if(!aodTrack) continue;
+      if (!aodTrack) {
+	Printf("ERROR: Could not receive track %d", iArray);
+	continue;
+      }
 
       aodTrack->SetCharge(chargeVectorShuffle.at(iArray));
     }
@@ -440,6 +443,11 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     // --> shuffling only for AODs up to now
     if(gAnalysisLevel == "AOD") {
       AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(array->At(iArray));
+      if (!aodTrack) {
+	Printf("ERROR: Could not receive track %d", iArray);
+	continue;
+      }
+
       aodTrack->SetCharge(chargeVector.at(iArray));
     }
   }
