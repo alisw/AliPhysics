@@ -71,6 +71,7 @@
 
 #include "AliAnalysisTaskPerformanceStrange.h"
 #include "AliAnalysisCentralitySelector.h"
+#include "AliPIDResponse.h"
 #include "AliCentrality.h"
 
 
@@ -80,7 +81,7 @@ ClassImp(AliAnalysisTaskPerformanceStrange)
 
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
-: AliAnalysisTaskSE(), fAnalysisMC(0), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"),fDown(0),fUp(0), fESD(0), fListHist(0),fCentrSelector(0),fTracksCuts(0), 
+: AliAnalysisTaskSE(), fAnalysisMC(0), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"),fDown(0),fUp(0), fESD(0), fListHist(0),fCentrSelector(0),fTracksCuts(0),fPIDResponse(0), 
 
   fHistMCPrimaryVertexX(0),
   fHistMCPrimaryVertexY(0),
@@ -297,7 +298,7 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
 
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char *name)
-  : AliAnalysisTaskSE(name), fAnalysisMC(0), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"),fDown(0),fUp(0), fESD(0), fListHist(),fCentrSelector(0), fTracksCuts(0),
+  : AliAnalysisTaskSE(name), fAnalysisMC(0), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"),fDown(0),fUp(0), fESD(0), fListHist(),fCentrSelector(0), fTracksCuts(0),fPIDResponse(0),
 
     fHistMCPrimaryVertexX(0),
     fHistMCPrimaryVertexY(0),
@@ -410,6 +411,29 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
     fHistDecayLengthV0LvsMassL(0),
     fHistDcaV0DaughtersLvsMassL(0),
     fHistCosPointAngleLvsMassL(0),
+
+
+    
+      fHistDcaPosToPrimVertexK0vsMassLpt1(0),
+      fHistDcaNegToPrimVertexK0vsMassLpt1(0),
+      fHistRadiusV0K0vsMassLpt1(0),
+      fHistDecayLengthV0K0vsMassLpt1(0),
+      fHistDcaV0DaughtersK0vsMassLpt1(0),
+      fHistCosPointAngleK0vsMassLpt1(0),
+
+      fHistDcaPosToPrimVertexK0vsMassLpt2(0),
+      fHistDcaNegToPrimVertexK0vsMassLpt2(0),
+      fHistRadiusV0K0vsMassLpt2(0),
+      fHistDecayLengthV0K0vsMassLpt2(0),
+      fHistDcaV0DaughtersK0vsMassLpt2(0),
+      fHistCosPointAngleK0vsMassLpt2(0),
+
+      fHistDcaPosToPrimVertexK0vsMassLpt3(0),
+      fHistDcaNegToPrimVertexK0vsMassLpt3(0),
+      fHistRadiusV0K0vsMassLpt3(0),
+      fHistDecayLengthV0K0vsMassLpt3(0),
+      fHistDcaV0DaughtersK0vsMassLpt3(0),
+      fHistCosPointAngleK0vsMassLpt3(0),
 
     /////////////////////////////////////////
 
@@ -872,6 +896,62 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
   fHistCosPointAngleLvsMassL           = new TH2F("h2CosPointAngleLvsMassL", "Cosine of V0's pointing angle", 200,0.997,1.007,140, 1.06, 1.2);
   fListHist->Add(fHistCosPointAngleLvsMassL);
 
+    //// pt1
+      fHistDcaPosToPrimVertexK0vsMassLpt1 = new TH2F("h2DcaPosToPrimVertexK0vsMassLpt1", "Positive V0 daughter;dca(cm);K0s inv. mass",500,0,10,140,1.06,1.2);
+      fListHist->Add(fHistDcaPosToPrimVertexK0vsMassLpt1);
+
+      fHistDcaNegToPrimVertexK0vsMassLpt1 = new TH2F("h2DcaNegToPrimVertexK0vsMassLpt1", "Negative V0 daughter;dca(cm);K0s inv. mass",500,0,10,140,1.06,1.2);
+      fListHist->Add(fHistDcaNegToPrimVertexK0vsMassLpt1);
+
+      fHistRadiusV0K0vsMassLpt1           = new TH2F("h2RadiusV0K0vsMassLpt1", "Radius;Radius(cm);K0s inv. mass",110,0,110,140,1.06,1.2);
+      fListHist->Add(fHistRadiusV0K0vsMassLpt1);
+
+      fHistDecayLengthV0K0vsMassLpt1      = new TH2F("h2DecayLengthV0K0vsMassLpt1", "V0s decay Length;decay length(cm);K0s inv. mass",100,0,100,140,1.06,1.2);
+      fListHist->Add(fHistDecayLengthV0K0vsMassLpt1);
+
+      fHistDcaV0DaughtersK0vsMassLpt1     = new TH2F("h2DcaV0DaughtersK0vsMassLpt1", "DCA between daughters;dca(cm);K0s inv. mass", 110, 0, 1.1,140,1.06,1.2);
+      fListHist->Add(fHistDcaV0DaughtersK0vsMassLpt1);
+
+      fHistCosPointAngleK0vsMassLpt1      = new TH2F("h2CosPointAngleK0vsMassLpt1", "Cosine of V0's pointing angle", 200,0.997,1.007,140,1.06,1.2);
+      fListHist->Add(fHistCosPointAngleK0vsMassLpt1);
+
+      /// pt2
+      fHistDcaPosToPrimVertexK0vsMassLpt2 = new TH2F("h2DcaPosToPrimVertexK0vsMassLpt2", "Positive V0 daughter;dca(cm);K0s inv. mass",500,0,10,140,1.06,1.2);
+      fListHist->Add(fHistDcaPosToPrimVertexK0vsMassLpt2);
+
+      fHistDcaNegToPrimVertexK0vsMassLpt2 = new TH2F("h2DcaNegToPrimVertexK0vsMassLpt2", "Negative V0 daughter;dca(cm);K0s inv. mass",500,0,10,140,1.06,1.2);
+      fListHist->Add(fHistDcaNegToPrimVertexK0vsMassLpt2);
+
+      fHistRadiusV0K0vsMassLpt2           = new TH2F("h2RadiusV0K0vsMassLpt2", "Radius;Radius(cm);K0s inv. mass",110,0,110,140,1.06,1.2);
+      fListHist->Add(fHistRadiusV0K0vsMassLpt2);
+
+      fHistDecayLengthV0K0vsMassLpt2      = new TH2F("h2DecayLengthV0K0vsMassLpt2", "V0s decay Length;decay length(cm);K0s inv. mass", 100, 0, 100,140,1.06,1.2);
+      fListHist->Add(fHistDecayLengthV0K0vsMassLpt2);
+
+      fHistDcaV0DaughtersK0vsMassLpt2     = new TH2F("h2DcaV0DaughtersK0vsMassLpt2", "DCA between daughters;dca(cm);K0s inv. mass", 110, 0, 1.1,140,1.06,1.2);
+      fListHist->Add(fHistDcaV0DaughtersK0vsMassLpt2);
+  
+      fHistCosPointAngleK0vsMassLpt2      = new TH2F("h2CosPointAngleK0vsMassLpt2", "Cosine of V0's pointing angle", 200,0.997,1.007,140,1.06,1.2);
+      fListHist->Add(fHistCosPointAngleK0vsMassLpt2);
+
+      /// pt3
+      fHistDcaPosToPrimVertexK0vsMassLpt3 = new TH2F("h2DcaPosToPrimVertexK0vsMassLpt3", "Positive V0 daughter;dca(cm);K0s inv. mass",500,0,10,140,1.06,1.2);
+      fListHist->Add(fHistDcaPosToPrimVertexK0vsMassLpt3);
+
+      fHistDcaNegToPrimVertexK0vsMassLpt3 = new TH2F("h2DcaNegToPrimVertexK0vsMassLpt3", "Negative V0 daughter;dca(cm);K0s inv. mass",500,0,10,140,1.06,1.2);
+      fListHist->Add(fHistDcaNegToPrimVertexK0vsMassLpt3);
+
+      fHistRadiusV0K0vsMassLpt3           = new TH2F("h2RadiusV0K0vsMassLpt3", "Radius;Radius(cm);K0s inv. mass",110,0,110,140,1.06,1.2);
+      fListHist->Add(fHistRadiusV0K0vsMassLpt3);
+
+      fHistDecayLengthV0K0vsMassLpt3      = new TH2F("h2DecayLengthV0K0vsMassLpt3", "V0s decay Length;decay length(cm);K0s inv. mass", 100, 0, 100,140,1.06,1.2);
+      fListHist->Add(fHistDecayLengthV0K0vsMassLpt3);
+
+      fHistDcaV0DaughtersK0vsMassLpt3     = new TH2F("h2DcaV0DaughtersK0vsMassLpt3", "DCA between daughters;dca(cm);K0s inv. mass", 110, 0, 1.1,140,1.06,1.2);
+      fListHist->Add(fHistDcaV0DaughtersK0vsMassLpt3);
+  
+      fHistCosPointAngleK0vsMassLpt3      = new TH2F("h2CosPointAngleK0vsMassLpt3", "Cosine of V0's pointing angle", 200,0.997,1.007,140,1.06,1.2);
+      fListHist->Add(fHistCosPointAngleK0vsMassLpt3);
 
   // V0 Multiplicity
   if (!fHistV0Multiplicity) {
@@ -1190,6 +1270,13 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     Printf("ERROR: Event not available");
     return;
   }
+  // PID
+        if (fUsePID.Contains("withPID")) {
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  fPIDResponse = inputHandler->GetPIDResponse();
+	}
+
 
   //******************
   // Trigger Selection ! Warning Works only for ESD, add protection in case of AOD loop
@@ -1237,7 +1324,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   Float_t cutNSigmaLowP  = 1E3;
   Float_t cutNSigmaHighP = 1E3;
   if (fUsePID.Contains("withPID")) {
-    cutNSigmaLowP  = 5.0;
+    cutNSigmaLowP  = 3.0;
     cutNSigmaHighP = 3.0;
   }
 
@@ -1251,6 +1338,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   // Min number of TPC clusters:
   // Int_t nbMinTPCclusters = 80;
 
+  /*
   //*******************
   // PID parameters:
   //*******************
@@ -1262,7 +1350,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   fAlephParameters[2] = 5.04114e-11;
   fAlephParameters[3] = 2.12543e+00;
   fAlephParameters[4] = 4.88663e+00; 
-
+  */
 
   //*******************
   // Access MC:
@@ -1291,13 +1379,14 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       
     }
     
-
+    /*
     // PID parameters for MC simulations:
     fAlephParameters[0] = 2.15898e+00/50.;
     fAlephParameters[1] = 1.75295e+01;
     fAlephParameters[2] = 3.40030e-09;
     fAlephParameters[3] = 1.96178e+00;
     fAlephParameters[4] = 3.91720e+00; 
+    */
   }
 
 
@@ -1710,8 +1799,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   //************************************
   // PID
 
-  AliESDpid *fESDpid = new AliESDpid();
-  fESDpid->GetTPCResponse().SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]); 
+  //  AliESDpid *fESDpid = new AliESDpid();
+  // fESDpid->GetTPCResponse().SetBetheBlochParameters(fAlephParameters[0],fAlephParameters[1],fAlephParameters[2],fAlephParameters[3],fAlephParameters[4]); 
       
 
 
@@ -1900,15 +1989,17 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	continue;}
       ///////////////////////////////////////////////////////////////////////      
 
-      // PID
+      // PID  new method July 2011
       if (fUsePID.Contains("withPID")) {
-	nSigmaPosPion   = TMath::Abs(fESDpid->NumberOfSigmasTPC(myTrackPos,AliPID::kPion));
+	//	nSigmaPosPion   = TMath::Abs(fESDpid->NumberOfSigmasTPC(myTrackPos,AliPID::kPion));
+	nSigmaPosPion =	TMath::Abs(fPIDResponse->NumberOfSigmasTPC(myTrackPos, AliPID::kPion));
+		//	nSigmaNegPion   = TMath::Abs(fESDpid->NumberOfSigmasTPC(myTrackNeg,AliPID::kPion));
+	nSigmaNegPion =	TMath::Abs(fPIDResponse->NumberOfSigmasTPC(myTrackNeg, AliPID::kPion));
+	//	nSigmaPosProton = TMath::Abs(fESDpid->NumberOfSigmasTPC(myTrackPos,AliPID::kProton));
+	nSigmaPosProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(myTrackPos, AliPID::kProton));
+	//	nSigmaNegProton = TMath::Abs(fESDpid->NumberOfSigmasTPC(myTrackNeg,AliPID::kProton));
+        nSigmaNegProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(myTrackNeg, AliPID::kProton));
 	
-	nSigmaNegPion   = TMath::Abs(fESDpid->NumberOfSigmasTPC(myTrackNeg,AliPID::kPion));
-
-	nSigmaPosProton = TMath::Abs(fESDpid->NumberOfSigmasTPC(myTrackPos,AliPID::kProton));
-	
-	nSigmaNegProton = TMath::Abs(fESDpid->NumberOfSigmasTPC(myTrackNeg,AliPID::kProton));
       }
       else {
 	nSigmaPosPion = 0; nSigmaNegPion =0; nSigmaPosProton = 0; nSigmaNegProton= 0;
@@ -2140,8 +2231,19 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       }
       if (nSigmaNegProton < cutNSigmaHighP) lCheckPIDAntiLambdaNegDaughter = 1;
     }
+ 
     
-    
+    /*    
+    if ( lCheckPIDAntiLambdaNegDaughter==1 || lCheckPIDAntiLambdaPosDaughter==1 || lCheckPIDLambdaPosDaughter!=1 || lCheckPIDLambdaNegDaughter!=1)
+      {
+      	if (negPiKF) delete negPiKF; negPiKF=NULL;
+	if (posPiKF) delete posPiKF; posPiKF=NULL;
+	if (posPKF)  delete posPKF;  posPKF=NULL;
+	if (negAPKF) delete negAPKF; negAPKF=NULL;
+
+	continue;
+      }     
+    */
     //*****************************
     // filling histograms
     //*****************************
@@ -2159,82 +2261,116 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	continue;}
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     */
-    if (TMath::Abs(lRapK0s) < lCutRap) {
 
-      //////2D histos: cut vs on fly status/////////////////////
 
-      fHistDcaPosToPrimVertexK0->Fill(lDcaPosToPrimVertex,lOnFlyStatus);
-      fHistDcaNegToPrimVertexK0->Fill(lDcaNegToPrimVertex,lOnFlyStatus);
-      fHistRadiusV0K0->Fill(lV0Radius,lOnFlyStatus);
-      fHistDecayLengthV0K0->Fill(lV0DecayLength,lOnFlyStatus);
-      fHistDcaV0DaughtersK0->Fill(lDcaV0Daughters,lOnFlyStatus);
-      fHistChi2K0->Fill(lChi2V0,lOnFlyStatus);
-      fHistCosPointAngleK0->Fill(lV0cosPointAngle,lOnFlyStatus);
+    // insert PID condition for K0s instead of "kTRUE" value
+    if (fUsePID.Contains("withPID") && kTRUE || !fUsePID.Contains("withPID")){  
+      if (TMath::Abs(lRapK0s) < lCutRap ) {
 
-      //////2D histos: cut vs mass///////////////////// 
+	//////2D histos: cut vs on fly status/////////////////////
 
-      if (lOnFlyStatus==0){
+	fHistDcaPosToPrimVertexK0->Fill(lDcaPosToPrimVertex,lOnFlyStatus);
+	fHistDcaNegToPrimVertexK0->Fill(lDcaNegToPrimVertex,lOnFlyStatus);
+	fHistRadiusV0K0->Fill(lV0Radius,lOnFlyStatus);
+	fHistDecayLengthV0K0->Fill(lV0DecayLength,lOnFlyStatus);
+	fHistDcaV0DaughtersK0->Fill(lDcaV0Daughters,lOnFlyStatus);
+	fHistChi2K0->Fill(lChi2V0,lOnFlyStatus);
+	fHistCosPointAngleK0->Fill(lV0cosPointAngle,lOnFlyStatus);
 
-	fHistDcaPosToPrimVertexK0vsMassK0->Fill(lDcaPosToPrimVertex,lInvMassK0s);
-	fHistDcaNegToPrimVertexK0vsMassK0->Fill(lDcaNegToPrimVertex,lInvMassK0s);
-	fHistRadiusV0K0vsMassK0->Fill(lV0Radius,lInvMassK0s);
-	fHistDecayLengthV0K0vsMassK0->Fill(lV0DecayLength,lInvMassK0s);
-	fHistDcaV0DaughtersK0vsMassK0->Fill(lDcaV0Daughters,lInvMassK0s);
-	fHistCosPointAngleK0vsMassK0->Fill(lV0cosPointAngle,lInvMassK0s);
+	//////2D histos: cut vs mass///////////////////// 
 
-	   if (lPtK0s>1 && lPtK0s <2){ 
-	     fHistDcaPosToPrimVertexK0vsMassK0pt1->Fill(lDcaPosToPrimVertex,lInvMassK0s);
-	     fHistDcaNegToPrimVertexK0vsMassK0pt1->Fill(lDcaNegToPrimVertex,lInvMassK0s);
-	     fHistRadiusV0K0vsMassK0pt1->Fill(lV0Radius,lInvMassK0s);
-	     fHistDecayLengthV0K0vsMassK0pt1->Fill(lV0DecayLength,lInvMassK0s);
-	     fHistDcaV0DaughtersK0vsMassK0pt1->Fill(lDcaV0Daughters,lInvMassK0s);
-	     fHistCosPointAngleK0vsMassK0pt1->Fill(lV0cosPointAngle,lInvMassK0s);
-	     }   
-	     if (lPtK0s > 2 && lPtK0s < 3){ 
-	     fHistDcaPosToPrimVertexK0vsMassK0pt2->Fill(lDcaPosToPrimVertex,lInvMassK0s);
-	     fHistDcaNegToPrimVertexK0vsMassK0pt2->Fill(lDcaNegToPrimVertex,lInvMassK0s);
-	     fHistRadiusV0K0vsMassK0pt2->Fill(lV0Radius,lInvMassK0s);
-	     fHistDecayLengthV0K0vsMassK0pt2->Fill(lV0DecayLength,lInvMassK0s);
-	     fHistDcaV0DaughtersK0vsMassK0pt2->Fill(lDcaV0Daughters,lInvMassK0s);
-	     fHistCosPointAngleK0vsMassK0pt2->Fill(lV0cosPointAngle,lInvMassK0s);
-	     }   
-	     if (lPtK0s > 3 && lPtK0s < 4){ 
-	     fHistDcaPosToPrimVertexK0vsMassK0pt3->Fill(lDcaPosToPrimVertex,lInvMassK0s);
-	     fHistDcaNegToPrimVertexK0vsMassK0pt3->Fill(lDcaNegToPrimVertex,lInvMassK0s);
-	     fHistRadiusV0K0vsMassK0pt3->Fill(lV0Radius,lInvMassK0s);
-	     fHistDecayLengthV0K0vsMassK0pt3->Fill(lV0DecayLength,lInvMassK0s);
-	     fHistDcaV0DaughtersK0vsMassK0pt3->Fill(lDcaV0Daughters,lInvMassK0s);
-	     fHistCosPointAngleK0vsMassK0pt3->Fill(lV0cosPointAngle,lInvMassK0s);
-	     }   
-      }
+	if (lOnFlyStatus==0){
 
-    }
+	  fHistDcaPosToPrimVertexK0vsMassK0->Fill(lDcaPosToPrimVertex,lInvMassK0s);
+	  fHistDcaNegToPrimVertexK0vsMassK0->Fill(lDcaNegToPrimVertex,lInvMassK0s);
+	  fHistRadiusV0K0vsMassK0->Fill(lV0Radius,lInvMassK0s);
+	  fHistDecayLengthV0K0vsMassK0->Fill(lV0DecayLength,lInvMassK0s);
+	  fHistDcaV0DaughtersK0vsMassK0->Fill(lDcaV0Daughters,lInvMassK0s);
+	  fHistCosPointAngleK0vsMassK0->Fill(lV0cosPointAngle,lInvMassK0s);
 
-    if (TMath::Abs(lRapLambda) < lCutRap) {
+	  if (lPtK0s>0 && lPtK0s <3){ 
+	    fHistDcaPosToPrimVertexK0vsMassK0pt1->Fill(lDcaPosToPrimVertex,lInvMassK0s);
+	    fHistDcaNegToPrimVertexK0vsMassK0pt1->Fill(lDcaNegToPrimVertex,lInvMassK0s);
+	    fHistRadiusV0K0vsMassK0pt1->Fill(lV0Radius,lInvMassK0s);
+	    fHistDecayLengthV0K0vsMassK0pt1->Fill(lV0DecayLength,lInvMassK0s);
+	    fHistDcaV0DaughtersK0vsMassK0pt1->Fill(lDcaV0Daughters,lInvMassK0s);
+	    fHistCosPointAngleK0vsMassK0pt1->Fill(lV0cosPointAngle,lInvMassK0s);
+	  }   
+	  if (lPtK0s > 3 && lPtK0s < 6){ 
+	    fHistDcaPosToPrimVertexK0vsMassK0pt2->Fill(lDcaPosToPrimVertex,lInvMassK0s);
+	    fHistDcaNegToPrimVertexK0vsMassK0pt2->Fill(lDcaNegToPrimVertex,lInvMassK0s);
+	    fHistRadiusV0K0vsMassK0pt2->Fill(lV0Radius,lInvMassK0s);
+	    fHistDecayLengthV0K0vsMassK0pt2->Fill(lV0DecayLength,lInvMassK0s);
+	    fHistDcaV0DaughtersK0vsMassK0pt2->Fill(lDcaV0Daughters,lInvMassK0s);
+	    fHistCosPointAngleK0vsMassK0pt2->Fill(lV0cosPointAngle,lInvMassK0s);
+	  }   
+	  if (lPtK0s > 6 && lPtK0s < 10){ 
+	    fHistDcaPosToPrimVertexK0vsMassK0pt3->Fill(lDcaPosToPrimVertex,lInvMassK0s);
+	    fHistDcaNegToPrimVertexK0vsMassK0pt3->Fill(lDcaNegToPrimVertex,lInvMassK0s);
+	    fHistRadiusV0K0vsMassK0pt3->Fill(lV0Radius,lInvMassK0s);
+	    fHistDecayLengthV0K0vsMassK0pt3->Fill(lV0DecayLength,lInvMassK0s);
+	    fHistDcaV0DaughtersK0vsMassK0pt3->Fill(lDcaV0Daughters,lInvMassK0s);
+	    fHistCosPointAngleK0vsMassK0pt3->Fill(lV0cosPointAngle,lInvMassK0s);
+	  }   
+	}
+      } // if rap. condition
+    } // end if withPID condition
 
-      //////2D histos: cut vs on fly status/////////////////////
+    // insert PID condition for Lambda instead of "kTRUE" value
+    if (fUsePID.Contains("withPID") && kTRUE || !fUsePID.Contains("withPID")){  
 
-      fHistDcaPosToPrimVertexL->Fill(lDcaPosToPrimVertex,lOnFlyStatus);
-      fHistDcaNegToPrimVertexL->Fill(lDcaNegToPrimVertex,lOnFlyStatus);
-      fHistRadiusV0L->Fill(lV0Radius,lOnFlyStatus);
-      fHistDecayLengthV0L->Fill(lV0DecayLength,lOnFlyStatus);
-      fHistDcaV0DaughtersL->Fill(lDcaV0Daughters,lOnFlyStatus);
-      fHistChi2L->Fill(lChi2V0,lOnFlyStatus);
-      fHistCosPointAngleL->Fill(lV0cosPointAngle,lOnFlyStatus);
+      if (TMath::Abs(lRapLambda) < lCutRap) {
 
-      //////2D histos: cut vs mass/////////////////////
+	//////2D histos: cut vs on fly status/////////////////////
 
-      if (lOnFlyStatus==0){
+	fHistDcaPosToPrimVertexL->Fill(lDcaPosToPrimVertex,lOnFlyStatus);
+	fHistDcaNegToPrimVertexL->Fill(lDcaNegToPrimVertex,lOnFlyStatus);
+	fHistRadiusV0L->Fill(lV0Radius,lOnFlyStatus);
+	fHistDecayLengthV0L->Fill(lV0DecayLength,lOnFlyStatus);
+	fHistDcaV0DaughtersL->Fill(lDcaV0Daughters,lOnFlyStatus);
+	fHistChi2L->Fill(lChi2V0,lOnFlyStatus);
+	fHistCosPointAngleL->Fill(lV0cosPointAngle,lOnFlyStatus);
 
-	fHistDcaPosToPrimVertexLvsMassL->Fill(lDcaPosToPrimVertex,lInvMassLambda);
-	fHistDcaNegToPrimVertexLvsMassL->Fill(lDcaNegToPrimVertex,lInvMassLambda);
-	fHistRadiusV0LvsMassL->Fill(lV0Radius,lInvMassLambda);
-	fHistDecayLengthV0LvsMassL->Fill(lV0DecayLength,lInvMassLambda);
-	fHistDcaV0DaughtersLvsMassL->Fill(lDcaV0Daughters,lInvMassLambda);
-	fHistCosPointAngleLvsMassL->Fill(lV0cosPointAngle,lInvMassLambda);
-      }
+	//////2D histos: cut vs mass/////////////////////
 
-    }
+	if (lOnFlyStatus==0){
+
+	  fHistDcaPosToPrimVertexLvsMassL->Fill(lDcaPosToPrimVertex,lInvMassLambda);
+	  fHistDcaNegToPrimVertexLvsMassL->Fill(lDcaNegToPrimVertex,lInvMassLambda);
+	  fHistRadiusV0LvsMassL->Fill(lV0Radius,lInvMassLambda);
+	  fHistDecayLengthV0LvsMassL->Fill(lV0DecayLength,lInvMassLambda);
+	  fHistDcaV0DaughtersLvsMassL->Fill(lDcaV0Daughters,lInvMassLambda);
+	  fHistCosPointAngleLvsMassL->Fill(lV0cosPointAngle,lInvMassLambda);
+
+            
+	  if (lPtLambda>0 && lPtLambda <3){ 
+	    fHistDcaPosToPrimVertexK0vsMassLpt1->Fill(lDcaPosToPrimVertex,lInvMassLambda);
+	    fHistDcaNegToPrimVertexK0vsMassLpt1->Fill(lDcaNegToPrimVertex,lInvMassLambda);
+	    fHistRadiusV0K0vsMassLpt1->Fill(lV0Radius,lInvMassLambda);
+	    fHistDecayLengthV0K0vsMassLpt1->Fill(lV0DecayLength,lInvMassLambda);
+	    fHistDcaV0DaughtersK0vsMassLpt1->Fill(lDcaV0Daughters,lInvMassLambda);
+	    fHistCosPointAngleK0vsMassLpt1->Fill(lV0cosPointAngle,lInvMassLambda);
+	  }   
+	  if (lPtLambda > 3 && lPtLambda < 6){ 
+	    fHistDcaPosToPrimVertexK0vsMassLpt2->Fill(lDcaPosToPrimVertex,lInvMassLambda);
+	    fHistDcaNegToPrimVertexK0vsMassLpt2->Fill(lDcaNegToPrimVertex,lInvMassLambda);
+	    fHistRadiusV0K0vsMassLpt2->Fill(lV0Radius,lInvMassLambda);
+	    fHistDecayLengthV0K0vsMassLpt2->Fill(lV0DecayLength,lInvMassLambda);
+	    fHistDcaV0DaughtersK0vsMassLpt2->Fill(lDcaV0Daughters,lInvMassLambda);
+	    fHistCosPointAngleK0vsMassLpt2->Fill(lV0cosPointAngle,lInvMassLambda);
+	  }   
+	  if (lPtLambda > 6 && lPtLambda < 10){ 
+	    fHistDcaPosToPrimVertexK0vsMassLpt3->Fill(lDcaPosToPrimVertex,lInvMassLambda);
+	    fHistDcaNegToPrimVertexK0vsMassLpt3->Fill(lDcaNegToPrimVertex,lInvMassLambda);
+	    fHistRadiusV0K0vsMassLpt3->Fill(lV0Radius,lInvMassLambda);
+	    fHistDecayLengthV0K0vsMassLpt3->Fill(lV0DecayLength,lInvMassLambda);
+	    fHistDcaV0DaughtersK0vsMassLpt3->Fill(lDcaV0Daughters,lInvMassLambda);
+	    fHistCosPointAngleK0vsMassLpt3->Fill(lV0cosPointAngle,lInvMassLambda);
+	  }   
+	}
+      } //end of Rap condition
+    } // end of PID condition
+
     ///////////////values for cuts end////////////////////////////////////////////////////////////////////////
 
 
