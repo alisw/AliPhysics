@@ -16,6 +16,7 @@ class TH1F;
 class TH2F;
 //class TH3F;
 class AliAnalysisCentralitySelector;
+class AliPIDResponse;
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
@@ -52,6 +53,7 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
 
   AliAnalysisCentralitySelector * fCentrSelector; // Centrality selector, used to 
   AliESDtrackCuts * fTracksCuts;		// track cuts
+  AliPIDResponse *fPIDResponse;                 // PID response
 
   // MC histograms
   TH1F        *fHistMCPrimaryVertexX;      //! Histo
@@ -204,6 +206,32 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH2F        *fHistDecayLengthV0LvsMassL;            //! Histo
   TH2F        *fHistDcaV0DaughtersLvsMassL;         //! Histo
   TH2F        *fHistCosPointAngleLvsMassL;            //! Histo
+
+
+
+  // pt1
+  TH2F        *fHistDcaPosToPrimVertexK0vsMassLpt1;  //! Histo
+  TH2F        *fHistDcaNegToPrimVertexK0vsMassLpt1;  //! Histo
+  TH2F        *fHistRadiusV0K0vsMassLpt1;            //! Histo
+  TH2F        *fHistDecayLengthV0K0vsMassLpt1;       //! Histo
+  TH2F        *fHistDcaV0DaughtersK0vsMassLpt1;      //! Histo
+  TH2F        *fHistCosPointAngleK0vsMassLpt1;       //! Histo
+  
+  // pt2
+  TH2F        *fHistDcaPosToPrimVertexK0vsMassLpt2;  //! Histo
+  TH2F        *fHistDcaNegToPrimVertexK0vsMassLpt2;  //! Histo
+  TH2F        *fHistRadiusV0K0vsMassLpt2;             //! Histo
+  TH2F        *fHistDecayLengthV0K0vsMassLpt2;     //! Histo
+  TH2F        *fHistDcaV0DaughtersK0vsMassLpt2;    //! Histo
+  TH2F        *fHistCosPointAngleK0vsMassLpt2;     //! Histo
+
+  // pt3
+  TH2F        *fHistDcaPosToPrimVertexK0vsMassLpt3;    //! Histo
+  TH2F        *fHistDcaNegToPrimVertexK0vsMassLpt3;    //! Histo
+  TH2F        *fHistRadiusV0K0vsMassLpt3;             //! Histo
+  TH2F        *fHistDecayLengthV0K0vsMassLpt3;       //! Histo
+  TH2F        *fHistDcaV0DaughtersK0vsMassLpt3;      //! Histo
+  TH2F        *fHistCosPointAngleK0vsMassLpt3;      //! Histo
 
 //////////////////////////////////////////////////////////////////////
 
