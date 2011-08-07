@@ -60,7 +60,7 @@ ClassImp(AliCalorimeterUtils)
   InitParameters();
   for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
   for(Int_t i = 0; i < 5 ; i++) fPHOSMatrix[i]  = 0 ;
-
+  
 }
 
 //_________________________________
@@ -69,7 +69,7 @@ AliCalorimeterUtils::~AliCalorimeterUtils() {
   
   //if(fPHOSGeo)  delete fPHOSGeo  ;
   if(fEMCALGeo) delete fEMCALGeo ;
-
+  
   if(fPHOSBadChannelMap) { 
     fPHOSBadChannelMap->Clear();
     delete  fPHOSBadChannelMap;
@@ -87,14 +87,14 @@ AliCalorimeterUtils::~AliCalorimeterUtils() {
 
 //_______________________________________________________________
 Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells, AliVEvent * event, Int_t iev) const {
-
+  
 	// Given the list of AbsId of the cluster, get the maximum cell and 
 	// check if there are fNCellsFromBorder from the calorimeter border
 	
-    //If the distance to the border is 0 or negative just exit accept all clusters
+  //If the distance to the border is 0 or negative just exit accept all clusters
 	if(cells->GetType()==AliVCaloCells::kEMCALCell && fEMCALRecoUtils->GetNumberOfCellsFromEMCALBorder() <= 0 ) return kTRUE;
 	if(cells->GetType()==AliVCaloCells::kPHOSCell  && fNCellsFromPHOSBorder  <= 0 ) return kTRUE;
-
+  
   Int_t absIdMax	= -1;
 	Float_t ampMax  = -1;
 	
@@ -108,7 +108,7 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, AliVCa
       cellsCumul =  mixEvent->GetEMCALCellsCumul() ; 
       numberOfCells = mixEvent->GetNumberOfEMCALCells() ;
     } 
-      
+    
     else if (cells->GetType()==AliVCaloCells::kPHOSCell) {
       cellsCumul =  mixEvent->GetPHOSCellsCumul() ; 
       numberOfCells = mixEvent->GetNumberOfPHOSCells() ;
@@ -152,28 +152,28 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, AliVCa
 	
 	if(fDebug > 1)
 		printf("AliCalorimeterUtils::CheckCellFiducialRegion() - Cluster Max AbsId %d, Cell Energy %2.2f, Cluster Energy %2.2f\n", 
-		   absIdMax, ampMax, cluster->E());
+           absIdMax, ampMax, cluster->E());
 	
 	if(absIdMax==-1) return kFALSE;
 	
 	//Check if the cell is close to the borders:
 	Bool_t okrow = kFALSE;
 	Bool_t okcol = kFALSE;
-
+  
 	if(cells->GetType()==AliVCaloCells::kEMCALCell){
-	
+    
 		Int_t iTower = -1, iIphi = -1, iIeta = -1, iphi = -1, ieta = -1, iSM = -1; 
 		fEMCALGeo->GetCellIndex(absIdMax,iSM,iTower,iIphi,iIeta); 
 		fEMCALGeo->GetCellPhiEtaIndexInSModule(iSM,iTower,iIphi, iIeta,iphi,ieta);
 		if(iSM < 0 || iphi < 0 || ieta < 0 ) {
       Fatal("CheckCellFidutialRegion","Negative value for super module: %d, or cell ieta: %d, or cell iphi: %d, check EMCAL geometry name\n",iSM,ieta,iphi);
     }
-      
+    
 		//Check rows/phi
     Int_t nborder = fEMCALRecoUtils->GetNumberOfCellsFromEMCALBorder();
 		if(iSM < 10){
 			if(iphi >= nborder && iphi < 24-nborder) okrow =kTRUE; 
-	    }
+    }
 		else{
 			if(iphi >= nborder && iphi < 12-nborder) okrow =kTRUE; 
 		}
@@ -193,7 +193,7 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, AliVCa
 		if(fDebug > 1)
 		{
 			printf("AliCalorimeterUtils::CheckCellFiducialRegion() - EMCAL Cluster in %d cells fiducial volume: ieta %d, iphi %d, SM %d ?",
-				   nborder, ieta, iphi, iSM);
+             nborder, ieta, iphi, iSM);
 			if (okcol && okrow ) printf(" YES \n");
 			else  printf(" NO: column ok? %d, row ok? %d \n",okcol,okrow);
 		}
@@ -210,7 +210,7 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, AliVCa
 		if(fDebug > 1)
 		{
 			printf("AliCalorimeterUtils::CheckCellFiducialRegion() - PHOS Cluster in %d cells fiducial volume: icol %d, irow %d, Module %d?",
-				   fNCellsFromPHOSBorder, icol, irow, relId[0]-1);
+             fNCellsFromPHOSBorder, icol, irow, relId[0]-1);
 			if (okcol && okrow ) printf(" YES \n");
 			else  printf(" NO: column ok? %d, row ok? %d \n",okcol,okrow);
 		}
@@ -230,12 +230,12 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter,UShort
 	//printf("fEMCALBadChannelMap %p, fPHOSBadChannelMap %p \n",fEMCALBadChannelMap,fPHOSBadChannelMap);
 	if(calorimeter == "EMCAL" && !fEMCALRecoUtils->GetEMCALChannelStatusMap(0)) return kFALSE;
 	if(calorimeter == "PHOS"  && !fPHOSBadChannelMap)  return kFALSE;
-
+  
 	Int_t icol = -1;
 	Int_t irow = -1;
 	Int_t imod = -1;
 	for(Int_t iCell = 0; iCell<nCells; iCell++){
-	
+    
 		//Get the column and row
 		if(calorimeter == "EMCAL"){
       return fEMCALRecoUtils->ClusterContainsBadChannel((AliEMCALGeometry*)fEMCALGeo,cellList,nCells);
@@ -252,9 +252,9 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter,UShort
 		else return kFALSE;
 		
 	}// cell cluster loop
-
+  
 	return kFALSE;
-
+  
 }
 
 //____________________________________________________________________________________________________________________________________________________
@@ -273,7 +273,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
 		fEMCALGeo->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(), absId);
 		if(fDebug > 2) 
 		  printf("AliCalorimeterUtils::GetModuleNumber(PWG4AOD) - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
-			 particle->Eta(), particle->Phi()*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
+             particle->Eta(), particle->Phi()*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
 		return fEMCALGeo->GetSuperModuleNumber(absId) ;
 	}//EMCAL
 	else if(particle->GetDetector()=="PHOS"){
@@ -331,7 +331,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
 		fEMCALGeo->GetAbsCellIdFromEtaPhi(lv.Eta(),phi, absId);
 		if(fDebug > 2) 
 		  printf("AliCalorimeterUtils::GetModuleNumber() - EMCAL: cluster eta %f, phi %f, absid %d, SuperModule %d\n",
-			 lv.Eta(), phi*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
+             lv.Eta(), phi*TMath::RadToDeg(),absId, fEMCALGeo->GetSuperModuleNumber(absId));
 		return fEMCALGeo->GetSuperModuleNumber(absId) ;
 	}//EMCAL
 	else if(cluster->IsPHOS()) {
@@ -340,7 +340,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
 			absId = cluster->GetCellAbsId(0);
 			if(fDebug > 2) 
 				printf("AliCalorimeterUtils::GetModuleNumber() - PHOS: cluster eta %f, phi %f, e %f, absId %d\n",
-					   lv.Eta(), phi*TMath::RadToDeg(), lv.E(), absId);
+               lv.Eta(), phi*TMath::RadToDeg(), lv.E(), absId);
 		}
 		else return -1;
 		
@@ -417,29 +417,19 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(const Int_t absId, const T
 void AliCalorimeterUtils::InitParameters()
 {
   //Initialize the parameters of the analysis.
-  fEMCALGeoName = "EMCAL_COMPLETEV1";
-  fPHOSGeoName  = "PHOSgeo";
-	
-  if(gGeoManager) {// geoManager was set
-	if(fDebug > 2)printf("AliCalorimeterUtils::InitParameters() - Geometry manager available\n");
-	fEMCALGeoMatrixSet = kTRUE;	 
-	fPHOSGeoMatrixSet  = kTRUE;	 
-  }
-  else{
-	fEMCALGeoMatrixSet = kFALSE;
-	fPHOSGeoMatrixSet  = kFALSE;
-  }
-		
-  fRemoveBadChannels   = kFALSE;
-	
-  fNCellsFromPHOSBorder    = 0;
+  fEMCALGeoName         = "EMCAL_COMPLETEV1";
+  fPHOSGeoName          = "PHOSgeo";
+  fEMCALGeoMatrixSet    = kFALSE;
+  fPHOSGeoMatrixSet     = kFALSE;
+  fRemoveBadChannels    = kFALSE;
+  fNCellsFromPHOSBorder = 0;
   
-//  fMaskCellColumns = new Int_t[fNMaskCellColumns];
-//  fMaskCellColumns[0] = 6 ;  fMaskCellColumns[1] = 7 ;  fMaskCellColumns[2] = 8 ; 
-//  fMaskCellColumns[3] = 35;  fMaskCellColumns[4] = 36;  fMaskCellColumns[5] = 37; 
-//  fMaskCellColumns[6] = 12+AliEMCALGeoParams::fgkEMCALCols; fMaskCellColumns[7] = 13+AliEMCALGeoParams::fgkEMCALCols;
-//  fMaskCellColumns[8] = 40+AliEMCALGeoParams::fgkEMCALCols; fMaskCellColumns[9] = 41+AliEMCALGeoParams::fgkEMCALCols; 
-//  fMaskCellColumns[10]= 42+AliEMCALGeoParams::fgkEMCALCols; 
+  //  fMaskCellColumns = new Int_t[fNMaskCellColumns];
+  //  fMaskCellColumns[0] = 6 ;  fMaskCellColumns[1] = 7 ;  fMaskCellColumns[2] = 8 ; 
+  //  fMaskCellColumns[3] = 35;  fMaskCellColumns[4] = 36;  fMaskCellColumns[5] = 37; 
+  //  fMaskCellColumns[6] = 12+AliEMCALGeoParams::fgkEMCALCols; fMaskCellColumns[7] = 13+AliEMCALGeoParams::fgkEMCALCols;
+  //  fMaskCellColumns[8] = 40+AliEMCALGeoParams::fgkEMCALCols; fMaskCellColumns[9] = 41+AliEMCALGeoParams::fgkEMCALCols; 
+  //  fMaskCellColumns[10]= 42+AliEMCALGeoParams::fgkEMCALCols; 
   
 }
 
@@ -451,10 +441,10 @@ void AliCalorimeterUtils::InitPHOSBadChannelStatusMap(){
   //In order to avoid rewriting the same histograms
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-
+  
   fPHOSBadChannelMap = new TObjArray(5);	
   for (int i = 0; i < 5; i++)fPHOSBadChannelMap->Add(new TH2I(Form("PHOSBadChannelMap_Mod%d",i),Form("PHOSBadChannelMap_Mod%d",i), 56, 0, 56, 64, 0, 64));
-
+  
   fPHOSBadChannelMap->SetOwner(kTRUE);
   fPHOSBadChannelMap->Compress();
   
@@ -469,7 +459,7 @@ void AliCalorimeterUtils::InitPHOSRecalibrationFactors(){
 	//In order to avoid rewriting the same histograms
 	Bool_t oldStatus = TH1::AddDirectoryStatus();
 	TH1::AddDirectory(kFALSE);
-
+  
 	fPHOSRecalibrationFactors = new TObjArray(5);
 	for (int i = 0; i < 5; i++)fPHOSRecalibrationFactors->Add(new TH2F(Form("PHOSRecalFactors_Mod%d",i),Form("PHOSRecalFactors_Mod%d",i), 56, 0, 56, 64, 0, 64));
 	//Init the histograms with 1
@@ -519,21 +509,21 @@ void AliCalorimeterUtils::InitPHOSGeometry()
 //________________________________________________________________
 void AliCalorimeterUtils::Print(const Option_t * opt) const
 {
-
+  
   //Print some relevant parameters set for the analysis
   if(! opt)
     return;
-
+  
   printf("***** Print: %s %s ******\n", GetName(), GetTitle() ) ;
   printf("Remove Clusters with bad channels? %d\n",fRemoveBadChannels);
   printf("Remove Clusters with max cell at less than %d cells from EMCAL border and %d cells from PHOS border\n",
-	 fEMCALRecoUtils->GetNumberOfCellsFromEMCALBorder(), fNCellsFromPHOSBorder);
+         fEMCALRecoUtils->GetNumberOfCellsFromEMCALBorder(), fNCellsFromPHOSBorder);
   if(fEMCALRecoUtils->IsEMCALNoBorderAtEta0()) printf("Do not remove EMCAL clusters at Eta = 0\n");
   printf("Recalibrate Clusters? %d\n",fRecalibration);
   printf("Recalculate Clusters Position? %d\n",fRecalculatePosition);
   printf("Recalculate Clusters Energy? %d\n",fCorrectELinearity);
   printf("Matching criteria: dR < %2.2f[cm], dZ < %2.2f[cm]\n",fCutR,fCutZ);
-
+  
   printf("    \n") ;
 } 
 
@@ -559,7 +549,7 @@ Bool_t AliCalorimeterUtils::MaskFrameCluster(const Int_t iSM,  const Int_t ieta)
 //________________________________________________________________
 Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster, AliVCaloCells * cells){
 	// Recalibrate the cluster energy, considering the recalibration map and the energy of the cells that compose the cluster.
-
+  
   //Initialize some used variables
 	Float_t energy   = 0;
 	Int_t absId      = -1;
@@ -567,31 +557,31 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster, Ali
 	Float_t factor = 1, frac = 0;  
   
 	if(cells) {
-	
-	//Get the cluster number of cells and list of absId, check what kind of cluster do we have.
-	UShort_t * index    = cluster->GetCellsAbsId() ;
-	Double_t * fraction = cluster->GetCellsAmplitudeFraction() ;
-	Int_t ncells     = cluster->GetNCells();	
-	TString calo     = "EMCAL";
-	if(cluster->IsPHOS()) calo = "PHOS";
-	
-	//Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
-	for(Int_t icell = 0; icell < ncells; icell++){
-		absId = index[icell];
-		frac =  fraction[icell];
-		if(frac < 1e-3) frac = 1; //in case of EMCAL, this is set as 0, not used.
-        module = GetModuleNumberCellIndexes(absId,calo,icol,irow,iRCU);
-		if(cluster->IsPHOS()) factor = GetPHOSChannelRecalibrationFactor (module,icol,irow);
-		else                  factor = GetEMCALChannelRecalibrationFactor(module,icol,irow);
-		if(fDebug>2)
-			printf("AliCalorimeterUtils::RecalibrateClusterEnergy() - recalibrate cell: %s, module %d, col %d, row %d, cell fraction %f, recalibration factor %f, cell energy %f\n", 
-				calo.Data(),module,icol,irow,frac,factor,cells->GetCellAmplitude(absId));
-		
-		energy += cells->GetCellAmplitude(absId)*factor*frac;
-	}
-	
-	if(fDebug>1)
-		printf("AliCalorimeterUtils::RecalibrateClusterEnergy() - Energy before %f, after %f\n",cluster->E(),energy);
+    
+    //Get the cluster number of cells and list of absId, check what kind of cluster do we have.
+    UShort_t * index    = cluster->GetCellsAbsId() ;
+    Double_t * fraction = cluster->GetCellsAmplitudeFraction() ;
+    Int_t ncells     = cluster->GetNCells();	
+    TString calo     = "EMCAL";
+    if(cluster->IsPHOS()) calo = "PHOS";
+    
+    //Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
+    for(Int_t icell = 0; icell < ncells; icell++){
+      absId = index[icell];
+      frac =  fraction[icell];
+      if(frac < 1e-3) frac = 1; //in case of EMCAL, this is set as 0, not used.
+      module = GetModuleNumberCellIndexes(absId,calo,icol,irow,iRCU);
+      if(cluster->IsPHOS()) factor = GetPHOSChannelRecalibrationFactor (module,icol,irow);
+      else                  factor = GetEMCALChannelRecalibrationFactor(module,icol,irow);
+      if(fDebug>2)
+        printf("AliCalorimeterUtils::RecalibrateClusterEnergy() - recalibrate cell: %s, module %d, col %d, row %d, cell fraction %f, recalibration factor %f, cell energy %f\n", 
+               calo.Data(),module,icol,irow,frac,factor,cells->GetCellAmplitude(absId));
+      
+      energy += cells->GetCellAmplitude(absId)*factor*frac;
+    }
+    
+    if(fDebug>1)
+      printf("AliCalorimeterUtils::RecalibrateClusterEnergy() - Energy before %f, after %f\n",cluster->E(),energy);
     
 	}// cells available
   else{
@@ -605,7 +595,7 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster, Ali
 void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEvent) 
 {
   //Set the calorimeters transformation matrices
-
+  
   //Get the EMCAL transformation geometry matrices from ESD 
   if(!fEMCALGeoMatrixSet && fEMCALGeo){
     if(fLoadEMCALMatrices){
@@ -621,12 +611,12 @@ void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEven
       
     }//Load matrices
     else if (!gGeoManager) { 
-
+      
       if(fDebug > 1) 
         printf(" AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load EMCAL misalignment matrices. \n");
       if(!strcmp(inputEvent->GetName(),"AliESDEvent"))  {
         for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){ 
-          //printf("Load matrix %d, %p\n",mod,((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod));
+          //printf("Load ESD matrix %d, %p\n",mod,((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod));
           if(((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod)) {
             fEMCALGeo->SetMisalMatrix(((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod),mod) ;
           }
@@ -686,5 +676,5 @@ void AliCalorimeterUtils::RecalculateClusterPosition(AliVCaloCells* cells, AliVC
   //Recalculate EMCAL cluster position
   
   fEMCALRecoUtils->RecalculateClusterPosition((AliEMCALGeometry*)fEMCALGeo, cells,clu);
-
+  
 }
