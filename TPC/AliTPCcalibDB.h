@@ -225,7 +225,8 @@ protected:
   AliTPCcalibDButil   *fDButil;       // utility class
   //ctp info
   AliCTPTimeParams *fCTPTimeParams;   //CTP timing parameters
-  
+  Int_t            fMode;             //RCU trigger config mode
+
   ClassDef(AliTPCcalibDB, 0)
  private:
    AliTPCcalibDB (const AliTPCcalibDB& );

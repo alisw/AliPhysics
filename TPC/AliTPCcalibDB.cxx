@@ -205,7 +205,8 @@ AliTPCcalibDB::AliTPCcalibDB():
   fRunList(100000),              //! run list - indicates try to get the run param 
   fBHasAlignmentOCDB(kFALSE),    // Flag  - has the alignment on the composed correction ?
   fDButil(0),
-  fCTPTimeParams(0)
+  fCTPTimeParams(0),
+  fMode(-1)
 {
   //
   // constructor
@@ -249,7 +250,8 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fRunList(0),              //! run list - indicates try to get the run param 
   fBHasAlignmentOCDB(kFALSE),    // Flag  - has the alignment on the composed correction ?
   fDButil(0),
-  fCTPTimeParams(0)
+  fCTPTimeParams(0),
+  fMode(-1)
 {
   //
   // Copy constructor invalid -- singleton implementation
@@ -482,7 +484,9 @@ void AliTPCcalibDB::Update(){
     }  
   }else{
     AliError("TPC - Missing calibration entry-  TPC/Calib/Correction");
-  }    
+  } 
+  //RCU trigger config mode
+  fMode=GetRCUTriggerConfig();
   //
   if (!fTransform) {
     fTransform=new AliTPCTransform(); 
@@ -850,9 +854,8 @@ Bool_t AliTPCcalibDB::IsTrgL0()
   //
   // return if the FEE readout was triggered on L0
   //
-  Int_t mode=GetRCUTriggerConfig();
-  if (mode<0) return kFALSE;
-  return (mode==1);
+  if (fMode<0) return kFALSE;
+  return (fMode==1);
 }
 
 Bool_t AliTPCcalibDB::IsTrgL1()
@@ -860,9 +863,8 @@ Bool_t AliTPCcalibDB::IsTrgL1()
   //
   // return if the FEE readout was triggered on L1
   //
-  Int_t mode=GetRCUTriggerConfig();
-  if (mode<0) return kFALSE;
-  return (mode==0);
+  if (fMode<0) return kFALSE;
+  return (fMode==0);
 }
 
 void AliTPCcalibDB::RegisterExB(Int_t index, Float_t bz, Bool_t bdelete){
