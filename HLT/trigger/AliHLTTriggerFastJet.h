@@ -17,9 +17,13 @@
 #ifndef ALIHLTTRIGGERFASTJET_H
 #define ALIHLTTRIGGERFASTJET_H
 
+#include "AliHLTTriggerEmcalClusterEnergy.h"
+#include "AliESDTrackCuts.h"
+#include "TObjArray.h"
 #include "AliHLTTrigger.h"
 #include "AliFJWrapper.h"
 
+class AliHLTCaloClusterReader;
 class TRefArray;
 class AliESDEvent;
 class TMap;
@@ -28,7 +32,7 @@ class AliHLTTriggerFastJet : public AliHLTTrigger
 {
   
  public:
-  AliHLTTriggerFastJet(TString detector);
+  AliHLTTriggerFastJet();
   ~AliHLTTriggerFastJet();
   
   ///
@@ -56,18 +60,9 @@ class AliHLTTriggerFastJet : public AliHLTTrigger
   // inherited from AliHLTComponent: Get a ratio by how much the data volume is shrunken or enhanced.
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
-protected :
-  // get the clusters from the esd
-  Int_t GetClustersFromEsd( const AliESDEvent * esd, TRefArray * clustersRefs );
-
   // inherited from AliHLTTrigger: calculate the trigger
   Int_t DoTrigger();
 
-  // default constructor prohibited
-  AliHLTTriggerFastJet();
-
-
- 
   // check if cluster fullfills criteria and if so trigger
   template <class T> 
   Bool_t TriggerOnJet(T Jet);
@@ -81,18 +76,14 @@ protected :
   // fast jet wrapper
   AliFJWrapper *fFastJetWrapper;
 
-  // array to hold esd clusters
-  TRefArray * fClustersRefs;  //!transient
-
   // the default configuration entry for this component
   const char* fOCDBEntry; //!transient
 
+  // track cuts to get tpc tracks
+  AliESDtrackCuts *EsdTrackCuts;
   
   // offset for calo tracks
-  Int_t fOffset;
-
-  // input data type for calo struct input, must be set in child class
-  AliHLTComponentDataType fInputDataType;   
+  //Int_t fOffset;
 
  private:
 
