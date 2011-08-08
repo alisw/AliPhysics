@@ -123,7 +123,7 @@ AliMUONAlignmentTask::AliMUONAlignmentTask(const AliMUONAlignmentTask& other):
   fReadRecords( other.fReadRecords ),
   fWriteRecords( other.fWriteRecords ),
   fDoAlignment( other.fDoAlignment ),
-  fAlign( fAlign ),
+  fAlign( other.fAlign ),
   fGeoFilename( other.fGeoFilename ),
   fDefaultStorage( other.fDefaultStorage ),
   fOldAlignStorage( other.fOldAlignStorage ),
