@@ -88,13 +88,15 @@ public :
   TObjArray* GetHistos() const { return fFolderObj; }
   
   static Bool_t GetMergeTHnSparse() { return fgMergeTHnSparse; }
-  static void SetMergeTHnSparse(Bool_t mergeTHnSparse) { fgMergeTHnSparse = mergeTHnSparse; }
+  static void SetMergeTHnSparse(Bool_t mergeTHnSparse) {fgUseMergeTHnSparse = kTRUE; fgMergeTHnSparse = mergeTHnSparse; }
+  
   void SetUseHLT(Bool_t useHLT = kTRUE) {fUseHLT = useHLT;}
   Bool_t GetUseHLT() { return fUseHLT; }  
 
 private:
 
   static Bool_t fgMergeTHnSparse;
+  static Bool_t fgUseMergeTHnSparse;
 
   //
   // Control histograms

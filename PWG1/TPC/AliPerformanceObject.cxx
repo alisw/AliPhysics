@@ -43,6 +43,7 @@ ClassImp(AliPerformanceObject)
 //_____________________________________________________________________________
 AliPerformanceObject::AliPerformanceObject():
   TNamed("AliPerformanceObject","AliPerformanceObject"),
+  fMergeTHnSparseObj(kFALSE),
   fAnalysisMode(-1),
   fRunNumber(-1),
   fHptGenerator(kFALSE),
@@ -59,6 +60,7 @@ AliPerformanceObject::AliPerformanceObject():
 //_____________________________________________________________________________
 AliPerformanceObject::AliPerformanceObject(const char* name, const char* title, Int_t run, Bool_t highMult):
   TNamed(name,title),
+  fMergeTHnSparseObj(kFALSE),
   fAnalysisMode(-1),
   fRunNumber(run),
   fHptGenerator(kFALSE),
