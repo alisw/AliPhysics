@@ -49,6 +49,7 @@ AliHLTTriggerEmcalElectron::AliHLTTriggerEmcalElectron() :
 
   fClusterReader = new AliHLTCaloClusterReader();
   fClustersRefs = new TRefArray();
+  
 
 }
 
@@ -72,7 +73,7 @@ const char* AliHLTTriggerEmcalElectron::GetTriggerName() const {
 
 AliHLTComponent* AliHLTTriggerEmcalElectron::Spawn() {
   // see header file for class documentation
-  return new AliHLTTriggerEmcalElectron;
+  return new AliHLTTriggerEmcalElectron() ;
 }
 
 Int_t AliHLTTriggerEmcalElectron::DoTrigger() {

@@ -18,7 +18,7 @@
 #ifndef ALIHLTTRIGGEREMCALELECTRON_H
 #define ALIHLTTRIGGEREMCALELECTRON_H
 
-#include "AliHLTTriggerEmcalClusterEnergy.h"
+//#include "AliHLTTriggerEmcalClusterEnergy.h"
 #include "AliHLTTrigger.h"
 
 class AliHLTCaloClusterReader;
@@ -33,8 +33,10 @@ public:
   AliHLTTriggerEmcalElectron();
   ~AliHLTTriggerEmcalElectron();
 
-  /// inherited from AliHLTTrigger: name of this trigger
+  /// inherited from AliHLTTrigger: name of this trigge
+
   const char* GetTriggerName() const;
+  
   /// inherited from AliHLTComponent: create an instance
   AliHLTComponent* Spawn();
 
@@ -61,11 +63,12 @@ public:
 
 protected :
 
+    
   ///Get the clusters from the esd
-//  Int_t GetClustersFromEsd( const AliESDEvent * esd, TRefArray * clustersRefs );
-
+  //  Int_t GetClustersFromEsd( const AliESDEvent * esd, TRefArray * clustersRefs );
+  
   // FR: Set the appropriate readout list for each calo
-//  void SetCaloReadoutList();
+  //  void SetCaloReadoutList();
   
   /// inherited from AliHLTTrigger: calculate the trigger
   Int_t DoTrigger();
@@ -80,16 +83,16 @@ protected :
   Float_t fEoverPThreshold;
   Float_t fEoverPLimit;
 
-  
   ///array to hold esd clusters
   TRefArray * fClustersRefs;  //!transient
 
-    ///Cluster data struct reader
+  const TString fDetector;
+  
+  ///Cluster data struct reader
   AliHLTCaloClusterReader * fClusterReader; //!transient
-
+  
   /// the default configuration entry for this component
   const char* fOCDBEntry; //!transient
-  const TString fDetector;
   
   AliHLTComponentDataType fInputDataType;   ///Input data type for calo struct input, must be set in child class
   
