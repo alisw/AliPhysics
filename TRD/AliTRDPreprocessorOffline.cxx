@@ -467,14 +467,14 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeGain(){
 	fPlots->AddAt(coefGain,kGain);
 	// 
 	ok = kTRUE;
-	if(fStatus == 0) fStatus =5;
+	fStatus += 1000000;
       }
       else {
-	if(fStatus == 0) fStatus =3;
+	fStatus += 1000;
       }      
     }
     else {
-      if(fStatus == 0) fStatus = 3;
+      fStatus += 1000;
     }
   }
   
@@ -534,7 +534,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftT0(){
     ok = kTRUE;
   }
   else {
-    if(fStatus == 0) fStatus = 2;
+    fStatus += 100;
   }
   calibra->ResetVectorFit();
  
@@ -603,11 +603,11 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
 	fPlots->AddAt(coefDriftLinear,kVdriftLinear);
 	// 
 	ok = kTRUE;
-	fStatus = 4; 
+	fStatus += 10000;
       }
-      else fStatus = 1;      
+      else fStatus += 1;      
     }
-    else fStatus = 1;
+    else fStatus += 1;
   }
   
   calibra->ResetVectorFit();
@@ -970,7 +970,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
      if((mean > 0.2) && (mean < 1.4) && (rms < 0.5)) return kTRUE;
      //if((mean > 0.2) && (mean < 1.4)) return kTRUE;
      else {
-       fStatus = 6;
+       fStatus += 1000000000;
        return kFALSE;
      }
    }
@@ -996,7 +996,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
      Double_t rms = calDet->GetRMSRobust();
      //printf("Vdrift::mean %f, rms %f\n",mean,rms);
      if(!((mean > 1.0) && (mean < 2.0) && (rms < 0.5))) {
-       fStatus = 6;
+       fStatus += 10000000;
        ok = kFALSE;
      }
    }
@@ -1009,7 +1009,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
        Double_t rms = calPad->GetRMS();
        //printf("Vdrift::meanpad %f, rmspad %f\n",mean,rms);
        if(!((mean > 0.9) && (mean < 1.1) && (rms < 0.6))) {
-	 fStatus = 6;
+	 fStatus += 10000000;
 	 ok = kFALSE;
        }
      }
@@ -1035,7 +1035,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
      //printf("T0::minimum %f, rmsdet %f,meanpad %f, rmspad %f\n",meandet,rmsdet,meanpad,rmspad);
      if((meandet > -1.5) && (meandet < 5.0) && (rmsdet < 4.0) && (meanpad < 5.0) && (meanpad > -0.5)) return kTRUE;
      else {
-       fStatus = 6;
+       fStatus += 100000000;
        return kFALSE;
      }
    }
@@ -1073,7 +1073,7 @@ Bool_t AliTRDPreprocessorOffline::ValidateChamberStatus() const{
       if(calChamberStatus->IsMasked(det)) detectormasked++;
     }
     //printf("Number of chambers masked %d\n",detectormasked);
-    if(detectormasked > 29) return kFALSE;
+    if(detectormasked > 40) return kFALSE;
     else return kTRUE;
   }
   else return kFALSE;
