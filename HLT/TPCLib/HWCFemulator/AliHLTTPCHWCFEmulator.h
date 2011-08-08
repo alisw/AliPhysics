@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTTPCHWCFEMULATOR_H
 #define ALIHLTTPCHWCFEMULATOR_H
 

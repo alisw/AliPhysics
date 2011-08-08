@@ -1,3 +1,4 @@
+// $Id$
 //****************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project          * 
 //* ALICE Experiment at CERN, All rights reserved.                           *
@@ -26,6 +27,7 @@
 #include "AliHLTTPCHWCFDataTypes.h"
 #include "AliHLTTPCHWCFEmulator.h"
 #include "AliHLTTPCClusterMCData.h"
+#include "AliHLTTPCHWCFData.h"
 
 #include <iostream>
 
@@ -133,17 +135,19 @@ int AliHLTTPCHWCFEmulator::FindClusters( const AliHLTUInt32_t *rawEvent,
 	  fDivisionUnit.InputStream(candidate);
 	  while( (cluster = fDivisionUnit.OutputStream()) ){	    
 	    if( cluster->fFlag==1 ){
-	      if( outputSize32+5 > maxOutputSize32 ){ // No space in the output buffer
+	      if( outputSize32+AliHLTTPCHWCFData::fgkAliHLTTPCHWClusterSize > maxOutputSize32 ){ // No space in the output buffer
 		ret = -2;
 		break;
 	      }	      
 	      AliHLTUInt32_t *co = &output[outputSize32];
-	      co[0] = WriteBigEndian(cluster->fRowQ);
-	      co[1] = cluster->fP;
-	      co[2] = cluster->fT;
-	      co[3] = cluster->fP2;
-	      co[4] = cluster->fT2;
-	      outputSize32+=5;
+	      int i=0;
+	      co[i++] = WriteBigEndian(cluster->fRowQ);
+	      co[i++] = WriteBigEndian(cluster->fQ);
+	      co[i++] = cluster->fP;
+	      co[i++] = cluster->fT;
+	      co[i++] = cluster->fP2;
+	      co[i++] = cluster->fT2;
+	      outputSize32+=AliHLTTPCHWCFData::fgkAliHLTTPCHWClusterSize;
 	      if( mcLabels && outputMC && outputMC->fCount < maxNMCLabels){
 		outputMC->fLabels[outputMC->fCount++] = cluster->fMC;
 	      }

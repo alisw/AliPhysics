@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTTPCHWCFEXTRACTORUNIT_H
 #define ALIHLTTPCHWCFEXTRACTORUNIT_H
 //* This file is property of and copyright by the ALICE HLT Project        * 

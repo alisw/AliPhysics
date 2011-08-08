@@ -1,3 +1,4 @@
+// $Id$
 //****************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project          * 
 //* ALICE Experiment at CERN, All rights reserved.                           *
@@ -32,6 +33,7 @@ using namespace std;
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCHWCFDataTypes.h"
 #include "AliHLTTPCClusterMCData.h"
+#include "AliHLTTPCHWCFData.h"
 
 #include "AliGRPObject.h"
 #include "AliCDBEntry.h"
@@ -444,7 +446,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       // book memory for the output
       
       AliHLTUInt32_t maxNClusters = rawEventSize32 + 1; // N 32-bit words in input
-      AliHLTUInt32_t clustersSize32 = maxNClusters*5;
+      AliHLTUInt32_t clustersSize32 = maxNClusters*AliHLTTPCHWCFData::fgkAliHLTTPCHWClusterSize;
       AliHLTUInt32_t nOutputMC = maxNClusters;
 
       AliHLTUInt32_t headerSize = sizeof(AliRawDataHeader);                   
@@ -487,8 +489,9 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       }
 
       if( fDebug ){
+	int elsize=AliHLTTPCHWCFData::fgkAliHLTTPCHWClusterSize;
 	printf("\nHWCF Emulator: output clusters for slice%d patch %d:\n",slice,patch);
-	for( AliHLTUInt32_t i=0; i<clustersSize32; i+=5 ){
+	for( AliHLTUInt32_t i=0; i<clustersSize32; i+=elsize ){
 	  AliHLTUInt32_t *c = outClusters+i;
 	  AliHLTUInt32_t flag = (c[0]>>30);  	  
 	  if( flag == 0x3){ //beginning of a cluster
@@ -499,13 +502,13 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 	    AliHLTFloat32_t p2 = *((AliHLTFloat32_t*)&c[3]);
 	    AliHLTFloat32_t t2 = *((AliHLTFloat32_t*)&c[4]);
 	    printf("N: %3d    R: %3d    C: %4d    P:  %7.4f    T:  %8.4f    DP: %6.4f    DT: %6.4f\n", 
-		   i/5+1, padRow, q, p, t, sqrt(fabs(p2-p*p)), sqrt(fabs(t2-t*t)));
+		   i/elsize+1, padRow, q, p, t, sqrt(fabs(p2-p*p)), sqrt(fabs(t2-t*t)));
 
 	    if( outMC && outMC->fCount>0 ){
 	      printf("        MC: (%3d,%6.1f) (%3d,%6.1f) (%3d,%6.1f)\n",
-		     outMC->fLabels[i/5].fClusterID[0].fMCID,outMC->fLabels[i/5].fClusterID[0].fWeight,
-		     outMC->fLabels[i/5].fClusterID[1].fMCID,outMC->fLabels[i/5].fClusterID[1].fWeight,
-		     outMC->fLabels[i/5].fClusterID[2].fMCID,outMC->fLabels[i/5].fClusterID[2].fWeight
+		     outMC->fLabels[i/elsize].fClusterID[0].fMCID,outMC->fLabels[i/elsize].fClusterID[0].fWeight,
+		     outMC->fLabels[i/elsize].fClusterID[1].fMCID,outMC->fLabels[i/elsize].fClusterID[1].fWeight,
+		     outMC->fLabels[i/elsize].fClusterID[2].fMCID,outMC->fLabels[i/elsize].fClusterID[2].fWeight
 		     );
 	    }
 	  }

@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTTPCHWCFPROCESSORUNIT_H
 #define ALIHLTTPCHWCFPROCESSORUNIT_H
 

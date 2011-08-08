@@ -1,3 +1,4 @@
+// $Id$
 //****************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project          * 
 //* ALICE Experiment at CERN, All rights reserved.                           *
@@ -209,6 +210,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFMergerUnit::OutputStream()
     }
     // cout<<"merge search range at "<<fSearchStart-1<<" of "<<fSearchEnd<<endl;
     if( !fInput.fSlope && s.fLastQ > fInput.fQ ) fInput.fSlope = 1;
+    if (fInput.fQmax < s.fQmax) fInput.fQmax = s.fQmax;
     fInput.fQ += s.fQ;
     fInput.fT += s.fT;
     fInput.fT2 += s.fT2;

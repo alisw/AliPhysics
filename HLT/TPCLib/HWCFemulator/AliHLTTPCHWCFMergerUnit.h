@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTTPCHWCFMERGERUNIT_H
 #define ALIHLTTPCHWCFMERGERUNIT_H
 

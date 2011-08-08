@@ -1,3 +1,4 @@
+// $Id$
 //****************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project          * 
 //* ALICE Experiment at CERN, All rights reserved.                           *
@@ -110,7 +111,8 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
   AliHLTFloat32_t q = fkInput->fQ;
   
   fOutput.fFlag = 1;
-  fOutput.fRowQ = (((AliHLTUInt32_t) 0x3)<<30) + ((fkInput->fRow &0x3f)<<24) + ((fkInput->fQ>>(AliHLTTPCHWCFDefinitions::kFixedPoint-6))&0xFFFFFF);		  
+  fOutput.fRowQ = (((AliHLTUInt32_t) 0x3)<<30) + ((fkInput->fRow &0x3f)<<24) + ((fkInput->fQmax>>(AliHLTTPCHWCFDefinitions::kFixedPoint-6))&0xFFFFFF);		  
+  fOutput.fQ = fkInput->fQ;
   *((AliHLTFloat32_t*)&fOutput.fP) = (float)fkInput->fP/q;
   *((AliHLTFloat32_t*)&fOutput.fT) = (float)fkInput->fT/q;
   *((AliHLTFloat32_t*)&fOutput.fP2) = (float)fkInput->fP2/q;

@@ -1,3 +1,4 @@
+// $Id$
 //****************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project          * 
 //* ALICE Experiment at CERN, All rights reserved.                           *
@@ -108,6 +109,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
   fOutput.fPad = fkBunch->fPad;
   fOutput.fBranch = fkBunch->fBranch;
   fOutput.fBorder = fkBunch->fBorder;  
+  fOutput.fQmax = 0;
   fOutput.fQ = 0;
   fOutput.fT = 0;
   fOutput.fT2 = 0;
@@ -142,6 +144,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
     if( fDeconvolute && slope && q>qLast ){
       //cout<<"deconvolution time!!!"<<endl;
       if( length==1 && fOutput.fQ<fSingleSeqLimit ){
+	fOutput.fQmax = 0;
 	fOutput.fQ = 0;
 	fOutput.fT = 0;
 	fOutput.fT2 = 0;
@@ -158,6 +161,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
     }
     if( q<qLast ) slope = 1;
     qLast = q;
+    if (fOutput.fQmax < q) fOutput.fQmax = q;
     fOutput.fQ += q;
     fOutput.fT += q*bunchTime;
     fOutput.fT2+= q*bunchTime*bunchTime;
