@@ -267,7 +267,7 @@ int AliHLTTrackGeometry::AssociateSpacePoints(const AliHLTUInt32_t* trackpoints,
     AliHLTUInt32_t planeId=0;
     int result=FindMatchingTrackPoint(trackpoints[i], xyz, planeId);
     if (result<0) {
-      HLTWarning("no associated track point found for space point id %08x x=%f y=%f z=%f", trackpoints[i], xyz[0], xyz[1], xyz[2]);
+      if (GetVerbosity()>0) HLTWarning("no associated track point found for space point id %08x x=%f y=%f z=%f", trackpoints[i], xyz[0], xyz[1], xyz[2]);
       continue;
     } else if (result==0) {
       HLTWarning("associated track point for space pointid %08x x=%f y=%f z=%f occupied", trackpoints[i], xyz[0], xyz[1], xyz[2]);
@@ -331,6 +331,7 @@ int AliHLTTrackGeometry::FillResidual(int coordinate, TH2* histo) const
   const vector<AliHLTTrackPoint>& trackPoints=TrackPoints();
   for (vector<AliHLTTrackPoint>::const_iterator trackpoint=trackPoints.begin();
        trackpoint!=trackPoints.end(); trackpoint++) {
+    if (!trackpoint->HaveAssociatedSpacePoint()) continue;
     histo->Fill(GetPlaneR(trackpoint->GetId()), trackpoint->GetResidual(coordinate));
   }
   return 0;
