@@ -107,7 +107,8 @@ Int_t AliHLTTriggerEmcalElectron::DoTrigger() {
   if (esd != NULL) {
     esd->GetStdContent();
 
-    Int_t ncc = 0; //GetClustersFromEsd(esd, fClustersRefs); 
+    /*FIXME: this must be fixed properly by implementing GetClustersFromEsd
+    Int_t ncc = GetClustersFromEsd(esd, fClustersRefs); 
     
     for (Int_t i = 0; i < ncc ; i++) {
       
@@ -116,6 +117,7 @@ Int_t AliHLTTriggerEmcalElectron::DoTrigger() {
 	return iResult;
       }
     }
+    */
   }
 
   // If we got to this point then we did not find any clusters with E > fEThreshold
