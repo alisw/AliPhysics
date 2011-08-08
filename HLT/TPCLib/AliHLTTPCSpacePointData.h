@@ -31,6 +31,26 @@ struct AliHLTTPCSpacePointData{
   Bool_t fUsed;     // only used in AliHLTTPCDisplay 
   Int_t fTrackN;    // only used in AliHLTTPCDisplay 
 
+  void SetX(Float_t x)             {fX=x;}
+  void SetY(Float_t y)             {fY=y;}
+  void SetZ(Float_t z)             {fZ=z;}
+  void SetID(UInt_t id)            {fID=id;}
+  void SetPadRow(Short_t padrow)   {fPadRow=padrow;}
+  void SetSigmaY2(Float_t sigmaY2) {fSigmaY2=sigmaY2;}
+  void SetSigmaZ2(Float_t sigmaZ2) {fSigmaZ2=sigmaZ2;}
+  void SetCharge(UShort_t charge)  {fCharge=charge;}
+  void SetQMax(UShort_t qmax)      {fQMax=qmax;}
+
+  Float_t  GetX()       const      {return fX;}
+  Float_t  GetY()       const      {return fY;}
+  Float_t  GetZ()       const      {return fZ;}
+  UInt_t   GetID()      const      {return fID;}
+  UShort_t GetPadRow()  const      {return fPadRow;}
+  Float_t  GetSigmaY2() const      {return fSigmaY2;}
+  Float_t  GetSigmaZ2() const      {return fSigmaZ2;}
+  UShort_t GetCharge()  const      {return fCharge;}
+  UShort_t GetQMax()    const      {return fQMax;}
+
   static UInt_t GetSlice( UInt_t Id )  { return (Id>>25)&0x3F; }
   static UInt_t GetPatch( UInt_t Id )  { return (Id>>22)&0x7; }
   static UInt_t GetNumber( UInt_t Id ) { return Id&0x003FFFFF; }
