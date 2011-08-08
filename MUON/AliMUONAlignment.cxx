@@ -1107,8 +1107,9 @@ AliMUONAlignmentTrackRecord* AliMUONAlignment::ProcessTrack( AliMUONTrack* track
 
     // and get new pointers
     fTrackParam = (AliMUONTrackParam *) fTrack->GetTrackParamAtCluster()->At(iCluster);
+    if ( ! fTrackParam ) continue;
     fCluster = fTrackParam->GetClusterPtr();
-    if (!fCluster || !fTrackParam) continue;
+    if ( ! fCluster ) continue;
     // if (fDetElemId<500) continue;
 
     // fill local variables for this position --> one measurement
