@@ -469,7 +469,9 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
 
     // save AOD
     if( fWriteRecords && fRecordCount > 0 ) { 
-			AliAODHandler* handler = dynamic_cast<AliAODHandler*>( AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler() );
+      AliAODHandler* handler = dynamic_cast<AliAODHandler*>( AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler() );
+      if( handler )
+	{
 //			printf("handler: %p\n",handler);
 			AliAODEvent* aod = handler->GetAOD();
 //			printf("aod: %p\n",aod);
@@ -477,7 +479,9 @@ void AliMUONAlignmentTask::UserExec(Option_t *)
 //			printf("header: %p\n",header);
 			header->SetRunNumber(lESD->GetRunNumber());
 //			printf("RunNumber: %d\n",lESD->GetRunNumber());
-			AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE); }
+			AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
+	} else AliInfo( "Error: invalid output event handler" );
+    }
 
   }
 
