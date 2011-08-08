@@ -50,24 +50,30 @@ ClassImp(AliAnaPi0EbE)
   
 //____________________________________________________________________________
 AliAnaPi0EbE::AliAnaPi0EbE() : 
-AliAnaPartCorrBaseClass(),  fAnaType(kIMCalo),fCalorimeter(""),
-fMinDist(0.),fMinDist2(0.),fMinDist3(0.),	
-fInputAODGammaConv(0x0),fInputAODGammaConvName(""),
-fHistoSSBins(100), fHistoSSMax(5), fHistoSSMin(0),
-fHistoDiffTimeBins(800), fHistoDiffTimeMax(400), fHistoDiffTimeMin(-400),
-fhPtPi0(0), fhEPi0(0), fhEEtaPhiPi0(0),
-fhEDispPi0(0), fhEDispBkg(0), 
-fhELambda0Pi0(0), fhELambda0Bkg(0),
-fhELambda1Pi0(0), fhELambda1Bkg(0),
-fhELambdaPi0EtaCen(0),fhELambdaPi0EtaMid(0),fhELambdaPi0EtaBor(0),
-fhClusterPairDiffTimeE(0),fhClusterPairDiffTimeAsy(0),
-//MC histos
-fhELambdaPhNoConv(0),fhELambdaConvPhotons(0),fhELambdaElectrons(0),
-fhELambdaPi0NoPh(0),fhELambdaOtherParts(0),
-fhPtMCNoPi0(0),fhPhiMCNoPi0(0),fhEtaMCNoPi0(0), 
-fhPtMCPi0(0),fhPhiMCPi0(0),fhEtaMCPi0(0)
+    AliAnaPartCorrBaseClass(),    fAnaType(kIMCalo),            fCalorimeter(""),
+    fMinDist(0.),fMinDist2(0.),   fMinDist3(0.),	
+    fInputAODGammaConv(0x0),      fInputAODGammaConvName(""),
+    //Histograms
+    fhPtPi0(0),                   fhEPi0(0),                    fhEEtaPhiPi0(0),
+    //Shower shape histos
+    fhEDispersion(0),             fhELambda0(0),                fhELambda1(0),             
+    fhEdDispersion(0),            fhEdLambda0(0),               fhEdLambda1(0),            
+    //Time histograms
+    fhClusterPairDiffTimeE(0),    fhClusterPairDiffTimeAsy(0),
+    //MC histos
+    fhPtMCNoPi0(0),               fhPhiMCNoPi0(0),              fhEtaMCNoPi0(0), 
+    fhPtMCPi0(0),                 fhPhiMCPi0(0),                fhEtaMCPi0(0)
 {
   //default ctor
+  
+  for(Int_t i = 0; i < 5; i++){
+    fhEMCLambda0[i]     = 0;
+    fhEMCLambda1[i]     = 0;
+    fhEMCDispersion[i]  = 0;
+    fhEMCdLambda0[i]    = 0;
+    fhEMCdLambda1[i]    = 0;
+    fhEMCdDispersion[i] = 0;
+  }
   
   //Initialize parameters
   InitParameters();
@@ -88,33 +94,33 @@ AliAnaPi0EbE::~AliAnaPi0EbE()
 TObjString *  AliAnaPi0EbE::GetAnalysisCuts()
 {	
 	//Save parameters used for analysis
-	 TString parList ; //this will be list of parameters used for this analysis.
-   const Int_t buffersize = 255;
-	 char onePar[buffersize] ;
-	 
-	 snprintf(onePar,buffersize,"--- AliAnaPi0EbE ---\n") ;
-	 parList+=onePar ;	
-	 snprintf(onePar,buffersize,"fAnaType=%d (Pi0 selection type) \n",fAnaType) ;
-	 parList+=onePar ;
-	 
-	 if(fAnaType == kSSCalo){
-	   snprintf(onePar,buffersize,"Calorimeter: %s\n",fCalorimeter.Data()) ;
-	   parList+=onePar ;
-	   snprintf(onePar,buffersize,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
-	   parList+=onePar ;
-	   snprintf(onePar,buffersize,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
-	   parList+=onePar ;
-	   snprintf(onePar,buffersize,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
-	   parList+=onePar ;
-	 }
-	 
-	 //Get parameters set in base class.
-	 parList += GetBaseParametersList() ;
-	 
-	 //Get parameters set in PID class.
-	 if(fAnaType == kSSCalo) parList += GetCaloPID()->GetPIDParametersList() ;
-	 
-	 return new TObjString(parList) ;
+  TString parList ; //this will be list of parameters used for this analysis.
+  const Int_t buffersize = 255;
+  char onePar[buffersize] ;
+  
+  snprintf(onePar,buffersize,"--- AliAnaPi0EbE ---\n") ;
+  parList+=onePar ;	
+  snprintf(onePar,buffersize,"fAnaType=%d (Pi0 selection type) \n",fAnaType) ;
+  parList+=onePar ;
+  
+  if(fAnaType == kSSCalo){
+    snprintf(onePar,buffersize,"Calorimeter: %s\n",fCalorimeter.Data()) ;
+    parList+=onePar ;
+    snprintf(onePar,buffersize,"fMinDist =%2.2f (Minimal distance to bad channel to accept cluster) \n",fMinDist) ;
+    parList+=onePar ;
+    snprintf(onePar,buffersize,"fMinDist2=%2.2f (Cuts on Minimal distance to study acceptance evaluation) \n",fMinDist2) ;
+    parList+=onePar ;
+    snprintf(onePar,buffersize,"fMinDist3=%2.2f (One more cut on distance used for acceptance-efficiency study) \n",fMinDist3) ;
+    parList+=onePar ;
+  }
+  
+  //Get parameters set in base class.
+  parList += GetBaseParametersList() ;
+  
+  //Get parameters set in PID class.
+  if(fAnaType == kSSCalo) parList += GetCaloPID()->GetPIDParametersList() ;
+  
+  return new TObjString(parList) ;
 }
 
 //________________________________________________________________________
@@ -129,12 +135,13 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   Int_t nphibins = GetHistoPhiBins();          Float_t phimax = GetHistoPhiMax();          Float_t phimin = GetHistoPhiMin();
   Int_t netabins = GetHistoEtaBins();          Float_t etamax = GetHistoEtaMax();          Float_t etamin = GetHistoEtaMin();
   Int_t ssbins   = GetHistoShowerShapeBins();  Float_t ssmax  = GetHistoShowerShapeMax();  Float_t ssmin  = GetHistoShowerShapeMin();
+  Int_t tdbins   = GetHistoDiffTimeBins() ;    Float_t tdmax  = GetHistoDiffTimeMax();     Float_t tdmin  = GetHistoDiffTimeMin();
   
   fhPtPi0  = new TH1F("hPtPi0","Number of identified  #pi^{0} decay",nptbins,ptmin,ptmax); 
   fhPtPi0->SetYTitle("N");
   fhPtPi0->SetXTitle("p_{T #pi^{0}}(GeV/c)");
   outputContainer->Add(fhPtPi0) ; 
-    
+  
   fhEPi0  = new TH1F("hEPi0","Number of identified  #pi^{0} decay",nptbins,ptmin,ptmax); 
   fhEPi0->SetYTitle("N");
   fhEPi0->SetXTitle("E  #pi^{0}(GeV)");
@@ -151,66 +158,50 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   
   if(fAnaType == kIMCalo){
     
-    fhEDispPi0  = new TH2F
-    ("hEDispPi0","Selected #pi^{0} pairs: E vs dispersion",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-    fhEDispPi0->SetYTitle("dispersion");
-    fhEDispPi0->SetXTitle("E (GeV)");
-    outputContainer->Add(fhEDispPi0) ; 
+    fhEDispersion  = new TH2F
+    ("hEDispersion","Selected #pi^{0} pairs: E vs dispersion",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhEDispersion->SetYTitle("D^{2}");
+    fhEDispersion->SetXTitle("E (GeV)");
+    outputContainer->Add(fhEDispersion) ; 
     
-    fhEDispBkg  = new TH2F
-    ("hEDispBkg","Rejected #pi^{0} pairs: E vs dispersion",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-    fhEDispBkg->SetYTitle("dispersion");
-    fhEDispBkg->SetXTitle("E (GeV)");
-    outputContainer->Add(fhEDispBkg) ; 
+    fhELambda0  = new TH2F
+    ("hELambda0","Selected #pi^{0} pairs: E vs #lambda_{0}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhELambda0->SetYTitle("#lambda_{0}^{2}");
+    fhELambda0->SetXTitle("E (GeV)");
+    outputContainer->Add(fhELambda0) ; 
     
-    fhELambda0Pi0  = new TH2F
-    ("hELambda0Pi0","Selected #pi^{0} pairs: E vs #lambda_{0}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-    fhELambda0Pi0->SetYTitle("#lambda_{0}");
-    fhELambda0Pi0->SetXTitle("E (GeV)");
-    outputContainer->Add(fhELambda0Pi0) ; 
+    fhELambda1  = new TH2F
+    ("hELambda1","Selected #pi^{0} pairs: E vs #lambda_{1}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhELambda1->SetYTitle("#lambda_{1}^{2}");
+    fhELambda1->SetXTitle("E (GeV)");
+    outputContainer->Add(fhELambda1) ; 
     
-    fhELambda0Bkg  = new TH2F
-    ("hELambda0Bkg","Rejected #pi^{0} pairs: E vs #lambda_{0}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-    fhELambda0Bkg->SetYTitle("#lambda_{0}");
-    fhELambda0Bkg->SetXTitle("E (GeV)");
-    outputContainer->Add(fhELambda0Bkg) ; 
-
-    fhELambda1Pi0  = new TH2F
-    ("hELambda1Pi0","Selected #pi^{0} pairs: E vs #lambda_{1}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-    fhELambda1Pi0->SetYTitle("#lambda_{1}");
-    fhELambda1Pi0->SetXTitle("E (GeV)");
-    outputContainer->Add(fhELambda1Pi0) ; 
     
-    fhELambda1Bkg  = new TH2F
-    ("hELambda1Bkg","Rejected #pi^{0} pairs: E vs #lambda_{1}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-    fhELambda1Bkg->SetYTitle("#lambda_{1}");
-    fhELambda1Bkg->SetXTitle("E (GeV)");
-    outputContainer->Add(fhELambda1Bkg) ; 
+    fhEdDispersion  = new TH2F
+    ("hEdDispersion","Selected #pi^{0} pairs: E vs dispersion^{2}/N_{cells}^{2}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
+    fhEdDispersion->SetYTitle("D^{2}");
+    fhEdDispersion->SetXTitle("E (GeV)");
+    outputContainer->Add(fhEdDispersion) ; 
     
-    fhELambdaPi0EtaCen  = new TH2F
-    ("hELambdaPi0EtaCen","Selected #pi^{0} pairs: E vs #lambda_{0}, |#eta < 0.2|",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-    fhELambdaPi0EtaCen->SetYTitle("#lambda_{0}");
-    fhELambdaPi0EtaCen->SetXTitle("E (GeV)");
-    outputContainer->Add(fhELambdaPi0EtaCen) ; 
+    fhEdLambda0  = new TH2F
+    ("hEdLambda0","Selected #pi^{0} pairs: E vs #lambda_{0}^{2}/N_{cells}^{2}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
+    fhEdLambda0->SetYTitle("#lambda_{0}^{2}");
+    fhEdLambda0->SetXTitle("E (GeV)");
+    outputContainer->Add(fhEdLambda0) ; 
     
-    fhELambdaPi0EtaMid  = new TH2F
-    ("hELambdaPi0EtaMid","Selected #pi^{0} pairs: E vs #lambda_{0}, |0.2< #eta < 0.5|",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-    fhELambdaPi0EtaMid->SetYTitle("#lambda_{0}");
-    fhELambdaPi0EtaMid->SetXTitle("E (GeV)");
-    outputContainer->Add(fhELambdaPi0EtaMid) ; 
+    fhEdLambda1  = new TH2F
+    ("hEdLambda1","Selected #pi^{0} pairs: E vs #lambda_{1}^{2}/N_{cells}^{2}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
+    fhEdLambda1->SetYTitle("#lambda_{1}^{2}");
+    fhEdLambda1->SetXTitle("E (GeV)");
+    outputContainer->Add(fhEdLambda1) ; 
     
-    fhELambdaPi0EtaBor  = new TH2F
-    ("hELambdaPi0EtaBor","Selected #pi^{0} pairs: E vs #lambda_{0}, |#eta > 0.5|",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-    fhELambdaPi0EtaBor->SetYTitle("#lambda_{0}");
-    fhELambdaPi0EtaBor->SetXTitle("E (GeV)");
-    outputContainer->Add(fhELambdaPi0EtaBor) ; 
     
-    fhClusterPairDiffTimeE = new TH2F("hClusterPairDiffTimeE","cluster pair time difference vs E",nptbins,ptmin,ptmax, fHistoDiffTimeBins,fHistoDiffTimeMin,fHistoDiffTimeMax);
+    fhClusterPairDiffTimeE = new TH2F("hClusterPairDiffTimeE","cluster pair time difference vs E",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
     fhClusterPairDiffTimeE->SetXTitle("E_{pair} (GeV)");
     fhClusterPairDiffTimeE->SetYTitle("#Delta t (ns)");
     outputContainer->Add(fhClusterPairDiffTimeE);
     
-    fhClusterPairDiffTimeAsy = new TH2F("hClusterPairDiffTime","cluster pair time difference vs pair asymmetry",100,0,1, fHistoDiffTimeBins,fHistoDiffTimeMin,fHistoDiffTimeMax);
+    fhClusterPairDiffTimeAsy = new TH2F("hClusterPairDiffTime","cluster pair time difference vs pair asymmetry",100,0,1, tdbins,tdmin,tdmax);
     fhClusterPairDiffTimeAsy->SetXTitle("Asymmetry");
     fhClusterPairDiffTimeAsy->SetYTitle("#Delta t (ns)");
     outputContainer->Add(fhClusterPairDiffTimeAsy);    
@@ -256,46 +247,56 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       outputContainer->Add(fhEtaMCNoPi0) ;
       
       if(fAnaType == kIMCalo){
-        
-        fhELambdaPhNoConv  = new TH2F
-        ("hELambdaPhNoConv","Selected #pi^{0} pairs (Really photons and not conversion): E vs #lambda_{0} vs #lambda_{1}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhELambdaPhNoConv->SetZTitle("#lambda_{1}");
-        fhELambdaPhNoConv->SetYTitle("#lambda_{0}");
-        fhELambdaPhNoConv->SetXTitle("E (GeV)");
-        outputContainer->Add(fhELambdaPhNoConv) ; 
-        
-        
-        fhELambdaConvPhotons  = new TH2F
-        ("hELambdaConvPhotons","Selected #pi^{0} pairs (Converted photons): E vs #lambda_{0} vs #lambda_{1}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhELambdaConvPhotons->SetZTitle("#lambda_{1}");
-        fhELambdaConvPhotons->SetYTitle("#lambda_{0}");
-        fhELambdaConvPhotons->SetXTitle("E (GeV)");
-        outputContainer->Add(fhELambdaConvPhotons) ; 
-        
-        fhELambdaElectrons  = new TH2F
-        ("hELambdaElectrons","Selected #pi^{0} pairs(Electrons ): E vs #lambda_{0} vs #lambda_{1}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhELambdaElectrons->SetZTitle("#lambda_{1}");
-        fhELambdaElectrons->SetYTitle("#lambda_{0}");
-        fhELambdaElectrons->SetXTitle("E (GeV)");
-        outputContainer->Add(fhELambdaElectrons) ; 
-        
-        fhELambdaPi0NoPh  = new TH2F
-        ("hELambdaPi0NoPh","Selected #pi^{0} pairs(Pi0s instead of photons): E vs #lambda_{0} vs #lambda_{1}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhELambdaPi0NoPh->SetZTitle("#lambda_{1}");
-        fhELambdaPi0NoPh->SetYTitle("#lambda_{0}");
-        fhELambdaPi0NoPh->SetXTitle("E (GeV)");
-        outputContainer->Add(fhELambdaPi0NoPh) ; 
-        
-        fhELambdaOtherParts  = new TH2F
-        ("hELambdaOtherParts","Selected #pi^{0} pairs (Other parts): E vs #lambda_{0} vs #lambda_{1}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhELambdaOtherParts->SetZTitle("#lambda_{1}");
-        fhELambdaOtherParts->SetYTitle("#lambda_{0}");
-        fhELambdaOtherParts->SetXTitle("E (GeV)");
-        outputContainer->Add(fhELambdaOtherParts) ; 
+        TString ptype[] ={"#gamma","#gamma->e^{#pm}","#pi^{0}","e^{#pm}", "hadron"}; 
+        TString pname[] ={"Photon","Conversion",     "Pi0",    "Electron","Hadron"};
+        for(Int_t i = 0; i < 5; i++){ 
+          
+          fhEMCLambda0[i]  = new TH2F(Form("hELambda0_MC%s",pname[i].Data()),
+                                      Form("Selected pair, cluster from %s : E vs #lambda_{0}^{2}",ptype[i].Data()),
+                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhEMCLambda0[i]->SetYTitle("#lambda_{0}^{2}");
+          fhEMCLambda0[i]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhEMCLambda0[i]) ; 
+          
+          fhEMCdLambda0[i]  = new TH2F(Form("hEdLambda0_MC%s",pname[i].Data()),
+                                       Form("Selected pair, cluster from %s : E vs #lambda_{0}^{2}/N_{cells}^{2}",ptype[i].Data()),
+                                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
+          fhEMCdLambda0[i]->SetYTitle("d#lambda_{0}^{2}");
+          fhEMCdLambda0[i]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhEMCdLambda0[i]) ; 
+          
+          fhEMCLambda1[i]  = new TH2F(Form("hELambda1_MC%s",pname[i].Data()),
+                                      Form("Selected pair, cluster from %s : E vs #lambda_{1}^{2}",ptype[i].Data()),
+                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhEMCLambda1[i]->SetYTitle("#lambda_{1}^{2}");
+          fhEMCLambda1[i]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhEMCLambda1[i]) ; 
+          
+          fhEMCdLambda1[i]  = new TH2F(Form("hEdLambda1_MC%s",pname[i].Data()),
+                                       Form("Selected pair, cluster from %s : E vs d#lambda_{1}^{2}/N_{cells}^{2}",ptype[i].Data()),
+                                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
+          fhEMCdLambda1[i]->SetYTitle("d#lambda_{1}^{2}");
+          fhEMCdLambda1[i]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhEMCdLambda1[i]) ; 
+          
+          fhEMCDispersion[i]  = new TH2F(Form("hEDispersion_MC%s",pname[i].Data()),
+                                         Form("Selected pair, cluster from %s : E vs dispersion^{2}",ptype[i].Data()),
+                                         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhEMCDispersion[i]->SetYTitle("D^{2}");
+          fhEMCDispersion[i]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhEMCDispersion[i]) ; 
+          
+          fhEMCdDispersion[i]  = new TH2F(Form("hEdDispersion_MC%s",pname[i].Data()),
+                                          Form("Selected pair, cluster from %s : E vs dispersion^{2}/N_{cells}^{2}",ptype[i].Data()),
+                                          nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
+          fhEMCdDispersion[i]->SetYTitle("dD^{2}");
+          fhEMCdDispersion[i]->SetXTitle("E (GeV)");
+          outputContainer->Add(fhEMCdDispersion[i]) ;   
+          
+        }//
         
       }//kIMCalo
-      
-    }
+    } //Not MC reader
   }//Histos with MC
   
   
@@ -315,13 +316,44 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   
 }
 
+//____________________________________________________________________________
+void AliAnaPi0EbE::Init()
+{ 
+  //Init
+  //Do some checks
+  if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD()){
+    printf("AliAnaPi0EbE::Init() - !!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
+    abort();
+  }
+  else  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD()){
+    printf("AliAnaPi0EbE::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
+    abort();
+  }
+  
+}
+
+//____________________________________________________________________________
+void AliAnaPi0EbE::InitParameters()
+{
+  //Initialize the parameters of the analysis.  
+  AddToHistogramsName("AnaPi0EbE_");
+  
+  fInputAODGammaConvName = "gammaconv" ;
+  fAnaType = kIMCalo ;
+  fCalorimeter = "EMCAL" ;
+  fMinDist  = 2.;
+  fMinDist2 = 4.;
+  fMinDist3 = 5.;
+  
+}
+
 //__________________________________________________________________
 void  AliAnaPi0EbE::MakeAnalysisFillAOD() 
 {
   //Do analysis and fill aods
   
   switch(fAnaType) 
-    {
+  {
     case kIMCalo:
       MakeInvMassInCalorimeter();
       break;
@@ -334,7 +366,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillAOD()
       MakeInvMassInCalorimeterAndCTS();
       break;
       
-    }
+  }
 }
 
 //__________________________________________________________________
@@ -371,7 +403,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
     TObjArray *clusters = 0;
     if     (fCalorimeter="EMCAL") clusters = GetEMCALClusters();
     else if(fCalorimeter="PHOS" ) clusters = GetPHOSClusters() ;
-
+    
     Bool_t bFound1        = kFALSE;
     Int_t  caloLabel1     = photon1->GetCaloLabel(0);
     Bool_t iclus1         = -1;    
@@ -404,20 +436,19 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       
       //Photon1
       Float_t e1    = photon1->E();
-      Float_t eta1  = photon1->Eta();
       Float_t tof1  = -1;
       Float_t disp1 = -1;
       Float_t l01   = -1;
       Float_t l11   = -1; 
+      Int_t ncells1 = 0;
       
       //Photon2
       Float_t e2    = photon2->E();
-      Float_t eta2  = photon2->Eta();
       Float_t disp2 = -1;
       Float_t tof2  = -1;
       Float_t l02   = -1;
       Float_t l12   = -1; 
-      
+      Int_t ncells2 = 0;
       Bool_t bFound2        = kFALSE;
       Int_t  caloLabel2     = photon2->GetCaloLabel(0);
       AliVCluster *cluster2 = 0; 
@@ -435,23 +466,25 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         
         //Photon/Cluster 1
         if(cluster1 && bFound1){
-          disp1 = cluster1->GetDispersion();
-          l11   = cluster1->GetM20();
-          l01   = cluster1->GetM02();
-          tof1  = cluster1->GetTOF()*1e9;
+          disp1   = cluster1->GetDispersion()*cluster1->GetDispersion();
+          l11     = cluster1->GetM20();
+          l01     = cluster1->GetM02();
+          tof1    = cluster1->GetTOF()*1e9;
+          ncells1 = cluster1->GetNCells()*cluster1->GetNCells();
         }
-//        else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
-//                     photon2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
+        //        else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
+        //                     photon2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
         
         //Photon/Cluster 2
         if(cluster2 && bFound2){
-          disp2 = cluster2->GetDispersion();
-          l12   = cluster2->GetM20();
-          l02   = cluster2->GetM02();
-          tof2  = cluster2->GetTOF()*1e9;
+          disp2   = cluster2->GetDispersion()*cluster2->GetDispersion();
+          l12     = cluster2->GetM20();
+          l02     = cluster2->GetM02();
+          tof2    = cluster2->GetTOF()*1e9;
+          ncells2 = cluster2->GetNCells()*cluster2->GetNCells();
         }
-//        else printf("cluster2 not available: calo label %d / %d, cluster ID %d\n",
-//                     photon2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());    
+        //        else printf("cluster2 not available: calo label %d / %d, cluster ID %d\n",
+        //                     photon2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());    
         
         //Select clusters with good time window difference
         Double_t t12diff = tof1-tof2;
@@ -490,14 +523,14 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
                 TParticle * mother2 = GetMCStack()->Particle(label2);//photon in kine tree
                 label2 = mother2->GetFirstMother();
                 //mother2 = GetMCStack()->Particle(label2);//pi0
-               }
+              }
             }
             else if(GetReader()->ReadAODMCParticles()){//&& (input > -1)){
               if(label1>=0){
                 AliAODMCParticle * mother1 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon1->GetInputFileIndex()))->At(label1);//photon in kine tree
                 label1 = mother1->GetMother();
                 //mother1 = GetMCStack()->Particle(label1);//pi0
-               }
+              }
               if(label2>=0){
                 AliAODMCParticle * mother2 = (AliAODMCParticle *) (GetReader()->GetAODMCParticles(photon2->GetInputFileIndex()))->At(label2);//photon in kine tree
                 label2 = mother2->GetMother();
@@ -518,78 +551,117 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
           //printf("Signal Cl1: e %f, pt %f, disp %f, l1 %f, l0 %f, eta %f, phi %f \n",
           //       e,pt,disp,l1,l0,photon2->Eta(),photon2->Phi());
           
-          fhEDispPi0   ->Fill(e1, disp1);   
-          fhELambda0Pi0->Fill(e1, l01  );  
-          fhELambda1Pi0->Fill(e1, l11  );  
-
-          if(TMath::Abs(eta1)<0.2){
-            fhELambdaPi0EtaCen->Fill(e1, l01);
-          }
-          else if (TMath::Abs(eta1)>0.2 && TMath::Abs(eta1)<0.5){
-            fhELambdaPi0EtaMid->Fill(e1, l01);
-          } 
-          else {
-            fhELambdaPi0EtaBor->Fill(e1, l01);
-          }
+          fhEDispersion   ->Fill(e1, disp1);   
+          fhELambda0->Fill(e1, l01  );  
+          fhELambda1->Fill(e1, l11  );  
+          
+          fhEdDispersion   ->Fill(e1, disp1/ncells1);   
+          fhEdLambda0->Fill(e1, l01/ncells1  );  
+          fhEdLambda1->Fill(e1, l11/ncells1  );  
           
           //Photon2
           //printf("Signal Cl2: e %f, pt %f, disp %f, l1 %f, l0 %f, eta %f, phi %f \n",e
           //     ,pt,disp,l1,l0,photon2->Eta(),photon2->Phi());
           
-          fhEDispPi0   ->Fill(e2, disp2);   
-          fhELambda0Pi0->Fill(e2, l02  ); 
-          fhELambda1Pi0->Fill(e2, l12  ); 
+          fhEDispersion   ->Fill(e2, disp2);   
+          fhELambda0->Fill(e2, l02  ); 
+          fhELambda1->Fill(e2, l12  ); 
           
-          if(TMath::Abs(eta2)<0.2){
-            fhELambdaPi0EtaCen->Fill(e2, l02);
-          }
-          else if (TMath::Abs(eta2)>0.2 && TMath::Abs(eta2)<0.5){
-            fhELambdaPi0EtaMid->Fill(e2, l02);
-          } 
-          else {
-            fhELambdaPi0EtaBor->Fill(e2, l02);
-          }
+          fhEdDispersion   ->Fill(e2, disp2/ncells2);   
+          fhEdLambda0->Fill(e2, l02/ncells2  ); 
+          fhEdLambda1->Fill(e2, l12/ncells2  ); 
           
           if(IsDataMC()) {
             //Photon1
-            if( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPhoton) && !GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCConversion) ){
-              fhELambdaPhNoConv->Fill(e1, l01);
+            if( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPhoton) && 
+               !GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCConversion) ){
+              fhEMCLambda0[0]    ->Fill(e1, l01);
+              fhEMCdLambda0[0]   ->Fill(e1, l01/ncells1);
+              fhEMCLambda1[0]    ->Fill(e1, l11);
+              fhEMCdLambda1[0]   ->Fill(e1, l11/ncells1);
+              fhEMCDispersion[0] ->Fill(e1, disp1);
+              fhEMCdDispersion[0]->Fill(e1, disp1/ncells1);                
             }//photon   no conversion
             else if  ( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCElectron)){
-              fhELambdaElectrons->Fill(e1, l01);
+              fhEMCLambda0[3]    ->Fill(e1, l01);
+              fhEMCdLambda0[3]   ->Fill(e1, l01/ncells1);
+              fhEMCLambda1[3]    ->Fill(e1, l11);
+              fhEMCdLambda1[3]   ->Fill(e1, l11/ncells1);
+              fhEMCDispersion[3] ->Fill(e1, disp1);
+              fhEMCdDispersion[3]->Fill(e1, disp1/ncells1);
             }//electron
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCConversion) && GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCConversion) ){
-              fhELambdaConvPhotons->Fill(e1, l01);
-            }//convesion photon
-            
+            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCConversion) && 
+                      GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCConversion) ){
+              fhEMCLambda0[1]    ->Fill(e1, l01);
+              fhEMCdLambda0[1]   ->Fill(e1, l01/ncells1);
+              fhEMCLambda1[1]    ->Fill(e1, l11);
+              fhEMCdLambda1[1]   ->Fill(e1, l11/ncells1);
+              fhEMCDispersion[1] ->Fill(e1, disp1);
+              fhEMCdDispersion[1]->Fill(e1, disp1/ncells1);           
+            }//conversion photon
             else if  ( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0)  ){
-              fhELambdaPi0NoPh->Fill(e1, l01);
+              fhEMCLambda0[2]    ->Fill(e1, l01);
+              fhEMCdLambda0[2]   ->Fill(e1, l01/ncells1);
+              fhEMCLambda1[2]    ->Fill(e1, l11);
+              fhEMCdLambda1[2]   ->Fill(e1, l11/ncells1);
+              fhEMCDispersion[2] ->Fill(e1, disp1);
+              fhEMCdDispersion[2]->Fill(e1, disp1/ncells1);     
             }//pi0
             else {
-              fhELambdaOtherParts->Fill(e1, l01);
-            }//other particules 
+              fhEMCLambda0[4]    ->Fill(e1, l01);
+              fhEMCdLambda0[4]   ->Fill(e1, l01/ncells1);
+              fhEMCLambda1[4]    ->Fill(e1, l11);
+              fhEMCdLambda1[4]   ->Fill(e1, l11/ncells1);
+              fhEMCDispersion[4] ->Fill(e1, disp1);
+              fhEMCdDispersion[4]->Fill(e1, disp1/ncells1);    
+            }//other particles 
             
             //Photon 2
-            if( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPhoton) && !GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCConversion) ){
-              fhELambdaPhNoConv->Fill(e2, l02);
+            if( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPhoton) && 
+               !GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCConversion) ){
+              fhEMCLambda0[0]    ->Fill(e2, l02);
+              fhEMCdLambda0[0]   ->Fill(e2, l02/ncells2);
+              fhEMCLambda1[0]    ->Fill(e2, l12);
+              fhEMCdLambda1[0]   ->Fill(e2, l12/ncells2);
+              fhEMCDispersion[0] ->Fill(e2, disp2);
+              fhEMCdDispersion[0]->Fill(e2, disp2/ncells2);            
             }//photon   no conversion
             else if  ( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCElectron)){
-              fhELambdaElectrons->Fill(e2, l02);
+              fhEMCLambda0[3]    ->Fill(e2, l02);
+              fhEMCdLambda0[3]   ->Fill(e2, l02/ncells2);
+              fhEMCLambda1[3]    ->Fill(e2, l12);
+              fhEMCdLambda1[3]   ->Fill(e2, l12/ncells2);
+              fhEMCDispersion[3] ->Fill(e2, disp2);
+              fhEMCdDispersion[3]->Fill(e2, disp2/ncells2);    
             }//electron
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCConversion) && GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCConversion) ){
-              fhELambdaConvPhotons->Fill(e2, l02);
-            }//convesion photon
-            
+            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCConversion) && 
+                      GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCConversion) ){
+              fhEMCLambda0[1]    ->Fill(e2, l02);
+              fhEMCdLambda0[1]   ->Fill(e2, l02/ncells2);
+              fhEMCLambda1[1]    ->Fill(e2, l12);
+              fhEMCdLambda1[1]   ->Fill(e2, l12/ncells2);
+              fhEMCDispersion[1] ->Fill(e2, disp2);
+              fhEMCdDispersion[1]->Fill(e2, disp2/ncells2);                
+            }//conversion photon
             else if  ( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPi0)  ){
-              fhELambdaPi0NoPh->Fill(e2, l02);
+              fhEMCLambda0[2]    ->Fill(e2, l02);
+              fhEMCdLambda0[2]   ->Fill(e2, l02/ncells2);
+              fhEMCLambda1[2]    ->Fill(e2, l12);
+              fhEMCdLambda1[2]   ->Fill(e2, l12/ncells2);
+              fhEMCDispersion[2] ->Fill(e2, disp2);
+              fhEMCdDispersion[2]->Fill(e2, disp2/ncells2);                
             }//pi0
             else {
-              fhELambdaOtherParts->Fill(e2, l02);
-            }//other particules 
+              fhEMCLambda0[4]    ->Fill(e2, l02);
+              fhEMCdLambda0[4]   ->Fill(e2, l02/ncells2);
+              fhEMCLambda1[4]    ->Fill(e2, l12);
+              fhEMCdLambda1[4]   ->Fill(e2, l12/ncells2);
+              fhEMCDispersion[4] ->Fill(e2, disp2);
+              fhEMCdDispersion[4]->Fill(e2, disp2/ncells2);                
+            }//other particles 
           }//is datamc
-          
         }//MC histograms
-
+        
         //Create AOD for analysis
         mom = mom1+mom2;
         AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
@@ -602,33 +674,6 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         //pi0.SetInputFileIndex(input);
         AddAODParticle(pi0);
       }//pi0
-      else{
-        Float_t phi = (mom1+mom2).Phi();
-        if(phi < 0) phi+=TMath::TwoPi();
-        
-        //Fill some histograms about shower shape
-        if(GetReader()->GetDataType()!=AliCaloTrackReader::kMC){
-          //Photon1
-          
-          //printf("Bkg Cl1: e %f, pt %f, disp %f, l1 %f, l0 %f, eta %f, phi %f \n",
-          //       e,pt,disp,l1,l0,photon2->Eta(),photon2->Phi());
-          
-          fhEDispBkg   ->Fill(e1, disp1);   
-          fhELambda0Bkg->Fill(e1, l01  );  
-          fhELambda1Bkg->Fill(e1, l11  );  
-           
-          //Photon2
-          
-          //printf("Bkg Cl2: e %f, pt %f, disp %f, l1 %f, l0 %f, eta %f, phi %f \n",
-          //e,pt,disp,l1,l0,photon2->Eta(),photon2->Phi());
-          
-          fhEDispBkg   ->Fill(e2, disp2);   
-          fhELambda0Bkg->Fill(e2, l02  );  
-          fhELambda1Bkg->Fill(e2, l12  );  
-   
-        }
-        
-      }//bkg pair
       
     }//2n photon loop
     
@@ -762,15 +807,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Info("MakeShowerShapeIdentification","TObjArray with %s clusters is NULL!\n",fCalorimeter.Data());
     return;
   }  
-  
-  //Get vertex for photon momentum calculation
-  //Double_t vertex2[] = {0,0,0} ; //vertex from second aod input
-  //if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) 
-  //{
-  //if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
-  //}
 	
-  
   TLorentzVector mom ;
   for(Int_t icalo = 0; icalo < pl->GetEntriesFast(); icalo++){
     AliVCluster * calo = (AliVCluster*) (pl->At(icalo));	
@@ -780,23 +817,14 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       evtIndex=GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
     }
     if(TMath::Abs(GetVertex(evtIndex)[2]) > GetZvertexCut()) continue ;  //vertex cut
-
-    //Cluster selection, not charged, with pi0 id and in fiducial cut
-	  
-    //Input from second AOD?
-    //Int_t input = 0;
-    //	if     (fCalorimeter == "EMCAL" && GetReader()->GetEMCALClustersNormalInputEntries() <= icalo) input = 1 ;
-    //	else if(fCalorimeter == "PHOS"  && GetReader()->GetPHOSClustersNormalInputEntries()  <= icalo) input = 1;
-	  
+    
     //Get Momentum vector, 
-    //if     (input == 0) 
     if(GetReader()->GetDataType() != AliCaloTrackReader::kMC){
       calo->GetMomentum(mom,GetVertex(evtIndex)) ;}//Assume that come from vertex in straight line
     else{
       Double_t vertex[]={0,0,0};
       calo->GetMomentum(mom,vertex) ;
     }
-    //else if(input == 1) calo->GetMomentum(mom,vertex2);//Assume that come from vertex in straight line  
 	  
     //If too small or big pt, skip it
     if(mom.Pt() < GetMinPt() || mom.Pt() > GetMaxPt() ) continue ; 
@@ -933,38 +961,6 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
     }//Histograms with MC
     
   }// aod loop
-  
-}
-
-
-//____________________________________________________________________________
-void AliAnaPi0EbE::Init()
-{ 
-  //Init
-  //Do some checks
-  if(fCalorimeter == "PHOS" && !GetReader()->IsPHOSSwitchedOn() && NewOutputAOD()){
-    printf("AliAnaPi0EbE::Init() - !!STOP: You want to use PHOS in analysis but it is not read!! \n!!Check the configuration file!!\n");
-    abort();
-  }
-  else  if(fCalorimeter == "EMCAL" && !GetReader()->IsEMCALSwitchedOn() && NewOutputAOD()){
-    printf("AliAnaPi0EbE::Init() - !!STOP: You want to use EMCAL in analysis but it is not read!! \n!!Check the configuration file!!\n");
-    abort();
-  }
-  
-}
-
-//____________________________________________________________________________
-void AliAnaPi0EbE::InitParameters()
-{
-  //Initialize the parameters of the analysis.  
-  AddToHistogramsName("AnaPi0EbE_");
-
-  fInputAODGammaConvName = "gammaconv" ;
-  fAnaType = kIMCalo ;
-  fCalorimeter = "EMCAL" ;
-  fMinDist  = 2.;
-  fMinDist2 = 4.;
-  fMinDist3 = 5.;
   
 }
 
