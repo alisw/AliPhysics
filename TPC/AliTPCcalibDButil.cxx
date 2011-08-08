@@ -384,7 +384,7 @@ void AliTPCcalibDButil::ProcessNoiseData(TVectorD &vNoiseMean, TVectorD &vNoiseM
         }
         //check for nan
         if ( !(noiseVal<10000000) ){
-//           printf ("Warning: nan detected in (sec,row,pad - val): %02d,%02d,%03d - %.1f\n",isec,irow,ipad,noiseVal);
+	  AliInfo(Form("Warning: nan detected in (sec,row,pad - val): %02d,%02d,%03d - %.1f\n",isec,irow,ipad,noiseVal));
           ++nNaN;
           continue;
         }
@@ -460,7 +460,7 @@ void AliTPCcalibDButil::ProcessNoiseData(TVectorD &vNoiseMean, TVectorD &vNoiseM
     Double_t rmsSen=0;
     
     if (c[i]>verySmall){
-//       printf ("i: %d - m: %.3f, c: %.0f, r: %.3f\n",i,vNoiseMean[i],c[i],vNoiseRMS[i]);
+      AliInfo(Form("i: %d - m: %.3f, c: %.0f, r: %.3f\n",i,vNoiseMean[i],c[i],vNoiseRMS[i]));
       mean=vNoiseMean[i]/c[i];
       rms=vNoiseRMS[i];
       rms=TMath::Sqrt(TMath::Abs(rms/c[i]-mean*mean));
@@ -518,8 +518,7 @@ void AliTPCcalibDButil::ProcessQAData(TVectorD &vQaOcc, TVectorD &vQaQtot,
 
   for (UInt_t isec=0;isec<AliTPCCalPad::kNsec;++isec){
 
-    printf("Sector %d\n", isec);
-
+    AliInfo(Form("Sector %d\n", isec));
     AliTPCCalROC* occupancyROC = fDataQA->GetNoThreshold()->GetCalROC(isec); 
     AliTPCCalROC* nclusterROC = fDataQA->GetNLocalMaxima()->GetCalROC(isec); 
     AliTPCCalROC* qROC = fDataQA->GetMeanCharge()->GetCalROC(isec); 
@@ -531,7 +530,7 @@ void AliTPCcalibDButil::ProcessQAData(TVectorD &vQaOcc, TVectorD &vQaQtot,
     
     const UInt_t nchannels=occupancyROC->GetNchannels();
 
-    printf("Nchannels %d\n", nchannels);
+    AliInfo(Form("Nchannels %d\n", nchannels));
 
     for (UInt_t ichannel=0;ichannel<nchannels;++ichannel){
 
@@ -2149,7 +2148,7 @@ Int_t  AliTPCcalibDButil::MakeRunList(Int_t startRun, Int_t stopRun){
       if (!tmpRun) continue;
       fRunsStart[irun]=tmpRun->GetStartTime().GetSec();
       fRunsStop[irun]=tmpRun->GetEndTime().GetSec();
-      //      printf("irun\t%d\tRun\t%d\t%d\t%d\n",irun,fRuns[irun],tmpRun->GetStartTime().GetSec(),tmpRun->GetEndTime().GetSec());
+      //AliInfo(Form("irun\t%d\tRun\t%d\t%d\t%d\n",irun,fRuns[irun],tmpRun->GetStartTime().GetSec(),tmpRun->GetEndTime().GetSec()));
     }}
   return fRuns.fN;
 }
@@ -2165,7 +2164,7 @@ Int_t AliTPCcalibDButil::FindRunTPC(Int_t    itime, Bool_t debug){
   for (Int_t index=index0; index<=index1; index++){
     if (fRunsStart[index]<=itime && fRunsStop[index]>=itime) cindex=index;
     if (debug) {
-      printf("%d\t%d\t%d\n",fRuns[index], fRunsStart[index]-itime, fRunsStop[index]-itime);
+      AliInfo(Form("%d\t%d\t%d\n",fRuns[index], fRunsStart[index]-itime, fRunsStop[index]-itime));
     }
   }
   if (cindex<0) cindex =(index0+index1)/2;
@@ -2365,12 +2364,12 @@ Double_t AliTPCcalibDButil::EvalGraphConst(TGraph * const graph, Double_t xref){
   // Use constant interpolation outside of range 
   //
   if (!graph) {
-    printf("AliTPCcalibDButil::EvalGraphConst: 0 pointer\n");
+    AliInfoGeneral("AliTPCcalibDButil","AliTPCcalibDButil::EvalGraphConst: 0 pointer\n");
     return 0;
   }
 
   if (graph->GetN()<1){
-    printf("AliTPCcalibDButil::EvalGraphConst: Empty graph \n");
+    AliInfoGeneral("AliTPCcalibDButil","AliTPCcalibDButil::EvalGraphConst: Empty graph \n");
     return 0;
   }
  
@@ -2378,7 +2377,7 @@ Double_t AliTPCcalibDButil::EvalGraphConst(TGraph * const graph, Double_t xref){
   if (xref<graph->GetX()[0]) return graph->GetY()[0];
   if (xref>graph->GetX()[graph->GetN()-1]) return graph->GetY()[graph->GetN()-1]; 
 
-  //  printf("graph->Eval(graph->GetX()[0]) %f, graph->Eval(xref) %f \n",graph->Eval(graph->GetX()[0]), graph->Eval(xref));
+  //  AliInfo(Form("graph->Eval(graph->GetX()[0]) %f, graph->Eval(xref) %f \n",graph->Eval(graph->GetX()[0]), graph->Eval(xref)));
 
   if(graph->GetN()==1)
     return graph->Eval(graph->GetX()[0]);
@@ -2392,11 +2391,11 @@ Double_t AliTPCcalibDButil::EvalGraphConst(AliSplineFit *graph, Double_t xref){
   // Use constant interpolation outside of range also for spline fits
   //
   if (!graph) {
-    printf("AliTPCcalibDButil::EvalGraphConst: 0 pointer\n");
+    AliInfoGeneral("AliTPCcalibDButil","AliTPCcalibDButil::EvalGraphConst: 0 pointer\n");
     return 0;
   }
   if (graph->GetKnots()<1){
-    printf("AliTPCcalibDButil::EvalGraphConst: Empty graph");
+    AliInfoGeneral("AliTPCcalibDButil","AliTPCcalibDButil::EvalGraphConst: Empty graph");
     return 0;
   }
   if (xref<graph->GetX()[0]) return graph->GetY0()[0];
@@ -2493,7 +2492,6 @@ Float_t  AliTPCcalibDButil::FilterTemperature(AliTPCSensorTempArray *tempArray, 
   for (Int_t isensor=0; isensor<nsensors; isensor++){
     AliDCSSensor *sensor = tempArray->GetSensorNum(isensor);
     if (!sensor) continue;
-    //printf("%d\n",isensor);
     FilterSensor(sensor,ymin,ymax,kMaxDy, sigmaCut);
     if (sensor->GetFit()==0){
       //delete sensor;
@@ -2960,7 +2958,7 @@ void AliTPCcalibDButil::FilterGoofie(AliDCSSensorArray * goofieArray, Double_t d
 	    AliTPCcalibDButil::SmoothGraph(graphNew2,deltaT);
 	    AliTPCcalibDButil::SmoothGraph(graphNew2,deltaT);
 	    AliTPCcalibDButil::SmoothGraph(graphNew2,deltaT);
-	    printf("%d\t%f\t%f\n",isensor, median,vrmsArray[isensor]);
+	    //	    AliInfo(Form("%d\t%f\t%f\n",isensor, median,vrmsArray[isensor]));
 	    vmedianArray[isensor]=median;
 	    //
 	  }
