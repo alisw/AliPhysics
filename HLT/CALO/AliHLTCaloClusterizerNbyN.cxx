@@ -42,7 +42,6 @@ AliHLTCaloClusterizerNbyN::~AliHLTCaloClusterizerNbyN()
 
 Int_t AliHLTCaloClusterizerNbyN::ClusterizeEvent(Int_t nDigits)
 {
-
     //see header file for documentation
     Int_t nRecPoints = 0;
     fNRecPoints = 0;
@@ -106,7 +105,9 @@ Int_t AliHLTCaloClusterizerNbyN::ClusterizeEvent(Int_t nDigits)
         Int_t maxDiff = fN/2;
         for (Int_t j = 0; j < nDigits; j++)
         {
-            if (fDigitsPointerArray[j]->fEnergy < fEmcMinEnergyThreshold) break; // Sorted by energy
+	  if (fDigitsPointerArray[j]->fEnergy < fEmcMinEnergyThreshold) break; // Sorted by energy
+	      if(fDigitsPointerArray[j]->fAssociatedCluster!=-1) continue;//cell is already associated with a cluster (higher energy seed)
+	      if(TMath::Abs(fRecPointDataPtr->fTime-fDigitsPointerArray[j]->fTime) >= fEmcTimeGate) continue;//time difference between cell and seed is larger than cut
 
             if (TMath::Abs(fDigitsPointerArray[i]->fX - fDigitsPointerArray[j]->fX) <= maxDiff
                     && TMath::Abs(fDigitsPointerArray[i]->fZ - fDigitsPointerArray[j]->fZ) <= maxDiff) // The digit is in our grid

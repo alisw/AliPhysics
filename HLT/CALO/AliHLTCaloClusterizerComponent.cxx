@@ -218,37 +218,41 @@ AliHLTCaloClusterizerComponent::ScanConfigurationArgument(int argc, const char *
 
     if (argc <= 0) return 0;
 
-    int i=0;
+    for(int i=0;i<argc;i++){
+      TString argument=argv[i];
 
-    TString argument=argv[i];
+      if (argument.CompareTo("-digitthreshold") == 0)
+	{
+	  if (++i >= argc) return -EPROTO;
+	  argument = argv[i];
+	  fClusterizerPtr->SetEmcMinEnergyThreshold(argument.Atof());
+	}
 
-    if (argument.CompareTo("-digitthreshold") == 0)
-    {
-        if (++i >= argc) return -EPROTO;
-        argument = argv[i];
-        fClusterizerPtr->SetEmcMinEnergyThreshold(argument.Atof());
-        return 1;
-    }
+      if (argument.CompareTo("-recpointthreshold") == 0)
+	{
+	  if (++i >= argc) return -EPROTO;
+	  argument = argv[i];
+	  fClusterizerPtr->SetEmcClusteringThreshold(argument.Atof());
+	}
 
-    if (argument.CompareTo("-recpointthreshold") == 0)
-    {
-        if (++i >= argc) return -EPROTO;
-        argument = argv[i];
-        fClusterizerPtr->SetEmcClusteringThreshold(argument.Atof());
-        return 1;
-    }
+      if (argument.CompareTo("-cutonsinglecell") == 0)
+	{
+	  if (++i >= argc) return -EPROTO;
+	  argument = argv[i];
+	  fAnalyserPtr->SetCutOnSingleCellClusters(true, argument.Atof());
+	}
 
-    if (argument.CompareTo("-cutonsinglecell") == 0)
-    {
-        if (++i >= argc) return -EPROTO;
-        argument = argv[i];
-        fAnalyserPtr->SetCutOnSingleCellClusters(true, argument.Atof());
-        return 1;
-    }
-    if (argument.CompareTo("-sortbyposition") == 0)
-    {
-        fClusterizerPtr->SetSortDigitsByPosition();
-        return 1;
+      if (argument.CompareTo("-emctimegate") == 0)
+	{
+	  if (++i >= argc) return -EPROTO;
+	  argument = argv[i];
+	  fClusterizerPtr->SetEmcTimeGate(argument.Atof());
+	}
+
+      if (argument.CompareTo("-sortbyposition") == 0)
+	{
+	  fClusterizerPtr->SetSortDigitsByPosition();
+	}
     }
 
     return 0;
@@ -298,10 +302,7 @@ AliHLTCaloClusterizerComponent::DoInit(int argc, const char** argv )
 
     //  ConfigureFromCDBTObjString(path);
 
-    for (int i = 0; i < argc; i++)
-    {
-        ScanConfigurationArgument(i, argv);
-    }
+    ScanConfigurationArgument(argc, argv);
 
     return 0;
 }
