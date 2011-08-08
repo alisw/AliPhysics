@@ -597,6 +597,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	hik->Fit("fit","RQ","Q",  meanEstimate-40,  meanEstimate+40);
 	fMeans[ik]= (Int_t) fit->GetParameter(1);
 	hik->GetXaxis()->SetRangeUser(0, 30000);
+	fit->Delete();
       }
     }
     //
