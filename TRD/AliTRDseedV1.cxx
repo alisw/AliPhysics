@@ -1234,7 +1234,7 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
   }
   AliDebug(4, Form("Sorted row candidates:\n"
       "  row[%2d] Ncl[%2d] <dz>[cm]=%+8.2f row[%2d] Ncl[%2d] <dz>[cm]=%+8.2f"
-      , idxRow[0], ncl[idxRow[0]], zresRow[0], idxRow[1], ncl[idxRow[1]], zresRow[1]));
+      , idxRow[0], ncl[idxRow[0]], zresRow[0], idxRow[1], idxRow[1]<0?0:ncl[idxRow[1]], zresRow[1]));
 
   // initialize debug streamer
   TTreeSRedirector *pstreamer(NULL);
