@@ -399,7 +399,7 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     AliWarning("No output container defined.");
     return NULL;
   }
-  return NULL;
+//  return NULL;
   Double_t val[kNdim+1];
   AliTRDseedV1 *fTracklet(NULL);
   for(Int_t il(0); il<AliTRDgeometry::kNlayer; il++){
@@ -428,7 +428,7 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
       val[kZrez] = TMath::ATan((fTracklet->GetYref(1) - exb)/(1+fTracklet->GetYref(1)*exb));
     }
     val[kNdim] = fTracklet->GetdQdl();
-    H->Fill(val);
+    if(DebugLevel()>=1) H->Fill(val);
 
 //     // compute covariance matrix
 //     fTracklet->GetCovAt(x, cov);
@@ -439,7 +439,7 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
 //     ((TH3S*)arr->At(1))->Fill(sgm[fSegmentLevel], dyz[0], dyz[1]);
 //     ((TH3S*)arr->At(3))->Fill(tht, dyz[1], rc);
 
-    if(DebugLevel()>=1){
+    if(DebugLevel()>=2){
       Bool_t rc(fTracklet->IsRowCross());
       UChar_t err(fTracklet->GetErrorMsg());
       Double_t x(fTracklet->GetX()),
@@ -1096,7 +1096,6 @@ Bool_t AliTRDresolution::MakeProjectionCluster()
 Bool_t AliTRDresolution::MakeProjectionTracklet()
 {
 // Analyse tracklet
-  return kTRUE;
   Int_t cidx = kTracklet;
   if(fProj && fProj->At(cidx)) return kTRUE;
   if(!fContainer){
@@ -1105,10 +1104,9 @@ Bool_t AliTRDresolution::MakeProjectionTracklet()
   }
   THnSparse *H(NULL);
   if(!(H = (THnSparse*)fContainer->At(cidx))){
-    AliError(Form("Missing/Wrong data @ %d.", cidx));
+//    AliError(Form("Missing/Wrong data @ %d.", cidx));
     return kFALSE;
   }
-
   return kTRUE;
 }
 
@@ -1459,7 +1457,7 @@ TObjArray* AliTRDresolution::BuildMonitorContainerTrack(const char* name)
   if(!(h = (TH3S*)gROOT->FindObject(hname))){
     h = new TH3S(hname, htitle, 
                  kNpt, binsPt, kNdpt, binsDPt, kNspc, binsSpc);
-    ax = h->GetZaxis();
+    //ax = h->GetZaxis();
     //for(Int_t ib(1); ib<=ax->GetNbins(); ib++) ax->SetBinLabel(ib, fgParticle[ib-1]);
   } else h->Reset();
   arr->AddAt(h, 8);
