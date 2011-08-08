@@ -20,6 +20,7 @@
 
 class TArrayC;
 class TH1;
+class TTree;
 
 /**
  * @class AliHLTSpacePointContainer
@@ -118,6 +119,8 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
   }
 
   TH1* DrawProjection(const char* plane, const vector<AliHLTUInt32_t>& selection) const;
+
+  TTree* FillTree(const char* name, const char* title="");
 
  protected:
 

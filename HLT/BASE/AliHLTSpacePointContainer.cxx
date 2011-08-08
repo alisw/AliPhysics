@@ -31,6 +31,7 @@
 #include "TH2F.h"
 #include "TMath.h"
 #include "TMarker.h"
+#include "TTree.h"
 #include <memory>
 #include <algorithm>
 #include <iostream>
@@ -388,6 +389,45 @@ void AliHLTSpacePointContainer::Draw(Option_t *option)
     m->SetMarkerColor(markercolor);
     m->Draw("same");    
   }  
+}
+
+TTree* AliHLTSpacePointContainer::FillTree(const char* name, const char* title)
+{
+  // create tree and fill the space point coordinates
+  TString treename=name;
+  TString treetitle=title;
+  if (treename.IsNull()) treename="spacepoints";
+  if (treetitle.IsNull()) treetitle="HLT space point coordinates";
+  std::auto_ptr<TTree> tree(new TTree(treename, treetitle));
+  if (!tree.get()) return NULL;
+
+  const unsigned dimension=5;
+  float values[dimension];
+  memset(values, 0, sizeof(values));
+  const char* names[dimension]={
+    "x", "y", "z", "charge", "alpha"
+  };
+
+  for (unsigned i=0; i<dimension; i++) {
+    TString type=names[i]; type+="/F";
+    tree->Branch(names[i], &values[i], type);
+  }
+
+  const vector<AliHLTUInt32_t>* clusterIDs=GetClusterIDs(0xffffffff);
+  for (vector<AliHLTUInt32_t>::const_iterator clusterID=clusterIDs->begin();
+       clusterID!=clusterIDs->end();
+       clusterID++) {
+    unsigned pos=0;
+    values[pos++]=GetX(*clusterID);
+    values[pos++]=GetY(*clusterID);
+    values[pos++]=GetZ(*clusterID);
+    values[pos++]=GetCharge(*clusterID);
+    values[pos++]=GetPhi(*clusterID);
+
+    tree->Fill();
+  }
+
+  return tree.release();
 }
 
 ostream& operator<<(ostream &out, const AliHLTSpacePointContainer& c)
