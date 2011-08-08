@@ -547,10 +547,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   if (fTwoTrackEfficiencyStudy)
   {
     Float_t bSign = (fESD->GetMagneticField() > 0) ? 1 : -1;
-    TObjArray* reduced = fHistos->ApplyTwoTrackCut(tracks, bSign);
-    //if (centrality >= 0)
-    //  fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepBiasStudy, reduced, 0, weight);
-    delete reduced;
+    fHistos->TwoTrackEfficiency(tracks, 0, bSign);
   }
   
   // fill second time with SPD centrality
@@ -598,7 +595,14 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       for (Int_t jMix=0; jMix<nMix; jMix++) 
       {
 	TObjArray* bgTracks = pool->GetEvent(jMix);
-	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, bgTracks, 1.0 / nMix, (jMix == 0));
+	
+	if (fTwoTrackEfficiencyStudy)
+	{
+	  Float_t bSign = (fESD->GetMagneticField() > 0) ? 1 : -1;
+	  fHistos->TwoTrackEfficiency(tracks, bgTracks, bSign);
+	}
+
+	//fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, bgTracks, 1.0 / nMix, (jMix == 0));
       }
     }
     

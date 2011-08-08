@@ -33,7 +33,7 @@ class AliUEHistograms : public TNamed
   void FillEvent(Double_t centrality, Int_t step);
   void FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType, Double_t centrality = 0);
   
-  TObjArray* ApplyTwoTrackCut(TObjArray* tracks, Float_t bSign);
+  void TwoTrackEfficiency(TObjArray* tracks, TObjArray* mixed, Float_t bSign);
   
   void CopyReconstructedData(AliUEHistograms* from);
   
