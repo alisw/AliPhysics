@@ -40,8 +40,6 @@ public:
   void Init();
 
   TObjString* GetAnalysisCuts();
-
-  void MakeAnalysisFillAOD()  ;
     
   void MakeAnalysisFillHistograms() ; 
   

@@ -225,8 +225,8 @@ public:
   Int_t GetV0Multiplicity(Int_t i ) const { return fReader->GetV0Multiplicity(i)   ; }
   
   
+  //Histogrammes setters and getters (move to independend class to hold the parameters soon)
   
-  //Histogrammes setters and getters
   //Pt, Energy 
   virtual void SetHistoPtRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoPtBins = n ;
@@ -321,6 +321,106 @@ public:
   virtual Int_t GetHistoTrackMultiplicityMin()   const { return fHistoTrMMin  ; }
   virtual Int_t GetHistoTrackMultiplicityMax()   const { return fHistoTrMMax  ; }
   
+  
+  Int_t   GetHistoFinePtBins()           const { return fHistoFinePtBins     ; }
+  Float_t GetHistoFinePtMin()            const { return fHistoFinePtMin      ; }
+  Float_t GetHistoFinePtMax()            const { return fHistoFinePtMax      ; }	
+  
+  Int_t   GetHistodEdxBins()             const { return fHistodEdxBins       ; }
+  Float_t GetHistodEdxMin()              const { return fHistodEdxMin        ; }
+  Float_t GetHistodEdxMax()              const { return fHistodEdxMax        ; }	
+  
+  Int_t   GetHistoNClusterCellBins()     const { return fHistoNBins          ; }
+  Int_t   GetHistoNClusterCellMin()      const { return fHistoNMin           ; }
+  Int_t   GetHistoNClusterCellMax()      const { return fHistoNMax           ; }	
+  
+  Int_t   GetHistoPOverEBins()           const { return fHistoPOverEBins     ; }
+  Float_t GetHistoPOverEMin()            const { return fHistoPOverEMin      ; }
+  Float_t GetHistoPOverEMax()            const { return fHistoPOverEMax      ; }
+	
+  Int_t   GetHistodRBins()               const { return fHistodRBins         ; }
+  Float_t GetHistodRMin()                const { return fHistodRMin          ; }
+  Float_t GetHistodRMax()                const { return fHistodRMax          ; }	
+  
+  Int_t   GetHistoTimeBins()             const { return fHistoTimeBins       ; }
+  Float_t GetHistoTimeMin()              const { return fHistoTimeMin        ; }
+  Float_t GetHistoTimeMax()              const { return fHistoTimeMax        ; }	
+  
+  Int_t   GetHistoRatioBins()            const { return fHistoRatioBins      ; }
+  Float_t GetHistoRatioMin()             const { return fHistoRatioMin       ; }
+  Float_t GetHistoRatioMax()             const { return fHistoRatioMax       ; }	
+  
+  Int_t   GetHistoVertexDistBins()       const { return fHistoVertexDistBins ; }
+  Float_t GetHistoVertexDistMin()        const { return fHistoVertexDistMin  ; }
+  Float_t GetHistoVertexDistMax()        const { return fHistoVertexDistMax  ; }	
+  
+  Int_t   GetHistoRBins()                const { return fHistoRBins          ; }
+  Float_t GetHistoRMin()                 const { return fHistoRMin           ; }
+  Float_t GetHistoRMax()                 const { return fHistoRMax           ; }	  
+  
+  Int_t   GetHistoXBins()                const { return fHistoXBins          ; }
+  Float_t GetHistoXMin()                 const { return fHistoXMin           ; }
+  Float_t GetHistoXMax()                 const { return fHistoXMax           ; }
+  
+  Int_t   GetHistoYBins()                const { return fHistoYBins          ; }
+  Float_t GetHistoYMin()                 const { return fHistoYMin           ; }
+  Float_t GetHistoYMax()                 const { return fHistoYMax           ; }	
+  
+  Int_t   GetHistoZBins()                const { return fHistoZBins          ; }
+  Float_t GetHistoZMin()                 const { return fHistoZMin           ; }
+  Float_t GetHistoZMax()                 const { return fHistoZMax           ; }	
+	
+  Int_t   GetHistoShowerShapeBins()      const { return fHistoSSBins         ; }
+  Float_t GetHistoShowerShapeMin()       const { return fHistoSSMin          ; }
+  Float_t GetHistoShowerShapeMax()       const { return fHistoSSMax          ; }	
+  
+  Int_t   GetHistoDiffTimeBins()         const { return fHistoDiffTimeBins   ; }
+	Float_t GetHistoDiffTimeMin()          const { return fHistoDiffTimeMin    ; }
+	Float_t GetHistoDiffTimeMax()          const { return fHistoDiffTimeMax    ; }	
+  
+  
+  virtual void SetHistoPOverERangeAndNBins      (Float_t min, Float_t max, Int_t n) {
+    fHistoPOverEBins     = n ; fHistoPOverEMax     = max ; fHistoPOverEMin     = min ; }
+  
+  virtual void SetHistoFinePtRangeAndNBins      (Float_t min, Float_t max, Int_t n) {
+    fHistoFinePtBins     = n ; fHistoFinePtMax     = max ; fHistoFinePtMin     = min ; }
+  
+  virtual void SetHistodEdxRangeAndNBins        (Float_t min, Float_t max, Int_t n) {
+    fHistodEdxBins       = n ; fHistodEdxMax       = max ; fHistodEdxMin       = min ; }
+  
+  virtual void SetHistodRRangeAndNBins          (Float_t min, Float_t max, Int_t n) {
+    fHistodRBins         = n ; fHistodRMax         = max ; fHistodRMin         = min ; }
+  
+  virtual void SetHistoTimeRangeAndNBins        (Float_t min, Float_t max, Int_t n) {
+    fHistoTimeBins       = n ; fHistoTimeMax       = max ; fHistoTimeMin       = min ; }	
+  
+  virtual void SetHistoNClusterCellRangeAndNBins(Int_t   min, Int_t   max, Int_t n) {
+    fHistoNBins          = n ; fHistoNMax          = max ; fHistoNMin          = min ; }
+  
+  virtual void SetHistoRatioRangeAndNBins       (Float_t min, Float_t max, Int_t n) {
+    fHistoRatioBins      = n ; fHistoRatioMax      = max ; fHistoRatioMin      = min ; }
+  
+  virtual void SetHistoVertexDistRangeAndNBins  (Float_t min, Float_t max, Int_t n) { 
+    fHistoVertexDistBins = n ; fHistoVertexDistMax = max ; fHistoVertexDistMin = min ; }
+  
+  virtual void SetHistoXRangeAndNBins           (Float_t min, Float_t max, Int_t n) {
+    fHistoXBins          = n ; fHistoXMax          = max ; fHistoXMin          = min ; }
+  
+  virtual void SetHistoYRangeAndNBins           (Float_t min, Float_t max, Int_t n) {
+    fHistoYBins          = n ; fHistoYMax          = max ; fHistoYMin          = min ; }
+  
+  virtual void SetHistoZRangeAndNBins           (Float_t min, Float_t max, Int_t n) {
+    fHistoZBins         = n ; fHistoZMax           = max ; fHistoZMin          = min ; }
+  
+  virtual void SetHistoRRangeAndNBins           (Float_t min, Float_t max, Int_t n) {
+    fHistoRBins         = n ; fHistoRMax           = max ; fHistoRMin          = min ; }
+  
+  virtual void SetHistoShowerShapeRangeAndNBins (Float_t min, Float_t max, Int_t n) {
+    fHistoSSBins        = n ; fHistoSSMax          = max ; fHistoSSMin        = min ; }
+  
+  void         SetHistoDiffTimeRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoDiffTimeBins  = n ; fHistoDiffTimeMax   = max ; fHistoDiffTimeMin   = min   ; }
+	  
   void   SwitchOnPlotsMaking()  { fMakePlots = kTRUE  ; }
   void   SwitchOffPlotsMaking() { fMakePlots = kFALSE ; }
   Bool_t MakePlotsOn()    const { return fMakePlots   ; }
@@ -366,32 +466,74 @@ private:
   AliCalorimeterUtils      * fCaloUtils ; // Pointer to CalorimeterUtils
 
   //Histograms binning and range    
-  Int_t   fHistoPtBins   ;  // Number of bins in pt axis
-  Float_t fHistoPtMax    ;  // Maximum value of pt histogram range
-  Float_t fHistoPtMin    ;  // Minimum value of pt histogram range
-  Int_t   fHistoPhiBins  ;  // Number of bins in phi axis
-  Float_t fHistoPhiMax   ;  // Maximum value of phi histogram range
-  Float_t fHistoPhiMin   ;  // Minimum value of phi histogram range
-  Int_t   fHistoEtaBins  ;  // Number of bins in eta axis
-  Float_t fHistoEtaMax   ;  // Maximum value of eta histogram range
-  Float_t fHistoEtaMin   ;  // Minimum value of eta histogram range
-  Int_t   fHistoMassBins ;  // Number of bins in mass axis
-  Float_t fHistoMassMax  ;  // Maximum value of mass histogram range
-  Float_t fHistoMassMin  ;  // Minimum value of mass histogram range
-  Int_t   fHistoAsymBins ;  // Number of bins in asymmetry axis
-  Float_t fHistoAsymMax  ;  // Maximum value of asymmetry histogram range
-  Float_t fHistoAsymMin  ;  // Minimum value of asymmetry histogram range
-  Int_t   fHistoV0SBins  ;  // Number of bins in V0 signal axis
-  Int_t   fHistoV0SMax   ;  // Maximum value of V0 signal histogram range
-  Int_t   fHistoV0SMin   ;  // Minimum value of V0 signal histogram range
-  Int_t   fHistoV0MBins  ;  // Number of bins in V0 multiplicity axis
-  Int_t   fHistoV0MMax   ;  // Maximum value of V0 multiplicity histogram range
-  Int_t   fHistoV0MMin   ;  // Minimum value of V0 multiplicity histogram range
-  Int_t   fHistoTrMBins  ;  // Number of bins in V0 multiplicity axis
-  Int_t   fHistoTrMMax   ;  // Maximum value of track multiplicity histogram range
-  Int_t   fHistoTrMMin   ;  // Minimum value of track multiplicity histogram range
+  Int_t    fHistoPtBins   ;  // Number of bins in pt axis
+  Float_t  fHistoPtMax    ;  // Maximum value of pt histogram range
+  Float_t  fHistoPtMin    ;  // Minimum value of pt histogram range
+  Int_t    fHistoPhiBins  ;  // Number of bins in phi axis
+  Float_t  fHistoPhiMax   ;  // Maximum value of phi histogram range
+  Float_t  fHistoPhiMin   ;  // Minimum value of phi histogram range
+  Int_t    fHistoEtaBins  ;  // Number of bins in eta axis
+  Float_t  fHistoEtaMax   ;  // Maximum value of eta histogram range
+  Float_t  fHistoEtaMin   ;  // Minimum value of eta histogram range
+  Int_t    fHistoMassBins ;  // Number of bins in mass axis
+  Float_t  fHistoMassMax  ;  // Maximum value of mass histogram range
+  Float_t  fHistoMassMin  ;  // Minimum value of mass histogram range
+  Int_t    fHistoAsymBins ;  // Number of bins in asymmetry axis
+  Float_t  fHistoAsymMax  ;  // Maximum value of asymmetry histogram range
+  Float_t  fHistoAsymMin  ;  // Minimum value of asymmetry histogram range
+  Int_t    fHistoV0SBins  ;  // Number of bins in V0 signal axis
+  Int_t    fHistoV0SMax   ;  // Maximum value of V0 signal histogram range
+  Int_t    fHistoV0SMin   ;  // Minimum value of V0 signal histogram range
+  Int_t    fHistoV0MBins  ;  // Number of bins in V0 multiplicity axis
+  Int_t    fHistoV0MMax   ;  // Maximum value of V0 multiplicity histogram range
+  Int_t    fHistoV0MMin   ;  // Minimum value of V0 multiplicity histogram range
+  Int_t    fHistoTrMBins  ;  // Number of bins in V0 multiplicity axis
+  Int_t    fHistoTrMMax   ;  // Maximum value of track multiplicity histogram range
+  Int_t    fHistoTrMMin   ;  // Minimum value of track multiplicity histogram range
+  Int_t    fHistoFinePtBins;                  // fine binning for fhAmpId histogram
+  Float_t  fHistoFinePtMax;                   // maximum pt value for fhAmpId histogram
+  Float_t  fHistoFinePtMin;                   // minimum pt value for fhAmpId histogram
+  Int_t    fHistoPOverEBins;                  // p/E histogram number of bins
+  Float_t  fHistoPOverEMax;                   // p/E maximum value
+  Float_t  fHistoPOverEMin;                   // p/E minimum value
+  Int_t    fHistodEdxBins;                    // dEdx histogram number of bins
+  Float_t  fHistodEdxMax;                     // dEdx maximum value
+  Float_t  fHistodEdxMin;                     // dEdx minimum value
+  Int_t    fHistodRBins;                      // dR histogram number of bins
+  Float_t  fHistodRMax;                       // dR maximum value
+  Float_t  fHistodRMin;                       // dR minimum value
+  Int_t    fHistoTimeBins;                    // cell time histogram number of bins
+  Float_t  fHistoTimeMax;                     // cell time maximum value
+  Float_t  fHistoTimeMin;                     // cell time minimum value
+  Int_t    fHistoNBins;                       // number of clusters/cells histogram number of bins
+  Int_t    fHistoNMax;                        // number maximum value
+  Int_t    fHistoNMin;                        // number minimum value
+  Int_t    fHistoRatioBins;                   // ratio histogram number of bins
+  Float_t  fHistoRatioMax;                    // ratio maximum value
+  Float_t  fHistoRatioMin;                    // ratio minimum value
+  Int_t    fHistoVertexDistBins;              // vertex distance histogram number of bins
+  Float_t  fHistoVertexDistMax;               // vertex distance maximum value
+  Float_t  fHistoVertexDistMin;               // vertex distance minimum value	
+  Int_t    fHistoRBins;                       // r =sqrt(x^2+y^2+z^2) (cm) position histogram number of bins
+  Float_t  fHistoRMax;                        // r =sqrt(x^2+y^2+z^2) (cm)  maximum value
+  Float_t  fHistoRMin;                        // r =sqrt(x^2+y^2+z^2) (cm)  minimum value	
+  Int_t    fHistoXBins;                       // x (cm) position histogram number of bins
+  Float_t  fHistoXMax;                        // x (cm) position maximum value
+  Float_t  fHistoXMin;                        // x (cm) position minimum value
+  Int_t    fHistoYBins;                       // y (cm) position histogram number of bins
+  Float_t  fHistoYMax;                        // y (cm) position maximum value
+  Float_t  fHistoYMin;                        // y (cm) position minimum value
+  Int_t    fHistoZBins;                       // z (cm) position histogram number of bins
+  Float_t  fHistoZMax;                        // z (cm) position maximum value
+  Float_t  fHistoZMin;                        // z (cm) position minimum value
+  Int_t    fHistoSSBins;                      // Shower Shape parameter histogram number of bins
+  Float_t  fHistoSSMax;                       // Shower Shape parameter position maximum value
+  Float_t  fHistoSSMin;                       // Shower Shape parameter position minimum value
+  Int_t    fHistoDiffTimeBins;                // Difference cluster pair time parameter histogram number of bins
+  Float_t  fHistoDiffTimeMax;                 // Difference cluster pair time parameter position maximum value
+  Float_t  fHistoDiffTimeMin;                 // Difference cluster pair time parameter position minimum value  
   
-  ClassDef(AliAnaPartCorrBaseClass,17)
+  ClassDef(AliAnaPartCorrBaseClass,18)
 } ;
 
 
