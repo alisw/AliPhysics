@@ -33,6 +33,8 @@ using namespace std;
 #include "AliRawDataHeader.h"
 #include "AliHLTTPCRawCluster.h"
 #include "AliHLTTPCHWCFEmulator.h"
+#include "AliHLTTPCHWCFData.h"
+#include "AliHLTErrorGuard.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -54,6 +56,7 @@ fDataId(kFALSE),
 fChargeThreshold(10),
 fTransform(),
 fPublishRawClusters(kFALSE),
+fpDecoder(NULL),
 fBenchmark("HWClusterTransform")
 {
   // see header file for class documentation
@@ -66,8 +69,11 @@ fBenchmark("HWClusterTransform")
   fBenchmark.SetTimer(0,"total");
 }
 
-AliHLTTPCHWClusterTransformComponent::~AliHLTTPCHWClusterTransformComponent() { 
-// see header file for class documentation
+AliHLTTPCHWClusterTransformComponent::~AliHLTTPCHWClusterTransformComponent()
+{ 
+  // destructor
+  if (!fpDecoder) delete fpDecoder;
+  fpDecoder=NULL;
 }
 
 const char* AliHLTTPCHWClusterTransformComponent::GetComponentID() { 
@@ -135,11 +141,19 @@ int AliHLTTPCHWClusterTransformComponent::DoInit( int argc, const char** argv ) 
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
 
+  if (iResult>=0) {
+    fpDecoder=new AliHLTTPCHWCFData;
+    if (!fpDecoder) iResult=-ENOMEM;
+  }
+  
   return iResult;
 } // end DoInit()
 
 int AliHLTTPCHWClusterTransformComponent::DoDeinit() { 
   // see header file for class documentation   
+  if (!fpDecoder) delete fpDecoder;
+  fpDecoder=NULL;
+
   return 0;
 }
 
@@ -153,9 +167,9 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
   UInt_t maxOutSize = size;
   size = 0;
   int iResult = 0;
-  if(GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR )){
-     return 0;
-  }
+  if(!IsDataEvent()) return 0;
+
+  if (!fpDecoder) return -ENODEV;
 
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
@@ -203,112 +217,81 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
     UInt_t minPartition = AliHLTTPCDefinitions::GetMinPatchNr(*iter);
     //UInt_t maxSlice     = AliHLTTPCDefinitions::GetMaxSliceNr(*iter); 
     //UInt_t maxPartition = AliHLTTPCDefinitions::GetMaxPatchNr(*iter);
+    float padpitch=1.0;
+    if ((int)minPartition<AliHLTTPCTransform::GetNRowLow())
+      padpitch=AliHLTTPCTransform::GetPadPitchWidthLow();
+    else
+      padpitch=AliHLTTPCTransform::GetPadPitchWidthUp();
+    float zwidth=AliHLTTPCTransform::GetZWidth();
 
     fBenchmark.SetName(Form("HWClusterTransform slice %d patch %d",minSlice,minPartition));
 
     HLTDebug("minSlice: %d, minPartition: %d", minSlice, minPartition);
     
     AliHLTTPCClusterData* outPtr  = (AliHLTTPCClusterData*)outputPtr;
+    outPtr->fSpacePointCnt=0;
 
     long maxPoints = ((long)maxOutSize-size-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
-    
-     
+
     AliHLTUInt32_t *buffer;     
     buffer = (AliHLTUInt32_t*)iter->fPtr;  
-     
-     /*  
-     //cluster fabrication
-     buffer = new AliHLTUInt32_t[14];
-     //header
-     buffer[0]=0xffffffff;
-     buffer[1]=0xffffffff;
-     buffer[2]=0xffffffff;
-     buffer[3]=0xffffffff;
-     buffer[4]=0xffffffff;
-     buffer[5]=0xffffffff;
-     buffer[6]=0xffffffff;
-     buffer[7]=0xffffffff;
-     //cluster 1
-     buffer[8]=0xC60002EF;
-     buffer[9]=0x0;
-     buffer[10]=0x0;
-     buffer[11]=0x0;
-     buffer[12]=0x0;
-     //RCU trailer
-     buffer[13]=0x80000000;
-     */
-
-     // PrintDebug(buffer, 14);
      
      // skip the first 8 32-bit CDH words
      buffer += 8;
      UInt_t bufferSize32 = ((Int_t)iter->fSize - sizeof(AliRawDataHeader) )/sizeof(AliHLTUInt32_t);
 
-     //PrintDebug(buffer, (Int_t)iter->fSize/sizeof(AliHLTUInt32_t));
-
-     long nAddedClusters = 0;
-     
-     for(UInt_t nWords=0; nWords<bufferSize32; nWords+=5){
-
-       AliHLTUInt32_t  word0 = AliHLTTPCHWCFEmulator::ReadBigEndian( buffer[nWords] );
-
-       // check if bit 31 and 30 of the 32-bit word is 11 -> cluster (10 is RCU trailer)
-       AliHLTUInt32_t bit3130 = (word0>>30); // shift 30 to the right
-       
-       if(bit3130 == 0x3){ //beginning of a cluster
-	 
-	 //PrintDebug(&buffer[nWords], 5);
-	 
-	 if(nAddedClusters>=maxPoints){
+     if (fpDecoder->Init(reinterpret_cast<AliHLTUInt8_t*>(buffer), bufferSize32*sizeof(AliHLTUInt32_t))>=0 && fpDecoder->CheckVersion()>=0) {
+       UInt_t nofClusters=fpDecoder->GetNumberOfClusters();
+       for (UInt_t cl=0; cl<nofClusters; cl++) {
+	 if(outPtr->fSpacePointCnt>=maxPoints){
 	   HLTWarning("No more space to add clusters, exiting!");
 	   iResult  = -ENOSPC;
 	   break;
 	 }
-	   
-	 AliHLTTPCSpacePointData cluster;
-              
-	 cluster.fPadRow  = ( word0 >> 24 ) & 0x3f ;
-	 cluster.fCharge  = ( word0 & 0xFFFFFF )>>6; //24-bit mask to get out the charge and division with 64(>>6) for the gain correction	 
-	 Float_t tmpPad   = *((Float_t*)&buffer[nWords+1]);
-	 Float_t tmpTime  = *((Float_t*)&buffer[nWords+2]);
-	 cluster.fSigmaY2 = *((Float_t*)&buffer[nWords+3]);
-	 cluster.fSigmaZ2 = *((Float_t*)&buffer[nWords+4]);
-	   
-	   
-	 if(cluster.fCharge<fChargeThreshold) continue;
-	   
-	 // correct expressions for the error calculation
-	 // Kenneth: 12.11.2009 I'm not sure if this is a correct calculation. Leave it out for now since it is anyway not used later since it caused segfaults.
-	 // cluster.fSigmaY2 = TMath::Sqrt( *((Float_t*)&buffer[nWords+3]) - *((Float_t*)&buffer[nWords+1])* (*((Float_t*)&buffer[nWords+1])) );
-	 // cluster.fSigmaZ2 = TMath::Sqrt( *((Float_t*)&buffer[nWords+3]) - *((Float_t*)&buffer[nWords+1])* (*((Float_t*)&buffer[nWords+1])) );
-	 
-	 HLTDebug("padrow: %d, charge: %d, pad: %f, time: %f, errY: %f, errZ: %f \n", cluster.fPadRow, (UInt_t)cluster.fCharge, tmpPad, tmpTime, cluster.fSigmaY2, cluster.fSigmaZ2);        	   
-	 
-	 cluster.fPadRow += AliHLTTPCTransform::GetFirstRow(minPartition);	     	     
-	 
-	 Float_t xyz[3];
-	 fTransform.Transform( minSlice, cluster.fPadRow, tmpPad + 0.5, tmpTime, xyz );
-	 cluster.fX = xyz[0];
-	 cluster.fY = xyz[1];
-	 cluster.fZ = xyz[2];		     		   
-	 
-	 // set the cluster ID so that the cluster dump printout is the same for FCF and SCF
-	 cluster.SetID( minSlice, minPartition, nAddedClusters );
-	 
-	 HLTDebug("Cluster number %d: %f, Y: %f, Z: %f, charge: %d \n", nAddedClusters, cluster.fX, cluster.fY, cluster.fZ, (UInt_t)cluster.fCharge);
-	 outPtr->fSpacePoints[nAddedClusters] = cluster;
-	 
-	 nAddedClusters++; 
-       } // end of clusters starting with 11=0x3
-       else if(bit3130 == 0x2){ // we have reached the beginning of the RCU trailer - 10=0x2
-	 break;
-       }
-     } // end of loop over clusters
-     
-     HLTDebug("Number of found clusters: %d", nAddedClusters);
-     
-     outPtr->fSpacePointCnt = nAddedClusters;
 
+	 AliHLTTPCSpacePointData& c=outPtr->fSpacePoints[outPtr->fSpacePointCnt];
+	 int padrow=fpDecoder->GetPadRow(cl) + AliHLTTPCTransform::GetFirstRow(minPartition);
+	 if (padrow<0) {
+	   // something wrong here, padrow is stored in the cluster header
+	   // word which has bit pattern 0x3 in bits bit 30 and 31 which was
+	   // not recognized
+	   ALIHLTERRORGUARD(1, "can not read cluster header word, skipping %d of %d cluster(s)", nofClusters-cl, nofClusters);
+	   break;
+	 }
+	 AliHLTUInt32_t charge=fpDecoder->GetCharge(cl);
+	 // skip clusters below threshold  
+	 if( charge<fChargeThreshold ) continue;  
+
+	 float pad=fpDecoder->GetPad(cl);
+	 float time=fpDecoder->GetTime(cl);
+	 float sigmaY2=fpDecoder->GetSigmaY2(cl);
+	 float sigmaZ2=fpDecoder->GetSigmaZ2(cl);
+	 sigmaY2-=pad*pad;
+	 sigmaY2*=padpitch*padpitch;
+	 sigmaZ2-=time*time;
+	 sigmaZ2*=zwidth*zwidth;
+	 c.SetPadRow(padrow);
+	 c.SetCharge(charge);
+	 c.SetSigmaY2(sigmaY2);
+	 c.SetSigmaZ2(sigmaZ2);
+	 c.SetQMax(fpDecoder->GetQMax(cl));
+
+	 Float_t xyz[3];
+	 fTransform.Transform( minSlice, padrow, pad + 0.5, time, xyz );
+	 c.SetX(xyz[0]);
+	 c.SetY(xyz[1]);
+	 c.SetZ(xyz[2]);
+
+	 // set the cluster ID so that the cluster dump printout is the same for FCF and SCF
+	 c.SetID( minSlice, minPartition, outPtr->fSpacePointCnt );
+	 
+	 HLTDebug("Cluster number %d: %f, Y: %f, Z: %f, charge: %d \n", outPtr->fSpacePointCnt, cluster.fX, cluster.fY, cluster.fZ, (UInt_t)cluster.fCharge);
+	 
+	 outPtr->fSpacePointCnt++; 
+       } // end of loop over clusters
+     }     
+     HLTDebug("Number of found clusters: %d", outPtr->fSpacePointCnt);
+     
      UInt_t mysize = sizeof(AliHLTTPCClusterData) + sizeof(AliHLTTPCSpacePointData)*outPtr->fSpacePointCnt;
  
      AliHLTComponentBlockData bd;
@@ -343,40 +326,43 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	 outputRaw->fVersion = 0;
 	 outputRaw->fCount = 0;
 
-	 for(UInt_t nWords=0; nWords<bufferSize32; nWords+=5){
-
-	   AliHLTUInt32_t  word0 = AliHLTTPCHWCFEmulator::ReadBigEndian( buffer[nWords] );
-
-	   // check if bit 31 and 30 of the 32-bit word is 11 -> cluster (10 is RCU trailer)
-	   AliHLTUInt32_t bit3130 = (word0>>30); // shift 30 to the right
-         
-	   if(bit3130 == 0x3){ //beginning of a cluster
-
-	     if(outputRaw->fCount>=maxRawClusters){
-	       HLTWarning("No more space to add clusters, exiting!");
-	       iResult  = -ENOSPC;
-	       break;
-	     }
-
-	     AliHLTTPCRawCluster &c = outputRaw->fClusters[outputRaw->fCount];
-	     c.SetPadRow( ((word0>>24)&0x3f) + AliHLTTPCTransform::GetFirstRow(minPartition));
-	     c.SetPad(    *((Float_t*)&buffer[nWords+1]));  
-	     c.SetTime(   *((Float_t*)&buffer[nWords+2]));
-	     c.SetSigmaY2(*((Float_t*)&buffer[nWords+3]));
-	     c.SetSigmaZ2(*((Float_t*)&buffer[nWords+4]));
-	     c.SetCharge( (word0 & 0xFFFFFF) >> 6 );
-	     c.SetQMax(0); // TODO        	 
-
-	     // skip clusters below threshold  
-	     if( c.GetCharge()<(int)fChargeThreshold ) continue;  
-	     // store cluster and continue
-	     outputRaw->fCount++;
-
-	   } else if(bit3130 == 0x2){ // we have reached the beginning of the RCU trailer - 10=0x2
+	 UInt_t nofClusters=fpDecoder->GetNumberOfClusters();
+	 for (UInt_t cl=0; cl<nofClusters; cl++) {
+	   if(outputRaw->fCount>=maxRawClusters){
+	     HLTWarning("No more space to add clusters, exiting!");
+	     iResult  = -ENOSPC;
 	     break;
 	   }
-	 }       
-	 
+	   AliHLTTPCRawCluster &c = outputRaw->fClusters[outputRaw->fCount];
+	   int padrow=fpDecoder->GetPadRow(cl) + AliHLTTPCTransform::GetFirstRow(minPartition);
+	   if (padrow<0) {
+	     // something wrong here, padrow is stored in the cluster header
+	     // word which has bit pattern 0x3 in bits bit 30 and 31 which was
+	     // not recognized
+	     break;
+	   }
+	   AliHLTUInt32_t charge= fpDecoder->GetCharge(cl);
+	   // skip clusters below threshold  
+	   if( charge<fChargeThreshold ) continue;  
+
+	   float pad =fpDecoder->GetPad(cl);
+	   float time =fpDecoder->GetTime(cl);
+	   float sigmaP2=fpDecoder->GetSigmaY2(cl);
+	   float sigmaT2=fpDecoder->GetSigmaZ2(cl);
+	   sigmaP2-=pad*pad;
+	   sigmaT2-=time*time;
+	   c.SetPadRow(padrow);
+	   c.SetCharge(charge);
+	   c.SetPad(pad);  
+	   c.SetTime(time);
+	   c.SetSigmaY2(sigmaP2);
+	   c.SetSigmaZ2(sigmaT2);
+	   c.SetQMax(fpDecoder->GetQMax(cl));
+
+	   // store cluster and continue
+	   outputRaw->fCount++;
+	 }
+
 	 // fill into HLT output data
 	 AliHLTComponentBlockData bdRawClusters;
 	 FillBlockData( bdRawClusters );
