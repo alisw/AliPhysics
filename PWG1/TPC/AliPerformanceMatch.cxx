@@ -66,6 +66,7 @@ using namespace std;
 ClassImp(AliPerformanceMatch)
 
 Bool_t AliPerformanceMatch::fgMergeTHnSparse = kFALSE;
+Bool_t AliPerformanceMatch::fgUseMergeTHnSparse = kFALSE;
 
 //_____________________________________________________________________________
 AliPerformanceMatch::AliPerformanceMatch():
@@ -205,6 +206,10 @@ void AliPerformanceMatch::Init(){
 
   // init folder
   fAnalysisFolder = CreateFolder("folderMatch","Analysis Matching Folder");
+  
+   // save merge status in object
+  fMergeTHnSparseObj = fgMergeTHnSparse;
+
 }
 
 //_____________________________________________________________________________
@@ -583,6 +588,8 @@ Long64_t AliPerformanceMatch::Merge(TCollection* const list)
 
   if (list->IsEmpty())
   return 1;
+  
+  Bool_t merge = ((fgUseMergeTHnSparse && fgMergeTHnSparse) || (!fgUseMergeTHnSparse && fMergeTHnSparseObj));
 
   TIterator* iter = list->MakeIterator();
   TObject* obj = 0;
@@ -595,7 +602,7 @@ Long64_t AliPerformanceMatch::Merge(TCollection* const list)
   {
     AliPerformanceMatch* entry = dynamic_cast<AliPerformanceMatch*>(obj);
     if (entry == 0) continue; 
-    if (fgMergeTHnSparse) {
+    if (merge) {
         if ((fResolHisto) && (entry->fResolHisto)) { fResolHisto->Add(entry->fResolHisto); }
         if ((fPullHisto) && (entry->fPullHisto)) { fPullHisto->Add(entry->fPullHisto); }
         if ((fTrackingEffHisto) && (entry->fTrackingEffHisto)) { fTrackingEffHisto->Add(entry->fTrackingEffHisto); }
@@ -607,7 +614,7 @@ Long64_t AliPerformanceMatch::Merge(TCollection* const list)
   }
   if (fFolderObj) { fFolderObj->Merge(objArrayList); } 
   // to signal that track histos were not merged: reset
-  if (!fgMergeTHnSparse) { fResolHisto->Reset(); fPullHisto->Reset(); fTrackingEffHisto->Reset(); }
+  if (!merge) { fResolHisto->Reset(); fPullHisto->Reset(); fTrackingEffHisto->Reset(); }
   // delete
   if (objArrayList)  delete objArrayList;  objArrayList=0;
 return count;

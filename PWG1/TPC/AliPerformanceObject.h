@@ -86,6 +86,10 @@ public :
   
   Bool_t IsHighMultiplicity() { return fHighMultiplicity; }  
   
+  // merging of thnsparse
+  Bool_t GetMergeTHnSparseObj() { return fMergeTHnSparseObj; }
+  void SetMergeTHnSparseObj(Bool_t merge) {fMergeTHnSparseObj = merge; }  
+  
   void SetRunNumber(Int_t run) { fRunNumber = run; }
   Int_t GetRunNumber() const { return fRunNumber; }
 
@@ -107,6 +111,9 @@ protected:
   void AddProjection(TObjArray* aFolderObj, TString nameSparse, THnSparse *hSparse, Int_t xDim, Int_t yDim, TString* selString = 0);
   void AddProjection(TObjArray* aFolderObj, TString nameSparse, THnSparse *hSparse, Int_t xDim, Int_t yDim, Int_t zDim, TString* selString = 0);
 
+  // merge THnSparse
+  Bool_t fMergeTHnSparseObj;
+  
   // analysis mode
   Int_t fAnalysisMode;  // 0-TPC, 1-TPCITS, 2-Constrained, 3-TPC inner wall, 4-TPC outer wall
 
@@ -133,7 +140,7 @@ protected:
   AliPerformanceObject(const AliPerformanceObject&); // not implemented
   AliPerformanceObject& operator=(const AliPerformanceObject&); // not implemented
 
-  ClassDef(AliPerformanceObject,6);
+  ClassDef(AliPerformanceObject,7);
 };
 
 #endif
