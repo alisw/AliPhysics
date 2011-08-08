@@ -365,7 +365,7 @@ Int_t    AliHLTTPCHWCFData::AliHLTTPCHWClusterV1::GetCharge()  const
 
 Int_t    AliHLTTPCHWCFData::AliHLTTPCHWClusterV1::GetQMax()    const
 {
-  // 24 bit fixed point number with 6 bits after the point
+  // 24 bit fixed point number with 12 bits after the point
   AliHLTUInt32_t header=AliHLTTPCHWCFEmulator::ReadBigEndian(fHeader);
-  return (header & 0xFFFFFF )>>6;
+  return (header & 0xFFFFFF )>>12;
 }

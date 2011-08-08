@@ -111,7 +111,7 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
   AliHLTFloat32_t q = fkInput->fQ;
   
   fOutput.fFlag = 1;
-  fOutput.fRowQ = (((AliHLTUInt32_t) 0x3)<<30) + ((fkInput->fRow &0x3f)<<24) + ((fkInput->fQmax>>(AliHLTTPCHWCFDefinitions::kFixedPoint-6))&0xFFFFFF);		  
+  fOutput.fRowQ = (((AliHLTUInt32_t) 0x3)<<30) + ((fkInput->fRow &0x3f)<<24) + ((fkInput->fQmax)&0xFFFFFF);
   fOutput.fQ = fkInput->fQ;
   *((AliHLTFloat32_t*)&fOutput.fP) = (float)fkInput->fP/q;
   *((AliHLTFloat32_t*)&fOutput.fT) = (float)fkInput->fT/q;

@@ -83,7 +83,7 @@ struct AliHLTTPCHWCFCluster
   AliHLTUInt32_t fRowQ; // bits 30-31 = 0x3
                         // bits 24-29 = row number
                         // bits 0 -23 = max adc value as fixed point integer,
-                        //              with 6 bits after the point
+                        //              with 12 bits after the point
   AliHLTUInt32_t fQ;    // total charge as fixed point integer, 12 bits after the point
   AliHLTUInt32_t fT;    // mean time, 32-bit float stored as 32-bit integer
   AliHLTUInt32_t fP;    // mean pad,  32-bit float stored as 32-bit integer
