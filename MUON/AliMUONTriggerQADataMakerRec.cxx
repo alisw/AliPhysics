@@ -150,7 +150,7 @@ void AliMUONTriggerQADataMakerRec::EndOfDetectorCycleRaws(Int_t /*specie*/, TObj
      
   Float_t mean = hYCopyNorm->Integral();
       
-  TH1* hSummary = GetRawsData(AliMUONQAIndices::kTriggerErrorSummary,itc);
+  TH1* hSummary = GetRawsData(AliMUONQAIndices::kTriggerErrorSummaryNorm,itc);
   hSummary->SetBinContent(AliMUONQAIndices::kAlgoLocalYCopy+1,mean/192.); //put the mean of the % of YCopy error in the kTriggerError's corresponding bin
 
   TH1F* hTriggerRatio = (TH1F*)GetRawsData(AliMUONQAIndices::kTriggerLocalRatio4434,itc);
