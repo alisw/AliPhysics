@@ -277,7 +277,7 @@ const TVectorD* AliTRDPIDResponse::GetParams(Int_t ntracklets, Double_t level) c
   // returns the threshold for a given number of tracklets and a given efficiency level
   //tby definition the lower of step is given.
   //
-  if(ntracklets > 6 || ntracklets) return NULL;
+  if(ntracklets > 6 || ntracklets <=0) return NULL;
   TObjArray * entry = dynamic_cast<TObjArray *>(fkPIDParams->At(ntracklets - 1));
   if(!entry) return NULL;
   
@@ -287,9 +287,10 @@ const TVectorD* AliTRDPIDResponse::GetParams(Int_t ntracklets, Double_t level) c
   TIter cutIter(entry);
   while((cut = dynamic_cast<TObjArray *>(cutIter()))){
     effLevel = static_cast<TVectorF *>(cut->At(0));
-    if(effLevel[0] > currentLower && effLevel[0] <= level){
+    if((*effLevel)[0] > currentLower && (*effLevel)[0] <= level){
       // New Lower entry found
       parameters = static_cast<const TVectorD *>(cut->At(1));
+      currentLower = (*effLevel)[0];
     }
   }  
 

@@ -442,6 +442,9 @@ void AliPIDResponse::ExecNewRun()
   
   SetTPCPidResponseMaster();
   SetTPCParametrisation();
+
+  SetTRDPidResponseMaster(); 
+  InitializeTRDResponse();
   
   fTOFResponse.SetTimeResolution(fTOFres);
 }
@@ -479,7 +482,7 @@ void AliPIDResponse::SetRecoInfo()
     
   fBeamType="PP";
   
-  TPRegexp reg(".*(LHC11[a-z]+[0-9]+[a-z]*)/.*");
+  TPRegexp reg(".*(LHC11[a-z]+[0-9]+[a-z_]*)/.*");
   //find the period by run number (UGLY, but not stored in ESD and AOD... )
   if (fRun>=114737&&fRun<=117223)      { fLHCperiod="LHC10B"; fMCperiodTPC="LHC10D1";  }
   else if (fRun>=118503&&fRun<=121040) { fLHCperiod="LHC10C"; fMCperiodTPC="LHC10D1";  }
@@ -642,11 +645,12 @@ void AliPIDResponse::SetTRDPidResponseMaster()
   // Load the TRD pid params and references from the OADB
   //
   if(fTRDPIDParams) return;
-  AliOADBContainer contParams; 
+  AliOADBContainer contParams("contParams"); 
+
   contParams.InitFromFile(Form("%s/COMMON/PID/data/TRDPIDParams.root", fOADBPath.Data()), "AliTRDPIDParams");
   fTRDPIDParams = (TObjArray *)contParams.GetObject(fRun);
 
-  AliOADBContainer contRefs;
+  AliOADBContainer contRefs("contRefs");
   contRefs.InitFromFile(Form("%s/COMMON/PID/dReferencesLQ1D.root", fOADBPath.Data()), "AliTRDPIDReference");
   fTRDPIDReference = (AliTRDPIDReference *)contRefs.GetObject(fRun);
 }
