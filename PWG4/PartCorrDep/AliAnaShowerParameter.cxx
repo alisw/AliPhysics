@@ -213,181 +213,6 @@ void AliAnaShowerParameter::InitParameters()
 }
 
 //__________________________________________________________________
-void  AliAnaShowerParameter::MakeAnalysisFillAOD() 
-{
-  /*//Do analysis and fill aods
-  //Search for photons in fCalorimeter 
-  
-  //Get vertex for photon momentum calculation
-  
-  for (Int_t iev = 0; iev < GetNMixedEvent(); iev++) {
-    if (!GetMixedEvent()) 
-      GetReader()->GetVertex(GetVertex(iev));
-    else 
-      GetMixedEvent()->GetVertexOfEvent(iev)->GetXYZ(GetVertex(iev)); 
-  } 
-  
-  //Select the Calorimeter of the photon
-  TObjArray * pl = 0x0; 
-  if(fCalorimeter == "PHOS")
-    pl = GetPHOSClusters();
-  else if (fCalorimeter == "EMCAL")
-    pl = GetEMCALClusters();
-  
-  if(!pl){
-    printf("AliAnaShowerParameter::MakeAnalysisFillAOD() - Careful cluster array NULL!!\n");
-    return;
-  }
-  
-  //Fill AODCaloClusters and AODParticle with PHOS/EMCAL aods
-  TLorentzVector mom, mom2 ; 
-  Int_t nCaloClusters = pl->GetEntriesFast();   
-  //Cut on the number of clusters in the event.
-  if ((fNumClusters !=-1) && (nCaloClusters != fNumClusters)) return;
-  Bool_t * indexConverted = new Bool_t[nCaloClusters];
-  for (Int_t i = 0; i < nCaloClusters; i++) 
-    indexConverted[i] = kFALSE;
-  
-  for(Int_t icalo = 0; icalo < nCaloClusters; icalo++){    
-    
-    AliAODCaloCluster * calo =  (AliAODCaloCluster*) (pl->At(icalo));	
-    Int_t evtIndex = 0 ; 
-    if (GetMixedEvent()) {
-      evtIndex=GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ; 
-    }
-    //Cluster selection, not charged, with photon id and in fiducial cut
-	  
-    //Input from second AOD?
-    Int_t input = 0;
-    
-    //Get Momentum vector, 
-    if (input == 0) 
-      calo->GetMomentum(mom,GetVertex(evtIndex)) ;//Assume that come from vertex in straight line
-    
-    //Skip the cluster if it doesn't fit inside the cuts.
-    if(mom.Pt() < GetMinPt() || mom.Pt() > GetMaxPt() ) continue ; 
-    Double_t tof = calo->GetTOF()*1e9;    
-    if(tof < fTimeCutMin || tof > fTimeCutMax) continue;	  
-    if(calo->GetNCells() <= fNCellsCut) continue;
-    
-    //Check acceptance selection
-    if(IsFiducialCutOn()){
-      Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
-      if(! in ) continue ;
-    }
-    
-    //Create AOD for analysis
-    AliAODPWG4Particle aodph = AliAODPWG4Particle(mom);
-    Int_t label = calo->GetLabel();
-    aodph.SetLabel(label);
-    aodph.SetInputFileIndex(input);
-    
-    //Set the indices of the original caloclusters  
-    aodph.SetCaloLabel(calo->GetID(),-1);
-    aodph.SetDetector(fCalorimeter);
-    if(GetDebug() > 1) 
-      printf("AliAnaShowerParameter::MakeAnalysisFillAOD() - Min pt cut and fiducial cut passed: pt %3.2f, phi %2.2f, eta %1.2f\n",aodph.Pt(),aodph.Phi(),aodph.Eta());	
-    
-    //Check Distance to Bad channel, set bit.
-    Double_t distBad=calo->GetDistanceToBadChannel() ; //Distance to bad channel
-    if(distBad < 0.) distBad=9999. ; //workout strange convension dist = -1. ;
-    if(distBad < fMinDist) //In bad channel (PHOS cristal size 2.2x2.2 cm)
-      continue ;
-    
-    if(GetDebug() > 1) printf("AliAnaShowerParameter::MakeAnalysisFillAOD() - Bad channel cut passed %4.2f\n",distBad);
-    
-    if     (distBad > fMinDist3) aodph.SetDistToBad(2) ;
-    else if(distBad > fMinDist2) aodph.SetDistToBad(1) ; 
-    else                         aodph.SetDistToBad(0) ;
-    
-    //Skip matched clusters with tracks
-    if(fRejectTrackMatch && IsTrackMatched(calo)) continue ;
-    if(GetDebug() > 1) printf("AliAnaShowerParameter::MakeAnalysisFillAOD() - TrackMatching cut passed \n");
-    
-    //Set PID bits for later selection (AliAnaPi0 for example)
-    //GetPDG already called in SetPIDBits.
-    GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodph, GetCaloUtils());
-    if(GetDebug() > 1) printf("AliAnaShowerParameter::MakeAnalysisFillAOD() - PID Bits set \n");		    
-    
-    //Play with the MC stack if available
-    //Check origin of the candidates
-    if(IsDataMC()){
-      aodph.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), aodph.GetInputFileIndex()));
-      if(GetDebug() > 0) printf("AliAnaShowerParameter::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodph.GetTag());
-    }
-    
-    // Check if cluster comes from a conversion in the material in front of the calorimeter
-    // Do invariant mass of all pairs, if mass is close to 0, then it is conversion.
-    
-    if(fCheckConversion && nCaloClusters > 1){
-      Bool_t bConverted = kFALSE;
-      Int_t id2 = -1;
-		  
-      //Check if set previously as converted couple, if so skip its use.
-      if (indexConverted[icalo]) continue;
-		  
-      for(Int_t jcalo = icalo + 1 ; jcalo < nCaloClusters ; jcalo++) {
-        //Check if set previously as converted couple, if so skip its use.
-        if (indexConverted[jcalo]) continue;
-        //printf("Check Conversion indeces %d and %d\n",icalo,jcalo);
-        AliAODCaloCluster * calo2 =  (AliAODCaloCluster*) (pl->At(jcalo));              //Get cluster kinematics
-        Int_t evtIndex2 = 0 ; 
-        if (GetMixedEvent()) {
-          evtIndex2=GetMixedEvent()->EventIndexForCaloCluster(calo2->GetID()) ; 
-        }        
-        calo2->GetMomentum(mom2,GetVertex(evtIndex2));
-        //Check only certain regions
-        Bool_t in2 = kTRUE;
-        if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(mom2,fCalorimeter) ;
-        if(!in2) continue;      
-        
-        //Get mass of pair, if small, take this pair.
-        //printf("\t both in calo, mass %f, cut %f\n",(mom+mom2).M(),fMassCut);
-        if((mom+mom2).M() < fMassCut){  
-          bConverted = kTRUE;
-          id2 = calo2->GetID();
-          indexConverted[jcalo]=kTRUE;
-          break;
-        }
-			  
-      }//Mass loop
-		  
-      if(bConverted){ 
-        if(fAddConvertedPairsToAOD){
-          //Create AOD of pair analysis
-          TLorentzVector mpair = mom+mom2;
-          AliAODPWG4Particle aodpair = AliAODPWG4Particle(mpair);
-          aodpair.SetLabel(aodph.GetLabel());
-          aodpair.SetInputFileIndex(input);
-          
-          //printf("Index %d, Id %d\n",icalo, calo->GetID());
-          //Set the indeces of the original caloclusters  
-          aodpair.SetCaloLabel(calo->GetID(),id2);
-          aodpair.SetDetector(fCalorimeter);
-          aodpair.SetPdg(aodph.GetPdg());
-          aodpair.SetTag(aodph.GetTag());
-          
-          //Add AOD with pair object to aod branch
-          AddAODParticle(aodpair);
-          //printf("\t \t both added pair\n");
-        }
-        
-        //Do not add the current calocluster
-        continue;
-      }//converted pair
-    }//check conversion
-	  
-    //Add AOD with photon object to aod branch
-    AddAODParticle(aodph);
-    
-  }//loop;
-  delete [] indexConverted;
-	
-  if(GetDebug() > 1) printf("AliAnaShowerParameter::MakeAnalysisFillAOD()  End fill AODs, with %d entries \n",GetOutputAODBranch()->GetEntriesFast());  
-  
-*/
-}
-//__________________________________________________________________
 void  AliAnaShowerParameter::MakeAnalysisFillHistograms() 
 {
   
@@ -396,13 +221,9 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
   
   // Access MC information in stack if requested, check that it exists.	
   AliStack * stack = 0x0;
-  //TParticle * primary = 0x0;   
   TClonesArray * mcparticles0 = 0x0;
-  //AliAODMCParticle * aodprimary = 0x0; 
-  //TObjArray * pl = 0x0;
   Int_t NClusters = 0 ;
   TLorentzVector momCluster ;
-  
   
   //Check if the stack is available when analysing MC data.
   if(IsDataMC()){
@@ -464,9 +285,6 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
       
       //Play with the MC data if available
       if(IsDataMC()){
-        
-        //if(GetReader()->ReadStack() && !stack) return;
-        //if(GetReader()->ReadAODMCParticles() && !mcparticles0) return;
         
         //Get the tag from AliMCAnalysisUtils for PID
         Int_t tag = aodCluster->GetTag();
