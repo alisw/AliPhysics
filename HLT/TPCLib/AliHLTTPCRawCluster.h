@@ -20,8 +20,8 @@ struct AliHLTTPCRawCluster {
   float fTime;
   float fSigmaY2;
   float fSigmaZ2;
-  short fCharge;
-  short fQMax;
+  unsigned short fCharge;
+  unsigned short fQMax;
 
   Int_t   GetPadRow()  const {return fPadRow;}
   Float_t GetPad()     const {return fPad;}
@@ -36,8 +36,8 @@ struct AliHLTTPCRawCluster {
   void SetTime(Float_t time)    {fTime=time;}
   void SetSigmaY2(Float_t sigmaY2) {fSigmaY2=sigmaY2;}
   void SetSigmaZ2(Float_t sigmaZ2) {fSigmaZ2=sigmaZ2;}
-  void SetCharge(Short_t charge)  {fCharge=charge;}
-  void SetQMax(Short_t qmax)    {fQMax=qmax;}
+  void SetCharge(UShort_t charge)  {fCharge=charge;}
+  void SetQMax(UShort_t qmax)    {fQMax=qmax;}
 
   /* Int_t GetPadRow()    const {return        (fP0>>24) &     0xff;} */
   /* Float_t GetPad()     const {return (float( fP0      & 0xffffff)-8388608.)*1.e-4;} */
