@@ -49,6 +49,9 @@ public:
   }
 
   Double_t GetMIP() const { return fMIP;} 
+  Float_t  GetRes0()  const { return fRes0;  }
+  Float_t  GetResN2() const { return fResN2; }
+
 private:
   Float_t fMIP;          // dEdx for MIP
   Float_t fRes0;         // relative dEdx resolution  rel sigma = fRes0*sqrt(1+fResN2/npoint)
