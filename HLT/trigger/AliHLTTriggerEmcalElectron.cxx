@@ -33,12 +33,16 @@ ClassImp(AliHLTTriggerEmcalElectron)
 AliHLTTriggerEmcalElectron::AliHLTTriggerEmcalElectron() : 
   AliHLTTrigger(),
   fEThreshold(0.0),
-  fEoverPThreshold(0.8),
-  fEoverPLimit(1.2),
-  fClustersRefs(NULL),
+  fEoverPThreshold(0.),
+  fEoverPLimit(0.),
+  fdEta(1.),
+  fdPhi(1.),
+  
+//   fClustersRefs(NULL),
+//   fClusterReader(NULL),
+  fOCDBEntry("HLT/ConfigHLT/EmcalElectronTrigger"),
+//   fOCDBEntry(""), 
   fDetector("EMCAL"),
-  fClusterReader(NULL),
-  fOCDBEntry(""), 
   fInputDataType()
 {
   // see header file for class documentation
@@ -47,22 +51,21 @@ AliHLTTriggerEmcalElectron::AliHLTTriggerEmcalElectron() :
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlts
 
-  fClusterReader = new AliHLTCaloClusterReader();
-  fClustersRefs = new TRefArray();
-  
+//   fClusterReader = new AliHLTCaloClusterReader();
+//   fClustersRefs = new TRefArray();
 
 }
 
 
 AliHLTTriggerEmcalElectron::~AliHLTTriggerEmcalElectron() {
   // see header file for class documentation
-  if (fClusterReader)
-    delete fClusterReader;
-  fClusterReader = NULL;
-
-  if(fClustersRefs)
-    delete fClustersRefs;
-  fClustersRefs = NULL;
+//   if (fClusterReader)
+//     delete fClusterReader;
+//   fClusterReader = NULL;
+// 
+//   if(fClustersRefs)
+//     delete fClustersRefs;
+//   fClustersRefs = NULL;
 }
 
 //Trigger name
@@ -73,7 +76,7 @@ const char* AliHLTTriggerEmcalElectron::GetTriggerName() const {
 
 AliHLTComponent* AliHLTTriggerEmcalElectron::Spawn() {
   // see header file for class documentation
-  return new AliHLTTriggerEmcalElectron() ;
+  return new AliHLTTriggerEmcalElectron;
 }
 
 Int_t AliHLTTriggerEmcalElectron::DoTrigger() {
@@ -107,17 +110,18 @@ Int_t AliHLTTriggerEmcalElectron::DoTrigger() {
   if (esd != NULL) {
     esd->GetStdContent();
 
-    /*FIXME: this must be fixed properly by implementing GetClustersFromEsd
-    Int_t ncc = GetClustersFromEsd(esd, fClustersRefs); 
+//     Int_t ncc = GetClustersFromEsd(esd, fClustersRefs); //marcel test
+    Int_t ncc = esd->GetNumberOfCaloClusters();  
+//     Int_t ncc = GetClustersFromEsd(esd, fClustersRefs); 
     
     for (Int_t i = 0; i < ncc ; i++) {
       
-      AliESDCaloCluster * cluster = static_cast<AliESDCaloCluster*>(fClustersRefs->At(i));
+//       AliESDCaloCluster * cluster = static_cast<AliESDCaloCluster*>(fClustersRefs->At(i));
+      AliVCluster *cluster = (AliVCluster*) esd->GetCaloCluster(i); //MARCEL test
       if(TriggerOnEoverP(cluster,esd)) { 
 	return iResult;
       }
     }
-    */
   }
 
   // If we got to this point then we did not find any clusters with E > fEThreshold
@@ -134,13 +138,15 @@ Int_t AliHLTTriggerEmcalElectron::DoTrigger() {
 template <class T>
 Bool_t AliHLTTriggerEmcalElectron::TriggerOnEoverP(T* cluster,AliESDEvent *esd) {
   
-  if (cluster->E() > fEThreshold) {
-    
-      if(!cluster->IsEMCAL()) return kFALSE;
-      //Double_t clusterEnergy=cluster->E();  
-      //Int_t nmatched=cluster->GetNTracksMatched();    
+  if (cluster->E() > fEThreshold) {    
+
       Int_t trackindex=cluster->GetTrackMatchedIndex(); 
       if(trackindex<0)return kFALSE;
+      
+      Double_t dEta=cluster->GetTrackDz();
+      Double_t dPhi=cluster->GetTrackDx();
+      if(TMath::Abs(dEta)>fdEta)return kFALSE;
+      if(TMath::Abs(dPhi)>fdPhi)return kFALSE;
       AliESDtrack* track = esd->GetTrack(trackindex);
       if(!track)return kFALSE;     
       Double_t EoverP=cluster->E()/track->P(); 
@@ -149,18 +155,15 @@ Bool_t AliHLTTriggerEmcalElectron::TriggerOnEoverP(T* cluster,AliESDEvent *esd) 
 
    //We have a cluster satisfying trigger criteria
     TString description;
-    description.Form("Event contains at least one %s cluster with energy greater than %.02f corresponding to  %.02f < E/P < %.02f", fDetector.Data(),fEThreshold,fEoverPThreshold,fEoverPLimit);
+    description.Form("Event contains at least one %s cluster with energy greater than %.02f corresponding to  %.02f < E/P < %.02f, residuals: dPhi < %.02f dEta < %.02f", fDetector.Data(),fEThreshold,fEoverPThreshold,fEoverPLimit,fdPhi,fdEta);
     SetDescription(description.Data());
     
-
     // Enable the detectors for readout.
 
     //GetReadoutList().Enable(AliHLTReadoutList::kPHOS);
 //     SetCaloReadoutList("EMCAL");  //FR
-//    SetCaloReadoutList();  //FR
-    
-    
-    
+//     SetCaloReadoutList();  //FR
+     
     // Add the available HLT information for readout too.
     GetTriggerDomain().Add(kAliHLTAnyDataTypeID, fDetector.Data());
     
@@ -177,16 +180,16 @@ Bool_t AliHLTTriggerEmcalElectron::TriggerOnEoverP(T* cluster,AliESDEvent *esd) 
 
 int AliHLTTriggerEmcalElectron::DoInit(int argc, const char** argv) {
   // see header file for class documentation
-
+//   return 0;// marcel test
   // first configure the default
   int iResult=ConfigureFromCDBTObjString(fOCDBEntry);
 
   // configure from the command line parameters if specified
   if (iResult>=0 && argc>0) {
     iResult=ConfigureFromArgumentString(argc, argv);
-    HLTImportant("Trigger threshold set from argument string:  %.02f GeV: E/P:%.02f and %.02f", fEThreshold,fEoverPThreshold,fEoverPLimit);   
+    HLTImportant("Trigger threshold set from argument string:  %.02f GeV: E/P:%.02f and %.02f, residuals: dPhi:%.02f dEta:%.02f", fDetector.Data(),fEThreshold,fEoverPThreshold,fEoverPLimit,fdPhi,fdEta);   
   } else if ( iResult >=0 ) {
-    HLTImportant("Trigger threshold set from OCDB database entry:  %.02f GeV: E/P:%.02f and %.02f", fEThreshold,fEoverPThreshold,fEoverPLimit);  
+    HLTImportant("Trigger threshold set from OCDB database entry:  %.02f GeV: E/P:%.02f and %.02f, residuals: dPhi:%.02f dEta:%.02f", fDetector.Data(),fEThreshold,fEoverPThreshold,fEoverPLimit,fdPhi,fdEta);
   }
   return iResult;
 }
@@ -211,7 +214,7 @@ int AliHLTTriggerEmcalElectron::Reconfigure(const char* cdbEntry, const char* /*
 int AliHLTTriggerEmcalElectron::ScanConfigurationArgument(int argc, const char** argv) {
   // see header file for class documentation
   if (argc<=0) return 0;
-  int i=2;
+  int i=0;
   TString argument=argv[i];
 
   // -maxpt
@@ -234,8 +237,23 @@ int AliHLTTriggerEmcalElectron::ScanConfigurationArgument(int argc, const char**
     argument=argv[i];
     fEoverPLimit=argument.Atof(); // 
     return 2;
+  }
+  
+    if (argument.CompareTo("-dEta")==0) {
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    fdEta=argument.Atof(); // 
+    return 2;
   } 
-  // unknown argument
+  
+    if (argument.CompareTo("-dPhi")==0) {
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    fdPhi=argument.Atof(); // 
+    return 2;
+  } 
+  
+// unknown argument
   return -EINVAL;
 }
 
@@ -247,6 +265,7 @@ void AliHLTTriggerEmcalElectron::GetOutputDataSize(unsigned long& constBase, dou
 
 
 void AliHLTTriggerEmcalElectron::GetOCDBObjectDescription( TMap* const targetMap) {
+  
   // Get a list of OCDB object description.
   if (!targetMap) return;
   targetMap->Add(new TObjString(fOCDBEntry),
