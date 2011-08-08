@@ -110,6 +110,11 @@ public:
   /** interface function, see @ref AliHLTComponent for description */
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
+  /// inherited from AliHLTComponent, scan one argument and
+  /// its parameters
+  //  int ScanConfigurationArgument(int argc, const char** argv);
+
+
   /** interface function, see @ref AliHLTComponent for description */
   int DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
 	      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
