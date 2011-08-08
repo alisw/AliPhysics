@@ -48,7 +48,7 @@ public :
   virtual TFolder* GetAnalysisFolder() const {return fAnalysisFolder;}
   
   static Bool_t GetMergeTHnSparse() { return fgMergeTHnSparse; }
-  static void SetMergeTHnSparse(Bool_t mergeTHnSparse) { fgMergeTHnSparse = mergeTHnSparse; }
+  static void SetMergeTHnSparse(Bool_t mergeTHnSparse) {fgUseMergeTHnSparse = kTRUE; fgMergeTHnSparse = mergeTHnSparse; }
 
   // Create folder for analysed histograms
   TFolder *CreateFolder(TString folder = "folderDEdx",TString title = "Analysed DEdx histograms");
@@ -82,6 +82,7 @@ public :
 private:
 
   static Bool_t fgMergeTHnSparse;
+  static Bool_t fgUseMergeTHnSparse;
   
   // TPC dE/dx 
   THnSparseF *fDeDxHisto; //-> signal:phi:y:z:snp:tgl:ncls:p
