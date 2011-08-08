@@ -54,6 +54,7 @@ AliTOFTenderSupply::AliTOFTenderSupply() :
   fTimeZeroType(AliESDpid::kBest_T0),
   fCorrectExpTimes(kTRUE),
   fLHC10dPatch(kFALSE),
+  fT0DetectorAdjust(kFALSE),
   fDebugLevel(0),
   fAutomaticSettings(kTRUE),
   fTOFCalib(0x0),
@@ -80,6 +81,7 @@ AliTOFTenderSupply::AliTOFTenderSupply(const char *name, const AliTender *tender
   fTimeZeroType(AliESDpid::kBest_T0),
   fCorrectExpTimes(kTRUE),
   fLHC10dPatch(kFALSE),
+  fT0DetectorAdjust(kFALSE),
   fDebugLevel(0),
   fAutomaticSettings(kTRUE),
   fTOFCalib(0x0),
@@ -102,7 +104,7 @@ AliTOFTenderSupply::AliTOFTenderSupply(const char *name, const AliTender *tender
 void AliTOFTenderSupply::Init()
 {
 
-  
+  Bool_t tenderUnsupported = kFALSE;
   // Initialise TOF tender (this is called at each detected run change)
   AliLog::SetClassDebugLevel("AliTOFTenderSupply",10); 
 
@@ -111,12 +113,16 @@ void AliTOFTenderSupply::Init()
   if (run == 0) return;                // to skip first init, when we don't have yet a run number
 
   if (fAutomaticSettings) {
-    if (run>=114737&&run<=117223) {      //period="LHC10B";
+    if (run<114737) {
+      tenderUnsupported = kTRUE;
+    }
+    else if (run>=114737&&run<=117223) {      //period="LHC10B";
       fCorrectExpTimes=kTRUE;
       fLHC10dPatch=kFALSE;
       fTOFres=100.;
       fTimeZeroType=AliESDpid::kTOF_T0;
       fT0IntercalibrationShift = 0;
+      fT0DetectorAdjust=kTRUE;
     }
     else if (run>=118503&&run<=121040) { //period="LHC10C";
       fCorrectExpTimes=kTRUE;
@@ -124,6 +130,7 @@ void AliTOFTenderSupply::Init()
       fTOFres=100.;
       fTimeZeroType=AliESDpid::kTOF_T0;
       fT0IntercalibrationShift = 0;
+      fT0DetectorAdjust=kFALSE;
     }
     else if (run>=122195&&run<=126437) { //period="LHC10D";
       fCorrectExpTimes=kFALSE;
@@ -131,6 +138,7 @@ void AliTOFTenderSupply::Init()
       fTOFres=100.;
       fTimeZeroType=AliESDpid::kBest_T0;
       fT0IntercalibrationShift = 0;
+      fT0DetectorAdjust=kTRUE;
     }
     else if (run>=127719&&run<=130850) { //period="LHC10E";
       fCorrectExpTimes=kFALSE;
@@ -138,6 +146,7 @@ void AliTOFTenderSupply::Init()
       fTOFres=100.;
       fTimeZeroType=AliESDpid::kBest_T0;
       fT0IntercalibrationShift = 30.;
+      fT0DetectorAdjust=kTRUE;
     }
     else if (run>=133004&&run<=135029) { //period="LHC10F";
       fCorrectExpTimes=kFALSE;
@@ -145,6 +154,7 @@ void AliTOFTenderSupply::Init()
       fTOFres=100.;
       fTimeZeroType=AliESDpid::kBest_T0;
       fT0IntercalibrationShift = 0.;
+      fT0DetectorAdjust=kTRUE;
       AliWarning("TOF tender not supported for LHC10F period!! Settings are just a guess!!");
     }
     else if (run>=135654&&run<=136377) { //period="LHC10G";
@@ -153,6 +163,7 @@ void AliTOFTenderSupply::Init()
       fTOFres=100.;
       fTimeZeroType=AliESDpid::kBest_T0;
       fT0IntercalibrationShift = 0.;
+      fT0DetectorAdjust=kTRUE;
       AliWarning("TOF tender not supported for LHC10G period!! Settings are just a guess!!");
     }
     else if (run>=136851&&run<=139517) { //period="LHC10H" - pass2;
@@ -161,15 +172,33 @@ void AliTOFTenderSupply::Init()
       fTOFres=90.;
       fTimeZeroType=AliESDpid::kTOF_T0;
       fT0IntercalibrationShift = 0.;
+      fT0DetectorAdjust=kTRUE;
     }
     else if (run>=139699) {              //period="LHC11A";
+      /*
       fCorrectExpTimes=kFALSE;
       fLHC10dPatch=kFALSE;
       fTOFres=100.;
       fTimeZeroType=AliESDpid::kBest_T0;
       fT0IntercalibrationShift = 0.;
+      fT0DetectorAdjust=kFALSE;
       AliWarning("TOF tender not supported for LHC11A period!! Settings are just a guess!!");
+      */
+      AliError("TOF tender not supported for 2011 data!!!!!");
+      tenderUnsupported = kTRUE;
     }
+  }
+
+  if (tenderUnsupported) {
+    AliInfo(" |---------------------------------------------------------------------------|");
+    AliInfo(" |                                                                           |");
+    AliInfo(Form(" |  TOF tender is not supported for run %d                               |",run));
+    AliInfo(" | You cannot use TOF tender for this run, your results can be spoiled       |");
+    AliInfo(" | Check TOF tender usage for run/periods at:                                |");
+    AliInfo(" |  https://twiki.cern.ch/twiki/bin/view/ALICE/TOF.                          |");
+    AliInfo(" |---------------------------------------------------------------------------|");
+    AliInfo(" ");
+    AliFatal(" ------- TOF tender not to be used in this run, issuing FATAL error -------- ");
   }
 
   // Check if another detector already created the esd pid object
@@ -208,6 +237,7 @@ void AliTOFTenderSupply::Init()
   AliInfo(Form("|    TOF resolution for TOFT0 maker :  %5.2f (ps)     |",fTOFres));
   AliInfo(Form("|    timeZero selection             :  %d               |",fTimeZeroType));
   AliInfo(Form("|    MC flag                        :  %d               |",fIsMC));
+  AliInfo(Form("|    T0 detector offsets applied    :  %d               |",fT0DetectorAdjust));
   AliInfo(Form("|    TOF/T0 intecalibration shift   :  %5.2f (ps)     |",fT0IntercalibrationShift));
   AliInfo("|******************************************************|");
 
@@ -237,20 +267,24 @@ void AliTOFTenderSupply::ProcessEvent()
     
     if(event->GetT0TOF()){ // read T0 detector correction from OCDB
       // OCDB instance
-      AliCDBManager* ocdbMan = AliCDBManager::Instance();
-      ocdbMan->SetRun(fTender->GetRun());    
-      AliCDBEntry *entry = ocdbMan->Get("T0/Calib/TimeAdjust/");
-      if(entry) {
-	AliT0CalibSeasonTimeShift *clb = (AliT0CalibSeasonTimeShift*) entry->GetObject();
-	Float_t *t0means= clb->GetT0Means();
-	//      Float_t *t0sigmas = clb->GetT0Sigmas();
-	fT0shift[0] = t0means[0] + fT0IntercalibrationShift;
-	fT0shift[1] = t0means[1] + fT0IntercalibrationShift;
-	fT0shift[2] = t0means[2] + fT0IntercalibrationShift;
-	fT0shift[3] = t0means[3] + fT0IntercalibrationShift;
+      if (fT0DetectorAdjust) {
+	AliCDBManager* ocdbMan = AliCDBManager::Instance();
+	ocdbMan->SetRun(fTender->GetRun());    
+	AliCDBEntry *entry = ocdbMan->Get("T0/Calib/TimeAdjust/");
+	if(entry) {
+	  AliT0CalibSeasonTimeShift *clb = (AliT0CalibSeasonTimeShift*) entry->GetObject();
+	  Float_t *t0means= clb->GetT0Means();
+	  //      Float_t *t0sigmas = clb->GetT0Sigmas();
+	  fT0shift[0] = t0means[0] + fT0IntercalibrationShift;
+	  fT0shift[1] = t0means[1] + fT0IntercalibrationShift;
+	  fT0shift[2] = t0means[2] + fT0IntercalibrationShift;
+	  fT0shift[3] = t0means[3] + fT0IntercalibrationShift;
+	} else {
+	  for (Int_t i=0;i<4;i++) fT0shift[i]=0;
+	  AliWarning("TofTender no T0 entry found T0shift set to 0");
+	}
       } else {
 	for (Int_t i=0;i<4;i++) fT0shift[i]=0;
-	AliWarning("TofTender no T0 entry found T0shift set to 0");
       }
     }
   }

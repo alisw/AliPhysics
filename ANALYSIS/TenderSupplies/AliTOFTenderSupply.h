@@ -34,6 +34,7 @@ public:
   void SetTOFres(Float_t res){fTOFres=res;}
   void SetIsMC(Bool_t flag=kFALSE){fIsMC=flag;}
   void SetCorrectExpTimes(Bool_t flag=kTRUE){fCorrectExpTimes=flag;}
+  void SetT0DetectorAdjust(Bool_t flag=kFALSE){fT0DetectorAdjust=flag;}
   void SetDebugLevel(Int_t flag=0){fDebugLevel=flag;}
   void SetLHC10dPatch(Bool_t flag=kFALSE){ 
     if (flag == kTRUE) {
@@ -59,8 +60,10 @@ private:
   Int_t  fTimeZeroType;      // flag to select timeZero type 
   Bool_t fCorrectExpTimes;   // flag to apply Expected Time correction 
   Bool_t fLHC10dPatch;       // flag to apply special patch for LHC10d (reconstructed with wrong geometry)
+  Bool_t fT0DetectorAdjust;  // flag to apply offsets to T0 data (works only on some periods)
   Int_t  fDebugLevel;        // debug purposes 0= no output, 1 Info, 2 lot of info....
   Bool_t fAutomaticSettings; // enable/disable automatic (per run) settings
+
 
   // variables for TOF calibrations and timeZero setup
   AliTOFcalib     *fTOFCalib;       // recalibrate TOF signal with OCDB
@@ -77,7 +80,7 @@ private:
   AliTOFTenderSupply(const AliTOFTenderSupply&c);
   AliTOFTenderSupply& operator= (const AliTOFTenderSupply&c);
 
-  ClassDef(AliTOFTenderSupply, 6);
+  ClassDef(AliTOFTenderSupply, 7);
 };
 
 
