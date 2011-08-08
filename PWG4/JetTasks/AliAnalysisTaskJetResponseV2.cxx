@@ -18,6 +18,7 @@
 #include "AliCentrality.h"
 #include "AliAnalysisHelperJetTasks.h"
 #include "AliInputEventHandler.h"
+#include "AliAODJetEventBackground.h"
 
 #include "AliAODEvent.h"
 #include "AliAODJet.h"
@@ -30,6 +31,7 @@ AliAnalysisTaskJetResponseV2::AliAnalysisTaskJetResponseV2() :
   AliAnalysisTaskSE(),
   fESD(0x0),
   fAOD(0x0),
+  fBackgroundBranch(""),
   fIsPbPb(kTRUE),
   fOfflineTrgMask(AliVEvent::kAny),
   fMinContribVtx(1),
@@ -50,11 +52,25 @@ AliAnalysisTaskJetResponseV2::AliAnalysisTaskJetResponseV2() :
   fkNbranches(2),
   fkEvtClasses(12),
   fOutputList(0x0),
+  fbEvent(kTRUE),
+  fbJetsMismatch1(kTRUE),
+  fbJetsMismatch2(kTRUE),
+  fbJetsRp(kTRUE),
+  fbJetsDeltaPt(kTRUE),
+  fbJetsEta(kTRUE),
+  fbJetsPhi(kTRUE),
+  fbJetsArea(kTRUE),
+  fbJetsBeforeCut1(kTRUE),
+  fbJetsBeforeCut2(kTRUE),
   fHistEvtSelection(0x0),
+  fHistJetSelection(0x0),
   fhnEvent(0x0),
+  fhnJetsMismatch1(0x0),
+  fhnJetsMismatch2(0x0),
   fhnJetsRp(0x0),
   fhnJetsDeltaPt(0x0),
   fhnJetsEta(0x0),
+  fhnJetsPhi(0x0),
   fhnJetsArea(0x0),
   fhnJetsBeforeCut1(0x0),
   fhnJetsBeforeCut2(0x0)
@@ -72,6 +88,7 @@ AliAnalysisTaskJetResponseV2::AliAnalysisTaskJetResponseV2(const char *name) :
   AliAnalysisTaskSE(name),
   fESD(0x0),
   fAOD(0x0),
+  fBackgroundBranch(""),
   fIsPbPb(kTRUE),
   fOfflineTrgMask(AliVEvent::kAny),
   fMinContribVtx(1),
@@ -92,11 +109,25 @@ AliAnalysisTaskJetResponseV2::AliAnalysisTaskJetResponseV2(const char *name) :
   fkNbranches(2),
   fkEvtClasses(12),
   fOutputList(0x0),
+  fbEvent(kTRUE),
+  fbJetsMismatch1(kTRUE),
+  fbJetsMismatch2(kTRUE),
+  fbJetsRp(kTRUE),
+  fbJetsDeltaPt(kTRUE),
+  fbJetsEta(kTRUE),
+  fbJetsPhi(kTRUE),
+  fbJetsArea(kTRUE),
+  fbJetsBeforeCut1(kTRUE),
+  fbJetsBeforeCut2(kTRUE),
   fHistEvtSelection(0x0),
+  fHistJetSelection(0x0),
   fhnEvent(0x0),
+  fhnJetsMismatch1(0x0),
+  fhnJetsMismatch2(0x0),
   fhnJetsRp(0x0),
   fhnJetsDeltaPt(0x0),
   fhnJetsEta(0x0),
+  fhnJetsPhi(0x0),
   fhnJetsArea(0x0),
   fhnJetsBeforeCut1(0x0),
   fhnJetsBeforeCut2(0x0)
@@ -154,93 +185,109 @@ void AliAnalysisTaskJetResponseV2::UserCreateOutputObjects()
   fHistEvtSelection->GetXaxis()->SetBinLabel(5,"centrality (rejected)");
   fHistEvtSelection->GetXaxis()->SetBinLabel(6,"multiplicity (rejected)");
   
-  Float_t pi = TMath::Pi();
+  fHistJetSelection = new TH1I("fHistJetSelection", "jet selection", 7, -0.5, 6.5);
+  fHistJetSelection->GetXaxis()->SetBinLabel(1,"ACCEPTED");
+  fHistJetSelection->GetXaxis()->SetBinLabel(2,"probes IN");
+  fHistJetSelection->GetXaxis()->SetBinLabel(3,"no matching jet");
+  fHistJetSelection->GetXaxis()->SetBinLabel(4,"not in list");
+  fHistJetSelection->GetXaxis()->SetBinLabel(5,"fraction cut");
+  fHistJetSelection->GetXaxis()->SetBinLabel(6,"acceptance cut");
+  fHistJetSelection->GetXaxis()->SetBinLabel(7,"p_{T} cut");
+
   
-  const Int_t dim1 = 3;
-  // cent : nInpTrks : rp
-  Int_t    nbins1[dim1] = { 100,   400,  30  };
-  Double_t xmin1[dim1]  = {   0.,    0.,  0. };
-  Double_t xmax1[dim1]  = { 100., 4000., pi  };
+  UInt_t entries = 0; // bit coded, see GetDimParams() below
+  UInt_t opt = 0;  // bit coded, default (0) or high resolution (1)
   
-  TString hnTitle("variables per event;centrality;nb. of input tracks;reaction plane #phi");
+  if(fbEvent){
+   entries = 1<<0 | 1<<1 | 1<<2;  // cent : nInpTrks : rp psi
+   opt = 1<<0 | 1<<1; // centrality and nInpTrks in high resolution
+   fhnEvent = NewTHnSparseF("fhnEvent", entries, opt);
+  }
+   
+  if(fbJetsMismatch1){ // real mismatch (no related rec jet found)
+   // cent : nInpTrks : rp bins : probe pt : probe eta : probe phi : probe area
+   entries = 1<<0 | 1<<1 | 1<<3 | 1<<6 | 1<<8 | 1<<10 | 1<<12;
+   opt =  1<<6 | 1<<8 | 1<<10;
+   fhnJetsMismatch1 = NewTHnSparseF("fhnJetsMismatch1", entries, opt);
+  }
   
-  fhnEvent = new THnSparseF("fhnEvent", hnTitle.Data(), dim1, nbins1, xmin1, xmax1);
+  if(fbJetsMismatch2){  // acceptance + fraction cut
+  // cent : nInpTrks : rp bins : jetPt(2x) : jetEta(2x) : deltaEta : deltaR : fraction
+   entries = 1<<0 | 1<<1 | 1<<3 | 1<<6 | 1<<7 | 1<<8 | 1<<9 | 1<<15 | 1<<17 | 1<<19;
+   opt = 1<<6 | 1<<7 | 1<<8 | 1<<9;
+   fhnJetsMismatch2 = NewTHnSparseF("fhnJetsMismatch2", entries, opt);
   
-  /* original thnsparse
-  const Int_t dim2 = 18;
-  // cent : nInpTrks : rp bins : rp wrt jet : fraction : 
-  // jetPt(2x) : jetEta(2x) : jetPhi (2x) : jetArea(2x)
-  // deltaPt : deltaEta : deltaPhi : deltaR : deltaArea
+  }
+   
+     
+  if(fbJetsRp){
+   // cent : nInpTrks : rp bins : rp wrt jet(2x) : probe pT : probe area: deltaPt : rp phi : rho : correction for RP : local rho
+   /*
+   entries = 1<<0 | 1<<1 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<12 | 1<<14 | 1<<2 | 1<<22 | 1<<23 | 1<<24 | 1<<25;
+   opt = 1<<4 | 1<<5;*/
+   // cent : nInpTrks : rp bins : rp wrt jet(2x) : probe pT : deltaPt : rp phi : rho : correction for RP
+   entries = 1<<0 | 1<<1 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<14 | 1<<2 | 1<<22 | 1<<23;
+   opt = 1<<4 | 1<<5;
+   fhnJetsRp = NewTHnSparseF("fhnJetsRp", entries, opt);
+  }
   
-  Int_t    nbins2[dim2] = {  16,   400,    3,  48,    52, 125,  125,    56,   56,   25,   25, 100, 100,    201,   101,    51,  50,   81 };
-  Double_t xmin2[dim2]  = {   0.,    0., -.5, -pi,  0.  ,   0.,   0., -0.7, -0.7,   0.,   0., 0. , 0. , -100.5, -1.01, -1.02,  0., -.81 };
-  Double_t xmax2[dim2]  = {  80., 4000., 2.5,  pi,  1.04, 250., 250.,  0.7,  0.7, 2*pi, 2*pi, 1.0, 1.0,  100.5,  1.01,  1.02,  1.,  .81 };
-  
-  fhnJets = new THnSparseF("fhnJets", "variables per jet", dim2, nbins2, xmin2, xmax2);
-  */
-  
-  
-  const Int_t dim2 = 6;
-  // cent : nInpTrks : rp bins : rp wrt jet : probe pT
-  Int_t    nbins2[dim2] = {   8 ,    40,   3,  48,  48,  50 };
-  Double_t xmin2[dim2]  = {   0.,    0., -.5, -pi, -pi,  0. };
-  Double_t xmax2[dim2]  = {  80., 4000., 2.5,  pi,  pi, 250.};
-  hnTitle = "variables per jet;centrality;nb. of input tracks; reaction plane bin;#Delta#phi(RP-jet);probe p_{T}";
-  fhnJetsRp = new THnSparseF("fhnJetsRp", hnTitle.Data(), dim2, nbins2, xmin2, xmax2);
-  
-  
-  const Int_t dim3 = 7;
   // cent : nInpTrks : rp bins:  deltaPt : jetPt(2x) : deltaArea (hr delta pt)
-  Int_t    nbins3[dim3] = {  16,   400,    3,    241,  250,  250,   81 };
-  Double_t xmin3[dim3]  = {   0.,    0., -.5, -120.5,   0.,   0., -.81 };
-  Double_t xmax3[dim3]  = {  80., 4000., 2.5,  120.5, 250., 250.,  .81 };
-  hnTitle = "variables per jet;centrality;nb. of input tracks; reaction plane bin;#delta p_{T};probe p_{T};rec p_{T};#Deltaarea";
-  fhnJetsDeltaPt = new THnSparseF("fhnJetsDeltaPt", hnTitle.Data(), dim3, nbins3, xmin3, xmax3);
-    
-  const Int_t dim4 = 10;	
-  // cent : nInpTrks : rp bins : deltaPt : jetPt(2x) : deltaR : deltaEta : jetEta(2x) (hr for eta)
-  Int_t    nbins4[dim4] = {   8 ,   40 ,   3,  101 ,  50 ,  50 , 50,    51,   56,   56 };
-  Double_t xmin4[dim4]  = {   0.,    0., -.5, -101.,   0.,   0., 0., -1.02, -0.7, -0.7 };
-  Double_t xmax4[dim4]  = {  80., 4000., 2.5,  101., 250., 250., 1.,  1.02,  0.7,  0.7 };
-  hnTitle = "variables per jet;centrality;nb. of input tracks; reaction plane bin;#delta p_{T};probe p_{T};rec p_{T};#DeltaR;#Delta#eta;#eta(probe);#eta(rec)";
-  fhnJetsEta = new THnSparseF("fhnJetsEta", hnTitle.Data(), dim4, nbins4, xmin4, xmax4);
+  if(fbJetsDeltaPt){
+   entries = 1<<0 | 1<<1 | 1<<3 | 1<<14 | 1<<6 | 1<<7 | 1<<18;
+   opt = 1<<1 | 1<<14 | 1<<6 | 1<<7 | 1<<18;
+   fhnJetsDeltaPt = NewTHnSparseF("fhnJetsDeltaPt", entries, opt);
+  }
   
-  const Int_t dim5 = 13; 
-  // cent : nInpTrks : rp bins : deltaArea : jetArea(2x) : deltaR : fraction : distance next rec jet : pT next jet : deltaPt : jetPt(2x) (hr for area) 
-  hnTitle = "variables per jet;centrality;nb. of input tracks; reaction plane bin;#Deltaarea;probe area;rec area;#DeltaR;fraction;distance to closest rec jet;p_{T} of closest rec jet;#delta p_{T};probe p_{T};rec p_{T}";
-  Int_t    nbins5[dim5] = {   8 ,   40 ,   3,   81, 100, 100, 50,   52,   51 , 100 ,  101 ,  50 ,  50  };
-  Double_t xmin5[dim5]  = {   0.,    0., -.5, -.81,  0.,  0., 0., 0.  , -0.02,   0., -101.,   0.,   0. };
-  Double_t xmax5[dim5]  = {  80., 4000., 2.5,  .81,  1.,  1., 1., 1.04,  1.  , 200.,  101., 250., 250. };
-  fhnJetsArea = new THnSparseF("fhnJetsArea", hnTitle.Data(), dim5, nbins5, xmin5, xmax5);
+  // cent : nInpTrks : rp bins : deltaPt : jetPt(2x) : deltaR : deltaEta : jetEta(2x) (hr for eta)
+  if(fbJetsEta){
+   entries = 1<<0 | 1<<1 | 1<<3 | 1<<14 | 1<<6 | 1<<7 | 1<<17 | 1<<15 | 1<<8 | 1<<9;
+   opt = 1<<15 | 1<<8 | 1<<9;
+   fhnJetsEta = NewTHnSparseF("fhnJetsEta", entries, opt);
+  }
+  
+  // cent : nInpTrks : rp bins : jetPt(2x) : jetPhi(2x) : deltaPt : deltaPhi
+  if(fbJetsPhi){
+    entries = 1<<0 | 1<<1 | 1<<3 | 1<<6 | 1<<7 | 1<<10 | 1<<11 | 1<<14 | 1<<16;
+    opt = 1<<10 | 1<<11;
+    fhnJetsPhi = NewTHnSparseF("fhnJetsPhi", entries, opt);
+  }
+  
+  // cent : nInpTrks : rp bins : deltaArea : jetArea(2x) : deltaR : fraction : distance next rec jet : pT next jet : deltaPt : jetPt(2x) (hr for area)
+  if(fbJetsArea){
+   entries = 1<<0 | 1<<1 | 1<<3 | 1<<18 | 1<<12 | 1<<13 | 1<<17 | 1<<19 | 1<<20 | 1<<21 | 1<<14 | 1<<6 | 1<<7;
+   opt = 1<<18 | 1<<12 | 1<<13;
+   fhnJetsArea = NewTHnSparseF("fhnJetsArea", entries, opt);
+  }
   
   
   //before cut
-  const Int_t dim6 = 10;
+  
   // cent : nInpTrks : rp bins : fraction : jetPt(2x) : jetEta(2x) : jetPhi(2x) (low resolution) (with fraction, eta, phi, pt cuts possible)
-  Int_t    nbins6[dim6] = {  8 ,   40 ,   3, 52 ,  50 ,  50 ,   28,   28,   25,   25 };
-  Double_t xmin6[dim6]  = {  0.,    0., -.5,  0.,   0.,   0., -0.7, -0.7,   0.,   0. };
-  Double_t xmax6[dim6]  = { 80., 4000., 2.5, 1.04, 250., 250.,  0.7,  0.7, 2*pi, 2*pi };
-  hnTitle = "variables before cut;centrality;nb. of input tracks; reaction plane bin;fraction;probe p_{T};rec p_{T};probe #eta; rec #eta;probe #phi;rec #phi";
-  fhnJetsBeforeCut1 = new THnSparseF("fhnJetsBeforeCut1", hnTitle.Data(), dim6, nbins6, xmin6, xmax6);
+  if(fbJetsBeforeCut1){
+   entries = 1<<0 | 1<<1 | 1<<3 | 1<<19 | 1<<6 | 1<<7 | 1<<8 | 1<<9 | 1<<10 | 1<<11;
+   opt = 0;
+   fhnJetsBeforeCut1 = NewTHnSparseF("fhnJetsBeforeCut1", entries, opt);
+  }
   
-  const Int_t dim7 = 10;
   // cent : nInpTrks : rp bins : deltaPt : jetPt(2x) : deltaR : deltaEta : jetEta(2x) (low resolution)
-  Int_t    nbins7[dim7] = {   8 ,   40 ,   3,  101 ,  50 ,  50 , 50,    51,   28,   28 };
-  Double_t xmin7[dim7]  = {   0.,    0., -.5, -101.,   0.,   0., 0., -1.02, -0.7, -0.7 };
-  Double_t xmax7[dim7]  = {  80., 4000., 2.5,  101., 250., 250., 1.,  1.02,  0.7,  0.7 };
-  hnTitle = "variables before cut;centrality;nb. of input tracks; reaction plane bin;#delta p_{T};probe p_{T};rec p_{T};#Delta R;#Delta #eta;probe #eta;rec #eta";
-  fhnJetsBeforeCut2 = new THnSparseF("fhnJetsBeforeCut2", hnTitle.Data(), dim7, nbins7, xmin7, xmax7);
-  
-  
+  if(fbJetsBeforeCut2){
+   entries = 1<<0 | 1<<1 | 1<<3 | 1<<14 | 1<<6 | 1<<7 | 1<<17 | 1<<15 | 1<<8 | 1<<9;
+   opt = 0;
+   fhnJetsBeforeCut2 = NewTHnSparseF("fhnJetsBeforeCut2", entries, opt);
+  }
   
   fOutputList->Add(fHistEvtSelection);
-  fOutputList->Add(fhnEvent);
-  fOutputList->Add(fhnJetsRp);
-  fOutputList->Add(fhnJetsDeltaPt);
-  fOutputList->Add(fhnJetsEta);
-  fOutputList->Add(fhnJetsArea);
-  fOutputList->Add(fhnJetsBeforeCut1);
-  fOutputList->Add(fhnJetsBeforeCut2);
+  fOutputList->Add(fHistJetSelection);
+  if(fbEvent)           fOutputList->Add(fhnEvent);
+  if(fbJetsMismatch1)   fOutputList->Add(fhnJetsMismatch1);
+  if(fbJetsMismatch2)   fOutputList->Add(fhnJetsMismatch2);
+  if(fbJetsRp)          fOutputList->Add(fhnJetsRp);
+  if(fbJetsDeltaPt)     fOutputList->Add(fhnJetsDeltaPt);
+  if(fbJetsEta)         fOutputList->Add(fhnJetsEta);
+  if(fbJetsPhi)         fOutputList->Add(fhnJetsPhi);
+  if(fbJetsArea)        fOutputList->Add(fhnJetsArea);
+  if(fbJetsBeforeCut1)  fOutputList->Add(fhnJetsBeforeCut1);
+  if(fbJetsBeforeCut2)  fOutputList->Add(fhnJetsBeforeCut2);
 
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fOutputList->GetEntries(); ++i) {
@@ -341,18 +388,34 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
   // -- end event selection --
 
   Double_t rp = AliAnalysisHelperJetTasks::ReactionPlane(kFALSE);
-  Double_t eventEntries[3] = { (Double_t)centValue, (Double_t)nInputTracks, rp };
-  fhnEvent->Fill(eventEntries);
+  if(fbEvent){
+   Double_t eventEntries[3] = { (Double_t)centValue, (Double_t)nInputTracks, rp };
+   fhnEvent->Fill(eventEntries);
+  }
+  
+  
+  // get background
+  AliAODJetEventBackground* externalBackground = 0;
+  if(!externalBackground&&fBackgroundBranch.Length()){
+    externalBackground =  (AliAODJetEventBackground*)(fAOD->FindListObject(fBackgroundBranch.Data()));
+    //if(!externalBackground)Printf("%s:%d Background branch not found %s",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());;
+  }
+  Float_t rho = 0;
+  if(externalBackground)rho = externalBackground->GetBackground(0);
   
   
   // fetch jets
   TClonesArray *aodJets[2];
   aodJets[0] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[0].Data())); // in general: embedded jet
   aodJets[1] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[1].Data())); // in general: embedded jet + UE
+  
+  
 
   for (Int_t iJetType = 0; iJetType < 2; iJetType++) {
     fListJets[iJetType]->Clear();
     if (!aodJets[iJetType]) continue;
+
+    if(fDebug) Printf("%s: %d jets",fJetBranchName[iJetType].Data(),aodJets[iJetType]->GetEntriesFast());
 	
     for (Int_t iJet = 0; iJet < aodJets[iJetType]->GetEntriesFast(); iJet++) {
       AliAODJet *jet = dynamic_cast<AliAODJet*>((*aodJets[iJetType])[iJet]);
@@ -384,14 +447,40 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
   Float_t rpJet[2]   = { -990., -990. };
    
   for(Int_t ig=0; ig<fListJets[0]->GetEntries(); ++ig){
-     ir = aMatchIndex[ig];
-	 if(ir<0) continue;
+    fHistJetSelection->Fill(1); // all probe jets
+    ir = aMatchIndex[ig];
+	 if(ir<0){
+      fHistJetSelection->Fill(2);
+      
+      if(fbJetsMismatch1){
+         jet[0] = (AliAODJet*)(fListJets[0]->At(ig));
+         if(!jet[0]) continue;
+         jetEta[0]  = jet[0]->Eta();
+         jetPhi[0]  = jet[0]->Phi();
+         jetPt[0]   = jet[0]->Pt();
+         jetArea[0] = jet[0]->EffectiveAreaCharged();
+         rpJet[0]   = TVector2::Phi_mpi_pi(rp-jetPhi[0]);
+      
+         Int_t rpBin = AliAnalysisHelperJetTasks::GetPhiBin(TVector2::Phi_mpi_pi(rp-jetPhi[0]), 3);
+      
+         Double_t jetEntriesMismatch1[7] = {
+           (Double_t)centValue, (Double_t)nInputTracks, (Double_t)rpBin,
+           (Double_t)jetPt[0], (Double_t)jetEta[0], (Double_t)jetPhi[0], (Double_t)jetArea[0]
+         };		 
+         fhnJetsMismatch1->Fill(jetEntriesMismatch1);
+      }
+      
+      continue;
+	 }
 	 fraction = aPtFraction[ig];
 	 
 	 // fetch jets
 	 jet[0] = (AliAODJet*)(fListJets[0]->At(ig));
 	 jet[1] = (AliAODJet*)(fListJets[1]->At(ir));
-	 if(!jet[0] || !jet[1]) continue;
+	 if(!jet[0] || !jet[1]){
+      fHistJetSelection->Fill(3);
+      continue;
+	 }
 	 
 	 // look for distance to next rec jet
 	 Float_t distNextJet = -0.01; // no neighbor
@@ -414,9 +503,28 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
       rpJet[i]   = TVector2::Phi_mpi_pi(rp-jetPhi[i]);
 	 }
 	 Int_t rpBin = AliAnalysisHelperJetTasks::GetPhiBin(TVector2::Phi_mpi_pi(rp-jetPhi[1]), 3);
+    //Float_t localRho = jetArea[1]>0. ? (jetPt[1]+rho*jetArea[1] - jetPt[0]) / jetArea[1] : 0.;
+    //Float_t relRho = rho>0. ? localRho / rho : 0.;
 
 	 
 	 // calculate parameters of associated jets
+    /* from Leticia, kT clusterizer
+    Float_t par0[4] = { 0.00409,       0.01229,      0.05,         0.26 };
+    Float_t par1[4] = { -2.97035e-03, -2.03182e-03, -1.25702e-03, -9.95107e-04 };
+    Float_t par2[4] = { 1.02865e-01,   1.49039e-01,  1.53910e-01,  1.51109e-01 };
+    */
+    // own, from embedded tracks
+    Float_t par0[4] = { 0.02841,       0.05039,      0.09092,      0.24089     };
+    Float_t par1[4] = { -4.26725e-04, -1.15273e-03, -1.56827e-03, -3.08003e-03 };
+    Float_t par2[4] = { 4.95415e-02,   9.79538e-02,  1.32814e-01,  1.71743e-01 };
+    
+    Float_t rpCorr = 0.;         
+    
+    if(eventClass>0&&eventClass<4){
+       rpCorr = par0[eventClass-1] + par1[eventClass-1] * 2*TMath::Cos(rpJet[1]) + par2[eventClass-1] * 2*TMath::Cos(2*rpJet[1]);
+       rpCorr *= rho * jetArea[1];
+    }
+
 	 Float_t deltaPt    = jetPt[1]-jetPt[0];
 	 Float_t deltaEta   = jetEta[1]-jetEta[0];
 	 Float_t deltaPhi   = TVector2::Phi_mpi_pi(jetPhi[1]-jetPhi[0]);
@@ -425,67 +533,116 @@ void AliAnalysisTaskJetResponseV2::UserExec(Option_t *)
 	 
 	
 	 // fill thnsparse before acceptance cut
-	 Double_t jetBeforeCutEntries1[10] = { 
-	    (Double_t)centValue, (Double_t)nInputTracks, (Double_t)rpBin,
-		(Double_t)fraction,	(Double_t)jetPt[0], (Double_t)jetPt[1], 
-		(Double_t)jetEta[0], (Double_t)jetEta[1], (Double_t)jetPhi[0], (Double_t)jetPhi[1] };
+    if(fbJetsBeforeCut1){
+      Double_t jetBeforeCutEntries1[10] = { 
+         (Double_t)centValue, (Double_t)nInputTracks, (Double_t)rpBin,
+         (Double_t)jetPt[0], (Double_t)jetPt[1], (Double_t)jetEta[0], (Double_t)jetEta[1], 
+         (Double_t)jetPhi[0], (Double_t)jetPhi[1], (Double_t)fraction
+         };
+      fhnJetsBeforeCut1->Fill(jetBeforeCutEntries1);
+    }
 	 
-	 Double_t jetBeforeCutEntries2[10] = {
-        (Double_t)centValue, (Double_t)nInputTracks, (Double_t)rpBin, 
-		(Double_t)deltaPt, (Double_t)jetPt[0], (Double_t)jetPt[1],
-		(Double_t)deltaR, (Double_t)deltaEta,
-		(Double_t)jetEta[0], (Double_t)jetEta[1] };
+    if(fbJetsBeforeCut2){
+      Double_t jetBeforeCutEntries2[10] = {
+         (Double_t)centValue, (Double_t)nInputTracks, (Double_t)rpBin, 
+         (Double_t)jetPt[0], (Double_t)jetPt[1],
+         (Double_t)jetEta[0], (Double_t)jetEta[1], 
+         (Double_t)deltaPt, (Double_t)deltaEta, (Double_t)deltaR
+         };
+	   fhnJetsBeforeCut2->Fill(jetBeforeCutEntries2);
+    }
 	 
-	 fhnJetsBeforeCut1->Fill(jetBeforeCutEntries1);
-	 fhnJetsBeforeCut2->Fill(jetBeforeCutEntries2);
-	 
-	 
+	 Bool_t jetAccepted = kTRUE;
 	 // minimum fraction required
-	 if(fraction<fJetPtFractionMin) continue;
-	 
-	 // jet acceptance + minimum pT check
-	 if(jetEta[0]>fJetEtaMax || jetEta[0]<fJetEtaMin ||
-	    jetEta[1]>fJetEtaMax || jetEta[1]<fJetEtaMin){
-		
-		if(fDebug){
-     		Printf("Jet not in eta acceptance.");
-			Printf("[0]: jet %d eta %.2f", ig, jetEta[0]);
-			Printf("[1]: jet %d eta %.2f", ir, jetEta[1]);
-		}
-		continue;
-     }
-	 if(jetPt[1] < fJetPtMin){
-	    if(fDebug) Printf("Jet %d (pT %.1f GeV/c) has less than required pT.", ir, jetPt[1]);
-	    continue;
+	 if(fraction<fJetPtFractionMin){
+       fHistJetSelection->Fill(4);
+       jetAccepted = kFALSE;
 	 }
 	 
+    if(jetAccepted){
+      // jet acceptance + minimum pT check
+      if(jetEta[0]>fJetEtaMax || jetEta[0]<fJetEtaMin ||
+         jetEta[1]>fJetEtaMax || jetEta[1]<fJetEtaMin){
+		
+         if(fDebug){
+            Printf("Jet not in eta acceptance.");
+            Printf("[0]: jet %d eta %.2f", ig, jetEta[0]);
+            Printf("[1]: jet %d eta %.2f", ir, jetEta[1]);
+         }
+         fHistJetSelection->Fill(5);
+         jetAccepted = kFALSE;
+      }
+    }
+    if(jetAccepted){
+      if(jetPt[1] < fJetPtMin){
+         if(fDebug) Printf("Jet %d (pT %.1f GeV/c) has less than required pT.", ir, jetPt[1]);
+         fHistJetSelection->Fill(6);
+         jetAccepted = kFALSE;
+      }
+    }
+    
+    if(!jetAccepted){
+      if(fbJetsMismatch2){
+         Double_t jetEntriesMismatch2[10] = {
+            (Double_t)centValue, (Double_t)nInputTracks, (Double_t)rpBin,
+            (Double_t)jetPt[0], (Double_t)jetPt[1],
+            (Double_t)jetEta[0], (Double_t)jetEta[1],
+            (Double_t)deltaEta, (Double_t)deltaR,
+            (Double_t)fraction
+         };
+         fhnJetsMismatch2->Fill(jetEntriesMismatch2);     
+      }
+      continue;
+    }
+    
+    // all accepted jets
+    fHistJetSelection->Fill(0);
+	 
 	 // fill thnsparse
-	 Double_t jetEntriesRp[6] = {
-          (Double_t)centValue, (Double_t)nInputTracks, (Double_t)rpBin, 
-          (Double_t)rpJet[0], (Double_t)rpJet[1], (Double_t)jetPt[0]
+    if(fbJetsRp){
+      Double_t jetEntriesRp[10] = {
+          (Double_t)centValue, (Double_t)nInputTracks, (Double_t) rp,
+          (Double_t)rpBin, (Double_t)rpJet[0], (Double_t)rpJet[1], 
+          (Double_t)jetPt[0], (Double_t)deltaPt, (Double_t)rho, (Double_t)rpCorr
           };
-     fhnJetsRp->Fill(jetEntriesRp);
+      fhnJetsRp->Fill(jetEntriesRp);
+    }
 	 
-	 Double_t jetEntriesDeltaPt[7] = {
+    if(fbJetsDeltaPt){
+      Double_t jetEntriesDeltaPt[7] = {
            (Double_t)centValue, (Double_t)nInputTracks, (Double_t)rpBin,
-		   (Double_t)deltaPt, (Double_t)jetPt[0], (Double_t)jetPt[1], (Double_t)deltaArea
-		   };		 
-     fhnJetsDeltaPt->Fill(jetEntriesDeltaPt);
+           (Double_t)jetPt[0], (Double_t)jetPt[1], (Double_t)deltaPt, (Double_t)deltaArea
+           };		 
+      fhnJetsDeltaPt->Fill(jetEntriesDeltaPt);
+    }
 	 
-	 Double_t jetEntriesEta[10] = {
+    if(fbJetsEta){
+      Double_t jetEntriesEta[10] = {
            (Double_t)centValue, (Double_t)nInputTracks, (Double_t)rpBin,
-		   (Double_t)deltaPt, (Double_t)jetPt[0], (Double_t)jetPt[1],
-		   (Double_t)deltaR, (Double_t)deltaEta, (Double_t)jetEta[0], (Double_t)jetEta[1]
-		   };				 
-     fhnJetsEta->Fill(jetEntriesEta);
+           (Double_t)jetPt[0], (Double_t)jetPt[1], (Double_t)jetEta[0], (Double_t)jetEta[1], 
+           (Double_t)deltaPt, (Double_t)deltaEta, (Double_t)deltaR
+           };				 
+      fhnJetsEta->Fill(jetEntriesEta);
+    }
+    
+    if(fbJetsPhi){
+      Double_t jetEntriesPhi[9] = {
+            (Double_t)centValue, (Double_t)nInputTracks, (Double_t)rpBin,
+            (Double_t)jetPt[0], (Double_t)jetPt[1], (Double_t)jetPhi[0], (Double_t)jetPhi[1],
+            (Double_t)deltaPt, (Double_t)deltaPhi
+      };
+      fhnJetsPhi->Fill(jetEntriesPhi);
+    }
 	 
-	 Double_t jetEntriesArea[13] = {
+    if(fbJetsArea){
+      Double_t jetEntriesArea[13] = {
            (Double_t)centValue, (Double_t)nInputTracks, (Double_t)rpBin,
-           (Double_t)deltaArea, (Double_t)jetArea[0], (Double_t)jetArea[1],
-		   (Double_t)deltaR, (Double_t)fraction, (Double_t)distNextJet, (Double_t)ptNextJet,
-		   (Double_t)deltaPt, (Double_t)jetPt[0], (Double_t)jetPt[1]
-		   };				 
-     fhnJetsArea->Fill(jetEntriesArea);
+           (Double_t)jetPt[0], (Double_t)jetPt[1], (Double_t)jetArea[0], (Double_t)jetArea[1], 
+           (Double_t)deltaPt, (Double_t)deltaR, (Double_t)deltaArea, 
+           (Double_t)fraction, (Double_t)distNextJet, (Double_t)ptNextJet
+           };				 
+      fhnJetsArea->Fill(jetEntriesArea);
+    }
 	 
   }
 
@@ -534,4 +691,308 @@ Int_t AliAnalysisTaskJetResponseV2::GetNInputTracks()
   if(fDebug) Printf("---> input tracks: %d", nInputTracks);
   
   return nInputTracks;  
+}
+
+THnSparse* AliAnalysisTaskJetResponseV2::NewTHnSparseF(const char* name, UInt_t entries, UInt_t opt)
+{
+  Int_t count = 0;
+  UInt_t tmp = entries;
+  while(tmp!=0){
+     count++;
+     tmp = tmp &~ -tmp;  // clear lowest bit
+  }
+
+  TString hnTitle(name);
+  const Int_t dim = count;
+  Int_t nbins[dim];
+  Double_t xmin[dim];
+  Double_t xmax[dim];
+  
+  Int_t i=0;
+  Int_t c=0;
+  while(c<dim && i<32){
+      if(entries&(1<<i)){
+         Bool_t highres = opt&(1<<i);
+         TString label("");
+         GetDimParams(i, highres, label, nbins[c], xmin[c], xmax[c]);
+         hnTitle += Form(";%s",label.Data());
+         c++;
+      }
+     
+     i++;
+  }
+  hnTitle += ";";
+  
+  return new THnSparseF(name, hnTitle.Data(), dim, nbins, xmin, xmax);
+}
+
+void AliAnalysisTaskJetResponseV2::GetDimParams(Int_t iEntry, Bool_t hr, TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax)
+{
+
+   const Double_t pi = TMath::Pi();
+   
+   switch(iEntry){
+   
+      case 0:
+         label = "V0 centrality (%)";
+         if(hr){
+            nbins = 100;
+            xmin = 0.;
+            xmax = 100.;
+         } else {
+            nbins = 8;
+            xmin = 0.;
+            xmax = 80.;
+         }
+      break;
+      
+      
+      case 1:
+         label = "nb. of input tracks";
+         if(fIsPbPb){
+            if(hr){
+               nbins = 400;
+               xmin = 0.;
+               xmax = 4000.;
+            } else {
+               nbins = 40;
+               xmin = 0.;
+               xmax = 4000.;
+            }
+         } else {
+            nbins = 40;
+            xmin = 0.;
+            xmax = 400.;
+         }
+      break;
+      
+      
+      case 2:
+         label = "event plane #psi";
+         if(hr){
+            nbins = 30;
+            xmin = 0.;
+            xmax = pi;
+         } else {
+            nbins = 30;
+            xmin = 0.;
+            xmax = pi;
+         }
+      break;
+      
+      
+      case 3:
+         label = "event plane bin";
+	 nbins = 3;
+         xmin = -.5;
+         xmax = 2.5;
+      break;
+      
+      
+      case 4:
+      case 5:
+         if(iEntry==4)label = "#Delta#phi(RP-jet) (probe)";
+         if(iEntry==5)label = "#Delta#phi(RP-jet) (rec)";
+         nbins = 48;
+         xmin = -pi;
+         xmax =  pi;
+      break;
+      
+      
+      case 6:
+      case 7:
+         if(iEntry==6)label = "probe p_{T} (GeV/c)";
+         if(iEntry==7)label = "rec p_{T} (GeV/c)";
+         if(hr){
+            nbins = 250;
+            xmin = 0.;
+            xmax = 250.;
+         } else {
+            nbins = 50;
+            xmin = 0.;
+            xmax = 250.;
+         }
+      break;
+      
+      
+      case 8:
+      case 9:
+         if(iEntry==8)label = "probe #eta";
+         if(iEntry==9)label = "rec #eta";
+         if(hr){
+            nbins = 56;
+            xmin = -.7;
+            xmax =  .7;
+         } else {
+            nbins = 28;
+            xmin = -.7;
+            xmax =  .7;
+         }
+      break;
+      
+      
+      case 10:
+      case 11:
+         if(iEntry==10)label = "probe #phi";
+         if(iEntry==11)label = "rec #phi";
+         if(hr){
+            nbins = 90;  // modulo 18 (sectors)
+            xmin = 0.;
+            xmax = 2*pi;
+         } else {
+            nbins = 25;
+            xmin = 0.;
+            xmax = 2*pi;
+         }
+      break;
+      
+      
+      case 12:
+      case 13:
+         if(iEntry==12)label = "probe area";
+         if(iEntry==13)label = "rec area";
+         if(hr){
+            nbins = 100;
+            xmin = 0.;
+            xmax = 1.;
+         } else {
+            nbins = 25;
+            xmin = 0.;
+            xmax = 1.;
+         }
+      break;
+      
+      case 14:
+         label = "#Delta p_{T}";
+         if(hr){
+            nbins = 241;
+            xmin = -120.5;
+            xmax =  120.5;
+         } else {
+            nbins = 101;
+            xmin = -101.;
+            xmax =  101.;
+         }
+      break;
+      
+      case 15:
+         label = "#Delta#eta";
+         if(hr){
+            nbins = 51;
+            xmin = -1.02;
+            xmax =  1.02;
+         } else {
+            nbins = 51;
+            xmin = -1.02;
+            xmax =  1.02;
+         }
+      break;
+      
+      
+      case 16:
+         label = "#Delta#phi";
+         if(hr){
+            nbins = 45;
+            xmin = -pi;
+            xmax =  pi;
+         } else {
+            nbins = 45;
+            xmin = -pi;
+            xmax =  pi;
+         }
+      break;
+      
+      
+      case 17:
+         label = "#DeltaR";
+         if(hr){
+            nbins = 50;
+            xmin = 0.;
+            xmax = 1.;
+         } else {
+            nbins = 50;
+            xmin = 0.;
+            xmax = 1.;
+         }
+      break;
+      
+      
+      case 18:
+         label = "#Deltaarea";
+         if(hr){
+            nbins = 81;
+            xmin = -.81;
+            xmax =  .81;
+         } else {
+            nbins = 33;
+            xmin = -.825;
+            xmax =  .825;
+         }
+      break;
+      
+      
+      case 19:
+         label = "fraction";
+         if(hr){
+            nbins = 52;
+            xmin = 0.;
+            xmax = 1.04;
+         } else {
+            nbins = 52;
+            xmin = 0.;
+            xmax = 1.04;
+         }
+      break;
+      
+      
+      case 20:
+         label = "distance to closest rec jet";
+         if(hr){
+            nbins = 51;
+            xmin = -0.02;
+            xmax =  1.;
+         } else {
+            nbins = 51;
+            xmin = -0.02;
+            xmax = 1.;
+         }
+      break;
+      
+      
+      case 21:
+         label = "p_{T} of closest rec jet";
+         nbins = 100;
+         xmin =  0.;
+         xmax =  200.;
+      break;
+      
+      case 22:
+         label = "#rho";
+         nbins = 125;
+         xmin  = 0.;
+         xmax  = 250.;
+      break;
+      
+      case 23:
+         label = "abs. correction of #rho for RP";
+         nbins =  51;
+         xmin  = -51.;
+         xmax  =  51.;
+      break;
+      
+      case 24:
+         label = "local #rho";
+         nbins = 125;
+         xmin  = 0.;
+         xmax  = 250.;
+      break;
+      
+      case 25:
+         label = "local #rho / #rho";
+         nbins = 500;
+         xmin  = 0.;
+         xmax  = 5.;
+   
+   }
+
 }
