@@ -65,9 +65,13 @@ class AliHLTTPCTrackGeometry : public AliHLTTrackGeometry
   virtual AliHLTSpacePointContainer* ConvertToSpacePoints() const {return ConvertToSpacePoints(false);}
   virtual AliHLTSpacePointContainer* ConvertToSpacePoints(bool bAssociated) const;
 
+  int FillRawResidual(int coordinate, TH2* histo, AliHLTSpacePointContainer* points) const;
+
  private:
   /// calculate the track points, expects the global magnetic field to be initialized
   int CalculateTrackPoints(AliHLTGlobalBarrelTrack& track, int firstpadrow, int step);
+
+  vector<AliHLTTrackPoint> fRawTrackPoints; // list of points in raw coordinates
 
   ClassDef(AliHLTTPCTrackGeometry, 0)
 };

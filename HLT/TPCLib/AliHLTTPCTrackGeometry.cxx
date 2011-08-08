@@ -31,6 +31,7 @@
 #include "AliHLTComponent.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "TMath.h"
+#include "TH2F.h"
 #include <memory>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -38,12 +39,14 @@ ClassImp(AliHLTTPCTrackGeometry)
 
 AliHLTTPCTrackGeometry::AliHLTTPCTrackGeometry()
   : AliHLTTrackGeometry()
+  , fRawTrackPoints()
 {
   /// standard constructor
 }
 
 AliHLTTPCTrackGeometry::AliHLTTPCTrackGeometry(const AliHLTTPCTrackGeometry& src)
   : AliHLTTrackGeometry(src)
+  , fRawTrackPoints(src.fRawTrackPoints)
 {
   /// copy constructor
 }
@@ -52,6 +55,7 @@ AliHLTTPCTrackGeometry& AliHLTTPCTrackGeometry::operator=(const AliHLTTPCTrackGe
 {
   /// assignment operator
   AliHLTTrackGeometry::operator=(src);
+  fRawTrackPoints.assign(src.fRawTrackPoints.begin(), src.fRawTrackPoints.end());
   return *this;
 }
 
@@ -151,7 +155,18 @@ int AliHLTTPCTrackGeometry::CalculateTrackPoints(AliHLTGlobalBarrelTrack& track,
     if (TMath::Abs(planealpha-GetPlaneAlpha(id))>0.0001) {
       HLTError("alpha missmatch for plane %08x (slice %d): alpha from id %f (%.0f), expected %f (%.0f)", id, slice, GetPlaneAlpha(id), 180*GetPlaneAlpha(id)/TMath::Pi(), planealpha, 180*planealpha/TMath::Pi());
     }
-    AddTrackPoint(AliHLTTrackPoint(id, y, z), AliHLTTPCSpacePointData::GetID(slice, partition, 0));
+    if (AddTrackPoint(AliHLTTrackPoint(id, y, z), AliHLTTPCSpacePointData::GetID(slice, partition, 0))>=0) {
+      Float_t rpt[3]={0.,y,z}; // row pad time
+      AliHLTTPCTransform::LocHLT2Raw(rpt, slice, padrow);
+      // FIXME: there is a mismatch in the definition of the pad coordinate
+      // should be with respect to middle of pad, that's why the offset of
+      // 0.5 has been applied when calling the AliHLTTPCClusterTransformation
+      // and for conversion to AliTPCclusterMI in AliHLTTPCClusterAccessHLTOUT
+      // AliHLTTPCTransform::LocHLT2Raw seems to define this shift in the
+      // opposite direction
+      rpt[1]+=1.;
+      fRawTrackPoints.push_back(AliHLTTrackPoint(id, rpt[1], rpt[2]));
+    }
   }
   return 0;
 }
@@ -279,9 +294,40 @@ AliHLTSpacePointContainer* AliHLTTPCTrackGeometry::ConvertToSpacePoints(bool bAs
     bd.fPtr=pBuffer;
     bd.fSize=sizeof(AliHLTTPCClusterData)+pClusterData->fSpacePointCnt*sizeof(AliHLTTPCSpacePointData);
     AliHLTComponent::SetDataType(bd.fDataType, "CLUSTERS", "TPC ");
-    bd.fSpecification=//AliHLTTPCDefinitions::EncodeDataSpecification(currentSlice, currentSlice, currentPartition, currentPartition);
+    bd.fSpecification=kAliHLTVoidDataSpec;//AliHLTTPCDefinitions::EncodeDataSpecification(currentSlice, currentSlice, currentPartition, currentPartition);
     spacepoints->AddInputBlock(&bd);
   }
 
   return spacepoints.release();
+}
+
+int AliHLTTPCTrackGeometry::FillRawResidual(int coordinate, TH2* histo, AliHLTSpacePointContainer* points) const
+{
+  // fill residual histogram
+  if (!histo || !points) return -EINVAL;
+  const vector<AliHLTTrackPoint>& trackPoints=TrackPoints();
+  for (vector<AliHLTTrackPoint>::const_iterator trackpoint=trackPoints.begin();
+       trackpoint!=trackPoints.end(); trackpoint++) {
+    AliHLTUInt32_t spacepointId=~(AliHLTUInt32_t)0;
+    if (trackpoint->GetAssociatedSpacePoint(spacepointId)<0) continue;
+    vector<AliHLTTrackPoint>::const_iterator rawpoint=find(fRawTrackPoints.begin(), fRawTrackPoints.end(), trackpoint->GetId());
+    if (rawpoint==fRawTrackPoints.end()) {
+      HLTError("can not find track raw coordinates of track point 0x%08x", trackpoint->GetId());
+      continue;
+    }
+    if (!points->Check(spacepointId)) {
+      //HLTError("can not find associated space point 0x%08x of track point 0x%08x", spacepointId, trackpoint->GetId());
+      continue;
+    }
+    float value=0.;
+    if (coordinate==0) {
+      value=rawpoint->GetU()-points->GetY(spacepointId);
+      histo->Fill(GetPlaneR(trackpoint->GetId()), value);
+    } else {
+      value=rawpoint->GetV()-points->GetZ(spacepointId);
+      //histo->Fill(GetPlaneR(trackpoint->GetId()), value);
+      histo->Fill(rawpoint->GetV(), value);
+    }
+  }
+  return 0;
 }
