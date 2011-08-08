@@ -822,13 +822,13 @@ void AliUEHistograms::Reset()
       GetUEHist(i)->Reset();
 }
 
-TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks, Float_t bSign)
+void AliUEHistograms::TwoTrackEfficiency(TObjArray* tracks, TObjArray* mixed, Float_t bSign)
 {
-  // takes the input list <tracks> and applies two-track efficiency cuts
-  // returns the tracks which pass the cuts (if a pair fails the cut, both are removed)
-  // while the cut is applied, control histograms are filled: fTwoTrackDistancePt[i] (i = 0 before, i = 1 after)
-  // the cut has been developed by the HBT group and removes tracks which are spatially close inside the TPC volume
-  // see https://indico.cern.ch/materialDisplay.py?contribId=36&sessionId=6&materialId=slides&confId=142700
+  // takes the input list <tracks> and fills histograms to study two two-track efficiency effects
+  // fTwoTrackDistancePt[i] (i = 0 same, i = 1 mixed)
+  //
+  // the variables have been developed by the HBT group 
+  // see e.g. https://indico.cern.ch/materialDisplay.py?contribId=36&sessionId=6&materialId=slides&confId=142700
   
   if (!fTwoTrackDistancePt[0])
   {
@@ -836,12 +836,21 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks, Float_t bSign)
     fTwoTrackDistancePt[1] = (TH3F*) fTwoTrackDistancePt[0]->Clone("fTwoTrackDistancePt[1]");
   }
 
-  TObjArray* accepted = new TObjArray(*tracks);
-
   // Eta() is extremely time consuming, therefore cache it for the inner loop here:
-  TArrayF eta(tracks->GetEntriesFast());
+  TArrayF eta1(tracks->GetEntriesFast());
   for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
-    eta[i] = ((AliVParticle*) tracks->At(i))->Eta();
+    eta1[i] = ((AliVParticle*) tracks->At(i))->Eta();
+  
+  Int_t jMax = tracks->GetEntriesFast();
+  if (mixed)
+    jMax = mixed->GetEntriesFast();
+  
+  TArrayF eta2(jMax);
+  if (!mixed)
+    eta2 = eta1;
+  else
+    for (Int_t i=0; i<mixed->GetEntriesFast(); i++)
+      eta2[i] = ((AliVParticle*) mixed->At(i))->Eta();
 
   for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
   {
@@ -850,12 +859,16 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks, Float_t bSign)
     Float_t pt1 = particle1->Pt();
     Float_t charge1 = particle1->Charge();
     
-    for (Int_t j=0; j<tracks->GetEntriesFast(); j++)
+    for (Int_t j=0; j<jMax; j++)
     {
-      if (i == j)
+      if (!mixed && i == j)
 	continue;
       
-      AliVParticle* particle2 = (AliVParticle*) tracks->At(j);
+      AliVParticle* particle2 = 0;
+      if (mixed)
+	particle2 = (AliVParticle*) mixed->At(j);
+      else
+	particle2 = (AliVParticle*) tracks->At(j);
       Float_t phi2 = particle2->Phi();
       Float_t pt2 = particle2->Pt();
       Float_t charge2 = particle2->Charge();
@@ -864,14 +877,12 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks, Float_t bSign)
 	continue;
       
 //       Double_t dpt = TMath::Abs(pt1 - pt2);
-      Float_t deta = eta[i] - eta[j];
+      Float_t deta = eta1[i] - eta2[j];
       Float_t detaabs = TMath::Abs(deta);
       
       // optimization
       if (detaabs > 0.05 && (pt1 < 8 || pt1 > 15))
 	continue;
-      
-      Bool_t cutPassed = kTRUE;
       
       Float_t dphistarmin = 1e5;
       Float_t dphistarminabs = 1e5;
@@ -887,13 +898,6 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks, Float_t bSign)
 	  dphistarminabs = dphistarabs;
 	}
       }
-      
-      // hardcoded cut values for the moment
-      if (detaabs < 0.011 && dphistarminabs < 0.01)
-      {
-	cutPassed = kFALSE;
-	//Printf("%d %d failed: %.3f %.3f; %.3f %.3f %.4f; %.2f %.2f (%p %p)", i, j, eta[i], eta[j], phi1, phi2, dphistarminabs, pt1, pt2, particle1, particle2);
-      }
 
       Float_t fillPt = pt2;
       
@@ -901,21 +905,10 @@ TObjArray* AliUEHistograms::ApplyTwoTrackCut(TObjArray* tracks, Float_t bSign)
       if (pt1 < 8 || pt1 > 15)
 	fillPt = 0.25;
     
-      fTwoTrackDistancePt[0]->Fill(deta, dphistarmin, fillPt);
-      if (cutPassed)
-	fTwoTrackDistancePt[1]->Fill(deta, dphistarmin, fillPt);
+      if (!mixed)
+	fTwoTrackDistancePt[0]->Fill(deta, dphistarmin, fillPt);
       else
-      {
-	// remove tracks from list
-	accepted->Remove(particle1);
-	accepted->Remove(particle2);
-      }
+	fTwoTrackDistancePt[1]->Fill(deta, dphistarmin, fillPt);
     }
   }
-  
-  accepted->Compress();
-  
-  //Printf("AliUEHistograms::ApplyTwoTrackCut: Accepted %d out of %d tracks", accepted->GetEntriesFast(), tracks->GetEntriesFast());
-  
-  return accepted;
 }

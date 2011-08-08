@@ -38,10 +38,12 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   ana->SetReduceMemoryFootprint(kTRUE);
   //ana->SetSelectCharge(2);
   
-  ana->SetEventMixing(kFALSE);
+//   ana->SetEventMixing(kFALSE);
   
 //   ana->SetCompareCentralities(kTRUE);
   ana->SetTwoTrackEfficiencyStudy(kTRUE);
+  
+//   ana->SetFillpT(kTRUE);
   
   if (0)
   {
