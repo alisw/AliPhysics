@@ -60,6 +60,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fBypassMerger(0),
   fClusterLowerLimit(0),
   fSingleSeqLimit(0),
+  fMergerDistance(3),
   fDebug(0),
   fCFSupport(),
   fCFEmulator(),
@@ -84,6 +85,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   fBypassMerger(0),
   fClusterLowerLimit(0),
   fSingleSeqLimit(0),
+  fMergerDistance(3),
   fDebug(0),
   fCFSupport(),
   fCFEmulator(),
@@ -207,6 +209,7 @@ void AliHLTTPCHWCFEmulatorComponent::SetDefaultConfiguration()
   fBypassMerger = 0;
   fClusterLowerLimit = 0;
   fSingleSeqLimit = 0;
+  fMergerDistance = 3;
   fDebug = 0;
   fBenchmark.Reset();
   fBenchmark.SetTimer(0,"total");
@@ -294,6 +297,13 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fSingleSeqLimit  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
       HLTInfo( "Single sequence limit is set to: %d", fSingleSeqLimit );
+      continue;
+    }
+    
+    if ( argument.CompareTo( "-merger-distance" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fMergerDistance  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Merger distance is set to: %d", fMergerDistance );
       continue;
     }
     
@@ -411,8 +421,9 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
 
-  AliHLTUInt32_t configWord = AliHLTTPCHWCFEmulator::CreateConfiguration
-    ( fDoDeconvTime, fDoDeconvPad, fDoFlowControl, fDoSinglePadSuppression, fBypassMerger, fClusterLowerLimit, fSingleSeqLimit );
+  AliHLTUInt32_t configWord1=0, configWord2=0; 
+  AliHLTTPCHWCFEmulator::CreateConfiguration
+    ( fDoDeconvTime, fDoDeconvPad, fDoFlowControl, fDoSinglePadSuppression, fBypassMerger, fClusterLowerLimit, fSingleSeqLimit, fMergerDistance, configWord1, configWord2 );
 
   for ( unsigned long ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
@@ -472,7 +483,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
      
       fBenchmark.Start(1);
       fCFEmulator.Init
-	( fCFSupport.GetMapping(slice,patch), configWord );
+	( fCFSupport.GetMapping(slice,patch), configWord1, configWord2 );
       
       int err = fCFEmulator.FindClusters( rawEvent, rawEventSize32, 
 					  outClusters, clustersSize32, 

@@ -71,18 +71,19 @@ AliHLTTPCHWCFEmulator& AliHLTTPCHWCFEmulator::operator=(const AliHLTTPCHWCFEmula
   return *this;
 }
 
-void AliHLTTPCHWCFEmulator::Init( const AliHLTUInt32_t *mapping, AliHLTUInt32_t config )
+void AliHLTTPCHWCFEmulator::Init( const AliHLTUInt32_t *mapping, AliHLTUInt32_t config1, AliHLTUInt32_t config2 )
 {
   // Initialisation
   fkMapping = mapping;
   
-  fChannelProcessor.SetDeconvolution( config & 0x1 );
-  fChannelMerger.SetDeconvolution( (config>>1) & 0x1 );
-  fDivisionUnit.SetSinglePadSuppression( (config>>3) & 0x1 );
-  fChannelMerger.SetByPassMerger( (config>>4) & 0x1 );
-  fDivisionUnit.SetClusterLowerLimit( (config>>8) & 0xFF );
-  fChannelProcessor.SetSingleSeqLimit( (config>>16) & 0xFF );
- 
+  fChannelMerger.SetByPassMerger( (config1>>27) & 0x1 );
+  fDivisionUnit.SetSinglePadSuppression( (config1>>26) & 0x1 );
+  fChannelMerger.SetDeconvolution( (config1>>25) & 0x1 );
+  fChannelProcessor.SetDeconvolution( (config1>>24) & 0x1 );
+  fDivisionUnit.SetClusterLowerLimit( (config1>>8) & 0xFFFF );
+  fChannelProcessor.SetSingleSeqLimit( (config1) & 0xFF );
+  fChannelMerger.SetMatchDistance( (config2) & 0xF );
+
   fChannelProcessor.SetDebugLevel(fDebug);
   fChannelMerger.SetDebugLevel(fDebug);
   fDivisionUnit.SetDebugLevel(fDebug);
@@ -190,24 +191,27 @@ AliHLTUInt32_t AliHLTTPCHWCFEmulator::WriteBigEndian ( AliHLTUInt32_t word )
   return ret;
 }
 
-AliHLTUInt32_t AliHLTTPCHWCFEmulator::CreateConfiguration
+void AliHLTTPCHWCFEmulator::CreateConfiguration
 (
  bool doDeconvTime, bool doDeconvPad, bool doFlowControl, 
  bool doSinglePadSuppression, bool bypassMerger, 
- AliHLTUInt32_t clusterLowerLimit,AliHLTUInt32_t singleSeqLimit
+ AliHLTUInt32_t clusterLowerLimit, AliHLTUInt32_t singleSeqLimit, AliHLTUInt32_t mergerDistance,
+
+ AliHLTUInt32_t &configWord1, AliHLTUInt32_t &configWord2 
  )
 {
   // static method to create configuration word 
 
-  AliHLTUInt32_t config = 0;
+  configWord1 = 0;
+  configWord2 = 0;
 
-  config |= ( (AliHLTUInt32_t)doDeconvTime & 0x1 );
-  config |= ( (AliHLTUInt32_t)doDeconvPad & 0x1 ) << 1;
-  config |= ( (AliHLTUInt32_t)doFlowControl & 0x1 ) << 2;
-  config |= ( (AliHLTUInt32_t)doSinglePadSuppression & 0x1 ) << 3;
-  config |= ( (AliHLTUInt32_t)bypassMerger & 0x1 ) << 4;
-  config |= ( (AliHLTUInt32_t)clusterLowerLimit & 0xFF )<<8;
-  config |= ( (AliHLTUInt32_t)singleSeqLimit & 0xFF )<<16;
+  configWord1 |= ( (AliHLTUInt32_t)doFlowControl & 0x1 ) << 29;
+  configWord1 |= ( (AliHLTUInt32_t)bypassMerger & 0x1 ) << 27;
+  configWord1 |= ( (AliHLTUInt32_t)doSinglePadSuppression & 0x1 ) << 26;
+  configWord1 |= ( (AliHLTUInt32_t)doDeconvPad & 0x1 ) << 25;
+  configWord1 |= ( (AliHLTUInt32_t)doDeconvTime & 0x1 ) << 24;
+  configWord1 |= ( (AliHLTUInt32_t)clusterLowerLimit & 0xFFFF )<<8;
+  configWord1 |= ( (AliHLTUInt32_t)singleSeqLimit & 0xFF );
 
-  return config;
+  configWord2 |= ( (AliHLTUInt32_t)mergerDistance & 0xF );
 }

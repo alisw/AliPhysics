@@ -36,7 +36,7 @@ class AliHLTTPCHWCFEmulator
 
   /** initialisation 
    */
-  void Init( const AliHLTUInt32_t *mapping, AliHLTUInt32_t configWord );
+  void Init( const AliHLTUInt32_t *mapping, AliHLTUInt32_t configWord1, AliHLTUInt32_t configWord2 );
   
   /** Loops over all rows finding the clusters 
    */
@@ -61,15 +61,17 @@ class AliHLTTPCHWCFEmulator
 
   /** create configuration word 
    **/
-  static AliHLTUInt32_t CreateConfiguration
+  static void CreateConfiguration
     ( bool doDeconvTime, bool doDeconvPad, bool doFlowControl,  
       bool doSinglePadSuppression, bool bypassMerger, 
-      AliHLTUInt32_t clusterLowerLimit,AliHLTUInt32_t singleSeqLimit );
+      AliHLTUInt32_t clusterLowerLimit,AliHLTUInt32_t singleSeqLimit, 
+      AliHLTUInt32_t mergerDistance,
+      AliHLTUInt32_t &configWord1, AliHLTUInt32_t &configWord2  );
  
   /** create default configuration word 
    **/
-  static AliHLTUInt32_t CreateDefaultConfiguration(){
-    return CreateConfiguration(0,0,0,1,0,0,0);
+  static void CreateDefaultConfiguration( AliHLTUInt32_t &configWord1, AliHLTUInt32_t &configWord2 ){
+     CreateConfiguration(0,0,0,1,0,0,0, 3, configWord1, configWord2 );
   }
   
  private: 
