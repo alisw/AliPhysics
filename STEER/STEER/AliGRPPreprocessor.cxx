@@ -1431,6 +1431,10 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs()
 			Log(Form("Number of ids: %d",list2->GetEntries()));
 			for(Int_t i = 0; i < list2->GetEntries(); i++) {
 				TObjString *idStr = (TObjString *)list2->At(i);
+				if (idStr->String().CompareTo("QAThreshold") == 0 || idStr->String().CompareTo("TriggerClassesAndHistosToClone") == 0) {
+					Log(Form("Skipping file with Id %s",idStr->String().Data()));
+					continue; 
+				}
 				TString fileName = GetFile(kDAQ,idStr->String().Data(),objStr->String().Data());
 				if (fileName.Length() > 0) {
 					Log(Form("Adding file in the chain: %s",fileName.Data()));
