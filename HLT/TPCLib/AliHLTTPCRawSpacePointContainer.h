@@ -78,6 +78,10 @@ class AliHLTTPCRawSpacePointContainer : public AliHLTSpacePointContainer
   virtual int GetTrackID(AliHLTUInt32_t clusterID) const;
   virtual int SetMCID(int clusterID, const AliHLTUInt32_t* clusterIDs, int arraySize);
 
+  virtual int Write(AliHLTUInt8_t* outputPtr, AliHLTUInt32_t size,
+		    vector<AliHLTComponentBlockData>& outputBlocks,
+		    const char* option="") const;
+
   class AliHLTTPCRawSpacePointProperties {
   public:
     AliHLTTPCRawSpacePointProperties();

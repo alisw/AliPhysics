@@ -29,6 +29,7 @@
 #include "AliHLTTPCTransform.h"
 #include "AliHLTComponent.h"
 #include "AliHLTTemplates.h"
+#include "AliHLTErrorGuard.h"
 #include "TMath.h"
 #include <memory>
 #include <algorithm>
@@ -141,17 +142,29 @@ const vector<AliHLTUInt32_t>* AliHLTTPCRawSpacePointContainer::GetClusterIDs(Ali
   if (!selected) return NULL;
   UInt_t slice=AliHLTTPCSpacePointData::GetSlice(mask);
   UInt_t partition=AliHLTTPCSpacePointData::GetPatch(mask);
-  HLTInfo("creating collection 0x%08x", mask);
-  for (std::map<AliHLTUInt32_t, AliHLTTPCRawSpacePointProperties>::const_iterator cl=fClusters.begin();
-       cl!=fClusters.end(); cl++) {
+  //HLTInfo("creating collection 0x%08x", mask);
+
+  // the first cluster with number 0 has equal ID to mask unless
+  // the mask selects multiple partitions/slices
+  std::map<AliHLTUInt32_t, AliHLTTPCRawSpacePointProperties>::const_iterator cl=fClusters.find(mask);
+  bool bAll=false;
+  if (slice>=(unsigned)AliHLTTPCTransform::GetNSlice() ||
+      partition>=(unsigned)AliHLTTPCTransform::GetNumberOfPatches()) {
+    cl=fClusters.begin();
+    bAll=true;
+  }
+  for (; cl!=fClusters.end(); cl++) {
     UInt_t s=AliHLTTPCSpacePointData::GetSlice(cl->first);
     UInt_t p=AliHLTTPCSpacePointData::GetPatch(cl->first);
     if ((slice>=(unsigned)AliHLTTPCTransform::GetNSlice() || s==slice) && 
 	(partition>=(unsigned)AliHLTTPCTransform::GetNumberOfPatches() || p==partition)) {
       selected->push_back(cl->first);
+    } else if (!bAll) {
+      // no need to continue, we are out of the range
+      break;
     }
   }
-  HLTInfo("collection 0x%08x with %d spacepoints", mask, selected->size());
+  //HLTInfo("collection 0x%08x with %d spacepoints", mask, selected->size());
   fSelections[mask]=selected;
   return selected;
 }
@@ -365,6 +378,68 @@ int AliHLTTPCRawSpacePointContainer::SetMCID(int mcID, const AliHLTUInt32_t* clu
     iCount++;
   }
   return iCount;
+}
+
+int AliHLTTPCRawSpacePointContainer::Write(AliHLTUInt8_t* outputPtr, AliHLTUInt32_t size, AliHLTComponentBlockDataList& outputBlocks, const char* /*option*/) const
+{
+  /// write blocks to HLT component output
+  if (!outputPtr) return -EINVAL;
+  int iResult=0;
+  AliHLTUInt32_t capacity=size;
+  size=0;
+
+  for (int slice=0; slice<AliHLTTPCTransform::GetNSlice(); slice++) {
+    for (int part=0; part<AliHLTTPCTransform::GetNPatches(); part++) {
+      AliHLTUInt32_t mask=AliHLTTPCSpacePointData::GetID(slice,part,0);
+      // FIXME: make GetClusterIDs a const function and handle the cast there
+      const vector<AliHLTUInt32_t>* collection=const_cast<AliHLTTPCRawSpacePointContainer*>(this)->GetClusterIDs(mask);
+      if (!collection) continue;
+      if (size+sizeof(AliHLTTPCRawClusterData)+collection->size()*sizeof(AliHLTTPCRawCluster)>capacity) {
+	ALIHLTERRORGUARD(1,"too little space to write cluster output block");
+	return -ENOSPC;
+      }
+      AliHLTTPCRawClusterData* blockout=reinterpret_cast<AliHLTTPCRawClusterData*>(outputPtr+size);
+      blockout->fVersion=0;
+      blockout->fCount=0;
+      vector<AliHLTUInt32_t>::const_iterator clusterID=collection->begin();
+      if (clusterID!=collection->end()) {
+	std::map<AliHLTUInt32_t, AliHLTTPCRawSpacePointProperties>::const_iterator cl=fClusters.find(*clusterID);
+	for (; clusterID!=collection->end(); clusterID++, cl++) {
+	  if (cl->first!=*clusterID) cl=fClusters.find(*clusterID);
+	  if (cl==fClusters.end() || cl->second.Data()==NULL) continue;
+	  AliHLTTPCRawCluster& c=blockout->fClusters[blockout->fCount];
+	  int padrow=cl->second.Data()->GetPadRow();
+	  padrow+=AliHLTTPCTransform::GetFirstRow(part);
+	  c.SetPadRow(padrow);
+	  c.SetCharge(cl->second.Data()->GetCharge());
+	  float pad =cl->second.Data()->GetPad();
+	  float time =cl->second.Data()->GetTime();
+	  float sigmaY2=cl->second.Data()->GetSigmaY2();
+	  float sigmaZ2=cl->second.Data()->GetSigmaZ2();
+	  sigmaY2-=pad*pad;
+	  sigmaZ2-=time*time;
+	  c.SetPad(pad);  
+	  c.SetTime(time);
+	  c.SetSigmaY2(sigmaY2);
+	  c.SetSigmaZ2(sigmaZ2);
+	  c.SetQMax(cl->second.Data()->GetQMax());
+	  blockout->fCount++;
+	}
+      }
+      AliHLTComponent_BlockData bd;
+      AliHLTComponent::FillBlockData(bd);
+      bd.fOffset        = size;
+      bd.fSize          = sizeof(AliHLTTPCRawClusterData)+blockout->fCount*sizeof(AliHLTTPCRawCluster);
+      bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(slice, slice, part, part);
+      bd.fDataType      = AliHLTTPCDefinitions::fgkRawClustersDataType;
+      outputBlocks.push_back(bd);
+      
+      size += bd.fSize;
+    }
+  }
+
+  if (iResult<0) return iResult;
+  return size;
 }
 
 AliHLTTPCRawSpacePointContainer::AliHLTTPCRawSpacePointProperties::AliHLTTPCRawSpacePointProperties()
