@@ -2061,6 +2061,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     // do not use ALIHLTCOMPONENT_DA_STOPWATCH(); macro
     // in order to avoid 'shadowed variable' warning
     AliHLTStopwatchGuard swguard2(fpStopwatches!=NULL?reinterpret_cast<TStopwatch*>(fpStopwatches->At((int)kSWDA)):NULL);
+    AliHLTMisc::AliOnlineGuard onlineGuard;
     iResult=DoProcessing(evtData, blocks, trigData, outputPtr, size, blockData, edd);
   } // end of the scope of the stopwatch guard
   if (iResult>=0 && !bSkipDataProcessing) {
