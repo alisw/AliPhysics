@@ -957,7 +957,7 @@ Int_t AliTRDrawStream::ReadTrackingHeader(Int_t stack)
 	else {
 	  // done marker (so far only used to set trigger flag)
 	  fCurrTrgFlags[fCurrEquipmentId-kDDLOffset] |= 1 << (27 + stack);
-	  fCurrTrkFlags[(fCurrEquipmentId-kDDLOffset)*fgkNstacks + fCurrStack] = trackWord;
+	  fCurrTrkFlags[(fCurrEquipmentId-kDDLOffset)*fgkNstacks + stack] = trackWord;
 
 	  AliDebug(2, Form("tracking done marker: 0x%016llx, trigger flags: 0x%08x",
 			   trackWord, fCurrTrgFlags[fCurrEquipmentId-kDDLOffset]));
