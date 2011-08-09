@@ -76,6 +76,7 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCDataCheckerComponent.h"
 #include "AliHLTTPCHWCFEmulatorComponent.h"
 #include "AliHLTTPCHWCFConsistencyControlComponent.h"
+#include "AliHLTTPCDataCompressionComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCAgent)
@@ -119,6 +120,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     TString sinkClusterInput;
     TString sinkHWClusterInput;
     TString dEdXInput;
+    TString compressorInput;
     for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
       TString trackerInput;
       for (int part=iMinPart; part<=iMaxPart; part++) {
@@ -154,6 +156,9 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	TString hwcfemu;
 	hwcfemu.Form("TPC-HWCFEmu_%02d_%d", slice, part);
 	handler->CreateConfiguration(hwcfemu.Data(), "TPCHWClusterFinderEmulator", publisher.Data(), "-do-mc 1");
+	if (compressorInput.Length()>0) compressorInput+=" ";
+	compressorInput+=hwcfemu;
+
 	TString hwcf;
 	hwcf.Form("TPC-HWCF_%02d_%d", slice, part);
 	handler->CreateConfiguration(hwcf.Data(), "TPCHWClusterTransform",hwcfemu.Data(), "-publish-raw");
@@ -162,6 +167,8 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	trackerInput+=cf;
 	if (dEdXInput.Length()>0) dEdXInput+=" ";
 	dEdXInput+=cf;
+	if (compressorInput.Length()>0) compressorInput+=" ";
+	compressorInput+=hwcf;
 	if (sinkClusterInput.Length()>0) sinkClusterInput+=" ";
 	sinkClusterInput+=cf;
 	if (sinkHWClusterInput.Length()>0) sinkHWClusterInput+=" ";
@@ -180,10 +187,16 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     // GlobalMerger component
     handler->CreateConfiguration("TPC-globalmerger","TPCCAGlobalMerger",mergerInput.Data(),"");
 
+    // dEdx component
     if (dEdXInput.Length()>0) dEdXInput+=" ";
     dEdXInput+="TPC-globalmerger";
 
     handler->CreateConfiguration("TPC-dEdx","TPCdEdx",dEdXInput.Data(),"");
+
+    // compression component
+    if (compressorInput.Length()>0) compressorInput+=" ";
+    compressorInput+="TPC-globalmerger";
+    handler->CreateConfiguration("TPC-compression", "TPCDataCompressor", compressorInput.Data(),"");
 
     // the esd converter configuration
     TString converterInput="TPC-globalmerger";
@@ -320,6 +333,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCDataCheckerComponent);
   pHandler->AddComponent(new AliHLTTPCHWCFEmulatorComponent);
 //  pHandler->AddComponent(new AliHLTTPCHWCFConsistencyControlComponent);  //FIXME: Causes crash: https://savannah.cern.ch/bugs/?83677
+  pHandler->AddComponent(new AliHLTTPCDataCompressionComponent);
   return 0;
 }
 
