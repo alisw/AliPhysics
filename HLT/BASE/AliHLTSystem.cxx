@@ -853,6 +853,7 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
 	    AliHLTOUT* pHLTOUT=RequestHLTOUT();
 	    if (pHLTOUT) {
 	      pHLTOUT->AddSubCollection(pTask);
+	      ReleaseHLTOUT(pHLTOUT);
 	    } else {
 	      HLTWarning("no HLTOUT instance available, output blocks of the chain are ignored");
 	    }
