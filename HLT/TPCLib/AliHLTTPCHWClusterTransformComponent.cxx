@@ -250,7 +250,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	 }
 
 	 AliHLTTPCSpacePointData& c=outPtr->fSpacePoints[outPtr->fSpacePointCnt];
-	 int padrow=fpDecoder->GetPadRow(cl) + AliHLTTPCTransform::GetFirstRow(minPartition);
+	 int padrow=fpDecoder->GetPadRow(cl);
 	 if (padrow<0) {
 	   // something wrong here, padrow is stored in the cluster header
 	   // word which has bit pattern 0x3 in bits bit 30 and 31 which was
@@ -258,6 +258,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	   ALIHLTERRORGUARD(1, "can not read cluster header word, skipping %d of %d cluster(s)", nofClusters-cl, nofClusters);
 	   break;
 	 }
+	 padrow+=AliHLTTPCTransform::GetFirstRow(minPartition);
 	 AliHLTUInt32_t charge=fpDecoder->GetCharge(cl);
 	 // skip clusters below threshold  
 	 if( charge<fChargeThreshold ) continue;  
@@ -334,13 +335,14 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	     break;
 	   }
 	   AliHLTTPCRawCluster &c = outputRaw->fClusters[outputRaw->fCount];
-	   int padrow=fpDecoder->GetPadRow(cl) + AliHLTTPCTransform::GetFirstRow(minPartition);
+	   int padrow=fpDecoder->GetPadRow(cl);
 	   if (padrow<0) {
 	     // something wrong here, padrow is stored in the cluster header
 	     // word which has bit pattern 0x3 in bits bit 30 and 31 which was
 	     // not recognized
 	     break;
 	   }
+	   padrow+=AliHLTTPCTransform::GetFirstRow(minPartition);
 	   AliHLTUInt32_t charge= fpDecoder->GetCharge(cl);
 	   // skip clusters below threshold  
 	   if( charge<fChargeThreshold ) continue;  
