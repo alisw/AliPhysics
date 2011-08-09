@@ -69,10 +69,7 @@ AliHLTTPCSpacePointContainer::~AliHLTTPCSpacePointContainer()
 {
   // destructor
 
-  for (std::map<AliHLTUInt32_t, vector<AliHLTUInt32_t>*>::iterator selection=fSelections.begin();
-       selection!=fSelections.end(); selection++) {
-    if (selection->second) delete selection->second;
-  }
+  Clear();
 }
 
 int AliHLTTPCSpacePointContainer::AddInputBlock(const AliHLTComponentBlockData* pDesc)
@@ -250,6 +247,14 @@ float AliHLTTPCSpacePointContainer::GetCharge(AliHLTUInt32_t clusterID) const
   return fClusters.find(clusterID)->second.Data()->fCharge;
 }
 
+float AliHLTTPCSpacePointContainer::GetMaxSignal(AliHLTUInt32_t clusterID) const
+{
+  // get charge
+  if (fClusters.find(clusterID)==fClusters.end() ||
+      fClusters.find(clusterID)->second.Data()==NULL) return 0.0;
+  return fClusters.find(clusterID)->second.Data()->fQMax;
+}
+
 float AliHLTTPCSpacePointContainer::GetPhi(AliHLTUInt32_t clusterID) const
 {
   // get charge
@@ -260,9 +265,18 @@ float AliHLTTPCSpacePointContainer::GetPhi(AliHLTUInt32_t clusterID) const
   return ( slice + 0.5 ) * TMath::Pi() / 9.0;
 }
 
-void AliHLTTPCSpacePointContainer::Clear(Option_t * /*option*/)
+void AliHLTTPCSpacePointContainer::Clear(Option_t * option)
 {
   // clear the object and reset pointer references
+  fClusters.clear();
+
+  for (std::map<AliHLTUInt32_t, vector<AliHLTUInt32_t>*>::iterator selection=fSelections.begin();
+       selection!=fSelections.end(); selection++) {
+    if (selection->second) delete selection->second;
+  }
+  fSelections.clear();
+
+  AliHLTSpacePointContainer::Clear(option);
 }
 
 void AliHLTTPCSpacePointContainer::Print(ostream& out, Option_t */*option*/) const
@@ -431,6 +445,8 @@ void AliHLTTPCSpacePointContainer::AliHLTTPCSpacePointProperties::Print(ostream&
   }
   const AliHLTTPCSpacePointData* data=Data();
   out << " " << data->fX << " " << data->fY << " " << data->fZ << " " << (UInt_t)data->fPadRow
+      << " " << data->GetSigmaY2() << " "  << data->GetSigmaZ2()
+      << " " << data->GetCharge() << " "  << data->GetQMax()
       << " " << fTrackId << " " << fMCId << " " << fUsed;
 }
 

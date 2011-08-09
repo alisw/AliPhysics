@@ -46,6 +46,7 @@ class AliHLTTPCRawSpacePointContainer : public AliHLTSpacePointContainer
   virtual float GetZ(AliHLTUInt32_t clusterID) const;
   virtual float GetZWidth(AliHLTUInt32_t clusterID) const;
   virtual float GetCharge(AliHLTUInt32_t clusterID) const;
+  virtual float GetMaxSignal(AliHLTUInt32_t clusterID) const;
   virtual float GetPhi(AliHLTUInt32_t clusterID) const;
 
   /// add input block to the collection

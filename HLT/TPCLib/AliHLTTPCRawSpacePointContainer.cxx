@@ -69,11 +69,7 @@ AliHLTTPCRawSpacePointContainer& AliHLTTPCRawSpacePointContainer::operator=(cons
 AliHLTTPCRawSpacePointContainer::~AliHLTTPCRawSpacePointContainer()
 {
   // destructor
-
-  for (std::map<AliHLTUInt32_t, vector<AliHLTUInt32_t>*>::iterator selection=fSelections.begin();
-       selection!=fSelections.end(); selection++) {
-    if (selection->second) delete selection->second;
-  }
+  Clear();
 }
 
 int AliHLTTPCRawSpacePointContainer::AddInputBlock(const AliHLTComponentBlockData* pDesc)
@@ -221,6 +217,14 @@ float AliHLTTPCRawSpacePointContainer::GetCharge(AliHLTUInt32_t clusterID) const
   return fClusters.find(clusterID)->second.Data()->GetCharge();
 }
 
+float AliHLTTPCRawSpacePointContainer::GetMaxSignal(AliHLTUInt32_t clusterID) const
+{
+  // get charge
+  if (fClusters.find(clusterID)==fClusters.end() ||
+      fClusters.find(clusterID)->second.Data()==NULL) return 0.0;
+  return fClusters.find(clusterID)->second.Data()->GetQMax();
+}
+
 float AliHLTTPCRawSpacePointContainer::GetPhi(AliHLTUInt32_t clusterID) const
 {
   // get charge
@@ -231,9 +235,18 @@ float AliHLTTPCRawSpacePointContainer::GetPhi(AliHLTUInt32_t clusterID) const
   return ( slice + 0.5 ) * TMath::Pi() / 9.0;
 }
 
-void AliHLTTPCRawSpacePointContainer::Clear(Option_t * /*option*/)
+void AliHLTTPCRawSpacePointContainer::Clear(Option_t * option)
 {
   // clear the object and reset pointer references
+  fClusters.clear();
+
+  for (std::map<AliHLTUInt32_t, vector<AliHLTUInt32_t>*>::iterator selection=fSelections.begin();
+       selection!=fSelections.end(); selection++) {
+    if (selection->second) delete selection->second;
+  }
+  fSelections.clear();
+
+  AliHLTSpacePointContainer::Clear(option);
 }
 
 void AliHLTTPCRawSpacePointContainer::Print(ostream& out, Option_t */*option*/) const
@@ -402,6 +415,8 @@ void AliHLTTPCRawSpacePointContainer::AliHLTTPCRawSpacePointProperties::Print(os
   }
   const AliHLTTPCRawCluster* data=Data();
   out << " " << data->GetPadRow() << " " << data->GetPad() << " " << data->GetTime()
+      << " " << data->GetSigmaY2() << " "  << data->GetSigmaZ2()
+      << " " << data->GetCharge() << " "  << data->GetQMax()
       << " " << fTrackId << " " << fMCId << " " << fUsed;
 }
 
