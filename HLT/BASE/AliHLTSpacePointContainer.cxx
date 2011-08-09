@@ -401,11 +401,11 @@ TTree* AliHLTSpacePointContainer::FillTree(const char* name, const char* title)
   std::auto_ptr<TTree> tree(new TTree(treename, treetitle));
   if (!tree.get()) return NULL;
 
-  const unsigned dimension=5;
+  const unsigned dimension=8;
   float values[dimension];
   memset(values, 0, sizeof(values));
   const char* names[dimension]={
-    "x", "y", "z", "charge", "alpha"
+    "x", "y", "z", "sigmaY2", "sigmaZ2", "charge", "qmax", "alpha"
   };
 
   for (unsigned i=0; i<dimension; i++) {
@@ -421,7 +421,10 @@ TTree* AliHLTSpacePointContainer::FillTree(const char* name, const char* title)
     values[pos++]=GetX(*clusterID);
     values[pos++]=GetY(*clusterID);
     values[pos++]=GetZ(*clusterID);
+    values[pos++]=GetYWidth(*clusterID);
+    values[pos++]=GetZWidth(*clusterID);
     values[pos++]=GetCharge(*clusterID);
+    values[pos++]=GetMaxSignal(*clusterID);
     values[pos++]=GetPhi(*clusterID);
 
     tree->Fill();

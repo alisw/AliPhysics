@@ -57,6 +57,7 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
   virtual float GetZ(AliHLTUInt32_t clusterID) const = 0;
   virtual float GetZWidth(AliHLTUInt32_t clusterID) const = 0;
   virtual float GetCharge(AliHLTUInt32_t clusterID) const = 0;
+  virtual float GetMaxSignal(AliHLTUInt32_t /*clusterID*/) const {return 0.0;}
   virtual float GetPhi(AliHLTUInt32_t /*clusterID*/) const {return 0.0;}
 
   /// create a collection of clusters for a space point mask
