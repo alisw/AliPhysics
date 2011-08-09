@@ -79,6 +79,7 @@ AliQAManager::AliQAManager() :
   fDetectorsW("ALL"), 
   fESD(NULL), 
   fESDTree(NULL),
+  fEventInfo(NULL), 
   fGAliceFileName(""), 
   fFirstEvent(0),        
   fMaxEvents(0),   
@@ -115,6 +116,7 @@ AliQAManager::AliQAManager(AliQAv1::MODE_t mode, const Char_t* gAliceFilename) :
   fDetectorsW("ALL"), 
   fESD(NULL), 
   fESDTree(NULL),
+  fEventInfo(NULL),  
   fGAliceFileName(gAliceFilename), 
   fFirstEvent(0),        
   fMaxEvents(0),   
@@ -151,6 +153,7 @@ AliQAManager::AliQAManager(const AliQAManager & qas) :
   fDetectorsW(qas.fDetectorsW), 
   fESD(NULL), 
   fESDTree(NULL), 
+  fEventInfo(NULL), 
   fGAliceFileName(qas.fGAliceFileName), 
   fFirstEvent(qas.fFirstEvent),        
   fMaxEvents(qas.fMaxEvents),    
@@ -207,53 +210,58 @@ AliQAManager::~AliQAManager()
 //_____________________________________________________________________________
 Bool_t AliQAManager::DoIt(const AliQAv1::TASKINDEX_t taskIndex)
 {
-  // Runs all the QA data Maker for every detector
-		
+    // Runs all the QA data Maker for every detector
+  
   Bool_t rv = kFALSE ;
-  // Fill QA data in event loop 
+    // Fill QA data in event loop 
   for (UInt_t iEvent = fFirstEvent ; iEvent < (UInt_t)fMaxEvents ; iEvent++) {
     fCurrentEvent++ ; 
-    // Get the event
+      // Get the event
     if ( iEvent%10 == 0  ) 
       AliDebug(AliQAv1::GetQADebugLevel(), Form("processing event %d", iEvent));
     if ( taskIndex == AliQAv1::kRAWS ) {
       if ( !fRawReader->NextEvent() )
-	break ;
+        break ;
     } else if ( taskIndex == AliQAv1::kESDS ) {
       if ( fESDTree->GetEntry(iEvent) == 0 )
-	break ;
+        break ;
     } else {
       if ( fRunLoader->GetEvent(iEvent) != 0 )
-	break ;
+        break ;
     }
-    // loop  over active loaders
+      // loop  over active loaders
+    TString detList ; 
+    if ( GetEventInfo()) 
+      detList = GetEventInfo()->GetTriggerCluster() ; 
     for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
-      if (IsSelected(AliQAv1::GetDetName(iDet))) {
-	AliQADataMaker * qadm = GetQADataMaker(iDet) ;
-	if (!qadm) continue; // This detector doesn't have any QA (for example, HLT)
-	if ( qadm->IsCycleDone() ) {
+      if (!detList.IsNull() && !detList.Contains(AliQAv1::GetDetName(iDet)))
+        continue ;
+      if (IsSelected(AliQAv1::GetDetName(iDet)) ){
+        AliQADataMaker * qadm = GetQADataMaker(iDet) ;
+        if (!qadm) continue; // This detector doesn't have any QA (for example, HLT)
+        if ( qadm->IsCycleDone() ) {
           qadm->EndOfCycle(taskIndex) ;
-	}
-	TTree * data = NULL ; 
-	AliLoader* loader = GetLoader(qadm->GetUniqueID());
-	switch (taskIndex) {
-	case AliQAv1::kNULLTASKINDEX : 
-	  break ; 
-	case AliQAv1::kRAWS :
-	  qadm->Exec(taskIndex, fRawReader) ; 
-	  break ; 
-	case AliQAv1::kHITS :
-	  if( loader ) {
-	    loader->LoadHits() ; 
-	    data = loader->TreeH() ; 
-	    if ( ! data ) {
-	      AliWarning(Form(" Hit Tree not found for  %s", AliQAv1::GetDetName(iDet))) ; 
-	      break ; 
-	    } 
-	    qadm->Exec(taskIndex, data) ;
-	  } 
-	  break ;
-	case AliQAv1::kSDIGITS :
+        }
+        TTree * data = NULL ; 
+        AliLoader* loader = GetLoader(qadm->GetUniqueID());
+        switch (taskIndex) {
+          case AliQAv1::kNULLTASKINDEX : 
+            break ; 
+          case AliQAv1::kRAWS :
+            qadm->Exec(taskIndex, fRawReader) ; 
+            break ; 
+          case AliQAv1::kHITS :
+            if( loader ) {
+              loader->LoadHits() ; 
+              data = loader->TreeH() ; 
+              if ( ! data ) {
+                AliWarning(Form(" Hit Tree not found for  %s", AliQAv1::GetDetName(iDet))) ; 
+                break ; 
+              } 
+              qadm->Exec(taskIndex, data) ;
+            } 
+            break ;
+          case AliQAv1::kSDIGITS :
           {
             
             TString fileName(Form("%s.SDigits.root", AliQAv1::GetDetName(iDet))) ; 
@@ -269,61 +277,61 @@ Bool_t AliQAManager::DoIt(const AliQAv1::TASKINDEX_t taskIndex)
               }
             }
           }
-	  break; 
-	case AliQAv1::kDIGITS :
-	  if( loader ) {      
-	    loader->LoadDigits() ; 
-	    data = loader->TreeD() ; 
-	    if ( ! data ) {
-	      AliWarning(Form(" Digit Tree not found for  %s", AliQAv1::GetDetName(iDet))) ; 
-	      break ; 
-	    } 
-	    qadm->Exec(taskIndex, data) ;
-	  }
-	  break;
-	case AliQAv1::kDIGITSR :
-	  if( loader ) {      
-	    loader->LoadDigits() ; 
-	    data = loader->TreeD() ; 
-	    if ( ! data ) {
-	      AliWarning(Form(" Digit Tree not found for  %s", AliQAv1::GetDetName(iDet))) ; 
-	      break ; 
-	    } 
-	    qadm->Exec(taskIndex, data) ;
-	  }
-	  break; 
-	case AliQAv1::kRECPOINTS :
-	  if( loader ) {      
-	    loader->LoadRecPoints() ; 
-	    data = loader->TreeR() ; 
-	    if (!data) {
-	      AliWarning(Form("RecPoints not found for %s", AliQAv1::GetDetName(iDet))) ; 
-	      break ; 
-	    } 
-	    qadm->Exec(taskIndex, data) ; 
-	  }
-	  break; 
-	case AliQAv1::kTRACKSEGMENTS :
-	  break; 
-	case AliQAv1::kRECPARTICLES :
-	  break; 
-	case AliQAv1::kESDS :
-	  qadm->Exec(taskIndex, fESD) ;
-	  break; 
-	case AliQAv1::kNTASKINDEX :
-	  break; 
-	} //task switch
+            break; 
+          case AliQAv1::kDIGITS :
+            if( loader ) {      
+              loader->LoadDigits() ; 
+              data = loader->TreeD() ; 
+              if ( ! data ) {
+                AliWarning(Form(" Digit Tree not found for  %s", AliQAv1::GetDetName(iDet))) ; 
+                break ; 
+              } 
+              qadm->Exec(taskIndex, data) ;
+            }
+            break;
+          case AliQAv1::kDIGITSR :
+            if( loader ) {      
+              loader->LoadDigits() ; 
+              data = loader->TreeD() ; 
+              if ( ! data ) {
+                AliWarning(Form(" Digit Tree not found for  %s", AliQAv1::GetDetName(iDet))) ; 
+                break ; 
+              } 
+              qadm->Exec(taskIndex, data) ;
+            }
+            break; 
+          case AliQAv1::kRECPOINTS :
+            if( loader ) {      
+              loader->LoadRecPoints() ; 
+              data = loader->TreeR() ; 
+              if (!data) {
+                AliWarning(Form("RecPoints not found for %s", AliQAv1::GetDetName(iDet))) ; 
+                break ; 
+              } 
+              qadm->Exec(taskIndex, data) ; 
+            }
+            break; 
+          case AliQAv1::kTRACKSEGMENTS :
+            break; 
+          case AliQAv1::kRECPARTICLES :
+            break; 
+          case AliQAv1::kESDS :
+            qadm->Exec(taskIndex, fESD) ;
+            break; 
+          case AliQAv1::kNTASKINDEX :
+            break; 
+        } //task switch
       }
     } // detector loop
     Increment(taskIndex) ; 
   } // event loop	
-  // Save QA data for all detectors
-
+    // Save QA data for all detectors
+  
   EndOfCycle() ; 
-	
+  
   if ( taskIndex == AliQAv1::kRAWS ) 
     fRawReader->RewindEvents() ;
-
+  
   return rv ; 
 }
 
@@ -1281,12 +1289,16 @@ TString AliQAManager::Run(const Char_t * detectors, const AliQAv1::TASKINDEX_t t
 //_____________________________________________________________________________
 void AliQAManager::RunOneEvent(AliRawReader * rawReader) 
 {
-  //Runs all the QA data Maker for Raws only and on one event only (event loop done by calling method)
+    //Runs all the QA data Maker for Raws only and on one event only (event loop done by calling method)
+  
   if ( ! rawReader ) 
     return ; 
   if (fTasks.Contains(Form("%d", AliQAv1::kRAWS))){
+    TString detList ; 
+    if ( GetEventInfo()) 
+      detList = GetEventInfo()->GetTriggerCluster() ; 
     for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-      if (!IsSelected(AliQAv1::GetDetName(iDet))) 
+      if (!IsSelected(AliQAv1::GetDetName(iDet)) || (!detList.IsNull() && !detList.Contains(AliQAv1::GetDetName(iDet)))) 
         continue;
       AliQADataMaker *qadm = GetQADataMaker(iDet);  
       if (!qadm) 
@@ -1296,7 +1308,7 @@ void AliQAManager::RunOneEvent(AliRawReader * rawReader)
       }
       qadm->SetEventSpecie(fEventSpecie) ;  
       if ( qadm->GetRecoParam() ) 
-	if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault) 
+        if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault) 
           qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
       qadm->Exec(AliQAv1::kRAWS, rawReader) ;
     }
@@ -1306,18 +1318,21 @@ void AliQAManager::RunOneEvent(AliRawReader * rawReader)
 //_____________________________________________________________________________
 void AliQAManager::RunOneEvent(AliESDEvent *& esd, AliESDEvent *& hltesd) 
 {
-  //Runs all the QA data Maker for ESDs only and on one event only (event loop done by calling method)
+    //Runs all the QA data Maker for ESDs only and on one event only (event loop done by calling method)
 	
   if (fTasks.Contains(Form("%d", AliQAv1::kESDS))) {
+    TString detList ; 
+    if ( GetEventInfo()) 
+      detList = GetEventInfo()->GetTriggerCluster() ; 
     for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-      if (!IsSelected(AliQAv1::GetDetName(iDet))) 
+      if (!IsSelected(AliQAv1::GetDetName(iDet)) || (!detList.IsNull() && !detList.Contains(AliQAv1::GetDetName(iDet)))) 
         continue;
       AliQADataMaker *qadm = GetQADataMaker(iDet);  
       if (!qadm) 
         continue;
       qadm->SetEventSpecie(fEventSpecie) ;  
       if ( qadm->GetRecoParam() ) 
-	if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault)  
+        if ( AliRecoParam::Convert(qadm->GetRecoParam()->GetEventSpecie()) != AliRecoParam::kDefault)  
           qadm->SetEventSpecie(qadm->GetRecoParam()->GetEventSpecie()) ; 
       if ( qadm->IsCycleDone() ) {
         qadm->EndOfCycle() ;
@@ -1337,11 +1352,17 @@ void AliQAManager::RunOneEvent(AliESDEvent *& esd, AliESDEvent *& hltesd)
 //_____________________________________________________________________________
 void AliQAManager::RunOneEventInOneDetector(Int_t det, TTree * tree) 
 {
-  // Runs all the QA data Maker for ESDs only and on one event only (event loop done by calling method)
+    // Runs all the QA data Maker for ESDs only and on one event only (event loop done by calling method)
   
+  TString detList ; 
+  if ( GetEventInfo()) 
+    detList = GetEventInfo()->GetTriggerCluster() ; 
+  if (!detList.IsNull() && !detList.Contains(AliQAv1::GetDetName(det)))
+    return ;
+
   TString test(tree->GetName()) ; 
   if (fTasks.Contains(Form("%d", AliQAv1::kRECPOINTS))) {
-    if (IsSelected(AliQAv1::GetDetName(det))) {
+    if (IsSelected(AliQAv1::GetDetName(det))) {      
       AliQADataMaker *qadm = GetQADataMaker(det);  
       if (qadm) { 
         qadm->SetEventSpecie(fEventSpecie) ;  

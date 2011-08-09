@@ -1801,6 +1801,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	reconstructor->GetPidSettings(&pid);
 	reconstructor->SetEventInfo(&fEventInfo);
         if (fRunQA) {
+          AliQAManager::QAManager()->SetEventInfo(&fEventInfo) ;
           AliQAManager::QAManager()->SetRecoParam(iDet, par) ; 
           if (par) AliQAManager::QAManager()->SetEventSpecie(AliRecoParam::Convert(par->GetEventSpecie())) ;
         }

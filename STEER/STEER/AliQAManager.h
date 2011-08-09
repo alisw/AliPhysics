@@ -24,6 +24,7 @@
 #include "AliLoader.h"
 #include "AliCDBManager.h"
 #include "AliRecoParam.h"
+#include "AliEventInfo.h"
  
 class TCanvas ; 
 class AliESDEvent ; 
@@ -48,6 +49,7 @@ public:
   void             EndOfCycle(TString detectors) ; 
 	UInt_t           GetCurrentEvent() const { return fCurrentEvent ; }
 	TObjArray *      GetFromOCDB(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, const Char_t * year) const ; 
+  const AliEventInfo *   GetEventInfo() const { return fEventInfo ; }
   AliRecoParam::EventSpecie_t GetEventSpecieFromESD() ;
   TCanvas **       GetImage(Char_t * detName) ;
   const Char_t *   GetMode(){ return fMode.Data() ; }
@@ -75,6 +77,7 @@ public:
   void             SetCheckerExternParam(AliQAv1::DETECTORINDEX_t det, TList * parameterList) ;  
 	void             SetCycleLength(const AliQAv1::DETECTORINDEX_t det, const Int_t cycle) { fQACycles[det] = cycle ; }
 	void             SetWriteExpert(const AliQAv1::DETECTORINDEX_t det) { fQAWriteExpert[det] = kTRUE ; }
+  void             SetEventInfo(AliEventInfo *info) { fEventInfo = info ;} 
 	void             SetEventRange(UInt_t first, UInt_t last) { fFirstEvent = first ; fMaxEvents = last - first + 1 ; }    
   void             SetEventSpecie(AliRecoParam::EventSpecie_t es) ; 
 	void             SetFirsEvent(UInt_t first) { fFirstEvent = first ; }      
@@ -106,6 +109,7 @@ private:
 	TString                     fDetectorsW ;                   //! list of active detectors with QA implemented 
 	AliESDEvent *               fESD ;                          //! current ESD
 	TTree *                     fESDTree ;                      //! current ESD Tree
+  AliEventInfo *              fEventInfo ;                    //! info on the current event  
 	TString                     fGAliceFileName ;               //! name of the galice file
 	UInt_t                      fFirstEvent ;                   //! first event to process
 	Long64_t                    fMaxEvents ;                    //! number of events to process
