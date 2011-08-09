@@ -837,7 +837,7 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     AliEMCALRecPoint *recPoint = (AliEMCALRecPoint*) recPoints->At(i);
     
     const Int_t ncells = recPoint->GetMultiplicity();
-    Int_t ncells_true = 0;
+    Int_t ncellsTrue = 0;
     
     if(recPoint->GetEnergy() < fRecParam->GetClusteringThreshold()) continue;
     
@@ -845,16 +845,41 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     UShort_t   absIds[ncells];  
     Double32_t ratios[ncells];
     
+    //For later check embedding
+    AliAODInputHandler* aodIH = dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+
     for (Int_t c = 0; c < ncells; c++) {
       AliEMCALDigit *digit = (AliEMCALDigit*) digitsArr->At(recPoint->GetDigitsList()[c]);
       
-      absIds[ncells_true] = digit->GetId();
-      ratios[ncells_true] = recPoint->GetEnergiesList()[c]/digit->GetAmplitude();
+      absIds[ncellsTrue] = digit->GetId();
+      ratios[ncellsTrue] = recPoint->GetEnergiesList()[c]/digit->GetAmplitude();
       
-      if (ratios[ncells_true] > 0.001) ncells_true++;
-    }
+      Float_t ratioOrg = ratios[ncellsTrue];
+      
+      // In case of embedding, fill ratio with amount of signal, 
+      // It will not work for unfolding case
+
+      if (aodIH && aodIH->GetMergeEvents()) {
+       
+        //AliVCaloCells* inEMCALCells = InputEvent()->GetEMCALCells();
+        AliVCaloCells* meEMCALCells = aodIH->GetEventToMerge()->GetEMCALCells();
+        AliVCaloCells* ouEMCALCells = AODEvent()->GetEMCALCells();
+        
+        Float_t sigAmplitude = meEMCALCells->GetCellAmplitude(absIds[ncellsTrue]);
+        //Float_t bkgAmplitude = inEMCALCells->GetCellAmplitude(absIds[ncellsTrue]);
+        Float_t sumAmplitude = ouEMCALCells->GetCellAmplitude(absIds[ncellsTrue]);
+        //printf("\t AbsID %d, amplitude : bkg %f, sigAmplitude %f, summed %f - %f\n",absIds[ncellsTrue], bkgAmplitude, sigAmplitude, sumAmplitude, digit->GetAmplitude());
+        
+        if(sumAmplitude > 0) ratios[ncellsTrue] = sigAmplitude/sumAmplitude;
+        //printf("\t \t ratio %f\n",ratios[ncellsTrue]);
+        
+      }//Embedding
+      
+      if ( ratioOrg > 0.001) ncellsTrue++;
+
+    }// cluster cell loop
     
-    if (ncells_true < 1) {
+    if (ncellsTrue < 1) {
       printf("AliAnalysisTaskEMCALClusterize::RecPoints2Clusters() - Skipping cluster with no cells avobe threshold E = %f, ncells %d\n",recPoint->GetEnergy(), ncells);
       continue;
     }
@@ -875,7 +900,7 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     clus->SetType(AliVCluster::kEMCALClusterv1);
     clus->SetE(recPoint->GetEnergy());
     clus->SetPosition(g);
-    clus->SetNCells(ncells_true);
+    clus->SetNCells(ncellsTrue);
     clus->SetCellsAbsId(absIds);
     clus->SetCellsAmplitudeFraction(ratios);
     clus->SetDispersion(recPoint->GetDispersion());
