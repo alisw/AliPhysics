@@ -1347,6 +1347,7 @@ void AliUnfolding::DrawResults(TH2* correlation, TH1* efficiency, TH1* measured,
   //meas2->GetXaxis()->SetLimits(0,fgMaxInput);
   meas2->SetBit(kCannotPick);
   DrawGuess(params, presult, pres, ppen, reuseHists,unfolded);
+  delete [] params;
 }
 //____________________________________________________________________
 void AliUnfolding::RedrawInteractive() {
@@ -1506,7 +1507,9 @@ TH1* AliUnfolding::GetResidualsPlot(TH1* corrected)
     params[i] = TMath::Sqrt(TMath::Abs(corrected->GetBinContent(i+1)*(*fgEfficiency)(i)));
 
 
-  return GetResidualsPlot(params);
+  TH1 * plot = GetResidualsPlot(params);
+  delete [] params;
+  return plot;
 }
 
 //____________________________________________________________________
