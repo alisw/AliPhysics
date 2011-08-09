@@ -472,10 +472,19 @@ int AliHLTTPCdEdxComponent::DoEvent
         break;
       }
 
+      //Old method
+      /*
       tTPC.CookdEdx( 0.02, 0.6 );      
       outPtr[0] = tTPC.GetdEdx();
       outPtr[1] = tTPC.GetSDEDX(0);
       outPtr[2] = tTPC.GetNCDEDX(0);
+      */
+
+      //New method
+      outPtr[0] = tTPC.CookdEdxAnalytical(0.02,0.6,1,0,159,0);
+      outPtr[1] = 0.;
+      outPtr[2] = 159;
+      
       outPtr+=3;
       outSize+=3*sizeof( AliHLTFloat32_t );    
       outBlock.fSize+=3*sizeof( AliHLTFloat32_t );  
