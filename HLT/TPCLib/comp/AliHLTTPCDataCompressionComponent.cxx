@@ -79,7 +79,7 @@ void AliHLTTPCDataCompressionComponent::GetOutputDataSize( unsigned long& constB
 {
   /// inherited from AliHLTComponent: output data size estimator
   constBase=0;
-  inputMultiplier=2.;
+  inputMultiplier=1.;
 }
 
 AliHLTComponent* AliHLTTPCDataCompressionComponent::Spawn()
