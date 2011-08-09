@@ -844,6 +844,24 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
 	if ((iResult=Run(nofEvents, 0, trgMask, timestamp, eventtype))<0) SetStatusFlags(kError);
       }
       }
+
+      // add the current HLTOUT task to the collection
+      if (fpHLTOUTTask) {
+	AliHLTOUT* pTask=dynamic_cast<AliHLTOUT*>(fpHLTOUTTask);
+	if (pTask && (iResult=pTask->Init())>=0) {
+	  if (pTask->GetNofDataBlocks()>0) {
+	    AliHLTOUT* pHLTOUT=RequestHLTOUT();
+	    if (pHLTOUT) {
+	      pHLTOUT->AddSubCollection(pTask);
+	    } else {
+	      HLTWarning("no HLTOUT instance available, output blocks of the chain are ignored");
+	    }
+	  }
+	} else {
+	  HLTWarning("can not initialize HLTOUT sub collection %s for reconstruction chain (%d), data blocks are lost", pTask?fpHLTOUTTask->GetName():"nil", iResult);
+	  iResult=0;
+	}
+      }
     } else {
       HLTError("wrong state %#x, required flags %#x", GetStatusFlags(), kReady);
     }
@@ -875,20 +893,6 @@ int AliHLTSystem::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd)
   if (!pHLTOUT) return -EINVAL;
   HLTDebug("processing %d HLT data blocks", pHLTOUT->GetNofDataBlocks());
 
-  // add the current HLTOUT task to the collection
-  if (fpHLTOUTTask) {
-    AliHLTOUT* pTask=dynamic_cast<AliHLTOUT*>(fpHLTOUTTask);
-    if (pTask && (iResult=pTask->Init())>=0) {
-      if (pTask->GetNofDataBlocks()>0) {
-	pHLTOUT->AddSubCollection(pTask);
-      }
-    } else {
-      HLTWarning("can not initialize HLTOUT sub collection %s for reconstruction chain (%d), data blocks are lost", pTask?fpHLTOUTTask->GetName():"nil", iResult);
-      iResult=0;
-    }
-  }
-
-  
   //
   // process all kChain handlers first
   //
