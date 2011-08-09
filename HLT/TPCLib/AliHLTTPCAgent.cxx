@@ -164,9 +164,9 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	handler->CreateConfiguration(hwcf.Data(), "TPCHWClusterTransform",hwcfemu.Data(), "-publish-raw");
 
 	if (trackerInput.Length()>0) trackerInput+=" ";
-	trackerInput+=cf;
+	trackerInput+=hwcf;
 	if (dEdXInput.Length()>0) dEdXInput+=" ";
-	dEdXInput+=cf;
+	dEdXInput+=hwcf;
 	if (compressorInput.Length()>0) compressorInput+=" ";
 	compressorInput+=hwcf;
 	if (sinkClusterInput.Length()>0) sinkClusterInput+=" ";
