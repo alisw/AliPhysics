@@ -276,7 +276,10 @@ class AliAODTrack : public AliVTrack {
   void SetUsedForPrimVtxFit(Bool_t used = kTRUE) { used ? SetBit(kUsedForPrimVtxFit) : ResetBit(kUsedForPrimVtxFit); }
 
   void SetIsTPCOnly(Bool_t b = kTRUE) { SetIsTPCConstrained(b); }// obsolete bad naming
+
   void SetIsTPCConstrained(Bool_t b = kTRUE) { b ? SetBit(kIsTPCConstrained) : ResetBit(kIsTPCConstrained); }
+  void SetIsHybridTPCConstrainedGlobal(Bool_t hybrid = kTRUE) { hybrid ? SetBit(kIsHybridTPCCG) : ResetBit(kIsHybridTPCCG); }
+
   void SetIsGlobalConstrained(Bool_t b = kTRUE) { b ? SetBit(kIsGlobalConstrained) : ResetBit(kIsGlobalConstrained); }
   void SetIsHybridGlobalConstrainedGlobal(Bool_t hybrid = kTRUE) { hybrid ? SetBit(kIsHybridGCG) : ResetBit(kIsHybridGCG); }
 
