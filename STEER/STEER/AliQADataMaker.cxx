@@ -721,8 +721,8 @@ TObjArray* AliQADataMaker::GetDataOfTrigClass(TObjArray *arr, int cloneID, TObjA
       if (!ob) continue;
       (*destS)[ih] = ob;
     }
+    destS->SetUniqueID(arr->GetUniqueID());
   } 
-  destS->SetUniqueID(arr->GetUniqueID());
   return destS;
   //
 }
