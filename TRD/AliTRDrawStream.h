@@ -55,7 +55,7 @@ class AliTRDrawStream : public TObject
   Bool_t NextDDL();
   Int_t NextChamber(AliTRDdigitsManager *digMgr);
   Int_t NextChamber(AliTRDdigitsManager *digMgr,
-		      UInt_t ** /* trackletContainer */, UShort_t ** /* errorContainer */) { AliError("Deprecated, use NextChamber(AliTRDdigitsManger*) instead!"); return NextChamber(digMgr); }
+  		      UInt_t ** /* trackletContainer */, UShort_t ** /* errorContainer */) { AliError("Deprecated, use NextChamber(AliTRDdigitsManger*) instead!"); return NextChamber(digMgr); }
 
   Bool_t ConnectTracklets(TTree *trklTree);
 
@@ -84,6 +84,7 @@ class AliTRDrawStream : public TObject
     kAdcDataAbort,
     kAdcChannelsMiss,
     kMissMcmHeaders,
+    kMissTpData,
     kLastErrorCode
   };
 
@@ -155,13 +156,14 @@ class AliTRDrawStream : public TObject
     ClassDef(AliTRDrawStats, 1);
   };
 
-  AliTRDrawStats fStats; 	     // event statistics, clearing must be done by the user
-
   AliTRDrawStats* GetStats() { return &fStats; }
   Int_t GetEventSize(Int_t sector)  const { return fStats.fStatsSector[sector].fBytes; }
   Int_t GetNTracklets(Int_t sector) const { return fStats.fStatsSector[sector].fNTracklets; }
   Int_t GetNMCMs(Int_t sector)      const { return fStats.fStatsSector[sector].fNMCMs; }
   Int_t GetNChannels(Int_t sector)  const { return fStats.fStatsSector[sector].fNChannels; }
+
+  ULong64_t GetTrkFlags(Int_t sector, Int_t stack) const { return fCurrTrkFlags[sector*fgkNstacks + stack]; }
+  UInt_t GetTriggerFlags(Int_t sector) const { return fCurrTrgFlags[sector]; }
 
   // raw data dumping
   void SetDumpMCM(Int_t det, Int_t rob, Int_t mcm, Bool_t dump = kTRUE);
@@ -239,6 +241,8 @@ class AliTRDrawStream : public TObject
   UInt_t fErrorFlags;                           // error flags used to steer subsequent reading
   char   fErrorBuffer[100];                     // buffer for error message
 
+  AliTRDrawStats fStats; 	     // event statistics, clearing must be done by the user
+
   UInt_t *fPayloadStart;                        // pointer to start of data payload
   UInt_t *fPayloadCurr;                         // pointer to current reading position in the payload
   Int_t   fPayloadSize;                         // size of the payload (in UInt_t words)
@@ -284,10 +288,12 @@ class AliTRDrawStream : public TObject
   // Tracking header
   UInt_t *fCurrTrkHeaderIndexWord;              // current tracking header index word
   UInt_t *fCurrTrkHeaderSize;                   // current tracking header index word
+  ULong64_t *fCurrTrkFlags;                     // current tracking done flags
 
   // Trigger header
   UInt_t *fCurrTrgHeaderIndexWord;              // current tracking header index word
   UInt_t *fCurrTrgHeaderSize;                   // current tracking header index word
+  UInt_t *fCurrTrgFlags;			// current trigger flags of all sectors
 
   // Stack header
   UInt_t *fCurrStackIndexWord;			// current stack index words
