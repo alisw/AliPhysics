@@ -241,8 +241,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
      UInt_t bufferSize32 = ((Int_t)iter->fSize - sizeof(AliRawDataHeader) )/sizeof(AliHLTUInt32_t);
 
      if (fpDecoder->Init(reinterpret_cast<AliHLTUInt8_t*>(buffer), bufferSize32*sizeof(AliHLTUInt32_t))>=0 && fpDecoder->CheckVersion()>=0) {
-       UInt_t nofClusters=fpDecoder->GetNumberOfClusters();
-       for (UInt_t cl=0; cl<nofClusters; cl++) {
+       for (AliHLTTPCHWCFData::iterator cl=fpDecoder->begin(); cl!=fpDecoder->end(); ++cl) {
 	 if(outPtr->fSpacePointCnt>=maxPoints){
 	   HLTWarning("No more space to add clusters, exiting!");
 	   iResult  = -ENOSPC;
@@ -250,23 +249,23 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	 }
 
 	 AliHLTTPCSpacePointData& c=outPtr->fSpacePoints[outPtr->fSpacePointCnt];
-	 int padrow=fpDecoder->GetPadRow(cl);
+	 int padrow=cl.GetPadRow();
 	 if (padrow<0) {
 	   // something wrong here, padrow is stored in the cluster header
 	   // word which has bit pattern 0x3 in bits bit 30 and 31 which was
 	   // not recognized
-	   ALIHLTERRORGUARD(1, "can not read cluster header word, skipping %d of %d cluster(s)", nofClusters-cl, nofClusters);
+	   ALIHLTERRORGUARD(1, "can not read cluster header word");
 	   break;
 	 }
 	 padrow+=AliHLTTPCTransform::GetFirstRow(minPartition);
-	 AliHLTUInt32_t charge=fpDecoder->GetCharge(cl);
+	 AliHLTUInt32_t charge=cl.GetCharge();
 	 // skip clusters below threshold  
 	 if( charge<fChargeThreshold ) continue;  
 
-	 float pad=fpDecoder->GetPad(cl);
-	 float time=fpDecoder->GetTime(cl);
-	 float sigmaY2=fpDecoder->GetSigmaY2(cl);
-	 float sigmaZ2=fpDecoder->GetSigmaZ2(cl);
+	 float pad=cl.GetPad();
+	 float time=cl.GetTime();
+	 float sigmaY2=cl.GetSigmaY2();
+	 float sigmaZ2=cl.GetSigmaZ2();
 	 sigmaY2-=pad*pad;
 	 sigmaY2*=padpitch*padpitch;
 	 sigmaZ2-=time*time;
@@ -275,7 +274,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	 c.SetCharge(charge);
 	 c.SetSigmaY2(sigmaY2);
 	 c.SetSigmaZ2(sigmaZ2);
-	 c.SetQMax(fpDecoder->GetQMax(cl));
+	 c.SetQMax(cl.GetQMax());
 
 	 Float_t xyz[3];
 	 fTransform.Transform( minSlice, padrow, pad + 0.5, time, xyz );
@@ -327,15 +326,17 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	 outputRaw->fVersion = 0;
 	 outputRaw->fCount = 0;
 
-	 UInt_t nofClusters=fpDecoder->GetNumberOfClusters();
-	 for (UInt_t cl=0; cl<nofClusters; cl++) {
+	 // check if there are clusters available, if not the format might
+	 // not even been decoded at that moment 
+	 if (fpDecoder->GetNumberOfClusters()>0) {
+	 for (AliHLTTPCHWCFData::iterator cl=fpDecoder->begin(); cl!=fpDecoder->end(); ++cl) {
 	   if(outputRaw->fCount>=maxRawClusters){
 	     HLTWarning("No more space to add clusters, exiting!");
 	     iResult  = -ENOSPC;
 	     break;
 	   }
 	   AliHLTTPCRawCluster &c = outputRaw->fClusters[outputRaw->fCount];
-	   int padrow=fpDecoder->GetPadRow(cl);
+	   int padrow=cl.GetPadRow();
 	   if (padrow<0) {
 	     // something wrong here, padrow is stored in the cluster header
 	     // word which has bit pattern 0x3 in bits bit 30 and 31 which was
@@ -343,14 +344,14 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	     break;
 	   }
 	   padrow+=AliHLTTPCTransform::GetFirstRow(minPartition);
-	   AliHLTUInt32_t charge= fpDecoder->GetCharge(cl);
+	   AliHLTUInt32_t charge= cl.GetCharge();
 	   // skip clusters below threshold  
 	   if( charge<fChargeThreshold ) continue;  
 
-	   float pad =fpDecoder->GetPad(cl);
-	   float time =fpDecoder->GetTime(cl);
-	   float sigmaP2=fpDecoder->GetSigmaY2(cl);
-	   float sigmaT2=fpDecoder->GetSigmaZ2(cl);
+	   float pad =cl.GetPad();
+	   float time =cl.GetTime();
+	   float sigmaP2=cl.GetSigmaY2();
+	   float sigmaT2=cl.GetSigmaZ2();
 	   sigmaP2-=pad*pad;
 	   sigmaT2-=time*time;
 	   c.SetPadRow(padrow);
@@ -359,10 +360,11 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	   c.SetTime(time);
 	   c.SetSigmaY2(sigmaP2);
 	   c.SetSigmaZ2(sigmaT2);
-	   c.SetQMax(fpDecoder->GetQMax(cl));
+	   c.SetQMax(cl.GetQMax());
 
 	   // store cluster and continue
 	   outputRaw->fCount++;
+	 }
 	 }
 
 	 // fill into HLT output data

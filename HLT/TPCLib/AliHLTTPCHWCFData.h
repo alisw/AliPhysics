@@ -149,6 +149,93 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
     int fEntries;            //! number of entries
   };
 
+  class iterator {
+  public:
+    iterator()
+      : fData(NULL), fVersion(-1), fElementSize(0) {}
+    iterator(const AliHLTUInt8_t* pData, int version, int elementSize)
+      : fData(pData), fVersion(version), fElementSize(elementSize) {}
+    iterator(const iterator& i)
+      : fData(i.fData), fVersion(i.fVersion), fElementSize(i.fElementSize) {}
+    iterator& operator=(const iterator& i)
+      { fData=i.fData; fVersion=i.fVersion; fElementSize=i.fElementSize; return *this;}
+    ~iterator() {}
+
+    bool operator==(const iterator& i) const  {return (fData!=NULL) && (fData==i.fData);}
+    bool operator!=(const iterator& i) const  {return (fData!=NULL) && (fData!=i.fData);}
+    // prefix operators
+    iterator& operator++() {fData+=fElementSize; return *this;}
+    iterator& operator--() {fData-=fElementSize; return *this;}
+    // postfix operators
+    iterator operator++(int) {iterator i(*this); fData+=fElementSize; return i;}
+    iterator operator--(int) {iterator i(*this); fData-=fElementSize; return i;}
+
+    iterator& operator+=(int step) {fData+=step*fElementSize; return *this;}
+
+    Int_t    GetPadRow()  const {
+      switch (fVersion) {
+      case 0: return reinterpret_cast<const AliHLTTPCHWClusterV0*>(fData)->GetPadRow();
+      case 1: return reinterpret_cast<const AliHLTTPCHWClusterV1*>(fData)->GetPadRow();
+      } return -1;
+    }
+    Float_t  GetPad()     const {
+      switch (fVersion) {
+      case 0: return reinterpret_cast<const AliHLTTPCHWClusterV0*>(fData)->GetPad();
+      case 1: return reinterpret_cast<const AliHLTTPCHWClusterV1*>(fData)->GetPad();
+      } return -10000.;
+    }
+    Float_t  GetTime()    const {
+      switch (fVersion) {
+      case 0: return reinterpret_cast<const AliHLTTPCHWClusterV0*>(fData)->GetTime();
+      case 1: return reinterpret_cast<const AliHLTTPCHWClusterV1*>(fData)->GetTime();
+      } return -10000.;
+    }
+    Float_t  GetSigmaY2() const {
+      switch (fVersion) {
+      case 0: return reinterpret_cast<const AliHLTTPCHWClusterV0*>(fData)->GetSigmaY2();
+      case 1: return reinterpret_cast<const AliHLTTPCHWClusterV1*>(fData)->GetSigmaY2();
+      } return -10000.;
+    }
+    Float_t  GetSigmaZ2() const {
+      switch (fVersion) {
+      case 0: return reinterpret_cast<const AliHLTTPCHWClusterV0*>(fData)->GetSigmaZ2();
+      case 1: return reinterpret_cast<const AliHLTTPCHWClusterV1*>(fData)->GetSigmaZ2();
+      } return -10000.;
+    }
+    Int_t    GetCharge()  const {
+      switch (fVersion) {
+      case 0: return reinterpret_cast<const AliHLTTPCHWClusterV0*>(fData)->GetCharge();
+      case 1: return reinterpret_cast<const AliHLTTPCHWClusterV1*>(fData)->GetCharge();
+      } return -1;
+    }
+    Int_t    GetQMax()    const {
+      switch (fVersion) {
+      case 0: return reinterpret_cast<const AliHLTTPCHWClusterV0*>(fData)->GetQMax();
+      case 1: return reinterpret_cast<const AliHLTTPCHWClusterV1*>(fData)->GetQMax();
+      } return -1;
+    }
+
+  protected:
+  private:
+    const AliHLTUInt8_t* fData; //! data
+    int fVersion; //! format version
+    int fElementSize; //! element size
+  };
+
+  // prepare iterator and end marker
+  iterator& begin() {
+    fIterator.~iterator();
+    new (&fIterator) iterator(fpBuffer, fVersion, GetElementSize(fVersion));
+    fIteratorEnd=fIterator;
+    fIteratorEnd+=GetNumberOfClusters();
+    return fIterator;
+  }
+
+  // get loop end marker
+  iterator& end() {
+    return fIteratorEnd;
+  }
+
   static const unsigned  fgkAliHLTTPCHWClusterSize;
  protected:
 
@@ -174,6 +261,9 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
   int fRCUTrailerSize; //! size of the RCU trailer in Byte
 
   TArrayC* fpFileBuffer; //! internal buffer for file content
+
+  iterator fIterator; //! iterator
+  iterator fIteratorEnd; //! end iterator
 
   ClassDef(AliHLTTPCHWCFData, 0)
 };

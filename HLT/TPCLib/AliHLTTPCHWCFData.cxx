@@ -39,6 +39,8 @@ AliHLTTPCHWCFData::AliHLTTPCHWCFData(int forceVersion)
  , fForcedVersion(forceVersion)
  , fRCUTrailerSize(0)
  , fpFileBuffer(NULL)
+ , fIterator()
+ , fIteratorEnd()
 {
   // constructor
 }
@@ -251,7 +253,7 @@ Int_t    AliHLTTPCHWCFData::GetCharge(int i)  const
       ALIHLTERRORGUARD(1, "invalid format version %d", fVersion);
     }
   }
-  return -10000.;
+  return -1;
 }
 
 Int_t    AliHLTTPCHWCFData::GetQMax(int i)    const
@@ -265,7 +267,7 @@ Int_t    AliHLTTPCHWCFData::GetQMax(int i)    const
       ALIHLTERRORGUARD(1, "invalid format version %d", fVersion);
     }
   }
-  return -10000.;
+  return -1;
 }
 
 void AliHLTTPCHWCFData::Print(const char* option)
