@@ -58,7 +58,19 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   
   void         Print(const Option_t * opt)const;
     
+  
+  // Analysis methods
+  
   Bool_t       ClusterSelected(AliVCluster* cl, TLorentzVector mom) ;
+  
+  void         FillAcceptanceHistograms();
+
+  //           Fill Shower Shape histograms
+  void         FillShowerShapeHistograms( AliVCluster* cluster, const Int_t mcTag) ;
+  
+  void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms = kTRUE  ; }
+  void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms = kFALSE ; }  
+  
   
   //---------------------------------------
   // Analysis parameters setters getters
@@ -83,13 +95,6 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   Bool_t       IsTrackMatchRejectionOn()        const { return fRejectTrackMatch   ; }
   void         SwitchOnTrackMatchRejection()          { fRejectTrackMatch = kTRUE  ; }
   void         SwitchOffTrackMatchRejection()         { fRejectTrackMatch = kFALSE ; }  
-  
-  //           Fill Shower Shape histograms
-  
-  void         FillShowerShapeHistograms( AliVCluster* cluster, const Int_t mcTag) ;
-  
-  void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms = kTRUE  ; }
-  void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms = kFALSE ; }  
   
   // ** Conversion pair analysis **
   
@@ -121,13 +126,15 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   Float_t      GetConvDPhiMinCut()              const { return fConvDPhiMinCut     ; }
   Float_t      GetConvDPhiMaxCut()              const { return fConvDPhiMaxCut     ; }
   
-  // For histograms
-  enum mcTypes   {mcPhoton = 0,        mcConversion = 1,    mcPi0 = 2, 
-                  mcElectron = 3,      mcOther = 4,         mcPrompt = 5,       
-                  mcFragmentation = 6, mcISR = 7,           
-                  mcPi0Decay = 8,      mcOtherDecay = 9, 
-                  mcAntiNeutron = 10,  mcAntiProton = 11,   mcString = 12 };  
+  // For histograms in arrays, index in the array, corresponding to a particle
+  enum mcTypes   { mcPhoton = 0,        mcPrompt = 1,        mcFragmentation = 2, 
+                   mcISR = 3,           mcPi0Decay = 4,      mcOtherDecay = 5,  
+                   mcOther = 6,         mcPi0 = 7,           mcConversion = 8,    
+                   mcElectron = 9,      mcAntiNeutron = 10,  mcAntiProton = 11,   mcString = 12};  
 
+  enum mcssTypes  { mcssPhoton = 0,     mcssOther = 1,       mcssPi0 = 2,         
+                    mcssEta = 3,        mcssConversion = 4,  mcssElectron = 5 };  
+  
   private:
  
   TString  fCalorimeter ;                // Calorimeter where the gamma is searched;
@@ -146,7 +153,7 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   Bool_t   fAddConvertedPairsToAOD;      // Put Converted pairs in AOD
   Float_t  fMassCut;                     // Mass cut for the conversion pairs selection  
   Float_t  fConvAsymCut;                 // Select conversion pairs when asymmetry is smaller than cut
-	Float_t  fConvDEtaCut;                 // Select conversion pairs when deta of pair smaller than cut
+  Float_t  fConvDEtaCut;                 // Select conversion pairs when deta of pair smaller than cut
   Float_t  fConvDPhiMinCut;              // Select conversion pairs when dphi of pair lager than cut
   Float_t  fConvDPhiMaxCut;              // Select conversion pairs when dphi of pair smaller than cut
 
@@ -243,11 +250,21 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TH2F * fh2Pt ;                          //! pT distribution, Reco vs MC
   
   //Origin of this cluster is ...
-  TH1F * fhEMC[13];                     //! Number of identified photon vs cluster energy coming from MC particle
+  TH1F * fhMCE[13];                     //! Number of identified photon vs cluster energy coming from MC particle
   TH1F * fhPtMC[13];                    //! Number of identified photon vs cluster pT     coming from MC particle
   TH2F * fhPhiMC[13];                   //! Phi of identified photon coming from MC particle
   TH2F * fhEtaMC[13];                   //! eta of identified photon coming from MC particle
-	
+
+  TH1F * fhEPrimMC[7];                  //! Number of generated photon vs energy
+  TH1F * fhPtPrimMC[7];                 //! Number of generated photon vs pT   
+  TH2F * fhPhiPrimMC[7];                //! Phi of generted photon
+  TH2F * fhYPrimMC[7];                  //! Rapidity of generated photon 
+  
+  TH1F * fhEPrimMCAcc[7];               //! Number of generated photon vs energy, in calorimeter acceptance
+  TH1F * fhPtPrimMCAcc[7];              //! Number of generated photon vs pT, in calorimeter acceptance   
+  TH2F * fhPhiPrimMCAcc[7];             //! Phi of generted photon, in calorimeter acceptance
+  TH2F * fhYPrimMCAcc[7];               //! Rapidity of generated photon, in calorimeter acceptance   
+  
   //Conversion pairs analysis histograms
   TH1F * fhPtConversionTagged;            //! Number of identified gamma from Conversion , tagged as conversion 
   TH1F * fhPtAntiNeutronTagged;           //! Number of identified gamma from AntiNeutrons gamma, tagged as conversion 
@@ -293,15 +310,42 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
 
   // Shower Shape MC
 
-  TH2F * fhEMCLambda0[5] ;                //! E vs Lambda0     from MC particle
-  TH2F * fhEMCdLambda0[5];                //! E vs dLambda0    from MC particle
-  TH2F * fhEMCLambda1[5] ;                //! E vs Lambda1     from MC particle
-  TH2F * fhEMCdLambda1[5];                //! E vs dLambda1    from MC particle
-  TH2F * fhEMCDispersion[5] ;             //! E vs Dispersion  from MC particle
-  TH2F * fhEMCdDispersion[5];             //! E vs dDispersion from MC particle
+  TH2F * fhMCELambda0[6] ;                //! E vs Lambda0     from MC particle
+  TH2F * fhMCEdLambda0[6];                //! E vs dLambda0    from MC particle
+  TH2F * fhMCELambda1[6] ;                //! E vs Lambda1     from MC particle
+  TH2F * fhMCEdLambda1[6];                //! E vs dLambda1    from MC particle
+  TH2F * fhMCEDispersion[6] ;             //! E vs Dispersion  from MC particle
+  TH2F * fhMCEdDispersion[6];             //! E vs dDispersion from MC particle
   
+  TH2F * fhMCPhotonELambda0NoOverlap ;    //! E vs Lambda0     from MC photons, no overlap
+  TH2F * fhMCPhotonELambda0TwoOverlap ;   //! E vs Lambda0     from MC photons, 2 particles overlap
+  TH2F * fhMCPhotonELambda0NOverlap ;     //! E vs Lambda0     from MC photons, N particles overlap
+  TH2F * fhMCPhotonEdLambda0NoOverlap ;   //! E vs dLambda0    from MC photons, no overlap
+  TH2F * fhMCPhotonEdLambda0TwoOverlap ;  //! E vs dLambda0    from MC photons, 2 particles overlap
+  TH2F * fhMCPhotonEdLambda0NOverlap ;    //! E vs dLambda0    from MC photons, N particles overlap
   
-   ClassDef(AliAnaPhoton,14)
+  //Embedding
+  TH2F * fhEmbeddedSignalFractionEnergy ;     //! Fraction of photon energy of embedded signal vs cluster energy
+  
+  TH2F * fhEmbedPhotonELambda0FullSignal ;    //!  Lambda0 vs E for embedded photons with more than 90% of the cluster energy
+  TH2F * fhEmbedPhotonEdLambda0FullSignal ;   //! dLambda0 vs E for embedded photons with more than 90% of the cluster energy
+  TH2F * fhEmbedPhotonELambda0MostlySignal ;  //!  Lambda0 vs E for embedded photons with 90%<fraction<50% 
+  TH2F * fhEmbedPhotonEdLambda0MostlySignal ; //! dLambda0 vs E for embedded photons with 90%<fraction<50% 
+  TH2F * fhEmbedPhotonELambda0MostlyBkg ;     //!  Lambda0 vs E for embedded photons with 50%<fraction<10% 
+  TH2F * fhEmbedPhotonEdLambda0MostlyBkg ;    //! dLambda0 vs E for embedded photons with 50%<fraction<10% 
+  TH2F * fhEmbedPhotonELambda0FullBkg ;       //!  Lambda0 vs E for embedded photons with less than 10% of the cluster energy
+  TH2F * fhEmbedPhotonEdLambda0FullBkg ;      //! dLambda0 vs E for embedded photons with less than 10% of the cluster energy
+  
+  TH2F * fhEmbedPi0ELambda0FullSignal ;       //!  Lambda0 vs E for embedded photons with more than 90% of the cluster energy
+  TH2F * fhEmbedPi0EdLambda0FullSignal ;      //! dLambda0 vs E for embedded photons with more than 90% of the cluster energy
+  TH2F * fhEmbedPi0ELambda0MostlySignal ;     //!  Lambda0 vs E for embedded photons with 90%<fraction<50% 
+  TH2F * fhEmbedPi0EdLambda0MostlySignal ;    //! dLambda0 vs E for embedded photons with 90%<fraction<50% 
+  TH2F * fhEmbedPi0ELambda0MostlyBkg ;        //!  Lambda0 vs E for embedded photons with 50%<fraction<10% 
+  TH2F * fhEmbedPi0EdLambda0MostlyBkg ;       //! dLambda0 vs E for embedded photons with 50%<fraction<10% 
+  TH2F * fhEmbedPi0ELambda0FullBkg ;          //!  Lambda0 vs E for embedded photons with less than 10% of the cluster energy
+  TH2F * fhEmbedPi0EdLambda0FullBkg ;         //! dLambda0 vs E for embedded photons with less than 10% of the cluster energy  
+  
+   ClassDef(AliAnaPhoton,15)
 
 } ;
  
