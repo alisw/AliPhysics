@@ -628,8 +628,9 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
       return;    
     }
     
-    if(fCaloClusterArr->GetEntriesFast() != fClusterArr->GetEntriesFast()){
-      printf("AliAnalisysTaskEMCALClusterize::UserExec() - Some RecRoints not transformed into CaloClusters: Input entries %d - Output entries %d - %d (not fast)\n",
+    if( DebugLevel() > 0 && fCaloClusterArr->GetEntriesFast() != fClusterArr->GetEntriesFast()){
+      printf("AliAnalisysTaskEMCALClusterize::UserExec() - Some RecRoints not transformed into CaloClusters (clusterizer %d, unfold %d): Input entries %d - Output entries %d - %d (not fast)\n",
+             fRecParam->GetClusterizerFlag(),fRecParam->GetUnfold(),
              fClusterArr->GetEntriesFast(), fCaloClusterArr->GetEntriesFast(), fCaloClusterArr->GetEntries());
     }
     
