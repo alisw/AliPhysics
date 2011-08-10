@@ -119,24 +119,51 @@ AliAnaPhoton::AliAnaPhoton() :
     fhConvDeltaEtaMCString(0),         fhConvDeltaPhiMCString(0),      fhConvDeltaEtaPhiMCString(0),      
     fhConvAsymMCString(0),             fhConvPtMCString(0),      
     fhConvDispersionMCString(0),       fhConvM02MCString(0),
-    fhConvDistMCConversion(0),         fhConvDistMCConversionCuts(0)
+    fhConvDistMCConversion(0),         fhConvDistMCConversionCuts(0),
+
+    // Photon SS MC histograms
+    fhMCPhotonELambda0NoOverlap(0),    fhMCPhotonELambda0TwoOverlap(0),  fhMCPhotonELambda0NOverlap(0),
+    fhMCPhotonEdLambda0NoOverlap(0),   fhMCPhotonEdLambda0TwoOverlap(0), fhMCPhotonEdLambda0NOverlap(0),
+
+    //Embedding
+    fhEmbeddedSignalFractionEnergy(0),
+    fhEmbedPhotonELambda0FullSignal(0),    fhEmbedPhotonEdLambda0FullSignal(0),
+    fhEmbedPhotonELambda0MostlySignal(0),  fhEmbedPhotonEdLambda0MostlySignal(0),
+    fhEmbedPhotonELambda0MostlyBkg(0),     fhEmbedPhotonEdLambda0MostlyBkg(0),
+    fhEmbedPhotonELambda0FullBkg(0),       fhEmbedPhotonEdLambda0FullBkg(0),
+    fhEmbedPi0ELambda0FullSignal(0),       fhEmbedPi0EdLambda0FullSignal(0),
+    fhEmbedPi0ELambda0MostlySignal(0),     fhEmbedPi0EdLambda0MostlySignal(0),
+    fhEmbedPi0ELambda0MostlyBkg(0),        fhEmbedPi0EdLambda0MostlyBkg(0),
+    fhEmbedPi0ELambda0FullBkg(0),          fhEmbedPi0EdLambda0FullBkg(0)
 {
   //default ctor
   
   for(Int_t i = 0; i < 12; i++){
-    fhPtMC[i]  = 0;
-    fhEMC[i]   = 0;
+    fhPtMC [i] = 0;
+    fhMCE  [i] = 0;
     fhPhiMC[i] = 0;
     fhEtaMC[i] = 0;
   }
   
-  for(Int_t i = 0; i < 5; i++){
-    fhEMCLambda0[i]     = 0;
-    fhEMCLambda1[i]     = 0;
-    fhEMCDispersion[i]  = 0;
-    fhEMCdLambda0[i]    = 0;
-    fhEMCdLambda1[i]    = 0;
-    fhEMCdDispersion[i] = 0;
+  for(Int_t i = 0; i < 7; i++){
+    fhPtPrimMC [i] = 0;
+    fhEPrimMC  [i] = 0;
+    fhPhiPrimMC[i] = 0;
+    fhYPrimMC  [i] = 0;
+    
+    fhPtPrimMCAcc [i] = 0;
+    fhEPrimMCAcc  [i] = 0;
+    fhPhiPrimMCAcc[i] = 0;
+    fhYPrimMCAcc  [i] = 0;
+  }  
+  
+  for(Int_t i = 0; i < 6; i++){
+    fhMCELambda0    [i] = 0;
+    fhMCELambda1    [i] = 0;
+    fhMCEDispersion [i] = 0;
+    fhMCEdLambda0   [i] = 0;
+    fhMCEdLambda1   [i] = 0;
+    fhMCEdDispersion[i] = 0;
   }
   
   //Initialize parameters
@@ -212,6 +239,415 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
     
 }
 
+//_____________________________________________________________
+void AliAnaPhoton::FillAcceptanceHistograms(){
+  //Fill acceptance histograms if MC data is available
+  
+  if(GetReader()->ReadStack()){	
+    AliStack * stack = GetMCStack();
+    if(stack){
+      for(Int_t i=0 ; i<stack->GetNtrack(); i++){
+        TParticle * prim = stack->Particle(i) ;
+        Int_t pdg = prim->GetPdgCode();
+        //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
+        //                             prim->GetName(), prim->GetPdgCode());
+        
+        if(pdg == 22){
+          
+          // Get tag of this particle photon from fragmentation, decay, prompt ...
+          Int_t tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader(), 0);
+          if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)){
+            //A conversion photon from a hadron, skip this kind of photon
+            //            printf("AliAnaPhoton::FillAcceptanceHistograms() - not a photon, weird!: tag %d, conv %d, pi0 %d, hadron %d, electron %d, unk %d, muon %d,pion %d, proton %d, neutron %d, kaon %d, antiproton %d, antineutron %d\n",tag,
+            //                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion),
+            //                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0),
+            //                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOther),
+            //                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron),
+            //                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCUnknown),
+            //                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCMuon), 
+            //                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPion),
+            //                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCProton), 
+            //                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron),
+            //                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCKaon), 
+            //                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton), 
+            //                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron));
+            
+            return;
+          }
+          
+          //Get photon kinematics
+          if(prim->Energy() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception	  
+          
+          Double_t photonY   = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
+          Double_t photonE   = prim->Energy() ;
+          Double_t photonPt  = prim->Pt() ;
+          Double_t photonPhi = TMath::RadToDeg()*prim->Phi() ;
+          if(photonPhi < 0) photonPhi+=TMath::TwoPi();
+          Double_t photonEta = prim->Eta() ;
+          
+          
+          //Check if photons hit the Calorimeter
+          TLorentzVector lv;
+          prim->Momentum(lv);
+          Bool_t inacceptance = kFALSE;
+          if     (fCalorimeter == "PHOS"){
+            if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet()){
+              Int_t mod ;
+              Double_t x,z ;
+              if(GetPHOSGeometry()->ImpactOnEmc(prim,mod,z,x)) 
+                inacceptance = kTRUE;
+              if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+            }
+            else{
+              if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter)) 
+                inacceptance = kTRUE ;
+              if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+            }
+          }	   
+          else if(fCalorimeter == "EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
+            if(GetEMCALGeometry()){
+              
+              Int_t absID=0;
+              
+              GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(prim->Eta(),prim->Phi(),absID);
+              
+              if( absID >= 0) 
+                inacceptance = kTRUE;
+              
+              //                  if(GetEMCALGeometry()->Impact(phot1) && GetEMCALGeometry()->Impact(phot2)) 
+              //                    inacceptance = kTRUE;
+              if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+            }
+            else{
+              if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter)) 
+                inacceptance = kTRUE ;
+              if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+            }
+          }	  //In EMCAL
+          
+          //Fill histograms
+          
+          fhYPrimMC[mcPhoton]->Fill(photonPt, photonY) ;
+          if(TMath::Abs(photonY) < 1.0)
+          {
+            fhEPrimMC  [mcPhoton]->Fill(photonE ) ;
+            fhPtPrimMC [mcPhoton]->Fill(photonPt) ;
+            fhPhiPrimMC[mcPhoton]->Fill(photonE , photonPhi) ;
+            fhYPrimMC[mcPhoton]  ->Fill(photonE , photonEta) ;
+          }
+          if(inacceptance){
+            fhEPrimMCAcc[mcPhoton]  ->Fill(photonE ) ;
+            fhPtPrimMCAcc[mcPhoton] ->Fill(photonPt) ;
+            fhPhiPrimMCAcc[mcPhoton]->Fill(photonE , photonPhi) ;
+            fhYPrimMCAcc[mcPhoton]  ->Fill(photonE , photonY) ;
+          }//Accepted
+          
+          //Origin of photon
+          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))
+          {
+            fhYPrimMC[mcPrompt]->Fill(photonPt, photonY) ;
+            if(TMath::Abs(photonY) < 1.0){
+              fhEPrimMC  [mcPrompt]->Fill(photonE ) ;
+              fhPtPrimMC [mcPrompt]->Fill(photonPt) ;
+              fhPhiPrimMC[mcPrompt]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[mcPrompt]  ->Fill(photonE , photonEta) ;
+            }   
+            if(inacceptance){
+              fhEPrimMCAcc[mcPrompt]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[mcPrompt] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[mcPrompt]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[mcPrompt]  ->Fill(photonE , photonY) ;
+            }//Accepted
+          }
+          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation))
+          {
+            fhYPrimMC[mcFragmentation]->Fill(photonPt, photonY) ;
+            if(TMath::Abs(photonY) < 1.0){
+              fhEPrimMC  [mcFragmentation]->Fill(photonE ) ;
+              fhPtPrimMC [mcFragmentation]->Fill(photonPt) ;
+              fhPhiPrimMC[mcFragmentation]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[mcFragmentation]  ->Fill(photonE , photonEta) ;
+            }  
+            if(inacceptance){
+              fhEPrimMCAcc[mcFragmentation]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[mcFragmentation] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[mcFragmentation]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[mcFragmentation]  ->Fill(photonE , photonY) ;
+            }//Accepted
+          }
+          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR))
+          {
+            fhYPrimMC[mcISR]->Fill(photonPt, photonY) ;
+            if(TMath::Abs(photonY) < 1.0){
+              fhEPrimMC  [mcISR]->Fill(photonE ) ;
+              fhPtPrimMC [mcISR]->Fill(photonPt) ;
+              fhPhiPrimMC[mcISR]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[mcISR]->Fill(photonE , photonEta) ;
+            }            
+            if(inacceptance){
+              fhEPrimMCAcc[mcISR]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[mcISR] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[mcISR]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[mcISR]  ->Fill(photonE , photonY) ;
+            }//Accepted
+          }
+          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
+          {
+            fhYPrimMC[mcPi0Decay]->Fill(photonPt, photonY) ;
+            if(TMath::Abs(photonY) < 1.0){
+              fhEPrimMC  [mcPi0Decay]->Fill(photonE ) ;
+              fhPtPrimMC [mcPi0Decay]->Fill(photonPt) ;
+              fhPhiPrimMC[mcPi0Decay]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[mcPi0Decay]  ->Fill(photonE , photonEta) ;
+            }     
+            if(inacceptance){
+              fhEPrimMCAcc[mcPi0Decay]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[mcPi0Decay] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[mcPi0Decay]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[mcPi0Decay]  ->Fill(photonE , photonY) ;
+            }//Accepted
+          }
+          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || 
+                  GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
+          {
+            fhYPrimMC[mcOtherDecay]->Fill(photonPt, photonY) ;
+            if(TMath::Abs(photonY) < 1.0){
+              fhEPrimMC  [mcOtherDecay]->Fill(photonE ) ;
+              fhPtPrimMC [mcOtherDecay]->Fill(photonPt) ;
+              fhPhiPrimMC[mcOtherDecay]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[mcOtherDecay]  ->Fill(photonE , photonEta) ;
+            } 
+            if(inacceptance){
+              fhEPrimMCAcc[mcOtherDecay]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[mcOtherDecay] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[mcOtherDecay]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[mcOtherDecay]  ->Fill(photonE , photonY) ;
+            }//Accepted
+          }
+          else 
+          {
+            fhYPrimMC[mcOther]->Fill(photonPt, photonY) ;
+            if(TMath::Abs(photonY) < 1.0){
+              fhEPrimMC  [mcOther]->Fill(photonE ) ;
+              fhPtPrimMC [mcOther]->Fill(photonPt) ;
+              fhPhiPrimMC[mcOther]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[mcOther]  ->Fill(photonE , photonEta) ;
+            }
+            if(inacceptance){
+              fhEPrimMCAcc[mcOther]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[mcOther] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[mcOther]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[mcOther]  ->Fill(photonE , photonY) ;
+            }//Accepted
+          }//Other origin
+        }// Primary photon 
+      }//loop on primaries	
+    }//stack exists and data is MC
+  }//read stack
+  else if(GetReader()->ReadAODMCParticles()){
+    TClonesArray * mcparticles = GetReader()->GetAODMCParticles(0);
+    if(mcparticles){
+      Int_t nprim = mcparticles->GetEntriesFast();
+      
+      for(Int_t i=0; i < nprim; i++)
+      {
+        AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);   
+        
+        Int_t pdg = prim->GetPdgCode();
+        
+        if(pdg == 22){
+          
+          // Get tag of this particle photon from fragmentation, decay, prompt ...
+          Int_t tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader(), 0);
+          if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)){
+            //A conversion photon from a hadron, skip this kind of photon
+//            printf("AliAnaPhoton::FillAcceptanceHistograms() - not a photon, weird!: tag %d, conv %d, pi0 %d, hadron %d, electron %d, unk %d, muon %d,pion %d, proton %d, neutron %d, kaon %d, antiproton %d, antineutron %d\n",tag,
+//                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion),
+//                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0),
+//                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOther),
+//                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron),
+//                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCUnknown),
+//                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCMuon), 
+//                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPion),
+//                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCProton), 
+//                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron),
+//                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCKaon), 
+//                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton), 
+//                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron));
+            
+            return;
+          }
+          
+          //Get photon kinematics
+          if(prim->E() == TMath::Abs(prim->Pz()))  continue ; //Protection against floating point exception	 
+          
+          Double_t photonY  = 0.5*TMath::Log((prim->E()-prim->Pz())/(prim->E()+prim->Pz())) ;
+          Double_t photonE   = prim->E() ;
+          Double_t photonPt  = prim->Pt() ;
+          Double_t photonPhi = TMath::RadToDeg()*prim->Phi() ;
+          if(photonPhi < 0) photonPhi+=TMath::TwoPi();
+          Double_t photonEta = prim->Eta() ;
+          
+          //Check if photons hit the Calorimeter
+          TLorentzVector lv;
+          lv.SetPxPyPzE(prim->Px(),prim->Py(),prim->Pz(),prim->E());
+          Bool_t inacceptance = kFALSE;
+          if     (fCalorimeter == "PHOS"){
+            if(GetPHOSGeometry() && GetCaloUtils()->IsPHOSGeoMatrixSet()){
+              Int_t mod ;
+              Double_t x,z ;
+              Double_t vtx[]={prim->Xv(),prim->Yv(),prim->Zv()};
+              if(GetPHOSGeometry()->ImpactOnEmc(vtx, prim->Theta(),prim->Phi(),mod,z,x))
+                inacceptance = kTRUE;
+              if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+            }
+            else{
+              if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter)) 
+                inacceptance = kTRUE ;
+              if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+            }
+          }	   
+          else if(fCalorimeter == "EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
+            if(GetEMCALGeometry()){
+              
+              Int_t absID=0;
+              
+              GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(prim->Eta(),prim->Phi(),absID);
+              
+              if( absID >= 0) 
+                inacceptance = kTRUE;
+              
+              if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+            }
+            else{
+              if(GetFiducialCut()->IsInFiducialCut(lv,fCalorimeter)) 
+                inacceptance = kTRUE ;
+              if(GetDebug() > 2) printf("In %s fiducial cut acceptance? %d\n",fCalorimeter.Data(),inacceptance);
+            }
+          }	  //In EMCAL
+          
+          //Fill histograms
+          
+          fhYPrimMC[mcPhoton]->Fill(photonPt, photonY) ;
+          if(TMath::Abs(photonY) < 1.0)
+          {
+            fhEPrimMC  [mcPhoton]->Fill(photonE ) ;
+            fhPtPrimMC [mcPhoton]->Fill(photonPt) ;
+            fhPhiPrimMC[mcPhoton]->Fill(photonE , photonPhi) ;
+            fhYPrimMC[mcPhoton]->Fill(photonE , photonEta) ;
+          }
+          if(inacceptance){
+            fhEPrimMCAcc[mcPhoton]  ->Fill(photonE ) ;
+            fhPtPrimMCAcc[mcPhoton] ->Fill(photonPt) ;
+            fhPhiPrimMCAcc[mcPhoton]->Fill(photonE , photonPhi) ;
+            fhYPrimMCAcc[mcPhoton]  ->Fill(photonE , photonY) ;
+          }//Accepted
+          
+          
+          //Origin of photon
+          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))
+          {
+            fhYPrimMC[mcPrompt]->Fill(photonPt, photonY) ;
+            if(TMath::Abs(photonY) < 1.0){
+              fhEPrimMC  [mcPrompt]->Fill(photonE ) ;
+              fhPtPrimMC [mcPrompt]->Fill(photonPt) ;
+              fhPhiPrimMC[mcPrompt]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[mcPrompt]->Fill(photonE , photonEta) ;
+            }   
+            if(inacceptance){
+              fhEPrimMCAcc[mcPrompt]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[mcPrompt] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[mcPrompt]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[mcPrompt]  ->Fill(photonE , photonY) ;
+            }//Accepted
+          }
+          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation))
+          {
+            fhYPrimMC[mcFragmentation]->Fill(photonPt, photonY) ;
+            if(TMath::Abs(photonY) < 1.0){
+              fhEPrimMC  [mcFragmentation]->Fill(photonE ) ;
+              fhPtPrimMC [mcFragmentation]->Fill(photonPt) ;
+              fhPhiPrimMC[mcFragmentation]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[mcFragmentation]->Fill(photonE , photonEta) ;
+            }  
+            if(inacceptance){
+              fhEPrimMCAcc[mcFragmentation]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[mcFragmentation] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[mcFragmentation]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[mcFragmentation]  ->Fill(photonE , photonY) ;
+            }//Accepted
+          }
+          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR))
+          {
+            fhYPrimMC[mcISR]->Fill(photonPt, photonY) ;
+            if(TMath::Abs(photonY) < 1.0){
+              fhEPrimMC  [mcISR]->Fill(photonE ) ;
+              fhPtPrimMC [mcISR]->Fill(photonPt) ;
+              fhPhiPrimMC[mcISR]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[mcISR]->Fill(photonE , photonEta) ;
+            }            
+            if(inacceptance){
+              fhEPrimMCAcc[mcISR]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[mcISR] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[mcISR]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[mcISR]  ->Fill(photonE , photonY) ;
+            }//Accepted
+          }
+          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
+          {
+            fhYPrimMC[mcPi0Decay]->Fill(photonPt, photonY) ;
+            if(TMath::Abs(photonY) < 1.0){
+              fhEPrimMC  [mcPi0Decay]->Fill(photonE ) ;
+              fhPtPrimMC [mcPi0Decay]->Fill(photonPt) ;
+              fhPhiPrimMC[mcPi0Decay]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[mcPi0Decay]->Fill(photonE , photonEta) ;
+            }     
+            if(inacceptance){
+              fhEPrimMCAcc[mcPi0Decay]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[mcPi0Decay] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[mcPi0Decay]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[mcPi0Decay]  ->Fill(photonE , photonY) ;
+            }//Accepted
+          }
+          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || 
+                  GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
+          {
+            fhYPrimMC[mcOtherDecay]->Fill(photonPt, photonY) ;
+            if(TMath::Abs(photonY) < 1.0){
+              fhEPrimMC  [mcOtherDecay]->Fill(photonE ) ;
+              fhPtPrimMC [mcOtherDecay]->Fill(photonPt) ;
+              fhPhiPrimMC[mcOtherDecay]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[mcOtherDecay]->Fill(photonE , photonEta) ;
+            } 
+            if(inacceptance){
+              fhEPrimMCAcc[mcOtherDecay]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[mcOtherDecay] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[mcOtherDecay]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[mcOtherDecay]  ->Fill(photonE , photonY) ;
+            }//Accepted
+          }
+          else 
+          {
+            fhYPrimMC[mcOther]->Fill(photonPt, photonY) ;
+            if(TMath::Abs(photonY) < 1.0){
+              fhEPrimMC  [mcOther]->Fill(photonE ) ;
+              fhPtPrimMC [mcOther]->Fill(photonPt) ;
+              fhPhiPrimMC[mcOther]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[mcOther]->Fill(photonE , photonEta) ;
+            }
+            if(inacceptance){
+              fhEPrimMCAcc[mcOther]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[mcOther] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[mcOther]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[mcOther]  ->Fill(photonE , photonY) ;
+            }//Accepted
+          }//Other origin
+        }// Primary photon 
+      }//loop on primaries	
+      
+    }//mc array exists and data is MC
+  }	// read AOD MC
+}
 
 //__________________________________________________________________
 void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t mcTag){
@@ -297,48 +733,167 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
   }
   
   if(IsDataMC()){
-  
+    
+    
+    //Fill histograms to check shape of embedded clusters
+    Float_t fraction = 0;
+    if(GetReader()->IsEmbeddedClusterSelectionOn()){
+      AliVCaloCells * cells = 0;
+      if(fCalorimeter == "EMCAL") cells = GetReader()->GetEMCALCells();
+      else                        cells = GetReader()->GetPHOSCells(); //only working for EMCAL, but in case in future it works
+      
+      Float_t clusterE = 0; // recalculate in case corrections applied.
+      Float_t cellE    = 0;
+      for(Int_t icell = 0; icell < cluster->GetNCells(); icell++){
+        cellE    = cells->GetCellAmplitude(cluster->GetCellAbsId(icell));
+        clusterE+=cellE;  
+        fraction+=cellE*cluster->GetCellAmplitudeFraction(icell);
+      }
+      
+      //Fraction of total energy due to the embedded signal
+      fraction/=clusterE;
+      
+      if(GetDebug() > 1 ) printf("AliAnaPhoton::FillShowerShapeHistogram() - Energy fraction of embedded signal %2.3f, Energy %2.3f\n",fraction, clusterE);
+      
+      fhEmbeddedSignalFractionEnergy->Fill(clusterE,fraction);
+      
+    }  // embedded fraction    
+    
     if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) && 
-       !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) ){
-      fhEMCLambda0[0]    ->Fill(energy, lambda0);
-      fhEMCdLambda0[0]   ->Fill(energy, lambda0/ncells2);
-      fhEMCLambda1[0]    ->Fill(energy, lambda1);
-      fhEMCdLambda1[0]   ->Fill(energy, lambda1/ncells2);
-      fhEMCDispersion[0] ->Fill(energy, disp);
-      fhEMCdDispersion[0]->Fill(energy, disp/ncells2);                
+       !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) &&
+       !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0) &&
+       !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)){
+      fhMCELambda0[mcssPhoton]    ->Fill(energy, lambda0);
+      fhMCEdLambda0[mcssPhoton]   ->Fill(energy, lambda0/ncells2);
+      fhMCELambda1[mcssPhoton]    ->Fill(energy, lambda1);
+      fhMCEdLambda1[mcssPhoton]   ->Fill(energy, lambda1/ncells2);
+      fhMCEDispersion[mcssPhoton] ->Fill(energy, disp);
+      fhMCEdDispersion[mcssPhoton]->Fill(energy, disp/ncells2);   
+      
+      
+      if(!GetReader()->IsEmbeddedClusterSelectionOn()){
+        //Check particle overlaps in cluster
+        
+        //Compare the primary depositing more energy with the rest, if no photon/electron as comon ancestor (conversions), count as other particle
+        Int_t ancPDG = 0, ancStatus = -1;
+        TLorentzVector momentum; TVector3 prodVertex;
+        Int_t ancLabel = 0;
+        Int_t noverlaps = 1;      
+        for (UInt_t ilab = 0; ilab < cluster->GetNLabels(); ilab++ ) {
+          ancLabel = GetMCAnalysisUtils()->CheckCommonAncestor(cluster->GetLabels()[0],cluster->GetLabels()[ilab], GetReader(),ancPDG,ancStatus,momentum,prodVertex);
+          if(ancPDG!=22 && TMath::Abs(ancPDG)!=11) noverlaps++;
+        }
+        
+        if(noverlaps == 1){
+          fhMCPhotonELambda0NoOverlap  ->Fill(energy, lambda0);
+          fhMCPhotonEdLambda0NoOverlap ->Fill(energy, lambda0/ncells2);
+        }
+        else if(noverlaps == 2){        
+          fhMCPhotonELambda0TwoOverlap ->Fill(energy, lambda0);
+          fhMCPhotonEdLambda0TwoOverlap->Fill(energy, lambda0/ncells2);
+        }
+        else if(noverlaps > 2){          
+          fhMCPhotonELambda0NOverlap   ->Fill(energy, lambda0);
+          fhMCPhotonEdLambda0NOverlap  ->Fill(energy, lambda0/ncells2);
+        }
+        else {
+          printf("AliAnaPhoton::FillShowerShapeHistogram() - n overlaps = %d!!", noverlaps);
+        }
+      }//No embedding
+      
+      //Fill histograms to check shape of embedded clusters
+      if(GetReader()->IsEmbeddedClusterSelectionOn()){
+        
+        if     (fraction > 0.9) 
+        {
+          fhEmbedPhotonELambda0FullSignal   ->Fill(energy, lambda0);
+          fhEmbedPhotonEdLambda0FullSignal  ->Fill(energy, lambda0/ncells2);
+        }
+        else if(fraction > 0.5)
+        {
+          fhEmbedPhotonELambda0MostlySignal ->Fill(energy, lambda0);
+          fhEmbedPhotonEdLambda0MostlySignal->Fill(energy, lambda0/ncells2);
+        }
+        else if(fraction > 0.1)
+        { 
+          fhEmbedPhotonELambda0MostlyBkg    ->Fill(energy, lambda0);
+          fhEmbedPhotonEdLambda0MostlyBkg   ->Fill(energy, lambda0/ncells2);
+        }
+        else
+        {
+          fhEmbedPhotonELambda0FullBkg      ->Fill(energy, lambda0);
+          fhEmbedPhotonEdLambda0FullBkg     ->Fill(energy, lambda0/ncells2);
+        }
+      } // embedded
+      
     }//photon   no conversion
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)){
-      fhEMCLambda0[3]    ->Fill(energy, lambda0);
-      fhEMCdLambda0[3]   ->Fill(energy, lambda0/ncells2);
-      fhEMCLambda1[3]    ->Fill(energy, lambda1);
-      fhEMCdLambda1[3]   ->Fill(energy, lambda1/ncells2);
-      fhEMCDispersion[3] ->Fill(energy, disp);
-      fhEMCdDispersion[3]->Fill(energy, disp/ncells2);
+      fhMCELambda0[mcssElectron]    ->Fill(energy, lambda0);
+      fhMCEdLambda0[mcssElectron]   ->Fill(energy, lambda0/ncells2);
+      fhMCELambda1[mcssElectron]    ->Fill(energy, lambda1);
+      fhMCEdLambda1[mcssElectron]   ->Fill(energy, lambda1/ncells2);
+      fhMCEDispersion[mcssElectron] ->Fill(energy, disp);
+      fhMCEdDispersion[mcssElectron]->Fill(energy, disp/ncells2);
     }//electron
-    else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) && 
+    else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) && 
               GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) ){
-      fhEMCLambda0[1]    ->Fill(energy, lambda0);
-      fhEMCdLambda0[1]   ->Fill(energy, lambda0/ncells2);
-      fhEMCLambda1[1]    ->Fill(energy, lambda1);
-      fhEMCdLambda1[1]   ->Fill(energy, lambda1/ncells2);
-      fhEMCDispersion[1] ->Fill(energy, disp);
-      fhEMCdDispersion[1]->Fill(energy, disp/ncells2);           
+      fhMCELambda0[mcssConversion]    ->Fill(energy, lambda0);
+      fhMCEdLambda0[mcssConversion]   ->Fill(energy, lambda0/ncells2);
+      fhMCELambda1[mcssConversion]    ->Fill(energy, lambda1);
+      fhMCEdLambda1[mcssConversion]   ->Fill(energy, lambda1/ncells2);
+      fhMCEDispersion[mcssConversion] ->Fill(energy, disp);
+      fhMCEdDispersion[mcssConversion]->Fill(energy, disp/ncells2);  
+      
     }//conversion photon
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)  ){
-      fhEMCLambda0[2]    ->Fill(energy, lambda0);
-      fhEMCdLambda0[2]   ->Fill(energy, lambda0/ncells2);
-      fhEMCLambda1[2]    ->Fill(energy, lambda1);
-      fhEMCdLambda1[2]   ->Fill(energy, lambda1/ncells2);
-      fhEMCDispersion[2] ->Fill(energy, disp);
-      fhEMCdDispersion[2]->Fill(energy, disp/ncells2);                
+      fhMCELambda0[mcssPi0]    ->Fill(energy, lambda0);
+      fhMCEdLambda0[mcssPi0]   ->Fill(energy, lambda0/ncells2);
+      fhMCELambda1[mcssPi0]    ->Fill(energy, lambda1);
+      fhMCEdLambda1[mcssPi0]   ->Fill(energy, lambda1/ncells2);
+      fhMCEDispersion[mcssPi0] ->Fill(energy, disp);
+      fhMCEdDispersion[mcssPi0]->Fill(energy, disp/ncells2);      
+      
+      //Fill histograms to check shape of embedded clusters
+      if(GetReader()->IsEmbeddedClusterSelectionOn()){
+        
+        if     (fraction > 0.9) 
+        {
+          fhEmbedPi0ELambda0FullSignal   ->Fill(energy, lambda0);
+          fhEmbedPi0EdLambda0FullSignal  ->Fill(energy, lambda0/ncells2);
+        }
+        else if(fraction > 0.5)
+        {
+          fhEmbedPi0ELambda0MostlySignal ->Fill(energy, lambda0);
+          fhEmbedPi0EdLambda0MostlySignal->Fill(energy, lambda0/ncells2);
+        }
+        else if(fraction > 0.1)
+        { 
+          fhEmbedPi0ELambda0MostlyBkg    ->Fill(energy, lambda0);
+          fhEmbedPi0EdLambda0MostlyBkg   ->Fill(energy, lambda0/ncells2);
+        }
+        else
+        {
+          fhEmbedPi0ELambda0FullBkg      ->Fill(energy, lambda0);
+          fhEmbedPi0EdLambda0FullBkg     ->Fill(energy, lambda0/ncells2);
+        }
+      } // embedded      
+      
     }//pi0
+    else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)  ){
+      fhMCELambda0[mcssEta]    ->Fill(energy, lambda0);
+      fhMCEdLambda0[mcssEta]   ->Fill(energy, lambda0/ncells2);
+      fhMCELambda1[mcssEta]    ->Fill(energy, lambda1);
+      fhMCEdLambda1[mcssEta]   ->Fill(energy, lambda1/ncells2);
+      fhMCEDispersion[mcssEta] ->Fill(energy, disp);
+      fhMCEdDispersion[mcssEta]->Fill(energy, disp/ncells2);                
+    }//eta    
     else {
-      fhEMCLambda0[4]    ->Fill(energy, lambda0);
-      fhEMCdLambda0[4]   ->Fill(energy, lambda0/ncells2);
-      fhEMCLambda1[4]    ->Fill(energy, lambda1);
-      fhEMCdLambda1[4]   ->Fill(energy, lambda1/ncells2);
-      fhEMCDispersion[4] ->Fill(energy, disp);
-      fhEMCdDispersion[4]->Fill(energy, disp/ncells2);    
+      fhMCELambda0[mcssOther]    ->Fill(energy, lambda0);
+      fhMCEdLambda0[mcssOther]   ->Fill(energy, lambda0/ncells2);
+      fhMCELambda1[mcssOther]    ->Fill(energy, lambda1);
+      fhMCEdLambda1[mcssOther]   ->Fill(energy, lambda1/ncells2);
+      fhMCEDispersion[mcssOther] ->Fill(energy, disp);
+      fhMCEdDispersion[mcssOther]->Fill(energy, disp/ncells2);    
     }//other particles 
     
   }//MC data
@@ -791,7 +1346,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhdDispdLam1HighE->SetXTitle("dD^{2}");
     fhdDispdLam1HighE->SetYTitle("d#lambda_{1}^{2}");
     outputContainer->Add(fhdDispdLam1HighE);  
-    
+        
     
   } // Shower shape
   
@@ -823,20 +1378,23 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fh2Pt->SetYTitle("p_{T,gen} (GeV/c)");
     outputContainer->Add(fh2Pt);
    
-    TString ptype[] ={"#gamma","#gamma->e^{#pm}","#pi^{0}","e^{#pm}", "hadron",
-      "#gamma_{prompt}","#gamma_{fragmentation}","#gamma_{ISR}","#gamma_{#pi decay}",
-      "Anti-N","Anti-P","String"}; 
-    TString pname[] ={"Photon","Conversion","Pi0",    "Electron","Hadron", 
-      "PhotonPrompt","PhotonFragmentation","PhotonISR","PhotonPi0Decay",
-      "AntiNeutron","AntiProton","String"};
+    TString ptype[] = { "#gamma","#gamma_{prompt}","#gamma_{fragmentation}","#gamma_{ISR}",
+                        "#gamma_{#pi decay}","#gamma_{decay}","hadron?",
+                        "#pi^{0}","#gamma->e^{#pm}","e^{#pm}",
+                        "Anti-N","Anti-P","String"                                } ; 
     
-    for(Int_t i = 0; i < 12; i++){ 
+    TString pname[] = { "Photon","PhotonPrompt","PhotonFragmentation","PhotonISR",
+                        "PhotonPi0Decay", "PhotonOtherDecay", "Hadron",
+                        "Pi0","Conversion","Electron",
+                        "AntiNeutron","AntiProton","String"                       } ;
+    
+    for(Int_t i = 0; i < 13; i++){ 
       
-      fhEMC[i]  = new TH1F(Form("hE_MC%s",pname[i].Data()),
+      fhMCE[i]  = new TH1F(Form("hE_MC%s",pname[i].Data()),
                                 Form("cluster from %s : E ",ptype[i].Data()),
                                 nptbins,ptmin,ptmax); 
-      fhEMC[i]->SetXTitle("E (GeV)");
-      outputContainer->Add(fhEMC[i]) ; 
+      fhMCE[i]->SetXTitle("E (GeV)");
+      outputContainer->Add(fhMCE[i]) ; 
       
       fhPtMC[i]  = new TH1F(Form("hPt_MC%s",pname[i].Data()),
                            Form("cluster from %s : p_{T} ",ptype[i].Data()),
@@ -859,7 +1417,63 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhPhiMC[i]) ;
       
     }
-    	
+    
+    for(Int_t i = 0; i < 7; i++){ 
+      fhEPrimMC[i]  = new TH1F(Form("hEPrim_MC%s",pname[i].Data()),
+                           Form("primary photon %s : E ",ptype[i].Data()),
+                           nptbins,ptmin,ptmax); 
+      fhEPrimMC[i]->SetXTitle("E (GeV)");
+      outputContainer->Add(fhEPrimMC[i]) ; 
+      
+      fhPtPrimMC[i]  = new TH1F(Form("hPtPrim_MC%s",pname[i].Data()),
+                            Form("primary photon %s : p_{T} ",ptype[i].Data()),
+                            nptbins,ptmin,ptmax); 
+      fhPtPrimMC[i]->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtPrimMC[i]) ;
+      
+      fhYPrimMC[i]  = new TH2F(Form("hYPrim_MC%s",pname[i].Data()),
+                             Form("primary photon %s : Rapidity ",ptype[i].Data()),
+                             nptbins,ptmin,ptmax,800,-8,8); 
+      fhYPrimMC[i]->SetYTitle("Rapidity");
+      fhYPrimMC[i]->SetXTitle("E (GeV)");
+      outputContainer->Add(fhYPrimMC[i]) ;
+      
+      fhPhiPrimMC[i]  = new TH2F(Form("hPhiPrim_MC%s",pname[i].Data()),
+                             Form("primary photon %s : #phi ",ptype[i].Data()),
+                             nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      fhPhiPrimMC[i]->SetYTitle("#phi (rad)");
+      fhPhiPrimMC[i]->SetXTitle("E (GeV)");
+      outputContainer->Add(fhPhiPrimMC[i]) ;
+     
+      
+      fhEPrimMCAcc[i]  = new TH1F(Form("hEPrimAcc_MC%s",pname[i].Data()),
+                               Form("primary photon %s in acceptance: E ",ptype[i].Data()),
+                               nptbins,ptmin,ptmax); 
+      fhEPrimMCAcc[i]->SetXTitle("E (GeV)");
+      outputContainer->Add(fhEPrimMCAcc[i]) ; 
+      
+      fhPtPrimMCAcc[i]  = new TH1F(Form("hPtPrimAcc_MC%s",pname[i].Data()),
+                                Form("primary photon %s in acceptance: p_{T} ",ptype[i].Data()),
+                                nptbins,ptmin,ptmax); 
+      fhPtPrimMCAcc[i]->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtPrimMCAcc[i]) ;
+      
+      fhYPrimMCAcc[i]  = new TH2F(Form("hYPrimAcc_MC%s",pname[i].Data()),
+                                 Form("primary photon %s in acceptance: Rapidity ",ptype[i].Data()),
+                                 nptbins,ptmin,ptmax,100,-1,1); 
+      fhYPrimMCAcc[i]->SetYTitle("Rapidity");
+      fhYPrimMCAcc[i]->SetXTitle("E (GeV)");
+      outputContainer->Add(fhYPrimMCAcc[i]) ;
+      
+      fhPhiPrimMCAcc[i]  = new TH2F(Form("hPhiPrimAcc_MC%s",pname[i].Data()),
+                                 Form("primary photon %s in acceptance: #phi ",ptype[i].Data()),
+                                 nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      fhPhiPrimMCAcc[i]->SetYTitle("#phi (rad)");
+      fhPhiPrimMCAcc[i]->SetXTitle("E (GeV)");
+      outputContainer->Add(fhPhiPrimMCAcc[i]) ;
+      
+    }
+        	
     if(fCheckConversion){  
       fhPtConversionTagged  = new TH1F("hPtMCConversionTagged","Number of converted #gamma over calorimeter, tagged as converted",nptbins,ptmin,ptmax); 
       fhPtConversionTagged->SetYTitle("N");
@@ -1065,51 +1679,233 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     
     if(fFillSSHistograms){
       
-      for(Int_t i = 0; i < 5; i++){ 
+      TString ptypess[] = { "#gamma","hadron?","#pi^{0}","#eta","#gamma->e^{#pm}","e^{#pm}"} ; 
+      
+      TString pnamess[] = { "Photon","Hadron","Pi0","Eta","Conversion","Electron"} ;
+      
+      for(Int_t i = 0; i < 6; i++){ 
         
-        fhEMCLambda0[i]  = new TH2F(Form("hELambda0_MC%s",pname[i].Data()),
-                                    Form("cluster from %s : E vs #lambda_{0}^{2}",ptype[i].Data()),
+        fhMCELambda0[i]  = new TH2F(Form("hELambda0_MC%s",pnamess[i].Data()),
+                                    Form("cluster from %s : E vs #lambda_{0}^{2}",ptypess[i].Data()),
                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhEMCLambda0[i]->SetYTitle("#lambda_{0}^{2}");
-        fhEMCLambda0[i]->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEMCLambda0[i]) ; 
+        fhMCELambda0[i]->SetYTitle("#lambda_{0}^{2}");
+        fhMCELambda0[i]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCELambda0[i]) ; 
         
-        fhEMCdLambda0[i]  = new TH2F(Form("hEdLambda0_MC%s",pname[i].Data()),
-                                     Form("cluster from %s : E vs #lambda_{0}^{2}/N_{cells}^{2}",ptype[i].Data()),
+        fhMCEdLambda0[i]  = new TH2F(Form("hEdLambda0_MC%s",pnamess[i].Data()),
+                                     Form("cluster from %s : E vs #lambda_{0}^{2}/N_{cells}^{2}",ptypess[i].Data()),
                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
-        fhEMCdLambda0[i]->SetYTitle("d#lambda_{0}^{2}");
-        fhEMCdLambda0[i]->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEMCdLambda0[i]) ; 
+        fhMCEdLambda0[i]->SetYTitle("d#lambda_{0}^{2}");
+        fhMCEdLambda0[i]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCEdLambda0[i]) ; 
         
-        fhEMCLambda1[i]  = new TH2F(Form("hELambda1_MC%s",pname[i].Data()),
-                                    Form("cluster from %s : E vs #lambda_{1}^{2}",ptype[i].Data()),
+        fhMCELambda1[i]  = new TH2F(Form("hELambda1_MC%s",pnamess[i].Data()),
+                                    Form("cluster from %s : E vs #lambda_{1}^{2}",ptypess[i].Data()),
                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhEMCLambda1[i]->SetYTitle("#lambda_{1}^{2}");
-        fhEMCLambda1[i]->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEMCLambda1[i]) ; 
+        fhMCELambda1[i]->SetYTitle("#lambda_{1}^{2}");
+        fhMCELambda1[i]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCELambda1[i]) ; 
         
-        fhEMCdLambda1[i]  = new TH2F(Form("hEdLambda1_MC%s",pname[i].Data()),
-                                     Form("cluster from %s : E vs d#lambda_{1}^{2}/N_{cells}^{2}",ptype[i].Data()),
+        fhMCEdLambda1[i]  = new TH2F(Form("hEdLambda1_MC%s",pnamess[i].Data()),
+                                     Form("cluster from %s : E vs d#lambda_{1}^{2}/N_{cells}^{2}",ptypess[i].Data()),
                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
-        fhEMCdLambda1[i]->SetYTitle("d#lambda_{1}^{2}");
-        fhEMCdLambda1[i]->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEMCdLambda1[i]) ; 
+        fhMCEdLambda1[i]->SetYTitle("d#lambda_{1}^{2}");
+        fhMCEdLambda1[i]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCEdLambda1[i]) ; 
         
-        fhEMCDispersion[i]  = new TH2F(Form("hEDispersion_MC%s",pname[i].Data()),
-                                       Form("cluster from %s : E vs dispersion^{2}",ptype[i].Data()),
+        fhMCEDispersion[i]  = new TH2F(Form("hEDispersion_MC%s",pnamess[i].Data()),
+                                       Form("cluster from %s : E vs dispersion^{2}",ptypess[i].Data()),
                                        nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhEMCDispersion[i]->SetYTitle("D^{2}");
-        fhEMCDispersion[i]->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEMCDispersion[i]) ; 
+        fhMCEDispersion[i]->SetYTitle("D^{2}");
+        fhMCEDispersion[i]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCEDispersion[i]) ; 
         
-        fhEMCdDispersion[i]  = new TH2F(Form("hEdDispersion_MC%s",pname[i].Data()),
-                                        Form("cluster from %s : E vs dispersion^{2}/N_{cells}^{2}",ptype[i].Data()),
+        fhMCEdDispersion[i]  = new TH2F(Form("hEdDispersion_MC%s",pnamess[i].Data()),
+                                        Form("cluster from %s : E vs dispersion^{2}/N_{cells}^{2}",ptypess[i].Data()),
                                         nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
-        fhEMCdDispersion[i]->SetYTitle("dD^{2}");
-        fhEMCdDispersion[i]->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEMCdDispersion[i]) ;   
+        fhMCEdDispersion[i]->SetYTitle("dD^{2}");
+        fhMCEdDispersion[i]->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCEdDispersion[i]) ;   
         
-      }// loop       
+       }// loop    
+      
+      if(!GetReader()->IsEmbeddedClusterSelectionOn())
+      {
+        fhMCPhotonELambda0NoOverlap  = new TH2F("hELambda0_MCPhoton_NoOverlap",
+                                                "cluster from Photon : E vs #lambda_{0}^{2}",
+                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhMCPhotonELambda0NoOverlap->SetYTitle("#lambda_{0}^{2}");
+        fhMCPhotonELambda0NoOverlap->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCPhotonELambda0NoOverlap) ; 
+        
+        fhMCPhotonEdLambda0NoOverlap  = new TH2F("hEdLambda0_MCPhoton_NoOverlap",
+                                                 "cluster from Photon : E vs #lambda_{0}^{2}/N_{cells}^{2}",
+                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
+        fhMCPhotonEdLambda0NoOverlap->SetYTitle("d#lambda_{0}^{2}");
+        fhMCPhotonEdLambda0NoOverlap->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCPhotonEdLambda0NoOverlap) ; 
+        
+        fhMCPhotonELambda0TwoOverlap  = new TH2F("hELambda0_MCPhoton_TwoOverlap",
+                                                 "cluster from Photon : E vs #lambda_{0}^{2}",
+                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhMCPhotonELambda0TwoOverlap->SetYTitle("#lambda_{0}^{2}");
+        fhMCPhotonELambda0TwoOverlap->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCPhotonELambda0TwoOverlap) ; 
+        
+        fhMCPhotonEdLambda0TwoOverlap  = new TH2F("hEdLambda0_MCPhoton_TwoOverlap",
+                                                  "cluster from Photon : E vs #lambda_{0}^{2}/N_{cells}^{2}",
+                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
+        fhMCPhotonEdLambda0TwoOverlap->SetYTitle("d#lambda_{0}^{2}");
+        fhMCPhotonEdLambda0TwoOverlap->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCPhotonEdLambda0TwoOverlap) ; 
+        
+        fhMCPhotonELambda0NOverlap  = new TH2F("hELambda0_MCPhoton_NOverlap",
+                                               "cluster from Photon : E vs #lambda_{0}^{2}",
+                                               nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhMCPhotonELambda0NOverlap->SetYTitle("#lambda_{0}^{2}");
+        fhMCPhotonELambda0NOverlap->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCPhotonELambda0NOverlap) ; 
+        
+        fhMCPhotonEdLambda0NOverlap  = new TH2F("hEdLambda0_MCPhoton_NOverlap",
+                                                "cluster from Photon : E vs #lambda_{0}^{2}/N_{cells}^{2}",
+                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
+        fhMCPhotonEdLambda0NOverlap->SetYTitle("d#lambda_{0}^{2}");
+        fhMCPhotonEdLambda0NOverlap->SetXTitle("E (GeV)");
+        outputContainer->Add(fhMCPhotonEdLambda0NOverlap) ; 
+      } //No embedding     
+      
+      //Fill histograms to check shape of embedded clusters
+      if(GetReader()->IsEmbeddedClusterSelectionOn())
+      {
+        
+        fhEmbeddedSignalFractionEnergy  = new TH2F("hEmbeddedSignal_FractionEnergy",
+                                                    "Energy Fraction of embedded signal versus cluster energy",
+                                                    nptbins,ptmin,ptmax,100,0.,1.); 
+        fhEmbeddedSignalFractionEnergy->SetYTitle("Fraction");
+        fhEmbeddedSignalFractionEnergy->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbeddedSignalFractionEnergy) ; 
+        
+        fhEmbedPhotonELambda0FullSignal  = new TH2F("hELambda0_EmbedPhoton_FullSignal",
+                                                "cluster from Photon embedded with more than 90% energy in cluster : E vs #lambda_{0}^{2}",
+                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPhotonELambda0FullSignal->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPhotonELambda0FullSignal->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPhotonELambda0FullSignal) ; 
+        
+        fhEmbedPhotonEdLambda0FullSignal  = new TH2F("hEdLambda0_EmbedPhoton_FullSignal",
+                                          "cluster from Photon with more than 90% energy in cluster: E vs d#lambda_{0}^{2}",
+                                          nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPhotonEdLambda0FullSignal->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPhotonEdLambda0FullSignal->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPhotonEdLambda0FullSignal) ; 
+        
+        
+        fhEmbedPhotonELambda0MostlySignal  = new TH2F("hELambda0_EmbedPhoton_MostlySignal",
+                                          "cluster from Photon embedded with 50% to 90% energy in cluster : E vs #lambda_{0}^{2}",
+                                          nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPhotonELambda0MostlySignal->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPhotonELambda0MostlySignal->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPhotonELambda0MostlySignal) ; 
+        
+        fhEmbedPhotonEdLambda0MostlySignal  = new TH2F("hEdLambda0_EmbedPhoton_MostlySignal",
+                                           "cluster from Photon with 50% to 90% energy in cluster: E vs d#lambda_{0}^{2}",
+                                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPhotonEdLambda0MostlySignal->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPhotonEdLambda0MostlySignal->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPhotonEdLambda0MostlySignal) ; 
+        
+        
+        fhEmbedPhotonELambda0MostlyBkg  = new TH2F("hELambda0_EmbedPhoton_MostlyBkg",
+                                          "cluster from Photon embedded with 10% to 50% energy in cluster : E vs #lambda_{0}^{2}",
+                                          nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPhotonELambda0MostlyBkg->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPhotonELambda0MostlyBkg->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPhotonELambda0MostlyBkg) ; 
+        
+        fhEmbedPhotonEdLambda0MostlyBkg  = new TH2F("hEdLambda0_EmbedPhoton_MostlyBkg",
+                                           "cluster from Photon with 10% to 50% energy in cluster: E vs d#lambda_{0}^{2}",
+                                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPhotonEdLambda0MostlyBkg->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPhotonEdLambda0MostlyBkg->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPhotonEdLambda0MostlyBkg) ; 
+        
+        
+        fhEmbedPhotonELambda0FullBkg  = new TH2F("hELambda0_EmbedPhoton_FullBkg",
+                                                   "cluster from Photonm embedded with 0% to 10% energy in cluster : E vs #lambda_{0}^{2}",
+                                                   nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPhotonELambda0FullBkg->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPhotonELambda0FullBkg->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPhotonELambda0FullBkg) ; 
+        
+        fhEmbedPhotonEdLambda0FullBkg  = new TH2F("hEdLambda0_EmbedPhoton_FullBkg",
+                                                    "cluster from Photon with 0% to 10% energy in cluster: E vs d#lambda_{0}^{2}",
+                                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPhotonEdLambda0FullBkg->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPhotonEdLambda0FullBkg->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPhotonEdLambda0FullBkg) ;    
+        
+        
+        fhEmbedPi0ELambda0FullSignal  = new TH2F("hELambda0_EmbedPi0_FullSignal",
+                                                    "cluster from Pi0 embedded with more than 90% energy in cluster : E vs #lambda_{0}^{2}",
+                                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPi0ELambda0FullSignal->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPi0ELambda0FullSignal->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPi0ELambda0FullSignal) ; 
+        
+        fhEmbedPi0EdLambda0FullSignal  = new TH2F("hEdLambda0_EmbedPi0_FullSignal",
+                                                     "cluster from Pi0 with more than 90% energy in cluster: E vs d#lambda_{0}^{2}",
+                                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPi0EdLambda0FullSignal->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPi0EdLambda0FullSignal->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPi0EdLambda0FullSignal) ; 
+        
+        
+        fhEmbedPi0ELambda0MostlySignal  = new TH2F("hELambda0_EmbedPi0_MostlySignal",
+                                                      "cluster from Pi0 embedded with 50% to 90% energy in cluster : E vs #lambda_{0}^{2}",
+                                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPi0ELambda0MostlySignal->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPi0ELambda0MostlySignal->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPi0ELambda0MostlySignal) ; 
+        
+        fhEmbedPi0EdLambda0MostlySignal  = new TH2F("hEdLambda0_EmbedPi0_MostlySignal",
+                                                       "cluster from Pi0 with 50% to 90% energy in cluster: E vs d#lambda_{0}^{2}",
+                                                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPi0EdLambda0MostlySignal->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPi0EdLambda0MostlySignal->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPi0EdLambda0MostlySignal) ; 
+        
+        
+        fhEmbedPi0ELambda0MostlyBkg  = new TH2F("hELambda0_EmbedPi0_MostlyBkg",
+                                                   "cluster from Pi0 embedded with 10% to 50% energy in cluster : E vs #lambda_{0}^{2}",
+                                                   nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPi0ELambda0MostlyBkg->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPi0ELambda0MostlyBkg->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPi0ELambda0MostlyBkg) ; 
+        
+        fhEmbedPi0EdLambda0MostlyBkg  = new TH2F("hEdLambda0_EmbedPi0_MostlyBkg",
+                                                    "cluster from Pi0 with 10% to 50% energy in cluster: E vs d#lambda_{0}^{2}",
+                                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPi0EdLambda0MostlyBkg->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPi0EdLambda0MostlyBkg->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPi0EdLambda0MostlyBkg) ; 
+        
+        
+        fhEmbedPi0ELambda0FullBkg  = new TH2F("hELambda0_EmbedPi0_FullBkg",
+                                                 "cluster from Pi0 embedded with 0% to 10% energy in cluster : E vs #lambda_{0}^{2}",
+                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPi0ELambda0FullBkg->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPi0ELambda0FullBkg->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPi0ELambda0FullBkg) ; 
+        
+        fhEmbedPi0EdLambda0FullBkg  = new TH2F("hEdLambda0_EmbedPi0_FullBkg",
+                                                  "cluster from Pi0 with 0% to 10% energy in cluster: E vs d#lambda_{0}^{2}",
+                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+        fhEmbedPi0EdLambda0FullBkg->SetYTitle("#lambda_{0}^{2}");
+        fhEmbedPi0EdLambda0FullBkg->SetXTitle("E (GeV)");
+        outputContainer->Add(fhEmbedPi0EdLambda0FullBkg) ;
+        
+      }// embedded histograms
+      
       
     }// Fill SS MC histograms
     
@@ -1261,6 +2057,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //Check origin of the candidates
     if(IsDataMC()){
       aodph.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), aodph.GetInputFileIndex()));
+
       if(GetDebug() > 0)
         printf("AliAnaPhoton::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodph.GetTag());
     }//Work with stack also   
@@ -1286,7 +2083,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // Data, PID check on
     else if(IsCaloPIDOn()){
       //Get most probable PID, 2 options check PID weights 
-      //or redo PID, recommended option for EMCal.		
+      //or redo PID, recommended option for MCEal.		
       if(!IsCaloPIDRecalculationOn())
         aodph.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,calo->GetPID(),mom.E()));//PID with weights
       else
@@ -1388,7 +2185,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
           //given by R=p/(qB) = p / (300 B) with p in [MeV/c], B in [Tesla] and R in [m]. 
           //With nominal ALICE magnet current of 30kA B=0.5T, and so with E_cluster=p,  
           //R = E/1.5 [cm].  Under these assumptions, the distance from the conversion 
-          //point to the EMCal can be related to the separation distance, L=2y, on the EMCal 
+          //point to the MCEal can be related to the separation distance, L=2y, on the MCEal 
           //as d = sqrt(R^2 -(R-y)^2) = sqrt(2Ry - y^2). And since R>>y we can write as 
           //d = sqrt(E*L/1.5) where E is the cluster energy and L is the distance in cm between 
           //the clusters.
@@ -1588,8 +2385,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     if(GetReader()->ReadStack()){
       stack =  GetMCStack() ;
       if(!stack) {
-	printf("AliAnaPhoton::MakeAnalysisFillHistograms() - Stack not available, is the MC handler called? STOP\n");
-	abort();
+        printf("AliAnaPhoton::MakeAnalysisFillHistograms() - Stack not available, is the MC handler called? STOP\n");
+        abort();
       }
       
     }
@@ -1598,7 +2395,7 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       //Get the list of MC particles
       mcparticles = GetReader()->GetAODMCParticles(0);
       if(!mcparticles && GetDebug() > 0) 	{
-	printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
+        printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  Standard MCParticles not available!\n");
       }	
     }
   }// is data and MC
@@ -1653,97 +2450,108 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     //Play with the MC data if available
     if(IsDataMC()){
       
+      FillAcceptanceHistograms();
+      
       Int_t tag =ph->GetTag();
       
       if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
-	{
-	  fhEMC  [mcPhoton] ->Fill(ecluster);
-	  fhPtMC [mcPhoton] ->Fill(ptcluster);
-	  fhPhiMC[mcPhoton] ->Fill(ecluster,phicluster);
-	  fhEtaMC[mcPhoton] ->Fill(ecluster,etacluster);
-	  
-	  if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))
-	    {
-	      fhEMC  [mcConversion] ->Fill(ecluster);
-	      fhPtMC [mcConversion] ->Fill(ptcluster);
-	      fhPhiMC[mcConversion] ->Fill(ecluster,phicluster);
-	      fhEtaMC[mcConversion] ->Fill(ecluster,etacluster);
-	      
-	      if(fCheckConversion){
-		if(ph->IsTagged()) fhPtConversionTagged ->Fill(ptcluster);
-		if(ptcluster > 0.5)fhEtaPhiConversion   ->Fill(etacluster,phicluster);
-		else               fhEtaPhi05Conversion ->Fill(etacluster,phicluster);
-	      }
-	    }			
-	  
-	  if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)){
-	    fhEMC  [mcPrompt] ->Fill(ecluster);
-	    fhPtMC [mcPrompt] ->Fill(ptcluster);
-	    fhPhiMC[mcPrompt] ->Fill(ecluster,phicluster);
-	    fhEtaMC[mcPrompt] ->Fill(ecluster,etacluster);          
-	  }
-	  else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation))
-	    {
-	      fhEMC  [mcFragmentation] ->Fill(ecluster);
-	      fhPtMC [mcFragmentation] ->Fill(ptcluster);
-	      fhPhiMC[mcFragmentation] ->Fill(ecluster,phicluster);
-	      fhEtaMC[mcFragmentation] ->Fill(ecluster,etacluster);
-	      
-	    }
-	  else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR))
-	    {
-	      fhEMC  [mcISR] ->Fill(ecluster);
-	      fhPtMC [mcISR] ->Fill(ptcluster);
-	      fhPhiMC[mcISR] ->Fill(ecluster,phicluster);
-	      fhEtaMC[mcISR] ->Fill(ecluster,etacluster);          
-	    }
-	  else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
-	    {
-	      fhEMC  [mcPi0Decay] ->Fill(ecluster);
-	      fhPtMC [mcPi0Decay] ->Fill(ptcluster);
-	      fhPhiMC[mcPi0Decay] ->Fill(ecluster,phicluster);
-	      fhEtaMC[mcPi0Decay] ->Fill(ecluster,etacluster);
-	    }
-	  else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
-	    {
-	      fhEMC  [mcOtherDecay] ->Fill(ecluster);
-	      fhPtMC [mcOtherDecay] ->Fill(ptcluster);
-	      fhPhiMC[mcOtherDecay] ->Fill(ecluster,phicluster);
-	      fhEtaMC[mcOtherDecay] ->Fill(ecluster,etacluster);
-	    }
-	}
+      {
+        fhMCE  [mcPhoton] ->Fill(ecluster);
+        fhPtMC [mcPhoton] ->Fill(ptcluster);
+        fhPhiMC[mcPhoton] ->Fill(ecluster,phicluster);
+        fhEtaMC[mcPhoton] ->Fill(ecluster,etacluster);
+        
+        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))
+        {
+          fhMCE  [mcConversion] ->Fill(ecluster);
+          fhPtMC [mcConversion] ->Fill(ptcluster);
+          fhPhiMC[mcConversion] ->Fill(ecluster,phicluster);
+          fhEtaMC[mcConversion] ->Fill(ecluster,etacluster);
+          
+          if(fCheckConversion){
+            if(ph->IsTagged()) fhPtConversionTagged ->Fill(ptcluster);
+            if(ptcluster > 0.5)fhEtaPhiConversion   ->Fill(etacluster,phicluster);
+            else               fhEtaPhi05Conversion ->Fill(etacluster,phicluster);
+          }
+        }			
+        
+        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)){
+          fhMCE  [mcPrompt] ->Fill(ecluster);
+          fhPtMC [mcPrompt] ->Fill(ptcluster);
+          fhPhiMC[mcPrompt] ->Fill(ecluster,phicluster);
+          fhEtaMC[mcPrompt] ->Fill(ecluster,etacluster);          
+        }
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation))
+        {
+          fhMCE  [mcFragmentation] ->Fill(ecluster);
+          fhPtMC [mcFragmentation] ->Fill(ptcluster);
+          fhPhiMC[mcFragmentation] ->Fill(ecluster,phicluster);
+          fhEtaMC[mcFragmentation] ->Fill(ecluster,etacluster);
+          
+        }
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR))
+        {
+          fhMCE  [mcISR] ->Fill(ecluster);
+          fhPtMC [mcISR] ->Fill(ptcluster);
+          fhPhiMC[mcISR] ->Fill(ecluster,phicluster);
+          fhEtaMC[mcISR] ->Fill(ecluster,etacluster);          
+        }
+        else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) && 
+                !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))
+        {
+          fhMCE  [mcPi0Decay] ->Fill(ecluster);
+          fhPtMC [mcPi0Decay] ->Fill(ptcluster);
+          fhPhiMC[mcPi0Decay] ->Fill(ecluster,phicluster);
+          fhEtaMC[mcPi0Decay] ->Fill(ecluster,etacluster);
+        }
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || 
+                GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
+        {
+          fhMCE  [mcOtherDecay] ->Fill(ecluster);
+          fhPtMC [mcOtherDecay] ->Fill(ptcluster);
+          fhPhiMC[mcOtherDecay] ->Fill(ecluster,phicluster);
+          fhEtaMC[mcOtherDecay] ->Fill(ecluster,etacluster);
+        }
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))
+        {
+          fhMCE  [mcPi0] ->Fill(ecluster);
+          fhPtMC [mcPi0] ->Fill(ptcluster);
+          fhPhiMC[mcPi0] ->Fill(ecluster,phicluster);
+          fhEtaMC[mcPi0] ->Fill(ecluster,etacluster);
+        }        
+      }
       else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron))
-	{
-	  fhEMC  [mcAntiNeutron] ->Fill(ecluster);
-	  fhPtMC [mcAntiNeutron] ->Fill(ptcluster);
-	  fhPhiMC[mcAntiNeutron] ->Fill(ecluster,phicluster);
-	  fhEtaMC[mcAntiNeutron] ->Fill(ecluster,etacluster);
-	  if(ph->IsTagged() && fCheckConversion) fhPtAntiNeutronTagged ->Fill(ptcluster);
-	  
-	}
+      {
+        fhMCE  [mcAntiNeutron] ->Fill(ecluster);
+        fhPtMC [mcAntiNeutron] ->Fill(ptcluster);
+        fhPhiMC[mcAntiNeutron] ->Fill(ecluster,phicluster);
+        fhEtaMC[mcAntiNeutron] ->Fill(ecluster,etacluster);
+        if(ph->IsTagged() && fCheckConversion) fhPtAntiNeutronTagged ->Fill(ptcluster);
+        
+      }
       else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton))
-	{
-	  fhEMC  [mcAntiProton] ->Fill(ecluster);
-	  fhPtMC [mcAntiProton] ->Fill(ptcluster);
-	  fhPhiMC[mcAntiProton] ->Fill(ecluster,phicluster);
-	  fhEtaMC[mcAntiProton] ->Fill(ecluster,etacluster);
-	  if(ph->IsTagged() && fCheckConversion) fhPtAntiProtonTagged ->Fill(ptcluster);
-	} 
+      {
+        fhMCE  [mcAntiProton] ->Fill(ecluster);
+        fhPtMC [mcAntiProton] ->Fill(ptcluster);
+        fhPhiMC[mcAntiProton] ->Fill(ecluster,phicluster);
+        fhEtaMC[mcAntiProton] ->Fill(ecluster,etacluster);
+        if(ph->IsTagged() && fCheckConversion) fhPtAntiProtonTagged ->Fill(ptcluster);
+      } 
       else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))
-	{
-	  fhEMC  [mcElectron] ->Fill(ecluster);
-	  fhPtMC [mcElectron] ->Fill(ptcluster);
-	  fhPhiMC[mcElectron] ->Fill(ecluster,phicluster);
-	  fhEtaMC[mcElectron] ->Fill(ecluster,etacluster);
-	}     
+      {
+        fhMCE  [mcElectron] ->Fill(ecluster);
+        fhPtMC [mcElectron] ->Fill(ptcluster);
+        fhPhiMC[mcElectron] ->Fill(ecluster,phicluster);
+        fhEtaMC[mcElectron] ->Fill(ecluster,etacluster);
+      }     
       else{
-        fhEMC  [mcOther] ->Fill(ecluster);
+        fhMCE  [mcOther] ->Fill(ecluster);
         fhPtMC [mcOther] ->Fill(ptcluster);
         fhPhiMC[mcOther] ->Fill(ecluster,phicluster);
         fhEtaMC[mcOther] ->Fill(ecluster,etacluster);
         if(ph->IsTagged() && fCheckConversion) fhPtUnknownTagged ->Fill(ptcluster);
         
-	
+        
         //		 printf(" AliAnaPhoton::MakeAnalysisFillHistograms() - Label %d, pT %2.3f Unknown, bits set: ",
         //					ph->GetLabel(),ph->Pt());
         //		  for(Int_t i = 0; i < 20; i++) {
@@ -1757,50 +2565,50 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       // Access MC information in stack if requested, check that it exists.
       Int_t label =ph->GetLabel();
       if(label < 0) {
-	printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** bad label ***:  label %d \n", label);
-	continue;
+        if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** bad label ***:  label %d \n", label);
+        continue;
       }
       
       Float_t eprim   = 0;
       Float_t ptprim  = 0;
       if(GetReader()->ReadStack()){
-	
-	if(label >=  stack->GetNtrack()) {
+        
+        if(label >=  stack->GetNtrack()) {
           if(GetDebug() > 2)  printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", label, stack->GetNtrack());
           continue ;
-	}
-	
-	primary = stack->Particle(label);
-	if(!primary){
-	  printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", label);
-	  continue;
-	}
-	eprim   = primary->Energy();
-	ptprim  = primary->Pt();		
-	
+        }
+        
+        primary = stack->Particle(label);
+        if(!primary){
+          printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", label);
+          continue;
+        }
+        eprim   = primary->Energy();
+        ptprim  = primary->Pt();		
+        
       }
       else if(GetReader()->ReadAODMCParticles()){
-	//Check which is the input
-	if(ph->GetInputFileIndex() == 0){
-	  if(!mcparticles) continue;
-	  if(label >=  mcparticles->GetEntriesFast()) {
-	    if(GetDebug() > 2)  printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", 
+        //Check which is the input
+        if(ph->GetInputFileIndex() == 0){
+          if(!mcparticles) continue;
+          if(label >=  mcparticles->GetEntriesFast()) {
+            if(GetDebug() > 2)  printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** large label ***:  label %d, n tracks %d \n", 
                                        label, mcparticles->GetEntriesFast());
-	    continue ;
+            continue ;
           }
           //Get the particle
           aodprimary = (AliAODMCParticle*) mcparticles->At(label);
           
-       }
-	
-       if(!aodprimary){
-	 printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", label);
-	 continue;
-       }
-       
-       eprim   = aodprimary->E();
-       ptprim  = aodprimary->Pt();
-       
+        }
+        
+        if(!aodprimary){
+          printf("AliAnaPhoton::MakeAnalysisFillHistograms() *** no primary ***:  label %d \n", label);
+          continue;
+        }
+        
+        eprim   = aodprimary->E();
+        ptprim  = aodprimary->Pt();
+        
       }
       
       fh2E     ->Fill(ecluster, eprim);
