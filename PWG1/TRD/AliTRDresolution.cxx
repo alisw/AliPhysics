@@ -1107,6 +1107,7 @@ Bool_t AliTRDresolution::MakeProjectionTracklet()
 //    AliError(Form("Missing/Wrong data @ %d.", cidx));
     return kFALSE;
   }
+  AliDebug(2, Form("%s[%d]", H->GetName(), H->GetNdimensions()));
   return kTRUE;
 }
 
@@ -1418,7 +1419,7 @@ TObjArray* AliTRDresolution::BuildMonitorContainerTrack(const char* name)
   TObjArray *arr = BuildMonitorContainerTracklet(name); 
   arr->Expand(11);
   TH1 *h(NULL); char hname[100], htitle[300];
-  TAxis *ax(NULL);
+  //TAxis *ax(NULL);
 
   // snp pulls
   snprintf(hname, 100, "%s_%s_SNPpull", GetNameId(), name);
@@ -1467,7 +1468,7 @@ TObjArray* AliTRDresolution::BuildMonitorContainerTrack(const char* name)
   if(!(h = (TH3S*)gROOT->FindObject(hname))){
     h = new TH3S(hname, htitle, 
                  kNpt, 0., 2., 100, -4., 4., kNspc, -5.5, 5.5);
-    ax = h->GetZaxis();
+    //ax = h->GetZaxis();
     //for(Int_t ib(1); ib<=ax->GetNbins(); ib++) ax->SetBinLabel(ib, fgParticle[ib-1]);
   } else h->Reset();
   arr->AddAt(h, 9);
@@ -1477,7 +1478,7 @@ TObjArray* AliTRDresolution::BuildMonitorContainerTrack(const char* name)
   if(!(h = (TH3S*)gROOT->FindObject(hname))){
     h = new TH3S(hname, htitle, 
                  kNpt, binsPt, kNdpt, binsDPt, kNspc, binsSpc);
-    ax = h->GetZaxis();
+    //ax = h->GetZaxis();
     //for(Int_t ib(1); ib<=ax->GetNbins(); ib++) ax->SetBinLabel(ib, fgParticle[ib-1]);
   } else h->Reset();
   arr->AddAt(h, 10);
