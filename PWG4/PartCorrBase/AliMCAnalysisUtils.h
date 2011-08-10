@@ -33,18 +33,26 @@ class AliMCAnalysisUtils : public TObject {
   AliMCAnalysisUtils(const AliMCAnalysisUtils & mcu) ; // cpy ctor
 
  public:
+
+  //--------------------------------------
+  //Enum with tag for origin of particles
+  //--------------------------------------
+
 	//"Mostly" photon parent types on line 1,
 	//                                                  
 	//then "mostly" electron parent types on line 2, (e.g. electrons can
 	//come from pi0 decay)                              
 	//then charged particles on line 3,                                                                                    
 	//followed by other and unknown on line 4                                                                              
-	enum mcTypes {kMCPhoton, kMCPrompt, kMCFragmentation, kMCISR, kMCPi0Decay, kMCEtaDecay, kMCOtherDecay, kMCConversion,
-			kMCElectron, kMCEFromCFromB, kMCEFromC, kMCEFromB, kMCZDecay, kMCWDecay,
-			kMCMuon, kMCPion, kMCPi0, kMCKaon, kMCEta, kMCProton, kMCAntiProton, kMCNeutron, kMCAntiNeutron,
-			kMCOther, kMCUnknown, kMCBadLabel};
+	enum mcTypes { kMCPhoton,   kMCPrompt,      kMCFragmentation, kMCISR,    kMCPi0Decay, kMCEtaDecay, kMCOtherDecay, kMCConversion,
+                 kMCElectron, kMCEFromCFromB, kMCEFromC,        kMCEFromB, kMCZDecay,   kMCWDecay,
+			           kMCMuon,     kMCPion,        kMCPi0,           kMCKaon,   kMCEta,      kMCProton,   kMCAntiProton, kMCNeutron,    kMCAntiNeutron,
+			           kMCOther,    kMCUnknown,     kMCBadLabel                                                                                         } ;
 	
-	//Check only the label of the most significant particle
+  //--------------------------------------
+	//Methods to check origin of clusters
+  //--------------------------------------
+
   Int_t   CheckCommonAncestor(const Int_t index1, const Int_t index2, AliCaloTrackReader* reader, 
                               Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & v) ;
 	Int_t   CheckOrigin(const Int_t label, AliCaloTrackReader * reader, const Int_t input) ;
@@ -54,30 +62,36 @@ class AliMCAnalysisUtils : public TObject {
 	Int_t   CheckOriginInStack(const Int_t *labels, const Int_t nlabels, AliStack * stack) ;
 	Int_t   CheckOriginInAOD  (const Int_t *labels, const Int_t nlabels, TClonesArray* mcparticles) ;
 	
-	void   CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, AliStack * stack, Int_t & tag);
-	void   CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, TClonesArray* mcparticles, Int_t & tag);
-
-	TList * GetJets(AliCaloTrackReader * const reader) ;
-	
-	void SetTagBit(Int_t &tag, const UInt_t set) const {
+	void    CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, AliStack * stack, Int_t & tag);
+	void    CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, TClonesArray* mcparticles, Int_t & tag);
+  
+  //Check or set the bits produced in the above methods
+	void    SetTagBit(Int_t &tag, const UInt_t set) const {
 		// Set bit of type set (mcTypes) in tag
 		tag |= (1<<set) ; 
 	} 
 	
-	Bool_t CheckTagBit(const Int_t tag, const UInt_t test) const {
+	Bool_t  CheckTagBit(const Int_t tag, const UInt_t test) const {
 		// Check if in tag the bit test (mcTypes) is set.
 		if (tag & (1<<test) ) return  kTRUE ;    
 		else return kFALSE ;
   }
 	
-	void Print(const Option_t * opt)const;
-  	
-	void SetDebug(Int_t deb) {fDebug=deb;}
-	Int_t GetDebug() const {return fDebug;}	
-	
-	void SetMCGenerator(TString mcgen) {fMCGenerator=mcgen;}
-	TString GetMCGenerator() const {return fMCGenerator;}	
+  //--------------------------------------
+  // Other methods
+  //--------------------------------------
 
+  // Method to recover MC jets stored in generator
+	TList * GetJets(AliCaloTrackReader * const reader) ;
+	  
+	void    SetDebug(Int_t deb)           { fDebug=deb           ; }
+	Int_t   GetDebug()              const { return fDebug        ; }	
+	
+	void    SetMCGenerator(TString mcgen) { fMCGenerator = mcgen ; }
+	TString GetMCGenerator()        const { return fMCGenerator  ; }	
+  
+  void    Print(const Option_t * opt) const;
+  
 private:
 	Int_t   fCurrentEvent;        // Current Event
 	Int_t	  fDebug;               // Debug level
