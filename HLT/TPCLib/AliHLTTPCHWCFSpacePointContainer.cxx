@@ -99,7 +99,7 @@ int AliHLTTPCHWCFSpacePointContainer::AddInputBlock(const AliHLTComponentBlockDa
   if (!pDecoder.get()) return -ENOMEM;
 
   if (pDecoder->Init(reinterpret_cast<AliHLTUInt8_t*>(buffer), bufferSize32*sizeof(AliHLTUInt32_t))<0 ||
-      pDecoder->CheckVersion()<0) {
+      (pDecoder->CheckVersion()<0 && (int)bufferSize32>pDecoder->GetRCUTrailerSize())) {
     HLTError("data block of type %s corrupted: can not decode format",
 	     AliHLTComponent::DataType2Text(pDesc->fDataType).c_str());
     return -EBADMSG;
