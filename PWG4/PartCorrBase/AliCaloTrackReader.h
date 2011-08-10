@@ -60,105 +60,106 @@ public:
   virtual void    Print(const Option_t * opt) const;
   virtual void    ResetLists();
 
-  virtual Int_t   GetDebug()                         const { return fDebug          ; }
-  virtual void    SetDebug(Int_t d)                        { fDebug = d             ; }
+  virtual Int_t   GetDebug()                         const { return fDebug                 ; }
+  virtual void    SetDebug(Int_t d)                        { fDebug = d                    ; }
   
   enum inputDataType {kESD, kAOD, kMC};
-  virtual Int_t   GetDataType()                      const { return fDataType       ; }
-  virtual void    SetDataType(Int_t data )                 { fDataType = data       ; }
+  virtual Int_t   GetDataType()                      const { return fDataType              ; }
+  virtual void    SetDataType(Int_t data )                 { fDataType = data              ; }
 
-  virtual Int_t   GetEventNumber()                   const { return fEventNumber    ; }
+  virtual Int_t   GetEventNumber()                   const { return fEventNumber           ; }
 	
-  TString         GetTaskName()                      const { return fTaskName       ; }
-  void            SetTaskName(TString name)                { fTaskName = name       ; }
+  TString         GetTaskName()                      const { return fTaskName              ; }
+  void            SetTaskName(TString name)                { fTaskName = name              ; }
     
   //---------------------------------------
   //Input/output event setters and getters
   //---------------------------------------
   virtual void    SetInputEvent(AliVEvent* const input) ;
-  virtual void    SetOutputEvent(AliAODEvent* const aod)   { fOutputEvent = aod     ; }
-  virtual void    SetMC(AliMCEvent* const mc)              { fMC          = mc      ; }
+  virtual void    SetOutputEvent(AliAODEvent* const aod)   { fOutputEvent = aod            ; }
+  virtual void    SetMC(AliMCEvent* const mc)              { fMC          = mc             ; }
   virtual void    SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) { ; }
   
   // Delta AODs
-  virtual TList * GetAODBranchList()                 const { return fAODBranchList        ; }
-  void    SetDeltaAODFileName(TString name )               { fDeltaAODFileName = name     ; }
-  TString GetDeltaAODFileName()                      const { return fDeltaAODFileName     ; }
-  void    SwitchOnWriteDeltaAOD()                          { fWriteOutputDeltaAOD = kTRUE ; }
-  void    SwitchOffWriteDeltaAOD()                         { fWriteOutputDeltaAOD = kFALSE; }
-  Bool_t  WriteDeltaAODToFile()                      const { return fWriteOutputDeltaAOD  ; } 
+  virtual TList * GetAODBranchList()                 const { return fAODBranchList         ; }
+  void            SetDeltaAODFileName(TString name )       { fDeltaAODFileName = name      ; }
+  TString         GetDeltaAODFileName()              const { return fDeltaAODFileName      ; }
+  void            SwitchOnWriteDeltaAOD()                  { fWriteOutputDeltaAOD = kTRUE  ; }
+  void            SwitchOffWriteDeltaAOD()                 { fWriteOutputDeltaAOD = kFALSE ; }
+  Bool_t          WriteDeltaAODToFile()              const { return fWriteOutputDeltaAOD   ; } 
   
   //------------------------------------------------------------
   //Clusters/Tracks arrays filtering/filling methods and switchs 
   //------------------------------------------------------------
   
   //Minimum pt setters and getters 
-  Float_t          GetEMCALPtMin()                   const { return fEMCALPtMin ; }
-  Float_t          GetPHOSPtMin()                    const { return fPHOSPtMin  ; }
-  Float_t          GetCTSPtMin()                     const { return fCTSPtMin   ; }
-  Float_t          GetEMCALPtMax()                   const { return fEMCALPtMax ; }
-  Float_t          GetPHOSPtMax()                    const { return fPHOSPtMax  ; }
-  Float_t          GetCTSPtMax()                     const { return fCTSPtMax   ; }
+  Float_t          GetEMCALPtMin()                   const { return fEMCALPtMin            ; }
+  Float_t          GetPHOSPtMin()                    const { return fPHOSPtMin             ; }
+  Float_t          GetCTSPtMin()                     const { return fCTSPtMin              ; }
+  Float_t          GetEMCALPtMax()                   const { return fEMCALPtMax            ; }
+  Float_t          GetPHOSPtMax()                    const { return fPHOSPtMax             ; }
+  Float_t          GetCTSPtMax()                     const { return fCTSPtMax              ; }
   
-  void             SetEMCALPtMin(Float_t  pt)              { fEMCALPtMin = pt   ; }
-  void             SetPHOSPtMin (Float_t  pt)              { fPHOSPtMin  = pt   ; }
-  void             SetCTSPtMin  (Float_t  pt)              { fCTSPtMin   = pt   ; }  
+  void             SetEMCALPtMin(Float_t  pt)              { fEMCALPtMin = pt              ; }
+  void             SetPHOSPtMin (Float_t  pt)              { fPHOSPtMin  = pt              ; }
+  void             SetCTSPtMin  (Float_t  pt)              { fCTSPtMin   = pt              ; }  
   
-  void             SetEMCALPtMax(Float_t  pt)              { fEMCALPtMax = pt   ; }
-  void             SetPHOSPtMax (Float_t  pt)              { fPHOSPtMax  = pt   ; }
-  void             SetCTSPtMax  (Float_t  pt)              { fCTSPtMax   = pt   ; }  
+  void             SetEMCALPtMax(Float_t  pt)              { fEMCALPtMax = pt              ; }
+  void             SetPHOSPtMax (Float_t  pt)              { fPHOSPtMax  = pt              ; }
+  void             SetCTSPtMax  (Float_t  pt)              { fCTSPtMax   = pt              ; }  
    
-  Float_t          GetEMCALEMin()                    const { return GetEMCALPtMin() ; }
-  Float_t          GetPHOSEMin()                     const { return GetPHOSPtMin()  ; }
-  Float_t          GetEMCALEMax()                    const { return GetEMCALPtMax() ; }
-  Float_t          GetPHOSEMax()                     const { return GetPHOSPtMax()  ; }
+  Float_t          GetEMCALEMin()                    const { return GetEMCALPtMin()        ; }
+  Float_t          GetPHOSEMin()                     const { return GetPHOSPtMin()         ; }
+  Float_t          GetEMCALEMax()                    const { return GetEMCALPtMax()        ; }
+  Float_t          GetPHOSEMax()                     const { return GetPHOSPtMax()         ; }
   
-  void             SetEMCALEMin (Float_t  e)               { SetEMCALPtMin(e)   ; }
-  void             SetPHOSEMin  (Float_t  e)               { SetPHOSPtMin (e)   ; }
-  void             SetEMCALEMax (Float_t  e)               { SetEMCALPtMax(e)   ; }
-  void             SetPHOSEMax  (Float_t  e)               { SetPHOSPtMax (e)   ; }
+  void             SetEMCALEMin (Float_t  e)               { SetEMCALPtMin(e)              ; }
+  void             SetPHOSEMin  (Float_t  e)               { SetPHOSPtMin (e)              ; }
+  void             SetEMCALEMax (Float_t  e)               { SetEMCALPtMax(e)              ; }
+  void             SetPHOSEMax  (Float_t  e)               { SetPHOSPtMax (e)              ; }
   
   
   // Fidutial cuts  
   virtual AliFiducialCut * GetFiducialCut()                { 
                     if(!fFiducialCut) fFiducialCut = new AliFiducialCut(); 
-                    return  fFiducialCut                                           ; }
-  virtual void     SetFiducialCut(AliFiducialCut * const fc) { fFiducialCut = fc   ; }
-  virtual Bool_t   IsFiducialCutOn()                 const { return fCheckFidCut   ; }
-  virtual void     SwitchOnFiducialCut()                   { fCheckFidCut = kTRUE  ; 
-                                                             fFiducialCut = new AliFiducialCut();}
-  virtual void     SwitchOffFiducialCut()                  { fCheckFidCut = kFALSE ; }
+                    return  fFiducialCut                                                   ; }
+  virtual void     SetFiducialCut(AliFiducialCut * const fc) { fFiducialCut = fc           ; }
+  virtual Bool_t   IsFiducialCutOn()                 const { return fCheckFidCut           ; }
+  virtual void     SwitchOnFiducialCut()                   { fCheckFidCut = kTRUE          ; 
+                                                             fFiducialCut = new AliFiducialCut() ; }
+  virtual void     SwitchOffFiducialCut()                  { fCheckFidCut = kFALSE         ; }
   
   // Cluster origin
   Bool_t           IsEMCALCluster(AliVCluster *clus) const;
   Bool_t           IsPHOSCluster (AliVCluster *clus) const;
   //Patch for cluster origin for Old AODs implementation
-  void             SwitchOnOldAODs()                       { fOldAOD = kTRUE          ; }
-  void             SwitchOffOldAODs()                      { fOldAOD = kFALSE         ; }
+  void             SwitchOnOldAODs()                       { fOldAOD = kTRUE               ; }
+  void             SwitchOffOldAODs()                      { fOldAOD = kFALSE              ; }
   
   // Cluster/track/cells switchs
-  Bool_t           IsCTSSwitchedOn()                 const { return fFillCTS          ; }
-  void             SwitchOnCTS()                           { fFillCTS = kTRUE         ; }
-  void             SwitchOffCTS()                          { fFillCTS = kFALSE        ; }
+  Bool_t           IsCTSSwitchedOn()                 const { return fFillCTS               ; }
+  void             SwitchOnCTS()                           { fFillCTS = kTRUE              ; }
+  void             SwitchOffCTS()                          { fFillCTS = kFALSE             ; }
 
-  Bool_t           IsEMCALSwitchedOn()               const { return fFillEMCAL        ; }
-  void             SwitchOnEMCAL()                         { fFillEMCAL = kTRUE       ; }
-  void             SwitchOffEMCAL()                        { fFillEMCAL = kFALSE      ; }
+  Bool_t           IsEMCALSwitchedOn()               const { return fFillEMCAL             ; }
+  void             SwitchOnEMCAL()                         { fFillEMCAL = kTRUE            ; }
+  void             SwitchOffEMCAL()                        { fFillEMCAL = kFALSE           ; }
 
-  Bool_t           IsPHOSSwitchedOn()                const { return fFillPHOS         ; }
-  void             SwitchOnPHOS()                          { fFillPHOS = kTRUE        ; }
-  void             SwitchOffPHOS()                         { fFillPHOS = kFALSE       ; }
+  Bool_t           IsPHOSSwitchedOn()                const { return fFillPHOS              ; }
+  void             SwitchOnPHOS()                          { fFillPHOS = kTRUE             ; }
+  void             SwitchOffPHOS()                         { fFillPHOS = kFALSE            ; }
 
-  Bool_t           IsEMCALCellsSwitchedOn()          const { return fFillEMCALCells   ; }
-  void             SwitchOnEMCALCells()                    { fFillEMCALCells = kTRUE  ; }
-  void             SwitchOffEMCALCells()                   { fFillEMCALCells = kFALSE ; }
+  Bool_t           IsEMCALCellsSwitchedOn()          const { return fFillEMCALCells        ; }
+  void             SwitchOnEMCALCells()                    { fFillEMCALCells = kTRUE       ; }
+  void             SwitchOffEMCALCells()                   { fFillEMCALCells = kFALSE      ; }
 
-  Bool_t           IsPHOSCellsSwitchedOn()           const { return fFillPHOSCells    ; }
-  void             SwitchOnPHOSCells()                     { fFillPHOSCells = kTRUE   ; }
-  void             SwitchOffPHOSCells()                    { fFillPHOSCells = kFALSE  ; }
+  Bool_t           IsPHOSCellsSwitchedOn()           const { return fFillPHOSCells         ; }
+  void             SwitchOnPHOSCells()                     { fFillPHOSCells = kTRUE        ; }
+  void             SwitchOffPHOSCells()                    { fFillPHOSCells = kFALSE       ; }
 
-  void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE   ; }
-  void             SwitchOffEmbeddedClustersSelection()    { fSelectEmbeddedClusters = kFALSE  ; }
+  Bool_t           IsEmbeddedClusterSelectionOn()    const { return fSelectEmbeddedClusters   ; }
+  void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE  ; }
+  void             SwitchOffEmbeddedClustersSelection()    { fSelectEmbeddedClusters = kFALSE ; }
   
   // Filling/ filtering / detector information access methods
   virtual Bool_t   FillInputEvent(const Int_t iEntry, const char *currentFileName)  ;
@@ -170,17 +171,17 @@ public:
   virtual void     FillInputPHOSCells() ;
   virtual void     FillInputVZERO() ;  
   
-  Int_t            GetV0Signal(Int_t i)              const { return fV0ADC[i]     ; }
-  Int_t            GetV0Multiplicity(Int_t i)        const { return fV0Mul[i]     ; }
+  Int_t            GetV0Signal(Int_t i)              const { return fV0ADC[i]              ; }
+  Int_t            GetV0Multiplicity(Int_t i)        const { return fV0Mul[i]              ; }
   
-  void             SetEMCALClusterListName(TString &name)  {fEMCALClustersListName = name ; }
+  void             SetEMCALClusterListName(TString &name)  {fEMCALClustersListName = name  ; }
 
   // Arrayes with clusters/track/cells access method
-  virtual TObjArray*     GetCTSTracks()              const { return fCTSTracks     ; }
-  virtual TObjArray*     GetEMCALClusters()          const { return fEMCALClusters ; }
-  virtual TObjArray*     GetPHOSClusters()           const { return fPHOSClusters  ; }
-  virtual AliVCaloCells* GetEMCALCells()             const { return fEMCALCells    ; }
-  virtual AliVCaloCells* GetPHOSCells()              const { return fPHOSCells     ; }
+  virtual TObjArray*     GetCTSTracks()              const { return fCTSTracks             ; }
+  virtual TObjArray*     GetEMCALClusters()          const { return fEMCALClusters         ; }
+  virtual TObjArray*     GetPHOSClusters()           const { return fPHOSClusters          ; }
+  virtual AliVCaloCells* GetEMCALCells()             const { return fEMCALCells            ; }
+  virtual AliVCaloCells* GetPHOSCells()              const { return fPHOSCells             ; }
    
   //-------------------------------------
   // Event/track selection methods
@@ -255,20 +256,20 @@ public:
   virtual Float_t  GetCentralityBin(Int_t i)         const { if(i < 0 || i > 1) return 0 ; 
                                                              else return fCentralityBin[i]              ; }
   
-  virtual AliEventplane* GetEventPlane()             const { return fInputEvent->GetEventplane()   ; }           
-  virtual void           SetEventPlaneMethod(TString m)    { fEventPlaneMethod = m                 ; }
-  virtual TString        GetEventPlaneMethod()       const { return fEventPlaneMethod              ; }
+  virtual AliEventplane* GetEventPlane()             const { return fInputEvent->GetEventplane() ; }           
+  virtual void           SetEventPlaneMethod(TString m)    { fEventPlaneMethod = m               ; }
+  virtual TString        GetEventPlaneMethod()       const { return fEventPlaneMethod            ; }
 
   //-------------------------------------
   // Other methods
   //-------------------------------------
-  AliCalorimeterUtils * GetCaloUtils()               const { return fCaloUtils                       ; }
-  void             SetCaloUtils(AliCalorimeterUtils * caloutils)  { fCaloUtils = caloutils           ; }  
+  AliCalorimeterUtils * GetCaloUtils()               const { return fCaloUtils                   ; }
+  void             SetCaloUtils(AliCalorimeterUtils * caloutils)  { fCaloUtils = caloutils       ; }  
   
   //Use only for MC
-  void             SwitchOnClusterEnergySmearing()         { fSmearClusterEnergy = kTRUE             ; }
-  void             SwitchOffClusterEnergySmearing()        { fSmearClusterEnergy = kFALSE            ; }
-  Bool_t           IsClusterEnergySmeared()          const { return fSmearClusterEnergy              ; }   
+  void             SwitchOnClusterEnergySmearing()         { fSmearClusterEnergy = kTRUE         ; }
+  void             SwitchOffClusterEnergySmearing()        { fSmearClusterEnergy = kFALSE        ; }
+  Bool_t           IsClusterEnergySmeared()          const { return fSmearClusterEnergy          ; }   
   void             SetSmearingParameters(Int_t i, Float_t param) { if(i < 3)fSmearClusterParam[i] = param  ; }
     
   virtual Double_t GetBField()                       const { return fInputEvent->GetMagneticField()  ; } 
@@ -286,19 +287,19 @@ public:
   virtual TClonesArray*     GetAODMCParticles(Int_t input = 0) const ;
   virtual AliAODMCHeader*   GetAODMCHeader(Int_t input = 0)    const ;
 	
-  virtual AliVEvent*        GetInputEvent()          const { return fInputEvent  ; }
-  virtual AliVEvent*        GetOriginalInputEvent()  const { return 0x0          ; }
-  virtual AliAODEvent*      GetOutputEvent()         const { return fOutputEvent ; }
-  virtual AliMCEvent*       GetMC()                  const { return fMC          ; }
-  virtual AliMixedEvent*    GetMixedEvent()          const { return fMixedEvent  ; }
-  virtual Int_t             GetNMixedEvent()         const { return fNMixedEvent ; } 
+  virtual AliVEvent*        GetInputEvent()          const { return fInputEvent            ; }
+  virtual AliVEvent*        GetOriginalInputEvent()  const { return 0x0                    ; }
+  virtual AliAODEvent*      GetOutputEvent()         const { return fOutputEvent           ; }
+  virtual AliMCEvent*       GetMC()                  const { return fMC                    ; }
+  virtual AliMixedEvent*    GetMixedEvent()          const { return fMixedEvent            ; }
+  virtual Int_t             GetNMixedEvent()         const { return fNMixedEvent           ; } 
   
-  void             SwitchOnStack()                         { fReadStack          = kTRUE  ; }
-  void             SwitchOffStack()                        { fReadStack          = kFALSE ; }
-  void             SwitchOnAODMCParticles()                { fReadAODMCParticles = kTRUE  ; }
-  void             SwitchOffAODMCParticles()               { fReadAODMCParticles = kFALSE ; }
-  Bool_t           ReadStack()                       const { return fReadStack            ; }
-  Bool_t           ReadAODMCParticles()              const { return fReadAODMCParticles   ; }
+  void             SwitchOnStack()                         { fReadStack          = kTRUE   ; }
+  void             SwitchOffStack()                        { fReadStack          = kFALSE  ; }
+  void             SwitchOnAODMCParticles()                { fReadAODMCParticles = kTRUE   ; }
+  void             SwitchOffAODMCParticles()               { fReadAODMCParticles = kFALSE  ; }
+  Bool_t           ReadStack()                       const { return fReadStack             ; }
+  Bool_t           ReadAODMCParticles()              const { return fReadAODMCParticles    ; }
 	
   //Select generated events, depending on comparison of pT hard and jets.
   virtual Bool_t   ComparePtHardAndJetPt() ;
