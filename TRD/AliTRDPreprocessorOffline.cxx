@@ -160,6 +160,7 @@ void AliTRDPreprocessorOffline::CalibVdriftT0(const Char_t* file, Int_t startRun
   //
   if(fVdriftValidated) UpdateOCDBVdrift(startRunNumber,endRunNumber,ocdbStorage);
   if(fT0Validated) UpdateOCDBT0(startRunNumber,endRunNumber,ocdbStorage);
+  UpdateOCDBExB(startRunNumber,endRunNumber,ocdbStorage);
   
 }
 //_________________________________________________________________________________________________________________
@@ -578,6 +579,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
     object                     = calibra->GetVectorFit2();
     AliTRDCalDet *calDetLorentz = calibra->CreateDetObjectLorentzAngle(&object);
     TH1F *coefLorentzAngle = calDetLorentz->MakeHisto1DAsFunctionOfDet();
+    //if(!calDetLorentz) printf("No lorentz created\n");
     // Put them in the array
     fCalibObjects->AddAt(calDetVdrift,kVdriftLinear);
     fCalibObjects->AddAt(calDetLorentz,kLorentzLinear);
@@ -853,6 +855,29 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
    AliTRDCalDet *calDet = (AliTRDCalDet *) fCalibObjects->At(kGain);
    if(calDet) gStorage->Put(calDet, id1, metaData);
 
+
+ }
+ //___________________________________________________________________________________________________________________
+ void AliTRDPreprocessorOffline::UpdateOCDBExB(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath){
+   //
+   // Update OCDB entry
+   //
+
+   Int_t detExB = kLorentzLinear;
+   if(!fMethodSecond) return;
+
+   //printf("Pass\n");
+
+   AliCDBMetaData *metaData= new AliCDBMetaData();
+   metaData->SetObjectClassName("AliTRDCalDet");
+   metaData->SetResponsible("Raphaelle Bailhache");
+   metaData->SetBeamPeriod(1);
+
+   AliCDBId id1("TRD/Calib/ChamberExB", startRunNumber, endRunNumber);
+   AliCDBStorage * gStorage = AliCDBManager::Instance()->GetStorage(storagePath);
+   AliTRDCalDet *calDet = (AliTRDCalDet *) fCalibObjects->At(detExB);
+   if(calDet) gStorage->Put(calDet, id1, metaData);
+   //if(!calDet) printf("No caldet\n");
 
  }
  //___________________________________________________________________________________________________________________

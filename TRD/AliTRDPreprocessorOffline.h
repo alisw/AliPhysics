@@ -72,6 +72,7 @@ public:
   
   void UpdateOCDBT0(Int_t startRunNumber, Int_t endRunNumber, const char* storagePath);
   void UpdateOCDBVdrift(Int_t startRunNumber, Int_t endRunNumber, const char* storagePath);
+  void UpdateOCDBExB(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath);
   void UpdateOCDBGain(Int_t  startRunNumber, Int_t endRunNumber, const char* storagePath);
   void UpdateOCDBPRF(Int_t  startRunNumber, Int_t endRunNumber, const char* storagePath);
   void UpdateOCDBChamberStatus(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath);
