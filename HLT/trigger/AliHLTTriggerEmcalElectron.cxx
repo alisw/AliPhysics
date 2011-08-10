@@ -17,6 +17,7 @@
 
 #include "AliHLTTriggerEmcalElectron.h"
 #include "AliESDEvent.h"
+#include "AliVCluster.h" 
 #include "AliESDCaloCluster.h"
 #include "AliHLTTriggerDecision.h"
 #include "AliHLTDomainEntry.h"
