@@ -228,6 +228,6 @@ void AliMUONTriggerQAChecker::SetupHisto(Int_t nevents, const TObjArray& message
 
   histo.SetStats(kFALSE);
     
-  histo.GetListOfFunctions()->Clear();
+  histo.GetListOfFunctions()->Delete();
   histo.GetListOfFunctions()->Add(text);
 }
