@@ -15,13 +15,17 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "AliPID.h"
+class TF1;
 
 class AliEMCALPIDResponse 
 {
 public : 
-             AliEMCALPIDResponse();    //ctor
-    virtual ~AliEMCALPIDResponse() {;} //dtor
+    AliEMCALPIDResponse();    //ctor
+    AliEMCALPIDResponse( const AliEMCALPIDResponse& other);                //copy ructor
+    AliEMCALPIDResponse &operator=( const AliEMCALPIDResponse& other);     //assignment operator
 
+    virtual ~AliEMCALPIDResponse() {;} //dtor
+  
 
     // Getters
     Int_t     GetPtBin(Float_t pt) const;
@@ -47,8 +51,6 @@ public :
 protected:
   
 private:
-  AliEMCALPIDResponse( AliEMCALPIDResponse& r);                //dummy copy ructor
-  AliEMCALPIDResponse &operator=( AliEMCALPIDResponse& r);     //dummy assignment operator
 
   TF1 *fNorm;                            // Gauss function for normalizing NON electron probabilities 
 
@@ -63,7 +65,7 @@ private:
   Float_t fProbHigh[2*AliPID::kSPECIES][fNptBins];     // probability above E/p threshold for NON electrons (charge dependent)
 
 
-  ClassDef(AliEMCALPIDResponse,0)
+  ClassDef(AliEMCALPIDResponse, 1)
 };
 
 #endif // #ifdef AliEMCALPIDResponse_cxx

@@ -55,6 +55,9 @@ public:
   virtual UShort_t GetTPCNclsF() const { return 0;}
   virtual Double_t GetTRDslice(Int_t /*plane*/, Int_t /*slice*/) const { return -1.; }
   
+  virtual Int_t GetEMCALcluster() const {return -1;}
+  virtual Int_t GetPHOScluster()  const {return -1;}
+  
   //pid info
   virtual Double_t  GetITSsignal()       const {return 0.;}
   virtual Double_t  GetTPCsignal()       const {return 0.;}

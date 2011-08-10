@@ -47,6 +47,7 @@ fITSResponse(isMC),
 fTPCResponse(),
 fTRDResponse(),
 fTOFResponse(),
+fEMCALResponse(),
 fRange(5.),
 fITSPIDmethod(kITSTruncMean),
 fIsMC(isMC),
@@ -65,7 +66,8 @@ fResolutionCorrection(0x0),
 fTRDPIDParams(0x0),
 fTRDPIDReference(0x0),
 fTOFTimeZeroType(kBest_T0),
-fTOFres(100.)
+fTOFres(100.),
+fCurrentEvent(0x0)
 {
   //
   // default ctor
@@ -95,6 +97,7 @@ fITSResponse(other.fITSResponse),
 fTPCResponse(other.fTPCResponse),
 fTRDResponse(other.fTRDResponse),
 fTOFResponse(other.fTOFResponse),
+fEMCALResponse(other.fEMCALResponse),
 fRange(other.fRange),
 fITSPIDmethod(other.fITSPIDmethod),
 fIsMC(other.fIsMC),
@@ -113,7 +116,8 @@ fResolutionCorrection(0x0),
 fTRDPIDParams(0x0),
 fTRDPIDReference(0x0),
 fTOFTimeZeroType(AliPIDResponse::kBest_T0),
-fTOFres(100.)
+fTOFres(100.),
+fCurrentEvent(0x0)
 {
   //
   // copy ctor
@@ -134,6 +138,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fTPCResponse=other.fTPCResponse;
     fTRDResponse=other.fTRDResponse;
     fTOFResponse=other.fTOFResponse;
+    fEMCALResponse=other.fEMCALResponse;
     fRange=other.fRange;
     fITSPIDmethod=other.fITSPIDmethod;
     fOADBPath=other.fOADBPath;
@@ -154,6 +159,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     memset(fTRDslicesForPID,0,sizeof(UInt_t)*2);
     fTOFTimeZeroType=AliPIDResponse::kBest_T0;
     fTOFres=100.;
+    fCurrentEvent=other.fCurrentEvent;
   }
   return *this;
 }
@@ -171,11 +177,53 @@ Float_t AliPIDResponse::NumberOfSigmas(EDetCode detCode, const AliVParticle *tra
     case kDetTOF: return NumberOfSigmasTOF(track, type); break;
 //     case kDetTRD: return ComputeTRDProbability(track, type); break;
 //     case kDetPHOS: return ComputePHOSProbability(track, type); break;
-//     case kDetEMCAL: return ComputeEMCALProbability(track, type); break;
+//     case kDetEMCAL: return NumberOfSigmasEMCAL(track, type); break;
 //     case kDetHMPID: return ComputeHMPIDProbability(track, type); break;
     default: return -999.;
   }
 
+}
+
+//______________________________________________________________________________
+Float_t AliPIDResponse::NumberOfSigmasEMCAL(const AliVTrack *track, AliPID::EParticleType type) const {
+
+  AliVCluster *matchedClus = NULL;
+
+  Double_t mom     = -1.; 
+  Double_t pt      = -1.; 
+  Double_t EovP    = -1.;
+  Double_t fClsE   = -1.;
+  
+  Int_t nMatchClus = -1;
+  Int_t charge     = 0;
+  
+  // Track matching
+  nMatchClus = track->GetEMCALcluster();
+  if(nMatchClus > -1){
+
+    mom    = track->P();
+    pt     = track->Pt();
+    charge = track->Charge();
+    
+    matchedClus = (AliVCluster*)fCurrentEvent->GetCaloCluster(nMatchClus);
+    
+    if(matchedClus){
+      
+    // matched cluster is EMCAL
+    if(matchedClus->IsEMCAL()){
+      
+      fClsE       = matchedClus->E();
+      EovP        = fClsE/mom;
+      
+      
+      // NSigma value really meaningful only for electrons!
+      return fEMCALResponse.GetNumberOfSigmas(pt,EovP,type,charge); 
+    }
+  }
+  }
+
+  return -999;
+  
 }
 
 //______________________________________________________________________________
@@ -366,15 +414,57 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTRDProbability  (const AliV
   return kDetPidOk;
 }
 //______________________________________________________________________________
-AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeEMCALProbability(const AliVTrack */*track*/, Int_t nSpecies, Double_t p[]) const
+AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeEMCALProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const
 {
   //
   // Compute PID response for the EMCAL
   //
 
-  // set flat distribution (no decision)
+  AliVCluster *matchedClus = NULL;
+
+  Double_t mom     = -1.; 
+  Double_t pt      = -1.; 
+  Double_t EovP    = -1.;
+  Double_t fClsE   = -1.;
+  
+  Int_t nMatchClus = -1;
+  Int_t charge     = 0;
+  
+  // Track matching
+  nMatchClus = track->GetEMCALcluster();
+
+  if(nMatchClus > -1){
+
+    mom    = track->P();
+    pt     = track->Pt();
+    charge = track->Charge();
+    
+    matchedClus = (AliVCluster*)fCurrentEvent->GetCaloCluster(nMatchClus);
+    
+    if(matchedClus){    
+
+    // matched cluster is EMCAL
+    if(matchedClus->IsEMCAL()){
+
+      fClsE       = matchedClus->E();
+      EovP        = fClsE/mom;
+      
+      
+      // compute the probabilities 
+      if( 999 != fEMCALResponse.ComputeEMCALProbability(pt,EovP,charge,p)){	
+
+  	// in case everything is OK
+  	return kDetPidOk;
+	
+      }
+    }
+  }
+  }
+  
+  // in all other cases set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
   return kDetNoSignal;
+  
 }
 //______________________________________________________________________________
 AliPIDResponse::EDetPidStatus AliPIDResponse::ComputePHOSProbability (const AliVTrack */*track*/, Int_t nSpecies, Double_t p[]) const
@@ -410,8 +500,10 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass)
   // Apply settings for the current event
   //
   fRecoPass=pass;
-
+  
+  fCurrentEvent=0x0;
   if (!event) return;
+  fCurrentEvent=event;
   fRun=event->GetRunNumber();
   
   if (fRun!=fOldRun){

@@ -15,6 +15,7 @@
 #include "AliTPCPIDResponse.h"
 #include "AliTRDPIDResponse.h"
 #include "AliTOFPIDResponse.h"
+#include "AliEMCALPIDResponse.h"
 
 #include "AliVParticle.h"
 #include "AliVTrack.h"
@@ -53,11 +54,13 @@ public:
   AliTPCPIDResponse &GetTPCResponse() {return fTPCResponse;}
   AliTOFPIDResponse &GetTOFResponse() {return fTOFResponse;}
   AliTRDPIDResponse &GetTRDResponse() {return fTRDResponse;}
+  AliEMCALPIDResponse &GetEMCALResponse() {return fEMCALResponse;}
 
   Float_t NumberOfSigmas(EDetCode detCode, const AliVParticle *track, AliPID::EParticleType type) const;
   
   virtual Float_t NumberOfSigmasITS(const AliVParticle *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasTPC(const AliVParticle *track, AliPID::EParticleType type) const;
+  virtual Float_t NumberOfSigmasEMCAL(const AliVTrack *track, AliPID::EParticleType type) const;
   virtual Float_t NumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type) const = 0;
   virtual Bool_t IdentifiedAsElectronTRD(const AliVTrack *track, Double_t efficiencyLevel) const;
 
@@ -80,6 +83,8 @@ public:
   void InitialiseEvent(AliVEvent *event, Int_t pass);
   void SetCurrentFile(const char* file) { fCurrentFile=file; }
 
+  AliVEvent * GetCurrentEvent() const {return fCurrentEvent;}
+
   // User settings for the MC period and reco pass
   void SetMCperiod(const char *mcPeriod) {fMCperiodUser=mcPeriod;}
   void SetRecoPass(Int_t recoPass)       {fRecoPassUser=recoPass;}
@@ -92,6 +97,7 @@ protected:
   AliTPCPIDResponse fTPCResponse;    //PID response function of the TPC
   AliTRDPIDResponse fTRDResponse;    //PID response function of the TRD
   AliTOFPIDResponse fTOFResponse;    //PID response function of the TOF
+  AliEMCALPIDResponse fEMCALResponse;  //PID response function of the EMCAL
 
   Float_t           fRange;          // nSigma max in likelihood
   ITSPIDmethod      fITSPIDmethod;   // 0 = trunc mean; 1 = likelihood
@@ -120,6 +126,8 @@ private:
 
   Int_t   fTOFTimeZeroType;            //! default start time type for tof (ESD)
   Float_t fTOFres;                     //! TOF resolution
+
+  AliVEvent *fCurrentEvent;            //! event currently being processed
   
   void ExecNewRun();
   

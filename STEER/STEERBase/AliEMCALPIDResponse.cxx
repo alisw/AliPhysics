@@ -81,6 +81,50 @@ fNorm(0)
   SetPtBoundary();
   SetParametrizations();
 }
+
+AliEMCALPIDResponse::AliEMCALPIDResponse(const AliEMCALPIDResponse &other):
+    fNorm(other.fNorm)
+{
+  //
+  //  The copy constructor
+  //
+    for(Int_t i = 0; i < fNptBins; i++)
+    {
+	fPtCutMin[i] = 0.0;
+	for(Int_t j = 0; j < 2*AliPID::kSPECIES; j++)
+	{
+	    fMeanEoP[j][i]  = 0.0;
+	    fSigmaEoP[j][i] = 0.0;
+	    fProbLow[j][i]  = 0.0;
+	    fProbHigh[j][i] = 0.0;
+	}
+    }
+  
+    fPtCutMin[fNptBins] = 0.0;
+    SetPtBoundary();
+    SetParametrizations();
+}
+
+
+AliEMCALPIDResponse & AliEMCALPIDResponse::operator=( const AliEMCALPIDResponse& other)
+{
+  //
+  //  The assignment operator
+  //
+    fNorm = other.fNorm;
+    for(Int_t i = 0; i < fNptBins; i++)
+    {
+	fPtCutMin[i] = 0.0;
+	for(Int_t j = 0; j < 2*AliPID::kSPECIES; j++)
+	{
+	    fMeanEoP[j][i]  = 0.0;
+	    fSigmaEoP[j][i] = 0.0;
+	    fProbLow[j][i]  = 0.0;
+	    fProbHigh[j][i] = 0.0;
+	}
+    }
+}
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliEMCALPIDResponse::SetPtBoundary(){
   //
@@ -346,8 +390,8 @@ Double_t AliEMCALPIDResponse::ComputeEMCALProbability(Float_t pt, Float_t eop, I
   Double_t fRange  = 5.0;   // hardcoded 
   Double_t nsigma  = 0.0;
   Double_t sigma   = 0.0;
-  Double_t proba   = -1.;
-
+  Double_t proba   = 999.;
+  
 
   // Check the charge
   if( charge != -1 && charge != 1){
@@ -358,7 +402,7 @@ Double_t AliEMCALPIDResponse::ComputeEMCALProbability(Float_t pt, Float_t eop, I
  
   // default value (will be returned, if pt below threshold)
   for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
-    pEMCAL[species] = -1;
+    pEMCAL[species] = 999.;
   }
 
   if( GetPtBin(pt) > -1 ){
