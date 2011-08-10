@@ -1529,7 +1529,7 @@ void AliVertexerTracks::VertexFitter()
     chi2 = 0.;
     nTrksUsed = 0;
 
-    if(step==1) { initPos[0]=rv(0,0); initPos[0]=rv(1,0); }
+    if(step==1) { initPos[0]=rv(0,0); initPos[1]=rv(1,0); }
 
     TMatrixD sumWiri(3,1);
     TMatrixD sumWi(3,3);
