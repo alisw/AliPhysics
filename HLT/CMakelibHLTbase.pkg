@@ -91,6 +91,8 @@ set ( CLASS_HDRS
     AliHLTSpacePointContainer.h
     AliHLTTrackGeometry.h
     AliHLTComponentBenchmark.h
+    AliHLTDataDeflater.h
+    AliHLTDataDeflaterSimple.h
     )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}")
