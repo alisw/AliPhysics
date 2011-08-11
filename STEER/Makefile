@@ -12,6 +12,7 @@ ifndef PACKCXXFLAGS
 endif
 
 ALICEINC = -I.
+ALICEINC += -I./$(PACKAGE)/
 
 ifneq ($(ESD_INCLUDE),)
    ALICEINC += -I../$(ESD_INCLUDE) 
