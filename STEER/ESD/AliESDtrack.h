@@ -329,11 +329,11 @@ public:
   Bool_t  IsMultPrimary() const {return !(fFlags&kMultSec);}
   Bool_t  IsMultSecondary() const {return (fFlags&kMultSec);}
 
-  Int_t GetEMCALcluster() {return fCaloIndex;}
+  Int_t GetEMCALcluster() const {return fCaloIndex;}
   void SetEMCALcluster(Int_t index) {fCaloIndex=index;}
   Bool_t IsEMCAL() const {return fFlags&kEMCALmatch;}
 
-  Int_t GetPHOScluster() {return fCaloIndex;}
+  Int_t GetPHOScluster() const {return fCaloIndex;}
   void SetPHOScluster(Int_t index) {fCaloIndex=index;}
   Bool_t IsPHOS() const {return fFlags&kPHOSmatch;}
   Double_t GetPHOSdx()const{return fCaloDx ;}
