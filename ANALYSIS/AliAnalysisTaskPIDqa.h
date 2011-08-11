@@ -38,14 +38,16 @@ public:
 
   
 private: 
-  AliPIDResponse *fPIDResponse;        //! PID response Handler
-  TList                 *fListQA;      //! list with all QA histograms
-  TList                 *fListQAits;   //! List with ITS QA histograms
-  TList                 *fListQAtpc;   //! List with TPC QA histograms
-  TList                 *fListQAtrd;   //! List with TRD QA histograms
-  TList                 *fListQAtof;   //! List with TOF QA histograms
-  TList                 *fListQAemcal; //! List with EMCAL QA histograms
-  TList                 *fListQAtpctof;//! List with combined PID from TPC + TOF
+  AliPIDResponse *fPIDResponse;             //! PID response Handler
+  TList                 *fListQA;           //! list with all QA histograms
+  TList                 *fListQAits;        //! List with ITS QA histograms
+  TList                 *fListQAitsSA;      //! List with ITS SA QA histograms
+  TList                 *fListQAitsPureSA;  //! List with ITS pure SA QA histograms
+  TList                 *fListQAtpc;        //! List with TPC QA histograms
+  TList                 *fListQAtrd;        //! List with TRD QA histograms
+  TList                 *fListQAtof;        //! List with TOF QA histograms
+  TList                 *fListQAemcal;      //! List with EMCAL QA histograms
+  TList                 *fListQAtpctof;     //! List with combined PID from TPC + TOF
 
   
   void ExecNewRun();
