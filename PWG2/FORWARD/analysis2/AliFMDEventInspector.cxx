@@ -584,7 +584,9 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
  
   // Check for multiple vertices (pile-up) with at least 3
   // contributors and at least 0.8cm from the primary vertex
-  Bool_t pileup =  esd->IsPileupFromSPD(3,0.8);
+  Bool_t pileup = kFALSE;
+  if(fCollisionSystem == AliForwardUtil::kPP)
+    pileup =  esd->IsPileupFromSPD(3,0.8);
   if (pileup) {
     triggers |= AliAODForwardMult::kPileUp;
     fHTriggers->Fill(kPileUp+.5);
