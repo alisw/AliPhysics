@@ -834,8 +834,13 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcCaloTriggers()
       teta+=eta*en;
       tphi+=phi*en;
     }
+
+    if (tenergy<=0)
+      continue;
+
     teta/=tenergy;
     tphi/=tenergy;
+
     AliStaTrigger *trignew = static_cast<AliStaTrigger*>(fTriggers->New(ntrigs++));
     trignew->fE       = tenergy;
     trignew->fEta     = teta;
