@@ -20,6 +20,7 @@
 #include <AliESDtrack.h>
 #include <AliESDVertex.h>
 #include <AliESDEvent.h>
+#include <AliMultiplicity.h>
 #include <AliLog.h>
 
 #include <TTree.h>
@@ -73,6 +74,8 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "n crossed rows / n findable clusters",
  "missing ITS points"
 };
+
+AliESDtrackCuts* AliESDtrackCuts::fgMultEstTrackCuts[AliESDtrackCuts::kNMultEstTrackCuts] = { 0, 0, 0, 0 };
 
 //____________________________________________________________________
 AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliAnalysisCuts(name,title),
@@ -861,6 +864,8 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, Bool_t t
   // Gets reference multiplicity following the standard cuts and a defined fiducial volume
   // tpcOnly = kTRUE -> consider TPC-only tracks
   //         = kFALSE -> consider global tracks
+  //
+  // DEPRECATED Use GetReferenceMultiplicity with the enum as second argument instead
   
   if (!tpcOnly)
   {
@@ -1886,4 +1891,253 @@ Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
    TString tmp(dist);
    tmp.ReplaceAll("pt","x");
    f1CutMinDCAToVertexZPtDep = new TFormula("f1CutMinDCAToVertexZPtDep",tmp.Data());
+}
+
+AliESDtrackCuts* AliESDtrackCuts::GetMultEstTrackCuts(MultEstTrackCuts cut)
+{
+  // returns the multiplicity estimator track cuts objects to allow for user configuration
+  // upon first call the objects are created
+  //
+  // the cut defined here correspond to GetStandardITSTPCTrackCuts2010 (apart from the one for without SPD)
+  
+  if (!fgMultEstTrackCuts[kMultEstTrackCutGlobal])
+  {
+    // quality cut on ITS+TPC tracks
+    fgMultEstTrackCuts[kMultEstTrackCutGlobal] = new AliESDtrackCuts();
+    fgMultEstTrackCuts[kMultEstTrackCutGlobal]->SetMinNClustersTPC(70);
+    fgMultEstTrackCuts[kMultEstTrackCutGlobal]->SetMaxChi2PerClusterTPC(4);
+    fgMultEstTrackCuts[kMultEstTrackCutGlobal]->SetAcceptKinkDaughters(kFALSE);
+    fgMultEstTrackCuts[kMultEstTrackCutGlobal]->SetRequireTPCRefit(kTRUE);
+    fgMultEstTrackCuts[kMultEstTrackCutGlobal]->SetRequireITSRefit(kTRUE);
+    //multiplicity underestimate if we use global tracks with |eta| > 0.9
+    fgMultEstTrackCuts[kMultEstTrackCutGlobal]->SetEtaRange(-0.9, 0.9);
+    
+    // quality cut on ITS_SA tracks (complementary to ITS+TPC)
+    fgMultEstTrackCuts[kMultEstTrackCutITSSA] = new AliESDtrackCuts();
+    fgMultEstTrackCuts[kMultEstTrackCutITSSA]->SetRequireITSRefit(kTRUE);
+    
+    // primary selection for tracks with SPD hits
+    fgMultEstTrackCuts[kMultEstTrackCutDCAwSPD] = new AliESDtrackCuts();
+    fgMultEstTrackCuts[kMultEstTrackCutDCAwSPD]->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+    fgMultEstTrackCuts[kMultEstTrackCutDCAwSPD]->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+    fgMultEstTrackCuts[kMultEstTrackCutDCAwSPD]->SetMaxDCAToVertexZ(2);
+    
+    // primary selection for tracks w/o SPD hits
+    fgMultEstTrackCuts[kMultEstTrackCutDCAwoSPD] = new AliESDtrackCuts();
+    fgMultEstTrackCuts[kMultEstTrackCutDCAwoSPD]->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+    fgMultEstTrackCuts[kMultEstTrackCutDCAwoSPD]->SetMaxDCAToVertexXYPtDep("1.5*(0.0182+0.0350/pt^1.01)");
+    fgMultEstTrackCuts[kMultEstTrackCutDCAwoSPD]->SetMaxDCAToVertexZ(2);
+  }
+  
+  return fgMultEstTrackCuts[cut];
+}
+
+Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, MultEstTrackType trackType, Float_t etaRange) 
+{
+  // Get multiplicity estimate based on TPC/ITS tracks and tracklets
+  // Adapted for AliESDtrackCuts from a version developed by: Ruben Shahoyan, Anton Alkin, Arvinder Palaha
+  //
+  // Returns a negative value if no reliable estimate can be provided:
+  //   -1 SPD vertex missing
+  //   -2 SPD VertexerZ dispersion too large
+  //   -3 Track vertex missing (not checked for kTracklets)
+  //   -4 Distance between SPD and track vertices too large (not checked for kTracklets)
+  //
+  // WARNING This functions does not cut on the z vtx. Depending on the eta range requested, you need to restrict your z vertex range!
+  //
+  // Strategy for combined estimators
+  //   1. Count global tracks and flag them
+  //   2. Count ITSSA as complementaries for ITSTPC+ or as main tracks
+  //   3. Count the complementary SPD tracklets
+  
+  const AliESDVertex* vertices[2];
+  vertices[0] = esd->GetPrimaryVertexSPD();
+  vertices[1] = esd->GetPrimaryVertexTracks();
+  
+  if (!vertices[0]->GetStatus())
+  {
+    AliDebugClass(AliLog::kDebug, "No SPD vertex. Not able to make a reliable multiplicity estimate.");
+    return -1;
+  }
+  
+  if (vertices[0]->IsFromVertexerZ() && vertices[0]->GetDispersion() > 0.02)
+  {
+    AliDebugClass(AliLog::kDebug, "Vertexer z dispersion > 0.02. Not able to make a reliable multiplicity estimate.");
+    return -2;
+  }
+  
+  Int_t multiplicityEstimate = 0;
+  
+  // SPD tracklet-only estimate
+  if (trackType == kTracklets)
+  {
+    const AliMultiplicity* spdmult = esd->GetMultiplicity();    // spd multiplicity object
+    for (Int_t i=0; i<spdmult->GetNumberOfTracklets(); ++i) 
+    {
+      if (TMath::Abs(spdmult->GetEta(i)) > etaRange) 
+	continue; // eta selection for tracklets
+      multiplicityEstimate++;
+    }
+    return multiplicityEstimate;
+  }
+
+  if (!vertices[1]->GetStatus())
+  {
+    AliDebugClass(AliLog::kDebug, "No track vertex. Not able to make a reliable multiplicity estimate.");
+    return -3;
+  }
+
+  // TODO value of displacement to be studied
+  const Float_t maxDisplacement = 0.5;
+  //check for displaced vertices
+  Double_t displacement = TMath::Abs(vertices[0]->GetZ() - vertices[1]->GetZ());
+  if (displacement > maxDisplacement) 
+  {
+    AliDebugClass(AliLog::kDebug, Form("Displaced vertices %f > %f",displacement,maxDisplacement));
+    return -4;
+  }
+  
+  // update eta range in track cuts
+  GetMultEstTrackCuts(kMultEstTrackCutITSSA)->SetEtaRange(-etaRange, etaRange);
+  GetMultEstTrackCuts(kMultEstTrackCutDCAwSPD)->SetEtaRange(-etaRange, etaRange);
+  GetMultEstTrackCuts(kMultEstTrackCutDCAwoSPD)->SetEtaRange(-etaRange, etaRange);
+  
+  //*******************************************************************************************************
+  //set counters to initial zeros
+  Int_t tracksITSTPC = 0;     //number of global tracks for a given event
+  Int_t tracksITSSA = 0;      //number of ITS standalone tracks for a given event
+  Int_t tracksITSTPCSA_complementary = 0; //number of ITS standalone tracks complementary to TPC for a given event
+  Int_t trackletsITSTPC_complementary = 0;//number of SPD tracklets complementary to global/ITSSA tracks for a given events
+  Int_t trackletsITSSA_complementary = 0; //number of SPD tracklets complementary to ITSSA tracks for a given event
+
+  const Int_t nESDTracks = esd->GetNumberOfTracks();
+  Int_t highestID = 0;
+
+  // flags for secondary and rejected tracks
+  const Int_t kRejBit = BIT(15); // set this bit in global tracks if it is rejected by a cut
+  const Int_t kSecBit = BIT(16); // set this bit in global tracks if it is secondary according to a cut
+  
+  for(Int_t itracks=0; itracks < nESDTracks; itracks++) {
+    if(esd->GetTrack(itracks)->GetLabel() > highestID) highestID = esd->GetTrack(itracks)->GetLabel();
+    esd->GetTrack(itracks)->ResetBit(kSecBit|kRejBit); //reset bits used for flagging secondaries and rejected tracks in case they were changed before this analysis
+  }
+  const Int_t maxid = highestID+1; // used to define bool array for check multiple associations of tracklets to one track. array starts at 0.
+  
+  // bit mask for esd tracks, to check if multiple tracklets are associated to it
+  Bool_t globalBits[maxid], pureITSBits[maxid];
+  for(Int_t i=0; i<maxid; i++){ // set all bools to false
+      globalBits[i]=kFALSE;
+      pureITSBits[i]=kFALSE;
+  }
+
+  //*******************************************************************************************************
+  // get multiplicity from global tracks
+  for(Int_t itracks = 0; itracks < nESDTracks; itracks++) { // flag the tracks
+    AliESDtrack* track = esd->GetTrack(itracks);
+
+    // if track is a secondary from a V0, flag as a secondary
+    if (track->IsOn(AliESDtrack::kMultInV0)) {
+      track->SetBit(kSecBit);
+      continue;
+    }
+    
+    //secondary?
+    if (track->IsOn(AliESDtrack::kMultSec)) {
+      track->SetBit(kSecBit);
+      continue;
+    }
+
+    // check tracks with ITS part
+    //*******************************************************************************************************
+    if (track->IsOn(AliESDtrack::kITSin) && !track->IsOn(AliESDtrack::kITSpureSA) && trackType == kTrackletsITSTPC) { // track has ITS part but is not an ITS_SA
+      //*******************************************************************************************************
+      // TPC+ITS
+      if (track->IsOn(AliESDtrack::kTPCin)) {  // Global track, has ITS and TPC contributions
+          if (fgMultEstTrackCuts[kMultEstTrackCutGlobal]->AcceptTrack(track)) { // good ITSTPC track
+            if (fgMultEstTrackCuts[kMultEstTrackCutDCAwSPD]->AcceptTrack(track) || fgMultEstTrackCuts[kMultEstTrackCutDCAwoSPD]->AcceptTrack(track)) {
+              tracksITSTPC++; //global track counted
+              globalBits[itracks] = kTRUE;
+            }
+            else track->SetBit(kSecBit); // large DCA -> secondary, don't count either track not associated tracklet
+          }
+          else track->SetBit(kRejBit); // bad quality, don't count the track, but may count tracklet if associated
+      }
+      //*******************************************************************************************************
+      // ITS complementary
+      else if (fgMultEstTrackCuts[kMultEstTrackCutITSSA]->AcceptTrack(track)) { // good ITS complementary track
+        if (fgMultEstTrackCuts[kMultEstTrackCutDCAwSPD]->AcceptTrack(track) || fgMultEstTrackCuts[kMultEstTrackCutDCAwoSPD]->AcceptTrack(track)) {
+          tracksITSTPCSA_complementary++;
+          globalBits[itracks] = kTRUE;
+        }
+        else track->SetBit(kSecBit); // large DCA -> secondary, don't count either track not associated tracklet
+      }
+      else track->SetBit(kRejBit); // bad quality, don't count the track, but may count tracklet if associated
+    }
+    //*******************************************************************************************************
+    // check tracks from ITS_SA_PURE
+    if (track->IsOn(AliESDtrack::kITSin) && track->IsOn(AliESDtrack::kITSpureSA) && trackType == kTrackletsITSSA){
+      if (fgMultEstTrackCuts[kMultEstTrackCutITSSA]->AcceptTrack(track)) { // good ITSSA track
+        if (fgMultEstTrackCuts[kMultEstTrackCutDCAwSPD]->AcceptTrack(track) || fgMultEstTrackCuts[kMultEstTrackCutDCAwoSPD]->AcceptTrack(track)) {
+          tracksITSSA++;
+          pureITSBits[itracks] = kTRUE;
+        }
+        else track->SetBit(kRejBit);
+      }
+      else track->SetBit(kRejBit);
+    }
+  }//ESD tracks counted
+
+  //*******************************************************************************************************
+  // get multiplicity from ITS tracklets to complement TPC+ITS, and ITSpureSA
+  const AliMultiplicity* spdmult = esd->GetMultiplicity();    // spd multiplicity object
+  for (Int_t i=0; i<spdmult->GetNumberOfTracklets(); ++i) {
+    if (TMath::Abs(spdmult->GetEta(i)) > etaRange) continue; // eta selection for tracklets
+    
+    // if counting tracks+tracklets, check if clusters were already used in tracks
+    Int_t id1,id2,id3,id4;
+    spdmult->GetTrackletTrackIDs(i,0,id1,id2); // references for eventual Global/ITS_SA tracks
+    AliESDtrack* tr1 = id1>=0 ? esd->GetTrack(id1) : 0;
+    spdmult->GetTrackletTrackIDs(i,1,id3,id4); // references for eventual ITS_SA_pure tracks
+    AliESDtrack* tr3 = id3>=0 ? esd->GetTrack(id3) : 0;
+
+    // are both clusters from the same tracks? If not, skip the tracklet (shouldn't change things much)
+    if ((id1!=id2 && id1>=0 && id2>=0) || (id3!=id4 && id3>=0 && id4>=0)) continue;
+
+    Bool_t bUsedInGlobal = (id1 != -1) ? globalBits[id1] : 0;// has associated global track been associated to a previous tracklet?
+    Bool_t bUsedInPureITS = (id3 != -1) ? pureITSBits[id3] : 0;// has associated pure ITS track been associated to a previous tracklet?
+    //*******************************************************************************************************
+    if (trackType == kTrackletsITSTPC) {
+      // count tracklets towards global+complementary tracks
+      if (  (tr1 && !tr1->TestBit(kSecBit)) &&   // reject as secondary
+        (tr1 &&  tr1->TestBit(kRejBit)) ) {  // count tracklet as bad quality track
+          if(!bUsedInGlobal){
+            ++trackletsITSTPC_complementary;
+            if(id1>0) globalBits[id1] = kTRUE; // mark global track linked to this tracklet as "associated"
+          }
+      }
+      else if(id1<0) {
+        ++trackletsITSTPC_complementary; // if no associated track, count the tracklet
+      }
+    } else {
+      // count tracklets towards ITS_SA_pure tracks
+      if (  (tr3 && !tr3->TestBit(kSecBit)) &&   // reject as secondary
+        (tr3 &&  tr3->TestBit(kRejBit)) ) { // count tracklet as bad quality track
+        if(!bUsedInPureITS) {
+          ++trackletsITSSA_complementary;
+          if(id3>0) pureITSBits[id3] = kTRUE; // mark global track linked to this tracklet as "associated"
+        }
+      }
+      else if(id3<0) {
+        ++trackletsITSSA_complementary; // if no associated track, count the tracklet
+      }
+    }
+  }
+  
+  //*******************************************************************************************************
+  if (trackType == kTrackletsITSTPC)
+    multiplicityEstimate = tracksITSTPC + tracksITSTPCSA_complementary + trackletsITSTPC_complementary;
+  else
+    multiplicityEstimate = tracksITSSA + trackletsITSSA_complementary;
+
+  return multiplicityEstimate;
 }

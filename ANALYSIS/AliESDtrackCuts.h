@@ -41,6 +41,8 @@ class AliESDtrackCuts : public AliAnalysisCuts
 public:
   enum ITSClusterRequirement { kOff = 0, kNone, kAny, kFirst, kOnlyFirst, kSecond, kOnlySecond, kBoth };
   enum Detector { kSPD = 0, kSDD, kSSD };
+  enum MultEstTrackCuts { kMultEstTrackCutGlobal = 0, kMultEstTrackCutITSSA, kMultEstTrackCutDCAwSPD, kMultEstTrackCutDCAwoSPD, kNMultEstTrackCuts /* this must always be the last */};
+  enum MultEstTrackType { kTrackletsITSTPC = 0, kTrackletsITSSA, kTracklets };
   
   AliESDtrackCuts(const Char_t* name = "AliESDtrackCuts", const Char_t* title = "");
   virtual ~AliESDtrackCuts();
@@ -54,6 +56,8 @@ public:
   Int_t CountAcceptedTracks(const AliESDEvent* const esd);
   
   static Int_t GetReferenceMultiplicity(const AliESDEvent* esd, Bool_t tpcOnly);
+  static Int_t GetReferenceMultiplicity(const AliESDEvent* esd, MultEstTrackType trackType = kTrackletsITSTPC, Float_t etaRange = 0.5);
+  static AliESDtrackCuts* GetMultEstTrackCuts(MultEstTrackCuts cut);
 
   static AliESDtrack* GetTPCOnlyTrack(AliESDEvent* esd, Int_t iTrack);
   
@@ -190,6 +194,7 @@ protected:
   //######################################################
   // esd track quality cuts
   static const Char_t* fgkCutNames[kNCuts]; //! names of cuts (for internal use)
+  static AliESDtrackCuts* fgMultEstTrackCuts[kNMultEstTrackCuts]; //! track cuts used for the multiplicity estimate
 
   Int_t   fCutMinNClusterTPC;         // min number of tpc clusters
   Int_t   fCutMinNClusterITS;         // min number of its clusters
@@ -292,7 +297,7 @@ protected:
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
-  ClassDef(AliESDtrackCuts, 15)
+  ClassDef(AliESDtrackCuts, 16)
 };
 
 
