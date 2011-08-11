@@ -199,12 +199,16 @@ void AliTPCQADataMakerRec::InitRaws()
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   
-  fTPCdataQA = new AliTPCdataQA();
-  LoadMaps(); // Load Altro maps
-  fTPCdataQA->SetAltroMapping(fMapping); // set Altro mapping
-  fTPCdataQA->SetRangeTime(fRawFirstTimeBin, fRawLastTimeBin); // set time bin interval 
-  fTPCdataQA->SetIsDQM(kTRUE);
-  
+  // It might happen that we will be in this method a few times
+  // (we create the dataQA at the first call to this method)
+  if(!fTPCdataQA) {
+    fTPCdataQA = new AliTPCdataQA();
+    LoadMaps(); // Load Altro maps
+    fTPCdataQA->SetAltroMapping(fMapping); // set Altro mapping
+    fTPCdataQA->SetRangeTime(fRawFirstTimeBin, fRawLastTimeBin); // set time bin interval 
+    fTPCdataQA->SetIsDQM(kTRUE);
+  }
+
   TProfile * histRawsOccupancyVsSector = 
     new TProfile("hRawsOccupancyVsSector", "Occupancy vs sector; Sector; Occupancy",
 	     72, 0, 72);
