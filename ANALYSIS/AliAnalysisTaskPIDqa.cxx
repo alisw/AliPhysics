@@ -38,6 +38,8 @@
 #include <AliTRDPIDResponse.h>
 #include <AliTOFPIDResponse.h>
 
+#include <AliESDEvent.h>
+
 #include "AliAnalysisTaskPIDqa.h"
 
 
@@ -274,7 +276,9 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
 
   AliVEvent *event=InputEvent();
   
+
   Int_t ntracks=event->GetNumberOfTracks();
+  Int_t tracksAtTof = 0;
   for(Int_t itrack = 0; itrack < ntracks; itrack++){
     AliVTrack *track=(AliVTrack*)event->GetTrack(itrack);
     
@@ -282,10 +286,10 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
     //basic track cuts
     //
     ULong_t status=track->GetStatus();
-    // not that nice. status bits not in virtual interface
     // TPC refit + ITS refit +
     // TOF out + TOFpid +
     // kTIME
+    // (we don't use kTOFmismatch because it depends on TPC....)
     if (!((status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
         !((status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ||
         !((status & AliVTrack::kTOFout  ) == AliVTrack::kTOFout  ) ||
@@ -300,6 +304,7 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
     
     if ( nCrossedRowsTPC<70 || ratioCrossedRowsOverFindableClustersTPC<.8 ) continue;
     
+    tracksAtTof++;
     
     Double_t mom=track->P();
     
@@ -311,14 +316,38 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
       h->Fill(mom,nSigma);
     }
     
-    TH2 *h=(TH2*)fListQAtof->At(AliPID::kSPECIES);
+    TH2 *h=(TH2*)fListQAtof->FindObject("hSigP_TOF");
     if (h) {
       Double_t sig=track->GetTOFsignal();
       h->Fill(mom,sig);
     }
     
+    Double_t mask = (Double_t)fPIDResponse->GetTOFResponse().GetStartTimeMask(mom) + 0.5;
+    ((TH1F*)fListQAtof->FindObject("hStartTimeMask_TOF"))->Fill(mask);
+
+    Double_t res = (Double_t)fPIDResponse->GetTOFResponse().GetStartTimeRes(mom);
+    ((TH1F*)fListQAtof->FindObject("hStartTimeRes_TOF"))->Fill(res);
+
+    AliESDEvent *esd = dynamic_cast<AliESDEvent *>(event);
+    if (esd) {
+      Double_t startTime = esd->GetT0TOF(0);
+      if (startTime < 90000) ((TH1F*)fListQAtof->FindObject("hStartTimeAC_T0"))->Fill(startTime);
+      else {
+	startTime = esd->GetT0TOF(1);
+	if (startTime < 90000) ((TH1F*)fListQAtof->FindObject("hStartTimeA_T0"))->Fill(startTime);
+	startTime = esd->GetT0TOF(2);
+	if (startTime < 90000) ((TH1F*)fListQAtof->FindObject("hStartTimeC_T0"))->Fill(startTime);
+      }
+    }    
   }
+  if (tracksAtTof > 0) {
+    ((TH1F* )fListQAtof->FindObject("hnTracksAt_TOF"))->Fill(tracksAtTof);
+    Int_t mask = fPIDResponse->GetTOFResponse().GetStartTimeMask(5.); 
+    if (mask & 0x1) ((TH1F*)fListQAtof->FindObject("hT0MakerEff"))->Fill(tracksAtTof);
 }
+
+}
+
 
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillEMCALqa()
@@ -327,6 +356,60 @@ void AliAnalysisTaskPIDqa::FillEMCALqa()
   // Fill PID qa histograms for the EMCAL
   //
 
+  AliVEvent *event=InputEvent();
+  
+  Int_t ntracks=event->GetNumberOfTracks();
+  for(Int_t itrack = 0; itrack < ntracks; itrack++){
+    AliVTrack *track=(AliVTrack*)event->GetTrack(itrack);
+    
+    //
+    //basic track cuts
+    //
+    ULong_t status=track->GetStatus();
+    // not that nice. status bits not in virtual interface
+    // TPC refit + ITS refit +
+    // TOF out + TOFpid +
+    // kTIME
+    if (!( (status & AliVTrack::kEMCALmatch) == AliVTrack::kEMCALmatch) ) continue;
+
+    Double_t pt=track->Pt();
+   
+    //EMCAL nSigma (only for electrons at the moment)
+    TH2 *h=(TH2*)fListQAemcal->At(0);
+    if (!h) continue;
+    Double_t nSigma=fPIDResponse->NumberOfSigmasEMCAL(track, (AliPID::EParticleType)0);
+    h->Fill(pt,nSigma);
+    
+    //EMCAL signal (E/p vs. pT)
+    h=(TH2*)fListQAemcal->At(1);
+    if (h) {
+
+      Int_t nMatchClus = track->GetEMCALcluster();
+      Double_t mom     = track->P();
+      Double_t eop     = -1.;
+
+      if(nMatchClus > -1){
+    
+	AliVCluster *matchedClus = (AliVCluster*)event->GetCaloCluster(nMatchClus);
+    
+	if(matchedClus){
+
+	  // matched cluster is EMCAL
+	  if(matchedClus->IsEMCAL()){
+      
+	    Double_t fClsE       = matchedClus->E();
+	    eop                  = fClsE/mom;
+
+	    h->Fill(pt,eop);
+	    
+	  }
+	}
+      }
+      else{
+	Printf("status status = AliVTrack::kEMCALmatch, BUT no matched cluster!");
+      }
+    }
+  }
 }
 
 //______________________________________________________________________________
@@ -383,6 +466,33 @@ void AliAnalysisTaskPIDqa::FillTPCTOFqa()
       h=(TH2*)fListQAtpctof->At(ispecie+AliPID::kSPECIES);
       if (h && TMath::Abs(nSigmaTPC)<3.) h->Fill(mom,nSigmaTOF);
 
+      //EMCAL after TOF and TPC cut
+      h=(TH2*)fListQAtpctof->At(ispecie+2*AliPID::kSPECIES);
+      if (h && TMath::Abs(nSigmaTOF)<3. && TMath::Abs(nSigmaTPC)<3. ){
+
+	Int_t nMatchClus = track->GetEMCALcluster();
+	Double_t pt      = track->Pt();
+	Double_t eop     = -1.;
+	
+	if(nMatchClus > -1){
+	  
+	  AliVCluster *matchedClus = (AliVCluster*)event->GetCaloCluster(nMatchClus);
+	  
+	  if(matchedClus){
+	    
+	    // matched cluster is EMCAL
+	    if(matchedClus->IsEMCAL()){
+	      
+	      Double_t fClsE       = matchedClus->E();
+	      eop                  = fClsE/mom;
+
+	      h->Fill(pt,eop);
+ 
+	      
+	    }
+	  }
+	}
+      }
     }
   }
 }
@@ -465,6 +575,7 @@ void AliAnalysisTaskPIDqa::SetupTOFqa()
                               vX->GetNrows()-1,vX->GetMatrixArray(),
                               200,-10,10);
     fListQAtof->Add(hNsigmaP);
+    // to be added: t-texp without StartTime subtraction
   }
   
   
@@ -472,9 +583,29 @@ void AliAnalysisTaskPIDqa::SetupTOFqa()
                         "TOF signal vs. p;p [GeV]; TOF signal [arb. units]",
                         vX->GetNrows()-1,vX->GetMatrixArray(),
                         300,0,300);
+  
   fListQAtof->Add(hSig);
 
   delete vX;  
+
+  TH1F *hStartTimeMask_TOF = new TH1F("hStartTimeMask_TOF","StartTime mask",8,0,8);
+  fListQAtof->Add(hStartTimeMask_TOF);
+  TH1F *hStartTimeRes_TOF = new TH1F("hStartTimeRes_TOF","StartTime resolution [ps]",100,0,500);
+  fListQAtof->Add(hStartTimeRes_TOF);
+
+  TH1F *hnTracksAt_TOF = new TH1F("hnTracksAt_TOF","Matched tracks at TOF",20,0,20);
+  fListQAtof->Add(hnTracksAt_TOF);
+  TH1F *hT0MakerEff = new TH1F("hT0MakerEff","Events with T0-TOF vs nTracks",20,0,20);
+  fListQAtof->Add(hT0MakerEff);
+
+  // this in principle should stay on a T0 PID QA, but are just the data prepared for TOF use
+  TH1F *hStartTimeA_T0 = new TH1F("hStartTimeA_T0","StartTime from T0A [ps]",1000,-1000,1000);
+  fListQAtof->Add(hStartTimeA_T0);
+  TH1F *hStartTimeC_T0 = new TH1F("hStartTimeC_T0","StartTime from T0C [ps]",1000,-1000,1000);
+  fListQAtof->Add(hStartTimeC_T0);
+  TH1F *hStartTimeAC_T0 = new TH1F("hStartTimeAC_T0","StartTime from T0AC [ps]",1000,-1000,1000);;
+  fListQAtof->Add(hStartTimeAC_T0);
+
 }
 
 //______________________________________________________________________________
@@ -484,6 +615,21 @@ void AliAnalysisTaskPIDqa::SetupEMCALqa()
   // Create the EMCAL qa objects
   //
 
+  TVectorD *vX=MakeLogBinning(200,.1,30);
+  
+  TH2F *hNsigmaPt = new TH2F(Form("hNsigmaPt_EMCAL_%s",AliPID::ParticleName(0)),
+			     Form("EMCAL n#sigma %s vs. p_{T};p_{T} [GeV]; n#sigma",AliPID::ParticleName(0)),
+			     vX->GetNrows()-1,vX->GetMatrixArray(),
+			     200,-10,10);
+  fListQAemcal->Add(hNsigmaPt);  
+  
+  TH2F *hSigPt = new TH2F("hSigPt_EMCAL",
+                        "EMCAL signal (E/p) vs. p_{T};p_{T} [GeV]; EMCAL signal (E/p) [arb. units]",
+                        vX->GetNrows()-1,vX->GetMatrixArray(),
+                        200,0,2);
+  fListQAemcal->Add(hSigPt);
+
+  delete vX;  
 }
 
 //______________________________________________________________________________
@@ -511,6 +657,15 @@ void AliAnalysisTaskPIDqa::SetupTPCTOFqa()
                               vX->GetNrows()-1,vX->GetMatrixArray(),
                               200,-10,10);
     fListQAtpctof->Add(hNsigmaP);
+  }
+
+  //EMCAL signal after TOF and TPC cut
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+    TH2F *heopPt = new TH2F(Form("heopPt_TOF_TPC_%s",AliPID::ParticleName(ispecie)),
+			    Form("EMCAL signal (E/p) %s vs. p_{T};p_{T} [GeV]; EMCAL signal (E/p) [arb. units]",AliPID::ParticleName(ispecie)),
+			    vX->GetNrows()-1,vX->GetMatrixArray(),
+			    200,0,2);
+    fListQAtpctof->Add(heopPt);
   }
 
   delete vX;
