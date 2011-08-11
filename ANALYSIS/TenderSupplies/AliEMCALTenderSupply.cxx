@@ -63,7 +63,7 @@ ClassImp(AliEMCALTenderSupply)
 AliEMCALTenderSupply::AliEMCALTenderSupply() :
 	AliTenderSupply()
 	,fEMCALGeo(0x0)
-	,fEMCALGeoName("EMCAL_FIRSTYEARV1")
+	,fEMCALGeoName("EMCAL_COMPLETEV1")
 //	,fEMCALRecoUtils(new AliEMCALRecoUtils)
 	,fEMCALRecoUtils(0)
 	,fConfigName("")
@@ -80,8 +80,12 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
 	,fInputFile(0)
 	,fFilepass(0) 
 	,fMass(0.139)
-	,fStep(1)
+	,fStep(50)
+	,fCutEtaPhiSum(kTRUE)
+	,fCutEtaPhiSeparate(kFALSE)
 	,fRcut(0.05)	
+	,fEtacut(0.025)	
+	,fPhicut(0.05)	
   	,fBasePath(".")
 	,fReClusterize(kFALSE)
 	,fClusterizer(0)
@@ -109,7 +113,7 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
 AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *tender) :
 	AliTenderSupply(name,tender)
 	,fEMCALGeo(0x0)
-	,fEMCALGeoName("EMCAL_FIRSTYEARV1")
+	,fEMCALGeoName("EMCAL_COMPLETEV1")
 	,fEMCALRecoUtils(0)
 	,fConfigName("") 
 	,fDebugLevel(0)
@@ -125,8 +129,12 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *te
 	,fInputFile(0)
 	,fFilepass(0)
 	,fMass(0.139)
-	,fStep(1)
+	,fStep(50)
+	,fCutEtaPhiSum(kTRUE)
+	,fCutEtaPhiSeparate(kFALSE)
 	,fRcut(0.05)
+	,fEtacut(0.025)	
+	,fPhicut(0.05)	
   	,fBasePath(".")
 	,fReClusterize(kFALSE)
 	,fClusterizer(0)
@@ -198,6 +206,8 @@ void AliEMCALTenderSupply::Init()
 		fMass               = tender->fMass;
 		fStep               = tender->fStep;
 		fRcut               = tender->fRcut;
+		fEtacut             = tender->fEtacut;
+		fPhicut             = tender->fPhicut;
 		fReClusterize       = tender->fReClusterize;
 	        fLoadGeomMatrices   = tender->fLoadGeomMatrices;
 		fRecParam           = tender->fRecParam;
@@ -213,16 +223,24 @@ void AliEMCALTenderSupply::Init()
 	fEMCALRecoUtils->SetNonLinearityThreshold(fNonLinearThreshold);
 	fEMCALRecoUtils->SetNonLinearityFunction(fNonLinearFunc);
 
-	//Setting mass, step size and residual cut 
-	fEMCALRecoUtils->SwitchOnCutEtaPhiSum(); 
-	fEMCALRecoUtils->SetCutR(fRcut);
+	//Setting mass, step size and residual cut
+	if(fCutEtaPhiSum){ 
+		fEMCALRecoUtils->SwitchOnCutEtaPhiSum(); 
+		fEMCALRecoUtils->SetCutR(fRcut);
+	}
+	else if (fCutEtaPhiSeparate)
+	{
+		fEMCALRecoUtils->SwitchOnCutEtaPhiSeparate();
+		fEMCALRecoUtils->SetCutEta(fEtacut);
+		fEMCALRecoUtils->SetCutPhi(fPhicut);
+	}
 	fEMCALRecoUtils->SetMass(fMass);
 	fEMCALRecoUtils->SetStep(fStep);
 
 	//AliLog::SetGlobalDebugLevel(1);
-	
+
 	if(fDebugLevel>1) fEMCALRecoUtils->Print("");
-		
+
 
 }
 
@@ -244,7 +262,7 @@ void AliEMCALTenderSupply::ProcessEvent()
 	AliESDCaloCells *cells= event->GetEMCALCells();
 
 	//------------ EMCAL cells loop ------------
-	
+
 	//Recalibrate cells
 	if(fReCalibCell) RecalibrateCells();
 
@@ -355,10 +373,11 @@ void AliEMCALTenderSupply::SetTracksMatchedToCluster(AliESDEvent *event)
 		TArrayI arrayTrackMatched(nTracks);
 
 		//get the closest track matched to the cluster
-		matchTrackIndex = fEMCALRecoUtils->GetMatchedTrackIndex(iClus); 
-		arrayTrackMatched[nMatched] = matchTrackIndex;
-		nMatched++;
-
+		matchTrackIndex = fEMCALRecoUtils->GetMatchedTrackIndex(iClus);
+		if(matchTrackIndex != -1){ 					//Bug fix from Rongrong	
+			arrayTrackMatched[nMatched] = matchTrackIndex;
+			nMatched++;
+		}
 		//get all other tracks matched to the cluster
 		//track loop
 		for(Int_t iTrk=0; iTrk<nTracks; iTrk++){
@@ -388,7 +407,7 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
 
 	AliESDEvent *event=fTender->GetEvent();
 	if (!event) return kFALSE;
-	
+
 	if (fDebugLevel>0) AliInfo("Initialising Misalignment matrix \n");	
 
 	if(fInputTree){ 
@@ -425,7 +444,7 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
 		for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
 		{
 			//if(DebugLevel() > 1)  fEMCALMatrix[mod]->Print();
-      			fEMCALMatrix[mod] = new TGeoHMatrix();           // mfasel: prevent tender from crashing
+			fEMCALMatrix[mod] = new TGeoHMatrix();           // mfasel: prevent tender from crashing
 			fEMCALMatrix[mod]->SetRotation(rotationMatrix[mod]);
 			fEMCALMatrix[mod]->SetTranslation(translationMatrix[mod]);		
 			fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod); 
