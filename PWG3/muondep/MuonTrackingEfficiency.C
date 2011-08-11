@@ -30,14 +30,14 @@ lizardo.valencia.palomo@cern.ch
 
 
 
-TH1D* GraphToHist(Bool_t ToBePlotted, const TGraphAsymmErrors* Graph);
+TH1D* GraphToHist(Bool_t ToBePlotted, const TGraphAsymmErrors* Graph, Int_t Chamber);
 std::vector<Double_t> FillVector(TH1D* Chamber, Bool_t Errors);
 std::vector<Double_t> CorrelatedDeadArray(std::vector<Double_t> Chj, std::vector<Double_t> Chi, Int_t NumberOfDEs, Int_t SymmetricGroups);
 void Drawing(std::vector<Double_t> Chi, std::vector<Double_t> Chj, std::vector<Double_t> ChiErr, std::vector<Double_t> ChjErr, Int_t Bins, Int_t SymGroups, Int_t Station);
 Double_t N00(Double_t Average, Double_t CDA, Int_t SimGroup, Int_t SimGroupsPerCh);
 
 
-void MuonTrackingEfficiency(TString fileName = "./AnalysisResults_data.root")
+void MuonTrackingEfficiency(TString fileName = "./AnalysisResults.root")
 {
 
   TFile *file = new TFile(fileName, "read");
@@ -49,7 +49,7 @@ void MuonTrackingEfficiency(TString fileName = "./AnalysisResults_data.root")
   
   TList *listTT = (TList *)Directory->Get("TotalTracksPerChamber;1");
   TList *listTD = (TList *)Directory->Get("TracksDetectedPerChamber;1");
-  TList *listSD = (TList *)Directory->Get("OtherTracksPerChamber;1");
+  TList *listSD = (TList *)Directory->Get("SingleDetectedPerChamber;1");
 
   TH1D *EfficiencyHisto = 0x0; 
   TH1D *TD = 0x0;
@@ -118,7 +118,7 @@ void MuonTrackingEfficiency(TString fileName = "./AnalysisResults_data.root")
       
       TGraphAsymmErrors *EfficiencyGraph = new TGraphAsymmErrors(TD, TT);
 
-      EfficiencyHisto = GraphToHist(kFALSE,EfficiencyGraph);
+      EfficiencyHisto = GraphToHist(kFALSE,EfficiencyGraph,Chamber);
 
       Ncluster = new TH1D(Form("Ncluster %d",Chamber), "N_{Cluster}", nDEch, - 0.5, nDEch - 0.5);
       Ncluster->Sumw2();
@@ -134,7 +134,7 @@ void MuonTrackingEfficiency(TString fileName = "./AnalysisResults_data.root")
 
       TGraphAsymmErrors *EfficiencyGraphCh11 = new TGraphAsymmErrors(TDch11, TTch11);
 
-      EfficiencyHistoCh11 = GraphToHist(kTRUE,EfficiencyGraphCh11);
+      EfficiencyHistoCh11 = GraphToHist(kTRUE,EfficiencyGraphCh11,Chamber);
 
       TCanvas *CanvasEffPerCh = new TCanvas("Efficiency per chambers", "Efficiency per chambers");
       gStyle->SetOptStat(0);
@@ -279,7 +279,7 @@ void MuonTrackingEfficiency(TString fileName = "./AnalysisResults_data.root")
 
   TGraphAsymmErrors *EfficiencyGraphCorrected = new TGraphAsymmErrors(TD,TTcorrected);
 
-  TH1D *EfficiencyHistoCorrected = GraphToHist(1,EfficiencyGraphCorrected);//In this case doesnt matter which value is used in the first slot.
+  TH1D *EfficiencyHistoCorrected = GraphToHist(1,EfficiencyGraphCorrected,11);//In this case doesnt matter which value is used in the first slot.
 
   vector<Double_t> chambersEffCorrected;
   vector<Double_t> chambersEffErrCorrected;
@@ -585,10 +585,14 @@ void Drawing(std::vector<Double_t> Chi, std::vector<Double_t> Chj, std::vector<D
 }
 
 
-TH1D* GraphToHist(Bool_t ToBePlotted,const TGraphAsymmErrors* Graph)
+TH1D* GraphToHist(Bool_t ToBePlotted,const TGraphAsymmErrors* Graph,Int_t Chamber)
 {
 
-  Int_t    nBins = Graph->GetN();
+  Int_t nBins = 0;
+  if ( Chamber < 5 ) nBins = 4;
+  if ( (Chamber == 5) || (Chamber == 6) ) nBins = 18;
+  if ( (Chamber > 6) && (Chamber < 11) ) nBins = 26;
+  if ( Chamber == 11 ) nBins = 10;
   TArrayF  bins(nBins+1);
   TArrayF  y(nBins);
   TArrayF  ey(nBins);
@@ -619,7 +623,10 @@ TH1D* GraphToHist(Bool_t ToBePlotted,const TGraphAsymmErrors* Graph)
     h = new TH1D(name.Data(), title.Data(), nBins, bins[0]-dx/2 + 1.5, bins[nBins]-dx/2 + 1.5);
   }
   else {
-    h = new TH1D(name.Data(), title.Data(), nBins, bins[0]-dx/2 + 0.5, bins[nBins]-dx/2 + 0.5);
+    if ( Chamber < 5 ) h = new TH1D(name.Data(), title.Data(), 4, -0.5, 3.5);
+    if ( (Chamber == 5) || (Chamber == 6) ) h = new TH1D(name.Data(), title.Data(), 18,  -0.5, 17.5);
+    if ( (Chamber > 6) && (Chamber < 11) ) h = new TH1D(name.Data(), title.Data(), 26, -0.5, 25.5);
+    if ( Chamber == 11 ) h = new TH1D(name.Data(), title.Data(), 10, -0.5, 9.5);
   }
   for (Int_t i = 1; i <= nBins; i++) { 
     h->SetBinContent(i, y.fArray[i-1]);
