@@ -24,6 +24,8 @@
 // local2master matrices are now get from $ALICE_ROOT/OADB/PWG4/JetReconstruction/EMCALlocal2master.root
 // you can choose the geometry (EMCAL_COMPLETE, EMCAL_FIRSTYEARv1, etc) via SetEMCALgeo2bLoad('Name_of_Geometry') in the Readerheader
 // different options for survey(ed) matrice are provided too
+// ** August 2011
+// OADB path changed from  '../OADB/PWG4/JetReconstruction/'  to   '../OADB/EMCAL/'
 // marco.bregant@subatech.in2p3.fr
 //------------------------------------------------------------------------- 
 
@@ -143,7 +145,7 @@ if(myPath.Length()) {
 	Info(" SetEMCALGeometry","custom version of OADB file: %s",myPath.Data());
 	 customFile=kTRUE;
 	OADBfile=myPath;
- } else OADBfile.Form("%s/PWG4/JetReconstruction/EMCALlocal2master.root",(const char*) fJetanOADBpath);
+ } else OADBfile.Form("%s/EMCAL/EMCALlocal2master.root",(const char*) fJetanOADBpath);
  
  AliOADBContainer EMCALgeoCont;
 	Info(" SetEMCALGeometry"," I'm going to read the matrices from %s",OADBfile.Data()); 
