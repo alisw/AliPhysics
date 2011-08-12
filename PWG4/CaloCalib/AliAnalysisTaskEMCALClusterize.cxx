@@ -848,7 +848,8 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     
     //For later check embedding
     AliAODInputHandler* aodIH = dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-
+    
+    Float_t clusterE = 0; 
     for (Int_t c = 0; c < ncells; c++) {
       AliEMCALDigit *digit = (AliEMCALDigit*) digitsArr->At(recPoint->GetDigitsList()[c]);
       
@@ -856,6 +857,13 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
       ratios[ncellsTrue] = recPoint->GetEnergiesList()[c]/digit->GetAmplitude();
       
       Float_t ratioOrg = ratios[ncellsTrue];
+      
+      // In case of unfolding, remove digits with energy below the pedestal threshold, about 3 ADC counts = 50 MeV
+      // Not very precise to set it directly to 50 MeV since calibration of each channel changes, to be done more precisely in reconstruction.
+      if     (recPoint->GetEnergiesList()[c] < 0.05)                     continue;
+      else if(recPoint->GetEnergiesList()[c] < fRecParam->GetMinECut())  continue;
+      
+      clusterE+=recPoint->GetEnergiesList()[c];
       
       // In case of embedding, fill ratio with amount of signal, 
       // It will not work for unfolding case
@@ -876,12 +884,29 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
         
       }//Embedding
       
-      if ( ratioOrg > 0.001) ncellsTrue++;
+      //Remove too low cells in case of unfolding
+      if ( ratioOrg > 0.001) {
+        ncellsTrue++;
+      }
+      else  {
+        printf("AliAnalysisTaskEMCALClusterize::RecPoints2Clusters() - Too small energy in cell of cluster: cluster cell %f, digit %f\n",
+                   recPoint->GetEnergiesList()[c],digit->GetAmplitude());
+      }
 
     }// cluster cell loop
     
     if (ncellsTrue < 1) {
-      printf("AliAnalysisTaskEMCALClusterize::RecPoints2Clusters() - Skipping cluster with no cells avobe threshold E = %f, ncells %d\n",recPoint->GetEnergy(), ncells);
+      if (DebugLevel() > 1) 
+        printf("AliAnalysisTaskEMCALClusterize::RecPoints2Clusters() - Skipping cluster with no cells avobe threshold E = %f, ncells %d\n",
+               recPoint->GetEnergy(), ncells);
+      continue;
+    }
+    
+    //if(ncellsTrue != ncells) printf("Old E %f, ncells %d; New E %f, ncells %d\n",recPoint->GetEnergy(),ncells,clusterE,ncellsTrue);
+    
+    if(clusterE <  fRecParam->GetClusteringThreshold()) {
+      if (DebugLevel()>1)
+        printf("AliAnalysisTaskEMCALClusterize::RecPoints2Clusters() - Remove cluster with energy below seed threshold %f\n",clusterE);
       continue;
     }
     
@@ -899,20 +924,38 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     AliAODCaloCluster *clus = dynamic_cast<AliAODCaloCluster *>( clusArray->At(j) ) ;
     j++;
     clus->SetType(AliVCluster::kEMCALClusterv1);
-    clus->SetE(recPoint->GetEnergy());
+    clus->SetE(clusterE);//recPoint->GetEnergy());
     clus->SetPosition(g);
     clus->SetNCells(ncellsTrue);
     clus->SetCellsAbsId(absIds);
     clus->SetCellsAmplitudeFraction(ratios);
-    clus->SetDispersion(recPoint->GetDispersion());
     clus->SetChi2(-1); //not yet implemented
     clus->SetTOF(recPoint->GetTime()) ; //time-of-flight
     clus->SetNExMax(recPoint->GetNExMax()); //number of local maxima
-    Float_t elipAxis[2];
-    recPoint->GetElipsAxis(elipAxis);
-    clus->SetM02(elipAxis[0]*elipAxis[0]) ;
-    clus->SetM20(elipAxis[1]*elipAxis[1]) ;
     clus->SetDistanceToBadChannel(recPoint->GetDistanceToBadTower()); 
+
+    if(ncells == ncellsTrue){
+      Float_t elipAxis[2];
+      recPoint->GetElipsAxis(elipAxis);
+      clus->SetM02(elipAxis[0]*elipAxis[0]) ;
+      clus->SetM20(elipAxis[1]*elipAxis[1]) ;
+      clus->SetDispersion(recPoint->GetDispersion());
+    }
+    else{
+      //In case some cells rejected, in unfolding case
+      AliVCaloCells* cells = 0x0; 
+      if (aodIH && aodIH->GetMergeEvents()) cells = AODEvent()  ->GetEMCALCells();
+      else                                  cells = InputEvent()->GetEMCALCells();
+      fRecoUtils->RecalculateClusterShowerShapeParameters(fGeom,cells,clus);
+      fRecoUtils->RecalculateClusterPID(clus);
+      
+//      Float_t elipAxis[2];
+//      recPoint->GetElipsAxis(elipAxis);
+//      if(ncellsTrue > 2)
+//      printf("SS, old: l0 %f, l1 %f, D %f; New l0 %f, l1 %f, D %f\n",
+//             elipAxis[0]*elipAxis[0],elipAxis[1]*elipAxis[1], recPoint->GetDispersion(),
+//             clus->GetM02(),clus->GetM20(),clus->GetDispersion());
+    }
     
     //MC
     Int_t  parentMult  = 0;
