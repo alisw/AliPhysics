@@ -743,7 +743,7 @@ void AliPIDResponse::SetTRDPidResponseMaster()
   fTRDPIDParams = (TObjArray *)contParams.GetObject(fRun);
 
   AliOADBContainer contRefs("contRefs");
-  contRefs.InitFromFile(Form("%s/COMMON/PID/dReferencesLQ1D.root", fOADBPath.Data()), "AliTRDPIDReference");
+  contRefs.InitFromFile(Form("%s/COMMON/PID/data/TRDPIDReferenceLQ1D.root", fOADBPath.Data()), "AliTRDPIDReference");
   fTRDPIDReference = (AliTRDPIDReference *)contRefs.GetObject(fRun);
 }
 
