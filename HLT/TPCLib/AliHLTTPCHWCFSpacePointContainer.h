@@ -80,6 +80,7 @@ class AliHLTTPCHWCFSpacePointContainer : public AliHLTSpacePointContainer
 
   virtual int Write(AliHLTUInt8_t* outputPtr, AliHLTUInt32_t size,
 		    vector<AliHLTComponentBlockData>& outputBlocks,
+		    AliHLTDataDeflater* pDeflater,
 		    const char* option="") const;
 
   class AliHLTTPCHWCFSpacePointProperties {
