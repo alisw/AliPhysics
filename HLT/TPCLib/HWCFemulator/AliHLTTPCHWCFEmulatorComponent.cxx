@@ -145,7 +145,7 @@ void AliHLTTPCHWCFEmulatorComponent::GetOutputDataSize( unsigned long& constBase
   // see header file for class documentation
   // XXX TODO: Find more realistic values.  
   constBase = 0;
-  inputMultiplier = (6 * 0.4);
+  inputMultiplier = (6 * 0.7);
 }
 
 
