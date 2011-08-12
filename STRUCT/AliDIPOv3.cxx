@@ -20,6 +20,7 @@
 #include <TGeoVolume.h>
 #include <TGeoMedium.h>
 #include <TGeoMatrix.h>
+#include <TGeoArb8.h>
 #include <TGeoBBox.h>
 #include <TGeoTube.h>
 #include <TGeoCone.h>
@@ -128,7 +129,7 @@ void AliDIPOv3::CreateSpectrometerDipole()
     
  
     Float_t riD0 = (kZDipoleF - 5.)  * TMath::Tan(2. * kDegrad) + 0.2;
-    Float_t riD1 = 30.;
+    Float_t riD1 = 28.9;
     Float_t riD2 = 35.8;
     Float_t riD3 = riD2 + (kZDipoleR - zst)      * TMath::Tan(2. * kDegrad);
     Float_t riD4 = riD2 + (kZDipoleR - zst + 5.) * TMath::Tan(2. * kDegrad);
@@ -143,8 +144,24 @@ void AliDIPOv3::CreateSpectrometerDipole()
     shDDIP1->DefineSection(4,  zst            , riD2, rcst);
     shDDIP1->DefineSection(5,  kZDipoleR      , riD3, rcD2);
     shDDIP1->DefineSection(6, (kZDipoleR + 5.), riD4, rcD2);
-     
-    TGeoBBox* shDDIP2 =  new TGeoBBox(164., 182., 36.);
+
+	  // JC Ch6 is 2x5cm longer than Ch5
+    //    TGeoBBox* shDDIP2 =  new TGeoBBox(164., 182., 36.); 	  
+	  Double_t xD0 = 162.;
+	  Double_t xD1 = 171.;
+ 	  Double_t yD0 = 182.;
+	  Double_t zD0 = 36.;
+	
+  	Double_t xy[16] = {0};
+	  xy[0]  = -xD0; xy[1]  = -yD0; 
+ 	  xy[2]  = -xD0; xy[3]  =  yD0; 
+	  xy[4]  =  xD0; xy[5]  =  yD0;
+	  xy[6]  =  xD0; xy[7]  = -yD0;
+ 	  xy[8]  = -xD1; xy[9]  = -yD0; 
+	  xy[10] = -xD1; xy[11] =  yD0; 
+	  xy[12] =  xD1; xy[13] =  yD0;
+	  xy[14] =  xD1; xy[15] = -yD0;	
+	  TGeoArb8* shDDIP2 =  new TGeoArb8(zD0, xy); 
     shDDIP2->SetName("shDDIP2");
     TGeoTranslation* trDDIP2 = new TGeoTranslation("trDDIP2", 0., 0., kZDipole - 12.);
     trDDIP2->RegisterYourself();
