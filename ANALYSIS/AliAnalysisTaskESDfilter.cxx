@@ -1313,6 +1313,8 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
     aodTrack->SetTPCSharedMap (esdTrack->GetTPCSharedMap());
     aodTrack->SetChi2perNDF(Chi2perNDF(esdTrack));
     aodTrack->SetTPCPointsF(esdTrack->GetTPCNclsF());
+    if(esdTrack->IsEMCAL()) aodTrack->SetEMCALcluster(esdTrack->GetEMCALcluster());
+    if(esdTrack->IsPHOS())  aodTrack->SetPHOScluster(esdTrack->GetPHOScluster());
 
     fAODTrackRefs->AddAt(aodTrack, nTrack);
     

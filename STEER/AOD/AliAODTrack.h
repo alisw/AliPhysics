@@ -244,6 +244,15 @@ class AliAODTrack : public AliVTrack {
 
   UShort_t GetTPCNclsF() const { return fTPCnclsF;}
 
+  // Calorimeter Cluster
+  Int_t GetEMCALcluster() const {return fCaloIndex;}
+  void SetEMCALcluster(Int_t index) {fCaloIndex=index;}
+  Bool_t IsEMCAL() const {return fFlags&kEMCALmatch;}
+
+  Int_t GetPHOScluster() const {return fCaloIndex;}
+  void SetPHOScluster(Int_t index) {fCaloIndex=index;}
+  Bool_t IsPHOS() const {return fFlags&kPHOSmatch;}
+
   //pid signal interface
   Double_t  GetITSsignal()       const { return fDetPid?fDetPid->GetITSsignal():0.;    }
   Double_t  GetTPCsignal()       const { return fDetPid?fDetPid->GetTPCsignal():0.;    }
@@ -361,6 +370,9 @@ class AliAODTrack : public AliVTrack {
 
   Char_t        fCharge;            // particle charge
   Char_t        fType;              // Track Type
+
+  Int_t         fCaloIndex;         // index of associated EMCAL/PHOS cluster (AliAODCaloCluster)
+
   
   AliAODRedCov<6> *fCovMatrix;      // covariance matrix (x, y, z, px, py, pz)
   AliAODPid    *fDetPid;            // more detailed or detector specific pid information
