@@ -13,9 +13,12 @@
 ///
 
 #include "AliHLTProcessor.h"
+#include "TString.h"
 
 class AliHLTComponentBenchmark;
 class AliHLTSpacePointContainer;
+class AliHLTDataDeflater;
+class TH1F;
 
 /**
  * @class AliHLTTPCDataCompressionComponent
@@ -37,6 +40,12 @@ class AliHLTSpacePointContainer;
  *
  * <h2>Optional arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
+ * \li -mode     <i> number  </i> <br>
+ *      compression mode
+ * \li -deflater-mode     <i> number  </i> <br>
+ *      data deflater mode
+ * \li -histogram-file     <i> file  </i> <br>
+ *      file to store internal histograms at the end
  *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -77,6 +86,17 @@ public:
   /// inherited from AliHLTComponent: spawn function.
   virtual AliHLTComponent* Spawn();
 
+  enum ParameterId_t {
+    kPadRow = 0,
+    kPad,
+    kTime,
+    kSigmaY2,
+    kSigmaZ2,
+    kCharge,
+    kQMax,
+    kLast
+  };
+
 protected:
   /// inherited from AliHLTProcessor: data processing
   int DoEvent( const AliHLTComponentEventData& evtData, 
@@ -100,14 +120,24 @@ private:
   AliHLTTPCDataCompressionComponent(const AliHLTTPCDataCompressionComponent&);
   AliHLTTPCDataCompressionComponent& operator=(const AliHLTTPCDataCompressionComponent&);
 
+  int InitDeflater(int mode);
+
   AliHLTComponentBenchmark* GetBenchmarkInstance() const {return fpBenchmark;}
 
   int fMode; //! mode
+  int fDeflaterMode; //! deflater mode
 
   /// input raw cluster handler
   AliHLTSpacePointContainer* fRawInputClusters; //! input raw cluster handler
   /// input cluster handler
   AliHLTSpacePointContainer* fInputClusters; //! input cluster handler
+
+  /// deflater
+  AliHLTDataDeflater* fpDataDeflater; //! deflater for raw clusters
+
+  /// compression factor histogram
+  TH1F* fHistoCompFactor; //! histogram of compression factor
+  TString fHistogramFile; //! file to save histogram
 
   /// benchmark
   AliHLTComponentBenchmark* fpBenchmark; //! benchmark instance

@@ -167,8 +167,6 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	trackerInput+=hwcf;
 	if (dEdXInput.Length()>0) dEdXInput+=" ";
 	dEdXInput+=hwcf;
-	if (compressorInput.Length()>0) compressorInput+=" ";
-	compressorInput+=hwcf;
 	if (sinkClusterInput.Length()>0) sinkClusterInput+=" ";
 	sinkClusterInput+=cf;
 	if (sinkHWClusterInput.Length()>0) sinkHWClusterInput+=" ";

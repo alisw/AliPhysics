@@ -28,13 +28,20 @@
 #include "AliHLTTPCHWCFSpacePointContainer.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTComponentBenchmark.h"
-#include "TString.h"
+#include "AliHLTDataDeflaterSimple.h"
+#include "TH1F.h"
+#include "TFile.h"
+#include <memory>
 
 AliHLTTPCDataCompressionComponent::AliHLTTPCDataCompressionComponent()
   : AliHLTProcessor()
   , fMode(0)
+  , fDeflaterMode(0)
   , fRawInputClusters(NULL)
   , fInputClusters(NULL)
+  , fpDataDeflater(NULL)
+  , fHistoCompFactor(NULL)
+  , fHistogramFile()
   , fpBenchmark(NULL)
 {
 }
@@ -109,8 +116,10 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
 
   // Process an event
   // Loop over all input blocks in the event
-  AliHLTUInt8_t minSlice=0xFF, maxSlice=0xFF, minPatch=0xFF, maxPatch=0xFF;
   const AliHLTComponentBlockData* pDesc=NULL;
+
+  AliHLTUInt8_t minSlice=0xFF, maxSlice=0xFF, minPatch=0xFF, maxPatch=0xFF;
+  AliHLTUInt32_t inputRawClusterSize=0;
 
   /// input track array
   vector<AliHLTGlobalBarrelTrack> inputTrackArray;
@@ -134,6 +143,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
     if (fRawInputClusters) {
       fRawInputClusters->AddInputBlock(pDesc);
     }
+    inputRawClusterSize+=pDesc->fSize;
   }
   if (GetBenchmarkInstance()) {
     GetBenchmarkInstance()->Stop(1);
@@ -220,17 +230,22 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
 
   // output
   if (fMode==0) {
-    iResult=fRawInputClusters->Write(outputPtr, capacity-size, outputBlocks);
+    iResult=fRawInputClusters->Write(outputPtr+size, capacity-size, outputBlocks, fpDataDeflater);
     if (iResult>=0) {
       size+=iResult;
       if (GetBenchmarkInstance()) GetBenchmarkInstance()->AddOutput(iResult);
     }
   }
 
+  float compressionFactor=(float)inputRawClusterSize;
+  if ((size)>0) compressionFactor/=size;
+  else compressionFactor=0.;
+  if (fHistoCompFactor) fHistoCompFactor->Fill(compressionFactor);
+
   if (GetBenchmarkInstance()) {
     GetBenchmarkInstance()->Stop(5);
     GetBenchmarkInstance()->Stop(0);
-    HLTBenchmark(GetBenchmarkInstance()->GetStatistics());
+    HLTBenchmark("%s - compression factor %.2f", GetBenchmarkInstance()->GetStatistics(), compressionFactor);
   }
 
   if (fInputClusters) {
@@ -238,6 +253,12 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   }
   if (fRawInputClusters) {
     fRawInputClusters->Clear();
+  }
+
+  // forward MC labels
+  for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC);
+       pDesc!=NULL; pDesc=GetNextInputBlock()) {
+    outputBlocks.push_back(*pDesc);
   }
 
   return iResult;
@@ -256,7 +277,7 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
   TString cdbPath("HLT/ConfigTPC/");
   cdbPath += GetComponentID();
   //
-  //iResult = ConfigureFromCDBTObjString(cdbPath);
+  iResult = ConfigureFromCDBTObjString(cdbPath);
   if (iResult < 0) 
     return iResult;
 
@@ -264,29 +285,100 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
   if (argc && (iResult = ConfigureFromArgumentString(argc, argv)) < 0)
     return iResult;
 
-  fpBenchmark=new AliHLTComponentBenchmark;
-  if (GetBenchmarkInstance()) {
-    GetBenchmarkInstance()->SetTimer(0,"total");
-    GetBenchmarkInstance()->SetTimer(1,"rawclusterinput");
-    GetBenchmarkInstance()->SetTimer(2,"clusterinput");
-    GetBenchmarkInstance()->SetTimer(3,"trackinput");
-    GetBenchmarkInstance()->SetTimer(4,"processing");
-    GetBenchmarkInstance()->SetTimer(5,"output");
+  std::auto_ptr<AliHLTComponentBenchmark> benchmark(new AliHLTComponentBenchmark);
+  if (benchmark.get()) {
+    benchmark->SetTimer(0,"total");
+    benchmark->SetTimer(1,"rawclusterinput");
+    benchmark->SetTimer(2,"clusterinput");
+    benchmark->SetTimer(3,"trackinput");
+    benchmark->SetTimer(4,"processing");
+    benchmark->SetTimer(5,"output");
+  } else {
+    return -ENOMEM;
   }
 
-  fRawInputClusters=new AliHLTTPCHWCFSpacePointContainer;	  
-  if (!fRawInputClusters) return -ENOMEM;
+  std::auto_ptr<AliHLTTPCHWCFSpacePointContainer> rawInputClusters(new AliHLTTPCHWCFSpacePointContainer);
+  std::auto_ptr<AliHLTTPCSpacePointContainer> inputClusters(new AliHLTTPCSpacePointContainer);
+  std::auto_ptr<TH1F> histoCompFactor(new TH1F("factor", "HLT TPC data compression factor", 100, 0, 10));
 
-  fInputClusters=new AliHLTTPCSpacePointContainer;	  
-  if (!fInputClusters) return -ENOMEM;
+  if (!rawInputClusters.get() || !inputClusters.get() || !histoCompFactor.get()) return -ENOMEM;
+
+  if (fDeflaterMode>0 && (iResult=InitDeflater(fDeflaterMode))<0)
+    return iResult;
+
+  fpBenchmark=benchmark.release();
+  fRawInputClusters=rawInputClusters.release();
+  fInputClusters=inputClusters.release();
+  fHistoCompFactor=histoCompFactor.release();
 
   return iResult;
+}
+
+int AliHLTTPCDataCompressionComponent::InitDeflater(int mode)
+{
+  /// init the data deflater
+  if (mode==1) {
+    std::auto_ptr<AliHLTDataDeflaterSimple> deflater(new AliHLTDataDeflaterSimple);
+    if (!deflater.get()) return -ENOMEM;
+
+    struct parameter_t {
+      AliHLTTPCDataCompressionComponent::ParameterId_t fId;
+      const char* fName;
+      int fFullBitLength;
+      int fReducedBitLength;
+    };
+    parameter_t parameters[]= {
+      {kPadRow,  "padrow",   6,  4},
+      {kPad,     "pad",     14, 12},
+      {kTime,    "time",    15, 13},
+      {kSigmaY2, "sigmaY2",  8,  5},
+      {kSigmaZ2, "sigmaZ2",  8,  5},
+      {kCharge,  "charge",  16,  9},
+      {kQMax,    "qmax",    10,  6}
+    };
+
+    for (unsigned p=0; p<sizeof(parameters)/sizeof(parameter_t); p++) {
+      if (deflater->AddParameterDefinition(parameters[p].fName,
+					   parameters[p].fFullBitLength,
+					   parameters[p].fReducedBitLength)!=(int)parameters[p].fId) {
+	// for performance reason the parameter id is simply used as index in the array of
+	// definitions, the position must match the id
+	HLTFatal("mismatch between parameter id and position in array, rearrange definitions!");
+	return -EFAULT;
+      }
+    }
+    fpDataDeflater=deflater.release();
+    return 0;
+  } else if (mode==2) {
+    // huffman deflater
+    HLTError("huffman deflater to be implemented");
+    return -ENOSYS; // change to 0 if implemented
+  }
+  HLTError("invalid deflater mode %d, allowed 1=simple 2=huffman", mode);
+  return -EINVAL;
 }
 
 int AliHLTTPCDataCompressionComponent::DoDeinit()
 {
   /// inherited from AliHLTComponent: component cleanup
   int iResult=0;
+  if (fpBenchmark) delete fpBenchmark; fpBenchmark=NULL;
+  if (fRawInputClusters) delete fRawInputClusters; fRawInputClusters=NULL;
+  if (fInputClusters) delete fInputClusters; fInputClusters=NULL;
+  if (fHistoCompFactor) {
+    if (!fHistogramFile.IsNull()) {
+      TFile out(fHistogramFile, "RECREATE");
+      if (!out.IsZombie()) {
+	out.cd();
+	fHistoCompFactor->Write();
+	out.Close();
+      }
+    }
+    delete fHistoCompFactor;
+    fHistoCompFactor=NULL;
+  }
+  if (fpDataDeflater) delete fpDataDeflater; fpDataDeflater=NULL;
+
   return iResult;
 }
 
@@ -294,31 +386,50 @@ int AliHLTTPCDataCompressionComponent::ScanConfigurationArgument(int argc, const
 {
   /// inherited from AliHLTComponent: argument scan
   int iResult=0;
-  TString argument="";
+  if (argc<1) return 0;
   int bMissingParam=0;
   int i=0;
-  for (; i<argc && iResult>=0; i++) {
-    argument=argv[i];
-    if (argument.IsNull()) continue;
+  TString argument=argv[i];
 
+  do {
     // -mode
     if (argument.CompareTo("-mode")==0) {
       if ((bMissingParam=(++i>=argc))) break;
       TString parameter=argv[i];
       if (parameter.IsDigit()) {
 	fMode=parameter.Atoi();
+	return 2;
       } else {
 	HLTError("invalid parameter for argument %s, expecting number instead of %s", argument.Data(), parameter.Data());
 	return -EPROTO;
       }
     }
-  }
+
+    // -deflater-mode
+    if (argument.CompareTo("-deflater-mode")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString parameter=argv[i];
+      if (parameter.IsDigit()) {
+	fDeflaterMode=parameter.Atoi();
+	return 2;
+      } else {
+	HLTError("invalid parameter for argument %s, expecting number instead of %s", argument.Data(), parameter.Data());
+	return -EPROTO;
+      }
+    }
+
+    // -histogram-file
+    if (argument.CompareTo("-histogram-file")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      fHistogramFile=argv[i++];
+      return 2;
+    }
+  } while (0);
 
   if (bMissingParam) {
     HLTError("missing parameter for argument %s", argument.Data());
     iResult=-EPROTO;
   }
 
-  if (iResult>=0) return i;
   return iResult;
 }
