@@ -122,6 +122,9 @@ public:
   /// print info
   virtual void Print(ostream& out, Option_t *option="") const;
 
+  /// DataDeflaterSimple has deflater version 1
+  virtual int GetDeflaterVersion() const {return 1;}
+
  protected:
  private:
   vector<AliHLTDataDeflaterParameter> fParameterDefinitions; //!

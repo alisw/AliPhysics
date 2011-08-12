@@ -62,9 +62,14 @@ bool AliHLTDataDeflaterSimple::OutputParameterBits( int memberId, AliHLTUInt64_t
   return OutputBits(v, length);
 }
 
-void AliHLTDataDeflaterSimple::Clear(Option_t * /*option*/)
+void AliHLTDataDeflaterSimple::Clear(Option_t * option)
 {
   // internal cleanup
+  for (vector<AliHLTDataDeflaterParameter>::iterator m=fParameterDefinitions.begin();
+       m!=fParameterDefinitions.end(); m++) {
+    m->ResetBitCount();
+  }
+  AliHLTDataDeflater::Clear(option);
 }
 
 void AliHLTDataDeflaterSimple::Print(Option_t *option) const

@@ -40,10 +40,7 @@ public:
   int InitBitDataOutput( AliHLTUInt8_t* output, UInt_t outputSize );
 
   /** function to close bit data output */
-  void CloseBitDataOutput()
-  {
-    Pad8Bits();
-  }
+  void CloseBitDataOutput();
 
   /** function to get current byte output position
    * @return unsigned long value for current byte output position
@@ -109,6 +106,9 @@ public:
 
   /// write bit pattern of a parameter to the current byte and position
   virtual bool OutputParameterBits( int parameterId, AliHLTUInt64_t const & value );
+
+  /// return unique version of the deflater, base class has version 0
+  virtual int GetDeflaterVersion() const {return 0;}
 
 protected:
 

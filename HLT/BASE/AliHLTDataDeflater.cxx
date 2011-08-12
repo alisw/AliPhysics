@@ -63,6 +63,17 @@ int AliHLTDataDeflater::InitBitDataOutput( AliHLTUInt8_t* output, UInt_t outputS
   return 0;
 }
 
+void AliHLTDataDeflater::CloseBitDataOutput()
+{
+  // pad to full byte and clear internal pointer references
+  Pad8Bits();
+  fBitDataCurrentWord=0;
+  fBitDataCurrentPosInWord=0;
+  fBitDataCurrentOutput=NULL;
+  fBitDataCurrentOutputStart=NULL;
+  fBitDataCurrentOutputEnd=NULL;
+}
+
 AliHLTUInt8_t AliHLTDataDeflater::GetCurrentOutputByte( Int_t offset ) const
 {
   // get the current byte
