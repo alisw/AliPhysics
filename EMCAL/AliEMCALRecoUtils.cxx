@@ -389,11 +389,13 @@ Bool_t AliEMCALRecoUtils::IsExoticCluster(AliVCluster *cluster) const {
     AliInfo("Cluster pointer null!");
     return kFALSE;
   }
-
-  if(cluster->GetNCells()<(1+cluster->E()/3.))
-    return kTRUE;
-  else
-    return kFALSE;
+  
+  Int_t nc = cluster->GetNCells() ;
+  
+  if      ( nc > 8 )                   return kFALSE ; // Good cluster, needed for 3x3 clusterizer  
+  else if ( nc < 1 + cluster->E()/3. ) return kTRUE  ; // Bad cluster
+  else                                 return kFALSE ; // Good cluster
+  
 }
 
 //__________________________________________________
