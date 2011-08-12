@@ -202,7 +202,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     TString converterInput="TPC-globalmerger";
     if (!rawReader && runloader) {
       // propagate cluster info to the esd converter in order to fill the MC information
-      handler->CreateConfiguration("TPC-clustermc-info", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLMCINFO' 'TPC '");  
+      handler->CreateConfiguration("TPC-clustermc-info", "BlockFilter"   , sinkHWClusterInput.Data(), "-datatype 'CLMCINFO' 'TPC '");  
       handler->CreateConfiguration("TPC-mcTrackMarker","TPCTrackMCMarker","TPC-globalmerger TPC-clustermc-info","" );
       converterInput+=" ";
       converterInput+="TPC-mcTrackMarker";
