@@ -55,7 +55,8 @@
 ClassImp(AliEMCALPIDResponse)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliEMCALPIDResponse::AliEMCALPIDResponse():
-fNorm(0)
+  TObject(),
+  fNorm(NULL)
 {
   //
   //  The default constructor
@@ -83,7 +84,8 @@ fNorm(0)
 }
 
 AliEMCALPIDResponse::AliEMCALPIDResponse(const AliEMCALPIDResponse &other):
-    fNorm(other.fNorm)
+  TObject(other),
+  fNorm(other.fNorm)
 {
   //
   //  The copy constructor
@@ -111,8 +113,14 @@ AliEMCALPIDResponse & AliEMCALPIDResponse::operator=( const AliEMCALPIDResponse&
   //
   //  The assignment operator
   //
-    fNorm = other.fNorm;
-    for(Int_t i = 0; i < fNptBins; i++)
+
+  if(this == &other) return *this;
+  
+  // Make copy
+  TObject::operator=(other);
+  fNorm = other.fNorm;
+
+  for(Int_t i = 0; i < fNptBins; i++)
     {
 	fPtCutMin[i] = 0.0;
 	for(Int_t j = 0; j < 2*AliPID::kSPECIES; j++)
@@ -123,6 +131,12 @@ AliEMCALPIDResponse & AliEMCALPIDResponse::operator=( const AliEMCALPIDResponse&
 	    fProbHigh[j][i] = 0.0;
 	}
     }
+  
+  fPtCutMin[fNptBins] = 0.0;
+  SetPtBoundary();
+  SetParametrizations();
+
+  return *this;
 }
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

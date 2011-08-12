@@ -17,7 +17,7 @@
 #include "AliPID.h"
 class TF1;
 
-class AliEMCALPIDResponse 
+class AliEMCALPIDResponse: public TObject 
 {
 public : 
     AliEMCALPIDResponse();    //ctor
