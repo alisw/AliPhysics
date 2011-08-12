@@ -18,6 +18,7 @@
 #include "AliHLTDataTypes.h"
 #include "AliHLTStdIncludes.h"
 
+class AliHLTDataDeflater;
 class TArrayC;
 class TH1;
 class TTree;
@@ -91,6 +92,14 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
   virtual int SetMCID(int clusterID, const AliHLTUInt32_t* clusterIDs, int arraySize);
 
   /// write blocks to HLT component output
+  virtual int Write(AliHLTUInt8_t* outputPtr, AliHLTUInt32_t size,
+		    vector<AliHLTComponentBlockData>& outputBlocks,
+		    AliHLTDataDeflater* /*pDeflater*/,
+		    const char* option="") const {
+    return Write(outputPtr, size, outputBlocks, option);
+  }
+
+  /// write blocks to HLT component output: old function definition for backward compatibility
   virtual int Write(AliHLTUInt8_t* /*outputPtr*/, AliHLTUInt32_t /*size*/,
 		    vector<AliHLTComponentBlockData>& /*outputBlocks*/,
 		    const char* /*option*/="") const {return 0;}
