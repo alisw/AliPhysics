@@ -517,11 +517,11 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 	  AliHLTUInt32_t flag = (c[0]>>30);  	  
 	  if( flag == 0x3){ //beginning of a cluster
 	    int padRow  = (c[0]>>24)&0x3f;
-	    int q  = (c[0]&0xFFFFFF)>>6; 
-	    double p   = *((AliHLTFloat32_t*)&c[1]);
-	    double t  = *((AliHLTFloat32_t*)&c[2]);
-	    AliHLTFloat32_t p2 = *((AliHLTFloat32_t*)&c[3]);
-	    AliHLTFloat32_t t2 = *((AliHLTFloat32_t*)&c[4]);
+	    int q  = c[1];
+	    double p   = *((AliHLTFloat32_t*)&c[2]);
+	    double t  = *((AliHLTFloat32_t*)&c[3]);
+	    AliHLTFloat32_t p2 = *((AliHLTFloat32_t*)&c[4]);
+	    AliHLTFloat32_t t2 = *((AliHLTFloat32_t*)&c[5]);
 	    printf("N: %3d    R: %3d    C: %4d    P:  %7.4f    T:  %8.4f    DP: %6.4f    DT: %6.4f\n", 
 		   i/elsize+1, padRow, q, p, t, sqrt(fabs(p2-p*p)), sqrt(fabs(t2-t*t)));
 
