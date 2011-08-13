@@ -62,6 +62,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fUsePhiWeights(kFALSE),
  fUsePtWeights(kFALSE),
  fUseEtaWeights(kFALSE),
+ fUseTrackWeights(kFALSE),
  fWeightsList(NULL),
  fMultiplicityWeight(NULL)
 {
@@ -116,6 +117,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fUsePhiWeights(kFALSE),
  fUsePtWeights(kFALSE),
  fUseEtaWeights(kFALSE),
+ fUseTrackWeights(kFALSE),
  fWeightsList(NULL),
  fMultiplicityWeight(NULL)
 {
@@ -161,9 +163,10 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
  if(fUseParticleWeights)
  {
   // Pass the flags to class:
-  if(fUsePhiWeights) fQC->SetUsePhiWeights(fUsePhiWeights);
-  if(fUsePtWeights) fQC->SetUsePtWeights(fUsePtWeights);
-  if(fUseEtaWeights) fQC->SetUseEtaWeights(fUseEtaWeights);
+  if(fUsePhiWeights){fQC->SetUsePhiWeights(fUsePhiWeights);}
+  if(fUsePtWeights){fQC->SetUsePtWeights(fUsePtWeights);}
+  if(fUseEtaWeights){fQC->SetUseEtaWeights(fUseEtaWeights);}
+  if(fUseTrackWeights){fQC->SetUseTrackWeights(fUseTrackWeights);}
   // Get data from input slot #1 which is used for weights:
   if(GetNinputs()==2) 
   {                   

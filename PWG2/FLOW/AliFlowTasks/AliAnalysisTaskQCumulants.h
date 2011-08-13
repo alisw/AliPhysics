@@ -81,6 +81,8 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t GetUsePtWeights() const {return this->fUsePtWeights;};
   void SetUseEtaWeights(Bool_t const uEtaW) {this->fUseEtaWeights = uEtaW;};
   Bool_t GetUseEtaWeights() const {return this->fUseEtaWeights;};
+  void SetUseTrackWeights(Bool_t const uTrackW) {this->fUseTrackWeights = uTrackW;};
+  Bool_t GetUseTrackWeights() const {return this->fUseTrackWeights;};
   // Event weights:
   void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
  
@@ -115,6 +117,7 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t fUsePhiWeights;              // use phi weights
   Bool_t fUsePtWeights;               // use pt weights
   Bool_t fUseEtaWeights;              // use eta weights  
+  Bool_t fUseTrackWeights;            // use track weights (e.g. VZERO sector weights)  
   TList *fWeightsList;                // list with weights
   // Event weights:
   TString *fMultiplicityWeight;       // event-by-event weights for multiparticle correlations ("combinations","unit" or "multiplicity")  
