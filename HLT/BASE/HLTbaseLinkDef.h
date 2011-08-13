@@ -57,6 +57,7 @@
 #pragma link C++ class AliHLTComponentBenchmark+;
 #pragma link C++ class AliHLTDataDeflater+;
 #pragma link C++ class AliHLTDataDeflaterSimple+;
+#pragma link C++ class AliHLTDataInflater+;
 
 #include "RVersion.h"
 #if ROOT_VERSION_CODE < 334336 //ROOT_VERSION(5,26,0)
