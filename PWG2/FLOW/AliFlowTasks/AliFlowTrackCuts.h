@@ -139,7 +139,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t GetPmdNcell() const {return fPmdNcell; }
   Float_t GetBeta(const AliESDtrack* t);
   Float_t Getdedx(const AliESDtrack* t) const;
-  Float_t GetBayesianProb() const {return TMath::MaxElement(5,fProbBayes);};
+  Float_t GetBayesianProb() const {return fProbBayes;};
 
   void SetQA(Bool_t b=kTRUE) {if (b) DefineHistograms();}
   TList* GetQA() const {return fQA;}
@@ -236,7 +236,6 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   // part added by F. Noferini
   Bool_t PassesTOFbayesianCut(const AliESDtrack* track); 
   Bool_t PassesNucleiSelection(const AliESDtrack* track);   // added by Natasha
-  Int_t GetESDPdg(const AliESDtrack *track,Option_t *option="bayesianTOF",Int_t ipart=2,Float_t cPi=-1.0,Float_t cKa=0.0,Float_t cPr=0.0); // 3sigma cut ipart=0(el),1(mu),2(pi),3(K),4(p)
   Bool_t TPCTOFagree(const AliESDtrack *track);
   // end part added by F. Noferini
 
@@ -314,13 +313,13 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   // part added by F. Noferini
   static const Int_t fgkPIDptBin = 20; // pT bins for priors
   Float_t fC[fgkPIDptBin][5],fBinLimitPID[fgkPIDptBin]; // pt bin limit and priors
-  Float_t fProbBayes[5]; // bayesian probability
+  Float_t fProbBayes; // bayesian probability
   Float_t fCurrCentr; // current centrality used for set the priors
  // end part added by F. Noferini
 
   static const Int_t fgkNumberOfV0tracks=64; //number of V0 channels
 
-  ClassDef(AliFlowTrackCuts,10)
+  ClassDef(AliFlowTrackCuts,11)
 };
 
 #endif
