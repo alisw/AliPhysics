@@ -388,15 +388,16 @@ int AliHLTTPCRawSpacePointContainer::Write(AliHLTUInt8_t* outputPtr, AliHLTUInt3
   AliHLTUInt32_t capacity=size;
   size=0;
 
-  for (int slice=0; slice<AliHLTTPCTransform::GetNSlice(); slice++) {
-    for (int part=0; part<AliHLTTPCTransform::GetNPatches(); part++) {
+  for (int slice=0; slice<AliHLTTPCTransform::GetNSlice() && iResult>=0; slice++) {
+    for (int part=0; part<AliHLTTPCTransform::GetNPatches() && iResult>=0; part++) {
       AliHLTUInt32_t mask=AliHLTTPCSpacePointData::GetID(slice,part,0);
       // FIXME: make GetClusterIDs a const function and handle the cast there
       const vector<AliHLTUInt32_t>* collection=const_cast<AliHLTTPCRawSpacePointContainer*>(this)->GetClusterIDs(mask);
       if (!collection) continue;
       if (size+sizeof(AliHLTTPCRawClusterData)+collection->size()*sizeof(AliHLTTPCRawCluster)>capacity) {
 	ALIHLTERRORGUARD(1,"too little space to write cluster output block");
-	return -ENOSPC;
+	iResult=-ENOSPC;
+	break;
       }
       AliHLTTPCRawClusterData* blockout=reinterpret_cast<AliHLTTPCRawClusterData*>(outputPtr+size);
       blockout->fVersion=0;
@@ -404,7 +405,7 @@ int AliHLTTPCRawSpacePointContainer::Write(AliHLTUInt8_t* outputPtr, AliHLTUInt3
       vector<AliHLTUInt32_t>::const_iterator clusterID=collection->begin();
       if (clusterID!=collection->end()) {
 	std::map<AliHLTUInt32_t, AliHLTTPCRawSpacePointProperties>::const_iterator cl=fClusters.find(*clusterID);
-	for (; clusterID!=collection->end(); clusterID++, cl++) {
+	for (; clusterID!=collection->end(); clusterID++, (cl!=fClusters.end())?cl++:cl) {
 	  if (cl->first!=*clusterID) cl=fClusters.find(*clusterID);
 	  if (cl==fClusters.end() || cl->second.Data()==NULL) continue;
 	  AliHLTTPCRawCluster& c=blockout->fClusters[blockout->fCount];

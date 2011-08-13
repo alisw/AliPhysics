@@ -138,6 +138,21 @@ const AliHLTComponentDataType& AliHLTTPCDefinitions::AliHLTDataTypeClusterMCInfo
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo = AliHLTComponentDataTypeInitializer("CLMCINFO", kAliHLTDataOriginTPC);
 
 
+const AliHLTTPCDefinitions::AliClusterParameter AliHLTTPCDefinitions::fgkClusterParameterDefinitions[]= {
+  {AliHLTTPCDefinitions::kPadRow,  "padrow",   6,  4,   1},
+  {AliHLTTPCDefinitions::kPad,     "pad",     14, 12,  60}, // 100um for 6mm pads
+  {AliHLTTPCDefinitions::kTime,    "time",    15, 13,  25}, // 100um for 2.5 mm timebin pitch
+  {AliHLTTPCDefinitions::kSigmaY2, "sigmaY2",  8,  5,  25},
+  {AliHLTTPCDefinitions::kSigmaZ2, "sigmaZ2",  8,  5,  10},
+  {AliHLTTPCDefinitions::kCharge,  "charge",  16,  9,   1},
+  {AliHLTTPCDefinitions::kQMax,    "qmax",    10,  6,   1}
+};
+
+unsigned AliHLTTPCDefinitions::GetNumberOfClusterParameterDefinitions()
+{
+  return sizeof(fgkClusterParameterDefinitions)/sizeof(AliClusterParameter);
+}
+
 AliHLTTPCDefinitions::AliHLTTPCDefinitions()
 {
   // see header file for class documentation

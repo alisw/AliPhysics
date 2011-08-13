@@ -321,26 +321,12 @@ int AliHLTTPCDataCompressionComponent::InitDeflater(int mode)
     std::auto_ptr<AliHLTDataDeflaterSimple> deflater(new AliHLTDataDeflaterSimple);
     if (!deflater.get()) return -ENOMEM;
 
-    struct parameter_t {
-      AliHLTTPCDataCompressionComponent::ParameterId_t fId;
-      const char* fName;
-      int fFullBitLength;
-      int fReducedBitLength;
-    };
-    parameter_t parameters[]= {
-      {kPadRow,  "padrow",   6,  4},
-      {kPad,     "pad",     14, 12},
-      {kTime,    "time",    15, 13},
-      {kSigmaY2, "sigmaY2",  8,  5},
-      {kSigmaZ2, "sigmaZ2",  8,  5},
-      {kCharge,  "charge",  16,  9},
-      {kQMax,    "qmax",    10,  6}
-    };
-
-    for (unsigned p=0; p<sizeof(parameters)/sizeof(parameter_t); p++) {
-      if (deflater->AddParameterDefinition(parameters[p].fName,
-					   parameters[p].fFullBitLength,
-					   parameters[p].fReducedBitLength)!=(int)parameters[p].fId) {
+    const unsigned nofParameters=AliHLTTPCDefinitions::GetNumberOfClusterParameterDefinitions();
+    for (unsigned p=0; p<nofParameters; p++) {
+      const AliHLTTPCDefinitions::AliClusterParameter& parameter=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[p];
+      if (deflater->AddParameterDefinition(parameter.fName,
+					   parameter.fBitLength,
+					   parameter.fOptional)!=(int)parameter.fId) {
 	// for performance reason the parameter id is simply used as index in the array of
 	// definitions, the position must match the id
 	HLTFatal("mismatch between parameter id and position in array, rearrange definitions!");

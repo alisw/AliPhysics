@@ -150,6 +150,30 @@ public:
   static const AliHLTComponentDataType fgkAliHLTDataTypeClusterMCInfo;    // see above
   static const AliHLTComponentDataType& AliHLTDataTypeClusterMCInfo();
 
+  // ids for the different parameters of a cluster
+  enum AliClusterParameterId_t {
+    kPadRow = 0,
+    kPad,
+    kTime,
+    kSigmaY2,
+    kSigmaZ2,
+    kCharge,
+    kQMax,
+    kLast = kQMax
+  };
+
+  // helper struct for the definition of cluster parameters
+  struct AliClusterParameter {
+    AliClusterParameterId_t fId; //! id of the parameter
+    const char* fName;           //! name of the parameter
+    int fBitLength;              //! bit length
+    int fOptional;               //! optional parameter
+    int fScale;                  //! scale for conversion to int number
+  };
+
+  static const AliClusterParameter fgkClusterParameterDefinitions[];
+  static unsigned GetNumberOfClusterParameterDefinitions();
+
 private:
 
   /// Do not allow creation of this class since everything is static.

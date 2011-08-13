@@ -86,17 +86,6 @@ public:
   /// inherited from AliHLTComponent: spawn function.
   virtual AliHLTComponent* Spawn();
 
-  enum ParameterId_t {
-    kPadRow = 0,
-    kPad,
-    kTime,
-    kSigmaY2,
-    kSigmaZ2,
-    kCharge,
-    kQMax,
-    kLast
-  };
-
 protected:
   /// inherited from AliHLTProcessor: data processing
   int DoEvent( const AliHLTComponentEventData& evtData, 
