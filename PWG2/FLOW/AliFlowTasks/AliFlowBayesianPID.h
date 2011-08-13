@@ -100,13 +100,14 @@ class AliFlowBayesianPID : public AliPIDResponse {
   void SetPriors();
 
   static const Int_t fNdetectors = 2;
-  static TH2D* hPriors[5]; // histo with priors (hardcoded)
+  static const Int_t fNspecies = 8;// 0=el, 1=mu, 2=pi, 3=ka, 4=pr, 5=deuteron, 6=triton, 7=He3 
+  static TH2D* hPriors[fNspecies]; // histo with priors (hardcoded)
   static TSpline3 *fMism; // function for mismatch
   static AliTOFGeometry *fTofGeo; // TOF geometry needed to reproduce mismatch shape
 
   AliESDpid *fPIDesd;//ESDpid object
   TDatabasePDG *fDB; // Database pdg
-  Double_t fMass[5]; // mass for el(0),mu(1),pi(2),K(3),p(4)
+  Double_t fMass[fNspecies]; // mass for el(0),mu(1),pi(2),K(3),p(4)
 
   Bool_t fNewTrackParam; // switch for new tracking resolution TOF parameterization
   Bool_t fIsMC; // switch if MC data
@@ -120,15 +121,15 @@ class AliFlowBayesianPID : public AliPIDResponse {
 
   AliTOFT0maker *fTOFmaker; //TOF-T0 maker object
 
-  Float_t fWeights[fNdetectors][5]; // weights: 0=tpc,1=tof
-  Float_t fProb[5],fWTofMism,fProbTofMism; // Bayesian Combined PID + mismatch weights and probability 
+  Float_t fWeights[fNdetectors][fNspecies]; // weights: 0=tpc,1=tof
+  Float_t fProb[fNspecies],fWTofMism,fProbTofMism; // Bayesian Combined PID + mismatch weights and probability 
 
   Float_t fZ,fMassTOF; //measured charge(Z) and mass/Z
   TF1 *fBBdata; // Bethe Bloch function (needed to compute the charge of the particle)
 
   Bool_t fMaskAND[fNdetectors],fMaskOR[fNdetectors],fMaskCurrent[fNdetectors]; // mask detector should be used
 
-  ClassDef(AliFlowBayesianPID, 3); // example of analysis
+  ClassDef(AliFlowBayesianPID, 4); // example of analysis
 };
 
 #endif
