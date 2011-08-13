@@ -53,7 +53,6 @@ const char* AliHLTTPCHWClusterTransformComponent::fgkOCDBEntryHWTransform="HLT/C
 AliHLTTPCHWClusterTransformComponent::AliHLTTPCHWClusterTransformComponent()
 :
 fDataId(kFALSE),
-fChargeThreshold(10),
 fTransform(),
 fPublishRawClusters(kFALSE),
 fpDecoder(NULL),
@@ -259,8 +258,6 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	 }
 	 padrow+=AliHLTTPCTransform::GetFirstRow(minPartition);
 	 AliHLTUInt32_t charge=cl.GetCharge();
-	 // skip clusters below threshold  
-	 if( charge<fChargeThreshold ) continue;  
 
 	 float pad=cl.GetPad();
 	 float time=cl.GetTime();
@@ -345,8 +342,6 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	   }
 	   padrow+=AliHLTTPCTransform::GetFirstRow(minPartition);
 	   AliHLTUInt32_t charge= cl.GetCharge();
-	   // skip clusters below threshold  
-	   if( charge<fChargeThreshold ) continue;  
 
 	   float pad =cl.GetPad();
 	   float time =cl.GetTime();
@@ -418,9 +413,8 @@ int AliHLTTPCHWClusterTransformComponent::ScanConfigurationArgument(int argc, co
   
   if (argument.CompareTo("-charge-threshold")==0) {
     if (++i>=argc) return -EPROTO;
-    argument=argv[i];
-    fChargeThreshold=(UInt_t)argument.Atoi();
-    HLTInfo("The charge threshold has been set to %d.", fChargeThreshold);
+    argument=argv[i];    
+    HLTInfo("The argument -charge-threshold is deprecated.");
     return 2;
   }    
 
