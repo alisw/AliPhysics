@@ -85,7 +85,7 @@ class AliFlowAnalysisWithQCumulants{
     virtual void CalculateIntFlowProductOfCorrectionTermsForNUA();
     virtual void CalculateIntFlowSumOfEventWeightsNUA();
     virtual void CalculateIntFlowSumOfProductOfEventWeightsNUA();
-    // 2c.) Cros-checking reference flow correlations with nested loops: 
+    // 2c.) Cross-checking reference flow correlations with nested loops: 
     virtual void EvaluateIntFlowNestedLoops(AliFlowEventSimple* const anEvent);
     virtual void EvaluateIntFlowCorrelationsWithNestedLoops(AliFlowEventSimple* const anEvent); 
     virtual void EvaluateIntFlowCorrelationsWithNestedLoopsUsingParticleWeights(AliFlowEventSimple* const anEvent); 
@@ -213,6 +213,8 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t GetUsePtWeights() const {return this->fUsePtWeights;};
   void SetUseEtaWeights(Bool_t const uEtaW) {this->fUseEtaWeights = uEtaW;};
   Bool_t GetUseEtaWeights() const {return this->fUseEtaWeights;};
+  void SetUseTrackWeights(Bool_t const uTrackW) {this->fUseTrackWeights = uTrackW;};
+  Bool_t GetUseTrackWeights() const {return this->fUseTrackWeights;};
   void SetUseParticleWeights(TProfile* const uPW) {this->fUseParticleWeights = uPW;};
   TProfile* GetUseParticleWeights() const {return this->fUseParticleWeights;};
   void SetPhiWeights(TH1F* const histPhiWeights) {this->fPhiWeights = histPhiWeights;};
@@ -457,6 +459,7 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t fUsePhiWeights; // use phi weights
   Bool_t fUsePtWeights; // use pt weights
   Bool_t fUseEtaWeights; // use eta weights
+  Bool_t fUseTrackWeights; // use track weights (e.g. VZERO sector weights)
   TProfile *fUseParticleWeights; // profile with three bins to hold values of fUsePhiWeights, fUsePtWeights and fUseEtaWeights
   TH1F *fPhiWeights; // histogram holding phi weights
   TH1D *fPtWeights; // histogram holding phi weights
@@ -502,7 +505,7 @@ class AliFlowAnalysisWithQCumulants{
   TProfile *fIntFlowCorrelationsVsMPro[4]; // average correlations <<2>>, <<4>>, <<6>> and <<8>> versus multiplicity (error is wrong here!)
   TProfile *fIntFlowSquaredCorrelationsVsMPro[4]; // average correlations <<2>^2>, <<4>^2>, <<6>^2> and <<8>^2> versus multiplicity  
   TProfile *fIntFlowCorrelationsAllPro; // average all correlations for integrated flow (with wrong errors!)
-  TProfile *fIntFlowCorrelationsAllVsMPro[58]; // average all correlations vs M (errors via Sumw2 - to me improved)
+  TProfile *fIntFlowCorrelationsAllVsMPro[64]; // average all correlations vs M (errors via Sumw2 - to me improved)
   TProfile *fIntFlowExtraCorrelationsPro; // when particle weights are used some extra correlations appear 
   TProfile *fIntFlowProductOfCorrelationsPro; // average product of correlations <2>, <4>, <6> and <8>  
   TProfile *fIntFlowProductOfCorrelationsVsMPro[6]; // average product of correlations <2>, <4>, <6> and <8>  
