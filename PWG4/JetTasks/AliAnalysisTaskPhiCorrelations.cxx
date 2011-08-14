@@ -602,7 +602,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 	  fHistos->TwoTrackEfficiency(tracks, bgTracks, bSign);
 	}
 
-	//fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, bgTracks, 1.0 / nMix, (jMix == 0));
+	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, bgTracks, 1.0 / nMix, (jMix == 0));
       }
     }
     
