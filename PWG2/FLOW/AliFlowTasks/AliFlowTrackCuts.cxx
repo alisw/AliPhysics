@@ -111,7 +111,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fTrack(NULL),
   fTrackPhi(0.),
   fTrackEta(0.),
-  fTrackWeight(0.),
+  fTrackWeight(1.),
   fTrackLabel(INT_MIN),
   fMCevent(NULL),
   fMCparticle(NULL),
@@ -190,7 +190,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fTrack(NULL),
   fTrackPhi(0.),
   fTrackEta(0.),
-  fTrackWeight(0.),
+  fTrackWeight(1.),
   fTrackLabel(INT_MIN),
   fMCevent(NULL),
   fMCparticle(NULL),
@@ -276,7 +276,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fTrack(NULL),
   fTrackPhi(0.),
   fTrackEta(0.),
-  fTrackWeight(0.),
+  fTrackWeight(1.),
   fTrackLabel(INT_MIN),
   fMCevent(NULL),
   fMCparticle(NULL),
@@ -371,7 +371,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fTrack=NULL;
   fTrackEta=0.;
   fTrackPhi=0.;
-  fTrackWeight=0.;
+  fTrackWeight=1.;
   fTrackLabel=INT_MIN;
   fMCevent=NULL;
   fMCparticle=NULL;
@@ -476,14 +476,15 @@ Bool_t AliFlowTrackCuts::IsSelectedMCtruth(TObject* obj, Int_t id)
   AliVParticle* vparticle = dynamic_cast<AliVParticle*>(obj);
   if (vparticle) 
   {
-    return PassesMCcuts(fMCevent,vparticle->GetLabel());
+    return PassesMCcuts(fMCevent,(fFakesAreOK)?TMath::Abs(vparticle->GetLabel()):vparticle->GetLabel());
   }
   AliMultiplicity* tracklets = dynamic_cast<AliMultiplicity*>(obj);
   if (tracklets)
   {
     Int_t label0 = tracklets->GetLabel(id,0);
     Int_t label1 = tracklets->GetLabel(id,1);
-    Int_t label = (label0==label1)?tracklets->GetLabel(id,1):-666;
+    Int_t label = (fFakesAreOK)?TMath::Abs(label0):label0;
+    if (label0!=label1) label = -666;
     return PassesMCcuts(fMCevent,label);
   }
   return kFALSE;  //default when passed wrong type of object
@@ -507,7 +508,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(const AliMultiplicity* tracklet, Int_t id)
   //clean up from last iteration, and init label
   fTrack = NULL;
   fMCparticle=NULL;
-  fTrackLabel=-1;
+  fTrackLabel=-999;
 
   fTrackPhi = tracklet->GetPhi(id);
   fTrackEta = tracklet->GetEta(id);
@@ -688,35 +689,154 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
       }
       pdg = TMath::Sign(pdg,static_cast<Float_t>(pdgcode));
 
-      Float_t pdgFirstMother = 0;
-      switch (TMath::Abs(pdgcodeFirstMother))
+      Float_t geantCode = 0;
+      switch (pdgcodeFirstMother)
       {
-        case 3122: //lambda
-          pdgFirstMother = 0.5;
+        case 22: //#gamma
+          geantCode=1;
           break;
-        case 3222: case 3212: case 3112: //sigma+ sigma0 sigma-
-          pdgFirstMother = 1.5;
+        case -11: //e^{+}
+          geantCode=2;
           break;
-        case 3322: case 3312: //xi0 xi+
-          pdgFirstMother = 2.5;
+        case 11: //e^{-}
+          geantCode=3;
           break;
-        case 3332: //omega-
-          pdgFirstMother = 3.5;
+        case 12: case 14: case 16: //#nu
+          geantCode=4;
+          break;
+        case -13:
+          geantCode=5; //#mu^{+}
+          break;
+        case 13:
+          geantCode=6; //#mu^{-}
+          break;
+        case 111: //#pi^{0}
+          geantCode=7;
+          break;
+        case 211: //#pi^{+}
+          geantCode=8;
+          break;
+        case -211: //#pi^{-}
+          geantCode=9;
+          break;
+        case 130: //K^{0}_{L}
+          geantCode=10;
+          break;
+        case 321: //K^{+}
+          geantCode=11;
+          break;
+        case -321: //K^{-}
+          geantCode=12;
+          break;
+        case 2112:
+          geantCode = 13; //n
+          break;
+        case 2212:
+          geantCode = 14; //p
+          break;
+        case -2212:
+          geantCode=15; //#bar{p}
+          break;
+        case 310:
+          geantCode=16; //K^{0}_{S}
+          break;
+        case 221:
+          geantCode=17; //#eta
+          break;
+        case 3122:
+          geantCode=18; //#Lambda
+          break;
+        case 3222:
+          geantCode=19; //#Sigma^{+}
+          break;
+        case 3212:
+          geantCode=20; //#Sigma^{0}
+          break;
+        case 3112:
+          geantCode=21; //#Sigma^{-}
+          break;
+        case 3322:
+          geantCode=22; //#Theta^{0}
+          break;
+        case 3312:
+          geantCode=23; //#Theta^{-}
+          break;
+        case 3332:
+          geantCode=24; //#Omega^{-}
+          break;
+        case -2112:
+          geantCode=25; //#bar{n}
+          break;
+        case -3122:
+          geantCode=26; //#bar{#Lambda}
+          break;
+        case -3112:
+          geantCode=27; //#bar{#Sigma}^{-}
+          break;
+        case -3212:
+          geantCode=28; //#bar{#Sigma}^{0}
+          break;
+        case -3222:
+          geantCode=29; //#bar{#Sigma}^{+}
+          break;
+        case -3322:
+          geantCode=30; //#bar{#Theta}^{0}
+          break;
+        case -3312:
+          geantCode=31; //#bar{#Theta}^{+}
+          break;
+        case -3332:
+          geantCode=32; //#bar{#Omega}^{+}
+          break;
+        case -15:
+          geantCode=33; //#tau^{+}
+          break;
+        case 15:
+          geantCode=34; //#tau^{-}
+          break;
+        case 411:
+          geantCode=35; //D^{+}
+          break;
+        case -411:
+          geantCode=36; //D^{-}
+          break;
+        case 421:
+          geantCode=37; //D^{0}
+          break;
+        case -421:
+          geantCode=38; //#bar{D}^{0}
+          break;
+        case 431:
+          geantCode=39; //D_{s}^{+}
+          break;
+        case -431:
+          geantCode=40; //#bar{D_{s}}^{-}
+          break;
+        case 4122:
+          geantCode=41; //#Lambda_{c}^{+}
+          break;
+        case 24:
+          geantCode=42; //W^{+}
+          break;
+        case -24:
+          geantCode=43; //W^{-}
+          break;
+        case 23:
+          geantCode=44; //Z^{0}
           break;
         default:
-          pdgFirstMother = 1e10;
+          geantCode = 100;
           break;
       }
-      pdgFirstMother = TMath::Sign(pdgFirstMother,static_cast<Float_t>(pdgcodeFirstMother));
       
       QAbefore(2)->Fill(p,pdg);
       QAbefore(3)->Fill(p,primary?0.5:-0.5);
       QAbefore(4)->Fill(p,static_cast<Float_t>(processID));
-      QAbefore(7)->Fill(p,pdgFirstMother);
+      QAbefore(7)->Fill(p,geantCode+0.5);
       if (pass) QAafter(2)->Fill(p,pdg);
       if (pass) QAafter(3)->Fill(p,primary?0.5:-0.5);
       if (pass) QAafter(4)->Fill(p,static_cast<Float_t>(processID));
-      if (pass) QAafter(7)->Fill(p,pdgFirstMother);
+      if (pass) QAafter(7)->Fill(p,geantCode);
     }
   }
 
@@ -882,7 +1002,7 @@ void AliFlowTrackCuts::HandleESDtrack(AliESDtrack* track)
       {
         fTrack=NULL;
         fMCparticle=NULL;
-        fTrackLabel=-1;
+        fTrackLabel=-998;
         return;
       }
       fTrack = &fTPCtrack;
@@ -1017,6 +1137,7 @@ Bool_t AliFlowTrackCuts::FillFlowTrackGeneric(AliFlowTrack* flowtrack) const
     case kPure:
       flowtrack->SetPhi(fTrackPhi);
       flowtrack->SetEta(fTrackEta);
+      flowtrack->SetWeight(fTrackWeight);
       break;
     case kTrackWithMCkine:
       if (!fMCparticle) return kFALSE;
@@ -1028,12 +1149,14 @@ Bool_t AliFlowTrackCuts::FillFlowTrackGeneric(AliFlowTrack* flowtrack) const
       if (!fMCparticle) return kFALSE;
       flowtrack->SetPhi(fTrackPhi);
       flowtrack->SetEta(fTrackEta);
+      flowtrack->SetWeight(fTrackWeight);
       flowtrack->SetPt(fMCparticle->Pt());
       break;
     case kTrackWithPtFromFirstMother:
       if (!fMCparticle) return kFALSE;
       flowtrack->SetPhi(fTrackPhi);
       flowtrack->SetEta(fTrackEta);
+      flowtrack->SetWeight(fTrackWeight);
       tmpTParticle = fMCparticle->Particle();
       tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
       flowtrack->SetPt(tmpAliMCParticle->Pt());
@@ -1041,6 +1164,7 @@ Bool_t AliFlowTrackCuts::FillFlowTrackGeneric(AliFlowTrack* flowtrack) const
     default:
       flowtrack->SetPhi(fTrackPhi);
       flowtrack->SetEta(fTrackEta);
+      flowtrack->SetWeight(fTrackWeight);
       break;
   }
   flowtrack->SetSource(AliFlowTrack::kFromTracklet);
@@ -1094,7 +1218,7 @@ Bool_t AliFlowTrackCuts::FillFlowTrackVParticle(AliFlowTrack* flowtrack) const
   if (fParamType==kMC) 
   {
     flowtrack->SetSource(AliFlowTrack::kFromMC);
-    flowtrack->SetID(fTrack->GetLabel());
+    flowtrack->SetID(fTrackLabel);
   }
   else if (dynamic_cast<AliESDtrack*>(fTrack))
   {
@@ -1145,6 +1269,7 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackSPDtracklet() const
       flowtrack = new AliFlowTrack();
       flowtrack->SetPhi(fTrackPhi);
       flowtrack->SetEta(fTrackEta);
+      flowtrack->SetWeight(fTrackWeight);
       break;
     case kTrackWithMCkine:
       if (!fMCparticle) return NULL;
@@ -1158,6 +1283,7 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackSPDtracklet() const
       flowtrack = new AliFlowTrack();
       flowtrack->SetPhi(fTrackPhi);
       flowtrack->SetEta(fTrackEta);
+      flowtrack->SetWeight(fTrackWeight);
       flowtrack->SetPt(fMCparticle->Pt());
       break;
     case kTrackWithPtFromFirstMother:
@@ -1165,6 +1291,7 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackSPDtracklet() const
       flowtrack = new AliFlowTrack();
       flowtrack->SetPhi(fTrackPhi);
       flowtrack->SetEta(fTrackEta);
+      flowtrack->SetWeight(fTrackWeight);
       tmpTParticle = fMCparticle->Particle();
       tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
       flowtrack->SetPt(tmpAliMCParticle->Pt());
@@ -1173,6 +1300,7 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackSPDtracklet() const
       flowtrack = new AliFlowTrack();
       flowtrack->SetPhi(fTrackPhi);
       flowtrack->SetEta(fTrackEta);
+      flowtrack->SetWeight(fTrackWeight);
       break;
   }
   flowtrack->SetSource(AliFlowTrack::kFromTracklet);
@@ -1227,7 +1355,7 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackVParticle() const
   if (fParamType==kMC) 
   {
     flowtrack->SetSource(AliFlowTrack::kFromMC);
-    flowtrack->SetID(fTrack->GetLabel());
+    flowtrack->SetID(fTrackLabel);
   }
   else if (dynamic_cast<AliESDtrack*>(fTrack))
   {
@@ -1404,15 +1532,15 @@ void AliFlowTrackCuts::DefineHistograms()
   //define qa histograms
   if (fQA) return;
   
-  const Int_t kNbinsP=60;
+  const Int_t kNbinsP=200;
   Double_t binsP[kNbinsP+1];
   binsP[0]=0.0;
   for(int i=1; i<kNbinsP+1; i++)
   {
-    if(binsP[i-1]+0.05<1.01)
-      binsP[i]=binsP[i-1]+0.05;
-    else
-      binsP[i]=binsP[i-1]+0.1;
+    //if(binsP[i-1]+0.05<1.01)
+    //  binsP[i]=binsP[i-1]+0.05;
+    //else
+    binsP[i]=binsP[i-1]+0.05;
   }
 
   const Int_t nBinsDCA=1000;
@@ -1471,19 +1599,99 @@ void AliFlowTrackCuts::DefineHistograms()
   before->Add(new TH2F("DCAz",";p_{t}[GeV/c];DCAz[cm]", 100, 0., 10., nBinsDCA, binsDCA));//6
   after->Add(new TH2F("DCAz",";p_{t}[GeV/c];DCAz[cm]", 100, 0., 10., nBinsDCA, binsDCA));//6
   //first mother
-  hb = new TH2F("MC first mother",";p[GeV/c];",kNbinsP,binsP,4,0.,4.);
-  ha = new TH2F("MC first mother",";p[GeV/c];",kNbinsP,binsP,4,0.,4.);
-  hb->GetYaxis()->SetBinLabel(1,"#Lambda");
-  ha->GetYaxis()->SetBinLabel(1,"#Lambda");
-  hb->GetYaxis()->SetBinLabel(2,"#Sigma");
-  ha->GetYaxis()->SetBinLabel(2,"#Sigma");
-  hb->GetYaxis()->SetBinLabel(3,"#Xi");
-  ha->GetYaxis()->SetBinLabel(3,"#Xi");
-  hb->GetYaxis()->SetBinLabel(4,"#Omega");
-  ha->GetYaxis()->SetBinLabel(4,"#Omega");
+  hb = new TH2F("MC first mother",";p[GeV/c];",kNbinsP,binsP,44,1.,45.);
+  ha = new TH2F("MC first mother",";p[GeV/c];",kNbinsP,binsP,44,1.,45.);
+  hb->GetYaxis()->SetBinLabel(1, "#gamma");
+  ha->GetYaxis()->SetBinLabel(1, "#gamma");
+  hb->GetYaxis()->SetBinLabel(2, "e^{+}");
+  ha->GetYaxis()->SetBinLabel(2, "e^{+}");
+  hb->GetYaxis()->SetBinLabel(3, "e^{-}");
+  ha->GetYaxis()->SetBinLabel(3, "e^{-}");
+  hb->GetYaxis()->SetBinLabel(4, "#nu");
+  ha->GetYaxis()->SetBinLabel(4, "#nu");
+  hb->GetYaxis()->SetBinLabel(5, "#mu^{+}");
+  ha->GetYaxis()->SetBinLabel(5, "#mu^{+}");
+  hb->GetYaxis()->SetBinLabel(6, "#mu^{-}");
+  ha->GetYaxis()->SetBinLabel(6, "#mu^{-}");
+  hb->GetYaxis()->SetBinLabel(7, "#pi^{0}");
+  ha->GetYaxis()->SetBinLabel(7, "#pi^{0}");
+  hb->GetYaxis()->SetBinLabel(8, "#pi^{+}");
+  ha->GetYaxis()->SetBinLabel(8, "#pi^{+}");
+  hb->GetYaxis()->SetBinLabel(9, "#pi^{-}");
+  ha->GetYaxis()->SetBinLabel(9, "#pi^{-}");
+  hb->GetYaxis()->SetBinLabel(10, "K^{0}_{L}");
+  ha->GetYaxis()->SetBinLabel(10, "K^{0}_{L}");
+  hb->GetYaxis()->SetBinLabel(11, "K^{+}");
+  ha->GetYaxis()->SetBinLabel(11, "K^{+}");
+  hb->GetYaxis()->SetBinLabel(12, "K^{-}");
+  ha->GetYaxis()->SetBinLabel(12, "K^{-}");
+  hb->GetYaxis()->SetBinLabel( 13, "n");
+  ha->GetYaxis()->SetBinLabel( 13, "n");
+  hb->GetYaxis()->SetBinLabel( 14, "p");
+  ha->GetYaxis()->SetBinLabel( 14, "p");
+  hb->GetYaxis()->SetBinLabel(15, "#bar{p}");
+  ha->GetYaxis()->SetBinLabel(15, "#bar{p}");
+  hb->GetYaxis()->SetBinLabel(16, "K^{0}_{S}");
+  ha->GetYaxis()->SetBinLabel(16, "K^{0}_{S}");
+  hb->GetYaxis()->SetBinLabel(17, "#eta");
+  ha->GetYaxis()->SetBinLabel(17, "#eta");
+  hb->GetYaxis()->SetBinLabel(18, "#Lambda");
+  ha->GetYaxis()->SetBinLabel(18, "#Lambda");
+  hb->GetYaxis()->SetBinLabel(19, "#Sigma^{+}");
+  ha->GetYaxis()->SetBinLabel(19, "#Sigma^{+}");
+  hb->GetYaxis()->SetBinLabel(20, "#Sigma^{0}");
+  ha->GetYaxis()->SetBinLabel(20, "#Sigma^{0}");
+  hb->GetYaxis()->SetBinLabel(21, "#Sigma^{-}");
+  ha->GetYaxis()->SetBinLabel(21, "#Sigma^{-}");
+  hb->GetYaxis()->SetBinLabel(22, "#Theta^{0}");
+  ha->GetYaxis()->SetBinLabel(22, "#Theta^{0}");
+  hb->GetYaxis()->SetBinLabel(23, "#Theta^{-}");
+  ha->GetYaxis()->SetBinLabel(23, "#Theta^{-}");
+  hb->GetYaxis()->SetBinLabel(24, "#Omega^{-}");
+  ha->GetYaxis()->SetBinLabel(24, "#Omega^{-}");
+  hb->GetYaxis()->SetBinLabel(25, "#bar{n}");
+  ha->GetYaxis()->SetBinLabel(25, "#bar{n}");
+  hb->GetYaxis()->SetBinLabel(26, "#bar{#Lambda}");
+  ha->GetYaxis()->SetBinLabel(26, "#bar{#Lambda}");
+  hb->GetYaxis()->SetBinLabel(27, "#bar{#Sigma}^{-}");
+  ha->GetYaxis()->SetBinLabel(27, "#bar{#Sigma}^{-}");
+  hb->GetYaxis()->SetBinLabel(28, "#bar{#Sigma}^{0}");
+  ha->GetYaxis()->SetBinLabel(28, "#bar{#Sigma}^{0}");
+  hb->GetYaxis()->SetBinLabel(29, "#bar{#Sigma}^{+}");
+  ha->GetYaxis()->SetBinLabel(29, "#bar{#Sigma}^{+}");
+  hb->GetYaxis()->SetBinLabel(30, "#bar{#Theta}^{0}");
+  ha->GetYaxis()->SetBinLabel(30, "#bar{#Theta}^{0}");
+  hb->GetYaxis()->SetBinLabel(31, "#bar{#Theta}^{+}");
+  ha->GetYaxis()->SetBinLabel(31, "#bar{#Theta}^{+}");
+  hb->GetYaxis()->SetBinLabel(32, "#bar{#Omega}^{+}");
+  ha->GetYaxis()->SetBinLabel(32, "#bar{#Omega}^{+}");
+  hb->GetYaxis()->SetBinLabel(33, "#tau^{+}");
+  ha->GetYaxis()->SetBinLabel(33, "#tau^{+}");
+  hb->GetYaxis()->SetBinLabel(34, "#tau^{-}");
+  ha->GetYaxis()->SetBinLabel(34, "#tau^{-}");
+  hb->GetYaxis()->SetBinLabel(35, "D^{+}");
+  ha->GetYaxis()->SetBinLabel(35, "D^{+}");
+  hb->GetYaxis()->SetBinLabel(36, "D^{-}");
+  ha->GetYaxis()->SetBinLabel(36, "D^{-}");
+  hb->GetYaxis()->SetBinLabel(37, "D^{0}");
+  ha->GetYaxis()->SetBinLabel(37, "D^{0}");
+  hb->GetYaxis()->SetBinLabel(38, "#bar{D}^{0}");
+  ha->GetYaxis()->SetBinLabel(38, "#bar{D}^{0}");
+  hb->GetYaxis()->SetBinLabel(39, "D_{s}^{+}");
+  ha->GetYaxis()->SetBinLabel(39, "D_{s}^{+}");
+  hb->GetYaxis()->SetBinLabel(40, "#bar{D_{s}}^{-}");
+  ha->GetYaxis()->SetBinLabel(40, "#bar{D_{s}}^{-}");
+  hb->GetYaxis()->SetBinLabel(41, "#Lambda_{c}^{+}");
+  ha->GetYaxis()->SetBinLabel(41, "#Lambda_{c}^{+}");
+  hb->GetYaxis()->SetBinLabel(42, "W^{+}");
+  ha->GetYaxis()->SetBinLabel(42, "W^{+}");
+  hb->GetYaxis()->SetBinLabel(43, "W^{-}");
+  ha->GetYaxis()->SetBinLabel(43, "W^{-}");
+  hb->GetYaxis()->SetBinLabel(44, "Z^{0}");
+  ha->GetYaxis()->SetBinLabel(44, "Z^{0}");
   before->Add(hb);//7
   after->Add(ha);//7
-  
+
   TH1::AddDirectory(adddirstatus);
 }
 
@@ -1556,8 +1764,8 @@ void AliFlowTrackCuts::Clear(Option_t*)
   fTrack=NULL;
   fMCevent=NULL;
   fMCparticle=NULL;
-  fTrackLabel=-1;
-  fTrackWeight=0.0;
+  fTrackLabel=-997;
+  fTrackWeight=1.0;
   fTrackEta=0.0;
   fTrackPhi=0.0;
 }
@@ -3440,7 +3648,7 @@ Bool_t AliFlowTrackCuts::PassesPMDcuts(const AliESDPmdTrack* track )
 
   fTrack = NULL;
   fMCparticle=NULL;
-  fTrackLabel=-1;
+  fTrackLabel=-996;
 
   fTrackEta = GetPmdEta(clsX,clsY,clsZ);
   fTrackPhi = GetPmdPhi(clsX,clsY);
@@ -3464,7 +3672,7 @@ Bool_t AliFlowTrackCuts::PassesV0cuts(const AliVVZERO* vzero, Int_t id)
   //clean up from last iter
   fTrack = NULL;
   fMCparticle=NULL;
-  fTrackLabel=-1;
+  fTrackLabel=-995;
 
   // Additions by Carlos Perez cperez@cern.ch
   fTrackPhi = TMath::PiOver4()*(0.5+id%8);
@@ -3541,5 +3749,6 @@ Long64_t AliFlowTrackCuts::Merge(TCollection* list)
   }
   return fQA->Merge(&tmplist);
 }
+
 
 

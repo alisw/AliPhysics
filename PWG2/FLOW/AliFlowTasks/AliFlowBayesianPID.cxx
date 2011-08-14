@@ -113,13 +113,10 @@ AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid)
 }
 //________________________________________________________________________
 AliFlowBayesianPID::~AliFlowBayesianPID(){
-  if(fMism) delete fMism;
-  if(fTofGeo) delete fTofGeo;
-  if(fTOFResponse) delete fTOFResponse;
+  if(fTOFResponse) delete fTOFResponse; 
   if(fTPCResponse) delete fTPCResponse;
   if(fTOFmaker) delete fTOFmaker;
   if(fBBdata) delete fBBdata;
-  for(Int_t i=0;i < 5;i++) if(hPriors[i]) delete (hPriors[i]);
 }
 //________________________________________________________________________
 void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,EStartTimeType_t flagStart,Bool_t recomputeT0TOF){
@@ -6454,4 +6451,5 @@ x[4999]=110229.399237; y[4999]=6.896278e-07;
 
   return sp;
 }
+
 
