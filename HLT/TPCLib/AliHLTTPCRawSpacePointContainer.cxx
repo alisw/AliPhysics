@@ -406,7 +406,7 @@ int AliHLTTPCRawSpacePointContainer::Write(AliHLTUInt8_t* outputPtr, AliHLTUInt3
       if (clusterID!=collection->end()) {
 	std::map<AliHLTUInt32_t, AliHLTTPCRawSpacePointProperties>::const_iterator cl=fClusters.find(*clusterID);
 	for (; clusterID!=collection->end(); clusterID++, (cl!=fClusters.end())?cl++:cl) {
-	  if (cl->first!=*clusterID) cl=fClusters.find(*clusterID);
+	  if (cl!=fClusters.end() && cl->first!=*clusterID) cl=fClusters.find(*clusterID);
 	  if (cl==fClusters.end() || cl->second.Data()==NULL) continue;
 	  AliHLTTPCRawCluster& c=blockout->fClusters[blockout->fCount];
 	  int padrow=cl->second.Data()->GetPadRow();

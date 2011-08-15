@@ -281,6 +281,12 @@ void AliHLTTPCHWCFSpacePointContainer::Clear(Option_t * option)
   }
   fSelections.clear();
 
+  for (std::vector<AliHLTTPCHWCFData*>::iterator decoder=fDecoders.begin();
+       decoder!=fDecoders.end(); decoder++) {
+    if (*decoder) delete *decoder;
+  }
+  fDecoders.clear();
+
   AliHLTSpacePointContainer::Clear(option);
 }
 
@@ -441,7 +447,7 @@ int AliHLTTPCHWCFSpacePointContainer::Write(AliHLTUInt8_t* outputPtr,
       if (clusterID!=collection->end()) {
 	std::map<AliHLTUInt32_t, AliHLTTPCHWCFSpacePointProperties>::const_iterator cl=fClusters.find(*clusterID);
 	for (; clusterID!=collection->end(); clusterID++, (cl!=fClusters.end())?cl++:cl) {
-	  if (cl->first!=*clusterID) cl=fClusters.find(*clusterID);
+	  if (cl!=fClusters.end() && cl->first!=*clusterID) cl=fClusters.find(*clusterID);
 	  if (cl==fClusters.end() || cl->second.Decoder()==NULL) continue;
 	  int index=AliHLTTPCSpacePointData::GetNumber(cl->first);
 	  int padrow=cl->second.Decoder()->GetPadRow(index);
