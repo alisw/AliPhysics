@@ -261,7 +261,7 @@ class AliHLTTrackGeometry : public TObject, public AliHLTLogging
   virtual void Draw(Option_t *option="");
 
  protected:
-  int AddTrackPoint(const AliHLTTrackPoint& point, AliHLTUInt32_t selectionMask);
+  int AddTrackPoint(const AliHLTTrackPoint& point, AliHLTUInt32_t selectionMask=kAliHLTVoidDataSpec);
 
   const vector<AliHLTTrackPoint>& TrackPoints() const {return fTrackPoints;}
 
