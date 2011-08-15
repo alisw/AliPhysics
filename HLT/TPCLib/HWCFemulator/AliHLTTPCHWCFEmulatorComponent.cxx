@@ -41,6 +41,7 @@ using namespace std;
 #include "AliRawDataHeader.h"
 #include <cstdlib>
 #include <cerrno>
+#include <memory>
 #include "TString.h"
 #include "TObjString.h"
 #include "TObjArray.h"
@@ -445,8 +446,6 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       int slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
       int patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
  
-      const char *str=Form("slice %d patch %d:", slice, patch);
-
       fBenchmark.AddInput(iter->fSize);
  
       if (!iter->fPtr) continue;
@@ -470,26 +469,27 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       AliHLTUInt32_t clustersSize32 = maxNClusters*AliHLTTPCHWCFData::fgkAliHLTTPCHWClusterSize;
       AliHLTUInt32_t nOutputMC = maxNClusters;
 
-      AliHLTUInt32_t headerSize = sizeof(AliRawDataHeader);                   
-      AliHLTUInt8_t *outBlock = new AliHLTUInt8_t[ headerSize+clustersSize32*sizeof(AliHLTUInt32_t) ];
+      AliHLTUInt32_t headerSize = sizeof(AliRawDataHeader);
+      AliHLTUInt32_t outBlockSize=headerSize+clustersSize32*sizeof(AliHLTUInt32_t);
+      std::auto_ptr<AliHLTUInt8_t> outBlock(new AliHLTUInt8_t[outBlockSize]);
+      std::auto_ptr<AliHLTTPCClusterMCLabel> allocOutMC(new AliHLTTPCClusterMCLabel[nOutputMC+1]);
       
-      AliHLTTPCClusterMCData *outMC = reinterpret_cast<AliHLTTPCClusterMCData *>(new AliHLTTPCClusterMCLabel[nOutputMC+1]);
-      
-      if( !outBlock || !outMC ){
-	HLTWarning("%s Not enouth memory!!!", str);
-	delete[] outBlock;
-	delete[] outMC;
-	continue;	
+      if( !outBlock.get() || !allocOutMC.get() ){
+	return -ENOMEM;
       }
+
+      memset(outBlock.get(), 0, outBlockSize*sizeof(AliHLTUInt8_t));
+      memset(allocOutMC.get(), 0, (nOutputMC+1)*sizeof(AliHLTTPCClusterMCLabel));
+      AliHLTTPCClusterMCData *outMC = reinterpret_cast<AliHLTTPCClusterMCData *>(allocOutMC.get());
       
       // fill CDH header here, since the HW clusterfinder does not receive it
       
       AliRawDataHeader *cdhHeader = reinterpret_cast<AliRawDataHeader*>(iter->fPtr);
-      AliRawDataHeader *outCDHHeader = reinterpret_cast<AliRawDataHeader*>(outBlock);      
+      AliRawDataHeader *outCDHHeader = reinterpret_cast<AliRawDataHeader*>(outBlock.get());      
       *outCDHHeader = *cdhHeader;
       outCDHHeader->fSize = 0xFFFFFFFF;
 
-      AliHLTUInt32_t *outClusters = reinterpret_cast<AliHLTUInt32_t*> (outBlock + headerSize);
+      AliHLTUInt32_t *outClusters = reinterpret_cast<AliHLTUInt32_t*> (outBlock.get() + headerSize);
      
       fBenchmark.Start(1);
       fCFEmulator.Init
@@ -504,8 +504,6 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       else if( err==-2 ){  HLTWarning("No space left in the output buffer (warning %d)",err); }
       else if( err<0 ){ HLTWarning("HWCF emulator finished with error code %d",err); }
       if( err<0 ){
-	delete[] outBlock;
-	delete[] outMC;
 	continue;
       }
 
@@ -541,7 +539,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       
       if( size + outSize <= maxSize ){
 	
-	memcpy( outputPtr, outBlock, outSize );
+	memcpy( outputPtr, outBlock.get(), outSize );
 	
 	AliHLTComponentBlockData bd;
 	FillBlockData( bd );
@@ -577,9 +575,6 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 	  iResult=-ENOSPC;	    
 	}
       }
-      
-      delete[] outBlock;
-      delete[] outMC;      
     }
   
   fBenchmark.Stop(0);  
