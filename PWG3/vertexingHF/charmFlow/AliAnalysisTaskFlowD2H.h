@@ -1,6 +1,6 @@
 /* Copyright(c) 1998-1999, ALICExperiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice */
-/* $Id: $ */
+/* $Id$ */
 
 #ifndef AliAnalysisTaskFlowD2H_H
 #define AliAnalysisTaskFlowD2H_H
