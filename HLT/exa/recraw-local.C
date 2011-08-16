@@ -61,7 +61,8 @@ void recraw_local(const char *filename,
 		  int minEvent=-1,
 		  int maxEvent=-1,
 		  const char *modules="ALL",
-		  const char *hltOptions="loglevel=0x7c")
+		  const char *hltOptions="loglevel=0x7c",
+		  const char *cdbDrain=NULL)
 {
   if(!gSystem->AccessPathName("galice.root")){
     cerr << "AliReconstruction on raw data requires to delete galice.root, or run at different place." << endl;
@@ -90,6 +91,7 @@ void recraw_local(const char *filename,
       man->SetSpecificStorage("GRP/GRP/Data", "local://$PWD/..");      
     }
   }
+  if (cdbDrain) man->SetDrain(cdbDrain);
 
   // Reconstruction settings
   AliReconstruction rec;
