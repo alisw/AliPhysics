@@ -530,6 +530,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
   Bool_t offline  = ih->IsEventSelected() ;
   Bool_t fastonly = (ih->IsEventSelected() & AliVEvent::kFastOnly);
   //If we have the MC input handler,  this must be MC
+  TString trigStr = esd->GetFiredTriggerClasses();
   
   AliMCEventHandler* mch =  static_cast<AliMCEventHandler*>(am->GetMCtruthEventHandler());
   Bool_t isMC = false;
@@ -544,7 +545,11 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
      !isMC)
     if (fastonly) offline = false;
   nClusters = 0;
- 
+  
+  // MUON triggers are not strictly minimum bias (MB) so they are removed (HHD)
+  
+  if(offline && trigStr.Contains("CMUS1")) offline = false;
+    
   if (offline ) {
     triggers |= AliAODForwardMult::kOffline;
     triggers |= AliAODForwardMult::kInel;
@@ -591,9 +596,10 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
     triggers |= AliAODForwardMult::kPileUp;
     fHTriggers->Fill(kPileUp+.5);
   }
-
+  
   // Get trigger stuff 
-  TString trigStr = esd->GetFiredTriggerClasses();
+  
+  //TString trigStr = esd->GetFiredTriggerClasses();
   // AliWarning(Form("Fired trigger classes: %s", trigStr.Data()));
   fHWords->Fill(trigStr.Data(), 1);
 #if 0
@@ -608,11 +614,12 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
     triggers |= AliAODForwardMult::kEmpty;
     fHTriggers->Fill(kEmpty+.5);
   }
-
+  
   // Check for B triggers
   if (trigStr.Contains("CINT1B-ABCE-NOPF-ALL")   ||   // Early pp
       trigStr.Contains("CINT1-B-NOPF-ALLNOTRD")  ||   // Late pp 
-      trigStr.Contains("CINT1-B-NOPF-FASTNOTRD") ||   // Late pp 
+      trigStr.Contains("CINT1-B-NOPF-FASTNOTRD") ||   // Late pp
+      //trigStr.Contains("CMUS1-B-NOPF-MUON")      ||   // Late pp -- HHD 160811
       trigStr.Contains("CSMBB-ABCE-NOPF-ALL")    ||   // pp
       trigStr.Contains("CMBACS2-B-NOPF-ALL")     ||   // PbPb
       // trigStr.Contains("C0SMH-B-NOPF-ALL")    ||   // PbPb - high mult
@@ -623,8 +630,16 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
       trigStr.Contains("CMBACS2-B-NOPF-ALLNOTRD")     // PbPb
       // trigStr.Contains("C0SMH-B-NOPF-ALLNOTRD")    // PbPb - high mult
       ) {
-    triggers |= AliAODForwardMult::kB;
-    fHTriggers->Fill(kB+.5);
+    Bool_t bTrigger = kTRUE;
+    if ( trigStr.Contains("CINT1-B-NOPF-FASTNOTRD") && 
+	 !trigStr.Contains("CINT1-B-NOPF-ALLNOTRD") && 
+	 TMath::Abs(fEnergy - 2750.) < 20 && 
+	 fCollisionSystem == AliForwardUtil::kPP)
+      bTrigger = kFALSE;
+    if(bTrigger) {
+      triggers |= AliAODForwardMult::kB;
+      fHTriggers->Fill(kB+.5);
+    }
   }
   
   // Check for A triggers
