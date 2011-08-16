@@ -16,7 +16,7 @@
 #include <TMath.h>
 #include "AliEventPlaneResolution.h"
 
-/* $Id: AliITSOnlineSDDInjectors.cxx 48265 2011-03-09 23:36:06Z prino $ */
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
