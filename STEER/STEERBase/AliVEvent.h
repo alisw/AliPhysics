@@ -44,6 +44,8 @@ public:
       kMUU7         = BIT(9), // Muon trigger, unlike sign dimuon, offline V0 selection, CINT7 suite
       kEMC7         = BIT(10), // EMCAL trigger, CINT7 suite
       kMUS7         = BIT(11), // Muon trigger: low pt, single muon, offline V0 selection, CINT7 suite
+      kPHI1         = BIT(12), // PHOS trigger, CINT1 suite
+      kPHI7         = BIT(13), // PHOS trigger, CINT7 suite
       kFastOnly     = BIT(30), // The fast cluster fired. This bit is set in to addition another trigger bit, e.g. kMB
       kUserDefined  = BIT(31), // Set when custom trigger classes are set in AliPhysicsSelection, offline SPD or V0 selection
       kAny          = 0xffffffff, // to accept any trigger
