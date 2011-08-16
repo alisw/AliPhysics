@@ -328,7 +328,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 //
 // Was event selected ? If no event selection mechanism, the event SHOULD be selected (AG)
     UInt_t isSelected = AliVEvent::kAny;
-    if( fInputHandler && fInputHandler->GetEventSelection()) {
+    if( fInputHandler && (fInputHandler->GetEventSelection() || aodH)) {
       // Get the actual offline trigger mask for the event and AND it with the
       // requested mask. If no mask requested select by default the event.
       if (fOfflineTriggerMask)
