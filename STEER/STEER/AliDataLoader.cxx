@@ -432,10 +432,12 @@ void AliDataLoader::CloseFile()
       if (bl->IsLoaded()) return;
     }
   
-  AliDebug(1, "Closing and deleting (object) file.");
+  AliDebug(1, "Closing (object) file.");
   
-  delete fFile;
-  fFile = 0x0;
+  if (fFile) {
+    fFile->Close("R");
+    fFile = 0x0;
+  }
   fDirectory = 0x0;
 }
 
