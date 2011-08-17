@@ -163,6 +163,7 @@ AliESDTrdTrack* AliTRDtrackGTU::CreateTrdTrack() const
   for (Int_t iLayer = 0; iLayer < AliTRDgtuParam::GetNLayers(); iLayer++) {
     AliTRDtrackletGTU *trklGTU = GetTracklet(iLayer);
     if (trklGTU) {
+      trk->SetTrackletIndex(trklGTU->GetIndex(), iLayer);
       AliESDTrdTracklet *trkl = trklGTU->GetTrackletESD();
       if (trkl)
 	trk->AddTrackletReference(trkl, iLayer);

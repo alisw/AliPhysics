@@ -264,7 +264,14 @@ Bool_t AliTRDgtuTMU::RunInputUnit(Int_t layer)
 
     Int_t alpha = (trk->GetYbin() >> fGtuParam->GetBitExcessY()) * fGtuParam->GetCiAlpha(layer);
     alpha = ( 2 * trk->GetdY() - (alpha >> fGtuParam->GetBitExcessAlpha()) + 1 ) >> 1;
-    trk->SetAlpha(alpha);
+    // wrapping projected alpha as in hardware
+    if ((alpha < -64) || (alpha > 63))
+      AliError(Form("alpha out of range: %i", alpha));
+    alpha = alpha & 0x7f;
+    if (alpha & 0x40)
+      trk->SetAlpha(0xffffffc0 | alpha);
+    else
+      trk->SetAlpha(alpha);
 
     Int_t yproj = trk->GetdY() * (fGtuParam->GetCiYProj(layer)); //??? sign?
     yproj = ( ( ( (yproj >> fGtuParam->GetBitExcessYProj()) + trk->GetYbin() ) >> 2) + 1) >> 1;
@@ -716,7 +723,7 @@ Bool_t AliTRDgtuTMU::RunTrackMerging(TList* ListOfTracks)
     do {
 	done = kTRUE;
 	trkStage0 = 0x0;
-	for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++) {
+        for (Int_t zch = fGtuParam->GetNZChannels() - 1; zch > -1; zch--) {
 	    AliTRDtrackGTU *trk = (AliTRDtrackGTU*) tracksRefUnique[zch]->First();
 	    if (trk == 0) {
 		continue;
@@ -935,9 +942,9 @@ Bool_t AliTRDgtuTMU::CalculatePID(AliTRDtrackGTU *track)
       }
     }
 
-    ULong64_t sumExt = (sum << 1) & 0xfff; // 11 bit -> 12 bit vector
-    ULong64_t prod   = (sumExt * coeff) & 0xfffffffffull; // 18x18 signed -> 36
-    ULong64_t prodFinal = ((prod >> 18) + ((prod >> 17) & 1)) & 0xff; // rounding term is equivalent to adding 5 to sum_ext
+    sum = sum & 0x7ff;
+    ULong64_t prod   = (sum * coeff) & 0xfffffffffull;
+    ULong64_t prodFinal = ((prod >> 17) + ((prod >> 16) & 1)) & 0xff;
 
     track->SetPID(prodFinal & 0xff);
 
@@ -988,7 +995,7 @@ Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
       AliError(Form("Could not get tracklet in layer %i\n", layer));
       continue;
     }
-    AliDebug(10,Form("  trk yprime: %6i, aki: %6i", trk->GetYPrime(), (Int_t) (2048 * fGtuParam->GetAki(track->GetTrackletMask(), layer))));
+    AliDebug(10,Form("  layer %i trk yprime: %6i, aki: %6i", layer, trk->GetYPrime(), (Int_t) (2048 * fGtuParam->GetAki(track->GetTrackletMask(), layer))));
     a += (((Int_t) (2048 * fGtuParam->GetAki(track->GetTrackletMask(), layer))) * trk->GetYPrime() + 1) >> 8;
     b += fGtuParam->GetBki(track->GetTrackletMask(), layer) * trk->GetYPrime() * fGtuParam->GetBinWidthY();
     c += fGtuParam->GetCki(track->GetTrackletMask(), layer) * trk->GetYPrime() * fGtuParam->GetBinWidthY();

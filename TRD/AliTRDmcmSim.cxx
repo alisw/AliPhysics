@@ -573,7 +573,9 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *
   for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
     for (Int_t iAdc = 0; iAdc < fgkNADC; iAdc++) {
       Int_t value = adcArray->GetDataByAdcCol(GetRow(), offset - iAdc, iTimeBin);
-      if (value < 0 || (offset - iAdc < 1) || (offset - iAdc > 165)) {
+      // treat 0 as suppressed,
+      // this is not correct but reported like that from arrayADC
+      if (value <= 0 || (offset - iAdc < 1) || (offset - iAdc > 165)) {
         fADCR[iAdc][iTimeBin] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFPNP, fDetector, fRobPos, fMcmPos) + (fgAddBaseline << fgkAddDigits);
         fADCF[iAdc][iTimeBin] = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPFP, fDetector, fRobPos, fMcmPos) + (fgAddBaseline << fgkAddDigits);
       }
@@ -1182,6 +1184,9 @@ void AliTRDmcmSim::AddHitToFitreg(Int_t adc, UShort_t timebin, UShort_t qtot, Sh
     fFitReg[adc].fSumY  += ypos;
     fFitReg[adc].fSumY2 += ypos*ypos;
     fFitReg[adc].fSumXY += timebin*ypos;
+    AliDebug(10, Form("fitreg[%2i] in timebin %2i: X=%i, X2=%i, N=%i, Y=%i, Y2=%i, XY=%i, Q0=%i, Q1=%i",
+		      adc, timebin, fFitReg[adc].fSumX, fFitReg[adc].fSumX2, fFitReg[adc].fNhits,
+		      fFitReg[adc].fSumY, fFitReg[adc].fSumY2, fFitReg[adc].fSumXY, fFitReg[adc].fQ0, fFitReg[adc].fQ1));
   }
 
   // register hits (MC info)
@@ -1358,7 +1363,7 @@ void AliTRDmcmSim::CalcFitreg()
         // checking for adcCentral != 0 (in case of "bad" configuration)
         if (adcCentral == 0)
           continue;
-        ypos = 128*(adcLeft - adcRight) / adcCentral;
+        ypos = 128*(adcRight - adcLeft) / adcCentral;
         if (ypos < 0) ypos = -ypos;
         // make the correction using the position LUT
         ypos = ypos + fTrapConfig->GetTrapReg((AliTRDtrapConfig::TrapReg_t) (AliTRDtrapConfig::kTPL00 + (ypos & 0x7F)),
@@ -1409,7 +1414,7 @@ void AliTRDmcmSim::CalcFitreg()
         }
 
         // add the hit to the fitregister
-        AddHitToFitreg(adcch, timebin, qTotal[adcch], ypos, mcLabel);
+        AddHitToFitreg(adcch, timebin, qTotal[adcch] >> fgkAddDigits, ypos, mcLabel);
       }
     }
   }
@@ -1564,7 +1569,7 @@ void AliTRDmcmSim::FitTracklet()
       nHits   = fit0->fNhits + fit1->fNhits; // number of hits
       sumX    = fit0->fSumX  + fit1->fSumX;
       sumX2   = fit0->fSumX2 + fit1->fSumX2;
-      denom   = ((Long64_t) nHits)*((Long64_t) sumX2) - ((Long64_t) sumX)*((Long64_t) sumX);
+      denom   = nHits * sumX2 - sumX * sumX;
 
       mult    = mult / denom; // exactly like in the TRAP program
       q0      = fit0->fQ0    + fit1->fQ0;
@@ -1642,7 +1647,7 @@ void AliTRDmcmSim::FitTracklet()
           AliWarning("Overflow in offset");
         offset  = offset & 0x1FFF; // 13 bit
 
-	pid = GetPID(q0 >> fgkAddDigits, q1 >> fgkAddDigits);  // divided by 4 because in simulation there are two additional decimal places
+	pid = GetPID(q0, q1);
 
         if (pid > 0xff)
           AliWarning("Overflow in PID");
@@ -1704,8 +1709,8 @@ void AliTRDmcmSim::FitTracklet()
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetNHits(fit0->fNhits + fit1->fNhits);
 	((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetNHits0(nHits0);
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetNHits1(nHits1);
-        ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetQ0(q0 >> fgkAddDigits);
-        ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetQ1(q1 >> fgkAddDigits);
+        ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetQ0(q0);
+        ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetQ1(q1);
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetSlope(fitSlope);
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetOffset(fitOffset);
         ((AliTRDtrackletMCM*) (*fTrackletArray)[fTrackletArray->GetEntriesFast()-1])->SetError(TMath::Sqrt(TMath::Abs(fitError)/nHits));
@@ -2352,7 +2357,7 @@ void AliTRDmcmSim::PrintAdcDatXml(ostream& os) const
 
 
 
-void AliTRDmcmSim::PrintAdcDatDatx(ostream& os, Bool_t broadcast) const
+void AliTRDmcmSim::PrintAdcDatDatx(ostream& os, Bool_t broadcast, Int_t timeBinOffset) const
 {
   // print ADC data in datx format (to send to FEE)
 
@@ -2364,13 +2369,21 @@ void AliTRDmcmSim::PrintAdcDatDatx(ostream& os, Bool_t broadcast) const
    Int_t addrOffsetEBSIA = 0x20;
 
    for (Int_t iTimeBin = 0; iTimeBin < fNTimeBin; iTimeBin++) {
-      for (Int_t iChannel = 0; iChannel < fgkNADC; iChannel++) {
+     for (Int_t iChannel = 0; iChannel < fgkNADC; iChannel++) {
+       if ((iTimeBin < timeBinOffset) || (iTimeBin >= fNTimeBin+timeBinOffset)) {
 	 if(broadcast==kFALSE)
-	    fTrapConfig->PrintDatx(os, addrOffset+iChannel*addrStep+addrOffsetEBSIA+iTimeBin, (fADCF[iChannel][iTimeBin]/4), GetRobPos(),  GetMcmPos());
+	   fTrapConfig->PrintDatx(os, addrOffset+iChannel*addrStep+addrOffsetEBSIA+iTimeBin, 10, GetRobPos(),  GetMcmPos());
 	 else
-	    fTrapConfig->PrintDatx(os, addrOffset+iChannel*addrStep+addrOffsetEBSIA+iTimeBin, (fADCF[iChannel][iTimeBin]/4), 0, 127);
-      }
-      os << std::endl;
+	   fTrapConfig->PrintDatx(os, addrOffset+iChannel*addrStep+addrOffsetEBSIA+iTimeBin, 10, 0, 127);
+       }
+       else {
+	 if(broadcast==kFALSE)
+	   fTrapConfig->PrintDatx(os, addrOffset+iChannel*addrStep+addrOffsetEBSIA+iTimeBin, (fADCF[iChannel][iTimeBin-timeBinOffset]/4), GetRobPos(),  GetMcmPos());
+	 else
+	   fTrapConfig->PrintDatx(os, addrOffset+iChannel*addrStep+addrOffsetEBSIA+iTimeBin, (fADCF[iChannel][iTimeBin-timeBinOffset]/4), 0, 127);
+       }
+     }
+     os << std::endl;
    }
 }
 

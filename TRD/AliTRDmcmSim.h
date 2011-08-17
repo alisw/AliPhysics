@@ -128,7 +128,7 @@ class AliTRDmcmSim : public TObject {
 	  void PrintTrackletsXml(ostream& os) const;
 	  void PrintAdcDatHuman(ostream& os) const;
 	  void PrintAdcDatXml(ostream& os) const;
-	  void PrintAdcDatDatx(ostream& os, Bool_t broadcast=kFALSE) const;
+	  void PrintAdcDatDatx(ostream& os, Bool_t broadcast=kFALSE, Int_t timeBinOffset = -1) const;
 
  protected:
 	  Bool_t    CheckInitialized() const;           // Check whether the class is initialized
