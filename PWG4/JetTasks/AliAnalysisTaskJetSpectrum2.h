@@ -32,6 +32,7 @@ class TH2F;
 class TH3F;
 class TRandom3;
 class TProfile;
+class TProfile2D;
 class TSTring;
 
 
@@ -74,16 +75,9 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
     virtual void SetMatching(Bool_t b = kTRUE){fDoMatching = b;}
+    virtual void SetRPMethod(Int_t i){fRPMethod = i;}
     virtual void SetEventSelectionMask(UInt_t i){fEventSelectionMask = i;}
-    virtual void SetPhiWeights(TH3F *phiw){fh3PhiWeights = phiw;}
-    virtual void SetFlatteningCoeff(Float_t *fA,Float_t *fB){
-      fFlatA[0] = fA[0];fFlatA[1] = fA[1];
-      fFlatA[0] = fB[0];fFlatB[1] = fB[1];
-    }
-    virtual void SetDeltaQxy(Float_t *fD){
-      fDeltaQxy[0] = fD[0];
-      fDeltaQxy[1] = fD[1];
-    }
+
     virtual void SetNonStdFile(char* c){fNonStdFile = c;} 
 
 
@@ -166,7 +160,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
     Int_t         fFlagJetType[kJetTypes]; // disable the filling and booking of certain JetType histos
     Int_t         fEventClass;            // event class to be looked at for this instance of the task
-    Int_t         fRPSubeventMethod;      // method for subevent calculation
+    Int_t         fRPMethod;              // method for subevent calculation
     Float_t       fAvgTrials;             // Average nimber of trials
     Float_t       fExternalWeight;        // external weight
     Float_t       fJetRecEtaWindow;       // eta window for rec jets
@@ -176,9 +170,6 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Float_t       fDeltaPhiWindow;        // minium angle between dijets
     Float_t       fCentrality;            // ! centrality
     Float_t       fRPAngle;               // ! RP angle of the reaction plane
-    Float_t       fFlatA[2];              // flattening for RP
-    Float_t       fFlatB[2];              // flattening for RP
-    Float_t       fDeltaQxy[2];           // centering of QX QY
     Int_t         fMultRec;               // ! reconstructed track multiplicity
     Int_t         fMultGen;               // ! generated track multiplicity
     
@@ -194,17 +185,11 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1TmpRho;        //! just temporary histo for calculation    
     TH2F*         fh2MultRec;       //! reconstructed track multiplicity   
     TH2F*         fh2MultGen;       //! generated track multiplicity   
-    TH2F*         fh2RPSubevents;   //! subevent RP 
     TH2F*         fh2RPCentrality;   //! RP vs centrality
-    TH2F*         fh2RPDeltaRP;     //! centrality vs. RP dela  
-    TH2F*         fh2RPQxQy;        //! QX QY moments
-    TH2F*         fh2RPCosDeltaRP;  //! RP resolution
 
     TH2F*         fh2PtFGen;                //! found vs generated 
     TH2F*         fh2RelPtFGen;             //! relative difference between generated and found 
 
-    TH3F*         fh3PhiWeights;  // RP phi weights, need to be set externally
-    TH3F*         fh3RPPhiTracks; //! RP angle
     
 
     // Jet histos second go
@@ -219,7 +204,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     
     TH2F*         fh2NJetsPt[kJetTypes];    //! Number of found jets above threshold
     TH2F*         fh2NTracksPt[kJetTypes];  //! Number of tracks above threshold
-
+    TProfile2D    *fp2MultRPPhiTrackPt[kJetTypes];         //! for mean pT vs RP   
+    TProfile2D    *fp2CentRPPhiTrackPt[kJetTypes];         //! for mean pT vs RP   
     THnSparseF    *fhnJetPt[kJetTypes];                  //! jet pt information for analysis
     THnSparseF    *fhnJetPtQA[kJetTypes];                //! jet pt information for QA
     THnSparseF    *fhnTrackPt[kJetTypes];                //! track pt information for analysis
@@ -237,7 +223,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList;                  //! Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 16) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 17) // Analysis task for standard jet analysis
 };
  
 #endif
