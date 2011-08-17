@@ -46,27 +46,27 @@
 
 
 enum PDC06Proc_t 
-{
-  kPythia6, kPythia6D6T, kPythia6D6T_Flat, kPythia6ATLAS, kPythia6ATLAS_Flat, kPythia6_Perugia0, kPhojet, kRunMax
-};
+  {
+    kPythia6, kPythia6D6T, kPythia6ATLAS, kPythia6ATLAS_Flat, kPythiaPerugia0, kPhojet, kRunMax
+  };
 
 const char * pprRunName[] = {
-    "kPythia6", "kPythia6D6T", "kPythia6D6T_Flat", "kPythia6ATLAS", "kPythia6ATLAS_Flat", "kPythia6_Perugia0", "kPhojet" 
+  "kPythia6", "kPythia6D6T", "kPythia6ATLAS", "kPythia6ATLAS_Flat", "kPythiaPerugia0", "kPhojet" 
 };
 
 enum Mag_t
-{
-  kNoField, k5kG, kFieldMax
-};
+  {
+    kNoField, k5kG, kFieldMax
+  };
 
 const char * pprField[] = {
   "kNoField", "k5kG"
 };
 
 enum PhysicsList_t 
-{
-  QGSP_BERT_EMV,CHIPS,QGSP_BERT_CHIPS,QGSP_BERT_EMV_OPTICAL, CHIPS_OPTICAL, QGSP_BERT_CHIPS_OPTICAL, kListMax
-};
+  {
+    QGSP_BERT_EMV,CHIPS,QGSP_BERT_CHIPS,QGSP_BERT_EMV_OPTICAL, CHIPS_OPTICAL, QGSP_BERT_CHIPS_OPTICAL, kListMax
+  };
 
 const char * physicsListName[] = {
   "QGSP_BERT_EMV",         "CHIPS",         "QGSP_BERT_CHIPS", 
@@ -74,12 +74,12 @@ const char * physicsListName[] = {
 };
 
 enum PprTrigConf_t
-{
+  {
     kDefaultPPTrig, kDefaultPbPbTrig
-};
+  };
 
 const char * pprTrigConfName[] = {
-    "p-p","Pb-Pb"
+  "p-p","Pb-Pb"
 };
 
 //--- Functions ---
@@ -90,11 +90,12 @@ AliGenerator *MbPhojet();
 void ProcessEnvironmentVars();
 
 // Geterator, field, beam energy
-static PDC06Proc_t   proc         = kPhojet;
-static Mag_t         mag          = k5kG;
-static Float_t       energy       = 10000; // energy in CMS
-static PhysicsList_t physicslist  = QGSP_BERT_EMV;
+static PDC06Proc_t   proc     = kPhojet;
+static Mag_t         mag      = k5kG;
+static Float_t       energy   = 10000; // energy in CMS
+static Int_t         runNumber = 0;
 static PprTrigConf_t strig = kDefaultPPTrig; // default pp trigger configuration
+static PhysicsList_t physicslist  = QGSP_BERT_EMV;
 
 //========================//
 // Set Random Number seed //
@@ -117,20 +118,18 @@ void Config()
 
   // Libraries required by geant321
 #if defined(__CINT__)
-  gSystem->Load("liblhapdf");       // Parton density functions
-  gSystem->Load("libEGPythia6");    // TGenerator interface
-
+  gSystem->Load("liblhapdf");      // Parton density functions
+  gSystem->Load("libEGPythia6");   // TGenerator interface
   if (proc == kPythia6 || proc == kPhojet) {
-      gSystem->Load("libpythia6");        // Pythia 6.2	
+    gSystem->Load("libpythia6");        // Pythia 6.2
   } else {
-      gSystem->Load("libpythia6.4.21");   // Pythia 6.4
-  } 
-
-  gSystem->Load("libAliPythia6");   // ALICE specific implementations
-  //gSystem->Load("libgeant321");
+    gSystem->Load("libpythia6.4.21");   // Pythia 6.4
+  }
+  gSystem->Load("libAliPythia6");  // ALICE specific implementations
+  // gSystem->Load("libgeant321");
 #endif
 
-  //  new TGeant3TGeo("C++ Interface to Geant3");
+  // new TGeant3TGeo("C++ Interface to Geant3");
 
   //=======================================================================
   //  Create the output file
@@ -154,17 +153,13 @@ void Config()
   // gAlice->SetGeometryFromCDB();
   
   // Set the trigger configuration: proton-proton
-  AliSimulation::Instance()->SetTriggerConfig(pprTrigConfName[strig]);
-  cout<<"Trigger configuration is set to  "<<pprTrigConfName[strig]<<endl;
 
-  printf("\n \n Comment: %s \n \n", comment.Data());
- 
+  AliSimulation::Instance()->SetTriggerConfig(pprTrigConfName[strig]);
+  cout <<"Trigger configuration is set to  "<<pprTrigConfName[strig]<<endl;
+
+
   rl->CdGAFile();
   
-  // Field
-  TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., mag));
-
-
   Int_t iABSO  = 1;
   Int_t iACORDE= 0;
   Int_t iDIPO  = 1;
@@ -188,180 +183,191 @@ void Config()
   Int_t iZDC   = 1;
   
 
-    //=================== Alice BODY parameters =============================
-    AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
+  //=================== Alice BODY parameters =============================
+  AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
 
 
-    if (iMAG)
+  if (iMAG)
     {
-        //=================== MAG parameters ============================
-        // --- Start with Magnet since detector layouts may be depending ---
-        // --- on the selected Magnet dimensions ---
-        AliMAG *MAG = new AliMAG("MAG", "Magnet");
+      //=================== MAG parameters ============================
+      // --- Start with Magnet since detector layouts may be depending ---
+      // --- on the selected Magnet dimensions ---
+      AliMAG *MAG = new AliMAG("MAG", "Magnet");
     }
 
 
-    if (iABSO)
+  if (iABSO)
     {
-        //=================== ABSO parameters ============================
-        AliABSO *ABSO = new AliABSOv3("ABSO", "Muon Absorber");
+      //=================== ABSO parameters ============================
+      AliABSO *ABSO = new AliABSOv3("ABSO", "Muon Absorber");
     }
 
-    if (iDIPO)
+  if (iDIPO)
     {
-        //=================== DIPO parameters ============================
+      //=================== DIPO parameters ============================
 
-        AliDIPO *DIPO = new AliDIPOv3("DIPO", "Dipole version 3");
+      AliDIPO *DIPO = new AliDIPOv3("DIPO", "Dipole version 3");
     }
 
-    if (iHALL)
+  if (iHALL)
     {
-        //=================== HALL parameters ============================
+      //=================== HALL parameters ============================
 
-        AliHALL *HALL = new AliHALLv3("HALL", "Alice Hall");
-    }
-
-
-    if (iFRAME)
-    {
-        //=================== FRAME parameters ============================
-
-        AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
-	FRAME->SetHoles(1);
-    }
-
-    if (iSHIL)
-    {
-        //=================== SHIL parameters ============================
-
-        AliSHIL *SHIL = new AliSHILv3("SHIL", "Shielding Version 3");
+      AliHALL *HALL = new AliHALLv3("HALL", "Alice Hall");
     }
 
 
-    if (iPIPE)
+  if (iFRAME)
     {
-        //=================== PIPE parameters ============================
+      //=================== FRAME parameters ============================
 
-        AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
+      AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
+      FRAME->SetHoles(1);
+    }
+
+  if (iSHIL)
+    {
+      //=================== SHIL parameters ============================
+
+      AliSHIL *SHIL = new AliSHILv3("SHIL", "Shielding Version 3");
+    }
+
+
+  if (iPIPE)
+    {
+      //=================== PIPE parameters ============================
+
+      AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
     }
  
-    if (iITS)
+  if (iITS)
     {
-        //=================== ITS parameters ============================
+      //=================== ITS parameters ============================
 
-	AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+      AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
     }
 
-    if (iTPC)
+  if (iTPC)
     {
       //============================ TPC parameters =====================
 
-        AliTPC *TPC = new AliTPCv2("TPC", "Default");
-	TPC->SetPrimaryIonisation(); // not used with Geant3
+      AliTPC *TPC = new AliTPCv2("TPC", "Default");
+      TPC->SetPrimaryIonisation();// not used with Geant3
     }
 
 
-    if (iTOF) {
-        //=================== TOF parameters ============================
+  if (iTOF) {
+    //=================== TOF parameters ============================
 
-	AliTOF *TOF = new AliTOFv6T0("TOF", "normal TOF");
-    }
+    AliTOF *TOF = new AliTOFv6T0("TOF", "normal TOF");
+  }
 
 
-    if (iHMPID)
+  if (iHMPID)
     {
-        //=================== HMPID parameters ===========================
+      //=================== HMPID parameters ===========================
 
-        AliHMPID *HMPID = new AliHMPIDv3("HMPID", "normal HMPID");
+      AliHMPID *HMPID = new AliHMPIDv3("HMPID", "normal HMPID");
+
+    }
+
+
+  if (iZDC)
+    {
+      //=================== ZDC parameters ============================
+	
+      AliZDC *ZDC = new AliZDCv3("ZDC", "normal ZDC");
+      //Collimators aperture
+      ZDC->SetVCollSideCAperture(0.85);
+      ZDC->SetVCollSideCCentre(0.);
+      ZDC->SetVCollSideAAperture(0.75);
+      ZDC->SetVCollSideACentre(0.);
+      //Detector position
+      ZDC->SetYZNC(1.6);
+      ZDC->SetYZNA(1.6);
+      ZDC->SetYZPC(1.6);
+      ZDC->SetYZPA(1.6);
+    }
+
+  if (iTRD)
+    {
+      //=================== TRD parameters ============================
+
+      AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
+      AliTRDgeometry *geoTRD = TRD->GetGeometry();
+      // Partial geometry: modules at 0,1,7,8,9,16,17
+      // starting at 3h in positive direction
+      geoTRD->SetSMstatus(2,0);
+      geoTRD->SetSMstatus(3,0);
+      geoTRD->SetSMstatus(4,0);
+      geoTRD->SetSMstatus(5,0);
+      geoTRD->SetSMstatus(6,0);
+      geoTRD->SetSMstatus(11,0);
+      geoTRD->SetSMstatus(12,0);
+      geoTRD->SetSMstatus(13,0);
+      geoTRD->SetSMstatus(14,0);
+      geoTRD->SetSMstatus(15,0);
+      geoTRD->SetSMstatus(16,0);
+    }
+
+  if (iFMD)
+    {
+      //=================== FMD parameters ============================
+
+      AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
+    }
+
+  if (iMUON)
+    {
+      //=================== MUON parameters ===========================
+      // New MUONv1 version (geometry defined via builders)
+      AliMUON *MUON = new AliMUONv1("MUON", "default");
+      // activate trigger efficiency by cells
+      MUON->SetTriggerEffCells(1);
+    }
+
+  if (iPHOS)
+    {
+      //=================== PHOS parameters ===========================
+
+      AliPHOS *PHOS = new AliPHOSv1("PHOS", "noCPV_Modules123");
 
     }
 
 
-    if (iZDC)
+  if (iPMD)
     {
-        //=================== ZDC parameters ============================
+      //=================== PMD parameters ============================
 
-        AliZDC *ZDC = new AliZDCv3("ZDC", "normal ZDC");
+      AliPMD *PMD = new AliPMDv1("PMD", "normal PMD");
     }
 
-    if (iTRD)
+  if (iT0)
     {
-        //=================== TRD parameters ============================
-
-        AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
-        AliTRDgeometry *geoTRD = TRD->GetGeometry();
-	// Partial geometry: modules at 0,1,7,8,9,16,17
-	// starting at 3h in positive direction
-	geoTRD->SetSMstatus(2,0);
-	geoTRD->SetSMstatus(3,0);
-	geoTRD->SetSMstatus(4,0);
-        geoTRD->SetSMstatus(5,0);
-	geoTRD->SetSMstatus(6,0);
-        geoTRD->SetSMstatus(11,0);
-        geoTRD->SetSMstatus(12,0);
-        geoTRD->SetSMstatus(13,0);
-        geoTRD->SetSMstatus(14,0);
-        geoTRD->SetSMstatus(15,0);
-        geoTRD->SetSMstatus(16,0);
+      //=================== T0 parameters ============================
+      AliT0 *T0 = new AliT0v1("T0", "T0 Detector");
     }
 
-    if (iFMD)
+  if (iEMCAL)
     {
-        //=================== FMD parameters ============================
+      //=================== EMCAL parameters ============================
 
-	AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
-   }
-
-    if (iMUON)
-    {
-        //=================== MUON parameters ===========================
-        // New MUONv1 version (geometry defined via builders)
-
-        AliMUON *MUON = new AliMUONv1("MUON", "default");
+      AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_FIRSTYEARV1");
     }
 
-    if (iPHOS)
+  if (iACORDE)
     {
-        //=================== PHOS parameters ===========================
+      //=================== ACORDE parameters ============================
 
-       AliPHOS *PHOS = new AliPHOSv1("PHOS", "noCPV_Modules123");
-
+      AliACORDE *ACORDE = new AliACORDEv1("ACORDE", "normal ACORDE");
     }
 
-    if (iPMD)
+  if (iVZERO)
     {
-        //=================== PMD parameters ============================
+      //=================== ACORDE parameters ============================
 
-        AliPMD *PMD = new AliPMDv1("PMD", "normal PMD");
+      AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
     }
-
-    if (iT0)
-    {
-        //=================== T0 parameters ============================
-        AliT0 *T0 = new AliT0v1("T0", "T0 Detector");
-    }
-
-    if (iEMCAL)
-    {
-        //=================== EMCAL parameters ============================
-
-        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_FIRSTYEAR");
-    }
-
-     if (iACORDE)
-    {
-        //=================== ACORDE parameters ============================
-
-        AliACORDE *ACORDE = new AliACORDEv1("ACORDE", "normal ACORDE");
-    }
-
-     if (iVZERO)
-    {
-        //=================== ACORDE parameters ============================
-
-        AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
-    }
-
 
 
   // Load Geant4 + Geant4 VMC libraries
@@ -369,7 +375,7 @@ void Config()
   if (gClassTable->GetID("TGeant4") == -1) {
     TString g4libsMacro = "$G4INSTALL/macro/g4libs.C";
     //TString g4libsMacro = "$ALICE/geant4_vmc/examples/macro/g4libs.C";
-    // Load Geant4 libraries 
+    //Load Geant4 libraries 
     if (!gInterpreter->IsLoaded(g4libsMacro.Data())) {
       gROOT->LoadMacro(g4libsMacro.Data());
       gInterpreter->ProcessLine("g4libs()");
@@ -416,65 +422,51 @@ void Config()
   geant4->ProcessGeantCommand("/mcVerbose/all 1");  
   geant4->ProcessGeantCommand("/mcVerbose/geometryManager 1");  
   geant4->ProcessGeantCommand("/mcVerbose/opGeometryManager 1");  
-  geant4->ProcessGeantCommand("/mcTracking/loopVerbose 0");     
+  geant4->ProcessGeantCommand("/mcTracking/loopVerbose 1");     
   geant4->ProcessGeantCommand("/mcPhysics/rangeCuts 0.01 mm"); 
   geant4->ProcessGeantCommand("/mcPhysics/selectOpProcess Scintillation");
   geant4->ProcessGeantCommand("/mcPhysics/setOpProcessActivation false");
   geant4->ProcessGeantCommand("/mcVerbose/composedPhysicsList 2");  
   geant4->ProcessGeantCommand("/mcTracking/skipNeutrino true");
-  geant4->ProcessGeantCommand("/mcDet/setMaxStepInLowDensityMaterials 1 cm");
-
-  /*
-  // Set PAI model for TPC (TPC_Ne-CO2-N-2)
-  geant4->ProcessGeantCommand("/mcPhysics/emModel/selectMedium 219");
-  geant4->ProcessGeantCommand("/mcPhysics/emModel/setElossModel PAI");
-  geant4->ProcessGeantCommand("/mcPhysics/emModel/setFluctModel PAI");
-  geant4->ProcessGeantCommand("/mcPhysics/emModel/setParticles  all");
-  
-  // Set PAI model for TRD (TRD_XeCO2)
-  geant4->ProcessGeantCommand("/mcPhysics/emModel/selectMedium 291");
-  geant4->ProcessGeantCommand("/mcPhysics/emModel/setElossModel PAI");
-  geant4->ProcessGeantCommand("/mcPhysics/emModel/setFluctModel PAI");
-  geant4->ProcessGeantCommand("/mcPhysics/emModel/setParticles  all");
-  */
+  // geant4->ProcessGeantCommand("/mcDet/setMaxStepInLowDensityMaterials 1 cm");
 
 
- //
+  //
   //=======================================================================
   // ************* STEERING parameters FOR ALICE SIMULATION **************
   // --- Specify event type to be tracked through the ALICE setup
   // --- All positions are in cm, angles in degrees, and P and E in GeV
 
 
-    gMC->SetProcess("DCAY",1);
-    gMC->SetProcess("PAIR",1);
-    gMC->SetProcess("COMP",1);
-    gMC->SetProcess("PHOT",1);
-    gMC->SetProcess("PFIS",0);
-    gMC->SetProcess("DRAY",0);
-    gMC->SetProcess("ANNI",1);
-    gMC->SetProcess("BREM",1);
-    gMC->SetProcess("MUNU",1);
-    gMC->SetProcess("CKOV",1);
-    gMC->SetProcess("HADR",1);
-    gMC->SetProcess("LOSS",2);
-    gMC->SetProcess("MULS",1);
-    gMC->SetProcess("RAYL",1);
+  gMC->SetProcess("DCAY",1);
+  gMC->SetProcess("PAIR",1);
+  gMC->SetProcess("COMP",1);
+  gMC->SetProcess("PHOT",1);
+  gMC->SetProcess("PFIS",0);
+  gMC->SetProcess("DRAY",0);
+  gMC->SetProcess("ANNI",1);
+  gMC->SetProcess("BREM",1);
+  gMC->SetProcess("MUNU",1);
+  gMC->SetProcess("CKOV",1);
+  gMC->SetProcess("HADR",1);
+  gMC->SetProcess("LOSS",2);
+  gMC->SetProcess("MULS",1);
+  gMC->SetProcess("RAYL",1);
 
-    Float_t cut = 1.e-3;        // 1MeV cut by default
-    Float_t tofmax = 1.e10;
+  Float_t cut = 1.e-3;        // 1MeV cut by default
+  Float_t tofmax = 1.e10;
 
-    gMC->SetCut("CUTGAM", cut);
-    gMC->SetCut("CUTELE", cut);
-    gMC->SetCut("CUTNEU", cut);
-    gMC->SetCut("CUTHAD", cut);
-    gMC->SetCut("CUTMUO", cut);
-    gMC->SetCut("BCUTE",  cut); 
-    gMC->SetCut("BCUTM",  cut); 
-    gMC->SetCut("DCUTE",  cut); 
-    gMC->SetCut("DCUTM",  cut); 
-    gMC->SetCut("PPCUTM", cut);
-    gMC->SetCut("TOFMAX", tofmax); 
+  gMC->SetCut("CUTGAM", cut);
+  gMC->SetCut("CUTELE", cut);
+  gMC->SetCut("CUTNEU", cut);
+  gMC->SetCut("CUTHAD", cut);
+  gMC->SetCut("CUTMUO", cut);
+  gMC->SetCut("BCUTE",  cut); 
+  gMC->SetCut("BCUTM",  cut); 
+  gMC->SetCut("DCUTE",  cut); 
+  gMC->SetCut("DCUTM",  cut); 
+  gMC->SetCut("PPCUTM", cut);
+  gMC->SetCut("TOFMAX", tofmax); 
 
 
 
@@ -493,74 +485,50 @@ void Config()
   AliGenerator* gener = 0x0;
   
   if (proc == kPythia6) {
-      gener = MbPythia();
+    gener = MbPythia();
   } else if (proc == kPythia6D6T) {
-      gener = MbPythiaTuneD6T();
-  } else if (proc == kPythia6D6T_Flat) {
-      gener = MbPythiaTuneD6T_Flat();
+    gener = MbPythiaTuneD6T();
   } else if (proc == kPythia6ATLAS) {
-      gener = MbPythiaTuneATLAS();
+    gener = MbPythiaTuneATLAS();
+  } else if (proc == kPythiaPerugia0) {
+    gener = MbPythiaTunePerugia0();
   } else if (proc == kPythia6ATLAS_Flat) {
-      gener = MbPythiaTuneATLAS_Flat();
+    gener = MbPythiaTuneATLAS_Flat();
   } else if (proc == kPhojet) {
-      gener = MbPhojet();
-  } else if (proc == kPythia6_Perugia0) {
-      gener = MbPythiaTunePerugia0();
+    gener = MbPhojet();
   }
-
-  //
-  // PRIMARY VERTEX
-  //
-   Double_t xv = 0;
-   Double_t yv = 0;
-   Double_t zv = 0;
-
-   Double_t vtxPos[3];
-   Double_t vtxErr[3];
-   for (Int_t i = 0; i < 3; i++) {
-       vtxPos[i] = 0.;
-       vtxErr[i] = 0.;
-   }
-
-   if(AliCDBManager::Instance()->IsDefaultStorageSet()){
-      AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexSPD");
-      AliESDVertex* vertex = dynamic_cast<AliESDVertex*> (entry->GetObject());
-      vertex->GetXYZ(vtxPos);
-      vertex->GetSigmaXYZ(vtxErr);
-    }
-
-    printf("Vertex position from OCDB entry: x = %13.3f, y = %13.3f, z = %13.3f (sigma = %13.3f)\n",
-    vtxPos[0], vtxPos[1], vtxPos[2], vtxErr[2]);
-
-     gener->SetOrigin(vtxPos[0], vtxPos[1], vtxPos[2]);   // vertex position
+  
+  
   //
   //
   // Size of the interaction diamond
   // Longitudinal
-     sigmaz = vtxErr[2];
-//
+  Float_t sigmaz  = 5.4 / TMath::Sqrt(2.); // [cm]
+  if (energy == 900)
+    //sigmaz  = 10.5 / TMath::Sqrt(2.); // [cm]
+    //sigmaz = 3.7;
+    if (energy == 7000)
+      sigmaz  = 6.3 / TMath::Sqrt(2.); // [cm]
+  
+  //
   // Transverse
-  Float_t betast  = 10;                 // beta* [m]
-  Float_t eps     = 2.5e-6;            // emittance [m]
+
+  // beta*
+  Float_t betast                  = 10.0;  // beta* [m]
+  if (runNumber >= 117048) betast =  2.0;
+  if (runNumber >  122375) betast =  3.5;  // starting with fill 1179
+  //	
+  //
+  Float_t eps     = 5.0e-6;            // emittance [m]
   Float_t gamma   = energy / 2.0 / 0.938272;  // relativistic gamma [1]
   Float_t sigmaxy = TMath::Sqrt(eps * betast / gamma) / TMath::Sqrt(2.) * 100.;  // [cm]
- 
   printf("\n \n Diamond size x-y: %10.3e z: %10.3e\n \n", sigmaxy, sigmaz);
-
+    
   gener->SetSigma(sigmaxy, sigmaxy, sigmaz);      // Sigma in (X,Y,Z) (cm) on IP position
   gener->SetVertexSmear(kPerEvent);
   gener->Init();
 
-
-
-
-
-
-
-
-
-
-
+  printf("\n \n Comment: %s \n \n", comment.Data());
 
 
 }
@@ -570,330 +538,202 @@ void Config()
 
 AliGenerator* MbPythia()
 {
-      comment = comment.Append(" pp: Pythia low-pt");
-//
-//    Pythia
-      AliGenPythia* pythia = new AliGenPythia(-1); 
-      pythia->SetMomentumRange(0, 999999.);
-      pythia->SetThetaRange(0., 180.);
-      pythia->SetYRange(-12.,12.);
-      pythia->SetPtRange(0,1000.);
-      pythia->SetProcess(kPyMb);
-      pythia->SetEnergyCMS(energy);
+  comment = comment.Append(" pp: Pythia low-pt");
+  //
+  //    Pythia
+  AliGenPythia* pythia = new AliGenPythia(-1); 
+  pythia->SetMomentumRange(0, 999999.);
+  pythia->SetThetaRange(0., 180.);
+  pythia->SetYRange(-12.,12.);
+  pythia->SetPtRange(0,1000.);
+  pythia->SetProcess(kPyMb);
+  pythia->SetEnergyCMS(energy);
       
-      return pythia;
+  return pythia;
 }
 
 AliGenerator* MbPythiaTuneD6T()
 {
-      comment = comment.Append(" pp: Pythia low-pt");
-//
-//    Pythia
-      AliGenPythia* pythia = new AliGenPythia(-1); 
-      pythia->SetMomentumRange(0, 999999.);
-      pythia->SetThetaRange(0., 180.);
-      pythia->SetYRange(-12.,12.);
-      pythia->SetPtRange(0,1000.);
-      pythia->SetProcess(kPyMb);
-      pythia->SetEnergyCMS(energy);
-//    Tune
-//    109     D6T : Rick Field's CDF Tune D6T (NB: needs CTEQ6L pdfs externally)
-      pythia->SetTune(109); // F I X 
-      pythia->SetStrucFunc(kCTEQ6l);
-//
-      return pythia;
+  comment = comment.Append(" pp: Pythia low-pt");
+  //
+  //    Pythia
+  AliGenPythia* pythia = new AliGenPythia(-1); 
+  pythia->SetMomentumRange(0, 999999.);
+  pythia->SetThetaRange(0., 180.);
+  pythia->SetYRange(-12.,12.);
+  pythia->SetPtRange(0,1000.);
+  pythia->SetProcess(kPyMb);
+  pythia->SetEnergyCMS(energy);
+  //    Tune
+  //    109     D6T : Rick Field's CDF Tune D6T (NB: needs CTEQ6L pdfs externally)
+  pythia->SetTune(109); // F I X 
+  pythia->SetStrucFunc(kCTEQ6l);
+  //
+  return pythia;
 }
 
 AliGenerator* MbPythiaTunePerugia0()
 {
-      comment = comment.Append(" pp: Pythia Minimum Bias Tune Perugia0");
-//
-//    Pythia
-      AliGenPythia* pythia = new AliGenPythia(-1); 
-      pythia->SetMomentumRange(0, 999999.);
-      pythia->SetThetaRange(0., 180.);
-      pythia->SetYRange(-12.,12.);
-      pythia->SetPtRange(0, 1000.);
-      pythia->SetProcess(kPyMb);
-      pythia->SetEnergyCMS(energy);
-//    Tune
-      pythia->SetTune(320);
-//
-      return pythia;
+  comment = comment.Append(" pp: Pythia low-pt (Perugia0)");
+  //
+  //    Pythia
+  AliGenPythia* pythia = new AliGenPythia(-1); 
+  pythia->SetMomentumRange(0, 999999.);
+  pythia->SetThetaRange(0., 180.);
+  pythia->SetYRange(-12.,12.);
+  pythia->SetPtRange(0,1000.);
+  pythia->SetProcess(kPyMb);
+  pythia->SetEnergyCMS(energy);
+  //    Tune
+  //    320     Perugia 0
+  pythia->SetTune(320); 
+  pythia->UseNewMultipleInteractionsScenario();
+  pythia->SetCrossingAngle(0,0.000280);
+
+  //
+  return pythia;
 }
+
 
 AliGenerator* MbPythiaTuneATLAS()
 {
-      comment = comment.Append(" pp: Pythia low-pt");
-//
-//    Pythia
-      AliGenPythia* pythia = new AliGenPythia(-1); 
-      pythia->SetMomentumRange(0, 999999.);
-      pythia->SetThetaRange(0., 180.);
-      pythia->SetYRange(-12.,12.);
-      pythia->SetPtRange(0,1000.);
-      pythia->SetProcess(kPyMb);
-      pythia->SetEnergyCMS(energy);
-//    Tune
-//    C   306 ATLAS-CSC: Arthur Moraes' (new) ATLAS tune (needs CTEQ6L externally)
-      pythia->SetTune(306);
-      pythia->SetStrucFunc(kCTEQ6l);
-//
-      return pythia;
+  comment = comment.Append(" pp: Pythia low-pt");
+  //
+  //    Pythia
+  AliGenPythia* pythia = new AliGenPythia(-1); 
+  pythia->SetMomentumRange(0, 999999.);
+  pythia->SetThetaRange(0., 180.);
+  pythia->SetYRange(-12.,12.);
+  pythia->SetPtRange(0,1000.);
+  pythia->SetProcess(kPyMb);
+  pythia->SetEnergyCMS(energy);
+  //    Tune
+  //    C   306 ATLAS-CSC: Arthur Moraes' (new) ATLAS tune (needs CTEQ6L externally)
+  pythia->SetTune(306);
+  pythia->SetStrucFunc(kCTEQ6l);
+  //
+  return pythia;
 }
 
 AliGenerator* MbPythiaTuneATLAS_Flat()
 {
-      AliGenPythia* pythia = MbPythiaTuneATLAS();
+  AliGenPythia* pythia = MbPythiaTuneATLAS();
       
-      comment = comment.Append("; flat multiplicity distribution");
+  comment = comment.Append("; flat multiplicity distribution");
       
-      // set high multiplicity trigger
-      // this weight achieves a flat multiplicity distribution
-      TH1 *weight = new TH1D("weight","weight",201,-0.5,200.5);
-      weight->SetBinContent(1,5.49443);
-      weight->SetBinContent(2,8.770816);
-      weight->SetBinContent(6,0.4568624);
-      weight->SetBinContent(7,0.2919915);
-      weight->SetBinContent(8,0.6674189);
-      weight->SetBinContent(9,0.364737);
-      weight->SetBinContent(10,0.8818444);
-      weight->SetBinContent(11,0.531885);
-      weight->SetBinContent(12,1.035197);
-      weight->SetBinContent(13,0.9394057);
-      weight->SetBinContent(14,0.9643193);
-      weight->SetBinContent(15,0.94543);
-      weight->SetBinContent(16,0.9426507);
-      weight->SetBinContent(17,0.9423649);
-      weight->SetBinContent(18,0.789456);
-      weight->SetBinContent(19,1.149026);
-      weight->SetBinContent(20,1.100491);
-      weight->SetBinContent(21,0.6350525);
-      weight->SetBinContent(22,1.351941);
-      weight->SetBinContent(23,0.03233504);
-      weight->SetBinContent(24,0.9574557);
-      weight->SetBinContent(25,0.868133);
-      weight->SetBinContent(26,1.030998);
-      weight->SetBinContent(27,1.08897);
-      weight->SetBinContent(28,1.251382);
-      weight->SetBinContent(29,0.1391099);
-      weight->SetBinContent(30,1.192876);
-      weight->SetBinContent(31,0.448944);
-      weight->SetBinContent(32,1);
-      weight->SetBinContent(33,1);
-      weight->SetBinContent(34,1);
-      weight->SetBinContent(35,1);
-      weight->SetBinContent(36,0.9999997);
-      weight->SetBinContent(37,0.9999997);
-      weight->SetBinContent(38,0.9999996);
-      weight->SetBinContent(39,0.9999996);
-      weight->SetBinContent(40,0.9999995);
-      weight->SetBinContent(41,0.9999993);
-      weight->SetBinContent(42,1);
-      weight->SetBinContent(43,1);
-      weight->SetBinContent(44,1);
-      weight->SetBinContent(45,1);
-      weight->SetBinContent(46,1);
-      weight->SetBinContent(47,0.9999999);
-      weight->SetBinContent(48,0.9999998);
-      weight->SetBinContent(49,0.9999998);
-      weight->SetBinContent(50,0.9999999);
-      weight->SetBinContent(51,0.9999999);
-      weight->SetBinContent(52,0.9999999);
-      weight->SetBinContent(53,0.9999999);
-      weight->SetBinContent(54,0.9999998);
-      weight->SetBinContent(55,0.9999998);
-      weight->SetBinContent(56,0.9999998);
-      weight->SetBinContent(57,0.9999997);
-      weight->SetBinContent(58,0.9999996);
-      weight->SetBinContent(59,0.9999995);
-      weight->SetBinContent(60,1);
-      weight->SetBinContent(61,1);
-      weight->SetBinContent(62,1);
-      weight->SetBinContent(63,1);
-      weight->SetBinContent(64,1);
-      weight->SetBinContent(65,0.9999999);
-      weight->SetBinContent(66,0.9999998);
-      weight->SetBinContent(67,0.9999998);
-      weight->SetBinContent(68,0.9999999);
-      weight->SetBinContent(69,1);
-      weight->SetBinContent(70,1);
-      weight->SetBinContent(71,0.9999997);
-      weight->SetBinContent(72,0.9999995);
-      weight->SetBinContent(73,0.9999994);
-      weight->SetBinContent(74,1);
-      weight->SetBinContent(75,1);
-      weight->SetBinContent(76,1);
-      weight->SetBinContent(77,1);
-      weight->SetBinContent(78,0.9999999);
-      weight->SetBinContent(79,1);
-      weight->SetBinContent(80,1);
-      weight->SetEntries(526);
-        
-      Int_t limit = weight->GetRandom();
-      pythia->SetTriggerChargedMultiplicity(limit, 1.4);
-      
-      comment = comment.Append(Form("; multiplicity threshold set to %d in |eta| < 1.4", limit));
+  // set high multiplicity trigger
+  // this weight achieves a flat multiplicity distribution
+  Double_t cont[] =
+    {0, 
+     0.234836, 0.103484, 0.00984802, 0.0199906, 0.0260018, 0.0208481, 0.0101477, 0.00146998, -0.00681513, -0.0114928,
+     -0.0113352, -0.0102012, -0.00895238, -0.00534961, -0.00261648, -0.000819048, 0.00130816, 0.00177978, 0.00373838, 0.00566255,
+     0.00628156, 0.00687458, 0.00668017, 0.00702917, 0.00810848, 0.00876167, 0.00832783, 0.00848518, 0.0107709, 0.0106849,
+     0.00933702, 0.00912525, 0.0106553, 0.0102785, 0.0101756, 0.010962, 0.00957103, 0.00970448, 0.0117133, 0.012271,
+     0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113,
+     0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113,
+     0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113,
+     0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113,
+     0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113,
+     0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113, 0.0113,
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+     0};
 
-      return pythia;
-}
-AliGenerator* MbPythiaTuneD6T_Flat()
-{
-      AliGenPythia* pythia = MbPythiaTuneD6T();
-      
-      comment = comment.Append("; flat multiplicity distribution");
-      
-      // set high multiplicity trigger
-      // this weight achieves a flat multiplicity distribution
-      TH1 *weight = new TH1D("weight","weight",201,-0.5,200.5);
-      weight->SetBinContent(1,5.49443);
-      weight->SetBinContent(2,8.770816);
-      weight->SetBinContent(6,0.4568624);
-      weight->SetBinContent(7,0.2919915);
-      weight->SetBinContent(8,0.6674189);
-      weight->SetBinContent(9,0.364737);
-      weight->SetBinContent(10,0.8818444);
-      weight->SetBinContent(11,0.531885);
-      weight->SetBinContent(12,1.035197);
-      weight->SetBinContent(13,0.9394057);
-      weight->SetBinContent(14,0.9643193);
-      weight->SetBinContent(15,0.94543);
-      weight->SetBinContent(16,0.9426507);
-      weight->SetBinContent(17,0.9423649);
-      weight->SetBinContent(18,0.789456);
-      weight->SetBinContent(19,1.149026);
-      weight->SetBinContent(20,1.100491);
-      weight->SetBinContent(21,0.6350525);
-      weight->SetBinContent(22,1.351941);
-      weight->SetBinContent(23,0.03233504);
-      weight->SetBinContent(24,0.9574557);
-      weight->SetBinContent(25,0.868133);
-      weight->SetBinContent(26,1.030998);
-      weight->SetBinContent(27,1.08897);
-      weight->SetBinContent(28,1.251382);
-      weight->SetBinContent(29,0.1391099);
-      weight->SetBinContent(30,1.192876);
-      weight->SetBinContent(31,0.448944);
-      weight->SetBinContent(32,1);
-      weight->SetBinContent(33,1);
-      weight->SetBinContent(34,1);
-      weight->SetBinContent(35,1);
-      weight->SetBinContent(36,0.9999997);
-      weight->SetBinContent(37,0.9999997);
-      weight->SetBinContent(38,0.9999996);
-      weight->SetBinContent(39,0.9999996);
-      weight->SetBinContent(40,0.9999995);
-      weight->SetBinContent(41,0.9999993);
-      weight->SetBinContent(42,1);
-      weight->SetBinContent(43,1);
-      weight->SetBinContent(44,1);
-      weight->SetBinContent(45,1);
-      weight->SetBinContent(46,1);
-      weight->SetBinContent(47,0.9999999);
-      weight->SetBinContent(48,0.9999998);
-      weight->SetBinContent(49,0.9999998);
-      weight->SetBinContent(50,0.9999999);
-      weight->SetBinContent(51,0.9999999);
-      weight->SetBinContent(52,0.9999999);
-      weight->SetBinContent(53,0.9999999);
-      weight->SetBinContent(54,0.9999998);
-      weight->SetBinContent(55,0.9999998);
-      weight->SetBinContent(56,0.9999998);
-      weight->SetBinContent(57,0.9999997);
-      weight->SetBinContent(58,0.9999996);
-      weight->SetBinContent(59,0.9999995);
-      weight->SetBinContent(60,1);
-      weight->SetBinContent(61,1);
-      weight->SetBinContent(62,1);
-      weight->SetBinContent(63,1);
-      weight->SetBinContent(64,1);
-      weight->SetBinContent(65,0.9999999);
-      weight->SetBinContent(66,0.9999998);
-      weight->SetBinContent(67,0.9999998);
-      weight->SetBinContent(68,0.9999999);
-      weight->SetBinContent(69,1);
-      weight->SetBinContent(70,1);
-      weight->SetBinContent(71,0.9999997);
-      weight->SetBinContent(72,0.9999995);
-      weight->SetBinContent(73,0.9999994);
-      weight->SetBinContent(74,1);
-      weight->SetBinContent(75,1);
-      weight->SetBinContent(76,1);
-      weight->SetBinContent(77,1);
-      weight->SetBinContent(78,0.9999999);
-      weight->SetBinContent(79,1);
-      weight->SetBinContent(80,1);
-      weight->SetEntries(526);
-        
-      Int_t limit = weight->GetRandom();
-      pythia->SetTriggerChargedMultiplicity(limit, 1.4);
-      
-      comment = comment.Append(Form("; multiplicity threshold set to %d in |eta| < 1.4", limit));
+  Double_t err[] =
+    {0, 
+     0.00168216, 0.000743548, 0.00103125, 0.00108605, 0.00117101, 0.00124577, 0.00129119, 0.00128341, 0.00121421, 0.00112431,
+     0.00100588, 0.000895078, 0.000790314, 0.000711673, 0.000634547, 0.000589133, 0.000542763, 0.000509552, 0.000487375, 0.000468906, 
+     0.000460196, 0.000455806, 0.00044843, 0.000449317, 0.00045007, 0.000458016, 0.000461167, 0.000474742, 0.00050161, 0.00051637, 
+     0.000542336, 0.000558854, 0.000599169, 0.000611982, 0.000663855, 0.000696322, 0.000722825, 0.000771686, 0.000838023, 0.000908317, 
+     0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003,
+     0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003,
+     0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003,
+     0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003,
+     0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003,
+     0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003, 0.0003,
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+     0};
 
-      return pythia;
+  TH1F *weight = new TH1F("newweight","newweight",120,-0.5,119.5);
+
+  weight->SetContent(cont);
+  weight->SetError(err);
+        
+  Int_t limit = weight->GetRandom();
+  pythia->SetTriggerChargedMultiplicity(limit, 1.4);
+      
+  comment = comment.Append(Form("; multiplicity threshold set to %d in |eta| < 1.4", limit));
+
+  return pythia;
 }
 
 AliGenerator* MbPhojet()
 {
-      comment = comment.Append(" pp: Pythia low-pt");
-//
-//    DPMJET
+  comment = comment.Append(" pp: Pythia low-pt");
+  //
+  //    DPMJET
 #if defined(__CINT__)
   gSystem->Load("libdpmjet");      // Parton density functions
   gSystem->Load("libTDPMjet");      // Parton density functions
 #endif
-      AliGenDPMjet* dpmjet = new AliGenDPMjet(-1); 
-      dpmjet->SetMomentumRange(0, 999999.);
-      dpmjet->SetThetaRange(0., 180.);
-      dpmjet->SetYRange(-12.,12.);
-      dpmjet->SetPtRange(0,1000.);
-      dpmjet->SetProcess(kDpmMb);
-      dpmjet->SetEnergyCMS(energy);
-
-      return dpmjet;
+  AliGenDPMjet* dpmjet = new AliGenDPMjet(-1); 
+  dpmjet->SetMomentumRange(0, 999999.);
+  dpmjet->SetThetaRange(0., 180.);
+  dpmjet->SetYRange(-12.,12.);
+  dpmjet->SetPtRange(0,1000.);
+  dpmjet->SetProcess(kDpmMb);
+  dpmjet->SetEnergyCMS(energy);
+  dpmjet->SetCrossingAngle(0,0.000280);
+  return dpmjet;
 }
 
 void ProcessEnvironmentVars()
 {
-    // Run type
-    if (gSystem->Getenv("CONFIG_RUN_TYPE")) {
-      for (Int_t iRun = 0; iRun < kRunMax; iRun++) {
-	if (strcmp(gSystem->Getenv("CONFIG_RUN_TYPE"), pprRunName[iRun])==0) {
-	  proc = (PDC06Proc_t)iRun;
-	  cout<<"Run type set to "<<pprRunName[iRun]<<endl;
-	}
+  // Run type
+  if (gSystem->Getenv("CONFIG_RUN_TYPE")) {
+    for (Int_t iRun = 0; iRun < kRunMax; iRun++) {
+      if (strcmp(gSystem->Getenv("CONFIG_RUN_TYPE"), pprRunName[iRun])==0) {
+	proc = (PDC06Proc_t)iRun;
+	cout<<"Run type set to "<<pprRunName[iRun]<<endl;
       }
     }
+  }
 
-    // Field
-    if (gSystem->Getenv("CONFIG_FIELD")) {
-      for (Int_t iField = 0; iField < kFieldMax; iField++) {
-	if (strcmp(gSystem->Getenv("CONFIG_FIELD"), pprField[iField])==0) {
-	  mag = (Mag_t)iField;
-	  cout<<"Field set to "<<pprField[iField]<<endl;
-	}
+  // Field
+  if (gSystem->Getenv("CONFIG_FIELD")) {
+    for (Int_t iField = 0; iField < kFieldMax; iField++) {
+      if (strcmp(gSystem->Getenv("CONFIG_FIELD"), pprField[iField])==0) {
+	mag = (Mag_t)iField;
+	cout<<"Field set to "<<pprField[iField]<<endl;
       }
     }
+  }
 
-    // Energy
-    if (gSystem->Getenv("CONFIG_ENERGY")) {
-      energy = atoi(gSystem->Getenv("CONFIG_ENERGY"));
-      cout<<"Energy set to "<<energy<<" GeV"<<endl;
-    }
+  // Energy
+  if (gSystem->Getenv("CONFIG_ENERGY")) {
+    energy = atoi(gSystem->Getenv("CONFIG_ENERGY"));
+    cout<<"Energy set to "<<energy<<" GeV"<<endl;
+  }
 
-    // Random Number seed
-    if (gSystem->Getenv("CONFIG_SEED")) {
-      seed = atoi(gSystem->Getenv("CONFIG_SEED"));
-    }
+  // Random Number seed
+  if (gSystem->Getenv("CONFIG_SEED")) {
+    seed = atoi(gSystem->Getenv("CONFIG_SEED"));
+  }
 
-    // Physics lists
-    if (gSystem->Getenv("CONFIG_PHYSICSLIST")) {
-      for (Int_t iList = 0; iList < kListMax; iList++) {
-	if (strcmp(gSystem->Getenv("CONFIG_PHYSICSLIST"), physicsListName[iList])==0) {
-	  physicslist = (PhysicsList_t)iList;
-	  cout<<"Physics list set to "<< physicsListName[iList]<<endl;
-	}
+  // Run number
+  if (gSystem->Getenv("DC_RUN")) {
+    runNumber = atoi(gSystem->Getenv("DC_RUN"));
+  }
+
+  // Physics lists
+  if (gSystem->Getenv("CONFIG_PHYSICSLIST")) {
+    for (Int_t iList = 0; iList < kListMax; iList++) {
+      if (strcmp(gSystem->Getenv("CONFIG_PHYSICSLIST"), physicsListName[iList])==0){
+	physicslist = (PhysicsList_t)iList;
+	cout<<"Physics list set to "<< physicsListName[iList]<<endl;
       }
     }
+  }
 
 }
