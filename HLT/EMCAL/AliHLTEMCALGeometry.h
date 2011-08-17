@@ -38,8 +38,9 @@ class  AliHLTEMCALGeometry : public AliHLTCaloGeometry
 	void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId);
 	virtual Int_t InitialiseGeometry();
 	
-
-
+	virtual void GetLocalCoordinatesFromAbsId(Int_t absId, Int_t& module, Int_t& x, Int_t& z);
+	
+	
 protected:
 	int GetGeometryFromCDB();
 

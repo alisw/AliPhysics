@@ -28,7 +28,7 @@ AliHLTEMCALGeometry::AliHLTEMCALGeometry() :
 	AliHLTCaloGeometry ("EMCAL"),
 	fGeo(0),fReco(0)
 {
-  GetGeometryFromCDB();
+  //GetGeometryFromCDB();
 }
 
 Int_t AliHLTEMCALGeometry::InitialiseGeometry()
@@ -122,11 +122,14 @@ AliHLTEMCALGeometry::GetGeometryFromCDB()
 	      delete fGeo;
 	      fGeo = 0;
 	    }
-
-	  gGeoManager = (TGeoManager*) pEntry->GetObject();
+	  if(!gGeoManager)
+	  {
+	    gGeoManager = (TGeoManager*) pEntry->GetObject();
+	  }
 
 	  if(gGeoManager)
 	    {
+	      HLTDebug("Getting geometry from CDB");
 	      fGeo = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
 	      //fGeo = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
 	      fReco = new AliEMCALRecoUtils;
@@ -153,4 +156,16 @@ AliHLTEMCALGeometry::GetGeometryFromCDB()
 	}
     }
   return 0;
+}
+
+void AliHLTEMCALGeometry::GetLocalCoordinatesFromAbsId(Int_t absId, Int_t& module, Int_t& x, Int_t& z)
+{
+  Int_t mod; // not super module
+  Int_t tmpx;
+  Int_t tmpz;
+  
+  fGeo->GetCellIndex(absId, module, mod, tmpx, tmpz);
+  fGeo->GetCellPhiEtaIndexInSModule(module,mod,tmpx,tmpz, x, z);
+  
+  HLTDebug("ID: %d, smodule: %d, mod: %d, x: %d, z: %d", absId, module, mod, x, z);
 }
