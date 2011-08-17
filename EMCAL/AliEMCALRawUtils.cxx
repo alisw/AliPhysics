@@ -295,6 +295,12 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
   Int_t lowGain  = 0;
   Int_t caloFlag = 0; // low, high gain, or TRU, or LED ref.
   
+  Float_t bcTimePhaseCorr = 0; // for BC-based L1 phase correction
+  Int_t bcMod4 = (reader->GetBCID() % 4); // LHC uses 40 MHz, EMCal uses 10 MHz clock
+  if (bcMod4==0 || bcMod4==1) { 
+    bcTimePhaseCorr = -1e-7; // subtract 100 ns for certain BC values
+  } 
+
   while (in.NextDDL()) 
     {
       while (in.NextChannel()) 
@@ -319,7 +325,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	      AliCaloFitResults res =  fRawAnalyzer->Evaluate( bunchlist, in.GetAltroCFG1(), in.GetAltroCFG2());  
 	      if(res.GetAmp() >= fNoiseThreshold )
 		{
-		  AddDigit(digitsArr, id, lowGain, res.GetAmp(),  res.GetTime(), res.GetChi2(),  res.GetNdf() ); 
+		  AddDigit(digitsArr, id, lowGain, res.GetAmp(),  res.GetTime()+bcTimePhaseCorr, res.GetChi2(),  res.GetNdf() ); 
 		}
 	    }//ALTRO
 	  else if(fUseFALTRO)
