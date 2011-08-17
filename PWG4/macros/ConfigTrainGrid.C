@@ -39,7 +39,7 @@
   // bextra == 0 4 plus
   // bextra == 1 large pass1 split..
   // bextra == 2 3 plus
-  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "110728a";
+  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "110816a";
   //  Int_t bRun = 8102; Int_t bExtra = 1;  char* cDate = "110725a";
   iAODanalysis = 0; 
   // 1 == Read Jets and tracks form the input AOD
@@ -592,24 +592,76 @@
       30: clustersAOD_KT04_B2_Filter00016_Cut02000_Skip00RandomCone_random
       31: clustersAOD_ANTIKT04_B2_Filter00016_Cut02000_Skip02
             */
-      // UA1
+      /*
+	############# Possible jet branches ###################
+	1: jetsAOD_UA104_B0_Filter00272_Cut01000
+	2: jetsAOD_UA104_B0_Filter00272_Cut02000
+	3: jetsAOD_UA104_B2_Filter00272_Cut01000
+	4: jetsAOD_UA104_B2_Filter00272_Cut02000
+	5: clustersAOD_KT04_B0_Filter00272_Cut00150_Skip00
+	6: clustersAOD_KT04_B0_Filter00272_Cut00150_Skip00RandomConeSkip00
+	7: clustersAOD_KT04_B0_Filter00272_Cut00150_Skip00RandomCone_random
+	8: clustersAOD_KT04_B0_Filter00272_Cut01000_Skip00
+	9: clustersAOD_KT04_B0_Filter00272_Cut01000_Skip00RandomConeSkip00
+	10: clustersAOD_KT04_B0_Filter00272_Cut01000_Skip00RandomCone_random
+	11: clustersAOD_KT04_B0_Filter00272_Cut02000_Skip00
+	12: clustersAOD_KT04_B0_Filter00272_Cut02000_Skip00RandomConeSkip00
+	13: clustersAOD_KT04_B0_Filter00272_Cut02000_Skip00RandomCone_random
+	14: clustersAOD_KT02_B0_Filter00272_Cut00150_Skip00
+	15: clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip02
+	16: clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip02RandomConeSkip02
+	17: clustersAOD_ANTIKT04_B0_Filter00272_Cut00150_Skip02RandomCone_random
+	18: clustersAOD_ANTIKT04_B0_Filter00272_Cut01000_Skip02
+	19: clustersAOD_ANTIKT04_B0_Filter00272_Cut02000_Skip02
+	20: clustersAOD_ANTIKT02_B0_Filter00272_Cut00150_Skip00
+	21: clustersAOD_KT04_B1_Filter00272_Cut00150_Skip00RandomConeSkip00
+	22: clustersAOD_KT04_B1_Filter00272_Cut00150_Skip00RandomCone_random
+	23: clustersAOD_ANTIKT04_B1_Filter00272_Cut00150_Skip02
+	24: clustersAOD_ANTIKT04_B1_Filter00272_Cut00150_Skip02RandomConeSkip02
+	25: clustersAOD_ANTIKT04_B1_Filter00272_Cut00150_Skip02RandomCone_random
+	26: clustersAOD_ANTIKT02_B1_Filter00272_Cut00150_Skip00
+	27: clustersAOD_KT04_B2_Filter00272_Cut00150_Skip00RandomConeSkip00
+	28: clustersAOD_KT04_B2_Filter00272_Cut00150_Skip00RandomCone_random
+	29: clustersAOD_ANTIKT04_B2_Filter00272_Cut00150_Skip02
+	30: clustersAOD_ANTIKT04_B2_Filter00272_Cut00150_Skip02RandomConeSkip02
+	31: clustersAOD_ANTIKT04_B2_Filter00272_Cut00150_Skip02RandomCone_random
+	32: clustersAOD_ANTIKT02_B2_Filter00272_Cut00150_Skip00
+	33: clustersAOD_KT04_B2_Filter00272_Cut01000_Skip00RandomConeSkip00
+	34: clustersAOD_KT04_B2_Filter00272_Cut01000_Skip00RandomCone_random
+	35: clustersAOD_ANTIKT04_B2_Filter00272_Cut01000_Skip02
+	36: clustersAOD_KT04_B2_Filter00272_Cut02000_Skip00RandomConeSkip00
+	37: clustersAOD_KT04_B2_Filter00272_Cut02000_Skip00RandomCone_random
+	38: clustersAOD_ANTIKT04_B2_Filter00272_Cut02000_Skip02
+      */
+      
+      // in the first map we fill the correlations we want to plot
+      // in the jet back map we associated the branche used for background calculation
+      // to fetch the multiplicity
+
+      // UA1 
       kJetMapSpectrum.Add(4,2);
       kJetBackMapSpectrum.Add(4,8);
 
       // anti kT 150 MeV
-      kJetMapSpectrum.Add(25,12);
-      kJetBackMapSpectrum.Add(25,5);
-      kJetBackMapSpectrum.Add(13,5);
+      kJetMapSpectrum.Add(29,15);
+      kJetBackMapSpectrum.Add(29,5);
+      kJetBackMapSpectrum.Add(15,5);
+
+      // anti kT 1000 MeV
+      kJetMapSpectrum.Add(35,18);
+      kJetBackMapSpectrum.Add(35,8);      
+      kJetBackMapSpectrum.Add(35,8);
 
       // anti kT 2000 MeV
-      kJetMapSpectrum.Add(31,15);
-      kJetBackMapSpectrum.Add(31,8);      
-      kJetBackMapSpectrum.Add(15,8);
+      kJetMapSpectrum.Add(38,19);
+      kJetBackMapSpectrum.Add(35,11);      
+      kJetBackMapSpectrum.Add(19,11);
+
 
       // anti kT 0.2
-      kJetMapSpectrum.Add(28,16);
-      kJetBackMapSpectrum.Add(28,5);      
-      kJetBackMapSpectrum.Add(17,5);
+      kJetMapSpectrum.Add(32,14);
+      kJetBackMapSpectrum.Add(32,5);      
+      kJetBackMapSpectrum.Add(14,5);
 
       // random cones
       kJetMapSpectrum.Add(6,7);

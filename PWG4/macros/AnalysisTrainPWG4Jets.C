@@ -91,9 +91,11 @@ Int_t       kJetMapOffset[3] = {10000,100,1};
 TString     kDefaultJetBranch     = "";      // is currently set when filled (iJETAN or clusters) or from config macro 
 TString     kDefaultJetBackgroundBranch            = "";      // is currently set when filled (jet clsuters  
 TString     kDefaultJetBackgroundBranchCut1        = "";      // is currently set when filled (jet clsuters  
+TString     kDefaultJetBackgroundBranchCut2        = "";      // is currently set when filled (jet clsuters  
 TString     kDefaultJetBackgroundBranch_extra     = "";      // is currently set when filled (jet clsuters) 
 TString     kJetSubtractBranches     = "";      // is currently set when filled (jet clsuters  
 TString     kJetSubtractBranchesCut1     = "";      // is currently set when filled (jet clsuters  
+TString     kJetSubtractBranchesCut2     = "";      // is currently set when filled (jet clsuters  
 TString     kJetSubtractBranches_extra     = "";      // is currently set when filled (jet clsuters  
 
 TString     kDefaultJetBranchMC     = "";      // is currently set when filled (iJETAN or clusters) or from config macro 
@@ -605,7 +607,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 kJetSubtractBranches += Form("%s%s ",taskCl->GetJetOutputBranch(),"RandomConeSkip00");
 	 kJetSubtractBranches += Form("%s%s ",taskCl->GetJetOutputBranch(),"RandomCone_random");
 
-	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),2.0,fTrackEtaWindow,0); // this one is for the background and random jets, random cones with no skip
+	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),1.0,fTrackEtaWindow,0); // this one is for the background and random jets, random cones with no skip
 	 taskCl->SetEventSelection(kTRUE); // saves some computing time, not all vertices are processed
 	 taskCl->SetNRandomCones(1);
 	 taskCl->SetBackgroundCalc(kTRUE);
@@ -618,6 +620,21 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
 	 kJetListSpectrum.Add(new TObjString(Form("%sRandomConeSkip%02d",taskCl->GetJetOutputBranch(),0)));
 	 kJetListSpectrum.Add(new TObjString(Form("%sRandomCone_random",taskCl->GetJetOutputBranch())));
+
+	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),2.0,fTrackEtaWindow,0); // this one is for the background and random jets, random cones with no skip
+	 taskCl->SetEventSelection(kTRUE); // saves some computing time, not all vertices are processed
+	 taskCl->SetNRandomCones(1);
+	 taskCl->SetBackgroundCalc(kTRUE);
+	 taskCl->SetCentralityCut(fCenLo,fCenUp);
+	 taskCl->SetGhostEtamax(fTrackEtaWindow);
+	 if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
+	 kDefaultJetBackgroundBranchCut2 = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch());
+	 kJetSubtractBranchesCut2 += Form("%s%s ",taskCl->GetJetOutputBranch(),"RandomConeSkip00");
+	 kJetSubtractBranchesCut2 += Form("%s%s ",taskCl->GetJetOutputBranch(),"RandomCone_random");
+	 kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
+	 kJetListSpectrum.Add(new TObjString(Form("%sRandomConeSkip%02d",taskCl->GetJetOutputBranch(),0)));
+	 kJetListSpectrum.Add(new TObjString(Form("%sRandomCone_random",taskCl->GetJetOutputBranch())));
+
 
          if (iPWG4FastEmbedding) {
            AliAnalysisTaskJetCluster *taskClEmb = 0;
@@ -696,7 +713,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        kJetListSpectrum.Add(new TObjString(Form("%sRandomConeSkip%02d",taskCl->GetJetOutputBranch(),2)));
        kJetListSpectrum.Add(new TObjString(Form("%sRandomCone_random",taskCl->GetJetOutputBranch())));
 
-       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),2.0);
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),1.0);
        taskCl->SetEventSelection(kTRUE); // saves some computing time, not all vertices are processed
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
@@ -704,12 +721,23 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        kJetSubtractBranchesCut1 += Form("%s ",taskCl->GetJetOutputBranch());
        kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
 
+
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),2.0);
+       taskCl->SetEventSelection(kTRUE); // saves some computing time, not all vertices are processed
+       taskCl->SetCentralityCut(fCenLo,fCenUp);
+       if(iAODanalysis==2)taskCl->SetAODTrackInput(kTRUE);
+       if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranchCut2.Data());
+       kJetSubtractBranchesCut2 += Form("%s ",taskCl->GetJetOutputBranch());
+       kJetListSpectrum.Add(new TObjString(taskCl->GetJetOutputBranch()));
+
+
        // tmp track qa...
+       /*
        taskCl = AddTaskJetCluster("AOD","",1<<8,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),2.0);
        taskCl->SetEventSelection(kTRUE); // saves some computing time, not all vertices are processed
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        taskCl->SetFilterMask(1<<4|1<<8,1);
-
+       */
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data(),0.15);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        taskCl->SetEventSelection(kTRUE); // saves some computing time, not all vertices are processed
@@ -811,7 +839,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        //
        // cut1
        Int_t iB = 2;
-       taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranchesCut1,iB,kJetSubtractMask1.Data(),kJetSubtractMask2.Data(),"Cut2000");
+       taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranchesCut1,iB,kJetSubtractMask1.Data(),kJetSubtractMask2.Data(),"Cut1000");
        taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranchCut1.Data());	 	
        taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
        if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
@@ -824,6 +852,18 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 kJetListSpectrum.Add(new TObjString(cTmp.Data()));
        }
 
+       taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranchesCut2,iB,kJetSubtractMask1.Data(),kJetSubtractMask2.Data(),"Cut2000");
+       taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranchCut2.Data());	 	
+       taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
+       if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
+
+       objArr = kJetSubtractBranchesCut2.Tokenize(" ");
+       for(int iJB = 0;iJB<objArr->GetEntries();iJB++){
+	 TObjString *ostr = (TObjString*)objArr->At(iJB);
+	 cTmp = ostr->GetString().Data();
+	 cTmp.ReplaceAll(kJetSubtractMask1.Data(),Form(kJetSubtractMask2.Data(),iB));
+	 kJetListSpectrum.Add(new TObjString(cTmp.Data()));
+       }
 
      }
      if(kJetSubtractBranches_extra.Length()){
