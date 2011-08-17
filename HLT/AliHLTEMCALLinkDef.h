@@ -9,5 +9,7 @@
 #pragma link C++ class AliHLTEMCALDefinitions;
 #pragma link C++ class AliHLTEMCALCalibrationComponent;
 #pragma link C++ class AliHLTEMCALUtils;
+#pragma link C++ class AliHLTEMCALDigitHandler;
+
 #endif
 

@@ -45,6 +45,7 @@ set ( CLASS_HDRS
     AliHLTPHOSConstants.h
     AliHLTPHOSGeometry.h
     AliHLTPHOSRecoParamHandler.h
+    offline/AliHLTPHOSDigitHandler.h
     )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )

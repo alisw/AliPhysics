@@ -47,6 +47,8 @@ set ( CLASS_HDRS
     AliHLTCaloProcessor.h
     AliHLTCaloGeometry.h
     AliHLTCaloRecoParamHandler.h
+    offline/AliHLTCaloDigitPublisherComponent.h
+    offline/AliHLTCaloDigitHandler.h
     )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
