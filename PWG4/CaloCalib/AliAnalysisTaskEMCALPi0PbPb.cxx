@@ -225,7 +225,8 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fSelPrimTracks = new TObjArray;
 
   if (fDoNtuple) {
-    TFile *f = OpenFile(1);
+    TFile *f = OpenFile(1); 
+    TDirectory::TContext context(f);
     if (f) {
       f->SetCompressionLevel(2);
       fNtuple = new TTree(Form("tree%.0fto%.0f",fCentFrom,fCentTo), "StandaloneTree");
@@ -732,7 +733,8 @@ void AliAnalysisTaskEMCALPi0PbPb::Terminate(Option_t *)
   // Terminate called at the end of analysis.
 
   if (fNtuple) {
-    TFile *f = OpenFile(1);
+    TFile *f = OpenFile(1,"update");
+    TDirectory::TContext context(f);
     if (f) 
       fNtuple->Write();
   }
