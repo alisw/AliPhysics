@@ -390,8 +390,8 @@ void Extractv2from2Dhistos(){
 
   printf("\n--------- Summary ------------\n");
 
-  TH1F* hv2m1=new TH1F("hv2m1","",nFinalPtBins,ptlims);
-  TH1F* hv2m2=new TH1F("hv2m2","",nFinalPtBins,ptlims);
+  TH1F* hv2m1=new TH1F("hv2m1","Side Band subtraction",nFinalPtBins,ptlims);
+  TH1F* hv2m2=new TH1F("hv2m2","Fit to v2 vs. mass",nFinalPtBins,ptlims);
    for(Int_t iFinalPtBin=0; iFinalPtBin<nFinalPtBins; iFinalPtBin++){
     printf("PtBin %d   v2method1 = %f +- %f   v2method2 = %f +-%f\n",iFinalPtBin,
 	   v2M1[iFinalPtBin],errv2M1[iFinalPtBin],
@@ -425,4 +425,11 @@ void Extractv2from2Dhistos(){
    ent->SetTextColor(hv2m2->GetMarkerColor());
    leg2->Draw();
    cv2->Update();
+   cv2->SaveAs("Dzero-v2-2Dmethods.gif");
+
+   TFile* outfil=new TFile("Dzero-v2-2Dmethods.root","recreate");
+   outfil->cd();
+   hv2m1->Write();
+   hv2m2->Write();
+   outfil->Close();
 }
