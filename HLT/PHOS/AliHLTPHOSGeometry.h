@@ -39,10 +39,14 @@ class AliHLTPHOSGeometry : public AliHLTCaloGeometry
       virtual void GetCellAbsId(UInt_t module, UInt_t x, UInt_t z, Int_t& AbsId);
     
       /** Intialise the geometry from the HCDB/OCDB */
-      virtual Int_t InitialiseGeometry() {return 0; }
+      virtual Int_t InitialiseGeometry() { return GetGeometryFromCDB(); }
       
+      /** Convert rec point coordinates */
       virtual void ConvertRecPointCoordinates(Float_t &x, Float_t &z) const;
     
+      /** Convert absolute ID to local coordinates */
+      virtual void GetLocalCoordinatesFromAbsId(Int_t absId, Int_t& module, Int_t& x, Int_t& z);      
+      
      protected:
 	
 	Int_t GetGeometryFromCDB();

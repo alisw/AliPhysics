@@ -25,7 +25,7 @@ AliHLTCaloGeometry("PHOS"),
 fGeoUtils(0)
 {
  // See header file for class documentation
- GetGeometryFromCDB();
+ 
 }
 
 AliHLTPHOSGeometry::~AliHLTPHOSGeometry()
@@ -36,6 +36,7 @@ AliHLTPHOSGeometry::~AliHLTPHOSGeometry()
 void AliHLTPHOSGeometry::GetGlobalCoordinates ( AliHLTCaloRecPointDataStruct& recPoint, AliHLTCaloGlobalCoordinate& globalCoord, Int_t /* iParticle */ )
 {
    // See header file for class documentation
+   if(!fIsInitialised) { InitialiseGeometry(); }
    if(!fGeoUtils) 
    {
       Logging(kHLTLogError, "HLT", "PHOS", "AliHLTPHOSGeometry::GetGlobalCoordinates: no geometry initialised");
@@ -76,16 +77,18 @@ int AliHLTPHOSGeometry::GetGeometryFromCDB()
       AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
       if (pEntry) 
 	{
-	  if(!fGeoUtils) 
+	  if(fGeoUtils) 
 	    {
 	      delete fGeoUtils;
 	      fGeoUtils = 0;
 	    }
-
-	  gGeoManager = (TGeoManager*) pEntry->GetObject();
+	  
+	  if(!gGeoManager) gGeoManager = (TGeoManager*) pEntry->GetObject();
+	  
 	  if(gGeoManager)
 	    {
 	      fGeoUtils = new AliPHOSGeoUtils("PHOS", "noCPV");
+	      if(fGeoUtils) fIsInitialised = kTRUE;
 	    }
 	    else
 	    {
@@ -112,3 +115,11 @@ void AliHLTPHOSGeometry::GetCellAbsId ( UInt_t module, UInt_t x, UInt_t z, Int_t
       fGeoUtils->RelPosToAbsId(module, x, z, AbsId);
   }
 
+void AliHLTPHOSGeometry::GetLocalCoordinatesFromAbsId(Int_t absId, Int_t& module, Int_t& x, Int_t& z)
+{
+  Int_t rel[4];
+  fGeoUtils->AbsToRelNumbering(absId, rel);
+  module = rel[0]-1;
+  z = rel[2];
+  x = rel[3];
+}
