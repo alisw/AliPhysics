@@ -70,12 +70,14 @@ void AliGenFixed::Generate()
   Int_t i, j, nt;
   //
   Float_t o[3] = {0., 0., 0.}; 
+  Float_t time = 0.;
   if(fVertexSmear == kPerEvent) {
       Vertex();
       for (j = 0;j < 3; j++) o[j] = fVertex[j];
+      time = fTime;
   }
   
   for(i = 0; i < fNpart; i++) 
-    PushTrack(fTrackIt, -1, fIpart, fP, o , polar, 0, kPPrimary, nt);
+    PushTrack(fTrackIt, -1, fIpart, fP, o , polar, time, kPPrimary, nt);
 }
   

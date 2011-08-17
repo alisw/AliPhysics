@@ -307,6 +307,7 @@ void AliGenHIJINGpara::Generate()
     const Int_t kKaons[4] = {kK0Long, kK0Short, kKPlus, kKMinus};
     //
     Float_t origin[3];
+    Float_t time;
     Float_t pt, pl, ptot, wgt;
     Float_t phi, theta;
     Float_t p[3];
@@ -318,16 +319,19 @@ void AliGenHIJINGpara::Generate()
     Float_t random[6];
     //
     for (j=0;j<3;j++) origin[j]=fOrigin[j];
+    time = fTimeOrigin;
 
     if(fVertexSmear == kPerEvent) {
 	Vertex();
 	for (j=0; j < 3; j++) origin[j] = fVertex[j];
+	time = fTime;
     } // if kPerEvent
     TArrayF eventVertex;
     eventVertex.Set(3);
     eventVertex[0] = origin[0];
     eventVertex[1] = origin[1];
     eventVertex[2] = origin[2];
+    Float_t eventTime = time;
      
     for(i=0;i<fNpart;i++) {
 	while(1) {
@@ -366,6 +370,10 @@ void AliGenHIJINGpara::Generate()
 		    origin[j]=fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 			TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 		}
+		Rndm(random,2);
+		time = fTimeOrigin + fOsigma[2]/TMath::Ccgs()*
+		  TMath::Cos(2*random[0]*TMath::Pi())*
+		  TMath::Sqrt(-2*TMath::Log(random[1]));
 	    }
 
 	    if (fAnalog == 0) { 
@@ -378,12 +386,12 @@ void AliGenHIJINGpara::Generate()
 	    if (part == kPi0 && fPi0Decays){
 //
 //          Decay pi0 if requested
-		PushTrack(0,-1,part,p,origin,polar,0,kPPrimary,fNt,wgt);
+		PushTrack(0,-1,part,p,origin,polar,time,kPPrimary,fNt,wgt);
 		KeepTrack(fNt);
-		DecayPi0(origin, p);
+		DecayPi0(origin, p, time);
 	    } else {
       // printf("fNt %d", fNt);
-		PushTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,fNt,wgt);
+		PushTrack(fTrackIt,-1,part,p,origin,polar,time,kPPrimary,fNt,wgt);
 
 		KeepTrack(fNt);
 	    }
@@ -398,6 +406,7 @@ void AliGenHIJINGpara::Generate()
     AliGenEventHeader* header = new AliGenEventHeader("HIJINGparam");
 // Event Vertex
     header->SetPrimaryVertex(eventVertex);
+    header->SetInteractionTime(eventTime);
     header->SetNProduced(fNpartProd);
     gAlice->SetGenEventHeader(header); 
 }
@@ -406,7 +415,7 @@ void AliGenHIJINGpara::SetPtRange(Float_t ptmin, Float_t ptmax) {
     AliGenerator::SetPtRange(ptmin, ptmax);
 }
 
-void AliGenHIJINGpara::DecayPi0(Float_t* orig, Float_t * p) 
+void AliGenHIJINGpara::DecayPi0(Float_t* orig, Float_t * p, Float_t time) 
 {
 //
 //    Decay the pi0
@@ -437,7 +446,7 @@ void AliGenHIJINGpara::DecayPi0(Float_t* orig, Float_t * p)
 	p[2] = iParticle->Pz();
 	Int_t part = iParticle->GetPdgCode();
 
-	PushTrack(fTrackIt, fNt, part, p, orig, polar, 0, kPDecay, nt, fParentWeight);
+	PushTrack(fTrackIt, fNt, part, p, orig, polar, time, kPDecay, nt, fParentWeight);
 	KeepTrack(nt);
     }
     fNt = nt;

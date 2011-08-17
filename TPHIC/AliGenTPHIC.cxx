@@ -132,6 +132,7 @@ void AliGenTPHIC::Generate()
 
   Float_t polar[3]   = {0,0,0};
   Float_t origin0[3] = {0,0,0};
+  Float_t time0 = 0.;
   Float_t origin[3]  = {0,0,0};
   Float_t p[3], tof;
   Double_t weight;
@@ -150,13 +151,18 @@ void AliGenTPHIC::Generate()
     Info("Generate()","one event is produced");
 
   Int_t j;
-  for (j=0;j<3;j++) origin[j]=fOrigin[j];
+  for (j=0;j<3;j++) origin0[j]=fOrigin[j];
+  time0 = fTimeOrigin;
   if(fVertexSmear==kPerEvent) {
     Rndm(random,6);
     for (j=0;j<3;j++) {
       origin0[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 	TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
     }
+    Rndm(random,2);
+    time0 += fOsigma[2]/TMath::Ccgs()*
+      TMath::Cos(2*random[0]*TMath::Pi())*
+      TMath::Sqrt(-2*TMath::Log(random[1]));
   }
 
   Int_t ip;
@@ -176,7 +182,7 @@ void AliGenTPHIC::Generate()
     origin[2] = origin0[2]+iparticle->Vz()/10.;
     kf = CheckPDGCode(iparticle->GetPdgCode());
     iparent = -1;
-    tof     = kconv*iparticle->T();
+    tof     = time0 + kconv*iparticle->T();
     if (ks == 1) trackIt = 1;
     else         trackIt = 0;
     PushTrack(fTrackIt*trackIt,iparent,kf,p,origin,polar,tof,kPPrimary,nt,weight,ks);

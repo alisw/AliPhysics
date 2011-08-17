@@ -222,11 +222,14 @@ void AliGenMUONLMR::Generate() {
   Int_t nmuons = -1, npartPushed = 0, pdgPushed[100]; 
   Double_t polar[3]= {0,0,0};  // Polarisation of the parent particle (for GEANT tracking)
   Double_t origin0[3];         // Origin of the generated parent particle (for GEANT tracking)
+  Double_t time0;              // Time0  of the generated parent particle
   // Calculating vertex position per event
   for (Int_t j=0;j<3;j++) origin0[j]=fOrigin[j];
+  time0 = fTimeOrigin;
   if(fVertexSmear==kPerEvent) {
     Vertex();
     for (Int_t j=0;j<3;j++) origin0[j]=fVertex[j];
+    time0 = fTime;
   }
   
   printf ("In Generate()\n");
@@ -338,7 +341,7 @@ void AliGenMUONLMR::Generate() {
     if (TMath::Abs(pdgPushed[ipart]) != 13) { // particle is not a muon, hence it's a mother
       PushTrack(0,-1,pdgPushed[ipart],
 		pxPushed[ipart],pyPushed[ipart],pzPushed[ipart],ePushed[ipart],
-		origin0[0],origin0[1],origin0[2],0.,
+		origin0[0],origin0[1],origin0[2],time0,
 		polar[0],polar[1],polar[2],
 		kPPrimary,ntmother,1,11);
       KeepTrack(ntmother); 
@@ -346,7 +349,7 @@ void AliGenMUONLMR::Generate() {
     else { 
       PushTrack(1,ntmother,pdgPushed[ipart],
 		pxPushed[ipart],pyPushed[ipart],pzPushed[ipart],ePushed[ipart],
-		origin0[0],origin0[1],origin0[2],0.,
+		origin0[0],origin0[1],origin0[2],time0,
 		polar[0],polar[1],polar[2],
 		kPDecay,ntchild,1,1);
       KeepTrack(ntchild); 
@@ -355,6 +358,7 @@ void AliGenMUONLMR::Generate() {
   SetHighWaterMark(ntchild); 
   AliGenEventHeader* header = new AliGenEventHeader("LMR");
   header->SetPrimaryVertex(fVertex);
+  header->SetInteractionTime(fTime);
   header->SetNProduced(fNprimaries);
   AddHeader(header); 
 }

@@ -79,7 +79,9 @@ void AliGenBeamGas::Generate()
 //    beam 1 or 2
 //      
       Float_t ibeam = (random[1] < 0.5) ? -1. : 1.;
-      
+
+      // Interaction time
+      Float_t time = origin[2]/TMath::Ccgs()*ibeam;
 //
 //    Read next event
 //      
@@ -103,7 +105,7 @@ void AliGenBeamGas::Generate()
 	  Int_t idpart     = iparticle->GetPdgCode();
 	  Int_t decayed    = iparticle->GetFirstDaughter();
 	  Int_t doTracking = fTrackIt && (decayed < 0) && (TMath::Abs(idpart) > 10);
-	  PushTrack(doTracking,-1,idpart,p,origin,polar,0,kPPrimary,nt);
+	  PushTrack(doTracking,-1,idpart,p,origin,polar,time,kPPrimary,nt);
 	  KeepTrack(nt);
       } // track loop
       nInt++;

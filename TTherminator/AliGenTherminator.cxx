@@ -98,7 +98,9 @@ void AliGenTherminator::Generate()
 
   Float_t polar[3]    =   {0,0,0};
   Float_t origin[3]   =   {0,0,0};
+  Float_t time        =   0.;
   Float_t origin0[3]  =   {0,0,0};
+  Float_t time0       =   0.;
   Float_t p[3];
   Float_t mass, energy;
 
@@ -108,6 +110,7 @@ void AliGenTherminator::Generate()
 
   Vertex();
   for (j=0; j < 3; j++) origin0[j] = fVertex[j];
+  time0 = fTime;
 
   // Generate one event
 
@@ -152,7 +155,8 @@ void AliGenTherminator::Generate()
       origin[0] = vrho*TMath::Cos(vphi + evrot);
       origin[1] = vrho*TMath::Sin(vphi + evrot);
       origin[2] = iparticle->Vz();
-      
+      time      = iparticle->T();
+
       imo = -1;
       //      TParticle* mother = 0;
       if (hasMother) {
@@ -164,7 +168,7 @@ void AliGenTherminator::Generate()
       //      printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo>=0?idsOnStack[imo]:imo);
       PushTrack(tFlag,imo>=0?idsOnStack[imo]:imo,kf,
 		p[0],p[1],p[2],energy,
-		origin[0],origin[1],origin[2],iparticle->T(),
+		origin[0],origin[1],origin[2],time,
 		polar[0],polar[1],polar[2],
 		hasMother ? kPDecay:kPNoProcess,nt);
       idsOnStack[i] = nt;
@@ -197,7 +201,8 @@ void AliGenTherminator::Generate()
       origin[0] = vrho*TMath::Cos(vphi + evrot);
       origin[1] = vrho*TMath::Sin(vphi + evrot);
       origin[2] = iparticle->Vz();
-      
+      time      = iparticle->T();
+
       imo = -1;
       //      TParticle* mother = 0;
       if (hasMother) {
@@ -210,7 +215,7 @@ void AliGenTherminator::Generate()
 //       printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo>=0?idsOnStack[imo]:imo);
       PushTrack(tFlag,imo>=0?idsOnStack[imo]:imo,kf,
 		p[0],p[1],p[2],energy,
-		origin[0],origin[1],origin[2],iparticle->T(),
+		origin[0],origin[1],origin[2],time,
 		polar[0],polar[1],polar[2],
 		hasMother ? kPDecay:kPNoProcess,nt);
       idsOnStack[i] = nt;
@@ -220,6 +225,7 @@ void AliGenTherminator::Generate()
       origin[0] = origin0[0]+vrho*TMath::Cos(vphi + evrot);
       origin[1] = origin0[1]+vrho*TMath::Sin(vphi + evrot);
       origin[2] = origin0[2]+iparticle->Vz();
+      time      = time0+iparticle->T();
 
       imo = nt;
       //      mother = (TParticle *) fParticles.At(nt);
@@ -228,7 +234,7 @@ void AliGenTherminator::Generate()
 //       printf("Pushing Track %d with status %d mother %d\n", kf, tFlag, imo);
       PushTrack(tFlag,imo,kf,
 		p[0],p[1],p[2],energy,
-		origin[0],origin[1],origin[2],iparticle->T(),
+		origin[0],origin[1],origin[2],time,
 		polar[0],polar[1],polar[2],
 		hasMother ? kPDecay:kPNoProcess,nt);
       fNprimaries++;
@@ -245,6 +251,7 @@ void AliGenTherminator::Generate()
   eventVertex[0] = origin0[0];
   eventVertex[1] = origin0[1];
   eventVertex[2] = origin0[2];
+  Float_t eventTime = time0;
 
 // Builds the event header, to be called after each event
   AliGenEventHeader* header = new AliGenHijingEventHeader("Therminator");
@@ -257,6 +264,7 @@ void AliGenTherminator::Generate()
 
   ((AliGenHijingEventHeader*) header)->SetNProduced(fNprimaries);
   ((AliGenHijingEventHeader*) header)->SetPrimaryVertex(eventVertex);
+  ((AliGenHijingEventHeader*) header)->SetInteractionTime(eventTime);
   ((AliGenHijingEventHeader*) header)->SetImpactParameter(0.0);
   ((AliGenHijingEventHeader*) header)->SetTotalEnergy(0.0);
   ((AliGenHijingEventHeader*) header)->SetHardScatters(0);
@@ -293,6 +301,7 @@ void AliGenTherminator::Generate()
 //     ((AliGenHijingEventHeader*) header)->SetTrials(fTrials);
 // Event Vertex
   header->SetPrimaryVertex(fVertex);
+  header->SetInteractionTime(fTime);
   AddHeader(header);
   fCollisionGeometry = (AliGenHijingEventHeader*)  header;
 

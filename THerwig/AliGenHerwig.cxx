@@ -340,7 +340,7 @@ void AliGenHerwig::Generate()
 		origin[1] = fVertex[1] + iparticle->Vy()/10; // [cm]
 		origin[2] = fVertex[2] + iparticle->Vz()/10; // [cm]
 
-		Float_t tof = kconv*iparticle->T();
+		Float_t tof = fTime + kconv*iparticle->T();
 		Int_t   iparent = (imo > -1) ? newPos[imo] : -1;
 		Int_t   trackIt = (ks == 1) && fTrackIt;
 		PushTrack(trackIt, iparent, kf,
@@ -527,7 +527,7 @@ void AliGenHerwig::MakeHeader()
 //
 // Event Vertex 
     fHeader->SetPrimaryVertex(fVertex);
-    
+    fHeader->SetInteractionTime(fTime);
 //
 // Number of primaries
     fHeader->SetNProduced(fNprimaries);

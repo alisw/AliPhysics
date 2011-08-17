@@ -470,6 +470,7 @@ void AliGenMUONCocktailpp::Generate()
 	    gen = entry->Generator();
 	    genName = entry->GetName();
 	    gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
+	    gen->SetTime(fTime);
 
 	    npart = (strcmp(genName,"Pythia") == 0) ? 1 :
 		gRandom->Poisson(entry->Rate());
@@ -519,6 +520,7 @@ void AliGenMUONCocktailpp::Generate()
     for (Int_t j=0; j < 3; j++) eventVertex[j] = fVertex[j];
 
     fHeader->SetPrimaryVertex(eventVertex);
+    fHeader->SetInteractionTime(fTime);
 
     gAlice->SetGenEventHeader(fHeader);
 

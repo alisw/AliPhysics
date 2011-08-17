@@ -269,6 +269,7 @@ void AliGenHIJINGparaBa::Generate()
     const Int_t kBaryons[4] = {kProton, kProtonBar, kNeutron, kNeutronBar};
     //
     Float_t origin[3];
+    Float_t time;
     Float_t pt, pl, ptot;
     Float_t phi, theta;
     Float_t p[3];
@@ -280,6 +281,7 @@ void AliGenHIJINGparaBa::Generate()
     Float_t random[6];
     //
     for (j=0;j<3;j++) origin[j]=fOrigin[j];
+    time = fTimeOrigin;
 
     if(fVertexSmear == kPerEvent) {
 	Float_t dv[3];
@@ -292,12 +294,18 @@ void AliGenHIJINGparaBa::Generate()
 	    }
 	}
 	for (j=0; j < 3; j++) origin[j] += dv[j];
+
+	Rndm(random,2);
+	time += fOsigma[2]/TMath::Ccgs()*
+	  TMath::Cos(2*random[0]*TMath::Pi())*
+	  TMath::Sqrt(-2*TMath::Log(random[1]));
     } // if kPerEvent
     TArrayF eventVertex;
     eventVertex.Set(3);
     eventVertex[0] = origin[0];
     eventVertex[1] = origin[1];
     eventVertex[2] = origin[2];
+    Float_t eventTime = time;
 
     for(i=0;i<fNpart;i++) {
 	while(1) {
@@ -332,8 +340,13 @@ void AliGenHIJINGparaBa::Generate()
 		    origin[j]=fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 			TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 		}
+
+		Rndm(random,2);
+		time = fTimeOrigin + fOsigma[2]/TMath::Ccgs()*
+		  TMath::Cos(2*random[0]*TMath::Pi())*
+		  TMath::Sqrt(-2*TMath::Log(random[1]));
 	    }
-	    PushTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,nt,fParentWeight);
+	    PushTrack(fTrackIt,-1,part,p,origin,polar,time,kPPrimary,nt,fParentWeight);
 	    break;
 	} // while(1)
     } // Particle loop
@@ -341,6 +354,7 @@ void AliGenHIJINGparaBa::Generate()
     AliGenEventHeader* header = new AliGenEventHeader("HIJINGparam");
 // Event Vertex
     header->SetPrimaryVertex(eventVertex);
+    header->SetInteractionTime(eventTime);
     gAlice->SetGenEventHeader(header); 
 }
 

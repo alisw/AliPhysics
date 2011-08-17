@@ -194,15 +194,18 @@ void AliGenPromptPhotons::Generate()
 
     Float_t polar[3]= {0,0,0};
     Float_t origin[3];
+    Float_t time;
     Float_t p[3];
     Float_t random[6];
     Int_t nt;
 
     for (Int_t j=0;j<3;j++) origin[j]=fOrigin[j];
+    time = fTimeOrigin;
 /*
     if(fVertexSmear==kPerEvent) {
       Vertex();
       for (j=0;j<3;j++) origin[j]=fVertex[j];
+      time = fTime;
     }
 */
     TArrayF eventVertex;
@@ -210,6 +213,7 @@ void AliGenPromptPhotons::Generate()
     eventVertex[0] = origin[0];
     eventVertex[1] = origin[1];
     eventVertex[2] = origin[2];
+    Float_t eventTime = time;
 
     Int_t nGam;
     Float_t b,pt,rapidity,phi,ww;
@@ -237,9 +241,13 @@ void AliGenPromptPhotons::Generate()
 	      origin[j]=fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 	      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	    }
+	    Rndm(random,2);
+	    time = fTimeOrigin + fOsigma[2]/TMath::Ccgs()*
+	      TMath::Cos(2*random[0]*TMath::Pi())*
+	      TMath::Sqrt(-2*TMath::Log(random[1]));
 	  }
 
-	  PushTrack(fTrackIt,-1,22,p,origin,polar,0,kPPrimary,nt,1.);
+	  PushTrack(fTrackIt,-1,22,p,origin,polar,time,kPPrimary,nt,1.);
         }
       }
 
@@ -247,6 +255,7 @@ void AliGenPromptPhotons::Generate()
     AliGenEventHeader* header = new AliGenEventHeader("PromptPhotons");
 // Event Vertex
     header->SetPrimaryVertex(eventVertex);
+    header->SetInteractionTime(eventTime);			    
     header->SetNProduced(fNpart);
     gAlice->SetGenEventHeader(header);
 

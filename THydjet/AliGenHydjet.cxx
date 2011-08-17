@@ -112,6 +112,7 @@ void AliGenHydjet::Generate()
   Float_t polar[3]    =   {0,0,0};
   Float_t origin[3]   =   {0,0,0};
   Float_t origin0[3]  =   {0,0,0};
+  Float_t time0 = 0.;
   Float_t p[3];
   Float_t tof;
 
@@ -123,9 +124,11 @@ void AliGenHydjet::Generate()
   kf = 0;
 
   for (j = 0;j < 3; j++) origin0[j] = fOrigin[j];
+  time0 = fTimeOrigin;
   if(fVertexSmear == kPerEvent) {
       Vertex();
       for (j=0; j < 3; j++) origin0[j] = fVertex[j];
+      time0 = fTime;
   }
 
   while(1)
@@ -148,6 +151,7 @@ void AliGenHydjet::Generate()
       fVertex[0] = origin0[0];
       fVertex[1] = origin0[1];
       fVertex[2] = origin0[2];
+      fTime = time0;
 
 //
 // Now select the final state particles
@@ -185,7 +189,7 @@ void AliGenHydjet::Generate()
            origin[0] = fVertex[0]+iparticle->Vx()/10;
            origin[1] = fVertex[1]+iparticle->Vy()/10;
            origin[2] = fVertex[2]+iparticle->Vz()/10;
-           tof   = kconv*iparticle->T();
+           tof   = fTime + kconv*iparticle->T();
 
            imo = -1;
            //imo = iparticle->GetFirstMother();
@@ -263,6 +267,7 @@ void AliGenHydjet::MakeHeader()
 
 // Event Vertex
     header->SetPrimaryVertex(fVertex);
+    header->SetInteractionTime(fTime);
     AddHeader(header);
     fCollisionGeometry = (AliGenHydjetEventHeader*)  header;
 }

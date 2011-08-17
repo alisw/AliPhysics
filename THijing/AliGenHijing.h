@@ -127,7 +127,6 @@ class AliGenHijing : public AliGenMC
     Int_t       fLHC;            // Assume LHC as lab frame
     Bool_t      fRandomPz;       // Randomise sign of pz  event by event
     Bool_t      fNoHeavyQuarks;  // If true no heavy quarks are produced
-    Float_t     fEventTime;      // The event time
     AliGenHijingEventHeader     fHeader; // MC Header
     
  private:
@@ -141,7 +140,7 @@ class AliGenHijing : public AliGenMC
     // check if stable
     Bool_t Stable(const TParticle*  particle) const;
     
-    ClassDef(AliGenHijing, 7) // AliGenerator interface to Hijing
+    ClassDef(AliGenHijing, 8) // AliGenerator interface to Hijing
 };
 #endif
 

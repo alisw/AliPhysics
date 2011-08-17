@@ -71,6 +71,7 @@ void AliGenBox::Generate()
     Float_t polar[3]= {0,0,0};
   //
     Float_t origin[3];
+    Float_t time;
     Float_t p[3];
     Int_t i, j, nt;
     Double_t pmom, theta, phi, pt;
@@ -79,9 +80,11 @@ void AliGenBox::Generate()
     Float_t random[6];
   //
     for (j=0;j<3;j++) origin[j]=fOrigin[j];
+    time = fTimeOrigin;
     if(fVertexSmear==kPerEvent) {
 	Vertex();
 	for (j=0;j<3;j++) origin[j]=fVertex[j];
+	time = fTime;
     }
 
     Double_t m = TDatabasePDG::Instance()->GetParticle(fIpart)->Mass();
@@ -134,13 +137,19 @@ void AliGenBox::Generate()
 		origin[j]=fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 		    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	    }
+
+	    Rndm(random,2);
+	    time = fTimeOrigin + fOsigma[2]/TMath::Ccgs()*
+	      TMath::Cos(2*random[0]*TMath::Pi())*
+	      TMath::Sqrt(-2*TMath::Log(random[1]));
 	}
-	PushTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
+	PushTrack(fTrackIt,-1,fIpart,p,origin,polar,time,kPPrimary,nt);
     }
 
     AliGenEventHeader* header = new AliGenEventHeader("BOX");
     header->SetPrimaryVertex(fVertex);
     header->SetNProduced(fNpart);
+    header->SetInteractionTime(fTime);
     
  // Passes header either to the container or to gAlice
     if (fContainer) {

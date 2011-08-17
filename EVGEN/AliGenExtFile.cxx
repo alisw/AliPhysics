@@ -88,6 +88,7 @@ void AliGenExtFile::Generate()
   Double_t polar[3]  = {0,0,0};
   //
   Double_t origin[3] = {0,0,0};
+  Double_t time = 0.;
   Double_t p[4];
   Float_t random[6];
   Int_t i = 0, j, nt;
@@ -154,17 +155,21 @@ void AliGenExtFile::Generate()
 		    fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 		    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	    }
+	    Rndm(random,2);
+	    time = fTimeOrigin + fOsigma[2]/TMath::Ccgs()*
+	      TMath::Cos(2*random[0]*TMath::Pi())*
+	      TMath::Sqrt(-2*TMath::Log(random[1]));
 	} else {
 	    origin[0] = fVertex[0] + jparticle->Vx();
 	    origin[1] = fVertex[1] + jparticle->Vy();
 	    origin[2] = fVertex[2] + jparticle->Vz();
+	    time = fTime + jparticle->T();
 	}
-	Double_t tof = jparticle->T();
 	Int_t doTracking = fTrackIt && selected && (jparticle->TestBit(kTransportBit));
 	Int_t parent     = jparticle->GetFirstMother();
 	
 	PushTrack(doTracking, parent, idpart,
-		  p[0], p[1], p[2], p[3], origin[0], origin[1], origin[2], tof,
+		  p[0], p[1], p[2], p[3], origin[0], origin[1], origin[2], time,
 		  polar[0], polar[1], polar[2],
 		  kPPrimary, nt, 1., jparticle->GetStatusCode());
 
@@ -177,6 +182,7 @@ void AliGenExtFile::Generate()
     AliGenEventHeader * header = new AliGenEventHeader();
     header->SetNProduced(fNprimaries);
     header->SetPrimaryVertex(fVertex);
+    header->SetInteractionTime(fTime);
     AddHeader(header);
     break;
     

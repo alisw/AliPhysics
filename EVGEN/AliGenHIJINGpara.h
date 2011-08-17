@@ -41,7 +41,7 @@ class AliGenHIJINGpara : public AliGenerator
   TF1* fETAkac;         // Parametrised eta distribution fro ka
   AliDecayer* fDecayer; // ! Pointer to pythia object for decays
 
-  void DecayPi0(Float_t* orig, Float_t * p);
+  void DecayPi0(Float_t* orig, Float_t * p, Float_t time);
 
  private:
   AliGenHIJINGpara(const AliGenHIJINGpara &HIJINGpara);

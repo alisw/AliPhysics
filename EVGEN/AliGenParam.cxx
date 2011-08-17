@@ -262,6 +262,7 @@ void AliGenParam::Generate()
 //
   Float_t polar[3]= {0,0,0};  // Polarisation of the parent particle (for GEANT tracking)
   Float_t origin0[3];         // Origin of the generated parent particle (for GEANT tracking)
+  Float_t time0;              // Time0 of the generated parent particle
   Float_t pt, pl, ptot;       // Transverse, logitudinal and total momenta of the parent particle
   Float_t phi, theta;         // Phi and theta spherical angles of the parent particle momentum
   Float_t p[3], pc[3], 
@@ -280,9 +281,11 @@ void AliGenParam::Generate()
  
 // Calculating vertex position per event
   for (j=0;j<3;j++) origin0[j]=fOrigin[j];
+  time0 = fTimeOrigin;
   if(fVertexSmear==kPerEvent) {
       Vertex();
       for (j=0;j<3;j++) origin0[j]=fVertex[j];
+      time0 = fTime;
   }
   
   Int_t ipa=0;
@@ -343,6 +346,10 @@ void AliGenParam::Generate()
 		      fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 		      TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	      }
+	      Rndm(random,2);
+	      time0 = fTimeOrigin + fOsigma[2]/TMath::Ccgs()*
+		TMath::Cos(2*random[0]*TMath::Pi())*
+		TMath::Sqrt(-2*TMath::Log(random[1]));
 	  }
 	  
 // Looking at fForceDecay : 
@@ -446,7 +453,7 @@ void AliGenParam::Generate()
 // Parent
 		  
 		  
-		  PushTrack(0, -1, iPart, p, origin0, polar, 0, kPPrimary, nt, wgtp, ((decayed)? 11 : 1));
+		  PushTrack(0, -1, iPart, p, origin0, polar, time0, kPPrimary, nt, wgtp, ((decayed)? 11 : 1));
 		  pParent[0] = nt;
 		  KeepTrack(nt); 
 		  fNprimaries++;
@@ -476,7 +483,7 @@ void AliGenParam::Generate()
 			 
 			  PushTrack(fTrackIt * trackIt[i], iparent, kf,
 					   pc, och, polar,
-					   0, kPDecay, nt, wgtch, ksc);
+				           time0 + iparticle->T(), kPDecay, nt, wgtch, ksc);
 			  pParent[i] = nt;
 			  KeepTrack(nt); 
 			  fNprimaries++;
@@ -492,7 +499,7 @@ void AliGenParam::Generate()
 	  else  // nodecay option, so parent will be tracked by GEANT (pions, kaons, eta, omegas, baryons)
 	  {
 	    gAlice->GetMCApp()->
-		PushTrack(fTrackIt,-1,iPart,p,origin0,polar,0,kPPrimary,nt,wgtp, 1);
+		PushTrack(fTrackIt,-1,iPart,p,origin0,polar,time0,kPPrimary,nt,wgtp, 1);
             ipa++; 
 	    fNprimaries++;
 	  }
@@ -504,6 +511,7 @@ void AliGenParam::Generate()
 
   AliGenEventHeader* header = new AliGenEventHeader("PARAM");
   header->SetPrimaryVertex(fVertex);
+  header->SetInteractionTime(fTime);
   header->SetNProduced(fNprimaries);
   AddHeader(header);
 }

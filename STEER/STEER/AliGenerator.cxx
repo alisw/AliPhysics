@@ -79,6 +79,8 @@ AliGenerator::AliGenerator():
   fOrigin(3),
   fOsigma(3),
   fVertex(3),
+  fTimeOrigin(0.),
+  fTime(0.),
   fStack(0),
   fContainer(0),
   fCollisionGeometry(0),
@@ -147,6 +149,8 @@ AliGenerator::AliGenerator(Int_t npart):
   fOrigin(3),
   fOsigma(3),
   fVertex(3),
+  fTimeOrigin(0.),
+  fTime(0.),
   fStack(0),
   fContainer(0),
   fCollisionGeometry(0),
@@ -334,6 +338,7 @@ void AliGenerator::VertexExternal()
     fVertex[0] = vertex.X();
     fVertex[1] = vertex.Y();
     fVertex[2] = vertex.Z();
+    fTime = 0.;
 }
 
 //_______________________________________________________________________
@@ -355,10 +360,18 @@ void AliGenerator::VertexInternal()
 	    }
 	}
 	for (j=0; j < 3; j++) fVertex[j] = fOrigin[j] + dv[j];
+
+	// In case of gaussian smearing we smear also the event/collision time
+	Rndm(random,2);
+	fTime = fTimeOrigin + fOsigma[2]/TMath::Ccgs()*
+	  TMath::Cos(2*random[0]*TMath::Pi())*
+	  TMath::Sqrt(-2*TMath::Log(random[1]));
+	
     } else {
 	Rndm(random,3);
 	for (j=0; j < 3; j++)
 	    fVertex[j] =  fVMin[j] + random[j] * (fVMax[j] - fVMin[j]);
+	fTime = 0.;
     }
 }
 

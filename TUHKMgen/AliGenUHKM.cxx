@@ -324,12 +324,14 @@ void AliGenUHKM::Generate()
   Float_t polar[3] = {0,0,0};
   Float_t origin[3]   = {0,0,0};
   Float_t origin0[3]  = {0,0,0};
+  Float_t time0 = 0.;
   Float_t p[3];
   Float_t v[3];
   Float_t mass=0.0, energy=0.0;
 
   Vertex();
   for(Int_t j=0; j<3; j++) origin0[j] = fVertex[j];
+  time0 = fTime;
 
   // Generate the event and import particles
   fUHKMgen->GenerateEvent();
@@ -451,13 +453,14 @@ void AliGenUHKM::Generate()
       origin[0] = origin0[0]+v[0];
       origin[1] = origin0[1]+v[1];
       origin[2] = origin0[2]+v[2];
+      Float_t time = time0+iparticle->T();
       imo = nt;
       
       trackFlag = fTrackIt;    // Track this particle, unless otherwise specified by fTrackIt
       
       PushTrack(trackFlag, imo, kf,
 		p[0], p[1], p[2], energy,
-		origin[0], origin[1], origin[2], iparticle->T(),
+		origin[0], origin[1], origin[2], time,
 		polar[0], polar[1], polar[2],
 		hasMother ? kPDecay:kPNoProcess, nt);
       
@@ -473,6 +476,7 @@ void AliGenUHKM::Generate()
   eventVertex[0] = origin0[0];
   eventVertex[1] = origin0[1];
   eventVertex[2] = origin0[2];
+  Float_t eventTime = time0;
 
   // Builds the event header, to be called after each event
   AliGenEventHeader* header = new AliGenHijingEventHeader("UHKM");
@@ -486,6 +490,7 @@ void AliGenUHKM::Generate()
 
   ((AliGenHijingEventHeader*) header)->SetNProduced(fNprimaries);
   ((AliGenHijingEventHeader*) header)->SetPrimaryVertex(eventVertex);
+  ((AliGenHijingEventHeader*) header)->SetInteractionTime(eventTime);
   ((AliGenHijingEventHeader*) header)->SetImpactParameter(b);
   ((AliGenHijingEventHeader*) header)->SetTotalEnergy(0.0);
   ((AliGenHijingEventHeader*) header)->SetHardScatters(0);
@@ -495,6 +500,7 @@ void AliGenUHKM::Generate()
   ((AliGenHijingEventHeader*) header)->SetReactionPlaneAngle(0);//evrot);
 
   header->SetPrimaryVertex(fVertex);
+  header->SetInteractionTime(fTime);
   AddHeader(header);
   fCollisionGeometry = (AliGenHijingEventHeader*)  header;
 

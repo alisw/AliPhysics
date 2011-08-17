@@ -756,7 +756,7 @@ void AliGenGeVSim::Generate() {
   orgin[0] = fVertex[0];
   orgin[1] = fVertex[1];
   orgin[2] = fVertex[2];
-
+  time = fTime;
 
   // Particle params database
 
@@ -881,6 +881,7 @@ void AliGenGeVSim::Generate() {
   TArrayF eventVertex(3,orgin);
 
   header->SetPrimaryVertex(eventVertex);
+  header->SetInteractionTime(time);
   header->SetEventPlane(fPsi);
   header->SetEllipticFlow(fPhiFormula->GetParameter(2));
 

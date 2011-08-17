@@ -67,6 +67,7 @@ void AliGenThetaSlice::Generate()
   
     Float_t polar[3]= {0,0,0};
     Float_t origin[3];
+    Float_t time;
     Float_t p[3];
     Int_t i, j, nt;
     Double_t pmom, theta, phi, pt;
@@ -75,12 +76,17 @@ void AliGenThetaSlice::Generate()
     if (fNpart == 0) return;
 
     for (j=0;j<3;j++) origin[j]=fOrigin[j];
+    time = fTimeOrigin;
     if(fVertexSmear==kPerEvent) {
 	Rndm(random,6);
 	for (j=0;j<3;j++) {
 	    origin[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 		TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	}
+	Rndm(random,2);
+	time += fOsigma[2]/TMath::Ccgs()*
+	  TMath::Cos(2*random[0]*TMath::Pi())*
+	  TMath::Sqrt(-2*TMath::Log(random[1]));
     }
     Float_t thetaInterval = 0.;
     if (fNpart > 1) {
@@ -108,8 +114,12 @@ void AliGenThetaSlice::Generate()
 		origin[j]=fOrigin[j]+fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 		    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 	    }
+	    Rndm(random,2);
+	    time = fTimeOrigin + fOsigma[2]/TMath::Ccgs()*
+	      TMath::Cos(2*random[0]*TMath::Pi())*
+	      TMath::Sqrt(-2*TMath::Log(random[1]));
 	}
-	PushTrack(fTrackIt,-1,fIpart,p,origin,polar,0,kPPrimary,nt);
+	PushTrack(fTrackIt,-1,fIpart,p,origin,polar,time,kPPrimary,nt);
     }
 }
 

@@ -132,6 +132,7 @@ void AliGenEpEmv1::Generate()
 
   Float_t polar[3]= {0,0,0};
   Float_t origin[3];
+  Float_t time = 0.;
   Float_t p[3];
 
   Double_t ptElectron,ptPositron, phiElectron,phiPositron, mt;
@@ -146,12 +147,17 @@ void AliGenEpEmv1::Generate()
 	   yElectron,yPositron,xElectron,xPositron,phi12);
 
   for (j=0;j<3;j++) origin[j]=fOrigin[j];
+  time = fTimeOrigin;
   if(fVertexSmear==kPerEvent) {
     Rndm(random,6);
     for (j=0;j<3;j++) {
       origin[j]+=fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
 	TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
     }
+    Rndm(random,2);
+    time += fOsigma[2]/TMath::Ccgs()*
+      TMath::Cos(2*random[0]*TMath::Pi())*
+      TMath::Sqrt(-2*TMath::Log(random[1]));
   }
 
   Rndm(random,1);
@@ -168,7 +174,7 @@ void AliGenEpEmv1::Generate()
   id =  11;
   if (fDebug == 2)
     printf("id=%+3d, p = (%+11.4e,%+11.4e,%+11.4e) GeV\n",id,p[0],p[1],p[2]);
-  PushTrack(fTrackIt,-1, id,p,origin,polar,0,kPPrimary,nt,weight);
+  PushTrack(fTrackIt,-1, id,p,origin,polar,time,kPPrimary,nt,weight);
 
   // Produce positron
   mt = TMath::Sqrt(ptPositron*ptPositron + fMass*fMass);
@@ -178,7 +184,7 @@ void AliGenEpEmv1::Generate()
   id = -11;
   if (fDebug == 2)
     printf("id=%+3d, p = (%+11.4e,%+11.4e,%+11.4e) GeV\n",id,p[0],p[1],p[2]);
-  PushTrack(fTrackIt,-1, id,p,origin,polar,0,kPPrimary,nt,weight);
+  PushTrack(fTrackIt,-1, id,p,origin,polar,time,kPPrimary,nt,weight);
   
   fEvent++;
   if (fEvent%1000 == 0) {
@@ -186,6 +192,7 @@ void AliGenEpEmv1::Generate()
   	   fEvent,fEpEmGen->GetXsection(),fEpEmGen->GetDsection());
   }
   fHeader.SetEventWeight(weight);
+  fHeader.SetInteractionTime(time);
   AddHeader(&fHeader);
 }
 

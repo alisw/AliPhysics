@@ -65,6 +65,10 @@ class AliGenerator : public TNamed, public AliRndm
     void SetVertexGenerator(AliVertexGenerator* vertexGenerator)
       {fVertexGenerator = vertexGenerator; fVertexSource = kExternal; fVertexSmear = kPerEvent;}
     void SetPileUpTimeWindow(Float_t pileUpTimeW) {fPileUpTimeWindow = pileUpTimeW;}
+    virtual void SetTime(Float_t time)
+	{fTime = time;}
+    virtual void SetTimeOrigin(Float_t timeorig)
+        {fTimeOrigin = timeorig;}
     
     virtual void SetTrackingFlag(Int_t flag=1) {fTrackIt=flag;}
     void Vertex();
@@ -143,6 +147,9 @@ class AliGenerator : public TNamed, public AliRndm
     TArrayF     fOrigin;     // Origin of event
     TArrayF     fOsigma;     // Sigma of the Origin of event
     TArrayF     fVertex;        //! Vertex of current event
+    
+    Float_t     fTimeOrigin; // Time0 origin in a run or event sample
+    Float_t     fTime;       // Event time smeared around time0 origin using sigma vertex
 
     AliStack*   fStack;         //! Local pointer to stack
     AliGenerator* fContainer;   //! Local pointer to container
@@ -170,7 +177,7 @@ class AliGenerator : public TNamed, public AliRndm
     AliGenerator(const AliGenerator &gen);
     AliGenerator & operator=(const AliGenerator &gen);
 
-    ClassDef(AliGenerator,4) // Base class for event generators
+    ClassDef(AliGenerator,5) // Base class for event generators
 };
 
 #endif

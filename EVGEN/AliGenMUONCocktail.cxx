@@ -384,6 +384,7 @@ void AliGenMUONCocktail::Generate()
 		while((entry = (AliGenCocktailEntry*)next())) {
 			gen = entry->Generator();
 			gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
+			gen->SetTime(fTime);
 			if ( (npart = gRandom->Poisson(entry->Rate())) >0 ) {
 				igen++;	
 				if (igen == 1) entry->SetFirst(0);
@@ -413,7 +414,7 @@ void AliGenMUONCocktail::Generate()
 	     		(gAlice->GetMCApp()->Particle(iPart)->Theta()*180./TMath::Pi()>fMuonThetaMinCut) &&
 	     		(gAlice->GetMCApp()->Particle(iPart)->Theta()*180./TMath::Pi()<fMuonThetaMaxCut) &&
 	     		(gAlice->GetMCApp()->Particle(iPart)->Pt()>fMuonPtCut)                             ) { 
-	  				gAlice->GetMCApp()->Particle(iPart)->SetProductionVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2), 0.);   
+	  				gAlice->GetMCApp()->Particle(iPart)->SetProductionVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2), fTime);   
 	  				GoodMuons.AddLast(gAlice->GetMCApp()->Particle(iPart));
 					numberOfMuons++;
 			}			

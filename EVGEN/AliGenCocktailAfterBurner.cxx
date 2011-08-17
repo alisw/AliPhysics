@@ -121,6 +121,7 @@ AddAfterBurner(AliGenerator *AfterBurner, char* Name, Float_t RateExp)
 	AfterBurner->SetSigma(fOsigma[0], fOsigma[1], fOsigma[2]);
 	AfterBurner->SetVertexSmear(fVertexSmear);
 	AfterBurner->SetVertexSource(kContainer);
+	AfterBurner->SetTimeOrigin(fTimeOrigin);
     }
     AfterBurner->SetTrackingFlag(fTrackIt);
     //AfterBurner->SetContainer(this);
@@ -212,6 +213,8 @@ void AliGenCocktailAfterBurner::Generate()
 	cout << "Number of events per run" <<  numberOfEvents << endl;
 	TArrayF eventVertex;
 	eventVertex.Set(3 * (numberOfEvents + fNBgEvents));
+	TArrayF eventTime;
+	eventTime.Set(numberOfEvents + fNBgEvents);
 	fCurrentEvent=0;
       //Create stacks
 	fInternalStacks      = new TObjArray(numberOfEvents + fNBgEvents); //Create array of internal stacks
@@ -225,6 +228,7 @@ void AliGenCocktailAfterBurner::Generate()
 	   fInternalStacks->Add(stack);
 	   Vertex();
 	   for (Int_t j = 0; j < 3; j++) eventVertex[3 * i +  j] = fVertex[j];
+	   eventTime[i] = fTime;
 	   fHeaders[i] = new AliGenCocktailEventHeader();
 	   fCollisionGeometries[i] = 0;
        }
@@ -261,11 +265,13 @@ void AliGenCocktailAfterBurner::Generate()
 	    // Set the vertex for the generator
 	    Int_t ioff = 3 * i;
 	    fCurrentGenerator->SetVertex(eventVertex.At(ioff), eventVertex.At(ioff + 1), eventVertex.At(ioff + 2));
+	    fCurrentGenerator->SetTime(eventTime.At(i));
 	    fHeader = fHeaders[i];
-	    // Set the vertex for the cocktail
+	    // Set the vertex and time for the cocktail
 	    TArrayF v(3);
 	    for (Int_t j=0; j<3; j++) v[j] = eventVertex.At(ioff + j);
 	    fHeader->SetPrimaryVertex(v);
+	    fHeader->SetInteractionTime(eventTime.At(i));
 	    // Generate event
 	    fCurrentGenerator->Generate();
 	    //

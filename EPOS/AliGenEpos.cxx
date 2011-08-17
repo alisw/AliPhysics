@@ -57,11 +57,14 @@ void AliGenEpos::Generate() {
 	  Float_t polar[3]    =   {0,0,0};
 	  Float_t origin0[3]  =   {0,0,0};
 	  Float_t origin[3]   =   {0,0,0};
+	  Float_t time0 = 0.;
+	  Float_t time  = 0.;
 	  fNprimaries = 0;
 	  Int_t nt  = 0; //output parameter for PushTrack
 
 	  Vertex();
 	  for (int j=0; j < 3; j++) origin0[j] = fVertex[j];
+	  time0 = fTime;
 
 	  // Generate one event
 
@@ -91,13 +94,14 @@ void AliGenEpos::Generate() {
 			  origin[0] = iparticle->Vx();
 			  origin[1] = iparticle->Vy();
 			  origin[2] = iparticle->Vz();
+			  time      = iparticle->T();
 			  //doubled track with freeze out coordinates for femtoscopy
 			  PushTrack(0,
 					  imo>=0?idsOnStack[imo]:-1,
 					  iparticle->GetPdgCode(),
 				iparticle->Px(),iparticle->Py(),iparticle->Pz(),iparticle->Energy(),
 				origin[0], origin[1], origin[2],
-				iparticle->T(),
+			        time,
 				polar[0],polar[1],polar[2],
 				hasMother ? kPDecay:kPNoProcess,nt);
 
@@ -109,12 +113,13 @@ void AliGenEpos::Generate() {
 		      origin[0] += origin0[0];
 		      origin[1] += origin0[1];
 		      origin[2] += origin0[2];
+		      time      += time0;
 			  PushTrack(1,
 					  nt,   //doubled track as mother
 					  iparticle->GetPdgCode(),
 				iparticle->Px(),iparticle->Py(),iparticle->Pz(),iparticle->Energy(),
 				origin[0], origin[1], origin[2],
-				iparticle->T(),
+				time,
 				polar[0],polar[1],polar[2],
 				kPDecay,nt);
 		      fNprimaries++;
@@ -124,12 +129,13 @@ void AliGenEpos::Generate() {
 			  origin[0] = iparticle->Vx();
 			  origin[1] = iparticle->Vy();
 			  origin[2] = iparticle->Vz();
+			  time      = iparticle->T();
 			  PushTrack(0,
 					  imo>=0?idsOnStack[imo]:-1,
 					  iparticle->GetPdgCode(),
 				iparticle->Px(),iparticle->Py(),iparticle->Pz(),iparticle->Energy(),
 				origin[0], origin[1], origin[2],
-				iparticle->T(),
+				time,
 				polar[0],polar[1],polar[2],
 				hasMother ? kPDecay:kPNoProcess,nt);
 		      idsOnStack[i] = nt;
@@ -151,6 +157,7 @@ void AliGenEpos::Generate() {
 
 	  header->SetNProduced(fNprimaries);
 	  header->SetPrimaryVertex(eventVertex);
+	  header->SetInteractionTime(time0);
 
 	  header->SetImpactParameter(GetTEpos()->GetBimevt());
 	  header->SetReactionPlaneAngle(GetTEpos()->GetPhievt());
