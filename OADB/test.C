@@ -16,7 +16,7 @@ void test()
   // 
   con->WriteToFile("test.root");
   //
-  AliOADBContainer cont0;
+  AliOADBContainer cont0("");
   cont0.InitFromFile("test.root", "OADB");
   cont0.Dump();
   cont0.List();
