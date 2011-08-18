@@ -87,7 +87,7 @@ struct AliHLTCaloRecPointDataStruct
   Int_t fDigits;                              //COMMENT
   
   /** Time of the maximum digit */
-  Int_t fTime;  			      //COMMENT
+  //Int_t fTime;  			      //COMMENT
 
 };
 
