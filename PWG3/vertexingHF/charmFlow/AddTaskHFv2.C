@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kD0toKpi,Bool_t readMC=kFALSE,TString name="")
+AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kD0toKpi,Bool_t readMC=kFALSE,TString name="",Int_t flagep=0 /*0=tracks,1=V0*/)
 {
   //
   // Test macro for the AliAnalysisTaskSE for  D 
@@ -75,8 +75,8 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", Ali
   TFile *fpar = TFile::Open("VZEROParHist.root");
   TH2D *hh[6];
   for(Int_t i=0;i<6;i++){
-    TString name;name.Form("parhist%d_%d",(i+2)*10,(i+3)*10);
-    hh[i]=(TH2D*)fpar->Get(name.Data());
+    TString hhname;hhname.Form("parhist%d_%d",(i+2)*10,(i+3)*10);
+    hh[i]=(TH2D*)fpar->Get(hhname.Data());
   }
 
   // Analysis task    
@@ -85,6 +85,8 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", Ali
 
   v2Task->SetDebugLevel(0);
   
+  v2Task->SetUseV0EP(flagep);
+
   mgr->AddTask(v2Task);
 
   // Create containers for input/output
@@ -105,7 +107,7 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", Ali
   AliAnalysisDataContainer *cutobj = mgr->CreateContainer(contname.Data(),AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   
   contname=Form("coutputVZEROpar%s",suffix.Data());
-  AliAnalysisDataContainer *coutputpar = mgr->CreateContainer(contname.Data(),TH2D::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutputpar = mgr->CreateContainer(contname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
   mgr->ConnectInput(v2Task,0,mgr->GetCommonInputContainer());
   
