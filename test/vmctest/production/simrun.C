@@ -7,7 +7,7 @@
 // root.exe -b -q simrun.C  --run <x> --event <y> --process <kPythia6/kPhojet/kPythia6ATLAS_Flat/kPythia6D6T> --field <kNoField/k5kG> --energy <900/2360/10000> --physicslist <QGSP_BERT_CHIPS/CHIPS/QGSP_BERT_EMV>
 //
 // For production test:
-// root.exe -b -q simrun.C  --run 126088 --event 1 --process kPythia6D6T --field k5kG --energy 7000 --physicslist QGSP_BERT_EMV_OPTICAL
+// root.exe -b -q simrun.C  --run 126007 --event 1 --process kPythiaPerugia0 --field k5kG --energy 7000 --physicslist QGSP_BERT_EMV_OPTICAL
 //
 // By E. Sicking, CERN
 {
