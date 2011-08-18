@@ -83,6 +83,8 @@ class AliHLTSystem;
  *     configurations by means of AliHLTConfiguration.
  * \li chains=<i>configuration</i>                                      <br>
  *     comma separated list of configurations to be run during simulation
+ * \li events=<i>n</i>
+ *     number of events to simulate
  *
  *  @ingroup alihlt_aliroot_simulation
  */
@@ -129,7 +131,10 @@ class AliHLTSimulation : public TObject {
   /** RAW reader instance for chains which need RAW data as input */
   AliRawReader* fpRawReader;                                          //!transient
 
-  ClassDef(AliHLTSimulation, 2)
+  /// number of events to run
+  int fNEvents; //! number of events
+
+  ClassDef(AliHLTSimulation, 0)
 };
 
 #define ALIHLTSIMULATION_LIBRARY             "libHLTsim.so"

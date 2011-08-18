@@ -64,6 +64,7 @@ AliHLTSimulation::AliHLTSimulation()
   : fOptions()
   , fpPluginBase(new AliHLTPluginBase)
   , fpRawReader(NULL)
+  , fNEvents(-1)
 {
   // see header file for class documentation
   // or
@@ -185,6 +186,8 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
 	  AliError(Form("invalid parameter for argument 'hltout-mode=' %s, allowed: raw, digits, legacy ... ignoring argument  and using the standard simulation", param.Data()));
 	  ResetBit(kOneChain);
 	}
+      } else if (token.Contains("events=")) {
+	fNEvents=token.ReplaceAll("events=", "").Atoi();
       } else {
 	if (sysOp.Length()>0) sysOp+=" ";
 	sysOp+=token;
@@ -299,7 +302,7 @@ int AliHLTSimulation::Run(AliRunLoader* pRunLoader)
 int AliHLTSimulation::RunHLTSystem(AliHLTSystem* pSystem, AliRunLoader* pRunLoader, AliRawReader* pRawReader) const
 {
   // run reconstruction cycle for AliHLTSystem
-  int nEvents = pRunLoader->GetNumberOfEvents();
+  int nEvents = (fNEvents<0 || fNEvents>pRunLoader->GetNumberOfEvents())?pRunLoader->GetNumberOfEvents():fNEvents;
   int iResult=0;
 
   // Note: the rawreader is already placed at the first event
