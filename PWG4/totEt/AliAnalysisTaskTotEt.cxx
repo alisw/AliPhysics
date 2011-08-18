@@ -13,6 +13,7 @@
 
 #include "TChain.h"
 #include "TList.h"
+#include "TFile.h"
 #include "TH2F.h"
 #include "THnSparse.h"
 
@@ -25,6 +26,8 @@
 #include "AliAnalysisEtReconstructedEmcal.h"
 #include "AliAnalysisEtMonteCarloPhos.h"
 #include "AliAnalysisEtMonteCarloEmcal.h"
+#include "AliAnalysisEmEtMonteCarlo.h"
+#include "AliAnalysisEmEtReconstructed.h"
 
 #include <iostream>
 #include <AliCentrality.h>
@@ -35,26 +38,44 @@ ClassImp(AliAnalysisTaskTotEt)
 
 //________________________________________________________________________
 AliAnalysisTaskTotEt::AliAnalysisTaskTotEt(const char *name, Bool_t isMc) :
-        AliAnalysisTaskTransverseEnergy(name, isMc)
-        ,fRecAnalysis(0)
-        ,fMCAnalysis(0)
-	,fSparseHistRecVsMc(0)
-	,fSparseRecVsMc(0)
+AliAnalysisTaskTransverseEnergy(name, isMc)
+,fRecAnalysis(0)
+,fMCAnalysis(0)
+,fSparseHistRecVsMc(0)
+,fSparseRecVsMc(0)
 {
     // Constructor
-
+	
     // select if we should use EMCal or PHOS class
     // PHOS by default, EMCal if name string contains EMC
     TString t(name);
-    t.ToUpper();
+    //t.ToUpper();
     if (t.Contains("EMC")) {
-        if (fMCConfigFile.Length()) {
+		if (t.Contains("Detail")) {
+			fMCAnalysis = new AliAnalysisEmEtMonteCarlo();
+			fMCAnalysis->SetDataSet(2010);
+			fMCAnalysis->Init();
+			
+			cout << "Instantiating AliAnalysisEmEtMonteCarlo class..."<< endl;
+		}
+        else if (fMCConfigFile.Length()) {
             cout<<"Rereading AliAnalysisEtMonteCarloEmcal configuration file..."<<endl;
             gROOT->LoadMacro(fMCConfigFile);
             fMCAnalysis = (AliAnalysisEtMonteCarloEmcal *) gInterpreter->ProcessLine("ConfigEtMonteCarlo()");
         }
-
-        if (fRecoConfigFile.Length()) {
+		
+		if (t.Contains("Detail")) {
+			fRecAnalysis = new AliAnalysisEmEtReconstructed();
+			fRecAnalysis->SetDataSet(2010);
+			
+			TFile *infile = new TFile("corrections.root");
+			fRecAnalysis->SetCorrections((AliAnalysisHadEtCorrections *)infile->Get("hadCorrectionEMCAL"));
+			
+			fRecAnalysis->Init();
+			
+			cout << "Instantiating AliAnalysisEmEtReconstructed class..."<< endl;
+		}
+        else if (fRecoConfigFile.Length()) {
             cout<<"Rereading AliAnalysisEtReconstructedEmcal configuration file..."<<endl;
             gROOT->LoadMacro(fRecoConfigFile);
             fRecAnalysis = (AliAnalysisEtReconstructedEmcal *) gInterpreter->ProcessLine("ConfigEtReconstructed()");
@@ -64,11 +85,11 @@ AliAnalysisTaskTotEt::AliAnalysisTaskTotEt(const char *name, Bool_t isMc) :
         if (fMCConfigFile.Length()) {
             cout<<"Rereading AliAnalysisEtMonteCarloPhos configuration file..."<<endl;
             gROOT->LoadMacro(fMCConfigFile);
-	    
+			
             fMCAnalysis = (AliAnalysisEtMonteCarloPhos *) gInterpreter->ProcessLine("ConfigEtMonteCarlo(false)");
-	    cout << fMCAnalysis << endl;
+			cout << fMCAnalysis << endl;
         }
-
+		
         if (fRecoConfigFile.Length()) {
             cout<<"Rereading AliAnalysisEtReconstructedPhos configuration file..."<<endl;
             gROOT->LoadMacro(fRecoConfigFile);
@@ -79,12 +100,12 @@ AliAnalysisTaskTotEt::AliAnalysisTaskTotEt(const char *name, Bool_t isMc) :
     // Input slot #0 works with a TChain
     DefineInput(0, TChain::Class());
     // Output slot #1 writes into a TH1 container
-
+	
     DefineOutput(1, TList::Class());
-
+	
 }
 AliAnalysisTaskTotEt::~AliAnalysisTaskTotEt() {//Destructor
-//    fOutputList->Clear();
+	//    fOutputList->Clear();
     delete fRecAnalysis;
     delete fMCAnalysis;
 }
@@ -94,19 +115,21 @@ void AliAnalysisTaskTotEt::UserCreateOutputObjects()
 {
     // Create histograms
     // Called once
-    fMCAnalysis->CreateHistograms();
+	if (fMCAnalysis)
+		fMCAnalysis->CreateHistograms();
     fRecAnalysis->CreateHistograms();
     fOutputList = new TList;
     fOutputList->SetOwner();
     fRecAnalysis->FillOutputList(fOutputList);
-    fMCAnalysis->FillOutputList(fOutputList);
+	if (fMCAnalysis)
+		fMCAnalysis->FillOutputList(fOutputList);
     fHistEtRecvsEtMC = new TH2F("fHistEtRecvsEtMC", "Reconstructed E_{T} vs MC E_{T}", 1000, 0.000, 100, 1000, 0.0001, 100);
     fHistEtRecOverEtMC = new TH2F("fHistEtRecOverEtMC", "Reconstructed E_{T} over MC E_{T} vs centrality", 1000, 0.00, 2.0, 11, -0.5, 10.5); 
     fHistDiffEtRecEtMCOverEtMC = new TH2F("fHistDiffEtRecEtMCOverEtMC", "fHistDiffEtRecEtMCOverEtMC", 10000, 0.0, 1000, 1000, -5, 5); 
     fOutputList->Add(fHistEtRecvsEtMC);
     fOutputList->Add(fHistEtRecOverEtMC);
     fOutputList->Add(fHistDiffEtRecEtMCOverEtMC);
-
+	
     Bool_t selectPrimaries=kTRUE;
     if (fRecAnalysis->DataSet()==2009) {
         cout<<"Setting track cuts for the 2009 p+p collisions at 900 GeV"<<endl;
@@ -129,62 +152,65 @@ void AliAnalysisTaskTotEt::UserCreateOutputObjects()
         fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
         fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
     }
-
+	
     fOutputList->Add(fEsdtrackCutsITSTPC);
     fOutputList->Add(fEsdtrackCutsTPC);
     fOutputList->Add(fEsdtrackCutsITS);
     if (fEsdtrackCutsITSTPC && fEsdtrackCutsTPC) {
         fRecAnalysis->SetITSTrackCuts( GetITSTrackCuts());
-        fMCAnalysis->SetITSTrackCuts( GetITSTrackCuts());
+		if (fMCAnalysis)
+			fMCAnalysis->SetITSTrackCuts( GetITSTrackCuts());
         fRecAnalysis->SetTPCITSTrackCuts( GetTPCITSTrackCuts());
-        fMCAnalysis->SetTPCITSTrackCuts( GetTPCITSTrackCuts());
+		if (fMCAnalysis)
+			fMCAnalysis->SetTPCITSTrackCuts( GetTPCITSTrackCuts());
         fRecAnalysis->SetTPCOnlyTrackCuts( GetTPCOnlyTrackCuts());
-        fMCAnalysis->SetTPCOnlyTrackCuts( GetTPCOnlyTrackCuts());
+		if (fMCAnalysis)
+			fMCAnalysis->SetTPCOnlyTrackCuts( GetTPCOnlyTrackCuts());
         //add ITS stuff!
     }
     else {
         Printf("Error: no track cuts!");
     }
-
+	
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskTotEt::UserExec(Option_t *)
 { // execute method
-
+	
     fESDEvent = dynamic_cast<AliESDEvent*>(InputEvent());
     if (!fESDEvent)
     {
         Printf("ERROR: Could not retrieve event");
         return;
     }
-
-    Int_t res = CheckPhysicsSelection(fESDEvent->GetRunNumber());
-
+	
+    //Int_t res = CheckPhysicsSelection(fESDEvent->GetRunNumber());
+	
     AliCentrality *cent = GetCentralityObject();
-
-    if (res == 0 && cent)
-    {
-        if (IsPhysicsSelected())
-        {
-            fRecAnalysis->SetCentralityObject(cent);
-            fRecAnalysis->AnalyseEvent(fESDEvent);
-
-            AliMCEvent* mcEvent = MCEvent();
-            if (mcEvent)
-            {
-		fMCAnalysis->SetCentralityObject(cent);
-                fMCAnalysis->AnalyseEvent(mcEvent, fESDEvent);
-                //fMCAnalysis->AnalyseEvent(mcEvent);
-            }
-            if(fMCAnalysis)
+	
+    //if (res == 0 && cent)
+    //{
+	if (IsPhysicsSelected())
+	{
+		fRecAnalysis->SetCentralityObject(cent);
+		fRecAnalysis->AnalyseEvent(fESDEvent);
+		
+		AliMCEvent* mcEvent = MCEvent();
+		if (mcEvent)
+		{
+			fMCAnalysis->SetCentralityObject(cent);
+			fMCAnalysis->AnalyseEvent(mcEvent, fESDEvent);
+			//fMCAnalysis->AnalyseEvent(mcEvent);
+		}
+		if(fMCAnalysis)
 	    {
-	      fHistEtRecvsEtMC->Fill(fRecAnalysis->GetTotNeutralEtAcc(), fMCAnalysis->GetTotNeutralEtAcc());
-	      if(fMCAnalysis->GetTotNeutralEtAcc()) fHistEtRecOverEtMC->Fill(fRecAnalysis->GetTotNeutralEt()/fMCAnalysis->GetTotNeutralEtAcc(), cent->GetCentralityClass10("V0M"));
-	      if(fMCAnalysis->GetTotNeutralEtAcc()) fHistDiffEtRecEtMCOverEtMC->Fill(fMCAnalysis->GetTotNeutralEt(), (fRecAnalysis->GetTotNeutralEt()-fMCAnalysis->GetTotNeutralEt())/fMCAnalysis->GetTotNeutralEt());
+			fHistEtRecvsEtMC->Fill(fRecAnalysis->GetTotNeutralEtAcc(), fMCAnalysis->GetTotNeutralEtAcc());
+			if(fMCAnalysis->GetTotNeutralEtAcc()) fHistEtRecOverEtMC->Fill(fRecAnalysis->GetTotNeutralEt()/fMCAnalysis->GetTotNeutralEtAcc(), cent->GetCentralityClass10("V0M"));
+			if(fMCAnalysis->GetTotNeutralEtAcc()) fHistDiffEtRecEtMCOverEtMC->Fill(fMCAnalysis->GetTotNeutralEt(), (fRecAnalysis->GetTotNeutralEt()-fMCAnalysis->GetTotNeutralEt())/fMCAnalysis->GetTotNeutralEt());
 	    }
-        }
-    }
+	}
+    //}
     // Post output data.
     PostData(1, fOutputList);
 }
@@ -194,7 +220,7 @@ void AliAnalysisTaskTotEt::Terminate(Option_t *)
 {
     // Draw result to the screen
     // Called once at the end of the query
-
+	
     fOutputList = dynamic_cast<TList*> (GetOutputData(1));
     if (!fOutputList) {
         printf("ERROR: Output list not available\n");
