@@ -31,7 +31,8 @@ class AliStaVertex;
 
 class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskEMCALPi0PbPb(const char *name=0);
+  AliAnalysisTaskEMCALPi0PbPb();
+  AliAnalysisTaskEMCALPi0PbPb(const char *name);
   virtual ~AliAnalysisTaskEMCALPi0PbPb(); 
   
   void         UserCreateOutputObjects();

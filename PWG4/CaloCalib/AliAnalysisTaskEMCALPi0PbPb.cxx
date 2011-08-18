@@ -45,6 +45,104 @@
 ClassImp(AliAnalysisTaskEMCALPi0PbPb)
 
 //________________________________________________________________________
+AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb() 
+  : AliAnalysisTaskSE(),
+    fCentVar("V0M"),
+    fCentFrom(0),
+    fCentTo(100),
+    fVtxZMin(-10),
+    fVtxZMax(+10),
+    fUseQualFlag(1),
+    fClusName(),
+    fDoNtuple(0),
+    fDoAfterburner(0),
+    fAsymMax(1),
+    fNminCells(1),
+    fMinE(0.100),
+    fMinErat(0),
+    fMinEcc(0),
+    fGeoName("EMCAL_FIRSTYEARV1"),
+    fMinNClusPerTr(50),
+    fIsoDist(0.2),
+    fTrClassNames(""),
+    fTrCuts(0),
+    fPrimTrCuts(0),
+    fDoTrMatGeom(0),
+    fTrainMode(0),
+    fMarkCells(),
+    fMinL0Time(-1),
+    fMaxL0Time(1024),
+    fMcMode(0),
+    fEmbedMode(0),
+    fGeom(0),
+    fReco(0),
+    fDoPSel(kTRUE),
+    fIsGeoMatsSet(0),
+    fNEvs(0),
+    fOutput(0),
+    fTrClassNamesArr(0),
+    fEsdEv(0),
+    fAodEv(0),
+    fRecPoints(0),
+    fDigits(0),
+    fEsdClusters(0),
+    fEsdCells(0),
+    fAodClusters(0),
+    fAodCells(0),
+    fPtRanges(0),
+    fSelTracks(0),
+    fSelPrimTracks(0),
+    fNAmpInTrigger(0),
+    fAmpInTrigger(0),
+    fNtuple(0),
+    fHeader(0),
+    fPrimVert(0),
+    fSpdVert(0),
+    fTpcVert(0),
+    fClusters(0),
+    fTriggers(0),
+    fMcParts(0),
+    fHCuts(0x0),
+    fHVertexZ(0x0),
+    fHVertexZ2(0x0),
+    fHCent(0x0),
+    fHCentQual(0x0),
+    fHTclsBeforeCuts(0x0),
+    fHTclsAfterCuts(0x0),
+    fHColuRow(0x0),
+    fHColuRowE(0x0),
+    fHCellMult(0x0),
+    fHCellE(0x0),
+    fHCellH(0x0),
+    fHCellM(0x0),
+    fHCellM2(0x0),
+    fHCellFreqNoCut(0x0),
+    fHCellFreqCut100M(0x0),
+    fHCellFreqCut300M(0x0),
+    fHCellFreqE(0x0),
+    fHCellCheckE(0x0),
+    fHClustEccentricity(0),
+    fHClustEtaPhi(0x0),
+    fHClustEnergyPt(0x0),
+    fHClustEnergySigma(0x0),
+    fHClustSigmaSigma(0x0),
+    fHClustNCellEnergyRatio(0x0),
+    fHClustEnergyNCell(0x0),
+    fHPrimTrackPt(0x0),
+    fHPrimTrackEta(0x0),
+    fHPrimTrackPhi(0x0),
+    fHMatchDr(0x0),
+    fHMatchDz(0x0),
+    fHMatchEp(0x0),
+    fHPionEtaPhi(0x0),
+    fHPionMggPt(0x0),
+    fHPionMggAsym(0x0),
+    fHPionMggDgg(0x0)
+{
+  // Constructor.
+}
+
+//________________________________________________________________________
 AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name) 
   : AliAnalysisTaskSE(name),
     fCentVar("V0M"),
@@ -141,10 +239,6 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
 {
   // Constructor.
 
-  if (!name)
-    return;
-  SetName(name);
-  DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.,SPDVertex.,TPCVertex.,EMCALCells.,Tracks  EMCALTrigger."
                "AOD:header,vertices,emcalCells,tracks";
@@ -220,7 +314,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
     fReco = new AliEMCALRecoUtils();
   fTrClassNamesArr = fTrClassNames.Tokenize(" ");
   fOutput = new TList();
-  fOutput->SetOwner();
+  fOutput->SetOwner(1);
   fSelTracks = new TObjArray;
   fSelPrimTracks = new TObjArray;
 
@@ -719,9 +813,12 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   if (fTrainMode) {
     fSelTracks->Clear();
     fSelPrimTracks->Clear();
-    fTriggers->Clear();
     if (fMcParts)
       fMcParts->Clear();
+    if (fTriggers)
+      fTriggers->Clear();
+    if (fClusters)
+      fClusters->Clear();
   }
 
   PostData(1, fOutput);
@@ -733,7 +830,7 @@ void AliAnalysisTaskEMCALPi0PbPb::Terminate(Option_t *)
   // Terminate called at the end of analysis.
 
   if (fNtuple) {
-    TFile *f = OpenFile(1,"update");
+    TFile *f = OpenFile(1);
     TDirectory::TContext context(f);
     if (f) 
       fNtuple->Write();
@@ -749,6 +846,9 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcCaloTriggers()
 
   if (fAodEv)
     return; // information not available in AOD
+
+  if (!fTriggers)
+    return;
 
   fTriggers->Clear();
 
@@ -857,6 +957,9 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcCaloTriggers()
 void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
 {
   // Calculate cluster properties
+
+  if (!fClusters)
+    return;
 
   fClusters->Clear();
 
