@@ -18,7 +18,12 @@
 #pragma link C++ class AliHLTTriggerCaloClusterEnergy+;
 #pragma link C++ class AliHLTTriggerPhosClusterEnergy+;
 #pragma link C++ class AliHLTTriggerEmcalClusterEnergy+;
+//#pragma link C++ class AliHLTTriggerFastJet+;
+#pragma link C++ class AliHLTFastJetMonitor+;
+#pragma link C++ class AliHLTFastJetMonitorComponent+;
 #pragma link C++ class AliHLTTriggerEmcalElectron+;
+#pragma link C++ class AliHLTEmcalElectronMonitor+;
+#pragma link C++ class AliHLTEmcalElectronMonitorComponent+;
 #pragma link C++ class AliHLTTriggerPhosMip+;
 #pragma link C++ class AliHLTTriggerTrdClusterMultiplicity+;
 #pragma link C++ class AliHLTTriggerDetectorGeom+;
