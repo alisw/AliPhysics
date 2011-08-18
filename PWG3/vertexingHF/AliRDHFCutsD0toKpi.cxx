@@ -1285,7 +1285,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
 
   esdTrackCuts->SetMaxDCAToVertexXY(1.);  
   esdTrackCuts->SetMaxDCAToVertexZ(1.);
-  esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0100*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");  
+  esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0075*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");  
 
 
   AddTrackCuts(esdTrackCuts);
@@ -1314,8 +1314,8 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   SetPtBins(nptbins+1,ptbins);
   SetMinPtCandidate(2.);
 
-  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,400.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-50000.*1E-8,0.85,0.,5.},/* pt<0.5*/
-						  {0.400,400.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-50000.*1E-8,0.85,0.,5.},/* 0.5<pt<1*/
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,400.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.85,0.,5.},/* pt<0.5*/
+						  {0.400,400.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-35000.*1E-8,0.9,0.,5.},/* 0.5<pt<1*/
 						  {0.400,400.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-43000.*1E-8,0.85,0.,5.},/* 1<pt<2 */
 						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-40000.*1E-8,0.95,0.998,5.},/* 2<pt<3 */
 						  {0.400,250.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-36000.*1E-8,0.95,0.998,5.},/* 3<pt<4 */
@@ -1362,7 +1362,11 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   pidObj->SetCompat(compat);
   pidObj->SetTPC(kTRUE);
   pidObj->SetTOF(kTRUE);
-  
+  pidObj->SetPCompatTOF(2.);
+  pidObj->SetSigmaForTPCCompat(3.);
+  pidObj->SetSigmaForTOFCompat(3.);  
+
+
   SetPidHF(pidObj);
   SetUsePID(kTRUE);
   SetUseDefaultPID(kFALSE);
