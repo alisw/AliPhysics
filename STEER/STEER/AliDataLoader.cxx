@@ -242,6 +242,7 @@ Int_t AliDataLoader::OpenFile(Option_t* opt)
       return 1;
     }
   
+  fFile->SetBit(TFile::kDevNull);
   fFile->SetCompressionLevel(fCompressionLevel);
   
   AliRunLoader* rg = GetRunLoader();
