@@ -17,10 +17,10 @@
 #ifndef ALIHLTTRIGGERFASTJET_H
 #define ALIHLTTRIGGERFASTJET_H
 
-#include "AliHLTTriggerEmcalClusterEnergy.h"
-#include "AliESDTrackCuts.h"
 #include "TObjArray.h"
 #include "AliHLTTrigger.h"
+#include "AliESDtrackCuts.h"
+#include "AliHLTScalars.h"
 #include "AliFJWrapper.h"
 
 class AliHLTCaloClusterReader;
@@ -57,11 +57,17 @@ class AliHLTTriggerFastJet : public AliHLTTrigger
   // inherited from AliHLTComponent: scan one argument and its parameters
   int ScanConfigurationArgument(int argc, const char** argv);
 
-  // inherited from AliHLTComponent: Get a ratio by how much the data volume is shrunken or enhanced.
+  // inherited from AliHLTTrigger: returns the output data types generated from this component 
+  void GetOutputDataTypes(AliHLTComponentDataTypeList &list) const;
+
+  // inherited from AliHLTTrigger: Get a ratio by how much the data volume is shrunken or enhanced.
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
   // inherited from AliHLTTrigger: calculate the trigger
   Int_t DoTrigger();
+
+  // gets tpc tracks
+  TObjArray *GetTPCTracks(AliESDEvent *fESD);
 
   // check if cluster fullfills criteria and if so trigger
   template <class T> 
@@ -82,6 +88,12 @@ class AliHLTTriggerFastJet : public AliHLTTrigger
   // track cuts to get tpc tracks
   AliESDtrackCuts *EsdTrackCuts;
   
+  // flag to make statistics for histograming using AliHLTScalars
+  Bool_t fMakeStats;
+
+  // AliHLTScalars
+  AliHLTScalars scalars;
+
   // offset for calo tracks
   //Int_t fOffset;
 
