@@ -1,3 +1,19 @@
+//**************************************************************************                        
+//* This file is property of and copyright by the ALICE HLT Project        *                        
+//* ALICE Experiment at CERN, All rights reserved.                         *                        
+//*                                                                        *                        
+//* Primary Authors: leonidas.xaplanteris@gmail.com                        *                        
+//*                  for The ALICE HLT Project.                            *                        
+//*                                                                        *                        
+//* Permission to use, copy, modify and distribute this software and its   *                        
+//* documentation strictly for non-commercial purposes is hereby granted   *                        
+//* without fee, provided that the above copyright notice appears in all   *                        
+//* copies and that both the copyright notice and this permission notice   *                        
+//* appear in the supporting documentation. The authors make no claims     *                        
+//* about the suitability of this software for any purpose. It is          *                        
+//* provided "as is" without express or implied warranty.                  *                        
+//**************************************************************************   
+
 #include "AliHLTTriggerFastJet.h"
 #include "AliESDEvent.h"
 #include "AliESDtrackCuts.h"
@@ -13,6 +29,7 @@
 #include "TMap.h"
 #include "TObjArray.h"
 #include "TArrayI.h"
+#include "AliHLTScalars.h"
 
 #include "AliFJWrapper.h"
 
@@ -24,10 +41,17 @@ AliHLTTrigger(),
   fEThreshold(0.0),
   fDetector("EMCAL"),
   fFastJetWrapper(NULL),
+  fMakeStats(kFALSE),
   EsdTrackCuts(NULL),
   fOCDBEntry("HLT/ConfigHLT/EmcalJetTrigger")
 {
   fFastJetWrapper = new AliFJWrapper("FastJet","FastJet");
+
+  // check if the fMakeStats flag is set to use AliHLTScalars
+  // to Add a new scalar:
+  // scalars.Add(const char *name, const char *description, Double_t value) 
+  
+  if ( fMakeStats ) AliHLTScalars scalars;
 
 }
 //_____________________________________________________________
@@ -92,12 +116,15 @@ Int_t AliHLTTriggerFastJet::DoTrigger() {
   // check for MatchedTrack to avoid double counting
   
 
+
   if ( esd != NULL ) {
     esd->GetStdContent();
     
-    //Double_t vertex[3] = {0,0,0};
-    //esd->GetVertex()->GetXYZ(vertex);
-    //cout << "Vertex " << vertex[0] << vertex[1] << vertex [2] << endl;
+    Double_t vertex[3] = {0,0,0};
+    vertex[0] = esd->GetVertex()->GetX();
+    vertex[1] = esd->GetVertex()->GetY();
+    vertex[2] = esd->GetVertex()->GetZ();
+    cout << "Vertex " << vertex[0] << vertex[1] << vertex [2] << endl;
     //TLorentzVector gamma;
     
     // -- add VZERO
@@ -146,6 +173,7 @@ Int_t AliHLTTriggerFastJet::DoTrigger() {
       cout << "Set param to tpctrack " << endl;
 
       fFastJetWrapper->AddInputVector(tpctrack->Px(),tpctrack->Py(),tpctrack->Pz(),tpctrack->P());
+      if ( fMakeStats ) scalars.Add("TracksPt","TPC tracks pT", tpctrack->Pt());
       cout << "Added track with P: " << tpctrack->P() << endl;
     }
 
@@ -179,6 +207,11 @@ Int_t AliHLTTriggerFastJet::DoTrigger() {
 //
 //        cluster->GetMomentum( gamma, vertex );
 //        fFastJetWrapper->AddInputVector( gamma.Px(), gamma.Py(), gamma.Pz(), clusterEn );
+//        if ( fMakeStats ) {
+//           scalars.Add("ClusterEn","Clusters Energy",clusterEn);
+//           scalars.Add("ClusterEta","Clusters Eta", gamma.Eta());
+//           scalars.Add("ClusterPhi","Clusters Phi", gamma.Phi());
+//        }
 //        gamma.Clear();
 //      }
 //  }
@@ -192,6 +225,11 @@ Int_t AliHLTTriggerFastJet::DoTrigger() {
    	if (!track) continue;
    	fFastJetWrapper->AddInputVector(track->Px(),track->Py(),track->Pz(),cluster->E());
    	cout << "Added cluster with E: " << cluster->E() << endl;
+	if ( fMakeStats ) {
+	  scalars.Add("ClusterEn" , "Clusters Energy", cluster->E());
+	  scalars.Add("ClusterEta", "Clusters Eta"   , track->Eta());
+	  scalars.Add("ClusterPhi", "Clusters Phi"   , track->Phi());
+	}
       }
     }
   }
@@ -210,16 +248,20 @@ Int_t AliHLTTriggerFastJet::DoTrigger() {
 
   fFastJetWrapper->Run();
   fFastJetWrapper->GetMedianAndSigma(median,sigma);
-
+  
+  // checks if trigger criteria are fulfilled
   if ( TriggerOnJet(fFastJetWrapper->GetSubtractedJetsPts(median)) ) {
+    if ( fMakeStats ) iResult = PushBack(&scalars, kAliHLTDataTypeEventStatistics|kAliHLTDataOriginHLT);
     return iResult;
   }
-  
+ 
+  // if we got to this point it meens the trigger criteria were not fulfilled
   TString description;
   description.Form(" No jets with energy >  %.02f GeV found! ", fDetector.Data(), fEThreshold);
   SetDescription(description.Data());
   TriggerEvent(kFALSE);
-  
+ 
+  if ( fMakeStats ) iResult = PushBack(&scalars, kAliHLTDataTypeEventStatistics|kAliHLTDataOriginHLT);
   return iResult;
 }
 
@@ -244,6 +286,9 @@ Bool_t AliHLTTriggerFastJet::TriggerOnJet(T Jet) {
       // Set trigger desicion
       TriggerEvent(kTRUE);
       
+      // if fMakeStats true fill stats
+      if ( fMakeStats )	scalars.Add("JetsPt","Jets pT", Jet[ij]);
+
       return(kTRUE);
     }
   }
@@ -276,11 +321,24 @@ int AliHLTTriggerFastJet::ScanConfigurationArgument(int argc, const char** argv)
     fEThreshold=argument.Atof();
     return 2;
   }
+
+  if ( argument.CompareTo("-makestats") == 0) {
+    fMakeStats = kTRUE;
+    return 2;
+  }
   
   return -EINVAL;
 
 }
 //______________________________________________________________
+
+void AliHLTTriggerFastJet::GetOutputDataTypes(AliHLTComponentDataTypeList &list) const {
+  // return the output data types generated
+  
+  list.push_back(kAliHLTDataTypeTriggerDecision);
+  list.push_back(kAliHLTDataTypeEventStatistics|kAliHLTDataOriginHLT);
+}
+//_______________________________________________________________
 
 void AliHLTTriggerFastJet::GetOutputDataSize(unsigned long &constBase, double &inputMultiplier) {
   
