@@ -46,6 +46,8 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   void SetLowerCentLimit(Float_t lim){fCentLowLimit = lim;}
   void SetUseV0EP(Bool_t flagV0EP){fUseV0EP=flagV0EP;}
   void SetV0EventPlaneOrder(Int_t n){fV0EPorder=n;}
+  void SetMinCentrality(Int_t mincentr){fMinCentr=mincentr;}
+  void SetMaxCentrality(Int_t maxcentr){fMaxCentr=maxcentr;}
 
   Float_t GetUpperMassLimit()const {return fUpmasslimit;}
   Float_t GetLowerMassLimit()const {return fLowmasslimit;}
@@ -92,6 +94,8 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   Int_t fDecChannel;            //decay channel identifier
   Bool_t fUseV0EP;              //flag to select EP method
   Int_t  fV0EPorder;            //harmonic for VZERO event plane
+  Int_t fMinCentr;              //minimum centrality
+  Int_t fMaxCentr;              //maximum centrality
 
   ClassDef(AliAnalysisTaskSEHFv2,1); // AliAnalysisTaskSE for the HF v2 analysis
 };
