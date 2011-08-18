@@ -27,7 +27,7 @@
 #include "TString.h"
 #include "TMap.h"
 #include "AliESDtrack.h"
-
+#include "AliHLTScalars.h"
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTriggerEmcalElectron)
 
@@ -36,6 +36,7 @@ AliHLTTriggerEmcalElectron::AliHLTTriggerEmcalElectron() :
   fEThreshold(0.0),
   fEoverPThreshold(0.),
   fEoverPLimit(0.),
+  fMakeStats(kFALSE),
   fdEta(1.),
   fdPhi(1.),
   
@@ -52,6 +53,7 @@ AliHLTTriggerEmcalElectron::AliHLTTriggerEmcalElectron() :
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlts
 
+  if ( fMakeStats ) AliHLTScalars scalars;
 //   fClusterReader = new AliHLTCaloClusterReader();
 //   fClustersRefs = new TRefArray();
 
@@ -131,6 +133,8 @@ Int_t AliHLTTriggerEmcalElectron::DoTrigger() {
   description.Form("No %s clusters corresponding to Energy >  %.02f GeV and %.02f < E/P < %.02f", fDetector.Data(),fEThreshold,fEoverPThreshold,fEoverPLimit);
   SetDescription(description.Data());
   TriggerEvent(false);
+  
+  if ( fMakeStats ) iResult = PushBack(&scalars, kAliHLTDataTypeEventStatistics|kAliHLTDataOriginHLT);
   return iResult;
 
 }
@@ -143,18 +147,34 @@ Bool_t AliHLTTriggerEmcalElectron::TriggerOnEoverP(T* cluster,AliESDEvent *esd) 
 
       Int_t trackindex=cluster->GetTrackMatchedIndex(); 
       if(trackindex<0)return kFALSE;
-      
+
       Double_t dEta=cluster->GetTrackDz();
       Double_t dPhi=cluster->GetTrackDx();
-      if(TMath::Abs(dEta)>fdEta)return kFALSE;
-      if(TMath::Abs(dPhi)>fdPhi)return kFALSE;
+
       AliESDtrack* track = esd->GetTrack(trackindex);
       if(!track)return kFALSE;     
       Double_t EoverP=cluster->E()/track->P(); 
-      if(EoverP<fEoverPThreshold)return kFALSE;
-      if(EoverP>fEoverPLimit)return kFALSE;
+        
+      if ( fMakeStats ) {
+	Double_t deltaR=TMath::Sqrt(dEta*dEta+dPhi*dPhi);
+        scalars.Add("dR","Residuals dR of track matching", deltaR);
+	scalars.Add("dEta","Residuals dEta of track matching", dEta);
+	scalars.Add("dPhi","Residuals dPhi of track matching", dPhi);
+        }
+      
+      if(TMath::Abs(dEta)>fdEta)return kFALSE;
+      if(TMath::Abs(dPhi)>fdPhi)return kFALSE;
 
-   //We have a cluster satisfying trigger criteria
+      if ( fMakeStats ) {  
+        scalars.Add("TracksPt","TPC tracks pT", track->Pt());
+	scalars.Add("ClusterEn","Cluster Energy",cluster->E());
+	scalars.Add("EoverP","EoverP for matched tracks",EoverP);
+	}
+	    
+      if(EoverP<fEoverPThreshold)return kFALSE;
+      if(EoverP>fEoverPLimit)return kFALSE; 
+ 
+      //We have a cluster satisfying trigger criteria
     TString description;
     description.Form("Event contains at least one %s cluster with energy greater than %.02f corresponding to  %.02f < E/P < %.02f, residuals: dPhi < %.02f dEta < %.02f", fDetector.Data(),fEThreshold,fEoverPThreshold,fEoverPLimit,fdPhi,fdEta);
     SetDescription(description.Data());
@@ -254,10 +274,25 @@ int AliHLTTriggerEmcalElectron::ScanConfigurationArgument(int argc, const char**
     return 2;
   } 
   
+    if (argument.CompareTo("-makestats")==0) {
+    fMakeStats = kTRUE;
+    return 2;
+  }
+  
 // unknown argument
   return -EINVAL;
 }
 
+//______________________________________________________________
+
+void AliHLTTriggerEmcalElectron::GetOutputDataTypes(AliHLTComponentDataTypeList &list) const {
+  // return the output data types generated
+  
+  list.push_back(kAliHLTDataTypeTriggerDecision);
+  list.push_back(kAliHLTDataTypeEventStatistics|kAliHLTDataOriginHLT);
+}
+//_______________________________________________________________
+// 
 void AliHLTTriggerEmcalElectron::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier) {
   // see header file for documentation
   constBase = sizeof(AliHLTTriggerDecision) + sizeof(AliHLTDomainEntry)*14;

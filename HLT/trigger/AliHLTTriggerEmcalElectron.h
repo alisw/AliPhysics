@@ -20,7 +20,7 @@
 #include "AliHLTTriggerCaloClusterEnergy.h"
 #include "AliHLTTriggerEmcalClusterEnergy.h"
 #include "AliHLTTrigger.h"
-
+#include "AliHLTScalars.h"
 class AliHLTCaloClusterReader;
 class TRefArray;
 class AliESDEvent;
@@ -59,6 +59,9 @@ public:
   //  Get a ratio by how much the data volume is shrunken or enhanced.
   virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
+    // inherited from AliHLTTrigger: returns the output data types generated from this component 
+  void GetOutputDataTypes(AliHLTComponentDataTypeList &list) const;
+  
 protected :
 
   ///Get the clusters from the esd
@@ -95,6 +98,11 @@ protected :
   
   AliHLTComponentDataType fInputDataType;   ///Input data type for calo struct input, must be set in child class
   
+  // flag to make statistics for histograming using AliHLTScalars
+  Bool_t fMakeStats;
+
+  // AliHLTScalars
+  AliHLTScalars scalars;
   
   
  private:
