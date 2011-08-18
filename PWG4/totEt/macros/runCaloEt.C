@@ -49,6 +49,8 @@ void runCaloEt(bool submit = false, // true or false
   gROOT->ProcessLine(".L AliAnalysisEtSelectionContainer.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisEtSelectionHandler.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisTaskTransverseEnergy.cxx+g");
+gROOT->ProcessLine(".L AliAnalysisEmEtMonteCarlo.cxx+g");
+gROOT->ProcessLine(".L AliAnalysisEmEtReconstructed.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisTaskTotEt.cxx+g");
 
    gInterpreter->GenerateDictionary("std::map<int, AliPhysicsSelection*>", "AliPhysicsSelection.h;map")  ;
