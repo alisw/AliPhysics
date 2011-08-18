@@ -96,7 +96,9 @@ AliAnalysisTaskSE(),
   fReadMC(kFALSE),
   fDecChannel(0),
   fUseV0EP(kFALSE),
-  fV0EPorder(2)
+  fV0EPorder(2),
+  fMinCentr(10),
+  fMaxCentr(80)
 {
   // Default constructor
 }
@@ -119,7 +121,9 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
   fReadMC(kFALSE),
   fDecChannel(decaychannel),
   fUseV0EP(kFALSE),
-  fV0EPorder(2)
+  fV0EPorder(2),
+  fMinCentr(10),
+  fMaxCentr(80)
 {
 
   Int_t pdg=421;
@@ -232,8 +236,8 @@ void AliAnalysisTaskSEHFv2::LocalInit()
 
   if(fDebug > 1) printf("AnalysisTaskSEHFv2::Init() \n");
 
-  fRDCuts->SetMinCentrality(10);
-  fRDCuts->SetMaxCentrality(80);
+  fRDCuts->SetMinCentrality(fMinCentr);
+  fRDCuts->SetMaxCentrality(fMaxCentr);
 
   switch(fDecChannel){
   case 0:
@@ -285,7 +289,7 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("MainOutput");
   
-  for(Int_t icentr=10;icentr<=80;icentr=icentr+5){
+  for(Int_t icentr=fMinCentr+5;icentr<=fMaxCentr;icentr=icentr+5){
     TString centrname;centrname.Form("centr%d_%d",icentr-5,icentr);
     for(Int_t i=0;i<fNPtBins;i++){
       
@@ -496,7 +500,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
   //determine centrality bin
   Float_t centr=fRDCuts->GetCentrality(aod);
   Int_t icentr=0;
-  for(Int_t ic=5;ic<=80;ic=ic+5){
+  for(Int_t ic=fMinCentr+5;ic<=fMaxCentr;ic=ic+5){
     if(ic>centr){
       icentr=ic;
       break;
