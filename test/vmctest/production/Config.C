@@ -6,7 +6,7 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
-#include <TRandom.h>
+#include <TRandom.h>  
 #include <TDatime.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
@@ -70,7 +70,7 @@ enum PhysicsList_t
   };
 
 const char * physicsListName[] = {
-  "QGSP_BERT_EMV",         "CHIPS",         "QGSP_BERT_CHIPS",         "QGSP_FTFP_BERT"
+  "QGSP_BERT_EMV",         "CHIPS",         "QGSP_BERT_CHIPS",         "QGSP_FTFP_BERT",
   "QGSP_BERT_EMV_OPTICAL", "CHIPS_OPTICAL", "QGSP_BERT_CHIPS_OPTICAL", "QGSP_FTFP_BERT_OPTICAL"
 };
 
