@@ -51,6 +51,9 @@
 #include "AliHLTTriggerCosmics.h"
 #include "AliHLTTriggerCounterComponent.h"
 #include "AliHLTTriggerEmcalElectron.h"
+#include "AliHLTTriggerFastJet.h"
+#include "AliHLTFastJetMonitorComponent.h"
+#include "AliHLTEmcalElectronMonitorComponent.h"
 
 /** global instance for agent registration */
 AliHLTTriggerAgent gAliHLTTriggerAgent;
@@ -94,6 +97,9 @@ int AliHLTTriggerAgent::RegisterComponents(AliHLTComponentHandler* pHandler) con
   pHandler->AddComponent(new AliHLTTriggerCosmics);
   pHandler->AddComponent(new AliHLTTriggerCounterComponent);
   pHandler->AddComponent(new AliHLTTriggerEmcalElectron);
+  //pHandler->AddComponent(new AliHLTTriggerFastJet);
+  pHandler->AddComponent(new AliHLTFastJetMonitorComponent);
+  pHandler->AddComponent(new AliHLTEmcalElectronMonitorComponent);
  return 0;
 }
 
