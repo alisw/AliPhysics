@@ -56,8 +56,23 @@ set ( CLASS_HDRS
     AliHLTTriggerCounters.h
     AliHLTTriggerCaloClusterEnergy.h
     AliHLTTriggerEmcalElectron.h	
+# uncomment if fastjet is installed
+#    AliHLTTriggerFastJet.h
+# ---------------------------------
+    AliHLTFastJetMonitorComponent.h
+    AliHLTFastJetMonitor.h
+    AliHLTEmcalElectronMonitor.h
+    AliHLTEmcalElectronMonitorComponent.h
     )
 
+
+set(FASTJETENV $ENV{FASTJET})
+
+if(FASTJETENV)
+  set ( EDEFINE -isystem${FASTJETENV}/include/fastjet )
+else()
+  set ( EDEFINE -isystem${ALICE_ROOT}/JETAN/fastjet)
+endif(FASTJETENV)
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
 
@@ -65,7 +80,7 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR  	AliHLTTriggerLinkDef.h)
 
-set ( EINCLUDE HLT/BASE HLT/BASE/util HLT/trigger HLT/TPCLib HLT/TRD TRD HLT/ITS HLT/MUON MUON HLT/EMCAL JETAN JETAN/fastjet)
+set ( EINCLUDE HLT/BASE HLT/BASE/util HLT/trigger HLT/TPCLib HLT/TRD TRD HLT/ITS HLT/MUON MUON HLT/FJWrapper ${FASTJETENV}/include ${FASTJETENV}/include/fastjet ${FASTJETENV}/include/fastjet/internal )
 
 set ( ELIBS  "HLTbase AliHLTTRD AliHLTMUON AliHLTUtil")
 
