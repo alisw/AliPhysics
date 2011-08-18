@@ -26,9 +26,12 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCRawCluster.h"
+#include "AliHLTTPCTransform.h"
 #include "AliHLTOUT.h"
 #include "AliHLTComponent.h"
 #include "AliHLTErrorGuard.h"
+#include "AliHLTDataInflater.h"
+#include "AliHLTTPCDefinitions.h"
 #include "AliLog.h"
 #include "AliHLTSystem.h"
 #include "AliHLTPluginBase.h"
@@ -335,6 +338,20 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCRawClusterData(AliHLTOUT* pHLTOUT
     }
     const AliHLTTPCRawClusterData* clusterData = reinterpret_cast<const AliHLTTPCRawClusterData*>(pBuffer);
     Int_t nCount = (Int_t) clusterData->fCount;
+    if (clusterData->fVersion!=0) {
+      // this is encoded data of different formats
+      switch (clusterData->fVersion) {
+      case 1: 
+	iResult=ReadAliHLTTPCRawClusterDataDeflateSimple(reinterpret_cast<const AliHLTUInt8_t*>(clusterData->fClusters),
+							 size-sizeof(AliHLTTPCRawClusterData), nCount, specification,
+							 pClusters, tpcClusterLabels);
+	break;
+      default:
+	iResult=-EPROTO;
+      }
+      return iResult;
+    }
+
     if (nCount*sizeof(AliHLTTPCRawCluster) + sizeof(AliHLTTPCRawClusterData) != size) {
       AliError("inconsistent cluster data block size, skipping block");
       continue;
@@ -382,5 +399,112 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCRawClusterData(AliHLTOUT* pHLTOUT
     }
     if (fVerbosity>0) AliInfo(Form("converted %d cluster(s) from block %s 0x%08x", nCount, AliHLTComponent::DataType2Text(dt).c_str(), specification));
   } while (pHLTOUT->SelectNextDataBlock()>=0);
+  return iResult;
+}
+
+int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCRawClusterDataDeflateSimple(const AliHLTUInt8_t* pData, int dataSize,
+									   int nofClusters, AliHLTUInt32_t specification,
+									   TClonesArray* pClusters,
+									   const AliHLTTPCClusterMCDataList *tpcClusterLabels)
+{
+  // read cluster data from AliHLTTPCClusterData
+
+  // FIXME: quick implementation to read the compressed cluster data from HLTOUT
+  // the data definition below is the same as in AliHLTTPCDataCompressionComponent
+  // but needs to be moved to a common class (AliHLTTPCDefinitions?)
+  // Think about a decoder class supporting iterator objects for various types
+  // of cluster data
+  int iResult=0;
+  if (!pData || !pClusters) return -EINVAL;
+  AliHLTDataInflater inflater;
+  if ((iResult=inflater.InitBitDataInput(pData, dataSize))<0) {
+    return iResult;
+  }
+
+  int offset=pClusters->GetEntries();
+  pClusters->ExpandCreate(offset+nofClusters);
+  AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(specification);
+  AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(specification);
+  // the compressed format stores the difference of the local row number in
+  // the partition to the row of the last cluster
+  // add the first row in the partition to get global row number
+  // offline uses row number in physical sector, inner sector consists of
+  // partitions 0 and 1, outer sector of partition 2-5
+  int rowOffset=AliHLTTPCTransform::GetFirstRow(partition)-(partition<2?0:AliHLTTPCTransform::GetFirstRow(2));
+
+  int parameterId=0;
+  int outClusterCnt=0;
+  AliHLTUInt8_t switchBit=0;
+  AliHLTUInt64_t value=0;
+  AliTPCclusterMI* pCluster=NULL;
+  AliHLTUInt32_t lastPadRow=0;
+  while (outClusterCnt<nofClusters && inflater.InputBit(switchBit)) {
+    const AliHLTTPCDefinitions::AliClusterParameter& parameter
+      =AliHLTTPCDefinitions::fgkClusterParameterDefinitions[parameterId];
+    // in mode DeflaterSimple, the optional parameter of the cluster parameter definition
+    // corresponds to the number bits of the reduced format
+    if (!inflater.InputBits(value, switchBit?parameter.fBitLength:parameter.fOptional)) {
+      break;
+    }
+
+    if (!pCluster) {
+      if (!pClusters->At(offset+outClusterCnt)) {
+	// here we should not get anymore because of the condition outClusterCnt<nofClusters
+	return -ENOSPC;
+      }
+      pCluster=dynamic_cast<AliTPCclusterMI*>(pClusters->At(offset+outClusterCnt));
+      if (!pCluster) {
+	AliError("invalid object type, expecting AliTPCclusterMI");
+	iResult=-EBADF; // this is a problem of all objects
+	break;
+      }
+    }
+    switch (parameterId) {
+    case AliHLTTPCDefinitions::kPadRow:
+      {pCluster->SetRow(value+lastPadRow+rowOffset); lastPadRow+=value;break;}
+    case AliHLTTPCDefinitions::kPad:
+      {float pad=value; pad/=parameter.fScale; pCluster->SetPad(pad); break;}
+    case AliHLTTPCDefinitions::kTime:
+      {float time=value; time/=parameter.fScale; pCluster->SetTimeBin(time); break;}
+    case AliHLTTPCDefinitions::kSigmaY2:
+      {float sigmaY2=value; sigmaY2/=parameter.fScale; pCluster->SetSigmaY2(sigmaY2); break;}
+    case AliHLTTPCDefinitions::kSigmaZ2:
+      {float sigmaZ2=value; sigmaZ2/=parameter.fScale; pCluster->SetSigmaZ2(sigmaZ2); break;}
+    case AliHLTTPCDefinitions::kCharge:
+      {pCluster->SetQ(value); break;}
+    case AliHLTTPCDefinitions::kQMax:
+      {pCluster->SetMax(value); break;}
+    }
+    if (parameterId>=AliHLTTPCDefinitions::kLast) {
+      // switch to next cluster
+      if (tpcClusterLabels) {
+	UInt_t clusterID=AliHLTTPCSpacePointData::GetID(slice, partition, outClusterCnt);
+	if (tpcClusterLabels->find(clusterID)!=tpcClusterLabels->end()) {
+	  const AliHLTTPCClusterMCWeight* mcWeights=tpcClusterLabels->find(clusterID)->second.fClusterID;
+	  for (int k=0; k<3; k++) {
+	    // TODO: sort the labels according to the weight in order to assign the most likely mc label
+	    // to the first component 
+	    pCluster->SetLabel(mcWeights[k].fMCID, k);
+	  }
+	} else {
+	  AliError(Form("can not find mc label of cluster with id %0x08x", clusterID));
+	}
+      }
+      outClusterCnt++;
+      pCluster=NULL;
+      parameterId=-1;
+    }
+    parameterId++;
+  }
+  inflater.Pad8Bits();
+  if (inflater.InputBit(switchBit)) {
+    AliWarning("format error of compressed clusters, there is more data than expected");
+  }
+  inflater.CloseBitDataInput();
+  if (iResult>=0 && nofClusters!=outClusterCnt) {
+    // is this a Fatal?
+    AliError(Form("error reading compressed cluster format: expected %d, read only %d cluster(s)", nofClusters, outClusterCnt));
+    return -EPROTO;
+  }
   return iResult;
 }

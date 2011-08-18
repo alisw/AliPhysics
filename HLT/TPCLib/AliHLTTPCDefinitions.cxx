@@ -139,7 +139,7 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCIn
 
 
 const AliHLTTPCDefinitions::AliClusterParameter AliHLTTPCDefinitions::fgkClusterParameterDefinitions[]= {
-  {AliHLTTPCDefinitions::kPadRow,  "padrow",   6,  4,   1},
+  {AliHLTTPCDefinitions::kPadRow,  "padrow",   6,  1,   1}, // difference of rows, mostly 0 or 1
   {AliHLTTPCDefinitions::kPad,     "pad",     14, 12,  60}, // 100um for 6mm pads
   {AliHLTTPCDefinitions::kTime,    "time",    15, 13,  25}, // 100um for 2.5 mm timebin pitch
   {AliHLTTPCDefinitions::kSigmaY2, "sigmaY2",  8,  5,  25},
