@@ -302,7 +302,8 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 	      ++ cnt;
 	      //UShort_t* firstBunchPtr = 0;
 	      int chId = fMapperPtr->GetChannelID(iter->fSpecification, fAltroRawStreamPtr->GetHWAddress()); 
-	    
+				//patch to skip LG in EMC
+				if(fDetector.CompareTo("EMCAL") == 0 && (int)((chId >> 12)&0x1) == 0) continue;
 	      if( fDoPushRawData == true)
 		{
 		  fRawDataWriter->SetChannelId( chId );
@@ -340,6 +341,7 @@ AliHLTCaloRawAnalyzerComponentv3::DoIt(const AliHLTComponentBlockData* iter, Ali
 		channelDataPtr->fChannelID =  chId;
 		channelDataPtr->fEnergy = static_cast<Float_t>( res.GetAmp()  ) - fOffset;
 		channelDataPtr->fTime = static_cast<Float_t>(  res.GetTof() );
+		if(fDetector.CompareTo("EMCAL") == 0) channelDataPtr->fTime = static_cast<Float_t>(  res.GetTof() )*100E-9 - fAltroRawStreamPtr->GetL1Phase();
 		channelDataPtr->fCrazyness = static_cast<Short_t>(crazyness);
 		channelCount++;
 		channelDataPtr++; // Updating position of the free output.

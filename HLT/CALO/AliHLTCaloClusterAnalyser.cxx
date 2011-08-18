@@ -286,7 +286,7 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       Int_t id = 0;
 
        AliHLTCaloCellDataStruct *cellPtr = &(caloClusterPtr->fCaloCells);
-       
+      Float_t maxTime = 0; //time of maximum amplitude cell is assigned to cluster 
       for(UInt_t j = 0; j < caloClusterPtr->fNCells; j++)
 	{
  	   digitPtr = fDigitDataArray[*digitIndexPtr];
@@ -294,6 +294,7 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
  	   
 	  cellPtr->fCellsAbsId= id;
  	  cellPtr->fCellsAmpFraction = digitPtr->fEnergy/recPointPtr->fAmp;
+		if(digitPtr->fTime > maxTime) maxTime = digitPtr->fTime; 
 	  //printf("Cell ID pointer: %x\n", cellIDPtr);
  	 //printf("Cell Amp Pointer: %x\n", cellAmpFracPtr);
 	 //printf("Cell pos: x = %d, z = %d\n", digitPtr->fX, digitPtr->fZ);
@@ -316,7 +317,8 @@ AliHLTCaloClusterAnalyser::CreateClusters(Int_t nRecPoints, UInt_t availableSize
       }
       
       // Set the time of the maximum digit as cluster time
-      caloClusterPtr->fTOF = recPointPtr->fTime;
+      //caloClusterPtr->fTOF = recPointPtr->fTime;
+			caloClusterPtr->fTOF = maxTime;
       
       HLTDebug("Cluster global position: x = %f, y = %f, z = %f, energy: %f, time: %f, number of cells: %d, cluster pointer: %x", globalCoord.fX, globalCoord.fY, globalCoord.fZ, caloClusterPtr->fEnergy, caloClusterPtr->fTOF, caloClusterPtr->fNCells,  caloClusterPtr);
 

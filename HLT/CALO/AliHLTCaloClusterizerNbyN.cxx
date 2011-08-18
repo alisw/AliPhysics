@@ -81,7 +81,6 @@ Int_t AliHLTCaloClusterizerNbyN::ClusterizeEvent(Int_t nDigits)
 
         fRecPointDataPtr->fAmp = 0;
         fRecPointDataPtr->fModule = fDigitsPointerArray[i]->fModule;
-	fRecPointDataPtr->fTime = fDigitsPointerArray[i]->fTime;
 
         // Assigning the digit to this rec point
         fRecPointDataPtr->fDigits = i;
@@ -107,7 +106,7 @@ Int_t AliHLTCaloClusterizerNbyN::ClusterizeEvent(Int_t nDigits)
         {
 	  if (fDigitsPointerArray[j]->fEnergy < fEmcMinEnergyThreshold) break; // Sorted by energy
 	      if(fDigitsPointerArray[j]->fAssociatedCluster!=-1) continue;//cell is already associated with a cluster (higher energy seed)
-	      if(TMath::Abs(fRecPointDataPtr->fTime-fDigitsPointerArray[j]->fTime) >= fEmcTimeGate) continue;//time difference between cell and seed is larger than cut
+	      if(TMath::Abs(fDigitsPointerArray[i]->fTime-fDigitsPointerArray[j]->fTime) >= fEmcTimeGate) continue;//time difference between cell and seed is larger than cut
 
             if (TMath::Abs(fDigitsPointerArray[i]->fX - fDigitsPointerArray[j]->fX) <= maxDiff
                     && TMath::Abs(fDigitsPointerArray[i]->fZ - fDigitsPointerArray[j]->fZ) <= maxDiff) // The digit is in our grid
