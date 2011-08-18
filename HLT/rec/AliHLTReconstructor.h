@@ -226,6 +226,8 @@ public:
   /** init the reconstructor */
   void Init(const char* options);
 
+  void Terminate() const;
+
   /**
    * Build the CTP_TRIGGER_CLASSES string from CTP trigger configuration
    */

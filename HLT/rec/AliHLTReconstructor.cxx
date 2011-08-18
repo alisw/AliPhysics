@@ -202,6 +202,21 @@ void AliHLTReconstructor::Init()
   AliHLTMisc::Instance().InitStreamerInfos(fgkCalibStreamerInfoEntry);
 }
 
+void AliHLTReconstructor::Terminate() const
+{
+  AliInfo("terminating");
+  if (fpPluginBase) {
+  AliHLTSystem* pSystem=fpPluginBase->GetInstance();
+  if (pSystem) {
+    AliDebug(0, Form("terminate HLT system: status %#x", pSystem->GetStatusFlags()));
+    if (pSystem->CheckStatus(AliHLTSystem::kStarted)) {
+      // send specific 'event' to execute the stop sequence
+      pSystem->Reconstruct(0, NULL, NULL);
+    }
+  }
+  }
+}
+
 const char* AliHLTReconstructor::fgkCalibStreamerInfoEntry="HLT/Calib/StreamerInfo";
 
 void AliHLTReconstructor::Reconstruct(AliRawReader* rawReader, TTree* /*clustersTree*/) const 
