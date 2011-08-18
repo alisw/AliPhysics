@@ -35,6 +35,7 @@
 #include <memory>
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSpacePointContainer)
@@ -431,6 +432,147 @@ TTree* AliHLTSpacePointContainer::FillTree(const char* name, const char* title)
   }
 
   return tree.release();
+}
+
+ClassImp(AliHLTSpacePointContainer::AliHLTSpacePointGrid)
+
+AliHLTSpacePointContainer::AliHLTSpacePointGrid::AliHLTSpacePointGrid(float maxX, float stepX,
+								      float maxY, float stepY,
+								      float maxZ, float stepZ,
+								      int initialDataSize)
+  : fMaxX(maxX)
+  , fStepX(stepX)
+  , fMaxY(maxY)
+  , fStepY(stepY)
+  , fMaxZ(maxZ)
+  , fStepZ(stepZ)
+  , fDimX(0)
+  , fDimY(0)
+  , fDimZ(0)
+  , fCells(NULL)
+  , fCellDimension(0)
+  , fData(NULL)
+  , fDataDimension(initialDataSize)
+  , fCount(0)
+  , fIterator()
+  , fIteratorEnd()
+{
+  // constructor
+  if (fMaxX>0. && fMaxY>0. && fMaxZ>0 &&
+      fStepX>0. && fStepY>0. && fStepZ>0) {
+    fDimX=ceil(fMaxX/fStepX);
+    fDimY=ceil(fMaxY/fStepY);
+    fDimZ=ceil(fMaxZ/fStepZ);
+
+    fCellDimension=fDimX*fDimY*fDimZ;
+    fCells=new AliHLTSpacePointCell[fCellDimension];
+    if (fDataDimension<0) fDataDimension=10000;
+    fData=new AliHLTSpacePointGrid::ValueType[fDataDimension];
+    Clear();
+  }
+}
+
+AliHLTSpacePointContainer::AliHLTSpacePointGrid::~AliHLTSpacePointGrid()
+{
+  // destructor
+  if (fData) delete [] fData;
+  if (fCells) delete [] fCells;
+}
+
+int AliHLTSpacePointContainer::AliHLTSpacePointGrid::CountSpacePoint(float x, float y, float z)
+{
+  // increment counter of the cell where the spacepoint is
+  int cell=GetCellIndex(x, y, z);
+  if (cell<0 || !fCells || cell>=fCellDimension) return -EFAULT;
+  if (fCells[cell].fCount<0) fCells[cell].fCount=1;
+  else fCells[cell].fCount++;
+  return 0;
+}
+
+int AliHLTSpacePointContainer::AliHLTSpacePointGrid::IndexCells()
+{
+  // set the start index for data of every cell based on the counts
+  if (!fCells || fCellDimension<=0) return -ENOBUFS;
+  int offset=0;
+  int cell=0;
+  for (; cell<fCellDimension; cell++) {
+    if (fCells[cell].fCount<0) continue;
+    fCells[cell].fStartIndex=offset;
+    offset+=fCells[cell].fCount;
+    fCells[cell].fFilled=0;
+  }
+
+  if (offset>fDataDimension) {
+    // grow the data array
+    auto_ptr<AliHLTSpacePointGrid::ValueType> newArray(new AliHLTSpacePointGrid::ValueType[offset]);
+    if (newArray.get()) {
+      memcpy(newArray.get(), fData, fDataDimension);
+      memset(newArray.get()+(fDataDimension-offset), 0, (fDataDimension-offset)*sizeof(AliHLTSpacePointGrid::ValueType));
+      delete fData;
+      fData=newArray.release();
+      fDataDimension=offset;
+    } else {
+      for (cell=0; cell<fCellDimension; cell++) {
+	fCells[cell].fStartIndex=-1;
+      }
+    }
+  }
+  return 0;
+}
+
+int AliHLTSpacePointContainer::AliHLTSpacePointGrid::AddSpacePoint(AliHLTSpacePointContainer::AliHLTSpacePointGrid::ValueType t,
+								   float x, float y, float z)
+{
+  // add spacepoint, all spacepoints must have been counted before
+  int cell=GetCellIndex(x, y, z);
+  if (cell<0 || !fCells || cell>=fCellDimension) return -EFAULT;
+  if (fCells[cell].fFilled==fCells[cell].fCount) return -ENOSPC;
+  if (fCells[cell].fStartIndex<0 && IndexCells()<0) return -EACCES;
+  int offset=fCells[cell].fStartIndex+fCells[cell].fFilled;
+  fData[offset]=t;
+  fCells[cell].fFilled++;
+  fCount++;
+  return 0;
+}
+
+void AliHLTSpacePointContainer::AliHLTSpacePointGrid::Clear(const char* /*option*/)
+{
+  // clear internal data
+  if (fCells) memset(fCells, 0xff, fCellDimension*sizeof(AliHLTSpacePointCell));
+  if (fData) memset(fData, 0, fDataDimension*sizeof(AliHLTSpacePointGrid::ValueType));
+  fCount=0;
+}
+
+void AliHLTSpacePointContainer::AliHLTSpacePointGrid::Print(const char* /*option*/)
+{
+  // print info
+  bool bPrintEmpty=false;
+  cout << "AliHLTSpacePointGrid: " << (fCells?fCellDimension:0) << " cells" << endl;
+  cout << "   x: " << fDimX << " [0," << fMaxX << "]" << endl;
+  cout << "   y: " << fDimY << " [0," << fMaxY << "]" << endl;
+  cout << "   z: " << fDimZ << " [0," << fMaxZ << "]" << endl;
+  cout << "   " << GetNumberOfSpacePoints(0, fCellDimension) << " point(s)" << endl;
+  if (fCells) {
+    for (int i=0; i<fCellDimension; i++) {
+      if (!bPrintEmpty && fCells[i].fCount<=0) continue;
+      cout << "     " << setfill(' ') << setw(7) << setprecision(0) << i << " (" 
+	   << " " << setw(3) << GetLowerBoundX(i)
+	   << " " << setw(3) << GetLowerBoundY(i)
+	   << " " << setw(4) << GetLowerBoundZ(i)
+	   << "): ";
+      cout << setw(3) << fCells[i].fCount << " entries, " << setw(3) << fCells[i].fFilled << " filled";
+      cout << "  start index " << setw(5) << fCells[i].fStartIndex;
+      cout << endl;
+      if (fCells[i].fCount>0) {
+	cout << "          ";
+	for (iterator id=begin(GetLowerBoundX(i), GetLowerBoundY(i), GetLowerBoundZ(i));
+	     id!=end(); id++) {
+	  cout << " 0x" << hex << setw(8) << setfill('0') << id.Data();
+	}
+	cout  << dec << endl;
+      }
+    }
+  }
 }
 
 ostream& operator<<(ostream &out, const AliHLTSpacePointContainer& c)
