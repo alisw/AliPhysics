@@ -37,7 +37,8 @@ AliHLTTPCHWCFProcessorUnit::AliHLTTPCHWCFProcessorUnit()
   fBunchIndex(0),
   fDeconvolute(0),
   fSingleSeqLimit(0),
-  fTimeBinWindow(5),
+  fHalfTimeBinWindow(2),
+  fChargeFluctuation(0),
   fDebug(0)
 {
   //constructor 
@@ -57,7 +58,8 @@ AliHLTTPCHWCFProcessorUnit::AliHLTTPCHWCFProcessorUnit(const AliHLTTPCHWCFProces
   fBunchIndex(0),
   fDeconvolute(0),
   fSingleSeqLimit(0),
-  fTimeBinWindow(5),
+  fHalfTimeBinWindow(2),
+  fChargeFluctuation(0),
   fDebug(0)
 {
   // dummy
@@ -134,38 +136,77 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
 
   if( fBunchIndex >= fkBunch->fData.size() || fkBunch->fTime < fBunchIndex ) return 0;  
 
-  AliHLTInt32_t bunchTime0 = fkBunch->fTime - fBunchIndex;
-  AliHLTInt32_t bunchTime = bunchTime0;
+  AliHLTUInt32_t qMax = 0;  
+  AliHLTInt32_t iQMax = fBunchIndex;
+  AliHLTInt32_t clusterEnd = fBunchIndex+1;
 
-  AliHLTUInt32_t qArrStart = fBunchIndex, qArrEnd = qArrStart;
-  AliHLTUInt32_t qLast = 0;
-  bool slope = 0;
-  AliHLTUInt32_t length = 0;
+  {
+    AliHLTUInt32_t i=fBunchIndex;
 
-  for( ; qArrEnd<fkBunch->fData.size() && bunchTime>=0; qArrEnd++, bunchTime--, length++ ){
-    AliHLTUInt32_t q = fkBunch->fData[qArrEnd];
-    if( ( slope && length+1 >= fTimeBinWindow ) ||
-	( fDeconvolute && slope && q>qLast )     ){ // split the cluster
-      qArrEnd++;
-      break;
+    // find a maximum
+    
+    for( ; i<fkBunch->fData.size(); i++ ){
+      AliHLTUInt32_t q = fkBunch->fData[i];
+      if( q>qMax ){
+	qMax = q;
+	iQMax = i;
+      } else {
+	if( fDeconvolute && q + fChargeFluctuation < qMax ) break;	
+      }
+    }
+  
+    // find last minimum and the end of the cluster
+  
+    AliHLTUInt32_t iQMin = i;
+    if( i<fkBunch->fData.size() ){
+      AliHLTUInt32_t qMin = fkBunch->fData[i];  
+
+      for(; i<fkBunch->fData.size(); i++ ){
+	AliHLTUInt32_t q = fkBunch->fData[i];
+	if( q <= qMin ){
+	  qMin = q;
+	  iQMin = i;
+	} else {
+	  if( q > qMin + fChargeFluctuation ){
+	    break;
+	  }
+	}
+      }
     }
     
-    if( q<qLast && !slope ){ // local maximum
-      if( length > fTimeBinWindow/2 ){
-	length = fTimeBinWindow/2;
-	qArrStart = qArrEnd - length;
-      }      
-      slope = 1;     
+    clusterEnd = iQMin+1;
+    if( i>= fkBunch->fData.size() ) clusterEnd = fkBunch->fData.size();
+    
+    // find the center of the peak
+    AliHLTUInt32_t iMaxFirst = iQMax, iMaxLast = iQMax;
+    
+    for( i=fBunchIndex; i<iQMax; i++ ){
+      AliHLTUInt32_t q = fkBunch->fData[i];
+      if( q + fChargeFluctuation >= qMax ){
+	iMaxFirst = i;
+	break;
+      }
     }
-    qLast = q;
+    
+    for( i=clusterEnd-1; i>iQMax; i-- ){
+      AliHLTUInt32_t q = fkBunch->fData[i];
+      if( q + fChargeFluctuation >= qMax ){
+	iMaxLast = i;     
+	break;
+      }
+    }
+    
+    iQMax = ( iMaxFirst + iMaxLast )/ 2;
   }
-
-  fBunchIndex = qArrStart;
-  bunchTime0 = fkBunch->fTime - fBunchIndex; 
-  bunchTime = bunchTime0;
-  length = 0;
   
-  for( ; fBunchIndex<qArrEnd; fBunchIndex++, bunchTime--, length++ ){
+  AliHLTUInt32_t clusterStart = fBunchIndex;
+  if( (int)clusterStart < iQMax - fHalfTimeBinWindow ) clusterStart = iQMax - fHalfTimeBinWindow ;
+  if( clusterEnd > iQMax + fHalfTimeBinWindow +1 ) clusterEnd = iQMax + fHalfTimeBinWindow +1;  
+
+  fBunchIndex = clusterStart;  
+  AliHLTInt32_t bunchTime = fkBunch->fTime - clusterStart;
+
+  for( ; fBunchIndex < clusterEnd; fBunchIndex++, bunchTime-- ){
     AliHLTUInt64_t q = fkBunch->fData[fBunchIndex]*fkBunch->fGain;
     if (fOutput.fQmax < q) fOutput.fQmax = q;
     fOutput.fQ += q;
@@ -177,10 +218,12 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
       fOutput.fMC.push_back(fkBunch->fMC[fBunchIndex]);
     }
   }  
- 
-  fOutput.fTMean = (AliHLTUInt64_t)( (bunchTime0 + bunchTime + 1)/2 );
 
-  if( length==1 && fOutput.fQ < fSingleSeqLimit ) return 0;
+  fOutput.fTMean = (AliHLTUInt64_t)( fkBunch->fTime - iQMax );
+
+  AliHLTInt32_t length = clusterEnd - clusterStart;
+
+  if( length<=1 && fOutput.fQ < fSingleSeqLimit ) return 0;  
 
   return &fOutput;
 }

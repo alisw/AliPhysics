@@ -84,7 +84,7 @@ void AliHLTTPCHWCFEmulator::Init( const AliHLTUInt32_t *mapping, AliHLTUInt32_t 
   fChannelProcessor.SetSingleSeqLimit( (config1) & 0xFF );
   fChannelMerger.SetMatchDistance( (config2) & 0xF );
   fChannelProcessor.SetTimeBinWindow( (config2>>4) & 0xFF );
-
+  fChannelProcessor.SetChargeFluctuation( (config2>>12) & 0xF );
 
   fChannelProcessor.SetDebugLevel(fDebug);
   fChannelMerger.SetDebugLevel(fDebug);
@@ -198,7 +198,7 @@ void AliHLTTPCHWCFEmulator::CreateConfiguration
  bool doDeconvTime, bool doDeconvPad, bool doFlowControl, 
  bool doSinglePadSuppression, bool bypassMerger, 
  AliHLTUInt32_t clusterLowerLimit, AliHLTUInt32_t singleSeqLimit, 
- AliHLTUInt32_t mergerDistance, AliHLTUInt32_t timeBinWindow,
+ AliHLTUInt32_t mergerDistance, AliHLTUInt32_t timeBinWindow, AliHLTUInt32_t chargeFluctuation,
  AliHLTUInt32_t &configWord1, AliHLTUInt32_t &configWord2 
  )
 {
@@ -217,4 +217,5 @@ void AliHLTTPCHWCFEmulator::CreateConfiguration
 
   configWord2 |= ( (AliHLTUInt32_t)mergerDistance & 0xF );
   configWord2 |= ( (AliHLTUInt32_t)timeBinWindow  & 0xFF )<<4;
+  configWord2 |= ( (AliHLTUInt32_t)chargeFluctuation  & 0xF )<<12;
 }

@@ -63,6 +63,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fSingleSeqLimit(0),
   fMergerDistance(3),
   fTimeBinWindow(5),
+  fChargeFluctuation(0),
   fDebug(0),
   fCFSupport(),
   fCFEmulator(),
@@ -89,6 +90,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   fSingleSeqLimit(0),
   fMergerDistance(3),
   fTimeBinWindow(5),
+  fChargeFluctuation(0),
   fDebug(0),
   fCFSupport(),
   fCFEmulator(),
@@ -213,7 +215,8 @@ void AliHLTTPCHWCFEmulatorComponent::SetDefaultConfiguration()
   fClusterLowerLimit = 0;
   fSingleSeqLimit = 0;
   fMergerDistance = 3;
-  fTimeBinWindow = 250;
+  fTimeBinWindow = 5;
+  fChargeFluctuation = 0;
   fDebug = 0;
   fBenchmark.Reset();
   fBenchmark.SetTimer(0,"total");
@@ -318,6 +321,13 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       continue;
     }
    
+    if ( argument.CompareTo( "-charge-fluctuation" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fChargeFluctuation  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Charge fluctuation is set to: %d", fChargeFluctuation );
+      continue;
+    }
+
     if ( argument.CompareTo( "-debug-level" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fDebug  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
@@ -434,7 +444,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 
   AliHLTUInt32_t configWord1=0, configWord2=0; 
   AliHLTTPCHWCFEmulator::CreateConfiguration
-    ( fDoDeconvTime, fDoDeconvPad, fDoFlowControl, fDoSinglePadSuppression, fBypassMerger, fClusterLowerLimit, fSingleSeqLimit, fMergerDistance, fTimeBinWindow, configWord1, configWord2 );
+    ( fDoDeconvTime, fDoDeconvPad, fDoFlowControl, fDoSinglePadSuppression, fBypassMerger, fClusterLowerLimit, fSingleSeqLimit, fMergerDistance, fTimeBinWindow, fChargeFluctuation, configWord1, configWord2 );
 
   for ( unsigned long ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
