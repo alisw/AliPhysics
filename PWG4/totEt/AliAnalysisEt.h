@@ -51,7 +51,14 @@ public:
     virtual void CreateHistograms();
     virtual void CreateTrees();
     TH2F* CreateEtaEHisto2D(TString name, TString title, TString ztitle);
-    
+	TH2F* CreateEtaPtHisto2D(TString name, TString title, TString ztitle);
+	TH2F* CreateEtaEtHisto2D(TString name, TString title, TString ztitle);
+	TH2F* CreateResEHisto2D(TString name, TString title, TString ztitle);
+	TH2F* CreateResPtHisto2D(TString name, TString title, TString ztitle);
+    THnSparseD* CreateClusterHistoSparse(TString name, TString title);
+    THnSparseD* CreateNeutralPartHistoSparse(TString name, TString title);
+    THnSparseD* CreateChargedPartHistoSparse(TString name, TString title);
+	
     /** Fills the histograms, must be overloaded if you want to add your own */
     virtual void FillHistograms();
 
@@ -222,8 +229,12 @@ protected:
     /* Auxiliary Histogram variables */
     static Float_t fgEtaAxis[17];//bins for eta axis of histograms
     static Int_t fgnumOfEtaBins;//number of eta bins
+    static Float_t fgPtAxis[117];//bins for pt axis of histograms
+    static Int_t fgNumOfPtBins;//number of pt bins
     static Float_t fgEAxis[79];//bins for pt axis of histograms
     static Int_t fgNumOfEBins;//number of pt bins
+    static Float_t fgRAxis[48];//bins for R axis
+    static Int_t fgNumOfRBins;//number of R bins
 	
 	
     TTree *fTree; // optional TTree
