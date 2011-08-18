@@ -835,6 +835,7 @@ TGraphErrors* AliTriggerRunScalers::GetGraphScalerRate(const char* className, TS
 TGraphErrors* AliTriggerRunScalers::GetGraphScalerL2L0Ratio(const char* className, AliTriggerConfiguration* cfg)
 {
   Int_t classIndex = cfg->GetClassIndexFromName(className);
+  if (classIndex == -1) return 0;
   if (fScalersRecordESD.GetEntriesFast()==0) {
      if (CorrectScalersOverflow()==1) return 0;
   }
