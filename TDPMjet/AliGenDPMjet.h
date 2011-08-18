@@ -60,6 +60,8 @@ class AliGenDPMjet : public AliGenMC
     AliGenDPMjet &  operator=(const AliGenDPMjet & rhs);
     void     AddHeader(AliGenEventHeader* header);
 
+   void SetTuneForDiff(Bool_t a=kTRUE) {fkTuneForDiff=a;}
+
  protected:
     Bool_t SelectFlavor(Int_t pid);
     void   MakeHeader();
@@ -87,6 +89,9 @@ class AliGenDPMjet : public AliGenMC
     Float_t       fTriggerMultiplicityEta;   // Triggered multiplicity eta cut
     Float_t       fTriggerMultiplicityPtMin; // Triggered multiplicity min pt
 
+    Bool_t fkTuneForDiff;    // Phojet tune 
+    Int_t  fProcDiff;
+
  private:
     // adjust the weight from kinematic cuts
     void   AdjustWeights();
@@ -94,8 +99,10 @@ class AliGenDPMjet : public AliGenMC
     Bool_t DaughtersSelection(TParticle* iparticle);
     // check if stable
     Bool_t Stable(TParticle*  particle);
-    
-    ClassDef(AliGenDPMjet,2) // AliGenerator interface to DPMJET
+ 
+   Bool_t CheckDiffraction();
+
+    ClassDef(AliGenDPMjet,3) // AliGenerator interface to DPMJET
 };
 #endif
 

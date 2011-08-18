@@ -62,7 +62,9 @@ AliGenDPMjet::AliGenDPMjet()
      fProcess(kDpmMb),
      fTriggerMultiplicity(0),
      fTriggerMultiplicityEta(0),
-     fTriggerMultiplicityPtMin(0)
+     fTriggerMultiplicityPtMin(0),
+     fkTuneForDiff(0),
+     fProcDiff(0)
 {
 // Constructor
     fEnergyCMS = 5500.;
@@ -92,7 +94,9 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
      fProcess(kDpmMb),
      fTriggerMultiplicity(0),
      fTriggerMultiplicityEta(0),
-     fTriggerMultiplicityPtMin(0)
+     fTriggerMultiplicityPtMin(0),
+     fkTuneForDiff(0),
+     fProcDiff(0)
 {
 // Default PbPb collisions at 5. 5 TeV
 //
@@ -126,7 +130,9 @@ AliGenDPMjet::AliGenDPMjet(const AliGenDPMjet &/*Dpmjet*/)
      fProcess(kDpmMb),
      fTriggerMultiplicity(0),
      fTriggerMultiplicityEta(0),
-     fTriggerMultiplicityPtMin(0)
+     fTriggerMultiplicityPtMin(0),
+     fkTuneForDiff(0),
+     fProcDiff(0)
 {
     // Dummy copy constructor
     fEnergyCMS = 5500.;
@@ -235,6 +241,12 @@ void AliGenDPMjet::Generate()
 	if (multiplicity < fTriggerMultiplicity) continue;
 	Printf("Triggered on event with multiplicity of %d >= %d", multiplicity, fTriggerMultiplicity);
       }    
+
+
+      if(fkTuneForDiff && (TMath::Abs(fEnergyCMS - 900) < 1)) {
+	if(!CheckDiffraction() ) continue;
+      }
+
 
       Int_t nc = 0;
       if (np == 0) continue;
@@ -440,7 +452,7 @@ Bool_t AliGenDPMjet::Stable(TParticle*  particle)
 //______________________________________________________________________________
 void AliGenDPMjet::MakeHeader()
 {
-  printf("MakeHeader %13.3f \n", fDPMjet->GetBImpac());
+//  printf("MakeHeader %13.3f \n", fDPMjet->GetBImpac());
 // Builds the event header, to be called after each event
     AliGenEventHeader* header = new AliGenDPMjetEventHeader("DPMJET");
     ((AliGenDPMjetEventHeader*) header)->SetNProduced(fDPMjet->GetNumStablePc());
@@ -448,7 +460,13 @@ void AliGenDPMjet::MakeHeader()
     ((AliGenDPMjetEventHeader*) header)->SetTotalEnergy(fDPMjet->GetTotEnergy());
     ((AliGenDPMjetEventHeader*) header)->SetParticipants(fDPMjet->GetProjParticipants(), 
     							 fDPMjet->GetTargParticipants());
-     ((AliGenDPMjetEventHeader*) header)->SetProcessType(fDPMjet->GetProcessCode());
+
+    if(fProcDiff>0){
+    ((AliGenDPMjetEventHeader*) header)->SetProcessType(fProcDiff);
+    }
+    else 
+      ((AliGenDPMjetEventHeader*) header)->SetProcessType(fDPMjet->GetProcessCode());
+
     // Bookkeeping for kinematic bias
     ((AliGenDPMjetEventHeader*) header)->SetTrials(fTrials);
     // Event Vertex
@@ -483,6 +501,220 @@ void AliGenDPMjet::FinishRun()
     fDPMjet->Dt_Dtuout();
 }
 
+
+
+Bool_t AliGenDPMjet::CheckDiffraction()
+{
+
+  //  printf("AAA\n");
+
+   Int_t np = fParticles.GetEntriesFast();
+
+   Int_t iPart1=-1;
+   Int_t iPart2=-1;
+
+   Double_t y1 = 1e10;
+   Double_t y2 = -1e10;
+
+  const Int_t kNstable=20;
+  const Int_t pdgStable[20] = {
+    22,             // Photon
+    11,             // Electron
+    12,             // Electron Neutrino 
+    13,             // Muon 
+    14,             // Muon Neutrino
+    15,             // Tau 
+    16,             // Tau Neutrino
+    211,            // Pion
+    321,            // Kaon
+    311,            // K0
+    130,            // K0s
+    310,            // K0l
+    2212,           // Proton 
+    2112,           // Neutron
+    3122,           // Lambda_0
+    3112,           // Sigma Minus
+    3222,           // Sigma Plus
+    3312,           // Xsi Minus 
+    3322,           // Xsi0
+    3334            // Omega
+  };
     
+     for (Int_t i = 0; i < np; i++) {
+	TParticle *  part = (TParticle *) fParticles.At(i);
+	
+	Int_t statusCode = part->GetStatusCode();
+	
+	// Initial state particle
+	if (statusCode != 1)
+	  continue;
+
+	Int_t pdg = TMath::Abs(part->GetPdgCode());
+	Bool_t isStable = kFALSE;
+	for (Int_t i1 = 0; i1 < kNstable; i1++) {
+	  if (pdg == pdgStable[i1]) {
+	    isStable = kTRUE;
+	    break;
+	  }
+	}
+	if(!isStable) 
+	  continue;
+
+	Double_t y = part->Y();
+
+	if (y < y1)
+	  {
+	    y1 = y;
+	    iPart1 = i;
+	  }
+	if (y > y2)
+	{
+	  y2 = y;
+	  iPart2 = i;
+	}
+     }
+
+     if(iPart1<0 || iPart2<0) return kFALSE;
+
+     y1=TMath::Abs(y1);
+     y2=TMath::Abs(y2);
+
+     TParticle *  part1 = (TParticle *) fParticles.At(iPart1);
+     TParticle *  part2 = (TParticle *) fParticles.At(iPart2);
+
+     Int_t pdg1 = part1->GetPdgCode();
+     Int_t pdg2 = part2->GetPdgCode();
+
+
+     Int_t iPart = -1;
+     if (pdg1 == 2212 && pdg2 == 2212)
+       {
+	 if(y1 > y2) 
+	   iPart = iPart1;
+	 else if(y1 < y2) 
+	   iPart = iPart2;
+	 else {
+	   iPart = iPart1;
+	   if((AliDpmJetRndm::GetDpmJetRandom())->Uniform(0.,1.)>0.5) iPart = iPart2;
+	 }
+       }
+     else if (pdg1 == 2212)
+       iPart = iPart1;
+     else if (pdg2 == 2212)
+       iPart = iPart2;
+
+
+
+
+
+     Double_t M=-1.;
+     if(iPart>0) {
+       TParticle *  part = (TParticle *) fParticles.At(iPart);
+       Double_t E= part->Energy();
+       Double_t P= part->P();
+       M= TMath::Sqrt((fEnergyCMS-E-P)*(fEnergyCMS-E+P));
+     }
+
+const Int_t nbin=120;
+Double_t bin[]={
+1.080000, 1.274258, 1.468516, 1.662773, 1.857031, 2.051289, 
+2.245547, 2.439805, 2.634062, 2.828320, 3.022578, 3.216836, 
+3.411094, 3.605352, 3.799609, 3.993867, 4.188125, 4.382383, 
+4.576641, 4.770898, 4.965156, 5.547930, 6.130703, 6.713477, 
+7.296250, 7.879023, 8.461797, 9.044570, 9.627344, 10.210117, 
+10.792891, 11.375664, 11.958437, 12.541211, 13.123984, 13.706758, 
+14.289531, 14.872305, 15.455078, 16.037852, 16.620625, 17.203398, 
+17.786172, 18.368945, 18.951719, 19.534492, 20.117266, 20.700039, 
+21.282812, 21.865586, 22.448359, 23.031133, 23.613906, 24.196680, 
+24.779453, 25.362227, 25.945000, 26.527773, 27.110547, 27.693320, 
+28.276094, 28.858867, 29.441641, 30.024414, 30.607187, 31.189961, 
+31.772734, 32.355508, 32.938281, 33.521055, 34.103828, 34.686602, 
+35.269375, 35.852148, 36.434922, 37.017695, 37.600469, 38.183242, 
+38.766016, 39.348789, 39.931562, 40.514336, 41.097109, 41.679883, 
+42.262656, 42.845430, 43.428203, 44.010977, 44.593750, 45.176523, 
+45.759297, 46.342070, 46.924844, 47.507617, 48.090391, 48.673164, 
+49.255937, 49.838711, 50.421484, 57.220508, 64.019531, 70.818555, 
+77.617578, 84.416602, 91.215625, 98.014648, 104.813672, 111.612695, 
+118.411719, 125.210742, 132.009766, 138.808789, 145.607812, 152.406836, 
+159.205859, 166.004883, 172.803906, 179.602930, 186.401953, 193.200977, 
+200.000000};
+Double_t w[]={
+1.000000, 0.367136, 0.239268, 0.181139, 0.167470, 0.160072, 
+0.147832, 0.162765, 0.176103, 0.156382, 0.146040, 0.143375, 
+0.134038, 0.126747, 0.123152, 0.119424, 0.113839, 0.109433, 
+0.107180, 0.104690, 0.096427, 0.090603, 0.083706, 0.077206, 
+0.074603, 0.069698, 0.067315, 0.064980, 0.063560, 0.059573, 
+0.058712, 0.057581, 0.055944, 0.055442, 0.053272, 0.051769, 
+0.051672, 0.049284, 0.048980, 0.048797, 0.047434, 0.047039, 
+0.046395, 0.046227, 0.044288, 0.044743, 0.043772, 0.043902, 
+0.042771, 0.043232, 0.042222, 0.041668, 0.041988, 0.040858, 
+0.039672, 0.040069, 0.040274, 0.039438, 0.039903, 0.039083, 
+0.038741, 0.038182, 0.037664, 0.038610, 0.038759, 0.038688, 
+0.038039, 0.038220, 0.038145, 0.037445, 0.036765, 0.037333, 
+0.036753, 0.036405, 0.036339, 0.037659, 0.036139, 0.036706, 
+0.035393, 0.037136, 0.036570, 0.035234, 0.036832, 0.035560, 
+0.035509, 0.035579, 0.035100, 0.035471, 0.035421, 0.034494, 
+0.035596, 0.034935, 0.035810, 0.034324, 0.035355, 0.034323, 
+0.033486, 0.034622, 0.034805, 0.034419, 0.033946, 0.033927, 
+0.034224, 0.033942, 0.034088, 0.034190, 0.034620, 0.035294, 
+0.035650, 0.035378, 0.036028, 0.035933, 0.036753, 0.037171, 
+0.037528, 0.037985, 0.039589, 0.039359, 0.040269, 0.040755};
+
+ Double_t wSD=1.;
+ Double_t wDD=0.100418;
+ Double_t wND=0.050277;
+
+ if(M>-1 && M<bin[0]) return kFALSE;
+ if(M>bin[nbin]) M=-1;
+
+ Int_t procType=fDPMjet->GetProcessCode();//fPythia->GetMSTI(1);
+ Int_t proc0=2;
+ if(procType== 7) proc0=1;
+ if(procType== 5 || procType== 6) proc0=0;
+
+
+ // printf("M = %f   bin[nbin] = %f\n",M, bin[nbin]);
+
+ Int_t proc=2;
+ if(M>0) proc=0;
+ else if(proc0==1) proc=1;
+
+ if(proc==0 && (AliDpmJetRndm::GetDpmJetRandom())->Uniform(0.,1.) > wSD) return kFALSE;
+ if(proc==1 && (AliDpmJetRndm::GetDpmJetRandom())->Uniform(0.,1.) > wDD) return kFALSE;
+ if(proc==2 && (AliDpmJetRndm::GetDpmJetRandom())->Uniform(0.,1.) > wND) return kFALSE;
+
+
+    //     if(proc==1 || proc==2) return kFALSE;
+
+    if(proc!=0) {
+      if(proc0!=0) fProcDiff = procType;
+      else       fProcDiff = 1;
+      return kTRUE;
+    }
+
+    Int_t ibin=nbin-1;
+    for(Int_t i=1; i<=nbin; i++) 
+      if(M<=bin[i]) {
+	ibin=i-1;
+	//	printf("Mi> %f && Mi< %f\n", bin[i-1], bin[i]);
+	break;
+      }
+
+    //    printf("w[ibin] = %f\n", w[ibin]);
+
+    if((AliDpmJetRndm::GetDpmJetRandom())->Uniform(0.,1.)> w[ibin]) return kFALSE;
+
+    //    printf("iPart = %d\n", iPart);
+
+    if(iPart==iPart1) fProcDiff=5;
+    else if(iPart==iPart2) fProcDiff=6;
+    else {
+      printf("EROOR:  iPart!=iPart1 && iPart!=iPart2\n");
+
+    }
+
+    return kTRUE;
+}
+
 
 //______________________________________________________________________________
