@@ -20,7 +20,7 @@
 #include "AliVEvent.h"
 #include "Rtypes.h"
 #include "TString.h"
-//#include "THnSparse.h"
+	       //#include "THnSparse.h"
 
 using namespace std;
 ClassImp(AliAnalysisEt);
@@ -29,11 +29,26 @@ ClassImp(AliAnalysisEt);
 Int_t AliAnalysisEt::fgnumOfEtaBins = 16;
 Float_t AliAnalysisEt::fgEtaAxis[17]={-0.78, -0.7, -0.58, -0.46, -0.34, -0.22, -0.12, -0.06, -0.0, 0.06, 0.12, 0.22, 0.34, 0.46, 0.58, 0.7, 0.78};
 
+Int_t AliAnalysisEt::fgNumOfPtBins = 111;
+Float_t AliAnalysisEt::fgPtAxis[117]=
+   {0.0,0.01,0.02,0.03,0.04, 0.05, 0.06,0.07,0.08,0.09, 0.10,0.11, .12,0.13, .14,0.15, .16,0.17, .18,0.19,
+	0.2, .22, .24, .26, .28, 0.30, 0.32, .34, .36, .38, 0.40, .42, .44, .46, .48,
+	0.5, .52, .54, .56, .58, 0.60, 0.62, .64, .66, .68, 0.70, .72, .74, .76, .78,
+	.80, .82, .84, .86, .88, 0.90, 0.92, .94, .96, .98, 1.00,1.05, 1.1,1.15, 1.2,
+	1.25, 1.3,1.35,1.40,1.45, 1.50, 1.55, 1.6,1.65, 1.7, 1.75, 1.8,1.85, 1.9,1.95,
+	2.0, 2.2, 2.4, 2.6, 2.8, 3.00, 3.20, 3.4, 3.6, 3.8, 4.00, 4.2, 4.4, 4.6, 4.8,
+	5.0, 5.5, 6.0, 6.5, 7.0, 7.50, 8.00, 8.5, 9.0, 9.5, 10.0,12.0,14.0,16.0,18.0,
+	20.0,25.0,30.0,35.0,40.0, 45.0, 50.0}; 
+
 Int_t AliAnalysisEt::fgNumOfEBins = 78;
 Float_t AliAnalysisEt::fgEAxis[79]={0., 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
 									1.,1.5,2.,2.5,3.,3.5,4.,4.5,5.,5.5,6.,6.5,7.,7.5,8.,8.5,9.,9.5,10.,11.,
 									12.,13.,14.,15.,16.,17.,18.,19.,20.,21.,22.,23.,24.,25.,26.,27.,28.,29.,30.,31.,
 									32.,33.,34.,35.,36.,37.,38.,39.,40.,41.,42.,43.,44.,45.,46.,47.,48.,49.,50.};
+
+Int_t AliAnalysisEt::fgNumOfRBins = 47;
+Float_t AliAnalysisEt::fgRAxis[48]={-2.,-1.,0.,0.0005,0.001,0.0015,0.002,0.0025,0.003,0.0035,0.004,0.0045,0.005,0.0055,0.006,0.0065,0.007,0.0075,0.008,0.0085,0.009,0.0095,0.01,
+									0.011,0.012,0.013,0.014,0.015,0.016,0.017,0.018,0.019,0.020,0.022,0.024,0.026,0.028,0.03,0.032,0.034,0.036,0.038,0.04,0.042,0.044,0.046,0.048,0.05};
 
 
 AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
@@ -420,23 +435,126 @@ void AliAnalysisEt::CreateHistograms()
 
 TH2F* AliAnalysisEt::CreateEtaEHisto2D(TString name, TString title, TString ztitle)
 {     //creates a 2-d histogram in eta and E and adds it to the list of histograms to be saved
-	TString *histoname   = new TString();
-	TString *histotitle   = new TString();
-	TString *zaxistitle   = new TString();
+	TString histoname   = name + fHistogramNameSuffix;
 	
-	histoname->Append(name);
-	histotitle->Append(title);
-	zaxistitle->Append(ztitle);
-	
-	TH2F *histo = new TH2F(histoname->Data(),histotitle->Data(),fgNumOfEBins, fgEAxis, fgnumOfEtaBins, fgEtaAxis);
+	TH2F *histo = new TH2F(histoname.Data(),title.Data(),fgNumOfEBins, fgEAxis, fgnumOfEtaBins, fgEtaAxis);
 	histo->SetYTitle("#eta");
 	histo->SetXTitle("E (GeV)");
-	histo->SetZTitle(zaxistitle->Data());
+	histo->SetZTitle(ztitle.Data());
 	histo->Sumw2();
-	//fhistoList->Add(histo);
-	delete histoname;
-	delete histotitle;
-    delete zaxistitle;
+	
+	return histo; 
+}
+
+
+TH2F* AliAnalysisEt::CreateEtaPtHisto2D(TString name, TString title, TString ztitle)
+{     //creates a 2-d histogram in eta and phi and adds it to the list of histograms to be saved
+	TString histoname   = name + fHistogramNameSuffix;
+	
+	TH2F *histo = new TH2F(histoname.Data(),title.Data(),fgNumOfPtBins, fgPtAxis, fgnumOfEtaBins, fgEtaAxis);
+	histo->SetYTitle("#eta");
+	histo->SetXTitle("p_{T}");
+	histo->SetZTitle(ztitle.Data());
+	histo->Sumw2();
+	
+	return histo; 
+}
+
+TH2F* AliAnalysisEt::CreateEtaEtHisto2D(TString name, TString title, TString ztitle)
+{     //creates a 2-d histogram in eta and phi and adds it to the list of histograms to be saved
+	TString histoname   = name + fHistogramNameSuffix;
+	
+	TH2F *histo = new TH2F(histoname.Data(),title.Data(),fgNumOfEBins, fgEAxis, fgnumOfEtaBins, fgEtaAxis);
+	histo->SetYTitle("#eta");
+	histo->SetXTitle("E_{T}");
+	histo->SetZTitle(ztitle.Data());
+	histo->Sumw2();
+	
+	return histo; 
+}
+
+TH2F* AliAnalysisEt::CreateResEHisto2D(TString name, TString title, TString ztitle)
+{     //creates a 2-d histogram in eta and E and adds it to the list of histograms to be saved
+	TString histoname   = name + fHistogramNameSuffix;
+	
+	TH2F *histo = new TH2F(histoname.Data(),title.Data(),fgNumOfEBins, fgEAxis, fgNumOfRBins, fgRAxis);
+	histo->SetYTitle("R");
+	histo->SetXTitle("E (GeV)");
+	histo->SetZTitle(ztitle.Data());
+	histo->Sumw2();
+	
+	return histo; 
+}
+
+
+TH2F* AliAnalysisEt::CreateResPtHisto2D(TString name, TString title, TString ztitle)
+{     //creates a 2-d histogram in eta and phi and adds it to the list of histograms to be saved
+	TString histoname   = name + fHistogramNameSuffix;
+	
+	TH2F *histo = new TH2F(histoname.Data(),title.Data(),fgNumOfPtBins, fgPtAxis, fgNumOfRBins, fgRAxis);
+	histo->SetYTitle("R");
+	histo->SetXTitle("p_{T}");
+	histo->SetZTitle(ztitle.Data());
+	histo->Sumw2();
+	
+	return histo; 
+}
+
+THnSparseD* AliAnalysisEt::CreateClusterHistoSparse(TString name, TString title)
+{     //creates a 2D sparse histogram
+	TString histoname   = name + fHistogramNameSuffix;
+	
+	Int_t nBins[4] = {200,200,240,20};
+	Double_t min[4] = {0.,-1.,70.,0.5};
+	Double_t max[4] = {50.,1.,190,20.5};
+	
+	THnSparseD *histo = new THnSparseD(histoname.Data(),title.Data(),4,nBins,min, max);
+    histo->GetAxis(0)->SetTitle("E");
+    histo->GetAxis(1)->SetTitle("#eta_{cluster}");
+    histo->GetAxis(2)->SetTitle("#phi_{cluster}");
+    histo->GetAxis(3)->SetTitle("n_{cells}");
+	histo->Sumw2();
+	
+	return histo; 
+}
+
+THnSparseD* AliAnalysisEt::CreateNeutralPartHistoSparse(TString name, TString title)
+{     //creates a sparse neutral particle histogram
+	TString histoname   = name + fHistogramNameSuffix;
+	
+	Int_t nBins[6] = {20,200,200,200,240,20};
+	Double_t min[6] = {-1.,0.,0.,-1.,70.,0.5};
+	Double_t max[6] = {1.,50.,50.,1.,190,20.5};
+	
+	THnSparseD *histo = new THnSparseD(histoname.Data(),title.Data(),6,nBins,min, max);
+    histo->GetAxis(0)->SetTitle("#eta");
+    histo->GetAxis(1)->SetTitle("p_{T}");
+    histo->GetAxis(2)->SetTitle("E");
+    histo->GetAxis(3)->SetTitle("#eta_{cluster}");
+    histo->GetAxis(4)->SetTitle("#phi_{cluster}");
+    histo->GetAxis(5)->SetTitle("n_{cells}");
+	histo->Sumw2();
+	
+	return histo; 
+}
+
+THnSparseD* AliAnalysisEt::CreateChargedPartHistoSparse(TString name, TString title)
+{     //creates a sparse charged particle histogram
+	TString histoname   = name + fHistogramNameSuffix;
+	
+	Int_t nBins[7] = {20,200,200,200,240,20,100};
+	Double_t min[7] = {-1.,0.,0.,-1.,70.,0.5,0.};
+	Double_t max[7] = {1.,50.,50.,1.,190,20.5,0.1};
+	
+	THnSparseD *histo = new THnSparseD(histoname.Data(),title.Data(),7,nBins,min, max);
+    histo->GetAxis(0)->SetTitle("#eta");
+    histo->GetAxis(1)->SetTitle("p_{T}");
+    histo->GetAxis(2)->SetTitle("E");
+    histo->GetAxis(3)->SetTitle("#eta_{cluster}");
+    histo->GetAxis(4)->SetTitle("#phi_{cluster}");
+    histo->GetAxis(5)->SetTitle("n_{cells}");
+    histo->GetAxis(6)->SetTitle("R_{match}");
+	histo->Sumw2();
 	
 	return histo; 
 }
