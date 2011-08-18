@@ -51,7 +51,7 @@
 #include "AliHLTTriggerCosmics.h"
 #include "AliHLTTriggerCounterComponent.h"
 #include "AliHLTTriggerEmcalElectron.h"
-#include "AliHLTTriggerFastJet.h"
+//#include "AliHLTTriggerFastJet.h"
 #include "AliHLTFastJetMonitorComponent.h"
 #include "AliHLTEmcalElectronMonitorComponent.h"
 
