@@ -980,6 +980,16 @@ AliCDBStorage* AliCDBLocalFactory::Create(const AliCDBParam* param) {
 
 	return NULL;
 }
+//_____________________________________________________________________________
+void AliCDBLocal::SetRetry(Int_t nretry, Int_t totsec) {
+
+	// Function to set the exponential retry for putting entries in the OCDB
+
+	AliInfo("This function sets the exponential retry for putting entries in the OCDB - to be used ONLY for AliCDBGrid --> returning without doing anything");
+	return;
+} 
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                             //

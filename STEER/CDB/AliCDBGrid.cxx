@@ -29,6 +29,7 @@
 #include <TList.h>
 #include <TObjArray.h>
 #include <TObjString.h>
+#include <TMath.h>
 #include <TRegexp.h>
 
 #include "AliLog.h"
@@ -218,6 +219,17 @@ Bool_t AliCDBGrid::IdToFilename(const AliCDBId& id, TString& filename) const {
 
         return kTRUE;
 }
+
+//_____________________________________________________________________________
+void AliCDBGrid::SetRetry(Int_t nretry, Int_t totsec) {
+
+	// Function to set the exponential retry for putting entries in the OCDB
+
+	const Double_t klog2 = TMath::Log(2.);
+	fNretry = nretry;
+	fRetrySeconds = TMath::Max(TMath::Exp(TMath::Log(totsec)-nretry*klog2),1.);
+} 
+
 
 //_____________________________________________________________________________
 Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
@@ -718,13 +730,25 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 	// specify SE to filename
 	if (fSE != "default") fullFilename += Form("?se=%s",fSE.Data());
 
+	Int_t nsleep =1;
 	// open file
-  	TFile *file = TFile::Open(fullFilename,"CREATE");
-  	if(!file || !file->IsWritable()){
-  		AliError(Form("Can't open file <%s>!", filename.Data()));
-  		if(file && !file->IsWritable()) file->Close(); delete file; file=0;
-  		return kFALSE;
-  	}
+	TFile *file=0;
+	Printf("fNretry = %d, fRetrySeconds = %d",fNretry,fRetrySeconds);
+	for(Int_t i=0; i<=fNretry; ++i) {
+		AliDebug(2, Form("Putting the file in the OCDB: Retry n. %d",i));
+		file = TFile::Open(fullFilename,"CREATE");
+		if(!file || !file->IsWritable()){
+			AliError(Form("Can't open file <%s>!", filename.Data()));
+			if(file && !file->IsWritable()) file->Close(); delete file; file=0;
+			if(i==fNretry) return kFALSE;
+			else sleep(fRetrySeconds*nsleep);
+		} 
+		else {
+			AliDebug(2, " Successful!");
+			break;
+		}
+		nsleep*=2;
+	}
 
 	file->cd();
 

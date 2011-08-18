@@ -36,7 +36,9 @@ fMetaDataFilter(0),
 fSelections(),
 fURI(),
 fType(),
-fBaseFolder()
+fBaseFolder(),
+fNretry(0),
+fRetrySeconds(0)
 {
 // constructor
 
