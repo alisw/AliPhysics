@@ -38,10 +38,6 @@ ClassImp(AliAnalysisEmEtMonteCarlo);
 
 // ctor
 AliAnalysisEmEtMonteCarlo::AliAnalysisEmEtMonteCarlo():AliAnalysisEtMonteCarlo()
-,fNcoll(0)
-,fNpart(0)
-
-,fImpactParameter(0)
 ,fPrimtotET(0), fPrimAcctotET(0), fPrimRectotET(0), fPrimRectotETDep(0)
 ,fElectrontotET(0), fElectronAcctotET(0), fElectronRectotET(0)
 ,fConvElectrontotET(0), fConvElectronAcctotET(0), fConvElectronRectotET(0), fScatElectrontotET(0), fScatElectronAcctotET(0), fScatElectronRectotET(0)
@@ -1457,32 +1453,7 @@ Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		Printf("ERROR: Event generation header does not exist");   
 	    return 0;
     }
-    
-	AliGenHijingEventHeader* hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(genHeader);
-    if (hijingGenHeader) {
-		fImpactParameter = hijingGenHeader->ImpactParameter();
-		fNcoll = hijingGenHeader->HardScatters(); // or should this be some combination of NN() NNw() NwN() NwNw() ?
-		fNpart = hijingGenHeader->ProjectileParticipants() + hijingGenHeader->TargetParticipants(); 
-		/*
-		 printf("Hijing: ImpactParameter %g ReactionPlaneAngle %g \n",
-	     hijingGenHeader->ImpactParameter(), hijingGenHeader->ReactionPlaneAngle());
-		 printf("HardScatters %d ProjecileParticipants %d TargetParticipants %d\n",
-	     hijingGenHeader->HardScatters(), hijingGenHeader->ProjectileParticipants(), hijingGenHeader->TargetParticipants()); 
-		 printf("ProjSpectatorsn %d ProjSpectatorsp %d TargSpectatorsn %d TargSpectatorsp %d\n",
-	     hijingGenHeader->ProjSpectatorsn(), hijingGenHeader->ProjSpectatorsp(), hijingGenHeader->TargSpectatorsn(), hijingGenHeader->TargSpectatorsp());
-		 printf("NN %d NNw %d NwN %d, NwNw %d\n",
-	     hijingGenHeader->NN(), hijingGenHeader->NNw(), hijingGenHeader->NwN(), hijingGenHeader->NwNw());
-		 */
-    }
-	
-    /* // placeholder if we want to get some Pythia info later
-	 AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
-	 if (pythiaGenHeader) { // not Hijing; try with Pythia      
-	 printf("Pythia: ProcessType %d  GetPtHard %g \n",
-	 pythiaGenHeader->ProcessType(), pythiaGenHeader->GetPtHard());
-	 }
-	 */
-	
+    	
     // Let's play with the stack!
     AliStack *stack = event->Stack();
 
@@ -3030,11 +3001,6 @@ void AliAnalysisEmEtMonteCarlo::ResetEventValues()
 { // reset event values
 	AliAnalysisEt::ResetEventValues();
 	
-	// collision geometry defaults for p+p:
-	fImpactParameter = 0;
-	fNcoll = 1;
-	fNpart = 2;  
-	
 	fPrimtotET = 0; fPrimAcctotET = 0; fPrimRectotET = 0; fPrimRectotETDep = 0;
 
 	fElectrontotET = 0; fElectronAcctotET = 0; fElectronRectotET = 0;
@@ -3068,11 +3034,6 @@ void AliAnalysisEmEtMonteCarlo::ResetEventValues()
 void AliAnalysisEmEtMonteCarlo::CreateHistograms()
 { // histogram related additions
 	//AliAnalysisEt::CreateHistograms();
-	if (fTree) {
-		fTree->Branch("fImpactParameter",&fImpactParameter,"fImpactParameter/D");
-		fTree->Branch("fNcoll",&fNcoll,"fNcoll/I");
-		fTree->Branch("fNpart",&fNpart,"fNpart/I");
-	}
 	
 	fHistPrimEtaEET = CreateEtaEHisto2D("fHistPrimEtaEET_","MC E_{T}, primary particles","E_{T}(GeV)");
 	fHistPrimEtaPtET = CreateEtaPtHisto2D("fHistPrimEtaPtET_","MC E_{T}, primary particles","E_{T}(GeV)");

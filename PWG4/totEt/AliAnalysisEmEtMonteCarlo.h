@@ -56,10 +56,6 @@ protected:
 	
 protected:
 
-	Int_t fNcoll; // Ncoll, for Hijing; 1 otherwise
-	Int_t fNpart; // Ncoll, for Hijing; 2 otherwise
-
-	Double_t fImpactParameter;//, fResCut; // b(fm), for Hijing; 0 otherwise
 	Double_t fResCut; // b(fm), for Hijing; 0 otherwise
 	Double_t fPrimtotET, fPrimAcctotET, fPrimRectotET, fPrimRectotETDep;//Marcelo please add comment
 
