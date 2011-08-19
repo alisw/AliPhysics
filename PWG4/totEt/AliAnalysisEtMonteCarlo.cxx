@@ -35,48 +35,6 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
         ,fImpactParameter(0)
         ,fNcoll(0)
         ,fNpart(0)
-        ,fHistPrimElectronEtaEET(0)
-        ,fHistSecElectronEtaEET(0)
-        ,fHistConvElectronEtaEET(0)
-        ,fHistPrimGammaEtaEET(0)
-        ,fHistPion0GammaEtaEET(0)
-        ,fHistEtaGammaEtaEET(0)
-        ,fHistOmega0GammaEtaEET(0)
-        ,fHistSecGammaEtaEET(0)
-
-        ,fHistPrimElectronEtaE(0)
-        ,fHistSecElectronEtaE(0)
-        ,fHistConvElectronEtaE(0)
-        ,fHistPrimGammaEtaE(0)
-        ,fHistPion0GammaEtaE(0)
-        ,fHistEtaGammaEtaE(0)
-        ,fHistOmega0GammaEtaE(0)
-        ,fHistSecGammaEtaE(0)
-
-        ,fHistPrimElectronEtaERec(0)
-        ,fHistSecElectronEtaERec(0)
-        ,fHistConvElectronEtaERec(0)
-        ,fHistPrimGammaEtaERec(0)
-        ,fHistSecGammaEtaERec(0)
-        ,fHistPion0GammaEtaERec(0)
-        ,fHistEtaGammaEtaERec(0)
-        ,fHistOmega0GammaEtaERec(0)
-
-        ,fHistAllERecEMC(0)
-        ,fHistGammaERecEMC(0)
-        ,fHistElectronERecEMC(0)
-
-        ,fHistElectronFirstMother(0)
-        ,fHistElectronLastMother(0)
-        ,fHistElectronFirstMotherEtaAcc(0)
-        ,fHistElectronFirstMotherNPP(0)
-        ,fHistElectronFirstMotherNPPAcc(0)
-
-        ,fHistGammaFirstMother(0)
-        ,fHistGammaLastMother(0)
-        ,fHistGammaFirstMotherEtaAcc(0)
-        ,fHistGammaFirstMotherNPP(0)
-        ,fHistGammaFirstMotherNPPAcc(0)
 
         ,fHistDecayVertexNonRemovedCharged(0)
         ,fHistDecayVertexRemovedCharged(0)
@@ -317,115 +275,6 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
         // Check if it is a primary particle
         //if (!stack->IsPhysicalPrimary(iPart)) continue;
 
-        // it goes to the next particle in case it is not a physical primary or not a electron or gamma (want to check the contribution from secondary)
-        if (!stack->IsPhysicalPrimary(iPart))
-        {
-            // this part is used only to check the origin of secondary electrons and gammas
-            if (iPartMom>0)
-            {
-                //if (!stack->IsPhysicalPrimary(iPartMom)) continue;
-
-                if (pdgMom)
-                {
-                    if ((pdg->PdgCode() == fgEPlusCode) || (pdg->PdgCode() == fgEMinusCode))
-                    {
-                        fHistElectronFirstMotherNPP->Fill(pdgMom->PdgCode());
-                        // inside EMCal acceptance
-                        if (TMath::Abs(part->Eta()) < fEtaCutAcc && part->Phi() < fPhiCutAccMax && part->Phi() > fPhiCutAccMin)
-                            fHistElectronFirstMotherNPPAcc->Fill(pdgMom->PdgCode());
-                    }
-                    else if (pdg->PdgCode() == fgGammaCode)
-                    {
-                        fHistGammaFirstMotherNPP->Fill(pdgMom->PdgCode());
-                        if (TMath::Abs(part->Eta()) < fEtaCutAcc && part->Phi() < fPhiCutAccMax && part->Phi() > fPhiCutAccMin)
-                            fHistGammaFirstMotherNPPAcc->Fill(pdgMom->PdgCode());
-                    }
-                }
-                else
-                {
-                    if ((pdg->PdgCode() == fgEPlusCode) || (pdg->PdgCode() == fgEMinusCode))
-                        fHistElectronFirstMotherNPP->Fill(-598);
-                    else if (pdg->PdgCode() == fgGammaCode)
-                        fHistGammaFirstMotherNPP->Fill(-598);
-
-                    continue;
-                }
-            }
-            else
-            {
-                if ((pdg->PdgCode() == fgEPlusCode) || (pdg->PdgCode() == fgEMinusCode))
-                    fHistElectronFirstMotherNPP->Fill(-599);
-                else if (pdg->PdgCode() == fgGammaCode)
-                    fHistGammaFirstMotherNPP->Fill(-599);
-
-                continue;
-            }
-
-            if (!((pdg->PdgCode() == fgEPlusCode) || (pdg->PdgCode() == fgEMinusCode) || (pdg->PdgCode() == fgGammaCode)))
-                continue;
-        }
-        // this part is used only to check the origin of physical primary electrons and gammas
-        else
-        {
-            if (iPartMom>0)
-            {
-                if (pdgMom)
-                {
-                    if ((pdg->PdgCode() == fgEPlusCode) || (pdg->PdgCode() == fgEMinusCode))
-                        fHistElectronFirstMother->Fill(pdgMom->PdgCode());
-                    else if (pdg->PdgCode() == fgGammaCode)
-                        fHistGammaFirstMother->Fill(pdgMom->PdgCode());
-
-                    if (TMath::Abs(part->Eta()) < fCuts->GetCommonEtaCut())
-                    {
-                        if ((pdg->PdgCode() == fgEPlusCode) || (pdg->PdgCode() == fgEMinusCode))
-                            fHistElectronFirstMotherEtaAcc->Fill(pdgMom->PdgCode());
-                        else if (pdg->PdgCode() == fgGammaCode)
-                            fHistGammaFirstMotherEtaAcc->Fill(pdgMom->PdgCode());
-                    }
-                }
-                else
-                {
-                    if ((pdg->PdgCode() == fgEPlusCode) || (pdg->PdgCode() == fgEMinusCode))
-                        fHistElectronFirstMother->Fill(-598);
-                    else if (pdg->PdgCode() == fgGammaCode)
-                        fHistGammaFirstMother->Fill(-598);
-                }
-            }
-            else
-            {
-                if ((pdg->PdgCode() == fgEPlusCode) || (pdg->PdgCode() == fgEMinusCode))
-                    fHistElectronFirstMother->Fill(-599);
-                else if (pdg->PdgCode() == fgGammaCode)
-                    fHistGammaFirstMother->Fill(-599);
-            }
-
-            if (iPartLastMom>0)
-            {
-                if (pdgMomLast)
-                {
-                    if ((pdg->PdgCode() == fgEPlusCode) || (pdg->PdgCode() == fgEMinusCode))
-                        fHistElectronLastMother->Fill(pdgMomLast->PdgCode());
-                    else if (pdg->PdgCode() == fgGammaCode)
-                        fHistGammaLastMother->Fill(pdgMomLast->PdgCode());
-                }
-                else
-                {
-                    if ((pdg->PdgCode() == fgEPlusCode) || (pdg->PdgCode() == fgEMinusCode))
-                        fHistElectronLastMother->Fill(-598);
-                    else if (pdg->PdgCode() == fgGammaCode)
-                        fHistGammaLastMother->Fill(-598);
-                }
-            }
-            else
-            {
-                if ((pdg->PdgCode() == fgEPlusCode) || (pdg->PdgCode() == fgEMinusCode))
-                    fHistElectronLastMother->Fill(-599);
-                else if (pdg->PdgCode() == fgGammaCode)
-                    fHistGammaLastMother->Fill(-599);
-            }
-        }
-
         //printf("MC: iPart %03d eta %4.3f phi %4.3f code %d charge %g \n", iPart, part->Eta(), part->Phi(), pdg->PdgCode(), pdg->Charge()); // tmp/debug printout
 
         // Check for reasonable (for now neutral and singly charged) charge on the particle
@@ -528,45 +377,6 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                         if (et > fCuts->GetCommonClusterEnergyCut()) fTotNeutralEtAcc += et;
                         if (et > fCuts->GetCommonClusterEnergyCut()) fTotEtAcc += et;
                         if (part->Energy() > 0.05) partCount++;
-                        if (pdg->PdgCode() == fgGammaCode)
-                        {
-                            if (!stack->IsPhysicalPrimary(iPart))
-                            {
-                                fHistSecGammaEtaE->Fill(part->Energy(),part->Eta());
-                                fHistSecGammaEtaEET->Fill(part->Energy(),part->Eta(),et);
-                            }
-                            else
-                            {
-                                if (pdgMom)
-                                {
-                                    if (pdgMom->PdgCode() == fgPi0Code)
-                                    {
-                                        fHistPion0GammaEtaE->Fill(part->Energy(),part->Eta());
-                                        fHistPion0GammaEtaEET->Fill(part->Energy(),part->Eta(),et);
-                                    }
-                                    else if (pdgMom->PdgCode() == fgOmega0Code)
-                                    {
-                                        fHistOmega0GammaEtaE->Fill(part->Energy(),part->Eta());
-                                        fHistOmega0GammaEtaEET->Fill(part->Energy(),part->Eta(),et);
-                                    }
-                                    else if (pdgMom->PdgCode() == fgEtaCode)
-                                    {
-                                        fHistEtaGammaEtaE->Fill(part->Energy(),part->Eta());
-                                        fHistEtaGammaEtaEET->Fill(part->Energy(),part->Eta(),et);
-                                    }
-                                    else
-                                    {
-                                        fHistPrimGammaEtaE->Fill(part->Energy(),part->Eta());
-                                        fHistPrimGammaEtaEET->Fill(part->Energy(),part->Eta(),et);
-                                    }
-                                }
-                                else
-                                {
-                                    fHistPrimGammaEtaE->Fill(part->Energy(),part->Eta());
-                                    fHistPrimGammaEtaEET->Fill(part->Energy(),part->Eta(),et);
-                                }
-                            }
-                        }
                     }
                 }
                 //Charged particles
@@ -597,42 +407,11 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
                         {
                             fMuonEtAcc += et;
                         }
-                        /*
-                          if (pdg->PdgCode() == fgEPlusCode || pdg->PdgCode() == fgEMinusCode)
-                          {
-                          fElectronEtAcc += et;
-                          }
-                        */
+                        
                         if (pdg->PdgCode() == fgEPlusCode || pdg->PdgCode() == fgEMinusCode)
                         {
-                            if (!stack->IsPhysicalPrimary(iPart))
-                            {
-                                if (pdgMom)
-                                {
-                                    if ((pdgMom->PdgCode() == fgGammaCode) && (stack->IsPhysicalPrimary(iPartMom)))
-                                    {
-                                        fHistConvElectronEtaE->Fill(part->Energy(),part->Eta());
-                                        fHistConvElectronEtaEET->Fill(part->Energy(),part->Eta(),et);
-                                    }
-                                    else
-                                    {
-                                        fHistSecElectronEtaE->Fill(part->Energy(),part->Eta());
-                                        fHistSecElectronEtaEET->Fill(part->Energy(),part->Eta(),et);
-                                    }
-                                }
-                                else
-                                {
-                                    fHistSecElectronEtaE->Fill(part->Energy(),part->Eta());
-                                    fHistSecElectronEtaEET->Fill(part->Energy(),part->Eta(),et);
-                                }
-                            }
-                            else
-                            {
-                                fElectronEtAcc += et;
-                                fHistPrimElectronEtaE->Fill(part->Energy(),part->Eta());
-                                fHistPrimElectronEtaEET->Fill(part->Energy(),part->Eta(),et);
-                            }
-                        } // electron
+                          fElectronEtAcc += et;
+                        }
                     } // inside EMCal acceptance
 
                     //	  if (TrackHitsCalorimeter(part, event->GetMagneticField()))
@@ -717,7 +496,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     for (int iCluster = 0; iCluster < nCluster; iCluster++ )
     {
         AliESDCaloCluster* caloCluster = ( AliESDCaloCluster* )caloClusters->At( iCluster );
-        Float_t caloE = caloCluster->E();
+        //Float_t caloE = caloCluster->E();
 
         UInt_t iPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
         TParticle *part  = stack->Particle(iPart);
@@ -730,7 +509,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         }
 
         // compare MC and Rec energies for all particles
-        fHistAllERecEMC->Fill(part->Energy(),caloE);
+        //fHistAllERecEMC->Fill(part->Energy(),caloE);
 
         TParticlePDG *pdg = part->GetPDG(0);
         TParticlePDG *pdgMom = 0;
@@ -758,73 +537,6 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         } // end of primary particle check
 
         if (TMath::Abs(TMath::Abs(pdg->Charge()) - fCuts->GetMonteCarloSingleChargedParticle())<1e-3 && TMath::Abs(TMath::Abs(pdg->Charge()) - fCuts->GetMonteCarloNeutralParticle())<1e-3) continue;
-
-        if (pdg->PdgCode() == fgGammaCode)
-        {
-            // compare MC and Rec energies for gammas
-            fHistGammaERecEMC->Fill(part->Energy(),caloE);
-
-            if (!stack->IsPhysicalPrimary(iPart))
-            {
-                fHistSecGammaEtaERec->Fill(part->Energy(),part->Eta());
-            }
-            else
-            {
-                if (pdgMom)
-                {
-                    if (pdgMom->PdgCode() == fgPi0Code)
-                    {
-                        fHistPion0GammaEtaERec->Fill(part->Energy(),part->Eta());
-                    }
-                    else if (partMom->GetPDG(0)->PdgCode() == fgOmega0Code)
-                    {
-                        fHistOmega0GammaEtaERec->Fill(part->Energy(),part->Eta());
-                    }
-                    else if (partMom->GetPDG(0)->PdgCode() == fgEtaCode)
-                    {
-                        fHistEtaGammaEtaERec->Fill(part->Energy(),part->Eta());
-                    }
-                    else
-                    {
-                        fHistPrimGammaEtaERec->Fill(part->Energy(),part->Eta());
-                    }
-                }
-                else
-                {
-                    fHistPrimGammaEtaERec->Fill(part->Energy(),part->Eta());
-                }
-            }
-        } // gamma
-
-        if (pdg->PdgCode() == fgEPlusCode || pdg->PdgCode() == fgEMinusCode)
-        {
-            // compare MC and Rec energies for electrons
-            fHistElectronERecEMC->Fill(part->Energy(),caloE);
-
-            if (!stack->IsPhysicalPrimary(iPart))
-            {
-                if (pdgMom)
-                {
-                    if ((pdgMom->PdgCode() == fgGammaCode) && (stack->IsPhysicalPrimary(iPartMom)))
-                    {
-                        fHistConvElectronEtaERec->Fill(part->Energy(),part->Eta());
-                    }
-                    else
-                    {
-                        fHistSecElectronEtaERec->Fill(part->Energy(),part->Eta());
-                    }
-                }
-                else
-                {
-                    fHistSecElectronEtaERec->Fill(part->Energy(),part->Eta());
-                }
-            }
-            else
-            {
-                fHistPrimElectronEtaERec->Fill(part->Energy(),part->Eta());
-            }
-        }
-
 
         Double_t clEt = CalculateTransverseEnergy(caloCluster);
         if (caloCluster->E() < fCuts->GetCommonClusterEnergyCut()) continue;
@@ -1107,57 +819,7 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
         fTree->Branch("fNcoll",&fNcoll,"fNcoll/I");
         fTree->Branch("fNpart",&fNpart,"fNpart/I");
     }
-    fHistPrimElectronEtaEET = CreateEtaEHisto2D("fHistPrimElectronEtaEET","MC E_{T}, primary electrons","E_{T}(GeV)");
-    fHistSecElectronEtaEET = CreateEtaEHisto2D("fHistSecElectronEtaEET","MC E_{T}, secondary (no conversion) electrons","E_{T}(GeV)");
-    fHistConvElectronEtaEET = CreateEtaEHisto2D("fHistConvElectronEtaEET","MC E_{T}, electrons from conversion","E_{T}(GeV)");
-    fHistPrimGammaEtaEET = CreateEtaEHisto2D("fHistPrimGammaEtaEET","MC E_{T}, primary gammas","E_{T}(GeV)");
-    fHistPion0GammaEtaEET = CreateEtaEHisto2D("fHistPion0GammaEtaEET","MC E_{T}, #pi^{0}","E_{T}(GeV)");
-    fHistOmega0GammaEtaEET = CreateEtaEHisto2D("fHistOmega0GammaEtaEET","MC E_{T}, #omega^{0}","E_{T}(GeV)");
-    fHistEtaGammaEtaEET = CreateEtaEHisto2D("fHistEtaGammaEtaEET","MC E_{T}, #eta","E_{T}(GeV)");
-    fHistSecGammaEtaEET = CreateEtaEHisto2D("fHistSecGammaEtaEET","MC E_{T}, secondary (no #pi^{0}, #eta or #omega) gammas","E_{T}(GeV)");
-
-    fHistPrimElectronEtaE = CreateEtaEHisto2D("fHistPrimElectronEtaE","MC E_{T}, primary electrons","#");
-    fHistSecElectronEtaE = CreateEtaEHisto2D("fHistSecElectronEtaE","MC E_{T}, secondary (no conversion) electrons","#");
-    fHistConvElectronEtaE = CreateEtaEHisto2D("fHistConvElectronEtaE","MC E_{T}, electrons from conversion","#");
-    fHistPrimGammaEtaE = CreateEtaEHisto2D("fHistPrimGammaEtaE","MC E_{T}, primary gammas","#");
-    fHistPion0GammaEtaE = CreateEtaEHisto2D("fHistPion0GammaEtaE","MC E_{T}, #pi^{0}","#");
-    fHistOmega0GammaEtaE = CreateEtaEHisto2D("fHistOmega0GammaEtaE","MC E_{T}, #omega^{0}","#");
-    fHistEtaGammaEtaE = CreateEtaEHisto2D("fHistEtaGammaEtaE","MC E_{T}, #eta","#");
-    fHistSecGammaEtaE = CreateEtaEHisto2D("fHistSecGammaEtaE","MC E_{T}, secondary (no #pi^{0}, #eta or #omega) gammas","#");
-
-    fHistPrimElectronEtaERec = CreateEtaEHisto2D("fHistPrimElectronEtaERec","MC E_{T}, primary electrons","#");
-    fHistSecElectronEtaERec = CreateEtaEHisto2D("fHistSecElectronEtaERec","MC E_{T}, secondary (no conversion) electrons","#");
-    fHistConvElectronEtaERec = CreateEtaEHisto2D("fHistConvElectronEtaERec","MC E_{T}, electrons from conversion","#");
-    fHistPrimGammaEtaERec = CreateEtaEHisto2D("fHistPrimGammaEtaERec","MC E_{T}, primary gammas","#");
-    fHistPion0GammaEtaERec = CreateEtaEHisto2D("fHistPion0GammaEtaERec","MC E_{T}, #pi^{0}","#");
-    fHistOmega0GammaEtaERec = CreateEtaEHisto2D("fHistOmega0GammaEtaERec","MC E_{T}, #omega","#");
-    fHistEtaGammaEtaERec = CreateEtaEHisto2D("fHistEtaGammaEtaERec","MC E_{T}, #eta","#");
-    fHistSecGammaEtaERec = CreateEtaEHisto2D("fHistSecGammaEtaERec","MC E_{T}, secondary (no #pi^{0}, #eta or #omega) gammas","#");
-
-    fHistAllERecEMC = new TH2F("fHistAllERecEMC","E cluster Rec vs MC, all particles",fgNumOfEBins, fgEAxis,fgNumOfEBins, fgEAxis);
-    fHistAllERecEMC->SetXTitle("E_{MC}(GeV)");
-    fHistAllERecEMC->SetYTitle("E_{Rec}(GeV)");
-
-    fHistElectronERecEMC = new TH2F("fHistElectronERecEMC","E cluster Rec vs MC, Electrons",fgNumOfEBins, fgEAxis,fgNumOfEBins, fgEAxis);
-    fHistElectronERecEMC->SetXTitle("E_{MC}(GeV)");
-    fHistElectronERecEMC->SetYTitle("E_{Rec}(GeV)");
-
-    fHistGammaERecEMC = new TH2F("fHistGammaERecEMC","E cluster Rec vs MC, Gammas",fgNumOfEBins, fgEAxis,fgNumOfEBins, fgEAxis);
-    fHistGammaERecEMC->SetXTitle("E_{MC}(GeV)");
-    fHistGammaERecEMC->SetYTitle("E_{Rec}(GeV)");
-
-    fHistElectronFirstMother = new TH1F("fHistElectronFirstMother","Electron First Mother PDG Code Distribution",1201,-600.5,600.5);
-    fHistElectronLastMother = new TH1F("fHistElectronLastMother","Electron Last Mother PDG Code Distribution",1201,-600.5,600.5);
-    fHistElectronFirstMotherEtaAcc = new TH1F("fHistElectronFirstMotherEtaAcc","Electron First Mother PDG Code Distribution",1201,-600.5,600.5);
-    fHistElectronFirstMotherNPP = new TH1F("fHistElectronFirstMotherNPP","Electron First Mother PDG Code Distribution",1201,-600.5,600.5);
-    fHistElectronFirstMotherNPPAcc = new TH1F("fHistElectronFirstMotherNPPAcc","Electron First Mother PDG Code Distribution",1201,-600.5,600.5);
-
-    fHistGammaFirstMother = new TH1F("fHistGammaFirstMother","Gamma First Mother PDG Code Distribution",1201,-600.5,600.5);
-    fHistGammaLastMother = new TH1F("fHistGammaLastMother","Gamma Last Mother PDG Code Distribution",1201,-600.5,600.5);
-    fHistGammaFirstMotherEtaAcc = new TH1F("fHistGammaFirstMotherEtaAcc","Gamma First Mother PDG Code Distribution",1201,-600.5,600.5);
-    fHistGammaFirstMotherNPP = new TH1F("fHistGammaFirstMotherNPP","Gamma First Mother PDG Code Distribution",1201,-600.5,600.5);
-    fHistGammaFirstMotherNPPAcc = new TH1F("fHistGammaFirstMotherNPP","Gamma First Mother PDG Code Distribution",1201,-600.5,600.5);
-
+	
     //fHistDecayVertexNonRemovedCharged = new TH3F("fHistDecayVertexNonRemovedCharged","fHistDecayVertexNonRemovedCharged", 500, -470, 30, 500, -300, 300, 40, -20, 20);
     //fHistDecayVertexRemovedCharged = new TH3F("fHistDecayVertexRemovedCharged","fHistDecayVertexRemovedCharged", 500, -470, 30, 500, -300, 300, 40, -20, 20);
     //fHistDecayVertexNonRemovedNeutral = new TH3F("fHistDecayVertexNonRemovedNeutral","fHistDecayVertexNonRemovedNeutral", 500, -470, 30, 500, -300, 300, 40, -20, 20);
@@ -1234,49 +896,6 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
 void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
 {//fill the output list
     AliAnalysisEt::FillOutputList(list);
-
-    list->Add(fHistPrimElectronEtaEET);
-    list->Add(fHistSecElectronEtaEET);
-    list->Add(fHistConvElectronEtaEET);
-    list->Add(fHistPrimGammaEtaEET);
-    list->Add(fHistPion0GammaEtaEET);
-    list->Add(fHistOmega0GammaEtaEET);
-    list->Add(fHistEtaGammaEtaEET);
-    list->Add(fHistSecGammaEtaEET);
-
-    list->Add(fHistPrimElectronEtaE);
-    list->Add(fHistSecElectronEtaE);
-    list->Add(fHistConvElectronEtaE);
-    list->Add(fHistPrimGammaEtaE);
-    list->Add(fHistPion0GammaEtaE);
-    list->Add(fHistOmega0GammaEtaE);
-    list->Add(fHistEtaGammaEtaE);
-    list->Add(fHistSecGammaEtaE);
-
-    list->Add(fHistPrimElectronEtaERec);
-    list->Add(fHistSecElectronEtaERec);
-    list->Add(fHistConvElectronEtaERec);
-    list->Add(fHistPrimGammaEtaERec);
-    list->Add(fHistPion0GammaEtaERec);
-    list->Add(fHistOmega0GammaEtaERec);
-    list->Add(fHistEtaGammaEtaERec);
-    list->Add(fHistSecGammaEtaERec);
-
-    list->Add(fHistAllERecEMC);
-    list->Add(fHistElectronERecEMC);
-    list->Add(fHistGammaERecEMC);
-
-    list->Add(fHistElectronFirstMother);
-    list->Add(fHistElectronLastMother);
-    list->Add(fHistElectronFirstMotherEtaAcc);
-    list->Add(fHistElectronFirstMotherNPP);
-    list->Add(fHistElectronFirstMotherNPPAcc);
-
-    list->Add(fHistGammaFirstMother);
-    list->Add(fHistGammaLastMother);
-    list->Add(fHistGammaFirstMotherEtaAcc);
-    list->Add(fHistGammaFirstMotherNPP);
-    list->Add(fHistGammaFirstMotherNPPAcc);
 
     list->Add(fHistRemovedOrNot);
 
