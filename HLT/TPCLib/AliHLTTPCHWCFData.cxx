@@ -148,30 +148,6 @@ Int_t AliHLTTPCHWCFData::GetNumberOfClusters() const
   return (fBufferSize-fRCUTrailerSize)/elementsize;
 }
 
-int AliHLTTPCHWCFData::GetElementSize(int version) const
-{
-  // get the size of one element
-  switch (version) {
-  case 0: return sizeof(AliHLTTPCHWClusterV0);
-  case 1: return sizeof(AliHLTTPCHWClusterV1);
-  default:
-    ALIHLTERRORGUARD(1, "invalid format version %d", fVersion);
-  }
-  return -1;
-}
-
-bool AliHLTTPCHWCFData::CheckBounds(int i) const
-{
-  // check if index is within bounds
-  if (fVersion<0) {
-    ALIHLTERRORGUARD(1, "");
-    return false;
-  }
-  int elementsize=GetElementSize(fVersion);
-  if (elementsize<0) return false;
-  return ((i+1)*elementsize+fRCUTrailerSize<=fBufferSize);
-}
-
 Int_t    AliHLTTPCHWCFData::GetPadRow(int i)  const
 {
   // get raw coordinate

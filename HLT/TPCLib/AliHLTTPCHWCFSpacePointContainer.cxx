@@ -739,7 +739,9 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
 	HLTError("cluster index 0x%08x out of slice %d partition %d", clusterID.Data(), slice, part);
       }
       int index=AliHLTTPCSpacePointData::GetNumber(clusterID.Data());
-      int padrow=pDecoder->GetPadRow(index);
+      const AliHLTTPCHWCFData::iterator& input=pDecoder->find(index);
+      if (!(input!=pDecoder->end())) continue;
+      int padrow=input.GetPadRow();
       if (padrow<0) {
 	// something wrong here, padrow is stored in the cluster header
 	// word which has bit pattern 0x3 in bits bit 30 and 31 which was
@@ -752,10 +754,10 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
       // sum(q_i*pad_i*pad_i)/sum(q_i)
       // where the mean needs to be subtracted, not yet in the decoder
       // but should be implemented there
-      float pad =pDecoder->GetPad(index);
-      float time =pDecoder->GetTime(index);
-      float sigmaY2=pDecoder->GetSigmaY2(index);
-      float sigmaZ2=pDecoder->GetSigmaZ2(index);
+      float pad =input.GetPad();
+      float time =input.GetTime();
+      float sigmaY2=input.GetSigmaY2();
+      float sigmaZ2=input.GetSigmaZ2();
       sigmaY2-=pad*pad;
       sigmaZ2-=time*time;
 
@@ -763,14 +765,14 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
 	AliHLTTPCRawCluster& c=blockout->fClusters[blockout->fCount];
 	padrow+=AliHLTTPCTransform::GetFirstRow(part);
 	c.SetPadRow(padrow);
-	c.SetCharge(pDecoder->GetCharge(index));
+	c.SetCharge(input.GetCharge());
 	c.SetPad(pad);  
 	c.SetTime(time);
 	c.SetSigmaY2(sigmaY2);
 	c.SetSigmaZ2(sigmaZ2);
-	c.SetQMax(pDecoder->GetQMax(index));
+	c.SetQMax(input.GetQMax());
       } else {
-	AliHLTUInt64_t padrow64=pDecoder->GetPadRow(index);
+	AliHLTUInt64_t padrow64=input.GetPadRow();
 	if (padrow64==lastPadRow) {
 	  padrow64-=lastPadRow;
 	} else if (padrow64>lastPadRow) {
@@ -793,8 +795,8 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
 	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kTime   , time64);
 	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kSigmaY2, sigmaY264);
 	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kSigmaZ2, sigmaZ264);
-	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kCharge , pDecoder->GetCharge(index));
-	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kQMax   , pDecoder->GetQMax(index));
+	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kCharge , input.GetCharge());
+	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kQMax   , input.GetQMax());
       }
       blockout->fCount++;
     }

@@ -1,3 +1,4 @@
+//-*- Mode: C++ -*-
 // $Id$
 #ifndef ALIHLTTPCHWCFDATA_H
 #define ALIHLTTPCHWCFDATA_H
@@ -14,6 +15,7 @@
 #include "AliHLTTPCRootTypes.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTLogging.h"
+#include "AliHLTErrorGuard.h"
 
 class TArrayC;
 
@@ -68,8 +70,28 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
 
   int CheckVersion();
   bool CheckAssumption(int format, const AliHLTUInt8_t* pData, int size) const;
-  bool CheckBounds(int i) const;
-  int GetElementSize(int format) const;
+
+  // check if index is within bounds
+  bool CheckBounds(int i) const {
+    if (fVersion<0) {
+      ALIHLTERRORGUARD(1, "");
+      return false;
+    }
+    int elementsize=GetElementSize(fVersion);
+    if (elementsize<0) return false;
+    return ((i+1)*elementsize+fRCUTrailerSize<=fBufferSize);
+  }
+
+  // get the size of one element
+  int GetElementSize(int version) const {
+    switch (version) {
+    case 0: return sizeof(AliHLTTPCHWClusterV0);
+    case 1: return sizeof(AliHLTTPCHWClusterV1);
+    default:
+      ALIHLTERRORGUARD(1, "invalid format version %d", fVersion);
+    }
+    return -1;
+  }
 
   // pointer to RCU trailer
   const AliHLTUInt8_t*  GetRCUTrailer() const
@@ -159,7 +181,7 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
       : fData(i.fData), fVersion(i.fVersion), fElementSize(i.fElementSize) {}
     iterator& operator=(const iterator& i)
       { fData=i.fData; fVersion=i.fVersion; fElementSize=i.fElementSize; return *this;}
-    ~iterator() {}
+    ~iterator() {fData=NULL;}
 
     bool operator==(const iterator& i) const  {return (fData!=NULL) && (fData==i.fData);}
     bool operator!=(const iterator& i) const  {return (fData!=NULL) && (fData!=i.fData);}
@@ -234,6 +256,18 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
   // get loop end marker
   iterator& end() {
     return fIteratorEnd;
+  }
+
+  // find one single element
+  iterator& find(int i) {
+    fIterator.~iterator();
+    fIteratorEnd.~iterator();
+    if (i>=GetNumberOfClusters()) return fIterator;
+    new (&fIterator) iterator(fpBuffer, fVersion, GetElementSize(fVersion));
+    fIterator+=i;
+    fIteratorEnd=fIterator;
+    fIteratorEnd+=1;
+    return fIterator;
   }
 
   static const unsigned  fgkAliHLTTPCHWClusterSize;
