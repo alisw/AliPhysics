@@ -460,9 +460,9 @@ AliHLTSpacePointContainer::AliHLTSpacePointGrid::AliHLTSpacePointGrid(float maxX
   // constructor
   if (fMaxX>0. && fMaxY>0. && fMaxZ>0 &&
       fStepX>0. && fStepY>0. && fStepZ>0) {
-    fDimX=ceil(fMaxX/fStepX);
-    fDimY=ceil(fMaxY/fStepY);
-    fDimZ=ceil(fMaxZ/fStepZ);
+    fDimX=(int)ceil(fMaxX/fStepX);
+    fDimY=(int)ceil(fMaxY/fStepY);
+    fDimZ=(int)ceil(fMaxZ/fStepZ);
 
     fCellDimension=fDimX*fDimY*fDimZ;
     fCells=new AliHLTSpacePointCell[fCellDimension];
