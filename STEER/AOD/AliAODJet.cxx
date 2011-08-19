@@ -171,6 +171,20 @@ void  AliAODJet::SetPxPyPzE(Double_t px, Double_t py, Double_t pz, Double_t e){
   }
 }
 
+void  AliAODJet::SetPtEtaPhiM(Double_t pt, Double_t eta, Double_t phi, Double_t m){
+  // 
+  // Set the four Momentum from outside with pt eta phi and M
+  // MomentumVector()->SetPtPhiEtaM() cannot be used since pointer can be 0x0
+  //
+
+  if(!fMomentum){
+    fMomentum = new TLorentzVector();
+  }
+  fMomentum->SetPtEtaPhiM(pt,eta,phi,m);
+}
+
+
+
 Double_t AliAODJet::DeltaR(const AliVParticle* part){
 
   // Helper function to calculate the distance between two jets
