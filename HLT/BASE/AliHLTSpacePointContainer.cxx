@@ -466,11 +466,13 @@ AliHLTSpacePointContainer::AliHLTSpacePointGrid::AliHLTSpacePointGrid(float maxX
 
     fCellDimension=fDimX*fDimY*fDimZ;
     fCells=new AliHLTSpacePointCell[fCellDimension];
-    if (fDataDimension<0) fDataDimension=10000;
+    if (fDataDimension<0) fDataDimension=fgkDefaultDataSize;
     fData=new AliHLTSpacePointGrid::ValueType[fDataDimension];
     Clear();
   }
 }
+
+const int AliHLTSpacePointContainer::AliHLTSpacePointGrid::fgkDefaultDataSize=10000;
 
 AliHLTSpacePointContainer::AliHLTSpacePointGrid::~AliHLTSpacePointGrid()
 {
@@ -507,7 +509,7 @@ int AliHLTSpacePointContainer::AliHLTSpacePointGrid::IndexCells()
     auto_ptr<AliHLTSpacePointGrid::ValueType> newArray(new AliHLTSpacePointGrid::ValueType[offset]);
     if (newArray.get()) {
       memcpy(newArray.get(), fData, fDataDimension);
-      memset(newArray.get()+(fDataDimension-offset), 0, (fDataDimension-offset)*sizeof(AliHLTSpacePointGrid::ValueType));
+      memset(newArray.get()+fDataDimension, 0, (offset-fDataDimension)*sizeof(AliHLTSpacePointGrid::ValueType));
       delete fData;
       fData=newArray.release();
       fDataDimension=offset;

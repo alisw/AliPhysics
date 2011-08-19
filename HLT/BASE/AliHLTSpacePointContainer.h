@@ -224,6 +224,8 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
     iterator fIterator; //! iterator
     iterator fIteratorEnd; //! end marker iterator
 
+    static const int fgkDefaultDataSize; //! the default data size
+
     ClassDef(AliHLTSpacePointGrid, 0)
   };
 
