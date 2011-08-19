@@ -56,10 +56,10 @@ protected:
 	
 protected:
 
-	//Int_t fNcoll; // Ncoll, for Hijing; 1 otherwise
-	//Int_t fNpart; // Ncoll, for Hijing; 2 otherwise
+	Int_t fNcoll; // Ncoll, for Hijing; 1 otherwise
+	Int_t fNpart; // Ncoll, for Hijing; 2 otherwise
 
-	//Double_t fImpactParameter, fResCut; // b(fm), for Hijing; 0 otherwise
+	Double_t fImpactParameter;//, fResCut; // b(fm), for Hijing; 0 otherwise
 	Double_t fResCut; // b(fm), for Hijing; 0 otherwise
 	Double_t fPrimtotET, fPrimAcctotET, fPrimRectotET, fPrimRectotETDep;//Marcelo please add comment
 
@@ -124,10 +124,10 @@ protected:
 	TH2F *fHistElectronEtaPt;//Marcelo please add comment 
 	TH1F *fHistElectrontotET;//Marcelo please add comment 
 
-	//TH2F *fHistConvElectronEtaEET;//Marcelo please add comment  
+	TH2F *fHistConvElectronEtaEET;//Marcelo please add comment  
 	TH2F *fHistConvElectronEtaPtET;//Marcelo please add comment  
 	TH2F *fHistConvElectronEtaET;//Marcelo please add comment  
-	//TH2F *fHistConvElectronEtaE;//Marcelo please add comment  
+	TH2F *fHistConvElectronEtaE;//Marcelo please add comment  
 	TH2F *fHistConvElectronEtaPt;//Marcelo please add comment  
 	TH1F *fHistConvElectrontotET;//Marcelo please add comment  
 
@@ -717,7 +717,7 @@ protected:
 	// *******************
 
 	// check produced electrons
-	//TH1F *fHistElectronFirstMother;//Marcelo please add comment 
+	TH1F *fHistElectronFirstMother;//Marcelo please add comment 
 	TH2F *fHistElectronFirstMotherXY;//Marcelo please add comment 
 	TH1F *fHistElectronNDaughters;//Marcelo please add comment 
 	TH1F *fHistElectronDaughters;//Marcelo please add comment 
@@ -754,7 +754,7 @@ protected:
 	TH2F *fHistNPPElectronDaughtersXYRec;//Marcelo please add comment 
 	
 	// check produced gammas
-	//TH1F *fHistGammaFirstMother;//Marcelo please add comment 
+	TH1F *fHistGammaFirstMother;//Marcelo please add comment 
 	TH2F *fHistGammaFirstMotherXY;//Marcelo please add comment 
 	TH1F *fHistGammaNDaughters;//Marcelo please add comment 
 	TH1F *fHistGammaDaughters;//Marcelo please add comment 
@@ -797,10 +797,10 @@ protected:
 	TH2F *fHistNPPGammaDaughtersXYRec;//Marcelo please add comment 
 
 	//check projections
-	//TH2F *fHistAllERecEMC;//Marcelo please add comment	
+	TH2F *fHistAllERecEMC;//Marcelo please add comment	
 	TH2F *fHistAllPtRecPtMC;//Marcelo please add comment
-	//TH2F *fHistElectronERecEMC;//Marcelo please add comment	
-	//TH2F *fHistGammaERecEMC;//Marcelo please add comment
+	TH2F *fHistElectronERecEMC;//Marcelo please add comment	
+	TH2F *fHistGammaERecEMC;//Marcelo please add comment
 	
 	TH2F *fHistChargedRes;//Marcelo please add comment
 	TH2F *fHistChargedRes2;//Marcelo please add comment
