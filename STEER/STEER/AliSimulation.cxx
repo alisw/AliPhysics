@@ -196,6 +196,9 @@ AliSimulation::AliSimulation(const char* configFileName,
   fUseVertexFromCDB(0),
   fUseMagFieldFromGRP(0),
   fGRPWriteLocation(Form("local://%s", gSystem->pwd())),
+  fUseTimeStampFromCDB(0),
+  fTimeStart(0),
+  fTimeEnd(0),
   fQADetectors("ALL"),                  
   fQATasks("ALL"),	
   fRunQA(kTRUE), 
@@ -1031,6 +1034,23 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 	      gen->SetSigmaZ(vtxSig[2]);
 	  }
       }
+  }
+
+  // If requested we take the SOR and EOR time-stamps from the GRP and use them
+  // in order to generate the event time-stamps
+  if (fUseTimeStampFromCDB) {
+    AliGRPManager grpM;
+    grpM.ReadGRPEntry();
+    const AliGRPObject *grpObj = grpM.GetGRPData();
+    if (!grpObj || (grpObj->GetTimeEnd() <= grpObj->GetTimeStart())) {
+      AliError("Missing GRP or bad SOR/EOR time-stamps! Switching off the time-stamp generation from GRP!");
+      fTimeStart = fTimeEnd = 0;
+      fUseTimeStampFromCDB = kFALSE;
+    }
+    else {
+      fTimeStart = grpObj->GetTimeStart();
+      fTimeEnd = grpObj->GetTimeEnd();
+    }
   }
   
   if(AliCDBManager::Instance()->GetRun() >= 0) { 
@@ -2267,10 +2287,8 @@ void AliSimulation::WriteGRPEntry()
   AliGRPObject* grpObj = new AliGRPObject();
 
   grpObj->SetRunType("PHYSICS");
-  grpObj->SetTimeStart(0);
-  TDatime curtime;
-  grpObj->SetTimeStart(0);
-  grpObj->SetTimeEnd(curtime.Convert()); 
+  grpObj->SetTimeStart(fTimeStart);
+  grpObj->SetTimeEnd(fTimeEnd); 
   grpObj->SetBeamEnergyIsSqrtSHalfGeV(); // new format of GRP: store sqrt(s)/2 in GeV
 
   const AliGenerator *gen = gAlice->GetMCApp()->Generator();
@@ -2374,4 +2392,13 @@ void AliSimulation::WriteGRPEntry()
   man->SetLock(1, fKey);
 }
 
-
+//_____________________________________________________________________________
+time_t AliSimulation::GenerateTimeStamp() const
+{
+  // Generate event time-stamp according to
+  // SOR/EOR time from GRP
+  if (fUseTimeStampFromCDB)
+    return fTimeStart + gRandom->Integer(fTimeEnd-fTimeStart);
+  else
+    return 0;
+}

@@ -681,6 +681,7 @@ void AliMC::FinishEvent()
   // Update Header information 
   header->SetNprimary(stack->GetNprimary());
   header->SetNtrack(stack->GetNtrack());  
+  header->SetTimeStamp(AliSimulation::Instance()->GenerateTimeStamp());
 
   // Write out the kinematics
   if (!AliSimulation::Instance()->Lego()) stack->FinishEvent();

@@ -135,6 +135,9 @@ public:
   void UseMagFieldFromGRP() {fUseMagFieldFromGRP = kTRUE;} 
   void SetGRPWriteLocation(char* loc) {fGRPWriteLocation = loc;}
 
+  void UseTimeStampFromCDB()   {fUseTimeStampFromCDB   = kTRUE;}
+  time_t GenerateTimeStamp() const;
+
 private:
 
   AliSimulation(const AliSimulation&); // Not implemented
@@ -190,6 +193,10 @@ private:
   Bool_t          fUseVertexFromCDB;   // Flag to use Vertex from CDB
   Bool_t          fUseMagFieldFromGRP; // Use magnetic field settings from GRP
   TString         fGRPWriteLocation;   // Location to write the GRP entry from simulation
+
+  Bool_t          fUseTimeStampFromCDB;// Flag to generate event time-stamps according to SOR/EOR from GRP
+  time_t          fTimeStart;          // SOR time-stamp
+  time_t          fTimeEnd;            // EOR time-stamp
   
   //QA stuff
   static const Int_t   fgkNDetectors = 15 ;             // number of detectors
@@ -208,7 +215,7 @@ private:
 
   Bool_t         fWriteGRPEntry;      // Write or not GRP entry corresponding to the settings in Config.C
 
-  ClassDef(AliSimulation, 11)  // class for running generation, simulation and digitization
+  ClassDef(AliSimulation, 12)  // class for running generation, simulation and digitization
 };
 
 #endif

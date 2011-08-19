@@ -42,6 +42,7 @@ AliHeader::AliHeader():
   fNtrack(0),
   fEvent(0),
   fEventNrInRun(0),
+  fTimeStamp(0),
   fStack(0),
   fGenHeader(0),
   fDetHeaders(0)
@@ -60,6 +61,7 @@ AliHeader::AliHeader(const AliHeader& head):
   fNtrack(0),
   fEvent(0),
   fEventNrInRun(0),
+  fTimeStamp(0),
   fStack(0),
   fGenHeader(0),
   fDetHeaders(0)
@@ -78,6 +80,7 @@ AliHeader::AliHeader(Int_t run, Int_t event):
   fNtrack(0),
   fEvent(event),
   fEventNrInRun(0),
+  fTimeStamp(0),
   fStack(0),
   fGenHeader(0), 
   fDetHeaders(0) 
@@ -95,6 +98,7 @@ AliHeader::AliHeader(Int_t run, Int_t event, Int_t evNumber):
   fNtrack(0),
   fEvent(event),
   fEventNrInRun(evNumber),
+  fTimeStamp(0),
   fStack(0),
   fGenHeader(0), 
   fDetHeaders(0) 
@@ -129,6 +133,7 @@ void AliHeader::Reset(Int_t run, Int_t event)
   fNprimary=0;
   fNtrack=0;
   fEvent=event;
+  fTimeStamp=0;
   if (fDetHeaders) fDetHeaders->Delete();
 }
 
@@ -144,6 +149,7 @@ void AliHeader::Reset(Int_t run, Int_t event, Int_t evNumber)
   fNtrack=0;
   fEvent=event;
   fEventNrInRun=evNumber;
+  fTimeStamp=0;
   if (fDetHeaders) fDetHeaders->Clear();
 }
 
@@ -159,6 +165,7 @@ void AliHeader::Print(const char*) const
   printf("              Number of Vertex %d\n",fNvertex);
   printf("              Number of Primary %d\n",fNprimary);
   printf("              Number of Tracks %d\n",fNtrack);
+  printf("              Time-stamp %ld\n",fTimeStamp);
   printf(
   "=========== Header for run %d Event %d = end ============================================\n\n",
   fRun,fEvent);

@@ -58,6 +58,8 @@ public:
   virtual void AddDetectorEventHeader(AliDetectorEventHeader* header);
   virtual AliDetectorEventHeader* GetDetectorEventHeader(const char *name) const;
   
+  virtual  void SetTimeStamp(time_t timeStamp) {fTimeStamp = timeStamp;}
+  virtual  time_t GetTimeStamp() const {return fTimeStamp;}
   
   virtual void Print(const char *opt=0) const;
 
@@ -74,11 +76,12 @@ protected:
   Int_t         fNtrack;            //Number of tracks
   Int_t         fEvent;             //Event number (serial in the file)
   Int_t         fEventNrInRun;      //Unique Event number within the run
+  time_t        fTimeStamp;         //Event time-stamp
   AliStack     *fStack;             //Pointer to stack
   AliGenEventHeader* fGenHeader;    //Event Header for Generator
   TObjArray*         fDetHeaders;   //Event Headers for detector specific information 
 
-  ClassDef(AliHeader,3) //Alice event header    
+  ClassDef(AliHeader,4) //Alice event header    
 };
 
 #endif
