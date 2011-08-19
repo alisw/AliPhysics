@@ -36,7 +36,6 @@ AliHLTTriggerEmcalElectron::AliHLTTriggerEmcalElectron() :
   fEThreshold(0.0),
   fEoverPThreshold(0.),
   fEoverPLimit(0.),
-  fMakeStats(kFALSE),
   fdEta(1.),
   fdPhi(1.),
   
@@ -45,7 +44,8 @@ AliHLTTriggerEmcalElectron::AliHLTTriggerEmcalElectron() :
   fOCDBEntry("HLT/ConfigHLT/EmcalElectronTrigger"),
 //   fOCDBEntry(""), 
   fDetector("EMCAL"),
-  fInputDataType()
+  fInputDataType(),
+  fMakeStats(kFALSE)
 {
   // see header file for class documentation
   // or
@@ -53,7 +53,8 @@ AliHLTTriggerEmcalElectron::AliHLTTriggerEmcalElectron() :
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlts
 
-  if ( fMakeStats ) AliHLTScalars scalars;
+  //if ( fMakeStats ) AliHLTScalars scalars;
+  //AliHLTScalars scalars;
 //   fClusterReader = new AliHLTCaloClusterReader();
 //   fClustersRefs = new TRefArray();
 
@@ -86,7 +87,7 @@ Int_t AliHLTTriggerEmcalElectron::DoTrigger() {
   // see header file for class documentation
   
   Int_t iResult = 0;
-
+  AliHLTScalars scalars;
 
   if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
     return 0;
@@ -142,6 +143,8 @@ Int_t AliHLTTriggerEmcalElectron::DoTrigger() {
 
 template <class T>
 Bool_t AliHLTTriggerEmcalElectron::TriggerOnEoverP(T* cluster,AliESDEvent *esd) {
+  
+  AliHLTScalars scalars;
   
   if (cluster->E() > fEThreshold) {    
 

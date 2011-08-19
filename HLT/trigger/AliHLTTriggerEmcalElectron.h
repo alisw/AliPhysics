@@ -102,7 +102,7 @@ protected :
   Bool_t fMakeStats;
 
   // AliHLTScalars
-  AliHLTScalars scalars;
+  //AliHLTScalars scalars;
   
   
  private:

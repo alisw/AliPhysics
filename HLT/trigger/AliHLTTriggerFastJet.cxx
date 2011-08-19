@@ -51,7 +51,7 @@ AliHLTTrigger(),
   // to Add a new scalar:
   // scalars.Add(const char *name, const char *description, Double_t value) 
   
-  if ( fMakeStats ) AliHLTScalars scalars;
+  //  if ( fMakeStats ) AliHLTScalars scalars;
 
 }
 //_____________________________________________________________
@@ -106,7 +106,8 @@ const char* AliHLTTriggerFastJet::GetTriggerName() const {
 Int_t AliHLTTriggerFastJet::DoTrigger() {
 
   Int_t iResult = 0;
-
+  AliHLTScalars scalars;
+  
   if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
     return 0;
 

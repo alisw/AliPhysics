@@ -92,7 +92,7 @@ class AliHLTTriggerFastJet : public AliHLTTrigger
   Bool_t fMakeStats;
 
   // AliHLTScalars
-  AliHLTScalars scalars;
+  //  AliHLTScalars scalars;
 
   // offset for calo tracks
   //Int_t fOffset;
