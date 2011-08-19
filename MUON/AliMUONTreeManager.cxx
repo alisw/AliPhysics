@@ -221,7 +221,7 @@ AliMUONTreeManager::UpdateBranchStatuses(TTree& tree, const char* pattern) const
 }
 
 //_____________________________________________________________________________
-const char* 
+TString
 AliMUONTreeManager::GetClassName(const TTree& tree, const char* pattern,
                                  Bool_t makeDefault) const
 {
@@ -230,6 +230,8 @@ AliMUONTreeManager::GetClassName(const TTree& tree, const char* pattern,
   /// If makeDefault=true and we cannot find the pattern in the UserInfo,
   /// we return DefaultClassName(pattern)
   ///
+  
+  AliInfo(Form("pattern=%s makeDefault=%d",pattern,makeDefault));
   
   TTree& vtree = const_cast<TTree&>(tree); // not pretty, but the GetUserInfo is not const...
   
@@ -240,11 +242,13 @@ AliMUONTreeManager::GetClassName(const TTree& tree, const char* pattern,
   while ( ( object = next() ) )
   {
     AliMUONObjectPair* pair = static_cast<AliMUONObjectPair*>(object);
+    StdoutToAliInfo(pair->Print());
     TString key = (static_cast<TObjString*>(pair->First()))->String();
     TString value = (static_cast<TObjString*>(pair->Second()))->String();
     if ( key.Contains(pattern,TString::kIgnoreCase) ) 
     {
-      return value.Data();
+      AliInfo(Form("Will return %s",value.Data()));
+      return value;
     }
   }
   
@@ -254,7 +258,7 @@ AliMUONTreeManager::GetClassName(const TTree& tree, const char* pattern,
 }
 
 //_____________________________________________________________________________
-const char* 
+TString
 AliMUONTreeManager::DefaultClassName(const char* treeName, const char* pattern) const
 {
   /// For backward compatibility only. Decides, based on the tree name and a 

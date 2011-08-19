@@ -41,9 +41,6 @@ public:
   
   void UpdateBranchStatuses(TTree& tree, const char* pattern) const;
   
-  const char* GetClassName(const TTree& tree, const char* pattern,
-                           Bool_t makeDefault) const;
-  
   /** Debug method to get an event, but checking beforehand that all selected
     branches do have a non-zero address set (otherwise we leak memory). 
     */
@@ -54,7 +51,10 @@ public:
 
 private:
 
-  const char* DefaultClassName(const char* treename, const char* pattern) const;
+  TString GetClassName(const TTree& tree, const char* pattern,
+                       Bool_t makeDefault) const;
+    
+  TString DefaultClassName(const char* treename, const char* pattern) const;
   
   ClassDef(AliMUONTreeManager,0) // Helper class to handle MUON TTrees
 };
