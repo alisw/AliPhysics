@@ -1,0 +1,14 @@
+To enable the EMCAL jet trigger you need to
+
+0) install FastJet and define $FASTJET
+1) rename the CMakelibAliHLTFJW.pkg.noFJ in CMakelibAliHLTFJW.pkg this will build the FastJet library
+2) uncomment the line with # AliHLTTriggerFastJet.h in CMakelibAliHLTTrigger.pkg
+3) eneble the corresponding pragma directive in trigger/AliHLTTriggerLinkDef.h
+4) uncomment the lines
+//#include "AliHLTTriggerFastJet.h"
+//pHandler->AddComponent(new AliHLTTriggerFastJet);
+in trigger/AliHLTTriggerAgent.cxx
+
+problems questions
+"Federico Ronchetti" <federico.ronchetti@gmail.com>
+"Leonidas Xaplanteris" <leonidas.xaplanteris@gmail.com>
