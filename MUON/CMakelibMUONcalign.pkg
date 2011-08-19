@@ -40,4 +40,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  MUONcalignLinkDef.h)
 
-set ( EINCLUDE  MUON/mapping ANALYSIS STEER/STEERBase)
+set ( EINCLUDE  MUON/mapping ANALYSIS STEER/AOD STEER/STEERBase)

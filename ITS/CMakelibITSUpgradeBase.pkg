@@ -31,10 +31,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR ITSUpgradeBaseLinkDef.h)
 
-set ( EINCLUDE ${GEANT3_ROOT}/TGeant3 TPC RAW ITS ITS/UPGRADE)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lCDB -lSTEERBase -lRAWDatasim -lRAWDatarec -lRAWDatabase -L${ROOTLIBDIR} -lGui -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE ${GEANT3_ROOT}/TGeant3 TPC RAW ITS ITS/UPGRADE STEER/STEER STEER/ESD STEER/STEERBase )

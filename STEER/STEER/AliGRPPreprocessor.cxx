@@ -66,8 +66,8 @@ class AliShuttleInterface;
 #include <AliCDBMetaData.h>
 #include <AliCDBId.h>
 #include <AliTriggerConfiguration.h>
-#include <AliCTPTimeParams.h>
-#include <AliLHCClockPhase.h>
+#include "AliCTPTimeParams.h"
+#include "AliLHCClockPhase.h"
 
 const Double_t kFitFraction = -1.;                 // Fraction of DCS sensor fits required
 

@@ -31,10 +31,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR ITSUpgradeSimLinkDef.h)
 
-set ( EINCLUDE TPC RAW ITS ITS/UPGRADE)
-
-if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lITSUpgradeBase -lSTEER -lCDB -lSTEERBase -L${ROOTLIBDIR} -lVMC -lEG -lGeom)
-
-endif( ALICE_TARGET STREQUAL "win32gcc")
+set ( EINCLUDE TPC RAW ITS ITS/UPGRADE STEER/STEER STEER/ESD STEER/STEERBase )
