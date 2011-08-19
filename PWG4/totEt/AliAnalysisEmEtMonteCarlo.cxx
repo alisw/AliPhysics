@@ -719,6 +719,724 @@ AliAnalysisEmEtMonteCarlo::AliAnalysisEmEtMonteCarlo():AliAnalysisEtMonteCarlo()
 AliAnalysisEmEtMonteCarlo::~AliAnalysisEmEtMonteCarlo() 
 {//destructor
   //Marcelo, have you really cleaned up all memory here?  What about the histos?
+  delete fGeoUt;
+	delete fHistPrimEtaEET;
+	delete fHistPrimEtaPtET; 
+	delete fHistPrimEtaET;
+	delete fHistPrimtotET;
+	
+	delete fHistPrimAccEtaEET; 
+	delete fHistPrimAccEtaPtET; 
+	delete fHistPrimAccEtaET; 
+	delete fHistPrimAcctotET;
+	
+	delete fHistPrimRecEtaEET; 
+	delete fHistPrimRecEtaPtET; 
+	delete fHistPrimRecEtaET; 
+	delete fHistPrimRectotET;
+
+	delete fHistPrimRecEtaEDepETDep; 
+	delete fHistPrimRecEtaPtETDep; 
+	delete fHistPrimRecEtaETDep; 
+	delete fHistPrimRectotETDep;
+	
+	// *******************
+	// electron ET
+	// *******************
+	delete fHistElectronEtaEET; 
+	delete fHistElectronEtaPtET; 
+	delete fHistElectronEtaET; 
+	delete fHistElectronEtaE; 
+	delete fHistElectronEtaPt; 
+	delete fHistElectrontotET; 
+
+	delete fHistConvElectronEtaEET;  
+	delete fHistConvElectronEtaPtET;  
+	delete fHistConvElectronEtaET;  
+	delete fHistConvElectronEtaE;  
+	delete fHistConvElectronEtaPt;  
+	delete fHistConvElectrontotET;  
+
+	delete fHistScatElectronEtaEET;  
+	delete fHistScatElectronEtaPtET;  
+	delete fHistScatElectronEtaET;  
+	delete fHistScatElectronEtaE;  
+	delete fHistScatElectronEtaPt;  
+	delete fHistScatElectrontotET;  
+	
+	// *******************
+	// total electron ET
+	// *******************
+	delete fHistTotElectrontotET;
+	
+	// *******************
+	// gamma ET
+	// *******************
+	delete fHistGammaEtaEET;  
+	delete fHistGammaEtaPtET;  
+	delete fHistGammaEtaET;  
+	delete fHistGammaEtaE;  
+	delete fHistGammaEtaPt;  
+	delete fHistGammatotET;  
+	
+	delete fHistAnnihGammaEtaEET;  
+	delete fHistAnnihGammaEtaPtET;  
+	delete fHistAnnihGammaEtaET;  
+	delete fHistAnnihGammaEtaE;  
+	delete fHistAnnihGammaEtaPt;  
+	delete fHistAnnihGammatotET;  
+
+	delete fHistScatGammaEtaEET;  
+	delete fHistScatGammaEtaPtET;  
+	delete fHistScatGammaEtaET;  
+	delete fHistScatGammaEtaE;  
+	delete fHistScatGammaEtaPt;  
+	delete fHistScatGammatotET;  
+
+	delete fHistConvGammaEtaEET;  
+	delete fHistConvGammaEtaPtET;  
+	delete fHistConvGammaEtaET;  
+	delete fHistConvGammaEtaE;  
+	delete fHistConvGammaEtaPt;  
+	delete fHistConvGammatotET;  
+	
+	delete fHistNonConvGammaEtaEET;  
+	delete fHistNonConvGammaEtaPtET;  
+	delete fHistNonConvGammaEtaET;  
+	delete fHistNonConvGammaEtaE;  
+	delete fHistNonConvGammaEtaPt;  
+	delete fHistNonConvGammatotET;  
+	
+	// *******************
+	// total gamma ET
+	// *******************
+	delete fHistTotGammatotET;
+
+	// *******************
+	// total electromagnetic ET
+	// *******************
+	delete fHistTotEMtotET;
+
+	// non-primary electromagnetic ET
+	delete fHistNPPElectronEtaEET; 
+	delete fHistNPPElectronEtaPtET; 
+	delete fHistNPPElectronEtaET; 
+	delete fHistNPPElectronEtaE; 
+	delete fHistNPPElectronEtaPt; 
+	delete fHistNPPElectrontotET; 
+
+	delete fHistNPPGammaEtaEET; 
+	delete fHistNPPGammaEtaPtET; 
+	delete fHistNPPGammaEtaET; 
+	delete fHistNPPGammaEtaE; 
+	delete fHistNPPGammaEtaPt; 
+	delete fHistNPPGammatotET; 
+
+	delete fHistTotNPPEMtotET;
+
+	delete fHistNPPPi0GammaEtaEET; 
+	delete fHistNPPPi0GammaEtaPtET; 
+	delete fHistNPPPi0GammaEtaET; 
+	delete fHistNPPPi0GammaEtaE; 
+	delete fHistNPPPi0GammaEtaPt; 
+	delete fHistNPPPi0GammatotET; 
+		
+	// *******************
+	// electron ET inside EMCal acceptance
+	// *******************
+	delete fHistElectronAccEtaEET; 
+	delete fHistElectronAccEtaPtET; 
+	delete fHistElectronAccEtaET; 
+	delete fHistElectronAccEtaE; 
+	delete fHistElectronAccEtaPt; 
+	delete fHistElectronAcctotET; 
+	
+	delete fHistConvElectronAccEtaEET;  
+	delete fHistConvElectronAccEtaPtET;  
+	delete fHistConvElectronAccEtaET;  
+	delete fHistConvElectronAccEtaE;  
+	delete fHistConvElectronAccEtaPt;  
+	delete fHistConvElectronAcctotET;  
+	
+	delete fHistScatElectronAccEtaEET;  
+	delete fHistScatElectronAccEtaPtET;  
+	delete fHistScatElectronAccEtaET;  
+	delete fHistScatElectronAccEtaE;  
+	delete fHistScatElectronAccEtaPt;  
+	delete fHistScatElectronAcctotET;  
+	
+	// *******************
+	// total electron ET inside EMCal acceptance
+	// *******************
+	delete fHistTotElectronAcctotET;
+
+	// *******************
+	// gamma ET inside EMCal acceptance
+	// *******************
+	delete fHistGammaAccEtaEET;  
+	delete fHistGammaAccEtaPtET;  
+	delete fHistGammaAccEtaET;  
+	delete fHistGammaAccEtaE;  
+	delete fHistGammaAccEtaPt;  
+	delete fHistGammaAcctotET;  
+	
+	delete fHistAnnihGammaAccEtaEET;  
+	delete fHistAnnihGammaAccEtaPtET;  
+	delete fHistAnnihGammaAccEtaET;  
+	delete fHistAnnihGammaAccEtaE;  
+	delete fHistAnnihGammaAccEtaPt;  
+	delete fHistAnnihGammaAcctotET;  
+	
+	delete fHistScatGammaAccEtaEET;  
+	delete fHistScatGammaAccEtaPtET;  
+	delete fHistScatGammaAccEtaET;  
+	delete fHistScatGammaAccEtaE;  
+	delete fHistScatGammaAccEtaPt;  
+	delete fHistScatGammaAcctotET;  
+	
+	delete fHistConvGammaAccEtaEET;  
+	delete fHistConvGammaAccEtaPtET;  
+	delete fHistConvGammaAccEtaET;  
+	delete fHistConvGammaAccEtaE;  
+	delete fHistConvGammaAccEtaPt;  
+	delete fHistConvGammaAcctotET;  
+	
+	delete fHistNonConvGammaAccEtaEET;  
+	delete fHistNonConvGammaAccEtaPtET;  
+	delete fHistNonConvGammaAccEtaET;  
+	delete fHistNonConvGammaAccEtaE;  
+	delete fHistNonConvGammaAccEtaPt;  
+	delete fHistNonConvGammaAcctotET;  
+	
+	// *******************
+	// total gamma ET inside EMCal acceptance
+	// *******************
+	delete fHistTotGammaAcctotET;
+
+	// *******************
+	// total electromagnetic ET inside EMCal acceptance
+	// *******************
+	delete fHistTotEMAcctotET;
+
+	// non-primary electromagnetic ET
+	delete fHistNPPElectronAccEtaEET; 
+	delete fHistNPPElectronAccEtaPtET; 
+	delete fHistNPPElectronAccEtaE; 
+	delete fHistNPPElectronAccEtaPt; 
+	
+	delete fHistNPPGammaAccEtaEET; 
+	delete fHistNPPGammaAccEtaPtET; 
+	delete fHistNPPGammaAccEtaE; 
+	delete fHistNPPGammaAccEtaPt; 	
+	
+	// *******************
+	// electron ET reconstructed in EMCal
+	// *******************
+	delete fHistElectronRecEtaEET; 
+	delete fHistElectronRecEtaPtET; 
+	delete fHistElectronRecEtaET; 
+	delete fHistElectronRecEtaE; 
+	delete fHistElectronRecEtaPt; 
+	delete fHistElectronRectotET; 
+	
+	delete fHistConvElectronRecEtaEET;  
+	delete fHistConvElectronRecEtaPtET;  
+	delete fHistConvElectronRecEtaET;  
+	delete fHistConvElectronRecEtaE;  
+	delete fHistConvElectronRecEtaPt;  
+	delete fHistConvElectronRectotET;  
+	
+	delete fHistScatElectronRecEtaEET;  
+	delete fHistScatElectronRecEtaPtET;  
+	delete fHistScatElectronRecEtaET;  
+	delete fHistScatElectronRecEtaE;  
+	delete fHistScatElectronRecEtaPt;  
+	delete fHistScatElectronRectotET;  
+	
+	// *******************
+	// total Electron ET reconstructed in EMCal
+	// *******************
+	delete fHistTotElectronRectotET;
+
+	// *******************
+	// gamma ET reconstructed in EMCal
+	// *******************
+	delete fHistGammaRecEtaEET;  
+	delete fHistGammaRecEtaPtET;  
+	delete fHistGammaRecEtaET;  
+	delete fHistGammaRecEtaE;  
+	delete fHistGammaRecEtaPt;  
+	delete fHistGammaRectotET;  
+	
+	delete fHistAnnihGammaRecEtaEET;  
+	delete fHistAnnihGammaRecEtaPtET;  
+	delete fHistAnnihGammaRecEtaET;  
+	delete fHistAnnihGammaRecEtaE;  
+	delete fHistAnnihGammaRecEtaPt;  
+	delete fHistAnnihGammaRectotET;  
+	
+	delete fHistScatGammaRecEtaEET;  
+	delete fHistScatGammaRecEtaPtET;  
+	delete fHistScatGammaRecEtaET;  
+	delete fHistScatGammaRecEtaE;  
+	delete fHistScatGammaRecEtaPt;  
+	delete fHistScatGammaRectotET;  
+
+	// *******************
+	// total gamma ET reconstructed in EMCal
+	// *******************
+	delete fHistTotGammaRectotET;
+
+	// *******************
+	// total EM ET reconstructed in EMCal
+	// *******************
+	delete fHistTotEMRectotET;
+
+	// non-primary electromagnetic ET
+	delete fHistNPPElectronRecEtaEET; 
+	delete fHistNPPElectronRecEtaPtET; 
+	delete fHistNPPElectronRecEtaET; 
+	delete fHistNPPElectronRecEtaE; 
+	delete fHistNPPElectronRecEtaPt; 
+	delete fHistNPPElectronRectotET; 
+	
+	delete fHistNPPGammaRecEtaEET; 
+	delete fHistNPPGammaRecEtaPtET; 
+	delete fHistNPPGammaRecEtaET; 
+	delete fHistNPPGammaRecEtaE; 
+	delete fHistNPPGammaRecEtaPt; 
+	delete fHistNPPGammaRectotET; 
+	
+	delete fHistTotNPPEMRectotET;
+
+	delete fHistNPPPi0GammaRecEtaEET; 
+	delete fHistNPPPi0GammaRecEtaPtET; 
+	delete fHistNPPPi0GammaRecEtaET; 
+	delete fHistNPPPi0GammaRecEtaE; 
+	delete fHistNPPPi0GammaRecEtaPt; 
+	delete fHistNPPPi0GammaRectotET; 
+	
+	// *******************
+	// muon ET (+ and -)
+	// *******************
+	delete fHistMuonEtaEET; 
+	delete fHistMuonAccEtaEET; 
+	delete fHistMuonRecEtaEET; 
+	delete fHistMuonMatchEtaEET; 
+
+	delete fHistMuonEtaPtET; 
+	delete fHistMuonAccEtaPtET; 
+	delete fHistMuonRecEtaPtET; 
+	delete fHistMuonMatchEtaPtET; 
+
+	delete fHistMuonEtaET; 
+	delete fHistMuonAccEtaET; 
+	delete fHistMuonRecEtaET; 
+	delete fHistMuonMatchEtaET; 
+	
+	delete fHistMuonEtaE; 
+	delete fHistMuonAccEtaE; 
+	delete fHistMuonRecEtaE; 
+	delete fHistMuonMatchEtaE; 
+	
+	delete fHistMuonEtaPt; 
+	delete fHistMuonAccEtaPt; 
+	delete fHistMuonRecEtaPt; 
+	delete fHistMuonMatchEtaPt; 
+	
+	delete fHistMuontotET; 
+	delete fHistMuonAcctotET; 
+	delete fHistMuonRectotET; 
+	delete fHistMuonMatchtotET; 
+	
+	delete fHistMuonRectotETDep; 
+	delete fHistMuonMatchtotETDep; 
+	
+	delete fHistMuonRecEtaEDepETDep; 
+	delete fHistMuonMatchEtaEDepETDep; 
+
+	delete fHistMuonRecEtaPtETDep; 
+	delete fHistMuonMatchEtaPtETDep; 
+	
+	delete fHistMuonRecEtaETDep; 
+	delete fHistMuonMatchEtaETDep; 
+
+	delete fHistMuonRecResEET; 
+	delete fHistMuonRecResPtET; 
+	delete fHistMuonRecResE; 
+	delete fHistMuonRecResPt; 
+	delete fHistMuonRecResEDepETDep; 
+	delete fHistMuonRecResPtETDep; 
+	
+	// *******************
+	// pion ET (+ and -)
+	// *******************
+	delete fHistPionEtaEET; 
+	delete fHistPionAccEtaEET; 
+	delete fHistPionRecEtaEET; 
+	delete fHistPionMatchEtaEET; 
+	
+	delete fHistPionEtaPtET; 
+	delete fHistPionAccEtaPtET; 
+	delete fHistPionRecEtaPtET; 
+	delete fHistPionMatchEtaPtET; 
+	
+	delete fHistPionEtaET; 
+	delete fHistPionAccEtaET; 
+	delete fHistPionRecEtaET; 
+	delete fHistPionMatchEtaET; 
+	
+	delete fHistPionEtaE; 
+	delete fHistPionAccEtaE; 
+	delete fHistPionRecEtaE; 
+	delete fHistPionMatchEtaE; 
+	
+	delete fHistPionEtaPt; 
+	delete fHistPionAccEtaPt; 
+	delete fHistPionRecEtaPt; 
+	delete fHistPionMatchEtaPt; 
+	
+	delete fHistPiontotET; 
+	delete fHistPionAcctotET; 
+	delete fHistPionRectotET; 
+	delete fHistPionMatchtotET; 
+	
+	delete fHistPionRectotETDep; 
+	delete fHistPionMatchtotETDep; 
+	
+	delete fHistPionRecEtaEDepETDep; 
+	delete fHistPionMatchEtaEDepETDep; 
+
+	delete fHistPionRecEtaPtETDep; 
+	delete fHistPionMatchEtaPtETDep; 
+	
+	delete fHistPionRecEtaETDep; 
+	delete fHistPionMatchEtaETDep; 
+	
+	delete fHistPionRecResEET; 
+	delete fHistPionRecResPtET; 
+	delete fHistPionRecResE; 
+	delete fHistPionRecResPt; 
+	delete fHistPionRecResEDepETDep; 
+	delete fHistPionRecResPtETDep; 
+	
+	// *******************
+	// charged kaon (+ and -) ET
+	// *******************
+	delete fHistKaonEtaEET; 
+	delete fHistKaonAccEtaEET; 
+	delete fHistKaonRecEtaEET; 
+	delete fHistKaonMatchEtaEET; 
+	
+	delete fHistKaonEtaPtET; 
+	delete fHistKaonAccEtaPtET; 
+	delete fHistKaonRecEtaPtET; 
+	delete fHistKaonMatchEtaPtET; 
+	
+	delete fHistKaonEtaET; 
+	delete fHistKaonAccEtaET; 
+	delete fHistKaonRecEtaET; 
+	delete fHistKaonMatchEtaET; 
+	
+	delete fHistKaonEtaE; 
+	delete fHistKaonAccEtaE; 
+	delete fHistKaonRecEtaE; 
+	delete fHistKaonMatchEtaE; 
+	
+	delete fHistKaonEtaPt; 
+	delete fHistKaonAccEtaPt; 
+	delete fHistKaonRecEtaPt; 
+	delete fHistKaonMatchEtaPt; 
+
+	delete fHistKaontotET; 
+	delete fHistKaonAcctotET; 
+	delete fHistKaonRectotET; 
+	delete fHistKaonMatchtotET; 
+	
+	delete fHistKaonRectotETDep; 
+	delete fHistKaonMatchtotETDep; 
+	
+	delete fHistKaonRecEtaEDepETDep; 
+	delete fHistKaonMatchEtaEDepETDep; 
+
+	delete fHistKaonRecEtaPtETDep; 
+	delete fHistKaonMatchEtaPtETDep; 
+	
+	delete fHistKaonRecEtaETDep; 
+	delete fHistKaonMatchEtaETDep; 
+	
+	delete fHistKaonRecResEET; 
+	delete fHistKaonRecResPtET; 
+	delete fHistKaonRecResE; 
+	delete fHistKaonRecResPt; 
+	delete fHistKaonRecResEDepETDep; 
+	delete fHistKaonRecResPtETDep; 	
+	
+	// *******************
+	// proton (anti) ET
+	// *******************
+	delete fHistProtonEtaEET; 
+	delete fHistProtonAccEtaEET; 
+	delete fHistProtonRecEtaEET; 
+	delete fHistProtonMatchEtaEET; 
+	
+	delete fHistProtonEtaPtET; 
+	delete fHistProtonAccEtaPtET; 
+	delete fHistProtonRecEtaPtET; 
+	delete fHistProtonMatchEtaPtET; 
+	
+	delete fHistProtonEtaET; 
+	delete fHistProtonAccEtaET; 
+	delete fHistProtonRecEtaET; 
+	delete fHistProtonMatchEtaET; 
+	
+	delete fHistProtonEtaE; 
+	delete fHistProtonAccEtaE; 
+	delete fHistProtonRecEtaE; 
+	delete fHistProtonMatchEtaE; 
+	
+	delete fHistProtonEtaPt; 
+	delete fHistProtonAccEtaPt; 
+	delete fHistProtonRecEtaPt; 
+	delete fHistProtonMatchEtaPt; 
+
+	delete fHistProtontotET; 
+	delete fHistProtonAcctotET; 
+	delete fHistProtonRectotET; 
+	delete fHistProtonMatchtotET; 
+	
+	delete fHistProtonRectotETDep; 
+	delete fHistProtonMatchtotETDep; 
+	
+	delete fHistProtonRecEtaEDepETDep; 
+	delete fHistProtonMatchEtaEDepETDep; 
+	
+	delete fHistProtonRecEtaPtETDep; 
+	delete fHistProtonMatchEtaPtETDep; 
+	
+	delete fHistProtonRecEtaETDep; 
+	delete fHistProtonMatchEtaETDep; 
+
+	delete fHistProtonRecResEET; 
+	delete fHistProtonRecResPtET; 
+	delete fHistProtonRecResE; 
+	delete fHistProtonRecResPt; 
+	delete fHistProtonRecResEDepETDep; 
+	delete fHistProtonRecResPtETDep; 
+	
+	// *******************
+	// total charged ET
+	// *******************
+	delete fHistTotChargedtotET;
+	delete fHistTotChargedAcctotET;
+	delete fHistTotChargedRectotET;
+	delete fHistTotChargedRectotETDep;
+	delete fHistTotChargedMatchtotET;
+	delete fHistTotChargedMatchtotETDep;
+	
+	// *******************
+	// neutron (anti) ET
+	// *******************
+	delete fHistNeutronEtaEET; 
+	delete fHistNeutronAccEtaEET; 
+	delete fHistNeutronRecEtaEET; 
+	
+	delete fHistNeutronEtaPtET; 
+	delete fHistNeutronAccEtaPtET; 
+	delete fHistNeutronRecEtaPtET; 
+	
+	delete fHistNeutronEtaET; 
+	delete fHistNeutronAccEtaET; 
+	delete fHistNeutronRecEtaET; 
+	
+	delete fHistNeutronEtaE; 
+	delete fHistNeutronAccEtaE; 
+	delete fHistNeutronRecEtaE; 
+	
+	delete fHistNeutronEtaPt; 
+	delete fHistNeutronAccEtaPt; 
+	delete fHistNeutronRecEtaPt; 
+	
+	delete fHistNeutrontotET; 
+	delete fHistNeutronAcctotET; 
+	delete fHistNeutronRectotET; 
+	delete fHistNeutronRectotETDep; 
+	
+	delete fHistNeutronRecEtaEDepETDep; 
+	delete fHistNeutronRecEtaETDep; 
+	
+	delete fHistNeutronRecEtaPtETDep; 
+		
+	// *******************
+	// neutral kaon ET
+	// *******************
+	delete fHistK0EtaEET; 
+	delete fHistK0RecEtaEET; 
+	
+	delete fHistK0EtaPtET; 
+	delete fHistK0RecEtaPtET; 
+	
+	delete fHistK0EtaET; 
+	delete fHistK0RecEtaET; 
+	
+	delete fHistK0EtaE; 
+	delete fHistK0RecEtaE; 
+	
+	delete fHistK0EtaPt; 
+	delete fHistK0RecEtaPt; 
+
+	delete fHistK0totET; 
+	delete fHistK0RectotET; 
+	
+	delete fHistK0RectotETDep; 
+	
+	delete fHistK0RecEtaEDepETDep; 
+	delete fHistK0RecEtaETDep; 
+	
+	delete fHistK0RecEtaPtETDep; 
+		
+	// *******************
+	// Lambda(anti) ET
+	// *******************
+	delete fHistLambdaEtaEET; 
+	delete fHistLambdaRecEtaEET; 
+	
+	delete fHistLambdaEtaPtET; 
+	delete fHistLambdaRecEtaPtET; 
+	
+	delete fHistLambdaEtaET; 
+	delete fHistLambdaRecEtaET; 
+	
+	delete fHistLambdaEtaE; 
+	delete fHistLambdaRecEtaE; 
+	
+	delete fHistLambdaEtaPt; 
+	delete fHistLambdaRecEtaPt; 
+	
+	delete fHistLambdatotET; 
+	delete fHistLambdaRectotET; 
+	
+	delete fHistLambdaRectotETDep; 
+	
+	delete fHistLambdaRecEtaEDepETDep; 
+	delete fHistLambdaRecEtaETDep; 
+	
+	delete fHistLambdaRecEtaPtETDep; 
+
+	// *******************
+	// total neutral ET
+	// *******************
+	delete fHistTotNeutraltotET;
+	delete fHistTotNeutralRectotET;
+	delete fHistTotNeutralRectotETDep;
+	
+	// *******************
+	// total ET
+	// *******************
+	delete fHistTotaltotET;
+	delete fHistTotalAcctotET;
+	delete fHistTotalRectotET;
+	delete fHistTotalRectotETDep;
+	
+	// *******************
+	// some checks
+	// *******************
+
+	// check produced electrons
+	delete fHistElectronFirstMother; 
+	delete fHistElectronFirstMotherXY; 
+	delete fHistElectronNDaughters; 
+	delete fHistElectronDaughters; 
+	delete fHistElectronDaughtersXY; 
+
+	delete fHistElectronFirstMotherAcc;  
+	delete fHistElectronFirstMotherXYAcc;  
+	delete fHistElectronNDaughtersAcc; 
+	delete fHistElectronDaughtersAcc; 
+	delete fHistElectronDaughtersXYAcc; 
+
+	delete fHistElectronFirstMotherRec;  
+	delete fHistElectronFirstMotherXYRec;  
+	delete fHistElectronNDaughtersRec; 
+	delete fHistElectronDaughtersRec; 
+	delete fHistElectronDaughtersXYRec; 
+
+	delete fHistNPPElectronFirstMother; 
+	delete fHistNPPElectronFirstMotherXY; 
+	delete fHistNPPElectronNDaughters; 
+	delete fHistNPPElectronDaughters; 
+	delete fHistNPPElectronDaughtersXY; 
+	
+	delete fHistNPPElectronFirstMotherAcc;  
+	delete fHistNPPElectronFirstMotherXYAcc;  
+	delete fHistNPPElectronNDaughtersAcc; 
+	delete fHistNPPElectronDaughtersAcc; 
+	delete fHistNPPElectronDaughtersXYAcc; 
+	
+	delete fHistNPPElectronFirstMotherRec;  
+	delete fHistNPPElectronFirstMotherXYRec;  
+	delete fHistNPPElectronNDaughtersRec; 
+	delete fHistNPPElectronDaughtersRec; 
+	delete fHistNPPElectronDaughtersXYRec; 
+	
+	// check produced gammas
+	delete fHistGammaFirstMother; 
+	delete fHistGammaFirstMotherXY; 
+	delete fHistGammaNDaughters; 
+	delete fHistGammaDaughters; 
+	delete fHistGammaDaughtersXY; 
+	delete fHistConvGammaDaughtersXY; 
+	delete fHistNonConvGammaDaughtersXY; 
+	
+	delete fHistGammaFirstMotherAcc;  
+	delete fHistGammaFirstMotherXYAcc;  
+	delete fHistGammaNDaughtersAcc; 
+	delete fHistGammaDaughtersAcc; 
+	delete fHistGammaDaughtersXYAcc; 
+	delete fHistConvGammaDaughtersXYAcc; 
+	delete fHistNonConvGammaDaughtersXYAcc; 
+	
+	delete fHistGammaFirstMotherRec;  
+	delete fHistGammaFirstMotherXYRec;  
+	delete fHistGammaNDaughtersRec; 
+	delete fHistGammaDaughtersRec; 
+	delete fHistGammaDaughtersXYRec; 
+	delete fHistConvGammaDaughtersXYRec; 
+	delete fHistNonConvGammaDaughtersXYRec; 
+	
+	delete fHistNPPGammaFirstMother; 
+	delete fHistNPPGammaFirstMotherXY; 
+	delete fHistNPPGammaNDaughters; 
+	delete fHistNPPGammaDaughters; 
+	delete fHistNPPGammaDaughtersXY; 
+	
+	delete fHistNPPGammaFirstMotherAcc;  
+	delete fHistNPPGammaFirstMotherXYAcc;  
+	delete fHistNPPGammaNDaughtersAcc; 
+	delete fHistNPPGammaDaughtersAcc; 
+	delete fHistNPPGammaDaughtersXYAcc; 
+	
+	delete fHistNPPGammaFirstMotherRec;  
+	delete fHistNPPGammaFirstMotherXYRec;  
+	delete fHistNPPGammaNDaughtersRec; 
+	delete fHistNPPGammaDaughtersRec; 
+	delete fHistNPPGammaDaughtersXYRec; 
+
+	//check projections
+	delete fHistAllERecEMC;	
+	delete fHistAllPtRecPtMC;
+	delete fHistElectronERecEMC;	
+	delete fHistGammaERecEMC;
+	
+	delete fHistChargedRes;
+	delete fHistChargedRes2;
+	delete fHistChargedRes3;
+	delete fHistNeutralRes;
+	delete fHistElectronRes;
+	delete fHistGammaRes;
+	
+	delete fHistIsInAcc;
+	//delete   TH2F * yyyyyy
 }
 
 Int_t AliAnalysisEmEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
