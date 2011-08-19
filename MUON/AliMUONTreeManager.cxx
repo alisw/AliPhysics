@@ -231,8 +231,6 @@ AliMUONTreeManager::GetClassName(const TTree& tree, const char* pattern,
   /// we return DefaultClassName(pattern)
   ///
   
-  AliInfo(Form("pattern=%s makeDefault=%d",pattern,makeDefault));
-  
   TTree& vtree = const_cast<TTree&>(tree); // not pretty, but the GetUserInfo is not const...
   
   TIter next(vtree.GetUserInfo());
@@ -242,12 +240,10 @@ AliMUONTreeManager::GetClassName(const TTree& tree, const char* pattern,
   while ( ( object = next() ) )
   {
     AliMUONObjectPair* pair = static_cast<AliMUONObjectPair*>(object);
-    StdoutToAliInfo(pair->Print());
     TString key = (static_cast<TObjString*>(pair->First()))->String();
     TString value = (static_cast<TObjString*>(pair->Second()))->String();
     if ( key.Contains(pattern,TString::kIgnoreCase) ) 
     {
-      AliInfo(Form("Will return %s",value.Data()));
       return value;
     }
   }
