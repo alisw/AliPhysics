@@ -28,7 +28,7 @@ AliHLTEMCALGeometry::AliHLTEMCALGeometry() :
 	AliHLTCaloGeometry ("EMCAL"),
 	fGeo(0),fReco(0)
 {
-  //GetGeometryFromCDB();
+  GetGeometryFromCDB();
 }
 
 Int_t AliHLTEMCALGeometry::InitialiseGeometry()
