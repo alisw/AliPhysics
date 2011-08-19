@@ -167,6 +167,54 @@ AliAnalysisEmEtReconstructed::AliAnalysisEmEtReconstructed():AliAnalysisEtRecons
 AliAnalysisEmEtReconstructed::~AliAnalysisEmEtReconstructed() 
 {//Destructor
   //Marcelo, are you sure you clean up all memory?
+  delete fGeoUt;
+
+	delete fHistAllRecETDep;//Marcelo please add comment
+	delete fHistAllRec;//Marcelo please add comment
+	delete fHistAllRectotETDep;//Marcelo please add comment
+	
+	delete fHistElectronRecETDep;//Marcelo please add comment
+	delete fHistElectronRec;//Marcelo please add comment
+	delete fHistElectronMatchtotETDep;//Marcelo please add comment 
+	
+	delete fHistElectronRecdEdxP;//Marcelo please add comment
+
+	delete fHistNeutralRectotET;//Marcelo please add comment  
+
+	delete fHistTotEMRectotET;//Marcelo please add comment
+
+	delete fHistMuonRecETDep;//Marcelo please add comment
+	delete fHistMuonRec;//Marcelo please add comment
+	delete fHistMuonMatchtotETDep;//Marcelo please add comment 
+
+	delete fHistMuonRecdEdxP;//Marcelo please add comment
+	
+	delete fHistPionRecETDep;//Marcelo please add comment
+	delete fHistPionRec;//Marcelo please add comment
+	delete fHistPionMatchtotETDep;//Marcelo please add comment 
+
+	delete fHistPionRecdEdxP;//Marcelo please add comment
+
+	delete fHistKaonRecETDep;//Marcelo please add comment
+	delete fHistKaonRec;//Marcelo please add comment
+	delete fHistKaonMatchtotETDep;//Marcelo please add comment 
+
+	delete fHistKaonRecdEdxP;//Marcelo please add comment
+	
+	delete fHistProtonRecETDep;//Marcelo please add comment
+	delete fHistProtonRec;//Marcelo please add comment
+	delete fHistProtonMatchtotETDep;//Marcelo please add comment 
+
+	delete fHistProtonRecdEdxP;//Marcelo please add comment
+	
+	delete fHistTotChargedMatchtotETDep;//Marcelo please add comment
+	
+	delete fHistTotalRectotETDep;//Marcelo please add comment
+	
+	//few checks
+	delete fHistDeltaRZ;//Marcelo please add comment
+	//TH2F * TH1F * delete 
+	
 }
 
 Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
