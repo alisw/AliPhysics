@@ -733,7 +733,7 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 	Int_t nsleep =1;
 	// open file
 	TFile *file=0;
-	Printf("fNretry = %d, fRetrySeconds = %d",fNretry,fRetrySeconds);
+	AliDebug(2, Form("fNretry = %d, fRetrySeconds = %d",fNretry,fRetrySeconds));
 	for(Int_t i=0; i<=fNretry; ++i) {
 		AliDebug(2, Form("Putting the file in the OCDB: Retry n. %d",i));
 		file = TFile::Open(fullFilename,"CREATE");
