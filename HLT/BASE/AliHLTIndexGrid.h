@@ -51,7 +51,7 @@ class AliHLTIndexGrid {
       fCellDimension=fDimX*fDimY*fDimZ;
       fCells=new AliHLTIndexGridCell[fCellDimension];
       if (fDataDimension<0) fDataDimension=fgkDefaultDataSize;
-      fData=new AliHLTIndexGrid::ValueType[fDataDimension];
+      fData=new V[fDataDimension];
       Clear();
     }
   }
@@ -136,7 +136,7 @@ class AliHLTIndexGrid {
   void Clear(const char* /*option*/="") {
     // clear internal data
     if (fCells) memset(fCells, 0xff, fCellDimension*sizeof(AliHLTIndexGridCell));
-    if (fData) memset(fData, 0, fDataDimension*sizeof(AliHLTIndexGrid::ValueType));
+    if (fData) memset(fData, 0, fDataDimension*sizeof(V));
     fCount=0;
   }
 
@@ -276,10 +276,10 @@ class AliHLTIndexGrid {
 
     if (offset>fDataDimension) {
       // grow the data array
-      auto_ptr<AliHLTIndexGrid::ValueType> newArray(new AliHLTIndexGrid::ValueType[offset]);
+      auto_ptr<V> newArray(new V[offset]);
       if (newArray.get()) {
 	memcpy(newArray.get(), fData, fDataDimension);
-	memset(newArray.get()+fDataDimension, 0, (offset-fDataDimension)*sizeof(AliHLTIndexGrid::ValueType));
+	memset(newArray.get()+fDataDimension, 0, (offset-fDataDimension)*sizeof(V));
 	delete fData;
 	fData=newArray.release();
 	fDataDimension=offset;
