@@ -201,24 +201,37 @@ void AliAnalysisTaskPIDqa::FillITSqa()
     AliVTrack *track=(AliVTrack*)event->GetTrack(itrack);
     ULong_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
-    // ITS refit + ITS pid
-    if (!( ( (status & AliVTrack::kITSrefit)==AliVTrack::kITSrefit ) &&
-           ( (status & AliVTrack::kITSpid  )==AliVTrack::kITSpid   ) )) continue;
+    // ITS refit + ITS pid selection
+    if (!( ( (status & AliVTrack::kITSrefit)==AliVTrack::kITSrefit ) ||
+	   ! ( (status & AliVTrack::kITSpid  )==AliVTrack::kITSpid   ) )) continue;
     Double_t mom=track->P();
     
+    TList *theList = 0x0;
+    if(( (status & AliVTrack::kTPCin)==AliVTrack::kTPCin )){
+      //ITS+TPC tracks
+      theList=fListQAits;
+    }else{
+      if(!( (status & AliVTrack::kITSpureSA)==AliVTrack::kITSpureSA )){ 
+	//ITS Standalone tracks
+    	theList=fListQAitsSA;
+      }else{
+	//ITS Pure Standalone tracks
+	theList=fListQAitsPureSA;
+      }
+    }
+    
+    
     for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
-      TH2 *h=(TH2*)fListQAits->At(ispecie);
+      TH2 *h=(TH2*)theList->At(ispecie);
       if (!h) continue;
       Double_t nSigma=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType)ispecie);
       h->Fill(mom,nSigma);
     }
-    
-    TH2 *h=(TH2*)fListQAits->At(AliPID::kSPECIES);
+    TH2 *h=(TH2*)theList->At(AliPID::kSPECIES);
     if (h) {
       Double_t sig=track->GetITSsignal();
       h->Fill(mom,sig);
     }
-    
   }
 }
 
@@ -491,6 +504,7 @@ void AliAnalysisTaskPIDqa::SetupITSqa()
   
   TVectorD *vX=MakeLogBinning(200,.1,30);
   
+  //ITS+TPC tracks
   for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
     TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_ITS_%s",AliPID::ParticleName(ispecie)),
                               Form("ITS n#sigma %s vs. p;p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
@@ -498,14 +512,40 @@ void AliAnalysisTaskPIDqa::SetupITSqa()
                               200,-10,10);
     fListQAits->Add(hNsigmaP);
   }
-  
-  
   TH2F *hSig = new TH2F("hSigP_ITS",
                         "ITS signal vs. p;p [GeV]; ITS signal [arb. units]",
                         vX->GetNrows()-1,vX->GetMatrixArray(),
                         300,0,300);
   fListQAits->Add(hSig);
 
+  //ITS Standalone tracks
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+    TH2F *hNsigmaPSA = new TH2F(Form("hNsigmaP_ITSSA_%s",AliPID::ParticleName(ispecie)),
+				Form("ITS n#sigma %s vs. p;p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
+				vX->GetNrows()-1,vX->GetMatrixArray(),
+				200,-10,10);
+    fListQAitsSA->Add(hNsigmaPSA);
+  }
+  TH2F *hSigSA = new TH2F("hSigP_ITSSA",
+			  "ITS signal vs. p;p [GeV]; ITS signal [arb. units]",
+			  vX->GetNrows()-1,vX->GetMatrixArray(),
+			  300,0,300);
+  fListQAitsSA->Add(hSigSA);
+  
+  //ITS Pure Standalone tracks
+  for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
+    TH2F *hNsigmaPPureSA = new TH2F(Form("hNsigmaP_ITSPureSA_%s",AliPID::ParticleName(ispecie)),
+				    Form("ITS n#sigma %s vs. p;p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
+				    vX->GetNrows()-1,vX->GetMatrixArray(),
+				    200,-10,10);
+    fListQAitsPureSA->Add(hNsigmaPPureSA);
+  }
+  TH2F *hSigPureSA = new TH2F("hSigP_ITSPureSA",
+			      "ITS signal vs. p;p [GeV]; ITS signal [arb. units]",
+			      vX->GetNrows()-1,vX->GetMatrixArray(),
+			      300,0,300);
+  fListQAitsPureSA->Add(hSigPureSA);
+  
   delete vX;  
 }
 
@@ -713,3 +753,4 @@ TVectorD* AliAnalysisTaskPIDqa::MakeArbitraryBinning(const char* bins)
   delete arr;
   return binLimits;
 }
+
