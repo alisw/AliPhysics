@@ -116,11 +116,13 @@ int AliHLTEmcalElectronMonitorComponent::DoEvent(const AliHLTComponentEventData 
       scalarPtr = reinterpret_cast<AliHLTScalars*>(iter->fPtr);
     }
     else {
-      if (fVerbose)  HLTWarning("FastJet Monitor: Data block does not contain event stats - check if flag is set for histograming for AliHLTTriggerFastJet \n");
+      if (fVerbose)  HLTWarning("Electron Monitor: Data block does not contain event stats - check if flag is set for histograming for AliHLTEmcalElectronTrigger \n");
     }
     
     specification |= iter->fSpecification;
-    fHistoPtr->MakeHisto(scalarPtr);
+    
+    if (scalarPtr)
+      fHistoPtr->MakeHisto(scalarPtr);
   }
 
   fLocalEventCount++;

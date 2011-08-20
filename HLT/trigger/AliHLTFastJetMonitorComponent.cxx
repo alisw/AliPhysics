@@ -120,7 +120,8 @@ int AliHLTFastJetMonitorComponent::DoEvent(const AliHLTComponentEventData &evtDa
     }
     
     specification |= iter->fSpecification;
-    fHistoPtr->MakeHisto(scalarPtr);
+    if (scalarPtr)
+      fHistoPtr->MakeHisto(scalarPtr);
   }
 
   fLocalEventCount++;
