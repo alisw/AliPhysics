@@ -782,14 +782,14 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
 	  AliFatal("padrows not ordered");
 	}
 
-	AliHLTUInt64_t pad64
-	  =(AliHLTUInt64_t)round(pad*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kPad].fScale);
-	AliHLTUInt64_t time64
-	  =(AliHLTUInt64_t)round(time*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kTime].fScale);
-	AliHLTUInt64_t sigmaY264
-	  =(AliHLTUInt64_t)round(sigmaY2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaY2].fScale);
-	AliHLTUInt64_t sigmaZ264
-	  =(AliHLTUInt64_t)round(sigmaZ2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fScale);
+	AliHLTUInt64_t pad64=0;
+	if (!isnan(pad)) pad64=(AliHLTUInt64_t)round(pad*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kPad].fScale);
+	AliHLTUInt64_t time64=0;
+	if (!isnan(time)) time64=(AliHLTUInt64_t)round(time*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kTime].fScale);
+	AliHLTUInt64_t sigmaY264=0;
+	if (!isnan(sigmaY2)) sigmaY264=(AliHLTUInt64_t)round(sigmaY2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaY2].fScale);
+	AliHLTUInt64_t sigmaZ264=0;
+	if (!isnan(sigmaZ2)) sigmaZ264=(AliHLTUInt64_t)round(sigmaZ2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fScale);
 	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kPadRow , padrow64);
 	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kPad    , pad64);  
 	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kTime   , time64);
