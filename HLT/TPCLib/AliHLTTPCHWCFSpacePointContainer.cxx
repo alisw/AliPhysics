@@ -134,19 +134,20 @@ int AliHLTTPCHWCFSpacePointContainer::AddInputBlock(const AliHLTComponentBlockDa
     pDecoder=new AliHLTTPCHWCFData;
     if (!pDecoder) return -ENOMEM;
   }
-  if (!pGrid) {
-    pGrid=new AliHLTSpacePointGrid(33, 1.0, 140, 8, 1024, 10);
-    if (!pGrid) {
-      delete pDecoder;
-      return -ENOMEM;
-    }
-  }
 
   if (pDecoder->Init(reinterpret_cast<AliHLTUInt8_t*>(buffer), bufferSize32*sizeof(AliHLTUInt32_t))<0 ||
       (pDecoder->CheckVersion()<0 && (int)bufferSize32>pDecoder->GetRCUTrailerSize())) {
     HLTError("data block of type %s corrupted: can not decode format",
 	     AliHLTComponent::DataType2Text(pDesc->fDataType).c_str());
     return -EBADMSG;
+  }
+
+  if (!pGrid) {
+    pGrid=new AliHLTSpacePointGrid(33, 1.0, 140, 8, 1024, 10);
+    if (!pGrid) {
+      delete pDecoder;
+      return -ENOMEM;
+    }
   }
 
   if (fMode!=1) {
@@ -747,6 +748,7 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
 	// word which has bit pattern 0x3 in bits bit 30 and 31 which was
 	// not recognized
 	ALIHLTERRORGUARD(1, "can not read cluster header word");
+	iResult=-EBADF;
 	break;
       }
 
@@ -872,6 +874,8 @@ void AliHLTTPCHWCFSpacePointContainer::AliHLTTPCHWCFSpacePointProperties::Print(
     return;
   }
   const AliHLTTPCHWCFData* decoder=Decoder();
+  std::streamsize precision=out.precision();
+  ios::fmtflags   fmtflag=out.setf(ios::floatfield);
   out.setf(ios::fixed,ios::floatfield);
   out << " " << setfill(' ') << setw(3) << decoder->GetPadRow(fIndex) 
       << " " << setw(8) << setprecision(3) << decoder->GetPad(fIndex)
@@ -881,6 +885,8 @@ void AliHLTTPCHWCFSpacePointContainer::AliHLTTPCHWCFSpacePointProperties::Print(
       << " " << setw(5) << decoder->GetCharge(fIndex) 
       << " " << setw(5) << decoder->GetQMax(fIndex)
       << " " << fTrackId << " " << fMCId << " " << fUsed;
+  out << setprecision(precision);
+  out.setf(fmtflag,ios::floatfield);
 }
 
 ostream& operator<<(ostream &out, const AliHLTTPCHWCFSpacePointContainer::AliHLTTPCHWCFSpacePointProperties& p)
