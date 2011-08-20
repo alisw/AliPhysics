@@ -143,6 +143,7 @@ class AliHLTIndexGrid {
   void Print(const char* /*option*/="") {
   // print info
   bool bPrintEmpty=false;
+  std::streamsize precision=cout.precision();
   cout << "AliHLTIndexGrid: " << (fCells?fCellDimension:0) << " cells" << endl;
   cout << "   x: " << fDimX << " [0," << fMaxX << "]" << endl;
   cout << "   y: " << fDimY << " [0," << fMaxY << "]" << endl;
@@ -169,6 +170,7 @@ class AliHLTIndexGrid {
       }
     }
   }
+  cout << setprecision(precision);
 }
 
 
