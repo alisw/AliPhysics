@@ -52,9 +52,10 @@ class AliHLTTPCHWCFSpacePointContainer : public AliHLTSpacePointContainer
   /// add input block to the collection
   virtual int AddInputBlock(const AliHLTComponentBlockData* pDesc);
 
-  virtual int PopulateAccessGrid(AliHLTSpacePointGrid* pGrid, AliHLTUInt32_t mask) const;
-  int PopulateAccessGrid(AliHLTSpacePointGrid* pGrid, AliHLTTPCHWCFData* pDecoder, int slice, int partition) const;
-  virtual const AliHLTSpacePointGrid* GetAccessGrid(AliHLTUInt32_t /*mask*/) const;
+  virtual int PopulateAccessGrid(AliHLTSpacePointPropertyGrid* pGrid, AliHLTUInt32_t mask) const;
+  int PopulateAccessGrid(AliHLTSpacePointPropertyGrid* pGrid, AliHLTTPCHWCFData* pDecoder, int slice, int partition) const;
+  virtual const AliHLTSpacePointPropertyGrid* GetSpacePointPropertyGrid(AliHLTUInt32_t mask) const;
+  virtual int SetSpacePointPropertyGrid(AliHLTUInt32_t mask, AliHLTSpacePointPropertyGrid*);
 
   /// clear the object and reset pointer references
   virtual void Clear(Option_t * option ="");
@@ -102,11 +103,14 @@ class AliHLTTPCHWCFSpacePointContainer : public AliHLTSpacePointContainer
 		  const char* option="") const;
 
   int WriteSorted(AliHLTUInt8_t* outputPtr, AliHLTUInt32_t size, AliHLTUInt32_t offset,
-		  AliHLTTPCHWCFData* pDecoder, AliHLTSpacePointGrid* pGrid,
+		  AliHLTTPCHWCFData* pDecoder, AliHLTSpacePointPropertyGrid* pGrid,
 		  AliHLTUInt32_t mask,
 		  vector<AliHLTComponentBlockData>&  outputBlocks,
 		  AliHLTDataDeflater* pDeflater,
 		  const char* option) const;
+
+  /// allocate index grid, one single point to define the dimensions
+  static AliHLTSpacePointPropertyGrid* AllocateIndexGrid();
 
   class AliHLTTPCHWCFSpacePointProperties {
   public:
@@ -138,7 +142,7 @@ class AliHLTTPCHWCFSpacePointContainer : public AliHLTSpacePointContainer
 
   class AliHLTTPCHWCFSpacePointBlock {
   public:
-    AliHLTTPCHWCFSpacePointBlock(AliHLTUInt32_t id=0, AliHLTTPCHWCFData* pDecoder=NULL, AliHLTSpacePointGrid* pGrid=NULL)
+    AliHLTTPCHWCFSpacePointBlock(AliHLTUInt32_t id=0, AliHLTTPCHWCFData* pDecoder=NULL, AliHLTSpacePointPropertyGrid* pGrid=NULL)
       : fDecoder(pDecoder), fGrid(pGrid), fId(id) {}
     AliHLTTPCHWCFSpacePointBlock(const AliHLTTPCHWCFSpacePointBlock& s) 
       : fDecoder(s.fDecoder), fGrid(s.fGrid), fId(s.fId) {}
@@ -151,13 +155,13 @@ class AliHLTTPCHWCFSpacePointContainer : public AliHLTSpacePointContainer
     void SetId(AliHLTUInt32_t id) {fId=id;}
     AliHLTTPCHWCFData* GetDecoder() const {return fDecoder;} 
     void SetDecoder(AliHLTTPCHWCFData* pDecoder) {fDecoder=pDecoder;}
-    AliHLTSpacePointGrid* GetGrid() const {return fGrid;}
-    void SetGrid(AliHLTSpacePointGrid* pGrid) {fGrid=pGrid;}
+    AliHLTSpacePointPropertyGrid* GetGrid() const {return fGrid;}
+    void SetGrid(AliHLTSpacePointPropertyGrid* pGrid) {fGrid=pGrid;}
 
   protected:
   private:
     AliHLTTPCHWCFData* fDecoder; //!
-    AliHLTSpacePointGrid* fGrid; //!
+    AliHLTSpacePointPropertyGrid* fGrid; //!
     AliHLTUInt32_t fId; //!
   };
 
