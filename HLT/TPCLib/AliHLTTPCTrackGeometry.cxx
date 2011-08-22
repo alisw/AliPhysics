@@ -240,6 +240,39 @@ int AliHLTTPCTrackGeometry::FindMatchingTrackPoint(AliHLTUInt32_t spacepointId, 
   return -ENOENT;
 }
 
+
+int AliHLTTPCTrackGeometry::RegisterTrackPoints(AliHLTTrackGrid* pGrid) const
+{
+  /// register track points in the index grid, at this step the number
+  /// of tracks in each cell is counted
+  if (!pGrid) return -EINVAL;
+  int iResult=0;
+  for (vector<AliHLTTrackPoint>::const_iterator tp=TrackPoints().begin();
+       tp!=TrackPoints().end() && iResult>=0; tp++) {
+    AliHLTUInt32_t id=tp->GetId();
+    iResult=pGrid->CountSpacePoint(AliHLTTPCSpacePointData::GetSlice(id),
+				   AliHLTTPCSpacePointData::GetPatch(id),
+				   AliHLTTPCSpacePointData::GetNumber(id));
+  }
+  return iResult;
+}
+
+int AliHLTTPCTrackGeometry::FillTrackPoints(AliHLTTrackGrid* pGrid) const
+{
+  /// fill track points to index grid
+  if (!pGrid) return -EINVAL;
+  int iResult=0;
+  for (vector<AliHLTTrackPoint>::const_iterator tp=TrackPoints().begin();
+       tp!=TrackPoints().end() && iResult>=0; tp++) {
+    AliHLTUInt32_t id=tp->GetId();
+    iResult=pGrid->AddSpacePoint(GetTrackId(),
+				 AliHLTTPCSpacePointData::GetSlice(id),
+				 AliHLTTPCSpacePointData::GetPatch(id),
+				 AliHLTTPCSpacePointData::GetNumber(id));
+  }
+  return iResult;
+}
+
 AliHLTSpacePointContainer* AliHLTTPCTrackGeometry::ConvertToSpacePoints(bool bAssociated) const
 {
   /// create a collection of all points
@@ -299,6 +332,22 @@ AliHLTSpacePointContainer* AliHLTTPCTrackGeometry::ConvertToSpacePoints(bool bAs
   }
 
   return spacepoints.release();
+}
+
+const AliHLTTrackGeometry::AliHLTTrackPoint* AliHLTTPCTrackGeometry::GetRawTrackPoint(AliHLTUInt32_t id) const
+{
+  /// get raw track point of id
+  const AliHLTTrackGeometry::AliHLTTrackPoint* p=find(&fRawTrackPoints[0], &fRawTrackPoints[fRawTrackPoints.size()], id);
+  if (p==&fRawTrackPoints[fRawTrackPoints.size()]) return 0;
+  return p;
+}
+
+AliHLTTrackGeometry::AliHLTTrackPoint* AliHLTTPCTrackGeometry::GetRawTrackPoint(AliHLTUInt32_t id)
+{
+  /// get raw track point of id
+  AliHLTTrackGeometry::AliHLTTrackPoint* p=find(&fRawTrackPoints[0], &fRawTrackPoints[fRawTrackPoints.size()], id);
+  if (p==&fRawTrackPoints[fRawTrackPoints.size()]) return 0;
+  return p;
 }
 
 int AliHLTTPCTrackGeometry::FillRawResidual(int coordinate, TH2* histo, AliHLTSpacePointContainer* points) const

@@ -61,9 +61,20 @@ class AliHLTTPCTrackGeometry : public AliHLTTrackGeometry
   /// find the track point which can be associated to a spacepoint with coordinates and id
   virtual int FindMatchingTrackPoint(AliHLTUInt32_t spacepointId, float spacepoint[3], AliHLTUInt32_t& planeId);
 
+  /// register track points in the index grid
+  virtual int RegisterTrackPoints(AliHLTTrackGrid* pGrid) const;
+
+  /// fill track points to index grid
+  virtual int FillTrackPoints(AliHLTTrackGrid* pGrid) const;
+
   /// create a collection of all points
   virtual AliHLTSpacePointContainer* ConvertToSpacePoints() const {return ConvertToSpacePoints(false);}
   virtual AliHLTSpacePointContainer* ConvertToSpacePoints(bool bAssociated) const;
+
+  /// get raw track point of id
+  const AliHLTTrackPoint* GetRawTrackPoint(AliHLTUInt32_t id) const;
+  /// get raw track point of id
+  AliHLTTrackPoint* GetRawTrackPoint(AliHLTUInt32_t id);
 
   int FillRawResidual(int coordinate, TH2* histo, AliHLTSpacePointContainer* points) const;
 
