@@ -43,10 +43,18 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(11,iPtBin)] : 1.e6);}
 
+
+  enum EDsPid {kConservative, kStrong};
+  void SetPidOption(Int_t opt){
+    fPidOption=opt;
+  }
+  Int_t GetPidOption() const {return fPidOption;}
+  
  protected:
+  Int_t fPidOption;         //pid option
 
 
-  ClassDef(AliRDHFCutsDstoKKpi,1);  // class for cuts on AOD reconstructed Ds->KKpi
+  ClassDef(AliRDHFCutsDstoKKpi,2);  // class for cuts on AOD reconstructed Ds->KKpi
 };
 
 #endif
