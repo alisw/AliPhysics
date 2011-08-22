@@ -73,7 +73,6 @@ AliGenAmpt::AliGenAmpt()
     fLHC(kFALSE),
     fRandomPz(kFALSE),
     fNoHeavyQuarks(kFALSE),
-    fEventTime(0.),
     fIsoft(4),
     fNtMax(150),
     fIpop(1),
@@ -126,7 +125,6 @@ AliGenAmpt::AliGenAmpt(Int_t npart)
     fLHC(kFALSE),
     fRandomPz(kFALSE),
     fNoHeavyQuarks(kFALSE),
-    fEventTime(0.),
     fIsoft(1),
     fNtMax(150),
     fIpop(1),
@@ -235,6 +233,7 @@ void AliGenAmpt::Generate()
   Float_t polar[3]    =   {0,0,0};
   Float_t origin[3]   =   {0,0,0};
   Float_t origin0[3]  =   {0,0,0};
+  Float_t time0 = 0.;
   Float_t p[3];
   Float_t tof;
 
@@ -249,11 +248,13 @@ void AliGenAmpt::Generate()
   fTrials = 0;
   for (j = 0;j < 3; j++) 
     origin0[j] = fOrigin[j];
+  time0 = fTimeOrigin;
 
   if(fVertexSmear == kPerEvent) {
     Vertex();
     for (j=0; j < 3; j++) 
       origin0[j] = fVertex[j];
+    time0 = fTime;
   } 
 
   Float_t sign = (fRandomPz && (Rndm() < 0.5))? -1. : 1.;
@@ -373,6 +374,7 @@ void AliGenAmpt::Generate()
     fVertex[0] = origin0[0];
     fVertex[1] = origin0[1];	
     fVertex[2] = origin0[2];
+    fTime = time0;
       
     // First select parent particles
     for (Int_t i = 0; i < np; i++) {
@@ -440,11 +442,6 @@ void AliGenAmpt::Generate()
       } // selected
     } // particle loop final state
 
-    //Time of the interactions
-    Float_t tInt = 0.;
-    if (fPileUpTimeWindow > 0.) 
-      tInt = fPileUpTimeWindow * (2. * gRandom->Rndm() - 1.);
-
     // Write particles to stack
     for (Int_t i = 0; i<np; i++) {
       TParticle *iparticle = (TParticle *) fParticles.At(i);
@@ -459,16 +456,8 @@ void AliGenAmpt::Generate()
         origin[0] = origin0[0]+iparticle->Vx()/10;
         origin[1] = origin0[1]+iparticle->Vy()/10;
         origin[2] = origin0[2]+iparticle->Vz()/10;
-        fEventTime = 0.;
-	      
-        if (TestBit(kVertexRange)) {
-          fEventTime = sign * origin0[2] / 2.99792458e10;
-          tof = kconv * iparticle->T() + fEventTime;
-        } else {
-          tof = kconv * iparticle->T();
-          fEventTime = tInt;
-          if (fPileUpTimeWindow > 0.) tof += tInt;
-        }
+	tof = time0+kconv * iparticle->T();
+
         imo = -1;
         TParticle* mother = 0;
         if (hasMother) {
@@ -666,7 +655,7 @@ void AliGenAmpt::MakeHeader()
   fHeader->SetTrials(fTrials);
   // Event Vertex
   fHeader->SetPrimaryVertex(fVertex);
-  fHeader->SetInteractionTime(fEventTime);
+  fHeader->SetInteractionTime(fTime);
 
   fCollisionGeometry = fHeader;
   AddHeader(fHeader);

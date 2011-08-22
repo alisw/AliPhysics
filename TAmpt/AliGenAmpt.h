@@ -126,7 +126,6 @@ class AliGenAmpt : public AliGenMC
     Int_t                    fLHC;             // Assume LHC as lab frame
     Bool_t                   fRandomPz;        // Randomise sign of pz event by event
     Bool_t                   fNoHeavyQuarks;   // If true no heavy quarks are produced
-    Float_t                  fEventTime;       // The event time
     Int_t                    fIsoft;           // ISOFT (D=1): select Default AMPT or String Melting
     Int_t                    fNtMax;           // NTMAX: number of timesteps (D=150)
     Int_t                    fIpop;            // (D=1,yes;0,no) flag for popcorn mechanism(netbaryon stopping)
@@ -148,6 +147,6 @@ class AliGenAmpt : public AliGenMC
     // check if stable
     Bool_t Stable(TParticle*  particle) const;
 
-    ClassDef(AliGenAmpt, 3) // AliGenerator interface to Ampt
+    ClassDef(AliGenAmpt, 4) // AliGenerator interface to Ampt
 };
 #endif
