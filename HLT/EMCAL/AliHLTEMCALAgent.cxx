@@ -174,8 +174,8 @@ const char* AliHLTEMCALAgent::GetReconstructionChains(AliRawReader* /*rawReader*
         // Note: run loader is only available while running embedded into
         // AliRoot simulation
         
-        if (runloader->GetLoader("EMCALLoader") != NULL)
-            return "EMCAL-EM";
+        // if (runloader->GetLoader("EMCALLoader") != NULL)
+        //     return "EMCAL-EM";
     }
     return NULL;
 }
