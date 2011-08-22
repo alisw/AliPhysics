@@ -17,7 +17,7 @@ AliTOFGeometry* AliFlowBayesianPID::fTofGeo = NULL; // TOF geometry needed to re
 
 //________________________________________________________________________
 AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid) 
-  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fIsMC(0), fTOFres(80.0), fTOFResponse(NULL), fTPCResponse(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL)
+  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fIsMC(0), fTOFres(84.0), fTOFResponse(NULL), fTPCResponse(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL)
 {
   // Constructor
   Bool_t redopriors = kFALSE;
@@ -137,46 +137,52 @@ void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,ESta
     AlephParameters[4] = 2.57153e+00;
   }
   else if(centrality < 10){
-    AlephParameters[0] = 7.68595e-02;
-    AlephParameters[1] = 1.01781e+01;
-    AlephParameters[2] = 9.34864e-06;
-    AlephParameters[3] = 2.38588e+00;
-    AlephParameters[4] = 2.13599e+00;
+    mip = 53.549869;
+    AlephParameters[0] = 0.073740;
+    AlephParameters[1] = 10.205724;
+    AlephParameters[2] = 0.000009;
+    AlephParameters[3] = 2.292470;
+    AlephParameters[4] = 2.029191;
   }
   else if(centrality < 20){
-    AlephParameters[0] = 7.79393e-02;
-    AlephParameters[1] = 1.00337e+01;
-    AlephParameters[2] = 9.34864e-06;
-    AlephParameters[3] = 2.40323e+00;
-    AlephParameters[4] = 2.13072e+00;
+    mip = 53.549979;
+    AlephParameters[0] = 0.074808;
+    AlephParameters[1] = 10.002850;
+    AlephParameters[2] = 0.000009;
+    AlephParameters[3] = 2.353473;
+    AlephParameters[4] = 2.070397;
   }
   else if(centrality < 30){
-    AlephParameters[0] = 7.87563e-02;
-    AlephParameters[1] = 9.91265e+00;
-    AlephParameters[2] = 9.34864e-06;
-    AlephParameters[3] = 2.42280e+00;
-    AlephParameters[4] = 2.13296e+00;
+    mip = 53.550000;
+    AlephParameters[0] = 0.076092;
+    AlephParameters[1] = 9.911953;
+    AlephParameters[2] = 0.000009;
+    AlephParameters[3] = 2.316073;
+    AlephParameters[4] = 2.026312;
   }
   else if(centrality < 40){
-    AlephParameters[0] = 8.23869e-02;
-    AlephParameters[1] = 9.50211e+00;
-    AlephParameters[2] = 1.40230e-05;
-    AlephParameters[3] = 2.42899e+00;
-    AlephParameters[4] = 2.05572e+00;
+    mip = 53.549172;
+    AlephParameters[0] = 0.082482;
+    AlephParameters[1] = 9.027005;
+    AlephParameters[2] = 0.000013;
+    AlephParameters[3] = 2.420034;
+    AlephParameters[4] = 1.963044;
   }
   else if(centrality < 50){
-    AlephParameters[0] = 8.25626e-02;
-    AlephParameters[1] = 9.47698e+00;
-    AlephParameters[2] = 1.40230e-05;
-    AlephParameters[3] = 2.43731e+00;
-    AlephParameters[4] = 2.06060e+00;
+    mip = 53.549823;
+    AlephParameters[0] = 0.082570;
+    AlephParameters[1] = 9.003131;
+    AlephParameters[2] = 0.000013;
+    AlephParameters[3] = 2.442916;
+    AlephParameters[4] = 1.976435;
   }
   else if(centrality < 60){
-    AlephParameters[0] = 8.27528e-02;
-    AlephParameters[1] = 9.44676e+00;
-    AlephParameters[2] = 1.40230e-05;
-    AlephParameters[3] = 2.44433e+00;
-    AlephParameters[4] = 2.06498e+00;
+    mip = 53.521724;
+    AlephParameters[0] = 0.082672;
+    AlephParameters[1] = 8.974422;
+    AlephParameters[2] = 0.000013;
+    AlephParameters[3] = 2.462914;
+    AlephParameters[4] = 1.986885;
   }
   else if(centrality < 70){
     AlephParameters[0] = 8.29615e-02;
@@ -219,10 +225,10 @@ void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,ESta
   fPIDesd->SetTOFResponse(esd,flagStart);
 
   if(fNewTrackParam){
-    fPIDesd->GetTOFResponse().SetTrackParameter(0, 0.007);
-    fPIDesd->GetTOFResponse().SetTrackParameter(1,0.007);
-    fPIDesd->GetTOFResponse().SetTrackParameter(2,0.0);
-    fPIDesd->GetTOFResponse().SetTrackParameter(3,30);
+    fPIDesd->GetTOFResponse().SetTrackParameter(0, 0.008);
+    fPIDesd->GetTOFResponse().SetTrackParameter(1,0.008);
+    fPIDesd->GetTOFResponse().SetTrackParameter(2,0.002);
+    fPIDesd->GetTOFResponse().SetTrackParameter(3,40);
   }
 
   fPIDesd->MakePID(esd,kFALSE);
@@ -259,6 +265,9 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t,Float_t centr){
       else if(iS==6) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kTriton);
       else if(iS==7) resolutionTPC =  fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[7])*5*0.07;
 
+      if(centr < 10) resolutionTPC *= 1.07;
+      else if(centr < 20) resolutionTPC *= 1.03;
+
       fWeights[0][iS] = fTPCResponse->Eval((dedx - dedxExp)/resolutionTPC)/resolutionTPC;
     }
     fMaskCurrent[0] = kTRUE;
@@ -289,7 +298,7 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t,Float_t centr){
     timeextra = length * 33.3564095198152043;
     Float_t dz =t->GetTOFsignalDz();
     Float_t dx =t->GetTOFsignalDx();
-    Float_t mismweight = TMath::Max(fMism->Eval(timeTOF - timeextra),0.00001) * ((0.5 + 0.05/pt/pt/pt)*(0.75 + 0.23 * (1.3*dx*dx + 0.7*dz*dz))); // mismatch probabilities
+    Float_t mismweight = TMath::Max(fMism->Eval(timeTOF - timeextra),0.0000001) * ((0.5 + 0.05/pt/pt/pt)*(0.75 + 0.23 * (1.3*dx*dx + 0.7*dz*dz))); // mismatch probabilities
     fWTofMism = mismfrac*mismweight;
 
     Double_t inttimes[8];
@@ -1431,9 +1440,9 @@ void AliFlowBayesianPID::SetPriors(){
 	else
 	  hPriors[j]->SetBinContent(k1,k2,fC[icentr][ipt][j]);    
       } // end loop over species
-      hPriors[5]->SetBinContent(k1,k2,0.0001);
-      hPriors[6]->SetBinContent(k1,k2,0.000001);
-      hPriors[7]->SetBinContent(k1,k2,0.000001);      
+      hPriors[5]->SetBinContent(k1,k2,0.001);
+      hPriors[6]->SetBinContent(k1,k2,0.0001);
+      hPriors[7]->SetBinContent(k1,k2,0.00001);      
     } // end loop on pt
   } // end loop on centrality bins
   
