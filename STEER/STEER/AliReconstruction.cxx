@@ -2295,6 +2295,10 @@ void AliReconstruction::SlaveTerminate()
    AliWarning("Finish PlaneEff evaluation failed");
   }
 
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    AliReconstructor *reconstructor = GetReconstructor(iDet);
+    if (reconstructor) reconstructor->Terminate();
+  }
   // End of cycle for the in-loop  
 
   if (fRunQA || fRunGlobalQA) {
