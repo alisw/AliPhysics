@@ -1569,7 +1569,7 @@ void AliTRDmcmSim::FitTracklet()
       nHits   = fit0->fNhits + fit1->fNhits; // number of hits
       sumX    = fit0->fSumX  + fit1->fSumX;
       sumX2   = fit0->fSumX2 + fit1->fSumX2;
-      denom   = nHits * sumX2 - sumX * sumX;
+      denom   = ((Long64_t) nHits)*((Long64_t) sumX2) - ((Long64_t) sumX)*((Long64_t) sumX);
 
       mult    = mult / denom; // exactly like in the TRAP program
       q0      = fit0->fQ0    + fit1->fQ0;
