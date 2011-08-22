@@ -21,12 +21,13 @@
 #include "AliHLTTrigger.h"
 #include "AliESDtrackCuts.h"
 #include "AliHLTScalars.h"
-#include "AliFJWrapper.h"
+//#include "AliFJWrapper.h"
 
 class AliHLTCaloClusterReader;
 class TRefArray;
 class AliESDEvent;
 class TMap;
+class AliFJWrapper;
 
 class AliHLTTriggerFastJet : public AliHLTTrigger
 {
