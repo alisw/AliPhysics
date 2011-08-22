@@ -27,6 +27,7 @@
 #endif
 
 class AliAnalysisManager;
+class AliAnalysisTaskCfg;
 class TGridJDL;
 
 class AliAnalysisAlien : public AliAnalysisGrid {
@@ -97,6 +98,12 @@ public:
    TGridJDL           *GetMergingJDL() const {return fMergingJDL;}
    const char         *GetGridOutputDir() const                          {return fGridOutputDir;}
 //Utilities
+   void                AddModule(AliAnalysisTaskCfg *module);
+   void                AddModules(TObjArray *list);
+   Int_t               GetNmodules() const;
+   AliAnalysisTaskCfg *GetModule(const char *name);
+   Bool_t              LoadModules();
+   Bool_t              GenerateTest(const char *modname="");
    Bool_t              CheckFileCopy(const char *alienpath);
    virtual Bool_t      CreateDataset(const char *pattern);
    virtual Bool_t      CreateJDL();
@@ -150,6 +157,8 @@ protected:
    Bool_t              IsCollection(const char *lfn) const;
    virtual Bool_t      IsSingleOutput() const;
    Bool_t              IsUsingTags() const {return TObject::TestBit(AliAnalysisGrid::kUseTags);}
+   Bool_t              LoadModule(AliAnalysisTaskCfg *mod);
+   Bool_t              CheckDependencies();
 
 private:
    TGridJDL        *fGridJDL;         //! JDL maker
@@ -215,8 +224,9 @@ private:
    TString          fMergeDirName;    // Name of the directory that should be added to the output directory
    TObjArray       *fInputFiles;      // List of input files to be processed by the job
    TObjArray       *fPackages;        // List of packages to be used
+   TObjArray       *fModules;         // List of AliAnalysisTaskCfg modules
    TMap             fProofParam;      // Key-value pairs for proof mode
    
-   ClassDef(AliAnalysisAlien, 18)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 19)   // Class providing some AliEn utilities
 };
 #endif

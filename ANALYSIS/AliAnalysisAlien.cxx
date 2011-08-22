@@ -34,6 +34,7 @@
 #include "TChain.h"
 #include "TObjString.h"
 #include "TObjArray.h"
+#include "TMacro.h"
 #include "TGrid.h"
 #include "TGridResult.h"
 #include "TGridCollection.h"
@@ -42,6 +43,7 @@
 #include "TGridJobStatus.h"
 #include "TFileMerger.h"
 #include "AliAnalysisManager.h"
+#include "AliAnalysisTaskCfg.h"
 #include "AliVEventHandler.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliMultiInputEventHandler.h"
@@ -129,6 +131,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fMergeDirName(),
                   fInputFiles(0),
                   fPackages(0),
+                  fModules(0),
                   fProofParam()
 {
 // Dummy ctor.
@@ -200,6 +203,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fMergeDirName(),
                   fInputFiles(0),
                   fPackages(0),
+                  fModules(0),
                   fProofParam()
 {
 // Default ctor.
@@ -271,6 +275,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fMergeDirName(other.fMergeDirName),
                   fInputFiles(0),
                   fPackages(0),
+                  fModules(0),
                   fProofParam()
 {
 // Copy ctor.
@@ -292,16 +297,27 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
       while ((obj=next())) fPackages->Add(new TObjString(obj->GetName()));
       fPackages->SetOwner();
    }   
+   if (other.fModules) {
+      fModules = new TObjArray();
+      fModules->SetOwner();
+      TIter next(other.fModules);
+      AliAnalysisTaskCfg *mod, *crt;
+      while ((crt=(AliAnalysisTaskCfg*)next())) {
+         mod = new AliAnalysisTaskCfg(*crt);
+         fModules->Add(mod);
+      }
+   }   
 }
 
 //______________________________________________________________________________
 AliAnalysisAlien::~AliAnalysisAlien()
 {
 // Destructor.
-   if (fGridJDL) delete fGridJDL;
-   if (fMergingJDL) delete fMergingJDL;
-   if (fInputFiles) delete fInputFiles;
-   if (fPackages) delete fPackages;
+   delete fGridJDL;
+   delete fMergingJDL;
+   delete fInputFiles;
+   delete fPackages;
+   delete fModules;
    fProofParam.DeleteAll();
 }   
 
@@ -385,9 +401,184 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
          while ((obj=next())) fPackages->Add(new TObjString(obj->GetName()));
          fPackages->SetOwner();
       }   
+      if (other.fModules) {
+         fModules = new TObjArray();
+         fModules->SetOwner();
+         TIter next(other.fModules);
+         AliAnalysisTaskCfg *mod, *crt;
+         while ((crt=(AliAnalysisTaskCfg*)next())) {
+            mod = new AliAnalysisTaskCfg(*crt);
+            fModules->Add(mod);
+         }
+      }   
    }
    return *this;
 }
+
+//______________________________________________________________________________
+void AliAnalysisAlien::AddModule(AliAnalysisTaskCfg *module)
+{
+// Adding a module. Checks if already existing. Becomes owned by this.
+   if (!module) return;
+   if (GetModule(module->GetName())) {
+      Error("AddModule", "A module having the same name %s already added", module->GetName());
+      return;
+   }
+   if (!fModules) {
+      fModules = new TObjArray();
+      fModules->SetOwner();
+   }
+   fModules->Add(module);
+}
+
+//______________________________________________________________________________
+void AliAnalysisAlien::AddModules(TObjArray *list)
+{
+// Adding a list of modules. Checks if already existing. Becomes owned by this.
+   TIter next(list);
+   AliAnalysisTaskCfg *module;
+   while ((module = (AliAnalysisTaskCfg*)next())) AddModule(module);
+}   
+
+//______________________________________________________________________________
+Bool_t AliAnalysisAlien::CheckDependencies()
+{
+// Check if all dependencies are satisfied. Reorder modules if needed.
+   Int_t nmodules = GetNmodules();
+   if (!nmodules) {
+      Warning("CheckDependencies", "No modules added yet to check their dependencies");
+      return kTRUE;
+   }   
+   AliAnalysisTaskCfg *mod = 0;
+   AliAnalysisTaskCfg *dep = 0;
+   TString depname;
+   Int_t i, j, k;
+   for (i=0; i<nmodules; i++) {
+      mod = (AliAnalysisTaskCfg*) fModules->At(i);
+      Int_t ndeps = mod->GetNdeps();
+      Int_t istart = i;
+      for (j=0; j<ndeps; j++) {
+         depname = mod->GetDependency(j);
+         dep = GetModule(depname);
+         if (!dep) {
+            Error("CheckDependencies","Dependency %s not added for module %s",
+                   depname.Data(), mod->GetName());
+            return kFALSE;
+         }
+         if (dep->NeedsDependency(mod->GetName())) {
+            Error("CheckDependencies","Modules %s and %s circularly depend on each other",
+                   mod->GetName(), dep->GetName());
+            return kFALSE;
+         }                  
+         Int_t idep = fModules->IndexOf(dep);
+         // The dependency task must come first
+         if (idep>i) {
+            // Remove at idep and move all objects below up one slot
+            // down to index i included.
+            fModules->RemoveAt(idep);
+            for (k=idep-1; k>=i; k++) fModules->AddAt(fModules->RemoveAt(k),k+1);
+            fModules->AddAt(dep, i++);
+         }
+         //Redo from istart if dependencies were inserted
+         if (i>istart) i=istart-1;
+      }
+   }
+   return kTRUE;
+}      
+
+//______________________________________________________________________________
+Int_t AliAnalysisAlien::GetNmodules() const
+{
+// Get number of modules.
+   if (!fModules) return 0;
+   return fModules->GetEntries();
+}
+
+//______________________________________________________________________________
+AliAnalysisTaskCfg *AliAnalysisAlien::GetModule(const char *name)
+{
+// Get a module by name.
+   if (!fModules) return 0;
+   return (AliAnalysisTaskCfg*)fModules->FindObject(name);
+}
+   
+//______________________________________________________________________________
+Bool_t AliAnalysisAlien::LoadModule(AliAnalysisTaskCfg *mod)
+{
+// Load a given module.
+   if (mod->IsLoaded()) return kTRUE;
+   Int_t ndeps = mod->GetNdeps();
+   TString depname;
+   for (Int_t j=0; j<ndeps; j++) {
+      depname = mod->GetDependency(j);
+      AliAnalysisTaskCfg *dep = GetModule(depname);
+      if (!dep) {
+         Error("LoadModule","Dependency %s not existing for module %s",
+                depname.Data(), mod->GetName());
+         return kFALSE;
+      }
+      if (!LoadModule(dep)) {
+         Error("LoadModule","Dependency %s for module %s could not be loaded",
+                depname.Data(), mod->GetName());
+         return kFALSE;
+      }
+   }
+   // Load libraries for the module
+   if (!mod->CheckLoadLibraries()) {
+      Error("LoadModule", "Cannot load all libraries for module %s", mod->GetName());
+      return kFALSE;
+   }
+   // Execute the macro
+   if (mod->ExecuteMacro()<0) {
+      Error("LoadModule", "Executing the macro %s with arguments: %s for module %s returned a negative value",
+             mod->GetMacroName(), mod->GetMacroArgs(), mod->GetName());
+      return kFALSE;
+   }
+   // Configure dependencies
+   if (mod->GetConfigMacro() && mod->ExecuteConfigMacro()<0) {
+      Error("LoadModule", "There was an error executing the deps config macro %s for module %s",
+            mod->GetConfigMacro()->GetTitle(), mod->GetName());
+      return kFALSE;
+   }
+   return kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t AliAnalysisAlien::GenerateTest(const char *modname)
+{
+// Generate test macros for a single module or for the full train.
+   if (strlen(modname)) {
+      return kTRUE;
+   }
+   return kTRUE;   
+}
+
+//______________________________________________________________________________
+Bool_t AliAnalysisAlien::LoadModules()
+{
+// Load all modules by executing the AddTask macros. Checks first the dependencies.
+   if (!CheckDependencies()) return kFALSE;
+   TIter next(fModules);
+   AliAnalysisTaskCfg *mod;
+   while ((mod=(AliAnalysisTaskCfg*)next())) {
+      if (!LoadModule(mod)) return kFALSE;
+   }
+   // All modules are loaded. Adjust the library list.
+   next.Reset();
+   fAdditionalLibs = "";
+   TString lib;
+   while ((mod=(AliAnalysisTaskCfg*)next())) {
+      Int_t nlibs = mod->GetNlibs();
+      for (Int_t i=0; i<nlibs; i++) {
+         lib = mod->GetLibrary(i);
+         if (fAdditionalLibs.Contains(lib)) continue;
+         lib = Form("lib%s.so", lib.Data());
+         if (!fAdditionalLibs.IsNull()) fAdditionalLibs += " ";
+         fAdditionalLibs += lib;
+      }
+   }      
+   return kTRUE;
+}      
 
 //______________________________________________________________________________
 void AliAnalysisAlien::SetRunPrefix(const char *prefix)
