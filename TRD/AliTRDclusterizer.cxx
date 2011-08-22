@@ -917,7 +917,7 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Sh
   //
 
   Float_t gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col,Max.row);
-  Float_t ongain = fCalOnGainROC->GetGainCorrectionFactor(Max.row,Max.col);
+  Float_t ongain = fCalOnGainROC ? fCalOnGainROC->GetGainCorrectionFactor(Max.row,Max.col) : 1;
   Signals[1] = (Short_t)((fDigits->GetData(Max.row, Max.col, Max.time) - fBaseline) * ongain / gain + 0.5f);
   if(Signals[1] <= fMaxThresh) return kFALSE;
 
@@ -935,12 +935,12 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Sh
   Short_t signal(0);
   if((signal = fDigits->GetData(Max.row, Max.col-1, Max.time))){
     gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col-1,Max.row);
-    ongain = fCalOnGainROC->GetGainCorrectionFactor(Max.row,Max.col-1);
+    ongain = fCalOnGainROC ? fCalOnGainROC->GetGainCorrectionFactor(Max.row,Max.col-1) : 1;
     Signals[0] = (Short_t)((signal - fBaseline) * ongain / gain + 0.5f);
   } else Signals[0] = 0;
   if((signal = fDigits->GetData(Max.row, Max.col+1, Max.time))){
     gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col+1,Max.row);
-    ongain = fCalOnGainROC->GetGainCorrectionFactor(Max.row,Max.col+1);
+    ongain = fCalOnGainROC ? fCalOnGainROC->GetGainCorrectionFactor(Max.row,Max.col+1) : 1;
     Signals[2] = (Short_t)((signal - fBaseline) * ongain / gain + 0.5f);
   } else Signals[2] = 0;
 
