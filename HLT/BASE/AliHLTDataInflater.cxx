@@ -91,6 +91,22 @@ bool AliHLTDataInflater::InputBit( AliHLTUInt8_t & value )
   return true;
 }
 
+bool AliHLTDataInflater::RewindBitPosition(UInt_t const & bitCount)
+{
+  // Reverse the current bit position by the given number of bits.
+  UInt_t bitDataCurrentPosInWord=fBitDataCurrentPosInWord+bitCount;
+  if ( bitDataCurrentPosInWord > 7) {
+    UInt_t byteShift=bitDataCurrentPosInWord/8;
+    if (fBitDataCurrentInputStart+byteShift>fBitDataCurrentInput) {
+      return false;
+    }
+    fBitDataCurrentInput-=byteShift;
+    fBitDataCurrentWord = *fBitDataCurrentInput;
+    fBitDataCurrentPosInWord = bitDataCurrentPosInWord%8;
+  }
+  return true;
+}
+
 void AliHLTDataInflater::Pad8Bits()
 {
   // see header file for class documenation

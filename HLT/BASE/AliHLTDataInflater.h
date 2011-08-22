@@ -18,9 +18,51 @@
 
 /**
  * @class AliHLTDataInflater
- * Data inflating interface to a bitstream encoded by AliHLTDataInflater
- * 
- * 
+ * Data inflating interface to a bitstream encoded by AliHLTDataDeflater
+ *
+ * Setting up the data inflater:
+ * <pre>
+  AliHLTDataInflater inflater;
+  if (inflater.InitBitDataInput(pData, dataSize)<0) {
+    // can not initialize
+  }
+ * </pre>
+ *
+ * If the layout in the bitstream is known the parts of known bit length
+ * can be read by
+ * - InputBit(value)
+ * - InputBits(value, length)
+ *
+ * For inflating huffman encoded streams where the symbol length is unknown
+ * one has to read a fixed value, retrieve the symbol and rewind the stream.
+ * Example how to read a fixed number of bits from the stream and rewind
+ * after the length of the symbol has been determined.
+ * <pre>
+  AliHLTUInt64_t inputWord=0;
+  int inputLength=sizeof(inputWord)*8;
+  while (outClusterCnt<nofClusters && inflater.InputBits(inputWord, inputLength)) {
+    // check how many of the bits belong to the symbol and rewind the
+    // input stream
+    int symbolLength=...;
+    inputWord>>=(inputLength-symbolLength);
+    if (!inflater.RewindBitPosition(inputLength-symbolLength)) {
+      // some error
+      break;
+    }
+
+    // do something with data in input word
+
+    // check if there is less remaining data than the full input word bit length
+    UInt_t bytes=inflater.GetRemainingBitDataSizeBytes();
+    if (bytes>0 && bytes<=sizeof(inputWord)) {
+      // reading the last bytes
+      // available bits are determined by cuurent position+1 (because
+      // position 0 means 1 bit still available) and the bits in the
+      // available bytes
+      inputLength=inflater.GetCurrentBitInputPosition()+1+(bytes-1)*8;
+    }
+  }
+ * </pre>
  * 
  *
  * @ingroup alihlt_base
@@ -82,6 +124,15 @@ public:
     return fBitDataCurrentInput-fBitDataCurrentInputStart;
   }
 
+  /** get number of remaining input bytes
+   * the last byte might be already partially read, use
+   * GetCurrentBitInputPosition()
+   */
+  UInt_t GetRemainingBitDataSizeBytes() const
+  {
+    return fBitDataCurrentInputEnd-fBitDataCurrentInput;
+  }
+
   /** function to determine input bit
    * @return boolean (if bit is 1 or 0)
    */
@@ -94,6 +145,11 @@ public:
    */
   template<typename T>
   bool InputBits( T & value, UInt_t const & bitCount );
+
+  /**
+   * Rewind the current bit position by the given number of bits.
+   */
+  bool RewindBitPosition(UInt_t const & bitCount);
  
   /** function pad 8 bits */
   void Pad8Bits();
@@ -156,9 +212,9 @@ bool AliHLTDataInflater::InputBits( T & value, UInt_t const & bitCount )
     value = (value << curBitCount) | ( (fBitDataCurrentWord >> (fBitDataCurrentPosInWord-curBitCount+1)) & ((1 << curBitCount)-1) );
     if ( fBitDataCurrentPosInWord < curBitCount ) {
       fBitDataCurrentInput++;
+      fBitDataCurrentPosInWord = 7;
       if ( fBitDataCurrentInput<fBitDataCurrentInputEnd ) {
 	fBitDataCurrentWord = *fBitDataCurrentInput;
-	fBitDataCurrentPosInWord = 7;
       }
     }
     else
