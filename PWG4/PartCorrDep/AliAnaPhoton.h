@@ -127,13 +127,14 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   Float_t      GetConvDPhiMaxCut()              const { return fConvDPhiMaxCut     ; }
   
   // For histograms in arrays, index in the array, corresponding to a particle
-  enum mcTypes   { mcPhoton = 0,        mcPrompt = 1,        mcFragmentation = 2, 
-                   mcISR = 3,           mcPi0Decay = 4,      mcOtherDecay = 5,  
-                   mcOther = 6,         mcPi0 = 7,           mcConversion = 8,    
-                   mcElectron = 9,      mcAntiNeutron = 10,  mcAntiProton = 11,   mcString = 12};  
+  enum mcTypes    { mcPhoton = 0,        mcPrompt = 1,        mcFragmentation = 2, 
+                    mcISR = 3,           mcPi0Decay = 4,      mcOtherDecay = 5,  
+                    mcOther = 6,         mcPi0 = 7,           mcConversion = 8,    
+                    mcElectron = 9,      mcAntiNeutron = 10,  mcAntiProton = 11,   
+                    mcString = 12};  
 
-  enum mcssTypes  { mcssPhoton = 0,     mcssOther = 1,       mcssPi0 = 2,         
-                    mcssEta = 3,        mcssConversion = 4,  mcssElectron = 5 };  
+  enum mcssTypes  { mcssPhoton = 0,      mcssOther = 1,       mcssPi0 = 2,         
+                    mcssEta = 3,         mcssConversion = 4,  mcssElectron = 5 };  
   
   private:
  
