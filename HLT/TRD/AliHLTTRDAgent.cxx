@@ -1,3 +1,4 @@
+// $Id$
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -14,11 +15,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTTRDAgent.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Agent of the libAliHLTTRD library
-*/
+/// @file   AliHLTTRDAgent.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  Agent of the libAliHLTTRD library
+///
 
 #include "AliHLTTRDAgent.h"
 #include "AliHLTTRDDefinitions.h"
@@ -42,6 +43,8 @@ AliHLTTRDAgent gAliHLTTRDAgent;
 #include "AliHLTTRDHistoMergerComponent.h"
 #include "AliHLTTRDOfflineClusterizerComponent.h"
 #include "AliHLTTRDOfflineTrackerV1Component.h"
+#include "AliHLTTRDMonitorComponent.h"
+#include "AliHLTTRDGlobalMonitorComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTRDAgent)
@@ -100,7 +103,8 @@ int AliHLTTRDAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTRDHistoMergerComponent);
   pHandler->AddComponent(new AliHLTTRDOfflineClusterizerComponent);
   pHandler->AddComponent(new AliHLTTRDOfflineTrackerV1Component);
-  
+  pHandler->AddComponent(new AliHLTTRDMonitorComponent);
+  pHandler->AddComponent(new AliHLTTRDGlobalMonitorComponent);
   return 0;
 }
 

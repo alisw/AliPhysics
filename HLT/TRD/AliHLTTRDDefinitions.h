@@ -38,6 +38,8 @@ public:
   static const AliHLTComponentDataType fgkCalibrationDataType; // Calibration with TRDtracks
   static const AliHLTComponentDataType fgkEORCalibrationDataType;//Calibration end of run 
 
+  static const AliHLTComponentDataType fgkSimpleIntegerDataType;//Sample
+
   ClassDef(AliHLTTRDDefinitions, 0)
     
 };

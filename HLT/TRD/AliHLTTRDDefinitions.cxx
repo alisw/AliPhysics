@@ -45,6 +45,8 @@ const AliHLTComponentDataType AliHLTTRDDefinitions::fgkCalibrationDataType = { s
 
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkEORCalibrationDataType = { sizeof(AliHLTComponentDataType), {'C','A','L','I','B','E','O','R'},{'T','R','D',' '}};;
 
+const AliHLTComponentDataType AliHLTTRDDefinitions::fgkSimpleIntegerDataType = { sizeof(AliHLTComponentDataType), {'S','I','M','P','L','I','N','T'},{'T','R','D',' '}};;
+
 AliHLTTRDDefinitions::AliHLTTRDDefinitions()
 {
   // see header file for class documentation
