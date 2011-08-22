@@ -715,7 +715,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   
   
   // digits -> trigger
-  if (!RunTrigger(fTriggerConfig,fMakeDigits)) {
+  if (!fTriggerConfig.IsNull() && !RunTrigger(fTriggerConfig,fMakeDigits)) {
     if (fStopOnError) return kFALSE;
   }
 
