@@ -313,6 +313,9 @@ void AliCentralMultiplicityTask::FindEtaLimits()
       prev = c;
       after->SetBinContent(e, 0);
       after->SetBinError(e, 0);
+      for(Int_t nn =1; nn <=obg->GetNbinsY();nn++)
+	obg->SetBinContent(e,nn,0);
+      
     }
     for (Int_t e = proj->GetNbinsX(); e >= 1; e--) { 
       Double_t c = proj->GetBinContent(e);
@@ -323,6 +326,9 @@ void AliCentralMultiplicityTask::FindEtaLimits()
       prev = c;
       after->SetBinContent(e, 0);
       after->SetBinError(e, 0);
+      for(Int_t nn =1; nn <=obg->GetNbinsY();nn++)
+	obg->SetBinContent(e,nn,0);
+      
     }
     
     for (Int_t nn = fEtaMin[v-1]; nn<=fEtaMax[v-1]; nn++) { 
