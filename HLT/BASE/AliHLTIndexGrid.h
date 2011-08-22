@@ -14,6 +14,7 @@
 
 #include "AliHLTDataTypes.h"
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 #include <memory>
 
@@ -143,34 +144,34 @@ class AliHLTIndexGrid {
   void Print(const char* /*option*/="") {
   // print info
   bool bPrintEmpty=false;
-  std::streamsize precision=cout.precision();
-  cout << "AliHLTIndexGrid: " << (fCells?fCellDimension:0) << " cells" << endl;
-  cout << "   x: " << fDimX << " [0," << fMaxX << "]" << endl;
-  cout << "   y: " << fDimY << " [0," << fMaxY << "]" << endl;
-  cout << "   z: " << fDimZ << " [0," << fMaxZ << "]" << endl;
-  cout << "   " << GetNumberOfSpacePoints(0, fCellDimension) << " point(s)" << endl;
+  std::stringstream str;
+  str << "AliHLTIndexGrid: " << (fCells?fCellDimension:0) << " cells" << endl;
+  str << "   x: " << fDimX << " [0," << fMaxX << "]" << endl;
+  str << "   y: " << fDimY << " [0," << fMaxY << "]" << endl;
+  str << "   z: " << fDimZ << " [0," << fMaxZ << "]" << endl;
+  str << "   " << GetNumberOfSpacePoints(0, fCellDimension) << " point(s)" << endl;
   if (fCells) {
     for (int i=0; i<fCellDimension; i++) {
       if (!bPrintEmpty && fCells[i].fCount<=0) continue;
-      cout << "     " << setfill(' ') << setw(7) << setprecision(0) << i << " (" 
-	   << " " << setw(3) << GetLowerBoundX(i)
-	   << " " << setw(3) << GetLowerBoundY(i)
-	   << " " << setw(4) << GetLowerBoundZ(i)
-	   << "): ";
-      cout << setw(3) << fCells[i].fCount << " entries, " << setw(3) << fCells[i].fFilled << " filled";
-      cout << "  start index " << setw(5) << fCells[i].fStartIndex;
-      cout << endl;
+      str << "     " << setfill(' ') << setw(7) << setprecision(0) << i << " (" 
+	  << " " << setw(3) << GetLowerBoundX(i)
+	  << " " << setw(3) << GetLowerBoundY(i)
+	  << " " << setw(4) << GetLowerBoundZ(i)
+	  << "): ";
+      str << setw(3) << fCells[i].fCount << " entries, " << setw(3) << fCells[i].fFilled << " filled";
+      str << "  start index " << setw(5) << fCells[i].fStartIndex;
+      str << endl;
       if (fCells[i].fCount>0) {
-	cout << "          ";
+	str << "          ";
 	for (iterator id=begin(GetLowerBoundX(i), GetLowerBoundY(i), GetLowerBoundZ(i));
 	     id!=end(); id++) {
-	  cout << " 0x" << hex << setw(8) << setfill('0') << id.Data();
+	  str << " 0x" << hex << setw(8) << setfill('0') << id.Data();
 	}
-	cout  << dec << endl;
+	str  << dec << endl;
       }
     }
   }
-  cout << setprecision(precision);
+  cout << str;
 }
 
 
@@ -178,7 +179,7 @@ class AliHLTIndexGrid {
   public:
   iterator()
     : fData(NULL) {}
-  iterator(const ValueType* pData)
+  iterator(ValueType* pData)
     : fData(pData) {}
   iterator(const iterator& i)
     : fData(i.fData) {}
@@ -198,10 +199,11 @@ class AliHLTIndexGrid {
     iterator& operator+=(int step) {fData+=step; return *this;}
 
     const ValueType& Data() const {return *fData;}
+    ValueType& Data() {return *fData;}
 
   protected:
   private:
-    const ValueType* fData; //! data
+    ValueType* fData; //! data
   };
 
   // prepare iterator and end marker
