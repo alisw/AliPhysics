@@ -39,6 +39,7 @@ AliFMDEventInspector::AliFMDEventInspector()
     fHEventsTr(0), 
     fHEventsTrVtx(0),
     fHEventsAccepted(0),
+    fHEventsAcceptedXY(0),
     fHTriggers(0),
     fHType(0),
     fHWords(0),
@@ -66,6 +67,7 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fHEventsTr(0), 
     fHEventsTrVtx(0), 
     fHEventsAccepted(0),
+    fHEventsAcceptedXY(0),
     fHTriggers(0),
     fHType(0),
     fHWords(0),
@@ -96,6 +98,7 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fHEventsTr(o.fHEventsTr), 
     fHEventsTrVtx(o.fHEventsTrVtx), 
     fHEventsAccepted(o.fHEventsAccepted),
+    fHEventsAcceptedXY(o.fHEventsAcceptedXY),
     fHTriggers(o.fHTriggers),
     fHType(o.fHType),
     fHWords(o.fHWords),
@@ -145,6 +148,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fHEventsTr         = o.fHEventsTr;
   fHEventsTrVtx      = o.fHEventsTrVtx;
   fHEventsAccepted   = o.fHEventsAccepted;
+  fHEventsAcceptedXY = o.fHEventsAcceptedXY;
   fHTriggers         = o.fHTriggers;
   fHType             = o.fHType;
   fHWords            = o.fHWords;
@@ -259,7 +263,17 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   // fHEventsAccepted->Sumw2();
   fList->Add(fHEventsAccepted);
 			      
-      
+  fHEventsAcceptedXY = new TH2D("nEventsAcceptedXY", 
+			      "XY vertex w/trigger and Z vertex in range",
+				1000,-1,1,1000,-1,1);
+  
+  fHEventsAcceptedXY->SetXTitle("v_{x} [cm]");
+  fHEventsAcceptedXY->SetYTitle("v_{y} [cm]");
+  fHEventsAcceptedXY->SetDirectory(0);
+  // fHEventsAccepted->Sumw2();
+  fList->Add(fHEventsAcceptedXY);
+
+  
   fHTriggers = new TH1I("triggers", "Triggers", kOffline+1, 0, kOffline+1);
   fHTriggers->SetFillColor(kRed+1);
   fHTriggers->SetFillStyle(3001);
@@ -424,8 +438,12 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   }
 
   // --- Get the vertex information ----------------------------------
+  
+  Double_t vx = 0;
+  Double_t vy = 0;
   vz          = 0;
-  Bool_t vzOk = ReadVertex(event, vz);
+  
+  Bool_t vzOk = ReadVertex(event, vz,vx,vy);
 
   fHEventsTr->Fill(vz);
   if (!vzOk) { 
@@ -434,7 +452,7 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
     return kNoVertex;
   }
   fHEventsTrVtx->Fill(vz);
-
+  
   // --- Get the vertex bin ------------------------------------------
   ivz = fVtxAxis.FindBin(vz);
   if (ivz <= 0 || ivz > fVtxAxis.GetNbins()) { 
@@ -446,6 +464,7 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
     return kBadVertex;
   }
   fHEventsAccepted->Fill(vz);
+  fHEventsAcceptedXY->Fill(vx,vy);
   
   // --- Check the FMD ESD data --------------------------------------
   if (!event->GetFMDData()) { 
@@ -712,7 +731,10 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
 }
 //____________________________________________________________________
 Bool_t
-AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, Double_t& vz)
+AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, 
+				 Double_t& vz, 
+				 Double_t& vx, 
+				 Double_t& vy)
 {
   // 
   // Read the vertex information from the ESD event 
@@ -725,7 +747,8 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, Double_t& vz)
   //    @c true on success, @c false otherwise 
   //
   vz = 0;
-  
+  vx = 1024;
+  vy = 1024;
   if(fUseFirstPhysicsVertex) {
     // This is the code used by the 1st physics people 
     const AliESDVertex* vertex    = esd->GetPrimaryVertex();
@@ -758,8 +781,13 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, Double_t& vz)
       }
     }
     vz = vertex->GetZ();
+    
+    if(!vertex->IsFromVertexerZ()) {
+      vx = vertex->GetX();
+      vy = vertex->GetY();
+    }
     return true;
-  } 
+  }
   else { //Use standard SPD vertex (perhaps preferable for Pb+Pb)
    
     // Get the vertex 
@@ -788,6 +816,12 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, Double_t& vz)
     
     // Get the z coordiante 
     vz = vertex->GetZ();
+    const AliESDVertex* vertexXY = esd->GetPrimaryVertex();
+    
+    if(!vertexXY->IsFromVertexerZ()) {
+      vx = vertexXY->GetX();
+      vy = vertexXY->GetY();
+    }
     return kTRUE;
   } 
 }

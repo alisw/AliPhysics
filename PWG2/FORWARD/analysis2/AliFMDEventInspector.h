@@ -260,7 +260,7 @@ protected:
    * 
    * @return @c true on success, @c false otherwise 
    */
-  Bool_t ReadVertex(const AliESDEvent* esd, Double_t& vz);
+  Bool_t ReadVertex(const AliESDEvent* esd, Double_t& vz, Double_t& vx, Double_t& vy);
   /** 
    * Read centrality from event 
    * 
@@ -276,6 +276,7 @@ protected:
   TH1I*    fHEventsTr;    //! Histogram of events w/trigger
   TH1I*    fHEventsTrVtx; //! Events w/trigger and vertex 
   TH1I*    fHEventsAccepted; //! Events w/trigger and vertex in range 
+  TH2D*    fHEventsAcceptedXY; //! XY vtx with trigger and Z vertex in range 
   TH1I*    fHTriggers;    //! Triggers
   TH1I*    fHType;        //! Type (low/high flux) of event
   TH1I*    fHWords;       //! Trigger words 
