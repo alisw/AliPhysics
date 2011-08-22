@@ -76,7 +76,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   , fFillAODFile(kTRUE), fFillAODHeader(0),    fFillAODCaloCells(0)
   , fRun(-1),            fRecoUtils(0),        fConfigName("")
   , fCellLabels(),       fCellSecondLabels(),  fMaxEvent(1000000000),  fDoTrackMatching(kFALSE)
-  
+  , fSelectCell(kFALSE)
 {
   //ctor
   for(Int_t i = 0; i < 10;    i++)  fGeomMatrix[i] =  0;
@@ -103,6 +103,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   , fFillAODFile(kFALSE), fFillAODHeader(0),    fFillAODCaloCells(0)
   , fRun(-1),             fRecoUtils(0),        fConfigName("") 
   , fCellLabels(),        fCellSecondLabels(),  fMaxEvent(1000000000),  fDoTrackMatching(kFALSE)
+  , fSelectCell(kFALSE)
 {
   // Constructor
   for(Int_t i = 0; i < 10;    i++)  fGeomMatrix[i] =  0;
@@ -860,9 +861,10 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
       
       // In case of unfolding, remove digits with energy below the pedestal threshold, about 3 ADC counts = 50 MeV
       // Not very precise to set it directly to 50 MeV since calibration of each channel changes, to be done more precisely in reconstruction.
-      if     (recPoint->GetEnergiesList()[c] < 0.05)                     continue;
-      else if(recPoint->GetEnergiesList()[c] < fRecParam->GetMinECut())  continue;
-      
+      if(fSelectCell){
+        if     (recPoint->GetEnergiesList()[c] < 0.05)                     continue;
+        //else if(recPoint->GetEnergiesList()[c] < fRecParam->GetMinECut())  continue;
+      }
       clusterE+=recPoint->GetEnergiesList()[c];
       
       // In case of embedding, fill ratio with amount of signal, 
@@ -885,14 +887,16 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
       }//Embedding
       
       //Remove too low cells in case of unfolding
-      if ( ratioOrg > 0.001) {
+      if ( fSelectCell && ratioOrg > 0.001) {
         ncellsTrue++;
+        
+        if(DebugLevel() > 1)  {
+          printf("AliAnalysisTaskEMCALClusterize::RecPoints2Clusters() - Too small energy in cell of cluster: cluster cell %f, digit %f\n",
+                  recPoint->GetEnergiesList()[c],digit->GetAmplitude());
+        }
       }
-      else  {
-        printf("AliAnalysisTaskEMCALClusterize::RecPoints2Clusters() - Too small energy in cell of cluster: cluster cell %f, digit %f\n",
-                   recPoint->GetEnergiesList()[c],digit->GetAmplitude());
-      }
-
+      else if(!fSelectCell) ncellsTrue++;
+      
     }// cluster cell loop
     
     if (ncellsTrue < 1) {
@@ -941,13 +945,15 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
       clus->SetM20(elipAxis[1]*elipAxis[1]) ;
       clus->SetDispersion(recPoint->GetDispersion());
     }
-    else{
-      //In case some cells rejected, in unfolding case
+    else if(fSelectCell){
+      // In case some cells rejected, in unfolding case, recalculate
+      // shower shape parameters and position
       AliVCaloCells* cells = 0x0; 
       if (aodIH && aodIH->GetMergeEvents()) cells = AODEvent()  ->GetEMCALCells();
       else                                  cells = InputEvent()->GetEMCALCells();
       fRecoUtils->RecalculateClusterShowerShapeParameters(fGeom,cells,clus);
       fRecoUtils->RecalculateClusterPID(clus);
+      fRecoUtils->RecalculateClusterPosition(fGeom,cells,clus); 
       
 //      Float_t elipAxis[2];
 //      recPoint->GetElipsAxis(elipAxis);

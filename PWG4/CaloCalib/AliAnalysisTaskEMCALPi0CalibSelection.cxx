@@ -45,20 +45,23 @@ ClassImp(AliAnalysisTaskEMCALPi0CalibSelection)
 
 //__________________________________________________
 AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(const char* name) :
-  AliAnalysisTaskSE(name),fEMCALGeo(0x0),//fCalibData(0x0), 
-  fEmin(0.5), fEmax(15.), fDTimeCut(20.), fAsyCut(1.),fMinNCells(2), fGroupNCells(0),
-  fLogWeight(4.5), fSameSM(kFALSE), fFilteredInput(kFALSE),
+  AliAnalysisTaskSE(name),fEMCALGeo(0x0), 
+  fEmin(0.5),               fEmax(15.),      fDTimeCut(20.), 
+  fAsyCut(1.),              fMinNCells(2),   fGroupNCells(0),
+  fLogWeight(4.5),          fSameSM(kFALSE), fFilteredInput(kFALSE),
   fCorrectClusters(kFALSE), fEMCALGeoName("EMCAL_COMPLETEV1"), 
-  fRecoUtils(new AliEMCALRecoUtils),
-  fNbins(300), fMinBin(0.), fMaxBin(300.),fOutputContainer(0x0),
-  fHmgg(0x0),           fHmggDifferentSM(0x0), 
-  fHmggMaskFrame(0x0),  fHmggDifferentSMMaskFrame(0x0), 
-  fHOpeningAngle(0x0),  fHOpeningAngleDifferentSM(0x0),  
-  fHIncidentAngle(0x0), fHIncidentAngleDifferentSM(0x0),
-  fHAsymmetry(0x0),     fHAsymmetryDifferentSM(0x0),  
-  fhNEvents(0x0),fCuts(0x0),fLoadMatrices(0),
-  fNMaskCellColumns(11), fMaskCellColumns(0x0),
-  fhClusterTime(0x0), fhClusterPairDiffTime(0x0)
+  fTriggerName("EMC"),      fRecoUtils(new AliEMCALRecoUtils), 
+  fCuts(0x0),               fLoadMatrices(0),
+  fNMaskCellColumns(11),    fMaskCellColumns(0x0),
+  //Histograms
+  fNbins(300), fMinBin(0.), fMaxBin(300.),   fOutputContainer(0x0),
+  fHmgg(0x0),               fHmggDifferentSM(0x0), 
+  fHmggMaskFrame(0x0),      fHmggDifferentSMMaskFrame(0x0), 
+  fHOpeningAngle(0x0),      fHOpeningAngleDifferentSM(0x0),  
+  fHIncidentAngle(0x0),     fHIncidentAngleDifferentSM(0x0),
+  fHAsymmetry(0x0),         fHAsymmetryDifferentSM(0x0),  
+  fhNEvents(0x0),
+  fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
 {
   //Named constructor which should be used.
   
@@ -437,7 +440,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     abort();
   }
   
-  if(!(((AliESDEvent*)InputEvent())->GetFiredTriggerClasses()).Contains("EMC")) {
+  if(!(((AliESDEvent*)InputEvent())->GetFiredTriggerClasses()).Contains(fTriggerName)) {
     //printf("Reject Event %d, FiredClass %s\n",(Int_t)Entry(),(((AliESDEvent*)InputEvent())->GetFiredTriggerClasses()).Data());
     return;
   }
