@@ -217,8 +217,6 @@ AliAnalysisTaskFlowEvent::~AliAnalysisTaskFlowEvent()
   delete fFlowEvent;
   delete fCutsEvent;
   delete fQAList;
-  delete fCutsRP; fCutsRP=NULL;
-  delete fCutsPOI; fCutsPOI=NULL; //set to null because another delete will be attempted via the container
   if (fCutContainer) fCutContainer->Delete(); delete fCutContainer;
   // objects in the output list are deleted
   // by the TSelector dtor (I hope)
