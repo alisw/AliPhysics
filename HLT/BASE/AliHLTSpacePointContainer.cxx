@@ -439,3 +439,10 @@ ostream& operator<<(ostream &out, const AliHLTSpacePointContainer& c)
   c.Print(out);
   return out;
 }
+
+ostream& operator<<(ostream &out, const AliHLTSpacePointContainer::AliHLTSpacePointProperties& p)
+{
+  // print
+  cout << p.fId;
+  return out;
+}

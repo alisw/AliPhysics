@@ -46,6 +46,12 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
   /// destructor
   ~AliHLTSpacePointContainer();
 
+  struct AliHLTSpacePointProperties {
+    AliHLTSpacePointProperties(AliHLTUInt32_t id=~(AliHLTUInt32_t)0, int trackid=-1) : fId(id), fTrackId(trackid) {}
+    AliHLTUInt32_t fId;      //! the id of the spacepoint
+    int            fTrackId; //! track the spacepoint is assigned to
+  };
+  typedef AliHLTIndexGrid<float, AliHLTSpacePointProperties> AliHLTSpacePointPropertyGrid;
   typedef AliHLTIndexGrid<float, AliHLTUInt32_t> AliHLTSpacePointGrid;
 
   //////////////////////////////////////////////////////////////////////////
@@ -55,8 +61,14 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
 
   /// add input block to the collection
   virtual int AddInputBlock(const AliHLTComponentBlockData* pDesc)=0;
+  virtual int PopulateAccessGrid(AliHLTSpacePointPropertyGrid* /*pGrid*/, AliHLTUInt32_t /*mask*/) const {return -ENOSYS;}
+  virtual const AliHLTSpacePointPropertyGrid* GetSpacePointPropertyGrid(AliHLTUInt32_t /*mask*/) const {return NULL;}
+  virtual int SetSpacePointPropertyGrid(AliHLTUInt32_t /*mask*/, AliHLTSpacePointPropertyGrid* /*pGrid*/) {return -ENOSYS;}
+
+  // for backward compatibility
   virtual int PopulateAccessGrid(AliHLTSpacePointGrid* /*pGrid*/, AliHLTUInt32_t /*mask*/) const {return -ENOSYS;}
   virtual const AliHLTSpacePointGrid* GetAccessGrid(AliHLTUInt32_t /*mask*/) const {return NULL;}
+  virtual int SetAccessGrid(AliHLTUInt32_t /*mask*/, AliHLTSpacePointGrid* /*pGrid*/) {return -ENOSYS;}
 
   virtual int GetNumberOfSpacePoints() const;
   virtual bool Check(AliHLTUInt32_t clusterID) const;
@@ -157,5 +169,7 @@ class AliHLTSpacePointContainer : public TObject, public AliHLTLogging
 };
 
 ostream& operator<<(ostream &out, const AliHLTSpacePointContainer& c);
+
+ostream& operator<<(ostream &out, const AliHLTSpacePointContainer::AliHLTSpacePointProperties& p);
 
 #endif
