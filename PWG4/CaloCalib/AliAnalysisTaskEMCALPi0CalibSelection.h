@@ -35,38 +35,50 @@ private:
 public:
   
   // Implementation of interface methods
-  virtual void UserCreateOutputObjects();
-  virtual void UserExec(Option_t * opt);
-  virtual void LocalInit() ;
+  void    UserCreateOutputObjects();
   
-  void    SetPairDTimeCut(Float_t t)        {fDTimeCut    = t   ;}
-  void    SetAsymmetryCut(Float_t asy)      {fAsyCut      = asy ;}
-  void    SetClusterMinEnergy(Float_t emin) {fEmin        = emin;}
-  void    SetClusterMaxEnergy(Float_t emax) {fEmax        = emax;}
-  void    SetClusterMinNCells(Int_t n)      {fMinNCells   = n   ;}
-  void    SetNCellsGroup(Int_t n)           {fGroupNCells = n   ;}
-  void    SetLogWeight(Float_t w)           {fLogWeight   = w   ;}
-  	
-  void    SwitchOnSameSM()                  {fSameSM = kTRUE  ; }
-  void    SwitchOffSameSM()                 {fSameSM = kFALSE ; }
+  void    UserExec(Option_t * opt);
+  
+  void    LocalInit() ;
+  
+  void    PrintInfo();
+
+  void    GetMaxEnergyCellPosAndClusterPos(AliVCaloCells* cells, AliVCluster* clu, Int_t& iSM, Int_t& ieta, Int_t& iphi);
+  
+  // Analysis parameter setting
+  
+  void    SetPairDTimeCut(Float_t t)                     { fDTimeCut    = t          ; }
+  void    SetAsymmetryCut(Float_t asy)                   { fAsyCut      = asy        ; }
+  void    SetClusterMinEnergy(Float_t emin)              { fEmin        = emin       ; }
+  void    SetClusterMaxEnergy(Float_t emax)              { fEmax        = emax       ; }
+  void    SetClusterMinNCells(Int_t n)                   { fMinNCells   = n          ; }
+  void    SetNCellsGroup(Int_t n)                        { fGroupNCells = n          ; }
+  void    SetLogWeight(Float_t w)                        { fLogWeight   = w          ; }
+  	  
+  void    SwitchOnSameSM()                               { fSameSM = kTRUE           ; }
+  void    SwitchOffSameSM()                              { fSameSM = kFALSE          ; }
+  
+  void    UseFilteredEventAsInput()                      { fFilteredInput = kTRUE    ; }
+  void    UseNormalEventAsInput()                        { fFilteredInput = kFALSE   ; }
+  
+  void    SetTriggerName(TString name)                   { fTriggerName = name       ; }
   
   //Geometry setters
-  void    SetGeometryName(TString name)                  { fEMCALGeoName = name   ; }
-  TString GeometryName() const                           { return fEMCALGeoName   ; }
-  void    SwitchOnLoadOwnGeometryMatrices()              { fLoadMatrices = kTRUE  ; }
-  void    SwitchOffLoadOwnGeometryMatrices()             { fLoadMatrices = kFALSE ; }
-  void    SetGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fMatrix[i]    = m      ; }
+  
+  void    SetGeometryName(TString name)                  { fEMCALGeoName = name      ; }
+  TString GeometryName() const                           { return fEMCALGeoName      ; }
+  void    SwitchOnLoadOwnGeometryMatrices()              { fLoadMatrices = kTRUE     ; }
+  void    SwitchOffLoadOwnGeometryMatrices()             { fLoadMatrices = kFALSE    ; }
+  void    SetGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fMatrix[i]    = m         ; }
 
   // Cluster recalculation
-  void    SwitchOnClusterCorrection()               {fCorrectClusters = kTRUE  ; }
-  void    SwitchOffClusterCorrection()              {fCorrectClusters = kFALSE ; }
-  void    SetEMCALRecoUtils(AliEMCALRecoUtils * ru) {fRecoUtils = ru           ; }
-  AliEMCALRecoUtils* GetEMCALRecoUtils()    const   {return fRecoUtils         ; }
+  void    SwitchOnClusterCorrection()                    { fCorrectClusters = kTRUE  ; }
+  void    SwitchOffClusterCorrection()                   { fCorrectClusters = kFALSE ; }
+  void    SetEMCALRecoUtils(AliEMCALRecoUtils * ru)      { fRecoUtils = ru           ; }
+  AliEMCALRecoUtils* GetEMCALRecoUtils()    const        { return fRecoUtils         ; }
   
   void    SetInvariantMassHistoBinRange(Int_t nBins, Float_t minbin, Float_t maxbin){
                                         fNbins = nBins; fMinBin = minbin; fMaxBin = maxbin; }
-	  
-  void    GetMaxEnergyCellPosAndClusterPos(AliVCaloCells* cells, AliVCluster* clu, Int_t& iSM, Int_t& ieta, Int_t& iphi);
 
   // Mask clusters
   void    SetNMaskCellColumns(Int_t n) {
@@ -75,11 +87,6 @@ public:
   void    SetMaskCellColumn(Int_t ipos, Int_t icol) { if(ipos < fNMaskCellColumns) fMaskCellColumns[ipos] = icol            ;
                                                       else printf("Not set, position larger than allocated set size first") ; }
   Bool_t  MaskFrameCluster(const Int_t iSM, const Int_t ieta) const;
-  
-  void    UseFilteredEventAsInput() {fFilteredInput = kTRUE ;}
-  void    UseNormalEventAsInput()   {fFilteredInput = kFALSE;}
-
-  void    PrintInfo();
   
 private:
 
@@ -95,9 +102,19 @@ private:
   Bool_t  fSameSM;         // Combine clusters in channels on same SM
   Bool_t  fFilteredInput;  // Read input produced with filter.
   Bool_t  fCorrectClusters;// Correct clusters energy, position etc.
+  
   TString fEMCALGeoName;   // Name of geometry to use.
+  TString fTriggerName;    // Trigger name must contain this name
 
   AliEMCALRecoUtils * fRecoUtils;  // Access to reconstruction utilities
+  
+  TList * fCuts ;        //! List with analysis cuts
+  Bool_t  fLoadMatrices; //  Matrices set from configuration, not get from geometry.root or from ESDs/AODs
+  TGeoHMatrix * fMatrix[AliEMCALGeoParams::fgkEMCALModules];    // Geometry matrices with alignments
+  
+  Int_t   fNMaskCellColumns;  // Number of masked columns
+  Int_t*  fMaskCellColumns;   //[fNMaskCellColumns] list of masked cell collumn
+  
   
   //Output histograms	
   Int_t   fNbins;  // N       mass bins of invariant mass histograms
@@ -140,13 +157,7 @@ private:
   TH2F*   fhTowerDecayPhotonHitMaskFrame[AliEMCALGeoParams::fgkEMCALModules] ;//! Cells ordered in column/row for different module, number of times a decay photon hits
 
   TH1I*   fhNEvents;     //! Number of events counter histogram
-  TList * fCuts ;        //! List with analysis cuts
-  Bool_t  fLoadMatrices; //  Matrices set from configuration, not get from geometry.root or from ESDs/AODs
-  TGeoHMatrix * fMatrix[AliEMCALGeoParams::fgkEMCALModules];    // Geometry matrices with alignments
-  
-  Int_t   fNMaskCellColumns;  // Number of masked columns
-  Int_t*  fMaskCellColumns;   //[fNMaskCellColumns] list of masked cell collumn
-  
+ 
   //Time
   TH2F*   fhClusterTime ;                  // Timing of clusters vs energy
   TH2F*   fhClusterTimeSM[AliEMCALGeoParams::fgkEMCALModules] ;            // Timing of clusters vs energy per SM
@@ -155,7 +166,7 @@ private:
   TH2F*   fhClusterPairDiffTimeSameSector[AliEMCALGeoParams::fgkEMCALModules/2]; // Diference in time of clusters same sector
   TH2F*   fhClusterPairDiffTimeSameSide[AliEMCALGeoParams::fgkEMCALModules-2];   // Diference in time of clusters same side
 
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,14);
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,15);
 
 };
 
